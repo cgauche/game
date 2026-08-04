@@ -5,7 +5,7 @@ import { calmeValue } from '../engine/psychology';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { Icon } from './Icon';
 import { testBreakdown, testPending } from './breakdown';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeApproach } from '../state/flowOutcomes';
 
@@ -66,13 +66,7 @@ export function ApproachModal() {
       }
       rows={[actorRow]}
       rolled={rolled}
-      outcome={r && (
-        <JournalLine
-          className="rm-journal"
-          event={ev('fear', describeApproach(pa), c.id, src?.id)}
-          combatants={battle.combatants}
-        />
-      )}
+      outcome={r ? [recapLineOfEvent(ev('fear', describeApproach(pa), c.id, src?.id), battle.combatants)] : undefined}
       actions={actions}
       onCancel={rolled ? undefined : cancel}
     />

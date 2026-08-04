@@ -15,6 +15,8 @@
  * défendra pas) échoue dès qu'on re-dérive le prédicat dans l'UI à partir de `defenseSurfaced` seul.
  */
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useGame, type BattleState } from '../state/store';
@@ -124,6 +126,20 @@ describe('#1004 modale d’attaque — attente neutre au lieu du verdict', () =>
     expect(host.textContent, 'le verdict chiffré serait invalidé par la Défense qui suit').not.toContain(pa.result!.log);
     expect(host.textContent, 'ni le mot Blessures, ni « touche »').not.toMatch(/Blessure|touche/);
     expect(host.textContent).toContain('En attente de la Défense de Grunni.');
+  });
+
+  it('l’attente occupe SA zone (`.rm-await`, bloc aux tokens du cadre d’issue), jamais la note de pied', () => {
+    playAttack(HIT_SEED);
+    act(() => { root.render(<AttackModal />); });
+    const zone = host.querySelector('.rm-await');
+    expect(zone, 'le libellé validé à l’écran a sa zone propre').not.toBeNull();
+    expect(zone!.textContent).toContain('En attente de la Défense de Grunni.');
+    expect(host.querySelector('.rm-log'), 'pas la note atténuée de pied de modale').toBeNull();
+    // Le rendu de cette zone est celui d'un BLOC (fond, respiration, texte aligné à gauche) — le
+    // vérifier ICI garde la classe d'être vidée de sa matière ailleurs.
+    const css = readFileSync(join(process.cwd(), 'src/ui/styles/sheet.css'), 'utf8');
+    const rule = css.slice(css.indexOf('.rm-await {'));
+    expect(rule.slice(0, rule.indexOf('}'))).toMatch(/background:[^;]+;[\s\S]*text-align: left/);
   });
 
   it('NON-RÉGRESSION — défenseur non surfacé (héros piloté-IA) : verdict IMMÉDIAT inchangé, aucune attente', () => {

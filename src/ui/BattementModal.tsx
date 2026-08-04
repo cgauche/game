@@ -6,10 +6,11 @@ import { battementFoes } from '../state/combatFlow';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeBattement } from '../state/flowOutcomes';
 import { Icon } from './Icon';
+import { VsHeader } from './VsHeader';
 
 /**
  * Modale de Battement (LDB 10 l.103 / AA 13 l.17) : Action, Test de Corps à corps NON opposé retirant
@@ -67,11 +68,10 @@ export function BattementModal() {
     <RollShell
       flowKey="battement"
       title={<><Icon id="action/attack" /> Battement</>}
-      subtitle={
-        <>
-          <strong>{attacker.label}</strong> bat l'arme de <strong>{foe.label}</strong> pour lui retirer de l'Avantage (coûte l'Action)
-        </>
-      }
+      /* A→B canonique (décision utilisateur 2026-08-04) : portraits + flèche annotée de la manœuvre
+         — jamais une phrase « X bat l'arme de Y ». Le COÛT (l'Action) est un prérequis de ressource,
+         pas un modificateur du jet : il s'annonce sur la flèche, pas sur la ligne. */
+      extra={<VsHeader actor={attacker} target={foe} label="Battement · coûte l’Action" verb="action/attack" />}
       /* Choix de la cible AVANT le jet (plusieurs adversaires éligibles) — OptionChooser partagé. */
       setup={
         foes.length > 1 ? (
@@ -84,7 +84,7 @@ export function BattementModal() {
       }
       rows={[actorRow]}
       rolled={rolled}
-      outcome={r && <JournalLine className="rm-journal" event={ev('attack', describeBattement(pb, attacker.label, foe.label), attacker.id, foe.id)} combatants={battle.combatants} />}
+      outcome={r ? [recapLineOfEvent(ev('attack', describeBattement(pb, attacker.label, foe.label), attacker.id, foe.id), battle.combatants)] : undefined}
       actions={actions}
       onCancel={cancel}
     />

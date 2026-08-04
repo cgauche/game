@@ -6,6 +6,7 @@ import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { ChoiceButtons } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { Icon } from './Icon';
+import { resultLines, freeCons } from '../state/rollSeam';
 
 /**
  * Modale de Chute VOLONTAIRE (LDB 15 l.82) : le pré-jet est le CHOIX RAW « vous pouvez tenter un Test
@@ -81,16 +82,16 @@ export function FallModal() {
     <RollShell
       flowKey="fall"
       title={<><Icon id="melee/flee" size="sm" /> Chute volontaire</>}
-      subtitle={<><strong>{c.label}</strong> amortit sa chute (Test d'Athlétisme +20, {p.metres} m)</>}
+      /* Z1 : acteur + la SITUATION que rien d'autre ne porte (la hauteur). La Compétence est le label
+         de la ligne et le « +20 » sa Difficulté (`accessible`, `.rm-roll-diff` #1072) — pas ici. */
+      subtitle={<><strong>{c.label}</strong> — dénivelé de {p.metres} m</>}
       rows={[actorRow]}
       rolled={rolled}
-      outcome={r && (
-        <div className="rm-journal">
-          {r.effectiveMetres <= 0
-            ? <>La chute est amortie : aucun Dégât.</>
-            : <>{r.effectiveMetres} m de chute (réduite de {Math.max(0, p.metres - r.effectiveMetres)} m).</>}
-        </div>
-      )}
+      outcome={r
+        ? resultLines(freeCons([r.effectiveMetres <= 0
+            ? 'La chute est amortie : aucun Dégât.'
+            : `${r.effectiveMetres} m de chute (réduite de ${Math.max(0, p.metres - r.effectiveMetres)} m).`]))
+        : undefined}
       actions={actions}
       onCancel={rolled ? undefined : cancel}
     />

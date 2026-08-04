@@ -2,7 +2,8 @@
  * NARRATION d'issue des jets — SOURCE UNIQUE par flux (popin ET journal).
  *
  * Motif unifié : chaque flux expose une fonction PURE `describeX(pending) → string` qui produit LA
- * ligne d'issue du jet. La modale l'affiche (`<JournalLine event={ev(kind, describeX(p), …)}>`) et le
+ * ligne d'issue du jet. La modale la FOURNIT en donnée (`outcome={[recapLineOfEvent(ev(kind, describeX(p), …))]}`,
+ * rendue par la coquille) et le
  * store la journalise au même endroit — fini les `outcomeText` recalculés dans chaque modale (et
  * re-recalculés à la validation). Pour le combat, l'équivalent est `result.log`, déjà posé par le
  * moteur ; ces fonctions étendent le même principe aux flux non-combat.
@@ -231,13 +232,14 @@ export function describeReload(pr: PendingReload, after: number, weaponName: str
   return after >= pr.reload ? t('out.reloadDone', { weapon: weaponName }) : t('out.reload', { name: pr.actorName, weapon: weaponName, after, reload: pr.reload });
 }
 
-/** Focalisation = Test étendu (LDB 46) : issue (source unique popin ↔ journal). `prev`/`ni` = DR déjà
- *  cumulé et NI du sort. La ligne combine le jet (`result.log`) et le cumul mis à jour. */
+/** Focalisation = Test étendu (LDB 46) : issue de la fenêtre de jet. La PROGRESSION (DR du Round,
+ *  cumul vers le NI) vit dans SES zones — ✓/✗ ±DR sur la ligne de jet, cumul/cible sur la barre de DR
+ *  (#1078 LOT B2, patron Dissipation/Test étendu) : ne reste à l'issue que ce qu'aucune autre zone
+ *  n'énonce, le NI ATTEINT. Chaîne vide sinon — donc aucun cadre d'issue. */
 export function describeFocus(pf: PendingFocus, prev: number, ni: number): string {
   const r = pf.result;
   if (!r) return '';
-  const after = prev + r.dr;
-  return t('out.focus', { log: r.log, after, ni, niReached: after >= ni ? t('out.fragNiReached') : '' });
+  return prev + r.dr >= ni ? t('out.focusDone') : '';
 }
 
 /** Entrée en Frénésie (LDB 21 l.32) : issue (source unique popin ↔ journal). `name` = le combattant. */

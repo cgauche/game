@@ -14,7 +14,7 @@ import { OptionChooser } from '../OptionChooser';
 import { optionValue } from '../breakdown';
 import { VsHeader } from '../VsHeader';
 import { DeterminationButton } from '../DeterminationButton';
-import { JournalLine } from '../NarratedLine';
+import { recapLineOfEvent } from '../../gameIso/combatNarration';
 import { ev } from '../../state/combatLog';
 import { Icon } from '../Icon';
 import { CodexRef } from '../compendium/CodexRef';
@@ -183,17 +183,14 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
     rows: [attackerRow, defenderRow],
     winnerIndex: res?.defenderDetail ? (res.hit ? 0 : 1) : undefined,
     netSL: res?.defenderDetail ? res.netSL : undefined,
-    postRollExtra: res ? (
-      <>
-        <JournalLine
-          className="rm-journal"
-          event={ev(res.critical ? 'crit' : res.hit ? 'damage' : pd.mode === 'parade' ? 'parry' : 'dodge', res.log, attacker.id, defender.id)}
-          combatants={battle.combatants}
-        />
-        {/* #1000 : les deux camps ont forcé — l'arbitrage APPLIQUÉ (garanties éteintes) est AFFICHÉ. */}
-        {opposedForcingCancelled(pd) && <p className="rm-note">{OPPOSED_FORCING_CANCELLED_NOTE}</p>}
-      </>
-    ) : undefined,
+    outcome: res
+      ? [recapLineOfEvent(
+          ev(res.critical ? 'crit' : res.hit ? 'damage' : pd.mode === 'parade' ? 'parry' : 'dodge', res.log, attacker.id, defender.id),
+          battle.combatants,
+        )]
+      : undefined,
+    /* #1000 : les deux camps ont forcé — l'arbitrage APPLIQUÉ (garanties éteintes) est AFFICHÉ. */
+    postRollExtra: res && opposedForcingCancelled(pd) ? <p className="rm-note">{OPPOSED_FORCING_CANCELLED_NOTE}</p> : undefined,
     actions,
   };
 }

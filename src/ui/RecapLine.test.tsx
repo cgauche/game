@@ -3,13 +3,14 @@
  * utilisateur « RecapLine unique ») : le pont `recapLineOfEvent` reverse la narration existante
  * (`narrateEvent`) dans le vocabulaire structuré, sans composer un seul mot de texte.
  *
- * PARITÉ mesurée contre le renderer sortant (`JournalLine`) : même texte, même coloration par camp.
- * Les deux renderers restent vivants dans ce lot — la migration des ~25 sites est un lot suivant.
+ * PARITÉ mesurée contre le rendu du JOURNAL lui-même (`NarratedSegments`, ce que compose `LogDrawer`) :
+ * même texte, même coloration par camp. Les modales de jet, elles, ne rendent plus que la donnée
+ * (#1078 LOT B1) — un écart de narration entre le journal et l'issue se voit ICI.
  */
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { RecapLineRow } from './RecapLine';
-import { JournalLine } from './NarratedLine';
+import { NarratedSegments } from './NarratedLine';
 import { recapLineOfEvent, recapLinesOfEvents } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 
@@ -35,7 +36,7 @@ const SAMPLE = [
 describe('recapLineOfEvent — parité de TEXTE avec la ligne de journal', () => {
   for (const e of SAMPLE) {
     it(`« ${e.text} » : même texte des deux côtés`, () => {
-      const journal = plainText(renderToStaticMarkup(<JournalLine event={e} combatants={combatants} />));
+      const journal = plainText(renderToStaticMarkup(<NarratedSegments event={e} combatants={combatants} />));
       const recap = plainText(renderToStaticMarkup(<RecapLineRow line={recapLineOfEvent(e, combatants)} />));
       expect(recap).toBe(journal);
       expect(recap).toContain(e.text);
@@ -45,11 +46,13 @@ describe('recapLineOfEvent — parité de TEXTE avec la ligne de journal', () =>
 
 describe('recapLineOfEvent — la COULEUR DE CAMP est préservée', () => {
   it('le héros est allié, la créature ennemie — mêmes classes que le journal', () => {
+    // Les enveloppes diffèrent volontairement (le journal a sa gouttière `.jr-ic`/`.jr-tx`) : la
+    // parité porte sur le TEXTE lu et le COMPTE de noms colorés, jamais sur le markup.
     const e = SAMPLE[0];
     const html = renderToStaticMarkup(<RecapLineRow line={recapLineOfEvent(e, combatants)} />);
     expect(html).toContain('class="nm-ally">Gustav<');
     expect(html).toContain('class="nm-foe">Rat géant<');
-    const journal = renderToStaticMarkup(<JournalLine event={e} combatants={combatants} />);
+    const journal = renderToStaticMarkup(<NarratedSegments event={e} combatants={combatants} />);
     expect(html.match(/nm-ally/g)?.length).toBe(journal.match(/nm-ally/g)?.length);
     expect(html.match(/nm-foe/g)?.length).toBe(journal.match(/nm-foe/g)?.length);
   });

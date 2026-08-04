@@ -9,11 +9,13 @@ import { OPPOSED_FORCING_CANCELLED_NOTE } from '../../state/rollFlowSpecs';
 import { testScene } from '../../scenes/test-fixture';
 import type { Combatant, Weapon } from '../../engine/types';
 import { useDefenseJetProps } from './useDefenseJetProps';
+import { RollShell } from '../RollShell';
 
 /**
  * #1000 — quand les DEUX camps ont dépensé « Je ne faillirai pas ! », l'arbitrage APPLIQUÉ (les deux
  * garanties de victoire s'éteignent) est AFFICHÉ dans la fenêtre de celui qui vient de brûler son
- * Point : la ligne factuelle vit dans le `postRollExtra` de la coquille partagée `RollShell`.
+ * Point. La sonde monte la fenêtre ENTIÈRE (`RollShell`) : l'arbitrage est une note d'ÉTAT, distincte
+ * de l'ISSUE du jet (#1078) — un test qui ne regarderait qu'une zone raterait le déplacement de l'autre.
  */
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -24,10 +26,10 @@ const mk = (id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }): 
      weapons: [sword], advantage: 0, size: 'moyenne', pos, wounds: { current: 18, max: 18 },
      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, resilience: 1 } as unknown as Combatant);
 
-/** Rend le `postRollExtra` de la fenêtre de Défense, telle que la monte `CascadeModal`. */
+/** Monte la fenêtre de Défense ENTIÈRE, telle que la rend `CascadeModal`. */
 function Probe() {
   const props = useDefenseJetProps();
-  return <>{props?.postRollExtra}</>;
+  return props ? <RollShell {...props} /> : null;
 }
 
 let root: Root | null = null;
@@ -74,7 +76,8 @@ describe('#1000 — l’annulation mutuelle des Résiliences est AFFICHÉE', () 
   it('un seul camp a forcé (ou aucun) → aucune ligne : la garantie tient, il n’y a rien à annoncer', () => {
     for (const opts of [{ atk: true }, { def: true }, {}]) {
       const html = play(opts);
-      expect(html.length, 'la fenêtre rend bien son journal (le témoin n’est pas vide)').toBeGreaterThan(0);
+      // TÉMOIN : la fenêtre a bien rendu son ISSUE (sinon l'absence de la note ne prouverait rien).
+      expect(html, 'la fenêtre rend bien l’issue du jet').toContain(useGame.getState().pendingDefense!.result!.log);
       expect(html).not.toContain(OPPOSED_FORCING_CANCELLED_NOTE);
     }
   });

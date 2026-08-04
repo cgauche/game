@@ -8,6 +8,7 @@ import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { Icon } from './Icon';
+import { resultLines, freeCons } from '../state/rollSeam';
 
 /**
  * Modale de CHANSON DE MARIN (Talent, MDG 09 l.32-40) : le pré-jet est un MENU (OptionChooser) des
@@ -62,7 +63,9 @@ export function ShantyModal() {
     <RollShell
       flowKey="shanty"
       title={<><Icon id="audio/music" size="sm" /> Chanson de marin</>}
-      subtitle={<><strong>{singer.label}</strong> entonne pour l'équipage (Test de Divertissement (Chant))</>}
+      /* Z1 : acteur + le BÉNÉFICIAIRE, qui n'a de portrait nulle part (l'équipage entier). La
+         Compétence est le label de la ligne (`Divertissement (Chant)`) — jamais redite ici. */
+      subtitle={<><strong>{singer.label}</strong> — pour tout l’équipage</>}
       setup={
         <OptionChooser
           layout="seg"
@@ -78,13 +81,17 @@ export function ShantyModal() {
       }
       rows={[actorRow]}
       rolled={rolled}
-      outcome={r && chosen && (
-        <div className="rm-journal">
-          {r.success
-            ? <><Icon id="audio/music" size="sm" /> « {chosen.label} » porte {3 + Math.max(0, r.sl)} minute(s) : {chosen.desc}{chosen.note && <em className="muted"> — {chosen.note}</em>}</>
-            : <>La chanson tombe à plat — aucun effet (le quart est consommé).</>}
-        </div>
-      )}
+      /* Hiérarchie de l'issue par le TON du modèle, jamais par du JSX : l'effet obtenu porte le ton
+         d'une réussite, la précision de la chanson descend en ligne atténuée — ton `info` ÉCRIT ici
+         (le rendu par défaut d'une issue est à pleine couleur, #1078 LOT B2). */
+      outcome={r && chosen
+        ? resultLines(freeCons(r.success
+            ? [
+                { text: `« ${chosen.label} » porte ${3 + Math.max(0, r.sl)} minute(s) : ${chosen.desc}`, icon: 'audio/music', tone: 'ok' as const },
+                ...(chosen.note ? [{ text: `— ${chosen.note}`, tone: 'info' as const }] : []),
+              ]
+            : ['La chanson tombe à plat — aucun effet (le quart est consommé).']))
+        : undefined}
       actions={actions}
       onCancel={rolled ? undefined : cancel}
     />

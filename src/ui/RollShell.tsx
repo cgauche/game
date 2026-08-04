@@ -7,6 +7,8 @@ import { d100Faces } from './Dice';
 import { FLOW_VERBS } from '../state/rollFlowSpecs';
 import { rowForcedDie } from './forcedDieRow';
 import { useGame } from '../state/store';
+import { RecapLineRow } from './RecapLine';
+import type { RecapLine } from '../state/recapLine';
 
 /**
  * RollShell — LA coquille UNIQUE des modales de jet différé (mono, opposé, ou N contributeurs).
@@ -108,7 +110,10 @@ export function RollShell({
   /** Famille de classes du sous-titre : 'roll' (rm-subtitle) / 'test' (test-actor). */
   variant?: 'roll' | 'test';
   subtitle?: ReactNode;
-  /** Ligne d'instruction sous le sous-titre (`mini-title`). */
+  /** Zone Z2 — CONSIGNE DE GESTE pré-jet, sous le sous-titre (`mini-title`) : ce que les joueurs ont
+   *  à FAIRE dans cette fenêtre quand la barre d'actions ne suffit pas à le dire (multi : « Chacun
+   *  frappe — Corps à corps (Bagarre)… », `ForceDoorModal`). Jamais un rappel de règle ni l'issue du
+   *  jet : la Difficulté vit sur la ligne (#1072), le verdict sur `RollLine`, l'issue sur `outcome`. */
   instruction?: ReactNode;
   /** Rendu EMBARQUÉ (zone de jet d'une modale persistante) : même contenu, sans l'enveloppe `Modal`. */
   embedded?: boolean;
@@ -125,9 +130,15 @@ export function RollShell({
   /** Test opposé (2 rangées) : index de la rangée gagnante — passé à `RollRow`/RollPanel via `row`. */
   winnerIndex?: number | null;
   netSL?: number;
-  /** Issue style journal sous la LISTE, à TOUTE cardinalité (mono, opposé, multi). Une issue PAR
-   *  rangée passe, elle, par `row.note`. */
-  outcome?: ReactNode;
+  /** Issue du jet sous la LISTE, à TOUTE cardinalité (mono, opposé, multi) — DONNÉE, jamais du JSX :
+   *  la coquille la rend elle-même (`RecapLineRow`, renderer UNIQUE). Ce que le TYPE garantit :
+   *  aucun JSX n'entre ici, et le vocabulaire `RecapLine` (texte + segments tonés par camp + icône
+   *  + ton) n'expose AUCUN champ de verdict — ✓/✗ et DR restent la donnée de la ligne de jet
+   *  (`RollLine`). Le texte, lui, est libre : qu'il ne redise pas le verdict ni la progression déjà
+   *  rendus par les autres zones relève du CONTRAT, pas du type (#1078).
+   *  Producteurs : `recapLineOfEvent`/`recapLinesOfEvents` (événement de combat), `resultLines`
+   *  (conséquences). Une issue PAR rangée passe, elle, par `row.note`. */
+  outcome?: RecapLine[];
   /** Bandeau d'ISSUE agrégée sous les rangées (multi : total, succès…). Masqué si absent. */
   summary?: ReactNode;
   /** Contenu métier POST-JET (Surincantation, Contre-sort…). */
@@ -209,8 +220,14 @@ export function RollShell({
         })}
       </div>
       {/* L'ISSUE dit ce que les jets ont produit : elle tombe sous le MÊME verrou que le halo et le
-          badge « DR net » (#990) — une rangée masquée révélerait par sa conclusion ce que son dé cache. */}
-      {!panelMasked && outcome}
+          badge « DR net » (#990) — une rangée masquée révélerait par sa conclusion ce que son dé cache.
+          Le CADRE (`.rm-journal`) et le rendu de chaque ligne (`RecapLineRow`) appartiennent à la
+          coquille : un site fournit la DONNÉE, jamais le markup (#1078). */}
+      {!panelMasked && !!outcome?.length && (
+        <div className="rm-journal">
+          {outcome.map((l, i) => <RecapLineRow key={i} line={l} />)}
+        </div>
+      )}
       {/* DR net du Test opposé (2 rangées) — même badge que `RollPanel`, réutilisé ici. Il COMPARE les
           deux jets : masqué avec eux (#990). */}
       {!panelMasked && rolled && winnerIndex != null && netSL != null && (

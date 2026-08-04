@@ -63,11 +63,19 @@ export function stepSubtitleLabel(stepLabel: string | undefined, modalTitle: unk
   return typeof modalTitle === 'string' && modalTitle.trim() === stepLabel.trim() ? undefined : stepLabel;
 }
 
-/** Sous-titre d'étape — `undefined` quand il ne RESTE rien à dire (libellé dédoublonné ET séquence à
- *  une étape, donc pas de compteur). Un fragment JSX vide n'est pas `null` : la coquille rendrait un
- *  `<p>` vide, soit une bande de marge sans contenu sous le titre. */
-function stepSubtitle(stepLabel: string | undefined, icon: string, cursor: number, total: number): ReactNode {
-  const compteur = total > 1 ? `${stepLabel ? ' · ' : ''}${cursor + 1}/${total}` : '';
+/** Sous-titre d'étape — SOURCE UNIQUE des six branches de la cascade (table / affichage riche /
+ *  affichage / choix / batch / jet) : libellé DÉDOUBLONNÉ contre le titre (`stepSubtitleLabel`) puis
+ *  compteur. `undefined` quand il ne RESTE rien à dire (libellé dédoublonné ET séquence à une étape,
+ *  donc pas de compteur). Un fragment JSX vide n'est pas `null` : la coquille rendrait un `<p>` vide,
+ *  soit une bande de marge sans contenu sous le titre.
+ *  `count` porte le compteur : rang de l'étape par défaut (`n/m`), ou compte de JETS RÉELS pour la
+ *  branche jet (`prefix: 'jet '`, `total` = `totalJets`, arbitrage user 2026-07-11). */
+function stepSubtitle(
+  stepLabel: string | undefined,
+  icon: string,
+  count: { cursor: number; total: number; prefix?: string },
+): ReactNode {
+  const compteur = count.total > 1 ? `${stepLabel ? ' · ' : ''}${count.prefix ?? ''}${count.cursor + 1}/${count.total}` : '';
   if (!stepLabel && !compteur) return undefined;
   return <>{stepLabel && <strong><Icon id={icon} size="sm" /> {stepLabel}</strong>}{compteur}</>;
 }
@@ -367,7 +375,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     return (
       <RollShell
         title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
-        subtitle={stepSubtitle(stepLabel, cur.icon || 'nav/dice', p.cursor, p.participants.length)}
+        subtitle={stepSubtitle(stepLabel, cur.icon || 'nav/dice', { cursor: p.cursor, total: p.participants.length })}
         rolled={false}
         rows={[...doneWitnessRows, ...currentRows(aff.rows)]}
         extra={<TableRollLine table={tableLineLabel(def?.label, cur.label, p.title)} />}
@@ -392,7 +400,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       return (
         <RollShell
           title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
-          subtitle={stepSubtitle(stepSubtitleLabel(cur.label, p.title), cur.icon || 'journal/info', p.cursor, p.participants.length)}
+          subtitle={stepSubtitle(stepSubtitleLabel(cur.label, p.title), cur.icon || 'journal/info', { cursor: p.cursor, total: p.participants.length })}
           rolled
           /* Le CONCERNÉ (`RevealEntry.subjectId`) porte son portrait EN TÊTE de l'étape : on sait
              toujours à qui la révélation s'applique. Le Coup Critique le rend déjà dans son en-tête
@@ -414,7 +422,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     return (
       <RollShell
         title={p.title}
-        subtitle={stepSubtitle(stepLabel, cur.icon || 'journal/info', p.cursor, p.participants.length)}
+        subtitle={stepSubtitle(stepLabel, cur.icon || 'journal/info', { cursor: p.cursor, total: p.participants.length })}
         rolled
         /* La marque « dé fixé » n'a qu'UNE surface : l'étiquette du sélecteur quand il est servi,
            la pastille de rangée sinon (siège voisin, option éteinte). */
@@ -454,7 +462,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     return (
       <RollShell
         title={p.title}
-        subtitle={<><strong><Icon id={cur.icon || 'journal/info'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
+        subtitle={stepSubtitle(stepSubtitleLabel(cur.label, p.title), cur.icon || 'journal/info', { cursor: p.cursor, total: p.participants.length })}
         rolled
         rows={doneWitnessRows}
         postRollExtra={
@@ -519,7 +527,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     return (
       <RollShell
         title={p.title}
-        subtitle={<><strong><Icon id={cur.icon || 'nav/dice'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
+        subtitle={stepSubtitle(stepSubtitleLabel(cur.label, p.title), cur.icon || 'nav/dice', { cursor: p.cursor, total: p.participants.length })}
         extra={stakeNote ?? undefined}
         rolled={ready}
         rows={[...doneWitnessRows, ...rows]}
@@ -625,7 +633,11 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
       /* « jet N/M » : N = jets de dé jusqu'ici + celui-ci, M = total des jets RÉELS (arbitrage user
          2026-07-11 — l'agrégation/la météo/les affichages ne comptent pas). */
-      subtitle={<><strong><Icon id={cur.icon || 'nav/dice'} size="sm" /> {cur.label}</strong>{totalJets > 1 ? ` · jet ${p.participants.slice(0, p.cursor).reduce((n, s) => n + diceOf(s), 0) + 1}/${totalJets}` : ''}</>}
+      subtitle={stepSubtitle(stepSubtitleLabel(cur.label, p.title), cur.icon || 'nav/dice', {
+        cursor: p.participants.slice(0, p.cursor).reduce((n, s) => n + diceOf(s), 0),
+        total: totalJets,
+        prefix: 'jet ',
+      })}
       extra={oppHeader || stakeNote ? <>{oppHeader}{stakeNote}</> : undefined}
       rolled={rolled}
       /* Rangées : validées FIGÉES (témoins) + rangée de l'adversaire figé (Test opposé, #579) + courante

@@ -5,9 +5,11 @@ import { freeRerollOf } from '../../engine/activeFlags';
 import { combatValue } from '../../engine/combat';
 import { RollShell, type RollAction, type RollRowData } from '../RollShell';
 import { testPending } from '../breakdown';
-import { JournalLine } from '../NarratedLine';
+import { recapLineOfEvent } from '../../gameIso/combatNarration';
 import { ev } from '../../state/combatLog';
 import { Icon } from '../Icon';
+import { VsHeader } from '../VsHeader';
+import { trampleFreeMove } from '../../state/combatFlow';
 
 /**
  * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET de Piétinement (LDB 85 - Traits de
@@ -33,6 +35,9 @@ export function useTrampleJetProps(): ComponentProps<typeof RollShell> | null {
   if (!attacker || !target) return null;
   const r = pt.result;
   const rolled = !!r;
+  // Voie de PAIEMENT réelle : prédicat PARTAGÉ avec la porte ET le débit (`trampleFreeMove`) — ce que
+  // la fenêtre annonce est exactement ce que `trampleConfirm` dépense.
+  const freeMoveAction = trampleFreeMove(battle, attacker);
 
   const actorRow: RollRowData = {
     actor: attacker,
@@ -63,14 +68,21 @@ export function useTrampleJetProps(): ComponentProps<typeof RollShell> | null {
   return {
     flowKey: 'trample',
     title: <><Icon id="resource/movement" size="sm" /> Piétinement</>,
-    subtitle: (
-      <>
-        <strong>{attacker.label}</strong> écrase <strong>{target.label}</strong> (coûte 1 Avantage)
-      </>
+    // A→B canonique (décision utilisateur 2026-08-04) : portraits + flèche, jamais une phrase
+    // « X écrase Y ». Le COÛT est annoncé sur la flèche : c'est un prérequis de RESSOURCE (débité à
+    // l'ouverture, `combatSlice.battleTrample`), pas un modificateur du jet — il n'a rien à faire sur
+    // la ligne. Sa nature est DÉRIVÉE de la même condition que la porte (LDB 85 l.320 / l.314).
+    extra: (
+      <VsHeader
+        actor={attacker}
+        target={target}
+        label={`Piétinement · coûte ${freeMoveAction ? 'une Action de Mouvement' : '1 Avantage'}`}
+        verb="melee/trample"
+      />
     ),
     rows: [actorRow],
     rolled,
-    outcome: r ? <JournalLine className="rm-journal" event={ev('attack', r.log, attacker.id, target.id)} combatants={battle.combatants} /> : undefined,
+    outcome: r ? [recapLineOfEvent(ev('attack', r.log, attacker.id, target.id), battle.combatants)] : undefined,
     actions,
     onCancel: cancel,
   };

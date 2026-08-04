@@ -204,6 +204,29 @@ describe('Piétinement en combat (store)', () => {
     expect(st.battle!.combatants.find((c) => c.id === H.id)!.advantage).toBe(3); // 2 − 0 (coût) + 1 (victoire)
   });
 
+  it('Se cabrer + Mouvement DÉJÀ dépensé, mais de l’Avantage : la voie ORDINAIRE s’applique — 1 Avantage DÉBITÉ', () => {
+    // #1078 LOT B2 : la fenêtre annonçait « coûte 1 Avantage » et le paiement, qui ne testait que le
+    // trait, n'en débitait aucun. Le prédicat PARTAGÉ (`trampleFreeMove`) ferme la voie gratuite dès que
+    // l'Action de Mouvement n'est plus entière (trait « Se cabrer », LDB 85 l.314 : « Pour une Action de
+    // Mouvement… ») : le coût redevient 1 Avantage (l.320-321), et c'est CE coût qui part.
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    H.size = 'grande';
+    H.characteristics['capacite-de-combat'] = 85;
+    H.characteristics.force = 45;
+    H.traits = [{ id: 'se-cabrer' }] as unknown as Combatant['traits'];
+    H.advantage = 2;
+    const spent = mountMovement(useGame.getState().battle!, H);
+    useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: spent } });
+    useGame.getState().battleTrample(E.id);
+    expect(useGame.getState().pendingTrample, 'la porte s’ouvre : il reste la voie à 1 Avantage').not.toBeNull();
+    useGame.getState().trampleRoll();
+    useGame.getState().trampleConfirm();
+    const st = useGame.getState();
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.advantage, '2 − 1 (coût) + 1 (victoire)').toBe(2);
+    expect(st.battle!.movementUsed, 'aucun Mouvement supplémentaire consommé').toBe(spent);
+  });
+
   it('Se cabrer : refusé si l’Action de Mouvement est DÉJÀ dépensée ce Tour (movementUsed > 0, 0 Avantage)', () => {
     const { H, E } = setup();
     H.size = 'grande';

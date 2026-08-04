@@ -4,7 +4,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { effectiveChar } from '../engine/characteristics';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeFrenzy } from '../state/flowOutcomes';
 import { Icon } from './Icon';
@@ -65,13 +65,7 @@ export function FrenzyModal() {
       }
       rows={[actorRow]}
       rolled={rolled}
-      outcome={r && (
-        <JournalLine
-          className="rm-journal"
-          event={ev('frenzy', describeFrenzy(pf, c.label), c.id)}
-          combatants={battle.combatants}
-        />
-      )}
+      outcome={r ? [recapLineOfEvent(ev('frenzy', describeFrenzy(pf, c.label), c.id), battle.combatants)] : undefined}
       actions={actions}
       onCancel={rolled ? undefined : cancel}
     />

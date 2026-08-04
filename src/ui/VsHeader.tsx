@@ -14,6 +14,7 @@ export function VsHeader({
   target,
   label,
   verb,
+  targetVariant = 'vital',
 }: {
   actor?: Combatant | null;
   target?: Combatant | null;
@@ -23,6 +24,10 @@ export function VsHeader({
    *  registre d'icônes, rendu par `<Icon>`. Absent → glyphe « → ». Le type interdit le texte libre :
    *  la direction A→B dit déjà qui agit, un mot y ajoutait une redite propre à chaque modale. */
   verb?: IconId;
+  /** Cadre du CIBLÉ : `vital` (défaut, jauge seule) ou `full` — qui ajoute les pastilles d'ÉTATS. Une
+   *  fenêtre dont le jet AGIT sur ces États (soins : suivre l'Hémorragie passe par passe) a besoin de
+   *  les voir ; ailleurs, la vitalité suffit. Le défaut laisse les consommateurs existants inchangés. */
+  targetVariant?: 'vital' | 'full';
 }) {
   if (!actor && !target) return null;
   return (
@@ -39,7 +44,7 @@ export function VsHeader({
           {verb ? <Icon id={verb} size="sm" /> : '→'}
         </span>
       )}
-      {target && <CharFrame c={target} variant="vital" size="md" />}
+      {target && <CharFrame c={target} variant={targetVariant} size="md" />}
     </div>
   );
 }

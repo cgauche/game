@@ -344,7 +344,7 @@ Les tests étendus servent à résoudre des tâches particulièrement longues ou
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.171-180, l.182-185) → `useExtendedTestJetProps`, `useTestJetProps`, `TestFields`, `ReloadModal`, `hasSkillAdvance`, `PendingTest`, `buildStageSteps`, `CascadeBody`, `RollRowProps`, `assistBonus`, +20 — `src/engine/activities.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, `src/state/combatEffects.ts`, +13 fichiers
+- `LDB 12` (l.171-180, l.182-185) → `useExtendedTestJetProps`, `useTestJetProps`, `ReloadModal`, `TestFields`, `hasSkillAdvance`, `PendingTest`, `buildStageSteps`, `RollRowProps`, `CascadeBody`, `assistBonus`, +20 — `src/engine/activities.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, `src/state/combatEffects.ts`, +13 fichiers
 
 ---
 

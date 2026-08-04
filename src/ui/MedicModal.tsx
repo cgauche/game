@@ -15,9 +15,10 @@ import { hasTreatableTrauma, hasSurgeryTrauma, surgeryTraumas, recoverableTrauma
 import { bestHealerFor } from '../state/medicFlow';
 import { partyMoneyTotal } from '../state/bourseFlow';
 import { toMoney } from '../engine/money';
-import { DIFFICULTY_LABELS, type Combatant } from '../engine/types';
+import type { Combatant } from '../engine/types';
 import { Icon } from './Icon';
-import { healSubtitleLabel } from './healSubtitle';
+import { VsHeader } from './VsHeader';
+import { HEAL_ACT } from './healSubtitle';
 
 const ACT_META: Record<HealMode, { icon: ReactNode; label: string }> = {
   wounds: { icon: <Icon id="journal/heal" size="sm" />, label: 'Soigner les Blessures' },
@@ -105,13 +106,10 @@ function SurgeryRollFlow() {
     <RollShell
       flowKey="surgery"
       embedded
-      title={<>{recovery ? <Icon id="medical/crutch" size="sm" /> : <Icon id="medical/scalpel" size="sm" />} {recovery ? 'Rééduquer (une passe)' : 'Opérer (une passe)'}</>}
-      subtitle={
-        <>
-          <strong>{ps.healerName}</strong> {recovery ? 'rééduque' : 'opère'} <strong>{ps.targetName}</strong>{' '}
-          <span className="rm-weapon">({healSubtitleLabel(ps.difficulty)})</span>
-        </>
-      }
+      title={<><Icon id={HEAL_ACT[kind ?? 'surgery'].icon} size="sm" /> {recovery ? 'Rééduquer (une passe)' : 'Opérer (une passe)'}</>}
+      /* AUCUN sous-titre : la passe est EMBARQUÉE dans le dossier d'opération, qui porte déjà l'A→B
+         (`VsHeader` soignant→patient) au-dessus. Le geste est le titre, la Difficulté la donnée de la
+         LIGNE (#1072), le cumul la `DrBar` — il ne reste rien à écrire ici. */
       rows={[actorRow]}
       rolled={rolled}
       actions={actions}
@@ -180,12 +178,28 @@ export function MedicModal() {
           {sg && (() => {
             const recovery = sg.kind === 'recovery';
             const pool = recovery ? recoverableTraumas(patient) : surgeryTraumas(patient);
+            const acte = HEAL_ACT[sg.kind]; // vocabulaire PARTAGÉ avec HealRollFlow (healSubtitle.ts)
+            // Le chirurgien n'est un `Combatant` que s'il est du GROUPE : un PNJ tarifé (`healerId`
+            // sentinelle, `medicFlow.medicAct`) n'a ni portrait ni fiche — son nom EST le titre de la
+            // fenêtre (« Soins — <PNJ> »). Sans acteur, `VsHeader` n'a pas d'A→B à rendre (il tairait
+            // aussi son `label`) : l'acte et le patient se disent alors en note.
+            const surgeon = sg.healerId ? party.find((c) => c.id === sg.healerId) : undefined;
             return (
             <div className="medic-surgery">
-              <p className="rm-vs">
-                <strong>{sg.healerName}</strong> {recovery ? 'rééduque' : 'opère'} <strong>{patient.label}</strong>{' '}
-                <span className="rm-weapon">(cumuler {sg.targetDR} DR · {DIFFICULTY_LABELS[sg.difficulty]})</span>
-              </p>
+              {/* L'A→B de l'opération est la PRIMITIVE d'opposition (`VsHeader`) : soigneur → patient.
+                  La Difficulté vit sur la LIGNE du jet (`pending.difficulty`, #1072) et le DR à cumuler
+                  sur la `DrBar` ci-dessous : ni l'une ni l'autre ne se réécrit ici. */}
+              {surgeon ? (
+                <VsHeader
+                  actor={surgeon}
+                  target={patient}
+                  label={acte.label}
+                  verb={acte.icon}
+                  targetVariant="full"
+                />
+              ) : (
+                <p className="rm-note">{acte.label} — {patient.label}</p>
+              )}
               {!sg.last && pool.length > 1 && (
                 <div className="modal-actions medic-wound-pick">
                   {pool.map((t, i) => (
@@ -211,7 +225,7 @@ export function MedicModal() {
                   <button className="btn btn-ghost" onClick={cancelSurgery} title={sg.last ? 'Le cumul de DR est perdu' : 'Renoncer (acte remboursé)'}>
                     {recovery ? 'Arrêter la rééducation' : 'Arrêter l’opération'}
                   </button>
-                  <button className="btn btn-primary" onClick={openPass}>{recovery ? <><Icon id="medical/crutch" size="sm" /> Rééduquer (une passe)</> : <><Icon id="medical/scalpel" size="sm" /> Opérer (une passe)</>}</button>
+                  <button className="btn btn-primary" onClick={openPass}><Icon id={acte.icon} size="sm" /> {recovery ? 'Rééduquer (une passe)' : 'Opérer (une passe)'}</button>
                 </div>
               )}
             </div>

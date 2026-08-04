@@ -3,7 +3,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 
 /**
@@ -57,7 +57,7 @@ export function SteamSaveModal() {
       subtitle={<>panne de vapeur</>}
       rows={[actorRow]}
       rolled={rolled}
-      outcome={<JournalLine className="rm-journal" event={ev(p.success ? 'info' : 'condition', text, p.actorId)} combatants={party} />}
+      outcome={[recapLineOfEvent(ev(p.success ? 'info' : 'condition', text, p.actorId), party)]}
       actions={actions}
     />
   );

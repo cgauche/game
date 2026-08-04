@@ -21,7 +21,7 @@ import { VsHeader } from './VsHeader';
 import { RollRow } from './RollRow';
 import { rowForcedDie } from './forcedDieRow';
 import { maskOpposedRow, opposedResponded, opposedRevealed } from './opposedFrozen';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { testBreakdown, testPending, soutienMod } from './breakdown';
 import { Icon } from './Icon';
@@ -183,13 +183,9 @@ export function CastModal() {
     forceShow: !!res && !res.cast,
   });
 
-  const journal = res && castRevealed && !!outcome && (
-    <JournalLine
-      className="rm-journal"
-      event={ev(res.isCritical ? 'crit' : 'cast', outcome, caster.id, selfTarget ? undefined : target.id)}
-      combatants={pool}
-    />
-  );
+  const issue = res && castRevealed && outcome
+    ? [recapLineOfEvent(ev(res.isCritical ? 'crit' : 'cast', outcome, caster.id, selfTarget ? undefined : target.id), pool)]
+    : undefined;
 
   // Rangée d'opposition interactive encore à lancer : `oppositionConfirm` REFUSE d'agréger (la cible
   // subirait sans avoir opposé) — l'action le DIT au lieu de rester cliquable pour rien.
@@ -241,8 +237,11 @@ export function CastModal() {
             }
             verb="action/cast"
           />
+          {/* PORTÉE du sort (gabarit de Zone d'Effet / cible = le lanceur) : ce n'est PAS une
+              opposition A→B — sa classe est la sienne (`.rm-spellinfo`, #1078 LOT B2), pas celle de
+              `VsHeader`. Mêmes déclarations que `.rm-vs` : rendu inchangé, rôle séparé. */}
           {(selfTarget || pc.zone) && (
-            <p className="rm-vs">
+            <p className="rm-spellinfo">
               {pc.zone ? (
                 <>
                   <strong>Zone d'Effet</strong> — gabarit {pc.zone.radius * 2 + 1}×{pc.zone.radius * 2 + 1} cases
@@ -260,7 +259,7 @@ export function CastModal() {
       }
       rows={[castRow]}
       rolled={!!res}
-      outcome={journal}
+      outcome={issue}
       setup={
         <>
           {/* « Prêchez, ma sœur ! » (LDB 40 l.40-42) : entonner la Prière à voix haute (Intermédiaire)

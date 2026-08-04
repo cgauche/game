@@ -17,7 +17,7 @@ import { DeterminationButton } from '../DeterminationButton';
 import { CodexRef } from '../compendium/CodexRef';
 import { RollShell, type RollRowData, type RollAction } from '../RollShell';
 import { VsHeader } from '../VsHeader';
-import { JournalLine } from '../NarratedLine';
+import { recapLineOfEvent } from '../../gameIso/combatNarration';
 import { ev } from '../../state/combatLog';
 import { Icon } from '../Icon';
 
@@ -297,22 +297,19 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
     netSL: res?.defenderDetail ? res.netSL : undefined,
     // Issue = LA ligne de journal du moteur (`res.log` : « X touche Y (loc) : N − (BE+PA) = Z Blessures »),
     // pas une ligne condensée dupliquée. Source unique, le calcul des Dégâts est visible dans la popin.
-    // Rendue en `postRollExtra`.
     // #1004 : quand une fenêtre de Défense va s'interposer (`surfacedDefensePending`, MÊME prédicat que
     // `openSurfacedDefense`), `res` est une résolution `defense:'none'` contre PERSONNE — son verdict et
-    // ses Dégâts seraient invalidés par l'opposition qui suit. On n'affiche qu'une attente ; le verdict
-    // réel s'énonce après la Défense (fenêtre interposée).
-    postRollExtra: res ? (
-      awaitingDefense ? (
-        <div className="rm-journal">{t('defense.awaiting', { cible: target.label })}</div>
-      ) : (
-        <JournalLine
-          className="rm-journal"
-          event={ev(res.critical ? 'crit' : res.hit ? 'damage' : 'attack', res.log, attacker.id, target.id)}
-          combatants={battle.combatants}
-        />
-      )
-    ) : undefined,
+    // ses Dégâts seraient invalidés par l'opposition qui suit. Il n'y a alors AUCUNE issue : seule une
+    // ATTENTE s'affiche (zone d'état, `postRollExtra`) ; le verdict réel s'énonce après la Défense.
+    outcome: res && !awaitingDefense
+      ? [recapLineOfEvent(
+          ev(res.critical ? 'crit' : res.hit ? 'damage' : 'attack', res.log, attacker.id, target.id),
+          battle.combatants,
+        )]
+      : undefined,
+    postRollExtra: res && awaitingDefense
+      ? <p className="rm-await">{t('defense.awaiting', { cible: target.label })}</p>
+      : undefined,
     forcedExtra: res?.critical && pa.forced ? <CritLocationPicker current={res.critLocation} onSet={setCritLocation} shape={target.bodyShape} /> : undefined,
     actions: [
       { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'pre' } as RollAction,

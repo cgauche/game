@@ -3,7 +3,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending, supportSplit } from './breakdown';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { Icon } from './Icon';
 import { ev } from '../state/combatLog';
 import { resultLine, freeCons } from '../state/rollSeam';
@@ -64,20 +64,22 @@ export function DispelModal() {
     <RollShell
       flowKey="dispel"
       title={<><Icon id="action/dispel" size="sm" /> Dissipation</>}
+      /* Z1 : QUI dissipe QUOI. La PROGRESSION (DR cumulé vers le NI) n'est PAS ici — elle a sa zone
+         unique, la barre de DR de la rangée (`extendedDr`, ci-dessus). */
       subtitle={
         <>
-          <strong>{caster.label}</strong> dissipe <strong>{pd.label}</strong> ({prev}/{pd.ni} DR)
+          <strong>{caster.label}</strong> dissipe <strong>{pd.label}</strong>
         </>
       }
       rows={[actorRow]}
       rolled={rolled}
-      outcome={r && (
-        <JournalLine
-          className="rm-journal"
-          event={ev('cast', resultLine(freeCons([`${caster.label} — Dissipation de ${pd.label} : DR ${r.sl >= 0 ? '+' : ''}${r.sl} (cumul ${cum}/${pd.ni})${cum >= pd.ni ? ' → dissipé !' : ''}.`])), caster.id)}
-          combatants={battle?.combatants ?? party}
-        />
-      )}
+      /* La PROGRESSION (DR du Round, cumul vers le NI) vit dans ses zones : ✓/✗ ±DR sur la ligne de
+         jet, cumul/cible sur la barre de DR de la rangée. Reste à l'issue le seul fait que rien
+         d'autre n'énonce — le sort a cédé. */
+      outcome={r && cum >= pd.ni ? [recapLineOfEvent(
+        ev('cast', resultLine(freeCons([`${caster.label} — ${pd.label} est dissipé !`])), caster.id),
+        battle?.combatants ?? party,
+      )] : undefined}
       actions={actions}
       onCancel={cancel}
     />

@@ -100,8 +100,8 @@ export function narrateEvent(e: CombatEvent, combatants: ComLite[] = []): Narrat
 
 /** Un événement de combat en LIGNE DE RÉCAP structurée (#1078) : même narration que le journal
  *  (`narrateEvent` — aucun texte n'est composé ici), reversée dans le vocabulaire partagé `RecapLine`
- *  (texte plat + segments tonés par camp + icône). C'est le pont qui permet au renderer unique de
- *  rendre ce que `JournalLine` rend. */
+ *  (texte plat + segments tonés par camp + icône). C'est le pont qui permet au renderer unique
+ *  (`RecapLineRow`) de rendre une issue de jet comme le journal (`NarratedSegments`) rend sa ligne. */
 export function recapLineOfEvent(e: CombatEvent, combatants: ComLite[] = []): RecapLine {
   const n = narrateEvent(e, combatants);
   return { text: n.raw, icon: n.icon, segments: n.segments.map((s) => (s.team ? { text: s.text, team: s.team } : { text: s.text })) };

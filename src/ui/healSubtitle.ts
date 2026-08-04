@@ -1,30 +1,21 @@
-import { DIFFICULTY_LABELS, type Difficulty } from '../engine/types';
 import type { HealMode } from '../engine/healing';
+import type { IconId } from './icons';
 
 /**
- * Libellé « Guérison, <Difficulté> » du sous-titre d'un flux de soin (HealRollFlow) — dérivé de
- * `PendingHeal.difficulty` (jamais recodé en dur), même patron que `SurgeryRollFlow` (MedicModal.tsx).
+ * VOCABULAIRE d'un acte de soin — source UNIQUE partagée par les deux fenêtres (`HealRollFlow` et le
+ * dossier d'opération de `MedicModal`) : ce sur QUOI porte le soin (`label`) et son icône. Sert à
+ * annoter la flèche de l'A→B (`VsHeader`), qui est LA forme canonique du face-à-face (décision
+ * utilisateur 2026-08-04) — plus aucune phrase « A soigne B » en sous-titre.
+ *
+ * Ni la Difficulté ni la Compétence n'ont de composeur ici (#1078 LOT B2) : elles voyagent en donnée
+ * de LIGNE (`difficulty` → `testPending`/`testBreakdown` → `.rm-roll-diff`, #1072 ; « Guérison » est
+ * le label de la ligne). Les écrire aussi au bandeau était le double rendu de classe #352.
  */
-export function healSubtitleLabel(difficulty: Difficulty): string {
-  return `Guérison, ${DIFFICULTY_LABELS[difficulty]}`;
-}
-
-/**
- * Verbe (+ préposition) du sous-titre selon `PendingHeal.mode` — même patron que le verbe de
- * `SurgeryRollFlow` (« opère »/« rééduque »), mais pour `HealRollFlow` (wounds/bleed/trauma/ammo).
- * Affichage UI (pas du texte RAW) : vocabulaire libre, cohérent avec les titres de `HealModal.tsx`.
- */
-export function healSubtitleVerb(mode: HealMode): string {
-  switch (mode) {
-    case 'wounds':
-      return 'soigne';
-    case 'bleed':
-      return 'stoppe l’hémorragie de';
-    case 'ammo':
-      return 'retire une munition de';
-    case 'trauma':
-      return 'traite la déchirure de';
-    default:
-      return 'soigne';
-  }
-}
+export const HEAL_ACT: Record<HealMode, { label: string; icon: IconId }> = {
+  wounds: { label: 'Blessures', icon: 'journal/heal' },
+  bleed: { label: 'Hémorragie', icon: 'condition/bleeding' },
+  trauma: { label: 'Déchirure', icon: 'medical/tear' },
+  ammo: { label: 'Munition logée', icon: 'item/ammo' },
+  surgery: { label: 'Chirurgie', icon: 'medical/scalpel' },
+  recovery: { label: 'Rééducation', icon: 'medical/crutch' },
+};

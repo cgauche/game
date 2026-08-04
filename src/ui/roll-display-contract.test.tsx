@@ -1,15 +1,21 @@
 /**
- * CONTRAT D'AFFICHAGE DE JET (#1078 LOT A1) — le SOCLE des primitives, vérifié en contrat POSITIF :
- * l'issue d'un jet se rend quelle que soit la cardinalité, chaque rôle du bandeau porte SA classe,
- * le verbe de `VsHeader` est un vocabulaire FERMÉ (id d'icône), et la sous-ligne d'une rangée a un
- * canal UNIQUE (`PanelRowData.note` → `.rr-note`).
+ * CONTRAT D'AFFICHAGE DE JET (#1078) — le SOCLE des primitives, vérifié en contrat POSITIF :
+ * l'issue d'un jet est une DONNÉE rendue par la coquille, quelle que soit la cardinalité ; chaque
+ * rôle du bandeau porte SA classe ; le verbe de `VsHeader` est un vocabulaire FERMÉ (id d'icône) ;
+ * la sous-ligne d'une rangée a un canal UNIQUE (`PanelRowData.note` → `.rr-note`).
  */
 import { describe, it, expect } from 'vitest';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { RollShell, type RollRowData, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
 import { buildParticipantRows } from './buildParticipantRows';
 import { testBreakdown } from './breakdown';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
+import { ev } from '../state/combatLog';
+import { toRecapLines } from '../state/recapLine';
 import type { Combatant } from '../engine/types';
 
 const noop = () => {};
@@ -38,7 +44,7 @@ describe('RollShell — l’ISSUE se rend à toute cardinalité (#1078)', () => 
         rows={[rolledRow(), rolledRow('Esquive', { interactive: false })]}
         rolled
         winnerIndex={1}
-        outcome={<p className="rm-journal">Gustav esquive le coup</p>}
+        outcome={toRecapLines(['Gustav esquive le coup'])}
         actions={actions}
       />,
     );
@@ -51,7 +57,7 @@ describe('RollShell — l’ISSUE se rend à toute cardinalité (#1078)', () => 
         title="Multi"
         rows={[rolledRow(), rolledRow('Voile'), rolledRow('Rame')]}
         rolled
-        outcome={<p className="rm-journal">La manœuvre passe</p>}
+        outcome={toRecapLines(['La manœuvre passe'])}
         summary={<>DR total +6</>}
         actions={actions}
       />,
@@ -62,9 +68,89 @@ describe('RollShell — l’ISSUE se rend à toute cardinalité (#1078)', () => 
 
   it('le mono rend toujours son `outcome`', () => {
     const html = renderToStaticMarkup(
-      <RollShell title="Mono" rows={[rolledRow()]} rolled outcome={<p className="rm-journal">Réussi</p>} actions={actions} />,
+      <RollShell title="Mono" rows={[rolledRow()]} rolled outcome={toRecapLines(['Réussi'])} actions={actions} />,
     );
     expect(html).toContain('Réussi');
+  });
+});
+
+describe('RollShell — l’issue est une DONNÉE, rendue par LA coquille (#1078 LOT B1)', () => {
+  const combatants = [mk('Gustav', 'hero'), mk('Skaven', 'enemy')];
+
+  it('le CADRE d’issue et la ligne appartiennent à la coquille : `.rm-journal` > `.recap-line`', () => {
+    const html = renderToStaticMarkup(
+      <RollShell title="T" rows={[rolledRow()]} rolled outcome={toRecapLines(['Le coup porte'])} actions={actions} />,
+    );
+    const frame = html.slice(html.indexOf('rm-journal'));
+    expect(html, 'la coquille pose le cadre elle-même').toContain('class="rm-journal"');
+    expect(frame, 'et rend chaque ligne par le renderer UNIQUE').toContain('recap-line');
+    expect(frame).toContain('Le coup porte');
+  });
+
+  it('une issue produite par `recapLineOfEvent` garde sa coloration PAR CAMP et son icône', () => {
+    const line = recapLineOfEvent(ev('damage', 'Gustav frappe Skaven', 'Gustav', 'Skaven'), combatants);
+    const html = renderToStaticMarkup(
+      <RollShell title="T" rows={[rolledRow()]} rolled outcome={[line]} actions={actions} />,
+    );
+    const frame = html.slice(html.indexOf('rm-journal'));
+    expect(frame, 'l’allié se colore').toContain('nm-ally');
+    expect(frame, 'l’ennemi aussi').toContain('nm-foe');
+    expect(frame, 'et l’icône du kind est rendue').toContain('<svg class="icon"');
+  });
+
+  it('une issue VIDE ne pose AUCUN cadre (pas de boîte fantôme)', () => {
+    const html = renderToStaticMarkup(
+      <RollShell title="T" rows={[rolledRow()]} rolled outcome={[]} actions={actions} />,
+    );
+    expect(html).not.toContain('rm-journal');
+  });
+
+  it('N lignes d’issue se rendent DANS LE MÊME cadre (une seule boîte)', () => {
+    const html = renderToStaticMarkup(
+      <RollShell title="T" rows={[rolledRow()]} rolled outcome={toRecapLines(['Premier fait', 'Second fait'])} actions={actions} />,
+    );
+    expect(html.split('rm-journal').length - 1, 'un seul cadre').toBe(1);
+    expect(html).toContain('Premier fait');
+    expect(html).toContain('Second fait');
+  });
+});
+
+/**
+ * CLIQUET (#1078 LOT B1) — le CONTENEUR d'issue `.rm-journal` appartient à la coquille : plus aucun
+ * module de `src/` ne l'écrit à la main. Un site qui recomposerait sa boîte d'issue en JSX contournerait
+ * le renderer unique — et échapperait au TYPE de `outcome`, qui interdit le JSX et n'expose aucun champ
+ * de verdict (que le TEXTE ne redise pas le verdict relève, lui, du CONTRAT).
+ * Baseline ZÉRO, sans liste d'exception : `RollShell.tsx` est le seul propriétaire de la classe.
+ *
+ * Le motif traqué est la SOUS-CHAÎNE, pas une forme d'écriture : `className={'rm-journal'}`,
+ * `cx("rm-journal")`, une concaténation, un `class=` de gabarit ou un attribut coupé sur deux lignes
+ * sont tous des poses de la classe. Les feuilles CSS sont hors périmètre (la classe y est STYLÉE),
+ * les fichiers de test aussi (ce cliquet porte lui-même le motif).
+ */
+describe('CLIQUET — `.rm-journal` n’est écrit QUE par la coquille', () => {
+  const SRC = fileURLToPath(new URL('..', import.meta.url));
+  const OWNER = 'ui/RollShell.tsx';
+
+  function walk(dir: string, acc: string[] = []): string[] {
+    for (const e of readdirSync(dir)) {
+      const p = join(dir, e);
+      if (statSync(p).isDirectory()) walk(p, acc);
+      else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) acc.push(p);
+    }
+    return acc;
+  }
+
+  it('aucun module de `src` (hors RollShell) ne pose la classe `rm-journal`', () => {
+    const offenders: string[] = [];
+    for (const f of walk(SRC)) {
+      const name = f.slice(SRC.length).split('\\').join('/');
+      if (name === OWNER) continue;
+      const src = readFileSync(f, 'utf8');
+      src.split('\n').forEach((l, i) => {
+        if (l.includes('rm-journal')) offenders.push(`${name}:${i + 1}`);
+      });
+    }
+    expect(offenders, 'Cadre d’issue recomposé à la main — fournir la DONNÉE (RecapLine[]) à RollShell.outcome :\n' + offenders.join('\n')).toEqual([]);
   });
 });
 
@@ -83,7 +169,7 @@ describe('RollShell — sous MASQUE, l’issue se tait (#990)', () => {
         rolled
         winnerIndex={0}
         netSL={3}
-        outcome={<p className="rm-journal">Gustav passe inaperçu</p>}
+        outcome={toRecapLines(['Gustav passe inaperçu'])}
         actions={actions}
       />,
     );
@@ -100,7 +186,7 @@ describe('RollShell — sous MASQUE, l’issue se tait (#990)', () => {
         rolled
         winnerIndex={0}
         netSL={3}
-        outcome={<p className="rm-journal">Gustav passe inaperçu</p>}
+        outcome={toRecapLines(['Gustav passe inaperçu'])}
         actions={actions}
       />,
     );

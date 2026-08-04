@@ -5,7 +5,7 @@ import { influencesLocally } from '../state/netOwnership';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { supportSplit, testBreakdown, testPending } from './breakdown';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeAppraise } from '../state/flowOutcomes';
 
@@ -79,12 +79,7 @@ export function AppraiseModalView({
       subtitle={<>{pa.itemName}</>}
       rows={[actorRow]}
       rolled={rolled}
-      outcome={rolled && (
-        <JournalLine
-          className="rm-journal"
-          event={ev('info', describeAppraise(pa))}
-        />
-      )}
+      outcome={rolled ? [recapLineOfEvent(ev('info', describeAppraise(pa)))] : undefined}
       actions={actions}
       onCancel={rolled || !owned ? undefined : onCancel}
     />

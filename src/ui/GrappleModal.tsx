@@ -4,7 +4,7 @@ import { canReroll } from '../engine/fortune';
 import { OptionChooser } from './OptionChooser';
 import { RollShell, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { testBreakdown } from './breakdown';
 import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
@@ -68,13 +68,9 @@ export function GrappleModal() {
     forceShow: pd.result !== 'success',
   };
 
-  const journal = pd.def && (
-    <JournalLine
-      className="rm-journal"
-      event={ev(pd.result === 'success' ? 'dodge' : 'attack', outcome, actor.id, foe.id)}
-      combatants={battle.combatants}
-    />
-  );
+  const issue = pd.def
+    ? [recapLineOfEvent(ev(pd.result === 'success' ? 'dodge' : 'attack', outcome, actor.id, foe.id), battle.combatants)]
+    : undefined;
 
   if (pd.phase === 'options') {
     // Le VAINQUEUR tranche l'issue de l'Empoignade. Panneau résolu conservé.
@@ -86,9 +82,9 @@ export function GrappleModal() {
         rows={[foeRow, actorRow]}
         rolled
         winnerIndex={winnerIndex}
+        outcome={issue}
         postRollExtra={
           <>
-            {journal}
             <p className="rm-log">Tu l'emportes : choisis l'issue de l'Empoignade.</p>
             <OptionChooser
               layout="actions"
@@ -122,7 +118,7 @@ export function GrappleModal() {
       rows={[foeRow, actorRow]}
       rolled={rolled}
       winnerIndex={winnerIndex}
-      postRollExtra={journal}
+      outcome={issue}
       actions={actions}
       onCancel={rolled ? undefined : cancel}
     />

@@ -640,6 +640,10 @@
 .recap-line { margin: 2px 0; font-size: 13px; color: var(--muted); }
 .recap-line.bad { color: var(--danger-soft); }
 .recap-line.ok { color: var(--ok-bright); }
+/* Le ton `info` du trio est ATTÉNUÉ, et l'écrit ici comme `ok`/`bad` : le cadre d'issue d'une modale
+   de jet remet ses lignes à pleine couleur (`.rm-journal .recap-line`, sheet.css) — sans cette règle
+   de MÊME spécificité, module importé après, une ligne tonée `info` y perdait son atténuation. */
+.recap-line.info { color: var(--muted); }
 .recap-phase + .recap-phase { margin-top: 6px; }
 .recap-phase-label { margin: 0 0 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); opacity: .8; }
 

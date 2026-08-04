@@ -9,7 +9,7 @@ import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { OptionChooser } from './OptionChooser';
 import { Icon } from './Icon';
 import { testBreakdown, testPending } from './breakdown';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeCorruption } from '../state/flowOutcomes';
 
@@ -101,7 +101,7 @@ export function CorruptionModal() {
       }
       rows={[actorRow]}
       rolled={rolled}
-      outcome={rolled && <JournalLine className="rm-journal" event={ev('info', describeCorruption(pc, hero?.label ?? '?'), pc.heroId)} combatants={pool} />}
+      outcome={rolled ? [recapLineOfEvent(ev('info', describeCorruption(pc, hero?.label ?? '?'), pc.heroId), pool)] : undefined}
       actions={actions}
     />
   );

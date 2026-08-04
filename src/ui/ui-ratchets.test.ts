@@ -319,7 +319,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // VsHeader, sous-titre de RollShell, bandeau d'issue agrégée) sous un seul nom : restyler l'un
   // repeignait les autres. Somme nulle VISUELLE (les trois classes partagent le MÊME bloc de
   // déclarations, combat-modals.css) ; la hausse achète la séparation des rôles, pas un motif d'écran.
-  'styles/combat-modals.css': 142,
+  // +1 (#1078 LOT B2) : `.rm-spellinfo` — la PORTÉE d'un sort (gabarit de ZdE / « sur lui-même »,
+  // CastModal) détournait `.rm-vs` alors qu'elle n'oppose personne. MÊME bloc de déclarations : somme
+  // nulle visuelle, un rôle de plus nommé.
+  'styles/combat-modals.css': 143,
   'styles/combat-ui.css': 112,
   // +1 : `.nb` (#393 P2) — note d'atelier non cliquable en fin de section chips (CodexRowView).
   'styles/compendium.css': 56,
@@ -467,7 +470,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // marqueur `ptile-gauge` reste un className de compatibilité, sans style propre), le rendu vit
   // dans `LifeBar` (gauges.css).
   // #668 : +1 (143 → 144) — `.objective-deadline` (puce de compte à rebours du bandeau d'objectif).
-  'styles/hud.css': 144,
+  // #1078 LOT B1 : +1 (144 → 145) — `.info` complète le trio de tons de `.recap-line` (`ok`/`bad`
+  // déjà ici) : le ton ATTÉNUÉ s'écrit, au lieu de dépendre de la couleur par défaut — un cadre qui
+  // remet ses lignes à pleine couleur l'effaçait.
+  'styles/hud.css': 145,
   'styles/mass-battle.css': 29,
   'styles/merchant.css': 53,
   'styles/ornaments.css': 13,
@@ -554,7 +560,14 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // #1072 : `.rm-roll-diff` — la Difficulté du Test sur la LIGNE (texte + valeur), classe de la
   // PRIMITIVE `RollLine`. MIGRATION, pas un ajout net : `.interlude-hint` (world-meta.css, 134 → 133)
   // meurt en regard — la Difficulté ne se peint plus écran par écran. 106 → 107.
-  'styles/sheet.css': 107,
+  // #1078 LOT B1 : net NUL (107 → 107) — `.recap-line` est CITÉE ici (`.rm-journal .recap-line`,
+  // aucune définition propre : l'issue d'un jet est une donnée rendue par le renderer UNIQUE dans le
+  // cadre que ce module possède déjà) ; `.jr-line` n'est plus citée — aucune modale ne compose plus
+  // le markup du journal, sa gouttière se reprend en sélecteur d'ÉLÉMENT (`.recap-line > svg`).
+  // Finition B1 : +1 (107 → 108) — `.rm-await` (zone d'ATTENTE d'un verdict suspendu à une fenêtre
+  // qui va s'interposer, #1004) : rôle distinct de l'issue, donc classe propre aux mêmes tokens de
+  // bloc, jamais la note de pied `.rm-log`.
+  'styles/sheet.css': 108,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,

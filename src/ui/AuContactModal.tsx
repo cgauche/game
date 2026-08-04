@@ -5,7 +5,7 @@ import { OptionChooser } from './OptionChooser';
 import { RollShell, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
 import { Icon } from './Icon';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { testBreakdown } from './breakdown';
 import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
@@ -68,13 +68,9 @@ export function AuContactModal() {
     forceShow: pd.result !== 'success',
   };
 
-  const journal = pd.def && (
-    <JournalLine
-      className="rm-journal"
-      event={ev(pd.result === 'success' ? 'dodge' : 'attack', outcome, mover.id, foe.id)}
-      combatants={battle.combatants}
-    />
-  );
+  const issue = pd.def
+    ? [recapLineOfEvent(ev(pd.result === 'success' ? 'dodge' : 'attack', outcome, mover.id, foe.id), battle.combatants)]
+    : undefined;
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Renoncer', onClick: cancel, when: 'pre' },
@@ -91,9 +87,9 @@ export function AuContactModal() {
         rows={[foeRow, actorRow]}
         rolled
         winnerIndex={winnerIndex}
+        outcome={issue}
         postRollExtra={
           <>
-            {journal}
             <p className="rm-log">Tu l'emportes : choisis comment se poursuit le corps à corps.</p>
             <OptionChooser
               layout="actions"
@@ -117,7 +113,7 @@ export function AuContactModal() {
       rows={[foeRow, actorRow]}
       rolled={rolled}
       winnerIndex={winnerIndex}
-      postRollExtra={journal}
+      outcome={issue}
       actions={actions}
       onCancel={rolled ? undefined : cancel}
     />

@@ -4,7 +4,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending, supportSplit } from './breakdown';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeReload } from '../state/flowOutcomes';
 
@@ -73,12 +73,7 @@ export function ReloadModalView({
       /* QUI recharge → portrait dans la ligne de jet ; Projectiles/cible vivent dans le cadre, le cumul dans la rangée. */
       rows={[actorRow]}
       rolled={rolled}
-      outcome={rolled && (
-        <JournalLine
-          className="rm-journal"
-          event={ev('reload', describeReload(pr, after, weaponName), pr.actorId)}
-        />
-      )}
+      outcome={rolled ? [recapLineOfEvent(ev('reload', describeReload(pr, after, weaponName), pr.actorId))] : undefined}
       actions={actions}
       onCancel={rolled ? undefined : onCancel}
     />

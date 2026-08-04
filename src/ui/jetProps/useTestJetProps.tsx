@@ -6,7 +6,7 @@ import { freeRerollOf } from '../../engine/activeFlags';
 import { RollShell, type RollAction } from '../RollShell';
 import { PortraitPicker } from '../PortraitPicker';
 import { supportSplit, testBreakdown, testPending } from '../breakdown';
-import { JournalLine } from '../NarratedLine';
+import { recapLineOfEvent } from '../../gameIso/combatNarration';
 import { ev } from '../../state/combatLog';
 import { describeTest, amazingTestLabel } from '../../state/flowOutcomes';
 import { rule } from '../../engine/policy';
@@ -126,7 +126,7 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
         determination: !rolled && pt.psychMod ? { resolve: actor?.resolve ?? 0, onResolve: determination } : undefined,
       },
     ],
-    outcome: rolled ? <JournalLine className="rm-journal" event={ev('info', describeTest(pt), pt.actorId)} combatants={party} /> : undefined,
+    outcome: rolled ? [recapLineOfEvent(ev('info', describeTest(pt), pt.actorId), party)] : undefined,
     /* Option « Succès / échec stupéfiants » (LDB 12 l.151) : badge du double (libellé seul, aucune
        mécanique nouvelle), gaté par la règle. */
     postRollExtra: amazing ? (

@@ -6,6 +6,7 @@ import { evaluateTest } from '../engine/tests';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending, supportSplit } from './breakdown';
 import { describeActivity } from '../state/flowOutcomes';
+import { resultLines, freeCons } from '../state/rollSeam';
 
 /**
  * Jet d'Activité (LDB 23 interlude / ADE II 8 BATAILLE de masse) : même coquille `RollShell` que
@@ -105,7 +106,6 @@ export function ActivityModal() {
   const winnerIndex = opposed ? (pa.success ? 0 : rows.length - 1) : null;
   const netSL = opposed ? -(pa.enemySL ?? 0) : undefined;
 
-  const multi = rows.length > 1;
   const issue = rolled ? describeActivity(pa) : '';
 
   const actions: RollAction[] = [
@@ -124,9 +124,10 @@ export function ActivityModal() {
       rolled={rolled}
       winnerIndex={winnerIndex}
       netSL={netSL}
-      /* Cas MONO (interlude / bataille simple) : issue sous la ligne. MULTI (combiné/opposé) : bandeau agrégé. */
-      outcome={!multi && rolled && <p className="rm-journal">{issue}</p>}
-      summary={multi && rolled ? issue : undefined}
+      /* Une SEULE issue, à toute cardinalité (mono, combiné, opposé) : `describeActivity` est la ligne
+         d'issue du jet, pas un agrégat de rangées — elle vit donc en `outcome`, et la coquille seule
+         décide de son affichage. Aucun bandeau `summary` : il n'y a rien à agréger en plus. */
+      outcome={rolled ? resultLines(freeCons([issue])) : undefined}
       actions={actions}
       onCancel={rolled ? undefined : cancel}
     />

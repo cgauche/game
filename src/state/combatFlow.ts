@@ -2978,6 +2978,16 @@ export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, targe
 /** Arme abstraite du Piétinement : Corps à corps (Bagarre), Dégâts = Bonus de Force (+0). */
 export const TRAMPLE_WEAPON: Weapon = buildWeapon({ label: 'Piétinement', attackKind: 'pietinement', damage: { plusBF: true, flat: 0, bare: true } });
 
+/** La voie GRATUITE du Piétinement est-elle ouverte ? « Se cabrer » (LDB 85 l.314) paie le Piétinement
+ *  d'une Action de MOUVEMENT : elle exige donc que cette Action soit ENTIÈRE (aucun Mouvement dépensé
+ *  ce Tour) — sinon le Piétinement retombe sur la voie ordinaire, 1 Avantage (l.320-321). SOURCE UNIQUE
+ *  du prédicat : la porte de l'action (`battleTrample`), les PAIEMENTS (`trampleConfirm`, `applyTrample`)
+ *  et le libellé de coût de la fenêtre (`useTrampleJetProps`) le consomment tous — un site qui ne testait
+ *  que le trait annonçait « coûte 1 Avantage » et n'en débitait aucun. */
+export function trampleFreeMove(battle: BattleState | null | undefined, attacker: Combatant): boolean {
+  return !!battle && traitCapability(attacker.traits, 'freeTrample') && battle.movementUsed === 0;
+}
+
 /** Résout un Piétinement : dépense 1 Avantage (coût de l'action gratuite), SAUF Se cabrer (`freeTrample`,
  *  LDB 85 l.314 : payé d'une Action de Mouvement) → 0 Avantage, mais tout le Mouvement restant du Tour
  *  est dépensé à la place (`movementUsed = M`, précédent `loseNextMovement` l.4928 : « le Tour perd son
@@ -2985,7 +2995,7 @@ export const TRAMPLE_WEAPON: Weapon = buildWeapon({ label: 'Piétinement', attac
  *  `resolveTrample` (BF +0, Corps à corps). Ne consomme PAS l'Action (« action gratuite »). */
 export function applyTrample(get: Get, set: SetFn, attacker: Combatant, target: Combatant): void {
   const prevActed = get().battle?.acted ?? false; // « action gratuite » : ne doit pas consommer l'Action
-  const free = traitCapability(attacker.traits, 'freeTrample');
+  const free = trampleFreeMove(get().battle, attacker);
   campSpend(get, attacker, free ? 0 : 1); // coût : 1 Avantage (LDB 85 l.320) — réserve du camp en mode groupe (AA 11 l.30-38)
   const res = resolveTrample(attacker, target, battleRng());
   applyAttackResult(get, set, attacker, target, TRAMPLE_WEAPON, res, false); // pose acted=true (attaque standard)… ; Piétinement = résolution instantanée (pas de modale)

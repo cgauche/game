@@ -389,9 +389,6 @@
   font-size: 12px;
   line-height: 1.3;
 }
-.rr-note .jr-line {
-  margin: 0;
-}
 /* Test opposé post-jet : la ligne GAGNANTE est accentuée (or), la perdante atténuée. */
 .rr-win .rm-roll {
   border-color: var(--gold2);
@@ -544,6 +541,35 @@
   font-size: 13px;
   line-height: 1.35;
   text-align: left; /* ligne de journal : toujours à gauche, même dans .test-modal qui centre tout le reste */
+}
+/* Les lignes du cadre d'issue sont rendues par le renderer UNIQUE (`RecapLineRow`, #1078) : dans ce
+   cadre elles reprennent la mise en forme du journal (icône en gouttière, texte à pleine couleur).
+   Les tons du vocabulaire partagé restent ceux de `hud.css` (`.recap-line.ok`/`.bad`, même
+   spécificité, module importé APRÈS celui-ci) — aucune règle de ton n'est redéclarée ici. */
+.rm-journal .recap-line {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  margin: 0;
+  font-size: inherit;
+  color: inherit;
+}
+/* Gouttière d'icône du journal (`.jr-ic`, combat-modals.css) reprise ici : boîte FIXE devant le
+   texte, pour que le retour à la ligne s'aligne sous la première ligne au lieu de repartir du bord. */
+.rm-journal .recap-line > svg {
+  flex: 0 0 16px;
+}
+/* Zone d'ATTENTE d'une modale de jet (#1004) — un verdict est suspendu à une fenêtre qui va
+   s'interposer : bloc à part entière, aux tokens du cadre d'issue (dont il occupe la place), jamais
+   une note de pied de modale. */
+.rm-await {
+  margin: 8px 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: left;
 }
 /* Badge « Succès / Échec Stupéfiant » (option LDB 12 l.151) : libellé du double, sous l'issue du Test. */
 .amazing-row { display: flex; justify-content: center; margin: -2px 0 8px; }

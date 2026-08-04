@@ -5,7 +5,7 @@ import { testValue } from '../engine/skills';
 import { refLabel } from '../data';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeRun } from '../state/flowOutcomes';
 import { Icon } from './Icon';
@@ -70,13 +70,7 @@ export function RunModal() {
       }
       rows={[actorRow]}
       rolled={rolled}
-      outcome={r && (
-        <JournalLine
-          className="rm-journal"
-          event={ev('move', describeRun(pr), c.id)}
-          combatants={battle.combatants}
-        />
-      )}
+      outcome={r ? [recapLineOfEvent(ev('move', describeRun(pr), c.id), battle.combatants)] : undefined}
       actions={actions}
       onCancel={rolled ? undefined : cancel}
     />

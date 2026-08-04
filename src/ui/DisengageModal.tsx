@@ -9,7 +9,7 @@ import { OptionChooser } from './OptionChooser';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { buildParticipantRows, type ParticipantRow } from './buildParticipantRows';
 import { VsHeader } from './VsHeader';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeDisengage, describeDisengageFlee } from '../state/flowOutcomes';
 import { fleeBackstab, fleeCalme, fleeNeedCalme } from '../state/pendings';
@@ -142,8 +142,8 @@ export function DisengageModal() {
         extra={header}
         rows={rows}
         rolled={rolled}
-        postRollExtra={fleeOutcome
-          ? <JournalLine className="rm-journal" event={ev(needCalme ? 'fear' : 'flee', fleeOutcome, mover.id, foe.id)} combatants={battle.combatants} />
+        outcome={fleeOutcome
+          ? [recapLineOfEvent(ev(needCalme ? 'fear' : 'flee', fleeOutcome, mover.id, foe.id), battle.combatants)]
           : undefined}
         actions={actions}
       />
@@ -192,13 +192,7 @@ export function DisengageModal() {
       rows={[foeRow, moverRow]}
       rolled
       winnerIndex={winnerIndex}
-      postRollExtra={
-        <JournalLine
-          className="rm-journal"
-          event={ev(pd.result === 'success' ? 'dodge' : 'attack', outcome, mover.id, foe.id)}
-          combatants={battle.combatants}
-        />
-      }
+      outcome={[recapLineOfEvent(ev(pd.result === 'success' ? 'dodge' : 'attack', outcome, mover.id, foe.id), battle.combatants)]}
       actions={actions}
     />
   );

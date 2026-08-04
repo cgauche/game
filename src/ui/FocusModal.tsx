@@ -6,7 +6,7 @@ import { castingValue } from '../engine/magic';
 import { windsMagicModOf } from '../state/combatOrParty';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeFocus } from '../state/flowOutcomes';
 import { Icon } from './Icon';
@@ -69,20 +69,18 @@ export function FocusModal() {
     <RollShell
       flowKey="focus"
       title={<><Icon id="flag/focus" size="sm" /> Focalisation</>}
+      /* Z1 : QUI focalise QUOI. La PROGRESSION (DR cumulé vers le NI) n'est PAS ici — elle a sa zone
+         unique, la barre de DR de la rangée (`extendedDr`, ci-dessus). */
       subtitle={
         <>
-          <strong>{caster.label}</strong> focalise <strong>{spell?.label ?? pf.spellId}</strong> ({prev}/{ni} DR)
+          <strong>{caster.label}</strong> — Focalisation de <strong>{spell?.label ?? pf.spellId}</strong>
         </>
       }
       rows={[actorRow]}
       rolled={rolled}
-      outcome={r && (
-        <JournalLine
-          className="rm-journal"
-          event={ev('focus', describeFocus(pf, prev, ni), caster.id)}
-          combatants={battle?.combatants ?? party}
-        />
-      )}
+      /* L'issue ne s'ouvre que pour ce qu'aucune autre zone n'énonce (le NI atteint) : `describeFocus`
+         rend '' tant que la Focalisation progresse — pas de cadre vide, pas de progression redite. */
+      outcome={r && describeFocus(pf, prev, ni) ? [recapLineOfEvent(ev('focus', describeFocus(pf, prev, ni), caster.id), battle?.combatants ?? party)] : undefined}
       actions={actions}
       onCancel={cancel}
     />

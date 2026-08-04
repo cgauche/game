@@ -50,7 +50,8 @@ locale-aware · **Phase D** (UI, libellés menus/boutons).
 - **Narration PERSISTANTE (journal de combat)** : **événement structuré** — stocker `{ key, params }`
   (pas une string), résolu à l'affichage. Avantages : le journal se **re-rend dans la locale courante** ;
   le moteur **émet des clés**, l'UI **résout**. C'est l'extension naturelle du `result.log` unifié par la
-  session // : `result.log: string` → `result.log: MsgRef` (`{ key, params }`), `JournalLine` résout via `t()`.
+  session // : `result.log: string` → `result.log: MsgRef` (`{ key, params }`), `NarratedSegments` (journal) et
+  `RecapLineRow` (issue de jet) résolvent via `t()`.
 
 ### 3. Données (label / desc)
 - `refLabel` / `conditionLabel` / `skillRefLabel` → lookups **par locale** (FR par défaut). Les `label` des JSON
@@ -90,7 +91,7 @@ garde `i18n-narration-guard.test.ts` à baseline zéro).
 
 - **Nouveaux** : `src/i18n/index.ts`, `src/i18n/messages/fr.ts`, `src/i18n/i18n.test.ts`.
 - **Touchés par phase** : `engine/types.ts` / `engine/combat.ts` / `engine/psychology.ts` (maps, **Phase B**) ;
-  `src/data/index.ts` (`refLabel` locale-aware, **Phase B**) ; `state/combatLog.ts` + `JournalLine` +
+  `src/data/index.ts` (`refLabel` locale-aware, **Phase B**) ; `state/combatLog.ts` + `NarratedSegments` +
   `state/flowOutcomes.ts` (**Phase C**, coordonné avec la session //).
 
 ## Esquisse de la primitive (Phase A)

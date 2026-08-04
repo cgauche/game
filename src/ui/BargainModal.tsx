@@ -6,7 +6,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { supportSplit, testBreakdown, testPending } from './breakdown';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeBargain } from '../state/flowOutcomes';
 
@@ -97,7 +97,7 @@ export function BargainModalView({
       rolled={rolled}
       winnerIndex={winnerIndex}
       netSL={opposed ? pb.result!.netSL : undefined}
-      outcome={rolled && <JournalLine className="rm-journal" event={ev('info', describeBargain(pb))} />}
+      outcome={rolled ? [recapLineOfEvent(ev('info', describeBargain(pb)))] : undefined}
       actions={actions}
       onCancel={rolled || !owned ? undefined : onCancel}
     />

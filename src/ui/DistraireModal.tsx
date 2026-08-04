@@ -6,7 +6,7 @@ import { smokeOf } from '../state/combatGeometry';
 import { OptionChooser } from './OptionChooser';
 import { RollShell, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { testBreakdown } from './breakdown';
 import { describeDistraire } from '../state/flowOutcomes';
@@ -68,13 +68,9 @@ export function DistraireModal() {
     forceShow: pd.result !== 'success',
   };
 
-  const journal = pd.atk && (
-    <JournalLine
-      className="rm-journal"
-      event={ev(pd.result === 'success' ? 'dodge' : 'attack', describeDistraire(pd, mover.label, foe.label), mover.id, foe.id)}
-      combatants={battle.combatants}
-    />
-  );
+  const issue = pd.atk
+    ? [recapLineOfEvent(ev(pd.result === 'success' ? 'dodge' : 'attack', describeDistraire(pd, mover.label, foe.label), mover.id, foe.id), battle.combatants)]
+    : undefined;
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Renoncer', onClick: cancel, when: 'pre' },
@@ -97,7 +93,7 @@ export function DistraireModal() {
       rows={[foeRow, actorRow]}
       rolled={rolled}
       winnerIndex={winnerIndex}
-      postRollExtra={journal}
+      outcome={issue}
       actions={actions}
       onCancel={rolled ? undefined : cancel}
     />

@@ -4,13 +4,13 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { OptionChooser } from './OptionChooser';
 import { supportSplit, testBreakdown, testPending } from './breakdown';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeHeal } from '../state/flowOutcomes';
-import { ModalSubject } from './ModalSubject';
 import { combatHealModes } from '../engine/healing';
 import { Icon } from './Icon';
-import { healSubtitleLabel, healSubtitleVerb } from './healSubtitle';
+import { HEAL_ACT } from './healSubtitle';
+import { VsHeader } from './VsHeader';
 
 /**
  * Flux de jet d'un SOIN (Guérison, LDB 09-Compétences) : « Lancer » → Chance (relance / +1 DR) →
@@ -39,6 +39,7 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
   const fortune = healer?.fortune ?? 0;
   const target = pool.find((c) => c.id === ph.targetId);
   const rolled = ph.roll != null;
+  const acte = HEAL_ACT[ph.mode]; // vocabulaire PARTAGÉ avec le dossier d’opération (MedicModal)
 
   const wounds = ph.mode === 'wounds';
   const trauma = ph.mode === 'trauma';
@@ -86,13 +87,16 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
       flowKey="heal"
       embedded={embedded}
       title={wounds ? <><Icon id="journal/heal" size="sm" /> Soigner les Blessures</> : trauma ? <><Icon id="medical/tear" size="sm" /> Soigner une déchirure</> : ammo ? <><Icon id="item/ammo" size="sm" /> Retirer une munition</> : <><Icon id="condition/bleeding" size="sm" /> Arrêter l’Hémorragie</>}
-      subtitle={
-        <>
-          <strong>{ph.healerName}</strong> {healSubtitleVerb(ph.mode)} <strong>{ph.targetName}</strong>{' '}
-          <span className="rm-weapon">({healSubtitleLabel(ph.difficulty)})</span>
-        </>
-      }
-      extra={!embedded && target ? <ModalSubject c={target} variant="full" /> : undefined}
+      /* A→B canonique (décision utilisateur 2026-08-04) : portraits + flèche annotée de l'acte —
+         plus AUCUNE phrase « A soigne B » en sous-titre. Le patient est en `full` : ses pastilles
+         d'ÉTATS sont ce que le jet fait bouger (suivre l'Hémorragie passe par passe). EMBARQUÉ
+         (infirmerie) : aucun bandeau — la bande `.medic-patients` porte déjà le patient en full et
+         l'acte est le bouton qu'on vient de cliquer. Soigneur PNJ tarifé (`healerId` sentinelle de
+         `medicFlow.medicAct`, aucune fiche) : pas de bandeau dégénéré, l'acte se dit en note (son
+         nom est au titre de l'infirmerie). La Difficulté reste la donnée de la LIGNE (#1072). */
+      extra={embedded ? undefined : healer
+        ? <VsHeader actor={healer} target={target} label={acte.label} verb={acte.icon} targetVariant="full" />
+        : <p className="rm-note">{acte.label} — {ph.targetName}</p>}
       setup={combatModes.length > 1 ? (
         <OptionChooser
           layout="seg"
@@ -111,7 +115,7 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
       ) : undefined}
       rows={[actorRow]}
       rolled={rolled}
-      outcome={rolled && <JournalLine className="rm-journal" event={ev('heal', describeHeal(ph, target), ph.healerId, ph.targetId)} combatants={pool} />}
+      outcome={rolled ? [recapLineOfEvent(ev('heal', describeHeal(ph, target), ph.healerId, ph.targetId), pool)] : undefined}
       actions={actions}
       onCancel={rolled ? undefined : cancel}
     />

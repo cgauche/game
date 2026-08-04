@@ -5,7 +5,7 @@ import { freeRerollOf } from '../../engine/activeFlags';
 import { RollShell } from '../RollShell';
 import { testBreakdown, testPending } from '../breakdown';
 import { Icon } from '../Icon';
-import { resultLine, freeCons } from '../../state/rollSeam';
+import { resultLines, freeCons } from '../../state/rollSeam';
 
 /**
  * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET d'un Test ÉTENDU (LDB 12 l.170-186).
@@ -67,11 +67,10 @@ export function useExtendedTestJetProps(): ComponentProps<typeof RollShell> | nu
         extendedDr: { cum, target: p.targetDR },
       },
     ],
-    outcome: rolled ? (
-      <p className={`rm-journal ${res!.sl >= 0 ? 'ok-text' : 'muted'}`}>
-        {resultLine(freeCons([`${res!.sl >= 0 ? `+${res!.sl}` : res!.sl} DR → total ${cum} / ${p.targetDR}${willReset ? ' (retombé à 0 !)' : ''}`]))}
-      </p>
-    ) : undefined,
+    /* La PROGRESSION (DR du Round, cumul vers la cible) est rendue par les zones qui la possèdent :
+       ✓/✗ ±DR sur la ligne de jet, cumul/cible sur la barre de DR de la rangée. L'issue ne porte donc
+       que ce qu'aucune des deux ne dit : la remise à zéro portée par `willReset`. */
+    outcome: willReset ? resultLines(freeCons(['Le total repart de zéro !'])) : undefined,
     /* « Round suivant » cumule + ouvre le Round suivant ; à la réussite, ferme la cascade.
        « Renoncer » disponible aussi APRÈS le jet (when:'always'). */
     actions: [

@@ -27,7 +27,9 @@ export function useFumbleJetProps(): ComponentProps<typeof RollShell> | null {
   return {
     variant: 'test',
     title: <><Icon id="nav/dice" size="sm" /> Maladresse</>,
-    subtitle: `${combatant.label} — Test de combat raté sur un double (Tableau des Oups !).`,
+    // Z1 : l'ACTEUR et le FAIT qui ouvre la fenêtre. Le NOM DE LA TABLE se lit sur la ligne de tirage
+    // (`TableRollLine`, ci-dessous) et sur le bouton de lancement — jamais une troisième fois ici.
+    subtitle: `${combatant.label} — Test de combat raté sur un double`,
     rolled,
     // Rangée UNIQUE : un tirage de table sans influence — seulement « Lancer » (le cycle reste vide).
     rows: [

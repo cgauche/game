@@ -4,7 +4,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
-import { JournalLine } from './NarratedLine';
+import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeStateRecovery } from '../state/flowOutcomes';
 
@@ -82,12 +82,7 @@ export function StateRecoveryModalView({
       subtitle={<>{sub} · {sr.stacks} pion{sr.stacks > 1 ? 's' : ''}</>}
       rows={witness ? [actorRow, witness] : [actorRow]}
       rolled={rolled}
-      outcome={rolled && (
-        <JournalLine
-          className="rm-journal"
-          event={ev('condition', describeStateRecovery(sr, sr.actorName), sr.actorId)}
-        />
-      )}
+      outcome={rolled ? [recapLineOfEvent(ev('condition', describeStateRecovery(sr, sr.actorName), sr.actorId))] : undefined}
       actions={actions}
       onCancel={rolled ? undefined : onCancel}
     />
