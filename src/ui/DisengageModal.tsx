@@ -50,7 +50,7 @@ export function DisengageModal() {
   const mover = battle.combatants.find((c) => c.id === pd.moverId);
   const foe = battle.combatants.find((c) => c.id === pd.foeId);
   if (!mover || !foe) return null;
-  const header = <VsHeader actor={mover} target={foe} label="quitter le corps à corps" verb="↩" />;
+  const header = <VsHeader actor={mover} target={foe} label="quitter le corps à corps" verb="melee/disengage" />;
 
   // ── Phase 'choice' : MENU d'options (pas un jet) — Modal simple + OptionChooser + Résilience pré-jet. ──
   if (pd.phase === 'choice') {
@@ -124,7 +124,7 @@ export function DisengageModal() {
         ? { combatant: actor, d: res?.attackerDetail ? { ...res.attackerDetail, label: 'Corps à corps (dans le dos)' } : undefined }
         : { combatant: actor, d: calme ? testBreakdown('Calme', calmeValue(mover), calme, 'intermediaire') : undefined }),
       // Issue courte sous la ligne du coup : « Touché · N Blessure(s) » / « Manqué ».
-      extra: (part) => (isBackstab(part.id) && res
+      note: (part) => (isBackstab(part.id) && res
         ? <p className="rm-log">{res.hit ? `Touché · ${res.woundsLost ?? 0} Blessure${(res.woundsLost ?? 0) > 1 ? 's' : ''}` : 'Manqué'}</p>
         : undefined),
     // Les rangées de cette coquille appartiennent au flux `flee` (≠ `disengage` de la coquille).

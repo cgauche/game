@@ -29,6 +29,15 @@ export const icons: IconFamily = [
       `<path ${KF} d="M4.4 19.8 C6.5 18.5 9 18 11.7 18.3"/>`,
   },
   {
+    id: 'melee/disengage',
+    label: 'Se désengager',
+    // Trajectoire qui revient en arrière, hors de la portée de la lame restée plantée.
+    svg:
+      `<path ${K} d="M17.4 18.6 C18.4 13.4 16.1 9.4 11.2 8.6"/>` +
+      `<path ${F} d="M12.2 4.9 L6.4 8.6 L12.4 12.1 Z"/>` +
+      `<path ${KF} d="M20.6 3.4 L20.6 12.4 M18.5 12.7 L22.6 12.7"/>`,
+  },
+  {
     id: 'melee/close-in',
     label: 'Au contact',
     // Poing tendu qui vient au contact.

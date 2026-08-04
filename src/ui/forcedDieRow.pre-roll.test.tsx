@@ -14,6 +14,7 @@ import { seedBattleRng } from '../state/battleRng';
 import { setDesFixes, resetDesFixes } from '../engine/fixedDie';
 import { rowForcedDie } from './forcedDieRow';
 import { RollRow } from './RollRow';
+import { Modal } from './Modal';
 import { testPending } from './breakdown';
 import type { Combatant } from '../engine/types';
 
@@ -82,13 +83,30 @@ afterEach(() => {
   resetDesFixes();
 });
 
-/** Saisie clavier réelle dans un `<input type=number>` contrôlé par React. */
+/** UNE frappe dans un `<input type=number>` contrôlé par React (le commit ne s'y fait pas — #955). */
 function type(input: HTMLInputElement, value: string) {
   const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
   act(() => {
     setter.call(input, value);
     input.dispatchEvent(new Event('input', { bubbles: true }));
   });
+}
+
+/** Geste TERMINAL du champ : c'est LUI qui commet la valeur saisie. */
+function pressEnter(input: HTMLInputElement) {
+  act(() => {
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  });
+}
+
+/** Saisie CLAVIER complète : chaque caractère frappé l'un après l'autre, puis Entrée. */
+function typeAndCommit(input: HTMLInputElement, value: string) {
+  let acc = '';
+  for (const ch of value) {
+    acc += ch;
+    type(input, acc);
+  }
+  pressEnter(input);
 }
 
 const dieInput = () => host.querySelector('input.rm-die-input') as HTMLInputElement | null;
@@ -120,9 +138,46 @@ describe('« Dé fixé » PRÉ-jet — le champ écrit vraiment (option ON, hér
     });
     const input = dieInput();
     expect(input).not.toBeNull();
-    type(input!, '33');
+    typeAndCommit(input!, '33');
     expect(calls).toEqual(['roll']);
     expect(useGame.getState().pendingAttack!.result!.attackerRoll).toBe(33);
+    expect(useGame.getState().pendingAttack!.fixed).toBe(true);
+  });
+
+  it('commit TERMINAL (#955) : les frappes de « 50 » ne lancent RIEN ; Entrée lance UNE fois, avec 50', () => {
+    setDesFixes(true);
+    setupPreRoll();
+    const calls: string[] = [];
+    const onRoll = () => { calls.push('roll'); resolveRoll(); };
+    const die = rowForcedDie(
+      useGame.getState(),
+      'attack',
+      { actor: ATT, rolled: false, interactive: true, onRoll },
+      false,
+    );
+    act(() => {
+      root.render(
+        <RollRow
+          actor={VIEW}
+          row={{ combatant: VIEW, pending: testPending('Corps à corps', 45) }}
+          rolled={false}
+          interactive
+          forcedRoll={die.forcedRoll}
+          fixedMark={die.fixedMark}
+          rollFrisson={false}
+          onRoll={onRoll}
+        />,
+      );
+    });
+    const input = dieInput()!;
+    type(input, '5');
+    type(input, '50');
+    expect(calls, 'une frappe qui lance = le « 5 » de « 50 » résout le Test').toEqual([]);
+    expect(useGame.getState().pendingAttack!.result, 'aucun jet ne doit exister avant le geste terminal').toBeNull();
+    expect(input.value, 'la frappe reste lisible dans le champ tant qu’elle n’est pas commise').toBe('50');
+    pressEnter(input);
+    expect(calls, 'Entrée lance UNE fois').toEqual(['roll']);
+    expect(useGame.getState().pendingAttack!.result!.attackerRoll).toBe(50);
     expect(useGame.getState().pendingAttack!.fixed).toBe(true);
   });
 
@@ -238,5 +293,67 @@ describe('« Dé fixé » PRÉ-jet — le champ écrit vraiment (option ON, hér
     });
     const occurrences = (host.textContent ?? '').split('Dé fixé').length - 1;
     expect(occurrences).toBe(1);
+  });
+});
+
+/** jsdom ne calcule aucune géométrie : sans rect non nul, `Modal` juge le bouton primaire invisible
+ *  et son raccourci Entrée ne partirait JAMAIS — le test passerait pour la mauvaise raison. */
+function makeVisible(el: HTMLElement) {
+  el.getClientRects = (() => [{ width: 80, height: 24 }] as unknown as DOMRectList) as HTMLElement['getClientRects'];
+}
+
+describe('« Dé fixé » PRÉ-jet — le champ DANS une vraie modale', () => {
+  /** Le câblage complet : `Modal` (son écouteur Entrée au document) + la rangée + son sélecteur. */
+  function mountInModal(onRoll: () => void, applies: string[]) {
+    const die = rowForcedDie(useGame.getState(), 'attack', { actor: ATT, rolled: false, interactive: true, onRoll }, false);
+    act(() => {
+      root.render(
+        <Modal title="Attaque" variant="roll">
+          <RollRow
+            actor={VIEW}
+            row={{ combatant: VIEW, pending: testPending('Corps à corps', 45) }}
+            rolled={false}
+            interactive
+            forcedRoll={die.forcedRoll}
+            fixedMark={die.fixedMark}
+            rollFrisson={false}
+            onRoll={onRoll}
+          />
+          <div className="modal-actions">
+            <button className="btn btn-primary" onClick={() => applies.push('apply')}>Appliquer</button>
+          </div>
+        </Modal>,
+      );
+    });
+    makeVisible(host.querySelector<HTMLElement>('.modal-actions .btn-primary')!);
+    return dieInput()!;
+  }
+
+  it('Entrée pose le dé et RIEN d’autre : un jet à 50, zéro clic sur l’action primaire', () => {
+    setDesFixes(true);
+    setupPreRoll();
+    const calls: string[] = [];
+    const applies: string[] = [];
+    const input = mountInModal(() => { calls.push('roll'); resolveRoll(); }, applies);
+    act(() => input.focus());
+    expect(document.activeElement, 'la frappe doit partir DU champ').toBe(input);
+    typeAndCommit(input, '50');
+    expect(calls, 'Entrée lance UNE fois').toEqual(['roll']);
+    expect(useGame.getState().pendingAttack!.result!.attackerRoll).toBe(50);
+    expect(applies, 'Entrée validerait la modale PAR-DESSUS le dé posé').toEqual([]);
+  });
+
+  it('quitter le champ sans Entrée ne lance RIEN : le brouillon retombe, aucun dé n’est posé', () => {
+    setDesFixes(true);
+    setupPreRoll();
+    const calls: string[] = [];
+    const input = mountInModal(() => { calls.push('roll'); resolveRoll(); }, []);
+    act(() => input.focus());
+    type(input, '5');
+    type(input, '50');
+    act(() => { input.blur(); input.dispatchEvent(new FocusEvent('blur', { bubbles: false })); });
+    expect(calls, 'le blur COMMET = cliquer « Annuler » roule le dé qu’on annule').toEqual([]);
+    expect(useGame.getState().pendingAttack!.result, 'aucun jet ne doit exister').toBeNull();
+    expect(input.value, 'le brouillon abandonné revient à la dernière valeur commise (aucune)').toBe('');
   });
 });

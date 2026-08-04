@@ -1,17 +1,22 @@
 import type { RecapLine } from '../state/recapLine';
 import { groupRecapLinesByPhase } from '../state/recapLine';
 import { Icon } from './Icon';
+import { TeamSegments } from './TeamSegments';
 
 /**
  * RENDERER UNIQUE d'une ligne de récap structurée (#349) — icône + texte teinté par `tone` (mêmes
  * classes que le PV multijet, `.mrl-row.ok`/`.bad`, `styles/hud.css`). Consommé par `CascadeModal`
  * (note de conséquence d'étape), `TravelDayBody`/`SeaVoyageBody` (jour de voyage) et `dayCardSummary`
  * (résumé de carte, via `.text`) — UN seul rendu de ligne, pas une chaîne recomposée par surface.
+ *
+ * Une ligne qui porte des `segments` (issue de combat narrée, `recapLineOfEvent`) rend ses noms
+ * COLORÉS PAR CAMP par la MÊME primitive que le journal (`TeamSegments`, #1078).
  */
 export function RecapLineRow({ line }: { line: RecapLine }) {
   return (
     <p className={`recap-line ${line.tone ?? ''}`}>
-      {line.icon && <Icon id={line.icon} size="sm" />} {line.text}
+      {line.icon && <Icon id={line.icon} size="sm" />}{' '}
+      {line.segments ? <TeamSegments segments={line.segments} /> : line.text}
     </p>
   );
 }

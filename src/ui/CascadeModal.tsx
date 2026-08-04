@@ -571,7 +571,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // (`worldOwner`, `actor` absent) : cycle d'influence NUL (Chance/Pacte/Résilience/Détermination
   // sont des ressources de HÉROS), seul « Lancer » reste actionnable pour le siège owner.
   // DONNÉE de Test étendu de CETTE rangée (arbitrage user 2026-07-11 : `RollRow` rend la barre, site
-  // UNIQUE ; plus le bandeau global du shell qui disparaissait au pas suivant — persistée via `stepWitnessRows`).
+  // UNIQUE ; persistée via `stepWitnessRows`, elle reste lisible aux pas suivants).
   const curExtendedDr = extendedDrData(cur.meta?.extendedDrDone as number | undefined, cur.meta?.extendedDrTarget as number | undefined, res);
   const curRow: RollRowData = {
     // Étape COURANTE du flux `cascade` : `key` = son id de slot → `RollShell` dérive le sélecteur
@@ -629,8 +629,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       extra={oppHeader || stakeNote ? <>{oppHeader}{stakeNote}</> : undefined}
       rolled={rolled}
       /* Rangées : validées FIGÉES (témoins) + rangée de l'adversaire figé (Test opposé, #579) + courante
-         interactive (pré-jet en attente, post-jet résolue). La barre de Test étendu vit désormais SUR la
-         rangée (`curRow.extra`), pas dans le bandeau global. */
+         interactive (pré-jet en attente, post-jet résolue). La barre de Test étendu appartient à la
+         RANGÉE qui cumule (`curRow.extendedDr`). */
       rows={[...doneWitnessRows, ...(oppRow ? [oppRow] : []), curRow]}
       actions={jetActions}
       disableEscClose

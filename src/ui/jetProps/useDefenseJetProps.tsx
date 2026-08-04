@@ -134,7 +134,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
     flowKey: 'defense',
     title: 'Défense',
     subtitle: null,
-    extra: <VsHeader actor={attacker} target={defender} label={pd.weapon?.label ?? 'Mains nues'} verb="attaque →" />,
+    extra: <VsHeader actor={attacker} target={defender} label={pd.weapon?.label ?? 'Mains nues'} />,
     disableEscClose: true,
     rolled,
     /* Options pré-jet (Parade/Esquive/social + arme de parade) + bouton Détermination (retirer un État). */

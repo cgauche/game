@@ -50,9 +50,10 @@ export function opposedRevealed(s: GameState, ownerId: string | undefined, respo
  * Une rangée MASQUÉE neutralise TOUT ce qui DÉRIVE du résultat — liste EXPLICITE et exhaustive, car un
  * champ oublié rend le dé caché inutile : `forceShow` (« Je ne faillirai pas ! » n'est offert qu'après
  * un échec), `rerollable` (Chance : après un échec), `darkPactable`, `reverse` (son `preview` PORTE
- * `{roll, sl, success}`), `resist` (offert sur issue défavorable), `extendedDr` (DR cumulés), `extra`
- * (issue en clair) et `winner` (l'accent gagnant/perdant EST le verdict). Ce qui ne dérive PAS du
- * résultat traverse intact (`rolled`, `onRoll`, `interactive`, `actor`, ressources…).
+ * `{roll, sl, success}`), `resist` (offert sur issue défavorable), `extendedDr` (DR cumulés), `winner`
+ * (l'accent gagnant/perdant EST le verdict) et la SOUS-LIGNE `row.note` (issue en clair — canal unique
+ * de la rangée). Ce qui ne dérive PAS du résultat traverse intact (`rolled`, `onRoll`, `interactive`,
+ * `actor`, ressources…).
  */
 export function maskOpposedRow<T extends RollRowData>(
   s: GameState,
@@ -65,6 +66,7 @@ export function maskOpposedRow<T extends RollRowData>(
     ...row,
     row: {
       ...row.row,
+      note: undefined,
       ...(d ? { d: { ...d, mask: 'roll' as const } } : {}),
       ...(pending ? { pending: { ...pending, mask: 'roll' as const } } : {}),
     },
@@ -74,7 +76,6 @@ export function maskOpposedRow<T extends RollRowData>(
     reverse: undefined,
     resist: undefined,
     extendedDr: undefined,
-    extra: undefined,
     winner: undefined,
   };
 }

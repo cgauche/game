@@ -53,7 +53,7 @@ export function ShipBatteryModal() {
         ? { combatant: actor, d: testBreakdown(label, val, { roll: res.roll, target: res.target, sl: res.sl }, difficulty) }
         : { combatant: actor, pending: testPending(label, val, undefined, difficulty) };
     },
-    extra: (part, _actor, res) => <div className="cs-outcome ok-text">{part.essential ? `${sign(res.sl)} DR ×2` : `${sign(res.sl)} DR`}</div>,
+    note: (part, _actor, res) => <div className="cs-outcome ok-text">{part.essential ? `${sign(res.sl)} DR ×2` : `${sign(res.sl)} DR`}</div>,
   });
 
   const actions: RollAction[] = [

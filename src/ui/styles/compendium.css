@@ -293,15 +293,20 @@
 /* ── CodexRef : libellé enrichi + popover (hover/focus) ──
    Affordance : AUCUN soulignement au repos — le libellé est presque toujours déjà dans un cadre
    (chip/tag/stat-chip/titre), le pointillé y serait redondant. Indice de découverte commun :
-   teinte or + curseur au survol/focus. Seul un ref en PLEINE PROSE (`inline`) garde le pointillé. */
+   teinte or + curseur au survol/focus. Seul un ref en PLEINE PROSE (`inline`) garde le pointillé.
+   L'indice suit l'ÉTAT RÉEL du déclencheur — `[role='button']`, posé par `CodexRef` exactement quand
+   quelque chose s'ouvre (fiche ou popover). Le repli muet garde la mise en forme (même surface, même
+   densité) sans promettre un clic. */
 .codex-ref {
   position: relative;
-  cursor: help;
   outline: none;
   transition: color 0.1s, border-color 0.1s;
 }
-.codex-ref:hover,
-.codex-ref:focus-visible {
+.codex-ref[role='button'] {
+  cursor: help;
+}
+.codex-ref[role='button']:hover,
+.codex-ref[role='button']:focus-visible {
   color: var(--gold2);
 }
 /* Ref hors cadre (prose) : l'« indice léger » = pointillé discret, réservé à ce seul cas. */
@@ -435,6 +440,21 @@
 .codex-ref.ab-codex-info:hover,
 .codex-ref.ab-codex-info:focus-visible {
   opacity: 1;
+}
+/* Tactile : l'icône d'info mesure ~13px — au doigt, elle est intouchable. On lui donne la cible
+   minimale de la charte (40px, cf. base.css) sans toucher à la densité desktop : le glyphe garde sa
+   taille, seule la surface cliquable grandit, et l'atténuation de repos tombe (aucun survol n'existe
+   pour la révéler). */
+@media (pointer: coarse) {
+  .codex-ref.ab-codex-info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0;
+    opacity: 0.9;
+  }
 }
 
 @media (max-width: 900px) {

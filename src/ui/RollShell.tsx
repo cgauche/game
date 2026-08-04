@@ -17,14 +17,17 @@ import { useGame } from '../state/store';
  *   → outcome/summary → postRollExtra → forcedExtra → `.modal-actions`
  *
  * Cardinalité des rangées :
- * - **mono** : 1 rangée interactive → l'issue passe par `outcome` (sous la liste) ;
+ * - **mono** : 1 rangée interactive ;
  * - **opposé** : 2 rangées (1 interactive + 1 témoin `interactive:false`) ;
  * - **multi** : N rangées + `summary` (agrégat) — `summary` masqué si absent.
  *
+ * `outcome` (l'issue sous la liste) se rend à TOUTE cardinalité : un jet opposé a une issue comme
+ * un jet mono — c'est le MÊME schéma d'informations (#1078).
+ *
  * La phase courante est `rolled` (au moins un jet lancé). Les actions déclarent `when` :
  * `'pre'` (avant jet), `'post'` (après), `'always'` (toujours) — le shell filtre. Aucune classe CSS
- * nouvelle : réutilise `Modal`/`roll-modal`·`test-modal`, `test-actor`/`rm-vs`, `mini-title`,
- * `cs-rows`, `modal-actions` — donc restyler/étendre se fait à UN endroit.
+ * nouvelle : réutilise `Modal`/`roll-modal`·`test-modal`, `test-actor`/`rm-subtitle`, `mini-title`,
+ * `cs-rows`, `rm-summary`, `modal-actions` — donc restyler/étendre se fait à UN endroit.
  */
 
 /** Donnée d'UNE rangée de jet du shell = les props de `RollRow` (ligne + cycle d'influence propre).
@@ -102,7 +105,7 @@ export function RollShell({
   flowKey,
 }: {
   title: ReactNode;
-  /** Famille de classes : 'roll' (rm-vs) / 'test' (test-actor). */
+  /** Famille de classes du sous-titre : 'roll' (rm-subtitle) / 'test' (test-actor). */
   variant?: 'roll' | 'test';
   subtitle?: ReactNode;
   /** Ligne d'instruction sous le sous-titre (`mini-title`). */
@@ -122,7 +125,8 @@ export function RollShell({
   /** Test opposé (2 rangées) : index de la rangée gagnante — passé à `RollRow`/RollPanel via `row`. */
   winnerIndex?: number | null;
   netSL?: number;
-  /** Issue style journal sous la LISTE (cas mono : une seule rangée). Sinon `row.note` par rangée. */
+  /** Issue style journal sous la LISTE, à TOUTE cardinalité (mono, opposé, multi). Une issue PAR
+   *  rangée passe, elle, par `row.note`. */
   outcome?: ReactNode;
   /** Bandeau d'ISSUE agrégée sous les rangées (multi : total, succès…). Masqué si absent. */
   summary?: ReactNode;
@@ -144,8 +148,7 @@ export function RollShell({
   // frais à chaque rendu : hook appelé INCONDITIONNELLEMENT, jamais après un retour anticipé.
   useGame((s) => s.net);
   const state = useGame.getState();
-  const subClass = variant === 'test' ? 'test-actor' : 'rm-vs';
-  const single = rows.length === 1;
+  const subClass = variant === 'test' ? 'test-actor' : 'rm-subtitle';
   // VERROU de comparaison (#990) : dès qu'UNE rangée du panneau porte un jet MASQUÉ, la coquille ne
   // décerne plus rien qui compare les deux jets — ni halo vainqueur/perdant, ni badge « DR net ». Le
   // calendrier de découverte vit dans la donnée (`mask`), l'accent est DÉRIVÉ ici : sans ce verrou,
@@ -205,7 +208,9 @@ export function RollShell({
           return separator ? <Fragment key={key ?? i}>{separator}{row}</Fragment> : <Fragment key={key ?? i}>{row}</Fragment>;
         })}
       </div>
-      {single && outcome}
+      {/* L'ISSUE dit ce que les jets ont produit : elle tombe sous le MÊME verrou que le halo et le
+          badge « DR net » (#990) — une rangée masquée révélerait par sa conclusion ce que son dé cache. */}
+      {!panelMasked && outcome}
       {/* DR net du Test opposé (2 rangées) — même badge que `RollPanel`, réutilisé ici. Il COMPARE les
           deux jets : masqué avec eux (#990). */}
       {!panelMasked && rolled && winnerIndex != null && netSL != null && (
@@ -213,7 +218,7 @@ export function RollShell({
           DR net : {netSL >= 0 ? '+' : '−'}{Math.abs(netSL)}
         </div>
       )}
-      {summary != null && <p className="rm-vs">{summary}</p>}
+      {summary != null && <p className="rm-summary">{summary}</p>}
       {postRollExtra}
       {forcedExtra}
       </div>

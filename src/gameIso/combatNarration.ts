@@ -10,6 +10,7 @@
  */
 import { conditionMeta } from './effectIcons';
 import type { IconId } from '../ui/icons';
+import type { RecapLine } from '../state/recapLine';
 import {
   type CombatEvent, type CombatEventKind, type ActorAim, type ActorAimKind,
   type CombatTone, toneOf, isImportantEvent, STATE_LABEL_TO_ID,
@@ -95,6 +96,20 @@ function colorize(text: string, combatants: ComLite[]): NarratedSegment[] {
 /** Narre un événement de combat : icône unifiée + importance + ton + segments colorés par camp. */
 export function narrateEvent(e: CombatEvent, combatants: ComLite[] = []): NarratedLine {
   return { raw: e.text, icon: iconOf(e), important: isImportantEvent(e), tone: toneOf(e.kind), segments: colorize(e.text, combatants) };
+}
+
+/** Un événement de combat en LIGNE DE RÉCAP structurée (#1078) : même narration que le journal
+ *  (`narrateEvent` — aucun texte n'est composé ici), reversée dans le vocabulaire partagé `RecapLine`
+ *  (texte plat + segments tonés par camp + icône). C'est le pont qui permet au renderer unique de
+ *  rendre ce que `JournalLine` rend. */
+export function recapLineOfEvent(e: CombatEvent, combatants: ComLite[] = []): RecapLine {
+  const n = narrateEvent(e, combatants);
+  return { text: n.raw, icon: n.icon, segments: n.segments.map((s) => (s.team ? { text: s.text, team: s.team } : { text: s.text })) };
+}
+
+/** Le même pont pour une SUITE d'événements (pile d'issues d'une étape, récap de fin de fenêtre). */
+export function recapLinesOfEvents(events: CombatEvent[], combatants: ComLite[] = []): RecapLine[] {
+  return events.map((e) => recapLineOfEvent(e, combatants));
 }
 
 /** Verbe + kind (icône/ton) pour chaque manière de télégraphe d'intention. */

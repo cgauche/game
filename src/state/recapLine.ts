@@ -9,10 +9,24 @@
  */
 export type RecapTone = 'ok' | 'bad' | 'info';
 
+/** Camp d'un SEGMENT de texte — même vocabulaire que la narration de combat (`NarratedSegment.team`,
+ *  classes `.nm-ally`/`.nm-foe`) : les noms se colorent par camp, allié / ennemi. */
+export type RecapTeam = 'ally' | 'enemy';
+
+/** Un MORCEAU de la ligne : du texte, éventuellement toné par le camp qu'il nomme. Structure, jamais
+ *  du JSX — le rendu (RecapLineRow) décide de la mise en forme. */
+export interface RecapSegment {
+  text: string;
+  team?: RecapTeam;
+}
+
 export interface RecapLine {
   text: string;
   icon?: string;
   tone?: RecapTone;
+  /** Découpe TONÉE du même contenu que `text` (concaténation des `segment.text` = `text`) : porte la
+   *  coloration par camp des noms. Absente → la ligne se rend en texte plat. */
+  segments?: RecapSegment[];
   /** Phase du jour (clé de `DAY_PHASE_CATALOG`) — posée quand la ligne provient d'une étape de
    *  cascade (`kind` connu) ; absente pour les notes hors-cascade (météo, entretien, soins d'arrivée). */
   phase?: string;

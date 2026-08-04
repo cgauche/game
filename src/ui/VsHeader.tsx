@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
+import type { IconId } from './icons';
 import { CharFrame } from './CharFrame';
+import { Icon } from './Icon';
 
 /**
  * En-tête A → B partagé des modales (« A attaque B », « A fait peur à B », « A lance un sort
@@ -11,14 +13,16 @@ export function VsHeader({
   actor,
   target,
   label,
-  verb = '→',
+  verb,
 }: {
   actor?: Combatant | null;
   target?: Combatant | null;
   /** Annotation au-dessus de la flèche : arme (« Épée · Dégâts 6 + DR »), sort, nature du jet. */
   label?: ReactNode;
-  /** Texte de la flèche (déf. « → ») : « attaque → », « ▸ »… */
-  verb?: ReactNode;
+  /** Verbe de la flèche, VOCABULAIRE FERMÉ (décision utilisateur 2026-08-04, #1078) : un id du
+   *  registre d'icônes, rendu par `<Icon>`. Absent → glyphe « → ». Le type interdit le texte libre :
+   *  la direction A→B dit déjà qui agit, un mot y ajoutait une redite propre à chaque modale. */
+  verb?: IconId;
 }) {
   if (!actor && !target) return null;
   return (
@@ -32,7 +36,7 @@ export function VsHeader({
               <br />
             </>
           )}
-          {verb}
+          {verb ? <Icon id={verb} size="sm" /> : '→'}
         </span>
       )}
       {target && <CharFrame c={target} variant="vital" size="md" />}

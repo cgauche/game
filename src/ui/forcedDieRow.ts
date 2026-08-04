@@ -92,7 +92,9 @@ export function rowForcedDie(
   if (!doRoll) return { fixedMark: mark };
   return {
     // `roll: null` — le champ est une OFFRE : rien n'est fixé tant que le joueur n'a pas saisi.
-    forcedRoll: { roll: null, target: FIXED_ROLL_MAX, fixed: true, onSet: (r) => withPreRollFixedDie(useGame.getState, useGame.setState, doRoll, () => onSet(r)) },
+    // `commitOnBlur: false` — ICI le commit LANCE le jet : seule Entrée le pose, quitter le champ
+    // (pour « Annuler », pour une autre commande) rend le brouillon sans rouler quoi que ce soit.
+    forcedRoll: { roll: null, target: FIXED_ROLL_MAX, fixed: true, commitOnBlur: false, onSet: (r) => withPreRollFixedDie(useGame.getState, useGame.setState, doRoll, () => onSet(r)) },
     fixedMark: mark,
   };
 }

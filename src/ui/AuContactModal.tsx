@@ -87,7 +87,7 @@ export function AuContactModal() {
       <RollShell
         flowKey="auContact"
         title="Au contact"
-        extra={<VsHeader actor={mover} target={foe} label="entrer dans la longueur d'arme" verb={<Icon id="melee/close-in" size="sm" />} />}
+        extra={<VsHeader actor={mover} target={foe} label="entrer dans la longueur d'arme" verb="melee/close-in" />}
         rows={[foeRow, actorRow]}
         rolled
         winnerIndex={winnerIndex}
@@ -113,7 +113,7 @@ export function AuContactModal() {
     <RollShell
       flowKey="auContact"
       title="Au contact"
-      extra={<VsHeader actor={mover} target={foe} label="entrer dans la longueur d'arme" verb={<Icon id="melee/close-in" size="sm" />} />}
+      extra={<VsHeader actor={mover} target={foe} label="entrer dans la longueur d'arme" verb="melee/close-in" />}
       rows={[foeRow, actorRow]}
       rolled={rolled}
       winnerIndex={winnerIndex}

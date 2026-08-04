@@ -122,8 +122,10 @@ export function CodexRef({
     };
   }, [pinned, unpin]);
 
-  // Sans entrée catalogue NI fallback : icône-déclencheur → rien ; libellé → texte simple.
-  if (!item && !fallback) return hideIfUnknown ? null : <span className={className}>{children ?? label}</span>;
+  // Sans entrée catalogue NI fallback : icône-déclencheur → rien ; libellé → texte simple. La classe
+  // `codex-ref` reste portée — elle habille l'affordance (`.codex-ref.ab-codex-info`), et sans elle
+  // le repli perdrait sa mise en forme au lieu de rester la même surface, muette.
+  if (!item && !fallback) return hideIfUnknown ? null : <span className={`codex-ref codex-static${className ? ` ${className}` : ''}`}>{children ?? label}</span>;
 
   const title = item?.label ?? label;
   const body = item ? (item.desc ? truncate(mdToText(item.desc)) : null) : (fallback?.body || null);

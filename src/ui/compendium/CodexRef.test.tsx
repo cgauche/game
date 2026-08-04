@@ -59,3 +59,15 @@ describe('CodexRef — affordance clic (#tooltipOnly bascule le popover, jamais 
     expect(h).not.toContain('aria-expanded');
   });
 });
+
+describe('CodexRef — repli sans entrée catalogue (#956) : la surface garde sa mise en forme', () => {
+  it('entrée INTROUVABLE : le repli porte `codex-ref` (le style de l’affordance mord) et la classe du site', () => {
+    const h = renderToStaticMarkup(
+      <CodexRef category="characteristics" id="entree-qui-n-existe-pas" label="Inconnue" className="ab-codex-info">Inconnue</CodexRef>,
+    );
+    expect(h).toContain('codex-ref');
+    expect(h).toContain('ab-codex-info');
+    // Rien n'est cliquable : aucune fiche à ouvrir.
+    expect(h).not.toContain('role="button"');
+  });
+});

@@ -315,7 +315,11 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // sa barre d'actions), `.prow-line` (+ son 1er enfant) qui ancre la marque à SA ligne, `.rm-range`
   // (+ son cas sans libellé) pour la fourchette des tuiles, et l'allègement de voile DESCENDU ici
   // depuis la couche partagée (`.app-campaign .modal-overlay:has(.roll-modal)`).
-  'styles/combat-modals.css': 140,
+  // +2 (#1078 LOT A1) : `.rm-subtitle`/`.rm-summary` — `.rm-vs` servait CINQ rôles (opposition
+  // VsHeader, sous-titre de RollShell, bandeau d'issue agrégée) sous un seul nom : restyler l'un
+  // repeignait les autres. Somme nulle VISUELLE (les trois classes partagent le MÊME bloc de
+  // déclarations, combat-modals.css) ; la hausse achète la séparation des rôles, pas un motif d'écran.
+  'styles/combat-modals.css': 142,
   'styles/combat-ui.css': 112,
   // +1 : `.nb` (#393 P2) — note d'atelier non cliquable en fin de section chips (CodexRowView).
   'styles/compendium.css': 56,

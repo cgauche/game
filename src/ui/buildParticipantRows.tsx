@@ -31,8 +31,9 @@ export interface ParticipantRowBundle<P extends ParticipantRow> {
   row: (part: P, actor: Combatant, res: P['result']) => PanelRowData;
   /** Rangée INTERACTIVE ? (défaut : `part.interactive !== false`). Le naval y greffe le gate `owns`. */
   interactiveOf?: (part: P, actor: Combatant) => boolean;
-  /** Issue courte sous la ligne (DR ×2 essentiel…) — rendue APRÈS le jet seulement. */
-  extra?: (part: P, actor: Combatant, res: NonNullable<P['result']>) => ReactNode;
+  /** Issue courte sous la ligne (DR ×2 essentiel…) — rendue APRÈS le jet seulement, dans le CANAL
+   *  UNIQUE de sous-ligne (`PanelRowData.note`, `.rr-note`). */
+  note?: (part: P, actor: Combatant, res: NonNullable<P['result']>) => ReactNode;
   /** DONNÉE de Test ÉTENDU d'une rangée (cartographie de voyage…) : la barre est rendue par `RollRow`
    *  (site UNIQUE), visible avant/après le jet et persistante. Le bundle ne pose que la donnée. */
   extendedDrOf?: (part: P, actor: Combatant) => { cum: number; target: number } | undefined;
@@ -70,10 +71,12 @@ export function buildParticipantRows<P extends ParticipantRow>(
     const res = part.result;
     const failed = participantFailed(res);
     const extendedDr = bundle.extendedDrOf?.(part, actor);
+    const panelRow = bundle.row(part, actor, res);
+    const note = bundle.note && res ? bundle.note(part, actor, res) : undefined;
     return [{
       key: part.id,
       actor,
-      row: bundle.row(part, actor, res),
+      row: note != null ? { ...panelRow, note } : panelRow,
       rolled: !!res,
       interactive: bundle.interactiveOf ? bundle.interactiveOf(part, actor) : part.interactive !== false,
       ...(bundle.rollLabel != null ? { rollLabel: bundle.rollLabel } : {}),
@@ -86,7 +89,6 @@ export function buildParticipantRows<P extends ParticipantRow>(
       onForce: () => bundle.onForce(part.id),
       forceShow: !!res,
       ...(extendedDr ? { extendedDr } : {}),
-      ...(bundle.extra && res ? { extra: bundle.extra(part, actor, res) } : {}),
     }];
   });
 }

@@ -1,4 +1,5 @@
 import type { HitLocation, BodyShape } from '../engine/types';
+import { useRef, useState } from 'react';
 import { locationLabel } from '../engine/combat';
 import { maxForcedRoll } from '../engine/tests';
 import { FIXED_ROLL_MAX } from '../engine/fixedDie';
@@ -39,7 +40,7 @@ export function CritLocationPicker({ current, onSet, shape = 'humanoide' }: {
  *  - saisie libre ≤ cible (le choix doit RESTER une réussite) — les unités nourrissent
  *    Percutante/Dévastatrice et la localisation inversée côté attaque.
  */
-export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed = false, marked = false, max, mod = 0, effective }: {
+export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed = false, marked = false, max, mod = 0, effective, commitOnBlur = true }: {
   /** `null` = RIEN n'est encore fixé (offre pré-jet) : le champ est VIDE, la valeur ne se commet qu'à la saisie. */
   roll: number | null;
   target: number;
@@ -64,19 +65,51 @@ export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed =
   /** Dé EFFECTIF rendu par le RÉSOLVEUR (`CascadeTableResult.die`) : l'UI l'AFFICHE, elle ne le
    *  recalcule pas — lui seul connaît le plancher de sa table. Absent = rien n'est encore résolu. */
   effective?: number | null;
+  /** La perte de focus COMMET la saisie (défaut). `false` là où commettre est un acte IRRÉVERSIBLE —
+   *  la saisie PRÉ-jet LANCE le dé (`forcedDieRow`) : quitter le champ pour cliquer « Annuler »
+   *  roulerait le jet qu'on annule. Le brouillon revient alors à la dernière valeur commise, et
+   *  Entrée reste le seul geste qui pose le dé. */
+  commitOnBlur?: boolean;
 }) {
   // Borne : dé fixé → les faces du dé (d100 par défaut) ; Résilience → ≤ cible ET hors bande d'échec
   // auto (dérivé de la policy).
   const maxRoll = fixed ? Math.min(max ?? FIXED_ROLL_MAX, FIXED_ROLL_MAX) : maxForcedRoll(target);
+  // La frappe reste LOCALE : le dé ne se commet qu'au geste TERMINAL (Entrée, et la perte de focus
+  // quand `commitOnBlur`). Un commit par frappe rendrait tout nombre à deux chiffres insaisissable
+  // avant le jet — la branche pré-jet LANCE au commit (`forcedDieRow`), le « 5 » de « 50 » résoudrait
+  // le Test.
+  const [draft, setDraft] = useState(roll != null ? String(roll) : '');
+  // Dernière valeur COMMISE : un second geste terminal sur la même valeur (Entrée puis blur) ne
+  // rejoue pas le commit. Quand le dé du MODÈLE change (jet, Résilience, ligne de table cliquée), le
+  // champ le reflète — ajustement dérivé fait AU RENDU, pas dans un effet différé.
+  const committed = useRef<number | null>(roll);
+  if (committed.current !== roll) {
+    committed.current = roll;
+    setDraft(roll != null ? String(roll) : '');
+  }
+
+  const commit = (n: number) => {
+    if (n === committed.current) return;
+    committed.current = n;
+    setDraft(String(n));
+    onSet(n);
+  };
+  // REFUS honnête hors domaine (jamais un clamp silencieux) : une saisie qui sortirait des faces
+  // n'est pas commise — le champ revient à la dernière valeur valide.
+  const commitDraft = () => {
+    const n = Number(draft);
+    if (draft !== '' && Number.isInteger(n) && n >= 1 && n <= maxRoll) commit(n);
+    else setDraft(committed.current != null ? String(committed.current) : '');
+  };
   return (
     <div className="rm-die-pick">
       {!fixed && (
-        <button className={`btn small ${roll === 1 ? 'btn-primary' : ''}`} title="Le score le plus bas → DR maximum" onClick={() => onSet(1)}>
+        <button className={`btn small ${roll === 1 ? 'btn-primary' : ''}`} title="Le score le plus bas → DR maximum" onClick={() => commit(1)}>
           01 · DR max
         </button>
       )}
       {!fixed && critable && maxRoll >= 11 && (
-        <button className={`btn small ${roll === 11 ? 'btn-primary' : ''}`} title="Le plus bas double réussi → Critique au meilleur DR" onClick={() => onSet(11)}>
+        <button className={`btn small ${roll === 11 ? 'btn-primary' : ''}`} title="Le plus bas double réussi → Critique au meilleur DR" onClick={() => commit(11)}>
           11 · Critique
         </button>
       )}
@@ -89,12 +122,21 @@ export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed =
           type="number"
           min={1}
           max={maxRoll}
-          value={roll ?? ''}
+          value={draft}
           placeholder={`d${maxRoll}`}
-          /* REFUS honnête hors domaine (jamais un clamp silencieux) : la frappe qui sortirait des faces
-             n'est pas commise — le champ garde la dernière valeur valide. */
-          onChange={(e) => { const n = Number(e.target.value); if (e.target.value !== '' && n >= 1 && n <= maxRoll) onSet(n); }}
-          title={fixed ? `Saisir la valeur du dé (1 à ${maxRoll})` : `Choisir librement la valeur du dé (1 à ${maxRoll})`}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              // Entrée est CONSOMMÉE par le champ : elle pose le dé, et rien d'autre. Sans
+              // `stopPropagation`, l'écouteur clavier de `Modal` la reçoit à son tour et clique le
+              // bouton primaire — le jet posé partirait avec la validation de la boîte.
+              e.preventDefault();
+              e.stopPropagation();
+              commitDraft();
+            }
+          }}
+          onBlur={commitOnBlur ? commitDraft : () => setDraft(committed.current != null ? String(committed.current) : '')}
+          title={fixed ? `Saisir la valeur du dé (1 à ${maxRoll}), validée par Entrée` : `Choisir librement la valeur du dé (1 à ${maxRoll}), validée par Entrée`}
         />
       </label>
       {/* Le dé qui RÉSOUT n'est pas celui qui est saisi dès qu'un modificateur s'applique : on montre

@@ -7,9 +7,9 @@
  * l'atteint (modificateur compris) ; le champ est borné aux FACES du dé et refuse le reste ; un dé
  * posé reste RÉ-ÉDITABLE tant que l'étape est courante.
  *
- * La saisie est jouée FRAPPE PAR FRAPPE (un `input` par caractère, comme un vrai clavier) : un test
- * qui pose « 48 » en UN événement ne verrait jamais le dé intermédiaire « 4 », et ne verrait donc ni
- * une valeur figée au premier chiffre ni un champ démonté après la pose.
+ * La saisie est jouée FRAPPE PAR FRAPPE puis validée par Entrée (comme un vrai clavier) : un test qui
+ * poserait « 48 » en UN événement ne verrait ni le dé intermédiaire « 4 », ni un champ démonté après
+ * la pose, ni le geste TERMINAL qui commet seul (#955).
  */
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
 import { act } from 'react';
@@ -54,7 +54,8 @@ const rowButton = (text: string) => rowButtons().find((b) => (b.textContent ?? '
 const step = () => useGame.getState().pendingCascade!.participants[0];
 const result = () => step().table!.result;
 
-/** UNE frappe : la valeur du champ devient `value` (React contrôle l'input, d'où le setter natif). */
+/** UNE frappe : la valeur du champ devient `value` (React contrôle l'input, d'où le setter natif).
+ *  Une frappe ne COMMET rien — le dé se pose au geste terminal (#955). */
 function typeChar(input: HTMLInputElement, value: string) {
   const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
   act(() => {
@@ -63,7 +64,15 @@ function typeChar(input: HTMLInputElement, value: string) {
   });
 }
 
-/** Frappe une valeur CARACTÈRE PAR CARACTÈRE (le champ est relu entre chaque : il peut se démonter). */
+/** Geste TERMINAL (Entrée) : c'est LUI qui pose le dé saisi. */
+function pressEnter(input: HTMLInputElement) {
+  act(() => {
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  });
+}
+
+/** Saisie clavier RÉELLE : caractère par caractère (le champ est relu entre chaque : il peut se
+ *  démonter), puis Entrée qui commet. */
 function typeSlowly(value: string) {
   let acc = '';
   for (const ch of value) {
@@ -72,6 +81,7 @@ function typeSlowly(value: string) {
     expect(input, `le champ a disparu après « ${acc.slice(0, -1)} » — la saisie n'est plus corrigeable`).not.toBeNull();
     typeChar(input!, acc);
   }
+  pressEnter(dieInput()!);
 }
 
 beforeEach(() => {
@@ -137,7 +147,10 @@ describe('Mode table — les deux affordances d’une étape à table', () => {
     setDesFixes(true);
     openTable(10);
     render();
-    typeSlowly('48');
+    typeChar(dieInput()!, '4');
+    expect(result(), 'une frappe intermédiaire ne pose RIEN : le commit est terminal (#955)').toBeUndefined();
+    typeChar(dieInput()!, '48');
+    pressEnter(dieInput()!);
     expect(result(), 'un chiffre intermédiaire figé = la valeur du joueur jamais atteinte').toMatchObject({ roll: 48, die: 58, id: 'haute' });
     openTable();
     render();
@@ -154,6 +167,7 @@ describe('Mode table — les deux affordances d’une étape à table', () => {
     expect(input, 'le champ démonté après la pose = une valeur subie').not.toBeNull();
     expect(input!.value).toBe('97');
     typeChar(input!, '12');
+    pressEnter(input!);
     expect(result()).toMatchObject({ roll: 12, id: 'basse' });
     // La grille reste servie elle aussi : re-choisir une ligne re-pose le dé.
     act(() => { rowButton('51-100')!.click(); });
@@ -165,10 +179,12 @@ describe('Mode table — les deux affordances d’une étape à table', () => {
     openTable(undefined, T10);
     render();
     expect(dieInput()!.getAttribute('max')).toBe('10');
-    typeChar(dieInput()!, '4');
+    typeSlowly('4');
     expect(result()).toMatchObject({ roll: 4, id: 'bas' });
     typeChar(dieInput()!, '47');
+    pressEnter(dieInput()!);
     expect(result(), '47 appliqué comme « 10 » serait une valeur menteuse : le dé reste celui saisi').toMatchObject({ roll: 4, id: 'bas' });
+    expect(dieInput()!.value, 'une saisie refusée revient à la dernière valeur valide').toBe('4');
   });
 
   it('le RÉSULTAT d’un dé posé porte la marque « Dé fixé » — UNE seule surface (l’étiquette du champ)', () => {
@@ -194,11 +210,11 @@ describe('Mode table — les deux affordances d’une étape à table', () => {
       steps: [{ ...tableStep(T), id: 's1' }, { ...tableStep(T), id: 's2' }],
     });
     render();
-    typeChar(dieInput()!, '9');
+    typeSlowly('9');
     const fige = useGame.getState().pendingCascade!.participants[0].table!.result;
     act(() => { useGame.getState().cascadeNext(); }); // conséquence de s1 appliquée, curseur sur s2
     // Le champ à l'écran est celui de s2 : y saisir n'écrit PAS sur l'étape figée.
-    typeChar(dieInput()!, '72');
+    typeSlowly('72');
     const parts = () => useGame.getState().pendingCascade!.participants;
     expect(parts()[0].table!.result, 'le dé d’une étape déjà subie ne se réécrit pas depuis l’étape suivante').toEqual(fige);
     expect(parts()[1].table!.result).toMatchObject({ roll: 72, id: 'haute' });

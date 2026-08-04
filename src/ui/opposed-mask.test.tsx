@@ -202,26 +202,27 @@ describe('#990 site 2 — incantation opposée : la rangée du lanceur ET son ve
 
   /** Fermeture de FORME : la fuite F1 (« Résilience » sur rangée masquée) n'était pas un oubli isolé
    *  mais une CLASSE — tout champ de rangée dérivé du résultat rouvre le même trou. Assertion
-   *  EXHAUSTIVE sur l'objet rendu : les 8 champs dérivés neutralisés sous masque, intacts au découvert
-   *  (aucun rendu nécessaire — c'est le contrat de la fonction, pas d'un écran). */
-  it('rangée masquée : les 8 champs DÉRIVÉS du résultat sont neutralisés, le reste traverse INTACT', () => {
+   *  EXHAUSTIVE sur l'objet rendu : les 7 champs dérivés de RANGÉE + la SOUS-LIGNE (`row.note`, canal
+   *  unique depuis #1078) neutralisés sous masque, intacts au découvert (aucun rendu nécessaire —
+   *  c'est le contrat de la fonction, pas d'un écran). */
+  it('rangée masquée : les champs DÉRIVÉS du résultat (rangée + sous-ligne) sont neutralisés, le reste traverse INTACT', () => {
     const A = mk('A', 'hero');
     const E = mk('E', 'enemy');
     putBattle([A, E], ['E', 'A']);
     const s = useGame.getState();
     const onRoll = () => {};
     const base: RollRowData = {
-      row: { combatant: E, pending: { label: 'Incantation', base: 45 } },
+      // La sous-ligne (issue en clair) vit DANS la ligne : c'est le canal unique `PanelRowData.note`.
+      row: { combatant: E, pending: { label: 'Incantation', base: 45 }, note: 'DR net +2' },
       rolled: false, interactive: true, onRoll, actor: E, fortune: 3, resilience: 2,
-      // Les 8 dérivés, tous renseignés : un champ non neutralisé se voit.
+      // Les dérivés de rangée, tous renseignés : un champ non neutralisé se voit.
       forceShow: true, rerollable: true, darkPactable: true,
       reverse: { onReverse: () => {}, preview: { roll: 32, sl: 2, success: true } },
       resist: { menace: 'magie', onResist: () => {} },
       extendedDr: { cum: 3, target: 5 },
-      extra: 'DR net +2',
       winner: 'win',
     };
-    const DERIVES = ['forceShow', 'rerollable', 'darkPactable', 'reverse', 'resist', 'extendedDr', 'extra', 'winner'] as const;
+    const DERIVES = ['forceShow', 'rerollable', 'darkPactable', 'reverse', 'resist', 'extendedDr', 'winner'] as const;
 
     const masked = maskOpposedRow(s, { ownerId: 'E', responded: false }, base);
     expect(masked.row.pending?.mask).toBe('roll');
@@ -230,17 +231,19 @@ describe('#990 site 2 — incantation opposée : la rangée du lanceur ET son ve
       'champ dérivé du résultat encore ARMÉ sur une rangée masquée — il annonce le verdict que le dé cache',
     ).toEqual([]);
     expect(masked.reverse, 'son `preview` porte {roll, sl, success} : le dé fuirait par là').toBeUndefined();
+    expect(masked.row.note, 'la sous-ligne dit l’issue en clair sous un dé masqué').toBeUndefined();
     // Ce qui ne dérive PAS du résultat traverse : sans quoi la rangée perdrait son bouton « Lancer ».
     expect(masked.rolled).toBe(false);
     expect(masked.interactive).toBe(true);
     expect(masked.onRoll).toBe(onRoll);
     expect([masked.actor, masked.fortune, masked.resilience]).toEqual([E, 3, 2]);
 
-    // Découvert (jet produit par ce siège) : la rangée traverse SANS copie ni retouche — donc les 8
-    // dérivés y sont TOUS conservés, à l'identique.
+    // Découvert (jet produit par ce siège) : la rangée traverse SANS copie ni retouche — donc les
+    // dérivés y sont TOUS conservés, à l'identique, sous-ligne comprise.
     const revealed = maskOpposedRow(s, { ownerId: 'A', responded: false }, base);
     expect(revealed).toBe(base);
     expect(DERIVES.map((k) => revealed[k])).toEqual(DERIVES.map((k) => base[k]));
+    expect(revealed.row.note).toBe('DR net +2');
   });
 
   /** VERROU DE SOCLE (#990/D5) : `RollShell` DÉRIVE le halo vainqueur d'un `winnerIndex` posé par le

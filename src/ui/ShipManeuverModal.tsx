@@ -67,7 +67,7 @@ export function ShipManeuverModal() {
         ? { combatant: actor, d: testBreakdown(label, val, { roll: res.roll, target: res.target, sl: res.sl }, difficulty) }
         : { combatant: actor, pending: testPending(label, val, undefined, difficulty) };
     },
-    extra: (part, _actor, res) => <div className="cs-outcome ok-text">{resultLine(freeCons([part.essential ? `${res.sl >= 0 ? '+' : ''}${res.sl} DR ×2` : `${res.sl >= 0 ? '+' : ''}${res.sl} DR`]))}</div>,
+    note: (part, _actor, res) => <div className="cs-outcome ok-text">{resultLine(freeCons([part.essential ? `${res.sl >= 0 ? '+' : ''}${res.sl} DR ×2` : `${res.sl >= 0 ? '+' : ''}${res.sl} DR`]))}</div>,
   });
 
   const actions: RollAction[] = [

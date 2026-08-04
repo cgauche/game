@@ -56,7 +56,6 @@ export function RollRow({
   rollFrisson = true,
   rollInBar = false,
   winner,
-  extra,
   extendedDr,
 }: RollRowProps) {
   // Frisson du jet (helper partagé avec le bouton « Lancer » hissé dans la barre du RollShell).
@@ -95,7 +94,6 @@ export function RollRow({
           (arbitrage user 2026-07-11) : les émetteurs (cartographie, Peur de combat, périls…) ne posent
           QUE la donnée `extendedDr` ; elle vit SUR la rangée et persiste (rangées témoins/batch/bilan). */}
       {extendedDr && <DrBar cum={extendedDr.cum} target={extendedDr.target} />}
-      {extra}
       {/* Roulis du jet INITIAL — inline (`scene={false}`) : une scène centrale par participant serait
           absurde en multi. `rollInBar` : la coquille (RollShell) porte la scène CENTRALE à sa place
           (cas mono, une seule rangée à lancer). Découplé de `rolled` (`rolled` bascule DÈS le
@@ -193,7 +191,7 @@ export interface RollRowProps {
    *  par l'option de confort (avant OU après le jet, tout le d100). Absent → pas de sélecteur.
    *  `roll: null` = offre PRÉ-jet (champ vide : rien n'est fixé tant que le joueur n'a pas saisi).
    *  Site UNIQUE de dérivation : `ui/forcedDieRow.ts`. */
-  forcedRoll?: { roll: number | null; target: number; onSet: (roll: number) => void; critable?: boolean; fixed?: boolean; max?: number; mod?: number; effective?: number | null };
+  forcedRoll?: { roll: number | null; target: number; onSet: (roll: number) => void; critable?: boolean; fixed?: boolean; max?: number; mod?: number; effective?: number | null; commitOnBlur?: boolean };
   /** Ce jet a été SAISI par le joueur (option « Dés fixés ») → mention « dé fixé » sur la rangée. */
   fixedMark?: boolean;
   /** Flux PROPRE à cette rangée quand il DIFFÈRE de celui de la coquille (`RollShell.flowKey`) :
@@ -239,8 +237,6 @@ export interface RollRowProps {
   /** Test opposé : accent de CETTE rangée (`'win'` = gagnante accentuée, `'lose'` = perdante atténuée).
    *  Traduit en `winnerIndex` du panneau mono. Absent/`null` → pas d'accent (jet non opposé). */
   winner?: 'win' | 'lose' | null;
-  /** Issue courte (« Dissipé ! », « DR net +2 ») affichée sous la ligne. */
-  extra?: ReactNode;
   /** Test ÉTENDU (LDB 12) : progression cumulée (`cum`) vers la cible (`target`) — rendue en `DrBar`
    *  SUR la rangée (site UNIQUE, arbitrage user 2026-07-11). Les call-sites posent la DONNÉE, jamais le composant. */
   extendedDr?: { cum: number; target: number };

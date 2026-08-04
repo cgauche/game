@@ -41,8 +41,14 @@ export function ChanceButtons({
     </>
   );
   const rerollBtn = rerollable && (freeReroll || fortune > 0) && (
-    <button className="btn btn-resource" onClick={onReroll}>
-      {freeReroll ? <><Icon id="faith/prayer" size="sm" /> Relancer</> : <><Icon id="resource/fortune" size="sm" /> Relancer</>}
+    <button
+      className="btn btn-resource"
+      onClick={onReroll}
+      /* Le « ×N » ne compte que les Points de Chance : le title est la seule surface qui porte
+         aussi la contrainte LDB 12 l.40. */
+      title={`Relancer le jet raté — une seule relance par Test${freeReroll ? '' : ` (${fortune} Point${fortune > 1 ? 's' : ''} de Chance)`}`}
+    >
+      {freeReroll ? <><Icon id="faith/prayer" size="sm" /> Relancer</> : <><Icon id="resource/fortune" size="sm" /> Relancer ×{fortune}</>}
     </button>
   );
   return (

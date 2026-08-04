@@ -98,8 +98,9 @@ export const icons: IconFamily = [
     id: 'journal/info',
     label: 'Information',
     svg:
-      `<circle ${F} cx="12" cy="12" r="2.1"/>` +
-      `<circle ${KF} cx="12" cy="12" r="4.8"/>`,
+      `<circle ${K} cx="12" cy="12" r="8.7"/>` +
+      `<circle ${F} cx="12" cy="7.4" r="1.5"/>` +
+      `<path ${K} d="M12 10.7 V17"/>`,
   },
   {
     id: 'journal/reload',

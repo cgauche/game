@@ -44,7 +44,7 @@ export function ForceDoorModal() {
         ? { combatant: actor, d: testBreakdown('Bagarre', val, { roll: res.roll, target: res.target, sl: res.sl }) }
         : { combatant: actor, pending: testPending('Bagarre', val) };
     },
-    extra: (_part, _actor, res) => <div className={`cs-outcome ${res.damage > 0 ? 'ok-text' : 'muted'}`}>{resultLine(freeCons([res.damage > 0 ? `−${res.damage} Blessure${res.damage > 1 ? 's' : ''}` : 'Rebondit (0 dégât)']))}</div>,
+    note: (_part, _actor, res) => <div className={`cs-outcome ${res.damage > 0 ? 'ok-text' : 'muted'}`}>{resultLine(freeCons([res.damage > 0 ? `−${res.damage} Blessure${res.damage > 1 ? 's' : ''}` : 'Rebondit (0 dégât)']))}</div>,
   });
 
   const actions: RollAction[] = [

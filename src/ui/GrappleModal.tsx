@@ -82,7 +82,7 @@ export function GrappleModal() {
       <RollShell
         flowKey="grapple"
         title="Empoignade"
-        extra={<VsHeader actor={actor} target={foe} label="lutte au corps à corps" verb={<Icon id="melee/grapple" size="sm" />} />}
+        extra={<VsHeader actor={actor} target={foe} label="lutte au corps à corps" verb="melee/grapple" />}
         rows={[foeRow, actorRow]}
         rolled
         winnerIndex={winnerIndex}
@@ -118,7 +118,7 @@ export function GrappleModal() {
     <RollShell
       flowKey="grapple"
       title="Empoignade"
-      extra={<VsHeader actor={actor} target={foe} label="lutte au corps à corps" verb={<Icon id="melee/grapple" size="sm" />} />}
+      extra={<VsHeader actor={actor} target={foe} label="lutte au corps à corps" verb="melee/grapple" />}
       rows={[foeRow, actorRow]}
       rolled={rolled}
       winnerIndex={winnerIndex}

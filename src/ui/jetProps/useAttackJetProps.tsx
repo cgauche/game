@@ -297,7 +297,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
     netSL: res?.defenderDetail ? res.netSL : undefined,
     // Issue = LA ligne de journal du moteur (`res.log` : « X touche Y (loc) : N − (BE+PA) = Z Blessures »),
     // pas une ligne condensée dupliquée. Source unique, le calcul des Dégâts est visible dans la popin.
-    // Rendue en `postRollExtra` (2 rangées possibles → `outcome` du shell ne s'affiche qu'en mono).
+    // Rendue en `postRollExtra`.
     // #1004 : quand une fenêtre de Défense va s'interposer (`surfacedDefensePending`, MÊME prédicat que
     // `openSurfacedDefense`), `res` est une résolution `defense:'none'` contre PERSONNE — son verdict et
     // ses Dégâts seraient invalidés par l'opposition qui suit. On n'affiche qu'une attente ; le verdict

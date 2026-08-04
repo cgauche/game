@@ -169,6 +169,7 @@ export type IconIdGenerated =
   | 'medical/scalpel'
   | 'medical/tear'
   | 'melee/close-in'
+  | 'melee/disengage'
   | 'melee/flee'
   | 'melee/grapple'
   | 'melee/pulled-punch'

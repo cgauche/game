@@ -105,7 +105,11 @@ export function useModalA11y(boxRef: RefObject<HTMLDivElement>, onClose?: () => 
       const els = visibleFocusables(box);
       if (e.key === 'Enter') {
         // Un bouton de la boîte est focalisé → on laisse son activation NATIVE (cocher une option de choix,
-        // cliquer Lancer/Terminer…). Sinon (focus sur la boîte/aucun) → repli sur le bouton primaire.
+        // cliquer Lancer/Terminer…). Depuis un champ de saisie, Entrée SOUMET la boîte (nom de campagne →
+        // « Enregistrer », mise de taverne → « Jouer », semaine en mer → « Valider la semaine ») : un champ
+        // qui doit garder son Entrée la CONSOMME chez lui (`preventDefault` + `stopPropagation`, cf. le
+        // sélecteur de dé de `ForcedRollPicker`), il ne se déclare pas ici.
+        // Sinon (focus sur la boîte/aucun) → repli sur le bouton primaire.
         const ae = document.activeElement;
         if (ae instanceof HTMLButtonElement && box.contains(ae) && !ae.disabled) return;
         const primary = box.querySelector<HTMLElement>('.modal-actions .btn-primary:not([disabled])');

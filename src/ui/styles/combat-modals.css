@@ -40,7 +40,13 @@
 .multi-roll {
   min-width: min(480px, 92vw);
 }
-.rm-vs {
+/* Trois RÔLES distincts, trois classes (#1078 LOT A1) : `.rm-vs` est la classe de `VsHeader`, la
+   bande d'OPPOSITION A→B ; `.rm-subtitle` le sous-titre de `RollShell` (variant 'roll') ; `.rm-summary`
+   son bandeau d'issue agrégée. Déclarations IDENTIQUES : l'éclatement est une somme nulle visuelle,
+   il rend seulement chaque rôle restylable séparément. */
+.rm-vs,
+.rm-subtitle,
+.rm-summary {
   display: flex;
   align-items: center;
   justify-content: center;

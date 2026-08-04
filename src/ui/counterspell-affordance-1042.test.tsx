@@ -100,3 +100,21 @@ describe('#1042/#1059 — le CTA de Contre-sort ne ment jamais sur ce qu’il fe
     expect(raisons()).toEqual([]);
   });
 });
+
+describe('sous-ligne de rangée — une `.rr-note` porte du CONTENU (#1078)', () => {
+  /** `RollPanel` ouvre `.rr-note` sur la TRUTHINESS de la note : une note toujours fournie (fragment
+   *  vide compris) creuse une sous-ligne muette sous CHAQUE rangée de la fenêtre. */
+  const notes = () => [...host.querySelectorAll('.rr-note')];
+
+  it('la rangée QUI A QUELQUE CHOSE À DIRE a sa sous-ligne, l’autre n’en ouvre AUCUNE', () => {
+    monter([
+      // A : déclarée « contrer seul », pas encore lancée → rien à dire sous sa ligne de jet.
+      { id: 'A', interactive: true, declared: 'solo', result: null },
+      // B : déclarée « passe » → sa situation MOTIVE l'extinction, elle occupe la sous-ligne.
+      { id: 'B', interactive: true, declared: 'pass', result: null },
+    ]);
+    const textes = notes().map((n) => n.textContent?.trim());
+    expect(textes.filter((t) => t?.includes('passe')), 'la situation « passe » se lit sous la rangée B').toHaveLength(1);
+    expect(textes.filter((t) => !t), 'une `.rr-note` vide = une sous-ligne fantôme sur chaque rangée').toEqual([]);
+  });
+});

@@ -131,6 +131,12 @@ Ordre de préférence STRICT pour exercer un flux :
 > la rotation caméra et de la vue. Vérifier le déplacement par la position lue (`__wfrp.state()`), jamais
 > par un delta attendu en dur.
 
+> **Mouvement EN COMBAT au clavier** (piège de recette, mesuré 2026-08-04) : pousser le curseur
+> au-delà de l'allonge de Mouvement normal du combattant n'échoue pas silencieusement — la validation
+> ouvre la modale de **Course** (Test d'Athlétisme +20). Une recette qui « appuie N fois sur la flèche
+> puis Entrée » pour un simple pas peut donc déclencher un JET inattendu (et perdre son état si elle
+> l'annule mal). Viser une case DANS l'allonge, ou vérifier `__wfrp.modal()` avant de valider.
+
 ## Outillage `__wfrp` (SOURCE UNIQUE du harnais, DEV uniquement, `src/state/devtools.ts`)
 
 Pour piloter le jeu depuis Playwright **sans chasser les coordonnées pixel des tokens**, via

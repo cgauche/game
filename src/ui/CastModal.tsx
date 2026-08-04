@@ -239,7 +239,7 @@ export function CastModal() {
                 {!isPrayer ? ` · NI ${ni}` : ''}
               </>
             }
-            verb={<Icon id="action/cast" size="sm" />}
+            verb="action/cast"
           />
           {(selfTarget || pc.zone) && (
             <p className="rm-vs">
@@ -411,6 +411,13 @@ export function CastModal() {
                 const row = r
                   ? { combatant: actor, d: testBreakdown(lab, testValue(actor, pcs.skill, pcs.char), r.oppose) }
                   : { combatant: actor, pending: testPending(lab, testValue(actor, pcs.skill, pcs.char)) };
+                /* #990 : l'issue d'une rangée COMPARE le jet du répondant à l'incantation masquée — elle
+                   suit donc le calendrier du SPECTATEUR (`castRevealed`), pas celui du propriétaire de la
+                   rangée : sinon « Résiste ! » livre le verdict que le dé masqué cachait. Conséquence
+                   assumée (arbitrage #990) : chacun joue à l'aveugle et lit son propre verdict à la fin. */
+                const oppNote = r && castRevealed
+                  ? <div className={`cs-outcome ${r.resisted ? 'ok-text' : 'muted'}`}>{r.resisted ? <><Icon id="ui/done" size="sm" /> Résiste !</> : `subit · marge DR ${r.margin}`}</div>
+                  : undefined;
                 // COOP : même gate que la rangée Contre-sort voisine (#1005 — `influencesLocally`, routé par
                 // le PORTEUR du jet), composé avec `part.interactive` (cible IA = rangée témoin, auto-roulée).
                 const owned = influencesLocally(useGame.getState(), part.id) && !!part.interactive;
@@ -421,7 +428,7 @@ export function CastModal() {
                   <RollRow
                     key={part.id}
                     actor={actor}
-                    row={row}
+                    row={oppNote ? { ...row, note: oppNote } : row}
                     rolled={!!r}
                     forcedRoll={die.forcedRoll}
                     fixedMark={die.fixedMark}
@@ -438,11 +445,6 @@ export function CastModal() {
                     /* Résistance (Menace : Magie), LDB 10 : auto-succès du Test qui résiste au Sort. */
                     resist={pcs.menace != null && availableResistance(actor, pcs.menace) != null && (!r || !r.resisted)
                       ? { menace: pcs.menace, onResist: () => oppResist(part.id) } : undefined}
-                    /* #990 : l'issue d'une rangée COMPARE le jet du répondant à l'incantation masquée — elle
-                       suit donc le calendrier du SPECTATEUR (`castRevealed`), pas celui du propriétaire de la
-                       rangée : sinon « Résiste ! » livre le verdict que le dé masqué cachait. Conséquence
-                       assumée (arbitrage #990) : chacun joue à l'aveugle et lit son propre verdict à la fin. */
-                    extra={r && castRevealed && <div className={`cs-outcome ${r.resisted ? 'ok-text' : 'muted'}`}>{r.resisted ? <><Icon id="ui/done" size="sm" /> Résiste !</> : `subit · marge DR ${r.margin}`}</div>}
                   />
                 );
               })}
@@ -500,11 +502,24 @@ export function CastModal() {
                   : dejaDissipee
                     ? `Déjà dissipé par ${pool.find((c) => c.id === dejaDissipee.id)?.label ?? 'un autre contre-lanceur'}`
                     : undefined;
+                /* Sous-ligne de la rangée (canal UNIQUE `note`) : la situation s'affiche là où le
+                   contrôle de déclaration ne la porte pas déjà (rangée d'un autre siège, ou phase
+                   close) ; l'issue suit le calendrier du SPECTATEUR (`castRevealed`, #990).
+                   Rien à dire ⇒ `null` : `RollPanel` gate `.rr-note` sur la TRUTHINESS de la note, et
+                   un fragment vide est truthy — il ouvrirait une sous-ligne vide sur chaque rangée. */
+                const cspSituation = !r && situation && !(owned && phase1) ? situation : null;
+                const cspOutcome = r && castRevealed ? r : null;
+                const cspNote = cspSituation || cspOutcome ? (
+                  <>
+                    {cspSituation && <div className="hint">{cspSituation}</div>}
+                    {cspOutcome && <div className={`cs-outcome ${cspOutcome.dispelled ? 'ok-text' : 'muted'}`}>{cspOutcome.dispelled ? <><Icon id="ui/done" size="sm" /> Dissipé !</> : `DR net ${cspOutcome.casterNetSL >= 0 ? '+' : ''}${cspOutcome.casterNetSL}`}</div>}
+                  </>
+                ) : null;
                 return (
                   <RollRow
                     key={part.id}
                     actor={actor}
-                    row={row}
+                    row={{ ...row, note: cspNote }}
                     rolled={!!r}
                     forcedRoll={die.forcedRoll}
                     fixedMark={die.fixedMark}
@@ -534,12 +549,6 @@ export function CastModal() {
                     onDarkPact={() => cspDarkPact(part.id)}
                     onForce={lance ? () => cspForce(part.id) : undefined}
                     forceShow={!!r && !r.dispelled}
-                    extra={<>
-                      {/* La situation s'affiche là où le contrôle de déclaration ne la porte pas déjà
-                          (rangée d'un autre siège, ou phase close). */}
-                      {!r && situation && !(owned && phase1) && <div className="hint">{situation}</div>}
-                      {r && castRevealed && <div className={`cs-outcome ${r.dispelled ? 'ok-text' : 'muted'}`}>{r.dispelled ? <><Icon id="ui/done" size="sm" /> Dissipé !</> : `DR net ${r.casterNetSL >= 0 ? '+' : ''}${r.casterNetSL}`}</div>}
-                    </>}
                   />
                 );
               })}
