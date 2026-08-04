@@ -41,7 +41,7 @@ import { freeCons } from '../rollSeam';
 import { recoveryGeometry, effectSourcesOf, fireOwnTestFailed } from '../triggeredEffects';
 import { emitCombatEvent } from '../combatEvents';
 import { humanControlled } from '../netOwnership';
-import { inBattleId, actorIn } from '../combatOrParty';
+import { inBattleId, actorIn } from '../combatants';
 import { campSpend } from './advantagePool';
 
 /** Reflète la mutation EN PLACE d'un combattant (États retirés) dans les références party/battle pour

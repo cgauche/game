@@ -110,12 +110,12 @@ describe('#1051 — l’ancienne regex d’interlude est ÉNUMÉRÉE (4 clés ex
 /**
  * DoD FALSIFIABLE — `intentAllowedFor` ne porte plus AUCUNE branche par nom d'intent : sa décision
  * est la table, plus le repli.
- * LIMITES DÉCLARÉES : (a) la garde est TEXTUELLE (elle lit le corps de la fonction dans le fichier),
- * elle prouve l'absence de branchement par nom, pas l'absence de toute logique ; (b) MESURE du
- * 2026-08-03 — importer `netOwnership` charge le store (chaîne runtime
- * `netOwnership → combatOrParty → targetingModes → … → store`), donc l'énumération ci-dessous prouve
- * que la table se construit sans ÉTAT (aucun `useGame` monté ni pending posé), pas qu'elle
- * s'isolerait du graphe d'import.
+ * LIMITE DÉCLARÉE : la garde est TEXTUELLE (elle lit le corps de la fonction dans le fichier), elle
+ * prouve l'absence de branchement par nom, pas l'absence de toute logique.
+ * L'énumération ci-dessous se fait sans ÉTAT (aucun `useGame` monté ni pending posé) ET par IMPORT
+ * ISOLÉ : `netOwnership` ne charge plus le store (#1054), ce que garde
+ * `netownership-import-isole.test.ts` — un script ou une garde CI légère peut donc lire `ROUTES`
+ * hors environnement de test complet.
  */
 describe('#1051 — DoD : aucune branche par nom d’intent dans `intentAllowedFor`', () => {
   const corps = (): string => {

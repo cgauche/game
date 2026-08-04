@@ -21,24 +21,7 @@ import { currentTargetingMode } from './targetingModes';
 import { hoverTargeting } from './targeting';
 import { isOutOfAction } from '../engine/conditions';
 import type { SeaWind } from '../engine/domainAttributes';
-
-/** Acteur d'une action joueur résolu dans le bon ensemble : file de combat si en combat, sinon le groupe. */
-export function actorIn(state: GameState, id: string): Combatant | undefined {
-  return (state.battle?.combatants ?? state.party).find((c) => c.id === id);
-}
-
-/**
- * Combattant EN COMBAT (`battle.combatants`) par id — distinct d'`actorIn` (combat OU groupe).
- * `battle` prend le type du champ `GameState['battle']` (nullable) : la plupart des call-sites tiennent
- * déjà un `battle` non-null en main (narrowed en amont), mais accepter le nullable rend la migration
- * mécanique (`inBattleId(battle, id)` remplace `battle.combatants.find(...)` sans changer les gardes
- * d'appel) plutôt que d'imposer un narrowing supplémentaire à chaque site. `id` accepte aussi
- * `undefined` (plusieurs sites cherchent un id OPTIONNEL, ex. `sourceId?`) — même repli honnête que
- * `.find` sur une valeur absente : ne matche jamais, retourne `undefined`.
- */
-export function inBattleId(battle: GameState['battle'], id: string | undefined): Combatant | undefined {
-  return id == null ? undefined : battle?.combatants.find((c) => c.id === id);
-}
+import { inBattleId } from './combatants';
 
 /** Patch Zustand pour re-render après mutation EN PLACE d'un acteur (Chance/Résilience) : combat → `battle`, sinon `party`. */
 export function touchActors(state: GameState): Partial<GameState> {

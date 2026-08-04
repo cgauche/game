@@ -11,7 +11,7 @@ import { combatDistance } from './footprint';
 import type { GameState } from './store';
 import { currentTargetingMode, type HoverTargeting, type TilePreview } from './targetingModes';
 import { controlsCombatant } from './netOwnership';
-import { inBattleId } from './combatOrParty';
+import { inBattleId } from './combatants';
 import { canPreemptRanged } from '../engine/combatFeatures/dispatch';
 import type { Pt } from './path';
 

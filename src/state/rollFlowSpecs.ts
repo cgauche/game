@@ -28,7 +28,8 @@ import { makeRollFlow, type RollFlowHandlers, type RollFlowLens, type PendingBas
 import { TestOutcome } from '../engine/testOutcome';
 import type { RollBreakdown } from '../engine/combat';
 import { battleRng } from './battleRng';
-import { actorIn, inBattleId, touchActors, seaMagicContext, windsMagicModOf } from './combatOrParty';
+import { touchActors, seaMagicContext, windsMagicModOf } from './combatOrParty';
+import { actorIn, inBattleId } from './combatants';
 import {
   TRAMPLE_WEAPON, resolveAttack, firedWeapon, bestDefenseMode, effectiveSpellOf,
   disengageOutcome, castWardPenalty, domainCastBonus,

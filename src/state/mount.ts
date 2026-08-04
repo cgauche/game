@@ -19,7 +19,7 @@ import { meleeWarMachineHullOf, isMeleeWarMachine } from './siegePush';
 import { structureImmune } from '../engine/structures';
 import type { Pt } from './path';
 import type { BattleState } from './store';
-import { inBattleId } from './combatOrParty';
+import { inBattleId } from './combatants';
 
 /** Ce combattant chevauche-t-il une monture (= cavalier) ? */
 export const isRider = (c: Combatant): boolean => !!c.mountId;

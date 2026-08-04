@@ -1,0 +1,33 @@
+/**
+ * RECHERCHE d'un combattant par id — les deux primitives partagées (table CLAUDE.md) : `actorIn`
+ * (combat OU groupe) et `inBattleId` (en combat seulement). Pure lecture d'état.
+ *
+ * Module VOLONTAIREMENT LÉGER (patron `targetingHolder`, #1054) : AUCUN import runtime, le type de
+ * l'état seulement. INVARIANT — `netOwnership` ne demande que « qui est ce combattant ? » et doit
+ * pouvoir s'importer seul (énumérer `ROUTES` dans un script ou une garde CI légère) ; or
+ * `combatOrParty` importe `targetingModes` pour son affordance de clic, donc le moteur de combat,
+ * donc `store.ts` — chaîne runtime MESURÉE par la sonde (c) de `netownership-import-isole.test.ts`.
+ * Ces deux primitives descendent donc ici, et la dépendance va du LOURD vers le LÉGER :
+ * `combatOrParty` consomme ce module, jamais l'inverse. Y ajouter un import runtime rouvre la
+ * chaîne et rend cette garde ROUGE.
+ */
+import type { Combatant } from '../engine/types';
+import type { GameState } from './store';
+
+/** Acteur d'une action joueur résolu dans le bon ensemble : file de combat si en combat, sinon le groupe. */
+export function actorIn(state: GameState, id: string): Combatant | undefined {
+  return (state.battle?.combatants ?? state.party).find((c) => c.id === id);
+}
+
+/**
+ * Combattant EN COMBAT (`battle.combatants`) par id — distinct d'`actorIn` (combat OU groupe).
+ * `battle` prend le type du champ `GameState['battle']` (nullable) : la plupart des call-sites tiennent
+ * déjà un `battle` non-null en main (narrowed en amont), mais accepter le nullable rend la migration
+ * mécanique (`inBattleId(battle, id)` remplace `battle.combatants.find(...)` sans changer les gardes
+ * d'appel) plutôt que d'imposer un narrowing supplémentaire à chaque site. `id` accepte aussi
+ * `undefined` (plusieurs sites cherchent un id OPTIONNEL, ex. `sourceId?`) — même repli honnête que
+ * `.find` sur une valeur absente : ne matche jamais, retourne `undefined`.
+ */
+export function inBattleId(battle: GameState['battle'], id: string | undefined): Combatant | undefined {
+  return id == null ? undefined : battle?.combatants.find((c) => c.id === id);
+}

@@ -6,7 +6,7 @@
 import type { GameState } from './store';
 import type { Combatant } from '../engine/types';
 import { modalOwnerOf, horsModalOwnedIntents, horsModalByPending, type HorsModalDef } from './modalArbiter';
-import { inBattleId, actorIn } from './combatOrParty';
+import { inBattleId, actorIn } from './combatants';
 import { targetingHolder } from './targetingHolder';
 import { cadenceAuto, cadenceAutoCombat } from '../engine/cadence';
 import { desFixes } from '../engine/fixedDie';

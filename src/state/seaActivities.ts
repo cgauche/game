@@ -51,7 +51,7 @@ import type { CascadeStep } from './pendings';
 import { composeRollLabel, effectiveTarget, resolveSurface, freeCons, type RollRequest } from './rollSeam';
 import { registerCascadeApplier, registerExtendedTestOutcome, runCascadeImmediate, startCascade } from './cascade';
 import { noteSeaLine, patchSea } from './seaVoyageFlow';
-import { actorIn } from './combatOrParty';
+import { actorIn } from './combatants';
 
 /** VERBATIM MDG 15 l.266-272 (règle 5 : recollable dans Source/) — affiché en tête de la modale. */
 export const SEA_ACTIVITIES_INTRO = `Pour chaque semaine (8 jours) de voyage en mer, chaque Personnage a l'occasion d'effectuer une Activité. Comme elles ont lieu sur les flots, ces Activités ne sont pas soumises aux règles *Argent à gaspiller*, *Avec le pouvoir*… et *Amélioration elfique* (voir page de **WFJDR**, page 195).

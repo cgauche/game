@@ -17,7 +17,7 @@ import type { Get, Set as SetFn } from './flowTypes';
 import { Pt, tileKey } from './path';
 import { Scene, isWalkable } from './scene';
 import { occupied } from './combatGeometry';
-import { inBattleId } from './combatOrParty';
+import { inBattleId } from './combatants';
 import { spawnEnemy } from './spawn';
 import { grantTrait } from '../engine/grantedTraits';
 import { resolveFormula, slBonus, type GameOp } from '../engine/ops';

@@ -23,7 +23,7 @@ import { fireTriggers } from '../triggeredEffects';
 import { collectRoundEndTestSteps } from './triggeredTest';
 import { pushCombatStep } from '../combatEffects';
 import { humanControlled } from '../netOwnership';
-import { inBattleId } from '../combatOrParty';
+import { inBattleId } from '../combatants';
 import { traitAuras } from '../../engine/traits/dispatch';
 import { outnumberCountBonus } from '../../engine/combatFeatures/dispatch';
 import { combatDistance } from '../footprint';

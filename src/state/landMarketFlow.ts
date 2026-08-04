@@ -24,7 +24,7 @@ import { d100 } from '../engine/dice';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { registerCascadeApplier } from './cascade';
 import { openPartyTest, freeCons } from './rollSeam';
-import { actorIn } from './combatOrParty';
+import { actorIn } from './combatants';
 import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, toMoney } from '../engine/money';
 import { partyMoneyTotal, payFromGroup, distributeCredit } from './bourseFlow';
 import {

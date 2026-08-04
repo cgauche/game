@@ -12,7 +12,7 @@ import type { Dir8 } from './dir8';
 import { Scene, isWalkable } from './scene';
 import { Pt, MoveEnv, tileKey, climbTraverseFor } from './path';
 import { footprintTiles, footprintN, occupiesTile } from './footprint';
-import { inBattleId, actorIn } from './combatOrParty';
+import { inBattleId, actorIn } from './combatants';
 import { sizeGap } from '../engine/size';
 import { requiredTerrains } from '../engine/ops';
 import { isOutOfAction } from '../engine/conditions';

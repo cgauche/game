@@ -36,7 +36,7 @@ import { toBrass, fromBrass, formatMoney } from '../engine/money';
 import { bourseOf, creditBourse, payWithAllocation, soloPayer } from './bourseFlow';
 import { openRoll, freeCons, testSkillLabel, type Consequence } from './rollSeam';
 import { registerCascadeApplier } from './cascade';
-import { actorIn } from './combatOrParty';
+import { actorIn } from './combatants';
 import { scheduleFlowTimer } from './combatTimers';
 
 /** Adversaire d'une partie : un compagnon du groupe (ses vraies valeurs) ou une valeur ABSTRAITE fixée

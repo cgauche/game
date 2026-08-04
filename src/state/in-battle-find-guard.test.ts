@@ -7,7 +7,7 @@ import { scanInBattleFind } from '../../scripts/guards/lib/inBattleFind.mjs';
 /**
  * Garde-fou « recherche de combattant EN COMBAT par id » (#279, F1 du programme structurel #276).
  * `X.combatants.find((c) => c.id === …)` réinvente `inBattleId(battle, id)`
- * (`src/state/combatOrParty.ts`). Lot 1 a migré ~150 sites de `src/state` (find-par-id EXACT
+ * (`src/state/combatants.ts`). Lot 1 a migré ~150 sites de `src/state` (find-par-id EXACT
  * uniquement — les prédicats COMPOSÉS, ex. `c.id === X && c.kind === 'hero'`, ne se réduisent pas
  * à un simple appel de primitive et RESTENT visibles ici, comptés).
  *
@@ -18,7 +18,8 @@ import { scanInBattleFind } from '../../scripts/guards/lib/inBattleFind.mjs';
  * #276 (lots futurs) ; il est GELÉ ici en baseline par-fichier — la garde arrête la CROISSANCE, elle
  * ne migre pas les sites. Toute baisse doit ABAISSER la baseline (cliquet décroissant).
  *
- * `combatOrParty.ts` HORS SCAN : c'est le foyer de la primitive, son implémentation EST le motif.
+ * Le FOYER de la primitive (`combatants.ts`) est SCANNÉ comme le reste : son unique site est gelé en
+ * baseline, pas exempté en bloc — une exemption au FICHIER masquerait tout ajout futur.
  *
  * MODE CLIQUET (patron `hardcode.mjs`/`combat-hardcode-guard.test.ts`) : `BASELINES` gèle, PAR
  * FICHIER, le nombre de sites tolérés au recensement. Le test échoue si un fichier DÉPASSE sa
@@ -28,12 +29,15 @@ import { scanInBattleFind } from '../../scripts/guards/lib/inBattleFind.mjs';
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ → ../../ = racine du projet
 const SCAN_DIRS = ['src/state', 'src/ui', 'src/gameIso'];
-const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rel === 'src/state/combatOrParty.ts';
+const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
 
 /** Baseline gelée par fichier. src/state (recensement Lot 1, 2026-07-10 — 3 sites résiduels, tous
  *  prédicats COMPOSÉS non réductibles à `inBattleId` seul) ; src/ui + src/gameIso (recensement #410,
  *  2026-07-13 — STOCK à résorber par #276, lots futurs). */
 const BASELINES: Record<string, number> = {
+  // FOYER de la primitive : l'implémentation d'`inBattleId` EST le motif. Gelée à son site UNIQUE
+  // (le cliquet la surveille comme n'importe quel autre fichier) plutôt qu'exemptée en bloc.
+  'src/state/combatants.ts': 1,
   // src/state (Lot 1)
   'src/state/combat/recover.ts': 1,
   'src/state/combatFlow.ts': 1,
@@ -119,7 +123,7 @@ describe('garde-fou « inBattleId » — find-par-id combattant EN COMBAT (cliqu
     expect(
       offenders,
       'Nouveau(x) find-par-id réinventé(s) — migrer vers inBattleId(battle, id) ' +
-        `(src/state/combatOrParty.ts), ou si prédicat composé légitime AUGMENTER la baseline :\n${offenders.join('\n')}`,
+        `(src/state/combatants.ts), ou si prédicat composé légitime AUGMENTER la baseline :\n${offenders.join('\n')}`,
     ).toEqual([]);
   });
 

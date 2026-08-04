@@ -134,7 +134,7 @@ import { beginShipwreck } from './shipwreck';
 import { isInanimate, isStructure, structureAimCell, ramVsNonDoor } from '../engine/structures';
 import { rollStructureCritical, structureCollapseLog, type StructureCriticalResolved } from '../engine/structureCritical';
 import { STRUCTURE_CRITICALS } from '../data/structureCriticals';
-import { actorIn, inBattleId } from './combatOrParty';
+import { actorIn, inBattleId } from './combatants';
 import { followsCharacterRules, effectivelyHostile } from '../engine/relations';
 import type { ShipRig } from '../engine/combat';
 import { norm } from '../lib/normalize';

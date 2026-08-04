@@ -23,7 +23,7 @@ import { cargoOverload } from '../engine/seaVoyage';
 import { exposedCrew } from '../engine/shipCritical';
 import { crewRoleValue, crewTalentDR, moraleBand, capToSuccesMinime, crewTestSuccess } from '../engine/crewMorale';
 import { placementPenalty } from './shipPostes';
-import { inBattleId } from './combatOrParty';
+import { inBattleId } from './combatants';
 import { findVehicleById, findCrewRoleById } from '../data';
 import { vesselPropulsion } from '../engine/shipBuild';
 import type { RNG } from '../engine/dice';

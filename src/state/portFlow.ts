@@ -41,7 +41,7 @@ import { seasonOfMonth } from '../engine/travelStages';
 import { toDate } from '../engine/clock';
 import { registerCascadeApplier } from './cascade';
 import { openPartyTest, openWorldTest, freeCons } from './rollSeam';
-import { actorIn } from './combatOrParty';
+import { actorIn } from './combatants';
 import { scheduleFlowTimer } from './combatTimers';
 import type { Get, Set } from './flowTypes';
 

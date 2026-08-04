@@ -24,7 +24,7 @@ import type { CascadeStep, PendingCascade, CascadeRoll, BatchParticipant, Cascad
 import type { Consequence } from './rollSeam';
 import { resultLines } from './rollSeam';
 import { toRecapLines } from './recapLine';
-import { actorIn } from './combatOrParty';
+import { actorIn } from './combatants';
 import { rollTest, evaluateTest, bestForcedRoll } from '../engine/tests';
 import { battleRng } from './battleRng';
 

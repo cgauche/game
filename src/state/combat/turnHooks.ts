@@ -25,7 +25,7 @@ import { rawCombatTestBase } from '../../engine/skills';
 import { describeTestRoll } from '../../engine/ops';
 import { CHAR_LABELS, DIFFICULTY_MODIFIERS } from '../../engine/types';
 import { humanControlled } from '../netOwnership';
-import { inBattleId } from '../combatOrParty';
+import { inBattleId } from '../combatants';
 import { reconcileAdvantageToPool, creditOpposingAdvantage, campSpend } from './advantagePool';
 import { mountMovement, riderFearSize } from '../mount';
 import { losClear } from '../lineOfSight';

@@ -37,7 +37,7 @@ import type { PairedSense, GameOp } from '../engine/ops';
 import type { CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate } from './pendings';
 import type { RecapLine, RecapTone } from './recapLine';
 import { TestOutcome } from '../engine/testOutcome';
-import { actorIn } from './combatOrParty';
+import { actorIn } from './combatants';
 import { startCascade, runCascadeImmediate } from './cascade';
 import { testValue, partyBest, partyAssisted } from '../engine/skills';
 import { getTestPolicy } from '../engine/testPolicy';

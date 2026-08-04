@@ -32,7 +32,7 @@ import { findTalentById, findPsychologyById, findManeuverById, type ManeuverDef,
 import { registerCascadeApplier, startCascade } from './cascade';
 import { freeCons } from './rollSeam';
 import { pilotedByHuman } from './netOwnership';
-import { inBattleId } from './combatOrParty';
+import { inBattleId } from './combatants';
 import type { CascadeStep } from './pendings';
 import type { GameOp } from '../engine/ops';
 import type { IconId } from '../ui/icons';

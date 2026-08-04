@@ -31,7 +31,7 @@ import { isOutOfAction, loseWounds, applyZeroWounds, isMagicallyAsleep, wakeSlee
 import { bonus, effectiveChar } from '../../engine/characteristics';
 import { combatDistance } from '../footprint';
 import { pushBackTiles } from '../combatGeometry';
-import { inBattleId } from '../combatOrParty';
+import { inBattleId } from '../combatants';
 
 // ── Helpers propres aux sauvegardes, DÉPLACÉS depuis combatFlow (ré-exporté via le baril pour applyCast / tests) ──
 

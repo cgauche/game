@@ -11,7 +11,7 @@ import { sizeFootprint } from './footprint';
 import type { Combatant } from '../engine/types';
 import type { BattleState } from './store';
 import type { SizeCategory } from '../engine/size';
-import { inBattleId } from './combatOrParty';
+import { inBattleId } from './combatants';
 
 /**
  * INVARIANT (LDB 85 l.373-374 vs Frappe Mortelle) : on TRAVERSE la case d'une créature plus petite

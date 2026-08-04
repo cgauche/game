@@ -4,7 +4,7 @@ import { seaBoardEventById } from '../engine/seaVoyage';
 import { beginShipwreck } from './shipwreck';
 import { placeOfScene, placeById, type MapRoute } from './worldMap';
 import { routeDistanceLabel } from '../engine/travel';
-import { actorIn, inBattleId } from './combatOrParty';
+import { actorIn, inBattleId } from './combatants';
 import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn, applyEffects } from './combatFlow';
 import { setAiTrace } from './ai';
 import { pushCombatStep, gearFromEffects } from './combatEffects';

@@ -30,7 +30,7 @@ import { MERCHANTS } from './merchants/index';
 import { describeBargain } from './flowOutcomes';
 import { registerCascadeApplier, startCascade } from './cascade';
 import { freeCons, openPartyTest } from './rollSeam';
-import { actorIn } from './combatOrParty';
+import { actorIn } from './combatants';
 import type { CascadeStep } from './pendings';
 import { addPossession } from './possessionsFlow';
 

@@ -20,7 +20,7 @@ import { featureLevel } from '../engine/combatFeatures/dispatch';
 import type { CombatFeature } from '../engine/combatFeatures/types';
 import { isOutOfAction, combatTestPenalty } from '../engine/conditions';
 import { humanControlled } from './netOwnership';
-import { actorIn } from './combatOrParty';
+import { actorIn } from './combatants';
 import { isEngagedWith, isEngaged } from '../engine/engagement';
 import { SIZE_ORDER, effectiveSize } from '../engine/size';
 import { combatDistance } from './footprint';

@@ -35,7 +35,7 @@ import { spellOps } from './flow';
 import { placeCombatant } from './spawn';
 import { mountOf, mountMovement, attackGeomOf, combatGeomOf, pickAttackWeapon } from './mount';
 import { pilotedByHuman } from './netOwnership';
-import { inBattleId } from './combatOrParty';
+import { inBattleId } from './combatants';
 import { targetingHolder } from './targetingHolder';
 import { afterApproach } from './combatDirector';
 import { ev } from './combatLog';

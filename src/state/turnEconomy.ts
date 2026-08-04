@@ -5,7 +5,7 @@ import { canTakeAction, isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { canStrikeFirst } from '../engine/qualities/dispatch';
 import { hasFreeWeaponAttack } from './combatManeuvers';
-import { inBattleId } from './combatOrParty';
+import { inBattleId } from './combatants';
 
 /**
  * Le héros actif a-t-il ENCORE une option UTILE ce tour ? (R6 du diagnostic lisibilité-combat). Sert au
