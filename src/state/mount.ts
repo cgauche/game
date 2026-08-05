@@ -11,6 +11,7 @@ import { sizeGap, type SizeCategory } from '../engine/size';
 import { fearSizeAsMount } from '../engine/combatFeatures/dispatch';
 import type { ModLine } from '../engine/combat';
 import { assertAttackWeapon } from '../engine/combat';
+import { RULE_REF } from '../engine/ruleRefs';
 import { reachTiles, meleeReachTiles } from '../engine/engagement';
 import { Scene, isWalkable } from './scene';
 import { occupiesTile, footprintN, combatDistance } from './footprint';
@@ -265,9 +266,9 @@ export function mountedAttackMods(battle: BattleState, attacker: Combatant, targ
   const out: ModLine[] = [];
   if (!target) return out;
   const attMount = mountOf(battle, attacker);
-  if (attMount && sizeGap(attMount.size, target.size) >= 1) out.push({ label: 'Combat monté (cible plus petite)', value: 20 });
+  if (attMount && sizeGap(attMount.size, target.size) >= 1) out.push({ label: 'Combat monté (cible plus petite)', value: 20, ref: RULE_REF['combat-monte'] });
   const tgtMount = mountOf(battle, target); // la cible est-elle un cavalier ? (on frappe alors le cavalier, pas la monture)
-  if (kind === 'melee' && tgtMount && sizeGap(attacker.size, tgtMount.size) <= -1) out.push({ label: 'Cibler le cavalier (plus petit que la monture)', value: -10 });
+  if (kind === 'melee' && tgtMount && sizeGap(attacker.size, tgtMount.size) <= -1) out.push({ label: 'Cibler le cavalier (plus petit que la monture)', value: -10, ref: RULE_REF['combat-monte'] });
   return out;
 }
 

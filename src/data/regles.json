@@ -218,5 +218,155 @@
       "page": 171,
       "note": "LDB 17 « Dépenser de la Résilience »"
     }
+  },
+  {
+    "id": "avantage",
+    "label": "Avantage",
+    "desc": "Chaque Avantage ajoute +10 à un Test de Combat ou de Psychologie appropriés (voir **Psychologie** à la page 190). De ce fait, si vous disposez de 5 pions Avantage, vous obtenez un impressionnant +50 à tous les Tests pour toucher, vous défendre, et résister à l'influence des autres.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 164,
+      "note": "LDB 14 « Avantage » — Les bénéfices de l'Avantage"
+    }
+  },
+  {
+    "id": "amputation",
+    "label": "Amputation",
+    "desc": "Les Blessures critiques les plus graves aboutissent généralement à la perte d'une partie du corps, comme les doigts, les mains, les pieds ou même une jambe ! Si un Personnage se fait trancher plusieurs parties du corps, il est peut-être temps de penser à les remplacer de façon à atténuer au maximum les éventuelles pénalités (voir **Chapitre 11 : Équipement**).\n\nÀ chaque fois que vous subissez une Blessure critique où il est indiqué *Amputation (Difficulté)*, vous devez réussir un Test de **Résistance** (la difficulté est indiquée entre parenthèses) ou gagner 1 État *À Terre*. Sur un échec (-2 DR) ou pire, vous recevez également un État *Sonné*. Si vous échouez avec au moins -4 DR, gagnez un État *Inconscient*.\n\nToutes les amputations nécessitent d'être traitées par la chirurgie, ce qui signifie qu'une Blessure ne peut pas être soignée tant que vous n'êtes pas passé entre les mains d'un chirurgien. Voir Chirurgie à la page 181.\n\n**Bras**\n\nUtilisez les règles pour la perte de la main, et il vous est impossible de sangler un bouclier à ce bras, puisqu'absent. Perdre ses deux bras est encore pire que de perdre ses deux mains, car il devient difficile de se laver ou d'accomplir quoi que ce soit d'autre.\n\n**Dents**\n\nLa perte de dents peut être disgracieuse et rend la mastication difficile. Pour chaque paire de dents manquante, vous perdez également 1 Point de votre caractéristique de Sociabilité. De plus, une fois qu'il vous manque plus de la moitié de vos dents (humains 16 ; elfes 18 ; nains et halflings : 20), vous avez beaucoup plus de mal à consommer de la nourriture solide que vos pairs, doublant le temps nécessaire aux repas et rendant certaines denrées alimentaires très difficiles à manger, ce qui, pour le coup dépend surtout de votre interprétation et de vos capacités narratives.\n\n**Doigts**\n\nAvec des doigts coupés, votre prise est moins ferme et les risques de Maladresses augmentent lorsque vous utilisez cette main. Pour le premier doigt perdu, sur un échec à tout Test en rapport dont le chiffre des unités est 1 est considéré comme une Maladresse. Pour deux doigts perdus, ce seront les résultats dont le chiffre des unités sera 1 ou 2 qui seront considérés comme des Maladresses, etc. De plus, vous subissez une pénalité de -5 à tous les Tests qui impliquent cette main par doigt perdu. Une fois que vous avez perdu 4 doigts ou plus, utilisez la règle de la main tranchée.\n\n**Jambe**\n\nUtilisez les mêmes règles que pour le pied. De plus, vous ne pouvez pas utiliser le talent Esquive du tout.\n\n**Langue**\n\nDépourvu de langue, vous ne pouvez plus que marmonner et grommeler, ou vous servir d'un système de signes maison pour communiquer. Tous les Tests de Langue qui impliquent la parole se soldent automatiquement par un échec.\n\n**Main**\n\nVous recevez une pénalité de -20 à tous les Tests qui utilisent cette main et vous ne pouvez pas utiliser d'armes à deux mains. Cependant, vous pouvez lacer un bouclier sur le bras blessé. Si la main perdue est votre main principale, vous subissez la pénalité habituelle de -20 à tous les Tests d'Arme effectués avec votre main secondaire. Vous pouvez réduire cette pénalité de 5 par tranche de 100 PX dépensés, car vous apprenez à tout effectuer avec cette seconde main.\n\nSi vous perdez les deux mains, il sera temps d'apprendre à maîtriser le combat au crochet.\n\n**Nez**\n\nLa perte d'un nez rend le visage plutôt effrayant. Votre Sociabilité est réduite de -20 de façon permanente et vous subissez une pénalité de -30 à tous les Tests qui impliquent l'odorat.\n\n**Œil**\n\nMême s'il est horrible de perdre un œil, vous apprendrez très vite à compenser. Si vous avez la malchance de perdre vos deux yeux, subissez une pénalité de -30 à tous les Tests en rapport avec la vue, comme les Tests d'Arme, les Tests d'Esquive, les Tests de Chevaucher, et autres. De plus, vous subissez une pénalité de -5 à tous vos Tests de Sociabilité par orbite vide que les autres peuvent voir.\n\n**Oreille**\n\nPerdre une oreille est douloureux, mais on apprend à vivre sans assez vite. Si vous avez la malchance de perdre vos deux oreilles, subissez une pénalité permanente de -20 à tous les Tests de Perception basés sur l'ouïe. De plus, vous subissez une pénalité de -5 à tous vos Tests de Sociabilité par oreille perdue lorsque les autres voient votre visage.\n\n**Orteils**\n\nLa perte d'orteils a un effet sur votre équilibre. Pour chaque orteil perdu, vous subissez une perte définitive de -1 à votre Agilité et à votre Capacité de Combat.\n\n**Pied**\n\nRéduisez de façon permanente votre Mouvement de moitié, et subissez une pénalité de -20 à tous les Tests qui impliquent la mobilité, comme une Esquive. Si vous perdez vos deux pieds, il devient très compliqué de marcher. Peut-être pourriez-vous engager un homme de main afin de vous porter ?",
+    "source": {
+      "book": "livre-de-base",
+      "page": 180,
+      "note": "LDB 18 « Amputation »"
+    }
+  },
+  {
+    "id": "maladresse-tableau-des-oups",
+    "label": "Maladresse (Tableau des Oups !)",
+    "desc": "Vous avez mal négocié votre manœuvre, ce qui vous met en mauvaise posture, ou vous perdez la prise de votre arme à distance. Au cours du prochain Round, votre Action subira une pénalité de -10.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 160,
+      "note": "LDB 14 « Maladresses » — Tableau des Oups ! (41-60)"
+    }
+  },
+  {
+    "id": "portee-d-une-arme",
+    "label": "Portée d'une arme",
+    "desc": "La Portée d'une arme est sa portée moyenne en mètres. Le Chapitre 5 : Règles présente les modificateurs selon si une arme est à Bout portant, Courte, Longue ou Extrême. Calculez les Portées comme suit :\n\n**CALCUL DES FOURCHETTES DE PORTÉE**\n\nBout portant = Portée ÷ 10\n\nCourte = Portée ÷ 2\n\nLongue = Portée x 2\n\nExtrême = Portée x 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 297,
+      "note": "LDB 62 « Portée d'une arme »"
+    }
+  },
+  {
+    "id": "allonge-longueur-d-arme",
+    "label": "Longueur d'arme et combat au contact",
+    "desc": "Ce sont des règles simples pour ceux qui aiment utiliser la longueur de l'Arme pour plus qu'une simple description de l'apparence, et un obstacle possible pour ajuster ses coups dans les tunnels sombres.\n\n**LONGUEUR D'ARME**\n\nSi votre arme est plus longue que celle de vos adversaires, ils subissent une pénalité de -10 pour vous toucher car vous trouvez plus facile de les tenir à distance.\n\n**AU CONTACT**\n\nPour votre Action, vous pouvez effectuer un Test opposé de **Corps à corps** pour tenter d'entrer dans la longueur d'arme de votre adversaire. Le vainqueur choisit si le combat continue normalement ou « au contact ». Pendant un combat au contact, n'importe quelle arme plus longue que Courte est considérée comme une Arme improvisée.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 297,
+      "note": "LDB 62 « OPTION : LONGUEUR D'ARME ET COMBAT AU CONTACT »"
+    }
+  },
+  {
+    "id": "taille-modificateurs-en-combat",
+    "label": "Modificateurs de Taille en Combat",
+    "desc": "Si la créature est plus grande :\n\n- Ses armes gagnent l'Atout Dévastatrice si la créature est d'une catégorie de Taille supérieure, et Percutante si elle est plus grande d'au moins deux catégories de Taille.\n- Vous multipliez les Dégâts infligés par le nombre de catégories de Taille supérieures (ainsi, 2 catégories = x2, 3 catégories = x3, et ainsi de suite) : cette multiplication est calculée après l'application des modificateurs.\n- Toutes les frappes réussies activent la règle optionnelle Frappe Mortelle (voir page 160), même si la cible survit.\n\nSi la créature est plus petite :\n\n• Elle gagne un bonus de +10 pour toucher.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 342,
+      "note": "LDB 85 « Taille (Divers) » — Modificateurs de Taille en Combat"
+    }
+  },
+  {
+    "id": "taille-cible-au-tir",
+    "label": "Taille de la cible au tir",
+    "desc": "La taille est un facteur important lorsqu'on tire sur une cible : il est bien plus facile d'atteindre la porte d'une grange qu'une pomme. Si ce modificateur vous permet de toucher, alors que le Test aurait du être un échec, vous obtenez un succès avec 0 DR. Pour en apprendre plus sur les tailles, référez-vous au **Chapitre 12 : Bestiaire** .",
+    "source": {
+      "book": "livre-de-base",
+      "page": 162,
+      "note": "LDB 14 « Taille »"
+    }
+  },
+  {
+    "id": "superiorite-numerique",
+    "label": "Supériorité numérique",
+    "desc": "Si vous êtes en supériorité numérique sur un adversaire à 2 contre 1, vous gagnez un bonus de +20 pour le toucher en combat au Corps à corps. Si vous êtes à 3 contre 1, vous obtenez un bonus encore plus grand de +40 pour toucher. De plus, à la fin de chaque Round, tous les adversaires surpassés en nombre perdent 1 Avantage. La supériorité numérique est en générale déterminée par le nombre de Personnages *Engagés* avec d'autres ; s'il y a le moindre doute, le MJ décide qui des deux camps est en supériorité numérique.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 162,
+      "note": "LDB 14 « Supériorité numérique »"
+    }
+  },
+  {
+    "id": "attaque-de-flanc-ou-de-dos",
+    "label": "Attaquer de flanc ou de dos",
+    "desc": "Attaquer un adversaire Engagé dans le dos ou sur les côtés.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 161,
+      "note": "LDB 14, Tableau des Difficultés de Combat — Accessible (+20)"
+    }
+  },
+  {
+    "id": "cible-en-contrebas",
+    "label": "Attaquer en contrebas de la cible",
+    "desc": "Attaquer alors que vous êtes À Terre (voir page 168) ou en-dessous de votre cible.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 161,
+      "note": "LDB 14, Tableau des Difficultés de Combat — Complexe (-10)"
+    }
+  },
+  {
+    "id": "tir-dans-un-combat-au-corps-a-corps",
+    "label": "Tirer dans un combat au corps à corps",
+    "desc": "Pour la plupart d'entre nous, le fait de choisir une cible et de lancer les dés pour tenter de la toucher est suffisant. Cependant, certains vont préférer des règles plus précises lorsqu'il s'agit de tirer sur une cible déjà *Engagée*. Si c'est votre cas, utilisez les règles suivantes :\n\nIl peut arriver que vous souhaitiez tirer sur une cible qui est déjà *Engagée* avec une ou plusieurs cibles alliées. Les Tests de Capacité de Tir contre ces adversaires sont résolus comme d'habitude, mais vous subissez une pénalité de -20 parce que vous faites de votre mieux pour toucher la cible désirée. Si cette pénalité vous fait échouer à votre Test alors qu'il était réussi sans ce modificateur, vous touchez à la place l'un des adversaires de la cible, déterminé au hasard par le MJ. Si vous n'avez cure de savoir sur qui vous tirez, vous gagnez un bonus allant de +20 à +60, voir Tirer dans le tas.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 162,
+      "note": "LDB 14 « OPTION : TIRER DANS UN COMBAT AU CORPS À CORPS »"
+    }
+  },
+  {
+    "id": "cible-dissimulee",
+    "label": "Cible dissimulée (brouillard, brume, obscurité)",
+    "desc": "La cible du tir est dissimulée par le brouillard, la brume ou l'obscurité.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 161,
+      "note": "LDB 14, Tableau des Difficultés de Combat — Difficile (-20)"
+    }
+  },
+  {
+    "id": "combat-monte",
+    "label": "Combat monté",
+    "desc": "Chevaucher en combat, l'épée fauchant l'air ou faisant feu de toute part n'est pas seulement terrifiant pour ceux qui subissent la charge, mais confère également un bonus au cavalier. Le Combat monté utilise les mêmes règles que tout autre Combat, avec ces ajouts :\n\n- En ce qui concerne votre Mouvement, on considère que le cavalier possède l'Attribut de Mouvement de sa monture. En outre, les Cavaliers doivent effectuer des Tests de Chevaucher pour tous les Tests de course, de saut ou similaires, et utilisent l'attribut de Mouvement de leur monture.\n- Toute attaque effectuée par un Cavalier sur une cible plus petite que sa Monture se voit accorder un bonus de +20 au toucher.\n- Si vous tentez de toucher un Personnage qui est sur une monture, vous choisissez de toucher soit le cavalier soit sa monture. Si vous êtes en combat rapproché, vous subissez une pénalité de -10 à vos Tests de Compétence d'Armes si vous ciblez le cavalier et que vous êtes plus petit que la monture (voir Taille page 162).\n- Une monture sans le Trait Nerveux est un autre combattant à part entière, et peut effectuer sa propre Action pour attaquer les cibles *Engagées*.\n- Lorsque vous Chargez, vous pouvez utiliser la Force et la règle de Taille de votre monture pour calculer les Dégâts.\n- Lorsque vous chevauchez, vous subissez une pénalité de -20 pour toute tentative d'utiliser la Compétence Esquive, sauf si vous possédez le Talent Acrobaties équestres.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 163,
+      "note": "LDB 14 « Combat monté »"
+    }
+  },
+  {
+    "id": "equipe-incomplete-machine-de-guerre",
+    "label": "Équipe incomplète (machine de guerre)",
+    "desc": "La section suivante comprend les statistiques des machines de guerre pouvant être utilisées en combat pendant les Scènes cinématiques. Elle inclut également des statistiques pour les structures susceptibles d'être visées par les armes de siège. Une Équipe est un groupe d'individus entraînés requis pour faire fonctionner une machine de guerre correctement. Les armes sans Équipe complète peuvent être utilisées avec une pénalité de –20. Elles ne peuvent être utilisées avec moins de la moitié de l'Équipe nécessaire. Toutes les machines de guerre ont les Atouts Dévastatrice et Percutante. Elles utilisent toutes la Compétence Projectiles (Machine de guerre), à l'exception du bélier, qui utilise Force.",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 88,
+      "note": "ADE II 8 « Machines de guerre »"
+    }
+  },
+  {
+    "id": "possession-pas-a-sa-taille",
+    "label": "Possession pas prévue pour sa taille",
+    "desc": "Un ogre subit une pénalité de -20 à tous les Tests lorsqu'il tente d'utiliser des possessions qui ne sont pas prévues pour sa taille, en plus de trouver certaines choses impossibles à faire. Par exemple, un doigt d'ogre ne peut tout simplement pas presser la détente d'un pistolet à répétition humain.",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 31,
+      "note": "ADE II 2 « UN LOURD FARDEAU »"
+    }
   }
 ]

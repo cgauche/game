@@ -46,7 +46,26 @@ export type RuleId =
   | 'sombre-pacte'
   | 'chance'
   | 'benediction-de-chance'
-  | 'determination';
+  | 'determination'
+  | 'avantage'
+  | 'amputation'
+  | 'maladresse-tableau-des-oups'
+  | 'portee-d-une-arme'
+  | 'allonge-longueur-d-arme'
+  | 'taille-modificateurs-en-combat'
+  | 'taille-cible-au-tir'
+  | 'superiorite-numerique'
+  | 'attaque-de-flanc-ou-de-dos'
+  | 'cible-en-contrebas'
+  | 'tir-dans-un-combat-au-corps-a-corps'
+  | 'cible-dissimulee'
+  | 'combat-monte'
+  | 'equipe-incomplete-machine-de-guerre'
+  | 'possession-pas-a-sa-taille'
+  | 'salve'
+  | 'arme-d-equipe'
+  | 'nuee'
+  | 'parasite';
 
 /** La fiche Codex de chaque règle, en ids STABLES. Les producteurs de `ModLine` la consomment
  *  (`RULE_REF.viser`), l'affichage la résout en chip cliquable — jamais un `{category, id}` recopié
@@ -65,4 +84,23 @@ export const RULE_REF: Record<RuleId, CodexTarget> = {
   chance: { category: 'characteristics', id: 'chance' },
   'benediction-de-chance': { category: 'spells', id: 'benediction-de-chance' },
   determination: { category: 'characteristics', id: 'determination' },
+  avantage: { category: 'regles', id: 'avantage' },
+  amputation: { category: 'regles', id: 'amputation' },
+  'maladresse-tableau-des-oups': { category: 'regles', id: 'maladresse-tableau-des-oups' },
+  'portee-d-une-arme': { category: 'regles', id: 'portee-d-une-arme' },
+  'allonge-longueur-d-arme': { category: 'regles', id: 'allonge-longueur-d-arme' },
+  'taille-modificateurs-en-combat': { category: 'regles', id: 'taille-modificateurs-en-combat' },
+  'taille-cible-au-tir': { category: 'regles', id: 'taille-cible-au-tir' },
+  'superiorite-numerique': { category: 'regles', id: 'superiorite-numerique' },
+  'attaque-de-flanc-ou-de-dos': { category: 'regles', id: 'attaque-de-flanc-ou-de-dos' },
+  'cible-en-contrebas': { category: 'regles', id: 'cible-en-contrebas' },
+  'tir-dans-un-combat-au-corps-a-corps': { category: 'regles', id: 'tir-dans-un-combat-au-corps-a-corps' },
+  'cible-dissimulee': { category: 'regles', id: 'cible-dissimulee' },
+  'combat-monte': { category: 'regles', id: 'combat-monte' },
+  'equipe-incomplete-machine-de-guerre': { category: 'regles', id: 'equipe-incomplete-machine-de-guerre' },
+  'possession-pas-a-sa-taille': { category: 'regles', id: 'possession-pas-a-sa-taille' },
+  salve: { category: 'qualities', id: 'salve' },
+  'arme-d-equipe': { category: 'qualities', id: 'arme-d-equipe' },
+  nuee: { category: 'traits', id: 'nuee' },
+  parasite: { category: 'traits', id: 'parasite' },
 };

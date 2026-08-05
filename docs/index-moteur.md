@@ -159,7 +159,7 @@ _1872 exports publics mesurés (151 fichiers de `src/engine`, hors tests) — 15
 | Psychologie de rencontre | `encounterPsych` (encounterPsych.ts:27), `EncounterPsychTrigger` (encounterPsych.ts:18) |
 | Qualités d'arme et d'armure | `applyEnchants` (weaponDamage.ts:83), `attackModQualityIds` (qualities/dispatch.ts:107), `giveTrappingQualities` (items.ts:305), `hasCapability` (capabilities.ts:45), `ignoredArmourAP` (items.ts:826), `isFirearmQuality` (qualities/dispatch.ts:156), `QUALITIES` (qualities/registry.ts:14), `QualityCarrier` (qualities/dispatch.ts:24), `qualityDamageStep` (qualities/dispatch.ts:279), `qualitySocMod` (qualities/dispatch.ts:169), `qualitySum` (qualities/dispatch.ts:94), `resolveQualities` (qualities/dispatch.ts:54), `weaponFromId` (creatureEquip.ts:21), `weaponPassiveOps` (qualities/dispatch.ts:46), `withGiveQualities` (items.ts:298), `woundsFromHit` (woundsCalc.ts:25) |
 | Récolte (ingrédients) | `Conservation` (harvest.ts:15), `costPerEnc` (harvest.ts:58), `Danger` (harvest.ts:14), `HarvestProfile` (harvest.ts:17), `harvestProfileFor` (harvest.ts:36), `HarvestResult` (harvest.ts:62), `HarvestSize` (harvest.ts:16), `harvestSizeOf` (harvest.ts:48), `harvestYield` (harvest.ts:76), `Rarity` (harvest.ts:13) |
-| Références Codex des règles (modificateurs de jet) | `CodexTarget` (ruleRefs.ts:14), `ModProvenance` (ruleRefs.ts:28), `RULE_REF` (ruleRefs.ts:54), `RuleId` (ruleRefs.ts:36) |
+| Références Codex des règles (modificateurs de jet) | `CodexTarget` (ruleRefs.ts:14), `ModProvenance` (ruleRefs.ts:28), `RULE_REF` (ruleRefs.ts:73), `RuleId` (ruleRefs.ts:36) |
 | Registre de psychologie | `parsePsychTraits` (psych/registry.ts:35) |
 | Registre des qualités | `QUALITIES` (qualities/registry.ts:14) |
 | Registre des traits | `TRAITS` (traits/registry.ts:15) |
@@ -2002,7 +2002,7 @@ _1872 exports publics mesurés (151 fichiers de `src/engine`, hors tests) — 15
 | `CodexTarget` | 14 | interface | Cible Codex en ids STABLES : `category` = clé de catégorie du registre, `id` = id de l'entrée. | Références Codex des règles (modificateurs de jet) |
 | `ModProvenance` | 28 | interface | Provenance STRUCTURÉE d'un modificateur : QUI l'octroie, en identité stable. | Références Codex des règles (modificateurs de jet) |
 | `RuleId` | 36 | type | Les règles dont la référence Codex est établie. | Références Codex des règles (modificateurs de jet) |
-| `RULE_REF` | 54 | const | La fiche Codex de chaque règle, en ids STABLES. | Références Codex des règles (modificateurs de jet) |
+| `RULE_REF` | 73 | const | La fiche Codex de chaque règle, en ids STABLES. | Références Codex des règles (modificateurs de jet) |
 
 ### `scatter.ts` — Dispersion (tir raté)
 

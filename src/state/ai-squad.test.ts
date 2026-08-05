@@ -11,6 +11,7 @@
 import { describe, it, expect } from 'vitest';
 import { chooseEnemyAction, type EnemyAction, type EnemyTurnInput } from './ai';
 import { outnumberMod } from '../engine/combat';
+import { RULE_REF } from '../engine/ruleRefs';
 import { emptyScene } from './scene';
 import type { Combatant, Weapon } from '../engine/types';
 
@@ -69,8 +70,8 @@ describe('Lot 4 — FEU CONCENTRÉ (surnombre RAW)', () => {
   it('parité du DÉCOMPTE avec combatFlow.ts:425 : 1 allié adjacent + l’attaquant = 2c1 → +20 (et 2 alliés → +40)', () => {
     // L'IA réutilise `outnumberMod(adj + 1)` où `adj` = alliés à combatDistance ≤ 1 (MÊME filtre que la
     // résolution combatFlow.ts:425, qui inclut l'attaquant). On vérifie ici la fonction partagée.
-    expect(outnumberMod(1 + 1)).toEqual({ label: 'Surnombre (2 c.1)', value: 20 }); // 1 allié + attaquant
-    expect(outnumberMod(2 + 1)).toEqual({ label: 'Surnombre (3+ c.1)', value: 40 }); // 2 alliés + attaquant
+    expect(outnumberMod(1 + 1)).toEqual({ label: 'Surnombre (2 c.1)', value: 20, ref: RULE_REF['superiorite-numerique'] }); // 1 allié + attaquant
+    expect(outnumberMod(2 + 1)).toEqual({ label: 'Surnombre (3+ c.1)', value: 40, ref: RULE_REF['superiorite-numerique'] }); // 2 alliés + attaquant
     expect(outnumberMod(0 + 1)).toBeNull(); // attaquant seul → pas de surnombre
   });
 });

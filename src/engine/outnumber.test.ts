@@ -10,13 +10,13 @@ describe('outnumberMod', () => {
     expect(outnumberMod(0)).toBeNull();
   });
   it('2 contre 1 → +20', () => {
-    expect(outnumberMod(2)).toEqual({ label: 'Surnombre (2 c.1)', value: 20 });
+    expect(outnumberMod(2)).toEqual({ label: 'Surnombre (2 c.1)', value: 20, ref: RULE_REF['superiorite-numerique'] });
   });
   it('3 contre 1 → +40', () => {
-    expect(outnumberMod(3)).toEqual({ label: 'Surnombre (3+ c.1)', value: 40 });
+    expect(outnumberMod(3)).toEqual({ label: 'Surnombre (3+ c.1)', value: 40, ref: RULE_REF['superiorite-numerique'] });
   });
   it('4 et plus : plafonné à +40', () => {
-    expect(outnumberMod(6)).toEqual({ label: 'Surnombre (3+ c.1)', value: 40 });
+    expect(outnumberMod(6)).toEqual({ label: 'Surnombre (3+ c.1)', value: 40, ref: RULE_REF['superiorite-numerique'] });
   });
 });
 

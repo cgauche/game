@@ -469,13 +469,13 @@ export function attackModifiers(
 ): ModLine[] {
   const out: ModLine[] = [];
   const adv = attacker.advantage * 10;
-  if (adv) out.push({ label: 'Avantage', value: adv, uncapped: true });
+  if (adv) out.push({ label: 'Avantage', value: adv, uncapped: true, ref: RULE_REF.avantage });
   const pen = combatTestPenalty(attacker);
   if (pen) out.push({ label: 'État', value: pen });
-  if (attacker.nextActionPenalty) out.push({ label: 'Maladresse (Round précédent)', value: -attacker.nextActionPenalty });
+  if (attacker.nextActionPenalty) out.push({ label: 'Maladresse (Round précédent)', value: -attacker.nextActionPenalty, ref: RULE_REF['maladresse-tableau-des-oups'] });
   // Amputation (LDB 18 l.251/263) : pénalité CONTEXTUELLE à l'arme — s'applique ssi l'arme implique la main blessée.
   const amp = amputationCombatPenalty(attacker, weapon);
-  if (amp) out.push({ label: 'Amputation', value: amp });
+  if (amp) out.push({ label: 'Amputation', value: amp, ref: RULE_REF.amputation });
   // Psychologie (LDB 21) : Peur/Haine/Amour modulent le DR du jet (±1 DR, l.29/22/41/77/82), PAS la valeur
   // cible — appliqué à `atkSL` via `psychDRAdjust` au moment de la résolution (cœur opposé + passes non
   // opposées), jamais ici (un ±10 sur la cible fausserait la probabilité ET le DR, contra RAW).
@@ -487,31 +487,31 @@ export function attackModifiers(
       // Tireur embusqué (LDB 10) : aucune pénalité à Longue distance, moitié à Portée extrême.
       const m = m0 != null ? sniperRangeAdjust(attacker, m0) : null;
       const name = rangeBandName(opts.distanceTiles, rangeM, opts.metresPerTile);
-      if (m != null && m !== 0 && name) out.push({ label: name, value: m });
+      if (m != null && m !== 0 && name) out.push({ label: name, value: m, ref: RULE_REF['portee-d-une-arme'] });
     }
     if (attacker.aiming) out.push({ label: 'Viser', value: 20, ref: RULE_REF.viser }); // LDB 13, Tableau des Difficultés de Combat — Accessible (+20)
     // Salve (Aux Armes p.126) : chaque tir SUPPLÉMENTAIRE dans le Round subit −10 cumulatif.
     const salvoShots = hasQuality(weapon, 'salve') ? (attacker.shotsThisTurn ?? 0) : 0;
-    if (salvoShots > 0) out.push({ label: 'Salve (tir suivant)', value: -10 * salvoShots });
+    if (salvoShots > 0) out.push({ label: 'Salve (tir suivant)', value: -10 * salvoShots, ref: RULE_REF.salve });
     // Taille de la CIBLE au tir (LDB 14 l.151-170) — valeur absolue −30..+60. Une Nuée ignore la
     // Taille et donne +40 au tir contre elle (LDB 85 l.200).
-    if (target?.swarm) out.push({ label: 'Nuée (tir)', value: 40 });
+    if (target?.swarm) out.push({ label: 'Nuée (tir)', value: 40, ref: RULE_REF.nuee });
     else if (target && !ignoresSizeRangedMods(attacker)) { // Tireur d'élite (LDB 10) : ignore la Taille de la cible
       const sm = SIZE_RANGED_MOD[effectiveSize(target.size)];
-      if (sm !== 0) out.push({ label: `Taille (cible) — ${SIZE_LABEL[effectiveSize(target.size)]}`, value: sm });
+      if (sm !== 0) out.push({ label: `Taille (cible) — ${SIZE_LABEL[effectiveSize(target.size)]}`, value: sm, ref: RULE_REF['taille-cible-au-tir'] });
     }
   } else if (target) {
     const vuln = meleeAttackerBonus(target, { flankRear: opts.flankRear });
     if (vuln) out.push({ label: 'Cible vulnérable', value: vuln });
     // Parasité (LDB 85 p.340) : −10 pour toucher la créature en Corps à corps (vermine perturbante).
     const para = incomingAttackMod(target, 'melee');
-    if (para) out.push({ label: 'Parasité', value: para });
+    if (para) out.push({ label: 'Parasité', value: para, ref: RULE_REF.parasite });
     // Option « Longueur d'Arme » (LDB 62 l.215) : arme adverse plus longue → −10 pour la toucher.
     const reach = weaponReachPenalty(weapon, target.weapons?.find((w) => w.type === 'melee'));
-    if (reach) out.push({ label: "Allonge de l'adversaire", value: reach });
+    if (reach) out.push({ label: "Allonge de l'adversaire", value: reach, ref: RULE_REF['allonge-longueur-d-arme'] });
   }
   // +10 au plus petit, mêlée ET tir (LDB 85 l.301-303). Une Nuée ignore TOUTES les règles de Taille (l.200).
-  if (target && !attacker.swarm && !target.swarm && sizeGap(attacker.size, target.size) < 0) out.push({ label: 'Taille (plus petit)', value: 10 });
+  if (target && !attacker.swarm && !target.swarm && sizeGap(attacker.size, target.size) < 0) out.push({ label: 'Taille (plus petit)', value: 10, ref: RULE_REF['taille-modificateurs-en-combat'] });
   const precise = qualitySum(weapon, 'attackMod');
   if (precise) {
     // La qualité PORTEUSE est la référence de la ligne quand elle est SEULE à contribuer ; à
@@ -521,10 +521,10 @@ export function attackModifiers(
   }
   // Arme d'équipe en sous-effectif re-recevant un Défaut déjà porté → −10 plat (MDG 12 l.460), baké sur
   // l'arme tirée par `crewedFireWeapon` (≠ le −1 DR d'Imprécise, qui reste sur la qualité).
-  if (weapon.crewedTohitPenalty) out.push({ label: 'Sous-effectif (Défaut redoublé)', value: weapon.crewedTohitPenalty });
+  if (weapon.crewedTohitPenalty) out.push({ label: 'Sous-effectif (Défaut redoublé)', value: weapon.crewedTohitPenalty, ref: RULE_REF['arme-d-equipe'] });
   // Machine de guerre en Équipe incomplète (ADE II 8 l.233) : −20 plat, baké par `warMachineFireWeapon`
   // (3ᵉ courbe de sous-effectif, DISTINCTE de celle d'AA ci-dessus).
-  if (weapon.crewTeamPenalty) out.push({ label: 'Équipe incomplète', value: weapon.crewTeamPenalty });
+  if (weapon.crewTeamPenalty) out.push({ label: 'Équipe incomplète', value: weapon.crewTeamPenalty, ref: RULE_REF['equipe-incomplete-machine-de-guerre'] });
   // Localisation visée = Complexe −10 (l.104) — SAUF contre une créature de Taille ≥ 2 catégories
   // supérieure : on choisit GRATUITEMENT la zone la plus proche / en Ligne de Vue (LDB « Point
   // d'Impact des Créatures » p.312 / `76` l.39).
@@ -545,7 +545,7 @@ export function attackModifiers(
   const carrierSize = effectiveSize(attacker.size);
   if (!weapon.natural && !weapon.sizeless && gearSize !== carrierSize
       && (weapon.sizeFor !== undefined || SIZE_ORDER[carrierSize] > SIZE_ORDER.moyenne)) {
-    out.push({ label: 'Possession pas à sa taille', value: -20 });
+    out.push({ label: 'Possession pas à sa taille', value: -20, ref: RULE_REF['possession-pas-a-sa-taille'] });
   }
   // Pénalité de main secondaire (LDB 14 l.181) ; Ambidextre la réduit via le registre combatFeatures.
   if (weapon.hand === 'off') {
@@ -567,8 +567,8 @@ export function attackModifiers(
  *  contact d'une même cible → +20 (Accessible) ; 3 ou plus → +40 (Facile). `attackers` inclut
  *  l'attaquant courant. Renvoyé en `ModLine` pour injection via `env`. */
 export function outnumberMod(attackers: number): ModLine | null {
-  if (attackers >= 3) return { label: 'Surnombre (3+ c.1)', value: 40 };
-  if (attackers === 2) return { label: 'Surnombre (2 c.1)', value: 20 };
+  if (attackers >= 3) return { label: 'Surnombre (3+ c.1)', value: 40, ref: RULE_REF['superiorite-numerique'] };
+  if (attackers === 2) return { label: 'Surnombre (2 c.1)', value: 20, ref: RULE_REF['superiorite-numerique'] };
   return null;
 }
 
@@ -603,7 +603,7 @@ export function defenseModifiers(defender: Combatant, mode: DefenseMode, dodgeMo
   const adv = defender.advantage * 10;
   // Avantage HORS table de Difficulté (comme `attackModifiers`) → `uncapped` : ne compte PAS dans le
   // plafond ±30/+60 de `combineMods` — sans ce marqueur, l'affichage défense plafonnerait l'Avantage à tort.
-  if (adv) out.push({ label: 'Avantage', value: adv, uncapped: true });
+  if (adv) out.push({ label: 'Avantage', value: adv, uncapped: true, ref: RULE_REF.avantage });
   const pen = combatTestPenalty(defender);
   if (pen) out.push({ label: 'État', value: pen });
   if (defender.defensiveStance) out.push({ label: 'Sur la défensive', value: 20, ref: RULE_REF['sur-la-defensive'] });
@@ -613,7 +613,7 @@ export function defenseModifiers(defender: Combatant, mode: DefenseMode, dodgeMo
     if (pp) out.push({ label: 'Main secondaire', value: pp, ref: RULE_REF['main-secondaire'] });
     // Amputation (LDB 18) : la parade est un Test d'ARME → même pénalité contextuelle que l'attaque (ssi l'arme de parade implique la main blessée).
     const amp = weapon ? amputationCombatPenalty(defender, weapon) : 0;
-    if (amp) out.push({ label: 'Amputation', value: amp });
+    if (amp) out.push({ label: 'Amputation', value: amp, ref: RULE_REF.amputation });
   }
   // Substitution sociale (Intimidation/Dressage) : ni arme ni esquive → pas de main secondaire, de
   // neige, ni de malus « maniement deux armes » ; seuls Avantage/État/Sur la défensive s'appliquent.

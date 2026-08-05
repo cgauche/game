@@ -270,18 +270,18 @@ describe('Bandes de portée — échelle métrique de la Scène (#249, metresPer
   });
   it('attackModifiers propage metresPerTile jusqu’au mod de portée affiché', () => {
     const mods = attackModifiers(mk({ label: 'A' }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 3, metresPerTile: 10 });
-    expect(mods).toContainEqual({ label: 'Courte portée', value: 20 });
+    expect(mods).toContainEqual({ label: 'Courte portée', value: 20, ref: RULE_REF['portee-d-une-arme'] });
   });
   it('sans metresPerTile (défaut 2, terrestre) : même distanceTiles=3 reste Bout Portant/hors-Courte, comportement BYTE-IDENTIQUE', () => {
     const mods = attackModifiers(mk({ label: 'A' }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 3 });
-    expect(mods).toContainEqual({ label: 'Bout portant', value: 40 }); // 6 m ≤ 6, comme avant le câblage
+    expect(mods).toContainEqual({ label: 'Bout portant', value: 40, ref: RULE_REF['portee-d-une-arme'] }); // 6 m ≤ 6, comme avant le câblage
   });
 });
 
 describe('attackModifiers — modificateurs étiquetés (source unique)', () => {
   it('tir à courte portée → mod « Courte portée » +20', () => {
     const mods = attackModifiers(mk({ label: 'A' }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 10 });
-    expect(mods).toContainEqual({ label: 'Courte portée', value: 20 });
+    expect(mods).toContainEqual({ label: 'Courte portée', value: 20, ref: RULE_REF['portee-d-une-arme'] });
   });
   it('tireur qui a Visé → mod « Viser » +20 (action Viser, l.90)', () => {
     const mods = attackModifiers(mk({ label: 'A', aiming: true }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 28 });

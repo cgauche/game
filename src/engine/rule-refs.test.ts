@@ -56,49 +56,28 @@ function refLessProducers(): string[] {
  *  - « État » (attaque ET défense), #1107 : `combatTestPenalty` ne rend qu'un NOMBRE — l'État
  *    gagnant du pool non-cumul est INIDENTIFIABLE au site (`PassiveMod` = `{op, kind?}`, sans id
  *    de source). Lever ce blocage = faire porter son id à `PassiveMod` ;
- *  - libellés DÉRIVÉS d'une donnée déjà nommée ailleurs (bandes de portée, météo de scène, lignes
- *    volatiles de Caractéristique) : leur référence se dérive de cette donnée, pas d'une règle ;
- *  - le reste : entrées de la table des Difficultés de Combat sans fiche `regles` au catalogue.
+ *  - « Cible vulnérable » (`meleeAttackerBonus`) et « Aura de Sorcière » (`castWardPenalty`) : MÊME
+ *    classe que « État » — un pool d'octroyeurs (États / effets `castWard`) dont le gagnant n'est pas
+ *    rendu au site ;
+ *  - libellés DÉRIVÉS d'une donnée déjà nommée ailleurs (météo de scène, force des Vents, lignes
+ *    volatiles de Caractéristique) : leur référence se dérive de cette donnée, pas d'une règle.
  */
 const RATCHET = [
   'src/engine/characteristics.ts · best.label',
   'src/engine/characteristics.ts · e.label',
   'src/engine/characteristics.ts · p.label',
   'src/engine/characteristics.ts · worst.label',
-  "src/engine/combat.ts · \"Allonge de l'adversaire\"",
-  "src/engine/combat.ts · 'Amputation'",
-  "src/engine/combat.ts · 'Amputation'",
-  "src/engine/combat.ts · 'Avantage'",
-  "src/engine/combat.ts · 'Avantage'",
   "src/engine/combat.ts · 'Cible vulnérable'",
-  "src/engine/combat.ts · 'Maladresse (Round précédent)'",
   "src/engine/combat.ts · 'Neige épaisse'",
-  "src/engine/combat.ts · 'Nuée (tir)'",
-  "src/engine/combat.ts · 'Parasité'",
-  "src/engine/combat.ts · 'Possession pas à sa taille'",
   "src/engine/combat.ts · 'Rapide'",
-  "src/engine/combat.ts · 'Salve (tir suivant)'",
-  "src/engine/combat.ts · 'Sous-effectif (Défaut redoublé)'",
-  "src/engine/combat.ts · 'Surnombre (2 c.1)'",
-  "src/engine/combat.ts · 'Surnombre (3+ c.1)'",
-  "src/engine/combat.ts · 'Taille (plus petit)'",
   "src/engine/combat.ts · 'État'", // #1107 (attaque)
   "src/engine/combat.ts · 'État'", // #1107 (défense)
-  "src/engine/combat.ts · 'Équipe incomplète'",
-  'src/engine/combat.ts · name',
   "src/state/combatFlow.ts · 'Aura de Sorcière'",
-  "src/state/combatFlow.ts · 'Avantage'",
   "src/state/combatFlow.ts · 'Contrecoup'",
-  "src/state/combatFlow.ts · 'En contrebas de la cible'",
-  "src/state/combatFlow.ts · 'Flanc/dos'",
-  "src/state/combatFlow.ts · 'Tir dans la mêlée'",
   "src/state/combatFlow.ts · 'Vents de Magie'",
   'src/state/combatFlow.ts · sc.label',
   'src/state/combatFlow.ts · sc.label',
-  "src/state/combatFlow.ts · sc.label || 'Obscurité'",
   "src/state/commandTeam.ts · 'Commandant d’équipe'",
-  "src/state/mount.ts · 'Cibler le cavalier (plus petit que la monture)'",
-  "src/state/mount.ts · 'Combat monté (cible plus petite)'",
   "src/state/travelFlow.ts · 'pas de course'",
   "src/state/travelPostes.ts · 'Tests physiques'",
 ].sort();
