@@ -53,5 +53,4 @@ export const quadHead: QuadHeadDef = {
       `M${(x * bl).toFixed(1)} ${y} Q${(x * bl - 2).toFixed(1)} ${y - h * 0.7} ${(x * bl - 3.6).toFixed(1)} ${y - h} Q${(x * bl - 1).toFixed(1)} ${y - h * 0.4} ${(x * bl + 3).toFixed(1)} ${y} Z`;
     return `<g data-ridge="crete-hydre"><path d="${fl(-34, -9, 6)}${fl(-26, -12, 7)}${fl(-18, -14.5, 8)}${fl(-10, -16.5, 8.5)}${fl(-2, -17.5, 8)}${fl(6, -18, 7.5)}${fl(14, -17, 6.5)}" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/></g>`;
   },
-  tailCrest: true,
 };

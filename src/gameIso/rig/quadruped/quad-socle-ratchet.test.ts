@@ -20,7 +20,7 @@
  * y basculer du branchement pour faire baisser les plafonds échoue la garde.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { QUAD_HEAD_DEFS } from './heads/_registry.generated';
 import { QUAD_TAIL_DEFS } from './tails/_registry.generated';
@@ -137,6 +137,25 @@ describe('socle quadrupède : le branchement par espèce ne peut que DÉCROÎTRE
     expect(lectures.length, 'les 3 sites de crinière du socle').toBe(3);
     for (const l of lectures)
       expect(l, 'lecture de `mane` hors lookup `quadManeDef`').toMatch(/quadManeDef\(p\.mane\)/);
+  });
+
+  it('les trois registres de parts sont ÉTANCHES : aucune def n\'importe le registre d\'une autre part', () => {
+    // Une def de QUEUE lisait le registre des TÊTES pour savoir si la crête se prolonge, et une def
+    // de TÊTE portait l'art d'une queue : la part décidait pour sa voisine. Ce qui traverse une
+    // frontière de part est désormais un AXE de la bête (`QuadProps`), lu par la part qui le peint.
+    const PARTS = ['heads', 'tails', 'manes'] as const;
+    const fautes: string[] = [];
+    for (const part of PARTS) {
+      const dir = fileURLToPath(new URL(`./${part}/defs`, import.meta.url));
+      for (const f of readdirSync(dir)) {
+        const src = readFileSync(`${dir}/${f}`, 'utf8');
+        for (const autre of PARTS)
+          if (autre !== part && new RegExp(`from '\\.\\./\\.\\./${autre}`).test(src))
+            fautes.push(`${part}/defs/${f} importe le registre « ${autre} »`);
+      }
+    }
+    expect(fautes).toEqual([]);
+    expect(readdirSync(fileURLToPath(new URL('./tails/defs', import.meta.url))).length).toBeGreaterThan(1);
   });
 
   it('le stock des crinières a MIGRÉ : 3 defs enregistrées', () => {

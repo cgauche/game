@@ -34,17 +34,4 @@ export const quadHead: QuadHeadDef = {
       `<path d="M0 -19 l-2.6 -3 l0.6 3.2 l-3 -1.6 l1.4 3.2 l-3.2 0.6 l2.4 2.6 l-2.6 1.8 l3.2 1 l-1.2 3 l3.4 -1 l1 3 l2 -2.6 l2.4 2.2 l0.6 -3.2 l3.2 0.6 l-1.8 -3 l3 -1.4 l-3 -1.6 l1.8 -2.8 l-3.4 0 l0.8 -3.2 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>` + // couronne de crinière
       `<ellipse cx="0" cy="-15" rx="3.1" ry="3.4" fill="@corps" stroke="@corpsO" stroke-width="0.5"/></g>`,
   },
-  // LONGUE queue fine dressée en S au-dessus de la croupe, pointe osseuse (ZI 66 l. « longue
-  // queue ») — une queue traînante sortirait du gabarit 120×150 (le corps massif touche déjà le
-  // bord arrière) ; même compensation d'os que 'reptile'.
-  tailProfile: (() => {
-    const d = 'M0 0 Q-9 -6 -10.5 -20 Q-11.5 -34 -6 -45 Q-2.5 -52 3 -57';
-    return `<g transform="rotate(-42)">` +
-      `<path d="${d}" fill="none" stroke="@corps" stroke-width="4.6" stroke-linecap="round"/>` +
-      `<path d="M-8.5 -30 Q-9 -42 -3.5 -50 Q-0.5 -54 3 -57" fill="none" stroke="@corps" stroke-width="2.4" stroke-linecap="round"/>` +
-      `<path d="${d}" fill="none" stroke="@corpsO" stroke-width="0.9" opacity="0.5"/>` +
-      `<path d="M-12.4 -14 l-2.4 -1.6 l2.2 -1.2 M-13 -26 l-2.4 -0.8 l2 -1.8 M-11 -38 l-2 -2 l2.4 -1.2 M-6.2 -47 l-1.2 -2.6 l2.4 -0.6" stroke="@corpsO" stroke-width="0.8" fill="none" stroke-linecap="round"/>` + // épines du fouet
-      `<path d="M3 -57 l5 -3.6 l-1.8 5.6 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>` + // pointe osseuse
-      `</g>`;
-  })(),
 };

@@ -22,9 +22,8 @@ const SPECIES: Record<string, QuadProps> = { ...QUAD_SPECIES, ...WINGED_SPECIES 
 const witness = (key: string): QuadProps => witnessesOf(SPECIES, 'head', key)[0];
 
 /** Vue où le socle CONSULTE chaque canal de forme d'une def de tête. */
-const CHANNEL_VIEW: Record<'bodyHi' | 'chestCrest' | 'tailProfile', View> = {
-  bodyHi: 'profile', chestCrest: 'front', tailProfile: 'profile',
-};
+const CHANNEL_VIEW: Record<'bodyHi' | 'chestCrest', View> = { bodyHi: 'profile', chestCrest: 'front' };
+const CHANNELS = Object.keys(CHANNEL_VIEW) as (keyof typeof CHANNEL_VIEW)[];
 /** SVG complet d'une espèce pour une vue, tous os confondus. */
 const builtSvg = (p: QuadProps, view: View): string =>
   Object.values(quadParts(p, view, 'folded')).flat().map((l) => l.svg).join('');
@@ -32,7 +31,7 @@ const builtSvg = (p: QuadProps, view: View): string =>
 /** Canaux d'art d'une def, nommés (les optionnels sont sautés quand absents). */
 const channels = (d: QuadHeadDef): [string, QuadArt][] => [
   ...VIEWS.map((v) => [`art.${v}`, d.art[v]] as [string, QuadArt]),
-  ...(['bodyHi', 'ridge', 'chestCrest', 'tailProfile'] as const)
+  ...(['bodyHi', 'ridge', 'chestCrest'] as const)
     .filter((k) => d[k] != null)
     .map((k) => [k, d[k] as QuadArt] as [string, QuadArt]),
 ];
@@ -72,13 +71,13 @@ describe('defs de tête quadrupèdes : contrat de vues, d\'axes et de repli', ()
   });
 
   it('canal DÉCLARÉ = canal PEINT : aucun canal de forme n\'est de l\'art mort', () => {
-    // Un canal de forme (`bodyHi`/`chestCrest`/`tailProfile`) n'est consulté que par certaines
+    // Un canal de forme (`bodyHi`/`chestCrest`) n'est consulté que par certaines
     // carrures du socle. Déclaré par une def dont AUCUNE espèce porteuse ne passe par ce chemin,
     // il serait de l'art committé que rien ne rend — invisible aux gardes de contenu, qui
     // n'éprouvent que la def.
     const declares: string[] = [];
     for (const d of Object.values(QUAD_HEADS))
-      for (const ch of ['bodyHi', 'chestCrest', 'tailProfile'] as const) {
+      for (const ch of CHANNELS) {
         if (d[ch] == null) continue;
         declares.push(`${d.key}.${ch}`);
         const peint = witnessesOf(SPECIES, 'head', d.key)
@@ -97,7 +96,7 @@ describe('defs de tête quadrupèdes : contrat de vues, d\'axes et de repli', ()
     const dormants: string[] = [];
     for (const [id, p] of Object.entries(SPECIES)) {
       const d = QUAD_HEADS[p.head];
-      for (const ch of ['bodyHi', 'chestCrest', 'tailProfile'] as const)
+      for (const ch of CHANNELS)
         if (d?.[ch] != null && !builtSvg(p, CHANNEL_VIEW[ch]).includes(quadArt(d[ch], p)))
           dormants.push(`${d.key}.${ch}@${id} (build ${p.build})`);
     }

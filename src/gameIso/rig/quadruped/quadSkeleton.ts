@@ -86,6 +86,10 @@ export interface QuadProps {
    *  inchangés (quadSkeletonForView y force l'angle à 0). */
   headPitch?: number;
   tailLen?: number; // × sur l'art de queue (défaut 1)
+  /** La crête du dos se PROLONGE sur la queue jusqu'à la pointe (hydre). Propriété de la BÊTE : la
+   *  def de QUEUE la lit, aucune def de tête ne la décide. L'autre porte de la continuité est la
+   *  dorsale `ridge: 'epines-continues'` (basilic), lue au même endroit. */
+  tailCrest?: true;
   /** Décor PAR-OS propre à la créature (harnais doré du pégase — précédent : épave du crabe,
    *  `CrabProps.deco`) : SVG dans le repère de l'ART de l'os pour la vue (`quadAnchor`), posé en
    *  CALQUE sur cet os, uniquement là où l'os porte déjà un art dans la vue courante. L'ancre porte

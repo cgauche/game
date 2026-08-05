@@ -43,6 +43,7 @@ export const AXIS_FUZZ: Partial<Record<keyof QuadProps, readonly unknown[]>> = {
   markings: ['taches', 'rayures', 'balzanes', 'sans', undefined],
   headgear: ['bois', 'cornes', undefined],
   foreCoat: ['plumes', undefined],
+  tailCrest: [true, undefined],
   wings: ['plumes', 'membrane', undefined],
   wingPose: ['dressees', 'deployees', undefined],
   sl: [0.7, 1, 1.4],

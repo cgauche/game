@@ -329,9 +329,7 @@ function headgear(p: QuadProps, view: 'front' | 'profile' | 'back'): string {
 // (Les arts de tête de PROFIL vivent dans `heads/defs/<clé>.ts`, résolus par `headArtOn`.)
 function tail(p: QuadProps): string {
   const t = quadTailDef(p.tail);
-  if (t.vide) return ''; // l'espèce ne porte pas de queue : rien, pas même l'art déclaré par la tête
-  const own = quadArt(quadHeadDef(p.head).tailProfile, p); // queue déclarée par la DEF de tête
-  return own || quadArt(t.art.profile, p);
+  return t.vide ? '' : quadArt(t.art.profile, p); // `vide` = l'espèce ne porte pas de queue
 }
 
 // ============================ FACE (front) ============================

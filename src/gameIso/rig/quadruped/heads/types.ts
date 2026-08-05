@@ -19,8 +19,9 @@ import type { QuadArt } from '../partArt';
  *   - `bodyHi`     : calque clair ajouté au haut de la silhouette de PROFIL (pelage, balafres).
  *   - `ridge`      : dorsale propre à la tête, qui remplace celle du jeton `ridge` de l'espèce.
  *   - `chestCrest` : crête de poitrail, vue de face.
- *   - `tailProfile`: queue propre à la tête, qui remplace l'art du jeton `tail` en profil.
- *   - `tailCrest`  : la crête de la queue reptilienne se prolonge jusqu'à la pointe.
+ *
+ * Une def de tête ne porte AUCUN art de queue ni aucun réglage de queue : la queue est une part à
+ * part entière (`tails/defs/`) et la continuité de crête un axe de la BÊTE (`QuadProps.tailCrest`).
  */
 export interface QuadHeadDef {
   key: string;
@@ -32,6 +33,4 @@ export interface QuadHeadDef {
   bodyHi?: QuadArt;
   ridge?: QuadArt;
   chestCrest?: QuadArt;
-  tailProfile?: QuadArt;
-  tailCrest?: boolean;
 }
