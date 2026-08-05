@@ -254,20 +254,37 @@ describe('les plans de profondeur ne vivent QUE dans QUAD_Z (#1082)', () => {
     });
   }
 
-  it('le cavalier s\'intercale aux mêmes plans qu\'avant la publication de la table', () => {
+  it('le cavalier s\'intercale au PROFIL comme avant la publication de la table', () => {
     const profil = riderZForQuad('profile');
     expect(profil(bone('cuisseG', 0))).toBe(4.5);  // jambe lointaine, sous le barillet (5)
     expect(profil(bone('torse', 0))).toBe(6.6);    // corps, au-dessus de l'encolure (6)
     expect(profil(bone('cuisseD', 0))).toBe(8.2);  // jambe proche, au-dessus de la tête (7)
-    for (const view of ['front', 'back'] as View[]) expect(riderZForQuad(view)(bone('torse', 0))).toBe(6.6);
   });
 
-  it('le harnachement s\'intercale aux mêmes plans qu\'avant la publication de la table', () => {
-    const monture = [bone('tronc', QUAD_Z.tronc.profile), bone('tete', QUAD_Z.tete.profile)];
-    const profil = mountTackBones(monture, 'profile');
-    expect(profil.find((b) => b.id === 'selle')?.z).toBe(5.5);
-    expect(profil.find((b) => b.id === 'renes')?.z).toBe(6.7);
-    expect(mountTackBones(monture, 'front').find((b) => b.id === 'selle')?.z).toBe(5.5);
+  // Lot 1 (2026-08-05) : c'est le CODE qui a bougé — le forfait unique de face/dos (torse 6.6,
+  // jambes au même plan que le torse) devient une table PAR VUE (`QUAD_RIDER_Z`).
+  it('de DOS, le cavalier COUVRE la tête de sa monture et ses jambes passent derrière la croupe', () => {
+    const dos = riderZForQuad('back');
+    expect(dos(bone('torse', 0))).toBeGreaterThan(QUAD_Z.tete.back);
+    for (const jambe of ['cuisseG', 'cuisseD', 'piedG', 'piedD']) {
+      expect(dos(bone(jambe, 0)), `${jambe} doit passer derrière la croupe`).toBeLessThan(QUAD_Z.tronc.back);
+    }
+  });
+
+  it('de FACE, le cavalier passe DERRIÈRE la tête redressée et ses jambes derrière le poitrail', () => {
+    const face = riderZForQuad('front');
+    expect(face(bone('torse', 0))).toBeLessThan(QUAD_Z.tete.front);
+    expect(face(bone('torse', 0))).toBeGreaterThan(QUAD_Z.tronc.front);
+    for (const jambe of ['cuisseG', 'cuisseD']) expect(face(bone(jambe, 0))).toBeLessThan(QUAD_Z.tronc.front);
+  });
+
+  it('le harnachement s\'intercale juste au-dessus du barillet, dans les 3 vues', () => {
+    for (const view of VIEWS) {
+      const monture = [bone('tronc', QUAD_Z.tronc[view]), bone('tete', QUAD_Z.tete[view])];
+      const tack = mountTackBones(monture, view);
+      expect(tack.find((b) => b.id === 'selle')?.z, `selle ${view}`).toBe(QUAD_Z.tronc[view] + 0.5);
+      if (view === 'profile') expect(tack.find((b) => b.id === 'renes')?.z).toBe(QUAD_Z.encolure.profile + 0.7);
+    }
   });
 });
 

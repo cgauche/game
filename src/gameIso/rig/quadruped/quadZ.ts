@@ -57,3 +57,39 @@ export function quadZOrder(view: View): { id: QuadBoneId; z: number }[] {
     .map(([id, byView]) => ({ id, z: byView[view] }))
     .sort((a, b) => a.z - b.z || a.id.localeCompare(b.id));
 }
+
+/** Plans du CAVALIER intercalés dans l'échelle de la monture, par vue (`mountedRig`). */
+export interface QuadRiderZ { corps: number; jambeProche: number; jambeLointaine: number }
+
+/**
+ * Où s'intercale le cavalier, VUE PAR VUE — la position de l'œil autour de la monture décide.
+ * PROFIL : la jambe lointaine passe sous le barillet, le corps au-dessus de l'encolure, la jambe
+ * proche par-dessus la tête. DE FACE : le poitrail est la partie la plus proche de l'œil (les deux
+ * jambes passent derrière lui) et la tête redressée est devant le cavalier. DE DOS : c'est la
+ * croupe qui est au plus près (les jambes passent derrière elle) et la tête de la monture est à
+ * l'autre bout de la bête — le cavalier la COUVRE.
+ */
+export const QUAD_RIDER_Z: Record<View, QuadRiderZ> = {
+  profile: {
+    corps: QUAD_Z.encolure.profile + 0.6,
+    jambeProche: QUAD_Z.tete.profile + 1.2,
+    jambeLointaine: QUAD_Z.tronc.profile - 0.5,
+  },
+  front: {
+    corps: QUAD_Z.tete.front - 0.5,
+    jambeProche: QUAD_Z.tronc.front - 0.5,
+    jambeLointaine: QUAD_Z.tronc.front - 0.5,
+  },
+  back: {
+    corps: QUAD_Z.tete.back + 0.6,
+    jambeProche: QUAD_Z.tronc.back - 0.5,
+    jambeLointaine: QUAD_Z.tronc.back - 0.5,
+  },
+};
+
+/** Plans du HARNACHEMENT, par vue : la selle juste au-dessus du barillet, les rênes juste
+ *  au-dessus de l'encolure (elles ne sont posées qu'en profil). */
+export const quadTackZ = (view: View) => ({
+  selle: QUAD_Z.tronc[view] + 0.5,
+  renes: QUAD_Z.encolure[view] + 0.7,
+});
