@@ -134,6 +134,13 @@ function legPartsFront(p: QuadProps, far: boolean, foot: QuadFoot, fore = false)
 // +x = avant. La croupe (os) ne porte plus que pattes arrière/queue ; l'arrière-train vit ici
 // (la croupe ne tourne que de quelques degrés en anim — perte négligeable, couture supprimée).
 // La profondeur est encore étirée par girth (scale vertical au rendu).
+// Canal `bodyHi` (calque clair du haut de la silhouette : pelage en touffes, balafres) : la DEF DE
+// TÊTE le déclare, la CARRURE décide où il s'applique — deux cas l'ajoutent à leur `hi` (`ursine`,
+// `canine`), les six autres l'ignorent. Une tête qui déclare le canal peint donc sur ces deux
+// carrures, quelle que soit l'espèce porteuse. Population au 2026-08-05 : `ours` (ours + blaireau
+// en `ursine`, chien en `feline` — non consulté là) et `loup-feroce` (loup, `canine`) ; les couples
+// (canal, espèce) non consultés sont un stock gelé nominatif (`heads/quad-heads.test.ts`), et
+// qu'aucun canal ne soit de l'art mort y est une garde.
 function barrel(p: QuadProps): string {
   const bl = p.bodyLen;
   const X = (n: number) => (n * bl).toFixed(1);
@@ -153,7 +160,7 @@ function barrel(p: QuadProps): string {
       path = `M${X(30)} -12 Q${X(34)} -4 ${X(33)} 6 Q${X(30)} 17 ${X(20)} 20 Q${X(2)} 24 ${X(-16)} 21 Q${X(-34)} 22 ${X(-42)} 14 Q${X(-48)} 6 ${X(-46)} -4 Q${X(-44)} -14 ${X(-34)} -18 Q${X(-20)} -22 ${X(-6)} -24 Q${X(6)} -28 ${X(16)} -24 Q${X(26)} -20 ${X(30)} -12 Z`;
       hi = `<path d="M${X(-16)} -21 Q${X(2)} -27 ${X(16)} -23 L${X(15)} -18 Q${X(2)} -22 ${X(-15)} -16 Z" fill="@corpsH" opacity="0.55"/>`;
       lo = `<path d="M${X(-42)} 12 Q${X(-8)} 22 ${X(24)} 14 L${X(26)} 8 Q${X(-6)} 18 ${X(-41)} 6 Z" fill="@corpsO" opacity="0.85"/>`;
-      hi += quadArt(quadHeadDef(p.head).bodyHi, p); // calque de pelage déclaré par la DEF de tête
+      hi += quadArt(quadHeadDef(p.head).bodyHi, p); // canal `bodyHi` de la def de tête (cf. en-tête)
       break;
     case 'canine': // loup/chien : garrot haut, DOS qui plonge vers la croupe, poitrail PROFOND
       // descendu au coude, fort RELEVÉ de ventre (flanc creusé) au niveau du rein — silhouette
@@ -161,7 +168,7 @@ function barrel(p: QuadProps): string {
       path = `M${X(30)} 2 Q${X(33)} -8 ${X(31)} -12 Q${X(28)} -17 ${X(22)} -17 Q${X(4)} -16 ${X(-12)} -14 Q${X(-30)} -12 ${X(-40)} -7 Q${X(-45)} -2 ${X(-43)} 3 Q${X(-40)} 6 ${X(-33)} 6 Q${X(-24)} 6 ${X(-18)} 3 Q${X(-8)} 7 ${X(4)} 11 Q${X(16)} 14 ${X(25)} 13 Q${X(31)} 8 ${X(30)} 2 Z`;
       hi = `<path d="M${X(-28)} -13 Q${X(-4)} -16 ${X(18)} -16 L${X(17)} -12 Q${X(-4)} -13 ${X(-27)} -9 Z" fill="@corpsH" opacity="0.5"/>`;
       lo = `<path d="M${X(-33)} 5 Q${X(-22)} 5 ${X(-16)} 2.5 Q${X(-6)} 6 ${X(6)} 10 Q${X(18)} 13 ${X(24)} 11 L${X(22)} 7 Q${X(14)} 9 ${X(4)} 6 Q${X(-8)} 3 ${X(-18)} 0 Q${X(-26)} 1.5 ${X(-32)} 1 Z" fill="@corpsO" opacity="0.7"/>`;
-      hi += quadArt(quadHeadDef(p.head).bodyHi, p); // calque de pelage déclaré par la DEF de tête
+      hi += quadArt(quadHeadDef(p.head).bodyHi, p); // canal `bodyHi` de la def de tête (cf. en-tête)
       break;
     case 'feline': // poitrail profond + TAILLE creusée + haunches arrière rondes et musclées
       path = `M${X(30)} -15 Q${X(34)} -8 ${X(33)} 0 Q${X(31)} 8 ${X(23)} 10 Q${X(10)} 11 ${X(0)} 8 Q${X(-12)} 5 ${X(-22)} 8 Q${X(-36)} 12 ${X(-43)} 6 Q${X(-48)} -1 ${X(-45)} -9 Q${X(-42)} -16 ${X(-32)} -17 Q${X(-16)} -19 ${X(-2)} -20 Q${X(12)} -23 ${X(23)} -20 Q${X(29)} -18 ${X(30)} -15 Z`;

@@ -52,6 +52,10 @@ const MAX_FAR_LINES = 30;
 const MAX_WING_STATE_LINES = 3;
 const MAX_SPECIES_SCALAR_LINES = 13;
 const MAX_TAIL_SITES = 0; // 20 sites avant l'extraction des QUEUES en defs (2026-08-05)
+/** Lignes du socle qui LISENT l'axe `mane` (`p.mane` ou son accesseur) : 4 au 2026-08-05 —
+ *  l'accesseur, sa lecture dans `neck`, la fraise de poitrail canine, la touffe de croupe canine.
+ *  Le compte ne peut que décroître ; la crinière rejoint les têtes et les queues en part-defs. */
+const MAX_MANE_SITES = 4;
 
 const headSites = [...CODE_SRC.matchAll(/p\.head === '([a-z-]+)'/g)].map((m) => m[1]);
 const linesMatching = (re: RegExp) => CODE.filter((l) => re.test(l)).length;
@@ -109,6 +113,13 @@ describe('socle quadrupède : le branchement par espèce ne peut que DÉCROÎTRE
     expect((CODE_SRC.match(/p\.tail !==|switch\s*\(\s*p\.tail\s*\)|\[\s*p\.tail\s*\]/g) ?? []).length,
       'forme d\'aiguillage par queue invisible au compte des jetons').toBe(0);
     expect([...":p.tail === 'crin'".matchAll(/p\.tail === '[a-z-]+'/g)].length, 'détecteur mort').toBe(1);
+  });
+
+  it('lignes lisant l\'axe `mane` : 4 avant l\'extraction des CRINIÈRES en defs', () => {
+    const MANE = /maneOf\(|p\.mane\b/;
+    expect(linesMatching(MANE), 'lectures de `mane` dans quadParts.ts').toBeLessThanOrEqual(MAX_MANE_SITES);
+    expect(MANE.test("  const ruff = maneOf(p) === 'hirsute'"), 'détecteur mort').toBe(true);
+    expect(MANE.test('const maneOf = (p: QuadProps): QuadMane => p.mane;'), 'détecteur mort').toBe(true);
   });
 
   it('le stock des queues a MIGRÉ : 11 defs enregistrées', () => {

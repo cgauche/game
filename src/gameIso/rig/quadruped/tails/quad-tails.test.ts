@@ -9,16 +9,13 @@ import { quadArt } from '../partArt';
 import type { QuadArt } from '../partArt';
 import { QUAD_SPECIES, WINGED_SPECIES } from '../../creatures';
 import { MISSING_TONE } from '../../viewArt';
+import { consumedAxes, witnessesOf } from '../axis-fuzz.fixture';
 import type { QuadProps } from '../quadSkeleton';
 
 const SPECIES: Record<string, QuadProps> = { ...QUAD_SPECIES, ...WINGED_SPECIES };
 
 /** Props d'une espèce qui PORTE cette queue. */
-const witness = (key: string): QuadProps => {
-  const p = Object.values(SPECIES).find((s) => s.tail === key);
-  if (!p) throw new Error(`aucune espèce ne porte la queue « ${key} » — témoin introuvable`);
-  return p;
-};
+const witness = (key: string): QuadProps => witnessesOf(SPECIES, 'tail', key)[0];
 const arts = (d: QuadTailDef): QuadArt[] => [d.art.profile, d.art.back];
 
 describe('defs de queue quadrupèdes : contrat de vues, d\'axes et de repli', () => {
@@ -37,13 +34,12 @@ describe('defs de queue quadrupèdes : contrat de vues, d\'axes et de repli', ()
     expect(Object.values(QUAD_TAILS).filter((d) => d.vide).map((d) => d.key)).toEqual(['sans']);
   });
 
-  it('axes DÉCLARÉS = axes CONSOMMÉS (mesure à l\'exécution)', () => {
+  it('axes DÉCLARÉS = axes CONSOMMÉS (TOUS les témoins × produit des valeurs déclarées)', () => {
     for (const d of Object.values(QUAD_TAILS)) {
-      const p = witness(d.key);
-      const used = new Set<string>();
-      const spy = new Proxy(p, { get: (t, k) => { if (typeof k === 'string') used.add(k); return t[k as keyof QuadProps]; } });
-      for (const a of arts(d)) quadArt(a, spy as QuadProps);
-      expect([...used].sort(), `${d.key} : axes consommés non déclarés`).toEqual([...new Set<string>(d.params ?? [])].sort());
+      const declared = [...new Set<string>(d.params ?? [])].sort();
+      const { used, missingDomain } = consumedAxes(arts(d), witnessesOf(SPECIES, 'tail', d.key), declared);
+      expect(missingDomain, `${d.key} : axe déclaré sans domaine de fuzz (AXIS_FUZZ)`).toEqual([]);
+      expect(used, `${d.key} : axes consommés non déclarés`).toEqual(declared);
     }
   });
 
