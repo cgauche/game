@@ -11,7 +11,7 @@
         "timonier"
       ],
       "essential": "capitaine",
-      "enjeu": "Quand vous déterminez la progression d'un grand navire dans des conditions normales, vous pouvez effectuer un Test d'équipage au lieu d'un Test de Navigation.",
+      "rule": "test-equipage-progression",
       "source": {
         "book": "mer-des-griffes",
         "page": 122,
@@ -29,7 +29,7 @@
         "timonier"
       ],
       "essential": "mousse",
-      "enjeu": "Ce genre de Test sert à déterminer la vitesse. Il suit généralement les règles de poursuite et de course en page 109. Ce sont les Mousses qui réduisent la voilure ou qui rament, ils sont donc essentiels pour cette tâche.",
+      "rule": "test-equipage-progression-poursuite",
       "source": {
         "book": "mer-des-griffes",
         "page": 122,
@@ -47,7 +47,7 @@
         "chansonnier"
       ],
       "essential": "timonier",
-      "enjeu": "Chaque fois qu'un vaisseau doit entreprendre un Test de Navigation afin de manœuvrer pour prendre un virage serré ou contourner un obstacle, ce Test peut être remplacé par un Test d'équipage. Le Timonier est le personnage le plus important dans ce cas.",
+      "rule": "test-equipage-manoeuvre",
       "source": {
         "book": "mer-des-griffes",
         "page": 123,
@@ -65,7 +65,7 @@
         "chansonnier"
       ],
       "essential": "vigie",
-      "enjeu": "Chaque fois que les circonstances nécessitent qu'un personnage à bord d'un vaisseau effectue un Test de Perception pour repérer un péril imminent, une terre à l'horizon ou le signal d'un phare, ce Test peut être remplacé par un Test d'équipage.",
+      "rule": "test-equipage-perception",
       "source": {
         "book": "mer-des-griffes",
         "page": 123,
@@ -83,7 +83,7 @@
         "navigateur"
       ],
       "essential": "navigateur",
-      "enjeu": "S'assurer que le bateau garde le cap est la responsabilité du Navigateur, mais les conseils de ceux qui se trouvent sur le pont l'aident indéniablement.",
+      "rule": "test-equipage-orientation",
       "source": {
         "book": "mer-des-griffes",
         "page": 123,
@@ -101,7 +101,7 @@
         "chansonnier"
       ],
       "essential": "mousse",
-      "enjeu": "Là où un petit navire effectuerait des Tests de Navigation pour éviter les Dégâts résultant de forts vents, un grand vaisseau peut être protégé par une prise de décision rapide de son Capitaine et par les actions promptes de l'équipage.",
+      "rule": "test-equipage-affaler",
       "source": {
         "book": "mer-des-griffes",
         "page": 123,
@@ -119,7 +119,7 @@
         "chansonnier"
       ],
       "essential": "mousse",
-      "enjeu": "Pour régler ce problème, l'équipage doit effectuer un Test étendu d'Extermination des nuisibles. Chaque Test nécessite que l'équipage consacre 1d10 heures à purger la vermine.",
+      "rule": "test-equipage-extermination-nuisibles",
       "source": {
         "book": "mer-des-griffes",
         "page": 123,
@@ -137,7 +137,7 @@
         "chirurgien"
       ],
       "essential": "cuisinier",
-      "enjeu": "Si le total de ce Test donne un ou plusieurs DR négatifs, réduisez le Moral d'un nombre égal au nombre de ces DR en plus des autres conséquences négatives.",
+      "rule": "test-equipage-rude-epreuve",
       "source": {
         "book": "mer-des-griffes",
         "page": 123,
@@ -155,7 +155,7 @@
         "navigateur"
       ],
       "essential": "mousse",
-      "enjeu": "Tout Test entrepris pour effectuer des réparations sur le navire peut être remplacé par un Test d'équipage d'Entretien.",
+      "rule": "test-equipage-entretien",
       "source": {
         "book": "mer-des-griffes",
         "page": 123,
@@ -173,7 +173,7 @@
         "timonier"
       ],
       "essential": "artilleur",
-      "enjeu": "Plutôt que de lancer les dés pour toucher pour chaque canon, le Test d'équipage de Tir de batterie peut être effectué et le total de DR s'applique à toutes les armes à feu tournées vers l'ennemi, pour le meilleur et pour le pire.",
+      "rule": "test-equipage-batterie",
       "source": {
         "book": "mer-des-griffes",
         "page": 123,

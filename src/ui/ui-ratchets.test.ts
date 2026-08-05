@@ -803,15 +803,12 @@ function scanBareButtons(files: string[]) {
 //    `rolled &&`, ou jet du même acteur) : rien à masquer. Les jets figés À L'OUVERTURE (Empoignade,
 //    Au Contact, Distraire, Désengagement) sont passés au builder au #990 — d'où 12 → 8.
 const FROZEN_WITNESS_BASELINE: Record<string, number> = {
-  // 2ᵉ Compétence du MÊME acteur (Test combiné) + « Puissance » ennemie construite `rolled &&` (l.93).
-  'ActivityModal.tsx': 2,
+  // 2ᵉ Compétence du MÊME acteur (Test combiné) ; la « Puissance » ennemie passe par `opposedLines`.
+  'ActivityModal.tsx': 1,
   'BargainModal.tsx': 1,           // Marchandage du marchand : jet tiré à la résolution (ligne opaque, `mask:'value'`)
   'CascadeModal.tsx': 1,           // rangée-participant FIGÉE d'un pas batch DÉJÀ validé (pile des étapes)
   'jetProps/useAttackJetProps.tsx': 2, // défense adverse : aperçu SANS valeur (pré-jet) + résultat post-jet
   'MultiRollList.tsx': 1,          // bilan de jets déjà résolus
-  // Vue PURE (sans store, donc sans calendrier possible) ET rangée construite `rolled && sr.opposed`
-  // (l.64) : le jet de la source n'existe qu'après la réponse de l'acteur.
-  'StateRecoveryModal.tsx': 1,
 };
 
 /** Portée d'une occurrence : le littéral `{…}` englobant (forme objet) ou la balise JSX (forme `={false}`). */

@@ -19,7 +19,7 @@ import {
   WATER_EXPOSURE, navalPorts,
   navalProgression, seaNavigation, seaPerils, seaWeather, shipConstruction,
   disponibilite, riverNavigation,
-  GRAPPLE, NIGHT_STAKES,
+  GRAPPLE, NIGHT_STAKES, VOYAGE_STAKES,
 } from './index';
 // #157 : catalogues de CONTENU déjà chargés par un module dédié (`src/data/*.ts` ou `src/engine/*.ts`,
 // pas la façade `index.ts`) — importés DIRECTEMENT ici (même patron que `massBattle*` ci-dessus, qui
@@ -188,6 +188,7 @@ const ARRAYS = {
   // LOT 3 #422 (FINAL) : enjeux VERBATIM de la cascade de nuit — tableau RACINE, nom de fichier
   // kebab-case divergent (même besoin que `navalPorts`).
   nightStakes: NIGHT_STAKES,
+  voyageStakes: VOYAGE_STAKES,
 } as const;
 
 export type DatasetKey = keyof typeof ARRAYS;
@@ -328,6 +329,7 @@ const NESTED_ARRAY_FILE: Partial<Record<DatasetKey, { file: string; root: () => 
   miscastWrath: { file: 'miscast.json', root: () => miscastRoot },
   // LOT 3 #422 (FINAL) : `nightStakes` (tableau racine, nom de fichier kebab-case divergent).
   nightStakes: { file: 'night-stakes.json', root: () => NIGHT_STAKES },
+  voyageStakes: { file: 'voyage-stakes.json', root: () => VOYAGE_STAKES },
 };
 /** Fichier disque d'un dataset-tableau (`<clé>.json` par défaut ; le fichier PARENT pour un tableau niché). */
 export function datasetFile(key: DatasetKey): string {

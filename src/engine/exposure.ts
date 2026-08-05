@@ -24,7 +24,7 @@
  * `exposureTestCount`/`exposureShelterFromTent`. La météo de scène donne la sévérité : pluie/neige
  * = difficile, tempête = extrême (froid). Pur : mute `c`, renvoie jets + journal.
  */
-import type { Combatant, CharKey, Difficulty, ItemInstance } from './types';
+import { CHAR_LABELS, type Combatant, type CharKey, type Difficulty, type ItemInstance } from './types';
 import type { RNG } from './dice';
 import { rollTest } from './tests';
 import { addCondition, hasCondition, loseWounds } from './conditions';
@@ -108,6 +108,22 @@ export function isWeatherWarded(c: Combatant): boolean {
  *  cape (LDB 65 l.44 — « des pénalités », non chiffrées ; valeur `exposure-no-coat-penalty`). */
 export function exposureTarget(c: Combatant, resVal: number): number {
   return Math.max(0, resVal - (hasCoat(c) ? 0 : Number(rule('exposure-no-coat-penalty'))));
+}
+
+/** Caractéristiques DU PREMIER échec d'Exposition (`FIRST_FAIL`), en libellés du catalogue — SOURCE
+ *  du descripteur d'enjeu de l'étape (`voyage-stakes.json`, gabarit `exposure`) : chaque terme est
+ *  l'effet que `applyExposureFailure` applique RÉELLEMENT, jamais une explication rédigée. PUR. */
+export function exposureFirstFailChars(kind: ExposureKind = 'froid'): string {
+  return FIRST_FAIL[kind].map((k) => CHAR_LABELS[k]).join('/');
+}
+
+/** Modificateur NOMMÉ compris dans `exposureTarget` : la pénalité maison « sans Manteau ni cape »
+ *  (`exposure-no-coat-penalty`) se LIT sur la ligne de jet au lieu d'être un −N anonyme dans la cible
+ *  (#1112). Renvoie `{}` quand rien ne s'applique (le porteur est couvert). */
+export function exposureCoatMods(c: Combatant): { mods?: { label: string; value: number }[] } {
+  if (hasCoat(c)) return {};
+  const pen = Number(rule('exposure-no-coat-penalty'));
+  return pen ? { mods: [{ label: 'Sans manteau', value: -pen }] } : {};
 }
 
 /** Objet le plus lourd porté par `c` (Encombrement le plus élevé, strictement positif) — LA

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
+import { refLabel } from '../data';
 import type { RollRowData } from './RollShell';
 import type { PanelRowData } from './RollPanel';
 
@@ -15,6 +16,9 @@ import type { PanelRowData } from './RollPanel';
  */
 export interface ParticipantRow {
   id: string;
+  /** Compétence RÉELLEMENT lancée (paire id + spécialisation) — le libellé de ligne s'en DÉRIVE. */
+  skillId?: string;
+  spec?: string;
   interactive?: boolean;
   rerolled?: boolean;
   result: { roll: number; target: number; sl: number; success?: boolean } | null;
@@ -71,7 +75,19 @@ export function buildParticipantRows<P extends ParticipantRow>(
     const res = part.result;
     const failed = participantFailed(res);
     const extendedDr = bundle.extendedDrOf?.(part, actor);
-    const panelRow = bundle.row(part, actor, res);
+    // Z5 (docs/charte-ui.md) — SOURCE UNIQUE du libellé de LIGNE d'une rangée-participant : la
+    // Compétence lancée, DÉRIVÉE de la paire `{skillId, spec}` par le résolveur canonique (« Voile
+    // (Chaland) »). Le producteur ne fournit plus de libellé libre : un `part.label` ne peut plus
+    // faire passer un RÔLE (« Timonier ») pour la Compétence (#1117).
+    const skillLabel = part.skillId ? refLabel('skills', { id: part.skillId, spec: part.spec }) : undefined;
+    const panelRow0 = bundle.row(part, actor, res);
+    const panelRow = skillLabel
+      ? {
+          ...panelRow0,
+          ...(panelRow0.d ? { d: { ...panelRow0.d, label: skillLabel } } : {}),
+          ...(panelRow0.pending ? { pending: { ...panelRow0.pending, label: skillLabel } } : {}),
+        }
+      : panelRow0;
     const note = bundle.note && res ? bundle.note(part, actor, res) : undefined;
     return [{
       key: part.id,

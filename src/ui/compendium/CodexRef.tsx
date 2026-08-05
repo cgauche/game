@@ -64,6 +64,7 @@ export function CodexRef({
   instance,
   tooltipOnly = false,
   wrap = false,
+  provenances,
   fallback,
 }: {
   category: string;
@@ -96,6 +97,9 @@ export function CodexRef({
    *  ⓘ voisin (#1078). La FICHE reste atteignable — le popover porte un bouton « Ouvrir la fiche »
    *  activable au pointeur (pont de survol) ou par ↓ depuis le contrôle (épinglage + focus). */
   wrap?: boolean;
+  /** Noms de PROVENANCE portés par le popover (soutiens d'un Test, octroyeurs d'un bonus) — la chip
+   *  reste sobre, le détail se lit au survol/à l'épinglage (arbitrage user 2026-08-05). */
+  provenances?: string[];
   /** Contenu de SECOURS quand l'entrée n'est pas au catalogue (arme invoquée/enchantée…) : un popover
    *  est tout de même rendu au survol (sub + body), sans ouverture de fiche. */
   fallback?: { sub?: string; body?: string };
@@ -134,16 +138,24 @@ export function CodexRef({
 
   useEffect(() => cancelHide, [cancelHide]);
 
-  // Épinglé : Échap referme, clic HORS du déclencheur ET hors du popover referme. Le popover porté
-  // compte comme « dedans » : sous `wrap` il est cliquable (sa porte vers la fiche), et un
-  // `mousedown` dessus le démonterait avant que le `click` n'atteigne le bouton.
+  // Échap referme le popover dès qu'il est À L'ÉCRAN — épinglé OU simplement affiché (survol/focus
+  // sous `wrap`, où la fermeture est différée par le pont de survol). La couverture d'origine (#1078
+  // B3a « Échap en couches ») ne visait que l'ÉPINGLÉ : un popover de chip resté affiché au-dessus du
+  // CTA d'une modale de jet ne répondait donc pas à Échap, et sa boîte (pointer-events auto sous
+  // `wrap`) interceptait le clic sur « Continuer » (recette #1117, vécu 3 fois).
+  // Clic HORS du déclencheur ET hors du popover referme aussi. Le popover porté compte comme
+  // « dedans » : sous `wrap` il est cliquable (sa porte vers la fiche), et un `mousedown` dessus le
+  // démonterait avant que le `click` n'atteigne le bouton.
   useEffect(() => {
-    if (!pinned) return;
+    if (!pinned && !pos) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
+      const wasPinned = pinned;
       unpin();
-      // Le focus revient au contrôle englobé (le bouton de dépense), jamais dans le vide.
-      if (wrap) ref.current?.querySelector('button')?.focus();
+      // Le focus ne revient au contrôle englobé QUE s'il était parti DANS le popover (épinglage) —
+      // sinon il n'a jamais bougé, et le re-focaliser rouvrirait le popover à l'instant même par
+      // `onFocus={show}` : Échap semblait alors « ne rien fermer » (recette #1117).
+      if (wrap && wasPinned) ref.current?.querySelector('button')?.focus();
     };
     const onDoc = (e: MouseEvent) => {
       const t = e.target as Node;
@@ -156,7 +168,7 @@ export function CodexRef({
       document.removeEventListener('keydown', onKey);
       document.removeEventListener('mousedown', onDoc);
     };
-  }, [pinned, unpin, wrap]);
+  }, [pinned, pos, unpin, wrap]);
 
   // Épinglage clavier sous `wrap` : le focus ENTRE dans le popover, sur sa porte — sans quoi la
   // fiche ne serait atteignable qu'à la souris (le portal est en fin de `body`, hors ordre de Tab).
@@ -247,6 +259,10 @@ export function CodexRef({
             {inst && <span className="codex-pop-sub">{title}</span>}
             {popSub && <span className="codex-pop-sub">{popSub}</span>}
             {metaLine && <span className="codex-pop-meta">{metaLine}</span>}
+            {/* PROVENANCES de la chip (qui soutient, qui octroie) — arbitrage user 2026-08-05 :
+                « Normalement les informations de ce genre sont dans le hover codex non ? ». Elles
+                vivent DANS le popover, jamais en badges flottants à côté de la chip. */}
+            {provenances?.length ? <span className="codex-pop-meta">{provenances.join(' · ')}</span> : null}
             {body && <span className="codex-pop-body">{body}</span>}
             {(src || openFiche) && (
               <span className="codex-pop-foot">

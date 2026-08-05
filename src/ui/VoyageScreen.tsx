@@ -115,6 +115,15 @@ const hullTone: (cur: number, max: number) => GaugeTone = (cur, max) => {
   const frac = max > 0 ? cur / max : 1;
   return frac <= 0.25 ? 'danger' : frac <= 0.5 ? 'warn' : 'ok';
 };
+
+/** COQUE VIVE du navire de campagne (source unique `vessel.wounds`, #296) — jauge partagée par la tuile
+ *  de la carte de voyage ET par l'écran de traversée : une seule surface pour un seul état. `null` si
+ *  aucun navire. */
+export function vesselHullGauge(vessel: CampaignVessel | null | undefined): { current: number; max: number; tone: (cur: number, max: number) => GaugeTone } | null {
+  if (!vessel) return null;
+  const max = vessel.wounds?.max ?? findVehicleById(vessel.vehicleId)?.hull?.char.B ?? 0;
+  return { current: vessel.wounds?.current ?? max, max, tone: hullTone };
+}
 const moraleGaugeTone: (v: number) => GaugeTone = (v) => (v <= 25 ? 'danger' : v <= 50 ? 'warn' : 'ok');
 const cargoGaugeTone: (enc: number, cap: number) => GaugeTone = (enc, cap) => {
   const frac = cap > 0 ? enc / cap : 0;
@@ -190,11 +199,10 @@ export function voyageTiles(
     });
     if (vessel) {
       const vd = findVehicleById(vessel.vehicleId);
-      const woundsMax = vessel.wounds?.max ?? vd?.hull?.char.B ?? 0;
-      const woundsCur = vessel.wounds?.current ?? woundsMax;
+      const hullGauge = vesselHullGauge(vessel)!;
       const capacity = vd?.ship?.capacity ?? 0;
       const cargoEnc = cargoTotalEnc(vessel.cargo ?? []);
-      tiles.push({ key: 'coque', icon: 'scenario/port', label: 'Coque', value: `${woundsCur} / ${woundsMax}`, gauge: { value: woundsCur, max: woundsMax, tone: hullTone }, onClick: onDossier, title: 'Dossier du navire' });
+      tiles.push({ key: 'coque', icon: 'scenario/port', label: 'Coque', value: `${hullGauge.current} / ${hullGauge.max}`, gauge: { value: hullGauge.current, max: hullGauge.max, tone: hullGauge.tone }, onClick: onDossier, title: 'Dossier du navire' });
       tiles.push({ key: 'moral', icon: 'nav/seat-owner', label: 'Moral', value: `${vessel.morale.score} — ${moraleBand(vessel.morale.score).desc.split('.')[0]}`, gauge: { value: vessel.morale.score, max: 100, tone: moraleGaugeTone }, onClick: onDossier });
       if (vessel.provisions != null) tiles.push({ key: 'provisions', icon: 'item/misc', label: 'Provisions', value: `${vessel.provisions} j-homme` });
       tiles.push({ key: 'cale', icon: 'item/misc', label: 'Cale', value: `${cargoEnc} / ${capacity} Enc`, gauge: { value: cargoEnc, max: Math.max(capacity, 1), tone: cargoGaugeTone }, onClick: onDossier });

@@ -5,8 +5,8 @@ import { makeRNG } from './dice';
 import { difficultyFromModifier } from './tests';
 import {
   rollRiverWind, tickRiverWind, riverWindEffect, savoirVoiesFluvialesBonus, riverPilotSkill,
-  riverControlKept, rowingAgilityFactor, riverDayKm, riverDriftKm, navDifficultyWithPenalty,
-  resolveCapsizeRighting, capsizeSinkTurns, holeSinkMinutes,
+  riverControlKept, rowingAgilityFactor, riverDayKm, riverDriftKm, navPenaltyMods,
+  capsizeRoundTarget, CAPSIZE_RIGHT_DIFFICULTY, CAPSIZE_RIGHT_CUMULATIVE, capsizeSinkTurns, holeSinkMinutes,
   riverCritical, resolveRiverImpact, rollBarrage, echouageDamage, findRiverPeril, RIVER_PERILS,
 } from './riverNavigation';
 
@@ -79,10 +79,11 @@ describe('Navigation & rame (l.11-17)', () => {
     expect(riverDriftKm(48)).toBe(12); // 25 %
   });
 
-  it('difficulté de Navigation = base + malus plat (Dérive −10, hors de contrôle −20, gouvernail −30)', () => {
-    expect(navDifficultyWithPenalty(0)).toBe('intermediaire');
-    expect(navDifficultyWithPenalty(-10)).toBe('complexe');
-    expect(navDifficultyWithPenalty(-20)).toBe('difficile');
+  it('les malus de Navigation sont des MODIFICATEURS NOMMÉS, pas des Difficultés (l.38 dérive −10, l.41 hors de contrôle −20)', () => {
+    expect(navPenaltyMods({})).toEqual([]);
+    expect(navPenaltyMods({ drift: true })).toEqual([{ label: 'Dérive', value: -10 }]);
+    expect(navPenaltyMods({ outOfControl: true })).toEqual([{ label: 'Hors de contrôle', value: -20 }]);
+    expect(navPenaltyMods({ drift: true, outOfControl: true }).reduce((s, m) => s + m.value, 0)).toBe(-30);
     expect(difficultyFromModifier(20)).toBe('accessible');
   });
 
@@ -96,18 +97,16 @@ describe('Navigation & rame (l.11-17)', () => {
 });
 
 describe('Chavirage & naufrage (note 4 l.40 ; l.101-103)', () => {
-  it('redressement : réussite au 1ᵉʳ Round → redressé (Navigation Accessible +20)', () => {
-    const r = resolveCapsizeRighting(200, 4, lo); // valeur haute + d100=1 → réussite immédiate
-    expect(r.righted).toBe(true);
-    expect(r.sank).toBe(false);
-    expect(r.rounds).toHaveLength(1);
+  it('redressement : la cible du 1ᵉʳ Round est la Navigation Accessible (+20), sans malus', () => {
+    expect(capsizeRoundTarget(45, 0)).toBe(65); // 45 + 20 (Accessible)
+    expect(CAPSIZE_RIGHT_DIFFICULTY).toBe('accessible');
   });
 
-  it('non redressé en BE Rounds → coule (échecs cumulés −5)', () => {
-    const r = resolveCapsizeRighting(0, 4, hi); // d100=100 → échec ; 4 Rounds (BE) épuisés
-    expect(r.sank).toBe(true);
-    expect(r.righted).toBe(false);
-    expect(r.rounds).toHaveLength(4);
+  it('chaque Round échoué ajoute −5 à la cible du suivant (note 4, l.40)', () => {
+    expect(CAPSIZE_RIGHT_CUMULATIVE).toBe(-5);
+    expect(capsizeRoundTarget(45, 1)).toBe(60); // 1 échec : 65 − 5
+    expect(capsizeRoundTarget(45, 3)).toBe(50); // 3 échecs : 65 − 15
+    expect(capsizeRoundTarget(2, 10)).toBe(1); // plancher de cible
   });
 
   it('temporisation du naufrage : chavirage = BE tours ; coque percée = E minutes (l.40 / l.103)', () => {

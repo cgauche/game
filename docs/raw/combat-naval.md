@@ -59,7 +59,7 @@ de 10 % d'équipage manquant**).
 comme ressource](#lequipage-comme-ressource--le-round-naval) · [`tests.md`](tests.md) (DR, Succès Minime).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.9, l.13, l.19, l.39, l.53) → `progression`, `skill`, `progression-poursuite`, `rollCrewRole`, `ShipBatteryModal`, `isPassengerInBattle`, `maneuverCrewTotal`, `ShipManeuverModal`, `resolveVolley`, `cascadeSuccessRules`, +39 — `src/data/crew-test-types.json`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/engine/volley.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, +13 fichiers
+- `MDG 14` (l.9, l.13, l.19, l.39, l.53) → `progression`, `skill`, `progression-poursuite`, `rollCrewRole`, `ShipBatteryModal`, `isPassengerInBattle`, `maneuverCrewTotal`, `ShipManeuverModal`, `resolveVolley`, `cascadeSuccessRules`, +42 — `src/data/crew-test-types.json`, `src/data/regles.json`, `src/data/voyage-stakes.json`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, +15 fichiers
 
 **État du code.** ✅ somme des DR, essentiel ×2, Moral, « un jet par poste » (PJ + 1 marin représentant).
 ✅ **Manque de bras** : cumul 2 rôles = +2 crans (`crewActed` + `easeDifficulty(-2)`) ET sous-effectif d'équipage
@@ -117,8 +117,8 @@ choisit**.
 (rôles parallèles) · `MDG 14 l.53` (cumul = +2 crans).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.354-420) → `MapPlace`, `scene`, `perilManagement` ⚠sans-appelant, `lighthouseSpotDifficulty`, `lighthouseOrientationDR`, `LIGHTHOUSE_PERIL_SPOT_BONUS` ⚠sans-appelant, `WorldMapPlacePanel`, `maelstrom-primordial`, `resolveShipUnits`, `pursuitLowMPenalty`, +10 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, `src/engine/seaNavigation.ts`, `src/engine/seaPerils.ts`, +6 fichiers
-- `MDG 14` (l.37, l.53) → `progression`, `skill`, `progression-poursuite`, `rollCrewRole`, `ShipBatteryModal`, `isPassengerInBattle`, `ShipManeuverModal`, `resolveVolley`, `CrewTestModalView`, `withCrewActed`, +26 — `src/data/crew-test-types.json`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/engine/volley.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, +12 fichiers
+- `MDG 13` (l.354-420) → `MapPlace`, `scene`, `perilManagement` ⚠sans-appelant, `lighthouseSpotDifficulty`, `lighthouseOrientationDR`, `LIGHTHOUSE_PERIL_SPOT_BONUS` ⚠sans-appelant, `WorldMapPlacePanel`, `maelstrom-primordial`, `resolveShipUnits`, `pursuitLowMPenalty`, +12 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, `src/data/voyage-stakes.json`, `src/engine/seaNavigation.ts`, +7 fichiers
+- `MDG 14` (l.37, l.53) → `progression`, `skill`, `progression-poursuite`, `rollCrewRole`, `ShipBatteryModal`, `isPassengerInBattle`, `ShipManeuverModal`, `resolveVolley`, `CrewTestModalView`, `withCrewActed`, +29 — `src/data/crew-test-types.json`, `src/data/regles.json`, `src/data/voyage-stakes.json`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, +14 fichiers
 
 **État du code.** ✅ (R3) `battle.crewActed` (par navire, reset au round-start `enterRoundStartPause`) recense les
 marins ayant contribué à un Test ce Round. Les rôles Capitaine/Chansonnier/Mousse/Timonier étant dans `manoeuvre`
@@ -145,7 +145,7 @@ M ≤ 3 subit des pénalités de Poursuite (M3 = −1 DR, M2 = −2, M1 = −3, 
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 12` (l.92) → `shipboardSouls`, `surcharge-3` — `src/data/sea-cargo.json`, `src/gameIso/rig/ship/defs/bateau-de-patrouille.ts`, `src/state/shipCrew.ts`
-- `MDG 13` (l.173, l.304, l.376, l.378-399) → `OrientationOutcome`, `aucune`, `orientationOutcome`, `legeres`, `voyageTiles`, `abondantes`, `pursuitLowMPenalty`, `pursuitDistanceGain`, `tres-abondantes`, `caniculaire`, +26 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/data/sea-navigation.json`, `src/data/sea-weather.json`, `src/data/trappings.json`, `src/engine/seaNavigation.ts`, +2 fichiers
+- `MDG 13` (l.173, l.304, l.376, l.378-399) → `OrientationOutcome`, `aucune`, `orientationOutcome`, `legeres`, `voyageTiles`, `abondantes`, `pursuitLowMPenalty`, `pursuitDistanceGain`, `tres-abondantes`, `caniculaire`, +28 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/data/sea-navigation.json`, `src/data/sea-weather.json`, `src/data/trappings.json`, `src/data/voyage-stakes.json`, +3 fichiers
 
 **État du code.** ✅ Test d'équipage (Timonier ★), virage = réussite du d100 (≠ dr≥0), Man en ±DR, Progression,
 placement des pièces (Contenance), « Peu maniable »/« Lissage ». ⬜ Vent (direction/force → M), affaler les voiles.
@@ -266,7 +266,7 @@ peut aussi considérer un résultat de 0 comme un succès en fonction des circon
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 13` (l.656) → `VolleyShot`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction` — `src/data/sea-navigation.json`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/volley.ts`
-- `MDG 14` (l.13, l.126-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `maneuverCrewTotal`, +58 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/localisation.json`, `src/data/ship-criticals.json`, `src/engine/crewMorale.ts`, +14 fichiers
+- `MDG 14` (l.13, l.126-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `maneuverCrewTotal`, +75 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/localisation.json`, `src/data/regles.json`, `src/data/ship-criticals.json`, +16 fichiers
 
 **État du code.** ✅ **(1)(2)(3)(4-Dégâts)(5)** après refonte : Test d'équipage multi (Artilleur ★) → DR partagé →
 chaque pièce préparée comme le tir individuel (effectif via `crewedFireWeapon`, munition via `weaponWithAmmo`) → Dégâts
@@ -369,7 +369,7 @@ De plus, tous les coups qui touchent une fois que le score de Blessures… est t
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 13` (l.654-674) → `VolleyShot`, `beginShipwreck`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `OPTIONAL_RULES`, `finalizeFastVoyage`, `runSeaDay`, `checkBattleOver` — `src/data/sea-navigation.json`, `src/engine/conditions.ts`, `src/engine/policy.ts`, `src/engine/shipBuild.ts`, `src/engine/volley.ts`, `src/state/combatFlow.ts`, +2 fichiers
-- `MDG 14` (l.13, l.128) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `maneuverCrewTotal`, +58 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/localisation.json`, `src/data/ship-criticals.json`, `src/engine/crewMorale.ts`, +14 fichiers
+- `MDG 14` (l.13, l.128) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `maneuverCrewTotal`, +75 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/localisation.json`, `src/data/regles.json`, `src/data/ship-criticals.json`, +16 fichiers
 
 **État du code.** ✅ `applyHullCritical` (localisation, Équipage, Éclats, Voie d'eau, En flammes en GameOp, Critiques
 de Coque récursifs). ✅ (R1) **« tout coup à B=0 = Critique »** : `resolveVolley` critique sur `wounds.current ≤ 0`.
@@ -386,7 +386,7 @@ Manœuvre / frontale = IC adverse + M total des deux). Sauf précision, **les co
 **Sources RAW** : `MDG 13 l.446-464`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.446-464) → `collisionIndex`, `iceberg`, `debris-marins`, `resolveCollision`, `rocher`, `bas-fonds`, `perilManagement` ⚠sans-appelant, `faible`, `strandingPenalty`, `moyen`, +6 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-perils.json`, `src/engine/collision.ts`, `src/engine/seaPerils.ts`, `src/state/seaVoyageFlow.ts`, `src/state/shipCollision.ts`
+- `MDG 13` (l.446-464) → `collisionIndex`, `iceberg`, `debris-marins`, `resolveCollision`, `rocher`, `bas-fonds`, `perilManagement` ⚠sans-appelant, `faible`, `strandingPenalty`, `moyen`, +6 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-perils.json`, `src/data/voyage-stakes.json`, `src/engine/collision.ts`, `src/engine/seaPerils.ts`, `src/state/seaVoyageFlow.ts`, +1 fichiers
 
 **État du code.** ✅ `resolveCollision` (frontal/milieu/poupe/s'éloigne/manœuvre), localisation Coque.
 
@@ -401,7 +401,7 @@ d'une **Rude épreuve** réduisent le Moral d'autant.
 **Sources RAW** : `MDG 14 l.110` (Rude épreuve → Moral) · `l.133-141` (Moral 75).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.110) → `manoeuvre`, `perception`, `orientation`, `affaler`, `extermination-nuisibles`, `rude-epreuve`, `entretien`, `batterie`, `rudeEpreuveMoraleDelta`, `ActionBar`, +2 — `src/data/crew-test-types.json`, `src/data/localisation.json`, `src/engine/crewMorale.ts`, `src/state/seaActivities.ts`, `src/state/seaVoyageFlow.ts`, `src/ui/ActionBar.tsx`
+- `MDG 14` (l.110) → `manoeuvre`, `perception`, `orientation`, `affaler`, `extermination-nuisibles`, `rude-epreuve`, `entretien`, `batterie`, `crew-progression`, `crew-orientation`, +19 — `src/data/crew-test-types.json`, `src/data/localisation.json`, `src/data/regles.json`, `src/data/voyage-stakes.json`, `src/engine/crewMorale.ts`, `src/state/seaActivities.ts`, +2 fichiers
 
 **État du code.** ✅ Moral 75 par défaut, bande de DR au Test d'équipage, pont campagne→combat. ⬜ évolution du
 Moral en combat (Rude épreuve, mutinerie).

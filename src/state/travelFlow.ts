@@ -804,7 +804,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
       const best = partyAssisted(party, 'survie-en-exterieur'); // Soutien (LDB 12)
       if (best) return { consequences: freeCons(j), insert: [{
         id: 'peril-survie', kind: 'landPerilSurvie', actorId: best.actor.id, icon: 'travel/compass', label: 'Survie en extérieur',
-        rollLabel: 'Survie en extérieur', base: best.value, support: best.support, target: Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS.accessible)), result: null, interactive: true,
+        rollLabel: 'Survie en extérieur', base: best.value, support: best.support, difficulty: 'accessible', target: Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS.accessible)), result: null, interactive: true,
       }] };
       j.push(...applyEreintant(get, set)); // personne pour tester : retard direct
     } else if (entry.kind === 'attaque') {
@@ -814,7 +814,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
       const best = partyAssisted(party, 'perception'); // Soutien (LDB 12)
       if (best) return { consequences: freeCons(j), insert: [{
         id: 'peril-perception', kind: 'landPerilPerception', actorId: best.actor.id, icon: 'ui/eye', label: 'Perception',
-        rollLabel: 'Perception', base: best.value, support: best.support, target: Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS.accessible)), result: null, interactive: true,
+        rollLabel: 'Perception', base: best.value, support: best.support, difficulty: 'accessible', target: Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS.accessible)), result: null, interactive: true,
         meta: { destLabel, configured, ambushScene: route.ambush?.scene ?? '', ambushEntry: route.ambush?.entry ?? '', ambushEnc: route.ambush?.encounter ?? '' } }] };
       if (configured) { j.push(...markLandInterrupt(get, set, { kind: 'ambush', scene: route.ambush!.scene, entry: route.ambush!.entry, encounter: route.ambush!.encounter, noSurprise: false }, destLabel)); return { consequences: freeCons(j) }; }
       j.push('(Aucune rencontre d’embuscade n’est configurée sur cette route — l’alerte reste sans suite.)');
@@ -1045,11 +1045,14 @@ function applyVehicleProblemEffects(get: Get, set: Set, entry: ReturnType<typeof
  *  −10/km déjà galopé (l.229). `meta` porte l'accumulateur (km/heures déjà acquis) relu par l'applier
  *  pour chaîner le km SUIVANT (`insert`) ou finaliser la journée (`finalizeForcedPace`). */
 function buildForcedPaceStep(driver: { actor: Combatant; value: number }, kmLeft: number, galloped = 0, km = 0, hours = 0): CascadeStep {
-  const base = Math.max(0, driver.value - 10 * galloped); // −10 par km déjà au pas de course (l.229)
+  const penalty = -10 * galloped; // l.229
+  const base = Math.max(0, driver.value + penalty);
   return {
     id: `land-forced-${galloped}`, kind: 'landForcedPace', actorId: driver.actor.id, icon: 'travel/cart',
     label: `${driver.actor.label} — Conduite d'attelage (allure forcée)`, rollLabel: 'Conduite d’attelage',
-    base, target: Math.max(1, Math.min(99, base)), result: null, interactive: true,
+    base, difficulty: 'intermediaire',
+    ...(penalty ? { mods: [{ label: `Km déjà au pas de course (${galloped})`, value: penalty }] } : {}),
+    target: Math.max(1, Math.min(99, base)), result: null, interactive: true,
     meta: { kmLeft, galloped, km, hours, driverBase: driver.value },
   };
 }
@@ -1113,7 +1116,7 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
       return { consequences: freeCons(j), insert: [{
         id: `${step.id}-control`, kind: 'landForcedPaceControl', actorId: step.actorId, icon: 'travel/cart',
         label: `${name} — reprendre le contrôle`, rollLabel: 'Conduite d’attelage',
-        base: driverBase, target: Math.max(1, Math.min(99, driverBase)), result: null, interactive: true,
+        base: driverBase, difficulty: 'intermediaire', target: Math.max(1, Math.min(99, driverBase)), result: null, interactive: true,
         meta: { finalKm, finalHours },
       }] };
     }

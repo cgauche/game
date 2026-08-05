@@ -70,7 +70,9 @@ async function runOneSeaDay() {
     const casc = get().pendingCascade;
     if (casc) {
       const cur = casc.participants[casc.cursor];
-      if (cur?.participants) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
+      // Choix de Progression (MDG 14 l.63) : le pilote répond par défaut, comme la cadence commandée.
+      if (cur?.options && !cur.chosen) get().cascadeChoose(cur.id, cur.defaultChoice ?? cur.options[0].key);
+      else if (cur?.participants) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
       else if (cur && !cur.result) get().cascadeRoll(cur.id);
       get().cascadeNext();
       await tick();
@@ -90,7 +92,8 @@ async function runSeaActivities() {
     const ext = get().pendingExtendedTest;
     if (casc) {
       const cur = casc.participants[casc.cursor];
-      if (cur && !cur.result) get().cascadeRoll(cur.id);
+      if (cur?.options && !cur.chosen) get().cascadeChoose(cur.id, cur.defaultChoice ?? cur.options[0].key);
+      else if (cur && !cur.result) get().cascadeRoll(cur.id);
       get().cascadeNext();
       await tick();
       continue;

@@ -383,7 +383,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: 
       icon: 'ui/think', label: `Prolonger ${e.label} ?`,
       options: [{ key: 'yes', label: `Tenter (Force Mentale) — ${e.label}` }, { key: 'no', label: 'Renoncer' }],
       defaultChoice: 'no', interactive: true,
-      meta: { sourceSpellId: spellId, effectLabel: e.label },
+      meta: { sourceSpellId: spellId },
     });
   }
   return steps;

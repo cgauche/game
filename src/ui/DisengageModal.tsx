@@ -1,5 +1,5 @@
 import { useGame } from '../state/store';
-import { defenseValue, combatValue } from '../engine/combat';
+import { defenseValue, combatValue, defenseModifiers, baseTestModLines } from '../engine/combat';
 import { calmeValue } from '../engine/psychology';
 import { groupAdvantage } from '../engine/advantagePool';
 import { retreatAdvantageCost } from '../engine/combatFeatures/dispatch';
@@ -15,7 +15,7 @@ import { describeDisengage, describeDisengageFlee } from '../state/flowOutcomes'
 import { fleeBackstab, fleeCalme, fleeNeedCalme } from '../state/pendings';
 import { Modal } from './Modal';
 import { Icon } from './Icon';
-import { testBreakdown } from './breakdown';
+import { opposedLines, testBreakdown } from './breakdown';
 import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
 
 /**
@@ -155,6 +155,15 @@ export function DisengageModal() {
   const outcome = describeDisengage(pd);
   const winnerIndex = pd.result === 'success' ? 1 : pd.result === 'failure' ? 0 : null;
 
+  // Test OPPOSÉ Corps à corps (foe) / Esquive (mover) : la Difficulté est DÉCLARÉE UNE fois pour
+  // l'opposition entière (LDB 12 l.166 ; jet de combat, LDB 13 l.118).
+  // Modificateurs NOMMÉS de chaque côté, pris à la SOURCE que roule le résolveur : `baseTestMods` pour
+  // le Corps à corps « brut » du foe (`rollDisengageAttack`), `defenseModifiers` pour l'Esquive du mover
+  // (`rollMeleeDefender`) — jamais un +N anonyme dans la cible.
+  const [foeLine, moverLine] = opposedLines([
+    { label: 'Corps à corps', base: combatValue(foe, 'melee'), r: pd.atk, mods: baseTestModLines(foe, 'capacite-de-combat') },
+    { label: 'Esquive', base: defenseValue(mover, 'esquive'), r: pd.def, mods: defenseModifiers(mover, 'esquive') },
+  ]);
   // Rangée [0] = TÉMOIN : Corps à corps du foe, figé à l'ouverture (jamais relancé, aucun bouton) —
   // même calendrier de découverte que les autres jets figés (#990 : `pd.def` = la réponse du mover).
   const foeRow: RollRowData = {
@@ -162,14 +171,14 @@ export function DisengageModal() {
     ...frozenOpposedRow(useGame.getState(), {
       ownerId: pd.foeId,
       responded: opposedResponded(useGame.getState(), [{ id: pd.moverId, interactive: true, result: pd.def }]),
-      row: { combatant: foe, d: pd.atk ? testBreakdown('Corps à corps', combatValue(foe, 'melee'), pd.atk) : undefined },
+      row: { combatant: foe, d: foeLine.d },
     }),
   };
   // Rangée [1] = INTERACTIVE : Esquive du mover, porteuse de son cycle d'influence.
   const moverRow: RollRowData = {
     key: 'mover',
     actor: mover,
-    row: { combatant: mover, d: pd.def ? testBreakdown('Esquive', defenseValue(mover, 'esquive'), pd.def) : undefined },
+    row: { combatant: mover, d: moverLine.d },
     rolled: true,
     rerollable,
     onReroll: reroll,

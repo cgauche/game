@@ -6,7 +6,8 @@ import { RollShell, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
-import { testBreakdown } from './breakdown';
+import { baseTestModLines } from '../engine/combat';
+import { opposedLines } from './breakdown';
 import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
 import { Icon } from './Icon';
 
@@ -42,18 +43,25 @@ export function GrappleModal() {
     : pd.result === 'failure' ? `${foe.label} l'emporte : +1 Avantage.`
     : 'Égalité parfaite : l’Empoignade se poursuit.';
 
+  // Test OPPOSÉ de Force : la Difficulté est DÉCLARÉE UNE fois pour l'opposition entière
+  // (LDB 12 l.166 ; jet de combat, LDB 13 l.118).
+  // Modificateurs NOMMÉS (Avantage, États, météo) : même source que celle que roule `rollGrappleForce`.
+  const [foeLine, actorLine] = opposedLines([
+    { label: 'Force', base: effectiveChar(foe, 'force'), r: pd.atk, mods: baseTestModLines(foe, 'force') },
+    { label: 'Force', base: effectiveChar(actor, 'force'), r: pd.def, mods: baseTestModLines(actor, 'force') },
+  ]);
   // Rangée TÉMOIN : Force du foe, figée à l'ouverture (jamais relancée) — MASQUÉE tant que l'acteur
   // n'a pas répondu (#990 : `pd.def` est SA réponse ; le calendrier est celui de tous les jets figés).
   const foeRow = frozenOpposedRow(useGame.getState(), {
     ownerId: pd.foeId,
     responded: opposedResponded(useGame.getState(), [{ id: pd.actorId, interactive: true, result: pd.def }]),
-    row: { combatant: foe, d: pd.atk ? testBreakdown('Force', effectiveChar(foe, 'force'), pd.atk) : undefined },
+    row: { combatant: foe, d: foeLine.d },
   });
   // Rangée INTERACTIVE : Force de l'acteur, porteur de son cycle d'influence.
   const actorRow = {
     combatant: actor,
     actor,
-    row: { combatant: actor, d: pd.def ? testBreakdown('Force', effectiveChar(actor, 'force'), pd.def) : undefined },
+    row: { combatant: actor, d: actorLine.d },
     rolled,
     rollLabel: 'Lancer (Force)',
     onRoll: roll,

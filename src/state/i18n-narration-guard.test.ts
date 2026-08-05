@@ -32,6 +32,17 @@ import { fileURLToPath } from 'node:url';
 const ROOT = fileURLToPath(new URL('../../', import.meta.url)); // src/state/ → ../../ = racine du repo
 const SCAN_DIRS = ['src/engine', 'src/state'];
 
+/** Fichiers DISPENSÉS par NATURE (#1117) : leur sortie n'est pas une surface de JEU mais une sortie
+ *  d'OUTIL de développement — la console de recette (`__wfrp.*`), lue par un développeur/recetteur,
+ *  jamais par un joueur. Traduire ces verdicts n'a aucun sens, et les compter dans un cliquet
+ *  anti-hausse ne mesure rien (chaque helper de recette en ajoute par construction : la baseline
+ *  monterait à chaque outil, ce qui n'est pas un cliquet). Dispense STRUCTURELLE et NOMINATIVE — elle
+ *  ne s'étend pas d'elle-même : ajouter un fichier ici demande de justifier que sa surface est
+ *  hors-jeu. */
+const DEV_ONLY = new Set([
+  'src/state/devtools.ts', // outillage `__wfrp` de la recette navigateur (docs/recette-navigateur.md)
+]);
+
 /** Fichiers dont la narration de JOURNAL est entièrement passée au catalogue (Phase C) — baseline
  *  ZÉRO INVARIANTE : un littéral FR y réapparaissant échoue, quelle que soit la baseline générale. */
 const MIGRATED = new Set([
@@ -74,7 +85,7 @@ const BASELINE: Record<string, number> = {
   'src/state/corruptionFlow.ts': 4,
   // #839 : -3 (44 → 41) — messages de réglage MUTUALISÉS entre `rules()` et `prefs()` (forme, détail,
   // remise au défaut, valeur invalide) : une seule copie de chaque libellé pour les deux registres.
-  'src/state/devtools.ts': 40,
+  // `src/state/devtools.ts` : plus de baseline — DISPENSÉ par nature (`DEV_ONLY`, #1117).
   'src/state/interludeFlow.ts': 31,
   'src/state/keybindings.ts': 1,
   'src/state/massBattleFlow.ts': 21, // +1 mesuré : littéral SEMÉ à la déclaration du tableau de lignes (forme initialiseur, désormais comptée)
@@ -86,7 +97,7 @@ const BASELINE: Record<string, number> = {
   'src/state/portFlow.ts': 1,
   'src/state/pursuitFlow.ts': 2,
   'src/state/restFlow.ts': 4,
-  'src/state/riverVoyageFlow.ts': 11,
+  'src/state/riverVoyageFlow.ts': 10,
   'src/state/rollFlowFactory.ts': 1,
   // +3 mesurés : légendes de l'export ASCII semées à la déclaration (forme initialiseur, désormais
   // comptée). Ce ne sont pas des lignes de JOURNAL — stock gelé au même titre que le reste, à passer
@@ -183,6 +194,7 @@ function countsByFile(): Record<string, number> {
       if (statSync(p).isDirectory()) walk(p);
       else if (/\.tsx?$/.test(e) && !/\.test\.[tj]sx?$/.test(e)) {
         const rel = relative(ROOT, p).split('\\').join('/');
+        if (DEV_ONLY.has(rel)) continue; // sortie d'OUTIL de dev : hors périmètre de la narration de JEU
         const n = narrationCount(readFileSync(p, 'utf8'));
         if (n > 0) counts[rel] = n;
       }

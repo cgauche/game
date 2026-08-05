@@ -71,6 +71,8 @@ export function voyageDayEntry(opts: {
   d?: RollBreakdown;
   text?: string;
   tone?: NightEntry['tone'];
+  /** Rubrique commune des lignes d'une même étape (rendue en UNE bande par `MultiRollList`). */
+  group?: string;
 }): NightEntry {
-  return { id: opts.id, actorId: opts.actorId, label: opts.label, icon: opts.icon, d: opts.d, text: opts.text, tone: opts.tone };
+  return { id: opts.id, actorId: opts.actorId, label: opts.label, icon: opts.icon, d: opts.d, text: opts.text, tone: opts.tone, group: opts.group };
 }

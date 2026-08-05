@@ -69,7 +69,7 @@ import { applyShipPostes, autoFormCrews, servingCrewPresent, shipOfCrew, servabl
 import { posteHullOf, pushEligible, pushCrewOk, pushReachable } from './siegePush';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { crewTestContributors, shipCrewAssignments, shipMoraleScore, shipUndercrew, shipSaboteurDR, applyShipMoraleDelta, applyShantyToCrew, quartIndex, withCrewActed } from './shipCrew';
-import { resolveSteamSave, continueSeaDayAfterCascade, continueSeaDayAfterScorbut, continueSeaDayAfterExhaustion, runSeaDay, finalizePortArrival } from './seaVoyageFlow';
+import { resolveSteamSave, continueSeaDayAfterCascade, continueSeaDayAfterScorbut, continueSeaDayAfterExposure, continueSeaDayAfterExhaustion, runSeaDay, finalizePortArrival } from './seaVoyageFlow';
 import { continueSeaActivitiesAfterCascade } from './seaActivities';
 import { resolveCrewTestByRoles, rudeEpreuveMoraleDelta, crewTestSuccess, capToSuccesMinime } from '../engine/crewMorale';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
@@ -398,6 +398,7 @@ export function createCombatSlice(get: Get, set: Set) {
     else if (done?.purpose === 'pursuite') { continuePursuitRound(get, set, done); handled = true; } // manche de poursuite terrestre close → résoudre puis rouvrir/dénouer (state/pursuitFlow)
     // Entretien-survie maritime surfacé au MJ (#272 résiduel, seam #275) : la clôture enchaîne la phase suivante de la journée.
     else if (done?.purpose === 'seaScorbut') { continueSeaDayAfterScorbut(get, set, done.participants); handled = true; }
+    else if (done?.purpose === 'seaExposure') { continueSeaDayAfterExposure(get, set, done.participants); handled = true; }
     else if (done?.purpose === 'seaExhaustion') { continueSeaDayAfterExhaustion(get, set, done.participants); handled = true; }
     else if (done?.purpose === 'seaActivities') { continueSeaActivitiesAfterCascade(get, set); handled = true; } // Activités en mer (#273 Étape 2) → Commerce d'opportunité séquencé puis halte
     // Mini-cascade AUTONOME d'un événement de bord maritime (`purpose:'test'` : Cogue pirate, Ouragan,

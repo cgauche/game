@@ -11,7 +11,7 @@ import type { SeaRecapChrome } from '../state/seaVoyageFlow';
 
 const chrome: SeaRecapChrome = {
   weatherLabel: 'Ciel dégagé', windForce: 'vent-modere', windFrom: 'ouest', heading: 'est',
-  hull: { current: 40, max: 50 }, morale: 75, manann: 0, milesLeft: 300, daysLeft: 4,
+  hullDelta: 0, morale: 75, manann: 0, milesLeft: 300, daysLeft: 4,
 };
 
 function day(events: TravelRecapDay['events']): TravelRecapDay {

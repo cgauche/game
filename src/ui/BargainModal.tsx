@@ -5,7 +5,7 @@ import { influencesLocally } from '../state/netOwnership';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { supportSplit, testBreakdown, testPending } from './breakdown';
+import { supportSplit, opposedLines } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeBargain } from '../state/flowOutcomes';
@@ -46,12 +46,15 @@ export function BargainModalView({
   const rolled = pb.roll != null && pb.result != null;
   // Soutien des conseillers du groupe (LDB 12) : ligne de mod nommée, base SANS le Soutien.
   const { base, mods: supMods } = supportSplit(pb.playerSkill, pb.support);
-  const playerD = pb.roll ? testBreakdown('Marchandage', base, pb.roll, undefined, supMods) : undefined;
-  // Jet OPPOSÉ rendu façon Défense : 2 lignes à portrait (joueur + marchand), vainqueur accentué. Le
-  // Marchandage du marchand reste OPAQUE → ligne `mask:'value'` (portrait + dé + DR, sans base/cible).
-  const merchantD = rolled && pb.merchantRoll
-    ? { label: 'Marchandage', base: pb.merchantValue, modifier: 0, target: pb.merchantRoll.target, roll: pb.merchantRoll.roll, success: pb.merchantRoll.success, sl: pb.merchantRoll.sl, mask: 'value' as const }
-    : null;
+  // Jet OPPOSÉ de Marchandage rendu façon Défense : 2 lignes à portrait (joueur + marchand), vainqueur
+  // accentué, Difficulté DÉCLARÉE UNE fois pour l'opposition (LDB 12 l.166). Le Marchandage du marchand
+  // reste OPAQUE → `mask:'value'` (portrait + dé + DR, sans base/cible).
+  const [playerLine, merchantLine] = opposedLines([
+    { label: 'Marchandage', base, r: pb.roll, target: pb.playerSkill, mods: supMods },
+    { label: 'Marchandage', base: pb.merchantValue, r: rolled ? pb.merchantRoll : undefined, mask: 'value' },
+  ]);
+  const playerD = playerLine.d;
+  const merchantD = merchantLine.d ?? null;
   const opposed = rolled && !!actor && !!merchant && !!playerD && !!merchantD;
 
   // Rangée INTERACTIVE du négociateur (pré-jet en attente puis résultat), porteuse de son influence.
@@ -61,7 +64,7 @@ export function BargainModalView({
     row: {
       combatant: actor,
       d: playerD,
-      pending: testPending('Marchandage', base, pb.playerSkill, undefined, supMods),
+      pending: playerLine.pending,
     },
     rolled,
     fortune,

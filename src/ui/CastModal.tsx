@@ -23,7 +23,7 @@ import { rowForcedDie } from './forcedDieRow';
 import { maskOpposedRow, opposedResponded, opposedRevealed } from './opposedFrozen';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
-import { testBreakdown, testPending, soutienMod } from './breakdown';
+import { testBreakdown, testPending, soutienMod, opposedLines } from './breakdown';
 import { Icon } from './Icon';
 import { resultLine, freeCons } from '../state/rollSeam';
 
@@ -275,7 +275,7 @@ export function CastModal() {
             />
           )}
           {conjureForms.length > 0 && (
-            <div className="rm-crit-choice rm-options">
+            <div className="rm-options">
               {/* Arme invoquée à forme libre (LDB 47) : le lanceur choisit sa Compétence de Corps à corps. */}
               <span className="mini-title"><Icon id="item/weapon" size="sm" /> Forme de l'arme invoquée</span>
               <div className="rm-loc-grid">
@@ -328,7 +328,7 @@ export function CastModal() {
             const designated = pc.extraTargetIds?.length ?? 0;
             const candidates = overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile, source, oc.range);
             return (
-              <div className="rm-overcast rm-options">
+              <div className="rm-options">
                 <span className="mini-title"><Icon id="magic/gust" size="sm" /> Surincantation — {left} pas (+{stepCost} DR) restant(s)</span>
                 <div className="rm-stepper-list">
                   {rows.map((a) => (
@@ -374,7 +374,7 @@ export function CastModal() {
             );
           })()}
           {res.isCritical && !isPrayer && influencesLocally(useGame.getState(), pc.casterId) && (
-            <div className="rm-crit-choice rm-options">
+            <div className="rm-options">
               {/* Incantation CRITIQUE (LDB 46 l.26-32) : puissance supplémentaire au choix
                   (le contrecoup — Imparfaite Mineure sauf Diction instinctive — est automatique). */}
               <span className="mini-title"><Icon id="magic/power" size="sm" /> Incantation Critique — choisir l'effet</span>
@@ -407,9 +407,12 @@ export function CastModal() {
                 if (!actor) return null;
                 const r = part.result;
                 const lab = pcs.char ?? pcs.skill ?? 'Opposition';
+                // Test OPPOSÉ : la cible oppose son Test à Difficulté Intermédiaire — ce que roule le
+                // résolveur `castOpposition` (LDB 12 l.166).
+                const [oppLine] = opposedLines([{ label: lab, base: testValue(actor, pcs.skill, pcs.char), r: r?.oppose }]);
                 const row = r
-                  ? { combatant: actor, d: testBreakdown(lab, testValue(actor, pcs.skill, pcs.char), r.oppose) }
-                  : { combatant: actor, pending: testPending(lab, testValue(actor, pcs.skill, pcs.char)) };
+                  ? { combatant: actor, d: oppLine.d }
+                  : { combatant: actor, pending: oppLine.pending };
                 /* #990 : l'issue d'une rangée COMPARE le jet du répondant à l'incantation masquée — elle
                    suit donc le calendrier du SPECTATEUR (`castRevealed`), pas celui du propriétaire de la
                    rangée : sinon « Résiste ! » livre le verdict que le dé masqué cachait. Conséquence
@@ -472,9 +475,12 @@ export function CastModal() {
                 const mods = soutienMod(counterspellSupportFor(st, csp, part.id));
                 const phase1 = counterspellDeclarePhase(csp);
                 const lance = counterspellRolls(st, csp, part);
+                // Contre-sort OPPOSÉ à l'incantation : Difficulté Intermédiaire — ce que roule
+                // `resolveCounterspell` (LDB 12 l.166 ; LDB 46 l.156).
+                const [counterLine] = opposedLines([{ label: 'Langue (Magick)', base: val, r: r?.counter, mods: mods ? [mods] : undefined }]);
                 const row = r
-                  ? { combatant: actor, d: testBreakdown('Langue (Magick)', val, r.counter, undefined, mods ? [mods] : undefined) }
-                  : { combatant: actor, pending: testPending('Langue (Magick)', val, undefined, undefined, mods ? [mods] : undefined) };
+                  ? { combatant: actor, d: counterLine.d }
+                  : { combatant: actor, pending: counterLine.pending };
                 const owned = influencesLocally(st, part.id) && !!part.interactive;
                 // Seule une rangée qui LANCE (solo, ou meneur du groupe) reçoit le jet : ni bouton, ni
                 // dé à fixer, ni Résilience pré-jet pour un soutien ou une rangée qui passe.

@@ -104,7 +104,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Haine (Cible), Préjugé (Cible)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.18-21) → `ApproachModal`, `PsychAffliction`, `describeApproach`, `EffectFlags`, `isFrenzyCapable`, `BattleState`, `extendedTestStep`, `resolvePeurTest`, `ActionBar`, `attackClickCommit`, +15 — `src/data/index.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/gameIso/effectIcons.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, +9 fichiers
+- `LDB 21` (l.18-21) → `ApproachModal`, `PsychAffliction`, `describeApproach`, `isFrenzyCapable`, `EffectFlags`, `BattleState`, `extendedTestStep`, `resolvePeurTest`, `ActionBar`, `attackClickCommit`, +15 — `src/data/index.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/gameIso/effectIcons.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, +9 fichiers
 
 ---
 
@@ -131,7 +131,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Terreur (Indice), État Brisé (`etats.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.23-28, l.29) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, `describeApproach`, `EffectFlags`, +34 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +17 fichiers
+- `LDB 21` (l.23-28, l.29) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, `describeApproach`, `isFrenzyCapable`, +34 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +17 fichiers
 
 ---
 
@@ -187,7 +187,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Talent Frénésie, Talent Contrôle de la Frénésie, État Exténué (`etats.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.28-33, l.35) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, `describeApproach`, `EffectFlags`, +33 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +17 fichiers
+- `LDB 21` (l.28-33, l.35) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, `describeApproach`, `isFrenzyCapable`, +33 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +17 fichiers
 
 ---
 
@@ -505,7 +505,7 @@ Confère la capacité d'entrer en Frénésie (idem trait de créature Frénésie
 **Sources RAW** : `LDB 10 l.506`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.255, l.398, l.506) → `TriggeredEffect`, `combattant-en-espace-clos`, `concocter`, `contorsionniste`, `controle-de-la-frenesie`, `cooperatif`, `TraitCapabilities`, `costaud`, `coude-a-coude`, `coup-puissant`, +36 — `src/data/index.ts`, `src/data/talents.json`, `src/engine/flowCore.ts`
+- `LDB 10` (l.255, l.398, l.506) → `TriggeredEffect`, `combattant-en-espace-clos`, `concocter`, `contorsionniste`, `controle-de-la-frenesie`, `cooperatif`, `costaud`, `TraitCapabilities`, `coude-a-coude`, `coup-puissant`, +36 — `src/data/index.ts`, `src/data/talents.json`, `src/engine/flowCore.ts`
 
 ---
 

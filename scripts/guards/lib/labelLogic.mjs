@@ -681,6 +681,14 @@ export const RATCHET_EXCEPTIONS = {
     "pas une FK de logique métier — aucune régression jouable. Exposée par #608 (le champ etait `name`).",
   'ui/gallery/DesignGallery.tsx:28':
     'Même galerie DEV (classe active du bouton de liste, même comparaison) — même justification que :12.',
+  'ui/RollRow.tsx:82':
+    "Nom ACCESSIBLE dérivé du libellé affiché de la ligne (« Fixer le dé — Voile », #1117) — display " +
+    "pur, aucun branchement de comportement : rien n'est décidé selon le texte, il est seulement RENDU " +
+    "dans un attribut. Le test de type est structurel, pas sémantique : `RollBreakdown.label` est une " +
+    "chaîne, `PendingRoll.label` un ReactNode (chips) dont on ne peut extraire de texte sans le tester. " +
+    "Sans ce nom, N spinbuttons « Fixer le dé » deviennent homonymes et le geste vise au hasard.",
+  'ui/RollRow.tsx:83':
+    'Même dérivation, branche du pré-jet (`row.pending.label`) — même justification que :82.',
 };
 
 /** Résout le `shortKey` (`fichier:ligne` relatif à `src/`) d'un finding porté par un chemin `src/…`

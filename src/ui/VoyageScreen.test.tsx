@@ -30,7 +30,7 @@ const vessel = (): CampaignVessel => ({
 
 const base = (): TravelPlan => ({ routeId: 'r', fromPlaceId: 'a', toPlaceId: 'b', mode: 'mer', hoursPerDay: 24, km: 380, kmDone: 212, interrupted: false });
 
-const seaPlan = (): TravelPlan => ({ ...base(), sea: { heading: 'ouest', weather: rollSeaWeather('ete'), windFrom: 'nord', daysToEvent: 3, daysAtSea: 4, lines: [], milesToday: 0 } });
+const seaPlan = (): TravelPlan => ({ ...base(), sea: { heading: 'ouest', weather: rollSeaWeather('ete'), windFrom: 'nord', daysToEvent: 3, daysAtSea: 4, lines: [], milesToday: 0, hullAtDayStart: 50 } });
 const riverPlan = (): TravelPlan => ({ ...base(), mode: 'barge-du-sel', river: { windForce: 'modere', windDir: 'contraire', daysAfloat: 2 } as TravelPlan['river'], vehicle: { ...hero('barge'), wounds: { current: 18, max: 24 } } });
 const landPlan = (): TravelPlan => ({ ...base(), mode: 'monture', allure: 'trot' });
 // Transport PAYANT en barge (#333 correctif) : ni `.sea` ni `.river` (pas de descente JOUÉE, un

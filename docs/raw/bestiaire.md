@@ -204,7 +204,7 @@ Le trait **Endurant** ajoute +BE aux Blessures calculées (appliqué avant tout 
 **Voir aussi** : [Modificateurs de Taille en combat](#modificateurs-de-taille-en-combat) ; [Taille dans combat.md](combat.md#taille-categories-et-modificateurs-de-combat) (récapitulatif en-combat, renvoi ici pour le détail des Blessures).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.343-406) → `creatureWeapon`, `cannotStopOn`, `weaponFromTrait`, `EnemyTurnInput`, `woundsForSize`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, `taille-modificateurs-en-combat`, `SpecsSource`, +24 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, +6 fichiers
+- `LDB 85` (l.343-406) → `creatureWeapon`, `cannotStopOn`, `weaponFromTrait`, `EnemyTurnInput`, `woundsForSize`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, `taille-modificateurs-en-combat`, `rollManeuverAttacker`, +24 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, +6 fichiers
 
 ---
 
@@ -433,7 +433,7 @@ Indices observés dans le bestiaire MDG : Redoutable 1 (Baudroye, Hydre d'os, Sa
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `ZI 14` (l.1045) → `fouissement` — `src/data/traits.json`
-- `MDG 16` (l.9-13, l.152) → `scene`, `scenario`, `fireTurnEdgeTriggers`, `suffocationTick`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `TriggerCtx`, `offTerrainSuffocates`, `ActionBar`, `GameOp`, +8 — `src/data/creatures.json`, `src/data/index.ts`, `src/engine/ops.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, `src/scenes/test-scenarios/20-aspersion.ts`, +6 fichiers
+- `MDG 16` (l.9-13, l.152) → `scene`, `scenario`, `fireTurnEdgeTriggers`, `suffocationTick`, `reconcileAdvantageToPool`, `creditOpposingAdvantage`, `sea-scorbut`, `TriggerCtx`, `offTerrainSuffocates`, `ActionBar`, +9 — `src/data/creatures.json`, `src/data/index.ts`, `src/data/voyage-stakes.json`, `src/engine/ops.ts`, `src/engine/suffocation.ts`, `src/engine/types.ts`, +7 fichiers
 
 ## Bilan de fidélité
 

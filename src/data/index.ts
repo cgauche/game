@@ -78,6 +78,7 @@ import reglesJson from './regles.json';
 import disponibiliteJson from './disponibilite.json';
 import waterExposureJson from './water-exposure.json';
 import nightStakesJson from './night-stakes.json';
+import voyageStakesJson from './voyage-stakes.json';
 import axesJson from './axes.json';
 import navalProgressionJson from './naval-progression.json';
 import seaNavigationJson from './sea-navigation.json';
@@ -173,6 +174,42 @@ export interface NightStakeEntry {
   source: SourceRef;
 }
 export const NIGHT_STAKES = nightStakesJson as NightStakeEntry[];
+
+/** ENJEU d'un `kind` d'étape de cascade de VOYAGE (#1117) — GABARIT de descripteur mécanique dont les
+ *  trous `{nom}` sont remplis par le flux avec ses valeurs CALCULÉES. Distinct de `NightStakeEntry`
+ *  (verbatim figé) : cf. `schemas/defs/voyage-stakes.ts`. */
+export interface VoyageStakeEntry {
+  id: string;
+  label: string;
+  kind: string;
+  template: string;
+  /** Fiche de règle du Codex derrière l'étape (`regles.json`). */
+  rule?: string;
+  source: SourceRef;
+}
+export const VOYAGE_STAKES = voyageStakesJson as VoyageStakeEntry[];
+
+/** ENJEU RENDU d'une étape de voyage : le gabarit de la DONNÉE, ses trous remplis par les valeurs
+ *  calculées du flux. FAIL-CLOSED aux DEUX bouts : un `kind` sans entrée JETTE (une étape qui demande
+ *  son enjeu et n'en reçoit AUCUN en silence, c'est l'étape muette qu'on vient de supprimer — le
+ *  surfaçage progressif se déclare en n'appelant pas), et un trou sans valeur JETTE aussi (un
+ *  « {driftKm} » affiché tel quel serait un texte cassé rendu au joueur). */
+/** Cible Codex de l'étape `kind` — `{category:'regles', id}` à donner tel quel à `CodexRef` (la règle
+ *  est à UN CLIC depuis l'enjeu, #1117). `undefined` si aucune fiche ne couvre ce `kind`. */
+export function voyageStakeRule(kind: string): { category: string; id: string } | undefined {
+  const id = VOYAGE_STAKES.find((e) => e.kind === kind)?.rule;
+  return id ? { category: 'regles', id } : undefined;
+}
+
+export function voyageStake(kind: string, vars: Record<string, string | number> = {}): string {
+  const tpl = VOYAGE_STAKES.find((e) => e.kind === kind)?.template;
+  if (!tpl) throw new Error(`voyageStake('${kind}') : aucun gabarit d'enjeu (voyage-stakes.json) — une étape qui LANCE dit ce qu'elle met en jeu`);
+  return tpl.replace(/\{(\w+)\}/g, (_m, name: string) => {
+    const v = vars[name];
+    if (v == null) throw new Error(`voyageStake('${kind}') : valeur manquante pour « ${name} » (gabarit de voyage-stakes.json)`);
+    return String(v);
+  });
+}
 
 export interface SpeciesData {
   /** id STABLE (slug du libellé) — cible de `Combatant.species`, pregens, draft. Le `label` ne sert
@@ -1832,8 +1869,10 @@ export interface CrewTestTypeData {
   label: string;
   roles: string[];
   essential: string;
-  /** ENJEU du Test (#331) : ce que l'échec coûte, verbatim MDG 14 — surfacé sous le titre d'étape. */
-  enjeu?: string;
+  /** Fiche de RÈGLE (`regles.json`) qui porte le VERBATIM MDG 14 de ce Test d'équipage — la règle est
+   *  à un clic depuis l'étape. L'ENJEU AFFICHÉ, lui, est le descripteur d'EFFET du `kind` joué
+   *  (`voyage-stakes.json`, `voyageStake`) : deux natures, deux datasets. */
+  rule?: string;
 }
 export const crewRoles = crewRolesJson as CrewRoleData[];
 const crewRoleById = new Map(crewRoles.map((r) => [r.id, r]));

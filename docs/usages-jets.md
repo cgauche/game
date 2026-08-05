@@ -104,7 +104,7 @@ _1 consommateurs sur 36._
 ## Matrice — consommateur × zones de RANGÉE
 
 Les zones de la RANGÉE (`RollRowProps`) : ce que chaque consommateur pose SUR la ligne de jet.
-Colonnes restreintes aux 28 zones effectivement consommées (sur 30 déclarées) — les autres
+Colonnes restreintes aux 28 zones effectivement consommées (sur 31 déclarées) — les autres
 seraient une colonne vide de bout en bout.
 
 | Consommateur | `actor` | `fortune` | `freeReroll` | `resilience` | `row` | `rolled` | `interactive` | `rollLabel` | `onRoll` | `rerollable` | `onReroll` | `onBonusSL` | `darkPactable` | `onDarkPact` | `onForce` | `preRollForce` | `forceShow` | `forcedRoll` | `fixedMark` | `flowKey` | `noForcedDie` | `determination` | `resist` | `reverse` | `declare` | `rollBlocked` | `rollFrisson` | `extendedDr` |
@@ -146,7 +146,7 @@ seraient une colonne vide de bout en bout.
 | `src/ui/SteamSaveModal.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | · | · | · | · | · | · |
 | `src/ui/WardModal.tsx` | ✓ | · | ✓ | · | ✓ | ✓ | · | · | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | · | · | · | · | · | · |
 
-_Zones de rangée jamais consommées : `rollInBar`, `winner`._
+_Zones de rangée jamais consommées : `rollInBar`, `dieCommitRef`, `winner`._
 
 ## Particularités MÉCANIQUES déduites des zones
 

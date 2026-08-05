@@ -804,6 +804,9 @@ export function dualStrikeTargets(battle: BattleState, attacker: Combatant, offW
  *  `inRange` = cible atteignable (mêlée : Allonge ; tir : dans une bande de portée) ; `blocked` = tir sans LdV. */
 export interface AttackPreview {
   weapon: Weapon; kind: 'melee' | 'ranged'; inRange: boolean; blocked: boolean; target: number; mods: ModLine[];
+  /** Difficulté du jet d'attaque, POSÉE À LA SOURCE — LDB 13 l.118 : « Lors d'un Combat, les Difficultés
+   *  sont supposées être au niveau Intermédiaire (+0). » L'affichage la rend, il ne la devine pas. */
+  difficulty: Difficulty;
   /** Valeur de compétence NUE (combatValue) — décomposition `target = base + Σmods` pour l'affichage. */
   base: number;
   /** Dégâts d'arme (Force incluse) AVANT le DR du jet. La Blessure réelle = `dmg` + DR − `soak` (plancher 1). */
@@ -835,9 +838,9 @@ export function previewAttack(
   const base = combatValue(attacker, kind, weapon);
   const loc = location ?? 'corps';
   const soak = (dmg + 20) - woundsFromHit(weapon, target, loc, dmg + 20);
-  if (kind === 'melee' && dist > reachTiles(weapon)) return { weapon, kind, inRange: false, blocked: false, target: 0, base, mods: [], dmg, soak };
+  if (kind === 'melee' && dist > reachTiles(weapon)) return { weapon, kind, inRange: false, blocked: false, target: 0, base, mods: [], dmg, soak, difficulty: 'intermediaire' };
   const { env, blocked } = attackEnv(get, attacker, target, weapon, opts);
-  if (blocked) return { weapon, kind, inRange: true, blocked: true, target: 0, base, mods: [], dmg, soak };
+  if (blocked) return { weapon, kind, inRange: true, blocked: true, target: 0, base, mods: [], dmg, soak, difficulty: 'intermediaire' };
   const distanceTiles = kind === 'ranged' ? dist : undefined;
   const mods = attackModifiers(attacker, target, weapon, { kind, location, distanceTiles, env, metresPerTile: mpt });
   const target0 = base + combineMods(mods);
@@ -850,16 +853,17 @@ export function previewAttack(
   const charLines = volatileCharLines(attacker, charKey);
   const base2 = base - charLines.reduce((s, l) => s + l.value, 0);
   const mods2 = [...charLines, ...mods];
-  return { weapon, kind, inRange, blocked: false, target: target0, base: base2, mods: mods2, dmg, soak };
+  return { weapon, kind, inRange, blocked: false, target: target0, base: base2, mods: mods2, dmg, soak, difficulty: 'intermediaire' };
 }
 
 /** Ligne ADVERSE du panneau de jet pré-rempli (modale d'attaque) : ce que le joueur est en droit
  *  de savoir de la défense à venir — la compétence probable (« Parade » / « Esquive ») et ses
  *  bonus/malus visibles (Avantage, États, Sur la défensive…), SANS la valeur de compétence ni
  *  l'encaissé. Compétence = meilleure défense (`bestDefenseMode`) ; Bestial → Esquive seule. */
-export function previewDefense(defender: Combatant): { label: string; mods: ModLine[] } {
+export function previewDefense(defender: Combatant): { label: string; mods: ModLine[]; difficulty: Difficulty } {
   const mode = bestDefenseMode(defender);
-  return { label: DEFENSE_LABEL[mode], mods: defenseModifiers(defender, mode, 0, defender.weapons[0]) };
+  // Difficulté POSÉE À LA SOURCE (LDB 13 l.118, jet de Combat) — voir `AttackPreview.difficulty`.
+  return { label: DEFENSE_LABEL[mode], mods: defenseModifiers(defender, mode, 0, defender.weapons[0]), difficulty: 'intermediaire' };
 }
 
 /** Pré-jet d'INCANTATION pour le panneau de jet (même rôle que previewAttack/previewDefense) : valeur
@@ -5476,7 +5480,7 @@ export function openContractionCascade(get: Get, set: SetFn, patient: Combatant,
     title, icon: 'condition/bleeding', purpose: 'test',
     steps: [{
       id: `infection-${patient.id}-${disease}`, kind: 'combatEndDisease', actorId: patient.id, icon: 'medical/infection',
-      rollLabel: 'Résistance', base: resVal, target: resVal + DIFFICULTY_MODIFIERS[difficulty],
+      rollLabel: 'Résistance', base: resVal, difficulty, target: resVal + DIFFICULTY_MODIFIERS[difficulty],
       label: title, result: null, interactive: true, meta: { disease }, menace: 'maladie',
     }],
   });

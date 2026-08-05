@@ -11,7 +11,7 @@ import { freeRerollOf } from '../../engine/activeFlags';
 import { RollShell, type RollAction } from '../RollShell';
 import { frozenOpposedRow, opposedResponded } from '../opposedFrozen';
 import { OptionChooser } from '../OptionChooser';
-import { optionValue } from '../breakdown';
+import { optionValue, opposedLines } from '../breakdown';
 import { VsHeader } from '../VsHeader';
 import { DeterminationButton } from '../DeterminationButton';
 import { recapLineOfEvent } from '../../gameIso/combatNarration';
@@ -83,6 +83,16 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   const canReact = reactionCost > 0 && !defender.usedShieldReactionRound && (defender.advantage ?? 0) >= reactionCost && !rolled;
   const toggleReaction = (kind: 'damage' | 'push') => setShieldReaction(pd.shieldReaction === kind ? null : kind);
 
+  // Attaque et défense sont les DEUX lignes d'un même Test opposé : la Difficulté est déclarée UNE
+  // fois à la fabrique (LDB 12 l.166 ; jet de Combat, LDB 13 l.118).
+  const [attackLine, defenseLine] = opposedLines([
+    {
+      label: pd.freeKind ? FREE_ATTACK_LABEL[pd.freeKind] ?? 'Attaque gratuite' : 'Attaque',
+      base: pd.atk.target,
+      r: { roll: pd.atk.roll, target: pd.atk.target, sl: pd.atk.sl, success: pd.atk.success },
+    },
+    { label: myLabel, base: myBase, mods: myMods },
+  ]);
   // Rangée [0] = TÉMOIN : l'attaque FIGÉE (jet déjà eu lieu, aucun bouton), MASQUÉE tant que ce siège
   // n'a pas répondu (#990, calendrier unique `frozenOpposedRow` — mono = N=1 participant : moi).
   const attackerRow = frozenOpposedRow(useGame.getState(), {
@@ -90,17 +100,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
     responded: opposedResponded(useGame.getState(), [{ id: pd.defenderId, interactive: true, result: res }]),
     row: {
       combatant: attacker,
-      d: res
-        ? res.attackerDetail
-        : {
-            label: pd.freeKind ? FREE_ATTACK_LABEL[pd.freeKind] ?? 'Attaque gratuite' : 'Attaque',
-            base: pd.atk.target,
-            modifier: 0,
-            target: pd.atk.target,
-            roll: pd.atk.roll,
-            success: pd.atk.success,
-            sl: pd.atk.sl,
-          },
+      d: res ? res.attackerDetail : attackLine.d,
     },
   });
   // Rangée [1] = INTERACTIVE : MA défense (pré-remplie puis résolue), porteuse du cycle d'influence.
@@ -108,7 +108,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
     actor: defender,
     row: res
       ? { combatant: defender, d: res.defenderDetail }
-      : { combatant: defender, pending: { label: myLabel, base: myBase, mods: myMods } },
+      : { combatant: defender, pending: defenseLine.pending },
     rolled,
     onRoll: roll,
     rollFrisson: true,

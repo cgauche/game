@@ -5,7 +5,7 @@ import { useRollFrisson } from './useRollFrisson';
 import { DiceRoll } from './DiceRoll';
 import { d100Faces } from './Dice';
 import { FLOW_VERBS } from '../state/rollFlowSpecs';
-import { rowForcedDie } from './forcedDieRow';
+import { rowForcedDie, useDieCommit, useDieCommitRegistry, withPickedDie } from './forcedDieRow';
 import { useGame } from '../state/store';
 import { RecapLineRow } from './RecapLine';
 import type { RecapLine } from '../state/recapLine';
@@ -56,10 +56,13 @@ export interface RollAction {
 }
 
 /** Rôle visuel d'une action DÉDUIT de sa `key` (les appelants ne le choisissent plus) : abandon /
- *  secondaire = ghost ; ressource (Chance/Destin…) = resource ; tout le reste (validation, progression,
- *  jet groupé : confirm/apply/next/finish/continue/rollAll/all…) = primary. Source UNIQUE de la
- *  proéminence des barres de jet — restyler un rôle se fait ICI, jamais au call-site. */
-const ACTION_GHOST_KEYS = new Set(['cancel', 'break', 'ack']);
+ *  secondaire = ghost ; ressource (Chance/Destin…) = resource ; tout le reste (validation,
+ *  progression : confirm/apply/next/finish/continue…) = primary. Source UNIQUE de la proéminence des
+ *  barres de jet — restyler un rôle se fait ICI, jamais au call-site.
+ *  `all`/`rollAll` (« Tout lancer ») sont SECONDAIRES (#1117, recette 2026-08-05) : voisins du
+ *  « Lancer » primaire, même style, ils déclenchaient la résolution de TOUTE la séquence sans
+ *  influence — la confusion a coûté la moitié d'une recette. */
+const ACTION_GHOST_KEYS = new Set(['cancel', 'break', 'ack', 'all', 'rollAll']);
 const ACTION_RESOURCE_KEYS = new Set<string>();
 function actionClass(key: string): string {
   if (ACTION_GHOST_KEYS.has(key)) return 'btn btn-ghost';
@@ -174,6 +177,15 @@ export function RollShell({
   const hoistRow = hoistIdx >= 0 ? rows[hoistIdx] : undefined;
   // Hook appelé INCONDITIONNELLEMENT (règles des hooks) : no-op quand rien à hisser.
   const hoist = useRollFrisson(hoistRow?.onRoll, { frisson: hoistRow?.rollFrisson });
+  // Le CTA HISSÉ lance à la place de la rangée : il doit consommer le MÊME brouillon de « Fixer le
+  // dé » (garde partagée `withPickedDie`, `forcedDieRow.ts`). Sans cela, taper une valeur puis
+  // cliquer « Lancer » dans une CASCADE roulait un dé naturel (recette #1117) — le fix côté rangée ne
+  // couvrait pas cet hôte.
+  const hoistDieCommit = useDieCommit();
+  // REGISTRE des poignées de « Fixer le dé », une par rangée : il sert le CTA de rangée, le CTA hissé
+  // ET le verbe groupé « Tout lancer » (3ᵉ hôte, #1117) — la garde vit au socle, jamais recopiée.
+  const dieRegistry = useDieCommitRegistry();
+  const rowKeyOf = (r: RollRowData, i: number): string => String(r.key ?? i);
   // Dès que le résolveur commet (`rolled` bascule, en plein `landed`), `hoistIdx` retombe à -1 (la
   // rangée n'est plus « à lancer ») et `hoistRow` disparaît PENDANT `landed`, avant que la scène n'ait
   // eu le temps de lire ses vraies faces. On fige donc l'INDEX de la
@@ -188,7 +200,22 @@ export function RollShell({
   // geste qu'un clic sur les dés (`hoist.skip`), jamais une annulation en pleine animation. Sinon,
   // annule seulement pré-jet ; un bouton Annuler post-jet porte sa visibilité via `when`.
   const escClose = disableEscClose ? undefined : (hoist.rolling || hoist.landed) ? hoist.skip : (!rolled ? onCancel : undefined);
-  const shownActions = actions.filter((a) => a.when === 'always' || (rolled ? a.when === 'post' : a.when === 'pre'));
+  // « TOUT LANCER » par rangées (`rollRows`/`rollAll` — fenêtre MULTI) : chaque rangée commet d'abord
+  // SON brouillon ; celles dont la saisie a POSÉ un dé ont déjà lancé, on ne les relance pas. Les
+  // autres partent par LEUR propre `onRoll` (la même fonction que leur bouton) — le verbe du domaine
+  // n'est pas réinterprété, il est seulement appliqué rangée par rangée.
+  const ROLL_ALL_ROWS_KEYS = new Set(['rollRows', 'rollAll']);
+  const rollAllRowsWithPickedDice = (fallback: () => void) => () => {
+    const rollable = rows
+      .map((r, i) => ({ r, key: rowKeyOf(r, i) }))
+      .filter(({ r }) => r.interactive !== false && !(r.rolled ?? rolled) && r.onRoll);
+    const launched = dieRegistry.commitAll(rollable.map((x) => x.key));
+    if (!launched.size) { fallback(); return; } // aucun dé saisi : le verbe du domaine s'applique tel quel
+    for (const { r, key } of rollable) if (!launched.has(key)) r.onRoll?.();
+  };
+  const shownActions = actions
+    .filter((a) => a.when === 'always' || (rolled ? a.when === 'post' : a.when === 'pre'))
+    .map((a) => (ROLL_ALL_ROWS_KEYS.has(a.key) ? { ...a, onClick: rollAllRowsWithPickedDice(a.onClick) } : a));
   const body = (
     <>
       {/* Scène centrale du roulis (#396 v2/v3, mono/opposé — le hissage `hoistIdx` ne s'active que
@@ -215,7 +242,7 @@ export function RollShell({
           // aucune ne le calcule plus (cf. `forcedDieRow.ts`). `flowKey` donne le flux, la rangée donne
           // son acteur et, en multi, l'id de son slot.
           const die = rowForcedDie(state, r.flowKey ?? flowKey, { ...r, onRoll: r.onRoll ?? null }, rolled);
-          const row = <RollRow {...rest} forcedRoll={die.forcedRoll} fixedMark={rest.fixedMark ?? die.fixedMark} rolled={rest.rolled ?? rolled} winner={rest.winner ?? winner} rollInBar={i === hoistIdx} />;
+          const row = <RollRow {...rest} forcedRoll={die.forcedRoll} fixedMark={rest.fixedMark ?? die.fixedMark} rolled={rest.rolled ?? rolled} winner={rest.winner ?? winner} rollInBar={i === hoistIdx} dieCommitRef={i === hoistIdx ? hoistDieCommit : dieRegistry.handle(rowKeyOf(r, i))} />;
           return separator ? <Fragment key={key ?? i}>{separator}{row}</Fragment> : <Fragment key={key ?? i}>{row}</Fragment>;
         })}
       </div>
@@ -256,7 +283,7 @@ export function RollShell({
             PRIMAIRE à droite, « Annuler » à gauche (convention de la coquille). Pendant le roulis/
             l'atterrissage, la SCÈNE centrale (ci-dessus) porte les dés : ce bouton disparaît sans repli. */}
         {hoistIdx >= 0 && !rolled && !hoist.rolling && (
-          <button key="roll" className="btn btn-primary" onClick={() => hoist.trigger()}>
+          <button key="roll" className="btn btn-primary" onClick={withPickedDie(hoistDieCommit, () => hoist.trigger())}>
             {hoistRow?.rollLabel ?? DEFAULT_ROLL_LABEL}
           </button>
         )}

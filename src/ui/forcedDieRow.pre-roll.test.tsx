@@ -14,8 +14,9 @@ import { seedBattleRng } from '../state/battleRng';
 import { setDesFixes, resetDesFixes } from '../engine/fixedDie';
 import { rowForcedDie } from './forcedDieRow';
 import { RollRow } from './RollRow';
+import { RollShell } from './RollShell';
 import { Modal } from './Modal';
-import { testPending } from './breakdown';
+import { testPending, testBreakdown } from './breakdown';
 import type { Combatant } from '../engine/types';
 
 beforeAll(() => {
@@ -343,7 +344,7 @@ describe('« Dé fixé » PRÉ-jet — le champ DANS une vraie modale', () => {
     expect(applies, 'Entrée validerait la modale PAR-DESSUS le dé posé').toEqual([]);
   });
 
-  it('quitter le champ sans Entrée ne lance RIEN : le brouillon retombe, aucun dé n’est posé', () => {
+  it('quitter le champ sans Entrée ne lance RIEN — et le brouillon SURVIT (le clic « Lancer » blur d’abord)', () => {
     setDesFixes(true);
     setupPreRoll();
     const calls: string[] = [];
@@ -352,8 +353,386 @@ describe('« Dé fixé » PRÉ-jet — le champ DANS une vraie modale', () => {
     type(input, '5');
     type(input, '50');
     act(() => { input.blur(); input.dispatchEvent(new FocusEvent('blur', { bubbles: false })); });
-    expect(calls, 'le blur COMMET = cliquer « Annuler » roule le dé qu’on annule').toEqual([]);
+    expect(calls, 'quitter le champ ne roule RIEN (cliquer « Annuler » ne doit pas lancer)').toEqual([]);
     expect(useGame.getState().pendingAttack!.result, 'aucun jet ne doit exister').toBeNull();
-    expect(input.value, 'le brouillon abandonné revient à la dernière valeur commise (aucune)').toBe('');
+    // Le blur ne DÉTRUIT pas la saisie : tout clic sur un bouton blur le champ d'abord — un brouillon
+    // effacé là faisait partir « Lancer » en dé naturel (cause racine, recette 4).
+    expect(input.value, 'la saisie reste disponible pour le CTA').toBe('50');
+  });
+});
+
+/**
+ * #1117 (recette 2026-08-05, « Fixer le dé perd les frappes ») — CAUSE MESURÉE : sur une cascade à
+ * plusieurs lignes, TOUS les champs portaient le même nom accessible (« Fixer le dé »), donc le geste
+ * — clavier réel comme automate de recette — visait au hasard entre N spinbuttons. Le nom accessible
+ * porte désormais SA ligne ; le libellé VISIBLE reste l'état du champ (offre / marque).
+ */
+describe('« Fixer le dé » — un nom accessible PAR LIGNE (#1117)', () => {
+  /** Deux rangées pré-jet montées ensemble, comme une cascade à 2 lignes. */
+  function mountTwoRows(): HTMLInputElement[] {
+    setDesFixes(true);
+    setupPreRoll();
+    const die = rowForcedDie(useGame.getState(), 'attack', { actor: ATT, rolled: false, interactive: true, onRoll: () => {} }, false);
+    act(() => {
+      root.render(
+        <>
+          <RollRow actor={VIEW} row={{ combatant: VIEW, pending: testPending('Voile', 45) }} rolled={false} interactive
+            forcedRoll={die.forcedRoll} fixedMark={die.fixedMark} rollFrisson={false} onRoll={() => {}} />
+          <RollRow actor={VIEW} row={{ combatant: VIEW, pending: testPending('Résistance', 45) }} rolled={false} interactive
+            forcedRoll={die.forcedRoll} fixedMark={die.fixedMark} rollFrisson={false} onRoll={() => {}} />
+        </>,
+      );
+    });
+    return [...host.querySelectorAll('input.rm-die-input')] as HTMLInputElement[];
+  }
+
+  it('chaque champ porte le nom de SA ligne — plus deux spinbuttons homonymes', () => {
+    const inputs = mountTwoRows();
+    expect(inputs).toHaveLength(2);
+    const names = inputs.map((i) => i.getAttribute('aria-label'));
+    expect(names).toEqual(['Fixer le dé — Voile', 'Fixer le dé — Résistance']);
+    expect(new Set(names).size, 'deux noms accessibles DISTINCTS').toBe(2);
+  });
+
+  it('le libellé VISIBLE reste l’état du champ (l’offre), pas le nom de la ligne', () => {
+    mountTwoRows();
+    expect(host.querySelector('.rm-die-pick > label')?.textContent).toContain('Fixer le dé');
+    expect(host.querySelector('.rm-die-pick > label')?.textContent).not.toContain('Voile');
+  });
+
+  it('la frappe reste dans le champ VISÉ (aucun reset au re-rendu de la rangée voisine)', () => {
+    const inputs = mountTwoRows();
+    act(() => inputs[1].focus());
+    type(inputs[1], '3');
+    type(inputs[1], '37');
+    expect(inputs[1].value, 'le brouillon de la ligne visée survit').toBe('37');
+    expect(inputs[0].value, 'la ligne voisine reste vierge').toBe('');
+  });
+});
+
+/**
+ * #1117 (recette 2, vécu 2× sur les lignes « Voile » de la cascade fluviale) — le joueur TAPE une
+ * valeur dans « Fixer le dé » puis clique « Lancer » (sans Entrée ni blur) : le jet DOIT partir avec
+ * SA valeur : le CTA commet le brouillon du champ, la protection `commitOnBlur:false` (quitter le
+ * champ ne roule rien) restant entière.
+ */
+describe('« Fixer le dé » PRÉ-jet — taper PUIS cliquer « Lancer » (sans Entrée) pose bien le dé (#1117)', () => {
+  /** Rangée pré-jet réelle (`rowForcedDie` + `RollRow`), avec son CTA « Lancer ». */
+  function mountRow(): { input: HTMLInputElement; cta: HTMLButtonElement; calls: string[] } {
+    setDesFixes(true);
+    setupPreRoll();
+    const calls: string[] = [];
+    const die = rowForcedDie(
+      useGame.getState(), 'attack',
+      { actor: ATT, rolled: false, interactive: true, onRoll: () => { calls.push('roll'); resolveRoll(); } },
+      false,
+    );
+    act(() => {
+      root.render(
+        <RollRow actor={VIEW} row={{ combatant: VIEW, pending: testPending('Voile', 45) }} rolled={false} interactive
+          forcedRoll={die.forcedRoll} fixedMark={die.fixedMark} rollFrisson={false}
+          onRoll={() => { calls.push('roll'); resolveRoll(); }} rollLabel="Lancer" />,
+      );
+    });
+    const cta = [...host.querySelectorAll('button')].find((b) => b.textContent === 'Lancer') as HTMLButtonElement;
+    return { input: dieInput()!, cta, calls };
+  }
+
+  it('le dé SAISI est celui du jet — pas un d100 naturel', () => {
+    const { input, cta } = mountRow();
+    act(() => input.focus());
+    type(input, '3');
+    type(input, '37'); // frappe complète, AUCUNE validation
+    act(() => { cta.click(); });
+    expect(useGame.getState().pendingAttack!.result, 'le jet a bien eu lieu').toBeTruthy();
+    expect(useGame.getState().pendingAttack!.result!.attackerRoll, 'le dé SAISI est celui qui résout').toBe(37);
+  });
+
+  it('le jet ne part QU’UNE fois (poser le dé lance déjà — pas de double jet)', () => {
+    const { input, cta, calls } = mountRow();
+    act(() => input.focus());
+    type(input, '37');
+    act(() => { cta.click(); });
+    expect(calls, 'un seul passage par le résolveur').toEqual(['roll']);
+  });
+
+  it('champ VIDE : le CTA lance normalement (le d100 naturel reste le défaut)', () => {
+    const { cta } = mountRow();
+    act(() => { cta.click(); });
+    expect(useGame.getState().pendingAttack!.result!.attackerRoll, 'aucune valeur saisie → dé naturel').toBe(88);
+  });
+
+  it('saisie HORS domaine : rien n’est posé, le jet reste naturel (refus honnête)', () => {
+    const { input, cta } = mountRow();
+    act(() => input.focus());
+    type(input, '250'); // au-delà des faces
+    act(() => { cta.click(); });
+    expect(useGame.getState().pendingAttack!.result!.attackerRoll).toBe(88);
+  });
+});
+
+/**
+ * #1117 (audit vague 5) — MÊME contrat de commit APRÈS le jet (rangée d'influence : « Dé fixé » +
+ * « Relancer ») et RETOUR HONNÊTE d'une saisie hors domaine.
+ */
+describe('« Dé fixé » POST-jet et refus hors domaine (#1117)', () => {
+  /** Rangée POST-jet : le jet a eu lieu, la rangée offre le champ + la relance. */
+  function mountRolled(): { input: HTMLInputElement; reroll: HTMLButtonElement; calls: string[] } {
+    setDesFixes(true);
+    setupPreRoll();
+    resolveRoll(); // un jet EXISTE (dé naturel 88)
+    const calls: string[] = [];
+    const onSet = (r: number) => { calls.push(`set:${r}`); };
+    act(() => {
+      root.render(
+        <RollRow actor={{ ...VIEW, fortune: 2 }} row={{ combatant: VIEW, d: testBreakdown('Voile', 45, { roll: 88, target: 45, sl: -4, success: false }) }}
+          rolled interactive rollFrisson={false} fortune={2}
+          forcedRoll={{ roll: null, target: 45, fixed: true, commitOnBlur: false, onSet }}
+          rerollable onReroll={() => { calls.push('reroll'); }} />,
+      );
+    });
+    const reroll = [...host.querySelectorAll('button')].find((b) => /Relancer|Chance/i.test(b.textContent ?? '')) as HTMLButtonElement;
+    return { input: dieInput()!, reroll, calls };
+  }
+
+  it('taper une valeur PUIS cliquer « Relancer » : la valeur est utilisée, et une seule fois', () => {
+    const { input, reroll, calls } = mountRolled();
+    expect(reroll, 'la rangée offre bien la relance').toBeTruthy();
+    act(() => input.focus());
+    type(input, '4');
+    type(input, '42');
+    act(() => { reroll.click(); });
+    expect(calls, 'le dé SAISI est posé, et la relance ne part PAS en double').toEqual(['set:42']);
+  });
+
+  it('taper une valeur PUIS cliquer « Sombre Pacte » : la valeur est utilisée, et une seule fois', () => {
+    // Le Sombre Pacte RELANCE (comme la Chance) : il commet donc le brouillon, au même titre.
+    setDesFixes(true);
+    setupPreRoll();
+    resolveRoll();
+    const calls: string[] = [];
+    act(() => {
+      root.render(
+        <RollRow actor={{ ...VIEW, fortune: 0 }} row={{ combatant: VIEW, d: testBreakdown('Voile', 45, { roll: 88, target: 45, sl: -4, success: false }) }}
+          rolled interactive rollFrisson={false}
+          forcedRoll={{ roll: null, target: 45, fixed: true, commitOnBlur: false, onSet: (r) => { calls.push(`set:${r}`); } }}
+          darkPactable onDarkPact={() => { calls.push('pacte'); }} />,
+      );
+    });
+    const pacte = [...host.querySelectorAll('button')].find((b) => /pacte/i.test(b.textContent ?? '')) as HTMLButtonElement;
+    expect(pacte, 'la rangée offre bien le Sombre Pacte').toBeTruthy();
+    const input = dieInput()!;
+    act(() => input.focus());
+    type(input, '4');
+    type(input, '42');
+    act(() => { pacte.click(); });
+    expect(calls, 'le dé SAISI est posé, et le Pacte ne relance PAS en double').toEqual(['set:42']);
+  });
+
+  it('saisie HORS domaine : état invalide ANNONCÉ, domaine visible, aucun jet fantôme', () => {
+    const { input, reroll, calls } = mountRolled();
+    act(() => input.focus());
+    type(input, '250');
+    act(() => { reroll.click(); });
+    expect(input.getAttribute('aria-invalid'), 'le refus est annoncé').toBe('true');
+    expect(host.textContent, 'le DOMAINE est rendu apparent (fait, pas phrase d’aide) — les faces du dé').toContain('1–100');
+    expect(calls.filter((c) => c.startsWith('set:')), 'aucun dé posé hors domaine').toEqual([]);
+  });
+
+  it('une nouvelle frappe efface l’état invalide (le refus ne colle pas au champ)', () => {
+    const { input, reroll } = mountRolled();
+    act(() => input.focus());
+    type(input, '250');
+    act(() => { reroll.click(); });
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    type(input, '4');
+    expect(input.getAttribute('aria-invalid')).toBeNull();
+  });
+});
+
+/**
+ * #1117 (recette 3, bloquant) — le CTA « Lancer » d'une CASCADE n'est PAS celui de la rangée : quand
+ * une seule rangée est lançable, `RollShell` HISSE le bouton dans sa barre (`RollShell.tsx`, cas mono)
+ * et lance lui-même. C'est l'hôte RÉEL de toute cascade ; il consomme la MÊME poignée de commit
+ * (`withPickedDie`, socle `forcedDieRow.ts`) que la rangée.
+ */
+describe('CTA HISSÉ de la coquille (hôte réel d’une cascade) — le dé saisi est celui du jet (#1117)', () => {
+  /** Coquille MONO : une seule rangée lançable → le « Lancer » est hissé dans la barre. */
+  function mountShell(): { input: HTMLInputElement; cta: HTMLButtonElement; rolls: number[] } {
+    setDesFixes(true);
+    setupPreRoll();
+    const rolls: number[] = [];
+    act(() => {
+      root.render(
+        <RollShell
+          flowKey="attack"
+          title="Journée de descente"
+          rolled={false}
+          rows={[{ key: 'r', actor: VIEW, row: { combatant: VIEW, pending: testPending('Voile', 45) }, rolled: false, interactive: true, rollFrisson: false, onRoll: () => { resolveRoll(); rolls.push(useGame.getState().pendingAttack!.result!.attackerRoll); } }]}
+          actions={[]}
+          onCancel={() => {}}
+        />,
+      );
+    });
+    const cta = [...host.querySelectorAll('.modal-actions button')].find((b) => /Lancer/.test(b.textContent ?? '')) as HTMLButtonElement;
+    return { input: dieInput()!, cta, rolls };
+  }
+
+  it('le « Lancer » de la barre EXISTE (c’est bien lui que le joueur clique en cascade)', () => {
+    const { cta, input } = mountShell();
+    expect(cta, 'CTA hissé dans la barre d’actions').toBeTruthy();
+    expect(input, 'le champ « Fixer le dé » est offert sur la rangée').toBeTruthy();
+  });
+
+  it('taper 95 PUIS cliquer le « Lancer » HISSÉ : le jet part avec 95, pas un dé naturel', () => {
+    const { input, cta } = mountShell();
+    act(() => input.focus());
+    type(input, '9');
+    type(input, '95');
+    expect(input.value, 'la valeur est bien dans le DOM (repro du recetteur)').toBe('95');
+    act(() => { cta.click(); });
+    expect(useGame.getState().pendingAttack!.result!.attackerRoll).toBe(95);
+  });
+
+  it('le jet hissé ne part QU’UNE fois (poser le dé lance déjà)', () => {
+    const { input, cta, rolls } = mountShell();
+    act(() => input.focus());
+    type(input, '95');
+    act(() => { cta.click(); });
+    expect(rolls).toHaveLength(1);
+  });
+});
+
+/**
+ * #1117 (audit, 3ᵉ hôte) — « TOUT LANCER » par rangées (`rollAllUnrolledRows`, consommé par
+ * CascadeModal batch / CrewTest / ShipBattery / ShipManeuver) lançait N rangées d'un coup sans
+ * consommer aucun brouillon : il n'apparaît qu'à ≥2 rangées lançables, donc précisément quand chaque
+ * rangée détient sa poignée LOCALE. La coquille tient désormais un REGISTRE de poignées et applique
+ * la garde rangée par rangée.
+ */
+describe('« Tout lancer » d’une fenêtre MULTI — chaque rangée consomme SON brouillon (#1117)', () => {
+  /** Fenêtre multi : 3 rangées lançables + l'action groupée, montée dans la coquille réelle. */
+  function mountMulti(): { inputs: HTMLInputElement[]; cta: HTMLButtonElement; rolls: string[] } {
+    setDesFixes(true);
+    setupPreRoll();
+    const rolls: string[] = [];
+    const mkRow = (id: string, label: string) => ({
+      key: id,
+      actor: { ...VIEW, id },
+      row: { combatant: { ...VIEW, id }, pending: testPending(label, 45) },
+      rolled: false,
+      interactive: true,
+      rollFrisson: false,
+      onRoll: () => { rolls.push(`${id}:naturel`); },
+      forcedRoll: { roll: null, target: 45, fixed: true, commitOnBlur: false, onSet: (r: number) => { rolls.push(`${id}:${r}`); } },
+    });
+    act(() => {
+      root.render(
+        <RollShell
+          flowKey="crewTest"
+          title="Test d’équipage"
+          rolled={false}
+          rows={[mkRow('a', 'Voile'), mkRow('b', 'Ramer'), mkRow('c', 'Perception')]}
+          actions={[{ key: 'rollAll', label: 'Tout lancer', onClick: () => { for (const id of ['a', 'b', 'c']) rolls.push(`${id}:naturel`); }, when: 'pre' }]}
+          onCancel={() => {}}
+        />,
+      );
+    });
+    const cta = [...host.querySelectorAll('.modal-actions button')].find((b) => /Tout lancer/.test(b.textContent ?? '')) as HTMLButtonElement;
+    return { inputs: [...host.querySelectorAll('input.rm-die-input')] as HTMLInputElement[], cta, rolls };
+  }
+
+  it('taper 95 dans la rangée 2 puis « Tout lancer » : elle part à 95, les autres en naturel, chacune UNE fois', () => {
+    const { inputs, cta, rolls } = mountMulti();
+    expect(inputs, 'une saisie par rangée').toHaveLength(3);
+    expect(cta, 'le verbe groupé est offert').toBeTruthy();
+    act(() => inputs[1].focus());
+    type(inputs[1], '9');
+    type(inputs[1], '95');
+    act(() => { cta.click(); });
+    expect(rolls.filter((r) => r.startsWith('b:')), 'la rangée saisie part à 95, une seule fois').toEqual(['b:95']);
+    expect(rolls.filter((r) => r.startsWith('a:'))).toEqual(['a:naturel']);
+    expect(rolls.filter((r) => r.startsWith('c:'))).toEqual(['c:naturel']);
+  });
+
+  it('aucune saisie : le verbe du domaine s’applique tel quel (aucune sémantique réinterprétée)', () => {
+    const { cta, rolls } = mountMulti();
+    act(() => { cta.click(); });
+    expect(rolls).toEqual(['a:naturel', 'b:naturel', 'c:naturel']);
+  });
+});
+
+/**
+ * #1117 (recette 4, CAUSE RACINE) — un clic sur un bouton BLUR d'abord le champ, puis exécute son
+ * handler. Les trois hôtes étaient verts en test parce qu'en jsdom un `click()` programmatique ne
+ * blur pas : le VRAI ordre d'événements (blur PUIS click) n'était joué nulle part. Ces trois cas le
+ * jouent — c'est le test qui manquait aux trois vagues.
+ */
+describe('ORDRE RÉEL blur → clic : les 3 hôtes consomment quand même le dé saisi (#1117)', () => {
+  it('CTA de RANGÉE : blur puis clic « Lancer » → le dé saisi résout', () => {
+    setDesFixes(true);
+    setupPreRoll();
+    const die = rowForcedDie(useGame.getState(), 'attack', { actor: ATT, rolled: false, interactive: true, onRoll: () => { resolveRoll(); } }, false);
+    act(() => {
+      root.render(
+        <RollRow actor={VIEW} row={{ combatant: VIEW, pending: testPending('Voile', 45) }} rolled={false} interactive
+          forcedRoll={die.forcedRoll} fixedMark={die.fixedMark} rollFrisson={false} rollLabel="Lancer"
+          onRoll={() => { resolveRoll(); }} />,
+      );
+    });
+    const input = dieInput()!;
+    const cta = [...host.querySelectorAll('button')].find((b) => b.textContent === 'Lancer') as HTMLButtonElement;
+    act(() => input.focus());
+    type(input, '95');
+    act(() => { input.blur(); input.dispatchEvent(new FocusEvent('blur', { bubbles: false })); }); // ce que fait un vrai clic
+    act(() => { cta.click(); });
+    expect(useGame.getState().pendingAttack!.result!.attackerRoll).toBe(95);
+  });
+
+  it('CTA HISSÉ de la coquille (cascade) : blur puis clic → le dé saisi résout', () => {
+    setDesFixes(true);
+    setupPreRoll();
+    act(() => {
+      root.render(
+        <RollShell flowKey="attack" title="Journée de descente" rolled={false}
+          rows={[{ key: 'r', actor: VIEW, row: { combatant: VIEW, pending: testPending('Voile', 45) }, rolled: false, interactive: true, rollFrisson: false, onRoll: () => { resolveRoll(); } }]}
+          actions={[]} onCancel={() => {}} />,
+      );
+    });
+    const input = dieInput()!;
+    const cta = [...host.querySelectorAll('.modal-actions button')].find((b) => /Lancer/.test(b.textContent ?? '')) as HTMLButtonElement;
+    act(() => input.focus());
+    type(input, '95');
+    act(() => { input.blur(); input.dispatchEvent(new FocusEvent('blur', { bubbles: false })); });
+    act(() => { cta.click(); });
+    expect(useGame.getState().pendingAttack!.result!.attackerRoll).toBe(95);
+  });
+
+  it('« TOUT LANCER » (multi) : blur puis clic → seule la rangée saisie part à 95', () => {
+    setDesFixes(true);
+    setupPreRoll();
+    const rolls: string[] = [];
+    const mkRow = (id: string, label: string) => ({
+      key: id, actor: { ...VIEW, id }, row: { combatant: { ...VIEW, id }, pending: testPending(label, 45) },
+      rolled: false, interactive: true, rollFrisson: false,
+      onRoll: () => { rolls.push(`${id}:naturel`); },
+      forcedRoll: { roll: null, target: 45, fixed: true, commitOnBlur: false, onSet: (r: number) => { rolls.push(`${id}:${r}`); } },
+    });
+    act(() => {
+      root.render(
+        <RollShell flowKey="crewTest" title="Test d’équipage" rolled={false}
+          rows={[mkRow('a', 'Voile'), mkRow('b', 'Ramer')]}
+          actions={[{ key: 'rollAll', label: 'Tout lancer', onClick: () => { rolls.push('a:naturel'); rolls.push('b:naturel'); }, when: 'pre' }]}
+          onCancel={() => {}} />,
+      );
+    });
+    const inputs = [...host.querySelectorAll('input.rm-die-input')] as HTMLInputElement[];
+    const cta = [...host.querySelectorAll('.modal-actions button')].find((b) => /Tout lancer/.test(b.textContent ?? '')) as HTMLButtonElement;
+    act(() => inputs[1].focus());
+    type(inputs[1], '95');
+    act(() => { inputs[1].blur(); inputs[1].dispatchEvent(new FocusEvent('blur', { bubbles: false })); });
+    act(() => { cta.click(); });
+    expect(rolls.filter((r) => r.startsWith('b:'))).toEqual(['b:95']);
+    expect(rolls.filter((r) => r.startsWith('a:'))).toEqual(['a:naturel']);
   });
 });

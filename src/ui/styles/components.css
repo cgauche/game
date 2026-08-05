@@ -932,3 +932,21 @@ button.chip:hover {
   overflow-y: auto;
   overscroll-behavior: contain;
 }
+
+/* Note secondaire d'une modale de jet (7 sites : enjeu d'une étape de cascade, acte de soin en cours,
+   cadence d'un Test étendu, nuit sans histoire, opposition annulée). Six d'entre eux sont des <p> à
+   contenu INLINE : aucun sélecteur ne les vise, leur rendu est inchangé (typographie et marges restent
+   celles de leur contexte — les toucher serait un restylage non recetté). Le septième porte une icône
+   suivie d'une <Prose> de BLOC : l'icône FLOTTE (les lignes se composent autour) plutôt que de créer un
+   contexte flex, qui aurait dégauchi l'alignement des six autres. */
+.rm-note > svg,
+.rm-note > .icon {
+  float: left;
+  margin: 2px 6px 0 0;
+}
+.rm-note p {
+  margin: 0;
+}
+.rm-note p + p {
+  margin-top: 4px;
+}

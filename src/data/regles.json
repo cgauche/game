@@ -368,5 +368,185 @@
       "page": 31,
       "note": "ADE II 2 « UN LOURD FARDEAU »"
     }
+  },
+  {
+    "id": "navigation-agilite-de-rame",
+    "label": "Navigation — Agilité de rame",
+    "desc": "Ramer est une Compétence de base, ce qui veut dire que tous les Personnages ont le droit de faire des Tests de **Ramer**, qu'ils aient augmenté la compétence ou pas. Ce n'est pas le cas de la Compétence Voile. Les Personnages qui ne l'ont pas ont peu de chance de réussir à faire quoi que ce soit d'utile sur un voilier. Au début de chaque jour de voyage, demandez aux Personnages concernés un Test d'**Agilité Intermédiaire (+0)**. Si le Test est un échec, la vitesse de déplacement du bateau est réduite ce jour-là de 20%. Toutefois, si le résultat est un Échec spectaculaire (-6DR), la vitesse de mouvement du bateau est divisée par deux pour la journée.",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "MSRC 7 l.17"
+    }
+  },
+  {
+    "id": "navigation-derive",
+    "label": "Navigation — Dérive",
+    "desc": "- 2. Le bateau dérive en aval à 25 % de sa vitesse de mouvement normale ; les Tests de **Navigation** subissent un malus de –10.",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "MSRC 7 l.38"
+    }
+  },
+  {
+    "id": "navigation-louvoyage",
+    "label": "Navigation — Louvoyage",
+    "desc": "- 3. Cette augmentation de la vitesse n'est possible qu'en faisant louvoyer le bateau ; pour cela, un Test de **Navigation Accessible (+20)** est nécessaire.",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "MSRC 7 l.39"
+    }
+  },
+  {
+    "id": "navigation-chavirage",
+    "label": "Navigation — Chavirage et redressement",
+    "desc": "- 4. Un Test de **Navigation Accessible (+20)** doit être effectué pour retirer la voile avant que le bateau ne soit renversé. Si le Test échoue, la voile et le gréement tombent, le bateau se renverse et commence à prendre l'eau. Les Personnages peuvent faire un seul Test de **Navigation Accessible (+20)** par Round pour essayer de redresser le bateau ; chaque Test échoué ajoute un malus de -5 au Test suivant. S'il n'est pas redressé, le bateau coule en un nombre de tours égal à son Bonus d'Endurance.",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "MSRC 7 l.40"
+    }
+  },
+  {
+    "id": "navigation-greement",
+    "label": "Navigation — Avarie de gréement",
+    "desc": "- 5. Un Test de **Navigation Accessible (+20)** est nécessaire pour éviter que la voile et le gréement subissent des dégâts. Si le Test échoue, traitez le résultat comme un Coup Critique au gréement (voir plus bas). Le bateau dérive, hors de contrôle, à 25 % de sa vitesse normale, sans compter la force et la direction du vent qu'il faudra aussi ajouter. Les Tests de **Navigation** pour tenter de diriger le bateau subissent un malus de -20.",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "MSRC 7 l.41"
+    }
+  },
+  {
+    "id": "navigation-echouage",
+    "label": "Navigation — Échouage et renflouage",
+    "desc": "Dans certaines circonstances, il est possible qu'un bateau s'échoue ; les chances que cela arrive sont données quand un danger se présente. Quand un bateau s'échoue, il s'arrête soudainement et sa coque subit 12 Dégâts. Il doit être tiré afin d'être remis à l'eau. Pour un bateau chargé, cette tâche nécessite un Test de **Force** avec un malus égal au nombre total de Points d'Encombrement du bateau et de sa cargaison. N'importe quel Personnage ou animal de trait peut contribuer à la tâche, tant qu'il y a assez de cordes pour tout le monde (il est préférable que les Personnages qui aident ne soient pas déjà encombrés par des armures lourdes, des sacs à dos, etc.)",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 30,
+      "note": "MSRC 7 l.99"
+    }
+  },
+  {
+    "id": "navigation-coque-percee",
+    "label": "Navigation — Coque percée",
+    "desc": "Un bateau à la coque percée coule en un nombre de minutes égal à son Endurance, à moins que des réparations temporaires soient effectuées (voir plus bas). Une fois que c'est fait, le bateau peut être vidé de son eau (si les Personnages ont accès à des seaux). Pour savoir combien de Tours seront nécessaires, prenez le nombre de minutes durant lesquelles le bateau prenait l'eau et multipliez par deux ce nombre. Par exemple, s'il y a eu 3 minutes entre l'apparition du trou dans la coque et sa réparation, il faudra 6 Tours pour évacuer l'eau.",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 30,
+      "note": "MSRC 7 l.103"
+    }
+  },
+  {
+    "id": "test-equipage-progression",
+    "label": "Test d’équipage — Progression du bateau",
+    "desc": "Quand vous déterminez la progression d'un grand navire dans des conditions normales, vous pouvez effectuer un Test d'équipage au lieu d'un Test de Navigation.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 122,
+      "note": "MDG 14 l.63"
+    }
+  },
+  {
+    "id": "test-equipage-progression-poursuite",
+    "label": "Test d’équipage — Progression lors d’une Poursuite",
+    "desc": "Ce genre de Test sert à déterminer la vitesse. Il suit généralement les règles de poursuite et de course en page 109. Ce sont les Mousses qui réduisent la voilure ou qui rament, ils sont donc essentiels pour cette tâche.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 122,
+      "note": "MDG 14 l.69"
+    }
+  },
+  {
+    "id": "test-equipage-manoeuvre",
+    "label": "Test d’équipage — Manœuvres",
+    "desc": "Chaque fois qu'un vaisseau doit entreprendre un Test de Navigation afin de manœuvrer pour prendre un virage serré ou contourner un obstacle, ce Test peut être remplacé par un Test d'équipage. Le Timonier est le personnage le plus important dans ce cas.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.76"
+    }
+  },
+  {
+    "id": "test-equipage-perception",
+    "label": "Test d’équipage — Perception",
+    "desc": "Chaque fois que les circonstances nécessitent qu'un personnage à bord d'un vaisseau effectue un Test de Perception pour repérer un péril imminent, une terre à l'horizon ou le signal d'un phare, ce Test peut être remplacé par un Test d'équipage. La Vigie est la plus utile ici, mais les réactions rapides des autres sur le pont peuvent aider à empêcher une collision.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.82"
+    }
+  },
+  {
+    "id": "test-equipage-orientation",
+    "label": "Test d’équipage — Orientation",
+    "desc": "S'assurer que le bateau garde le cap est la responsabilité du Navigateur, mais les conseils de ceux qui se trouvent sur le pont l'aident indéniablement.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.88"
+    }
+  },
+  {
+    "id": "test-equipage-affaler",
+    "label": "Test d’équipage — Affaler les voiles",
+    "desc": "Là où un petit navire effectuerait des Tests de Navigation pour éviter les Dégâts résultant de forts vents, un grand vaisseau peut être protégé par une prise de décision rapide de son Capitaine et par les actions promptes de l'équipage.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.94"
+    }
+  },
+  {
+    "id": "test-equipage-extermination-nuisibles",
+    "label": "Test d’équipage — Extermination des nuisibles",
+    "desc": "Parfois, des rats ou d'autres nuisibles peuvent infester un navire. Pour régler ce problème, l'équipage doit effectuer un Test étendu d'Extermination des nuisibles. Chaque Test nécessite que l'équipage consacre 1d10 heures à purger la vermine. La Difficulté et le nombre total de DR nécessaires pour terminer l'extermination dépendent du degré d'infestation. Un nid de rats à bord nécessiterait un Test étendu d'**Extermination des nuisibles Intermédiaire (+0)** pour un total de 10 DR.\n\nSi un Ratier se trouve à bord, il peut occuper le rôle essentiel et utiliser sa Compétence Projectiles (Fronde) pour le Test. La présence d'un chat de bord ou d'un chien petit, mais féroce ajoute +1 DR au résultat.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.100-102"
+    }
+  },
+  {
+    "id": "test-equipage-rude-epreuve",
+    "label": "Test d’équipage — Rude épreuve",
+    "desc": "Ce genre de Test est nécessaire lors des voyages où le navire n'a pas vu de terre depuis bien trop longtemps, l'objectif est incertain ou les mers inconnues, ou si l'équipage commence à manquer de nourriture, que la maladie s'est répandue à bord ou que les gens ont peur de ce que pourrait prochainement subir le bateau.\n\nLa fatigue du voyage peut commencer à se faire sentir et le moral de l'équipage va dégringoler. Les Personnages peuvent persévérer malgré tout, mais les PNJ membres de l'équipage vont commencer à flancher. Si le total de ce Test donne un ou plusieurs DR négatifs, réduisez le Moral d'un nombre égal au nombre de ces DR en plus des autres conséquences négatives.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.108-110"
+    }
+  },
+  {
+    "id": "test-equipage-entretien",
+    "label": "Test d’équipage — Entretien",
+    "desc": "Les petits navires risquent de souffrir de l'absence de charpentier, de tailleur ou de constructeur de navires expérimenté quand il faut réparer les dégâts et faire en sorte que le bateau reste fonctionnel. Un grand vaisseau peut compter sur la sagesse collective de son équipage s'il n'a pas d'individu possédant ces compétences.\n\nTout Test entrepris pour effectuer des réparations sur le navire peut être remplacé par un Test d'équipage d'Entretien.\n\nCe Test peut être effectué à la place d'un Test de Compétence Métier nécessaire pour réparer le bateau. Cependant, même si la force du nombre aide à réaliser le travail, elle ne compense pas l'absence de l'expertise qu'un charpentier ou un tailleur bien formé pourrait fournir. C'est pourquoi si ce Test d'équipage est effectué pour se substituer à ces Compétences, il subit –2 DR.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.118-122"
+    }
+  },
+  {
+    "id": "test-equipage-batterie",
+    "label": "Test d’équipage — Tir de batterie",
+    "desc": "Si un ennemi se trouve à portée de tir du vaisseau, ce Test d'équipage peut être entrepris si le Capitaine veut lui lâcher une bordée. Plutôt que de lancer les dés pour toucher pour chaque canon, le Test d'équipage de Tir de batterie peut être effectué et le total de DR s'applique à toutes les armes à feu tournées vers l'ennemi, pour le meilleur et pour le pire.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.128"
+    }
+  },
+  {
+    "id": "navigation-progression",
+    "label": "Navigation — Tableau de progression",
+    "desc": "Les résultats du Test de Navigation peuvent ensuite être comparés au tableau de progression qui suit.\n\n| DR          | Effet                                                                                     |\n|-------------|-------------------------------------------------------------------------------------------|\n| 4 ou plus   | Le bateau progresse à sa vitesse maximale. Il se déplace de son score de M+2.              |\n| 1 à 3       | Le navire progresse bien. Il se déplace de son score de M+1.                               |\n| –2 à 0      | Le vaisseau progresse normalement. Il se déplace de son score de M.                        |\n| –3 à –4     | Le bateau progresse lentement. Il se déplace de son score de M–1.                          |\n| –5 ou moins | Le navire lutte pour avancer. Il se déplace de la moitié de son score de M (arrondie à l'inférieur). |",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 104,
+      "note": "MDG 13 l.66-75 — transcription DÉCLARÉE du tableau PROGRESSION : l'extraction le rend malformé (deux colonnes vides, en-tête scindé sur deux lignes, sauts de ligne en balises que la règle 5 interdit en prose). Bandes et libellés vérifiés un à un ; la phrase d'introduction (l.66) est verbatim."
+    }
   }
 ]

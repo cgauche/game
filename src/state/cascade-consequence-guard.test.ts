@@ -115,9 +115,9 @@ const CONTENT_DIRS = ['src/state', 'src/engine'];
 /** Baseline par fichier — voir doc ci-dessus. Sites gardés nominativement (#295) et stock #410. */
 const CONTENT_BASELINE: Record<string, number> = {
   // #295 — sites GARDÉS nominativement (journal = SEULE surface du jet)
-  'src/state/seaVoyageFlow.ts': 2, // Exposition de nuit (multi-Tests/héros) + redémarrage vapeur (`runRestart`) : équipage/ambiance hors modale.
+  'src/state/seaVoyageFlow.ts': 1, // redémarrage vapeur (`runRestart`) : équipage/ambiance hors modale — l'Exposition est passée en étapes influençables.
   'src/state/travelFlow.ts': 4, // bêtes de l'attelage (×2, sans rangée dédiée) + reprise de contrôle IA (×2, repli sans acteur joueur).
-  'src/state/riverVoyageFlow.ts': 5, // redressement multi-Round + éclats/calfatage/renflouage IA (repli sans pilote humain, ×4).
+  'src/state/riverVoyageFlow.ts': 4, // éclats/calfatage/renflouage IA (repli sans pilote humain, ×4) — le redressement est passé en étapes Round par Round.
   'src/state/shipwreck.ts': 1, // Natation, repli SANS pilote humain à bord (aucune cascade démarrée).
   'src/state/pursuitFlow.ts': 1, // Mouvement des adversaires (pas des PJ, aucune rangée).
   'src/state/combat/triggeredTest.ts': 2, // Test opposé INLINE (attaquant ET défenseur, aucun piloté humain) — SEULE surface des deux jets.

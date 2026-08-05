@@ -108,6 +108,7 @@ export function openPursuitRound(get: Get, set: Set, skillLabel?: string): void 
       label: `${h.label} — ${label}`,
       rollLabel: label,
       base: target,
+      difficulty: 'intermediaire',
       target,
       result: null,
       interactive: true,

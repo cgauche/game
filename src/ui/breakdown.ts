@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { combineMods, type ModLine, type RollBreakdown } from '../engine/combat';
+import { combineMods, type ModLine, type RollBreakdown, type RollMask } from '../engine/combat';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import type { PendingRoll } from './RollLine';
 
@@ -55,6 +55,34 @@ export function testPending(label: ReactNode, base: number, target?: number, dif
     mods: extraMods?.length ? extraMods : undefined,
     ...(clamped ? { clamped } : {}),
   };
+}
+
+/** Une ligne d'un Test OPPOSÉ : sa compétence/caractéristique, sa base, ses mods circonstanciels, et
+ *  son résultat MESURÉ (`r`) s'il est déjà lancé — sinon la ligne reste en attente (pré-jet). */
+export interface OpposedLineSpec {
+  label: string;
+  base: number;
+  r?: { roll: number; target?: number; sl?: number; success?: boolean; clamped?: number } | null;
+  /** Cible pré-jet déjà connue (sinon dérivée `base + Difficulté + mods`). */
+  target?: number;
+  mods?: ModLine[];
+  /** Masque d'AFFICHAGE de la ligne (adversaire opaque — les valeurs restent exactes, cf. `RollMask`). */
+  mask?: RollMask;
+}
+
+/**
+ * Les N lignes d'un Test OPPOSÉ, avec la Difficulté DÉCLARÉE UNE fois pour l'opposition entière
+ * (LDB 12 l.166). Chaque ligne sort prête pour une rangée de `RollShell` : `d` (jet lancé) ou
+ * `pending` (pré-jet). Réutiliser — ne pas semer la Difficulté ligne à ligne ni refabriquer les
+ * `RollBreakdown` d'une opposition à la main.
+ */
+export function opposedLines(
+  specs: OpposedLineSpec[],
+  difficulty: Difficulty = 'intermediaire',
+): Array<{ d?: RollBreakdown; pending?: PendingRoll }> {
+  return specs.map((s) => (s.r
+    ? { d: { ...testBreakdown(s.label, s.base, s.r, difficulty, s.mods), ...(s.mask ? { mask: s.mask } : {}) } }
+    : { pending: testPending(s.label, s.base, s.target, difficulty, s.mods) }));
 }
 
 /**

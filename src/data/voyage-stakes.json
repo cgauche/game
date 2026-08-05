@@ -1,0 +1,386 @@
+[
+  {
+    "id": "river-control-repair",
+    "label": "Réparation du gréement",
+    "kind": "riverControlRepair",
+    "template": "Réussi : malus de Navigation levés ({driftPenalty} dérive, {outOfControlPenalty} hors de contrôle).",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "MSRC 7 l.78-82"
+    },
+    "rule": "navigation-greement"
+  },
+  {
+    "id": "river-agility",
+    "label": "Agilité de rame",
+    "kind": "riverAgility",
+    "template": "Échec : vitesse −{failPct} % aujourd’hui ; Échec spectaculaire : vitesse ÷{spectacularDiv}.",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 28,
+      "note": "MSRC 7 l.17"
+    },
+    "rule": "navigation-agilite-de-rame"
+  },
+  {
+    "id": "river-nav",
+    "label": "Navigation de l’étape",
+    "kind": "riverNav",
+    "template": "Échec : dérive {driftKm} km en aval ({driftPct} % de la vitesse).",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "MSRC 7 l.38"
+    },
+    "rule": "navigation-derive"
+  },
+  {
+    "id": "river-tack",
+    "label": "Louvoyage",
+    "kind": "riverTack",
+    "template": "Réussi : +{windPct} % de vitesse ; échec : +0 %.",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "MSRC 7 l.39"
+    },
+    "rule": "navigation-louvoyage"
+  },
+  {
+    "id": "river-capsize",
+    "label": "Retirer la voile (chavirage)",
+    "kind": "riverCapsize",
+    "template": "Échec : chavirage — {rounds} Test(s) de redressement, puis naufrage.",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "MSRC 7 l.40"
+    },
+    "rule": "navigation-chavirage"
+  },
+  {
+    "id": "river-rigging",
+    "label": "Préserver le gréement",
+    "kind": "riverRigging",
+    "template": "Échec : Coup Critique au gréement, dérive hors de contrôle ({outOfControlPenalty} en Navigation).",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "MSRC 7 l.41"
+    },
+    "rule": "navigation-greement"
+  },
+  {
+    "id": "river-righting",
+    "label": "Redressement du bateau",
+    "kind": "riverRighting",
+    "template": "Réussi : bateau redressé. Échec : Round suivant à {nextPenalty}, naufrage après le Round {rounds}.",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "MSRC 7 l.40"
+    },
+    "rule": "navigation-chavirage"
+  },
+  {
+    "id": "river-peril-nav",
+    "label": "Évitement d’un péril",
+    "kind": "riverPerilNav",
+    "template": "Échec : {hits} coup(s) à la coque, {damagePerHit} Dégâts par coup.",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 30,
+      "note": "MSRC 7 l.123-125"
+    }
+  },
+  {
+    "id": "river-peril-detect",
+    "label": "Détection d’un péril",
+    "kind": "riverPerilDetect",
+    "template": "Échec : {damage} Dégâts à la coque.",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 30,
+      "note": "MSRC 7 l.136"
+    }
+  },
+  {
+    "id": "river-splinter-dodge",
+    "label": "Éclats du Critique",
+    "kind": "riverSplinterDodge",
+    "template": "Échec : +{damage} Dégâts d’éclats et État {condition}.",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "MSRC 7 l.78"
+    }
+  },
+  {
+    "id": "river-hole-repair",
+    "label": "Calfatage d’urgence",
+    "kind": "riverHoleRepair",
+    "template": "Échec : le bateau coule dans {minutes} min.",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 30,
+      "note": "MSRC 7 l.101-105"
+    },
+    "rule": "navigation-coque-percee"
+  },
+  {
+    "id": "river-echouage-force",
+    "label": "Renflouage",
+    "kind": "riverEchouageForce",
+    "template": "Échec : le bateau reste échoué (aucune progression).",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 30,
+      "note": "MSRC 7 l.99"
+    },
+    "rule": "navigation-echouage"
+  },
+  {
+    "id": "sea-overspeed",
+    "label": "Survitesse",
+    "kind": "sea-overspeed",
+    "template": "Survitesse M+{overM} — {damage} Dégât(s) de coque par Test raté.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 121,
+      "note": "MDG 12 l.121-142"
+    }
+  },
+  {
+    "id": "sea-force-pace",
+    "label": "Forcer le rythme",
+    "kind": "sea-force-pace",
+    "template": "Réussi : +{paceM} M aujourd’hui ; Test d’Épuisement au soir dans les deux cas.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 132,
+      "note": "MDG 13 l.95-111"
+    }
+  },
+  {
+    "id": "sea-epuisement",
+    "label": "Épuisement",
+    "kind": "sea-epuisement",
+    "template": "Échec : +1 État {condition}.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 132,
+      "note": "MDG 13 l.109-111"
+    }
+  },
+  {
+    "id": "sea-scorbut",
+    "label": "Scorbut",
+    "kind": "sea-scorbut",
+    "template": "Échec : contracte {disease}.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 143,
+      "note": "MDG 14 l.230"
+    }
+  },
+  {
+    "id": "sea-mal-de-mer",
+    "label": "Mal de mer",
+    "kind": "sea-mal-de-mer",
+    "template": "Échec : contracte {disease}.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 142,
+      "note": "MDG 14 l.211-222"
+    }
+  },
+  {
+    "id": "sea-tonneau-expose",
+    "label": "Tonneau d’eau contaminé",
+    "kind": "sea-tonneau-expose",
+    "template": "Échec : contracte {disease}.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 142,
+      "note": "MDG 14 l.209"
+    }
+  },
+  {
+    "id": "sea-tonneau-contamine",
+    "label": "Tonneau d’eau",
+    "kind": "sea-tonneau-contamine",
+    "template": "Échec : le tonneau passe à l’état contaminé ({disease}) — chaque buveur y testera ensuite sa Résistance.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 142,
+      "note": "MDG 14 l.209"
+    }
+  },
+  {
+    "id": "exposure",
+    "label": "Exposition",
+    "kind": "exposure",
+    "template": "Échec : −10 en {chars} ; 2ᵉ échec : toutes les autres ; 3ᵉ+ : 1d10 Dégâts (ignorent les PA).",
+    "source": {
+      "book": "livre-de-base",
+      "page": 181,
+      "note": "LDB 18 l.330/334"
+    }
+  },
+  {
+    "id": "sea-degagement",
+    "label": "Dégagement du navire",
+    "kind": "sea-degagement",
+    "template": "Échec : le navire reste bloqué (aucune progression ce jour).",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 132,
+      "note": "MDG 13 l.471-499"
+    }
+  },
+  {
+    "id": "crew-progression",
+    "label": "Progression du bateau",
+    "kind": "progression",
+    "template": "Le total de DR fixe les milles parcourus aujourd'hui.",
+    "rule": "test-equipage-progression",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.63"
+    }
+  },
+  {
+    "id": "crew-orientation",
+    "label": "Orientation du jour",
+    "kind": "orientation",
+    "template": "Le total de DR se lit à la table des Repères : du cap tenu à la dérive, qui déclenche un Changement de cap (retard, demi-tour ou quart de tour).",
+    "rule": "test-equipage-orientation",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.88"
+    }
+  },
+  {
+    "id": "crew-phare",
+    "label": "Feu du phare",
+    "kind": "phare",
+    "template": "Réussi : la lumière repérée donne un bonus de DR au Test d'Orientation.",
+    "rule": "test-equipage-perception",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.82"
+    }
+  },
+  {
+    "id": "crew-embuscade",
+    "label": "Vigie avant l’abordage",
+    "kind": "embuscade",
+    "template": "Échoué : le navire hostile aborde par Surprise.",
+    "rule": "test-equipage-perception",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.82"
+    }
+  },
+  {
+    "id": "crew-extermination",
+    "label": "Purge de la vermine",
+    "kind": "extermination",
+    "template": "Test étendu : les DR s'accumulent jusqu'au seuil d'infestation, et chaque Test consomme 1d10 heures.",
+    "rule": "test-equipage-extermination-nuisibles",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.100"
+    }
+  },
+  {
+    "id": "crew-entretien",
+    "label": "Entretien du soir",
+    "kind": "entretien",
+    "template": "Le Test subit −2 DR ; à +1 DR ou mieux, la coque récupère 1d10 Blessures.",
+    "rule": "test-equipage-entretien",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.122"
+    }
+  },
+  {
+    "id": "crew-affaler",
+    "label": "Affaler les voiles",
+    "kind": "affaler",
+    "template": "Échoué : Coup Critique au gréement.",
+    "rule": "test-equipage-affaler",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.94"
+    }
+  },
+  {
+    "id": "crew-affaler-ouragan",
+    "label": "Affaler sous l’ouragan",
+    "kind": "sea-ouragan-affaler",
+    "template": "Le Test subit −2 DR ; échoué : Coup Critique au gréement.",
+    "rule": "test-equipage-affaler",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.94"
+    }
+  },
+  {
+    "id": "crew-voyage-rapide",
+    "label": "Rude épreuve du long voyage",
+    "kind": "voyage-rapide",
+    "template": "Le total de DR entre dans le tirage du voyage rapide : il décide du palier subi (équipage, cargaison, coque).",
+    "rule": "test-equipage-rude-epreuve",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 123,
+      "note": "MDG 14 l.110"
+    }
+  },
+  {
+    "id": "crew-poursuite",
+    "label": "Manche de Poursuite",
+    "kind": "poursuite",
+    "template": "Le total de DR décide du terrain gagné ou perdu : à la Distance d'évasion le poursuivant abandonne, à zéro c'est l'abordage.",
+    "rule": "test-equipage-progression-poursuite",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 109,
+      "note": "MDG 13 l.354-370"
+    }
+  },
+  {
+    "id": "crew-tourbillon",
+    "label": "Manche de Tourbillon",
+    "kind": "tourbillon",
+    "template": "La coque encaisse les Dégâts du Tourbillon à chaque manche ; les DR s'accumulent jusqu'au seuil d'évasion.",
+    "rule": "test-equipage-manoeuvre",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 110,
+      "note": "MDG 13 l.514-528"
+    }
+  },
+  {
+    "id": "nav-progression",
+    "label": "Progression — Test de Navigation",
+    "kind": "sea-progression-nav",
+    "template": "Le DR se lit au tableau de progression : de M+2 (4 DR ou plus) à la moitié de M (−5 ou moins).",
+    "rule": "navigation-progression",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 104,
+      "note": "MDG 13 l.66-75"
+    }
+  }
+]

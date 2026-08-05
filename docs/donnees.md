@@ -15,12 +15,12 @@
 **Périmètre mesuré et angles morts** — la carte §A vient du manifeste ÉDITORIAL
 `src/data/donnees.manifest.json` (rangement par rubrique, description, homonymes) : rien de tout cela
 ne se devine de l'arbre, un jugement humain reste nécessaire. Ce que ce générateur CALCULE et
-réfute au besoin : (1) bijection stricte manifeste ⇄ `111` fichiers réels de
+réfute au besoin : (1) bijection stricte manifeste ⇄ `112` fichiers réels de
 `src/data/*.json` (un `.json` neuf non cartographié, ou une entrée de manifeste pointant sur un
 fichier disparu, casse la génération) ; (2) nombre d'entrées par fichier (comptage `Array.isArray`,
 `objet à sous-catalogues` sinon — angle mort assumé : cette étiquette ne dit RIEN du contenu réel
 d'un objet à sous-catalogues, juste qu'il n'est pas un tableau plat) ; (3) couverture du contrat de
-schéma zod (`111/111`, cf. §E-bis) ; (4) présence effective sur disque de
+schéma zod (`112/112`, cf. §E-bis) ; (4) présence effective sur disque de
 chaque fichier cité par un cas d'homonyme de §D. Angle mort déclaré : les DESCRIPTIONS de rubrique,
 de fichier et d'homonyme restent du texte manuscrit du manifeste — ce générateur ne les vérifie PAS
 contre le contenu réel des `.json` (une description qui ment sur ce que porte un fichier ne casse
@@ -74,7 +74,7 @@ garantie, pas la justesse de sa glose.
 | `localisation.json` | Tables de localisation d100 (`personnage`/`navire`/`navire-fluvial`) (objet à sous-catalogues) |
 | `tables.json` | Tables d'effets `[min,max] → GameOp[]` référencées par l'op `rollTable` (`tableId`) — Tableau des aspects démoniaques (Allure démoniaque, EDOC 13) par Domaine du Chaos (20 entrée(s)) |
 | `grapple.json` | Lutte / empoignade (objet à sous-catalogues) |
-| `regles.json` | Procédures / options de jeu au texte VERBATIM (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation étendue, Ragot au marché…) — routées en tooltip `CodexRef` (catégorie Codex `regles`), jamais une paraphrase de règle (#392) (37 entrée(s)) |
+| `regles.json` | Procédures / options de jeu au texte VERBATIM (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation étendue, Ragot au marché…) — routées en tooltip `CodexRef` (catégorie Codex `regles`), jamais une paraphrase de règle (#392) (55 entrée(s)) |
 | `damage-types.json` | Types de dégâts (poison, feu, électrique) (4 entrée(s)) |
 | `sizes.json` · `encumbranceTiers.json` | Modif. de Taille au tir · paliers d'Encombrement (objet à sous-catalogues · 4 entrée(s)) |
 | `etats.json` | États / Conditions (À terre, Aveuglé…) (20 entrée(s)) |
@@ -92,6 +92,7 @@ garantie, pas la justesse de sa glose.
 | `water-exposure.json` | Exposition à l'eau (noyade, maladies) (objet à sous-catalogues) |
 | `obsessions.json` · `drunkenness.json` | Obsessions (table) · ivresse (table) (objet à sous-catalogues · objet à sous-catalogues) |
 | `night-stakes.json` | Enjeu VERBATIM par `kind` d'étape de la cascade de nuit (#331) — ce que l'échec coûte, lu par `nightStake` (`src/state/restFlow.ts`) (15 entrée(s)) |
+| `voyage-stakes.json` | Enjeu par `kind` d'étape de cascade de VOYAGE (#1117) — GABARIT de descripteur mécanique dont les trous `{nom}` reçoivent les valeurs calculées du flux, lu par `voyageStake` (`src/data/index.ts`) (33 entrée(s)) |
 
 ### Objets & équipement
 | Fichier | Contient |
@@ -286,7 +287,7 @@ Deux mécaniques « ram » homonymes (brise-porte ADE II ↔ collision MDG) sont
 ## §E-bis — Contrat de schéma (`src/data/schemas/`)
 
 Chaque `src/data/*.json` valide contre un schéma zod **STRICT** — le contrat de donnée (Lot 1,
-**111/111** datasets sous contrat, décompte CALCULÉ des defs présentes dans
+**112/112** datasets sous contrat, décompte CALCULÉ des defs présentes dans
 `src/data/schemas/defs/`). Trois pièces :
 
 - **`src/data/schemas/defs/<nom>.ts`** — 1 def PAR dataset (même basename que le `.json`), exporte

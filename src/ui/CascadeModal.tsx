@@ -21,7 +21,7 @@ import { ModalSubject } from './ModalSubject';
 import { RecapLineList } from './RecapLine';
 import { RuleDivider } from './Ornaments';
 import { TableRollLine } from './RollLine';
-import { supportSplit, testBreakdown, testPending } from './breakdown';
+import { supportSplit, testBreakdown, testPending, opposedLines } from './breakdown';
 import type { ModLine } from '../engine/combat';
 import { Icon } from './Icon';
 import { stepInteraction, stepReady, tableStepDefs, tableStepDie, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
@@ -31,6 +31,7 @@ import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
 import type { CascadeStep, CascadeRollStep, CascadeRoll, BatchParticipant } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 import { buildParticipantRows, rollAllUnrolledRows } from './buildParticipantRows';
+import { CodexRef } from './compendium/CodexRef';
 import { Prose } from './Prose';
 
 /** Une étape-JET est PRÉSENTABLE avec son acteur (comportement historique) OU sans acteur quand
@@ -175,15 +176,19 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const stepLine = (s: CascadeRollStep): { label: string; base: number; mods: ModLine[] } => {
     const raw = s.base ?? s.target;
     const { base, mods } = supportSplit(raw, s.support);
-    return { label: s.rollLabel, base, mods };
+    // Les modificateurs circonstanciels NOMMÉS de l'étape (`step.mods`) rejoignent le Soutien : un
+    // malus RAW qui n'est pas une Difficulté se LIT sur la ligne, jamais fondu dans la cible.
+    return { label: s.rollLabel, base, mods: [...mods, ...(s.mods ?? [])] };
   };
   const breakdown = (s: CascadeRollStep, r: CascadeRoll) => {
     const l = stepLine(s);
-    return testBreakdown(l.label, l.base, { roll: r.roll, target: s.target, sl: r.sl, success: r.success }, s.difficulty, l.mods, s.easedBy);
+    // L'ÉCRÊTAGE mesuré à la construction (`step.clamped`) voyage avec la ligne : le réconciliateur
+    // le NOMME (« plafond 99 ») au lieu de l'avouer « autres » (#1117).
+    return testBreakdown(l.label, l.base, { roll: r.roll, target: s.target, sl: r.sl, success: r.success, ...(s.clamped ? { clamped: s.clamped } : {}) }, s.difficulty, l.mods, s.easedBy);
   };
   const pendingOf = (s: CascadeRollStep) => {
     const l = stepLine(s);
-    return testPending(l.label, l.base, s.target, s.difficulty, l.mods, s.easedBy);
+    return testPending(l.label, l.base, s.target, s.difficulty, l.mods, s.easedBy, s.clamped);
   };
   /** Étape qui LANCE — la ligne de jet n'existe que là (les étapes d'affichage/choix/table/batch
    *  n'ont ni cible ni libellé de ligne : elles se rendent par leur note). */
@@ -274,7 +279,21 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // ENJEU surfaçable (#331) : ce que l'échec de l'étape COURANTE coûte, ÉNONCÉ sous le titre AVANT le
   // jet (le mécanisme est déjà dans l'applier — cf. « on ne sait ni à quoi ça correspond »). Verbatim
   // Source, porté par la donnée (`step.stake`, posé à la construction par le flux propriétaire).
-  const stakeNote = cur.stake ? <div className="rm-threat"><Icon id="ui/warning" size="sm" /> <Prose md={cur.stake} /></div> : null;
+  // Ton NEUTRE (`.rm-stake`) : l'enjeu ANNONCE ce que le jet met en jeu — ce n'est pas une menace
+  // subie (`.rm-threat`, fond rouge, réservé à l'attaque entrante).
+  // L'enjeu porte SA RÈGLE quand l'étape en déclare une (#1117, arbitrage user) : la fiche est à UN
+  // CLIC, par la primitive `CodexRef` (jamais un lien maison ni une paraphrase de la règle ici).
+  const stakeNote = cur.stake ? (
+    <div className="rm-note">
+      <Icon id="nav/dice" size="sm" />
+      <div>
+        <Prose md={cur.stake} />
+        {cur.stakeRule && (
+          <CodexRef category={cur.stakeRule.category} id={cur.stakeRule.id} label="la règle" inline>la règle</CodexRef>
+        )}
+      </div>
+    </div>
+  ) : null;
   // ÉTAPE-JET : REGISTRE data-driven du rendu par TYPE de jet (ajouter un type = 1 entrée ici). Les
   // cinq jets RollShell (attaque/défense/Maladresse/Test/Test étendu) sont rendus via leur hook de
   // props dans la MÊME coquille restée montée → jet ET conséquences vivent dans UNE fenêtre jusqu'à
@@ -570,7 +589,12 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       responded: opposedResponded(useGame.getState(), [{ id: cur.actorId, interactive: true, result: res }]),
       row: {
         combatant: oppActor,
-        d: { label: opp.attackerName ? (opp.attackerLabel ? `${opp.attackerName} — ${opp.attackerLabel}` : opp.attackerName) : (opp.attackerLabel ?? 'Adversaire'), base: opp.aT.target, modifier: 0, target: opp.aT.target, roll: opp.aT.roll, success: opp.aT.success, sl: opp.aT.sl },
+        // Ligne d'un Test OPPOSÉ : Difficulté déclarée UNE fois à la fabrique (LDB 12 l.166).
+        ...opposedLines([{
+          label: opp.attackerName ? (opp.attackerLabel ? `${opp.attackerName} — ${opp.attackerLabel}` : opp.attackerName) : (opp.attackerLabel ?? 'Adversaire'),
+          base: opp.aT.target,
+          r: { roll: opp.aT.roll, target: opp.aT.target, sl: opp.aT.sl, success: opp.aT.success },
+        }])[0],
       },
     }),
   } : null;

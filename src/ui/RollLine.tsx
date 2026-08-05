@@ -71,9 +71,8 @@ function provenanceLabel(p: ModProvenance, state: GameState): string {
  *  chip CODEX-LIÉE : survol/focus = le texte de la règle, clic = sa fiche — la chip EST l'affordance
  *  (aucun ⓘ à côté). L'`instance` transmise est le circonstanciel tel qu'il est lu à l'écran
  *  (« +10 Soutien »), ce que le Codex reprend à l'ouverture. Sans `ref`, la chip reste le span muet.
- *  `by` (provenance STRUCTURÉE : les soutiens) s'égrène en badges discrets `.entity-badge` (le
- *  satellite de fin de chip PARTAGÉ, `base.css`), NOMMÉS par `provenanceLabel` et liés au Codex
- *  quand leur catégorie existe. */
+ *  `by` (provenance STRUCTURÉE : les soutiens) est NOMMÉE par `provenanceLabel` et se lit DANS le
+ *  popover de la chip ; sans `ref` (pas de popover), elle passe par le `title` du span. */
 function ModChip({ m }: { m: ModLine }) {
   // Lecture NON réactive : un nom de combattant ne bouge pas pendant qu'on lit son jet, et une
   // souscription par chip re-rendrait toute la grille de mods à chaque tick de combat.
@@ -81,19 +80,18 @@ function ModChip({ m }: { m: ModLine }) {
   const tone = m.value >= 0 ? 'pos' : 'neg';
   const amount = `${m.value >= 0 ? '+' : '−'}${Math.abs(m.value)}`;
   const text = `${amount} ${m.label}`;
-  return (
-    <>
-      {m.ref
-        ? <CodexRef category={m.ref.category} id={m.ref.id} label={m.label} instance={text} className={`rm-mod ${tone}`}>{text}</CodexRef>
-        : <span className={`rm-mod ${tone}`}>{text}</span>}
-      {m.by?.map((p, i) => {
-        const name = provenanceLabel(p, state);
-        return p.category && p.id
-          ? <CodexRef key={i} category={p.category} id={p.id} label={name} className="entity-badge">{name}</CodexRef>
-          : <em key={i} className="entity-badge">{name}</em>;
-      })}
-    </>
-  );
+  // PROVENANCE (qui soutient, qui octroie) : elle vit DANS le popover de la chip — arbitrage user
+  // 2026-08-05, verbatim « Normalement les informations de ce genre sont dans le hover codex non ? ».
+  // Les noms flottant à côté de la chip (badges inline) ne se rattachaient visuellement à rien : le
+  // lecteur ne savait pas de quel modificateur ils parlaient. La chip reste sobre.
+  const provenances = m.by?.map((p) => provenanceLabel(p, state)) ?? [];
+  return m.ref
+    ? (
+      <CodexRef category={m.ref.category} id={m.ref.id} label={m.label} instance={text} className={`rm-mod ${tone}`} provenances={provenances}>
+        {text}
+      </CodexRef>
+    )
+    : <span className={`rm-mod ${tone}`} title={provenances.length ? provenances.join(' · ') : undefined}>{text}</span>;
 }
 
 /** Chips des modificateurs étiquetés (« Courte portée +40 », « Sonné −10 »…). */

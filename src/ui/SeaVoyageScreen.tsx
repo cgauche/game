@@ -8,6 +8,7 @@ import { Icon } from './Icon';
 import type { Dir8 } from '../state/dir8';
 import { windDirectionLabel, type SeaWindForceId } from '../engine/seaWeather';
 import type { TravelRecapDay } from '../state/travelFlow';
+import { vesselHullGauge } from './VoyageScreen';
 
 /** Cap de mer (`WindDirection` : nord/sud/est/ouest) → `Dir8` (vocabulaire rose des vents du projet). */
 const HEADING_TO_DIR8: Record<string, Dir8> = { nord: 'N', sud: 'S', est: 'E', ouest: 'O' };
@@ -22,6 +23,9 @@ const HEADING_TO_DIR8: Record<string, Dir8> = { nord: 'N', sud: 'S', est: 'E', o
  */
 export function SeaVoyageBody({ day }: { day: TravelRecapDay }) {
   const chrome = day.sea!;
+  // COQUE : jauge VIVE (source unique `vessel.wounds`, #296) — la journée close n'en porte que son DELTA
+  // (`chrome.hullDelta`), jamais un absolu concurrent sous le même libellé.
+  const hullGauge = vesselHullGauge(useGame((s) => s.vessel));
   const cadence = useGame((s) => s.travelPlan?.orders?.cadence);
   const setCadence = useGame((s) => s.setVoyageCadence);
   const active = !!useGame((s) => s.travelPlan); // la bascule n'a de sens que tant que la traversée dure
@@ -30,8 +34,10 @@ export function SeaVoyageBody({ day }: { day: TravelRecapDay }) {
       <div className="sea-voyage-head">
         <WindRose dir={HEADING_TO_DIR8[chrome.windFrom] ?? 'N'} force={chrome.windForce as SeaWindForceId} heading={HEADING_TO_DIR8[chrome.heading] ?? 'N'} size="md" />
         <div className="sea-voyage-gauges">
-          <NotchGauge label="Coque" icon={<Icon id="scenario/port" size="sm" />} value={chrome.hull.current} max={chrome.hull.max}
-            tone={(v, m) => (v <= m * 0.25 ? 'danger' : v <= m * 0.5 ? 'warn' : 'ok')} stacked />
+          {hullGauge && (
+            <NotchGauge label="Coque" icon={<Icon id="scenario/port" size="sm" />} value={hullGauge.current} max={hullGauge.max}
+              tone={(v, m) => hullGauge.tone(v, m)} stacked />
+          )}
           <NotchGauge label="Moral" value={chrome.morale} max={100}
             tone={(v) => (v <= 25 ? 'danger' : v <= 50 ? 'warn' : 'ok')} stacked />
           {chrome.waterLitres != null && (
@@ -48,6 +54,7 @@ export function SeaVoyageBody({ day }: { day: TravelRecapDay }) {
         <span className="stat-chip"><span className="sc-label">Cap</span><span className="sc-value">{windDirectionLabel(chrome.heading)}</span></span>
         <span className="stat-chip"><span className="sc-label">Distance</span><span className="sc-value">{chrome.milesLeft} milles{chrome.daysLeft > 0 ? ` · ~${chrome.daysLeft} j` : ''}</span></span>
         {chrome.manann !== 0 && <span className="stat-chip"><span className="sc-label">Manann</span><span className="sc-value">{chrome.manann >= 0 ? `+${chrome.manann}` : chrome.manann}</span></span>}
+        {chrome.hullDelta !== 0 && <span className="stat-chip"><span className="sc-label">Coque</span><span className="sc-value">{chrome.hullDelta > 0 ? `+${chrome.hullDelta}` : chrome.hullDelta}</span></span>}
       </div>
       {/* Événements de bord RACONTÉS (un récit → une carte-parchemin) — AVANT le procès-verbal, ils
           en sont la cause narrative du jour. */}

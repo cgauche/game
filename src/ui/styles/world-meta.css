@@ -125,10 +125,17 @@
     grid-template-rows: minmax(0, 1fr) auto;
   }
 }
+/* Le calque CARTE est BORNÉ à sa cellule de grille (#1117, recette 3) : `.map-canvas-frame` porte un
+   `aspect-ratio`, donc sous une cellule plus PLATE que ce ratio (empilement ≤900px, fenêtre basse) il
+   déborderait — son SVG, plein de `rect`/`path` de fond, recouvrait alors le panneau latéral et
+   captait les clics (« Rythme normal / Forcer +1 M » injoignables, `elementFromPoint` résolvant sur le
+   canevas). À ≥901px les deux colonnes séparent les surfaces : le défaut ne se voyait qu'en dessous —
+   d'où une recette qui réussit le clic et la suivante non. Le fix ne dépend d'aucun viewport. */
 .worldmap-canvas {
   min-height: 0;
   display: grid;
   place-items: center;
+  overflow: hidden;
 }
 /* Cadre au ratio EXACT du viewBox (`worldMapViewport.ts` VB_W/VB_H = 100/64) — les commandes de zoom
    s'ancrent à CE cadre, jamais au conteneur englobant `.worldmap-canvas` (souvent plus grand,
@@ -160,9 +167,17 @@
 .map-canvas-frame svg [role="button"]:focus-visible .map-marker-focus-ring {
   opacity: 1;
 }
-/* Commandes de zoom, coin bas-droit de la carte — cibles tactiles ≥40px (pointer: coarse). */
+/* Commandes de zoom, coin bas-droit de la carte — cibles tactiles ≥40px (pointer: coarse).
+   ATTEIGNABLES panneau OUVERT (#1117, recette 4) : sans contexte d'empilement local ni `z-index`, un
+   panneau de route rendu APRÈS dans le DOM passait au-dessus d'elles (`elementFromPoint` résolvait
+   l'aside) — le cadre s'ISOLE et les commandes montent dans SON empilement, sans jamais déborder
+   (le calque carte est borné par `.worldmap-canvas`). */
+.map-canvas-frame {
+  isolation: isolate;
+}
 .wm-zoom {
   position: absolute;
+  z-index: 2;
   right: 12px;
   bottom: 12px;
   display: flex;

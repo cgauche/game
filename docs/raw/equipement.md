@@ -619,7 +619,7 @@ Procédure pour qu'un Personnage construise (ou fasse construire) son vaisseau, 
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (table *Caractéristiques de bateau standard*) · § Navires — profil et Caractéristiques (MDG) · § Traits de navire (MDG) · § Améliorations de navire (MDG).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.108-164) → `peu-maniable`, `minuscule`, `shipSizeFromLength`, `renforce`, `robuste`, `tres-petite`, `solide`, `petite`, `navalSkillTestDR`, `ancre`, +29 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/ship-construction.ts`, `src/data/sea-cargo.json`, `src/data/ship-construction.json`, `src/engine/navalTraits.ts`, +4 fichiers
+- `MDG 12` (l.108-164) → `peu-maniable`, `minuscule`, `shipSizeFromLength`, `renforce`, `robuste`, `tres-petite`, `solide`, `petite`, `navalSkillTestDR`, `ancre`, +29 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/ship-construction.ts`, `src/data/sea-cargo.json`, `src/data/ship-construction.json`, `src/data/voyage-stakes.json`, +5 fichiers
 
 ---
 

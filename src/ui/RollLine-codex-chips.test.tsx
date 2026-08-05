@@ -14,7 +14,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { RollShell } from './RollShell';
 import { RULE_REF } from '../engine/ruleRefs';
 import type { PendingRoll } from './RollLine';
-import { soutienMod } from '../engine/skills';
+import { soutienMod, partyAssisted, supportSplit } from '../engine/skills';
 import { useGame } from '../state/store';
 import type { Combatant } from '../engine/types';
 
@@ -85,20 +85,23 @@ describe('ModChips — la chip PORTE sa règle (#1078)', () => {
     expect(pop!.textContent).toContain('viser');
   });
 
-  it('provenance `by` : un badge par soutien, NOM seul tant qu’aucune catégorie ne l’expose', () => {
+  // ── PROVENANCE : arbitrage user 2026-08-05, verbatim « Normalement les informations de ce genre
+  //    sont dans le hover codex non ? » — les noms ne flottent plus à côté de la chip (illisibles,
+  //    rattachés à rien) : ils vivent DANS le popover de la chip, qui porte déjà sa règle.
+  it('provenance `by` : AUCUN badge inline — les noms partent au popover de la chip', () => {
     ({ container, root } = mount(shell([
       { label: 'Soutien', value: 20, ref: RULE_REF.soutien, by: [{ label: 'Perdita' }, { label: 'Valentyn' }] },
     ])));
-    // Badge PARTAGÉ `.entity-badge` (base.css), pas une classe mono-écran de plus.
-    const by = [...container.querySelectorAll('.rm-roll-mods .entity-badge')].map((n) => n.textContent);
-    expect(by).toEqual(['Perdita', 'Valentyn']);
-    // Aucun lien inventé : sans catégorie, le badge n'est pas cliquable.
-    expect(container.querySelector('.rm-roll-mods .entity-badge')!.getAttribute('role')).toBeNull();
+    expect(container.querySelectorAll('.rm-roll-mods .entity-badge'), 'plus de badge flottant').toHaveLength(0);
+    // La chip reste sobre et porte toujours sa règle (affordance CodexRef).
+    const chip = container.querySelector('.rm-mod')!;
+    expect(chip.textContent).toBe('+20 Soutien');
+    expect(chip.className).toContain('codex-ref');
   });
 
   // ── Recette B3a, capture 07 : « pregen-101 » s'affichait parce que `medicFlow` n'avait pas passé
   //    de résolveur id→nom. La résolution est REMONTÉE au rendu : aucun producteur n'en fournit.
-  it('les badges rendent les NOMS du store — AUCUN site ne passe de résolveur', () => {
+  it('les NOMS viennent du store, et aucun id brut ne fuit à l’écran', () => {
     const party = [
       { id: 'pregen-101', label: 'Perdita' },
       { id: 'pregen-102', label: 'Valentyn' },
@@ -107,27 +110,51 @@ describe('ModChips — la chip PORTE sa règle (#1078)', () => {
     // `soutienMod` est le producteur RÉEL, appelé comme tout site l'appelle : un seul argument.
     const mod = soutienMod({ count: 2, bonus: 20, ids: ['pregen-101', 'pregen-102'] })!;
     expect(mod.by, 'le moteur reste PUR : il ne connaît que des ids').toEqual([{ id: 'pregen-101' }, { id: 'pregen-102' }]);
-
     ({ container, root } = mount(shell([mod])));
-    const by = [...container.querySelectorAll('.rm-roll-mods .entity-badge')].map((n) => n.textContent);
-    expect(by).toEqual(['Perdita', 'Valentyn']);
-    // L'id BRUT ne fuit jamais à l'écran.
     expect(container.textContent).not.toContain('pregen-101');
+    expect(container.textContent).not.toContain('Perdita'); // au popover, pas sur la ligne
   });
 
-  it('un `label` qui vaut son propre id (repli fautif) est RÉSOLU comme s’il était absent', () => {
+  // ── #1117 (recette) : « les soutiens sont invisibles ». Le contrat NÉGATIF ci-dessus (aucun badge
+  //    sur la ligne) est vrai sans que l'information soit LISIBLE nulle part — il faut donc prouver
+  //    l'autre bout : le popover de la chip, atteignable au survol ET au focus clavier, les NOMME.
+  it('le popover de la chip Soutien NOMME les soutiens (survol)', () => {
+    useGame.setState({ party: [{ id: 'pregen-101', label: 'Perdita' }, { id: 'pregen-102', label: 'Valentyn' }] as Combatant[], battle: null });
+    const mod = soutienMod({ count: 2, bonus: 20, ids: ['pregen-101', 'pregen-102'] })!;
+    ({ container, root } = mount(shell([mod])));
+    const chip = container.querySelector('.rm-mod.codex-ref') as HTMLElement;
+    act(() => { chip.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); });
+    const pop = document.querySelector('.codex-pop')!;
+    expect(pop.textContent).toContain('Perdita');
+    expect(pop.textContent).toContain('Valentyn');
+  });
+
+  it('la même information s’atteint au CLAVIER (focus), pas seulement à la souris', () => {
     useGame.setState({ party: [{ id: 'pregen-101', label: 'Perdita' }] as Combatant[], battle: null });
-    ({ container, root } = mount(shell([
-      { label: 'Soutien', value: 10, ref: RULE_REF.soutien, by: [{ id: 'pregen-101', label: 'pregen-101' }] },
-    ])));
-    expect(container.querySelector('.rm-roll-mods .entity-badge')!.textContent).toBe('Perdita');
+    const mod = soutienMod({ count: 1, bonus: 10, ids: ['pregen-101'] })!;
+    ({ container, root } = mount(shell([mod])));
+    const chip = container.querySelector('.rm-mod.codex-ref') as HTMLElement;
+    act(() => { chip.focus(); });
+    expect(document.querySelector('.codex-pop')?.textContent).toContain('Perdita');
   });
 
-  it('provenance INCONNUE du store : le badge retombe sur son id, jamais sur un vide muet', () => {
-    useGame.setState({ party: [], battle: null });
-    ({ container, root } = mount(shell([
-      { label: 'Soutien', value: 10, ref: RULE_REF.soutien, by: [{ id: 'fantome-9' }] },
-    ])));
-    expect(container.querySelector('.rm-roll-mods .entity-badge')!.textContent).toBe('fantome-9');
+  // ── Le bout AMONT : le producteur réel du voyage (`partyAssisted` → `supportSplit`) doit livrer
+  //    une ligne dont la provenance est PEUPLÉE — une étape qui perdrait `support.ids` afficherait
+  //    « +20 Soutien » sans jamais pouvoir dire qui.
+  it('chaîne RÉELLE partyAssisted → supportSplit → chip : la provenance arrive peuplée', () => {
+    const party = [
+      { id: 'pregen-101', label: 'Perdita', characteristics: { force: 40 }, skills: {}, wounds: 10 },
+      { id: 'pregen-102', label: 'Valentyn', characteristics: { force: 30 }, skills: {}, wounds: 10 },
+    ] as unknown as Combatant[];
+    useGame.setState({ party, battle: null });
+    const assisted = partyAssisted(party, undefined, 'force')!;
+    const { base, mods } = supportSplit(assisted.value, assisted.support);
+    expect(base, 'la base affichée redevient celle du meneur seul').toBe(40);
+    expect(mods[0].value, 'le Soutien est une ligne NOMMÉE').toBeGreaterThan(0);
+    expect(mods[0].by, 'la provenance n’est pas vide').toHaveLength(1);
+    ({ container, root } = mount(shell(mods)));
+    const chip = container.querySelector('.rm-mod.codex-ref') as HTMLElement;
+    act(() => { chip.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); });
+    expect(document.querySelector('.codex-pop')?.textContent).toContain('Valentyn');
   });
 });

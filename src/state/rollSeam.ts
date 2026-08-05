@@ -43,13 +43,12 @@ import { TestOutcome } from '../engine/testOutcome';
 import { actorIn } from './combatants';
 import { startCascade, runCascadeImmediate } from './cascade';
 import { testValue, partyBest, partyAssisted, type SupportDetail } from '../engine/skills';
-import { getTestPolicy } from '../engine/testPolicy';
 import { humanControlled, pilotedByHuman } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
 import { findSkillById, conditionLabel } from '../data';
 import { t, type OutKey, type OutVars } from '../i18n';
-import { rollTest } from '../engine/tests';
+import { rollTest, clampTarget } from '../engine/tests';
 import { defaultRNG, type RNG } from '../engine/dice';
 import type { TestResult } from '../engine/tests';
 
@@ -92,16 +91,21 @@ export interface RollRequest {
 /** Trois surfaces (Décision 3) : Modale influençable / Visible-lançable MJ / Inline-PV. */
 type Surface = 'M' | 'V' | 'I';
 
-/** Cible EFFECTIVE (difficulté déjà appliquée) d'un Test skill/char — même arithmétique que
- *  `rollTest` (`clamp(value+DIFFICULTY_MODIFIERS[difficulty], policy)`, `engine/tests.ts:59`), sans
- *  dupliquer `clamp` (privée à `tests.ts`, hors périmètre de cette Ronde). `baseOverride` couvre les
- *  côtés SANS acteur (`worldSide` — via `meta.baseValue`) ou dont la valeur EST l'acteur+valeur choisis
- *  par la porte (`partyBest`) — RÉSERVÉ à ces deux cas (extension mandat coordinateur) : un côté
- *  `actorId` calcule TOUJOURS `testValue` ICI, jamais un `meta.baseValue` du call-site. */
-export function effectiveTarget(actor: Combatant | undefined, test: RollRequest['test'], difficulty: Difficulty, baseOverride?: number): number {
+/** Cible EFFECTIVE d'un Test skill/char AVEC l'écrêtage RÉELLEMENT subi — même arithmétique que
+ *  `rollTest`, par la primitive PARTAGÉE `clampTarget` (`engine/tests.ts`, plus de `clamp` recopié
+ *  ici). L'écrêtage est RENDU, pas jeté : une base SOUTENUE peut franchir le plafond, et l'écart
+ *  doit se NOMMER sur la ligne (« plafond 99 ») au lieu d'être avoué « autres » (#1117).
+ *  `baseOverride` couvre les côtés SANS acteur (`worldSide` — via `meta.baseValue`) ou dont la valeur
+ *  EST l'acteur+valeur choisis par la porte (`partyBest`) — RÉSERVÉ à ces deux cas (extension mandat
+ *  coordinateur) : un côté `actorId` calcule TOUJOURS `testValue` ICI, jamais un `meta.baseValue`. */
+export function effectiveTargetClamped(actor: Combatant | undefined, test: RollRequest['test'], difficulty: Difficulty, baseOverride?: number): { target: number; clamped?: number } {
   const value = baseOverride ?? (actor ? testValue(actor, test.skill, test.char, test.spec, test.sense) : 0);
-  const policy = getTestPolicy();
-  return Math.max(policy.targetMin, Math.min(policy.targetMax, value + DIFFICULTY_MODIFIERS[difficulty]));
+  return clampTarget(value + DIFFICULTY_MODIFIERS[difficulty]);
+}
+
+/** Cible EFFECTIVE seule — pour les sites dont la base ne peut pas franchir les bornes. */
+export function effectiveTarget(actor: Combatant | undefined, test: RollRequest['test'], difficulty: Difficulty, baseOverride?: number): number {
+  return effectiveTargetClamped(actor, test, difficulty, baseOverride).target;
 }
 
 /** Libellé de COMPÉTENCE/carac d'un Test DÉCLARÉ — DÉRIVÉ des ids `skill`/`char` (catalogue

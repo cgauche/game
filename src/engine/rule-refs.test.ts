@@ -53,9 +53,10 @@ function refLessProducers(): string[] {
 
 /**
  * CLIQUET — stock des `ModLine` SANS `ref`. Ce qui BLOQUE chacune est MESURÉ :
- *  - « État » (attaque ET défense), #1107 : `combatTestPenalty` ne rend qu'un NOMBRE — l'État
- *    gagnant du pool non-cumul est INIDENTIFIABLE au site (`PassiveMod` = `{op, kind?}`, sans id
- *    de source). Lever ce blocage = faire porter son id à `PassiveMod` ;
+ *  - « État » (#1107) : `combatTestPenalty` ne rend qu'un NOMBRE — l'État gagnant du pool non-cumul
+ *    est INIDENTIFIABLE au site (`PassiveMod` = `{op, kind?}`, sans id de source). Lever ce blocage =
+ *    faire porter son id à `PassiveMod`. UNE seule entrée depuis #1112 : les trois producteurs
+ *    (attaque, défense, Test de combat « brut ») passent par la primitive `conditionModLines` ;
  *  - « Cible vulnérable » (`meleeAttackerBonus`) et « Aura de Sorcière » (`castWardPenalty`) : MÊME
  *    classe que « État » — un pool d'octroyeurs (États / effets `castWard`) dont le gagnant n'est pas
  *    rendu au site ;
@@ -70,8 +71,7 @@ const RATCHET = [
   "src/engine/combat.ts · 'Cible vulnérable'",
   "src/engine/combat.ts · 'Neige épaisse'",
   "src/engine/combat.ts · 'Rapide'",
-  "src/engine/combat.ts · 'État'", // #1107 (attaque)
-  "src/engine/combat.ts · 'État'", // #1107 (défense)
+  "src/engine/combat.ts · 'État'", // #1107 — SOURCE UNIQUE `conditionModLines` (attaque + défense + Test brut)
   "src/state/combatFlow.ts · 'Aura de Sorcière'",
   "src/state/combatFlow.ts · 'Contrecoup'",
   "src/state/combatFlow.ts · 'Vents de Magie'",

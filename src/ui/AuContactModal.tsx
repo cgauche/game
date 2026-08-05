@@ -1,5 +1,5 @@
 import { useGame } from '../state/store';
-import { combatValue } from '../engine/combat';
+import { baseTestModLines, combatValue } from '../engine/combat';
 import { canReroll } from '../engine/fortune';
 import { OptionChooser } from './OptionChooser';
 import { RollShell, type RollAction } from './RollShell';
@@ -7,7 +7,7 @@ import { VsHeader } from './VsHeader';
 import { Icon } from './Icon';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
-import { testBreakdown } from './breakdown';
+import { opposedLines } from './breakdown';
 import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
 
 /**
@@ -42,18 +42,26 @@ export function AuContactModal() {
     : pd.result === 'failure' ? `${foe.label} l'emporte et choisit.`
     : 'Égalité parfaite : le combat se poursuit normalement.';
 
+  // Test OPPOSÉ de Corps à corps : la Difficulté est DÉCLARÉE UNE fois pour l'opposition entière
+  // (LDB 12 l.166 ; jet de combat, LDB 13 l.118).
+  // Les modificateurs du jet (Avantage, États, météo) sont NOMMÉS sur la ligne — même source que celle
+  // que roule `rollDisengageAttack` (`baseTestMods`) : aucun +N anonyme dans la cible.
+  const [foeLine, moverLine] = opposedLines([
+    { label: 'Corps à corps', base: combatValue(foe, 'melee'), r: pd.atk, mods: baseTestModLines(foe, 'capacite-de-combat') },
+    { label: 'Corps à corps', base: combatValue(mover, 'melee'), r: pd.def, mods: baseTestModLines(mover, 'capacite-de-combat') },
+  ]);
   // Rangée TÉMOIN : Corps à corps du foe, figé à l'ouverture (jamais relancé, aucun bouton) — MASQUÉ
   // tant que le mover n'a pas répondu (#990 : `pd.def` est SA réponse).
   const foeRow = frozenOpposedRow(useGame.getState(), {
     ownerId: pd.foeId,
     responded: opposedResponded(useGame.getState(), [{ id: pd.moverId, interactive: true, result: pd.def }]),
-    row: { combatant: foe, d: pd.atk ? testBreakdown('Corps à corps', combatValue(foe, 'melee'), pd.atk) : undefined },
+    row: { combatant: foe, d: foeLine.d },
   });
   // Rangée INTERACTIVE : Corps à corps du mover (héros), porteur de son cycle d'influence.
   const actorRow = {
     combatant: mover,
     actor: mover,
-    row: { combatant: mover, d: pd.def ? testBreakdown('Corps à corps', combatValue(mover, 'melee'), pd.def) : undefined },
+    row: { combatant: mover, d: moverLine.d },
     rolled,
     rollLabel: 'Lancer',
     onRoll: roll,

@@ -100,7 +100,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   const defenderPending = res
     ? undefined
     : weapon?.type === 'ranged'
-      ? (rangedDef ? { label: DEFENSE_LABEL[rangedDef.mode], mods: defenseModifiers(target, rangedDef.mode, 0, rangedDef.parryWeapon) } : undefined)
+      ? (rangedDef ? { label: DEFENSE_LABEL[rangedDef.mode], mods: defenseModifiers(target, rangedDef.mode, 0, rangedDef.parryWeapon), difficulty: 'intermediaire' as const } : undefined) // LDB 13 l.118
       : isInanimate(target) ? undefined : previewDefense(target); // OBJET INANIMÉ (structure/véhicule/affût) : aucune Parade/Esquive → pas de ligne de défense
   // Cible Inconsciente (LDB États l.113) : le dé est DÉJÀ le meilleur choisi par le moteur (helplessTest,
   // succès + Critique forcés) — seule la Localisation reste un choix (LDB 17 l.68, CritLocationPicker
@@ -134,6 +134,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               base: preview!.base,
               target: Math.max(0, Math.min(100, preview!.target)),
               mods: preview!.mods,
+              difficulty: preview!.difficulty, // posée par `previewAttack` (LDB 13 l.118)
             },
           },
     rolled,

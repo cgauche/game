@@ -37,7 +37,7 @@ import { rule } from '../engine/policy';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { applyFractureEnd } from '../engine/trauma';
 import type { DeferredUpkeepTest } from './upkeep';
-import { weatherExposure, exposureTestCount, expireExposureEffects, exposureShelterFromTent, applyExposureFailure, exposureTarget, sealskinDR, heaviestPossession, dropHeaviestPossession, type ExposureSeverity, type ExposureKind } from '../engine/exposure';
+import { weatherExposure, exposureTestCount, expireExposureEffects, exposureShelterFromTent, applyExposureFailure, exposureTarget, exposureCoatMods, sealskinDR, heaviestPossession, dropHeaviestPossession, type ExposureSeverity, type ExposureKind } from '../engine/exposure';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { forcedMarchTarget, applyForcedMarch } from '../engine/travel';
 import { registerCascadeApplier, startCascade } from './cascade';
@@ -88,6 +88,9 @@ export interface NightEntry {
   d?: RollBreakdown;
   /** Issue / note en clair (« +7 PB », « jour 4/6 »). */
   text?: string;
+  /** RUBRIQUE de la ligne : les lignes consécutives d'une MÊME rubrique (les contributeurs d'un même
+   *  Test d'équipage) se rendent sous UNE bande titrée (`Band`) au lieu de répéter l'en-tête. */
+  group?: string;
   /** Vocabulaire PARTAGÉ (#349) — `RecapTone`, `state/recapLine.ts` (même trio que `RecapLine.tone`). */
   tone?: RecapTone;
   /** Type de jet HÉROS de `sleepParty` (chemin EAGER — cheat `restParty`, clôture d'interlude) —
@@ -167,7 +170,8 @@ export function sleepParty(
         actorId: h.id,
         icon: r.kind === 'recovery' ? 'rest/bed' : 'creature/scream',
         label: r.kind === 'recovery' ? 'Récupération' : 'Cauchemars (Calme)',
-        d: { label: r.kind === 'recovery' ? 'Résistance' : 'Calme', base: r.base, modifier: r.target - r.base, target: r.target, roll: r.roll, success: r.success, sl: r.sl },
+        // Mêmes Difficultés que les étapes de la cascade de nuit (chemin influençable) — la ligne les DIT.
+        d: { label: r.kind === 'recovery' ? 'Résistance' : 'Calme', base: r.base, difficulty: r.kind === 'recovery' ? 'accessible' : 'facile', modifier: r.target - r.base, target: r.target, roll: r.roll, success: r.success, sl: r.sl },
         tone: r.success ? 'ok' : 'bad',
         reKind: r.kind,
       });
@@ -253,7 +257,8 @@ function buildExposureSteps(party: Combatant[], camperIds: string[], count: numb
     const resVal = restResistVal(h);
     for (let i = 0; i < count; i++) {
       steps.push({ id: `expo-${id}-${i}`, kind: 'exposure', actorId: id, label: 'Exposition', icon: 'rest/cold',
-        rollLabel: 'Résistance', base: resVal, target: exposureTarget(h, resVal), result: null, interactive: true });
+        rollLabel: 'Résistance', base: resVal, difficulty: 'intermediaire', ...exposureCoatMods(h),
+        target: exposureTarget(h, resVal), result: null, interactive: true });
     }
   }
   return steps;
@@ -376,7 +381,7 @@ registerCascadeApplier('dessoulage', (_get, _set, step, hero) => {
   const alc = testValue(hero, 'resistance-a-l-alcool', 'endurance');
   const insert: CascadeStep[] = [{
     id: `dessoulageHangover-${hero.id}`, kind: 'dessoulageHangover', actorId: hero.id, icon: 'time/night',
-    rollLabel: 'Résistance', base: alc, target: alc, label: 'Gueule de bois', result: null, interactive: true,
+    rollLabel: 'Résistance', base: alc, difficulty: 'intermediaire', target: alc, label: 'Gueule de bois', result: null, interactive: true,
   }];
   return { consequences: freeCons(d.log), insert };
 });
@@ -447,7 +452,8 @@ export function deferredUpkeepSteps(party: Combatant[], deferred: DeferredUpkeep
     const h = party.find((x) => x.id === t.heroId);
     if (!h || h.dead) continue;
     const st: CascadeStep = { id: `${t.kind}-${t.heroId}-${startIndex + steps.length}`, kind: t.kind, actorId: t.heroId, label: t.label,
-      icon: UPKEEP_STEP_ICON[t.kind] ?? 'nav/dice', rollLabel: 'Résistance', base: t.base, target: t.target, result: null, interactive: true, meta: t.meta as CascadeStepMeta | undefined };
+      icon: UPKEEP_STEP_ICON[t.kind] ?? 'nav/dice', rollLabel: 'Résistance', base: t.base, difficulty: t.difficulty,
+      ...(t.mods?.length ? { mods: t.mods } : {}), target: t.target, result: null, interactive: true, meta: t.meta as CascadeStepMeta | undefined };
     const stake = nightStake(t.kind); if (stake) st.stake = stake;
     steps.push(st);
   }
@@ -493,7 +499,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     const h = party.find((x) => x.id === id);
     if (!h || h.dead) continue;
     steps.push({ id: `march-${id}`, kind: 'forcedMarch', actorId: id, label: 'Marche forcée', icon: 'travel/foot',
-      rollLabel: 'Résistance', base: forcedMarchTarget(h), target: forcedMarchTarget(h), result: null, interactive: true });
+      rollLabel: 'Résistance', base: forcedMarchTarget(h), difficulty: 'intermediaire', target: forcedMarchTarget(h), result: null, interactive: true });
   }
   // Tests d'entretien DIFFÉRÉS (faim, soif, maladie, convalescence, dessoûlage) → étapes influençables.
   steps.push(...deferredUpkeepSteps(party, deferred, steps.length));
@@ -502,7 +508,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     const h = party.find((x) => x.id === c.heroId);
     if (!h || h.dead) continue;
     steps.push({ id: `contagion-${c.heroId}-${steps.length}`, kind: 'contagion', actorId: c.heroId, label: `Contagion (${c.diseaseName})`, icon: 'medical/infection',
-      rollLabel: 'Résistance', base: c.resVal, target: c.resVal + DIFFICULTY_MODIFIERS[c.difficulty], result: null, interactive: true, meta: { diseaseName: c.diseaseName },
+      rollLabel: 'Résistance', base: c.resVal, difficulty: c.difficulty, target: c.resVal + DIFFICULTY_MODIFIERS[c.difficulty], result: null, interactive: true, meta: { diseaseName: c.diseaseName },
       menace: 'maladie' }); // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
   }
   // Campement : Exposition (intempéries) — abri de fortune (STEP) → insère les jets d'Exposition.
@@ -518,7 +524,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
       const best = partyAssisted(party.filter((h) => !h.dead), 'survie-en-exterieur'); // Soutien (LDB 12)
       if (best) {
         steps.push({ id: 'abri', kind: 'shelter', actorId: best.actor.id, label: 'Abri de fortune', icon: 'rest/camp',
-          rollLabel: 'Survie en extérieur', base: best.value, target: best.value, result: null, interactive: true,
+          rollLabel: 'Survie en extérieur', base: best.value, difficulty: 'intermediaire', target: best.value, result: null, interactive: true,
           meta: { severity, campers: camperIds.join(',') } });
       } else {
         const count = exposureTestCount(severity, false);
@@ -533,7 +539,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     if (h.dead) continue;
     if (needsRecoveryRoll(h)) {
       steps.push({ id: `recov-${h.id}`, kind: 'recovery', actorId: h.id, label: 'Récupération', icon: 'rest/bed',
-        rollLabel: 'Résistance', base: restResistVal(h), target: recoveryTarget(h), result: null, interactive: true });
+        rollLabel: 'Résistance', base: restResistVal(h), difficulty: 'accessible', target: recoveryTarget(h), result: null, interactive: true });
     } else {
       const before = h.wounds.current;
       const { wokeUp } = applyRecoveryDay(h, null);
@@ -542,7 +548,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     }
     if (h.nightmares) {
       steps.push({ id: `nm-${h.id}`, kind: 'nightmare', actorId: h.id, label: 'Cauchemars', icon: 'creature/scream',
-        rollLabel: 'Calme', base: calmeVal(h), target: calmeVal(h) + 40, result: null, interactive: true });
+        rollLabel: 'Calme', base: calmeVal(h), difficulty: 'facile', target: calmeVal(h) + DIFFICULTY_MODIFIERS['facile'], result: null, interactive: true });
     }
   }
 

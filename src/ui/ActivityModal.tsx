@@ -4,7 +4,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import type { ModLine } from '../engine/combat';
 import { evaluateTest } from '../engine/tests';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { testBreakdown, testPending, supportSplit } from './breakdown';
+import { testBreakdown, testPending, supportSplit, opposedLines } from './breakdown';
 import { describeActivity } from '../state/flowOutcomes';
 import { resultLines, freeCons } from '../state/rollSeam';
 
@@ -96,7 +96,8 @@ export function ActivityModal() {
     const enemyName = massBattle?.enemy.label ?? 'Ennemi';
     rows.push({
       key: 'enemy',
-      row: { d: testBreakdown(`${enemyName} · Puissance`, pa.enemyValue!, enemyT) },
+      // La Difficulté de l'opposition est celle DÉCLARÉE par le flux, à défaut Intermédiaire (LDB 12 l.166).
+      row: opposedLines([{ label: `${enemyName} · Puissance`, base: pa.enemyValue!, r: enemyT }], pa.difficulty)[0],
       rolled,
       interactive: false,
     });

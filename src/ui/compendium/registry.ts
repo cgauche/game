@@ -1254,6 +1254,14 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       id: e.id, label: e.label, desc: e.stake, source: src(e.source),
     })),
   },
+  {
+    // Jumeau du précédent pour les cascades de VOYAGE (#1117) : le contenu est un GABARIT de descripteur
+    // mécanique (trous `{nom}` remplis par le flux), là où l'enjeu de nuit est un verbatim figé.
+    key: 'voyageStakes', label: 'Enjeux — cascade de voyage', group: 'Tables', sourceRef: 'MSRC 7 · MDG 12',
+    build: () => datasetArray('voyageStakes').map((e) => ({
+      id: e.id, label: e.label, desc: e.template, source: src(e.source),
+    })),
+  },
 
   {
     key: 'races', label: 'Races', group: 'Personnage',

@@ -461,6 +461,16 @@ export function psychDRAdjust(attacker: Combatant, target: Combatant | null): nu
  * (`14 - _GoBack.md`) : Avantage ×10 (LDB Dépl.), portée (l.82-118), Viser +20 (l.90), Précise +10
  * (Armes l.304), Localisation visée −10 (l.104), Cible vulnérable À Terre/Surpris +20 (l.93).
  */
+/** Ligne de mod des ÉTATS d'un combattant (`combatTestPenalty`) — SOURCE UNIQUE de la chip « État »
+ *  des trois producteurs (attaque, défense, Test de combat « brut »). Sans `ref` : la pénalité est un
+ *  POOL non-cumul dont l'État gagnant n'est pas identifiable au site (`PassiveMod` = `{op, kind?}`,
+ *  sans id de source) — une seule entrée au cliquet #1078 au lieu de trois copies. `[]` si aucun État
+ *  ne pèse. */
+export function conditionModLines(c: Combatant): ModLine[] {
+  const pen = combatTestPenalty(c);
+  return pen ? [{ label: 'État', value: pen }] : [];
+}
+
 export function attackModifiers(
   attacker: Combatant,
   target: Combatant | null,
@@ -470,8 +480,7 @@ export function attackModifiers(
   const out: ModLine[] = [];
   const adv = attacker.advantage * 10;
   if (adv) out.push({ label: 'Avantage', value: adv, uncapped: true, ref: RULE_REF.avantage });
-  const pen = combatTestPenalty(attacker);
-  if (pen) out.push({ label: 'État', value: pen });
+  out.push(...conditionModLines(attacker));
   if (attacker.nextActionPenalty) out.push({ label: 'Maladresse (Round précédent)', value: -attacker.nextActionPenalty, ref: RULE_REF['maladresse-tableau-des-oups'] });
   // Amputation (LDB 18 l.251/263) : pénalité CONTEXTUELLE à l'arme — s'applique ssi l'arme implique la main blessée.
   const amp = amputationCombatPenalty(attacker, weapon);
@@ -604,8 +613,7 @@ export function defenseModifiers(defender: Combatant, mode: DefenseMode, dodgeMo
   // Avantage HORS table de Difficulté (comme `attackModifiers`) → `uncapped` : ne compte PAS dans le
   // plafond ±30/+60 de `combineMods` — sans ce marqueur, l'affichage défense plafonnerait l'Avantage à tort.
   if (adv) out.push({ label: 'Avantage', value: adv, uncapped: true, ref: RULE_REF.avantage });
-  const pen = combatTestPenalty(defender);
-  if (pen) out.push({ label: 'État', value: pen });
+  out.push(...conditionModLines(defender));
   if (defender.defensiveStance) out.push({ label: 'Sur la défensive', value: 20, ref: RULE_REF['sur-la-defensive'] });
   if (mode === 'esquive' && dodgeMod) out.push({ label: 'Neige épaisse', value: dodgeMod });
   if (mode === 'parade') {
@@ -631,14 +639,27 @@ function defenseTestChar(mode: DefenseMode): CharKey | null {
   return mode === 'parade' ? 'capacite-de-combat' : mode === 'esquive' ? 'agilite' : null;
 }
 
-/** Modificateurs de BASE d'un Test de combat « brut » (hors Atouts d'arme et bonus de cible) :
- *  Avantage ×10 + pénalité d'États + météo « Tests physiques » (canal `weatherTestMods`, #341). `ck` = la
- *  Caractéristique RÉELLE du Test brut (Empoignade → Force, Désengagement/coup dans le dos → CC) : la météo
- *  n'arrive que si elle est physique (LISTE maison `physicalTestChars`). SOURCE UNIQUE réutilisée par les
- *  jets de Désengagement et le coup dans le dos. Réutiliser ; ne pas réécrire `c.advantage * 10 + …`. */
+/** Modificateurs de BASE d'un Test de combat « brut » (hors Atouts d'arme et bonus de cible), en lignes
+ *  NOMMÉES : Avantage ×10 + pénalité d'États + météo « Tests physiques » (canal `weatherTestMods`, #341).
+ *  MÊME nomenclature que `attackModifiers`/`defenseModifiers` — une modale de Test opposé « brut »
+ *  (Empoignade, Au Contact, Désengagement) affiche ainsi ses modificateurs au lieu d'un +N anonyme.
+ *  `ck` = la Caractéristique RÉELLE du Test brut (Empoignade → Force, Désengagement/coup dans le dos →
+ *  CC) : la météo n'arrive que si elle est physique (LISTE maison `physicalTestChars`). */
+export function baseTestModLines(c: Combatant, ck?: CharKey): ModLine[] {
+  const out: ModLine[] = [];
+  const adv = c.advantage * 10;
+  // Avantage HORS table de Difficulté (comme `attackModifiers`/`defenseModifiers`) → `uncapped`.
+  if (adv) out.push({ label: 'Avantage', value: adv, uncapped: true, ref: RULE_REF.avantage });
+  out.push(...conditionModLines(c));
+  out.push(...weatherTestMods(c.envWeather, ck ?? null));
+  return out;
+}
+
+/** Somme des modificateurs de base d'un Test de combat « brut » — la VALEUR que roule le résolveur.
+ *  SOURCE UNIQUE partagée avec `baseTestModLines` (l'affichage et le jet ne peuvent pas diverger).
+ *  Réutiliser ; ne pas réécrire `c.advantage * 10 + …`. */
 export function baseTestMods(c: Combatant, ck?: CharKey): number {
-  const weather = weatherTestMods(c.envWeather, ck ?? null).reduce((s, l) => s + l.value, 0);
-  return c.advantage * 10 + combatTestPenalty(c) + weather;
+  return baseTestModLines(c, ck).reduce((s, l) => s + l.value, 0);
 }
 
 export interface AttackOptions {

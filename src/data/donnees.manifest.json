@@ -303,6 +303,12 @@
             "night-stakes.json"
           ],
           "desc": "Enjeu VERBATIM par `kind` d'étape de la cascade de nuit (#331) — ce que l'échec coûte, lu par `nightStake` (`src/state/restFlow.ts`)"
+        },
+        {
+          "files": [
+            "voyage-stakes.json"
+          ],
+          "desc": "Enjeu par `kind` d'étape de cascade de VOYAGE (#1117) — GABARIT de descripteur mécanique dont les trous `{nom}` reçoivent les valeurs calculées du flux, lu par `voyageStake` (`src/data/index.ts`)"
         }
       ]
     },

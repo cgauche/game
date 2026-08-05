@@ -23,6 +23,7 @@
  * `FLOW_HANDLERS[k].setForcedRoll(get,set,…)` en direct) : c'est lui que le routage d'intents coop
  * intercepte côté invité.
  */
+import { useRef } from 'react';
 import { FLOW_HANDLERS, FLOW_VERBS } from '../state/rollFlowSpecs';
 import { canFixDie } from '../state/netOwnership';
 import { withPreRollFixedDie } from '../state/combatFlow';
@@ -34,6 +35,62 @@ import type { GameState } from '../state/store';
 import type { RollRowProps } from './RollRow';
 
 export type FlowKey = keyof typeof FLOW_VERBS;
+
+/**
+ * COMMIT du dé SAISI — la GARDE partagée des hôtes qui lancent (#1117). « Fixer le dé » vit dans
+ * `ForcedRollPicker` et son brouillon ne se commet qu'au geste terminal (Entrée). Or DEUX hôtes
+ * rendent un CTA de lancement : le bouton de la RANGÉE (`RollRow`) et le bouton HISSÉ dans la barre
+ * de la coquille (`RollShell`, cas mono — celui de TOUTE cascade). Un CTA qui lance sans consommer le
+ * brouillon abandonne la saisie et roule un dé naturel : le joueur voit sa valeur à l'écran et un
+ * autre dé résoudre (recette #1117, vécu au navigateur alors que le seul hôte-rangée était couvert).
+ *
+ * La garde vit donc ICI, avec le reste de la couture du dé fixé : un troisième hôte s'y branche, et
+ * aucune copie ne doit exister ailleurs (doctrine « UN HÔTE, jamais dupliqué », #942).
+ */
+export type DieCommit = { current: null | (() => boolean) };
+
+/** Poignée de commit à passer au picker (`commitRef`) et aux CTA de l'hôte. */
+export function useDieCommit(): DieCommit {
+  return useRef<null | (() => boolean)>(null);
+}
+
+/** Enveloppe un verbe qui (RE)LANCE : commet le brouillon d'abord ; s'il a POSÉ un dé, le verbe ne
+ *  s'exécute pas (poser le dé (re)lance déjà côté flux) — un seul jet, jamais deux. */
+export function withPickedDie(commit: DieCommit, run: () => void): () => void {
+  return () => {
+    if (commit.current?.()) return;
+    run();
+  };
+}
+
+/** REGISTRE des poignées, une par rangée — le TROISIÈME hôte (« Tout lancer » d'une fenêtre MULTI)
+ *  lance N rangées d'un coup : il lui faut la poignée de CHACUNE, or elles sont locales à leur
+ *  `RollRow`. La coquille tient le registre et le sert aux deux consommateurs (les rangées, et le
+ *  verbe groupé) — jamais un état parallèle recopié côté modale. */
+export interface DieCommitRegistry {
+  /** Poignée STABLE de la rangée `key` (créée à la demande). */
+  handle: (key: string) => DieCommit;
+  /** Commet le brouillon de chaque rangée ; rend les `key` dont la saisie a POSÉ un dé (donc déjà
+   *  lancées — l'appelant ne doit PAS les relancer). */
+  commitAll: (keys: string[]) => Set<string>;
+}
+
+export function useDieCommitRegistry(): DieCommitRegistry {
+  const map = useRef<Map<string, DieCommit>>(new Map());
+  const handle = (key: string): DieCommit => {
+    const known = map.current.get(key);
+    if (known) return known;
+    const fresh: DieCommit = { current: null };
+    map.current.set(key, fresh);
+    return fresh;
+  };
+  const commitAll = (keys: string[]): Set<string> => {
+    const launched = new Set<string>();
+    for (const k of keys) if (map.current.get(k)?.current?.()) launched.add(k);
+    return launched;
+  };
+  return { handle, commitAll };
+}
 
 type SetForcedMono = (roll: number) => void;
 type SetForcedMulti = (pid: string, roll: number) => void;

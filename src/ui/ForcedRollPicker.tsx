@@ -1,5 +1,5 @@
 import type { HitLocation, BodyShape } from '../engine/types';
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { locationLabel } from '../engine/combat';
 import { maxForcedRoll } from '../engine/tests';
 import { FIXED_ROLL_MAX } from '../engine/fixedDie';
@@ -40,7 +40,7 @@ export function CritLocationPicker({ current, onSet, shape = 'humanoide' }: {
  *  - saisie libre ≤ cible (le choix doit RESTER une réussite) — les unités nourrissent
  *    Percutante/Dévastatrice et la localisation inversée côté attaque.
  */
-export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed = false, marked = false, max, mod = 0, effective, commitOnBlur = true }: {
+export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed = false, marked = false, max, mod = 0, effective, commitOnBlur = true, rowName, commitRef }: {
   /** `null` = RIEN n'est encore fixé (offre pré-jet) : le champ est VIDE, la valeur ne se commet qu'à la saisie. */
   roll: number | null;
   target: number;
@@ -70,6 +70,16 @@ export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed =
    *  roulerait le jet qu'on annule. Le brouillon revient alors à la dernière valeur commise, et
    *  Entrée reste le seul geste qui pose le dé. */
   commitOnBlur?: boolean;
+  /** Poignée de COMMIT exposée à la rangée : elle la déclenche quand le joueur clique « Lancer » sans
+   *  avoir validé le champ (le geste NATUREL — taper puis lancer). Rend `true` si un dé a été posé
+   *  (la rangée ne doit alors PAS relancer : en pré-jet, poser le dé LANCE déjà). Sans cette poignée,
+   *  le brouillon était abandonné et le jet partait en d100 naturel (recette #1117, vécu 2×). */
+  commitRef?: { current: null | (() => boolean) };
+  /** Nom de la LIGNE qui porte ce champ (« Voile », « Résistance »…) — entre dans le nom ACCESSIBLE
+   *  du champ. Une cascade offre UN champ par ligne : sans ce discriminant, N spinbuttons portent le
+   *  MÊME nom (« Fixer le dé »), et le geste — clavier comme automate de recette — vise au hasard
+   *  (recette #1117 : frappes perdues, jet parti en aléatoire). */
+  rowName?: string;
 }) {
   // Borne : dé fixé → les faces du dé (d100 par défaut) ; Résilience → ≤ cible ET hors bande d'échec
   // auto (dérivé de la policy).
@@ -96,11 +106,22 @@ export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed =
   };
   // REFUS honnête hors domaine (jamais un clamp silencieux) : une saisie qui sortirait des faces
   // n'est pas commise — le champ revient à la dernière valeur valide.
-  const commitDraft = () => {
+  // Saisie HORS DOMAINE : refus honnête ET VISIBLE (recette #1117 — le champ se vidait sans un mot, le
+  // jet partait en dé naturel). L'état invalide est ANNONCÉ (`aria-invalid`), le domaine reste le seul
+  // fait dit (les bornes du dé), jamais un texte d'aide rédigé.
+  const [invalid, setInvalid] = useState(false);
+  const commitDraft = (): boolean => {
     const n = Number(draft);
-    if (draft !== '' && Number.isInteger(n) && n >= 1 && n <= maxRoll) commit(n);
-    else setDraft(committed.current != null ? String(committed.current) : '');
+    if (draft !== '' && Number.isInteger(n) && n >= 1 && n <= maxRoll) { commit(n); setInvalid(false); return true; }
+    setInvalid(draft !== ''); // champ VIDE = pas de saisie à refuser
+    setDraft(committed.current != null ? String(committed.current) : '');
+    return false;
   };
+  // La rangée tient la poignée de commit TANT QUE ce champ est monté (rendu, pas effet différé : le
+  // clic « Lancer » peut suivre la frappe dans le même tick).
+  if (commitRef) commitRef.current = commitDraft;
+  const stateLabel = !fixed ? 'Dé choisi' : marked ? 'Dé fixé' : 'Fixer le dé';
+  const domainId = useId();
   return (
     <div className="rm-die-pick">
       {!fixed && (
@@ -116,15 +137,18 @@ export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed =
       {/* UNE surface par ÉTAT : « Fixer le dé » tant que rien n'est commis (une OFFRE), « Dé fixé » une
           fois le dé saisi (la MARQUE de provenance, sa valeur restant éditable en place). */}
       <label className="field">
-        <span>{!fixed ? 'Dé choisi' : marked ? 'Dé fixé' : 'Fixer le dé'}</span>
+        <span>{stateLabel}</span>
         <input
           className="rm-die-input"
           type="number"
+          aria-label={rowName ? `${stateLabel} — ${rowName}` : stateLabel}
           min={1}
           max={maxRoll}
           value={draft}
           placeholder={`d${maxRoll}`}
-          onChange={(e) => setDraft(e.target.value)}
+          aria-invalid={invalid || undefined}
+          aria-describedby={invalid ? domainId : undefined}
+          onChange={(e) => { setInvalid(false); setDraft(e.target.value); }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               // Entrée est CONSOMMÉE par le champ : elle pose le dé, et rien d'autre. Sans
@@ -135,9 +159,16 @@ export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed =
               commitDraft();
             }
           }}
-          onBlur={commitOnBlur ? commitDraft : () => setDraft(committed.current != null ? String(committed.current) : '')}
+          // Le blur ne COMMET pas quand `commitOnBlur:false` (quitter le champ ne doit rien rouler) —
+          // mais il n'EFFACE rien non plus : cliquer « Lancer » blur d'abord, et un brouillon effacé
+          // à cet instant faisait partir le jet en dé naturel (recette #1117, cause racine). Le
+          // brouillon SURVIT donc au blur ; c'est le CTA qui décide de le consommer (`withPickedDie`).
+          onBlur={commitOnBlur ? commitDraft : undefined}
           title={fixed ? `Saisir la valeur du dé (1 à ${maxRoll}), validée par Entrée` : `Choisir librement la valeur du dé (1 à ${maxRoll}), validée par Entrée`}
         />
+        {/* Le DOMAINE, rendu apparent quand la saisie est refusée — un fait (les bornes du dé), pas
+            une phrase d'aide. */}
+        {invalid && <span id={domainId} className="hint" role="status">1–{maxRoll}</span>}
       </label>
       {/* Le dé qui RÉSOUT n'est pas celui qui est saisi dès qu'un modificateur s'applique : on montre
           l'opération en clair, à côté de la saisie. Sans elle, la valeur affichée ment sur l'issue. */}

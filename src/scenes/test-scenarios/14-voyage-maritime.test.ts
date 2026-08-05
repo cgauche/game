@@ -49,7 +49,10 @@ function sailToPort(maxSteps = 400): string[] {
       const cur = casc.participants[casc.cursor];
       if (cur) {
         kinds.push(cur.kind);
-        if (cur.participants) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
+        // Étape de CHOIX (Progression : Test d'équipage ou Test de Navigation, MDG 14 l.63) : le joueur
+        // TRANCHE — une cascade ne franchit jamais un choix seule. Le pilote répond le défaut.
+        if (cur.options && !cur.chosen) get().cascadeChoose(cur.id, cur.defaultChoice ?? cur.options[0].key);
+        else if (cur.participants) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
         else if (!cur.result) get().cascadeRoll(cur.id);
       }
       get().cascadeNext();

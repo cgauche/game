@@ -15,9 +15,9 @@ export const schema = z.strictObject({
       label: z.string(),
       roles: z.array(z.string()),
       essential: z.string(),
-      /** ENJEU (#331) : ce que l'échec du Test coûte, verbatim MDG 14 (règle 5) — surfacé sous le
-       *  titre d'étape de cascade. Optionnel (une entrée sans enjeu documenté n'affiche rien). */
-      enjeu: z.string().optional(),
+      /** Fiche `regles.json` portant le VERBATIM MDG 14 du Test (règle-cadre « ce Test peut être
+       *  remplacé par un Test d'équipage »). L'enjeu AFFICHÉ vient de `voyage-stakes.json`. */
+      rule: z.string().optional(),
       source: sourceRefSchema,
     }),
   ),

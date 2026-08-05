@@ -30,7 +30,6 @@ import riverCriticalsJson from '../data/river-criticals.json';
 import riverPerilsJson from '../data/river-perils.json';
 import { findTableEntry } from './tables';
 import { d10, d100, rollExpr, type RNG, defaultRNG } from './dice';
-import { rollTest, difficultyFromModifier } from './tests';
 import { bonus } from './characteristics';
 import { DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from './types';
 
@@ -165,40 +164,34 @@ export function riverDriftKm(baseKmPerDay: number): number {
   return baseKmPerDay * (DATA.driftPctOfSpeed / 100);
 }
 
-/** Difficulté EFFECTIVE d'un Test de Navigation à partir de la base (Intermédiaire, l.15) + un malus PLAT
- *  RAW (Dérive −10 note 2 ; hors de contrôle −20 note 5 ; gouvernail brisé −30 l.86). `flatPenalty` en pas
- *  de 10 → crans (chaque cran = 10, `DIFFICULTY_MODIFIERS`). PUR. */
-export function navDifficultyWithPenalty(flatPenalty: number): Difficulty {
-  return difficultyFromModifier(DIFFICULTY_MODIFIERS[NAV_BASE_DIFFICULTY] + flatPenalty);
+/** MODIFICATEURS NOMMÉS du Test de Navigation du jour — MSRC 7 l.38 (dérive : « les Tests de
+ *  **Navigation** subissent un malus de –10 ») et l.41 (« Les Tests de **Navigation** pour tenter de
+ *  diriger le bateau subissent un malus de -20 »). Ce sont des MALUS, pas des Difficultés : la
+ *  Difficulté du Test reste `NAV_BASE_DIFFICULTY` (MSRC 7 l.15 demande le Test sans en fixer la
+ *  Difficulté — le défaut Intermédiaire +0 est celui de la table, LDB 12 l.148). PUR. */
+export function navPenaltyMods(state: { drift?: boolean; outOfControl?: boolean }): { label: string; value: number }[] {
+  const mods: { label: string; value: number }[] = [];
+  if (state.drift) mods.push({ label: 'Dérive', value: DRIFT_NAV_PENALTY });
+  if (state.outOfControl) mods.push({ label: 'Hors de contrôle', value: OUT_OF_CONTROL.navPenalty });
+  return mods;
 }
 
 // ── Chavirage (note 4, l.40) ─────────────────────────────────────────────────────────────────────
 
-export interface CapsizeRighting {
-  /** Le bateau a été redressé avant de couler. */
-  righted: boolean;
-  /** Le bateau a coulé (aucun redressement en BE Rounds). */
-  sank: boolean;
-  /** Jets successifs (1/Round, malus −5 cumulatif). */
-  rounds: { roll: number; target: number; success: boolean }[];
+/** Cible du Test de redressement d'un bateau renversé AU ROUND `round` (0 = le premier) — note 4,
+ *  l.40 : « Les Personnages peuvent faire un seul Test de **Navigation Accessible (+20)** par Round
+ *  pour essayer de redresser le bateau ; chaque Test échoué ajoute un malus de -5 au Test suivant. »
+ *  `pilotValue` = valeur de Navigation du barreur (Savoir Voies fluviales inclus). PUR. */
+export function capsizeRoundTarget(pilotValue: number, round: number): number {
+  const penalty = Math.max(0, round) * DATA.capsize.rightCumulativePenalty; // −5 par échec précédent
+  return Math.max(1, Math.min(99, pilotValue + DIFFICULTY_MODIFIERS[DATA.capsize.rightDifficulty] + penalty));
 }
 
-/** Redressement d'un bateau renversé (note 4, l.40) : « Les Personnages peuvent faire un seul Test de
- *  Navigation Accessible (+20) par Round pour essayer de redresser le bateau ; chaque Test échoué ajoute un
- *  malus de −5 au Test suivant. S'il n'est pas redressé, le bateau coule en un nombre de tours égal à son
- *  Bonus d'Endurance. » `pilotValue` = valeur de Navigation du barreur (Savoir Voies fluviales inclus). PUR
- *  (RNG injecté). */
-export function resolveCapsizeRighting(pilotValue: number, bonusEndurance: number, rng: RNG = defaultRNG): CapsizeRighting {
-  const rounds: CapsizeRighting['rounds'] = [];
-  let penalty = 0;
-  for (let r = 0; r < Math.max(1, bonusEndurance); r++) {
-    const t = rollTest(pilotValue + penalty, DATA.capsize.rightDifficulty, rng);
-    rounds.push({ roll: t.roll, target: t.target, success: t.success });
-    if (t.success) return { righted: true, sank: false, rounds };
-    penalty += DATA.capsize.rightCumulativePenalty; // −5 cumulatif
-  }
-  return { righted: false, sank: true, rounds };
-}
+/** Difficulté RAW du Test de redressement (note 4, l.40 — Accessible). */
+export const CAPSIZE_RIGHT_DIFFICULTY: Difficulty = DATA.capsize.rightDifficulty;
+
+/** Malus CUMULATIF par Round échoué du redressement (note 4, l.40) — chip NOMMÉE de la ligne. */
+export const CAPSIZE_RIGHT_CUMULATIVE = DATA.capsize.rightCumulativePenalty;
 
 /** Tours avant naufrage d'un bateau renversé non redressé (note 4, l.40) : Bonus d'Endurance de la coque. PUR. */
 export function capsizeSinkTurns(hullEndurance: number): number {

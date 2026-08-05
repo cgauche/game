@@ -41,7 +41,7 @@ import { traumaById, dechirureFractureFicheId } from '../engine/trauma';
 import { DAY_PHASES, minutesUntilNext, scheduleAt } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
-import { isWeatherWarded, exposureTarget, type ExposureKind } from '../engine/exposure';
+import { isWeatherWarded, exposureTarget, exposureCoatMods, type ExposureKind } from '../engine/exposure';
 import { findSpellById } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { distributeCredit, drainGroup, condCtx } from './bourseFlow';
@@ -1098,7 +1098,8 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
           steps.push({
             id: `expo-${c.id}-${i}`, kind: 'exposure', actorId: c.id, icon: 'rest/cold',
             rollLabel: 'Résistance', label: kind === 'froid' ? 'Exposition (froid)' : 'Exposition (chaleur)',
-            base: resVal, target, result: null, interactive: true, meta: { kind },
+            base: resVal, difficulty: 'intermediaire', ...(kind === 'froid' ? exposureCoatMods(c) : {}),
+            target, result: null, interactive: true, meta: { kind },
           });
         }
       }

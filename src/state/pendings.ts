@@ -99,6 +99,9 @@ export interface PendingTest {
    *  `FlowTest` (skill/spec/characteristic) au build du pending. */
   skillId?: string;
   spec?: string;
+  /** RÔLE tenu (id stable de `crew-roles`) — PROVENANCE de la rangée, jamais son libellé de ligne :
+   *  la ligne NOMME la Compétence lancée (Z5), le rôle dit d'où vient le jet (#1117). */
+  roleId?: string;
   char?: CharKey;
   skillValue: number;
   difficulty: Difficulty;
@@ -1285,6 +1288,13 @@ export interface BatchParticipant extends RollParticipant {
   target: number;
   /** Détail additif de la rangée (affichage). */
   mods?: { label: string; value: number }[];
+  /** COMPÉTENCE réellement lancée par ce contributeur (résolue à la construction par le flux
+   *  propriétaire — naval : `crewRoleValue().used`) : la ligne de jet NOMME la Compétence (Z5), le
+   *  rôle tenu n'étant que la PROVENANCE. */
+  skillId?: string;
+  spec?: string;
+  /** RÔLE tenu (id stable de `crew-roles`) — PROVENANCE de la rangée, jamais son libellé de ligne. */
+  roleId?: string;
   /** Contribue DOUBLE à l'agrégat sommé (rôle essentiel MDG 14 l.19 — « compte double », générique). */
   essential?: boolean;
   /** +DR ajouté au DR d'un jet RÉUSSI (Talent baké à la construction — Commandant émérite MDG 09 l.54). */
@@ -1383,6 +1393,9 @@ export interface CascadeStepBase extends RollParticipant {
    *  mécanisme est déjà dans l'applier — ceci ne fait que le rendre LISIBLE sous le titre d'étape).
    *  Posé à la construction par le flux propriétaire depuis son catalogue (crew-test-types / nuit). */
   stake?: string;
+  /** Fiche de RÈGLE derrière l'étape (`{category,id}` du Codex) — l'enjeu devient cliquable : la règle
+   *  est à UN CLIC (#1117). Posée par le flux propriétaire depuis son catalogue d'enjeux. */
+  stakeRule?: { category: string; id: string };
   /** Valeur « brute » du Test (carac/compétence, avant difficulté) — affichage. Un côté de GROUPE
    *  (`partyAssisted`) y porte le Soutien FONDU ; `support` ci-dessous le rend à l'affichage. */
   base?: number;
@@ -1390,8 +1403,16 @@ export interface CascadeStepBase extends RollParticipant {
    *  rend en ligne de mod nommée (`ui/breakdown.supportSplit`), jamais en bonus muet. Posé par la
    *  porte du seam (`buildMonoStep`) et par les flux qui construisent leurs étapes à la main. */
   support?: SupportDetail;
+  /** Modificateurs circonstanciels NOMMÉS de la ligne (compris dans `target`) — un malus RAW qui n'est
+   *  PAS une Difficulté (dérive MSRC 7 l.38, hors de contrôle l.41, −5 cumulatif du redressement l.40)
+   *  se nomme ICI : aucun +N anonyme dans la cible. La Difficulté, elle, voyage dans `difficulty`. */
+  mods?: { label: string; value: number }[];
   /** Cible EFFECTIVE (difficulté déjà appliquée → Test « +0 » sur `target`). Absent → étape sans jet. */
   target?: number;
+  /** ÉCRÊTAGE réellement subi par `target` aux bornes de `TestPolicy` (`engine/tests.clampTarget`) —
+   *  une base SOUTENUE peut dépasser le plafond, et l'écart doit se NOMMER (« plafond 99 ») au lieu
+   *  d'être avoué « autres » par le réconciliateur de `RollLine`. Mesuré à la construction. */
+  clamped?: number;
   result?: CascadeRoll | null;
   /** Étape à TABLE (#942 L2) : un TIRAGE SUR TABLEAU est l'interaction `'table'` — le dé de l'étape se
    *  jette sur `table.tableId` (registre `tableStepDefs`), `rollTableStep` pose `table.result` (dé
@@ -1537,7 +1558,7 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
    *  séquence d'AFFICHAGE PUR — étapes sans jet ni choix, poussées hors combat par `pushReveal` quand
    *  aucune séquence n'est en vol ; clôture sans AUCUNE suite propre, `dispatchCascadeDone` n'a qu'à
    *  reprendre une éventuelle séquence parquée). */
-  purpose: 'night' | 'travel' | 'travelDay' | 'test' | 'combat' | 'pursuite' | 'seaScorbut' | 'seaExhaustion' | 'seaActivities' | 'riverExposure' | 'upkeep' | 'interlude' | 'affichage';
+  purpose: 'night' | 'travel' | 'travelDay' | 'test' | 'combat' | 'pursuite' | 'seaScorbut' | 'seaExposure' | 'seaExhaustion' | 'seaActivities' | 'riverExposure' | 'upkeep' | 'interlude' | 'affichage';
   /** HALTE de voyage : la finalisation REPREND la route (continueTravelAfterNight). */
   travelHalt?: boolean;
   /** Cascade de PEUR de FIN de Round (combat) : à sa fermeture, le store ré-appelle `resolveRoundBoundary`

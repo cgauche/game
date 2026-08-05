@@ -4,6 +4,7 @@ import { makePregens } from '../data/pregens';
 import { buildSeaPlan, runSeaDay } from './seaVoyageFlow';
 import { buildRiverPlan, runRiverDays } from './riverVoyageFlow';
 import { seedBattleRng } from './battleRng';
+import { skills as SKILLS, crewRoles as CREW_ROLES, refLabel } from '../data';
 import { seaAutoResolves, riverAutoResolves, SEA_ROUTINE_KINDS, RIVER_ROUTINE_KINDS, DEFAULT_VOYAGE_ORDERS } from './voyageCadence';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -79,10 +80,31 @@ describe('traversée COMMANDÉE (mer) — routine auto-résolue, PV du jour, auc
     const ids = day.entries!.map((e) => e.id ?? '');
     expect(ids.some((i) => i.startsWith('sea-progression'))).toBe(true);
     expect(ids.some((i) => i.startsWith('sea-orientation'))).toBe(true);
-    // Instantané pour l’écran de traversée (rose des vents + jauges + distance restante).
+    // Instantané pour l’écran de traversée (rose des vents + distance restante) ; la coque n'y est
+    // qu'en DELTA du jour (l'état courant se lit sur `vessel.wounds`).
     expect(day.sea).toBeTruthy();
     expect(day.sea!.milesLeft).toBeGreaterThan(0);
-    expect(day.sea!.hull.max).toBeGreaterThan(0);
+    expect(typeof day.sea!.hullDelta).toBe('number');
+  });
+
+  it('chaque ligne du PV NOMME la Compétence lancée (Z5), DIT sa Difficulté, et porte le rôle en PROVENANCE (#1112 G5)', () => {
+    get().startTravel('r1', 'mer', { cadence: 'commande' });
+    const day = get().pendingRest!.travelDay!;
+    const crewLines = day.entries!.filter((e) => (e.id ?? '').startsWith('sea-progression'));
+    expect(crewLines.length).toBeGreaterThan(0);
+    const skillLabels = new Set(SKILLS.map((s) => s.label));
+    const roleLabels = new Set(CREW_ROLES.map((r) => r.label));
+    for (const e of crewLines) {
+      // Z5 : le libellé de la LIGNE est une Compétence du catalogue — jamais un libellé de rôle.
+      expect(skillLabels.has(e.d!.label.replace(/ \(.*\)$/, ''))).toBe(true);
+      expect(roleLabels.has(e.d!.label)).toBe(false);
+      // La Difficulté posée à la construction de l'étape voyage jusqu'à la ligne.
+      expect(e.d!.difficulty).toBe('intermediaire');
+      // Le RÔLE tenu est la provenance (libellé d'entrée), et la rubrique groupe les contributeurs.
+      expect(roleLabels.has((e.label ?? '').replace(' ★', ''))).toBe(true);
+      expect(e.group).toBeTruthy();
+    }
+    expect(new Set(crewLines.map((e) => e.group)).size).toBe(1); // un seul Test → une seule rubrique
   });
 
   it('aucun jet silencieux : chaque Test de routine du jour a au moins une ligne au PV (lignes ≥ jets)', () => {
@@ -218,5 +240,37 @@ describe('DEFAULT_VOYAGE_ORDERS — source unique du défaut de cadence (mer ⇄
     set({ travelPlan: { ...plan, orders: undefined } } as never);
     get().setVoyageCadence('commande');
     expect(get().travelPlan!.orders).toEqual({ ...DEFAULT_VOYAGE_ORDERS, cadence: 'commande' });
+  });
+});
+
+/**
+ * #1117 G1 — DURCISSEMENT Z5 des rangées d'équipage : le producteur ne fournit plus de libellé de
+ * ligne, il fournit la PAIRE `{skillId, spec}` (+ le rôle en id, provenance). Le libellé se DÉRIVE au
+ * fabricant par le résolveur canonique — « Voile (Chaland) », jamais « Timonier ».
+ */
+describe('rangées d’équipage — le libellé de ligne est DÉRIVÉ de {skillId, spec} (#1117 G1)', () => {
+  beforeEach(freshSea);
+
+  it('chaque contributeur porte sa paire Compétence + son rôle en ID (provenance)', () => {
+    get().startTravel('r1', 'mer', { cadence: 'jour-par-jour' });
+    let guard = 0;
+    while (guard++ < 30 && get().pendingCascade) {
+      const p = get().pendingCascade!;
+      const cur = p.participants[p.cursor];
+      if (cur?.participants?.length) {
+        for (const part of cur.participants) {
+          expect(part.skillId, 'la Compétence lancée est une DONNÉE (id), pas un texte').toBeTruthy();
+          expect(part.roleId, 'le rôle tenu voyage en id — provenance').toBeTruthy();
+          // Le libellé RENDU vient du catalogue, spécialisation comprise.
+          const attendu = refLabel('skills', { id: part.skillId!, spec: part.spec });
+          expect(attendu.length).toBeGreaterThan(0);
+          expect(CREW_ROLES.some((r) => r.label === attendu), 'jamais un libellé de RÔLE').toBe(false);
+        }
+        return;
+      }
+      const c = p.participants[p.cursor];
+      if (c && c.target != null && !c.result) get().cascadeRoll(c.id);
+      else get().cascadeNext();
+    }
   });
 });

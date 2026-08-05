@@ -380,7 +380,7 @@ function buildExposureSteps(state: { party: Combatant[] }, stage: StageContext):
     if (!diff) continue; // bien équipé sous pluie/neige normale, ou beau temps → aucun Test
     const resVal = testValue(h, 'resistance', 'endurance');
     out.push({ id: `expo-${id}`, kind: 'stageExposure', actorId: id, icon: 'rest/cold', label: 'Exposition',
-      rollLabel: 'Résistance', base: resVal, target: Math.max(1, Math.min(99, resVal + DIFFICULTY_MODIFIERS[diff as Difficulty])),
+      rollLabel: 'Résistance', base: resVal, difficulty: diff as Difficulty, target: Math.max(1, Math.min(99, resVal + DIFFICULTY_MODIFIERS[diff as Difficulty])),
       result: null, interactive: true, menace: 'Exposition',
       meta: { weatherLabel: WEATHER_LABEL[stage.weather], warded: isWeatherWarded(h), coldSeason: isColdSeason(stage.season) } });
   }

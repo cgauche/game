@@ -8,6 +8,7 @@ import { ResilienceButton } from './ResilienceButton';
 import { ResistButton } from './ResistButton';
 import { ReverseButton } from './ReverseButton';
 import { ForcedRollPicker } from './ForcedRollPicker';
+import { useDieCommit, withPickedDie, type DieCommit } from './forcedDieRow';
 import { useRollFrisson } from './useRollFrisson';
 import { DiceRoll } from './DiceRoll';
 import { d100Faces } from './Dice';
@@ -56,11 +57,26 @@ export function RollRow({
   rollBlocked,
   rollFrisson = true,
   rollInBar = false,
+  dieCommitRef,
   winner,
   extendedDr,
 }: RollRowProps) {
   // Frisson du jet (helper partagé avec le bouton « Lancer » hissé dans la barre du RollShell).
   const { rolling, landed, trigger: doRoll, skip } = useRollFrisson(onRoll, { frisson: rollFrisson });
+  // « Fixer le dé » PRÉ-jet : le joueur tape une valeur PUIS clique « Lancer » sans valider le champ —
+  // le geste naturel. Le CTA COMMET donc le brouillon avant de lancer ; en pré-jet, poser le dé LANCE
+  // déjà (`withPreRollFixedDie`), d'où le retour anticipé. Sans cela le brouillon était abandonné et
+  // le jet partait en d100 naturel (recette #1117).
+  // Poignée FOURNIE par la coquille quand c'est ELLE qui porte le CTA (rangée hissée) — sinon locale.
+  // Une seule poignée par rangée : les deux hôtes commettent le MÊME brouillon.
+  const localDieCommit = useDieCommit();
+  const dieCommit = dieCommitRef ?? localDieCommit;
+  // TOUT verbe qui (re)lance commet d'abord le brouillon du champ « Fixer le dé » : le joueur tape une
+  // valeur PUIS clique — le geste naturel. Poser le dé (re)LANCE déjà (`onSet` du site appelant), d'où
+  // le retour anticipé : un seul jet, jamais deux. SOURCE UNIQUE des trois verbes (Lancer, Relancer,
+  // Sombre Pacte) — un quatrième se branche ICI, pas en recopiant la garde (#1117).
+  const rollWithPickedDie = withPickedDie(dieCommit, () => doRoll());
+  const rerollWithPickedDie = withPickedDie(dieCommit, () => doReroll(onReroll ?? (() => {})));
   // Frisson de la RELANCE (Chance/Sombre Pacte, #396) — même geste que le jet initial : les deux
   // verbes appellent `reresolveOf` (nouveau jet RNG) dans `rollFlowFactory`, à la différence de
   // « +1 DR »/Résilience/Résistance/Détermination qui AJUSTENT le jet existant sans le relancer.
@@ -69,6 +85,11 @@ export function RollRow({
   // Vraies faces (#396 v3) : `row.d.roll` n'est FRAIS qu'une fois le résolveur commis (React 18 batch
   // la transition `landed` et le re-rendu du store dans le MÊME rendu) — jamais pendant le tumble.
   const rowFaces = (landed || rerollLanded) && row.d ? d100Faces(row.d.roll) : null;
+  // Nom de la LIGNE (Compétence lancée, à défaut le porteur) — discrimine le nom accessible du champ
+  // « Fixer le dé » quand une cascade en offre plusieurs (#1117).
+  const rowName = typeof row.d?.label === 'string' ? row.d.label
+    : typeof row.pending?.label === 'string' ? row.pending.label
+      : actor?.label;
   const determineBtn = determination && determination.resolve > 0 && (
     <CodexRef category={RULE_REF.determination.category} id={RULE_REF.determination.id} label="Détermination" wrap>
       <button className="btn btn-resource" onClick={determination.onResolve}>
@@ -124,13 +145,13 @@ export function RollRow({
           {determineBtn}
           {/* Sélecteur PRÉ-jet du dé FIXÉ : la saisie lance le jet puis y substitue la valeur (`onSet` du
               site appelant). Option de CONFORT — elle passe APRÈS les choix de règle, avant le CTA. */}
-          {forcedRoll?.fixed && <ForcedRollPicker {...forcedRoll} marked={fixedMark} />}
+          {forcedRoll?.fixed && <ForcedRollPicker {...forcedRoll} marked={fixedMark} rowName={rowName} commitRef={dieCommit} />}
           {/* CTA de jet. `rollBlocked` = le résolveur REFUSERA (le site fournit la raison, dérivée de
               SES propres gardes) : le bouton se désactive AVEC sa raison visible (`GatedAction`), au
               lieu de rester cliquable pour rien. */}
           {onRoll && !rollInBar && (rollBlocked
             ? <GatedAction id={`prow-roll-${actor?.id ?? 'row'}`} label={rollLabel} enabled={false} reason={rollBlocked} onClick={() => {}} btnClassName="small" />
-            : <button className="btn small btn-primary" onClick={() => doRoll()}>{rollLabel}</button>)}
+            : <button className="btn small btn-primary" onClick={rollWithPickedDie}>{rollLabel}</button>)}
         </div>
       )}
       {/* Roulis de la RELANCE (Chance/Sombre Pacte) — même primitive inline, même règle de découplage. */}
@@ -139,17 +160,17 @@ export function RollRow({
       )}
       {interactive && rolled && !rolling && !landed && !rerolling && !rerollLanded && (
         <>
-          {forcedRoll && <ForcedRollPicker {...forcedRoll} marked={fixedMark} />}
+          {forcedRoll && <ForcedRollPicker {...forcedRoll} marked={fixedMark} rowName={rowName} commitRef={dieCommit} />}
           <InfluenceRow
             actor={actor}
             fortune={fortune}
             freeReroll={freeReroll}
             resilience={resilience}
             rerollable={rerollable}
-            onReroll={() => doReroll(onReroll ?? (() => {}))}
+            onReroll={rerollWithPickedDie}
             onBonusSL={onBonusSL}
             darkPactable={darkPactable}
-            onDarkPact={onDarkPact && (() => doReroll(onDarkPact))}
+            onDarkPact={onDarkPact && withPickedDie(dieCommit, () => doReroll(onDarkPact))}
             onForce={onForce}
             forceShow={forceShow}
           >
@@ -234,6 +255,9 @@ export interface RollRowProps {
    *  la rangée n'affiche alors NI le bouton inline NI le spinner (le reste — influence, Résilience
    *  pré-jet, résistance — inchangé). Le shell le pose lui-même ; les hooks/modales n'y touchent pas. */
   rollInBar?: boolean;
+  /** Poignée de commit du champ « Fixer le dé » FOURNIE par la coquille : quand le CTA est HISSÉ
+   *  (`rollInBar`), c'est `RollShell` qui lance — il lui faut la même poignée que la rangée. */
+  dieCommitRef?: DieCommit;
   /** Test opposé : accent de CETTE rangée (`'win'` = gagnante accentuée, `'lose'` = perdante atténuée).
    *  Traduit en `winnerIndex` du panneau mono. Absent/`null` → pas d'accent (jet non opposé). */
   winner?: 'win' | 'lose' | null;

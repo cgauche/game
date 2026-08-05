@@ -16,6 +16,12 @@ dans `src/scenes/test-scenarios/` (cf. `docs/test-scenarios.md`).
 > (lock Chrome mort/vivant d'une autre recette) ; `lib.mjs` lance SON propre Chrome headless avec un
 > profil temporaire dédié (`launchSession`), donc jamais ce conflit. N'invoquer `playwright-MCP` que
 > si le besoin dépasse ce que `lib.mjs`/`shot-screen.mjs` couvrent (vécu diagnostic #506).
+>
+> **NUANCE mesurée (recette #1117, 2026-08-05)** : sur les CASCADES à re-render fréquent (une étape
+> valide, la suivante se monte — le DOM change sous la main), `playwright-MCP` s'est montré PLUS
+> FIABLE que le socle, dont les refs se périment entre deux gestes. La préférence `lib.mjs` reste la
+> règle pour la capture et la console ; pour PILOTER une cascade pas à pas, `playwright-MCP` est
+> l'outil qui tient — et le piège des refs périmées ci-dessous s'applique aux deux.
 
 Kit **committé** `scripts/recette/` — capture d'écran + console sans réinventer un script CDP par
 agent (constat 2026-07-14 : plusieurs dizaines de scripts scratchpad ad hoc, un par session, pour
@@ -268,7 +274,7 @@ elle reprend à la CONFIRMATION de ces étapes/modales, jamais via `time()`/`res
 
 | Helper | Usage | Limites connues |
 |---|---|---|
-| `advanceSeaDay({stopOnEveryEvent?, maxIters?})` | symétrique VOYAGE de `fastForward` : pilote la journée EN COURS (cascade du jour, halte de nuit, Activités hebdo si le palier de 8 jours tombe) jusqu'au JOUR SUIVANT — MÊME machinerie que le joueur (`cascadeResolveAll`/`Finish`, `restSleep`, `seaActivitiesConfirm`), sans les clics | s'arrête sur la cascade `travelDay` FRAÎCHE du jour suivant (déjà ouverte, `cursor:0`, pas encore consommée — le PROCHAIN `advanceSeaDay()`/`roll()`/`skipToArrival()` la joue), jamais un `pendingCascade` à `null` ; `maxIters` (défaut 400) = garde-fou scrutations, `✗ borne atteinte…` = soft-lock probable (`auto()`) ; retourne une `Promise` (`await`). `stopOnEveryEvent:true` (#380) : s'arrête AUSSI au recap dès qu'un événement de bord RACONTÉ (routine, non décisionnel — carte-parchemin `sea.events`, rendue par `SeaVoyageBody`) vient d'être résolu, pour le constater ; `restSleep()`/`advanceSeaDay()` reprend ensuite. Défaut inchangé (arrêt au jour suivant / décision présentée seulement) |
+| `advanceSeaDay({stopOnEveryEvent?, stopAt?, maxIters?})` | symétrique VOYAGE de `fastForward` : pilote la journée EN COURS (cascade du jour, halte de nuit, Activités hebdo si le palier de 8 jours tombe) jusqu'au JOUR SUIVANT — MÊME machinerie que le joueur (`cascadeResolveAll`/`Finish`, `restSleep`, `seaActivitiesConfirm`), sans les clics | s'arrête sur la cascade `travelDay` FRAÎCHE du jour suivant (déjà ouverte, `cursor:0`, pas encore consommée — le PROCHAIN `advanceSeaDay()`/`roll()`/`skipToArrival()` la joue), jamais un `pendingCascade` à `null` ; `maxIters` (défaut 400) = garde-fou scrutations, `✗ borne atteinte…` = soft-lock probable (`auto()`) ; retourne une `Promise` (`await`). **PORTÉE EXACTE de `stopOnEveryEvent:true` (#380)** : il ne s'arrête QUE sur un événement RACONTÉ (carte-parchemin, `travelDay.events` non vide, testé sur `pendingRest`/`pendingSeaActivities`) — **jamais** sur une étape STRUCTURELLE du jour (Progression, choix de Progression, Orientation, Exposition, Entretien…), que `cascadeResolveAll` traverse aux défauts. L'attendre pour observer une étape a coûté un point de recette. Pour CELA : `stopAt:'<kind>'` (#1117) → s'arrête **avant** de résoudre la cascade qui porte cette étape et rend la main intacte (ex. `advanceSeaDay({stopAt:'sea-progression-choice'})`, puis `__wfrp.modal()`/`roll()`). Même option sur `advanceRiverDay` |
 | `skipToArrival(maxIters=4000)` | comme `advanceSeaDay` mais ROULE jusqu'à l'ACCOSTAGE (`openPortAt`, `travelPlan` vidé) | s'arrête aussi sur un combat (embuscade/abordage) — `battle` alors ouvert, à jouer/`fastForward` séparément ; `Promise` (`await`) |
 | `dealShipDamage(n=5)` | inflige `n` Dégâts de coque HORS COMBAT — VRAI pipeline (`damageVesselHull` si un voyage est en cours sur le navire de campagne, sinon `setVesselHull` directement au port) | symétrique de `dealDamage` (combat) — voir le piège des DEUX copies de coque ci-dessous ; **NE déclenche PAS un naufrage fiable** (voir piège d'ORDONNANCEMENT ci-dessous, `forceShipwreck`) |
 | `forceShipwreck(aboardIds?)` | déclenche `beginShipwreck` DIRECTEMENT (setup ASSUMÉ, PAS le pipeline de dégâts) — coque + cargaison purgées IMMÉDIATEMENT, cascade de survie à la nage (Chance/Pacte/Résilience influençable) ouverte pour les héros à bord | `✗` sans `state.vessel` ; voir piège d'ORDONNANCEMENT ci-dessous |
@@ -346,6 +352,65 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
 (cf. `game-browser-verif-tempo`, closure-sync ci-dessous).
 
 ## Pièges vécus (corrections d'expérience)
+
+- **Occlusion de la carte du monde sur le panneau latéral** (vécu 2026-08-05, recette 3) : sous 901px
+  de large, la mise en page EMPILE carte et panneau ; `.map-canvas-frame` porte un `aspect-ratio` et
+  débordait de sa cellule, son SVG recouvrant les commandes du panneau (« Rythme normal / Forcer +1 M »
+  injoignables — `elementFromPoint` résolvait sur un `path`/`rect` du canevas). Corrigé #1117
+  (`.worldmap-canvas` borne son contenu). **La recette précédente avait RÉUSSI le même clic** : elle
+  tournait au-dessus de 901px, où les deux colonnes séparent les surfaces — d'où deux verdicts opposés
+  sur le même bouton. RÈGLE : un clic qui échoue se DIAGNOSTIQUE d'abord à `document.elementFromPoint`
+  (centre + 4 coins), et la LARGEUR de fenêtre se note au rapport — un test de clic sans viewport
+  déclaré n'est pas reproductible.
+- **`forceRiverCapsize` arme ET reconstruit la journée** (#1117) : le clic « Partir » construit les
+  étapes du jour de façon SYNCHRONE — armer le vent après coup ne changeait rien (2 essais sur 3
+  perdus en recette 4). Le helper reconstruit désormais la cascade du jour en cours ; `__wfrp.riverDayCascade()`
+  la (re)pose seule et rend ses étapes, pour ne pas rejouer achat/carte/départ à chaque essai.
+- **Zoom de la carte, panneau de route OUVERT — DÉFAUT OUVERT (#1117)** : à ~850×900, panneau ouvert,
+  `elementFromPoint` au centre et aux 4 coins de « Zoomer » rend `ASIDE.worldmap-side`. Deux pistes ont
+  été éliminées par la mesure : l'ordre d'empilement (le cadre carte isole déjà, `.wm-zoom` porte son
+  `z-index`) et le `sticky` de l'aside (la primitive `.layout-sidebar` le remet en `static` ≤900px —
+  `base.css`, garde `WorldMapView.test.tsx`). La cause restante est GÉOMÉTRIQUE et se mesure au
+  navigateur, pas au CSS : relever `getBoundingClientRect()` de `.worldmap-canvas`,
+  `.map-canvas-frame`, `.wm-zoom` et de l'aside, plus leur `position`/`transform`/`margin` calculés,
+  et joindre les 4 rectangles au rapport. Sans ces rectangles, tout nouveau correctif est un pari.
+  L'`aside` ne s'ouvre qu'avec une route SÉLECTIONNÉE : recetter aussi à ~360px.
+- **Toutes les routes de barge ne sont PAS une descente JOUÉE** (#1117) : la cascade jour-par-jour
+  fluviale exige QUATRE conditions (`travelFlow.startTravel` → `buildRiverPlan`) — la route porte
+  `river: true`, le mode choisi est une EMBARCATION, une coque existe, et le groupe compte un
+  batelier (`hasBatelier` : Voile ou Ramer avancé). L'une manque ⇒ repli sur le transport payant
+  (« on paie un passeur »), résolu en NARRATION, sans aucune cascade ni jet. Dans le scénario
+  « Commerce fluvial », une seule route la porte : **`r-grunburg-altdorf` (Grünburg → Altdorf,
+  45 km)** ; les maillons courts de 30 km de la chaîne du Reik n'ont pas `river: true` et se
+  résolvent donc en narration. Recetter la navigation fluviale sur CE trajet, jamais sur un maillon.
+- **L'interactivité des étapes du jour dépend du MODE de traversée** (#1117) : seul « Jour par jour »
+  monte les étapes de `travelDay` en modale ; en traversée rapide elles se résolvent sans surface.
+  Une recette qui ne voit « aucune modale » doit d'abord vérifier le mode choisi au départ.
+- **Scénario « Voyage maritime » : la traversée démarre en Violente tempête persistante** (recette 3) —
+  `kmDone` reste figé tant qu'elle dure (voiles affalées), donc ni progression ni survitesse à observer.
+  Armer d'abord un vent calme (`__wfrp.forceSeaWeather({ vent: 'calme-plat' })` puis le cran voulu, ou
+  dérouler les jours jusqu'à la levée du verrou météo) AVANT de recetter la Progression, la survitesse
+  ou l'Orientation. Sans ça, le rapport conclut « rien ne bouge » sur un état de mer parfaitement RAW.
+- **Le « Lancer » d'une cascade n'est pas celui de la rangée** (même recette) : quand une seule rangée
+  est lançable, `RollShell` HISSE le bouton dans sa barre d'actions et lance lui-même. Un fix posé sur
+  le CTA de rangée peut donc être vert en test et mort à l'écran. Viser le bouton de la BARRE
+  (`.modal-actions`) pour recetter une cascade, et se souvenir qu'un même verbe peut avoir deux hôtes.
+
+- **« Tout lancer » n'est PAS « Lancer »** (vécu 2026-08-05, a coûté la moitié d'une recette) : dans
+  une cascade, la barre porte « Lancer » (la ligne COURANTE, influençable) et « Tout lancer » (TOUTE
+  la séquence restante, résolue d'un coup, SANS aucune modale ni influence). Cliquer le second par
+  réflexe brûle la scène qu'on venait recetter — et rien ne le rejoue. Depuis #1117 les deux ne se
+  ressemblent plus (`all`/`rollAll` sont des rôles SECONDAIRES dans `RollShell`, le primaire reste le
+  jet de la ligne) ; en recette, viser le bouton par son NOM accessible exact (« Lancer »),
+  jamais par sa position.
+- **Un champ « Fixer le dé » par LIGNE** (même recette) : chaque rangée offre le sien. Ils portaient
+  le même nom accessible → le geste (clavier comme automate) visait au hasard et la frappe partait
+  ailleurs, le jet tombant en aléatoire. Le nom accessible porte désormais sa ligne
+  (« Fixer le dé — Voile ») : le cibler ainsi, et vérifier la valeur du champ AVANT d'appuyer Entrée.
+- **Popover Codex resté ouvert par-dessus le CTA** (même recette, vécu 3 fois) : un popover de chip
+  affiché (survol/focus) recouvrait « Continuer » et interceptait le clic ; Échap semblait inopérant
+  (il refermait puis le re-focus le rouvrait aussitôt). Corrigé #1117 — si le symptôme revient :
+  Échap, puis cliquer une zone neutre, et le SIGNALER (c'est une régression, pas une fatalité).
 
 - **Retour-menu SILENCIEUX en pleine partie = arbre PAS gelé, pas un bug** (vécu 2026-07-11,
   3 reloads pendant une recette, zéro erreur console/collecteur) : Vite sert le WORKING TREE — un

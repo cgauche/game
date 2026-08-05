@@ -3,6 +3,9 @@ import { portRepairVessel, portCareenVessel, portInstallUpgrade, damageVesselHul
 import { seaBoardEventById } from '../engine/seaVoyage';
 import { beginShipwreck } from './shipwreck';
 import { placeOfScene, placeById, type MapRoute } from './worldMap';
+import { buildRiverDayCascade } from './riverVoyageFlow';
+import { findVehicleById } from '../data';
+import { startCascade } from './cascade';
 import { routeDistanceLabel } from '../engine/travel';
 import { actorIn, inBattleId } from './combatants';
 import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn, applyEffects } from './combatFlow';
@@ -112,7 +115,12 @@ bus.on(EVT.TEST_RESOLVED, (payload) => { lastRollTrace = payload as typeof lastR
  *                           (cascade du jour, halte de nuit, Activités hebdo…) jusqu'au jour SUIVANT,
  *                           l'arrivée ou un combat — MÊME machinerie que le joueur (cascadeResolveAll/
  *                           Finish, restSleep, seaActivitiesConfirm…), juste sans les clics ;
- *                           advanceSeaDay({stopOnEveryEvent:true}) → s'arrête AUSSI au recap d'un événement raconté
+ *                           advanceSeaDay({stopOnEveryEvent:true}) → s'arrête AUSSI au recap d'un événement
+ *                           RACONTÉ (carte-parchemin de `travelDay.events`) — et SEULEMENT là : jamais
+ *                           sur une étape STRUCTURELLE du jour (Progression, Orientation, Exposition…),
+ *                           que `cascadeResolveAll` traverse aux défauts. Pour observer une étape
+ *                           précise : advanceSeaDay({stopAt:'<kind>'}) → s'arrête AVANT de la résoudre
+ *                           (ex. stopAt:'sea-progression-choice'), cascade rendue intacte
  *   __wfrp.skipToArrival() → comme `advanceSeaDay` mais ROULE jusqu'à l'ACCOSTAGE (ou interruption)
  *   __wfrp.advanceRiverDay() → symétrique FLUVIAL d'`advanceSeaDay` : pilote la journée de descente EN
  *                           COURS (cascade du jour, Exposition hydrique, halte de nuit) jusqu'au jour
@@ -129,6 +137,18 @@ bus.on(EVT.TEST_RESOLVED, (payload) => { lastRollTrace = payload as typeof lastR
  *   __wfrp.setMorale(n)  → pose le Moral d'équipage (`vessel.morale.score`, setup direct — patron
  *                           `flag()`) pour rendre la désertion à quai observable sans dérouler des
  *                           semaines de facteurs en espérant la bande basse (#332)
+ *   __wfrp.riverDayCascade() → (re)pose la cascade du JOUR fluvial en cours et rend ses étapes — évite de
+ *                           rejouer achat/carte/départ à chaque essai (symétrique d'`advanceSeaDay`)
+ *   __wfrp.forceRiverCapsize() → arme le CHAVIRAGE fluvial et RECONSTRUIT la journée en cours : vent Très fort
+ *                           DE CÔTÉ (`river-navigation.json` : la seule combinaison qui porte
+ *                           `capsizeRisk`) → la journée pose l'étape « Retirer la voile », dont l'échec
+ *                           ouvre le redressement Round par Round (#1104a). À dérouler avec
+ *                           `advanceRiverDay()` ; symétrique fluvial de `forceEncounter`
+ *   __wfrp.forceOverspeed(overM?) → arme la SURVITESSE du jour de mer (seuil RAW M+5 : un « +1 M » seul
+ *                           ne le franchit jamais sur une Cogue) — pose `effMToday` = M de conception + overM
+ *   __wfrp.forceSeaWeather({temperature}) → arme la météo du jour de mer EN COURS (bande de Température
+ *                           = cadence des Tests d'Exposition : Glaciale/Caniculaire 4, Froide/Chaude 2,
+ *                           Médiane 0) — symétrique de `forceRiverCapsize`, à dérouler avec `advanceSeaDay()`
  *   __wfrp.forceShipwreck() → déclenche `beginShipwreck` DIRECTEMENT (setup assumé, PAS le pipeline de
  *                           dégâts) — `dealShipDamage(999)` est EFFACÉ par la Réparation de fortune du
  *                           MÊME jour (la garde de naufrage n'est évaluée qu'à l'ENTRÉE de `runSeaDay`,
@@ -169,6 +189,28 @@ function devDriveModal(verb: 'Roll' | 'Confirm' | 'Cancel'): string {
   return `✓ ${flux}${verb}()`;
 }
 
+/** (Re)construit la cascade du JOUR fluvial EN COURS depuis l'état courant (vent compris) et la pose.
+ *  Sert `__wfrp.riverDayCascade()` et le rebuild d'après-armement de `forceRiverCapsize`. */
+function riverDayCascade(): string {
+  const s = useGame.getState();
+  const plan = s.travelPlan;
+  if (!plan?.river) return '✗ aucune descente fluviale en cours (travelPlan.river)';
+  const map = s.worldMap as import('./worldMap').WorldMap | undefined;
+  const route = map?.routes.find((r) => r.id === plan.routeId);
+  const to = map ? placeById(map, plan.toPlaceId) : undefined;
+  if (!route || !to) return '✗ route ou destination introuvable sur la carte du monde';
+  // Le slot est REMPLACÉ, jamais complété : `startCascade` APPEND quand le `purpose` est déjà ouvert
+  // (doctrine du slot, `cascade.ts` — voulue, et dont le combat dépend). Le chemin JOUEUR ne peut pas
+  // rouvrir un `travelDay` déjà ouvert (`runRiverDays` refuse si `pendingCascade`) ; ce helper, lui,
+  // court-circuite ce garde — sans cette purge il concaténait 2 journées (ids dupliqués, étapes
+  // injouables, recette 5).
+  useGame.setState({ pendingCascade: null });
+  const built = buildRiverDayCascade(useGame.getState, useGame.setState, route, { scene: to.scene ?? '', label: to.label });
+  startCascade(useGame.getState, useGame.setState, { title: 'Journée de descente', icon: 'travel/wave', purpose: 'travelDay', steps: built.steps });
+  const kinds = built.steps.map((x: { kind: string }) => x.kind).join(', ');
+  return `cascade du jour posée : ${built.steps.length} étape(s) [${kinds}]`;
+}
+
 /** Boucle interne partagée par `__wfrp.advanceSeaDay`/`skipToArrival` : pilote la MÊME machinerie que
  *  le joueur (cascade du jour `pendingCascade` `purpose:'travelDay'`, halte de nuit `pendingRest`,
  *  Activités hebdo `pendingSeaActivities`, tout autre `pending<Flux>` par convention) — jamais un
@@ -185,7 +227,7 @@ function devDriveModal(verb: 'Roll' | 'Confirm' | 'Cancel'): string {
  *  `stopOnEvent` (#380) : arrêt SUPPLÉMENTAIRE dès qu'une halte/Activités hebdo porte un événement de
  *  bord RACONTÉ (`travelDay.events`, rendu `ParchmentCard` — routine, non décisionnel) — le recetteur
  *  constate la carte-parchemin au recap AVANT que le drive ne dorme la nuit. Défaut inchangé (faux). */
-function driveSeaVoyage(stopAtNextDay: boolean, maxIters: number, stopOnEvent = false): Promise<string> {
+function driveSeaVoyage(stopAtNextDay: boolean, maxIters: number, stopOnEvent = false, stopAt?: string): Promise<string> {
   return new Promise((resolve, reject) => {
     // `globalThis` (pas `window`) — même raison que `fastForward` : identique navigateur/vitest 'node'.
     type TimeoutSetter = (cb: (...a: unknown[]) => void, ms?: number, ...a: unknown[]) => unknown;
@@ -208,6 +250,15 @@ function driveSeaVoyage(stopAtNextDay: boolean, maxIters: number, stopOnEvent = 
         if (p) {
           if (stopAtNextDay && p.purpose === 'travelDay' && p.cursor === 0 && seenTravelDays >= 1) {
             resolve(`✓ jour suivant atteint (${seenTravelDays} jour(s) résolu(s), ${Math.max(0, Math.round(plan.km - plan.kmDone))} milles restants) — cascade prête (__wfrp.modal()/roll())`);
+            return;
+          }
+          // `stopAt` (recette #1117) : la cascade courante PORTE l'étape nommée → on s'arrête AVANT de
+          // la résoudre et on rend la main. Le pilote ne se dédouble pas pour autant (aucune boucle
+          // pas-à-pas recopiée ici) : la suite se joue à la modale réelle (`__wfrp.modal()/roll()`),
+          // qui est précisément ce qu'une recette veut observer sur une étape précise.
+          const cible = stopAt ? p.participants.findIndex((st, i) => st.kind === stopAt && i >= p.cursor) : -1;
+          if (cible >= 0) {
+            resolve(`✓ étape « ${stopAt} » atteinte (position ${cible + 1}/${p.participants.length}) — cascade NON résolue : __wfrp.modal()/roll()`);
             return;
           }
           if (p.cursor < p.participants.length) {
@@ -1286,8 +1337,8 @@ export function buildApi() {
      *  `stopOnEveryEvent` (#380) : arrêt ADDITIONNEL au recap dès qu'un événement de bord RACONTÉ
      *  (routine, non décisionnel — carte-parchemin) vient d'être résolu, pour le constater ; défaut
      *  inchangé (arrêt uniquement au jour suivant / décision présentée). */
-    advanceSeaDay: (opts: { stopOnEveryEvent?: boolean; maxIters?: number } = {}) =>
-      driveSeaVoyage(true, opts.maxIters ?? 400, opts.stopOnEveryEvent ?? false),
+    advanceSeaDay: (opts: { stopOnEveryEvent?: boolean; maxIters?: number; stopAt?: string } = {}) =>
+      driveSeaVoyage(true, opts.maxIters ?? 400, opts.stopOnEveryEvent ?? false, opts.stopAt),
 
     /** RECETTE #297 : comme `advanceSeaDay` mais ROULE jusqu'à l'ACCOSTAGE (ou une interruption —
      *  combat, échouage, péripétie d'auteur). `n` (scrutations) borne l'anti-boucle infinie. */
@@ -1300,8 +1351,8 @@ export function buildApi() {
      *  (scrutations) borne l'anti-boucle infinie, jamais une durée de descente attendue.
      *  `stopOnEveryEvent` (#380) : arrêt ADDITIONNEL au recap dès qu'un événement de bord raconté vient
      *  d'être résolu (symétrique fluvial de `advanceSeaDay`) ; défaut inchangé. */
-    advanceRiverDay: (opts: { stopOnEveryEvent?: boolean; maxIters?: number } = {}) =>
-      driveSeaVoyage(true, opts.maxIters ?? 400, opts.stopOnEveryEvent ?? false),
+    advanceRiverDay: (opts: { stopOnEveryEvent?: boolean; maxIters?: number; stopAt?: string } = {}) =>
+      driveSeaVoyage(true, opts.maxIters ?? 400, opts.stopOnEveryEvent ?? false, opts.stopAt),
 
     /** RECETTE #297 : inflige `n` Dégâts de coque HORS COMBAT (VRAI pipeline — `damageVesselHull` si un
      *  voyage est en cours sur le navire de campagne, sinon `setVesselHull` directement au port) —
@@ -1337,6 +1388,53 @@ export function buildApi() {
      *  la MÊME fonction que `runSeaDay`/`checkBattleOver` sur naufrage réel, juste sans la course contre
      *  la Réparation de fortune. `aboardIds` (optionnel) restreint les héros à bord (défaut : tout le
      *  groupe vivant, cf. signature `beginShipwreck`). */
+    /** RECETTE #1117 : arme le CHAVIRAGE de la PROCHAINE journée fluviale — pose le vent Très fort de
+     *  CÔTÉ sur `travelPlan.river` (`riverWindEffect` en dérive `capsizeRisk`, la seule combinaison de
+     *  la donnée qui le porte). Le jour suivant construit alors son étape « Retirer la voile » ; son
+     *  ÉCHEC ouvre le redressement Round par Round. Aucun dé n'est bidouillé : le Test se joue. */
+    forceRiverCapsize: () => {
+      const plan = g().travelPlan;
+      if (!plan?.river) return '✗ aucune descente fluviale en cours (travelPlan.river)';
+      useGame.setState({ travelPlan: { ...plan, river: { ...plan.river, windForce: 'tres-fort', windDir: 'cote' } } });
+      // Le clic « Partir » construit les étapes du jour SYNCHRONE : armer après coup ne servait à rien
+      // (2 appels sur 3 perdus en recette #1117). On RECONSTRUIT donc la journée EN COURS sur le vent
+      // armé — quel que soit le moment de l'appel, l'étape « Retirer la voile » est au programme.
+      const rebuilt = riverDayCascade();
+      return `✓ vent Très fort de côté armé — ${rebuilt}`;
+    },
+
+    /** RECETTE #1117 : (re)POSE la cascade du JOUR fluvial en cours — raccourci symétrique
+     *  d'`advanceSeaDay` pour observer les étapes SANS rejouer achat/carte/départ à chaque essai.
+     *  Rend le compte d'étapes et leurs `kind` (ce qu'on vient d'armer se voit tout de suite). */
+    riverDayCascade: () => riverDayCascade(),
+
+    /** RECETTE #1117 : arme la MÉTÉO de mer du jour EN COURS (`sea.weather`) — `temperature` seule
+     *  suffit à observer la cascade d'Exposition (bande Glaciale/Caniculaire = 4 Tests par héros,
+     *  Froide/Chaude = 2, Médiane = aucun). Symétrique de `forceRiverCapsize` : aucun dé n'est
+     *  bidouillé, la journée se joue. À dérouler avec `advanceSeaDay()`. */
+    forceSeaWeather: (opts: { temperature?: string; precipitations?: string; visibilite?: string; vent?: string } = {}) => {
+      const plan = g().travelPlan;
+      if (!plan?.sea) return '✗ aucune traversée en cours (travelPlan.sea)';
+      const weather = { ...plan.sea.weather, ...opts } as typeof plan.sea.weather;
+      useGame.setState({ travelPlan: { ...plan, sea: { ...plan.sea, weather } } });
+      return `✓ météo de mer armée (${Object.entries(opts).map(([k, v]) => `${k}=${v}`).join(', ') || 'inchangée'}) — dérouler avec __wfrp.advanceSeaDay()`;
+    },
+
+    /** RECETTE #1117 : arme la SURVITESSE du jour de mer — pose le M EFFECTIF du jour (`sea.effMToday`)
+     *  et des milles parcourus, les deux entrées que lit `buildOverspeedStep`. Le seuil RAW est M+5 :
+     *  sur une Cogue (M 5), un seul « +1 M » ne le franchit JAMAIS — la note de Survitesse restait
+     *  invisible en recette sans cumuler des jours. `overM` = excès VOULU au-dessus du M de conception. */
+    forceOverspeed: (overM = 5) => {
+      const plan = g().travelPlan;
+      if (!plan?.sea) return '✗ aucune traversée en cours (travelPlan.sea)';
+      const vd = plan.vehicle ? findVehicleById(plan.vehicle.creatureId ?? '')?.ship : undefined;
+      const baseM = vd?.sail?.m ?? vd?.oars?.m ?? 0;
+      if (!baseM) return '✗ M de conception introuvable sur le navire de campagne';
+      const effMToday = baseM + Math.max(1, overM);
+      useGame.setState({ travelPlan: { ...plan, sea: { ...plan.sea, effMToday, milesToday: Math.max(1, plan.sea.milesToday) } } });
+      return `✓ survitesse armée : M ${baseM} → ${effMToday} (M+${effMToday - baseM}) — dérouler avec __wfrp.advanceSeaDay()`;
+    },
+
     forceShipwreck: (aboardIds?: string[]) => {
       if (!g().vessel) return '✗ aucun navire de campagne (state.vessel)';
       beginShipwreck(() => useGame.getState(), useGame.setState, aboardIds ? { aboardIds } : {});
@@ -1378,7 +1476,10 @@ export function buildApi() {
       // (`stroke-opacity="0"`, `WorldMapView.tsx`) — DANS le MÊME ordre que `map.routes` filtré.
       const clickable = map.routes.filter(fromHere);
       const idx = clickable.findIndex((r) => r.id === routeId);
-      const paths = Array.from(document.querySelectorAll<SVGPathElement>('svg.wm-map path[stroke-opacity="0"]'));
+      // La bande CLIQUABLE d'une route est le `path` de HIT de `MapCanvas` (`stroke="transparent"`,
+      // `pointer-events: stroke`) — sélecteur RE-MESURÉ au rendu réel en recette #1117 : l'ancien
+      // `path[stroke-opacity="0"]` ne correspondait à rien et rendait le helper muet.
+      const paths = Array.from(document.querySelectorAll<SVGPathElement>('svg.wm-map path[stroke="transparent"][pointer-events="stroke"]'));
       const path = paths[idx];
       if (!path) return `✗ tracé SVG introuvable pour « ${routeId} » (carte du monde fermée à l'écran ?)`;
       const ctm = path.getScreenCTM();

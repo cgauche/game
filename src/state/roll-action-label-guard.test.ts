@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { skills } from '../data';
 import { CHAR_LABELS } from '../engine/types';
@@ -112,8 +112,11 @@ describe('CLIQUET — le libellé d’ACTION d’un jet ne porte ni parenthèse 
  * parenthèses (« Métier (Cartographe) ») — apostrophes normalisées (le catalogue écrit `'`, les sites
  * écrivent parfois `’`). Sinon : entrée NOMINATIVE au stock ci-dessous, plafond COLLÉ et décroissant.
  *
- * ANGLE MORT assumé du volet : un `rollLabel` calculé (`refLabel('skills', …)`, ternaire, variable)
- * n'est pas lu — il est déjà, par construction, un libellé du catalogue.
+ * ANGLE MORT assumé du volet : un `rollLabel` CALCULÉ (`refLabel(…)`, ternaire, variable) n'est pas lu
+ * par ce scan lexical. Il n'est PAS pour autant sûr : un libellé calculé peut venir d'un AUTRE
+ * catalogue que les compétences — précédent MESURÉ, les rôles d'équipage (`findCrewRoleById(…).label`
+ * servait de libellé de LIGNE au procès-verbal de mer, #1112). Le volet 3 ci-dessous couvre cette
+ * famille du côté des lignes de jet fabriquées dans `src/state`.
  */
 const norm = (s: string): string => s.replace(/[’‘]/g, "'").trim();
 const CATALOGUE_LABELS = new Set<string>([...skills.map((s) => norm(s.label)), ...Object.values(CHAR_LABELS).map(norm)]);
@@ -178,5 +181,88 @@ describe('CLIQUET — un `rollLabel` nomme la COMPÉTENCE, pas la situation (#11
     expect(scanRollLabels(`rollLabel: 'Force Mentale', base: 40,`), 'une caractéristique aussi').toEqual([]);
     expect(scanRollLabels(`rollLabel: 'Métier (Cartographe)', base: 40,`), 'compétence + spécialisation').toEqual([]);
     expect(scanRollLabels(`rollLabel: 'Conduite d’attelage', base: 40,`), 'apostrophe typographique').toEqual([]);
+  });
+});
+
+
+/**
+ * VOLET 3 (#1112) — le LIBELLÉ D'UNE LIGNE DE JET fabriquée dans `src/state` (`RollBreakdown` d'une
+ * modale, `NightEntry.d` d'un procès-verbal) nomme la COMPÉTENCE / la CARACTÉRISTIQUE lancée (Z5), et
+ * JAMAIS une autre nomenclature : le rôle tenu, la situation, le nom de l'action. La provenance (rôle
+ * d'équipage, poste) vit sur l'entrée, pas sur la ligne.
+ */
+const CREW_CATALOGUE_RX = /\b(findCrewRoleById|crewRoles|crewRoleById|role\??\.label)\b/;
+
+/** Littéraux de LIGNE DE JET (`{ … label: … roll: … }`) d'un fichier : leur libellé (littéral) et
+ *  l'expression brute quand il est calculé. Exporté pour la preuve fail-closed. */
+export function scanRollLineLabels(src: string): { line: number; text: string; computed: boolean }[] {
+  const out: { line: number; text: string; computed: boolean }[] = [];
+  for (const m of src.matchAll(/\broll:/g)) {
+    const i = m.index!;
+    let depth = 0;
+    let start = -1;
+    for (let j = i; j >= 0; j--) {
+      if (src[j] === '}') depth++;
+      else if (src[j] === '{') { if (depth === 0) { start = j; break; } depth--; }
+    }
+    if (start < 0) continue;
+    let end = -1;
+    depth = 0;
+    for (let j = i; j < src.length; j++) {
+      if (src[j] === '{') depth++;
+      else if (src[j] === '}') { if (depth === 0) { end = j; break; } depth--; }
+    }
+    if (end < 0) continue;
+    const lit = src.slice(start, end);
+    if (!/\btarget\s*:/.test(lit)) continue; // pas une ligne de jet (base + cible + dé)
+    // Une ligne de jet est un littéral COURT ; au-delà, l'accolade englobante est celle d'un bloc
+    // (slice de store, fonction) qui contient par hasard `roll:`/`target:` — hors périmètre.
+    if (lit.length > 600) continue;
+    const lab = /\blabel:\s*([^,\r\n]+)/.exec(lit);
+    if (!lab) continue;
+    const raw = lab[1].trim();
+    const literal = /^(['"])((?:\\.|(?!\1)[\s\S])*?)\1$/.exec(raw);
+    out.push({ line: src.slice(0, start).split('\n').length, text: literal ? literal[2] : raw, computed: !literal });
+  }
+  return out;
+}
+
+describe('CLIQUET — le libellé d’une LIGNE de jet nomme la Compétence lancée (#1112 volet 3)', () => {
+  // PÉRIMÈTRE ÉTENDU (#1117) : le FABRICANT de rangées-participants vit dans `src/ui`
+  // (`buildParticipantRows`) et dérivait son libellé d'un `part.label` CALCULÉ — il échappait donc au
+  // scan des littéraux de `src/state`. Le trou est celui-là : on scanne les deux couches.
+  const files = () => [...walk(join(ROOT, 'src', 'state')), ...walk(join(ROOT, 'src', 'ui'))];
+
+  it('aucun libellé de ligne LITTÉRAL qui ne soit une Compétence/Caractéristique du catalogue', () => {
+    const bad: string[] = [];
+    for (const f of files()) {
+      const rel = relative(ROOT, f).split(sep).join('/');
+      for (const h of scanRollLineLabels(readFileSync(f, 'utf8'))) {
+        if (h.computed || isCompetenceLabel(h.text)) continue;
+        bad.push(`${rel}:${h.line} — « ${h.text} »`);
+      }
+    }
+    expect(bad, ['Libellé de LIGNE de jet qui ne nomme pas la Compétence lancée (Z5, docs/charte-ui.md) :', ...bad].join('\n')).toEqual([]);
+  });
+
+  it('aucun libellé de ligne RÉSOLU depuis le catalogue des rôles d’équipage (crew-roles)', () => {
+    const bad: string[] = [];
+    for (const f of files()) {
+      const rel = relative(ROOT, f).split(sep).join('/');
+      for (const h of scanRollLineLabels(readFileSync(f, 'utf8'))) {
+        if (!h.computed || !CREW_CATALOGUE_RX.test(h.text)) continue;
+        bad.push(`${rel}:${h.line} — ${h.text}`);
+      }
+    }
+    expect(bad, ['Le rôle d’équipage est une PROVENANCE, jamais le libellé de la ligne de jet :', ...bad].join('\n')).toEqual([]);
+  });
+
+  it('fail-closed : une ligne SYNTHÉTIQUE mal nommée est détectée, une ligne bien nommée passe', () => {
+    const roleLine = `d: { label: 'Capitaine', base: 40, modifier: 0, target: 40, roll: 12, success: true, sl: 3 }`;
+    const skillLine = `d: { label: 'Voile', base: 40, modifier: 0, target: 40, roll: 12, success: true, sl: 3 }`;
+    const computedRole = `d: { label: findCrewRoleById(a.roleId)?.label ?? '', base: 40, modifier: 0, target: 40, roll: 12, success: true, sl: 3 }`;
+    expect(scanRollLineLabels(roleLine).filter((h) => !h.computed && !isCompetenceLabel(h.text))).toHaveLength(1);
+    expect(scanRollLineLabels(skillLine).filter((h) => !h.computed && !isCompetenceLabel(h.text))).toEqual([]);
+    expect(scanRollLineLabels(computedRole).filter((h) => h.computed && CREW_CATALOGUE_RX.test(h.text))).toHaveLength(1);
   });
 });
