@@ -329,23 +329,43 @@ function stockDiff(stock: Stock, mesure: Map<string, number>) {
 
 /**
  * Le `kind` porte l'INVARIANT de l'entrée, et chaque état a une CHARGE DE PREUVE dans le `why` :
- * une entrée qui doit tomber à zéro (`dette`/`tri`) sans ticket qui l'emporte est une dette orpheline
- * — un « -> #ticket » recopié sans y penser, ou un lot de tri jamais ouvert. Une entrée `canonique`
- * qui n'annonce pas sa nature en tête se relit comme de la dette au premier balayage.
+ * une entrée `dette` sans ticket qui l'emporte est une dette orpheline — un « -> #ticket » recopié
+ * sans y penser. Une entrée `canonique` qui n'annonce pas sa nature en tête se relit comme de la
+ * dette au premier balayage. Le vocabulaire accepté est de TROIS valeurs (#1070) : chaque entrée est
+ * qualifiée site par site, une entrée qui se déclare « à trier » est rouge (cf. le test dédié).
  */
+const KINDS_ADMIS = ['dette', 'canonique', 'mixte'] as const;
+
 function kindDiff(stock: Stock, label: string) {
-  const KINDS = new Set(['dette', 'tri', 'canonique', 'mixte']);
+  const KINDS = new Set<string>(KINDS_ADMIS);
   const ecarts: string[] = [];
   for (const [rel, e] of stock) {
-    if (!KINDS.has(e.kind)) { ecarts.push(`${label} ${rel} : kind « ${e.kind} » inconnu (dette|tri|canonique|mixte)`); continue; }
+    if (!KINDS.has(e.kind)) { ecarts.push(`${label} ${rel} : kind « ${e.kind} » inconnu (${KINDS_ADMIS.join('|')})`); continue; }
     const citeTicket = /#\d+/.test(e.why);
     const ditCanonique = /canonique/i.test(e.why);
-    if ((e.kind === 'dette' || e.kind === 'tri') && !citeTicket) ecarts.push(`${label} ${rel} : kind=${e.kind} sans ticket cité — une population qui doit tomber à zéro nomme le lot qui l'emporte`);
+    if (e.kind === 'dette' && !citeTicket) ecarts.push(`${label} ${rel} : kind=dette sans ticket cité — une population qui doit tomber à zéro nomme le lot qui l'emporte`);
     if (e.kind === 'canonique' && !/^canonique/i.test(e.why.trim())) ecarts.push(`${label} ${rel} : kind=canonique dont la justification n'annonce pas sa nature en tête`);
     if (e.kind === 'mixte' && !(citeTicket && ditCanonique)) ecarts.push(`${label} ${rel} : kind=mixte doit citer un ticket ET dire la part canonique`);
   }
   return ecarts;
 }
+
+describe('REGISTRE des chemins de jet (#1070) — le tri de population est SOLDÉ', () => {
+  it('chaque entrée des deux stocks est QUALIFIÉE : dette | canonique | mixte, et rien d’autre', () => {
+    const restants = [...PENDING_JET_FABRICATION_STOCK, ...ENGINE_DELEGATED_ROLL_STOCK]
+      .filter(([, e]) => !(KINDS_ADMIS as readonly string[]).includes(e.kind))
+      .map(([rel, e]) => `${rel} : kind=${e.kind}`);
+    expect(
+      restants,
+      `Une entrée du registre n'est pas qualifiée — le tri site par site est le geste, pas une étiquette d'attente (KINDS_ADMIS = ${KINDS_ADMIS.join('|')}) :\n${restants.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('fail-closed : une entrée « à trier » réintroduite est REFUSÉE par kindDiff', () => {
+    const stock: Stock = new Map([['src/state/x.ts', { n: 1, kind: 'tri', why: 'population non qualifiée -> #1070.' }]]);
+    expect(kindDiff(stock, '(X)')).toEqual(['(X) src/state/x.ts : kind « tri » inconnu (dette|canonique|mixte)']);
+  });
+});
 
 describe('REGISTRE des chemins de jet (#1066) — (F) fabrication d’un pending de jet', () => {
   const mesure = () => {

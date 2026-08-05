@@ -104,7 +104,7 @@ for (const [label, stock, mesure] of [
   for (const [rel, dec] of stock) {
     if (!mesure.has(rel)) couverture.push(`${label} — ${rel} : entrée PÉRIMÉE (0 site mesuré, ${dec.n} déclaré)`)
     if (!dec.why?.trim()) couverture.push(`${label} — ${rel} : entrée SANS justification`)
-    if (!['dette', 'tri', 'canonique', 'mixte'].includes(dec.kind)) couverture.push(`${label} — ${rel} : kind « ${dec.kind} » inconnu`)
+    if (!['dette', 'canonique', 'mixte'].includes(dec.kind)) couverture.push(`${label} — ${rel} : kind « ${dec.kind} » inconnu`)
   }
 }
 if (couverture.length) {
@@ -190,9 +190,9 @@ for (const [rel, dec] of ENGINE_DELEGATED_ROLL_STOCK) {
   out += `| \`${rel}\` | ${dec.n} | ${dec.kind} | ${noms.map((n) => `\`${n}\``).join(', ')} | ${esc(dec.why)} |\n`
 }
 out += `\n_${total(delegue)} call-sites mesurés dans ${delegue.size} fichiers, pour ${rollers.size} exports rouleurs dérivés de \`src/engine\` — par nature : ${parNature(ENGINE_DELEGATED_ROLL_STOCK)}._\n\n`
-out += `> **Nature** (\`kind\`) : \`dette\` = tous les sites doivent disparaître · \`tri\` = population non qualifiée\n`
-out += `> (tirage de table légitime ⇄ Test à enjeu silencieux), tri site par site · \`canonique\` = aucun site ne bouge ·\n`
-out += `> \`mixte\` = l'entrée porte les deux natures. Sans ce discriminant, « cette liste décroît » ne veut rien dire.\n\n`
+out += `> **Nature** (\`kind\`) : \`dette\` = tous les sites doivent disparaître · \`canonique\` = aucun site ne bouge ·\n`
+out += `> \`mixte\` = l'entrée porte les deux natures. Sans ce discriminant, « cette liste décroît » ne veut rien dire.\n`
+out += `> Le tri de population est SOLDÉ (#1070) : \`tri\` n'est plus une valeur acceptée — chaque entrée est qualifiée site par site.\n\n`
 
 // --- population authorée ---
 out += `## Population AUTHORÉE (donnée, pas code)\n\n`

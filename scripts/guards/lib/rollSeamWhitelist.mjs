@@ -71,14 +71,13 @@ export function rollSeamExcluded(rel) {
  * Entrée de stock : nombre de sites MESURÉ + `kind` + justification ÉCRITE. Le `kind` porte
  * l'INVARIANT de l'entrée — sans lui, « cette liste décroît » (en-tête de `ROLL_SEAM_PHASE2_STOCK`)
  * ne vaut que pour une partie des entrées, et un lot futur ne sait pas laquelle doit tomber à zéro.
- * Quatre états, chacun VÉRIFIÉ par le test :
+ * TROIS états, chacun VÉRIFIÉ par le test — le tri de population est SOLDÉ (#1070) : chaque entrée est
+ * qualifiée site par site, et `'tri'` n'est plus une valeur acceptée (contrat POSITIF du garde).
  *  - `'dette'`     — TOUS les sites doivent disparaître ; `why` cite le ticket (`#N`) qui les emporte.
- *  - `'tri'`       — population NON QUALIFIÉE (tirage de table légitime ⇄ Test à enjeu silencieux) :
- *                    le tri se fait site par site, `why` cite son ticket de tri.
  *  - `'canonique'` — aucun site ne bouge ; `why` COMMENCE par « canonique » et dit la raison mesurée.
  *  - `'mixte'`     — l'entrée porte les deux natures (l'entrée ne tombera pas à 0) ; `why` cite un
  *                    ticket ET le mot « canonique ».
- * @typedef {{ n: number, kind: 'dette'|'tri'|'canonique'|'mixte', why: string }} StockEntry
+ * @typedef {{ n: number, kind: 'dette'|'canonique'|'mixte', why: string }} StockEntry
  */
 
 /**
@@ -108,23 +107,23 @@ export const PENDING_JET_FABRICATION_STOCK = new Map([
 export const ENGINE_DELEGATED_ROLL_STOCK = new Map([
   ['src/state/combat/roundHooks.ts', { n: 1, kind: 'dette', why: '`bleedDeathRoll` (Hémorragie mortelle) roulé en fin de ronde -> #1064.' }],
   ['src/state/combat/turnHooks.ts', { n: 6, kind: 'dette', why: 'psychologie de début de tour (`resolveFrenzyEntry`/`resolveTerreurTest`/`resolvePeurTest` ×2/`resolveCalmeSimple` ×2) -> #1064.' }],
-  ['src/state/combatEffects.ts', { n: 2, kind: 'tri', why: 'population NON QUALIFIÉE : 1 tirage de TABLE (`drawWaterDisease`, maladie tirée au sort) et 1 conséquence à enjeu (`traumaOnImpossibleAmbition`) — tri site par site -> #1070.' }],
-  ['src/state/combatFlow.ts', { n: 34, kind: 'tri', why: 'population NON QUALIFIÉE : le fichier mêle des tirages de TABLE (`critWoundLocation`, `rollOups`, `rollCritical`, `rollMiscast`) et des confrontations à enjeu (`resolveMelee`/`resolveRanged`, `rollGrappleForce`, `opposedTest`) — tri site par site -> #1070.' }],
+  ['src/state/combatEffects.ts', { n: 2, kind: 'mixte', why: 'canonique : `drawWaterDisease` (:1545) tire la maladie sur la table d100 (MSRC 16 p.91) dans l\'applier d\'une étape DÉJÀ surfacée — le jet d\'exposition est imprimé, le tirage n\'est que sa conséquence. Dette : `traumaOnImpossibleAmbition` (:1157) roule un Test de Calme de HÉROS dans le mutateur, 45,09 % de Trauma permanent -> #1103.' }],
+  ['src/state/combatFlow.ts', { n: 34, kind: 'mixte', why: 'canonique pour les tirages de TABLE surfacés en étape/reveal (`critWoundLocation`, `rollOups`, `rollCritical`, `rollMiscast`, `applyHullCritical`, `rollStructureCritical`) et pour les confrontations DÉJÀ affichées (`resolveRanged`, `resolveMelee` :761, `rollDisengageAttack`, `rollGrappleForce` :1138, `rollMeleeAttacker` :2693, `rollRangedAttacker`, `resolveCounterspell`, `resolveRun`). Dettes : bouclier (`rollMeleeAttacker` :2630) -> #1093 ; attaque gratuite (`resolveMelee` :3151) et 2ᵉ main (`rollMeleeDefender` :787) -> #1094, surface du dual-wield -> #998 ; amputations post-rencontre (:5398) -> #1095 ; `rollGrappleForce` :1166 et `opposedTest` :6779 -> #1096.' }],
   ['src/state/combatSetup.ts', { n: 1, kind: 'dette', why: '`initiativeOrder` — l\'Initiative de mise en place roule la ligne entière d\'un coup -> #1064.' }],
-  ['src/state/combatSlice.ts', { n: 9, kind: 'tri', why: 'population NON QUALIFIÉE : tirages de table (`rollOups`) et confrontations à enjeu (`resolveCasting`, `resolveCrewTestByRoles`, `rollMeleeDefender`) dans le même fichier — tri site par site -> #1070.' }],
+  ['src/state/combatSlice.ts', { n: 9, kind: 'mixte', why: 'canonique pour 7 sites : la Volée en table (`resolveVolley` :208), le Test d\'équipage d\'un navire piloté par l\'IA (`resolveCrewTestByRoles` :1378), et les jets affichés (`rollDisengageAttack` :727, `rollGrappleForce` :792, `rollOups` :2433, `resolveMagicMissile` :2945, `resolveCasting` :2946). Dettes : `rollMeleeDefender` :560 (défense au désengagement) -> #1097 ; `animositeOrHaine` :130 (Animosité acquise sur un Destin dépensé) -> #1098.' }],
   ['src/state/devtools.ts', { n: 1, kind: 'canonique', why: 'canonique : `tickDisease` appelé par l\'outil de DEV (avance forcée d\'une maladie) — hors partie jouée, aucune surface de jet à offrir.' }],
-  ['src/state/landMarketFlow.ts', { n: 6, kind: 'tri', why: 'population NON QUALIFIÉE : 4 tirages de TABLE (`rollFindMerchant`, `rollCargoQuantity`, `rollRandomLandCargo`, `rollTradeRumour`) et 2 `opposedTest` de marchandage à enjeu — tri site par site -> #1070.' }],
+  ['src/state/landMarketFlow.ts', { n: 6, kind: 'mixte', why: 'canonique pour 4 sites : `rollFindMerchant`/`rollCargoQuantity`/`rollRandomLandCargo` sont des dés de MONDE et des tables (MSRC 13 l.22-42/l.129-160), et `rollTradeRumour` tire sa rumeur dans l\'applier d\'un `openPartyTest` DÉJÀ surfacé (MSRC 13 l.176-180). Dettes : les 2 `opposedTest` de Marchandage (:238, :296) -> #1099.' }],
   ['src/state/massBattleFlow.ts', { n: 1, kind: 'dette', why: '`resolveClash` (massBattleFlow.ts:845) → `rollMightTest` (engine/massBattle.ts:124) → `rollTest` : LE site fondateur du trou engine-délégué -> #1067.' }],
-  ['src/state/merchantFlow.ts', { n: 1, kind: 'tri', why: 'population NON QUALIFIÉE : `rollStock` est un tirage de disponibilité d\'étal (table), pas un jet à surfacer par le lot d\'affichage — tri site par site -> #1070.' }],
+  ['src/state/merchantFlow.ts', { n: 1, kind: 'canonique', why: 'canonique : `rollStock` (:208) est le Test de DISPONIBILITÉ de l\'étal (LDB 59 l.50) — un dé d\'ÉTAL sur RNG seedé, sans valeur de PJ à influencer, et sa révélation passe déjà par la porte MJ `openStockRevealCascade`.' }],
   ['src/state/outOfCombatUpkeep.ts', { n: 1, kind: 'dette', why: '`bleedDeathRoll` hors combat (entretien quotidien) -> #1064.' }],
-  ['src/state/portFlow.ts', { n: 3, kind: 'tri', why: 'population NON QUALIFIÉE : 1 tirage de TABLE (`rollRandomCargo`) et 2 `rollMerchantOpposition` (opposition de négoce à enjeu) — tri site par site -> #1070.' }],
-  ['src/state/restFlow.ts', { n: 2, kind: 'tri', why: 'population NON QUALIFIÉE : 1 tirage de TABLE (`rollContraction`, contagion au repos) et 1 Test de récupération à enjeu (`restRecovery`) — tri site par site -> #1070.' }],
-  ['src/state/riverVoyageFlow.ts', { n: 3, kind: 'tri', why: 'population NON QUALIFIÉE : 2 `resolveRiverImpact` (impact de rive, dégâts tirés) et 1 `resolveCapsizeRighting` (Test de redressement à enjeu) — tri site par site -> #1070.' }],
-  ['src/state/seaVoyageFlow.ts', { n: 6, kind: 'tri', why: 'population NON QUALIFIÉE : tirages de TABLE / dés de monde (`rollBoardEvent`, `rollWeeklyFouling`, `rollDebrisEntangle`, `rollStranding`) et périls à enjeu (`exposureNight`, `rollSteamBreakdown`) — tri site par site -> #1070.' }],
+  ['src/state/portFlow.ts', { n: 3, kind: 'mixte', why: 'canonique : `rollRandomCargo` (:117) est un tirage de TABLE de cargaison. Dettes : les 2 `rollMerchantOpposition` (:216, :294) sont des Marchandages opposés résolus en silence -> #580.' }],
+  ['src/state/restFlow.ts', { n: 2, kind: 'dette', why: 'les 2 sites du chemin EAGER de la nuit (`sleepParty`) : `restRecovery` (:163, Test de Résistance Accessible +20, LDB 18 l.296) et `rollContraction` (:203, contagion de promiscuité, LDB 20 l.206) — 118 Tests silencieux mesurés sur une nuit de groupe, `rollContraction` sans même un dé rendu ; le chemin à cascade passe déjà par `onDeferTest` -> #1101.' }],
+  ['src/state/riverVoyageFlow.ts', { n: 3, kind: 'mixte', why: 'canonique : les 2 `resolveRiverImpact` (:613, :751) tirent les dégâts d\'un péril sur d100 (MSRC 7 l.138-144), le pilote humain ayant DÉJÀ joué son `riverPerilDetect`. Dette : `resolveCapsizeRighting` (:481) roule N Tests de Navigation de HÉROS en boucle, 3,13 % de naufrages contre 0,13 % attendus -> #1104.' }],
+  ['src/state/seaVoyageFlow.ts', { n: 6, kind: 'mixte', why: 'canonique pour 4 sites : `rollBoardEvent` (:995, événement de bord, MDG 15 l.89), `rollSteamBreakdown` (:1509, MDG 12 l.313, tiré APRÈS un Test surfacé), `rollDebrisEntangle` (:2200) et `rollStranding` (:2212) (périls de mer, MDG 13 l.485-499). Dettes : `exposureNight` (:1379, 62,44 % d\'échecs jamais offerts) -> #1104 ; `rollWeeklyFouling` (:1352, 40,22 % sans trace) -> #1105.' }],
   ['src/state/shipBattery.ts', { n: 1, kind: 'dette', why: '`resolveCrewTestByRoles` — Test d\'équipage de la batterie -> #1067 (même famille navale qu\'`openCrewTestPending`).' }],
   ['src/state/tavernFlow.ts', { n: 2, kind: 'canonique', why: 'canonique : `rollTavernTest` est la primitive `roll*` à UN SEUL jet extraite en #370 — appelée en POST-COMMIT par l\'applier (patron `portFlow.ts`), le jet du joueur passant, lui, par le seam.' }],
-  ['src/state/travelFlow.ts', { n: 3, kind: 'tri', why: 'population NON QUALIFIÉE : 1 tirage de TABLE (`rollStageWeather`, météo d\'étape) et 2 Tests à enjeu (`forcedMarchTest` marche forcée, `resolveMountedDay` journée montée) — tri site par site -> #1070.' }],
-  ['src/state/upkeep.ts', { n: 4, kind: 'tri', why: 'population NON QUALIFIÉE : `dailyFoodUpkeep`/`dailyWaterUpkeep`/`dailyDiseaseUpkeep`/`tickTraumaRecovery` sont des Tests d\'entretien à enjeu résolus en silence, hors du périmètre d\'affichage — tri site par site -> #1070.' }],
+  ['src/state/travelFlow.ts', { n: 3, kind: 'mixte', why: 'canonique : `rollStageWeather` (:610) est un d100 de MONDE sur la table de saison (EDOC 8 l.42) — aucun acteur ne le porte. Dettes : `forcedMarchTest` (:712, marche forcée) -> #1102 ; `resolveMountedDay` (:863, journée en selle EDOC 07 l.142-146 dont le Test de Chevaucher du CAVALIER l.165-174, rendu en lecture seule, 69,96 % d\'échecs) -> #1106.' }],
+  ['src/state/upkeep.ts', { n: 4, kind: 'canonique', why: 'canonique : `dailyFoodUpkeep`/`dailyWaterUpkeep`/`dailyDiseaseUpkeep`/`tickTraumaRecovery` reçoivent `onDeferTest`, qui transforme chaque Test d\'entretien en étape de cascade influençable sur les chemins principaux (store.ts:2564, :2570) ; le seul appelant sans defer est le chemin eager de `restFlow.ts` (:154), ticketé #1101 côté restFlow.' }],
 ]);
 
 /**

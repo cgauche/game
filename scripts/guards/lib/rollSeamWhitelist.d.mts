@@ -4,7 +4,7 @@ export const ROLL_SEAM_FILE_WHITELIST: Set<string>;
 export function rollSeamExcluded(rel: string): boolean;
 
 /** Registre des chemins de jet (#1066) — entrée de stock : compte MESURÉ + justification ÉCRITE. */
-export type StockKind = 'dette' | 'tri' | 'canonique' | 'mixte';
+export type StockKind = 'dette' | 'canonique' | 'mixte';
 export interface StockEntry {
   n: number;
   kind: StockKind;

@@ -600,8 +600,8 @@ function buildTravelDayCascade(
 ): CascadeStep[] {
   const steps: CascadeStep[] = [];
 
-  // Météo « au début de chaque étape » (l.42) : tirage de MONDE (arbitrage user 2026-07-11 : aucune
-  // interaction, PAS de pas de cascade). Tiré ici (même RNG), porté en CONTEXTE DU JOUR (`recapDay.weather`
+  // Météo « au début de chaque étape » (l.42) : dé de MONDE sur la table de saison — aucun acteur ne le
+  // porte, rien n'y est influençable, donc PAS de pas de cascade. Tiré ici (même RNG), porté en CONTEXTE DU JOUR (`recapDay.weather`
   // — en-tête/tuile de la vague 2 ; d100 INTERNE, jamais montré au joueur) ; le journal en garde une
   // ligne STRUCTURÉE (libellé météo seul). Puis les postes + l'agrégation (fourrage/camp/carte/Rencontre)
   // qui insère l'Exposition.
