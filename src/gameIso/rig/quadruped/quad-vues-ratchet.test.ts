@@ -33,7 +33,7 @@ import {
 } from './deco-stock.fixture';
 import { resolveQuadFromProps } from './composeQuad';
 import { buildQuadSkeleton, quadSkeletonForView, type QuadBoneId, type QuadProps } from './quadSkeleton';
-import { quadParts, quadLayersSvg, quadDecoFragments } from './quadParts';
+import { quadParts, quadLayersSvg, quadDecoFragments, quadAnchor } from './quadParts';
 import { riderZForQuad, mountTackBones } from '../mountedRig';
 import { rigFxGradients } from '../fxGradients';
 import type { ResolvedBone } from '../composeRig';
@@ -129,6 +129,25 @@ describe('plan RELATIF d\'un fragment de décor : l\'os résolu se dédouble (#1
         if (zs[i] !== zs[i - 1] && zs[i] - zs[i - 1] < QUAD_DECO_PLAN_MAX) ecarts.push(`${view} ${zs[i - 1]}→${zs[i]}`);
     }
     expect(ecarts, 'deux plans d\'os voisins plus proches que la borne : un décor pourrait en doubler un').toEqual([]);
+  });
+
+  /**
+   * OCCLUSION d'un décor de TÊTE en vue de DOS. L'art de tête y est scindé en deux calques portés
+   * par deux os de plans opposés au tronc (`tete` 9 dessus, `nuque` 4,5 dessous) ; un décor apposé
+   * sur `tete` reste ENTIER au plan du crâne, même la part de son dessin qui descend sous la ligne
+   * de coupe (bride du cheval, museau du rat-géant). Le canal l'exprime : `nuque` PARTAGE l'ancre
+   * de la tête (`quadAnchor`), donc le fragment qui appartient au raccord s'authore aux MÊMES
+   * coordonnées et se déclare sur `nuque#back` — il passe alors sous le tronc.
+   */
+  it('un décor de tête de dos porté par `nuque` passe SOUS le tronc, aux coordonnées de l\'art de tête', () => {
+    const p: QuadProps = { ...quadDefs[0].quad, deco: { 'nuque#back': '<g data-deco="raccord"/>' } };
+    const bones = resolveQuadFromProps(p, 'back');
+    const porteur = bones.filter((b) => b.parts.some((q) => q.svg.includes('data-deco="raccord"')));
+    expect(porteur.map((b) => b.id), 'un seul os porte le décor').toEqual(['nuque']);
+    expect(porteur[0].z, 'sous le tronc').toBeLessThan(QUAD_Z.tronc.back);
+    const i = (id: string) => bones.findIndex((b) => b.id === id);
+    expect(bones.indexOf(porteur[0]), 'peint AVANT le tronc = masqué par lui').toBeLessThan(i('tronc'));
+    expect(quadAnchor(p, 'nuque', 'back'), 'même repère que l\'art de tête').toBe(quadAnchor(p, 'tete', 'back'));
   });
 });
 

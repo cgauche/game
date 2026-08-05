@@ -90,7 +90,11 @@ export interface QuadProps {
    *  Clé suffixée `#vue` = décor limité à cette vue (gueule de brame du grand cerf, dessinée
    *  pour la tête de PROFIL seulement) ; clé nue = toutes les vues où l'os a un art.
    *  Valeur = SVG nu (calque apposé PAR-DESSUS l'art de l'os) ou liste de FRAGMENTS déclarant
-   *  chacun son `plan` (cf. `QuadDecoFragment`). */
+   *  chacun son `plan` (cf. `QuadDecoFragment`).
+   *  VUE DE DOS, décor de TÊTE : l'art de tête y est scindé entre `tete` (crâne, au-dessus du
+   *  tronc) et `nuque` (raccord, dessous), qui PARTAGENT le même repère (`quadAnchor`). La part
+   *  d'un décor qui descend sous la ligne de coupe se déclare donc sur `nuque#back`, aux mêmes
+   *  coordonnées — sur `tete#back` elle resterait entière au plan du crâne. */
   deco?: Partial<Record<QuadBoneId | `${QuadBoneId}#${'profile' | 'front' | 'back'}`, QuadDecoValue>>;
   /** Posture de REPOS propre à la créature en PROFIL (deltas additifs d'angle par os, même
    *  vocabulaire que QuadPose) : port habituel qui s'ajoute SOUS toute pose d'anim (lion de

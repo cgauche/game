@@ -48,10 +48,12 @@ export function quadDecoCouples(): DecoCouples {
 }
 
 /**
- * Stock GELÉ des couples MORTS (mesuré le 2026-08-05). Chaque entrée porte sa VOIE de solde :
- * (a) réaffectation à un os émis — faite au Lot 2 ; (b) art de bout à créer — le décor est
- * authoré dans les coordonnées du PROFIL et n'a aucun sens réemployé tel quel de bout, il attend
- * la phase d'ART (P1b). Ne peut que rétrécir.
+ * Stock GELÉ des couples MORTS (mesuré le 2026-08-05). Deux voies de solde étaient ouvertes :
+ * (a) réaffectation MÉCANIQUE à un os émis, (b) art de bout à créer. Les 12 relèvent de (b),
+ * chacun pour la raison notée : leur art est authoré dans les COORDONNÉES et la SILHOUETTE du
+ * profil (festons, bandes le long de l'axe du cou, dents de scie de la ligne de dos) — reporté
+ * tel quel sur le tronc ou la tête vus de bout, il peindrait une vue de côté sur une vue de face.
+ * Le solde appartient donc à la phase d'ART (P1b). Ne peut que rétrécir.
  */
 export const DECOS_MORTS_GELES = [
   // (b) FANON bovin : festons vus de CÔTÉ, pendus de la gorge au poitrail — le fanon de face du
@@ -178,9 +180,7 @@ export const DECOS_SANS_PLAN_GELES = [
   'blaireau front tronc#front',
   'blaireau profile tete#profile',
   'blaireau profile tronc#profile',
-  'boeuf back tete#back',
   'boeuf back tronc#back',
-  'boeuf front tete#front',
   'boeuf front tronc#front',
   'boeuf profile encolure',
   'boeuf profile tete#profile',

@@ -199,8 +199,12 @@ export const creature: CreatureDef = {
     head: 'cheval', headScale: HS, tail: 'touffe-basse', tailLen: 1.05, mane: 'sans',
     ears: 'courtes', foot: 'sabot',
     deco: {
-      'tete#front': CORNES_FACE + MUFLE_FACE,
-      'tete#back': CORNES_FACE,
+      // DE FACE, deux fragments de plans OPPOSÉS sur le même os : les cornes naissent au sommet du
+      // crâne et balaient en arrière-plan, le mufle est la partie la plus proche de l'œil.
+      'tete#front': [{ svg: CORNES_FACE, plan: -0.5 }, { svg: MUFLE_FACE, plan: 0.5 }],
+      // DE DOS, la lyre part du front, à l'OPPOSÉ de l'œil : elle passe DERRIÈRE le crâne, seules
+      // les pointes qui débordent de la calotte restent visibles (plan relatif négatif).
+      'tete#back': [{ svg: CORNES_FACE, plan: -0.5 }],
       'tete#profile': CORNES_PROFIL,
       encolure: FANON,
       'tronc#profile': TRONC_PROFIL,
