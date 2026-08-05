@@ -1069,6 +1069,21 @@ function wingFoldedEnd(p: QuadProps): string {
     `</g>`;
 }
 
+// ============================ scission crâne / nuque (vue de DOS) ============================
+/**
+ * Ligne de partage de l'art de tête vu de DOS, dans le repère de l'art (y croissant = vers le
+ * garrot) : au-dessus vit le CRÂNE (calotte, oreilles, coiffe), au-dessous la NUQUE (le raccord
+ * crinière→garrot qui se glisse entre les épaules). Les deux calques sont le MÊME art, découpé par
+ * les clipPaths `rigCutQuadCrane`/`rigCutQuadNuque` (`fxGradients.ts`, userSpaceOnUse) — précédent :
+ * la scission du bras au coude (`splitBrasSvg`, parts/derive.ts). Ils sont portés par deux os de
+ * plans DIFFÉRENTS (`tete` / `nuque`, cf. QUAD_Z) : de dos, le crâne reste au-dessus du tronc et la
+ * nuque passe dessous.
+ */
+const backHeadLayers = (art: string) => ({
+  crane: `<g clip-path="url(#rigCutQuadCrane)">${art}</g>`,
+  nuque: `<g clip-path="url(#rigCutQuadNuque)">${art}</g>`,
+});
+
 // ============================ repère de l'art, par OS × VUE ============================
 /**
  * Repère (transform SVG) dans lequel vit l'art d'un os pour une vue : échelles d'espèce
@@ -1080,7 +1095,7 @@ function wingFoldedEnd(p: QuadProps): string {
  */
 export function quadAnchor(p: QuadProps, bone: QuadBoneId, view: View): string {
   const t: string[] = [];
-  if (bone === 'tete') {
+  if (bone === 'tete' || bone === 'nuque') { // `nuque` = calque BAS de l'art de tête : MÊME repère
     if (p.headScale && p.headScale !== 1) t.push(`scale(${p.headScale})`);
     // Tête de PROFIL agrandie (1.3) : à l'échelle nue elle lisait « minuscule/sombre » au bout
     // de l'encolure. Ancrée à la jonction tête-cou (0,0) → grandit sans se détacher du cou.
@@ -1129,9 +1144,11 @@ export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' 
   }
   if (view === 'back') {
     const n = legPartsFront(p, false, p.foot), f = legPartsFront(p, true, frontFoot, true);
+    const dos = backHeadLayers(headgear(p, 'back') + napeBack(p));
     return withDeco({
       ...endWings('back'),
-      tronc: bodyBack(p), tete: quadAnchored(p, 'tete', view, headgear(p, 'back') + napeBack(p)), queue: quadAnchored(p, 'queue', view, tailBack(p)),
+      tronc: bodyBack(p), queue: quadAnchored(p, 'queue', view, tailBack(p)),
+      tete: quadAnchored(p, 'tete', view, dos.crane), nuque: quadAnchored(p, 'nuque', view, dos.nuque),
       hautArD: n.haut, basArD: n.bas, piedArD: n.pied, hautArG: n.haut, basArG: n.bas, piedArG: n.pied,
       hautAvD: f.haut, basAvD: f.bas, piedAvD: f.pied, hautAvG: f.haut, basAvG: f.bas, piedAvG: f.pied,
     });

@@ -6,7 +6,8 @@
  * seule fois au niveau App (`GlobalSvgDefs`). Verbatim — ne pas migrer en palette (ce n'est pas du décor).
  *
  * Contient aussi les clipPaths `rigCutBras*` (#633 D1, scission du bras au coude par `splitBrasSvg`)
- * et `rigJambeClip*` (#633 Lot 0, confinement du détail de tenue à la silhouette de jambe, `jambeVetue`).
+ * et `rigJambeClip*` (#633 Lot 0, confinement du détail de tenue à la silhouette de jambe, `jambeVetue`)
+ * et `rigCutQuad*` (#1082 Lot 1, scission crâne/nuque de l'art de tête quadrupède vu de dos).
  * En `userSpaceOnUse` : leur repère est celui de l'art de la part (`composeRig` injecte PART sous
  * `<g matrix><g scale>`, donc y=18=coude / jambe 0..50), pas l'écran ; symétriques en x → servent
  * aussi le membre droit rendu en `scale(-1,1)`.
@@ -31,4 +32,6 @@ export const rigFxGradients = `
   <clipPath id="rigCutBrasHaut" clipPathUnits="userSpaceOnUse"><rect x="-20" y="-12" width="40" height="30"/></clipPath>
   <clipPath id="rigCutBrasBas" clipPathUnits="userSpaceOnUse"><rect x="-20" y="16" width="40" height="30"/></clipPath>
   <clipPath id="rigJambeClip" clipPathUnits="userSpaceOnUse"><rect x="-6" y="-4" width="12" height="60"/></clipPath>
-  <clipPath id="rigJambeClipProfil" clipPathUnits="userSpaceOnUse"><rect x="-6" y="-4" width="13" height="60"/></clipPath>`;
+  <clipPath id="rigJambeClipProfil" clipPathUnits="userSpaceOnUse"><rect x="-6" y="-4" width="13" height="60"/></clipPath>
+  <clipPath id="rigCutQuadCrane" clipPathUnits="userSpaceOnUse"><rect x="-60" y="-80" width="120" height="80"/></clipPath>
+  <clipPath id="rigCutQuadNuque" clipPathUnits="userSpaceOnUse"><rect x="-60" y="0" width="120" height="80"/></clipPath>`;

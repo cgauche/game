@@ -25,11 +25,16 @@ export const QUAD_Z: QuadZTable = {
   croupe: { profile: 4, front: 4, back: 4 },
   encolure: { profile: 6, front: 8, back: 8 },
   tete: { profile: 7, front: 9, back: 9 },
+  // `nuque` = calque BAS de l'art de tête (scission `rigCutQuad*`, quadParts.ts) : il suit la tête
+  // (même os porteur, même repère) mais porte son propre plan. De DOS il passe SOUS le tronc — le
+  // raccord crinière→garrot se glisse entre les épaules, le crâne restant au-dessus (9).
+  nuque: { profile: 6, front: 8, back: 4.5 },
   queue: { profile: 3, front: 2, back: 6 },
   // Ailes : en profil aileD = proche (par-dessus le flanc), aileG = lointaine (derrière le corps).
-  // De face/dos les deux sont déployées de part et d'autre, derrière le tronc.
-  aileD: { profile: 6, front: 2, back: 2 },
-  aileG: { profile: 2, front: 2, back: 2 },
+  // De FACE, l'aile pliée est sur les flancs, derrière le poitrail qui fait face à l'œil (2) ; de
+  // DOS elle repose SUR le dos, donc au-dessus du tronc (6).
+  aileD: { profile: 6, front: 2, back: 6 },
+  aileG: { profile: 2, front: 2, back: 6 },
   // Membres : en profil, côté D = proche (9), côté G = lointain (1). De face/dos, c'est la PAIRE
   // face à l'œil qui est devant (antérieurs de face, postérieurs de dos) — le côté n'y joue pas.
   hautAvD: { profile: 9, front: 4, back: 2 },

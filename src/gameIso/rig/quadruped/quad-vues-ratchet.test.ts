@@ -30,6 +30,7 @@ import { QUAD_Z, quadZOrder } from './quadZ';
 import { buildQuadSkeleton, quadSkeletonForView, type QuadBoneId, type QuadProps } from './quadSkeleton';
 import { quadParts } from './quadParts';
 import { riderZForQuad, mountTackBones } from '../mountedRig';
+import { rigFxGradients } from '../fxGradients';
 import type { ResolvedBone } from '../composeRig';
 import type { View } from '../facing';
 
@@ -193,25 +194,27 @@ describe('décors MORTS : le stock gelé ne peut que décroître (#1082)', () =>
 });
 
 // ── (b) ORDRE DES OS PAR VUE ────────────────────────────────────────────────────────────────
+// Mis à jour au Lot 1 (2026-08-05) : c'est le CODE qui a bougé (table `QUAD_Z`), pas le détecteur —
+// os `nuque` ajouté (calque bas de la tête), ailes portées SUR le dos en vue de dos (2 → 6).
 const ORDRE_ATTENDU: Record<View, string[]> = {
   profile: [
     'basArG:1', 'basAvG:1', 'hautArG:1', 'hautAvG:1', 'piedArG:1', 'piedAvG:1',
-    'aileG:2', 'queue:3', 'croupe:4', 'tronc:5', 'aileD:6', 'encolure:6', 'tete:7',
+    'aileG:2', 'queue:3', 'croupe:4', 'tronc:5', 'aileD:6', 'encolure:6', 'nuque:6', 'tete:7',
     'basArD:9', 'basAvD:9', 'hautArD:9', 'hautAvD:9', 'piedArD:9', 'piedAvD:9',
   ],
   front: [
     'aileD:2', 'aileG:2', 'basArD:2', 'basArG:2', 'hautArD:2', 'hautArG:2', 'piedArD:2', 'piedArG:2', 'queue:2',
     'basAvD:4', 'basAvG:4', 'croupe:4', 'hautAvD:4', 'hautAvG:4', 'piedAvD:4', 'piedAvG:4',
-    'tronc:5', 'encolure:8', 'tete:9',
+    'tronc:5', 'encolure:8', 'nuque:8', 'tete:9',
   ],
   back: [
-    'aileD:2', 'aileG:2', 'basAvD:2', 'basAvG:2', 'hautAvD:2', 'hautAvG:2', 'piedAvD:2', 'piedAvG:2',
+    'basAvD:2', 'basAvG:2', 'hautAvD:2', 'hautAvG:2', 'piedAvD:2', 'piedAvG:2',
     'basArD:4', 'basArG:4', 'croupe:4', 'hautArD:4', 'hautArG:4', 'piedArD:4', 'piedArG:4',
-    'tronc:5', 'queue:6', 'encolure:8', 'tete:9',
+    'nuque:4.5', 'tronc:5', 'aileD:6', 'aileG:6', 'queue:6', 'encolure:8', 'tete:9',
   ],
 };
 
-/** Props minimales d'un quadrupède AILÉ (les 19 os, ailes comprises). */
+/** Props minimales d'un quadrupède AILÉ (tous les os, ailes comprises). */
 const PROPS_AILE: QuadProps = { ...(quadDefs.find((d) => d.quad.wings)?.quad as QuadProps) };
 
 describe('ordre des os par vue : snapshot de la table publiée (#1082)', () => {
@@ -265,5 +268,46 @@ describe('les plans de profondeur ne vivent QUE dans QUAD_Z (#1082)', () => {
     expect(profil.find((b) => b.id === 'selle')?.z).toBe(5.5);
     expect(profil.find((b) => b.id === 'renes')?.z).toBe(6.7);
     expect(mountTackBones(monture, 'front').find((b) => b.id === 'selle')?.z).toBe(5.5);
+  });
+});
+
+// ── (d) SÉMANTIQUE DE LA VUE DE DOS (Lot 1) ─────────────────────────────────────────────────
+describe('vue de DOS : crâne au-dessus du tronc, nuque dessous, aile pliée SUR le dos (#1082)', () => {
+  it('l\'art de tête de dos est scindé en DEUX calques portés par deux os de plans différents', () => {
+    for (const { id, quad } of quadDefs) {
+      const back = quadParts(quad, 'back');
+      expect(back.tete, `${id} : calque crâne`).toContain('clip-path="url(#rigCutQuadCrane)"');
+      expect(back.nuque, `${id} : calque nuque`).toContain('clip-path="url(#rigCutQuadNuque)"');
+    }
+    expect(QUAD_Z.nuque.back).toBeLessThan(QUAD_Z.tronc.back);
+    expect(QUAD_Z.tete.back).toBeGreaterThan(QUAD_Z.tronc.back);
+  });
+
+  it('les deux découpes se PARTAGENT le plan de l\'art (complémentaires, sans recouvrement ni trou)', () => {
+    const rect = (id: string) => {
+      const m = new RegExp(`id="${id}"[^>]*><rect x="(-?[\\d.]+)" y="(-?[\\d.]+)" width="([\\d.]+)" height="([\\d.]+)"`).exec(rigFxGradients);
+      expect(m, `clipPath ${id} absent des DEFS`).toBeTruthy();
+      return { x: +m![1], y: +m![2], w: +m![3], h: +m![4] };
+    };
+    const crane = rect('rigCutQuadCrane'), nuque = rect('rigCutQuadNuque');
+    expect(crane.y + crane.h, 'le bas du crâne = le haut de la nuque').toBe(nuque.y);
+    expect(crane.x).toBe(nuque.x);
+    expect(crane.w).toBe(nuque.w);
+  });
+
+  it('l\'os `nuque` ne porte d\'art QUE de dos (de face et de profil, la tête est entière)', () => {
+    for (const { id, quad } of quadDefs) {
+      for (const view of ['profile', 'front'] as View[]) {
+        expect(quadParts(quad, view).nuque, `${id} ${view}`).toBeUndefined();
+        expect(quadParts(quad, view).tete, `${id} ${view}`).not.toContain('rigCutQuad');
+      }
+    }
+  });
+
+  it('l\'aile pliée repose SUR le dos de dos, et reste derrière le poitrail de face', () => {
+    expect(QUAD_Z.aileD.back).toBeGreaterThan(QUAD_Z.tronc.back);
+    expect(QUAD_Z.aileG.back).toBeGreaterThan(QUAD_Z.tronc.back);
+    expect(QUAD_Z.aileD.front).toBeLessThan(QUAD_Z.tronc.front);
+    expect(QUAD_Z.aileG.front).toBeLessThan(QUAD_Z.tronc.front);
   });
 });

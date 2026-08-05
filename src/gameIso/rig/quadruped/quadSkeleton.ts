@@ -9,7 +9,7 @@ import type { View } from '../facing';
 import { QUAD_Z } from './quadZ';
 
 export type QuadBoneId =
-  | 'tronc' | 'croupe' | 'encolure' | 'tete' | 'queue'
+  | 'tronc' | 'croupe' | 'encolure' | 'tete' | 'nuque' | 'queue'
   | 'aileD' | 'aileG' // gabarit AILÉ : paire d'ailes (membrane/plumes) sur le garrot
   | 'hautAvD' | 'basAvD' | 'piedAvD' | 'hautAvG' | 'basAvG' | 'piedAvG'
   | 'hautArD' | 'basArD' | 'piedArD' | 'hautArG' | 'basArG' | 'piedArG';
@@ -118,6 +118,9 @@ export function buildQuadSkeleton(p: QuadProps): QuadSkeleton {
     // neckAngle est stocké négatif (héritage) → on le négocie en avant via -neckAngle.
     encolure: { parent: 'tronc', pivot: { x: 28 * bl, y: -12 }, angle: -p.neckAngle, length: 30 * p.neckLen, thickness: 14, z: QUAD_Z.encolure.profile },
     tete: { parent: 'encolure', pivot: { x: 0, y: -30 * p.neckLen }, angle: 10 + p.neckAngle + (p.headPitch ?? 0), length: 18, thickness: 14, z: QUAD_Z.tete.profile },
+    // `nuque` : os PORTÉ par la tête (même repère, pivot nul) qui reçoit le calque BAS de l'art de
+    // tête — il n'existe que pour porter son propre plan de profondeur (cf. QUAD_Z.nuque).
+    nuque: { parent: 'tete', pivot: { x: 0, y: 0 }, angle: 0, length: 0, thickness: 0, z: QUAD_Z.nuque.profile },
     queue: { parent: 'croupe', pivot: { x: -16, y: -6 }, angle: 42, length: 26, thickness: 6, z: QUAD_Z.queue.profile },
     ...leg('hautAvG', 'basAvG', 'piedAvG', 'tronc', 24 * bl + 6, 8, true),
     ...leg('hautArG', 'basArG', 'piedArG', 'croupe', -6 * bl + 6, 8, true, true),
@@ -152,6 +155,7 @@ export function quadSkeletonForView(sk: QuadSkeleton, view: View): QuadSkeleton 
   // la tête à gauche ET la faisait pivoter (« deux yeux empilés, museau à gauche »).
   out.encolure = { ...sk.encolure, pivot: { x: 0, y: -18 }, length: neckL, angle: 0, z: QUAD_Z.encolure[view] };
   out.tete = { ...sk.tete, pivot: { x: 0, y: -neckL - 4 }, angle: 0, z: QUAD_Z.tete[view] };
+  out.nuque = { ...sk.nuque, angle: 0, z: QUAD_Z.nuque[view] };
   out.queue = { ...sk.queue, pivot: { x: 0, y: -6 }, angle: front ? 60 : 4, z: QUAD_Z.queue[view] };
   // pattes : straddle ±, segments droits, derrière le corps (la paire la plus proche de
   // l'œil selon la vue est devant : avant en face / arrière de dos).
