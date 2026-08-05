@@ -47,7 +47,7 @@ const combatRenderCases = (): Case[] => {
 describe('détecteur de fuite des registres d’art du rig', () => {
   it('une amputation de ARMOUR.plaque.{pied,main,cou} fait diverger 78 rendus de combat, et la remise les restaure', () => {
     const cases = combatRenderCases();
-    expect(cases.length).toBe(1023);
+    expect(cases.length).toBe(1020);
     const before = cases.map((c) => c.render());
 
     const P = ARMOUR.plaque as Record<string, unknown>;

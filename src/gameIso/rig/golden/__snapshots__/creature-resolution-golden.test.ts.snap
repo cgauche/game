@@ -279,10 +279,10 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "bete-des-marais",
   },
   "Bœuf": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "Humain",
+    "def": "Bœuf",
+    "plan": "quadruped",
+    "scale": 1.06,
+    "species": "boeuf",
   },
   "Caledair - la Faux de Feu": {
     "def": "Dragon",
