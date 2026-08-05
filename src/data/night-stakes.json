@@ -8,7 +8,8 @@
       "book": "livre-de-base",
       "page": 181,
       "note": "LDB 18 l.343"
-    }
+    },
+    "rule": "faim-et-soif"
   },
   {
     "id": "soif",
@@ -19,7 +20,8 @@
       "book": "livre-de-base",
       "page": 181,
       "note": "LDB 18 l.340"
-    }
+    },
+    "rule": "faim-et-soif"
   },
   {
     "id": "recovery",
@@ -30,7 +32,8 @@
       "book": "livre-de-base",
       "page": 181,
       "note": "LDB 18 l.296"
-    }
+    },
+    "rule": "guerison-des-blessures"
   },
   {
     "id": "nightmare",
@@ -41,7 +44,8 @@
       "book": "livre-de-base",
       "page": 191,
       "note": "LDB 21 l.95"
-    }
+    },
+    "rule": "trauma"
   },
   {
     "id": "shelter",
@@ -50,9 +54,10 @@
     "stake": "Quand vous campez, faites un Test de Survie en extérieur, modifié par la rudesse des conditions – par exemple, un Test est **Intermédiaire (+0)** s'il pleut, **Difficile (-20)** lors d'une tempête. Un Test réussi indique que vous pouvez vous procurer de la nourriture et un abri pour la nuit. Chaque DR vous permet de procurer l'équivalent pour un Personnage de plus. Si le Test échoue, vous devez faire un Test de **Résistance Intermédiaire (+0)** ou recevoir l'État *Exténué*.",
     "source": {
       "book": "livre-de-base",
-      "page": 118,
+      "page": 131,
       "note": "LDB 09 l.554"
-    }
+    },
+    "rule": "survie-en-exterieur-camper"
   },
   {
     "id": "exposure",
@@ -63,7 +68,8 @@
       "book": "livre-de-base",
       "page": 181,
       "note": "LDB 18 l.330/334"
-    }
+    },
+    "rule": "exposition"
   },
   {
     "id": "exposure-heat-drop",
@@ -74,7 +80,8 @@
       "book": "livre-de-base",
       "page": 181,
       "note": "LDB 18 l.332"
-    }
+    },
+    "rule": "exposition"
   },
   {
     "id": "forced-march",
@@ -83,9 +90,10 @@
     "stake": "En prenant en compte les temps de repos, les arrêts nécessaires et une topographie standard, un groupe peut voyager l'équivalent de 6 heures par jour sans avoir besoin de Tests de Résistance. S'il voyage plus rapidement ou plus loin, donnez un État *Exténué* à ceux échouant à ce Test, et un État *Exténué* supplémentaire si le Personnage est Encombré.",
     "source": {
       "book": "livre-de-base",
-      "page": 261,
+      "page": 262,
       "note": "LDB 51 l.195"
-    }
+    },
+    "rule": "temps-de-voyage"
   },
   {
     "id": "trauma-fracture",
@@ -96,7 +104,8 @@
       "book": "livre-de-base",
       "page": 179,
       "note": "LDB 18 l.202/213"
-    }
+    },
+    "rule": "fractures"
   },
   {
     "id": "disease-tick",
@@ -105,9 +114,10 @@
     "stake": "**Blessé :** Chaque jour, réussissez un Test de **Résistance Accessible (+20)** ou subissez une Blessure Purulente si vous n'en avez pas déjà une.\n\n**Toxine :** Effectuez un Test de **Résistance Très Facile (+60)** tous les jours (en général pendant votre sommeil) ou vous mourrez, peut-être dans votre sommeil, ou en délirant de fièvre, ou encore dans la pire agonie.",
     "source": {
       "book": "livre-de-base",
-      "page": 186,
+      "page": 188,
       "note": "LDB 20 l.145/212-215"
-    }
+    },
+    "rule": "symptomes-des-maladies"
   },
   {
     "id": "disease-gangrene",
@@ -116,9 +126,10 @@
     "stake": "Chaque jour, effectuez un Test de **Résistance Accessible (+20)**. Sur un succès, la *Gangrène* est contenue. Sur un échec, elle empire. Si vous obtenez plus d'échecs que votre Bonus d'Endurance, la Localisation devient totalement inutilisable. Si cela se produit, utilisez les mêmes règles que pour l'Amputation (voir Blessures critiques).",
     "source": {
       "book": "livre-de-base",
-      "page": 186,
+      "page": 189,
       "note": "LDB 20 l.176"
-    }
+    },
+    "rule": "symptome-gangrene"
   },
   {
     "id": "disease-persist",
@@ -127,9 +138,10 @@
     "stake": "Après que votre maladie est arrivée à la fin de sa Durée, effectuez un Test de Résistance avec la Difficulté indiquée entre parenthèses après le symptôme comme ceci : Persistant (Accessible) ou Persistant (Facile). Sur un échec Minime (0), rajoutez 1d10 jours à la durée. Sur un échec (-2), vous subissez une *Blessure Purulente*. Sur un échec Stupéfiant (-6), vous développez *Infection du sang*.",
     "source": {
       "book": "livre-de-base",
-      "page": 186,
+      "page": 189,
       "note": "LDB 20 l.200"
-    }
+    },
+    "rule": "symptome-persistant"
   },
   {
     "id": "contagion",
@@ -138,9 +150,10 @@
     "stake": "Vous toussez et éternuez régulièrement, propageant ainsi votre maladie tout autour de vous. Tout Personnage se trouvant dans votre environnement immédiat s'expose à la maladie dont vous êtes porteur et doit effectuer un Test pour en éviter la Contraction une fois par heure entamée d'exposition.",
     "source": {
       "book": "livre-de-base",
-      "page": 186,
+      "page": 189,
       "note": "LDB 20 l.206"
-    }
+    },
+    "rule": "symptome-toux-et-eternuements"
   },
   {
     "id": "dessoulage",
@@ -151,7 +164,8 @@
       "book": "livre-de-base",
       "page": 129,
       "note": "LDB 09 l.485"
-    }
+    },
+    "rule": "resistance-a-l-alcool-dessoulage"
   },
   {
     "id": "dessoulage-hangover",
@@ -162,6 +176,7 @@
       "book": "livre-de-base",
       "page": 129,
       "note": "LDB 09 l.485"
-    }
+    },
+    "rule": "resistance-a-l-alcool-dessoulage"
   }
 ]

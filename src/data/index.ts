@@ -172,6 +172,8 @@ export interface NightStakeEntry {
   kind: string;
   stake: string;
   source: SourceRef;
+  /** Fiche de règle du Codex derrière l'étape (`regles.json`). */
+  rule?: string;
 }
 export const NIGHT_STAKES = nightStakesJson as NightStakeEntry[];
 

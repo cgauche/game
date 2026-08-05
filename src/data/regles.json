@@ -548,5 +548,115 @@
       "page": 104,
       "note": "MDG 13 l.66-75 — transcription DÉCLARÉE du tableau PROGRESSION : l'extraction le rend malformé (deux colonnes vides, en-tête scindé sur deux lignes, sauts de ligne en balises que la règle 5 interdit en prose). Bandes et libellés vérifiés un à un ; la phrase d'introduction (l.66) est verbatim."
     }
+  },
+  {
+    "id": "guerison-des-blessures",
+    "label": "Guérison des Blessures",
+    "desc": "Vous êtes considéré comme étant blessé si vous avez perdu au moins un Point de Blessure.\n\nUne fois par jour, vous pouvez tenter, sans aide médicale, un Test de **Résistance Accessible (+20)**, après avoir passé une bonne nuit de sommeil. Vous guérissez un nombre de Points de Blessure équivalent à votre DR + Bonus d'Endurance. Pour chaque journée passée à vous reposer, vous guérissez également un nombre de Points de Blessure équivalent à votre Bonus d'Endurance.\n\nSi vous voulez Guérir plus de Points de Blessure, alors vous devez être assisté par quelqu'un possédant la Compétence Guérison (voir **Chapitre 4 : Compétences et Talents.**) ou alors aurez besoin de bandages, d'un cataplasme de soin ou de tout autre équivalent (voir **Chapitre 11 : Équipement**).\n\nIl n'y a aucune pénalité liée au fait d'être blessé. Les Points de Blessure perdus sont considérés comme des petites coupures, des bleus et autres traumatismes mineurs.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 181,
+      "note": "LDB 18 l.294-300"
+    }
+  },
+  {
+    "id": "exposition",
+    "label": "Exposition",
+    "desc": "Après 4 heures passées dans un environnement difficile – comme lorsque les températures sont négatives, dans un désert brûlant ou une tempête, vous devez effectuer un Test de Résistance. Lorsque vous vous retrouvez dans un environnement aux conditions extrêmes, ce Test doit être effectué toutes les deux heures.\n\n**Chaleur :** sur un premier échec, vous subissez une pénalité de -10 en **Intelligence** et en **Force Mentale**, et vous gagnez un État *Exténué*. Le deuxième échec réduit toutes les autres caractéristiques de -10 % et vous gagnez un second État *Exténué*. À partir du troisième échec, vous subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1 Blessure perdue.\n\nVous débarrasser d'une Possession lourde annule 1 Test échoué.\n\n**Froid :** sur un premier échec, vous subissez une pénalité de -10 à votre Compétence de **CT**, à votre **Agilité** et votre **Dextérité**. Le deuxième échec réduit la valeur de toutes vos autres caractéristiques de -10 %. À partir du troisième échec, vous subissez 1d10 Dégâts, qui ignorent les PA, avec un minimum de 1 Blessure perdue. Si vous atteignez 0 Blessure, vous recevez immédiatement un État *Inconscient*. Certaines Possessions accordent des bonus et des pénalités pour ces Tests (voir p. 302 et 309).",
+    "source": {
+      "book": "livre-de-base",
+      "page": 181,
+      "note": "LDB 18 l.328-334"
+    }
+  },
+  {
+    "id": "fractures",
+    "label": "Fractures",
+    "desc": "Les fractures peu importantes guérissent d'elles-mêmes, mais certaines autres, lorsque les os dépassent de la plaie en adoptant des angles étranges, présentent un tout autre problème. Si vous souffrez d'une *Fracture*, elle sera majeure ou mineure.\n\n# **Mineure**\n\nL'un de vos os est fracturé mais il est toujours dans le bon alignement, ce qui signifie qu'il va pouvoir guérir sans intervention médicale.\n\nVous ne pouvez pas utiliser cette Localisation tant que la fracture n'est pas soignée. En ce qui concerne les Bras et les Jambes, vous êtes contraint de ne plus vous servir que d'un de vos deux membres car l'autre est devenu trop douloureux et devra sans doute être bandé. Utilisez la règle de Bras ou Jambe Sectionnés (voir **Membres amputés**). Pour les coups à la Tête, vous serez contraint de suivre un régime liquide et subirez une pénalité de -30 à tous vos Tests de Langue. Pour les blessures au Torse, votre force et votre mobilité seront sérieusement diminuées : subissez une perte de -30 à vos caractéristiques de Force et d'Agilité et votre Mouvement est divisé par deux.\n\n**Guérison :** il faudra 30+1d10 jours pour soigner une fracture. À la fin de cette période, un succès obtenu sur un Test de **Résistance Accessible (+20)** indique que l'os s'est remis correctement et que vous ne subirez aucun effet à long terme. Sur un échec, vous subirez une pénalité permanente de -5 à tous vos Tests d'Agilité pour une blessure au Bras, à la Jambe ou au Torse, ou une pénalité permanente de -5 à tous vos Tests de Langue s'il s'agit d'une blessure à la tête mal guérie.\n\nUn Test de **Guérison Accessible (+20)** réussi dans un intervalle d'une semaine suivant la fracture permet d'éviter le Test de Résistance, mais la zone touchée doit rester bandée et maintenue en place pendant tout le temps de la guérison. Si le bandage est défait, il faudra réussir un second Test de **Guérison Accessible (+20)** moins de 24 heures après pour éviter le Test de Résistance.\n\n# **Majeure**\n\nUn de vos os est salement fracturé et adopte un angle très bizarre avec le reste du membre ou a éclaté au point de fracture. Il est fort peu probable qu'il se soigne correctement sans intervention médicale.\n\nVous ne pouvez pas utiliser cette Localisation tant que l'os n'est pas guéri. Utilisez les mêmes règles que pour *Fracture (Mineure)*.\n\n**Guérison :** la guérison est plus longue de 10 jours. Tous les Tests associés sont **Intermédiaires (+0)**. Les pénalités en cas d'échec augmentent à -10.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 179,
+      "note": "LDB 18 l.194-212"
+    }
+  },
+  {
+    "id": "survie-en-exterieur-camper",
+    "label": "Survie en extérieur — Camper",
+    "desc": "La Compétence Survie en extérieur est utilisée pour la survie dans la nature, et comprend la capacité de pêcher, de chasser, de rechercher de la nourriture, de faire un feu et de construire un abri. Les voyageurs expérimentés sont doués pour repérer les signes d'un changement de météo et les excréments de nombreuses bêtes dangereuses.\n\nQuand vous campez, faites un Test de Survie en extérieur, modifié par la rudesse des conditions – par exemple, un Test est **Intermédiaire (+0)** s'il pleut, **Difficile (-20)** lors d'une tempête. Un Test réussi indique que vous pouvez vous procurer de la nourriture et un abri pour la nuit. Chaque DR vous permet de procurer l'équivalent pour un Personnage de plus. Si le Test échoue, vous devez faire un Test de **Résistance Intermédiaire (+0)** ou recevoir l'État *Exténué*. Si vous subissez un Échec Stupéfiant, quelque chose de fâcheux est arrivé, déterminé par le MJ ; peut-être votre camp est-il attaqué pendant la nuit ?",
+    "source": {
+      "book": "livre-de-base",
+      "page": 131,
+      "note": "LDB 09 l.552-554"
+    }
+  },
+  {
+    "id": "resistance-a-l-alcool-dessoulage",
+    "label": "Résistance à l’alcool — Dessoûlage",
+    "desc": "Après une heure passée sans boire, effectuez un Test de **Résistance à l'alcool Intermédiaire (+0)**. Les effets de l'ivresse se dissiperont après 10-DR heures, et tous les modificateurs de Caractéristiques disparaîtront après ce délai. Une fois tous les effets dissipés, effectuez un nouveau Test de **Résistance à l'alcool Intermédiaire (+0)**. Vous avez à présent la gueule de bois, qui correspond à l'État *Exténué* et ne peut pas être retiré pendant 5 – DR heures.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 129,
+      "note": "LDB 09 l.485"
+    }
+  },
+  {
+    "id": "trauma",
+    "label": "Trauma",
+    "desc": "La vie de la grande majorité des Reiklanders est désagréable, brutale et courte. Et c'est encore plus vrai pour les aventuriers, dont la vie est plutôt agitée. Chacun retranscrit les traumas différemment, et vous pouvez choisir de partir sur des pistes différentes : cauchemars, substances illicites, flashbacks, *Hostilité* ou *Haine* envers un groupe en particulier, ou une *Phobie*. Un Personnage qui a subi une expérience traumatique peut en manifester les conséquences de plusieurs différentes façons au fil du temps.\n\n**Exemple :** *Le village de Horst a été ravagé par un terrible incendie – il entend d'ailleurs encore certains cris dans ses cauchemars. Si Horst tombe sur un Personnage (ami ou ennemi) qui est Enflammé, il doit effectuer un Test de Calme Intermédiaire (+0). Sur un échec, il gagne un État Sonné, plus un État Sonné par DR négatif. De plus, chaque nuit, Horst effectue un Test de Calme Facile (+40). Sur un échec, il est en proie à de terribles cauchemars et gagne l'État Exténué.*",
+    "source": {
+      "book": "livre-de-base",
+      "page": 191,
+      "note": "LDB 21 l.93-95"
+    }
+  },
+  {
+    "id": "temps-de-voyage",
+    "label": "Temps de voyage",
+    "desc": "Utilisez le Déplacement pour déterminer la vitesse du voyage en kilomètre par heure. Ainsi, si le Déplacement le plus lent d'un groupe est de 3, il voyagerait approximativement à 3 kilomètres par heure.\n\nEn prenant en compte les temps de repos, les arrêts nécessaires et une topographie standard, un groupe peut voyager l'équivalent de 6 heures par jour sans avoir besoin de Tests de Résistance. S'il voyage plus rapidement ou plus loin, donnez un État *Exténué* à ceux échouant à ce Test, et un État *Exténué* supplémentaire si le Personnage est Encombré (voir page 293).\n\nLa vitesse d'une barge peut augmenter ou diminuer jusqu'à 30 % si elle est en aval ou en amont, si vous jugez que c'est approprié.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 262,
+      "note": "LDB 51 l.193-197"
+    }
+  },
+  {
+    "id": "symptomes-des-maladies",
+    "label": "Symptômes des maladies",
+    "desc": "Cette section explique la façon dont se manifestent chacun des symptômes des différentes infections. Servez-vous en pour inventer des maladies bien répugnantes.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 188,
+      "note": "LDB 20 l.133"
+    }
+  },
+  {
+    "id": "symptome-gangrene",
+    "label": "Symptôme — Gangrène",
+    "desc": "Votre chair noircit et pourrit, infectée par quelque chose d'horrible. Et cela ne semble pas s'arranger. Effectuez un lancer de pourcentage pour déterminer une Localisation (voir **Combat**). Si vous obtenez Corps, vous avez de la chance, la *Gangrène* ne s'est pas propagée au cours de l'infection. Si vous obtenez la Tête, c'est votre nez qui est touché. Si vous obtenez Bras, ce sont vos doigts. Si c'est la jambe, c'est votre pied qui est atteint. Chaque jour, effectuez un Test de **Résistance Accessible (+20)**. Sur un succès, la *Gangrène* est contenue. Sur un échec, elle empire. Si vous obtenez plus d'échecs que votre Bonus d'Endurance, la Localisation devient totalement inutilisable. Si cela se produit, utilisez les mêmes règles que pour l'Amputation (voir Blessures critiques). Tant que vous souffrez de la *Gangrène*, subissez une pénalité de -10 à tous vos Tests de Sociabilité, et vous subissez le symptôme Blessé. De plus, comme si ce n'était pas suffisant, vous souffrez également de *Toxine* tant que le tissu affecté ne sera pas amputé. Et cela perdurera même après que vous avez été guéri de la maladie à l'origine de la *Gangrène*.\n\n**Traitement :** le seul traitement vraiment efficace consiste à amputer la partie gangrénée.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 189,
+      "note": "LDB 20 l.176-178"
+    }
+  },
+  {
+    "id": "symptome-persistant",
+    "label": "Symptôme — Persistant",
+    "desc": "Vous avez une infection qui perdure. De ce fait, vous craignez que cela empire… Après que votre maladie est arrivée à la fin de sa Durée, effectuez un Test de Résistance avec la Difficulté indiquée entre parenthèses après le symptôme comme ceci : Persistant (Accessible) ou Persistant (Facile). Sur un échec Minime (0), rajoutez 1d10 jours à la durée. Sur un échec (-2), vous subissez une *Blessure Purulente*. Sur un échec Stupéfiant (-6), vous développez *Infection du sang*.\n\n**Traitement :** les traitements pour les infections persistantes sont légion et plutôt abordables, dépassant rarement une pistole. Cependant, la plupart ne sont que des placebos ou reposent sur des traditions erronées. Il n'y a que 10 % des traitements achetés qui soient efficaces, mais, si c'est le cas, ils permettront de ne pas avoir besoin de Test de Résistance s'il est ingurgité au bon moment (ce qui nécessitera un Test de Guérison réussi pour déterminer le jour exact).",
+    "source": {
+      "book": "livre-de-base",
+      "page": 189,
+      "note": "LDB 20 l.200-202"
+    }
+  },
+  {
+    "id": "symptome-toux-et-eternuements",
+    "label": "Symptôme — Toux et éternuements",
+    "desc": "Vous toussez et éternuez régulièrement, propageant ainsi votre maladie tout autour de vous. Tout Personnage se trouvant dans votre environnement immédiat s'expose à la maladie dont vous êtes porteur et doit effectuer un Test pour en éviter la Contraction une fois par heure entamée d'exposition.\n\n**Traitement :** rien ne fonctionne",
+    "source": {
+      "book": "livre-de-base",
+      "page": 189,
+      "note": "LDB 20 l.206-208"
+    }
   }
 ]

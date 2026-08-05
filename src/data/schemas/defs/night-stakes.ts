@@ -18,6 +18,9 @@ export const schema = z.array(
     kind: z.string(),
     stake: z.string(),
     source: sourceRefSchema,
+    /** Fiche de RÈGLE du Codex (`regles.json`) derrière cette étape — la règle est à UN CLIC depuis
+     *  l'enjeu (#1117). Même forme que `voyage-stakes.rule`. */
+    rule: z.string().optional(),
   }),
 );
 
