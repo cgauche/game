@@ -19,6 +19,8 @@
  *      rogné par le viewBox, pas par la bête) — c'est le cas du basilic et de l'hydre de profil.
  *   4. OCCLUSION tête∩tronc — part des pixels de l'os `tete` que le `tronc` recouvrirait s'il
  *      passait devant : ce que coûterait une bascule de plan.
+ *   5. MASQUAGE RÉEL — part des pixels d'un os (tête, nuque, aile) que les os de plan SUPÉRIEUR
+ *      recouvrent dans le rendu courant : la mesure qui bouge quand la table `QUAD_Z` bouge.
  * Plus l'inventaire des DÉCORS MORTS (couple deco×os×vue déclaré par une def, jamais émis).
  *
  * PÉRIMÈTRE DE MESURE : tout ici (silhouettes, débords, sol, occlusion, ET le scan des décors
@@ -101,8 +103,24 @@ interface Row {
   /** `sature` : la silhouette touche un bord HORIZONTAL du viewBox de mesure → gauche/droite
    *  sont des MINORANTS du débord réel (le rendu est rogné par le viewBox). */
   debords: { view: View; top: number; sol: number; gauche: number; droite: number; sature: boolean }[];
-  /** part (%) des pixels de `tete` recouverts par `tronc`, par vue. */
+  /** part (%) des pixels de `tete` recouverts par `tronc`, par vue — mesure de GÉOMÉTRIE
+   *  (indépendante des plans : ce que coûterait une bascule de z). */
   occlusionTete: Record<View, number>;
+  /** MASQUAGE RÉEL par vue : part (%) des pixels d'un os que les os peints PAR-DESSUS (z
+   *  supérieur) recouvrent effectivement dans le rendu — dépend de la table `QUAD_Z`. */
+  masque: Record<View, Record<'tete' | 'nuque' | 'aile', number>>;
+}
+
+/** % des pixels de l'os `id` recouverts par les os de plan STRICTEMENT supérieur. -1 = os absent. */
+function masquageReel(bones: ResolvedBone[], id: string): number {
+  const os = bonesOf(bones, id);
+  if (!os.length) return -1;
+  const z = Math.max(...os.map((b) => b.z));
+  const dessus = bones.filter((b) => b.z > z);
+  const m = maskOf(os).m, n = count(m);
+  if (!n) return -1;
+  if (!dessus.length) return 0;
+  return (100 * inter(m, maskOf(dessus).m)) / n;
 }
 
 const rows: Row[] = [];
@@ -110,6 +128,7 @@ for (const [espece, p] of Object.entries(ALL)) {
   const box = {} as Record<View, Box>;
   const vu = {} as Record<View, Box>;
   const occlusionTete = {} as Record<View, number>;
+  const masque = {} as Row['masque'];
   const debords: Row['debords'] = [];
   for (const view of VIEWS) {
     const bones = resolveQuadFromProps(p, view);
@@ -121,6 +140,11 @@ for (const [espece, p] of Object.entries(ALL)) {
       const nT = count(mT);
       occlusionTete[view] = nT ? (100 * inter(mT, mB)) / nT : 0;
     } else occlusionTete[view] = 0;
+    masque[view] = {
+      tete: masquageReel(bones, 'tete'),
+      nuque: masquageReel(bones, 'nuque'),
+      aile: masquageReel(bones, 'aileD'),
+    };
     const b = box[view];
     const sature = b.gauche <= -PAD_X || b.droite >= BOX_W + PAD_X;
     if (b.top < 0 || b.sol > BOX_H || b.gauche < 0 || b.droite > BOX_W)
@@ -136,6 +160,7 @@ for (const [espece, p] of Object.entries(ALL)) {
     flottementSol: Math.max(...sols) - Math.min(...sols),
     debords,
     occlusionTete,
+    masque,
   });
 }
 
@@ -186,6 +211,14 @@ if (process.argv.includes('--json')) {
   console.log('-'.repeat(60));
   for (const r of parOcc)
     console.log(`${r.espece.padEnd(28)} ${n(r.occlusionTete.profile)} ${n(r.occlusionTete.front)} ${n(r.occlusionTete.back)}`);
+
+  console.log('\n== MASQUAGE RÉEL (% des pixels d\'un os couverts par les os peints PAR-DESSUS) ==');
+  console.log('   « — » = l\'os ne porte pas d\'art dans cette vue ; `aile` = aileD (proche/droite).');
+  console.log(`${'espèce'.padEnd(28)} ${'têteDos'} ${'nuqDos'} ${'aileDos'} ${'aileFac'} ${'têtePro'}`);
+  console.log('-'.repeat(76));
+  const q = (v: number) => (v < 0 ? '      —' : n(v));
+  for (const r of [...rows].sort((a, b) => b.masque.back.aile - a.masque.back.aile))
+    console.log(`${r.espece.padEnd(28)} ${q(r.masque.back.tete)} ${q(r.masque.back.nuque)} ${q(r.masque.back.aile)} ${q(r.masque.front.aile)} ${q(r.masque.profile.tete)}`);
 
   console.log(`\n== DÉCORS MORTS : ${decosMorts.length} / ${decosApplicables} couples applicables ==`);
   for (const d of decosMorts) console.log(`  ${d.espece.padEnd(28)} ${d.view.padEnd(8)} deco[${d.cle}] → os '${d.os}' sans art dans cette vue`);
