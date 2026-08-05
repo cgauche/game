@@ -58,6 +58,14 @@ export function quadZOrder(view: View): { id: QuadBoneId; z: number }[] {
     .sort((a, b) => a.z - b.z || a.id.localeCompare(b.id));
 }
 
+/**
+ * Amplitude MAXIMALE du plan d'un fragment de décor, RELATIVE au plan de son os porteur
+ * (`QuadDecoFragment.plan`) : un décor s'intercale autour de l'os qui le porte, il ne traverse
+ * pas la pile. Le pas de la table est de 1 entre os voisins → ±0,5 place un fragment entre son
+ * os et le voisin, jamais au-delà.
+ */
+export const QUAD_DECO_PLAN_MAX = 0.5;
+
 /** Plans du CAVALIER intercalés dans l'échelle de la monture, par vue (`mountedRig`). */
 export interface QuadRiderZ { corps: number; jambeProche: number; jambeLointaine: number }
 

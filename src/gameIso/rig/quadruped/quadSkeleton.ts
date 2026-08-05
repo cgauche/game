@@ -27,6 +27,18 @@ export interface QBone extends FKBone {
 export type QuadSkeleton = Record<QuadBoneId, QBone>;
 export type QuadPose = Partial<Record<QuadBoneId, number>>;
 
+/**
+ * Fragment de DÉCOR posé sur un os : son `plan` est RELATIF au plan de l'os porteur (`QUAD_Z`),
+ * borné à ±`QUAD_DECO_PLAN_MAX` — un fragment ne quitte jamais le voisinage de son os. `plan`
+ * absent = calque apposé PAR-DESSUS l'art de l'os (le comportement du canal avant #1082 Lot 2,
+ * compté par le cliquet `decos-sans-plan-declare`). Un couple (os, vue) peut porter N fragments
+ * de plans différents : la sangle qui fait le tour (un pan devant, un derrière), les cornes du
+ * bœuf de dos (derrière le crâne) et son mufle (devant).
+ */
+export interface QuadDecoFragment { svg: string; plan?: number }
+/** Décor d'un couple (os, vue) : SVG nu (sans plan déclaré) ou fragments à plans déclarés. */
+export type QuadDecoValue = string | QuadDecoFragment[];
+
 /** Caractère d'une espèce quadrupède (proportions + parts + couleurs par défaut). */
 export type QuadBuild = 'equine' | 'canine' | 'suid' | 'rodent' | 'ursine' | 'feline' | 'draconic' | 'batracien';
 export type QuadHead = 'cheval' | 'loup' | 'loup-feroce' | 'sanglier' | 'rat' | 'ours' | 'aigle' | 'dragon' | 'basilic' | 'crapaud' | 'hydre' | 'chimere' | 'dechiqueteur' | 'felin';
@@ -69,15 +81,17 @@ export interface QuadProps {
   headPitch?: number;
   tailLen?: number; // × sur l'art de queue (défaut 1)
   /** Décor PAR-OS propre à la créature (harnais doré du pégase — précédent : épave du crabe,
-   *  `CrabProps.deco`) : SVG dans le repère de l'ART de l'os pour la vue (`quadAnchor`), APPOSÉ
-   *  après cet art, uniquement là où l'os porte déjà un art dans la vue courante. L'ancre porte
+   *  `CrabProps.deco`) : SVG dans le repère de l'ART de l'os pour la vue (`quadAnchor`), posé en
+   *  CALQUE sur cet os, uniquement là où l'os porte déjà un art dans la vue courante. L'ancre porte
    *  `headScale`, `tailLen`, `wingSpan`, l'agrandissement de tête en profil et le miroir de l'aile
    *  gauche vue de bout. `bodyLen`/`neckLen` restent CUITS dans les coordonnées de l'art de tronc
    *  et d'encolure (`barrel`/`neck`, quadParts.ts) : un décor de ces deux os s'authore à leurs
    *  valeurs d'espèce. Jetons de palette admis.
    *  Clé suffixée `#vue` = décor limité à cette vue (gueule de brame du grand cerf, dessinée
-   *  pour la tête de PROFIL seulement) ; clé nue = toutes les vues où l'os a un art. */
-  deco?: Partial<Record<QuadBoneId | `${QuadBoneId}#${'profile' | 'front' | 'back'}`, string>>;
+   *  pour la tête de PROFIL seulement) ; clé nue = toutes les vues où l'os a un art.
+   *  Valeur = SVG nu (calque apposé PAR-DESSUS l'art de l'os) ou liste de FRAGMENTS déclarant
+   *  chacun son `plan` (cf. `QuadDecoFragment`). */
+  deco?: Partial<Record<QuadBoneId | `${QuadBoneId}#${'profile' | 'front' | 'back'}`, QuadDecoValue>>;
   /** Posture de REPOS propre à la créature en PROFIL (deltas additifs d'angle par os, même
    *  vocabulaire que QuadPose) : port habituel qui s'ajoute SOUS toute pose d'anim (lion de
    *  Chrace tapi prêt à bondir). Ignorée de face/dos (quadSkeletonForView y refige les angles). */

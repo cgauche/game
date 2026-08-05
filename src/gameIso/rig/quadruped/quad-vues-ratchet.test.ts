@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url';
 import { CREATURES } from '../creatures';
 import { QUAD_Z, quadZOrder } from './quadZ';
 import { buildQuadSkeleton, quadSkeletonForView, type QuadBoneId, type QuadProps } from './quadSkeleton';
-import { quadParts } from './quadParts';
+import { quadParts, quadLayersSvg } from './quadParts';
 import { riderZForQuad, mountTackBones } from '../mountedRig';
 import { rigFxGradients } from '../fxGradients';
 import type { ResolvedBone } from '../composeRig';
@@ -350,8 +350,8 @@ describe('vue de DOS : crâne au-dessus du tronc, nuque dessous, aile pliée SUR
   it('l\'art de tête de dos est scindé en DEUX calques portés par deux os de plans différents', () => {
     for (const { id, quad } of quadDefs) {
       const back = quadParts(quad, 'back');
-      expect(back.tete, `${id} : calque crâne`).toContain('clip-path="url(#rigCutQuadCrane)"');
-      expect(back.nuque, `${id} : calque nuque`).toContain('clip-path="url(#rigCutQuadNuque)"');
+      expect(quadLayersSvg(back.tete), `${id} : calque crâne`).toContain('clip-path="url(#rigCutQuadCrane)"');
+      expect(quadLayersSvg(back.nuque), `${id} : calque nuque`).toContain('clip-path="url(#rigCutQuadNuque)"');
     }
     expect(QUAD_Z.nuque.back).toBeLessThan(QUAD_Z.tronc.back);
     expect(QUAD_Z.tete.back).toBeGreaterThan(QUAD_Z.tronc.back);
@@ -372,7 +372,7 @@ describe('vue de DOS : crâne au-dessus du tronc, nuque dessous, aile pliée SUR
     const union = { x0: crane.x, x1: crane.x + crane.w, y0: crane.y, y1: nuque.y + nuque.h };
     const debords: string[] = [];
     for (const { id, quad } of quadDefs) {
-      const b = bboxOf(clipContent(quadParts(quad, 'back').tete!, 'rigCutQuadCrane'));
+      const b = bboxOf(clipContent(quadLayersSvg(quadParts(quad, 'back').tete), 'rigCutQuadCrane'));
       if (b.x0 < union.x0 || b.x1 > union.x1 || b.y0 < union.y0 || b.y1 > union.y1)
         debords.push(`${id} : art x[${b.x0}..${b.x1}] y[${b.y0}..${b.y1}] hors de x[${union.x0}..${union.x1}] y[${union.y0}..${union.y1}]`);
     }
@@ -383,7 +383,7 @@ describe('vue de DOS : crâne au-dessus du tronc, nuque dessous, aile pliée SUR
     for (const { id, quad } of quadDefs) {
       for (const view of ['profile', 'front'] as View[]) {
         expect(quadParts(quad, view).nuque, `${id} ${view}`).toBeUndefined();
-        expect(quadParts(quad, view).tete, `${id} ${view}`).not.toContain('rigCutQuad');
+        expect(quadLayersSvg(quadParts(quad, view).tete), `${id} ${view}`).not.toContain('rigCutQuad');
       }
     }
   });

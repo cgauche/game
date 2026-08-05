@@ -5,7 +5,7 @@
  * silhouette : les sprites monolithiques officiels (Loup/Chien/Ours/Rat géant/Sanglier).
  */
 import type { View } from '../facing';
-import type { QuadBoneId, QuadProps, QuadFoot, QuadMane } from './quadSkeleton';
+import type { QuadBoneId, QuadProps, QuadFoot, QuadMane, QuadDecoFragment, QuadDecoValue } from './quadSkeleton';
 import { scalesPatch, plumeFan } from '../parts/textures';
 
 const maneOf = (p: QuadProps): QuadMane => p.mane;
@@ -1119,18 +1119,38 @@ export function quadAnchored(p: QuadProps, bone: QuadBoneId, view: View, svg: st
 }
 
 // ============================ dispatch ============================
-export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' | 'spread' = 'folded'): Partial<Record<QuadBoneId, string>> {
+/**
+ * Un CALQUE d'art porté par un os : `plan` RELATIF au plan de l'os (`QuadDecoFragment.plan`),
+ * absent = calque peint avec l'art de l'os (dans l'ordre d'apposition).
+ */
+export interface QuadLayer { svg: string; plan?: number }
+/** Calques ordonnés PAR OS — le retour de `quadParts`. Un os absent ne porte aucun art. */
+export type QuadLayers = Partial<Record<QuadBoneId, QuadLayer[]>>;
+
+/** Fragments déclarés d'une valeur de `deco` (SVG nu = un fragment sans plan). */
+export const quadDecoFragments = (v: QuadDecoValue): QuadDecoFragment[] =>
+  (typeof v === 'string' ? [{ svg: v }] : v);
+
+/** Art d'un os, calques concaténés dans l'ordre du peintre (plan croissant, tri STABLE). */
+export const quadLayersSvg = (ls?: QuadLayer[]): string =>
+  [...(ls ?? [])].sort((a, b) => (a.plan ?? 0) - (b.plan ?? 0)).map((l) => l.svg).join('');
+
+export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' | 'spread' = 'folded'): QuadLayers {
   const frontFoot: QuadFoot = p.frontFoot ?? p.foot;
   // Décor PAR-OS propre à la créature (prop `deco` — précédent : épave du crabe, CrabProps.deco) :
-  // SVG posé dans le REPÈRE DE L'ART de l'os (`quadAnchor`), APPOSÉ après cet art, uniquement là
+  // SVG posé dans le REPÈRE DE L'ART de l'os (`quadAnchor`), en CALQUE sur cet os, uniquement là
   // où l'os porte déjà un art dans la vue courante (un os sans art n'affiche pas de décor flottant).
   // Clé `os#vue` = décor limité à cette vue (cf. QuadProps.deco) ; clé nue = toutes les vues.
-  const withDeco = (r: Partial<Record<QuadBoneId, string>>): Partial<Record<QuadBoneId, string>> => {
-    if (p.deco) for (const [key, svg] of Object.entries(p.deco) as [string, string][]) {
+  const withDeco = (r: Partial<Record<QuadBoneId, string>>): QuadLayers => {
+    const out: QuadLayers = {};
+    for (const [id, svg] of Object.entries(r) as [QuadBoneId, string | undefined][])
+      if (svg) out[id] = [{ svg }];
+    if (p.deco) for (const [key, val] of Object.entries(p.deco) as [string, QuadDecoValue | undefined][]) {
       const [id, vue] = key.split('#') as [QuadBoneId, View | undefined];
-      if (svg && (!vue || vue === view) && r[id]) r[id] += quadAnchored(p, id, view, svg);
+      if (!val || (vue && vue !== view) || !out[id]) continue;
+      for (const f of quadDecoFragments(val)) out[id]!.push({ svg: quadAnchored(p, id, view, f.svg), plan: f.plan });
     }
-    return r;
+    return out;
   };
   // Ailes face/dos : déployées vers ±x, ou bosses pliées au garrot (aileG = miroir de l'ancre).
   const endArt = wings === 'spread' ? wingSpread(p) : wingFoldedEnd(p);

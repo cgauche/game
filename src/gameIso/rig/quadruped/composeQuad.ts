@@ -52,7 +52,7 @@ export function resolveQuadFromProps(
   const world = worldTransformsG(sk, pose) as Record<QuadBoneId, Matrix>;
   const parts = quadParts(p, view, wings);
   // Yeux custom (catalogue) sur les ancres data-eye de la tête (no-op sans ancre — hydre…).
-  if (eyes && parts.tete) parts.tete = applyEyes(parts.tete, eyes);
+  if (eyes && parts.tete) parts.tete = parts.tete.map((l) => ({ ...l, svg: applyEyes(l.svg, eyes) }));
   // Famille de jetons d'AILE (@aile*) : base custom `aile` de `stored` si la def en donne une
   // (pégase : ailes brun/doré ≠ robe blanche) ; SINON repli sur la famille `corps` — y compris
   // sous recoloriage utilisateur du slot `corps` (les ailes suivent la robe, comme avant).
@@ -66,19 +66,30 @@ export function resolveQuadFromProps(
   const ov = colors ?? {};
   const tmap = buildTokenMap(stored, !ownWingTint && ov.corps != null ? ({ ...ov, aile: ov.corps } as Palette) : ov);
   const legW = 0.7 + 0.4 * p.girth; // pattes plus épaisses pour les bêtes trapues
+  // Un os → N os RÉSOLUS, un par PLAN distinct de ses calques : le plan déclaré d'un calque est
+  // RELATIF à celui de l'os (`QuadDecoFragment.plan`), et le tri peintre unique ci-dessous
+  // l'intercale dans la pile de la vue. Les calques sans plan déclaré restent groupés avec l'art
+  // de l'os, dans leur ordre d'apposition — même rendu qu'avant le canal de calques.
   return sortByZ((Object.keys(parts) as QuadBoneId[])
-    .filter((id) => parts[id])
-    .map((id) => {
+    .filter((id) => parts[id]?.length)
+    .flatMap((id) => {
       const b = sk[id];
       const sx = b.limb ? (b.thickness / LEG_REF_TH) * legW : 1;
       const sy = b.girth ? p.girth : 1; // carrure = profondeur du corps
-      return {
-        id,
-        matrix: world[id],
-        scale: [sx, sy] as [number, number],
-        z: b.z,
-        parts: [{ svg: applyTokenMap(parts[id]!, tmap), layer: 0 }],
-      };
+      const parPlan = new Map<number, string[]>();
+      for (const l of parts[id]!) {
+        const plan = l.plan ?? 0;
+        (parPlan.get(plan) ?? parPlan.set(plan, []).get(plan)!).push(l.svg);
+      }
+      return [...parPlan.entries()]
+        .sort(([a], [c]) => a - c)
+        .map(([plan, svgs]) => ({
+          id,
+          matrix: world[id],
+          scale: [sx, sy] as [number, number],
+          z: b.z + plan,
+          parts: svgs.map((svg) => ({ svg: applyTokenMap(svg, tmap), layer: 0 })),
+        }));
     }));
 }
 

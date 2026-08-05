@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { CREATURES } from '../creatures';
-import { quadParts, quadAnchor } from './quadParts';
+import { quadParts, quadAnchor, quadLayersSvg } from './quadParts';
 import type { QuadBoneId, QuadProps } from './quadSkeleton';
 import type { View } from '../facing';
 
@@ -46,7 +46,7 @@ describe('quadAnchor = repère de l\'art de l\'os (contrat du canal deco)', () =
         for (const key of Object.keys(quad.deco)) {
           const [bone, vue] = key.split('#') as [QuadBoneId, View | undefined];
           if (vue && vue !== view) continue;
-          const art = nu[bone];
+          const art = quadLayersSvg(nu[bone]);
           if (!art) continue;
           couples++;
           const ancre = quadAnchor(quad, bone, view);
