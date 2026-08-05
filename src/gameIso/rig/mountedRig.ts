@@ -14,18 +14,25 @@ import type { View } from './facing';
 import { apply, type Matrix } from './kinematics';
 import { handlingClass, type Handling } from './anim/handling';
 import type { Weapon } from '../../engine/types';
+import { QUAD_Z } from './quadruped/quadZ';
 
 const FAR_LEG = /(cuisse|tibia|pied)G$/; // de profil, G = côté LOINTAIN
 const NEAR_LEG = /(cuisse|tibia|pied)D$/;
 
-/** z d'un os du cavalier dans l'échelle de la monture quadrupède, selon la vue.
- *  Quad : pattes loin 1 · queue 3 · croupe 4 · TRONC(barillet) 5 · encolure 6 · TÊTE 7 · pattes proches 9.
+// Plans du CAVALIER intercalés dans l'échelle z de la monture (table `QUAD_Z`, colonne profil) :
+// jambe LOINTAINE juste sous le barillet, corps juste au-dessus de l'encolure, jambe PROCHE
+// au-dessus de la tête et sous l'antérieur proche.
+const RIDER_FAR_LEG_Z = QUAD_Z.tronc.profile - 0.5;
+const RIDER_BODY_Z = QUAD_Z.encolure.profile + 0.6;
+const RIDER_NEAR_LEG_Z = QUAD_Z.tete.profile + 1.2;
+
+/** z d'un os du cavalier dans l'échelle de la monture quadrupède (`QUAD_Z`), selon la vue.
  *  +z_natif*0.01 conserve l'ordre interne du cavalier (bras lointain derrière torse, etc.). */
 export function riderZForQuad(view: View): (b: ResolvedBone) => number {
   if (view === 'profile') {
-    return (b) => (FAR_LEG.test(b.id) ? 4.5 : NEAR_LEG.test(b.id) ? 8.2 : 6.6) + b.z * 0.01;
+    return (b) => (FAR_LEG.test(b.id) ? RIDER_FAR_LEG_Z : NEAR_LEG.test(b.id) ? RIDER_NEAR_LEG_Z : RIDER_BODY_Z) + b.z * 0.01;
   }
-  return (b) => 6.6 + b.z * 0.01; // face/dos : tout le cavalier devant le barillet, derrière la tête redressée
+  return (b) => RIDER_BODY_Z + b.z * 0.01; // face/dos : tout le cavalier devant le barillet, derrière la tête redressée
 }
 
 // ── CORPS ASSIS (sans arme), par vue ────────────────────────────────────────
@@ -79,9 +86,11 @@ const SADDLE_LOCAL_Y = -15;
 
 // ── HARNACHEMENT (selle/sangle/étrier/rênes) — os SYNTHÉTIQUES posés sur la monture quand
 // elle est montée. Couleurs LITTÉRALES (les tokens de la monture sont déjà résolus ici) :
-// cuir de sellerie, pas la robe. z calés dans l'échelle quad (cf. riderZForQuad) :
-// selle 5.5 = au-dessus du barillet (5) et de la jambe lointaine (4.5), SOUS le corps du
-// cavalier (6.6) et sa jambe proche (8.2) ; rênes 6.7 = par-dessus le corps, sous la jambe.
+// cuir de sellerie, pas la robe. z calés dans la même échelle que le cavalier : la SELLE
+// au-dessus du barillet et de la jambe lointaine du cavalier, sous son corps et sa jambe proche ;
+// les RÊNES par-dessus son corps, sous sa jambe proche.
+const TACK_SADDLE_Z = QUAD_Z.tronc.profile + 0.5;
+const TACK_REINS_Z = QUAD_Z.encolure.profile + 0.7;
 const CUIR = '#5b3f28', CUIR_O = '#36241a', METAL = '#b8b4a8';
 
 /** Os de harnachement pour une monture RÉSOLUE. Profil = sellerie complète ; face/dos = tapis
@@ -97,7 +106,7 @@ export function mountTackBones(mountBones: ResolvedBone[], view: View): Resolved
       `<path d="M-8 ${top - 2} Q0 ${top - 5.5} 8 ${top - 2} L7 ${top + 3} Q0 ${top + 1} -7 ${top + 3} Z" fill="${CUIR}" stroke="${CUIR_O}" stroke-width="0.6"/>` +
       `<path d="M-7.5 ${top + 2} L-6.5 ${belly} M7.5 ${top + 2} L6.5 ${belly}" stroke="${CUIR_O}" stroke-width="1.6"/>` +
       `</g>`;
-    return [{ ...tronc, id: 'selle', parts: [{ svg, layer: 0 }], scale: [1, 1], z: 5.5 } as ResolvedBone];
+    return [{ ...tronc, id: 'selle', parts: [{ svg, layer: 0 }], scale: [1, 1], z: TACK_SADDLE_Z } as ResolvedBone];
   }
   // PROFIL : siège incurvé pommeau/troussequin + tapis + quartier + sangle + étrier.
   const selle = `<g>` +
@@ -113,7 +122,7 @@ export function mountTackBones(mountBones: ResolvedBone[], view: View): Resolved
     `<path d="M2 ${top + 13} L2.4 ${top + 19}" stroke="${CUIR_O}" stroke-width="1.4"/>` +
     `<path d="M0.6 ${top + 19} L4.2 ${top + 19} L3.8 ${top + 23} Q2.4 ${top + 24.4} 1 ${top + 23} Z" fill="none" stroke="${METAL}" stroke-width="1.3"/>` +
     `</g>`;
-  const out: ResolvedBone[] = [{ ...tronc, id: 'selle', parts: [{ svg: selle, layer: 0 }], scale: [1, 1], z: 5.5 } as ResolvedBone];
+  const out: ResolvedBone[] = [{ ...tronc, id: 'selle', parts: [{ svg: selle, layer: 0 }], scale: [1, 1], z: TACK_SADDLE_Z } as ResolvedBone];
   // Rênes : du museau au pommeau (la main gauche du cavalier tient là). Os en coords BOÎTE
   // (matrice identité) — courbe douce qui suit le creux de l'encolure.
   const tete = mountBones.find((b) => b.id === 'tete');
@@ -123,7 +132,7 @@ export function mountTackBones(mountBones: ResolvedBone[], view: View): Resolved
     const sag = Math.max(mz.y, pommel.y) + 9;
     const reins = `<path d="M${mz.x.toFixed(1)} ${mz.y.toFixed(1)} Q${((mz.x + pommel.x) / 2).toFixed(1)} ${sag.toFixed(1)} ${pommel.x.toFixed(1)} ${pommel.y.toFixed(1)}" fill="none" stroke="${CUIR_O}" stroke-width="1.1"/>` +
       `<path d="M${(mz.x - 3).toFixed(1)} ${(mz.y - 4).toFixed(1)} L${(mz.x + 1).toFixed(1)} ${(mz.y + 1).toFixed(1)}" stroke="${CUIR_O}" stroke-width="1.2"/>`; // muserolle
-    out.push({ id: 'renes', matrix: [1, 0, 0, 1, 0, 0], scale: [1, 1], parts: [{ svg: reins, layer: 0 }], z: 6.7 } as ResolvedBone);
+    out.push({ id: 'renes', matrix: [1, 0, 0, 1, 0, 0], scale: [1, 1], parts: [{ svg: reins, layer: 0 }], z: TACK_REINS_Z } as ResolvedBone);
   }
   return out;
 }

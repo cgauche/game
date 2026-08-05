@@ -6,6 +6,7 @@
 import { worldTransformsG, type FKBone } from '../kinematics';
 import type { StoredPalette } from '../palette';
 import type { View } from '../facing';
+import { QUAD_Z } from './quadZ';
 
 export type QuadBoneId =
   | 'tronc' | 'croupe' | 'encolure' | 'tete' | 'queue'
@@ -99,38 +100,37 @@ export function buildQuadSkeleton(p: QuadProps): QuadSkeleton {
     haut: QuadBoneId, bas: QuadBoneId, pied: QuadBoneId,
     parent: QuadBoneId, px: number, py: number, far: boolean, rear = false,
   ): Partial<QuadSkeleton> => {
-    const z = far ? 1 : 9;
     // ARRIÈRE-main angulée (cuisse portée en avant, JARRET cassé en arrière, canon qui revient
     // d'aplomb) — 4 pattes verticales parallèles = silhouette « table ». L'avant reste ~d'aplomb.
     const aHaut = rear ? (far ? -4 : -7) : far ? 3 : -1;
     const aBas = rear ? (far ? 13 : 16) : far ? 6 : 8;
     const aPied = rear ? -9 : far ? -5 : -7;
     return {
-      [haut]: { parent, pivot: { x: px, y: py }, angle: aHaut, length: 30 * ll, thickness: 9, z, limb: true },
-      [bas]: { parent: haut, pivot: { x: 0, y: 30 * ll }, angle: aBas, length: 22 * ll, thickness: 7, z, limb: true }, // pli de genou/jarret
-      [pied]: { parent: bas, pivot: { x: 0, y: 22 * ll }, angle: aPied, length: 9, thickness: 7, z }, // sabot ramené à la verticale
+      [haut]: { parent, pivot: { x: px, y: py }, angle: aHaut, length: 30 * ll, thickness: 9, z: QUAD_Z[haut].profile, limb: true },
+      [bas]: { parent: haut, pivot: { x: 0, y: 30 * ll }, angle: aBas, length: 22 * ll, thickness: 7, z: QUAD_Z[bas].profile, limb: true }, // pli de genou/jarret
+      [pied]: { parent: bas, pivot: { x: 0, y: 22 * ll }, angle: aPied, length: 9, thickness: 7, z: QUAD_Z[pied].profile }, // sabot ramené à la verticale
     } as Partial<QuadSkeleton>;
   };
   const sk: Partial<QuadSkeleton> = {
-    tronc: { parent: null, pivot: { x: 56, y: 82 }, angle: 0, length: 0, thickness: 26, z: 5, girth: true },
-    croupe: { parent: 'tronc', pivot: { x: -28 * bl, y: -2 }, angle: 0, length: 0, thickness: 26, z: 4, girth: true },
+    tronc: { parent: null, pivot: { x: 56, y: 82 }, angle: 0, length: 0, thickness: 26, z: QUAD_Z.tronc.profile, girth: true },
+    croupe: { parent: 'tronc', pivot: { x: -28 * bl, y: -2 }, angle: 0, length: 0, thickness: 26, z: QUAD_Z.croupe.profile, girth: true },
     // Encolure penchée en AVANT (tête devant le poitrail, pas au-dessus = « fusionnée »).
     // neckAngle est stocké négatif (héritage) → on le négocie en avant via -neckAngle.
-    encolure: { parent: 'tronc', pivot: { x: 28 * bl, y: -12 }, angle: -p.neckAngle, length: 30 * p.neckLen, thickness: 14, z: 6 },
-    tete: { parent: 'encolure', pivot: { x: 0, y: -30 * p.neckLen }, angle: 10 + p.neckAngle + (p.headPitch ?? 0), length: 18, thickness: 14, z: 7 },
-    queue: { parent: 'croupe', pivot: { x: -16, y: -6 }, angle: 42, length: 26, thickness: 6, z: 3 },
+    encolure: { parent: 'tronc', pivot: { x: 28 * bl, y: -12 }, angle: -p.neckAngle, length: 30 * p.neckLen, thickness: 14, z: QUAD_Z.encolure.profile },
+    tete: { parent: 'encolure', pivot: { x: 0, y: -30 * p.neckLen }, angle: 10 + p.neckAngle + (p.headPitch ?? 0), length: 18, thickness: 14, z: QUAD_Z.tete.profile },
+    queue: { parent: 'croupe', pivot: { x: -16, y: -6 }, angle: 42, length: 26, thickness: 6, z: QUAD_Z.queue.profile },
     ...leg('hautAvG', 'basAvG', 'piedAvG', 'tronc', 24 * bl + 6, 8, true),
     ...leg('hautArG', 'basArG', 'piedArG', 'croupe', -6 * bl + 6, 8, true, true),
     ...leg('hautAvD', 'basAvD', 'piedAvD', 'tronc', 24 * bl, 10, false),
     ...leg('hautArD', 'basArD', 'piedArD', 'croupe', -6 * bl, 10, false, true),
   };
   // Ailes (gabarit AILÉ) : attachées au garrot (haut-avant du tronc). aileD = aile PROCHE
-  // (par-dessus le flanc, z élevé) ; aileG = aile LOINTAINE (derrière le corps, z bas). L'art
+  // (par-dessus le flanc), aileG = aile LOINTAINE (derrière le corps) — plans dans `QUAD_Z`. L'art
   // est dessiné librement dans le repère de l'os (comme la queue). Length/thickness 0 = os
   // d'attache (pas de FK de longueur). Angle de repos = aile à demi-repliée dressée vers l'arrière.
   if (p.wings) {
-    sk.aileD = { parent: 'tronc', pivot: { x: 12 * bl, y: -15 }, angle: 0, length: 0, thickness: 0, z: 6 };
-    sk.aileG = { parent: 'tronc', pivot: { x: 9 * bl, y: -16 }, angle: 0, length: 0, thickness: 0, z: 2 };
+    sk.aileD = { parent: 'tronc', pivot: { x: 12 * bl, y: -15 }, angle: 0, length: 0, thickness: 0, z: QUAD_Z.aileD.profile };
+    sk.aileG = { parent: 'tronc', pivot: { x: 9 * bl, y: -16 }, angle: 0, length: 0, thickness: 0, z: QUAD_Z.aileG.profile };
   }
   return sk as QuadSkeleton;
 }
@@ -146,33 +146,34 @@ export function quadSkeletonForView(sk: QuadSkeleton, view: View): QuadSkeleton 
   const front = view === 'front';
   const out = { ...sk } as QuadSkeleton;
   const neckL = sk.encolure.length * 0.26;
-  out.croupe = { ...sk.croupe, pivot: { x: -2, y: -2 }, angle: 0, z: 4 };
+  out.croupe = { ...sk.croupe, pivot: { x: -2, y: -2 }, angle: 0, z: QUAD_Z.croupe[view] };
   // Encolure VERTICALE par le PIVOT (pas par rotation) : angle 0 → la tête monte droit au-
   // dessus du tronc ET reste à l'endroit (face au spectateur). Une rotation -90 ici déportait
   // la tête à gauche ET la faisait pivoter (« deux yeux empilés, museau à gauche »).
-  out.encolure = { ...sk.encolure, pivot: { x: 0, y: -18 }, length: neckL, angle: 0, z: 8 };
-  out.tete = { ...sk.tete, pivot: { x: 0, y: -neckL - 4 }, angle: 0, z: 9 };
-  out.queue = { ...sk.queue, pivot: { x: 0, y: -6 }, angle: front ? 60 : 4, z: front ? 2 : 6 };
+  out.encolure = { ...sk.encolure, pivot: { x: 0, y: -18 }, length: neckL, angle: 0, z: QUAD_Z.encolure[view] };
+  out.tete = { ...sk.tete, pivot: { x: 0, y: -neckL - 4 }, angle: 0, z: QUAD_Z.tete[view] };
+  out.queue = { ...sk.queue, pivot: { x: 0, y: -6 }, angle: front ? 60 : 4, z: QUAD_Z.queue[view] };
   // pattes : straddle ±, segments droits, derrière le corps (la paire la plus proche de
   // l'œil selon la vue est devant : avant en face / arrière de dos).
-  const set = (id: QuadBoneId, x: number, z: number) => {
-    out[id] = { ...sk[id], pivot: { x, y: sk[id].pivot.y }, angle: 0, z };
+  const set = (id: QuadBoneId, x: number) => {
+    out[id] = { ...sk[id], pivot: { x, y: sk[id].pivot.y }, angle: 0, z: QUAD_Z[id][view] };
   };
   // La paire face à l'œil (avant en face / arrière de dos) est devant et SOUS le corps (les
   // antérieurs émergent du bréchet, pas écartés en tréteau) ; l'autre paire est resserrée et
   // derrière (profondeur) → on lit bien 4 pattes d'aplomb, pas 2 fusionnées ni un chevalet.
-  const zNear = 4, zFar = 2, wNear = 10, wFar = 4;
-  set('hautAvD', front ? wNear : wFar, front ? zNear : zFar); set('hautAvG', front ? -wNear : -wFar, front ? zNear : zFar);
-  set('hautArD', front ? wFar : wNear, front ? zFar : zNear); set('hautArG', front ? -wFar : -wNear, front ? zFar : zNear);
+  // Écartements par vue ici ; plans de profondeur dans `QUAD_Z`.
+  const wNear = 10, wFar = 4;
+  set('hautAvD', front ? wNear : wFar); set('hautAvG', front ? -wNear : -wFar);
+  set('hautArD', front ? wFar : wNear); set('hautArG', front ? -wFar : -wNear);
   for (const id of ['basAvD', 'basAvG', 'basArD', 'basArG', 'piedAvD', 'piedAvG', 'piedArD', 'piedArG'] as QuadBoneId[]) {
-    out[id] = { ...sk[id], angle: 0, z: out[id.startsWith('basAv') || id.startsWith('piedAv') ? 'hautAvD' : 'hautArD'].z };
+    out[id] = { ...sk[id], angle: 0, z: QUAD_Z[id][view] };
   }
   // Ailes de face/dos : DÉPLOYÉES de part et d'autre du corps (droite +x / gauche -x), derrière
-  // le tronc (z bas) → silhouette d'oiseau de proie ailes ouvertes. Art symétrique (miroir géré
-  // par la part front/back de l'aile elle-même).
+  // le tronc (plans dans `QUAD_Z`) → silhouette d'oiseau de proie ailes ouvertes. Art symétrique
+  // (miroir géré par la part front/back de l'aile elle-même).
   if (sk.aileD) {
-    out.aileD = { ...sk.aileD, pivot: { x: 10, y: -15 }, angle: 0, z: 2 };
-    out.aileG = { ...sk.aileG, pivot: { x: -10, y: -15 }, angle: 0, z: 2 };
+    out.aileD = { ...sk.aileD, pivot: { x: 10, y: -15 }, angle: 0, z: QUAD_Z.aileD[view] };
+    out.aileG = { ...sk.aileG, pivot: { x: -10, y: -15 }, angle: 0, z: QUAD_Z.aileG[view] };
   }
   return out;
 }
