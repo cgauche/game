@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CREATURES } from '../creatures';
 import { quadParts, quadAnchor, quadLayersSvg } from './quadParts';
+import { DECOS_MORTS_GELES } from './deco-stock.fixture';
 import type { QuadBoneId, QuadProps } from './quadSkeleton';
 import type { View } from '../facing';
 
@@ -61,17 +62,23 @@ describe('quadAnchor = repère de l\'art de l\'os (contrat du canal deco)', () =
     expect(divergences).toEqual([]);
   });
 
-  it('chaque clé `deco` authorée vise un os qui porte un art dans la vue visée', () => {
-    const orphelines: string[] = [];
+  /**
+   * Contrat POSITIF : une clé `deco` vise UNE vue (`os#vue`) ou LES TROIS (clé nue) — et dans
+   * CHACUNE des vues visées, l'os doit porter un art, sinon le décor est peint nulle part. Le
+   * stock GELÉ des couples encore perdus (`DECOS_MORTS_GELES`) est la seule exemption, nominative :
+   * tout couple mort NOUVEAU rougit ici.
+   */
+  it('chaque clé `deco` authorée vise un os qui porte un art dans CHACUNE des vues visées', () => {
+    const perdus: string[] = [];
     for (const { id, quad } of quadDefs) {
       if (!quad.deco) continue;
       for (const key of Object.keys(quad.deco)) {
         const [bone, vue] = key.split('#') as [QuadBoneId, View | undefined];
-        const vues = vue ? [vue] : VIEWS;
-        const porte = vues.some((v) => quadParts({ ...quad, deco: undefined }, v)[bone]);
-        if (!porte) orphelines.push(`${id} ${key}`);
+        for (const v of (vue ? [vue] : VIEWS))
+          if (!quadParts({ ...quad, deco: undefined }, v)[bone]) perdus.push(`${id} ${v} ${key}`);
       }
     }
-    expect(orphelines).toEqual([]);
+    expect(perdus.filter((c) => !DECOS_MORTS_GELES.includes(c)),
+      'décor authoré pour une vue où son os n\'est pas émis').toEqual([]);
   });
 });

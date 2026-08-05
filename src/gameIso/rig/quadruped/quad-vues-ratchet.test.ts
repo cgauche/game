@@ -26,9 +26,14 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { CREATURES } from '../creatures';
-import { QUAD_Z, quadZOrder } from './quadZ';
+import { QUAD_Z, quadZOrder, QUAD_DECO_PLAN_MAX } from './quadZ';
+import {
+  quadDecoCouples, APPLICABLES_GELES, PLAFOND_DECOS_MORTS,
+  DECOS_SANS_PLAN_GELES, PLAFOND_DECOS_SANS_PLAN,
+} from './deco-stock.fixture';
+import { resolveQuadFromProps } from './composeQuad';
 import { buildQuadSkeleton, quadSkeletonForView, type QuadBoneId, type QuadProps } from './quadSkeleton';
-import { quadParts, quadLayersSvg } from './quadParts';
+import { quadParts, quadLayersSvg, quadDecoFragments } from './quadParts';
 import { riderZForQuad, mountTackBones } from '../mountedRig';
 import { rigFxGradients } from '../fxGradients';
 import type { ResolvedBone } from '../composeRig';
@@ -37,127 +42,9 @@ import type { View } from '../facing';
 const VIEWS: View[] = ['profile', 'front', 'back'];
 const quadDefs = CREATURES.filter((c) => c.quad).map((c) => ({ id: c.id, quad: c.quad as QuadProps }));
 
-// ── (a) DÉCORS MORTS ────────────────────────────────────────────────────────────────────────
-/** Stock GELÉ (mesuré le 2026-08-05) : `<espèce> <vue> <clé deco>`. Ne peut que rétrécir. */
-const DECOS_MORTS_GELES = [
-  'boeuf back encolure',
-  'boeuf front encolure',
-  'cheval back encolure',
-  'cheval front encolure',
-  'chien back encolure',
-  'chien front encolure',
-  'grand-cerf back encolure',
-  'grand-cerf front encolure',
-  'pegase back encolure',
-  'pegase front encolure',
-  'sanglier back encolure',
-  'sanglier front encolure',
-];
-const PLAFOND_DECOS_MORTS = DECOS_MORTS_GELES.length;
-
-/**
- * Population GELÉE (mesurée le 2026-08-05) : les 79 couples `deco`×os×vue APPLICABLES, soit le
- * dénominateur du stock des morts. Un couple ne quitte cette liste que par un art émis (solde).
- */
-const APPLICABLES_GELES = [
-  'blaireau back tete#back',
-  'blaireau front tete#front',
-  'blaireau front tronc#front',
-  'blaireau profile tete#profile',
-  'blaireau profile tronc#profile',
-  'boeuf back encolure',
-  'boeuf back tete#back',
-  'boeuf back tronc#back',
-  'boeuf front encolure',
-  'boeuf front tete#front',
-  'boeuf front tronc#front',
-  'boeuf profile encolure',
-  'boeuf profile tete#profile',
-  'boeuf profile tronc#profile',
-  'cheval back encolure',
-  'cheval back tete',
-  'cheval front encolure',
-  'cheval front tete',
-  'cheval profile encolure',
-  'cheval profile tete',
-  'chien back encolure',
-  'chien back tronc',
-  'chien front encolure',
-  'chien front tronc',
-  'chien profile encolure',
-  'chien profile tronc',
-  'grand-cerf back encolure',
-  'grand-cerf back tete',
-  'grand-cerf front encolure',
-  'grand-cerf front tete',
-  'grand-cerf profile encolure',
-  'grand-cerf profile tete',
-  'grand-cerf profile tete#profile',
-  'griffon back basAvD',
-  'griffon back basAvG',
-  'griffon back hautArD',
-  'griffon back hautArG',
-  'griffon back hautAvD',
-  'griffon back hautAvG',
-  'griffon front basAvD',
-  'griffon front basAvG',
-  'griffon front hautArD',
-  'griffon front hautArG',
-  'griffon front hautAvD',
-  'griffon front hautAvG',
-  'griffon profile basAvD',
-  'griffon profile basAvG',
-  'griffon profile hautArD',
-  'griffon profile hautArG',
-  'griffon profile hautAvD',
-  'griffon profile hautAvG',
-  'lion-de-guerre-de-chrace profile piedAvD#profile',
-  'manticore back tete',
-  'manticore front tete',
-  'manticore profile queue#profile',
-  'manticore profile tete',
-  'pegase back encolure',
-  'pegase front encolure',
-  'pegase profile encolure',
-  'preyton back tronc',
-  'preyton front tronc',
-  'preyton profile tronc',
-  'rat-geant back tete',
-  'rat-geant front tete',
-  'rat-geant profile tete',
-  'sanglier back encolure',
-  'sanglier back tete#back',
-  'sanglier front encolure',
-  'sanglier front tete#front',
-  'sanglier profile encolure',
-  'sanglier profile tete#profile',
-  'sanglier profile tronc#profile',
-  'varghulf back aileD',
-  'varghulf back aileG',
-  'varghulf front aileD',
-  'varghulf front aileG',
-  'varghulf profile aileD',
-  'varghulf profile aileG',
-  'varghulf profile tronc#profile',
-];
-
-function decosMorts(): { morts: string[]; applicables: string[] } {
-  const morts: string[] = [];
-  const applicables: string[] = [];
-  for (const { id, quad } of quadDefs) {
-    if (!quad.deco) continue;
-    for (const view of VIEWS) {
-      const nu = quadParts({ ...quad, deco: undefined }, view);
-      for (const cle of Object.keys(quad.deco)) {
-        const [os, vue] = cle.split('#') as [QuadBoneId, View | undefined];
-        if (vue && vue !== view) continue;
-        applicables.push(`${id} ${view} ${cle}`);
-        if (!nu[os]) morts.push(`${id} ${view} ${cle}`);
-      }
-    }
-  }
-  return { morts: morts.sort(), applicables: applicables.sort() };
-}
+// ── (a) DÉCORS MORTS, PLANS NON DÉCLARÉS ────────────────────────────────────────────────────
+// Le détecteur et les stocks GELÉS vivent dans `deco-stock.fixture.ts` (source unique, partagée
+// avec le CONTRAT `quad-anchor-contract.test.ts` qui, lui, rougit sur tout couple mort NOUVEAU).
 
 /** L'os d'un couple porte-t-il un art dans cette vue ? (art émis = le décor n'est plus perdu) */
 function artEmis(couple: string): boolean {
@@ -170,26 +57,78 @@ function artEmis(couple: string): boolean {
 
 describe('décors MORTS : le stock gelé ne peut que décroître (#1082)', () => {
   it('la mesure porte sur une population réelle', () => {
-    const { applicables } = decosMorts();
+    const { applicables } = quadDecoCouples();
     expect(quadDefs.length).toBeGreaterThan(20);
     expect(applicables.length).toBeGreaterThan(50);
   });
 
-  it('aucun couple deco×os×vue mort HORS du stock gelé', () => {
-    const { morts } = decosMorts();
-    const nouveaux = morts.filter((m) => !DECOS_MORTS_GELES.includes(m));
-    expect(nouveaux, 'décor authoré perdu par une vue qui n\'a pas d\'art sur l\'os visé').toEqual([]);
-  });
-
   it('le stock reste sous son plafond', () => {
-    const { morts } = decosMorts();
+    const { morts } = quadDecoCouples();
     expect(morts.length).toBeLessThanOrEqual(PLAFOND_DECOS_MORTS);
   });
 
   it('aucun couple applicable GELÉ n\'a disparu sans que son art soit émis', () => {
-    const { applicables } = decosMorts();
+    const { applicables } = quadDecoCouples();
     const disparus = APPLICABLES_GELES.filter((c) => !applicables.includes(c) && !artEmis(c));
     expect(disparus, 'couple applicable retiré sans art émis dans la vue : blanchiment du stock des morts').toEqual([]);
+  });
+});
+
+// ── (a bis) PLANS DE DÉCOR NON DÉCLARÉS (transition N2) ─────────────────────────────────────
+describe('décors SANS plan déclaré : stock gelé, plafond décroissant (#1082)', () => {
+  it('aucun couple sans plan HORS du stock gelé', () => {
+    const { sansPlan } = quadDecoCouples();
+    const nouveaux = sansPlan.filter((c) => !DECOS_SANS_PLAN_GELES.includes(c));
+    expect(nouveaux, 'décor authoré sans `plan` : le canal de calques attend un plan RELATIF à l\'os').toEqual([]);
+  });
+
+  it('le stock reste sous son plafond', () => {
+    const { sansPlan } = quadDecoCouples();
+    expect(sansPlan.length).toBeLessThanOrEqual(PLAFOND_DECOS_SANS_PLAN);
+  });
+
+  it('tout plan déclaré tient dans le voisinage de son os', () => {
+    const hors: string[] = [];
+    for (const { id, quad } of quadDefs) {
+      for (const [cle, val] of Object.entries(quad.deco ?? {})) {
+        if (!val) continue;
+        for (const f of quadDecoFragments(val))
+          if (f.plan != null && Math.abs(f.plan) > QUAD_DECO_PLAN_MAX) hors.push(`${id} ${cle} : plan=${f.plan}`);
+      }
+    }
+    expect(hors, `un fragment de décor ne s'écarte pas de plus de ${QUAD_DECO_PLAN_MAX} du plan de son os`).toEqual([]);
+  });
+});
+
+// ── (a ter) CONTRAT DU PLAN RELATIF : un fragment déclaré s'intercale ────────────────────────
+describe('plan RELATIF d\'un fragment de décor : l\'os résolu se dédouble (#1082)', () => {
+  /** Props d'épreuve : la première def quadrupède du registre, décorée de deux fragments opposés. */
+  const props = (): QuadProps => ({
+    ...(quadDefs[0].quad),
+    deco: { 'tete#back': [{ svg: '<g data-deco="derriere"/>', plan: -0.5 }, { svg: '<g data-deco="devant"/>', plan: 0.5 }] },
+  });
+
+  it('un fragment à plan NÉGATIF est peint AVANT l\'art de son os, un plan POSITIF après', () => {
+    const os = resolveQuadFromProps(props(), 'back').filter((b) => b.id === 'tete');
+    expect(os.map((b) => b.z), 'trois plans distincts portés par le MÊME os').toEqual([
+      QUAD_Z.tete.back - 0.5, QUAD_Z.tete.back, QUAD_Z.tete.back + 0.5,
+    ]);
+    expect(os[0].parts[0].svg).toContain('data-deco="derriere"');
+    expect(os[1].parts[0].svg).toContain('rigCutQuadCrane'); // l'art de l'os, à son propre plan
+    expect(os[2].parts[0].svg).toContain('data-deco="devant"');
+  });
+
+  it('sous la borne, un fragment atteint AU PLUS le plan de l\'os voisin, jamais au-delà', () => {
+    // L'écart MINIMAL entre deux plans d'os voisins de la table vaut la borne elle-même (de dos :
+    // croupe 4 · nuque 4,5 · tronc 5) : un fragment poussé à ±0,5 rejoint au pire le plan du
+    // voisin — l'égalité se départage alors par l'ordre d'émission (tri STABLE), il ne le double pas.
+    const ecarts: string[] = [];
+    for (const view of VIEWS) {
+      const zs = quadZOrder(view).map((o) => o.z);
+      for (let i = 1; i < zs.length; i++)
+        if (zs[i] !== zs[i - 1] && zs[i] - zs[i - 1] < QUAD_DECO_PLAN_MAX) ecarts.push(`${view} ${zs[i - 1]}→${zs[i]}`);
+    }
+    expect(ecarts, 'deux plans d\'os voisins plus proches que la borne : un décor pourrait en doubler un').toEqual([]);
   });
 });
 
