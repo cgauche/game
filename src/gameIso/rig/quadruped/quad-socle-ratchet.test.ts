@@ -24,6 +24,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { QUAD_HEAD_DEFS } from './heads/_registry.generated';
 import { QUAD_TAIL_DEFS } from './tails/_registry.generated';
+import { QUAD_MANE_DEFS } from './manes/_registry.generated';
 
 const SRC = readFileSync(fileURLToPath(new URL('./quadParts.ts', import.meta.url)), 'utf8');
 const LINES = SRC.split(/\r?\n/);
@@ -52,10 +53,17 @@ const MAX_FAR_LINES = 30;
 const MAX_WING_STATE_LINES = 3;
 const MAX_SPECIES_SCALAR_LINES = 13;
 const MAX_TAIL_SITES = 0; // 20 sites avant l'extraction des QUEUES en defs (2026-08-05)
-/** Lignes du socle qui LISENT l'axe `mane` (`p.mane` ou son accesseur) : 4 au 2026-08-05 —
- *  l'accesseur, sa lecture dans `neck`, la fraise de poitrail canine, la touffe de croupe canine.
- *  Le compte ne peut que décroître ; la crinière rejoint les têtes et les queues en part-defs. */
-const MAX_MANE_SITES = 4;
+/**
+ * Lignes du socle qui COMPARENT l'axe `mane` à une clé littérale : 4 avant l'extraction des
+ * CRINIÈRES en part-defs (2026-08-05), 0 après — les 3 sites (encolure, fraise de poitrail, touffe
+ * de croupe) composent par lookup `quadManeDef`. Jamais relevé.
+ *
+ * La mesure porte sur le BRANCHEMENT (`=== '<clé>'`), pas sur la lecture de l'axe : le compte des
+ * lectures était 4 avant l'extraction (accesseur + 3 sites) et vaut 3 après (les 3 lookups), un
+ * plafond qui ne distinguerait pas la composition de l'aiguillage. Les lectures restantes sont donc
+ * mesurées séparément ci-dessous : chacune doit être un lookup, jamais une lecture nue.
+ */
+const MAX_MANE_SITES = 0;
 
 const headSites = [...CODE_SRC.matchAll(/p\.head === '([a-z-]+)'/g)].map((m) => m[1]);
 const linesMatching = (re: RegExp) => CODE.filter((l) => re.test(l)).length;
@@ -115,11 +123,25 @@ describe('socle quadrupède : le branchement par espèce ne peut que DÉCROÎTRE
     expect([...":p.tail === 'crin'".matchAll(/p\.tail === '[a-z-]+'/g)].length, 'détecteur mort').toBe(1);
   });
 
-  it('lignes lisant l\'axe `mane` : 4 avant l\'extraction des CRINIÈRES en defs', () => {
-    const MANE = /maneOf\(|p\.mane\b/;
-    expect(linesMatching(MANE), 'lectures de `mane` dans quadParts.ts').toBeLessThanOrEqual(MAX_MANE_SITES);
-    expect(MANE.test("  const ruff = maneOf(p) === 'hirsute'"), 'détecteur mort').toBe(true);
-    expect(MANE.test('const maneOf = (p: QuadProps): QuadMane => p.mane;'), 'détecteur mort').toBe(true);
+  it('branchement par clé de CRINIÈRE : 4 sites avant l\'extraction en defs, 0 après', () => {
+    // `sans` est hors motif : c'est AUSSI une valeur de `ridge` (`ridgeArt`), le compte y serait
+    // aveugle à ce qu'il mesure. Les deux clés restantes couvraient les 4 sites d'origine.
+    const BRANCHE = /=== '(crin|hirsute)'/;
+    expect(linesMatching(BRANCHE), 'comparaison à une clé de crinière dans quadParts.ts')
+      .toBeLessThanOrEqual(MAX_MANE_SITES);
+    expect(BRANCHE.test("  const ruff = maneOf(p) === 'hirsute'"), 'détecteur mort').toBe(true);
+  });
+
+  it('toute lecture restante de `mane` est un LOOKUP de def, jamais une lecture nue', () => {
+    const lectures = CODE.filter((l) => /\bp\.mane\b|maneOf\(/.test(l));
+    expect(lectures.length, 'les 3 sites de crinière du socle').toBe(3);
+    for (const l of lectures)
+      expect(l, 'lecture de `mane` hors lookup `quadManeDef`').toMatch(/quadManeDef\(p\.mane\)/);
+  });
+
+  it('le stock des crinières a MIGRÉ : 3 defs enregistrées', () => {
+    expect(QUAD_MANE_DEFS.length).toBeGreaterThanOrEqual(3);
+    expect(new Set(QUAD_MANE_DEFS.map((d) => d.key)).size).toBe(QUAD_MANE_DEFS.length);
   });
 
   it('le stock des queues a MIGRÉ : 11 defs enregistrées', () => {

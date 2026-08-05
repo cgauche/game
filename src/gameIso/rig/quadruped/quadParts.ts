@@ -5,13 +5,12 @@
  * silhouette : les sprites monolithiques officiels (Loup/Chien/Ours/Rat géant/Sanglier).
  */
 import type { View } from '../facing';
-import type { QuadBoneId, QuadProps, QuadFoot, QuadMane, QuadDecoFragment, QuadDecoValue } from './quadSkeleton';
+import type { QuadBoneId, QuadProps, QuadFoot, QuadDecoFragment, QuadDecoValue } from './quadSkeleton';
 import { scalesPatch } from '../parts/textures';
 import { quadHeadBone, quadHeadDef } from './heads';
+import { quadManeDef } from './manes';
 import { quadArt } from './partArt';
 import { quadTailDef } from './tails';
-
-const maneOf = (p: QuadProps): QuadMane => p.mane;
 
 // ============================ helpers ============================
 // Segment CONIQUE (membre qui s'effile : cuisse→genou, canon→boulet) — la capsule droite à
@@ -287,14 +286,7 @@ function neck(p: QuadProps): string {
     // gorge (devant de l'encolure) + pli de gorge interne
     `<path d="M13.5 11 Q11 1 10 0 Q10 ${-L * 0.55} 6 ${-L}" fill="none" stroke="@corpsO" stroke-width="0.7"/>` +
     `<path d="M9 4 Q9.5 ${-L * 0.5} 5 ${-L * 0.94}" fill="none" stroke="@corpsO" stroke-width="0.7" opacity="0.45"/>`;
-  const m = maneOf(p);
-  let crin = `<path d="M-5 ${-L} Q-9 ${-L * 0.6} -8 2" fill="none" stroke="@cheveux" stroke-width="2.4" opacity="0.8"/>`; // 'sans' : ligne de dos discrète
-  if (m === 'crin') // crin COUCHÉ retombant sur l'encolure : masse + mèches
-    crin = `<path d="M-4 ${-L - 2} Q-14 ${-L * 0.78} -13 ${-L * 0.34} Q-12.5 ${-L * 0.06} -10 4 Q-9 4.5 -7.5 4 Q-9.5 ${-L * 0.36} -2 ${-L * 0.9} Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>` +
-      `<path d="M-11.5 ${-L * 0.62} Q-10.5 ${-L * 0.4} -10.6 ${-L * 0.18} M-9.4 ${-L * 0.78} Q-8.6 ${-L * 0.5} -9 ${-L * 0.26} M-7 ${-L * 0.9} Q-6.4 ${-L * 0.6} -7.2 ${-L * 0.4}" fill="none" stroke="@cheveuxO" stroke-width="0.7" opacity="0.7"/>`;
-  else if (m === 'hirsute') // fourrure DRESSÉE en dents le long du dos + touffe de gorge
-    crin = `<path d="M-6 ${-L} l-4 -4 l1 5 l-4.5 -2.5 l1.8 4.4 l-4 -1 l2.2 3.8 l-3.4 0 l2.6 3.4 Q-9.5 ${-L * 0.4} -8.4 0 L-6.6 0 Q-8 ${-L * 0.45} -4.5 ${-L * 0.92} Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.45"/>` +
-      `<path d="M8 ${-L * 0.3} q4 1.4 5 5 q-3.6 -0.4 -5.4 -2.2 M8.6 ${-L * 0.14} q3.4 1.6 4 4.6 q-3.2 -0.8 -4.6 -2.4" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4"/>`;
+  const crin = quadArt(quadManeDef(p.mane).art.neck, p); // crinière d'encolure déclarée par sa DEF
   // Avant-train emplumé (foreCoat) : la BASE de l'encolure — qui plonge dans le poitrail et le
   // recouvre au rendu — porte le manteau @aile, transition DENTELÉE plumes du cou → plumage du
   // poitrail + mouchetures claires (sinon le manteau du tronc reste caché derrière ce panneau).
@@ -353,11 +345,7 @@ function bodyFrontCanine(p: QuadProps): string {
   const flanks = `<path d="M${-w} -4 Q${-w} 11 -5 21 L-6 18 Q${-(w - 2)} 9 ${-(w - 2)} -3 Z" fill="@corpsO" opacity="0.42"/>` +
     `<path d="M${w} -4 Q${w} 11 5 21 L6 18 Q${w - 2} 9 ${w - 2} -3 Z" fill="@corpsO" opacity="0.5"/>`;
   const bib = `<path d="M-3.6 -18 Q0 -21 3.6 -18 Q4.4 -2 2 15 Q0 18 -2 15 Q-4.4 -2 -3.6 -18 Z" fill="@corpsH" opacity="0.3"/>`;
-  // fraise hirsute (loup) : lobes de fourrure dentelés débordant le haut du poitrail.
-  const ruff = maneOf(p) === 'hirsute'
-    ? `<path d="M-3 -19 Q-13 -16 -16 -3 Q-17 5 -13 12 Q-12.5 4 -9 -2 l-3.5 5.5 Q-9.5 -5 -5.5 -11 l-3 4.5 Q-6 -10 -2.5 -16 Z" fill="@corps" stroke="@corpsO" stroke-width="0.5"/>` +
-      `<path d="M3 -19 Q13 -16 16 -3 Q17 5 13 12 Q12.5 4 9 -2 l3.5 5.5 Q9.5 -5 5.5 -11 l3 4.5 Q6 -10 2.5 -16 Z" fill="@corps" stroke="@corpsO" stroke-width="0.5"/>`
-    : '';
+  const ruff = quadArt(quadManeDef(p.mane).art.chestRuff, p); // fraise de poitrail déclarée par la DEF de crinière
   return `<g>${body}${flanks}${ruff}${bib}</g>`;
 }
 function bodyFront(p: QuadProps): string {
@@ -398,8 +386,7 @@ function bodyBackCanine(p: QuadProps): string {
     `<ellipse cx="${w * 0.42}" cy="-3" rx="${w * 0.4}" ry="13" fill="@corpsH" opacity="0.2"/>`;
   const cleft = `<path d="M0 -20 Q1.4 -2 0 19" fill="none" stroke="@corpsO" stroke-width="1" opacity="0.55"/>`;
   const shade = `<path d="M${w} -6 Q${w - 1} 9 7 19 L8 16 Q${w - 2} 8 ${w - 2} -4 Z" fill="@corpsO" opacity="0.42"/>`;
-  // fourrure dorsale dressée (loup hirsute) au sommet de la croupe.
-  const ridge = maneOf(p) === 'hirsute' ? `<path d="M0 -23 l-2 -3 l0.5 3.2 l-2.4 -1.4 l1.1 3 Q-1.4 -8 -1 -2 L1 -2 Q1.4 -8 1 -5 l2.4 -1.6 l-2.1 -0.4 l1.3 -2.6 Z" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.4" opacity="0.8"/>` : '';
+  const ridge = quadArt(quadManeDef(p.mane).art.backTuft, p); // touffe de croupe déclarée par la DEF de crinière
   return `<g>${body}${haunch}${cleft}${shade}${ridge}</g>`;
 }
 function bodyBack(p: QuadProps): string {

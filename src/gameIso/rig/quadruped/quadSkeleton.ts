@@ -9,6 +9,7 @@ import type { View } from '../facing';
 import { QUAD_Z } from './quadZ';
 import type { QuadHeadId } from './heads/_registry.generated';
 import type { QuadTailId } from './tails/_registry.generated';
+import type { QuadManeId } from './manes/_registry.generated';
 
 export type QuadBoneId =
   | 'tronc' | 'croupe' | 'encolure' | 'tete' | 'nuque' | 'queue'
@@ -49,9 +50,9 @@ export type QuadHead = QuadHeadId;
 export type QuadFoot = 'sabot' | 'patte' | 'serre'; // serre = serres d'aigle (rapace)
 /** Queue = id du REGISTRE des defs (`tails/defs/<clé>.ts`, union générée). */
 export type QuadTail = QuadTailId;
-/** Crinière le long de l'encolure : crin couché (équin), hirsute (fourrure dressée — loup/
- *  sanglier), sans. */
-export type QuadMane = 'crin' | 'hirsute' | 'sans';
+/** Crinière = id du REGISTRE des defs (`manes/defs/<clé>.ts`, union générée) : crin couché (équin),
+ *  hirsute (fourrure dressée — loup/sanglier), sans. */
+export type QuadMane = QuadManeId;
 export interface QuadProps {
   sl: number; // échelle globale (taille)
   build: QuadBuild; // SILHOUETTE du corps (équin level / canin svelte / suidé bossu / rongeur arqué / ursin massif / félin / draconique)

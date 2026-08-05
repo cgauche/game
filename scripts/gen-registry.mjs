@@ -74,6 +74,17 @@ export const REGISTRIES = [
     idUnion: { typeName: 'QuadTailId', field: 'key' },
   },
   {
+    // Crinières QUADRUPÈDES (encolure de profil + fraise de poitrail + touffe de croupe) :
+    // 1 crinière = 1 fichier defs/. L'union `QuadManeId` GÉNÉRÉE remplace l'union littérale du socle.
+    dir: 'src/gameIso/rig/quadruped/manes/defs',
+    out: 'src/gameIso/rig/quadruped/manes/_registry.generated.ts',
+    exportName: 'quadMane',
+    arrayName: 'QUAD_MANE_DEFS',
+    type: 'QuadManeDef',
+    typeFrom: './types',
+    idUnion: { typeName: 'QuadManeId', field: 'key' },
+  },
+  {
     // Appendices (cornes/queue, art multi-vues) : 1 appendice = 1 fichier defs/. Source UNIQUE de
     // l'art de corne/queue, référencé par id (monster.cornes / appendageFeature / traitVisuals).
     dir: 'src/gameIso/rig/parts/appendages/defs',
