@@ -17,6 +17,9 @@ import { mdToText } from '../Prose';
 
 const truncate = (s: string, n = 400): string => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
 
+/** Pont de survol (ms) : sous `wrap`, délai avant fermeture pour que le pointeur ATTEIGNE le
+ *  popover — il y porte la seule porte vers la fiche. Annulé dès qu'il y entre. */
+const HOVER_BRIDGE_MS = 160;
 const POP_W = 320;
 const GAP = 6;
 const MARGIN = 8;
@@ -60,6 +63,7 @@ export function CodexRef({
   inline = false,
   instance,
   tooltipOnly = false,
+  wrap = false,
   fallback,
 }: {
   category: string;
@@ -85,6 +89,13 @@ export function CodexRef({
    *  d'équipement = picker au clic), utiliser `tooltipOnly` empêche l'ouverture concurrente de la
    *  fiche tout en gardant l'info accessible sans survol (tactile/clavier). */
   tooltipOnly?: boolean;
+  /** ENGLOBE un contrôle DÉJÀ interactif (un `<button>` de dépense de ressource) : la surface
+   *  enveloppante n'intercepte RIEN — ni clic, ni rôle, ni tabindex (deux contrôles imbriqués
+   *  déclencheraient les deux actions au même clic). Le popover s'ouvre au survol ET au focus du
+   *  contrôle enfant (`focusin` remonte) : c'est le BOUTON qui devient l'affordance de règle, sans
+   *  ⓘ voisin (#1078). La FICHE reste atteignable — le popover porte un bouton « Ouvrir la fiche »
+   *  activable au pointeur (pont de survol) ou par ↓ depuis le contrôle (épinglage + focus). */
+  wrap?: boolean;
   /** Contenu de SECOURS quand l'entrée n'est pas au catalogue (arme invoquée/enchantée…) : un popover
    *  est tout de même rendu au survol (sub + body), sans ouverture de fiche. */
   fallback?: { sub?: string; body?: string };
@@ -92,27 +103,52 @@ export function CodexRef({
   const openCodex = useGame((s) => s.openCodex);
   const item = (id ? codexLookupById(category, id) : undefined) ?? codexLookup(category, label);
   const ref = useRef<HTMLSpanElement>(null);
+  const popRef = useRef<HTMLSpanElement>(null);
+  const openBtnRef = useRef<HTMLButtonElement>(null);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [pos, setPos] = useState<PopoverPlacement | null>(null);
-  // Épinglé (mode `tooltipOnly` : clic/Entrée/Espace) — le popover reste ouvert hors survol, fermé
-  // par Échap, clic ailleurs, ou un 2e déclenchement (toggle). Hors `tooltipOnly` le popover reste
-  // un pur tooltip de survol/focus (le clic ouvre directement la fiche Codex).
+  // Épinglé (mode `tooltipOnly` : clic/Entrée/Espace ; mode `wrap` : ↓ depuis le contrôle) — le
+  // popover reste ouvert hors survol, fermé par Échap, clic ailleurs, ou un 2e déclenchement.
+  // Hors ces deux modes le popover reste un pur tooltip de survol/focus.
   const [pinned, setPinned] = useState(false);
 
+  const cancelHide = useCallback(() => {
+    if (hideTimer.current) { clearTimeout(hideTimer.current); hideTimer.current = null; }
+  }, []);
   const showAt = useCallback(() => {
+    cancelHide();
     const el = ref.current;
     if (el) setPos(computePopoverPos(el.getBoundingClientRect(), window.innerWidth, window.innerHeight));
-  }, []);
+  }, [cancelHide]);
   const show = useCallback(() => { if (!pinned) showAt(); }, [pinned, showAt]);
-  const hide = useCallback(() => { if (!pinned) setPos(null); }, [pinned]);
-  const unpin = useCallback(() => { setPinned(false); setPos(null); }, []);
+  // Sous `wrap`, le popover porte la SEULE porte vers la fiche : il ne peut pas mourir à l'instant
+  // où le pointeur quitte le déclencheur (le trajet vers lui le tuerait). Fermeture DIFFÉRÉE,
+  // annulée dès que le pointeur entre dedans. Hors `wrap` : fermeture immédiate (pur tooltip).
+  const hide = useCallback(() => {
+    if (pinned) return;
+    if (!wrap) { setPos(null); return; }
+    cancelHide();
+    hideTimer.current = setTimeout(() => setPos(null), HOVER_BRIDGE_MS);
+  }, [pinned, wrap, cancelHide]);
+  const unpin = useCallback(() => { cancelHide(); setPinned(false); setPos(null); }, [cancelHide]);
 
-  // Épinglé (`tooltipOnly`) : Échap referme, clic HORS du déclencheur referme (le popover porté
-  // est en `pointer-events: none` — un clic dessus retombe naturellement à l'élément dessous).
+  useEffect(() => cancelHide, [cancelHide]);
+
+  // Épinglé : Échap referme, clic HORS du déclencheur ET hors du popover referme. Le popover porté
+  // compte comme « dedans » : sous `wrap` il est cliquable (sa porte vers la fiche), et un
+  // `mousedown` dessus le démonterait avant que le `click` n'atteigne le bouton.
   useEffect(() => {
     if (!pinned) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') unpin(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      unpin();
+      // Le focus revient au contrôle englobé (le bouton de dépense), jamais dans le vide.
+      if (wrap) ref.current?.querySelector('button')?.focus();
+    };
     const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) unpin();
+      const t = e.target as Node;
+      if (ref.current?.contains(t) || popRef.current?.contains(t)) return;
+      unpin();
     };
     document.addEventListener('keydown', onKey);
     document.addEventListener('mousedown', onDoc);
@@ -120,7 +156,13 @@ export function CodexRef({
       document.removeEventListener('keydown', onKey);
       document.removeEventListener('mousedown', onDoc);
     };
-  }, [pinned, unpin]);
+  }, [pinned, unpin, wrap]);
+
+  // Épinglage clavier sous `wrap` : le focus ENTRE dans le popover, sur sa porte — sans quoi la
+  // fiche ne serait atteignable qu'à la souris (le portal est en fin de `body`, hors ordre de Tab).
+  useEffect(() => {
+    if (pinned && wrap) openBtnRef.current?.focus();
+  }, [pinned, wrap]);
 
   // Sans entrée catalogue NI fallback : icône-déclencheur → rien ; libellé → texte simple. La classe
   // `codex-ref` reste portée — elle habille l'affordance (`.codex-ref.ab-codex-info`), et sans elle
@@ -135,14 +177,19 @@ export function CodexRef({
   const metaLine = item?.meta?.length ? truncate(item.meta.slice(0, 4).map((m) => `${m.label} ${m.value}`).join(' · '), 140) : null;
   const src = item?.source;
   const inst = instance && instance !== title ? instance : undefined;
-  // Clic → fiche Codex UNIQUEMENT pour une vraie entrée catalogue, hors mode popover-seul (prop
-  // `tooltipOnly`, ex. cellule d'équipement déjà cliquable comme picker).
+  // La FICHE existe-t-elle ? (`openFiche` = le popover porte sa porte « Ouvrir la fiche »). Qui
+  // ACTIONNE cette porte diffère : hors `wrap`, le déclencheur lui-même ; sous `wrap`, le
+  // déclencheur enveloppe un contrôle qui a DÉJÀ son action (dépenser une ressource) — la surface
+  // ne prend donc aucune interaction, et la porte devient un vrai bouton DANS le popover, atteint
+  // au pointeur ou par ↓ depuis le contrôle (#1078).
   const openFiche = !tooltipOnly && !!item;
-  const togglePopover = tooltipOnly && (!!item || !!fallback);
-  const clickable = openFiche || togglePopover;
+  const wrapperOpens = !wrap && openFiche;
+  const togglePopover = !wrap && tooltipOnly && (!!item || !!fallback);
+  const clickable = wrapperOpens || togglePopover;
   const open = () => { if (item) openCodex({ category, id: item.id, label: item.label, instance: inst }); };
   const toggle = () => { if (pinned) unpin(); else { showAt(); setPinned(true); } };
-  const activate = openFiche ? open : togglePopover ? toggle : undefined;
+  const activate = wrapperOpens ? open : togglePopover ? toggle : undefined;
+  const pinFromWrap = wrap && openFiche;
 
   return (
     <span
@@ -151,13 +198,33 @@ export function CodexRef({
       tabIndex={clickable ? 0 : undefined}
       role={clickable ? 'button' : undefined}
       aria-expanded={togglePopover ? pinned : undefined}
+      {...(pinFromWrap ? {
+        // La porte clavier ne se DEVINE pas : elle s'annonce (lecteur d'écran + infobulle native).
+        'aria-keyshortcuts': 'ArrowDown',
+        title: `${title} — ↓ : fiche`,
+      } : null)}
       onClick={activate}
-      onKeyDown={activate ? (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+      onKeyDown={(e) => {
+        // ↓ épingle et entre dans le popover (le contrôle englobé ignore cette touche : son
+        // Entrée/Espace reste SA dépense). Même idiome qu'un bouton de menu.
+        // `stopPropagation` : la touche est CONSOMMÉE ici — sans quoi le listener global de jeu
+        // (`useGameKeyboard`) la voit aussi et le curseur tactique de combat court avec elle
+        // (recette B3a, capture 04). Ceinture ET bretelles avec `notWhenControlFocused` posé sur
+        // les bindings `cursor-*` : le socle protège TOUT contrôle focalisé, ceci protège ce geste
+        // même si un listener futur ne consultait pas le registre.
+        if (pinFromWrap && e.key === 'ArrowDown') {
+          e.preventDefault();
+          e.stopPropagation();
+          e.nativeEvent.stopImmediatePropagation();
+          showAt();
+          setPinned(true);
+          return;
+        }
+        if (activate && (e.key === 'Enter' || e.key === ' ')) {
           e.preventDefault();
           activate();
         }
-      } : undefined}
+      }}
       onMouseEnter={show}
       onMouseLeave={hide}
       onFocus={show}
@@ -166,7 +233,16 @@ export function CodexRef({
       {children ?? label}
       {pos &&
         createPortal(
-          <span className="codex-pop" style={{ top: pos.top, bottom: pos.bottom, left: pos.left, maxWidth: pos.width, maxHeight: pos.maxHeight }} role="tooltip">
+          <span
+            ref={popRef}
+            className="codex-pop"
+            // Sous `wrap` le popover est ACTIONNABLE (il porte la porte) : il reprend les
+            // événements de pointeur que `.codex-pop` neutralise pour le pur tooltip.
+            style={{ top: pos.top, bottom: pos.bottom, left: pos.left, maxWidth: pos.width, maxHeight: pos.maxHeight, ...(wrap ? { pointerEvents: 'auto' as const } : null) }}
+            role="tooltip"
+            onMouseEnter={cancelHide}
+            onMouseLeave={hide}
+          >
             <span className="codex-pop-title">{inst ?? title}</span>
             {inst && <span className="codex-pop-sub">{title}</span>}
             {popSub && <span className="codex-pop-sub">{popSub}</span>}
@@ -175,8 +251,24 @@ export function CodexRef({
             {(src || openFiche) && (
               <span className="codex-pop-foot">
                 {src && <span className="codex-src">{src.book} p.{src.page}</span>}
-                {/* affordance EXPLICITE : le déclencheur est cliquable → la fiche Codex s'ouvre */}
-                {openFiche && <span className="codex-pop-open">Ouvrir la fiche</span>}
+                {/* La PORTE vers la fiche. Sous `wrap` c'est un vrai bouton (clic ET clavier) :
+                    le déclencheur, lui, garde son action propre. Sinon, mention : c'est le
+                    déclencheur qui est cliquable. */}
+                {openFiche && (wrap
+                  ? (
+                    <button
+                      ref={openBtnRef}
+                      type="button"
+                      /* Contrôle RÉEL → il compose le token de bouton partagé (`.btn.btn-ghost`,
+                         `components.css`) ; `.codex-pop-open` ne garde que son placement en pied. */
+                      className="btn btn-ghost codex-pop-open"
+                      style={{ pointerEvents: 'auto' }}
+                      onClick={() => { open(); unpin(); }}
+                    >
+                      Ouvrir la fiche
+                    </button>
+                  )
+                  : <span className="codex-pop-open">Ouvrir la fiche</span>)}
               </span>
             )}
           </span>,

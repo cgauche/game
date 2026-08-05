@@ -40,7 +40,9 @@ export interface KeyBinding {
   when: (s: GameState) => boolean;
   /** Action : reçoit l'accès au store (`get`) pour appeler ses actions. */
   run: (get: () => GameState) => void;
-  /** Touche d'ACTIVATION (Espace/Entrée) : ne pas voler le clic d'un bouton/lien focalisé. */
+  /** La touche appartient au CONTRÔLE focalisé (bouton/lien), pas au raccourci : activation
+   *  (Espace/Entrée) comme navigation propre au contrôle (flèches d'un menu, d'un popover, d'une
+   *  liste à roving tabindex). */
   notWhenControlFocused?: boolean;
 }
 
@@ -110,11 +112,16 @@ export const KEYBINDINGS: KeyBinding[] = [
     },
   },
   // ── Curseur de combat (flèches) — la MANETTE réutilise ces mêmes ids via runBindingById. Le curseur
-  //    « suit les yeux » (direction écran). Le 1er appui le pose sur le combattant actif. ──
-  { id: 'cursor-up', codes: ['ArrowUp'], label: 'Curseur : haut', section: 'curseur', when: curOrPreempt, run: (g) => g().moveCursor('up') },
-  { id: 'cursor-down', codes: ['ArrowDown'], label: 'Curseur : bas', section: 'curseur', when: curOrPreempt, run: (g) => g().moveCursor('down') },
-  { id: 'cursor-left', codes: ['ArrowLeft'], label: 'Curseur : gauche', section: 'curseur', when: curOrPreempt, run: (g) => g().moveCursor('left') },
-  { id: 'cursor-right', codes: ['ArrowRight'], label: 'Curseur : droite', section: 'curseur', when: curOrPreempt, run: (g) => g().moveCursor('right') },
+  //    « suit les yeux » (direction écran). Le 1er appui le pose sur le combattant actif.
+  //    `notWhenControlFocused` : un CONTRÔLE focalisé possède ses propres flèches (menu, popover de
+  //    règle d'un bouton de pool, liste à roving tabindex). Sans cette garde, le curseur tactique
+  //    court AVEC lui sur la même touche — le ↓ qui devait ouvrir la porte de la fiche déplaçait
+  //    aussi la visée (recette B3a, capture 04). Même doctrine que `round-start`/`end-turn` pour
+  //    Espace/Entrée, étendue aux flèches : la touche appartient au contrôle qui a le focus.
+  { id: 'cursor-up', codes: ['ArrowUp'], label: 'Curseur : haut', section: 'curseur', notWhenControlFocused: true, when: curOrPreempt, run: (g) => g().moveCursor('up') },
+  { id: 'cursor-down', codes: ['ArrowDown'], label: 'Curseur : bas', section: 'curseur', notWhenControlFocused: true, when: curOrPreempt, run: (g) => g().moveCursor('down') },
+  { id: 'cursor-left', codes: ['ArrowLeft'], label: 'Curseur : gauche', section: 'curseur', notWhenControlFocused: true, when: curOrPreempt, run: (g) => g().moveCursor('left') },
+  { id: 'cursor-right', codes: ['ArrowRight'], label: 'Curseur : droite', section: 'curseur', notWhenControlFocused: true, when: curOrPreempt, run: (g) => g().moveCursor('right') },
   // Tab : aimante le curseur sur la cible valide suivante (cycle proche→loin) ; gardé sur ≥1 cible
   // (sinon Tab garde sa nav normale). `²/~` = cible précédente (le registre ignore les modificateurs).
   {

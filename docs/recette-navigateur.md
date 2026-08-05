@@ -582,3 +582,10 @@ Lire le DOM dans le **même** `evaluate` que `talk()` lit l'état AVANT le re-re
 séparer en deux appels (cf. `game-browser-verif-tempo`). Plus généralement : cliquer un bouton
 qui change un état React PUIS agir dans le MÊME `evaluate` lit l'ANCIEN état (React n'a pas
 re-rendu). Séparer en deux appels, ou utiliser un `ref` côté composant pour la logique de drag.
+
+Variante mesurée (2026-08-05) : un **focus posé par un `useEffect` post-rendu** (ex. le popover
+épinglé de `CodexRef` qui focalise sa porte après `↓`) n'est pas garanti au moment d'un
+`evaluate(document.activeElement)` immédiat — lire un focus transitoire fait conclure à tort à
+un vol de focus. Lire via `browser_snapshot` (qui laisse s'écouler un tour d'event loop), ou
+attendre avant de lire. Ne JAMAIS « réparer » en mutant le DOM (`tabindex` à la main) : recharger
+et rejouer la séquence canonique.

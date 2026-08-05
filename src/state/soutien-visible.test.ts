@@ -34,9 +34,10 @@ describe('#1064 — le pending PORTE le détail du Soutien (couture)', () => {
     runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'perception', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     expect(pt.skillValue).toBe(55); // 35 + 2×10 (Soutien FONDU, inchangé)
-    expect(pt.support).toEqual({ count: 2, bonus: 20 }); // …et DÉTAILLÉ pour l'affichage
+    // …et DÉTAILLÉ pour l'affichage, NOMS COMPRIS (`ids` : la provenance de la chip « +20 Soutien »).
+    expect(pt.support).toEqual({ count: 2, bonus: 20, ids: ['h2', 'h3'] });
     // Le détail suit le CANDIDAT (le plafond est celui de SA Caractéristique) : `testSetActor` le recopie.
-    expect(pt.candidates?.find((c) => c.id === 'h1')?.support).toEqual({ count: 2, bonus: 20 });
+    expect(pt.candidates?.find((c) => c.id === 'h1')?.support).toEqual({ count: 2, bonus: 20, ids: ['h2', 'h3'] });
   });
 
   it('Test NON soutenu : aucun détail inventé (pas de ligne « Soutien +0 »)', () => {
@@ -93,7 +94,7 @@ describe('#1064 — le pending PORTE le détail du Soutien (couture)', () => {
     openPartyTest(useGame.getState, useGame.setState, { skill: 'perception', actionLabel: 'Fouiller la pièce', difficulty: 'intermediaire' }, 'testSoutienSeam');
     const step = useGame.getState().pendingCascade!.participants[0];
     expect(step.base).toBe(45); // 35 + 10 (Soutien fondu dans la valeur du meneur)
-    expect(step.support).toEqual({ count: 1, bonus: 10 });
+    expect(step.support).toEqual({ count: 1, bonus: 10, ids: ['h2'] });
   });
 });
 
@@ -140,7 +141,7 @@ describe('LDB 12 l.197 — un Test SUBI ne se soutient pas (défaut de la VOIE, 
     const aide = skilled('h2', undefined, 'guerison', 2);
     useGame.setState({ party: [soigne, aide] });
     routeTriggeredTest(useGame.getState, useGame.setState, soigne, soigne, subi({ skill: 'guerison', noSupport: false }));
-    expect(useGame.getState().pendingTest!.support).toEqual({ count: 1, bonus: 10 });
+    expect(useGame.getState().pendingTest!.support).toEqual({ count: 1, bonus: 10, ids: ['h2'] });
   });
 
   it('DONNÉE — « Nécessaire antipoison » (Test de Guérison) est authoré SOUTENABLE (LDB 12 l.197)', () => {

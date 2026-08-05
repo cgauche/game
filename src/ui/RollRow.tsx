@@ -14,6 +14,7 @@ import { d100Faces } from './Dice';
 import { DrBar } from './DrBar';
 import { Icon } from './Icon';
 import { CodexRef } from './compendium/CodexRef';
+import { RULE_REF } from '../engine/ruleRefs';
 import type { FLOW_VERBS } from '../state/rollFlowSpecs';
 
 /** Libellé par défaut du bouton « Lancer » (rangée seule ET coquille `RollShell` hissée). */
@@ -69,12 +70,11 @@ export function RollRow({
   // la transition `landed` et le re-rendu du store dans le MÊME rendu) — jamais pendant le tumble.
   const rowFaces = (landed || rerollLanded) && row.d ? d100Faces(row.d.roll) : null;
   const determineBtn = determination && determination.resolve > 0 && (
-    <>
+    <CodexRef category={RULE_REF.determination.category} id={RULE_REF.determination.id} label="Détermination" wrap>
       <button className="btn btn-resource" onClick={determination.onResolve}>
         <Icon id="resource/resolve" size="sm" /> Détermination ×{determination.resolve}
       </button>
-      <CodexRef category="characteristics" id="determination" label="Détermination" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
-    </>
+    </CodexRef>
   );
   return (
     <div className="prow">

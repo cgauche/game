@@ -3,6 +3,10 @@ import type { ModLine, RollBreakdown, RollMask } from '../engine/combat';
 import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { Dice } from './Dice';
 import { Icon } from './Icon';
+import { CodexRef } from './compendium/CodexRef';
+import type { ModProvenance } from '../engine/ruleRefs';
+import { actorIn } from '../state/combatants';
+import { useGame, type GameState } from '../state/store';
 
 /** Valeur de la Difficulté déjà comprise dans le modificateur de la ligne — elle est EXPLIQUÉE par le
  *  texte de la ligne, donc retirée de ce que les chips ont à réconcilier (#1072). */
@@ -46,16 +50,57 @@ function reconciled(mods: ModLine[], modifier: number, target: number, clamped?:
   ];
 }
 
+/**
+ * Nom d'AFFICHAGE d'une provenance — COUTURE UNIQUE de la résolution id→nom (#1078).
+ *
+ * Les producteurs de `ModLine` sont PURS : ils ne connaissent que des ids stables. Résoudre au
+ * producteur exigerait que chaque site passe un résolveur — et le site N+1 l'oublie (recette B3a :
+ * « pregen-101 » à l'écran depuis `medicFlow`). La résolution vit donc ICI, au seul endroit que
+ * TOUTE chip traverse : `actorIn` (combat OU groupe, primitive partagée). Un `label` qui vaut son
+ * propre id est traité comme absent — c'est l'empreinte exacte du repli fautif. Sans acteur
+ * résolvable (source hors combattants), le `label` fourni fait foi ; en dernier recours l'id, jamais
+ * un vide muet.
+ */
+function provenanceLabel(p: ModProvenance, state: GameState): string {
+  const raw = p.label && p.label !== p.id ? p.label : undefined;
+  const resolved = p.id ? actorIn(state, p.id)?.label : undefined;
+  return raw ?? resolved ?? p.label ?? p.id ?? '—';
+}
+
+/** UNE chip de modificateur. Toute ligne qui porte sa RÈGLE (`ModLine.ref`, ids stables) devient une
+ *  chip CODEX-LIÉE : survol/focus = le texte de la règle, clic = sa fiche — la chip EST l'affordance
+ *  (aucun ⓘ à côté). L'`instance` transmise est le circonstanciel tel qu'il est lu à l'écran
+ *  (« +10 Soutien »), ce que le Codex reprend à l'ouverture. Sans `ref`, la chip reste le span muet.
+ *  `by` (provenance STRUCTURÉE : les soutiens) s'égrène en badges discrets `.entity-badge` (le
+ *  satellite de fin de chip PARTAGÉ, `base.css`), NOMMÉS par `provenanceLabel` et liés au Codex
+ *  quand leur catégorie existe. */
+function ModChip({ m }: { m: ModLine }) {
+  // Lecture NON réactive : un nom de combattant ne bouge pas pendant qu'on lit son jet, et une
+  // souscription par chip re-rendrait toute la grille de mods à chaque tick de combat.
+  const state = useGame.getState();
+  const tone = m.value >= 0 ? 'pos' : 'neg';
+  const amount = `${m.value >= 0 ? '+' : '−'}${Math.abs(m.value)}`;
+  const text = `${amount} ${m.label}`;
+  return (
+    <>
+      {m.ref
+        ? <CodexRef category={m.ref.category} id={m.ref.id} label={m.label} instance={text} className={`rm-mod ${tone}`}>{text}</CodexRef>
+        : <span className={`rm-mod ${tone}`}>{text}</span>}
+      {m.by?.map((p, i) => {
+        const name = provenanceLabel(p, state);
+        return p.category && p.id
+          ? <CodexRef key={i} category={p.category} id={p.id} label={name} className="entity-badge">{name}</CodexRef>
+          : <em key={i} className="entity-badge">{name}</em>;
+      })}
+    </>
+  );
+}
+
 /** Chips des modificateurs étiquetés (« Courte portée +40 », « Sonné −10 »…). */
 function ModChips({ mods }: { mods: ModLine[] }) {
   return (
     <div className="rm-roll-mods">
-      {mods.map((m, i) => (
-        <span key={i} className={`rm-mod ${m.value >= 0 ? 'pos' : 'neg'}`}>
-          {m.value >= 0 ? '+' : '−'}
-          {Math.abs(m.value)} {m.label}
-        </span>
-      ))}
+      {mods.map((m, i) => <ModChip key={i} m={m} />)}
     </div>
   );
 }

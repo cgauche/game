@@ -170,7 +170,7 @@ La compétence **Prière**, **Langue (Magick)** et **Focalisation** sont des **c
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 46` (l.23-25) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `hasArcaneTalent` ⚠sans-appelant, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `a-terre`, `mineure-delie`, +47 — `src/data/miscast.json`, `src/engine/domainAttributes.ts`, `src/engine/magic.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +4 fichiers
-- `LDB 85` (l.206-207) → `STARTLE_CAUSE_LABELS`, `applySwarmBuild`, `Condition`, `TriggerCtx`, `combatTestPenalty`, `attackModifiers`, `combineOpposed`, `immunite-psychologique`, `increvable`, `infecte`, +20 — `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +5 fichiers
+- `LDB 85` (l.206-207) → `STARTLE_CAUSE_LABELS`, `applySwarmBuild`, `Condition`, `TriggerCtx`, `combatTestPenalty`, `attackModifiers`, `immunite-psychologique`, `combineOpposed`, `increvable`, `infecte`, +20 — `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +5 fichiers
 
 ---
 
@@ -313,7 +313,7 @@ Incanter à proximité d'une **source de Corruption** (voir LDB 19) rend le cont
 | 96–00 | Contre-réaction aethyrique | Quiconque dans un rayon en mètres = BFM (allié ou ennemi) subit 1d10 Blessures ignorant BE et PA + État **À Terre**. Si aucune cible à portée : la tête du lanceur **explose**, mort instantanée. |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.55-80) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `assourdi`, `MiscastResult`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `lecture-au-grimoire`, `a-terre`, +37 — `src/data/miscast.json`, `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, +2 fichiers
+- `LDB 46` (l.55-80) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `assourdi`, `MiscastResult`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `a-terre`, `lecture-au-grimoire`, +37 — `src/data/miscast.json`, `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, +2 fichiers
 
 > **Note :** La table de la **Colère des dieux** (prières, LDB 40 l.52-101) est implémentée dans `WRATH` (`src/engine/miscast.ts` l.164-206) mais appartient au domaine **Religion** → voir `religion.md` (à construire).
 
@@ -338,7 +338,7 @@ Les Avantages **ne s'appliquent pas** aux Tests de Focalisation (contrairement a
 > **Verbatim** (l.176) : « Les Avantages en combat s'appliquent aux Tests d'Incantation, pas aux Tests de Focalisation. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.129-151) → `DispelModal`, `STEP_WINDOW_AUTO`, `CastableSpell`, `focalisation-etendue`, `FocusInterruptHook`, `lecture-au-grimoire`, `jetSurfaced`, `castingValue`, `BattleState`, `armourCastDRPenalty`, +54 — `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, +20 fichiers
+- `LDB 46` (l.129-151) → `DispelModal`, `STEP_WINDOW_AUTO`, `CastableSpell`, `FocusInterruptHook`, `focalisation-etendue`, `lecture-au-grimoire`, `jetSurfaced`, `castingValue`, `BattleState`, `armourCastDRPenalty`, +54 — `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, +20 fichiers
 
 ---
 
@@ -351,7 +351,7 @@ Un **Critique** (double réussi) lors de la Focalisation signifie qu'un flux pui
 > **Verbatim** (l.186-187) : « tant de magie concentrée si rapidement en un endroit entraîne un contrecoup magique : lancez 1d100 et consultez le Tableau des Incantations Imparfaites Mineures (voir p.234), sauf si vous possédez le Talent Harmonisation aethyrique (voir p.138). »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.135-137) → `focalisation-etendue`, `FocusInterruptHook`, `lecture-au-grimoire`, `castingValue`, `BattleState`, `runCombatFlow`, `createCombatSlice`, `castingNumberOf`, `CastTestKind`, `CastPenalty`, +9 — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combat/triggeredTest.ts`, +3 fichiers
+- `LDB 46` (l.135-137) → `FocusInterruptHook`, `focalisation-etendue`, `lecture-au-grimoire`, `castingValue`, `BattleState`, `runCombatFlow`, `createCombatSlice`, `castingNumberOf`, `CastTestKind`, `CastPenalty`, +9 — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combat/triggeredTest.ts`, +3 fichiers
 
 ---
 
@@ -364,7 +364,7 @@ La définition de **Maladresse est élargie** lors d'un Test de Focalisation : c
 > **Verbatim** (l.190-192) : « Concentrer les Vents de la Magie en un flux important est dangereux. Considérez comme Maladresse tout double ou tout résultat terminant par un 0 au-delà de votre Compétence, donc 00, 99, 90, 88, etc. Si vous obtenez une Maladresse à un Test de Focalisation, vous subissez une Incantation Imparfaite. Lancez 1d100 et consultez le Tableau des Incantations Imparfaites Majeures. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.139-141) → `focalisation-etendue`, `FocusInterruptHook`, `armourCastDRPenalty`, `runCombatFlow`, `createCombatSlice`, `CastTestKind`, `CastPenalty`, `CastTestModsContext`, `castTestDRMods`, `WeaponGroupData`, +7 — `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +4 fichiers
+- `LDB 46` (l.139-141) → `FocusInterruptHook`, `focalisation-etendue`, `armourCastDRPenalty`, `runCombatFlow`, `createCombatSlice`, `CastTestKind`, `CastPenalty`, `CastTestModsContext`, `castTestDRMods`, `WeaponGroupData`, +7 — `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +4 fichiers
 
 ---
 
@@ -377,7 +377,7 @@ La concentration est vitale pour focaliser. Si perturbé par quelque chose (brui
 > **Verbatim** (l.193-195) : « Si vous êtes perturbé par quelque chose – bruits forts, Dégâts subis, lumières aveuglantes ou autres –, vous devrez réussir un Test de Calme Difficile (−20) ou subir une Incantation Imparfaite Mineure et perdre tous les DR accumulés jusque-là au Test étendu de Focalisation. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.143-145) → `focalisation-etendue`, `FocusInterruptHook`, `armourCastDRPenalty`, `runCombatFlow`, `createCombatSlice`, `CastPenalty`, `CastTestModsContext`, `castTestDRMods`, `WeaponGroupData`, `GameOp`, +7 — `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +4 fichiers
+- `LDB 46` (l.143-145) → `FocusInterruptHook`, `focalisation-etendue`, `armourCastDRPenalty`, `runCombatFlow`, `createCombatSlice`, `CastPenalty`, `CastTestModsContext`, `castTestDRMods`, `WeaponGroupData`, `GameOp`, +7 — `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +4 fichiers
 
 ---
 
@@ -400,7 +400,7 @@ Porter les couleurs appropriées au Vent manipulé aide à l'attirer. C'est pour
 > **Verbatim** (l.150) : « tout Lanceur de Sorts portant une armure subit une pénalité de −1 DR à tous ses Tests d'Incantation et de Focalisation, pour chaque PA sur la Localisation la mieux protégée du corps. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.150-152) → `DispelModal`, `STEP_WINDOW_AUTO`, `focalisation-etendue`, `FocusInterruptHook`, `jetSurfaced`, `RollRowProps`, `armourCastDRPenalty`, `assistBonus`, `runCombatFlow`, `createCombatSlice`, +49 — `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, +20 fichiers
+- `LDB 46` (l.150-152) → `DispelModal`, `STEP_WINDOW_AUTO`, `FocusInterruptHook`, `focalisation-etendue`, `jetSurfaced`, `RollRowProps`, `armourCastDRPenalty`, `assistBonus`, `runCombatFlow`, `createCombatSlice`, +49 — `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, +20 fichiers
 - `VDM 2` (l.5, l.169) → `schema`, `armourCastDRPenalty`, `armure-du-chaos`, `malevolentInfluenceSeverity`, `OPTIONAL_RULES`, `TrappingData`, `WeaponGroupData`, `ItemInstance`, `malepierreDR`, `malepierreCharge`, +4 — `src/data/index.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/magic.ts`, `src/engine/policy.ts`, +3 fichiers
 
 ---
@@ -427,7 +427,7 @@ Si un sort **vous cible** ou vise un point **visible** à une distance en mètre
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.108-110) → `entityBlockedAt`, `sur-la-defensive`, `BattleState`, `OPTIONAL_RULES`, `pushCommitTile`, `ActionBar`, `resolveAttack`, `GameState`, `createCombatSlice` — `src/data/regles.json`, `src/engine/policy.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/sceneRules.ts`, `src/state/store.ts`, +2 fichiers
-- `LDB 46` (l.154-156) → `DispelModal`, `STEP_WINDOW_AUTO`, `focalisation-etendue`, `FocusInterruptHook`, `jetSurfaced`, `RollRowProps`, `armourCastDRPenalty`, `assistBonus`, `runCombatFlow`, `createCombatSlice`, +49 — `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, +20 fichiers
+- `LDB 46` (l.154-156) → `DispelModal`, `STEP_WINDOW_AUTO`, `FocusInterruptHook`, `focalisation-etendue`, `jetSurfaced`, `RollRowProps`, `armourCastDRPenalty`, `assistBonus`, `runCombatFlow`, `createCombatSlice`, +49 — `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, +20 fichiers
 - dette : #1033
 
 ---
@@ -740,7 +740,7 @@ La **malepierre** est un éclat de magie pure dans le plan matériel — manifes
   `magic-vdm-incantation` (`TrappingData.niPerGram`/`niConsumedPerDR`).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 19` (l.40, l.51-53) → `sombre-pacte`, `CorruptionModal`, `EXPOSURE_LADDER`, `physique`, `schema`, `corruption`, `mentale`, `Effect`, `GameOp`, `PendingCorruption`, +5 — `src/data/characteristics.json`, `src/data/mutationTables.json`, `src/data/regles.json`, `src/data/schemas/defs/arcane-phenomena.ts`, `src/data/trappings.json`, `src/engine/corruption.ts`, +6 fichiers
+- `LDB 19` (l.40, l.51-53) → `CorruptionModal`, `sombre-pacte`, `EXPOSURE_LADDER`, `physique`, `schema`, `corruption`, `mentale`, `Effect`, `GameOp`, `PendingCorruption`, +5 — `src/data/characteristics.json`, `src/data/mutationTables.json`, `src/data/regles.json`, `src/data/schemas/defs/arcane-phenomena.ts`, `src/data/trappings.json`, `src/engine/corruption.ts`, +6 fichiers
 - `LDB 44` (l.113-119) → `schema` — `src/data/schemas/defs/trappings.ts`
 - `LDB 46` (l.164-173) → `DispelModal`, `windsModFromRoll`, `rollWindsOfMagic`, `FocusModal`, `vents-tres-forts`, `STEP_WINDOW_AUTO`, `schema`, `windsMagicModOf`, `useHoverTargeting`, `focalisation-etendue`, +68 — `src/data/donnees.manifest.json` ⚠hors-app, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/species.ts`, `src/data/schemas/defs/vents-tourbillonnants.ts`, `src/data/trappings.json`, +31 fichiers
 - `VDM 2` (l.165) → `schema`, `armourCastDRPenalty`, `armure-du-chaos`, `malevolentInfluenceSeverity`, `OPTIONAL_RULES`, `TrappingData`, `WeaponGroupData`, `ItemInstance`, `malepierreDR`, `malepierreCharge`, +4 — `src/data/index.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/magic.ts`, `src/engine/policy.ts`, +3 fichiers

@@ -100,6 +100,16 @@ export function qualitySum(w: QualityCarrier | undefined, field: 'attackMod' | '
   return n;
 }
 
+/** ids STABLES des qualités PRÉSENTES qui portent un modificateur PLAT au Test d'attaque (part
+ *  `attackMod` de `qualitySum`) — permet au site d'affichage de lier le modificateur à SA qualité au
+ *  Codex. Une altération d'arme (`Weapon.passive`, op `augmentWeapon`) n'est pas une qualité de
+ *  registre : elle n'a pas d'id et n'apparaît donc pas ici. */
+export function attackModQualityIds(w: QualityCarrier | undefined): string[] {
+  return resolveQualities(w)
+    .filter((r) => (r.data?.passive ?? []).some((op) => op.op === 'weaponRollMod' && op.phase === 'attack' && (op.flatMod ?? 0) !== 0))
+    .map((r) => r.id);
+}
+
 /** Une qualité de l'arme déclenche-t-elle un Critique pour ce jet ? (Empaleuse `critOnRoll` multiple de 10). */
 export function qualityCritTriggered(w: QualityCarrier | undefined, roll: number): boolean {
   for (const op of weaponPassiveOps(w)) if (op.op === 'critOnRoll' && roll % op.mod === op.equals) return true;

@@ -13,6 +13,7 @@ import { agilityTestPenalty } from './encumbrance';
 import { traumaSkillPenalty, passiveSkillSum, passiveTestMod } from './trauma';
 import type { PairedSense } from './ops';
 import type { ModLine } from './combat';
+import { RULE_REF } from './ruleRefs';
 import { rule } from './policy';
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
@@ -284,13 +285,25 @@ export function bestSkilledOption<T extends { skills?: SkillRef[] }>(
 export interface SupportDetail {
   count: number;
   bonus: number;
+  /** Les SOUTIENS eux-mêmes, par id de Combattant — la provenance du bonus est une STRUCTURE, jamais
+   *  un libellé composé. Rendue en micro-chips par `ui/RollLine.tsx` (`ModLine.by`). */
+  ids: string[];
 }
 
 /** Ligne de mod « Soutien » (LDB 12) — SOURCE UNIQUE : le bonus d'un jet de GROUPE soutenu s'affiche
  *  comme TOUT autre modificateur (ligne du breakdown, verte si +), pas fondu dans la base ni relégué
- *  en sous-titre. `undefined` si personne ne soutient (aucune ligne « Soutien +0 » inventée). */
+ *  en sous-titre. `undefined` si personne ne soutient (aucune ligne « Soutien +0 » inventée).
+ *  La provenance ne porte QUE des ids : le moteur est pur, et le NOM se résout au RENDU (couture
+ *  unique `ui/RollLine.tsx`) — un résolveur à fournir par appelant s'oublie, et l'écran affiche
+ *  alors l'id brut (recette B3a, « pregen-101 »). */
 export function soutienMod(support?: SupportDetail): ModLine | undefined {
-  return support && support.count > 0 ? { label: 'Soutien', value: support.bonus } : undefined;
+  if (!support || support.count <= 0) return undefined;
+  return {
+    label: 'Soutien',
+    value: support.bonus,
+    ref: RULE_REF.soutien,
+    by: (support.ids ?? []).map((id) => ({ id })),
+  };
 }
 
 /** DÉFAIT le Soutien FONDU dans une valeur de jet (`partyAssisted().value` = meneur + bonus) : la base
@@ -319,16 +332,35 @@ export function partyAssisted(
 ): { actor: Combatant; value: number; support: SupportDetail } | null {
   const leader = partyBest(party, skill, characteristic, extraMod, spec);
   if (!leader) return null;
-  const b = soutienBonus(party, leader.actor, skill, characteristic, spec, eligible);
-  return { actor: leader.actor, value: leader.value + b, support: { count: b / 10, bonus: b } };
+  const support = soutienDetail(party, leader.actor, skill, characteristic, spec, eligible);
+  return { actor: leader.actor, value: leader.value + support.bonus, support };
 }
 
-/** Bonus de SOUTIEN (LDB 12 l.187-200) pour un meneur DONNÉ — brique partagée par `partyAssisted` ET les
- *  Tests à sélecteur de candidat (Tests de scène) où le meneur n'est pas le « meilleur » mais le candidat
+/** DÉTAIL de SOUTIEN (LDB 12 l.187-200) pour un meneur DONNÉ — SOURCE UNIQUE : combien de membres
+ *  soutiennent, le bonus total, et QUI (`ids`). Brique partagée par `partyAssisted` ET les Tests à
+ *  sélecteur de candidat (Tests de scène) où le meneur n'est pas le « meilleur » mais le candidat
  *  considéré : +10 par AUTRE membre VIVANT et ÉLIGIBLE (`hasSkillAdvance`, l.195 ; Test de pure
  *  Caractéristique → tous), plafonné au Bonus de la Caractéristique testée du meneur (l.198). `eligible` (l.196, « doit
  *  normalement être adjacent ») : prédicat GÉOMÉTRIQUE optionnel fourni par l'appelant (moteur PUR — la
- *  position/adjacence vit côté état) ; absent = comportement inchangé (aucune géométrie, ex. hors combat). */
+ *  position/adjacence vit côté état) ; absent = comportement inchangé (aucune géométrie, ex. hors combat).
+ *  Le plafond RETIENT les premiers éligibles dans l'ordre du groupe : `ids.length === count`. */
+export function soutienDetail(
+  party: Combatant[],
+  leader: Combatant,
+  skill?: string,
+  characteristic?: CharKey,
+  spec?: string,
+  eligible?: (c: Combatant) => boolean,
+): SupportDetail {
+  const elig = party.filter((c) => c.id !== leader.id && !c.dead
+    && (skill ? hasSkillAdvance(c, skill, spec) : true) // LDB 12 l.195
+    && (eligible ? eligible(c) : true));
+  const ck = effectiveSkillCharKey(leader, skill, { explicit: characteristic, spec });
+  const b = assistBonus(elig.length, bonus(effectiveChar(leader, ck)));
+  return { count: b / 10, bonus: b, ids: elig.slice(0, b / 10).map((c) => c.id) };
+}
+
+/** Bonus de SOUTIEN seul (`soutienDetail().bonus`) — pour les sites qui n'ont qu'un nombre à porter. */
 export function soutienBonus(
   party: Combatant[],
   leader: Combatant,
@@ -337,11 +369,7 @@ export function soutienBonus(
   spec?: string,
   eligible?: (c: Combatant) => boolean,
 ): number {
-  const elig = party.filter((c) => c.id !== leader.id && !c.dead
-    && (skill ? hasSkillAdvance(c, skill, spec) : true) // LDB 12 l.195
-    && (eligible ? eligible(c) : true)).length;
-  const ck = effectiveSkillCharKey(leader, skill, { explicit: characteristic, spec });
-  return assistBonus(elig, bonus(effectiveChar(leader, ck)));
+  return soutienDetail(party, leader, skill, characteristic, spec, eligible).bonus;
 }
 
 /** Meilleur résultat SOUTENU d'un groupe pour une Scène à compétences AU CHOIX (ADE II 8) : pour chaque

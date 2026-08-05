@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { influencesLocally } from '../state/netOwnership';
-import { overcastTargetCandidates, previewCast, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, counterspellSoutenu, counterspellSoutienFor, withPreRollFixedDie } from '../state/combatFlow';
+import { overcastTargetCandidates, previewCast, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, counterspellSoutenu, counterspellSupportFor, withPreRollFixedDie } from '../state/combatFlow';
 import type { CounterDeclaration } from '../state/pendings';
 import { findSpellById } from '../data/index';
 import { spellEffectOps } from '../state/flow';
@@ -469,8 +469,7 @@ export function CastModal() {
                 // son Soutien s'affiche comme tout autre modificateur (`soutienMod`, source unique).
                 const st = useGame.getState();
                 const grp = counterspellSoutenu(st, csp);
-                const soutien = counterspellSoutienFor(st, csp, part.id);
-                const mods = soutienMod({ count: soutien / 10, bonus: soutien });
+                const mods = soutienMod(counterspellSupportFor(st, csp, part.id));
                 const phase1 = counterspellDeclarePhase(csp);
                 const lance = counterspellRolls(st, csp, part);
                 const row = r
@@ -490,7 +489,7 @@ export function CastModal() {
                   : part.declared === 'pass'
                     ? 'passe — ne tente pas la Dissipation ce Round'
                     : part.declared === 'soutenu' && grp
-                      ? (lance ? `mène le Test Soutenu (+${soutien})` : `soutient ${grp.leader.label} (+10)`)
+                      ? (lance ? `mène le Test Soutenu (+${grp.bonus})` : `soutient ${grp.leader.label} (+10)`)
                       : undefined;
                 // AFFORDANCE = GARDE : les deux refus SILENCIEUX de `counterspellEngage` (phase de
                 // déclaration ouverte ; une AUTRE rangée a déjà dissipé) éteignent le CTA avec leur

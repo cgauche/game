@@ -213,7 +213,7 @@ export interface PendingReload {
   posteUid?: string;
   shipId?: string;
   /** Soutien générique (LDB 12) déjà FONDU dans `skillValue` : nb de servants assistants + bonus total (affichage). */
-  soutien?: { count: number; bonus: number };
+  soutien?: SupportDetail;
 }
 /** « Se libérer » / « se rouler au sol » en attente (LDB 16 l.61 Empêtré / l.77 En flammes) :
  *  une Action pour retirer l'État via un Test ; succès ⇒ 1 + DR pions retirés. Empêtré = Test OPPOSÉ

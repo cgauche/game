@@ -3,6 +3,7 @@ import type { Combatant } from '../engine/types';
 import { conditionMeta } from '../gameIso/effectIcons';
 import { Icon } from './Icon';
 import { CodexRef } from './compendium/CodexRef';
+import { RULE_REF } from '../engine/ruleRefs';
 
 /**
  * Détermination en modale de jet (LDB 17 l.62-66) : AVANT de lancer, un héros qui subit des
@@ -18,13 +19,14 @@ export function DeterminationButton({ combatant, onSpend }: { combatant?: Combat
   if (resolve <= 0 || conds.length === 0) return null;
   return (
     <>
-      <button
-        className={`btn btn-resource ${open ? 'btn-primary' : ''}`}
-        onClick={() => setOpen(!open)}
-      >
-        <Icon id="resource/resolve" size="sm" /> Détermination ×{resolve}
-      </button>
-      <CodexRef category="characteristics" id="determination" label="Détermination" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
+      <CodexRef category={RULE_REF.determination.category} id={RULE_REF.determination.id} label="Détermination" wrap>
+        <button
+          className={`btn btn-resource ${open ? 'btn-primary' : ''}`}
+          onClick={() => setOpen(!open)}
+        >
+          <Icon id="resource/resolve" size="sm" /> Détermination ×{resolve}
+        </button>
+      </CodexRef>
       {open &&
         conds.map((c) => (
           <button

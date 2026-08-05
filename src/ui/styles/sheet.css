@@ -532,6 +532,10 @@
   color: var(--danger-soft);
   border-color: var(--accent2);
 }
+/* Chip de mod CODEX-LIÉE (#1078) : aucune règle propre — `.codex-ref[role='button']`
+   (`compendium.css`) porte déjà l'affordance (curseur + teinte or au survol/focus). La provenance
+   (`ModLine.by`) réutilise le badge discret partagé `.entity-badge` (`base.css`), pas une classe
+   de plus : c'est le MÊME idiome « satellite de fin de chip » que les chips d'entité. */
 /* Ligne d'issue d'un jet, rendue dans le style du journal (icône + noms colorés) au sein d'une modale. */
 .rm-journal {
   margin: 8px 0;

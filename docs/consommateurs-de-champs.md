@@ -135,12 +135,12 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 |---|---|---|
 | `skill` | 9 | `src/state/combat/triggeredTest.ts:176` |
 | `spec` | 8 | `src/state/combat/triggeredTest.ts:176` |
-| `sense` | 1 | `src/state/combatEffects.ts:390` |
+| `sense` | 1 | `src/state/combatEffects.ts:391` |
 | `characteristic` | 8 | `src/state/combat/triggeredTest.ts:176` |
 | `difficulty` | 2 | `src/engine/flowCore.ts:367` |
-| `requireSL` | 1 | `src/state/combatEffects.ts:417` |
+| `requireSL` | 1 | `src/state/combatEffects.ts:418` |
 | `label` | 2 | `src/state/combat/triggeredTest.ts:181` |
-| `tool` | 1 | `src/state/combatEffects.ts:392` |
+| `tool` | 1 | `src/state/combatEffects.ts:393` |
 | `vsGroups` | 3 | `src/state/combatEffects.ts:325` |
 | `vsStatus` | 1 | `src/state/combatEffects.ts:324` |
 | `begging` | 2 | `src/state/combatEffects.ts:329` |

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseQualityInstance } from './qualities/normalize';
 import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers, psychDRAdjust, resolveStrayRangedHit, defenseModifiers, rollMeleeDefender, finishMelee, resolveMeleePassive, resolveTrample, attackTestLabel } from './combat';
+import { RULE_REF } from './ruleRefs';
 import { evaluateTest } from './tests';
 import { makeRNG } from './dice';
 import { Combatant, Weapon } from './types';
@@ -284,11 +285,12 @@ describe('attackModifiers — modificateurs étiquetés (source unique)', () => 
   });
   it('tireur qui a Visé → mod « Viser » +20 (action Viser, l.90)', () => {
     const mods = attackModifiers(mk({ label: 'A', aiming: true }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 28 });
-    expect(mods).toContainEqual({ label: 'Viser', value: 20 });
+    // La ligne porte SA règle : la chip du breakdown ouvre `regles/viser` (#1078).
+    expect(mods).toContainEqual({ label: 'Viser', value: 20, ref: RULE_REF.viser });
   });
   it('viser une localisation → mod « Localisation visée » −10', () => {
     const mods = attackModifiers(mk({ label: 'A' }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 28, location: 'tete' });
-    expect(mods).toContainEqual({ label: 'Localisation visée', value: -10 });
+    expect(mods).toContainEqual({ label: 'Localisation visée', value: -10, ref: RULE_REF['viser-une-localisation'] });
   });
   it('mêlée vs cible À Terre → mod « Cible vulnérable » +20', () => {
     const downed = mk({ label: 'B', conditions: [{ id: 'a-terre', value: 1 }] });

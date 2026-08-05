@@ -12,7 +12,7 @@ import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
 import { effectiveChar } from '../engine/characteristics';
 import { buildActorView } from './combat/flowEval';
-import { partyBest, partyAssisted, soutienBonus, isSocialTest, socialPsychMod, socialPsychLabel, testValue, actorHasSkill } from '../engine/skills';
+import { partyBest, partyAssisted, soutienDetail, isSocialTest, socialPsychMod, socialPsychLabel, testValue, actorHasSkill } from '../engine/skills';
 import { clampTarget } from '../engine/tests';
 import { statusCharmMod, statusCharmLabel, actorStatus, capriciousDR } from '../engine/social';
 import { parseStatus } from '../engine/creation';
@@ -383,8 +383,9 @@ export function openSkillTest(
     // Bonus de Carac). Calculé par candidat car le sélecteur laisse le joueur choisir qui lance. `noSupport`
     // (l.197 : maladie/poison/peur/danger) coupe le Soutien à la source ; adjacence (l.196), gate GÉOMÉTRIQUE
     // via `combatDistance`, active quand `actor.pos` est posé (combat en cours).
-    const sout = spec.noSupport ? 0 : soutienBonus(living, actor, spec.skill, spec.characteristic, spec.spec,
+    const soutD = spec.noSupport ? null : soutienDetail(living, actor, spec.skill, spec.characteristic, spec.spec,
       battle && actor.pos ? (c) => !!c.pos && combatDistance(actor, c) <= 1 : undefined);
+    const sout = soutD?.bonus ?? 0;
     // `spec.sense` (vue/ouïe, LDB 18) restreint le malus de Surdité au seul Test de Perception auditif — le
     // Soutien (`sout`, plafonné au Bonus de Carac du meneur) et le mod social ne dépendent pas du sens.
     const value = testValue(actor, spec.skill, spec.characteristic, spec.spec, spec.sense) + (socialMod ? socialMod(actor) : 0) + sout;
@@ -402,7 +403,7 @@ export function openSkillTest(
       itemUid: tool?.uid,
       // Détail du Soutien de CE candidat (il change avec le meneur : le plafond est celui de SA
       // Caractéristique) — porté pour l'affichage, la valeur reste soutenue.
-      support: sout > 0 ? { count: sout / 10, bonus: sout } : undefined,
+      support: soutD && soutD.bonus > 0 ? soutD : undefined,
     };
   });
   const def = candidates.find((c) => c.id === best.actor.id) ?? candidates[0];

@@ -453,7 +453,7 @@ describe('Affectation explicite d\'un PJ à une action (poste ≠ auto « meille
     const pa = pending()!;
     expect(pa.heroId).toBe(other);
     expect(pa.heroIds).toEqual([other]);
-    expect(pa.support).toEqual({ count: 0, bonus: 0 });
+    expect(pa.support).toEqual({ count: 0, bonus: 0, ids: [] });
   });
 
   it('(a-bis) DEUX PJ postés → SOUTIEN (meneur + assistant), les DEUX consommés', () => {
@@ -477,7 +477,7 @@ describe('Affectation explicite d\'un PJ à une action (poste ≠ auto « meille
     const pa = pending()!;
     expect(mbState().assignment).toEqual({});
     expect(pa.skillValue).toBeGreaterThan(0);
-    expect(pa.support).toEqual({ count: 0, bonus: 0 });
+    expect(pa.support).toEqual({ count: 0, bonus: 0, ids: [] });
     expect(pa.heroIds).toEqual([pa.heroId]);
   });
 
@@ -545,7 +545,7 @@ describe('Activité SOUTENABLE — Planification (l.81 : « peut aider au Test �
     const pa = pending()!;
     expect(pa.heroId).toBe(a);
     expect(pa.heroIds).toEqual([a]);
-    expect(pa.support).toEqual({ count: 0, bonus: 0 });
+    expect(pa.support).toEqual({ count: 0, bonus: 0, ids: [] });
   });
 
   it('une Activité SOLO (Repérage) reste solo — pas de Soutien', () => {

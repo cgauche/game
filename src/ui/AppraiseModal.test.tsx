@@ -29,7 +29,7 @@ describe('AppraiseModal (#2e)', () => {
   });
 
   it('#1064 — Soutien (LDB 12) : chip NOMMÉE et base rebasée, avant comme après le jet', () => {
-    const pa: PendingAppraise = { ...base, skillValue: 65, target: 65, support: { count: 2, bonus: 20 } };
+    const pa: PendingAppraise = { ...base, skillValue: 65, target: 65, support: { count: 2, bonus: 20, ids: ['h2', 'h3'] } };
     const pre = renderToStaticMarkup(
       <AppraiseModalView pa={pa} fortune={0} onRoll={noop} onReroll={noop} onBonusSL={noop} onConfirm={noop} onCancel={noop} />,
     );

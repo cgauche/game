@@ -43,7 +43,7 @@ import { gainCorruption } from './corruptionFlow';
 import { fireOwnTestFailed } from './triggeredEffects';
 import { applyMiscast } from './combatFlow';
 import { buySpell as partyBuySpell } from './partyFlow';
-import { testValue } from '../engine/skills';
+import { testValue, type SupportDetail } from '../engine/skills';
 import { rule } from '../engine/policy';
 import { effectiveEntry } from '../engine/variants';
 import { effectiveChar } from '../engine/characteristics';
@@ -335,7 +335,7 @@ export interface PendingActivity extends PendingBase {
   mod?: number;
   modLabel?: string;
   /** Détail du SOUTIEN multi-PJ fondu dans `skillValue` (l.153/157, LDB 12) — affiché en LIGNE de mod. */
-  support?: { count: number; bonus: number };
+  support?: SupportDetail;
   /** TOUS les PJ engagés dans une Scène/Activité MULTI-PJ (meneur `heroId` compris, l.116-118) — tous
    *  marqués « ayant agi » à la résolution. */
   heroIds?: string[];

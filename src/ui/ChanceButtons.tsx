@@ -1,5 +1,6 @@
 import { Icon } from './Icon';
 import { CodexRef } from './compendium/CodexRef';
+import { RULE_REF } from '../engine/ruleRefs';
 
 /**
  * Boutons de dépense de Chance partagés par les modales de jet (LDB « Destin et Résistance »
@@ -13,7 +14,9 @@ import { CodexRef } from './compendium/CodexRef';
  * le Pacte (`darkPactable` : Test raté, MÊME déjà relancé), un héros peut recevoir
  * volontairement 1 Point de Corruption pour relancer — y compris à 0 Chance, c'est son intérêt.
  *
- * Libellés courts normés (rangée « influencer le jet ») — les explications vivent en tooltip.
+ * Chaque bouton EST l'affordance de sa règle : son `CodexRef` (`wrap`) l'ENGLOBE et rend le texte
+ * de la règle au survol/focus, SANS intercepter le clic de dépense — aucun ⓘ voisin (#1078).
+ * Libellés courts normés (rangée « influencer le jet »).
  */
 export function ChanceButtons({
   fortune,
@@ -33,40 +36,37 @@ export function ChanceButtons({
   onDarkPact?: () => void;
 }) {
   const pactBtn = onDarkPact && darkPactable && (
-    <>
+    <CodexRef category={RULE_REF['sombre-pacte'].category} id={RULE_REF['sombre-pacte'].id} label="Sombre Pacte" wrap>
       <button className="btn btn-resource" onClick={onDarkPact}>
         <Icon id="condition/bleeding" size="sm" /> Pacte
       </button>
-      <CodexRef category="regles" id="sombre-pacte" label="Sombre Pacte" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
-    </>
+    </CodexRef>
   );
+  // La relance GRATUITE relève de la Bénédiction de Chance (LDB 41), la payante de la Chance
+  // (LDB 12 l.40) : le bouton porte la règle qui l'autorise RÉELLEMENT.
+  const rerollRef = freeReroll ? RULE_REF['benediction-de-chance'] : RULE_REF.chance;
   const rerollBtn = rerollable && (freeReroll || fortune > 0) && (
-    <button
-      className="btn btn-resource"
-      onClick={onReroll}
-      /* Le « ×N » ne compte que les Points de Chance : le title est la seule surface qui porte
-         aussi la contrainte LDB 12 l.40. */
-      title={`Relancer le jet raté — une seule relance par Test${freeReroll ? '' : ` (${fortune} Point${fortune > 1 ? 's' : ''} de Chance)`}`}
-    >
-      {freeReroll ? <><Icon id="faith/prayer" size="sm" /> Relancer</> : <><Icon id="resource/fortune" size="sm" /> Relancer ×{fortune}</>}
-    </button>
+    <CodexRef category={rerollRef.category} id={rerollRef.id} label={freeReroll ? 'Bénédiction de Chance' : 'Chance'} wrap>
+      <button
+        className="btn btn-resource"
+        onClick={onReroll}
+        /* Le « ×N » ne compte que les Points de Chance : le title est la seule surface qui porte
+           aussi la contrainte LDB 12 l.40. */
+        title={`Relancer le jet raté — une seule relance par Test${freeReroll ? '' : ` (${fortune} Point${fortune > 1 ? 's' : ''} de Chance)`}`}
+      >
+        {freeReroll ? <><Icon id="faith/prayer" size="sm" /> Relancer</> : <><Icon id="resource/fortune" size="sm" /> Relancer ×{fortune}</>}
+      </button>
+    </CodexRef>
   );
   return (
     <>
       {rerollBtn}
-      {freeReroll && rerollable && (
-        <CodexRef category="spells" id="benediction-de-chance" label="Bénédiction de Chance" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
-      )}
-      {!freeReroll && rerollable && fortune > 0 && (
-        <CodexRef category="characteristics" id="chance" label="Chance" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
-      )}
       {fortune > 0 && onBonusSL && (
-        <>
+        <CodexRef category={RULE_REF.chance.category} id={RULE_REF.chance.id} label="Chance" wrap>
           <button className="btn btn-resource" onClick={onBonusSL}>
             <Icon id="ui/add" size="sm" /> +1 DR ×{fortune}
           </button>
-          <CodexRef category="characteristics" id="chance" label="Chance" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
-        </>
+        </CodexRef>
       )}
       {pactBtn}
     </>

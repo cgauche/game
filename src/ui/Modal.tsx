@@ -94,7 +94,22 @@ export function useModalA11y(boxRef: RefObject<HTMLDivElement>, onClose?: () => 
       if (!box) return;
       const dialogs = document.querySelectorAll('[role="dialog"]');
       if (dialogs[dialogs.length - 1] !== box) return;
+      // Un CONTRÔLE focalisé possède sa touche, OÙ QU'IL VIVE dans le document — `document.activeElement`
+      // est global, alors que la boîte n'est qu'un sous-arbre. Juger par CONTAINMENT (`box.contains(ae)`)
+      // était faux au socle : tout contrôle actionnable rendu en PORTAL (`createPortal(document.body)`)
+      // — popover de règle, menu, infobulle actionnable — se faisait voler sa touche par la boîte
+      // pendant qu'une modale était ouverte (recette B3a 13b/13c : Entrée sur « Ouvrir la fiche »
+      // résolvait la cascade via le repli « Tout lancer »).
+      const ae = document.activeElement;
+      const activeButton = ae instanceof HTMLButtonElement && !ae.disabled;
+      // Focus posé sur un ÉLÉMENT RÉEL hors de la boîte (portal) : il n'appartient pas à ce dialogue,
+      // la boîte ne décide pas pour lui. `body` (focus nulle part) reste à la boîte, c'est son repli.
+      const focusElsewhere = !!ae && ae !== document.body && !box.contains(ae);
       if (e.key === 'Escape') {
+        // Congédiement EN COUCHES : la surface portée qui tient le focus se referme la PREMIÈRE
+        // (elle est « au-dessus » de la boîte à l'écran). Sans cette frontière, Échap fermait la
+        // modale ENTIÈRE sous un popover encore ouvert — même défaut de containment qu'Entrée.
+        if (focusElsewhere) return;
         if (closeRef.current) {
           e.preventDefault();
           e.stopPropagation(); // une modale/écran qui CONSOMME Échap ne le laisse pas ouvrir le menu système (useGameKeyboard, phase window)
@@ -104,14 +119,13 @@ export function useModalA11y(boxRef: RefObject<HTMLDivElement>, onClose?: () => 
       }
       const els = visibleFocusables(box);
       if (e.key === 'Enter') {
-        // Un bouton de la boîte est focalisé → on laisse son activation NATIVE (cocher une option de choix,
-        // cliquer Lancer/Terminer…). Depuis un champ de saisie, Entrée SOUMET la boîte (nom de campagne →
-        // « Enregistrer », mise de taverne → « Jouer », semaine en mer → « Valider la semaine ») : un champ
-        // qui doit garder son Entrée la CONSOMME chez lui (`preventDefault` + `stopPropagation`, cf. le
-        // sélecteur de dé de `ForcedRollPicker`), il ne se déclare pas ici.
+        // Bouton focalisé → activation NATIVE (cocher une option de choix, cliquer Lancer/Terminer…).
+        // Depuis un champ de saisie, Entrée SOUMET la boîte (nom de campagne → « Enregistrer », mise de
+        // taverne → « Jouer », semaine en mer → « Valider la semaine ») : un champ qui doit garder son
+        // Entrée la CONSOMME chez lui (`preventDefault` + `stopPropagation`, cf. le sélecteur de dé de
+        // `ForcedRollPicker`), il ne se déclare pas ici.
         // Sinon (focus sur la boîte/aucun) → repli sur le bouton primaire.
-        const ae = document.activeElement;
-        if (ae instanceof HTMLButtonElement && box.contains(ae) && !ae.disabled) return;
+        if (activeButton || focusElsewhere) return;
         const primary = box.querySelector<HTMLElement>('.modal-actions .btn-primary:not([disabled])');
         if (primary && primary.getClientRects().length) { e.preventDefault(); primary.click(); }
         return;
@@ -120,8 +134,10 @@ export function useModalA11y(boxRef: RefObject<HTMLDivElement>, onClose?: () => 
       // segmentés (Parade/Esquive) et boutons d'action navigables au clavier seul, sans chasser le Tab.
       if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
         // NE PAS voler les flèches d'un champ de formulaire (select/number/texte) → édition native préservée.
-        const ae = document.activeElement;
         if (ae && /^(SELECT|INPUT|TEXTAREA)$/.test(ae.tagName)) return;
+        // MÊME frontière que pour Entrée : un contrôle porté par portal navigue chez lui (un popover a
+        // ses propres flèches), la boîte ne rove pas par-dessus.
+        if (focusElsewhere) return;
         if (!els.length) return;
         e.preventDefault();
         const dir = e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : -1;

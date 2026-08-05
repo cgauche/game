@@ -6,14 +6,15 @@ import { CodexRef } from './compendium/CodexRef';
  * pour une réussite garantie (Test opposé : l'emporte avec DR +1). Affiché uniquement quand il
  * reste de la Résilience ET que l'issue est défavorable (`show`).
  *
- * MÊME forme que ses sœurs de pool (Chance, Détermination) : « ressource ×N restants » + affordance
- * Codex ouvrant la RÈGLE dépensée (`regles`/`je-ne-faillirai-pas`), pas la caractéristique.
+ * MÊME forme que ses sœurs de pool (Chance, Détermination) : « ressource ×N restants », et le BOUTON
+ * est l'affordance de sa RÈGLE (`regles`/`je-ne-faillirai-pas`, pas la caractéristique) — englobé par
+ * `CodexRef wrap`, qui rend le texte au survol/focus sans intercepter le clic (#1078).
  */
 export function ResilienceButton({ resilience, show, onForce }: { resilience: number; show: boolean; onForce: () => void }) {
   if (resilience <= 0 || !show) return null;
   const label = <><Icon id="fire/flame" size="sm" /> Résilience ×{resilience}</>;
   return (
-    <>
+    <CodexRef category="regles" id="je-ne-faillirai-pas" label="Je ne faillirai pas !" wrap>
       <button
         className="btn btn-resource"
         onClick={onForce}
@@ -21,7 +22,6 @@ export function ResilienceButton({ resilience, show, onForce }: { resilience: nu
       >
         {label}
       </button>
-      <CodexRef category="regles" id="je-ne-faillirai-pas" label="Je ne faillirai pas !" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
-    </>
+    </CodexRef>
   );
 }

@@ -22,7 +22,7 @@ import type { Get, Set } from './flowTypes';
 import type { Combatant, CharKey, Difficulty } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10, d100, type RNG } from '../engine/dice';
-import { partyBest, testValue, bestForSkills, bestForCombined, bestAssistedOption, type SkillRef } from '../engine/skills';
+import { partyBest, testValue, bestForSkills, bestForCombined, bestAssistedOption, type SkillRef, type SupportDetail } from '../engine/skills';
 import { isStructure } from '../engine/structures';
 import { inanimateCombatant } from '../engine/inanimate';
 import { applyOps } from '../engine/ops';
@@ -344,7 +344,7 @@ function openBattlePending(_get: Get, set: Set, o: {
   label?: string; mod?: number; modLabel?: string;
   combined?: { skillId?: string; spec?: string; value: number };
   enemyValue?: number; enemyRoll?: number;
-  heroIds?: string[]; support?: { count: number; bonus: number };
+  heroIds?: string[]; support?: SupportDetail;
 }): void {
   const skillLabel = o.skillId ? refLabel('skills', { id: o.skillId, spec: o.spec }) : o.char ? CHAR_LABELS[o.char] : 'Test';
   const diffMod = DIFFICULTY_MOD(o.difficulty) + (o.mod ?? 0);

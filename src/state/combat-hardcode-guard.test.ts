@@ -100,6 +100,11 @@ const BASELINES: Record<string, number> = {
   'src/state/combatEffects.ts': 2, // détection « mis à terre » par-nom (a-terre, l.776,779)
   'src/engine/combat.ts': 1, // isHelplessTarget — hasCondition(c, 'inconscient') (l.651)
   'src/engine/healing.ts': 1, // Soin ciblant un Inconscient par-nom (l.86)
+  // TABLE de références Codex (#1078) : `determination: { category: 'characteristics', id: 'determination' }`
+  // matche la signature textuelle `id: 'determination` de TRAIT_TALENT_RX. Ce n'est PAS une réaction
+  // par-nom (aucune branche) mais une entrée de TABLE d'ids stables — le vocabulaire même que la
+  // garde promeut. Une SECONDE occurrence dans ce fichier, elle, échouera.
+  'src/engine/ruleRefs.ts': 1,
   // #413 (2026-07-14) — stock révélé par la fermeture du loophole d'instrumentation, GELÉ
   'src/engine/conditions.ts': 1, // isOutOfAction coque — hasCondition(c, 'naufrage') derrière gate wounds<=0 (l.446)
   'src/engine/exposure.ts': 1, // gate hypothermie — hasCondition(c, 'inconscient') derrière wounds<=0 (l.111)

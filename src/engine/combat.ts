@@ -26,7 +26,8 @@ import { groupMatch } from './groups';
 import { ignoredArmourAP, impenetrableAt, selectedAmmo, activeLoadout, unarmedWeapon } from './items';
 import { incomingAttackMod, incomingDamageNullified, skillDRBonus, offTerrainTestDR } from './ops';
 import { isPsychImmune } from './psychology';
-import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon, resolveQualities } from './qualities/dispatch';
+import { qualitySum, attackModQualityIds, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon, resolveQualities } from './qualities/dispatch';
+import { RULE_REF, type CodexTarget, type ModProvenance } from './ruleRefs';
 import { spellEffectOps } from './flowCore';
 import { findPsychologyById } from '../data';
 import { offHandPenalty, talentDamageBonus, isSlayer, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust } from './combatFeatures/dispatch';
@@ -284,6 +285,13 @@ export interface ModLine {
   value: number;
   /** Hors du plafond « Combiner les Difficultés » (ex. Avantage — pas une entrée de la table). */
   uncapped?: boolean;
+  /** La RÈGLE qui octroie ce modificateur, en ids STABLES (`RULE_REF`, ou une entité : État,
+   *  Domaine, qualité d'arme). L'affichage en fait une chip liée au Codex (`ui/RollLine.tsx`) ;
+   *  le moteur ne la lit jamais. */
+  ref?: CodexTarget;
+  /** Qui octroie ce modificateur, en STRUCTURE (les soutiens d'un Test de groupe) — jamais du
+   *  texte composé dans `label`. Rendu en micro-chips à côté de la chip de la règle. */
+  by?: ModProvenance[];
 }
 
 /** Degré de masquage d'une ligne de jet à l'écran — DÉFINITION UNIQUE, partagée par le jet RÉSOLU
@@ -481,7 +489,7 @@ export function attackModifiers(
       const name = rangeBandName(opts.distanceTiles, rangeM, opts.metresPerTile);
       if (m != null && m !== 0 && name) out.push({ label: name, value: m });
     }
-    if (attacker.aiming) out.push({ label: 'Viser', value: 20 }); // LDB 13, Tableau des Difficultés de Combat — Accessible (+20)
+    if (attacker.aiming) out.push({ label: 'Viser', value: 20, ref: RULE_REF.viser }); // LDB 13, Tableau des Difficultés de Combat — Accessible (+20)
     // Salve (Aux Armes p.126) : chaque tir SUPPLÉMENTAIRE dans le Round subit −10 cumulatif.
     const salvoShots = hasQuality(weapon, 'salve') ? (attacker.shotsThisTurn ?? 0) : 0;
     if (salvoShots > 0) out.push({ label: 'Salve (tir suivant)', value: -10 * salvoShots });
@@ -505,7 +513,12 @@ export function attackModifiers(
   // +10 au plus petit, mêlée ET tir (LDB 85 l.301-303). Une Nuée ignore TOUTES les règles de Taille (l.200).
   if (target && !attacker.swarm && !target.swarm && sizeGap(attacker.size, target.size) < 0) out.push({ label: 'Taille (plus petit)', value: 10 });
   const precise = qualitySum(weapon, 'attackMod');
-  if (precise) out.push({ label: 'Précise', value: precise });
+  if (precise) {
+    // La qualité PORTEUSE est la référence de la ligne quand elle est SEULE à contribuer ; à
+    // plusieurs contributrices, aucune ne peut prétendre expliquer le total à elle seule.
+    const q = attackModQualityIds(weapon);
+    out.push({ label: 'Précise', value: precise, ref: q.length === 1 ? { category: 'qualities', id: q[0] } : undefined });
+  }
   // Arme d'équipe en sous-effectif re-recevant un Défaut déjà porté → −10 plat (MDG 12 l.460), baké sur
   // l'arme tirée par `crewedFireWeapon` (≠ le −1 DR d'Imprécise, qui reste sur la qualité).
   if (weapon.crewedTohitPenalty) out.push({ label: 'Sous-effectif (Défaut redoublé)', value: weapon.crewedTohitPenalty });
@@ -517,7 +530,7 @@ export function attackModifiers(
   // d'Impact des Créatures » p.312 / `76` l.39).
   // Frappe assommante (Tête + arme Assommante) / Tir mortel (distance) : pas de −10 (LDB 10).
   if (opts.location && !(target && sizeGap(target.size, attacker.size) >= 2)
-      && !ignoresCalledShotPenalty(attacker, opts.kind, opts.location, hasQuality(weapon, 'assommante'))) out.push({ label: 'Localisation visée', value: -10 });
+      && !ignoresCalledShotPenalty(attacker, opts.kind, opts.location, hasQuality(weapon, 'assommante'))) out.push({ label: 'Localisation visée', value: -10, ref: RULE_REF['viser-une-localisation'] });
   // Possession pas prévue pour la Taille du porteur (ADE II 2 l.710) : −20 plat, ex. un ogre maniant
   // une arme de Taille Moyenne. Symétrique quand `sizeFor` est POSÉ (une arme taillée pour une Taille
   // devient réellement inadaptée à une autre, ADE II 2 l.604). Sans `sizeFor` (possession ORDINAIRE
@@ -537,7 +550,7 @@ export function attackModifiers(
   // Pénalité de main secondaire (LDB 14 l.181) ; Ambidextre la réduit via le registre combatFeatures.
   if (weapon.hand === 'off') {
     const p = offHandPenalty(attacker);
-    if (p) out.push({ label: 'Main secondaire', value: p });
+    if (p) out.push({ label: 'Main secondaire', value: p, ref: RULE_REF['main-secondaire'] });
   }
   // Météo « Tests physiques » (EDOC 8 l.82, #341) : CANAL UNIQUE — le Test d'attaque est physique
   // (Corps à corps = CC, Projectiles = CT). Lu depuis `attacker.envWeather` (posé à l'ouverture du combat),
@@ -563,9 +576,9 @@ export function outnumberMod(attackers: number): ModLine | null {
  *  cible noyée dans un groupe serré d'ennemis → 3-6 cibles +20, 7-12 → +40, 13+ → +60. `group` inclut
  *  la cible elle-même. */
 export function crowdMod(group: number): ModLine | null {
-  if (group >= 13) return { label: 'Tirer dans le tas (13+)', value: 60 };
-  if (group >= 7) return { label: 'Tirer dans le tas (7-12)', value: 40 };
-  if (group >= 3) return { label: 'Tirer dans le tas (3-6)', value: 20 };
+  if (group >= 13) return { label: 'Tirer dans le tas (13+)', value: 60, ref: RULE_REF['tirer-dans-le-tas'] };
+  if (group >= 7) return { label: 'Tirer dans le tas (7-12)', value: 40, ref: RULE_REF['tirer-dans-le-tas'] };
+  if (group >= 3) return { label: 'Tirer dans le tas (3-6)', value: 20, ref: RULE_REF['tirer-dans-le-tas'] };
   return null;
 }
 
@@ -593,18 +606,18 @@ export function defenseModifiers(defender: Combatant, mode: DefenseMode, dodgeMo
   if (adv) out.push({ label: 'Avantage', value: adv, uncapped: true });
   const pen = combatTestPenalty(defender);
   if (pen) out.push({ label: 'État', value: pen });
-  if (defender.defensiveStance) out.push({ label: 'Sur la défensive', value: 20 });
+  if (defender.defensiveStance) out.push({ label: 'Sur la défensive', value: 20, ref: RULE_REF['sur-la-defensive'] });
   if (mode === 'esquive' && dodgeMod) out.push({ label: 'Neige épaisse', value: dodgeMod });
   if (mode === 'parade') {
     const pp = parryPenalty(defender, weapon);
-    if (pp) out.push({ label: 'Main secondaire', value: pp });
+    if (pp) out.push({ label: 'Main secondaire', value: pp, ref: RULE_REF['main-secondaire'] });
     // Amputation (LDB 18) : la parade est un Test d'ARME → même pénalité contextuelle que l'attaque (ssi l'arme de parade implique la main blessée).
     const amp = weapon ? amputationCombatPenalty(defender, weapon) : 0;
     if (amp) out.push({ label: 'Amputation', value: amp });
   }
   // Substitution sociale (Intimidation/Dressage) : ni arme ni esquive → pas de main secondaire, de
   // neige, ni de malus « maniement deux armes » ; seuls Avantage/État/Sur la défensive s'appliquent.
-  if (mode !== 'social' && defender.dualStrikeDefensePenalty) out.push({ label: 'Maniement deux armes', value: -10 }); // LDB 10 l.638
+  if (mode !== 'social' && defender.dualStrikeDefensePenalty) out.push({ label: 'Maniement deux armes', value: -10, ref: RULE_REF['combat-deux-armes'] }); // LDB 10 l.638
   // Météo « Tests physiques » (EDOC 8 l.82, #341) : le CANAL UNIQUE `weatherTestMods` lit `defender.envWeather`
   // (posé à l'ouverture du combat), scopé par la carac RÉELLE du mode (Parade = CC, Esquive = Agilité) — jamais
   // recâblé par surface (la garde d'import interdit tout autre lecteur de `weatherPhysicalTestMod`).

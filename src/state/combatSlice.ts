@@ -62,7 +62,7 @@ import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, 
 import { hasWaterContainer, waterSprayCandidates } from '../engine/suffocation';
 import { treatTrauma, receiveMedicalAid } from '../engine/trauma';
 import { persistentConditions } from '../engine/persistence';
-import { testValue, actorHasSkill, soutienBonus } from '../engine/skills';
+import { testValue, actorHasSkill, soutienDetail } from '../engine/skills';
 import { rollOups } from '../engine/oups';
 import { spawnEnemy, placeCombatant } from './spawn';
 import { applyShipPostes, autoFormCrews, servingCrewPresent, shipOfCrew, servablePostes, serveAtPoste, leaveChef, isPosteManned } from './shipPostes';
@@ -1892,16 +1892,16 @@ export function createCombatSlice(get: Get, set: Set) {
       // requis pour armer la pièce) : ceci reste le Soutien générique LDB 12, adjacence (l.196) gatée pareil
       // qu'ailleurs en combat (`combatDistance`) — s'annule d'elle-même si `chef` n'a pas de `pos` propre
       // (équipage navire PASSAGER hors case, shipPostes.ts l.244-245).
-      const soutien = soutienBonus(servants, chef, 'projectiles', undefined, 'Poudre noire',
+      const sout = soutienDetail(servants, chef, 'projectiles', undefined, 'Poudre noire',
         chef.pos ? (c) => !!c.pos && combatDistance(chef, c) <= 1 : undefined);
-      const skillValue = combatValue(chef, 'ranged', w) + soutien;
+      const skillValue = combatValue(chef, 'ranged', w) + sout.bonus;
       set({
         pendingReload: {
           actorId: chef.id, actorName: chef.label, weaponUid: w.uid!,
           reload: reloadDRTarget(w), progressBefore: poste.reloadProgress ?? 0,
           skillValue, difficulty: 'intermediaire', roll: null,
           target: skillValue + DIFFICULTY_MODIFIERS.intermediaire, sl: 0, success: false,
-          posteUid, shipId, soutien: soutien ? { count: soutien / 10, bonus: soutien } : undefined,
+          posteUid, shipId, soutien: sout.bonus ? sout : undefined,
         },
       });
     },
@@ -3409,13 +3409,13 @@ export function createCombatSlice(get: Get, set: Set) {
       // `Combatant.spells` = ids STABLES au runtime → résolution par id SEULE (pas de repli libellé : interdit).
       const domainsOf = (h: Combatant) => new Set((h.spells ?? []).map((id) => findSpellById(id)?.subType).filter(Boolean) as string[]);
       const mine = domainsOf(active);
-      const supBonus = soutienBonus(battle.combatants, active, 'langue', 'intelligence', 'magick',
+      const sup = soutienDetail(battle.combatants, active, 'langue', 'intelligence', 'magick',
         (c) => c.kind === active.kind && [...domainsOf(c)].some((d) => mine.has(d))
           && (!active.pos || (!!c.pos && combatDistance(active, c) <= 1)));
-      const value = testValue(active, 'langue', undefined, 'magick') + supBonus;
+      const value = testValue(active, 'langue', undefined, 'magick') + sup.bonus;
       set({ pendingDispel: {
         casterId: active.id, spellId, spellCasterId, label: target.label, ni: target.ni, value,
-        support: supBonus > 0 ? { count: supBonus / 10, bonus: supBonus } : undefined,
+        support: sup.bonus > 0 ? sup : undefined,
         result: null,
       } });
     },
@@ -3484,12 +3484,12 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!target) return;
       const domainsOf = (h: Combatant) => new Set((h.spells ?? []).map((id) => findSpellById(id)?.subType).filter(Boolean) as string[]);
       const mine = domainsOf(caster);
-      const supBonus = soutienBonus(party, caster, 'langue', 'intelligence', 'magick',
+      const sup = soutienDetail(party, caster, 'langue', 'intelligence', 'magick',
         (c) => c.kind === caster.kind && [...domainsOf(c)].some((d) => mine.has(d)));
-      const value = testValue(caster, 'langue', undefined, 'magick') + supBonus;
+      const value = testValue(caster, 'langue', undefined, 'magick') + sup.bonus;
       set({ pendingDispel: {
         casterId: caster.id, spellId, spellCasterId, label: target.label, ni: target.ni, value,
-        support: supBonus > 0 ? { count: supBonus / 10, bonus: supBonus } : undefined,
+        support: sup.bonus > 0 ? sup : undefined,
         result: null,
       } });
     },

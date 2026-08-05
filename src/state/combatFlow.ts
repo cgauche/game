@@ -56,6 +56,7 @@ import {
   DEFENSE_LABEL,
   attackHandGate,
 } from '../engine/combat';
+import { RULE_REF } from '../engine/ruleRefs';
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, areInContact, reachTiles, meleeReachTiles } from '../engine/engagement';
 import { areGrappling, clearGrapple, grappleEnvMod } from '../engine/grapple';
 import { gainAdvantage } from '../engine/advantage';
@@ -129,7 +130,7 @@ import {
 } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep, easeDifficulty, hydrateTR } from '../engine/tests';
 import { effectiveChar, bonus, volatileCharLines } from '../engine/characteristics';
-import { testValue, skillBaseValue } from '../engine/skills';
+import { testValue, skillBaseValue, type SupportDetail } from '../engine/skills';
 import { findManeuverById, findDomainById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, GRAPPLE, type SpellData, type ManeuverDef } from '../data';
 import { applyHullCritical, exposedCrew } from '../engine/shipCritical';
 import { endShanty, resolveShipUnits } from './shipCrew';
@@ -656,7 +657,7 @@ export function attackEnv(
     const mobileShot = attacker.kind === 'hero'
       ? (battle.movementUsed > 0 || (mountMovement(battle, attacker) > 0 && !opts?.heldGround))
       : battle.movementUsed > 0;
-    if (mobileShot) env.push({ label: 'Tir en bougeant', value: -10 });
+    if (mobileShot) env.push({ label: 'Tir en bougeant', value: -10, ref: RULE_REF['tir-en-mouvement'] });
     // Tir dans la mêlée (LDB 14 l.134) : la cible est Engagée avec un allié du tireur. Règle optionnelle
     // « Tir dans un corps à corps » (LDB 14 l.133) : si désactivée, pas de −20 NI d'artefact d'aperçu
     // (`inMelee` reste false → pas de tir égaré non plus).
@@ -3928,6 +3929,15 @@ export function counterspellSoutienFor(s: GameState, pcs: PendingCounterspell | 
   return grp && grp.leader.id === id ? grp.bonus : 0;
 }
 
+/** MÊME Soutien que `counterspellSoutienFor`, en DÉTAIL affichable : les contre-lanceurs unis QUI
+ *  soutiennent ce meneur (`ids`), pour que la ligne de mod porte sa provenance. `undefined` hors
+ *  meneur ou sans Soutien. */
+export function counterspellSupportFor(s: GameState, pcs: PendingCounterspell | null | undefined, id: string): SupportDetail | undefined {
+  const grp = counterspellSoutenu(s, pcs);
+  if (!grp || grp.leader.id !== id || grp.bonus <= 0) return undefined;
+  return { count: grp.bonus / 10, bonus: grp.bonus, ids: grp.unis.filter((c) => c.id !== grp.leader.id).map((c) => c.id) };
+}
+
 /** Cette rangée LANCE-t-elle le dé de la fenêtre ? — déclarée `solo`, ou MENEUR du groupe uni (le
  *  Soutenu n'a qu'un jet, `LDB 12 l.189`). `pass` ne lance jamais. Prédicat UNIQUE, lu par la garde
  *  du jet (`counterspellEngage`) ET par l'affordance de la rangée (`CastModal`). */
@@ -5251,10 +5261,13 @@ export function castContextMods(
   const ward = opts?.skipWard ? 0 : castWardPenalty(s, target, spell);
   const domain = domainCastBonus(s, caster, spell);
   const env = domainEnvironmentBonus(spell, s.scene?.environment);
+  // La ligne de Domaine (attribut ET environnement) porte SON Domaine en référence : c'est lui, pas une
+  // règle générique, qui décrit le bonus (Aqshy/Ghyran — LDB 48 l.157/690).
+  const dref = spell.domainId ? { category: 'domains', id: spell.domainId } : undefined;
   const mods: ModLine[] = [
     ...(ward ? [{ label: 'Aura de Sorcière', value: ward }] : []),
-    ...(domain ? [{ label: 'Domaine', value: domain }] : []),
-    ...(env ? [{ label: 'Environnement', value: env }] : []),
+    ...(domain ? [{ label: 'Domaine', value: domain, ref: dref }] : []),
+    ...(env ? [{ label: 'Environnement', value: env, ref: dref }] : []),
   ];
   return { mods, total: ward + domain + env, ward, domain, env };
 }

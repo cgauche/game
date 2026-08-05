@@ -42,7 +42,8 @@ describe('skills — testValue / partyBest / skillCharKeyById', () => {
     const a = { ...mk({ sociabilite: 40 }), id: 'a' }, b = { ...mk({ sociabilite: 60 }), id: 'b' }, c = { ...mk({ sociabilite: 50 }), id: 'c' };
     const r = partyAssisted([a, b, c], undefined, 'sociabilite')!;
     expect(r.actor.id).toBe('b'); // le plus compétent lance
-    expect(r.support).toEqual({ count: 2, bonus: 20 }); // 2 soutiens × 10 (plafond BSoc 6)
+    // Le détail nomme QUI soutient (`ids`, provenance de la chip « +20 Soutien ») — pas seulement combien.
+    expect(r.support).toEqual({ count: 2, bonus: 20, ids: ['a', 'c'] }); // 2 soutiens × 10 (plafond BSoc 6)
     expect(r.value).toBe(80); // 60 + 20
   });
   // (escamotage : compétence avancée Dex SANS gate d'outil — le −10 « sans outils de crochetage »
@@ -70,6 +71,8 @@ describe('skills — testValue / partyBest / skillCharKeyById', () => {
     const helpers = [1, 2, 3, 4].map((n) => ({ ...mk({ dexterite: 10 }, [{ skillId: 'escamotage', advances: 1 }]), id: 'h' + n }));
     const r = partyAssisted([lead, ...helpers], 'escamotage')!;
     expect(r.support.count).toBe(2); // 4 aptes, plafond BDex 2
+    // Le plafond RETIENT les premiers éligibles : la provenance affichée compte autant de noms que de crans.
+    expect(r.support.ids).toEqual(['h1', 'h2']);
     expect(r.value).toBe(70); // 50 + 20
   });
   it('partyAssisted — un membre à 0 Augmentation ne soutient PAS (LDB 12 l.195)', () => {
@@ -77,14 +80,14 @@ describe('skills — testValue / partyBest / skillCharKeyById', () => {
     const novice = { ...mk({ dexterite: 40 }, [{ skillId: 'escamotage', advances: 0 }]), id: 'n' }; // 0 Augmentation
     const r = partyAssisted([lead, novice], 'escamotage')!;
     expect(r.actor.id).toBe('L');
-    expect(r.support).toEqual({ count: 0, bonus: 0 });
+    expect(r.support).toEqual({ count: 0, bonus: 0, ids: [] });
     expect(r.value).toBe(70); // aucun +10
   });
   it('partyAssisted — spec ciblée : l’Augmentation compte DANS cette spécialisation (l.195)', () => {
     const lead = { ...mk({ dexterite: 40 }, [{ skillId: 'metier', advances: 30, spec: 'Serrurier' }]), id: 'L' }; // 70
     const autre = { ...mk({ dexterite: 40 }, [{ skillId: 'metier', advances: 20, spec: 'Forgeron' }, { skillId: 'metier', advances: 0, spec: 'Serrurier' }]), id: 'a' };
     const r = partyAssisted([lead, autre], 'metier', undefined, undefined, 'Serrurier')!;
-    expect(r.support).toEqual({ count: 0, bonus: 0 });
+    expect(r.support).toEqual({ count: 0, bonus: 0, ids: [] });
   });
   it('soutienBonus/partyAssisted — filtre `eligible` (adjacence, LDB 12 l.196) exclut un membre capable écarté', () => {
     const a = { ...mk({ dexterite: 50 }, [{ skillId: 'escamotage', advances: 20 }]), id: 'a' }; // 70, possède
@@ -161,7 +164,7 @@ describe('bestAssistedOption — Scène à compétences AU CHOIX résolue en Sou
     const ref = bestForSkills([a], [{ skillId: 'discretion' }, { skillId: 'perception' }], undefined)!;
     expect(solo.value).toBe(ref.value);        // 80, aucun soutien
     expect(solo.skillId).toBe('discretion');
-    expect(solo.support).toEqual({ count: 0, bonus: 0 });
+    expect(solo.support).toEqual({ count: 0, bonus: 0, ids: [] });
   });
   it('N PJ AVANCÉS dans la compétence → valeur = meneur + 10×assistants (plafonné BCarac)', () => {
     // Meneur Discrétion 60 (BDex 3) ; deux autres y ont des Augmentations → +20 (sous le plafond 3).
@@ -170,14 +173,14 @@ describe('bestAssistedOption — Scène à compétences AU CHOIX résolue en Sou
     const h2 = { ...mk({ dexterite: 30 }, [{ skillId: 'discretion', advances: 1 }]), id: 'h2' };
     const r = bestAssistedOption([lead, h1, h2], [{ skillId: 'discretion' }], undefined)!;
     expect(r.actor.id).toBe('L');
-    expect(r.support).toEqual({ count: 2, bonus: 20 });
+    expect(r.support).toEqual({ count: 2, bonus: 20, ids: ['h1', 'h2'] });
     expect(r.value).toBe(80); // 60 + 20
   });
   it('un PJ à 0 Augmentation dans l’option retenue ne soutient pas (LDB 12 l.195)', () => {
     const lead = { ...mk({ dexterite: 30 }, [{ skillId: 'discretion', advances: 30 }]), id: 'L' }; // 60
     const novice = { ...mk({ dexterite: 30 }, [{ skillId: 'discretion', advances: 0 }]), id: 'n' };
     const r = bestAssistedOption([lead, novice], [{ skillId: 'discretion' }], undefined)!;
-    expect(r.support).toEqual({ count: 0, bonus: 0 });
+    expect(r.support).toEqual({ count: 0, bonus: 0, ids: [] });
     expect(r.value).toBe(60);
   });
   it('équipage vide → null', () => {

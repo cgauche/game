@@ -1,5 +1,15 @@
 [
   {
+    "id": "soutien",
+    "label": "Soutien",
+    "desc": "Dans certaines situations, il est évident que plusieurs Personnages œuvrant de concert à une même tâche ont plus de chance d'y parvenir qu'un Personnage isolé. Avec l'accord du MJ, un Personnage peut apporter son soutien à un autre sur le point d'effectuer un Test. Lorsque c'est le cas, le Personnage qui possède la plus forte chance de réussite lance les dés. Chaque Personnage qui apporte son soutien octroie un bonus de +10 au Test. Ceci mis à part, le Test est effectué normalement.\n\n**Limites du Soutien**\n\nLes Joueurs peuvent se soutenir dans la plupart des cas, mais il existe certaines limites.\n\n- Pour apporter leur soutien, tous les Personnages doivent posséder au moins une Augmentation dans la Compétence utilisée pour le Test.\n- Le Personnage qui soutient doit normalement être adjacent à celui qui effectue le Test.\n- Vous ne pouvez pas soutenir les Personnages qui font des Tests pour résister à la maladie, au poison, à la peur, au danger, ou toute autre tentative que le MJ jugera inappropriée.\n- Le Personnage qui effectue le Test ne peut pas être soutenu par plus de Personnages que son propre bonus dans la Caractéristique appropriée (voir page 33).",
+    "source": {
+      "book": "livre-de-base",
+      "page": 155,
+      "note": "LDB 12 « Soutien » / « Limites du Soutien »"
+    }
+  },
+  {
     "id": "sombre-pacte",
     "label": "Sombre Pacte",
     "desc": "Quelquefois, vous devez l'emporter. La plupart du temps, cela signifie réussir un Test important. Si ce Test aboutit à un échec, vous pouvez utiliser un Point de Chance pour le relancer, en espérant que la seconde tentative sera couronnée de succès. Mais qu'en sera-t-il si ce second Test se solde lui aussi par un échec ? Ou qu'il ne vous reste plus de Points de Chance à utiliser ? Il est temps de conclure un Sombre Pacte.\n\nVous pouvez décider de recevoir volontairement un Point de Corruption pour pouvoir relancer un Test, même si un deuxième jet a déjà été effectué. C'est toujours un choix qui vous appartient – jamais le MJ ne peut prendre cette décision à votre place – même s'il n'y à rien d'anormal à ce que le MJ vous rappelle gentiment qu'il existe un moyen de pouvoir relancer une fois de plus. Après tout, c'est quoi, le pire ?",

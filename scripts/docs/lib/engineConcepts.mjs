@@ -124,6 +124,7 @@ export const FILE_CONCEPTS = new Map([
   ['src/engine/shipCritical.ts', 'Coups Critiques de navire'],
   ['src/engine/shipMelee.ts', 'Combat naval au contact'],
   ['src/engine/shipNavigation.ts', 'Navigation de navire'],
+  ['src/engine/ruleRefs.ts', 'Références Codex des règles (modificateurs de jet)'],
   ['src/engine/size.ts', 'Taille'],
   ['src/engine/skillCombatApps.ts', 'Applications de compétence en combat'],
   ['src/engine/skills.ts', 'Compétences'],
