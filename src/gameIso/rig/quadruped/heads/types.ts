@@ -1,12 +1,6 @@
 import type { View } from '../../facing';
 import type { QuadBoneId, QuadProps } from '../quadSkeleton';
-
-/**
- * Art d'une VUE : SVG constant, ou FONCTION des axes de gabarit — dans ce cas les axes consommés
- * sont DÉCLARÉS dans `params` (contrat d'axes déclarés, design v2 §1 de #1082). La garde
- * `heads/quad-heads.test.ts` mesure les axes réellement lus et rejette tout axe non déclaré.
- */
-export type QuadHeadArt = string | ((p: QuadProps) => string);
+import type { QuadArt } from '../partArt';
 
 /**
  * Une TÊTE de quadrupède = un fichier `heads/defs/<clé>.ts` (patron des parts monstrueuses du
@@ -31,13 +25,13 @@ export type QuadHeadArt = string | ((p: QuadProps) => string);
 export interface QuadHeadDef {
   key: string;
   label: string;
-  art: Record<View, QuadHeadArt>;
+  art: Record<View, QuadArt>;
   bone?: Partial<Record<View, QuadBoneId>>;
   params?: readonly (keyof QuadProps)[];
   bodyWidth?: { front?: number; back?: number };
-  bodyHi?: QuadHeadArt;
-  ridge?: QuadHeadArt;
-  chestCrest?: QuadHeadArt;
-  tailProfile?: QuadHeadArt;
+  bodyHi?: QuadArt;
+  ridge?: QuadArt;
+  chestCrest?: QuadArt;
+  tailProfile?: QuadArt;
   tailCrest?: boolean;
 }

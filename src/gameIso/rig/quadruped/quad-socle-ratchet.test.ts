@@ -23,6 +23,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { QUAD_HEAD_DEFS } from './heads/_registry.generated';
+import { QUAD_TAIL_DEFS } from './tails/_registry.generated';
 
 const SRC = readFileSync(fileURLToPath(new URL('./quadParts.ts', import.meta.url)), 'utf8');
 const LINES = SRC.split(/\r?\n/);
@@ -50,6 +51,7 @@ const MAX_HEAD_SITES = 0;
 const MAX_FAR_LINES = 30;
 const MAX_WING_STATE_LINES = 3;
 const MAX_SPECIES_SCALAR_LINES = 13;
+const MAX_TAIL_SITES = 0; // 20 sites avant l'extraction des QUEUES en defs (2026-08-05)
 
 const headSites = [...CODE_SRC.matchAll(/p\.head === '([a-z-]+)'/g)].map((m) => m[1]);
 const linesMatching = (re: RegExp) => CODE.filter((l) => re.test(l)).length;
@@ -100,5 +102,17 @@ describe('socle quadrupède : le branchement par espèce ne peut que DÉCROÎTRE
     // désormais des fichiers du registre. Blanchir le socle en SUPPRIMANT des têtes échoue ici.
     expect(QUAD_HEAD_DEFS.length).toBeGreaterThanOrEqual(14);
     expect(new Set(QUAD_HEAD_DEFS.map((d) => d.key)).size).toBe(QUAD_HEAD_DEFS.length);
+  });
+
+  it('jetons `p.tail === <clé>` : 20 sites avant l\'extraction des queues, 0 après', () => {
+    expect((CODE_SRC.match(/p\.tail === '[a-z-]+'/g) ?? []).length).toBeLessThanOrEqual(MAX_TAIL_SITES);
+    expect((CODE_SRC.match(/p\.tail !==|switch\s*\(\s*p\.tail\s*\)|\[\s*p\.tail\s*\]/g) ?? []).length,
+      'forme d\'aiguillage par queue invisible au compte des jetons').toBe(0);
+    expect([...":p.tail === 'crin'".matchAll(/p\.tail === '[a-z-]+'/g)].length, 'détecteur mort').toBe(1);
+  });
+
+  it('le stock des queues a MIGRÉ : 11 defs enregistrées', () => {
+    expect(QUAD_TAIL_DEFS.length).toBeGreaterThanOrEqual(11);
+    expect(new Set(QUAD_TAIL_DEFS.map((d) => d.key)).size).toBe(QUAD_TAIL_DEFS.length);
   });
 });

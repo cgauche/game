@@ -4,8 +4,10 @@
  * déclaré »), et repli VISIBLE d'une clé sans def (#223).
  */
 import { describe, it, expect, vi } from 'vitest';
-import { QUAD_HEADS, quadHeadDef, headArt, quadHeadBone } from './index';
-import type { QuadHeadArt, QuadHeadDef } from './types';
+import { QUAD_HEADS, quadHeadDef, quadHeadBone } from './index';
+import { quadArt } from '../partArt';
+import type { QuadHeadDef } from './types';
+import type { QuadArt } from '../partArt';
 import { QUAD_SPECIES, WINGED_SPECIES } from '../../creatures';
 import { MISSING_TONE } from '../../viewArt';
 import type { QuadProps } from '../quadSkeleton';
@@ -22,11 +24,11 @@ const witness = (key: string): QuadProps => {
 };
 
 /** Canaux d'art d'une def, nommés (les optionnels sont sautés quand absents). */
-const channels = (d: QuadHeadDef): [string, QuadHeadArt][] => [
-  ...VIEWS.map((v) => [`art.${v}`, d.art[v]] as [string, QuadHeadArt]),
+const channels = (d: QuadHeadDef): [string, QuadArt][] => [
+  ...VIEWS.map((v) => [`art.${v}`, d.art[v]] as [string, QuadArt]),
   ...(['bodyHi', 'ridge', 'chestCrest', 'tailProfile'] as const)
     .filter((k) => d[k] != null)
-    .map((k) => [k, d[k] as QuadHeadArt] as [string, QuadHeadArt]),
+    .map((k) => [k, d[k] as QuadArt] as [string, QuadArt]),
 ];
 
 describe('defs de tête quadrupèdes : contrat de vues, d\'axes et de repli', () => {
@@ -39,7 +41,7 @@ describe('defs de tête quadrupèdes : contrat de vues, d\'axes et de repli', ()
     for (const d of Object.values(QUAD_HEADS)) {
       const p = witness(d.key);
       for (const v of VIEWS)
-        expect(headArt(d.art[v], p), `${d.key} / ${v}`).not.toBe('');
+        expect(quadArt(d.art[v], p), `${d.key} / ${v}`).not.toBe('');
     }
   });
 
@@ -57,7 +59,7 @@ describe('defs de tête quadrupèdes : contrat de vues, d\'axes et de repli', ()
       const p = witness(d.key);
       const used = new Set<string>();
       const spy = new Proxy(p, { get: (t, k) => { if (typeof k === 'string') used.add(k); return t[k as keyof QuadProps]; } });
-      for (const [, art] of channels(d)) headArt(art, spy as QuadProps);
+      for (const [, art] of channels(d)) quadArt(art, spy as QuadProps);
       const declared = new Set<string>(d.params ?? []);
       expect([...used].sort(), `${d.key} : axes consommés non déclarés`).toEqual([...declared].sort());
     }
@@ -66,7 +68,7 @@ describe('defs de tête quadrupèdes : contrat de vues, d\'axes et de repli', ()
   it('une clé SANS def rend la silhouette de REPLI VISIBLE + un avertissement (jamais un vide silencieux)', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const d = quadHeadDef('espece-de-tete-inconnue-xyz');
-    for (const v of VIEWS) expect(headArt(d.art[v], witness('cheval'))).toContain(MISSING_TONE);
+    for (const v of VIEWS) expect(quadArt(d.art[v], witness('cheval'))).toContain(MISSING_TONE);
     if (import.meta.env?.DEV) expect(warn).toHaveBeenCalled();
     warn.mockRestore();
   });

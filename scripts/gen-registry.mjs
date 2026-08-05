@@ -63,6 +63,17 @@ export const REGISTRIES = [
     idUnion: { typeName: 'QuadHeadId', field: 'key' },
   },
   {
+    // Queues QUADRUPÈDES (art profil + dos) : 1 queue = 1 fichier defs/. L'union `QuadTailId`
+    // GÉNÉRÉE remplace l'ancienne union littérale `QuadTail` du socle.
+    dir: 'src/gameIso/rig/quadruped/tails/defs',
+    out: 'src/gameIso/rig/quadruped/tails/_registry.generated.ts',
+    exportName: 'quadTail',
+    arrayName: 'QUAD_TAIL_DEFS',
+    type: 'QuadTailDef',
+    typeFrom: './types',
+    idUnion: { typeName: 'QuadTailId', field: 'key' },
+  },
+  {
     // Appendices (cornes/queue, art multi-vues) : 1 appendice = 1 fichier defs/. Source UNIQUE de
     // l'art de corne/queue, référencé par id (monster.cornes / appendageFeature / traitVisuals).
     dir: 'src/gameIso/rig/parts/appendages/defs',

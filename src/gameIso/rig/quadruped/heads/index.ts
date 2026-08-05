@@ -4,12 +4,12 @@
  * LOOKUP — il ne connaît plus aucune clé d'espèce (#1082 P2).
  */
 import { QUAD_HEAD_DEFS } from './_registry.generated';
-import type { QuadHeadArt, QuadHeadDef } from './types';
-import type { QuadBoneId, QuadProps } from '../quadSkeleton';
+import type { QuadHeadDef } from './types';
+import type { QuadBoneId } from '../quadSkeleton';
 import type { View } from '../../facing';
 import { MISSING_ART, pickView } from '../../viewArt';
 
-export type { QuadHeadArt, QuadHeadDef } from './types';
+export type { QuadHeadDef } from './types';
 export type { QuadHeadId } from './_registry.generated';
 
 /** Table DÉRIVÉE des fichiers `defs/` (clé de tête → def). */
@@ -34,10 +34,6 @@ const MISSING_HEAD: QuadHeadDef = {
   label: 'Tête manquante',
   art: { profile: missing('profile'), front: missing('front'), back: missing('back') },
 };
-
-/** Résout un art de def (SVG constant ou fonction des axes déclarés). Absent = pas d'art. */
-export const headArt = (a: QuadHeadArt | undefined, p: QuadProps): string =>
-  typeof a === 'function' ? a(p) : a ?? '';
 
 /** Os PORTEUR de l'art de tête pour la vue (défaut `tete` ; clusters multi-cous : `encolure` en profil). */
 export const quadHeadBone = (d: QuadHeadDef, view: View): QuadBoneId => d.bone?.[view] ?? 'tete';

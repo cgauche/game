@@ -8,6 +8,7 @@ import type { StoredPalette } from '../palette';
 import type { View } from '../facing';
 import { QUAD_Z } from './quadZ';
 import type { QuadHeadId } from './heads/_registry.generated';
+import type { QuadTailId } from './tails/_registry.generated';
 
 export type QuadBoneId =
   | 'tronc' | 'croupe' | 'encolure' | 'tete' | 'nuque' | 'queue'
@@ -46,7 +47,8 @@ export type QuadBuild = 'equine' | 'canine' | 'suid' | 'rodent' | 'ursine' | 'fe
  *  écrire `p.head === 'hydre'` : une tête N+1 est un fichier, jamais une branche (#1082 P2). */
 export type QuadHead = QuadHeadId;
 export type QuadFoot = 'sabot' | 'patte' | 'serre'; // serre = serres d'aigle (rapace)
-export type QuadTail = 'crin' | 'touffe' | 'touffe-basse' | 'fouet' | 'nue' | 'courte' | 'reptile' | 'enroulee' | 'leonine' | 'dard' | 'sans';
+/** Queue = id du REGISTRE des defs (`tails/defs/<clé>.ts`, union générée). */
+export type QuadTail = QuadTailId;
 /** Crinière le long de l'encolure : crin couché (équin), hirsute (fourrure dressée — loup/
  *  sanglier), sans. */
 export type QuadMane = 'crin' | 'hirsute' | 'sans';
