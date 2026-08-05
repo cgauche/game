@@ -1131,10 +1131,6 @@ export type QuadLayers = Partial<Record<QuadBoneId, QuadLayer[]>>;
 export const quadDecoFragments = (v: QuadDecoValue): QuadDecoFragment[] =>
   (typeof v === 'string' ? [{ svg: v }] : v);
 
-/** Art d'un os, calques concaténés dans l'ordre du peintre (plan croissant, tri STABLE). */
-export const quadLayersSvg = (ls?: QuadLayer[]): string =>
-  [...(ls ?? [])].sort((a, b) => (a.plan ?? 0) - (b.plan ?? 0)).map((l) => l.svg).join('');
-
 export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' | 'spread' = 'folded'): QuadLayers {
   const frontFoot: QuadFoot = p.frontFoot ?? p.foot;
   // Décor PAR-OS propre à la créature (prop `deco` — précédent : épave du crabe, CrabProps.deco) :

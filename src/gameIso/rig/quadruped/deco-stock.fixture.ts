@@ -9,11 +9,17 @@
  * le registre réel des créatures, à l'image de `src/scenes/test-fixture.ts`.
  */
 import { CREATURES } from '../creatures';
-import { quadParts, quadDecoFragments } from './quadParts';
+import { quadParts, quadDecoFragments, type QuadLayer } from './quadParts';
 import type { QuadBoneId, QuadProps } from './quadSkeleton';
 import type { View } from '../facing';
 
 export const DECO_VIEWS: View[] = ['profile', 'front', 'back'];
+
+/** Art d'un os, calques concaténés dans l'ordre du peintre (plan croissant, tri STABLE) : ce que
+ *  le rendu peint pour cet os, tous plans confondus — mesure de test (le rendu, lui, émet un os
+ *  RÉSOLU par plan distinct, cf. `composeQuad`). */
+export const quadLayersSvg = (ls?: QuadLayer[]): string =>
+  [...(ls ?? [])].sort((a, b) => (a.plan ?? 0) - (b.plan ?? 0)).map((l) => l.svg).join('');
 
 /** Les defs quadrupèdes/ailées du registre (le dénominateur de toute mesure de ce module). */
 export const quadDecoDefs = (): { id: string; quad: QuadProps }[] =>

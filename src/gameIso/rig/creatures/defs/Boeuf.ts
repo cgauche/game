@@ -201,10 +201,10 @@ export const creature: CreatureDef = {
     deco: {
       // DE FACE, deux fragments de plans OPPOSÉS sur le même os : les cornes naissent au sommet du
       // crâne et balaient en arrière-plan, le mufle est la partie la plus proche de l'œil.
-      'tete#front': [{ svg: CORNES_FACE, plan: -0.5 }, { svg: MUFLE_FACE, plan: 0.5 }],
+      'tete#front': [{ svg: CORNES_FACE, plan: -0.25 }, { svg: MUFLE_FACE, plan: 0.25 }],
       // DE DOS, la lyre part du front, à l'OPPOSÉ de l'œil : elle passe DERRIÈRE le crâne, seules
       // les pointes qui débordent de la calotte restent visibles (plan relatif négatif).
-      'tete#back': [{ svg: CORNES_FACE, plan: -0.5 }],
+      'tete#back': [{ svg: CORNES_FACE, plan: -0.25 }],
       'tete#profile': CORNES_PROFIL,
       encolure: FANON,
       'tronc#profile': TRONC_PROFIL,

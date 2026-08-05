@@ -61,11 +61,13 @@ export function quadZOrder(view: View): { id: QuadBoneId; z: number }[] {
 /**
  * Amplitude MAXIMALE du plan d'un fragment de décor, RELATIVE au plan de son os porteur
  * (`QuadDecoFragment.plan`) : un décor s'intercale autour de l'os qui le porte, il ne traverse
- * pas la pile. L'écart MINIMAL entre deux plans d'os voisins de la table vaut 0,5 (de dos :
- * croupe 4 · nuque 4,5 · tronc 5) : à la borne, un fragment REJOINT au pire le plan du voisin
- * (égalité départagée par l'ordre d'émission, tri stable), il ne le double jamais.
+ * pas la pile. La valeur est STRICTEMENT inférieure à l'écart minimal entre deux plans d'os
+ * voisins de la table (0,5 — de dos : croupe 4 · nuque 4,5 · tronc 5) : à la borne, le z d'un
+ * fragment reste strictement entre le plan de son os et celui du voisin, jamais égal — le tri
+ * peintre (`sortByZ`, comparaison de z seule) n'a donc aucune égalité à départager entre un
+ * fragment et un os. Cliquets : `quad-vues-ratchet.test.ts` (borne authorée, séparation stricte).
  */
-export const QUAD_DECO_PLAN_MAX = 0.5;
+export const QUAD_DECO_PLAN_MAX = 0.25;
 
 /** Plans du CAVALIER intercalés dans l'échelle de la monture, par vue (`mountedRig`). */
 export interface QuadRiderZ { corps: number; jambeProche: number; jambeLointaine: number }

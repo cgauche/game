@@ -25,15 +25,15 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { CREATURES } from '../creatures';
+import { CREATURES, QUAD_SPECIES, WINGED_SPECIES } from '../creatures';
 import { QUAD_Z, quadZOrder, QUAD_DECO_PLAN_MAX } from './quadZ';
 import {
   quadDecoCouples, APPLICABLES_GELES, PLAFOND_DECOS_MORTS,
-  DECOS_SANS_PLAN_GELES, PLAFOND_DECOS_SANS_PLAN,
+  DECOS_SANS_PLAN_GELES, PLAFOND_DECOS_SANS_PLAN, quadLayersSvg,
 } from './deco-stock.fixture';
 import { resolveQuadFromProps } from './composeQuad';
 import { buildQuadSkeleton, quadSkeletonForView, type QuadBoneId, type QuadProps } from './quadSkeleton';
-import { quadParts, quadLayersSvg, quadDecoFragments, quadAnchor } from './quadParts';
+import { quadParts, quadDecoFragments, quadAnchor } from './quadParts';
 import { riderZForQuad, mountTackBones } from '../mountedRig';
 import { rigFxGradients } from '../fxGradients';
 import type { ResolvedBone } from '../composeRig';
@@ -41,6 +41,11 @@ import type { View } from '../facing';
 
 const VIEWS: View[] = ['profile', 'front', 'back'];
 const quadDefs = CREATURES.filter((c) => c.quad).map((c) => ({ id: c.id, quad: c.quad as QuadProps }));
+
+/** Plan de fragment HORS du voisinage admis de son os : au-delà de la borne, ou non fini
+ *  (`NaN`/`±Infinity` — toute comparaison avec `NaN` est fausse, la valeur passerait sinon). */
+const planHorsBorne = (plan: number): boolean =>
+  !Number.isFinite(plan) || Math.abs(plan) > QUAD_DECO_PLAN_MAX;
 
 // ── (a) DÉCORS MORTS, PLANS NON DÉCLARÉS ────────────────────────────────────────────────────
 // Le détecteur et les stocks GELÉS vivent dans `deco-stock.fixture.ts` (source unique, partagée
@@ -93,42 +98,71 @@ describe('décors SANS plan déclaré : stock gelé, plafond décroissant (#1082
       for (const [cle, val] of Object.entries(quad.deco ?? {})) {
         if (!val) continue;
         for (const f of quadDecoFragments(val))
-          if (f.plan != null && Math.abs(f.plan) > QUAD_DECO_PLAN_MAX) hors.push(`${id} ${cle} : plan=${f.plan}`);
+          if (f.plan != null && planHorsBorne(f.plan)) hors.push(`${id} ${cle} : plan=${f.plan}`);
       }
     }
     expect(hors, `un fragment de décor ne s'écarte pas de plus de ${QUAD_DECO_PLAN_MAX} du plan de son os`).toEqual([]);
+  });
+
+  it('la borne rejette aussi le plan NON FINI (NaN, ±Infinity)', () => {
+    for (const plan of [NaN, Infinity, -Infinity, 0.5, -0.5, QUAD_DECO_PLAN_MAX + 0.01])
+      expect(planHorsBorne(plan), `plan=${plan}`).toBe(true);
+    for (const plan of [0, QUAD_DECO_PLAN_MAX, -QUAD_DECO_PLAN_MAX, 0.1])
+      expect(planHorsBorne(plan), `plan=${plan}`).toBe(false);
   });
 });
 
 // ── (a ter) CONTRAT DU PLAN RELATIF : un fragment déclaré s'intercale ────────────────────────
 describe('plan RELATIF d\'un fragment de décor : l\'os résolu se dédouble (#1082)', () => {
+  const M = QUAD_DECO_PLAN_MAX;
   /** Props d'épreuve : la première def quadrupède du registre, décorée de deux fragments opposés. */
   const props = (): QuadProps => ({
     ...(quadDefs[0].quad),
-    deco: { 'tete#back': [{ svg: '<g data-deco="derriere"/>', plan: -0.5 }, { svg: '<g data-deco="devant"/>', plan: 0.5 }] },
+    deco: { 'tete#back': [{ svg: '<g data-deco="derriere"/>', plan: -M }, { svg: '<g data-deco="devant"/>', plan: M }] },
   });
 
   it('un fragment à plan NÉGATIF est peint AVANT l\'art de son os, un plan POSITIF après', () => {
     const os = resolveQuadFromProps(props(), 'back').filter((b) => b.id === 'tete');
     expect(os.map((b) => b.z), 'trois plans distincts portés par le MÊME os').toEqual([
-      QUAD_Z.tete.back - 0.5, QUAD_Z.tete.back, QUAD_Z.tete.back + 0.5,
+      QUAD_Z.tete.back - M, QUAD_Z.tete.back, QUAD_Z.tete.back + M,
     ]);
     expect(os[0].parts[0].svg).toContain('data-deco="derriere"');
     expect(os[1].parts[0].svg).toContain('rigCutQuadCrane'); // l'art de l'os, à son propre plan
     expect(os[2].parts[0].svg).toContain('data-deco="devant"');
   });
 
-  it('sous la borne, un fragment atteint AU PLUS le plan de l\'os voisin, jamais au-delà', () => {
-    // L'écart MINIMAL entre deux plans d'os voisins de la table vaut la borne elle-même (de dos :
-    // croupe 4 · nuque 4,5 · tronc 5) : un fragment poussé à ±0,5 rejoint au pire le plan du
-    // voisin — l'égalité se départage alors par l'ordre d'émission (tri STABLE), il ne le double pas.
+  it('la borne est STRICTEMENT sous l\'écart de deux plans d\'os voisins', () => {
     const ecarts: string[] = [];
     for (const view of VIEWS) {
       const zs = quadZOrder(view).map((o) => o.z);
       for (let i = 1; i < zs.length; i++)
-        if (zs[i] !== zs[i - 1] && zs[i] - zs[i - 1] < QUAD_DECO_PLAN_MAX) ecarts.push(`${view} ${zs[i - 1]}→${zs[i]}`);
+        if (zs[i] !== zs[i - 1] && zs[i] - zs[i - 1] <= QUAD_DECO_PLAN_MAX) ecarts.push(`${view} ${zs[i - 1]}→${zs[i]}`);
     }
-    expect(ecarts, 'deux plans d\'os voisins plus proches que la borne : un décor pourrait en doubler un').toEqual([]);
+    expect(ecarts, 'deux plans d\'os voisins séparés d\'au plus la borne : un décor pourrait en ATTEINDRE un').toEqual([]);
+  });
+
+  // Les deux cas d'ÉGALITÉ possibles : de dos, `nuque` (4,5) et `tronc` (5) sont les deux plans les
+  // plus proches de la table. Poussé À la borne, le fragment reste STRICTEMENT entre les deux — le
+  // tri peintre (z seul) n'a aucune égalité à départager, et l'ordre d'émission des os ne décide rien.
+  const zDe = (bones: ResolvedBone[], marque: string) =>
+    bones.findIndex((b) => b.parts.some((p) => p.svg.includes(marque)));
+
+  it('un fragment de `nuque` poussé à +borne reste SOUS le tronc (de dos)', () => {
+    const bones = resolveQuadFromProps(
+      { ...quadDefs[0].quad, deco: { 'nuque#back': [{ svg: '<g data-deco="haut"/>', plan: M }] } }, 'back');
+    const i = zDe(bones, 'data-deco="haut"'), iTronc = bones.findIndex((b) => b.id === 'tronc');
+    expect(bones[i].z, 'strictement sous le plan du tronc').toBeLessThan(QUAD_Z.tronc.back);
+    expect(bones[i].z).toBe(QUAD_Z.nuque.back + M);
+    expect(i, 'peint AVANT le tronc = masqué par lui').toBeLessThan(iTronc);
+  });
+
+  it('un fragment de `tronc` poussé à −borne reste AU-DESSUS de la nuque (de dos)', () => {
+    const bones = resolveQuadFromProps(
+      { ...quadDefs[0].quad, deco: { 'tronc#back': [{ svg: '<g data-deco="bas"/>', plan: -M }] } }, 'back');
+    const i = zDe(bones, 'data-deco="bas"'), iNuque = bones.findIndex((b) => b.id === 'nuque');
+    expect(bones[i].z, 'strictement au-dessus du plan de la nuque').toBeGreaterThan(QUAD_Z.nuque.back);
+    expect(bones[i].z).toBe(QUAD_Z.tronc.back - M);
+    expect(i, 'peint APRÈS la nuque = la masque').toBeGreaterThan(iNuque);
   });
 
   /**
@@ -148,6 +182,28 @@ describe('plan RELATIF d\'un fragment de décor : l\'os résolu se dédouble (#1
     const i = (id: string) => bones.findIndex((b) => b.id === id);
     expect(bones.indexOf(porteur[0]), 'peint AVANT le tronc = masqué par lui').toBeLessThan(i('tronc'));
     expect(quadAnchor(p, 'nuque', 'back'), 'même repère que l\'art de tête').toBe(quadAnchor(p, 'tete', 'back'));
+  });
+
+  /**
+   * L'INVARIANT qui rend ce contrat authorable : un décor déclaré sur `nuque#back` s'écrit dans les
+   * coordonnées de l'art de TÊTE. Cela ne tient que si l'os `nuque` est posé exactement là où l'est
+   * `tete` — même matrice monde (placement/rotation issus de la FK) ET même échelle. Toute espèce
+   * dont le pivot ou l'ancre de nuque dériverait ferait glisser tous ses décors de raccord.
+   */
+  it('de dos, `nuque` porte la MÊME matrice monde et la MÊME échelle que `tete`, pour TOUTE espèce', () => {
+    const ecarts: string[] = [];
+    const especes = { ...QUAD_SPECIES, ...WINGED_SPECIES } as Record<string, QuadProps>;
+    expect(Object.keys(especes).length, 'population mesurée').toBeGreaterThan(20);
+    for (const [espece, p] of Object.entries(especes)) {
+      const bones = resolveQuadFromProps(p, 'back');
+      const tete = bones.find((b) => b.id === 'tete'), nuque = bones.find((b) => b.id === 'nuque');
+      if (!tete || !nuque) { ecarts.push(`${espece} : tete=${!!tete} nuque=${!!nuque}`); continue; }
+      if (tete.matrix.join(',') !== nuque.matrix.join(','))
+        ecarts.push(`${espece} : matrice tete=[${tete.matrix}] nuque=[${nuque.matrix}]`);
+      if (tete.scale.join(',') !== nuque.scale.join(','))
+        ecarts.push(`${espece} : échelle tete=[${tete.scale}] nuque=[${nuque.scale}]`);
+    }
+    expect(ecarts, 'la nuque doit rester le calque BAS de la tête, au même repère').toEqual([]);
   });
 });
 

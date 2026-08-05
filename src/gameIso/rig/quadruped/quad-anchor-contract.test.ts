@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CREATURES } from '../creatures';
-import { quadParts, quadAnchor, quadLayersSvg } from './quadParts';
-import { DECOS_MORTS_GELES } from './deco-stock.fixture';
+import { quadParts, quadAnchor } from './quadParts';
+import { DECOS_MORTS_GELES, quadLayersSvg } from './deco-stock.fixture';
 import type { QuadBoneId, QuadProps } from './quadSkeleton';
 import type { View } from '../facing';
 

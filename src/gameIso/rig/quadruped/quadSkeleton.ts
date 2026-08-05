@@ -31,7 +31,7 @@ export type QuadPose = Partial<Record<QuadBoneId, number>>;
  * Fragment de DÉCOR posé sur un os : son `plan` est RELATIF au plan de l'os porteur (`QUAD_Z`),
  * borné à ±`QUAD_DECO_PLAN_MAX` — un fragment ne quitte jamais le voisinage de son os. `plan`
  * absent = calque apposé PAR-DESSUS l'art de l'os (le comportement du canal avant #1082 Lot 2,
- * compté par le cliquet `decos-sans-plan-declare`). Un couple (os, vue) peut porter N fragments
+ * compté par le stock gelé `DECOS_SANS_PLAN_GELES`). Un couple (os, vue) peut porter N fragments
  * de plans différents : la sangle qui fait le tour (un pan devant, un derrière), les cornes du
  * bœuf de dos (derrière le crâne) et son mufle (devant).
  */
