@@ -254,7 +254,7 @@ describe('les plans de profondeur ne vivent QUE dans QUAD_Z (#1082)', () => {
     });
   }
 
-  it('le cavalier s\'intercale au PROFIL comme avant la publication de la table', () => {
+  it('au PROFIL, le cavalier s\'intercale entre sa jambe lointaine (sous le barillet) et sa jambe proche (au-dessus de la tête)', () => {
     const profil = riderZForQuad('profile');
     expect(profil(bone('cuisseG', 0))).toBe(4.5);  // jambe lointaine, sous le barillet (5)
     expect(profil(bone('torse', 0))).toBe(6.6);    // corps, au-dessus de l'encolure (6)
