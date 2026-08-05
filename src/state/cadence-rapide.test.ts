@@ -30,7 +30,7 @@ describe('Cadence Rapide — auto-résolution des cascades par le driver', () =>
     return h;
   }
   const step = (id: string, actorId: string): CascadeStep =>
-    ({ id, kind: 'tally', actorId, label: id, target: 55, result: null, interactive: true });
+    ({ id, kind: 'tally', actorId, label: id, rollLabel: 'Résistance', target: 55, result: null, interactive: true });
 
   it('manuel (défaut) : le driver ne touche PAS la cascade', () => {
     const h = hero();

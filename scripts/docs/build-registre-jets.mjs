@@ -172,6 +172,8 @@ out += `Le roulage, lui, arrive plus tard et passe par le seam : rien ne le sign
 out += `seam (\`ROLL_SEAM_CORE\`) sont hors périmètre — leur pending EST le foyer.\n\n`
 out += `| Fichier | Sites | Nature | Lignes | Justification |\n|---|---|---|---|---|\n`
 for (const [rel, dec] of PENDING_JET_FABRICATION_STOCK) {
+  // Ancrage par NUMÉROS DE LIGNE dans le contenu comparé : churn à chaque édition au-dessus d'un site
+  // -> #1110 (patron correctif : `enclosingSymbol` de scripts/docs/lib/rollShellUsage.mjs).
   out += `| \`${rel}\` | ${dec.n} | ${dec.kind} | ${fabrication.get(rel).map((s) => s.line).join(', ')} | ${esc(dec.why)} |\n`
 }
 out += `\n_${total(fabrication)} sites mesurés dans ${fabrication.size} fichiers — par nature : ${parNature(PENDING_JET_FABRICATION_STOCK)}._\n\n`
@@ -186,6 +188,7 @@ out += `\`rollMightTest\`) reste invisible), \`rollTest\`/\`d100\` eux-mêmes ex
 out += `La forme (S) « position de spec » garde son exclusion structurelle.\n\n`
 out += `| Fichier | Sites | Nature | Rouleurs appelés | Justification |\n|---|---|---|---|---|\n`
 for (const [rel, dec] of ENGINE_DELEGATED_ROLL_STOCK) {
+  // Idem (F) : les justifications de cette section citent des `:ligne` -> #1110.
   const noms = [...new Set(delegue.get(rel).map((s) => s.name))].sort()
   out += `| \`${rel}\` | ${dec.n} | ${dec.kind} | ${noms.map((n) => `\`${n}\``).join(', ')} | ${esc(dec.why)} |\n`
 }

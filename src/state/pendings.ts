@@ -1354,7 +1354,7 @@ export interface CascadeTableResult {
   lines: string[];
 }
 
-export interface CascadeStep extends RollParticipant {
+export interface CascadeStepBase extends RollParticipant {
   /** Nature de la conséquence (clé de `cascadeAppliers`). Ex. 'recovery' | 'nightmare' | 'exposure'. */
   kind: string;
   /** Héros qui lance (résolu via `actorIn`). Absent → étape de groupe (rare). */
@@ -1375,7 +1375,9 @@ export interface CascadeStep extends RollParticipant {
    *  Moral, périls sans acteur unique) : aucun `actorId`, l'arbitre route l'owner au siège MJ (`gmSeat`)
    *  quand il existe, à l'hôte sinon (`netOwnership.seatOwns` via le sentinel `WORLD_STEP_OWNER`). */
   worldOwner?: boolean;
-  /** Libellé du Test affiché (« Résistance », « Calme », « Survie en extérieur »…). */
+  /** Libellé du Test affiché (« Résistance », « Calme », « Survie en extérieur »…) — la COMPÉTENCE
+   *  lancée, pas la situation. LIÉ À `target` par le TYPE (cf. `CascadeStep` en fin d'interface) : une
+   *  étape qui lance en porte un, une étape sans jet n'en porte pas. */
   rollLabel?: string;
   /** ENJEU surfaçable (#331) : ce que l'ÉCHEC de l'étape coûte, ÉNONCÉ verbatim depuis la Source (le
    *  mécanisme est déjà dans l'applier — ceci ne fait que le rendre LISIBLE sous le titre d'étape).
@@ -1483,6 +1485,18 @@ export interface CascadeStep extends RollParticipant {
    *  indépendants, #351). */
   aggregate?: CascadeAggregate;
 }
+
+/** Étape qui LANCE un dé : `target` (cible effective) et `rollLabel` (compétence lancée) vont
+ *  ENSEMBLE — la ligne de jet a besoin des deux (`RollLine`, contrat d'affichage `docs/charte-ui.md`). */
+export type CascadeRollStep = CascadeStepBase & { target: number; rollLabel: string };
+
+/**
+ * UNE étape de cascade : elle LANCE (cible + libellé de ligne) ou elle ne lance pas (affichage, choix,
+ * table, batch — ni l'un ni l'autre). Le lien est porté par le TYPE, pas par un repli d'affichage :
+ * `CascadeModal` n'a plus de « Jet » de secours à écrire quand un constructeur oublie le libellé —
+ * l'oubli ne compile pas (#1078 LOT C1).
+ */
+export type CascadeStep = CascadeRollStep | (CascadeStepBase & { target?: undefined; rollLabel?: undefined });
 /**
  * CASCADE séquentielle influençable (régime choisi par l'utilisateur pour les jets de NUIT et de
  * VOYAGE — cf. docs/superpowers/specs/2026-06-14-multi-roll-modal-design.md, Étape 3) : on présente

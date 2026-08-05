@@ -22,7 +22,7 @@ describe('#253.1 — dessoûlage : le 2ᵉ Test (gueule de bois) est une étape 
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     hero.drunk = { failedTests: 3, drunk: true, result: 'joyeux' };
     useGame.setState({ party: [hero], gameTime: 8 * 60 });
-    const step: CascadeStep = { id: 'dessoulage-H-0', kind: 'dessoulage', actorId: hero.id, label: 'Dessoûlage', base: 40, target: 40, result: { roll: 45, target: 40, sl: 1, success: true } };
+    const step: CascadeStep = { id: 'dessoulage-H-0', kind: 'dessoulage', actorId: hero.id, label: 'Dessoûlage', rollLabel: 'Résistance', base: 40, target: 40, result: { roll: 45, target: 40, sl: 1, success: true } };
 
     const out = cascadeAppliers['dessoulage'].apply(get, set, step, hero, { steps: [step], index: 0 });
 
@@ -64,7 +64,7 @@ describe('#253.2 — combat franchissant minuit : les Tests d\'entretien se mett
   it('openCombatEndCascade CONSOMME la file : un héros piloté-humain → l\'étape rejoint la cascade de FIN', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(3) });
     const heroClone = { ...hero, kind: 'hero' as const };
-    const queued: CascadeStep = { id: 'faim-H-0', kind: 'faim', actorId: hero.id, label: 'Faim', base: 40, target: 40, result: null, interactive: true };
+    const queued: CascadeStep = { id: 'faim-H-0', kind: 'faim', actorId: hero.id, label: 'Faim', rollLabel: 'Résistance', base: 40, target: 40, result: null, interactive: true };
     useGame.setState({
       party: [hero],
       battle: { combatants: [heroClone, deadEnemy()], order: [hero.id, 'e'], turn: 0, round: 1, log: [], over: null } as never,

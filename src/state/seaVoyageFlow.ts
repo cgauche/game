@@ -569,10 +569,13 @@ function buildOverspeedStep(get: Get, index: number): CascadeStep | null {
   const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance' };
   return {
     id: `sea-overspeed-${index}`, kind: 'sea-overspeed', actorId: best.actor.id, icon: 'travel/sail-ship',
-    label: composeRollLabel(best.actor, `Ça va lâcher, capitaine ! (M+${sea.effMToday - baseM})`, test),
+    label: composeRollLabel(best.actor, 'Ça va lâcher, capitaine !', test),
     difficulty: row.difficulty,
     rollLabel: 'Résistance', base: best.value, support: best.support, target: effectiveTarget(best.actor, test, row.difficulty),
-    result: null, interactive: true, meta: { overspeedDamage: row.damage },
+    // SURPLUS de M du jour, en DONNÉE (`effMToday − M de conception`) : c'est ce qui choisit la bande
+    // du tableau (l.121-142). Structuré, jamais recomposé dans le libellé — le contrat d'affichage
+    // réserve le libellé d'action au NOM de l'action (docs/charte-ui.md).
+    result: null, interactive: true, meta: { overspeedDamage: row.damage, overspeedOverM: sea.effMToday - baseM },
   };
 }
 
@@ -1190,7 +1193,8 @@ function buildBarrelSteps(get: Get, sea: SeaVoyageState, vessel: CampaignVessel 
     for (const h of get().party.filter((c) => !c.dead && contractionDue(c, diseaseId))) {
       out.push({
         id: `sea-tonneau-expose-${h.id}`, kind: 'sea-tonneau-expose', actorId: h.id,
-        label: composeRollLabel(h, `Tonneau d'eau contaminé (${diseaseLabel(diseaseId)})`, test), difficulty: diff,
+        label: composeRollLabel(h, 'Tonneau d’eau contaminé', test), difficulty: diff,
+        // Z5 : SITUATION en `rollLabel` (Compétence lancée = Résistance) — stock du cliquet, #1109.
         rollLabel: 'Tonneau contaminé', base: testValue(h, 'resistance', 'endurance'),
         target: effectiveTarget(h, test, diff), result: null, interactive: true, meta: { diseaseId },
       });
@@ -1202,7 +1206,8 @@ function buildBarrelSteps(get: Get, sea: SeaVoyageState, vessel: CampaignVessel 
       if (!dz) continue;
       out.push({
         id: `sea-tonneau-contamine-${h.id}`, kind: 'sea-tonneau-contamine', actorId: h.id,
-        label: composeRollLabel(h, "Tonneau d'eau (boire)", test), difficulty: 'intermediaire',
+        label: composeRollLabel(h, 'Tonneau d’eau', test), difficulty: 'intermediaire',
+        // Z5 : SITUATION en `rollLabel` (Compétence lancée = Résistance) — stock du cliquet, #1109.
         rollLabel: "Tonneau d'eau", base: testValue(h, 'resistance', 'endurance'),
         target: effectiveTarget(h, test, 'intermediaire'), result: null, interactive: true, meta: { diseaseId: dz.id },
       });
@@ -1231,7 +1236,8 @@ function buildSeasicknessSteps(get: Get, sea: SeaVoyageState): CascadeStep[] {
     if (firstDay) {
       out.push({
         id: `sea-mal-de-mer-premier-${h.id}`, kind: 'sea-mal-de-mer', actorId: h.id,
-        label: composeRollLabel(h, 'Mal de mer — premier voyage en mer', test), difficulty: 'complexe',
+        label: composeRollLabel(h, 'Mal de mer du premier voyage', test), difficulty: 'complexe',
+        // Z5 : SITUATION en `rollLabel` (Compétence lancée = Résistance) — stock du cliquet, #1109.
         rollLabel: 'Mal de mer', base: testValue(h, 'resistance', 'endurance'),
         target: effectiveTarget(h, test, 'complexe'), result: null, interactive: true,
       });
@@ -1239,7 +1245,8 @@ function buildSeasicknessSteps(get: Get, sea: SeaVoyageState): CascadeStep[] {
     if (badWeather) {
       out.push({
         id: `sea-mal-de-mer-tempete-${h.id}`, kind: 'sea-mal-de-mer', actorId: h.id,
-        label: composeRollLabel(h, 'Mal de mer — mauvais temps', test), difficulty: 'intermediaire',
+        label: composeRollLabel(h, 'Mal de mer par mauvais temps', test), difficulty: 'intermediaire',
+        // Z5 : SITUATION en `rollLabel` (Compétence lancée = Résistance) — stock du cliquet, #1109.
         rollLabel: 'Mal de mer', base: testValue(h, 'resistance', 'endurance'),
         target: effectiveTarget(h, test, 'intermediaire'), result: null, interactive: true,
       });
@@ -1308,6 +1315,8 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
     const diff: Difficulty = soup ? 'facile' : 'intermediaire';
     return {
       id: `sea-scorbut-${h.id}`, kind: 'sea-scorbut', actorId: h.id,
+      // Z5 (docs/charte-ui.md) : ce `rollLabel` nomme la SITUATION, pas la Compétence lancée
+      // (Résistance) — stock nominatif du cliquet `roll-action-label-guard`, #1109.
       label: composeRollLabel(h, 'Scorbut', scurvyTest), difficulty: diff, rollLabel: 'Scorbut',
       base: testValue(h, 'resistance', 'endurance'), target: effectiveTarget(h, scurvyTest, diff),
       result: null, interactive: true, meta: { soup },
@@ -1397,6 +1406,8 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
       const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance' };
       const steps: CascadeStep[] = patients.map((h) => ({
         id: `sea-epuisement-${h.id}`, kind: 'sea-epuisement', actorId: h.id,
+        // Z5 (docs/charte-ui.md) : ce `rollLabel` nomme la SITUATION, pas la Compétence lancée
+        // (Résistance) — stock nominatif du cliquet `roll-action-label-guard`, #1109.
         label: composeRollLabel(h, 'Épuisement', test), difficulty: diff, rollLabel: 'Épuisement',
         base: testValue(h, 'resistance', 'endurance'), target: effectiveTarget(h, test, diff),
         result: null, interactive: true,

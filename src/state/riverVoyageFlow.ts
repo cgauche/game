@@ -34,7 +34,7 @@ import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import { toRecapLines } from './recapLine';
 import { travelSpeed } from '../engine/travel';
 import { vehicleCombatant } from '../engine/vehicle';
-import { findVehicleById } from '../data';
+import { findVehicleById, refLabel } from '../data';
 import { partyCargoTotalEnc } from './carriers';
 import { partyAssisted, type SupportDetail } from '../engine/skills';
 import { rollTest, type TestResult } from '../engine/tests';
@@ -229,6 +229,15 @@ function riverStep(id: string, kind: string, actorId: string | undefined, label:
   return { id, kind, actorId, icon, label, rollLabel, base, support, target: Math.max(1, Math.min(99, base + DIFFICULTY_MODIFIERS[difficulty])), result: null, interactive: true, meta };
 }
 
+/** Libellé de la COMPÉTENCE de barre du bateau EN COURS (Voile si gréé, Ramer sinon — MSRC 7 l.15),
+ *  résolu par la couture id→label du catalogue. SOURCE UNIQUE : la construction du jour le porte en
+ *  donnée (`meta.navLabel`) et l'applier le RE-DÉRIVE pour une cascade PERSISTÉE (save reprise, siège
+ *  coop) construite avant que la donnée n'existe — la ligne de jet n'est jamais sans nom (Z5). */
+function riverPilotSkillLabel(get: Get): string {
+  const vehicleId = get().travelPlan?.vehicle?.creatureId ?? '';
+  return refLabel('skills', { id: riverPilotSkill(findVehicleById(vehicleId)?.ship?.sail != null) });
+}
+
 /**
  * Construit les ÉTAPES influençables du JOUR (dans l'ORDRE de résolution RAW : réparation → Agilité →
  * Navigation → Louvoyage → sauvegardes de vent → périls). Pose le CONTEXTE de vitesse transitoire
@@ -274,8 +283,8 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
   //    La difficulté DÉPEND de l'état de dérive à ce moment — RÉÉVALUÉE dans l'applier après la réparation.
   if (pilot) {
     const savoir = savoirVoiesFluvialesBonus(pilot.actor);
-    steps.push(riverStep('river-nav', 'riverNav', pilot.actor.id, `Navigation (${skillId === 'voile' ? 'Voile' : 'Ramer'})`, 'travel/sail-ship',
-      skillId === 'voile' ? 'Voile' : 'Ramer', pilot.value, riverNavDifficulty(river, eff), { savoir }, pilot.support));
+    steps.push(riverStep('river-nav', 'riverNav', pilot.actor.id, `Navigation (${refLabel('skills', { id: skillId })})`, 'travel/sail-ship',
+      refLabel('skills', { id: skillId }), pilot.value, riverNavDifficulty(river, eff), { savoir }, pilot.support));
   } else {
     logs.push('Aucun batelier à la barre — le fleuve emporte l\'embarcation à sa guise.');
     dayCtx.forceDrift = true; // pas de barreur = contrôle perdu (note 2 : dérive)
@@ -284,17 +293,17 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
 
   // 4. LOUVOYAGE (note 3, l.39) : le +% de vent de côté Modéré/Fort n'est acquis qu'avec un Test réussi.
   if (eff.tack && pilot) steps.push(riverStep('river-tack', 'riverTack', pilot.actor.id, 'Louvoyage', 'nautical/tack',
-    skillId === 'voile' ? 'Voile' : 'Ramer', pilot.value, TACK_DIFFICULTY, { savoir: savoirVoiesFluvialesBonus(pilot.actor) }, pilot.support));
+    refLabel('skills', { id: skillId }), pilot.value, TACK_DIFFICULTY, { savoir: savoirVoiesFluvialesBonus(pilot.actor) }, pilot.support));
 
   // 5. Sauvegardes de VENT (l.40-41).
   if (eff.capsizeRisk) {
     if (pilot) steps.push(riverStep('river-capsize', 'riverCapsize', pilot.actor.id, 'Retirer la voile (chavirage)', 'nautical/wind',
-      skillId === 'voile' ? 'Voile' : 'Ramer', pilot.value, CAPSIZE.removeSailDifficulty, { savoir: savoirVoiesFluvialesBonus(pilot.actor) }, pilot.support));
+      refLabel('skills', { id: skillId }), pilot.value, CAPSIZE.removeSailDifficulty, { savoir: savoirVoiesFluvialesBonus(pilot.actor) }, pilot.support));
     else { sinkBoat(get, set, (l) => logs.push(...l), 'Sans barreur, le bateau se renverse sous le vent violent et coule.'); }
   }
   if (eff.riggingRisk) {
     if (pilot) steps.push(riverStep('river-rigging', 'riverRigging', pilot.actor.id, 'Préserver le gréement', 'nautical/wind',
-      skillId === 'voile' ? 'Voile' : 'Ramer', pilot.value, CAPSIZE.removeSailDifficulty, { savoir: savoirVoiesFluvialesBonus(pilot.actor) }, pilot.support));
+      refLabel('skills', { id: skillId }), pilot.value, CAPSIZE.removeSailDifficulty, { savoir: savoirVoiesFluvialesBonus(pilot.actor) }, pilot.support));
     else { steps.push(...applyBoatCriticalNoPilot(get, set, coque, (l) => logs.push(...l))); }
   }
 
@@ -310,7 +319,11 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
     if (!peril) continue;
     steps.push({ id: `river-peril-${i}`, kind: 'riverPerilCheck', actorId: pilot?.actor.id, icon: 'ui/warning', label: peril.label,
       meta: { perilId: spawn.perilId, chancePct: spawn.chancePct, savoir: pilot ? savoirVoiesFluvialesBonus(pilot.actor) : 0,
-        navBase: perilNavBase ?? 0, navTarget: perilNavTarget ?? 0, hasPilot: !!pilot } });
+        navBase: perilNavBase ?? 0, navTarget: perilNavTarget ?? 0, hasPilot: !!pilot,
+        // Libellé de la LIGNE du Test d'évitement inséré par l'applier : la compétence du barreur
+        // (l.15), RÉSOLUE par la couture id→label du catalogue et portée en donnée — l'applier n'a
+        // plus à la deviner.
+        navLabel: riverPilotSkillLabel(get) } });
   }
 
   return { steps, log: logs };
@@ -517,7 +530,7 @@ registerCascadeApplier('riverPerilCheck', (get, set, step) => {
     if (!hasPilot) return resolveRiverPerilConsequence(get, set, peril, { ...step, result: null } as CascadeStep, rng);
     const insert: CascadeStep[] = [{
       id: `${step.id}-nav`, kind: 'riverPerilNav', actorId: step.actorId, icon: 'nautical/snag', label: `${peril.label} — évitement`,
-      rollLabel: step.rollLabel, base: Number(step.meta?.navBase ?? 0), target: Number(step.meta?.navTarget ?? 0), result: null, interactive: true,
+      rollLabel: String(step.meta?.navLabel ?? riverPilotSkillLabel(get)), base: Number(step.meta?.navBase ?? 0), target: Number(step.meta?.navTarget ?? 0), result: null, interactive: true,
       meta: { perilId, savoir: Number(step.meta?.savoir ?? 0) },
     }];
     return { insert };

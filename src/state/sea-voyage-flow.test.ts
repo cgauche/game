@@ -1603,7 +1603,7 @@ describe('Survitesse — « Ça va lâcher, capitaine ! » (#443, MDG 13 l.121-1
     planLangskip('avirons', 11); // oars.m 6 → M+5 (safeBonus 4)
     const [st] = buildOverspeedSteps(get);
     expect(st).toBeTruthy();
-    expect(st!.label).toContain('M+5');
+    expect(st!.meta?.overspeedOverM).toBe(5); // référent M = oars.m 6
     expect(st!.meta?.overspeedDamage).toBe(overspeedRow(6, 11)!.damage);
   });
 
@@ -1611,7 +1611,7 @@ describe('Survitesse — « Ça va lâcher, capitaine ! » (#443, MDG 13 l.121-1
     planLangskip('voile', 11); // sail.m 4 → M+7
     const [st] = buildOverspeedSteps(get);
     expect(st).toBeTruthy();
-    expect(st!.label).toContain('M+7');
+    expect(st!.meta?.overspeedOverM).toBe(7); // référent M = sail.m 4
     expect(st!.meta?.overspeedDamage).toBe(overspeedRow(4, 11)!.damage);
   });
 
@@ -1622,7 +1622,7 @@ describe('Survitesse — « Ça va lâcher, capitaine ! » (#443, MDG 13 l.121-1
     set({ travelPlan: { ...plan, sea } });
     const [st] = buildOverspeedSteps(get);
     expect(st).toBeTruthy();
-    expect(st!.label).toContain('M+6');
+    expect(st!.meta?.overspeedOverM).toBe(6); // référent M = oars.m 3
     expect(st!.meta?.overspeedDamage).toBe(overspeedRow(3, 9)!.damage);
   });
 });

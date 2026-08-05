@@ -154,6 +154,51 @@ describe('CLIQUET — `.rm-journal` n’est écrit QUE par la coquille', () => {
   });
 });
 
+/**
+ * CLIQUET (#1078 LOT C1) — l'OPPOSITION A→B a UNE surface : `VsHeader`. La classe `.rm-vs` n'est
+ * donc posée QUE par `ui/VsHeader.tsx` : un site qui la repose habille en opposition ce qui n'oppose
+ * personne (le sous-titre a `.rm-subtitle`, l'issue agrégée `.rm-summary`, la portée d'un sort
+ * `.rm-spellinfo`, la rangée `.prow`) — c'est la confusion de rôles que le LOT A1 a démêlée.
+ * Baseline ZÉRO, sans liste d'exception.
+ *
+ * COUVERTURE : les modules `.ts(x)` de `src` hors tests, COMMENTAIRES RETIRÉS avant le scan — nommer
+ * la classe dans une prose de commentaire (`CastModal` explique pourquoi elle ne l'utilise PAS) n'est
+ * pas la poser. Reste traqué toute forme d'ÉCRITURE (`className="rm-vs"`, `cx('rm-vs')`,
+ * concaténation, gabarit) : c'est la sous-chaîne dans du CODE qui compte, pas un nom d'identifiant.
+ */
+describe('CLIQUET — `.rm-vs` n’est écrit QUE par `VsHeader`', () => {
+  const SRC = fileURLToPath(new URL('..', import.meta.url));
+  const OWNER = 'ui/VsHeader.tsx';
+
+  function walkSrc(dir: string, acc: string[] = []): string[] {
+    for (const e of readdirSync(dir)) {
+      const p = join(dir, e);
+      if (statSync(p).isDirectory()) walkSrc(p, acc);
+      else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) acc.push(p);
+    }
+    return acc;
+  }
+
+  /** Retire les commentaires (bloc et ligne) en gardant les sauts de ligne — les numéros de ligne
+   *  rapportés restent ceux du fichier. */
+  const stripComments = (src: string): string =>
+    src
+      .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
+      .replace(/(^|[^:])\/\/[^\n]*/g, (_m, p1: string) => p1);
+
+  it('aucun module de `src` (hors VsHeader) ne pose la classe `rm-vs`', () => {
+    const offenders: string[] = [];
+    for (const f of walkSrc(SRC)) {
+      const name = f.slice(SRC.length).split('\\').join('/');
+      if (name === OWNER) continue;
+      stripComments(readFileSync(f, 'utf8')).split('\n').forEach((l, i) => {
+        if (l.includes('rm-vs')) offenders.push(`${name}:${i + 1}`);
+      });
+    }
+    expect(offenders, 'A→B recomposé à la main — composer `VsHeader` (ou la classe du rôle réellement rendu) :\n' + offenders.join('\n')).toEqual([]);
+  });
+});
+
 describe('RollShell — sous MASQUE, l’issue se tait (#990)', () => {
   /** Rangée dont le DÉ est masqué (`mask: 'roll'`) : le spectateur ne doit rien pouvoir déduire. */
   const maskedRow = (): RollRowData => {

@@ -623,10 +623,9 @@ function GameOpChipsDemo() {
   );
 }
 
-/** RollShell/RollRow : #396 (`useRollFrisson.ts`/`DiceRoll.tsx`/`RollRow.tsx`/`RollShell.tsx`) est du
- *  WIP NON committé en cours d'arbitrage — les monter vivants coupleriait la galerie à une forme
- *  instable. Maquette STATIQUE des états (composée des MÊMES classes canon `.modal`/`.rm-vs`/
- *  `.rm-influence`, sans importer les composants WIP), légendée. */
+/** RollShell/RollRow : un spécimen VIVANT exigerait un flux de jet monté (store + `makeRollFlow`),
+ *  hors de portée d'une vignette de galerie. Maquette STATIQUE des états, composée des classes canon
+ *  du rôle rendu (`.modal`/`.modal-actions` pour la coquille, `.prow` pour la rangée), légendée. */
 function RollShellStaticMock() {
   return (
     <div className="modal" style={{ position: 'static', width: 420 }}>
@@ -641,7 +640,7 @@ function RollShellStaticMock() {
 }
 function RollRowStaticMock() {
   return (
-    <div className="rm-vs" style={{ position: 'static' }}>
+    <div className="prow" style={{ position: 'static' }}>
       <p className="hint">Une rangée de `RollShell` (mono = N=1) — maquette statique, cf. entrée « RollShell ».</p>
     </div>
   );

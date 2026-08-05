@@ -239,6 +239,46 @@ plafond mesuré, portée, États…).
 | `.dlg-choices` (+ `.dlg-choice`, `.dlg-choice-text`, `.dlg-choice-cost`) | Zone de choix du dialogue arborescent | Variant `dialogue` seulement — le contenu des lignes reste au métier (`DialogueBox`), la primitive ne pose que le conteneur. |
 | `.scene-backdrop` (+ `.scene-backdrop-fallback`) | Bande d'illustration d'ambiance (bord haut d'un panel) | Composée par la primitive `SceneBackdrop` (CLAUDE.md) — sans `backdropId`/id inconnu, repli dégradé + fleuron `Ornaments`, jamais un trou. |
 
+## Contrat d'affichage d'un jet (Z0-Z15)
+
+Doctrine (arbitrages utilisateur 2026-08-04, #1078) : **un seul schéma d'informations pour TOUS les
+jets** — mono, opposé, multi, cascade, magie, soin, naval. Une spécificité de type de jet étend la
+MÉCANIQUE (déclaration multi, table d100, dé fixé…), jamais le schéma affiché ; un écart est une
+non-conformité à converger, pas une préférence d'écran. Chaque zone porte UNE information et une
+seule, et a UN propriétaire — la primitive qui la rend. Réfs : #1064, #1072, #1078.
+
+| Zone | Information portée (et elle seule) | Propriétaire | Règle |
+|---|---|---|---|
+| **Z0** Titre | le NOM de l'action, seul | `RollShell.title` | Jamais l'acteur, la compétence ni la difficulté : `rollTitle` rend l'`actionLabel` nu — un titre composé redouble Z1 (#352). |
+| **Z1** Sous-titre | « Acteur — Action (Compétence) » + compteur `n/m` | `RollShell.subtitle` (`.rm-subtitle`, variante `test-actor`) | Composé par `composeRollLabel` (source unique) et DÉDOUBLONNÉ contre Z0 (`stepSubtitleLabel`). Jamais la difficulté (#1072), jamais la progression (Z6), jamais un A→B textuel (Z3). |
+| **Z2** Instruction | la consigne de GESTE pré-jet | `RollShell.instruction` | Un seul poseur, rôle documenté ; ni rappel de règle, ni issue. |
+| **Z3** Opposition | l'A→B : portraits + flèche | `VsHeader` (`.rm-vs` — SEUL écrivain de la classe) | Arbitrage user : « on a des portraits, une flèche ». Le verbe est un vocabulaire FERMÉ (`IconId`), défaut « → » ; `targetVariant='full'` quand les États du sujet guident la fenêtre. A→B naval → #1088. |
+| **Z3b** Enjeu | ce que l'ÉCHEC coûte, verbatim Source | `CascadeStep.stake` → `.rm-threat` | Donnée posée par le flux propriétaire ; jamais une paraphrase écrite à l'écran. |
+| **Z4** Pré-jet | le choix de RÈGLE avant le jet (Parade/Esquive, arme, localisation) | `RollShell.setup` + `OptionChooser` | Valeurs par `optionValue`/`optionPending`, jamais un « base + mods » recalculé au call-site. Disparaît au jet. |
+| **Z5** LA ligne | portrait · libellé + difficulté · base ± mods = cible · dé · verdict ✓/✗ ±DR | `RollLine` / `PendingRollLine` (site UNIQUE) | La Difficulté vit ICI, en texte et en valeur (`.rm-roll-diff`), TOUJOURS — jamais en chip (#1072). Le masque de découverte (#990) s'applique par CELLULE (`RollMask`). |
+| **Z5b** Chips | les modificateurs CIRCONSTANCIELS, nommés | `ModChips` (`.rm-mod`) | Une chip EST sa règle, cliquable (patron `chipCodex` / `CodexRef` / `RULE_REF`) ; provenance en badges structurés, jamais un ⓘ. L'écart de réconciliation (`reconciled`, plafond mesuré `TestResult.clamped`) devient une chip NOMMÉE — jamais un masquage silencieux. |
+| **Z6** Progression | Test étendu `n/m` | `RollRow.extendedDr` → `DrBar` | SEULE surface de progression : ni le sous-titre, ni l'issue ne la redisent. |
+| **Z7** Sous-ligne | l'issue de CETTE rangée | `PanelRowData.note` (`.rr-note`) | Canal UNIQUE d'une note par rangée. |
+| **Z8** Refus | la RAISON de l'indisponibilité, visible | `RollRow.rollBlocked` → `GatedAction` | Dérivée du MÊME prédicat que la garde du résolveur, jamais une seconde condition recopiée. |
+| **Z9** Déclaration | qui lance (fenêtre à composition) | `RollRow.declare` | Phase 1 : elle précède les choix de règle. |
+| **Z10** Influences | les POOLS de ressource, « Ressource ×N » | `InfluenceRow` (+ `ResilienceButton`, `DeterminationButton`) | Jamais de `n/m` sur un pool (réservé Z6). La fiche RAW passe par la PORTE du popover (`CodexRef` `wrap` : le clic dépense, ↓ épingle). |
+| **Z11** Sélecteur de dé | le dé POSÉ (Résilience, option « Dés fixés ») | `ForcedRollPicker` | Commit au geste TERMINAL (Entrée) ; un blur pré-jet réinitialise. UNE surface de marque « Dé fixé » (étiquette du sélecteur, sinon `.prow-fixed-mark`). |
+| **Z12** Issue | ce qui s'est PASSÉ | `RollShell.outcome` (`RecapLine[]` → `RecapLineRow`, cadre `.rm-journal`) | DONNÉE, jamais du JSX ni du markup de site. Ni le verdict chiffré (Z5) ni la progression (Z6). Pleine couleur par défaut, ton AUTHORÉ. Muette sous le verrou `panelMasked` (#990). |
+| **Z13** Bilan | l'agrégat multi / le DR net | `RollShell.summary` (`.rm-summary`) + `netSL` (`.rm-netsl`) | Masqué avec les jets qu'il compare (#990). |
+| **Z14** Post-jet métier | surincantation, Critique, contre-sort | `RollShell.postRollExtra` / `forcedExtra` | Ne porte JAMAIS d'issue (Z12). L'ATTENTE d'un jet distant est une zone d'ÉTAT distincte (`.rm-await`). |
+| **Z15** Actions | les verbes de la barre | `RollShell.actions` (`RollAction`) | Vocabulaire VERROUILLÉ (`assertActionVocabulary` : verbes du flux + neutres) ; la proéminence se DÉDUIT de la `key`, aucun style au call-site. |
+
+**Un signe, un sens** (libellés de jet) : la **parenthèse** est le détail DÉRIVÉ par le moteur — la
+compétence, ajoutée par `composeRollLabel` ; le **tiret long** est le séparateur acteur/action. Donc
+l'`actionLabel` écrit au call-site est un **groupe nominal capitalisé sans ponctuation** (« Forcer le
+rythme », « Mal de mer par mauvais temps »), jamais une valeur dynamique entre parenthèses, un usage
+(« … (boire) ») ni une situation après un tiret. Cliquet : `src/state/roll-action-label-guard.test.ts`.
+
+**Règle transverse** : toute nouvelle surface de jet **compose** ces primitives — jamais un markup
+recomposé, jamais une classe de rôle empruntée (`.rm-vs` appartient à `VsHeader`, cliquet
+`src/ui/roll-display-contract.test.tsx`). Une information qui manque se sert par sa zone ; si aucune
+zone ne l'accueille, c'est le contrat qu'on amende ici, avant le code.
+
 ## Politique grand écran (≥1440px)
 
 Les breakpoints canon de la règle stricte 4 (900/700/560) ne bornent que VERS LE BAS (empilement

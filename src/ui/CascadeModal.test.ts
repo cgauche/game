@@ -11,7 +11,7 @@ import type { Combatant } from '../engine/types';
  * extrait qui remplace ce garde — testé ici en isolation (pas de harnais de rendu React dans ce repo).
  */
 function baseStep(overrides: Partial<CascadeStep> = {}): CascadeStep {
-  return { id: 's1', kind: 'sea-desertion', label: 'Désertion', target: 50, result: null, ...overrides };
+  return { id: 's1', kind: 'sea-desertion', label: 'Désertion', rollLabel: 'Désertion', target: 50, result: null, ...overrides };
 }
 
 describe('jetStepPresentable — présentabilité d’une étape-JET de cascade', () => {

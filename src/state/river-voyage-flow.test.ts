@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { buildRiverPlan, runRiverDays, hasBatelier, applyEchouage } from './riverVoyageFlow';
+import { buildRiverPlan, buildRiverDayCascade, runRiverDays, hasBatelier, applyEchouage } from './riverVoyageFlow';
+import { cascadeAppliers } from './cascade';
+import { findSkillById } from '../data';
 import { creditBourse } from './bourseFlow';
 import { seedBattleRng } from './battleRng';
 import { createHero, skillCharacteristicById } from '../engine/character';
@@ -450,5 +452,47 @@ describe('#270 — Critique au gréement : esquive d’éclats gâtée par contr
     get().cascadeNext();
     expect(get().pendingCascade).toBeNull(); // 1 seule étape, résolue inline → cascade close
     expect(get().journal.join('\n')).toMatch(/Critique au greement/);
+  });
+});
+
+/**
+ * #1078 LOT C1 / #1109 — le LIBELLÉ DE LIGNE (Z5, `docs/charte-ui.md`) du Test d'évitement d'un péril
+ * est la COMPÉTENCE du barreur, RÉSOLUE par la couture id→label du catalogue (`refLabel`) et portée en
+ * DONNÉE jusqu'à l'applier. Avant, l'étape insérée recopiait le `rollLabel` d'un pas `riverPerilCheck`
+ * qui n'en a jamais → la ligne s'affichait sans nom de Compétence.
+ */
+describe('péril fluvial — la ligne du Test d’évitement nomme la Compétence du barreur (#1109)', () => {
+  it('la donnée `meta.navLabel` est le libellé du CATALOGUE, et l’étape insérée le porte en `rollLabel`', () => {
+    launch(false, 45, { riverPerils: [{ perilId: 'debris', chancePct: 100 }] });
+    set({ travelPlan: buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])! });
+    const built = buildRiverDayCascade(get, set, get().worldMap!.routes[0], { scene: 'quai-b', label: 'Altdorf' });
+    const check = built.steps.find((s) => s.kind === 'riverPerilCheck')!;
+    expect(check, 'le pas de vérification du péril existe').toBeTruthy();
+    // Barge gréée → compétence `voile` ; le libellé vient du CATALOGUE, jamais d'un littéral.
+    expect(check.meta?.navLabel).toBe(findSkillById('voile')!.label);
+
+    seedBattleRng(2);
+    const out = cascadeAppliers['riverPerilCheck'].apply(get, set, check, undefined, { steps: [check], index: 0 });
+    const nav = out?.insert?.find((s) => s.kind === 'riverPerilNav');
+    expect(nav, 'le Test d’évitement est inséré (barreur présent, péril à 100 %)').toBeTruthy();
+    expect(nav!.rollLabel).toBe(findSkillById('voile')!.label);
+    expect(nav!.rollLabel).not.toBe(''); // la ligne ne peut plus s'afficher sans nom de Compétence
+  });
+
+  it('cascade PERSISTÉE d’avant le lot (aucun `meta.navLabel`) : le libellé est RE-DÉRIVÉ du vaisseau, jamais vide', () => {
+    launch(false, 45, { riverPerils: [{ perilId: 'debris', chancePct: 100 }] });
+    set({ travelPlan: buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])! });
+    const built = buildRiverDayCascade(get, set, get().worldMap!.routes[0], { scene: 'quai-b', label: 'Altdorf' });
+    const check = built.steps.find((s) => s.kind === 'riverPerilCheck')!;
+    // Forme LEGACY : la save rejouée ne porte PAS `navLabel` (aucun backfill dans `saves.ts`).
+    const legacy = { ...check, meta: { ...check.meta, navLabel: undefined } } as typeof check;
+    expect(legacy.meta?.navLabel).toBeUndefined();
+
+    seedBattleRng(2);
+    const out = cascadeAppliers['riverPerilCheck'].apply(get, set, legacy, undefined, { steps: [legacy], index: 0 });
+    const nav = out?.insert?.find((s) => s.kind === 'riverPerilNav');
+    expect(nav, 'le Test d’évitement s’insère aussi sur le chemin legacy').toBeTruthy();
+    expect(nav!.rollLabel).toBe(findSkillById('voile')!.label); // dérivé du bateau EN COURS
+    expect(nav!.rollLabel).not.toBe('');
   });
 });

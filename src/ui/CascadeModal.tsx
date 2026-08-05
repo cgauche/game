@@ -22,13 +22,13 @@ import { RecapLineList } from './RecapLine';
 import { RuleDivider } from './Ornaments';
 import { TableRollLine } from './RollLine';
 import { supportSplit, testBreakdown, testPending } from './breakdown';
-import { combineMods, type ModLine } from '../engine/combat';
+import type { ModLine } from '../engine/combat';
 import { Icon } from './Icon';
 import { stepInteraction, stepReady, tableStepDefs, tableStepDie, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
 import { ownsLocally } from '../state/netOwnership';
 import { tableStepForcedDie } from './forcedDieRow';
 import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
-import type { CascadeStep, CascadeRoll, BatchParticipant } from '../state/pendings';
+import type { CascadeStep, CascadeRollStep, CascadeRoll, BatchParticipant } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 import { buildParticipantRows, rollAllUnrolledRows } from './buildParticipantRows';
 import { Prose } from './Prose';
@@ -166,26 +166,28 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // `ShipManeuverModal`/`CrewTestModal`) — sinon l'affordance est morte (l'intent est refusé par l'hôte).
   const owns = (id: string) => net.mode === 'local' || ownsLocally(useGame.getState(), id);
 
-  // Libellé de rangée = la COMPÉTENCE lancée (« Résistance », « Calme »…), comme Défense affiche
-  // « Attaque »/« Parade » — pas le texte de l'étape (le but vit dans le sous-titre).
-  const rowLabel = (s: CascadeStep) => s.rollLabel ?? 'Jet';
-  // Base AFFICHÉE + lignes de mod NOMMÉES d'une étape : le Soutien (LDB 12), FONDU dans `step.base`
-  // par la porte du seam / le flux propriétaire, redevient une ligne (primitive PARTAGÉE
-  // `supportSplit`). La Difficulté, elle, n'est PAS un mod (#1072) : elle voyage en donnée de LIGNE
-  // (`step.difficulty`, posée par la porte du seam et les flux) et se lit en texte + valeur.
-  const stepLine = (s: CascadeStep): { label: string; base: number; mods: ModLine[] } => {
-    const raw = s.base ?? s.target ?? 0;
+  // Base AFFICHÉE + lignes de mod NOMMÉES d'une étape QUI LANCE (`CascadeRollStep` : cible ET libellé
+  // de ligne par le TYPE) : le libellé est la COMPÉTENCE lancée (« Résistance », « Calme »…), comme
+  // Défense affiche « Attaque »/« Parade » — pas le texte de l'étape (le but vit dans le sous-titre).
+  // Le Soutien (LDB 12), FONDU dans `step.base` par la porte du seam / le flux propriétaire, redevient
+  // une ligne (primitive PARTAGÉE `supportSplit`). La Difficulté, elle, n'est PAS un mod (#1072) : elle
+  // voyage en donnée de LIGNE (`step.difficulty`, posée par la porte du seam et les flux).
+  const stepLine = (s: CascadeRollStep): { label: string; base: number; mods: ModLine[] } => {
+    const raw = s.base ?? s.target;
     const { base, mods } = supportSplit(raw, s.support);
-    return { label: rowLabel(s), base, mods };
+    return { label: s.rollLabel, base, mods };
   };
-  const breakdown = (s: CascadeStep, r: CascadeRoll) => {
+  const breakdown = (s: CascadeRollStep, r: CascadeRoll) => {
     const l = stepLine(s);
-    return testBreakdown(l.label, l.base, { roll: r.roll, target: s.target ?? l.base + combineMods(l.mods), sl: r.sl, success: r.success }, s.difficulty, l.mods, s.easedBy);
+    return testBreakdown(l.label, l.base, { roll: r.roll, target: s.target, sl: r.sl, success: r.success }, s.difficulty, l.mods, s.easedBy);
   };
-  const pendingOf = (s: CascadeStep) => {
+  const pendingOf = (s: CascadeRollStep) => {
     const l = stepLine(s);
     return testPending(l.label, l.base, s.target, s.difficulty, l.mods, s.easedBy);
   };
+  /** Étape qui LANCE — la ligne de jet n'existe que là (les étapes d'affichage/choix/table/batch
+   *  n'ont ni cible ni libellé de ligne : elles se rendent par leur note). */
+  const isRollStep = (s: CascadeStep): s is CascadeRollStep => s.target != null;
   // Conséquence (issue style journal) d'une étape — rendue sous le jet, elle PERSISTE quand on
   // enchaîne (« on ne perd pas les conséquences »). Une étape VALIDÉE porte sa conséquence RÉELLE
   // chiffrée dans `outcome` (lignes STRUCTURÉES #349 : « récupère 8 PB », « contracte : Vérole… »,
@@ -202,7 +204,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     // Étape BATCH committée : sa conséquence (resultLine, #331) se lit SUR PLACE — note SEULE (pas de
     // RollLine mono factice `base 0` : le batch n'a ni acteur ni cible d'étape, le verdict est agrégé).
     if (s.participants) return s.outcome?.length ? { combatant: a, note: noteFor(s) } : null;
-    if (s.result) return { combatant: a, d: breakdown(s, s.result), note: noteFor(s) }; // jet validé
+    if (s.result && isRollStep(s)) return { combatant: a, d: breakdown(s, s.result), note: noteFor(s) }; // jet validé
     if (s.outcome?.length) return { combatant: a, note: noteFor(s) }; // affichage/choix validé : note seule
     return null;
   };
@@ -547,7 +549,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const res = cur.result;
   const rolled = cur.target == null ? true : !!res;
   const failed = !!res && !res.success;
-  const curPending: PanelRow = { combatant: actor, pending: pendingOf(cur) };
+  const curPending: PanelRow = { combatant: actor, ...(isRollStep(cur) ? { pending: pendingOf(cur) } : {}) };
   // `outcome` (résumé de conséquence) n'existe que sur une étape COMMITTÉE ; l'étape COURANTE
   // s'appuie sur la rangée ✓/✗ ±DR (breakdown) comme SEUL verdict (#295 Décision 1b) : aucun
   // prologue « X réussit »/« X échoue » ici.
@@ -587,7 +589,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     flowKey: 'cascade',
     key: cur.id,
     actor,
-    row: res ? { combatant: actor, d: breakdown(cur, res) } : curPending,
+    row: res && isRollStep(cur) ? { combatant: actor, d: breakdown(cur, res) } : curPending,
     rolled,
     ...(curExtendedDr ? { extendedDr: curExtendedDr } : {}),
     onRoll: () => roll(cur.id),
