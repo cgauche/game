@@ -1078,6 +1078,10 @@ function wingFoldedEnd(p: QuadProps): string {
  * la scission du bras au coude (`splitBrasSvg`, parts/derive.ts). Ils sont portés par deux os de
  * plans DIFFÉRENTS (`tete` / `nuque`, cf. QUAD_Z) : de dos, le crâne reste au-dessus du tronc et la
  * nuque passe dessous.
+ * PÉRIMÈTRE de la scission : l'art passé ici, c'est-à-dire `headgear(p, 'back') + napeBack(p)`. Le
+ * décor du canal `deco` (clés `tete` et `tete#back`) est apposé par `withDeco` APRÈS la découpe,
+ * hors des deux calques : il est porté ENTIER par l'os `tete`, y compris la part de son art qui
+ * descend sous la ligne de partage.
  */
 const backHeadLayers = (art: string) => ({
   crane: `<g clip-path="url(#rigCutQuadCrane)">${art}</g>`,

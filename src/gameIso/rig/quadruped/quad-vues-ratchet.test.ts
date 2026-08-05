@@ -261,8 +261,8 @@ describe('les plans de profondeur ne vivent QUE dans QUAD_Z (#1082)', () => {
     expect(profil(bone('cuisseD', 0))).toBe(8.2);  // jambe proche, au-dessus de la tête (7)
   });
 
-  // Lot 1 (2026-08-05) : c'est le CODE qui a bougé — le forfait unique de face/dos (torse 6.6,
-  // jambes au même plan que le torse) devient une table PAR VUE (`QUAD_RIDER_Z`).
+  // Le plan du cavalier se lit PAR VUE dans `QUAD_RIDER_Z` : chaque vue tient son propre contrat
+  // d'intercalage (profil ci-dessus, dos et face ci-dessous).
   it('de DOS, le cavalier COUVRE la tête de sa monture et ses jambes passent derrière la croupe', () => {
     const dos = riderZForQuad('back');
     expect(dos(bone('torse', 0))).toBeGreaterThan(QUAD_Z.tete.back);
@@ -289,6 +289,63 @@ describe('les plans de profondeur ne vivent QUE dans QUAD_Z (#1082)', () => {
 });
 
 // ── (d) SÉMANTIQUE DE LA VUE DE DOS (Lot 1) ─────────────────────────────────────────────────
+/** Contenu du groupe `clip-path="url(#id)"` : l'art DÉCOUPÉ seul (le décor apposé après en est exclu). */
+function clipContent(svg: string, id: string): string {
+  const open = `<g clip-path="url(#${id})">`;
+  const i = svg.indexOf(open);
+  expect(i, `groupe découpé ${id} absent`).toBeGreaterThanOrEqual(0);
+  const re = /<g\b|<\/g>/g;
+  re.lastIndex = i + open.length;
+  for (let m = re.exec(svg), depth = 1; m; m = re.exec(svg)) {
+    depth += m[0] === '</g>' ? -1 : 1;
+    if (depth === 0) return svg.slice(i + open.length, m.index);
+  }
+  throw new Error(`groupe découpé ${id} non fermé`);
+}
+
+type Box = { x0: number; y0: number; x1: number; y1: number };
+/**
+ * Boîte englobante d'un art SVG dans SON repère (M/L/Q absolus et relatifs, `circle`, `ellipse`,
+ * `translate` interne). SUR-ENSEMBLE assumé : les points de contrôle des Q comptent comme des
+ * sommets. Toute autre commande ou transformation lève — l'art nouveau se mesure, il ne se devine pas.
+ */
+function bboxOf(svg: string): Box {
+  const b: Box = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+  const add = (x: number, y: number) => {
+    b.x0 = Math.min(b.x0, x); b.y0 = Math.min(b.y0, y); b.x1 = Math.max(b.x1, x); b.y1 = Math.max(b.y1, y);
+  };
+  let dx = 0, dy = 0;
+  for (const [, t] of svg.matchAll(/transform="([^"]+)"/g)) {
+    const m = /^translate\(\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\)$/.exec(t);
+    if (!m) throw new Error(`transformation non mesurée : ${t}`);
+    dx = Math.max(dx, Math.abs(+m[1])); dy = Math.max(dy, Math.abs(+m[2]));
+  }
+  for (const [, d] of svg.matchAll(/d="([^"]+)"/g)) {
+    const toks = d.match(/[A-Za-z]|-?[\d.]+/g) ?? [];
+    let x = 0, y = 0, cmd = '', k = 0;
+    const n = () => +toks[k++];
+    while (k < toks.length) {
+      if (/[A-Za-z]/.test(toks[k])) cmd = toks[k++];
+      if (cmd === 'Z' || cmd === 'z') continue;
+      const rel = cmd === cmd.toLowerCase(), px = rel ? x : 0, py = rel ? y : 0, c = cmd.toUpperCase();
+      if (c === 'Q') { add(px + n(), py + n()); x = px + n(); y = py + n(); }
+      else if (c === 'M' || c === 'L') { x = px + n(); y = py + n(); }
+      else throw new Error(`commande de tracé non mesurée : ${cmd}`);
+      add(x, y);
+    }
+  }
+  const attr = (tag: string, a: string) => +(new RegExp(`${a}="(-?[\\d.]+)"`).exec(tag)?.[1] ?? 0);
+  for (const [, tag] of svg.matchAll(/<circle([^>]*)>/g)) {
+    const [cx, cy, r] = [attr(tag, 'cx'), attr(tag, 'cy'), attr(tag, 'r')];
+    add(cx - r, cy - r); add(cx + r, cy + r);
+  }
+  for (const [, tag] of svg.matchAll(/<ellipse([^>]*)>/g)) {
+    const [cx, cy, rx, ry] = [attr(tag, 'cx'), attr(tag, 'cy'), attr(tag, 'rx'), attr(tag, 'ry')];
+    add(cx - rx, cy - ry); add(cx + rx, cy + ry);
+  }
+  return { x0: b.x0 - dx, y0: b.y0 - dy, x1: b.x1 + dx, y1: b.y1 + dy };
+}
+
 describe('vue de DOS : crâne au-dessus du tronc, nuque dessous, aile pliée SUR le dos (#1082)', () => {
   it('l\'art de tête de dos est scindé en DEUX calques portés par deux os de plans différents', () => {
     for (const { id, quad } of quadDefs) {
@@ -300,7 +357,7 @@ describe('vue de DOS : crâne au-dessus du tronc, nuque dessous, aile pliée SUR
     expect(QUAD_Z.tete.back).toBeGreaterThan(QUAD_Z.tronc.back);
   });
 
-  it('les deux découpes se PARTAGENT le plan de l\'art (complémentaires, sans recouvrement ni trou)', () => {
+  it('les deux découpes se PARTAGENT le plan de l\'art (complémentaires, et elles le COUVRENT)', () => {
     const rect = (id: string) => {
       const m = new RegExp(`id="${id}"[^>]*><rect x="(-?[\\d.]+)" y="(-?[\\d.]+)" width="([\\d.]+)" height="([\\d.]+)"`).exec(rigFxGradients);
       expect(m, `clipPath ${id} absent des DEFS`).toBeTruthy();
@@ -310,6 +367,16 @@ describe('vue de DOS : crâne au-dessus du tronc, nuque dessous, aile pliée SUR
     expect(crane.y + crane.h, 'le bas du crâne = le haut de la nuque').toBe(nuque.y);
     expect(crane.x).toBe(nuque.x);
     expect(crane.w).toBe(nuque.w);
+    // Couverture : l'art de tête de dos de CHAQUE espèce tient dans l'union des deux rects — un art
+    // qui déborde serait amputé au rendu, il rougit ici.
+    const union = { x0: crane.x, x1: crane.x + crane.w, y0: crane.y, y1: nuque.y + nuque.h };
+    const debords: string[] = [];
+    for (const { id, quad } of quadDefs) {
+      const b = bboxOf(clipContent(quadParts(quad, 'back').tete!, 'rigCutQuadCrane'));
+      if (b.x0 < union.x0 || b.x1 > union.x1 || b.y0 < union.y0 || b.y1 > union.y1)
+        debords.push(`${id} : art x[${b.x0}..${b.x1}] y[${b.y0}..${b.y1}] hors de x[${union.x0}..${union.x1}] y[${union.y0}..${union.y1}]`);
+    }
+    expect(debords, 'l\'union des deux découpes doit couvrir l\'art de tête de dos').toEqual([]);
   });
 
   it('l\'os `nuque` ne porte d\'art QUE de dos (de face et de profil, la tête est entière)', () => {
