@@ -22,6 +22,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { QUAD_HEAD_DEFS } from './heads/_registry.generated';
 
 const SRC = readFileSync(fileURLToPath(new URL('./quadParts.ts', import.meta.url)), 'utf8');
 const LINES = SRC.split(/\r?\n/);
@@ -32,12 +33,23 @@ const isComment = (l: string) => /^\s*(\/\/|\/\*|\*)/.test(l);
 const CODE = LINES.filter((l) => !isComment(l));
 const CODE_SRC = CODE.join('\n');
 
-/** PLAFONDS gelés (mesurés le 2026-08-04 sur l'arbre du Lot A-bis, lignes de commentaire exclues). */
-const MAX_HEAD_KEYS = 14;
-const MAX_HEAD_SITES = 51;
-const MAX_FAR_LINES = 43;
+/**
+ * PLAFONDS (mesurés le 2026-08-04 sur l'arbre du Lot A-bis, lignes de commentaire exclues), abaissés
+ * le 2026-08-05 par l'extraction des TÊTES en part-defs (#1082 P2) :
+ *   - têtes 14 clés / 51 sites → 0/0 : les 14 arts vivent dans `heads/defs/<clé>.ts`, le socle compose
+ *     par lookup (`quadHeadDef`) ; la population n'a pas disparu, elle a CHANGÉ DE PORTEUR (cf. le test
+ *     « le stock des têtes a MIGRÉ » ci-dessous, qui compte les defs du registre).
+ *   - `far` 43 → 30 : les 13 lignes emportées sont celles des têtes-satellites des clusters
+ *     (hydre/déchiqueteur, rang proche/lointain), parties dans `heads/kit.ts`.
+ *   - scalaires 16 → 13 : les 3 lignes emportées sont les arts paramétrés par `neckLen` (les 3 clusters),
+ *     devenus des arts-FONCTION à axes déclarés dans leur def.
+ * Jamais relevés.
+ */
+const MAX_HEAD_KEYS = 0;
+const MAX_HEAD_SITES = 0;
+const MAX_FAR_LINES = 30;
 const MAX_WING_STATE_LINES = 3;
-const MAX_SPECIES_SCALAR_LINES = 16;
+const MAX_SPECIES_SCALAR_LINES = 13;
 
 const headSites = [...CODE_SRC.matchAll(/p\.head === '([a-z-]+)'/g)].map((m) => m[1]);
 const linesMatching = (re: RegExp) => CODE.filter((l) => re.test(l)).length;
@@ -70,10 +82,23 @@ describe('socle quadrupède : le branchement par espèce ne peut que DÉCROÎTRE
       .toBeLessThanOrEqual(MAX_SPECIES_SCALAR_LINES);
   });
 
-  it('les plafonds mesurent bien quelque chose : chaque compte est non nul', () => {
-    expect(headSites.length).toBeGreaterThan(0);
+  it('les plafonds encore peuplés mesurent bien quelque chose : chaque compte est non nul', () => {
     expect(linesMatching(/\bfar\b/)).toBeGreaterThan(0);
     expect(linesMatching(/wings === 'spread'|wings: 'folded'/)).toBeGreaterThan(0);
     expect(linesMatching(/\$\{-?L ?\*|\* p\.(bodyLen|neckLen|girth|tailLen|wingSpan|headScale)/)).toBeGreaterThan(0);
+  });
+
+  it('le détecteur de jetons n\'est pas mort avec son stock : il voit encore la forme qu\'il compte', () => {
+    // Un plafond à 0 dont la sonde ne détecterait plus rien serait un cliquet FANTÔME : on éprouve
+    // la regex sur un témoin (la forme exacte que l'extraction a supprimée du socle).
+    const temoin = "  if (p.head === 'hydre') return '';";
+    expect([...temoin.matchAll(/p\.head === '([a-z-]+)'/g)].map((m) => m[1])).toEqual(['hydre']);
+  });
+
+  it('le stock des têtes a MIGRÉ, il n\'a pas disparu : 14 defs enregistrées', () => {
+    // Le pendant du plafond à 0 : les 14 clés d'espèce autrefois branchées dans le socle sont
+    // désormais des fichiers du registre. Blanchir le socle en SUPPRIMANT des têtes échoue ici.
+    expect(QUAD_HEAD_DEFS.length).toBeGreaterThanOrEqual(14);
+    expect(new Set(QUAD_HEAD_DEFS.map((d) => d.key)).size).toBe(QUAD_HEAD_DEFS.length);
   });
 });

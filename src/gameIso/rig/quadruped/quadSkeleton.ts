@@ -7,6 +7,7 @@ import { worldTransformsG, type FKBone } from '../kinematics';
 import type { StoredPalette } from '../palette';
 import type { View } from '../facing';
 import { QUAD_Z } from './quadZ';
+import type { QuadHeadId } from './heads/_registry.generated';
 
 export type QuadBoneId =
   | 'tronc' | 'croupe' | 'encolure' | 'tete' | 'nuque' | 'queue'
@@ -41,7 +42,9 @@ export type QuadDecoValue = string | QuadDecoFragment[];
 
 /** Caractère d'une espèce quadrupède (proportions + parts + couleurs par défaut). */
 export type QuadBuild = 'equine' | 'canine' | 'suid' | 'rodent' | 'ursine' | 'feline' | 'draconic' | 'batracien';
-export type QuadHead = 'cheval' | 'loup' | 'loup-feroce' | 'sanglier' | 'rat' | 'ours' | 'aigle' | 'dragon' | 'basilic' | 'crapaud' | 'hydre' | 'chimere' | 'dechiqueteur' | 'felin';
+/** Tête = id du REGISTRE des defs (`heads/defs/<clé>.ts`, union générée) — le socle ne peut plus
+ *  écrire `p.head === 'hydre'` : une tête N+1 est un fichier, jamais une branche (#1082 P2). */
+export type QuadHead = QuadHeadId;
 export type QuadFoot = 'sabot' | 'patte' | 'serre'; // serre = serres d'aigle (rapace)
 export type QuadTail = 'crin' | 'touffe' | 'touffe-basse' | 'fouet' | 'nue' | 'courte' | 'reptile' | 'enroulee' | 'leonine' | 'dard' | 'sans';
 /** Crinière le long de l'encolure : crin couché (équin), hirsute (fourrure dressée — loup/

@@ -52,6 +52,17 @@ export const REGISTRIES = [
     typeFrom: './types',
   },
   {
+    // Têtes QUADRUPÈDES (art 3 vues + canaux de forme portés par la tête) : 1 tête = 1 fichier defs/.
+    // L'union `QuadHeadId` GÉNÉRÉE remplace l'ancienne union littérale `QuadHead` du socle.
+    dir: 'src/gameIso/rig/quadruped/heads/defs',
+    out: 'src/gameIso/rig/quadruped/heads/_registry.generated.ts',
+    exportName: 'quadHead',
+    arrayName: 'QUAD_HEAD_DEFS',
+    type: 'QuadHeadDef',
+    typeFrom: './types',
+    idUnion: { typeName: 'QuadHeadId', field: 'key' },
+  },
+  {
     // Appendices (cornes/queue, art multi-vues) : 1 appendice = 1 fichier defs/. Source UNIQUE de
     // l'art de corne/queue, référencé par id (monster.cornes / appendageFeature / traitVisuals).
     dir: 'src/gameIso/rig/parts/appendages/defs',
