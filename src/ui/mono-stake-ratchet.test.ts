@@ -1,0 +1,108 @@
+/**
+ * CLIQUET « une modale de jet dit son ENJEU » (#1117 L1b) — pendant, à l'étage de l'UI, du cliquet
+ * `state/cascade-step-stake-guard` (les étapes de cascade) : toute coquille `RollShell` montée par une
+ * modale doit passer la prop `stake` (une `StakeRef`, jamais un texte : le type l'interdit).
+ *
+ * Lecture STRUCTURELLE, pas un grep de ligne : pour chaque `flowKey="…"`, on remonte à l'ouverture de
+ * la balise JSX qui le porte et on lit CETTE balise jusqu'à sa fermeture (profondeur d'accolades) —
+ * une prop posée n'importe où dans la balise compte, une prop d'une AUTRE balise ne compte pas.
+ *
+ * Baseline NOMINATIVE et DÉCROISSANTE : chaque `flowKey` encore muet est listé avec sa raison. Un
+ * site NEUF muet échoue ; un site doté dont la ligne reste ici échoue aussi (baseline périmée).
+ */
+import { describe, it, expect } from 'vitest';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { FLOW_STAKES } from '../data';
+import { FLOW_VERBS } from '../state/flowVerbs';
+
+const UI = join(process.cwd(), 'src', 'ui');
+
+/** Balise JSX ouvrante qui contient l'index `i` : de son `<` jusqu'au `>` de même profondeur. */
+function openingTag(src: string, i: number): string {
+  const start = src.lastIndexOf('<', i);
+  if (start < 0) return '';
+  let depth = 0;
+  for (let j = start; j < src.length; j++) {
+    const ch = src[j];
+    if (ch === '{') depth++;
+    else if (ch === '}') depth--;
+    else if (ch === '>' && depth === 0) return src.slice(start, j + 1);
+  }
+  return src.slice(start);
+}
+
+/** `flowKey` des coquilles de jet SANS prop `stake`, dans une source donnée. */
+export function shellsWithoutStake(src: string): string[] {
+  const out: string[] = [];
+  for (const m of src.matchAll(/flowKey="(\w+)"/g)) {
+    const tag = openingTag(src, m.index!);
+    if (!/^<RollShell\b/.test(tag)) continue; // `flowKey` d'une RANGÉE (RollRowData) : l'enjeu est sur la coquille
+    if (/\bstake=\{/.test(tag)) continue;
+    out.push(m[1]);
+  }
+  return out;
+}
+
+/**
+ * Coquilles encore MUETTES, par flux, avec leur motif. Chaque ligne tombe avec le lot qui la traite —
+ * L2 (combat), L3 (activités), L4+ (multi d'équipage). Un flux ABSENT d'ici doit être doté.
+ */
+const BASELINE: Record<string, string> = {
+  // COMBAT — mesuré en L2 par la FORME (target/roll), pas par grep de kind : le dataset `combat-stakes`
+  // naît avec ce lot, ces coquilles s'y branchent d'un coup.
+  maneuver: 'L2 — combat-stakes',
+  grapple: 'L2 — combat-stakes',
+  handGate: 'L2 — combat-stakes',
+  approach: 'L2 — combat-stakes',
+  // MAGIE — le renvoi vise la fiche du SORT (design §4), lot magie.
+  cast: 'L2 — renvoi CodexRef vers la fiche du sort',
+  focus: 'L2 — renvoi CodexRef vers la fiche du sort',
+  // ACTIVITÉS — `ActivityDef.stake/rule` éditables par activité (design §4), lot L3.
+  activity: 'L3 — ActivityDef.stake',
+  bargain: 'L3 — négoce (marchand), lot des activités marchandes',
+  // ÉQUIPAGE & NAVIRE — jumeaux de `crewTest`, à doter avec leurs types de Test (même patron).
+  shipManeuver: 'L4 — jumeau de crewTest, entryId = type de Test',
+  shipBattery: 'L4 — jumeau de crewTest, entryId = type de Test',
+  // Porte à enfoncer : la procédure jouée est celle de l'Appendice 2 d'EDO, dont l'extraction FR ne
+  // porte pas de passage citable au niveau du jet. Des candidats existent AILLEURS (relevés au ticket
+  // #1117 : EDO 7, MSRC 7, PDT 8, PDT 9, Ubersreik 10) — à INSTRUIRE au Source en L2, pas à supposer ici.
+  forceDoor: 'L2 — enjeu à sourcer : candidats relevés, aucun passage encore instruit',
+};
+
+describe('cliquet — une modale de jet dit son ENJEU (#1117 L1b)', () => {
+  it('aucune coquille NEUVE sans enjeu, et toute baseline soldée est RETIRÉE', () => {
+    const muets = new Map<string, string[]>(); // flowKey → fichiers
+    for (const f of readdirSync(UI).filter((n) => n.endsWith('.tsx') && !n.includes('.test.'))) {
+      for (const k of shellsWithoutStake(readFileSync(join(UI, f), 'utf8'))) {
+        muets.set(k, [...(muets.get(k) ?? []), f]);
+      }
+    }
+    const neufs = [...muets].filter(([k]) => !(k in BASELINE)).map(([k, fs]) => `${k} (${fs.join(', ')})`);
+    expect(neufs, ['Coquille de jet SANS enjeu — le joueur doit savoir ce que le jet met en jeu (`stake`, flow-stakes.json) :', ...neufs].join('\n')).toEqual([]);
+
+    const perimees = Object.keys(BASELINE).filter((k) => !muets.has(k));
+    expect(perimees, ['Baseline PÉRIMÉE : ces flux ont désormais leur enjeu — retirer leur ligne :', ...perimees].join('\n')).toEqual([]);
+  });
+
+  it('chaque enjeu de modale mono nomme un FLUX réel (ou la fenêtre de décision du Destin)', () => {
+    // `fateSave` n'est pas un flux de jet (aucun dé) : c'est la fenêtre de DÉCISION du Destin, dont
+    // l'enjeu se rend par la même primitive. Tout autre `flow` doit exister au vocabulaire des flux.
+    const connus = new Set([...Object.keys(FLOW_VERBS), 'fateSave']);
+    const inconnus = FLOW_STAKES.filter((e) => !connus.has(e.flow)).map((e) => `${e.id} → ${e.flow}`);
+    expect(inconnus, 'enjeu keyé sur un flux qui n’existe pas').toEqual([]);
+  });
+
+  it('FAIL-CLOSED : une coquille synthétique sans enjeu est DÉTECTÉE, avec enjeu elle ne l’est pas', () => {
+    const sans = `<RollShell flowKey="run" title="X" rows={[]} />`;
+    const avec = `<RollShell flowKey="run" stake={flowStakeRef('run', 'roll')} title="X" rows={[]} />`;
+    // Une prop d'une AUTRE balise ne doit pas compter — l'enjeu doit être SUR la coquille.
+    const voisin = `<div stake={x}><RollShell flowKey="run" title="X" /></div>`;
+    // `flowKey` d'une RANGÉE (RollRowData) : hors périmètre, l'enjeu est porté par la coquille.
+    const rangee = `<RollRow flowKey="flee" />`;
+    expect(shellsWithoutStake(sans)).toEqual(['run']);
+    expect(shellsWithoutStake(avec)).toEqual([]);
+    expect(shellsWithoutStake(voisin)).toEqual(['run']);
+    expect(shellsWithoutStake(rangee)).toEqual([]);
+  });
+});

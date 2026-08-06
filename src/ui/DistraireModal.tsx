@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { flowStakeRef } from '../data';
 import { canReroll } from '../engine/fortune';
 import { distraireAttackValue, distraireDefenseValue, distraireFoes } from '../state/combatFlow';
 import { losClear } from '../state/lineOfSight';
@@ -80,6 +81,7 @@ export function DistraireModal() {
   return (
     <RollShell
       flowKey="distraire"
+      stake={flowStakeRef('distraire', 'roll')}
       title="Distraire"
       extra={<VsHeader actor={mover} target={foe} label="détourner son attention (Athlétisme vs Calme)" />}
       // Choix de la cible AVANT le jet (plusieurs adversaires en Ligne de vue) — OptionChooser partagé.

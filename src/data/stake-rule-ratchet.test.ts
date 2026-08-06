@@ -8,7 +8,12 @@
  * La nuit est SOLDÉE (15/15 depuis L0a) — aucune tolérance n'y est ouverte.
  */
 import { describe, it, expect } from 'vitest';
-import { NIGHT_STAKES, VOYAGE_STAKES, regles, skills, symptoms, etats } from './index';
+import {
+  NIGHT_STAKES, VOYAGE_STAKES, FLOW_STAKES,
+  regles, skills, symptoms, etats, talents, qualities, spells,
+  characteristics, psychologies, seaShanties, crewTestTypes,
+} from './index';
+import { STEAM_BREAKDOWNS } from '../engine/shipBuild';
 
 
 /** Entrées d'enjeu de VOYAGE encore sans fiche — chacune attend SA curation verbatim (patron L0a).
@@ -47,10 +52,15 @@ describe('cliquet — un enjeu porte sa RÈGLE (#1117)', () => {
   });
 
   it('aucun renvoi MORT : chaque `rule` déclarée existe dans SON foyer', () => {
-    // Le foyer peut être une ENTITÉ (amendement A) : la catégorie voyage avec l'id.
-    const FOYERS: Record<string, { id: string }[]> = { regles, skills, symptoms, etats };
+    // Le foyer peut être une ENTITÉ (amendement A) : la catégorie voyage avec l'id. Les trois datasets
+    // passent par le MÊME contrôle — un renvoi mort est un renvoi mort, quelle que soit la famille.
+    const FOYERS: Record<string, { id: string }[]> = {
+      regles, skills, symptoms, etats, talents, qualities, spells,
+      characteristics, psychologies, seaShanties, crewTestTypes,
+      steamBreakdowns: STEAM_BREAKDOWNS,
+    };
     const cat = (e: { ruleCategory?: string | undefined }) => e.ruleCategory ?? 'regles';
-    const morts = [...NIGHT_STAKES, ...VOYAGE_STAKES]
+    const morts = [...NIGHT_STAKES, ...VOYAGE_STAKES, ...FLOW_STAKES]
       .filter((e) => e.rule && !(FOYERS[cat(e as { ruleCategory?: string })] ?? []).some((x) => x.id === e.rule))
       .map((e) => `${e.id} → ${cat(e as { ruleCategory?: string })}:${e.rule}`);
     expect(morts, 'renvoi vers un foyer inexistant').toEqual([]);
@@ -62,25 +72,33 @@ describe('cliquet — un enjeu porte sa RÈGLE (#1117)', () => {
 
   /**
    * Fiches curées en L1a pour les MODALES MONO : leur consommateur (`flow-stakes`, id de jet
-   * {flow, phase}) naît en L1b. Elles sont donc SANS RÉFÉRENT — et c'est DÉCLARÉ ici, nominativement,
-   * pour qu'aucune ne s'installe en dette muette (le défaut que l'amendement A combat).
-   * Le stock ne peut que DÉCROÎTRE : dès que L1b câble une fiche, sa ligne meurt ici.
+   * {flow, phase}) est né en L1b — le stock d'attente est SOLDÉ. L'assertion reste, INVERSÉE : chaque
+   * fiche curée pour un jet DOIT désormais être référencée par un dataset d'enjeu. Une fiche qui
+   * perdrait son référent (câblage retiré) rougit — c'est la dette muette que l'amendement A combat.
    */
-  const ATTENDUES_SANS_REFERENT_JUSQU_A_L1B = [
+  const FICHES_L1A_CABLEES = [
     'course', 'desengagement', 'fuite', 'chute',
     'influences-corruptrices', 'dissipation', 'au-contact',
   ];
 
-  it('les fiches L1a existent et attendent leur câblage L1b — stock NOMINATIF et décroissant', () => {
-    const absentes = ATTENDUES_SANS_REFERENT_JUSQU_A_L1B.filter((id) => !regles.some((r) => r.id === id));
+  it('les fiches L1a existent ET sont CÂBLÉES — plus aucune en attente', () => {
+    const absentes = FICHES_L1A_CABLEES.filter((id) => !regles.some((r) => r.id === id));
     expect(absentes, 'fiche annoncée par L1a mais absente du catalogue').toEqual([]);
 
-    // Assertion INVERSE : tant qu'elles ne sont pas câblées, AUCUNE ne doit être référencée par un
-    // dataset d'enjeu — si l'une l'est, L1b a câblé et la ligne doit SORTIR de cette liste.
     const referencees = new Set(
-      [...NIGHT_STAKES, ...VOYAGE_STAKES].map((e) => e.rule).filter((r): r is string => !!r),
+      [...NIGHT_STAKES, ...VOYAGE_STAKES, ...FLOW_STAKES].map((e) => e.rule).filter((r): r is string => !!r),
     );
-    const cablees = ATTENDUES_SANS_REFERENT_JUSQU_A_L1B.filter((id) => referencees.has(id));
-    expect(cablees, 'fiche désormais CÂBLÉE : la retirer de la liste d’attente L1b').toEqual([]);
+    const orphelines = FICHES_L1A_CABLEES.filter((id) => !referencees.has(id));
+    expect(orphelines, 'fiche L1a SANS référent : son jet ne la cite plus (câblage L1b perdu)').toEqual([]);
+  });
+
+  /**
+   * Les enjeux de MODALE MONO sont soldés dès leur naissance : chaque entrée porte SA porte de
+   * lecture — le foyer du jet (`rule` + `ruleCategory`) ou la catégorie de l'ENTRÉE jouée
+   * (`entryCategory`). Aucune tolérance ouverte : le dataset naît sans dette.
+   */
+  it('chaque enjeu de modale mono porte SA porte (foyer ou entrée)', () => {
+    const sans = FLOW_STAKES.filter((e) => !e.entryCategory && !(e.rule && e.ruleCategory)).map((e) => e.id);
+    expect(sans, 'enjeu de modale mono sans foyer ni catégorie d’entrée').toEqual([]);
   });
 });

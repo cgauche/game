@@ -344,7 +344,7 @@ Les tests étendus servent à résoudre des tâches particulièrement longues ou
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.171-180, l.182-185) → `soutien`, `useExtendedTestJetProps`, `AuContactModal`, `GrappleModal`, `useTestJetProps`, `BargainModalView`, `StateRecoveryModalView`, `opposedLines`, `ReloadModal`, `useDefenseJetProps`, +30 — `src/data/regles.json`, `src/engine/activities.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, +23 fichiers
+- `LDB 12` (l.171-180, l.182-185) → `soutien`, `useExtendedTestJetProps`, `AuContactModal`, `GrappleModal`, `useTestJetProps`, `BargainModalView`, `StateRecoveryModalView`, `opposedLines`, `useDefenseJetProps`, `ReloadModal`, +30 — `src/data/regles.json`, `src/engine/activities.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, +23 fichiers
 
 ---
 
@@ -497,7 +497,7 @@ En dépensant un Point de Résilience, un personnage peut choisir *lui-même* le
 
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé), [Tests opposés](#tests-opposés), Destin et Résilience (domaine propre)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.17-28, l.40-44, l.46-48, l.64-71) → `canReroll`, `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `hasMeaningfulOption`, +93 — `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +49 fichiers
+- `LDB 17` (l.17-28, l.40-44, l.46-48, l.64-71) → `canReroll`, `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `hasMeaningfulOption`, +95 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, +50 fichiers
 
 ---
 
@@ -541,7 +541,7 @@ Autrement dit : chaque fois qu'un personnage *réussit* un test utilisant une Co
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr), [Tests étendus](#tests-étendus)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.11-20, l.62, l.89, l.123, l.263, l.411, l.448, l.520, l.605, l.759, l.787) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `CrewContributor`, `tissage`, `assaut-feroce`, +89 — `src/data/talents.json`, `src/engine/careerSlots.ts`, `src/engine/combat.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, +1 fichiers
+- `LDB 10` (l.11-20, l.62, l.89, l.123, l.263, l.411, l.448, l.520, l.605, l.759, l.787) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `CrewContributor`, `tissage`, `assaut-feroce`, +91 — `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/careerSlots.ts`, `src/engine/combat.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, +2 fichiers
 
 ---
 
@@ -578,7 +578,7 @@ Talents concernés (LDB 10) :
 
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.150, l.176, l.634, l.834, l.899, l.950, l.966) → `MedicState`, `useAttackJetProps`, `CombatFeature`, `surgeryNext`, `MedicModal`, `baratiner`, `dualAffordance`, `battement`, `PendingAttack`, `beni`, +77 — `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +7 fichiers
+- `LDB 10` (l.150, l.176, l.634, l.834, l.899, l.950, l.966) → `MedicState`, `useAttackJetProps`, `CombatFeature`, `surgeryNext`, `MedicModal`, `battement-roll`, `surgery-roll`, `baratiner`, `dualAffordance`, `battement`, +79 — `src/data/flow-stakes.json`, `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, +8 fichiers
 - `LDB 12` (l.43) → `canReroll`, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `ChanceButtons`, `OPTIONAL_RULES`, `evaluateTest`, `NightEntry`, `maxForcedRoll`, `BatchParticipant` — `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, +2 fichiers
 
 ---
@@ -618,6 +618,6 @@ Ces trois mécaniques constituent des extensions légitimes du système de DR da
 **Voir aussi** : [Doubles — Critique et Maladresse](#doubles--critique-et-maladresse), [Influencer un test — Chance, Résilience, Talents](#influencer-un-test--chance-résilience-talents), [Tests étendus](#tests-étendus)
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 12` (l.124-127) → `forceCrewRole`, `OPTIONAL_RULES`, `evaluateTest`, `double-critique-maladresse`, `bestForcedRoll`, `SL_IMPRESSIVE`, `isAstoundingFailure`, `FicheBody`, `resolveAppraise`, `ItemInstance` — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +2 fichiers
-- `LDB 17` (l.22) → `canReroll`, `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, +12 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/keybindings.ts`, +11 fichiers
+- `LDB 17` (l.22) → `canReroll`, `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, +12 — `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +12 fichiers
 - `NADJ 16` (l.7, l.11, l.19, l.57, l.97) → `al-zahr`, `alvatafl`, `bras-de-fer`, `bete-tailleurs`, `boules`, `cerevis`, `arene`, `OPTIONAL_RULES` — `src/data/tavernGames.json`, `src/engine/policy.ts`
 - sans code : `NADJ 16` (l.25, l.34)

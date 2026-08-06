@@ -104,7 +104,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Haine (Cible), Préjugé (Cible)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.18-21) → `ApproachModal`, `PsychAffliction`, `describeApproach`, `isFrenzyCapable`, `EffectFlags`, `BattleState`, `extendedTestStep`, `resolvePeurTest`, `ActionBar`, `attackClickCommit`, +15 — `src/data/index.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/gameIso/effectIcons.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, +9 fichiers
+- `LDB 21` (l.18-21) → `ApproachModal`, `PsychAffliction`, `describeApproach`, `isFrenzyCapable`, `EffectFlags`, `BattleState`, `extendedTestStep`, `resolvePeurTest`, `ActionBar`, `attackClickCommit`, +15 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/gameIso/effectIcons.ts`, `src/state/ai.ts`, +10 fichiers
 
 ---
 
@@ -131,7 +131,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Terreur (Indice), État Brisé (`etats.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.23-28, l.29) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, `describeApproach`, `isFrenzyCapable`, +34 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +17 fichiers
+- `LDB 21` (l.23-28, l.29) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, `describeApproach`, `isFrenzyCapable`, +34 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, +18 fichiers
 
 ---
 
@@ -187,7 +187,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Talent Frénésie, Talent Contrôle de la Frénésie, État Exténué (`etats.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.28-33, l.35) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, `describeApproach`, `isFrenzyCapable`, +33 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +17 fichiers
+- `LDB 21` (l.28-33, l.35) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, `describeApproach`, `isFrenzyCapable`, +33 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, +18 fichiers
 
 ---
 
@@ -213,7 +213,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Talent Haine (Groupe)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.37-39, l.41) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `calme-d-approche`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, +39 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +20 fichiers
+- `LDB 21` (l.37-39, l.41) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `calme-d-approche`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, +39 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +21 fichiers
 
 ---
 
@@ -233,7 +233,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 - `LDB 21 l.41-51` — définition, succès/échec, comportement obligatoire, conditions de fin
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.41-51) → `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `openScriptedPsych`, `calme-d-approche`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, `isFrenzyCapable`, +30 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +17 fichiers
+- `LDB 21` (l.41-51) → `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `openScriptedPsych`, `calme-d-approche`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, `isFrenzyCapable`, +30 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +18 fichiers
 
 ---
 
@@ -505,7 +505,7 @@ Confère la capacité d'entrer en Frénésie (idem trait de créature Frénésie
 **Sources RAW** : `LDB 10 l.506`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.255, l.398, l.506) → `TriggeredEffect`, `combattant-en-espace-clos`, `concocter`, `contorsionniste`, `controle-de-la-frenesie`, `cooperatif`, `costaud`, `coude-a-coude`, `coup-puissant`, `criminel`, +36 — `src/data/index.ts`, `src/data/talents.json`, `src/engine/flowCore.ts`
+- `LDB 10` (l.255, l.398, l.506) → `distraire-roll`, `TriggeredEffect`, `combattant-en-espace-clos`, `concocter`, `contorsionniste`, `controle-de-la-frenesie`, `cooperatif`, `costaud`, `coude-a-coude`, `coup-puissant`, +37 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/talents.json`, `src/engine/flowCore.ts`
 
 ---
 
@@ -540,7 +540,7 @@ Exemples de groupes : hommes-bêtes, peaux-vertes, monstres, hors-la-loi, sigmar
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.548, l.1051, l.1053) → `fearImmuneVs`, `CombatFeature`, `frappe-assommante`, `frappe-blessante`, `frappe-precise`, `frappe-reactive`, `frenesie`, `fuite`, `grand-orateur`, `grimpeur`, +14 — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
-- `LDB 21` (l.37-39) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `calme-d-approche`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, +39 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +20 fichiers
+- `LDB 21` (l.37-39) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `calme-d-approche`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, +39 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +21 fichiers
 
 ---
 
@@ -574,7 +574,7 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 
 **Voir aussi** : `destin.md` (Détermination)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.59) → `ResilienceButton`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, `ForcedResolve`, +66 — `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, +36 fichiers
+- `LDB 17` (l.59) → `ResilienceButton`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, `ForcedResolve`, +68 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, +37 fichiers
 
 ---
 
@@ -611,8 +611,8 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.1053) → `fearImmuneVs`, `CombatFeature`, `robuste`, `vampires`, `saut-carpe`, `voies-fluviales`, `soldats`, `seconde-vue`, `seigneur-de-guerre`, `vue` — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
-- `LDB 17` (l.59) → `ResilienceButton`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, `ForcedResolve`, +66 — `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, +36 fichiers
-- `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `peur`, `terreur`, `animosite`, `recoveryTarget`, `openScriptedPsych`, +56 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +28 fichiers
+- `LDB 17` (l.59) → `ResilienceButton`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, `ForcedResolve`, +68 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, +37 fichiers
+- `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `peur`, `terreur`, `animosite`, `recoveryTarget`, `openScriptedPsych`, +56 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +29 fichiers
 - `LDB 85` (l.178-179, l.382-383) → `cannotStopOn`, `Formula`, `EnemyTurnInput`, `displaceSmaller`, `Condition`, `MoveEnv`, `availableAttacks`, `engagedAdvantageGap`, `taille-modificateurs-en-combat`, `knowsCastingSkill`, +54 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, +9 fichiers
 
 ---

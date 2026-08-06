@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { flowStakeRef } from '../data';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
@@ -52,6 +53,7 @@ export function SteamSaveModal() {
   return (
     <RollShell
       flowKey="steamSave"
+      stake={flowStakeRef('steamSave', 'roll')}
       variant="test"
       title="Fuite de vapeur — Initiative"
       subtitle={<>panne de vapeur</>}

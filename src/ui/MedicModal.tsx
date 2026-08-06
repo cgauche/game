@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useGame } from '../state/store';
+import { flowStakeRef } from '../data';
 import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
 import { TeamPortrait } from './TeamPortrait';
@@ -105,6 +106,7 @@ function SurgeryRollFlow() {
   return (
     <RollShell
       flowKey="surgery"
+      stake={flowStakeRef('surgery', 'roll', { values: { targetDR: ps.targetDR } })}
       embedded
       title={<><Icon id={HEAL_ACT[kind ?? 'surgery'].icon} size="sm" /> {recovery ? 'Rééduquer (une passe)' : 'Opérer (une passe)'}</>}
       /* AUCUN sous-titre : la passe est EMBARQUÉE dans le dossier d'opération, qui porte déjà l'A→B

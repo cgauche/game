@@ -2,7 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { testValue } from '../engine/skills';
-import { refLabel } from '../data';
+import { flowStakeRef, refLabel } from '../data';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
@@ -62,6 +62,7 @@ export function RunModal() {
   return (
     <RollShell
       flowKey="run"
+      stake={flowStakeRef('run', 'roll')}
       title={<><Icon id="melee/flee" size="sm" /> Course</>}
       subtitle={
         <>

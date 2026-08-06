@@ -3,7 +3,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { testValue } from '../engine/skills';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
-import { findSeaShantyById } from '../data';
+import { findSeaShantyById, flowStakeRef } from '../data';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
@@ -62,6 +62,7 @@ export function ShantyModal() {
   return (
     <RollShell
       flowKey="shanty"
+      stake={flowStakeRef('shanty', 'roll', p.shantyId ? { entryId: p.shantyId } : undefined)}
       title={<><Icon id="audio/music" size="sm" /> Chanson de marin</>}
       /* Z1 : acteur + le BÉNÉFICIAIRE, qui n'a de portrait nulle part (l'équipage entier). La
          Compétence est le label de la ligne (`Divertissement (Chant)`) — jamais redite ici. */

@@ -1,4 +1,6 @@
 import { useGame } from '../state/store';
+import { flowStakeRef } from '../data';
+import { StakeNote, StakeRule, stakeRuleOf } from './StakeNote';
 import { defenseValue, combatValue, defenseModifiers, baseTestModLines } from '../engine/combat';
 import { calmeValue } from '../engine/psychology';
 import { groupAdvantage } from '../engine/advantagePool';
@@ -58,13 +60,17 @@ export function DisengageModal() {
     // 1 avec Impitoyable) débité de la réserve du camp ; sinon LDB « Sacrifier l'Avantage » (→ 0).
     const groupMode = groupAdvantage();
     const retreatCost = retreatAdvantageCost(mover);
+    const choiceStake = flowStakeRef('disengage', pd.phase);
     const sacrificeLabel = groupMode ? `↩ Retraite stratégique (${retreatCost} Av)` : "Sacrifier l'Avantage";
     const sacrificeTitle = groupMode
       ? `Dépense ${retreatCost} Avantage(s) de la réserve du camp pour rompre le combat, sans coût d'Action`
       : "Tu as l'Avantage supérieur : pars librement, sans coût d'Action";
     return (
-      <Modal title="Se désengager" onClose={cancel}>
+      <Modal title={<>Se désengager <StakeRule rule={stakeRuleOf(choiceStake)} label="Se désengager" /></>} onClose={cancel}>
         {header}
+        {/* Z3b : le MENU dit aussi ce qu'il met en jeu (arbitrage « on fait des jets à l'aveugle ») —
+            même primitive que la coquille de jet, l'enjeu venant de la MÊME entrée de donnée. */}
+        <StakeNote stake={choiceStake} />
         <div className="rm-options">
           {/* Menu d'options PARTAGÉ (OptionChooser) — Esquiver montre sa valeur effective d'Esquive. */}
           <OptionChooser
@@ -138,6 +144,7 @@ export function DisengageModal() {
     return (
       <RollShell
         flowKey="disengage"
+        stake={flowStakeRef('disengage', pd.phase)}
         title="Se désengager"
         extra={header}
         rows={rows}
@@ -196,6 +203,7 @@ export function DisengageModal() {
   return (
     <RollShell
       flowKey="disengage"
+      stake={flowStakeRef('disengage', pd.phase)}
       title="Se désengager"
       extra={header}
       rows={[foeRow, moverRow]}

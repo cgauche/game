@@ -37,7 +37,7 @@ La durée de chaque État est précisée dans sa description ; cependant, certai
 
 **Voir aussi** : Avantage (`combat.md`), Détermination (`destin.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.7, l.10-11) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `combatTestPenalty`, `meleeAttackerBonus`, `StatusData`, `passiveGlobalTestMod` — `src/data/index.ts`, `src/engine/conditions.ts`, `src/engine/trauma.ts`
+- `LDB 16` (l.7, l.10-11) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `combatTestPenalty`, `meleeAttackerBonus`, `passiveGlobalTestMod`, `StatusData` — `src/data/index.ts`, `src/engine/conditions.ts`, `src/engine/trauma.ts`
 
 ---
 
@@ -175,7 +175,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Psychologie (`psychologie.md`), Exténué
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.51-61) → `addCondition`, `EnemyAction`, `StateRecoveryModal`, `brise`, `Condition`, `aaBleedUnconsciousDue`, `tileSeenByFoe`, `describeStateRecovery`, `PendingStateRecovery`, `ActionBar`, +19 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/ai.ts`, +11 fichiers
+- `LDB 16` (l.51-61) → `addCondition`, `EnemyAction`, `StateRecoveryModal`, `brise`, `Condition`, `aaBleedUnconsciousDue`, `tileSeenByFoe`, `describeStateRecovery`, `PendingStateRecovery`, `ActionBar`, +19 — `src/data/etats.json`, `src/data/flow-stakes.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +12 fichiers
 
 ---
 
@@ -199,7 +199,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Empoignade (`combat.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.66, l.72, l.86-87) → `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `brise`, `recoveryTarget`, `aaBleedUnconsciousDue`, `Condition`, `describeStateRecovery`, `PendingStateRecovery`, +21 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, +11 fichiers
+- `LDB 16` (l.66, l.72, l.86-87) → `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `brise`, `recoveryTarget`, `aaBleedUnconsciousDue`, `Condition`, `describeStateRecovery`, `PendingStateRecovery`, +21 — `src/data/etats.json`, `src/data/flow-stakes.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, +12 fichiers
 
 ---
 
@@ -226,7 +226,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Exténué, Drogues et poisons (`LDB 71`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.68-79) → `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `brise`, `aaBleedUnconsciousDue`, `Condition`, `describeStateRecovery`, `PendingStateRecovery`, `ActionBar`, +18 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, +10 fichiers
+- `LDB 16` (l.68-79) → `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `brise`, `aaBleedUnconsciousDue`, `Condition`, `describeStateRecovery`, `PendingStateRecovery`, `ActionBar`, +18 — `src/data/etats.json`, `src/data/flow-stakes.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, +11 fichiers
 
 ---
 
@@ -249,7 +249,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Traumatisme (`traumatisme.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.81-84) → `Formula`, `brise`, `recoveryTarget`, `ActionBar`, `empetre`, `GameOp`, `empoisonne`, `collectHeroRoundEndUpkeep`, `endOfRound`, `en-flammes`, +3 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, `src/state/ai.ts`, +2 fichiers
+- `LDB 16` (l.81-84) → `Formula`, `brise`, `recoveryTarget`, `ActionBar`, `empetre`, `GameOp`, `empoisonne`, `collectHeroRoundEndUpkeep`, `endOfRound`, `en-flammes`, +3 — `src/data/etats.json`, `src/data/flow-stakes.json`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, +3 fichiers
 
 ---
 
@@ -281,8 +281,8 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Brisé, Sonné, Hémorragique, Empoisonné, Inconscient, Traumatisme (`traumatisme.md`), Psychologie (`psychologie.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.84-102) → `unstable`, `Formula`, `stopBleedOutcome`, `brise`, `hitModifiers`, `recoveryTarget`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, +25 — `src/data/etats.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +11 fichiers
-- `LDB 21` (l.33) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, `describeApproach`, `isFrenzyCapable`, +33 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +17 fichiers
+- `LDB 16` (l.84-102) → `unstable`, `Formula`, `stopBleedOutcome`, `brise`, `hitModifiers`, `recoveryTarget`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, +25 — `src/data/etats.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, +12 fichiers
+- `LDB 21` (l.33) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, `describeApproach`, `isFrenzyCapable`, +33 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, +18 fichiers
 
 ---
 
@@ -420,7 +420,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 - `LDB 16 l.28-139` — descriptions individuelles
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.16-17, l.28-139) → `PRONE_POSE`, `unstable`, `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `stopBleedOutcome`, `brise`, `hitModifiers`, `addClockCondition`, +66 — `src/data/etats.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/healing.ts`, +22 fichiers
+- `LDB 16` (l.16-17, l.28-139) → `PRONE_POSE`, `unstable`, `addCondition`, `EnemyAction`, `Formula`, `stopBleedOutcome`, `StateRecoveryModal`, `brise`, `hitModifiers`, `addClockCondition`, +66 — `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, +23 fichiers
 
 ---
 
@@ -513,7 +513,7 @@ Le LDB 16 exprime toutes les durées en Rounds. Plusieurs sources introduisent d
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 40` (l.56, l.60-61, l.70, l.71-72, l.82, l.86, l.87-88, l.90, l.94-95, l.99, l.101) → `NestedTest`, `liveTableDecl`, `peche`, `CastPenalty`, `CascadeActorCounter`, `sonne`, `colere-pensez-a-vos-actes`, `colere-tenez-compte-de-mes-enseignements`, `a-terre`, `colere-vous-abusez-de-ma-patience`, +26 — `src/data/characteristics.json`, `src/data/miscast.json`, `src/engine/miscast.ts`, `src/engine/prayer.ts`, `src/engine/types.ts`, `src/state/cascade.ts`, +2 fichiers
-- `LDB 46` (l.36, l.39-40, l.43-44, l.45, l.46, l.47-48, l.49, l.59, l.60, l.63, l.64, l.66, l.68, l.74, l.75, l.78, l.80, l.102, l.126) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `followsCharacterRules`, `mineure-mildiou`, `overcastAxes`, `assourdi`, `MiscastResult`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `CastableSpell`, +69 — `src/data/miscast.json`, `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/overcast.ts`, +10 fichiers
+- `LDB 46` (l.36, l.39-40, l.43-44, l.45, l.46, l.47-48, l.49, l.59, l.60, l.63, l.64, l.66, l.68, l.74, l.75, l.78, l.80, l.102, l.126) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `followsCharacterRules`, `mineure-mildiou`, `overcastAxes`, `assourdi`, `MiscastResult`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `CastableSpell`, +70 — `src/data/flow-stakes.json`, `src/data/miscast.json`, `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, +11 fichiers
 
 ---
 
@@ -548,7 +548,7 @@ Les tableaux de Blessures Critiques (LDB 18) génèrent des États dont le **ret
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), section Blessures Critiques
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.64, l.67, l.74-75, l.104, l.123-125, l.148, l.149, l.211, l.213) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `dechirure-autre-mineure`, `aveugle`, `CritEscalation`, `fracture-torse-mineure`, `assourdi`, `trauma-fracture`, `fracture-torse-majeure`, +51 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, +9 fichiers
+- `LDB 18` (l.64, l.67, l.74-75, l.104, l.123-125, l.148, l.149, l.211, l.213) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `dechirure-autre-mineure`, `aveugle`, `CritEscalation`, `fracture-torse-mineure`, `assourdi`, `trauma-fracture`, `fracture-torse-majeure`, +52 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, +10 fichiers
 
 ---
 
@@ -619,7 +619,7 @@ Les listes de sorts et miracles (LDB 47-51, 40-43) infligent des États en cours
 - `ADE II 4 l.222, l.230, l.367` — objets magiques : sources d'État En flammes / Surpris / Aveuglé
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.233-234) → `a-enroulement`, `a-poudre-noire`, `a-repetition`, `sonne`, `defensive`, `arbalete`, `devastatrice`, `arc`, `entraves`, `explosifs`, +21 — `src/data/qualities.json`, `src/data/regles.json`, `src/data/weaponGroups.json`
+- `LDB 62` (l.233-234) → `a-enroulement`, `a-poudre-noire`, `a-repetition`, `sonne`, `au-contact-roll`, `defensive`, `arbalete`, `au-contact-choice`, `devastatrice`, `arc`, +23 — `src/data/flow-stakes.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/weaponGroups.json`
 - `ADE II 4` (l.222) → `deroutante` — `src/data/qualities.json`
 - `ZI 2` (l.165, l.178) → `filet`, `filet-barbele`, `coup-puissant`, `cornes`, `arme` — `src/data/creatures.json`, `src/data/qualities.json`
 - `ZI 14` (l.1008) → `fouissement` — `src/data/traits.json`

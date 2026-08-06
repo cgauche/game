@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { flowStakeRef } from '../data';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { testValue } from '../engine/skills';
@@ -35,6 +36,7 @@ export function FallModal() {
     return (
       <RollShell
         flowKey="fall"
+        stake={flowStakeRef('fall', p.phase, { values: { metres: p.metres } })}
         title={<><Icon id="melee/flee" size="sm" /> Chute volontaire</>}
         subtitle={<><strong>{c.label}</strong> se tient au bord d'un dénivelé de {p.metres} m</>}
         rows={[]}
@@ -82,6 +84,7 @@ export function FallModal() {
   return (
     <RollShell
       flowKey="fall"
+      stake={flowStakeRef('fall', p.phase, { values: { metres: p.metres } })}
       title={<><Icon id="melee/flee" size="sm" /> Chute volontaire</>}
       /* Z1 : acteur + la SITUATION que rien d'autre ne porte (la hauteur). La Compétence est le label
          de la ligne et le « +20 » sa Difficulté (`accessible`, `.rm-roll-diff` #1072) — pas ici. */

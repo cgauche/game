@@ -110,7 +110,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Voir aussi** : tables complètes → [combat.md § Critiques](combat.md#critiques-et-frappe-mortelle) ; Fractures → [§ 7](#7-fractures-mineure--majeure) ; Déchirures → [§ 8](#8-déchirures-musculaires-mineure--majeure) ; Amputations → [§ 9](#9-amputation--choc-traitement-et-séquelles-permanentes).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `dechirure-autre-mineure`, `aveugle`, `CritEscalation`, `fracture-torse-mineure`, `assourdi`, `trauma-fracture`, `fracture-torse-majeure`, +54 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, +11 fichiers
+- `LDB 18` (l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `dechirure-autre-mineure`, `aveugle`, `CritEscalation`, `fracture-torse-mineure`, `assourdi`, `trauma-fracture`, `fracture-torse-majeure`, +55 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, +12 fichiers
 
 ---
 
@@ -181,7 +181,7 @@ L'os est salement fracturé ou a éclaté. Peu probable de guérir correctement 
 **Voir aussi** : [Amputation — Membre amputé](#9-amputation--choc-traitement-et-séquelles-permanentes) ; [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.193-213) → `dechirure-jambe-mineure`, `dechirure-autre-mineure`, `fracture-torse-mineure`, `trauma-fracture`, `fracture-torse-majeure`, `fracture-jambe-mineure`, `fractureSequela`, `fractureEndDifficulty`, `fracture-jambe-majeure`, `fracture-tete-mineure`, +6 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traumas.json`, `src/engine/trauma.ts`
+- `LDB 18` (l.193-213) → `dechirure-jambe-mineure`, `dechirure-autre-mineure`, `fracture-torse-mineure`, `trauma-fracture`, `fracture-torse-majeure`, `fracture-jambe-mineure`, `fractureSequela`, `fractureEndDifficulty`, `fracture-jambe-majeure`, `fracture-tete-mineure`, +7 — `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traumas.json`, `src/engine/trauma.ts`
 
 ---
 
@@ -212,7 +212,7 @@ La Compétence Guérison ne raccourcit pas la Majeure (elle informe seulement qu
 **Voir aussi** : [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.215-231) → `permanentAmputations`, `dechirure-jambe-mineure`, `AMPUTATION_WOUND_DESC`, `CritEntry`, `dechirure-jambe-majeure`, `Amputation`, `TraumaFiche`, `amputationSchema`, `dechirure-autre-mineure`, `AAEntry`, +30 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, +2 fichiers
+- `LDB 18` (l.215-231) → `permanentAmputations`, `dechirure-jambe-mineure`, `AMPUTATION_WOUND_DESC`, `CritEntry`, `dechirure-jambe-majeure`, `Amputation`, `TraumaFiche`, `amputationSchema`, `dechirure-autre-mineure`, `AAEntry`, +31 — `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, +3 fichiers
 
 ---
 
@@ -258,7 +258,7 @@ Toute amputation nécessite une **Chirurgie** pour être traitée. La blessure n
 **Voir aussi** : [Chirurgie](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie) ; États → [etats.md](etats.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.233-285) → `faim`, `isFumble`, `permanentAmputations`, `soif`, `dechirure-jambe-mineure`, `recovery`, `AMPUTATION_WOUND_DESC`, `CritEntry`, `dechirure-jambe-majeure`, `Amputation`, +49 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/data/voyage-stakes.json`, +7 fichiers
+- `LDB 18` (l.233-285) → `faim`, `isFumble`, `permanentAmputations`, `soif`, `dechirure-jambe-mineure`, `recovery`, `AMPUTATION_WOUND_DESC`, `CritEntry`, `dechirure-jambe-majeure`, `Amputation`, +50 — `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, +8 fichiers
 
 ---
 
@@ -283,7 +283,7 @@ Un personnage est **blessé** s'il a perdu au moins 1 PB. Il n'y a **aucune pén
 **Voir aussi** : Compétence Guérison → [competences.md](competences.md) (LDB 09 l.255-269) ; [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie) ; Faim/Soif → [§ 13](#13-faim-et-soif) (sans provisions : pas de récupération naturelle).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.255-269) → `altCharKey`, `carryOverState`, `healDifficulty`, `healWoundsDelta`, `stopBleedOutcome`, `HealWoundsOptions`, `OPTIONAL_RULES`, `applyHealWounds`, `emprise-sur-les-animaux`, `escamotage`, +6 — `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/types.ts`, +1 fichiers
+- `LDB 9` (l.255-269) → `altCharKey`, `carryOverState`, `healDifficulty`, `healWoundsDelta`, `stopBleedOutcome`, `HealWoundsOptions`, `OPTIONAL_RULES`, `applyHealWounds`, `heal-wounds`, `emprise-sur-les-animaux`, +8 — `src/data/flow-stakes.json`, `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, +2 fichiers
 - `LDB 18` (l.289-300) → `faim`, `permanentAmputations`, `soif`, `recovery`, `dechirure-jambe-majeure`, `critEscalationSchema`, `TraumaFiche`, `dechirure-autre-majeure`, `exposure`, `exposure-heat-drop`, +29 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/data/voyage-stakes.json`, `src/engine/combat.ts`, +10 fichiers
 
 ---
@@ -312,7 +312,7 @@ Certaines entrées exigent une **Chirurgie** (indiquée dans le résultat). Les 
 **Voir aussi** : Compétence Guérison → [competences.md](competences.md) ; [Fractures](#7-fractures-mineure--majeure) ; [Déchirures](#8-déchirures-musculaires-mineure--majeure) ; [Amputation](#9-amputation--choc-traitement-et-séquelles-permanentes).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.303-320) → `faim`, `soif`, `recovery`, `availableHealModes`, `critEscalationSchema`, `exposure`, `ExposureKind`, `exposure-heat-drop`, `exposureTestCount`, `HealWoundsOptions`, +20 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/voyage-stakes.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +14 fichiers
+- `LDB 18` (l.303-320) → `faim`, `soif`, `recovery`, `availableHealModes`, `critEscalationSchema`, `exposure`, `ExposureKind`, `exposure-heat-drop`, `exposureTestCount`, `HealWoundsOptions`, +20 — `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/voyage-stakes.json`, `src/engine/combat.ts`, +15 fichiers
 
 ---
 
@@ -345,7 +345,7 @@ Se débarrasser d'une Possession lourde annule 1 Test échoué.
 **Voir aussi** : Possessions accordant bonus/malus aux Tests d'Exposition (LDB 65 p.302 / LDB 74 p.309).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.327-334) → `faim`, `soif`, `recovery`, `availableHealModes`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `ExposureKind`, `exposure-heat-drop`, +29 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/exposure.ts`, `src/engine/healing.ts`, +13 fichiers
+- `LDB 18` (l.327-334) → `faim`, `soif`, `recovery`, `availableHealModes`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `ExposureKind`, `exposure-heat-drop`, +29 — `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/exposure.ts`, +14 fichiers
 
 ---
 

@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { flowStakeRef } from '../data';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
@@ -85,6 +86,7 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
   return (
     <RollShell
       flowKey="heal"
+      stake={flowStakeRef('heal', ph.mode)}
       embedded={embedded}
       title={wounds ? <><Icon id="journal/heal" size="sm" /> Soigner les Blessures</> : trauma ? <><Icon id="medical/tear" size="sm" /> Soigner une déchirure</> : ammo ? <><Icon id="item/ammo" size="sm" /> Retirer une munition</> : <><Icon id="condition/bleeding" size="sm" /> Arrêter l’Hémorragie</>}
       /* A→B canonique (décision utilisateur 2026-08-04) : portraits + flèche annotée de l'acte —

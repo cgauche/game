@@ -15,7 +15,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { NIGHT_STAKES, books, regles } from './index';
+import { NIGHT_STAKES, FLOW_STAKES, books, regles } from './index';
 
 const RULE_IDS = new Set(regles.map((r) => r.id));
 
@@ -77,5 +77,41 @@ describe('night-stakes — la FORME de chaque enjeu est déclarée et tenue (#11
     expect(contigu(lines, '**Blessé :** Chaque jour')).toBe(false);
     // Un fragment recollé par-dessus la coupure de folio de Toxine (l.212 → l.215).
     expect(contigu(lines, 'tous les jours (en général pendant votre sommeil)')).toBe(false);
+  });
+});
+
+/**
+ * MÊME contrat de forme pour le dataset des MODALES MONO (#1117 L1b) : la promesse suit la
+ * DÉCLARATION, pas la famille. `flow-stakes.json` rend `form` OBLIGATOIRE au schéma (pas de défaut
+ * implicite) — la garde tient les deux régimes avec le MÊME `contigu`.
+ */
+describe('flow-stakes — la FORME de chaque enjeu de modale mono est déclarée et tenue (#1117 L1b)', () => {
+  it('tout `template` déclaré VERBATIM est contigu au chapitre cité, bloc par bloc', () => {
+    const defauts: string[] = [];
+    for (const e of FLOW_STAKES) {
+      if (e.form !== 'verbatim') continue;
+      const lines = chapterLines(e.source.book, e.source.note ?? '');
+      for (const bloc of e.template.split('\n\n')) {
+        if (!contigu(lines, bloc)) {
+          defauts.push(`${e.id} : bloc NON contigu au Source (${e.source.note}) — « ${bloc.slice(0, 70)}… »`);
+        }
+      }
+    }
+    expect(defauts, 'un assemblage qui se présente comme du verbatim : le déclarer `descripteur` ou le rendre contigu').toEqual([]);
+  });
+
+  it('tout `template` déclaré DESCRIPTEUR porte SA porte (le verbatim reste à un clic)', () => {
+    const sans = FLOW_STAKES
+      .filter((e) => e.form === 'descripteur' && !e.entryCategory && !(e.rule && e.ruleCategory))
+      .map((e) => e.id);
+    expect(sans, 'descripteur sans foyer ni catégorie d’entrée').toEqual([]);
+  });
+
+  it('chaque entrée est couverte par l’un des deux régimes, et son id de jet est UNIQUE', () => {
+    expect(FLOW_STAKES.length).toBeGreaterThan(0);
+    const inconnus = FLOW_STAKES.filter((e) => e.form !== 'verbatim' && e.form !== 'descripteur').map((e) => e.id);
+    expect(inconnus, 'régime de forme inconnu').toEqual([]);
+    const kinds = FLOW_STAKES.map((e) => `${e.flow}/${e.phase}`);
+    expect(kinds.length, 'deux entrées se disputent le MÊME id de jet {flow, phase}').toBe(new Set(kinds).size);
   });
 });

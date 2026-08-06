@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { flowStakeRef } from '../data';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { effectiveChar } from '../engine/characteristics';
@@ -57,6 +58,7 @@ export function FrenzyModal() {
   return (
     <RollShell
       flowKey="frenzy"
+      stake={flowStakeRef('frenzy', 'roll')}
       title={<><Icon id="flag/frenzy" size="sm" /> Frénésie</>}
       subtitle={
         <>

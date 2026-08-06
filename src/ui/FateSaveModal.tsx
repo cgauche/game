@@ -2,6 +2,8 @@ import { useGame } from '../state/store';
 import { Modal } from './Modal';
 import { OptionChooser, ChoiceButtons } from './OptionChooser';
 import { Icon } from './Icon';
+import { flowStakeRef } from '../data';
+import { StakeNote, StakeRule, stakeRuleOf } from './StakeNote';
 
 /**
  * Sauvetage par le Destin (LDB « Destin et Résistance » ch.17 l.31-35) : quand un héros à Destin
@@ -19,13 +21,16 @@ export function FateSaveModal() {
   const hero = battle.combatants.find((c) => c.id === p.heroId);
   if (!hero) return null;
   const fate = hero.fate ?? 0;
+  const stake = flowStakeRef('fateSave', 'choice');
 
   return (
-    <Modal title={<><Icon id="resource/fate" size="sm" /> Le Destin</>} subject={hero} variant="test">
+    <Modal title={<><Icon id="resource/fate" size="sm" /> Le Destin <StakeRule rule={stakeRuleOf(stake)} label="Le Destin" /></>} subject={hero} variant="test">
       <p className="rm-log">
         {p.source === 'hit' ? 'Un coup fatal le frappe !' : 'Ses blessures l’emportent…'} Sacrifier un Point de Destin ?
         (il en reste {fate})
       </p>
+      {/* Z3b : la fenêtre de décision dit ce qu'elle met en jeu — même primitive, même donnée. */}
+      <StakeNote stake={stake} />
       <div className="rm-options">
         <OptionChooser
           layout="grid"

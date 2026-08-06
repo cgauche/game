@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { flowStakeRef } from '../data';
 import { baseTestModLines, combatValue } from '../engine/combat';
 import { canReroll } from '../engine/fortune';
 import { OptionChooser } from './OptionChooser';
@@ -90,6 +91,7 @@ export function AuContactModal() {
     return (
       <RollShell
         flowKey="auContact"
+        stake={flowStakeRef('auContact', pd.phase)}
         title="Au contact"
         extra={<VsHeader actor={mover} target={foe} label="entrer dans la longueur d'arme" verb="melee/close-in" />}
         rows={[foeRow, actorRow]}
@@ -116,6 +118,7 @@ export function AuContactModal() {
   return (
     <RollShell
       flowKey="auContact"
+      stake={flowStakeRef('auContact', pd.phase)}
       title="Au contact"
       extra={<VsHeader actor={mover} target={foe} label="entrer dans la longueur d'arme" verb="melee/close-in" />}
       rows={[foeRow, actorRow]}

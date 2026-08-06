@@ -1,4 +1,5 @@
 import { useGame, type PendingAppraise } from '../state/store';
+import { flowStakeRef } from '../data';
 import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { influencesLocally } from '../state/netOwnership';
@@ -73,6 +74,7 @@ export function AppraiseModalView({
   return (
     <RollShell
       flowKey="appraise"
+      stake={flowStakeRef('appraise', pa.mode ?? 'evaluate')}
       variant="test"
       title={detect ? "Détecter l'aura" : 'Évaluer'}
       /* QUI évalue → portrait dans la ligne de jet (plus de nom en clair) ; la cible/DR vit dans le cadre. */

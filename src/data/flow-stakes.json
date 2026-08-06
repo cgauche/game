@@ -1,0 +1,467 @@
+[
+  {
+    "id": "fall-choice",
+    "label": "Chute volontaire — le choix",
+    "flow": "fall",
+    "phase": "choice",
+    "template": "Sauter : chute pleine de {metres} m. Tenter : Test d’Athlétisme Accessible (+20), 1 m de chute en moins par DR.",
+    "form": "descripteur",
+    "rule": "chute",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 166,
+      "note": "LDB 15 l.80-84"
+    }
+  },
+  {
+    "id": "fall-roll",
+    "label": "Chute volontaire — le Test",
+    "flow": "fall",
+    "phase": "roll",
+    "template": "Chute de {metres} m, réduite d’1 m par DR — 3 Dégâts par mètre restant +1d10, réduits par le Bonus d’Endurance et non par les PA ; plus de PB perdus que le Bonus d’Endurance ⇒ État À Terre.",
+    "form": "descripteur",
+    "rule": "chute",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 166,
+      "note": "LDB 15 l.80-84"
+    }
+  },
+  {
+    "id": "run-roll",
+    "label": "Course",
+    "flow": "run",
+    "phase": "roll",
+    "template": "Distance de Course = Mouvement de Course + DR en mètres, en plus du Mouvement du Round (un DR négatif la raccourcit).",
+    "form": "descripteur",
+    "rule": "course",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 165,
+      "note": "LDB 15 l.41"
+    }
+  },
+  {
+    "id": "disengage-choice",
+    "label": "Désengagement — le menu",
+    "flow": "disengage",
+    "phase": "choice",
+    "template": "Sacrifier l’Avantage : Avantage ramené à 0, tu t’éloignes sans pénalité. Esquiver : Test opposé d’Esquive, coûte l’Action. Fuir : attaque gratuite dans le dos, puis Course.",
+    "form": "descripteur",
+    "rule": "desengagement",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 165,
+      "note": "LDB 15 l.45-49"
+    }
+  },
+  {
+    "id": "disengage-esquive",
+    "label": "Désengagement — Esquive",
+    "flow": "disengage",
+    "phase": "esquive",
+    "template": "Test opposé d’Esquive contre le Corps à corps de l’adversaire — gagné : tu quittes le corps à corps ; perdu : tu restes Engagé. L’Action est dépensée dans les deux cas.",
+    "form": "descripteur",
+    "rule": "esquive",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "livre-de-base",
+      "page": 165,
+      "note": "LDB 15 l.45-49"
+    }
+  },
+  {
+    "id": "disengage-fuir",
+    "label": "Désengagement — Fuite",
+    "flow": "disengage",
+    "phase": "fuir",
+    "template": "L’adversaire gagne +1 Avantage et une attaque gratuite de Corps à corps non opposée, +20 (dos tourné). Touché : +1 Avantage de plus, et Test de Calme — échec = État Brisé, +1 par DR sous 0. Puis Course dans la direction opposée.",
+    "form": "descripteur",
+    "rule": "fuite",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 165,
+      "note": "LDB 15 l.61-68"
+    }
+  },
+  {
+    "id": "au-contact-roll",
+    "label": "Au contact — le Test",
+    "flow": "auContact",
+    "phase": "roll",
+    "template": "Test opposé de Corps à corps : le vainqueur choisit si le combat continue normalement ou « au contact ».",
+    "form": "descripteur",
+    "rule": "au-contact",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 297,
+      "note": "LDB 62 l.176"
+    }
+  },
+  {
+    "id": "au-contact-choice",
+    "label": "Au contact — le choix du vainqueur",
+    "flow": "auContact",
+    "phase": "choice",
+    "template": "Au contact : toute arme plus longue que Courte est traitée comme une Arme improvisée, pour les deux camps.",
+    "form": "descripteur",
+    "rule": "au-contact",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 297,
+      "note": "LDB 62 l.176"
+    }
+  },
+  {
+    "id": "corruption-mineure",
+    "label": "Influence corruptrice mineure",
+    "flow": "corruption",
+    "phase": "mineure",
+    "template": "Échec : 1 Point de Corruption. Réussite : aucun.",
+    "form": "descripteur",
+    "rule": "influences-corruptrices",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 182,
+      "note": "LDB 19 l.31"
+    }
+  },
+  {
+    "id": "corruption-moderee",
+    "label": "Influence corruptrice modérée",
+    "flow": "corruption",
+    "phase": "moderee",
+    "template": "Échec : 2 Points de Corruption. Réussite de 0-1 DR : 1. Réussite de 2 DR ou plus : aucun.",
+    "form": "descripteur",
+    "rule": "influences-corruptrices",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 182,
+      "note": "LDB 19 l.52"
+    }
+  },
+  {
+    "id": "corruption-majeure",
+    "label": "Influence corruptrice majeure",
+    "flow": "corruption",
+    "phase": "majeure",
+    "template": "Échec : 3 Points de Corruption. Réussite de 0-1 DR : 2. De 2-3 DR : 1. De 4 DR ou plus : aucun.",
+    "form": "descripteur",
+    "rule": "influences-corruptrices",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 182,
+      "note": "LDB 19 l.65"
+    }
+  },
+  {
+    "id": "corruption-seuil",
+    "label": "Seuil de Corruption",
+    "flow": "corruption",
+    "phase": "seuil",
+    "template": "Réussi : la Corruption est contenue, pour cette fois. Raté : une mutation est tirée — la Résilience « Je te renie ! » peut encore l’éviter.",
+    "form": "descripteur",
+    "rule": "influences-corruptrices",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 182,
+      "note": "LDB 19 l.80"
+    }
+  },
+  {
+    "id": "dispel-roll",
+    "label": "Dissipation permanente",
+    "flow": "dispel",
+    "phase": "roll",
+    "template": "Test étendu de Langue (Magick) : le DR cumule d’un Round à l’autre ; à {ni} DR cumulés, le Sort est dissipé.",
+    "form": "descripteur",
+    "rule": "dissipation",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 237,
+      "note": "LDB 46 l.158-160"
+    }
+  },
+  {
+    "id": "ward-roll",
+    "label": "Bénédiction de Protection",
+    "flow": "ward",
+    "phase": "roll",
+    "template": "Réussi : l’attaque sur la cible bénie a lieu. Raté : elle n’a pas lieu — il faut choisir une autre cible ou une autre Action.",
+    "form": "descripteur",
+    "rule": "benediction-de-protection",
+    "ruleCategory": "spells",
+    "source": {
+      "book": "livre-de-base",
+      "page": 213,
+      "note": "LDB 41 l.105"
+    }
+  },
+  {
+    "id": "steam-save-roll",
+    "label": "Fuite de vapeur — sauvegarde d’Initiative",
+    "flow": "steamSave",
+    "phase": "roll",
+    "template": "Raté : ébouillanté — 1d10−5 Dégâts (1 minimum), qui ignorent l’Armure.",
+    "form": "descripteur",
+    "rule": "fuite-de-vapeur",
+    "ruleCategory": "steamBreakdowns",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 99,
+      "note": "Panne de Vapeur, MDG 12 l.324-349"
+    }
+  },
+  {
+    "id": "frenzy-roll",
+    "label": "Entrée en Frénésie",
+    "flow": "frenzy",
+    "phase": "roll",
+    "template": "Réussi : tu entres en Frénésie — immunisé aux autres Traits Psychologiques, aucune fuite ni retraite, déplacement maximal vers l’ennemi le plus proche pour l’attaquer.",
+    "form": "descripteur",
+    "rule": "frenesie",
+    "ruleCategory": "psychologies",
+    "source": {
+      "book": "livre-de-base",
+      "page": 190,
+      "note": "LDB 21 l.31-36"
+    }
+  },
+  {
+    "id": "reload-roll",
+    "label": "Rechargement",
+    "flow": "reload",
+    "phase": "roll",
+    "template": "Test étendu de Projectiles : le DR cumule vers l’Indice {indice} de Recharge ; atteint, l’arme est chargée. Interrompu, le cumul repart de zéro.",
+    "form": "descripteur",
+    "rule": "recharge",
+    "ruleCategory": "qualities",
+    "source": {
+      "book": "livre-de-base",
+      "page": 299,
+      "note": "LDB 62 l.335"
+    }
+  },
+  {
+    "id": "battement-roll",
+    "label": "Battement",
+    "flow": "battement",
+    "phase": "roll",
+    "template": "Test de Corps à corps NON opposé — réussi : l’adversaire perd 1 Avantage, et 1 de plus par DR.",
+    "form": "descripteur",
+    "rule": "battement",
+    "ruleCategory": "talents",
+    "source": {
+      "book": "livre-de-base",
+      "page": 133,
+      "note": "LDB 10 l.103"
+    }
+  },
+  {
+    "id": "distraire-roll",
+    "label": "Distraire",
+    "flow": "distraire",
+    "phase": "roll",
+    "template": "Test opposé Athlétisme contre Calme — réussi : l’adversaire ne gagne pas d’Avantage jusqu’à la fin du prochain Round.",
+    "form": "descripteur",
+    "rule": "distraire",
+    "ruleCategory": "talents",
+    "source": {
+      "book": "livre-de-base",
+      "page": 136,
+      "note": "LDB 10 l.364"
+    }
+  },
+  {
+    "id": "surgery-roll",
+    "label": "Chirurgie — une passe",
+    "flow": "surgery",
+    "phase": "roll",
+    "template": "Test étendu de Guérison : le DR cumule vers {targetDR}. Chaque passe coûte au patient 1d10 Blessures et 1 État Hémorragique.",
+    "form": "descripteur",
+    "rule": "chirurgie",
+    "ruleCategory": "talents",
+    "source": {
+      "book": "livre-de-base",
+      "page": 134,
+      "note": "LDB 10 l.154"
+    }
+  },
+  {
+    "id": "appraise-evaluate",
+    "label": "Évaluation",
+    "flow": "appraise",
+    "phase": "evaluate",
+    "template": "Réussi : la valeur de l’objet est estimée à ±10 % et ses qualités cachées sont révélées.",
+    "form": "descripteur",
+    "rule": "evaluation",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "livre-de-base",
+      "page": 289,
+      "note": "LDB 59 l.41"
+    }
+  },
+  {
+    "id": "appraise-detect",
+    "label": "Détection d’artefact",
+    "flow": "appraise",
+    "phase": "detect",
+    "template": "Réussi : l’objet est senti magique, et chaque DR en apprend une règle. Une seule tentative par artefact.",
+    "form": "descripteur",
+    "rule": "intuition",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "livre-de-base",
+      "page": 128,
+      "note": "LDB 10 l.310-312"
+    }
+  },
+  {
+    "id": "heal-wounds",
+    "label": "Soin de Blessures",
+    "flow": "heal",
+    "phase": "wounds",
+    "template": "Réussi : le patient regagne Bonus d’Intelligence + DR Points de Blessure ; il ne bénéficie que d’un jet de Guérison par rencontre. Échec Stupéfiant : Infection Mineure.",
+    "form": "descripteur",
+    "rule": "guerison",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "livre-de-base",
+      "page": 123,
+      "note": "LDB 09 l.243"
+    }
+  },
+  {
+    "id": "heal-bleed",
+    "label": "Arrêt d’Hémorragie",
+    "flow": "heal",
+    "phase": "bleed",
+    "template": "Réussi : 1 État Hémorragique retiré, et 1 de plus par DR.",
+    "form": "descripteur",
+    "rule": "guerison",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "livre-de-base",
+      "page": 123,
+      "note": "LDB 09 l.243"
+    }
+  },
+  {
+    "id": "heal-trauma",
+    "label": "Soin d’une déchirure",
+    "flow": "heal",
+    "phase": "trauma",
+    "template": "Le jet est consommé, réussi ou non — une seule fois par séquelle. Réussi sur une déchirure mineure : convalescence raccourcie d’1 jour + 1 par DR ; sur une déchirure majeure, la Guérison ne fait que diagnostiquer le délai restant.",
+    "form": "descripteur",
+    "rule": "guerison",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "livre-de-base",
+      "page": 179,
+      "note": "LDB 18 l.317"
+    }
+  },
+  {
+    "id": "heal-ammo",
+    "label": "Retrait d’une munition logée",
+    "flow": "heal",
+    "phase": "ammo",
+    "template": "Réussi : 1 munition logée retirée. Raté : elle reste.",
+    "form": "descripteur",
+    "rule": "guerison",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "livre-de-base",
+      "page": 291,
+      "note": "LDB 62 l.250"
+    }
+  },
+  {
+    "id": "shanty-roll",
+    "label": "Chanson de marin",
+    "flow": "shanty",
+    "phase": "roll",
+    "template": "Test de Divertissement (Chant) — réussi : l’effet de la chanson porte sur tout l’équipage trois minutes, plus une minute par DR.",
+    "form": "descripteur",
+    "rule": "chanson-de-marin",
+    "ruleCategory": "talents",
+    "entryCategory": "seaShanties",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 71,
+      "note": "MDG 09 l.32-40"
+    }
+  },
+  {
+    "id": "recover-empetre",
+    "label": "Se libérer (Empêtré)",
+    "flow": "recover",
+    "phase": "empetre",
+    "template": "Test opposé de Force contre la source — réussi : 1 pion Empêtré retiré, et 1 de plus par DR.",
+    "form": "descripteur",
+    "rule": "empetre",
+    "ruleCategory": "etats",
+    "source": {
+      "book": "livre-de-base",
+      "page": 171,
+      "note": "LDB 16 l.61"
+    }
+  },
+  {
+    "id": "recover-en-flammes",
+    "label": "Se rouler au sol (En flammes)",
+    "flow": "recover",
+    "phase": "en-flammes",
+    "template": "Test d’Athlétisme — réussi : 1 pion En flammes retiré, et 1 de plus par DR.",
+    "form": "descripteur",
+    "rule": "en-flammes",
+    "ruleCategory": "etats",
+    "source": {
+      "book": "livre-de-base",
+      "page": 171,
+      "note": "LDB 16 l.77"
+    }
+  },
+  {
+    "id": "fate-save-choice",
+    "label": "Sauvetage par le Destin",
+    "flow": "fateSave",
+    "phase": "choice",
+    "template": "Sacrifier 1 Point de Destin : annuler le coup et rester en combat, ou survivre en quittant la rencontre. Refuser : le héros meurt.",
+    "form": "descripteur",
+    "rule": "destin",
+    "ruleCategory": "characteristics",
+    "source": {
+      "book": "livre-de-base",
+      "page": 34,
+      "note": "LDB 17 l.31-35"
+    }
+  },
+  {
+    "id": "crew-test-roll",
+    "label": "Test d’équipage",
+    "flow": "crewTest",
+    "phase": "roll",
+    "template": "Les DR de tous les rôles tenus se somment, le rôle essentiel comptant double ; le total décide de la réussite du Test d’équipage.",
+    "form": "descripteur",
+    "entryCategory": "crewTestTypes",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 108,
+      "note": "MDG 14 l.13-19"
+    }
+  }
+]

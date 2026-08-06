@@ -13,6 +13,7 @@
  * entrée d'enjeu.
  */
 import { resolveStake, type StakeRef } from '../data';
+import { CodexRef } from './compendium/CodexRef';
 import { Icon } from './Icon';
 import { Prose } from './Prose';
 
@@ -25,4 +26,31 @@ export function StakeNote({ stake }: { stake: StakeRef }) {
       </div>
     </div>
   );
+}
+
+/**
+ * `StakeRule` — la PORTE du renvoi de règle, en affordance COMPACTE accolée au titre de l'étape ou
+ * de la fenêtre (arbitrage user 2026-08-06). SOURCE UNIQUE du déclencheur : `CascadeModal.stepSubtitle`
+ * la compose pour les cascades, les modales mono pour leurs titres. Rien quand aucun foyer n'est
+ * déclaré, ou quand la fiche est inconnue du Codex (`hideIfUnknown`).
+ */
+export function StakeRule({ rule, label }: { rule?: { category: string; id: string }; label: string }) {
+  if (!rule) return null;
+  return (
+    <CodexRef
+      category={rule.category}
+      id={rule.id}
+      label={label}
+      ariaLabel={`Règle : ${label}`}
+      className="ab-codex-info"
+      hideIfUnknown
+    >
+      <Icon id="journal/info" size="sm" />
+    </CodexRef>
+  );
+}
+
+/** Foyer de règle DÉRIVÉ d'une référence d'enjeu — le producteur ne nomme jamais la fiche. */
+export function stakeRuleOf(stake: StakeRef) {
+  return resolveStake(stake).rule;
 }

@@ -1,7 +1,7 @@
 import { useGame, type BattleState } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
 import { easeDifficulty } from '../engine/tests';
-import { findCrewRoleById, findCrewTestTypeById } from '../data';
+import { findCrewRoleById, findCrewTestTypeById, flowStakeRef } from '../data';
 import { crewRoleValue, rudeEpreuveMoraleDelta, crewTestSuccess } from '../engine/crewMorale';
 import { maneuverCrewTotal } from '../state/shipManeuver';
 import type { PendingCrewTest } from '../state/pendings';
@@ -97,6 +97,7 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
   return (
     <RollShell
       flowKey="crewTest"
+      stake={flowStakeRef('crewTest', 'roll', { entryId: p.testTypeId })}
       title={<><Icon id="travel/anchor" size="sm" /> {testType.label} — Test d’équipage</>}
       variant="test"
       subtitle={<><strong>{ship.label}</strong> — Moral {p.moraleScore}{p.extraDR ? ` · sabotage ${sign(p.extraDR)} DR` : ''}</>}

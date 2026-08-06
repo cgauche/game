@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { flowStakeRef } from '../data';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { effectiveChar } from '../engine/characteristics';
@@ -57,6 +58,7 @@ export function WardModal() {
   return (
     <RollShell
       flowKey="ward"
+      stake={flowStakeRef('ward', 'roll')}
       title={<><Icon id="action/defend" size="sm" /> Bénédiction de Protection</>}
       subtitle={
         <>

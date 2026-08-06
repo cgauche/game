@@ -309,6 +309,12 @@
             "voyage-stakes.json"
           ],
           "desc": "Enjeu par `kind` d'étape de cascade de VOYAGE (#1117) — GABARIT de descripteur mécanique dont les trous `{nom}` reçoivent les valeurs calculées du flux, lu par `voyageStake` (`src/data/index.ts`)"
+        },
+        {
+          "files": [
+            "flow-stakes.json"
+          ],
+          "desc": "Enjeu d'un JET DE MODALE MONO (#1117), keyé par l'id de jet `{flow, phase}` — descripteur mécanique + foyer de règle (entité porteuse) ou catégorie de l'entrée jouée, lu par `flowStakeRef`/`resolveStake` (`src/data/index.ts`)"
         }
       ]
     },

@@ -5,7 +5,7 @@ import { availableResistance } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { VsHeader } from './VsHeader';
-import { CodexRef } from './compendium/CodexRef';
+import { StakeRule } from './StakeNote';
 import { resolveStake } from '../data';
 import { useAttackJetProps } from './jetProps/useAttackJetProps';
 import { useTrampleJetProps } from './jetProps/useTrampleJetProps';
@@ -89,18 +89,7 @@ export function stepSubtitle(
       {stepLabel && (
         <strong>
           <Icon id={icon} size="sm" /> {stepLabel}
-          {rule && (
-            <CodexRef
-              category={rule.category}
-              id={rule.id}
-              label={stepLabel}
-              ariaLabel={`Règle : ${stepLabel}`}
-              className="ab-codex-info"
-              hideIfUnknown
-            >
-              <Icon id="journal/info" size="sm" />
-            </CodexRef>
-          )}
+          <StakeRule rule={rule} label={stepLabel} />
         </strong>
       )}
       {compteur}

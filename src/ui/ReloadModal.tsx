@@ -1,4 +1,5 @@
 import { useGame, type PendingReload } from '../state/store';
+import { flowStakeRef } from '../data';
 import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
@@ -67,6 +68,7 @@ export function ReloadModalView({
   return (
     <RollShell
       flowKey="reload"
+      stake={flowStakeRef('reload', 'roll', { values: { indice: pr.reload } })}
       variant="test"
       title="Recharger"
       subtitle={<>{weaponName}</>}

@@ -4,7 +4,7 @@ import { availableResistance } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
 import { EXPOSURE_LABELS } from '../engine/corruption';
 import { testValue } from '../engine/skills';
-import { refLabel } from '../data';
+import { flowStakeRef, refLabel } from '../data';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { OptionChooser } from './OptionChooser';
 import { Icon } from './Icon';
@@ -76,6 +76,7 @@ export function CorruptionModal() {
   return (
     <RollShell
       flowKey="corruption"
+      stake={flowStakeRef('corruption', seuil ? 'seuil' : (pc.level ?? 'mineure'))}
       variant="test"
       title={seuil ? <><Icon id="nav/mutation" size="sm" /> Seuil de Corruption ({hero?.corruption ?? '?'} Points)</> : <><Icon id="nav/mutation" size="sm" /> Influence corruptrice ({EXPOSURE_LABELS[pc.level ?? 'mineure']})</>}
       subtitle={

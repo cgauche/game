@@ -1,4 +1,5 @@
 import { useGame, type PendingStateRecovery } from '../state/store';
+import { flowStakeRef } from '../data';
 import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
@@ -81,6 +82,7 @@ export function StateRecoveryModalView({
   return (
     <RollShell
       flowKey="recover"
+      stake={flowStakeRef('recover', sr.state)}
       variant="test"
       title={sr.state === 'empetre' ? 'Se libérer' : 'Se rouler au sol'}
       subtitle={<>{sub} · {sr.stacks} pion{sr.stacks > 1 ? 's' : ''}</>}
