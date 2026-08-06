@@ -688,5 +688,25 @@
       "page": 92,
       "note": "MSRC 16 l.13 (Exposition) et l.49 (conséquence de l’échec)"
     }
+  },
+  {
+    "id": "blessures-critiques",
+    "label": "Tableau des Critiques",
+    "desc": "Lorsque vous subissez une **Blessure Critique**, en subissant plus de Points de Blessure que vous n'en avez, lancez 1d100 et référez-vous au tableau approprié pour déterminer ce qui s'est passé. Lorsque vous encaissez un **Coup Critique (voir page 159)**, vous ne déterminez pas la Localisation en inversant votre lancer comme d'habitude. À la place, lancez 1d100 et référez-vous à **Déterminer la Localisation (voir page 159)**, puis lancez de nouveau 1d100 et référez-vous au Tableau des Critiques correspondant pour voir ce qu'il se produit. Vous perdez le nombre de Points de Blessure indiqué, en ignorant votre Bonus d'Endurance et vos PA, bien que celles-ci n'entraînent jamais de **Blessures critiques**. De plus, vous subissez les Effets supplémentaires indiqués. Si votre Personnage subit l'État *Inconscient*, vous restez inconscient jusqu'à la fin de la rencontre, ou jusqu'à recevoir une Aide médicale (voir Guérison à la page 181), sauf indication contraire. Si un résultat indique que vous avez des fractures, des déchirures musculaires ou un membre amputé, référez-vous à *Fractures* à la page 179, *Déchirures musculaires* page 179, ou *Membres amputés* page 180, pour voir ce qui arrive.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 174,
+      "note": "LDB 18 l.53"
+    }
+  },
+  {
+    "id": "incantation-imparfaite",
+    "label": "Incantations Imparfaites",
+    "desc": "Si vous perdez le contrôle de l'énergie magique que vous focalisez, les choses se passent toujours mal. Si vous obtenez une Maladresse à votre Test d'Incantation, vous subissez une Incantation Imparfaite. Lancez 1d100 et consultez le Tableau des Incantations Imparfaites Mineures.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 236,
+      "note": "LDB 46 l.85"
+    }
   }
 ]

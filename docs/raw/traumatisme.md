@@ -72,7 +72,7 @@ Exemple : BE = 4, PB restants = 2, Dégâts = 8 → PB fictifs = −6 → |−6|
 **Voir aussi** : déclenchement du Coup Critique → [combat.md § Critiques](combat.md#critiques-et-frappe-mortelle) (LDB 13/14) ; tableaux complets → [§ 4](#4-tableaux-des-critiques--renvoi).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.17, l.22-38, l.53) → `hemorragique`, `isHealable`, `outOfCombatUpkeep`, `aveugle`, `assourdi`, `CritEscalation`, `HealWoundsOptions`, `sonne`, `applyHealWounds`, `skillDRBonus`, +53 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +16 fichiers
+- `LDB 18` (l.17, l.22-38, l.53) → `hemorragique`, `isHealable`, `outOfCombatUpkeep`, `aveugle`, `assourdi`, `CritEscalation`, `HealWoundsOptions`, `sonne`, `applyHealWounds`, `crit-severity`, +55 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/regles.json`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, +18 fichiers
 
 ---
 
@@ -110,7 +110,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Voir aussi** : tables complètes → [combat.md § Critiques](combat.md#critiques-et-frappe-mortelle) ; Fractures → [§ 7](#7-fractures-mineure--majeure) ; Déchirures → [§ 8](#8-déchirures-musculaires-mineure--majeure) ; Amputations → [§ 9](#9-amputation--choc-traitement-et-séquelles-permanentes).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `dechirure-autre-mineure`, `aveugle`, `CritEscalation`, `fracture-torse-mineure`, `assourdi`, `trauma-fracture`, `fracture-torse-majeure`, +55 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, +12 fichiers
+- `LDB 18` (l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `dechirure-autre-mineure`, `aveugle`, `CritEscalation`, `fracture-torse-mineure`, `assourdi`, `trauma-fracture`, `fracture-torse-majeure`, +57 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, +13 fichiers
 
 ---
 
@@ -129,7 +129,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Voir aussi** : [Option : Mort Subite](#6-option--mort-subite) ; Destin → [destin.md](destin.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.34, l.38-40, l.42-43) → `hemorragique`, `aveugle`, `assourdi`, `sonne`, `critWoundLocation`, `EtatPanel`, `OPTIONAL_RULES`, `blessure-majeure-a-l-oreille`, `inconscient`, `perte-auditive-partielle`, +29 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +4 fichiers
+- `LDB 18` (l.34, l.38-40, l.42-43) → `hemorragique`, `aveugle`, `assourdi`, `sonne`, `crit-severity`, `critWoundLocation`, `EtatPanel`, `OPTIONAL_RULES`, `blessure-majeure-a-l-oreille`, `inconscient`, +31 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/regles.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +6 fichiers
 
 ---
 
@@ -142,7 +142,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Sources RAW** : `LDB 18 l.44-46`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.44-46) → `hemorragique`, `aveugle`, `assourdi`, `sonne`, `critWoundLocation`, `EtatPanel`, `OPTIONAL_RULES`, `blessure-majeure-a-l-oreille`, `inconscient`, `perte-auditive-partielle`, +28 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +3 fichiers
+- `LDB 18` (l.44-46) → `hemorragique`, `aveugle`, `assourdi`, `sonne`, `crit-severity`, `critWoundLocation`, `EtatPanel`, `OPTIONAL_RULES`, `blessure-majeure-a-l-oreille`, `inconscient`, +30 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/regles.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +5 fichiers
 
 ---
 

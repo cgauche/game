@@ -5,7 +5,8 @@ import { availableResistance } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { VsHeader } from './VsHeader';
-import { StakeRule } from './StakeNote';
+import { StakeRule, OutcomeNote } from './StakeNote';
+import { certainFlowOps } from '../engine/flowCore';
 import { resolveStake } from '../data';
 import { useAttackJetProps } from './jetProps/useAttackJetProps';
 import { useTrampleJetProps } from './jetProps/useTrampleJetProps';
@@ -301,6 +302,12 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // entrée d'enjeu (`resolveStake`) ; une étape de CHOIX, sans enjeu, garde son `stakeRule` propre.
   const stakeProps = cur.stake ? { stake: cur.stake } : {};
   const stakeRule = (cur.stake ? resolveStake(cur.stake).rule : undefined) ?? cur.stakeRule;
+  // ENCADRÉ « Réussite / Échec » en régime CALCULÉ (#1117) : les deux fabriques d'étape
+  // `triggeredTest` (`state/combat/triggeredTest.ts`) SÉRIALISENT déjà les Flows de branche dans le
+  // `meta` — l'encadré se DÉRIVE donc de leurs ops effectives (`certainFlowOps` → `GameOpChips`),
+  // règles optionnelles comprises, au lieu d'être une phrase stockée qui mentirait dès qu'une option
+  // change le comportement. Rendu SEULEMENT quand au moins une branche est certaine.
+  const outcomeNote = <OutcomeNote onSuccess={certainFlowOps(cur.meta?.onSuccess)} onFail={certainFlowOps(cur.meta?.onFail)} />;
   // ÉTAPE-JET : REGISTRE data-driven du rendu par TYPE de jet (ajouter un type = 1 entrée ici). Les
   // cinq jets RollShell (attaque/défense/Maladresse/Test/Test étendu) sont rendus via leur hook de
   // props dans la MÊME coquille restée montée → jet ET conséquences vivent dans UNE fenêtre jusqu'à
@@ -672,7 +679,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         prefix: 'jet ',
       }, stakeRule)}
       {...stakeProps}
-      extra={oppHeader ?? undefined}
+      extra={<>{oppHeader}{outcomeNote}</>}
       rolled={rolled}
       /* Rangées : validées FIGÉES (témoins) + rangée de l'adversaire figé (Test opposé, #579) + courante
          interactive (pré-jet en attente, post-jet résolue). La barre de Test étendu appartient à la

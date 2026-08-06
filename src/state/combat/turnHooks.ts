@@ -23,7 +23,7 @@ import { effectiveChar } from '../../engine/characteristics';
 import { isOutOfAction, addCondition, combatTestPenalty } from '../../engine/conditions';
 import { rawCombatTestBase } from '../../engine/skills';
 import { describeTestRoll } from '../../engine/ops';
-import { CHAR_LABELS, DIFFICULTY_MODIFIERS } from '../../engine/types';
+import { CHAR_LABELS, DIFFICULTY_MODIFIERS, CATEGORY_BY_SOURCE_KIND } from '../../engine/types';
 import { humanControlled } from '../netOwnership';
 import { inBattleId } from '../combatants';
 import { reconcileAdvantageToPool, creditOpposingAdvantage, campSpend } from './advantagePool';
@@ -35,7 +35,7 @@ import {
   fearSourceFor, sansPeurVs, resolvePeurTest, resolveTerreurTest, calmeValue, isFrenzyCapable, isFrenzied, isPsychImmune,
   resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, suppressSupersededPsych, CIBLE_TYPES, psychResolution,
 } from '../../engine/psychology';
-import { psychologyLabel } from '../../data';
+import { psychologyLabel, combatStakeRef } from '../../data';
 import { isColdBlooded, hasRage } from '../../engine/traits/dispatch';
 import { fireTriggers, hasFoeInLoS } from '../triggeredEffects';
 import { aiDriven } from '../combatGate';
@@ -94,13 +94,20 @@ export function resolveActGates(get: Get, set: SetFn, c: Combatant): ActGateOutc
   const gates = (c.activeEffects ?? []).filter((e) => e.actGate);
   const chars = [...new Set(gates.map((e) => e.actGate!.char))];
   for (const char of chars) {
-    const label = gates.find((e) => e.actGate!.char === char)?.label ?? 'Effet';
+    const gate = gates.find((e) => e.actGate!.char === char);
+    const label = gate?.label ?? 'Effet';
     if (humanControlled(get(), c)) {
       const base = rawCombatTestBase(c, undefined, char);
+      // ENJEU (#1117) : le gabarit dit la mécanique du gate ; le RENVOI descend à l'ENTITÉ qui l'exige
+      // (`ActiveEffect.source`, estampillée génériquement par `applyOps`) — la Racine de mandragore
+      // ouvre SA fiche d'objet, jamais une fiche de règle générique. La catégorie vient de la table
+      // TOTALE `CATEGORY_BY_SOURCE_KIND` : aucun `if` par nature de source ici.
+      const src = gate?.source;
       pushCombatStep(set, {
         id: `actGate-${c.id}-${char}`, kind: 'actGate', actorId: c.id, icon: 'item/consumable', rollLabel: CHAR_LABELS[char],
         base, target: base + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(c),
         label: t('turn.actGate', { label }),
+        stake: combatStakeRef('actGate', src ? { entryId: src.id, entryCategory: CATEGORY_BY_SOURCE_KIND[src.kind] } : {}),
       });
       continue;
     }

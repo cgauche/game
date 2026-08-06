@@ -3,7 +3,7 @@
  * (pion sur le terrain, panneau Perso, ordre de bataille, fiche express au survol).
  * Aucune règle ici : on lit `conditions[]` et `activeEffects[]` déjà gérés par le moteur.
  */
-import { CHAR_LABELS, type ConditionInstance, type ActiveEffect, type CharKey, type Combatant, type EffectSource, type EffectSourceKind } from '../engine/types';
+import { CHAR_LABELS, CATEGORY_BY_SOURCE_KIND, type ConditionInstance, type ActiveEffect, type CharKey, type Combatant, type EffectSource } from '../engine/types';
 import type { IconId } from '../ui/icons';
 import {
   conditionLabel, findConditionById, findPsychologyById, findSpellById,
@@ -186,15 +186,6 @@ const CATALOGUE_HAS: Record<string, (id: string) => boolean> = {
  *  cet ordre — l'effet n'étant pas issu d'un lancement, sa règle vit hors du catalogue Sorts. */
 const EFFECT_ID_CATEGORIES = ['regles', 'etats', 'psychologies'] as const;
 
-/** Catégorie Codex d'une `EffectSource` — TOTALE sur `EffectSourceKind` : une source nommée ouvre sa
- *  fiche, quel que soit son TYPE (sort, talent, trait, objet…). Prières et bénédictions vivent au
- *  catalogue Sorts (`spells.json`) comme les sorts. */
-const CATEGORY_BY_SOURCE_KIND: Record<EffectSourceKind, string> = {
-  spell: 'spells', prayer: 'spells', talent: 'talents', trait: 'traits', trapping: 'trappings',
-  quality: 'qualities', disease: 'maladies', symptom: 'symptoms', mutation: 'mutations',
-  condition: 'etats', psychology: 'psychologies', maneuver: 'maneuvers', creature: 'creatures',
-  activity: 'activities', rule: 'regles',
-};
 /** Entrée CATALOGUE d'un état-drapeau — routage par id STABLE (`FlagId`), jamais par libellé. La table
  *  est TOTALE : un état affiché sans règle derrière lui serait un défaut d'affichage, pas une donnée
  *  manquante (arbitrage user 2026-07-18). */

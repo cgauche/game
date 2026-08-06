@@ -33,7 +33,7 @@ import {
 import {
   MUTATION_TABLE_IDS, mutationAt, mutationOfRow, mutationSubTableFor, mutationTablePlayerLabel, mutationTableRows,
 } from '../data/mutations';
-import { species, mutationBodyMaxForSpecies } from '../data';
+import { species, mutationBodyMaxForSpecies, combatStakeRef } from '../data';
 import { findTableEntry } from '../engine/tables';
 import { registerCascadeApplier, registerTableStep, rollTableStep, pushStep } from './cascade';
 import { touchActors } from './combatOrParty';
@@ -125,6 +125,9 @@ for (const max of new Set([50, ...species.map((s) => s.mutationBodyMax ?? 50)]))
     die: 100,
     rows,
     lines: (die) => [findTableEntry(rows, die).label],
+    // La ligne tirée EST l'id du Tableau de Corruption qui suivra : sa fiche Codex est le foyer de
+    // l'enjeu une fois le dé tombé (`stakeAtTableRow`).
+    entryCategory: 'mutationTables',
   });
 }
 
@@ -140,6 +143,7 @@ for (const id of MUTATION_TABLE_IDS) {
     die: 100,
     rows,
     lines: (die) => [mutationAt(id, die).label],
+    entryCategory: 'mutations', // la ligne tirée EST la mutation : sa fiche est le foyer de l'enjeu
   });
 }
 
@@ -163,6 +167,7 @@ function natureStep(hero: Combatant, align: ChaosAlign | undefined, index: numbe
     label: 'Dissolution — corps ou esprit',
     table: { tableId: mutationNatureTableId(hero.species), die: 100 },
     mutation: { heroId: hero.id, align },
+    stake: combatStakeRef('mutationNature'),
     interactive: true,
   };
 }
@@ -174,6 +179,7 @@ function mutationTableStep(hero: Combatant, tableId: string, ctx: PendingMutatio
     label: `Mutation — ${mutationTablePlayerLabel(tableId)}`,
     table: { tableId, die: 100 },
     mutation: { ...ctx, tableId },
+    stake: combatStakeRef('mutationTable'),
     interactive: true,
   };
 }

@@ -616,6 +616,39 @@ export function spellEffectOps<E = EffectOp>(flow: Flow<E> | undefined): GameOp[
   return [...spellOps(flow, 'target'), ...spellOps(flow, 'caster')];
 }
 
+/**
+ * OPS CERTAINES d'une branche de Flow (#1117, régime `calcule`) — la liste des `GameOp` que CETTE
+ * branche appliquera À COUP SÛR, pour que l'encadré « Réussite / Échec » d'un jet se CALCULE des ops
+ * au lieu d'être écrit à la main : une phrase stockée ment dès qu'une règle optionnelle change les
+ * ops appliquées, une dérivation ne le peut pas.
+ *
+ * FAIL-CLOSED : rend `undefined` dès qu'un nœud rend l'issue INCERTAINE — un `if` (la branche dépend
+ * d'une Condition évaluée au moment de l'application), un `test` imbriqué (un second jet), un `choice`
+ * (une décision à venir), ou une feuille qui n'est pas une liste d'ops (transition, dialogue). Aplatir
+ * ces cas produirait un encadré qui PROMET ce qui ne se produira peut-être pas. Une branche vide rend
+ * `[]` (« rien ne se produit »), qui est une réponse, pas une absence. PURE.
+ *
+ * PORTÉE de la certitude : elle est STRUCTURELLE — elle porte sur la FORME du Flow (`do`+ops sans
+ * `if`/`test`/`choice` en amont), jamais sur le contenu d'une op. Une op dont l'effet est conditionné
+ * EN INTERNE (garde dans son propre payload) est rendue comme certaine : sa certitude relève de son
+ * exécuteur, `applyOps`. Une op qui doit annoncer une issue conditionnelle expose sa condition dans
+ * la STRUCTURE du Flow (`if`), où cette fonction la lit.
+ */
+export function certainFlowOps<E = EffectOp>(flow: Flow<E> | undefined): GameOp[] | undefined {
+  if (!flow) return undefined;
+  if (flow.kind === 'seq') {
+    const out: GameOp[] = [];
+    for (const s of flow.steps) {
+      const ops = certainFlowOps(s);
+      if (!ops) return undefined;
+      out.push(...ops);
+    }
+    return out;
+  }
+  if (flow.kind === 'do') return isEffectOp(flow.effect) ? [...flow.effect.ops] : undefined;
+  return undefined;
+}
+
 /** Sous-Flow d'un Flow de sort ne gardant que les nœuds adressant `on` (target/caster) — pour appliquer
  *  SÉPARÉMENT les effets de cible (par cible, missile/soutien) et ceux du lanceur (une fois). Préserve
  *  l'imbrication if/test : un nœud de structure est conservé si l'une de ses branches porte un effet

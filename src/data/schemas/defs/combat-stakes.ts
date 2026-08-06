@@ -20,7 +20,8 @@ export const schema = z.array(
       id: z.string(),
       /** Libellé FR d'affichage. */
       label: z.string(),
-      /** `kind` de l'étape de cascade servie (clé de `cascadeAppliers`). */
+      /** `kind` servi : celui de l'applier de cascade quand il en existe un, sinon celui du TIRAGE
+       *  (une même étape joue sur deux jeux de tables — Imparfaite / Colère des dieux). */
       kind: z.string(),
       /** Gabarit du descripteur — trous `{nom}` remplis par le flux (valeurs calculées). */
       template: z.string(),
@@ -33,10 +34,13 @@ export const schema = z.array(
       /** Catégorie Codex de l'ENTRÉE JOUÉE quand le foyer descend jusqu'à elle (`'maladies'`,
        *  `'maneuvers'`, `'spells'`) — le producteur fournit alors l'`entryId` depuis son `meta`. */
       entryCategory: z.string().optional(),
+      /** La catégorie de l'entrée vient de l'ENTITÉ SOURCE de l'effet (nature variable — objet,
+       *  Talent, maladie…) : seul le PRODUCTEUR peut la nommer. Vaut PORTE, comme `entryCategory`. */
+      entryFromSource: z.boolean().optional(),
       source: sourceRefSchema,
     })
     .superRefine((e, ctx) => {
-      if (!e.entryCategory && !(e.rule && e.ruleCategory)) {
+      if (!e.entryCategory && !e.entryFromSource && !(e.rule && e.ruleCategory)) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${e.id} : ni foyer (rule+ruleCategory) ni entryCategory` });
       }
       if (e.rule && !e.ruleCategory) {

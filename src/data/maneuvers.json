@@ -13,7 +13,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 85
-    }
+    },
+    "stake": "Aucun effet authoré : la touche n’inflige que les Dégâts de l’arme naturelle (Indice).",
+    "stakeForm": "descripteur"
   },
   {
     "id": "morsure",
@@ -29,7 +31,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 85
-    }
+    },
+    "stake": "Aucun effet authoré : la touche n’inflige que les Dégâts de la morsure (Indice).",
+    "stakeForm": "descripteur"
   },
   {
     "id": "caudale",
@@ -79,7 +83,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 85
-    }
+    },
+    "stake": "La touche n’inflige que ses Dégâts, sauf à une cible PLUS PETITE que l’attaquant, qui gagne en plus l’État À Terre si elle ne l’a pas déjà.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "cornes",
@@ -95,7 +101,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 85
-    }
+    },
+    "stake": "Aucun effet authoré : la charge n’inflige que les Dégâts des cornes (Indice).",
+    "stakeForm": "descripteur"
   },
   {
     "id": "tentacules",
@@ -134,7 +142,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 85
-    }
+    },
+    "stake": "La touche pose l’État Empêtré — une empoignade dont la Force d’évasion est la Force de l’attaquant — si la cible n’y est pas déjà.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "langue-prehensile",
@@ -197,7 +207,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 85
-    }
+    },
+    "stake": "Esquive — réussie : la langue manque sa prise. Ratée : Dégâts égaux à l’Indice (Bonus d’Endurance et PA déduits), puis État Empêtré, dont la Force d’évasion est la Force de l’attaquant.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "etreinte-glaciale",
@@ -243,7 +255,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 85
-    }
+    },
+    "stake": "La touche inflige 1d10 Blessures, +1 par DR, en ignorant le Bonus d’Endurance et les PA.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "regard-petrifiant",
@@ -329,7 +343,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 85
-    }
+    },
+    "stake": "Test opposé d’Initiative — vous l’emportez : le regard glisse. L’attaquant l’emporte de 6 DR ou plus : État Pétrifié et Points de Blessure ramenés à 0 ; de 2 DR ou plus : 1 État Sonné par tranche de 2 DR.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "souffle-feu",
@@ -393,7 +409,9 @@
         }
       }
     ],
-    "desc": "Zone, jet CT/Esquive. Dégâts Indice (ignore PA) + En flammes. LDB 85 l.249-269."
+    "desc": "Zone, jet CT/Esquive. Dégâts Indice (ignore PA) + En flammes. LDB 85 l.249-269.",
+    "stake": "Esquive — réussie : le souffle est évité. Ratée : Dégâts égaux à l’Indice, PA ignorées (Bonus d’Endurance déduit), puis État En flammes.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "souffle-froid",
@@ -457,7 +475,9 @@
         }
       }
     ],
-    "desc": "Zone, jet CT/Esquive. Dégâts Indice + Sonné (RAW : 1 Sonné/5 PB → forfaitaire). LDB 85 l.249-269."
+    "desc": "Zone, jet CT/Esquive. Dégâts Indice + Sonné (RAW : 1 Sonné/5 PB → forfaitaire). LDB 85 l.249-269.",
+    "stake": "Esquive — réussie : le souffle est évité. Ratée : Dégâts égaux à l’Indice (Bonus d’Endurance et PA déduits), puis État Sonné.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "souffle-corrosif",
@@ -534,7 +554,9 @@
         }
       }
     ],
-    "desc": "Zone, jet CT/Esquive. Dégâts Indice + Sonné + corrosion (cuir seul, RAW : toute matière). LDB 85 l.249-269."
+    "desc": "Zone, jet CT/Esquive. Dégâts Indice + Sonné + corrosion (cuir seul, RAW : toute matière). LDB 85 l.249-269.",
+    "stake": "Esquive — réussie : le souffle est évité. Ratée : Dégâts égaux à l’Indice (Bonus d’Endurance et PA déduits), État Sonné, et l’armure de cuir touchée est rongée.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "souffle-electrique",
@@ -598,7 +620,9 @@
         }
       }
     ],
-    "desc": "Zone, jet CT/Esquive. Dégâts Indice (ignore PA) + Sonné. LDB 85 l.249-269."
+    "desc": "Zone, jet CT/Esquive. Dégâts Indice (ignore PA) + Sonné. LDB 85 l.249-269.",
+    "stake": "Esquive — réussie : le souffle est évité. Ratée : Dégâts égaux à l’Indice, PA ignorées (Bonus d’Endurance déduit), puis État Sonné.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "souffle-poison",
@@ -662,7 +686,9 @@
         }
       }
     ],
-    "desc": "Zone, jet CT/Esquive. Dégâts Indice (ignore PA) + Empoisonné. LDB 85 l.249-269."
+    "desc": "Zone, jet CT/Esquive. Dégâts Indice (ignore PA) + Empoisonné. LDB 85 l.249-269.",
+    "stake": "Esquive — réussie : le souffle est évité. Ratée : Dégâts égaux à l’Indice, PA ignorées (Bonus d’Endurance déduit), puis État Empoisonné.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "souffle-fumee",
@@ -686,7 +712,9 @@
       "page": 85
     },
     "effects": [],
-    "desc": "Zone : la fumée bloque les Lignes de vue pendant Bonus d’Endurance Rounds (géométrie moteur). LDB 85 l.249-269."
+    "desc": "Zone : la fumée bloque les Lignes de vue pendant Bonus d’Endurance Rounds (géométrie moteur). LDB 85 l.249-269.",
+    "stake": "Esquive — le nuage ne porte AUCUN effet authoré : il ne blesse pas, il coupe les Lignes de vue.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "vomissement",
@@ -776,7 +804,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 85
-    }
+    },
+    "stake": "Esquive — réussie : la gerbe est évitée. Ratée : Dégâts égaux au Bonus d’Endurance de l’attaquant, puis 4 Dégâts de plus (Bonus d’Endurance et PA déduits), État Sonné, et l’armure de cuir touchée est rongée.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "hurlement-fantomatique",
@@ -860,7 +890,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 85
-    }
+    },
+    "stake": "Le hurlement inflige 1d10 Blessures ignorant le Bonus d’Endurance et les PA, puis 3 États Assourdi ; un Test de Résistance Accessible (+20) raté y ajoute 1 État Brisé.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "hurlement-de-la-bete-indomptable",
@@ -924,7 +956,9 @@
     "source": {
       "book": "middenheim",
       "page": 115
-    }
+    },
+    "stake": "Le hurlement pose 3 États Assourdi, puis un Test de Calme Complexe (-10) : échoué, il y ajoute 3 États Brisé.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "frisson-paralysant",
@@ -963,7 +997,9 @@
     "source": {
       "book": "middenheim",
       "page": 117
-    }
+    },
+    "stake": "Esquive — réussie : le frisson est évité. Ratée : aucun Dégât, mais 1 État Sonné par DR.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "forme-hybride-ulric",
@@ -1074,7 +1110,9 @@
     "source": {
       "book": "middenheim",
       "page": 116
-    }
+    },
+    "stake": "Sur soi : la forme hybride prend — Capacité de Combat, Force, Endurance, Initiative et Agilité +10, Dextérité et Intelligence −10, Sociabilité −20, Mouvement +1, et les Traits Arme 4, Armure 2, Morsure 3, Peur 2, Pisteur, Vision nocturne — au prix de l’Action du tour.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "forme-humaine-ulric",
@@ -1110,6 +1148,8 @@
     "source": {
       "book": "middenheim",
       "page": 116
-    }
+    },
+    "stake": "Sur soi : la forme hybride prend fin, au prix de l’Action du tour.",
+    "stakeForm": "descripteur"
   }
 ]

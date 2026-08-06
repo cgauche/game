@@ -261,7 +261,7 @@ import {
   setManeuverPostHitHook,
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
-import { startCascade, registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep } from './cascade';
+import { startCascade, registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep, stakeAtTableRow } from './cascade';
 import { freeCons, rollSansPilote } from './rollSeam';
 
 /** L'État du défenseur accorde-t-il un Avantage à l'assaillant en mêlée ? Lu en DONNÉES
@@ -1431,6 +1431,11 @@ export const CRIT_TABLE_IDS: Record<CritTableKey, string> = {
   tete: 'criticals-tete', bras: 'criticals-bras', corps: 'criticals-corps', jambe: 'criticals-jambe',
 };
 const CRIT_TABLE_LABELS: Record<CritTableKey, string> = { tete: 'Tête', bras: 'Bras', corps: 'Corps', jambe: 'Jambe' };
+/** Catégorie Codex où vit CHAQUE ligne de ces tables — c'est elle qui fait descendre l'enjeu de
+ *  l'étape à la Blessure critique RÉELLEMENT tirée (#1117, `stakeAtTableRow`). */
+const CRIT_TABLE_CATEGORIES: Record<CritTableKey, string> = {
+  tete: 'criticalsTete', bras: 'criticalsBras', corps: 'criticalsCorps', jambe: 'criticalsJambe',
+};
 for (const key of Object.keys(CRIT_TABLE_IDS) as CritTableKey[]) {
   const rows = critTableRows(key);
   registerTableStep(CRIT_TABLE_IDS[key], {
@@ -1438,6 +1443,7 @@ for (const key of Object.keys(CRIT_TABLE_IDS) as CritTableKey[]) {
     die: 100,
     rows,
     lines: (die) => [findTableEntry(rows, die).label],
+    entryCategory: CRIT_TABLE_CATEGORIES[key],
   });
 }
 
@@ -1646,6 +1652,7 @@ registerTableStep(STRUCTURE_CRIT_TABLE, {
   die: 100,
   rows: STRUCTURE_CRITICALS,
   lines: (die) => { const o = rollStructureCritical(battleRng(), die); return o.note ? [...o.log, o.note] : [...o.log]; },
+  entryCategory: 'structureCriticals',
 });
 
 /**
@@ -1689,6 +1696,9 @@ export function applyStructureCriticalToTarget(
       id: `cons-critical-structure-${target.id}-${target.criticalWounds}`,
       kind: 'critical', actorId: target.id, icon: 'journal/critical', label: entry.title,
       table: { ...table, result: rolled }, reveal: entry, outcome: toRecapLines(rolled.lines), interactive: true,
+      // Étape poussée DÉJÀ tirée : l'enjeu descend ici même à la ligne atteinte (même porte que la
+      // re-pose des étapes à dé posé — `stakeAtTableRow` lit la catégorie déclarée par la table).
+      stake: stakeAtTableRow(combatStakeRef('structureCritical'), table, rolled),
     });
   }
   return outcome;
@@ -1982,6 +1992,9 @@ export function applyAttackResult(
       label: `Blessure critique (${locationLabel(cloc, target.bodyShape)})`,
       table: critSeverityDecl(target, cloc, overkill0, twice), interactive: true,
       critSeverity: { attackerId: attacker.id, targetId: target.id, weapon, res, location: cloc, overkill: overkill0, twice },
+      // Avant le dé, l'enjeu est celui du TABLEAU (fiche `blessures-critiques`) ; après, la re-pose
+      // le fait descendre à la Blessure tirée (catégorie déclarée par la table de la Localisation).
+      stake: combatStakeRef('critSeverity'),
     });
     return true; // suspendu — la résolution part de l'applier 'critSeverity'
   }
@@ -3532,12 +3545,20 @@ export function useSpellComponent(caster: Combatant, spellId: string, lines: str
 // Une entrée par table RÉELLE de `miscast.json` (Mineure/Majeure LDB, leurs révisions VDM, Colère
 // des dieux) : fourchettes et ids STABLES projetés depuis la donnée PAR RÉFÉRENCE (le moteur les
 // expose), et la ligne d'affichage est le libellé de l'entrée atteinte par le dé EFFECTIF.
+/** Catégorie Codex où vit CHAQUE ligne, table par table (#1117) — les deux tables RÉVISÉES par les
+ *  Vents de Magie n'en ont pas : le Codex n'expose que les trois tableaux du Livre de base, et un
+ *  renvoi vers une catégorie qui ne contient pas la ligne serait un renvoi mort. Sans catégorie,
+ *  l'enjeu reste au foyer du `kind` (repli déclaré). */
+const MISCAST_TABLE_CATEGORIES: Record<string, string> = {
+  'miscast-mineure': 'miscastMinor', 'miscast-majeure': 'miscastMajor', 'miscast-colere': 'miscastWrath',
+};
 for (const [id, rows] of Object.entries(MISCAST_TABLE_ROWS)) {
   registerTableStep(id, {
     label: MISCAST_TABLE_LABELS[id],
     die: 100,
     rows,
     lines: (die) => [miscastRowAt(id, die).label],
+    ...(MISCAST_TABLE_CATEGORIES[id] ? { entryCategory: MISCAST_TABLE_CATEGORIES[id] } : {}),
   });
 }
 
@@ -3567,6 +3588,9 @@ function miscastTableStep(caster: Combatant, ctx: PendingMiscastStep, id: string
     icon: colere ? 'magic/power' : 'fire/blast',
     label: colere ? 'Colère des dieux' : `Incantation Imparfaite ${ctx.severity === 'majeure' ? 'Majeure' : 'Mineure'}`,
     table: miscastTableDecl(ctx),
+    // Deux tirages de nature DIFFÉRENTE partagent ce `kind` d'étape : le contrecoup magique (LDB 46)
+    // et la sanction divine (LDB 40, +10 par Point de Péché) ne mettent pas la même chose en jeu.
+    stake: combatStakeRef(colere ? 'wrathTable' : 'miscastTable'),
     miscast: ctx,
     interactive: true,
   };

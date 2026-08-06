@@ -285,7 +285,7 @@ Peur spécifique envers un Type de créature, un objet ou une situation.
 - `LDB 21 l.85-89` — définition ; traitement comme Peur 1
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.85-89) → `nightmare`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `recoveryTarget`, `animosite`, `calme-d-approche`, `haine`, `prejuge`, +11 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +7 fichiers
+- `LDB 21` (l.85-89) → `nightmare`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `recoveryTarget`, `animosite`, `calme-d-approche`, `haine`, `prejuge`, +12 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +7 fichiers
 
 ---
 
@@ -302,7 +302,7 @@ Conséquence d'une expérience traumatisante. Peut se manifester de diverses fa�
 
 **Voir aussi** : `src/data/traumatisme.md` (`traumatisme.md` pour les Blessures Critiques)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.91-96) → `nightmare`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `recoveryTarget`, `animosite`, `calme-d-approche`, `haine`, `prejuge`, +10 — `src/data/combat-stakes.json`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, +6 fichiers
+- `LDB 21` (l.91-96) → `nightmare`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `recoveryTarget`, `animosite`, `calme-d-approche`, `haine`, `prejuge`, +11 — `src/data/combat-stakes.json`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, +6 fichiers
 
 ---
 
@@ -612,7 +612,7 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.1053) → `fearImmuneVs`, `CombatFeature`, `robuste`, `vampires`, `saut-carpe`, `voies-fluviales`, `soldats`, `seconde-vue`, `seigneur-de-guerre`, `vue` — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
 - `LDB 17` (l.59) → `ResilienceButton`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, `ForcedResolve`, +68 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, +37 fichiers
-- `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `recoveryTarget`, +58 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, +30 fichiers
+- `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `recoveryTarget`, +59 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, +30 fichiers
 - `LDB 85` (l.178-179, l.382-383) → `cannotStopOn`, `Formula`, `EnemyTurnInput`, `displaceSmaller`, `Condition`, `MoveEnv`, `availableAttacks`, `taille-modificateurs-en-combat`, `engagedAdvantageGap`, `knowsCastingSkill`, +54 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, +9 fichiers
 
 ---

@@ -36,6 +36,10 @@ export const schema = z.array(
     /** `ManeuverDef.source` est OPTIONNEL en TS mais présent sur les 20/20 entrées réelles. */
     source: sourceRefSchema,
     priority: z.number().optional(),
+    /** ENJEU de l'ENTRÉE (#1117) — ce que la manœuvre met en jeu, COLLÉ à ses `effects` (éditable au
+     *  Codex). Rendu par `resolveStake` et PRIORITAIRE sur le gabarit du kind `maneuverDefense`. */
+    stake: z.string().optional(),
+    stakeForm: z.enum(['verbatim', 'descripteur']).optional(),
   }),
 );
 

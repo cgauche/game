@@ -6,6 +6,7 @@ import { spyApplier } from './cascadeTestKit';
 import { STRUCTURE_CRIT_TABLE } from './combatFlow';
 import { STRUCTURE_CRITICALS } from '../data/structureCriticals';
 import { stripBookMarker, hasBookMarker } from '../data/bookMarker';
+import { combatStakeRef, resolveStake } from '../data';
 import { findTableEntry } from '../engine/tables';
 import { setDesFixes, resetDesFixes } from '../engine/fixedDie';
 import { intentAllowedFor } from './netOwnership';
@@ -291,5 +292,95 @@ describe('MODE TABLE — poser le dé d’une étape à table (option « Dés fi
     useGame.getState().cascadeTableSetForcedRoll('s2', 88);
     expect(useGame.getState().pendingCascade!.participants.map((x) => x.table!.result!.roll)).toEqual(avant);
     expect(applied).toHaveLength(2);
+  });
+});
+
+/**
+ * RE-POSE POST-TIRAGE de l'ENJEU (#1117 L2 vague 4b) — une étape à table énonce son enjeu AVANT le
+ * dé, donc au niveau du `kind` ; la LIGNE jouée n'existe qu'APRÈS. Le contrat mesuré ici : les
+ * QUATRE pilotes de tirage font descendre le renvoi à l'entrée Codex de la ligne tirée, en versant
+ * la catégorie DÉCLARÉE PAR LA TABLE — et une table qui n'en déclare aucune laisse l'enjeu intact
+ * (repli déclaré, jamais un renvoi fabriqué).
+ *
+ * Mesuré sur le CHEMIN RÉEL : vraies coutures du store, vraie table de domaine
+ * (`structure-criticals`, catégorie `structureCriticals`), vrai résolveur `resolveStake`.
+ */
+describe('Étape à TABLE — l’enjeu DESCEND à la ligne jouée (#1117)', () => {
+  const NEUTRE = 'test-table-sans-categorie';
+  beforeEach(() => {
+    useGame.setState({ battle: null, pendingCascade: null, suspendedCascades: [], journal: [] });
+    registerTableStep(NEUTRE, {
+      label: 'Table sans catégorie',
+      die: 100,
+      rows: [{ min: 1, max: 100, id: 'unique' }],
+      lines: () => ['x'],
+    });
+    spyApplier('stakeSpy', [], () => undefined);
+  });
+
+  /** Étape sur la VRAIE table de Critiques de Structure, portant l'enjeu de son `kind`. */
+  const structureStep = (id: string, forcedRoll?: number): CascadeStep => ({
+    id, kind: 'stakeSpy', label: 'Critique de Structure', icon: 'nav/dice',
+    table: { tableId: STRUCTURE_CRIT_TABLE, die: 100, ...(forcedRoll ? { forcedRoll } : {}) },
+    stake: combatStakeRef('structureCritical'), interactive: true,
+  });
+
+  const ruleOf = (st: CascadeStep) => resolveStake(st.stake!).rule;
+
+  it('AVANT le dé, l’enjeu reste au `kind` (aucune ligne n’a encore été jouée)', () => {
+    const st = structureStep('s0');
+    expect(st.stake!.key.entryId).toBeUndefined();
+    expect(ruleOf(st)).toBeUndefined(); // l'entrée `structure-critical` n'a que sa catégorie d'entrées
+  });
+
+  it('pilote MODALE (`cascadeTableRoll`) : le renvoi vise la ligne RÉELLEMENT tirée', () => {
+    startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [structureStep('s1', 40)] });
+    useGame.getState().cascadeTableRoll('s1');
+    const st = useGame.getState().pendingCascade!.participants[0];
+    expect(st.table!.result!.id).toBe(findTableEntry(STRUCTURE_CRITICALS, 40).id);
+    expect(ruleOf(st)).toEqual({ category: 'structureCriticals', id: st.table!.result!.id });
+  });
+
+  it('pilote DÉ POSÉ (`cascadeTableSetForcedRoll`) : même descente, et un dé RE-posé re-descend', () => {
+    startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [structureStep('s1')] });
+    useGame.getState().cascadeTableSetForcedRoll('s1', 10);
+    const bas = useGame.getState().pendingCascade!.participants[0];
+    expect(ruleOf(bas)).toEqual({ category: 'structureCriticals', id: findTableEntry(STRUCTURE_CRITICALS, 10).id });
+    useGame.getState().cascadeTableSetForcedRoll('s1', 98);
+    const haut = useGame.getState().pendingCascade!.participants[0];
+    expect(ruleOf(haut)).toEqual({ category: 'structureCriticals', id: findTableEntry(STRUCTURE_CRITICALS, 98).id });
+    expect(ruleOf(haut)).not.toEqual(ruleOf(bas)); // la re-pose SUIT le dé, elle ne se fige pas au premier
+  });
+
+  it('pilotes AUTOMATIQUES (« Tout lancer » et résolution immédiate) descendent aussi', () => {
+    startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [structureStep('s1', 85)] });
+    useGame.getState().cascadeResolveAll();
+    const st = useGame.getState().pendingCascade!.participants[0];
+    expect(ruleOf(st)).toEqual({ category: 'structureCriticals', id: findTableEntry(STRUCTURE_CRITICALS, 85).id });
+    useGame.getState().cascadeFinish();
+    const out = runCascadeImmediate(useGame.getState, useGame.setState, [structureStep('s2', 20)]);
+    expect(ruleOf(out[0])).toEqual({ category: 'structureCriticals', id: findTableEntry(STRUCTURE_CRITICALS, 20).id });
+  });
+
+  it('table SANS catégorie d’entrées : l’enjeu est rendu TEL QUEL (repli déclaré)', () => {
+    const st: CascadeStep = {
+      id: 'n1', kind: 'stakeSpy', label: 'Neutre', icon: 'nav/dice',
+      table: { tableId: NEUTRE, die: 100, forcedRoll: 50 }, stake: combatStakeRef('structureCritical'), interactive: true,
+    };
+    startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [st] });
+    useGame.getState().cascadeTableRoll('n1');
+    const apres = useGame.getState().pendingCascade!.participants[0];
+    expect(apres.stake!.key.entryId).toBeUndefined();
+    expect(apres.stake).toEqual(st.stake);
+  });
+
+  it('étape SANS enjeu : le tirage n’en fabrique aucun', () => {
+    const st: CascadeStep = {
+      id: 'm1', kind: 'stakeSpy', label: 'Muette', icon: 'nav/dice',
+      table: { tableId: STRUCTURE_CRIT_TABLE, die: 100, forcedRoll: 40 }, interactive: true,
+    };
+    startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [st] });
+    useGame.getState().cascadeTableRoll('m1');
+    expect(useGame.getState().pendingCascade!.participants[0].stake).toBeUndefined();
   });
 });

@@ -51,7 +51,7 @@ import type { ChaosAlign, ExposureLevel } from '../engine/corruption';
 import { buyTalent as engineBuyTalent, talentCost, buySkillAdvance as engineBuySkillAdvance, buyCharAdvance as engineBuyCharAdvance } from '../engine/advancement';
 import { skillCharacteristicById } from '../engine/character';
 import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '../engine/talentEffects';
-import { findCareerById, levelsForCareer, findTrappingById, findTalentById, findSpellById, refLabel, skillInstanceLabel, advancementBaseId, qualityRefLabel, qualities, type ActivitySkill } from '../data';
+import { findCareerById, levelsForCareer, findTrappingById, findTalentById, findSpellById, refLabel, skillInstanceLabel, advancementBaseId, qualityRefLabel, qualities, combatStakeRef, type ActivitySkill } from '../data';
 import { findEffectTableById } from '../data/effectTables';
 import { findTableEntry } from '../engine/tables';
 import { CHAR_LABELS, DIFFICULTY_MODIFIERS, type CharKey, type Combatant, type Difficulty, type QualityInstance } from '../engine/types';
@@ -135,6 +135,7 @@ registerTableStep(INTERLUDE_EVENT_TABLE, {
   die: 100,
   rows: INTERLUDE_EVENTS,
   lines: (die) => [interludeEventFor(die).label, interludeEventFor(die).text],
+  entryCategory: 'interludeEvents', // la ligne tirée EST l'Événement : sa fiche porte son texte
 });
 
 /** Aucun modificateur : le dé NATUREL est le dé du lookup — c'est aussi ce que `perHero.eventRoll`
@@ -152,6 +153,7 @@ function eventStep(hero: Combatant): CascadeStep {
     kind: 'interludeEvent', actorId: hero.id, icon: 'nav/dice',
     label: `Événement — ${hero.label}`,
     table: INTERLUDE_EVENT_DECL,
+    stake: combatStakeRef('interludeEvent'),
     interactive: true,
   };
 }

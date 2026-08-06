@@ -573,10 +573,22 @@ export interface CastPenalty {
 }
 
 /** Nature de l'ENTITÉ qui a produit un effet — vocabulaire fermé, chaque valeur adossée à une
- *  catégorie du Codex (routage d'affichage : `chipCodex`, `src/gameIso/effectIcons.ts`). */
+ *  catégorie du Codex (table `CATEGORY_BY_SOURCE_KIND` ci-dessous). */
 export type EffectSourceKind =
   | 'spell' | 'prayer' | 'talent' | 'trait' | 'trapping' | 'quality' | 'disease' | 'symptom'
   | 'mutation' | 'condition' | 'psychology' | 'maneuver' | 'creature' | 'activity' | 'rule';
+
+/** Catégorie Codex de CHAQUE nature de source — table TOTALE, SOURCE UNIQUE des deux consommateurs :
+ *  le routage d'affichage d'une pastille (`chipCodex`, `src/gameIso/effectIcons.ts`) ET la descente de
+ *  l'ENJEU d'un jet à l'entité qui l'exige (`src/state`, #1117). Elle vit ICI, à côté du vocabulaire
+ *  qu'elle indexe, parce qu'`src/state` ne peut pas dépendre de `src/gameIso` : une copie côté state
+ *  aurait fait DEUX vérités pour une seule question. */
+export const CATEGORY_BY_SOURCE_KIND: Record<EffectSourceKind, string> = {
+  spell: 'spells', prayer: 'spells', talent: 'talents', trait: 'traits', trapping: 'trappings',
+  quality: 'qualities', disease: 'maladies', symptom: 'symptoms', mutation: 'mutations',
+  condition: 'etats', psychology: 'psychologies', maneuver: 'maneuvers', creature: 'creatures',
+  activity: 'activities', rule: 'regles',
+};
 
 /** IDENTITÉ de ce qui a produit un effet — « les GameOps sont rattachés à quelque chose » (arbitrage
  *  user 2026-07-18). Portée par l'`OpsCtx` du déclencheur et stampée par `applyOps` sur tout

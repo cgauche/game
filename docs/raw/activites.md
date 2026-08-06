@@ -121,7 +121,7 @@ Lancer **1d100** par Personnage. Certains événements n'affectent que le Person
 | 98–00 | **Mercenaires Particuliers** | Entraînement/Apprentissage particulier : −20 % des coûts. *Entraînement au Combat* : +20 % à tout Test adapté. |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 22` (l.11-135) → `allie-inculpe`, `encheres-esoteriques`, `trahison`, `imprevu`, `eh-tu-as-renverse-ma-pinte`, `repression-du-crime`, `le-prevot-arrive`, `fausse-monnaie`, `profits-abondants`, `un-homme-averti-en-vaut-deux`, +26 — `src/data/interludeEvents.json`, `src/engine/policy.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`
+- `LDB 22` (l.11-135) → `allie-inculpe`, `encheres-esoteriques`, `trahison`, `imprevu`, `eh-tu-as-renverse-ma-pinte`, `repression-du-crime`, `le-prevot-arrive`, `fausse-monnaie`, `profits-abondants`, `un-homme-averti-en-vaut-deux`, +26 — `src/data/combat-stakes.json`, `src/data/interludeEvents.json`, `src/engine/policy.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`
 
 ---
 
@@ -537,7 +537,7 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 | **Remaniement du Contremaître** | Ragot (+0) pour localiser, puis Corps à Corps **ou** Projectiles Complexe (−10) | Reçoit l'objet désiré + Critique sur localisation aléatoire (gravité variable selon résultat) |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 12` (l.5-144) → `skillRefSchema`, `ActivitySkill`, `artilleur`, `changeCareer`, `ActivityDef`, `everBelongedClasses`, `PendingActivity`, `battement`, `bestActivitySkill`, `cavalier-emerite`, +15 — `src/data/activities.json`, `src/data/index.ts`, `src/data/schemas/defs/activities.ts`, `src/data/tables.json`, `src/data/talents.json`, `src/engine/activities.ts`, +3 fichiers
+- `AA 12` (l.5-144) → `skillRefSchema`, `ActivitySkill`, `artilleur`, `changeCareer`, `ActivityDef`, `everBelongedClasses`, `battement`, `PendingActivity`, `bestActivitySkill`, `cavalier-emerite`, +15 — `src/data/activities.json`, `src/data/index.ts`, `src/data/schemas/defs/activities.ts`, `src/data/tables.json`, `src/data/talents.json`, `src/engine/activities.ts`, +3 fichiers
 
 ---
 
@@ -770,7 +770,7 @@ Les cinq Activités : *Pénitence*, *Entraînement avec une arme inhabituelle*, 
 **Voir aussi** : [Cadre général « Entre deux aventures »](#cadre-général-entre-deux-aventures), [Activités Répandues (LDB 23)](#activités-répandues-ldb-23) (Opérations Bancaires — Mécénat en est une variante), [Pénitence (LDB 41)](religion.md#pénitence) (renvoi — pénitence MJ-arbitrée en réponse à la Colère des dieux, distincte de l'Activité *Pénitence* ci-dessous), [Colère des dieux — déclencheur Maladresse](religion.md#colère-des-dieux--déclencheur-maladresse), [Corruption & mutation](corruption.md) (Tester des objets magiques — Exposition mineure).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.3-7) → `InterludeHeroState`, `matchOutcomes`, `combatValue`, `weaponGroupSkillMode`, `itemFromTrappingById`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `TrappingData`, `runActivityResolver`, +4 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
+- `ACE 12` (l.3-7) → `InterludeHeroState`, `matchOutcomes`, `combatValue`, `weaponGroupSkillMode`, `itemFromTrappingById`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `runActivityResolver`, `TrappingData`, +4 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 

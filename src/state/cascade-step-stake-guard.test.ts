@@ -168,6 +168,77 @@ export function flowTestsWithoutStake(src: string): number[] {
   return lines;
 }
 
+/**
+ * QUATRIÈME forme qui lance — nommée par le JUGE avant qu'une recette ne la trouve. Les trois scans
+ * précédents mesurent des PORTES (le littéral d'étape, la `RollRequest` du seam, le 1ᵉʳ argument de
+ * `testFlow`) ; or un jet se DÉCRIT dans un littéral, et ce littéral entre par bien d'autres portes :
+ * un nœud `{ kind:'test', test:{…} }` monté à la main, un `FlowTest` passé DIRECTEMENT à
+ * `openSkillTest`, un `spec` d'`openPartyTest`, un `extendedTest`, un pending de chirurgie. Toutes
+ * produisent un jet, aucune n'était mesurée.
+ *
+ * Le discriminant est donc la FORME du DESCRIPTEUR, pas la fonction qui le reçoit : un littéral qui
+ * nomme CE QU'ON TESTE (`skill` / `characteristic`) ET COMMENT (difficulté fixe, dynamique, ou
+ * opposition) DÉCRIT un jet, et doit dire ce qu'il met en jeu. Cette couverture est un SUR-ENSEMBLE de
+ * celle de `flowTestsWithoutStake` — c'est exactement ce que PROUVE le rejeu de l'ancien périmètre
+ * ci-dessous, site par site.
+ *
+ * NB `noSupport`/`gate`/`menace`/`label` ne sont PAS requis : facultatifs sur un descripteur réel, les
+ * exiger rétrécirait la mesure au sous-ensemble le mieux authoré — l'inverse du but.
+ */
+export function literalTestsWithoutStake(src: string): number[] {
+  const s = stripLiterals(src);
+  const lines: number[] = [];
+  const seen = new Set<number>();
+  for (const m of s.matchAll(/(?<=[{,]\s*)(?:skill|characteristic)\s*:\s*[^\s,}]/g)) {
+    const i = m.index!;
+    let depth = 0;
+    let start = -1;
+    for (let j = i; j >= 0; j--) {
+      if (s[j] === '}') depth++;
+      else if (s[j] === '{') { if (depth === 0) { start = j; break; } depth--; }
+    }
+    if (start < 0 || seen.has(start)) continue;
+    seen.add(start);
+    if (!/(?:[([,=?:]|\breturn)$/.test(s.slice(0, start).replace(/\s+$/, ''))) continue; // pas un littéral
+    depth = 0;
+    let end = -1;
+    for (let j = i; j < s.length; j++) {
+      if (s[j] === '{') depth++;
+      else if (s[j] === '}') { if (depth === 0) { end = j; break; } depth--; }
+    }
+    if (end < 0) continue;
+    const lit = s.slice(start, end);
+    // Un `FlowTest` réel nomme SA difficulté (fixe ou dynamique) OU son OPPOSITION (un Test opposé n'a
+    // pas de difficulté propre — Piège-lame, LDB 62 l.295 : sans cette branche, la mesure perdrait un
+    // site que l'ancien scan voyait, cf. le rejeu ci-dessous).
+    if (!hasTopLevelKey(lit, 'difficulty') && !hasTopLevelKey(lit, 'difficultyBy') && !hasTopLevelKey(lit, 'opposed')) continue;
+    if (/\bstake\s*(?:[,:]|$)/.test(lit)) continue;
+    lines.push(src.slice(0, start).split('\n').length);
+  }
+  return lines;
+}
+
+/** Baseline NOMINATIVE de la 4ᵉ forme — stock RÉEL mesuré le 2026-08-06 : 19 descripteurs de jet
+ *  muets sur 11 fichiers, dont 7 que les trois scans précédents ne voyaient PAS. SUR-ENSEMBLE de
+ *  `BASELINE_FLOW` (les arguments de `testFlow` ont la même forme), donc chaque fichier y compte au
+ *  moins autant. Décroissante comme les autres : un site doté ABAISSE sa ligne. */
+const BASELINE_LITERAL: Record<string, number> = {
+  // Déjà vus par le scan `testFlow` (mêmes sites, même dette) :
+  'climbMove.ts': 1, // Escalade (LDB 15) : fiche de règle à curer
+  'jumpMove.ts': 1, // Saut (LDB 15) : fiche de règle à curer
+  'combatFlow.ts': 4, // Vigilance d'embuscade ×2, désarmement/reprise d'arme, Piège-lame
+  // Récolte (Savoir (Bêtes), vu par `testFlow`) + serrure à Test ÉTENDU (invisible au scan `testFlow`).
+  'combatEffects.ts': 2,
+  // PROPRES à la 4ᵉ forme — jamais mesurés jusqu'ici :
+  'combatSlice.ts': 2, // Commandant d'équipe + gain d'Avantage par Compétence (`openSkillTest` direct)
+  'innFlow.ts': 1, // Ragot de taverne (`openPartyTest`)
+  'landMarketFlow.ts': 2, // marché terrestre : les deux Marchandages
+  'medicFlow.ts': 1, // pending de CHIRURGIE (Test étendu du soigneur)
+  'merchantFlow.ts': 1, // Marchandage du marchand
+  'portFlow.ts': 3, // port : Marchandage d'achat, de vente, et Test de service
+  'seaVoyageFlow.ts': 1, // jet de bord — à doter avec le lot maritime
+};
+
 /** Baseline NOMINATIVE des `FlowTest` muets — même contrat que les deux précédentes. */
 const BASELINE_FLOW: Record<string, number> = {
   'climbMove.ts': 1, // Escalade (LDB 15) : fiche de règle à curer
@@ -195,17 +266,11 @@ const BASELINE: Record<string, number> = {
   // COMBAT — reste du stock mesuré, chacun avec le VERROU qui l'empêche d'être doté aujourd'hui :
   // (`combat/triggeredTest.ts` est SOLDÉ : ses deux fabriques d'étape TRANSMETTENT `FlowTest.stake` —
   //  la dette est remontée chez les PRODUCTEURS de Flow, mesurés par `BASELINE_FLOW` ci-dessus.)
-  // gate d'Action : `ActiveEffect.source` EXISTE et est estampillée génériquement par `applyOps`
-  // (post-passe `ctx.source`) — la source est donc atteignable. Le verrou est de COUCHE : la table
-  // `EffectSourceKind` → catégorie Codex vit dans `gameIso/effectIcons.ts` (`CATEGORY_BY_SOURCE_KIND`),
-  // dont `src/state` ne peut pas dépendre ; elle doit descendre en couche neutre d'abord.
-  'combat/turnHooks.ts': 1,
-  // ÉTAPES À TABLE — le `stake` se pose à la CONSTRUCTION, or la LIGNE (`table.result.id`) n'existe
-  // qu'APRÈS le tirage : la descente à l'entrée jouée y demande une RE-POSE post-tirage, et aucune de
-  // ces tables n'a encore de fiche de règle. Mesurées et gelées ici plutôt que muettes.
-  'combatFlow.ts': 3, // Critique de Structure, sévérité de Blessure critique, Imparfaite/Colère
-  'corruptionFlow.ts': 2, // nature de la mutation, table des mutations
-  'interludeFlow.ts': 1, // table d'événement d'interlude
+  // (gate d'Action SOLDÉ : `CATEGORY_BY_SOURCE_KIND` est descendue en couche neutre — `engine/types.ts`,
+  //  consommée par `gameIso` ET `state` — et l'étape renvoie à l'ENTITÉ qui exige le jet.)
+  // ÉTAPES À TABLE : SOLDÉES (vague 4b). L'enjeu se pose à la construction PUIS DESCEND à la ligne
+  // jouée après le dé — `stakeAtTableRow` (`state/cascade.ts`) verse l'`entryId` tiré et la catégorie
+  // Codex déclarée par la table (`TableStepDef.entryCategory`), sur les quatre pilotes de tirage.
 };
 
 describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', () => {
@@ -247,6 +312,64 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
       if (n < b) stale.push(`${f} : baseline ${b}, réel ${n} — ABAISSER`);
     }
     expect(stale, ['Baseline(s) PÉRIMÉE(s) :', ...stale].join('\n')).toEqual([]);
+  });
+
+  it('4ᵉ FORME : aucun DESCRIPTEUR de jet littéral neuf sans enjeu, et toute baseline soldée est ABAISSÉE', () => {
+    const counts: Record<string, number[]> = {};
+    for (const f of sourceFiles(STATE)) {
+      const found = literalTestsWithoutStake(readFileSync(f, 'utf8'));
+      if (found.length) counts[f.slice(STATE.length + 1).split(sep).join('/')] = found;
+    }
+    const over: string[] = [];
+    for (const [f, l] of Object.entries(counts)) {
+      const b = BASELINE_LITERAL[f] ?? 0;
+      if (l.length > b) over.push(`${f} : ${l.length} (baseline ${b}) — lignes ${l.join(', ')}`);
+    }
+    expect(over, ['`FlowTest` monté À LA MAIN sans enjeu (hors `testFlow`) :', ...over].join('\n')).toEqual([]);
+    const stale: string[] = [];
+    for (const [f, b] of Object.entries(BASELINE_LITERAL)) {
+      const n = counts[f]?.length ?? 0;
+      if (n < b) stale.push(`${f} : baseline ${b}, réel ${n} — ABAISSER`);
+    }
+    expect(stale, ['Baseline(s) PÉRIMÉE(s) :', ...stale].join('\n')).toEqual([]);
+  });
+
+  /**
+   * REJEU DE L'ANCIEN PÉRIMÈTRE — la 4ᵉ forme ne se croit pas sur parole : restreinte aux littéraux
+   * que le scan de `testFlow(` voyait DÉJÀ, la mesure par la FORME doit rendre EXACTEMENT les mêmes
+   * lignes. Un sur-ensemble qui perdrait un ancien site serait une régression déguisée en élargissement.
+   */
+  it('REJEU : sur l’ancien périmètre (`testFlow`), la mesure par la FORME rend les MÊMES lignes', () => {
+    const manquants: string[] = [];
+    let ancien = 0;
+    for (const f of sourceFiles(STATE)) {
+      const src = readFileSync(f, 'utf8');
+      const old = flowTestsWithoutStake(src);
+      if (!old.length) continue;
+      ancien += old.length;
+      const neuf = new Set(literalTestsWithoutStake(src));
+      const perdus = old.filter((l) => !neuf.has(l));
+      if (perdus.length) manquants.push(`${f.slice(STATE.length + 1)} : lignes ${perdus.join(', ')} vues par testFlow, PERDUES par la forme`);
+    }
+    expect(manquants, ['Sites de l’ancien périmètre non retrouvés :', ...manquants].join('\n')).toEqual([]);
+    // Compte EXACT de l'ancien périmètre (somme de `BASELINE_FLOW`) — s'il bouge, la comparaison
+    // ci-dessus porterait sur un autre stock que celui mesuré.
+    expect(ancien).toBe(Object.values(BASELINE_FLOW).reduce((a, b) => a + b, 0));
+  });
+
+  it('FAIL-CLOSED (4ᵉ forme) : les DEUX formes propres sont détectées, et l’enjeu les éteint', () => {
+    const noeud = `const n = { kind: 'test', test: { skill: 'escalade', difficulty: 'intermediaire' }, success: EMPTY_FLOW, fail: f };`;
+    const noeudAvec = `const n = { kind: 'test', test: { skill: 'escalade', difficulty: 'intermediaire', stake: flowStakeRef('climb', 'roll') }, success: EMPTY_FLOW, fail: f };`;
+    const direct = `openSkillTest(get, set, { characteristic: 'force-mentale', difficulty: 'difficile' }, EMPTY_FLOW, fail);`;
+    const directAvec = `openSkillTest(get, set, { characteristic: 'force-mentale', difficulty: 'difficile', stake: combatStakeRef('actGate') }, EMPTY_FLOW, fail);`;
+    const dynamique = `const t = { skill: 'calme', difficultyBy: [{ cond: c, difficulty: 'accessible' }] };`;
+    const pasUnTest = `const a = { skill: 'artisanat', label: 'Fabriquer' };`; // aucune difficulté : pas un FlowTest
+    expect(literalTestsWithoutStake(noeud)).toHaveLength(1);
+    expect(literalTestsWithoutStake(noeudAvec)).toHaveLength(0);
+    expect(literalTestsWithoutStake(direct)).toHaveLength(1);
+    expect(literalTestsWithoutStake(directAvec)).toHaveLength(0);
+    expect(literalTestsWithoutStake(dynamique), 'la difficulté DYNAMIQUE compte autant que la fixe').toHaveLength(1);
+    expect(literalTestsWithoutStake(pasUnTest)).toHaveLength(0);
   });
 
   it('aucun `FlowTest` NEUF sans enjeu, et toute baseline soldée est ABAISSÉE', () => {

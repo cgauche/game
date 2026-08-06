@@ -133,5 +133,111 @@
       "page": 166,
       "note": "LDB 15 l.90-94"
     }
+  },
+  {
+    "id": "crit-severity",
+    "label": "Sévérité d’une Blessure critique",
+    "kind": "critSeverity",
+    "template": "Un d100 sur le Tableau des Critiques de la Localisation touchée : la ligne tirée dit les Points de Blessure perdus — Bonus d’Endurance et PA ignorés — et ses Effets supplémentaires.",
+    "form": "descripteur",
+    "rule": "blessures-critiques",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 174,
+      "note": "LDB 18 l.53"
+    }
+  },
+  {
+    "id": "structure-critical",
+    "label": "Critique de Structure",
+    "kind": "structureCritical",
+    "template": "Un d100 sur les Coups Critiques contre une Structure : la ligne tirée dit les Blessures encaissées par la Structure et ce que l’impact fait subir à qui s’y trouve ; un Effondrement la met à 0 Blessure.",
+    "form": "descripteur",
+    "entryCategory": "structureCriticals",
+    "source": {
+      "book": "aux-armes",
+      "page": 120,
+      "note": "AA 10 l.114"
+    }
+  },
+  {
+    "id": "miscast-table",
+    "label": "Incantation Imparfaite",
+    "kind": "miscastTable",
+    "template": "Un d100 sur le Tableau des Incantations Imparfaites : la ligne tirée dit le contrecoup subi — certaines lignes en appellent un nouveau lancer.",
+    "form": "descripteur",
+    "rule": "incantation-imparfaite",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 236,
+      "note": "LDB 46 l.85"
+    }
+  },
+  {
+    "id": "wrath-table",
+    "label": "Colère des dieux",
+    "kind": "wrathTable",
+    "template": "Un d100 sur le tableau de la Colère des dieux, +10 par Point de Péché déjà accumulé : la ligne tirée dit la sanction divine. Après le lancer, les Points de Péché baissent de 1, jusqu’à un minimum de 0.",
+    "form": "descripteur",
+    "entryCategory": "miscastWrath",
+    "source": {
+      "book": "livre-de-base",
+      "page": 218,
+      "note": "LDB 40 l.46"
+    }
+  },
+  {
+    "id": "mutation-nature",
+    "label": "Dissolution — corps ou esprit",
+    "kind": "mutationNature",
+    "template": "Ensuite, effectuez un lancer de pourcentage et reportez-vous au tableau qui suit pour définir si c'est votre corps ou votre esprit qui va renaître.",
+    "form": "verbatim",
+    "entryCategory": "mutationTables",
+    "source": {
+      "book": "livre-de-base",
+      "page": 183,
+      "note": "LDB 19 l.76"
+    }
+  },
+  {
+    "id": "mutation-table",
+    "label": "Tableau de Corruption",
+    "kind": "mutationTable",
+    "template": "Un d100 sur le Tableau de Corruption de la nature tirée : la ligne atteinte EST la mutation acquise — une ligne à sous-table appelle un lancer de plus.",
+    "form": "descripteur",
+    "entryCategory": "mutations",
+    "source": {
+      "book": "livre-de-base",
+      "page": 183,
+      "note": "LDB 19 l.83"
+    }
+  },
+  {
+    "id": "act-gate",
+    "label": "Agir malgré l’effet",
+    "kind": "actGate",
+    "template": "Réussite : votre Round est entier. Échec : vous ne gardez qu’UNE des deux — l’Action ou le Mouvement.",
+    "form": "descripteur",
+    "entryFromSource": true,
+    "source": {
+      "book": "livre-de-base",
+      "page": 307,
+      "note": "LDB 71 l.35"
+    }
+  },
+  {
+    "id": "interlude-event",
+    "label": "Événement de la période",
+    "kind": "interludeEvent",
+    "template": "Avant de choisir vos Activités, lancez d'abord 1d100 sur le tableau des Événements ci-après. Certains Événements n'affecteront que vous, alors que d'autres concerneront le groupe tout entier.",
+    "form": "verbatim",
+    "entryCategory": "interludeEvents",
+    "source": {
+      "book": "livre-de-base",
+      "page": 192,
+      "note": "LDB 22 l.5"
+    }
   }
 ]

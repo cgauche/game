@@ -24,6 +24,9 @@ import traitsJson from './traits.json';
 import qualitiesJson from './qualities.json';
 import mutationsJson from './mutations.json';
 import mutationTablesJson from './mutationTables.json';
+import criticalsRawJson from './criticals.json';
+import structureCriticalsRawJson from './structure-criticals.json';
+import miscastRawJson from './miscast.json';
 import trappingsJson from './trappings.json';
 import vehiclesJson from './vehicles.json';
 import merchantsJson from './merchants.json';
@@ -219,8 +222,11 @@ export interface FlowStakeEntry {
 }
 export const FLOW_STAKES = flowStakesJson as FlowStakeEntry[];
 
-/** ENJEU d'un `kind` d'étape de cascade de COMBAT (#1117 L2) — jumeau de `FlowStakeEntry`, keyé par le
- *  `kind` de l'applier au lieu du couple `{flow, phase}` : cf. `schemas/defs/combat-stakes.ts`. */
+/** ENJEU d'un `kind` d'étape de CASCADE (#1117 L2) — jumeau de `FlowStakeEntry`, keyé par un `kind`
+ *  au lieu du couple `{flow, phase}` : cf. `schemas/defs/combat-stakes.ts`. Le `kind` est celui de
+ *  l'applier servi quand il en existe un ; sinon celui du TIRAGE servi, car une même étape peut
+ *  jouer sur deux jeux de tables qui ne mettent pas la même chose en jeu (Imparfaite vs Colère).
+ *  Famille née en combat, elle sert toute cascade à étapes (mutation, interlude). */
 export interface CombatStakeEntry {
   id: string;
   label: string;
@@ -231,6 +237,11 @@ export interface CombatStakeEntry {
   ruleCategory?: string;
   /** Catégorie Codex de l'ENTRÉE jouée — le renvoi descend jusqu'à elle quand la clé la nomme. */
   entryCategory?: string;
+  /** La catégorie de l'entrée est celle de l'ENTITÉ SOURCE de l'effet, que seul le PRODUCTEUR connaît
+   *  (`CATEGORY_BY_SOURCE_KIND`, `engine/types.ts` : un jet exigé par un objet, un Talent, une maladie…
+   *  n'a pas de catégorie déclarable au dataset). Vaut PORTE au même titre qu'`entryCategory` : ce qui
+   *  est interdit, c'est le silence — pas la catégorie dynamique. */
+  entryFromSource?: boolean;
   source: SourceRef;
 }
 export const COMBAT_STAKES = combatStakesJson as CombatStakeEntry[];
@@ -298,7 +309,38 @@ const STAKE_ENTRY_POOLS: Record<string, (id: string) => boolean> = {
   psychologies: (id) => !!findPsychologyById(id),
   maneuvers: (id) => !!findManeuverById(id),
   spells: (id) => !!findSpellById(id),
+  // Familles à TABLE (#1117 L2 vague 4b) : la LIGNE tirée est déjà une entrée Codex éditable — son
+  // foyer est SA fiche, jamais une fiche de règle doublon (amendement A). La catégorie voyage avec
+  // l'id, versée par la re-pose post-tirage (`stakeAtTableRow`, `state/cascade.ts`).
+  criticalsTete: (id) => criticalsRows.tete.some((r) => r.id === id),
+  criticalsBras: (id) => criticalsRows.bras.some((r) => r.id === id),
+  criticalsCorps: (id) => criticalsRows.corps.some((r) => r.id === id),
+  criticalsJambe: (id) => criticalsRows.jambe.some((r) => r.id === id),
+  structureCriticals: (id) => structureCriticalRows.some((r) => r.id === id),
+  miscastMinor: (id) => miscastRows.minor.some((r) => r.id === id),
+  miscastMajor: (id) => miscastRows.major.some((r) => r.id === id),
+  miscastWrath: (id) => miscastRows.wrath.some((r) => r.id === id),
+  mutations: (id) => mutations.some((m) => m.id === id),
+  mutationTables: (id) => mutationTables.some((t) => t.id === id),
+  interludeEvents: (id) => interludeEvents.some((e) => e.id === id),
+  // Catégories atteignables par l'ENTITÉ SOURCE d'un effet (`CATEGORY_BY_SOURCE_KIND`, engine/types) —
+  // la table est TOTALE côté source, donc le pool l'est aussi : sans elles, un jet exigé par un objet
+  // ou un Talent replierait en silence sur le foyer de son `kind`.
+  talents: (id) => talents.some((t) => t.id === id),
+  traits: (id) => traits.some((t) => t.id === id),
+  trappings: (id) => trappings.some((t) => t.id === id),
+  qualities: (id) => qualities.some((q) => q.id === id),
+  etats: (id) => etats.some((e) => e.id === id),
+  creatures: (id) => creatures.some((c) => c.id === id),
+  regles: (id) => regles.some((r) => r.id === id),
+  activities: (id) => ACTIVITY_STAKES.some((a) => a.id === id),
 };
+
+/** Rangées BRUTES des tables tirées par une étape, réduites à leur id — le résolveur d'enjeu n'a
+ *  besoin que du pool d'ids, et les lit sur le MÊME JSON que le Codex édite. */
+const criticalsRows = criticalsRawJson as Record<'tete' | 'bras' | 'corps' | 'jambe', { id: string }[]>;
+const structureCriticalRows = (structureCriticalsRawJson as { entries: { id: string }[] }).entries;
+const miscastRows = miscastRawJson as unknown as Record<'minor' | 'major' | 'wrath', { id: string }[]>;
 
 /** CATALOGUE d'ENTRÉES d'un `kind` : où vit la fiche de l'entrée JOUÉE, quand la clé en nomme une.
  *  Déclaratif — ajouter une famille à entrées (tables régionales de Lustrie, périls…) = une ligne ICI,
@@ -327,11 +369,23 @@ const STAKE_ENTRY_CATALOG: Record<string, { category: string; has: (id: string) 
  *  `resolution`/`failCondition`/`failAmount`/`becomes` diffèrent d'une entrée à l'autre). */
 const STAKE_ENTRY_TEXTS: Record<string, (id: string) => string | undefined> = {
   psychologies: (id) => findPsychologyById(id)?.stake,
+  maneuvers: (id) => findManeuverById(id)?.stake,
 };
 
-/** Catégorie de l'ENTRÉE d'un `kind` : celle DÉCLARÉE par le dataset, ou celle FOURNIE par le
- *  producteur (`key.entryCategory`) quand un même `kind` joue sur N catégories (les Critiques par
- *  localisation). Le déclaratif prime — le dynamique ne comble que ce qu'il ne peut pas savoir. */
+/** Catégorie de l'ENTRÉE d'un `kind` — TABLE DES PORTES vers le foyer de la règle. Toute porte est
+ *  NOMMÉE ici ; une porte qu'on n'écrit pas s'invente ailleurs.
+ *  (a) DÉCLARATIVE : le `kind` figure au catalogue `STAKE_ENTRY_CATALOG` (dataset ou énumération),
+ *      sa catégorie est la même à chaque tirage — porte par défaut, elle PRIME sur les suivantes.
+ *  (b) DYNAMIQUE BORNÉE : le producteur fournit `key.entryCategory`, valide seulement si le nom
+ *      figure dans `STAKE_ENTRY_POOLS` — pour un `kind` jouant sur N catégories connues au tirage
+ *      (les Critiques par localisation).
+ *  (c) PAR LA SOURCE : le dataset pose `entryFromSource: true` (schéma `defs/combat-stakes.ts`),
+ *      qui déclare que la catégorie ne se connaît qu'au RUNTIME — le producteur la tire de
+ *      `ActiveEffect.source` (`CATEGORY_BY_SOURCE_KIND`) et la verse par la porte (b) ; le kind
+ *      `actGate` en vit (un même gate est exigé par un objet, un Talent, une maladie…).
+ *      CRITÈRE : `entryFromSource` ne se déclare que si la catégorie est irréductiblement dynamique
+ *      (le même `kind` sert N natures de source) — si une déclaration statique peut la dire, c'est
+ *      (a) ou (b). */
 function entryCategoryOf(key: StakeKey): { category: string; has: (id: string) => boolean } | undefined {
   const declared = STAKE_ENTRY_CATALOG[key.kind];
   if (declared) return declared;
@@ -415,13 +469,19 @@ export function voyageStakeRef(kind: string, values?: Record<string, string | nu
  *  SA fiche ; un id inconnu replie sur le foyer du `kind` (déclaré, jamais silencieux). */
 export function combatStakeRef(
   kind: string,
-  opts?: { entryId?: string; values?: Record<string, string | number> },
+  opts?: { entryId?: string; entryCategory?: string; values?: Record<string, string | number> },
 ): StakeRef {
   if (!stakeEntry({ dataset: 'combat', kind })) {
     throw new Error(`combatStakeRef('${kind}') : aucune entrée d'enjeu (combat-stakes.json) — une étape de combat qui LANCE dit ce qu'elle met en jeu`);
   }
   return {
-    key: { dataset: 'combat', kind, ...(opts?.entryId ? { entryId: opts.entryId } : {}) },
+    key: {
+      dataset: 'combat', kind,
+      ...(opts?.entryId ? { entryId: opts.entryId } : {}),
+      // Catégorie FOURNIE par le producteur, pour les kinds dont le dataset ne peut pas la déclarer
+      // (`entryFromSource` : l'entité source d'un effet peut être de n'importe quelle nature).
+      ...(opts?.entryCategory ? { entryCategory: opts.entryCategory } : {}),
+    },
     ...(opts?.values ? { values: opts.values } : {}),
   };
 }
@@ -1264,6 +1324,13 @@ export interface ManeuverDef {
    *  plus haut = choisie plus volontiers. Combinée aux bonus situationnels AUTO (dégâts attendus,
    *  multi-cible, état onHit applicable). Défaut 1 ; 0 = jamais auto-choisie (reste manuelle). */
   priority?: number;
+  /** ENJEU porté par l'ENTRÉE (#1117 L2, patron `ActivityDef.stake`/`PsychologyData.stake`) : les
+   *  `effects` d'une manœuvre sont AUTHORÉS entrée par entrée (aucune formule commune), donc un
+   *  gabarit au `kind` serait tautologique. Rendu par `resolveStake` (dataset `combat`, kind
+   *  `maneuverDefense`, `entryId` = l'id de la manœuvre) : il PRIME sur le gabarit du kind. */
+  stake?: string;
+  /** FORME déclarée de l'enjeu — `verbatim` (contigu au Source) ou `descripteur` (assemblage des ops). */
+  stakeForm?: 'verbatim' | 'descripteur';
 }
 /** Drapeaux de CAPACITÉ IRRÉDUCTIBLES d'un trait (LDB 85) — décisions d'IA/psychologie, règles de
  *  résolution de combat, capacités de construction/déplacement/vision : NI un modificateur (`passive`)

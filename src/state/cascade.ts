@@ -21,6 +21,7 @@ import type { Combatant } from '../engine/types';
 import { roll, type RNG } from '../engine/dice';
 import { findTableEntry } from '../engine/tables';
 import type { CascadeStep, PendingCascade, CascadeRoll, BatchParticipant, CascadeAggregate, CascadeTableDecl, CascadeTableResult } from './pendings';
+import type { StakeRef } from '../data';
 import type { Consequence } from './rollSeam';
 import { resultLines } from './rollSeam';
 import { toRecapLines } from './recapLine';
@@ -141,6 +142,12 @@ export interface TableStepDef {
   rows: TableStepRow[];
   /** Lignes d'affichage de la ligne atteinte par le dé EFFECTIF (formatage du moteur de domaine). */
   lines: (effectiveRoll: number) => string[];
+  /** Catégorie Codex où vivent les LIGNES de cette table (`criticalsTete`, `mutations`,
+   *  `interludeEvents`…). Déclarée ICI parce que la table est le seul endroit qui la connaisse : un
+   *  même `kind` d'étape tire sur N tables (une Blessure critique se joue sur celle de SA
+   *  Localisation). C'est elle qui fait DESCENDRE l'enjeu à la ligne jouée après le tirage
+   *  (`stakeAtTableRow`) ; absente, l'enjeu reste au foyer du `kind`. */
+  entryCategory?: string;
 }
 
 export const tableStepDefs: Record<string, TableStepDef> = {};
@@ -201,6 +208,32 @@ export function rollTableStep(decl: CascadeTableDecl, rng: RNG): CascadeTableRes
   }
   const row = findTableEntry(def.rows, die);
   return { roll: natural, die, id: row.id, lines: def.lines(die) };
+}
+
+/**
+ * RE-POSE POST-TIRAGE de l'enjeu d'une étape à TABLE (#1117 L2) — l'étape énonce son enjeu à la
+ * CONSTRUCTION, mais la LIGNE jouée n'existe qu'APRÈS le dé : tant que le tirage n'est pas tombé,
+ * l'enjeu ne peut parler que du `kind` (« une Blessure critique »), jamais de ce qui vient d'arriver
+ * (« Blessure majeure à l'œil »). Cette fonction fait descendre la clé à l'entrée tirée, en versant
+ * la catégorie Codex DÉCLARÉE PAR LA TABLE (`TableStepDef.entryCategory`) — le pilote de tirage n'a
+ * donc rien à nommer, et un `kind` qui tire sur N tables descend chaque fois dans la bonne.
+ *
+ * SANS enjeu posé, ou table sans catégorie : la référence est rendue TELLE QUELLE (repli déclaré sur
+ * le foyer du `kind`, jamais un renvoi fabriqué). PURE.
+ */
+export function stakeAtTableRow(stake: StakeRef | undefined, decl: CascadeTableDecl, result: CascadeTableResult): StakeRef | undefined {
+  const category = tableStepDefs[decl.tableId]?.entryCategory;
+  if (!stake || !category) return stake;
+  return { ...stake, key: { ...stake.key, entryId: result.id, entryCategory: category } };
+}
+
+/** Étape à table RÉSOLUE : la déclaration qui a tiré + son résultat + l'enjeu redescendu à la ligne
+ *  jouée. SITE UNIQUE de la pose d'un `table.result` sur une étape — les quatre pilotes de tirage
+ *  (modale, dé posé, résolution forcée, cascade immédiate) passent par ici, sinon l'un d'eux
+ *  laisserait l'enjeu au `kind` pendant que les autres l'ont fait descendre. */
+export function tableStepResolved(step: CascadeStep, decl: CascadeTableDecl, result: CascadeTableResult): CascadeStep {
+  const stake = stakeAtTableRow(step.stake, decl, result);
+  return { ...step, table: { ...decl, result }, ...(stake ? { stake } : {}) };
 }
 
 /** Type d'INTERACTION d'une étape, inféré de ses champs (zéro migration des étapes-jet existantes) :
@@ -321,7 +354,7 @@ export function rollCascadeTable(get: Get, set: Set, stepId: string): void {
   // l'étape : le `mod` qui a servi reste lisible (rangée + conséquence) au lieu d'être recalculé.
   const table = liveTableDecl(get(), cur);
   const result = rollTableStep(table, battleRng());
-  set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...x, table: { ...table, result } } : x)) } });
+  set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? tableStepResolved(x, table, result) : x)) } });
 }
 
 /** Faces du dé d'un tirage sur table : la DÉCLARATION l'emporte sur la table, d100 par défaut —
@@ -381,7 +414,7 @@ export function setCascadeTableForcedRoll(get: Get, set: Set, stepId: string, ro
   const live = liveTableDecl(get(), cur);
   const table: CascadeTableDecl = { ...live, forcedRoll: clampTableNatural(live, roll) };
   const result = rollTableStep(table, battleRng());
-  set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...x, table: { ...table, result }, fixed: true } : x)) } });
+  set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...tableStepResolved(x, table, result), fixed: true } : x)) } });
 }
 
 /**
@@ -639,7 +672,8 @@ export function resolveRemainingCascade(get: Get, set: Set): PendingCascade | nu
       // TIRAGE SUR TABLE sans influence (« Tout lancer ») : mêmes résolveur ET composition de
       // déclaration que la modale (`liveTableDecl` — modificateur vivant au moment du jet).
       const table = liveTableDecl(get(), st);
-      steps = steps.map((x, k) => (k === i ? { ...x, table: { ...table, result: rollTableStep(table, battleRng()) } } : x));
+      const rolled = rollTableStep(table, battleRng());
+      steps = steps.map((x, k) => (k === i ? tableStepResolved(x, table, rolled) : x));
     } else if (stepInteraction(st) === 'batch') {
       steps = steps.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(st) } : x));
     } else if (stepInteraction(st) === 'choix' && st.chosen == null) {
@@ -698,7 +732,8 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ct
       cur = cur.map((x, k) => (k === i ? { ...x, result } : x));
     } else if (stepInteraction(st) === 'table') {
       const table = liveTableDecl(get(), st); // même composition de déclaration que la modale
-      cur = cur.map((x, k) => (k === i ? { ...x, table: { ...table, result: rollTableStep(table, battleRng()) } } : x));
+      const rolled = rollTableStep(table, battleRng());
+      cur = cur.map((x, k) => (k === i ? tableStepResolved(x, table, rolled) : x));
     } else if (stepInteraction(st) === 'batch') {
       cur = cur.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(st) } : x));
     } else if (stepInteraction(st) === 'choix' && st.chosen == null) {

@@ -12,8 +12,12 @@ import {
   NIGHT_STAKES, VOYAGE_STAKES, FLOW_STAKES, COMBAT_STAKES,
   regles, skills, symptoms, etats, talents, qualities, spells,
   characteristics, psychologies, seaShanties, crewTestTypes, maladies, maneuvers, resolveStake,
+  mutations, mutationTables, interludeEvents, trappings, traits, creatures, ACTIVITY_STAKES,
 } from './index';
+import { CATEGORY_BY_SOURCE_KIND } from '../engine/types';
 import { STEAM_BREAKDOWNS } from '../engine/shipBuild';
+import { STRUCTURE_CRITICALS } from './structureCriticals';
+import miscastRawJson from './miscast.json';
 
 
 /** Entrées d'enjeu de VOYAGE encore sans fiche — chacune attend SA curation verbatim (patron L0a).
@@ -34,6 +38,16 @@ const VOYAGE_SANS_REGLE = [
   'exposure',
   'sea-degagement',
 ];
+
+/** UN id RÉEL par catégorie Codex atteignable depuis une nature de source — la sonde du chemin RÉEL
+ *  (`resolveStake`) : un pool absent rendrait `rule: undefined` sur une entrée pourtant existante. */
+const PROBE_ID: Record<string, string> = {
+  spells: spells[0].id, talents: talents[0].id, traits: traits[0].id, trappings: trappings[0].id,
+  qualities: qualities[0].id, maladies: maladies[0].id, symptoms: symptoms[0].id,
+  mutations: mutations[0].id, etats: etats[0].id, psychologies: psychologies[0].id,
+  maneuvers: maneuvers[0].id, creatures: creatures[0].id, activities: ACTIVITY_STAKES[0].id,
+  regles: regles[0].id,
+};
 
 describe('cliquet — un enjeu porte sa RÈGLE (#1117)', () => {
   it('la cascade de NUIT est soldée : chaque entrée renvoie vers une fiche', () => {
@@ -103,9 +117,15 @@ describe('cliquet — un enjeu porte sa RÈGLE (#1117)', () => {
   });
 
   /** Même contrat pour la cascade de COMBAT (#1117 L2) : le dataset naît sans dette. */
-  it('chaque enjeu de combat porte SA porte (foyer ou entrée)', () => {
-    const sans = COMBAT_STAKES.filter((e) => !e.entryCategory && !(e.rule && e.ruleCategory)).map((e) => e.id);
+  it('chaque enjeu de combat porte SA porte (foyer, entrée déclarée, ou entrée de la SOURCE)', () => {
+    const sans = COMBAT_STAKES.filter((e) => !e.entryCategory && !e.entryFromSource && !(e.rule && e.ruleCategory)).map((e) => e.id);
     expect(sans, 'enjeu de combat sans foyer ni catégorie d’entrée').toEqual([]);
+    // `entryFromSource` n'est pas un blanc-seing : le PRODUCTEUR doit pouvoir nommer une catégorie que
+    // le résolveur sait interroger. La table des natures de source est TOTALE — le pool doit l'être.
+    const POOLS_MANQUANTS = Object.values(CATEGORY_BY_SOURCE_KIND).filter(
+      (cat) => !resolveStake({ key: { dataset: 'combat', kind: 'actGate', entryId: PROBE_ID[cat], entryCategory: cat } }).rule,
+    );
+    expect(POOLS_MANQUANTS, 'catégorie de source sans pool : le renvoi replierait en silence').toEqual([]);
   });
 
   /**
@@ -128,12 +148,45 @@ describe('cliquet — un enjeu porte sa RÈGLE (#1117)', () => {
     }
   });
 
+  /**
+   * MÊME contrat pour les MANŒUVRES (#1117 L2 vague 4b) : `applyManeuverEffects` exécute des
+   * `TriggeredEffect[]` AUTHORÉS par manœuvre — aucune formule commune, donc rien de générique à
+   * dire au `kind`. Une manœuvre qui fait LANCER sa cible (`defense` autre qu'`auto`) doit énoncer
+   * ce que ce jet met en jeu ; toutes portent leur enjeu, y compris celles à `effects: []`, qui le
+   * disent honnêtement. Une manœuvre NEUVE arrive avec le sien, ou rougit ici.
+   */
+  it('chaque manœuvre porte son enjeu, et l’enjeu prime sur le gabarit du kind', () => {
+    const testantes = maneuvers.filter((m) => m.defense && m.defense !== 'auto');
+    expect(testantes.length, 'aucune manœuvre à jet mesurée : le critère a glissé').toBeGreaterThan(0);
+    const sansJet = testantes.filter((m) => !m.stake).map((m) => m.id);
+    expect(sansJet, 'manœuvre qui fait LANCER sa cible sans enjeu : l’étape retomberait sur le gabarit générique').toEqual([]);
+    const sans = maneuvers.filter((m) => !m.stake).map((m) => m.id);
+    expect(sans, 'manœuvre sans enjeu — même à `effects: []`, elle doit le dire').toEqual([]);
+    const sansForme = maneuvers.filter((m) => m.stake && !m.stakeForm).map((m) => m.id);
+    expect(sansForme, 'enjeu sans forme déclarée (stakeForm)').toEqual([]);
+    // Chemin RÉEL : la descente à l'entrée doit rendre le texte DE L'ENTRÉE, pas celui du kind.
+    const gabarit = COMBAT_STAKES.find((e) => e.kind === 'maneuverDefense')!.template;
+    for (const m of maneuvers) {
+      const r = resolveStake({ key: { dataset: 'combat', kind: 'maneuverDefense', entryId: m.id } });
+      expect(r.text, `${m.id} : l’étape rend le gabarit du kind au lieu de l’enjeu de l’entrée`).not.toBe(gabarit);
+      expect(r.text, `${m.id} : enjeu vide`).toBe(m.stake);
+      expect(r.rule, `${m.id} : renvoi hors de sa propre fiche`).toEqual({ category: 'maneuvers', id: m.id });
+    }
+  });
+
   /** Une `entryCategory` ne vaut que si le RÉSOLVEUR sait l'interroger (`STAKE_ENTRY_POOLS`,
    *  `src/data/index.ts`) : sinon le renvoi replie SILENCIEUSEMENT sur le foyer du kind — le repli
    *  déclaré deviendrait un repli subi. Mesuré SUR LE CHEMIN RÉEL (`resolveStake` avec un id VRAI de
    *  la catégorie), jamais sur une copie parallèle de la table de pools. */
   it('chaque `entryCategory` déclarée fait DESCENDRE le renvoi à l’entrée jouée', () => {
-    const POOLS: Record<string, { id: string }[]> = { symptoms, seaShanties, crewTestTypes, maladies, psychologies, maneuvers, spells };
+    const POOLS: Record<string, { id: string }[]> = {
+      symptoms, seaShanties, crewTestTypes, maladies, psychologies, maneuvers, spells,
+      // Familles à TABLE (vague 4b) : la ligne tirée est l'entrée jouée — les pools sont lus sur les
+      // MÊMES fichiers que le Codex édite, jamais sur une copie du résolveur.
+      mutations, mutationTables, interludeEvents,
+      structureCriticals: STRUCTURE_CRITICALS,
+      miscastWrath: (miscastRawJson as unknown as { wrath: { id: string }[] }).wrath,
+    };
     const muettes: string[] = [];
     for (const [dataset, e] of [
       ...FLOW_STAKES.map((x) => ['flow' as const, x] as const),
