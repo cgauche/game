@@ -94,18 +94,21 @@ export const REPERES_ART_PROPRES_GELES = [
 export const PLAFOND_REPERES_ART_PROPRES = REPERES_ART_PROPRES_GELES.length;
 
 /**
- * Stock GELÉ des couples MORTS (mesuré le 2026-08-05). Deux voies de solde étaient ouvertes :
- * (a) réaffectation MÉCANIQUE à un os émis, (b) art de bout à créer. Les 12 relèvent de (b),
- * chacun pour la raison notée : leur art est authoré dans les COORDONNÉES et la SILHOUETTE du
- * profil (festons, bandes le long de l'axe du cou, dents de scie de la ligne de dos) — reporté
- * tel quel sur le tronc ou la tête vus de bout, il peindrait une vue de côté sur une vue de face.
- * Le solde appartient donc à la phase d'ART (P1b). Ne peut que rétrécir.
+ * Stock GELÉ des couples MORTS (mesuré le 2026-08-05, amendé le 2026-08-06). Deux voies de solde
+ * étaient ouvertes : (a) réaffectation MÉCANIQUE à un os émis, (b) art de bout à créer. Les 10
+ * relèvent de (b), chacun pour la raison notée : leur art est authoré dans les COORDONNÉES et la
+ * SILHOUETTE du profil (festons, bandes le long de l'axe du cou, dents de scie de la ligne de dos)
+ * — reporté tel quel sur le tronc ou la tête vus de bout, il peindrait une vue de côté sur une vue
+ * de face. Le solde appartient donc à la phase d'ART (P1b). Ne peut que rétrécir.
+ *
+ * SORTIS le 2026-08-06 — `boeuf back encolure` et `boeuf front encolure` : la clé `deco` qui les
+ * portait (fanon de profil) n'existe plus, le PROFIL bovin étant désormais un dessin entier compilé
+ * par os. Ces deux couples n'ont jamais rien peint : mesuré en posant un témoin `deco` sur l'os
+ * `encolure` du bœuf, le rendu résolu des vues front et back est BYTE-IDENTIQUE avec et sans lui
+ * (front 2107c995d6c4d919, back 62cff3ac1c69006b, témoin absent du markup), quand le même témoin
+ * apparaît bien de profil. Leur retrait est un SOLDE mesuré, pas un blanchiment de stock.
  */
 export const DECOS_MORTS_GELES = [
-  // (b) FANON bovin : festons vus de CÔTÉ, pendus de la gorge au poitrail — le fanon de face du
-  // bœuf vit déjà, à part, dans son deco de tronc (`tronc#front`).
-  'boeuf back encolure',
-  'boeuf front encolure',
   // (b) TACK du cheval : harnais contre-transformé dans le repère du tronc de PROFIL (sangle de
   // poitrail vue de côté) — de bout il faut un art de sanglage frontal.
   'cheval back encolure',
@@ -129,8 +132,10 @@ export const DECOS_MORTS_GELES = [
 export const PLAFOND_DECOS_MORTS = DECOS_MORTS_GELES.length;
 
 /**
- * Population GELÉE (mesurée le 2026-08-05) : les 79 couples APPLICABLES, dénominateur du stock
- * des morts. Un couple ne quitte cette liste que par un art émis (solde réel).
+ * Population GELÉE (mesurée le 2026-08-05, amendée le 2026-08-06) : les 77 couples APPLICABLES,
+ * dénominateur du stock des morts. Un couple ne quitte cette liste que par un art émis (solde
+ * réel) — ou, nommément, par la preuve qu'il ne peignait RIEN : `boeuf back/front encolure` en
+ * sont sortis le 2026-08-06 sur la mesure du témoin (cf. `DECOS_MORTS_GELES` ci-dessus).
  */
 export const APPLICABLES_GELES = [
   'blaireau back tete#back',
@@ -138,10 +143,8 @@ export const APPLICABLES_GELES = [
   'blaireau front tronc#front',
   'blaireau profile tete#profile',
   'blaireau profile tronc#profile',
-  'boeuf back encolure',
   'boeuf back tete#back',
   'boeuf back tronc#back',
-  'boeuf front encolure',
   'boeuf front tete#front',
   'boeuf front tronc#front',
   'boeuf profile encolure',

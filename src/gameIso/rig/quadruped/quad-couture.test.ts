@@ -308,15 +308,18 @@ describe('couture du gabarit quadrupède : deux parts voisines se recouvrent à 
   });
 
   /**
-   * Baseline FIGÉE : l'étalon bovin, épaule au repos (le parc va de 0 à 41 u).
-   * Sur cette bête, la couverture vient du CONTOUR de la carrure, qui descend en deux lobes sur les
-   * membres — pas d'une pièce de raccord posée par-dessus la couture. 21,25 u : le contrat
-   * d'emboîtement rend 0,5 u de moins qu'une masse rapportée, pour une pièce de moins à la couture.
+   * Baseline FIGÉE : l'étalon bovin, épaule au repos (le parc va de 0 à 41 u ; seuil de cette
+   * couture : 3,6 u, soit 40 % des 9 u d'épaisseur du haut d'antérieur).
+   * 14,25 u = 3,96× le seuil. Le bœuf de profil est DESSINÉ entier puis compilé par os : le haut
+   * du membre proche démarre 12 u au-dessus de son pivot et entre sous la silhouette du tronc,
+   * l'artiste traçant ce recouvrement au plus juste de ce que la couture demande — là où une
+   * carrure paramétrique le donne en surplus, par ses deux lobes de contour.
    */
-  it('baseline bœuf tronc↔hautAvD (épaule, repos) = 21,25 u', () => {
+  it('baseline bœuf tronc↔hautAvD (épaule, repos) = 14,25 u', () => {
     const m = toutes().find((x) => x.cle === 'boeuf repos epaule');
     expect(m, 'mesure bœuf/repos/épaule absente').toBeTruthy();
-    expect(m!.corde).toBeCloseTo(21.25, 2);
+    expect(m!.seuil, 'seuil relatif de la couture d’épaule bovine').toBeCloseTo(3.6, 2);
+    expect(m!.corde).toBeCloseTo(14.25, 2);
   });
 
   /**
