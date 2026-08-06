@@ -9,8 +9,8 @@
  *
  * Le RENVOI vers la fiche de règle n'est PAS ici (arbitrage user 2026-08-06 : « "la régle" ? C'est
  * moche. Je pensais que tu allais mettre un "i" a coté de "Cauchemars" ») : il vit en affordance
- * compacte sur la LIGNE DE TITRE de l'étape (`stepSubtitle`, `CascadeModal`), dérivé de la MÊME
- * entrée d'enjeu.
+ * compacte sur la LIGNE DE TITRE de la fenêtre (`CascadeBody.titleNode`, `CascadeModal`), qui porte le
+ * libellé du pas COURANT ; dérivé de la MÊME entrée d'enjeu.
  */
 import { isValidElement, type ReactNode } from 'react';
 import { resolveStake, type StakeRef } from '../data';
@@ -57,7 +57,7 @@ export function OutcomeNote({ onSuccess, onFail }: { onSuccess?: GameOp[]; onFai
 
 /**
  * `StakeRule` — la PORTE du renvoi de règle, en affordance COMPACTE accolée au titre de l'étape ou
- * de la fenêtre (arbitrage user 2026-08-06). SOURCE UNIQUE du déclencheur : `CascadeModal.stepSubtitle`
+ * de la fenêtre (arbitrage user 2026-08-06). SOURCE UNIQUE du déclencheur : `CascadeBody.titleNode`
  * la compose pour les cascades, `RollShell` l'accole LUI-MÊME au titre de toute modale de jet qui pose
  * un `stake` (Z3b′ tenue par le SOCLE, plus par discipline au site). Rien quand aucun foyer n'est
  * déclaré, ou quand la fiche est inconnue du Codex (`hideIfUnknown`).

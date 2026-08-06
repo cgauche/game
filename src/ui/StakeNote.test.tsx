@@ -9,9 +9,8 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { resolveStake, nightStakeRef, voyageStakeRef, symptoms } from '../data';
-import { StakeNote } from './StakeNote';
+import { StakeNote, StakeRule } from './StakeNote';
 import { RollShell } from './RollShell';
-import { stepSubtitle } from './CascadeModal';
 
 describe('resolveStake — la porte UNIQUE, fail-closed (#1117)', () => {
   it('rend le texte de la donnée et DÉRIVE la fiche de règle de la même entrée', () => {
@@ -99,29 +98,24 @@ describe('RollShell.stake — prop de PREMIER RANG (#1117)', () => {
 });
 
 /**
- * Le RENVOI vers la règle est une AFFORDANCE COMPACTE accolée au TITRE de l'étape — arbitrage user
- * 2026-08-06 : « "la régle" ? C'est moche. Je pensais que tu allais mettre un "i" a coté de
- * "Cauchemars", pas "la régle" en dessous ». Il compose le déclencheur-icône EXISTANT de `CodexRef`
- * (`ab-codex-info` + glyphe `journal/info`, patron de la barre d'action) — aucun bouton local, aucun
- * caractère typographique bricolé. La nuance de #1078 tient : les CHIPS restent leurs propres portes.
+ * `StakeRule` — le déclencheur lui-même : il compose le patron EXISTANT de `CodexRef`
+ * (`ab-codex-info` + glyphe `journal/info`, patron de la barre d'action), aucun bouton local, aucun
+ * caractère typographique bricolé (arbitrage user 2026-08-06 : « "la régle" ? C'est moche. Je
+ * pensais que tu allais mettre un "i" a coté de "Cauchemars", pas "la régle" en dessous »). SA
+ * POSITION — la ligne de titre de la fenêtre de cascade — se mesure à l'écran dans
+ * `cascade-subtitle.test.tsx` (montage réel de `CascadeBody`).
  */
-describe('renvoi de règle AU TITRE d’étape (#1117, arbitrage 2026-08-06)', () => {
-  const rule = { category: 'regles', id: 'trauma' };
-
-  it('le titre porte le déclencheur-icône, NOMMÉ pour un lecteur d’écran', () => {
-    const html = renderToStaticMarkup(<>{stepSubtitle('Cauchemars', 'creature/scream', { cursor: 0, total: 1 }, rule)}</>);
-    expect(html).toContain('Cauchemars');
+describe('StakeRule — le déclencheur-icône (#1117, arbitrage 2026-08-06)', () => {
+  it('porte le patron partagé, NOMMÉ pour un lecteur d’écran', () => {
+    const html = renderToStaticMarkup(<StakeRule rule={{ category: 'regles', id: 'trauma' }} label="Cauchemars" />);
     expect(html, 'le déclencheur-icône partagé, pas un bouton local').toContain('ab-codex-info');
     expect(html, 'l’icône vient du pipeline (journal/info), jamais un caractère bricolé').toContain('<svg');
     expect(html, 'nom accessible dérivé du libellé d’étape').toContain('aria-label="Règle : Cauchemars"');
     expect(html).toContain('role="button"');
-    // Le lien textuel est mort.
-    expect(html).not.toContain('la règle');
+    expect(html, 'aucun lien textuel').not.toContain('la règle');
   });
 
-  it('sans règle, le titre reste NU (aucune icône morte)', () => {
-    const html = renderToStaticMarkup(<>{stepSubtitle('Cauchemars', 'creature/scream', { cursor: 0, total: 1 })}</>);
-    expect(html).toContain('Cauchemars');
-    expect(html).not.toContain('ab-codex-info');
+  it('sans foyer déclaré, rien n’est rendu (aucune icône morte)', () => {
+    expect(renderToStaticMarkup(<StakeRule label="Cauchemars" />)).toBe('');
   });
 });

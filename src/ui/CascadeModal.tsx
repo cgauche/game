@@ -57,45 +57,17 @@ export function fourchette(min: number, max: number, dieMax: number): string {
   return min === max ? pad(min) : `${pad(min)}-${pad(max)}`;
 }
 
-/** Le sous-titre d'étape ne REDIT pas le titre de la fenêtre : quand une séquence s'ouvre sur une
- *  étape, elle lui emprunte son libellé (`pushStep`) — l'afficher deux fois empile deux tuiles pour
- *  la même information. Le compteur « n/m », lui, reste (il n'est pas dans le titre). */
-export function stepSubtitleLabel(stepLabel: string | undefined, modalTitle: unknown): string | undefined {
-  if (!stepLabel) return undefined;
-  return typeof modalTitle === 'string' && modalTitle.trim() === stepLabel.trim() ? undefined : stepLabel;
-}
-
 /** Sous-titre d'étape — SOURCE UNIQUE des six branches de la cascade (table / affichage riche /
- *  affichage / choix / batch / jet) : libellé DÉDOUBLONNÉ contre le titre (`stepSubtitleLabel`) puis
- *  compteur. `undefined` quand il ne RESTE rien à dire (libellé dédoublonné ET séquence à une étape,
- *  donc pas de compteur). Un fragment JSX vide n'est pas `null` : la coquille rendrait un `<p>` vide,
- *  soit une bande de marge sans contenu sous le titre.
- *  `count` porte le compteur : rang de l'étape par défaut (`n/m`), ou compte de JETS RÉELS pour la
- *  branche jet (`prefix: 'jet '`, `total` = `totalJets`, arbitrage user 2026-07-11).
- *  `rule` pose le RENVOI vers la fiche de règle EN AFFORDANCE COMPACTE, accolée au libellé d'étape
- *  (arbitrage user 2026-08-06 : « Je pensais que tu allais mettre un "i" a coté de "Cauchemars", pas
- *  "la régle" en dessous ») — même déclencheur-icône que la barre d'action (`CodexRef` + glyphe
- *  `journal/info`), jamais un lien textuel sous la phrase d'enjeu. La nuance de #1078 tient : les
- *  CHIPS restent leurs propres portes (aucun ⓘ voisin) — ceci ne vaut que pour le TITRE d'étape. */
-export function stepSubtitle(
-  stepLabel: string | undefined,
-  icon: string,
-  count: { cursor: number; total: number; prefix?: string },
-  rule?: { category: string; id: string },
-): ReactNode {
-  const compteur = count.total > 1 ? `${stepLabel ? ' · ' : ''}${count.prefix ?? ''}${count.cursor + 1}/${count.total}` : '';
-  if (!stepLabel && !compteur) return undefined;
-  return (
-    <>
-      {stepLabel && (
-        <strong>
-          <Icon id={icon} size="sm" /> {stepLabel}
-          <StakeRule rule={rule} label={stepLabel} />
-        </strong>
-      )}
-      {compteur}
-    </>
-  );
+ *  affichage / choix / batch / jet) : la POSITION dans la séquence, et elle seule. Le libellé de
+ *  l'étape et son renvoi de règle sont portés par le TITRE de la fenêtre (`CascadeBody.titleNode`,
+ *  qui suit le pas courant) — les redire ici empilerait deux tuiles pour la même information.
+ *  `undefined` quand il n'y a rien à situer (séquence à une étape) : un fragment JSX vide n'est pas
+ *  `null`, la coquille rendrait un `<p>` vide, soit une bande de marge sans contenu sous le titre.
+ *  `count` porte le rang de l'étape par défaut (`n/m`), ou le compte de JETS RÉELS pour la branche
+ *  jet (`prefix: 'jet '`, `total` = `totalJets`, arbitrage user 2026-07-11). */
+export function stepSubtitle(count: { cursor: number; total: number; prefix?: string }): ReactNode {
+  if (count.total <= 1) return undefined;
+  return `${count.prefix ?? ''}${count.cursor + 1}/${count.total}`;
 }
 
 /** Nom de table de la rangée de tirage : rendu SEULEMENT s'il apporte autre chose que ce qui est déjà
@@ -278,11 +250,14 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
 
   // BILAN « Tout lancer » : curseur EN FIN — toutes les étapes résolues, chaque conséquence visible.
   // Un seul bouton « Terminer » (ferme + enchaîne la suite). Pas d'influence (jets déjà subis).
+  // TITRE NEUTRE (arbitrage user 2026-08-06, #1117 : « Neutre "Bilan" ») : le récap couvre TOUS les
+  // pas, il ne peut pas emprunter le nom d'un seul d'entre eux. Le compte de jets reste au
+  // sous-titre, qui ne redit donc plus le mot du titre.
   if (p.cursor >= p.participants.length) {
     return (
       <RollShell
-        title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
-        subtitle={<>Bilan · {totalJets} jet{totalJets > 1 ? 's' : ''}</>}
+        title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> Bilan</>}
+        subtitle={<>{totalJets} jet{totalJets > 1 ? 's' : ''}</>}
         rolled
         rows={p.participants.flatMap(stepWitnessRows)}
         actions={[{ key: 'finish', label: 'Terminer', onClick: () => finish(), when: 'always' }]}
@@ -302,6 +277,23 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // entrée d'enjeu (`resolveStake`) ; une étape de CHOIX, sans enjeu, garde son `stakeRule` propre.
   const stakeProps = cur.stake ? { stake: cur.stake } : {};
   const stakeRule = (cur.stake ? resolveStake(cur.stake).rule : undefined) ?? cur.stakeRule;
+  // TITRE = le pas COURANT (arbitrage user 2026-08-06, #1117). Une séquence APPEND (`pushStep`,
+  // `state/cascade.ts`) et n'écrit son `title` qu'à la CRÉATION : la fenêtre resterait titrée par le
+  // PREMIER pas pendant qu'on en joue un autre. Dérivation au RENDU (aucune écriture d'état) ; repli
+  // sur le titre de séquence pour un pas sans libellé. Le titre porte l'icône du pas COURANT (elle
+  // suit le même curseur) et le renvoi de règle, accolé au libellé d'étape (arbitrage user
+  // 2026-08-06 : « Je pensais que tu allais mettre un "i" a coté de "Cauchemars" ») — même
+  // déclencheur-icône que la barre d'action (`CodexRef` + glyphe `journal/info`), jamais un lien
+  // textuel sous la phrase d'enjeu. La nuance de #1078 tient : les CHIPS restent leurs propres
+  // portes (aucun ⓘ voisin) — ceci ne vaut que pour la ligne de TITRE. Le sous-titre, lui, ne garde
+  // que la position (« jet N/M »).
+  const modalTitle = cur.label ?? p.title;
+  const titleNode = (
+    <>
+      <Icon id={cur.icon || p.icon || 'nav/dice'} size="sm" /> {modalTitle}
+      {cur.label && stakeRule ? <StakeRule rule={stakeRule} label={modalTitle} /> : null}
+    </>
+  );
   // ENCADRÉ « Réussite / Échec » en régime CALCULÉ (#1117) : les deux fabriques d'étape
   // `triggeredTest` (`state/combat/triggeredTest.ts`) SÉRIALISENT déjà les Flows de branche dans le
   // `meta` — l'encadré se DÉRIVE donc de leurs ops effectives (`certainFlowOps` → `GameOpChips`),
@@ -402,18 +394,17 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   if (interaction === 'table') {
     const def = tableStepDefs[cur.table!.tableId];
     const aff = tableAffordances(cur);
-    const stepLabel = stepSubtitleLabel(cur.label, p.title);
     const tableActions: RollAction[] = [
       { key: 'roll', label: <><Icon id="nav/dice" size="sm" /> Lancer</>, onClick: () => tableRoll(cur.id), when: 'pre' },
       ...(!isLast ? [{ key: 'all', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: () => resolveAll(), title: "Résoudre d'un coup tous les jets restants (sans influence)", when: 'always' } as RollAction] : []),
     ];
     return (
       <RollShell
-        title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
-        subtitle={stepSubtitle(stepLabel, cur.icon || 'nav/dice', { cursor: p.cursor, total: p.participants.length }, stakeRule)}
+        title={titleNode}
+        subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length })}
         rolled={false}
         rows={[...doneWitnessRows, ...currentRows(aff.rows)]}
-        extra={<TableRollLine table={tableLineLabel(def?.label, cur.label, p.title)} />}
+        extra={<TableRollLine table={tableLineLabel(def?.label, cur.label, modalTitle)} />}
         setup={aff.lines}
         actions={tableActions}
         disableEscClose
@@ -434,8 +425,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       const revSubject = rev.subjectId ? pool.find((c) => c.id === rev.subjectId) : undefined;
       return (
         <RollShell
-          title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
-          subtitle={stepSubtitle(stepSubtitleLabel(cur.label, p.title), cur.icon || 'journal/info', { cursor: p.cursor, total: p.participants.length }, stakeRule)}
+          title={titleNode}
+          subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length })}
           rolled
           /* Le CONCERNÉ (`RevealEntry.subjectId`) porte son portrait EN TÊTE de l'étape : on sait
              toujours à qui la révélation s'applique. Le Coup Critique le rend déjà dans son en-tête
@@ -453,11 +444,10 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     // Étape à TABLE déjà tirée : les affordances de POSE restent servies tant que l'étape est
     // COURANTE (le dé se re-pose, la ligne se re-choisit) — le tirage n'est pas un aller sans retour.
     const aff = tableAffordances(cur);
-    const stepLabel = stepSubtitleLabel(cur.label, p.title);
     return (
       <RollShell
-        title={p.title}
-        subtitle={stepSubtitle(stepLabel, cur.icon || 'journal/info', { cursor: p.cursor, total: p.participants.length }, stakeRule)}
+        title={titleNode}
+        subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length })}
         rolled
         /* La marque « dé fixé » n'a qu'UNE surface : l'étiquette du sélecteur quand il est servi,
            la pastille de rangée sinon (siège voisin, option éteinte). */
@@ -469,7 +459,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
            contenu de l'étape résolue — c'est le verdict, il ne se cherche pas sous une grille. */
         extra={tbl ? (
           <>
-            <TableRollLine table={tableLineLabel(tableStepDefs[cur.table!.tableId]?.label, cur.label, p.title)} roll={tbl.roll} die={tbl.die} mod={cur.table!.mod ?? 0} result={tbl.lines[0] ?? ''} />
+            <TableRollLine table={tableLineLabel(tableStepDefs[cur.table!.tableId]?.label, cur.label, modalTitle)} roll={tbl.roll} die={tbl.die} mod={cur.table!.mod ?? 0} result={tbl.lines[0] ?? ''} />
             {tbl.lines.slice(1).map((l, i) => <p key={i} className="rm-log">{l}</p>)}
             {aff.lines}
           </>
@@ -496,8 +486,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     const revSubject = rev?.subjectId ? pool.find((c) => c.id === rev.subjectId) : undefined;
     return (
       <RollShell
-        title={p.title}
-        subtitle={stepSubtitle(stepSubtitleLabel(cur.label, p.title), cur.icon || 'journal/info', { cursor: p.cursor, total: p.participants.length }, stakeRule)}
+        title={titleNode}
+        subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length })}
         rolled
         rows={doneWitnessRows}
         postRollExtra={
@@ -561,8 +551,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     ];
     return (
       <RollShell
-        title={p.title}
-        subtitle={stepSubtitle(stepSubtitleLabel(cur.label, p.title), cur.icon || 'nav/dice', { cursor: p.cursor, total: p.participants.length }, stakeRule)}
+        title={titleNode}
+        subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length })}
         {...stakeProps}
         rolled={ready}
         rows={[...doneWitnessRows, ...rows]}
@@ -670,14 +660,14 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
 
   return (
     <RollShell
-      title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
+      title={titleNode}
       /* « jet N/M » : N = jets de dé jusqu'ici + celui-ci, M = total des jets RÉELS (arbitrage user
          2026-07-11 — l'agrégation/la météo/les affichages ne comptent pas). */
-      subtitle={stepSubtitle(stepSubtitleLabel(cur.label, p.title), cur.icon || 'nav/dice', {
+      subtitle={stepSubtitle({
         cursor: p.participants.slice(0, p.cursor).reduce((n, s) => n + diceOf(s), 0),
         total: totalJets,
         prefix: 'jet ',
-      }, stakeRule)}
+      })}
       {...stakeProps}
       extra={<>{oppHeader}{outcomeNote}</>}
       rolled={rolled}
