@@ -63,10 +63,12 @@ const BASELINE: Record<string, string> = {
   // ÉQUIPAGE & NAVIRE — jumeaux de `crewTest`, à doter avec leurs types de Test (même patron).
   shipManeuver: 'L4 — jumeau de crewTest, entryId = type de Test',
   shipBattery: 'L4 — jumeau de crewTest, entryId = type de Test',
-  // Porte à enfoncer : la procédure jouée est celle de l'Appendice 2 d'EDO, dont l'extraction FR ne
-  // porte pas de passage citable au niveau du jet. Des candidats existent AILLEURS (relevés au ticket
-  // #1117 : EDO 7, MSRC 7, PDT 8, PDT 9, Ubersreik 10) — à INSTRUIRE au Source en L2, pas à supposer ici.
-  forceDoor: 'L2 — enjeu à sourcer : candidats relevés, aucun passage encore instruit',
+  // Porte à enfoncer : les 5 candidats relevés au ticket #1117 sont INSTRUITS (L2, 2026-08-06) —
+  // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,
+  // Ubersreik 10 l.183 pose une procédure LOCALE divergente (Force +20), MSRC 7 n'en parle pas.
+  // LA règle vit ailleurs : EDO 11 l.89-101 (« Portes »), extraction FR présente et citable — c'est
+  // la procédure que la modale joue déjà. Reste à curer sa fiche et son entrée `flow-stakes`.
+  forceDoor: 'L2 — passage instruit (EDO 11 l.89-101) ; fiche + entrée d’enjeu à curer',
 };
 
 describe('cliquet — une modale de jet dit son ENJEU (#1117 L1b)', () => {

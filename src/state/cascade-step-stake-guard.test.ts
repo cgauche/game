@@ -4,14 +4,20 @@ import { join, sep } from 'node:path';
 import { stripLiterals } from './cascade-step-difficulty-guard.test';
 
 /**
- * CLIQUET — une étape de cascade INTERACTIVE dit son ENJEU (#1117, arbitrage user : « Louvoyage… ça
+ * CLIQUET — une étape de cascade qui LANCE dit son ENJEU (#1117, arbitrage user : « Louvoyage… ça
  * se mange ? » / « Faudrait globaliser ça, histoire qu'on sache pourquoi on fait un jet »). Une étape
- * qui LANCE et qu'un joueur peut influencer doit ÉNONCER ce qu'elle met en jeu (`CascadeStep.stake`,
- * gabarit mécanique de `voyage-stakes.json`) : sans lui, la modale demande un jet sans dire pourquoi.
+ * qui LANCE doit ÉNONCER ce qu'elle met en jeu (`CascadeStep.stake`, référence de donnée résolue par
+ * `resolveStake`) : sans lui, la modale demande un jet sans dire pourquoi.
  *
- * Jumeau exact de `cascade-step-difficulty-guard` (même parseur : commentaires et contenus de
- * chaînes/gabarits neutralisés avant le parcours d'accolades) — un invariant par fichier. Baseline
- * NOMINATIVE et DÉCROISSANTE : un site doté ABAISSE sa ligne.
+ * Le discriminant est la FORME, pas un drapeau : `stepInteraction` (`state/cascade.ts`) rend `'jet'
+ * dès que `step.target != null` — `interactive` ne gouverne QUE les rangées d'une étape à
+ * participants (`stepReady`, cas `batch`). Une étape mono est donc rendue et lancée par le joueur
+ * qu'elle porte ou non `interactive: true`, et `result: null` y est facultatif : ces deux champs
+ * n'ont jamais mesuré ce que le cliquet vise.
+ *
+ * Même parseur que `cascade-step-difficulty-guard` (commentaires et contenus de chaînes/gabarits
+ * neutralisés avant le parcours d'accolades) — un invariant par fichier. Baseline NOMINATIVE et
+ * DÉCROISSANTE : un site doté ABAISSE sa ligne.
  */
 
 const STATE = join(process.cwd(), 'src', 'state');
@@ -26,7 +32,19 @@ function sourceFiles(dir: string): string[] {
   return out;
 }
 
-/** Étapes INTERACTIVES qui lancent, sans `stake` — renvoie leurs numéros de ligne (1-based). */
+/** La propriété `name` est-elle posée au PREMIER niveau du littéral `lit` ? (Un `kind` enfoui dans un
+ *  sous-objet — `outcome: { kind }` d'un Test étendu — ne fait pas de son porteur une étape.) */
+function hasTopLevelKey(lit: string, name: string): boolean {
+  let depth = 0;
+  for (const m of lit.matchAll(new RegExp(`[{}]|(?<=[{,]\\s*)${name}\\s*[:,}]`, 'g'))) {
+    if (m[0] === '{') depth++;
+    else if (m[0] === '}') depth--;
+    else if (depth === 1) return true;
+  }
+  return false;
+}
+
+/** Étapes qui LANCENT (cible posée), sans `stake` — renvoie leurs numéros de ligne (1-based). */
 export function stepsWithoutStake(src: string): number[] {
   const s = stripLiterals(src);
   // POSE DIFFÉRÉE : un flux qui dote ses étapes APRÈS construction (`st.stake = nightStake(st.kind)`,
@@ -34,7 +52,10 @@ export function stepsWithoutStake(src: string): number[] {
   // comme muets. La dotation reste vérifiée par le catalogue d'enjeux de CE flux.
   if (/\.stake\s*=\s*/.test(s)) return [];
   const lines: number[] = [];
-  for (const m of s.matchAll(/result\s*:\s*null/g)) {
+  const seen = new Set<number>();
+  // Une CIBLE en position de PROPRIÉTÉ : `target: <expression>` ou le raccourci `target,`. Une valeur
+  // de chaîne est blanchie par `stripLiterals` → `target: 'party'` (cible d'un EFFET) ne matche pas.
+  for (const m of s.matchAll(/(?<=[{,]\s*)target\s*(?::\s*[^\s,}]|[,}])/g)) {
     const i = m.index!;
     let depth = 0;
     let start = -1;
@@ -42,41 +63,57 @@ export function stepsWithoutStake(src: string): number[] {
       if (s[j] === '}') depth++;
       else if (s[j] === '{') { if (depth === 0) { start = j; break; } depth--; }
     }
+    if (start < 0 || seen.has(start)) continue;
+    seen.add(start);
+    // Seule une accolade OUVRANT UN LITTÉRAL est une étape : celle d'un corps de fonction, d'une
+    // interface ou d'un bloc est précédée d'autre chose que `(`/`,`/`[`/`=`/`?`/`return`.
+    if (!/(?:[([,=?]|\breturn)$/.test(s.slice(0, start).replace(/\s+$/, ''))) continue;
     depth = 0;
     let end = -1;
     for (let j = i; j < s.length; j++) {
       if (s[j] === '{') depth++;
       else if (s[j] === '}') { if (depth === 0) { end = j; break; } depth--; }
     }
-    if (start < 0 || end < 0) continue;
+    if (end < 0) continue;
     const lit = s.slice(start, end);
-    if (!/\btarget\s*[:,}]/.test(lit)) continue; // étape sans jet : rien à mettre en jeu
-    if (!/\binteractive\s*:\s*true/.test(lit)) continue; // témoin/auto-résolue : aucune décision offerte
-    if (!/\bkind\s*[:,}]/.test(lit)) continue; // CONTRIBUTEUR d'une étape batch : l'enjeu est porté par l'ÉTAPE
-    if (/\bstake\s*[,:]/.test(lit)) continue;
+    if (!hasTopLevelKey(lit, 'kind')) continue; // CONTRIBUTEUR batch (aucun kind) / pending d'un autre flux
+    if (!/\b(actorId|worldOwner|rollLabel)\s*[:,}]/.test(lit)) continue; // aucun lanceur nommé : pas une étape
+    // `stake:`, raccourci `stake,` — et `{ …, stake }` en dernière propriété (le littéral est tranché
+    // AVANT son accolade fermante : la fin de chaîne y tient lieu de délimiteur).
+    if (/\bstake\s*(?:[,:]|$)/.test(lit)) continue;
     lines.push(src.slice(0, start).split('\n').length);
   }
   return lines;
 }
 
-/** Baseline NOMINATIVE (fichier → étapes interactives encore sans enjeu). ZÉRO ailleurs. */
+/** Baseline NOMINATIVE (fichier → étapes qui lancent, encore sans enjeu). ZÉRO ailleurs.
+ *  Stock RE-MESURÉ le 2026-08-06 (#1117 L2) à la FORME : l'ancienne mesure filtrait sur
+ *  `interactive: true` + `result: null`, deux champs qui ne gouvernent pas le rendu d'une étape mono
+ *  (cf. en-tête) — 11 sites vus, 27 réels. */
 const BASELINE: Record<string, number> = {
   // VOYAGE (fluvial + maritime) = 0 : le périmètre soldé par #1117.
   // Une ACTIVITÉ en mer (MDG 15 l.266-306) est un CHOIX du joueur : ce qu'elle met en jeu EST
   // l'activité choisie, énoncée par son panneau de sélection — l'étape ne redit pas le choix.
   'seaActivities.ts': 2,
-  // HORS périmètre #1117 (voyage) — stock MESURÉ le 2026-08-05, gelé et décroissant : chaque famille
-  // dotera ses enjeux avec le lot qui la traite (le catalogue `voyage-stakes.json` est déjà le
-  // gabarit à suivre ; rien n'y est propre au voyage sauf ses entrées).
+  // HORS périmètre déjà soldé — stock gelé et décroissant : chaque famille dotera ses enjeux avec le
+  // lot qui la traite (le catalogue `voyage-stakes.json` est déjà le gabarit à suivre).
   'travelFlow.ts': 4, // voyage TERRESTRE : périls de route (Survie/Perception), attelage forcé ×2
   'travelPostes.ts': 1, // Exposition de fin d'Étape terrestre
+  'shipwreck.ts': 1, // Natation du naufrage
+  'embrigadementFlow.ts': 2, // Ragot + Discrétion de l'embrigadement
   'pursuitFlow.ts': 1, // manche de poursuite terrestre
-  'combatEffects.ts': 1, // Exposition posée par un effet de scène
-  'combatFlow.ts': 1, // Contraction de maladie (fin de combat / chirurgie)
   'rollSeam.ts': 1, // PORTE générique du seam (`buildMonoStep`) : l'enjeu vient du flux appelant
+  // COMBAT (#1117 L2) — foyers d'entité MESURÉS le 2026-08-06, curation à venir :
+  'combatEffects.ts': 2, // exposition de scène (kind `exposure`, applier de nuit) + exposition hydrique
+  'combatFlow.ts': 4, // contraction de maladie ×2, exposition à la Corruption, Psychologie de combat
+  'combatManeuvers.ts': 1, // défense contre une manœuvre de zone
+  'combat/roundHooks.ts': 3, // perte de sang AA, effort soutenu, prolongation « Durée + »
+  'combat/triggeredTest.ts': 2, // Test déclenché en DONNÉES (simple + opposé) — enjeu CALCULÉ depuis ses ops
+  'combat/turnHooks.ts': 1, // gate d'Action par Round (op `actGate`)
+  'encounterPsychFlow.ts': 2, // Peur/Terreur de rencontre (scriptée + naturelle)
 };
 
-describe('cliquet — une étape de cascade interactive dit son ENJEU (#1117)', () => {
+describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', () => {
   it('aucun site NEUF sans enjeu, et toute baseline assainie est ABAISSÉE', () => {
     const counts: Record<string, number[]> = {};
     for (const f of sourceFiles(STATE)) {
@@ -88,7 +125,7 @@ describe('cliquet — une étape de cascade interactive dit son ENJEU (#1117)', 
       const b = BASELINE[f] ?? 0;
       if (l.length > b) over.push(`${f} : ${l.length} (baseline ${b}) — lignes ${l.join(', ')}`);
     }
-    expect(over, ['Étape de cascade INTERACTIVE sans enjeu — le joueur doit savoir ce que le jet met en jeu (`stake`, voyage-stakes.json) :', ...over].join('\n')).toEqual([]);
+    expect(over, ['Étape de cascade qui LANCE sans enjeu — le joueur doit savoir ce que le jet met en jeu (`stake`, résolu par `resolveStake`) :', ...over].join('\n')).toEqual([]);
     const stale: string[] = [];
     for (const [f, b] of Object.entries(BASELINE)) {
       const n = counts[f]?.length ?? 0;
@@ -97,19 +134,25 @@ describe('cliquet — une étape de cascade interactive dit son ENJEU (#1117)', 
     expect(stale, ['Baseline(s) PÉRIMÉE(s) :', ...stale].join('\n')).toEqual([]);
   });
 
-  it('FAIL-CLOSED : une étape interactive synthétique sans enjeu est DÉTECTÉE, avec enjeu elle ne l’est pas', () => {
-    const sans = `const s = { id: \`x-\${a}\`, kind: 'k', base: 40, target: 40, result: null, interactive: true };`;
+  it('FAIL-CLOSED : une étape synthétique qui LANCE sans enjeu est DÉTECTÉE, avec enjeu elle ne l’est pas', () => {
+    const sans = `const s = { id: \`x-\${a}\`, kind: 'k', actorId: h.id, base: 40, target: 40, result: null };`;
     // Forme RÉELLE d'un enjeu depuis #1117 : une RÉFÉRENCE de donnée produite par la porte unique —
     // un texte au call-site ne compile plus (`stake?: StakeRef`), le scanner voit l'appel.
-    const avec = `const s = { id: 'x', kind: 'k', base: 40, target: 40, stake: voyageStakeRef('k'), result: null, interactive: true };`;
-    const raccourci = `const s = { id: 'x', kind: 'k', base: 40, target: 40, stake, result: null, interactive: true };`;
-    const temoin = `const s = { id: 'x', kind: 'k', base: 40, target: 40, result: null, interactive: false };`;
-    const sansJet = `const s = { id: 'x', kind: 'reveal', result: null, interactive: true };`;
+    const avec = `const s = { id: 'x', kind: 'k', actorId: h.id, base: 40, target: 40, stake: voyageStakeRef('k') };`;
+    const raccourci = `const s = { id: 'x', kind: 'k', actorId: h.id, base: 40, target: 40, stake };`;
+    const temoin = `const s = { id: 'x', kind: 'k', actorId: h.id, base: 40, target: 40, interactive: false };`;
+    const sansJet = `const s = { id: 'x', kind: 'reveal', actorId: h.id, result: null };`;
+    const cibleTexte = `const e = { type: 'exposureNight', kind: 'froid', count: 2, target: 'party' };`;
+    const contributeur = `const p = { id: h.id, base: 40, target: 40, result: null, interactive: true };`;
+    const corpsDeFonction = `function f(): boolean { const kind = 'k'; const actorId = h.id; return { target } != null; }`;
     expect(stepsWithoutStake(sans)).toHaveLength(1);
     expect(stepsWithoutStake(avec)).toHaveLength(0);
     expect(stepsWithoutStake(raccourci)).toHaveLength(0);
-    expect(stepsWithoutStake(temoin), 'une rangée témoin n’offre aucune décision').toHaveLength(0);
+    expect(stepsWithoutStake(temoin), '`interactive` ne gouverne pas le rendu d’une étape mono : elle lance quand même').toHaveLength(1);
     expect(stepsWithoutStake(sansJet), 'une étape d’affichage ne met rien en jeu').toHaveLength(0);
+    expect(stepsWithoutStake(cibleTexte), 'la cible d’un EFFET (`target: \'party\'`) n’est pas une cible de jet').toHaveLength(0);
+    expect(stepsWithoutStake(contributeur), 'CONTRIBUTEUR d’une étape batch : l’enjeu est porté par l’ÉTAPE').toHaveLength(0);
+    expect(stepsWithoutStake(corpsDeFonction), 'un corps de fonction n’est pas un littéral d’étape').toHaveLength(0);
   });
 });
 
