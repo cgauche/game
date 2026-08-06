@@ -17,7 +17,7 @@ import { isOutOfAction, canTakeAction, hasCondition } from '../../engine/conditi
 import { isFrenzied } from '../../engine/psychology';
 import { combatantAtTile } from '../../state/combatGeometry';
 import { controlsCombatant } from '../../state/netOwnership';
-import { outOfSightTargetIds, castOutOfSightTargetIds, movePreviewAt, previewResourceDelta, frenzyTarget, hasFreeWeaponAttack } from '../../state/combatFlow';
+import { outOfSightTargetIds, castOutOfSightTargetIds, resolveMovement, previewResourceDelta, frenzyTarget, hasFreeWeaponAttack } from '../../state/combatFlow';
 import { hoverTargeting, tilePreviewAt } from '../../state/targeting';
 import type { RoomPortal } from '../../state/roomPortals';
 
@@ -158,16 +158,27 @@ export function useHoverTargeting(
   // flux tactile. Mêmes sources que le clic. Un mode-CASE du catalogue (Pousser/Téléportation/pose de
   // zone, `tilePreviewAt` #198) PRIME et rend son aperçu même Action consommée / case VIDE (le mode
   // décide, pas ce hook) ; sinon on retombe sur l'aperçu de déplacement NORMAL (mode neutre only).
+  const hoverMovementResolution = useMemo(() => {
+    if (mode !== 'battle' || !battle || battle.over || !effHover || battle.preview || !myTurn) return null;
+    const tp = tilePreviewAt(useGame.getState, effHover);
+    if (tp) return null;
+    if (pendingAttack || pendingDefense || pendingTrample || pendingHeal || pendingCast || pendingCleave || pendingDualStrike) return null;
+    const occ = combatantAtTile(battle.combatants, effHover.x, effHover.y, effHover.z ?? 0);
+    return occ ? null : resolveMovement(useGame.getState, effHover);
+  }, [combatCursor, hover, mode, battle, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
+
   const hoverMove = useMemo<{ kind: 'move' | 'run' | 'tile'; path: Pt[]; cost?: number; label: string } | null>(() => {
     if (mode !== 'battle' || !battle || battle.over || !effHover || battle.preview || !myTurn) return null;
     const tp = tilePreviewAt(useGame.getState, effHover);
     if (tp) return { kind: 'tile', path: tp.path ?? [], cost: tp.cost, label: tp.label };
-    if (pendingAttack || pendingDefense || pendingTrample || pendingHeal || pendingCast || pendingCleave || pendingDualStrike) return null;
-    const occ = combatantAtTile(battle.combatants, effHover.x, effHover.y, effHover.z ?? 0);
-    if (occ) return null; // une cible a sa propre visée (hoverAim)
-    const mv = movePreviewAt(useGame.getState, effHover);
-    return mv ? { kind: mv.kind, path: mv.path, cost: mv.cost, label: mv.kind === 'move' ? `Aller (${mv.cost})` : 'Courir' } : null;
-  }, [combatCursor, hover, mode, battle, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
+    if (hoverMovementResolution?.status !== 'ok') return null;
+    return {
+      kind: hoverMovementResolution.kind,
+      path: hoverMovementResolution.path,
+      cost: hoverMovementResolution.cost,
+      label: hoverMovementResolution.kind === 'move' ? `Aller (${hoverMovementResolution.cost})` : 'Courir',
+    };
+  }, [effHover, mode, battle, myTurn, hoverMovementResolution]);
 
   // Aperçu de DÉPLACEMENT au SURVOL hors combat : même calcul que le clic (moveAlong) — pathTo avec la
   // portée de saut du GROUPE. Memoïsé sur (hover, partyPos, scene) → le BFS ne tourne PAS à la frame.
@@ -185,12 +196,19 @@ export function useHoverTargeting(
   // l'intention SOUS LA SOURIS — un aperçu de la forme tap-1 est synthétisé du survol et passe par la
   // MÊME source (`previewResourceDelta`). Écrit au store seulement quand le delta CHANGE.
   useEffect(() => {
-    const pvLike = hoverAim?.preview ?? (hoverMove && hover && hoverMove.kind !== 'tile' ? { kind: hoverMove.kind, tile: { ...hover }, path: hoverMove.path, cost: hoverMove.cost } : null);
+    const pvLike = hoverAim?.preview ?? (hoverMove && effHover && hoverMove.kind !== 'tile' ? { kind: hoverMove.kind, tile: { ...effHover }, path: hoverMove.path, cost: hoverMove.cost } : null);
     const delta = pvLike && battle ? previewResourceDelta({ ...battle, preview: pvLike as never }) : null;
+    const next = delta
+      ? { ...delta, ...(hoverMovementResolution ? { movement: hoverMovementResolution } : {}) }
+      : hoverMovementResolution
+        ? { action: 0, move: 0, adv: 0, movement: hoverMovementResolution }
+        : null;
     const cur = useGame.getState().hoverDelta;
-    const same = (!delta && !cur) || (!!delta && !!cur && delta.action === cur.action && delta.move === cur.move && delta.adv === cur.adv);
-    if (!same) useGame.setState({ hoverDelta: delta });
-  }, [hoverAim, hoverMove, battle, hover]);
+    const same = (!next && !cur) || (!!next && !!cur
+      && next.action === cur.action && next.move === cur.move && next.adv === cur.adv
+      && next.movement === cur.movement);
+    if (!same) useGame.setState({ hoverDelta: next });
+  }, [hoverAim, hoverMove, hoverMovementResolution, battle, effHover]);
 
   return { hoverAim, hoveredId, hoverMove, explorePath, ghostIds, effHover };
 }

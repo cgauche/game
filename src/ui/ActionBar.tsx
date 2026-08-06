@@ -42,6 +42,7 @@ import { RULE_REF } from '../engine/ruleRefs';
 import { ItemIcon } from './ItemIcon';
 import { Icon } from './Icon';
 import { GatedAction } from './GatedAction';
+import { MovementIntent } from './MovementIntent';
 
 /** Descripteur d'une capacité de la barre : source du rendu ET du clavier (1-9 = n-ième slot).
  *  `done` = l'action est déjà faite ce tour → état visuel du slot (`.hotbar-done` + coche), pas un
@@ -304,6 +305,10 @@ export function ActionBar() {
   // hoverDelta posé par IsoStage) — même source previewResourceDelta, les jauges clignotent pareil.
   const tapDelta = previewResourceDelta(battle);
   const previewDelta = tapDelta.action || tapDelta.move || tapDelta.adv ? tapDelta : hoverDelta ?? tapDelta;
+  const tapMovement = battle.preview?.kind === 'move' || battle.preview?.kind === 'run'
+    ? { status: 'ok' as const, kind: battle.preview.kind, path: battle.preview.path, cost: battle.preview.cost }
+    : null;
+  const movementIntent = tapMovement ?? hoverDelta?.movement ?? null;
   const heroIdx = party.findIndex((h) => h.id === active.id);
   const ring = heroIdx >= 0 ? HERO_RING[heroIdx % HERO_RING.length] : ENEMY_RING;
   // « Assailli ×N » : ennemis (en vie) au contact du héros actif — indice visuel, pas un modificateur.
@@ -613,6 +618,14 @@ export function ActionBar() {
             </div>
           ))}
         </div>
+      )}
+
+      {isHero && movementIntent && (
+        <MovementIntent
+          resolution={movementIntent}
+          remainingBefore={moveLeft}
+          remainingAfter={Math.max(0, moveLeft - previewDelta.move)}
+        />
       )}
 
       <div className="ab-bar">

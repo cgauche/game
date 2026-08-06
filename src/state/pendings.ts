@@ -499,6 +499,8 @@ export interface PendingRun {
   /** Destination demandée (clic dans la zone de Course) : à l'application, on avance le long du chemin
    *  jusqu'au dernier point que le budget du jet (Marche + Course + DR) permet. */
   dest?: Pt;
+  path?: Pt[];
+  cost?: number;
   /** `target` absent sur un résultat synthétique (Résilience pré-jet) — la RollLine retombe sur la base. */
   result: { success: boolean; roll: number; target?: number; dr: number; bonusCases: number } | null;
   rerolled?: boolean;

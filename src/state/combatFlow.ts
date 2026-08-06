@@ -985,22 +985,55 @@ export function castSightBlocked(get: Get, from: Pt, to: Pt): boolean {
  *  le clic-sol (`displayedReach`/`computeRunReach`/`pathTo`, géométrie de la monture incluse) :
  *  l'aperçu ne ment pas. Les gates de COMMIT (Peur à l'approche, Frénésie) restent au clic,
  *  comme pour le tap-1 tactile. null = case non atteignable / pas en mode neutre. */
-export function movePreviewAt(get: Get, pt: Pt): { kind: 'move' | 'run'; path: Pt[]; cost: number } | null {
+export type MovementBlockReason =
+  | 'no-battle'
+  | 'no-scene'
+  | 'combat-over'
+  | 'targeting'
+  | 'no-active'
+  | 'not-controlled'
+  | 'engaged'
+  | 'movement-spent'
+  | 'out-of-range'
+  | 'no-path';
+
+export type MovementResolution =
+  | { status: 'ok'; kind: 'move' | 'run'; path: Pt[]; cost: number }
+  | { status: 'blocked'; reason: MovementBlockReason };
+
+export function resolveMovement(get: Get, pt: Pt): MovementResolution {
   const battle = get().battle;
   const scene = get().scene;
-  if (!battle || !scene || battle.over || battle.action !== null) return null;
+  if (!battle) return { status: 'blocked', reason: 'no-battle' };
+  if (!scene) return { status: 'blocked', reason: 'no-scene' };
+  if (battle.over) return { status: 'blocked', reason: 'combat-over' };
+  if (battle.action !== null) return { status: 'blocked', reason: 'targeting' };
   const active = activeCombatant(battle);
-  if (!active || !controlsCombatant(get(), active) || !active.pos) return null;
-  if (isEngaged(active) || !canMove(battle, active)) return null; // Engagé : le clic route vers le Désengagement
+  if (!active?.pos) return { status: 'blocked', reason: 'no-active' };
+  if (!controlsCombatant(get(), active)) return { status: 'blocked', reason: 'not-controlled' };
+  if (isEngaged(active)) return { status: 'blocked', reason: 'engaged' };
+  if (!canMove(battle, active)) return { status: 'blocked', reason: 'movement-spent' };
   const k = tileKey(pt.x, pt.y, pt.z ?? 0); // z-aware : une case de rempart (z1) ne matche plus la clé « x,y » du sol
   const reach = displayedReach(get);
   const inWalk = reach.has(k);
   const runReach = inWalk ? null : computeRunReach(get);
-  if (!inWalk && !runReach?.has(k)) return null;
+  if (!inWalk && !runReach?.has(k)) return { status: 'blocked', reason: 'out-of-range' };
+  const preview = battle.preview;
+  if ((preview?.kind === 'move' || preview?.kind === 'run')
+    && preview.tile.x === pt.x && preview.tile.y === pt.y && (preview.tile.z ?? 0) === (pt.z ?? 0)) {
+    return { status: 'ok', kind: preview.kind, path: preview.path, cost: preview.cost };
+  }
   const geom = mountOf(battle, active) ?? active;
-  const path = pathTo(scene, active.pos, pt, moveEnv(battle, geom)) ?? [];
-  if (path.length < 2) return null;
-  return { kind: inWalk ? 'move' : 'run', path, cost: (inWalk ? reach.get(k) : runReach!.get(k)) ?? 0 };
+  const path = pathTo(scene, active.pos, pt, moveEnv(battle, geom));
+  if (!path || path.length < 2) return { status: 'blocked', reason: 'no-path' };
+  return { status: 'ok', kind: inWalk ? 'move' : 'run', path, cost: (inWalk ? reach.get(k) : runReach!.get(k)) ?? 0 };
+}
+
+export function movePreviewAt(get: Get, pt: Pt): { kind: 'move' | 'run'; path: Pt[]; cost: number } | null {
+  const resolution = resolveMovement(get, pt);
+  return resolution.status === 'ok'
+    ? { kind: resolution.kind, path: resolution.path, cost: resolution.cost }
+    : null;
 }
 
 /** Ennemis SANS Ligne de Vue depuis le héros actif pour un SORT (LDB 46 l.170) — même grisage
@@ -6942,6 +6975,5 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     }
   }
 }
-
 
 

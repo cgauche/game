@@ -520,7 +520,12 @@ export interface GameState extends RollFlowActionsMap {
   /** Coût/gain (Action/Mouvement/Avantage) de l'intention SOUS LA SOURIS (desktop) — alimente le
    *  clignotant des jauges (ActiveFrame), même source que le tap-1 (`previewResourceDelta`).
    *  Posé par IsoStage au changement de tuile survolée ; null hors survol pertinent. */
-  hoverDelta: { action: number; move: number; adv: number } | null;
+  hoverDelta: {
+    action: number;
+    move: number;
+    adv: number;
+    movement?: import('./combatFlow').MovementResolution;
+  } | null;
   /** Soin de Guérison en cours (modale interactive, combat ou hors-combat). */
   pendingHeal: PendingHeal | null;
   /** Passe de Chirurgie en cours (jet INFLUENÇABLE du chirurgien, modale embarquée dans l'infirmerie). */
@@ -1151,7 +1156,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Avantage dépensé par le Regard pétrifiant (variable, LDB 85 l.238) : 1..advantage → +N DR. */
   maneuverSetAvantage: (n: number) => void;
   /** Course (LDB 15 l.79-82) : ouvrir la modale, lancer le Test d'Athlétisme, Chance/Résilience, appliquer (déplacement étendu). */
-  battleRun: (dest?: Pt) => void;
+  battleRun: (dest?: Pt, movement?: { path: Pt[]; cost: number }) => void;
   /** Manœuvre navale (MDG 13) : ouvre la modale du Test de Navigation pour le navire que sert `crewId`. */
   battleShipManeuver: (crewId: string) => void;
   /** Choix du virage (pré-jet OptionChooser) : crans d'octant (±1 = 45°, ±2 = 90°, 0 = tout droit). */

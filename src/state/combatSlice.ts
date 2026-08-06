@@ -20,7 +20,7 @@ import { continueRiverDayAfterCascade, continueRiverDayAfterExposure } from './r
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc, type Weapon } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castContextMods, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, trampleFreeMove, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, applyCounterspellFallback, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castContextMods, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, trampleFreeMove, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, applyCounterspellFallback, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, resolveMovement, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { losClear } from './lineOfSight';
 import { smokeOf, captureMoveSnapshot } from './combatGeometry';
@@ -29,7 +29,7 @@ import { setTriggeredTestRouter, fireOwnTestFailed } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
 import { EMPTY_FLOW, flowEffects, type Flow } from './flow';
 import { pickActiveModalKey } from './modalArbiter';
-import { mountMovement, canMove, mountUp, dismount, mountOf, mountableNear, isControlledMount, insertByInitiative } from './mount';
+import { mountMovement, mountUp, dismount, mountOf, mountableNear, isControlledMount, insertByInitiative } from './mount';
 import { heroCombatMount } from '../engine/mountTravel';
 import { ev, evLines } from './combatLog';
 import { t } from '../i18n';
@@ -101,7 +101,7 @@ import type {
   ConjureForm,
 } from '../engine/conjuredWeapons';
 import { findSpellById } from '../data/index';
-import { reachable, moveReachFor, pathTo, chebyshev, tileKey, Pt } from './path';
+import { reachable, moveReachFor, chebyshev, Pt } from './path';
 import { combatDistance } from './footprint';
 import { combatOrder } from './combatSetup';
 import { isMerScene, sceneMetresPerTile } from './scene';
@@ -839,25 +839,15 @@ export function createCombatSlice(get: Get, set: Set) {
         startDisengage(get, set, active);
         return;
       }
-      if (!canMove(battle, active)) return;
-      // La case cliquée EST la destination : le franchissement vertical s'auto-dérive du relief le long
-      // du chemin (`pathTo` via `surfaceLink` — rampe/falaise), plus aucun escalier explicite à router.
       const dest = pt;
-      const reach = displayedReach(get);
-      const k = tileKey(dest.x, dest.y, dest.z ?? 0); // clé z-aware (« x,y » au sol, « x,y,z » à l'étage)
-      const inWalk = reach.has(k);
-      // Au-delà de la Marche : zone de COURSE (LDB 15 l.79-82) — le commit demande le Test d'Athlétisme,
-      // et le déplacement réel s'arrêtera là où le jet porte (runConfirm).
-      const runReach = inWalk ? null : computeRunReach(get);
-      if (!inWalk && !runReach?.has(k)) {
-        // Clic hors de toute portée : purge l'aperçu en cours (geste « annuler »).
+      const movement = resolveMovement(get, dest);
+      if (movement.status === 'blocked') {
         if (battle.preview) {
-          set({ battle: { ...battle, preview: null } });
+          set({ battle: { ...battle, preview: null }, hoverDelta: null });
           bus.emit(EVT.SCENE_DIRTY);
         }
         return;
       }
-      const stepCost = (inWalk ? reach.get(k) : runReach!.get(k)) ?? 0; // coût (cases) du segment
       // Peur (LDB 21 l.29) : se RAPPROCHER d'une source de Peur exige un Test de Calme Intermédiaire (+0)
       // — vérifié au COMMIT seulement (l'aperçu reste libre). Une tentative par Tour (battle.fearGate) :
       // succès → approches libres ce Tour ; échec → aucune approche ce Tour.
@@ -885,26 +875,22 @@ export function createCombatSlice(get: Get, set: Set) {
         get().log(t('cs.frenzyMustCharge', { name: active.label, foe: ft.label }));
         return true;
       };
-      // Combat monté : la géométrie (empreinte/collisions) est celle de la MONTURE ; le cavalier la suit.
       const geom = mountOf(battle, active) ?? active;
-      const env = moveEnv(battle, geom);
       const prev = battle.preview;
-      if (!inWalk) {
+      if (movement.kind === 'run') {
         // Zone de Course : tap 1 = aperçu « Courir » ; tap 2 = Test d'Athlétisme (pendingRun + destination).
-        if (!opts?.confirm && !(prev?.kind === 'run' && prev.tile.x === dest.x && prev.tile.y === dest.y)) {
-          const path = pathTo(scene, active.pos!, dest, env) ?? [];
-          set({ battle: { ...battle, preview: { kind: 'run', tile: { ...dest }, path, cost: stepCost } } });
+        if (!opts?.confirm && !(prev?.kind === 'run' && prev.path === movement.path)) {
+          set({ battle: { ...battle, preview: { kind: 'run', tile: { ...dest }, path: movement.path, cost: movement.cost } }, hoverDelta: null });
           bus.emit(EVT.SCENE_DIRTY);
           return;
         }
         if (fearGateBlocks() || frenzyBlocks()) return;
-        get().battleRun({ ...dest }); // ouvre la modale de Course ; le déplacement suivra le jet (runConfirm)
+        get().battleRun({ ...dest }, { path: movement.path, cost: movement.cost });
         return;
       }
       // Tap 1 : APERÇU (chemin + coût) — sauf confirmation directe ou re-tap de la même case.
-      if (!opts?.confirm && !(prev?.kind === 'move' && prev.tile.x === dest.x && prev.tile.y === dest.y)) {
-        const path = pathTo(scene, active.pos!, dest, env) ?? [];
-        set({ battle: { ...battle, preview: { kind: 'move', tile: { ...dest }, path, cost: stepCost } } });
+      if (!opts?.confirm && !(prev?.kind === 'move' && prev.path === movement.path)) {
+        set({ battle: { ...battle, preview: { kind: 'move', tile: { ...dest }, path: movement.path, cost: movement.cost } }, hoverDelta: null });
         bus.emit(EVT.SCENE_DIRTY);
         return;
       }
@@ -914,7 +900,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // positionnel AVANT de bouger, pour pouvoir tout annuler tant qu'aucune Action n'a été prise.
       const snapshot =
         (battle.movementUsed ?? 0) === 0 ? captureMoveSnapshot(battle, get().facing) : battle.moveSnapshot ?? null;
-      const path = pathTo(scene, active.pos!, dest, env);
+      const path = movement.path;
       placeCombatant(active, scene, dest);
       if (geom !== active) placeCombatant(geom, scene, dest); // déplace la monture sous le cavalier (couple solidaire)
       displaceSmaller(get, geom); // un grand « dégage » les plus petits sous son empreinte (85 l.373-374)
@@ -926,7 +912,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // Mouvement décomposable : cumule le coût du segment ; reste en mode neutre → le joueur peut
       // re-cliquer une case (s'il reste du Mouvement) OU enchaîner une Action. Si ce segment précède
       // l'Action, on marque `movedPreAction` (verrouille tout Mouvement post-Action).
-      set({ battle: { ...battle, moveSnapshot: snapshot, movementUsed: (battle.movementUsed ?? 0) + stepCost, movedPreAction: battle.movedPreAction || !battle.acted, action: null, reachable: new Map(), preview: null } });
+      set({ battle: { ...battle, moveSnapshot: snapshot, movementUsed: (battle.movementUsed ?? 0) + movement.cost, movedPreAction: battle.movedPreAction || !battle.acted, action: null, reachable: new Map(), preview: null }, hoverDelta: null });
       bus.emit(EVT.SCENE_DIRTY);
     },
 
@@ -1225,19 +1211,22 @@ export function createCombatSlice(get: Get, set: Set) {
     // ── Course (LDB 15 l.41) : utilise l'Action + un Test d'Athlétisme (+20) → déplacement
     //    étendu (Marche + Course + DR) vers la destination cliquée dans la zone de Course. « Un jet = une
     //    modale » : le Test passe par pendingRun. ──
-    battleRun: (dest?: Pt) => {
+    battleRun: (dest?: Pt, movement?: { path: Pt[]; cost: number }) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const battle = get().battle;
       if (!battle || battle.over || battle.acted || battle.movementUsed > 0) return; // Course = Marche + Action (exige le plein Mouvement)
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active) || isEngaged(active) || hasCondition(active, COND.aTerre) || !canTakeAction(active)) return; // Engagé/À Terre → pas de Course (LDB 16 l.37)
-      set({ pendingRun: { combatantId: active.id, dest, result: null }, battle: { ...battle, action: null, preview: null } });
+      const resolved = dest && !movement ? resolveMovement(get, dest) : null;
+      if (resolved?.status === 'blocked') return;
+      const plan = movement ?? (resolved?.status === 'ok' ? { path: resolved.path, cost: resolved.cost } : undefined);
+      set({ pendingRun: { combatantId: active.id, dest, ...plan, result: null }, battle: { ...battle, action: null, preview: null }, hoverDelta: null });
     },
     runConfirm: () => {
       const { battle, scene, pendingRun: pr } = get();
       if (!battle || !scene || !pr || !pr.result || !pr.dest) return;
       const c = inBattleId(battle, pr.combatantId);
-      set({ pendingRun: null });
+      set({ pendingRun: null, hoverDelta: null });
       if (!c) return;
       // Combat monté : Course au Mouvement de la monture, empreinte/collisions de la monture (couple solidaire).
       const geom = mountOf(battle, c) ?? c;
@@ -1247,7 +1236,8 @@ export function createCombatSlice(get: Get, set: Set) {
       // Le jet peut porter MOINS loin que la destination demandée : on suit le chemin et on s'arrête au
       // dernier point que le budget permet (« au max qu'il puisse faire »).
       const reach = reachable(scene, c.pos!, range, env);
-      const path = pathTo(scene, c.pos!, pr.dest, env) ?? [];
+      const fallback = pr.path ? null : resolveMovement(get, pr.dest);
+      const path = pr.path ?? (fallback?.status === 'ok' ? fallback.path : []);
       let stopIdx = -1;
       for (let i = path.length - 1; i >= 0; i--) {
         if (reach.has(`${path[i].x},${path[i].y}`)) { stopIdx = i; break; }
@@ -1277,7 +1267,7 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ battle: { ...get().battle!, action: null, acted: true, runBudget: range, movementUsed: (battle.movementUsed ?? 0) + cost, reachable: new Map(), preview: null, log } });
       bus.emit(EVT.SCENE_DIRTY);
     },
-    runCancel: () => set({ pendingRun: null }),
+    runCancel: () => set({ pendingRun: null, hoverDelta: null }),
 
     // ── Manœuvre navale (MDG 13) : le barreur (héros ACTIF, à la barre) dépense son Action pour un Test
     //    de Navigation → vire le cap (re-mappe les bordées) + avance la coque. « Un jet = une Action » : le
