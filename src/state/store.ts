@@ -2057,14 +2057,14 @@ export const useGame = create<GameState>((set, get) => ({
     const plan = planFall(scene, from, to);
     if (plan.kind !== 'fall') return; // pas une falaise DESCENDANTE → refus silencieux (aucun marqueur ne s'y affiche)
     set({
-      pendingFall: { combatantId: mover.id, to, metres: plan.metres, attempt: null, result: null },
+      pendingFall: { combatantId: mover.id, to, metres: plan.metres, attempt: null, phase: 'choice', result: null },
       ...(mode === 'battle' && battle ? { battle: { ...battle, action: null, preview: null } } : {}),
     });
   },
   fallChoose: (attempt) => {
     const p = get().pendingFall;
     if (!p || p.result) return;
-    if (attempt) { set({ pendingFall: { ...p, attempt: true } }); return; }
+    if (attempt) { set({ pendingFall: { ...p, attempt: true, phase: 'roll' } }); return; }
     // Saut direct SANS Test (RAW « vous pouvez tenter » — le Test est un CHOIX) : chute PLEINE.
     settleFall(get, set, p, p.metres, false);
   },

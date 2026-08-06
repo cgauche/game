@@ -35,7 +35,15 @@ describe('fallAcross — exploration', () => {
   it('ouvre le choix pré-jet (hauteur RÉELLE, aucun attempt choisi)', () => {
     useGame.getState().fallAcross(top, foot);
     const p = useGame.getState().pendingFall;
-    expect(p).toMatchObject({ metres: 4, attempt: null, result: null });
+    // La PHASE est un champ d'ÉTAT (#1117) : le pending la PORTE, la modale n'a rien à déduire.
+    expect(p).toMatchObject({ metres: 4, attempt: null, phase: 'choice', result: null });
+  });
+
+  it('« Tenter » fait AVANCER la phase d’état : choice → roll (#1117)', () => {
+    useGame.getState().fallAcross(top, foot);
+    expect(useGame.getState().pendingFall!.phase).toBe('choice');
+    useGame.getState().fallChoose(true);
+    expect(useGame.getState().pendingFall!.phase, 'la fenêtre de jet est une PHASE portée par l’état').toBe('roll');
   });
 
   it('geste inapplicable (pas une falaise descendante) → refus silencieux', () => {

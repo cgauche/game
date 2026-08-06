@@ -514,6 +514,10 @@ export interface PendingFall {
   to: Pt;
   metres: number;
   attempt: boolean | null;
+  /** PHASE de la fenêtre — champ d'ÉTAT, jamais une constante de rendu (#1117) : la modale ne déduit
+   *  plus sa phase d'un `attempt === null` lu au site UI. `'choice'` = le menu Sauter / Tenter ;
+   *  `'roll'` = le Test d'Athlétisme ouvert. C'est la moitié « phase » de l'id de jet `{flow, phase}`. */
+  phase: 'choice' | 'roll';
   /** `target` absent sur un résultat synthétique (Résilience pré-jet) — la RollLine retombe sur la base. */
   result: { success: boolean; roll: number; target?: number; dr: number; effectiveMetres: number } | null;
   rerolled?: boolean;

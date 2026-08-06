@@ -30,7 +30,8 @@ export function FallModal() {
   const c = (battle?.combatants ?? party).find((x) => x.id === p.combatantId);
   if (!c) return null;
 
-  if (p.attempt === null) {
+  // La PHASE est un champ d'ÉTAT du pending (#1117) — la fenêtre la LIT, elle ne la déduit pas.
+  if (p.phase === 'choice') {
     return (
       <RollShell
         flowKey="fall"
