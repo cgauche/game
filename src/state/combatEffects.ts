@@ -23,7 +23,7 @@ import { traumaOnImpossibleAmbition } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, giveTrappingLabel, withGiveQualities, autoStowNewItem } from '../engine/items';
 import { trappingById, indiceById } from './campaignData';
 import { revealClue, discreditClue } from './clues';
-import { findCreatureById, findVehicleById, refLabel, WATER_EXPOSURE, diseaseLabel } from '../data';
+import { findCreatureById, findVehicleById, refLabel, WATER_EXPOSURE, diseaseLabel, nightStakeRef } from '../data';
 import { MORALE_BASE } from '../engine/crewMorale';
 import { clampSaboteurDR } from './shipCrew';
 import { harvestSizeOf, harvestYield } from '../engine/harvest';
@@ -1099,7 +1099,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
             id: `expo-${c.id}-${i}`, kind: 'exposure', actorId: c.id, icon: 'rest/cold',
             rollLabel: 'Résistance', label: kind === 'froid' ? 'Exposition (froid)' : 'Exposition (chaleur)',
             base: resVal, difficulty: 'intermediaire', ...(kind === 'froid' ? exposureCoatMods(c) : {}),
-            target, result: null, interactive: true, meta: { kind },
+            target, result: null, interactive: true, meta: { kind }, stake: nightStakeRef('exposure'),
           });
         }
       }

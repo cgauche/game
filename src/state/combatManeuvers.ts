@@ -28,7 +28,7 @@ import { isOutOfAction, applyZeroWounds, stacks, COND, cannotDefend } from '../e
 import { isBestial, traitCapability } from '../engine/traits/dispatch';
 import { isFrenzied } from '../engine/psychology';
 import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../engine/creatureAttacks';
-import { findTalentById, findPsychologyById, findManeuverById, type ManeuverDef, type ManeuverMeasure } from '../data';
+import { findTalentById, findPsychologyById, findManeuverById, combatStakeRef, type ManeuverDef, type ManeuverMeasure } from '../data';
 import { registerCascadeApplier, startCascade } from './cascade';
 import { freeCons } from './rollSeam';
 import { pilotedByHuman } from './netOwnership';
@@ -495,6 +495,7 @@ function openManeuverDefenseCascade(
       base,
       target: base, // Test opposé Intermédiaire (+0) → cible = valeur nue ; l'issue vient de resolveOpposed(aT)
       label: attackerLabel,
+      stake: combatStakeRef('maneuverDefense', { entryId: def.id }),
       meta: {
         opposed: { aT: atk, attackerId: attacker.id, attackerName: attacker.label, attackerLabel },
         maneuverDefense: { attackerId: attacker.id, maneuverId: def.id, indice, spent },

@@ -1243,6 +1243,12 @@ export interface CascadeStepMeta {
   /** Contexte d'une DÉFENSE de manœuvre de zone (applier `maneuverDefense`) : l'attaquant + la manœuvre +
    *  l'indice/l'Avantage. Le jet d'attaquant FIGÉ voyage à côté dans `opposed.aT`. */
   maneuverDefense?: ManeuverDefenseFreeze;
+  /** ENTITÉ SOURCE d'un Test déclenché (`effectSourcesOf` → `TriggeredEffect.source`) : le `kind` de
+   *  source (`trait`/`talent`/`condition`/`symptom`/`quality`/`psychology`/`trapping`) et son id.
+   *  Sérialisée pour que l'enjeu de l'étape (#1117) renvoie à l'entité qui EXIGE le Test — jamais à
+   *  une fiche générique. Ces deux champs sont de l'AFFICHAGE : aucun applier n'en dépend. */
+  sourceKind?: string;
+  sourceEntityId?: string;
   /** RÉFÉRENT des Formules de la branche (« votre Force Mentale » — Forêt d'épines LDB 48 l.749) quand
    *  il DIFFÈRE du combattant qui jette (`hero`) — le LANCEUR d'un effet posé par un tiers (zone de
    *  Sort, Trait déclenché d'un attaquant). Id sérialisable, résolu par l'applier (`actorIn`, combat OU

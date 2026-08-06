@@ -80,6 +80,7 @@ import waterExposureJson from './water-exposure.json';
 import nightStakesJson from './night-stakes.json';
 import voyageStakesJson from './voyage-stakes.json';
 import flowStakesJson from './flow-stakes.json';
+import combatStakesJson from './combat-stakes.json';
 import activitiesStakeJson from './activities.json';
 import axesJson from './axes.json';
 import navalProgressionJson from './naval-progression.json';
@@ -218,6 +219,22 @@ export interface FlowStakeEntry {
 }
 export const FLOW_STAKES = flowStakesJson as FlowStakeEntry[];
 
+/** ENJEU d'un `kind` d'étape de cascade de COMBAT (#1117 L2) — jumeau de `FlowStakeEntry`, keyé par le
+ *  `kind` de l'applier au lieu du couple `{flow, phase}` : cf. `schemas/defs/combat-stakes.ts`. */
+export interface CombatStakeEntry {
+  id: string;
+  label: string;
+  kind: string;
+  template: string;
+  form: 'verbatim' | 'descripteur';
+  rule?: string;
+  ruleCategory?: string;
+  /** Catégorie Codex de l'ENTRÉE jouée — le renvoi descend jusqu'à elle quand la clé la nomme. */
+  entryCategory?: string;
+  source: SourceRef;
+}
+export const COMBAT_STAKES = combatStakesJson as CombatStakeEntry[];
+
 /** ENJEU d'une ACTIVITÉ (#1117 L3) — porté par l'ENTITÉ elle-même (`activities.json`), pas par un
  *  fichier d'enjeux tiers : une Activité EST déjà une entrée Codex éditable qui porte sa règle en
  *  `desc` verbatim. Vue MINIMALE de `ActivityDef` (`src/engine/activities.ts`) réduite aux champs
@@ -237,7 +254,7 @@ const flowKind = (flow: string, phase: string) => `${flow}/${phase}`;
 
 /** DATASET d'enjeux servant une famille de jets (#1117). Union FERMÉE : ajouter une famille = ajouter
  *  son dataset ICI et sa branche dans `resolveStake` — jamais une N-ième porte de résolution. */
-export type StakeDataset = 'night' | 'voyage' | 'weather' | 'flow' | 'activity';
+export type StakeDataset = 'night' | 'voyage' | 'weather' | 'flow' | 'activity' | 'combat';
 
 /** CLÉ d'enjeu — la coordonnée de la DONNÉE, jamais son texte. `entryId` fait DESCENDRE la résolution
  *  à l'ENTRÉE jouée quand elle existe (le symptôme d'une étape de maladie, demain le péril d'une table
@@ -270,6 +287,10 @@ const STAKE_ENTRY_POOLS: Record<string, (id: string) => boolean> = {
   symptoms: (id) => symptoms.some((s) => s.id === id),
   seaShanties: (id) => !!findSeaShantyById(id),
   crewTestTypes: (id) => crewTestTypes.some((t) => t.id === id),
+  maladies: (id) => !!findDiseaseById(id),
+  psychologies: (id) => !!findPsychologyById(id),
+  maneuvers: (id) => !!findManeuverById(id),
+  spells: (id) => !!findSpellById(id),
 };
 
 /** CATALOGUE d'ENTRÉES d'un `kind` : où vit la fiche de l'entrée JOUÉE, quand la clé en nomme une.
@@ -284,6 +305,11 @@ const STAKE_ENTRY_CATALOG: Record<string, { category: string; has: (id: string) 
     (flowStakesJson as FlowStakeEntry[])
       .filter((e) => e.entryCategory)
       .map((e) => [flowKind(e.flow, e.phase), { category: e.entryCategory!, has: STAKE_ENTRY_POOLS[e.entryCategory!] ?? (() => false) }]),
+  ),
+  ...Object.fromEntries(
+    (combatStakesJson as CombatStakeEntry[])
+      .filter((e) => e.entryCategory)
+      .map((e) => [e.kind, { category: e.entryCategory!, has: STAKE_ENTRY_POOLS[e.entryCategory!] ?? (() => false) }]),
   ),
 };
 
@@ -319,6 +345,14 @@ function stakeEntry(key: StakeKey): { text: string; rule?: { category: string; i
     const rule = kindRule(e.rule, e.ruleCategory ?? 'regles');
     return { text: e.template, ...(rule ? { rule } : {}) };
   }
+  if (key.dataset === 'combat') {
+    // COMBAT : `key.kind` = le `kind` de l'applier de cascade. Même règle de foyer que `flow` —
+    // l'ENTRÉE JOUÉE (la maladie contractée, la manœuvre subie, le sort prolongé) prime sur le kind.
+    const e = COMBAT_STAKES.find((x) => x.kind === key.kind);
+    if (!e) return undefined;
+    const rule = kindRule(e.rule, e.ruleCategory ?? 'regles');
+    return { text: e.template, ...(rule ? { rule } : {}) };
+  }
   if (key.dataset === 'activity') {
     // ACTIVITÉS : `key.kind` = l'id de l'`ActivityDef`. Le FOYER par DÉFAUT est l'Activité ELLE-MÊME
     // (catégorie Codex `activities`, où vit sa `desc` verbatim) — une fiche `regles.json` doublon
@@ -341,6 +375,23 @@ export function voyageStakeRef(kind: string, values?: Record<string, string | nu
     throw new Error(`voyageStakeRef('${kind}') : aucun gabarit d'enjeu (voyage-stakes.json) — une étape qui LANCE dit ce qu'elle met en jeu`);
   }
   return { key: { dataset: 'voyage', kind }, ...(values ? { values } : {}) };
+}
+
+/** RÉFÉRENCE d'enjeu de COMBAT (#1117 L2) — patron `voyageStakeRef` : le `kind` se valide À LA
+ *  CONSTRUCTION (fail-closed au plus tôt). `entryId` = l'ENTRÉE JOUÉE quand l'étape en nomme une dans
+ *  son `meta` (la maladie contractée, la manœuvre subie, le sort prolongé) : le renvoi descend alors à
+ *  SA fiche ; un id inconnu replie sur le foyer du `kind` (déclaré, jamais silencieux). */
+export function combatStakeRef(
+  kind: string,
+  opts?: { entryId?: string; values?: Record<string, string | number> },
+): StakeRef {
+  if (!stakeEntry({ dataset: 'combat', kind })) {
+    throw new Error(`combatStakeRef('${kind}') : aucune entrée d'enjeu (combat-stakes.json) — une étape de combat qui LANCE dit ce qu'elle met en jeu`);
+  }
+  return {
+    key: { dataset: 'combat', kind, ...(opts?.entryId ? { entryId: opts.entryId } : {}) },
+    ...(opts?.values ? { values: opts.values } : {}),
+  };
 }
 
 /** RÉFÉRENCE d'enjeu de NUIT — même patron fail-closed que `voyageStakeRef` : le TYPE ferme le

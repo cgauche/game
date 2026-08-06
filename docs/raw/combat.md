@@ -1278,7 +1278,7 @@ L'Empoignade fonctionne entièrement via l'État _Empêtré_ infligé. Sa défin
 **Voir aussi** : Combat à mains nues (Bagarre), État Empêtré, Avantage, Tests opposés et Degrés de Réussite (DR), Localisation (dé inversé), Combat monté, Trait Constriction.
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 14` (l.155, l.159, l.161, l.163, l.185-186, l.188-189, l.191, l.193, l.195, l.197, l.199, l.201-202) → `advantageCap`, `advantageCapFor`, `GrappleModal`, `areGrappling`, `ActiveFrame`, `combat-deux-armes`, `setGrapple`, `scatter`, `main-secondaire`, `combatOrder`, +49 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/advantage.ts`, +27 fichiers
-- `LDB 16` (l.62, l.86-87) → `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `brise`, `recoveryTarget`, `Condition`, `aaBleedUnconsciousDue`, `tileSeenByFoe`, `describeStateRecovery`, +25 — `src/data/etats.json`, `src/data/flow-stakes.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, +14 fichiers
+- `LDB 16` (l.62, l.86-87) → `combat-fatigue`, `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `brise`, `recoveryTarget`, `Condition`, `aaBleedUnconsciousDue`, `tileSeenByFoe`, +26 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, +15 fichiers
 
 ---
 
@@ -3150,7 +3150,7 @@ L'aventure de départ **Aventures à Übersreik** rassemble les Traits d'un mons
 **Voir aussi** : Souffle (Indice)(Type) ; Regard pétrifiant ; Étreinte glaciale ; Hurlement fantomatique ; Vomissement ; Trait Taille (Piétinement, multiplicateur de Dégâts) ; États Empêtré / Empoisonné / À Terre ; Empoignade ; Charge et Avantage.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.68-74, l.86-87) → `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `brise`, `recoveryTarget`, `aaBleedUnconsciousDue`, `Condition`, `describeStateRecovery`, `PendingStateRecovery`, +21 — `src/data/etats.json`, `src/data/flow-stakes.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, +12 fichiers
+- `LDB 16` (l.68-74, l.86-87) → `combat-fatigue`, `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `brise`, `recoveryTarget`, `aaBleedUnconsciousDue`, `Condition`, `describeStateRecovery`, +22 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, +13 fichiers
 - `LDB 85` (l.8-9, l.32-35, l.43, l.46-47, l.74-75, l.82-83, l.193-194, l.210-213, l.237, l.388, l.389, l.405, l.408, l.451) → `a-distance`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `TraumaFiche`, `amphibie`, `applySwarmBuild`, `weaponFromTrait`, `animosite`, `arboricole`, +83 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +17 fichiers
 - sans code : `AU1 4` (l.9, l.12)
 
@@ -3552,7 +3552,7 @@ La créature est **porteuse de la maladie _Type_**. **Les autres doivent faire u
 **Voir aussi** : États (Brisé, Sonné, Inconscient, Exténué) ; Frénésie et Avantage ; Peur, Terreur et Calme ; Corruption et mutations ; Maladies et Contraction ; Taille des créatures (Peur/Terreur par catégorie) ; Test étendu et Degrés de Réussite.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 19` (l.34-58) → `CorruptionModal`, `sombre-pacte`, `EXPOSURE_LADDER`, `MANUAL_COMBAT_INTENTS`, `physique`, `schema`, `corruption-mineure`, `corruption-moderee`, `corruption-majeure`, `corruption-seuil`, +13 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/mutationTables.json`, `src/data/regles.json`, `src/data/schemas/defs/arcane-phenomena.ts`, `src/data/trappings.json`, +10 fichiers
+- `LDB 19` (l.34-58) → `CorruptionModal`, `sombre-pacte`, `combat-end-corruption`, `EXPOSURE_LADDER`, `MANUAL_COMBAT_INTENTS`, `physique`, `schema`, `corruption-mineure`, `corruption-moderee`, `corruption-majeure`, +14 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/mutationTables.json`, `src/data/regles.json`, `src/data/schemas/defs/arcane-phenomena.ts`, +11 fichiers
 - `LDB 21` (l.9, l.20, l.21, l.23-25, l.27, l.29-35, l.37-39, l.41-51, l.54-57) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `openScriptedPsych`, `calme-d-approche`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, +44 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +22 fichiers
 - `LDB 85` (l.5, l.13, l.17, l.25, l.51, l.59, l.71, l.87, l.92, l.110, l.142, l.150, l.165, l.179, l.185, l.221, l.225, l.249, l.253, l.262, l.264, l.274, l.282, l.334, l.335, l.383, l.411) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `creatureWeapon`, `TraumaFiche`, `cannotStopOn`, `StatblockEditor`, +123 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +23 fichiers
 
@@ -4070,7 +4070,7 @@ Le système redéfinit l'État _Hémorragique_ :
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `AA 6` (l.554-558) → `commander-la-legion`, `terrifier-l-ennemi`, `en-bon-ordre`, `connais-ton-ennemi`, `en-terrain-dangereux`, `frappe-rapide`, `devotion-de-la-vierge-guerriere`, `prouesses-martiales`, `fureur-vengeresse` — `src/data/spells.json`
-- `AA 7` (l.4-10, l.17-21, l.23-25, l.28-32, l.35-36, l.39-42, l.48-57, l.58-61, l.64-67, l.69-75, l.78-79, l.82-104, l.105-131, l.132-159, l.160-185) → `StructureCritEntry`, `critEscalationSchema`, `healDifficulty`, `amputationSchema`, `CritEscalation`, `retenir-ses-coups`, `attackHandGate`, `resolveAACritical`, `MODAL_DEFS`, `aaBleedUnconsciousDue`, +22 — `src/data/criticals.ts`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/structureCriticals.ts`, `src/engine/aaCritical.ts`, +14 fichiers
+- `AA 7` (l.4-10, l.17-21, l.23-25, l.28-32, l.35-36, l.39-42, l.48-57, l.58-61, l.64-67, l.69-75, l.78-79, l.82-104, l.105-131, l.132-159, l.160-185) → `StructureCritEntry`, `critEscalationSchema`, `healDifficulty`, `amputationSchema`, `CritEscalation`, `retenir-ses-coups`, `attackHandGate`, `resolveAACritical`, `MODAL_DEFS`, `aaBleedUnconsciousDue`, +22 — `src/data/combat-stakes.json`, `src/data/criticals.ts`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/structureCriticals.ts`, +15 fichiers
 - sans code : `ADE II 4` (l.147)
 
 ---
@@ -4201,7 +4201,7 @@ Le **Tableau des Armes de Base** d'*Aux Armes* utilise ces nouveaux Atouts. Extr
 **Voir aussi** : LDB — États (Hémorragique, Inconscient, Exténué, À Terre, Empoisonné) ; LDB 13 — Combat & Critiques ; LDB 62 — Atouts/Défauts d'arme (Protectrice/Défensive/Taille version Livre de Base) ; AA — Atouts à distance (Salve, etc.) ; LDB 18 — Traumatisme (Blessures Critiques).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 7` (l.4-10, l.31) → `healDifficulty`, `aaBleedUnconsciousDue`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, `collectHeroRoundEndUpkeep`, `tickDeath`, `createCombatSlice` — `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/state/combat/roundHooks.ts`, `src/state/combatSlice.ts`
+- `AA 7` (l.4-10, l.31) → `healDifficulty`, `aaBleedUnconsciousDue`, `aaBleedUnconsciousApply`, `OPTIONAL_RULES`, `collectHeroRoundEndUpkeep`, `tickDeath`, `createCombatSlice` — `src/data/combat-stakes.json`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/state/combat/roundHooks.ts`, `src/state/combatSlice.ts`
 - `AA 8` (l.67-76, l.79-81, l.83-85, l.87, l.89-95, l.98-108, l.131-147) → `taillade`, `precise`, `inoffensive`, `perforante`, `a-terre`, `tir-de-zone`, `desequilibree`, `protectrice`, `percutante`, `empaleuse`, +1 — `src/data/qualities.json`, `src/data/trappings.json`
 
 ---

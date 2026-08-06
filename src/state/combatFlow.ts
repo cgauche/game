@@ -131,7 +131,7 @@ import {
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep, easeDifficulty, hydrateTR } from '../engine/tests';
 import { effectiveChar, bonus, volatileCharLines } from '../engine/characteristics';
 import { testValue, skillBaseValue, type SupportDetail } from '../engine/skills';
-import { findManeuverById, findDomainById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, GRAPPLE, type SpellData, type ManeuverDef } from '../data';
+import { findManeuverById, findDomainById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, combatStakeRef, GRAPPLE, type SpellData, type ManeuverDef } from '../data';
 import { applyHullCritical, exposedCrew } from '../engine/shipCritical';
 import { endShanty, resolveShipUnits } from './shipCrew';
 import { beginShipwreck } from './shipwreck';
@@ -5412,6 +5412,7 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
         id: `combatEndDisease-${c.id}-${d.disease}`, kind: 'combatEndDisease', actorId: c.id, icon: 'medical/infection',
         rollLabel: 'Résistance', base: resVal, target: resVal + DIFFICULTY_MODIFIERS[d.difficulty] + combatTestPenalty(c),
         label: d.label, meta: { disease: d.disease, ...(d.instant ? { instant: true } : {}) },
+        stake: combatStakeRef('combatEndDisease', { entryId: d.disease }),
         menace: 'maladie', // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
       });
     }
@@ -5421,6 +5422,9 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
         id: `combatEndCorruption-${c.id}`, kind: 'combatEndCorruption', actorId: c.id, icon: 'nav/mutation',
         rollLabel: 'Résistance', base: res, target: res + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(c),
         label: `Exposition à la Corruption (${corr.label})`, meta: { level: corr.level, exposureLabel: corr.label },
+        // L'enjeu DIT le coût de l'échec, lu à l'applier : `corruptionGain(niveau, false, …)` est constant
+        // par niveau (1/2/3) — la valeur interpolée vient donc du MÊME calcul que la conséquence.
+        stake: combatStakeRef('combatEndCorruption', { values: { niveau: corr.label, gainEchec: corruptionGain(corr.level, false, 0) } }),
         menace: 'corruption', // Test d'Exposition = « résister à la Corruption » (Résistance (Menace), LDB 10)
       });
     }
@@ -5482,6 +5486,7 @@ export function openContractionCascade(get: Get, set: SetFn, patient: Combatant,
       id: `infection-${patient.id}-${disease}`, kind: 'combatEndDisease', actorId: patient.id, icon: 'medical/infection',
       rollLabel: 'Résistance', base: resVal, difficulty, target: resVal + DIFFICULTY_MODIFIERS[difficulty],
       label: title, result: null, interactive: true, meta: { disease }, menace: 'maladie',
+      stake: combatStakeRef('combatEndDisease', { entryId: disease }),
     }],
   });
 }

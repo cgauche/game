@@ -31,6 +31,7 @@ import { sceneMetresPerTile } from '../scene';
 import { rule } from '../../engine/policy';
 import { rollWindsOfMagic, hasSecondeVue } from '../../engine/windsOfMagic';
 import { groupAdvantage } from '../../engine/advantagePool';
+import { combatStakeRef } from '../../data';
 import { t } from '../../i18n';
 import type { Combatant, ActiveEffect } from '../../engine/types';
 import type { CascadeStep } from '../pendings';
@@ -359,7 +360,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: 
   //    le héros manuel). Le résolveur générique de cascade tire le Test sur `target` ; l'applier applique.
   if (rule('combat-aa-blessures') === 'aa' && aaBleedUnconsciousDue(c)) {
     const res = testValue(c, 'resistance');
-    steps.push({ id: `aaBleed-${c.id}`, kind: 'aaBleedUnconscious', actorId: c.id, icon: 'condition/bleeding', rollLabel: 'Résistance', base: res, target: res, label: 'Perte de sang' });
+    steps.push({ id: `aaBleed-${c.id}`, kind: 'aaBleedUnconscious', actorId: c.id, icon: 'condition/bleeding', rollLabel: 'Résistance', base: res, target: res, label: 'Perte de sang', stake: combatStakeRef('aaBleedUnconscious') });
   }
   // (Mâchoires d'acier n'est PLUS un Test de fin de Round : c'est un effet `onGainCondition` data-driven,
   //  déclenché à l'acquisition du Sonné — cf. talents.json + brique `combat/triggeredTest`.)
@@ -369,7 +370,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: 
   //    n'émet l'étape que si le seuil est atteint (Test de Résistance différé).
   if (rule('combat-se-fatiguer') && (c.effortRounds ?? 0) >= fatigueThreshold(c)) {
     const res = testValue(c, 'resistance');
-    steps.push({ id: `fatigue-${c.id}`, kind: 'fatigue', actorId: c.id, icon: 'condition/fatigued', rollLabel: 'Résistance', base: res, target: res, label: 'Effort soutenu' });
+    steps.push({ id: `fatigue-${c.id}`, kind: 'fatigue', actorId: c.id, icon: 'condition/fatigued', rollLabel: 'Résistance', base: res, target: res, label: 'Effort soutenu', stake: combatStakeRef('fatigue') });
   }
   // 4) Durée « + » (LDB 47 l.311) : effets GELÉS (spell source marqué) — « vous POUVEZ effectuer un Test
   //    de Force Mentale pour prolonger » = décision OPT-IN, étape de CHOIX (Oui/Renoncer) ; sur Oui,
@@ -440,7 +441,7 @@ registerCascadeApplier('spellPlusChoice', (get, set, step, hero) => {
     pushCombatStep(set, {
       id: `spellPlusTest-${hero.id}-${spellId}`, kind: 'spellPlusTest', actorId: hero.id,
       icon: 'nav/dice', rollLabel: 'Force Mentale', base, target: base, label: `Prolonger ${effect.label}`,
-      meta: { sourceSpellId: spellId },
+      meta: { sourceSpellId: spellId }, stake: combatStakeRef('spellPlusTest', { entryId: spellId }),
     });
     return;
   }

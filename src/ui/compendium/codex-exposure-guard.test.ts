@@ -92,6 +92,7 @@ const FILE_TO_CATEGORY_KEYS: Record<string, string[]> = {
   'night-stakes.json': ['nightStakes'],
   'voyage-stakes.json': ['voyageStakes'],
   'flow-stakes.json': ['flowStakes'],
+  'combat-stakes.json': ['combatStakes'],
   'obsessions.json': ['obsessions'],
   'oups.json': ['oups'],
   'peripeties.json': ['peripeties'],

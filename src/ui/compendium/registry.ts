@@ -1283,6 +1283,14 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       id: e.id, label: e.label, sub: `${e.flow}/${e.phase}`, desc: e.template, source: src(e.source),
     })),
   },
+  {
+    // Quatrième dataset de la famille (#1117 L2) : l'enjeu d'une étape de cascade de COMBAT, keyé par
+    // le `kind` de son applier. Éditable comme ses jumeaux — descripteur mécanique lu à l'applier.
+    key: 'combatStakes', label: 'Enjeux — cascade de combat', group: 'Tables', sourceRef: 'LDB 16/19/20/47/85 · AA 07',
+    build: () => datasetArray('combatStakes').map((e) => ({
+      id: e.id, label: e.label, sub: e.kind, desc: e.template, source: src(e.source),
+    })),
+  },
 
   {
     key: 'races', label: 'Races', group: 'Personnage',

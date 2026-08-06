@@ -1,0 +1,83 @@
+[
+  {
+    "id": "combat-end-disease",
+    "label": "Contraction d’une maladie",
+    "kind": "combatEndDisease",
+    "template": "Échec : la maladie est contractée — incubation, puis ses symptômes. Réussite : aucune infection.",
+    "form": "descripteur",
+    "entryCategory": "maladies",
+    "source": {
+      "book": "livre-de-base",
+      "page": 187,
+      "note": "LDB 20 l.25 — « Contraction : sur un échec d’un Test de Résistance … après un combat »"
+    }
+  },
+  {
+    "id": "combat-end-corruption",
+    "label": "Exposition à la Corruption",
+    "kind": "combatEndCorruption",
+    "template": "Échec : {gainEchec} point(s) de Corruption (exposition {niveau}) — au seuil, une mutation.",
+    "form": "descripteur",
+    "rule": "influences-corruptrices",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 182,
+      "note": "LDB 19 l.27-29"
+    }
+  },
+  {
+    "id": "combat-fatigue",
+    "label": "Effort soutenu",
+    "kind": "fatigue",
+    "template": "Échec : État Exténué. Réussite : le compteur d’effort baisse d’autant de Rounds que le DR.",
+    "form": "descripteur",
+    "rule": "extenue",
+    "ruleCategory": "etats",
+    "source": {
+      "book": "livre-de-base",
+      "page": 168,
+      "note": "LDB 16 l.97"
+    }
+  },
+  {
+    "id": "combat-aa-bleed",
+    "label": "Perte de sang",
+    "kind": "aaBleedUnconscious",
+    "template": "Échec : État Inconscient. Réussite : vous tenez bon ce Round — le Test revient au suivant tant que l’Hémorragie dure.",
+    "form": "descripteur",
+    "rule": "inconscient",
+    "ruleCategory": "etats",
+    "source": {
+      "book": "aux-armes",
+      "page": 61,
+      "note": "AA 07 l.5"
+    }
+  },
+  {
+    "id": "combat-spell-plus",
+    "label": "Prolonger un sort (Durée +)",
+    "kind": "spellPlusTest",
+    "template": "Réussite : l’effet dure un Round de plus. Échec : il expire normalement.",
+    "form": "descripteur",
+    "entryCategory": "spells",
+    "source": {
+      "book": "livre-de-base",
+      "page": 236,
+      "note": "LDB 47 l.311"
+    }
+  },
+  {
+    "id": "combat-maneuver-defense",
+    "label": "Défense contre une manœuvre",
+    "kind": "maneuverDefense",
+    "template": "Test opposé — vous l’emportez : la manœuvre est déjouée. L’attaquant l’emporte : ses effets s’appliquent, d’autant plus forts que sa marge de DR est grande.",
+    "form": "descripteur",
+    "entryCategory": "maneuvers",
+    "source": {
+      "book": "livre-de-base",
+      "page": 85,
+      "note": "LDB 85"
+    }
+  }
+]

@@ -9,9 +9,9 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
-  NIGHT_STAKES, VOYAGE_STAKES, FLOW_STAKES,
+  NIGHT_STAKES, VOYAGE_STAKES, FLOW_STAKES, COMBAT_STAKES,
   regles, skills, symptoms, etats, talents, qualities, spells,
-  characteristics, psychologies, seaShanties, crewTestTypes,
+  characteristics, psychologies, seaShanties, crewTestTypes, maladies, maneuvers, resolveStake,
 } from './index';
 import { STEAM_BREAKDOWNS } from '../engine/shipBuild';
 
@@ -56,11 +56,11 @@ describe('cliquet — un enjeu porte sa RÈGLE (#1117)', () => {
     // passent par le MÊME contrôle — un renvoi mort est un renvoi mort, quelle que soit la famille.
     const FOYERS: Record<string, { id: string }[]> = {
       regles, skills, symptoms, etats, talents, qualities, spells,
-      characteristics, psychologies, seaShanties, crewTestTypes,
+      characteristics, psychologies, seaShanties, crewTestTypes, maladies, maneuvers,
       steamBreakdowns: STEAM_BREAKDOWNS,
     };
     const cat = (e: { ruleCategory?: string | undefined }) => e.ruleCategory ?? 'regles';
-    const morts = [...NIGHT_STAKES, ...VOYAGE_STAKES, ...FLOW_STAKES]
+    const morts = [...NIGHT_STAKES, ...VOYAGE_STAKES, ...FLOW_STAKES, ...COMBAT_STAKES]
       .filter((e) => e.rule && !(FOYERS[cat(e as { ruleCategory?: string })] ?? []).some((x) => x.id === e.rule))
       .map((e) => `${e.id} → ${cat(e as { ruleCategory?: string })}:${e.rule}`);
     expect(morts, 'renvoi vers un foyer inexistant').toEqual([]);
@@ -100,5 +100,35 @@ describe('cliquet — un enjeu porte sa RÈGLE (#1117)', () => {
   it('chaque enjeu de modale mono porte SA porte (foyer ou entrée)', () => {
     const sans = FLOW_STAKES.filter((e) => !e.entryCategory && !(e.rule && e.ruleCategory)).map((e) => e.id);
     expect(sans, 'enjeu de modale mono sans foyer ni catégorie d’entrée').toEqual([]);
+  });
+
+  /** Même contrat pour la cascade de COMBAT (#1117 L2) : le dataset naît sans dette. */
+  it('chaque enjeu de combat porte SA porte (foyer ou entrée)', () => {
+    const sans = COMBAT_STAKES.filter((e) => !e.entryCategory && !(e.rule && e.ruleCategory)).map((e) => e.id);
+    expect(sans, 'enjeu de combat sans foyer ni catégorie d’entrée').toEqual([]);
+  });
+
+  /** Une `entryCategory` ne vaut que si le RÉSOLVEUR sait l'interroger (`STAKE_ENTRY_POOLS`,
+   *  `src/data/index.ts`) : sinon le renvoi replie SILENCIEUSEMENT sur le foyer du kind — le repli
+   *  déclaré deviendrait un repli subi. Mesuré SUR LE CHEMIN RÉEL (`resolveStake` avec un id VRAI de
+   *  la catégorie), jamais sur une copie parallèle de la table de pools. */
+  it('chaque `entryCategory` déclarée fait DESCENDRE le renvoi à l’entrée jouée', () => {
+    const POOLS: Record<string, { id: string }[]> = { symptoms, seaShanties, crewTestTypes, maladies, psychologies, maneuvers, spells };
+    const muettes: string[] = [];
+    for (const [dataset, e] of [
+      ...FLOW_STAKES.map((x) => ['flow' as const, x] as const),
+      ...COMBAT_STAKES.map((x) => ['combat' as const, x] as const),
+    ]) {
+      if (!e.entryCategory) continue;
+      const pool = POOLS[e.entryCategory];
+      if (!pool?.length) { muettes.push(`${e.id} → catégorie « ${e.entryCategory} » inconnue du test`); continue; }
+      const entryId = pool[0].id;
+      const kind = 'flow' in e ? `${(e as { flow: string }).flow}/${(e as { phase: string }).phase}` : (e as { kind: string }).kind;
+      const rule = resolveStake({ key: { dataset, kind, entryId } }).rule;
+      if (rule?.category !== e.entryCategory || rule.id !== entryId) {
+        muettes.push(`${e.id} → attendu ${e.entryCategory}:${entryId}, obtenu ${rule ? `${rule.category}:${rule.id}` : 'aucun renvoi'}`);
+      }
+    }
+    expect(muettes, 'entryCategory sans pool dans le résolveur : le renvoi replie en silence sur le kind').toEqual([]);
   });
 });

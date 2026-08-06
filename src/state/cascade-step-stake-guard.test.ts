@@ -89,7 +89,7 @@ export function stepsWithoutStake(src: string): number[] {
 /** Baseline NOMINATIVE (fichier → étapes qui lancent, encore sans enjeu). ZÉRO ailleurs.
  *  Stock RE-MESURÉ le 2026-08-06 (#1117 L2) à la FORME : l'ancienne mesure filtrait sur
  *  `interactive: true` + `result: null`, deux champs qui ne gouvernent pas le rendu d'une étape mono
- *  (cf. en-tête) — 11 sites vus, 27 réels. */
+ *  (cf. en-tête) — 11 sites vus, 27 réels, dont 9 dotés par la vague de curation `combat-stakes`. */
 const BASELINE: Record<string, number> = {
   // VOYAGE (fluvial + maritime) = 0 : le périmètre soldé par #1117.
   // Une ACTIVITÉ en mer (MDG 15 l.266-306) est un CHOIX du joueur : ce qu'elle met en jeu EST
@@ -101,16 +101,13 @@ const BASELINE: Record<string, number> = {
   'travelPostes.ts': 1, // Exposition de fin d'Étape terrestre
   'shipwreck.ts': 1, // Natation du naufrage
   'embrigadementFlow.ts': 2, // Ragot + Discrétion de l'embrigadement
-  'pursuitFlow.ts': 1, // manche de poursuite terrestre
-  'rollSeam.ts': 1, // PORTE générique du seam (`buildMonoStep`) : l'enjeu vient du flux appelant
-  // COMBAT (#1117 L2) — foyers d'entité MESURÉS le 2026-08-06, curation à venir :
-  'combatEffects.ts': 2, // exposition de scène (kind `exposure`, applier de nuit) + exposition hydrique
-  'combatFlow.ts': 4, // contraction de maladie ×2, exposition à la Corruption, Psychologie de combat
-  'combatManeuvers.ts': 1, // défense contre une manœuvre de zone
-  'combat/roundHooks.ts': 3, // perte de sang AA, effort soutenu, prolongation « Durée + »
-  'combat/triggeredTest.ts': 2, // Test déclenché en DONNÉES (simple + opposé) — enjeu CALCULÉ depuis ses ops
-  'combat/turnHooks.ts': 1, // gate d'Action par Round (op `actGate`)
-  'encounterPsychFlow.ts': 2, // Peur/Terreur de rencontre (scriptée + naturelle)
+  'pursuitFlow.ts': 1, // manche de poursuite terrestre (LDB 15 : aucune fiche de règle encore curée)
+  // COMBAT — reste du stock mesuré, chacun avec le VERROU qui l'empêche d'être doté aujourd'hui :
+  'combatEffects.ts': 1, // exposition hydrique MSRC 16 : aucun foyer (fiche verbatim à curer)
+  'combatFlow.ts': 1, // Psychologie de combat : l'enjeu doit vivre SUR la psychologie jouée (patron `ActivityDef.stake`)
+  'combat/triggeredTest.ts': 2, // Test déclenché en DONNÉES : régime `calcule` (ops de `meta.onSuccess`/`onFail`)
+  'combat/turnHooks.ts': 1, // gate d'Action : l'`ActiveEffect` porteur n'expose pas l'id de sa source
+  'encounterPsychFlow.ts': 2, // Peur/Terreur de rencontre : même verrou que la Psychologie de combat
 };
 
 describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', () => {

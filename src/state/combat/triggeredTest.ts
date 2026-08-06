@@ -219,7 +219,11 @@ export function collectRoundEndTestSteps(get: Get, c: Combatant): CascadeStep[] 
         });
         continue;
       }
-      steps.push(simpleTriggeredTestStep(c, ft, { onSuccess: eff.flow.success, onFail: eff.flow.fail }, EMPTY_FLOW, resolveTestDifficulty(ft, cc)));
+      // L'ENTITÉ SOURCE voyage dans le `meta` (déjà estampillée par `withSource`) : c'est la
+      // coordonnée `entryId` du contrat d'enjeu (#1117) — le renvoi d'un Test déclenché doit viser
+      // l'État/le Trait/le Talent/le symptôme qui l'exige, jamais une fiche générique.
+      steps.push(simpleTriggeredTestStep(c, ft, { onSuccess: eff.flow.success, onFail: eff.flow.fail }, EMPTY_FLOW, resolveTestDifficulty(ft, cc),
+        eff.source ? { sourceKind: eff.source.kind, sourceEntityId: eff.source.id } : {}));
     }
   }
   return [...steps, ...optional];

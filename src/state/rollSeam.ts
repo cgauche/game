@@ -46,7 +46,7 @@ import { testValue, partyBest, partyAssisted, type SupportDetail } from '../engi
 import { humanControlled, pilotedByHuman } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
-import { findSkillById, conditionLabel } from '../data';
+import { findSkillById, conditionLabel, type StakeRef } from '../data';
 import { t, type OutKey, type OutVars } from '../i18n';
 import { rollTest, clampTarget } from '../engine/tests';
 import { defaultRNG, type RNG } from '../engine/dice';
@@ -86,6 +86,11 @@ export interface RollRequest {
   klass: RollClass;
   /** Requis pour un `batch`/multi ; défaut `summed-dr` (Test d'équipage, MDG 14). */
   aggregate?: RollAggregate;
+  /** ENJEU du jet (#1117) — RÉFÉRENCE de donnée produite par une porte d'enjeu (`combatStakeRef`,
+   *  `nightStakeRef`, `voyageStakeRef`…), jamais un texte : la porte du seam la POSE telle quelle sur
+   *  l'étape qu'elle construit (mono comme batch). C'est ici que le flux appelant dit ce qu'il met en
+   *  jeu — `buildMonoStep` est générique et n'a aucun moyen de le deviner. */
+  stake?: StakeRef;
 }
 
 /** Trois surfaces (Décision 3) : Modale influençable / Visible-lançable MJ / Inline-PV. */
@@ -313,6 +318,7 @@ function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeS
     result: null,
     interactive: true,
     menace: req.test.menace,
+    ...(req.stake ? { stake: req.stake } : {}),
     meta,
   };
 }
@@ -334,6 +340,7 @@ function buildBatchStep(get: Get, req: RollRequest, kind: string, meta?: Cascade
     participants,
     aggregate: req.aggregate ?? 'summed-dr',
     interactive: true,
+    ...(req.stake ? { stake: req.stake } : {}),
     meta,
   };
 }
