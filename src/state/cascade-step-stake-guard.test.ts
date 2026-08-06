@@ -97,11 +97,9 @@ export function stepsWithoutStake(src: string): number[] {
  * `openRoll` construit l'étape à partir d'elle, donc un `RollRequest` muet produit une étape muette
  * que le scan d'étapes ci-dessus ne peut pas voir (le littéral d'étape est DANS le seam, générique).
  *
- * ARBITRAGE (#1117 vague 3, question « `RollRequest.stake` devient-il REQUIS ? ») : NON aujourd'hui —
- * le rendre requis au TYPE bloquerait tout appelant dont l'enjeu n'est pas encore curé (dette
- * transformée en blocage, pas en dotation). Le stock est donc ÉNUMÉRÉ ici et DÉCROISSANT ; le champ
- * se fermera au type le jour où cette baseline atteint 0 — le critère est mesurable, pas une
- * intention.
+ * CONTRAT (#1117 vague 3, « `RollRequest.stake` devient-il REQUIS ? ») : le champ reste optionnel au
+ * TYPE tant que la baseline ci-dessous est peuplée, et s'y ferme le jour où elle atteint 0. La garde
+ * rend le critère mesurable : tout site soldé s'y retire, tout site neuf muet ROUGIT.
  */
 export function rollRequestsWithoutStake(src: string): number[] {
   const s = stripLiterals(src);
