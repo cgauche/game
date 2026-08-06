@@ -110,7 +110,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Voir aussi** : tables complètes → [combat.md § Critiques](combat.md#critiques-et-frappe-mortelle) ; Fractures → [§ 7](#7-fractures-mineure--majeure) ; Déchirures → [§ 8](#8-déchirures-musculaires-mineure--majeure) ; Amputations → [§ 9](#9-amputation--choc-traitement-et-séquelles-permanentes).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `dechirure-autre-mineure`, `aveugle`, `CritEscalation`, `fracture-torse-mineure`, `trauma-fracture`, `assourdi`, `fracture-torse-majeure`, +54 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, +11 fichiers
+- `LDB 18` (l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `dechirure-autre-mineure`, `aveugle`, `CritEscalation`, `fracture-torse-mineure`, `assourdi`, `trauma-fracture`, `fracture-torse-majeure`, +54 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, +11 fichiers
 
 ---
 

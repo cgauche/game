@@ -175,8 +175,11 @@ export interface NightStakeEntry {
    *  Source, bloc par bloc ; `descripteur` = assemblage mécanique assumé, fiche `rule` exigée. */
   form?: 'verbatim' | 'descripteur';
   source: SourceRef;
-  /** Fiche de règle du Codex derrière l'étape (`regles.json`). */
+  /** FOYER de la règle derrière l'étape : l'id de l'ENTITÉ qui la porte (amendement A) — une fiche
+   *  `regles.json` seulement quand aucune entité ne l'héberge. */
   rule?: string;
+  /** Catégorie Codex du foyer (`'regles'` par défaut : `'skills'`, `'etats'`, `'symptoms'`…). */
+  ruleCategory?: string;
 }
 export const NIGHT_STAKES = nightStakesJson as NightStakeEntry[];
 
@@ -243,11 +246,12 @@ function entryRule(key: StakeKey): { category: string; id: string } | undefined 
 function stakeEntry(key: StakeKey): { text: string; rule?: { category: string; id: string } } | undefined {
   // La fiche de l'ENTRÉE jouée PRIME sur celle du `kind` (une étape « Blessé » renvoie au symptôme
   // Blessé, pas à l'intro du chapitre des maladies) ; à défaut, la fiche du kind.
-  const kindRule = (id?: string) => entryRule(key) ?? (id ? { category: 'regles', id } : undefined);
+  const kindRule = (id?: string, category = 'regles') => entryRule(key) ?? (id ? { category, id } : undefined);
   if (key.dataset === 'night') {
     const e = NIGHT_STAKES.find((x) => x.kind === key.kind);
     if (!e) return undefined;
-    const rule = kindRule(e.rule);
+    // Le FOYER peut être une entité (compétence, État, symptôme) — sa catégorie voyage avec l'id.
+    const rule = kindRule(e.rule, e.ruleCategory ?? 'regles');
     return { text: e.stake, ...(rule ? { rule } : {}) };
   }
   if (key.dataset === 'weather') {

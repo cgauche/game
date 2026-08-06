@@ -25,9 +25,14 @@ export const schema = z.array(
      *  La garde distingue les deux STRUCTURELLEMENT : un assemblage non déclaré échoue. */
     form: z.enum(['verbatim', 'descripteur']).optional(),
     source: sourceRefSchema,
-    /** Fiche de RÈGLE du Codex (`regles.json`) derrière cette étape — la règle est à UN CLIC depuis
-     *  l'enjeu (#1117). Même forme que `voyage-stakes.rule`. */
+    /** FICHE derrière cette étape — la règle est à UN CLIC depuis l'enjeu (#1117). C'est l'id de
+     *  l'entité qui PORTE déjà la règle (amendement A, 2026-08-06 : « tant qu'on évite de surcharger
+     *  au maximum la table régle ») : une compétence, un État, un symptôme… `regles.json` n'est que
+     *  le foyer des règles de CADRE, sans entité porteuse. */
     rule: z.string().optional(),
+    /** CATÉGORIE Codex du foyer — `'regles'` par défaut. `'skills'` quand la règle vit sur la
+     *  compétence, `'etats'` sur l'État, etc. Le renvoi est un couple {catégorie, id}. */
+    ruleCategory: z.string().optional(),
   }),
 );
 

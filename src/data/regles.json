@@ -580,16 +580,6 @@
     }
   },
   {
-    "id": "survie-en-exterieur-camper",
-    "label": "Survie en extérieur — Camper",
-    "desc": "La Compétence Survie en extérieur est utilisée pour la survie dans la nature, et comprend la capacité de pêcher, de chasser, de rechercher de la nourriture, de faire un feu et de construire un abri. Les voyageurs expérimentés sont doués pour repérer les signes d'un changement de météo et les excréments de nombreuses bêtes dangereuses.\n\nQuand vous campez, faites un Test de Survie en extérieur, modifié par la rudesse des conditions – par exemple, un Test est **Intermédiaire (+0)** s'il pleut, **Difficile (-20)** lors d'une tempête. Un Test réussi indique que vous pouvez vous procurer de la nourriture et un abri pour la nuit. Chaque DR vous permet de procurer l'équivalent pour un Personnage de plus. Si le Test échoue, vous devez faire un Test de **Résistance Intermédiaire (+0)** ou recevoir l'État *Exténué*. Si vous subissez un Échec Stupéfiant, quelque chose de fâcheux est arrivé, déterminé par le MJ ; peut-être votre camp est-il attaqué pendant la nuit ?",
-    "source": {
-      "book": "livre-de-base",
-      "page": 131,
-      "note": "LDB 09 l.552-554"
-    }
-  },
-  {
     "id": "resistance-a-l-alcool-dessoulage",
     "label": "Résistance à l’alcool — Dessoûlage",
     "desc": "Après une heure passée sans boire, effectuez un Test de **Résistance à l'alcool Intermédiaire (+0)**. Les effets de l'ivresse se dissiperont après 10-DR heures, et tous les modificateurs de Caractéristiques disparaîtront après ce délai. Une fois tous les effets dissipés, effectuez un nouveau Test de **Résistance à l'alcool Intermédiaire (+0)**. Vous avez à présent la gueule de bois, qui correspond à l'État *Exténué* et ne peut pas être retiré pendant 5 – DR heures.",
@@ -630,33 +620,73 @@
     }
   },
   {
-    "id": "symptome-gangrene",
-    "label": "Symptôme — Gangrène",
-    "desc": "Votre chair noircit et pourrit, infectée par quelque chose d'horrible. Et cela ne semble pas s'arranger. Effectuez un lancer de pourcentage pour déterminer une Localisation (voir **Combat**). Si vous obtenez Corps, vous avez de la chance, la *Gangrène* ne s'est pas propagée au cours de l'infection. Si vous obtenez la Tête, c'est votre nez qui est touché. Si vous obtenez Bras, ce sont vos doigts. Si c'est la jambe, c'est votre pied qui est atteint. Chaque jour, effectuez un Test de **Résistance Accessible (+20)**. Sur un succès, la *Gangrène* est contenue. Sur un échec, elle empire. Si vous obtenez plus d'échecs que votre Bonus d'Endurance, la Localisation devient totalement inutilisable. Si cela se produit, utilisez les mêmes règles que pour l'Amputation (voir Blessures critiques). Tant que vous souffrez de la *Gangrène*, subissez une pénalité de -10 à tous vos Tests de Sociabilité, et vous subissez le symptôme Blessé. De plus, comme si ce n'était pas suffisant, vous souffrez également de *Toxine* tant que le tissu affecté ne sera pas amputé. Et cela perdurera même après que vous avez été guéri de la maladie à l'origine de la *Gangrène*.\n\n**Traitement :** le seul traitement vraiment efficace consiste à amputer la partie gangrénée.",
+    "id": "course",
+    "label": "Course",
+    "desc": "À votre tour, vous pouvez utiliser votre Action pour courir. Vous avez besoin d'un Test **d'Athlétisme Accessible (+20)**, et la distance couverte vient en plus de celle parcourue par votre Mouvement de ce Round. Vous pouvez courir sur une distance équivalente à votre Mouvement de Course + DR en mètres (voir Tableau des Mouvements pour les Mouvements en Charge). Ainsi, un Personnage avec Mouvement 4 qui obtient DR -2 pourra courir sur 14 mètres supplémentaires (16-2=14).",
     "source": {
       "book": "livre-de-base",
-      "page": 189,
-      "note": "LDB 20 l.176-178"
+      "page": 165,
+      "note": "LDB 15 l.41"
     }
   },
   {
-    "id": "symptome-persistant",
-    "label": "Symptôme — Persistant",
-    "desc": "Vous avez une infection qui perdure. De ce fait, vous craignez que cela empire… Après que votre maladie est arrivée à la fin de sa Durée, effectuez un Test de Résistance avec la Difficulté indiquée entre parenthèses après le symptôme comme ceci : Persistant (Accessible) ou Persistant (Facile). Sur un échec Minime (0), rajoutez 1d10 jours à la durée. Sur un échec (-2), vous subissez une *Blessure Purulente*. Sur un échec Stupéfiant (-6), vous développez *Infection du sang*.\n\n**Traitement :** les traitements pour les infections persistantes sont légion et plutôt abordables, dépassant rarement une pistole. Cependant, la plupart ne sont que des placebos ou reposent sur des traditions erronées. Il n'y a que 10 % des traitements achetés qui soient efficaces, mais, si c'est le cas, ils permettront de ne pas avoir besoin de Test de Résistance s'il est ingurgité au bon moment (ce qui nécessitera un Test de Guérison réussi pour déterminer le jour exact).",
+    "id": "desengagement",
+    "label": "Désengagement",
+    "desc": "Si vous êtes *Engagé* en Combat (voir page 159) et que vous ne souhaitez plus échanger de coups avec votre adversaire, vous disposez des deux options suivantes pour quitter le combat en toute sécurité.\n\n**Utiliser l'Avantage :** si vous disposez de plus d'Avantages que votre adversaire, c'est que vous vous trouvez en position de supériorité et que vous avez la possibilité de vous placer hors de portée. Si vous choisissez de ramener votre Avantage à 0, vous pouvez vous éloigner de votre adversaire sans subir de pénalités, peut-être en choisissant de Charger une autre cible ou de courir aussi loin que possible ou encore faire quelques pas en arrière et de tirer un coup de feu au visage de votre adversaire !\n\n**Utiliser l'Esquive :** si votre Avantage est inférieur ou égal à celui de votre adversaire et que vous ne souhaitez pas le dépenser, vous êtes cloué sur place. Si vous voulez vous enfuir, vous devez utiliser votre action pour effectuer un Test opposé d'**Esquive/ Corps à corps**. Sur un succès, vous obtenez +1 Avantage et pouvez utiliser votre Mouvement pour aller où vous souhaitez en suivant les règles normales. Sur un échec, votre adversaire gagne +1 Avantage et votre fuite est impossible, à moins de vous prendre un coup dans le dos.",
     "source": {
       "book": "livre-de-base",
-      "page": 189,
-      "note": "LDB 20 l.200-202"
+      "page": 165,
+      "note": "LDB 15 l.45-49"
     }
   },
   {
-    "id": "symptome-toux-et-eternuements",
-    "label": "Symptôme — Toux et éternuements",
-    "desc": "Vous toussez et éternuez régulièrement, propageant ainsi votre maladie tout autour de vous. Tout Personnage se trouvant dans votre environnement immédiat s'expose à la maladie dont vous êtes porteur et doit effectuer un Test pour en éviter la Contraction une fois par heure entamée d'exposition.\n\n**Traitement :** rien ne fonctionne",
+    "id": "fuite",
+    "label": "Fuite",
+    "desc": "S'il n'y a pas d'autre solution, vous pouvez faire demi-tour et utiliser votre Mouvement pour fuir. Bien souvent, la Fuite est involontaire, et est provoquée par la *Terreur* (voir page 191) ou la magie.\n\nSi vous fuyez, votre adversaire gagne immédiatement +1 Avantage et une Attaque gratuite. Cette attaque est un Test de Corps à corps non opposé, et le DR est utilisé pour vous infliger des Dégâts, comme d'habitude. Comme vous lui tournez le dos, votre adversaire bénéficie de +20 au toucher. Si vous êtes touché, votre adversaire gagne +1 Avantage, et vous devez effectuer un Test de **Calme Intermédiaire (+0)** : sur un échec, vous obtenez l'État *Brisé*, ainsi que +1 *Brisé* par DR inférieur à 0.\n\nUne fois que ce coup gratuit est résolu, vous pouvez vous déplacer jusqu'à la limite de votre Mouvement de Course (voir le Tableau des Mouvements) dans la direction opposée à celle de votre adversaire, en partant du principe que vous en êtes encore capable.",
     "source": {
       "book": "livre-de-base",
-      "page": 189,
-      "note": "LDB 20 l.206-208"
+      "page": 165,
+      "note": "LDB 15 l.61-68 — phrase RECOLLÉE à la soudure de folio 165/166 (l.63 se termine sur « Comme vous lui », la suite « tournez le dos, … » ouvre le folio 166)"
+    }
+  },
+  {
+    "id": "chute",
+    "label": "Chute",
+    "desc": "Au cours d'une chute, vous subissez 3 Dégâts pour chaque mètre de chute +1d10 Dégâts. Ces Dégâts sont réduits par votre Bonus d'Endurance mais pas par les PA dont vous pouvez disposer.\n\nSi vous chutez à dessein – ou, si vous préférez, si vous sautez vers le bas – vous pouvez tenter un Test d'**Athlétisme Accessible (+20)** afin de réduire les Dégâts reçus. Pour chaque DR, considérez que vous tombez de 1m de moins. Si vous parvenez à réduire votre distance de chute à 0 ou moins, vous ne subissez aucun Dégât de chute.\n\nSi vous subissez plus de Points de Blessure à cause de la chute que votre Bonus d'Endurance, vous obtenez l'État *À Terre*.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 166,
+      "note": "LDB 15 l.80-84"
+    }
+  },
+  {
+    "id": "influences-corruptrices",
+    "label": "Influences corruptrices",
+    "desc": "Les Points de Corruption sont généralement acquis lorsqu'on se trouve en présence d'une personne, d'un endroit ou d'un objet contaminé par le Chaos, ou dans une situation qui sied particulièrement aux Dieux Sombres.\n\nSi vous tombez sur une Influence corruptrice, tentez un Test de **Résistance Intermédiaire (+0)** ou un Test de **Calme Intermédiaire (+0)**, comme déterminé par le MJ – généralement, les Influences physiques sont repoussées avec Résistance, et la Corruption spirituelle avec Calme.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 182,
+      "note": "LDB 19 l.27-29"
+    }
+  },
+  {
+    "id": "dissipation",
+    "label": "Dissipation",
+    "desc": "Si un Sort vous cible, ou vise un point que vous pouvez voir à une distance en mètres égale à votre Force Mentale, vous pouvez opposer le Test d'Incantation avec **Langue (Magick)**, car vous chantez un Contre-sort. Effectuez un Test opposé de **Langue (Magick)**. Sur un succès, vous dissipez le Sort ; sur un échec, le Sort utilise le DR du Test opposé pour déterminer si l'incantation a réussi normalement. Vous ne pouvez tenter de dissiper qu'un seul Sort chaque Round.\n\n#### **Dissiper des Sorts permanents**\n\nSi un Sort a un effet durable, vous pouvez tenter de le dissiper pour votre Action. Il faut pour cela effectuer un Test étendu de Langue (Magick). Quand votre DR atteint la NI du Sort, vous le dissipez avec succès.\n\nPlusieurs lanceurs de Sorts tentant de dissiper le même Sort effectuent leur lancer séparément. S'ils incantent en utilisant le même Domaine, ils peuvent décider d'effectuer un Test Soutenu à la place.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 237,
+      "note": "LDB 46 l.156-162"
+    }
+  },
+  {
+    "id": "au-contact",
+    "label": "Au contact",
+    "desc": "Pour votre Action, vous pouvez effectuer un Test opposé de **Corps à corps** pour tenter d'entrer dans la longueur d'arme de votre adversaire. Le vainqueur choisit si le combat continue normalement ou « au contact ». Pendant un combat au contact, n'importe quelle arme plus longue que Courte est considérée comme une Arme improvisée.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 297,
+      "note": "LDB 62 l.176"
     }
   }
 ]

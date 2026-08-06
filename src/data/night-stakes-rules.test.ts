@@ -11,11 +11,23 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { NIGHT_STAKES, regles, books } from './index';
+import { NIGHT_STAKES, regles, books, skills, symptoms, etats } from './index';
+
+/** FOYERS possibles d'une règle (amendement A, 2026-08-06) : l'entité qui la PORTE d'abord —
+ *  `regles.json` n'héberge que les règles de CADRE, sans entité porteuse. */
+const FOYERS: Record<string, { id: string; label: string }[]> = {
+  regles, skills, symptoms, etats,
+};
+const foyer = (e: { rule?: string; ruleCategory?: string }) =>
+  e.rule ? (FOYERS[e.ruleCategory ?? 'regles'] ?? []).find((x) => x.id === e.rule) : undefined;
 
 const RULE_BY_ID = new Map(regles.map((r) => [r.id, r]));
 const BOOK_IDS = new Set(books.map((b) => b.id));
-const NIGHT_RULE_IDS = new Set(NIGHT_STAKES.map((e) => e.rule).filter((r): r is string => !!r));
+/** Fiches de `regles.json` référencées par la nuit — les foyers d'une AUTRE catégorie portent leur
+ *  propre garde de source (chaque catalogue a la sienne) et sortent de ce périmètre. */
+const NIGHT_RULE_IDS = new Set(
+  NIGHT_STAKES.filter((e) => (e.ruleCategory ?? 'regles') === 'regles').map((e) => e.rule).filter((r): r is string => !!r),
+);
 
 /** Lignes du fichier de CHAPITRE cité par une note (`LDB 18 l.294-300` → `18 - Traumatisme.md`). */
 const chapterCache = new Map<string, string[]>();
@@ -45,9 +57,9 @@ function folioAt(lines: string[], lineNo: number): number | null {
 }
 
 describe('night-stakes.json — chaque enjeu porte sa règle (#1117 L0a)', () => {
-  it('toute entrée a un `rule` qui résout vers une fiche de regles.json', () => {
-    const orphelins = NIGHT_STAKES.filter((e) => !e.rule || !RULE_BY_ID.has(e.rule)).map(
-      (e) => `${e.id} → ${e.rule ?? '(aucun)'}`,
+  it('toute entrée a un `rule` qui résout vers son FOYER (entité porteuse, ou fiche de cadre)', () => {
+    const orphelins = NIGHT_STAKES.filter((e) => !foyer(e)).map(
+      (e) => `${e.id} → ${e.ruleCategory ?? 'regles'}:${e.rule ?? '(aucun)'}`,
     );
     expect(orphelins, 'entrée sans renvoi de règle résoluble').toEqual([]);
   });
@@ -58,19 +70,17 @@ describe('night-stakes.json — chaque enjeu porte sa règle (#1117 L0a)', () =>
   });
 
   it('aucune fiche du périmètre nuit n’est orpheline (chacune référencée par ≥1 entrée)', () => {
+    // Les fiches de CADRE que la nuit fait vivre. Les foyers d'ENTITÉ (compétence `survie-en-exterieur`,
+    // symptômes) n'y figurent pas : ils vivent pour eux-mêmes, la nuit ne fait que les pointer.
     const NUIT = [
       'faim-et-soif',
       'guerison-des-blessures',
       'exposition',
       'fractures',
-      'survie-en-exterieur-camper',
       'resistance-a-l-alcool-dessoulage',
       'trauma',
       'temps-de-voyage',
       'symptomes-des-maladies',
-      'symptome-gangrene',
-      'symptome-persistant',
-      'symptome-toux-et-eternuements',
     ];
     expect(NUIT.filter((id) => !RULE_BY_ID.has(id)), 'fiche du périmètre absente de regles.json').toEqual([]);
     expect(NUIT.filter((id) => !NIGHT_RULE_IDS.has(id)), 'fiche créée que rien ne référence').toEqual([]);

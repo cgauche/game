@@ -8,9 +8,8 @@
  * La nuit est SOLDÉE (15/15 depuis L0a) — aucune tolérance n'y est ouverte.
  */
 import { describe, it, expect } from 'vitest';
-import { NIGHT_STAKES, VOYAGE_STAKES, regles } from './index';
+import { NIGHT_STAKES, VOYAGE_STAKES, regles, skills, symptoms, etats } from './index';
 
-const RULE_IDS = new Set(regles.map((r) => r.id));
 
 /** Entrées d'enjeu de VOYAGE encore sans fiche — chacune attend SA curation verbatim (patron L0a).
  *  Mesuré le 2026-08-06 : 12 sur 33. Retirer un id d'ici est le geste de solde. */
@@ -47,14 +46,41 @@ describe('cliquet — un enjeu porte sa RÈGLE (#1117)', () => {
     expect(sans).toEqual(attendu);
   });
 
-  it('aucun renvoi MORT : chaque `rule` déclarée existe au catalogue', () => {
+  it('aucun renvoi MORT : chaque `rule` déclarée existe dans SON foyer', () => {
+    // Le foyer peut être une ENTITÉ (amendement A) : la catégorie voyage avec l'id.
+    const FOYERS: Record<string, { id: string }[]> = { regles, skills, symptoms, etats };
+    const cat = (e: { ruleCategory?: string | undefined }) => e.ruleCategory ?? 'regles';
     const morts = [...NIGHT_STAKES, ...VOYAGE_STAKES]
-      .filter((e) => e.rule && !RULE_IDS.has(e.rule))
-      .map((e) => `${e.id} → ${e.rule}`);
-    expect(morts, 'renvoi vers une fiche inexistante').toEqual([]);
+      .filter((e) => e.rule && !(FOYERS[cat(e as { ruleCategory?: string })] ?? []).some((x) => x.id === e.rule))
+      .map((e) => `${e.id} → ${cat(e as { ruleCategory?: string })}:${e.rule}`);
+    expect(morts, 'renvoi vers un foyer inexistant').toEqual([]);
   });
 
   it('le stock DÉCROÎT : le plafond mesuré ne remonte pas', () => {
     expect(VOYAGE_STAKES.filter((e) => !e.rule).length).toBeLessThanOrEqual(12);
+  });
+
+  /**
+   * Fiches curées en L1a pour les MODALES MONO : leur consommateur (`flow-stakes`, id de jet
+   * {flow, phase}) naît en L1b. Elles sont donc SANS RÉFÉRENT — et c'est DÉCLARÉ ici, nominativement,
+   * pour qu'aucune ne s'installe en dette muette (le défaut que l'amendement A combat).
+   * Le stock ne peut que DÉCROÎTRE : dès que L1b câble une fiche, sa ligne meurt ici.
+   */
+  const ATTENDUES_SANS_REFERENT_JUSQU_A_L1B = [
+    'course', 'desengagement', 'fuite', 'chute',
+    'influences-corruptrices', 'dissipation', 'au-contact',
+  ];
+
+  it('les fiches L1a existent et attendent leur câblage L1b — stock NOMINATIF et décroissant', () => {
+    const absentes = ATTENDUES_SANS_REFERENT_JUSQU_A_L1B.filter((id) => !regles.some((r) => r.id === id));
+    expect(absentes, 'fiche annoncée par L1a mais absente du catalogue').toEqual([]);
+
+    // Assertion INVERSE : tant qu'elles ne sont pas câblées, AUCUNE ne doit être référencée par un
+    // dataset d'enjeu — si l'une l'est, L1b a câblé et la ligne doit SORTIR de cette liste.
+    const referencees = new Set(
+      [...NIGHT_STAKES, ...VOYAGE_STAKES].map((e) => e.rule).filter((r): r is string => !!r),
+    );
+    const cablees = ATTENDUES_SANS_REFERENT_JUSQU_A_L1B.filter((id) => referencees.has(id));
+    expect(cablees, 'fiche désormais CÂBLÉE : la retirer de la liste d’attente L1b').toEqual([]);
   });
 });

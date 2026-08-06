@@ -183,7 +183,7 @@ Soin aux animaux, Voile**
 **Sources RAW :** LDB 09 l.65-574 (descriptions individuelles).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.65-574) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `actBlockReason`, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `essieu-casse`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, +82 — `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/driving-mishap.ts`, +29 fichiers
+- `LDB 9` (l.65-574) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `actBlockReason`, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `essieu-casse`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, +81 — `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/driving-mishap.ts`, +29 fichiers
 
 ---
 
