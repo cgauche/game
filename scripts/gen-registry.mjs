@@ -85,6 +85,18 @@ export const REGISTRIES = [
     idUnion: { typeName: 'QuadManeId', field: 'key' },
   },
   {
+    // Sets d'ÉQUIPEMENT quadrupèdes (sellerie/bât/barde — art cuit par vue depuis
+    // `atelier/harnais/<id>@<espèce>-<vue>.dessin.mts`) : 1 set = 1 fichier defs/. Même patron que
+    // les têtes/queues/crinières ; l'union `QuadHarnaisId` est GÉNÉRÉE des ids déclarés (#1128).
+    dir: 'src/gameIso/rig/quadruped/harnais/defs',
+    out: 'src/gameIso/rig/quadruped/harnais/_registry.generated.ts',
+    exportName: 'quadHarnais',
+    arrayName: 'QUAD_HARNAIS_DEFS',
+    type: 'QuadHarnaisDef',
+    typeFrom: './types',
+    idUnion: { typeName: 'QuadHarnaisId', field: 'id' },
+  },
+  {
     // Appendices (cornes/queue, art multi-vues) : 1 appendice = 1 fichier defs/. Source UNIQUE de
     // l'art de corne/queue, référencé par id (monster.cornes / appendageFeature / traitVisuals).
     dir: 'src/gameIso/rig/parts/appendages/defs',
@@ -373,9 +385,11 @@ function genOne(r) {
       [...readFileSync(join(r.dir, f), 'utf8').matchAll(new RegExp(`\\b${r.idUnion.field}:\\s*'([^']+)'`, 'g'))].map((m) => m[1]),
     );
     const uniq = [...new Set(ids)].sort();
+    // Registre encore VIDE (socle posé avant sa première def) : l'union est `never`, pas la chaîne
+    // vide — un `''` accepterait silencieusement l'id vide chez les consommateurs.
     unionDecl =
       `\n/** Union GÉNÉRÉE des \`${r.idUnion.field}\` déclarés dans les defs — le typage réel des consommateurs. */\n` +
-      `export type ${r.idUnion.typeName} =\n  | '${uniq.join(`'\n  | '`)}';\n`;
+      `export type ${r.idUnion.typeName} =\n${uniq.length ? `  | '${uniq.join(`'\n  | '`)}';\n` : '  | never;\n'}`;
   }
   const body =
     `// GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.\n` +

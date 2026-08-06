@@ -177,11 +177,12 @@ if (rawFicheStaged) {
   }
 }
 
-// #1082 — le compilé committé EST la compilation exacte du dessin committé : le --check tourne dès
-// qu'un dessin d'atelier quadrupède OU une sortie compilée est stagé, même patron bloquant.
+// #1082/#1128 — le compilé committé EST la compilation exacte du dessin committé : le --check tourne
+// dès qu'un dessin d'atelier quadrupède (espèce à plat OU set sous atelier/harnais/) ou une sortie
+// compilée (quadruped/*Compile.ts OU quadruped/harnais/*Compile.ts) est stagé, même patron bloquant.
 const atelierQuadStaged = staged.some((f) => {
   const r = f.replace(/\\/g, '/');
-  return r.startsWith('src/gameIso/rig/quadruped/atelier/') || /^src\/gameIso\/rig\/quadruped\/[^/]+Compile\.ts$/.test(r);
+  return r.startsWith('src/gameIso/rig/quadruped/atelier/') || /^src\/gameIso\/rig\/quadruped\/(?:harnais\/)?[^/]+Compile\.ts$/.test(r);
 });
 if (atelierQuadStaged) {
   try {

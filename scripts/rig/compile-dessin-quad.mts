@@ -9,6 +9,12 @@
  *           LOCAL de chaque os, prêt pour le canal `QuadProps.viewArt`. Le moteur de RENDU ne
  *           change pas d'un octet : il reçoit de l'art de part comme tout autre.
  *
+ * SETS D'ÉQUIPEMENT (#1128) : `atelier/harnais/<set>@<espèce>-<vue>.dessin.mts` → `quadruped/harnais/
+ * <set><Vue>Compile.ts`. Le suffixe `@<espèce>` donne le GABARIT (squelette, pose, échelles d'os) sur
+ * lequel l'art est cuit — même cuisson, même langage restreint, même idempotence qu'un dessin d'espèce.
+ * L'art d'un set est donc FIT-PAR-GABARIT : le registre `quadruped/harnais/` déclare pour quelles
+ * espèces il est cuit (`especes`), et sa sortie alimente le canal `deco` (calque par-os), pas `viewArt`.
+ *
  * MÉCANIQUE — le rendu compose : monde = M(os) · S(os) · local  (`composeQuad` : `transform=
  * toSvg(matrix)` puis `scale(sx,sy)`). Le compilateur applique donc l'INVERSE, T = S⁻¹ · M⁻¹, à
  * CHAQUE coordonnée du dessin, et CUIT le résultat dans le `d` du path. Aucun `<g transform>` n'est
@@ -27,13 +33,15 @@
  * IDEMPOTENT : relancé sur un dessin inchangé, il réécrit le même octet. `--check` n'écrit rien et
  * sort en 1 si une sortie diverge de son dessin (porte de commit).
  */
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { dirname, resolve, basename } from 'node:path';
+import { dirname, resolve, basename, relative } from 'node:path';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const ATELIER = resolve(ROOT, 'src/gameIso/rig/quadruped/atelier');
+const ATELIER_SETS = resolve(ATELIER, 'harnais');
 const DEST_DIR = resolve(ROOT, 'src/gameIso/rig/quadruped');
+const DEST_SETS = resolve(DEST_DIR, 'harnais');
 const CHECK = process.argv.includes('--check');
 const FILTRE = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 
@@ -51,11 +59,28 @@ interface GroupeDessin { bone: string; svg: string }
 const VUES: Record<string, string> = { profil: 'profile', face: 'front', dos: 'back' };
 
 /** `grand-cerf` → `GRAND_CERF` (nom de la constante exportée). */
-const constante = (espece: string, vueFr: string) =>
-  `${espece.replace(/-/g, '_').toUpperCase()}_${vueFr.toUpperCase()}_COMPILE`;
+const constante = (id: string, vueFr: string) =>
+  `${id.replace(/-/g, '_').toUpperCase()}_${vueFr.toUpperCase()}_COMPILE`;
 /** `grand-cerf` + `profil` → `grandCerfProfilCompile` (nom de fichier de la sortie). */
 const camel = (s: string) => s.replace(/-(.)/g, (_m, c: string) => c.toUpperCase());
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
+
+/**
+ * Nom de dessin → gabarit d'espèce, vue, et id de SET quand le dessin en est un.
+ *   `boeuf-profil`                    → { set: null, espece: 'boeuf', vueFr: 'profil' }
+ *   `sellerie-imperiale@cheval-profil` → { set: 'sellerie-imperiale', espece: 'cheval', vueFr: 'profil' }
+ * Le `@` n'est admis QUE sous `atelier/harnais/`, et y est OBLIGATOIRE : le gabarit d'un set se lit
+ * dans son nom, jamais deviné.
+ */
+function lireNom(nom: string, set: boolean): { set: string | null; espece: string; vueFr: string } {
+  const at = nom.indexOf('@');
+  if (set && at < 0) throw new Error(`${nom} : dessin de set sans gabarit — attendu <set>@<espèce>-<vue>.dessin.mts`);
+  if (!set && at >= 0) throw new Error(`${nom} : suffixe @<espèce> réservé aux dessins de set (atelier/harnais/)`);
+  const reste = nom.slice(at + 1);
+  const coupe = reste.lastIndexOf('-');
+  if (coupe <= 0) throw new Error(`${nom} : nom illisible — attendu <espèce>-<vue>`);
+  return { set: at < 0 ? null : nom.slice(0, at), espece: reste.slice(0, coupe), vueFr: reste.slice(coupe + 1) };
+}
 
 /** T = S⁻¹ · M⁻¹ — le passage monde → repère local de l'os, échelle d'os comprise. */
 function versLocal(p: unknown, sk: Record<string, unknown>, world: Record<string, Mat>, bone: string, vue: string): Mat {
@@ -96,9 +121,9 @@ function cuire(svg: string, t: Mat): string {
 
 /** Compile UN dessin et rend le texte du module de sortie. */
 async function compile(fichier: string): Promise<{ dest: string; texte: string; groupes: number }> {
+  const rel = relative(ATELIER, fichier).replace(/\\/g, '/');
   const nom = basename(fichier, '.dessin.mts');
-  const coupe = nom.lastIndexOf('-');
-  const espece = nom.slice(0, coupe), vueFr = nom.slice(coupe + 1);
+  const { set, espece, vueFr } = lireNom(nom, rel.startsWith('harnais/'));
   const vue = VUES[vueFr];
   if (!vue) throw new Error(`${nom} : vue inconnue « ${vueFr} » (attendu : ${Object.keys(VUES).join(', ')})`);
   const especes = { ...QUAD_SPECIES, ...WINGED_SPECIES } as Record<string, Record<string, unknown>>;
@@ -122,29 +147,40 @@ async function compile(fichier: string): Promise<{ dest: string; texte: string; 
     if (/<g[^>]*transform/.test(art)) throw new Error(`${nom} : repère propre interdit sur ${g.bone}`);
     lignes.push(`  ${g.bone}: ${JSON.stringify(art)},`);
   }
+  const id = set ?? espece;
   const texte =
-    `// GÉNÉRÉ par scripts/rig/compile-dessin-quad.mts depuis atelier/${basename(fichier)} — ne pas éditer à la main.\n` +
-    `export const ${constante(espece, vueFr)}: Record<string, string> = {\n${lignes.join('\n')}\n};\n`;
-  return { dest: resolve(DEST_DIR, `${camel(espece)}${cap(vueFr)}Compile.ts`), texte, groupes: DESSIN.length };
+    `// GÉNÉRÉ par scripts/rig/compile-dessin-quad.mts depuis atelier/${rel} — ne pas éditer à la main.\n` +
+    `export const ${constante(id, vueFr)}: Record<string, string> = {\n${lignes.join('\n')}\n};\n`;
+  const dir = set ? DEST_SETS : DEST_DIR;
+  return { dest: resolve(dir, `${camel(id)}${cap(vueFr)}Compile.ts`), texte, groupes: DESSIN.length };
 }
 
-// ── balayage de l'atelier ────────────────────────────────────────────────────────────────────
-const dessins = readdirSync(ATELIER)
-  .filter((f) => f.endsWith('.dessin.mts'))
-  .filter((f) => !FILTRE.length || FILTRE.some((x) => f.startsWith(`${x}-`)))
-  .sort();
+// ── balayage de l'atelier (dessins d'espèce à plat + dessins de set sous harnais/) ────────────
+const dessinsDe = (dir: string): string[] => {
+  try { return readdirSync(dir).filter((f) => f.endsWith('.dessin.mts')).map((f) => resolve(dir, f)); }
+  catch { return []; }
+};
+/** Un filtre positionnel vise un id de SET ou une espèce (`… cheval` prend aussi les sets du cheval). */
+const vise = (f: string): boolean => {
+  if (!FILTRE.length) return true;
+  const rel = relative(ATELIER, f).replace(/\\/g, '/');
+  const { set, espece } = lireNom(basename(f, '.dessin.mts'), rel.startsWith('harnais/'));
+  return FILTRE.includes(espece) || (set !== null && FILTRE.includes(set));
+};
+const dessins = [...dessinsDe(ATELIER), ...dessinsDe(ATELIER_SETS)].filter(vise).sort();
 if (!dessins.length) { console.error(`aucun dessin dans ${ATELIER}`); process.exit(1); }
 
 const divergents: string[] = [];
 for (const f of dessins) {
-  const { dest, texte, groupes } = await compile(resolve(ATELIER, f));
+  const rel = relative(ATELIER, f).replace(/\\/g, '/');
+  const { dest, texte, groupes } = await compile(f);
   const actuel = (() => { try { return readFileSync(dest, 'utf8'); } catch { return null; } })();
   if (CHECK) {
-    if (actuel !== texte) divergents.push(`${f} → ${basename(dest)}`);
-    console.log(`${actuel === texte ? 'à jour ' : 'DIVERGE'} : ${f} (${groupes} groupes)`);
+    if (actuel !== texte) divergents.push(`${rel} → ${basename(dest)}`);
+    console.log(`${actuel === texte ? 'à jour ' : 'DIVERGE'} : ${rel} (${groupes} groupes)`);
   } else {
-    if (actuel !== texte) writeFileSync(dest, texte);
-    console.log(`compilé : ${f} → ${basename(dest)} (${groupes} groupes${actuel === texte ? ', inchangé' : ''})`);
+    if (actuel !== texte) { mkdirSync(dirname(dest), { recursive: true }); writeFileSync(dest, texte); }
+    console.log(`compilé : ${rel} → ${basename(dest)} (${groupes} groupes${actuel === texte ? ', inchangé' : ''})`);
   }
 }
 if (divergents.length) {
