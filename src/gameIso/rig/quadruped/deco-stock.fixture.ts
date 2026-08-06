@@ -61,20 +61,21 @@ export function quadDecoCouples(): DecoCouples {
  * s'écrit `<espèce> <vue> <os>`, suivie du transform mesuré. Ne peut que rétrécir, et ne peut pas
  * contenir d'entrée périmée : toute def à repère propre absente d'ici rougit, toute entrée d'ici
  * qui ne diverge plus rougit aussi.
- *  · les 19 entrées restantes sont TOUTES des ROTATIONS : un mouvement RIGIDE, donc l'unité de la
+ *  · les 18 entrées restantes sont TOUTES des ROTATIONS : un mouvement RIGIDE, donc l'unité de la
  *    part reste celle de l'os (le décor y arriverait tourné, jamais redimensionné). C'est le port
  *    de tête de profil, cuit dans l'art faute d'axe de squelette qui le porte.
  *  · plus AUCUNE échelle : `boeuf profile tete` portait `translate(2 5) rotate(6) scale(0.84)` —
  *    son art valait 1,31 quand son décor de tête valait 1,56, 19 % d'écart d'unité entre une part
  *    et son propre raccord (mesure du juge de design, #1082). Le lot B2 a réécrit les coordonnées
  *    de cet art dans le repère de l'OS, port de tête compris : la def n'enveloppe plus rien et
- *    l'entrée SORT du stock — 20 → 19. C'est le patron que les 19 autres suivront.
+ *    l'entrée SORT du stock — 20 → 19. C'est le patron que les autres suivront ; `cheval profile
+ *    tete` (rotate(8), la bride) l'a suivi le 2026-08-06 avec le profil équin dessiné d'un
+ *    trait — 19 → 18.
  */
 export const REPERES_ART_PROPRES_GELES = [
   'basilic profile tete',    // rotate(6)
   'blaireau profile tete',   // rotate(6)
   'chat-sauvage profile tete', // rotate(4)
-  'cheval profile tete',     // rotate(8)
   'chien profile tete',      // rotate(6)
   'crapaud profile tete',    // rotate(2)
   'grand-cerf profile tete', // rotate(8)
@@ -95,24 +96,27 @@ export const PLAFOND_REPERES_ART_PROPRES = REPERES_ART_PROPRES_GELES.length;
 
 /**
  * Stock GELÉ des couples MORTS (mesuré le 2026-08-05, amendé le 2026-08-06). Deux voies de solde
- * étaient ouvertes : (a) réaffectation MÉCANIQUE à un os émis, (b) art de bout à créer. Les 10
+ * étaient ouvertes : (a) réaffectation MÉCANIQUE à un os émis, (b) art de bout à créer. Les 8
  * relèvent de (b), chacun pour la raison notée : leur art est authoré dans les COORDONNÉES et la
  * SILHOUETTE du profil (festons, bandes le long de l'axe du cou, dents de scie de la ligne de dos)
  * — reporté tel quel sur le tronc ou la tête vus de bout, il peindrait une vue de côté sur une vue
  * de face. Le solde appartient donc à la phase d'ART (P1b). Ne peut que rétrécir.
  *
- * SORTIS le 2026-08-06 — `boeuf back encolure` et `boeuf front encolure` : la clé `deco` qui les
- * portait (fanon de profil) n'existe plus, le PROFIL bovin étant désormais un dessin entier compilé
- * par os. Ces deux couples n'ont jamais rien peint : mesuré en posant un témoin `deco` sur l'os
- * `encolure` du bœuf, le rendu résolu des vues front et back est BYTE-IDENTIQUE avec et sans lui
- * (front 2107c995d6c4d919, back 62cff3ac1c69006b, témoin absent du markup), quand le même témoin
- * apparaît bien de profil. Leur retrait est un SOLDE mesuré, pas un blanchiment de stock.
+ * SORTIS le 2026-08-06 — `boeuf back/front encolure`, puis `cheval back/front encolure` (vague
+ * P1b-MASSE) : MÊME cas dans les deux lots. La clé `deco` qui les portait (fanon bovin de profil ;
+ * TACK équin — selle, caparaçon, croupière, crinière, tous authorés dans les coordonnées du tronc
+ * de PROFIL) n'existe plus, ces deux profils étant désormais des dessins entiers compilés par os.
+ * Ces quatre couples n'ont jamais rien peint : l'os `encolure` ne porte d'art qu'en profil, et un
+ * décor visant un os que la vue n'émet pas est SILENCIEUSEMENT perdu.
+ *
+ * LA PREUVE EST COMMITTÉE, plus une mesure d'atelier : `quad-vues-ratchet.test.ts`, describe
+ * « canal `deco` : un décor ne vit que sur un os que la vue ÉMET », qui pose un témoin sur le
+ * chemin de rendu RÉEL dans les DEUX sens — contrôle négatif (os non émis → témoin absent du
+ * markup, ~80 couples) et contrôle positif sur la même population (os émis → témoin présent, pour
+ * que le négatif ne puisse pas passer à vide). Retirer un couple d'ici sur ce motif est donc un
+ * SOLDE rejouable, pas un blanchiment de stock : la loi invoquée rougit si elle cesse de tenir.
  */
 export const DECOS_MORTS_GELES = [
-  // (b) TACK du cheval : harnais contre-transformé dans le repère du tronc de PROFIL (sangle de
-  // poitrail vue de côté) — de bout il faut un art de sanglage frontal.
-  'cheval back encolure',
-  'cheval front encolure',
   // (b) GORGERIN + collier à pointes du chien : bande d'acier tracée le long de l'axe du cou de
   // profil, plaque à tête de mort décalée sur la gorge — de bout, un art de collier annulaire.
   'chien back encolure',
@@ -132,13 +136,23 @@ export const DECOS_MORTS_GELES = [
 export const PLAFOND_DECOS_MORTS = DECOS_MORTS_GELES.length;
 
 /**
- * Population GELÉE (mesurée le 2026-08-05, re-mesurée le 2026-08-06) : les 72 couples APPLICABLES,
+ * Population GELÉE (mesurée le 2026-08-05, re-mesurée le 2026-08-06) : les 66 couples APPLICABLES,
  * dénominateur du stock des morts. Un couple ne quitte cette liste que par un art émis (solde réel)
  * — ou, nommément, par la preuve qu'il ne peignait RIEN. Sorties du 2026-08-06 : `boeuf back/front
  * encolure` sur la mesure du témoin (cf. `DECOS_MORTS_GELES` ci-dessus) ; puis les cinq clés `deco`
  * bovines qui n'existent plus dans la def — `tete#back`, `tete#front` (l'art de tête est une part,
  * `quadruped/heads/defs/boeuf.ts`), `encolure`, `tete#profile`, `tronc#profile` (le PROFIL bovin est
  * un dessin entier compilé par os, `viewArt`). Restent les deux calques de modelé de bout.
+ *
+ * Sorties du 2026-08-06 (vague P1b-MASSE) — les SIX clés `deco` ÉQUINES, pour deux raisons
+ * distinctes qu'il faut tenir séparées : `cheval back/front encolure` ne peignaient RIEN (mesure du
+ * témoin, cf. `DECOS_MORTS_GELES`) ; `cheval profile encolure`/`profile tete` sont SOLDÉES par
+ * l'art (le harnais et la bride sont peints dans le dessin entier de profil, sur l'os qu'ils
+ * chevauchent) ; `cheval back/front tete` portaient la BRIDE — un art de PROFIL (têtière et
+ * muserolle en diagonale, anneau de mors sur la joue) que les vues de bout affichaient TEL QUEL sur
+ * un mufle vu de face. Ce couple-là émettait donc bien quelque chose, mais de faux : sa disparition
+ * rend aux vues de bout le cheval NU, ce que la def annonçait déjà. Un art de bride vu de bout
+ * appartient à la phase d'ART des vues front/back, il n'est pas rattrapable par un décor de profil.
  */
 export const APPLICABLES_GELES = [
   'blaireau back tete#back',
@@ -148,12 +162,6 @@ export const APPLICABLES_GELES = [
   'blaireau profile tronc#profile',
   'boeuf back tronc#back',
   'boeuf front tronc#front',
-  'cheval back encolure',
-  'cheval back tete',
-  'cheval front encolure',
-  'cheval front tete',
-  'cheval profile encolure',
-  'cheval profile tete',
   'chien back encolure',
   'chien back tronc',
   'chien front encolure',
@@ -227,10 +235,6 @@ export const DECOS_SANS_PLAN_GELES = [
   'blaireau front tronc#front',
   'blaireau profile tete#profile',
   'blaireau profile tronc#profile',
-  'cheval back tete',
-  'cheval front tete',
-  'cheval profile encolure',
-  'cheval profile tete',
   'chien back tronc',
   'chien front tronc',
   'chien profile encolure',
@@ -284,3 +288,22 @@ export const DECOS_SANS_PLAN_GELES = [
   'varghulf profile tronc#profile',
 ];
 export const PLAFOND_DECOS_SANS_PLAN = DECOS_SANS_PLAN_GELES.length;
+
+/**
+ * Stock GELÉ des arts de VUE dont la tête ne porte PAS l'ancre d'œil `data-eye`/`data-ec`
+ * (mesuré le 2026-08-06 par la garde `quad-anchor-contract.test.ts`, section « art de VUE :
+ * l'œil reste ANCRÉ pour le catalogue »). Conséquence exacte, vérifiée au contre-factuel :
+ * `swapEye` n'y trouve aucun point d'accroche et rend l'art INCHANGÉ — le catalogue d'yeux est
+ * sans effet sur l'espèce, sans erreur ni trace. Le stock est nominatif, son plafond ne peut que
+ * décroître, et il ne tolère aucune entrée périmée (une ancre posée doit SORTIR d'ici).
+ *
+ * `boeuf profile` : l'étalon « bête entière par vue » a été dessiné avant que cette conséquence
+ * soit mesurée — son œil est peint en dur dans `boeufProfilCompile.ts` (0 occurrence de
+ * `data-eye`, vérifié à l'octet). Le solde est un geste d'ART sur le dessin bovin (poser le
+ * groupe d'ancre autour du globe et du reflet, comme `cheval-profil.dessin.mts` le fait), donc
+ * il appartient à la vague qui reprendra cette espèce, pas à un lot voisin.
+ */
+export const ANCRES_OEIL_ABSENTES_GELEES = [
+  'boeuf profile',
+];
+export const PLAFOND_ANCRES_OEIL_ABSENTES = ANCRES_OEIL_ABSENTES_GELEES.length;

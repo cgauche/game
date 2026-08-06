@@ -1,8 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { CREATURES } from '../creatures';
 import { quadParts, quadAnchor } from './quadParts';
-import { DECOS_MORTS_GELES, PLAFOND_REPERES_ART_PROPRES, REPERES_ART_PROPRES_GELES, quadLayersSvg } from './deco-stock.fixture';
+import {
+  DECOS_MORTS_GELES, PLAFOND_REPERES_ART_PROPRES, REPERES_ART_PROPRES_GELES, quadLayersSvg,
+  ANCRES_OEIL_ABSENTES_GELEES, PLAFOND_ANCRES_OEIL_ABSENTES,
+} from './deco-stock.fixture';
 import { OS_TETE } from './composeQuad';
+import { applyEyes } from '../parts/eyes';
 import type { QuadBoneId, QuadProps } from './quadSkeleton';
 import type { View } from '../facing';
 
@@ -110,5 +114,59 @@ describe('quadAnchor = repère de l\'art de l\'os (contrat du canal deco)', () =
     }
     expect(perdus.filter((c) => !DECOS_MORTS_GELES.includes(c)),
       'décor authoré pour une vue où son os n\'est pas émis').toEqual([]);
+  });
+});
+
+/**
+ * ANCRE D'ŒIL d'un art de VUE (`QuadProps.viewArt`) — contrat d'ANCRES, comme le reste du fichier,
+ * mais côté catalogue d'yeux plutôt que côté décor.
+ *
+ * Le canal `viewArt` REMPLACE l'art de l'os `tete` pour la vue qu'il déclare (`quadParts`). Or
+ * `swapEye` (`parts/eyes`) opère par REMPLACEMENT TEXTUEL du groupe `<g data-eye="D" data-ec="x y">`
+ * — il n'a aucun autre point d'accroche. Une bête dessinée d'un trait dont l'art de tête peint son
+ * œil « en dur » fait donc taire le catalogue d'yeux (montures mortes-vivantes à œil rouge…) SANS
+ * AUCUNE erreur : `applyEyes` ne trouve rien à remplacer et rend l'art inchangé.
+ * Le silence porte loin : `cheval` est l'espèce de REPLI de `resolveQuad`, donc toute résolution
+ * dont l'espèce est inconnue hérite de son art de tête.
+ * `data-ec` est en coordonnées de l'OS — le compilateur de dessins ne cuit que les `d`, jamais un
+ * attribut : c'est une valeur écrite à la main, et ce test est ce qui empêche qu'elle disparaisse.
+ */
+describe('art de VUE : l\'œil reste ANCRÉ pour le catalogue (#1082)', () => {
+  const ANCRE = /<g data-eye="[GD]" data-ec="-?[\d.]+ -?[\d.]+">/;
+
+  /** Les arts de tête dessinés par vue : `<espèce> <vue>` → l'art compilé. */
+  const artsDeTete = quadDefs.flatMap(({ id, quad }) =>
+    VIEWS.flatMap((view) => {
+      const art = quad.viewArt?.[view]?.tete;
+      return art ? [{ cle: `${id} ${view}`, art }] : [];
+    }));
+
+  it('toute def à `viewArt` garde `data-eye`/`data-ec` sur l\'art de tête de la vue dessinée', () => {
+    // Plancher : au moins une espèce dessinée d'un trait porte un art de tête (sinon ce test
+    // passerait à vide le jour où le canal `viewArt` serait renommé).
+    expect(artsDeTete.length, 'population des arts de tête dessinés par vue').toBeGreaterThan(0);
+    const muettes = artsDeTete.filter(({ art }) => !ANCRE.test(art)).map(({ cle }) => cle);
+    expect(muettes.filter((c) => !ANCRES_OEIL_ABSENTES_GELEES.includes(c)),
+      'art de tête sans ancre d\'œil : `swapEye` y est MUET (catalogue d\'yeux sans effet), et en silence')
+      .toEqual([]);
+    // Le stock ne peut que RÉTRÉCIR, et ne tolère aucune entrée périmée : une ancre posée en sort.
+    expect(muettes.length).toBeLessThanOrEqual(PLAFOND_ANCRES_OEIL_ABSENTES);
+    expect(ANCRES_OEIL_ABSENTES_GELEES.filter((c) => !muettes.includes(c)),
+      'entrée gelée dont l\'ancre est désormais posée — à retirer du stock').toEqual([]);
+  });
+
+  it('l\'ancre est bien le point d\'accroche de `swapEye` (contre-factuel sur l\'art réel)', () => {
+    const rouge = '<circle data-eye-art="temoin" r="2" fill="#f00"/>';
+    const ancres = artsDeTete.filter(({ cle }) => !ANCRES_OEIL_ABSENTES_GELEES.includes(cle));
+    expect(ancres.length).toBeGreaterThan(0);
+    for (const { cle, art } of ancres) {
+      expect(applyEyes(art, { D: rouge }), cle).toContain('data-eye-art="temoin"');
+      expect(applyEyes(art, undefined), cle).not.toContain('data-eye-art');
+    }
+    // Le stock gelé est bien MUET — c'est la conséquence que le stock DIT, mesurée, pas supposée.
+    for (const cle of ANCRES_OEIL_ABSENTES_GELEES) {
+      const g = artsDeTete.find((a) => a.cle === cle);
+      if (g) expect(applyEyes(g.art, { D: rouge }), `${cle} (gelé)`).toBe(g.art);
+    }
   });
 });

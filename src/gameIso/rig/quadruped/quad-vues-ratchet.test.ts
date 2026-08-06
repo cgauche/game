@@ -79,6 +79,64 @@ describe('décors MORTS : le stock gelé ne peut que décroître (#1082)', () =>
   });
 });
 
+/**
+ * LOI DU CANAL `deco` — la PREUVE que `artEmis` invoque, rendue rejouable (#1082, vague P1b).
+ *
+ * `quadParts` n'appose un calque de décor que sur un os qui porte DÉJÀ un art dans la vue courante
+ * (« un os sans art n'affiche pas de décor flottant »). C'est cette loi — et elle seule — qui rend
+ * un couple `deco`×os×vue MORT quand la vue n'émet pas l'os, et donc qui autorise à retirer un tel
+ * couple des stocks gelés : le retrait est un SOLDE (le décor ne peignait rien), jamais un
+ * blanchiment. Sans ce test, l'affirmation « ce couple était mort » restait une mesure d'atelier,
+ * non rejouable : le stock pouvait être vidé sur parole.
+ *
+ * Mesure par TÉMOIN, sur le chemin de rendu RÉEL (`resolveQuadFromProps`), les deux sens à la fois :
+ * un contrôle NÉGATIF vacuerait si le témoin lui-même n'arrivait jamais au markup, donc le contrôle
+ * POSITIF est mesuré sur la même population, au même appel.
+ */
+const TEMOIN_DECO = '<path data-temoin="1" d="M0 0 L9 0 L9 9 L0 9 Z" fill="#ff00ff"/>';
+const rendu = (quad: QuadProps, view: View): string =>
+  resolveQuadFromProps(quad, view, {}).map((b: ResolvedBone) => b.parts.map((p) => p.svg).join('')).join('');
+
+describe('canal `deco` : un décor ne vit que sur un os que la vue ÉMET (#1082)', () => {
+  // Os de CORPS communs aux trois vues au socle : la population du témoin. Les os de membre
+  // porteraient la même loi, ils n'apportent aucun cas de figure de plus.
+  const OS_TEMOINS: QuadBoneId[] = ['tronc', 'encolure', 'tete', 'queue'];
+
+  it('os NON émis par la vue → le décor ne peint RIEN (contrôle négatif)', () => {
+    const fuites: string[] = [];
+    let mesures = 0;
+    for (const { id, quad } of quadDefs)
+      for (const view of VIEWS)
+        for (const os of OS_TEMOINS) {
+          if (quadParts({ ...quad, deco: undefined }, view)[os]) continue; // os émis → cf. contrôle positif
+          mesures++;
+          if (rendu({ ...quad, deco: { [os]: TEMOIN_DECO } }, view).includes('data-temoin'))
+            fuites.push(`${id} ${view} ${os}`);
+        }
+    // Plancher de POPULATION : sans lui, un socle qui se mettrait à émettre tous les os viderait ce
+    // contrôle de son contenu et le laisserait passer À VIDE — la loi ne serait plus mesurée.
+    // 80 couples au 2026-08-06, dont `encolure` en front/back sur les espèces sans art de cou de
+    // bout : c'est ce cas-là que les sorties de stock des lots bovin puis équin invoquent.
+    expect(mesures, 'population du contrôle négatif').toBeGreaterThan(50);
+    expect(fuites, 'décor émis sur un os que la vue ne porte pas : la loi du canal ne tient plus').toEqual([]);
+  });
+
+  it('os ÉMIS par la vue → le décor peint BIEN (contrôle positif : le témoin n\'est pas inerte)', () => {
+    const muets: string[] = [];
+    let mesures = 0;
+    for (const { id, quad } of quadDefs)
+      for (const view of VIEWS)
+        for (const os of OS_TEMOINS) {
+          if (!quadParts({ ...quad, deco: undefined }, view)[os]) continue;
+          mesures++;
+          if (!rendu({ ...quad, deco: { [os]: TEMOIN_DECO } }, view).includes('data-temoin'))
+            muets.push(`${id} ${view} ${os}`);
+        }
+    expect(mesures).toBeGreaterThan(100); // la population du contrôle positif est réelle
+    expect(muets, 'décor perdu sur un os que la vue porte pourtant').toEqual([]);
+  });
+});
+
 // ── (a bis) PLANS DE DÉCOR NON DÉCLARÉS (transition N2) ─────────────────────────────────────
 describe('décors SANS plan déclaré : stock gelé, plafond décroissant (#1082)', () => {
   it('aucun couple sans plan HORS du stock gelé', () => {

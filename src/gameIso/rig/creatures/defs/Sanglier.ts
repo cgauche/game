@@ -5,8 +5,10 @@ import type { CreatureDef } from '../types';
 // dressées en dents de scie qui court du garrot à la croupe, corps COMPACT et voûté à l'avant-train
 // dominant (bosse d'épaule haute, arrière fin), pattes courtes sur petits sabots clairs.
 // LDB 78 l.58-61 (Cornes (Défenses), 1m50-1m80 de long, Armure (Peau 1)).
-// La crête dorsale vit en `deco.encolure` (repère contre-calculé sur le dos suid × girth ; l'os
-// encolure n'a d'art qu'en PROFIL → pas de crête fantôme en face/dos — précédent : TACK du Cheval).
+// La crête dorsale vit en `deco.encolure` : son repère est contre-calculé sur la ligne de dos suid
+// × girth, et l'os encolure ne portant d'art qu'en PROFIL, le calque n'est émis que là — les vues
+// de bout restent sans crête fantôme (garde : `quad-vues-ratchet.test.ts`, « un décor visant un os
+// que la vue n'émet pas ne peint rien »).
 export const creature: CreatureDef = {
   label: "Sanglier",
   id: "sanglier",
