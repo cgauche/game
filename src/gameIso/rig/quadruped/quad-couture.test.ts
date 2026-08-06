@@ -212,7 +212,7 @@ interface Ligne { x: number; y: number; dx: number; dy: number }
 function ligneMonde(p: QuadProps, pose: QuadPose, i: QuadInterface): Ligne {
   const sk = groundQuad(quadSkeletonForView(buildQuadSkeleton(p), 'profile'), pose);
   const [a, b, c, d, e, f] = (worldTransformsG(sk, pose) as Record<string, Matrix>)[i.os];
-  const [sx, sy] = quadBoneScale(p, sk[i.os], i.os, 'profile');
+  const [sx, sy] = quadBoneScale(p, sk[i.os], 'profile');
   const proj = (x: number, y: number) => ({ x: a * (x * sx) + c * (y * sy) + e, y: b * (x * sx) + d * (y * sy) + f });
   const o = proj(i.x, i.y);
   // La ligne d'interface est TRANSVERSE à l'os : son axe local x, porté au monde.

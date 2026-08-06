@@ -60,7 +60,7 @@ const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 /** T = S⁻¹ · M⁻¹ — le passage monde → repère local de l'os, échelle d'os comprise. */
 function versLocal(p: unknown, sk: Record<string, unknown>, world: Record<string, Mat>, bone: string, vue: string): Mat {
   const m = world[bone];
-  const [sx, sy] = quadBoneScale(p, sk[bone], bone, vue);
+  const [sx, sy] = quadBoneScale(p, sk[bone], vue);
   const det = m[0] * m[3] - m[1] * m[2];
   if (Math.abs(det) < 1e-9) throw new Error(`matrice singulière pour ${bone}`);
   const inv: Mat = [m[3] / det, -m[1] / det, -m[2] / det, m[0] / det,

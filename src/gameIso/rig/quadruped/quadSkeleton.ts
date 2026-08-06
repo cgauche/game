@@ -26,6 +26,9 @@ export interface QBone extends FKBone {
   limb?: boolean;
   /** Os de CORPS : prend la CARRURE de l'espèce (`QuadProps.girth`) en profondeur. */
   girth?: boolean;
+  /** Os qui PORTE l'art de tête : prend l'échelle de tête de l'espèce (`QuadProps.headScale`) au
+   *  lieu de l'échelle de membre/carrure. */
+  head?: boolean;
 }
 export type QuadSkeleton = Record<QuadBoneId, QBone>;
 export type QuadPose = Partial<Record<QuadBoneId, number>>;
@@ -164,10 +167,10 @@ export function buildQuadSkeleton(p: QuadProps): QuadSkeleton {
     // Encolure penchée en AVANT (tête devant le poitrail, pas au-dessus = « fusionnée »).
     // neckAngle est stocké négatif (héritage) → on le négocie en avant via -neckAngle.
     encolure: { parent: 'tronc', pivot: { x: 28 * bl, y: -12 }, angle: -p.neckAngle, length: 30 * p.neckLen, thickness: 14, z: QUAD_Z.encolure.profile },
-    tete: { parent: 'encolure', pivot: { x: 0, y: -30 * p.neckLen }, angle: 10 + p.neckAngle + (p.headPitch ?? 0), length: 18, thickness: 14, z: QUAD_Z.tete.profile },
+    tete: { parent: 'encolure', pivot: { x: 0, y: -30 * p.neckLen }, angle: 10 + p.neckAngle + (p.headPitch ?? 0), length: 18, thickness: 14, z: QUAD_Z.tete.profile, head: true },
     // `nuque` : os PORTÉ par la tête (même repère, pivot nul) qui reçoit le calque BAS de l'art de
     // tête — il n'existe que pour porter son propre plan de profondeur (cf. QUAD_Z.nuque).
-    nuque: { parent: 'tete', pivot: { x: 0, y: 0 }, angle: 0, length: 0, thickness: 0, z: QUAD_Z.nuque.profile },
+    nuque: { parent: 'tete', pivot: { x: 0, y: 0 }, angle: 0, length: 0, thickness: 0, z: QUAD_Z.nuque.profile, head: true },
     queue: { parent: 'croupe', pivot: { x: -16, y: -6 }, angle: 42, length: 26, thickness: 6, z: QUAD_Z.queue.profile },
     ...leg('hautAvG', 'basAvG', 'piedAvG', 'tronc', 24 * bl + 6, 8, true),
     ...leg('hautArG', 'basArG', 'piedArG', 'croupe', -6 * bl + 6, 8, true, true),

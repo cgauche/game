@@ -25,7 +25,8 @@ const LEG_REF_TH = 9; // épaisseur de réf d'un os porteur (haut) → léger sc
  * tête partagent ainsi une seule unité, celle de l'os (`src/gameIso/rig/PART-CONTRACT.md` l.137).
  */
 const TETE_PROFIL = 1.3;
-/** Os qui portent l'art de tête — `nuque` est le calque BAS du MÊME art (cf. `quadParts`). */
+/** Os qui portent l'art de tête (`QBone.head`), pour ITÉRER — `nuque` est le calque BAS du MÊME
+ *  art (cf. `quadParts`). Le rendu, lui, lit le champ de l'os, jamais cette liste. */
 export const OS_TETE: QuadBoneId[] = ['tete', 'nuque'];
 
 /**
@@ -33,8 +34,8 @@ export const OS_TETE: QuadBoneId[] = ['tete', 'nuque'];
  * carrure des os de corps, épaisseur des membres. Le rendu la pose sur `ResolvedBone.scale` ; une
  * garde qui projette un point du squelette au monde la lit ICI, jamais une copie.
  */
-export function quadBoneScale(p: QuadProps, b: QBone, id: QuadBoneId, view: View): [number, number] {
-  if (OS_TETE.includes(id)) {
+export function quadBoneScale(p: QuadProps, b: QBone, view: View): [number, number] {
+  if (b.head) {
     const k = (p.headScale ?? 1) * (view === 'profile' ? TETE_PROFIL : 1);
     return [k, k];
   }
@@ -95,7 +96,7 @@ export function resolveQuadFromProps(
     .filter((id) => parts[id]?.length)
     .flatMap((id) => {
       const b = sk[id];
-      const [sx, sy] = quadBoneScale(p, b, id, view);
+      const [sx, sy] = quadBoneScale(p, b, view);
       const parPlan = new Map<number, string[]>();
       for (const l of parts[id]!) {
         const plan = l.plan ?? 0;
