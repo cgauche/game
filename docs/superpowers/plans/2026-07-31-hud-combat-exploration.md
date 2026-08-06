@@ -1,300 +1,183 @@
-# HUD de combat et d’exploration — Implementation Plan
+# HUD Combat and Exploration Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rendre immédiatement distincts le groupe, le temps du combat et les décisions du tour, tout en conservant la carte comme surface dominante et sans inventer de mécanique.
+**Goal:** Donner à chaque ancrage du HUD une responsabilité unique, partager une seule résolution de déplacement et verrouiller le rendu de l’attaque sur Z0–Z15.
 
-**Architecture:** Conserver `CampaignView` comme unique compositeur du HUD. Faire de `PartyDock`, `InitiativeStrip`, `ViewControls` et `ActiveFrame` des vues pures à props ; réutiliser les données déjà calculées par `ActionBar` et `useHoverTargeting`. L’attaque reste paramétrée par `useAttackJetProps` dans la coquille commune `RollShell`. Les adaptations de géométrie vivent dans `styles/hud.css` et `styles/combat-ui.css`, avec les breakpoints canoniques 900/700/560 px.
+**Architecture:** Les composants du HUD restent des vues composées des primitives existantes. Le mouvement est résolu par une requête pure unique, conservée au premier tap puis consommée au commit. Les transitions de store et les mécaniques de combat hors de cette couture ne changent pas.
 
-**Tech Stack:** React 19, TypeScript, Zustand, CSS modulaire global, Vitest SSR/jsdom, SVG via le registre `Icon`, recette navigateur avec `window.__wfrp`.
+**Tech Stack:** TypeScript, React, Zustand, CSS modulaire, Vitest, Testing Library, Playwright via `recette-navigateur`.
 
 ## Global Constraints
 
-- Lire et appliquer `docs/charte-ui.md` avant toute retouche CSS.
-- Pour l’exécution : utiliser les skills projet `orchestrer-des-agents`, `retoucher-un-ecran-ui`, `ajouter-une-icone` au lot 3, puis `recette-navigateur` avant validation finale.
-- Ne modifier aucune règle d’initiative, d’économie d’action, de déplacement ou d’attaque.
-- Ne jamais afficher l’acteur courant dans la barre de groupe ; cette information appartient exclusivement à l’initiative et au dock inférieur.
-- Ne pas créer de ressource « Réaction » : le moteur expose Action, Mouvement et Avantage.
-- Ne pas dupliquer les interactions d’exploration : les halos, curseurs et trajets de `IsoStage` restent l’affordance principale.
-- Réutiliser `PortraitTile`, `LifeBar`, `RollShell`, `VsHeader`, `Icon` et les classes atomiques existantes.
-- Éviter de nouveaux sélecteurs de classe lorsque la structure sémantique, `data-phase`, `aria-current`, `fieldset`, `legend` ou `dl` suffisent. Toute hausse inévitable du cliquet de classes doit être justifiée au voisinage de `CLASS_SELECTOR_BASELINE`.
-- Tous les textes visibles sont en français ; couleur jamais seule ; focus clavier visible ; cibles tactiles de 44 px sous `pointer: coarse`.
-- Préserver les changements sans rapport déjà présents dans le working tree. Chaque commit ne stage que les fichiers explicitement listés dans sa tâche.
-- Spécification source : `docs/superpowers/specs/2026-07-31-hud-combat-exploration-design.md`.
+- Appliquer `docs/superpowers/specs/2026-07-31-hud-combat-exploration-design.md`, révision 2026-08-06, et `docs/charte-ui.md`.
+- Réutiliser `PortraitTile`, `LifeBar`, `StateChips`, `RollShell`, `VsHeader`, `Icon` et les tokens existants.
+- Aucun emoji, SVG local, hexadécimal, label comme clé logique, nouvelle règle WFRP ou nouvelle référence RAW.
+- Breakpoints de largeur exclusifs : 900, 700 et 560 px ; 360 px est une largeur de recette, pas un breakpoint.
+- `EditorCanvas` conserve son appel actuel de `ViewControls`.
+- L’attaque peut corriger sa projection de props vers `RollShell`, jamais sa mécanique ni `AttackModal`.
+- Dans chaque fichier touché, remplacer tout commentaire-excuse, pierre tombale ou paraphrase de règle rencontrée ; ne pas élargir ce nettoyage hors du lot.
+- Chaque tâche produit un commit autonome. Ce plan est supprimé après exécution et recette verte.
 
 ---
 
-## Task 1: Retirer définitivement l’état actif de la barre de groupe
+### Task 1: Rendre `PartyDock` strictement identitaire
 
 **Files:**
-
 - Modify: `src/ui/PartyDock.tsx`
 - Modify: `src/ui/PartyDock.test.tsx`
 - Modify: `src/ui/CampaignView.tsx`
-- Modify: `src/ui/styles/hud.css`
 
-- [ ] **Step 1: Écrire le verrou de non-régression**
+**Interfaces:**
+- Consumes: `PortraitTile` avec `variant="full"`, vie et états existants.
+- Produces:
 
-Dans `PartyDock.test.tsx`, remplacer le scénario « actif marqué » par un scénario qui rend deux héros et vérifie :
-
-```tsx
-const html = renderToStaticMarkup(
-  <PartyDock heroes={[h1, h2]} onOpen={() => {}} />,
-);
-expect(html).toContain('11/11');
-expect(html).toContain('Gunnar');
-expect(html).toContain('Elsa');
-expect(html).not.toContain('ptile-caret');
-expect(html).not.toContain('▼');
+```ts
+export interface PartyDockProps {
+  heroes: Combatant[];
+  targeting?: boolean;
+  onOpen: (id: string) => void;
+}
 ```
 
-Conserver un test séparé du titre de ciblage afin de vérifier que le clic reste contextuel sans devenir un état persistant.
+- [ ] **Step 1: RED — verrouiller l’absence d’identité de tour**
 
-- [ ] **Step 2: Vérifier que le test échoue**
+Remplacer le montage du test par `<PartyDock heroes={[h1, h2]} onOpen={() => {}} />`, garder l’assertion `11/11`, puis ajouter :
+
+```ts
+expect(html).not.toContain('▼');
+expect(html).not.toContain('aria-current');
+expect(html).not.toContain('active');
+```
 
 Run: `npx vitest run src/ui/PartyDock.test.tsx`
 
-Expected: FAIL car `activeId` est encore requis et produit le caret de l’acteur courant.
+Expected: FAIL car `activeId` est requis et `PortraitTile active` rend encore le caret.
 
-- [ ] **Step 3: Simplifier le contrat de `PartyDock`**
+- [ ] **Step 2: GREEN — retirer l’état de tour sans toucher au contenu des cartes**
 
-Supprimer `activeId` des props et ne plus passer `active` à `PortraitTile`. Conserver `variant="full"`, `size="md"`, les anneaux d’identité `HERO_RING`, les états et le comportement de ciblage/ouverture. Envelopper chaque tuile dans un élément sémantique portant le nom visible du héros ; ne pas modifier `PortraitTile`, dont le contrat interne reste « portrait sans nom ».
+Exporter `PartyDockProps`, retirer `activeId` et supprimer uniquement `active={c.id === activeId}`. Conserver `heroes`, `targeting`, `onOpen`, `variant="full"`, `size="md"`, `team`, `ring`, `title` et le z-index contextuel de fiche.
 
-Dans `hud.css`, ancrer les `StateChips` existants dans le coin de cette carte afin qu’une alerte ne flotte jamais entre deux héros. Utiliser les descendants de `.party-dock` et les classes existantes, sans nouveau sélecteur de classe.
-
-Dans `CampaignView`, supprimer le calcul local `activeId` s’il n’a plus d’autre consommateur et appeler :
+Dans `CampaignView`, supprimer la dérivation locale `activeId` devenue inutilisée et monter :
 
 ```tsx
 <PartyDock heroes={dockHeroes} targeting={isTargeting} onOpen={onDockPortrait} />
 ```
 
-- [ ] **Step 4: Vérifier le lot**
+- [ ] **Step 3: Test ciblé et commit**
 
-Run: `npx vitest run src/ui/PartyDock.test.tsx && npm run typecheck`
+Run: `npx vitest run src/ui/PartyDock.test.tsx && npx tsc --noEmit`
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit ciblé**
-
-```bash
-git add src/ui/PartyDock.tsx src/ui/PartyDock.test.tsx src/ui/CampaignView.tsx src/ui/styles/hud.css
-git commit -m "fix(ui): réserve l'acteur courant à l'initiative"
+```powershell
+git add src/ui/PartyDock.tsx src/ui/PartyDock.test.tsx src/ui/CampaignView.tsx
+git commit -m "fix(ui): rend le dock de groupe identitaire"
 ```
 
-## Task 2: Faire de l’initiative la source unique du round et du tour courant
+### Task 2: Rattacher round, inspection et annonces à leurs propriétaires
 
 **Files:**
-
 - Modify: `src/ui/InitiativeStrip.tsx`
 - Modify: `src/ui/InitiativeStrip.test.tsx`
-- Modify: `src/ui/CampaignView.tsx`
-- Modify: `src/ui/styles/hud.css`
-
-- [ ] **Step 1: Écrire les tests de structure temporelle**
-
-Étendre les fixtures d’appel avec `round={2}` puis vérifier :
-
-```tsx
-expect(html).toContain('Round');
-expect(html).toContain('>2<');
-expect(html).toContain('aria-current="step"');
-expect(html).toContain('data-phase="past"');
-expect(html).toContain('data-phase="current"');
-expect(html).toContain('data-phase="next"');
-expect(html).toContain('1 suivant');
-```
-
-Remplacer le test historique « score absent une fois engagé (#205) » par un test qui exige les valeurs `42` et `31` pendant le tour 1. Ajouter un test `turn={-1}` : aucune entrée passée/courante, toutes à venir.
-
-- [ ] **Step 2: Vérifier l’échec**
-
-Run: `npx vitest run src/ui/InitiativeStrip.test.tsx`
-
-Expected: FAIL car `round`, les phases et les scores persistants n’existent pas.
-
-- [ ] **Step 3: Étendre les props sans toucher au moteur**
-
-Ajouter `round: number` à `InitiativeStripProps`; dans `CampaignView`, passer `round={battle.round}`.
-
-Rendre un en-tête sémantique avant `.is-tiles`, sans nouvelle classe locale. L’en-tête expose aussi le nombre d’entrées suivant l’acteur courant (`Math.max(0, order.length - turn - 1)`) afin que le défilement ne masque pas l’étendue restante :
-
-```tsx
-<header aria-label={`Round ${p.round}`}>
-  <span>Round</span>
-  <strong>{p.round}</strong>
-</header>
-```
-
-Pour chaque `.is-cell`, poser `data-phase` à partir de l’index et de `turn`, et `aria-current="step"` sur l’entrée courante. Garder `PortraitTile active` ici : son liseré or et son caret sont désormais le marqueur exclusif du tour courant.
-
-- [ ] **Step 4: Rendre la valeur persistante et le nom accessible**
-
-Retirer la garde `p.turn === -1` autour de `.is-score`. Conserver `initiativeTitle`, l’indicateur d’arme Lente et les badges de préemption.
-
-Afficher un nom court dans un élément textuel voisin du portrait sur les largeurs qui le permettent ; ne pas modifier la règle interne de `PortraitTile` qui garde le nom dans son `title`/`aria-label`. Le CSS doit masquer ce texte uniquement dans la variante horizontale étroite, pas le retirer du DOM.
-
-- [ ] **Step 5: Styler le panneau et les trois phases**
-
-Dans `hud.css` :
-
-- intégrer le cartouche du round au même fond/bordure que la liste ;
-- atténuer `[data-phase='past']` par opacité et non par disparition ;
-- renforcer `[aria-current='step']` par le marqueur existant + un contraste de fond ;
-- conserver les suivants à contraste normal ;
-- garder le défilement vertical et un acteur courant entièrement visible.
-
-Utiliser des sélecteurs descendants/attributs avant d’ajouter une classe.
-
-- [ ] **Step 6: Vérifier le lot**
-
-Run: `npx vitest run src/ui/InitiativeStrip.test.tsx src/ui/PartyDock.test.tsx && npm run typecheck`
-
-Expected: PASS.
-
-- [ ] **Step 7: Commit ciblé**
-
-```bash
-git add src/ui/InitiativeStrip.tsx src/ui/InitiativeStrip.test.tsx src/ui/CampaignView.tsx src/ui/styles/hud.css
-git commit -m "feat(ui): rattache round et tour à l'initiative"
-```
-
-## Task 3: Regrouper les commandes réelles de caméra
-
-**Files:**
-
 - Modify: `src/ui/ViewControls.tsx`
 - Create: `src/ui/ViewControls.test.tsx`
-- Modify: `src/ui/icons/defs/ui.ts`
-- Modify: `src/ui/icons/_registry.generated.ts` (generated)
+- Modify: `src/ui/CombatBanner.tsx`
+- Create: `src/ui/CombatBanner.test.tsx`
+- Modify: `src/ui/CampaignView.tsx`
 - Modify: `src/ui/styles/hud.css`
-- Verify: `src/ui/ui-ratchets.test.ts`
+- Verify unchanged call: `src/ui/editor/EditorCanvas.tsx`
 
-- [ ] **Step 1: Ajouter le test d’accessibilité et de comportement**
+**Interfaces:**
+- `InitiativeStripProps` ajoute `round: number` et perd `inspectEnabled` / `onToggleInspect`.
+- Produces:
 
-Monter `ViewControls` avec des espions et vérifier trois groupes accessibles :
+```ts
+export type InitiativePhase = 'past' | 'current' | 'future';
+export function initiativePhase(index: number, turn: number, over: boolean): InitiativePhase;
 
-```tsx
-expect(screen.getByRole('group', { name: 'Orientation de la caméra' })).toBeTruthy();
-expect(screen.getByRole('group', { name: 'Mode d’affichage' })).toBeTruthy();
-expect(screen.getByRole('group', { name: 'Zoom' })).toBeTruthy();
-expect(screen.getByRole('button', { name: 'Réinitialiser le zoom à 100 %' })).toBeTruthy();
+interface ViewControlsProps {
+  // props actuelles inchangées
+  inspectEnabled?: boolean;
+  onToggleInspect?: () => void;
+}
 ```
 
-Vérifier que les boutons appellent toujours `onRotateLeft`, `onRotateRight`, `onToggleView`, `onZoomIn`, `onZoomOut` et que l’absence de `onTogglePov` retire seulement le bouton POV (contrat éditeur).
+- [ ] **Step 1: RED — écrire les trois contrats**
 
-- [ ] **Step 2: Vérifier l’échec**
+Dans `InitiativeStrip.test.tsx`, fournir `round={3}` à tous les montages et vérifier :
 
-Run: `npx vitest run src/ui/ViewControls.test.tsx`
+```ts
+expect(html).toContain('Round');
+expect(html).toContain('3');
+expect(initiativePhase(0, -1, false)).toBe('future');
+expect(initiativePhase(0, 1, false)).toBe('past');
+expect(initiativePhase(1, 1, false)).toBe('current');
+expect(initiativePhase(2, 1, false)).toBe('future');
+expect(initiativePhase(1, 1, true)).toBe('future');
+expect(html).not.toContain('inspect-toggle');
+```
 
-Expected: FAIL car les groupes et noms accessibles n’existent pas.
+Dans `ViewControls.test.tsx`, rendre une fois avec `inspectEnabled` / `onToggleInspect`, une fois sans, puis vérifier le bouton `Inspection des combattants`, `aria-pressed="true"`, son callback et son absence dans le montage éditeur.
 
-- [ ] **Step 3: Ajouter uniquement les icônes manquantes au registre**
+Dans `CombatBanner.test.tsx`, initialiser un combat sans ligne puis avec une ligne et vérifier la région :
 
-Avec le skill `ajouter-une-icone`, ajouter dans la famille `ui` exactement les ids stables `ui/rotate-left`, `ui/rotate-right`, `ui/zoom-in`, `ui/zoom-out` et `ui/projection`. Réutiliser `ui/eye` pour le POV.
+```ts
+expect(status).toHaveAttribute('role', 'status');
+expect(status).toHaveAttribute('aria-live', 'polite');
+expect(status).toHaveAttribute('aria-atomic', 'true');
+expect(status.querySelectorAll('.cb-ev')).toHaveLength(message ? 1 : 0);
+```
 
-Run: `npm run gen`
+Run: `npx vitest run src/ui/InitiativeStrip.test.tsx src/ui/ViewControls.test.tsx src/ui/CombatBanner.test.tsx`
 
-Expected: `_registry.generated.ts` contient les nouveaux ids et aucune référence d’icône n’est orpheline.
+Expected: FAIL sur `round`, les phases, l’inspection dans `ViewControls` et la région persistante.
 
-- [ ] **Step 4: Remplacer le tableau inline par trois groupes sémantiques**
+- [ ] **Step 2: GREEN — implémenter les propriétaires exacts**
 
-Conserver l’API de props partagée avec `EditorCanvas`. Utiliser un conteneur `.view-controls` puis trois `fieldset`/`legend` ou trois éléments `role="group"` nommés. Les boutons portent `className="btn"`, un `aria-label`, un `title`, `aria-pressed` pour les modes et `<Icon>` pour l’affordance.
+Dans `InitiativeStrip.tsx` :
 
-Le zoom courant est toujours visible comme valeur (`100 %`, `130 %`), et cette même valeur sert de bouton de reset. Supprimer `BTN` et tous les styles de géométrie inline.
+```ts
+export function initiativePhase(index: number, turn: number, over: boolean): InitiativePhase {
+  if (over || turn < 0) return 'future';
+  if (index < turn) return 'past';
+  return index === turn ? 'current' : 'future';
+}
+```
 
-- [ ] **Step 5: Poser la géométrie dans `hud.css`**
+Afficher le round dans le panneau, poser `data-phase`, `aria-current={phase === 'current' ? 'step' : undefined}` et `active={phase === 'current'}`. Retirer le toggle d’inspection. La phase d’un renfort vient de son index dans le `map(order)` courant.
 
-Ancrer le composant en haut à droite, distinguer les groupes par espacement/bordure et conserver des cibles 42 px, portées à 44 px sous `pointer: coarse`. À `<=700px`, garder orientation + zoom accessibles et déplacer les commandes secondaires dans une disposition compacte, sans cacher la valeur de zoom.
+Dans `ViewControls`, ajouter le bouton uniquement sous `onToggleInspect`, avec `Icon id="nav/identify"`, `aria-pressed={inspectEnabled === true}`, `title` et `aria-label`. Poser aussi `aria-pressed` sur projection et POV ; ne rendre aucun bouton de jeu si le callback optionnel manque.
 
-Styler avec `.view-controls` déjà existante et ses descendants sémantiques (`fieldset`, `legend`, boutons) : ce lot ne doit pas augmenter `CLASS_SELECTOR_BASELINE`.
+Dans `CombatBanner`, garder la région montée pendant tout combat non fini :
 
-- [ ] **Step 6: Vérifier jeu et éditeur**
+```tsx
+<div className="combat-feed" role="status" aria-live="polite" aria-atomic="true">
+  {line ? <div key={key} className={`cb-ev cb-now cb-tone-${line.tone}`}>{content}</div> : null}
+</div>
+```
 
-Run: `npx vitest run src/ui/ViewControls.test.tsx src/ui/editor/EditorCanvas.test.tsx src/ui/ui-ratchets.test.ts && npm run typecheck`
+Seul `.cb-ev` garde l’animation. Dans `CampaignView`, passer `round={battle.round}` à l’initiative et `inspectEnabled` / `onToggleInspect={toggleInspect}` à `ViewControls`. Ne pas modifier l’appel d’`EditorCanvas`.
+
+- [ ] **Step 3: Test ciblé et commit**
+
+Run: `npx vitest run src/ui/InitiativeStrip.test.tsx src/ui/ViewControls.test.tsx src/ui/CombatBanner.test.tsx && npx tsc --noEmit`
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit ciblé**
-
-```bash
-git add src/ui/ViewControls.tsx src/ui/ViewControls.test.tsx src/ui/icons/defs/ui.ts src/ui/icons/_registry.generated.ts src/ui/styles/hud.css
-git commit -m "feat(ui): structure les commandes de caméra"
+```powershell
+git add src/ui/InitiativeStrip.tsx src/ui/InitiativeStrip.test.tsx src/ui/ViewControls.tsx src/ui/ViewControls.test.tsx src/ui/CombatBanner.tsx src/ui/CombatBanner.test.tsx src/ui/CampaignView.tsx src/ui/styles/hud.css
+git commit -m "feat(ui): attribue round inspection et annonces"
 ```
 
-## Task 4: Rendre l’économie du tour lisible en texte
+### Task 3: Partager une seule résolution de déplacement
 
 **Files:**
-
-- Modify: `src/ui/ActiveFrame.tsx`
-- Modify: `src/ui/ActiveFrame.test.tsx`
-- Modify: `src/ui/ActionBar.tsx`
-- Modify: `src/ui/styles/combat-ui.css`
-- Modify: `src/ui/styles/hud.css`
-- Verify: `src/ui/ui-ratchets.test.ts`
-
-- [ ] **Step 1: Verrouiller les libellés de ressources**
-
-Ajouter des assertions SSR :
-
-```tsx
-expect(html).toContain('Action');
-expect(html).toContain('1/2');
-expect(html).toContain('Mouvement');
-expect(html).toContain('3/5');
-expect(html).toContain('Avantage');
-expect(html).not.toContain('Réaction');
-```
-
-Ajouter un scénario consommé (`actAvail={0}`) et vérifier un état textuel « utilisée » ou équivalent, pas uniquement une différence de couleur.
-
-- [ ] **Step 2: Vérifier l’échec**
-
-Run: `npx vitest run src/ui/ActiveFrame.test.tsx`
-
-Expected: FAIL car les valeurs ne vivent aujourd’hui que dans les `title` des jauges.
-
-- [ ] **Step 3: Composer les jauges et un résumé nommé**
-
-Conserver `Notches` pour le retour instantané et l’aperçu clignotant. Ajouter à `ActiveFrame` un `<dl>` compact qui expose les mêmes props, sans recalcul :
-
-```tsx
-<dl aria-label="Ressources du tour">
-  <div><dt>Action</dt><dd>{actAvail}/{actMax}</dd></div>
-  <div><dt>Mouvement</dt><dd>{moveLeft}/{moveMax}</dd></div>
-  <div><dt>Avantage</dt><dd>{advantage}/{advantageMax}</dd></div>
-</dl>
-```
-
-Pour une ressource à zéro, ajouter du texte accessible « utilisée »/« épuisé » et un attribut de donnée permettant le style, sans créer une ressource distincte.
-
-- [ ] **Step 4: Restituer l’identité courte de l’acteur**
-
-Dans `.ab-actor-side`, afficher `active.label` et la carrière éventuelle au-dessus des alertes et sets d’armes. Le nom dans ce dock ne contredit pas la barre de groupe : il identifie le sujet des décisions du tour.
-
-- [ ] **Step 5: Recomposer le bas de l’écran sans changer les actions**
-
-Dans `combat-ui.css`, donner la priorité visuelle au bloc acteur/ressources, conserver `.ab-slots` et isoler visuellement la slot `Fin du tour` déjà produite par `ActionBar`. Ne réordonner aucune action par label : utiliser les ids de slots existants.
-
-Dans `hud.css`, conserver le passage pleine largeur à 560 px et permettre à la liste d’actions de s’enrouler sans pousser le résumé hors écran.
-
-- [ ] **Step 6: Vérifier le lot**
-
-Run: `npx vitest run src/ui/ActiveFrame.test.tsx src/ui/ui-ratchets.test.ts && npm run typecheck`
-
-Expected: PASS. `ActionBar` ne reçoit aucune nouvelle logique : il transmet les valeurs qu’il calcule déjà à la vue pure testée `ActiveFrame`.
-
-- [ ] **Step 7: Commit ciblé**
-
-```bash
-git add src/ui/ActiveFrame.tsx src/ui/ActiveFrame.test.tsx src/ui/ActionBar.tsx src/ui/styles/combat-ui.css src/ui/styles/hud.css
-git commit -m "feat(ui): nomme les ressources du tour"
-```
-
-## Task 5: Ajouter le résumé textuel du déplacement sans dupliquer son calcul
-
-**Files:**
-
+- Modify: `src/state/combatFlow.ts`
+- Modify: `src/state/combatSlice.ts`
+- Modify: `src/state/pendings.ts`
 - Modify: `src/state/store.ts`
+- Create: `src/state/movement-resolution.test.ts`
 - Modify: `src/gameIso/stage/useHoverTargeting.ts`
 - Modify: `src/gameIso/stage/useHoverTargeting.test.tsx`
 - Create: `src/ui/MovementIntent.tsx`
@@ -302,275 +185,279 @@ git commit -m "feat(ui): nomme les ressources du tour"
 - Modify: `src/ui/ActionBar.tsx`
 - Modify: `src/ui/styles/combat-ui.css`
 
-- [ ] **Step 1: Définir le contrat minimal de présentation**
-
-Ajouter au store un état éphémère, par ids/valeurs et non par prose :
+**Interfaces:**
 
 ```ts
-movementIntent: {
-  kind: 'move' | 'run';
-  cost: number;
-  remaining: number;
-  pathStatus: 'free';
-} | null;
+export type MovementResolution =
+  | { status: 'ok'; path: Pt[]; cost: number; kind: 'move' | 'run' }
+  | { status: 'blocked'; reason: string };
+export function resolveMovementAt(get: Get, pt: Pt): MovementResolution;
+
+export interface MovementIntentProps {
+  resolution: MovementResolution | null;
+  remainingBefore: number;
+  remainingAfter: number | null;
+}
 ```
 
-`pathStatus` ne prétend pas détecter un danger non modélisé : un aperçu produit par `movePreviewAt` est un trajet légal, donc « libre ». Les destinations illégales continuent à ne produire aucun aperçu.
+`PendingRun` ajoute `path?: Pt[]`. `GameState` ajoute `movementIntent: MovementResolution | null`, initialisé à `null` et non persisté.
 
-- [ ] **Step 2: Écrire les tests du producteur**
+- [ ] **Step 1: RED — tester résolution, propriété et rendu**
 
-Dans `useHoverTargeting.test.tsx`, vérifier qu’un survol de déplacement légal renseigne le coût exact déjà fourni par `hoverMove`, le mouvement restant dérivé du budget courant, puis revient à `null` quand le survol disparaît ou qu’une modale bloque l’action.
+Dans `movement-resolution.test.ts`, monter un combat contrôlé et vérifier : destination légale = `status:'ok'` avec `path/cost/kind`, hors portée = `status:'blocked'` avec `reason`, premier tap = mêmes `path/cost` dans `battle.preview`, second tap = commit depuis ce chemin. Lire le corps de `battleClickTile` et `runConfirm` et vérifier qu’ils ne contiennent plus `pathTo(`.
 
-Run: `npx vitest run src/gameIso/stage/useHoverTargeting.test.tsx`
+Dans `MovementIntent.test.tsx`, vérifier `null`, le texte `Marche · coût 2 · Mouvement 4 → 2 · trajet libre`, `Course`, puis un refus sentinelle `Passage fermé` rendu tel quel.
 
-Expected: FAIL car `movementIntent` n’existe pas.
+Dans `useHoverTargeting.test.tsx`, vérifier que le survol légal pose la résolution du résolveur et que sortie de case / modale bloquante remet `movementIntent` à l’aperçu tactile courant ou `null`.
 
-- [ ] **Step 3: Projeter les données existantes dans le store**
+Run: `npx vitest run src/state/movement-resolution.test.ts src/gameIso/stage/useHoverTargeting.test.tsx src/ui/MovementIntent.test.tsx`
 
-Dans un effet voisin de celui qui pose `hoverDelta`, écrire `movementIntent` uniquement lorsque `hoverMove.kind` vaut `move` ou `run`. Réutiliser `hoverMove.cost`, `movementRemaining` et les mêmes conditions de validité ; ne relancer aucun pathfinding.
+Expected: FAIL car le type, le résolveur, le store et le composant n’existent pas, et les commits rappellent `pathTo`.
 
-- [ ] **Step 4: Écrire le composant pur**
+- [ ] **Step 2: GREEN — extraire puis consommer la résolution**
 
-`MovementIntent` reçoit l’objet ou `null` et rend le format suivant :
+Remplacer `movePreviewAt` par `resolveMovementAt`, sans écriture de store. Conserver les gates actuels ; chaque refus retourne son texte via `{ status:'blocked', reason }`. Un succès appelle `pathTo` une seule fois et retourne les quatre champs du contrat.
 
-```text
-Destination : 1 case · 3 mouvements resteront · trajet libre
+Dans `battleClickTile`, garder les routes `currentTargetingMode.commitTile` et `isEngaged -> startDisengage` avant le résolveur. Pour le mode neutre :
+
+```ts
+const saved = sameDestination(battle.preview, dest) ? battle.preview : null;
+const resolved = saved && (saved.kind === 'move' || saved.kind === 'run')
+  ? { status: 'ok' as const, kind: saved.kind, path: saved.path, cost: saved.cost }
+  : resolveMovementAt(get, dest);
 ```
 
-Tester pluriels, course et rendu nul. Utiliser `role="status"` avec une politique `aria-live` non intrusive.
+Sur refus, poser seulement `movementIntent`. Au premier tap, copier la résolution dans `battle.preview`. Au commit, utiliser `resolved.path` pour orientation, animation et franchissements, et `resolved.cost` pour `movementUsed`. Pour la Course, transmettre `path` à `battleRun`, stocker `PendingRun.path`, puis tronquer ce chemin dans `runConfirm` sans `pathTo`.
 
-Run: `npx vitest run src/ui/MovementIntent.test.tsx`
+Dans `useHoverTargeting`, utiliser le même résolveur pour le tracé et `movementIntent`. Au nettoyage, restaurer la résolution de `battle.preview` si elle existe, sinon `null`.
 
-Expected: FAIL puis PASS après implémentation.
+`MovementIntent` ne reçoit aucun store et rend seulement ses props. `ActionBar` choisit l’aperçu tactile avant le survol, calcule `remainingAfter` depuis `movementRemaining` et le `cost` déjà produit, puis monte le composant au-dessus de `.ab-bar`. Purger `movementIntent` au commit, annulation, changement de tour et sortie du combat.
 
-- [ ] **Step 5: Monter le bandeau au-dessus des actions**
+- [ ] **Step 3: Test ciblé et commit**
 
-Lire `movementIntent` dans `ActionBar` et rendre `MovementIntent` dans le dock, sans déplacer les overlays de trajet de `IsoStage`. Sur tactile, le même état doit aussi être alimenté par `battle.preview` afin que le tap-1 présente le coût avant confirmation.
-
-- [ ] **Step 6: Vérifier le lot**
-
-Run: `npx vitest run src/gameIso/stage/useHoverTargeting.test.tsx src/ui/MovementIntent.test.tsx src/state/preview-resource-delta.test.ts && npm run typecheck`
+Run: `npx vitest run src/state/movement-resolution.test.ts src/gameIso/stage/useHoverTargeting.test.tsx src/ui/MovementIntent.test.tsx src/state/preview-resource-delta.test.ts && npx tsc --noEmit`
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit ciblé**
-
-```bash
-git add src/state/store.ts src/gameIso/stage/useHoverTargeting.ts src/gameIso/stage/useHoverTargeting.test.tsx src/ui/MovementIntent.tsx src/ui/MovementIntent.test.tsx src/ui/ActionBar.tsx src/ui/styles/combat-ui.css
-git commit -m "feat(ui): explicite le coût du déplacement"
+```powershell
+git add src/state/combatFlow.ts src/state/combatSlice.ts src/state/pendings.ts src/state/store.ts src/state/movement-resolution.test.ts src/gameIso/stage/useHoverTargeting.ts src/gameIso/stage/useHoverTargeting.test.tsx src/ui/MovementIntent.tsx src/ui/MovementIntent.test.tsx src/ui/ActionBar.tsx src/ui/styles/combat-ui.css
+git commit -m "refactor(combat): partage la resolution du deplacement"
 ```
 
-## Task 6: Réaligner le HUD d’exploration et le flux de combat
+### Task 4: Nommer l’économie du tour sans perdre les contrôles
 
 **Files:**
+- Modify: `src/ui/ActiveFrame.tsx`
+- Modify: `src/ui/ActiveFrame.test.tsx`
+- Modify: `src/ui/ActionBar.tsx`
+- Modify: `src/ui/styles/combat-ui.css`
 
-- Modify: `src/ui/styles/hud.css`
-- Modify: `src/ui/ObjectiveBanner.test.tsx` or existing objective render test
-- Modify: `src/ui/CombatBanner.tsx` only if an accessibility attribute is missing
-- Create or modify: `src/ui/CombatBanner.test.tsx`
+**Interfaces:**
+- `ActiveFrame` garde toutes ses props actuelles et ses valeurs de preview `spendAction`, `spendMove`, `gainAdv`.
+- `ActionBar` garde `.ab-loadouts`, `switchLoadout`, les slots existants et `Fin du tour`.
 
-- [ ] **Step 1: Verrouiller la séparation des rôles**
+- [ ] **Step 1: RED — verrouiller texte, aperçu et témoins de non-régression**
 
-Dans les tests :
+Dans `ActiveFrame.test.tsx`, rendre `actAvail=1`, `actMax=1`, `moveLeft=4`, `moveMax=4`, `advantage=2`, `spendAction=1`, `spendMove=2`, `gainAdv=1`, puis vérifier :
 
-- `ObjectiveBanner` rend seulement en présence d’un objectif, garde le plus récent comme courant et reste dépliable ;
-- `CombatBanner` ne contient ni « Round » ni donnée persistante d’initiative ;
-- le message de combat porte `role="status"`/`aria-live="polite"` et un seul événement.
+```ts
+expect(html).toContain('Action');
+expect(html).toContain('1 → 0');
+expect(html).toContain('Mouvement');
+expect(html).toContain('4 → 2');
+expect(html).toContain('Avantage');
+expect(html).toContain('2 → 3');
+expect(html).not.toContain('Réaction');
+expect(html).toContain('af-action');
+expect(html).toContain('ptile-gauge');
+```
 
-Run: `npx vitest run src/ui/ObjectiveBanner.test.tsx src/ui/CombatBanner.test.tsx`
+Ajouter un test source de `ActionBar.tsx` qui exige `ab-loadouts`, `switchLoadout`, `ab-slots` et `Fin du tour`.
 
-Expected: le test d’annonce accessible échoue si l’attribut manque.
+Run: `npx vitest run src/ui/ActiveFrame.test.tsx`
 
-- [ ] **Step 2: Corriger uniquement la sémantique nécessaire**
+Expected: FAIL car les valeurs restent seulement dans les titres des crans.
 
-Ajouter l’annonce accessible au `CombatBanner` sans changer `combatFeed`, `narrateIntent` ni la cadence du directeur de combat.
+- [ ] **Step 2: GREEN — ajouter un résumé textuel adossé aux props**
 
-- [ ] **Step 3: Repositionner l’exploration**
+Conserver `Notches`, `PortraitTile` et `StateChips`. Ajouter un `<dl aria-label="Ressources du tour">` avec trois lignes. Afficher la valeur courante seule sans preview et `avant → après` quand le delta correspondant est non nul ; borner uniquement l’affichage entre 0 et le maximum fourni. Poser `data-spent="true"` et le texte `utilisée` pour Action à zéro, `épuisé` pour Mouvement à zéro.
 
-Dans `hud.css`, placer l’objectif sous la zone lieu/date en haut à gauche plutôt que sous la barre de groupe. Garder sa largeur bornée et son dépliage. Les interactions restent portées par `IsoStage` (`interact-halo`, curseur et trajet) : ne pas créer de liste permanente en bas à droite, où vit déjà `LogDrawer`.
+Dans `ActionBar`, restaurer l’identité courte avant les alertes :
 
-- [ ] **Step 4: Recaler le flux de combat**
+```tsx
+<strong>{active.label}</strong>
+{active.career ? <span>{careerLabelFor(active)}</span> : null}
+```
 
-Positionner `.combat-feed` sous une unique rangée de groupe et supprimer les offsets 176/254 px hérités du dock 2×2. Le flux reste centré, transitoire et ne chevauche pas le round/initiative.
+Ne déplacer ni supprimer le commutateur de loadout, ses handlers, les alertes ou les slots.
 
-- [ ] **Step 5: Vérifier le lot**
+- [ ] **Step 3: Test ciblé et commit**
 
-Run: `npx vitest run src/ui/ObjectiveBanner.test.tsx src/ui/CombatBanner.test.tsx src/ui/ui-ratchets.test.ts && npm run typecheck`
+Run: `npx vitest run src/ui/ActiveFrame.test.tsx src/state/preview-resource-delta.test.ts && npx tsc --noEmit`
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit ciblé**
-
-```bash
-git add src/ui/styles/hud.css src/ui/ObjectiveBanner.test.tsx src/ui/CombatBanner.tsx src/ui/CombatBanner.test.tsx
-git commit -m "feat(ui): sépare contexte d'exploration et flux de combat"
+```powershell
+git add src/ui/ActiveFrame.tsx src/ui/ActiveFrame.test.tsx src/ui/ActionBar.tsx src/ui/styles/combat-ui.css
+git commit -m "feat(ui): nomme les ressources du tour"
 ```
 
-## Task 7: Finaliser les cinq largeurs responsive
+### Task 5: Aligner exploration et responsive sur la matrice canonique
 
 **Files:**
-
+- Modify: `src/ui/CampaignView.tsx`
+- Modify: `src/ui/ObjectiveBanner.test.tsx`
 - Modify: `src/ui/styles/hud.css`
 - Modify: `src/ui/styles/combat-ui.css`
-- Modify: `src/ui/styles/combat-modals.css` only if the existing 560 px full-screen behavior is incomplete
-- Modify: `src/ui/ui-ratchets.test.ts` only if justified
+- Modify: `src/ui/styles/combat-modals.css`
+- Modify: `src/ui/ui-ratchets.test.ts`
 
-- [ ] **Step 1: Définir les invariants CSS à tester**
+**Interfaces:**
+- `CampaignView` produit un `<aside aria-label="Contexte d’exploration">` dans l’ordre lieu, `GameDate`, `ObjectiveBannerMount`.
+- Les seuls media queries de largeur ajoutés ou conservés pour ce HUD sont `max-width:900px`, `700px`, `560px`.
 
-Ajouter au cliquet ou à un test CSS ciblé des assertions de présence pour les trois breakpoints 900/700/560 et `pointer: coarse`. Verrouiller notamment :
+- [ ] **Step 1: RED — verrouiller pile et tranches**
 
-- groupe de quatre portraits sur une seule rangée à 360 px (`flex-wrap: nowrap` + débordement horizontal de secours) ;
-- initiative horizontale et défilable sous 700 px ;
-- dock pleine largeur sous 560 px ;
-- cibles caméra 44 px sous pointeur grossier.
+Dans `ObjectiveBanner.test.tsx`, garder les tests de pile et ajouter le témoin que l’objectif courant reste le dernier objectif, avec son bouton dépliable accessible.
 
-- [ ] **Step 2: Vérifier l’échec des nouveaux invariants**
+Dans `ui-ratchets.test.ts`, lire `hud.css` / `combat-ui.css` et vérifier :
 
-Run: `npx vitest run src/ui/ui-ratchets.test.ts`
+```ts
+expect(css).toContain('@media (max-width: 900px)');
+expect(css).toContain('@media (max-width: 700px)');
+expect(css).toContain('@media (max-width: 560px)');
+expect(css).toContain('@media (pointer: coarse)');
+expect(css).not.toMatch(/max-width:\s*(360|420)px/);
+```
 
-Expected: FAIL sur les règles responsive absentes.
+Ajouter des assertions source pour `flex-wrap: nowrap` du groupe sous 560, `overflow-x: auto` de l’initiative sous 700 et `min-width: 44px` des commandes sous `pointer: coarse`.
 
-- [ ] **Step 3: Implémenter `<=900px`**
+Run: `npx vitest run src/ui/ObjectiveBanner.test.tsx src/ui/ui-ratchets.test.ts`
 
-Compacter nom/ressources sans supprimer le round, la Blessure ou l’acteur courant. Autoriser le dock d’action à deux rangées. Ne pas réduire les portraits sous la taille lisible déjà définie par `PortraitTile`.
+Expected: FAIL car `hud.css` conserve 420 px et ne porte pas les quatre tranches explicites.
 
-- [ ] **Step 4: Implémenter `<=700px`**
+- [ ] **Step 2: GREEN — composer le contexte et les quatre tranches**
 
-Transformer `.initiative-strip` en bande horizontale placée sous `.party-dock`; `.is-tiles` passe en ligne avec `overflow-x:auto`. Le cartouche du round reste le premier élément visible. Le groupe ne s’enroule plus en 2×2.
+Dans `CampaignView`, sortir `GameDate` de la barre d’actions et monter :
 
-- [ ] **Step 5: Implémenter `<=560px` et `pointer: coarse`**
+```tsx
+{mode === 'exploration' && (
+  <aside aria-label="Contexte d’exploration">
+    <strong>{scene?.nom ?? 'Lieu inconnu'}</strong>
+    <span className="hud-clock"><GameDate time={gameTime} /></span>
+    <ObjectiveBannerMount />
+  </aside>
+)}
+```
 
-Garder quatre portraits sur une ligne ; réduire le texte visible mais conserver Blessures et alertes. Le dock occupe la largeur, le résumé acteur reste visible, les actions secondaires peuvent défiler/s’ouvrir sans cacher `Fin du tour`. Vérifier que les modales `RollShell` occupent l’écran, que leur corps défile et que le pied d’action reste fixe.
+Styler cet aside par son attribut, sans nouvelle classe locale. Supprimer la media query 420 px et redistribuer sa règle dans 560 px. Implémenter exactement : base `>900`, `max-width:900`, `max-width:700`, `max-width:560`, plus `pointer:coarse`. À 560 : groupe `nowrap`, initiative horizontale défilable, dock pleine largeur. Conserver les modales plein écran et leur pied fixe à 560.
 
-- [ ] **Step 6: Vérifier mécaniquement**
+- [ ] **Step 3: Test ciblé et commit**
 
-Run: `npx vitest run src/ui/ui-ratchets.test.ts src/ui/PartyDock.test.tsx src/ui/InitiativeStrip.test.tsx src/ui/ViewControls.test.tsx src/ui/ActiveFrame.test.tsx && npm run typecheck`
+Run: `npx vitest run src/ui/ObjectiveBanner.test.tsx src/ui/PartyDock.test.tsx src/ui/InitiativeStrip.test.tsx src/ui/ViewControls.test.tsx src/ui/ui-ratchets.test.ts && npx tsc --noEmit`
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit ciblé**
-
-```bash
-git add src/ui/styles/hud.css src/ui/styles/combat-ui.css src/ui/styles/combat-modals.css src/ui/ui-ratchets.test.ts
-git commit -m "feat(ui): adapte le HUD tactique aux petits écrans"
+```powershell
+git add src/ui/CampaignView.tsx src/ui/ObjectiveBanner.test.tsx src/ui/styles/hud.css src/ui/styles/combat-ui.css src/ui/styles/combat-modals.css src/ui/ui-ratchets.test.ts
+git commit -m "feat(ui): aligne exploration et responsive"
 ```
 
-## Task 8: Verrouiller la hiérarchie de la modale d’attaque existante
+### Task 6: Verrouiller l’attaque sur Z0–Z15
 
 **Files:**
-
-- Verify: `src/ui/jetProps/useAttackJetProps.tsx`
-- Create: `src/ui/jetProps/useAttackJetProps.render.test.tsx`
+- Modify: `src/ui/jetProps/useAttackJetProps.tsx`
+- Create: `src/ui/jetProps/useAttackJetProps.conformance.test.tsx`
+- Verify: `src/ui/RollShell.tsx`
 - Verify: `src/ui/VsHeader.tsx`
 
-- [ ] **Step 1: Écrire un test de rendu du flux réel**
+**Interfaces:**
+- `useAttackJetProps(): ComponentProps<typeof RollShell> | null` reste inchangé.
+- `composeRollLabel(attacker, 'Attaque', test)` devient l’unique producteur de Z1.
+- Aucune modification de `pendingAttack`, du calcul, des handlers ou d’une modale dédiée.
 
-Initialiser le store avec une `pendingAttack` valide puis rendre les props renvoyées par `useAttackJetProps` dans `RollShell`. Vérifier dans l’ordre du DOM :
+- [ ] **Step 1: RED — rendre le flux réel et sonder ses zones**
 
-1. titre `Attaque` ;
-2. `VsHeader` attaquant/cible ;
-3. les deux rangées opposées quand une défense existe ;
-4. arme et dégâts prévus ;
-5. options de localisation ;
-6. actions Annuler/Lancer.
+Créer une fixture jsdom sur le patron de `defense-forcage-annule.test.tsx`, initialiser un attaquant et une cible, ouvrir l’attaque réelle, puis rendre `<RollShell {...useAttackJetProps()!} />` dans un `Probe`.
 
-Vérifier aussi l’absence de groupe, de round et de duplication de Blessures globales.
+Vérifier Z0 `Attaque` seul, Z1 `attaquant — Attaque (Corps à corps)`, un seul `.rm-vs` en Z3, les options en Z4, une ou deux `.roll-row` en Z5, aucune `.rm-journal` pré-jet, puis les actions `Annuler` / `Appliquer`. Vérifier l’absence de `Round`, `party-dock` et d’une deuxième modale.
 
-- [ ] **Step 2: Exécuter le test avant retouche**
+Run: `npx vitest run src/ui/jetProps/useAttackJetProps.conformance.test.tsx`
 
-Run: `npx vitest run src/ui/jetProps/useAttackJetProps.render.test.tsx`
+Expected: FAIL sur Z1 car `subtitle` vaut actuellement `null`.
 
-Expected: PASS, car la cartographie confirme que le flux compose déjà `RollShell` et `VsHeader`. Un échec est une régression réelle à traiter avant de poursuivre, jamais le motif de créer une nouvelle modale.
+- [ ] **Step 2: GREEN — corriger seulement la projection Z1**
 
-- [ ] **Step 3: Vérifier les régressions de la coquille**
+Importer `composeRollLabel` et dériver le test depuis l’arme déjà résolue :
 
-Run: `npx vitest run src/ui/jetProps/useAttackJetProps.render.test.tsx src/ui/RollShell.test.tsx src/ui/opposed-mask.test.tsx src/ui/component-conformance.test.ts`
+```ts
+const attackTest = weapon.resolveChar
+  ? { char: weapon.resolveChar }
+  : { skill: weapon.type === 'ranged' ? 'projectiles' : 'corps-a-corps' };
+
+subtitle: composeRollLabel(attacker, 'Attaque', attackTest),
+```
+
+Conserver `title:'Attaque'`, `extra:<VsHeader>`, `setup`, `rows`, `outcome`, `postRollExtra`, `forcedExtra` et `actions` à leur propriétaire actuel. Ne modifier aucun handler ni fichier de moteur.
+
+- [ ] **Step 3: Test ciblé et commit**
+
+Run: `npx vitest run src/ui/jetProps/useAttackJetProps.conformance.test.tsx src/ui/roll-display-contract.test.tsx src/ui/component-conformance.test.ts && npx tsc --noEmit`
 
 Expected: PASS.
 
-- [ ] **Step 4: Commit ciblé**
-
-```bash
-git add src/ui/jetProps/useAttackJetProps.render.test.tsx
-git commit -m "test(ui): verrouille la lecture de l'attaque opposée"
+```powershell
+git add src/ui/jetProps/useAttackJetProps.tsx src/ui/jetProps/useAttackJetProps.conformance.test.tsx
+git commit -m "test(ui): verrouille attaque sur le contrat de jet"
 ```
 
-## Task 9: Recette navigateur complète et fermeture du chantier
+### Task 7: Passer les gates, recetter et supprimer le plan exécuté
 
 **Files:**
+- Delete after all checks pass: `docs/superpowers/plans/2026-07-31-hud-combat-exploration.md`
+- Modify only on observed regression: files already owned by Tasks 1–6
 
-- Delete after completion: `docs/superpowers/plans/2026-07-31-hud-combat-exploration.md`
+**Interfaces:**
+- Scénarios existants : `L’Embuscade` pour le combat et `La Diligence — exploration` hors combat.
+- Largeurs : 1600×900, 900, 700, 560, 360 px.
 
-- [ ] **Step 1: Lancer les gardes complètes**
+- [ ] **Step 1: RED — exécuter les gates avant fermeture**
 
-```bash
+Run:
+
+```powershell
 npm test
 npm run typecheck
 npm run docs:check
 ```
 
-Expected: trois commandes vertes. Corriger toute régression dans le lot qui l’a introduite, sans modifier un test pour masquer un comportement faux.
+Expected: les trois commandes doivent passer ; tout échec reste attribué au premier lot qui l’a introduit et y reçoit un test rouge avant correction.
 
-- [ ] **Step 2: Démarrer le jeu et utiliser la recette réelle**
+- [ ] **Step 2: GREEN — recette navigateur complète**
 
-Avec le skill `recette-navigateur`, lancer le scénario existant **L’Embuscade** via `window.__wfrp` pour le combat et **La Diligence — exploration** pour l’état hors combat. Ces deux scénarios couvrent déjà un groupe de quatre, plusieurs ennemis, déplacement, attaque et exploration libre : aucun nouveau scénario n’est requis.
+Avec le skill `recette-navigateur`, lancer `L’Embuscade` et vérifier : pause `turn=-1`, tour joueur, renfort, déplacement survol/tap/commit/refus, attaque pré-jet/résultat/influence, tour ennemi et combat fini. Confirmer absence de caret dans le groupe, round et phases dans l’initiative, inspection dans `ViewControls`, région live unique, texte avant → après, loadout et `Fin du tour` intacts.
 
-- [ ] **Step 3: Recetter les états de combat**
+Lancer `La Diligence — exploration` et confirmer la pile lieu/date/objectif haut-gauche, le groupe identitaire et l’absence d’initiative, round, flux et dock.
 
-À 1600×900, vérifier et capturer :
+Répéter les contrôles structurants aux cinq largeurs. À 360 px : quatre portraits sur une ligne, round visible, courant atteignable, commandes de 44 px sous pointeur grossier, dock et modale exploitables sans collision. Parcourir au clavier groupe, initiative, vue, dock et modale ; console à zéro erreur.
 
-- précombat : round rattaché à l’initiative, valeurs visibles ;
-- tour joueur : acteur courant uniquement dans initiative + dock ;
-- déplacement : coût/reste/trajet avant confirmation ;
-- attaque : `VsHeader`, valeurs opposées, localisation, actions ;
-- résultat/influence : même ossature `RollShell` ;
-- tour ennemi : intention brève, acteur courant lisible ;
-- groupe : aucun caret/liseré d’acteur courant sur les quatre cartes.
+- [ ] **Step 3: Rejouer les gates après la dernière correction**
 
-- [ ] **Step 4: Recetter l’exploration**
+Run:
 
-Vérifier : initiative/round/dock absents ; groupe inchangé ; date/lieu et objectif lisibles ; halo/cursor/trajet d’une interaction réellement disponible ; aucun panneau permanent dupliquant ces affordances.
-
-- [ ] **Step 5: Recetter les largeurs**
-
-Répéter les points structurants à 900, 700, 560 et 360 px. À 360 px : quatre portraits sur une ligne, initiative horizontale défilable, acteur courant visible, commandes caméra tactiles, dock exploitable, modale plein écran et aucune collision.
-
-- [ ] **Step 6: Vérifier console et contrôles**
-
-Console à zéro erreur. Parcourir groupe, initiative, caméra, actions et modale au clavier ; vérifier `focus-visible`, noms accessibles et absence d’information reposant seulement sur la couleur.
-
-- [ ] **Step 7: Faire corriger les défauts observés et rejouer la recette**
-
-Chaque défaut visible reçoit un test quand il est mécaniquement verrouillable, puis est corrigé dans le composant source. Rejouer le scénario complet après la dernière correction.
-
-- [ ] **Step 8: Supprimer le plan exécuté et committer**
-
-La politique du dépôt interdit les plans périmés. Une fois tous les critères atteints :
-
-```bash
-git rm docs/superpowers/plans/2026-07-31-hud-combat-exploration.md
-git add <uniquement les corrections finales et preuves autorisées>
-git commit -m "docs(ui): clôt la refonte du HUD tactique"
+```powershell
+npm test
+npm run typecheck
+npm run docs:check
 ```
 
-- [ ] **Step 9: Pousser `main`**
+Expected: PASS pour les trois commandes et recette navigateur verte.
 
-```bash
-git push origin main
+- [ ] **Step 4: Supprimer le plan et committer la fermeture**
+
+Supprimer `docs/superpowers/plans/2026-07-31-hud-combat-exploration.md` seulement après les gates et la recette vertes.
+
+```powershell
+git add docs/superpowers/plans/2026-07-31-hud-combat-exploration.md
+git commit -m "docs(ui): clot le chantier du HUD tactique"
 ```
-
-Expected: branche distante à jour, arbre de travail ne contenant que les WIP étrangers déjà présents avant le chantier.
-
-## Final Verification Checklist
-
-- [ ] Chaque point des critères d’acceptation de la spécification possède un test ou une étape de recette explicite.
-- [ ] Aucun `TBD`, placeholder, pseudo-API ou nom de fichier incertain ne subsiste.
-- [ ] `PartyDock` ne reçoit plus aucun état de tour.
-- [ ] `InitiativeStrip` reçoit le round depuis `battle.round` et porte seul la temporalité.
-- [ ] `ViewControls` conserve son contrat partagé avec `EditorCanvas`.
-- [ ] `ActiveFrame` ne recalcule pas l’économie ; il présente les props déjà calculées par `ActionBar`.
-- [ ] Le déplacement réutilise `hoverMove`/`previewResourceDelta`, sans second pathfinding.
-- [ ] L’attaque reste sur `RollShell`/`VsHeader`.
-- [ ] Aucun label n’est utilisé comme clé logique.
-- [ ] Aucun emoji, SVG local, couleur JSX en dur ou classe mono-écran injustifiée n’a été ajouté.
-- [ ] `npm test`, `npm run typecheck`, `npm run docs:check` et la recette navigateur sont verts.
