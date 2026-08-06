@@ -27,6 +27,9 @@ import type { CharKey, Difficulty, EffectSource, HitLocation } from './types';
 import { relationBetween, type Camp, type Relation } from './relations';
 import { groupMatch } from './groups';
 import type { GameOp, PairedSense } from './ops';
+// Type SEUL (effacé à la compilation — aucun cycle runtime) : `StakeRef` est la forme canonique de la
+// zone d'enjeu, et la redéclarer ici serait la 2ᵉ source du même vocabulaire que #1117 combat.
+import type { StakeRef } from '../data';
 import { statusOf, statusMeets } from './social';
 
 /** Fenêtre horaire d'un trigger/Condition (heure-du-jour, `before` EXCLUSIF). Champs absents = borne
@@ -376,6 +379,12 @@ export function flowTestGateOpen(ft: FlowTest, cc: ConditionCtx): boolean {
  *  SANS les branches (portées par le nœud Flow `test`). Source UNIQUE : `Effect` 'test' est normalisé
  *  vers cette forme à l'exécution (un seul ouvreur de modale `openSkillTest`). */
 export interface FlowTest {
+  /** ENJEU du Test (#1117) — RÉFÉRENCE de donnée, jamais un texte. C'est la TROISIÈME forme qui lance
+   *  (après l'étape de cascade posée à la main et la `RollRequest` du seam) : `resolveFlowTest` bâtit
+   *  son étape via `simpleTriggeredTestStep`, qui n'a aucun moyen de deviner ce que le Flow met en
+   *  jeu. Le producteur du Flow le fournit ici — y compris un Flow AUTHORÉ (la clé est pur-donnée,
+   *  sérialisable). */
+  stake?: StakeRef;
   skill?: string;
   /** Spécialisation ciblée (Métier (Serrurier), Savoir (Magie)…) — précise QUELLE instance de `skill`
    *  est testée quand le héros en possède plusieurs ; sinon la première suffit. */

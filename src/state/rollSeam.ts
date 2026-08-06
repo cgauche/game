@@ -378,17 +378,18 @@ export function openRoll(get: Get, set: Set, req: RollRequest, kind: string, met
  */
 export function openPartyTest(
   get: Get, set: Set,
-  spec: { skill: string; char?: CharKey; assisted?: boolean; spec?: string; sense?: PairedSense; menace?: string; noSupport?: boolean; actionLabel: string; difficulty: Difficulty },
+  spec: { skill: string; char?: CharKey; assisted?: boolean; spec?: string; sense?: PairedSense; menace?: string; noSupport?: boolean; actionLabel: string; difficulty: Difficulty; stake?: StakeRef },
   kind: string,
   meta?: CascadeStepMeta,
 ): void {
-  const { skill, char, assisted, spec: specName, sense, menace, noSupport, actionLabel, difficulty } = spec;
+  const { skill, char, assisted, spec: specName, sense, menace, noSupport, actionLabel, difficulty, stake } = spec;
   openRoll(get, set, {
     side: { partyBest: { skill, char, assisted } },
     actionLabel,
     test: { skill, char, spec: specName, sense, menace, noSupport },
     difficulty,
     klass: 'hero-test',
+    ...(stake ? { stake } : {}),
   }, kind, meta);
 }
 
@@ -399,7 +400,7 @@ export function openPartyTest(
  */
 export function openWorldTest(
   get: Get, set: Set,
-  spec: { ownerId: string; actionLabel: string; difficulty: Difficulty },
+  spec: { ownerId: string; actionLabel: string; difficulty: Difficulty; stake?: StakeRef },
   kind: string,
   meta?: CascadeStepMeta,
 ): void {
@@ -409,6 +410,7 @@ export function openWorldTest(
     test: {},
     difficulty: spec.difficulty,
     klass: 'subi',
+    ...(spec.stake ? { stake: spec.stake } : {}),
   }, kind, meta);
 }
 

@@ -517,7 +517,22 @@ export const conditionSchema: z.ZodType<unknown> = z.lazy(() =>
 );
 
 /** `FlowTest` (`engine/flowCore.ts:335`) — jet différé (→ modale), tout le métier hors branches. */
+/** RÉFÉRENCE d'enjeu AUTHORÉE (#1117) — miroir zod de `StakeRef` (`src/data/index.ts`) : la clé de la
+ *  donnée + les valeurs calculées pour ses trous. Un Flow authoré peut donc DIRE ce qu'il met en jeu,
+ *  sans qu'aucun texte n'entre au document (le résolveur reste la seule porte du texte). */
+export const stakeRefSchema = z.strictObject({
+  key: z.strictObject({
+    dataset: z.enum(['night', 'voyage', 'weather', 'flow', 'activity', 'combat']),
+    kind: z.string(),
+    entryId: z.string().optional(),
+    entryCategory: z.string().optional(),
+  }),
+  values: z.record(z.string(), z.union([z.string(), z.number()])).optional(),
+});
+
 export const flowTestSchema = z.strictObject({
+  /** ENJEU du Test (#1117) — cf. `stakeRefSchema`. */
+  stake: stakeRefSchema.optional(),
   skill: z.string().optional(),
   spec: z.string().optional(),
   sense: z.enum(['vue', 'ouie']).optional(),

@@ -6123,7 +6123,12 @@ export function approachFearTrigger(get: Get, set: SetFn, mover: Combatant, from
     if (chebyshev(mover.pos, c.pos) >= chebyshev(fromPos, c.pos)) continue; // ne s'est pas rapproché
     peur.lastApproachKey = approachKey;
     const flow = testFlow(
-      { skill: 'calme', difficulty: 'intermediaire', label: 'Approche menaçante' },
+      {
+        skill: 'calme', difficulty: 'intermediaire', label: 'Approche menaçante',
+        // Le foyer est l'ENTRÉE de psychologie affrontée (`peur`), qui porte déjà son enjeu et sa
+        // fiche — pas un gabarit de `kind` : c'est la MÊME Peur que celle des Tests de Round.
+        stake: combatStakeRef('combatPsych', { entryId: 'peur', values: { indice: peur.indice ?? 0 } }),
+      },
       EMPTY_FLOW, // réussite : garde son sang-froid, rien à faire
       { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: COND.brise, value: 1 }] } },
     );

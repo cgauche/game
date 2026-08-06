@@ -133,11 +133,12 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
+| `stake` | 1 | `src/state/combat/triggeredTest.ts:184` |
 | `skill` | 9 | `src/state/combat/triggeredTest.ts:176` |
 | `spec` | 8 | `src/state/combat/triggeredTest.ts:176` |
 | `sense` | 1 | `src/state/combatEffects.ts:391` |
 | `characteristic` | 8 | `src/state/combat/triggeredTest.ts:176` |
-| `difficulty` | 2 | `src/engine/flowCore.ts:367` |
+| `difficulty` | 2 | `src/engine/flowCore.ts:370` |
 | `requireSL` | 1 | `src/state/combatEffects.ts:418` |
 | `label` | 2 | `src/state/combat/triggeredTest.ts:181` |
 | `tool` | 1 | `src/state/combatEffects.ts:393` |
@@ -150,10 +151,10 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `unlessImmune` | 1 | `src/state/combat/flowEval.ts:55` |
 | `onlyGroups` | 1 | `src/state/combat/flowEval.ts:56` |
 | `exceptGroups` | 1 | `src/state/combat/flowEval.ts:57` |
-| `gate` | 1 | `src/engine/flowCore.ts:372` |
+| `gate` | 1 | `src/engine/flowCore.ts:375` |
 | `noSupport` | 1 | `src/state/combatEffects.ts:386` |
-| `menace` | 1 | `src/state/combat/triggeredTest.ts:185` |
-| `difficultyBy` | 1 | `src/engine/flowCore.ts:366` |
+| `menace` | 1 | `src/state/combat/triggeredTest.ts:188` |
+| `difficultyBy` | 1 | `src/engine/flowCore.ts:369` |
 | `opposed` | **0 — JAMAIS LU** | — |
 
 ### `TravelTableEntry` (src/engine/travelTables.ts)
@@ -216,7 +217,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 ## Synthèse
 
-17 types, 118 champs mesurés, **16 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
+17 types, 119 champs mesurés, **16 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
 
 ## Cas fondateur
 

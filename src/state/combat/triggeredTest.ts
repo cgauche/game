@@ -179,6 +179,9 @@ export function simpleTriggeredTestStep(
     id: `triggeredTest-${c.id}-${skillLabel}`,
     kind: 'triggeredTest', actorId: c.id, icon: 'nav/dice', rollLabel: skillLabel,
     base, target: base + DIFFICULTY_MODIFIERS[difficulty] + combatTestPenalty(c), label: ft.label ?? skillLabel,
+    // ENJEU du Flow (#1117) : le producteur du `FlowTest` le fournit, cette fabrique le transmet —
+    // elle est générique et ne peut rien deviner de ce que le Test met en jeu.
+    ...(ft.stake ? { stake: ft.stake } : {}),
     meta: { onSuccess: branches.onSuccess, onFail: branches.onFail, after, ...extraMeta },
     // Tag de DONNÉE (`FlowTest.menace` — Venin/lames empoisonnées : 'Poison') → l'étape offre
     // l'auto-succès du talent Résistance (Menace) (LDB 10, verbe `cascadeResist`).
@@ -356,6 +359,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
       ? {
           id: `triggeredTest-${c.id}-${skillLabel}`, kind: 'triggeredTest', actorId: c.id, icon: 'nav/dice', rollLabel: skillLabel,
           base, target: base + DIFFICULTY_MODIFIERS[difficulty] + penalty, label,
+          ...(ft.stake ? { stake: ft.stake } : {}),
           meta: { onSuccess: node.success, onFail: node.fail, after, opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}) }, ...extraMeta },
           ...(ft.menace ? { menace: ft.menace } : {}),
         }

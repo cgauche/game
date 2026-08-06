@@ -133,12 +133,47 @@ export function rollRequestsWithoutStake(src: string): number[] {
 
 /** Baseline NOMINATIVE des `RollRequest` muettes — même contrat que celle des étapes. */
 const BASELINE_REQ: Record<string, number> = {
-  // La PORTE elle-même : ses deux `RollRequest` de commodité (`openHeroTest`/`openPartyTest`) sont
-  // génériques — l'enjeu vient de LEUR appelant, qui le transmet désormais (`RollRequest.stake`).
-  'rollSeam.ts': 2,
+  // La PORTE elle-même : ses `RollRequest` de commodité sont GÉNÉRIQUES — `openPartyTest` et
+  // `openWorldTest` TRANSMETTENT désormais le `stake` de leur appelant (donc soldées) ; la dernière
+  // est la forme qui n'a pas encore de spec porteuse.
+  'rollSeam.ts': 1,
   'tavernFlow.ts': 1, // jeux de taverne (NADJ) : fiche de règle à curer
   'seaActivities.ts': 1, // Commerce d'opportunité (MDG 15) — même arbitrage que ses étapes : le CHOIX porte l'enjeu
   'seaVoyageFlow.ts': 3, // jets de bord passant par le seam : à doter avec le lot maritime
+};
+
+/**
+ * TROISIÈME forme qui lance : un `FlowTest` passé à `testFlow(…)` et joué par `runCombatFlow` —
+ * `resolveFlowTest` en fait une étape via `simpleTriggeredTestStep`, DANS le seam. Le littéral
+ * d'étape est donc générique : les deux scans ci-dessus ne peuvent pas le voir muet (trou trouvé en
+ * recette L2 sur l'Approche menaçante, `combatFlow.approachFearTrigger`). Un détecteur ne mesure que
+ * sa couverture : celle-ci est le 1ᵉʳ argument littéral de `testFlow(`.
+ */
+export function flowTestsWithoutStake(src: string): number[] {
+  const s = stripLiterals(src);
+  const lines: number[] = [];
+  for (const m of s.matchAll(/\btestFlow\s*\(\s*\{/g)) {
+    const start = s.indexOf('{', m.index!);
+    let depth = 0;
+    let end = -1;
+    for (let j = start + 1; j < s.length; j++) {
+      if (s[j] === '{') depth++;
+      else if (s[j] === '}') { if (depth === 0) { end = j; break; } depth--; }
+    }
+    if (end < 0) continue;
+    const lit = s.slice(start, end);
+    if (/\bstake\s*(?:[,:]|$)/.test(lit)) continue;
+    lines.push(src.slice(0, start).split('\n').length);
+  }
+  return lines;
+}
+
+/** Baseline NOMINATIVE des `FlowTest` muets — même contrat que les deux précédentes. */
+const BASELINE_FLOW: Record<string, number> = {
+  'climbMove.ts': 1, // Escalade (LDB 15) : fiche de règle à curer
+  'combatEffects.ts': 1, // Test de scène authoré : l'enjeu vient du document, pas du site
+  'combatFlow.ts': 4, // Vigilance d'embuscade ×2, désarmement/reprise d'arme, contraction de fin de combat
+  'jumpMove.ts': 1, // Saut (LDB 15) : fiche de règle à curer
 };
 
 /** Baseline NOMINATIVE (fichier → étapes qui lancent, encore sans enjeu). ZÉRO ailleurs.
@@ -158,7 +193,8 @@ const BASELINE: Record<string, number> = {
   'shipwreck.ts': 1, // Natation du naufrage
   'embrigadementFlow.ts': 2, // Ragot + Discrétion de l'embrigadement
   // COMBAT — reste du stock mesuré, chacun avec le VERROU qui l'empêche d'être doté aujourd'hui :
-  'combat/triggeredTest.ts': 2, // Test déclenché en DONNÉES : régime `calcule` (ops de `meta.onSuccess`/`onFail`)
+  // (`combat/triggeredTest.ts` est SOLDÉ : ses deux fabriques d'étape TRANSMETTENT `FlowTest.stake` —
+  //  la dette est remontée chez les PRODUCTEURS de Flow, mesurés par `BASELINE_FLOW` ci-dessus.)
   // gate d'Action : `ActiveEffect.source` EXISTE et est estampillée génériquement par `applyOps`
   // (post-passe `ctx.source`) — la source est donc atteignable. Le verrou est de COUCHE : la table
   // `EffectSourceKind` → catégorie Codex vit dans `gameIso/effectIcons.ts` (`CATEGORY_BY_SOURCE_KIND`),
@@ -211,6 +247,33 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
       if (n < b) stale.push(`${f} : baseline ${b}, réel ${n} — ABAISSER`);
     }
     expect(stale, ['Baseline(s) PÉRIMÉE(s) :', ...stale].join('\n')).toEqual([]);
+  });
+
+  it('aucun `FlowTest` NEUF sans enjeu, et toute baseline soldée est ABAISSÉE', () => {
+    const counts: Record<string, number[]> = {};
+    for (const f of sourceFiles(STATE)) {
+      const found = flowTestsWithoutStake(readFileSync(f, 'utf8'));
+      if (found.length) counts[f.slice(STATE.length + 1).split(sep).join('/')] = found;
+    }
+    const over: string[] = [];
+    for (const [f, l] of Object.entries(counts)) {
+      const b = BASELINE_FLOW[f] ?? 0;
+      if (l.length > b) over.push(`${f} : ${l.length} (baseline ${b}) — lignes ${l.join(', ')}`);
+    }
+    expect(over, ['`FlowTest` joué par le seam sans enjeu (`FlowTest.stake`) :', ...over].join('\n')).toEqual([]);
+    const stale: string[] = [];
+    for (const [f, b] of Object.entries(BASELINE_FLOW)) {
+      const n = counts[f]?.length ?? 0;
+      if (n < b) stale.push(`${f} : baseline ${b}, réel ${n} — ABAISSER`);
+    }
+    expect(stale, ['Baseline(s) PÉRIMÉE(s) :', ...stale].join('\n')).toEqual([]);
+  });
+
+  it('FAIL-CLOSED : un `FlowTest` synthétique sans enjeu est DÉTECTÉ, avec enjeu il ne l’est pas', () => {
+    const sans = `const f = testFlow({ skill: 'calme', difficulty: 'intermediaire', label: 'Approche' }, EMPTY_FLOW, brise);`;
+    const avec = `const f = testFlow({ skill: 'calme', difficulty: 'intermediaire', label: 'Approche', stake: combatStakeRef('combatPsych', { entryId: 'peur' }) }, EMPTY_FLOW, brise);`;
+    expect(flowTestsWithoutStake(sans)).toHaveLength(1);
+    expect(flowTestsWithoutStake(avec)).toHaveLength(0);
   });
 
   it('FAIL-CLOSED : une `RollRequest` synthétique sans enjeu est DÉTECTÉE, avec enjeu elle ne l’est pas', () => {
