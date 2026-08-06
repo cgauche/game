@@ -21,12 +21,19 @@ const truncate = (s: string, n = 400): string => (s.length > n ? `${s.slice(0, n
  *  déclencheur qui n'a QUE des icônes serait MUET pour un lecteur d'écran. On dérive alors son nom
  *  accessible du `label` — correctif DANS la primitive, jamais N props recopiées aux call-sites. */
 export function nodeHasText(node: ReactNode): boolean {
-  if (node == null || typeof node === 'boolean') return false;
-  if (typeof node === 'string') return node.trim().length > 0;
-  if (typeof node === 'number') return true;
-  if (Array.isArray(node)) return node.some(nodeHasText);
-  if (isValidElement(node)) return nodeHasText((node.props as { children?: ReactNode }).children);
-  return false;
+  return nodeText(node).trim().length > 0;
+}
+
+/** TEXTE porté par un nœud, récursivement — un élément non textuel (`Icon` → `<svg aria-hidden>`)
+ *  n'y contribue rien. SOURCE UNIQUE de la dérivation « contenu riche → nom accessible » : `nodeHasText`
+ *  en est la sonde booléenne, et un titre de coquille y prend son libellé de renvoi (`RollShell`). */
+export function nodeText(node: ReactNode): string {
+  if (node == null || typeof node === 'boolean') return '';
+  if (typeof node === 'string') return node;
+  if (typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(nodeText).join('');
+  if (isValidElement(node)) return nodeText((node.props as { children?: ReactNode }).children);
+  return '';
 }
 
 /** Pont de survol (ms) : sous `wrap`, délai avant fermeture pour que le pointeur ATTEIGNE le

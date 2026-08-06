@@ -10,7 +10,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { useGame } from '../state/store';
 import { characteristics, regles } from '../data';
-import { codexLookupById } from './compendium/registry';
+import { codexLookupById, optionBody } from './compendium/registry';
 import { ResilienceButton } from './ResilienceButton';
 
 const noop = () => {};
@@ -131,5 +131,31 @@ describe('ResilienceButton — pool, le BOUTON porte sa règle (#945, #1078)', (
     expect(sec, 'section « Dépenses » absente de la fiche Résilience').toBeTruthy();
     expect(sec!.rows.filter((r) => r.t === 'sub').map((r) => (r as { label: string }).label))
       .toEqual(['Je ne faillirai pas !', 'Je te renie !']);
+  });
+
+  /**
+   * GOÛT (recette #1117) : le sous-en-tête porte déjà le nom — le corps ne redit ni la puce de liste
+   * ni « **Nom :** ». La DONNÉE, elle, reste le verbatim recollable : le dédoublonnage est un geste
+   * d'AFFICHAGE (`optionBody`), vérifié ici des deux côtés.
+   */
+  it('le corps d’une dépense est DÉDOUBLONNÉ à l’affichage, la donnée restant verbatim', () => {
+    const sec = codexLookupById('characteristics', 'resilience')?.sections?.find((s) => s.title === 'Dépenses');
+    const corps = sec!.rows.filter((r) => r.t === 'text').map((r) => (r as { text: string }).text);
+    for (const t of corps) {
+      expect(t.startsWith('- '), 'puce de liste orpheline sous le sous-en-tête').toBe(false);
+      expect(t.startsWith('**'), 'libellé répété alors que le sous-en-tête le porte').toBe(false);
+    }
+    expect(corps[1]).toBe('vous pouvez choisir de ne pas développer la mutation obtenue. Et comme vous ne mutez pas, vous ne perdez aucun Point de Corruption. Voir Corruption à la page 182 pour en savoir plus.');
+    // La DONNÉE n'a pas bougé : elle porte toujours sa puce et son préfixe (règle 5).
+    const renie = (characteristics as { id: string; options?: { id: string; desc: string }[] }[])
+      .find((c) => c.id === 'resilience')!.options!.find((o) => o.id === 'je-te-renie')!;
+    expect(renie.desc.startsWith('- **Je te renie ! :**')).toBe(true);
+  });
+
+  it('FAIL-CLOSED : `optionBody` ne touche QUE le préfixe de SON libellé', () => {
+    expect(optionBody({ label: 'Je te renie !', desc: '- **Je te renie ! :** texte.' })).toBe('texte.');
+    // Verbatim qui ne commence PAS par le nom de l'option : rendu tel quel.
+    expect(optionBody({ label: 'Je te renie !', desc: '- **Autre chose :** texte.' })).toBe('**Autre chose :** texte.');
+    expect(optionBody({ label: 'Je te renie !', desc: 'texte sans puce.' })).toBe('texte sans puce.');
   });
 });

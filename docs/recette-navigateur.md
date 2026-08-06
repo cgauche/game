@@ -281,6 +281,24 @@ elle reprend à la CONFIRMATION de ces étapes/modales, jamais via `time()`/`res
 | `clickRoute(routeId)` | calcule un point ON-PATH CLIQUABLE d'une route depuis ici → `{x,y}` ÉCRAN. SONDE `elementFromPoint` au milieu du tracé et, si un décor transparent l'intercepte (chaîne d'ancêtres sans `cursor:pointer`), balaie d'autres fractions de `getPointAtLength` jusqu'à un point cliquable (repli INTÉGRÉ) | ne clique PAS lui-même (le VRAI clic reste `page.mouse.click(x,y)`, Playwright) — remplace le calcul manuel `browser_run_code_unsafe`, voir piège ci-dessous ; `note` indique la fraction retenue (ou qu'aucune n'a testé cliquable → milieu par défaut) ; `✗` si route inconnue/non cliquable d'ici/tracé absent du DOM |
 | `forceEncounter(id='navire-hostile')` | force un événement de bord maritime NOMMÉ (`sea-events.json`, id ou kind) au PROCHAIN jour — court-circuite le timer 1d10 + le tirage d100/Manann | à dérouler avec `advanceSeaDay()` : le drive s'ARRÊTE sur la décision présentée (Cogue pirate fuir/combattre/soumettre) sans la trancher — voir doctrine ci-dessous ; `✗` si aucune traversée en cours / événement introuvable |
 
+**Observer le PROCÈS-VERBAL groupé du jour (`MultiRollList`, une bande par rubrique + son enjeu)** —
+le PV se lit à `SeaVoyageScreen` (`.sea-voyage-log`) et à `TravelRecapModal`, alimenté par
+`travelDay.entries` (une ligne par contributeur, `group` = le libellé de l'étape). Il n'existe qu'une
+fois le jour RÉSOLU en route **commandée** (les Tests d'équipage de routine s'auto-résolvent —
+`voyageCadence.ts`) : `await __wfrp.advanceSeaDay()` puis lire l'écran de traversée. Pour jouer une
+étape d'équipage À LA MAIN avant qu'elle n'entre au PV, s'arrêter dessus par son `kind` — les kinds
+RÉELS passés à `buildVoyageCrewStep` (`seaVoyageFlow.ts`, 3ᵉ argument — à ne pas confondre avec le
+`testTypeId` du 2ᵉ) sont `progression`, `orientation`, `embuscade`, `phare`, et en crise `poursuite`
+ou `tourbillon` :
+
+```js
+await __wfrp.advanceSeaDay({ stopAt: 'orientation' });  // rend la main AVANT le Test d'Orientation
+__wfrp.modal();                                          // la modale de cascade est intacte
+```
+
+`stopAt:'sea-progression-choice'` vise le CHOIX de progression (une étape de décision), pas un Test
+d'équipage : pour le Test lui-même, viser `progression`.
+
 **Doctrine `advanceSeaDay`/`skipToArrival`** : même doctrine que `fastForward` — SETUP et
 accélération du BRUIT de routine, jamais un raccourci qui saute une décision du joueur. La halte de
 nuit est résolue avec les valeurs PRÉ-REMPLIES de la modale (`pendingRest`, lodging/pitance par
@@ -494,6 +512,11 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
   vient pas et expire. Cibler par le **roster du HUD** (portraits/frise, éléments DOM stables) ou lire
   `screenPos('id')` puis un VRAI clic souris (`page.mouse.click`) aux coordonnées — jamais un
   `browser_click` qui attend la fin de l'animation du token.
+- **Roster du HUD : viser un DOUBLON de libellé par son ID, pas par son nom** — deux héros (ou deux
+  marins d'équipage) peuvent porter le MÊME libellé à l'écran ; un sélecteur par texte en attrape un
+  au hasard, et la capture « prouve » alors l'autre. Résoudre l'id d'abord (`__wfrp.battle()` liste
+  les combattants une ligne chacun, id compris), puis `screenPos(id)` → VRAI clic souris. Le canal
+  `data-cid` est unique par entité, le texte ne l'est pas.
 - **Cliquer une ROUTE de la carte du monde** : le tracé SVG n'a de hit-test QUE sur son trait
   (`pointer-events: stroke`) — jamais la bbox, jamais son label (`pointer-events: none`). Un clic au
   centre du bbox (ce que fait `browser_click` sur l'élément) tombe hors du trait et est intercepté par

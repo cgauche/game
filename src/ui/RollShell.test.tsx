@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { RollShell, type RollRowData, type RollAction } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
+import { StakeRule, stakeRuleOf } from './StakeNote';
+import { flowStakeRef } from '../data';
 
 const noop = () => {};
 
@@ -206,5 +208,35 @@ describe('RollShell — coquille de jet unifiée', () => {
     // (Le préfixe 🎲 est désormais l'icône <Icon id="nav/dice"> — on vérifie le libellé texte.)
     expect(pre).toContain('Lancer');
     expect(post).not.toContain('Lancer');
+  });
+});
+
+/**
+ * Z3b′ AU SOCLE (recette #1117) : le renvoi vers la règle était une DISCIPLINE AU SITE — `RunModal`
+ * posait son enjeu sans jamais enrober son titre, et le joueur n'avait aucune porte. La coquille
+ * l'accole désormais elle-même, dérivé de la MÊME entrée d'enjeu que la phrase.
+ */
+describe('RollShell — Z3b′ : le renvoi de règle est accolé au titre PAR LA COQUILLE', () => {
+  const stake = flowStakeRef('run', 'roll'); // un jet dont l'enjeu a un foyer (`regles/course`)
+
+  it('un `stake` à foyer donne le ℹ au titre SANS que le site ne compose quoi que ce soit', () => {
+    const html = render(<RollShell title="Course" rows={[pendingRow()]} rolled={false} actions={actions} stake={stake} />);
+    expect(stakeRuleOf(stake), 'pré-requis : cet enjeu a bien un foyer').toBeTruthy();
+    expect(html.match(/ab-codex-info/g) ?? [], 'une porte, et une seule').toHaveLength(1);
+    // Nom accessible DÉRIVÉ du titre — aucun libellé recopié au call-site.
+    expect(html).toContain('aria-label="Règle : Course"');
+  });
+
+  it('sans `stake`, aucune porte n’apparaît au titre', () => {
+    const html = render(<RollShell title="Course" rows={[pendingRow()]} rolled={false} actions={actions} />);
+    expect(html).not.toContain('ab-codex-info');
+  });
+
+  it('un site qui a DÉJÀ composé sa porte (titre ou sous-titre) n’en reçoit pas une 2ᵉ', () => {
+    const rule = stakeRuleOf(stake);
+    const auTitre = render(<RollShell title={<>Course <StakeRule rule={rule} label="Course" /></>} rows={[pendingRow()]} rolled={false} actions={actions} stake={stake} />);
+    const auSousTitre = render(<RollShell title="Course" subtitle={<>étape <StakeRule rule={rule} label="Course" /></>} rows={[pendingRow()]} rolled={false} actions={actions} stake={stake} />);
+    expect(auTitre.match(/ab-codex-info/g) ?? []).toHaveLength(1);
+    expect(auSousTitre.match(/ab-codex-info/g) ?? []).toHaveLength(1);
   });
 });

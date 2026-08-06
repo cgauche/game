@@ -1027,6 +1027,19 @@ function arcaneTableRows(t: ArcaneTable): CodexRow[] {
   } as CodexRow));
 }
 
+/**
+ * CORPS AFFICHÉ d'une dépense de ressource (`characteristics.options`). La DONNÉE reste le VERBATIM
+ * recollable de la Source, puce de liste comprise (« - **Je te renie ! :** … », règle 5) : c'est
+ * l'AFFICHAGE qui retire ce que le sous-en-tête dit DÉJÀ — la puce orpheline et le libellé répété.
+ * Retrait STRUCTUREL (le préfixe est reconnu depuis le `label` de l'option, jamais réécrit) : une
+ * option dont le verbatim ne commence pas par son nom est rendue telle quelle.
+ */
+export function optionBody(o: { label: string; desc: string }): string {
+  const sansPuce = o.desc.replace(/^\s*[-*]\s+/, '');
+  const echappe = o.label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return sansPuce.replace(new RegExp(`^\\*\\*${echappe}\\s*:\\*\\*\\s*`), '');
+}
+
 const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'arcanePhenomena', label: 'Magie environnementale', group: 'Magie', sourceRef: 'VDM 14',
@@ -1327,11 +1340,11 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         // DÉPENSES de la ressource (Résilience : ses deux choix) — la règle vit sur l'ENTITÉ qui la
         // porte (amendement A, #1117) ; `regles.json` ne garde que les règles de CADRE. Même forme
         // qu'une section dérivée d'un champ de donnée (`symptoms.onTick`) : un sous-en-tête par
-        // option, son verbatim dessous.
+        // option, son verbatim dessous — DÉDOUBLONNÉ à l'AFFICHAGE par `optionBody`.
         c.options?.length
           ? {
             title: 'Dépenses', layout: 'list' as const,
-            rows: c.options.flatMap((o) => [{ t: 'sub', label: o.label } as CodexRow, { t: 'text', text: o.desc } as CodexRow]),
+            rows: c.options.flatMap((o) => [{ t: 'sub', label: o.label } as CodexRow, { t: 'text', text: optionBody(o) } as CodexRow]),
           }
           : null,
         ...reverseSections('characteristics', c.id),

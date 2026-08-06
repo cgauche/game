@@ -9,7 +9,8 @@ import { rowForcedDie, useDieCommit, useDieCommitRegistry, withPickedDie } from 
 import { useGame } from '../state/store';
 import { RecapLineRow } from './RecapLine';
 import type { RecapLine } from '../state/recapLine';
-import { StakeNote } from './StakeNote';
+import { StakeNote, StakeRule, hasStakeRule, stakeRuleOf } from './StakeNote';
+import { nodeText } from './compendium/CodexRef';
 import type { StakeRef } from '../data';
 
 /**
@@ -127,7 +128,9 @@ export function RollShell({
   disableEscClose?: boolean;
   /** Zone Z3b — ENJEU du jet (#1117) : une RÉFÉRENCE de donnée, jamais un texte. La coquille la résout
    *  et rend la PHRASE par `StakeNote`. Prop de PREMIER RANG : toute modale de jet peut dire son
-   *  enjeu sans passer par `extra`. Le RENVOI vers la règle vit sur la ligne de TITRE, pas ici. */
+   *  enjeu sans passer par `extra`. Le RENVOI vers la règle est accolé au TITRE par la coquille
+   *  ELLE-MÊME (Z3b′) : un site n'a rien à composer, et n'en reçoit pas un 2ᵉ s'il en a déjà posé un
+   *  dans son titre ou son sous-titre (cascade : la porte vit sur la ligne d'ÉTAPE). */
   stake?: StakeRef;
   /** Contenu optionnel AVANT les rangées (portraits, sélecteur de cible, choix de virage…). */
   extra?: ReactNode;
@@ -170,6 +173,15 @@ export function RollShell({
   useGame((s) => s.net);
   const state = useGame.getState();
   const subClass = variant === 'test' ? 'test-actor' : 'rm-subtitle';
+  // Z3b′ AU SOCLE (recette #1117) : le RENVOI vers la règle est accolé au TITRE par la COQUILLE, plus
+  // par discipline au site — une modale qui pose son `stake` l'obtient sans rien faire. La cible est
+  // DÉRIVÉE de la même entrée d'enjeu que la phrase (`resolveStake().rule`), le nom accessible du
+  // texte du titre. Un site qui a déjà composé son `StakeRule` dans le titre n'en reçoit pas un 2ᵉ
+  // (reconnaissance par IDENTITÉ de composant, `hasStakeRule`).
+  const stakeRule = stake ? stakeRuleOf(stake) : undefined;
+  const titleNode = stakeRule && !hasStakeRule(title) && !hasStakeRule(subtitle)
+    ? <>{title} <StakeRule rule={stakeRule} label={nodeText(title).trim()} /></>
+    : title;
   // VERROU de comparaison (#990) : dès qu'UNE rangée du panneau porte un jet MASQUÉ, la coquille ne
   // décerne plus rien qui compare les deux jets — ni halo vainqueur/perdant, ni badge « DR net ». Le
   // calendrier de découverte vit dans la donnée (`mask`), l'accent est DÉRIVÉ ici : sans ce verrou,
@@ -302,13 +314,13 @@ export function RollShell({
   if (embedded) {
     return (
       <div className={`rs-embedded ${variant === 'test' ? 'test-modal' : 'roll-modal'}`}>
-        <div className="mini-title">{title}</div>
+        <div className="mini-title">{titleNode}</div>
         {body}
       </div>
     );
   }
   return (
-    <Modal title={title} variant={variant} onClose={escClose}>
+    <Modal title={titleNode} variant={variant} onClose={escClose}>
       {body}
     </Modal>
   );
