@@ -542,6 +542,23 @@ textarea:focus {
   min-width: 0;
   flex: 1; /* occupe la largeur restante du panneau (le nom remplit l'espace, plus de gros vide) */
 }
+/* Identité du combattant actif : le nom prime, la carrière le qualifie. Stylée par la STRUCTURE du
+   panneau (aucune classe de domaine de plus, cliquet xii). */
+.ab-actor-side > strong {
+  font-size: 14px;
+  line-height: 1.1;
+  color: var(--gold2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ab-actor-side > span {
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .ab-actor-top {
   display: flex;
   align-items: center;
@@ -634,6 +651,39 @@ textarea:focus {
   overflow: hidden;
 }
 .af-hp b { display: block; height: 100%; }
+/* Économie du tour en TEXTE (résumé « Ressources du tour » d'`ActiveFrame`) : la valeur NOMMÉE prime
+   sur la jauge, l'aperçu de clic se lit « avant → après ». Stylée par la STRUCTURE du cadre — aucune
+   classe de domaine de plus (cliquet xii). */
+.aframe dl {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-content: center;
+  gap: 1px 8px;
+  margin: 0;
+  font-size: 12px;
+}
+.aframe dt {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.aframe dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.aframe dd em {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: 4px;
+}
+.aframe dd[data-spent='true'] > span {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
 /* Pastilles d'États/buffs partagées */
 .fx-chips {
   display: flex;
@@ -689,6 +739,13 @@ textarea:focus {
   padding-bottom: 2px;
   scrollbar-width: thin;
   -webkit-overflow-scrolling: touch;
+}
+/* La sortie de tour se détache du reste de la liste, désignée par son ID DE SLOT (jamais par son
+   libellé) : un filet et un écart, pas de classe de domaine de plus. */
+.ab-slots [data-slot='end-turn'] {
+  margin-left: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+  padding-left: 10px;
 }
 .ab-slot {
   position: relative; /* ancre le badge de raccourci .ab-key */

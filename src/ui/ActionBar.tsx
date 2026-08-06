@@ -639,7 +639,8 @@ export function ActionBar() {
             title={active.career ? `${active.label} — ${careerLabelFor(active)}` : active.label}
           />
           <div className="ab-actor-side">
-            {/* Le NOM n'est plus affiché (dispo au survol du portrait / du pion). */}
+            <strong>{active.label}</strong>
+            {active.career ? <span>{careerLabelFor(active)}</span> : null}
             {(assailliN >= 2 || (isHero && battle.fearGate === 'failed') || isRenfort) && (
               <div className="ab-actor-top">
                 {assailliN >= 2 && <span className="ab-assailli" title={`${assailliN} ennemis au contact`}><Icon id="action/attack" size="sm" /> ×{assailliN}</span>}
@@ -685,7 +686,7 @@ export function ActionBar() {
         {isHero || isShip ? (
           <div className="ab-slots">
             {slots.map((s, i) => (
-              <button key={s.id} className={'ab-slot ' + (s.cls ?? '') + (s.done ? ' hotbar-done' : '')} disabled={s.disabled} onClick={s.run} title={s.title}>
+              <button key={s.id} data-slot={s.id} className={'ab-slot ' + (s.cls ?? '') + (s.done ? ' hotbar-done' : '')} disabled={s.disabled} onClick={s.run} title={s.title}>
                 {i < 9 && <span className="ab-key">{i + 1}</span>}
                 {s.done && <Icon id="ui/done" size="sm" className="ab-done" />}
                 <span className="ab-ico">{s.icon}</span>

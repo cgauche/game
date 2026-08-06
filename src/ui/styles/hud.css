@@ -190,9 +190,8 @@
   pointer-events: none;
   z-index: 2;
 }
-/* `ptile-gauge` (jauge de vie horizontale du portrait) : marqueur de compatibilité SANS style
-   propre — le rendu vient désormais de la primitive partagée LifeBar (variante superposée,
-   styles/gauges.css), `pointer-events: none` compris. */
+/* `ptile-gauge` (jauge de vie horizontale du portrait) : aucun style ici — le rendu APPARTIENT à la
+   primitive partagée LifeBar (variante superposée, styles/gauges.css), `pointer-events: none` compris. */
 /* États de FIN (#237) : pastille distincte par état, coin bas-droit du portrait — teinte propre à
    chaque état (langage visuel UNIQUE, cf. src/ui/endStateVisual.ts). */
 .ptile .end-mark {
@@ -391,6 +390,10 @@
   .action-bar { left: 4px; right: 4px; bottom: calc(6px + env(safe-area-inset-bottom, 0px)); transform: none; max-width: none; align-items: stretch; }
   .ab-bar { flex-direction: column; align-items: stretch; gap: 6px; padding: 6px 8px; }
   .ab-actor { border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.12); padding-right: 0; padding-bottom: 6px; }
+  /* Le résumé « Ressources du tour » occupe la largeur restante du cadre acteur plutôt que de pousser
+     la liste d'actions hors écran : libellé à gauche, valeur ferrée à droite. */
+  .ab-actor dl { flex: 1 1 auto; min-width: 0; grid-template-columns: auto 1fr; }
+  .ab-actor dd { text-align: right; }
   .ab-slots { max-width: none; }
   .ab-slot { flex: 1 1 0; min-width: 52px; padding: 6px 3px; }
   .ab-ico { font-size: 17px; }

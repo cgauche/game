@@ -799,9 +799,8 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   }
   // États (LDB 16) : leur `passive: GameOp[]` (pénalité de Test → `testMod`, bonus à l'attaquant →
   // `incomingAttackMod`, échelle de Mouvement…) émis kind `etat` (pool NON-CUMUL, le pire seul, l.20).
-  // VIDE aujourd'hui (migration des 12 États en cours — cf. docs/combat-events-coherence.md, Lot 4) :
-  // inerte tant qu'aucun État ne porte de `passive`. L'échelle par stacks (Exténué) et le gating de
-  // combat (`ignoreStatePenalties`) sont traités au moment de la migration de chaque État concerné.
+  // La magnitude d'un `testMod` est multipliée par les pions quand l'entrée porte `perStack` (LDB 16 l.11) ;
+  // le gate de combat `ignoreStatePenalties` est appliqué au point de LECTURE (combatTestPenalty).
   for (const cond of c.conditions ?? []) {
     const ed = findConditionById(cond.id);
     if (!ed?.passive?.length) continue;

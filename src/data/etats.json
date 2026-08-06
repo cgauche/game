@@ -20,6 +20,7 @@
         "hearingOnly": true
       }
     ],
+    "perStack": true,
     "effects": [
       {
         "trigger": "onRoundEnd",
@@ -90,6 +91,7 @@
         "combatOnly": true
       }
     ],
+    "perStack": true,
     "effects": [
       {
         "trigger": "onRoundEnd",
@@ -132,6 +134,7 @@
         ]
       }
     ],
+    "perStack": true,
     "effects": [
       {
         "trigger": "onRoundEnd",
@@ -315,6 +318,7 @@
         "movementOnly": true
       }
     ],
+    "perStack": true,
     "recover": {
       "characteristic": "force",
       "opposedBy": "source"
@@ -340,6 +344,7 @@
         "amount": -10
       }
     ],
+    "perStack": true,
     "effects": [
       {
         "trigger": "onRoundEnd",
@@ -572,6 +577,7 @@
         "amount": 1
       }
     ],
+    "perStack": true,
     "effects": [
       {
         "trigger": "onRoundEnd",

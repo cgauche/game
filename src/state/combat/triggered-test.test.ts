@@ -68,16 +68,16 @@ describe('Mâchoires d’acier — effet onGainCondition cadence-aware (brique t
     expect(step.meta?.onFail).toBeTruthy();
   });
 
-  it('RAW : la pénalité d’État (−10 Sonné) est comptée UNE seule fois dans le Test (≠ testValue + combatTestPenalty = −20)', () => {
+  it('RAW : la pénalité d’État (Sonné ×2 = −20) est comptée UNE seule fois dans le Test (≠ testValue + combatTestPenalty = −40)', () => {
     seedBattleRng(7);
     const { H } = setup();
     H.talents = [...(H.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
-    addCondition(H, COND.sonne, 2); // H porte Sonné AU MOMENT du Test → ancien double-compte du −10
+    addCondition(H, COND.sonne, 2); // H porte Sonné AU MOMENT du Test → ancien double-compte de la pénalité
     const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'triggeredTest')!;
-    // `base` = valeur BRUTE (sans pénalité d'État) ; `target` = base + Intermédiaire(0) + `combatTestPenalty` (−10 UNE fois).
+    // `base` = valeur BRUTE (sans pénalité d'État) ; `target` = base + Intermédiaire(0) + `combatTestPenalty` (UNE fois).
     expect(step.base).toBe(rawCombatTestBase(H, 'resistance'));
     expect(step.target).toBe(rawCombatTestBase(H, 'resistance') + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(H));
-    expect(combatTestPenalty(H)).toBe(-10); // Sonné = −10 (non-cumul) → compté une fois
+    expect(combatTestPenalty(H)).toBe(-20); // 2 pions de Sonné : −10 par pion (LDB 16 l.11) — comptés une fois
   });
 
   it('héros MANUEL : cascadeRoll + cascadeNext retire 1 + DR États Sonné (Résistance réussie)', () => {

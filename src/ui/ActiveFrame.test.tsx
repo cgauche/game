@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ActiveFrame } from './ActiveFrame';
 import type { Combatant } from '../engine/types';
@@ -28,10 +30,10 @@ describe('ActiveFrame — jauges crantées à taille fixe', () => {
     expect(html).toContain('af-action');
   });
 
-  it('vie via la tuile-portrait UNIFIÉE (ptile-gauge), plus de barre af-hp séparée', () => {
+  it('vie via la tuile-portrait UNIFIÉE (ptile-gauge) : une seule surface de vie dans le cadre', () => {
     const html = renderToStaticMarkup(<ActiveFrame c={c({})} ring="#fff" isHero actAvail={1} actMax={1} moveLeft={0} moveMax={0} />);
     expect(html).toContain('ptile-gauge'); // la vie vient de PortraitTile (même affichage partout)
-    expect(html).not.toContain('af-hp'); // l'ancienne barre dédiée a disparu
+    expect(html).not.toContain('af-hp'); // aucune 2ᵉ surface de vie dans le cadre
   });
 
   it('ennemi : pas de jauges Action/Mouvement, mais vie + Avantage visibles', () => {
@@ -40,5 +42,70 @@ describe('ActiveFrame — jauges crantées à taille fixe', () => {
     expect(html).not.toContain('af-move');
     expect(html).toContain('ptile-gauge'); // vie via la tuile unifiée
     expect(html).toContain('af-adv');
+  });
+});
+
+/** Le résumé de ressources SEUL (hors `title`/`aria-label` des jauges, qui portent déjà des `n/m`). */
+const resources = (html: string) => {
+  const after = html.split('Ressources du tour')[1];
+  expect(after, 'aucune liste « Ressources du tour » rendue').toBeTruthy();
+  return after.split('</dl>')[0];
+};
+
+describe('ActiveFrame — économie du tour nommée en texte', () => {
+  it('Action / Mouvement / Avantage : libellé, valeur et aperçu avant → après', () => {
+    const html = renderToStaticMarkup(
+      <ActiveFrame
+        c={c({ advantage: 2 })} ring="#fff" isHero
+        actAvail={1} actMax={1} moveLeft={4} moveMax={4}
+        spendAction={1} spendMove={2} gainAdv={1}
+      />,
+    );
+    const dl = resources(html);
+    expect(dl).toContain('Action');
+    expect(dl).toContain('1 → 0');
+    expect(dl).toContain('Mouvement');
+    expect(dl).toContain('4 → 2');
+    expect(dl).toContain('Avantage');
+    expect(dl).toContain('2 → 3');
+    expect(html).not.toContain('Réaction'); // le HUD n'invente aucune économie que le moteur ne porte pas
+    expect(html).toContain('af-action'); // les jauges crantées restent
+    expect(html).toContain('ptile-gauge');
+  });
+
+  it('sans aperçu : la valeur courante seule, avec son maximum', () => {
+    const html = renderToStaticMarkup(
+      <ActiveFrame c={c({ advantage: 2 })} ring="#fff" isHero actAvail={1} actMax={2} moveLeft={3} moveMax={5} />,
+    );
+    const dl = resources(html);
+    expect(dl).toContain('1/2');
+    expect(dl).toContain('3/5');
+    expect(dl).not.toContain('→');
+  });
+
+  it('ressource à zéro : état TEXTUEL (utilisée / épuisé), pas seulement une couleur', () => {
+    const html = renderToStaticMarkup(
+      <ActiveFrame c={c({})} ring="#fff" isHero actAvail={0} actMax={1} moveLeft={0} moveMax={4} />,
+    );
+    const dl = resources(html);
+    expect(dl).toContain('utilisée');
+    expect(dl).toContain('épuisé');
+    expect(dl).toContain('data-spent="true"');
+  });
+});
+
+describe('ActionBar — contrôles conservés (témoin de non-régression)', () => {
+  const src = readFileSync(fileURLToPath(new URL('./ActionBar.tsx', import.meta.url)), 'utf8');
+
+  it('garde le commutateur de set d’armes, ses handlers, les slots et Fin du tour', () => {
+    expect(src).toContain('ab-loadouts');
+    expect(src).toContain('switchLoadout');
+    expect(src).toContain('ab-slots');
+    expect(src).toContain('Fin du tour');
+  });
+
+  it('affiche l’identité du combattant actif dans le panneau latéral', () => {
+    expect(src).toContain('<strong>{active.label}</strong>');
+    expect(src).toContain('<span>{careerLabelFor(active)}</span>');
   });
 });
