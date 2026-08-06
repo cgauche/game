@@ -21,7 +21,7 @@ import { effectiveChar } from '../engine/characteristics';
 import { testValue } from '../engine/skills';
 import { combatValue } from '../engine/combat';
 import { buildWeapon } from '../engine/items';
-import { findTalentById, skillInstanceLabel, findTrappingById, qualities, refLabel } from '../data';
+import { findTalentById, skillInstanceLabel, findTrappingById, qualities, refLabel, activityStakeRef, hasActivityStake } from '../data';
 import type { Combatant, ConditionId } from '../engine/types';
 import { rule } from '../engine/policy';
 import { effectiveEntry } from '../engine/variants';
@@ -408,6 +408,12 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
 const activityOps = (def: ActivityDef): GameOp[] =>
   [...(def.onSuccess ?? []), ...(def.outcomes ?? []).flatMap((b) => b.ops ?? [])];
 
+/** ENJEU (Z3b, #1117 L3) posé sur la ligne de pré-jet d'un volet d'Activité : la RÉFÉRENCE de donnée
+ *  (`ActivityDef.stake`, éditable au Codex) via la porte unique — jamais un texte écrit ici. Une
+ *  Activité sans enjeu authoré (donc sans Test) traverse inchangée : pas de zone muette. */
+const withStake = (p: PendingRoll, activityId: string): PendingRoll =>
+  (hasActivityStake(activityId) ? { ...p, stake: activityStakeRef(activityId) } : p);
+
 /** Résolveurs des Activités du catalogue qui ont un VOLET DÉDIÉ (UX riche : formule de Revenus,
  *  flux 2 étapes de l'Artisanat, sélecteur de Talent, sélecteur d'artefact) ou vivent ailleurs
  *  (`mecenat` = dans la banque). Exclus de la liste GÉNÉRIQUE du catalogue pour ne pas les doubler. */
@@ -582,7 +588,7 @@ function RevenusPane({ hero, st, disabled, desc }: { hero: Combatant; st: Interl
       title="Revenus — une semaine de travail"
       desc={desc}
       blocked={blocked}
-      prejet={testPending(<SkillChip skillId={skillId} />, testValue(hero, skillId), undefined, 'accessible')}
+      prejet={withStake(testPending(<SkillChip skillId={skillId} />, testValue(hero, skillId), undefined, 'accessible'), 'revenus')}
       note={<>Succès : <b>{incomeFormula}</b> · échec : moitié · Échec Stupéfiant : rien. Crédités à la reprise.</>}
       actions={
         <button
@@ -614,7 +620,7 @@ function CraftProgressPane({ hero, craft, disabled, desc }: {
       icon={PANE_ICON.craft}
       title={`Artisanat — ${label}`}
       desc={desc}
-      prejet={testPending(chip, testValue(hero, 'metier', undefined, metier?.spec), undefined, craft.difficulty)}
+      prejet={withStake(testPending(chip, testValue(hero, 'metier', undefined, metier?.spec), undefined, craft.difficulty), 'craft')}
       note={<>Test étendu : <b>{craft.drDone}/{craft.drTarget} DR</b> (1 lancer par Activité — le travail inachevé se conserve).</>}
       actions={
         <button className="btn small btn-primary" disabled={disabled} onClick={() => activity(hero.id, 'craft')}
@@ -695,7 +701,7 @@ function CraftPane({ hero, disabled, money, desc }: { hero: Combatant; disabled:
       desc={desc}
       blocked={blockedMsg}
       prejet={sel && target
-        ? testPending(chip, metier ? testValue(hero, 'metier', undefined, metier.spec) : 0, undefined, target.difficulty)
+        ? withStake(testPending(chip, metier ? testValue(hero, 'metier', undefined, metier.spec) : 0, undefined, target.difficulty), 'craft')
         : undefined}
       cost={sel ? <CoinsB brass={sel.materialsBrass} /> : undefined}
       note={sel && target
@@ -748,12 +754,15 @@ function LearnPane({ hero, disabled, fails, money, desc }: { hero: Combatant; di
   const tMax = effectiveEntry(talent)?.max;
   const ck: CharKey = tMax && typeof tMax !== 'number' ? tMax.bonusOf : 'intelligence';
   const prejet = sel
-    ? optionPending(
-        CHAR_LABELS[ck],
-        effectiveChar(hero, ck),
-        failCount ? [{ label: 'Acharnement', value: failCount * 10 }] : [],
-        undefined,
-        'difficile',
+    ? withStake(
+        optionPending(
+          CHAR_LABELS[ck],
+          effectiveChar(hero, ck),
+          failCount ? [{ label: 'Acharnement', value: failCount * 10 }] : [],
+          undefined,
+          'difficile',
+        ),
+        'learn',
       )
     : undefined;
   return (
@@ -997,7 +1006,7 @@ function IdentifyPane({ hero, disabled, desc }: { hero: Combatant; disabled: boo
       desc={desc}
       blocked={blocked}
       prejet={savoir
-        ? testPending(<SkillChip skillId={savoir.skillId} show={skillInstanceLabel(savoir)} />, testValue(hero, savoir.skillId, undefined, savoir.spec), undefined, 'intermediaire')
+        ? withStake(testPending(<SkillChip skillId={savoir.skillId} show={skillInstanceLabel(savoir)} />, testValue(hero, savoir.skillId, undefined, savoir.spec), undefined, 'intermediaire'), 'identify')
         : undefined}
       note={<>Une semaine d'étude · un grand succès révèle les Particularités ; une lourde méprise ancre de <b>fausses</b> certitudes.</>}
       actions={
@@ -1066,7 +1075,7 @@ function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDe
     if (item) {
       const kind = item.kind === 'ranged' ? ('ranged' as const) : ('melee' as const);
       const base = combatValue(hero, kind, buildWeapon({ label: item.label, type: kind, damage: item.damage ?? { plusBF: true, flat: 0 }, subType: item.subType }));
-      prejet = testPending(<SkillChip skillId={kind === 'melee' ? 'corps-a-corps' : 'projectiles'} />, base, undefined, diff);
+      prejet = withStake(testPending(<SkillChip skillId={kind === 'melee' ? 'corps-a-corps' : 'projectiles'} />, base, undefined, diff), def.id);
     }
   } else if (def.skills?.length) {
     const best = bestActivitySkill(hero, def);
@@ -1078,7 +1087,7 @@ function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDe
     ));
     if (best) {
       const bestDiff = classGatedDifficulty({ difficulty: best.difficulty, classGate: def.classGate }, hero);
-      prejet = testPending(<>{chips}</>, best.value, undefined, bestDiff);
+      prejet = withStake(testPending(<>{chips}</>, best.value, undefined, bestDiff), def.id);
     }
   }
   return (
@@ -1150,7 +1159,7 @@ function BattlePrepPane({ hero, def, disabled, entry }: {
         <SkillChip skillId={s.skillId} show={s.spec ? `${refLabel('skills', { id: s.skillId })} (${s.spec})` : undefined} />
       </Fragment>
     ));
-    prejet = testPending(<>{chips}</>, best.v, undefined, diff);
+    prejet = withStake(testPending(<>{chips}</>, best.v, undefined, diff), def.id);
   }
   const done = entry?.done ?? false;
   const blocked = done ? 'Déjà réalisée cette bataille (Activité non répétable).' : entry?.blocked ?? null;

@@ -282,6 +282,30 @@ export interface ActivityDef extends TestSpec {
    *  cible peut être mal vue », sans table de résolution → `difficulty:'intermediaire'` est le repli.
    *  DISPLAY/DOC only, jamais lu pour de la mécanique (comme `criticals.ts` `maison`, #195). */
   maison?: string;
+  /** ENJEU du jet (#1117) : ce que le Test de CETTE Activité met en jeu, en descripteur MÉCANIQUE
+   *  (ce que le résolveur applique) et/ou verbatim court. Donnée ÉDITABLE au Codex, jamais un texte
+   *  écrit au call-site — les surfaces (volet d'Activité, modale de jet) le résolvent par la porte
+   *  unique `resolveStake` (`src/data/index.ts`, dataset `activity`). */
+  stake?: string;
+  /** FORME DÉCLARÉE du `stake` — même contrat que `night-stakes`/`flow-stakes` (garde de forme). */
+  stakeForm?: 'verbatim' | 'descripteur';
+  /** FOYER de la règle derrière le jet : id de l'ENTITÉ qui la porte. Absent = l'Activité elle-même
+   *  (sa `desc` verbatim, catégorie Codex `activities`) — jamais une fiche `regles.json` doublon. */
+  rule?: string;
+  /** Catégorie Codex du foyer (`'regles'`, `'skills'`, `'etats'`…), exigée avec `rule`. */
+  ruleCategory?: string;
+}
+
+/** Résolveurs qui DÉRIVENT leur compétence du héros au moment d'ouvrir le jet (`openCatalogActivity`,
+ *  `src/state/interludeFlow.ts`) : leur Activité n'a donc pas de `skills` en donnée, mais elle LANCE.
+ *  SOURCE UNIQUE consommée par `activityRolls` — une Activité de plus dans ce cas = une ligne ici. */
+const SKILL_DERIVING_RESOLVERS = new Set(['income', 'craftExtended', 'learnTalent', 'reputation', 'ritualFocus']);
+
+/** L'Activité LANCE-t-elle un Test ? `skills`/`char`/`freeSkill` déclarés, ou résolveur qui dérive sa
+ *  compétence du héros. Une Activité sans Test (Récupérer, Entraînement, Scènes de COMBAT tactique
+ *  d'une bataille) n'a rien à mettre en jeu — pas de zone d'enjeu muette. PURE. */
+export function activityRolls(def: Pick<ActivityDef, 'skills' | 'char' | 'freeSkill' | 'resolver'>): boolean {
+  return !!(def.skills?.length || def.char || def.freeSkill || SKILL_DERIVING_RESOLVERS.has(def.resolver ?? ''));
 }
 
 /** Carrières JAMAIS PERDUES d'un héros (`Combatant.careerHistory`, cumulé — absent = `[career]`) →

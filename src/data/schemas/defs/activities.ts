@@ -96,6 +96,28 @@ export const schema = z.array(
     // `maison` = arbitrage NON-verbatim documentant un champ (ex. `difficulty` par défaut quand le
     // RAW la laisse « variable ») — même convention que `naval-traits.json`/`criticals.json`/`crew-roles.json`.
     maison: z.string().optional(),
+    // ── ENJEU du jet (#1117 L3) — `activities` est le 5ᵉ dataset d'enjeux, porté par l'ENTITÉ
+    //    elle-même (pas de fichier tiers) : une Activité qui LANCE dit ce que son jet met en jeu.
+    /** Texte d'enjeu — descripteur mécanique de ce que le résolveur applique, et/ou verbatim court. */
+    stake: z.string().optional(),
+    /** FORME DÉCLARÉE du `stake` (même contrat que `night-stakes`/`flow-stakes`). */
+    stakeForm: z.enum(['verbatim', 'descripteur']).optional(),
+    /** FOYER de la règle derrière le jet — id de l'entité qui la PORTE. Absent : le foyer est
+     *  l'Activité elle-même (sa `desc` verbatim, catégorie Codex `activities`). */
+    rule: z.string().optional(),
+    /** Catégorie Codex du foyer (`'regles'`, `'skills'`, `'etats'`…) — exigée avec `rule`. */
+    ruleCategory: z.string().optional(),
+  })
+  .superRefine((a, ctx) => {
+    if (a.stake && !a.stakeForm) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : enjeu sans forme déclarée (stakeForm)` });
+    }
+    if (a.stakeForm && !a.stake) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : forme d’enjeu déclarée sans enjeu` });
+    }
+    if (a.rule && !a.ruleCategory) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${a.id} : rule sans ruleCategory` });
+    }
   }),
 );
 

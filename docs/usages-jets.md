@@ -48,7 +48,7 @@ sa définition vit à la charte. Une prop non encore taguée affiche « — » e
 
 | Consommateur | Sites | Rangées | `title` | `variant` | `subtitle` | **Z2** | `embedded` | `disableEscClose` | `stake` | `extra` | `setup` | `rows` | `rolled` | `winnerIndex` | `netSL` | `outcome` | `summary` | `postRollExtra` | `forcedExtra` | `actions` | `onCancel` | `flowKey` |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `src/ui/ActivityModal.tsx` | `ActivityModal` (J) | variable | ✓ | ✓ | ✓ | · | · | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ |
+| `src/ui/ActivityModal.tsx` | `ActivityModal` (J) | variable | ✓ | ✓ | ✓ | · | · | · | ✓ | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/AppraiseModal.tsx` | `AppraiseModalView` (J) | 1 | ✓ | ✓ | ✓ | · | · | · | ✓ | · | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/ApproachModal.tsx` | `ApproachModal` (J) | 1 | ✓ | · | ✓ | · | · | · | · | · | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/AuContactModal.tsx` | `AuContactModal` (J) ×2 | 2 | ✓ | · | · | · | · | · | ✓ | ✓ | · | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ |

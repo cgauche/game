@@ -15,6 +15,17 @@ import { testScene } from '../scenes/test-fixture';
 import { interludeCatalog } from '../state/interludeFlow';
 import { interludeEventFor } from '../data/interludeEvents';
 import { InterludeScreen, type InterludeSeam } from './InterludeScreen';
+import { ACTIVITIES } from '../engine/activities';
+
+/** Texte NU d'un rendu statique : balises retirées, entités HTML de React décodées — pour confronter
+ *  un texte de DONNÉE (apostrophes comprises) au markup rendu. */
+const mdToPlain = (html: string) => html
+  .replace(/<[^>]*>/g, '')
+  .replace(/&#x27;/g, "'")
+  .replace(/&quot;/g, '"')
+  .replace(/&lt;/g, '<')
+  .replace(/&gt;/g, '>')
+  .replace(/&amp;/g, '&');
 
 function buildSeam(weeks = 3): InterludeSeam {
   const a = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Vétéran', rng: makeRNG(1601) });
@@ -144,6 +155,29 @@ describe('InterludeScreen — refonte LOT 6', () => {
     expect(html).toContain('Sans jet');
     expect(html).toContain('Investir');
     expect(html).toContain('Planquer');
+  });
+
+  it('Z3b (#1117 L3) : le volet DIT ce que le jet met en jeu, texte pris à la DONNÉE de l’Activité', () => {
+    const seam = buildSeam();
+    const hero = seam.party[0];
+    const html = renderToStaticMarkup(
+      <InterludeScreen seam={{ ...seam, phase: 'activities', openPane: { heroId: hero.id, pane: 'revenus' } }} />,
+    );
+    expect(html).toContain('rm-stake'); // la primitive d'enjeu (StakeNote), au pied du volet
+    // Le TEXTE vient de `activities.json` (`ActivityDef.stake`), jamais d'un littéral de l'écran :
+    // on le relit dans la donnée et on l'exige à l'écran (un renommage au Codex suit l'affichage).
+    const attendu = ACTIVITIES.find((a) => a.id === 'revenus')!.stake!;
+    expect(attendu).toBeTruthy();
+    expect(mdToPlain(html)).toContain(attendu);
+  });
+
+  it('Z3b (#1117 L3) : une Activité SANS Test n’affiche AUCUNE zone d’enjeu (pas de zone muette)', () => {
+    const seam = buildSeam();
+    const hero = seam.party[0];
+    const html = renderToStaticMarkup(
+      <InterludeScreen seam={{ ...seam, phase: 'activities', openPane: { heroId: hero.id, pane: 'bank' } }} />,
+    );
+    expect(html).not.toContain('rm-stake');
   });
 
   it('clôture : récapitulatif confirmé (argent gaspillé annoncé, temps qui passe)', () => {

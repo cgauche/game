@@ -7,6 +7,7 @@ import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending, supportSplit, opposedLines } from './breakdown';
 import { describeActivity } from '../state/flowOutcomes';
 import { resultLines, freeCons } from '../state/rollSeam';
+import { activityStakeRef, hasActivityStake } from '../data';
 
 /**
  * Jet d'Activité (LDB 23 interlude / ADE II 8 BATAILLE de masse) : même coquille `RollShell` que
@@ -119,6 +120,9 @@ export function ActivityModal() {
       flowKey="activity"
       variant="test"
       title={pa.label}
+      /* Z3b : l'enjeu vient de l'ACTIVITÉ jouée (donnée éditable) — le ⓘ du titre s'accole tout seul
+         (RollShell), et le foyer de règle est l'Activité elle-même à défaut d'un autre déclaré. */
+      stake={pa.activityId && hasActivityStake(pa.activityId) ? activityStakeRef(pa.activityId) : undefined}
       /* QUI fait l'Activité → portrait dans la ligne de jet ; la compétence vit dans le cadre. */
       subtitle={null}
       rows={rows}

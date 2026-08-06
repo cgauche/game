@@ -80,6 +80,7 @@ import waterExposureJson from './water-exposure.json';
 import nightStakesJson from './night-stakes.json';
 import voyageStakesJson from './voyage-stakes.json';
 import flowStakesJson from './flow-stakes.json';
+import activitiesStakeJson from './activities.json';
 import axesJson from './axes.json';
 import navalProgressionJson from './naval-progression.json';
 import seaNavigationJson from './sea-navigation.json';
@@ -217,13 +218,26 @@ export interface FlowStakeEntry {
 }
 export const FLOW_STAKES = flowStakesJson as FlowStakeEntry[];
 
+/** ENJEU d'une ACTIVITÉ (#1117 L3) — porté par l'ENTITÉ elle-même (`activities.json`), pas par un
+ *  fichier d'enjeux tiers : une Activité EST déjà une entrée Codex éditable qui porte sa règle en
+ *  `desc` verbatim. Vue MINIMALE de `ActivityDef` (`src/engine/activities.ts`) réduite aux champs
+ *  d'enjeu : `src/data` ne dépend jamais de `src/engine`. */
+export interface ActivityStakeEntry {
+  id: string;
+  stake?: string;
+  stakeForm?: 'verbatim' | 'descripteur';
+  rule?: string;
+  ruleCategory?: string;
+}
+export const ACTIVITY_STAKES = activitiesStakeJson as ActivityStakeEntry[];
+
 /** Id de JET d'une modale mono : le couple `{flow, phase}` aplati en `kind` de `StakeKey`. SOURCE
  *  UNIQUE de la composition — la donnée porte les deux moitiés séparément, la clé les recolle ici. */
 const flowKind = (flow: string, phase: string) => `${flow}/${phase}`;
 
 /** DATASET d'enjeux servant une famille de jets (#1117). Union FERMÉE : ajouter une famille = ajouter
  *  son dataset ICI et sa branche dans `resolveStake` — jamais une N-ième porte de résolution. */
-export type StakeDataset = 'night' | 'voyage' | 'weather' | 'flow';
+export type StakeDataset = 'night' | 'voyage' | 'weather' | 'flow' | 'activity';
 
 /** CLÉ d'enjeu — la coordonnée de la DONNÉE, jamais son texte. `entryId` fait DESCENDRE la résolution
  *  à l'ENTRÉE jouée quand elle existe (le symptôme d'une étape de maladie, demain le péril d'une table
@@ -305,6 +319,15 @@ function stakeEntry(key: StakeKey): { text: string; rule?: { category: string; i
     const rule = kindRule(e.rule, e.ruleCategory ?? 'regles');
     return { text: e.template, ...(rule ? { rule } : {}) };
   }
+  if (key.dataset === 'activity') {
+    // ACTIVITÉS : `key.kind` = l'id de l'`ActivityDef`. Le FOYER par DÉFAUT est l'Activité ELLE-MÊME
+    // (catégorie Codex `activities`, où vit sa `desc` verbatim) — une fiche `regles.json` doublon
+    // serait le péché de l'amendement A. Une entrée peut NOMMER un autre foyer (`rule`) quand la
+    // règle vit ailleurs (Augure → la table des Symboles).
+    const e = ACTIVITY_STAKES.find((x) => x.id === key.kind);
+    if (!e?.stake) return undefined;
+    return { text: e.stake, rule: e.rule ? { category: e.ruleCategory ?? 'regles', id: e.rule } : { category: 'activities', id: e.id } };
+  }
   const e = VOYAGE_STAKES.find((x) => x.kind === key.kind);
   if (!e) return undefined;
   const rule = kindRule(e.rule);
@@ -330,6 +353,22 @@ export function nightStakeRef(kind: NightTestKind, entryId?: string): StakeRef {
     throw new Error(`nightStakeRef('${kind}') : aucune entrée d'enjeu (night-stakes.json) — une étape de nuit qui LANCE dit ce qu'elle met en jeu`);
   }
   return { key: { dataset: 'night', kind, ...(entryId ? { entryId } : {}) } };
+}
+
+/** L'Activité a-t-elle son enjeu authoré ? PRÉDICAT de la MÊME porte que `activityStakeRef` — pour
+ *  les surfaces qui rendent un catalogue MIXTE (le volet d'Activité sert aussi celles SANS Test, qui
+ *  n'ont rien à mettre en jeu) sans connaître le stock ni rattraper un throw. */
+export function hasActivityStake(activityId: string): boolean {
+  return !!stakeEntry({ dataset: 'activity', kind: activityId });
+}
+
+/** RÉFÉRENCE d'enjeu d'une ACTIVITÉ (#1117 L3) — patron `voyageStakeRef` : l'id se valide À LA
+ *  CONSTRUCTION. Le renvoi vise le foyer déclaré, à défaut la fiche Codex de l'Activité elle-même. */
+export function activityStakeRef(activityId: string): StakeRef {
+  if (!stakeEntry({ dataset: 'activity', kind: activityId })) {
+    throw new Error(`activityStakeRef('${activityId}') : aucun enjeu authoré (activities.json) — une Activité qui LANCE dit ce qu'elle met en jeu`);
+  }
+  return { key: { dataset: 'activity', kind: activityId } };
 }
 
 /** RÉFÉRENCE d'enjeu de MÉTÉO (Test de Résistance de traversée) — fail-closed : l'appelant n'appelle

@@ -241,7 +241,7 @@ Créer de l'équipement du Guide de l'équipement (LDB 11) si le Personnage poss
 Chaque Activité *Artisanat* = un lancer de Test étendu. Le travail inachevé se conserve.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.75-103) → `craft`, `learn`, `entrainement`, `dressage`, `Combatant` — `src/data/activities.json`, `src/engine/types.ts`
+- `LDB 23` (l.75-103) → `craft`, `learn`, `entrainement`, `Combatant`, `dressage` — `src/data/activities.json`, `src/engine/types.ts`
 
 ---
 
@@ -256,7 +256,7 @@ Avec accord du MJ :
 Le temps illustre présentations, pots-de-vin, licences, etc.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.105-108) → `craft`, `learn`, `entrainement`, `dressage`, `Combatant` — `src/data/activities.json`, `src/engine/types.ts`
+- `LDB 23` (l.105-108) → `craft`, `learn`, `entrainement`, `Combatant`, `dressage` — `src/data/activities.json`, `src/engine/types.ts`
 
 ---
 
@@ -274,7 +274,7 @@ Sur succès d'une consultation de savoir : gagne une **Relance Experte** (utilis
 Une relation établie avec un expert = consultable gratuitement (sans Activité) lors des futurs interludes.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.111-126) → `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `dressage`, `Combatant` — `src/data/activities.json`, `src/engine/types.ts`, `src/state/spawn.ts`
+- `LDB 23` (l.111-126) → `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `Combatant`, `dressage` — `src/data/activities.json`, `src/engine/types.ts`, `src/state/spawn.ts`
 
 ---
 
@@ -427,7 +427,7 @@ Apprendre des rumeurs de loin. Test **Ragot Intermédiaire (+0)**.
 - Échec Impressionnant → rumeur fausse crue vraie (MJ peut lancer en secret).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.196-250) → `ReverseButton`, `Duration`, `tokenReverseAvailable`, `useTestJetProps`, `useDefenseJetProps`, `InterludeHeroState`, `purgeAdventureEffects`, `useAttackJetProps`, `RollFlowSpec`, `revenus`, +20 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, +9 fichiers
+- `LDB 23` (l.196-250) → `ReverseButton`, `Duration`, `tokenReverseAvailable`, `useTestJetProps`, `useDefenseJetProps`, `InterludeHeroState`, `purgeAdventureEffects`, `useAttackJetProps`, `RollFlowSpec`, `startInterlude`, +20 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, +9 fichiers
 
 ---
 
@@ -593,7 +593,7 @@ Les Activités de voyage durent toute une Étape de voyage et restent **fatigant
 Note sur les Revenus en voyage : l'Activité *Revenus* (LDB 23) n'est **pas adaptée** pour la plupart des Carrières en voyage — sauf juges/huissiers itinérants, chasseurs, éclaireurs, cochers (EDOC 8 l.167).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `EDOC 8` (l.129-180) → `plein-air`, `PosteCardinality`, `printemps`, `activityAsPoste`, `approvisionnement`, `EncounterCategory`, `ete`, `gatherInnInfo`, `recueillir-informations`, `rester-aux-aguets`, +22 — `src/data/activities.json`, `src/data/weather.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/engine/travelEncounter.ts`, `src/engine/travelTables.ts`, +7 fichiers
+- `EDOC 8` (l.129-180) → `plein-air`, `PosteCardinality`, `printemps`, `activityAsPoste`, `approvisionnement`, `EncounterCategory`, `ete`, `gatherInnInfo`, `recueillir-informations`, `automne`, +22 — `src/data/activities.json`, `src/data/weather.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/engine/travelEncounter.ts`, `src/engine/travelTables.ts`, +7 fichiers
 
 ---
 
@@ -857,7 +857,7 @@ Table des résultats (`ACE 12 l.57-65`) :
 **Voir aussi** : [Opérations Bancaires](#opérations-bancaires) (ch.23, dépôt invest/planque).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.45-49, l.57-65) → `OutcomeBand`, `BankDeposit`, `ActivityDef`, `penitence`, `PendingActivity`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `mecenat`, `recherche-universitaire`, `buySpell`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
+- `ACE 12` (l.45-49, l.57-65) → `OutcomeBand`, `BankDeposit`, `ActivityDef`, `penitence`, `PendingActivity`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `mecenat`, `buySpell`, `recherche-universitaire`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
 
 ---
 
@@ -876,5 +876,5 @@ Consultation des bibliothèques/laboratoires d'un Collège de Magie à Altdorf p
 - Achat du sort **immédiat**, sinon la remise est perdue.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.51-55, l.67) → `OutcomeBand`, `BankDeposit`, `ActivityDef`, `penitence`, `PendingActivity`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `mecenat`, `recherche-universitaire`, `buySpell`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
+- `ACE 12` (l.51-55, l.67) → `OutcomeBand`, `BankDeposit`, `ActivityDef`, `penitence`, `PendingActivity`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `mecenat`, `buySpell`, `recherche-universitaire`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
 

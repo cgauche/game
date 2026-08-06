@@ -155,7 +155,7 @@ Règle d'application des Traits Facultatifs modificateurs de profil (**Élite, C
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.11-13, l.45) → `aaTableFor`, `SceneEntity`, `resolveAACritical`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `critTableKeyFor`, `rollCritical` — `src/data/criticals.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
-- `LDB 85` (l.339-340) → `creatureWeapon`, `woundsForSize`, `taille-modificateurs-en-combat`, `SpecsSource`, `bestDefenseMode`, `perturbant`, `peur`, `pisteur`, `prejuge`, `protection`, +12 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, +2 fichiers
+- `LDB 85` (l.339-340) → `creatureWeapon`, `woundsForSize`, `taille-modificateurs-en-combat`, `bestDefenseMode`, `SpecsSource`, `perturbant`, `peur`, `pisteur`, `prejuge`, `protection`, +12 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, +2 fichiers
 
 ---
 
@@ -222,7 +222,7 @@ Ces modificateurs s'appliquent **par catégorie d'écart**. Ils sont cumulatifs 
 - `LDB 85 l.339-340` — règle d'agrandissement/réduction.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.276-277, l.339-340) → `creatureWeapon`, `StatblockEditor`, `fearSourceFor`, `woundsForSize`, `resizeBySteps`, `creatureToCombatant`, `resolvePsychAI`, `taille-modificateurs-en-combat`, `SpecsSource`, `bestDefenseMode`, +17 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/psychology.ts`, +6 fichiers
+- `LDB 85` (l.276-277, l.339-340) → `creatureWeapon`, `StatblockEditor`, `fearSourceFor`, `woundsForSize`, `resizeBySteps`, `creatureToCombatant`, `resolvePsychAI`, `taille-modificateurs-en-combat`, `bestDefenseMode`, `SpecsSource`, +17 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/psychology.ts`, +6 fichiers
 
 ---
 

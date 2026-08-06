@@ -8,7 +8,7 @@
     ],
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
-      "page": 35
+      "page": 34
     },
     "skills": [
       {
@@ -25,7 +25,10 @@
       "neige": -20,
       "blizzard": -30
     },
-    "stageOutcome": "suppressExposure"
+    "stageOutcome": "suppressExposure",
+    "desc": "Grâce à une bonne affinité avec la nature et à un bon flair pour la météo, vous pouvez atténuer les pires intempéries rencontrées. Tentez un Test de **Survie en extérieur Intermédiaire (+0)**, modifié de -10 par degré de temps éloigné de Beau temps (voir page 32). En cas de réussite, vous et vos compagnons n'avez pas besoin de faire de Test d'Exposition à cause du mauvais temps.",
+    "stake": "Réussite : aucun Test d'Exposition au mauvais temps pour le groupe cette Étape. Échec : un État Exténué.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "approvisionnement",
@@ -36,7 +39,7 @@
     ],
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
-      "page": 35
+      "page": 34
     },
     "skills": [
       {
@@ -48,7 +51,10 @@
     "weatherMod": {
       "sec": -10
     },
-    "resolver": "forage"
+    "resolver": "forage",
+    "desc": "Il est souvent impossible de transporter toute la nourriture et l'eau nécessaires à un long voyage, et se réapprovisionner au fur et à mesure du voyage peut aboutir à un coût prohibitif. La plupart des voyageurs complètent leurs rations avec des aliments et de l'eau trouvés sur le terrain, que ce soit par la chasse, des pièges ou la recherche de nourriture. Effectuez un Test de **Survie en extérieur** comme indiqué à la page 131 du **Livre de Règles**, en prenant en compte la règle optionnelle « Trouver de la nourriture et des herbes ».",
+    "stake": "Réussite : de quoi nourrir 1 personne, +1 par DR — une ration par Personnage qui n'en a plus. Échec : rien de trouvé, et un État Exténué.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "recueillir-informations",
@@ -60,7 +66,7 @@
     ],
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
-      "page": 35
+      "page": 34
     },
     "skills": [
       {
@@ -69,7 +75,10 @@
     ],
     "difficulty": "intermediaire",
     "failExtenue": true,
-    "stageOutcome": "gatherInfo"
+    "stageOutcome": "gatherInfo",
+    "desc": "Bien que l'Empire dispose d'un corps de messagers, la plupart des informations circulent de bouche à oreille. Un Personnage peut choisir de passer son temps à papoter et à poser des questions dans les auberges, si la route est assez fréquentée pour le permettre. Effectuez un Test de **Ragot Intermédiaire (+0)**, et posez au MJ autant de questions que de DR obtenus, le MJ doit répondre avec autant de sincérité que les habitants de cette région le feraient. Alternativement, le Personnage peut souhaiter entendre les ragots qui circulent actuellement, voir **L'Ennemi dans l'Ombre** pour une sélection de rumeurs circulant dans l'Empire.",
+    "stake": "Réussite : autant de questions posées aux gens du coin que de DR obtenus (à l'auberge, une rumeur commerciale). Échec : un État Exténué.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "rester-aux-aguets",
@@ -80,7 +89,7 @@
     ],
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
-      "page": 35
+      "page": 34
     },
     "skills": [
       {
@@ -89,7 +98,10 @@
     ],
     "difficulty": "intermediaire",
     "failExtenue": true,
-    "stageOutcome": "noSurprise"
+    "stageOutcome": "noSurprise",
+    "desc": "Alors que tout voyageur de l'Empire digne de ce nom est conscient de ce qui l'entoure, certains renoncent à d'autres occupations, dorment moins, ne bavardent pas inutilement, font du repérage, etc, pour rester vigilant à tout moment. En réussissant un Test de **Perception Intermédiaire (+0)**, les Personnages ne peuvent pas être surpris pendant cette étape de leur voyage.",
+    "stake": "Réussite : le groupe ne peut pas être surpris pendant cette Étape. Échec : un État Exténué.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "etablir-cartes",
@@ -100,7 +112,7 @@
     ],
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
-      "page": 35
+      "page": 34
     },
     "skills": [
       {
@@ -117,7 +129,10 @@
       "drPerStage": 2
     },
     "failExtenue": true,
-    "stageOutcome": "mapMade"
+    "stageOutcome": "mapMade",
+    "desc": "Les longues heures passées sur la route sont souvent ennuyeuses pour les érudits, parfois peu habitués aux tâches physiques du voyage. Cependant, les voyages futurs peuvent être considérablement facilités par la création d'une carte, et avec des fournitures suffisantes, papier, plumes et encre, cette activité est possible. Pour créer une carte de l'itinéraire, un Personnage doit commencer un Test étendu de **Métier (Cartographe)** ou d'**Art (Dessin)**, avec un nombre requis de DR égal au double du nombre d'Étapes du voyage. Ce Test peut être répété chaque fois que cette Activité est entreprise.\n\nUne carte appropriée d'une région rend les Tests de **Savoir** ou d'**Orientation** lors d'un voyage **Accessible (+20)**, plutôt qu'**Intermédiaire (+0)** (page 31). Les cartes peuvent se négocier à partir d'une pistole pour des lignes mal esquissées, jusqu'à des dizaines ou des centaines de couronnes pour des œuvres d'art particulièrement léchées (bien qu'il soit peu probable qu'elles soient achevées durant le voyage).",
+    "stake": "Test étendu : 2 DR par Étape du voyage à cumuler, un lancer par Activité, les DR de tous les cartographes s'additionnant. Échec : un État Exténué.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "pratiquer-competence",
@@ -133,7 +148,10 @@
     "freeSkill": true,
     "difficulty": "intermediaire",
     "failExtenue": true,
-    "stageOutcome": "rerollToken"
+    "stageOutcome": "rerollToken",
+    "desc": "La monotonie du voyage représente pour de nombreux Personnages le moment idéal pour pratiquer leurs Compétences en vue des épreuves à venir. Un Personnage peut effectuer un Test **Intermédiaire (+0)** d'une seule Compétence qu'il est possible de pratiquer en voyageant : Orientation, Métier (Herboristerie), Langue (Wastelander), etc. Une Réussite signifie que le Personnage peut inverser le résultat d'un Test en utilisant cette Compétence au cours de l'aventure suivante, ou de toute étape ultérieure du voyage.",
+    "stake": "Réussite : la Compétence pratiquée devient inversable plus tard — jeton non posé, le moteur ne fait que l'annoncer. Échec : un État Exténué.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "recuperer",
@@ -170,7 +188,10 @@
     ],
     "difficulty": "intermediaire",
     "failExtenue": true,
-    "stageOutcome": "campCare"
+    "stageOutcome": "campCare",
+    "desc": "Souvent, les voyageurs se concentrent trop sur la destination et pas assez sur le voyage lui-même ; à l'arrivée, ils sont hagards, épuisés et mal préparés à ce qu'ils vont affronter. N'importe qui peut planter une tente ou déployer une couverture. Les voyageurs chevronnés, eux, prennent le temps de s'installer confortablement pour la nuit en choisissant un bon emplacement, en ramassant du bois de chauffage, en préparant de l'eau, etc. Effectuez un Test de **Survie en extérieur** ou de **Guérison Intermédiaire (+0)**. Chaque DR de l'un ou l'autre de ces Tests peut être dépensé pour retirer les État *Exténué* d'un Personnage ou pour le guérir (voir page 123 du **Livre de Règles**).",
+    "stake": "Réussite : chaque DR retire un État Exténué à un Personnage du groupe, les DR de tous les campeurs s'additionnant. Échec : un État Exténué.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "revenus",
@@ -185,7 +206,9 @@
     },
     "difficulty": "accessible",
     "resolver": "income",
-    "desc": "Cette Activité englobe les différentes façons de vous faire de l'argent entre vos aventures. La plupart travailleront sûrement dans une profession reconnue – les Chasseurs de primes chassent les primes, les Patrouilleurs fluviaux surveillent les rivières, les Tueurs de trolls tuent des trolls – d'autres peuvent compter sur une compétence lucrative. Les Personnages les plus fortunés, comme les Nobles et les Marchands, pourraient recevoir une rente en satisfaisant (brièvement) leur famille, ou toucher les intérêts de leurs investissements et entreprises commerciales. Les Voleurs ont une foule de moyens pour obtenir des fonds, bien qu'il vaille mieux ne pas leur demander trop de précisions à ce sujet.\n\nVous obtenez alors les revenus avec lesquels vous commencerez votre prochaine aventure, qui correspond à votre revenu standard déterminé par votre Statut. Certains résultats du Tableau des Événements peuvent directement affecter vos revenus. L'argent que vous obtenez grâce à une Activité *Revenus* vous est seulement remis une fois que vous avez disposé de l'argent de votre dernière aventure (voir *Argent à gaspiller*)."
+    "desc": "Cette Activité englobe les différentes façons de vous faire de l'argent entre vos aventures. La plupart travailleront sûrement dans une profession reconnue – les Chasseurs de primes chassent les primes, les Patrouilleurs fluviaux surveillent les rivières, les Tueurs de trolls tuent des trolls – d'autres peuvent compter sur une compétence lucrative. Les Personnages les plus fortunés, comme les Nobles et les Marchands, pourraient recevoir une rente en satisfaisant (brièvement) leur famille, ou toucher les intérêts de leurs investissements et entreprises commerciales. Les Voleurs ont une foule de moyens pour obtenir des fonds, bien qu'il vaille mieux ne pas leur demander trop de précisions à ce sujet.\n\nVous obtenez alors les revenus avec lesquels vous commencerez votre prochaine aventure, qui correspond à votre revenu standard déterminé par votre Statut. Certains résultats du Tableau des Événements peuvent directement affecter vos revenus. L'argent que vous obtenez grâce à une Activité *Revenus* vous est seulement remis une fois que vous avez disposé de l'argent de votre dernière aventure (voir *Argent à gaspiller*).",
+    "stake": "Réussite : la totalité des revenus de ton Statut. Échec : la moitié. Échec Stupéfiant (−6 DR) : rien. L'argent est crédité à la reprise de l'aventure.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "craft",
@@ -200,7 +223,9 @@
     },
     "difficulty": "intermediaire",
     "resolver": "craftExtended",
-    "desc": "Plutôt que de courir les échoppes ou de passer commande auprès de quelqu'un pour faire le travail, vous pouvez confectionner votre propre équipement. *Artisanat* vous permet de créer de l'équipement du **Chapitre 11 : Guide de l'équipement** (ou toute autre chose que le MJ vous autorise à créer) si vous possédez les Compétences Métier appropriées. Pour cela, vous avez besoin des Outils de la profession, de matériaux de base, et d'un accès à un atelier adéquat. En général, les matières premières pour créer l'équipement de votre choix coûteront un quart du prix de l'équipement, et devront être achetées avant le début de l'Activité *Artisanat*.\n\nPour créer l'équipement, effectuez un Test **étendu de Métier**, dont la Difficulté est fixée par le MJ, généralement basé sur la Disponibilité de l'Équipement."
+    "desc": "Plutôt que de courir les échoppes ou de passer commande auprès de quelqu'un pour faire le travail, vous pouvez confectionner votre propre équipement. *Artisanat* vous permet de créer de l'équipement du **Chapitre 11 : Guide de l'équipement** (ou toute autre chose que le MJ vous autorise à créer) si vous possédez les Compétences Métier appropriées. Pour cela, vous avez besoin des Outils de la profession, de matériaux de base, et d'un accès à un atelier adéquat. En général, les matières premières pour créer l'équipement de votre choix coûteront un quart du prix de l'équipement, et devront être achetées avant le début de l'Activité *Artisanat*.\n\nPour créer l'équipement, effectuez un Test **étendu de Métier**, dont la Difficulté est fixée par le MJ, généralement basé sur la Disponibilité de l'Équipement.",
+    "stake": "Test étendu : les DR du lancer s'ajoutent (ou se retranchent) au total de l'ouvrage ; à la cible atteinte, l'équipement est fabriqué avec ses Atouts et ses Défauts. Le travail inachevé se conserve.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "learn",
@@ -215,7 +240,9 @@
     },
     "difficulty": "difficile",
     "resolver": "learnTalent",
-    "desc": "C'est une chose d'acquérir une Compétence qui peut être facilement pratiquée, c'en est une autre d'apprendre quelque chose pour laquelle on n'a aucune aptitude. Cette Activité vous permet d'essayer d'apprendre un Talent en dehors de votre Carrière. Il n'y a aucune garantie que cette tentative réussisse, ce qui signifie qu'il y a de bonnes chances pour que vous échouiez dans l'apprentissage du Talent que vous espériez acquérir, dépensant en vain des PX et de l'argent.\n\nVous ne pouvez apprendre un Talent que si vous avez le tuteur approprié. Une fois que vous avez trouvé un tuteur, le prix pour apprendre le Talent est de 2D10 pistoles d'argent par 100PX que coûte l'achat du Talent. Tentez un Test **Difficile (-20)** en utilisant la Caractéristique ou la Compétence la plus pertinente pour le Talent, telle que déterminée par le MJ. Sur un succès, vous avez appris le Talent. Sinon, vous avez échoué cette fois-ci, mais pourrez essayer de nouveau avec une future Activité et gagnez un modificateur de +10 pour chaque tentative ratée."
+    "desc": "C'est une chose d'acquérir une Compétence qui peut être facilement pratiquée, c'en est une autre d'apprendre quelque chose pour laquelle on n'a aucune aptitude. Cette Activité vous permet d'essayer d'apprendre un Talent en dehors de votre Carrière. Il n'y a aucune garantie que cette tentative réussisse, ce qui signifie qu'il y a de bonnes chances pour que vous échouiez dans l'apprentissage du Talent que vous espériez acquérir, dépensant en vain des PX et de l'argent.\n\nVous ne pouvez apprendre un Talent que si vous avez le tuteur approprié. Une fois que vous avez trouvé un tuteur, le prix pour apprendre le Talent est de 2D10 pistoles d'argent par 100PX que coûte l'achat du Talent. Tentez un Test **Difficile (-20)** en utilisant la Caractéristique ou la Compétence la plus pertinente pour le Talent, telle que déterminée par le MJ. Sur un succès, vous avez appris le Talent. Sinon, vous avez échoué cette fois-ci, mais pourrez essayer de nouveau avec une future Activité et gagnez un modificateur de +10 pour chaque tentative ratée.",
+    "stake": "Réussite : le Talent est appris, les PX débités. Échec : PX et prix du tuteur dépensés quand même, et +10 à la prochaine tentative.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "entrainement",
@@ -250,7 +277,9 @@
     ],
     "difficulty": "intermediaire",
     "resolver": "identify",
-    "desc": "La plupart des Personnages ne savent rien des capacités d'un artefact avant de procéder à des recherches ou des expérimentations. Pour les Personnages dotés du Talent Détection d'artefact, c'est plutôt simple : en touchant l'objet, ils peuvent effectuer un Test d'**Intuition** et étudier l'artefact. Pour d'autres sorciers, la tâche est plus ardue et nécessite généralement une semaine par tentative, souvent dans un laboratoire, une bibliothèque bien fournie ou un autre espace approprié. C'est un processus décourageant, car les objets magiques sont dangereux lorsqu'ils sont manipulés dans l'ignorance. Pour identifier un artefact magique, un Personnage doit effectuer un Test de **Savoir (Magie) Intermédiaire (+0)** et consulter le tableau suivant."
+    "desc": "La plupart des Personnages ne savent rien des capacités d'un artefact avant de procéder à des recherches ou des expérimentations. Pour les Personnages dotés du Talent Détection d'artefact, c'est plutôt simple : en touchant l'objet, ils peuvent effectuer un Test d'**Intuition** et étudier l'artefact. Pour d'autres sorciers, la tâche est plus ardue et nécessite généralement une semaine par tentative, souvent dans un laboratoire, une bibliothèque bien fournie ou un autre espace approprié. C'est un processus décourageant, car les objets magiques sont dangereux lorsqu'ils sont manipulés dans l'ignorance. Pour identifier un artefact magique, un Personnage doit effectuer un Test de **Savoir (Magie) Intermédiaire (+0)** et consulter le tableau suivant.",
+    "stake": "+6 DR : l'objet et TOUTES ses Particularités. +4/+5 : l'objet, et tu sais s'il en a. +2/+3 : l'objet et ses Particularités visibles. 0/+1 : l'objet et une Particularité cachée. 0/−1 : rien, mais tu le sais. −2/−3 : tu le confonds avec un objet du même genre. −4/−5 : une fausse Particularité tenue pour vraie. −6 ou pire : au moins deux.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "convalescence",
@@ -273,7 +302,10 @@
       {
         "op": "removePsychTrait"
       }
-    ]
+    ],
+    "desc": "Vous faites des efforts concertés pour vous reposer et réfléchir, et tenter de trouver la paix sans vous soucier des peines d'autrui. Effectuez un Test de **Calme Très Difficile (–30)**. La difficulté peut être réduite en fonction de la qualité des soins reçus. En cas de réussite, vous pouvez éliminer un Trait Psychologique de votre choix. Même en cas d'échec, vous vous sentez mieux après avoir fait face à vos problèmes et pouvez inverser un Test de **Calme** pour résister aux effets du Trait Psychologique au cours de votre prochaine aventure.",
+    "stake": "Réussite : un Trait psychologique de ton choix disparaît. Échec : aucun effet.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "penitence",
@@ -334,7 +366,9 @@
     ],
     "where": [
       "altdorf"
-    ]
+    ],
+    "stake": "Réussite : −1 Point de Péché, −2 à partir de +4 DR. Échec : un État Exténué au premier jour de la prochaine aventure. Maladresse : un tirage sur la Colère des Dieux à la place.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "entrainement-arme-inhabituelle",
@@ -371,7 +405,9 @@
     ],
     "where": [
       "altdorf"
-    ]
+    ],
+    "stake": "Réussite : l'arme visée est maîtrisée pour de bon. Échec : rien — l'entraînement est à reprendre à la prochaine pause.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "tester-objets-magiques",
@@ -424,7 +460,9 @@
     ],
     "where": [
       "altdorf"
-    ]
+    ],
+    "stake": "+4 DR ou plus : l'objet est percé à jour, dangers compris. Réussite en dessous : sa fonction principale et son activation. Échec : rien ; à −4 DR ou pire, un Test d'Exposition mineure à la Corruption en plus.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "mecenat",
@@ -491,7 +529,9 @@
     ],
     "minInvest": {
       "gold": 5
-    }
+    },
+    "stake": "+6 DR : ta mise et 20 % de profit. +3 à +5 : ta mise. 0 à +2 : la moitié de ta mise. Échec : ta mise est perdue.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "recherche-universitaire",
@@ -521,7 +561,9 @@
     ],
     "where": [
       "altdorf"
-    ]
+    ],
+    "stake": "Réussite : le sort choisi coûte 100 PX de moins par DR (minimum 100 PX) — l'achat se fait dans la foulée.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "commerce-opportunite",
@@ -541,7 +583,9 @@
     ],
     "difficulty": "complexe",
     "resolver": "opportunityTrade",
-    "desc": "Si votre voyage vous fait passer par des ports appropriés, vous pouvez tenter de faire du commerce d'opportunité. Un achat ou une vente rapide peut faire une grosse différence. Vous pouvez investir jusqu'à l'équivalent de la valeur totale d'Encombrement disponible et non surchargé de votre bateau en couronnes d'or. Effectuez un Test étendu de **Marchandage Complexe (–10)** nécessitant 10 DR et autorisant jusqu'à trois tentatives. Reportez-vous au tableau ci-dessous pour connaitre le résultat de votre investissement."
+    "desc": "Si votre voyage vous fait passer par des ports appropriés, vous pouvez tenter de faire du commerce d'opportunité. Un achat ou une vente rapide peut faire une grosse différence. Vous pouvez investir jusqu'à l'équivalent de la valeur totale d'Encombrement disponible et non surchargé de votre bateau en couronnes d'or. Effectuez un Test étendu de **Marchandage Complexe (–10)** nécessitant 10 DR et autorisant jusqu'à trois tentatives. Reportez-vous au tableau ci-dessous pour connaitre le résultat de votre investissement.",
+    "stake": "Test étendu : 10 DR en 3 tentatives au plus — le total atteint fixe le pourcentage de la mise récupéré. La mise est engagée avant le premier jet.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "cartographie",
@@ -562,7 +606,9 @@
     ],
     "difficulty": "complexe",
     "resolver": "seaChart",
-    "desc": "Vous dessinez une carte qui peut être reproduite et vendue pour faire un bénéfice, mais aussi servir d'outil pour s'orienter. Effectuez un Test de **Métier (Cartographe) Complexe (–10)** et désignez deux ports. En cas de succès, vous produisez une carte ayant une valeur en CO égale au nombre de DR obtenus sur le Test. Quand vous voyagez entre les deux ports désignés, la carte fournit +2 DR sur les Tests d'Orientation.\n\nLors de la confection de la carte, vous pouvez aussi tenter gratuitement l'Activité *Opérations bancaires : Planque* (voir page 199 de **WFJDR**) quand vous fabriquez la carte pour cacher votre butin dans un endroit indiqué sur cette carte. Votre trésor est en sécurité tant que vous gardez la carte, mais si quelqu'un met la main dessus, il est découvert sur un 50 ou moins plutôt que le 10 ou moins habituel sur le lancer d'1d100."
+    "desc": "Vous dessinez une carte qui peut être reproduite et vendue pour faire un bénéfice, mais aussi servir d'outil pour s'orienter. Effectuez un Test de **Métier (Cartographe) Complexe (–10)** et désignez deux ports. En cas de succès, vous produisez une carte ayant une valeur en CO égale au nombre de DR obtenus sur le Test. Quand vous voyagez entre les deux ports désignés, la carte fournit +2 DR sur les Tests d'Orientation.\n\nLors de la confection de la carte, vous pouvez aussi tenter gratuitement l'Activité *Opérations bancaires : Planque* (voir page 199 de **WFJDR**) quand vous fabriquez la carte pour cacher votre butin dans un endroit indiqué sur cette carte. Votre trésor est en sécurité tant que vous gardez la carte, mais si quelqu'un met la main dessus, il est découvert sur un 50 ou moins plutôt que le 10 ou moins habituel sur le lancer d'1d100.",
+    "stake": "Réussite : une Carte marine valant autant de CO que de DR, qui donne +2 DR aux Tests d'Orientation ; la Planque cachée dessus est découverte sur un jet de 50 ou moins. Échec : les relevés sont inutilisables.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "entrainement-equipage",
@@ -582,7 +628,9 @@
     ],
     "difficulty": "difficile",
     "resolver": "crewTraining",
-    "desc": "Votre équipage pourrait devenir plus compétent. Choisissez l'une de vos Compétences utiles à la gestion d'un bateau. Vous passez votre temps à former l'équipage à cette Compétence. Effectuez un Test de **Commandement Difficile (–20)** suivi d'un Test **Difficile (–20)** dans la Compétence à entraîner. En cas de succès, augmentez le score de l'équipage dans la Compétence que vous lui avez apprise d'un nombre égal au nombre de DR obtenus sur le Test de Commandement et dépensez 2 pistoles d'argent en frais et en grog de félicitations par membre de l'équipage entraîné. Vous ne pouvez pas augmenter un score de Compétence au-delà de vos propres Augmentations dans cette Compétence. Seuls les PNJ peuvent gagner des Augmentations grâce à cette Activité."
+    "desc": "Votre équipage pourrait devenir plus compétent. Choisissez l'une de vos Compétences utiles à la gestion d'un bateau. Vous passez votre temps à former l'équipage à cette Compétence. Effectuez un Test de **Commandement Difficile (–20)** suivi d'un Test **Difficile (–20)** dans la Compétence à entraîner. En cas de succès, augmentez le score de l'équipage dans la Compétence que vous lui avez apprise d'un nombre égal au nombre de DR obtenus sur le Test de Commandement et dépensez 2 pistoles d'argent en frais et en grog de félicitations par membre de l'équipage entraîné. Vous ne pouvez pas augmenter un score de Compétence au-delà de vos propres Augmentations dans cette Compétence. Seuls les PNJ peuvent gagner des Augmentations grâce à cette Activité.",
+    "stake": "Réussite : le score d'équipage dans la Compétence enseignée monte d'autant de points que les DR du Test de Commandement, sans dépasser tes propres Augmentations, contre 2 pistoles d'argent par membre entraîné.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "inspire",
@@ -613,7 +661,9 @@
           }
         ]
       }
-    ]
+    ],
+    "stake": "Réussite : +10 au Test de Puissance de ton armée pour le premier Round de la bataille.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "planification",
@@ -659,7 +709,9 @@
           }
         ]
       }
-    ]
+    ],
+    "stake": "Réussite : +10 à tous les Tests de Puissance de ton armée pendant la bataille, +20 à partir de +6 DR. Réussite : l'Infiltration se débloque.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "infiltration",
@@ -697,7 +749,9 @@
           }
         ]
       }
-    ]
+    ],
+    "stake": "Test combiné : les deux Compétences doivent atteindre leur cible. Réussite : +20 au Test de Planification.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "rassembler-des-forces",
@@ -760,7 +814,9 @@
           }
         ]
       }
-    ]
+    ],
+    "stake": "Réussite : +5 de Puissance de départ à ton armée, +10 à partir de +6 DR. Échec Stupéfiant (−6 DR) : −10.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "reperage",
@@ -796,7 +852,9 @@
           }
         ]
       }
-    ]
+    ],
+    "stake": "Test combiné : les deux Compétences doivent atteindre leur cible. Réussite : +10 au Test de Planification, et le Sabotage se débloque.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "sabotage",
@@ -847,7 +905,9 @@
           }
         ]
       }
-    ]
+    ],
+    "stake": "Réussite : −5 de Puissance de départ à l'armée ennemie, −10 à partir de +6 DR.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "motivation",
@@ -886,7 +946,9 @@
           }
         ]
       }
-    ]
+    ],
+    "stake": "Réussite : +1 de Puissance à ton armée par DR.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "pluie-de-fleches",
@@ -990,7 +1052,9 @@
           }
         ]
       }
-    ]
+    ],
+    "stake": "Test opposé chaque Round : les DR perdus s'ajoutent au Point de rupture — à 10, ou au bout de 5 Rounds, c'est la déroute. Chaque Round tenu : −2 de Puissance ennemie, mais +10 à l'opposition du Round suivant.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "compte-a-rebours",
@@ -1033,7 +1097,9 @@
           "motivation"
         ]
       }
-    ]
+    ],
+    "stake": "Réussite : −10 de Puissance à l'armée ennemie. Échec : une Scène de Motivation s'impose au Round suivant.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "percee",
@@ -1119,7 +1185,9 @@
           }
         ]
       }
-    ]
+    ],
+    "stake": "Réussite : −5 de Puissance ennemie, et −5 de plus si le capitaine visé tombe.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "tuez-la-bete",
@@ -1200,7 +1268,9 @@
           "charge"
         ]
       }
-    ]
+    ],
+    "stake": "Réussite : −5 de Puissance ennemie ; un Succès Stupéfiant (+6 DR) neutralise le général et lui coûte −15 de plus. Échec Stupéfiant (−6 DR) : une Scène de Charge s'impose au Round suivant.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "charge",
@@ -1330,7 +1400,9 @@
     ],
     "difficulty": "intermediaire",
     "desc": "Entre deux Rounds de bataille, un Personnage blessé peut se rassembler pour reprendre des forces. En réussissant un Test de Résistance Intermédiaire (+0), il guérit un nombre de Blessures égal au DR obtenu plus son Bonus d'Endurance.",
-    "resolver": "battleRally"
+    "resolver": "battleRally",
+    "stake": "Réussite : tu regagnes autant de Blessures que ton DR plus ton Bonus d'Endurance.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "dressage",
@@ -1355,7 +1427,9 @@
         "on": "success",
         "note": "En cas de réussite, ajoutez une Compétence à votre animal, choisie parmi les Traits de créature Dressé (voir page 339) — non appliqué : aucun registre d'animal/compagnon possédé par un héros n'existe dans le moteur (mesure #508)."
       }
-    ]
+    ],
+    "stake": "Réussite : l'animal entraîné gagne une Compétence du Trait Dressé — non appliqué, le moteur ne tient aucun registre d'animal possédé.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "dernieres-nouvelles",
@@ -1392,7 +1466,9 @@
         "maxSL": -4,
         "note": "Si vous échouez sérieusement (un Échec Impressionnant), vous apprenez quelque chose de faux, mais êtes convaincu que c'est réel."
       }
-    ]
+    ],
+    "stake": "Réussite : une rumeur, plus une par DR. Échec Impressionnant (−4 DR ou pire) : une nouvelle fausse, tenue pour vraie.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "entrainement-au-combat",
@@ -1422,7 +1498,9 @@
       "outsidePenalty": 1
     },
     "resolver": "combatTraining",
-    "desc": "Des Guerriers trop longtemps éloignés du champ de bataille peuvent voir leurs Compétences de combat perdre en efficacité. Un entraînement rigoureux et régulier atténue non seulement ce souci, mais peut apporter un avantage supplémentaire au moment opportun. Si vous entreprenez cette Activité, vous passez vos journées à vous entraîner avec les armes que vous connaissez, perfectionnant vos Compétences pour le jour où cela sera crucial. Après avoir entrepris cette Activité, tentez un Test de **Compétence Intermédiaire (+0)** en utilisant une Compétence de Corps à corps ou Projectiles. Sur un succès, vous pouvez inverser un Test de la Compétence associée une fois pendant votre prochaine aventure. Notez-le sur votre Feuille de Personnage. Vous pouvez entreprendre cette Activité plusieurs fois si vous le souhaitez."
+    "desc": "Des Guerriers trop longtemps éloignés du champ de bataille peuvent voir leurs Compétences de combat perdre en efficacité. Un entraînement rigoureux et régulier atténue non seulement ce souci, mais peut apporter un avantage supplémentaire au moment opportun. Si vous entreprenez cette Activité, vous passez vos journées à vous entraîner avec les armes que vous connaissez, perfectionnant vos Compétences pour le jour où cela sera crucial. Après avoir entrepris cette Activité, tentez un Test de **Compétence Intermédiaire (+0)** en utilisant une Compétence de Corps à corps ou Projectiles. Sur un succès, vous pouvez inverser un Test de la Compétence associée une fois pendant votre prochaine aventure. Notez-le sur votre Feuille de Personnage. Vous pouvez entreprendre cette Activité plusieurs fois si vous le souhaitez.",
+    "stake": "Réussite : un jeton d'inversion sur la Compétence de combat entraînée, pour ta prochaine aventure. Échec : aucun bénéfice.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "observer-une-cible",
@@ -1458,7 +1536,9 @@
         ],
         "note": "Sur un succès, vous pouvez inverser un Test concernant votre cible une fois pendant votre prochaine aventure."
       }
-    ]
+    ],
+    "stake": "Réussite : un jeton d'inversion sur un Test concernant ta cible, pour ta prochaine aventure.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "recherche-de-savoir",
@@ -1495,7 +1575,9 @@
         "maxSL": -4,
         "note": "Si vous échouez sérieusement (un Échec Impressionnant), vous apprenez quelque chose de faux, mais êtes convaincu que c'est vrai."
       }
-    ]
+    ],
+    "stake": "Réussite : une part de connaissance sur le sujet, plus une par DR. Échec Impressionnant (−4 DR ou pire) : une information fausse, tenue pour vraie.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "reputation",
@@ -1519,7 +1601,9 @@
       "outsidePenalty": 1
     },
     "resolver": "reputation",
-    "desc": "C'est bien connu, l'argent est roi. Si vous cherchez à exercer votre influence et à élever votre statut social, vous devez être prêt à lâcher un peu de votre fortune. Tout élan donné à votre réputation retombera quand l'argent cessera de couler, alors vous devriez exploiter cet avantage tant que ça dure.\n\nLes Personnages peuvent dépenser de l'argent pour augmenter leur Standing de +1 pour la prochaine aventure, après quoi le bonus disparaît. Cela coûte le maximum de vos revenus standards (p 52). Donc si vos revenus sont de 4D10 sous de cuivre, il vous en coûtera 40sc et nécessite un Test de **Compétence de Carrière Intermédiaire (+0)** (voir Gagner de l'argent grâce au Statut p.51). Sur un succès, votre Standing augmente de +1. Si vous obtenez un Succès Stupéfiant (+6), il augmente de +2. Si vous échouez, vous avez juste gaspillé votre argent. Si vous obtenez un Échec Stupéfiant (-6), votre basse flatterie a tellement exaspéré vos pairs que votre Standing diminue de -1 pour la durée entière de votre prochaine aventure."
+    "desc": "C'est bien connu, l'argent est roi. Si vous cherchez à exercer votre influence et à élever votre statut social, vous devez être prêt à lâcher un peu de votre fortune. Tout élan donné à votre réputation retombera quand l'argent cessera de couler, alors vous devriez exploiter cet avantage tant que ça dure.\n\nLes Personnages peuvent dépenser de l'argent pour augmenter leur Standing de +1 pour la prochaine aventure, après quoi le bonus disparaît. Cela coûte le maximum de vos revenus standards (p 52). Donc si vos revenus sont de 4D10 sous de cuivre, il vous en coûtera 40sc et nécessite un Test de **Compétence de Carrière Intermédiaire (+0)** (voir Gagner de l'argent grâce au Statut p.51). Sur un succès, votre Standing augmente de +1. Si vous obtenez un Succès Stupéfiant (+6), il augmente de +2. Si vous échouez, vous avez juste gaspillé votre argent. Si vous obtenez un Échec Stupéfiant (-6), votre basse flatterie a tellement exaspéré vos pairs que votre Standing diminue de -1 pour la durée entière de votre prochaine aventure.",
+    "stake": "La dépense part dans tous les cas. Réussite : +1 de Standing pour la prochaine aventure, +2 sur un Succès Stupéfiant (+6 DR). Échec Stupéfiant (−6 DR) : −1.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "semer-dissension-reperage",
@@ -1546,7 +1630,9 @@
       "outsidePenalty": 1
     },
     "resolver": "dissensionScout",
-    "desc": "Si vous cherchez à créer des troubles sociaux, entreprenez l'Activité *Semer la dissension*. En discutant avec les citoyens locaux, en animant des réunions et en vous impliquant, vous pouvez orienter les conversations pour nourrir lentement la colère et le ressentiment envers un individu en particulier, un groupe ou une institution. Mais cela prend du temps, il faut donc deux Activités pour tenter de *Semer la dissension* (et cela sera aussi considéré comme une Activité *Revenus* si vous avez une Carrière d'Agitateur).\n\nPour entreprendre l'Activité, vous devez d'abord tenter un Test de **Ragot Accessible (+20)** pour comprendre qui sont les personnes influentes du coin."
+    "desc": "Si vous cherchez à créer des troubles sociaux, entreprenez l'Activité *Semer la dissension*. En discutant avec les citoyens locaux, en animant des réunions et en vous impliquant, vous pouvez orienter les conversations pour nourrir lentement la colère et le ressentiment envers un individu en particulier, un groupe ou une institution. Mais cela prend du temps, il faut donc deux Activités pour tenter de *Semer la dissension* (et cela sera aussi considéré comme une Activité *Revenus* si vous avez une Carrière d'Agitateur).\n\nPour entreprendre l'Activité, vous devez d'abord tenter un Test de **Ragot Accessible (+20)** pour comprendre qui sont les personnes influentes du coin.",
+    "stake": "Réussite : les personnalités influentes du coin sont repérées — la seconde Activité (Charme) se débloque pour cette période. Échec : rien.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "semer-dissension-emeute",
@@ -1574,7 +1660,9 @@
     },
     "resolver": "dissensionEmeute",
     "maison": "Difficulté « déterminée par la façon dont la cible peut être mal vue » (LDB 23 l.242) — le RAW ne fixe aucune table, seulement deux exemples (Facile/Difficile) : `difficulty:'intermediaire'` est le repli maison, non cité par la source.",
-    "desc": "Sur un succès, tentez un Test de **Charme** dont la Difficulté est déterminée par la façon dont la cible peut être mal vue. Susciter la colère contre un noble oppresseur peut être un Test **Facile (+40)**, alors que soulever une foule pour protester contre les bonnes œuvres d'un hospice de Shallya peut être **Difficile (-20)**. Si vous échouez à l'un de ces Tests, l'Activité n'est pas un succès.\n\nSur un succès, vous trouverez plus facile de déchaîner le courroux des foules sur la cible de votre choix. Pendant votre prochaine aventure, vous pouvez tenter un Test de **Charme** pour rassembler une foule contre la même cible, dont la Difficulté sera déterminée par le MJ en fonction de la constitution de la foule.\n\nUn seul succès signifie que vous rassemblez suffisamment de citadins en colère pour accoster la cible, en criant des insultes, en demandant justice, en lançant des légumes et plus généralement en abordant le point central de leur colère. Un Succès Impressionnant ou Stupéfiant peut mener à des lynchages incontrôlables ou même à des tentatives d'incendies ! Un échec signifie que les gens n'ont pas l'envie de se révolter ; échouer de plusieurs DR peut signifier que la cible, ou ses sympathisants prennent connaissance de vos actions…\n\nUne fois que vous avez l'oreille d'une foule (entreprenant avec succès cette Activité), vous pouvez tenter de mobiliser la foule contre une cible différente pendant une aventure, bien que cela soit plus difficile, et que la Difficulté du Test de **Charme** soit plus élevée de deux niveaux."
+    "desc": "Sur un succès, tentez un Test de **Charme** dont la Difficulté est déterminée par la façon dont la cible peut être mal vue. Susciter la colère contre un noble oppresseur peut être un Test **Facile (+40)**, alors que soulever une foule pour protester contre les bonnes œuvres d'un hospice de Shallya peut être **Difficile (-20)**. Si vous échouez à l'un de ces Tests, l'Activité n'est pas un succès.\n\nSur un succès, vous trouverez plus facile de déchaîner le courroux des foules sur la cible de votre choix. Pendant votre prochaine aventure, vous pouvez tenter un Test de **Charme** pour rassembler une foule contre la même cible, dont la Difficulté sera déterminée par le MJ en fonction de la constitution de la foule.\n\nUn seul succès signifie que vous rassemblez suffisamment de citadins en colère pour accoster la cible, en criant des insultes, en demandant justice, en lançant des légumes et plus généralement en abordant le point central de leur colère. Un Succès Impressionnant ou Stupéfiant peut mener à des lynchages incontrôlables ou même à des tentatives d'incendies ! Un échec signifie que les gens n'ont pas l'envie de se révolter ; échouer de plusieurs DR peut signifier que la cible, ou ses sympathisants prennent connaissance de vos actions…\n\nUne fois que vous avez l'oreille d'une foule (entreprenant avec succès cette Activité), vous pouvez tenter de mobiliser la foule contre une cible différente pendant une aventure, bien que cela soit plus difficile, et que la Difficulté du Test de **Charme** soit plus élevée de deux niveaux.",
+    "stake": "Le repérage est consommé dans tous les cas. Réussite : la foule est retournée contre la cible — la mobilisation promise pour la prochaine aventure n'a aucune Scène pour la porter au moteur. Échec : rien.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "fanmaris",
@@ -1607,7 +1695,9 @@
         "on": "success",
         "note": "En cas de Succès, une fois au cours de la prochaine aventure, vous pouvez utiliser le bénéfice suivant : après avoir passé un Round de combat à viser votre adversaire, vous pouvez déclarer que vous accomplissez un Tir parfait — non modélisé : le bénéfice (bande de DR cumulative appliquée à une attaque déclarée, aucun jeton de manœuvre de combat multi-effets consommable n'existe dans le moteur) est mesuré, non fabriqué (#510)."
       }
-    ]
+    ],
+    "stake": "Réussite : le bénéfice de Tir parfait pour la prochaine aventure — non appliqué, aucun jeton de manœuvre de combat ne le porte au moteur.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "leitdorf",
@@ -1639,7 +1729,9 @@
         "on": "success",
         "note": "En cas de Succès, une fois au cours de la prochaine aventure, vous pouvez employer la Défense de Leitdorf : Test opposé de Corps à Corps à -10, l'adversaire privé de Talents/Augmentations — non modélisé : aucune manœuvre de combat déclarée de ce type (Test opposé spécial, coûts asymétriques des deux côtés) n'existe dans le moteur ; mesuré, non fabriqué (#510)."
       }
-    ]
+    ],
+    "stake": "Réussite : la Défense de Leitdorf pour la prochaine aventure — non appliquée, aucune manœuvre de Test opposé de ce genre n'existe au moteur.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "alcatani",
@@ -1671,7 +1763,9 @@
         "on": "success",
         "note": "Pour chaque DR obtenu, vous pouvez donner à un Personnage un rang temporaire de Coude-à-coude pour la prochaine aventure (plafonné au rang de l'instructeur, multiplié par Exaltant) — non modélisé : le Talent Coude-à-coude n'a aucune mécanique de rang implémentée dans le moteur (aucune couture d'octroi temporaire multi-cibles) ; mesuré, non fabriqué (#510)."
       }
-    ]
+    ],
+    "stake": "Réussite : un rang temporaire de Coude-à-coude par DR à distribuer — non appliqué, le Talent n'a aucune mécanique de rang au moteur.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "punchausen",
@@ -1703,7 +1797,9 @@
       "scope": "ever"
     },
     "resolver": "punchausen",
-    "desc": "L'avènement de l'imprimerie a répandu les pamphlets parmi les masses. Certains de ceux qui font imprimer des prospectus se concentrent sur les prêches religieux ou la dénonciation de leurs opposants politiques, mais il en existe toujours qui recherchent des textes susceptibles d'attirer un public plus large, et les histoires sanglantes des aventuriers itinérants sont toujours très demandées. Imprimés sur le papier le moins cher possible et illustrés d'estampes montrant des scènes sensationnelles pour susciter la curiosité des illettrés, ces contes d'épouvante sont populaires dans de nombreuses parties de l'Empire. Les guerriers qui veulent un peu d'argent et de célébrité peuvent tenter de raconter leurs aventures à un imprimeur.\n\nAprès avoir entrepris cette Activité, effectuez un Test de **Charme Complexe (–10)** ou un Test de **Divertissement (Narration) Intermédiaire (+0)**. En cas de Succès, vous recevez 2d10 pistoles et une fois au cours de la prochaine aventure, vous pouvez inverser les dés sur un Test de **Charme** ou de **Divertissement (Narration)** car l'une des personnes qui vous écoutent a récemment lu ou entendu lire à haute voix votre récit."
+    "desc": "L'avènement de l'imprimerie a répandu les pamphlets parmi les masses. Certains de ceux qui font imprimer des prospectus se concentrent sur les prêches religieux ou la dénonciation de leurs opposants politiques, mais il en existe toujours qui recherchent des textes susceptibles d'attirer un public plus large, et les histoires sanglantes des aventuriers itinérants sont toujours très demandées. Imprimés sur le papier le moins cher possible et illustrés d'estampes montrant des scènes sensationnelles pour susciter la curiosité des illettrés, ces contes d'épouvante sont populaires dans de nombreuses parties de l'Empire. Les guerriers qui veulent un peu d'argent et de célébrité peuvent tenter de raconter leurs aventures à un imprimeur.\n\nAprès avoir entrepris cette Activité, effectuez un Test de **Charme Complexe (–10)** ou un Test de **Divertissement (Narration) Intermédiaire (+0)**. En cas de Succès, vous recevez 2d10 pistoles et une fois au cours de la prochaine aventure, vous pouvez inverser les dés sur un Test de **Charme** ou de **Divertissement (Narration)** car l'une des personnes qui vous écoutent a récemment lu ou entendu lire à haute voix votre récit.",
+    "stake": "Réussite : 2d10 pistoles d'argent pour toi, et un jeton d'inversion sur la Compétence employée pour la vente. Échec : aucun imprimeur intéressé.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "remaniement-contremaitre",
@@ -1730,7 +1826,9 @@
       "scope": "ever"
     },
     "resolver": "contremaitre",
-    "desc": "Le bon équipement fait souvent la différence entre le succès et l'échec, la victoire et la défaite, la vie et la mort. Le matériel de première qualité est souvent bien trop cher pour un humble aventurier, mais dans les parties plus ou moins louches du Vieux Monde, quelques pièces et un mot glissés discrètement à un vieux compagnon peuvent révéler une occasion d'acquérir ce que vous désirez. Les missions à accomplir pour cela sont toujours dangereuses et souvent fatales, mais le jeu peut en valoir les cicatrices.\n\nPour entreprendre cette Activité, choisissez une Possession, appliquez-lui les Atouts souhaités et calculez son coût final, en arrondissant à la couronne d'or la plus proche. Le coût devrait normalement être limité à 20 CO, mais le MJ peut lever cette limite s'il le veut.\n\nEnsuite, effectuez un Test de **Ragot Intermédiaire (+0)** pour localiser un ancien associé qui peut vous envoyer sur une mission adéquate. En cas de Succès, ce contact vous détaille un travail lors duquel vous pouvez mettre la main sur l'objet demandé, soit en paiement, soit en vous en emparant pendant la mission elle-même.\n\nLa mission est dangereuse. Effectuez un Test de **Corps à Corps** ou de **Projectiles Complexe (–10)**. En cas de Succès, vous recevez à la fois l'objet désiré et une Blessure Critique sur une Localisation tirée au hasard mais en enlevant 20 sur le jet du Tableau des Critiques (minimum 01). En cas d'Échec, vous recevez l'objet et une Blessure Critique sur une Localisation tirée au hasard, mais en ajoutant au lancer sur le Tableau des Critiques autant que le coût de l'objet en Couronnes d'or. Vous ne pouvez pas dévier ce Critique avec votre armure, mais un point de Destin pourrait vous permettre d'éviter certaines conséquences.\n\nConsultez le tableau en page 139 pour générer les détails d'une mission aléatoire."
+    "desc": "Le bon équipement fait souvent la différence entre le succès et l'échec, la victoire et la défaite, la vie et la mort. Le matériel de première qualité est souvent bien trop cher pour un humble aventurier, mais dans les parties plus ou moins louches du Vieux Monde, quelques pièces et un mot glissés discrètement à un vieux compagnon peuvent révéler une occasion d'acquérir ce que vous désirez. Les missions à accomplir pour cela sont toujours dangereuses et souvent fatales, mais le jeu peut en valoir les cicatrices.\n\nPour entreprendre cette Activité, choisissez une Possession, appliquez-lui les Atouts souhaités et calculez son coût final, en arrondissant à la couronne d'or la plus proche. Le coût devrait normalement être limité à 20 CO, mais le MJ peut lever cette limite s'il le veut.\n\nEnsuite, effectuez un Test de **Ragot Intermédiaire (+0)** pour localiser un ancien associé qui peut vous envoyer sur une mission adéquate. En cas de Succès, ce contact vous détaille un travail lors duquel vous pouvez mettre la main sur l'objet demandé, soit en paiement, soit en vous en emparant pendant la mission elle-même.\n\nLa mission est dangereuse. Effectuez un Test de **Corps à Corps** ou de **Projectiles Complexe (–10)**. En cas de Succès, vous recevez à la fois l'objet désiré et une Blessure Critique sur une Localisation tirée au hasard mais en enlevant 20 sur le jet du Tableau des Critiques (minimum 01). En cas d'Échec, vous recevez l'objet et une Blessure Critique sur une Localisation tirée au hasard, mais en ajoutant au lancer sur le Tableau des Critiques autant que le coût de l'objet en Couronnes d'or. Vous ne pouvez pas dévier ce Critique avec votre armure, mais un point de Destin pourrait vous permettre d'éviter certaines conséquences.\n\nConsultez le tableau en page 139 pour générer les détails d'une mission aléatoire.",
+    "stake": "Réussite : les détails d'une mission tirés aux trois tables (lieu, objectif, commanditaire) — la mission elle-même n'est pas modélisée. Échec : aucun contact.",
+    "stakeForm": "descripteur"
   },
   {
     "id": "accomplir-un-rituel",
@@ -2045,7 +2143,11 @@
         ],
         "note": "Effectuez trois lancers sur le Tableau des Symboles. Les symboles sont inversés."
       }
-    ]
+    ],
+    "stake": "+4 DR ou plus : deux tirages sur le Tableau des Symboles. 0 à +3 : un. −2/−3 : un tirage, symbole inversé. −4/−5 : deux, inversés. −6 ou pire : trois, inversés.",
+    "stakeForm": "descripteur",
+    "rule": "tableau-augure",
+    "ruleCategory": "regles"
   },
   {
     "id": "ecrire-des-parchemins",

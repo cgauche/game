@@ -15,7 +15,8 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { NIGHT_STAKES, FLOW_STAKES, books, regles } from './index';
+import { NIGHT_STAKES, FLOW_STAKES, ACTIVITY_STAKES, books, regles } from './index';
+import { ACTIVITIES } from '../engine/activities';
 
 const RULE_IDS = new Set(regles.map((r) => r.id));
 
@@ -113,5 +114,54 @@ describe('flow-stakes — la FORME de chaque enjeu de modale mono est déclarée
     expect(inconnus, 'régime de forme inconnu').toEqual([]);
     const kinds = FLOW_STAKES.map((e) => `${e.flow}/${e.phase}`);
     expect(kinds.length, 'deux entrées se disputent le MÊME id de jet {flow, phase}').toBe(new Set(kinds).size);
+  });
+});
+
+/**
+ * MÊME contrat de forme pour les ACTIVITÉS (#1117 L3), 4ᵉ dataset d'enjeux — porté par l'ENTITÉ
+ * (`activities.json`, champs `stake`/`stakeForm`). La différence d'ancrage est nommée : une Activité
+ * cite son folio (`source.page`), pas une ligne de chapitre — un enjeu déclaré `verbatim` doit donc
+ * fournir `source.note` pour être localisable, faute de quoi la contiguïté n'est pas démontrable et
+ * le régime est refusé. Aucune entrée n'est aujourd'hui `verbatim` (les 46 sont des descripteurs de
+ * ce que le résolveur applique) : la branche est tenue par le FAIL-CLOSED ci-dessous, pas par un
+ * échantillon — c'est le prix d'un régime ouvert mais inemployé.
+ */
+describe('activities — la FORME de chaque enjeu d’Activité est déclarée et tenue (#1117 L3)', () => {
+  const avecEnjeu = ACTIVITY_STAKES.filter((a) => a.stake);
+
+  it('toute Activité qui porte un enjeu DÉCLARE sa forme', () => {
+    const sans = avecEnjeu.filter((a) => a.stakeForm !== 'verbatim' && a.stakeForm !== 'descripteur').map((a) => a.id);
+    expect(sans, 'un assemblage qui ne dit pas ce qu’il est').toEqual([]);
+  });
+
+  it('tout `stake` déclaré VERBATIM est localisable ET contigu au chapitre cité, bloc par bloc', () => {
+    const defauts: string[] = [];
+    for (const a of avecEnjeu.filter((x) => x.stakeForm === 'verbatim')) {
+      const entry = ACTIVITIES.find((x) => x.id === a.id)!;
+      const note = (entry.source as { note?: string }).note;
+      if (!note) { defauts.push(`${a.id} : verbatim sans source.note — passage non localisable`); continue; }
+      const lines = chapterLines(entry.source.book, note);
+      for (const bloc of a.stake!.split('\n\n')) {
+        if (!contigu(lines, bloc)) defauts.push(`${a.id} : bloc NON contigu au Source (${note}) — « ${bloc.slice(0, 70)}… »`);
+      }
+    }
+    expect(defauts, 'le déclarer `descripteur` ou le rendre contigu').toEqual([]);
+  });
+
+  it('le stock DESCRIPTEUR est celui mesuré, et chaque descripteur porte SA porte', () => {
+    const descripteurs = avecEnjeu.filter((a) => a.stakeForm === 'descripteur');
+    expect(descripteurs.length).toBe(46);
+    expect(avecEnjeu.filter((a) => a.stakeForm === 'verbatim').length).toBe(0);
+    // Porte = le foyer déclaré, ou l'Activité elle-même (qui doit alors porter sa `desc` verbatim —
+    // vérifié nominativement par `activity-stake-ratchet`).
+    const sansPorte = descripteurs.filter((a) => a.rule && !a.ruleCategory).map((a) => a.id);
+    expect(sansPorte, 'foyer déclaré sans catégorie Codex').toEqual([]);
+  });
+
+  it('FAIL-CLOSED : le même `contigu` reconnaît un passage réel d’activité et rejette un assemblage', () => {
+    const lines = chapterLines('ennemi-dans-l-ombre-compagnon', 'EDOC 8 l.157');
+    expect(contigu(lines, 'les Personnages ne peuvent pas être surpris pendant cette étape de leur voyage.')).toBe(true);
+    // Le descripteur mécanique de « Rester aux aguets » n'est PAS du verbatim — le déclarer tel échouerait.
+    expect(contigu(lines, 'Réussite : le groupe ne peut pas être surpris pendant cette Étape.')).toBe(false);
   });
 });

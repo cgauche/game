@@ -58,8 +58,7 @@ const BASELINE: Record<string, string> = {
   // MAGIE — le renvoi vise la fiche du SORT (design §4), lot magie.
   cast: 'L2 — renvoi CodexRef vers la fiche du sort',
   focus: 'L2 — renvoi CodexRef vers la fiche du sort',
-  // ACTIVITÉS — `ActivityDef.stake/rule` éditables par activité (design §4), lot L3.
-  activity: 'L3 — ActivityDef.stake',
+  // ACTIVITÉS — `activity` est SOLDÉ (L3 : `ActivityDef.stake`, dataset `activity`).
   bargain: 'L3 — négoce (marchand), lot des activités marchandes',
   // ÉQUIPAGE & NAVIRE — jumeaux de `crewTest`, à doter avec leurs types de Test (même patron).
   shipManeuver: 'L4 — jumeau de crewTest, entryId = type de Test',
