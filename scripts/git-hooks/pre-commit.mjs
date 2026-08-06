@@ -177,6 +177,24 @@ if (rawFicheStaged) {
   }
 }
 
+// #1082 — le compilé committé EST la compilation exacte du dessin committé : le --check tourne dès
+// qu'un dessin d'atelier quadrupède OU une sortie compilée est stagé, même patron bloquant.
+const atelierQuadStaged = staged.some((f) => {
+  const r = f.replace(/\\/g, '/');
+  return r.startsWith('src/gameIso/rig/quadruped/atelier/') || /^src\/gameIso\/rig\/quadruped\/[^/]+Compile\.ts$/.test(r);
+});
+if (atelierQuadStaged) {
+  try {
+    execFileSync(
+      process.execPath,
+      [join(ROOT, 'node_modules', 'tsx', 'dist', 'cli.mjs'), join(ROOT, 'scripts', 'rig', 'compile-dessin-quad.mts'), '--check'],
+      { cwd: ROOT, stdio: 'inherit' },
+    );
+  } catch {
+    offenders.push("compile-dessin-quad --check en échec (dessin d'atelier et compilé désynchronisés — relancer `npx tsx scripts/rig/compile-dessin-quad.mts` et committer les deux)");
+  }
+}
+
 // #641 — la suite `test:raw` (harnais de couverture Atlas, node --test) échappait au gate : un
 // commit touchant scripts/raw/** ou docs/raw/** pouvait laisser test:raw rouge (vécu #604). Même
 // patron diff-scopé bloquant que docs:check ci-dessus.
