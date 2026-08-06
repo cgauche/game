@@ -20,6 +20,7 @@ import { VsHeader } from '../VsHeader';
 import { recapLineOfEvent } from '../../gameIso/combatNarration';
 import { ev } from '../../state/combatLog';
 import { Icon } from '../Icon';
+import { composeRollLabel } from '../../state/rollSeam';
 
 const LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
 
@@ -60,56 +61,40 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   // manœuvre de trait comprise) : MÊME primitive que l'application (`attackConfirm`, #1026) — l'écran
   // et la fenêtre de Défense qui suit ne peuvent plus parler de deux armes différentes.
   const weapon = attackWeaponOf(battle, attacker, target, pa);
-  // Armes choisissables du loadout actif (hors Mains nues) : ≥2 → sélecteur d'arme d'attaque (main secondaire -20).
   const pickable = attacker.weapons.filter((w) => !isUnarmed(w) && !!w.uid);
   const res = pa.result;
   const rolled = !!res;
-  // Maniement de deux armes (LDB 10 l.638) : proposé seulement à un héros qui a le talent ET tient 2 armes de
-  // MÊLÉE à 1 main, sur l'attaque-ACTION (jamais une frappe gratuite/enchaînée — ni cleave, ni 2ᵉ frappe).
+  // LDB 10 l.638
   const dualEligible = !res && attacker.kind === 'hero' && attackModesFor(attacker).includes('dual-wield')
     && attacker.weapons.some((w) => w.hand === 'main' && w.type === 'melee' && (w.hands ?? 1) === 1)
     && attacker.weapons.some((w) => w.hand === 'off' && w.type === 'melee' && (w.hands ?? 1) === 1)
     && !pa.cleave && !pa.dualSecond;
-  // « Tirer dans le tas » (LDB 14 l.136/146) : proposé au TIR quand ≥3 combattants sont serrés au contact de la cible.
+  // LDB 14 l.136/146
   const crowd = !res && weapon?.type === 'ranged' ? crowdEligible(battle, attacker, target) : [];
   const cm = crowdMod(crowd.length);
-  // Tir IMMOBILE (LDB 14 l.101) : proposé au TIR d'un héros qui n'a pas encore bougé ET qui PEUT encore se
-  // déplacer (sinon il est immobile d'office, pas de −10 à annuler) — annule le −10 « Tir en bougeant » au
-  // prix de son Mouvement du Tour (Mouvement décomposable : sinon on tirerait puis bougerait).
+  // LDB 14 l.101
   const canHoldGround = !res && !pa.interrupt && weapon?.type === 'ranged' && attacker.kind === 'hero' && battle.movementUsed === 0 && movementRemaining(battle, attacker) > 0;
-  // Mode de tir « corde séparée » (Lance-harpon, ADE II 02 l.677) : proposé au TIR d'un héros dont l'arme
-  // tirée porte la capacité `ItemCapabilities.ropeMode` — jamais un id d'arme en dur (#476).
+  // ADE II 02 l.677
   const weaponItem = weapon ? attacker.items?.find((it) => it.uid === weapon.uid) : undefined;
   const canHarpoonRopeCut = !res && weapon?.type === 'ranged' && attacker.kind === 'hero' && !!weaponItem && itemCapability(weaponItem, 'ropeMode');
-  // « Retenir ses coups » (Aux Armes 07 l.59-61) : maîtriser sans tuer. Proposé seulement quand c'est légal —
-  // attaque de MÊLÉE (jamais tir/sort), arme qui n'inflige PAS *En flammes* (l.61), avant le jet.
+  // AA 07 l.59-61
   const canWithhold = !res && weapon?.type === 'melee' && attacker.kind === 'hero' && !weaponInflictsFlames(weapon);
-  // « Empoignade » (LDB 14 l.159) : déclarée AVANT le jet, MAINS NUES seulement, en mêlée. Sur une touche,
-  // « au lieu d'infliger des Dégâts », pose l'Empoignade (les deux) + l'État Empêtré (cible).
+  // LDB 14 l.159
   const canGrapple = !res && weapon?.type === 'melee' && isUnarmed(weapon) && attacker.kind === 'hero';
   const rerollable = !!res && canReroll(!res.attackerDetail?.success, !!pa.rerolled);
   // Panneau pré-rempli (l'avant-jet = le résultat, pré-rempli) : MA ligne (score + mods) recalculée à
   // chaque changement d'option ; la ligne adverse via `previewDefense` (compétence + mods, sans valeur).
   const preview = !res ? previewAttack(useGame.getState, attacker, target, pa.location ?? undefined, { intoCrowd: pa.intoCrowd, heldGround: pa.heldGround, weaponUid: pa.weaponUid, harpoonRopeCut: pa.harpoonRopeCut }) : null;
-  // Aperçu de la défense ADVERSE dans le panneau pré-jet. À distance, le tir n'est PAS opposé par
-  // défaut (LDB 13 l.135) : on n'affiche une ligne de défense QUE si le RAW l'autorise (Parade avec
-  // bouclier Protectrice 2+/tireur Engagé, Esquive à Bout Portant — `bestRangedDefense`). Sinon AUCUNE
-  // ligne : le tir n'est juste pas opposé — ce n'est PAS un état « cible sans défense » (règle
-  // particulière distincte). En mêlée : défense probable.
+  // LDB 13 l.135
   const rangedDef = !res && weapon?.type === 'ranged' ? bestRangedDefense(attacker, target, weapon, combatDistance(attacker, target)) : undefined;
   const defenderPending = res
     ? undefined
     : weapon?.type === 'ranged'
       ? (rangedDef ? { label: DEFENSE_LABEL[rangedDef.mode], mods: defenseModifiers(target, rangedDef.mode, 0, rangedDef.parryWeapon), difficulty: 'intermediaire' as const } : undefined) // LDB 13 l.118
-      : isInanimate(target) ? undefined : previewDefense(target); // OBJET INANIMÉ (structure/véhicule/affût) : aucune Parade/Esquive → pas de ligne de défense
-  // Cible Inconsciente (LDB États l.113) : le dé est DÉJÀ le meilleur choisi par le moteur (helplessTest,
-  // succès + Critique forcés) — seule la Localisation reste un choix (LDB 17 l.68, CritLocationPicker
-  // plus bas) ; pas de re-choix du dé lui-même (réservé à la Résilience volontaire, `pa.forced` manuel).
+      : isInanimate(target) ? undefined : previewDefense(target);
+  // LDB États l.113 ; LDB 17 l.68
   const helplessForced = isHelplessTarget(target);
-  // Cible Inconsciente : aucun choix de dé (opt-out du sélecteur dérivé par `RollShell`).
-  // Inversion de Test (LDB 23 l.209, LDB 10 — CHOIX du joueur, #558) : offerte dès qu'une voie
-  // (Talent/jeton) est applicable (`reverseAvailable`, pure) ; `reversePreview` rend l'issue LISIBLE
-  // avant le clic (le jeton, libre, peut dégrader un succès existant).
+  // LDB 23 l.209 ; LDB 10
   const reverseAvail = rolled && FLOWS.attack.reverseAvailable(useGame.getState, useGame.setState);
   const reversePreview = reverseAvail ? FLOWS.attack.reversePreview(useGame.getState, useGame.setState) : null;
 
@@ -134,7 +119,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               base: preview!.base,
               target: Math.max(0, Math.min(100, preview!.target)),
               mods: preview!.mods,
-              difficulty: preview!.difficulty, // posée par `previewAttack` (LDB 13 l.118)
+              difficulty: preview!.difficulty, // LDB 13 l.118
             },
           },
     rolled,
@@ -159,11 +144,14 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
     ? (res.defenderDetail ? { row: { combatant: target, d: res.defenderDetail }, rolled, interactive: false } : null)
     : (!blocked && defenderPending ? { row: { combatant: target, pending: { ...defenderPending, mask: 'value' as const } }, rolled, interactive: false } : null);
   const rows = [attackerRow, ...(defenderRow ? [defenderRow] : [])];
+  const attackTest = weapon?.resolveChar
+    ? { char: weapon.resolveChar }
+    : { skill: weapon?.type === 'ranged' ? 'projectiles' as const : 'corps-a-corps' as const };
 
   return {
     flowKey: 'attack',
     title: 'Attaque',
-    subtitle: null,
+    subtitle: composeRollLabel(attacker, 'Attaque', attackTest),
     extra: (
       <VsHeader
         actor={attacker}
@@ -177,7 +165,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
     setup: (
       <>
         <div className="rm-options">
-          {/* Maniement de deux armes (LDB 10 l.638) : attaquer des DEUX armes pour son Action. */}
+          {/* LDB 10 l.638 */}
           {dualEligible && (
             <div className="rm-loc-inline rm-dual-toggle">
               <label>
@@ -187,8 +175,6 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               <CodexRef category="regles" id="combat-deux-armes" label="Combat à deux armes" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
             </div>
           )}
-          {/* Choix d'arme (dual-wield) : la main secondaire affiche son -20 ; le panneau reflète le mod.
-              Masqué en mode « des deux armes » (l'attaque-Action utilise alors la main directrice). */}
           {pickable.length >= 2 && !pa.dualMode && (
             <div className="rm-loc-inline">
               <span className="mini-title">Arme</span>
@@ -204,9 +190,6 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               <CodexRef category="regles" id="main-secondaire" label="Attaque de la main secondaire" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
             </div>
           )}
-          {/* Localisation visée = choix RARE (par défaut « Au hasard ») → menu déroulant compact.
-              Viser une localisation rend le Test Complexe (-10). MASQUÉ pour un OBJET INANIMÉ
-              (structure/véhicule/affût : pas de Tableau de Localisation — on ne « vise » pas un membre d'un mur). */}
           {!isInanimate(target) && (
             <div className="rm-loc-inline">
               <span className="mini-title">Localisation</span>
