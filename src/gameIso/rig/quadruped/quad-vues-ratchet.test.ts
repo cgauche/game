@@ -28,8 +28,8 @@ import { fileURLToPath } from 'node:url';
 import { CREATURES, QUAD_SPECIES, WINGED_SPECIES } from '../creatures';
 import { QUAD_Z, quadZOrder, QUAD_DECO_PLAN_MAX } from './quadZ';
 import {
-  quadDecoCouples, APPLICABLES_GELES, PLAFOND_DECOS_MORTS,
-  DECOS_SANS_PLAN_GELES, PLAFOND_DECOS_SANS_PLAN, quadLayersSvg,
+  quadDecoCouples, APPLICABLES_GELES, PLAFOND_DECOS_MORTS, DECOS_MORTS_GELES, quadDecoDefs,
+  DECOS_SANS_PLAN_GELES, PLAFOND_DECOS_SANS_PLAN, quadLayersSvg, DECO_VIEWS,
 } from './deco-stock.fixture';
 import { resolveQuad, resolveQuadFromProps } from './composeQuad';
 import { buildQuadSkeleton, quadSkeletonForView, type QuadBoneId, type QuadProps } from './quadSkeleton';
@@ -136,6 +136,66 @@ describe('canal `deco` : un décor ne vit que sur un os que la vue ÉMET (#1082)
         }
     expect(mesures).toBeGreaterThan(100); // la population du contrôle positif est réelle
     expect(muets, 'décor perdu sur un os que la vue porte pourtant').toEqual([]);
+  });
+});
+
+/**
+ * Le stock des MORTS est une DETTE MESURÉE, ligne à ligne — pas une liste d'exceptions (#1128 L5).
+ *
+ * Un couple mort ne peint rien : la clé qui le porte peut donc être RÉTRÉCIE aux vues qu'elle
+ * habille réellement, sans qu'un octet du rendu bouge. Ce test le vérifie POUR CHAQUE entrée
+ * restante : chacune devient un solde immédiatement praticable, et le jour où l'une cesse d'être
+ * byte-neutre, c'est que l'os s'est mis à porter un art dans cette vue — la ligne est alors à
+ * relire, pas à garder par habitude. C'est la sonde qui a autorisé le solde 8 → 4 de ce lot,
+ * rendue REJOUABLE au lieu de rester une mesure d'atelier ; son TÉMOIN INVERSÉ (2ᵉ `it`) refuse
+ * qu'elle passe à vide : sur les couples VIVANTS, le même retrait DOIT changer le rendu.
+ */
+describe('stock des MORTS : chaque entrée est une dette soldable BYTE-NEUTRE (#1128 L5)', () => {
+  const parId = () => new Map(quadDecoDefs().map((d) => [d.id, d.quad]));
+  /** La même déco, PRIVÉE du couple (clé × vue) : clé `os#vue` retirée, clé nue réduite aux autres
+   *  vues, À SA PLACE dans l'objet (l'ordre des clés décide de l'empilement des calques d'un os). */
+  const sansCouple = (deco: NonNullable<QuadProps['deco']>, cle: string, vue: View): NonNullable<QuadProps['deco']> => {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(deco)) {
+      if (k !== cle) { out[k] = v; continue; }
+      if (k.includes('#')) continue; // clé déjà visée à une vue : le couple EST la clé
+      for (const autre of DECO_VIEWS) if (autre !== vue) out[`${k}#${autre}`] = v;
+    }
+    return out as NonNullable<QuadProps['deco']>;
+  };
+
+  it('retirer un couple MORT de sa clé ne change RIEN au rendu des trois vues', () => {
+    const defs = parId();
+    const ecarts: string[] = [];
+    let mesures = 0;
+    for (const couple of DECOS_MORTS_GELES) {
+      const [id, vue, cle] = couple.split(' ') as [string, View, string];
+      const quad = defs.get(id);
+      expect(quad, `${couple} : def introuvable — entrée périmée du stock`).toBeTruthy();
+      const etroite: QuadProps = { ...quad!, deco: sansCouple(quad!.deco!, cle, vue) };
+      for (const v of VIEWS) {
+        mesures++;
+        if (rendu(quad!, v) !== rendu(etroite, v)) ecarts.push(`${couple} → ${v}`);
+      }
+    }
+    expect(DECOS_MORTS_GELES.length, 'stock vide : la mesure passerait à vide').toBeGreaterThan(0);
+    expect(mesures).toBe(DECOS_MORTS_GELES.length * 3);
+    expect(ecarts, 'couple déclaré MORT dont le retrait change le rendu : il peignait quelque chose').toEqual([]);
+  });
+
+  it('la sonde MORD : retirer un couple VIVANT change le rendu (témoin inversé)', () => {
+    const defs = parId();
+    const vivants = quadDecoCouples().applicables.filter((c) => !DECOS_MORTS_GELES.includes(c));
+    const muets: string[] = [];
+    for (const couple of vivants) {
+      const [id, vue, cle] = couple.split(' ') as [string, View, string];
+      const quad = defs.get(id);
+      if (!quad) continue;
+      const etroite: QuadProps = { ...quad, deco: sansCouple(quad.deco!, cle, vue) };
+      if (rendu(quad, vue) === rendu(etroite, vue)) muets.push(couple);
+    }
+    expect(vivants.length, 'population du témoin inversé').toBeGreaterThan(30);
+    expect(muets, 'couple compté VIVANT dont le retrait ne change rien : il est mort et manque au stock').toEqual([]);
   });
 });
 

@@ -125,6 +125,14 @@ export const PLAFOND_REPERES_ART_PROPRES = REPERES_ART_PROPRES_GELES.length;
  * Ces quatre couples n'ont jamais rien peint : l'os `encolure` ne porte d'art qu'en profil, et un
  * décor visant un os que la vue n'émet pas est SILENCIEUSEMENT perdu.
  *
+ * SOLDÉS le 2026-08-06 (#1128 L5), 8 → 4 : le collier du pégase et le gorgerin du chien sont passés
+ * à des SETS d'équipement (`collier-dore-pegase`, `harnais-de-guerre-canin`) dont la clé vise
+ * `encolure#profile` — la seule vue où l'os porte un art. Une clé qui ne réclame plus les vues de
+ * bout n'y perd plus rien : ce n'est pas un blanchiment mais un RÉTRÉCISSEMENT DE PORTÉE, mesuré
+ * byte-neutre sur les trois vues (describe « le stock des MORTS est une dette MESURÉE » ci-dessous).
+ * La clé se ré-ouvrira le jour où l'art de bout existera — le stock ne cache pas la dette, il la
+ * déplace où elle se voit : un collier absent de face, plutôt qu'une clé qui prétend le peindre.
+ *
  * LA PREUVE EST COMMITTÉE, plus une mesure d'atelier : `quad-vues-ratchet.test.ts`, describe
  * « canal `deco` : un décor ne vit que sur un os que la vue ÉMET », qui pose un témoin sur le
  * chemin de rendu RÉEL dans les DEUX sens — contrôle négatif (os non émis → témoin absent du
@@ -133,17 +141,10 @@ export const PLAFOND_REPERES_ART_PROPRES = REPERES_ART_PROPRES_GELES.length;
  * SOLDE rejouable, pas un blanchiment de stock : la loi invoquée rougit si elle cesse de tenir.
  */
 export const DECOS_MORTS_GELES = [
-  // (b) GORGERIN + collier à pointes du chien : bande d'acier tracée le long de l'axe du cou de
-  // profil, plaque à tête de mort décalée sur la gorge — de bout, un art de collier annulaire.
-  'chien back encolure',
-  'chien front encolure',
   // (b) FANON du grand cerf : frange de toison dentelée le long du DEVANT de l'encolure tendue
   // (pose de brame) — la pose elle-même est refigée de bout (quadSkeletonForView).
   'grand-cerf back encolure',
   'grand-cerf front encolure',
-  // (b) COLLIER doré du pégase : bande clouée suivant la courbe de l'encolure arquée de profil.
-  'pegase back encolure',
-  'pegase front encolure',
   // (b) CRÊTE de soies du sanglier : dents de scie qui courent garrot→croupe le long de la ligne
   // de dos, contre-calculées sur le tronc de profil — de dos, une crête vue en enfilade.
   'sanglier back encolure',
@@ -169,6 +170,17 @@ export const PLAFOND_DECOS_MORTS = DECOS_MORTS_GELES.length;
  * un mufle vu de face. Ce couple-là émettait donc bien quelque chose, mais de faux : sa disparition
  * rend aux vues de bout le cheval NU, ce que la def annonçait déjà. Un art de bride vu de bout
  * appartient à la phase d'ART des vues front/back, il n'est pas rattrapable par un décor de profil.
+ *
+ * DÉMÉNAGÉS le 2026-08-06 (#1128 L5) : les clés `deco` CANINES et PÉGASES ne sortent pas par
+ * disparition, elles CHANGENT DE PORTEUR — l'art d'équipement est passé aux sets
+ * `harnais-de-guerre-canin` et `collier-dore-pegase`, mesurés sous `<set>@<espèce>` (rendu prouvé
+ * byte-identique pour le record qui porte le set, retrait pur pour les records dénudés). Les quatre
+ * couples `sellerie-imperiale@cheval` ENTRENT au même titre : la population mesurée les comptait
+ * déjà (L2), cette liste ne les nommait pas — 66 énumérés pour 70 mesurés.
+ *
+ * Les QUATRE couples `<set> back/front encolure` ne sont PAS repris : la clé des deux sets vise
+ * désormais `encolure#profile`, elle ne réclame plus les vues de bout (solde du stock des morts,
+ * 8 → 4, mesuré byte-neutre). Population : 70 → 66.
  */
 export const APPLICABLES_GELES = [
   'blaireau back tete#back',
@@ -178,12 +190,7 @@ export const APPLICABLES_GELES = [
   'blaireau profile tronc#profile',
   'boeuf back tronc#back',
   'boeuf front tronc#front',
-  'chien back encolure',
-  'chien back tronc',
-  'chien front encolure',
-  'chien front tronc',
-  'chien profile encolure',
-  'chien profile tronc',
+  'collier-dore-pegase@pegase profile encolure#profile',
   'grand-cerf back encolure',
   'grand-cerf back tete',
   'grand-cerf front encolure',
@@ -209,14 +216,15 @@ export const APPLICABLES_GELES = [
   'griffon profile hautArG',
   'griffon profile hautAvD',
   'griffon profile hautAvG',
+  'harnais-de-guerre-canin@chien back tronc',
+  'harnais-de-guerre-canin@chien front tronc',
+  'harnais-de-guerre-canin@chien profile encolure#profile',
+  'harnais-de-guerre-canin@chien profile tronc',
   'lion-de-guerre-de-chrace profile piedAvD#profile',
   'manticore back tete',
   'manticore front tete',
   'manticore profile queue#profile',
   'manticore profile tete',
-  'pegase back encolure',
-  'pegase front encolure',
-  'pegase profile encolure',
   'preyton back tronc',
   'preyton front tronc',
   'preyton profile tronc',
@@ -230,6 +238,10 @@ export const APPLICABLES_GELES = [
   'sanglier profile encolure',
   'sanglier profile tete#profile',
   'sanglier profile tronc#profile',
+  'sellerie-imperiale@cheval back tronc#back',
+  'sellerie-imperiale@cheval front tronc#front',
+  'sellerie-imperiale@cheval profile tete#profile',
+  'sellerie-imperiale@cheval profile tronc#profile',
   'varghulf back aileD',
   'varghulf back aileG',
   'varghulf front aileD',
@@ -244,6 +256,11 @@ export const APPLICABLES_GELES = [
  * spec P1 v2) : le défaut « calque apposé par-dessus l'art de l'os » reste TOLÉRÉ sur l'existant,
  * mais il est COMPTÉ et son plafond ne peut que décroître. Un couple hors de cette liste doit
  * déclarer son plan — toute NOUVELLE def sans plan rougit.
+ *
+ * SOLDE du 2026-08-06 (#1128 L5), 56 → 51 : les quatre couples CANINS et le couple PÉGASE portaient
+ * l'équipement de la bête. Devenu l'art des sets `harnais-de-guerre-canin` et
+ * `collier-dore-pegase`, il DIT désormais son plan (`plan: 0`) — le plan de l'os, celui-là même que
+ * le défaut lui donnait tacitement, d'où un rendu byte-identique pour le record qui porte le set.
  */
 export const DECOS_SANS_PLAN_GELES = [
   'blaireau back tete#back',
@@ -251,10 +268,6 @@ export const DECOS_SANS_PLAN_GELES = [
   'blaireau front tronc#front',
   'blaireau profile tete#profile',
   'blaireau profile tronc#profile',
-  'chien back tronc',
-  'chien front tronc',
-  'chien profile encolure',
-  'chien profile tronc',
   'grand-cerf back tete',
   'grand-cerf front tete',
   'grand-cerf profile encolure',
@@ -283,7 +296,6 @@ export const DECOS_SANS_PLAN_GELES = [
   'manticore front tete',
   'manticore profile queue#profile',
   'manticore profile tete',
-  'pegase profile encolure',
   'preyton back tronc',
   'preyton front tronc',
   'preyton profile tronc',

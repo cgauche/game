@@ -914,7 +914,8 @@
       "page": 315
     },
     "appearance": {
-      "species": "chien"
+      "species": "chien",
+      "harnais": "harnais-de-guerre-canin"
     }
   },
   {
@@ -2432,7 +2433,8 @@
       "page": 323
     },
     "appearance": {
-      "species": "pegase"
+      "species": "pegase",
+      "harnais": "collier-dore-pegase"
     }
   },
   {

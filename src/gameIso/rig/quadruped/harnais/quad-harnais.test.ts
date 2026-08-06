@@ -301,14 +301,15 @@ describe('mergeQuadDeco : le set S\'AJOUTE à la déco d\'espèce (#1128 L3)', (
     expect(out['tronc#profile']).toBe(B);
   });
 
-  it('sur une espèce qui porte DÉJÀ de la déco (chien), rien de l\'espèce n\'est perdu', () => {
-    const chien = QUAD_SPECIES.chien;
-    const out = mergeQuadDeco(chien.deco, QUAD_HARNAIS['sellerie-imperiale'].deco);
-    for (const [cle, val] of Object.entries(chien.deco!)) {
+  it('sur une espèce qui porte DÉJÀ de la déco (sanglier), rien de l\'espèce n\'est perdu', () => {
+    const espece = QUAD_SPECIES.sanglier;
+    expect(Object.keys(espece.deco ?? {}).length, 'espèce sans déco : la mesure serait vide').toBeGreaterThan(0);
+    const out = mergeQuadDeco(espece.deco, QUAD_HARNAIS['sellerie-imperiale'].deco);
+    for (const [cle, val] of Object.entries(espece.deco!)) {
       const fusion = quadDecoFragments(out[cle as keyof typeof out]!);
       expect(fusion.slice(0, quadDecoFragments(val!).length), cle).toEqual(quadDecoFragments(val!));
     }
-    expect(Object.keys(out).length).toBe(new Set([...Object.keys(chien.deco!), ...Object.keys(QUAD_HARNAIS['sellerie-imperiale'].deco)]).size);
+    expect(Object.keys(out).length).toBe(new Set([...Object.keys(espece.deco!), ...Object.keys(QUAD_HARNAIS['sellerie-imperiale'].deco)]).size);
   });
 });
 
