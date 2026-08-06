@@ -274,8 +274,18 @@
   align-items: center;
   gap: 4px;
 }
-/* Score d'initiative (LDB 13) : badge permanent en coin de cellule de frise — explique l'ordre du
-   Round et la pré-emption « agir en premier ». Visible pour tous (héros + ennemis). */
+.is-round {
+  align-self: stretch;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+  color: var(--gold2);
+  font-family: var(--font-display);
+  font-size: 12px;
+  text-align: center;
+}
+.is-cell[data-phase='past'] { opacity: 0.55; }
+.is-cell[data-phase='future'] { opacity: 0.78; }
+/* LDB 13 l.40. */
 .is-score {
   position: absolute; top: -4px; left: -4px; z-index: 2;
   min-width: 16px; padding: 0 3px; height: 16px; line-height: 16px;
@@ -286,9 +296,6 @@
   pointer-events: none;
 }
 .is-score.lente { color: var(--muted); border-color: rgba(163, 147, 111, 0.5); }
-.is-tiles .inspect-toggle {
-  align-self: center;
-}
 .is-first {
   font-size: 10px;
   background: rgba(255, 224, 102, 0.14);
@@ -302,13 +309,13 @@
 .is-first .icon {
   vertical-align: -2px;
 }
-/* Pré-emption GRATUITE (arme Rapide) : même badge, teinte éclair — l'icône seule, pas de coût. */
+/* LDB 62 l.318-319. */
 .is-first.free {
   color: var(--cyan-pale);
   border-color: rgba(159, 216, 255, 0.55);
   background: rgba(159, 216, 255, 0.12);
 }
-/* Badge Tir rapide (LDB 10) : teinte « tir » distincte du badge de pré-emption ; état « armé » = en attente de cible. */
+/* LDB 10. */
 .is-preempt {
   font-size: 10px;
   background: rgba(255, 138, 92, 0.14);
@@ -324,6 +331,43 @@
   background: rgba(255, 138, 92, 0.3);
   border-color: var(--danger-bright);
   box-shadow: 0 0 0 1px rgba(255, 138, 92, 0.45);
+}
+
+.view-controls {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  user-select: none;
+}
+.vc-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn.vc-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-width: 1.5px;
+  border-radius: 9px;
+  font-size: 20px;
+  line-height: 1;
+  opacity: 0.92;
+}
+.btn.vc-btn[aria-pressed='true'] { border-color: var(--gold); }
+.vc-zoom-value {
+  min-width: 44px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 @media (max-width: 700px) {
   .initiative-strip { left: 4px; }
@@ -734,4 +778,3 @@
   color: var(--muted);
   line-height: 1.35;
 }
-

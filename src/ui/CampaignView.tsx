@@ -138,22 +138,19 @@ export function CampaignView() {
     ...party.map((h) => battle?.combatants.find((x) => x.id === h.id) ?? h),
     ...(battle?.combatants.filter((c) => (isVehicle(c) || isEngin(c)) && c.kind === 'hero') ?? []),
   ];
-  // Pré-emption d'initiative (pause de début de Round) : combattants éligibles (LDB 17 l.27) que le
-  // siège LOCAL CONTRÔLE (héros, ou ennemis conduits par le MJ) — `controlsCombatant` filtre le contrôle.
+  // LDB 17 l.27.
   const canFirstIds = battle && pendingRoundStart
     ? battle.order.filter((id) => {
         const c = battle.combatants.find((x) => x.id === id);
         return !!c && canActFirst(c, battle) && controlsCombatant(useGame.getState(), c);
       })
     : [];
-  // Pré-emption GRATUITE (arme Rapide, LDB 62 l.318-319) — badge dédié au lieu de Chance.
+  // LDB 62 l.318-319.
   const freeFirstIds = canFirstIds.filter((id) => {
     const c = battle?.combatants.find((x) => x.id === id);
     return !!c && freeActFirst(c);
   });
-  // Tir rapide (talent, LDB 10) : héros CONTRÔLÉS localement pouvant interrompre à distance pendant la pause
-  // (arme chargée + pas encore tiré ce Round). La visée ARMÉE (`preemptAiming`) vit dans le STORE → le clic
-  // adversaire route par `battleClickEntity` (source unique carte ⇄ frise), comme toute action de ciblage.
+  // LDB 10.
   const preemptAiming = useGame((s) => s.preemptAiming);
   const armPreempt = useGame((s) => s.armPreempt);
   const canPreemptIds = preemptShooterIds(useGame.getState); // source UNIQUE (partagée avec le ciblage clavier)
@@ -163,7 +160,7 @@ export function CampaignView() {
   const controls = useGame(controlsActive);
   const targetingAction = battle && !battle.over ? battle.action : null;
   const isTargeting = controls && !!targetingAction && ['attack', 'cast', 'charge', 'trample'].includes(targetingAction as string);
-  // Tir rapide (LDB 10) : le badge arme/désarme la visée d'un héros pendant la pause de début de Round.
+  // LDB 10.
   const onStripPortrait = (id: string) => {
     const c = battle?.combatants.find((x) => x.id === id);
     // Tir rapide armé : router le clic vers `battleClickEntity` (source UNIQUE carte ⇄ frise) — il déclenche
@@ -202,13 +199,12 @@ export function CampaignView() {
             <InitiativeStrip
               order={battle.order}
               turn={battle.turn}
+              round={battle.round}
               combatants={battle.combatants}
               over={battle.over != null}
               canFirstIds={canFirstIds}
               freeFirstIds={freeFirstIds}
-              inspectEnabled={inspectEnabled}
               targeting={isTargeting || !!preemptAiming}
-              onToggleInspect={toggleInspect}
               onActivate={onStripPortrait}
               onHover={setHoverCombatant}
               hoveredId={hovered}
@@ -342,6 +338,8 @@ export function CampaignView() {
           onToggleView={toggleViewMode}
           pov={povActive}
           onTogglePov={mode === 'exploration' ? togglePov : undefined}
+          inspectEnabled={inspectEnabled}
+          onToggleInspect={mode === 'battle' ? toggleInspect : undefined}
         />
         {mode === 'exploration' && povActive && <PovControls />}
         {dialogue && <DialogueBox />}

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { InitiativeStrip } from './InitiativeStrip';
+import { InitiativeStrip, initiativePhase } from './InitiativeStrip';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
@@ -18,30 +18,52 @@ describe('InitiativeStrip', () => {
   it('rend les tuiles dans l’ordre de battle.order et marque l’actif', () => {
     const { h, foe } = fixtures();
     const html = renderToStaticMarkup(
-      <InitiativeStrip order={['e1', 'h1']} turn={1} combatants={[h, foe]} over={false}
-        canFirstIds={[]} inspectEnabled={false} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,
+      <InitiativeStrip order={['e1', 'h1']} turn={1} round={3} combatants={[h, foe]} over={false}
+        canFirstIds={[]} onActivate={noop} onPromote={noop} />,
     );
     expect(html.indexOf('Brigand')).toBeGreaterThan(-1);
-    expect(html.indexOf('Brigand')).toBeLessThan(html.indexOf('Gunnar')); // ordre = order[]
-    expect(html.match(/▼/g)?.length).toBe(1); // un seul actif (turn=1)
+    expect(html.indexOf('Brigand')).toBeLessThan(html.indexOf('Gunnar'));
+    expect(html).toContain('Round 3');
+    expect(html.match(/aria-current="step"/g)?.length).toBe(1);
+    expect(html.match(/▼/g)?.length).toBe(1);
+  });
+
+  it.each([
+    { index: 0, turn: 1, over: false, want: 'past' },
+    { index: 1, turn: 1, over: false, want: 'current' },
+    { index: 2, turn: 1, over: false, want: 'future' },
+    { index: 0, turn: -1, over: false, want: 'future' },
+    { index: 1, turn: 1, over: true, want: 'future' },
+  ] as const)('classe la position $index comme $want', ({ index, turn, over, want }) => {
+    expect(initiativePhase(index, turn, over)).toBe(want);
+  });
+
+  it('classe un renfort ajouté après l’index courant comme futur', () => {
+    const { h, foe } = fixtures();
+    const reinforcement = { ...foe, id: 'e2', label: 'Renfort' };
+    const html = renderToStaticMarkup(
+      <InitiativeStrip order={['e1', 'h1', 'e2']} turn={1} round={2} combatants={[h, foe, reinforcement]} over={false}
+        canFirstIds={[]} onActivate={noop} onPromote={noop} />,
+    );
+    expect(html).toMatch(/data-phase="future"[^>]*>.*Renfort/s);
   });
 
   it('badge de score d’Initiative rendu pour héros ET ennemis', () => {
     const { h, foe } = fixtures();
     const html = renderToStaticMarkup(
-      <InitiativeStrip order={['e1', 'h1']} turn={-1} combatants={[h, foe]} over={false}
-        canFirstIds={[]} inspectEnabled={false} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,
+      <InitiativeStrip order={['e1', 'h1']} turn={-1} round={1} combatants={[h, foe]} over={false}
+        canFirstIds={[]} onActivate={noop} onPromote={noop} />,
     );
     expect(html).toContain('is-score');
-    expect(html).toContain('42'); // initiative du héros
-    expect(html).toContain('31'); // initiative de l'ennemi
+    expect(html).toContain('42');
+    expect(html).toContain('31');
   });
 
   it('badge de score d’Initiative absent une fois le combat engagé (#205)', () => {
     const { h, foe } = fixtures();
     const html = renderToStaticMarkup(
-      <InitiativeStrip order={['e1', 'h1']} turn={1} combatants={[h, foe]} over={false}
-        canFirstIds={[]} inspectEnabled={false} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,
+      <InitiativeStrip order={['e1', 'h1']} turn={1} round={1} combatants={[h, foe]} over={false}
+        canFirstIds={[]} onActivate={noop} onPromote={noop} />,
     );
     expect(html).not.toContain('is-score');
   });
@@ -50,34 +72,20 @@ describe('InitiativeStrip', () => {
     const { h, foe } = fixtures();
     h.fortune = 2;
     const html = renderToStaticMarkup(
-      <InitiativeStrip order={['e1', 'h1']} turn={0} combatants={[h, foe]} over={false}
-        canFirstIds={['h1']} inspectEnabled={false} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,
+      <InitiativeStrip order={['e1', 'h1']} turn={0} round={1} combatants={[h, foe]} over={false}
+        canFirstIds={['h1']} onActivate={noop} onPromote={noop} />,
     );
-    expect(html).toContain('is-first'); // badge de pré-emption sur le héros éligible
-    expect(html).not.toContain('is-first free'); // payant (pas d'arme Rapide) → pas la variante gratuite
+    expect(html).toContain('is-first');
+    expect(html).not.toContain('is-first free');
   });
 
   it('badge gratuit (arme Rapide) : variante .free, sans coût en Chance affiché', () => {
     const { h, foe } = fixtures();
     h.fortune = 2;
     const html = renderToStaticMarkup(
-      <InitiativeStrip order={['e1', 'h1']} turn={0} combatants={[h, foe]} over={false}
-        canFirstIds={['h1']} freeFirstIds={['h1']} inspectEnabled={false} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,
+      <InitiativeStrip order={['e1', 'h1']} turn={0} round={1} combatants={[h, foe]} over={false}
+        canFirstIds={['h1']} freeFirstIds={['h1']} onActivate={noop} onPromote={noop} />,
     );
     expect(html).toContain('is-first free');
-  });
-
-  it('toggle d’inspection présent (On si inspection activée)', () => {
-    const { h, foe } = fixtures();
-    const off = renderToStaticMarkup(
-      <InitiativeStrip order={['h1']} turn={0} combatants={[h, foe]} over={false}
-        canFirstIds={[]} inspectEnabled={false} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,
-    );
-    expect(off).toContain('inspect-toggle');
-    const on = renderToStaticMarkup(
-      <InitiativeStrip order={['h1']} turn={0} combatants={[h, foe]} over={false}
-        canFirstIds={[]} inspectEnabled={true} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,
-    );
-    expect(on).toContain('On');
   });
 });

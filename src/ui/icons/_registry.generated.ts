@@ -274,6 +274,10 @@ export type IconIdGenerated =
   | 'ui/lock'
   | 'ui/partial'
   | 'ui/preempt'
+  | 'ui/projection-iso'
+  | 'ui/projection-top'
+  | 'ui/rotate-left'
+  | 'ui/rotate-right'
   | 'ui/round-start'
   | 'ui/search'
   | 'ui/settings'
@@ -282,4 +286,7 @@ export type IconIdGenerated =
   | 'ui/turn-end'
   | 'ui/undo'
   | 'ui/wait'
-  | 'ui/warning';
+  | 'ui/warning'
+  | 'ui/zoom-in'
+  | 'ui/zoom-out'
+  | 'ui/zoom-reset';

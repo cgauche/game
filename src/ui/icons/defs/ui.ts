@@ -188,4 +188,63 @@ export const icons: IconFamily = [
       `<path ${K} d="M5.4 5 V19 M9.1 5 V19 M12.8 5 V19 M16.5 5 V19"/>` +
       `<path ${K} d="M4 8.6 L18 15.4"/>`,
   },
+  {
+    id: 'ui/rotate-left',
+    label: 'Tourner à gauche',
+    // Flèche circulaire antihoraire, pointe nettement orientée vers la gauche.
+    svg:
+      `<path ${K} d="M18.9 8.1 C17.4 5.4 14.2 3.9 11.1 4.4 C7.4 5 4.7 8.2 4.7 12 C4.7 16 8 19.3 12 19.3 C15.2 19.3 17.9 17.3 18.9 14.5"/>` +
+      `<path ${K} d="M4.8 7.2 L4.7 12 L9.4 11.3"/>`,
+  },
+  {
+    id: 'ui/rotate-right',
+    label: 'Tourner à droite',
+    // Miroir horaire : pointe nettement orientée vers la droite.
+    svg:
+      `<path ${K} d="M5.1 8.1 C6.6 5.4 9.8 3.9 12.9 4.4 C16.6 5 19.3 8.2 19.3 12 C19.3 16 16 19.3 12 19.3 C8.8 19.3 6.1 17.3 5.1 14.5"/>` +
+      `<path ${K} d="M19.2 7.2 L19.3 12 L14.6 11.3"/>`,
+  },
+  {
+    id: 'ui/projection-iso',
+    label: 'Vue isométrique',
+    // Plan losange subdivisé selon ses deux axes isométriques.
+    svg:
+      `<path ${K} d="M12 3.7 L20.4 8.2 L12 12.7 L3.6 8.2 Z"/>` +
+      `<path ${K} d="M12 3.7 V12.7 M3.6 8.2 H20.4"/>` +
+      `<path ${KF} d="M5.1 11.2 L12 15 L18.9 11.2 M5.1 14.7 L12 18.5 L18.9 14.7"/>`,
+  },
+  {
+    id: 'ui/projection-top',
+    label: 'Vue du dessus',
+    // Plan carré quadrillé vu à plat.
+    svg:
+      `<rect ${K} x="4.2" y="4.2" width="15.6" height="15.6" rx="0.8"/>` +
+      `<path ${K} d="M12 4.2 V19.8 M4.2 12 H19.8"/>`,
+  },
+  {
+    id: 'ui/zoom-in',
+    label: 'Zoom avant',
+    // Loupe et signe plus géométrique.
+    svg:
+      `<circle ${K} cx="10.2" cy="10.2" r="5.8"/>` +
+      `<path ${K} d="M14.5 14.5 L20 20 M10.2 7.2 V13.2 M7.2 10.2 H13.2"/>`,
+  },
+  {
+    id: 'ui/zoom-out',
+    label: 'Zoom arrière',
+    // Loupe et signe moins géométrique.
+    svg:
+      `<circle ${K} cx="10.2" cy="10.2" r="5.8"/>` +
+      `<path ${K} d="M14.5 14.5 L20 20 M7.2 10.2 H13.2"/>`,
+  },
+  {
+    id: 'ui/zoom-reset',
+    label: 'Réinitialiser le zoom',
+    // Loupe entourant une flèche de retour circulaire, sans chiffre ni glyphe.
+    svg:
+      `<circle ${K} cx="10.2" cy="10.2" r="6.2"/>` +
+      `<path ${K} d="M14.7 14.7 L20 20"/>` +
+      `<path ${KF} d="M12.9 8.1 C12 6.7 10.2 6.2 8.7 6.9 C7.2 7.5 6.4 9.1 6.7 10.7 C7 12.3 8.4 13.5 10 13.6 C11.2 13.7 12.3 13.1 13 12.2"/>` +
+      `<path ${KF} d="M12.9 8.1 L10.4 7.9 M12.9 8.1 L12.6 5.7"/>`,
+  },
 ];

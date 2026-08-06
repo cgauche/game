@@ -1,12 +1,7 @@
 import { Icon } from './Icon';
 
-/**
- * Boutons de vue PARTAGÉS entre le jeu (CampaignView) et l'éditeur : zoom (+ / − / 1×)
- * et rotation caméra (⟲ / ⟳). Composant purement présentationnel — chaque écran câble
- * ses propres handlers (le jeu zoome la caméra, l'éditeur zoome le viewBox). Rendu en
- * overlay HTML positionné par-dessus le canvas (le parent doit être `position: relative`).
- */
-interface ViewControlsProps {
+/** Contrôles de caméra partagés entre CampaignView et EditorCanvas. */
+export interface ViewControlsProps {
   zoom: number;
   onZoomIn: () => void;
   onZoomOut: () => void;
@@ -19,82 +14,84 @@ interface ViewControlsProps {
   /** Vue subjective (POV) : état + bascule. Optionnels — absents chez l'éditeur (jeu seulement). */
   pov?: boolean;
   onTogglePov?: () => void;
+  inspectEnabled?: boolean;
+  onToggleInspect?: () => void;
 }
 
-const BTN: React.CSSProperties = {
-  width: 42,
-  height: 42,
-  borderRadius: 9,
-  background: 'var(--panel2)',
-  borderWidth: 1.5,
-  borderStyle: 'solid',
-  borderColor: 'var(--border)',
-  color: 'var(--text)',
-  fontSize: 20,
-  lineHeight: 1,
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: 0,
-  opacity: 0.92,
-};
-
-export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateLeft, onRotateRight, view, onToggleView, pov, onTogglePov }: ViewControlsProps) {
+export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateLeft, onRotateRight, view, onToggleView, pov, onTogglePov, inspectEnabled, onToggleInspect }: ViewControlsProps) {
   const stop = (fn: () => void) => (e: React.PointerEvent) => {
     e.stopPropagation();
     e.preventDefault();
     fn();
   };
+  const inspectLabel = inspectEnabled
+    ? 'Désactiver l’inspection des combattants'
+    : 'Activer l’inspection des combattants';
+  const projectionLabel = view === 'top' ? 'Vue isométrique' : 'Vue du dessus';
+  const povLabel = pov ? 'Vue normale (au-dessus)' : 'Vue subjective (première personne)';
   return (
     <div
       className="view-controls"
-      style={{ position: 'absolute', top: 16, right: 16, display: 'flex', flexDirection: 'column', gap: 8, zIndex: 5, userSelect: 'none' }}
       onPointerDown={(e) => e.stopPropagation()}
     >
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button type="button" title="Tourner anti-horaire (Q)" style={BTN} onPointerDown={stop(onRotateLeft)}>
-          ⟲
+      <div className="vc-group" role="group" aria-label="Orientation">
+        <button type="button" className="btn vc-btn" title="Tourner anti-horaire (Q)" aria-label="Tourner anti-horaire (Q)" onPointerDown={stop(onRotateLeft)}>
+          <Icon id="ui/rotate-left" size="sm" />
         </button>
-        <button type="button" title="Tourner horaire (E)" style={BTN} onPointerDown={stop(onRotateRight)}>
-          ⟳
+        <button type="button" className="btn vc-btn" title="Tourner horaire (E)" aria-label="Tourner horaire (E)" onPointerDown={stop(onRotateRight)}>
+          <Icon id="ui/rotate-right" size="sm" />
         </button>
       </div>
-      {/* Grille 2 colonnes : GAUCHE = vue (projection ▦/◇, puis subjective) ; DROITE = zoom (+, −).
-          → le toggle POV est SOUS la vue du dessus et À GAUCHE du −. */}
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div className="vc-group" role="group" aria-label="Affichage">
         <button
           type="button"
-          title={view === 'top' ? 'Vue isométrique' : 'Vue du dessus'}
-          style={{ ...BTN, fontSize: 22, borderColor: view === 'top' ? 'var(--gold)' : 'var(--border)' }}
+          title={projectionLabel}
+          aria-label={projectionLabel}
+          aria-pressed={view === 'top'}
+          className="btn vc-btn"
           onPointerDown={stop(onToggleView)}
         >
-          {view === 'top' ? '◇' : '▦'}
+          <Icon id={view === 'top' ? 'ui/projection-iso' : 'ui/projection-top'} size="sm" />
         </button>
-        <button type="button" title="Zoom avant" style={{ ...BTN, fontSize: 26 }} onPointerDown={stop(onZoomIn)}>
-          +
-        </button>
-      </div>
-      <div style={{ display: 'flex', gap: 8 }}>
         {onTogglePov && (
           <button
             type="button"
-            title={pov ? 'Vue normale (au-dessus)' : 'Vue subjective (première personne)'}
-            style={{ ...BTN, fontSize: 20, borderColor: pov ? 'var(--gold)' : 'var(--border)' }}
+            title={povLabel}
+            aria-label={povLabel}
+            aria-pressed={!!pov}
+            className="btn vc-btn"
             onPointerDown={stop(onTogglePov)}
           >
             {pov ? <Icon id="nav/campaign" size="sm" /> : <Icon id="ui/eye" size="sm" />}
           </button>
         )}
-        <button type="button" title="Zoom arrière" style={{ ...BTN, fontSize: 30 }} onPointerDown={stop(onZoomOut)}>
-          −
-        </button>
+        {onToggleInspect && (
+          <button
+            type="button"
+            className="btn vc-btn"
+            title={inspectLabel}
+            aria-label={inspectLabel}
+            aria-pressed={!!inspectEnabled}
+            onPointerDown={stop(onToggleInspect)}
+          >
+            <Icon id="nav/identify" size="sm" />
+          </button>
+        )}
       </div>
-      {Math.abs(zoom - 1) > 0.001 && (
-        <button type="button" title="Réinitialiser le zoom" style={{ ...BTN, height: 26, fontSize: 12 }} onPointerDown={stop(onZoomReset)}>
-          1×
+      <div className="vc-group" role="group" aria-label="Zoom">
+        <button type="button" className="btn vc-btn" title="Zoom arrière" aria-label="Zoom arrière" onPointerDown={stop(onZoomOut)}>
+          <Icon id="ui/zoom-out" size="sm" />
         </button>
-      )}
+        <output className="vc-zoom-value">{Math.round(zoom * 100)}%</output>
+        <button type="button" className="btn vc-btn" title="Zoom avant" aria-label="Zoom avant" onPointerDown={stop(onZoomIn)}>
+          <Icon id="ui/zoom-in" size="sm" />
+        </button>
+        {zoom !== 1 && (
+          <button type="button" className="btn vc-btn" title="Réinitialiser le zoom" aria-label="Réinitialiser le zoom" onPointerDown={stop(onZoomReset)}>
+            <Icon id="ui/zoom-reset" size="sm" />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
