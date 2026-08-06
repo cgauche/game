@@ -138,7 +138,6 @@ export function CampaignView() {
     ...party.map((h) => battle?.combatants.find((x) => x.id === h.id) ?? h),
     ...(battle?.combatants.filter((c) => (isVehicle(c) || isEngin(c)) && c.kind === 'hero') ?? []),
   ];
-  const activeId = battle && !battle.over ? battle.order[battle.turn] : null;
   // Pré-emption d'initiative (pause de début de Round) : combattants éligibles (LDB 17 l.27) que le
   // siège LOCAL CONTRÔLE (héros, ou ennemis conduits par le MJ) — `controlsCombatant` filtre le contrôle.
   const canFirstIds = battle && pendingRoundStart
@@ -326,7 +325,7 @@ export function CampaignView() {
             modale système au-dessus resterait invisible/inatteignable sous elle sans cette garde. */}
         {saveOpen && !dialogue && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
         {(sessionOpen || sessionEndOpen) && !dialogue && <SessionEndModal onClose={() => { setSessionOpen(false); closeSessionEnd(); }} />}
-        <PartyDock heroes={dockHeroes} activeId={activeId} targeting={isTargeting} onOpen={onDockPortrait} />
+        <PartyDock heroes={dockHeroes} targeting={isTargeting} onOpen={onDockPortrait} />
         <LogDrawer
           battle={mode === 'battle' && battle ? { log: battle.log, combatants: battle.combatants } : null}
           journal={journal}

@@ -9,11 +9,15 @@ describe('PartyDock', () => {
   const h2 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Elsa', rng: makeRNG(4) });
   h1.id = 'h1'; h2.id = 'h2';
 
-  it('une tuile par héros, PV chiffrés affichés, actif marqué', () => {
+  it('conserve Blessures et États sans marquer le héros actif du tour', () => {
     h1.wounds = { current: 11, max: 11 };
-    const html = renderToStaticMarkup(<PartyDock heroes={[h1, h2]} activeId="h2" onOpen={() => {}} />);
+    h1.conditions = [{ id: 'assourdi', value: 1 }];
+    const html = renderToStaticMarkup(<PartyDock heroes={[h1, h2]} onOpen={() => {}} />);
     expect(html).toContain('party-dock');
-    expect(html).toContain('11/11'); // showPv sur le dock
-    expect(html.match(/▼/g)?.length).toBe(1); // h2 actif
+    expect(html).toContain('11/11');
+    expect(html).toContain('ptile-states');
+    expect(html).toContain('pt-state');
+    expect(html).not.toContain('ptile-caret');
+    expect(html).not.toMatch(/class="ptile[^"]*\bactive\b/);
   });
 });
