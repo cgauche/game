@@ -133,7 +133,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `stake` | 1 | `src/state/combat/triggeredTest.ts:184` |
+| `stake` | 2 | `src/state/combat/triggeredTest.ts:184` |
 | `skill` | 9 | `src/state/combat/triggeredTest.ts:176` |
 | `spec` | 8 | `src/state/combat/triggeredTest.ts:176` |
 | `sense` | 1 | `src/state/combatEffects.ts:391` |

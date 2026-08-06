@@ -494,13 +494,13 @@ export function applySurprise(get: Get, set: SetFn, surprisedSide: 'party' | 'en
   const surprise: Flow = { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: COND.surpris, value: 1 }] } };
   const onLose: Flow = {
     kind: 'if', cond: { kind: 'has', who: 'target', what: 'talent', value: 'vigilance' },
-    then: testFlow({ skill: 'perception', difficulty: 'intermediaire', label: 'Vigilance' }, EMPTY_FLOW, surprise),
+    then: testFlow({ skill: 'perception', difficulty: 'intermediaire', label: 'Vigilance', stake: combatStakeRef('ambushVigilance') }, EMPTY_FLOW, surprise),
     else: surprise,
   };
   for (const c of surprised) {
     // Embusqueur (Discrétion, FIGÉE comme attaquant opposé) vs guetteur (Perception, le défenseur qui jette).
     const flow = testFlow(
-      { skill: 'perception', difficulty: 'intermediaire', label: 'Surprise',
+      { skill: 'perception', difficulty: 'intermediaire', label: 'Surprise', stake: combatStakeRef('ambushSurprise'),
         opposed: { attacker: 'agilite', attackerSkill: 'discretion', attackerLabel: 'Discrétion', attackerBonusSL: sneakDR } },
       EMPTY_FLOW, // le guetteur résiste → pas de Surprise
       onLose,
@@ -1858,7 +1858,7 @@ function breakBacleArmour(target: Combatant, loc: HitLocation, log: string[]): v
   log.push(tr('cf.shoddyBreaks', { name: target.label, loc }));
 }
 
-/** « Arme possédant une lame » (Piège-lame, LDB 62 l.292) — flag maison éditable (le RAW ne liste
+/** « Arme possédant une lame » (Piège-lame, LDB 62 l.278) — flag maison éditable (le RAW ne liste
  *  pas les armes), keyé par id (`Weapon.bladed`), jamais par le libellé. */
 export function weaponHasBlade(w: Weapon | undefined): boolean {
   return w?.type === 'melee' && !!w.bladed;
@@ -2159,7 +2159,7 @@ export function applyAttackResult(
     // (b) Défenseur : Critique sur sa défense → l'attaquant subit un Critique sec — UNIQUEMENT en PARADE
     // (« Test de Corps à corps », LDB 13 l.184) ; l'Esquive est un Test d'AGILITÉ → ne génère PAS de Critique.
     // `res.parryWeapon` n'est posé qu'en Parade (finishMelee). Un HÉROS qui PARE avec une arme Piège-lame face
-    // à une lame peut choisir de PIÉGER à la place (LDB 62 l.292-294) → étape de séquence.
+    // à une lame peut choisir de PIÉGER à la place (LDB 62 l.278) → étape de séquence.
     if (dd.success && isDoubleRoll(dd.roll) && !isOutOfAction(attacker) && res.parryWeapon) {
       if (target.kind === 'hero' && res.parryWeapon && hasBladeTrap(res.parryWeapon) && weaponHasBlade(weapon)) {
         // Folding P3b : le choix Piéger/Critique devient une ÉTAPE de la séquence (texte + options),
@@ -2391,7 +2391,7 @@ export function checkFocusInterruption(get: Get, set: SetFn, target: Combatant):
   // Branche d'échec : marqueur `interruptFocus` sur la cible (le focaliseur) → hook injecté. Succès = rien
   // (concentration maintenue, DR conservés). Le nœud `test` est résolu cadence-aware par `runCombatFlow`.
   const flow = testFlow(
-    { skill: 'calme', difficulty: 'difficile', label: 'Focalisation interrompue' },
+    { skill: 'calme', difficulty: 'difficile', label: 'Focalisation interrompue', stake: combatStakeRef('focusInterrupt') },
     EMPTY_FLOW,
     { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'interruptFocus' }] } },
   );
@@ -2504,12 +2504,12 @@ export function runPreemptShots(get: Get, set: SetFn): void {
 }
 
 /** Use/détruit l'arme sur l'ItemInstance SOURCE (héros → persiste, `recomputeLoadout` re-dérive),
- *  sinon sur le Weapon actif (ennemi/figurant, transient). Respecte Incassable (LDB 62 l.310). */
+ *  sinon sur le Weapon actif (ennemi/figurant, transient). Respecte Incassable (LDB 62 l.262). */
 function wearActiveWeapon(c: Combatant, weapon: Weapon, destroy: boolean): void {
   // L'ItemInstance source de l'arme tenue : match par `uid` (posé par recomputeLoadout sur le Weapon dérivé).
   // Mains nues / Crochet n'ont pas d'uid → pas d'item source (usure transient via le `else` ci-dessous).
   const it = weapon.uid ? (c.items ?? []).find((i) => i.uid === weapon.uid) : undefined;
-  if (isUnbreakable(it ?? weapon)) return; // Incassable : ni dégât ni destruction (LDB 62 l.310)
+  if (isUnbreakable(it ?? weapon)) return; // Incassable : ni dégât ni destruction (LDB 62 l.262)
   // Sauvegarde Solide(N) contre une cassure instantanée : 1d10 ≥ seuil → l'arme résiste (LDB 60 l.30-32).
   if (destroy) {
     const thr = solideSaveThreshold(weapon);
@@ -5844,7 +5844,7 @@ function lockedGauntletHolds(wielder: Combatant, drop: Weapon, round: number): b
 /**
  * Conséquence PROCÉDURALE d'un Test opposé de Piège-lame GAGNÉ par le défenseur (op `breakBlade`, hook
  * `bladeTrap`) : l'adversaire est désarmé de la lame visée (`bt.weaponUid`), arrachée de ses mains. Marge
- * NETTE `(DR final du défenseur + bt.defSL) − bt.attackerSL` ≥ 6 (Succès Stupéfiant, LDB 62 l.295) → la lame
+ * NETTE `(DR final du défenseur + bt.defSL) − bt.attackerSL` ≥ 6 (Succès Stupéfiant, LDB 62 l.280) → la lame
  * est BRISÉE à moins qu'elle ne possède l'Atout Incassable (sauvegarde Solide gérée par `wearActiveWeapon`).
  * Échec/égalité au Test ⇒ branche `fail` (pas d'op, l'adversaire libère sa lame) → cette fonction n'est pas
  * appelée. La conséquence est EMPILÉE comme étape d'AFFICHAGE propre dans la cascade (`pushCombatStep` →
@@ -5858,10 +5858,10 @@ export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: Bl
   if (!attacker || isOutOfAction(attacker)) return;
   const drop = attacker.weapons.find((w) => w.uid === bt.weaponUid);
   if (!drop) return;
-  const netSL = defenderSL + bt.defSL - bt.attackerSL; // marge nette du défenseur vainqueur (LDB 62 l.295)
+  const netSL = defenderSL + bt.defSL - bt.attackerSL; // marge nette du défenseur vainqueur (LDB 62 l.280)
   let line: string;
   if (netSL >= 6) {
-    // Succès Stupéfiant : la lame est BRISÉE, à moins qu'elle ne possède l'Atout Incassable (l.295).
+    // Succès Stupéfiant : la lame est BRISÉE, à moins qu'elle ne possède l'Atout Incassable (l.280).
     wearActiveWeapon(attacker, drop, true);
     line = drop.destroyed
       ? tr('cf.bladeBroken', { name: attacker.label, weapon: drop.label })
@@ -5891,7 +5891,7 @@ export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: Bl
  *  l'affichage empilé reste (mirroir d'une révélation de Critique en étape de séquence). */
 registerCascadeApplier('bladeTrapResult', () => {});
 
-/** Applier de l'étape de CHOIX « piège-lame » (LDB 62 l.292-295). « Coup Critique » (défaut) inflige le
+/** Applier de l'étape de CHOIX « piège-lame » (LDB 62 l.278-280). « Coup Critique » (défaut) inflige le
  *  critique normal sur sa défense (LDB 14 l.7). « Piéger » route un Test opposé de Force CADENCE-AWARE
  *  (le héros défenseur PEUT dépenser Chance/Résilience) via `runCombatFlow` : le défenseur jette, l'attaquant
  *  (porteur) oppose sa Force, en ajoutant le DR de la défense (`defSL`) au jet du défenseur (l.295) ; la
@@ -5923,7 +5923,7 @@ registerCascadeApplier('bladeTrap', (get, set, step) => {
   // double-jet. `runCombatFlow` route le Test (héros manuel → cascade influençable ; ennemi/auto → inline).
   const bt: BladeTrapFreeze = { attackerId: attacker.id, weaponUid: pbt.weapon.uid!, defSL: pbt.defSL, attackerSL: 0 };
   const flow = testFlow(
-    { characteristic: 'force', label: 'Piège-lame', opposed: { attacker: 'force', attackerLabel: 'Force', bonusSL: pbt.defSL } },
+    { characteristic: 'force', label: 'Piège-lame', stake: combatStakeRef('bladeTrapForce'), opposed: { attacker: 'force', attackerLabel: 'Force', bonusSL: pbt.defSL } },
     { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'breakBlade' }] } },
     EMPTY_FLOW,
   );

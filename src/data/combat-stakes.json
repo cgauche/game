@@ -239,5 +239,103 @@
       "page": 192,
       "note": "LDB 22 l.5"
     }
+  },
+  {
+    "id": "climb-test",
+    "label": "Escalade d’une paroi",
+    "kind": "climbTest",
+    "template": "Réussite : vous prenez pied en haut. Échec : vous lâchez prise et retombez au pied — {metres} m de chute, 3 Dégâts par mètre +1d10 réduits par le seul Bonus d’Endurance (PA ignorés), et l’État À Terre si les Blessures perdues le dépassent.",
+    "form": "descripteur",
+    "rule": "chute",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 165,
+      "note": "LDB 15 l.52-57 (Escalade), l.80-84 (Chute)"
+    }
+  },
+  {
+    "id": "jump-test",
+    "label": "Saut au-delà de la portée libre",
+    "kind": "jumpTest",
+    "template": "Réussite : le gouffre est franchi. Échec : vous manquez le bord et tombez — {metres} m de chute, 3 Dégâts par mètre +1d10 réduits par le seul Bonus d’Endurance (PA ignorés), et l’État À Terre si les Blessures perdues le dépassent.",
+    "form": "descripteur",
+    "rule": "chute",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 166,
+      "note": "LDB 15 l.76 (Saut), l.80-84 (Chute)"
+    }
+  },
+  {
+    "id": "ambush-surprise",
+    "label": "Embuscade — repérer les embusqués",
+    "kind": "ambushSurprise",
+    "template": "Test opposé de Discrétion/Perception. Vous l’emportez : l’embuscade est repérée, aucune Surprise. L’embusqueur l’emporte : l’État Surpris — sauf si le Talent Vigilance vous ouvre encore un Test de Perception.",
+    "form": "descripteur",
+    "rule": "surpris",
+    "ruleCategory": "etats",
+    "source": {
+      "book": "livre-de-base",
+      "page": 157,
+      "note": "LDB 13 l.67"
+    }
+  },
+  {
+    "id": "ambush-vigilance",
+    "label": "Vigilance — éviter la Surprise",
+    "kind": "ambushVigilance",
+    "template": "Réussite : vous ignorez la Surprise et agissez normalement au premier Round. Échec : l’État Surpris.",
+    "form": "descripteur",
+    "rule": "vigilance",
+    "ruleCategory": "talents",
+    "source": {
+      "book": "livre-de-base",
+      "page": 147,
+      "note": "LDB 11 l.168"
+    }
+  },
+  {
+    "id": "focus-interrupt",
+    "label": "Focalisation interrompue",
+    "kind": "focusInterrupt",
+    "template": "Réussite : votre concentration tient, les DR accumulés restent acquis. Échec : tous les DR du Test étendu de Focalisation sont perdus et vous subissez une Incantation Imparfaite Mineure — sans effet si un composant du Sort est sacrifié.",
+    "form": "descripteur",
+    "rule": "interruption-de-focalisation",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 237,
+      "note": "LDB 46 l.144"
+    }
+  },
+  {
+    "id": "blade-trap-force",
+    "label": "Piège-lame — Test opposé de Force",
+    "kind": "bladeTrapForce",
+    "template": "Test opposé de Force, votre DR de défense en renfort. Vous l’emportez : la lame de l’adversaire lui est arrachée — et brisée sur un Succès Stupéfiant si elle n’y résiste pas (Incassable, sauvegarde de Solide) ; un gantelet verrouillé la lui laisse en main. Il l’emporte : il libère sa lame et combat normalement.",
+    "form": "descripteur",
+    "rule": "piege-lame",
+    "ruleCategory": "qualities",
+    "source": {
+      "book": "livre-de-base",
+      "page": 298,
+      "note": "LDB 62 l.278-280"
+    }
+  },
+  {
+    "id": "harvest-creature",
+    "label": "Récolte de pièces de créature",
+    "kind": "harvestCreature",
+    "template": "Réussite : vous reconnaissez les parties prisées — {encPlein} Enc de pièces prélevées. Échec : la quantité exploitable descend d’un cran — {encEchec} Enc.",
+    "form": "descripteur",
+    "rule": "precieuses-entrailles",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "zoo-imperial",
+      "page": 99,
+      "note": "ZI 13 l.314-316 — le moteur retire UN cran fixe à l'échec, le RAW en retire un PAR Degré d'échec : écart ouvert en #1136"
+    }
   }
 ]

@@ -708,5 +708,25 @@
       "page": 236,
       "note": "LDB 46 l.85"
     }
+  },
+  {
+    "id": "interruption-de-focalisation",
+    "label": "Interruptions (Focalisation)",
+    "desc": "La concentration est vitale pour focaliser. Si vous êtes perturbé par quelque chose – bruits forts, Dégâts subis, lumières aveuglantes ou autres –, vous devrez réussir un Test de **Calme Difficile (-20)** ou subir une Incantation Imparfaite Mineure et perdre tous les DR accumulés jusque-là au Test étendu de Focalisation.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 237,
+      "note": "LDB 46 l.144"
+    }
+  },
+  {
+    "id": "precieuses-entrailles",
+    "label": "Précieuses entrailles — quelles pièces ?",
+    "desc": "Ce n'est pas tout de tuer un monstre, il faut encore savoir identifier les parties qui intéresseront les acheteurs potentiels. Il peut s'agir d'un ou plusieurs organes ou bien de son sang qui auraient, selon la rumeur, des propriétés médicinales. Les Personnages doivent faire un Test de **Savoir** approprié pour déterminer ce qui doit être conservé sur le cadavre qui gît à leurs pieds.\n\nAinsi, un Test de **Savoir (Bêtes ou Remèdes)** permet de reconnaître les parties prisées chez la plupart des créatures. Un Test de **Métier (Empoisonneur)** ou similaire peut être effectué s'il s'agit d'une espèce vénéneuse, venimeuse ou les deux ! **Savoir (Magie)** peut également être utilisé pour les créatures qui possèdent des propriétés « mystiques » susceptibles d'intéresser les sorciers. Si le Test est réussi, le Personnage aura une bonne idée des morceaux à conserver, qu'importe son DR. Pour chaque Degré d'échec, diminuez d'un cran la quantité exploitable qui peut être prélevée sur le paragraphe Quantité exploitable. Par exemple, si un groupe est perplexe quant aux organes prisés sur une bête Énorme et obtient -2 DR sur son Test de Savoir, il ne pourra collecter que 2 points d'Encombrement de parties du monstre.",
+    "source": {
+      "book": "zoo-imperial",
+      "page": 99,
+      "note": "ZI 13 l.314-316"
+    }
   }
 ]

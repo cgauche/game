@@ -20,7 +20,12 @@ import { stripLiterals } from './cascade-step-difficulty-guard.test';
  * DÉCROISSANTE : un site doté ABAISSE sa ligne.
  */
 
-const STATE = join(process.cwd(), 'src', 'state');
+/** COUVERTURE des quatre scans : `src/state` (les flux) ET `src/scenes` (les Flows AUTHORÉS des
+ *  documents de scène — ils décrivent des jets pour de vrai, et un `testFlow` y est aussi muet
+ *  qu'ailleurs). Un détecteur ne mesure que sa couverture : elle est NOMMÉE ici, la clé de baseline
+ *  porte le dossier (`state/…`, `scenes/…`). */
+const SRC = join(process.cwd(), 'src');
+const SCAN_ROOTS = [join(SRC, 'state'), join(SRC, 'scenes')];
 
 function sourceFiles(dir: string): string[] {
   const out: string[] = [];
@@ -31,6 +36,11 @@ function sourceFiles(dir: string): string[] {
   }
   return out;
 }
+
+/** Tous les fichiers scannés, tous dossiers de couverture confondus. */
+const scanned = () => SCAN_ROOTS.flatMap(sourceFiles);
+/** Clé de baseline d'un fichier scanné : chemin RELATIF à `src/` (`state/combatFlow.ts`). */
+const keyOf = (f: string) => f.slice(SRC.length + 1).split(sep).join('/');
 
 /** La propriété `name` est-elle posée au PREMIER niveau du littéral `lit` ? (Un `kind` enfoui dans un
  *  sous-objet — `outcome: { kind }` d'un Test étendu — ne fait pas de son porteur une étape.) */
@@ -136,10 +146,10 @@ const BASELINE_REQ: Record<string, number> = {
   // La PORTE elle-même : ses `RollRequest` de commodité sont GÉNÉRIQUES — `openPartyTest` et
   // `openWorldTest` TRANSMETTENT désormais le `stake` de leur appelant (donc soldées) ; la dernière
   // est la forme qui n'a pas encore de spec porteuse.
-  'rollSeam.ts': 1,
-  'tavernFlow.ts': 1, // jeux de taverne (NADJ) : fiche de règle à curer
-  'seaActivities.ts': 1, // Commerce d'opportunité (MDG 15) — même arbitrage que ses étapes : le CHOIX porte l'enjeu
-  'seaVoyageFlow.ts': 3, // jets de bord passant par le seam : à doter avec le lot maritime
+  'state/rollSeam.ts': 1,
+  'state/tavernFlow.ts': 1, // jeux de taverne (NADJ) : fiche de règle à curer
+  'state/seaActivities.ts': 1, // Commerce d'opportunité (MDG 15) — même arbitrage que ses étapes : le CHOIX porte l'enjeu
+  'state/seaVoyageFlow.ts': 3, // jets de bord passant par le seam : à doter avec le lot maritime
 };
 
 /**
@@ -209,7 +219,7 @@ export function literalTestsWithoutStake(src: string): number[] {
     if (end < 0) continue;
     const lit = s.slice(start, end);
     // Un `FlowTest` réel nomme SA difficulté (fixe ou dynamique) OU son OPPOSITION (un Test opposé n'a
-    // pas de difficulté propre — Piège-lame, LDB 62 l.295 : sans cette branche, la mesure perdrait un
+    // pas de difficulté propre — Piège-lame, LDB 62 l.280 : sans cette branche, la mesure perdrait un
     // site que l'ancien scan voyait, cf. le rejeu ci-dessous).
     if (!hasTopLevelKey(lit, 'difficulty') && !hasTopLevelKey(lit, 'difficultyBy') && !hasTopLevelKey(lit, 'opposed')) continue;
     if (/\bstake\s*(?:[,:]|$)/.test(lit)) continue;
@@ -218,33 +228,36 @@ export function literalTestsWithoutStake(src: string): number[] {
   return lines;
 }
 
-/** Baseline NOMINATIVE de la 4ᵉ forme — stock RÉEL mesuré le 2026-08-06 : 19 descripteurs de jet
- *  muets sur 11 fichiers, dont 7 que les trois scans précédents ne voyaient PAS. SUR-ENSEMBLE de
- *  `BASELINE_FLOW` (les arguments de `testFlow` ont la même forme), donc chaque fichier y compte au
- *  moins autant. Décroissante comme les autres : un site doté ABAISSE sa ligne. */
+/** Baseline NOMINATIVE de la 4ᵉ forme — stock mesuré le 2026-08-06 : 19 descripteurs de jet muets
+ *  sur 11 fichiers, dont 7 que les trois scans précédents ne voyaient PAS ; 12 sur 8 fichiers depuis
+ *  que les producteurs de `testFlow` sont dotés. SUR-ENSEMBLE de `BASELINE_FLOW` (les arguments de
+ *  `testFlow` ont la même forme), donc chaque fichier y compte au moins autant. Décroissante comme
+ *  les autres : un site doté ABAISSE sa ligne. */
 const BASELINE_LITERAL: Record<string, number> = {
-  // Déjà vus par le scan `testFlow` (mêmes sites, même dette) :
-  'climbMove.ts': 1, // Escalade (LDB 15) : fiche de règle à curer
-  'jumpMove.ts': 1, // Saut (LDB 15) : fiche de règle à curer
-  'combatFlow.ts': 4, // Vigilance d'embuscade ×2, désarmement/reprise d'arme, Piège-lame
-  // Récolte (Savoir (Bêtes), vu par `testFlow`) + serrure à Test ÉTENDU (invisible au scan `testFlow`).
-  'combatEffects.ts': 2,
+  // `combatEffects.ts` : la serrure à Test ÉTENDU (invisible au scan `testFlow`) — la Récolte est dotée.
+  'state/combatEffects.ts': 1,
   // PROPRES à la 4ᵉ forme — jamais mesurés jusqu'ici :
-  'combatSlice.ts': 2, // Commandant d'équipe + gain d'Avantage par Compétence (`openSkillTest` direct)
-  'innFlow.ts': 1, // Ragot de taverne (`openPartyTest`)
-  'landMarketFlow.ts': 2, // marché terrestre : les deux Marchandages
-  'medicFlow.ts': 1, // pending de CHIRURGIE (Test étendu du soigneur)
-  'merchantFlow.ts': 1, // Marchandage du marchand
-  'portFlow.ts': 3, // port : Marchandage d'achat, de vente, et Test de service
-  'seaVoyageFlow.ts': 1, // jet de bord — à doter avec le lot maritime
+  'state/combatSlice.ts': 2, // Commandant d'équipe + gain d'Avantage par Compétence (`openSkillTest` direct)
+  'state/innFlow.ts': 1, // Ragot de taverne (`openPartyTest`)
+  'state/landMarketFlow.ts': 2, // marché terrestre : les deux Marchandages
+  'state/medicFlow.ts': 1, // pending de CHIRURGIE (Test étendu du soigneur)
+  'state/merchantFlow.ts': 1, // Marchandage du marchand
+  'state/portFlow.ts': 3, // port : Marchandage d'achat, de vente, et Test de service
+  'state/seaVoyageFlow.ts': 1, // jet de bord — à doter avec le lot maritime
+  // Flows AUTHORÉS de scène (couverture `src/scenes`) — mêmes sites que `BASELINE_FLOW`, même dette :
+  'scenes/test-scenarios/opera.ts': 2,
+  'scenes/test-scenarios/piege-caveau.ts': 1,
 };
 
-/** Baseline NOMINATIVE des `FlowTest` muets — même contrat que les deux précédentes. */
+/** Baseline NOMINATIVE des `FlowTest` muets. `src/state` est SOLDÉ (vague 5) : ses 7 producteurs de
+ *  Flow, joués par `runCombatFlow` OU `runFlow`, fournissent leur `FlowTest.stake` (Escalade et Saut →
+ *  la fiche Chute ; Surprise → l'État Surpris ; Vigilance → le Talent ; Focalisation interrompue et
+ *  Récolte → leur fiche ; Piège-lame → l'Atout qui la porte). Restent les Flows AUTHORÉS des documents
+ *  de scène, entrés dans la couverture avec `src/scenes` — leur enjeu s'authore DANS le document
+ *  (`FlowTest.stake` est pur-donnée, sérialisable), il ne se code pas ici. */
 const BASELINE_FLOW: Record<string, number> = {
-  'climbMove.ts': 1, // Escalade (LDB 15) : fiche de règle à curer
-  'combatEffects.ts': 1, // Test de scène authoré : l'enjeu vient du document, pas du site
-  'combatFlow.ts': 4, // Vigilance d'embuscade ×2, désarmement/reprise d'arme, contraction de fin de combat
-  'jumpMove.ts': 1, // Saut (LDB 15) : fiche de règle à curer
+  'scenes/test-scenarios/opera.ts': 2, // Perception (repérer les pétards / le voleur) : enjeu à authorer avec la scène
+  'scenes/test-scenarios/piege-caveau.ts': 1, // Athlétisme (esquiver les piques de la dalle) : idem
 };
 
 /** Baseline NOMINATIVE (fichier → étapes qui lancent, encore sans enjeu). ZÉRO ailleurs.
@@ -256,13 +269,13 @@ const BASELINE: Record<string, number> = {
   // VOYAGE (fluvial + maritime) = 0 : le périmètre soldé par #1117.
   // Une ACTIVITÉ en mer (MDG 15 l.266-306) est un CHOIX du joueur : ce qu'elle met en jeu EST
   // l'activité choisie, énoncée par son panneau de sélection — l'étape ne redit pas le choix.
-  'seaActivities.ts': 2,
+  'state/seaActivities.ts': 2,
   // HORS périmètre déjà soldé — stock gelé et décroissant : chaque famille dotera ses enjeux avec le
   // lot qui la traite (le catalogue `voyage-stakes.json` est déjà le gabarit à suivre).
-  'travelFlow.ts': 4, // voyage TERRESTRE : périls de route (Survie/Perception), attelage forcé ×2
-  'travelPostes.ts': 1, // Exposition de fin d'Étape terrestre
-  'shipwreck.ts': 1, // Natation du naufrage
-  'embrigadementFlow.ts': 2, // Ragot + Discrétion de l'embrigadement
+  'state/travelFlow.ts': 4, // voyage TERRESTRE : périls de route (Survie/Perception), attelage forcé ×2
+  'state/travelPostes.ts': 1, // Exposition de fin d'Étape terrestre
+  'state/shipwreck.ts': 1, // Natation du naufrage
+  'state/embrigadementFlow.ts': 2, // Ragot + Discrétion de l'embrigadement
   // COMBAT — reste du stock mesuré, chacun avec le VERROU qui l'empêche d'être doté aujourd'hui :
   // (`combat/triggeredTest.ts` est SOLDÉ : ses deux fabriques d'étape TRANSMETTENT `FlowTest.stake` —
   //  la dette est remontée chez les PRODUCTEURS de Flow, mesurés par `BASELINE_FLOW` ci-dessus.)
@@ -276,9 +289,9 @@ const BASELINE: Record<string, number> = {
 describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', () => {
   it('aucun site NEUF sans enjeu, et toute baseline assainie est ABAISSÉE', () => {
     const counts: Record<string, number[]> = {};
-    for (const f of sourceFiles(STATE)) {
+    for (const f of scanned()) {
       const found = stepsWithoutStake(readFileSync(f, 'utf8'));
-      if (found.length) counts[f.slice(STATE.length + 1).split(sep).join('/')] = found;
+      if (found.length) counts[keyOf(f)] = found;
     }
     const over: string[] = [];
     for (const [f, l] of Object.entries(counts)) {
@@ -296,9 +309,9 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
 
   it('aucune `RollRequest` NEUVE sans enjeu, et toute baseline soldée est ABAISSÉE', () => {
     const counts: Record<string, number[]> = {};
-    for (const f of sourceFiles(STATE)) {
+    for (const f of scanned()) {
       const found = rollRequestsWithoutStake(readFileSync(f, 'utf8'));
-      if (found.length) counts[f.slice(STATE.length + 1).split(sep).join('/')] = found;
+      if (found.length) counts[keyOf(f)] = found;
     }
     const over: string[] = [];
     for (const [f, l] of Object.entries(counts)) {
@@ -316,9 +329,9 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
 
   it('4ᵉ FORME : aucun DESCRIPTEUR de jet littéral neuf sans enjeu, et toute baseline soldée est ABAISSÉE', () => {
     const counts: Record<string, number[]> = {};
-    for (const f of sourceFiles(STATE)) {
+    for (const f of scanned()) {
       const found = literalTestsWithoutStake(readFileSync(f, 'utf8'));
-      if (found.length) counts[f.slice(STATE.length + 1).split(sep).join('/')] = found;
+      if (found.length) counts[keyOf(f)] = found;
     }
     const over: string[] = [];
     for (const [f, l] of Object.entries(counts)) {
@@ -338,18 +351,43 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
    * REJEU DE L'ANCIEN PÉRIMÈTRE — la 4ᵉ forme ne se croit pas sur parole : restreinte aux littéraux
    * que le scan de `testFlow(` voyait DÉJÀ, la mesure par la FORME doit rendre EXACTEMENT les mêmes
    * lignes. Un sur-ensemble qui perdrait un ancien site serait une régression déguisée en élargissement.
+   *
+   * Deux corpus, parce que l'arbre MAIGRIT : un CORPUS FIGÉ (les quatre formes réellement rencontrées
+   * dans ce chantier, recopiées telles quelles) qui mord même le jour où tout site réel est doté, et
+   * l'arbre COURANT — dont le compte reste égal à la somme de `BASELINE_FLOW`.
    */
+  const CORPUS_FIGE = [
+    // Test SIMPLE à difficulté fixe (Focalisation interrompue, `combatFlow`).
+    `const flow = testFlow({ skill: 'calme', difficulty: 'difficile', label: 'Focalisation interrompue' }, EMPTY_FLOW, brise);`,
+    // Test OPPOSÉ sans difficulté propre (Piège-lame, `combatFlow`).
+    `const flow = testFlow({ characteristic: 'force', label: 'Piège-lame', opposed: { attacker: 'force', attackerLabel: 'Force', bonusSL: pbt.defSL } }, gagne, EMPTY_FLOW);`,
+    // Difficulté portée par une EXPRESSION (Escalade, `climbMove`).
+    `flow: testFlow({ skill: 'Escalade', difficulty: c.difficulty ?? 'intermediaire', label: 'Escalade' }, EMPTY_FLOW, chute),`,
+    // Descripteur multi-lignes avec opposition (Surprise d'embuscade, `combatFlow`).
+    `const flow = testFlow(\n  { skill: 'perception', difficulty: 'intermediaire', label: 'Surprise',\n    opposed: { attacker: 'agilite', attackerSkill: 'discretion' } },\n  EMPTY_FLOW,\n  onLose,\n);`,
+  ];
+
   it('REJEU : sur l’ancien périmètre (`testFlow`), la mesure par la FORME rend les MÊMES lignes', () => {
+    // (a) CORPUS FIGÉ — indépendant de l'état de l'arbre : chaque forme vue par `testFlow` l'est aussi
+    // par la FORME, et l'enjeu posé les éteint toutes les deux.
+    for (const [i, src] of CORPUS_FIGE.entries()) {
+      expect(flowTestsWithoutStake(src), `corpus ${i} : l’ancien scan ne le voit plus`).toHaveLength(1);
+      expect(literalTestsWithoutStake(src), `corpus ${i} : la FORME PERD un site que testFlow voyait`).toHaveLength(1);
+      const dote = src.replace(/label: '([^']+)'/, `label: '$1', stake: combatStakeRef('k')`);
+      expect(flowTestsWithoutStake(dote), `corpus ${i} : enjeu posé, encore vu muet`).toHaveLength(0);
+      expect(literalTestsWithoutStake(dote), `corpus ${i} : enjeu posé, encore vu muet`).toHaveLength(0);
+    }
+    // (b) ARBRE COURANT — le sur-ensemble ne perd aucun site réel.
     const manquants: string[] = [];
     let ancien = 0;
-    for (const f of sourceFiles(STATE)) {
+    for (const f of scanned()) {
       const src = readFileSync(f, 'utf8');
       const old = flowTestsWithoutStake(src);
       if (!old.length) continue;
       ancien += old.length;
       const neuf = new Set(literalTestsWithoutStake(src));
       const perdus = old.filter((l) => !neuf.has(l));
-      if (perdus.length) manquants.push(`${f.slice(STATE.length + 1)} : lignes ${perdus.join(', ')} vues par testFlow, PERDUES par la forme`);
+      if (perdus.length) manquants.push(`${keyOf(f)} : lignes ${perdus.join(', ')} vues par testFlow, PERDUES par la forme`);
     }
     expect(manquants, ['Sites de l’ancien périmètre non retrouvés :', ...manquants].join('\n')).toEqual([]);
     // Compte EXACT de l'ancien périmètre (somme de `BASELINE_FLOW`) — s'il bouge, la comparaison
@@ -374,9 +412,9 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
 
   it('aucun `FlowTest` NEUF sans enjeu, et toute baseline soldée est ABAISSÉE', () => {
     const counts: Record<string, number[]> = {};
-    for (const f of sourceFiles(STATE)) {
+    for (const f of scanned()) {
       const found = flowTestsWithoutStake(readFileSync(f, 'utf8'));
-      if (found.length) counts[f.slice(STATE.length + 1).split(sep).join('/')] = found;
+      if (found.length) counts[keyOf(f)] = found;
     }
     const over: string[] = [];
     for (const [f, l] of Object.entries(counts)) {
@@ -452,7 +490,7 @@ describe('« un signe, un sens » — les enjeux et leurs conséquences parlent 
   it('aucune ligne de conséquence des flux de voyage n’en exprime non plus', () => {
     const fautifs: string[] = [];
     for (const f of ['riverVoyageFlow.ts', 'seaVoyageFlow.ts']) {
-      const src = stripLiterals(readFileSync(join(STATE, f), 'utf8'));
+      const src = stripLiterals(readFileSync(join(SRC, 'state', f), 'utf8'));
       // On lit le fichier ENTIER hors commentaires : une ligne de journal est du texte de gabarit.
       if (FACTEUR.test(src)) fautifs.push(f);
     }

@@ -93,7 +93,7 @@ Dépenser 1 Point de Chance offre l'une de ces trois options (au choix du joueur
 **Voir aussi** : [Influencer un test — Chance, Résilience, Talents](tests.md#influencer-un-test--chance-résilience-talents) (dans `tests.md`) pour le contexte d'intégration avec les Tests et les Degrés de Réussite.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.21-27) → `canReroll`, `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, +16 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, +13 fichiers
+- `LDB 17` (l.21-27) → `canReroll`, `RunModal`, `fateSaveOrDie`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, `je-ne-faillirai-pas`, +15 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, +12 fichiers
 
 ---
 
@@ -123,7 +123,7 @@ Le MJ décrit la façon dont le personnage survit après la dépense.
 **Voir aussi** : [Personnages Sacrifiés](#personnages-sacrifiés-destin-au-moment-de-la-mort) ci-dessous (usage du Destin face à la mort au Tableau des Critiques).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.29-39) → `canReroll`, `restoreFortune`, `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ReservesSeuilsBand`, `ActionBar`, +21 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +17 fichiers
+- `LDB 17` (l.29-39) → `canReroll`, `restoreFortune`, `RunModal`, `fateSaveOrDie`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, +20 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +16 fichiers
 
 ---
 

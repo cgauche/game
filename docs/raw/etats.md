@@ -37,7 +37,7 @@ La durée de chaque État est précisée dans sa description ; cependant, certai
 
 **Voir aussi** : Avantage (`combat.md`), Détermination (`destin.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.7, l.10-11) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `combatTestPenalty`, `meleeAttackerBonus`, `passiveGlobalTestMod`, `StatusData` — `src/data/index.ts`, `src/engine/conditions.ts`, `src/engine/trauma.ts`
+- `LDB 16` (l.7, l.10-11) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `combatTestPenalty`, `meleeAttackerBonus`, `passiveMods`, `passiveGlobalTestMod`, `StatusData` — `src/data/index.ts`, `src/engine/conditions.ts`, `src/engine/trauma.ts`
 
 ---
 
@@ -69,7 +69,7 @@ Un personnage peut subir plusieurs fois le même État. Les pénalités s'accumu
 - `LDB 16 l.137` — Surpris ne se cumule pas
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.11, l.12-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `addCondition`, `stopBleedOutcome`, `hitModifiers`, `addClockCondition`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, +37 — `src/data/etats.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, +14 fichiers
+- `LDB 16` (l.11, l.12-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `addCondition`, `stopBleedOutcome`, `hitModifiers`, `addClockCondition`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, +38 — `src/data/etats.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, +14 fichiers
 
 ---
 
@@ -82,7 +82,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Détermination (`destin.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.20-21) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `combatTestPenalty`, `HEARING_SKILL`, `meleeAttackerBonus`, `AttackOptions`, `SkillData`, `GameOp`, +3 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/state/combatFlow.ts`
+- `LDB 16` (l.20-21) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `combatTestPenalty`, `HEARING_SKILL`, `meleeAttackerBonus`, `AttackOptions`, `SkillData`, `passiveMods`, +4 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/state/combatFlow.ts`
 
 ---
 
@@ -513,7 +513,7 @@ Le LDB 16 exprime toutes les durées en Rounds. Plusieurs sources introduisent d
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 40` (l.56, l.60-61, l.70, l.71-72, l.82, l.86, l.87-88, l.90, l.94-95, l.99, l.101) → `NestedTest`, `liveTableDecl`, `wrath-table`, `peche`, `CastPenalty`, `CascadeActorCounter`, `sonne`, `colere-pensez-a-vos-actes`, `colere-tenez-compte-de-mes-enseignements`, `a-terre`, +27 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/miscast.json`, `src/engine/miscast.ts`, `src/engine/prayer.ts`, `src/engine/types.ts`, +3 fichiers
-- `LDB 46` (l.36, l.39-40, l.43-44, l.45, l.46, l.47-48, l.49, l.59, l.60, l.63, l.64, l.66, l.68, l.74, l.75, l.78, l.80, l.102, l.126) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `followsCharacterRules`, `mineure-mildiou`, `overcastAxes`, `assourdi`, `MiscastResult`, `mineure-lueur-occulte`, `combat-spell-plus`, `mineure-murmures-mortels`, +73 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/miscast.json`, `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, +12 fichiers
+- `LDB 46` (l.36, l.39-40, l.43-44, l.45, l.46, l.47-48, l.49, l.59, l.60, l.63, l.64, l.66, l.68, l.74, l.75, l.78, l.80, l.102, l.126) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `followsCharacterRules`, `mineure-mildiou`, `overcastAxes`, `assourdi`, `MiscastResult`, `mineure-lueur-occulte`, `combat-spell-plus`, `mineure-murmures-mortels`, +75 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/miscast.json`, `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, +12 fichiers
 
 ---
 
@@ -619,7 +619,7 @@ Les listes de sorts et miracles (LDB 47-51, 40-43) infligent des États en cours
 - `ADE II 4 l.222, l.230, l.367` — objets magiques : sources d'État En flammes / Surpris / Aveuglé
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.233-234) → `a-enroulement`, `a-poudre-noire`, `a-repetition`, `sonne`, `au-contact-roll`, `defensive`, `arbalete`, `au-contact-choice`, `devastatrice`, `arc`, +23 — `src/data/flow-stakes.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/weaponGroups.json`
+- `LDB 62` (l.233-234) → `a-enroulement`, `a-poudre-noire`, `a-repetition`, `sonne`, `au-contact-roll`, `defensive`, `arbalete`, `au-contact-choice`, `devastatrice`, `arc`, +24 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/weaponGroups.json`
 - `ADE II 4` (l.222) → `deroutante` — `src/data/qualities.json`
 - `ZI 2` (l.165, l.178) → `filet`, `filet-barbele`, `coup-puissant`, `cornes`, `arme` — `src/data/creatures.json`, `src/data/qualities.json`
 - `ZI 14` (l.1008) → `fouissement` — `src/data/traits.json`

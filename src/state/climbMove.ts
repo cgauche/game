@@ -2,6 +2,7 @@ import { Scene, Effect, WallSeg, heightAt, climbEdgeBetween } from './scene';
 import { type Flow, EMPTY_FLOW, flowFromEffects, testFlow } from './flow';
 import type { Pt } from './path';
 import { surfaceClimbImpossible } from '../engine/movement';
+import { combatStakeRef } from '../data';
 
 /**
  * Traduit une ESCALADE d'arête (LDB 15 l.52-57) — `from` (case basse) vers `to` (case haute, adjacente en
@@ -41,7 +42,7 @@ export function planClimb(scene: Scene, from: Pt, to: Pt, hasGrimpeur: boolean, 
   return {
     kind: 'test',
     flow: testFlow(
-      { skill: 'Escalade', difficulty: c.difficulty ?? 'intermediaire', label: 'Escalade' },
+      { skill: 'Escalade', difficulty: c.difficulty ?? 'intermediaire', label: 'Escalade', stake: combatStakeRef('climbTest', { values: { metres } }) },
       EMPTY_FLOW,
       flowFromEffects([fall]),
     ),

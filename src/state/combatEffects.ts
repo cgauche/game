@@ -218,7 +218,7 @@ export function harvestVictoryCreature(get: Get, set: SetFn, creatureId: string)
   const part = (enc: number) => `Pièces de ${name} (${enc} Enc)`; // objet CUSTOM (hors catalogue)
   if (pv) set({ pendingVictory: { ...pv, harvested: [...(pv.harvested ?? []), creatureId] } }); // grise le bouton
   runFlow(get, set, testFlow(
-    { skill: 'Savoir (Bêtes)', difficulty: 'intermediaire', label: `Récolter — ${name}` },
+    { skill: 'Savoir (Bêtes)', difficulty: 'intermediaire', label: `Récolter — ${name}`, stake: combatStakeRef('harvestCreature', { values: { encPlein: full.enc, encEchec: lo.enc } }) },
     flowFromEffects([{ type: 'giveTrapping', custom: part(full.enc), price: full.total }]),
     flowFromEffects([{ type: 'giveTrapping', custom: part(lo.enc), price: lo.total }]),
   ), `Récolter — ${name}`);
@@ -431,7 +431,10 @@ export function openSkillTest(
   // `CascadeModal` (via `useTestJetProps`). `pendingTest` coexiste comme porteur de données (comme
   // `pendingAttack` pour l'attaque) ; `resolveTest` ferme les deux. Pas d'applier : la conséquence
   // (branche onSuccess/onFailure + continuation) est lancée par `resolveTest`.
-  startCascade(get, set, { title: label, icon: 'nav/dice', purpose: 'test', steps: [{ id: 'test-jet', kind: 'sceneTestJet', jet: 'test', actorId: def.id }] });
+  // ENJEU (#1117) : `FlowTest.stake` DESCEND sur l'étape qui lance — c'est elle que `CascadeModal` lit.
+  // Second transporteur du champ, à parité avec les deux fabriques de `combat/triggeredTest.ts` : sans
+  // lui, tout Flow joué par `runFlow` (Escalade, Saut, Récolte…) porterait un enjeu que rien n'affiche.
+  startCascade(get, set, { title: label, icon: 'nav/dice', purpose: 'test', steps: [{ id: 'test-jet', kind: 'sceneTestJet', jet: 'test', actorId: def.id, ...(spec.stake ? { stake: spec.stake } : {}) }] });
   return true;
 }
 

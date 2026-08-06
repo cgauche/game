@@ -2,6 +2,7 @@ import { Scene, Effect, isWalkable, heightAt } from './scene';
 import { type Flow, EMPTY_FLOW, flowFromEffects, testFlow } from './flow';
 import type { Pt } from './path';
 import { jumpNeedsTest } from '../engine/movement';
+import { combatStakeRef } from '../data';
 
 export type JumpPlan = { kind: 'free' } | { kind: 'test'; flow: Flow };
 
@@ -28,5 +29,6 @@ export function planJump(scene: Scene, takeoff: Pt, landing: Pt, movement: numbe
   const fall: Effect = { type: 'fall', target: 'party', metres, to: { x: gap.x, y: gap.y, z: belowZ } };
   // Test d'Athlétisme « Saut » : la réussite ne fait rien (on a déjà franchi, optimiste) ; l'échec
   // déclenche `fall` dans le gouffre.
-  return { kind: 'test', flow: testFlow({ skill: 'Athlétisme', difficulty, label: 'Saut' }, EMPTY_FLOW, flowFromEffects([fall])) };
+  const stake = combatStakeRef('jumpTest', { values: { metres } });
+  return { kind: 'test', flow: testFlow({ skill: 'Athlétisme', difficulty, label: 'Saut', stake }, EMPTY_FLOW, flowFromEffects([fall])) };
 }

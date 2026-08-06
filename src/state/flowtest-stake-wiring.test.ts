@@ -1,0 +1,66 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { useGame } from './store';
+import { runFlow } from './combatFlow';
+import { testFlow, EMPTY_FLOW } from './flow';
+import { combatStakeRef, resolveStake } from '../data';
+import { planClimb } from './climbMove';
+import { emptyScene, type Scene } from './scene';
+import type { Combatant } from '../engine/types';
+
+/**
+ * CÂBLAGE de l'ENJEU sur la voie `runFlow` (#1117) — la SECONDE porte d'un `FlowTest`, à côté de
+ * `runCombatFlow` : `openSkillTest` (`combatEffects.ts`) bâtit lui-même l'étape qui lance, donc c'est
+ * LUI qui doit faire descendre `FlowTest.stake` jusqu'à elle. Sans ce transport, un enjeu authoré au
+ * site est une donnée MORTE : le cliquet le voit posé, le joueur ne le lit jamais.
+ *
+ * Mesuré sur le CHEMIN RÉEL : `runFlow` → `openSkillTest` → `pendingCascade.steps[0]`, l'étape que
+ * `CascadeModal` rend (`cur.stake` → `StakeNote`/`StakeRule`), et le texte est celui que `resolveStake`
+ * produit — trous remplis par les valeurs du producteur.
+ */
+const hero = (): Combatant => ({
+  id: 'h1', name: 'Grimpeur', kind: 'hero',
+  characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 40, agilite: 35, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
+  wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], movement: 4,
+  skills: [{ skillId: 'escalade', characteristic: 'force', advances: 0 }], talents: [],
+  armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, items: [],
+} as unknown as Combatant);
+
+/** Falaise de 4 m (patron `climbMove.test.ts`) : pied en (2,1) à 0 m, sommet (2,0) à 4 m, arête N
+ *  grimpable en `surface` — la hauteur RÉELLE du décor fait l'enjeu. */
+function cliff(): Scene {
+  const s = emptyScene(4, 4);
+  const h = new Array(4 * 4).fill(0) as number[];
+  h[0 * 4 + 2] = 4;
+  s.layers[0].height = h;
+  s.walls = [{ x: 2, y: 1, side: 'N', climb: { kind: 'surface' } }];
+  return s;
+}
+
+/** L'étape qui LANCE d'une cascade fraîche (`startCascade` la pose en `participants[0]`). */
+const firstStep = () => useGame.getState().pendingCascade!.participants[0];
+
+describe('l’enjeu d’un `FlowTest` DESCEND jusqu’à l’étape qui lance, voie `runFlow` (#1117)', () => {
+  beforeEach(() => { useGame.setState({ battle: null, pendingTest: null, pendingCascade: null, party: [hero()] }); });
+
+  it('`openSkillTest` transporte `spec.stake` jusqu’à l’étape de la cascade', () => {
+    const stake = combatStakeRef('climbTest', { values: { metres: 4 } });
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'escalade', stake, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    const step = firstStep();
+    expect(step.stake, 'étape muette : le joueur ne saurait pas ce que ce jet met en jeu').toEqual(stake);
+    expect(resolveStake(step.stake!).text).toContain('4 m de chute');
+    expect(resolveStake(step.stake!).rule).toEqual({ category: 'regles', id: 'chute' });
+  });
+
+  it('sans enjeu authoré, l’étape reste sans `stake` (le transport n’en invente pas)', () => {
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'escalade', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    expect(firstStep().stake).toBeUndefined();
+  });
+
+  it('bout en bout : le plan d’ESCALADE joué par `runFlow` porte l’enjeu de SA hauteur', () => {
+    const plan = planClimb(cliff(), { x: 2, y: 1 }, { x: 2, y: 0 }, false);
+    expect(plan?.kind, 'la falaise doit produire un plan à Test (sinon la sonde ne mesure rien)').toBe('test');
+    if (plan?.kind !== 'test') throw new Error('attendu test');
+    runFlow(useGame.getState, useGame.setState, plan.flow);
+    expect(resolveStake(firstStep().stake!).text).toContain('4 m de chute'); // hauteur RÉELLE du décor
+  });
+});
