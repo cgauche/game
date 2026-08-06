@@ -670,6 +670,15 @@ export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' 
     const out: QuadLayers = {};
     for (const [id, v] of Object.entries(r) as [QuadBoneId, string | QuadLayer[] | undefined][])
       if (typeof v === 'string') { if (v) out[id] = [{ svg: v }]; } else if (v?.length) out[id] = [...v];
+    // ART DE VUE (#1082, `QuadProps.viewArt`) : la bête authorée d'un trait pour CETTE vue tient
+    // l'art de ses os, un par un. Le PLAN du calque est celui que le socle a décidé (carrure
+    // `sousTronc`) : ce canal change le dessin, jamais la pile.
+    const artDeVue = p.viewArt?.[view];
+    if (artDeVue) for (const [id, svg] of Object.entries(artDeVue) as [QuadBoneId, string | undefined][]) {
+      if (!svg) continue;
+      const plan = out[id]?.[0]?.plan;
+      out[id] = [{ svg, ...(plan != null && { plan }) }];
+    }
     if (p.deco) for (const [key, val] of Object.entries(p.deco) as [string, QuadDecoValue | undefined][]) {
       const [id, vue] = key.split('#') as [QuadBoneId, View | undefined];
       if (!val || (vue && vue !== view) || !out[id]) continue;

@@ -84,6 +84,16 @@ export interface QuadProps {
    *  les tarses/serres AVANT avec la famille custom `cuirAv`. Absent = robe unie (griffon). */
   foreCoat?: 'plumes';
   headScale?: number; // × sur l'art de tête (défaut 1)
+  /**
+   * ART DE VUE — « bête entière par vue » (#1082). La bête est authorée comme UNE illustration
+   * continue pour la vue (`quadruped/atelier/<espèce>-<vue>.dessin.mts`), puis répartie en groupes
+   * d'os et COMPILÉE dans le repère local de chaque os par `scripts/rig/compile-dessin-quad.mts`
+   * (coordonnées cuites, aucun repère propre). Ce canal tient, pour les os qu'il déclare et pour
+   * cette vue SEULEMENT, l'art que le socle aurait composé — le plan du calque de l'os (carrure
+   * `sousTronc`) est CONSERVÉ. Les vues non déclarées se composent au socle.
+   * Population : `boeuf`, vue `profile` (l'étalon). Le rendu (`composeQuad`) n'en sait rien.
+   */
+  viewArt?: Partial<Record<View, Partial<Record<QuadBoneId, string>>>>;
   /** Tangage ADDITIF de l'os tête en PROFIL (deg, négatif = museau levé). Par défaut l'os tête
    *  compense neckAngle (rotation monde constante +10) → museau à l'horizontale quel que soit le
    *  port d'encolure ; un port de tête expressif (brame du grand cerf) le décale. Face/dos
