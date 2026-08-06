@@ -31,6 +31,13 @@ export const schema = z.array(
     immuneToFromTarget: z.array(z.string()).optional(),
     attackDR: z.strictObject({ amount: z.number(), vs: z.enum(['source', 'group', 'any']) }).optional(),
     cancelsFear: z.boolean().optional(),
+    /** ENJEU du Test de Psychologie (#1117 L2) — porté par l'ENTRÉE, pas par un gabarit de `kind` :
+     *  les conséquences diffèrent d'une entrée à l'autre (`resolution`/`failCondition`/`failAmount`/
+     *  `becomes`), donc un texte au `kind` serait tautologique. Patron `ActivityDef.stake` : l'entité
+     *  qui PORTE la règle porte aussi ce que son jet met en jeu. `{indice}` = trou rempli par le flux. */
+    stake: z.string().optional(),
+    /** FORME DÉCLARÉE du `stake` (même contrat que `night-stakes`/`flow-stakes`/`activities`). */
+    stakeForm: z.enum(['verbatim', 'descripteur']).optional(),
     resolution: z.enum(['extended', 'terreur', 'binary']).optional(),
     failCondition: z.string().optional(),
     failAmount: z

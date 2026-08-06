@@ -53,9 +53,14 @@ export function stepsWithoutStake(src: string): number[] {
   if (/\.stake\s*=\s*/.test(s)) return [];
   const lines: number[] = [];
   const seen = new Set<number>();
-  // Une CIBLE en position de PROPRIÉTÉ : `target: <expression>` ou le raccourci `target,`. Une valeur
-  // de chaîne est blanchie par `stripLiterals` → `target: 'party'` (cible d'un EFFET) ne matche pas.
-  for (const m of s.matchAll(/(?<=[{,]\s*)target\s*(?::\s*[^\s,}]|[,}])/g)) {
+  // Les DEUX formes qui LANCENT, telles que `stepInteraction` les reconnaît (`state/cascade.ts`) :
+  //  - `'jet'`   = une CIBLE en position de PROPRIÉTÉ (`target: <expr>` ou le raccourci `target,`) ;
+  //    une valeur de chaîne est blanchie par `stripLiterals` → `target: 'party'` (cible d'un EFFET)
+  //    ne matche pas ;
+  //  - `'table'` = un TIRAGE SUR TABLEAU (`table: <expr>`), qui met tout autant en jeu (Blessure
+  //    critique, Oups, Colère des dieux, mutation) et n'a PAS de `target` — angle mort jumeau de
+  //    celui d'`interactive`, levé ici.
+  for (const m of s.matchAll(/(?<=[{,]\s*)(?:target\s*(?::\s*[^\s,}]|[,}])|table\s*:\s*[^\s,}])/g)) {
     const i = m.index!;
     let depth = 0;
     let start = -1;
@@ -77,6 +82,7 @@ export function stepsWithoutStake(src: string): number[] {
     if (end < 0) continue;
     const lit = s.slice(start, end);
     if (!hasTopLevelKey(lit, 'kind')) continue; // CONTRIBUTEUR batch (aucun kind) / pending d'un autre flux
+
     if (!/\b(actorId|worldOwner|rollLabel)\s*[:,}]/.test(lit)) continue; // aucun lanceur nommé : pas une étape
     // `stake:`, raccourci `stake,` — et `{ …, stake }` en dernière propriété (le littéral est tranché
     // AVANT son accolade fermante : la fin de chaîne y tient lieu de délimiteur).
@@ -86,10 +92,62 @@ export function stepsWithoutStake(src: string): number[] {
   return lines;
 }
 
+/**
+ * Jets DÉCRITS au seam (`RollRequest`, `state/rollSeam.ts`) sans enjeu — l'AUTRE forme qui lance :
+ * `openRoll` construit l'étape à partir d'elle, donc un `RollRequest` muet produit une étape muette
+ * que le scan d'étapes ci-dessus ne peut pas voir (le littéral d'étape est DANS le seam, générique).
+ *
+ * ARBITRAGE (#1117 vague 3, question « `RollRequest.stake` devient-il REQUIS ? ») : NON aujourd'hui —
+ * le rendre requis au TYPE bloquerait tout appelant dont l'enjeu n'est pas encore curé (dette
+ * transformée en blocage, pas en dotation). Le stock est donc ÉNUMÉRÉ ici et DÉCROISSANT ; le champ
+ * se fermera au type le jour où cette baseline atteint 0 — le critère est mesurable, pas une
+ * intention.
+ */
+export function rollRequestsWithoutStake(src: string): number[] {
+  const s = stripLiterals(src);
+  const lines: number[] = [];
+  const seen = new Set<number>();
+  for (const m of s.matchAll(/(?<=[{,]\s*)klass\s*:\s*[^\s,}]/g)) {
+    const i = m.index!;
+    let depth = 0;
+    let start = -1;
+    for (let j = i; j >= 0; j--) {
+      if (s[j] === '}') depth++;
+      else if (s[j] === '{') { if (depth === 0) { start = j; break; } depth--; }
+    }
+    if (start < 0 || seen.has(start)) continue;
+    seen.add(start);
+    if (!/(?:[([,=?]|\breturn)$/.test(s.slice(0, start).replace(/\s+$/, ''))) continue;
+    depth = 0;
+    let end = -1;
+    for (let j = i; j < s.length; j++) {
+      if (s[j] === '{') depth++;
+      else if (s[j] === '}') { if (depth === 0) { end = j; break; } depth--; }
+    }
+    if (end < 0) continue;
+    const lit = s.slice(start, end);
+    if (!hasTopLevelKey(lit, 'actionLabel')) continue; // pas une `RollRequest` (un `klass` d'autre chose)
+    if (/\bstake\s*(?:[,:]|$)/.test(lit)) continue;
+    lines.push(src.slice(0, start).split('\n').length);
+  }
+  return lines;
+}
+
+/** Baseline NOMINATIVE des `RollRequest` muettes — même contrat que celle des étapes. */
+const BASELINE_REQ: Record<string, number> = {
+  // La PORTE elle-même : ses deux `RollRequest` de commodité (`openHeroTest`/`openPartyTest`) sont
+  // génériques — l'enjeu vient de LEUR appelant, qui le transmet désormais (`RollRequest.stake`).
+  'rollSeam.ts': 2,
+  'tavernFlow.ts': 1, // jeux de taverne (NADJ) : fiche de règle à curer
+  'seaActivities.ts': 1, // Commerce d'opportunité (MDG 15) — même arbitrage que ses étapes : le CHOIX porte l'enjeu
+  'seaVoyageFlow.ts': 3, // jets de bord passant par le seam : à doter avec le lot maritime
+};
+
 /** Baseline NOMINATIVE (fichier → étapes qui lancent, encore sans enjeu). ZÉRO ailleurs.
  *  Stock RE-MESURÉ le 2026-08-06 (#1117 L2) à la FORME : l'ancienne mesure filtrait sur
  *  `interactive: true` + `result: null`, deux champs qui ne gouvernent pas le rendu d'une étape mono
- *  (cf. en-tête) — 11 sites vus, 27 réels, dont 9 dotés par la vague de curation `combat-stakes`. */
+ *  (cf. en-tête) — 11 sites vus, 27 réels, puis 33 quand les étapes à TABLE sont entrées dans la
+ *  mesure. 20 dotés à ce jour. */
 const BASELINE: Record<string, number> = {
   // VOYAGE (fluvial + maritime) = 0 : le périmètre soldé par #1117.
   // Une ACTIVITÉ en mer (MDG 15 l.266-306) est un CHOIX du joueur : ce qu'elle met en jeu EST
@@ -101,13 +159,19 @@ const BASELINE: Record<string, number> = {
   'travelPostes.ts': 1, // Exposition de fin d'Étape terrestre
   'shipwreck.ts': 1, // Natation du naufrage
   'embrigadementFlow.ts': 2, // Ragot + Discrétion de l'embrigadement
-  'pursuitFlow.ts': 1, // manche de poursuite terrestre (LDB 15 : aucune fiche de règle encore curée)
   // COMBAT — reste du stock mesuré, chacun avec le VERROU qui l'empêche d'être doté aujourd'hui :
-  'combatEffects.ts': 1, // exposition hydrique MSRC 16 : aucun foyer (fiche verbatim à curer)
-  'combatFlow.ts': 1, // Psychologie de combat : l'enjeu doit vivre SUR la psychologie jouée (patron `ActivityDef.stake`)
   'combat/triggeredTest.ts': 2, // Test déclenché en DONNÉES : régime `calcule` (ops de `meta.onSuccess`/`onFail`)
-  'combat/turnHooks.ts': 1, // gate d'Action : l'`ActiveEffect` porteur n'expose pas l'id de sa source
-  'encounterPsychFlow.ts': 2, // Peur/Terreur de rencontre : même verrou que la Psychologie de combat
+  // gate d'Action : `ActiveEffect.source` EXISTE et est estampillée génériquement par `applyOps`
+  // (post-passe `ctx.source`) — la source est donc atteignable. Le verrou est de COUCHE : la table
+  // `EffectSourceKind` → catégorie Codex vit dans `gameIso/effectIcons.ts` (`CATEGORY_BY_SOURCE_KIND`),
+  // dont `src/state` ne peut pas dépendre ; elle doit descendre en couche neutre d'abord.
+  'combat/turnHooks.ts': 1,
+  // ÉTAPES À TABLE — le `stake` se pose à la CONSTRUCTION, or la LIGNE (`table.result.id`) n'existe
+  // qu'APRÈS le tirage : la descente à l'entrée jouée y demande une RE-POSE post-tirage, et aucune de
+  // ces tables n'a encore de fiche de règle. Mesurées et gelées ici plutôt que muettes.
+  'combatFlow.ts': 3, // Critique de Structure, sévérité de Blessure critique, Imparfaite/Colère
+  'corruptionFlow.ts': 2, // nature de la mutation, table des mutations
+  'interludeFlow.ts': 1, // table d'événement d'interlude
 };
 
 describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', () => {
@@ -131,6 +195,35 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
     expect(stale, ['Baseline(s) PÉRIMÉE(s) :', ...stale].join('\n')).toEqual([]);
   });
 
+  it('aucune `RollRequest` NEUVE sans enjeu, et toute baseline soldée est ABAISSÉE', () => {
+    const counts: Record<string, number[]> = {};
+    for (const f of sourceFiles(STATE)) {
+      const found = rollRequestsWithoutStake(readFileSync(f, 'utf8'));
+      if (found.length) counts[f.slice(STATE.length + 1).split(sep).join('/')] = found;
+    }
+    const over: string[] = [];
+    for (const [f, l] of Object.entries(counts)) {
+      const b = BASELINE_REQ[f] ?? 0;
+      if (l.length > b) over.push(`${f} : ${l.length} (baseline ${b}) — lignes ${l.join(', ')}`);
+    }
+    expect(over, ['Jet DÉCRIT au seam sans enjeu (`RollRequest.stake`) :', ...over].join('\n')).toEqual([]);
+    const stale: string[] = [];
+    for (const [f, b] of Object.entries(BASELINE_REQ)) {
+      const n = counts[f]?.length ?? 0;
+      if (n < b) stale.push(`${f} : baseline ${b}, réel ${n} — ABAISSER`);
+    }
+    expect(stale, ['Baseline(s) PÉRIMÉE(s) :', ...stale].join('\n')).toEqual([]);
+  });
+
+  it('FAIL-CLOSED : une `RollRequest` synthétique sans enjeu est DÉTECTÉE, avec enjeu elle ne l’est pas', () => {
+    const sans = `openRoll(get, set, { side: { actorId: h.id }, actionLabel: 'Prier', test: { skill: 'priere' }, difficulty: 'intermediaire', klass: 'hero-test' }, K);`;
+    const avec = `openRoll(get, set, { side: { actorId: h.id }, actionLabel: 'Prier', test: { skill: 'priere' }, difficulty: 'intermediaire', klass: 'hero-test', stake: combatStakeRef('k') }, K);`;
+    const autreKlass = `const cfg = { klass: 'rowdy', label: 'x' };`;
+    expect(rollRequestsWithoutStake(sans)).toHaveLength(1);
+    expect(rollRequestsWithoutStake(avec)).toHaveLength(0);
+    expect(rollRequestsWithoutStake(autreKlass), 'un `klass` hors RollRequest (aucun actionLabel)').toHaveLength(0);
+  });
+
   it('FAIL-CLOSED : une étape synthétique qui LANCE sans enjeu est DÉTECTÉE, avec enjeu elle ne l’est pas', () => {
     const sans = `const s = { id: \`x-\${a}\`, kind: 'k', actorId: h.id, base: 40, target: 40, result: null };`;
     // Forme RÉELLE d'un enjeu depuis #1117 : une RÉFÉRENCE de donnée produite par la porte unique —
@@ -142,6 +235,8 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
     const cibleTexte = `const e = { type: 'exposureNight', kind: 'froid', count: 2, target: 'party' };`;
     const contributeur = `const p = { id: h.id, base: 40, target: 40, result: null, interactive: true };`;
     const corpsDeFonction = `function f(): boolean { const kind = 'k'; const actorId = h.id; return { target } != null; }`;
+    const tableSans = `const s = { id: 'x', kind: 'critSeverity', actorId: t.id, table: critSeverityDecl(t, loc) };`;
+    const tableAvec = `const s = { id: 'x', kind: 'critSeverity', actorId: t.id, table: critSeverityDecl(t, loc), stake: combatStakeRef('critSeverity') };`;
     expect(stepsWithoutStake(sans)).toHaveLength(1);
     expect(stepsWithoutStake(avec)).toHaveLength(0);
     expect(stepsWithoutStake(raccourci)).toHaveLength(0);
@@ -150,6 +245,8 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
     expect(stepsWithoutStake(cibleTexte), 'la cible d’un EFFET (`target: \'party\'`) n’est pas une cible de jet').toHaveLength(0);
     expect(stepsWithoutStake(contributeur), 'CONTRIBUTEUR d’une étape batch : l’enjeu est porté par l’ÉTAPE').toHaveLength(0);
     expect(stepsWithoutStake(corpsDeFonction), 'un corps de fonction n’est pas un littéral d’étape').toHaveLength(0);
+    expect(stepsWithoutStake(tableSans), 'un TIRAGE sur tableau met en jeu autant qu’un Test').toHaveLength(1);
+    expect(stepsWithoutStake(tableAvec)).toHaveLength(0);
   });
 });
 

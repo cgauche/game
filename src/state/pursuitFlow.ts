@@ -19,7 +19,7 @@ import { testValue } from '../engine/skills';
 import { effectiveMovement } from '../engine/encumbrance';
 import { pursuitTargetMovementBonus } from '../engine/combatFeatures/dispatch';
 import type { Combatant } from '../engine/types';
-import { findSkillById } from '../data/index';
+import { findSkillById, combatStakeRef } from '../data/index';
 import { battleRng } from './battleRng';
 import { startCascade, registerCascadeApplier } from './cascade';
 import { freeCons } from './rollSeam';
@@ -112,6 +112,7 @@ export function openPursuitRound(get: Get, set: Set, skillLabel?: string): void 
       target,
       result: null,
       interactive: true,
+      stake: combatStakeRef('pursuitMove', { values: { distance: p.distance, evasion: p.escapeAt } }),
     };
   });
   if (!steps.length) { set({ pursuit: null }); return; }

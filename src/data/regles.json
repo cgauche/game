@@ -668,5 +668,25 @@
       "page": 297,
       "note": "LDB 62 l.176"
     }
+  },
+  {
+    "id": "poursuite",
+    "label": "Poursuite",
+    "desc": "**1 : Déterminer la distance –** Le MJ décide de la distance qui sépare les poursuivants des poursuivis et chiffre cet Avantage de départ, qu'il appelle Distance. Typiquement, cela ira de 1 pour ceux qui sont presque à portée, en passant par 4 pour ceux qui ont une avance confortable et peut aller jusque 8 pour ceux qui sont quasiment hors de portée lorsque la poursuite commence.\n\n- **2 : Test** Tout participant à la poursuite effectue un Test pour son Mouvement – en fonction des circonstances, ce sera un Test de Conduite d'Attelages, de Chevaucher ou d'Athlétisme.\n- **3 : Actualiser la Distance** On compare le DR le plus petit obtenu par les poursuivis au plus haut DR obtenu par les poursuivants, et la différence est ajoutée à la Distance si les poursuivis l'ont emporté et retranchée de cette même Distance si ce sont les poursuivants qui l'ont emporté.\n- **4 : Déterminer l'issue** Si la Distance est réduite à 0 ou moins, les poursuivants ont rejoint leur cible ! Les poursuivis ont alors la possibilité, pour ce Round, de sacrifier le plus lent d'entre eux afin de ralentir les poursuivants et de poursuivre leur fuite, ou ils peuvent s'arrêter et les affronter. Si le plus lent des poursuivis est abandonné, les poursuivants décident de qui s'arrête pour l'affronter et qui continue la poursuite. Si le pauvre retardataire n'est pas une cible prioritaire, il se peut qu'il soit purement et simplement ignoré ! Si la Distance atteint 10+, les poursuivants ont perdu leur proie et la poursuite s'achève… pour le moment ! Si la Distance reste comprise entre 1 et 9, la poursuite continue, et on retourne à l'étape 2.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 166,
+      "note": "LDB 15 l.90-94"
+    }
+  },
+  {
+    "id": "exposition-hydrique",
+    "label": "Exposition aux maladies transmises par l’eau",
+    "desc": "Chaque fois qu'un Personnage risque d'être exposé à une maladie provenant de l'eau d'une rivière, il est possible qu'il doive réaliser un Test de **Résistance Intermédiaire (+0)**, modifié selon les circonstances. Consultez les tableaux suivants : tous les modificateurs peuvent être cumulés.\n\nSi le Test de Résistance est raté, lancez un dé selon le tableau suivant, avec un modificateur de +10 pour chaque DR négatif.",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 92,
+      "note": "MSRC 16 l.13 (Exposition) et l.49 (conséquence de l’échec)"
+    }
   }
 ]

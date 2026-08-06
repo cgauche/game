@@ -6232,6 +6232,9 @@ function psychStepFor(get: Get, _set: SetFn, c: Combatant, collect: (get: Get, c
     target, // Test (Calme par défaut) à la difficulté déclarée, ou Accessible (+20) avec Sans Peur
     label: `${cl ? `${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? 'Terreur' : 'Peur'} ${t.indice}`}${sansPeur ? ' · Sans Peur (+20)' : ''}`,
     combatPsych: { kind: t.kind, sourceId: t.sourceId, sourceName: t.sourceName, indice: t.indice, cible: t.cible, prevDR: t.prevDR, sansPeur },
+    // L'enjeu descend à l'AFFLICTION affrontée : ses conséquences lui sont propres (`psychResolution`
+    // lit `failCondition`/`failAmount`/`becomes` de SON entrée), donc son texte vit sur SON entrée.
+    stake: combatStakeRef('combatPsych', { entryId: t.kind, values: { indice: t.indice } }),
     ...(extended ? { meta: extended } : {}),
   };
 }

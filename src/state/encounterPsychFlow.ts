@@ -18,7 +18,7 @@ import { encounterPsych } from '../engine/encounterPsych';
 import { CIBLE_TYPES, CIBLE_LABEL, PsychType, failConditionAmount, psychResolution, suppressSupersededPsych, isPsychImmune } from '../engine/psychology';
 import { skillBaseValue } from '../engine/skills';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
-import { psychologyLabel, refLabel, findPsychologyById } from '../data';
+import { psychologyLabel, refLabel, findPsychologyById, combatStakeRef } from '../data';
 import { t } from '../i18n';
 import { addCondition } from '../engine/conditions';
 import { registerCascadeApplier, startCascade } from './cascade';
@@ -77,6 +77,7 @@ export function openEncounterPsych(get: Get, set: Set): void {
       target, // Test (Calme par défaut) à la difficulté déclarée (défaut Intermédiaire +0)
       label: cl ? `${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? 'Terreur' : 'Peur'} ${t.indice} — ${src?.label ?? '?'}`,
       encounterPsych: { kind: t.kind, sourceId: t.sourceId, sourceName: src?.label ?? '?', indice: t.indice, cible: t.cible },
+      stake: combatStakeRef('encounterPsych', { entryId: t.kind, values: { indice: t.indice } }),
     });
   }
   if (!steps.length) return;
@@ -110,6 +111,7 @@ export function openScriptedPsych(get: Get, set: Set, kind: 'peur' | 'terreur', 
       target,
       label: `${kind === 'terreur' ? 'Terreur' : 'Peur'} ${indice} — ${label}`,
       encounterPsych: { kind, sourceId, sourceName: label, indice },
+      stake: combatStakeRef('encounterPsych', { entryId: kind, values: { indice } }),
     });
   }
   if (!steps.length) return;

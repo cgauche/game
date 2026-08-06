@@ -257,13 +257,20 @@ const flowKind = (flow: string, phase: string) => `${flow}/${phase}`;
 export type StakeDataset = 'night' | 'voyage' | 'weather' | 'flow' | 'activity' | 'combat';
 
 /** CLÉ d'enjeu — la coordonnée de la DONNÉE, jamais son texte. `entryId` fait DESCENDRE la résolution
- *  à l'ENTRÉE jouée quand elle existe (le symptôme d'une étape de maladie, demain le péril d'une table
- *  régionale) ; sans lui, la résolution reste au `kind`. C'est la clé `{dataset, kind, entryId?}` du
- *  design #1117 — le repli sur `kind` est déclaré, jamais silencieux. */
+ *  à l'ENTRÉE jouée quand elle existe (le symptôme d'une étape de maladie, la psychologie affrontée,
+ *  demain le péril d'une table régionale) ; sans lui, la résolution reste au `kind`. C'est la clé
+ *  `{dataset, kind, entryId?}` du design #1117 — le repli sur `kind` est déclaré, jamais silencieux.
+ *
+ *  `entryCategory` couvre le cas UN KIND → N CATÉGORIES, que la déclaration statique du dataset ne
+ *  peut pas trancher : une Blessure critique se joue sur la table de SA localisation
+ *  (`criticalsTete`/`Bras`/`Corps`/`Jambe`), connue seulement au tirage. Le producteur la fournit
+ *  alors avec l'`entryId` ; le catalogue déclaratif reste la SOURCE par défaut (le dynamique ne
+ *  s'applique qu'aux kinds qui n'en déclarent aucune). */
 export interface StakeKey {
   dataset: StakeDataset;
   kind: string;
   entryId?: string;
+  entryCategory?: string;
 }
 
 /** RÉFÉRENCE d'enjeu portée par une entrée de jet (étape de cascade, pending) : la clé de la donnée
@@ -313,11 +320,36 @@ const STAKE_ENTRY_CATALOG: Record<string, { category: string; has: (id: string) 
   ),
 };
 
-/** Fiche de l'ENTRÉE jouée — `undefined` si la clé n'en nomme pas, si le `kind` n'a pas de catalogue
+/** ENJEU porté par l'ENTRÉE elle-même, par catégorie Codex — patron `ActivityDef.stake` (l'entité
+ *  qui PORTE la règle porte aussi ce que son jet met en jeu). Une catégorie de plus = une ligne ICI.
+ *  Quand elle rend un texte, il PRIME sur le gabarit du `kind` : c'est la seule façon d'échapper au
+ *  descripteur tautologique quand les conséquences sont AUTHORÉES par entrée (les psychologies :
+ *  `resolution`/`failCondition`/`failAmount`/`becomes` diffèrent d'une entrée à l'autre). */
+const STAKE_ENTRY_TEXTS: Record<string, (id: string) => string | undefined> = {
+  psychologies: (id) => findPsychologyById(id)?.stake,
+};
+
+/** Catégorie de l'ENTRÉE d'un `kind` : celle DÉCLARÉE par le dataset, ou celle FOURNIE par le
+ *  producteur (`key.entryCategory`) quand un même `kind` joue sur N catégories (les Critiques par
+ *  localisation). Le déclaratif prime — le dynamique ne comble que ce qu'il ne peut pas savoir. */
+function entryCategoryOf(key: StakeKey): { category: string; has: (id: string) => boolean } | undefined {
+  const declared = STAKE_ENTRY_CATALOG[key.kind];
+  if (declared) return declared;
+  const dyn = key.entryCategory;
+  return dyn && STAKE_ENTRY_POOLS[dyn] ? { category: dyn, has: STAKE_ENTRY_POOLS[dyn] } : undefined;
+}
+
+/** Fiche de l'ENTRÉE jouée — `undefined` si la clé n'en nomme pas, si le `kind` n'a pas de catégorie
  *  d'entrées, ou si l'id est inconnu (repli DÉCLARÉ sur la fiche du `kind`). */
 function entryRule(key: StakeKey): { category: string; id: string } | undefined {
-  const cat = key.entryId ? STAKE_ENTRY_CATALOG[key.kind] : undefined;
+  const cat = key.entryId ? entryCategoryOf(key) : undefined;
   return cat && cat.has(key.entryId!) ? { category: cat.category, id: key.entryId! } : undefined;
+}
+
+/** Texte porté par l'ENTRÉE jouée, s'il existe (sinon le gabarit du `kind` fait foi). */
+function entryText(key: StakeKey): string | undefined {
+  const rule = entryRule(key);
+  return rule ? STAKE_ENTRY_TEXTS[rule.category]?.(rule.id) : undefined;
 }
 
 function stakeEntry(key: StakeKey): { text: string; rule?: { category: string; id: string } } | undefined {
@@ -343,7 +375,7 @@ function stakeEntry(key: StakeKey): { text: string; rule?: { category: string; i
     const e = FLOW_STAKES.find((x) => flowKind(x.flow, x.phase) === key.kind);
     if (!e) return undefined;
     const rule = kindRule(e.rule, e.ruleCategory ?? 'regles');
-    return { text: e.template, ...(rule ? { rule } : {}) };
+    return { text: entryText(key) ?? e.template, ...(rule ? { rule } : {}) };
   }
   if (key.dataset === 'combat') {
     // COMBAT : `key.kind` = le `kind` de l'applier de cascade. Même règle de foyer que `flow` —
@@ -351,7 +383,7 @@ function stakeEntry(key: StakeKey): { text: string; rule?: { category: string; i
     const e = COMBAT_STAKES.find((x) => x.kind === key.kind);
     if (!e) return undefined;
     const rule = kindRule(e.rule, e.ruleCategory ?? 'regles');
-    return { text: e.template, ...(rule ? { rule } : {}) };
+    return { text: entryText(key) ?? e.template, ...(rule ? { rule } : {}) };
   }
   if (key.dataset === 'activity') {
     // ACTIVITÉS : `key.kind` = l'id de l'`ActivityDef`. Le FOYER par DÉFAUT est l'Activité ELLE-MÊME
@@ -1103,6 +1135,11 @@ export interface EtatData extends StatusData {
 /** État PSYCHOLOGIQUE en DONNÉES (LDB 21) — `id` = `PsychType` (`frenesie`, à terme `peur`/`terreur`/…).
  *  Étend `StatusData` (passive/effects mutualisés) ; n'ajoute que la capacité propre à la psychologie. */
 export interface PsychologyData extends StatusData {
+  /** ENJEU du Test de cette affliction (#1117 L2) — porté par l'ENTRÉE (patron `ActivityDef.stake`) :
+   *  ses conséquences lui sont propres (`resolution`/`failCondition`/`failAmount`/`becomes`), un texte
+   *  au `kind` serait tautologique. Résolu par `resolveStake` via l'`entryId` de l'étape. */
+  stake?: string;
+  stakeForm?: 'verbatim' | 'descripteur';
   /** AFFICHAGE (couche UI, hors RAW LDB 21) : icône du registre `<Icon>` (id `famille/nom`), à l'égal
    *  d'`EtatData.icon`. Lu par `CIBLE_LABEL` (engine/psychology.ts). */
   icon?: string;

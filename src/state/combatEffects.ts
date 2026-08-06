@@ -23,7 +23,7 @@ import { traumaOnImpossibleAmbition } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, giveTrappingLabel, withGiveQualities, autoStowNewItem } from '../engine/items';
 import { trappingById, indiceById } from './campaignData';
 import { revealClue, discreditClue } from './clues';
-import { findCreatureById, findVehicleById, refLabel, WATER_EXPOSURE, diseaseLabel, nightStakeRef } from '../data';
+import { findCreatureById, findVehicleById, refLabel, WATER_EXPOSURE, diseaseLabel, nightStakeRef, combatStakeRef } from '../data';
 import { MORALE_BASE } from '../engine/crewMorale';
 import { clampSaboteurDR } from './shipCrew';
 import { harvestSizeOf, harvestYield } from '../engine/harvest';
@@ -1240,6 +1240,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
           rollLabel: refLabel('skills', { id: WATER_EXPOSURE.test.skillId }),
           label: t('eff.waterExposure', { mode: e.mode === 'immersion' ? 'immersion' : 'ingestion', detail: detail ? ` (${detail})` : '' }),
           base, target: Math.max(1, Math.min(99, base + DIFFICULTY_MODIFIERS[WATER_EXPOSURE.test.difficulty])),
+          stake: combatStakeRef('waterExposure'),
         };
       });
       startCascade(env.get, env.set, { title: t('eff.waterTitle'), icon: 'travel/wave', purpose: 'test', steps });

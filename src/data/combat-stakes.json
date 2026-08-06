@@ -79,5 +79,59 @@
       "page": 85,
       "note": "LDB 85"
     }
+  },
+  {
+    "id": "combat-psych",
+    "label": "Psychologie en combat",
+    "kind": "combatPsych",
+    "template": "Test de sang-froid — ce que l’échec installe dépend de l’affliction affrontée (sa fiche le dit).",
+    "form": "descripteur",
+    "entryCategory": "psychologies",
+    "source": {
+      "book": "livre-de-base",
+      "page": 192,
+      "note": "LDB 21 l.14 (début de Round) et l.27 (Test étendu de Peur)"
+    }
+  },
+  {
+    "id": "encounter-psych",
+    "label": "Psychologie de rencontre",
+    "kind": "encounterPsych",
+    "template": "Test de sang-froid — ce que l’échec installe dépend de l’affliction affrontée (sa fiche le dit).",
+    "form": "descripteur",
+    "entryCategory": "psychologies",
+    "source": {
+      "book": "livre-de-base",
+      "page": 192,
+      "note": "LDB 21 l.14 (début de Round) et l.27 (Test étendu de Peur)"
+    }
+  },
+  {
+    "id": "water-exposure",
+    "label": "Exposition hydrique",
+    "kind": "waterExposure",
+    "template": "Échec : un tirage sur la table des maladies de l’eau (+10 par DR négatif) — la maladie tirée est contractée directement. Réussite : rien.",
+    "form": "descripteur",
+    "rule": "exposition-hydrique",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 92,
+      "note": "MSRC 16 l.13 et l.49"
+    }
+  },
+  {
+    "id": "pursuit-move",
+    "label": "Manche de poursuite",
+    "kind": "pursuitMove",
+    "template": "Test de Mouvement de la manche : les DR des deux camps se comparent et l’écart bouge la Distance ({distance}/{evasion}). À 0 ou moins, les poursuivants rattrapent ; à {evasion}, la proie est perdue.",
+    "form": "descripteur",
+    "rule": "poursuite",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 166,
+      "note": "LDB 15 l.90-94"
+    }
   }
 ]

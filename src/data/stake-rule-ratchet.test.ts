@@ -108,6 +108,26 @@ describe('cliquet — un enjeu porte sa RÈGLE (#1117)', () => {
     expect(sans, 'enjeu de combat sans foyer ni catégorie d’entrée').toEqual([]);
   });
 
+  /**
+   * L'enjeu d'une Psychologie vit SUR SON ENTRÉE (#1117 L2, patron `ActivityDef.stake`) : ses
+   * conséquences lui sont propres (`resolution`/`failCondition`/`failAmount`/`becomes`), donc un
+   * gabarit au `kind` serait tautologique. Toute entrée qui déclare un `test` doit porter son enjeu ;
+   * une psychologie NEUVE arrive avec le sien, ou rougit ici.
+   */
+  it('chaque Psychologie qui LANCE un Test porte son enjeu, et l’enjeu prime sur le gabarit du kind', () => {
+    const sans = psychologies.filter((p) => p.test && !p.stake).map((p) => p.id);
+    expect(sans, 'psychologie testable sans enjeu : son étape retomberait sur le gabarit générique').toEqual([]);
+    const sansForme = psychologies.filter((p) => p.stake && !p.stakeForm).map((p) => p.id);
+    expect(sansForme, 'enjeu sans forme déclarée (stakeForm)').toEqual([]);
+    // Chemin RÉEL : la descente à l'entrée doit rendre le texte DE L'ENTRÉE, pas celui du kind.
+    const gabarit = COMBAT_STAKES.find((e) => e.kind === 'combatPsych')!.template;
+    for (const p of psychologies.filter((x) => x.stake)) {
+      const r = resolveStake({ key: { dataset: 'combat', kind: 'combatPsych', entryId: p.id }, values: { indice: 2 } });
+      expect(r.text, `${p.id} : l’étape rend le gabarit du kind au lieu de l’enjeu de l’entrée`).not.toBe(gabarit);
+      expect(r.rule, `${p.id} : renvoi hors de sa propre fiche`).toEqual({ category: 'psychologies', id: p.id });
+    }
+  });
+
   /** Une `entryCategory` ne vaut que si le RÉSOLVEUR sait l'interroger (`STAKE_ENTRY_POOLS`,
    *  `src/data/index.ts`) : sinon le renvoi replie SILENCIEUSEMENT sur le foyer du kind — le repli
    *  déclaré deviendrait un repli subi. Mesuré SUR LE CHEMIN RÉEL (`resolveStake` avec un id VRAI de

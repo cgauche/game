@@ -504,8 +504,8 @@ Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au 
 Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les pénalités sont **permanentes** (seuls des moyens magiques ou miraculeux peuvent les annuler).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.4-160) → `schema`, `DiseaseDef`, `Disease`, `OPS_FIELDS`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `applyOnFailInline`, `combatTestPenalty`, `inconscient`, +20 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +12 fichiers
-- sans code : `MSRC 16` (l.6-9, l.10-14, l.16-49)
+- `MSRC 16` (l.4-160) → `schema`, `DiseaseDef`, `water-exposure`, `Disease`, `OPS_FIELDS`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `applyOnFailInline`, `combatTestPenalty`, +22 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, +14 fichiers
+- sans code : `MSRC 16` (l.35-47)
 
 ---
 
@@ -524,7 +524,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** (`MSRC 16 l.109-111`) : Aucun remède à base d'herbes n'est plus efficace qu'un autre. Seul vrai traitement : s'hydrater (compenser la perte de liquides) et attendre.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.104-118) → `applyOnFailInline`, `inconscient`, `colique`, `vers-de-carie`, `tickDisease`, `vers-du-reik`, `sonne`, `GameOp`, `SymptomCapabilities`, `applyOps` — `src/data/index.ts`, `src/data/maladies.json`, `src/data/symptoms.json`, `src/engine/disease.ts`, `src/engine/ops.ts`
+- `MSRC 16` (l.104-118) → `water-exposure`, `applyOnFailInline`, `inconscient`, `colique`, `vers-de-carie`, `tickDisease`, `vers-du-reik`, `sonne`, `exposition-hydrique`, `GameOp`, +2 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/regles.json`, `src/data/symptoms.json`, `src/engine/disease.ts`, +1 fichiers
 
 ---
 

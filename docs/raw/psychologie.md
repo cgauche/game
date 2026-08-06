@@ -55,7 +55,7 @@ Les instincts et émotions influencent fortement la façon dont les personnages 
 
 **Voir aussi** : État *Brisé* (`etats.md`), Détermination (`destin.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.5-11) → `createCombatSlice`, `collectHeroRoundStartPsych`, `openRoundStartPsych` — `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
+- `LDB 21` (l.5-11) → `createCombatSlice`, `collectHeroRoundStartPsych`, `openRoundStartPsych` — `src/data/combat-stakes.json`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
 
 ---
 
@@ -71,7 +71,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 - `LDB 21 l.8-11` — principe général + exemple Animosité d'un nain face à des elfes
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.8-11) → `createCombatSlice`, `collectHeroRoundStartPsych`, `openRoundStartPsych` — `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
+- `LDB 21` (l.8-11) → `createCombatSlice`, `collectHeroRoundStartPsych`, `openRoundStartPsych` — `src/data/combat-stakes.json`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
 
 ---
 
@@ -104,7 +104,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Haine (Cible), Préjugé (Cible)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.18-21) → `ApproachModal`, `PsychAffliction`, `describeApproach`, `isFrenzyCapable`, `EffectFlags`, `BattleState`, `extendedTestStep`, `resolvePeurTest`, `ActionBar`, `attackClickCommit`, +15 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/gameIso/effectIcons.ts`, `src/state/ai.ts`, +10 fichiers
+- `LDB 21` (l.18-21) → `ApproachModal`, `PsychAffliction`, `describeApproach`, `isFrenzyCapable`, `EffectFlags`, `BattleState`, `extendedTestStep`, `resolvePeurTest`, `ActionBar`, `attackClickCommit`, +15 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/gameIso/effectIcons.ts`, +11 fichiers
 
 ---
 
@@ -131,7 +131,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Terreur (Indice), État Brisé (`etats.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.23-28, l.29) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, `describeApproach`, `isFrenzyCapable`, +34 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, +18 fichiers
+- `LDB 21` (l.23-28, l.29) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, `describeApproach`, `isFrenzyCapable`, +34 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, +19 fichiers
 
 ---
 
@@ -271,7 +271,7 @@ Sentiments positifs envers un groupe d'individus.
 - `LDB 21 l.80-83` — définition et effets
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.80-83) → `nightmare`, `calme-d-approche`, `buildExposureSteps`, `Effect`, `gainPhobieIfThreshold`, `nightmareCheck`, `trauma`, `PsychologyData`, `EFFECT_HANDLERS`, `Combatant`, +3 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, `src/engine/psychology.ts`, +4 fichiers
+- `LDB 21` (l.80-83) → `nightmare`, `calme-d-approche`, `buildExposureSteps`, `Effect`, `gainPhobieIfThreshold`, `nightmareCheck`, `trauma`, `EFFECT_HANDLERS`, `PsychologyData`, `Combatant`, +3 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, `src/engine/psychology.ts`, +4 fichiers
 
 ---
 
@@ -285,7 +285,7 @@ Peur spécifique envers un Type de créature, un objet ou une situation.
 - `LDB 21 l.85-89` — définition ; traitement comme Peur 1
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.85-89) → `nightmare`, `peur`, `terreur`, `animosite`, `recoveryTarget`, `calme-d-approche`, `haine`, `prejuge`, `amour`, `camaraderie`, +9 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, +6 fichiers
+- `LDB 21` (l.85-89) → `nightmare`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `recoveryTarget`, `animosite`, `calme-d-approche`, `haine`, `prejuge`, +11 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +7 fichiers
 
 ---
 
@@ -302,7 +302,7 @@ Conséquence d'une expérience traumatisante. Peut se manifester de diverses fa�
 
 **Voir aussi** : `src/data/traumatisme.md` (`traumatisme.md` pour les Blessures Critiques)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.91-96) → `nightmare`, `peur`, `terreur`, `animosite`, `recoveryTarget`, `calme-d-approche`, `haine`, `prejuge`, `amour`, `camaraderie`, +8 — `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, `src/engine/psychology.ts`, +5 fichiers
+- `LDB 21` (l.91-96) → `nightmare`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `recoveryTarget`, `animosite`, `calme-d-approche`, `haine`, `prejuge`, +10 — `src/data/combat-stakes.json`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, +6 fichiers
 
 ---
 
@@ -612,7 +612,7 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.1053) → `fearImmuneVs`, `CombatFeature`, `robuste`, `vampires`, `saut-carpe`, `voies-fluviales`, `soldats`, `seconde-vue`, `seigneur-de-guerre`, `vue` — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
 - `LDB 17` (l.59) → `ResilienceButton`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, `ForcedResolve`, +68 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, +37 fichiers
-- `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `peur`, `terreur`, `animosite`, `recoveryTarget`, `openScriptedPsych`, +56 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +29 fichiers
+- `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `recoveryTarget`, +58 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, +30 fichiers
 - `LDB 85` (l.178-179, l.382-383) → `cannotStopOn`, `Formula`, `EnemyTurnInput`, `displaceSmaller`, `Condition`, `MoveEnv`, `availableAttacks`, `taille-modificateurs-en-combat`, `engagedAdvantageGap`, `knowsCastingSkill`, +54 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, +9 fichiers
 
 ---
