@@ -6,6 +6,7 @@
  * du jour se clôt sur le calcul de la progression puis enchaîne la halte
  * de nuit / l'arrivée. La marche forcée reste une étape de la cascade de NUIT (inchangée).
  */
+import { resolveStake } from '../data';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
@@ -329,7 +330,7 @@ describe('#341 — Résistance de traversée Neige/Blizzard (pas BATCH au démar
     const step = steps[0];
     expect(step.kind).toBe('weatherResistance');
     expect(step.participants?.length).toBe(2); // un jet INDÉPENDANT par héros
-    expect(step.stake).toContain('Résistance Accessible (+20)'); // enjeu verbatim (l.86)
+    expect(resolveStake(step.stake!).text).toContain('Résistance Accessible (+20)'); // enjeu verbatim (l.86)
     const p0 = step.participants![0];
     expect(p0.target).toBe(Math.min(99, p0.base + 20)); // Accessible +20 baké dans la cible
     // #1072 : la Difficulté est une donnée de LIGNE (rendue en texte + valeur par `RollLine`), jamais

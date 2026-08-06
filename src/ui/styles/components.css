@@ -950,3 +950,28 @@ button.chip:hover {
 .rm-note p + p {
   margin-top: 4px;
 }
+
+/* Z3b — ENJEU d'un jet (`StakeNote`, #1117). Classe PROPRIÉTAIRE de la zone : `.rm-note` reste la note
+   générique (6 sites au contenu inline) et `.rm-threat` porte l'autre sens (menace SUBIE, fond rouge).
+   Ton NEUTRE assumé : un enjeu ANNONCE ce que le jet met en jeu, il n'alarme pas. L'icône FLOTTE, comme
+   sur `.rm-note`, pour que la prose de bloc se compose autour d'elle. */
+.rm-stake {
+  font-size: 12px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.035);
+  border-left: 2px solid var(--line);
+  border-radius: 0 6px 6px 0;
+  padding: 6px 8px;
+  margin: 0 0 10px;
+}
+.rm-stake > svg,
+.rm-stake > .icon {
+  float: left;
+  margin: 2px 6px 0 0;
+}
+.rm-stake p {
+  margin: 0;
+}
+.rm-stake p + p {
+  margin-top: 4px;
+}

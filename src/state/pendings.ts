@@ -15,6 +15,7 @@ import type { AttackResult, DefenseMode, ModLine } from '../engine/combat';
 import type { AttackKind } from '../engine/creatureAttacks';
 import type { CriticalResolved } from '../engine/critical';
 import type { OupsResolved } from '../engine/oups';
+import type { StakeRef } from '../data';
 import type { CastResult, MissileResult, FocusResult, CounterspellOutcome } from '../engine/magic';
 import type { HealMode } from '../engine/healing';
 import type { PsychType } from '../engine/psychology';
@@ -1389,12 +1390,13 @@ export interface CascadeStepBase extends RollParticipant {
    *  lancée, pas la situation. LIÉ À `target` par le TYPE (cf. `CascadeStep` en fin d'interface) : une
    *  étape qui lance en porte un, une étape sans jet n'en porte pas. */
   rollLabel?: string;
-  /** ENJEU surfaçable (#331) : ce que l'ÉCHEC de l'étape coûte, ÉNONCÉ verbatim depuis la Source (le
-   *  mécanisme est déjà dans l'applier — ceci ne fait que le rendre LISIBLE sous le titre d'étape).
-   *  Posé à la construction par le flux propriétaire depuis son catalogue (crew-test-types / nuit). */
-  stake?: string;
-  /** Fiche de RÈGLE derrière l'étape (`{category,id}` du Codex) — l'enjeu devient cliquable : la règle
-   *  est à UN CLIC (#1117). Posée par le flux propriétaire depuis son catalogue d'enjeux. */
+  /** ENJEU de l'étape (#331/#1117) : ce que le jet met en jeu — une RÉFÉRENCE de donnée (`StakeRef` :
+   *  clé de dataset + valeurs calculées), JAMAIS un texte. Le résolveur UNIQUE (`resolveStake`) rend
+   *  le texte ET la fiche de règle au moment de l'affichage : un producteur ne peut ni écrire l'enjeu
+   *  ni nommer sa règle (arbitrage Z5 appliqué à sa propre zone). */
+  stake?: StakeRef;
+  /** Fiche de RÈGLE d'une étape SANS enjeu (choix de voie : la règle encadre le choix, aucun jet n'est
+   *  encore mis en jeu). Une étape POURVUE d'un `stake` dérive sa règle du dataset — jamais ici. */
   stakeRule?: { category: string; id: string };
   /** Valeur « brute » du Test (carac/compétence, avant difficulté) — affichage. Un côté de GROUPE
    *  (`partyAssisted`) y porte le Soutien FONDU ; `support` ci-dessous le rend à l'affichage. */

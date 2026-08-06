@@ -1,3 +1,4 @@
+import { resolveStake } from '../data';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
@@ -59,7 +60,7 @@ describe('#253 — FAIM du bilan : étape de cascade influençable, pas un jet t
     expect(faim).toBeTruthy();
     expect(faim!.actorId).toBe('A');
     expect(faim!.interactive).toBe(true);
-    expect(faim!.stake).toContain('Test de Résistance'); // enjeu verbatim surfacé (NIGHT_STAKES)
+    expect(resolveStake(faim!.stake!).text).toContain('Test de Résistance'); // enjeu verbatim surfacé (NIGHT_STAKES)
     const aNow = useGame.getState().party.find((h) => h.id === 'A')!;
     expect(aNow.hunger!.tests).toBe(0); // DIFFÉRÉ, pas roulé en eager
     expect(aNow.hunger!.failures).toBe(0);

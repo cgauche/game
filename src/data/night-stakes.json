@@ -3,7 +3,7 @@
     "id": "faim",
     "label": "Faim",
     "kind": "faim",
-    "stake": "lorsque vous n'avez plus de nourriture, vous devez effectuer un Test de Résistance tous les deux jours. Sur un premier échec, vous subissez une pénalité de –10 en **Force**  et **Endurance**. À partir du deuxième échec, toutes les autres Caractéristiques sont réduites de -10 et vous subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1 Blessure.",
+    "stake": "lorsque vous n'avez plus de nourriture, vous devez effectuer un Test de Résistance tous les deux jours. Sur un premier échec, vous subissez une pénalité de –10 en **Force**  et **Endurance**.",
     "source": {
       "book": "livre-de-base",
       "page": 181,
@@ -15,7 +15,7 @@
     "id": "soif",
     "label": "Soif",
     "kind": "soif",
-    "stake": "chaque jour sans eau nécessite un Test de Résistance. Sur un premier échec, vous subissez une pénalité de -10 en **Intelligence***,*  **Force Mentale** et **Sociabilité**. À partir du deuxième échec, toutes les autres Caractéristiques sont réduites de -10 et vous subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1 Blessure.",
+    "stake": "chaque jour sans eau nécessite un Test de Résistance. Sur un premier échec, vous subissez une pénalité de -10 en **Intelligence***,*  **Force Mentale** et **Sociabilité**.",
     "source": {
       "book": "livre-de-base",
       "page": 181,
@@ -27,7 +27,7 @@
     "id": "recovery",
     "label": "Récupération",
     "kind": "recovery",
-    "stake": "Une fois par jour, vous pouvez tenter, sans aide médicale, un Test de **Résistance Accessible (+20)**, après avoir passé une bonne nuit de sommeil. Vous guérissez un nombre de Points de Blessure équivalent à votre DR + Bonus d'Endurance.",
+    "stake": "Vous guérissez un nombre de Points de Blessure équivalent à votre DR + Bonus d'Endurance.",
     "source": {
       "book": "livre-de-base",
       "page": 181,
@@ -39,19 +39,20 @@
     "id": "nightmare",
     "label": "Cauchemars",
     "kind": "nightmare",
-    "stake": "chaque nuit, Horst effectue un Test de **Calme Facile (+40)**. Sur un échec, il est en proie à de terribles cauchemars et gagne l'État *Exténué*.",
+    "stake": "Échec : État *Exténué*.",
     "source": {
       "book": "livre-de-base",
       "page": 191,
       "note": "LDB 21 l.95"
     },
-    "rule": "trauma"
+    "rule": "trauma",
+    "form": "descripteur"
   },
   {
     "id": "shelter",
     "label": "Abri de fortune",
     "kind": "shelter",
-    "stake": "Quand vous campez, faites un Test de Survie en extérieur, modifié par la rudesse des conditions – par exemple, un Test est **Intermédiaire (+0)** s'il pleut, **Difficile (-20)** lors d'une tempête. Un Test réussi indique que vous pouvez vous procurer de la nourriture et un abri pour la nuit. Chaque DR vous permet de procurer l'équivalent pour un Personnage de plus. Si le Test échoue, vous devez faire un Test de **Résistance Intermédiaire (+0)** ou recevoir l'État *Exténué*.",
+    "stake": "Si le Test échoue, vous devez faire un Test de **Résistance Intermédiaire (+0)** ou recevoir l'État *Exténué*.",
     "source": {
       "book": "livre-de-base",
       "page": 131,
@@ -63,7 +64,7 @@
     "id": "exposure",
     "label": "Exposition",
     "kind": "exposure",
-    "stake": "**Chaleur :** sur un premier échec, vous subissez une pénalité de -10 en **Intelligence** et en **Force Mentale**, et vous gagnez un État *Exténué*. Le deuxième échec réduit toutes les autres caractéristiques de -10 % et vous gagnez un second État *Exténué*. À partir du troisième échec, vous subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1 Blessure perdue.\n\n**Froid :** sur un premier échec, vous subissez une pénalité de -10 à votre Compétence de **CT**, à votre **Agilité** et votre **Dextérité**. Le deuxième échec réduit la valeur de toutes vos autres caractéristiques de -10 %. À partir du troisième échec, vous subissez 1d10 Dégâts, qui ignorent les PA, avec un minimum de 1 Blessure perdue. Si vous atteignez 0 Blessure, vous recevez immédiatement un État *Inconscient*.",
+    "stake": "**Chaleur :** sur un premier échec, vous subissez une pénalité de -10 en **Intelligence** et en **Force Mentale**, et vous gagnez un État *Exténué*.\n\n**Froid :** sur un premier échec, vous subissez une pénalité de -10 à votre Compétence de **CT**, à votre **Agilité** et votre **Dextérité**.",
     "source": {
       "book": "livre-de-base",
       "page": 181,
@@ -87,7 +88,7 @@
     "id": "forced-march",
     "label": "Marche forcée",
     "kind": "forcedMarch",
-    "stake": "En prenant en compte les temps de repos, les arrêts nécessaires et une topographie standard, un groupe peut voyager l'équivalent de 6 heures par jour sans avoir besoin de Tests de Résistance. S'il voyage plus rapidement ou plus loin, donnez un État *Exténué* à ceux échouant à ce Test, et un État *Exténué* supplémentaire si le Personnage est Encombré.",
+    "stake": "S'il voyage plus rapidement ou plus loin, donnez un État *Exténué* à ceux échouant à ce Test, et un État *Exténué* supplémentaire si le Personnage est Encombré",
     "source": {
       "book": "livre-de-base",
       "page": 262,
@@ -99,7 +100,7 @@
     "id": "trauma-fracture",
     "label": "Convalescence (fracture)",
     "kind": "traumaFracture",
-    "stake": "**Guérison :** il faudra 30+1d10 jours pour soigner une fracture. À la fin de cette période, un succès obtenu sur un Test de **Résistance Accessible (+20)** indique que l'os s'est remis correctement et que vous ne subirez aucun effet à long terme. Sur un échec, vous subirez une pénalité permanente de -5 à tous vos Tests d'Agilité pour une blessure au Bras, à la Jambe ou au Torse, ou une pénalité permanente de -5 à tous vos Tests de Langue s'il s'agit d'une blessure à la tête mal guérie.\n\n**Majeure :** la guérison est plus longue de 10 jours. Tous les Tests associés sont **Intermédiaires (+0)**. Les pénalités en cas d'échec augmentent à -10.",
+    "stake": "À la fin de cette période, un succès obtenu sur un Test de **Résistance Accessible (+20)** indique que l'os s'est remis correctement et que vous ne subirez aucun effet à long terme.",
     "source": {
       "book": "livre-de-base",
       "page": 179,
@@ -111,19 +112,20 @@
     "id": "disease-tick",
     "label": "Maladie — Test quotidien",
     "kind": "diseaseTick",
-    "stake": "**Blessé :** Chaque jour, réussissez un Test de **Résistance Accessible (+20)** ou subissez une Blessure Purulente si vous n'en avez pas déjà une.\n\n**Toxine :** Effectuez un Test de **Résistance Très Facile (+60)** tous les jours (en général pendant votre sommeil) ou vous mourrez, peut-être dans votre sommeil, ou en délirant de fièvre, ou encore dans la pire agonie.",
+    "stake": "Échec : la conséquence du symptôme joué s’applique.",
     "source": {
       "book": "livre-de-base",
       "page": 188,
       "note": "LDB 20 l.145/212-215"
     },
-    "rule": "symptomes-des-maladies"
+    "rule": "symptomes-des-maladies",
+    "form": "descripteur"
   },
   {
     "id": "disease-gangrene",
     "label": "Gangrène",
     "kind": "diseaseGangrene",
-    "stake": "Chaque jour, effectuez un Test de **Résistance Accessible (+20)**. Sur un succès, la *Gangrène* est contenue. Sur un échec, elle empire. Si vous obtenez plus d'échecs que votre Bonus d'Endurance, la Localisation devient totalement inutilisable. Si cela se produit, utilisez les mêmes règles que pour l'Amputation (voir Blessures critiques).",
+    "stake": "Chaque jour, effectuez un Test de **Résistance Accessible (+20)**. Sur un succès, la *Gangrène* est contenue. Sur un échec, elle empire.",
     "source": {
       "book": "livre-de-base",
       "page": 189,
@@ -135,7 +137,7 @@
     "id": "disease-persist",
     "label": "Fin de Maladie (Persistance)",
     "kind": "diseasePersist",
-    "stake": "Après que votre maladie est arrivée à la fin de sa Durée, effectuez un Test de Résistance avec la Difficulté indiquée entre parenthèses après le symptôme comme ceci : Persistant (Accessible) ou Persistant (Facile). Sur un échec Minime (0), rajoutez 1d10 jours à la durée. Sur un échec (-2), vous subissez une *Blessure Purulente*. Sur un échec Stupéfiant (-6), vous développez *Infection du sang*.",
+    "stake": "Sur un échec Minime (0), rajoutez 1d10 jours à la durée. Sur un échec (-2), vous subissez une *Blessure Purulente*. Sur un échec Stupéfiant (-6), vous développez *Infection du sang*.",
     "source": {
       "book": "livre-de-base",
       "page": 189,
@@ -147,7 +149,7 @@
     "id": "contagion",
     "label": "Contagion",
     "kind": "contagion",
-    "stake": "Vous toussez et éternuez régulièrement, propageant ainsi votre maladie tout autour de vous. Tout Personnage se trouvant dans votre environnement immédiat s'expose à la maladie dont vous êtes porteur et doit effectuer un Test pour en éviter la Contraction une fois par heure entamée d'exposition.",
+    "stake": "Tout Personnage se trouvant dans votre environnement immédiat s'expose à la maladie dont vous êtes porteur et doit effectuer un Test pour en éviter la Contraction une fois par heure entamée d'exposition.",
     "source": {
       "book": "livre-de-base",
       "page": 189,
@@ -159,7 +161,7 @@
     "id": "dessoulage",
     "label": "Dessoûlage",
     "kind": "dessoulage",
-    "stake": "Après une heure passée sans boire, effectuez un Test de **Résistance à l'alcool Intermédiaire (+0)**. Les effets de l'ivresse se dissiperont après 10-DR heures, et tous les modificateurs de Caractéristiques disparaîtront après ce délai.",
+    "stake": "Les effets de l'ivresse se dissiperont après 10-DR heures, et tous les modificateurs de Caractéristiques disparaîtront après ce délai.",
     "source": {
       "book": "livre-de-base",
       "page": 129,
@@ -171,7 +173,7 @@
     "id": "dessoulage-hangover",
     "label": "Gueule de bois",
     "kind": "dessoulageHangover",
-    "stake": "Une fois tous les effets dissipés, effectuez un nouveau Test de **Résistance à l'alcool Intermédiaire (+0)**. Vous avez à présent la gueule de bois, qui correspond à l'État *Exténué* et ne peut pas être retiré pendant 5 – DR heures.",
+    "stake": "Vous avez à présent la gueule de bois, qui correspond à l'État *Exténué* et ne peut pas être retiré pendant 5 – DR heures.",
     "source": {
       "book": "livre-de-base",
       "page": 129,

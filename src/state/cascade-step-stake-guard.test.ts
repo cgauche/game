@@ -99,7 +99,9 @@ describe('cliquet — une étape de cascade interactive dit son ENJEU (#1117)', 
 
   it('FAIL-CLOSED : une étape interactive synthétique sans enjeu est DÉTECTÉE, avec enjeu elle ne l’est pas', () => {
     const sans = `const s = { id: \`x-\${a}\`, kind: 'k', base: 40, target: 40, result: null, interactive: true };`;
-    const avec = `const s = { id: 'x', kind: 'k', base: 40, target: 40, stake: 'Échec : 2 Dégâts.', result: null, interactive: true };`;
+    // Forme RÉELLE d'un enjeu depuis #1117 : une RÉFÉRENCE de donnée produite par la porte unique —
+    // un texte au call-site ne compile plus (`stake?: StakeRef`), le scanner voit l'appel.
+    const avec = `const s = { id: 'x', kind: 'k', base: 40, target: 40, stake: voyageStakeRef('k'), result: null, interactive: true };`;
     const raccourci = `const s = { id: 'x', kind: 'k', base: 40, target: 40, stake, result: null, interactive: true };`;
     const temoin = `const s = { id: 'x', kind: 'k', base: 40, target: 40, result: null, interactive: false };`;
     const sansJet = `const s = { id: 'x', kind: 'reveal', result: null, interactive: true };`;

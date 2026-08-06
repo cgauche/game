@@ -34,7 +34,8 @@ import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import { toRecapLines } from './recapLine';
 import { travelSpeed } from '../engine/travel';
 import { vehicleCombatant } from '../engine/vehicle';
-import { voyageStake, voyageStakeRule, conditionLabel, findVehicleById, refLabel } from '../data';
+import { voyageStakeRef, conditionLabel, findVehicleById, refLabel } from '../data';
+import type { StakeRef } from '../data';
 import { partyCargoTotalEnc } from './carriers';
 import { partyAssisted, type SupportDetail } from '../engine/skills';
 import { rollTest, type TestResult } from '../engine/tests';
@@ -236,16 +237,13 @@ function riverStep(
   base: number, difficulty: Difficulty, meta: CascadeStepMeta | undefined,
   // `stake` REQUIS (#1117) : une étape fluviale qui LANCE dit ce qu'elle met en jeu — le compilateur
   // tient le contrat pour les étapes construites ici (le cliquet textuel ne voit que les littéraux).
-  opts: { support?: SupportDetail; mods?: { label: string; value: number }[]; stake: string },
+  opts: { support?: SupportDetail; mods?: { label: string; value: number }[]; stake: StakeRef },
 ): CascadeStep {
   const modSum = (opts.mods ?? []).reduce((s, m) => s + m.value, 0);
   return {
     id, kind, actorId, icon, label, rollLabel, base, support: opts.support, difficulty,
     ...(opts.mods?.length ? { mods: opts.mods } : {}),
     stake: opts.stake,
-    // La règle de l'étape accompagne son enjeu — même source (`voyage-stakes.json`), aucun couplage
-    // au site : le `kind` suffit.
-    ...(voyageStakeRule(kind) ? { stakeRule: voyageStakeRule(kind) } : {}),
     target: Math.max(1, Math.min(99, base + DIFFICULTY_MODIFIERS[difficulty] + modSum)),
     result: null, interactive: true, meta,
   };
@@ -294,14 +292,14 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
     const repair = bestShipwright(get);
     if (repair) steps.push(riverStep('river-repair', 'riverControlRepair', repair.actor.id, 'Réparation du gréement', 'travel/repair',
       'Métier', repair.value, TEMPORARY_REPAIR.difficulty, undefined,
-      { support: repair.support, stake: voyageStake('riverControlRepair', { driftPenalty: DRIFT_NAV_PENALTY, outOfControlPenalty: OUT_OF_CONTROL.navPenalty }) }));
+      { support: repair.support, stake: voyageStakeRef('riverControlRepair', { driftPenalty: DRIFT_NAV_PENALTY, outOfControlPenalty: OUT_OF_CONTROL.navPenalty }) }));
     else logs.push('Gréement/avirons hors d\'usage — personne pour les réparer, le bateau dérive.');
   }
 
   // 2. AGILITÉ de rame (l.17) : échec → −20 % ; Échec spectaculaire (−6 DR) → ÷2.
   if (pilot) steps.push(riverStep('river-agility', 'riverAgility', pilot.actor.id, 'Agilité de rame', 'travel/rowboat',
     'Agilité', testValue(pilot.actor, undefined, 'agilite'), ROWING_AGILITY_DIFFICULTY, undefined,
-    { stake: voyageStake('riverAgility', {
+    { stake: voyageStakeRef('riverAgility', {
       // La SOURCE parle en POURCENTAGE et en DIVISION (MSRC 7 l.17) : le facteur ×0.8 est la langue du
       // moteur, pas celle du joueur — la ligne d'échec dit déjà « −20 % » / « ÷2 ».
       failPct: Math.round((1 - rowingAgilityFactor(false, 0)) * 100),
@@ -315,7 +313,7 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
     const navTest = riverNavTest(river, eff);
     steps.push(riverStep('river-nav', 'riverNav', pilot.actor.id, `Navigation (${refLabel('skills', { id: skillId })})`, 'travel/sail-ship',
       refLabel('skills', { id: skillId }), pilot.value, navTest.difficulty, { savoir },
-      { support: pilot.support, mods: navTest.mods, stake: voyageStake('riverNav', { driftKm: Math.round(riverDriftKm(baseKm)), driftPct: DRIFT_PCT_OF_SPEED }) }));
+      { support: pilot.support, mods: navTest.mods, stake: voyageStakeRef('riverNav', { driftKm: Math.round(riverDriftKm(baseKm)), driftPct: DRIFT_PCT_OF_SPEED }) }));
   } else {
     logs.push('Aucun batelier à la barre — le fleuve emporte l\'embarcation à sa guise.');
     dayCtx.forceDrift = true; // pas de barreur = contrôle perdu (note 2 : dérive)
@@ -325,19 +323,19 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
   // 4. LOUVOYAGE (note 3, l.39) : le +% de vent de côté Modéré/Fort n'est acquis qu'avec un Test réussi.
   if (eff.tack && pilot) steps.push(riverStep('river-tack', 'riverTack', pilot.actor.id, 'Louvoyage', 'nautical/tack',
     refLabel('skills', { id: skillId }), pilot.value, TACK_DIFFICULTY, { savoir: savoirVoiesFluvialesBonus(pilot.actor) },
-    { support: pilot.support, stake: voyageStake('riverTack', { windPct: eff.pct ?? 0 }) }));
+    { support: pilot.support, stake: voyageStakeRef('riverTack', { windPct: eff.pct ?? 0 }) }));
 
   // 5. Sauvegardes de VENT (l.40-41).
   if (eff.capsizeRisk) {
     if (pilot) steps.push(riverStep('river-capsize', 'riverCapsize', pilot.actor.id, 'Retirer la voile (chavirage)', 'nautical/wind',
       refLabel('skills', { id: skillId }), pilot.value, CAPSIZE.removeSailDifficulty, { savoir: savoirVoiesFluvialesBonus(pilot.actor) },
-      { support: pilot.support, stake: voyageStake('riverCapsize', { rounds: Math.max(1, capsizeSinkTurns(effectiveChar(coque, 'endurance'))) }) }));
+      { support: pilot.support, stake: voyageStakeRef('riverCapsize', { rounds: Math.max(1, capsizeSinkTurns(effectiveChar(coque, 'endurance'))) }) }));
     else { sinkBoat(get, set, (l) => logs.push(...l), 'Sans barreur, le bateau se renverse sous le vent violent et coule.'); }
   }
   if (eff.riggingRisk) {
     if (pilot) steps.push(riverStep('river-rigging', 'riverRigging', pilot.actor.id, 'Préserver le gréement', 'nautical/wind',
       refLabel('skills', { id: skillId }), pilot.value, CAPSIZE.removeSailDifficulty, { savoir: savoirVoiesFluvialesBonus(pilot.actor) },
-      { support: pilot.support, stake: voyageStake('riverRigging', { outOfControlPenalty: OUT_OF_CONTROL.navPenalty }) }));
+      { support: pilot.support, stake: voyageStakeRef('riverRigging', { outOfControlPenalty: OUT_OF_CONTROL.navPenalty }) }));
     else { steps.push(...applyBoatCriticalNoPilot(get, set, coque, (l) => logs.push(...l))); }
   }
 
@@ -537,7 +535,7 @@ function rightingStep(source: CascadeStep, round: number, be: number, pilotValue
     difficulty: CAPSIZE_RIGHT_DIFFICULTY,
     ...(penalty ? { mods: [{ label: `−5 cumulatif (Round ${round + 1})`, value: penalty }] } : {}),
     target: capsizeRoundTarget(pilotValue, round),
-    ...(() => { const st = voyageStake('riverRighting', { nextPenalty: (round + 1) * CAPSIZE_RIGHT_CUMULATIVE, rounds: rounds }); return st ? { stake: st } : {}; })(),
+    ...(() => { const st = voyageStakeRef('riverRighting', { nextPenalty: (round + 1) * CAPSIZE_RIGHT_CUMULATIVE, rounds: rounds }); return st ? { stake: st } : {}; })(),
     result: null, interactive: true,
     meta: { rightRound: round, rightRounds: rounds, rightPilotValue: pilotValue },
   };
@@ -612,7 +610,7 @@ registerCascadeApplier('riverPerilCheck', (get, set, step) => {
       rollLabel: String(step.meta?.navLabel ?? riverPilotSkillLabel(get)), base: Number(step.meta?.navBase ?? 0), difficulty: NAV_BASE_DIFFICULTY,
       ...(() => { const m = navPenaltyMods({ drift: !!step.meta?.navDrift, outOfControl: !!step.meta?.navOutOfControl }); return m.length ? { mods: m } : {}; })(),
       target: Number(step.meta?.navTarget ?? 0), result: null, interactive: true,
-      ...(peril.onFail ? { stake: voyageStake('riverPerilNav', { hits: peril.onFail.hullHits, damagePerHit: peril.onFail.damagePerHit }) } : {}),
+      ...(peril.onFail ? { stake: voyageStakeRef('riverPerilNav', { hits: peril.onFail.hullHits, damagePerHit: peril.onFail.damagePerHit }) } : {}),
       meta: { perilId, savoir: Number(step.meta?.savoir ?? 0) },
     }];
     return { insert };
@@ -733,7 +731,7 @@ function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoy
       insert.push({
         id: `${idPrefix}-splinter`, kind: 'riverSplinterDodge', actorId: victim.id, icon: 'ui/warning',
         label: `Critique au ${location} — éclats`, rollLabel: 'Initiative', base, difficulty: 'intermediaire', target: Math.max(1, Math.min(99, base)),
-        stake: voyageStake('riverSplinterDodge', { damage: crit.splinterDamage ?? 0, condition: conditionLabel(crit.conditionId ?? 'empetre') }),
+        stake: voyageStakeRef('riverSplinterDodge', { damage: crit.splinterDamage ?? 0, condition: conditionLabel(crit.conditionId ?? 'empetre') }),
         result: null, interactive: true, meta: { dmg: crit.splinterDamage, conditionId: crit.conditionId ?? '', location },
       });
     } else if (victim) {
@@ -777,7 +775,7 @@ function holeBoat(get: Get, set: Set, plan: TravelPlan, tell: (l: string[]) => v
       id: `${idPrefix}-hole`, kind: 'riverHoleRepair', actorId: repair.actor.id, icon: 'travel/repair',
       label: 'Calfatage d’urgence', rollLabel: 'Métier', base: repair.value, support: repair.support,
       difficulty: TEMPORARY_REPAIR.difficulty, target: Math.max(1, Math.min(99, repair.value + DIFFICULTY_MODIFIERS[TEMPORARY_REPAIR.difficulty])), result: null, interactive: true,
-      stake: voyageStake('riverHoleRepair', { minutes }),
+      stake: voyageStakeRef('riverHoleRepair', { minutes }),
     }];
   }
   const rng = battleRng();
@@ -839,7 +837,7 @@ function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<Ret
       insert.push({
         id: `${step.id}-detect`, kind: 'riverPerilDetect', actorId: pilot.id, icon: 'nautical/snag', label: `${peril.label} — détection`,
         rollLabel: 'Agilité', base, difficulty: 'intermediaire', target: Math.max(1, Math.min(99, base)), result: null, interactive: true,
-        ...(peril.onHit ? { stake: voyageStake('riverPerilDetect', { damage: peril.onHit.hullDamage }) } : {}),
+        ...(peril.onHit ? { stake: voyageStakeRef('riverPerilDetect', { damage: peril.onHit.hullDamage }) } : {}),
         meta: { perilId: peril.id },
       });
     } else {
@@ -903,7 +901,7 @@ function applyEchouageSteps(get: Get, set: Set, idPrefix: string, j: import('./r
     id: `${idPrefix}-echouage`, kind: 'riverEchouageForce', actorId: force.actor.id, icon: 'travel/repair',
     label: 'Renflouage', rollLabel: 'Force', base: force.value, support: force.support,
     difficulty, target: Math.max(1, Math.min(99, force.value + DIFFICULTY_MODIFIERS[difficulty])), result: null, interactive: true,
-    stake: voyageStake('riverEchouageForce'),
+    stake: voyageStakeRef('riverEchouageForce'),
     meta: { encTxt },
   }];
 }

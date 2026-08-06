@@ -112,13 +112,17 @@ describe('Symptôme Délire — EDO App.2 p.145', () => {
 
 // ── Symptôme Gonflement ────────────────────────────────────────────────────────────────────────
 
-describe('Symptôme Gonflement — EDO App.2 p.145', () => {
+describe('Symptôme Gonflement — EDO App.2 folio 146', () => {
   it("existe dans le catalogue avec id, label et source corrects", () => {
     const s = findSymptomById('gonflement');
     expect(s).toBeTruthy();
     expect(s!.id).toBe('gonflement');
     expect(s!.label).toBe('Gonflement');
-    expect(s!.source).toEqual({ book: 'ennemi-dans-l-ombre', page: 145 });
+    // Folio MESURÉ au `data-folio` : le début de l'App.2 est folio 145 (marqueur l.56), mais le
+    // symptôme Gonflement (l.143) suit le marqueur l.129 → folio 146. Son voisin Délire (l.127) reste
+    // en 145 : les deux enjambent la coupure. La valeur 145 verrouillée ici venait du folio d'OUVERTURE
+    // de l'appendice, pas de la page du symptôme — corrigée avec le stock (#1117 L0b).
+    expect(s!.source).toEqual({ book: 'ennemi-dans-l-ombre', page: 146 });
   });
 
   it("purely descriptif : pas de passive ni onTick (effets dépendent de la localisation)", () => {

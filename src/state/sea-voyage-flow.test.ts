@@ -22,7 +22,7 @@ import { resumeTravel } from './travelFlow';
 import { applyEffects } from './combatEffects';
 import { cascadeAppliers } from './cascade';
 import { crewRoleValue } from '../engine/crewMorale';
-import { findCrewRoleById } from '../data';
+import { findCrewRoleById, resolveStake } from '../data';
 import { resultLine } from './rollSeam';
 import { voyageTiles, vesselHullGauge } from '../ui/VoyageScreen';
 import { checkBattleOver } from './combatFlow';
@@ -1630,7 +1630,7 @@ describe('Survitesse — « Ça va lâcher, capitaine ! » (#443, MDG 13 l.121-1
     planLangskip('avirons', 11); // oars.m 6 → M+5 (safeBonus 4)
     const [st] = buildOverspeedSteps(get);
     expect(st).toBeTruthy();
-    expect(st!.stake).toContain('Survitesse M+5'); // référent M = oars.m 6 — le surplus se LIT sur la note d'enjeu
+    expect(resolveStake(st!.stake!).text).toContain('Survitesse M+5'); // référent M = oars.m 6 — le surplus se LIT sur la note d'enjeu
     expect(st!.meta?.overspeedDamage).toBe(overspeedRow(6, 11)!.damage);
   });
 
@@ -1638,7 +1638,7 @@ describe('Survitesse — « Ça va lâcher, capitaine ! » (#443, MDG 13 l.121-1
     planLangskip('voile', 11); // sail.m 4 → M+7
     const [st] = buildOverspeedSteps(get);
     expect(st).toBeTruthy();
-    expect(st!.stake).toContain('Survitesse M+7'); // référent M = sail.m 4
+    expect(resolveStake(st!.stake!).text).toContain('Survitesse M+7'); // référent M = sail.m 4
     expect(st!.meta?.overspeedDamage).toBe(overspeedRow(4, 11)!.damage);
   });
 
@@ -1649,7 +1649,7 @@ describe('Survitesse — « Ça va lâcher, capitaine ! » (#443, MDG 13 l.121-1
     set({ travelPlan: { ...plan, sea } });
     const [st] = buildOverspeedSteps(get);
     expect(st).toBeTruthy();
-    expect(st!.stake).toContain('Survitesse M+6'); // référent M = oars.m 3
+    expect(resolveStake(st!.stake!).text).toContain('Survitesse M+6'); // référent M = oars.m 3
     expect(st!.meta?.overspeedDamage).toBe(overspeedRow(3, 9)!.damage);
   });
 });
@@ -1909,8 +1909,9 @@ describe('Tests d’équipage — enjeu d’EFFET, règle en fiche, choix de Pro
       for (const st of p.participants) {
         if (!st.participants || !st.stake) continue;
         vus += 1;
-        expect(st.stake, `« ${st.kind} » : l’enjeu ne récite pas la règle-cadre`).not.toMatch(/peut être remplacé|au lieu d'un Test de Navigation/);
-        expect(st.stakeRule?.id, `« ${st.kind} » : la règle MDG reste à un clic`).toMatch(/^test-equipage-/);
+        const resolved = resolveStake(st.stake);
+        expect(resolved.text, `« ${st.kind} » : l’enjeu ne récite pas la règle-cadre`).not.toMatch(/peut être remplacé|au lieu d'un Test de Navigation/);
+        expect(resolved.rule?.id, `« ${st.kind} » : la règle MDG reste à un clic`).toMatch(/^test-equipage-/);
       }
       stepCascade();
     }

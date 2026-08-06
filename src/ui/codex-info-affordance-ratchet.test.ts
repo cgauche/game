@@ -39,11 +39,17 @@ function infoAffordances(): Record<string, number> {
  *    AVANT que le modificateur n'existe, donc avant qu'une chip ne puisse la porter ;
  *  - `ActionBar`/`CharacterSheet`/`MerchantPanel`/`PossessionsRegistry` : ⓘ d'un ÉLÉMENT de liste
  *    (sort, compétence, possession) sans contrôle englobable à ce jour ;
- *  - `compendium/CodexRef.tsx` : la DÉFINITION de la classe (l'habillage de l'affordance).
+ *  - `compendium/CodexRef.tsx` : la DÉFINITION de la classe (l'habillage de l'affordance) ;
+ *  - `CascadeModal.tsx` : le renvoi de règle du TITRE d'étape (#1117, arbitrage user 2026-08-06 :
+ *    « Je pensais que tu allais mettre un "i" a coté de "Cauchemars", pas "la régle" en dessous »).
+ *    Le « faut pas mettre de i » de #1078 visait l'ⓘ POSÉ À CÔTÉ d'un contrôle qui porte déjà sa
+ *    règle ; un TITRE d'étape n'est pas un contrôle et n'a aucune chip à englober — sans lui, la
+ *    règle du jet n'a plus de porte. Les chips de la même fenêtre restent leurs propres portes.
  * Toute NOUVELLE occurrence, et tout retour d'une occurrence supprimée, échoue ici.
  */
 const RATCHET: Record<string, number> = {
   'ActionBar.tsx': 4,
+  'CascadeModal.tsx': 1,
   'CharacterSheet.tsx': 1,
   'MerchantPanel.tsx': 3,
   'PossessionsRegistry.tsx': 2,

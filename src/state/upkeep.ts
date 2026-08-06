@@ -30,7 +30,7 @@ import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { loseWounds, addClockCondition } from '../engine/conditions';
 import { rollTest } from '../engine/tests';
 import { soberUp } from '../engine/drunkenness';
-import { DIFFICULTY_MODIFIERS, type Difficulty, type UpkeepDeferTest } from '../engine/types';
+import { DIFFICULTY_MODIFIERS, type Difficulty, type UpkeepDeferTest, type NightTestKind } from '../engine/types';
 import { dailyDiseaseUpkeep, restResistVal } from '../engine/rest';
 import { conditionLabel } from '../data';
 import { rule } from '../engine/policy';
@@ -113,7 +113,8 @@ export function purgeAdventureEffects(get: Get, set: Set): string[] {
 /** Un Test de Résistance d'entretien DIFFÉRÉ, prêt à devenir une étape de cascade de nuit. */
 export interface DeferredUpkeepTest {
   heroId: string;
-  kind: string;
+  /** Vocabulaire FERMÉ des étapes de nuit (#1117 point 5) — un kind inventé ne compile pas. */
+  kind: NightTestKind;
   label: string;
   base: number;
   /** Difficulté DÉCLARÉE du Test (comprise dans `target`) — la ligne de jet la DIT (#1112). */

@@ -492,13 +492,13 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
             // Conséquence INCONDITIONNELLE (pas de jet — éclatement du Vers du Reik, issue invariante,
             // MSRC 16 l.142) : appliquée DIRECTEMENT ici (defer ou non), via l'interprète inline restreint.
             applyOnFailInline(c, tick.onFail, contractOnce, log);
-          } else if (defer) defer({ kind: 'diseaseTick', label: `${symptomLabel(inst.symptomId)} (${diseaseLabel(dz.id)})`, base: rv, difficulty: tick.difficulty, meta: { diseaseName: dz.id, onFail: tick.onFail } });
+          } else if (defer) defer({ kind: 'diseaseTick', label: `${symptomLabel(inst.symptomId)} (${diseaseLabel(dz.id)})`, base: rv, difficulty: tick.difficulty, meta: { diseaseName: dz.id, symptomId: inst.symptomId, onFail: tick.onFail } });
           else if (!rollTest(rv, tick.difficulty, rng).success) applyOnFailInline(c, tick.onFail, contractOnce, log);
         }
         // Gangrène (l.176) : capacité `amputation` — Test de Résistance Accessible (+20) journalier ; plus
         // d'échecs que le Bonus d'Endurance → la Localisation est PERDUE (Amputation). Machinerie stateful.
         if (diseaseHasCapability(dz, 'amputation') && !dz.gangreneLost) {
-          if (defer) defer({ kind: 'diseaseGangrene', label: 'Gangrène', base: rv, difficulty: 'accessible', meta: { diseaseName: dz.id, be: beForGangrene } });
+          if (defer) defer({ kind: 'diseaseGangrene', label: 'Gangrène', base: rv, difficulty: 'accessible', meta: { diseaseName: dz.id, symptomId: 'gangrene', be: beForGangrene } });
           else if (!rollTest(rv, 'accessible', rng).success) {
             dz.gangreneFails = (dz.gangreneFails ?? 0) + 1;
             if (dz.gangreneFails > beForGangrene) {
@@ -525,7 +525,7 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
       if (dz.persistDifficulty) {
         if (defer) {
           dz.endTestPending = true;
-          defer({ kind: 'diseasePersist', label: `Fin de « ${diseaseLabel(dz.id)} »`, base: rv, difficulty: dz.persistDifficulty, meta: { diseaseName: dz.id } });
+          defer({ kind: 'diseasePersist', label: `Fin de « ${diseaseLabel(dz.id)} »`, base: rv, difficulty: dz.persistDifficulty, meta: { diseaseName: dz.id, symptomId: 'persistant' } });
           survivors.push(dz);
         } else {
           const res = rollTest(rv, dz.persistDifficulty, rng); // l.162

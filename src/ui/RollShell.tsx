@@ -9,6 +9,8 @@ import { rowForcedDie, useDieCommit, useDieCommitRegistry, withPickedDie } from 
 import { useGame } from '../state/store';
 import { RecapLineRow } from './RecapLine';
 import type { RecapLine } from '../state/recapLine';
+import { StakeNote } from './StakeNote';
+import type { StakeRef } from '../data';
 
 /**
  * RollShell — LA coquille UNIQUE des modales de jet différé (mono, opposé, ou N contributeurs).
@@ -95,6 +97,7 @@ export function RollShell({
   instruction,
   embedded = false,
   disableEscClose = false,
+  stake,
   extra,
   setup,
   rows,
@@ -122,6 +125,10 @@ export function RollShell({
   embedded?: boolean;
   /** N'attache PAS Échap à l'annulation (flux où l'on ne peut pas fermer — défense obligatoire). */
   disableEscClose?: boolean;
+  /** Zone Z3b — ENJEU du jet (#1117) : une RÉFÉRENCE de donnée, jamais un texte. La coquille la résout
+   *  et rend la PHRASE par `StakeNote`. Prop de PREMIER RANG : toute modale de jet peut dire son
+   *  enjeu sans passer par `extra`. Le RENVOI vers la règle vit sur la ligne de TITRE, pas ici. */
+  stake?: StakeRef;
   /** Contenu optionnel AVANT les rangées (portraits, sélecteur de cible, choix de virage…). */
   extra?: ReactNode;
   /** Contenu métier PRÉ-JET uniquement (options : choix d'arme/localisation, Parade/Esquive…). */
@@ -229,6 +236,8 @@ export function RollShell({
       <div className="rs-scroll">
       {subtitle != null && <p className={subClass}>{subtitle}</p>}
       {instruction != null && <div className="mini-title">{instruction}</div>}
+      {/* Z3b — l'ENJEU (#1117) : résolu par la coquille depuis la RÉFÉRENCE de donnée, jamais écrit au site. */}
+      {stake && <StakeNote stake={stake} />}
       {extra}
       {!rolled && setup}
       <div className="cs-rows">

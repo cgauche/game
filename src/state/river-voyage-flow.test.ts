@@ -3,7 +3,7 @@ import { useGame } from './store';
 import { buildRiverPlan, buildRiverDayCascade, runRiverDays, hasBatelier, applyEchouage } from './riverVoyageFlow';
 import { buildApi } from './devtools';
 import { cascadeAppliers } from './cascade';
-import { findSkillById, voyageStake, VOYAGE_STAKES, regles } from '../data';
+import { findSkillById, resolveStake, voyageStakeRef, VOYAGE_STAKES, regles } from '../data';
 import { creditBourse } from './bourseFlow';
 import { seedBattleRng } from './battleRng';
 import { createHero, skillCharacteristicById } from '../engine/character';
@@ -662,8 +662,9 @@ describe('enjeu des étapes de voyage — data-driven, valeurs calculées (#1117
     expect(jets.length).toBeGreaterThanOrEqual(4);
     for (const s of jets) {
       expect(s.stake, `étape ${s.kind} sans enjeu`).toBeTruthy();
-      // Le gabarit de la donnée est la SOURCE : aucun trou non rempli ne sort à l'écran.
-      expect(s.stake).not.toMatch(/\{[a-zA-Z]+\}/);
+      // Le gabarit de la donnée est la SOURCE : aucun trou non rempli ne sort à l'écran (le résolveur
+      // UNIQUE jette sur un trou sans valeur — on vérifie ici le texte RENDU).
+      expect(resolveStake(s.stake!).text).not.toMatch(/\{[a-zA-Z]+\}/);
       expect(VOYAGE_STAKES.some((e) => e.kind === s.kind)).toBe(true);
     }
   });
@@ -677,7 +678,7 @@ describe('enjeu des étapes de voyage — data-driven, valeurs calculées (#1117
     const built = buildRiverDayCascade(get, set, get().worldMap!.routes[0], { scene: 'quai-b', label: 'Altdorf' });
     const tack = built.steps.find((s) => s.kind === 'riverTack');
     expect(tack, 'le louvoyage est bien au programme du jour').toBeTruthy();
-    expect(tack!.stake).toMatch(/^Réussi : \+\d+ % de vitesse ; échec : \+0 %\.$/);
+    expect(resolveStake(tack!.stake!).text).toMatch(/^Réussi : \+\d+ % de vitesse ; échec : \+0 %\.$/);
   });
 
   it('les valeurs CALCULÉES entrent dans le gabarit (dérive en km, % de vent)', () => {
@@ -686,14 +687,14 @@ describe('enjeu des étapes de voyage — data-driven, valeurs calculées (#1117
     set({ travelPlan: { ...plan, river: { ...plan.river!, windForce: 'leger', windDir: 'arriere' } } });
     const built = buildRiverDayCascade(get, set, get().worldMap!.routes[0], { scene: 'quai-b', label: 'Altdorf' });
     const nav = built.steps.find((s) => s.kind === 'riverNav')!;
-    expect(nav.stake).toMatch(/dérive \d+ km en aval \(25 % de la vitesse\)/); // km calculé, % de la donnée
+    expect(resolveStake(nav.stake!).text).toMatch(/dérive \d+ km en aval \(25 % de la vitesse\)/); // km calculé, % de la donnée
   });
 
   it('le gabarit qui manque une valeur JETTE (la donnée et le flux ne divergent pas en silence)', () => {
-    expect(() => voyageStake('riverNav', {})).toThrow(/driftKm/);
+    expect(() => resolveStake(voyageStakeRef('riverNav'))).toThrow(/driftKm/);
     // FAIL-CLOSED à l'autre bout : demander l'enjeu d'un `kind` SANS gabarit JETTE — une étape muette
     // en silence est exactement ce que #1117 supprime.
-    expect(() => voyageStake('kind-inexistant')).toThrow(/aucun gabarit d'enjeu/);
+    expect(() => voyageStakeRef('kind-inexistant')).toThrow(/aucun gabarit d'enjeu/);
   });
 });
 
@@ -710,8 +711,9 @@ describe('renvoi Codex au niveau ÉTAPE (#1117)', () => {
     const built = buildRiverDayCascade(get, set, get().worldMap!.routes[0], { scene: 'quai-b', label: 'Altdorf' });
     const jets = built.steps.filter((s) => s.target != null);
     for (const s of jets) {
-      expect(s.stakeRule, `étape ${s.kind} sans renvoi de règle`).toBeTruthy();
-      expect(s.stakeRule!.category).toBe('regles');
+      const rule = resolveStake(s.stake!).rule;
+      expect(rule, `étape ${s.kind} sans renvoi de règle`).toBeTruthy();
+      expect(rule!.category).toBe('regles');
     }
   });
 

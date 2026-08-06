@@ -1614,11 +1614,28 @@ export const DIFFICULTY_MODIFIERS: Record<Difficulty, number> = {
   impossible: -50,
 };
 
+/** VOCABULAIRE FERMÉ des étapes de la cascade de NUIT (#1117 point 5) — les 15 `kind` réellement
+ *  émis : 7 par les Tests d'entretien DIFFÉRÉS (`UpkeepDeferTest`), 8 construits par le flux de nuit.
+ *  Union au TYPE = premier rideau : un kind inventé ne compile pas ; le résolveur d'enjeu jette en
+ *  second rideau. Ajouter une étape de nuit = l'ajouter ICI et lui authorer son entrée d'enjeu. */
+export const NIGHT_TEST_KINDS = [
+  'faim', 'soif', 'recovery', 'nightmare', 'shelter', 'exposure', 'exposure-heat-drop',
+  'forcedMarch', 'traumaFracture', 'diseaseTick', 'diseaseGangrene', 'diseasePersist',
+  'contagion', 'dessoulage', 'dessoulageHangover',
+] as const;
+/** `kind` d'une étape de la cascade de nuit — union FERMÉE dérivée de `NIGHT_TEST_KINDS`. */
+export type NightTestKind = (typeof NIGHT_TEST_KINDS)[number];
+/** Garde de vocabulaire — DÉCLARE le tri (une étape de nuit hors vocabulaire, révélation ou pas de
+ *  météo, n'a pas d'enjeu de nuit à porter) au lieu de le faire en silence par un repli vide. */
+export function isNightTestKind(k: string): k is NightTestKind {
+  return (NIGHT_TEST_KINDS as readonly string[]).includes(k);
+}
+
 /** Spec d'un Test de Résistance d'entretien DIFFÉRÉ (cascade de nuit influençable) : le moteur le
  *  COLLECTE au lieu de le rouler (`state/upkeep` calcule la cible et en fait une étape de cascade,
  *  résolue par l'applicateur de `kind`). Garde l'invariante « si y'a un jet, y'a une étape ». */
 export type UpkeepDeferTest = (spec: {
-  kind: string;
+  kind: NightTestKind;
   label: string;
   base: number;
   difficulty: Difficulty;

@@ -10,7 +10,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatFlow';
-import { restPlacesHere, lodgingOptions } from './restFlow';
+import { restPlacesHere, lodgingOptions, applyNightStake } from './restFlow';
+import { resolveStake } from '../data';
+import { contractDisease, tickDisease } from '../engine/disease';
+import { effectiveChar } from '../engine/characteristics';
+import { battleRng as battleRngFor } from './battleRng';
 import { seedBattleRng } from './battleRng';
 import { emptyScene } from './scene';
 import { toBrass, type Money } from '../engine/money';
@@ -19,6 +23,7 @@ import { stacks, addCondition } from '../engine/conditions';
 
 import { MINUTES_PER_DAY } from '../engine/clock';
 import type { Combatant, ItemInstance } from '../engine/types';
+import type { CascadeStep } from './pendings';
 import { resetCadence, setCadence } from '../engine/cadence';
 
 const ration = (uid: string): ItemInstance => ({ uid, label: 'Ration', trappingId: 'ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
@@ -345,5 +350,70 @@ describe('effet `rest` (éditeur)', () => {
     expect(p.places.maison).toBe(true);
     useGame.getState().restSleep();
     expect((useGame.getState().gameTime ?? 0)).toBeGreaterThan(t0);
+  });
+});
+
+/**
+ * Le RENVOI de règle d'une étape de MALADIE descend au SYMPTÔME joué (#1117, escalade user
+ * 2026-08-06 : « Blessé (Blessure Purulente) » ouvrait l'INTRO du chapitre des maladies, du propos
+ * d'auteur MJ, au lieu de la fiche du symptôme). Le symptôme voyage dans le `meta` du Test différé,
+ * de son émission (`engine/disease`) jusqu'à la clé d'enjeu de l'étape (`{dataset, kind, entryId}`).
+ */
+
+/**
+ * CHEMIN RÉEL du joueur (recette 2026-08-06) : héros MALADE → auberge → « Dormir » → la cascade de
+ * nuit s'ouvre → l'étape « Blessé » porte SON symptôme, donc son renvoi de règle pointe la fiche du
+ * SYMPTÔME (Codex « Symptômes »), pas l'intro du chapitre des maladies.
+ *
+ * Ce test passe par `openRest` + `restSleep` — les DEUX bâtisseurs de la nuit s'exécutent, dans le
+ * MÊME ordre qu'en jeu. Une version qui n'appelait que `deferredUpkeepSteps` était VERTE alors que le
+ * navigateur était ROUGE : le second bâtisseur écrasait la clé. Le test suit le chemin du joueur.
+ */
+describe('CHEMIN RÉEL — la règle d’une étape de maladie est celle du SYMPTÔME (#1117)', () => {
+  function malade(): Combatant {
+    const h = useGame.getState().party[0]!;
+    seedBattleRng(7);
+    const dz = contractDisease('blessure-purulente', battleRngFor())!;
+    h.diseases = [...(h.diseases ?? []), dz];
+    // Comme le helper de recette `__wfrp.disease(..., { phase:'active' })` : on AVANCE le vrai cycle.
+    if (dz.phase === 'incubation') tickDisease(h, dz.minutesLeft, battleRngFor(), effectiveChar(h, 'endurance'));
+    useGame.setState((s) => ({ party: [...s.party] }));
+    return h;
+  }
+
+  it('« Dormir » à l’auberge → l’étape du symptôme porte son `entryId` et renvoie à SA fiche', () => {
+    malade();
+    setGroupPurse({ gold: 5, silver: 0, brass: 0 });
+    useGame.getState().openRest({ places: { auberge: true } });
+    useGame.getState().restSleep();
+    const p = useGame.getState().pendingCascade;
+    expect(p, 'la cascade de nuit s’ouvre').toBeTruthy();
+    const step = p!.participants.find((s) => s.kind === 'diseaseTick');
+    expect(step, 'la nuit d’un malade porte le Test de cycle du symptôme').toBeTruthy();
+    expect(step!.meta?.symptomId, 'le symptôme voyage jusqu’à l’étape').toBe('blesse');
+    expect(step!.stake!.key.entryId, 'la clé d’enjeu NOMME l’entrée jouée').toBe('blesse');
+    expect(resolveStake(step!.stake!).rule, 'le renvoi pointe la fiche du SYMPTÔME').toEqual({ category: 'symptoms', id: 'blesse' });
+    // REPLI prouvé AU BÂTISSEUR, sur le MÊME chemin réel : une étape SANS entrée jouée (Récupération)
+    // ne fabrique aucun `entryId` et garde la fiche de son `kind`.
+    const recovery = p!.participants.find((s) => s.kind === 'recovery');
+    expect(recovery, 'la nuit porte aussi le Test de Récupération').toBeTruthy();
+    expect(recovery!.stake!.key.entryId, 'aucune entrée jouée : pas d’entryId fabriqué').toBeUndefined();
+    expect(resolveStake(recovery!.stake!).rule).toEqual({ category: 'regles', id: 'guerison-des-blessures' });
+  });
+
+  /** IDEMPOTENCE de la fabrique — c'est ELLE qui rend l'écrasement impossible entre les deux
+   *  bâtisseurs : redoter une étape déjà dotée doit rendre EXACTEMENT la même clé. */
+  it('`applyNightStake` est IDEMPOTENTE (×2 == ×1) — l’ordre des bâtisseurs ne compte plus', () => {
+    const etape = (kind: string, meta?: Record<string, unknown>): CascadeStep => ({
+      id: `x-${kind}`, kind, actorId: 'h', label: kind, rollLabel: 'Résistance', base: 40, difficulty: 'accessible', target: 60,
+      result: null, interactive: true, ...(meta ? { meta: meta as never } : {}),
+    });
+    for (const st of [etape('diseaseTick', { symptomId: 'blesse' }), etape('diseaseTick'), etape('recovery')]) {
+      applyNightStake(st);
+      const une = JSON.stringify(st.stake);
+      applyNightStake(st);
+      applyNightStake(st);
+      expect(JSON.stringify(st.stake), `${st.kind} : la clé change au 2ᵉ passage`).toBe(une);
+    }
   });
 });

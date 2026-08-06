@@ -349,7 +349,7 @@
     },
     "source": {
       "book": "livre-de-base",
-      "page": 190
+      "page": 189
     }
   },
   {
@@ -361,7 +361,7 @@
     },
     "source": {
       "book": "livre-de-base",
-      "page": 190
+      "page": 189
     }
   },
   {
@@ -373,7 +373,7 @@
     },
     "source": {
       "book": "livre-de-base",
-      "page": 190
+      "page": 189
     }
   },
   {
@@ -385,7 +385,7 @@
     },
     "source": {
       "book": "livre-de-base",
-      "page": 190
+      "page": 189
     }
   },
   {
@@ -412,7 +412,7 @@
     "desc": "Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au rouge ou au violacé et devenant presque inutilisable. La partie du corps affectée est normalement l'emplacement d'une plaie ou d'une morsure provoquant cette réaction, ou le point où une maladie ou une infection est entrée en contact avec le corps.\n\n**Traitement :** la plupart des traitements consistent à plonger la partie infectée, ou parfois tout le corps, dans un bain d'eau glacée pour réduire la chaleur qui accompagne les gonflements. Un Test étendu de **Guérison Difficile (-20)** nécessitant +3 DR et réduit le gonflement de 2d10 heures. Chaque Test dure une heure. Le patient se retrouve avec un État *Exténué* +1 pour chaque Test effectué au cours du processus.\n\nCertains médecins saignent plutôt le patient avec une lame ou des sangsues. Un Test étendu de **Guérison** prolongé réussi nécessitant +4 DR et des outils professionnels (médecin) réduit le gonflement de (1d10 + le Bonus d'Endurance du patient) heures. Chaque Test a une Difficulté de base Impossible (-50) et dure une demi-heure.\n\n| Localisation | Effet |\n|---|---|\n| Tête | Les yeux et la langue gonflent, les joues deviennent violettes, la mâchoire s'ouvre involontairement. Manger est impossible, mais les liquides peu épais peuvent être sirotés en petites quantités. Tous les Tests nécessitant la parole sont 3 niveaux plus difficiles. |\n| Bras | Le bras et la main gonflent, les articulations de l'épaule et du coude ne peuvent plus bouger et la main devient inutile. Pour la durée du gonflement, le bras est considéré comme amputé (WFJDR, page 180). |\n| Corps | Tout le corps gonfle jusqu'à ce que la victime ne puisse plus porter de vêtements. Tous les Tests impliquant un mouvement deviennent 3 niveaux plus difficiles. |\n| Jambe | La jambe gonfle de façon grotesque, devenant aussi grosse que la partie la plus large de la cuisse et sur toute sa longueur. Le pied est presque impossible à discerner. Pour la durée du gonflement, la jambe est considérée comme amputée (WFJDR, page 180). |\n\nCette Difficulté est réduite d'1 niveau pour chaque Blessure subie par le patient avant que le Test ne soit effectué. Ainsi, si un patient subit 5 Blessures, le Test est Intermédiaire (+0).\n\nQuelques guérisseurs utilisent des cataplasmes cicatrisants pour réduire le gonflement, surtout s'il y a une plaie visible sur laquelle ils peuvent être appliqués. Un Test étendu de **Guérison Complexe (-10)** réussi, nécessitant +5 DR et un cataplasme de guérison par Test, réduit le gonflement de (2d10 + le Bonus d'Endurance du patient) heures. Chaque Test dure 10 minutes.",
     "source": {
       "book": "ennemi-dans-l-ombre",
-      "page": 145
+      "page": 146
     }
   },
   {
@@ -432,7 +432,7 @@
     ],
     "source": {
       "book": "middenheim",
-      "page": 131
+      "page": 128
     }
   },
   {

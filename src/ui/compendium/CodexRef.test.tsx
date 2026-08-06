@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { computePopoverPos, CodexRef } from './CodexRef';
+import { computePopoverPos, CodexRef, nodeHasText } from './CodexRef';
 
 describe('computePopoverPos — placement du popover dans le viewport (anti-débordement)', () => {
   const VW = 1000;
@@ -69,5 +69,43 @@ describe('CodexRef — repli sans entrée catalogue (#956) : la surface garde sa
     expect(h).toContain('ab-codex-info');
     // Rien n'est cliquable : aucune fiche à ouvrir.
     expect(h).not.toContain('role="button"');
+  });
+});
+
+/**
+ * NOM ACCESSIBLE d'un déclencheur-ICÔNE (#1117 L0b) — `Icon` rend un `<svg aria-hidden>` : sans nom
+ * dérivé, les 8 ⓘ du dépôt (ActionBar ×4, CharacterSheet, useAttackJetProps ×3) seraient des boutons
+ * MUETS. La dérivation vit DANS la primitive : les call-sites n'ont qu'à passer leur `label`, comme
+ * ils le font déjà. Un `ariaLabel` explicite reste prioritaire.
+ */
+describe('CodexRef — le déclencheur-icône se NOMME tout seul (#1117)', () => {
+  const icone = <svg aria-hidden />;
+
+  it('sans texte dans le déclencheur, le nom accessible DÉRIVE du label', () => {
+    const h = renderToStaticMarkup(
+      <CodexRef category="regles" id="soutien" label="Soutien" className="ab-codex-info">{icone}</CodexRef>,
+    );
+    expect(h).toContain('role="button"');
+    expect(h, 'un bouton d’icône ne peut pas être muet').toContain('aria-label="Soutien"');
+  });
+
+  it('l’`ariaLabel` explicite PRIME sur la dérivation', () => {
+    const h = renderToStaticMarkup(
+      <CodexRef category="regles" id="soutien" label="Soutien" ariaLabel="Règle : Cauchemars" className="ab-codex-info">{icone}</CodexRef>,
+    );
+    expect(h).toContain('aria-label="Règle : Cauchemars"');
+    expect(h).not.toContain('aria-label="Soutien"');
+  });
+
+  it('un déclencheur TEXTUEL ne reçoit AUCUN aria-label (il se nomme par son contenu)', () => {
+    const h = renderToStaticMarkup(<CodexRef category="regles" id="soutien" label="Soutien">Soutien</CodexRef>);
+    expect(h).not.toContain('aria-label');
+  });
+
+  it('`nodeHasText` — la sonde distingue icône seule, texte, et mélange', () => {
+    expect(nodeHasText(icone)).toBe(false);
+    expect(nodeHasText([icone, icone])).toBe(false);
+    expect(nodeHasText('Soutien')).toBe(true);
+    expect(nodeHasText(<span>{icone} Soutien</span>)).toBe(true);
   });
 });

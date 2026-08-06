@@ -9,13 +9,25 @@
  * contexte d'empilement. `pointer-events: none` → pur tooltip, pas de pont de survol ; le clic
  * (déclencheur) ouvre le Codex.
  */
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { isValidElement, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useGame } from '../../state/store';
 import { codexLookup, codexLookupById } from './registry';
 import { mdToText } from '../Prose';
 
 const truncate = (s: string, n = 400): string => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
+
+/** Le contenu du déclencheur porte-t-il du TEXTE ? Une `Icon` rend un `<svg aria-hidden>` : un
+ *  déclencheur qui n'a QUE des icônes serait MUET pour un lecteur d'écran. On dérive alors son nom
+ *  accessible du `label` — correctif DANS la primitive, jamais N props recopiées aux call-sites. */
+export function nodeHasText(node: ReactNode): boolean {
+  if (node == null || typeof node === 'boolean') return false;
+  if (typeof node === 'string') return node.trim().length > 0;
+  if (typeof node === 'number') return true;
+  if (Array.isArray(node)) return node.some(nodeHasText);
+  if (isValidElement(node)) return nodeHasText((node.props as { children?: ReactNode }).children);
+  return false;
+}
 
 /** Pont de survol (ms) : sous `wrap`, délai avant fermeture pour que le pointeur ATTEIGNE le
  *  popover — il y porte la seule porte vers la fiche. Annulé dès qu'il y entre. */
@@ -60,6 +72,7 @@ export function CodexRef({
   children,
   className,
   hideIfUnknown = false,
+  ariaLabel,
   inline = false,
   instance,
   tooltipOnly = false,
@@ -78,6 +91,11 @@ export function CodexRef({
   className?: string;
   /** Pour un déclencheur-icône (info) : ne rien rendre si l'entrée est inconnue (pas d'icône morte). */
   hideIfUnknown?: boolean;
+  /** NOM ACCESSIBLE du déclencheur — nécessaire quand le contenu est une ICÔNE seule (`Icon` rend un
+   *  `<svg aria-hidden>` : sans nom, le bouton serait MUET). À DÉFAUT il se DÉRIVE du `label` : ne le
+   *  poser que pour nommer AUTREMENT que la fiche (« Règle : Cauchemars »). Rendu en `aria-label`
+   *  SEUL — jamais un `title` : l'infobulle native est proscrite, le popover EST le mécanisme. */
+  ariaLabel?: string;
   /** Ref en PLEINE PROSE (hors cadre) : réintroduit l'indice pointillé. Par défaut (libellé déjà
    *  encadré : chip/tag/stat-chip/titre) aucun soulignement — cf. `.codex-ref.codex-inline`. */
   inline?: boolean;
@@ -202,6 +220,10 @@ export function CodexRef({
   const toggle = () => { if (pinned) unpin(); else { showAt(); setPinned(true); } };
   const activate = wrapperOpens ? open : togglePopover ? toggle : undefined;
   const pinFromWrap = wrap && openFiche;
+  // NOM ACCESSIBLE : l'`ariaLabel` explicite prime ; sinon on le DÉRIVE du `label` dès que le
+  // déclencheur ne porte aucun texte (déclencheur-icône). Sans cette dérivation, les déclencheurs
+  // ⓘ du dépôt — qui passent tous un `label` — seraient des boutons MUETS.
+  const accessibleName = ariaLabel ?? (nodeHasText(children ?? label) ? undefined : title);
 
   return (
     <span
@@ -210,6 +232,7 @@ export function CodexRef({
       tabIndex={clickable ? 0 : undefined}
       role={clickable ? 'button' : undefined}
       aria-expanded={togglePopover ? pinned : undefined}
+      {...(accessibleName ? { 'aria-label': accessibleName } : null)}
       {...(pinFromWrap ? {
         // La porte clavier ne se DEVINE pas : elle s'annonce (lecteur d'écran + infobulle native).
         'aria-keyshortcuts': 'ArrowDown',

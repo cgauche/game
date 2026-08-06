@@ -46,7 +46,8 @@ import type { CascadeStep, CascadeStepMeta } from './pendings';
 import { isRation, feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
 import { toBrass, fromBrass, formatMoney, priceToMoney, type Money } from '../engine/money';
 import { payFromGroup } from './bourseFlow';
-import { findTrappingById, NIGHT_STAKES } from '../data';
+import { findTrappingById, nightStakeRef } from '../data';
+import { isNightTestKind } from '../engine/types';
 import { minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { runDailyUpkeep, dayIndex } from './upkeep';
 import { continueTravelAfterNight } from './travelFlow';
@@ -241,11 +242,20 @@ function collectContagion(party: Combatant[]): ContagionSpec[] {
 //    — zéro duplication de formule vs la nuit eager (sleepParty/restRecovery). Une défaillance
 //    impacte la suite (escalade Exposition, abri → nombre de jets) → c'est pourquoi c'est séquentiel.
 
-/** Enjeu d'un `kind` d'étape de nuit (`undefined` = aucun enjeu documenté → rien à afficher). Catalogue
- *  UNIQUE `src/data/night-stakes.json` (règle 5 : verbatim Source, Markdown) — un kind absent n'affiche
- *  rien (surfaçage progressif). */
-function nightStake(kind: string): string | undefined {
-  return NIGHT_STAKES.find((e) => e.kind === kind)?.stake;
+/**
+ * DOTATION de l'ENJEU d'une étape de nuit — FABRIQUE UNIQUE (#1117).
+ *
+ * La nuit a DEUX bâtisseurs (les Tests d'entretien différés, et les étapes construites par
+ * `buildNightCascade`) : tant que chacun posait `stake` à sa façon, le second ÉCRASAIT la clé du
+ * premier — l'étape « Blessé » perdait son symptôme en chemin et renvoyait à l'intro du chapitre des
+ * maladies (défaut vu en RECETTE, invisible aux tests qui n'appelaient qu'un seul bâtisseur).
+ * Les deux passent désormais ICI : la clé se DÉRIVE de l'étape (son `kind`, et l'ENTRÉE JOUÉE portée
+ * par son `meta`), donc redoter une étape est IDEMPOTENT — plus aucun ordre de passage ne compte.
+ */
+export function applyNightStake(st: CascadeStep): void {
+  if (!isNightTestKind(st.kind)) return; // hors vocabulaire de nuit (révélation, agrégat) : rien à mettre en jeu
+  const entryId = typeof st.meta?.symptomId === 'string' ? st.meta.symptomId : undefined;
+  st.stake = nightStakeRef(st.kind, entryId);
 }
 
 /** Jets d'Exposition au froid pour les campeurs (`count` par campeur) — insérés par l'abri. */
@@ -454,7 +464,7 @@ export function deferredUpkeepSteps(party: Combatant[], deferred: DeferredUpkeep
     const st: CascadeStep = { id: `${t.kind}-${t.heroId}-${startIndex + steps.length}`, kind: t.kind, actorId: t.heroId, label: t.label,
       icon: UPKEEP_STEP_ICON[t.kind] ?? 'nav/dice', rollLabel: 'Résistance', base: t.base, difficulty: t.difficulty,
       ...(t.mods?.length ? { mods: t.mods } : {}), target: t.target, result: null, interactive: true, meta: t.meta as CascadeStepMeta | undefined };
-    const stake = nightStake(t.kind); if (stake) st.stake = stake;
+    applyNightStake(st);
     steps.push(st);
   }
   return steps;
@@ -553,9 +563,10 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   }
 
 
-  // ENJEU surfaçable (#331) : chaque étape de nuit porte ce que son échec coûte (verbatim Source),
-  // affiché sous le titre d'étape par `CascadeModal` — source UNIQUE `NIGHT_STAKES` par `kind`.
-  for (const st of steps) { const stake = nightStake(st.kind); if (stake) st.stake = stake; }
+  // ENJEU (#331/#1117) : chaque étape de nuit porte ce qu'elle met en jeu, affiché sous le titre par
+  // `CascadeModal`. MÊME fabrique que les Tests différés (`applyNightStake`) : la clé se dérive de
+  // l'étape, donc ce second passage ne peut plus écraser l'ENTRÉE JOUÉE posée par le premier.
+  for (const st of steps) applyNightStake(st);
 
   // Journal : le titre de nuit + tout ce qui s'est ajouté APRÈS l'entretien (tente, récupération sans
   // jet…) — l'entretien lui-même est déjà dans le journal (`runDailyUpkeep`, écriture unique, #216).

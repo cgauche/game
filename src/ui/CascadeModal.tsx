@@ -5,6 +5,8 @@ import { availableResistance } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { VsHeader } from './VsHeader';
+import { CodexRef } from './compendium/CodexRef';
+import { resolveStake } from '../data';
 import { useAttackJetProps } from './jetProps/useAttackJetProps';
 import { useTrampleJetProps } from './jetProps/useTrampleJetProps';
 import { useDefenseJetProps } from './jetProps/useDefenseJetProps';
@@ -31,8 +33,6 @@ import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
 import type { CascadeStep, CascadeRollStep, CascadeRoll, BatchParticipant } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 import { buildParticipantRows, rollAllUnrolledRows } from './buildParticipantRows';
-import { CodexRef } from './compendium/CodexRef';
-import { Prose } from './Prose';
 
 /** Une étape-JET est PRÉSENTABLE avec son acteur (comportement historique) OU sans acteur quand
  *  elle est MONDIALE (`worldOwner`, seam #275 Décision 3 — désertion/Moral, aucun `actorId` par
@@ -70,15 +70,42 @@ export function stepSubtitleLabel(stepLabel: string | undefined, modalTitle: unk
  *  donc pas de compteur). Un fragment JSX vide n'est pas `null` : la coquille rendrait un `<p>` vide,
  *  soit une bande de marge sans contenu sous le titre.
  *  `count` porte le compteur : rang de l'étape par défaut (`n/m`), ou compte de JETS RÉELS pour la
- *  branche jet (`prefix: 'jet '`, `total` = `totalJets`, arbitrage user 2026-07-11). */
-function stepSubtitle(
+ *  branche jet (`prefix: 'jet '`, `total` = `totalJets`, arbitrage user 2026-07-11).
+ *  `rule` pose le RENVOI vers la fiche de règle EN AFFORDANCE COMPACTE, accolée au libellé d'étape
+ *  (arbitrage user 2026-08-06 : « Je pensais que tu allais mettre un "i" a coté de "Cauchemars", pas
+ *  "la régle" en dessous ») — même déclencheur-icône que la barre d'action (`CodexRef` + glyphe
+ *  `journal/info`), jamais un lien textuel sous la phrase d'enjeu. La nuance de #1078 tient : les
+ *  CHIPS restent leurs propres portes (aucun ⓘ voisin) — ceci ne vaut que pour le TITRE d'étape. */
+export function stepSubtitle(
   stepLabel: string | undefined,
   icon: string,
   count: { cursor: number; total: number; prefix?: string },
+  rule?: { category: string; id: string },
 ): ReactNode {
   const compteur = count.total > 1 ? `${stepLabel ? ' · ' : ''}${count.prefix ?? ''}${count.cursor + 1}/${count.total}` : '';
   if (!stepLabel && !compteur) return undefined;
-  return <>{stepLabel && <strong><Icon id={icon} size="sm" /> {stepLabel}</strong>}{compteur}</>;
+  return (
+    <>
+      {stepLabel && (
+        <strong>
+          <Icon id={icon} size="sm" /> {stepLabel}
+          {rule && (
+            <CodexRef
+              category={rule.category}
+              id={rule.id}
+              label={stepLabel}
+              ariaLabel={`Règle : ${stepLabel}`}
+              className="ab-codex-info"
+              hideIfUnknown
+            >
+              <Icon id="journal/info" size="sm" />
+            </CodexRef>
+          )}
+        </strong>
+      )}
+      {compteur}
+    </>
+  );
 }
 
 /** Nom de table de la rangée de tirage : rendu SEULEMENT s'il apporte autre chose que ce qui est déjà
@@ -276,24 +303,15 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
 
   const cur = p.participants[p.cursor];
   if (!cur) return null;
-  // ENJEU surfaçable (#331) : ce que l'échec de l'étape COURANTE coûte, ÉNONCÉ sous le titre AVANT le
-  // jet (le mécanisme est déjà dans l'applier — cf. « on ne sait ni à quoi ça correspond »). Verbatim
-  // Source, porté par la donnée (`step.stake`, posé à la construction par le flux propriétaire).
-  // Ton NEUTRE (`.rm-stake`) : l'enjeu ANNONCE ce que le jet met en jeu — ce n'est pas une menace
-  // subie (`.rm-threat`, fond rouge, réservé à l'attaque entrante).
-  // L'enjeu porte SA RÈGLE quand l'étape en déclare une (#1117, arbitrage user) : la fiche est à UN
-  // CLIC, par la primitive `CodexRef` (jamais un lien maison ni une paraphrase de la règle ici).
-  const stakeNote = cur.stake ? (
-    <div className="rm-note">
-      <Icon id="nav/dice" size="sm" />
-      <div>
-        <Prose md={cur.stake} />
-        {cur.stakeRule && (
-          <CodexRef category={cur.stakeRule.category} id={cur.stakeRule.id} label="la règle" inline>la règle</CodexRef>
-        )}
-      </div>
-    </div>
-  ) : null;
+  // ENJEU (#331/#1117) : ce que le jet de l'étape COURANTE met en jeu, ÉNONCÉ sous le titre AVANT le
+  // jet (le mécanisme est déjà dans l'applier — cf. « on ne sait ni à quoi ça correspond »). L'étape
+  // ne porte qu'une RÉFÉRENCE de donnée : la coquille `RollShell` la résout et rend la PHRASE
+  // (`StakeNote`, zone Z3b, classe propriétaire `.rm-stake`).
+  // Le RENVOI, lui, vit sur la LIGNE DE TITRE (arbitrage user 2026-08-06) : affordance compacte
+  // accolée au libellé d'étape, pas un lien textuel sous la phrase. Sa cible se DÉRIVE de la même
+  // entrée d'enjeu (`resolveStake`) ; une étape de CHOIX, sans enjeu, garde son `stakeRule` propre.
+  const stakeProps = cur.stake ? { stake: cur.stake } : {};
+  const stakeRule = (cur.stake ? resolveStake(cur.stake).rule : undefined) ?? cur.stakeRule;
   // ÉTAPE-JET : REGISTRE data-driven du rendu par TYPE de jet (ajouter un type = 1 entrée ici). Les
   // cinq jets RollShell (attaque/défense/Maladresse/Test/Test étendu) sont rendus via leur hook de
   // props dans la MÊME coquille restée montée → jet ET conséquences vivent dans UNE fenêtre jusqu'à
@@ -396,7 +414,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     return (
       <RollShell
         title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
-        subtitle={stepSubtitle(stepLabel, cur.icon || 'nav/dice', { cursor: p.cursor, total: p.participants.length })}
+        subtitle={stepSubtitle(stepLabel, cur.icon || 'nav/dice', { cursor: p.cursor, total: p.participants.length }, stakeRule)}
         rolled={false}
         rows={[...doneWitnessRows, ...currentRows(aff.rows)]}
         extra={<TableRollLine table={tableLineLabel(def?.label, cur.label, p.title)} />}
@@ -421,7 +439,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       return (
         <RollShell
           title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
-          subtitle={stepSubtitle(stepSubtitleLabel(cur.label, p.title), cur.icon || 'journal/info', { cursor: p.cursor, total: p.participants.length })}
+          subtitle={stepSubtitle(stepSubtitleLabel(cur.label, p.title), cur.icon || 'journal/info', { cursor: p.cursor, total: p.participants.length }, stakeRule)}
           rolled
           /* Le CONCERNÉ (`RevealEntry.subjectId`) porte son portrait EN TÊTE de l'étape : on sait
              toujours à qui la révélation s'applique. Le Coup Critique le rend déjà dans son en-tête
@@ -443,7 +461,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     return (
       <RollShell
         title={p.title}
-        subtitle={stepSubtitle(stepLabel, cur.icon || 'journal/info', { cursor: p.cursor, total: p.participants.length })}
+        subtitle={stepSubtitle(stepLabel, cur.icon || 'journal/info', { cursor: p.cursor, total: p.participants.length }, stakeRule)}
         rolled
         /* La marque « dé fixé » n'a qu'UNE surface : l'étiquette du sélecteur quand il est servi,
            la pastille de rangée sinon (siège voisin, option éteinte). */
@@ -483,7 +501,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     return (
       <RollShell
         title={p.title}
-        subtitle={stepSubtitle(stepSubtitleLabel(cur.label, p.title), cur.icon || 'journal/info', { cursor: p.cursor, total: p.participants.length })}
+        subtitle={stepSubtitle(stepSubtitleLabel(cur.label, p.title), cur.icon || 'journal/info', { cursor: p.cursor, total: p.participants.length }, stakeRule)}
         rolled
         rows={doneWitnessRows}
         postRollExtra={
@@ -548,8 +566,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     return (
       <RollShell
         title={p.title}
-        subtitle={stepSubtitle(stepSubtitleLabel(cur.label, p.title), cur.icon || 'nav/dice', { cursor: p.cursor, total: p.participants.length })}
-        extra={stakeNote ?? undefined}
+        subtitle={stepSubtitle(stepSubtitleLabel(cur.label, p.title), cur.icon || 'nav/dice', { cursor: p.cursor, total: p.participants.length }, stakeRule)}
+        {...stakeProps}
         rolled={ready}
         rows={[...doneWitnessRows, ...rows]}
         actions={batchActions}
@@ -663,8 +681,9 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         cursor: p.participants.slice(0, p.cursor).reduce((n, s) => n + diceOf(s), 0),
         total: totalJets,
         prefix: 'jet ',
-      })}
-      extra={oppHeader || stakeNote ? <>{oppHeader}{stakeNote}</> : undefined}
+      }, stakeRule)}
+      {...stakeProps}
+      extra={oppHeader ?? undefined}
       rolled={rolled}
       /* Rangées : validées FIGÉES (témoins) + rangée de l'adversaire figé (Test opposé, #579) + courante
          interactive (pré-jet en attente, post-jet résolue). La barre de Test étendu appartient à la

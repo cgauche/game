@@ -117,6 +117,17 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     expect(c.diseases!.length).toBe(0);
   });
 
+  /** Le Test différé NOMME le symptôme joué (#1117) : c'est lui qui fait descendre le renvoi de règle
+   *  de l'étape à SA fiche (Codex « Symptômes ») au lieu de l'intro du chapitre des maladies. */
+  it('tickDisease(defer) : chaque Test différé porte le SYMPTÔME joué dans son meta', () => {
+    const c = sick({ diseases: [contractDisease('infection-mineure', seq([]), { incubation: 0, duration: 1 })!] });
+    const specs: { kind: string; meta?: Record<string, unknown> }[] = [];
+    tickDisease(c, MINUTES_PER_DAY, seq([]), 80, (spec) => specs.push(spec));
+    const bySymptom = Object.fromEntries(specs.map((s) => [s.kind, s.meta?.symptomId]));
+    expect(bySymptom.diseaseTick, 'le cycle quotidien nomme SON symptôme').toBe('blesse');
+    expect(bySymptom.diseasePersist, 'la fin de Durée nomme le symptôme Persistant').toBe('persistant');
+  });
+
   it('persistant échec stupéfiant (−6) → Infection du Sang', () => {
     // résistance haute pour réussir le blessé (pas de BP parasite), mais on force l'échec stupéfiant du persistant.
     const c = sick({ diseases: [contractDisease('blessure-purulente', seq([]), { incubation: 0, duration: 1 })!] });

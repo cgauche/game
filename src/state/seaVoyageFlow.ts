@@ -44,7 +44,7 @@ import type { AuthoredEnemy } from './encounterAuthoring';
 import { registerScene } from './store';
 import { openEmbrigadementRecovery } from './embrigadementFlow';
 import { vehicleCombatant } from '../engine/vehicle';
-import { voyageStake, conditionLabel, findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait, diseaseLabel, refLabel } from '../data';
+import { voyageStakeRef, conditionLabel, findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait, diseaseLabel, refLabel } from '../data';
 import { installCost, rollSteamBreakdown, steamBreakdownTriggered, shipSizeOfLength, vesselPropulsion, type SteamBreakdownEntry, type PropulsionKind } from '../engine/shipBuild';
 import { d10, d100, roll as rollDice, type RNG } from '../engine/dice';
 import { rollTest, isDoubleRoll, extendedTestStep, difficultyFromModifier } from '../engine/tests';
@@ -447,16 +447,6 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; mode: Propu
  *  `testTypeId`, un ÉVÉNEMENT peut réutiliser un `testTypeId` sous un AUTRE `kind` (Ouragan → Affaler,
  *  cf. `sea-ouragan-affaler`) pour ne jamais retomber dans la routine auto-résolue (`SEA_ROUTINE_KINDS`
  *  est indexée par `kind`, pas `testTypeId`). */
-/** ENJEU surfaçable d'un Test d'équipage : ce que CE jet-là change dans l'état du jeu — descripteur
- *  d'EFFET du `kind` joué (`voyage-stakes.json`, MÊME primitive que les étapes fluviales/maritimes),
- *  et non la règle-cadre « ce Test peut être remplacé par un Test d'équipage », qui ne dit rien de
- *  l'enjeu et vit désormais en fiche (`crew-test-types.rule`). Un ÉVÉNEMENT réutilisant un `testTypeId`
- *  sous un autre `kind` (Ouragan → Affaler) porte donc SON effet (−2 DR). `undefined` : aucun gabarit
- *  Fail-closed comme partout ailleurs : un `kind` de voyage sans gabarit LÈVE — une étape qui lance
- *  des dés dit ce qu'elle met en jeu. */
-function crewTestStake(kind: string): string {
-  return voyageStake(kind);
-}
 
 function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: { sense?: PairedSense; extraDR?: number; icon?: string } = {}): CascadeStep | null {
   const plan = get().travelPlan;
@@ -505,13 +495,14 @@ function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: {
   // traits + Manque de bras, et son plafond) et l'ID de son prédicat de succès (`crew-test` →
   // `crewTestSuccess`, MDG 14 l.13) : l'agrégat générique ne connaît aucun seuil naval.
   const flatDR = moraleBand(shipMoraleScore(get, ship)).crewTestDR + saboteur + traitDR + navDirDR + (opts.extraDR ?? 0) + undercrew.dr;
-  const stake = crewTestStake(kind); // ce que CE jet change (effet réel), jamais la règle-cadre
-  const stakeRule = testType?.rule ? { category: 'regles' as const, id: testType.rule } : undefined;
+  // ENJEU = ce que CE jet change (effet réel), jamais la règle-cadre « ce Test peut être remplacé par
+  // un Test d'équipage » (MDG 14 l.63), qui ne dit rien de l'enjeu. La FICHE se dérive de la MÊME
+  // entrée au rendu (`resolveStake`) : le flux ne la nomme plus (elle avait deux sources divergentes).
+  const stake = voyageStakeRef(kind);
   return {
     id: kind, kind, label: testType?.label ?? testTypeId, icon: opts.icon ?? 'travel/anchor',
     participants, aggregate: 'summed-dr', interactive: true,
     ...(stake ? { stake } : {}),
-    ...(stakeRule ? { stakeRule } : {}),
     meta: {
       aggregateSuccessRule: CREW_TEST_SUCCESS_RULE,
       ...(flatDR ? { aggregateFlatDR: flatDR } : {}),
@@ -545,7 +536,7 @@ function buildForcePaceStep(get: Get): CascadeStep | null {
     // Soutien fondu par `partyAssisted`) est la base de la CIBLE — sans ce `baseOverride`, la cible se
     // recalculait depuis la carac NUE et les soutiens ne changeaient rien au jet (recette #1117).
     base: best.value, support: best.support, ...effectiveTargetClamped(best.actor, test, diff, best.value), result: null, interactive: true,
-    stake: voyageStake('sea-force-pace', { paceM: sea.forcePace ?? 0 }),
+    stake: voyageStakeRef('sea-force-pace', { paceM: sea.forcePace ?? 0 }),
     meta: { forcePace: sea.forcePace },
   };
 }
@@ -569,8 +560,7 @@ function buildNavProgressionStep(get: Get): CascadeStep | null {
     difficulty: diff,
     base: best.value, support: best.support, ...effectiveTargetClamped(best.actor, test, diff, best.value),
     result: null, interactive: true,
-    stake: voyageStake('sea-progression-nav'),
-    stakeRule: { category: 'regles', id: 'test-equipage-progression' },
+    stake: voyageStakeRef('sea-progression-nav'),
   };
 }
 
@@ -607,7 +597,7 @@ function buildStrandedOrEntangledStep(get: Get, label: string, difficulty: Diffi
     base: force.value, support: force.support, ...effectiveTargetClamped(force.actor, test, difficulty, force.value), result: null, interactive: true,
     // Les deux `kind` de dégagement (échouage / débris) mettent la MÊME chose en jeu : la progression
     // du jour tant que le navire n'est pas dégagé.
-    stake: voyageStake('sea-degagement'),
+    stake: voyageStakeRef('sea-degagement'),
   };
 }
 
@@ -641,7 +631,7 @@ function buildOverspeedStep(get: Get, index: number): CascadeStep | null {
     // SURPLUS de M du jour (`effMToday − M de conception`) : c'est ce qui choisit la bande du tableau
     // (l.121-142). Il se LIT sur l'étape par sa NOTE d'enjeu (`stake`, zone d'accueil de ce que le jet
     // met en jeu) — le libellé d'action reste le NOM de l'action (docs/charte-ui.md).
-    stake: voyageStake('sea-overspeed', { overM: sea.effMToday - baseM, damage: row.damage }),
+    stake: voyageStakeRef('sea-overspeed', { overM: sea.effMToday - baseM, damage: row.damage }),
     result: null, interactive: true, meta: { overspeedDamage: row.damage },
   };
 }
@@ -1273,7 +1263,7 @@ function buildBarrelSteps(get: Get, sea: SeaVoyageState, vessel: CampaignVessel 
         // Z5 : SITUATION en `rollLabel` (Compétence lancée = Résistance) — stock du cliquet, #1109.
         rollLabel: 'Tonneau contaminé', base: testValue(h, 'resistance', 'endurance'),
         target: effectiveTarget(h, test, diff), result: null, interactive: true,
-        stake: voyageStake('sea-tonneau-expose', { disease: diseaseLabel(diseaseId) }), meta: { diseaseId },
+        stake: voyageStakeRef('sea-tonneau-expose', { disease: diseaseLabel(diseaseId) }), meta: { diseaseId },
       });
     }
   } else {
@@ -1287,7 +1277,7 @@ function buildBarrelSteps(get: Get, sea: SeaVoyageState, vessel: CampaignVessel 
         // Z5 : SITUATION en `rollLabel` (Compétence lancée = Résistance) — stock du cliquet, #1109.
         rollLabel: "Tonneau d'eau", base: testValue(h, 'resistance', 'endurance'),
         target: effectiveTarget(h, test, 'intermediaire'), result: null, interactive: true,
-        stake: voyageStake('sea-tonneau-contamine', { disease: diseaseLabel(dz.id) }), meta: { diseaseId: dz.id },
+        stake: voyageStakeRef('sea-tonneau-contamine', { disease: diseaseLabel(dz.id) }), meta: { diseaseId: dz.id },
       });
     }
   }
@@ -1318,7 +1308,7 @@ function buildSeasicknessSteps(get: Get, sea: SeaVoyageState): CascadeStep[] {
         // Z5 : SITUATION en `rollLabel` (Compétence lancée = Résistance) — stock du cliquet, #1109.
         rollLabel: 'Mal de mer', base: testValue(h, 'resistance', 'endurance'),
         target: effectiveTarget(h, test, 'complexe'), result: null, interactive: true,
-        stake: voyageStake('sea-mal-de-mer', { disease: diseaseLabel('mal-de-mer') }),
+        stake: voyageStakeRef('sea-mal-de-mer', { disease: diseaseLabel('mal-de-mer') }),
       });
     }
     if (badWeather) {
@@ -1328,7 +1318,7 @@ function buildSeasicknessSteps(get: Get, sea: SeaVoyageState): CascadeStep[] {
         // Z5 : SITUATION en `rollLabel` (Compétence lancée = Résistance) — stock du cliquet, #1109.
         rollLabel: 'Mal de mer', base: testValue(h, 'resistance', 'endurance'),
         target: effectiveTarget(h, test, 'intermediaire'), result: null, interactive: true,
-        stake: voyageStake('sea-mal-de-mer', { disease: diseaseLabel('mal-de-mer') }),
+        stake: voyageStakeRef('sea-mal-de-mer', { disease: diseaseLabel('mal-de-mer') }),
       });
     }
   }
@@ -1399,7 +1389,7 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
       // (Résistance) — stock nominatif du cliquet `roll-action-label-guard`, #1109.
       label: composeRollLabel(h, 'Scorbut', scurvyTest), difficulty: diff, rollLabel: 'Scorbut',
       base: testValue(h, 'resistance', 'endurance'), target: effectiveTarget(h, scurvyTest, diff),
-      result: null, interactive: true, stake: voyageStake('sea-scorbut', { disease: diseaseLabel('scorbut') }), meta: { soup },
+      result: null, interactive: true, stake: voyageStakeRef('sea-scorbut', { disease: diseaseLabel('scorbut') }), meta: { soup },
     };
   });
   const diseaseSteps: CascadeStep[] = [...buildBarrelSteps(get, sea, vessel0), ...buildSeasicknessSteps(get, sea), ...scurvySteps];
@@ -1483,7 +1473,7 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
           ...(tdef.exposure === 'froid' ? exposureCoatMods(h) : {}),
           target: Math.max(1, Math.min(99, base + DIFFICULTY_MODIFIERS[expDiff])),
           result: null, interactive: true,
-          stake: voyageStake('exposure', { chars: exposureFirstFailChars(tdef.exposure) }),
+          stake: voyageStakeRef('exposure', { chars: exposureFirstFailChars(tdef.exposure) }),
           meta: { kind: tdef.exposure },
         });
       }
@@ -1540,7 +1530,7 @@ export function continueSeaDayAfterExposure(get: Get, set: Set, doneSteps?: Casc
         // (Résistance) — stock nominatif du cliquet `roll-action-label-guard`, #1109.
         label: composeRollLabel(h, 'Épuisement', test), difficulty: diff, rollLabel: 'Épuisement',
         base: testValue(h, 'resistance', 'endurance'), target: effectiveTarget(h, test, diff),
-        result: null, interactive: true, stake: voyageStake('sea-epuisement', { condition: conditionLabel('extenue') }),
+        result: null, interactive: true, stake: voyageStakeRef('sea-epuisement', { condition: conditionLabel('extenue') }),
       }));
       const subiReq: RollRequest = { side: { worldSide: 'world', ownerId: get().vessel!.vehicleId }, actionLabel: 'Épuisement', test: {}, difficulty: 'intermediaire', klass: 'subi' };
       if (resolveSurface(get, subiReq, 'sea-epuisement') === 'I') {

@@ -21,7 +21,7 @@ import {
   type ActivityDef, type TravelActivityResult,
 } from '../engine/activities';
 import type { SkillRef } from '../engine/skills';
-import { refLabel } from '../data';
+import { refLabel, weatherStakeRef } from '../data';
 import { stageEncounterCategory } from '../engine/travelEncounter';
 import { rollEncounter, type EncounterCategory } from '../engine/travelTables';
 import { applyOps, type GameOp } from '../engine/ops';
@@ -266,9 +266,10 @@ export function buildWeatherResistanceSteps(get: Get, weather: Weather): Cascade
     });
   }
   if (!parts.length) return [];
+  const stake = rt.enjeu ? weatherStakeRef(weather) : undefined; // ENJEU = la RÉFÉRENCE de la condition (#1117), résolue au rendu
   return [{ id: 'weather-resistance', kind: 'weatherResistance', icon: 'rest/cold',
     label: `Traversée — ${WEATHER_LABEL[weather]}`, participants: parts, aggregate: 'none', // jets INDÉPENDANTS (#351, cf. l'applier)
-    interactive: true, ...(rt.enjeu ? { stake: rt.enjeu } : {}) }];
+    interactive: true, ...(stake ? { stake } : {}) }];
 }
 
 /** Test de RÉSISTANCE de traversée (l.86/127) : échec → Exténué (op `condition`, patron #338/#340), ligne

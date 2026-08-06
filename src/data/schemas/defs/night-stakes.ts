@@ -17,6 +17,13 @@ export const schema = z.array(
     label: z.string(),
     kind: z.string(),
     stake: z.string(),
+    /** FORME du `stake`, DÉCLARÉE par la donnée (garde `night-stake-form.test.ts`, #1117 L0b) :
+     *  - absente / `'verbatim'` : chaque bloc du `stake` est une sous-chaîne CONTIGUË d'une ligne du
+     *    chapitre cité par `source.note` — recollable tel quel (règle stricte 5) ;
+     *  - `'descripteur'` : descripteur MÉCANIQUE assemblé depuis ce que l'applier fait réellement
+     *    (aucun fragment n'est réputé verbatim). Le verbatim intégral vit dans la fiche `rule`.
+     *  La garde distingue les deux STRUCTURELLEMENT : un assemblage non déclaré échoue. */
+    form: z.enum(['verbatim', 'descripteur']).optional(),
     source: sourceRefSchema,
     /** Fiche de RÈGLE du Codex (`regles.json`) derrière cette étape — la règle est à UN CLIC depuis
      *  l'enjeu (#1117). Même forme que `voyage-stakes.rule`. */
