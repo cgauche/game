@@ -1,7 +1,7 @@
 /**
  * ATELIER — LA SELLERIE IMPÉRIALE de DOS, cuite au gabarit CHEVAL (#1128) : ce que le harnachement
  * montre par l'arrière — le troussequin vert de la selle posé au sommet de la croupe, la croupière
- * de cuir qui en descend vers la queue avec son médaillon doré, et les deux bords arrière du
+ * de cuir qui en descend vers la queue avec ses médaillons dorés, et les deux bords arrière du
  * caparaçon rouge qui dépassent aux flancs. C'est un SET D'ÉQUIPEMENT : il s'ajoute à la bête
  * (canal `deco`), il ne la remplace pas.
  *
@@ -24,7 +24,7 @@
  * Chaque forme tient DANS ces bornes — le troussequin affleure la ligne de dos sans la dépasser.
  *
  * DIRECTION D'ART ÉPURÉE, jugée à 40/64/128 px (arbitrage utilisateur du 2026-08-06) : CINQ formes,
- * trois taches — vert au sommet, rouge aux deux flancs, un seul point d'or sur la sangle de croupe.
+ * trois taches — vert au sommet, rouge aux deux flancs, deux points d'or sur les cuirs de croupe.
  * Aucune nappe à bord visible.
  *
  * JETONS : `@sangle` (selle), `@drap` (caparaçon), `@sellerieCuir` (cuirs), `@accent` (or) — jamais
@@ -49,13 +49,13 @@ function disque(cx: number, cy: number, r: number): string {
     `C${n(cx + r)} ${n(cy + k)} ${n(cx + k)} ${n(cy + r)} ${n(cx)} ${n(cy + r)} ` +
     `C${n(cx - k)} ${n(cy + r)} ${n(cx - r)} ${n(cy + k)} ${n(cx - r)} ${n(cy)} Z`;
 }
-/** Médaillon doré de harnais : disque plein cerclé + rivet central. Un seul, sur la croupière. */
+/** Médaillon doré de harnais : disque plein cerclé + rivet central. Deux, sur la croupière. */
 const medaillon = (cx: number, cy: number, r: number): string =>
   FS(disque(cx, cy, r), '@accent', '@accentO', 0.5) + F(disque(cx, cy, r * 0.36), '@accentO');
 
 // ═════════════════════════════════════════════════════════════════════════════════════════════
 // TRONC — la croupe vue de bout. Ordre du peintre : les bords du caparaçon (les plus bas, aux
-// flancs), puis le troussequin au sommet, puis la croupière qui en descend et son médaillon.
+// flancs), puis le troussequin au sommet, puis la croupière qui en descend et ses médaillons.
 // ═════════════════════════════════════════════════════════════════════════════════════════════
 const TRONC = [
   // ── BORDS ARRIÈRE DU CAPARAÇON : deux amorces rouges ÉTROITES aux flancs, à l'aplomb de la
@@ -74,6 +74,11 @@ const TRONC = [
   //    x∈[47..57] dès y=60 — mesuré au rendu, il n'en restait que le médaillon.
   F('M52.6 54 L55 54.4 L45.4 73.4 L42.4 71.8 Z M58.4 54 L56 54.4 L65.6 73.4 L68.6 71.8 Z', '@sellerieCuir'),
   medaillon(55.5, 57, 2.4),
+  //    Second point d'or, BAS sur le brin gauche (t≈0.80 le long de la sangle, centre du brin
+  //    mesuré à cette hauteur : x∈[44.1..47.7]) : monté, le cavalier assis couvre le haut de la
+  //    croupe et n'en laissait qu'un éclat — celui-ci tombe sous cette zone. Rayon 1.7 (< 2.4 du
+  //    médaillon de jonction) : le brin est plus étroit ici, le clou s'y pose sans l'avaler.
+  medaillon(45.9, 68.9, 1.7),
 ].join('');
 
 export const DESSIN: GroupeDessin[] = [
