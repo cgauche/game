@@ -5,6 +5,7 @@ import { Dice } from './Dice';
 import { Icon } from './Icon';
 import { CodexRef } from './compendium/CodexRef';
 import type { ModProvenance } from '../engine/ruleRefs';
+import type { StakeRef } from '../data';
 import { actorIn } from '../state/combatants';
 import { useGame, type GameState } from '../state/store';
 
@@ -183,6 +184,10 @@ export interface PendingRoll {
   /** Ligne adverse : ne pas afficher base/cible (portrait + compétence + bonus/malus seulement).
    *  Aucun dé n'est encore posé ici : `'value'` et `'roll'` cachent la même chose. */
   mask?: RollMask;
+  /** ENJEU du jet à venir (#1117 L1b) — la RÉFÉRENCE de donnée, jamais un texte (le type l'interdit).
+   *  Porté par l'ENTRÉE de jet pour les surfaces hors `RollShell` (pied d'`ActivityPane`) : la
+   *  coquille de jet, elle, a sa propre prop de premier rang. Absent = la surface ne rend RIEN. */
+  stake?: StakeRef;
 }
 
 export function PendingRollLine({ p }: { p: PendingRoll }) {

@@ -7,14 +7,16 @@ import { CodexRef } from './compendium/CodexRef';
  * reste de la Résilience ET que l'issue est défavorable (`show`).
  *
  * MÊME forme que ses sœurs de pool (Chance, Détermination) : « ressource ×N restants », et le BOUTON
- * est l'affordance de sa RÈGLE (`regles`/`je-ne-faillirai-pas`, pas la caractéristique) — englobé par
- * `CodexRef wrap`, qui rend le texte au survol/focus sans intercepter le clic (#1078).
+ * est l'affordance de sa RÈGLE — englobé par `CodexRef wrap`, qui rend le texte au survol/focus sans
+ * intercepter le clic (#1078). La règle vit sur l'ENTITÉ qui la porte (amendement A, #1117) : la FICHE
+ * est `characteristics/resilience` et son `instance` NOMME la dépense — le popover titre « Je ne
+ * faillirai pas ! » au-dessus de « Résilience », dont la section « Dépenses » porte le verbatim.
  */
 export function ResilienceButton({ resilience, show, onForce }: { resilience: number; show: boolean; onForce: () => void }) {
   if (resilience <= 0 || !show) return null;
   const label = <><Icon id="fire/flame" size="sm" /> Résilience ×{resilience}</>;
   return (
-    <CodexRef category="regles" id="je-ne-faillirai-pas" label="Je ne faillirai pas !" wrap>
+    <CodexRef category="characteristics" id="resilience" label="Résilience" instance="Je ne faillirai pas !" wrap>
       <button
         className="btn btn-resource"
         onClick={onForce}

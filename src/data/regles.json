@@ -200,26 +200,6 @@
     }
   },
   {
-    "id": "je-te-renie",
-    "label": "Je te renie !",
-    "desc": "- **Je te renie ! :** vous pouvez choisir de ne pas développer la mutation obtenue. Et comme vous ne mutez pas, vous ne perdez aucun Point de Corruption. Voir Corruption à la page 182 pour en savoir plus.",
-    "source": {
-      "book": "livre-de-base",
-      "page": 171,
-      "note": "LDB 17 « Dépenser de la Résilience »"
-    }
-  },
-  {
-    "id": "je-ne-faillirai-pas",
-    "label": "Je ne faillirai pas !",
-    "desc": "- **Je ne faillirai pas ! :** au lieu de lancer les dés pour un Test, vous choisissez le résultat, ce qui vous permet de réussir, même dans les pires conditions. Si vous infligez un Coup Critique, vous pouvez choisir la Localisation atteinte, plutôt que de la laisser au hasard. S'il s'agit d'un Test opposé, vous l'emportez avec au moins DR +1. Vous pouvez même faire ce choix après un Test qui a échoué.",
-    "source": {
-      "book": "livre-de-base",
-      "page": 171,
-      "note": "LDB 17 « Dépenser de la Résilience »"
-    }
-  },
-  {
     "id": "avantage",
     "label": "Avantage",
     "desc": "Chaque Avantage ajoute +10 à un Test de Combat ou de Psychologie appropriés (voir **Psychologie** à la page 190). De ce fait, si vous disposez de 5 pions Avantage, vous obtenez un impressionnant +50 à tous les Tests pour toucher, vous défendre, et résister à l'influence des autres.",

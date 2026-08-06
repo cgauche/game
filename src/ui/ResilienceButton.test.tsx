@@ -2,14 +2,15 @@
 /**
  * ResilienceButton — forme de bouton de POOL (#945) : « Résilience ×N restants » + affordance Codex,
  * comme Chance et Détermination. L'affordance ouvre la RÈGLE dépensée, « Je ne faillirai pas ! »
- * (LDB 17 l.68), entrée `regles`/`je-ne-faillirai-pas` — pas la caractéristique Résilience.
+ * (LDB 17 l.68), qui vit sur la Caractéristique `characteristics`/`resilience` — le foyer UNIQUE.
  */
 import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { useGame } from '../state/store';
-import { regles } from '../data';
+import { characteristics, regles } from '../data';
+import { codexLookupById } from './compendium/registry';
 import { ResilienceButton } from './ResilienceButton';
 
 const noop = () => {};
@@ -81,9 +82,10 @@ describe('ResilienceButton — pool, le BOUTON porte sa règle (#945, #1078)', (
     expect(porte, '« Ouvrir la fiche » doit être un contrôle réel').toBeTruthy();
     expect(porte.tagName).toBe('BUTTON');
     expect(document.activeElement).toBe(porte);
-    // 3. L'activer ouvre la fiche de la RÈGLE dépensée (pas la caractéristique Résilience).
+    // 3. L'activer ouvre la fiche de l'ENTITÉ qui PORTE la règle — la Caractéristique et sa section
+    //    « Dépenses » (amendement A #1117 : plus de fiche `regles` doublon), l'`instance` nommant le choix.
     act(() => porte.click());
-    expect(useGame.getState().codexOverlay).toMatchObject({ category: 'regles', id: 'je-ne-faillirai-pas' });
+    expect(useGame.getState().codexOverlay).toMatchObject({ category: 'characteristics', id: 'resilience', instance: 'Je ne faillirai pas !' });
     // …et le popover s'est refermé derrière elle.
     expect(document.querySelector('.codex-pop')).toBeNull();
   });
@@ -98,21 +100,36 @@ describe('ResilienceButton — pool, le BOUTON porte sa règle (#945, #1078)', (
     expect(useGame.getState().codexOverlay).toBeNull();
   });
 
-  it('les DEUX choix de Résilience sont au catalogue, un par entrée, texte VERBATIM du Source', () => {
-    const faillir = regles.find((x) => x.id === 'je-ne-faillirai-pas');
-    const renie = regles.find((x) => x.id === 'je-te-renie');
-    expect(faillir, 'entrée regles/je-ne-faillirai-pas absente').toBeTruthy();
-    expect(renie, 'entrée regles/je-te-renie absente').toBeTruthy();
+  it('les DEUX dépenses de Résilience vivent sur la CARACTÉRISTIQUE, texte VERBATIM du Source', () => {
+    const res = (characteristics as { id: string; options?: { id: string; label: string; desc: string; source: { book: string; page: number } }[] }[])
+      .find((c) => c.id === 'resilience');
+    const faillir = res?.options?.find((o) => o.id === 'je-ne-faillirai-pas');
+    const renie = res?.options?.find((o) => o.id === 'je-te-renie');
+    expect(faillir, 'dépense je-ne-faillirai-pas absente de characteristics/resilience').toBeTruthy();
+    expect(renie, 'dépense je-te-renie absente de characteristics/resilience').toBeTruthy();
     // LDB 17 l.68 — le bullet SEUL, recollable tel quel dans le Source.
     expect(faillir!.desc).toBe(
       "- **Je ne faillirai pas ! :** au lieu de lancer les dés pour un Test, vous choisissez le résultat, ce qui vous permet de réussir, même dans les pires conditions. Si vous infligez un Coup Critique, vous pouvez choisir la Localisation atteinte, plutôt que de la laisser au hasard. S'il s'agit d'un Test opposé, vous l'emportez avec au moins DR +1. Vous pouvez même faire ce choix après un Test qui a échoué.",
     );
-    // LDB 17 l.67 — l'autre choix, sa PROPRE entrée (`resolveRenounce` le joue).
+    // LDB 17 l.67 — l'autre dépense (`resolveRenounce` la joue).
     expect(renie!.desc).toBe(
       '- **Je te renie ! :** vous pouvez choisir de ne pas développer la mutation obtenue. Et comme vous ne mutez pas, vous ne perdez aucun Point de Corruption. Voir Corruption à la page 182 pour en savoir plus.',
     );
-    for (const r of [faillir!, renie!]) {
-      expect(r.source).toMatchObject({ book: 'livre-de-base', page: 171 });
+    for (const o of [faillir!, renie!]) {
+      expect(o.source).toMatchObject({ book: 'livre-de-base', page: 171 });
     }
+  });
+
+  it('les fiches `regles` DOUBLONS sont MORTES — un seul foyer par règle (amendement A)', () => {
+    const doublons = regles.filter((r) => r.id === 'je-ne-faillirai-pas' || r.id === 'je-te-renie').map((r) => r.id);
+    expect(doublons, 'entrée regles/* réintroduite : deux foyers pour le même texte').toEqual([]);
+  });
+
+  it('la fiche Résilience rend SA section « Dépenses », une sous-tête par choix', () => {
+    const fiche = codexLookupById('characteristics', 'resilience');
+    const sec = fiche?.sections?.find((s) => s.title === 'Dépenses');
+    expect(sec, 'section « Dépenses » absente de la fiche Résilience').toBeTruthy();
+    expect(sec!.rows.filter((r) => r.t === 'sub').map((r) => (r as { label: string }).label))
+      .toEqual(['Je ne faillirai pas !', 'Je te renie !']);
   });
 });

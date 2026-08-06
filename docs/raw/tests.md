@@ -227,7 +227,7 @@ Quand **plusieurs facteurs** affectent un même test, on **somme** leurs modific
 
 **Voir aussi** : [Difficulté — table complète](#difficulté--table-complète), [Modificateurs de test](#modificateurs-de-test), [Extensions de Difficulté (EDO)](#extensions-de-difficulté--presque-impossible-et-impossible-edo)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 14` (l.91-96) → `viser-une-localisation`, `viser`, `tirer-dans-le-tas`, `useAttackJetProps`, `tir-en-mouvement`, `W`, `taille-cible-au-tir`, `isFlankOrRear`, `superiorite-numerique`, `attaque-de-flanc-ou-de-dos`, +8 — `src/data/regles.json`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatGeometry.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, +2 fichiers
+- `LDB 14` (l.91-96) → `viser-une-localisation`, `viser`, `tirer-dans-le-tas`, `useAttackJetProps`, `tir-en-mouvement`, `W`, `taille-cible-au-tir`, `superiorite-numerique`, `attaque-de-flanc-ou-de-dos`, `isFlankOrRear`, +8 — `src/data/regles.json`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatGeometry.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, +2 fichiers
 
 ---
 
@@ -497,7 +497,7 @@ En dépensant un Point de Résilience, un personnage peut choisir *lui-même* le
 
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé), [Tests opposés](#tests-opposés), Destin et Résilience (domaine propre)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.17-28, l.40-44, l.46-48, l.64-71) → `canReroll`, `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `hasMeaningfulOption`, +95 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, +50 fichiers
+- `LDB 17` (l.17-28, l.40-44, l.46-48, l.64-71) → `canReroll`, `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `hasMeaningfulOption`, +95 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, +50 fichiers
 
 ---
 

@@ -5,6 +5,7 @@ import { Icon } from './Icon';
 import { Band } from './Band';
 import type { NightEntry } from '../state/restFlow';
 import { resultLine, freeCons } from '../state/rollSeam';
+import { StakeNote, StakeRule, stakeRuleOf } from './StakeNote';
 
 /**
  * PROCÈS-VERBAL (brique multi-jets) : globalise en UN écran une CASCADE de jets de ROUTINE résolus en
@@ -25,6 +26,9 @@ export function MultiRollList({ entries }: { entries: NightEntry[] }) {
     if (last && last.group != null && last.group === e.group) last.items.push(e);
     else groups.push({ group: e.group, items: [e] });
   }
+  // L'ENJEU d'une rubrique est celui de l'ÉTAPE, pas de chaque contributeur : il se rend UNE fois par
+  // bande (la première ligne qui en porte un fait foi), jamais répété par rangée.
+  const stakeOf = (items: NightEntry[]) => items.find((x) => x.stake)?.stake;
   const row = (e: NightEntry, i: number) => {
     const actor = e.actorId ? party.find((h) => h.id === e.actorId) : undefined;
     return (
@@ -42,9 +46,15 @@ export function MultiRollList({ entries }: { entries: NightEntry[] }) {
   };
   return (
     <div className="mrl">
-      {groups.map((g, gi) => (g.group
-        ? <Band key={`g-${gi}`} title={g.group}>{g.items.map(row)}</Band>
-        : <div key={`g-${gi}`}>{g.items.map(row)}</div>))}
+      {groups.map((g, gi) => {
+        const stake = stakeOf(g.items);
+        const body = <>{stake && <StakeNote stake={stake} />}{g.items.map(row)}</>;
+        return g.group
+          // Le RENVOI de règle est accolé au titre de la bande (même affordance que le titre d'étape
+          // d'une cascade), l'enjeu se lit dessous — une seule fois pour toute la rubrique.
+          ? <Band key={`g-${gi}`} title={<>{g.group} <StakeRule rule={stake ? stakeRuleOf(stake) : undefined} label={g.group} /></>}>{body}</Band>
+          : <div key={`g-${gi}`}>{body}</div>;
+      })}
     </div>
   );
 }

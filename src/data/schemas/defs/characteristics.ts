@@ -29,6 +29,20 @@ export const schema = z.array(
     type: z.enum(['roll', 'wounds', 'extra', 'mv', 'points', '']),
     desc: z.string(),
     source: sourceRefSchema,
+    /** DÉPENSES offertes par une ressource (Résilience : « Je ne faillirai pas ! » / « Je te renie ! » ;
+     *  demain le Destin et ses deux sauvetages) — amendement A de #1117 : la règle vit sur l'ENTITÉ qui
+     *  la porte, `regles.json` ne garde que les règles de CADRE. `desc` est un VERBATIM (règle 5).
+     *  Rendue en SECTION de la fiche par `registry.ts` (patron `symptoms.onTick`). */
+    options: z
+      .array(
+        z.strictObject({
+          id: z.string(),
+          label: z.string(),
+          desc: z.string(),
+          source: sourceRefSchema,
+        }),
+      )
+      .optional(),
   }),
 );
 

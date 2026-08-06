@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Icon } from './Icon';
 import { Prose } from './Prose';
 import { PendingRollLine, type PendingRoll } from './RollLine';
+import { StakeNote } from './StakeNote';
 
 /**
  * Gabarit UNIQUE d'un panneau d'Activité/Service (#371) : en-tête (icône du registre + titre),
@@ -39,6 +40,9 @@ export function ActivityPane({ icon, title, desc, blocked, prejet, cost, note, a
       {hasFoot && (
         <footer className="activity-pane-foot">
           <div className="activity-pane-terms">
+            {/* Z3b : l'enjeu vient de l'ENTRÉE de jet (`PendingRoll.stake`) — rien à rendre tant
+                qu'aucune donnée ne le porte (jamais de zone muette). */}
+            {prejet?.stake && <StakeNote stake={prejet.stake} />}
             {prejet && <PendingRollLine p={prejet} />}
             {(cost != null || note != null) && (
               <p className="activity-pane-detail">

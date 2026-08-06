@@ -353,6 +353,14 @@ export function weatherStakeRef(weatherId: string): StakeRef {
  *  vraies autorités sont confrontables : `state/flow-stake-coverage.test.ts` croise l'union de phase de
  *  CHAQUE pending câblé (`Record<union, true>` → `tsc` rouge si l'union s'élargit) et la donnée éditable
  *  (`etats.recover`, dans les deux sens) avec ce dataset. Le throw ci-dessous reste le SECOND rideau. */
+/** L'id de jet `{flow, phase}` a-t-il son entrée d'enjeu ? PRÉDICAT de la MÊME porte que
+ *  `flowStakeRef` (aucune seconde résolution) — pour les surfaces qui listent des jets dont SEULS
+ *  CERTAINS sont authorés (le menu d'infirmerie : ses actes de Guérison le sont, la rééducation non).
+ *  Elles n'ont ainsi ni à connaître le stock, ni à rattraper un throw. */
+export function hasFlowStake(flow: string, phase: string): boolean {
+  return !!stakeEntry({ dataset: 'flow', kind: flowKind(flow, phase) });
+}
+
 export function flowStakeRef(
   flow: string,
   phase: string,

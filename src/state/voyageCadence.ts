@@ -12,6 +12,7 @@
 import type { NightEntry } from './restFlow';
 import type { RollBreakdown } from '../engine/combat';
 import type { CascadeStep } from './pendings';
+import type { StakeRef } from '../data';
 
 /** COMMANDÉE : les Tests d'équipage de ROUTINE s'auto-résolvent (leurs lignes au PV) ; seules les
  *  décisions interrompent. JOUR-PAR-JOUR : chaque jet ouvre sa modale (cadence manuelle historique). */
@@ -73,6 +74,9 @@ export function voyageDayEntry(opts: {
   tone?: NightEntry['tone'];
   /** Rubrique commune des lignes d'une même étape (rendue en UNE bande par `MultiRollList`). */
   group?: string;
+  /** ENJEU de l'ÉTAPE dont la ligne est issue (`CascadeStep.stake`) — recopié TEL QUEL, jamais
+   *  reconstruit : le PV dit ce que le jet mettait en jeu, sans que l'auteur du PV l'écrive. */
+  stake?: StakeRef;
 }): NightEntry {
-  return { id: opts.id, actorId: opts.actorId, label: opts.label, icon: opts.icon, d: opts.d, text: opts.text, tone: opts.tone, group: opts.group };
+  return { id: opts.id, actorId: opts.actorId, label: opts.label, icon: opts.icon, d: opts.d, text: opts.text, tone: opts.tone, group: opts.group, ...(opts.stake ? { stake: opts.stake } : {}) };
 }

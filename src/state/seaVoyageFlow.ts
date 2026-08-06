@@ -820,6 +820,8 @@ function dayEntriesFromStep(get: Get, step: CascadeStep): NightEntry[] {
     return [voyageDayEntry({
       id: `sea-${step.kind}-${get().travelPlan?.sea?.daysAtSea ?? 0}-${part.id}-${i}`,
       actorId: part.id, icon: 'travel/anchor', group: step.label,
+      // L'ENJEU est celui de l'ÉTAPE (#1117 L1b) : recopié tel quel, rendu UNE fois par bande.
+      ...(step.stake ? { stake: step.stake } : {}),
       label: `${(part.roleId ? findCrewRoleById(part.roleId)?.label : undefined) ?? part.label ?? actor.label}${part.essential ? ' ★' : ''}`,
       // Z5 : la ligne NOMME la COMPÉTENCE lancée (couture id→label du catalogue) ; le RÔLE tenu est
       // la provenance, porté par le libellé d'entrée. La Difficulté posée à la construction voyage

@@ -574,7 +574,7 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 
 **Voir aussi** : `destin.md` (Détermination)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.59) → `ResilienceButton`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, `ForcedResolve`, +68 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, +37 fichiers
+- `LDB 17` (l.59) → `ResilienceButton`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, `ForcedResolve`, +68 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, +37 fichiers
 
 ---
 
@@ -611,9 +611,9 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.1053) → `fearImmuneVs`, `CombatFeature`, `robuste`, `vampires`, `saut-carpe`, `voies-fluviales`, `soldats`, `seconde-vue`, `seigneur-de-guerre`, `vue` — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
-- `LDB 17` (l.59) → `ResilienceButton`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, `ForcedResolve`, +68 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, +37 fichiers
+- `LDB 17` (l.59) → `ResilienceButton`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, `ForcedResolve`, +68 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, +37 fichiers
 - `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `peur`, `terreur`, `animosite`, `recoveryTarget`, `openScriptedPsych`, +56 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +29 fichiers
-- `LDB 85` (l.178-179, l.382-383) → `cannotStopOn`, `Formula`, `EnemyTurnInput`, `displaceSmaller`, `Condition`, `MoveEnv`, `availableAttacks`, `engagedAdvantageGap`, `taille-modificateurs-en-combat`, `knowsCastingSkill`, +54 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, +9 fichiers
+- `LDB 85` (l.178-179, l.382-383) → `cannotStopOn`, `Formula`, `EnemyTurnInput`, `displaceSmaller`, `Condition`, `MoveEnv`, `availableAttacks`, `taille-modificateurs-en-combat`, `engagedAdvantageGap`, `knowsCastingSkill`, +54 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, +9 fichiers
 
 ---
 

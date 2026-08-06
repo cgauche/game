@@ -1319,11 +1319,23 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'characteristics', label: 'Caractéristiques', group: 'Personnage',
-    build: () => (characteristics as { id: string; label: string; abr?: string; type?: string; desc?: string; source?: CodexSource }[]).map((c) => ({
+    build: () => (characteristics as { id: string; label: string; abr?: string; type?: string; desc?: string; source?: CodexSource; options?: { id: string; label: string; desc: string }[] }[]).map((c) => ({
       id: c.id, label: c.label, sub: c.abr, desc: c.desc, source: src(c.source),
       // Bonus de Caractéristique = chiffre des dizaines (LDB 03) — rappel sur les caracs à jet (d100).
       meta: c.type === 'roll' ? facts(fact('Bonus', 'chiffre des dizaines')) : undefined,
-      sections: sections(...reverseSections('characteristics', c.id)),
+      sections: sections(
+        // DÉPENSES de la ressource (Résilience : ses deux choix) — la règle vit sur l'ENTITÉ qui la
+        // porte (amendement A, #1117) ; `regles.json` ne garde que les règles de CADRE. Même forme
+        // qu'une section dérivée d'un champ de donnée (`symptoms.onTick`) : un sous-en-tête par
+        // option, son verbatim dessous.
+        c.options?.length
+          ? {
+            title: 'Dépenses', layout: 'list' as const,
+            rows: c.options.flatMap((o) => [{ t: 'sub', label: o.label } as CodexRow, { t: 'text', text: o.desc } as CodexRow]),
+          }
+          : null,
+        ...reverseSections('characteristics', c.id),
+      ),
     })),
   },
   {

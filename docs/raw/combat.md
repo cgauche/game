@@ -212,7 +212,7 @@ L'État *Surpris* signifie : « Vous avez été pris au dépourvu et vous n'ête
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.21, l.48-59, l.62-65, l.67-69, l.71) → `initiativeTitle`, `rollInitiative`, `secondsPerRound`, `resolveSpell`, `OPTIONAL_RULES`, `pickDoctrine`, `applySurprise`, `EncounterDef`, `initiativeOrder`, `createCombatSlice`, +2 — `src/engine/combat.ts`, `src/engine/policy.ts`, `src/engine/suffocation.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSetup.ts`, +5 fichiers
 - `LDB 16` (l.132-139) → `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `endOfRound`, `hemorragique`, `chooseEnemyAction`, `inconscient`, +5 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
-- `LDB 17` (l.61) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, +72 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, +39 fichiers
+- `LDB 17` (l.61) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, +72 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, +39 fichiers
 - sans code : `NADJ 5` (l.117), `NADJ 6` (l.148)
 
 ---

@@ -46,7 +46,7 @@ import type { CascadeStep, CascadeStepMeta } from './pendings';
 import { isRation, feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
 import { toBrass, fromBrass, formatMoney, priceToMoney, type Money } from '../engine/money';
 import { payFromGroup } from './bourseFlow';
-import { findTrappingById, nightStakeRef } from '../data';
+import { findTrappingById, nightStakeRef, type StakeRef } from '../data';
 import { isNightTestKind } from '../engine/types';
 import { minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { runDailyUpkeep, dayIndex } from './upkeep';
@@ -99,6 +99,10 @@ export interface NightEntry {
   reKind?: 'recovery' | 'nightmare';
   /** Relance de Chance déjà consommée sur CETTE ligne (LDB 12 l.40 : une relance max par Test). */
   rerolled?: boolean;
+  /** ENJEU du jet consigné (#1117 L1b) — la RÉFÉRENCE de donnée, jamais un texte : l'entrée de PV
+   *  porte ce que l'ÉTAPE mettait en jeu (`CascadeStep.stake`, recopié à l'émission). Rendu UNE fois
+   *  par rubrique (`group`) par `MultiRollList` — l'enjeu est celui de l'étape, pas de chaque ligne. */
+  stake?: StakeRef;
 }
 
 export interface PendingRest extends PendingBase {

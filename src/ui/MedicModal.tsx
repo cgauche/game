@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { useGame } from '../state/store';
-import { flowStakeRef } from '../data';
+import { flowStakeRef, hasFlowStake } from '../data';
+import { stakeRuleOf } from './StakeNote';
+import { CodexRef } from './compendium/CodexRef';
 import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
 import { TeamPortrait } from './TeamPortrait';
@@ -241,7 +243,13 @@ export function MedicModal() {
               const meta = ACT_META[a];
               const stacks = a === 'bleed' ? (patient.conditions ?? []).find((c) => c.id === 'hemorragique')?.value ?? 0
                 : a === 'ammo' ? lodgedAmmoCount(patient) : 0;
-              return (
+              // L'acte est SA propre porte de règle (#1078) : le bouton s'englobe dans `CodexRef wrap`,
+              // dont la cible est le FOYER de l'enjeu de CE jet (`heal/<mode>`, flow-stakes) et l'`instance`
+              // le nom de l'acte. Les actes SANS enjeu authoré (la rééducation) n'en reçoivent aucune —
+              // jamais une porte morte.
+              const stake = hasFlowStake('heal', a) ? flowStakeRef('heal', a) : undefined;
+              const rule = stake ? stakeRuleOf(stake) : undefined;
+              const bouton = (
                 <button
                   key={a}
                   className="btn medic-act"
@@ -255,6 +263,9 @@ export function MedicModal() {
                   {healer && <TeamPortrait combatant={healer} size={20} />}
                 </button>
               );
+              return rule
+                ? <CodexRef key={a} category={rule.category} id={rule.id} label={meta.label} instance={meta.label} wrap>{bouton}</CodexRef>
+                : bouton;
             })}
           </div>
         </div>
