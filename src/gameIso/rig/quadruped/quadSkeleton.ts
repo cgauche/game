@@ -90,8 +90,13 @@ export interface QuadProps {
    * d'os et COMPILÉE dans le repère local de chaque os par `scripts/rig/compile-dessin-quad.mts`
    * (coordonnées cuites, aucun repère propre). Ce canal tient, pour les os qu'il déclare et pour
    * cette vue SEULEMENT, l'art que le socle aurait composé — le plan du calque de l'os (carrure
-   * `sousTronc`) est CONSERVÉ. Les vues non déclarées se composent au socle.
-   * Population : `boeuf`, vue `profile` (l'étalon). Le rendu (`composeQuad`) n'en sait rien.
+   * `sousTronc`) est CONSERVÉ. Le rendu (`composeQuad`) n'en sait rien.
+   *
+   * CE N'EST PAS le contrat d'art orienté `rig/viewArt.ts` : aucun `foldView` ici — une vue absente
+   * ne REPLIE sur rien, elle se compose au socle (`quadParts`), part par part. C'est LE modèle de
+   * dessin des BÊTES (plans non équipables — #1082), pas une option parmi d'autres : l'assemblage
+   * par pièces reste aux bipèdes équipables et aux éléments attachés (`deco`).
+   * Population à ce jour : `boeuf`, vue `profile` (l'étalon).
    */
   viewArt?: Partial<Record<View, Partial<Record<QuadBoneId, string>>>>;
   /** Tangage ADDITIF de l'os tête en PROFIL (deg, négatif = museau levé). Par défaut l'os tête

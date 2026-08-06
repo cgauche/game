@@ -25,6 +25,20 @@ Pour les non-bipèdes : copier le def existant le plus proche (`Basilic`, `Araig
 `Squig`, `Fantome`…) et ajuster les props — ils sont auto-documentés dans
 `src/gameIso/rig/<plan>/compose*.ts`.
 
+### Une BÊTE se dessine ENTIÈRE, par vue
+
+Les bêtes (plans non équipables) ne s'assemblent pas pièce à pièce : chaque vue est authorée
+comme UNE illustration continue, en coordonnées monde, dans
+`src/gameIso/rig/quadruped/atelier/<espèce>-<vue>.dessin.mts` (étalon : `boeuf-profil`), puis
+compilée par os — coordonnées cuites dans le repère local de chaque os — par
+`scripts/rig/compile-dessin-quad.mts` (`--check` en porte de commit). La sortie alimente le canal
+`QuadProps.viewArt` ; une vue non déclarée se compose au socle, comme avant. Arbitrage utilisateur
+du 2026-08-06 (validation de l'étalon bovin — verbatim consigné au ticket #1082). L'assemblage par pièces reste aux **bipèdes équipables** (qui doivent recevoir
+tenue et armes) et aux **éléments attachés** (`deco` : harnais, collier, fanon…).
+
+**Direction d'art** : épuré, jugé à 40 / 64 / 128 px — la silhouette et deux ou trois masses
+lisibles priment sur le détail qui disparaît à la première réduction.
+
 ## 2. Bipède — l'empilement d'apparence
 
 ```

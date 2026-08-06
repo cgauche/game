@@ -130,6 +130,14 @@ Chaque type de navire a son ART DE COQUE dédié (`rig/ship/defs/<id>.ts`, regis
 boîte à outils `rig/ship/artkit.ts` : voiles carrées/latines/jonque, avirons, châteaux, pavois — proue à
 DROITE, quille à y=0) ; un id sans def retombe sur la silhouette procédurale par gréement (`hull.rig`)
 de `composeShip` — couverture déclarée, visible dans la galerie.
+
+Les **BÊTES** (plans non équipables) sont HORS de ce contrat : elles ne se replient pas de vue en
+vue, elles se dessinent ENTIÈRES par vue — une illustration continue en coordonnées monde
+(`src/gameIso/rig/quadruped/atelier/<espèce>-<vue>.dessin.mts`), compilée par os dans le repère
+local de chacun par `scripts/rig/compile-dessin-quad.mts` (`--check` en porte de commit), servie au
+rendu par le canal `QuadProps.viewArt` (aucun `foldView` : une vue non déclarée se compose au
+socle). Arbitrage utilisateur du 2026-08-06 (verbatim consigné au ticket #1082). L'assemblage par pièces reste aux bipèdes
+équipables et aux éléments attachés (`deco`). Direction d'art : épuré, jugé à 40 / 64 / 128 px.
 - **un TYPE d'élément** (au-delà de floor/wall/roof/prop/token) : ajouter le variant à `SceneEl`
   (`builders/types.ts`, discriminé par `kind`) + un builder + le rendu dans CHAQUE backend (affine ET
   POV) + sa profondeur de tri propre (chaque backend calcule la sienne, cf. `floorDepth`/`wallDepth`/…).

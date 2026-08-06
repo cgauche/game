@@ -132,10 +132,13 @@ export const DECOS_MORTS_GELES = [
 export const PLAFOND_DECOS_MORTS = DECOS_MORTS_GELES.length;
 
 /**
- * Population GELÉE (mesurée le 2026-08-05, amendée le 2026-08-06) : les 77 couples APPLICABLES,
- * dénominateur du stock des morts. Un couple ne quitte cette liste que par un art émis (solde
- * réel) — ou, nommément, par la preuve qu'il ne peignait RIEN : `boeuf back/front encolure` en
- * sont sortis le 2026-08-06 sur la mesure du témoin (cf. `DECOS_MORTS_GELES` ci-dessus).
+ * Population GELÉE (mesurée le 2026-08-05, re-mesurée le 2026-08-06) : les 72 couples APPLICABLES,
+ * dénominateur du stock des morts. Un couple ne quitte cette liste que par un art émis (solde réel)
+ * — ou, nommément, par la preuve qu'il ne peignait RIEN. Sorties du 2026-08-06 : `boeuf back/front
+ * encolure` sur la mesure du témoin (cf. `DECOS_MORTS_GELES` ci-dessus) ; puis les cinq clés `deco`
+ * bovines qui n'existent plus dans la def — `tete#back`, `tete#front` (l'art de tête est une part,
+ * `quadruped/heads/defs/boeuf.ts`), `encolure`, `tete#profile`, `tronc#profile` (le PROFIL bovin est
+ * un dessin entier compilé par os, `viewArt`). Restent les deux calques de modelé de bout.
  */
 export const APPLICABLES_GELES = [
   'blaireau back tete#back',
@@ -143,13 +146,8 @@ export const APPLICABLES_GELES = [
   'blaireau front tronc#front',
   'blaireau profile tete#profile',
   'blaireau profile tronc#profile',
-  'boeuf back tete#back',
   'boeuf back tronc#back',
-  'boeuf front tete#front',
   'boeuf front tronc#front',
-  'boeuf profile encolure',
-  'boeuf profile tete#profile',
-  'boeuf profile tronc#profile',
   'cheval back encolure',
   'cheval back tete',
   'cheval front encolure',

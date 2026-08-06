@@ -16,8 +16,9 @@
  * `REPERES_ART_PROPRES_GELES` interdit qu'une part s'enveloppe dans son propre repère).
  * Les matrices M viennent du SQUELETTE RÉEL en pose de REPOS (`buildQuadSkeleton` →
  * `quadSkeletonForView` → `groundQuad` → `worldTransformsG`), l'échelle S de `quadBoneScale` —
- * jamais d'un littéral recopié. La POSE de référence est `stance` de l'espèce + `QUAD_REST`,
- * exactement ce que `resolveQuadFromProps` compose : la bête que l'artiste a sous les yeux.
+ * jamais d'un littéral recopié. La POSE de référence se compose par la MÊME expression que le rendu
+ * (`resolveQuadFromProps` : `QUAD_REST` ADDITIONNÉ au `stance` de l'espèce, en PROFIL seulement —
+ * les vues de bout refigent leurs angles) : la bête que l'artiste a sous les yeux.
  *
  * Une largeur de trait est mise à l'échelle par √|det T| : le trait garde au monde l'épaisseur que
  * l'artiste a vue. Sous une échelle NON UNIFORME (carrure 1,2 en y du tronc bovin) c'est une
@@ -104,7 +105,12 @@ async function compile(fichier: string): Promise<{ dest: string; texte: string; 
   const p = especes[espece];
   if (!p) throw new Error(`${nom} : espèce inconnue du registre « ${espece} »`);
 
-  const pose: Record<string, number> = { ...((p.stance as object) ?? {}), ...QUAD_REST };
+  let pose: Record<string, number> = QUAD_REST as Record<string, number>;
+  if (p.stance && vue === 'profile') {
+    const merged: Record<string, number> = { ...(p.stance as Record<string, number>) };
+    for (const [id, d] of Object.entries(pose)) merged[id] = (merged[id] ?? 0) + (d ?? 0);
+    pose = merged;
+  }
   const sk = groundQuad(quadSkeletonForView(buildQuadSkeleton(p), vue), pose);
   const world = worldTransformsG(sk, pose) as Record<string, Mat>;
   const { DESSIN } = await import(`${pathToFileURL(fichier)}`) as { DESSIN: GroupeDessin[] };
