@@ -1,9 +1,8 @@
 /**
  * Table des PLANS de profondeur (z) du gabarit QUADRUPÈDE : un z par OS et par VUE, en données
  * nommées. SOURCE UNIQUE — consommée par le squelette (`buildQuadSkeleton` en profil,
- * `quadSkeletonForView` de face/dos) ET par le couple monté (`mountedRig` : cavalier et
- * harnachement s'intercalent dans la MÊME échelle). Aucun littéral de z ne vit ailleurs
- * (garde `quad-vues-ratchet.test.ts`).
+ * `quadSkeletonForView` de face/dos) ET par le couple monté (`mountedRig` : le cavalier s'intercale
+ * dans la MÊME échelle). Aucun littéral de z ne vit ailleurs (garde `quad-vues-ratchet.test.ts`).
  *
  * Échelle (croissant = plus près de l'œil). En PROFIL : pattes lointaines 1 · aile lointaine 2 ·
  * queue 3 · croupe 4 · tronc 5 · encolure et aile proche 6 · tête 7 · pattes proches 9.
@@ -97,10 +96,3 @@ export const QUAD_RIDER_Z: Record<View, QuadRiderZ> = {
     jambeLointaine: QUAD_Z.tronc.back - 0.5,
   },
 };
-
-/** Plans du HARNACHEMENT, par vue : la selle juste au-dessus du barillet, les rênes juste
- *  au-dessus de l'encolure (elles ne sont posées qu'en profil). */
-export const quadTackZ = (view: View) => ({
-  selle: QUAD_Z.tronc[view] + 0.5,
-  renes: QUAD_Z.encolure[view] + 0.7,
-});

@@ -120,6 +120,7 @@ export const EXEMPT_DATASETS = {
   'names.json': "liste de PRÉNOMS d'authoring par race — pas une mécanique mesurable, aucune règle à sourcer.",
   'sizes.json': 'un seul champ `rangedMod` (barème de modificateur par Taille) — vocabulaire structurel, pas une entrée narrative sourçable individuellement.',
   'speciesRace.json': "table de résolution race→défauts d'authoring (`_doc`/`default`/`rules`), pas une donnée RAW.",
+  'renduMonte.json': "réglage MAISON du RENDU monté (id du set d'équipement servi par défaut à une monture portée) — inférence d'atelier #1128, pas une table RAW : les Possessions de carrière donnent la monture « avec selle et harnais » (LDB 08 l.557, ADE I 07 l.48), aucune règle n'attache la sellerie au fait d'être monté.",
   'groups.json': "vocabulaire app-interne de GROUPES de créatures (tags de regroupement/rencontre), pas une notion RAW nommée.",
   'props.json': "catalogue de props de décor (rendu iso), pas une donnée RAW.",
   'reliefMaterials.json': 'catalogue de matériaux de relief (rendu iso), pas une donnée RAW.',

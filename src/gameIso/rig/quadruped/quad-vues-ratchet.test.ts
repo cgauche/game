@@ -31,10 +31,12 @@ import {
   quadDecoCouples, APPLICABLES_GELES, PLAFOND_DECOS_MORTS,
   DECOS_SANS_PLAN_GELES, PLAFOND_DECOS_SANS_PLAN, quadLayersSvg,
 } from './deco-stock.fixture';
-import { resolveQuadFromProps } from './composeQuad';
+import { resolveQuad, resolveQuadFromProps } from './composeQuad';
 import { buildQuadSkeleton, quadSkeletonForView, type QuadBoneId, type QuadProps } from './quadSkeleton';
 import { quadParts, quadDecoFragments, quadAnchor } from './quadParts';
-import { riderZForQuad, mountTackBones } from '../mountedRig';
+import { QUAD_HARNAIS, DEFAUT_HARNAIS_MONTE } from './harnais';
+import { QUAD_REST } from './quadPose';
+import { riderZForQuad } from '../mountedRig';
 import { rigFxGradients } from '../fxGradients';
 import type { ResolvedBone } from '../composeRig';
 import type { View } from '../facing';
@@ -350,13 +352,33 @@ describe('les plans de profondeur ne vivent QUE dans QUAD_Z (#1082)', () => {
     for (const jambe of ['cuisseG', 'cuisseD']) expect(face(bone(jambe, 0))).toBeLessThan(QUAD_Z.tronc.front);
   });
 
-  it('le harnachement s\'intercale juste au-dessus du barillet, dans les 3 vues', () => {
-    for (const view of VIEWS) {
-      const monture = [bone('tronc', QUAD_Z.tronc[view]), bone('tete', QUAD_Z.tete[view])];
-      const tack = mountTackBones(monture, view);
-      expect(tack.find((b) => b.id === 'selle')?.z, `selle ${view}`).toBe(QUAD_Z.tronc[view] + 0.5);
-      if (view === 'profile') expect(tack.find((b) => b.id === 'renes')?.z).toBe(QUAD_Z.encolure.profile + 0.7);
+  // Ce que tient cette garde : le HARNACHEMENT est la déco d'un SET servi par la donnée. Tout
+  // fragment du set arrive au canal déco de l'os qu'il chevauche, DANS LES TROIS VUES — à `plan`
+  // dans le voisinage admis (aucun plan nouveau ouvert), et peint APRÈS l'art de la bête.
+  it('le harnachement du set entre dans le PLAN de l\'os qu\'il chevauche, par-dessus la robe, DANS LES TROIS VUES', () => {
+    const deco = QUAD_HARNAIS[DEFAUT_HARNAIS_MONTE].deco;
+    const nu = (vue: View) => resolveQuad('cheval', vue, QUAD_REST, undefined, 'folded');
+    const selle = (vue: View) => resolveQuad('cheval', vue, QUAD_REST, undefined, 'folded', undefined, DEFAUT_HARNAIS_MONTE);
+    expect(Object.keys(deco).length, 'set sans déco : la mesure serait vide').toBeGreaterThan(0);
+    const vuesCouvertes = new Set<View>();
+    for (const [cle, val] of Object.entries(deco)) {
+      const [os, vue] = cle.split('#') as [QuadBoneId, View | undefined];
+      const fragments = quadDecoFragments(val!);
+      for (const f of fragments) expect(Math.abs(f.plan ?? 0), `${cle} : plan hors voisinage`).toBeLessThanOrEqual(QUAD_DECO_PLAN_MAX);
+      const v: View = vue ?? 'profile';
+      vuesCouvertes.add(v);
+      const avant = nu(v).filter((b) => b.id === os), apres = selle(v).filter((b) => b.id === os);
+      expect(apres.map((b) => b.z), `${cle} : le set n'ouvre aucun plan nouveau`).toEqual(avant.map((b) => b.z));
+      const plan0 = (bs: ResolvedBone[]) => bs.find((b) => b.z === QUAD_Z[os][v])!;
+      const ajout = plan0(apres).parts.length - plan0(avant).parts.length;
+      expect(ajout, `${cle} : les fragments du set n'arrivent pas au rendu`).toBe(fragments.length);
+      // APRÈS l'art de la bête : les calques d'origine restent en tête, le harnais ferme la pile.
+      expect(plan0(apres).parts.slice(0, plan0(avant).parts.length)).toEqual(plan0(avant).parts);
     }
+    // La garde ne vaut que par sa COUVERTURE : un set qui perdrait ses vues de bout redeviendrait
+    // muet de face et de dos sans qu'aucune boucle ci-dessus ne rougisse (elle n'itère que ce qui
+    // est déclaré). Les trois vues sont donc exigées nominativement.
+    expect([...vuesCouvertes].sort(), 'le set doit habiller les TROIS vues').toEqual(['back', 'front', 'profile']);
   });
 });
 

@@ -11,7 +11,7 @@ import { addPose } from '../src/gameIso/rig/poses';
 import { CLIPS, sampleClip, clipDuration, type Clip } from '../src/gameIso/rig/anim/clips';
 import { spellCastClip } from '../src/gameIso/rig/anim/spellClips';
 import { weaponRest, mountedAttackClip, mountedParryClip, seatedClip } from '../src/gameIso/rig/anim/weaponClips';
-import { seatRiderOnMount, mountedRest, mountTackBones } from '../src/gameIso/rig/mountedRig';
+import { seatRiderOnMount, mountedRest, mountedPlanOpts } from '../src/gameIso/rig/mountedRig';
 import { planById, resolveSpecies } from '../src/gameIso/rig/bodyPlan';
 import { sizeTokenScale } from '../src/gameIso/sizeScale';
 import { animatedRig, sampleTimes } from './_lib-anim-rig';
@@ -64,12 +64,13 @@ function mountedTile(label: string, weapon: Weapon | undefined, clip: Clip) {
   const dur = Math.max(clipDuration(clip), 1);
   const equip: EquipCtx = { weapons: weapon ? [weapon] : [], armour: [] };
   const samples = sampleTimes(dur, N).map((t) => {
-    const mountBones = quad.resolve(horse, 'profile', quad.restPose(), {});
+    // Monture PORTÉE : le harnachement vient de la couture montée (canal DONNÉE), jamais réexprimé ici.
+    const mountBones = quad.resolve(horse, 'profile', quad.restPose(), mountedPlanOpts(undefined));
     const riderPose = addPose(mountedRest('profile', weapon), sampleClip(clip, t).pose);
     const riderBones = resolveRig(soldat, equip, riderPose, 'Soldat', 'profile', [], false);
     // Ratio cavalier DÉRIVÉ comme en jeu (MountedToken) : cavalier ÷ (art monture × Taille).
     const rideK = 1 / (resolveSpecies(horse).scale * sizeTokenScale('grande'));
-    return seatRiderOnMount([...mountBones, ...mountTackBones(mountBones, 'profile')], riderBones, { view: 'profile', mountScale: 1, riderScale: rideK }).map((b, i) => ({ ...b, id: `${b.id}_${i}` }));
+    return seatRiderOnMount(mountBones, riderBones, { view: 'profile', mountScale: 1, riderScale: rideK }).map((b, i) => ({ ...b, id: `${b.id}_${i}` }));
   });
   const uid = `k${uidN++}`;
   const { css, svg } = animatedRig(samples, dur, uid);

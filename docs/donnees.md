@@ -155,6 +155,7 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
 | `decorPalette.json` | Palette de couleurs de décor (objet à sous-catalogues) |
 | `reliefMaterials.json` · `roofMaterials.json` | Matériaux de relief · de toit (6 entrée(s) · 4 entrée(s)) |
 | `ambiance.json` · `lightLevels.json` | Ambiance lumineuse (`iso`/`pov`) · niveaux de lumière (objet à sous-catalogues · 5 entrée(s)) |
+| `renduMonte.json` | Réglage MAISON du rendu du couple MONTÉ (#1128) — `harnaisParDefaut` : id du set d'équipement (registre `src/gameIso/rig/quadruped/harnais/`) apposé à une monture PORTÉE dont le record ne déclare pas de `appearance.harnais` (LDB 08 l.557), lu par `DEFAUT_HARNAIS_MONTE` (objet à sous-catalogues) |
 
 ### Méta
 | Fichier | Contient |

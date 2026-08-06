@@ -7,12 +7,18 @@ import { QUAD_HARNAIS_DEFS } from './_registry.generated';
 import type { QuadHarnaisDef } from './types';
 import type { QuadProps } from '../quadSkeleton';
 import { MISSING_ART, pickView } from '../../viewArt';
+import renduMonteJson from '../../../../data/renduMonte.json';
 
 export type { QuadHarnaisDef } from './types';
 export type { QuadHarnaisId } from './_registry.generated';
 
 /** Table DÉRIVÉE des fichiers `defs/` (id de set → def). */
 export const QUAD_HARNAIS: Record<string, QuadHarnaisDef> = Object.fromEntries(QUAD_HARNAIS_DEFS.map((d) => [d.id, d]));
+
+/** Set servi à une monture PORTÉE dont le record ne déclare pas de `appearance.harnais` — DÉCLARÉ en
+ *  donnée éditable (`src/data/renduMonte.json`), jamais une constante de code (patron
+ *  `DEFAULT_RACE_ID`/`speciesRace.json`). RAW : LDB 08 l.557, ADE I 07 l.48. */
+export const DEFAUT_HARNAIS_MONTE: string = (renduMonteJson as { harnaisParDefaut: string }).harnaisParDefaut;
 
 /** Options du sélecteur de set (affiche le libellé, stocke l'id) — pendant de `tenueOptions`. */
 export function harnaisOptions(): { id: string; label: string }[] {

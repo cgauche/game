@@ -573,6 +573,12 @@
             "lightLevels.json"
           ],
           "desc": "Ambiance lumineuse (`iso`/`pov`) · niveaux de lumière"
+        },
+        {
+          "files": [
+            "renduMonte.json"
+          ],
+          "desc": "Réglage MAISON du rendu du couple MONTÉ (#1128) — `harnaisParDefaut` : id du set d'équipement (registre `src/gameIso/rig/quadruped/harnais/`) apposé à une monture PORTÉE dont le record ne déclare pas de `appearance.harnais` (LDB 08 l.557), lu par `DEFAUT_HARNAIS_MONTE`"
         }
       ]
     },

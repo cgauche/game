@@ -14,7 +14,10 @@ import type { View } from './facing';
 import { apply, type Matrix } from './kinematics';
 import { handlingClass, type Handling } from './anim/handling';
 import type { Weapon } from '../../engine/types';
-import { QUAD_RIDER_Z, quadTackZ } from './quadruped/quadZ';
+import type { EntityAppearance } from '../../engine/authoringAppearance';
+import { planOptsForRecord, type ResolveOpts } from './bodyPlan';
+import { DEFAUT_HARNAIS_MONTE } from './quadruped/harnais';
+import { QUAD_RIDER_Z } from './quadruped/quadZ';
 
 const FAR_LEG = /(cuisse|tibia|pied)G$/; // de profil, G = côté LOINTAIN
 const NEAR_LEG = /(cuisse|tibia|pied)D$/;
@@ -77,55 +80,17 @@ export interface SeatOpts {
 // Point de SELLE dans le repère LOCAL de l'os `tronc` : haut du barillet (où s'assoit le bassin).
 const SADDLE_LOCAL_Y = -15;
 
-// ── HARNACHEMENT (selle/sangle/étrier/rênes) — os SYNTHÉTIQUES posés sur la monture quand
-// elle est montée. Couleurs LITTÉRALES (les tokens de la monture sont déjà résolus ici) :
-// cuir de sellerie, pas la robe. z lus dans la table de la monture PAR VUE (`quadTackZ`) : la
-// SELLE juste au-dessus du barillet, les RÊNES juste au-dessus de l'encolure.
-const CUIR = '#5b3f28', CUIR_O = '#36241a', METAL = '#b8b4a8';
-
-/** Os de harnachement pour une monture RÉSOLUE. Profil = sellerie complète ; face/dos = tapis
- *  de selle + sangle (les rênes liraient mal de bout). Vide si pas d'os `tronc`. */
-export function mountTackBones(mountBones: ResolvedBone[], view: View): ResolvedBone[] {
-  const tronc = mountBones.find((b) => b.id === 'tronc');
-  if (!tronc) return [];
-  const tackZ = quadTackZ(view);
-  const sy = tronc.scale[1];
-  const top = SADDLE_LOCAL_Y * sy; // haut du barillet (où s'assoit le bassin)
-  const belly = 19 * sy; // bas du ventre (sangle)
-  if (view !== 'profile') {
-    const svg = `<g>` +
-      `<path d="M-8 ${top - 2} Q0 ${top - 5.5} 8 ${top - 2} L7 ${top + 3} Q0 ${top + 1} -7 ${top + 3} Z" fill="${CUIR}" stroke="${CUIR_O}" stroke-width="0.6"/>` +
-      `<path d="M-7.5 ${top + 2} L-6.5 ${belly} M7.5 ${top + 2} L6.5 ${belly}" stroke="${CUIR_O}" stroke-width="1.6"/>` +
-      `</g>`;
-    return [{ ...tronc, id: 'selle', parts: [{ svg, layer: 0 }], scale: [1, 1], z: tackZ.selle } as ResolvedBone];
-  }
-  // PROFIL : siège incurvé pommeau/troussequin + tapis + quartier + sangle + étrier.
-  const selle = `<g>` +
-    // tapis de selle (sous le cuir, dépasse derrière)
-    `<path d="M-13 ${top + 1} L13 ${top + 1} L11.5 ${top + 7} L-11.5 ${top + 7} Z" fill="#7a2f26" stroke="#4c1d17" stroke-width="0.5"/>` +
-    // siège : assise creuse entre pommeau (avant +x, relevé) et troussequin (arrière, relevé)
-    `<path d="M-10 ${top + 1} Q-11 ${top - 4} -8.5 ${top - 5.5} Q-4 ${top - 1.5} 0 ${top - 1.5} Q5 ${top - 1.5} 8 ${top - 6} Q10.5 ${top - 4.5} 10 ${top + 1} Z" fill="${CUIR}" stroke="${CUIR_O}" stroke-width="0.7"/>` +
-    `<path d="M-9 ${top} Q-4 ${top - 2.5} 0 ${top - 2.5} Q4 ${top - 2.5} 8 ${top - 1}" fill="none" stroke="${CUIR_O}" stroke-width="0.6" opacity="0.7"/>` +
-    // quartier (flap) sur le flanc proche + sangle qui descend sous le ventre
-    `<path d="M-6 ${top + 2} Q-7 ${top + 12} -3 ${top + 14} L4 ${top + 14} Q7 ${top + 10} 6 ${top + 2} Z" fill="${CUIR}" stroke="${CUIR_O}" stroke-width="0.6"/>` +
-    `<path d="M0 ${top + 13} Q1 ${belly - 2} 0.5 ${belly}" fill="none" stroke="${CUIR_O}" stroke-width="2"/>` +
-    // étrivière + étrier (anneau métal) sous le quartier
-    `<path d="M2 ${top + 13} L2.4 ${top + 19}" stroke="${CUIR_O}" stroke-width="1.4"/>` +
-    `<path d="M0.6 ${top + 19} L4.2 ${top + 19} L3.8 ${top + 23} Q2.4 ${top + 24.4} 1 ${top + 23} Z" fill="none" stroke="${METAL}" stroke-width="1.3"/>` +
-    `</g>`;
-  const out: ResolvedBone[] = [{ ...tronc, id: 'selle', parts: [{ svg: selle, layer: 0 }], scale: [1, 1], z: tackZ.selle } as ResolvedBone];
-  // Rênes : du museau au pommeau (la main gauche du cavalier tient là). Os en coords BOÎTE
-  // (matrice identité) — courbe douce qui suit le creux de l'encolure.
-  const tete = mountBones.find((b) => b.id === 'tete');
-  if (tete) {
-    const mz = apply(tete.matrix, { x: 15 * tete.scale[0], y: 9 * tete.scale[1] });
-    const pommel = apply(tronc.matrix, { x: 8, y: top - 4 });
-    const sag = Math.max(mz.y, pommel.y) + 9;
-    const reins = `<path d="M${mz.x.toFixed(1)} ${mz.y.toFixed(1)} Q${((mz.x + pommel.x) / 2).toFixed(1)} ${sag.toFixed(1)} ${pommel.x.toFixed(1)} ${pommel.y.toFixed(1)}" fill="none" stroke="${CUIR_O}" stroke-width="1.1"/>` +
-      `<path d="M${(mz.x - 3).toFixed(1)} ${(mz.y - 4).toFixed(1)} L${(mz.x + 1).toFixed(1)} ${(mz.y + 1).toFixed(1)}" stroke="${CUIR_O}" stroke-width="1.2"/>`; // muserolle
-    out.push({ id: 'renes', matrix: [1, 0, 0, 1, 0, 0], scale: [1, 1], parts: [{ svg: reins, layer: 0 }], z: tackZ.renes } as ResolvedBone);
-  }
-  return out;
+/**
+ * Opts de rendu de la MONTURE d'un couple monté : celles de son record (`planOptsForRecord` —
+ * précédence par champ, override vivant → record), avec le set d'équipement par DÉFAUT quand la
+ * donnée n'en déclare aucun. Ce défaut est une INFÉRENCE MAISON de rendu (#1128), tenue en donnée
+ * éditable (`src/data/renduMonte.json`) : les listes de Possessions de carrière donnent la monture
+ * « avec selle et harnais » (LDB 08 l.557, ADE I 07 l.48) ; aucune règle n'attache la sellerie au
+ * fait d'être monté. Un `harnais: ''` authoré (nu explicite) est donc respecté tel quel. PURE.
+ */
+export function mountedPlanOpts(recordId: string | undefined, override?: EntityAppearance): ResolveOpts {
+  const opts = planOptsForRecord(recordId, override);
+  return { ...opts, harnais: opts.harnais ?? DEFAUT_HARNAIS_MONTE };
 }
 
 /**
