@@ -21,18 +21,20 @@ function Notches({ kind, value, max, vertical, title, spend = 0, gain = 0 }: { k
   );
 }
 
-/** Une ressource du tour NOMMÉE : libellé, valeur explicite, et l'aperçu du clic en « avant → après »
- *  quand `delta` est non nul (même patron que `MovementIntent`). Une ressource CONSOMMABLE (`spentLabel`)
- *  tombée à zéro le dit en TEXTE, jamais par la seule couleur. Aucune ressource ni recalcul de plus :
- *  mêmes props que les jauges crantées, l'affichage seul est borné entre 0 et `max`. */
+/** Une ressource du tour NOMMÉE : libellé, valeur RÉELLE (jamais rabotée sur `max` — un Avantage
+ *  au-dessus de son plafond effectif se lit tel quel), et l'aperçu du clic en « avant → après »
+ *  quand celui-ci change quelque chose. Une ressource CONSOMMABLE (`spentLabel`) tombée à zéro le
+ *  dit en TEXTE, jamais par la seule couleur. Un budget nul ne se rend PAS (même règle que la jauge
+ *  crantée) : rien à lire, et rien n'a été consommé. L'« après » est du BORNAGE D'AFFICHAGE des
+ *  mêmes props que les jauges — aucun calcul d'économie de plus. */
 function Resource({ label, value, max, delta, unit, spentLabel }: { label: string; value: number; max: number; delta: number; unit?: string; spentLabel?: string }) {
-  const shown = Math.min(max, Math.max(0, value));
-  const after = Math.min(max, Math.max(0, value + delta));
-  const text = delta !== 0 ? `${shown} → ${after}` : `${shown}/${max}`;
-  const spent = spentLabel !== undefined && shown <= 0;
+  if (max <= 0) return null;
+  const after = delta > 0 ? Math.max(value, Math.min(max, value + delta)) : Math.max(0, value + delta);
+  const text = after !== value ? `${value} → ${after}` : `${value}/${max}`;
+  const spent = spentLabel !== undefined && value <= 0;
   return (
     <>
-      <dt>{label}</dt>
+      <dt className="mini-title">{label}</dt>
       <dd data-spent={spent ? 'true' : undefined}>
         <span>{unit ? `${text} ${unit}` : text}</span>
         {spent && <em>{spentLabel}</em>}
@@ -61,7 +63,7 @@ export function ActiveFrame({ c, ring, isHero, actAvail, actMax, moveLeft, moveM
         <Notches kind="adv" value={Math.min(c.advantage, advCap)} max={advCap} gain={gainAdv} title={`Avantage : ${c.advantage}/${advCap}`} />
       </div>
       {isHero && <Notches kind="move" vertical value={moveLeft} max={moveMax} spend={spendMove} title={`Mouvement : ${moveLeft}/${moveMax} case${moveMax > 1 ? 's' : ''}`} />}
-      {/* États / buffs (TOUS) À DROITE de la jauge de Mouvement — plus en débordement derrière elle. */}
+      {/* États / buffs (TOUS) À DROITE de la jauge de Mouvement. */}
       <StateChips c={c} />
       <dl aria-label="Ressources du tour">
         {isHero && <Resource label="Action" value={actAvail} max={actMax} delta={-spendAction} spentLabel="utilisée" />}

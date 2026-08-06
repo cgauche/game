@@ -217,7 +217,8 @@ const BARE_BUTTON_BASELINE: Record<string, number> = {
   'ErrorCollectorBanner.tsx': 1,
   // #839 : -1 (1 → 0, entrée retirée) — la remise au défaut d'une règle (`↺`) compose désormais
   // `GatedAction` (bouton `.btn` + raison VISIBLE du verrou de combat), plus un `<button>` nu.
-  'InitiativeStrip.tsx': 3,
+  // #1135 : baseline abaissée (3 → 2), bouton nu retiré au commit 9bae13b3 — détecteur inchangé.
+  'InitiativeStrip.tsx': 2,
   'MerchantPanel.tsx': 1,
   'ObjectiveBanner.tsx': 1,
   'VoyageScreen.tsx': 4,
@@ -323,7 +324,8 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // CastModal) détournait `.rm-vs` alors qu'elle n'oppose personne. MÊME bloc de déclarations : somme
   // nulle visuelle, un rôle de plus nommé.
   'styles/combat-modals.css': 143,
-  'styles/combat-ui.css': 112,
+  // #1135 : baseline abaissée (112 → 111), bloc mort `.af-hp` purgé — détecteur inchangé.
+  'styles/combat-ui.css': 111,
   // +1 : `.nb` (#393 P2) — note d'atelier non cliquable en fin de section chips (CodexRowView).
   'styles/compendium.css': 56,
   // +25 : charte « Atelier du scribe » (#412) — MetalStatus/WaxSeal+SealedPlaque/CareerPath/

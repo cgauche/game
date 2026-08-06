@@ -640,36 +640,30 @@ textarea:focus {
   .af-bar i.spend, .af-bar i.gain { opacity: 1; }
   .af-bar i.spend { outline: 1px solid rgba(255, 255, 255, 0.85); outline-offset: -1px; }
 }
-.af-hp {
-  position: relative;
-  display: block;
-  width: 72px;
-  height: 10px;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.af-hp b { display: block; height: 100%; }
 /* Économie du tour en TEXTE (résumé « Ressources du tour » d'`ActiveFrame`) : la valeur NOMMÉE prime
    sur la jauge, l'aperçu de clic se lit « avant → après ». Stylée par la STRUCTURE du cadre — aucune
-   classe de domaine de plus (cliquet xii). */
+   classe de domaine de plus (cliquet xii). Le résumé se détache du groupe de jauges par un filet et
+   un écart (même patron que la sortie de tour, `.ab-slots [data-slot='end-turn']`) : le premier
+   libellé ne se lit plus comme la légende de la jauge qui le précède. Les libellés composent
+   `.mini-title` (charte) — ici seule la marge du patron se neutralise, la grille porte l'écart. */
 .aframe dl {
   display: grid;
   grid-template-columns: auto auto;
   align-content: center;
   gap: 1px 8px;
-  margin: 0;
+  margin: 0 0 0 6px;
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+  padding-left: 10px;
   font-size: 12px;
 }
 .aframe dt {
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
+  margin: 0;
 }
+/* Largeur RÉSERVÉE pour la forme la plus large (« N → M cases », Mouvement) : sans elle, l'aperçu de
+   clic élargit la colonne et fait glisser tout le dock sous le curseur. Chiffres déjà tabulaires. */
 .aframe dd {
   margin: 0;
+  min-width: 12ch;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;

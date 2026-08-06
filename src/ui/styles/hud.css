@@ -190,8 +190,6 @@
   pointer-events: none;
   z-index: 2;
 }
-/* `ptile-gauge` (jauge de vie horizontale du portrait) : aucun style ici — le rendu APPARTIENT à la
-   primitive partagée LifeBar (variante superposée, styles/gauges.css), `pointer-events: none` compris. */
 /* États de FIN (#237) : pastille distincte par état, coin bas-droit du portrait — teinte propre à
    chaque état (langage visuel UNIQUE, cf. src/ui/endStateVisual.ts). */
 .ptile .end-mark {
