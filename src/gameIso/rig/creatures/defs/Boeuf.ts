@@ -100,6 +100,9 @@ const MUFLE_FACE =
 // L = 30 × neckLen = 12.6 : encolure COURTE. Le fanon pend de la gorge au poitrail en festons
 // larges — le tell bovin de profil. L'os encolure n'a d'art qu'en profil : les vues de bout
 // retombent proprement sur le nu (le fanon de face vit dans le deco de tronc).
+// fermeture syntaxique minimale d'un WIP de session art interrompu : `memo` n'est ni importé ni
+// défini, et le slot `deco` attend une CHAÎNE comme ses voisins — le wrapper inachevé est retiré,
+// l'art est inchangé, à reprendre par la session art [entériné 2026-08-05]
 const FANON =
   `<g data-deco="fanon">` +
   `<path d="M8.8 -12.4 Q13.6 -9.6 14.2 -4 Q17.8 -1.4 16.6 2.2 Q20.2 4.6 18.4 8.4 Q21 11.4 18.6 15.2 Q13.6 19.4 8 16.6 Q7.2 3.4 8 -11 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
