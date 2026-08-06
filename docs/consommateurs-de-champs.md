@@ -218,7 +218,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 ## Synthèse
 
-17 types, 119 champs mesurés, **16 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
+17 types, 120 champs mesurés, **16 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
 
 ## Cas fondateur
 
