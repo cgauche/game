@@ -33,10 +33,9 @@ import {
 import { entityRigProfileFor, refOf } from '../rig/enemyProfile';
 import { RigSprite } from '../rig/composeRig';
 import { CLIPS, sampleClip } from '../rig/anim/clips';
-import { resolveRender, planById, type BodyPlan } from '../rig/bodyPlan';
+import { resolveRender, planById, planOptsForRecord, type BodyPlan } from '../rig/bodyPlan';
 import { bonesToSvg } from '../rig/renderBones';
-import { eyesArtFromKeys } from '../rig/parts/eyes';
-import type { Palette } from '../rig/palette';
+import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { findCreatureById } from '../../data';
 import type { Scene } from '../../state/scene';
 import { enrolledEntityIds } from '../../state/scene';
@@ -91,19 +90,19 @@ function PovPerson({ id, prof, view, mirror, a }: {
  *  sous-arbre se re-rend. `plan.idlePose` absent (ex. quadrupède) → pose de repos figée (`restPose`),
  *  exactement comme l'iso. L'angle `view`/`mirror` (imposé par `povView`) est CONSERVÉ, ailes repliées au
  *  repos. Sous `renderToStaticMarkup`, l'horloge reste à 0 → pose INITIALE (phase 0). */
-function PovCreature({ id, plan, species, view, mirror, colors, eyes, a }: {
+function PovCreature({ id, plan, species, view, mirror, recordId, override, a }: {
   id: string;
   plan: BodyPlan;
   species: string;
   view: 'front' | 'back' | 'profile';
   mirror: boolean;
-  colors?: Palette;
-  eyes?: { G?: string; D?: string };
+  recordId?: string;
+  override?: EntityAppearance;
   a: { sx: number; sy: number; o: number; s: number };
 }): JSX.Element {
   const t = usePovIdle();
   const pose = plan.idlePose ? plan.idlePose((t % IDLE_MS) / IDLE_MS) : plan.restPose();
-  const sprite = <g dangerouslySetInnerHTML={{ __html: bonesToSvg(plan.resolve(species, view, pose, { colors, eyes, wings: 'folded' })) }} />;
+  const sprite = <g dangerouslySetInnerHTML={{ __html: bonesToSvg(plan.resolve(species, view, pose, { ...planOptsForRecord(recordId, override), wings: 'folded' })) }} />;
   return anchored(id, a, a.s, mirrored(sprite, mirror));
 }
 
@@ -146,7 +145,7 @@ export function buildPovBillboards(scene: Scene, cam: CamPose, visible: Set<stri
       // (`plan.idlePose`), rAF isolé — cf. `PovCreature` (miroir de `PovPerson`).
       const plan = planById(r.plan);
       if (plan)
-        persons.push({ key: e.id, depth: a.depth, node: <PovCreature key={e.id} id={e.id} plan={plan} species={r.species} view={view} mirror={mirror} colors={e.appearance?.colors} eyes={eyesArtFromKeys(e.appearance?.eyes)} a={a} /> });
+        persons.push({ key: e.id, depth: a.depth, node: <PovCreature key={e.id} id={e.id} plan={plan} species={r.species} view={view} mirror={mirror} recordId={refName} override={e.appearance} a={a} /> });
     }
   }
 

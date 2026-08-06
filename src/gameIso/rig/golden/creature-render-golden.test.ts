@@ -6,7 +6,8 @@
  * l'identique, sinon une créature change d'apparence.
  *
  * Rend chaque entrée de `creatures.json` via le chemin de PROD (bipède = entityRigProfile+resolveRig ;
- * non-bipède = planById(bodyPlanById).resolve), en `front`, `profile` et `back`, seed fixe.
+ * non-bipède = planById(bodyPlanById).resolve, opts d'apparence du RECORD via planOptsForRecord),
+ * en `front`, `profile` et `back`, seed fixe.
  *
  * CE QUE LES SNAPSHOTS `back` FIGENT — ce n'est PAS une couverture d'art (#559). Sans art `back`
  * dédié sur une part, `parts/resolve.ts` (~l.185-189) FABRIQUE une silhouette dorsale générique en
@@ -21,7 +22,7 @@ import { creatures } from '../../../data';
 import { entityRigProfile } from '../enemyProfile';
 import { resolveRig } from '../composeRig';
 import { bonesToSvg } from '../renderBones';
-import { planById, resolveById } from '../bodyPlan';
+import { planById, resolveById, planOptsForRecord } from '../bodyPlan';
 import type { View } from '../facing';
 
 const VIEWS: View[] = ['front', 'profile', 'back'];
@@ -35,7 +36,7 @@ function renderSvg(id: string, view: View): string {
   }
   const plan = planById(r.plan);
   if (!plan) return '∅noplan';
-  return bonesToSvg(plan.resolve(r.species, view, plan.restPose()));
+  return bonesToSvg(plan.resolve(r.species, view, plan.restPose(), planOptsForRecord(id)));
 }
 
 describe('golden — rendu SVG du bestiaire entier (anti-régression de-POC apparence)', () => {

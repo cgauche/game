@@ -2,7 +2,7 @@
  * plan.resolve → bonesToSvg), front + profil. Sort public/qc/zoo.png. Args = ids séparés par virgules. */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
-import { resolveById, planById } from '../src/gameIso/rig/bodyPlan';
+import { resolveById, planById, planOptsForRecord } from '../src/gameIso/rig/bodyPlan';
 import { entityRigProfile } from '../src/gameIso/rig/enemyProfile';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
@@ -19,7 +19,7 @@ function renderSvg(id: string, view: View): string {
   }
   const plan = planById(r.plan);
   if (!plan || !plan.hasView(r.species, view)) return '';
-  return bonesToSvg(plan.resolve(r.species, view, plan.restPose()));
+  return bonesToSvg(plan.resolve(r.species, view, plan.restPose(), planOptsForRecord(id)));
 }
 const ids = (process.argv[2] ?? '').split(',').map((s) => s.trim()).filter(Boolean);
 const labelOf = (id: string) => creatures.find((c) => c.id === id)?.label ?? id;

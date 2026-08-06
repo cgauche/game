@@ -17,6 +17,8 @@ import { findCreatureById, findTrappingById, findVehicleById } from '../../data'
 import { isSwarm } from '../../engine/traits/dispatch';
 import { DEFAULT_RACE_ID } from './races';
 import { diagOnce, diagSubject } from './devDiag';
+import { eyesArtFromKeys } from './parts/eyes';
+import type { EntityAppearance } from '../../engine/authoringAppearance';
 
 /** Identifiant de gabarit — chaîne libre dérivée des `plans/defs/` (data-driven : chaque plan
  *  déclare son `id`). Le monolithique n'est PAS un BodyPlan (fallback legacy hors registre). */
@@ -97,6 +99,24 @@ export function resolveById(id: string): RenderResolution {
  *  la branche espèce-explicite (l'arg gagne) → EXACT-only, plus aucun match flou par libellé. */
 export function resolveSpecies(species: string): RenderResolution {
   return resolveRender(species, undefined, species);
+}
+
+/** Opts de rendu de GABARIT portées par l'apparence d'un RECORD de créature (`creatures.json`) —
+ *  pendant plan d'`enemyRigProfile` (bipède), consommé par TOUS les sites qui rendent un plan
+ *  (tokens iso, POV, aperçu de Codex, galeries, goldens). Une seule précédence PAR CHAMP (même
+ *  formule que `rigAppearance`, le pendant bipède) : apparence VIVANTE (`Combatant.appearanceOverride`,
+ *  `SceneEntity.appearance`, apparence en cours d'édition) passée en `override` → record. Un `colors`
+ *  d'override remplace donc l'objet `colors` ENTIER du record, il ne s'y fusionne pas.
+ *  Les deux entrées portent la forme d'AUTHORING (`eyes` = clés du catalogue `EYE_OPTIONS`) — résolue
+ *  en ARTS ici, une seule fois, pour tout le monde. PURE.
+ *  `armurePortee` (2 records de plan : demigriffon-adulte, destrier-squelettique) n'entre PAS ici :
+ *  c'est le canal BIPÈDE (`synthArmour`), et `ResolveOpts` ne le porte pas — à instruire en L3+ (#1128). */
+export function planOptsForRecord(recordId: string | undefined, override?: EntityAppearance): ResolveOpts {
+  const rec = recordId ? findCreatureById(recordId)?.appearance : undefined;
+  return {
+    colors: override?.colors ?? rec?.colors,
+    eyes: eyesArtFromKeys(override?.eyes) ?? eyesArtFromKeys(rec?.eyes),
+  };
 }
 
 /** Résolution de rendu UNIFIÉE et 100% DATA-DRIVEN (de-POC P5/5d) : classe (rig/gabarit), id de

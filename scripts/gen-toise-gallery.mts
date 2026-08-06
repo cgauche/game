@@ -11,7 +11,7 @@ import { resolveRig, type ResolvedBone } from '../src/gameIso/rig/composeRig';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { DEFS } from '../src/gameIso/sprites';
 import { entityRigProfile } from '../src/gameIso/rig/enemyProfile';
-import { planById, resolveById, resolveSpecies, type BodyPlanId, type RenderResolution } from '../src/gameIso/rig/bodyPlan';
+import { planById, resolveById, resolveSpecies, planOptsForRecord, type BodyPlanId, type RenderResolution } from '../src/gameIso/rig/bodyPlan';
 import { sizeTokenScale } from '../src/gameIso/sizeScale';
 import { parseSizeLabel, SIZE_LABEL, SIZE_ORDER, type SizeCategory } from '../src/engine/size';
 import { creatures } from '../src/data/index';
@@ -31,7 +31,7 @@ function sizeOf(traits: TraitList | undefined): SizeCategory {
 function restBones(r: RenderResolution, rigId: string, rigSpecies?: string): ResolvedBone[] {
   if (r.kind === 'plan') {
     const plan = planById(r.plan as BodyPlanId);
-    return plan.resolve(r.species, 'profile', plan.restPose(), {});
+    return plan.resolve(r.species, 'profile', plan.restPose(), planOptsForRecord(rigId));
   }
   const prof = entityRigProfile(rigId, 7, rigSpecies ? { species: rigSpecies } : undefined);
   if (!prof) return [];

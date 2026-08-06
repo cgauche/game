@@ -12,7 +12,7 @@ import { DEFS } from '../src/gameIso/sprites';
 import { addPose } from '../src/gameIso/rig/poses';
 import { CLIPS, sampleClip, clipDuration } from '../src/gameIso/rig/anim/clips';
 import { entityRigProfile } from '../src/gameIso/rig/enemyProfile';
-import { planById, bodyPlanById, resolveById, type BodyPlanId } from '../src/gameIso/rig/bodyPlan';
+import { planById, bodyPlanById, resolveById, planOptsForRecord, type BodyPlanId } from '../src/gameIso/rig/bodyPlan';
 import { mul, translate, type Matrix } from '../src/gameIso/rig/kinematics';
 import { animatedRig } from './_lib-anim-rig';
 import { creatures } from '../src/data/index';
@@ -45,10 +45,10 @@ function creatureFrames(id: string): { samples: ResolvedBone[][]; dur: number } 
     const plan = planById(planId as BodyPlanId);
     const species = resolveById(id).species;
     if (plan.idlePose) {
-      const samples = Array.from({ length: NB }, (_, i) => scaleBones(plan.resolve(species, 'front', plan.idlePose!(i / (NB - 1)), {}), z));
+      const samples = Array.from({ length: NB }, (_, i) => scaleBones(plan.resolve(species, 'front', plan.idlePose!(i / (NB - 1)), planOptsForRecord(id)), z));
       return { samples, dur: IDLE_MS };
     }
-    return { samples: [scaleBones(plan.resolve(species, 'front', plan.restPose(), {}), z)], dur: IDLE_MS };
+    return { samples: [scaleBones(plan.resolve(species, 'front', plan.restPose(), planOptsForRecord(id)), z)], dur: IDLE_MS };
   }
   // Humanoïde → rig + respiration (clip idle).
   const prof = entityRigProfile(id, 7);

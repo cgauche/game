@@ -14,7 +14,6 @@ import { isStructure } from '../engine/structures';
 import { findCreatureById, findTrappingById, findVehicleById } from '../data';
 import { presetPnjById } from '../state/campaignData';
 import { useGame } from '../state/store';
-import { eyesArtFromKeys } from './rig/parts/eyes';
 import { entitySprite } from './sprites';
 import { resolveRig, RigSprite } from './rig/composeRig';
 import { defaultAppearance, type Appearance } from './rig/appearance';
@@ -131,7 +130,7 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
       }
       return { backend: 'rig', id: c.id, speciesScale: r.scale, portraitBox: FACE_BOX, flat: false, body: <AnimatedRigToken combatant={c} profile={prof ?? undefined} pos={c.pos} /> };
     }
-    return { backend: 'plan', id: c.id, speciesScale: r.scale, portraitBox: planPortraitBox(r.plan), flat: top, body: <AnimatedPlanToken id={c.id} planId={r.plan} species={r.species} colors={c.appearanceOverride?.colors} eyes={eyesArtFromKeys(c.appearanceOverride?.eyes)} dead={groundStateOf(c) === 'corpse' || isOutOfAction(c)} prone={groundStateOf(c) === 'prone'} pos={c.pos} /> };
+    return { backend: 'plan', id: c.id, speciesScale: r.scale, portraitBox: planPortraitBox(r.plan), flat: top, body: <AnimatedPlanToken id={c.id} planId={r.plan} species={r.species} recordId={c.creatureId} override={c.appearanceOverride} dead={groundStateOf(c) === 'corpse' || isOutOfAction(c)} prone={groundStateOf(c) === 'prone'} pos={c.pos} /> };
   }
 
   if (subject.kind === 'partyLeader') {
@@ -187,9 +186,9 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
     return { backend: 'rig', id, speciesScale: r.scale, portraitBox: FACE_BOX, flat: false, body: <RigToken id={id} appearance={prof.appearance} equip={prof.equip} career={prof.tenue} ambientAnim={ent.anim ?? ''} facing={ent.facing} pos={ent.pos} /> };
   }
   if (r.kind === 'plan') {
-    // ent.appearance.eyes = CLÉS du catalogue (donnée éditeur) → résolues en arts ici — comme le
-    // combattant non-humanoïde plus haut (`c.appearanceOverride.eyes`, même `eyesArtFromKeys`).
-    return { backend: 'plan', id, speciesScale: r.scale, portraitBox: planPortraitBox(r.plan), flat: top, body: <AnimatedPlanToken id={id} planId={r.plan} species={r.species} colors={ent.appearance?.colors} eyes={eyesArtFromKeys(ent.appearance?.eyes)} facing={ent.facing} pos={ent.pos} /> };
+    // Socle unique `planOptsForRecord` (il résout aussi les clés d'yeux du catalogue en arts) :
+    // précédence PAR CHAMP — l'apparence de l'entité prime sur celle du record (`refName`).
+    return { backend: 'plan', id, speciesScale: r.scale, portraitBox: planPortraitBox(r.plan), flat: top, body: <AnimatedPlanToken id={id} planId={r.plan} species={r.species} recordId={refName} override={ent.appearance} facing={ent.facing} pos={ent.pos} /> };
   }
   return { backend: 'sprite', id, speciesScale: 1, portraitBox: FACE_BOX, flat: false, body: <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} /> };
 }

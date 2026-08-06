@@ -7,7 +7,7 @@
  */
 import { writeFileSync } from 'node:fs';
 import { DEFS } from '../src/gameIso/sprites';
-import { planById, bodyPlanById, resolveById, type BodyPlanId } from '../src/gameIso/rig/bodyPlan';
+import { planById, bodyPlanById, resolveById, planOptsForRecord, type BodyPlanId } from '../src/gameIso/rig/bodyPlan';
 import { mul, translate, type Matrix } from '../src/gameIso/rig/kinematics';
 import type { ResolvedBone } from '../src/gameIso/rig/composeRig';
 import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../src/engine/creatureAttacks';
@@ -35,7 +35,7 @@ function attackFrames(id: string, kind: AttackKind): { samples: ResolvedBone[][]
   const sc = r.scale;
   const z = sc > 1 ? +(1 / sc).toFixed(3) : 1;
   const poseAt = (p: number) => plan.attackKindPose?.(kind, p) ?? plan.attackPose(p);
-  const samples = Array.from({ length: N }, (_, i) => scaleBones(plan.resolve(species, 'profile', poseAt(i / (N - 1)), { wings: 'spread' }), z));
+  const samples = Array.from({ length: N }, (_, i) => scaleBones(plan.resolve(species, 'profile', poseAt(i / (N - 1)), { ...planOptsForRecord(id), wings: 'spread' }), z));
   return { samples };
 }
 

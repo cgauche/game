@@ -8,12 +8,10 @@ import { useMemo } from 'react';
 import { entityRigProfile } from '../../gameIso/rig/enemyProfile';
 import { resolveRig } from '../../gameIso/rig/composeRig';
 import { bonesToSvg } from '../../gameIso/rig/renderBones';
-import { resolveRender, planById } from '../../gameIso/rig/bodyPlan';
-import { eyesArtFromKeys } from '../../gameIso/rig/parts/eyes';
+import { resolveRender, planById, planOptsForRecord } from '../../gameIso/rig/bodyPlan';
 import { hashSeed } from '../../engine/dice';
 import { findCreatureById } from '../../data';
 import type { View } from '../../gameIso/rig/facing';
-import type { Palette } from '../../gameIso/rig/palette';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 
 // `name` = id de créature (Codex/bestiaire) OU libellé d'espèce/race (la résolution lit l'espèce
@@ -31,7 +29,7 @@ function rigSvg(name: string, a: EntityAppearance | undefined, view: View): stri
   const plan = planById(r.plan);
   if (!plan) return '';
   if (!plan.hasView(r.species, view)) return '';
-  return bonesToSvg(plan.resolve(r.species, view, plan.restPose(), { colors: a?.colors as Palette, eyes: eyesArtFromKeys(a?.eyes) }));
+  return bonesToSvg(plan.resolve(r.species, view, plan.restPose(), planOptsForRecord(name, a)));
 }
 
 export function CreaturePreview({ label, appearance }: { label: string; appearance?: EntityAppearance }) {

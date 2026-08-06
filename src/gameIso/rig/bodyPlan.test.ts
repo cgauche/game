@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { bodyPlanById, resolveSpecies, planById } from './bodyPlan';
+import { bodyPlanById, resolveSpecies, planById, planOptsForRecord, resolveById } from './bodyPlan';
+import { EYE_OPTIONS } from './parts/eyes';
+import { creatures } from '../../data';
+import type { EntityAppearance } from '../../engine/authoringAppearance';
 
 /** Plan d'un ID d'espèce canonique (slug de def) et plan d'un ID de record — les deux chemins explicites. */
 const planOfSpecies = (id: string): string => resolveSpecies(id).plan;
@@ -132,5 +135,60 @@ describe('planById(quadruped)', () => {
     const a = planById('quadruped').resolve('cheval', 'profile', {});
     const b = planById('quadruped').resolve('cheval', 'profile', {}, { colors: { corps: '#aa1133' } });
     expect(JSON.stringify(a)).not.toEqual(JSON.stringify(b));
+  });
+});
+
+/**
+ * Contrat POSITIF du socle `planOptsForRecord` (#1128 L0) — la couture qui fait enfin ARRIVER
+ * l'apparence d'un RECORD de plan jusqu'au gabarit (elle n'atteignait AUCUN site avant). Ce qui est
+ * verrouillé ici : le SENS de la précédence (une inversion `rec ?? override` doit virer au rouge),
+ * la résolution des clés d'yeux en arts, et l'équivalence « aucun record sans apparence ne bouge ».
+ */
+describe('planOptsForRecord — apparence du RECORD → opts de gabarit (#1128 L0)', () => {
+  const SQUIGS = 'nuee-de-squigs-des-cavernes'; // le seul record de plan portant `appearance.colors`
+
+  it('record seul : ses couleurs deviennent les opts', () => {
+    expect(planOptsForRecord(SQUIGS)).toEqual({ colors: { corps: '#5a2a7a' }, eyes: undefined });
+  });
+
+  it("l'override VIVANT prime sur le record — précédence PAR CHAMP : `colors` bascule EN ENTIER", () => {
+    const out = planOptsForRecord(SQUIGS, { colors: { peau: '#112233' } });
+    expect(out.colors).toEqual({ peau: '#112233' });
+    // Contrat assumé (même formule que `rigAppearance`, le pendant bipède) : `corps` du record ne
+    // survit pas à un override qui porte `colors` — l'objet remplace, il ne fusionne pas.
+    expect(out.colors?.corps).toBeUndefined();
+  });
+
+  it("champ d'override ABSENT : le record garde la main (le socle ne masque rien avec `undefined`)", () => {
+    expect(planOptsForRecord(SQUIGS, { sex: 'F' }).colors).toEqual({ corps: '#5a2a7a' });
+  });
+
+  it("yeux : clés du catalogue → ARTS, clé inconnue d'override = pas d'override (repli record)", () => {
+    expect(planOptsForRecord(undefined, { eyes: { D: 'chat' } }).eyes?.D).toBe(EYE_OPTIONS.chat.art);
+    // `eyesArtFromKeys` rend undefined sur une clé hors catalogue → le `??` retombe sur le record.
+    const out = planOptsForRecord('demigriffon-adulte', { eyes: { D: 'inconnu' } });
+    expect(out.eyes).toBeUndefined(); // ce record ne porte pas d'yeux : rien à replier
+  });
+
+  it('id inconnu / absent → opts VIDES (jamais une exception, jamais une apparence de tiers)', () => {
+    expect(planOptsForRecord('id-qui-n-existe-pas')).toEqual({ colors: undefined, eyes: undefined });
+    expect(planOptsForRecord(undefined)).toEqual({ colors: undefined, eyes: undefined });
+  });
+
+  it("ZÉRO changement silencieux : tout record de plan SANS apparence au-delà de `species` rend à l'IDENTIQUE avec ou sans le socle", () => {
+    let compares = 0;
+    for (const c of creatures) {
+      const r = resolveById(c.id);
+      if (r.kind !== 'plan') continue;
+      const a = c.appearance as EntityAppearance | undefined;
+      if (a?.colors || a?.eyes) continue; // ces records-là DOIVENT changer (leur donnée est enfin lue)
+      const plan = planById(r.plan);
+      if (!plan) continue;
+      const sans = plan.resolve(r.species, 'profile', plan.restPose());
+      const avec = plan.resolve(r.species, 'profile', plan.restPose(), planOptsForRecord(c.id));
+      expect(JSON.stringify(avec), c.id).toEqual(JSON.stringify(sans));
+      compares++;
+    }
+    expect(compares, 'la boucle a bien comparé le gros du bestiaire de plan').toBeGreaterThan(100);
   });
 });
