@@ -49,6 +49,11 @@ export interface EntityAppearance {
   /** Tenue CHOISIE — id STABLE de garde-robe (tenue ∪ carrière ∪ classe ∪ 'nu', jamais un libellé) :
    *  un PNJ porte n'importe quelle tenue (`mendiant`, `soldat`, `skaven`, `nu`…). Vide = dérivée du nom/espèce. */
   tenue?: string;
+  /** Set d'ÉQUIPEMENT porté par une bête à gabarit quadrupède (ailés compris) — id STABLE d'un set
+   *  du registre `gameIso/rig/quadruped/harnais` (sellerie, bât, barde). Deux formes distinctes :
+   *  ABSENT = cette couche ne dit rien (sur un override d'instance, le record garde la main) ;
+   *  `''` = NU explicite, qui gagne sur le record (déshabiller une monture harnachée par défaut). */
+  harnais?: string;
   /** Armure de statblock (PA par localisation, sans inventaire) VISIBLE/portée — OPT-IN d'authoring
    *  (#774, #775) : le statblock de PA ne pilote pas l'apparence. Absent = les PA restent mécaniques
    *  PURS, aucun art d'armure synthétisé (`synthArmour`). */

@@ -23,7 +23,7 @@ import { GameOpEditor, FormulaField, opsMissingRefs } from '../editor/GameOpEdit
 import type { GameOp } from '../../engine/ops';
 import type { ConsumableDuration } from '../../engine/consumables';
 import { JsonField } from '../editor/JsonField';
-import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
+import { creatureSpeciesOptions, QUAD_SPECIES, WINGED_SPECIES } from '../../gameIso/rig/creatures';
 import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from '../../state/flow';
@@ -738,11 +738,14 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
 }
 
 /** Éditeur d'apparence par défaut d'une créature (bloc `appearance` UNIFIÉ) — réutilise la brique
- *  partagée `MonsterPartsFields` (espèce + parts/couleurs/coiffure/tenue/yeux). Édite le VRAI record
+ *  partagée `MonsterPartsFields` (espèce + parts/couleurs/coiffure/tenue/harnachement/yeux). Édite le VRAI record
  *  `creatures.json` ; le rig le lit comme couche de défaut → l'apparence en jeu reflète l'édition. */
 function AppearanceField({ label, value, onChange }: { label: string; value: EntityAppearance | undefined; onChange: (v: EntityAppearance) => void }) {
   const a = value ?? {};
   const patch = (p: Partial<EntityAppearance>) => onChange({ ...a, ...p });
+  // Le harnachement est un canal du pipeline QUADRUPÈDE (quad ∪ ailé) : hors de ces gabarits, la
+  // clé serait de la donnée absurde, ignorée au rendu — le sélecteur n'est donc pas offert.
+  const quadrupede = !!a.species && (a.species in QUAD_SPECIES || a.species in WINGED_SPECIES);
   return (
     <div className="ed-field ed-appearance">
       <span>apparence par défaut (rig) — éditée sur le record, reflétée en jeu</span>
@@ -755,13 +758,14 @@ function AppearanceField({ label, value, onChange }: { label: string; value: Ent
         </select>
       </label>
       <MonsterPartsFields
-        monster={a.monster} colors={a.colors} sex={a.sex} build={a.build} hairstyle={a.hairstyle} tenue={a.tenue} eyes={a.eyes} features={a.features}
+        monster={a.monster} colors={a.colors} sex={a.sex} build={a.build} hairstyle={a.hairstyle} tenue={a.tenue} harnais={a.harnais} eyes={a.eyes} features={a.features}
         onMonster={(p) => patch({ monster: { ...(a.monster ?? {}), ...p } })}
         onColors={(p) => patch({ colors: { ...(a.colors ?? {}), ...p } })}
         onSex={(s) => patch({ sex: s })}
         onBuild={(b) => patch({ build: b })}
         onHairstyle={(id) => patch({ hairstyle: id })}
         onTenue={(c) => patch({ tenue: c })}
+        onHarnais={quadrupede ? (id) => patch({ harnais: id }) : undefined}
         onEyes={(p) => patch({ eyes: { ...(a.eyes ?? {}), ...p } })}
         onFeatures={(f) => patch({ features: f.length ? f : undefined })}
       />

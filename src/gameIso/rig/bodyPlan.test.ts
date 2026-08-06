@@ -181,7 +181,7 @@ describe('planOptsForRecord — apparence du RECORD → opts de gabarit (#1128 L
       const r = resolveById(c.id);
       if (r.kind !== 'plan') continue;
       const a = c.appearance as EntityAppearance | undefined;
-      if (a?.colors || a?.eyes) continue; // ces records-là DOIVENT changer (leur donnée est enfin lue)
+      if (a?.colors || a?.eyes || a?.harnais) continue; // ces records-là DOIVENT changer (leur donnée est enfin lue)
       const plan = planById(r.plan);
       if (!plan) continue;
       const sans = plan.resolve(r.species, 'profile', plan.restPose());

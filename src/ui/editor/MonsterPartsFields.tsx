@@ -8,6 +8,7 @@ import { EYE_OPTIONS } from '../../gameIso/rig/parts/eyes';
 import { ColorPalettePickers, MONSTER_COLOR_SLOTS } from '../ColorPalettePickers';
 import { hairstylesForSex } from '../../gameIso/rig/parts/hairstyles';
 import { tenueOptions } from '../../gameIso/rig/parts/career';
+import { harnaisOptions } from '../../gameIso/rig/quadruped/harnais';
 import { elementsOf } from '../../gameIso/rig/parts/elements';
 import type { MonsterPartsSel, ColorsSel } from '../../engine/authoringAppearance';
 
@@ -22,6 +23,7 @@ export function MonsterPartsFields({
   build,
   hairstyle,
   tenue,
+  harnais,
   eyes,
   features,
   onMonster,
@@ -31,6 +33,7 @@ export function MonsterPartsFields({
   onBuild,
   onHairstyle,
   onTenue,
+  onHarnais,
   onEyes,
   onFeatures,
 }: {
@@ -41,6 +44,7 @@ export function MonsterPartsFields({
   build?: number;
   hairstyle?: string;
   tenue?: string;
+  harnais?: string;
   eyes?: { G?: string; D?: string };
   /** Traits ADDITIFS choisis (clés du catalogue d'éléments). */
   features?: string[];
@@ -53,6 +57,9 @@ export function MonsterPartsFields({
   onBuild?: (b: number) => void;
   onHairstyle?: (id: string | undefined) => void;
   onTenue?: (c: string | undefined) => void;
+  /** Optionnel : si absent, le sélecteur « Harnachement » est masqué (il n'a de sens que là où
+   *  l'apparence peut porter un gabarit quadrupède — l'apparence par défaut d'une créature). */
+  onHarnais?: (id: string | undefined) => void;
   onEyes?: (patch: { G?: string; D?: string }) => void;
   /** Optionnel : si absent, le picker « Traits » est masqué. */
   onFeatures?: (f: string[]) => void;
@@ -158,6 +165,17 @@ export function MonsterPartsFields({
           ))}
         </select>
       </label>
+      {onHarnais && (
+        <label className="ed-field">
+          Harnachement
+          <select value={harnais ?? ''} onChange={(e) => onHarnais(e.target.value || undefined)}>
+            <option value="">— aucun (bête nue) —</option>
+            {harnaisOptions().map((o) => (
+              <option key={o.id} value={o.id}>{o.label}</option>
+            ))}
+          </select>
+        </label>
+      )}
       <ColorPalettePickers colors={colors} onColors={onColors} slots={MONSTER_COLOR_SLOTS} />
     </>
   );

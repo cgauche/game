@@ -9,9 +9,10 @@ import { worldTransformsG, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap, DEFAULT_PALETTE, type Palette } from '../palette';
 import {
   QUAD_SPECIES, buildQuadSkeleton, groundQuad, quadSkeletonForView,
-  type QBone, type QuadBoneId, type QuadProps,
+  type QBone, type QuadBoneId, type QuadDecoValue, type QuadProps,
 } from './quadSkeleton';
-import { quadParts } from './quadParts';
+import { quadParts, quadDecoFragments } from './quadParts';
+import { quadHarnaisDeco } from './harnais';
 import { applyEyes } from '../parts/eyes';
 import { QUAD_REST, quadWalkPose, quadBitePose, quadLeapPose, quadFlinchPose, QUAD_DEATH } from './quadPose';
 import { quadAttackPose } from '../anim/creatureAttackPoses';
@@ -42,7 +43,36 @@ export function quadBoneScale(p: QuadProps, b: QBone, view: View): [number, numb
   return [b.limb ? (b.thickness / LEG_REF_TH) * (0.7 + 0.4 * p.girth) : 1, b.girth ? p.girth : 1];
 }
 
-/** (espèce, vue, pose, couleurs, ailes) → os résolus, triés z croissant (peintre). PUR. */
+/**
+ * Déco de l'espèce ⊕ déco d'un SET d'équipement : par clé `os#vue`, les fragments du set s'AJOUTENT
+ * à ceux de l'espèce, après eux dans l'ordre d'apposition (leur `plan` décide de l'empilement, cf.
+ * `composeQuad`). Une clé que l'espèce ne porte pas entre telle quelle. PURE.
+ */
+export function mergeQuadDeco(
+  base: QuadProps['deco'],
+  set: NonNullable<QuadProps['deco']>,
+): NonNullable<QuadProps['deco']> {
+  const out = { ...(base ?? {}) } as Record<string, QuadDecoValue | undefined>;
+  for (const [cle, val] of Object.entries(set) as [string, QuadDecoValue | undefined][]) {
+    if (!val) continue;
+    const prev = out[cle];
+    out[cle] = prev ? [...quadDecoFragments(prev), ...quadDecoFragments(val)] : val;
+  }
+  return out as NonNullable<QuadProps['deco']>;
+}
+
+/**
+ * Props d'espèce HABILLÉES du set déclaré par la donnée (`ResolveOpts.harnais`) — SOURCE UNIQUE des
+ * deux gabarits servis par ce pipeline (`quadruped` et `winged`, qui est un quadrupède + ailes).
+ * `harnais` vide (absent ou `''`, nu explicite d'un override) = les props d'espèce, intactes. PURE.
+ */
+export function quadPropsWithHarnais(p: QuadProps, espece: string, harnais?: string): QuadProps {
+  return harnais ? { ...p, deco: mergeQuadDeco(p.deco, quadHarnaisDeco(harnais, espece)) } : p;
+}
+
+/** (espèce, vue, pose, couleurs, ailes, yeux, set d'équipement) → os résolus, triés z croissant
+ *  (peintre). C'est ICI que les props d'ESPÈCE deviennent le rendu : le set déclaré par la donnée
+ *  y fusionne sa déco, résolu contre l'espèce qui le porte. PUR. */
 export function resolveQuad(
   species: string,
   view: View = 'profile',
@@ -50,8 +80,10 @@ export function resolveQuad(
   colors?: Palette,
   wings: 'folded' | 'spread' = 'folded',
   eyes?: { G?: string; D?: string },
+  harnais?: string,
 ): ResolvedBone[] {
-  return resolveQuadFromProps(QUAD_SPECIES[species] ?? QUAD_SPECIES.cheval, view, pose, colors, wings, eyes);
+  const p = QUAD_SPECIES[species] ?? QUAD_SPECIES.cheval;
+  return resolveQuadFromProps(quadPropsWithHarnais(p, species, harnais), view, pose, colors, wings, eyes);
 }
 
 /** Même rendu, mais à partir d'un PROPS direct (réutilisé par le gabarit AILÉ qui a son propre
@@ -116,7 +148,7 @@ export function resolveQuadFromProps(
 
 export const quadrupedPlan: BodyPlan = {
   id: 'quadruped',
-  resolve: (sp, view, pose, opts) => resolveQuad(sp, view, pose, opts?.colors, opts?.wings, opts?.eyes),
+  resolve: (sp, view, pose, opts) => resolveQuad(sp, view, pose, opts?.colors, opts?.wings, opts?.eyes, opts?.harnais),
   speciesNames: () => Object.keys(QUAD_SPECIES),
   restPose: () => QUAD_REST,
   walkPose: quadWalkPose,

@@ -9,7 +9,7 @@ import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
 import type { Palette } from '../palette';
-import { resolveQuadFromProps } from '../quadruped/composeQuad';
+import { resolveQuadFromProps, quadPropsWithHarnais } from '../quadruped/composeQuad';
 import { QUAD_REST, quadWalkPose, quadBitePose, quadLeapPose, quadFlinchPose, QUAD_DEATH } from '../quadruped/quadPose';
 import { quadAttackPose } from '../anim/creatureAttackPoses';
 import { WINGED_SPECIES, wingedSpeciesNames } from '../creatures';
@@ -19,7 +19,8 @@ import { WINGED_SPECIES, wingedSpeciesNames } from '../creatures';
 // plan, svg, échelle). On re-exporte la table/matcher dérivés (consommateurs inchangés).
 export { WINGED_SPECIES, wingedSpeciesNames };
 
-/** (espèce ailée, vue, pose, couleurs, ailes) → os résolus (réutilise le pipeline quadrupède).
+/** (espèce ailée, vue, pose, couleurs, ailes, yeux, set d'équipement) → os résolus (réutilise le
+ *  pipeline quadrupède, `harnais` compris : un set peut DÉCLARER une espèce ailée).
  *  `wings` : REPLIÉES au repos (défaut) / DÉPLOYÉES en vol/attaque (cf. WingState). */
 export function resolveWing(
   species: string,
@@ -28,8 +29,10 @@ export function resolveWing(
   colors?: Palette,
   wings: 'folded' | 'spread' = 'folded',
   eyes?: { G?: string; D?: string },
+  harnais?: string,
 ): ResolvedBone[] {
-  return resolveQuadFromProps(WINGED_SPECIES[species] ?? WINGED_SPECIES.griffon, view, pose, colors, wings, eyes);
+  const p = WINGED_SPECIES[species] ?? WINGED_SPECIES.griffon;
+  return resolveQuadFromProps(quadPropsWithHarnais(p, species, harnais), view, pose, colors, wings, eyes);
 }
 
 // Battement d'ailes (sinusoïde sur aileD/aileG, signes opposés). Vit DANS le plan : l'idle bat
@@ -41,7 +44,7 @@ const wingFlap = (phase: number, amp: number): Record<string, number> => {
 };
 export const wingedPlan: BodyPlan = {
   id: 'winged',
-  resolve: (sp, view, pose, opts) => resolveWing(sp, view, pose, opts?.colors, opts?.wings, opts?.eyes),
+  resolve: (sp, view, pose, opts) => resolveWing(sp, view, pose, opts?.colors, opts?.wings, opts?.eyes, opts?.harnais),
   speciesNames: () => Object.keys(WINGED_SPECIES),
   restPose: () => QUAD_REST,
   idlePose: (phase) => wingFlap(phase, 2.5), // frémissement d'ailes PLIÉES au repos (subtil)

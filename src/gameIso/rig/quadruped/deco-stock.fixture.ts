@@ -8,7 +8,9 @@
  * Ce module est un FIXTURE de test (jamais importé par le rendu) : il vit sous `src/` pour lire
  * le registre réel des créatures, à l'image de `src/scenes/test-fixture.ts`.
  */
-import { CREATURES } from '../creatures';
+import { CREATURES, QUAD_SPECIES, WINGED_SPECIES } from '../creatures';
+import { QUAD_HARNAIS } from './harnais';
+import { mergeQuadDeco } from './composeQuad';
 import { quadParts, quadDecoFragments, type QuadLayer } from './quadParts';
 import type { QuadBoneId, QuadProps } from './quadSkeleton';
 import type { View } from '../facing';
@@ -21,9 +23,23 @@ export const DECO_VIEWS: View[] = ['profile', 'front', 'back'];
 export const quadLayersSvg = (ls?: QuadLayer[]): string =>
   [...(ls ?? [])].sort((a, b) => (a.plan ?? 0) - (b.plan ?? 0)).map((l) => l.svg).join('');
 
-/** Les defs quadrupèdes/ailées du registre (le dénominateur de toute mesure de ce module). */
-export const quadDecoDefs = (): { id: string; quad: QuadProps }[] =>
-  CREATURES.filter((c) => c.quad).map((c) => ({ id: c.id, quad: c.quad as QuadProps }));
+/**
+ * Le dénominateur de toute mesure de ce module : les defs quadrupèdes/ailées du registre, ET les
+ * SETS d'équipement (`harnais/`) — la déco d'un set est de la déco, soumise au MÊME contrat (os
+ * émis par la vue, `plan` déclaré, repli dans le voisinage de l'os). Un set se mesure sur la
+ * carrure de CHAQUE espèce qu'il déclare, sous la clé `<set>@<espèce>` : c'est l'assemblage que le
+ * rendu produira (`resolveQuad`, fusion `mergeQuadDeco`).
+ */
+export const quadDecoDefs = (): { id: string; quad: QuadProps }[] => {
+  const especes: Record<string, QuadProps> = { ...QUAD_SPECIES, ...WINGED_SPECIES };
+  return [
+    ...CREATURES.filter((c) => c.quad).map((c) => ({ id: c.id, quad: c.quad as QuadProps })),
+    ...Object.values(QUAD_HARNAIS).flatMap((s) =>
+      s.especes.flatMap((e) => (especes[e]
+        ? [{ id: `${s.id}@${e}`, quad: { ...especes[e], deco: mergeQuadDeco(especes[e].deco, s.deco) } }]
+        : []))),
+  ];
+};
 
 export interface DecoCouples {
   /** Couples APPLICABLES : la clé vise cette vue (clé nue = les trois). */

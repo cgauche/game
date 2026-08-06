@@ -5188,7 +5188,8 @@
       "availability": "Limitée"
     },
     "appearance": {
-      "species": "cheval"
+      "species": "cheval",
+      "harnais": "sellerie-imperiale"
     }
   },
   {
@@ -63715,7 +63716,8 @@
       "availability": "Commune"
     },
     "appearance": {
-      "species": "cheval"
+      "species": "cheval",
+      "harnais": "sellerie-imperiale"
     }
   },
   {
@@ -63800,7 +63802,8 @@
       "availability": "Commune"
     },
     "appearance": {
-      "species": "cheval"
+      "species": "cheval",
+      "harnais": "sellerie-imperiale"
     }
   },
   {

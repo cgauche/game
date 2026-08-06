@@ -39,6 +39,10 @@ export interface ResolveOpts {
   /** Yeux personnalisés (ARTS du catalogue, déjà résolus) — appliqués sur les ancres
    *  `data-eye` des têtes de gabarit (quad/ailé). Sans ancre → no-op. */
   eyes?: { G?: string; D?: string };
+  /** Gabarit QUADRUPÈDE seulement : id d'un SET d'équipement du registre `quadruped/harnais`
+   *  (sellerie…), apposé au canal `deco` par-dessus l'art de l'espèce. Les autres gabarits
+   *  l'ignorent. */
+  harnais?: string;
 }
 
 export interface BodyPlan {
@@ -109,13 +113,14 @@ export function resolveSpecies(species: string): RenderResolution {
  *  d'override remplace donc l'objet `colors` ENTIER du record, il ne s'y fusionne pas.
  *  Les deux entrées portent la forme d'AUTHORING (`eyes` = clés du catalogue `EYE_OPTIONS`) — résolue
  *  en ARTS ici, une seule fois, pour tout le monde. PURE.
- *  `armurePortee` (2 records de plan : demigriffon-adulte, destrier-squelettique) n'entre PAS ici :
- *  c'est le canal BIPÈDE (`synthArmour`), et `ResolveOpts` ne le porte pas — à instruire en L3+ (#1128). */
+ *  `armurePortee` (2 records de plan : demigriffon-adulte, destrier-squelettique) relève du canal
+ *  BIPÈDE (`synthArmour`) ; `ResolveOpts` ne le porte pas. */
 export function planOptsForRecord(recordId: string | undefined, override?: EntityAppearance): ResolveOpts {
   const rec = recordId ? findCreatureById(recordId)?.appearance : undefined;
   return {
     colors: override?.colors ?? rec?.colors,
     eyes: eyesArtFromKeys(override?.eyes) ?? eyesArtFromKeys(rec?.eyes),
+    harnais: override?.harnais ?? rec?.harnais,
   };
 }
 
