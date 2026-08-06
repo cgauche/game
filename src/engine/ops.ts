@@ -692,7 +692,7 @@ export type GameOp =
    *  `focusInterrupt` appelé par `runCombatFlow`), qui détient get/set et le combattant. `applyOps` (moteur
    *  pur) le laisse INERTE — comme `grantFreeAttack`/`summon`/`zone`. */
   | { op: 'interruptFocus' }
-  /** Marqueur IMPUR de la branche de VICTOIRE d'un Test opposé de Piège-lame (LDB 62 l.295) : l'adversaire
+  /** Marqueur IMPUR de la branche de VICTOIRE d'un Test opposé de Piège-lame (LDB 62 l.280) : l'adversaire
    *  est désarmé (sa lame arrachée) et, sur un Succès Stupéfiant (marge nette ≥ 6 DR), sa lame est BRISÉE à
    *  moins qu'elle ne possède l'Atout Incassable. Résolu par la couche state (combatFlow : `applyBladeTrap`
    *  via le hook injecté `bladeTrap` appelé par `runCombatFlow`), qui détient get/set, l'attaquant ciblé et

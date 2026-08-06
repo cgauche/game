@@ -359,7 +359,7 @@ export interface AttackResult {
    *  → balayage possible vers un autre adversaire à portée. Orchestré par le store/combatFlow. */
   cleave?: boolean;
   /** Arme avec laquelle le défenseur a PARÉ (mode parade uniquement) — sert aux Critiques du Test
-   *  opposé (Piège-lame, LDB 62 l.292) et à la Maladresse défensive d'une arme Dangereuse. */
+   *  opposé (Piège-lame, LDB 62 l.278) et à la Maladresse défensive d'une arme Dangereuse. */
   parryWeapon?: Weapon;
   /** Cible Inconsciente — règle optionnelle « mort-auto » (LDB 16 l.112) : en CORPS À CORPS, la cible
    *  est tuée automatiquement. Le store applique la mise hors de combat MORTELLE par le chemin des morts

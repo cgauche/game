@@ -262,7 +262,7 @@ export function itemFromTrappingById(id: string, resolveTrapping: TrappingResolv
     ...(t.defaultAmmo ? { defaultAmmo: t.defaultAmmo } : {}), // munition REPRÉSENTATIVE (hint joueur, ammoFamilyLabel)
     ...(t.soloSimple ? { soloSimple: true } : {}), // baliste « relativement simple » : tir solo perd les Atouts (l.3818)
     ...(t.indirect ? { indirect: true } : {}), // mortier/catapulte « arc élevé » (AA p.122-123) : tir INDIRECT → viser une case
-    ...(t.bladed ? { bladed: true } : {}), // LDB 62 l.292 — approximation MAISON, propagée du catalogue
+    ...(t.bladed ? { bladed: true } : {}), // LDB 62 l.278 — approximation MAISON, propagée du catalogue
     ...(t.organicProjectile ? { organicProjectile: true } : {}), // LDB 47 — approximation MAISON, propagée du catalogue
     ...(t.onHitEffects?.length ? { onHitEffects: t.onHitEffects } : {}), // effets « à la touche » en DONNÉE (Canon à flammes nain → En flammes, ADE II 8 l.243)
     ...(t.minRangeBand ? { minRangeBand: t.minRangeBand } : {}), // PORTÉE MINIMALE (machine de siège : pas de Bout Portant / trébuchet-mortier sous Portée Courte, ADE II 8 l.251/253)

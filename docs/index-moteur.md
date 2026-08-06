@@ -1869,7 +1869,7 @@ _1883 exports publics mesurés (151 fichiers de `src/engine`, hors tests) — 15
 | `protectriceAP` | 231 | function | Protectrice (Indice) : PA conférés à TOUTES les localisations quand on OPPOSE l'attaque avec cette arme (LDB 62 l.306). | Aiguillage des qualités d'arme/armure, Combat : attaque, Avantage, engagement, Coups Critiques |
 | `rangedOpposeWeapon` | 238 | function | Protectrice ≥ 2 : permet d'OPPOSER les projectiles tirés en Ligne de Vue (LDB 62 l.307). | Aiguillage des qualités d'arme/armure |
 | `canPushback` | 246 | function | Perturbante (LDB 62 l.275-276) : l'arme peut repousser au lieu de blesser. | Aiguillage des qualités d'arme/armure |
-| `hasBladeTrap` | 251 | function | Piège-lame (LDB 62 l.292-294) : l'arme peut piéger une lame sur un Critique défensif. | Aiguillage des qualités d'arme/armure, Combat : attaque, Avantage, engagement, Coups Critiques |
+| `hasBladeTrap` | 251 | function | Piège-lame (LDB 62 l.278) : l'arme peut piéger une lame sur un Critique défensif. | Aiguillage des qualités d'arme/armure, Combat : attaque, Avantage, engagement, Coups Critiques |
 | `isMagicWeapon` | 256 | function | Arme MAGIQUE (qualité enchantée, ADE II) : ses attaques comptent comme magiques (Éthéré, LDB 85). | Aiguillage des qualités d'arme/armure, Magie, incantation, sorts, prières, miracles, Combat : attaque, Avantage, engagement, Coups Critiques |
 | `DamageStepCtx` | 260 | interface | — | Aiguillage des qualités d'arme/armure |
 | `DamageStep` | 268 | interface | — | Aiguillage des qualités d'arme/armure |

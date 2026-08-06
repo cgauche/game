@@ -375,7 +375,7 @@ export interface Weapon {
    *  (pas forcément un combattant) ; son Atout Explosion/Tir de zone frappe le rayon autour de la case. Lu
    *  par `availableAttacks` (ciblage de case vs combattant). Absent = tir DIRECT (canon, baliste, pierrier). */
   indirect?: boolean;
-  /** LDB 62 l.292 — approximation MAISON (le RAW ne liste pas les armes à lame), éditable. */
+  /** LDB 62 l.278 — approximation MAISON (le RAW ne liste pas les armes à lame), éditable. */
   bladed?: boolean;
   /** LDB 47 — approximation MAISON (matière du projectile, non tabulée par le RAW), éditable. */
   organicProjectile?: boolean;
@@ -972,7 +972,7 @@ export interface ItemInstance {
   soloSimple?: boolean;
   /** Pièce à TIR INDIRECT (mortier/catapulte, cf. `Weapon.indirect`) — propagé à l'arme dérivée. */
   indirect?: boolean;
-  /** LDB 62 l.292 — approximation MAISON, propagé à l'arme dérivée (cf. `Weapon.bladed`). */
+  /** LDB 62 l.278 — approximation MAISON, propagé à l'arme dérivée (cf. `Weapon.bladed`). */
   bladed?: boolean;
   /** LDB 47 — approximation MAISON, propagé à l'arme dérivée (cf. `Weapon.organicProjectile`). */
   organicProjectile?: boolean;

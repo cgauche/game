@@ -247,7 +247,7 @@ export function canPushback(w: QualityCarrier | undefined): boolean {
   return resolveQualities(w).some((r) => r.caps?.pushback);
 }
 
-/** Piège-lame (LDB 62 l.292-294) : l'arme peut piéger une lame sur un Critique défensif. */
+/** Piège-lame (LDB 62 l.278) : l'arme peut piéger une lame sur un Critique défensif. */
 export function hasBladeTrap(w: QualityCarrier | undefined): boolean {
   return resolveQualities(w).some((r) => r.caps?.bladeTrap);
 }

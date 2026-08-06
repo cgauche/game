@@ -812,7 +812,7 @@ export interface PendingRenounce {
   /** Alignement de la source (cf. PendingCorruption.align) — table EDOC si la mutation est subie. */
   align?: import('../engine/corruption').ChaosAlign;
 }
-/** Piège-lame (LDB 62 l.292-294) : le HÉROS défenseur a obtenu un Critique en parant avec une arme
+/** Piège-lame (LDB 62 l.278-280) : le HÉROS défenseur a obtenu un Critique en parant avec une arme
  *  Piège-lame face à une arme à lame — il choisit entre le Coup Critique normal (LDB 14 l.7) et
  *  PIÉGER la lame (Test opposé de Force + DR de la défense ; victoire → désarme, Stupéfiant → brise
  *  sauf Incassable, échec → l'adversaire se libère). */
@@ -1160,7 +1160,7 @@ export interface OpposedFreeze {
   attackerName?: string;
   /** Libellé du côté attaquant (« Force ») — affichage. */
   attackerLabel?: string;
-  /** Bonus de DR ajouté au jet du DÉFENSEUR avant l'opposition (Piège-lame, LDB 62 l.295) — `FlowTest.
+  /** Bonus de DR ajouté au jet du DÉFENSEUR avant l'opposition (Piège-lame, LDB 62 l.280) — `FlowTest.
    *  opposed.bonusSL` figé : chaque (re)résolution oppose `def.sl + bonusSL` à `aT`. Absent/0 = Assommante. */
   bonusSL?: number;
 }
@@ -1191,7 +1191,7 @@ export interface FreeAttackFreeze {
 }
 /** Contexte SÉRIALISABLE de la CONSÉQUENCE d'un Test opposé de Piège-lame GAGNÉ (op `breakBlade`) porté par
  *  une étape de cascade : l'attaquant désarmé (`attackerId`), la lame visée (`weaponUid`, uid universel), le
- *  bonus de DR de la défense (`defSL`, LDB 62 l.295) et le DR FIGÉ de l'attaquant (`attackerSL`). La marge
+ *  bonus de DR de la défense (`defSL`, LDB 62 l.280) et le DR FIGÉ de l'attaquant (`attackerSL`). La marge
  *  nette = `(DR du défenseur + defSL) − attackerSL` ≥ 6 → la lame est BRISÉE (sauf Incassable), sinon
  *  ARRACHÉE. Reconstruit l'`exec` impur de l'applier (le bris/désarmement passe par `runCombatFlow` + le
  *  hook `bladeTrap`). Tout est primitif → mirroir dans `meta.bladeTrap` pour la voie cascade (héros manuel). */

@@ -14,7 +14,7 @@ import type { Weapon } from '../../engine/types';
 import { resetCadence, setCadence } from '../../engine/cadence';
 
 /**
- * Piège-lame (LDB 62 l.292-295) en Test opposé CADENCE-AWARE : « Si vous obtenez un Critique en vous
+ * Piège-lame (LDB 62 l.278-280) en Test opposé CADENCE-AWARE : « Si vous obtenez un Critique en vous
  * défendant contre une arme à lame, vous pouvez choisir de la piéger… effectuez un Test opposé de Force,
  * en ajoutant votre DR obtenu au précédent Test de Corps à corps. Si vous l'emportez, l'adversaire laisse
  * tomber la lame ; Succès Stupéfiant → la lame est BRISÉE sauf Incassable ; échec → l'adversaire libère sa
@@ -117,7 +117,7 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
 
     const a = useGame.getState().battle!.combatants.find((x) => x.id === A.id)!;
     expect(a.weapons.find((w) => w.uid === 'atk-blade')).toBeUndefined(); // désarmé dans tous les cas de victoire
-    // Bris SSI Succès Stupéfiant (marge nette ≥ 6) — preuve que la conséquence lit la marge nette (LDB 62 l.295).
+    // Bris SSI Succès Stupéfiant (marge nette ≥ 6) — preuve que la conséquence lit la marge nette (LDB 62 l.280).
     expect(weapon.destroyed === true).toBe(o.netSL >= 6);
     // La conséquence est EMPILÉE comme étape d'affichage propre (paradigme cascade : « l'un sous l'autre »).
     const rx = o.netSL >= 6 ? /BRISÉE/ : /arrachée/;
@@ -159,7 +159,7 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
 
     const a = useGame.getState().battle!.combatants.find((x) => x.id === A.id)!;
     expect(a.weapons.find((w) => w.uid === 'atk-blade')).toBeUndefined(); // arrachée des mains
-    expect(weapon.destroyed).toBeFalsy(); // Incassable → pas brisée (LDB 62 l.295)
+    expect(weapon.destroyed).toBeFalsy(); // Incassable → pas brisée (LDB 62 l.280)
     expect(outcome.some((l) => /résiste à la casse/.test(l.text))).toBe(true); // note empilée
   });
 

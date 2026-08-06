@@ -357,7 +357,7 @@ export function createCombatSlice(get: Get, set: Set) {
   // (perte des DR + Imparfaite Mineure, LDB 46 l.144) — appelée par `runCombatFlow` sur le `do`/`interruptFocus`.
   setFocusInterruptHook(applyFocusInterruption);
   // Hook `breakBlade` (op IMPURE) : conséquence d'un Test opposé de Piège-lame GAGNÉ (désarme/brise la lame,
-  // LDB 62 l.295) — appelée par `runCombatFlow` sur le `do`/`breakBlade`.
+  // LDB 62 l.280) — appelée par `runCombatFlow` sur le `do`/`breakBlade`.
   setBladeTrapHook(applyBladeTrap);
   // Hook `crossTest` de zone (Forêt d'épines, LDB 48 l.749, #500) : traversée gatée par un Test —
   // délègue à `routeTriggeredTest` (héros manuel → cascade ; ennemi/auto → jet inline).

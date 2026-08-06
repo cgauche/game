@@ -77,7 +77,7 @@ const weaponSchema = z.strictObject({
   weaponGroup: z.string().optional(),
   soloSimple: z.boolean().optional(),
   indirect: z.boolean().optional(),
-  /** LDB 62 l.292 — approximation MAISON (le RAW ne liste pas les armes à lame), éditable. */
+  /** LDB 62 l.278 — approximation MAISON (le RAW ne liste pas les armes à lame), éditable. */
   bladed: z.boolean().optional(),
   /** LDB 47 — approximation MAISON (matière du projectile, non tabulée par le RAW), éditable. */
   organicProjectile: z.boolean().optional(),
@@ -102,7 +102,7 @@ export const schema = z.array(
     weaponGroup: z.string().optional(),
     soloSimple: z.boolean().optional(),
     indirect: z.boolean().optional(),
-    /** LDB 62 l.292 — approximation MAISON (le RAW ne liste pas les armes à lame), éditable. */
+    /** LDB 62 l.278 — approximation MAISON (le RAW ne liste pas les armes à lame), éditable. */
     bladed: z.boolean().optional(),
     /** LDB 47 — approximation MAISON (matière du projectile, non tabulée par le RAW), éditable. */
     organicProjectile: z.boolean().optional(),

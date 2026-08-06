@@ -981,7 +981,7 @@ export const FLOWS = {
         const opp = st.meta?.opposed;
         // Chance « +1 DR » (LDB 17 l.26) sur un Test OPPOSÉ : on RE-OPPOSE le jet défenseur amélioré (+1 DR)
         // à l'attaquant FIGÉ (1ʳᵉ position) — le +1 peut FAIRE BASCULER l'issue (calque `disengage.bonus.derive`).
-        // `bonusSL` (Piège-lame, LDB 62 l.295) s'AJOUTE en plus au DR du défenseur dans l'opposition (pas au
+        // `bonusSL` (Piège-lame, LDB 62 l.280) s'AJOUTE en plus au DR du défenseur dans l'opposition (pas au
         // `sl` reporté, qui reste le DR propre +1).
         if (opp) {
           const def2 = bumpSL(hydrateTR({ roll: st.result.roll, target: st.target!, success: st.result.success, sl: st.result.sl }));

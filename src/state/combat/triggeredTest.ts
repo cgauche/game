@@ -114,7 +114,7 @@ export function setFocusInterruptHook(fn: FocusInterruptHook): void { focusInter
  *  store (`setBladeTrapHook` dans `createCombatSlice`), pointe sur `applyBladeTrap` (combatFlow). Appelé par
  *  `runCombatFlow` lorsqu'un `do`/`ops` porte un `breakBlade` : l'attaquant ciblé (`bt.attackerId`) est
  *  désarmé de la lame `bt.weaponUid` ; marge nette `(DR défenseur + bt.defSL) − bt.attackerSL` ≥ 6 → lame
- *  BRISÉE sauf Incassable (LDB 62 l.295). Le DR du défenseur vient du Test résolu (`defSL` ci-dessous = celui
+ *  BRISÉE sauf Incassable (LDB 62 l.280). Le DR du défenseur vient du Test résolu (`defSL` ci-dessous = celui
  *  du jet). Inversion de dépendance (cette brique reste sans import de combatFlow → pas de cycle). Absent
  *  (hors store) ⇒ no-op (l'op reste inerte, comme dans `applyOps`). */
 type BladeTrapHook = (get: Get, set: SetFn, defender: Combatant, bt: BladeTrapFreeze, defenderSL: number) => void;
@@ -262,7 +262,7 @@ export function runCombatFlow(ctx: ExecCtx, flow: Flow): void {
             // Op IMPURE `interruptFocus` (LDB 46 l.144) : le hook injecté (combatFlow) résout l'interruption
             // sur `unit` (le focaliseur) — perte des DR + Imparfaite Mineure (qui peut appender sa propre étape).
             if (focusInterruptHook) for (const op of node.effect.ops) if (op.op === 'interruptFocus') focusInterruptHook(ctx.get, ctx.set, unit);
-            // Op IMPURE `breakBlade` (LDB 62 l.295) : le hook injecté (combatFlow) désarme/brise la lame de
+            // Op IMPURE `breakBlade` (LDB 62 l.280) : le hook injecté (combatFlow) désarme/brise la lame de
             // l'attaquant ciblé (`ctx.bladeTrap`). `unit` = le défenseur piégeur ; son DR final (`ctx.opsCtx.sl`)
             // alimente la marge nette (= victoire Stupéfiante → bris). Le hook EMPILE sa conséquence comme étape
             // d'affichage propre (mirroir du Coup Critique) → rien à journaliser ici.
@@ -378,7 +378,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     // Test OPPOSÉ inline : l'attaquant figé (1ʳᵉ position) vs le jet du défenseur → le défenseur RÉSISTE
     // (success) si l'attaquant ne l'emporte PAS (défenseur vainqueur OU égalité). `t.success`/`t.sl` du
     // jet simple sont REMPLACÉS par l'issue opposée (LDB 62 l.268). Le bonus de DR du défenseur (Piège-lame,
-    // LDB 62 l.295) s'AJOUTE à son `sl` AVANT l'opposition (modifie le vainqueur ET la marge nette).
+    // LDB 62 l.280) s'AJOUTE à son `sl` AVANT l'opposition (modifie le vainqueur ET la marge nette).
     const bonusSL = opp.bonusSL ?? 0;
     const o = resolveOpposed(aT, { ...t, sl: t.sl + bonusSL });
     const defenderResists = o.winner !== 'attacker';

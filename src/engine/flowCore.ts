@@ -457,7 +457,7 @@ export interface FlowTest {
    *  `disengage` (l'opposant garde son jet, reroll-aware). */
   opposed?: { attacker: CharKey; attackerSkill?: string; attackerLabel?: string;
     /** Bonus de DR ajouté au jet du DÉFENSEUR (celui qui passe CE Test) AVANT l'opposition — Piège-lame
-     *  (LDB 62 l.295 : « en ajoutant votre DR obtenu au précédent Test de Corps à corps »). Modifie À LA
+     *  (LDB 62 l.280 : « en ajoutant votre DR obtenu au précédent Test de Corps à corps »). Modifie À LA
      *  FOIS le vainqueur et la marge nette (il s'additionne au `sl` du défenseur dans `resolveOpposed`).
      *  Absent = 0 (Assommante). */
     bonusSL?: number;
