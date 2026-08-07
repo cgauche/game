@@ -35,6 +35,23 @@
   padding-top: 10px;
   border-top: 1px solid var(--border);
 }
+/* ≤560 (design 2026-07-31 §12) : sur téléphone une fenêtre de jet prend TOUT l'écran, pour donner
+   au corps du jet la pleine hauteur. Le corps défile et le pied reste fixe par les règles ci-dessus :
+   cette tranche n'ôte que le cadre et l'ancrage. */
+@media (max-width: 560px) {
+  .modal-overlay:has(> .modal > .rs-scroll) {
+    place-items: stretch;
+    padding: 0;
+  }
+  .modal:has(> .rs-scroll) {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    max-height: 100%;
+    border-radius: 0;
+    padding: 14px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+}
 /* Modale de jet MULTI (N rangées riches : portrait + jet + influence) — plus large que le mono (340px) pour ne pas
    tasser les RollRow ; reste responsive (92vw ≤ ~520px). */
 .multi-roll {

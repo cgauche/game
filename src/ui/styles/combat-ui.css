@@ -471,22 +471,6 @@ textarea:focus {
   padding: 11px 40px;
 }
 
-/* Option de jeu : bascule d'inspection (OFF par défaut). */
-.inspect-toggle {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--muted);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 2px 6px;
-  cursor: pointer;
-}
-.inspect-toggle.on {
-  color: var(--gold2);
-  border-color: rgba(255, 224, 102, 0.5);
-  background: rgba(255, 224, 102, 0.12);
-}
 /* ── Barre d'action EN BAS : panneau Perso (héros actif) + actions (Lot 1) ── */
 .action-bar {
   position: absolute;
@@ -883,4 +867,48 @@ textarea:focus {
 .ab-spell-row .btn {
   flex: 1;
   text-align: left;
+}
+
+/* ══ Matrice responsive du DOCK DE DÉCISION (design 2026-07-31 §12) ══════════════════════════════
+   Mêmes breakpoints canon que le reste du HUD (900 / 700 / 560) plus `pointer: coarse`, dans cet
+   ordre. Aucune action légale ne disparaît à aucune largeur : la hotbar se compacte, puis défile.
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  /* La barre cède d'abord ses réserves : hotbar plafonnée (elle défile déjà) et colonne de valeurs
+     du résumé de tour resserrée — l'acteur, ses ressources et ses actions restent tous lisibles. */
+  .ab-slots { max-width: min(96vw, 620px); }
+  .aframe dd { min-width: 9ch; }
+}
+@media (max-width: 700px) {
+  .action-bar { max-width: 98%; }
+  .ab-bar { gap: 8px; padding: 7px 9px; }
+  .ab-slot { min-width: 54px; padding: 6px 7px; }
+}
+@media (max-width: 560px) {
+  /* Téléphone : la barre prend la largeur (la hotbar la remplit) et l'acteur passe AU-DESSUS de ses
+     actions — deux rangées plutôt qu'une rangée tronquée. */
+  .action-bar { left: 4px; right: 4px; bottom: calc(6px + env(safe-area-inset-bottom, 0px)); transform: none; max-width: none; align-items: stretch; }
+  .ab-bar { flex-direction: column; align-items: stretch; gap: 6px; padding: 6px 8px; }
+  .ab-actor { border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.12); padding-right: 0; padding-bottom: 6px; }
+  /* Le résumé « Ressources du tour » occupe la largeur restante du cadre acteur plutôt que de pousser
+     la liste d'actions hors écran : libellé à gauche, valeur ferrée à droite. */
+  .ab-actor dl { flex: 1 1 auto; min-width: 0; grid-template-columns: auto 1fr; }
+  .ab-actor dd { text-align: right; min-width: 0; }
+  .ab-slots { max-width: none; }
+  .ab-slot { flex: 1 1 0; min-width: 52px; padding: 6px 3px; }
+  .ab-ico { font-size: 17px; }
+  .ab-lbl { font-size: 9px; }
+  .ab-spells { max-height: 42vh; overflow-y: auto; }
+  /* La sortie de tour (désignée par son id de slot) reste COLLÉE au bord droit de la hotbar pendant
+     qu'on la fait défiler : aucune surface ne la recouvre et on l'atteint sans chercher. */
+  .ab-slots [data-slot='end-turn'] {
+    position: sticky;
+    right: 0;
+    margin-left: 6px;
+    padding-left: 6px;
+    background: rgba(12, 9, 18, 0.94);
+  }
+}
+@media (pointer: coarse) {
+  .ab-slot { min-height: 44px; }
 }

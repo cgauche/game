@@ -40,6 +40,7 @@ import type { Combatant } from '../engine/types';
 import { makeRNG } from '../engine/dice';
 import { partyMoneyTotal, creditBourse, distributeCredit } from './bourseFlow';
 import { t } from '../i18n';
+import { diamondCorners, type Dims } from '../geometry/iso';
 
 /** Trace du DERNIER Test résolu (`resolveTest`, `EVT.TEST_RESOLVED`) — observation pure pour la
  *  recette navigateur (`__wfrp.lastRoll()`), JAMAIS dans l'état de jeu persisté (module DEV seul,
@@ -59,6 +60,8 @@ bus.on(EVT.TEST_RESOLVED, (payload) => { lastRollTrace = payload as typeof lastR
  *                           distanceLabel) — cibler `clickRoute(id)` sans deviner parmi des chips ambigus
  *   __wfrp.screenPos('id') → bounding box ÉCRAN du token (combat ET exploration, `data-cid`) — LECTURE
  *                           seule (`getBoundingClientRect`), `null` si absent du DOM
+ *   __wfrp.tileScreenPos({x,y,z?}) → même bounding box ÉCRAN pour une CASE (vide comprise), là où
+ *                           `screenPos` exige un token `data-cid` — viser un déplacement au clic réel
  *   __wfrp.talk('id')     → téléporte le groupe à côté de l'entité et l'interpelle (dialogue/marchand)
  *   __wfrp.goto('id')     → place le groupe sur la case de l'entité (déclenche portes/triggers au pas)
  *   __wfrp.screen('menu') → navigue vers un écran
@@ -395,6 +398,26 @@ export function buildApi() {
       if (!el) return null;
       const r = el.getBoundingClientRect();
       return { x: r.x, y: r.y, width: r.width, height: r.height };
+    },
+
+    /** OBSERVATION seule : bounding box ÉCRAN d'une CASE — le symétrique de `screenPos`, qui ne sait
+     *  servir qu'un token porteur de `data-cid`. Une case VIDE n'a pas de nœud DOM propre : elle est
+     *  projetée par `diamondCorners` (`geometry/iso`, la géométrie du RENDU lui-même), puis la
+     *  transformée caméra est lue sur la CTM du groupe qui la porte — zoom, panoramique et rotation
+     *  viennent donc du DOM, pas d'un second calcul à tenir à jour. `z` = étage visé (défaut 0).
+     *  `null` hors scène ou tant que le stage n'est pas monté. Zéro action — ne pilote rien. */
+    tileScreenPos: (tile: { x: number; y: number; z?: number }): { x: number; y: number; width: number; height: number } | null => {
+      const st = useGame.getState();
+      if (!st.scene) return null;
+      const camGroup = document.querySelector('svg.iso-stage > g') as SVGGraphicsElement | null;
+      const ctm = camGroup?.getScreenCTM();
+      if (!ctm) return null;
+      const dims: Dims = { ...st.scene.dimensions, rot: st.camRot, view: st.viewMode, edge: st.camEdge };
+      const c = diamondCorners(tile.x, tile.y, dims, tile.z ?? 0);
+      const pts = [c.top, c.right, c.bot, c.left].map(([x, y]) => new DOMPoint(x, y).matrixTransform(ctm));
+      const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
+      const x = Math.min(...xs), y = Math.min(...ys);
+      return { x, y, width: Math.max(...xs) - x, height: Math.max(...ys) - y };
     },
 
     /** ACCÈS DIRECT : ouvre le dialogue/marchand d'une entité (téléporte le groupe à côté puis interagit). */

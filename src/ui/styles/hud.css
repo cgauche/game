@@ -159,9 +159,6 @@
   color: var(--muted);
   font-size: 11px;
 }
-@media (pointer: coarse) {
-  .ms-trigger, .ms-opt { padding-top: 7px; padding-bottom: 7px; }
-}
 /* Choix par tuile-portrait avec légende sous la tuile (monture/cavalier, modes de soin…). */
 .frame-pick {
   display: inline-flex;
@@ -280,8 +277,8 @@
   font-size: 12px;
   text-align: center;
 }
-.is-cell[data-phase='past'] { opacity: 0.55; }
-.is-cell[data-phase='future'] { opacity: 0.78; }
+/* Design 2026-07-31 §5. */
+.is-cell[data-phase='past'] { opacity: 0.34; filter: grayscale(0.8); }
 /* LDB 13 l.40. */
 .is-score {
   position: absolute; top: -4px; left: -4px; z-index: 2;
@@ -366,43 +363,9 @@
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
-@media (max-width: 700px) {
-  .initiative-strip { left: 4px; }
-  .is-tiles { gap: 5px; padding: 5px 4px; }
-  .ptile-states { font-size: 10px; }
-  /* Le dock d'équipe (4 héros + navires alliés en combat naval) S'ENROULE en dessous de cette largeur
-     (`.party-dock` — enrouler plutôt que chevaucher les coins) : 96px ne couvrait qu'UNE rangée, la
-     bannière chevauchait dès que le dock passait à 2 rangées (dès 4 tuiles) — #376 pt.7, repro CDP 360px. */
-  .combat-feed { top: 176px; max-width: 94vw; }
-  .cb-ev { white-space: normal; text-align: center; } /* événements longs : retour à la ligne sur mobile (pas de débord) */
-  .modal-actions { flex-wrap: wrap; justify-content: center; } /* boutons de modale : passage à la ligne propre sur mobile */
-}
-@media (max-width: 420px) {
-  /* En dessous de 420px, un combat NAVAL (4 héros + 1 navire allié = 5 tuiles) s'enroule sur 3 rangées. */
-  .combat-feed { top: 254px; }
-}
-
-/* TÉLÉPHONE étroit seulement : la barre passe pleine largeur (la hotbar remplit). Aux largeurs tablette
-   (561-700px) on garde la barre CENTRÉE qui épouse son contenu — sinon un grand vide à droite du panneau. */
-@media (max-width: 560px) {
-  .action-bar { left: 4px; right: 4px; bottom: calc(6px + env(safe-area-inset-bottom, 0px)); transform: none; max-width: none; align-items: stretch; }
-  .ab-bar { flex-direction: column; align-items: stretch; gap: 6px; padding: 6px 8px; }
-  .ab-actor { border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.12); padding-right: 0; padding-bottom: 6px; }
-  /* Le résumé « Ressources du tour » occupe la largeur restante du cadre acteur plutôt que de pousser
-     la liste d'actions hors écran : libellé à gauche, valeur ferrée à droite. */
-  .ab-actor dl { flex: 1 1 auto; min-width: 0; grid-template-columns: auto 1fr; }
-  .ab-actor dd { text-align: right; }
-  .ab-slots { max-width: none; }
-  .ab-slot { flex: 1 1 0; min-width: 52px; padding: 6px 3px; }
-  .ab-ico { font-size: 17px; }
-  .ab-lbl { font-size: 9px; }
-  .ab-spells { max-height: 42vh; overflow-y: auto; }
-}
-
-/* ── Dock d'équipe → RANGÉE EN HAUT (inversé avec l'initiative — demande utilisateur).
-   `max-width` réserve la place des coins (menu/carte à gauche, vue à droite) : sur petit
-   écran le dock S'ENROULE (2×2) au lieu de chevaucher ces boutons ; sur grand écran il
-   reste sur une rangée (la réserve ne fait que plafonner la largeur). ── */
+/* ── Dock d'équipe → RANGÉE EN HAUT (inversé avec l'initiative — demande utilisateur). Il est
+   strictement IDENTITAIRE (design 2026-07-31 §4) : ni ordre des tours, ni acteur courant.
+   `max-width` réserve la place des coins (menu/carte à gauche, vue à droite). ── */
 .party-dock {
   position: absolute;
   top: 10px;
@@ -417,12 +380,39 @@
   gap: 12px;
   max-width: calc(100vw - 220px);
 }
-@media (max-width: 700px) {
-  /* `max-width` desktop réserve les COINS (menu/carte) via un `calc(100vw - 220px)` : à largeur
-     mobile ce reste fixe de 220px dévore presque toute la largeur (140px à 360px !), forçant le dock
-     à s'enrouler sur 2 rangées et déborder sous la bannière d'annonce (#376 pt.7, repro CDP 360px).
-     Les coins sont déjà petits/redisposés en mobile → un plafond en vw (comme `.combat-feed`) suffit. */
-  .party-dock { top: 6px; gap: 8px 10px; max-width: 92vw; }
+/* Une alerte est CONTENUE par la carte de son personnage (design 2026-07-31 §4) : la colonne d'États
+   est sœur du portrait dans `.ptile-wrap` ; dans le dock elle est ancrée au coin haut-droit de la
+   tuile, donc l'alerte ne désigne qu'un seul héros. */
+.party-dock .ptile-wrap {
+  position: relative;
+}
+.party-dock .ptile-states {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 2;
+}
+/* Une carte de groupe = portrait + NOM VISIBLE dessous (design 2026-07-31 §4). L'enveloppe est
+   sémantique (`figure`/`figcaption`) et stylée en descendance : `PortraitTile` ne connaît pas le nom. */
+.party-dock > figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  max-width: 84px;
+}
+.party-dock figcaption {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-size: 11px;
+  line-height: 1.1;
+  color: var(--gold2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
 }
 
 /* ── Tiroir journal (bas-droite) ── */
@@ -467,12 +457,9 @@
   border-color: var(--border);
   text-shadow: none;
 }
-@media (max-width: 700px) {
-  .log-drawer { right: 8px; bottom: 88px; }
-}
-
-/* ── Barre HUD supérieure (haut-gauche, les deux modes) : menu ☰ + horloge + raccourcis de lieu.
-   UN conteneur en rangée qui s'enroule ≤700px — plus deux îlots absolus indépendants. */
+/* ── Barre HUD supérieure (haut-gauche, les deux modes) : menu ☰ + raccourcis de lieu, et HORS
+   COMBAT la pile de contexte — lieu, date, objectif (design 2026-07-31 §11). UN conteneur en
+   rangée qui s'enroule ≤700px. ── */
 .hud-topbar {
   position: absolute;
   top: 10px;
@@ -482,10 +469,29 @@
   flex-wrap: wrap;
   align-items: flex-start;
   gap: 6px;
+  /* Le haut-centre appartient au GROUPE (design 2026-07-31 §2) : la pile s'arrête avant le dock,
+     centré et large d'environ 242px pour quatre portraits. `50vw - 160px` = la moitié gauche moins
+     la demi-largeur du dock et son air ; le plancher garde la barre utilisable sous 700px, où le
+     dock passe en rangée défilable et ne se fait plus voler ses portraits. */
+  max-width: min(560px, max(200px, calc(50vw - 160px)));
   pointer-events: none; /* les interstices ne bloquent pas les clics sur la scène */
 }
 .hud-topbar > * {
   pointer-events: auto;
+}
+/* Lieu courant : premier étage de la pile de contexte, même chip que l'horloge (`.hud-clock`,
+   world-meta.css) — désigné par son id de zone, jamais par une classe de plus. */
+.hud-topbar [data-hud='place'] {
+  align-self: center;
+  max-width: 40vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--gold2);
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 3px var(--shadow-ink), 0 0 6px var(--shadow-ink);
 }
 .game-menu {
   position: relative;
@@ -508,17 +514,27 @@
   gap: 4px;
 }
 
-/* ── Bandeau d'objectif courant (#238 — haut-centre, exploration) ── */
+/* ── Objectif courant (#238) — DERNIER étage de la pile de contexte d'exploration (lieu, date,
+   objectif) : il vit DANS `.hud-topbar` et occupe sa propre ligne (`flex-basis: 100%`), donc son
+   ancrage suit la barre à toute largeur. ── */
+.hud-topbar > .objective-banner {
+  flex: 1 0 100%;
+  /* La marge dégage la rangée de portraits du groupe (haut-centre), dont la boîte descend plus bas
+     que celle des boutons de la barre. Elle est RELATIVE à la barre : quand celle-ci s'enroule,
+     l'objectif suit. */
+  margin-top: 22px;
+  /* La boîte tient toute la ligne, mais la SURFACE CLIQUABLE est la tête seule : le reste de la
+     ligne rend la scène (`.hud-topbar > *` accorde `auto` à tous les étages de la pile). */
+  pointer-events: none;
+}
+.hud-topbar > .objective-banner > * {
+  pointer-events: auto;
+}
 .objective-banner {
-  position: absolute;
-  top: 84px; /* #668 recette : sous `.party-dock` (top:10px) — dégage une rangée de portraits */
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 46; /* #668 : > `.party-dock` (45) — lisible même si le dock déborde (gros roster / 360px) */
   max-width: min(520px, 70vw);
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 4px;
 }
 .objective-head {
@@ -573,9 +589,6 @@
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
 }
 .objective-list li { margin: 2px 0; }
-@media (max-width: 700px) {
-  .objective-banner { top: 176px; max-width: 86vw; } /* #668 recette 360px : sous le dock 2×2 (4 portraits ≈ 161px) */
-}
 
 .defeat-modal { text-align: center; min-width: 240px; }
 
@@ -670,11 +683,6 @@
 .rest-hero-toggle { white-space: nowrap; }
 .rest-hero-controls { gap: 10px 16px; margin: 6px 0 2px 54px; }
 .rest-warn { font-size: 11px; color: var(--danger-soft); }
-@media (max-width: 560px) {
-  .rest-hero-line { grid-template-columns: auto minmax(0, 1fr) auto; }
-  .rest-hero-pick { grid-column: 2 / -1; }
-  .rest-hero-controls { margin-left: 0; }
-}
 .rest-foot { margin: 10px 0 0; text-align: center; font-size: 13px; }
 .rest-cost.over { color: var(--danger-soft); }
 .rest-travel-lines { margin: 0 0 6px; padding-left: 18px; font-size: 13px; color: var(--muted); }
@@ -778,4 +786,115 @@
   font-size: 11px;
   color: var(--muted);
   line-height: 1.35;
+}
+
+/* ══ Matrice responsive du HUD (design 2026-07-31 §12) ═══════════════════════════════════════════
+   Breakpoints canon 900 / 700 / 560, plus `pointer: coarse` — dans CET ordre, une tranche chacun :
+   la cascade se lit de haut en bas, une largeur plus étroite affine la précédente. 360px est une
+   largeur de RECETTE, elle appartient à la tranche ≤560.
+   ═══════════════════════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  /* Cartes du groupe et de la frise compactées : seules les respirations tombent — portrait,
+     Blessures et alertes restent. */
+  .party-dock { gap: 8px; }
+  .is-tiles { gap: 5px; padding: 6px 5px; }
+}
+@media (max-width: 700px) {
+  /* La frise quitte la colonne latérale pour une BANDE HORIZONTALE défilable sous le groupe,
+     cartouche du Round en tête. Le `padding-top` de la piste réserve la place du badge
+     d'initiative, qui déborde du haut de chaque cellule.
+     RÉSERVE DE DROITE : la colonne de commandes de vue mesure 144px de large et se pose à 16px du
+     bord (mesuré en recette, `scripts/recette/hud-clickables.mjs`) — 168px la dégagent en entier.
+     La frise porte un `z-index` supérieur : sans cette réserve elle recouvrait des boutons de
+     caméra qui ne recevaient plus leur clic.
+     `align-items: stretch` CONTRAINT la piste à la largeur de la bande : `overflow-x: auto` ne mord
+     que sur une boîte bornée — alignée en `flex-start` elle prenait la largeur de son contenu et
+     débordait du HUD sans jamais défiler. */
+  .initiative-strip {
+    top: 84px;
+    left: 4px;
+    right: 168px;
+    bottom: auto;
+    transform: none;
+    max-height: none;
+    align-items: stretch;
+  }
+  .is-tiles {
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    padding: 9px 5px 5px;
+    max-height: none;
+    min-width: 0;
+    overflow-x: auto;
+  }
+  .is-round {
+    align-self: center;
+    flex: 0 0 auto;
+    padding: 0 8px 0 2px;
+    border-bottom: none;
+    border-right: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .is-cell { flex: 0 0 auto; }
+  /* Le fil d'événements passe sous la bande d'initiative (le groupe, puis le round, puis le flux) :
+     le `top` se pose sous le BAS MESURÉ de la bande (84 + 78 = 162px, recette `hud-clickables.mjs`)
+     plus l'air — le message du flux et la frise n'ont aucune surface commune. */
+  .combat-feed { top: 172px; max-width: 94vw; }
+  .cb-ev { white-space: normal; text-align: center; } /* événements longs : retour à la ligne (pas de débord) */
+  .modal-actions { flex-wrap: wrap; justify-content: center; }
+  .party-dock { top: 6px; gap: 8px 10px; max-width: 92vw; }
+  .party-dock figcaption { font-size: 10px; }
+  .ptile-states { font-size: 10px; }
+  .log-drawer { right: 8px; bottom: 88px; }
+}
+@media (max-width: 560px) {
+  /* Les quatre portraits restent sur UNE ligne : le dock ne s'enroule plus (un 2×2 poussait la
+     bannière et le flux hors de vue). Un roster plus large — combat naval, 5 tuiles — défile
+     horizontalement plutôt que de passer à la ligne. */
+  .party-dock {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 6px;
+    max-width: 96vw;
+    overflow-x: auto;
+  }
+  /* Portraits compacts (design 2026-07-31 §12) : le nom sort de la VUE, jamais du DOM — il reste
+     lisible au lecteur d'écran et en infobulle, et la rangée garde sa hauteur de tuile. */
+  .party-dock figcaption { display: none; }
+  /* Les commandes de vue quittent le haut de l'écran pour la BANDE BASSE, en RANGÉE au-dessus du
+     tiroir du journal (`bottom: 88px` + sa hauteur de bouton + l'air). En haut à cette largeur elles
+     étaient couvertes soit par le dock centré, soit par la pile de contexte d'exploration, qui
+     s'enroule en colonne haute : aucun des six boutons ne recevait son clic (mesuré 0/6 à 360px).
+     En bande basse elles sont TOUTES atteignables et la frise récupère toute la largeur. */
+  .view-controls {
+    top: auto;
+    bottom: 140px;
+    right: 4px;
+    flex-direction: row;
+    gap: 6px;
+  }
+  .initiative-strip {
+    top: 88px;
+    right: 4px;
+  }
+  .combat-feed { top: 184px; }
+  .objective-banner { max-width: 86vw; }
+  .hud-topbar [data-hud='place'] { max-width: 52vw; font-size: 14px; }
+  .rest-hero-line { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .rest-hero-pick { grid-column: 2 / -1; }
+  .rest-hero-controls { margin-left: 0; }
+}
+@media (pointer: coarse) {
+  .ms-trigger, .ms-opt { padding-top: 7px; padding-bottom: 7px; }
+  /* Cible de 44px au doigt pour les commandes de vue et d'inspection (haut-droite). */
+  .btn.vc-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  /* Même cible pour les deux commandes permanentes des coins : menu ☰ et tiroir du journal. */
+  .gm-btn, .ld-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
 }

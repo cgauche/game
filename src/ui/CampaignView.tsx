@@ -219,12 +219,17 @@ export function CampaignView() {
         {mode === 'battle' && battle && <CombatBanner />}{/* fil SOUS la frise (CSS .combat-feed) */}
         {/* Ciblage par carte (Frappe Mortelle / Deux armes / Surincantation / pose de zone) :
             la BARRE D'ACTION se transforme en bandeau d'interlude (cf. ActionBar). */}
-        {/* Barre HUD supérieure UNIFIÉE : le menu ☰, l'horloge de campagne et les raccourcis de lieu
-            (navire / voyage / carte / hub / repos) partagent UN conteneur en rangée qui s'enroule
-            ≤700px — plus deux îlots absolus indépendants. Sauvegarder : exploration seulement (refusée
-            en combat) et jamais l'invité (la save vit chez l'hôte). */}
+        {/* Barre HUD supérieure UNIFIÉE : le menu ☰, les raccourcis de lieu (navire / voyage / carte /
+            hub / repos) et, HORS COMBAT, la pile de contexte — lieu, date, objectif dans cet ordre
+            (design 2026-07-31 §11). Sauvegarder : exploration seulement (refusée en combat) et jamais
+            l'invité (la save vit chez l'hôte). */}
         <div className="hud-topbar">
         <GameMenu sceneName={scene?.nom} time={gameTime} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onEndSession={mode === 'exploration' && netMode !== 'guest' ? () => setSessionOpen(true) : undefined} />
+        {/* Lieu courant : premier étage de la pile — le nom de la scène se lit sur le HUD, sans ouvrir
+            le menu. Sans nom authoré, aucune plaque (rien à annoncer). */}
+        {mode === 'exploration' && scene?.nom && (
+          <strong data-hud="place" title={scene.nom}>{scene.nom}</strong>
+        )}
         {/* Horloge de campagne : chip de la barre (date/heure), source unique `GameDate`. */}
         {mode === 'exploration' && (
           <span className="hud-clock" title="Date et heure de la campagne"><GameDate time={gameTime} /></span>
@@ -312,10 +317,11 @@ export function CampaignView() {
             <Icon id="nav/rest" size="lg" />
           </button>
         )}
-        </div>
-        {/* Objectif courant (#238) — surface discrète TOUJOURS visible en exploration ; masquée en
-            combat (l'écran tactique se réserve le HUD). Nulle si la pile d'objectifs est vide. */}
+        {/* Objectif courant (#238) — dernier étage de la pile de contexte : il occupe sa propre ligne
+            sous le lieu et la date (CSS `.hud-topbar > .objective-banner`). Masqué en combat (l'écran
+            tactique se réserve le HUD) ; nul si la pile d'objectifs est vide. */}
         {mode === 'exploration' && <ObjectiveBannerMount />}
+        </div>
         {/* Panneaux du menu ☰ : surfaces SYSTÈME, jamais par-dessus un dialogue PNJ en cours (#376 pt.2)
             — `DialogueBox` ne porte pas de `.modal-overlay` (pas de voile plein écran), donc une
             modale système au-dessus resterait invisible/inatteignable sous elle sans cette garde. */}

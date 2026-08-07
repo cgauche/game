@@ -20,4 +20,15 @@ describe('PartyDock', () => {
     expect(html).not.toContain('ptile-caret');
     expect(html).not.toMatch(/class="ptile[^"]*\bactive\b/);
   });
+
+  it('affiche le nom de chaque héros en TEXTE VISIBLE, pas seulement en infobulle', () => {
+    const html = renderToStaticMarkup(<PartyDock heroes={[h1, h2]} onOpen={() => {}} />);
+    // Les balises (donc TOUS les attributs : title, aria-label…) sont retirées : ne reste que le
+    // texte des nœuds, c'est-à-dire ce qu'un joueur lit à l'écran.
+    const visible = html.replace(/<[^>]*>/g, ' ');
+    expect(visible).toContain('Gunnar');
+    expect(visible).toContain('Elsa');
+    expect(html).toMatch(/>\s*Gunnar\s*</);
+    expect(html).toMatch(/>\s*Elsa\s*</);
+  });
 });

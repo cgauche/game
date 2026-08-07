@@ -26,6 +26,19 @@ describe('ObjectiveBanner', () => {
     expect(html).toContain('+1');
   });
 
+  it('plusieurs → l’en-tête reste un bouton dépliable annoncé', () => {
+    const html = renderToStaticMarkup(
+      <ObjectiveBanner objectives={[{ id: 'a', text: 'Ancien' }, { id: 'b', text: 'Récent' }]} now={0} />,
+    );
+    expect(html).toMatch(/<button[^>]*class="objective-head"/);
+    expect(html).toContain('aria-expanded="false"');
+  });
+
+  it('un seul objectif → aucun dépliage annoncé', () => {
+    const html = renderToStaticMarkup(<ObjectiveBanner objectives={[{ id: 'a', text: 'Seul' }]} now={0} />);
+    expect(html).not.toContain('aria-expanded');
+  });
+
   it('deadline posée → puce de compte à rebours', () => {
     const html = renderToStaticMarkup(
       <ObjectiveBanner objectives={[{ id: 'a', text: 'Empêcher le rituel', deadline: 2800 }]} now={800} />,

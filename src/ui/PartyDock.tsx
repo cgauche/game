@@ -15,16 +15,18 @@ export function PartyDock({ heroes, targeting, onOpen }: PartyDockProps) {
   return (
     <div className="party-dock" style={sheetOpen ? { zIndex: 126 } : undefined}>
       {heroes.map((c, idx) => (
-        <PortraitTile
-          key={c.id}
-          c={c}
-          ring={HERO_RING[idx % HERO_RING.length]}
-          team="ally"
-          variant="full"
-          size="md"
-          onClick={() => onOpen(c.id)}
-          title={targeting ? `${c.label} — cibler` : `${c.label} — fiche du personnage`}
-        />
+        <figure key={c.id}>
+          <PortraitTile
+            c={c}
+            ring={HERO_RING[idx % HERO_RING.length]}
+            team="ally"
+            variant="full"
+            size="md"
+            onClick={() => onOpen(c.id)}
+            title={targeting ? `${c.label} — cibler` : `${c.label} — fiche du personnage`}
+          />
+          <figcaption>{c.label}</figcaption>
+        </figure>
       ))}
     </div>
   );

@@ -61,6 +61,20 @@ Options : `--screen <id>` (obligatoire, un id de `SCREENS`, `src/state/store.ts`
 `--width`/`--height`, `--settle <ms>`. Exit ≠ 0 si la console a remonté une erreur/exception après
 l'ouverture de l'écran.
 
+### CLI — `scripts/recette/hud-clickables.mjs`
+
+```
+node scripts/recette/hud-clickables.mjs
+node scripts/recette/hud-clickables.mjs --widths 700,560,360
+```
+
+Vérifie par `elementFromPoint` qu'aucune surface du HUD n'en recouvre une autre, en exploration puis
+en combat, à 1600/1100/900/700/560/360 (options `--widths`, `--url`) : chaque commande de vue
+(`.vc-btn`) et chaque portrait du groupe reçoit SON clic, le fil d'événements ne mord pas sur la
+frise d'initiative, la piste `.is-tiles` défile au lieu de déborder, et la boîte pleine ligne du
+bandeau d'objectif n'avale rien hors de sa tête. Exit ≠ 0 avec la liste des défauts. Les cliquets
+CSS (`src/ui/ui-ratchets.test.ts`) lisent des déclarations ; ce script mesure le rendu.
+
 ### Socle — `scripts/recette/lib.mjs`
 
 | Fonction | Rôle |
@@ -156,6 +170,7 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 | `state()` | instantané `{screen, sceneId, partyPos, inDialogue, inCombat, party, money…}` | lecture seule ; `party` est une PROJECTION allégée (`{id, name}` seulement, `devtools.ts`) — ni `.skills` ni `.activeEffects` ; pour inspecter le détail d'un héros, lire `store.getState().party` |
 | `entities()` | cartographie des entités de la scène `{id,label,kind,pos,access}` | exclut les entités `hiddenUntilCombat` |
 | `screenPos('id')` | bounding box ÉCRAN (`{x,y,width,height}`) du token `[data-cid="id"]` — COMBAT ET EXPLORATION (même canal `data-cid`, #226) | lecture seule ; `null` si le token n'est pas dans le DOM (hors vue) ; pour un clic, **viser `{x: x+width/2, y: y+height}` (le BAS de la bbox, pied du token) plutôt que le centre géométrique** — un token de grande taille (créature haute) a sa bbox étirée vers le haut, et le centre géométrique tombe hors silhouette (retour vécu en recette, résidu #199) |
+| `tileScreenPos({x,y,z?})` | même bounding box ÉCRAN pour une CASE, vide comprise — projetée par `diamondCorners` (`src/geometry/iso.ts`, la géométrie du rendu) puis passée par la CTM du groupe caméra, donc zoom/panoramique/rotation viennent du DOM | lecture seule ; `null` hors scène ou tant que le stage n'est pas monté. Pour un clic, viser le CENTRE (`{x: x+width/2, y: y+height/2}`) : contrairement à un token, une case n'a pas de pied. Vérifié aux 8 crans de caméra contre `screenPos` du jeton du groupe (écart ≤ 6px sur une tuile de 93px = l'ancrage propre du sprite) |
 | `talk('id')` | téléporte le groupe à côté de l'entité + l'interpelle (dialogue/marchand) | rien si l'entité n'a ni dialogue ni marchand ; ⚠ un marchand-PNJ de scène n'a PAS de bande de décor (`ScreenShell` slot `backdrop`) — cette ambiance n'existe QUE par le chemin service-de-lieu (`openPlaceMerchant`, hub de ville) qui la porte en donnée. Ne pas conclure à une régression de décor en interpellant un PNJ |
 | `goto('id'\|{x,y,z?})` | place le groupe sur une case (déclenche portes/triggers au pas) | — |
 | `screen('menu'\|'party'\|…)` | navigue vers un écran | id validé contre `SCREENS` (`state/store.ts`) — `throw` immédiat + liste des ids valides si invalide (#211 ; avant : routage silencieux, écran blanc, zéro erreur console). ⚠ `screen('interlude')` n'ARME PAS l'interlude : `InterludeScreen` rend `null` sans `state.interlude` (peuplé par `startInterlude`) → écran vide. Utiliser `interlude()` (ci-dessous), pas `screen('interlude')` |

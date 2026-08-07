@@ -325,7 +325,11 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // nulle visuelle, un rôle de plus nommé.
   'styles/combat-modals.css': 143,
   // #1135 : baseline abaissée (112 → 111), bloc mort `.af-hp` purgé — détecteur inchangé.
-  'styles/combat-ui.css': 111,
+  // #1135 responsive : -1 (111 → 110) — `.inspect-toggle` MEURT (plus aucun consommateur : la bascule
+  // d'inspection a rejoint `ViewControls` et compose `.btn.vc-btn`). La matrice responsive du dock
+  // (900/700/560 + `pointer: coarse`) n'ajoute AUCUN nom : elle ne cible que des classes déjà définies
+  // ici et le slot `[data-slot='end-turn']` (attribut d'id stable, jamais une classe par écran).
+  'styles/combat-ui.css': 110,
   // +1 : `.nb` (#393 P2) — note d'atelier non cliquable en fin de section chips (CodexRowView).
   'styles/compendium.css': 56,
   // +25 : charte « Atelier du scribe » (#412) — MetalStatus/WaxSeal+SealedPlaque/CareerPath/
@@ -475,7 +479,23 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // #1078 LOT B1 : +1 (144 → 145) — `.info` complète le trio de tons de `.recap-line` (`ok`/`bad`
   // déjà ici) : le ton ATTÉNUÉ s'écrit, au lieu de dépendre de la couleur par défaut — un cadre qui
   // remet ses lignes à pleine couleur l'effaçait.
-  'styles/hud.css': 145,
+  // #1135 (attribution des ancrages du HUD) — décomposition MESURÉE (`git show <rev>:hud.css` passé au
+  // détecteur ci-dessous), et non estimée :
+  //  · 145 au point de départ (`d8742493`), baseline alors déclarée à 145 — cliquet vert ;
+  //  · +5 NON DÉCLARÉS par `9bae13b3` : `view-controls`/`vc-group`/`vc-btn`/`vc-zoom-value`/`btn`.
+  //    `ViewControls` posait sa géométrie en `style={{…}}` inline (objet recopié bouton par bouton),
+  //    interdit par la charte ; ces classes sont la contrepartie de sa mise en feuille, et
+  //    `.view-controls` est l'ANCRE qu'exigent la tranche `pointer: coarse` (cible de 44px) et la
+  //    tranche ≤560 (bande basse). Le cliquet mesure donc 150 contre 145 déclarées : il est ROUGE à
+  //    HEAD depuis ce commit. La dette se régularise ICI, avec sa justification propre ;
+  //  · -8 par RELOGEMENT : `.action-bar` et les sept `.ab-actor`/`-bar`/`-ico`/`-lbl`/`-slot`/
+  //    `-slots`/`-spells`. Le DOCK DE DÉCISION porte sa matrice responsive dans `combat-ui.css`, le
+  //    module qui définissait DÉJÀ ces noms — aucune classe ne meurt ni n'y naît (ce module paie -1
+  //    en regard, `.inspect-toggle`, la bascule appartenant à `ViewControls`).
+  // 145 + 5 - 8 = 142, mesure post-lot. La matrice responsive du HUD n'ajoute AUCUN nom : elle ne cible
+  // que des classes déjà définies ici, et le lieu de la pile de contexte est désigné par
+  // `[data-hud='place']` (attribut, pas classe). Détecteur inchangé.
+  'styles/hud.css': 142,
   'styles/mass-battle.css': 29,
   'styles/merchant.css': 53,
   'styles/ornaments.css': 13,
@@ -965,5 +985,132 @@ describe('#236 — cliquets d’hygiène UI', () => {
   it('(xv) rangée TÉMOIN porteuse de valeur hors `opposedFrozen.ts` : gelée et décroissante (#990)', () => {
     const files = walk(UI, (e) => /\.tsx?$/.test(e) && !/\.test\./.test(e)).filter((f) => rel(f) !== 'opposedFrozen.ts');
     assertRatchet(scanFrozenValueRows(files), FROZEN_WITNESS_BASELINE, 'rangée témoin à valeur figée hors du calendrier de découverte `frozenOpposedRow` (#990)');
+  });
+});
+
+/** Corps d'une tranche `@media` (accolades appariées). Les invariants ci-dessous s'énoncent sur la
+ *  PRÉSENCE d'une règle dans SA tranche, et sur les GRANDEURS dont une valeur fausse casse une
+ *  atteignabilité (réserve d'une colonne recouvrante) — jamais sur une esthétique en pixels. Le
+ *  verdict de rendu, lui, se mesure au navigateur : `scripts/recette/hud-clickables.mjs`. */
+function mediaBlock(css: string, query: string): string {
+  const at = css.indexOf(query);
+  if (at < 0) return '';
+  const open = css.indexOf('{', at);
+  let depth = 0;
+  for (let i = open; i < css.length; i++) {
+    if (css[i] === '{') depth++;
+    else if (css[i] === '}' && --depth === 0) return css.slice(open + 1, i);
+  }
+  return '';
+}
+/** Le module PRIVÉ de toutes ses tranches `@media` : ce qui doit valoir à TOUTE largeur se trouve
+ *  ici. Une règle glissée dans une tranche disparaît de cette vue — c'est ce que l'invariant traque. */
+function baseSection(css: string): string {
+  let out = '';
+  for (let i = 0; i < css.length; i++) {
+    if (css.startsWith('@media', i)) {
+      const open = css.indexOf('{', i);
+      let depth = 0;
+      let j = open;
+      for (; j < css.length; j++) {
+        if (css[j] === '{') depth++;
+        else if (css[j] === '}' && --depth === 0) break;
+      }
+      i = j;
+      continue;
+    }
+    out += css[i];
+  }
+  return out;
+}
+/** Valeur en px de la propriété `prop` dans la règle de sélecteur `selector`, ou `null`. */
+function pxOf(css: string, selector: string, prop: string): number | null {
+  const rule = new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{([^}]*)\\}`).exec(css);
+  if (!rule) return null;
+  const v = new RegExp(`${prop}:\\s*(-?[\\d.]+)px`).exec(rule[1]);
+  return v ? Number(v[1]) : null;
+}
+const occurrences = (s: string, needle: string) => s.split(needle).length - 1;
+
+const HUD_TRANCHES = ['@media (max-width: 900px)', '@media (max-width: 700px)', '@media (max-width: 560px)', '@media (pointer: coarse)'];
+const HUD_MODULES = ['hud.css', 'combat-ui.css'];
+
+describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => {
+  const read = (m: string) => readFileSync(join(UI, 'styles', m), 'utf8');
+
+  it('chaque module du HUD pose les quatre tranches, une seule fois chacune', () => {
+    for (const m of HUD_MODULES) {
+      const css = read(m);
+      for (const q of HUD_TRANCHES) {
+        expect(occurrences(css, q), `${m} : la tranche ${q} doit exister en UN exemplaire (section responsive ordonnée)`).toBe(1);
+      }
+    }
+  });
+
+  it('aucun breakpoint de largeur hors du canon 900 / 700 / 560', () => {
+    for (const m of [...HUD_MODULES, 'combat-modals.css']) {
+      const widths = [...read(m).matchAll(/@media[^{]*max-width:\s*(\d+)px/g)].map((x) => x[1]);
+      const hors = [...new Set(widths)].filter((w) => !['900', '700', '560'].includes(w));
+      expect(hors, `${m} : breakpoint(s) hors canon (360 et 420 sont des largeurs de RECETTE)`).toEqual([]);
+    }
+  });
+
+  it('≤700 : la frise d’initiative devient une bande horizontale défilable, contrainte et dégagée', () => {
+    const at700 = mediaBlock(read('hud.css'), '@media (max-width: 700px)');
+    expect(at700).toMatch(/\.is-tiles\s*\{[^}]*flex-direction:\s*row/);
+    expect(at700).toMatch(/\.is-tiles\s*\{[^}]*overflow-x:[ \t\r\n]*auto/);
+    // `overflow-x` ne mord que sur une piste BORNÉE : alignée en `flex-start`, elle prend la largeur
+    // de son contenu, déborde du HUD et ne défile jamais (défaut mesuré : piste 633px dans une bande
+    // de 294px à 360). `stretch` la ramène à la largeur de la bande.
+    expect(at700).toMatch(/\.initiative-strip\s*\{[^}]*align-items:\s*stretch/);
+    // RÉSERVE DE DROITE : la frise est au-dessus des commandes de vue dans l'empilement, donc elle
+    // doit s'arrêter AVANT elles. La colonne mesure 144px et se pose à 16px du bord (mesuré au
+    // navigateur, `scripts/recette/hud-clickables.mjs`) : moins de 160px de réserve et des boutons
+    // de caméra cessent de recevoir leur clic.
+    const reserve = pxOf(at700, '.initiative-strip', 'right');
+    expect(reserve, 'la frise ≤700 doit déclarer sa réserve de droite en px').not.toBeNull();
+    expect(reserve!).toBeGreaterThanOrEqual(160);
+  });
+
+  it('≤560 : le groupe tient sur une ligne, le dock d’action prend la largeur, la sortie de tour colle au bord', () => {
+    const hudAt560 = mediaBlock(read('hud.css'), '@media (max-width: 560px)');
+    expect(hudAt560).toMatch(/\.party-dock\s*\{[^}]*flex-wrap:\s*nowrap/);
+    expect(hudAt560).toMatch(/\.party-dock\s*\{[^}]*overflow-x:[ \t\r\n]*auto/); // débordement de secours (combat naval)
+    const barAt560 = mediaBlock(read('combat-ui.css'), '@media (max-width: 560px)');
+    expect(barAt560).toMatch(/\.action-bar\s*\{[^}]*left:\s*4px/);
+    expect(barAt560).toMatch(/\.action-bar\s*\{[^}]*right:\s*4px/);
+    // « Fin du tour » (désignée par son id de slot) reste COLLÉE au bord droit pendant qu'on fait
+    // défiler la hotbar : la seule présence du sélecteur ne dit rien de ce comportement.
+    expect(barAt560).toMatch(/\[data-slot='end-turn'\]\s*\{[^}]*position:\s*sticky/);
+    expect(barAt560).toMatch(/\[data-slot='end-turn'\]\s*\{[^}]*right:\s*0/);
+  });
+
+  it('pointeur grossier : les commandes de caméra offrent une cible de 44px', () => {
+    const coarse = mediaBlock(read('hud.css'), '@media (pointer: coarse)');
+    expect(coarse).toMatch(/\.vc-btn\s*\{[^}]*min-width:\s*44px/);
+    expect(coarse).toMatch(/\.vc-btn\s*\{[^}]*min-height:\s*44px/);
+  });
+
+  it('une alerte est ancrée dans la carte de SON héros, à TOUTE largeur', () => {
+    // L'ancrage se lit hors de toute tranche : glissé dans un `@media`, il cesserait de valoir aux
+    // largeurs qui ne l'atteignent pas et la pastille reflotterait entre deux portraits.
+    const base = baseSection(read('hud.css'));
+    expect(base).toMatch(/\.party-dock\s+\.ptile-wrap\s*\{[^}]*position:\s*relative/);
+    expect(base).toMatch(/\.party-dock\s+\.ptile-states\s*\{[^}]*position:\s*absolute/);
+    // Un coin ANCRÉ, pas seulement « absolu » : sans ses deux offsets la colonne d'États retombe à
+    // sa position statique, c'est-à-dire entre les deux portraits.
+    expect(base).toMatch(/\.party-dock\s+\.ptile-states\s*\{[^}]*top:\s*\d/);
+    expect(base).toMatch(/\.party-dock\s+\.ptile-states\s*\{[^}]*right:\s*\d/);
+  });
+
+  it('les modales de jet occupent l’écran sous 560, corps défilable et pied fixe', () => {
+    const css = read('combat-modals.css');
+    expect(css).toMatch(/\.modal:has\(>\s*\.rs-scroll\)\s*\{[^}]*overflow:\s*hidden/); // le corps défile, pas la boîte
+    expect(css).toMatch(/\.modal:has\(>\s*\.rs-scroll\)\s*>\s*\.modal-actions/); // pied hors du scrollport
+    const at560 = mediaBlock(css, '@media (max-width: 560px)');
+    expect(at560).toContain('.rs-scroll');
+    // Le cadre tombe SUR LA MODALE de jet : `border-radius: 0` posé sur n'importe quelle autre règle
+    // de la tranche satisfaisait l'ancienne formulation sans que la fenêtre prenne l'écran.
+    expect(at560).toMatch(/\.modal:has\(>\s*\.rs-scroll\)\s*\{[^}]*border-radius:\s*0/);
   });
 });

@@ -44,4 +44,15 @@ describe('CombatBanner', () => {
     expect(html).toContain('Gunnar');
     expect(html).not.toContain('Ancienne ligne');
   });
+
+  it('n’annonce ni le round ni l’ordre d’initiative — ils appartiennent à la frise', () => {
+    mocks.feed = [
+      { raw: 'Gunnar frappe', tone: 'hit', icon: 'action/attack', segments: [{ text: 'Gunnar', team: 'ally' }, { text: ' frappe' }] },
+    ];
+    const html = renderToStaticMarkup(<CombatBanner />);
+    expect(html).not.toContain('Round');
+    expect(html).not.toContain('is-round');
+    expect(html).not.toContain('initiative-strip');
+    expect(html).not.toContain('is-cell');
+  });
 });
