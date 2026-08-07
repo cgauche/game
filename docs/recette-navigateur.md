@@ -229,7 +229,7 @@ pas la cible d'UX.
 | Helper | Usage | Limites connues |
 |---|---|---|
 | `spawn(creatureId, pos?, {side?, id?}?)` | instancie une créature du REGISTRE (`creatures.json`) directement EN COMBAT — VRAI pipeline `creatureToCombatant` (`src/state/spawn.ts`, MÊME dérivation que `spawnEnemy`), sans rencontre de scène. `spawn('gobelin')` / `spawn('gobelin', {x:12,y:8}, {side:'hero'})` | `pos` défaut : à côté du combattant ACTIF (sinon 1er combattant positionné) ; `opts.side` (`'enemy'` défaut / `'hero'` / `'npc'`) pose `kind` après coup — `'hero'` marque aussi `aiControlled` (allié PNJ piloté par l'IA, jamais un 5ᵉ héros manuel) ; `creatureId` inconnu → `✗` |
-| `turn('id')` | donne le TOUR à un combattant (réinitialise Action/Mouvement) | saute les bornes de Round — mise en place, pas simulation de partie |
+| `turn('id')` | donne le TOUR à un combattant (réinitialise Action/Mouvement) | saute les bornes de Round — mise en place, pas simulation de partie. **Ne DÉCLENCHE PAS l'IA** (mesuré #1135) : positionne l'index de tour SEULEMENT (`battle.turn`), aucune logique de début de tour n'est invoquée — un ennemi conduit par l'IA reste immobile. Enchaîner `fastForward()` pour qu'il agisse |
 | `place('id',{x,y})` | téléporte un combattant | **PIÈGE COMPOSITE (corrigé)** : cible une coque à postes (`postes` non vide) ou un membre de `ShipPoste.crewIds` → déplace la FORMATION ENTIÈRE (coque + tout l'équipage des postes) du même delta, MÊME sémantique que la poussée (`pushCommitTile`). Téléporter la coque SEULE désynchronisait aperçu (postes) et portée réelle (équipage resté en arrière) — 30 % du budget d'une recette perdu à débugger ce déphasage avant fix. Retourne `{msg, moved:[ids]}` en cas composite, une chaîne sinon (combattant simple inchangé). |
 | `turnShip('id','tribord'\|'babord'\|crans)` | vire le cap d'un navire (triche, sans jet) | ne déplace QUE le cap (`facing`), jamais la position — vérifier ensuite avec `aim()` |
 | `maneuver('id', side?, helmsmanId?)` | manœuvre RÉELLE (Test de Navigation, peut échouer) | contrairement à `turnShip`, PEUT rater — pas une triche |
@@ -457,6 +457,13 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
 - **Une ref de snapshot se cible en `aria-ref=eNNNN`, jamais `ref=eNNNN`** : `browser_click` (et les
   autres outils MCP Playwright génériques) prend un sélecteur — `ref=e123` est rejeté (« Unknown
   engine "ref" »), la forme acceptée est `aria-ref=e123`.
+- **Faux `TimeoutError` APRÈS un `browser_click` réussi** (mesuré #1135, ~15 clics sur 15) : sur les
+  boutons de modales de combat (« Tout lancer », « Lancer », « Appliquer », tokens de la carte),
+  `browser_click` lève systématiquement `TimeoutError: 5000ms exceeded` — sa vérification de
+  stabilité post-clic ne converge pas sous les re-renders/animations du jeu, mais **le clic EST
+  passé**. Ne PAS re-cliquer (un re-clic aveugle double l'action : deux jets, deux applications) :
+  après le timeout, re-snapshoter ou évaluer l'état (`browser_snapshot` / `__wfrp`) et poursuivre
+  depuis ce qu'on mesure.
 - **`browser_resize` seul ne rend PAS le pointeur grossier** : la largeur change,
   `matchMedia('(pointer: coarse)')` reste `false` — toute mesure de cible tactile faite ainsi juge le
   mode fin. Émulation mesurée (recette 2026-08-07), nettoyage compris :
