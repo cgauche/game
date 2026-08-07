@@ -757,20 +757,24 @@ describe('Magie — compétences Avancées (gating)', () => {
     const langue = (adv: number) => [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence' as const, advances: adv }];
     // contre-lanceur écrasant (valeur 99 clampée) vs jet d'incantation médiocre figé (DR 1)
     const fort = caster({ intelligence: 89 }, langue(10));
-    const castT = { roll: 40, target: 50, success: true, sl: 1, isDouble: false };
+    const castT = { roll: 40, target: 50, base: 50, success: true, sl: 1, isDouble: false };
     let dispelCount = 0;
     for (let seed = 1; seed <= 12; seed++) {
       const out = resolveCounterspell(fort, castT, makeRNG(seed));
       expect(out.casterNetSL).toBe(castT.sl - out.counter.sl); // « le DR du Test opposé »
+      // Aucune ÉGALITÉ de DR sur ces 12 graines (mesuré) : les deux branches sont strictes ici, et le
+      // départage à DR égal (LDB 12 l.160) se joue dans `magie-departage-nue.test.ts`.
       if (out.dispelled) {
         dispelCount++;
-        expect(out.counter.sl).toBeGreaterThan(castT.sl); // gagné = DR strictement supérieur (ou cible sup. à égalité)
+        expect(out.counter.sl, 'dissipation obtenue sans battre le DR du lanceur').toBeGreaterThan(castT.sl);
+      } else {
+        expect(out.counter.sl, 'aucune dissipation alors que le chant tenait le DR du lanceur').toBeLessThan(castT.sl);
       }
     }
     expect(dispelCount).toBeGreaterThan(6); // valeur 99 vs DR 1 : la dissipation domine
     // contre-lanceur nul : jamais dissipé sur un DR adverse élevé
     const nul = caster({ intelligence: 10 }, langue(0));
-    const fortCast = { roll: 11, target: 95, success: true, sl: 8, isDouble: false };
+    const fortCast = { roll: 11, target: 95, base: 95, success: true, sl: 8, isDouble: false };
     for (let seed = 1; seed <= 8; seed++) expect(resolveCounterspell(nul, fortCast, makeRNG(seed)).dispelled).toBe(false);
   });
 

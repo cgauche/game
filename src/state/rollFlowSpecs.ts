@@ -50,7 +50,7 @@ import { d100, defaultRNG, type RNG } from '../engine/dice';
 import { resolveRun, resolveDeliberateFall, runFromTest, fallFromTest } from '../engine/movement';
 import { rollCrewRole, forceCrewRole } from './shipManeuver';
 import { rollBatchParticipant, forceBatchParticipant } from './cascade';
-import { testValue, effectiveSkillCharKey, skillBaseValue } from '../engine/skills';
+import { testValue, effectiveSkillCharKey, skillBaseValue, supportSplit, type SupportDetail } from '../engine/skills';
 import { skillDRBonus, charDRBonusOf, offTerrainTestDR } from '../engine/ops';
 import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestDRMods, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, withCastTestDRMods, castTestOf, castingValue, castInfoIsPrayer, malepierreDR, malepierreReserveOf } from '../engine/magic';
 import { discreetPrayerDifficulty } from '../engine/prayer';
@@ -136,11 +136,22 @@ const DEFENSE_LABEL_FALLBACK = 'Intimidation';
  *  — c'est-à-dire défenseur vainqueur OU ÉGALITÉ (LDB 62 l.268 : l'attaquant doit REMPORTER, pas faire
  *  nul). Le `sl` reporté est le DR PROPRE du défenseur (échelle des branches). `bonusSL` (Piège-lame, LDB 62
  *  l.295) s'AJOUTE au DR du défenseur AVANT l'opposition — modifie le vainqueur ET la marge nette, mais PAS
- *  le `sl` reporté (= DR propre, la conséquence recompose la marge via le contexte figé). Calque `disengageOutcome`. */
-function opposedCascadeRoll(def: TestResult, aT: TestResult, target: number, bonusSL = 0): { roll: number; target: number; sl: number; success: boolean } {
-  const o = resolveOpposed(aT, { ...def, sl: def.sl + bonusSL });
+ *  le `sl` reporté (= DR propre, la conséquence recompose la marge via le contexte figé). Calque `disengageOutcome`.
+ *  `defBase` = Niveau de Compétence NU du défenseur (`stepOpenValue`), IMPOSÉ ici : le dé de l'étape est
+ *  jeté sur la cible DÉJÀ modifiée, donc le `base` que le seam de jet y pose est une cible, pas une
+ *  Compétence — l'opposer au `base` nu de l'attaquant comparerait deux grandeurs (LDB 12 l.160). */
+function opposedCascadeRoll(def: TestResult, aT: TestResult, target: number, bonusSL = 0, defBase?: number): { roll: number; target: number; sl: number; success: boolean } {
+  const { base: _posed, ...bare } = def;
+  const o = resolveOpposed(aT, { ...bare, sl: def.sl + bonusSL, ...(defBase != null ? { base: defBase } : {}) });
   return { roll: def.roll, target, sl: def.sl, success: o.winner !== 'attacker' };
 }
+
+/** Niveau de Compétence NU d'une étape de cascade (`LDB 09 l.17`), pour le départage d'un Test opposé
+ *  (`LDB 12 l.160`) : la `base` authorée de l'étape, Soutien du groupe DÉFAIT (`supportSplit` — il est
+ *  fondu dedans, cf. `CascadeStepBase.support`). `undefined` sur une étape qui n'en porte pas : les deux
+ *  camps retombent alors sur leurs cibles (tout-ou-rien d'`openValues`), jamais un mixte. */
+const stepOpenValue = (st: { base?: number; support?: SupportDetail }): number | undefined =>
+  (st.base != null ? supportSplit(st.base, st.support).base : undefined);
 
 // ── Délégués de jet du store : générateur + types (fin de la duplication ~113 lignes) ──
 //
@@ -760,7 +771,9 @@ export const FLOWS = {
         // puis planché : Test opposé → l'emporter d'au moins DR +1, minimum 1 (LDB 17 l.68).
         const nat = withCastTestDRMods(actor, 'dissipation', evaluateTest(roll, value));
         const sl = Math.max(nat.sl, cur?.counter.sl ?? 1, castT.sl + 1, 1);
-        const counterT = forcedTR(roll, value, sl, value);
+        // `base` non fourni : la valeur NUE du chanteur est RELUE par `counterspellOutcomeFrom` — `value`
+        // porte le Soutien du groupe uni (LDB 12 l.189), qui n'est pas un Niveau de Compétence.
+        const counterT = forcedTR(roll, value, sl);
         return { result: counterspellOutcomeFrom(actor, counterT, castT) };
       }
       return { result: resolveCounterspell(actor, castT, battleRng(), {}, soutien) };
@@ -846,7 +859,7 @@ export const FLOWS = {
     // résultat » ; Test opposé contre l'incantation FIGÉE → « vous l'emportez avec au moins DR +1 »
     // (`resilience` : la cible résiste). Un dé FIXÉ s'évalue au naturel — l'opposition tranche.
     die: {
-      read: (part) => part.result ? { roll: part.result.oppose.roll, target: part.result.oppose.target, critable: false } : null,
+      read: (part) => part.result ? { roll: part.result.oppose.roll, target: part.result.oppose.target, base: part.result.oppose.base, critable: false } : null,
       write: (s, _part, _actor, _get, tr) => {
         const pcCast = s.pendingCast?.result;
         if (!pcCast) return null;
@@ -923,14 +936,16 @@ export const FLOWS = {
     rolled: (st) => !!st.result,
     actor: (s, st) => (st.actorId ? actorIn(s, st.actorId) : undefined),
     // ACCESSEUR DE DÉ de l'étape (une étape sans jet — `target` nul — n'en a pas). En Test OPPOSÉ,
-    // l'issue reste celle de l'opposition contre le jet FIGÉ de l'attaquant.
+    // l'issue reste celle de l'opposition contre le jet FIGÉ de l'attaquant. Aucun `base` ici : le
+    // Niveau de Compétence du défenseur est imposé au SEUL point d'opposition (`opposedCascadeRoll`,
+    // via `stepOpenValue`) — l'accesseur n'en est pas une seconde source (LDB 12 l.160).
     die: {
       read: (st) => (st.target != null && st.result ? { roll: st.result.roll, target: st.target, critable: false } : null),
       write: (_s, st, _a, _g, tr) => {
         if (st.target == null) return null;
         const opp = st.meta?.opposed;
         return opp
-          ? { result: opposedCascadeRoll(tr, opp.aT, st.target, opp.bonusSL ?? 0) }
+          ? { result: opposedCascadeRoll(tr, opp.aT, st.target, opp.bonusSL ?? 0, stepOpenValue(st)) }
           : { result: { roll: tr.roll, target: st.target, sl: tr.sl, success: tr.success } };
       },
     },
@@ -958,7 +973,7 @@ export const FLOWS = {
       // Test OPPOSÉ : l'issue success/sl du défenseur vient de `resolveOpposed(jetDéfenseur, aT figé)`
       // (l'attaquant garde son jet — calque `recover`/`disengage`), PAS de `roll ≤ target`. Le défenseur
       // RÉSISTE si l'attaquant ne l'emporte PAS (défenseur OU égalité). Simple sinon (réussite ≤ cible).
-      if (opp) return { result: opposedCascadeRoll(t, opp.aT, st.target, opp.bonusSL ?? 0) };
+      if (opp) return { result: opposedCascadeRoll(t, opp.aT, st.target, opp.bonusSL ?? 0, stepOpenValue(st)) };
       return { result: { roll: t.roll, target: st.target, sl: t.sl, success: t.success } };
     },
     outcome: (st) => testOutcome(st.result),

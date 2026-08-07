@@ -86,6 +86,7 @@ import {
   durationClockMinutes,
   castInfo,
   castingValue,
+  castingBaseValue,
   castPenaltyMod,
   knowsCastingSkill,
   isDispellableSpell,
@@ -901,7 +902,7 @@ export function previewCast(
   ];
   return {
     label: isPrayer ? tr('cf.prayerLabel') : tr('cf.castLabel', { ni }), // le test reste Langue (Magick) — « Projectile magique » ne change QUE Localisation/Dégâts après réussite (LDB 46 l.155-156)
-    base: target - advMod - penMod,
+    base: castingBaseValue(caster, ci.skill, ci.spec),
     target: target + windsMod + (ctx?.total ?? 0),
     mods,
   };

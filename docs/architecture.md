@@ -22,7 +22,18 @@ src/geometry/                Géométrie/simulation PURE partagée `state` ⇄ `
                             STEP_MS) — cadence l'attente de fin de marche AVANT résolution de combat.
 src/engine/                 Règles WFRP4, PUR + testé :
   types.ts                    Caractéristiques, Combatant, Weapon, ItemInstance, Difficulty…
-  tests.ts                    Tests & Degrés de Réussite (DR), tests opposés
+  tests.ts                    Tests & Degrés de Réussite (DR), tests opposés.
+                              **INVARIANT — `base` = le Niveau de Compétence NU (Caractéristique +
+                              Augmentations, LDB 09 l.17), PARTOUT.** Tout modificateur (Avantage,
+                              États, Soutien, ward, Difficulté…) voyage dans le `modifier`/la cible,
+                              jamais fondu dans une « value » : c'est cette valeur nue que
+                              `resolveOpposed` compare à DR égal (LDB 12 l.160). Source UNIQUE de la
+                              formule : `skillBaseValue` (`castingBaseValue` n'en délègue que la
+                              variante Domaine) ; deux points d'étranglement la relisent à la source
+                              pour le chemin magie (`evaluateCasting`, `counterspellOutcomeFrom`).
+                              Corollaire de NOMMAGE : une fonction dont le nom promet une valeur mais
+                              qui y fond des modificateurs est un bug (`castingValue`, #1150) — le
+                              site qui a besoin de la nue APPELLE l'accesseur, il ne soustrait pas.
   combat.ts                   touche/localisation inversée/dégâts/critique/initiative
   characteristics.ts          bonus, Blessures (BF+2×BE+BFM)
   character.ts                création de personnage (espèce+2d10, 40 augmentations, talents…)

@@ -106,12 +106,16 @@ export function skillToolMod(c: Combatant, skill?: string): number {
   return has ? 0 : tool.withoutMod;
 }
 
-/** Valeur de Test « NUE » d'une compétence : Caractéristique EFFECTIVE (buffs magiques + Traumatisme via
- *  `effectiveChar`) + avances de la compétence, SANS les pénalités d'État/Encombrement/passifs qu'applique
- *  `testValue`. Base des Tests de Psychologie (Calme), généralisant `calmeValue` à TOUTE compétence déclarée
- *  en donnée (`PsychologyData.test.skill`) — fini la valeur de Calme codée en dur dans la couche flux. */
-export function skillBaseValue(c: Combatant, skill: string, spec?: string): number {
-  const ck = effectiveSkillCharKey(c, skill, { spec });
+/** NIVEAU DE COMPÉTENCE, au sens de `LDB 09 l.17` (« la Caractéristique associée [+] le nombre
+ *  d'Augmentations prises ») : Caractéristique EFFECTIVE (buffs magiques + Traumatisme via
+ *  `effectiveChar`) + avances, SANS les pénalités d'État/Encombrement/passifs qu'applique `testValue`.
+ *  FORMULE UNIQUE de la valeur NUE d'un Test — base des Tests de Psychologie (Calme, généralisant
+ *  `calmeValue` à toute compétence déclarée en donnée) ET grandeur du départage à DR égal
+ *  (`LDB 12 l.160`, `resolveOpposed`). `explicitChar` : Caractéristique IMPOSÉE par l'appelant quand
+ *  elle ne se déduit pas de la Compétence (surcharge de Domaine pour Langue (Magick) —
+ *  `magic.castingBaseValue`), jamais un recalcul parallèle de la formule. */
+export function skillBaseValue(c: Combatant, skill: string, spec?: string, explicitChar?: CharKey): number {
+  const ck = effectiveSkillCharKey(c, skill, { spec, explicit: explicitChar });
   const adv = c.skills.find((s) => s.skillId === skill && (spec == null || s.spec === spec))?.advances ?? 0;
   return effectiveChar(c, ck) + adv;
 }

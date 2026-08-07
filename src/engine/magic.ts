@@ -22,7 +22,7 @@ import { getTestPolicy } from './testPolicy';
 import { rule } from './policy';
 import { traitCapability } from './traits/dispatch';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
-import { effectiveSkillCharKey, soutienBonus } from './skills';
+import { effectiveSkillCharKey, skillBaseValue, soutienBonus } from './skills';
 import { effectivelyHostile } from './relations';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { deviatableArmourAt } from './items';
@@ -201,23 +201,31 @@ export function castingCharKey(c: Combatant, skillName: string, spec?: string): 
 }
 
 /**
- * Valeur d'un test d'incantation : Caractéristique de la compétence + avances de
- * celle-ci (si le personnage la possède), sinon la Caractéristique seule —
- * modulée par les contrecoups actifs (castPenalties) et, EN COMBAT, par
- * l'Avantage (« Les Avantages s'appliquent aux Tests d'Incantation, pas aux
- * Tests de Focalisation », LDB 46 l.123-125).
+ * NIVEAU DE COMPÉTENCE d'incantation — SOURCE UNIQUE de la valeur NUE, au sens de
+ * `LDB 09 l.17` : Caractéristique associée (`castingCharKey`) + Augmentations prises, rien d'autre.
+ * C'est la grandeur que compare le départage d'un Test opposé à DR égal (`LDB 12 l.160`) et celle
+ * qu'affiche la ligne pré-jet ; le pendant, pour l'incantation, de `combatValue` au combat.
+ * Tout le reste (Avantage `LDB 46 l.123-125`, contrecoup, Soutien `LDB 12 l.189`, wards, Difficulté)
+ * est un MODIFICATEUR : il entre dans la cible, jamais ici. Aucun site ne re-dérive cette valeur par
+ * soustraction — ils appellent CETTE fonction.
+ */
+export function castingBaseValue(c: Combatant, skillName: string, spec?: string): number {
+  // `skillName` EST déjà l'id stable de la Compétence (skills.json) ; la FORMULE reste celle de
+  // `skillBaseValue` — seule la Caractéristique est imposée ici (surcharge de Domaine, `castingCharKey`).
+  return skillBaseValue(c, skillName, spec, castingCharKey(c, skillName, spec));
+}
+
+/**
+ * Valeur TESTÉE d'une incantation : le Niveau de Compétence (`castingBaseValue`) une fois modulé par
+ * les contrecoups actifs (castPenalties) et, EN COMBAT, par l'Avantage (« Les Avantages s'appliquent
+ * aux Tests d'Incantation, pas aux Tests de Focalisation », LDB 46 l.123-125).
  */
 export function castingValue(c: Combatant, skillName: string, spec?: string): number {
-  const base = effectiveChar(c, castingCharKey(c, skillName, spec));
-  // `skillName` EST déjà l'id stable de la Compétence (skills.json) — lookup direct.
-  const sk = c.skills.find(
-    (s) => s.skillId === skillName && (spec == null || s.spec === spec),
-  );
   const penalty = skillName === 'priere' || skillName === 'langue' || skillName === 'focalisation'
     ? castPenaltyMod(c, skillName)
     : 0;
   const advantage = skillName === 'focalisation' ? 0 : 10 * (c.advantage ?? 0);
-  return base + (sk?.advances ?? 0) + penalty + advantage;
+  return castingBaseValue(c, skillName, spec) + penalty + advantage;
 }
 
 /**
@@ -476,6 +484,13 @@ export interface CastResult {
   roll: number;
   /** Valeur cible effective du test (utile au journal/tests). */
   target: number;
+  /** NIVEAU DE COMPÉTENCE du lanceur (`castingBaseValue` : Caractéristique + Augmentations,
+   *  `LDB 09 l.17`) — PAS la valeur testée : ni Avantage, ni contrecoup, ni ward, ni Difficulté.
+   *  `castTestOf` la reconduit dans `TestResult.base` pour le départage à DR égal d'un Test opposé
+   *  (`LDB 12 l.160` : Contre-sort, opposition d'incantation). Optionnelle pour les seuls résultats
+   *  RÉHYDRATÉS d'avant ce champ (save/réseau) : le tout-ou-rien d'`openValues` (`tests.ts`) fait
+   *  alors retomber les DEUX camps sur leurs cibles, jamais un mixte. */
+  base?: number;
   sl: number;
   /** Incantation Critique (double réussi). */
   isCritical: boolean;
@@ -725,7 +740,9 @@ export function evaluateCasting(
   } else {
     log = `${caster.label} lance ${spell.label} (DR ${t.sl}).`;
   }
-  return { cast, roll: t.roll, target: t.target, sl: t.sl, isCritical, isFumble, log, ...(info.requireNI ? { niRequired: ni } : {}) };
+  // `base` : le Niveau de Compétence du lanceur, RELU à sa source canonique — jamais `t.base`, que le
+  // seam de jet a chargé de la valeur TESTÉE (Avantage, contrecoup, ward, Soutien fondus). LDB 12 l.160.
+  return { cast, roll: t.roll, target: t.target, sl: t.sl, base: castingBaseValue(caster, info.skill, info.spec), isCritical, isFumble, log, ...(info.requireNI ? { niRequired: ni } : {}) };
 }
 
 // ── Résistance à la Magie : le DR du Sort CONTRE une cible ────────────────────────────────────────
@@ -812,21 +829,26 @@ export function isDispellableSpell(spell: SpellLike): boolean {
  * Égalité du Test opposé : personne ne gagne → pas de dissipation, DR net 0 appliqué au NI.
  */
 /** Reconstruit le Test d'Incantation FIGÉ d'un résultat d'incantation, pour l'opposition du
- *  Contre-sort (LDB 46 l.156). Source unique. */
-export function castTestOf(res: Pick<CastResult, 'roll' | 'target' | 'sl'>): TestResult {
-  return { roll: res.roll, target: res.target, success: res.roll <= res.target, sl: res.sl, isDouble: res.roll === 100 || res.roll % 11 === 0 };
+ *  Contre-sort (LDB 46 l.156). Source unique. La valeur NUE (`base`) traverse : c'est elle que le
+ *  départage à DR égal compare (LDB 12 l.160). */
+export function castTestOf(res: Pick<CastResult, 'roll' | 'target' | 'sl' | 'base'>): TestResult {
+  return { roll: res.roll, target: res.target, success: res.roll <= res.target, sl: res.sl, isDouble: res.roll === 100 || res.roll % 11 === 0, ...(res.base != null ? { base: res.base } : {}) };
 }
 
 /** Issue d'un Contre-sort à partir d'un jet de contre-lanceur DÉJÀ obtenu (`counterT`, DR déjà
  *  ajusté) opposé au Test d'Incantation figé. Source UNIQUE de l'opposition + du journal — partagée
- *  par le jet RNG (`resolveCounterspell`), la Chance « +1 DR », et la Résilience (dé forcé). */
+ *  par le jet RNG (`resolveCounterspell`), la Chance « +1 DR », la Résilience et le dé posé.
+ *  POINT UNIQUE aussi de la valeur NUE du contre-lanceur : elle est RELUE ici (`castingBaseValue`),
+ *  jamais héritée du `counterT` reçu — dont la valeur testée porte le Soutien du groupe uni
+ *  (`LDB 12 l.189`) et les modificateurs propres du chant. LDB 12 l.160. */
 export function counterspellOutcomeFrom(counter: Combatant, counterT: TestResult, castT: TestResult): CounterspellOutcome {
-  const opp = resolveOpposed(castT, counterT); // le lanceur tient le rôle « attaquant »
+  const nue = { ...counterT, base: castingBaseValue(counter, 'langue', 'magick') };
+  const opp = resolveOpposed(castT, nue); // le lanceur tient le rôle « attaquant »
   const dispelled = opp.winner === 'defender';
   const net = castT.sl - counterT.sl;
   return {
     dispelled,
-    counter: counterT,
+    counter: nue,
     casterNetSL: net,
     log: dispelled
       ? `Contre-sort de ${counter.label} (${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : le Sort est DISSIPÉ.`
