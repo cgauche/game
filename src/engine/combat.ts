@@ -13,6 +13,7 @@ import { bonus, effectiveChar, baseWithTraits } from './characteristics';
 import { woundsFromHit } from './woundsCalc';
 import { isInanimate } from './structures';
 import { agilityTestPenalty } from './encumbrance';
+import { skillBaseValue } from './skills';
 import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS, CHAR_LABELS, type CharKey, type Difficulty } from './types';
 import { weatherTestMods } from './weatherTestMod';
 import { findTableEntry } from './tables';
@@ -157,7 +158,7 @@ function acceptableSpecs(weapon: Weapon, kind: 'melee' | 'ranged'): SpecAcceptan
  * entrées EXPLICITES (`spec` réel) priment sur la sentinelle `ANY_RANGED_SPEC`, essayée en dernier
  * (meilleure Spé de Tir disponible, dégradée). `null` si aucune Spé du `skillId` de `kind` ne matche.
  */
-function matchGroupSpec(c: Combatant, weapon: Weapon, kind: 'melee' | 'ranged'): { advances: number; mode: 'full' | 'degraded' } | null {
+function matchGroupSpec(c: Combatant, weapon: Weapon, kind: 'melee' | 'ranged'): { advances: number; mode: 'full' | 'degraded'; spec?: string } | null {
   const skillId = kind === 'melee' ? 'corps-a-corps' : 'projectiles';
   const matching = c.skills.filter((s) => s.skillId === skillId);
   if (!matching.length) return null;
@@ -165,38 +166,72 @@ function matchGroupSpec(c: Combatant, weapon: Weapon, kind: 'melee' | 'ranged'):
   for (const w of wanted) {
     if (w.spec === ANY_RANGED_SPEC) continue; // essayée en dernier, cf. plus bas
     const sk = matching.find((s) => s.spec === w.spec);
-    if (sk) return { advances: sk.advances, mode: w.mode };
+    if (sk) return { advances: sk.advances, mode: w.mode, spec: w.spec };
   }
   if (wanted.some((w) => w.spec === ANY_RANGED_SPEC)) {
     const best = matching.reduce<Combatant['skills'][number] | undefined>((m, s) => (!m || s.advances > m.advances ? s : m), undefined);
+    // Pas de `spec` rendue : la MEILLEURE instance n'est pas désignable par sa `spec` (deux instances
+    // peuvent la partager) — l'appelant s'en tient aux Augmentations retenues ici.
     if (best) return { advances: best.advances, mode: 'degraded' };
   }
   return null;
 }
 
+/** Compétence RETENUE pour un Test de combat : Caractéristique testée + Spé du Groupe de l'arme
+ *  (LDB 62 l.138-139) et ses Augmentations. Aucun modificateur — SÉLECTION pure, partagée par la
+ *  valeur NUE (`combatBaseValue`) et la somme des modificateurs (`combatValueMods`). */
+function combatSkillPick(c: Combatant, kind: 'melee' | 'ranged', weapon?: Weapon): { charKey: CharKey; skillId?: string; spec?: string; advances: number } {
+  // Résolution ALTERNATIVE déclarée par l'arme (bélier → Force, ADE II 8 l.233) : Caractéristique BRUTE,
+  // aucune Compétence associée (comme l'Empoignade, `rollGrappleForce`) — court-circuite CC/CT et la Spé du Groupe.
+  if (weapon?.resolveChar) return { charKey: weapon.resolveChar, advances: 0 };
+  const charKey = kind === 'melee' ? 'capacite-de-combat' : 'capacite-de-tir';
+  if (weapon && weaponUnmastered(c, weapon)) return { charKey, advances: 0 }; // arme inhabituelle non maîtrisée : carac brute (ACE 12 l.17-21)
+  const skillId = kind === 'melee' ? 'corps-a-corps' : 'projectiles';
+  const matching = c.skills.filter((s) => s.skillId === skillId);
+  if (matching.length === 0) return { charKey, advances: 0 };
+  if (!weapon || !weapon.subType) return { charKey, skillId, advances: Math.max(0, ...matching.map((s) => s.advances)) };
+  const m = matchGroupSpec(c, weapon, kind);
+  return { charKey, skillId, spec: m?.spec, advances: m?.advances ?? 0 };
+}
+
 /**
- * Valeur de Compétence de combat (Caractéristique + avances de la *bonne* Spécialisation).
+ * Valeur de Compétence de combat NUE (Caractéristique + avances de la *bonne* Spécialisation), au sens
+ * de `LDB 09 l.17` : c'est la grandeur du départage à DR égal (`LDB 12 l.160`), insensible à l'Avantage,
+ * aux États et aux effets actifs — ceux-ci voyagent dans `combatValueMods`.
  *
  * RAW : Corps à corps et Projectiles étant Groupées, les Augmentations ne comptent QUE pour la
  * Spécialisation correspondant au Groupe de l'arme tenue (exemple Sigrid, LDB 09 l.44 : sans la
  * Spé adéquate on teste sur la Caractéristique brute). `weapon` omis (créatures, Piétinement,
  * affichage générique) → comportement historique : meilleure Spé disponible.
  */
-export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Weapon): number {
-  // Résolution ALTERNATIVE déclarée par l'arme (bélier → Force, ADE II 8 l.233) : Caractéristique BRUTE,
-  // aucune Compétence associée (comme l'Empoignade, `rollGrappleForce`) — court-circuite CC/CT et la Spé du Groupe.
-  if (weapon?.resolveChar) return effectiveChar(c, weapon.resolveChar);
+export function combatBaseValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Weapon): number {
+  const p = combatSkillPick(c, kind, weapon);
+  // FORMULE UNIQUE : `skillBaseValue` (Caractéristique effective + Augmentations), avec la
+  // Caractéristique IMPOSÉE par le combat (CC/CT, ou celle de la résolution alternative de l'arme).
+  // Quand la Spé retenue n'est pas désignable par sa `spec` (meilleure Spé disponible, Spé absente,
+  // arme non maîtrisée, carac brute), seules ses Augmentations retenues s'ajoutent à cette carac.
+  return p.skillId != null && p.spec != null
+    ? skillBaseValue(c, p.skillId, p.spec, p.charKey)
+    : effectiveChar(c, p.charKey) + p.advances;
+}
+
+/**
+ * Modificateurs FONDUS dans la valeur de combat, en SOMME : mods de Test char-QUALIFIÉS d'effets
+ * ACTIFS (`activeCharTestMod`). Ils vivent DANS la valeur et ne transitent JAMAIS par `combineMods`
+ * (plafond « Combiner les Difficultés », LDB 14 l.126-131) — les y verser les amputerait à −30.
+ * #193 : pénalité de récupération « Tests effectués avec ce bras » (Épaule luxée, LDB/AA) — scopée à
+ * l'arme tenue dans CETTE main (`weaponHand`), jamais l'autre. Inerte si `weapon` absent (créature sans
+ * arme, Piétinement…) ou si aucun effet ne porte `testModHand`.
+ */
+export function combatValueMods(c: Combatant, kind: 'melee' | 'ranged', weapon?: Weapon): number {
+  if (weapon?.resolveChar) return 0; // carac BRUTE (ADE II 8 l.233) : aucun mod de Test char-qualifié
   const charKey = kind === 'melee' ? 'capacite-de-combat' : 'capacite-de-tir';
-  // #193 : pénalité de récupération « Tests effectués avec ce bras » (Épaule luxée, LDB/AA) — scopée à
-  // l'arme tenue dans CETTE main (`weaponHand`), jamais l'autre. Inerte si `weapon` absent (créature sans
-  // arme, Piétinement…) ou si aucun effet ne porte `testModHand`.
-  const base = effectiveChar(c, charKey) + activeCharTestMod(c, charKey, { weaponHand: weapon?.hand });
-  if (weapon && weaponUnmastered(c, weapon)) return base; // arme inhabituelle non maîtrisée : carac brute (ACE 12 l.17-21)
-  const skillId = kind === 'melee' ? 'corps-a-corps' : 'projectiles';
-  const matching = c.skills.filter((s) => s.skillId === skillId);
-  if (matching.length === 0) return base;
-  if (!weapon || !weapon.subType) return base + Math.max(0, ...matching.map((s) => s.advances));
-  return base + (matchGroupSpec(c, weapon, kind)?.advances ?? 0);
+  return activeCharTestMod(c, charKey, { weaponHand: weapon?.hand });
+}
+
+/** Valeur de combat FONDUE = valeur NUE + ses modificateurs (identité `base + modificateurs`). */
+export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Weapon): number {
+  return combatBaseValue(c, kind, weapon) + combatValueMods(c, kind, weapon);
 }
 
 /**
@@ -261,21 +296,38 @@ export type DefenseMode = 'parade' | 'esquive' | 'social';
 export interface DefenseSub { base: number; label: string }
 
 /**
- * Valeur de défense (Parade = Corps à corps avec l'arme parante ; Esquive = Agilité + avances ;
- * Social = valeur de Test de la Compétence substituée, fournie par `socialBase`).
- * L'Esquive subit la pénalité d'Agilité d'Encombrement (Surchargé, LDB 61 p.295). `weapon` (arme du
- * défenseur) n'est utilisé qu'en Parade, pour aligner la Spé de Corps à corps sur l'arme tenue.
+ * Valeur de défense NUE (Parade = Corps à corps avec l'arme parante ; Esquive = Agilité + avances ;
+ * Social = valeur de Test de la Compétence substituée, fournie par `socialBase`), au sens de
+ * `LDB 09 l.17` : grandeur du départage à DR égal (`LDB 12 l.160`). Les pénalités de mobilité et les
+ * effets actifs voyagent dans `defenseValueMods`. `weapon` (arme du défenseur) n'est utilisé qu'en Parade,
+ * pour aligner la Spé de Corps à corps sur l'arme tenue.
  */
-export function defenseValue(c: Combatant, mode: DefenseMode, weapon?: Weapon, socialBase?: number): number {
+export function defenseBaseValue(c: Combatant, mode: DefenseMode, weapon?: Weapon, socialBase?: number): number {
   if (mode === 'social') return socialBase ?? 0; // base = Test de la Compétence sociale (Intimidation/Dressage), calculée en amont
-  if (mode === 'parade') return combatValue(c, 'melee', weapon ?? c.weapons[0]);
-  const sk = c.skills.find((s) => s.skillId === 'esquive');
+  if (mode === 'parade') return combatBaseValue(c, 'melee', weapon ?? c.weapons[0]);
+  return skillBaseValue(c, 'esquive', undefined, 'agilite');
+}
+
+/**
+ * Modificateurs FONDUS dans la valeur de défense, en SOMME : pénalité de mobilité + mods de Test
+ * char-QUALIFIÉS d'effets ACTIFS. Ils vivent DANS la valeur et ne transitent JAMAIS par `combineMods`
+ * (plafond « Combiner les Difficultés », LDB 14 l.126-131) — les y verser les amputerait à −30.
+ * L'Esquive subit la pénalité d'Agilité d'Encombrement (Surchargé, LDB 61 p.295).
+ */
+export function defenseValueMods(c: Combatant, mode: DefenseMode, weapon?: Weapon): number {
+  if (mode === 'social') return 0; // valeur fournie clé en main par la couche état
+  if (mode === 'parade') return combatValueMods(c, 'melee', weapon ?? c.weapons[0]);
   // Pénalité de mobilité : pire pénalité (non-cumul, LDB l.20) entre Encombrement et traumatisme
   // de jambe (Déchirure −10/−20, Fracture −20 « règle du Pied », LDB 18 l.298/315/369).
   const mobilityPenalty = Math.min(agilityTestPenalty(c), traumaDodgePenalty(c));
   // #193 : pénalité de récupération « Tests impliquant cette jambe » (Genou démis, LDB/AA) — Esquive EST
   // classée « déplacement » (SkillData.movement), même catégorie que l'État À Terre/Empêtré.
-  return effectiveChar(c, 'agilite') + (sk?.advances ?? 0) + mobilityPenalty + activeCharTestMod(c, 'agilite', { movement: true });
+  return mobilityPenalty + activeCharTestMod(c, 'agilite', { movement: true });
+}
+
+/** Valeur de défense FONDUE = valeur NUE + ses modificateurs (identité `base + modificateurs`). */
+export function defenseValue(c: Combatant, mode: DefenseMode, weapon?: Weapon, socialBase?: number): number {
+  return defenseBaseValue(c, mode, weapon, socialBase) + defenseValueMods(c, mode, weapon);
 }
 
 /** Détail d'un jet (pour l'affichage : base, modificateurs, cible, d100 et DR). */
