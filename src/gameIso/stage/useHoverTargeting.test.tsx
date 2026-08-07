@@ -6,6 +6,7 @@ import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { testScene } from '../../scenes/test-fixture';
 import { useGame } from '../../state/store';
+import { startCascade } from '../../state/cascade';
 import { useHoverTargeting } from './useHoverTargeting';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -36,6 +37,8 @@ function setup() {
     pendingCast: null,
     pendingCleave: null,
     pendingDualStrike: null,
+    pendingCascade: null,
+    suspendedCascades: [],
     hoverDelta: null,
     combatCursor: null,
     hoverCombatantId: null,
@@ -89,5 +92,88 @@ describe('useHoverTargeting — intention de déplacement', () => {
       adv: 0,
       movement: { status: 'blocked', reason: 'engaged' },
     });
+  });
+});
+
+describe('useHoverTargeting — modale bloquante (arbitre modal)', () => {
+  beforeEach(() => useGame.setState({ battle: null, hoverDelta: null }));
+  afterEach(() => {
+    if (root) act(() => root!.unmount());
+    root = null;
+  });
+
+  /** Monte la sonde sur UNE case survolée et rend le verdict du hook (démonte aussitôt). */
+  function probe(hover: { x: number; y: number }) {
+    let result: ReturnType<typeof useHoverTargeting> | undefined;
+    const Probe = () => {
+      result = useHoverTargeting(testScene, hover, true);
+      return null;
+    };
+    root = createRoot(document.createElement('div'));
+    act(() => root!.render(<Probe />));
+    act(() => root!.unmount());
+    root = null;
+    return result!;
+  }
+
+  /** Un ennemi collé au héros actif : cible valide au corps à corps (réticule au survol). */
+  function foeNextTo(active: ReturnType<typeof setup>) {
+    const battle = useGame.getState().battle!;
+    const foe = battle.combatants.find((c) => c.kind === 'enemy')!;
+    foe.pos = { x: active.pos!.x + 1, y: active.pos!.y };
+    return foe;
+  }
+
+  it('cascade ouverte : ni réticule, ni piste, ni intention de déplacement', () => {
+    const active = setup();
+    const foe = foeNextTo(active);
+    const empty = { x: active.pos!.x, y: active.pos!.y + 2 };
+
+    // Référence : hors modale, la carte répond (réticule sur l'ennemi, piste sur la case vide).
+    expect(probe({ x: foe.pos!.x, y: foe.pos!.y }).hoverAim?.reticle).toBe(true);
+    expect(probe(empty).hoverMove).toMatchObject({ kind: 'move' });
+    expect(useGame.getState().hoverDelta?.movement).toMatchObject({ status: 'ok' });
+
+    act(() => startCascade(useGame.getState, useGame.setState, {
+      title: 'Surprise', purpose: 'test',
+      steps: [{ id: 'surprise-1', kind: 'sceneEntry', actorId: active.id, interactive: true, reveal: { kind: 'sceneEntry', title: 'Surprise', lines: ['…'] } }],
+    }));
+
+    expect(probe({ x: foe.pos!.x, y: foe.pos!.y }).hoverAim).toBeNull();
+    const under = probe(empty);
+    expect(under.hoverMove).toBeNull();
+    expect(useGame.getState().hoverDelta).toBeNull(); // movementIntent (ActionBar) = hoverDelta.movement
+  });
+
+  it('ciblage de sort PAR LA CARTE (pickingTargets) : le réticule reste actif sous la cascade', () => {
+    const active = setup();
+    const foe = foeNextTo(active);
+    act(() => startCascade(useGame.getState, useGame.setState, {
+      title: 'Incantation', purpose: 'combat',
+      steps: [{ id: 'cast-jet', kind: 'castJet', jet: 'cast', actorId: active.id }],
+    }));
+    // Surincantation « +Cible » : le lanceur désigne une cible SUPPLÉMENTAIRE sur la carte (mode overcast).
+    useGame.setState({ pendingCast: { casterId: active.id, targetId: active.id, spellId: 'benediction-de-bataille', missile: true, focused: false, result: null, pickingTargets: true } as never });
+
+    expect(probe({ x: foe.pos!.x, y: foe.pos!.y }).hoverAim?.reticle).toBe(true);
+  });
+
+  /**
+   * Le « ciblage carte en cours » se lit au REGISTRE (`mapTargetingActive`, `state/targetingHolder.ts`),
+   * plus dans une liste littérale recopiée par consommateur : `pendingSiegeAim` (pilonnage indirect,
+   * placeur de case) y est déclaré, mais manquait aux deux listes locales — sur une case HORS PORTÉE
+   * du placeur (aucun aperçu de mode-case), la carte reproposait une piste de déplacement pendant
+   * qu'on visait.
+   */
+  it('placeur de case ARMÉ (pilonnage) : plus d’intention de déplacement, même hors portée du placeur', () => {
+    const active = setup();
+    const loin = { x: active.pos!.x, y: active.pos!.y + 3 }; // > rangeTiles : le mode-case n'a AUCUN aperçu ici
+
+    // Référence : sans placeur armé, cette case porte une piste de déplacement.
+    expect(probe(loin).hoverMove).toMatchObject({ kind: 'move' });
+
+    useGame.setState({ pendingSiegeAim: { gunnerId: active.id, weaponUid: 'w-1', radius: 1, rangeTiles: 2 } as never });
+    expect(probe(loin).hoverMove, 'une piste de déplacement se trace pendant qu’on vise une case').toBeNull();
+    useGame.setState({ pendingSiegeAim: null });
   });
 });

@@ -19,6 +19,8 @@ import { footprintN, sizeFootprint } from '../state/footprint';
 import { mountOf } from '../state/mount';
 import { placingZoneOf } from '../state/combatFlow';
 import { controlsActive } from '../state/netOwnership';
+import { modalBlocksMapHover } from '../state/modalArbiter';
+import { mapTargetingActive } from '../state/targetingHolder';
 import { Dims, tileCenter, depth, isSquareView, capsuleCenter } from '../geometry/iso';
 import { DEFS } from './sprites';
 import { isoAmbianceDefs } from './catalog/ambiance';
@@ -86,6 +88,8 @@ export function IsoStage() {
   // COOP : le tour du héros d'un AUTRE joueur s'affiche comme un tour ennemi — AUCUNE affordance.
   const myTurn = useGame(controlsActive);
   const planView = useGame((s) => s.pendingRoundStart?.round === 1); // ouverture : cadrer tout le champ
+  const mapInert = useGame(modalBlocksMapHover); // modale bloquante (arbitre) : la carte ne répond plus
+  const mapTargeting = useGame(mapTargetingActive); // un ciblage carte tient la scène (registre des pendings de ciblage)
   const pendingAttack = useGame((s) => s.pendingAttack);
   const pendingCast = useGame((s) => s.pendingCast);
   const pendingSiegeAim = useGame((s) => s.pendingSiegeAim); // pilonnage indirect : placeur de CASE
@@ -367,8 +371,10 @@ export function IsoStage() {
         <FxLayer dims={dims} floats={floats} projs={projs} auras={auras} aoes={aoes} />
         {battle && hover && <ZdeTemplate battle={battle} hover={hover} pendingCast={pendingCast} pendingSiegeAim={pendingSiegeAim} activeC={activeC} dims={dims} />}
         {mode === 'battle' && <EnemyAoeTelegraph actorAoe={actorAoe} dims={dims} />}
+        {/* Curseur LIBRE : il se tait dès qu'un ciblage carte tient la scène (verdict du registre
+            `mapTargetingActive`) — le réticule/le gabarit du mode prennent alors le relais. */}
         {mode === 'battle' && battle && combatCursor
-          && !pendingAttack && !pendingDefense && !pendingTrample && !pendingHeal && !pendingCast && !pendingCleave && !pendingDualStrike
+          && !mapInert && !mapTargeting
           && !hoverAim?.reticle && <CursorOverlay tile={combatCursor.tile} footN={activeMoveN} dims={dims} liftAt={liftAt} />}
         {mode === 'battle' && battle && hoverMove && effHover && <HoverMovePreview move={hoverMove} at={effHover} footN={activeMoveN} dims={dims} lift={liftOf} />}
         {mode === 'exploration' && explorePath && (hover || hoveredPortal) && <ExplorePathPreview path={explorePath} dims={dims} lift={liftOf} walking={anyWalking} />}

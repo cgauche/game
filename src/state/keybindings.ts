@@ -10,7 +10,7 @@
 import type { GameState } from './store';
 import { useGame } from './store';
 import { controlsActive } from './netOwnership';
-import { pickActiveModalKey } from './modalArbiter';
+import { pickActiveModalKey, modalBlocksMapHover } from './modalArbiter';
 import { hotbar } from './hotbarBridge';
 import { validTargets, preemptShooterIds } from './targeting';
 import type { ScreenDir } from './combatCursor';
@@ -47,15 +47,24 @@ export interface KeyBinding {
 }
 
 const inBattle = (s: GameState) => s.mode === 'battle' && !!s.battle && !s.battle.over;
-/** Aucune modale de combat ouverte (sinon Espace/Entrée doivent rester à la modale). */
+/** Aucune modale de combat ouverte (sinon Espace/Entrée doivent rester à la modale). Garde des
+ *  gestes qui ENGAGENT ou QUITTENT le tour (fin de tour, barre d'action, menu système). */
 const noModal = (s: GameState) => pickActiveModalKey(s as Parameters<typeof pickActiveModalKey>[0]) == null;
-/** Contexte de PILOTAGE du combat (carte) : en combat, c'est bien ton tour (coop), aucune modale ouverte. */
+/** La CARTE accepte-t-elle un geste de ciblage ? MÊME verdict que la souris (`modalBlocksMapHover`,
+ *  arbitre) : une modale PILOTÉE PAR LA CARTE (désignation de cibles d'un sort) laisse la scène
+ *  vivante — la souris y cible, le curseur clavier/manette doit pouvoir en faire autant. */
+const mapLive = (s: GameState) => !modalBlocksMapHover(s as Parameters<typeof modalBlocksMapHover>[0]);
+/** Contexte de PILOTAGE du combat (fin de tour, barre d'action) : en combat, c'est bien ton tour
+ *  (coop), aucune modale ouverte. */
 const cur = (s: GameState) => inBattle(s) && controlsActive(s) && noModal(s);
+/** Contexte du CURSEUR de combat (viser / valider SUR LA CARTE) : ton tour et carte vivante — le
+ *  ciblage clavier survit donc à une modale pilotée par la carte, comme la souris. */
+const curMap = (s: GameState) => inBattle(s) && controlsActive(s) && mapLive(s);
 /** Contexte de VISÉE Tir rapide (pause de début de Round, LDB 10) : une visée est ARMÉE (`preemptAiming`),
- *  aucune modale — le curseur/Tab/Entrée pilotent le tir d'interruption HORS TOUR comme un ciblage normal. */
-const preemptCur = (s: GameState) => inBattle(s) && !!s.preemptAiming && noModal(s);
+ *  carte vivante — le curseur/Tab/Entrée pilotent le tir d'interruption HORS TOUR comme un ciblage normal. */
+const preemptCur = (s: GameState) => inBattle(s) && !!s.preemptAiming && mapLive(s);
 /** Curseur de combat actif : tour normal OU visée Tir rapide armée (le même curseur pilote les deux). */
-const curOrPreempt = (s: GameState) => cur(s) || preemptCur(s);
+const curOrPreempt = (s: GameState) => curMap(s) || preemptCur(s);
 /** Contexte d'EXPLORATION (carte hors combat) : écran de jeu, mode exploration, hors dialogue. */
 const exploring = (s: GameState) => s.screen === 'campaign' && s.mode === 'exploration' && !s.dialogue;
 /** Contexte d'exploration en vue SUBJECTIVE (POV) : les ZQSD deviennent cap-relatifs et A/E pivotent le

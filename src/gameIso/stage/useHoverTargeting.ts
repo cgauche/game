@@ -19,6 +19,8 @@ import { combatantAtTile } from '../../state/combatGeometry';
 import { controlsCombatant } from '../../state/netOwnership';
 import { outOfSightTargetIds, castOutOfSightTargetIds, resolveMovement, previewResourceDelta, frenzyTarget, hasFreeWeaponAttack } from '../../state/combatFlow';
 import { hoverTargeting, tilePreviewAt } from '../../state/targeting';
+import { modalBlocksMapHover } from '../../state/modalArbiter';
+import { mapTargetingActive } from '../../state/targetingHolder';
 import type { RoomPortal } from '../../state/roomPortals';
 
 export interface HoverAim {
@@ -64,13 +66,14 @@ export function useHoverTargeting(
   const combatCursor = useGame((s) => s.combatCursor);
   const hoverCombatantId = useGame((s) => s.hoverCombatantId);
   const setHovered = useGame((s) => s.setHovered);
-  const pendingAttack = useGame((s) => s.pendingAttack);
+  // Une modale bloque la scène ? Verdict UNIQUE de l'arbitre (registre `MODAL_DEFS`) : la carte est
+  // inerte, sauf modale pilotée par la carte (ciblage de sort).
+  const mapInert = useGame(modalBlocksMapHover);
+  // Un ciblage CARTE est-il en cours ? Verdict UNIQUE du registre des pendings de ciblage.
+  const mapTargeting = useGame(mapTargetingActive);
   const pendingCast = useGame((s) => s.pendingCast);
   const pendingCleave = useGame((s) => s.pendingCleave);
   const pendingDualStrike = useGame((s) => s.pendingDualStrike);
-  const pendingTrample = useGame((s) => s.pendingTrample);
-  const pendingHeal = useGame((s) => s.pendingHeal);
-  const pendingDefense = useGame((s) => s.pendingDefense);
   const preemptAiming = useGame((s) => s.preemptAiming);
 
   // Signaux de survol EFFECTIFS : le curseur clavier/manette PRIME sur la souris locale (hover) ET sur
@@ -93,7 +96,7 @@ export function useHoverTargeting(
   const hoverAim = useMemo<HoverAim | null>(() => {
     if (mode !== 'battle' || !battle || battle.over || (!effHover && !effFocusId)) return null;
     // Un jet à cible est déjà en cours (modale) : le réticule PERSISTANT prend le relais au rendu.
-    if (pendingAttack || pendingDefense || pendingTrample || pendingHeal || (pendingCast && !pendingCast.pickingTargets)) return null;
+    if (mapInert) return null;
     // Source du survol EFFECTIF : la cible aimantée du curseur (effFocusId) ou un PORTRAIT de frise
     // priment sur la tuile sous la souris (effHover) → réticule + infobulle identiques.
     const occ = effFocusId
@@ -139,7 +142,7 @@ export function useHoverTargeting(
     if (ht.kind === 'none') return null;
     if (ht.kind === 'invalid') return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text: hoverErrText(ht) }, reticle: false };
     return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
-  }, [combatCursor, hover, hoverCombatantId, mode, battle, scene, myTurn, preemptAiming, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
+  }, [combatCursor, hover, hoverCombatantId, mode, battle, scene, myTurn, preemptAiming, mapInert, pendingCast, pendingCleave, pendingDualStrike]);
 
   // Combattant SOUS le focus (tuile survolée OU portrait de frise/Tab) — INDÉPENDANT du ciblage
   // (hoverAim exige Mon Tour + cible valide). Pilote le halo de focus du token ET, synchronisé au
@@ -162,10 +165,13 @@ export function useHoverTargeting(
     if (mode !== 'battle' || !battle || battle.over || !effHover || battle.preview || !myTurn) return null;
     const tp = tilePreviewAt(useGame.getState, effHover);
     if (tp) return null;
-    if (pendingAttack || pendingDefense || pendingTrample || pendingHeal || pendingCast || pendingCleave || pendingDualStrike) return null;
+    // Modale bloquante (arbitre) OU ciblage CARTE en cours : on désigne une cible, on ne trace pas de
+    // déplacement. Le second verdict est celui du registre (`mapTargetingActive`) — un pending de
+    // ciblage nouveau y entre par UNE ligne, jamais par une liste littérale rallongée ici.
+    if (mapInert || mapTargeting) return null;
     const occ = combatantAtTile(battle.combatants, effHover.x, effHover.y, effHover.z ?? 0);
     return occ ? null : resolveMovement(useGame.getState, effHover);
-  }, [combatCursor, hover, mode, battle, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
+  }, [combatCursor, hover, mode, battle, myTurn, mapInert, mapTargeting]);
 
   const hoverMove = useMemo<{ kind: 'move' | 'run' | 'tile'; path: Pt[]; cost?: number; label: string } | null>(() => {
     if (mode !== 'battle' || !battle || battle.over || !effHover || battle.preview || !myTurn) return null;
