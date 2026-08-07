@@ -5,6 +5,7 @@ import { defenseValue, defenseModifiers, DEFENSE_LABEL, FREE_ATTACK_LABEL, type 
 import { shieldReactionCost } from '../../engine/combatFeatures/dispatch';
 import { combatSubstitute } from '../../engine/skillCombatApps';
 import { findSkillById } from '../../data/index';
+import { composeRollLabel } from '../../state/rollSeam';
 import { isUnarmed } from '../../engine/items';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
@@ -65,6 +66,14 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   const myMods = defenseModifiers(defender, pd.mode, 0, pd.mode === 'parade' ? chosenParry : undefined);
   const myBase = defenseValue(defender, pd.mode, chosenParry, socialBase);
   const myLabel = pd.mode === 'social' ? (socialLabel ?? 'Intimidation') : DEFENSE_LABEL[pd.mode];
+  // Résolution alternative de l'arme de parade (`Weapon.resolveChar`) : la base vient déjà d'elle
+  // (`defenseValue`), le sous-titre nomme donc la MÊME Caractéristique (#203+, `attackTestLabel`).
+  // Z1 (`docs/charte-ui.md`) : l'acteur du jet est le DÉFENSEUR, sa Compétence celle du mode CHOISI —
+  // Parade = Corps à corps, Esquive = Esquive, substitution = la Compétence figée sur le pending
+  // (`substituteSkillId`, LDB 13 l.161-167). Ids stables : le libellé est dérivé par `composeRollLabel`.
+  const defenseTest = pd.mode === 'parade' && chosenParry?.resolveChar
+    ? { char: chosenParry.resolveChar }
+    : { skill: pd.mode === 'social' ? pd.substituteSkillId ?? sub?.skillId : pd.mode === 'esquive' ? 'esquive' : 'corps-a-corps' };
   // Valeurs affichées sur le segmented control (chaque option montre SA valeur effective).
   const segVal = (mode: DefenseMode) =>
     optionValue(defenseValue(defender, mode, chosenParry, mode === 'social' ? sub?.value : undefined), defenseModifiers(defender, mode, 0, mode === 'parade' ? chosenParry : undefined));
@@ -133,7 +142,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   return {
     flowKey: 'defense',
     title: 'Défense',
-    subtitle: null,
+    subtitle: composeRollLabel(defender, 'Défense', defenseTest),
     extra: <VsHeader actor={attacker} target={defender} label={pd.weapon?.label ?? 'Mains nues'} />,
     disableEscClose: true,
     rolled,

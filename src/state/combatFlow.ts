@@ -1940,6 +1940,10 @@ export function applyAttackResult(
   deferAttackerAdvantage?: boolean, // Maniement de deux armes (LDB 10 l.638) : l'Avantage de l'attaquant est accordé à part (si les deux touchent)
   grapple?: boolean, // Empoignade (LDB 14 l.159) : « Au lieu d'infliger des Dégâts » — sur une touche, pose l'Empoignade + Empêtré au lieu de blesser
 ): boolean {
+  // SEAM du télégraphe (#1143) : cette fonction est l'entonnoir UNIQUE de résolution d'une attaque —
+  // toutes ses sorties écrivent la ligne de journal du geste, que le bandeau prend alors. Le réticule
+  // d'intention n'a donc plus lieu d'être ici, quel que soit le chemin qui a mené à l'application.
+  clearActorAim(get, set);
   // Surpris (LDB 16 l.136) : « après la première tentative effectuée pour vous toucher, vous perdez
   // l'État Surpris ». On le retire après une attaque STANDARD (deviated===undefined) — le +20 / l'absence
   // de défense ont déjà joué pour CELLE-CI ; les suivantes n'en bénéficieront plus. Les attaques GRATUITES
@@ -5930,9 +5934,19 @@ registerCascadeApplier('bladeTrap', (get, set, step) => {
   runCombatFlow({ mode: 'combat', get, set, target: defender, caster: attacker, label: 'Piège-lame', bladeTrap: bt }, flow);
 });
 
+/** Fin du TÉLÉGRAPHE d'intention (`actorAim`) — le télégraphe appartient au GESTE : posé quand l'IA
+ *  déclare son action, effacé au SEAM où naît la ligne de journal de ce geste (`applyAttackResult`,
+ *  entonnoir UNIQUE de résolution d'attaque — c'est cette ligne que le bandeau prend ensuite,
+ *  `ui/CombatBanner.tsx`) ou à son AVORTEMENT, quel que soit le chemin. Tant qu'une fenêtre de
+ *  défense/d'incantation suspend le tour sans rien résoudre, il TIENT (#1143). Idempotent. */
+function clearActorAim(get: Get, set: SetFn): void {
+  if (get().actorAim) set({ actorAim: null });
+}
+
 /** Reprend le tour de l'IA suspendu par la modale de défense (= ce qu'aurait fait
  *  attackThenAdvance juste après doAttack). No-op si le combat est terminé. */
 export function resumeEnemyTurn(get: Get, set: SetFn): void {
+  clearActorAim(get, set); // reprise d'un tour qu'aucune attaque n'a résolu (incantation témoin, manœuvre) : le geste est fini
   if (combatAdvanceBlocked(get())) return;
   scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'enemyAdvance'));
 }
@@ -5963,6 +5977,7 @@ export function advanceTurn(get: Get, set: SetFn) {
   if (get().pendingRoundStart) return;
   if (combatAdvanceBlocked(get())) return;
   if (get().combatCursor) set({ combatCursor: null }); // le curseur clavier/manette appartient au tour qui s'achève
+  clearActorAim(get, set); // le télégraphe appartient au geste du tour qui s'achève (filet : aucun chemin ne le laisse fuir)
   const battle = get().battle!; // non-null garanti par combatAdvanceBlocked ci-dessus
   // La Charge ne vaut que pour le tour où elle a lieu (Cornes LDB 85, Épuisante LDB 62 l.319) :
   // consommée au passage au combattant suivant (filet de sécurité, l'IA la consomme aussi en chemin).
@@ -6688,10 +6703,9 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     set({ actorAim: { fromId: enemy.id, toId: target.id, kind: aimKind } });
     bus.emit(EVT.SCENE_DIRTY);
     scheduleCombatTimer(() => {
-      set({ actorAim: null });
       const b = get().battle;
       // Tour caduc (combat fini OU relancé pendant le télégraphe → `enemy` hors du combat courant).
-      if (!b || b.over || !b.combatants.includes(enemy)) return;
+      if (!b || b.over || !b.combatants.includes(enemy)) { clearActorAim(get, set); return; }
       // Attaque-ACTION spéciale (Regard pétrifiant / Étreinte glaciale) à la place de l'attaque
       // normale si la créature en a le trait + l'Avantage ; sinon attaque normale (opposée). Une manœuvre
       // spéciale qui touche des HÉROS ouvre une cascade de défense influençable → tour SUSPENDU (reprise
@@ -6736,15 +6750,14 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       set({ actorAim: { fromId: enemy.id, toId: ctgt.id, kind: 'cast' } });
       bus.emit(EVT.SCENE_DIRTY);
       scheduleCombatTimer(() => {
-        set({ actorAim: null });
         const b = get().battle;
-        if (!b || b.over) return;
+        if (!b || b.over) { clearActorAim(get, set); return; }
         castSpell(get, set, enemy, ctgt, action.spell);
         // La modale d'incantation témoin (Lancer → Contre-sort → Appliquer) SUSPEND le tour de
         // l'IA : la reprise est portée par castConfirm/castCancel → resumeEnemyTurn (anti
         // double-advance, même pattern que la défense). castSpell peut refuser (contrecoup
         // bloquant, hors de portée…) → pas de modale → l'ennemi passe.
-        if (!get().pendingCast) scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'enemyAdvance'));
+        if (!get().pendingCast) { clearActorAim(get, set); scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'enemyAdvance')); }
       }, TEMPO.aimTelegraph);
       return;
     }
