@@ -219,6 +219,62 @@ describe('AttackResult — détail des jets (breakdown) pour la modale', () => {
   });
 });
 
+/**
+ * Z5c (`docs/charte-ui.md`) — le RÉSOLVEUR du Test opposé dit POURQUOI il a tranché, sur la LIGNE
+ * du camp concerné : le départage à la valeur nue (LDB 12 l.160) n'est plus une déduction de l'UI.
+ * L'annotation est CONDITIONNÉE aux DR que les lignes AFFICHENT (les DR naturels) : un verdict rendu
+ * sur des DR AJUSTÉS (Taille en Parade, Défensive…) reste MUET — sa phrase citerait une égalité de DR
+ * introuvable à l'écran.
+ */
+describe('AttackResult — la RAISON du départage voyage sur le détail de ligne (Z5c)', () => {
+  // Attaquant CC 45, défenseur Agilité 30 (base d'Esquive) : DR STRICTEMENT égaux des deux côtés,
+  // aucun ajustement de DR en jeu (épée sans qualité, même Taille, aucun Talent) — seul le
+  // départage à la valeur nue peut trancher.
+  const attaquant = mk({ label: 'Att', characteristics: { ...mk().characteristics, 'capacite-de-combat': 45 } });
+  const defenseur = mk({ label: 'Def', characteristics: { ...mk().characteristics, agilite: 30 } });
+
+  it('DR égaux, valeurs nues différentes → la raison va au VAINQUEUR, avec les deux grandeurs comparées', () => {
+    const atk = evaluateTest(32, 45, 45); // DR 1
+    const def = evaluateTest(21, 30, 30); // DR 1
+    expect(atk.sl).toBe(def.sl);
+    const res = finishMelee(attaquant, defenseur, sword, atk, def, 'esquive');
+    expect(res.attackerDetail!.decided).toEqual({ by: 'valeur', own: 45, other: 30 });
+    expect(res.defenderDetail!.decided, 'la ligne perdante n’explique rien : son verdict est dit par l’autre').toBeUndefined();
+  });
+
+  it('DR ET valeurs nues égaux → les DEUX lignes portent le statu quo', () => {
+    const atk = evaluateTest(32, 45, 45);
+    const def = evaluateTest(32, 45, 45);
+    const res = finishMelee(attaquant, defenseur, sword, atk, def, 'esquive');
+    expect(res.hit).toBe(false);
+    expect(res.attackerDetail!.decided).toEqual({ by: 'egalite' });
+    expect(res.defenderDetail!.decided).toEqual({ by: 'egalite' });
+  });
+
+  it('DR différents → AUCUNE raison : le cas nominal ne se commente pas', () => {
+    const atk = evaluateTest(13, 45, 45); // DR 3
+    const def = evaluateTest(21, 30, 30); // DR 1
+    const res = finishMelee(attaquant, defenseur, sword, atk, def, 'esquive');
+    expect(res.attackerDetail!.decided).toBeUndefined();
+    expect(res.defenderDetail!.decided).toBeUndefined();
+  });
+
+  it('DR naturels DIFFÉRENTS, égalité créée par un AJUSTEMENT de DR → les deux lignes se TAISENT', () => {
+    // Pénalité de Taille en Parade (LDB 85 l.305-306) : l'attaquant Grand retire 2 DR à la Parade du
+    // défenseur Moyen. Les lignes affichent DR 3 (attaque) et DR 5 (parade) ; le verdict, lui, se joue
+    // sur 3 contre 3 et se départage à la valeur nue (55 > 45, le défenseur l'emporte).
+    const grand = mk({ label: 'Att', size: 'grande', characteristics: { ...mk().characteristics, 'capacite-de-combat': 45 } });
+    const pareur = mk({ label: 'Def', size: 'moyenne', weapons: [sword], characteristics: { ...mk().characteristics, 'capacite-de-combat': 55 } });
+    const atk = evaluateTest(13, 45, 45); // DR 3 naturel
+    const def = evaluateTest(1, 55, 55); // DR 5 naturel → 3 une fois la Taille appliquée
+    expect(atk.sl, 'précondition : les DR AFFICHÉS diffèrent').not.toBe(def.sl);
+    const res = finishMelee(grand, pareur, sword, atk, def, 'parade');
+    expect(res.hit, 'précondition : le défenseur l’emporte au départage à la valeur nue').toBe(false);
+    expect(res.attackerDetail!.decided, 'aucune phrase : elle dirait « DR égaux » là où l’écran montre 3 contre 5').toBeUndefined();
+    expect(res.defenderDetail!.decided).toBeUndefined();
+  });
+});
+
 describe('attackTestLabel — libellé du Test SUIT combatValue, ne ment jamais (#203)', () => {
   const belier: Weapon = { label: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], resolveChar: 'force' };
   it('arme à Résolution alternative (bélier → Force, ADE II 8 l.233) → libellé de la Carac', () => {

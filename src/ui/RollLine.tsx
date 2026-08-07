@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
 import type { ModLine, RollBreakdown, RollMask } from '../engine/combat';
+import type { VerdictReason } from '../engine/tests';
 import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { Dice } from './Dice';
 import { Icon } from './Icon';
 import { CodexRef } from './compendium/CodexRef';
-import type { ModProvenance } from '../engine/ruleRefs';
+import { RULE_REF, type ModProvenance } from '../engine/ruleRefs';
 import type { StakeRef } from '../data';
 import { actorIn } from '../state/combatants';
 import { useGame, type GameState } from '../state/store';
@@ -131,6 +132,24 @@ function RollCalc({ base, modifier, target, mask }: { base?: number; modifier: n
   );
 }
 
+/** Z5c — la RAISON du verdict, ANNOTÉE sous la ligne qu'elle explique (`docs/charte-ui.md`) : elle
+ *  ne paraît que quand la comparaison des DR affichés ne dit pas le verdict à elle seule (départage
+ *  d'un Test opposé, LDB 12 l.160). Le résolveur fournit le critère et les grandeurs comparées
+ *  (`VerdictReason`) ; ce site n'en rend que la phrase, il ne recompare rien. L'annotation EST
+ *  l'affordance de la règle (`CodexRef` vers sa fiche) — aucun ⓘ voisin. */
+function VerdictNote({ r }: { r: VerdictReason }) {
+  const ref = RULE_REF['tests-opposes'];
+  return (
+    <div className="hint">
+      <CodexRef category={ref.category} id={ref.id} label="Tests opposés" inline>
+        {r.by === 'valeur'
+          ? <>DR égaux — la Compétence ou Caractéristique la plus élevée l’emporte ({r.own} &gt; {r.other})</>
+          : <>Égalité parfaite — statu quo</>}
+      </CodexRef>
+    </div>
+  );
+}
+
 /** Une ligne de jet : base + modificateurs = cible · d100 · DR (✓/✗), + le détail étiqueté
  *  des modificateurs (« Courte portée +40 », « Viser +20 »…). Les chips sont TOUJOURS servies quand
  *  la ligne en porte : un total qu'elles ne réconcilient pas se COMPLÈTE d'une chip nommée
@@ -140,7 +159,9 @@ function RollCalc({ base, modifier, target, mask }: { base?: number; modifier: n
  *  le dé et le ✓/✗ ±DR par un « ? » PAR CELLULE (une cellule VIDE dirait « pas de jet »), retire
  *  l'accent ok/fail — la couleur EST le verdict — et pose l'état `.masked` (liseré et empreintes
  *  de colonnes de la ligne résolue : la révélation change les valeurs, pas la géométrie). Les chips
- *  de modificateurs restent affichées. */
+ *  de modificateurs restent affichées.
+ *  `d.decided` (Z5c) : la RAISON du verdict, annotée sous la ligne — rendue sur les seules lignes SANS
+ *  masque (`d.mask`), dont le calcul et le ✓/✗ se lisent tels quels. */
 export function RollLine({ d }: { d: RollBreakdown }) {
   const dv = difficultyValue(d.difficulty);
   const mods = reconciled(d.mods ?? [], d.modifier - dv, d.target, d.clamped, dv);
@@ -158,6 +179,7 @@ export function RollLine({ d }: { d: RollBreakdown }) {
         </span>
       </div>
       {mods.length > 0 && <ModChips mods={mods} />}
+      {!d.mask && d.decided && <VerdictNote r={d.decided} />}
     </div>
   );
 }

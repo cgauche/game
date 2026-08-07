@@ -80,6 +80,10 @@ export interface ForcedResolve {
 export interface ForcedPick {
   roll: number;
   target: number;
+  /** Valeur NUE testée (avant Difficulté et modificateurs), quand le slot la porte : le `TestResult`
+   *  reconstruit sur un dé CHOISI ou FIXÉ la reconduit, faute de quoi le départage d'un Test opposé
+   *  (LDB 12 l.160) retombe sur les cibles modifiées des deux camps. */
+  base?: number;
   /** Le double (11) a un effet (Coup/Incantation Critique) → bouton « 11 · Critique ». */
   critable?: boolean;
 }
@@ -465,7 +469,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
     ?? (L
       ? (slot: Slot, actor: Combatant | undefined) => {
           const tr = L.actorTR(slot);
-          if (tr) return { roll: tr.roll, target: tr.target, critable: false };
+          if (tr) return { roll: tr.roll, target: tr.target, base: tr.base, critable: false };
           const tgt = lensDieTarget(slot, actor);
           return tgt == null ? null : { roll: bestForcedRoll(tgt), target: tgt, critable: false };
         }
@@ -541,7 +545,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
             // (Critique) correct.
             const die = bestForcedRoll(tgt);
             const sl = Math.max(evaluateTest(die, tgt).sl, floor);
-            return L.applyRoll(s, loc.slot, actor!, get, forcedTR(die, tgt, sl), p);
+            return L.applyRoll(s, loc.slot, actor!, get, forcedTR(die, tgt, sl, cur?.base), p);
           }
         : () => spec.resolve(s, loc.slot, actor, get, {}, p);
       opForceSuccess(actor, resolveForced, loc.commit);
@@ -570,10 +574,10 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       const resolveChosen = (r: number) => {
         const cur = dieRead?.(loc.slot, actor, p);
         if (!cur || !dieWrite) return null;
-        if (fixed) return dieWrite(s, loc.slot, actor, get, evaluateTest(r, cur.target), p);
+        if (fixed) return dieWrite(s, loc.slot, actor, get, evaluateTest(r, cur.target, cur.base), p);
         if (r > maxForcedRoll(cur.target)) return null;
         const floor = dieFloor(loc.slot, actor, p);
-        const tr = forcedTR(r, cur.target, Math.max(evaluateTest(r, cur.target).sl, floor));
+        const tr = forcedTR(r, cur.target, Math.max(evaluateTest(r, cur.target).sl, floor), cur.base);
         return (spec.die?.resilience ?? dieWrite)(s, loc.slot, actor, get, tr, p);
       };
       if (!opSetForcedRoll(loc.slot, actor, roll, resolveChosen, loc.commit, fixed) || !fixed) return;

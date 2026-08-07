@@ -219,6 +219,30 @@ export function resolveOpposed(attacker: TestResult, defender: TestResult): Oppo
   return { attacker, defender, winner, attackerWins: winner === 'attacker', netSL, decidedBy };
 }
 
+/** RAISON du verdict d'un Test opposé, prête pour la LIGNE (Z5) du camp qui la porte — zone Z5c de
+ *  `docs/charte-ui.md`. Donnée d'AFFICHAGE en ids STABLES : le texte FR est rendu par `ui/RollLine`,
+ *  aucun verdict n'en dépend. `own`/`other` = les grandeurs comparées au départage (`own` = celle de
+ *  la ligne porteuse), renseignées pour `valeur` seulement. */
+export interface VerdictReason {
+  by: 'valeur' | 'egalite';
+  own?: number;
+  other?: number;
+}
+
+/** Ce que chaque ligne d'un Test opposé a à DIRE de son verdict (LDB 12 l.160) : `[attaquant,
+ *  défenseur]`. Rien quand les DR ont tranché (`dr`) ou qu'une ressource a imposé la victoire
+ *  (`force`) : le cas nominal ne se commente pas. `valeur` → la raison va au VAINQUEUR, avec les deux
+ *  grandeurs comparées ; `egalite` → les deux lignes portent le statu quo, qu'aucune n'a emporté.
+ *  Les grandeurs sortent de `openValues`, la MÊME source que le départage — jamais recomposées en aval. */
+export function opposedReasons(opp: OpposedResult): [VerdictReason | undefined, VerdictReason | undefined] {
+  const [aVal, dVal] = openValues(opp.attacker, opp.defender);
+  if (opp.decidedBy === 'egalite') return [{ by: 'egalite' }, { by: 'egalite' }];
+  if (opp.decidedBy !== 'valeur') return [undefined, undefined];
+  return opp.winner === 'attacker'
+    ? [{ by: 'valeur', own: aVal, other: dVal }, undefined]
+    : [undefined, { by: 'valeur', own: dVal, other: aVal }];
+}
+
 /** Influence « +`by` DR » sur un jet DÉJÀ résolu (Chance, LDB 17 l.24 ; bonus de Piège-lame, LDB 62) :
  *  renvoie une copie du `TestResult` avec son Degré de Réussite augmenté, pour le RÉ-opposer ou le réappliquer.
  *  Atome PARTAGÉ des relances d'influence des Tests opposés — un seul point au lieu de `{ ...t, sl: t.sl + 1 }`

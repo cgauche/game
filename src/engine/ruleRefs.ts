@@ -65,7 +65,8 @@ export type RuleId =
   | 'salve'
   | 'arme-d-equipe'
   | 'nuee'
-  | 'parasite';
+  | 'parasite'
+  | 'tests-opposes';
 
 /** La fiche Codex de chaque règle, en ids STABLES. Les producteurs de `ModLine` la consomment
  *  (`RULE_REF.viser`), l'affichage la résout en chip cliquable — jamais un `{category, id}` recopié
@@ -103,4 +104,5 @@ export const RULE_REF: Record<RuleId, CodexTarget> = {
   'arme-d-equipe': { category: 'qualities', id: 'arme-d-equipe' },
   nuee: { category: 'traits', id: 'nuee' },
   parasite: { category: 'traits', id: 'parasite' },
+  'tests-opposes': { category: 'regles', id: 'tests-opposes' },
 };

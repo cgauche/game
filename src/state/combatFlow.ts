@@ -779,9 +779,10 @@ export function resolveDualSecond(
   offWeapon = effectiveWeapon(offWeapon, weaponContextOf(attacker, offWeapon, target));
   const { env } = attackEnv(get, attacker, target, offWeapon, {});
   const mods = attackModifiers(attacker, target, offWeapon, { kind: 'melee', location: opts?.location, env });
-  const toHit = combatValue(attacker, 'melee', offWeapon) + combineMods(mods);
+  const nue = combatValue(attacker, 'melee', offWeapon); // valeur NUE : départage du Test opposé (LDB 12 l.160)
+  const toHit = nue + combineMods(mods);
   const atkRoll = opts?.critValue != null ? opts.critValue : reverseRoll(mainRoll);
-  const atk = evaluateTest(atkRoll, toHit); // { roll, target, success, sl, isDouble }
+  const atk = evaluateTest(atkRoll, toHit, nue);
   const mode = (cannotDefend(target) || isInanimate(target)) ? 'none' : bestDefenseMode(target); // OBJET INANIMÉ (structure/véhicule/affût) : jamais de défense
   if (mode === 'none') return resolveMeleePassive(attacker, target, offWeapon, atk, opts?.location, env);
   const def = rollMeleeDefender(target, mode, battleRng(), 0, target.weapons[0], offWeapon); // NOUVEAU jet de défense (LDB 10 l.638)

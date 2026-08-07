@@ -7,6 +7,7 @@ import { evaluateTest, maxForcedRoll } from '../engine/tests';
 import { hitLocation, reverseRoll } from '../engine/combat';
 import { netSeatClosed } from './netFlow';
 import { seedBattleRng } from './battleRng';
+import { setDesFixes, resetDesFixes } from '../engine/fixedDie';
 import { setCadence, resetCadence } from '../engine/cadence';
 import type { AttackResult } from '../engine/combat';
 import { testScene } from '../scenes/test-fixture';
@@ -118,6 +119,40 @@ describe('#989 — quadrant siège MJ : attaque PILOTÉE → la défense s’int
     expect(pd, 'l’ennemi conduit par le MJ défend lui-même').toBeTruthy();
     expect(pd!.defenderId).toBe(enemy.id);
     expect(intentAllowedFor(g(), 0, 'defenseRoll'), 'le siège MJ tient le jet de défense de l’ennemi').toBe(true);
+  });
+});
+
+/**
+ * DÉPARTAGE d'un Test opposé SUR LE CHEMIN RÉEL de la défense surfacée (LDB 12 l.160, #1142) : à DR
+ * égaux, c'est la valeur NUE des deux camps qui tranche — jamais leur cible modifiée. La valeur nue
+ * ne survit que si elle VOYAGE dans le `TestResult` de chaque camp, y compris quand le dé est POSÉ
+ * par le joueur (option « Dés fixés » / Résilience) : le socle du dé choisi reconstruit le jet depuis
+ * l'accesseur de dé (`ForcedPick`), et un accesseur muet sur la valeur nue faisait retomber le
+ * départage sur les DEUX cibles (recette : « 55 > 40 » annoté sous une ligne qui affiche « 45 +10 »).
+ */
+describe('#1142 — la valeur NUE traverse la fenêtre de défense, dé POSÉ compris', () => {
+  afterEach(() => resetDesFixes());
+
+  it('DR égaux : le départage cite les valeurs NUES (45 > 40), pas les cibles modifiées (55 > 40)', () => {
+    setDesFixes(true);
+    const { enemy, hero } = setup({ x: 1, y: 0 }, [sword], { gmSeat: 0 });
+    enemy.advantage = 1; // +10 à l'attaque (Avantage) : la cible (55) s'écarte de la valeur nue (45)
+    hero.characteristics['capacite-de-combat'] = 25; // Esquive (Agilité 40) = sa meilleure défense
+    const g = useGame.getState as unknown as () => Record<string, (...a: unknown[]) => void>;
+    openAttackCascade(useGame.getState, useGame.setState, { attackerId: enemy.id, targetId: hero.id, location: null, result: null, weaponUid: 'sw' }, 'Attaque', 'action/attack');
+    g().attackRoll();
+    g().attackSetForcedRoll(21); // DR 3 côté attaque (cible 55)
+    g().attackConfirm();
+    const parked = useGame.getState().pendingDefense!;
+    expect(parked.atk.base, 'le jet d’attaque PARQUÉ garde sa valeur nue').toBe(45);
+    expect(parked.mode).toBe('esquive');
+    g().defenseRoll();
+    g().defenseSetForcedRoll(12); // DR 3 côté défense (cible 40) → DR ÉGAUX
+    const pd = useGame.getState().pendingDefense!;
+    expect(pd.def!.sl, 'précondition : les DR sont égaux, seul le départage peut trancher').toBe(parked.atk.sl);
+    expect(pd.def!.base, 'le dé POSÉ ne dépouille pas le jet de sa valeur nue').toBe(40);
+    expect(pd.result!.attackerDetail!.decided).toEqual({ by: 'valeur', own: 45, other: 40 });
+    expect(pd.result!.attackerDetail!.target, 'la cible reste 45+10 : c’est bien la NUE qui est citée').toBe(55);
   });
 });
 

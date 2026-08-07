@@ -17,6 +17,9 @@ import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { toRecapLines } from '../state/recapLine';
 import type { Combatant } from '../engine/types';
+import type { VerdictReason } from '../engine/tests';
+import { RULE_REF } from '../engine/ruleRefs';
+import { codexLookupById } from './compendium/registry';
 
 const noop = () => {};
 
@@ -237,6 +240,115 @@ describe('RollShell — sous MASQUE, l’issue se tait (#990)', () => {
     );
     expect(html).toContain('Gustav passe inaperçu');
     expect(html).toContain('rm-netsl');
+  });
+});
+
+/**
+ * Z5c (`docs/charte-ui.md`) — la RAISON du verdict est une ANNOTATION de LA ligne (Z5) : elle vit
+ * dans le bloc de la ligne qu'elle explique, jamais dans un bandeau de bilan (Z13, qui COMPARE), et
+ * ne paraît QUE quand la comparaison des DR AFFICHÉS ne suffit pas (départage d'un Test opposé, LDB
+ * 12 l.160). Ce que le moteur pose (`RollBreakdown.decided`), la coquille le montre — sans rien
+ * recomparer, et sous le MÊME verrou de découverte que le halo et le « DR net » (#990). La phrase EST
+ * l'affordance de la règle : elle porte le renvoi Codex vers la fiche « Tests opposés ».
+ */
+describe('RollShell — Z5c : la raison du départage annote la LIGNE gagnante', () => {
+  /** Les MOTS du RAW (LDB 12 l.160) tels que la ligne les rend — la condition est DITE. */
+  const PHRASE_VALEUR = 'DR égaux — la Compétence ou Caractéristique la plus élevée';
+  /** Rangée résolue portant la raison du verdict, telle que le résolveur la pose sur son détail. */
+  const withReason = (label: string, decided: VerdictReason, over: Partial<RollRowData> = {}): RollRowData => {
+    const r = rolledRow(label, over);
+    return { ...r, row: { ...r.row, d: { ...r.row.d!, decided } } };
+  };
+  /** Le bloc de ligne (`.rm-roll-block`) qui contient `label` — pour mesurer OÙ vit l'annotation. */
+  const blocDe = (html: string, label: string) =>
+    html.split('class="rm-roll-block"').find((b) => b.includes(label)) ?? '';
+
+  it('départage à la VALEUR : l’annotation est dans le bloc de la ligne GAGNANTE, avec les deux valeurs nues', () => {
+    const html = renderToStaticMarkup(
+      <RollShell
+        title="Opposé"
+        rows={[withReason('Corps à corps', { by: 'valeur', own: 45, other: 30 }),
+               rolledRow('Esquive', { interactive: false })]}
+        rolled
+        winnerIndex={0}
+        netSL={0}
+        actions={actions}
+      />,
+    );
+    const gagnante = blocDe(html, 'Corps à corps');
+    const perdante = blocDe(html, 'Esquive');
+    expect(gagnante, 'la raison explique le ✓ de CETTE ligne').toContain(PHRASE_VALEUR);
+    expect(gagnante, 'les deux grandeurs comparées sont lues telles que le moteur les a comparées').toContain('45');
+    expect(gagnante).toContain('30');
+    expect(perdante, 'la ligne perdante n’annonce rien').not.toContain(PHRASE_VALEUR);
+    expect(html.split(PHRASE_VALEUR).length - 1, 'une seule annotation').toBe(1);
+  });
+
+  it('ÉGALITÉ parfaite : les deux lignes portent le statu quo', () => {
+    const html = renderToStaticMarkup(
+      <RollShell
+        title="Opposé"
+        rows={[withReason('Corps à corps', { by: 'egalite' }),
+               withReason('Esquive', { by: 'egalite' }, { interactive: false })]}
+        rolled
+        actions={actions}
+      />,
+    );
+    expect(blocDe(html, 'Corps à corps')).toContain('statu quo');
+    expect(blocDe(html, 'Esquive')).toContain('statu quo');
+  });
+
+  it('les DR ont tranché (aucune raison posée) : la coquille n’écrit RIEN — le cas nominal ne se commente pas', () => {
+    const html = renderToStaticMarkup(
+      <RollShell
+        title="Opposé"
+        rows={[rolledRow('Corps à corps'), rolledRow('Esquive', { interactive: false })]}
+        rolled
+        winnerIndex={0}
+        netSL={3}
+        actions={actions}
+      />,
+    );
+    expect(html).not.toContain(PHRASE_VALEUR);
+    expect(html).not.toContain('statu quo');
+  });
+
+  it('panneau MASQUÉ : la raison se tait — elle CITERAIT la valeur que la ligne adverse cache', () => {
+    const masque = (r: RollRowData, mask: 'roll' | 'value'): RollRowData => ({ ...r, row: { ...r.row, d: { ...r.row.d!, mask } } });
+    for (const mask of ['roll', 'value'] as const) {
+      const html = renderToStaticMarkup(
+        <RollShell
+          title="Opposé masqué"
+          rows={[withReason('Corps à corps', { by: 'valeur', own: 45, other: 30 }),
+                 masque(rolledRow('Esquive', { interactive: false }), mask)]}
+          rolled
+          winnerIndex={0}
+          actions={actions}
+        />,
+      );
+      expect(html, `masque « ${mask} » : la raison compare les deux jets`).not.toContain(PHRASE_VALEUR);
+      expect(html, `masque « ${mask} » : la valeur nue de l’adversaire ne fuit pas`).not.toContain('&gt; 30');
+    }
+  });
+
+  it('la phrase EST le renvoi Codex : elle vit DANS un `CodexRef` RÉSOLU (fiche « Tests opposés »)', () => {
+    const ref = RULE_REF['tests-opposes'];
+    expect(codexLookupById(ref.category, ref.id), 'la fiche de règle est authorée au Codex').toBeTruthy();
+    const html = renderToStaticMarkup(
+      <RollShell
+        title="Opposé"
+        rows={[withReason('Corps à corps', { by: 'valeur', own: 45, other: 30 }),
+               rolledRow('Esquive', { interactive: false })]}
+        rolled
+        winnerIndex={0}
+        actions={actions}
+      />,
+    );
+    const bloc = blocDe(html, 'Corps à corps');
+    const i = bloc.indexOf('<span class="codex-ref');
+    expect(i, 'aucun renvoi Codex : la phrase ne mène nulle part').toBeGreaterThan(-1);
+    expect(bloc.slice(i), 'la phrase est le CONTENU du renvoi, pas un voisin').toContain(PHRASE_VALEUR);
+    expect(bloc.slice(i, bloc.indexOf(PHRASE_VALEUR)), 'renvoi INERTE (fiche introuvable) : le lecteur n’a plus de porte').not.toContain('codex-static');
   });
 });
 

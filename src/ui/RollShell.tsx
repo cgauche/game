@@ -187,6 +187,10 @@ export function RollShell({
   // calendrier de découverte vit dans la donnée (`mask`), l'accent est DÉRIVÉ ici : sans ce verrou,
   // un `winnerIndex` posé par un site rallumerait le verdict sur la ligne qu'on vient de cacher.
   const panelMasked = rows.some((r) => r.row.d?.mask === 'roll' || r.row.pending?.mask === 'roll');
+  // Z5c sous le MÊME verrou, élargi à `'value'` : la raison d'un départage CITE les deux grandeurs
+  // comparées (LDB 12 l.160) — sous un masque de valeur (Marchandage du marchand), la phrase
+  // révélerait le score que la ligne adverse cache justement.
+  const reasonLocked = rows.some((r) => !!r.row.d?.mask || !!r.row.pending?.mask);
   // « Lancer » hissé dans la barre (cas MONO). On hisse quand EXACTEMENT UNE rangée est à lancer :
   // interactive (≠ false), non lancée, et porteuse d'un `onRoll`. Le multi (≥2 rangées à lancer)
   // garde son « Lancer » par rangée + « Tout lancer » → 0 hissé. Opposé (1 interactive + 1 témoin
@@ -263,7 +267,8 @@ export function RollShell({
           // aucune ne le calcule plus (cf. `forcedDieRow.ts`). `flowKey` donne le flux, la rangée donne
           // son acteur et, en multi, l'id de son slot.
           const die = rowForcedDie(state, r.flowKey ?? flowKey, { ...r, onRoll: r.onRoll ?? null }, rolled);
-          const row = <RollRow {...rest} forcedRoll={die.forcedRoll} fixedMark={rest.fixedMark ?? die.fixedMark} rolled={rest.rolled ?? rolled} winner={rest.winner ?? winner} rollInBar={i === hoistIdx} dieCommitRef={i === hoistIdx ? hoistDieCommit : dieRegistry.handle(rowKeyOf(r, i))} />;
+          const shown = reasonLocked && rest.row.d?.decided ? { ...rest, row: { ...rest.row, d: { ...rest.row.d, decided: undefined } } } : rest;
+          const row = <RollRow {...shown} forcedRoll={die.forcedRoll} fixedMark={rest.fixedMark ?? die.fixedMark} rolled={rest.rolled ?? rolled} winner={rest.winner ?? winner} rollInBar={i === hoistIdx} dieCommitRef={i === hoistIdx ? hoistDieCommit : dieRegistry.handle(rowKeyOf(r, i))} />;
           return separator ? <Fragment key={key ?? i}>{separator}{row}</Fragment> : <Fragment key={key ?? i}>{row}</Fragment>;
         })}
       </div>

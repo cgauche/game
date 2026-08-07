@@ -728,5 +728,25 @@
       "page": 99,
       "note": "ZI 13 l.314-316"
     }
+  },
+  {
+    "id": "tests-opposes",
+    "label": "Tests opposés",
+    "desc": "Parfois, vous allez devoir confronter vos capacités à celles d'un adversaire. Les règles qui gèrent ce genre de situations font appel à un Test spectaculaire, appelé le Test opposé. Les Tests opposés occupent une part importante dans les règles de combat de **WFJDR**, détaillées plus loin dans ce chapitre. Mais ils sont également utilisés dans de nombreux autres cas.\n\nUn Test opposé est géré comme un Test spectaculaire, mais, ici, les deux groupes effectuent un Test. C'est le groupe avec le DR le plus élevé qui remporte le Test. Si les deux participants obtiennent le même DR, c'est le groupe avec la Compétence ou la Caractéristique la plus élevée qui l'emporte. Dans le cas improbable où il y ait une égalité, le MJ choisit l'une de ces deux solutions : 1) statu quo, rien ne se passe ; 2) les deux groupes refont le Test, jusqu'à ce qu'un vainqueur soit désigné.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 154,
+      "note": "LDB 12 l.155-160"
+    }
+  },
+  {
+    "id": "tests-etendus",
+    "label": "Tests étendus",
+    "desc": "Quelquefois au cours de l'aventure, il sera nécessaire d'atteindre un certain DR pour réussir une tâche particulièrement chronophage ou ardue. Pour ce faire, il faut donc effectuer un Test spectaculaire particulier, appelé Test étendu.\n\nLes Tests étendus sont gérés de la même façon que les Tests spectaculaires, mais les DR obtenus à chaque Round sont additionnés jusqu'à atteindre une valeur cible (voir Combats pour plus d'informations sur les *Rounds*). Si le DR total passe en dessous de 0, vous pouvez recommencer depuis le début, au début du Round suivant.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 154,
+      "note": "LDB 12 l.170-174"
+    }
   }
 ]

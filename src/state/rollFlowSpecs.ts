@@ -473,7 +473,7 @@ export const FLOWS = {
     },
     // ACCESSEUR DE DÉ : le d100 de l'attaquant (son inverse donne la localisation, LDB 13 l.142).
     die: {
-      read: (p) => (p.result?.attackerDetail ? { roll: p.result.attackerRoll, target: p.result.attackerDetail.target } : null),
+      read: (p) => (p.result?.attackerDetail ? { roll: p.result.attackerRoll, target: p.result.attackerDetail.target, base: p.result.attackerDetail.base } : null),
       write: (s, p, actor, _g, tr) => {
         const t = actorIn(s, p.targetId);
         return actor && t ? { result: rederiveAttack(actor, t, p, tr, s.battle?.combatants) } : null;
@@ -578,7 +578,7 @@ export const FLOWS = {
       forced: true,
     },
     die: {
-      read: (p) => (p.def ? { roll: p.def.roll, target: p.def.target } : null),
+      read: (p) => (p.def ? { roll: p.def.roll, target: p.def.target, base: p.def.base } : null),
       write: (s, p, actor, _g, tr) => {
         const att = actorIn(s, p.attackerId);
         return att && actor ? { def: tr, result: finishDefenseResult(att, actor, p, tr, 0, undefined, sceneMetresPerTile(s.scene)) } : null;

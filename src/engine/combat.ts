@@ -8,7 +8,7 @@
  */
 import { RNG, defaultRNG } from './dice';
 import { t } from '../i18n';
-import { rollTest, resolveOpposed, evaluateTest, TestResult } from './tests';
+import { rollTest, resolveOpposed, evaluateTest, opposedReasons, TestResult, type VerdictReason } from './tests';
 import { bonus, effectiveChar, baseWithTraits } from './characteristics';
 import { woundsFromHit } from './woundsCalc';
 import { isInanimate } from './structures';
@@ -330,6 +330,10 @@ export interface RollBreakdown {
    *  `'value'` = base/cible cachées (adversaire opaque, ex. Marchandage du marchand) ; `'roll'` ⊃
    *  `'value'` = ligne entière masquée, « ? » à la place du dé et du ✓/✗ ±DR (#990). */
   mask?: RollMask;
+  /** Z5c — RAISON du verdict de CETTE ligne quand la comparaison des DR ne le dit pas seule
+   *  (départage d'un Test opposé, LDB 12 l.160). Posée par le résolveur du Test opposé sur la ligne
+   *  concernée ; `ui/RollLine.tsx` en rend la phrase. Absente = rien à expliquer. */
+  decided?: VerdictReason;
 }
 
 export interface AttackResult {
@@ -843,6 +847,15 @@ function combineOpposed(
   const defLabel = defenseMode === 'social' ? (opts.sub?.label ?? DEFENSE_LABEL.parade) : DEFENSE_LABEL[defenseMode];
   const defBd = bd(defLabel, defenseValue(defender, defenseMode, parryWeapon, opts.sub?.base), def, defenseModifiers(defender, defenseMode, dodgeMod, parryWeapon), defenseMode);
   const usedParry = defenseMode === 'parade' ? parryWeapon : undefined; // arme de parade (Critiques opposés / Piège-lame)
+  // Z5c — la RAISON du départage (LDB 12 l.160) va sur la LIGNE du camp qu'elle explique : le
+  // résolveur la dit une fois, l'affichage n'a plus rien à déduire ni à recomparer.
+  // CONDITION d'annotation : les DR que les lignes AFFICHENT (`atk.sl`/`def.sl`, ceux que `bd` pose)
+  // doivent être égaux EUX AUSSI. Les ajustements de DR (Taille en Parade, Défensive, Peur/Haine…)
+  // entrent dans le verdict sans paraître sur les lignes : quand ils créent ou effacent l'égalité,
+  // la phrase citerait des DR que l'écran ne montre pas. Ces cas restent MUETS (périmètre #1152).
+  const [atkWhy, defWhy] = atk.sl === def.sl ? opposedReasons(opp) : [undefined, undefined];
+  const atkLine = atkWhy ? { ...atkBd, decided: atkWhy } : atkBd;
+  const defLine = defWhy ? { ...defBd, decided: defWhy } : defBd;
   if (opp.winner === 'defender') {
     return {
       hit: false,
@@ -852,8 +865,8 @@ function combineOpposed(
       critical: false,
       advantageTo: 'defender',
       defenderDefeated: false,
-      attackerDetail: atkBd,
-      defenderDetail: defBd,
+      attackerDetail: atkLine,
+      defenderDetail: defLine,
       parryWeapon: usedParry,
       log: `${attacker.label} rate son attaque ; ${defender.label} gagne +1 Avantage.`,
     };
@@ -868,17 +881,17 @@ function combineOpposed(
       critical: false,
       advantageTo: null,
       defenderDefeated: false,
-      attackerDetail: atkBd,
-      defenderDetail: defBd,
+      attackerDetail: atkLine,
+      defenderDetail: defLine,
       parryWeapon: usedParry,
       log: `Échange neutre : ni ${attacker.label} ni ${defender.label} ne prend l'avantage.`,
     };
   }
   const critical = atk.isDouble && atk.success;
   // Protectrice (LDB 62 l.306) : opposer l'attaque avec l'arme → Indice PA à toutes les localisations.
-  const res = applyHit(attacker, defender, weapon, atkBd, opp.netSL, critical, location, dmgProxy, defenseMode === 'parade' ? protectriceAP(parryWeapon) : 0, opts.withhold);
+  const res = applyHit(attacker, defender, weapon, atkLine, opp.netSL, critical, location, dmgProxy, defenseMode === 'parade' ? protectriceAP(parryWeapon) : 0, opts.withhold);
   res.defenderRoll = def.roll;
-  res.defenderDetail = defBd;
+  res.defenderDetail = defLine;
   res.parryWeapon = usedParry;
   if (res.hit && (attacker.swarm || sizeGap(dmgProxy?.size ?? attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200) ; charge montée → Taille de la monture
   return res;
