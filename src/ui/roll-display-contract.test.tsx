@@ -12,7 +12,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { RollShell, type RollRowData, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
 import { buildParticipantRows } from './buildParticipantRows';
-import { testBreakdown } from './breakdown';
+import { testBreakdown, testPending } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { toRecapLines } from '../state/recapLine';
@@ -305,5 +305,125 @@ describe('sous-ligne d’une rangée — CANAL UNIQUE `note` (#1078)', () => {
     });
     const html = renderToStaticMarkup(<RollShell title="T" rows={rows} rolled actions={[]} />);
     expect(html).not.toContain('rr-note');
+  });
+});
+
+/**
+ * Enfants DIRECTS de `.rs-scroll`, dans l'ordre du document — lus sur le markup rendu (l'environnement
+ * de test est `node`, sans DOM). Le compteur de profondeur ne s'appuie que sur la syntaxe
+ * auto-fermante émise par `react-dom/server` (`<br/>`, `<img …/>`) : aucune liste de balises vides à
+ * tenir à jour, donc aucun angle mort quand un rendu SVG entre dans une zone.
+ */
+function scrollChildren(html: string): string[] {
+  const marker = '<div class="rs-scroll">';
+  const start = html.indexOf(marker);
+  expect(start, 'la coquille rend bien son corps défilable `.rs-scroll`').toBeGreaterThanOrEqual(0);
+  const out: string[] = [];
+  let depth = 0;
+  const tagRe = /<(\/?)([a-zA-Z][-\w]*)((?:"[^"]*"|'[^']*'|[^>"'])*?)(\/?)>/g;
+  tagRe.lastIndex = start + marker.length;
+  for (let m = tagRe.exec(html); m; m = tagRe.exec(html)) {
+    const [, fermante, tag, attrs, autoFermante] = m;
+    if (fermante) {
+      if (depth === 0) break; // le `</div>` de `.rs-scroll` lui-même : fin des enfants directs
+      depth--;
+      continue;
+    }
+    if (depth === 0) out.push(/class="([^"]*)"/.exec(attrs)?.[1] ?? `<${tag}>`);
+    if (!autoFermante) depth++;
+  }
+  return out;
+}
+
+/**
+ * INVARIANT DE GÉOMÉTRIE (#1142, `docs/charte-ui.md` § « Invariant de GÉOMÉTRIE d'une fenêtre de
+ * jet ») : le bord HAUT de la fenêtre est invariant pour une session de jet donnée. Ce que le
+ * markup doit garantir — et que ces trois contrats mesurent : ce qui APPARAÎT au jet est rendu
+ * APRÈS les rangées, la seule zone volatile au-dessus d'elles est Z4 (`setup`), et les zones qui
+ * précèdent les rangées sont les MÊMES d'un état à l'autre. Le CSS ancre ensuite le haut
+ * (`combat-modals.css`) ; sans cet ordre du document, l'ancrage haut ferait simplement descendre le
+ * contenu au lieu de hisser la fenêtre — le tremblement changerait de forme, pas de nature.
+ *
+ * Ce qui est mesuré est l'ORDRE PAR CLASSES, jamais un index brut : un `extra` en Fragment (ou tout
+ * nœud stable de plus au-dessus des rangées) déplace l'index sans rien casser de l'invariant — un
+ * contrat qui compare des index ne mesurerait que sa propre fixture. Les fixtures en portent donc
+ * un, exprès.
+ */
+describe('RollShell — ORDRE DU DOCUMENT : rien de volatile au-dessus des rangées (#1142)', () => {
+  const preRow: RollRowData = { ...rolledRow(), rolled: false, row: { pending: testPending('Athlétisme', 45) } };
+  const setupNode = <div className="rm-options">Parade / Esquive</div>;
+  /** Nœuds STABLES d'un site, servis en Fragment : présents aux deux états, ils décalent l'index
+   *  des enfants directs de `.rs-scroll` sans toucher à l'ordre relatif que le contrat mesure. */
+  const extraNode = <><div className="rm-portraits">Gustav</div><div className="rm-spellinfo">Portée</div></>;
+  /** Zones VOLATILES : elles n'existent qu'APRÈS le jet. Les trois premières sont rendues par la
+   *  coquille elle-même (`RollShell.tsx` : `.rm-journal`, `.rm-netsl`, `.rm-summary`) ; les deux
+   *  suivantes sont les classes des nœuds passés aux slots post-jet `postRollExtra`/`forcedExtra`. */
+  const ZONES_VOLATILES = ['rm-journal', 'rm-netsl', 'rm-summary', 'rm-await', 'rm-loc-grid'];
+  const volatilesDe = (classes: string[]) =>
+    classes.filter((c) => c.split(/\s+/).some((n) => ZONES_VOLATILES.includes(n)));
+
+  it('aucune zone volatile ne précède les rangées, pré-jet comme post-jet (ordre par CLASSES)', () => {
+    const pre = scrollChildren(renderToStaticMarkup(
+      <RollShell title="Athlétisme" subtitle="Gustav — Franchir (Athlétisme)" extra={extraNode} rows={[preRow]} rolled={false} actions={actions} />,
+    ));
+    const post = scrollChildren(renderToStaticMarkup(
+      <RollShell
+        title="Athlétisme" subtitle="Gustav — Franchir (Athlétisme)" extra={extraNode}
+        rows={[rolledRow()]} rolled
+        outcome={toRecapLines(['Gustav franchit'])} summary={<>DR +2</>}
+        postRollExtra={<div className="rm-await">Surincantation</div>}
+        actions={actions}
+      />,
+    ));
+    for (const [etat, enfants] of [['pré-jet', pre], ['post-jet', post]] as const) {
+      const i = enfants.indexOf('cs-rows');
+      expect(i, `${etat} : les rangées ne sont pas rendues (le contrat ne mesurerait rien)`).toBeGreaterThanOrEqual(0);
+      expect(volatilesDe(enfants.slice(0, i)), `${etat} : une zone volatile est rendue AU-DESSUS des rangées — elle hissera la fenêtre en apparaissant`)
+        .toEqual([]);
+    }
+    expect(post.slice(0, post.indexOf('cs-rows')), 'les zones qui précèdent les rangées sont les mêmes d’un état à l’autre')
+      .toEqual(pre.slice(0, pre.indexOf('cs-rows')));
+  });
+
+  it('toute zone qui APPARAÎT au jet est rendue APRÈS les rangées — aucune ne les précède', () => {
+    const post = scrollChildren(renderToStaticMarkup(
+      <RollShell
+        title="Opposé" subtitle="Gustav — Frapper (Corps à corps)" extra={extraNode}
+        rows={[rolledRow(), rolledRow('Esquive', { interactive: false })]} rolled
+        winnerIndex={0} netSL={2}
+        outcome={toRecapLines(['Le coup porte'])} summary={<>DR total +6</>}
+        postRollExtra={<div className="rm-await">Contre-sort</div>}
+        forcedExtra={<div className="rm-loc-grid">Localisation</div>}
+        actions={actions}
+      />,
+    ));
+    const rangees = post.indexOf('cs-rows');
+    expect(rangees).toBeGreaterThanOrEqual(0);
+    for (const zone of ZONES_VOLATILES) {
+      const i = post.indexOf(zone);
+      expect(i, `la zone « ${zone} » est rendue (sinon le contrat ne mesure rien)`).toBeGreaterThanOrEqual(0);
+      expect(i, `la zone « ${zone} » pousse vers le BAS : elle suit les rangées`).toBeGreaterThan(rangees);
+    }
+  });
+
+  it('la SEULE zone volatile au-dessus des rangées est Z4 (`setup`), et elle disparaît au jet', () => {
+    const avecSetup = scrollChildren(renderToStaticMarkup(
+      <RollShell title="Athlétisme" subtitle="Gustav — Franchir (Athlétisme)" rows={[preRow]} rolled={false} setup={setupNode} actions={actions} />,
+    ));
+    const sansSetup = scrollChildren(renderToStaticMarkup(
+      <RollShell title="Athlétisme" subtitle="Gustav — Franchir (Athlétisme)" rows={[preRow]} rolled={false} actions={actions} />,
+    ));
+    // Le MÊME `setup` passé post-jet : la coquille ne le rend plus (`!rolled && setup`).
+    const postAvecSetup = scrollChildren(renderToStaticMarkup(
+      <RollShell title="Athlétisme" subtitle="Gustav — Franchir (Athlétisme)" rows={[rolledRow()]} rolled setup={setupNode} actions={actions} />,
+    ));
+    const teteAvec = avecSetup.slice(0, avecSetup.indexOf('cs-rows'));
+    const teteSans = sansSetup.slice(0, sansSetup.indexOf('cs-rows'));
+    const tetePost = postAvecSetup.slice(0, postAvecSetup.indexOf('cs-rows'));
+    expect(teteAvec, 'Z4 est bien rendue au-dessus des rangées, pré-jet').toContain('rm-options');
+    expect(teteAvec.filter((c) => c !== 'rm-options'), 'et elle est le SEUL écart avec la tête sans Z4')
+      .toEqual(teteSans);
+    expect(tetePost, 'post-jet, `setup` n’est plus rendu : la tête retombe sur les seules zones stables')
+      .toEqual(teteSans);
   });
 });

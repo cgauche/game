@@ -42,6 +42,19 @@ function rulesFor(cls: string): { file: string; body: string }[] {
   return found;
 }
 
+/** Corps d'un bloc `@media …{…}` (accolades APPARIÉES — une règle imbriquée ne coupe pas la tranche).
+ *  null si l'en-tête est absent. */
+function mediaSlice(css: string, header: RegExp): string | null {
+  const m = header.exec(css);
+  if (!m) return null;
+  let depth = 1;
+  for (let i = m.index + m[0].length; i < css.length; i++) {
+    if (css[i] === '{') depth++;
+    else if (css[i] === '}' && --depth === 0) return css.slice(m.index + m[0].length, i);
+  }
+  return null;
+}
+
 describe('rangée de jet — les classes du bloc « dé fixé » sont chartrées (feuille partagée)', () => {
   // `rm-range` (#942 L7) : la FOURCHETTE portée par chaque tuile de tableau — posée en JSX sans
   // règle, elle se collait au libellé (« Trahison !07-10 »), soit exactement le défaut que cette
@@ -75,13 +88,13 @@ describe('rangée de jet — les classes du bloc « dé fixé » sont chartrées
   });
 
   /**
-   * VOILE des fenêtres de jet (#942 L7, verdict vision) : l'allègement (voile clair + ancrage bas)
-   * existe pour garder le CHAMP DE BATAILLE lisible sous la fenêtre — il vit donc dans la feuille du
-   * DOMAINE et porte le scope de l'écran qui affiche ce champ. En couche PARTAGÉE il s'appliquait à
-   * tout écran (interlude compris), où il ne séparait plus les plans, et il a fallu une contre-règle
-   * par écran (dérive « classe mono-écran »). jsdom ne calcule pas la cascade : ce qui se verrouille
-   * ici est la DÉCLARATION (où vit la règle et à quoi elle est scopée) ; la preuve de rendu est la
-   * capture de recette navigateur, en combat comme à l'interlude.
+   * VOILE des fenêtres de jet (#942 L7, verdict vision) : l'allègement (voile clair + ancrage par
+   * bandes) existe pour garder le CHAMP DE BATAILLE lisible sous la fenêtre — il vit donc dans la
+   * feuille du DOMAINE et porte le scope de l'écran qui affiche ce champ. En couche PARTAGÉE il
+   * s'appliquait à tout écran (interlude compris), où il ne séparait plus les plans, et il a fallu
+   * une contre-règle par écran (dérive « classe mono-écran »). jsdom ne calcule pas la cascade : ce
+   * qui se verrouille ici est la DÉCLARATION (où vit la règle et à quoi elle est scopée) ; la preuve
+   * de rendu est la capture de recette navigateur, en combat comme à l'interlude.
    */
   it('l’allègement de voile est SCOPÉ au domaine (jamais un défaut de la couche partagée)', () => {
     const overlayRules = rulesFor('modal-overlay').filter((r) => /background:\s*rgba\(0,\s*0,\s*0,\s*0\.2/.test(r.body));
@@ -93,8 +106,31 @@ describe('rangée de jet — les classes du bloc « dé fixé » sont chartrées
     expect(combat, 'l’allègement n’est pas scopé à l’écran qui porte le champ de bataille').toMatch(
       /\.app-campaign\s+\.modal-overlay:has\(\.roll-modal\)\s*\{[^}]*background:\s*rgba\(0,\s*0,\s*0,\s*0\.28\)/,
     );
-    // Et l'ancrage BAS voyage avec lui (les deux moitiés de la même intention).
-    expect(combat).toMatch(/\.app-campaign\s+\.modal-overlay:has\(\.roll-modal\)\s*\{[^}]*align-items:\s*end/);
+  });
+
+  /**
+   * INVARIANT DE GÉOMÉTRIE d'une fenêtre de jet (#1142, `docs/charte-ui.md`) : au-dessus de 560px,
+   * c'est le bord HAUT qui est ancré (bande de champ de bataille CONSTANTE d'un état à l'autre), et
+   * la bande BASSE est RÉSERVÉE — le dock d'action et le tiroir de journal y vivent, une fenêtre
+   * haute les recouvrait sans elle. Les deux bandes se retrouvent dans le plafond de hauteur, sinon
+   * la fenêtre reprend au bas ce que le haut lui a donné. jsdom ne calcule pas de layout : on
+   * verrouille la DÉCLARATION, la preuve pixel est la mesure de recette navigateur.
+   */
+  it('la géométrie ancre le bord HAUT et RÉSERVE la bande basse (tranche ≥561px)', () => {
+    const combat = SHEETS.find((s) => /combat-modals\.css$/.test(s.file))!.css;
+    const slice = mediaSlice(combat, /@media\s*\(min-width:\s*561px\)\s*\{/);
+    expect(slice, 'plus de tranche `@media (min-width: 561px)` dans la feuille de domaine').toBeTruthy();
+    const overlay = /\.app-campaign\s+\.modal-overlay:has\(\.roll-modal\)\s*\{([^{}]*)\}/.exec(slice!)?.[1] ?? '';
+    expect(overlay, 'la bande haute n’est plus nommée : rien ne fixe le bord haut').toMatch(/--roll-band:/);
+    expect(overlay, 'sans `align-items: start` la fenêtre se recentre — le bord haut redevient variable').toMatch(/align-items:\s*start/);
+    expect(overlay, 'sans `padding-top: var(--roll-band)` le bord haut ne tient plus à la bande').toMatch(/padding-top:\s*var\(--roll-band\)/);
+    const bas = /padding-bottom:\s*([^;]+);/.exec(overlay)?.[1]?.trim();
+    expect(bas, 'aucune bande basse réservée : une fenêtre haute recouvre le dock d’action et le tiroir de journal').toBeTruthy();
+    expect(bas, 'bande basse nulle : idem').not.toMatch(/^0(px)?$/);
+    const modal = /\.app-campaign\s+\.modal-overlay:has\(\.roll-modal\)\s*>\s*\.modal\s*\{([^{}]*)\}/.exec(slice!)?.[1] ?? '';
+    const maxH = /max-height:\s*([^;]+);/.exec(modal)?.[1] ?? '';
+    expect(maxH, 'le plafond de hauteur ne retire pas la bande HAUTE : la fenêtre crève le bas de l’écran').toContain('var(--roll-band)');
+    expect(maxH, 'le plafond de hauteur ne retire pas la bande BASSE : la fenêtre redescend sur le dock').toContain(bas!);
   });
 
   // Sonde du juge vision, PROMUE : une classe posée en JSX sans règle qui SÉPARE laisse « Trahison !07-10 »

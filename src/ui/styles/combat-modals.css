@@ -3,15 +3,38 @@
 .roll-modal {
   min-width: 340px;
 }
-/* VOILE ALLÉGÉ + ancrage BAS des fenêtres de jet — règle de DOMAINE (descendue de `components.css`,
-   couche partagée, verdict vision #942 L7) : elle existe pour qu'on VOIE l'action sous la fenêtre,
-   ce qui n'a de sens que sur l'écran qui porte le champ de bataille. Ailleurs (écran plein-champ :
-   interlude, port, marché), le voile PLEIN de la couche partagée reprend et sépare les plans —
-   plus besoin d'une contre-règle par écran. */
+/* VOILE ALLÉGÉ + ancrage par le BORD HAUT des fenêtres de jet — règle de DOMAINE (descendue de
+   `components.css`, couche partagée, verdict vision #942 L7) : elle existe pour qu'on VOIE l'action
+   sous la fenêtre, ce qui n'a de sens que sur l'écran qui porte le champ de bataille. Ailleurs
+   (écran plein-champ : interlude, port, marché), le voile PLEIN de la couche partagée reprend et
+   sépare les plans — plus besoin d'une contre-règle par écran. */
 .app-campaign .modal-overlay:has(.roll-modal) {
-  align-items: end;
-  padding-bottom: 96px;
   background: rgba(0, 0, 0, 0.28);
+}
+/* INVARIANT DE GÉOMÉTRIE (#1142, `docs/charte-ui.md` § « Invariant de GÉOMÉTRIE d'une fenêtre de
+   jet ») : c'est le bord HAUT qui est fixé, pas le bas. La bande de champ de bataille visible
+   au-dessus de la fenêtre (`--roll-band`) reste alors CONSTANTE d'un état à l'autre de la même
+   session de jet ; une zone qui apparaît (issue, bilan, post-jet) pousse vers le BAS au lieu de
+   hisser toute la fenêtre. Mesuré sous ancrage bas : 105,6px de tremblement de `.cs-rows` sur la
+   cascade d'ouverture de combat (1600×900 comme 900×780) — 0 après.
+   Le plafond de hauteur se recalcule sur les DEUX bandes : la fenêtre ne crève jamais le bas de
+   l'écran, les grands flux défilent dans `.rs-scroll` (pied d'actions fixe, règles ci-dessous).
+   La bande BASSE (`--roll-dock`) réserve la place du dock d'action (`.action-bar`, bottom 14px) et
+   du tiroir de journal (`.log-drawer`, bottom 92px) : sans elle, une fenêtre haute descend jusqu'à
+   8px du bas et les recouvre. Les deux bandes se soustraient du `max-height` (`box-sizing:
+   border-box` global, base.css) — le bord haut reste invariant, le débordement part au défilement.
+   Tranche ≤560 EXCLUE : elle prend tout l'écran (bloc dédié plus bas), il n'y a plus de bande. */
+@media (min-width: 561px) {
+  .app-campaign .modal-overlay:has(.roll-modal) {
+    --roll-band: min(23vh, 260px);
+    --roll-dock: 96px;
+    align-items: start;
+    padding-top: var(--roll-band);
+    padding-bottom: var(--roll-dock);
+  }
+  .app-campaign .modal-overlay:has(.roll-modal) > .modal {
+    max-height: calc(100vh - var(--roll-band) - var(--roll-dock));
+  }
 }
 /* PIED FIXE de TOUTE modale de jet (`RollShell`) — le corps défile, la barre d'actions reste à
    l'écran. Sans ça, une étape à contenu long (grille de 31 lignes d'un tableau d100, pile d'étapes
@@ -50,6 +73,20 @@
     max-height: 100%;
     border-radius: 0;
     padding: 14px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+  /* Le corps prend la pleine hauteur du téléphone : un jet court (1 rangée) laissait son contenu
+     collé en haut et ~150px de vide avant « Appliquer ». Le contenu se CENTRE dans le corps ;
+     `safe` est obligatoire — un `center` nu rend le HAUT inatteignable dès que le contenu déborde
+     (débordement centré = la première ligne passe au-dessus du scrollport, sans retour possible).
+     Les enfants gardent leur hauteur naturelle (`flex: 0 0 auto`) : le passage en colonne flex ne
+     doit rien tasser. */
+  .modal:has(> .rs-scroll) > .rs-scroll {
+    display: flex;
+    flex-direction: column;
+    justify-content: safe center;
+  }
+  .modal:has(> .rs-scroll) > .rs-scroll > * {
+    flex: 0 0 auto;
   }
 }
 /* Modale de jet MULTI (N rangées riches : portrait + jet + influence) — plus large que le mono (340px) pour ne pas

@@ -348,7 +348,7 @@ button.chip:hover {
   place-items: center;
   z-index: 130; /* au-dessus de l'écran de victoire (120) : Évaluer/Détecter le butin ouvre une modale PAR-DESSUS */
 }
-/* L'allègement de voile des modales de JET (ancrage bas + voile plus léger) vit désormais dans le
+/* L'allègement de voile des modales de JET (ancrage par bandes + voile plus léger) vit désormais dans le
    DOMAINE qui le motive — voir `combat-modals.css` : il existe pour garder le CHAMP DE BATAILLE
    lisible sous la fenêtre. Ici, en couche partagée, il s'appliquait à tout écran portant une modale
    de jet et n'y séparait plus les plans (deux fenêtres empilées se lisaient comme une seule). */

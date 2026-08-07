@@ -262,6 +262,7 @@ seule, et a UN propriétaire — la primitive qui la rend. Réfs : #1064, #1072,
 | **Z4** Pré-jet | le choix de RÈGLE avant le jet (Parade/Esquive, arme, localisation) | `RollShell.setup` + `OptionChooser` | Valeurs par `optionValue`/`optionPending`, jamais un « base + mods » recalculé au call-site. Disparaît au jet. |
 | **Z5** LA ligne | portrait · libellé + difficulté · base ± mods = cible · dé · verdict ✓/✗ ±DR | `RollLine` / `PendingRollLine` (site UNIQUE) | La Difficulté vit ICI, en texte et en valeur (`.rm-roll-diff`), TOUJOURS — jamais en chip (#1072). Le masque de découverte (#990) s'applique par CELLULE (`RollMask`). |
 | **Z5b** Chips | les modificateurs CIRCONSTANCIELS, nommés | `ModChips` (`.rm-mod`) | Une chip EST sa règle, cliquable (patron `chipCodex` / `CodexRef` / `RULE_REF`) ; provenance en badges structurés, jamais un ⓘ. L'écart de réconciliation (`reconciled`, plafond mesuré `TestResult.clamped`) devient une chip NOMMÉE — jamais un masquage silencieux. |
+| **Z5c** Raison du verdict | POURQUOI ce verdict quand la comparaison des DR ne le dit pas seule — départage d'un Test opposé (LDB 12 l.160) | ANNOTATION de LA ligne (Z5), au même site de rendu que la difficulté (`RollLine` / `PendingRollLine`) | La raison appartient à la ligne dont elle explique le ✓/✗ : jamais un bandeau de bilan (Z13 COMPARE, elle n'explique pas), jamais l'issue (Z12) ni la sous-ligne de rangée (Z7). Zone RÉSERVÉE, aucun rendu à ce jour (#1149). |
 | **Z6** Progression | Test étendu `n/m` | `RollRow.extendedDr` → `DrBar` | SEULE surface de progression : ni le sous-titre, ni l'issue ne la redisent. |
 | **Z7** Sous-ligne | l'issue de CETTE rangée | `PanelRowData.note` (`.rr-note`) | Canal UNIQUE d'une note par rangée. |
 | **Z8** Refus | la RAISON de l'indisponibilité, visible | `RollRow.rollBlocked` → `GatedAction` | Dérivée du MÊME prédicat que la garde du résolveur, jamais une seconde condition recopiée. |
@@ -272,6 +273,32 @@ seule, et a UN propriétaire — la primitive qui la rend. Réfs : #1064, #1072,
 | **Z13** Bilan | l'agrégat multi / le DR net | `RollShell.summary` (`.rm-summary`) + `netSL` (`.rm-netsl`) | Masqué avec les jets qu'il compare (#990). |
 | **Z14** Post-jet métier | surincantation, Critique, contre-sort | `RollShell.postRollExtra` / `forcedExtra` | Ne porte JAMAIS d'issue (Z12). L'ATTENTE d'un jet distant est une zone d'ÉTAT distincte (`.rm-await`). |
 | **Z15** Actions | les verbes de la barre | `RollShell.actions` (`RollAction`) | Vocabulaire VERROUILLÉ (`assertActionVocabulary` : verbes du flux + neutres) ; la proéminence se DÉDUIT de la `key`, aucun style au call-site. |
+
+### Invariant de GÉOMÉTRIE d'une fenêtre de jet (#1142)
+
+**Le bord HAUT de la fenêtre de jet est invariant pour une session de jet donnée.** Toute zone dont
+la présence dépend de la phase est rendue APRÈS les zones stables dans l'ordre du document. Une zone
+qui apparaît pousse vers le BAS ; aucune ne tire vers le haut. **Les flux ne compensent jamais
+localement** — un site qui déplace son contenu d'un slot à l'autre pour « éviter que ça saute »
+soigne le symptôme chez lui et laisse l'invariant faux partout ailleurs.
+
+Conséquences concrètes :
+
+- L'ancrage de la fenêtre dans le voile fixe son bord HAUT (`.app-campaign .modal-overlay:has(.roll-modal)`,
+  `src/ui/styles/combat-modals.css`) : la fenêtre occupe la bande basse de l'écran, la bande de champ
+  de bataille visible au-dessus reste CONSTANTE d'un état à l'autre. C'est ce que servait l'ancrage
+  bas (verdict vision #942 L7, « voir l'action sous la fenêtre ») — un bord haut fixe le sert mieux,
+  puisque la bande visible ne respire plus au gré du contenu.
+- La fenêtre garde un `max-height` borné : elle ne crève jamais le bas de l'écran, les grands flux
+  (cascade à N pas déjà validés) défilent dans `.rs-scroll`, corps SŒUR de la barre d'actions.
+- Ordre du document dans `.rs-scroll` (`RollShell`) : sous-titre → enjeu → `extra` → **setup (Z4)** →
+  rangées (`.cs-rows`) → issue → DR net → bilan → post-jet → post-dé-forcé. Seule Z4 est volatile
+  AU-DESSUS des rangées : elle disparaît au jet, sous le rideau de dés opaque (`.rm-scene`,
+  `position:absolute; inset:0`) qui couvre la fenêtre pendant le roulis — la transition est masquée
+  sur le chemin majoritaire. Volatilité ACCEPTÉE en l'état (zéro JS, zéro hauteur réservée) : si un
+  chemin sans rideau vient l'exposer, c'est la coquille qui réservera CE slot, jamais un site.
+- Cliquet structurel : `src/ui/roll-display-contract.test.tsx` (l'index DOM de `.cs-rows` dans
+  `.rs-scroll` est le même pré-jet et post-jet, et aucune zone volatile hors Z4 ne la précède).
 
 **Un signe, un sens** (libellés de jet) : la **parenthèse** est le détail DÉRIVÉ par le moteur — la
 compétence, ajoutée par `composeRollLabel` ; le **tiret long** est le séparateur acteur/action. Donc

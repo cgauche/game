@@ -452,9 +452,10 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         /* La marque « dé fixé » n'a qu'UNE surface : l'étiquette du sélecteur quand il est servi,
            la pastille de rangée sinon (siège voisin, option éteinte). */
         rows={[...doneWitnessRows, ...currentRows([...witnessRows([{ combatant: actorOf(cur), note: noteFor(cur) }], !!cur.fixed && !aff.rows.length), ...aff.rows])]}
-        /* MÊME ordre qu'AVANT le tirage (rangée de table → grille des lignes → rangée porteuse du
-           champ) : le champ ne SAUTE pas d'une place à l'autre entre les deux états de la même étape.
-           D'où `extra` (rendu dans les deux états) plutôt que `postRollExtra` (post seulement). */
+        /* `extra` est la zone STABLE de l'étape à table : l'état AVANT tirage la sert déjà (branche
+           `table` ci-dessus), celui-ci l'ÉPAISSIT du résultat. Une zone stable qui grossit respecte
+           l'invariant de géométrie (`docs/charte-ui.md` § « Invariant de GÉOMÉTRIE d'une fenêtre de
+           jet ») — c'est `postRollExtra` qui en ferait une zone à présence dépendante de la phase. */
         /* VALEUR EN TÊTE : la rangée de tirage (dé + opération + ligne atteinte) est le PREMIER
            contenu de l'étape résolue — c'est le verdict, il ne se cherche pas sous une grille. */
         extra={tbl ? (
