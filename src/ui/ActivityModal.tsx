@@ -95,10 +95,15 @@ export function ActivityModal() {
   const opposed = !!enemyT;
   if (enemyT) {
     const enemyName = massBattle?.enemy.label ?? 'Ennemi';
+    // La ligne montre la grandeur qui TRANCHE à DR égal (LDB 12 l.160) : la Puissance NUE en base, le
+    // bonus cumulatif des Rounds tenus (ADE II 08 l.163) en ligne de mod NOMMÉE — même patron que le
+    // Soutien du PJ ci-dessus (`supportSplit`). Sans Puissance nue posée, la base reste la cible jetée.
+    const enemyBase = pa.enemyBase ?? pa.enemyValue!;
+    const holdMods: ModLine[] = pa.enemyValue! !== enemyBase ? [{ label: 'Rounds tenus', value: pa.enemyValue! - enemyBase }] : [];
     rows.push({
       key: 'enemy',
       // La Difficulté de l'opposition est celle DÉCLARÉE par le flux, à défaut Intermédiaire (LDB 12 l.166).
-      row: opposedLines([{ label: `${enemyName} · Puissance`, base: pa.enemyValue!, r: enemyT }], pa.difficulty)[0],
+      row: opposedLines([{ label: `${enemyName} · Puissance`, base: enemyBase, r: enemyT, mods: holdMods.length ? holdMods : undefined }], pa.difficulty)[0],
       rolled,
       interactive: false,
     });

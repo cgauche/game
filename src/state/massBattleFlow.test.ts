@@ -5,6 +5,7 @@ import { d100 } from '../engine/dice';
 import { evaluateTest } from '../engine/tests';
 import { pregenParty, PREGEN } from '../data/pregens';
 import { massBattleTrackHit, armyMight, armyStartMight, type MassBattleSpec, type MassBattleState } from './massBattleFlow';
+import type { PendingActivity } from './interludeFlow';
 import { setRule, resetRule } from '../engine/policy';
 import type { Combatant } from '../engine/types';
 
@@ -435,28 +436,102 @@ describe('Tenez votre position (l.161) — Point de rupture + bonus cumulatif', 
     expect(armyMight(mb.enemy)).toBe(55); // pas de −2 : la position n'a pas tenu
   });
 
-  it('DR ÉGAL : l\'ennemi l\'emporte par sa valeur supérieure (LDB 12 l.160) — la position NE tient pas', () => {
-    start({ situations: [['tenez-votre-position']] });
+  /** Ouvre la Scène de tenue APRÈS `heldRounds` Rounds déjà tenus. L'armée ennemie porte le solde de
+   *  ces Rounds (ADE II 8 l.163 : « −2 de Puissance » par Round tenu) et son jet reçoit le bonus
+   *  cumulatif de +10 par Round — la fixture est celle d'une partie réelle, pas un `held` posé nu. */
+  function openHold(heldRounds: number): PendingActivity {
+    start({ situations: [['tenez-votre-position']], enemyMight: 55 - 2 * heldRounds });
     useGame.getState().massBattleBegin();
+    const mb0 = mbState();
+    useGame.setState({ massBattle: { ...mb0, sceneState: { 'tenez-votre-position': { breakpoint: 0, held: heldRounds, broken: false } } } });
     useGame.getState().massBattleScene('tenez-votre-position');
-    const pa0 = pending()!;
-    // Le d100 que la résolution va tirer pour le PJ (même graine, même appel) — pour caler le jet FIGÉ
-    // de l'ennemi sur le MÊME DR : l'égalité de DR est la seule situation où le critère se voit.
+    return pending()!;
+  }
+
+  /** Joue le 1ᵉʳ jet de tenue avec les DEUX camps à DR ÉGAL — la seule situation où le départage se
+   *  voit (LDB 12 l.160). `pj.target` = la cible JETÉE, `pj.skillBase` = le Niveau de Compétence NU
+   *  posé par l'opener (à défaut la cible : c'est le repli d'une opposition sans nue) ; le d100 FIGÉ
+   *  de l'ennemi est calé sur le DR que la résolution va tirer (même graine, même appel). */
+  function playHoldAtEqualSL(pa0: PendingActivity, pj: { target: number; skillBase?: number }, enemy: { enemyValue: number; enemyBase?: number }) {
     const SEED = 5;
     seedBattleRng(SEED);
     const pjRoll = d100(battleRng());
-    const target = 40;
-    const pjSL = evaluateTest(pjRoll, target).sl;
-    const enemyValue = 70; // Puissance ennemie SUPÉRIEURE à la valeur du PJ
-    const enemyRoll = [...Array(100).keys()].map((i) => i + 1).find((r) => evaluateTest(r, enemyValue).sl === pjSL);
-    expect(enemyRoll).toBeDefined();
-    useGame.setState({ pendingActivity: { ...pa0, skillValue: target, target, mod: undefined, enemyValue, enemyRoll, roll: null } });
+    const pjSL = evaluateTest(pjRoll, pj.target).sl;
+    const enemyRoll = [...Array(100).keys()].map((i) => i + 1).find((r) => evaluateTest(r, enemy.enemyValue).sl === pjSL);
+    expect(enemyRoll, 'un d100 ennemi de MÊME DR existe').toBeDefined();
+    useGame.setState({
+      pendingActivity: {
+        ...pa0, skillValue: pj.target, target: pj.target, mod: undefined, support: undefined, roll: null,
+        ...enemy, enemyRoll: enemyRoll!, skillBase: pj.skillBase ?? pj.target,
+      },
+    });
     seedBattleRng(SEED);
     useGame.getState().activityRoll();
     const pa = pending()!;
     expect(pa.sl).toBe(pjSL);
-    expect(pa.enemySL).toBe(0); // DR strictement égaux
-    expect(pa.success).toBe(false); // départagé sur la valeur (70 > 40), plus par fiat en faveur du PJ
+    expect(pa.enemySL).toBe(0); // DR strictement égaux : seul le départage tranche
+    return pa;
+  }
+
+  it('DR ÉGAL : l\'ennemi l\'emporte par sa Puissance NUE supérieure (LDB 12 l.160) — la position NE tient pas', () => {
+    const pa0 = openHold(0);
+    expect(pa0.enemyValue).toBe(pa0.enemyBase); // aucun Round tenu : la cible du jet ennemi EST sa Puissance nue
+    const pa = playHoldAtEqualSL(pa0, { target: 40 }, { enemyValue: 70, enemyBase: 70 });
+    expect(pa.success).toBe(false); // Puissance nue 70 > Compétence nue 40, plus de fiat en faveur du PJ
+  });
+
+  it('DR ÉGAL, 2 Rounds déjà tenus : c\'est la Puissance NUE qui départage, pas la cible gonflée du bonus (l.163)', () => {
+    const pa0 = openHold(2);
+    expect(pa0.enemyBase).toBe(51); // Puissance NUE de l'armée après 2 Rounds tenus (55 − 2 − 2)
+    expect(pa0.enemyValue).toBe(51 + 20); // +10 par Round tenu, fondu dans la CIBLE du jet ennemi
+    // Compétence NUE du PJ : AU-DESSUS de la Puissance nue (51), EN DESSOUS de la cible bonifiée (71).
+    const pa = playHoldAtEqualSL(pa0, { target: 60 }, { enemyValue: pa0.enemyValue!, enemyBase: pa0.enemyBase });
+    expect(pa.success).toBe(true); // 60 > 51 → la position tient ; départager sur 60 vs 71 la ferait céder
+  });
+
+  it('DR ÉGAL et Puissance NUE ÉGALE à la Compétence : statu quo — l\'ennemi ne l\'emporte pas, la position TIENT', () => {
+    const pa0 = openHold(2);
+    const pa = playHoldAtEqualSL(pa0, { target: pa0.enemyBase! }, { enemyValue: pa0.enemyValue!, enemyBase: pa0.enemyBase });
+    expect(pa.success).toBe(true); // `tie` : aucun vainqueur, l'ennemi ne l'emporte pas
+  });
+
+  // ── La nue du PJ est le NIVEAU DE COMPÉTENCE (`LDB 09 l.17`), pas sa valeur de Test : `testValue`
+  //    y fond États/Encombrement/passifs, `skillBaseValue` non. Sondes G1 (la base ne bouge pas) et
+  //    G2 (le départage suit la nue, États compris). ──
+
+  /** Pose l'État `id` sur tout le groupe (l'opener choisit son acteur ; on veut qu'il soit affecté). */
+  function afflictParty(id: string): void {
+    useGame.setState({ party: useGame.getState().party.map((h) => ({ ...h, conditions: [...(h.conditions ?? []), { id, stacks: 1 }] })) as Combatant[] });
+  }
+
+  /** Rouvre la MÊME Scène de tenue dans la partie en cours (pending vidé, Scène non résolue). */
+  function reopenHold(): PendingActivity {
+    useGame.setState({ pendingActivity: null });
+    useGame.getState().massBattleScene('tenez-votre-position');
+    return pending()!;
+  }
+
+  it('G1 — un État mord la valeur de Test du PJ, JAMAIS le Niveau de Compétence nu posé (LDB 09 l.17)', () => {
+    const clean = openHold(0);
+    expect(clean.skillBase).toBeGreaterThan(0);
+    expect(clean.skillBase).toBe(clean.skillValue); // sans État ni Soutien : la cible NUE et la valeur de Test coïncident
+    afflictParty('empoisonne');
+    const sick = reopenHold();
+    expect(sick.heroId).toBe(clean.heroId); // même acteur : la comparaison porte sur le MÊME héros
+    expect(sick.skillValue).toBeLessThan(clean.skillValue); // l'État pénalise le jet (LDB 16)…
+    expect(sick.skillBase).toBe(clean.skillBase); // … et laisse le Niveau de Compétence INTACT
+  });
+
+  it('G2 — à DR égal, le PJ Empoisonné l\'emporte par sa Compétence NUE supérieure (LDB 12 l.160)', () => {
+    const clean = openHold(0);
+    afflictParty('empoisonne');
+    const sick = reopenHold();
+    const nue = sick.skillBase!;
+    expect(sick.skillValue).toBeLessThan(nue - 1); // le PJ pénalisé JETTE sous la Puissance ennemie ci-dessous
+    // Armée ennemie 1 point SOUS la Compétence nue du PJ, opposition bonifiée bien au-dessus de sa cible.
+    const pa = playHoldAtEqualSL(sick, { target: sick.skillValue, skillBase: nue }, { enemyValue: nue + 19, enemyBase: nue - 1 });
+    expect(pa.success).toBe(true); // nue 56 > 55 : la position tient malgré l'État
+    expect(clean.skillBase).toBe(nue); // (l'État n'a rien changé à la nue — G1 rappelée sur le même couple)
   });
 });
 
@@ -841,11 +916,16 @@ describe('Flux `activity` — défauts RAW corrigés (combiné partiel · Menace
     useGame.getState().massBattleScene('tenez-votre-position');
     const pa0 = pending()!;
     expect(pa0.enemyValue).toBeGreaterThan(0); // jet ennemi opposé figé
+    // DR de l'ennemi RECALCULÉ de son d100 figé : le pending est calé DESSUS (l'ennemi mène de 3 DR
+    // avant la Chance). Un `enemySL` forgé sans lien avec `enemyRoll`/`enemyValue` ne serait jamais relu.
+    const enemySL0 = evaluateTest(pa0.enemyRoll!, pa0.enemyValue!).sl;
+    const pjSL = enemySL0 - 3;
     // PJ « réussi » numériquement (roll ≤ cible) MAIS l'ennemi l'emporte à l'opposition (enemySL 3 > 0).
-    useGame.setState({ pendingActivity: { ...pa0, roll: 20, target: 50, sl: 2, success: false, enemySL: 3 } });
+    useGame.setState({ pendingActivity: { ...pa0, roll: 20, target: 50, sl: pjSL, success: false, enemySL: 3 } });
     grant({ fortune: 1 });
     useGame.getState().activityBonusSL();
     const pa = pending()!;
+    expect(pa.sl).toBe(pjSL + 1);
     expect(pa.enemySL).toBe(2); // +1 DR au PJ → −1 au DR net de l'ennemi
     expect(pa.success).toBe(pa.enemySL! <= 0); // success RE-DÉRIVÉ de la marge (pas du jet numérique)
     expect(pa.success).toBe(false); // l'ennemi tient encore le dessus (enemySL 2 > 0)

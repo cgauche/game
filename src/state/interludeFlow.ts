@@ -290,10 +290,26 @@ const eventLabelOf = (st: InterludeHeroState): string =>
 
 // ── Activités (ch.23) — flux de jet par modale (fabrique rollFlow) ────────────────────────────
 
+/** Grandeurs d'un Test OPPOSÉ d'Activité — Scène « Tenez votre position » (ADE II 8 l.161-163) —
+ *  POSÉES D'UN BLOC à l'ouverture : `enemyValue` = cible du jet ennemi (bonus cumulatif de tenue
+ *  l.163 déjà fondu), `enemyRoll` = son d100 FIGÉ, et les DEUX valeurs NUES que `resolveOpposed`
+ *  compare à DR égal (LDB 12 l.160) — `enemyBase` (Puissance de l'armée) et `skillBase` (Niveau de
+ *  Compétence du PJ, `LDB 09 l.17`, ni États ni Encombrement ni Soutien : la valeur que
+ *  `skillBaseValue` calcule, JAMAIS une soustraction faite au site de lecture).
+ *  Le TYPE porte le couplage : ces champs ne se posent qu'ENSEMBLE, ou aucun. Les deux nues restent
+ *  optionnelles (une save antérieure au champ n'en a pas → repli deux-cibles d'`openValues`).
+ *  Forme PLATE parce que ces champs sont SÉRIALISÉS dans le snapshot de partie (`saves.ts`, `MIGRATIONS`). */
+export type ActivityOppositionOn = { enemyValue: number; enemyRoll: number; enemyBase?: number; skillBase?: number };
+export type ActivityOpposition = ActivityOppositionOn | { enemyValue?: undefined; enemyRoll?: undefined; enemyBase?: undefined; skillBase?: undefined };
+
 /** Jet d'Activité en attente (modale) : Revenus / lancer d'Artisanat (Test étendu) / Apprentissage /
  *  Identification d'artefact (ADE II 4) / Activité du CATALOGUE data-driven (`activities.json` —
  *  Convalescence ADE II, Activités d'Altdorf ACE Annexe I). */
-export interface PendingActivity extends PendingBase {
+export type PendingActivity = PendingActivityFields & ActivityOpposition;
+
+/** Champs COMMUNS d'une `PendingActivity`, hors opposition ennemie : ce qu'assemble un producteur
+ *  d'Activité d'interlude (jamais opposée). */
+export interface PendingActivityFields extends PendingBase {
   heroId: string;
   /** TOUTES les Activités à jet passent par le CATALOGUE data-driven (`activities.json` + `resolver`). */
   kind: 'catalog';
@@ -349,9 +365,7 @@ export interface PendingActivity extends PendingBase {
   success2?: boolean;
   /** Niveau du Test combiné : `full` = les deux réussies ; `partial` = une seule ; `fail` = aucune. */
   combinedLevel?: 'full' | 'partial' | 'fail';
-  // ── Test OPPOSÉ de « Tenez votre position » (l.161) : l'ennemi oppose son jet FIGÉ ──
-  enemyValue?: number;
-  enemyRoll?: number;
+  // ── Test OPPOSÉ de « Tenez votre position » (l.161) : l'opposition ennemie vit dans `ActivityOpposition` ──
   /** DR net de l'ennemi au Test opposé de tenue (positif = l'ennemi l'emporte). */
   enemySL?: number;
   forced?: boolean;
@@ -527,7 +541,7 @@ export function bestActivitySkill(
  *  `resolveFocus` (`engine/magic.ts`), branché dans `FLOWS.activity` (rollFlowSpecs.ts). */
 export function openRitualFocus(
   get: Get, set: Set, h: Combatant, spellId: string | undefined,
-): { skillValue: number; skillLabel: string; extra: Partial<PendingActivity> & { label: string } } | undefined {
+): { skillValue: number; skillLabel: string; extra: Partial<PendingActivityFields> & { label: string } } | undefined {
   const id = spellId ?? h.ritual?.spellId;
   const sp = id ? findSpellById(id) : undefined;
   if (!sp?.isRitual || !(h.spells ?? []).includes(sp.id)) { get().log(id ? t('if.rituelUnknown', { id }) : t('if.rituelNoSelection', { name: h.label })); return undefined; }
@@ -579,7 +593,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
   let skillLabel: string;
   let skillValue: number;
   // Champs de pending dérivés par résolveur (Test étendu, Talent, item…) — annexés à la fin.
-  const extra: Partial<PendingActivity> = {};
+  const extra: Partial<PendingActivityFields> = {};
   if (def.resolver === 'income') {
     // Revenus (« Gagner de l'argent grâce au Statut », LDB 08 l.107-118) : Test de la Compétence de
     // Carrière « en italique du premier Niveau » (approximée par `incomeSkillOf`). Gate : événement

@@ -22,7 +22,7 @@ import type { Get, Set } from './flowTypes';
 import type { Combatant, CharKey, Difficulty } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10, d100, type RNG } from '../engine/dice';
-import { partyBest, testValue, bestForSkills, bestForCombined, bestAssistedOption, type SkillRef, type SupportDetail } from '../engine/skills';
+import { partyBest, testValue, skillBaseValue, bestForSkills, bestForCombined, bestAssistedOption, type SkillRef, type SupportDetail } from '../engine/skills';
 import { isStructure } from '../engine/structures';
 import { inanimateCombatant } from '../engine/inanimate';
 import { applyOps } from '../engine/ops';
@@ -33,7 +33,7 @@ import {
   activityById, activitiesFor, matchBattleOutcomes, battleOutcomeAmount,
   type ActivityDef, type BattleResolution, type BattleOutcome as BattleOutcomeDelta,
 } from '../engine/activities';
-import type { PendingActivity } from './interludeFlow';
+import type { PendingActivity, PendingActivityFields, ActivityOppositionOn } from './interludeFlow';
 import {
   inspireDifficulty, resolveClash, rallyHealAmount, battleOutcome, isDestroyed,
   battleHazard, clampMight, initHoldState, resolveHoldRound, holdEnemyBonus,
@@ -343,7 +343,7 @@ function openBattlePending(_get: Get, set: Set, o: {
   skillValue: number; skillId?: string; spec?: string; char?: CharKey; difficulty: Difficulty;
   label?: string; mod?: number; modLabel?: string;
   combined?: { skillId?: string; spec?: string; value: number };
-  enemyValue?: number; enemyRoll?: number;
+  opposition?: ActivityOppositionOn;
   heroIds?: string[]; support?: SupportDetail;
 }): void {
   const skillLabel = o.skillId ? refLabel('skills', { id: o.skillId, spec: o.spec }) : o.char ? CHAR_LABELS[o.char] : 'Test';
@@ -352,17 +352,16 @@ function openBattlePending(_get: Get, set: Set, o: {
   const combined = o.combined
     ? { skill2: o.combined.skillId ? refLabel('skills', { id: o.combined.skillId, spec: o.combined.spec }) : CHAR_LABELS[o.char ?? 'intelligence'], skillValue2: o.combined.value, target2: Math.max(1, Math.min(99, o.combined.value + diffMod)) }
     : {};
-  const pa: PendingActivity = {
+  const pa: PendingActivityFields = {
     heroId: o.actor.id, kind: 'catalog', activityId: o.def.id, battle: o.battle,
     label: o.label ?? o.def.label, skillLabel, skillValue: o.skillValue, difficulty: o.difficulty,
     roll: null, target, sl: 0, success: false,
     ...(o.mod ? { mod: o.mod, modLabel: o.modLabel } : {}),
     ...(o.support ? { support: o.support } : {}),
     ...(o.heroIds ? { heroIds: o.heroIds } : {}),
-    ...(o.enemyValue != null ? { enemyValue: o.enemyValue, enemyRoll: o.enemyRoll } : {}),
     ...combined,
   };
-  set({ pendingActivity: pa });
+  set({ pendingActivity: o.opposition ? { ...pa, ...o.opposition } : pa });
 }
 
 const DIFFICULTY_MOD = (d: Difficulty): number => DIFFICULTY_MODIFIERS[d];
@@ -556,12 +555,24 @@ function openHoldScene(get: Get, set: Set, scene: ActivityDef): void {
   const { team, picked } = at;
   const enemyBonus = holdEnemyBonus(scene.hold, state.held); // +10 cumulatif par Round déjà tenu (l.163).
   const mod = massBattleThreatPenalty(mb);
-  const enemyValue = Math.max(1, Math.min(99, armyMight(mb.enemy) + enemyBonus));
-  const enemyRoll = d100(battleRng());
+  // `enemyValue`/`skillValue` = les CIBLES jetées (bonus de tenue ADE II 8 l.163, Soutien, États,
+  // Menace) ; `enemyBase`/`skillBase` = les valeurs NUES que `resolveOpposed` compare (LDB 12 l.160).
+  // Les quatre voyagent ensemble jusqu'au verdict — aucun site en aval ne re-dérive une nue.
+  // Niveau de Compétence NU du PJ retenu (`LDB 09 l.17`) — Compétence si la Scène en teste une,
+  // Caractéristique effective sinon ; une Scène qui ne déclare ni l'une ni l'autre n'en pose aucune.
+  const skillBase = picked.skillId
+    ? skillBaseValue(picked.actor, picked.skillId, picked.spec)
+    : scene.char ? effectiveChar(picked.actor, scene.char) : undefined;
+  const opposition: ActivityOppositionOn = {
+    enemyValue: Math.max(1, Math.min(99, armyMight(mb.enemy) + enemyBonus)),
+    enemyRoll: d100(battleRng()),
+    enemyBase: armyMight(mb.enemy),
+    ...(skillBase != null ? { skillBase } : {}),
+  };
   openBattlePending(get, set, {
     actor: picked.actor, battle: 'round', def: scene, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: scene.char,
     difficulty: scene.difficulty ?? 'intermediaire', mod, modLabel: mod ? 'Menace' : undefined,
-    enemyValue, enemyRoll, heroIds: team.map((h) => h.id), support: picked.support,
+    opposition, heroIds: team.map((h) => h.id), support: picked.support,
   });
 }
 

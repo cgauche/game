@@ -19,7 +19,7 @@ import type {
   PendingCastOpposition, OppositionParticipant,
   PendingCascade, CascadeStep, BatchParticipant,
 } from './store';
-import type { PendingActivity } from './interludeFlow';
+import type { PendingActivity, ActivityOppositionOn } from './interludeFlow';
 import type { Combatant, Weapon } from '../engine/types';
 import type { Get, Set } from './flowTypes';
 import { FLOW_VERBS, type RollVerb, type FlowVerbs } from './flowVerbs';
@@ -245,11 +245,16 @@ function activityWon(p: PendingActivity): boolean {
  *  opposé contre les Personnages ») : `resolveOpposed` est le SEUL juge (LDB 12 l.160) entre le jet du
  *  PJ et le jet FIGÉ de l'ennemi. `held` = l'ennemi ne l'emporte pas ; `enemySL` = DR net de l'ennemi
  *  (positif = il progresse), cumulé en Point de rupture. SOURCE UNIQUE des trois sites (1ᵉʳ jet, dé
- *  choisi, Chance « +1 DR »). */
-function holdVerdict(o: { target: number; roll: number; sl: number; success: boolean; enemyRoll: number; enemyValue: number }): { held: boolean; enemySL: number } {
-  const et = evaluateTest(o.enemyRoll, o.enemyValue);
-  const opp = resolveOpposed({ roll: o.roll, target: o.target, success: o.success, sl: o.sl, isDouble: false }, et);
-  return { held: opp.winner !== 'defender', enemySL: et.sl - o.sl };
+ *  choisi, Chance « +1 DR »).
+ *  Les DEUX `base` sont les valeurs NUES POSÉES par l'opener (`skillBase` = Niveau de Compétence du
+ *  PJ au sens `LDB 09 l.17` — ni État, ni Encombrement, ni passif, ni Soutien ; `enemyBase` = Puissance
+ *  de l'armée hors bonus de tenue) : ce site les LIT, il n'en dérive aucune. Une nue absente (save
+ *  antérieure aux champs) fait retomber les DEUX camps sur leurs cibles (tout-ou-rien d'`openValues`). */
+function holdVerdict(p: PendingActivity & ActivityOppositionOn, jet: { roll: number; sl: number; success: boolean }): { held: boolean; enemySL: number } {
+  const et = evaluateTest(p.enemyRoll, p.enemyValue, p.enemyBase);
+  const pj = { roll: jet.roll, target: p.target, base: p.skillBase, success: jet.success, sl: jet.sl, isDouble: false };
+  const opp = resolveOpposed(pj, et);
+  return { held: opp.winner !== 'defender', enemySL: et.sl - jet.sl };
 }
 
 // ── Fabriques d'ISSUE CANONIQUE (cf. `TestOutcome`) — les DEUX formes récurrentes, écrites UNE fois.
@@ -1551,8 +1556,8 @@ export const FLOWS = {
           const c = evaluateCombinedTest(tr.roll, p.target, p.target2);
           return { roll: c.roll, sl: c.a.sl, success: c.a.success, sl2: c.b.sl, success2: c.b.success, combinedLevel: c.level };
         }
-        if (p.battle === 'round' && p.enemyValue != null && p.enemyRoll != null) {
-          const v = holdVerdict({ target: p.target, roll: tr.roll, sl: tr.sl, success: tr.success, enemyRoll: p.enemyRoll, enemyValue: p.enemyValue });
+        if (p.battle === 'round' && p.enemyValue != null) {
+          const v = holdVerdict(p, { roll: tr.roll, sl: tr.sl, success: tr.success });
           return { roll: tr.roll, sl: tr.sl, success: v.held, enemySL: v.enemySL };
         }
         return { roll: tr.roll, target: tr.target, sl: tr.sl, success: tr.success };
@@ -1607,9 +1612,9 @@ export const FLOWS = {
       // Test OPPOSÉ de « Tenez votre position » (l.161) : le PJ jette (`p.target` = mod fondu), l'ennemi a un
       // jet FIGÉ ; `holdVerdict` (→ `resolveOpposed`) tranche et donne le DR net de l'ennemi (`enemySL`,
       // positif = l'ennemi progresse) qui alimente le Point de rupture à la résolution.
-      if (p.battle === 'round' && p.enemyValue != null && p.enemyRoll != null) {
+      if (p.battle === 'round' && p.enemyValue != null) {
         const pt = evaluateTest(d100(battleRng()), p.target);
-        const v = holdVerdict({ target: p.target, roll: pt.roll, sl: pt.sl, success: pt.success, enemyRoll: p.enemyRoll, enemyValue: p.enemyValue });
+        const v = holdVerdict(p, { roll: pt.roll, sl: pt.sl, success: pt.success });
         return { roll: pt.roll, sl: pt.sl, success: v.held, enemySL: v.enemySL };
       }
       // Simple : d100 vs la cible EFFECTIVE (mod inclus) — renseigne `p.target` (interlude) sans jamais
@@ -1632,9 +1637,9 @@ export const FLOWS = {
         }
         // Tenue (Test OPPOSÉ) : +1 DR au PJ réduit d'autant le DR net de l'ennemi ; l'issue se RE-DÉRIVE
         // par le MÊME juge que le 1ᵉʳ jet (`holdVerdict` → `resolveOpposed`), jamais par une 2ᵉ règle.
-        if (p.battle === 'round' && p.enemyValue != null && p.enemyRoll != null) {
+        if (p.battle === 'round' && p.enemyValue != null) {
           const sl = p.sl + 1;
-          const v = holdVerdict({ target: p.target, roll: p.roll ?? 0, sl, success: p.success, enemyRoll: p.enemyRoll, enemyValue: p.enemyValue });
+          const v = holdVerdict(p, { roll: p.roll ?? 0, sl, success: p.success });
           return { sl, success: v.held, enemySL: v.enemySL };
         }
         // Simple : +1 DR, `success` INTACT (bumpSL ; LDB 17 l.84).
