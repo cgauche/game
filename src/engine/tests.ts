@@ -54,6 +54,10 @@ export function difficultyFromModifier(mod: number): Difficulty {
 export interface TestResult {
   roll: number;
   target: number; // valeur effective après difficulté
+  /** Valeur NUE de la Compétence/Caractéristique testée, AVANT Difficulté et modificateurs — la
+   *  même grandeur que `RollBreakdown.base`. C'est elle qui départage un Test opposé à DR égal
+   *  (LDB 12 l.160). Absente quand le jet est réhydraté d'un détail qui ne la portait pas. */
+  base?: number;
   success: boolean;
   /** Degrés de Réussite (positif = réussite, négatif = échec). */
   sl: number;
@@ -77,17 +81,19 @@ export function rollTest(
   const raw = value + DIFFICULTY_MODIFIERS[difficulty] + modifier;
   const target = clamp(raw, policy);
   const r = d100(rng);
-  const res = evaluateTest(r, target, policy);
+  const res = evaluateTest(r, target, value, policy);
   return target === raw ? res : { ...res, clamped: target - raw };
 }
 
-/** Évalue un jet déjà obtenu contre une cible (utile pour rejouer un jet). */
 /** Un d100 est-il un « double » (11, 22, …, 99, 00=100) ? Génère Critique (réussi) ou Maladresse (raté). */
 export function isDoubleRoll(roll: number): boolean {
   return roll === 100 || roll % 11 === 0;
 }
 
-export function evaluateTest(r: number, target: number, policy: TestPolicy = getTestPolicy()): TestResult {
+/** Évalue un jet déjà obtenu contre une cible (utile pour rejouer un jet). `base` = valeur NUE
+ *  testée (avant Difficulté/modificateurs) : un site qui la connaît la fait voyager jusqu'au
+ *  départage d'un Test opposé (LDB 12 l.160). */
+export function evaluateTest(r: number, target: number, base?: number, policy: TestPolicy = getTestPolicy()): TestResult {
   // 1) Réussite « numérique » : jet ≤ cible.
   let success = r <= target;
   // 2) Bandes automatiques (LDB 12 l.46). 'normal' = RAW (01..autoSuccessMax réussite auto,
@@ -106,7 +112,7 @@ export function evaluateTest(r: number, target: number, policy: TestPolicy = get
   const baseSL = policy.slMode === 'fast' && success ? tens(r) : tens(target) - tens(r);
   // 4) DR auto des bandes (LDB 12 l.119/l.121) : réussite forcée ≥ +1 ; échec forcé ≤ −1.
   const sl = forced === 'success' ? Math.max(1, baseSL) : forced === 'fail' ? Math.min(-1, baseSL) : baseSL;
-  return { roll: r, target, success, sl, isDouble: isDoubleRoll(r) };
+  return { roll: r, target, success, sl, isDouble: isDoubleRoll(r), ...(base != null ? { base } : {}) };
 }
 
 /** Valeur maximale d'un dé FORCÉ par la Résilience « Je ne faillirai pas ! » (LDB 17 l.68) : le dé
@@ -142,8 +148,8 @@ export interface CombinedTestResult {
  *  Compétences). Réutilise `evaluateTest` (bandes/DR identiques) pour chaque cible. PUR : la primitive
  *  est neutre ; l'activation (règle `test-combined`) et le branchement des issues vivent côté flux. */
 export function evaluateCombinedTest(roll: number, target1: number, target2: number, policy: TestPolicy = getTestPolicy()): CombinedTestResult {
-  const a = evaluateTest(roll, target1, policy);
-  const b = evaluateTest(roll, target2, policy);
+  const a = evaluateTest(roll, target1, undefined, policy);
+  const b = evaluateTest(roll, target2, undefined, policy);
   const passed = (a.success ? 1 : 0) + (b.success ? 1 : 0);
   return { roll, a, b, level: passed === 2 ? 'full' : passed === 1 ? 'partial' : 'fail' };
 }
@@ -167,15 +173,17 @@ export interface OpposedResult {
   attackerWins: boolean;
   /** DR net du vainqueur (sert aux dégâts en combat). */
   netSL: number;
+  /** Critère qui a TRANCHÉ, en ids STABLES (LDB 12 l.160) : `dr` = les DR diffèrent ; `valeur` =
+   *  DR égaux, départage sur la valeur nue (`base`, à défaut la cible) ; `egalite` = rien n'a
+   *  départagé (`winner === 'tie'`) ; `force` = victoire IMPOSÉE par une ressource/règle (Résilience
+   *  LDB 17 l.68), aucun départage joué. Donnée d'AFFICHAGE en aval, aucun verdict n'en dépend. */
+  decidedBy: 'dr' | 'valeur' | 'egalite' | 'force';
 }
 
 /**
- * Test opposé (12 - Tests.md). Le vainqueur est celui dont le DR est le plus
- * élevé ; en cas d'égalité de DR, celui dont la valeur cible (Compétence/
- * Caractéristique) est STRICTEMENT la plus élevée ; si elles sont aussi égales,
- * aucun vainqueur : statu quo (la source laisse le choix statu quo OU relance, LDB 12 l.160 ;
- * jeu sans MJ → statu quo retenu). Pas de priorité
- * « attaquant » (corrigé suite à l'audit de fidélité).
+ * Test opposé — LDB 12 l.160.
+ * Arbitrage maison (jeu sans MJ, CLAUDE.md règle 7) : l'égalité résiduelle que la source laisse
+ * au choix du MJ est tranchée en statu quo (`tie`), jamais en relance.
  */
 export function opposedTest(
   attackerValue: number,
@@ -189,15 +197,26 @@ export function opposedTest(
   return resolveOpposed(attacker, defender);
 }
 
+/** Grandeurs COMPARABLES des deux jets pour le départage (LDB 12 l.160) : les valeurs NUES quand les
+ *  DEUX côtés la portent, sinon les cibles des deux côtés. TOUT-OU-RIEN : opposer la valeur nue d'un
+ *  camp à la cible modifiée de l'autre comparerait deux grandeurs différentes (c'est le défaut que ce
+ *  départage corrige) — un jet réhydraté sans `base` fait donc retomber les DEUX sur la cible. */
+function openValues(attacker: TestResult, defender: TestResult): [number, number] {
+  return attacker.base != null && defender.base != null
+    ? [attacker.base, defender.base]
+    : [attacker.target, defender.target];
+}
+
 export function resolveOpposed(attacker: TestResult, defender: TestResult): OpposedResult {
-  // 1) DR le plus élevé l'emporte. 2) Égalité de DR → valeur cible strictement
-  // la plus haute. 3) Encore égal → statu quo (tie), aucun vainqueur.
+  // LDB 12 l.160.
   let winner: 'attacker' | 'defender' | 'tie';
-  if (attacker.sl !== defender.sl) winner = attacker.sl > defender.sl ? 'attacker' : 'defender';
-  else if (attacker.target !== defender.target) winner = attacker.target > defender.target ? 'attacker' : 'defender';
-  else winner = 'tie';
+  let decidedBy: OpposedResult['decidedBy'];
+  const [aVal, dVal] = openValues(attacker, defender);
+  if (attacker.sl !== defender.sl) { winner = attacker.sl > defender.sl ? 'attacker' : 'defender'; decidedBy = 'dr'; }
+  else if (aVal !== dVal) { winner = aVal > dVal ? 'attacker' : 'defender'; decidedBy = 'valeur'; }
+  else { winner = 'tie'; decidedBy = 'egalite'; }
   const netSL = Math.abs(attacker.sl - defender.sl);
-  return { attacker, defender, winner, attackerWins: winner === 'attacker', netSL };
+  return { attacker, defender, winner, attackerWins: winner === 'attacker', netSL, decidedBy };
 }
 
 /** Influence « +`by` DR » sur un jet DÉJÀ résolu (Chance, LDB 17 l.24 ; bonus de Piège-lame, LDB 62) :
@@ -210,15 +229,17 @@ export function bumpSL(t: TestResult, by = 1): TestResult {
 
 /** `TestResult` d'une réussite FORCÉE (Résilience « Je ne faillirai pas ! » LDB 17 l.68 / Résistance
  *  Menace LDB 10) au dé `roll`, DR `sl` imposé. Collapse le littéral `{ roll, target, success: true,
- *  sl, isDouble: isDoubleRoll(roll) }` recopié dans chaque résolveur forcé — atome PARTAGÉ, voisin de `bumpSL`. */
-export function forcedTR(roll: number, target: number, sl: number): TestResult {
-  return { roll, target, success: true, sl, isDouble: isDoubleRoll(roll) };
+ *  sl, isDouble: isDoubleRoll(roll) }` recopié dans chaque résolveur forcé — atome PARTAGÉ, voisin de `bumpSL`.
+ *  `base` = valeur nue, à fournir quand le site la connaît (départage opposé, LDB 12 l.160). */
+export function forcedTR(roll: number, target: number, sl: number, base?: number): TestResult {
+  return { roll, target, success: true, sl, isDouble: isDoubleRoll(roll), ...(base != null ? { base } : {}) };
 }
 
 /** `TestResult` RE-HYDRATÉ depuis un détail de jet stocké (RollBreakdown/attackerDetail/…) : ajoute
- *  `isDouble` dérivé du dé. `success` NATUREL préservé (≠ forcedTR qui force success:true). Atome PARTAGÉ. */
-export function hydrateTR(d: { roll: number; target: number; success: boolean; sl: number }): TestResult {
-  return { roll: d.roll, target: d.target, success: d.success, sl: d.sl, isDouble: isDoubleRoll(d.roll) };
+ *  `isDouble` dérivé du dé. `success` NATUREL préservé (≠ forcedTR qui force success:true). La valeur
+ *  nue `base` du détail (présente sur `RollBreakdown`) est reconduite telle quelle. Atome PARTAGÉ. */
+export function hydrateTR(d: { roll: number; target: number; success: boolean; sl: number; base?: number }): TestResult {
+  return { roll: d.roll, target: d.target, success: d.success, sl: d.sl, isDouble: isDoubleRoll(d.roll), ...(d.base != null ? { base: d.base } : {}) };
 }
 
 /** Test Soutenu (LDB 12 l.187-200) — BONUS de coopération : chaque soutien octroie +10 au Test, MAIS le

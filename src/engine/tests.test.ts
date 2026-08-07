@@ -10,32 +10,32 @@ const P = (over: Partial<TestPolicy> = {}): TestPolicy => ({
 
 describe('evaluateTest — bandes automatiques (LDB 12 l.46-47, l.147-149)', () => {
   it("'normal' : 01-05 = réussite auto même si cible < jet ; DR ≥ +1", () => {
-    const t = evaluateTest(3, 0, P()); // 3 > 0 → échec « numérique », mais bande basse
+    const t = evaluateTest(3, 0, undefined, P()); // 3 > 0 → échec « numérique », mais bande basse
     expect(t.success).toBe(true);
     expect(t.sl).toBeGreaterThanOrEqual(1);
   });
   it("'normal' : 96-00 = échec auto même si jet ≤ cible ; DR ≤ -1", () => {
-    const t = evaluateTest(98, 99, P()); // 98 ≤ 99 → réussite « numérique », mais bande haute
+    const t = evaluateTest(98, 99, undefined, P()); // 98 ≤ 99 → réussite « numérique », mais bande haute
     expect(t.success).toBe(false);
     expect(t.sl).toBeLessThanOrEqual(-1);
   });
   it("'off' : aucune bande (comportement historique = jet ≤ cible)", () => {
-    expect(evaluateTest(3, 0, P({ bandsMode: 'off' })).success).toBe(false);
-    expect(evaluateTest(98, 99, P({ bandsMode: 'off' })).success).toBe(true);
+    expect(evaluateTest(3, 0, undefined, P({ bandsMode: 'off' })).success).toBe(false);
+    expect(evaluateTest(98, 99, undefined, P({ bandsMode: 'off' })).success).toBe(true);
   });
   it("'inverted' : 01-05 échec auto / 96-00 réussite auto (règle maison)", () => {
-    expect(evaluateTest(3, 99, P({ bandsMode: 'inverted' })).success).toBe(false);
-    expect(evaluateTest(98, 0, P({ bandsMode: 'inverted' })).success).toBe(true);
+    expect(evaluateTest(3, 99, undefined, P({ bandsMode: 'inverted' })).success).toBe(false);
+    expect(evaluateTest(98, 0, undefined, P({ bandsMode: 'inverted' })).success).toBe(true);
   });
 });
 
 describe('evaluateTest — DR rapide (« Calculer Rapidement un DR », LDB 12 l.128)', () => {
   it("'fast' : sur une réussite, DR = chiffre des dizaines du JET", () => {
-    expect(evaluateTest(36, 80, P({ slMode: 'fast' })).sl).toBe(3); // dizaines de 36
-    expect(evaluateTest(36, 80, P()).sl).toBe(5); // standard : 8 − 3
+    expect(evaluateTest(36, 80, undefined, P({ slMode: 'fast' })).sl).toBe(3); // dizaines de 36
+    expect(evaluateTest(36, 80, undefined, P()).sl).toBe(5); // standard : 8 − 3
   });
   it("'fast' : sur un échec, DR calculé normalement", () => {
-    const t = evaluateTest(70, 30, P({ slMode: 'fast' }));
+    const t = evaluateTest(70, 30, undefined, P({ slMode: 'fast' }));
     expect(t.success).toBe(false);
     expect(t.sl).toBe(-4); // standard négatif : 3 − 7
   });
@@ -64,20 +64,20 @@ describe('maxForcedRoll — borne du dé forcé DÉRIVÉE de la policy (pas un n
 describe('bestForcedRoll — dé PAR DÉFAUT de la Résilience, DR-MAX selon la policy (LDB 17 l.68)', () => {
   it("standard (DR = différence de dizaines) : le meilleur jet est 01 → dizaines de la cible", () => {
     expect(bestForcedRoll(55, P())).toBe(1);
-    expect(evaluateTest(bestForcedRoll(55, P()), 55, P()).sl).toBe(5); // tens(55) − tens(01) = 5
+    expect(evaluateTest(bestForcedRoll(55, P()), 55, undefined, P()).sl).toBe(5); // tens(55) − tens(01) = 5
   });
   it("fast (DR = dizaines du JET) : le meilleur jet est le PLUS HAUT valide (≈ la cible), PAS 01", () => {
     const fp = P({ slMode: 'fast' });
     expect(bestForcedRoll(55, fp)).toBe(55);                       // maxForcedRoll(55) = 55
-    expect(evaluateTest(bestForcedRoll(55, fp), 55, fp).sl).toBe(5); // dizaines de 55
+    expect(evaluateTest(bestForcedRoll(55, fp), 55, undefined, fp).sl).toBe(5); // dizaines de 55
     // Le vieux dé 01 codé en dur en Fast DR = DR MINIMAL (dizaines 0, planché à 1 par la bande auto) vs 5.
-    expect(evaluateTest(1, 55, fp).sl).toBe(1);
-    expect(evaluateTest(10, 55, fp).sl).toBe(1);                   // tout jet bas → DR bas ; bestForcedRoll les évite
+    expect(evaluateTest(1, 55, undefined, fp).sl).toBe(1);
+    expect(evaluateTest(10, 55, undefined, fp).sl).toBe(1);                   // tout jet bas → DR bas ; bestForcedRoll les évite
   });
   it("fast : la bande d'échec auto plafonne le meilleur jet (cible ≥ autoFailMin)", () => {
     const fp = P({ slMode: 'fast' });
     expect(bestForcedRoll(99, fp)).toBe(95);                       // 96-00 échoue toujours → borné à 95
-    expect(evaluateTest(bestForcedRoll(99, fp), 99, fp).sl).toBe(9);
+    expect(evaluateTest(bestForcedRoll(99, fp), 99, undefined, fp).sl).toBe(9);
   });
 });
 

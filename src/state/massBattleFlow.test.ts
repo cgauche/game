@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { useGame } from './store';
-import { seedBattleRng } from './battleRng';
+import { seedBattleRng, battleRng } from './battleRng';
+import { d100 } from '../engine/dice';
+import { evaluateTest } from '../engine/tests';
 import { pregenParty, PREGEN } from '../data/pregens';
 import { massBattleTrackHit, armyMight, armyStartMight, type MassBattleSpec, type MassBattleState } from './massBattleFlow';
 import { setRule, resetRule } from '../engine/policy';
@@ -431,6 +433,30 @@ describe('Tenez votre position (l.161) — Point de rupture + bonus cumulatif', 
     expect(mb.sceneState['tenez-votre-position'].broken).toBe(true);
     expect(mb.imposed).not.toContain('tenez-votre-position');
     expect(armyMight(mb.enemy)).toBe(55); // pas de −2 : la position n'a pas tenu
+  });
+
+  it('DR ÉGAL : l\'ennemi l\'emporte par sa valeur supérieure (LDB 12 l.160) — la position NE tient pas', () => {
+    start({ situations: [['tenez-votre-position']] });
+    useGame.getState().massBattleBegin();
+    useGame.getState().massBattleScene('tenez-votre-position');
+    const pa0 = pending()!;
+    // Le d100 que la résolution va tirer pour le PJ (même graine, même appel) — pour caler le jet FIGÉ
+    // de l'ennemi sur le MÊME DR : l'égalité de DR est la seule situation où le critère se voit.
+    const SEED = 5;
+    seedBattleRng(SEED);
+    const pjRoll = d100(battleRng());
+    const target = 40;
+    const pjSL = evaluateTest(pjRoll, target).sl;
+    const enemyValue = 70; // Puissance ennemie SUPÉRIEURE à la valeur du PJ
+    const enemyRoll = [...Array(100).keys()].map((i) => i + 1).find((r) => evaluateTest(r, enemyValue).sl === pjSL);
+    expect(enemyRoll).toBeDefined();
+    useGame.setState({ pendingActivity: { ...pa0, skillValue: target, target, mod: undefined, enemyValue, enemyRoll, roll: null } });
+    seedBattleRng(SEED);
+    useGame.getState().activityRoll();
+    const pa = pending()!;
+    expect(pa.sl).toBe(pjSL);
+    expect(pa.enemySL).toBe(0); // DR strictement égaux
+    expect(pa.success).toBe(false); // départagé sur la valeur (70 > 40), plus par fiat en faveur du PJ
   });
 });
 

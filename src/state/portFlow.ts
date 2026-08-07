@@ -24,8 +24,8 @@
  */
 import { battleRng } from './battleRng';
 import { placeOfScene, placeById } from './worldMap';
-import { partyAssisted } from '../engine/skills';
-import { resolveOpposed, SL_ASTOUNDING, type TestResult } from '../engine/tests';
+import { partyAssisted, supportSplit } from '../engine/skills';
+import { resolveOpposed, bumpSL, SL_ASTOUNDING, type TestResult } from '../engine/tests';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, toMoney, priceToMoney } from '../engine/money';
 import { partyMoneyTotal, payFromGroup, distributeCredit } from './bourseFlow';
@@ -40,6 +40,7 @@ import {
 import { seasonOfMonth } from '../engine/travelStages';
 import { toDate } from '../engine/clock';
 import { registerCascadeApplier } from './cascade';
+import type { CascadeStep } from './pendings';
 import { openPartyTest, openWorldTest, freeCons } from './rollSeam';
 import { actorIn } from './combatants';
 import { scheduleFlowTimer } from './combatTimers';
@@ -202,6 +203,16 @@ export function portBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   }, PORT_BUY_BARGAIN_KIND, { cargoId, want, basePrice: offer.basePrice, merchantValue: merchant.value, merchantNegotiator: merchant.negotiator, sellerDR });
 }
 
+/** `TestResult` du héros MARCHANDEUR reconstruit depuis son étape de cascade. La valeur portée en
+ *  `base` est la Compétence NUE (`supportSplit` défait le Soutien fondu dans `step.base` par
+ *  `rollSeam`) — LDB 12 l.189-190 / l.160 : c'est elle que `resolveOpposed` compare à DR égal.
+ *  SOURCE UNIQUE des deux appliers de Marchandage portuaire (achat + vente). */
+function bargainHeroTR(step: CascadeStep): TestResult {
+  const r = step.result!;
+  const nue = step.base != null ? supportSplit(step.base, step.support).base : undefined;
+  return { roll: r.roll, target: r.target, ...(nue != null ? { base: nue } : {}), success: r.success, sl: r.sl, isDouble: false };
+}
+
 const PORT_BUY_BARGAIN_KIND = 'port-buy-bargain';
 registerCascadeApplier(PORT_BUY_BARGAIN_KIND, (get, set, step) => {
   if (!step.result) return {};
@@ -212,16 +223,14 @@ registerCascadeApplier(PORT_BUY_BARGAIN_KIND, (get, set, step) => {
   const merchantNegotiator = !!step.meta?.merchantNegotiator;
   const sellerDR = Number(step.meta?.sellerDR ?? 0);
   const actor = step.actorId ? actorIn(get(), step.actorId) : undefined;
-  const heroTR: TestResult = { roll: step.result.roll, target: step.result.target, success: step.result.success, sl: step.result.sl, isDouble: false };
+  const heroTR: TestResult = bargainHeroTR(step);
   const merchantRoll = rollMerchantOpposition(merchantValue, battleRng());
-  const opp = resolveOpposed(heroTR, merchantRoll);
-  const buyerSL = opp.attacker.sl;
-  const npcSL = opp.defender.sl + sellerDR; // +DR du vendeur NPC (l.339-341)
-  const buyerWins = buyerSL > npcSL || (buyerSL === npcSL && heroTR.target > merchantRoll.target);
-  const netSL = Math.abs(buyerSL - npcSL);
+  // +DR du vendeur NPC (l.339-341) porté AVANT le départage : `resolveOpposed` reste le seul juge.
+  const opp = resolveOpposed(heroTR, bumpSL(merchantRoll, sellerDR));
+  const netSL = opp.netSL;
   let pct = 0; // % appliqué au prix (négatif = remise pour l'acheteur)
-  if (buyerWins) pct = -bargainPct(actor ? hasBargainBonus(actor) : false, netSL); // remise à l'acheteur
-  else if (npcSL > buyerSL) pct = bargainPct(merchantNegotiator, netSL); // le vendeur monte le prix
+  if (opp.winner === 'attacker') pct = -bargainPct(actor ? hasBargainBonus(actor) : false, netSL); // remise à l'acheteur
+  else if (opp.winner === 'defender') pct = bargainPct(merchantNegotiator, netSL); // le vendeur monte le prix
   const bargainLine = `${actor?.label ?? '?'} — Marchandage (${heroTR.roll} vs ${merchantRoll.roll}${sellerDR ? `, vendeur +${sellerDR} DR` : ''}) : ${pct === 0 ? 'prix inchangé' : pct < 0 ? `remise de ${-pct} %` : `surcoût de ${pct} %`}.`;
   return { consequences: freeCons(finalizePortBuy(get, set, cargoId, want, basePrice, pct, bargainLine)) };
 });
@@ -290,16 +299,14 @@ registerCascadeApplier(PORT_SELL_BARGAIN_KIND, (get, set, step) => {
   const merchantNegotiator = !!step.meta?.merchantNegotiator;
   const sellerDR = Number(step.meta?.sellerDR ?? 0);
   const actor = step.actorId ? actorIn(get(), step.actorId) : undefined;
-  const heroTR: TestResult = { roll: step.result.roll, target: step.result.target, success: step.result.success, sl: step.result.sl, isDouble: false };
+  const heroTR: TestResult = bargainHeroTR(step);
   const merchantRoll = rollMerchantOpposition(merchantValue, battleRng());
-  const opp = resolveOpposed(heroTR, merchantRoll);
-  const sellerSL = opp.attacker.sl + sellerDR; // +DR du vendeur PJ (l.389-397)
-  const buyerSL = opp.defender.sl;
-  const sellerWins = sellerSL > buyerSL || (sellerSL === buyerSL && heroTR.target > merchantRoll.target);
-  const netSL = Math.abs(sellerSL - buyerSL);
+  // +DR du vendeur PJ (l.389-397) porté AVANT le départage : `resolveOpposed` reste le seul juge.
+  const opp = resolveOpposed(bumpSL(heroTR, sellerDR), merchantRoll);
+  const netSL = opp.netSL;
   let bargainPctVal = 0;
-  if (sellerWins) bargainPctVal = bargainPct(actor ? hasBargainBonus(actor) : false, netSL); // le PJ monte le prix
-  else if (buyerSL > sellerSL) bargainPctVal = -bargainPct(merchantNegotiator, netSL); // l'acheteur le baisse
+  if (opp.winner === 'attacker') bargainPctVal = bargainPct(actor ? hasBargainBonus(actor) : false, netSL); // le PJ monte le prix
+  else if (opp.winner === 'defender') bargainPctVal = -bargainPct(merchantNegotiator, netSL); // l'acheteur le baisse
   const bargainLine = `${actor?.label ?? '?'} — Marchandage (${heroTR.roll} vs ${merchantRoll.roll}${sellerDR ? `, vendeur ${sellerDR > 0 ? '+' : ''}${sellerDR} DR` : ''}) : ${bargainPctVal === 0 ? 'sans effet' : bargainPctVal > 0 ? `+${bargainPctVal} %` : `${bargainPctVal} %`}.`;
   return { consequences: freeCons([finalizePortSale(get, set, cargoIndex, sellEnc, offerPct, bargainPctVal, bargainLine)]) };
 });

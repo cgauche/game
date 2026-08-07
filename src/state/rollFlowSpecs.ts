@@ -224,10 +224,21 @@ function crewRoleFlowSpec<P extends import('./rollFlowFactory').PendingBase & { 
 
 /** Une Activité/Scène de bataille est-elle GAGNÉE ? Test COMBINÉ (l.75/102) : `full` seulement — un
  *  `partial` (skill-1 réussie mais skill-2 ratée) est un ÉCHEC GLOBAL RAW (LDB 12 l.206). Tenue (l.161,
- *  Test opposé) et cas simple → le `success` du résolveur (opposition `enemySL ≤ 0` / réussite numérique).
+ *  Test opposé) et cas simple → le `success` du résolveur (tenue : `holdVerdict` / réussite numérique).
  *  Gouverne le GARDE de la Résilience (rien à forcer si déjà gagné), en écho au `failed` du flux `activity`. */
 function activityWon(p: PendingActivity): boolean {
   return p.combinedLevel != null ? p.combinedLevel === 'full' : p.success;
+}
+
+/** Verdict du Test OPPOSÉ de « Tenez votre position » (ADE II 8 l.161 : « l'ennemi effectue un Test
+ *  opposé contre les Personnages ») : `resolveOpposed` est le SEUL juge (LDB 12 l.160) entre le jet du
+ *  PJ et le jet FIGÉ de l'ennemi. `held` = l'ennemi ne l'emporte pas ; `enemySL` = DR net de l'ennemi
+ *  (positif = il progresse), cumulé en Point de rupture. SOURCE UNIQUE des trois sites (1ᵉʳ jet, dé
+ *  choisi, Chance « +1 DR »). */
+function holdVerdict(o: { target: number; roll: number; sl: number; success: boolean; enemyRoll: number; enemyValue: number }): { held: boolean; enemySL: number } {
+  const et = evaluateTest(o.enemyRoll, o.enemyValue);
+  const opp = resolveOpposed({ roll: o.roll, target: o.target, success: o.success, sl: o.sl, isDouble: false }, et);
+  return { held: opp.winner !== 'defender', enemySL: et.sl - o.sl };
 }
 
 // ── Fabriques d'ISSUE CANONIQUE (cf. `TestOutcome`) — les DEUX formes récurrentes, écrites UNE fois.
@@ -484,7 +495,7 @@ export const FLOWS = {
         // Dé PAR DÉFAUT : « vous choisissez le résultat » (LDB 17 l.68) = LE MEILLEUR (`bestForcedRoll`,
         // policy-aware), jamais le dé raté courant. Test opposé : « vous l'emportez avec au moins DR +1 ».
         const aDie = bestForcedRoll(ad.target);
-        const atk2 = forcedTR(aDie, ad.target, Math.max(evaluateTest(aDie, ad.target).sl, opposedForcedFloor(defSL, false)));
+        const atk2 = forcedTR(aDie, ad.target, Math.max(evaluateTest(aDie, ad.target).sl, opposedForcedFloor(defSL, false)), ad.base);
         return { result: rederiveAttack(actor, target, p, atk2, s.battle?.combatants) };
       }
       const r = resolveAttack(get, actor, target, p.location ?? undefined, p.fromCharge, p.intoCrowd, p.heldGround, p.weaponUid, p.withhold);
@@ -520,7 +531,7 @@ export const FLOWS = {
         // `tr.success` = issue RÉELLE du dé renversé (le jeton, libre, peut ne PAS convertir un échec
         // — ni forcer un succès, `forcedTR`) ; seule la voie Talent (gate stricte échec→succès dans
         // `applyReverse`) garantit `tr.success:true` par construction.
-        const atk2 = hydrateTR({ roll: tr.roll, target: ad.target, success: tr.success, sl: tr.sl });
+        const atk2 = hydrateTR({ roll: tr.roll, target: ad.target, base: ad.base, success: tr.success, sl: tr.sl });
         return { result: rederiveAttack(actor, target, p, atk2, s.battle?.combatants) };
       },
     },
@@ -592,7 +603,7 @@ export const FLOWS = {
         // policy-aware), jamais le dé raté courant. Le plancher est celui de `opposedForcedFloor` : la
         // garantie (LDB 17 l.68) si elle vit encore, RIEN si elle est annulée (#1000).
         const dDie = bestForcedRoll(p.def.target);
-        const def2 = forcedTR(dDie, p.def.target, Math.max(evaluateTest(dDie, p.def.target).sl, opposedForcedFloor(p.atk.sl, cancelled)));
+        const def2 = forcedTR(dDie, p.def.target, Math.max(evaluateTest(dDie, p.def.target).sl, opposedForcedFloor(p.atk.sl, cancelled)), p.def.base);
         return { def: def2, result: finishDefenseResult(attacker, actor, pForced, def2, 0, undefined, mpt) };
       }
       // Neige −20 + cavalier −20 (LDB 14 l.115-116/225) ; Rapide : −10 à la parade d'une arme non-Rapide (LDB 62 l.320).
@@ -624,7 +635,7 @@ export const FLOWS = {
       applyRoll: (s, p, actor, _get, tr) => {
         const attacker = actorIn(s, p.attackerId); if (!attacker) return null;
         // `tr.success` = issue RÉELLE du dé renversé (voir attack.reverse.applyRoll — jamais forcé).
-        const def2 = hydrateTR({ roll: tr.roll, target: p.def!.target, success: tr.success, sl: tr.sl });
+        const def2 = hydrateTR({ roll: tr.roll, target: p.def!.target, base: p.def!.base, success: tr.success, sl: tr.sl });
         const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
         return { def: def2, result: finishDefenseResult(attacker, actor, p, def2, 0, parry, sceneMetresPerTile(s.scene)) };
       },
@@ -749,7 +760,7 @@ export const FLOWS = {
         // puis planché : Test opposé → l'emporter d'au moins DR +1, minimum 1 (LDB 17 l.68).
         const nat = withCastTestDRMods(actor, 'dissipation', evaluateTest(roll, value));
         const sl = Math.max(nat.sl, cur?.counter.sl ?? 1, castT.sl + 1, 1);
-        const counterT = forcedTR(roll, value, sl);
+        const counterT = forcedTR(roll, value, sl, value);
         return { result: counterspellOutcomeFrom(actor, counterT, castT) };
       }
       return { result: resolveCounterspell(actor, castT, battleRng(), {}, soutien) };
@@ -812,7 +823,7 @@ export const FLOWS = {
         // Résistance (Magie), LDB 10 l.1015-1021 : le Test pour résister au Sort réussit d'office —
         // la cible RÉSISTE (interprétation : « réussir le Test pour résister » = l'opposition est
         // tenue), DR imposé = Bonus d'Endurance (nourrit la marge).
-        const oppose = forcedTR(1, oppVal, forced.sl); // dé 01 → double=false → identique à l'ancien littéral
+        const oppose = forcedTR(1, oppVal, forced.sl, oppVal); // dé 01 → double=false → identique à l'ancien littéral
         return { result: { oppose, resisted: true, margin: Math.max(0, castT.sl - forced.sl) } };
       }
       if (forced) {
@@ -820,7 +831,7 @@ export const FLOWS = {
         const cur = part.result;
         const roll = cur ? cur.oppose.roll : 1; // 01 = jet propre garanti (LDB 17 l.68)
         const sl = Math.max(cur?.oppose.sl ?? 1, castT.sl + 1, 1);
-        const oppose = forcedTR(roll, oppVal, sl);
+        const oppose = forcedTR(roll, oppVal, sl, oppVal);
         return { result: { oppose, resisted: true, margin: Math.max(0, castT.sl - sl) } };
       }
       const oppose = rollTest(oppVal, 'intermediaire', battleRng());
@@ -848,7 +859,7 @@ export const FLOWS = {
         if (!pcCast) return null;
         const castT = castTestOf(pcCast);
         const sl = Math.max(tr.sl, castT.sl + 1, 1);
-        const oppose = forcedTR(tr.roll, tr.target, sl);
+        const oppose = forcedTR(tr.roll, tr.target, sl, tr.base);
         return { result: { oppose, resisted: true, margin: Math.max(0, castT.sl - sl) } };
       },
     },
@@ -984,7 +995,7 @@ export const FLOWS = {
         // `bonusSL` (Piège-lame, LDB 62 l.280) s'AJOUTE en plus au DR du défenseur dans l'opposition (pas au
         // `sl` reporté, qui reste le DR propre +1).
         if (opp) {
-          const def2 = bumpSL(hydrateTR({ roll: st.result.roll, target: st.target!, success: st.result.success, sl: st.result.sl }));
+          const def2 = bumpSL(hydrateTR({ roll: st.result.roll, target: st.target!, base: st.base, success: st.result.success, sl: st.result.sl }));
           const o = resolveOpposed(opp.aT, bumpSL(def2, opp.bonusSL ?? 0));
           return { result: { roll: def2.roll, target: st.target!, sl: def2.sl, success: o.winner !== 'attacker' } };
         }
@@ -1526,8 +1537,8 @@ export const FLOWS = {
           return { roll: c.roll, sl: c.a.sl, success: c.a.success, sl2: c.b.sl, success2: c.b.success, combinedLevel: c.level };
         }
         if (p.battle === 'round' && p.enemyValue != null && p.enemyRoll != null) {
-          const et = evaluateTest(p.enemyRoll, p.enemyValue);
-          return { roll: tr.roll, sl: tr.sl, success: tr.sl >= et.sl, enemySL: et.sl - tr.sl };
+          const v = holdVerdict({ target: p.target, roll: tr.roll, sl: tr.sl, success: tr.success, enemyRoll: p.enemyRoll, enemyValue: p.enemyValue });
+          return { roll: tr.roll, sl: tr.sl, success: v.held, enemySL: v.enemySL };
         }
         return { roll: tr.roll, target: tr.target, sl: tr.sl, success: tr.success };
       },
@@ -1579,12 +1590,12 @@ export const FLOWS = {
         return { roll: c.roll, sl: c.a.sl, success: c.a.success, sl2: c.b.sl, success2: c.b.success, combinedLevel: c.level };
       }
       // Test OPPOSÉ de « Tenez votre position » (l.161) : le PJ jette (`p.target` = mod fondu), l'ennemi a un
-      // jet FIGÉ. Le DR net de l'ennemi (`enemySL`, positif = l'ennemi progresse) alimente le Point de rupture
-      // à la résolution ; `success` = le PJ TIENT (son DR ≥ celui de l'ennemi ⟺ `enemySL ≤ 0`).
+      // jet FIGÉ ; `holdVerdict` (→ `resolveOpposed`) tranche et donne le DR net de l'ennemi (`enemySL`,
+      // positif = l'ennemi progresse) qui alimente le Point de rupture à la résolution.
       if (p.battle === 'round' && p.enemyValue != null && p.enemyRoll != null) {
         const pt = evaluateTest(d100(battleRng()), p.target);
-        const et = evaluateTest(p.enemyRoll, p.enemyValue);
-        return { roll: pt.roll, sl: pt.sl, success: pt.sl >= et.sl, enemySL: et.sl - pt.sl };
+        const v = holdVerdict({ target: p.target, roll: pt.roll, sl: pt.sl, success: pt.success, enemyRoll: p.enemyRoll, enemyValue: p.enemyValue });
+        return { roll: pt.roll, sl: pt.sl, success: v.held, enemySL: v.enemySL };
       }
       // Simple : d100 vs la cible EFFECTIVE (mod inclus) — renseigne `p.target` (interlude) sans jamais
       // l'écraser par une cible SANS mod (fin du « Menace relâchée » des Scènes simples).
@@ -1604,11 +1615,12 @@ export const FLOWS = {
           const passed = (p.success ? 1 : 0) + (p.success2 ? 1 : 0);
           return { sl: p.sl + 1, combinedLevel: passed === 2 ? 'full' as const : passed === 1 ? 'partial' as const : 'fail' as const };
         }
-        // Tenue (Test OPPOSÉ) : +1 DR au PJ réduit d'autant le DR net de l'ennemi ; l'issue se RE-DÉRIVE de la
-        // marge (`success = enemySL ≤ 0`) — cohérente avec `enemySL` ET `applyHoldResolution` (massBattleFlow).
-        if (p.battle === 'round' && p.enemyValue != null) {
-          const enemySL = (p.enemySL ?? 0) - 1;
-          return { sl: p.sl + 1, success: enemySL <= 0, enemySL };
+        // Tenue (Test OPPOSÉ) : +1 DR au PJ réduit d'autant le DR net de l'ennemi ; l'issue se RE-DÉRIVE
+        // par le MÊME juge que le 1ᵉʳ jet (`holdVerdict` → `resolveOpposed`), jamais par une 2ᵉ règle.
+        if (p.battle === 'round' && p.enemyValue != null && p.enemyRoll != null) {
+          const sl = p.sl + 1;
+          const v = holdVerdict({ target: p.target, roll: p.roll ?? 0, sl, success: p.success, enemyRoll: p.enemyRoll, enemyValue: p.enemyValue });
+          return { sl, success: v.held, enemySL: v.enemySL };
         }
         // Simple : +1 DR, `success` INTACT (bumpSL ; LDB 17 l.84).
         return { sl: p.sl + 1 };
@@ -1660,7 +1672,7 @@ export const FLOWS = {
         if (p.success) return null; // déjà réussi → rien à forcer
         const target = p.roll?.target ?? p.skillValue + DIFFICULTY_MODIFIERS[p.difficulty]; // cible effective (cf. rollTest)
         const die = bestForcedRoll(target); // dé DR-MAX policy-aware (JAMAIS 01 en dur)
-        const actorT = forcedTR(die, target, Math.max(evaluateTest(die, target).sl, p.requireSl ?? 1, 1));
+        const actorT = forcedTR(die, target, Math.max(evaluateTest(die, target).sl, p.requireSl ?? 1, 1), p.skillValue);
         if (p.opposed && p.opponentRoll) {
           const opp = resolveOpposed(actorT, p.opponentRoll); // re-oppose vs la source FIGÉE
           return { roll: actorT, netSL: Math.max(1, opp.netSL), success: true }; // l'emporte (DR +1 mini)
@@ -1830,7 +1842,7 @@ export const FLOWS = {
       resilience: (_s, p, _a, _g, tr) => {
         if (p.merchantRoll == null) return null;
         const result = resolveOpposed(tr, p.merchantRoll);
-        return { roll: tr, result: { ...result, winner: 'attacker' as const, attackerWins: true, netSL: Math.max(1, result.netSL) } };
+        return { roll: tr, result: { ...result, winner: 'attacker' as const, attackerWins: true, netSL: Math.max(1, result.netSL), decidedBy: 'force' as const } };
       },
     },
     rolled: (p) => p.roll != null,
@@ -1845,10 +1857,10 @@ export const FLOWS = {
         if (p.merchantRoll == null) return null; // pas de jet marchand figé (avant le 1er Lancer) → rien à opposer
         const target = p.roll?.target ?? p.playerSkill + DIFFICULTY_MODIFIERS.intermediaire; // cible effective (cf. rollTest)
         const die = bestForcedRoll(target); // dé DR-MAX policy-aware (JAMAIS 01 en dur)
-        const player = forcedTR(die, target, Math.max(evaluateTest(die, target).sl, 1));
+        const player = forcedTR(die, target, Math.max(evaluateTest(die, target).sl, 1), p.playerSkill);
         const result = resolveOpposed(player, p.merchantRoll); // re-oppose vs le marchand FIGÉ
         // Résilience = le joueur l'emporte d'au moins un Degré (LDB 17 l.68).
-        return { roll: player, result: { ...result, winner: 'attacker' as const, attackerWins: true, netSL: Math.max(1, result.netSL) } };
+        return { roll: player, result: { ...result, winner: 'attacker' as const, attackerWins: true, netSL: Math.max(1, result.netSL), decidedBy: 'force' as const } };
       }
       const player = rollTest(p.playerSkill, 'intermediaire');
       const merchant = rollTest(p.merchantValue, 'intermediaire');

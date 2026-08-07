@@ -3079,7 +3079,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
     const pb = useGame.getState().pendingBargain!;
     const win = { roll: 10, target: 40, success: true, sl: 3, isDouble: false };
     const lose = { roll: 80, target: 45, success: false, sl: -3, isDouble: false };
-    useGame.setState({ pendingBargain: { ...pb, roll: win, merchantRoll: lose, result: { attacker: win, defender: lose, winner: 'attacker', attackerWins: true, netSL: 6 } } });
+    useGame.setState({ pendingBargain: { ...pb, roll: win, merchantRoll: lose, result: { attacker: win, defender: lose, winner: 'attacker', attackerWins: true, netSL: 6, decidedBy: 'dr' } } });
     useGame.getState().bargainConfirm();
     expect(useGame.getState().pendingBargain).toBeNull();
     expect(useGame.getState().merchant!.bargainBuy).toEqual({ won: true, drNet: 6, negotiator: false });
@@ -3097,7 +3097,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
     const pb = useGame.getState().pendingBargain!;
     const lose = { roll: 90, target: 40, success: false, sl: -5, isDouble: false };
     const win = { roll: 10, target: 45, success: true, sl: 3, isDouble: false };
-    useGame.setState({ pendingBargain: { ...pb, roll: lose, merchantRoll: win, result: { attacker: lose, defender: win, winner: 'defender', attackerWins: false, netSL: 8 } } });
+    useGame.setState({ pendingBargain: { ...pb, roll: lose, merchantRoll: win, result: { attacker: lose, defender: win, winner: 'defender', attackerWins: false, netSL: 8, decidedBy: 'dr' } } });
     useGame.getState().bargainConfirm();
     expect(useGame.getState().merchant!.soured).toBe(true);
     useGame.getState().startBargain('sell'); // marchand méfiant → toute négociation bloquée

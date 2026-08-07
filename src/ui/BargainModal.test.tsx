@@ -39,6 +39,7 @@ describe('BargainModal (#2c)', () => {
         winner: 'attacker',
         attackerWins: true,
         netSL: 4,
+        decidedBy: 'dr',
       },
     };
     const html = renderToStaticMarkup(

@@ -17,10 +17,10 @@
 import { battleRng } from './battleRng';
 import { placeOfScene } from './worldMap';
 import { dayIndex } from './upkeep';
-import { partyAssisted, partyBest, testValue } from '../engine/skills';
-import { opposedTest, SL_ASTOUNDING, difficultyFromModifier } from '../engine/tests';
+import { partyAssisted, partyBest, testValue, supportSplit } from '../engine/skills';
+import { opposedTest, resolveOpposed, SL_ASTOUNDING, difficultyFromModifier, type OpposedResult } from '../engine/tests';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
-import { d100 } from '../engine/dice';
+import { d100, type RNG } from '../engine/dice';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { registerCascadeApplier } from './cascade';
 import { openPartyTest, freeCons } from './rollSeam';
@@ -212,6 +212,15 @@ function bargainPct(winnerNegotiator: boolean, netSL: number): number {
   return winnerNegotiator || netSL >= SL_ASTOUNDING ? 20 : 10;
 }
 
+/** Marchandage OPPOSÉ terrestre (MSRC 13 l.127) : les deux camps jettent, puis `resolveOpposed` est le
+ *  SEUL juge (LDB 12 l.160) — le meneur y oppose sa Compétence NUE, `supportSplit` défaisant le Soutien
+ *  que `partyAssisted` a fondu dans sa valeur de jet (LDB 12 l.189-190). SOURCE UNIQUE des deux sites
+ *  (achat + vente) : plus aucun départage artisanal par `>` au call-site. */
+function bargainOpposed(best: NonNullable<ReturnType<typeof partyAssisted>>, merchant: number, rng: RNG): OpposedResult {
+  const rolled = opposedTest(best.value, merchant, rng, 'intermediaire', 'intermediaire');
+  return resolveOpposed({ ...rolled.attacker, base: supportSplit(best.value, best.support).base }, rolled.defender);
+}
+
 /** ACHAT d'une cargaison (MSRC 13 l.129-131) : prix = Enc × prix de base, modulé par le Marchandage opposé et
  *  majoré de +10 % si LOT PARTIEL (l.131). Débité, CHARGÉ sur le porteur de défaut du groupe (navire /
  *  véhicule / bête, `primaryCargoCarrier`) dans la limite de sa Contenance (plafond DUR, #327). */
@@ -235,13 +244,10 @@ export function landBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   let pct = 0; // % appliqué au prix (négatif = remise pour l'acheteur)
   let bargainLine = 'Aucun marchandeur dans le groupe — prix plein.';
   if (best) {
-    const opp = opposedTest(best.value, merchant, rng, 'intermediaire', 'intermediaire');
-    const buyerSL = opp.attacker.sl;
-    const npcSL = opp.defender.sl;
-    const buyerWins = buyerSL > npcSL || (buyerSL === npcSL && best.value > merchant);
-    const netSL = Math.abs(buyerSL - npcSL);
-    if (buyerWins) pct = -bargainPct(hasBargainBonus(best.actor), netSL); // remise à l'acheteur
-    else if (npcSL > buyerSL) pct = bargainPct(false, netSL); // le marchand monte le prix
+    const opp = bargainOpposed(best, merchant, rng);
+    const netSL = opp.netSL;
+    if (opp.winner === 'attacker') pct = -bargainPct(hasBargainBonus(best.actor), netSL); // remise à l'acheteur
+    else if (opp.winner === 'defender') pct = bargainPct(false, netSL); // le marchand monte le prix
     bargainLine = `${best.actor.label} — Marchandage (${opp.attacker.roll} vs ${opp.defender.roll}) : ${pct === 0 ? 'prix inchangé' : pct < 0 ? `remise de ${-pct} %` : `surcoût de ${pct} %`}.`;
   }
   // Lot PARTIEL (l.131) : acheter moins que le stock du marchand → +10 % par 10 Enc sur le prix de base.
@@ -293,13 +299,10 @@ export function landSellCargo(get: Get, set: Set, carrierId: string, cargoIndex:
   let bargainPctVal = 0;
   let bargainLine = 'Aucun marchandeur — mise à prix prise telle quelle.';
   if (best) {
-    const opp = opposedTest(best.value, merchant, rng, 'intermediaire', 'intermediaire');
-    const sellerSL = opp.attacker.sl;
-    const buyerSL = opp.defender.sl;
-    const sellerWins = sellerSL > buyerSL || (sellerSL === buyerSL && best.value > merchant);
-    const netSL = Math.abs(sellerSL - buyerSL);
-    if (sellerWins) bargainPctVal = bargainPct(hasBargainBonus(best.actor), netSL); // le PJ monte le prix
-    else if (buyerSL > sellerSL) bargainPctVal = -bargainPct(false, netSL); // l'acheteur le baisse
+    const opp = bargainOpposed(best, merchant, rng);
+    const netSL = opp.netSL;
+    if (opp.winner === 'attacker') bargainPctVal = bargainPct(hasBargainBonus(best.actor), netSL); // le PJ monte le prix
+    else if (opp.winner === 'defender') bargainPctVal = -bargainPct(false, netSL); // l'acheteur le baisse
     bargainLine = `${best.actor.label} — Marchandage (${opp.attacker.roll} vs ${opp.defender.roll}) : ${bargainPctVal === 0 ? 'sans effet' : bargainPctVal > 0 ? `+${bargainPctVal} %` : `${bargainPctVal} %`}.`;
   }
   // Rumeur commerciale (l.180) : une rumeur du board visant CE Lieu et CE bien le fait vendre au DOUBLE du

@@ -179,9 +179,11 @@ describe('Sur la défensive (+20 en défense, LDB Combat l.118)', () => {
       ...opts,
     }) as unknown as Combatant;
   it('un défenseur sur la défensive est plus dur à toucher (même jet)', () => {
+    // Le +20 se mesure sur le DR de la défense (l.118), jamais sur un départage d'égalité : à CC 40,
+    // le défenseur passe de DR 0 (cible 40) à DR 2 (cible 60) sur le même dé, et dépasse l'attaquant.
     const atk = mk(50);
-    const open = mk(30); // Parade = CC 30
-    const guard = mk(30, { defensiveStance: true }); // +20 → 50
+    const open = mk(40); // Parade = CC 40
+    const guard = mk(40, { defensiveStance: true }); // +20 → 60
     expect(resolveMelee(atk, open, atk.weapons[0], rngOf(40), { defense: 'parade' }).hit).toBe(true);
     expect(resolveMelee(atk, guard, atk.weapons[0], rngOf(40), { defense: 'parade' }).hit).toBe(false);
   });
@@ -439,20 +441,56 @@ describe('Difficulté (canon : Accessible/Complexe/Difficile)', () => {
   });
 });
 
-describe('Test opposé (départage canon)', () => {
-  it('égalité de DR : la valeur cible la plus haute l’emporte (sans priorité attaquant)', () => {
-    const att = evaluateTest(13, 45); // sl = 4 - 1 = 3, cible 45
-    const def = evaluateTest(23, 55); // sl = 5 - 2 = 3, cible 55 > 45
+describe('Test opposé (départage canon, LDB 12 l.160)', () => {
+  it('égalité de DR : la Compétence NUE la plus haute l’emporte, pas la cible modifiée', () => {
+    // Compétence 45 sous Difficile (−20) → cible 25 ; Compétence 30 sous Facile (+40) → cible 70.
+    const att = evaluateTest(21, 25, 45); // DR 0
+    const def = evaluateTest(70, 70, 30); // DR 0
     const r = resolveOpposed(att, def);
     expect(att.sl).toBe(def.sl);
-    expect(r.winner).toBe('defender'); // cible 55 > 45 l'emporte
+    expect(r.winner).toBe('attacker');
+    expect(r.decidedBy).toBe('valeur');
   });
-  it('DR ET valeur cible égaux → statu quo (tie), aucun vainqueur', () => {
-    const att = evaluateTest(23, 45); // sl 2, cible 45
-    const def = evaluateTest(21, 45); // sl 2, cible 45
+  it('égalité de DR : à valeurs nues égales, la cible modifiée ne départage PAS → tie', () => {
+    const att = evaluateTest(21, 25, 45); // Compétence 45, cible 25
+    const def = evaluateTest(41, 45, 45); // Compétence 45, cible 45 — même DR
+    const r = resolveOpposed(att, def);
+    expect(att.sl).toBe(def.sl);
+    expect(r.winner).toBe('tie');
+    expect(r.decidedBy).toBe('egalite');
+    expect(r.attackerWins).toBe(false);
+  });
+  it('DR ET valeur nue égaux → statu quo (tie), aucun vainqueur', () => {
+    const att = evaluateTest(23, 45, 45); // DR 2
+    const def = evaluateTest(21, 45, 45); // DR 2
     const r = resolveOpposed(att, def);
     expect(r.winner).toBe('tie');
+    expect(r.decidedBy).toBe('egalite');
     expect(r.attackerWins).toBe(false);
+  });
+  it('DR différents : le DR tranche, le départage par la valeur nue ne s’active jamais', () => {
+    const att = evaluateTest(13, 45, 45); // DR 3
+    const def = evaluateTest(31, 55, 90); // DR 2, Compétence nue 90 (la plus haute)
+    const r = resolveOpposed(att, def);
+    expect(att.sl).toBeGreaterThan(def.sl);
+    expect(r.winner).toBe('attacker');
+    expect(r.decidedBy).toBe('dr');
+  });
+  it('valeur nue ABSENTE des deux côtés (jet réhydraté) : la cible sert de repli', () => {
+    const att = evaluateTest(13, 45);
+    const def = evaluateTest(23, 55);
+    const r = resolveOpposed(att, def);
+    expect(att.sl).toBe(def.sl);
+    expect(r.winner).toBe('defender');
+    expect(r.decidedBy).toBe('valeur');
+  });
+  it('valeur nue d’UN SEUL côté : tout-ou-rien — on compare les deux CIBLES, jamais nue vs cible', () => {
+    const att = evaluateTest(21, 25, 45); // Compétence nue 45, cible 25
+    const def = evaluateTest(70, 70);     // réhydraté sans valeur nue, cible 70
+    const r = resolveOpposed(att, def);
+    expect(att.sl).toBe(def.sl);
+    expect(r.winner).toBe('defender'); // cible 70 > cible 25 — la nue 45 n'affronte pas une cible
+    expect(r.decidedBy).toBe('valeur');
   });
 });
 

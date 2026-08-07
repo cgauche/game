@@ -40,3 +40,28 @@ describe('#1000 — plancher de la garantie (LDB 17 l.68) : jamais en dessous de
     expect(bargainForcedSL(3)).toBe(4);
   });
 });
+
+describe('Victoire IMPOSÉE : le critère de départage la NOMME (`decidedBy: force`)', () => {
+  /** Même sonde, mais on lit le CRITÈRE porté par l'issue au lieu du DR. */
+  function bargainForcedDecidedBy(merchantSL: number, chooseDie: boolean): string {
+    const hero = { id: 'H', label: 'H', name: 'H', kind: 'hero', resilience: 5, fortune: 0, characteristics: {}, skills: [], talents: [], weapons: [], items: [], conditions: [] } as unknown as Combatant;
+    useGame.setState({
+      party: [hero],
+      pendingBargain: {
+        playerId: 'H', merchantId: 'm', playerSkill: 45,
+        merchantRoll: TR(20, 50, merchantSL, merchantSL >= 0), roll: TR(45, 45, 0),
+      },
+    } as never);
+    useGame.getState().bargainForceSuccess();
+    if (chooseDie) useGame.getState().bargainSetForcedRoll(41);
+    return useGame.getState().pendingBargain!.result!.decidedBy;
+  }
+
+  it('Résilience (dé par défaut) : la victoire est imposée, aucun DR ne l’a tranchée', () => {
+    expect(bargainForcedDecidedBy(3, false)).toBe('force');
+  });
+
+  it('Résilience (dé CHOISI) : même critère — l’issue ne se réclame pas d’un départage joué', () => {
+    expect(bargainForcedDecidedBy(3, true)).toBe('force');
+  });
+});

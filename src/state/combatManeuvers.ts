@@ -534,7 +534,7 @@ registerCascadeApplier('maneuverDefense', (get, set, step, hero) => {
   }
   // L'attaquant l'emporte : on re-oppose le jet influencé du défenseur (reproduit `resolveOpposed` de la
   // cascade) pour la MARGE NETTE (RAW Regard : +1 DR/Avantage variable), puis on applique les effets.
-  const drow = hydrateTR({ roll: step.result.roll, target: step.result.target, success: step.result.roll <= step.result.target, sl: step.result.sl });
+  const drow = hydrateTR({ roll: step.result.roll, target: step.result.target, base: step.base, success: step.result.roll <= step.result.target, sl: step.result.sl });
   const margin = resolveOpposed(opp.aT, drow).netSL + (def.advantageMode === 'variable' ? md.spent : 0);
   const journal = applyManeuverEffects(get, set, attacker, def, hero, md.indice, margin, battleRng());
   syncManeuver();

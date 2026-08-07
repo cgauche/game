@@ -679,7 +679,7 @@ export function castLandProbability(caster: Combatant, spell: SpellLike, focused
   const ni = castingNumberOf(spell, focusedNI0, env, niMods, caster);
   let lands = 0;
   for (let r = 1; r <= 100; r++) {
-    const t = evaluateTest(r, value, policy);
+    const t = evaluateTest(r, value, value, policy);
     if (!t.success) continue;
     const dr = t.sl + delta + malepierreDR(Math.max(0, t.sl + delta), reserve);
     if (!info.requireNI || dr >= ni) lands++;

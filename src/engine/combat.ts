@@ -859,7 +859,7 @@ function combineOpposed(
     };
   }
   if (opp.winner === 'tie') {
-    // Égalité parfaite (DR et valeurs cibles) : statu quo, personne ne l'emporte.
+    // Statu quo (LDB 12 l.160) : personne ne l'emporte.
     return {
       hit: false,
       attackerRoll: atk.roll,
