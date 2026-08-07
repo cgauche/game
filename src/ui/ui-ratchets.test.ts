@@ -1085,6 +1085,27 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
     expect(barAt560).toMatch(/\[data-slot='end-turn'\]\s*\{[^}]*right:\s*0/);
   });
 
+  it('≤560 : la bande basse réserve la hauteur du dock ENGAGÉ (caméra et tiroir au-dessus)', () => {
+    const hudAt560 = mediaBlock(read('hud.css'), '@media (max-width: 560px)');
+    // Le dock de décision d'un tour engagé monte à 181px du bas (6px d'ancrage + 175px mesurés au
+    // navigateur, `scripts/recette/hud-clickables.mjs`). Toute surface posée plus bas passe SOUS lui
+    // et cesse de recevoir ses clics — la rangée de caméra calée sur le dock d'exploration (140px)
+    // était intégralement couverte (0/6 boutons à 560 comme à 360).
+    const bottomPx = (sel: string) => {
+      const rule = new RegExp(`\\${sel}\\s*\\{([^}]*)\\}`).exec(hudAt560);
+      const v = rule && /bottom:\s*(?:calc\()?\s*(\d+(?:\.\d+)?)px/.exec(rule[1]);
+      return v ? Number(v[1]) : null;
+    };
+    const tiroir = bottomPx('.log-drawer');
+    const camera = bottomPx('.view-controls');
+    expect(tiroir, 'le tiroir du journal ≤560 doit déclarer sa réserve du bas en px').not.toBeNull();
+    expect(camera, 'la rangée de caméra ≤560 doit déclarer sa réserve du bas en px').not.toBeNull();
+    expect(tiroir!).toBeGreaterThanOrEqual(181);
+    // La caméra s'empile AU-DESSUS du tiroir : sa réserve dépasse celle du tiroir de sa hauteur de
+    // bouton au doigt (44px, tranche `pointer: coarse`).
+    expect(camera!).toBeGreaterThanOrEqual(tiroir! + 44);
+  });
+
   it('pointeur grossier : les commandes de caméra offrent une cible de 44px', () => {
     const coarse = mediaBlock(read('hud.css'), '@media (pointer: coarse)');
     expect(coarse).toMatch(/\.vc-btn\s*\{[^}]*min-width:\s*44px/);

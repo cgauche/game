@@ -18,7 +18,8 @@ function countdownLabel(deadline: number, now: number): string {
 /**
  * Bandeau d'OBJECTIF courant (#238 « personne ne lit le journal ») — surface discrète mais TOUJOURS
  * visible en exploration, qui répond à « je fais quoi maintenant ? ». Affiche le plus récent objectif
- * de la pile `store.objectives` ; plusieurs → dépliable (chevron) pour voir toute la liste. Vide → rien.
+ * de la pile `store.objectives` ; plusieurs → tête BOUTON dépliable (`aria-expanded`) pour voir toute
+ * la liste, un seul → tête inerte (aucun contrôle à activer, donc aucun bouton). Vide → rien.
  * En combat, le bandeau est MASQUÉ par l'appelant (`CampaignView`) — l'écran tactique se réserve le HUD.
  * Pur à l'état (props nulles) : testé par `ObjectiveBanner.render`.
  */
@@ -27,24 +28,33 @@ export function ObjectiveBanner({ objectives, now }: { objectives: Objective[]; 
   if (!objectives.length) return null;
   const current = objectives[objectives.length - 1]; // le plus récent
   const rest = objectives.slice(0, -1);
+  const head = (
+    <>
+      <Icon id="map-tool/start-flag" size="sm" />
+      <span className="objective-text">{current.text}</span>
+      {current.deadline != null && (
+        <span className="objective-deadline" title={formatImperial(current.deadline)}>
+          {countdownLabel(current.deadline, now)}
+        </span>
+      )}
+      {rest.length > 0 && <span className="objective-count">+{rest.length}</span>}
+    </>
+  );
   return (
     <div className="objective-banner">
-      <button
-        type="button"
-        className="objective-head"
-        onClick={() => rest.length && setOpen((v) => !v)}
-        aria-expanded={rest.length ? open : undefined}
-        title={rest.length ? 'Objectifs — déplier' : undefined}
-      >
-        <Icon id="map-tool/start-flag" size="sm" />
-        <span className="objective-text">{current.text}</span>
-        {current.deadline != null && (
-          <span className="objective-deadline" title={formatImperial(current.deadline)}>
-            {countdownLabel(current.deadline, now)}
-          </span>
-        )}
-        {rest.length > 0 && <span className="objective-count">+{rest.length}</span>}
-      </button>
+      {rest.length > 0 ? (
+        <button
+          type="button"
+          className="objective-head"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          title="Objectifs — déplier"
+        >
+          {head}
+        </button>
+      ) : (
+        <div className="objective-head">{head}</div>
+      )}
       {open && rest.length > 0 && (
         <ul className="objective-list">
           {[...rest].reverse().map((o) => (

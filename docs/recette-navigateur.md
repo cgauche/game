@@ -454,6 +454,22 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
 - **Refs Playwright PÉRIMÉES après un `await`** : après tout `await __wfrp.xxx()` (ou tout clic qui
   déclenche de l'async), RE-SNAPSHOTER avant de cliquer — jamais réutiliser une ref d'un snapshot
   antérieur (échec « ref not found » sinon).
+- **Une ref de snapshot se cible en `aria-ref=eNNNN`, jamais `ref=eNNNN`** : `browser_click` (et les
+  autres outils MCP Playwright génériques) prend un sélecteur — `ref=e123` est rejeté (« Unknown
+  engine "ref" »), la forme acceptée est `aria-ref=e123`.
+- **`browser_resize` seul ne rend PAS le pointeur grossier** : la largeur change,
+  `matchMedia('(pointer: coarse)')` reste `false` — toute mesure de cible tactile faite ainsi juge le
+  mode fin. Émulation mesurée (recette 2026-08-07), nettoyage compris :
+  ```js
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Emulation.setEmitTouchEventsForMouse', { enabled: true, configuration: 'mobile' });
+  await cdp.send('Emulation.setDeviceMetricsOverride', { width: 560, height: 900, deviceScaleFactor: 1, mobile: true });
+  // … mesures …
+  await cdp.send('Emulation.clearDeviceMetricsOverride');
+  await cdp.send('Emulation.setEmitTouchEventsForMouse', { enabled: false });
+  ```
+  Au socle `scripts/recette/lib.mjs`, les mêmes commandes CDP passent par `session.rpc(...)`
+  (`setViewport`/`emulateReducedMotion` en usent déjà).
 - **Activer le siège MJ en SOLO** : menu ☰ en jeu → case « Contrôler aussi les ennemis / le monde
   (MJ) » (`GmSoloToggle`, `src/ui/CoopPanels.tsx`) — observable via `__wfrp` : `net.gmSeat` non nul.
   `__wfrp.gmSeat(true/false)` pose/retire le siège en SETUP (évite les clics répétés à chaque

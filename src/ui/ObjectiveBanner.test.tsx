@@ -34,9 +34,11 @@ describe('ObjectiveBanner', () => {
     expect(html).toContain('aria-expanded="false"');
   });
 
-  it('un seul objectif → aucun dépliage annoncé', () => {
+  it('un seul objectif → la tête n’est PAS un contrôle (aucun bouton, aucun dépliage annoncé)', () => {
     const html = renderToStaticMarkup(<ObjectiveBanner objectives={[{ id: 'a', text: 'Seul' }]} now={0} />);
+    expect(html).not.toContain('<button');
     expect(html).not.toContain('aria-expanded');
+    expect(html).toContain('class="objective-head"'); // la tête reste rendue, en surface inerte
   });
 
   it('deadline posée → puce de compte à rebours', () => {

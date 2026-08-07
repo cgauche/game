@@ -259,6 +259,17 @@ input[type='radio']:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
+/* Focus CLAVIER par DÉFAUT de tout contrôle interactif (#1135) — anneau `--gold2` DÉTACHÉ
+   (outline + offset), distinct du liseré `--gold` 1px qui marque l'option RETENUE (`.set-card.active`,
+   `.rm-die-input`) : le focus ne se lit plus comme une sélection. Même encre que les focus maison
+   déjà posés (`.talent-option`, `.creator-band-title-link`). Spécificité VOLONTAIREMENT nulle
+   (`:where`) : tout focus maison spécifique (anneau SVG de `MapCanvas`, `.btn`, `.talent-option`) prime
+   sans `!important`. Les descendants de `<svg>` sont exclus : en espace zoomé, l'outline encadre la
+   boîte du groupe entier et déborde le canevas (#372). */
+:where(button, [role='button'], select, summary, a[href], input, textarea, [tabindex='0']):where(:not(svg *)):focus-visible {
+  outline: 2px solid var(--gold2);
+  outline-offset: 2px;
+}
 html,
 body,
 #root {

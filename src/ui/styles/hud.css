@@ -278,7 +278,7 @@
   text-align: center;
 }
 /* Design 2026-07-31 §5. */
-.is-cell[data-phase='past'] { opacity: 0.34; filter: grayscale(0.8); }
+.is-cell[data-phase='past'] { opacity: 0.5; }
 /* LDB 13 l.40. */
 .is-score {
   position: absolute; top: -4px; left: -4px; z-index: 2;
@@ -416,10 +416,12 @@
 }
 
 /* ── Tiroir journal (bas-droite) ── */
+/* Au-dessus de 700px, le tiroir vit à DROITE du dock d'action : recouvrement nul mesuré à 900px
+   (dock x219-681, tiroir x846-888) — le calage vertical ne joue qu'aux tranches étroites. */
 .log-drawer {
   position: absolute;
   right: 12px;
-  bottom: 92px; /* au-dessus de la barre d'action — calibrer en recette */
+  bottom: 92px;
   z-index: 46;
   display: flex;
   flex-direction: column;
@@ -838,15 +840,17 @@
   }
   .is-cell { flex: 0 0 auto; }
   /* Le fil d'événements passe sous la bande d'initiative (le groupe, puis le round, puis le flux) :
-     le `top` se pose sous le BAS MESURÉ de la bande (84 + 78 = 162px, recette `hud-clickables.mjs`)
-     plus l'air — le message du flux et la frise n'ont aucune surface commune. */
-  .combat-feed { top: 172px; max-width: 94vw; }
+     le `top` se pose sous le BAS MESURÉ de la bande en combat ENGAGÉ (84 + 100 = 184px, recette
+     `hud-clickables.mjs`) plus l'air — le message du flux et la frise n'ont aucune surface commune. */
+  .combat-feed { top: 192px; max-width: 94vw; }
   .cb-ev { white-space: normal; text-align: center; } /* événements longs : retour à la ligne (pas de débord) */
   .modal-actions { flex-wrap: wrap; justify-content: center; }
   .party-dock { top: 6px; gap: 8px 10px; max-width: 92vw; }
   .party-dock figcaption { font-size: 10px; }
   .ptile-states { font-size: 10px; }
-  .log-drawer { right: 8px; bottom: 88px; }
+  /* Le dock de décision engagé monte à 131px du bas à cette largeur et prend presque toute la
+     ligne : à 88px le tiroir mordait 32×42px dessus. */
+  .log-drawer { right: 8px; bottom: 140px; }
 }
 @media (max-width: 560px) {
   /* Les quatre portraits restent sur UNE ligne : le dock ne s'enroule plus (un 2×2 poussait la
@@ -862,14 +866,17 @@
   /* Portraits compacts (design 2026-07-31 §12) : le nom sort de la VUE, jamais du DOM — il reste
      lisible au lecteur d'écran et en infobulle, et la rangée garde sa hauteur de tuile. */
   .party-dock figcaption { display: none; }
-  /* Les commandes de vue quittent le haut de l'écran pour la BANDE BASSE, en RANGÉE au-dessus du
-     tiroir du journal (`bottom: 88px` + sa hauteur de bouton + l'air). En haut à cette largeur elles
-     étaient couvertes soit par le dock centré, soit par la pile de contexte d'exploration, qui
-     s'enroule en colonne haute : aucun des six boutons ne recevait son clic (mesuré 0/6 à 360px).
-     En bande basse elles sont TOUTES atteignables et la frise récupère toute la largeur. */
+  /* BANDE BASSE, empilée au-dessus du dock de décision : dock, puis tiroir du journal, puis
+     commandes de vue. En haut de l'écran à cette largeur, les six boutons étaient couverts par le
+     dock du groupe ou par la pile de contexte d'exploration (mesuré 0/6 à 360px).
+     RÉSERVE DU BAS — mesurée en combat ENGAGÉ (`scripts/recette/hud-clickables.mjs`, dock à deux
+     rangées) : le dock monte à 181px du bas (6px d'ancrage + 175px de haut), le tiroir se pose à
+     190px et culmine à 234px (bouton de 44px au doigt), d'où 242px pour la rangée de caméra. Calée
+     sur les 140px d'exploration, elle passait ENTIÈREMENT sous le dock : 0/6 boutons cliquables. */
+  .log-drawer { bottom: calc(190px + env(safe-area-inset-bottom, 0px)); }
   .view-controls {
     top: auto;
-    bottom: 140px;
+    bottom: calc(242px + env(safe-area-inset-bottom, 0px));
     right: 4px;
     flex-direction: row;
     gap: 6px;
@@ -878,7 +885,7 @@
     top: 88px;
     right: 4px;
   }
-  .combat-feed { top: 184px; }
+  .combat-feed { top: 186px; } /* bande mesurée à 88 + 90 = 178px du haut, plus l'air */
   .objective-banner { max-width: 86vw; }
   .hud-topbar [data-hud='place'] { max-width: 52vw; font-size: 14px; }
   .rest-hero-line { grid-template-columns: auto minmax(0, 1fr) auto; }

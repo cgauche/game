@@ -109,12 +109,7 @@
   cursor: pointer;
   border-radius: 8px;
 }
-.rm-rolling:hover,
-.rm-rolling:focus-visible,
-.rm-scene:hover,
-.rm-scene:focus-visible {
-  outline: none;
-}
+/* Le fond clair marque le SURVOL ; au clavier il s'ajoute à l'anneau de focus partagé (base.css). */
 .rm-rolling:hover,
 .rm-rolling:focus-visible {
   background: rgba(255, 255, 255, 0.05);
@@ -282,9 +277,10 @@
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
+/* Le champ ACTIF s'allume au liseré `--gold` ; l'anneau de focus clavier partagé (base.css) reste
+   par-dessus, et distingue « je suis ici » de « valeur retenue ». */
 .rm-die-input:focus {
   border-color: var(--gold);
-  outline: none;
 }
 /* RANGÉE de jet (`.prow`, `RollRow`) — CONTENEUR : le ferrage est déclaré ICI, une fois, pour tous ses
    enfants présents et futurs (marque de provenance, issue courte, barre de DR, zone d'actions). Sans lui
