@@ -87,8 +87,7 @@ export function weaponFromTrait(t: TraitInstance): Weapon | null {
     // `sizeless` (≠ `natural`, qui viderait les mains) : le trait « Arme +N » SANS objet identifié au
     // catalogue n'est jamais une POSSESSION dont la Taille pourrait ne pas convenir (ADE II 2
     // l.604-710 vise un objet manufacturé réel, ex. une massue-ogre) — sa taille effective EST celle
-    // du porteur (LDB 85 l.33 : « porte une arme… ou utilise ses dents, griffes ou similaires »),
-    // exemptée du mismatch (`combat.ts`) sans toucher au rendu.
+    // du porteur (LDB 85 l.33), exemptée du mismatch (`combat.ts`) sans toucher au rendu.
     return buildWeapon({ label: t.arg ?? 'Arme', damage: dmg, sizeless: true });
   }
   // Attaque naturelle TYPÉE (Morsure, Cornes, Tentacules…) : reconnue par la CAPACITÉ du trait

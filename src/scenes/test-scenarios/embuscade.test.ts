@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { scenario } from './embuscade';
 import { layerTiles } from '../../state/scene';
+import { findTrappingById } from '../../data/index';
+import { weaponFromTrait } from '../../engine/creatureEquip';
 
 /**
  * Verrouille la Scene PRODUITE par `buildScene` dans `embuscade.ts` : dimensions, terrain case-à-case
@@ -120,5 +122,28 @@ describe('embuscade — Scene produite par buildScene', () => {
     expect(terenz?.weapon).toBeUndefined();
     expect(terenz?.statblock?.traits).toContainEqual({ id: 'arme', value: 7, arg: 'grande-hache' });
     expect(terenz?.statblock?.label).toBe('Terenz');
+  });
+
+  it('chaque mutant porte une arme IDENTIFIÉE au catalogue — le libellé rendu est celui de la Possession', () => {
+    const enc = s.encounters[0];
+    const attendus: Record<string, string> = {
+      'enemy-enc-mutants-0': 'Arme simple',
+      'enemy-enc-mutants-1': 'Massue',
+      'enemy-enc-mutants-2': 'Couteau',
+      'enemy-enc-mutants-3': 'Dague',
+      'enemy-enc-mutants-4': 'Grande hache',
+    };
+    expect(enc.members?.length).toBe(5);
+    for (const m of enc.members ?? []) {
+      const e = s.entities.find((x) => x.id === m.entityId);
+      const traits = (e?.statblock?.traits ?? []).filter((t) => t.id === 'arme' || t.id === 'a-distance');
+      expect(traits.length).toBeGreaterThan(0);
+      for (const t of traits) {
+        const trapping = t.arg ? findTrappingById(t.arg) : undefined;
+        expect(trapping?.type).toBe(t.id === 'a-distance' ? 'ranged' : 'melee');
+      }
+      const melee = traits.find((t) => t.id === 'arme');
+      expect(weaponFromTrait(melee!)?.label).toBe(attendus[m.entityId]);
+    }
   });
 });
