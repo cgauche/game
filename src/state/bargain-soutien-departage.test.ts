@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { seedBattleRng, battleRng } from './battleRng';
@@ -6,6 +6,7 @@ import { setRule, resetRule } from '../engine/policy';
 import { creditBourse } from './bourseFlow';
 import { cascadeAppliers } from './cascade';
 import { resultLine } from './rollSeam';
+import { emptyScene } from './scene';
 import { rollMerchantOpposition, type PortProfile } from '../engine/seaVoyage';
 import { rollMerchantSkill as rollLandMerchantSkill } from '../engine/landCargo';
 import { landBuyCargo, landSellCargo } from './landMarketFlow';
@@ -58,10 +59,10 @@ function setupPort(party: Combatant[]): void {
   if (party.length) creditBourse(get, set, party[0].id, { gold: 5000, silver: 0, brass: 0 });
 }
 
-/** Meneur à 45 en Marchandage + un soutien éligible (≥ 1 Augmentation, LDB 12 l.195) plus faible. */
-function pairAvecSoutien(): { leader: Combatant; helper: Combatant } {
+/** Meneur à `nue` en Marchandage + un soutien éligible (≥ 1 Augmentation, LDB 12 l.195) plus faible. */
+function pairAvecSoutien(nue = 45): { leader: Combatant; helper: Combatant } {
   const [leader, helper] = makePregens();
-  tuneSkill(leader, 'marchandage', 45);
+  tuneSkill(leader, 'marchandage', nue);
   tuneSkill(helper, 'marchandage', 20);
   return { leader, helper };
 }
@@ -218,5 +219,62 @@ describe('Marchandage TERRESTRE soutenu : `resolveOpposed` est le seul juge (MSR
     seedBattleRng(seed);
     landSellCargo(get, set, LAND_CARRIER, 0);
     expect(bargainLineOf()).toMatch(/Marchandage \(.*\) : -\d+ %/);
+  });
+});
+
+// ── Marchand AMBULANT (LDB 59 l.43) : flux `bargain` de `rollFlowSpecs` ──────────────────────────
+
+/** Marchandage de l'armurier ambulant (Marchandage 45) ouvert sur un groupe donné. */
+function setupAmbulant(party: Combatant[]): void {
+  const sc = emptyScene(4, 4); sc.id = 'm';
+  sc.entities.push({ id: 'pnj', kind: 'personnage', pos: { x: 0, y: 0 }, merchant: { archetype: 'armurier' } } as never);
+  set({ party, scene: sc, merchant: null, merchantStocks: {}, journal: [], pendingCascade: null, pendingBargain: null } as never);
+  get().openMerchant('pnj');
+}
+
+/** Impose la SÉQUENCE de d100 du flux (`rollTest` y tire sur `defaultRNG`, adossé à `Math.random`). */
+function forceD100(...dice: number[]): void {
+  const q = [...dice];
+  vi.spyOn(Math, 'random').mockImplementation(() => ((q.shift() ?? 1) - 0.5) / 100);
+}
+
+/** Meneur nu à 40 + 1 soutien (+10, fondu à 50) face à l'armurier à 45, DR ÉGAL des deux côtés. */
+function marchanderEgalite(): void {
+  const { leader, helper } = pairAvecSoutien(40);
+  setupAmbulant([leader, helper]);
+  get().startBargain('buy');
+  forceD100(30, 20); // joueur 30 sur cible 50 → DR 2 ; marchand 20 sur cible 45 → DR 2
+  get().bargainRoll();
+}
+
+describe('Marchandage AMBULANT soutenu : le Soutien ne départage pas (LDB 12 l.160 / l.189-190)', () => {
+  beforeEach(() => setRule('test-auto-bands', 'off'));
+  afterEach(() => { resetRule('test-auto-bands'); vi.restoreAllMocks(); });
+
+  it('CÂBLAGE : `startBargain` fond le Soutien dans `playerSkill` et en porte le détail (`support`)', () => {
+    const { leader, helper } = pairAvecSoutien(40);
+    setupAmbulant([leader, helper]);
+    get().startBargain('buy');
+    const pb = get().pendingBargain!;
+    expect(pb.support?.bonus).toBe(10); // 1 soutien éligible (l.189-190)
+    expect(pb.playerSkill).toBe(50); // 40 (Compétence) + 10 (Soutien) — FONDU par `partyAssisted`
+    expect(pb.merchantValue).toBe(45); // armurier.bargainSkill
+  });
+
+  it('DR égal : la Compétence NUE (40) perd contre le marchand (45) — la valeur SOUTENUE (50) ne vole pas la victoire', () => {
+    marchanderEgalite();
+    const pb = get().pendingBargain!;
+    expect([pb.roll!.roll, pb.merchantRoll!.roll]).toEqual([30, 20]); // dés imposés
+    expect(pb.roll!.sl).toBe(pb.merchantRoll!.sl); // sans égalité de DR, le départage ne se voit pas
+    expect(pb.roll!.target).toBe(50); // le Soutien reste un MODIFICATEUR du Test (l.189-190)
+    expect(pb.roll!.base).toBe(40); // …mais la grandeur qui départage est la Compétence NUE (l.160)
+    expect(pb.result!.decidedBy).toBe('valeur');
+    expect(pb.result!.attackerWins).toBe(false);
+  });
+
+  it('CONSÉQUENCE : le marchandage conclu est PERDU — la visite ne porte aucune remise', () => {
+    marchanderEgalite();
+    get().bargainConfirm();
+    expect(get().merchant!.bargainBuy!.won).toBe(false);
   });
 });

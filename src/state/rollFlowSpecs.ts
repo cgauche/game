@@ -110,6 +110,15 @@ function opposedForcedFloor(opponentSL: number, cancelled: boolean): number {
   return cancelled ? 0 : Math.max(opponentSL + 1, 1);
 }
 
+/** Jet du MARCHANDEUR prêt pour l'opposition (LDB 59 l.43) : `playerSkill` porte le Soutien déjà FONDU
+ *  par `partyAssisted` (LDB 12 l.189-190), qui doit rester dans la CIBLE mais ne départage pas à DR égal
+ *  (l.160) — `supportSplit` l'en défait pour la grandeur comparée. SOURCE UNIQUE des jets joueur du flux
+ *  `bargain` (lancer, relance, dé de Résilience), calque `bargainHeroTR` (portFlow) et `bargainOpposed`
+ *  (landMarketFlow). */
+function bargainPlayerTR(p: PendingBargain, tr: TestResult): TestResult {
+  return { ...tr, base: supportSplit(p.playerSkill, p.support).base };
+}
+
 /** Jet d'attaque figé, HONORANT « Je ne faillirai pas ! » (LDB 17 l.68 : « S'il s'agit d'un Test opposé,
  *  vous l'emportez avec au moins DR +1 »). La garantie est une propriété de l'OPPOSITION, pas du jet :
  *  sur le chemin INTERPOSÉ elle voyage MARQUÉE sur l'attaque figée (`p.pa.forced`) et se règle ICI, au
@@ -445,9 +454,11 @@ const resultDie = <P extends PendingBase & { result?: Die4 | null }>() => ({
   write: (_s: GameState, _p: P, _a: Combatant | undefined, _g: Get, tr: TestResult) => ({ result: die4(tr) } as Partial<P>),
 });
 
-/** Le `TestResult` ENTIER vit sous `roll` (Récupération d'État, Marchandage). */
+/** Le `TestResult` ENTIER vit sous `roll` (Récupération d'État, Marchandage). La valeur NUE du jet
+ *  voyage avec le dé (`ForcedPick.base`) : un dé CHOISI ou FIXÉ la reconduit au lieu de la perdre
+ *  (départage d'un Test opposé, LDB 12 l.160). */
 const trDie = <P extends PendingBase & { roll?: TestResult | null }>() => ({
-  read: (p: P) => (p.roll ? { roll: p.roll.roll, target: p.roll.target, critable: false } : null),
+  read: (p: P) => (p.roll ? { roll: p.roll.roll, target: p.roll.target, base: p.roll.base, critable: false } : null),
   write: (_s: GameState, _p: P, _a: Combatant | undefined, _g: Get, tr: TestResult) => ({ roll: tr } as Partial<P>),
 });
 
@@ -1859,8 +1870,9 @@ export const FLOWS = {
       // Test opposé vs un marchand FIGÉ : le plancher RAW est « l'emporter d'au moins DR +1 » (LDB 17 l.68).
       // `cancelled:false` STRUCTUREL : le marchand est figé, aucun verbe ne lui ouvre de forçage (#1000).
       floorSL: (p) => opposedForcedFloor(p.merchantRoll?.sl ?? 0, false),
-      resilience: (_s, p, _a, _g, tr) => {
+      resilience: (_s, p, _a, _g, chosen) => {
         if (p.merchantRoll == null) return null;
+        const tr = bargainPlayerTR(p, chosen);
         const result = resolveOpposed(tr, p.merchantRoll);
         return { roll: tr, result: { ...result, winner: 'attacker' as const, attackerWins: true, netSL: Math.max(1, result.netSL), decidedBy: 'force' as const } };
       },
@@ -1877,25 +1889,25 @@ export const FLOWS = {
         if (p.merchantRoll == null) return null; // pas de jet marchand figé (avant le 1er Lancer) → rien à opposer
         const target = p.roll?.target ?? p.playerSkill + DIFFICULTY_MODIFIERS.intermediaire; // cible effective (cf. rollTest)
         const die = bestForcedRoll(target); // dé DR-MAX policy-aware (JAMAIS 01 en dur)
-        const player = forcedTR(die, target, Math.max(evaluateTest(die, target).sl, 1), p.playerSkill);
+        const player = bargainPlayerTR(p, forcedTR(die, target, Math.max(evaluateTest(die, target).sl, 1)));
         const result = resolveOpposed(player, p.merchantRoll); // re-oppose vs le marchand FIGÉ
         // Résilience = le joueur l'emporte d'au moins un Degré (LDB 17 l.68).
         return { roll: player, result: { ...result, winner: 'attacker' as const, attackerWins: true, netSL: Math.max(1, result.netSL), decidedBy: 'force' as const } };
       }
-      const player = rollTest(p.playerSkill, 'intermediaire');
+      const player = bargainPlayerTR(p, rollTest(p.playerSkill, 'intermediaire'));
       const merchant = rollTest(p.merchantValue, 'intermediaire');
       return { roll: player, merchantRoll: merchant, result: resolveOpposed(player, merchant) };
     },
     reresolve: (_s, p) => {
       if (p.merchantRoll == null) return null;
-      const player = rollTest(p.playerSkill, 'intermediaire');
+      const player = bargainPlayerTR(p, rollTest(p.playerSkill, 'intermediaire'));
       return { roll: player, result: resolveOpposed(player, p.merchantRoll) };
     },
     outcome: (p) => rollOutcome(p.roll?.roll, p.roll?.target ?? 0, p.roll?.sl),
     bonus: {
       derive: (_s, p) => {
         if (p.roll == null || p.merchantRoll == null) return null;
-        const boosted = bumpSL(p.roll);
+        const boosted = bargainPlayerTR(p, bumpSL(p.roll));
         return { roll: boosted, result: resolveOpposed(boosted, p.merchantRoll) };
       },
     },
