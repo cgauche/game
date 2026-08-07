@@ -17,7 +17,9 @@ import type { Combatant } from '../engine/types';
  * Règles dérivées (arbitrées 2026-06-12) :
  *  - PV chiffrés : HÉROS uniquement (ennemi/PNJ = jauge seule, les PB exacts restent à
  *    l'Inspection) et à partir de `md` (illisible en dessous) ;
- *  - le NOM n'est jamais affiché — il vit dans `title`/`aria-label` (a11y) et dans la prose ;
+ *  - la TUILE ne rend jamais le nom (API fermée) : elle le porte en `title`/`aria-label` (a11y) ;
+ *    un appelant qui veut le nom VISIBLE le compose à l'EXTÉRIEUR (patron `figure`/`figcaption` de
+ *    `PartyDock.tsx`, styles `.party-dock figcaption`) ;
  *  - cadre = couleur d'identité/équipe (`ring`), fond d'équipe (`team`), KO grisé ✕,
  *    unité ACTIVE agrandie + liseré or + caret ▼, `selected` = tuile-radio des pickers.
  * Pur à props (testable en SSR), aucune lecture du store — voir CharFrame pour le wrapper connecté.
