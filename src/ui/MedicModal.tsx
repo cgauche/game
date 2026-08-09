@@ -10,7 +10,7 @@ import { Coins } from './Coins';
 import { DrBar } from './DrBar';
 import { HealRollFlow } from './HealModal';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { supportSplit, testBreakdown, testPending } from './breakdown';
+import { testValueSplit, testBreakdown, testPending } from './breakdown';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { isHealable, lodgedAmmoCount, type HealMode } from '../engine/healing';
@@ -79,8 +79,10 @@ function SurgeryRollFlow() {
   const fortune = surgeon?.fortune ?? 0;
   const rolled = ps.roll != null;
   const freeReroll = freeRerollOf(surgeon);
-  // Soutien des assistants de chirurgie (LDB 12) : ligne de mod nommée, base SANS le Soutien.
-  const { base, mods: supMods } = supportSplit(ps.skillValue, ps.support);
+  // Soutien des assistants de chirurgie (LDB 12) et composantes de la valeur de Test (États, séquelles,
+  // passifs, effets — #1178) : lignes de mod NOMMÉES, base rebasée sur le Niveau de Compétence nu
+  // (LDB 09 l.17). Chirurgien PNJ tarifé (aucune fiche) : affichage inchangé (garde de reconstruction).
+  const { base, mods: supMods } = testValueSplit(surgeon, ps.skillValue, { support: ps.support, skill: 'guerison' });
   const actorRow: RollRowData = {
     actor: surgeon,
     row: {

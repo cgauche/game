@@ -8,6 +8,7 @@ import {
 } from './seaVoyageFlow';
 import { seedBattleRng } from './battleRng';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
+import { partyAssisted, skillBaseValue, testValue } from '../engine/skills';
 import { subtract, toBrass } from '../engine/money';
 import { partyMoneyTotal, bourseOf, creditBourse } from './bourseFlow';
 import { itemFromTrappingById } from '../engine/items';
@@ -21,6 +22,7 @@ import type { CascadeStep } from './pendings';
 import { resumeTravel } from './travelFlow';
 import { applyEffects } from './combatEffects';
 import { cascadeAppliers } from './cascade';
+import { inexplique, soutienDe } from './cascadeTestKit';
 import { crewRoleValue } from '../engine/crewMorale';
 import { findCrewRoleById, resolveStake } from '../data';
 import { resultLine } from './rollSeam';
@@ -1777,20 +1779,13 @@ describe('Soutien — il entre dans la CIBLE de toute étape soutenue (#1117)', 
     } as never);
   }
 
-  /** Part de l'écart base→cible que la ligne n'explique PAS. Tout ce qu'elle SAIT dire s'en retire :
-   *  la Difficulté (texte de la ligne), les modificateurs NOMMÉS de l'étape (`mods`) et l'écrêtage
-   *  MESURÉ (`clamped`, rendu « plafond 99 »). Le Soutien, lui, est fondu dans `base`. Reste > 0 ⇒
-   *  le réconciliateur de `RollLine` avouera une chip « autres » : un fait que personne ne nomme. */
-  const inexplique = (st: CascadeStep): number =>
-    (st.target ?? 0) - (st.base ?? 0)
-    - DIFFICULTY_MODIFIERS[st.difficulty!]
-    - (st.mods ?? []).reduce((sum, m) => sum + m.value, 0)
-    - (st.clamped ?? 0);
+  // Cliquet « zéro chip anonyme » et lecture du Soutien : SOURCE UNIQUE `cascadeTestKit`
+  // (`inexplique`/`soutienDe`) — les quatre flux migrés jugent la MÊME grandeur.
 
   /** Toutes les étapes SOUTENUES posées par la cascade courante. */
   function soutenues(): CascadeStep[] {
     const p = get().pendingCascade;
-    return (p?.participants ?? []).filter((st) => (st.support?.bonus ?? 0) > 0 && st.target != null);
+    return (p?.participants ?? []).filter((st) => soutienDe(st) > 0 && st.target != null);
   }
 
   function seaDay(patch: Record<string, unknown>) {
@@ -1804,7 +1799,7 @@ describe('Soutien — il entre dans la CIBLE de toute étape soutenue (#1117)', 
     runSeaDay(get, set);
     const st = soutenues().find((x) => x.kind === 'sea-force-pace');
     expect(st, 'l’étape de Forcer le rythme est posée ET soutenue').toBeTruthy();
-    expect(st!.support!.bonus, 'des soutiens contribuent').toBeGreaterThan(0);
+    expect(soutienDe(st!), 'des soutiens contribuent, en ligne de mod NOMMÉE').toBeGreaterThan(0);
     expect(inexplique(st!), 'aucune chip « autres » : tout est nommé').toBe(0);
   });
 
@@ -1819,7 +1814,7 @@ describe('Soutien — il entre dans la CIBLE de toute étape soutenue (#1117)', 
   it('« Survitesse » : la cible porte le Soutien (aucun résidu)', () => {
     seaDay({ forcePace: 1, milesToday: 50, effMToday: 12 });
     const steps = buildOverspeedSteps(get);
-    const soutenue = steps.filter((st) => (st.support?.bonus ?? 0) > 0);
+    const soutenue = steps.filter((st) => soutienDe(st) > 0);
     expect(soutenue.length, 'au moins une étape de survitesse SOUTENUE').toBeGreaterThan(0);
     for (const st of soutenue) expect(inexplique(st), 'aucune chip « autres » : tout est nommé').toBe(0);
   });
@@ -1833,8 +1828,9 @@ describe('Soutien — il entre dans la CIBLE de toute étape soutenue (#1117)', 
     const roule = (get().pendingCascade!.participants.find((x) => x.id === st.id))!;
     expect(roule.result, 'le jet a bien eu lieu').toBeTruthy();
     expect(roule.result!.target, 'la cible ROULÉE est la cible soutenue').toBe(attendu);
-    // Et cette cible vaut bien la base SOUTENUE ± Difficulté (le +Soutien n’a pas été rejoué ailleurs).
-    expect(attendu).toBe(st.base! + DIFFICULTY_MODIFIERS[st.difficulty!]);
+    // Et cette cible vaut bien la base NUE + le Soutien (ligne de mod) ± Difficulté : le +Soutien
+    // entre UNE fois dans la cible, il n'a pas été rejoué ailleurs.
+    expect(attendu).toBe(st.base! + soutienDe(st) + DIFFICULTY_MODIFIERS[st.difficulty!]);
   });
 
   it('voie « Navigation » : une base SOUTENUE qui franchit le plafond NOMME son écrêtage', () => {
@@ -1863,6 +1859,33 @@ describe('Soutien — il entre dans la CIBLE de toute étape soutenue (#1117)', 
     // Le CONTRAT d'abord (ce que le joueur lit), le mécanisme ensuite (ce qui le produit).
     expect(inexplique(nav!), 'aucune chip « autres » sur la voie Navigation').toBe(0);
     expect(nav!.clamped, 'l’écrêtage est MESURÉ à la construction').toBeTruthy();
+  });
+
+  /**
+   * #1153 L2bis — la `base` d'une étape maritime est le Niveau de Compétence NU (`LDB 09 l.17`), le
+   * Soutien une ligne de mod NOMMÉE, et la CIBLE ne bouge pas d'un point (valeur SOUTENUE, l.189-190).
+   * Un équipage EMPOISONNÉ le PROUVE : la pénalité d'État sépare la nue de la valeur jetée, qu'une
+   * base fondue confondrait.
+   */
+  it('« Survitesse » sous ÉTAT : `base` = Résistance NUE, chip « Soutien », cible = valeur soutenue', () => {
+    seaDay({ forcePace: 1, milesToday: 50, effMToday: 12 });
+    set({ party: get().party.map((h) => ({ ...h, conditions: [{ id: 'empoisonne', value: 1 }] })) } as never);
+
+    const picked = partyAssisted(get().party, 'resistance', 'endurance')!;
+    const nue = skillBaseValue(picked.actor, 'resistance', undefined, 'endurance');
+    const jetee = testValue(picked.actor, 'resistance', 'endurance');
+    expect(jetee, 'l’État mord le jet, pas le Niveau de Compétence').toBeLessThan(nue);
+    expect(picked.support.bonus, 'l’équipage soutient (l.195)').toBeGreaterThan(0);
+
+    const st = buildOverspeedSteps(get)[0];
+    expect(st.actorId).toBe(picked.actor.id);
+    expect(st.base, 'Niveau de Compétence NU (LDB 09 l.17)').toBe(nue);
+    expect(soutienDe(st), 'le Soutien est une ligne de mod NOMMÉE').toBe(picked.support.bonus);
+    // CLIQUET « zéro chip anonyme » : sous État, la part d'écart que la ligne n'explique pas doit être
+    // NULLE — un résidu ferait avouer « autres » au réconciliateur de `RollLine`.
+    expect(inexplique(st), 'aucune chip « autres » : États compris, tout est nommé').toBe(0);
+    // CIBLE INVARIANTE : valeur SOUTENUE + Difficulté de la bande de survitesse (MDG 13 l.121-142).
+    expect(st.target).toBe(jetee + picked.support.bonus + DIFFICULTY_MODIFIERS[st.difficulty!]);
   });
 });
 
@@ -1916,5 +1939,51 @@ describe('Tests d’équipage — enjeu d’EFFET, règle en fiche, choix de Pro
       stepCascade();
     }
     expect(vus, 'au moins une étape d’équipage a été mesurée').toBeGreaterThan(0);
+  });
+});
+
+/**
+ * #1153 L2bis (sonde du juge B2) — la rangée d'un contributeur de Test d'équipage se lit comme un jet
+ * mono : base NUE (`LDB 09 l.17`) et TOUT le reste NOMMÉ. Le modificateur de chanson de marin
+ * (`MDG 09 l.224` : « un modificateur de +10 sur les Tests individuels de chaque membre d'équipage
+ * impliqué dans un Test d'équipage », donnée `sea-shanties.json`) est FONDU par `crewRoleValue` : il
+ * doit ressortir en chip portant le NOM de la chanson, sinon la rangée ment de +10.
+ */
+describe('Test d’équipage — la chanson de marin est NOMMÉE sur la rangée (#1153)', () => {
+  beforeEach(freshState);
+
+  it('un équipage qui chante : base nue, chip de la chanson, cible fondue — aucun résidu', () => {
+    // Chanson ACTIVE sur tout l'équipage (op `crewTestMod`, +10 aux Tests individuels).
+    set({
+      party: get().party.map((h) => ({
+        ...h,
+        skills: [...h.skills.filter((sk) => !['voile', 'ramer'].includes(sk.skillId)), { skillId: 'voile', advances: 12 }, { skillId: 'ramer', advances: 12 }],
+        activeEffects: [...(h.activeEffects ?? []), { label: 'Naviguons tous ensemble', crewTestMod: 10, duration: { scale: 'permanent' as const } }],
+      })),
+    } as never);
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0], { pace: 1 })!;
+    set({ travelPlan: plan });
+    runSeaDay(get, set);
+    // La journée s'ouvre sur le CHOIX de Progression (MDG 14 l.63) : on répond comme le joueur par
+    // défaut (Test d'équipage) jusqu'à trouver le pas à contributeurs.
+    let batch: CascadeStep | undefined;
+    for (let i = 0; i < 20 && !batch; i++) {
+      const p = get().pendingCascade;
+      if (!p) break;
+      const cur = p.participants[p.cursor];
+      if (cur?.participants?.length) { batch = cur; break; }
+      if (cur?.options && !cur.chosen) { get().cascadeChoose(cur.id, cur.defaultChoice ?? cur.options[0].key); get().cascadeNext(); continue; }
+      stepCascade();
+    }
+    expect(batch, 'la journée pose bien un Test d’équipage').toBeTruthy();
+    for (const part of batch!.participants!) {
+      const crew = get().party.find((h) => h.id === part.id)!;
+      expect(part.mods?.some((m) => m.label === 'Naviguons tous ensemble' && m.value === 10),
+        'la chanson se NOMME sur la rangée du marin').toBe(true);
+      expect(part.base, 'base NUE : la chanson n’y est plus fondue')
+        .toBe(skillBaseValue(crew, part.skillId, part.spec));
+      const st = { base: part.base, target: part.target, mods: part.mods, difficulty: part.difficulty, clamped: part.clamped } as never;
+      expect(inexplique(st), 'aucune chip « autres » sur une rangée d’équipage').toBe(0);
+    }
   });
 });

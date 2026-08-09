@@ -19,12 +19,12 @@
 import type { Get, Set } from './flowTypes';
 import type { CascadeStep } from './pendings';
 import { startCascade, registerCascadeApplier } from './cascade';
-import { freeCons } from './rollSeam';
+import { freeCons, rollStep, withDifficulty, type RollLineDecl } from './rollSeam';
 import { applyVesselCrewLoss } from './shipCrew';
 import { payFromGroup } from './bourseFlow';
-import { partyAssisted, type SupportDetail } from '../engine/skills';
+import { partyAssisted } from '../engine/skills';
 import { toMoney } from '../engine/money';
-import { DIFFICULTY_MODIFIERS, DIFFICULTY_LABELS, type Difficulty } from '../engine/types';
+import { DIFFICULTY_LABELS, type Difficulty } from '../engine/types';
 import { refLabel } from '../data';
 
 const num = (v: unknown, d = 0): number => (typeof v === 'number' ? v : d);
@@ -58,14 +58,17 @@ export function openEmbrigadementRecovery(
 /** Étape-jet Ragot Intermédiaire (MDG 15 l.245) : menée par le plus compétent (+ Soutien) — insérée
  *  quand le groupe choisit de TENTER la récupération. */
 function ragotStep(
-  lead: { actor: { id: string }; value: number; support?: SupportDetail },
+  // DÉCLARATION du jet (`RollLineSpec`) : le meneur, sa valeur SOUTENUE et son Soutien — la ligne
+  // (base nue, chips, cible ÉCRÊTÉE) est montée par le monteur canonique.
+  lead: { actorId: string; roll: RollLineDecl },
   recover: number, ransomCO: number, extraLoss: number, gossipDiff: Difficulty, stealthDiff: Difficulty,
 ): CascadeStep {
   return {
-    id: 'embrig-ragot', kind: 'embrigadementRagot', actorId: lead.actor.id,
+    id: 'embrig-ragot', kind: 'embrigadementRagot', actorId: lead.actorId,
     icon: 'nav/dice',
     rollLabel: refLabel('skills', { id: 'ragot' }),
-    base: lead.value, support: lead.support, target: lead.value + DIFFICULTY_MODIFIERS[gossipDiff],
+    difficulty: gossipDiff,
+    ...rollStep(withDifficulty(lead.roll, gossipDiff)),
     label: `Retrouver l'équipage — Ragot ${DIFFICULTY_LABELS[gossipDiff]}`,
     meta: { recover, ransomCO, extraLoss, stealthDiff },
   };
@@ -81,7 +84,8 @@ registerCascadeApplier(
     if (!lead) return { consequences: freeCons(['Personne à bord ne peut mener l\'enquête : vos compagnons restent captifs.']) };
     return {
       insert: [ragotStep(
-        lead, num(step.meta?.recover), num(step.meta?.ransomCO), num(step.meta?.extraLoss),
+        { actorId: lead.actor.id, roll: { actor: lead.actor, test: { skill: 'ragot' }, valeur: lead.value, soutien: lead.support } },
+        num(step.meta?.recover), num(step.meta?.ransomCO), num(step.meta?.extraLoss),
         diff(step.meta?.gossipDiff, 'intermediaire'), diff(step.meta?.stealthDiff, 'complexe'),
       )],
     };
@@ -139,7 +143,8 @@ registerCascadeApplier(
         id: 'embrig-discretion', kind: 'embrigadementDiscretion', actorId: lead.actor.id,
         icon: 'nav/dice',
         rollLabel: refLabel('skills', { id: 'discretion' }),
-        base: lead.value, support: lead.support, target: lead.value + DIFFICULTY_MODIFIERS[stealthDiff],
+        difficulty: stealthDiff,
+        ...rollStep({ actor: lead.actor, test: { skill: 'discretion' }, valeur: lead.value, soutien: lead.support, difficulty: stealthDiff }),
         label: `Libérer en douce — Discrétion ${DIFFICULTY_LABELS[stealthDiff]}`,
         meta: { recover, extraLoss },
       }],

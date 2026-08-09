@@ -42,7 +42,7 @@ import { applyHealWounds } from '../engine/healing';
 import { findVehicleById } from '../data';
 import { PERIPETIES } from '../data/peripeties';
 import { rollTest, testDetail } from '../engine/tests';
-import { partyAssisted, supportSplit } from '../engine/skills';
+import { partyAssisted, supportSplit, testValue, type SupportDetail } from '../engine/skills';
 import { addCondition, removeCondition, stacks } from '../engine/conditions';
 import { formatMoney } from '../engine/money';
 import { payFromGroup } from './bourseFlow';
@@ -54,7 +54,7 @@ import { seasonOfMonth, rollStageWeather, WEATHER_LABEL, type Season } from '../
 import { stageAssignmentFromRoles, type StagePosting } from '../engine/activities';
 import { buildStageSteps, buildWeatherResistanceSteps, type StageContext } from './travelPostes';
 import { startCascade, registerCascadeApplier } from './cascade';
-import { freeCons, rollSansPilote } from './rollSeam';
+import { freeCons, rollSansPilote, rollStep } from './rollSeam';
 import { t } from '../i18n';
 import type { CascadeStep, PendingCascade } from './pendings';
 import type { RecapLine } from './recapLine';
@@ -62,7 +62,7 @@ import { toRecapLines, phaseOfKind } from './recapLine';
 import { buildSeaPlan, runSeaDay, startFastVoyage, syncHullWoundsFromVessel } from './seaVoyageFlow';
 import { buildRiverPlan, runRiverDays } from './riverVoyageFlow';
 import { humanControlled } from './netOwnership';
-import { DIFFICULTY_MODIFIERS, type Combatant } from '../engine/types';
+import type { Combatant } from '../engine/types';
 
 import type { Get, Set } from './flowTypes';
 
@@ -804,7 +804,9 @@ registerCascadeApplier('landPeril', (get, set, step) => {
       const best = partyAssisted(party, 'survie-en-exterieur'); // Soutien (LDB 12)
       if (best) return { consequences: freeCons(j), insert: [{
         id: 'peril-survie', kind: 'landPerilSurvie', actorId: best.actor.id, icon: 'travel/compass', label: 'Survie en extérieur',
-        rollLabel: 'Survie en extérieur', base: best.value, support: best.support, difficulty: 'accessible', target: Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS.accessible)), result: null, interactive: true,
+        rollLabel: 'Survie en extérieur', difficulty: 'accessible',
+        ...rollStep({ actor: best.actor, test: { skill: 'survie-en-exterieur' }, valeur: best.value, soutien: best.support, difficulty: 'accessible' }),
+        result: null, interactive: true,
       }] };
       j.push(...applyEreintant(get, set)); // personne pour tester : retard direct
     } else if (entry.kind === 'attaque') {
@@ -814,7 +816,9 @@ registerCascadeApplier('landPeril', (get, set, step) => {
       const best = partyAssisted(party, 'perception'); // Soutien (LDB 12)
       if (best) return { consequences: freeCons(j), insert: [{
         id: 'peril-perception', kind: 'landPerilPerception', actorId: best.actor.id, icon: 'ui/eye', label: 'Perception',
-        rollLabel: 'Perception', base: best.value, support: best.support, difficulty: 'accessible', target: Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS.accessible)), result: null, interactive: true,
+        rollLabel: 'Perception', difficulty: 'accessible',
+        ...rollStep({ actor: best.actor, test: { skill: 'perception' }, valeur: best.value, soutien: best.support, difficulty: 'accessible' }),
+        result: null, interactive: true,
         meta: { destLabel, configured, ambushScene: route.ambush?.scene ?? '', ambushEntry: route.ambush?.entry ?? '', ambushEnc: route.ambush?.encounter ?? '' } }] };
       if (configured) { j.push(...markLandInterrupt(get, set, { kind: 'ambush', scene: route.ambush!.scene, entry: route.ambush!.entry, encounter: route.ambush!.encounter, noSurprise: false }, destLabel)); return { consequences: freeCons(j) }; }
       j.push('(Aucune rencontre d’embuscade n’est configurée sur cette route — l’alerte reste sans suite.)');
@@ -1041,19 +1045,32 @@ function applyVehicleProblemEffects(get: Get, set: Set, entry: ReturnType<typeof
   return { vehicleOut: r.entry.id === 'accident' || vehicle.wounds.current <= 0, vehicleLame: false };
 }
 
+/** Le CONDUCTEUR d'un attelage forcé et son Soutien (`LDB 12 l.189` : « le Personnage qui possède la
+ *  plus forte chance de réussite lance les dés. Chaque Personnage qui apporte son soutien octroie un
+ *  bonus de +10 au Test ») — les passagers d'un même véhicule sont adjacents (l.196) et la Conduite
+ *  d'attelage n'est pas un Test de résistance (l.197). SOURCE UNIQUE : le km courant, le km SUIVANT et
+ *  la reprise de contrôle désignent le conducteur par CETTE fonction, jamais par une valeur figée. */
+function forcedPaceDriver(get: Get) {
+  return partyAssisted(get().party, 'conduite-d-attelage');
+}
+
 /** Construit l'ÉTAPE-JET de Conduite d'attelage au kilomètre COURANT (#270, conducteur JOUEUR) — pénalité
- *  −10/km déjà galopé (l.229). `meta` porte l'accumulateur (km/heures déjà acquis) relu par l'applier
- *  pour chaîner le km SUIVANT (`insert`) ou finaliser la journée (`finalizeForcedPace`). */
-function buildForcedPaceStep(driver: { actor: Combatant; value: number }, kmLeft: number, galloped = 0, km = 0, hours = 0): CascadeStep {
+ *  −10/km déjà galopé (`EDOC 07 l.229`), DÉJÀ fondue dans la valeur jetée et déclarée en `dansLaValeur` :
+ *  elle compte UNE fois (chip nommée + cible), jamais deux. `meta` porte l'accumulateur (km/heures déjà
+ *  acquis) relu par l'applier pour chaîner le km SUIVANT (`insert`) ou finaliser (`finalizeForcedPace`). */
+function buildForcedPaceStep(driver: { actor: Combatant; value: number; support?: SupportDetail }, kmLeft: number, galloped = 0, km = 0, hours = 0): CascadeStep {
   const penalty = -10 * galloped; // l.229
-  const base = Math.max(0, driver.value + penalty);
   return {
     id: `land-forced-${galloped}`, kind: 'landForcedPace', actorId: driver.actor.id, icon: 'travel/cart',
     label: `${driver.actor.label} — Conduite d'attelage (allure forcée)`, rollLabel: 'Conduite d’attelage',
-    base, difficulty: 'intermediaire',
-    ...(penalty ? { mods: [{ label: `Km déjà au pas de course (${galloped})`, value: penalty }] } : {}),
-    target: Math.max(1, Math.min(99, base)), result: null, interactive: true,
-    meta: { kmLeft, galloped, km, hours, driverBase: driver.value },
+    difficulty: 'intermediaire',
+    ...rollStep({
+      actor: driver.actor, test: { skill: 'conduite-d-attelage' }, valeur: driver.value + penalty,
+      soutien: driver.support, difficulty: 'intermediaire',
+      ...(penalty ? { dansLaValeur: [{ label: `Km déjà au pas de course (${galloped})`, value: penalty }] } : {}),
+    }),
+    result: null, interactive: true,
+    meta: { kmLeft, galloped, km, hours },
   };
 }
 
@@ -1073,7 +1090,10 @@ function finalizeForcedPace(get: Get, set: Set, result: { km: number; hours: num
 registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
   if (!step.result) return;
   const m = step.meta!;
-  const kmLeft = Number(m.kmLeft), galloped = Number(m.galloped), driverBase = Number(m.driverBase);
+  const kmLeft = Number(m.kmLeft), galloped = Number(m.galloped);
+  // Conducteur RE-RÉSOLU (acteur + Soutien du moment) : le km suivant et la reprise de contrôle
+  // testent la MÊME chose que le km courant, ils ne rejouent pas une valeur figée (LDB 12 l.189).
+  const driver = forcedPaceDriver(get);
   let km = Number(m.km), hours = Number(m.hours);
   const name = hero?.label ?? 'Le conducteur';
   const plan = get().travelPlan!;
@@ -1085,8 +1105,8 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
     km += 1; hours += 1 / gallopKmh;
     // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
     const j = [`${name} — Conduite d'attelage (allure forcée) : l'attelage tient l'allure de course.`];
-    if (hours < plan.hoursPerDay - 1e-9 && km < kmLeft - 1e-9 && step.actorId && hero) {
-      return { consequences: freeCons(j), insert: [buildForcedPaceStep({ actor: hero, value: driverBase }, kmLeft, galloped + 1, km, hours)] };
+    if (hours < plan.hoursPerDay - 1e-9 && km < kmLeft - 1e-9 && step.actorId && hero && driver) {
+      return { consequences: freeCons(j), insert: [buildForcedPaceStep(driver, kmLeft, galloped + 1, km, hours)] };
     }
     finalizeForcedPace(get, set, { km: Math.min(km, kmLeft), hours, vehicleOut: false, vehicleLame: false });
     return { consequences: freeCons(j) };
@@ -1112,19 +1132,24 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
   let entry = rollVehicleProblem(roll);
   if (entry.id === 'incontrolable') {
     j.push(`Problème de véhicule — ${entry.label}.`);
-    if (step.actorId && hero) {
+    if (step.actorId && hero && driver) {
       return { consequences: freeCons(j), insert: [{
-        id: `${step.id}-control`, kind: 'landForcedPaceControl', actorId: step.actorId, icon: 'travel/cart',
-        label: `${name} — reprendre le contrôle`, rollLabel: 'Conduite d’attelage',
-        base: driverBase, difficulty: 'intermediaire', target: Math.max(1, Math.min(99, driverBase)), result: null, interactive: true,
+        id: `${step.id}-control`, kind: 'landForcedPaceControl', actorId: driver.actor.id, icon: 'travel/cart',
+        label: `${driver.actor.label} — reprendre le contrôle`, rollLabel: 'Conduite d’attelage',
+        difficulty: 'intermediaire',
+        // MÊME jet que le km (Conduite d'attelage soutenue, `LDB 12 l.189`) : ni la pénalité de km
+        // (`EDOC 07 l.253` ne la reconduit pas), ni une valeur figée. Les deux surfaces — étape
+        // influençable et repli sans pilote ci-dessous — lisent le MÊME conducteur soutenu.
+        ...rollStep({ actor: driver.actor, test: { skill: 'conduite-d-attelage' }, valeur: driver.value, soutien: driver.support, difficulty: 'intermediaire' }),
+        result: null, interactive: true,
         meta: { finalKm, finalHours },
       }] };
     }
     // Repli SANS acteur joueur (pas d'étape insérée ci-dessus) : aucune rangée nulle part pour ce jet
-    // — le journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
-    // `hero` y est toujours `undefined` (le gate l.1108 a déjà rendu sur `step.actorId && hero`, et
-    // `cascade.ts` ne résout `hero` que depuis `step.actorId`) : l'invariant de la primitive est vide ici.
-    const rt = rollSansPilote(get, hero, driverBase, 'intermediaire', battleRng());
+    // — le journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement). MÊME
+    // valeur que la surface influençable : le conducteur soutenu (`forcedPaceDriver`), jamais une
+    // grandeur seconde. Sans conducteur du tout, il ne reste que la valeur nue de l'acteur de l'étape.
+    const rt = rollSansPilote(get, driver?.actor ?? hero, driver?.value ?? testValue(hero!, 'conduite-d-attelage'), 'intermediaire', battleRng());
     j.push(`${name} tente de reprendre le contrôle : ${rt.roll}/${rt.target} → ${rt.success ? 'l’attelage est maîtrisé.' : 'ACCIDENT !'}`);
     if (rt.success) { finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, vehicleOut: false, vehicleLame: false }); return { consequences: freeCons(j) }; }
     entry = rollVehicleProblem(96);

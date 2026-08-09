@@ -63,14 +63,17 @@ export function stepsWithoutStake(src: string): number[] {
   if (/\.stake\s*=\s*/.test(s)) return [];
   const lines: number[] = [];
   const seen = new Set<number>();
-  // Les DEUX formes qui LANCENT, telles que `stepInteraction` les reconnaît (`state/cascade.ts`) :
+  // Les formes qui LANCENT, telles que `stepInteraction` les reconnaît (`state/cascade.ts`) :
   //  - `'jet'`   = une CIBLE en position de PROPRIÉTÉ (`target: <expr>` ou le raccourci `target,`) ;
   //    une valeur de chaîne est blanchie par `stripLiterals` → `target: 'party'` (cible d'un EFFET)
   //    ne matche pas ;
+  //  - `...rollStep({…})` = la MÊME cible, posée par le MONTEUR CANONIQUE (#1153) : depuis que les
+  //    flux DÉCLARENT leur ligne au lieu de la calculer, la cible n'est plus un littéral de l'étape.
+  //    Sans cette forme, le cliquet devient AVEUGLE sur tout site migré (couverture, pas exemption) ;
   //  - `'table'` = un TIRAGE SUR TABLEAU (`table: <expr>`), qui met tout autant en jeu (Blessure
   //    critique, Oups, Colère des dieux, mutation) et n'a PAS de `target` — angle mort jumeau de
   //    celui d'`interactive`, levé ici.
-  for (const m of s.matchAll(/(?<=[{,]\s*)(?:target\s*(?::\s*[^\s,}]|[,}])|table\s*:\s*[^\s,}])/g)) {
+  for (const m of s.matchAll(/(?<=[{,]\s*)(?:target\s*(?::\s*[^\s,}]|[,}])|table\s*:\s*[^\s,}])|\.\.\.rollStep\(/g)) {
     const i = m.index!;
     let depth = 0;
     let start = -1;

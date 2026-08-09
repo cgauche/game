@@ -66,7 +66,8 @@ export function ShipBatteryModal() {
     <RollShell
       flowKey="shipBattery"
       title={<><Icon id="action/aim" size="sm" /> Tir de batterie — Test d’équipage</>}
-      variant="test"
+      /* Coquille `roll` : N rangées d'artilleurs à portrait — pas un Test SOLO (cf. `BargainModal`, #1153 L2ter). */
+      variant="roll"
       subtitle={<><strong>{ship.label}</strong> — bordée {p.side} sur <strong>{target.label}</strong> ({postes.length} pièce{plural(postes.length)})</>}
       extra={
         <div className="rm-threat">

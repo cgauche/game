@@ -100,6 +100,11 @@ export interface PendingTest {
    *  `FlowTest` (skill/spec/characteristic) au build du pending. */
   skillId?: string;
   spec?: string;
+  /** Sens NARRATIVEMENT sollicité par CE Test (LDB 18 — Surdité ne pèse que sur un Test d'ouïe) :
+   *  posé à l'ouverture (`openSkillTest`, qui l'a DÉJÀ passé à `testValue`) et relu par l'affichage
+   *  pour décomposer la MÊME valeur (`testValueSplit`) — sans lui, les parts sense-scopées ne
+   *  reconstruisent pas la valeur jetée et la ligne perd toutes ses chips. */
+  sense?: PairedSense;
   /** RÔLE tenu (id stable de `crew-roles`) — PROVENANCE de la rangée, jamais son libellé de ligne :
    *  la ligne NOMME la Compétence lancée (Z5), le rôle dit d'où vient le jet (#1117). */
   roleId?: string;
@@ -1307,12 +1312,16 @@ export type CascadeAggregate = 'best' | 'opposed' | 'summed-dr' | 'none';
  *  un Test « déjà +0 » sur `target` (`evaluateTest`) ; sur une réussite s'ajoute `bonusSlOnSuccess` (le
  *  +DR de Talent baké à la construction). `essential` = contribue DOUBLE à l'agrégat sommé (générique). */
 export interface BatchParticipant extends RollParticipant {
-  /** Valeur « brute » du Test (affichage de rangée). */
+  /** Niveau de Compétence NU du contributeur (`skillBaseValue`, `LDB 09 l.17`) — MÊME contrat que
+   *  `CascadeStepBase.base` : la ligne d'une rangée batch se lit comme celle d'un jet mono. */
   base: number;
   /** Cible EFFECTIVE (difficulté déjà appliquée) — l'auto-roll générique évalue le d100 contre elle. */
   target: number;
-  /** Détail additif de la rangée (affichage). */
+  /** Détail additif de la rangée (affichage) : Soutien, États, passifs — toutes NOMMÉES. */
   mods?: ModLine[];
+  /** ÉCRÊTAGE réellement subi par `target` aux bornes de `TestPolicy` (`engine/tests.clampTarget`),
+   *  mesuré à la construction — la rangée le NOMME (« plafond 99 ») au lieu de l'avouer « autres ». */
+  clamped?: number;
   /** COMPÉTENCE réellement lancée par ce contributeur (résolue à la construction par le flux
    *  propriétaire — naval : `crewRoleValue().used`) : la ligne de jet NOMME la Compétence (Z5), le
    *  rôle tenu n'étant que la PROVENANCE. */
@@ -1434,21 +1443,13 @@ export interface CascadeStepBase extends RollParticipant {
   /** Fiche de RÈGLE d'une étape SANS enjeu (choix de voie : la règle encadre le choix, aucun jet n'est
    *  encore mis en jeu). Une étape POURVUE d'un `stake` dérive sa règle du dataset — jamais ici. */
   stakeRule?: { category: string; id: string };
-  /** Valeur « brute » du Test (carac/compétence, avant difficulté) — affichage ET grandeur du
-   *  départage à DR égal (`LDB 12 l.160`, `engine/tests.openValues`). La porte du seam
-   *  (`rollSeam.buildMonoStep`) y pose le Niveau de Compétence NU (`skillBaseValue`, `LDB 09 l.17`)
-   *  et sort le Soutien en ligne de `mods` ; les flux qui bâtissent leurs étapes à la main y portent
-   *  encore une valeur FONDUE, avec `support` ci-dessous pour la rendre à l'affichage.
-   *  Une étape OPPOSÉE (`meta.opposed`) fait EXCEPTION : sa `base` est NUE, sans quoi le départage
-   *  comparerait une valeur soutenue à la valeur nue de l'adversaire — invariant fail-closed tenu par
-   *  `cascade.stepOpposedFreeze`, seul point de passage des résolutions opposées. */
+  /** Niveau de Compétence NU du Test (`skillBaseValue`, `LDB 09 l.17`) — affichage ET grandeur du
+   *  départage à DR égal (`LDB 12 l.160`, `engine/tests.openValues`). CONTRAT UNIQUE : tout producteur
+   *  d'étape (porte du seam `rollSeam.buildMonoStep` comme flux qui bâtit ses étapes à la main) y pose
+   *  la NUE par l'accesseur, jamais une valeur fondue ni une soustraction ; les modificateurs — États,
+   *  Encombrement, passifs, SOUTIEN (`soutienMod`) — vivent en lignes NOMMÉES de `mods`, et la
+   *  Difficulté dans `difficulty`. La CIBLE (`target`), elle, dérive de la valeur fondue. */
   base?: number;
-  /** SOUTIEN (LDB 12 l.187-200) FONDU dans `base` par un flux qui bâtit son étape à la main — porté
-   *  pour l'AFFICHAGE : `CascadeModal` l'en défait et le rend en ligne de mod nommée
-   *  (`ui/breakdown.supportSplit`), jamais en bonus muet. Une étape de la porte du seam n'en porte
-   *  PAS : son Soutien arrive déjà nommé dans `mods` (`soutienMod`), sa `base` étant nue. Une étape
-   *  OPPOSÉE n'en porte JAMAIS (cf. `base` ci-dessus) : `stepOpposedFreeze` la REFUSE. */
-  support?: SupportDetail;
   /** Modificateurs circonstanciels NOMMÉS de la ligne (compris dans `target`) — un malus RAW qui n'est
    *  PAS une Difficulté (dérive MSRC 7 l.38, hors de contrôle l.41, −5 cumulatif du redressement l.40)
    *  se nomme ICI : aucun +N anonyme dans la cible. La Difficulté, elle, voyage dans `difficulty`. */

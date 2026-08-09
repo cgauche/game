@@ -31,7 +31,7 @@ import riverPerilsJson from '../data/river-perils.json';
 import { findTableEntry } from './tables';
 import { d10, d100, rollExpr, type RNG, defaultRNG } from './dice';
 import { bonus } from './characteristics';
-import { DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from './types';
+import type { Combatant, Difficulty } from './types';
 import { RULE_REF } from './ruleRefs';
 import type { ModLine } from './combat';
 
@@ -180,14 +180,6 @@ export function navPenaltyMods(state: { drift?: boolean; outOfControl?: boolean 
 
 // ── Chavirage (note 4, l.40) ─────────────────────────────────────────────────────────────────────
 
-/** Cible du Test de redressement d'un bateau renversé AU ROUND `round` (0 = le premier) — note 4,
- *  l.40 : « Les Personnages peuvent faire un seul Test de **Navigation Accessible (+20)** par Round
- *  pour essayer de redresser le bateau ; chaque Test échoué ajoute un malus de -5 au Test suivant. »
- *  `pilotValue` = valeur de Navigation du barreur (Savoir Voies fluviales inclus). PUR. */
-export function capsizeRoundTarget(pilotValue: number, round: number): number {
-  const penalty = Math.max(0, round) * DATA.capsize.rightCumulativePenalty; // −5 par échec précédent
-  return Math.max(1, Math.min(99, pilotValue + DIFFICULTY_MODIFIERS[DATA.capsize.rightDifficulty] + penalty));
-}
 
 /** Difficulté RAW du Test de redressement (note 4, l.40 — Accessible). */
 export const CAPSIZE_RIGHT_DIFFICULTY: Difficulty = DATA.capsize.rightDifficulty;

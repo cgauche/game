@@ -3,14 +3,20 @@ import { useGame } from './store';
 import { buildRiverPlan, buildRiverDayCascade, runRiverDays, hasBatelier, applyEchouage } from './riverVoyageFlow';
 import { buildApi } from './devtools';
 import { cascadeAppliers } from './cascade';
+import { inexplique, soutienDe } from './cascadeTestKit';
 import { findSkillById, resolveStake, voyageStakeRef, VOYAGE_STAKES, regles } from '../data';
 import { creditBourse } from './bourseFlow';
 import { seedBattleRng } from './battleRng';
 import { createHero, skillCharacteristicById } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { RULE_REF } from '../engine/ruleRefs';
+import { riverPilotSkill } from '../engine/riverNavigation';
+import { skillBaseValue, testValue, partyAssisted } from '../engine/skills';
+import { findVehicleById } from '../data';
+import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { buildScene } from './mapSpec';
 import type { Combatant, SkillInstance } from '../engine/types';
+import type { CascadeStep } from './pendings';
 import type { Possession } from '../engine/possession';
 import type { MapRoute, WorldMap } from './worldMap';
 
@@ -521,8 +527,14 @@ describe('chavirage — le redressement s’ouvre Round par Round (#1104a)', () 
     expect(r1, 'le Round 1 du redressement est une étape INFLUENÇABLE').toBeTruthy();
     expect(r1!.interactive).toBe(true);
     expect(r1!.difficulty).toBe('accessible'); // +20 RAW, jamais fondu dans un +N anonyme
-    expect(r1!.target).toBe(60); // 40 (Voile) + 20
-    expect(r1!.mods ?? []).toEqual([]); // aucun malus au 1ᵉʳ Round
+    // Le redressement est un Test de NAVIGATION : le barreur et son Soutien sont RE-RÉSOLUS au moment
+    // de l'insertion (#1153 décision (c)) — la cible suit la composition RÉELLE du bord, pas une valeur
+    // figée à la construction du jour.
+    const pilote = partyAssisted(get().party, 'voile')!;
+    expect(r1!.base).toBe(skillBaseValue(pilote.actor, 'voile')); // Niveau de Compétence NU
+    expect(r1!.target).toBe(pilote.value + DIFFICULTY_MODIFIERS.accessible);
+    expect(malus(r1!)).toEqual([]); // aucun MALUS de navigation au 1ᵉʳ Round
+    expect(inexplique(r1!)).toBe(0); // …et rien d'anonyme : le Soutien lui-même est nommé
     expect(r1!.rollLabel).toBe('Voile'); // la ligne NOMME la Compétence
   });
 
@@ -534,13 +546,15 @@ describe('chavirage — le redressement s’ouvre Round par Round (#1104a)', () 
       id: 'river-capsize-right-0', kind: 'riverRighting', actorId: get().party[0].id, icon: 'nautical/tack',
       label: 'Redressement du bateau — Round 1/3', rollLabel: 'Voile', base: 40, difficulty: 'accessible' as const,
       target: 60, result: { roll: 98, target: 60, sl: -4, success: false }, interactive: true,
-      meta: { rightRound: 0, rightRounds: be, rightPilotValue: 40 },
+      meta: { rightRound: 0, rightRounds: be },
     };
     const out0 = cascadeAppliers['riverRighting'].apply(get, set, round0, undefined, { steps: [round0], index: 0 });
     const round1 = out0?.insert?.find((s) => s.kind === 'riverRighting');
     expect(round1, 'le Round 2 s’insère tant qu’il reste des Rounds (BE)').toBeTruthy();
-    expect(round1!.mods).toEqual([{ label: '−5 cumulatif (Round 2)', value: -5, ref: RULE_REF['navigation-chavirage'] }]);
-    expect(round1!.target).toBe(55); // 40 + 20 − 5
+    expect(malus(round1!)).toEqual([{ label: '−5 cumulatif (Round 2)', value: -5, ref: RULE_REF['navigation-chavirage'] }]);
+    const pilote2 = partyAssisted(get().party, 'voile')!;
+    expect(round1!.target).toBe(pilote2.value + DIFFICULTY_MODIFIERS.accessible - 5);
+    expect(inexplique(round1!)).toBe(0);
     expect(get().travelPlan!.river!.sunk).toBeFalsy();
 
     // Dernier Round (index BE−1) échoué → naufrage.
@@ -556,13 +570,19 @@ describe('chavirage — le redressement s’ouvre Round par Round (#1104a)', () 
       id: 'river-capsize-right-0', kind: 'riverRighting', actorId: get().party[0].id, icon: 'nautical/tack',
       label: 'Redressement du bateau — Round 1/3', rollLabel: 'Voile', base: 40, difficulty: 'accessible' as const,
       target: 60, result: { roll: 12, target: 60, sl: 4, success: true }, interactive: true,
-      meta: { rightRound: 0, rightRounds: 3, rightPilotValue: 40 },
+      meta: { rightRound: 0, rightRounds: 3 },
     };
     const out = cascadeAppliers['riverRighting'].apply(get, set, round0, undefined, { steps: [round0], index: 0 });
     expect(out?.insert ?? []).toEqual([]);
     expect(get().travelPlan!.river!.sunk).toBeFalsy();
   });
 });
+
+/** Lignes de mod d'une étape hors LIGNE DU JETEUR (Soutien, États, passifs) : ces cas jugent les
+ *  malus de NAVIGATION, pas la décomposition de la valeur du barreur. Le tri se fait par RÈGLE/
+ *  provenance, jamais par libellé — les chips de navigation portent leur `RULE_REF` dédiée. */
+const NAV_RULE_IDS = new Set([RULE_REF['navigation-derive'].id, RULE_REF['navigation-greement'].id, RULE_REF['navigation-chavirage'].id]);
+const malus = (s: CascadeStep) => (s.mods ?? []).filter((m) => m.ref && NAV_RULE_IDS.has(m.ref.id));
 
 /**
  * #1112 — le Test de Navigation du jour DIT sa Difficulté (RAW l.15) et NOMME ses malus : la dérive
@@ -576,7 +596,7 @@ describe('Navigation du jour — Difficulté déclarée, malus NOMMÉS (#1112)',
     const built = buildRiverDayCascade(get, set, get().worldMap!.routes[0], { scene: 'quai-b', label: 'Altdorf' });
     const nav = built.steps.find((s) => s.kind === 'riverNav')!;
     expect(nav.difficulty).toBe('intermediaire');
-    expect(nav.mods ?? []).toEqual([]);
+    expect(malus(nav)).toEqual([]);
   });
 
   it('hors de contrôle : la Difficulté RESTE celle du RAW, le −20 est une chip NOMMÉE comprise dans la cible', () => {
@@ -586,8 +606,9 @@ describe('Navigation du jour — Difficulté déclarée, malus NOMMÉS (#1112)',
     const built = buildRiverDayCascade(get, set, get().worldMap!.routes[0], { scene: 'quai-b', label: 'Altdorf' });
     const nav = built.steps.find((s) => s.kind === 'riverNav')!;
     expect(nav.difficulty).toBe('intermediaire'); // le malus n'est PAS une Difficulté
-    expect(nav.mods).toEqual([{ label: 'Hors de contrôle', value: -20, ref: RULE_REF['navigation-greement'] }]);
-    expect(nav.target).toBe(Math.max(1, Math.min(99, (nav.base ?? 0) - 20))); // le malus est compris dans la cible
+    expect(malus(nav)).toEqual([{ label: 'Hors de contrôle', value: -20, ref: RULE_REF['navigation-greement'] }]);
+    // Le malus est compris dans la cible, et la ligne explique TOUT l'écart (cliquet).
+    expect(inexplique(nav)).toBe(0);
   });
 });
 
@@ -607,12 +628,12 @@ describe('péril fluvial — l’évitement porte les malus de dérive/hors-cont
     seedBattleRng(2);
     const out = cascadeAppliers['riverPerilCheck'].apply(get, set, check, undefined, { steps: [check], index: 0 });
     const nav = (out?.insert ?? []).find((s) => s.kind === 'riverPerilNav')!;
-    expect(nav.mods).toEqual([{ label: 'Hors de contrôle', value: -20, ref: RULE_REF['navigation-greement'] }]);
+    expect(malus(nav)).toEqual([{ label: 'Hors de contrôle', value: -20, ref: RULE_REF['navigation-greement'] }]);
     expect(nav.difficulty).toBe('intermediaire'); // le malus n'est pas une Difficulté
-    expect(nav.target).toBe(Math.max(1, Math.min(99, (nav.base ?? 0) - 20)));
+    expect(inexplique(nav), 'le malus est compris dans la cible, et TOUT l’écart est nommé').toBe(0);
     // Le Test de Navigation du JOUR et l'évitement voient le MÊME modificateur (une seule règle).
     const dayNav = built.steps.find((s) => s.kind === 'riverNav')!;
-    expect(dayNav.mods).toEqual(nav.mods);
+    expect(malus(dayNav)).toEqual(malus(nav));
   });
 
   it('sans dérive ni perte de contrôle : aucune chip, cible = base + Difficulté', () => {
@@ -624,8 +645,8 @@ describe('péril fluvial — l’évitement porte les malus de dérive/hors-cont
     seedBattleRng(2);
     const out = cascadeAppliers['riverPerilCheck'].apply(get, set, check, undefined, { steps: [check], index: 0 });
     const nav = (out?.insert ?? []).find((s) => s.kind === 'riverPerilNav')!;
-    expect(nav.mods ?? []).toEqual([]);
-    expect(nav.target).toBe(nav.base);
+    expect(malus(nav)).toEqual([]);
+    expect(inexplique(nav), 'cible = base + Soutien + Difficulté, rien d’anonyme').toBe(0);
   });
 });
 
@@ -782,5 +803,45 @@ describe('helpers de recette — reposer la journée ne DUPLIQUE jamais les éta
     const before = get().pendingCascade!.participants.length;
     runRiverDays(get, set);
     expect(get().pendingCascade!.participants).toHaveLength(before);
+  });
+});
+
+/**
+ * #1153 L2bis — une étape-jet fluviale pose le Niveau de Compétence NU (`LDB 09 l.17`) et sort le
+ * Soutien (LDB 12 l.187-200) en ligne de mod NOMMÉE ; la CIBLE reste dérivée de la valeur SOUTENUE
+ * (l.189-190), au point près. Un barreur sous ÉTAT le PROUVE : la pénalité d'État sépare la nue
+ * (`skillBaseValue`) de la valeur jetée (`testValue`), qu'une base fondue confondrait.
+ */
+describe('Navigation du jour — base NUE + Soutien NOMMÉ, cible invariante (#1153 L2bis)', () => {
+  it('barreur EMPOISONNÉ soutenu : `base` = Compétence NUE, chip « Soutien », cible = valeur soutenue', () => {
+    launch(false, 45);
+    const plan = buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])!;
+    const skillId = riverPilotSkill(findVehicleById(plan.vehicle!.creatureId ?? '')?.ship?.sail != null);
+    // Tout l'équipage sait manœuvrer (chacun est donc ÉLIGIBLE au Soutien, l.195) et tout le monde
+    // est EMPOISONNÉ (eau croupie du bord) : quel que soit le barreur retenu, l'État mord SA valeur
+    // jetée sans toucher son Niveau de Compétence.
+    const party = get().party.map((h) => {
+      const c = { ...h, skills: h.skills.map((s) => ({ ...s })), conditions: [{ id: 'empoisonne', value: 1 }] as never };
+      skill(c, skillId, 5);
+      return c;
+    });
+    set({ party, travelPlan: { ...plan, river: { ...plan.river!, windForce: 'leger', windDir: 'arriere' } } });
+
+    const picked = partyAssisted(get().party, skillId)!;
+    const lead = picked.actor;
+    const nue = skillBaseValue(lead, skillId);
+    const jetee = testValue(lead, skillId);
+    expect(jetee, 'l’État mord le jet, pas le Niveau de Compétence').toBeLessThan(nue);
+    expect(picked.support.bonus, 'les camarades éligibles soutiennent (l.195)').toBeGreaterThan(0);
+
+    const built = buildRiverDayCascade(get, set, get().worldMap!.routes[0], { scene: 'quai-b', label: 'Altdorf' });
+    const nav = built.steps.find((s) => s.kind === 'riverNav')!;
+    expect(nav.actorId).toBe(lead.id);
+    expect(nav.base, 'Niveau de Compétence NU (LDB 09 l.17)').toBe(nue);
+    expect(soutienDe(nav), 'le Soutien est une ligne de mod NOMMÉE').toBe(picked.support.bonus);
+    // CIBLE INVARIANTE : valeur SOUTENUE + Difficulté (Intermédiaire +0, aucun malus de dérive ici).
+    expect(nav.target).toBe(jetee + picked.support.bonus + DIFFICULTY_MODIFIERS.intermediaire);
+    // CLIQUET « zéro chip anonyme » : l'État est NOMMÉ lui aussi, il ne reste aucun écart muet.
+    expect(inexplique(nav), 'aucune chip « autres » : États compris, tout est nommé').toBe(0);
   });
 });

@@ -39,10 +39,11 @@ import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import type { PairedSense, GameOp } from '../engine/ops';
 import type { CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate } from './pendings';
 import type { RecapLine, RecapTone } from './recapLine';
+import type { ModLine } from '../engine/combat';
 import { TestOutcome } from '../engine/testOutcome';
 import { actorIn } from './combatants';
 import { startCascade, runCascadeImmediate } from './cascade';
-import { testValue, skillBaseValue, partyBest, partyAssisted, soutienMod, type SupportDetail } from '../engine/skills';
+import { testValue, partyBest, partyAssisted, testValueSplit, type SupportDetail } from '../engine/skills';
 import { humanControlled, pilotedByHuman } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
@@ -230,13 +231,17 @@ function resolveMonoSide(get: Get, req: RollRequest, meta?: CascadeStepMeta): { 
   }
   if ('partyBest' in req.side) {
     const { skill, char, assisted } = req.side.partyBest;
+    // La SPÉCIALISATION et le SENS déclarés sur le Test entrent dans le choix du meneur ET dans sa
+    // valeur : sans eux, `partyBest`/`partyAssisted` liraient une AUTRE instance de la compétence
+    // (Métier (Charpentier) vs Métier (Serrurier)) et la valeur du meneur divergerait de celle que
+    // `rollLine` décompose ensuite — la garde d'exactitude le refuserait, à raison.
     // `noSupport` (LDB 12 l.197) : Test de résistance déclaré sur le spec → jamais de Soutien, même si
     // `assisted` n'a pas été mis à `false` au call-site.
     if (assisted === false || req.test.noSupport) {
-      const solo = partyBest(get().party, skill, char);
+      const solo = partyBest(get().party, skill, char, undefined, req.test.spec, req.test.sense);
       return solo ? { actorId: solo.actor.id, actor: solo.actor, baseValue: solo.value } : {};
     }
-    const picked = partyAssisted(get().party, skill, char);
+    const picked = partyAssisted(get().party, skill, char, undefined, req.test.spec);
     if (!picked) return {};
     // Le DÉTAIL du Soutien remonte avec la valeur : la porte le pose sur l'étape (`buildMonoStep`),
     // la modale l'affiche en ligne de mod — un Soutien fondu sans détail est un bonus invisible.
@@ -291,13 +296,117 @@ export function resolveSurface(get: Get, req: RollRequest, kind: string): Surfac
   return 'I';
 }
 
-/** NIVEAU DE COMPÉTENCE NU d'un Test DÉCLARÉ (`LDB 09 l.17`) — l'accesseur canon `skillBaseValue`
- *  appliqué aux ids du `RollRequest`, jamais une valeur reconstituée par soustraction. `undefined`
- *  quand le Test ne déclare ni compétence ni caractéristique (Désertion, Moral : la grandeur n'existe
- *  pas, la cible posée par l'appelant tient lieu de base). */
-function nakedValue(actor: Combatant, test: RollRequest['test']): number | undefined {
-  if (!test.skill && !test.char) return undefined;
-  return skillBaseValue(actor, test.skill, test.spec, test.char);
+/** Ce qui est VRAI de tout jet : qui teste quoi, à quelle Difficulté, et ce qui pèse SUR LA CIBLE. */
+interface RollLineBase {
+  /** Le jeteur. Absent (côté MONDE : seuil d100 posé par l'appelant) ⇒ `valeur` tient lieu de base. */
+  actor?: Combatant;
+  /** Ids du Test — MÊME forme que `RollRequest['test']` (aucun texte : la ligne se NOMME depuis le catalogue). */
+  test?: { skill?: string; char?: CharKey; spec?: string; sense?: PairedSense };
+  difficulty: Difficulty;
+  /** Modificateurs NOMMÉS qui s'ajoutent À LA CIBLE et que la valeur ne contient PAS (dérive MSRC 7
+   *  l.38, hors de contrôle l.41, −5 cumulatif du redressement l.40, km déjà au pas de course EDOC 7
+   *  l.229). Les déclarer ici les compte UNE fois — dans la cible et sur la ligne. */
+  surLaCible?: ModLine[];
+}
+
+/** LA valeur du jet — deux régimes EXCLUSIFS, et le compilateur tient l'exclusion :
+ *  - DÉRIVÉE de l'acteur (`testValue`) : rien d'autre à déclarer ;
+ *  - FOURNIE par l'appelant (`valeur`) : alors, et alors seulement, il peut dire ce qu'il a fondu
+ *    dedans (`soutien`, `dansLaValeur`) ou DÉCLARER une valeur d'une AUTRE formule (`valeurEtrangere`).
+ *  Un `soutien` sans `valeur` est INEXPRIMABLE : le Soutien n'existe que fondu dans une valeur. */
+type RollLineValeur =
+  | {
+    /** Valeur FONDUE dont la cible dérive : valeur SOUTENUE de `partyAssisted`, seuil `meta.baseValue`. */
+    valeur: number;
+    /** Détail du Soutien (LDB 12) DÉJÀ fondu dans `valeur` — il ressort en ligne NOMMÉE. */
+    soutien?: SupportDetail;
+    /** Parts que l'appelant a lui-même fondues dans `valeur` et qu'il NOMME (−10 du réparateur de
+     *  substitution `MSRC 5 l.113-117`) : elles SORTENT de la base pour prendre leur place de ligne.
+     *  Les déclarer sans les avoir fondues fausse la base — la garde d'exactitude le refuse. */
+    dansLaValeur?: ModLine[];
+    /** La valeur vient d'une AUTRE formule que `testValue` (valeur de combat, soigneur PNJ sans fiche,
+     *  seuil de table) : la décomposition est alors IMPOSSIBLE et le drapeau la DÉCLARE — la base rendue
+     *  n'est PAS un Niveau de Compétence. Sans lui, une reconstruction ratée est un BUG. */
+    valeurEtrangere?: true;
+  }
+  | { valeur?: never; soutien?: never; dansLaValeur?: never; valeurEtrangere?: never };
+
+/** DÉCLARATION d'une ligne de jet — le CONTRAT d'entrée du monteur canonique `rollLine`. Aucun calcul
+ *  chez l'appelant : il DIT l'acteur, le Test, la Difficulté, sa valeur et ses poches. */
+export type RollLineSpec = RollLineBase & RollLineValeur;
+
+/** MÊME déclaration, Difficulté EXCEPTÉE — pour les résolveurs qui savent QUI teste QUOI mais pas
+ *  encore à quelle Difficulté (le meilleur réparateur de bateau, le meneur d'une enquête) : la
+ *  Difficulté vient du SITE qui ouvre le jet. Se complète par `withDifficulty`. */
+export type RollLineDecl = Omit<RollLineBase, 'difficulty'> & RollLineValeur;
+
+/** Complète une déclaration par sa Difficulté. Générique : la branche EXACTE de l'union (valeur
+ *  fournie / valeur dérivée) est CONSERVÉE, donc l'exclusivité `soutien` ⇒ `valeur` reste vérifiée
+ *  par le compilateur après composition. */
+export function withDifficulty<T extends RollLineDecl>(decl: T, difficulty: Difficulty): T & { difficulty: Difficulty } {
+  return { ...decl, difficulty };
+}
+
+/** Ce qu'une étape-jet doit porter pour être lisible : base NUE, lignes NOMMÉES, cible, écrêtage. */
+export interface RollLineParts { base: number; mods: ModLine[]; target: number; clamped?: number }
+
+/**
+ * MONTEUR CANONIQUE d'une ligne de jet (#1153) — le SEUL endroit du jeu où `base`/`mods`/`target`
+ * d'une étape se calculent. La porte du seam (`buildMonoStep`) comme les monteurs LOCAUX des flux
+ * (voyage fluvial/maritime/terrestre, embrigadement, activités hors combat) le consomment : un
+ * call-site DÉCLARE, il ne calcule plus — une erreur de cette famille se corrige ICI, une fois.
+ *
+ * INVARIANTS :
+ *  - `base` = Niveau de Compétence NU (`skillBaseValue`, `LDB 09 l.17`), la grandeur qui s'affiche et
+ *    qui DÉPARTAGE à DR égal (`LDB 12 l.160`) — SAUF côté MONDE (aucun acteur : la base EST le seuil
+ *    posé par l'appelant) et SAUF `valeurEtrangere` (formule hors `testValue`, assumée au call-site) ;
+ *  - `base + Σ mods + Difficulté + écrêtage === target` : tout l'écart est NOMMÉ (Soutien, États,
+ *    Encombrement, séquelles, passifs, outil manquant — `testValueSplit`), aucune chip « autres » ;
+ *  - la CIBLE dérive de la valeur FONDUE, écrêtée par la MÊME primitive que `rollTest` (`clampTarget`).
+ *
+ * GARDE D'EXACTITUDE : l'invariant arithmétique seul est TAUTOLOGIQUE (la base est une soustraction,
+ * elle absorbe l'erreur). Une reconstruction ratée non déclarée — modificateur annoncé mais jamais
+ * fondu, ou fondu ET redéclaré en double — THROW en DEV et se journalise en PROD (patron
+ * `rollSansPilote`) : le mensonge se voit au premier passage au lieu de se lire comme une base juste.
+ * Une Difficulté inconnue est refusée de même : sans elle la cible serait `NaN`, en silence.
+ */
+export function rollLine(spec: RollLineSpec): RollLineParts {
+  const t = spec.test ?? {};
+  const dansLaValeur = spec.dansLaValeur ?? [];
+  const fusedSum = dansLaValeur.reduce((s, m) => s + m.value, 0);
+  const dv = DIFFICULTY_MODIFIERS[spec.difficulty];
+  if (typeof dv !== 'number') throw new Error(`rollLine : Difficulté inconnue « ${String(spec.difficulty)} » — la cible serait NaN.`);
+  const value = spec.valeur ?? (spec.actor ? testValue(spec.actor, t.skill, t.char, t.spec, t.sense) : 0);
+  const split = testValueSplit(spec.actor, value, {
+    support: spec.soutien, skill: t.skill, characteristic: t.char, spec: t.spec, sense: t.sense, fused: fusedSum,
+  });
+  if (!split.exact && !spec.valeurEtrangere) {
+    const msg = `[seam] rollLine : la valeur (${value}) ne se reconstruit pas depuis le Niveau de Compétence `
+      + `(${t.skill ?? t.char ?? '?'} de « ${spec.actor?.label ?? '?'} ») + ses composantes + ${fusedSum} déclaré(s) `
+      + '— une poche est mal remplie (modificateur non fondu, ou fondu ET redéclaré). La base affichée serait FAUSSE.';
+    console.error(msg);
+    if (import.meta.env?.DEV) throw new Error(msg);
+  }
+  const surLaCible = spec.surLaCible ?? [];
+  const { target, clamped } = clampTarget(value + dv + surLaCible.reduce((s, m) => s + m.value, 0));
+  return {
+    base: split.base - fusedSum,
+    mods: [...split.mods, ...dansLaValeur, ...surLaCible],
+    target,
+    ...(clamped ? { clamped } : {}),
+  };
+}
+
+/** Étale une ligne montée en CHAMPS d'étape (`CascadeStep`/`BatchParticipant`) : `mods` et `clamped`
+ *  ne sont posés que s'ils existent — un monteur local ne réécrit jamais cet étalement à la main. */
+export function rollStep(spec: RollLineSpec): { base: number; mods?: ModLine[]; target: number; clamped?: number } {
+  const line = rollLine(spec);
+  return {
+    base: line.base,
+    ...(line.mods.length ? { mods: line.mods } : {}),
+    target: line.target,
+    ...(line.clamped ? { clamped: line.clamped } : {}),
+  };
 }
 
 /** Résout un test skill/char SIMPLE (mono, `hero-test`/`enemy`/`subi` à `actorId`) en `CascadeStep`
@@ -305,11 +414,11 @@ function nakedValue(actor: Combatant, test: RollRequest['test']): number | undef
  *  réduit au cas générique (pas de candidats/mod social : hors périmètre du seam Ronde 0). */
 function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeStepMeta): CascadeStep {
   const { actorId, actor, baseValue, support } = resolveMonoSide(get, req, meta);
-  // La CIBLE ne bouge pas : elle reste dérivée de la valeur FONDUE (`testValue` pour un acteur
-  // désigné, la valeur SOUTENUE de `partyAssisted`/le seuil `meta.baseValue` sinon).
-  const target = effectiveTarget(actor, req.test, req.difficulty, baseValue);
-  const naked = actor ? nakedValue(actor, req.test) : undefined;
-  const soutien = soutienMod(support);
+  // Ligne montée par le MONTEUR CANONIQUE : la cible reste dérivée de la valeur FONDUE (`testValue`
+  // pour un acteur désigné, la valeur SOUTENUE de `partyAssisted`/le seuil `meta.baseValue` sinon).
+  const line = rollLine(baseValue != null
+    ? { actor, test: req.test, difficulty: req.difficulty, valeur: baseValue, soutien: support }
+    : { actor, test: req.test, difficulty: req.difficulty });
   return {
     id: kind,
     kind,
@@ -320,20 +429,15 @@ function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeS
     ...(!actorId && 'worldSide' in req.side ? { worldOwner: true } : {}),
     label: composeRollLabel(actor, req.actionLabel, req.test),
     // Difficulté en donnée de LIGNE (#1072) : la modale la rend en texte + valeur sur la rangée ; sa
-    // valeur est déjà comprise dans `target` (`effectiveTarget`).
+    // valeur est déjà comprise dans `target` (`rollLine`).
     difficulty: req.difficulty,
     // Compétence DÉRIVÉE du catalogue (`testSkillLabel`) — jamais `req.actionLabel` sauf repli (Test
     // SANS compétence/carac déclarée, ex. Désertion : rien à nommer en position de compétence).
     rollLabel: testSkillLabel(req.test) ?? req.actionLabel,
-    // `LDB 09 l.17` / `LDB 12 l.160` (cf. INVARIANT, `docs/architecture.md`) : la valeur NUE, par
-    // l'accesseur canon `skillBaseValue` — jamais une soustraction. Les modificateurs (États,
-    // Encombrement, passifs, Soutien, Difficulté) restent dans `target`. Côté SANS acteur
-    // (`worldSide`), rien à dériver : le seuil posé en `meta.baseValue` fait office de base.
-    base: naked ?? baseValue ?? 0,
-    // Le SOUTIEN (LDB 12 l.187-200) est un MODIFICATEUR, pas un morceau de la base : il arrive en
-    // ligne NOMMÉE (`soutienMod`), à sa place dans le breakdown.
-    ...(soutien ? { mods: [soutien] } : {}),
-    target,
+    base: line.base,
+    ...(line.mods.length ? { mods: line.mods } : {}),
+    target: line.target,
+    ...(line.clamped ? { clamped: line.clamped } : {}),
     result: null,
     interactive: true,
     menace: req.test.menace,

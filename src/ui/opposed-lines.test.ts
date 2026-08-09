@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { opposedLines } from './breakdown';
 import { baseTestModLines, baseTestMods } from '../engine/combat';
-import { supportSplit } from './breakdown';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import type { Combatant } from '../engine/types';
 
@@ -95,19 +94,19 @@ describe('lignes opposées de combat — l’écart à la base est TOUJOURS couv
  * information à afficher au joueur.
  */
 describe('contrat arithmétique d’une ligne de cascade (#1117 G2)', () => {
-  /** Ce que la ligne AFFICHE, tel que `CascadeModal.stepLine` le compose. */
-  const emission = (step: { base?: number; target?: number; support?: unknown; mods?: { label: string; value: number }[]; difficulty?: Difficulty }) => {
-    const raw = step.base ?? step.target ?? 0;
-    const { base, mods } = supportSplit(raw, step.support as never);
-    const all = [...mods, ...(step.mods ?? [])];
+  /** Ce que la ligne AFFICHE, tel que `CascadeModal.stepLine` le compose : la `base` de l'étape est
+   *  NUE, ses `mods` portent TOUT le nommé (Soutien compris). */
+  const emission = (step: { base?: number; target?: number; mods?: { label: string; value: number }[]; difficulty?: Difficulty }) => {
+    const base = step.base ?? step.target ?? 0;
+    const all = step.mods ?? [];
     const modifier = (step.target ?? 0) - base;
     const dv = step.difficulty ? DIFFICULTY_MODIFIERS[step.difficulty] : 0;
     return { base, mods: all, modifier, dv, residual: modifier - dv - all.reduce((s, m) => s + m.value, 0) };
   };
 
   it('Soutien + Difficulté : tout l’écart est expliqué, résidu ZÉRO', () => {
-    // Cas de la sonde : valeur soutenue 89 (Soutien +20 fondu), Très difficile (−30) → cible 59.
-    const e = emission({ base: 89, target: 59, support: { count: 2, bonus: 20 } as never, difficulty: 'tresDifficile' });
+    // Cas de la sonde : porteur NU 69, Soutien +20 en ligne de mod, Très difficile (−30) → cible 59.
+    const e = emission({ base: 69, target: 59, mods: [{ label: 'Soutien', value: 20 }], difficulty: 'tresDifficile' });
     expect(e.base, 'la base affichée est la valeur NUE du porteur').toBe(69);
     expect(e.mods.map((m) => m.label)).toEqual(['Soutien']);
     expect(e.residual, 'aucun résidu : Σchips + Difficulté == modifier').toBe(0);

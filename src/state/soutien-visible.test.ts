@@ -96,7 +96,6 @@ describe('#1064 — le pending PORTE le détail du Soutien (couture)', () => {
     expect(step.base).toBe(35); // Niveau de Compétence NU du meneur (Ag 30 + 5), LDB 09 l.17
     expect(step.target).toBe(45); // …le Soutien reste un MODIFICATEUR compris dans la cible (l.189-190)
     expect(step.mods).toEqual([{ label: 'Soutien', value: 10, ref: { category: 'regles', id: 'soutien' }, by: [{ id: 'h2' }] }]);
-    expect(step.support).toBeUndefined(); // rien à défaire : la base n'a jamais fondu le Soutien
   });
 });
 

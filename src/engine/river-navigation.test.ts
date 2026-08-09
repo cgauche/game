@@ -7,7 +7,7 @@ import { RULE_REF } from './ruleRefs';
 import {
   rollRiverWind, tickRiverWind, riverWindEffect, savoirVoiesFluvialesBonus, riverPilotSkill,
   riverControlKept, rowingAgilityFactor, riverDayKm, riverDriftKm, navPenaltyMods,
-  capsizeRoundTarget, CAPSIZE_RIGHT_DIFFICULTY, CAPSIZE_RIGHT_CUMULATIVE, capsizeSinkTurns, holeSinkMinutes,
+  CAPSIZE_RIGHT_DIFFICULTY, CAPSIZE_RIGHT_CUMULATIVE, capsizeSinkTurns, holeSinkMinutes,
   riverCritical, resolveRiverImpact, rollBarrage, echouageDamage, findRiverPeril, RIVER_PERILS,
 } from './riverNavigation';
 
@@ -100,15 +100,11 @@ describe('Navigation & rame (l.11-17)', () => {
 
 describe('Chavirage & naufrage (note 4 l.40 ; l.101-103)', () => {
   it('redressement : la cible du 1ᵉʳ Round est la Navigation Accessible (+20), sans malus', () => {
-    expect(capsizeRoundTarget(45, 0)).toBe(65); // 45 + 20 (Accessible)
     expect(CAPSIZE_RIGHT_DIFFICULTY).toBe('accessible');
   });
 
   it('chaque Round échoué ajoute −5 à la cible du suivant (note 4, l.40)', () => {
     expect(CAPSIZE_RIGHT_CUMULATIVE).toBe(-5);
-    expect(capsizeRoundTarget(45, 1)).toBe(60); // 1 échec : 65 − 5
-    expect(capsizeRoundTarget(45, 3)).toBe(50); // 3 échecs : 65 − 15
-    expect(capsizeRoundTarget(2, 10)).toBe(1); // plancher de cible
   });
 
   it('temporisation du naufrage : chavirage = BE tours ; coque percée = E minutes (l.40 / l.103)', () => {

@@ -5,7 +5,8 @@ import { canReroll } from '../engine/fortune';
 import { influencesLocally } from '../state/netOwnership';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { supportSplit, testBreakdown, testPending } from './breakdown';
+import { testValueSplit, testBreakdown, testPending } from './breakdown';
+import { APPRAISE_SKILL } from '../state/merchantFlow';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeAppraise } from '../state/flowOutcomes';
@@ -42,8 +43,10 @@ export function AppraiseModalView({
   const rolled = pa.roll != null;
   const detect = pa.mode === 'detect';
   const skill = pa.skillLabel ?? (detect ? 'Intuition' : 'Évaluation');
-  // Soutien du groupe (LDB 12) : ligne de mod nommée, base SANS le Soutien.
-  const { base, mods: supMods } = supportSplit(pa.skillValue, pa.support);
+  // Soutien du groupe (LDB 12) et composantes de la valeur de Test (États, séquelles, passifs,
+  // effets — #1178) : lignes de mod NOMMÉES, base rebasée sur le Niveau de Compétence nu (LDB 09 l.17).
+  // La Compétence testée vient de la SOURCE UNIQUE du flux (`APPRAISE_SKILL`), par id.
+  const { base, mods: supMods } = testValueSplit(actor, pa.skillValue, { support: pa.support, ...APPRAISE_SKILL[pa.mode ?? 'evaluate'] });
 
   const actorRow: RollRowData = {
     actor,

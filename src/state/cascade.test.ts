@@ -395,22 +395,19 @@ describe('Cascade séquentielle influençable', () => {
 
 /**
  * CONTRAT de l'étape OPPOSÉE : la grandeur qui DÉPARTAGE à DR égal est le Niveau de Compétence NU
- * (LDB 12 l.160). Une étape qui oppose un jet figé tout en fondant un Soutien dans sa `base`
- * comparerait une valeur soutenue à la valeur nue de l’adversaire — `stepOpposedFreeze` est le SEUL
- * point de passage des résolutions opposées (mono ET bande) : il REFUSE, il ne corrige pas en douce.
+ * (LDB 12 l.160), et `stepOpposedFreeze` est le SEUL point de passage des résolutions opposées (mono
+ * ET bande) — il rend le jet d'adversaire FIGÉ tel que le producteur l'a jeté, une fois pour toutes
+ * les rangées. La `base` d'une étape est nue PAR CONSTRUCTION (`CascadeStepBase.base`, Soutien en
+ * ligne de `mods`) : aucune étape ne peut plus y fondre un Soutien.
  */
-describe('étape opposée — base NUE, fail-closed (LDB 12 l.160)', () => {
+describe('étape opposée — base NUE (LDB 12 l.160)', () => {
   const aT = { roll: 20, target: 60, success: true, sl: 4, isDouble: false, base: 60 };
-  it('une étape opposée SANS Soutien rend son freeze', () => {
+  it('une étape opposée rend son freeze', () => {
     const st = { id: 's1', kind: 'x', base: 40, target: 40, meta: { opposed: { aT } } } as unknown as CascadeStep;
     expect(stepOpposedFreeze(st)?.aT.roll).toBe(20);
   });
-  it('une étape opposée qui fond un Soutien dans sa base est REFUSÉE', () => {
-    const st = { id: 's1', kind: 'x', base: 50, target: 50, support: { count: 1, bonus: 10, names: ['A'] }, meta: { opposed: { aT } } } as unknown as CascadeStep;
-    expect(() => stepOpposedFreeze(st)).toThrow(/base NUE|Soutien FONDU/);
-  });
-  it('une étape NON opposée garde le droit de fondre son Soutien (aucune régression)', () => {
-    const st = { id: 's1', kind: 'x', base: 50, target: 50, support: { count: 1, bonus: 10, names: ['A'] } } as unknown as CascadeStep;
+  it('une étape NON opposée n’en rend aucun', () => {
+    const st = { id: 's1', kind: 'x', base: 50, target: 50, mods: [{ label: 'Soutien', value: 10 }] } as unknown as CascadeStep;
     expect(stepOpposedFreeze(st)).toBeUndefined();
   });
 });

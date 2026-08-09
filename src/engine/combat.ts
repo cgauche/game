@@ -19,7 +19,7 @@ import { weatherTestMods } from './weatherTestMod';
 import { findTableEntry } from './tables';
 import { maxBy } from './pick';
 import locJson from '../data/localisation.json';
-import { combatTestPenaltyParts, meleeAttackerBonusLines, cannotDefend, hasCondition, COND, activeCharTestMod } from './conditions';
+import { combatTestPenaltyParts, meleeAttackerBonusLines, cannotDefend, hasCondition, COND, activeCharTestMod, activeCharTestModParts } from './conditions';
 import { effectiveWeaponDamage, effectiveWeapon, effectiveWeaponRange } from './weaponDamage';
 import { traumaDodgePenalty, damageSBBonus, amputationCombatPenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, SIZE_ORDER, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
@@ -224,9 +224,16 @@ export function combatBaseValue(c: Combatant, kind: 'melee' | 'ranged', weapon?:
  * arme, Piétinement…) ou si aucun effet ne porte `testModHand`.
  */
 export function combatValueMods(c: Combatant, kind: 'melee' | 'ranged', weapon?: Weapon): number {
-  if (weapon?.resolveChar) return 0; // carac BRUTE (ADE II 8 l.233) : aucun mod de Test char-qualifié
+  return combatValueModParts(c, kind, weapon).reduce((s, p) => s + p.value, 0);
+}
+
+/** Les MÊMES modificateurs, en composantes NOMMÉES (libellé + renvoi Codex de l'entité émettrice) —
+ *  SOURCE UNIQUE dont `combatValueMods` est la Σ : l'écran qui rebase une valeur de combat sur sa
+ *  valeur NUE (`combatBaseValue`) annonce l'écart au lieu de le fondre (#1178, `ReloadModal`). */
+export function combatValueModParts(c: Combatant, kind: 'melee' | 'ranged', weapon?: Weapon): ModLine[] {
+  if (weapon?.resolveChar) return []; // carac BRUTE (ADE II 8 l.233) : aucun mod de Test char-qualifié
   const charKey = kind === 'melee' ? 'capacite-de-combat' : 'capacite-de-tir';
-  return activeCharTestMod(c, charKey, { weaponHand: weapon?.hand });
+  return activeCharTestModParts(c, charKey, { weaponHand: weapon?.hand });
 }
 
 /** Valeur de combat FONDUE = valeur NUE + ses modificateurs (identité `base + modificateurs`). */

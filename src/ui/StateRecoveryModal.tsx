@@ -83,7 +83,10 @@ export function StateRecoveryModalView({
     <RollShell
       flowKey="recover"
       stake={flowStakeRef('recover', sr.state)}
-      variant="test"
+      /* OPPOSÉ (« Se libérer ») = 2 rangées → coquille `roll` ; le prédicat vient du PENDING (stable
+         dès l'ouverture, la rangée témoin n'apparaît qu'au jet — la fenêtre ne change pas de gabarit
+         en cours de session). Test solo (« Se rouler au sol ») : gabarit `test`. (#1153 L2ter) */
+      variant={sr.opposed ? 'roll' : 'test'}
       title={sr.state === 'empetre' ? 'Se libérer' : 'Se rouler au sol'}
       subtitle={<>{sub} · {sr.stacks} pion{sr.stacks > 1 ? 's' : ''}</>}
       rows={witness ? [actorRow, witness] : [actorRow]}

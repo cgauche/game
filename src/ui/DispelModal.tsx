@@ -3,7 +3,7 @@ import { flowStakeRef } from '../data';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { testBreakdown, testPending, supportSplit } from './breakdown';
+import { testBreakdown, testPending, testValueSplit } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { Icon } from './Icon';
 import { ev } from '../state/combatLog';
@@ -31,8 +31,10 @@ export function DispelModal() {
   const prev = caster.dispel?.spellId === pd.spellId && caster.dispel.spellCasterId === pd.spellCasterId ? caster.dispel.total : 0;
   const r = pd.result;
   const cum = Math.min(pd.ni, prev + (r?.sl ?? 0));
-  // Soutien de dissipation à plusieurs (LDB 12) : ligne de mod comme tout bonus, base SANS le Soutien.
-  const { base, mods: supMods } = supportSplit(pd.value, pd.support);
+  // Soutien de dissipation à plusieurs (LDB 12) et composantes de la valeur de Test (États, séquelles,
+  // passifs, effets — #1178) : lignes de mod NOMMÉES, base rebasée sur le Niveau de Compétence nu
+  // (LDB 09 l.17). Compétence testée = celle que `battleDispelSpell`/`oocDispelSpell` roulent.
+  const { base, mods: supMods } = testValueSplit(caster, pd.value, { support: pd.support, skill: 'langue', spec: 'magick' });
   const rolled = !!r;
 
   const actorRow: RollRowData = {

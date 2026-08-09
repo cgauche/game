@@ -5,7 +5,7 @@
  */
 import type { GameState } from './store';
 import { toRecapLines } from './recapLine';
-import { Combatant, ItemInstance } from '../engine/types';
+import { Combatant, ItemInstance, type CharKey } from '../engine/types';
 import { recomputeLoadout, itemFromTrappingById, addItemToHero, autoStowNewItem } from '../engine/items';
 import { isRepairable, itemRepairCostBrass } from '../engine/repair';
 import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
@@ -833,12 +833,21 @@ export function bargainConfirm(get: Get, set: Set): void {
  *  l'objet est senti magique, chaque DR apprend une règle spéciale ; UNE tentative par artefact. */
 export const DETECT_TALENT = "Détection d'artefact";
 
+/** Compétence testée par CHAQUE mode de la fenêtre Évaluation/Détection, par id STABLE — SOURCE
+ *  UNIQUE lue par l'ouverture du jet (`bestDetector`/`openAppraise`) ET par la modale qui décompose
+ *  la valeur affichée (`AppraiseModal`, #1178). Détection : Talent « Détection d'artefact »
+ *  (`LDB 10 l.310-312`). Les Caractéristiques associées sont celles de `skills.json`. */
+export const APPRAISE_SKILL = {
+  evaluate: { skill: 'evaluation', characteristic: 'intelligence' },
+  detect: { skill: 'intuition', characteristic: 'initiative' },
+} as const satisfies Record<'evaluate' | 'detect', { skill: string; characteristic: CharKey }>;
+
 /** Meilleur détecteur du groupe : meilleure Intuition PARMI les porteurs du Talent (c'est LUI qui
  *  touche l'objet — pas un partyBest global comme l'Évaluation). null si personne ne l'a. */
 export function bestDetector(party: Combatant[]): { actor: Combatant; value: number; support: SupportDetail } | null {
   const holders = party.filter((h) => !h.dead && h.talents.some((t) => t.talentId === slugId(DETECT_TALENT) && (t.times ?? 1) >= 1));
   if (!holders.length) return null;
-  const best = partyAssisted(holders, 'intuition', 'initiative'); // Soutien (LDB 12)
+  const best = partyAssisted(holders, APPRAISE_SKILL.detect.skill, APPRAISE_SKILL.detect.characteristic); // Soutien (LDB 12)
   return best ? { actor: best.actor, value: best.value, support: best.support } : null;
 }
 
@@ -849,7 +858,7 @@ function openAppraise(
   target: { itemUid?: string; gear?: { scope: 'loot' | 'victory'; index: number } },
   itemName: string, mode: 'evaluate' | 'detect', trappingId?: string,
 ): void {
-  const best = mode === 'detect' ? bestDetector(get().party) : partyAssisted(get().party, 'evaluation', 'intelligence'); // Soutien (LDB 12)
+  const best = mode === 'detect' ? bestDetector(get().party) : partyAssisted(get().party, APPRAISE_SKILL.evaluate.skill, APPRAISE_SKILL.evaluate.characteristic); // Soutien (LDB 12)
   if (!best) return;
   const t = trappingId ? findTrappingById(trappingId) : undefined;
   set({ pendingAppraise: {

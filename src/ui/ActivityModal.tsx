@@ -4,7 +4,8 @@ import { freeRerollOf } from '../engine/activeFlags';
 import type { ModLine } from '../engine/combat';
 import { evaluateTest } from '../engine/tests';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { testBreakdown, testPending, supportSplit, opposedLines } from './breakdown';
+import { testBreakdown, testPending, testValueSplit, opposedLines } from './breakdown';
+import { activityById } from '../engine/activities';
 import { describeActivity } from '../state/flowOutcomes';
 import { resultLines, freeCons } from '../state/rollSeam';
 import { activityStakeRef, hasActivityStake } from '../data';
@@ -36,7 +37,15 @@ export function ActivityModal() {
   // Contexte de BATAILLE rendu en LIGNES de mod (source unique « base + mods » de la coquille), pas en
   // sous-titre ad hoc : Soutien multi-PJ (LDB 12, fondu dans `skillValue` → base RÉELLE = value − bonus,
   // même patron que la Dissipation à plusieurs) et modificateur de SITUATION (Menace/Planification).
-  const { base, mods: supMods } = supportSplit(pa.skillValue, pa.support);
+  // #1178 : les composantes de la valeur de Test (États, séquelles, passifs, effets) prennent aussi
+  // leur ligne NOMMÉE, quand la Compétence testée est DÉSIGNABLE par id — celle CHOISIE par le
+  // résolveur (`chosenSkill`), sinon l'unique Compétence déclarée par l'Activité (`activities.json`).
+  const actDef = pa.activityId ? activityById(pa.activityId) : undefined;
+  const onlySkill = actDef?.skills?.length === 1 ? actDef.skills[0] : undefined;
+  const tested = pa.chosenSkill ? { skillId: pa.chosenSkill, spec: pa.chosenSkillSpec } : onlySkill;
+  const { base, mods: supMods } = testValueSplit(actor, pa.skillValue, {
+    support: pa.support, skill: tested?.skillId, characteristic: tested ? undefined : actDef?.char, spec: tested?.spec,
+  });
   const situationMod: ModLine | undefined = pa.mod ? { label: pa.modLabel ?? 'Modificateur', value: pa.mod } : undefined;
   const extraMods: ModLine[] = [...supMods, ...(situationMod ? [situationMod] : [])];
   // Cible affichée : celle du jet (pré-cuite dès l'ouverture en bataille, sinon dérivée base+Difficulté).
@@ -123,7 +132,12 @@ export function ActivityModal() {
   return (
     <RollShell
       flowKey="activity"
-      variant="test"
+      /* Coquille `roll` dès que l'Activité rend PLUSIEURS rangées (Test combiné, opposition « Tenez
+         votre position ») — le gabarit `test` est celui d'un Test SOLO (`.test-modal`, 340px figés).
+         Le prédicat se lit sur le PENDING (connu à l'ouverture), jamais sur le nombre de rangées
+         RENDUES : la rangée ennemie n'apparaît qu'après le jet, et la fenêtre ne doit pas changer de
+         gabarit en cours de session (invariant de géométrie, `docs/charte-ui.md`). */
+      variant={pa.enemyValue != null || (pa.target2 != null && !!pa.skill2) ? 'roll' : 'test'}
       title={pa.label}
       /* Z3b : l'enjeu vient de l'ACTIVITÉ jouée (donnée éditable) — le ⓘ du titre s'accole tout seul
          (RollShell), et le foyer de règle est l'Activité elle-même à défaut d'un autre déclaré. */

@@ -104,7 +104,6 @@ describe('Marchandage PORTUAIRE soutenu : le Soutien ne départage pas (LDB 12 l
     expect(step.base).toBe(45); // Niveau de Compétence NU (LDB 09 l.17) — la grandeur du départage (l.160)
     expect(step.mods?.[0]).toMatchObject({ label: 'Soutien', value: 10 }); // 1 soutien éligible (l.189-190)
     expect(step.target).toBe(55); // …compris dans la CIBLE, là où le RAW le met
-    expect(step.support).toBeUndefined();
   });
 
   it('ACHAT, DR égal : la Compétence NUE du meneur (45) perd contre le marchand (50) — surcoût, jamais remise', () => {

@@ -543,3 +543,89 @@ describe('REGISTRE des chemins de jet (#1066) — familles CANONIQUES énuméré
     expect(/^function\s+openCrewTestPending\b/m.test(src)).toBe(true);
   });
 });
+
+/**
+ * CLIQUET « le calcul de ligne ne se réécrit plus à la main » (#1153 L2bis) — l'arithmétique de cible
+ * (`DIFFICULTY_MODIFIERS[…]`, écrêtage `Math.min(99, …)`) n'a de place que dans `src/engine/**` (les
+ * formules), dans le MONTEUR canonique (`rollSeam.rollLine`) et chez ses LECTEURS d'affichage
+ * (`ui/breakdown.ts`, `ui/RollLine.tsx`, harnais de test) — partout ailleurs, elle signe un monteur
+ * local qui refait la ligne et peut donc mentir (base fondue, chip fantôme, cible NaN).
+ *
+ * Ce stock est un CLIQUET : il ne peut que DÉCROÎTRE. Toute entrée est un site à router par
+ * `rollLine`, sauf le COMBAT — sorti NOMMÉMENT du périmètre (autre arithmétique : `baseTestMods`,
+ * Avantage, allonge…), à traiter par son propre lot.
+ */
+const LIGNE_A_LA_MAIN_STOCK: Record<string, number> = {
+  // COMBAT — hors périmètre déclaré (arithmétique distincte, lot dédié à ouvrir)
+  'src/state/combatFlow.ts': 4,
+  'src/state/combatSlice.ts': 3,
+  'src/state/combat/triggeredTest.ts': 3,
+  'src/state/combatEffects.ts': 5,
+  'src/state/encounterPsychFlow.ts': 1,
+  'src/state/shipManeuver.ts': 1,
+  // HORS COMBAT — dette restante, à router par `rollLine`
+  'src/state/massBattleFlow.ts': 4,
+  'src/state/rollFlowSpecs.ts': 4,
+  'src/state/restFlow.ts': 2,
+  'src/state/innFlow.ts': 1,
+  'src/state/interludeFlow.ts': 1,
+  'src/state/landMarketFlow.ts': 1,
+  'src/state/medicFlow.ts': 1,
+  'src/state/upkeep.ts': 1,
+  'src/state/shipwreck.ts': 2,
+  'src/state/seaVoyageFlow.ts': 1, // reste : conversion Difficulté→DR d'une infestation (pas une cible)
+  'src/ui/editor/LogicDock.tsx': 1, // éditeur : APERÇU d'une difficulté authorée, aucun jet
+  'src/state/cascadeTestKit.ts': 1, // le cliquet lui-même (`inexplique`)
+};
+
+/** Dette TOTALE mesurée à l'installation du cliquet (37 occurrences / 18 fichiers, dont 17 en combat,
+ *  hors périmètre déclaré) — verrou global : un site déplacé d'un fichier à l'autre ne s'y cache pas. */
+const TOTAL_DECLARE = Object.values(LIGNE_A_LA_MAIN_STOCK).reduce((s, n) => s + n, 0);
+
+describe('CLIQUET — l’arithmétique de ligne vit dans le monteur, pas dans les flux (#1153)', () => {
+  const LIGNE_RX = /DIFFICULTY_MODIFIERS\[|Math\.min\(99/g;
+  const HORS_CLIQUET = ['src/engine/', 'src/state/rollSeam.ts', 'src/ui/breakdown.ts', 'src/ui/RollLine.tsx'];
+
+  const walk = (dir: string, out: string[] = []): string[] => {
+    for (const e of readdirSync(dir)) {
+      const p = join(dir, e);
+      if (statSync(p).isDirectory()) walk(p, out);
+      else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) out.push(p);
+    }
+    return out;
+  };
+
+  it('aucun NOUVEAU site ne recalcule une cible à la main (le stock ne peut que décroître)', () => {
+    const mesure: Record<string, number> = {};
+    for (const abs of walk(join(ROOT, 'src'))) {
+      const rel = relative(ROOT, abs).replace(/\\/g, '/');
+      if (HORS_CLIQUET.some((p) => rel.startsWith(p))) continue;
+      const n = (readFileSync(abs, 'utf8').match(LIGNE_RX) ?? []).length;
+      if (n > 0) mesure[rel] = n;
+    }
+    const ecarts: string[] = [];
+    for (const [file, n] of Object.entries(mesure)) {
+      const attendu = LIGNE_A_LA_MAIN_STOCK[file];
+      if (attendu === undefined) ecarts.push(`${file} : ${n} occurrence(s) NOUVELLE(S) — monter la ligne par \`rollLine\` (rollSeam.ts)`);
+      else if (n > attendu) ecarts.push(`${file} : ${n} > ${attendu} déclaré(s) — le cliquet ne remonte pas`);
+    }
+    expect(ecarts, `Arithmétique de ligne réécrite à la main :\n${ecarts.join('\n')}`).toEqual([]);
+    // Le TOTAL est verrouillé aussi : un site déplacé d'un fichier à l'autre ne passerait pas entre
+    // les mailles du compte par fichier.
+    expect(Object.values(mesure).reduce((s, n) => s + n, 0)).toBeLessThanOrEqual(TOTAL_DECLARE);
+  });
+
+  it('le stock DÉCLARÉ suit la dette RÉELLE, à l’unité près (entrée périmée ET baseline trop haute)', () => {
+    // Le cliquet ne mord pas qu'à ZÉRO : une baseline de 5 sur un fichier retombé à 3 est PÉRIMÉE elle
+    // aussi — sans quoi le stock mentirait de 2 sites déjà migrés, et 2 régressions pourraient s'y
+    // glisser sans rien casser (patron `cascade-step-stake-guard`).
+    const perimees: string[] = [];
+    for (const [file, attendu] of Object.entries(LIGNE_A_LA_MAIN_STOCK)) {
+      const abs = join(ROOT, file);
+      if (!existsSync(abs)) { perimees.push(`${file} : fichier absent — retirer du stock`); continue; }
+      const n = (readFileSync(abs, 'utf8').match(LIGNE_RX) ?? []).length;
+      if (n < attendu) perimees.push(`${file} : baseline ${attendu}, réel ${n} — ABAISSER`);
+    }
+    expect(perimees, `Stock périmé (dette déjà résorbée, à refléter) :\n${perimees.join('\n')}`).toEqual([]);
+  });
+});

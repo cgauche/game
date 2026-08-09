@@ -29,7 +29,7 @@ import { applyHealWounds } from '../engine/healing';
 import { removeCondition, stacks } from '../engine/conditions';
 import { extendedTestStep } from '../engine/tests';
 import { registerCascadeApplier } from './cascade';
-import { freeCons, resultLines, type Consequence } from './rollSeam';
+import { freeCons, resultLines, rollStep, type Consequence } from './rollSeam';
 import { toRecapLines } from './recapLine';
 import { t } from '../i18n';
 import { rule } from '../engine/policy';
@@ -41,8 +41,8 @@ import { weatherTestMods } from '../engine/weatherTestMod'; // CANAL UNIQUE « T
 import { hasCoat, partyHasTent, applyExposureFailure, isWeatherWarded } from '../engine/exposure';
 import { rationCount } from '../engine/provisions';
 import { itemFromGive, autoStowNewItem } from '../engine/items';
-import { testValue, effectiveSkillCharKey } from '../engine/skills';
-import { DIFFICULTY_MODIFIERS, type Difficulty, type Combatant } from '../engine/types';
+import { effectiveSkillCharKey } from '../engine/skills';
+import type { Difficulty, Combatant } from '../engine/types';
 import type { ModLine } from '../engine/combat';
 import { weatherRef } from '../engine/travelStages';
 import { partyWalkSpeed, vehicleTravel, type TravelMode } from '../engine/travel';
@@ -164,16 +164,17 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
       const wMod = weatherModOf(def, weather);
       const char = spec.used ? effectiveSkillCharKey(hero, spec.used.skillId, { spec: spec.used.spec }) : undefined;
       const pMod = weatherTestMods(weather, char ?? null).reduce((s, l) => s + l.value, 0); // CANAL UNIQUE (#341)
-      const target = Math.max(1, Math.min(99, spec.value + DIFFICULTY_MODIFIERS[def.difficulty ?? 'intermediaire'] + wMod + pMod));
       const mods = stageActivityMods(weather, wMod, pMod);
+      const difficulty = def.difficulty ?? 'intermediaire';
       batchParts.push({
         id: hero.id,
         label: spec.used ? refLabel('skills', { id: spec.used.skillId, spec: spec.used.spec }) : def.label,
         interactive: true,
-        base: spec.value,
-        difficulty: def.difficulty ?? 'intermediaire',
-        target,
-        ...(mods ? { mods } : {}),
+        difficulty,
+        // Les mods de MÉTÉO (`wMod`/`pMod`) s'ajoutent à la CIBLE, ils ne sont pas dans la valeur.
+        ...rollStep(spec.used
+          ? { actor: hero, test: { skill: spec.used.skillId, spec: spec.used.spec }, valeur: spec.value, difficulty, surLaCible: mods }
+          : { valeur: spec.value, valeurEtrangere: true, difficulty, surLaCible: mods }),
         result: null,
         ...(spec.drTarget != null ? { extendedDrDone: Math.min(plan.extendedProgress ?? 0, spec.drTarget), extendedDrTarget: spec.drTarget } : {}),
       });
@@ -256,14 +257,13 @@ registerCascadeApplier('stagePosteBatch', (get, set, step) => {
 export function buildWeatherResistanceSteps(get: Get, weather: Weather): CascadeStep[] {
   const rt = weatherResistanceTest(weather);
   if (!rt) return [];
-  const diffMod = DIFFICULTY_MODIFIERS[rt.difficulty];
   const parts: BatchParticipant[] = [];
   for (const hero of get().party) {
     if (hero.dead || hero.outOfRencontre) continue;
-    const base = testValue(hero, 'resistance', 'endurance');
     parts.push({
       id: hero.id, label: 'Résistance', interactive: true,
-      base, difficulty: rt.difficulty, target: Math.max(1, Math.min(99, base + diffMod)),
+      difficulty: rt.difficulty,
+      ...rollStep({ actor: hero, test: { skill: 'resistance', char: 'endurance' }, difficulty: rt.difficulty }),
       result: null,
     });
   }
@@ -381,9 +381,9 @@ function buildExposureSteps(state: { party: Combatant[] }, stage: StageContext):
     if (!h || h.dead) continue;
     const diff = stageExposureDifficulty(stage.weather, hasCoat(h), tent);
     if (!diff) continue; // bien équipé sous pluie/neige normale, ou beau temps → aucun Test
-    const resVal = testValue(h, 'resistance', 'endurance');
     out.push({ id: `expo-${id}`, kind: 'stageExposure', actorId: id, icon: 'rest/cold', label: 'Exposition',
-      rollLabel: 'Résistance', base: resVal, difficulty: diff as Difficulty, target: Math.max(1, Math.min(99, resVal + DIFFICULTY_MODIFIERS[diff as Difficulty])),
+      rollLabel: 'Résistance', difficulty: diff as Difficulty,
+      ...rollStep({ actor: h, test: { skill: 'resistance', char: 'endurance' }, difficulty: diff as Difficulty }),
       result: null, interactive: true, menace: 'Exposition',
       meta: { weatherLabel: WEATHER_LABEL[stage.weather], warded: isWeatherWarded(h), coldSeason: isColdSeason(stage.season) } });
   }

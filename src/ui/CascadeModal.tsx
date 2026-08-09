@@ -610,9 +610,13 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       interactiveOf: (part) => part.interactive !== false && owns(part.id),
       row: (part, actor, res) => {
         const label = part.label ?? actor.label;
+        // La rangée batch se lit comme la rangée MONO : base NUE, chips nommées, CIBLE de l'étape et
+        // ÉCRÊTAGE mesuré. Sans `target` en pré-jet, la cible affichée se re-dérivait de `base +
+        // Difficulté` et divergeait de celle qui sera roulée ; sans `clamped`, le plafond redevenait
+        // une chip « autres ».
         return res
-          ? { combatant: actor, d: { label, base: part.base, mods: part.mods, ...(part.difficulty ? { difficulty: part.difficulty } : {}), modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } }
-          : { combatant: actor, pending: { label, base: part.base, mods: part.mods ?? [], ...(part.difficulty ? { difficulty: part.difficulty } : {}) } };
+          ? { combatant: actor, d: { label, base: part.base, mods: part.mods, ...(part.difficulty ? { difficulty: part.difficulty } : {}), ...(part.clamped ? { clamped: part.clamped } : {}), modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } }
+          : { combatant: actor, pending: { label, base: part.base, mods: part.mods ?? [], target: part.target, ...(part.difficulty ? { difficulty: part.difficulty } : {}), ...(part.clamped ? { clamped: part.clamped } : {}) } };
       },
       // ISSUES de la rangée (#1117) : la MÊME dérivation que l'étape MONO, mais PAR PARTICIPANT — le
       // VERDICT d'une rangée résolue et la promesse d'une rangée DIVERGENTE. Une rangée dont l'annonce est

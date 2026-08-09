@@ -35,12 +35,12 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `courses` | 5 | `src/gameIso/backends/affineRoofs.ts:130` |
+| `courses` | 6 | `src/gameIso/backends/affineRoofs.ts:130` |
 | `bands` | 1 | `src/gameIso/detail/expand.ts:86` |
 | `timber` | 2 | `src/gameIso/detail/expand.ts:91` |
-| `speckle` | 6 | `src/gameIso/backends/affineDetail.ts:477` |
-| `tufts` | 9 | `src/gameIso/backends/affineDetail.ts:472` |
-| `tintVar` | **0 — JAMAIS LU** | — |
+| `speckle` | 6 | `src/gameIso/backends/affineDetail.ts:419` |
+| `tufts` | 9 | `src/gameIso/backends/affineDetail.ts:414` |
+| `tintVar` | 1 | `src/gameIso/backends/webgl/faceColors.ts:115` |
 | `seedScope` | 2 | `src/gameIso/pov/geometry.ts:330` |
 
 ### `DiceSpec` (src/engine/dice.ts)
@@ -137,7 +137,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `stake` | 3 | `src/state/combat/triggeredTest.ts:202` |
 | `skill` | 12 | `src/state/combat/triggeredTest.ts:194` |
 | `spec` | 11 | `src/state/combat/triggeredTest.ts:194` |
-| `sense` | 1 | `src/state/combatEffects.ts:391` |
+| `sense` | 2 | `src/state/combatEffects.ts:391` |
 | `characteristic` | 10 | `src/state/combat/triggeredTest.ts:194` |
 | `difficulty` | 2 | `src/engine/flowCore.ts:370` |
 | `requireSL` | 1 | `src/state/combatEffects.ts:418` |
@@ -218,7 +218,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 ## Synthèse
 
-17 types, 120 champs mesurés, **15 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
+17 types, 120 champs mesurés, **14 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
 
 ## Cas fondateur
 

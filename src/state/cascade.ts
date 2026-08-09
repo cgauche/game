@@ -351,19 +351,12 @@ function aggregateBatchStep(step: CascadeStep): CascadeRoll {
  *
  * CONTRAT d'une étape OPPOSÉE : sa `base` est NUE (Niveau de Compétence, `LDB 09 l.17`) — c'est elle
  * qui DÉPARTAGE à DR égal (`LDB 12 l.160`, `engine/tests.openValues`), et une valeur SOUTENUE y
- * comparerait deux grandeurs distinctes. Une étape à la fois opposée et porteuse d'un Soutien fondu
- * (`support`, cf. `CascadeStepBase`) est donc REFUSÉE ici, fail-closed : c'est le seul point de
- * passage de toute résolution opposée de cascade, mono comme bande.
+ * comparerait deux grandeurs distinctes. `CascadeStepBase` ne peut plus porter de Soutien FONDU : le
+ * Soutien est une ligne NOMMÉE de `mods` (`soutienMod`) pour TOUT producteur d'étape.
  */
 export function stepOpposedFreeze(step: CascadeStep | undefined): { aT: TestResult; bonusSL?: number } | undefined {
   const opp = step?.meta?.opposed;
   if (!opp) return undefined;
-  if (step!.support) {
-    throw new Error(
-      `stepOpposedFreeze : l'étape « ${step!.id} » oppose un jet figé mais pose un Soutien FONDU dans sa base — `
-      + 'le départage (LDB 12 l.160) exige une base NUE ; sortir le Soutien en ligne de `mods`.',
-    );
-  }
   return { aT: opp.aT, ...(opp.bonusSL != null ? { bonusSL: opp.bonusSL } : {}) };
 }
 

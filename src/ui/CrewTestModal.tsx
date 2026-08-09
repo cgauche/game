@@ -99,7 +99,8 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
       flowKey="crewTest"
       stake={flowStakeRef('crewTest', 'roll', { entryId: p.testTypeId })}
       title={<><Icon id="travel/anchor" size="sm" /> {testType.label} — Test d’équipage</>}
-      variant="test"
+      /* Coquille `roll` : N rangées de rôles à portrait — pas un Test SOLO (cf. `BargainModal`, #1153 L2ter). */
+      variant="roll"
       subtitle={<><strong>{ship.label}</strong> — Moral {p.moraleScore}{p.extraDR ? ` · sabotage ${sign(p.extraDR)} DR` : ''}</>}
       extra={p.extraDR
         ? <div className="rm-threat"><Icon id="ui/warning" size="sm" /> Le Test d’équipage est perturbé : {sign(p.extraDR)} DR (sabotage).</div>

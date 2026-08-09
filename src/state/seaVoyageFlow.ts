@@ -80,7 +80,7 @@ import {
 import { navalMoveMod, navalTestTypeDR, navalNavTestDR, shipHasNavalTrait } from '../engine/navalTraits';
 import { rule } from '../engine/policy';
 import { seaAutoResolves, voyageDayEntry, DEFAULT_VOYAGE_ORDERS, type VoyageOrders, type VoyageCadence } from './voyageCadence';
-import { crewRoleValue, moraleBand, crewTalentDR, UNDERCREW_DR, capToSuccesMinime, crewTestSuccess, SUCCES_MINIME_CAP } from '../engine/crewMorale';
+import { crewRoleValue, crewTestModParts, moraleBand, crewTalentDR, UNDERCREW_DR, capToSuccesMinime, crewTestSuccess, SUCCES_MINIME_CAP } from '../engine/crewMorale';
 import { beginShipwreck } from './shipwreck';
 import type { NightEntry } from './restFlow';
 import { toMoney, canAfford, type Money } from '../engine/money';
@@ -92,7 +92,7 @@ import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficult
 import type { PendingSteamSave, CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
-import { openPartyTest, openWorldTest, composeRollLabel, effectiveTarget, effectiveTargetClamped, resolveSurface, freeCons, type RollRequest, type Consequence } from './rollSeam';
+import { openPartyTest, openWorldTest, composeRollLabel, resolveSurface, freeCons, rollStep, type RollRequest, type Consequence } from './rollSeam';
 import { registerCascadeApplier, registerCascadeSuccessRule, startCascade, runCascadeImmediate } from './cascade';
 
 /** Id du prédicat de succès des Tests d'équipage résolus PAR CASCADE (MDG 14 l.13) — le flux naval
@@ -459,13 +459,13 @@ function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: {
   if (!contributors.length) return null;
   const testType = findCrewTestTypeById(testTypeId);
   const essentialRoleId = testType?.essential;
-  // Le flux propriétaire (naval) RÉSOUT la présentation (label/base) et la cible EFFECTIVE de chaque
-  // participant À LA CONSTRUCTION — le séquenceur/modale génériques n'y liront QUE des champs neutres
-  // (`BatchParticipant`). `bonusSlOnSuccess` = +DR de Talent baké (Commandant émérite, MDG 09 l.54).
+  // Le flux propriétaire (naval) RÉSOUT la présentation (rôle tenu) et DÉCLARE le jet de chaque
+  // contributeur au MONTEUR CANONIQUE (`rollStep`) — le séquenceur/modale génériques n'y liront QUE
+  // des champs neutres (`BatchParticipant`), base NUE et composantes NOMMÉES comprises.
+  // `bonusSlOnSuccess` = +DR de Talent baké (Commandant émérite, MDG 09 l.54).
   const participants: BatchParticipant[] = contributors.map((a) => {
     const role = findCrewRoleById(a.roleId);
     const rv = role ? crewRoleValue(a.crew, role, opts.sense) : undefined;
-    const base = rv?.value ?? 0;
     return {
       id: a.crew.id,
       label: role?.label ?? a.roleId, // PROVENANCE affichée (rôle tenu) — jamais le libellé de LIGNE
@@ -473,9 +473,18 @@ function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: {
       ...(rv?.used ? { skillId: rv.used.skillId, ...(rv.used.spec ? { spec: rv.used.spec } : {}) } : {}),
       interactive: true,
       essential: a.roleId === essentialRoleId,
-      base,
-      difficulty: 'intermediaire',
-      target: effectiveTarget(a.crew, {}, 'intermediaire', base),
+      difficulty: 'intermediaire' as const,
+      // La Compétence RÉELLEMENT tenue par le rôle (`crewRoleValue().used`) est celle qui se décompose ;
+      // le modificateur de Test d'équipage des effets actifs (chanson de marin, `MDG 09 l.224`) est
+      // DÉJÀ fondu dans `rv.value` : il se déclare en `dansLaValeur` et sort en chip NOMMÉE par son
+      // effet émetteur. Sans rôle résolu, la valeur vient d'une autre formule : elle se DÉCLARE comme telle.
+      ...rollStep(rv?.used
+        ? {
+          actor: a.crew, test: { skill: rv.used.skillId, spec: rv.used.spec, sense: opts.sense },
+          valeur: rv.value, difficulty: 'intermediaire',
+          ...(crewTestModParts(a.crew).length ? { dansLaValeur: crewTestModParts(a.crew) } : {}),
+        }
+        : { valeur: rv?.value ?? 0, valeurEtrangere: true, difficulty: 'intermediaire' }),
       bonusSlOnSuccess: role ? crewTalentDR(a.crew, role) : 0,
       result: null,
     };
@@ -533,9 +542,10 @@ function buildForcePaceStep(get: Get): CascadeStep | null {
     label: composeRollLabel(best.actor, 'Forcer le rythme', test), rollLabel: skillId === 'voile' ? 'Voile' : 'Ramer',
     difficulty: diff,
     // Le Soutien est un bonus AU TEST (LDB 12, fiche `soutien`) : la valeur SOUTENUE (`best.value`,
-    // Soutien fondu par `partyAssisted`) est la base de la CIBLE — sans ce `baseOverride`, la cible se
-    // recalculait depuis la carac NUE et les soutiens ne changeaient rien au jet (recette #1117).
-    base: best.value, support: best.support, ...effectiveTargetClamped(best.actor, test, diff, best.value), result: null, interactive: true,
+    // Soutien fondu par `partyAssisted`) donne la CIBLE — sans elle, la cible se recalculerait depuis
+    // la carac NUE et les soutiens ne changeraient rien au jet (recette #1117).
+    ...rollStep({ actor: best.actor, test: { skill: skillId }, valeur: best.value, soutien: best.support, difficulty: diff }),
+    result: null, interactive: true,
     stake: voyageStakeRef('sea-force-pace', { paceM: sea.forcePace ?? 0 }),
     meta: { forcePace: sea.forcePace },
   };
@@ -558,7 +568,7 @@ function buildNavProgressionStep(get: Get): CascadeStep | null {
     id: 'sea-progression-nav', kind: 'sea-progression-nav', actorId: best.actor.id, icon: 'travel/anchor',
     label: composeRollLabel(best.actor, 'Progression', test), rollLabel: skillId === 'voile' ? 'Voile' : 'Ramer',
     difficulty: diff,
-    base: best.value, support: best.support, ...effectiveTargetClamped(best.actor, test, diff, best.value),
+    ...rollStep({ actor: best.actor, test: { skill: skillId }, valeur: best.value, soutien: best.support, difficulty: diff }),
     result: null, interactive: true,
     stake: voyageStakeRef('sea-progression-nav'),
   };
@@ -594,7 +604,8 @@ function buildStrandedOrEntangledStep(get: Get, label: string, difficulty: Diffi
     id: kind, kind, actorId: force.actor.id, icon: 'travel/repair',
     label: composeRollLabel(force.actor, `Dégagement — ${label}`, test), rollLabel: 'Force',
     difficulty,
-    base: force.value, support: force.support, ...effectiveTargetClamped(force.actor, test, difficulty, force.value), result: null, interactive: true,
+    ...rollStep({ actor: force.actor, test: { char: 'force' }, valeur: force.value, soutien: force.support, difficulty }),
+    result: null, interactive: true,
     // Les deux `kind` de dégagement (échouage / débris) mettent la MÊME chose en jeu : la progression
     // du jour tant que le navire n'est pas dégagé.
     stake: voyageStakeRef('sea-degagement'),
@@ -627,7 +638,8 @@ function buildOverspeedStep(get: Get, index: number): CascadeStep | null {
     id: `sea-overspeed-${index}`, kind: 'sea-overspeed', actorId: best.actor.id, icon: 'travel/sail-ship',
     label: composeRollLabel(best.actor, 'Ça va lâcher, capitaine !', test),
     difficulty: row.difficulty,
-    rollLabel: 'Résistance', base: best.value, support: best.support, ...effectiveTargetClamped(best.actor, test, row.difficulty, best.value),
+    rollLabel: 'Résistance',
+    ...rollStep({ actor: best.actor, test: { skill: 'resistance', char: 'endurance' }, valeur: best.value, soutien: best.support, difficulty: row.difficulty }),
     // SURPLUS de M du jour (`effMToday − M de conception`) : c'est ce qui choisit la bande du tableau
     // (l.121-142). Il se LIT sur l'étape par sa NOTE d'enjeu (`stake`, zone d'accueil de ce que le jet
     // met en jeu) — le libellé d'action reste le NOM de l'action (docs/charte-ui.md).
@@ -1263,8 +1275,9 @@ function buildBarrelSteps(get: Get, sea: SeaVoyageState, vessel: CampaignVessel 
         id: `sea-tonneau-expose-${h.id}`, kind: 'sea-tonneau-expose', actorId: h.id,
         label: composeRollLabel(h, 'Tonneau d’eau contaminé', test), difficulty: diff,
         // Z5 : SITUATION en `rollLabel` (Compétence lancée = Résistance) — stock du cliquet, #1109.
-        rollLabel: 'Tonneau contaminé', base: testValue(h, 'resistance', 'endurance'),
-        target: effectiveTarget(h, test, diff), result: null, interactive: true,
+        rollLabel: 'Tonneau contaminé',
+        ...rollStep({ actor: h, test: { skill: 'resistance', char: 'endurance' }, difficulty: diff }),
+        result: null, interactive: true,
         stake: voyageStakeRef('sea-tonneau-expose', { disease: diseaseLabel(diseaseId) }), meta: { diseaseId },
       });
     }
@@ -1277,8 +1290,9 @@ function buildBarrelSteps(get: Get, sea: SeaVoyageState, vessel: CampaignVessel 
         id: `sea-tonneau-contamine-${h.id}`, kind: 'sea-tonneau-contamine', actorId: h.id,
         label: composeRollLabel(h, 'Tonneau d’eau', test), difficulty: 'intermediaire',
         // Z5 : SITUATION en `rollLabel` (Compétence lancée = Résistance) — stock du cliquet, #1109.
-        rollLabel: "Tonneau d'eau", base: testValue(h, 'resistance', 'endurance'),
-        target: effectiveTarget(h, test, 'intermediaire'), result: null, interactive: true,
+        rollLabel: "Tonneau d'eau",
+        ...rollStep({ actor: h, test: { skill: 'resistance', char: 'endurance' }, difficulty: 'intermediaire' }),
+        result: null, interactive: true,
         stake: voyageStakeRef('sea-tonneau-contamine', { disease: diseaseLabel(dz.id) }), meta: { diseaseId: dz.id },
       });
     }
@@ -1308,8 +1322,9 @@ function buildSeasicknessSteps(get: Get, sea: SeaVoyageState): CascadeStep[] {
         id: `sea-mal-de-mer-premier-${h.id}`, kind: 'sea-mal-de-mer', actorId: h.id,
         label: composeRollLabel(h, 'Mal de mer du premier voyage', test), difficulty: 'complexe',
         // Z5 : SITUATION en `rollLabel` (Compétence lancée = Résistance) — stock du cliquet, #1109.
-        rollLabel: 'Mal de mer', base: testValue(h, 'resistance', 'endurance'),
-        target: effectiveTarget(h, test, 'complexe'), result: null, interactive: true,
+        rollLabel: 'Mal de mer',
+        ...rollStep({ actor: h, test: { skill: 'resistance', char: 'endurance' }, difficulty: 'complexe' }),
+        result: null, interactive: true,
         stake: voyageStakeRef('sea-mal-de-mer', { disease: diseaseLabel('mal-de-mer') }),
       });
     }
@@ -1318,8 +1333,9 @@ function buildSeasicknessSteps(get: Get, sea: SeaVoyageState): CascadeStep[] {
         id: `sea-mal-de-mer-tempete-${h.id}`, kind: 'sea-mal-de-mer', actorId: h.id,
         label: composeRollLabel(h, 'Mal de mer par mauvais temps', test), difficulty: 'intermediaire',
         // Z5 : SITUATION en `rollLabel` (Compétence lancée = Résistance) — stock du cliquet, #1109.
-        rollLabel: 'Mal de mer', base: testValue(h, 'resistance', 'endurance'),
-        target: effectiveTarget(h, test, 'intermediaire'), result: null, interactive: true,
+        rollLabel: 'Mal de mer',
+        ...rollStep({ actor: h, test: { skill: 'resistance', char: 'endurance' }, difficulty: 'intermediaire' }),
+        result: null, interactive: true,
         stake: voyageStakeRef('sea-mal-de-mer', { disease: diseaseLabel('mal-de-mer') }),
       });
     }
@@ -1390,7 +1406,7 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
       // Z5 (docs/charte-ui.md) : ce `rollLabel` nomme la SITUATION, pas la Compétence lancée
       // (Résistance) — stock nominatif du cliquet `roll-action-label-guard`, #1109.
       label: composeRollLabel(h, 'Scorbut', scurvyTest), difficulty: diff, rollLabel: 'Scorbut',
-      base: testValue(h, 'resistance', 'endurance'), target: effectiveTarget(h, scurvyTest, diff),
+      ...rollStep({ actor: h, test: { skill: 'resistance', char: 'endurance' }, difficulty: diff }),
       result: null, interactive: true, stake: voyageStakeRef('sea-scorbut', { disease: diseaseLabel('scorbut') }), meta: { soup },
     };
   });
@@ -1464,16 +1480,28 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
         continue;
       }
       const resVal = testValue(h, 'resistance', 'endurance');
-      const base = tdef.exposure === 'froid' ? exposureTarget(h, resVal) : Math.max(0, resVal);
+      // FROID : l'absence de manteau est DÉJÀ fondue dans la valeur jetée (`exposureTarget`) — elle se
+      // déclare donc en `dansLaValeur` pour redevenir la chip NOMMÉE que `exposureCoatMods` produit.
+      // PLANCHER : `exposureTarget` borne la valeur à 0 ; quand ce plancher MORD, la valeur ne vient
+      // plus de `testValue` : elle se DÉCLARE alors comme valeur d'une autre formule.
+      const froid = tdef.exposure === 'froid';
+      const coat = froid ? (exposureCoatMods(h).mods ?? []) : [];
+      const brut = resVal + coat.reduce((s, m) => s + m.value, 0);
+      const valeur = froid ? exposureTarget(h, resVal) : Math.max(0, resVal);
       // Un Test = UNE étape influençable (MDG 13 l.203-225 : la cadence de la bande donne le nombre de
       // Tests de la Période de travail) — même `kind` (et donc même applier d'escalade) que la nuit.
       for (let i = 0; i < expCount; i++) {
         steps.push({
           id: `sea-exposition-${h.id}-${i}`, kind: 'exposure', actorId: h.id, icon: 'rest/cold',
           label: `Exposition (${tdef.label})`, rollLabel: 'Résistance',
-          base: resVal, difficulty: expDiff,
-          ...(tdef.exposure === 'froid' ? exposureCoatMods(h) : {}),
-          target: Math.max(1, Math.min(99, base + DIFFICULTY_MODIFIERS[expDiff])),
+          difficulty: expDiff,
+          ...rollStep(valeur === brut
+            ? {
+              actor: h, test: { skill: 'resistance', char: 'endurance' }, valeur,
+              ...(coat.length ? { dansLaValeur: coat } : {}),
+              difficulty: expDiff,
+            }
+            : { valeur, valeurEtrangere: true, difficulty: expDiff }),
           result: null, interactive: true,
           stake: voyageStakeRef('exposure', { chars: exposureFirstFailChars(tdef.exposure) }),
           meta: { kind: tdef.exposure },
@@ -1531,7 +1559,7 @@ export function continueSeaDayAfterExposure(get: Get, set: Set, doneSteps?: Casc
         // Z5 (docs/charte-ui.md) : ce `rollLabel` nomme la SITUATION, pas la Compétence lancée
         // (Résistance) — stock nominatif du cliquet `roll-action-label-guard`, #1109.
         label: composeRollLabel(h, 'Épuisement', test), difficulty: diff, rollLabel: 'Épuisement',
-        base: testValue(h, 'resistance', 'endurance'), target: effectiveTarget(h, test, diff),
+        ...rollStep({ actor: h, test: { skill: 'resistance', char: 'endurance' }, difficulty: diff }),
         result: null, interactive: true, stake: voyageStakeRef('sea-epuisement', { condition: conditionLabel('extenue') }),
       }));
       const subiReq: RollRequest = { side: { worldSide: 'world', ownerId: get().vessel!.vehicleId }, actionLabel: 'Épuisement', test: {}, difficulty: 'intermediaire', klass: 'subi' };

@@ -4,7 +4,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { OptionChooser } from './OptionChooser';
-import { supportSplit, testBreakdown, testPending } from './breakdown';
+import { testValueSplit, testBreakdown, testPending } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeHeal } from '../state/flowOutcomes';
@@ -55,8 +55,11 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
   const lodged = target?.conditions.find((x) => x.id === 'munition-logee')?.value ?? 0;
 
   const freeReroll = freeRerollOf(healer);
-  // Soutien des assistants de soin (LDB 12) : ligne de mod nommée, base SANS le Soutien.
-  const { base, mods: supMods } = supportSplit(ph.skillValue, ph.support);
+  // Soutien des assistants de soin (LDB 12) et composantes de la valeur de Test (États, séquelles,
+  // passifs, effets — #1178) : lignes de mod NOMMÉES, base rebasée sur le Niveau de Compétence nu
+  // (LDB 09 l.17). Soigneur PNJ tarifé (aucune fiche dans le pool) : la garde de reconstruction de la
+  // primitive laisse l'affichage inchangé.
+  const { base, mods: supMods } = testValueSplit(healer, ph.skillValue, { support: ph.support, skill: 'guerison' });
   const actorRow: RollRowData = {
     actor: healer,
     row: {

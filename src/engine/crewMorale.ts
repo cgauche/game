@@ -24,7 +24,8 @@ import { skillDRBonus } from './ops';
 import { rule } from './policy';
 import { crewRoles, findCrewRoleById, findCrewTestTypeById, type CrewRoleData } from '../data';
 import { priceToMoney, toBrass } from './money';
-import type { Combatant, Difficulty } from './types';
+import { effectRef, type Combatant, type Difficulty } from './types';
+import type { ModLine } from './combat';
 import type { PairedSense } from './ops';
 
 /** Facteur de Moral (MODIFICATEURS DE MORAL, MDG 14) — `effect` = dés signés (« +2d10 », « -3d10 »). */
@@ -277,11 +278,20 @@ export interface CrewAssignment {
   doubleRole?: boolean;
 }
 
-/** Modificateur aux Tests INDIVIDUELS d'un Test d'équipage porté par les effets ACTIFS du marin
- *  (op `crewTestMod` — chanson « Naviguons tous ensemble », MDG 09 l.224 : « un modificateur de +10 sur
- *  les Tests individuels de chaque membre d'équipage impliqué dans un Test d'équipage »). Σ. PUR. */
+/** COMPOSANTES du modificateur « Test d'équipage » porté par les effets ACTIFS du marin (op
+ *  `crewTestMod` — chanson « Naviguons tous ensemble », MDG 09 l.224 : « un modificateur de +10 sur
+ *  les Tests individuels de chaque membre d'équipage impliqué dans un Test d'équipage »). Chaque part
+ *  tire son NOM de l'effet émetteur (`ActiveEffect.label`) et sa fiche de `effectRef` : la rangée
+ *  d'équipage nomme la chanson, elle n'affiche pas un +10 anonyme. PUR. */
+export function crewTestModParts(c: Combatant): ModLine[] {
+  return (c.activeEffects ?? [])
+    .filter((e) => !!e.crewTestMod)
+    .map((e) => ({ label: e.label, value: e.crewTestMod!, ref: effectRef(e) }));
+}
+
+/** Σ de `crewTestModParts` — SOURCE UNIQUE du montant (le jet et l'affichage lisent les MÊMES parts). */
 export function crewTestModOf(c: Combatant): number {
-  return (c.activeEffects ?? []).reduce((s, e) => s + (e.crewTestMod ?? 0), 0);
+  return crewTestModParts(c).reduce((s, m) => s + m.value, 0);
 }
 
 /** Valeur de Compétence d'un membre pour un rôle : la MEILLEURE de ses compétences (Mousse = Voile/Ramer),

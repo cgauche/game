@@ -17,7 +17,10 @@ import { CAMPAIGN_START } from '../engine/clock';
 import { setRule, resetRule } from '../engine/policy';
 import { buildWeatherResistanceSteps, buildStageSteps } from './travelPostes';
 import { creditBourse } from './bourseFlow';
-import type { Combatant, ItemInstance } from '../engine/types';
+import { DIFFICULTY_MODIFIERS, type Combatant, type ItemInstance } from '../engine/types';
+import { cascadeAppliers } from './cascade';
+import { inexplique, soutienDe } from './cascadeTestKit';
+import { skillBaseValue, testValue, soutienDetail, partyAssisted } from '../engine/skills';
 
 const get = () => useGame.getState();
 const set = useGame.setState;
@@ -376,5 +379,154 @@ describe('#341 — breakdown de mods sur les rangées BATCH d’activité (sourc
     expect(outPart.mods?.some((m) => typeof m.label === 'string' && m.label.startsWith('Météo'))).toBe(true); // Plein air -20 (l.106)
     expect(cartoPart.mods?.some((m) => m.label === 'Tests physiques' && m.value === -10)).toBe(true); // pluie diluvienne l.82, carac Dex
     resetRule('travel-etapes');
+  });
+
+  /** #1153 L2bis (sonde du juge B3) : la rangée batch monte sa ligne par le MONTEUR — un `mods` posé
+   *  APRÈS l'étalement l'écrasait, et l'écart météo repartait en chip « autres ». */
+  it('la rangée d’Étape n’a AUCUNE part anonyme : base nue, chips météo, cible et écrêtage du monteur', () => {
+    setRule('travel-etapes', true);
+    const hOut = hero({ id: 'hOut', travelRole: 'plein-air', skills: [{ skillId: 'survie-en-exterieur', advances: 20 } as never] });
+    const hCarto = hero({ id: 'hCarto', travelRole: 'etablir-cartes', skills: [{ skillId: 'metier', spec: 'Cartographe', advances: 20 } as never] });
+    set({ party: [hOut, hCarto], travelPlan: {
+      routeId: 'r1', fromPlaceId: 'pa', toPlaceId: 'pb', mode: 'pied', hoursPerDay: 6, km: 12, kmDone: 0, interrupted: false,
+      postes: { hOut: { activityId: 'plein-air' }, hCarto: { activityId: 'etablir-cartes' } },
+    } as never });
+    const batch = buildStageSteps(get, set, 'pluie-diluvienne', 'ete').find((s) => s.kind === 'stagePosteBatch')!;
+    expect(batch.participants!.length).toBeGreaterThan(1);
+    for (const part of batch.participants!) {
+      const st = { base: part.base, target: part.target, mods: part.mods, difficulty: part.difficulty, clamped: part.clamped } as never;
+      expect(inexplique(st), `rangée ${part.id} : chip « autres » = un monteur qui ment`).toBe(0);
+      // …et les chips météo sont bien LÀ (le résidu nul ne vient pas d'une ligne vidée de ses mods).
+      expect(part.mods?.length ?? 0).toBeGreaterThan(0);
+    }
+    resetRule('travel-etapes');
+  });
+});
+
+/**
+ * #1153 L2bis — l'étape-jet insérée par une péripétie pose le Niveau de Compétence NU (`LDB 09 l.17`)
+ * et sort le Soutien (LDB 12 l.187-200) en ligne de mod NOMMÉE ; la CIBLE reste dérivée de la valeur
+ * SOUTENUE (l.189-190), au point près. Un meneur sous ÉTAT le PROUVE : la pénalité d'État sépare la
+ * nue (`skillBaseValue`) de la valeur jetée (`testValue`), qu'une base fondue confondrait.
+ */
+describe('Péripétie terrestre — base NUE + Soutien NOMMÉ, cible invariante (#1153 L2bis)', () => {
+  /** Rejoue `landPeril` en cherchant le tirage qui donne « Voyage éreintant » (1d10 = 4, l.237) :
+   *  la table est tirée sur le RNG de bataille, donc c'est la GRAINE qui choisit — jamais un stub. */
+  const perilInsert = (kind: string) => {
+    const step = { id: 'p', kind: 'landPeril', meta: { destLabel: 'B' } } as never;
+    for (let seed = 1; seed <= 400; seed++) {
+      seedBattleRng(seed);
+      const out = cascadeAppliers.landPeril.apply(get, set, step, undefined, { steps: [step], index: 0 });
+      const found = (out?.insert ?? []).find((s) => s.kind === kind);
+      if (found) return found;
+    }
+    return undefined;
+  };
+
+  it('« Voyage éreintant » : `base` = Survie NUE du meneur EMPOISONNÉ, chip « Soutien », cible = valeur soutenue', () => {
+    const lead = hero({ id: 'lead', skills: [{ skillId: 'survie-en-exterieur', advances: 25 } as never], conditions: [{ id: 'empoisonne', value: 1 }] as never });
+    // DEUX soutiens (+20) : le Soutien ne compense pas exactement l'État (−10), donc une base FONDUE
+    // ne peut pas se faire passer pour la nue par coïncidence arithmétique.
+    const aide = hero({ id: 'aide', skills: [{ skillId: 'survie-en-exterieur', advances: 3 } as never] });
+    const aide2 = hero({ id: 'aide2', skills: [{ skillId: 'survie-en-exterieur', advances: 2 } as never] });
+    setup(map({ perilDie: 8 }), [lead, aide, aide2]);
+    set({ travelPlan: { routeId: 'r1', fromPlaceId: 'pa', toPlaceId: 'pb', mode: 'pied', hoursPerDay: 6, km: 12, kmDone: 0, interrupted: false } as never });
+
+    const nue = skillBaseValue(lead, 'survie-en-exterieur');
+    const jetee = testValue(lead, 'survie-en-exterieur');
+    expect(jetee, 'l’État mord le jet, pas le Niveau de Compétence').toBeLessThan(nue);
+    const soutien = soutienDetail(get().party, lead, 'survie-en-exterieur');
+    expect(soutien.bonus, 'le camarade éligible soutient (l.195)').toBeGreaterThan(0);
+
+    const st = perilInsert('landPerilSurvie')!;
+    expect(st, 'la péripétie « éreintant » insère bien son Test').toBeTruthy();
+    expect(st.actorId).toBe('lead');
+    expect(st.base, 'Niveau de Compétence NU (LDB 09 l.17)').toBe(nue);
+    expect(soutienDe(st), 'le Soutien est une ligne de mod NOMMÉE').toBe(soutien.bonus);
+    // CIBLE INVARIANTE : la valeur SOUTENUE + la Difficulté Accessible (+20) — inchangée par la migration.
+    expect(st.target).toBe(jetee + soutien.bonus + DIFFICULTY_MODIFIERS.accessible);
+    // CLIQUET « zéro chip anonyme » : l'État est NOMMÉ lui aussi, il ne reste aucun écart muet.
+    expect(inexplique(st), 'aucune chip « autres » : États compris, tout est nommé').toBe(0);
+  });
+});
+
+/**
+ * #1153 L2bis (sondes du juge B1/B4) — l'attelage forcé au fil des kilomètres : chaque km REDEMANDE le
+ * même Test de Conduite d'attelage, avec le MÊME conducteur soutenu (`LDB 12 l.189` : « le Personnage
+ * qui possède la plus forte chance de réussite lance les dés. Chaque Personnage qui apporte son
+ * soutien octroie un bonus de +10 au Test ») — les passagers sont adjacents (l.196) et ce Test n'est
+ * pas une résistance (l.197). La pénalité de −10/km (`EDOC 07 l.229`) est fondue dans la valeur et
+ * NOMMÉE une seule fois.
+ */
+describe('#1153 — allure forcée : km suivant et reprise de contrôle, une seule grandeur', () => {
+  afterEach(() => resetRule('travel-allures'));
+
+  function attelage(): { lead: Combatant; aide: Combatant } {
+    const lead = hero({ id: 'lead', label: 'Lead', skills: [{ skillId: 'conduite-d-attelage', advances: 40 } as never] });
+    const aide = hero({ id: 'aide', label: 'Aide', skills: [{ skillId: 'conduite-d-attelage', advances: 5 } as never] });
+    return { lead, aide };
+  }
+
+  function ouvreJournee(): void {
+    setRule('travel-allures', true);
+    seedBattleRng(1);
+    const { lead, aide } = attelage();
+    useGame.setState({ party: [lead, aide], gameTime: CAMPAIGN_START, travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
+    get().loadProject([sceneA(), sceneB()], 'lieu-a-scene', { id: 'c', nom: 'c', places: [
+      { id: 'pa', label: 'A', pos: { x: 0, y: 0 }, scene: 'lieu-a-scene' },
+      { id: 'pb', label: 'B', pos: { x: 70, y: 0 }, scene: 'lieu-b-scene' },
+    ], routes: [{ id: 'r1', a: 'pa', b: 'pb', km: 20, modes: ['diligence', 'pied'], perilDie: 0 }] } as WorldMap);
+    useGame.setState({ gameTime: CAMPAIGN_START });
+    creditBourse(get, set, 'lead', { gold: 500, silver: 0, brass: 0 });
+    get().startTravel('r1', 'diligence', { allure: 'galop' });
+  }
+
+  it('1ᵉʳ km : base NUE, Soutien NOMMÉ, aucune chip anonyme', () => {
+    ouvreJournee();
+    const st = get().pendingCascade!.participants.find((s) => s.kind === 'landForcedPace')!;
+    const picked = partyAssisted(get().party, 'conduite-d-attelage')!;
+    expect(st.base).toBe(skillBaseValue(picked.actor, 'conduite-d-attelage'));
+    expect(soutienDe(st)).toBe(picked.support.bonus);
+    expect(st.target).toBe(picked.value + DIFFICULTY_MODIFIERS.intermediaire);
+    expect(inexplique(st)).toBe(0);
+  });
+
+  it('2ᵉ km : le −10/km est NOMMÉ une seule fois et la cible ne le compte pas deux fois (B1)', () => {
+    ouvreJournee();
+    const st = get().pendingCascade!.participants.find((s) => s.kind === 'landForcedPace')!;
+    const picked = partyAssisted(get().party, 'conduite-d-attelage')!;
+    // Le km courant RÉUSSIT → l'applier insère le km suivant (`galloped = 1`, pénalité −10).
+    const reussi = { ...st, result: { roll: 5, target: st.target!, sl: 3, success: true } } as typeof st;
+    const out = cascadeAppliers.landForcedPace.apply(get, set, reussi, get().party[0], { steps: [reussi], index: 0 });
+    const km2 = (out?.insert ?? []).find((s) => s.kind === 'landForcedPace')!;
+    expect(km2, 'le kilomètre suivant s’insère').toBeTruthy();
+    expect(km2.base, 'base NUE : ni le Soutien ni la pénalité ne s’y cachent').toBe(skillBaseValue(picked.actor, 'conduite-d-attelage'));
+    const chips = km2.mods!.map((m) => m.label);
+    expect(chips.filter((l) => l.startsWith('Km déjà au pas de course'))).toHaveLength(1);
+    expect(soutienDe(km2)).toBe(picked.support.bonus);
+    expect(km2.target).toBe(picked.value - 10 + DIFFICULTY_MODIFIERS.intermediaire);
+    expect(inexplique(km2), 'aucune chip « autres » : le −10 compte UNE fois').toBe(0);
+  });
+
+  it('reprise de contrôle : MÊME conducteur soutenu que le km, sur les DEUX surfaces (B4)', () => {
+    ouvreJournee();
+    const st = get().pendingCascade!.participants.find((s) => s.kind === 'landForcedPace')!;
+    const picked = partyAssisted(get().party, 'conduite-d-attelage')!;
+    // Échec STUPÉFIANT (−6 DR) : l'applier tire le Tableau des problèmes ; sur « Incontrôlable » il
+    // insère la reprise de contrôle. Les autres tirages n'en insèrent pas — on cherche la graine qui
+    // produit le cas, sans stub (le d100 vit dans `battleRng`).
+    let control: typeof st | undefined;
+    for (let seed = 1; seed <= 200 && !control; seed++) {
+      seedBattleRng(seed);
+      const rate = { ...st, result: { roll: 99, target: st.target!, sl: -6, success: false } } as typeof st;
+      const out = cascadeAppliers.landForcedPace.apply(get, set, rate, get().party[0], { steps: [rate], index: 0 });
+      control = (out?.insert ?? []).find((s) => s.kind === 'landForcedPaceControl') as typeof st | undefined;
+    }
+    expect(control, 'le cas « Incontrôlable » est atteignable').toBeTruthy();
+    expect(control!.actorId).toBe(picked.actor.id);
+    expect(control!.base).toBe(skillBaseValue(picked.actor, 'conduite-d-attelage'));
+    expect(soutienDe(control!), 'le Soutien s’applique aussi à la reprise (LDB 12 l.189)').toBe(picked.support.bonus);
+    expect(control!.target, 'la cible NE dépend PAS de la surface : même valeur soutenue').toBe(picked.value + DIFFICULTY_MODIFIERS.intermediaire);
+    expect(inexplique(control!)).toBe(0);
   });
 });

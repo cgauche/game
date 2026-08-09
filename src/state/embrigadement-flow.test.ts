@@ -6,6 +6,10 @@ import { advanceCascade, setCascadeChoice } from './cascade';
 import { creditBourse, partyMoneyTotal } from './bourseFlow';
 import { seedBattleRng } from './battleRng';
 import type { RNG } from '../engine/dice';
+import { skillBaseValue, testValue, soutienDetail } from '../engine/skills';
+import { skillCharacteristicById } from '../engine/character';
+import { DIFFICULTY_MODIFIERS } from '../engine/types';
+import { inexplique, soutienDe } from './cascadeTestKit';
 
 /**
  * EMBRIGADEMENT — recouvrement d'équipage (MDG 15 l.245, #164). La perte de 2d10 marins est persistée,
@@ -136,5 +140,45 @@ describe('Embrigadement — recouvrement (MDG 15 l.245, #164)', () => {
     expect(get().pendingCascade).toBeNull(); // aucun meneur → pas d'étape Ragot insérée
     expect(get().vessel!.crewLost).toBe(2); // perte de base inchangée, pas de récupération tentée
     expect(get().journal.some((l) => l.includes('Personne à bord ne peut mener l\'enquête'))).toBe(true);
+  });
+});
+
+/**
+ * #1153 L2bis — l'étape-jet du recouvrement pose le Niveau de Compétence NU (`LDB 09 l.17`) et sort
+ * le Soutien (LDB 12 l.187-200) en ligne de mod NOMMÉE ; la CIBLE, elle, ne bouge pas d'un point :
+ * elle reste dérivée de la valeur SOUTENUE (l.189-190). Un meneur sous ÉTAT le PROUVE — la pénalité
+ * d'État sépare la nue (`skillBaseValue`) de la valeur jetée (`testValue`), qu'une base fondue
+ * confondrait.
+ */
+describe('Embrigadement — base NUE + Soutien NOMMÉ, cible invariante (#1153 L2bis)', () => {
+  beforeEach(fresh);
+
+  it('Ragot : `base` = Compétence NUE du meneur EMPOISONNÉ, chip « Soutien », cible = valeur soutenue', () => {
+    const [lead, aide, autre] = get().party;
+    // DEUX soutiens (+20) : le Soutien ne compense pas exactement l'État (−10), donc une base FONDUE
+    // ne peut pas se faire passer pour la nue par coïncidence arithmétique.
+    for (const [h, adv] of [[lead, 30], [aide, 5], [autre, 2]] as const) {
+      if (adv > 0) h.skills.push({ skillId: 'ragot', characteristic: skillCharacteristicById('ragot'), advances: adv } as never);
+    }
+    lead.conditions = [{ id: 'empoisonne', value: 1 }] as never; // l'État MORD le jet, pas le Niveau de Compétence
+    set({ party: [lead, aide, autre] });
+
+    const nue = skillBaseValue(lead, 'ragot');
+    const jetee = testValue(lead, 'ragot');
+    expect(jetee, 'l’État sépare bien la nue de la valeur jetée').toBeLessThan(nue);
+    const soutien = soutienDetail(get().party, lead, 'ragot');
+    expect(soutien.bonus, 'un camarade éligible soutient (l.195)').toBeGreaterThan(0);
+
+    resolvePortArrival(get, set, undefined, ones);
+    choose('tenter');
+    const step = get().pendingCascade!.participants[get().pendingCascade!.cursor];
+    expect(step.kind).toBe('embrigadementRagot');
+    expect(step.actorId).toBe(lead.id);
+    expect(step.base, 'Niveau de Compétence NU (LDB 09 l.17)').toBe(nue);
+    expect(soutienDe(step), 'le Soutien est une ligne de mod NOMMÉE').toBe(soutien.bonus);
+    // CIBLE INVARIANTE : la valeur SOUTENUE que roulait l'ancien contrat (base fondue + Difficulté).
+    expect(step.target).toBe(jetee + soutien.bonus + DIFFICULTY_MODIFIERS.intermediaire);
+    // CLIQUET « zéro chip anonyme » : l'État est NOMMÉ lui aussi, il ne reste aucun écart muet.
+    expect(inexplique(step), 'aucune chip « autres » : États compris, tout est nommé').toBe(0);
   });
 });

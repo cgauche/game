@@ -45,12 +45,23 @@ function reconciled(mods: ModLine[], modifier: number, target: number, clamped?:
   // expliquer (un `clamped` sans rapport avec l'écart courant ne s'invite pas dans la ligne).
   const cut = clamped && Math.sign(clamped) === Math.sign(residual) && Math.abs(clamped) <= Math.abs(residual) ? clamped : 0;
   const rest = residual - cut;
+  // Une chip « autres » n'est PAS une information : c'est un monteur de ligne qui ment (base fondue,
+  // modificateur jamais nommé). En DEV le fait se journalise à l'écran où il se produit — le compte
+  // sert de sonde au cliquet « zéro chip anonyme » (#1153) ; en PROD, rien à dire au joueur.
+  if (rest && import.meta.env?.DEV) {
+    ANONYMES.count += 1;
+    console.error(`[RollLine] chip « autres » (${rest}) : la ligne ne s'explique pas — itemiser la source à l'ÉMISSION (rollSeam.rollLine).`);
+  }
   return [
     ...mods,
     ...(cut ? [{ label: `${cut < 0 ? 'plafond' : 'plancher'} ${target}`, value: cut }] : []),
     ...(rest ? [{ label: 'autres', value: rest }] : []),
   ];
 }
+
+/** COMPTEUR DEV des chips « autres » réellement rendues (#1153) — sonde partagée : un écran de recette
+ *  ou un test peut lire `ANONYMES.count` pour prouver qu'aucune ligne n'a rien à cacher. Inerte en PROD. */
+export const ANONYMES = { count: 0 };
 
 /**
  * Nom d'AFFICHAGE d'une provenance — COUTURE UNIQUE de la résolution id→nom (#1078).

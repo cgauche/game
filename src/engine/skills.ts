@@ -355,13 +355,53 @@ export function supportSplit(value: number, support?: SupportDetail): { base: nu
   return { base: value - (m?.value ?? 0), mods: m ? [m] : [] };
 }
 
+/**
+ * DÉFAIT une valeur de Test FONDUE en base NUE + composantes NOMMÉES : le Soutien (`supportSplit`)
+ * PUIS toutes les composantes de `testValue` (`testValueParts` — États, Encombrement, séquelles,
+ * passifs, effets, outil manquant). SOURCE UNIQUE du geste d'affichage des surfaces hors combat
+ * (Test de scène, Activité, Évaluation, Dissipation, Soin, Chirurgie).
+ *
+ * La CIBLE ne bouge pas : `base + Σ mods === value` par construction, et la base rendue vaut alors
+ * `skillBaseValue` (+ `fused`, la part déjà fondue et annoncée AILLEURS par l'appelant — le malus
+ * psy social d'un Test de scène, `LDB 21`).
+ *
+ * GARDE DE RECONSTRUCTION : les composantes ne sortent QUE si elles reconstruisent EXACTEMENT la
+ * valeur jetée (`skillBaseValue + Σ parts + fused === value − Soutien`). Une valeur produite par une
+ * AUTRE formule (valeur de combat, Caractéristique nue, soigneur PNJ sans fiche) retombe sur
+ * `supportSplit` : l'écran ne nomme jamais une composante que le jet n'a pas subie.
+ *
+ * `exact` DIT laquelle des deux voies a servi — l'invariant arithmétique, lui, tient dans les DEUX
+ * (la base est une soustraction : elle absorbe n'importe quelle erreur de l'appelant). Sans ce
+ * drapeau, un appelant qui déclare un modificateur qu'il n'a pas fondu obtient une ligne cohérente
+ * mais une base FAUSSE, en silence. `false` ⇒ la base n'est PAS le Niveau de Compétence nu.
+ */
+export function testValueSplit(
+  c: Combatant | undefined,
+  value: number,
+  opts?: { support?: SupportDetail; skill?: string; characteristic?: CharKey; spec?: string; sense?: PairedSense; fused?: number },
+): { base: number; mods: ModLine[]; exact: boolean } {
+  const sup = supportSplit(value, opts?.support);
+  // Rien à décomposer (côté MONDE, Test sans compétence ni caractéristique) : la valeur EST la base,
+  // il n'y a aucune reconstruction à rater.
+  if (!c || (!opts?.skill && !opts?.characteristic)) return { ...sup, exact: true };
+  const parts = testValueParts(c, opts.skill, opts.characteristic, opts.spec, opts.sense);
+  const sum = parts.reduce((s, p) => s + p.value, 0);
+  const nu = skillBaseValue(c, opts.skill, opts.spec, opts.characteristic);
+  if (nu + sum + (opts.fused ?? 0) !== sup.base) return { ...sup, exact: false };
+  return { base: sup.base - sum, mods: [...sup.mods, ...parts], exact: true };
+}
+
 /** Test de GROUPE avec SOUTIEN (LDB 12 l.187-200) — SOURCE UNIQUE de la coopération hors combat : le plus
  *  compétent (`partyBest`) lance, et chaque AUTRE membre ÉLIGIBLE (l.195 ; Test de pure
  *  Caractéristique → tout le monde) le soutient à +10, plafonné au Bonus de la Caractéristique testée du
  *  meneur (`assistBonus`). À utiliser PARTOUT où le groupe œuvre de concert (Test étendu, Tests de scène,
  *  survie/perception en voyage, fouille, dissipation à plusieurs…). Renvoie le meneur, sa valeur SOUTENUE
- *  (Soutien déjà fondu) et le détail (`support`) pour l'affichage. `eligible` : filtre GÉOMÉTRIQUE additionnel
- *  (adjacence, l.196) — voir `soutienBonus`. */
+ *  (Soutien déjà fondu — la CIBLE en dérive), le détail (`support`) pour l'affichage, et sa valeur NUE
+ *  (`base`, `LDB 09 l.17` : `skillBaseValue` sur la compétence/spécialisation/caractéristique du choix
+ *  du meneur — jamais reconstituée par soustraction). ATTENTION : `extraMod` (malus psy social, `LDB 21`) entre
+ *  dans `value` mais PAS dans `base` : un appelant qui en fournit un porte lui-même la ligne qui le
+ *  nomme (`testValueSplit(..., { fused })`), sans quoi l'écart resterait muet. `eligible` : filtre
+ *  GÉOMÉTRIQUE additionnel (adjacence, l.196) — voir `soutienBonus`. */
 export function partyAssisted(
   party: Combatant[],
   skill?: string,
@@ -369,11 +409,16 @@ export function partyAssisted(
   extraMod?: (c: Combatant) => number,
   spec?: string,
   eligible?: (c: Combatant) => boolean,
-): { actor: Combatant; value: number; support: SupportDetail } | null {
+): { actor: Combatant; value: number; base: number; support: SupportDetail } | null {
   const leader = partyBest(party, skill, characteristic, extraMod, spec);
   if (!leader) return null;
   const support = soutienDetail(party, leader.actor, skill, characteristic, spec, eligible);
-  return { actor: leader.actor, value: leader.value + support.bonus, support };
+  return {
+    actor: leader.actor,
+    value: leader.value + support.bonus,
+    base: skillBaseValue(leader.actor, skill, spec, characteristic),
+    support,
+  };
 }
 
 /** DÉTAIL de SOUTIEN (LDB 12 l.187-200) pour un meneur DONNÉ — SOURCE UNIQUE : combien de membres

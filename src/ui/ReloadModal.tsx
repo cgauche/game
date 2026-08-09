@@ -5,6 +5,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending, supportSplit } from './breakdown';
+import { combatValueModParts } from '../engine/combat';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeReload } from '../state/flowOutcomes';
@@ -36,16 +37,23 @@ export function ReloadModalView({
 }) {
   const rolled = pr.roll != null;
   const after = Math.max(0, pr.progressBefore + pr.sl);
-  const weaponName = actor?.weapons.find((w) => w.uid === pr.weaponUid)?.label ?? 'arme'; // uid → NOM (affichage)
+  const weapon = actor?.weapons.find((w) => w.uid === pr.weaponUid);
+  const weaponName = weapon?.label ?? 'arme'; // uid → NOM (affichage)
   // Soutien des servants (Arme d'équipe, MDG 12 l.462) : ligne de mod comme tout bonus, base SANS le Soutien.
-  const { base, mods: supMods } = supportSplit(pr.skillValue, pr.soutien);
+  // Le Rechargement roule une valeur de COMBAT (`combatValue`) : ses modificateurs fondus se nomment
+  // par le décomposeur de CETTE valeur (`combatValueModParts`), et la base retombe sur la valeur NUE
+  // (#1178). `base + Σ mods` reste exactement la valeur jetée.
+  const { base: supBase, mods: supMods } = supportSplit(pr.skillValue, pr.soutien);
+  const valueParts = actor ? combatValueModParts(actor, 'ranged', weapon) : [];
+  const base = supBase - valueParts.reduce((s, p) => s + p.value, 0);
+  const mods = [...supMods, ...valueParts];
 
   const actorRow: RollRowData = {
     actor,
     row: {
       combatant: actor,
-      d: rolled ? testBreakdown('Projectiles', base, { roll: pr.roll!, target: pr.target, sl: pr.sl, success: pr.success }, pr.difficulty, supMods) : undefined,
-      pending: testPending('Projectiles', base, pr.target, pr.difficulty, supMods),
+      d: rolled ? testBreakdown('Projectiles', base, { roll: pr.roll!, target: pr.target, sl: pr.sl, success: pr.success }, pr.difficulty, mods) : undefined,
+      pending: testPending('Projectiles', base, pr.target, pr.difficulty, mods),
     },
     rolled,
     fortune,
