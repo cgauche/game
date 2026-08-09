@@ -104,7 +104,7 @@
     "desc": "Certaines créatures sont si profondément perturbantes qu'elles parviennent à provoquer une terreur glaçante auprès de leurs adversaires. Lorsque vous rencontrez pour la première fois une créature qui inspire la *Terreur*, effectuez un Test de Psychologie. Sur un succès, vous ne subissez aucun effet supplémentaire à cause de la *Terreur*. Sur un échec, vous gagnez autant d'États *Brisé* que l'*Indice* de *Terreur* de la créature, auquel vous rajoutez les DR inférieurs à 0.\n\nUne fois ce Test de Psychologie effectué, la créature cause la *Peur*, avec un *Indice* de *Peur* équivalent à son *Indice* de *Terreur*.",
     "source": {
       "book": "livre-de-base",
-      "page": 192
+      "page": 191
     },
     "resolution": "terreur",
     "failCondition": "brise",
