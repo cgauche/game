@@ -134,7 +134,10 @@ export const FLOW_VERBS = {
   shipBattery:  { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true, resolution: ['shipBatteryConfirm', 'shipBatteryCancel'] },
   crewTest:     { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true, resolution: ['crewTestConfirm', 'crewTestCancel'] },
   // Étape « batch » DANS une cascade : aucune action de clôture propre — c'est la cascade qui avance.
-  cascadeBatch: { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true, resolution: [] },
+  // PARITÉ de verbes avec l'étape MONO `cascade` : une bande met en jeu les MÊMES règles qu'une étape
+  // seule — `resist` (LDB 10 l.1015-1021) et `determine` (LDB 17 l.62) s'y jouent PAR RANGÉE, routés
+  // par le porteur du participant (`pidIsActor:true`), jamais sur la fenêtre partagée.
+  cascadeBatch: { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact', 'resist', 'determine'], coop: true, resolution: [] },
 } as const satisfies Record<string, FlowVerbs>;
 
 export type FlowKey = keyof typeof FLOW_VERBS;

@@ -1432,9 +1432,36 @@ export const FLOWS = {
     },
     rolled: (r) => !!r.result,
     actor: (s, r) => actorIn(s, r.id),
-    caps: { forced: true },
+    // PARITÉ de verbes avec l'étape MONO `cascade` (`FLOW_VERBS.cascadeBatch`) — une bande met en jeu
+    // les mêmes règles qu'une étape seule, et chaque rangée les joue POUR ELLE : Résilience (`forced`),
+    // Résistance (Menace) (`resist`, LDB 10 l.1015-1021) et Détermination (`determine`, LDB 17 l.62).
+    caps: {
+      forced: true,
+      // Le tag `menace` de la rangée (`PendingBase.menace`, posé à la construction par le producteur de
+      // la bande — comme sur l'étape mono) ouvre le verbe ; `resolve` reçoit alors `{ sl: BE }`.
+      resist: true,
+      // Détermination : immunité TEMPORAIRE marquée SUR LA RANGÉE (`BatchParticipant.immune`), pas une
+      // réussite forcée (≠ `resist`) — l'applier de bande lit ce flag par rangée. La bande vaut UNE
+      // entrée de règle : la DÉCLARATION de Psychologie (type/source/indice) vit sur l'ÉTAPE courante,
+      // ce qui diverge par héros vit sur la rangée (`BatchParticipant.meta`). Le `result` synthétique
+      // (DR 0) ne sert qu'à faire avancer la bande.
+      determine: (slot, actor, get, _set, commit) => {
+        if (slot.result) return; // rangée déjà résolue
+        const pc = get().pendingCascade;
+        const st = pc?.participants[pc.cursor];
+        if (!st || (!st.combatPsych && !st.encounterPsych)) return; // Détermination = immunité PSYCHOLOGIQUE seulement
+        if ((actor.resolve ?? 0) <= 0) return;
+        const msg = spendResolveForPsychImmunity(actor); // dépense + psychImmuneRoundsLeft (ActiveEffect 2 Rounds)
+        if (!msg) return;
+        commit({ immune: true, result: { roll: slot.target, target: slot.target, sl: 0, success: true } }, { touch: true });
+        get().log(msg);
+      },
+    },
     resolve: (s, r, actor, _get, forced) => {
       if (!actor) return null; // rangée sans acteur résoluble (parité historique) — pas de jet
+      // Résistance (Menace), LDB 10 l.1015-1021 : auto-succès de CETTE rangée à DR IMPOSÉ (aucun dé,
+      // aucune ré-opposition — calque de l'étape MONO) ; les autres rangées de la bande sont intactes.
+      if (forced?.sl != null) return { result: { roll: 1, target: r.target, sl: forced.sl, success: true } };
       // Résilience : le défenseur d'une opposition RÉSISTE (binaire, `forceBatchParticipant` rend
       // `success:true`) — l'attaquant figé ne l'emporte plus, comme sur l'étape MONO.
       return { result: forced ? forceBatchParticipant(r) : rollBatchParticipant(r, battleRng(), currentStepFreeze(s)) };

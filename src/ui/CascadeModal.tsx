@@ -105,6 +105,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const batchBonusSL = useGame((s) => s.cascadeBatchBonusSL);
   const batchDarkPact = useGame((s) => s.cascadeBatchDarkPact);
   const batchForce = useGame((s) => s.cascadeBatchForceSuccess);
+  const batchResist = useGame((s) => s.cascadeBatchResist); // Résistance (Menace) PAR RANGÉE (LDB 10)
+  const batchDetermine = useGame((s) => s.cascadeBatchDetermine); // Détermination PAR RANGÉE (LDB 17 l.62)
   const roll = useGame((s) => s.cascadeRoll);
   const reroll = useGame((s) => s.cascadeReroll);
   const bonusSL = useGame((s) => s.cascadeBonusSL);
@@ -619,7 +621,24 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       // Test ÉTENDU d'une rangée (cartographie de voyage) : DONNÉE seule — `RollRow` rend la barre (site
       // UNIQUE), visible AVANT et après le jet, persistante (arbitrage user 2026-07-11).
       extendedDrOf: (part) => extendedDrData(part.extendedDrDone, part.extendedDrTarget, part.result),
-    }).map((r) => ({ ...r, flowKey: 'cascadeBatch' as const, key: witnessRowKey(cur.id, String(r.key)) }));
+    }).map((r) => {
+      // Verbes à RESSOURCE de la rangée (parité avec l'étape MONO, joués PAR RANGÉE — flux `cascadeBatch`) :
+      // Résistance (Menace) sur une rangée TAGUÉE dont l'issue reste défavorable (LDB 10 l.1015-1021) ;
+      // Détermination avant le jet sur une bande de Psychologie (LDB 17 l.62), dont la DÉCLARATION vit
+      // sur l'étape (`cur.combatPsych`/`cur.encounterPsych`), les divergences par héros sur la rangée.
+      const part = cur.participants!.find((x) => x.id === String(r.key));
+      const a = r.actor;
+      const done = part?.result;
+      const resistOk = !!part?.menace && !!a && availableResistance(a, part.menace) != null && (!done || !done.success);
+      const determineOk = !!a && !!part && !done && !!(cur.combatPsych || cur.encounterPsych);
+      return {
+        ...r,
+        flowKey: 'cascadeBatch' as const,
+        key: witnessRowKey(cur.id, String(r.key)),
+        ...(resistOk ? { resist: { menace: part!.menace!, onResist: () => batchResist(part!.id) } } : {}),
+        ...(determineOk ? { determination: { resolve: a!.resolve ?? 0, onResolve: () => batchDetermine(part!.id) } } : {}),
+      };
+    });
     const ready = stepReady(cur);
     // Deux « Tout lancer » (#328) : PAR RANGÉES (lance d'un coup les contributeurs restants de CETTE
     // étape, ≥2 non lancés — mutualisé) et CASCADE (résout d'office tout le reste de la cascade, sans

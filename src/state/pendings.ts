@@ -1338,6 +1338,18 @@ export interface BatchParticipant extends RollParticipant {
   rerolled?: boolean;
   /** Réussite forcée par Résilience (LDB 17 l.68). */
   forced?: boolean;
+  /** Paramètres CHIFFRÉS et SÉRIALISABLES de la conséquence de CETTE rangée (jamais de closure — coop),
+   *  jumeau du `meta` d'étape (`CascadeStepMeta`) : une bande dont l'applier diverge PAR HÉROS
+   *  (Psychologie : type, source, indice, DR déjà cumulé, difficulté allégée) porte ici ce qui lui est
+   *  propre, l'étape gardant ce qui est COMMUN. Aucune BRANCHE ici (`onSuccess`/`onFail`/`opposed`
+   *  restent à l'ÉTAPE : aucun lecteur PAR RANGÉE n'existe, un `Flow` versé ici serait silencieux).
+   *  Aucun `stake` non plus : la CLÉ d'une bande EST l'entrée de règle mise en jeu (une fenêtre par
+   *  règle), donc l'enjeu — et la fiche ⓘ — restent ceux de l'ÉTAPE (#1117). */
+  meta?: CascadeStepMeta;
+  /** DÉTERMINATION (LDB 17 l.62) dépensée SUR CETTE RANGÉE : immunité TEMPORAIRE de son porteur, jumelle
+   *  de `CascadeStep.immune` — l'applier de bande lit le flag DE LA RANGÉE pour ne pas lui appliquer la
+   *  conséquence, les autres rangées de la bande gardant la leur. */
+  immune?: boolean;
 }
 
 /** TIRAGE SUR TABLE d'une étape de cascade — la DÉCLARATION, sérialisable (coop) : quelle table

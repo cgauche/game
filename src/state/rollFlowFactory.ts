@@ -591,7 +591,10 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       if (!spec.caps?.resist) return;
       const s = get(); const p = pendingOf(s); if (!p) return;
       const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot)) return;
-      // Le tag `menace` vit sur le SLOT (étape de cascade) ou sur le PENDING entier (opposition de sort).
+      // Le tag `menace` vit sur le SLOT (étape de cascade, RANGÉE d'une bande) ou sur le PENDING entier
+      // (opposition de sort : ses participants ne sont pas tagués, la FENÊTRE l'est). PRÉCÉDENCE : le tag
+      // du slot PRIME ; le repli ne sert qu'aux flux dont les rangées n'en portent pas. Une BANDE tague
+      // ses rangées à la construction (`frozenOpposedBatchStep`) — une rangée nue n'y résiste donc pas.
       const slot = loc.slot.menace != null ? loc.slot : { ...loc.slot, menace: (p as PendingBase).menace } as Slot;
       const actor = spec.actor(s, loc.slot, p);
       // Résistance (Menace) : réussite forcée à DR = Bonus d'Endurance (LDB 10). Repli = `resolve(…,{sl})`.

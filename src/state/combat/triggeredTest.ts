@@ -237,9 +237,8 @@ export function frozenOpposedBatchStep(
 ): CascadeStep | undefined {
   const opp = ft.opposed;
   if (!opp) throw new Error('frozenOpposedBatchStep : le FlowTest doit déclarer son opposition (`opposed`).');
-  // Une rangée batch n'offre pas le verbe `resist` (auto-succès du talent Résistance (Menace), LDB 10) :
-  // un Test tagué `menace` ne peut pas être groupé sans lui retirer sa voie de résistance.
-  if (ft.menace) throw new Error(`frozenOpposedBatchStep : Test tagué menace « ${ft.menace} » — la rangée batch n'offre pas l'auto-succès de Résistance.`);
+  // Test tagué `menace` : la rangée batch porte le tag ELLE-MÊME (comme l'étape mono), donc le verbe
+  // `resist` (Résistance (Menace), LDB 10 l.1015-1021) s'y joue PAR RANGÉE — `FLOWS.cascadeBatch.caps`.
   const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
   const participants: BatchParticipant[] = [];
   for (const c of defenders) {
@@ -248,6 +247,7 @@ export function frozenOpposedBatchStep(
     participants.push({
       id: c.id, interactive: true, result: null, base, difficulty,
       target: base + DIFFICULTY_MODIFIERS[difficulty],
+      ...(ft.menace ? { menace: ft.menace } : {}),
       ...(ft.skill ? { skillId: ft.skill } : {}), ...(ft.spec ? { spec: ft.spec } : {}),
     });
   }
@@ -257,6 +257,7 @@ export function frozenOpposedBatchStep(
     kind: 'triggeredBatchTest', icon: 'nav/dice', label: ft.label ?? skillLabel,
     interactive: true, aggregate: 'none', participants,
     ...(ft.stake ? { stake: ft.stake } : {}),
+    ...(ft.menace ? { menace: ft.menace } : {}),
     meta: {
       onSuccess: branches.onSuccess, onFail: branches.onFail, after, casterId: attacker.id,
       opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp.attackerLabel ?? CHAR_LABELS[opp.attacker], difficulty, ...(opp.bonusSL ? { bonusSL: opp.bonusSL } : {}) },
