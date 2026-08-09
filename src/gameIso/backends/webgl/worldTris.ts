@@ -42,8 +42,9 @@ export function pxPerM(mpt: number): number {
 export const ISO_PX_PER_M = LEVEL_H / METRES_PER_LEVEL;
 
 /** Largeurs ÉCRAN (px) des montants chez le backend affine — `affineWalls.ts:25` (poteau),
- *  `affineWalls.ts:26` (jambage), `affineFloors.ts:33` (pilier de surplomb). Ces constantes ne sont pas
- *  exportées par l'affine : copie LOCALE au spike. */
+ *  `affineWalls.ts:26` (jambage), `affineFloors.ts:33` (pilier de surplomb). L'affine ne les exporte
+ *  pas : ces trois nombres existent DEUX fois dans le dépôt, et une largeur de montant se mesure ici en
+ *  pixels d'écran. Inscrit au registre des fossiles de transition (#1176). */
 const UPRIGHT_PX: Record<string, number> = { poteau: 3.8, jambage: 3.6, pillar: 5 };
 
 /** Séparation métrique d'un cran de rang coplanaire. */
@@ -295,8 +296,14 @@ export function coplanarOverlapPairs(polys: readonly WorldPoly[]): [number, numb
   return pairs;
 }
 
-/** Géométrie GPU d'une face : ses triangles, sa normale, son rang coplanaire. */
+/** Géométrie GPU d'une face : ses triangles et leurs DEUX jeux d'UV, sa normale, son rang coplanaire. */
 export interface FaceGeom {
+  /** UV PLANAIRES MONDE (mètres) des 3 sommets de chaque triangle, dans le plan de SON quad — de quoi
+   *  répéter une texture à l'échelle métrique, continue d'un quad à l'autre du même plan. */
+  uv: [UV, UV, UV][];
+  /** UV NORMALISÉES [0,1]² de la FACE d'origine des 3 sommets de chaque triangle — de quoi cuire un
+   *  ornement calé sur la face (colombage, accents), quel que soit le volume qu'elle a engendré. */
+  uv1: [UV, UV, UV][];
   tris: Tri[];
   normal: Vec3 | null;
   rank: number;
@@ -330,6 +337,81 @@ export function faceQuadsOriented(face: Face, mpt: number): { quads: WorldPoly[]
   return { quads: [offsetPoly(poly, n, t / 2), reversePoly(offsetPoly(poly, n, -t / 2))], oriented: true };
 }
 
+// ————————————————————————————————————————————————————————————————
+// UV — deux jeux : la MAILLE du monde (mètres) et la FACE d'origine ([0,1]²)
+// ————————————————————————————————————————————————————————————————
+
+/** Coordonnée de texture d'un sommet. */
+export interface UV {
+  u: number;
+  v: number;
+}
+
+/** Repère orthonormé d'un plan. */
+export interface PlanarFrame {
+  eu: Vec3;
+  ev: Vec3;
+}
+
+const dot = (a: Vec3, b: Vec3) => a.x * b.x + a.y * b.y + a.z * b.z;
+const cross = (a: Vec3, b: Vec3): Vec3 => ({
+  x: a.y * b.z - a.z * b.y,
+  y: a.z * b.x - a.x * b.z,
+  z: a.x * b.y - a.y * b.x,
+});
+
+/** Repère PLANAIRE d'un plan de normale `n`, ancré à l'ORIGINE DU MONDE (jamais au quad) : deux quads
+ *  coplanaires — deux dalles de sol voisines, deux tronçons d'un même mur, une face et sa copie de joue —
+ *  reçoivent des UV qui se raccordent, sans couture au joint ni motif qui redémarre.
+ *  Plan HORIZONTAL (ou normale indéterminée) : u = est, v = sud. Sinon : u = l'horizontale du plan
+ *  (`up × n`), v descend (composante y ≤ 0), comme la convention de face des recettes de détail. */
+export function planarFrame(n: Vec3 | null): PlanarFrame {
+  if (!n || Math.abs(n.y) > 1 - 1e-9) return { eu: { x: 1, y: 0, z: 0 }, ev: { x: 0, y: 0, z: 1 } };
+  const len = Math.hypot(n.z, n.x);
+  const eu = { x: n.z / len, y: 0, z: -n.x / len };
+  const ev = cross(n, eu);
+  return { eu, ev: ev.y > 0 ? { x: -ev.x, y: -ev.y, z: -ev.z } : ev };
+}
+
+/** UV PLANAIRES MONDE d'un point, en MÈTRES : sa projection sur les deux axes du repère du plan.
+ *  L'application est une ISOMÉTRIE du plan — deux sommets distants d'un mètre le sont dans l'UV. Un
+ *  déplacement le long de la normale (biais coplanaire, joue de mur) ne la change pas. */
+export function planarUV(p: Vec3, f: PlanarFrame): UV {
+  return { u: dot(p, f.eu), v: dot(p, f.ev) };
+}
+
+/** Cadre d'une FACE dans son propre plan : le repère planaire + l'emprise de la face, de quoi
+ *  normaliser un point en [0,1]². Une emprise dégénérée (face à 2 points : montant) vaut 1 — la
+ *  division reste finie et l'UV se rabat sur le bord. */
+export interface FaceUvFrame extends PlanarFrame {
+  u0: number;
+  v0: number;
+  du: number;
+  dv: number;
+}
+
+export function faceUvFrame(poly: WorldPoly): FaceUvFrame {
+  const f = planarFrame(polyNormal(poly));
+  let u0 = Infinity, v0 = Infinity, u1 = -Infinity, v1 = -Infinity;
+  for (const p of poly) {
+    const uv = planarUV(p, f);
+    u0 = Math.min(u0, uv.u); u1 = Math.max(u1, uv.u);
+    v0 = Math.min(v0, uv.v); v1 = Math.max(v1, uv.v);
+  }
+  if (!poly.length) return { ...f, u0: 0, v0: 0, du: 1, dv: 1 };
+  return { ...f, u0, v0, du: u1 - u0 > 1e-9 ? u1 - u0 : 1, dv: v1 - v0 > 1e-9 ? v1 - v0 : 1 };
+}
+
+const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+
+/** UV NORMALISÉES [0,1]² d'un point dans le cadre de la face — u le long de la face, v du HAUT (0) vers
+ *  le BAS (1), la convention des `DetailRecipe`. Un point hors de l'emprise (bras d'une croix de
+ *  montant, chant d'une boîte de mur qui déborde du plan de face) se rabat sur le bord. */
+export function faceUv1(p: Vec3, f: FaceUvFrame): UV {
+  const uv = planarUV(p, f);
+  return { u: clamp01((uv.u - f.u0) / f.du), v: clamp01((uv.v - f.v0) / f.dv) };
+}
+
 /** Faces → triangles monde, biais coplanaire appliqué, montants développés en croix et murs en boîtes
  *  minces. Le RANG se calcule
  *  sur la liste FOURNIE (cf. `coplanarRanks` : la porter à l'échelle de la scène), quads de montants
@@ -339,8 +421,12 @@ export function facesGeometry(faces: readonly Face[], mpt: number): FaceGeom[] {
   const ranks = coplanarRanks(parts.flatMap((p) => p.quads));
   const out: FaceGeom[] = [];
   let k = 0;
-  for (const { quads: qs, oriented } of parts) {
+  faces.forEach((face, i) => {
+    const { quads: qs, oriented } = parts[i];
+    const faceFrame = faceUvFrame(facePoly(face, mpt));
     const tris: Tri[] = [];
+    const uv: [UV, UV, UV][] = [];
+    const uv1: [UV, UV, UV][] = [];
     let rank = 0;
     let normal: Vec3 | null = null;
     for (const q of qs) {
@@ -348,9 +434,14 @@ export function facesGeometry(faces: readonly Face[], mpt: number): FaceGeom[] {
       rank = Math.max(rank, r);
       const biased = biasPoly(q, r);
       if (qs.length === 1) normal = polyNormal(biased); // une croix de montant n'a pas UNE normale
-      tris.push(...fanTriangles(biased));
+      const quadFrame = planarFrame(polyNormal(biased)); // chaque quad porte SA maille de monde
+      for (const tri of fanTriangles(biased)) {
+        tris.push(tri);
+        uv.push(tri.map((p) => planarUV(p, quadFrame)) as [UV, UV, UV]);
+        uv1.push(tri.map((p) => faceUv1(p, faceFrame)) as [UV, UV, UV]);
+      }
     }
-    out.push({ tris, normal, rank, oriented });
-  }
+    out.push({ tris, uv, uv1, normal, rank, oriented });
+  });
   return out;
 }

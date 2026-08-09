@@ -27,6 +27,9 @@ import {
 import { facesGeometry, polyBounds, type Vec3 } from './worldTris';
 import { anchorAndSize, billboardHeightM, BILLBOARD_BOX_ASPECT } from './billboardMath';
 import { TINT_EXPLORED } from './visibilityTint';
+import { faceSurface, tintVarFactor } from './faceColors';
+import { TERRAIN_DEFS } from '../../../state/terrain';
+import type { Face } from '../../builders/types';
 import { buildScene } from '../../../state/mapSpec';
 import { spec as siegeSpec } from '../../../scenes/test-scenarios/siege-enceinte';
 import { scenario as arene } from '../../../scenes/test-scenarios/arene';
@@ -34,7 +37,7 @@ import { scenario as pontVitrine } from '../../../scenes/test-scenarios/pont-vit
 import { scenario as diligence } from '../../../scenes/test-scenarios/diligence';
 import { buildOperaFloorplan } from '../../../scenes/opera/floorplan';
 import { buildVitrineScene } from '../../../scenes/vitrine-batiments';
-import { sceneMetresPerTile, type Scene, type Terrain } from '../../../state/scene';
+import { emptyScene, sceneMetresPerTile, type Scene, type Terrain } from '../../../state/scene';
 import { PROPS, propSvg } from '../../catalog/decor';
 import { AMBIANCE } from '../../catalog/ambiance';
 
@@ -367,5 +370,96 @@ describe('OMBRE DE CONTACT — ancrée sous les pieds', () => {
     expect(disque.position.y).toBeCloseTo(ancre.y + CONTACT_SHADOW_LIFT_M, 9);
     expect(disque.rotation.x).toBeCloseTo(-Math.PI / 2, 9);
     expect(disque.geometry.parameters.radius).toBeGreaterThan(0);
+  });
+});
+
+describe('ATTRIBUTS d’UV — les deux jeux voyagent dans LA géométrie fusionnée', () => {
+  it('chaque scène-témoin rend UNE géométrie qui porte position + couleur + uv + uv1, alignés au sommet', () => {
+    for (const [nom, charge] of TEMOINS) {
+      const scène = charge();
+      const g = buildWorldGeometry(scène, sceneMetresPerTile(scène), plein);
+      const n = g.getAttribute('position').count;
+      expect([nom, g.getIndex()]).toEqual([nom, null]); // non indexée : un sommet par coin de triangle
+      expect([nom, n % 3]).toEqual([nom, 0]);
+      expect([nom, g.getAttribute('color').count]).toEqual([nom, n]);
+      expect([nom, g.getAttribute('uv').count]).toEqual([nom, n]);
+      expect([nom, g.getAttribute('uv1').count]).toEqual([nom, n]);
+      expect([nom, g.getAttribute('uv').itemSize, g.getAttribute('uv1').itemSize]).toEqual([nom, 2, 2]);
+    }
+  });
+
+  it('`uv` est la maille MONDE en MÈTRES : chaque arête de triangle y garde sa longueur', () => {
+    const g = buildWorldGeometry(scene, mpt, plein);
+    const pos = g.getAttribute('position').array as Float32Array;
+    const uv = g.getAttribute('uv').array as Float32Array;
+    let pires = 0;
+    for (let t = 0; t * 9 < pos.length; t++) {
+      for (let i = 0; i < 3; i++) {
+        const j = (i + 1) % 3;
+        const a = t * 3 + i;
+        const b = t * 3 + j;
+        const d3 = Math.hypot(pos[a * 3] - pos[b * 3], pos[a * 3 + 1] - pos[b * 3 + 1], pos[a * 3 + 2] - pos[b * 3 + 2]);
+        const dUV = Math.hypot(uv[a * 2] - uv[b * 2], uv[a * 2 + 1] - uv[b * 2 + 1]);
+        if (Math.abs(d3 - dUV) > 1e-3) pires++;
+      }
+    }
+    expect(pires).toBe(0);
+  });
+
+  it('`uv1` reste dans [0,1] et exploite la face (pas un aplat de zéros)', () => {
+    const g = buildWorldGeometry(scene, mpt, plein);
+    const uv1 = Array.from(g.getAttribute('uv1').array as Float32Array);
+    expect(uv1.filter((v) => v < -1e-6 || v > 1 + 1e-6)).toEqual([]);
+    expect(uv1.filter((v) => v > 0.99).length).toBeGreaterThan(100);
+  });
+});
+
+describe('TEINTE de sommet — la variance par case est CUITE dans `color`', () => {
+  /** Une nappe plate d'herbe : un albédo quasi unique, donc toute nuance résiduelle vient de la
+   *  variance de teinte par case (le sol d'herbe porte `tintVar` en donnée). */
+  const nappe = emptyScene(8, 8);
+
+  /** Couleurs distinctes des sommets, arrondies au 1/10000. */
+  const teintes = (g: THREE.BufferGeometry) => {
+    const c = g.getAttribute('color').array as Float32Array;
+    const out = new Set<string>();
+    for (let k = 0; k < c.length; k += 3) out.add([c[k], c[k + 1], c[k + 2]].map((v) => v.toFixed(4)).join(','));
+    return out;
+  };
+  const clé = (col: THREE.Color) => [col.r, col.g, col.b].map((v) => v.toFixed(4)).join(',');
+  /** Teinte ATTENDUE d'une face : son albédo de matériau × la variance de SA case. */
+  const attendue = (f: { face: Face; cell: { x: number; y: number; z: number } }) => {
+    const s = faceSurface(f.face);
+    return clé(new THREE.Color(s.color).multiplyScalar(tintVarFactor(s.recipe, f.cell)));
+  };
+
+  it('la nappe témoin porte bien de l’herbe à variance (sinon la mesure ne pèserait rien)', () => {
+    const herbe = TERRAIN_DEFS.find((t) => t.id === 'herbe')!;
+    expect(herbe.detail?.tintVar).toBeGreaterThan(0);
+    expect(worldFaces(nappe).filter((f) => f.face.material.id === 'herbe').length).toBeGreaterThan(50);
+  });
+
+  it('un sol à variance ne rend PAS un aplat : la nappe porte plusieurs nuances du MÊME albédo', () => {
+    const g = buildWorldGeometry(nappe, sceneMetresPerTile(nappe), plein);
+    const albédos = new Set(worldFaces(nappe).map((f) => faceSurface(f.face).color));
+    expect(teintes(g).size).toBeGreaterThan(albédos.size);
+  });
+
+  it('la teinte d’un sommet est EXACTEMENT albédo × variance de sa case (jamais une couleur inventée)', () => {
+    const g = buildWorldGeometry(nappe, sceneMetresPerTile(nappe), plein);
+    expect(teintes(g)).toEqual(new Set(worldFaces(nappe).map(attendue)));
+  });
+
+  it('la variance se COMPOSE avec la teinte de visibilité, elle ne l’écrase pas', () => {
+    const vue = buildWorldGeometry(nappe, sceneMetresPerTile(nappe), plein).getAttribute('color').array as Float32Array;
+    const explorée = buildWorldGeometry(nappe, sceneMetresPerTile(nappe), () => TINT_EXPLORED).getAttribute('color')
+      .array as Float32Array;
+    for (let k = 0; k < vue.length; k += 997) expect(explorée[k]).toBeCloseTo(vue[k] * TINT_EXPLORED, 5);
+  });
+
+  it('la nuance est STABLE : deux constructions de la même scène donnent les mêmes couleurs', () => {
+    const a = buildWorldGeometry(scene, mpt, plein).getAttribute('color').array as Float32Array;
+    const b = buildWorldGeometry(scene, mpt, plein).getAttribute('color').array as Float32Array;
+    expect(Array.from(a)).toEqual(Array.from(b));
   });
 });

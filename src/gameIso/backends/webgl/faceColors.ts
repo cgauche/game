@@ -1,20 +1,31 @@
 /**
- * SPIKE WebGL — COULEUR d'une `Face` du pivot, résolue par DOMAINE depuis les MÊMES catalogues que les
- * deux backends existants : structures (`wallPartColor`, partagé avec le POV), relief (`reliefMaterial`),
- * toiture (`roofMaterial`), terrain (`swatch` du registre `TERRAIN_DEFS`). Aucun littéral de couleur ici.
+ * SURFACE d'une `Face` du pivot — UNE résolution matériau → (couleur de base, recette de détail, clé de
+ * texture, échelle d'UV), par DOMAINE et depuis les MÊMES catalogues que les deux backends écran :
+ * structures (`wallPartColor`, partagé avec le POV), relief (`reliefMaterial`), toiture (`roofMaterial`),
+ * terrain (`swatch` du registre `TERRAIN_DEFS`). Aucun littéral de couleur ici.
  *
  * Les DEUX modes d'usage du renderer (unlit = couleur cuite au sommet ; lit = matériau éclairé) partent
  * de CETTE couleur de base : le mode est un choix de MATÉRIAU, pas de couleur, et ne se paramètre donc
  * pas ici. Aucun ombrage d'écran pré-calculé n'y est cuit — la lumière du renderer le remplace.
+ *
+ * DIVERGENCE ASSUMÉE avec l'affine sur les SOLS : un `TerrainDef` porte un dégradé `stops` (ombrage
+ * CUIT dans l'image, du clair en haut vers le sombre en bas de la tuile) en plus de son `swatch`. Ce
+ * dégradé est de la lumière peinte à la main : ici la couleur de base est le `swatch` seul, et le
+ * soleil du renderer fait l'ombrage. Seule la variance de teinte PAR TUILE (`detail.tintVar`) est
+ * reprise — elle est de l'identité de matériau, pas de la lumière (cf. `tintVarFactor`).
  */
 import { reliefMaterial } from '../../catalog/relief';
 import { roofMaterial } from '../../catalog/roofs';
 import { facadeStructureAppearance } from '../../catalog/facades';
 import { wallPartColor, type WallPart } from '../../catalog/structures';
 import { TERRAIN_DEFS } from '../../../state/terrain';
+import { TINT_SPREAD } from '../affineDetail';
+import { coursesPeriodM, groundPeriodM } from '../../detail/courses';
+import { hash32 } from '../../detail/hash';
+import type { DetailRecipe } from '../../detail/types';
 import type { Face } from '../../builders/types';
 
-/** Modes de rendu d'une face — deux MATÉRIAUX du renderer, une seule couleur de base (`faceColor`). */
+/** Modes de rendu d'une face — deux MATÉRIAUX du renderer, une seule couleur de base (`faceSurface`). */
 export type ColorMode = 'unlit' | 'lit';
 
 const TERRAIN_BY_ID = new Map(TERRAIN_DEFS.map((t) => [t.id, t]));
@@ -33,8 +44,36 @@ function roofColor(id: string, part: string | undefined): string {
   return sh[part as 'N' | 'E' | 'S' | 'O'] ?? sh.N ?? FLOOR_FALLBACK;
 }
 
-/** Couleur de base (`#rrggbb` ou toute couleur CSS des defs) d'une face, dans les deux modes. */
-export function faceColor(face: Face): string {
+/** Surface d'une face : ce qu'il faut pour la peindre ET pour la texturer. */
+export interface FaceSurface {
+  /** Couleur de base (`#rrggbb` ou toute couleur CSS des defs), dans les deux modes. */
+  color: string;
+  /** Recette de détail portée par la def d'apparence du matériau (absente = surface lisse). */
+  recipe?: DetailRecipe;
+  /** Identité de la surface par son CONTENU (couleur + recette) : deux faces qui la partagent
+   *  partagent leur texture. Un atlas s'y indexe sans dédupliquer lui-même. */
+  surfaceKey: string;
+  /** Taille MÉTRIQUE d'une période de texture (m). Absente quand la recette n'a pas d'assises : rien
+   *  ne se répète, l'UV monde n'a pas d'échelle propre. */
+  uvScaleM?: { u: number; v: number };
+}
+
+/** Recette de détail du matériau d'une face, prise à SA def d'apparence. */
+function faceRecipe(face: Face): DetailRecipe | undefined {
+  const { domain, id } = face.material;
+  switch (domain) {
+    case 'structure':
+      return facadeStructureAppearance(id).detail;
+    case 'relief':
+      return reliefMaterial(id).detail;
+    case 'roof':
+      return roofMaterial(id).detail;
+    case 'terrain':
+      return TERRAIN_BY_ID.get(id)?.detail;
+  }
+}
+
+function faceBaseColor(face: Face): string {
   const { domain, id, part } = face.material;
   switch (domain) {
     case 'structure':
@@ -46,4 +85,41 @@ export function faceColor(face: Face): string {
     case 'terrain':
       return TERRAIN_BY_ID.get(id)?.swatch ?? FLOOR_FALLBACK;
   }
+}
+
+/** Période de texture d'une face : celle du SOL pour un terrain (surface continue, période élargie),
+ *  celle d'une face d'appareillage sinon (`detail/courses`). */
+function faceUvScaleM(face: Face, recipe: DetailRecipe | undefined): { u: number; v: number } | undefined {
+  const c = recipe?.courses;
+  if (!c) return undefined;
+  return face.material.domain === 'terrain' ? groundPeriodM(c) : coursesPeriodM(c);
+}
+
+/** Clé d'une surface par son CONTENU : la couleur ET la recette y entrent toutes deux. Deux matériaux
+ *  de même teinte mais d'appareillage différent (une pierre lisse et une pierre à assises) ne se
+ *  partagent donc PAS une texture — c'est le dessin, pas seulement la teinte, qui fait la surface. */
+export function surfaceKeyOf(color: string, recipe?: DetailRecipe): string {
+  return `${color}~${recipe ? hash32(JSON.stringify(recipe)).toString(36) : '-'}`;
+}
+
+/** Résolution UNIQUE d'une face : sa couleur, sa recette, sa clé de texture, son échelle d'UV. */
+export function faceSurface(face: Face): FaceSurface {
+  const color = faceBaseColor(face);
+  const recipe = faceRecipe(face);
+  return {
+    color,
+    recipe,
+    surfaceKey: surfaceKeyOf(color, recipe),
+    uvScaleM: faceUvScaleM(face, recipe),
+  };
+}
+
+/** Facteur de variance de TEINTE d'une surface à l'identité MONDE de sa case ∈ [1−tintVar, 1+tintVar] :
+ *  MÊME tirage que l'affine (`affineDetail.ts` `terrainFillGradient`) — variante
+ *  `hash32('tint', x, y, z) % TINT_SPREAD.length`, facteur `1 + tintVar × TINT_SPREAD[k]`. Les deux
+ *  backends tombent donc sur la même nuance pour la même tuile. 1 sans `tintVar` (surface uniforme). */
+export function tintVarFactor(recipe: DetailRecipe | undefined, cell: { x: number; y: number; z: number }): number {
+  const tv = recipe?.tintVar;
+  if (!tv) return 1;
+  return 1 + tv * TINT_SPREAD[hash32('tint', cell.x, cell.y, cell.z) % TINT_SPREAD.length];
 }

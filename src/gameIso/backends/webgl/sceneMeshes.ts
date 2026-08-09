@@ -6,7 +6,7 @@
  * Deux invariants de ce module :
  *  - FUSION : toutes les faces de la scène tiennent dans UNE `BufferGeometry` non indexée (la couleur
  *    de face est cuite au sommet, le mode de rendu n'est qu'un choix de MATÉRIAU) — jamais un mesh par face ;
- *  - DÉLÉGATION : aucune couleur, aucune vue, aucun seuil n'est décidé ici — `faceColor`, `tintFor`,
+ *  - DÉLÉGATION : aucune couleur, aucune vue, aucun seuil n'est décidé ici — `faceSurface`, `tintFor`,
  *    `facesGeometry` (biais coplanaire compris), `propSvg`, `resolveRender`/`resolveRig` font foi.
  *
  * Node-safe (three est du JS pur) : aucun DOM, aucun renderer. La rasterisation vit dans `svgTexture.ts`.
@@ -18,7 +18,7 @@ import { buildRoofs } from '../../builders/roofs';
 import { buildProps } from '../../builders/props';
 import type { Face, SceneEl } from '../../builders/types';
 import { facesGeometry, polyNormal } from './worldTris';
-import { faceColor } from './faceColors';
+import { faceSurface, tintVarFactor } from './faceColors';
 import { BB_W, BB_H } from '../../pov/billboardCore';
 import { type BillboardKind } from './billboardMath';
 import { DEFS } from '../../sprites';
@@ -54,12 +54,12 @@ function faceEls(scene: Scene): SceneEl[] {
 /** Faces MONDE de la scène dans l'ordre de peinture des builders, chacune avec la clé de case qui porte
  *  sa teinte de visibilité — la liste EXACTE que `buildWorldGeometry` fusionne (les gardes s'y adossent
  *  au lieu de la reconstituer). */
-export function worldFaces(scene: Scene): { face: Face; cellKey: string }[] {
-  const out: { face: Face; cellKey: string }[] = [];
+export function worldFaces(scene: Scene): { face: Face; cell: SceneEl['cell']; cellKey: string }[] {
+  const out: { face: Face; cell: SceneEl['cell']; cellKey: string }[] = [];
   for (const el of faceEls(scene)) {
     if (!('faces' in el)) continue;
     const cellKey = `${el.cell.x},${el.cell.y},${el.cell.z}`;
-    for (const face of el.faces) out.push({ face, cellKey });
+    for (const face of el.faces) out.push({ face, cell: el.cell, cellKey });
   }
   return out;
 }
@@ -72,6 +72,8 @@ export function buildWorldGeometry(scene: Scene, mpt: number, tintAt: TintAt): T
   const geoms = facesGeometry(faces, mpt);
   const positions: number[] = [];
   const colors: number[] = [];
+  const uvs: number[] = [];
+  const uv1s: number[] = [];
   const c = new THREE.Color();
   // ORIENTATION des triangles : le pivot n'a aucune convention de sens de parcours (une face peut être
   // authorée dans un sens ou dans l'autre). Un rendu en `DoubleSide` s'en moque, mais la CARTE D'OMBRE
@@ -85,22 +87,33 @@ export function buildWorldGeometry(scene: Scene, mpt: number, tintAt: TintAt): T
   const cx = ((scene.dimensions.w - 1) / 2) * mpt;
   const cz = ((scene.dimensions.h - 1) / 2) * mpt;
   geoms.forEach((g, i) => {
-    c.set(faceColor(faces[i])).multiplyScalar(tints[i]);
-    for (const tri of g.tris) {
+    // La couleur de sommet porte l'albédo du matériau × la visibilité de la case × la variance de
+    // teinte de la surface : un aplat répété tuile après tuile se lit sinon comme une nappe de peinture.
+    const surface = faceSurface(faces[i]);
+    c.set(surface.color).multiplyScalar(tints[i] * tintVarFactor(surface.recipe, listées[i].cell));
+    g.tris.forEach((tri, t) => {
       const n = polyNormal(tri);
       const centre = { x: (tri[0].x + tri[1].x + tri[2].x) / 3, z: (tri[0].z + tri[1].z + tri[2].z) / 3 };
       const dehors = n ? n.x * (centre.x - cx) + n.z * (centre.z - cz) : 0;
       const versLExterieur = g.oriented || !n ? true : Math.abs(n.y) > 1e-6 ? n.y > 0 : dehors >= 0;
-      const ordered = versLExterieur ? tri : ([tri[0], tri[2], tri[1]] as typeof tri);
-      for (const p of ordered) {
+      // Le retournement d'un triangle PERMUTE ses UV comme ses sommets (elles sont par SOMMET).
+      const ordre = versLExterieur ? [0, 1, 2] : [0, 2, 1];
+      for (const k of ordre) {
+        const p = tri[k];
         positions.push(p.x, p.y, p.z);
         colors.push(c.r, c.g, c.b);
+        uvs.push(g.uv[t][k].u, g.uv[t][k].v);
+        uv1s.push(g.uv1[t][k].u, g.uv1[t][k].v);
       }
-    }
+    });
   });
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  // `uv` = maille MONDE en mètres (textures répétées) ; `uv1` = face d'origine en [0,1]² (ornements
+  // cuits par face). Les deux jeux voyagent dans LA géométrie fusionnée — jamais un mesh par surface.
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geometry.setAttribute('uv1', new THREE.Float32BufferAttribute(uv1s, 2));
   geometry.computeVertexNormals();
   geometry.computeBoundingBox();
   return geometry;
@@ -242,8 +255,8 @@ export interface SunRig {
  *  carte d'ombre (chaque mètre de frustum en trop est de la précision perdue). La `box` attendue est
  *  celle des CASTEURS, billboards compris (`worldShadowBox`).
  *
- *  Élévation/azimut fixes = provisoire — Phase 2 : `sunDirection(gameTime, northDeg)`, spec au
- *  commentaire #1176 du 2026-08-09. */
+ *  Ni l'heure de jeu ni le nord de la carte n'entrent dans ce réglage : la course du soleil
+ *  (`sunDirection(gameTime, northDeg)`) est spécifiée au #1176. */
 export function sunRig(box: THREE.Box3): SunRig {
   const target = box.getCenter(new THREE.Vector3());
   const radius = box.getSize(new THREE.Vector3()).length() / 2 || 1;

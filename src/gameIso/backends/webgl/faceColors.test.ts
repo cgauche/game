@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { faceColor } from './faceColors';
+import { faceSurface, surfaceKeyOf, tintVarFactor } from './faceColors';
+import { coursesPeriodM, groundPeriodM } from '../../detail/courses';
+import { TINT_SPREAD, terrainFillGradient } from '../affineDetail';
 import { reliefMaterial } from '../../catalog/relief';
 import { roofMaterial } from '../../catalog/roofs';
 import { structureAppearance } from '../../catalog/structures';
@@ -41,7 +43,7 @@ const SOL_INCONNU = '#6b6250';
 
 const scene = buildScene(siegeSpec);
 const face = (material: Face['material']): Face => ({ poly: [], material });
-const couleur = (material: Face['material']): string => faceColor(face(material));
+const couleur = (material: Face['material']): string => faceSurface(face(material)).color;
 
 describe('la DONNÉE dit bien ce que le test attend (sinon l’attendu ment)', () => {
   it('les littéraux du test sont ceux des catalogues', () => {
@@ -55,7 +57,7 @@ describe('la DONNÉE dit bien ce que le test attend (sinon l’attendu ment)', (
   });
 });
 
-describe('faceColor — chaque domaine résolu par SON catalogue, jamais un littéral', () => {
+describe('faceSurface — chaque domaine résolu par SON catalogue, jamais un littéral', () => {
   it('mur : chaque partie prend SA couleur de bois, jamais la face générique', () => {
     expect(couleur({ domain: 'structure', id: 'mur-en-bois', part: 'face' })).toBe(BOIS.face);
     expect(couleur({ domain: 'structure', id: 'mur-en-bois', part: 'panneau' })).toBe(BOIS.inset);
@@ -95,7 +97,99 @@ describe('faceColor — chaque domaine résolu par SON catalogue, jamais un litt
   it('toutes les faces de siege-enceinte reçoivent une couleur (aucune indéfinie)', () => {
     const faces = [...buildFloors(scene), ...buildWalls(scene), ...buildRoofs(scene)].flatMap((el) => el.faces);
     expect(faces.length).toBeGreaterThan(100);
-    const bad = faces.filter((f) => typeof faceColor(f) !== 'string' || faceColor(f).length === 0);
+    const bad = faces.filter((f) => typeof faceSurface(f).color !== 'string' || faceSurface(f).color.length === 0);
     expect(bad).toEqual([]);
+  });
+});
+
+describe('faceSurface — la RECETTE et l’échelle d’UV viennent de la même def que la couleur', () => {
+  it('terrain appareillé : la recette est celle de sa def, l’échelle d’UV est la période de SOL', () => {
+    const dalle = TERRAIN_DEFS.find((t) => t.id === 'dalle')!;
+    const s = faceSurface(face({ domain: 'terrain', id: 'dalle' }));
+    expect(s.recipe).toBe(dalle.detail);
+    expect(s.uvScaleM).toEqual(groundPeriodM(dalle.detail!.courses!));
+  });
+
+  it('mur appareillé : même recette, mais la période VERTICALE (un mur n’est pas un pavage de place)', () => {
+    const app = structureAppearance('mur-en-pierre');
+    expect(app.detail?.courses).toBeDefined();
+    const s = faceSurface(face({ domain: 'structure', id: 'mur-en-pierre', part: 'face' }));
+    expect(s.recipe).toBe(app.detail);
+    expect(s.uvScaleM).toEqual(coursesPeriodM(app.detail!.courses!));
+    expect(s.uvScaleM).not.toEqual(groundPeriodM(app.detail!.courses!));
+  });
+
+  it('surface lisse (aucune assise) : pas d’échelle d’UV — rien ne s’y répète', () => {
+    const s = faceSurface(face({ domain: 'terrain', id: 'herbe' }));
+    expect(s.recipe?.tintVar).toBe(0.07);
+    expect(s.uvScaleM).toBeUndefined();
+  });
+
+  it('la clé de surface DÉPEND de la recette autant que de la couleur (même teinte, autre appareillage ⇒ autre clé)', () => {
+    const pierre = reliefMaterial('pierre');
+    expect(pierre.detail?.courses).toBeDefined();
+    const lisse = surfaceKeyOf(pierre.face);
+    const àAssises = surfaceKeyOf(pierre.face, pierre.detail);
+    const autreAssise = surfaceKeyOf(pierre.face, {
+      ...pierre.detail!,
+      courses: { ...pierre.detail!.courses!, hM: pierre.detail!.courses!.hM * 2 },
+    });
+    expect(new Set([lisse, àAssises, autreAssise]).size).toBe(3);
+    expect(surfaceKeyOf(pierre.face, pierre.detail)).toBe(àAssises); // déterministe
+  });
+
+  it('deux faces de MÊME matériau et MÊME part partagent leur clé ; deux couleurs distinctes non', () => {
+    const a = faceSurface(face({ domain: 'structure', id: 'mur-en-bois', part: 'face' }));
+    const b = faceSurface(face({ domain: 'structure', id: 'mur-en-bois', part: 'face' }));
+    const autrePart = faceSurface(face({ domain: 'structure', id: 'mur-en-bois', part: 'plinthe' }));
+    expect(a.surfaceKey).toBe(b.surfaceKey);
+    expect(autrePart.surfaceKey).not.toBe(a.surfaceKey);
+  });
+
+  it('la clé d’une face est bien celle de son COUPLE (couleur, recette)', () => {
+    const s = faceSurface(face({ domain: 'terrain', id: 'dalle' }));
+    expect(s.surfaceKey).toBe(surfaceKeyOf(s.color, s.recipe));
+  });
+
+  it('toutes les faces de siege-enceinte reçoivent une clé de surface non vide', () => {
+    const faces = [...buildFloors(scene), ...buildWalls(scene), ...buildRoofs(scene)].flatMap((el) => el.faces);
+    expect(faces.filter((f) => !faceSurface(f).surfaceKey)).toEqual([]);
+  });
+});
+
+describe('tintVarFactor — la variance de teinte par case, à l’identité MONDE', () => {
+  const HERBE = TERRAIN_DEFS.find((t) => t.id === 'herbe')!.detail!;
+
+  it('sans `tintVar` : facteur NEUTRE (1) — aucune surface n’est repeinte au hasard', () => {
+    expect(tintVarFactor(undefined, { x: 1, y: 2, z: 0 })).toBe(1);
+    expect(tintVarFactor({ seedScope: 'tile' }, { x: 1, y: 2, z: 0 })).toBe(1);
+  });
+
+  it('BORNÉ par l’amplitude de la recette : 1 ± tintVar, jamais au-delà', () => {
+    const vals: number[] = [];
+    for (let x = 0; x < 40; x++) for (let y = 0; y < 40; y++) vals.push(tintVarFactor(HERBE, { x, y, z: 0 }));
+    expect(Math.min(...vals)).toBeGreaterThanOrEqual(1 - HERBE.tintVar!);
+    expect(Math.max(...vals)).toBeLessThanOrEqual(1 + HERBE.tintVar!);
+    // …et il VARIE (une constante 1 passerait les bornes sans rien nuancer).
+    expect(new Set(vals).size).toBeGreaterThan(1);
+  });
+
+  it('SEED-STABLE : la même case redonne exactement la même nuance, une autre case peut diverger', () => {
+    expect(tintVarFactor(HERBE, { x: 3, y: 7, z: 1 })).toBe(tintVarFactor(HERBE, { x: 3, y: 7, z: 1 }));
+    const parCase = new Set([0, 1, 2, 3, 4, 5, 6, 7].map((x) => tintVarFactor(HERBE, { x, y: 0, z: 0 })));
+    expect(parCase.size).toBeGreaterThan(1);
+  });
+
+  it('PARITÉ avec l’affine : la case tire la MÊME variante de dégradé que `terrainFillGradient`', () => {
+    for (const cell of [
+      { x: 0, y: 0, z: 0 },
+      { x: 3, y: 7, z: 1 },
+      { x: 12, y: 5, z: 0 },
+    ]) {
+      const id = terrainFillGradient('herbe', cell, 1)!;
+      const k = Number(id.slice(id.indexOf('-v') + 2));
+      expect(id).toBe(`g_grass-v${k}`); // la variante que l'affine PEINT
+      expect(tintVarFactor(HERBE, cell)).toBeCloseTo(1 + HERBE.tintVar! * TINT_SPREAD[k], 12);
+    }
   });
 });

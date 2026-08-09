@@ -16,6 +16,17 @@
  */
 import { hash32, seedStream } from '../detail/hash';
 import { expandRecipe, ACCENT_FRAC, BLOCK_INSET_M, BLOCK_SHADE_K } from '../detail/expand';
+import {
+  coursesKey,
+  coursesPeriod,
+  groundCoursesPeriod,
+  patternWM,
+  rowBoundaries,
+  N_VARIANTS,
+  type Courses,
+  type CourseLine,
+  type CourseVertical,
+} from '../detail/courses';
 import type { DetailRecipe } from '../detail/types';
 import { shade, ao, spec } from '../shade';
 import { LEVEL_H, isSquareView, type Dims } from '../../geometry/iso';
@@ -42,9 +53,6 @@ export const detailOf = (opts?: DetailOpts): { lod: Lod; mpt: number } => ({ lod
 // ── Constantes du motif ──────────────────────────────────────────────────────────────────────────────
 /** px écran par MÈTRE d'élévation (vérité partagée : LEVEL_H px ⇔ METRES_PER_LEVEL m). */
 export const PX_PER_M_V = LEVEL_H / METRES_PER_LEVEL;
-/** Variantes pré-seedées par recette (anti-périodicité, choisies par hash du monde) — partagé avec le
- *  backend TOITS (variante de bardeaux par élément). */
-export const N_VARIANTS = 3;
 /** Variantes de dégradé de terrain (variance de teinte par tuile) : étalement des facteurs de shade.
  *  PARTAGÉ avec le POV (`pov/geometry.ts` en tire la MÊME variante par tuile → même amplitude visuelle). */
 export const TINT_SPREAD = [-1, -0.4, 0.35, 1];
@@ -76,59 +84,31 @@ function axisMetreVec(axis: Axis, dims: Dims, mpt: number): Pt2 {
 const degenerate = (eu: Pt2): boolean => Math.abs(eu[0]) < 0.5;
 
 // ── Recettes d'appareillage disponibles (structure + relief), dédupliquées par CONTENU ───────────────
-export type Courses = NonNullable<DetailRecipe['courses']>;
-/** Clé de contenu d'une recette d'assises — nomme les motifs partagés (`dt-<clé>-<proj>-<axe><variante>`).
- *  Exportée : le backend TOITS aligne ses bardeaux sur les mêmes bornes seedées. */
-export const coursesKey = (c: Courses): string => hash32(JSON.stringify(c)).toString(36);
 /** Étiquette de PROJECTION dans l'id d'un motif/clip : son `patternTransform` dépend de la rotation/vue —
  *  une planche QC qui juxtapose plusieurs projections dans UN document SVG ne collisionne pas. */
 export const projTag = (dims: Dims): string => (isSquareView(dims.view) ? 'top' : `${dims.rot ?? 0}${dims.edge ? 'e' : ''}`);
 const patternId = (key: string, axis: Axis, variant: number, dims: Dims): string => `dt-${key}-${projTag(dims)}-${axis}${variant}`;
 
-/** Largeur de PÉRIODE du motif (m) : ~4 blocs moyens (assez large pour casser la répétition à l'œil). */
-export const patternWM = (c: Courses): number => (c.blockWM ? Math.max(1.6, 2 * (c.blockWM[0] + c.blockWM[1])) : 2);
+/** Le TRACÉ de période (bornes de rangs, joints, blocs nuancés) vit en géométrie métrique pure dans
+ *  `detail/courses` ; il est re-exposé ici pour les backends affines qui l'alignent sur le motif :
+ *  le backend TOITS pose ses bardeaux sur les MÊMES bornes seedées. */
+export { coursesKey, patternWM, rowBoundaries, N_VARIANTS, type Courses };
 
-/** Bornes des joints VERTICAUX d'un rang du motif périodique (positions en mètres dans ]0,W[), par
- *  PARITÉ de rang — PARTAGÉES par le motif (joints), les accents (blocs nuancés ALIGNÉS dessus) et les
- *  bardeaux du backend TOITS. Aucun joint au bord de période (0/W) : le bloc y chevauche la couture →
- *  périodicité invisible. */
-export function rowBoundaries(c: Courses, key: string, variant: number, parity: 0 | 1): number[] {
-  if (!c.blockWM) return [];
-  const [wMin, wMax] = c.blockWM;
-  const mean = (wMin + wMax) / 2;
-  const W = patternWM(c);
-  const r = seedStream(hash32('dtblocks', key, variant, parity));
-  const out: number[] = [];
-  let u = parity === 1 ? -(c.stagger ?? 0) * mean : 0;
-  for (;;) {
-    u += wMin + r() * (wMax - wMin);
-    if (u >= W - 0.05) return out;
-    if (u > 0.05) out.push(u);
-  }
-}
+/** Sérialisation ÉCRAN du tracé de période : les lignes de rang tremblées, puis les joints verticaux.
+ *  Les coordonnées sont les MÈTRES du tracé — c'est le `patternTransform` qui les projette. */
+const linesPath = (lines: readonly CourseLine[]): string =>
+  lines.map((l) => `M0,${n3(l.y0)}` + l.pts.map((p) => `L${n3(p.u)},${n3(p.y)}`).join('')).join('');
+const verticalsPath = (vs: readonly CourseVertical[]): string =>
+  vs.map((v) => `M${n3(v.u)},${n3(v.y0)}L${n3(v.u)},${n3(v.y1)}`).join('');
 
-/** Un motif d'appareillage pré-seedé : joints horizontaux tremblés (ancrés à 0 aux coutures) + joints
- *  verticaux par parité de rang, en MÈTRES — le `patternTransform` (base [eu | (0, PX_PER_M_V)]) le
- *  projette en écran pour l'orientation donnée. UN SEUL `<path>` par motif. */
+/** Un motif d'appareillage pré-seedé : le tracé de période de `detail/courses` (joints horizontaux
+ *  tremblés ancrés aux coutures + joints verticaux par parité de rang, en MÈTRES) posé en écran par le
+ *  `patternTransform` (base [eu | (0, PX_PER_M_V)]) de l'orientation donnée. UN SEUL `<path>` par motif. */
 function coursesPatternDef(c: Courses, key: string, axis: Axis, eu: Pt2, variant: number, dims: Dims): string {
-  const W = patternWM(c);
-  const r = seedStream(hash32('dtpat', key, variant));
-  const wob = c.edgeWobble ?? 0;
-  let d = '';
-  for (const y0 of [0, c.hM]) {
-    const SEG = 8;
-    d += `M0,${n3(y0)}`;
-    for (let i = 1; i <= SEG; i++) {
-      const dy = i === SEG ? 0 : (r() * 2 - 1) * wob;
-      d += `L${n3((W * i) / SEG)},${n3(y0 + dy)}`;
-    }
-  }
-  for (const parity of [0, 1] as const) {
-    const y0 = parity * c.hM;
-    for (const b of rowBoundaries(c, key, variant, parity)) d += `M${n3(b)},${n3(y0)}L${n3(b)},${n3(y0 + c.hM)}`;
-  }
+  const p = coursesPeriod(c, key, variant);
+  const d = linesPath(p.lines) + verticalsPath(p.verticals);
   return (
-    `<pattern id="${patternId(key, axis, variant, dims)}" patternUnits="userSpaceOnUse" width="${n3(W)}" height="${n3(2 * c.hM)}"` +
+    `<pattern id="${patternId(key, axis, variant, dims)}" patternUnits="userSpaceOnUse" width="${n3(p.wM)}" height="${n3(p.hM)}"` +
     ` patternTransform="matrix(${n3(eu[0])} ${n3(eu[1])} 0 ${PX_PER_M_V} 0 0)">` +
     `<path d="${d}" fill="none" stroke="${c.joint}" stroke-width="${n3(c.jointW)}" stroke-linecap="round" opacity="0.85"/>` +
     `</pattern>`
@@ -146,9 +126,6 @@ function coursesRecipes(): Map<string, Courses> {
 }
 
 // ── Sol APPAREILLÉ (pavés/dalles/lattes) : motif CONTINU ancré au plan du sol ────────────────────────
-/** Rangs par période verticale du motif de SOL — plus qu'un mur (2) : une place pavée expose une grande
- *  surface continue, la répétition doit boucler loin. */
-const GROUND_ROWS = 6;
 /** Alpha des nuances de pierre CUITES dans le motif de sol, par unité de `paletteVar`. */
 const GROUND_VAR_ALPHA = 1.7;
 
@@ -161,58 +138,23 @@ function groundBasis(dims: Dims, mpt: number): [Pt2, Pt2] | null {
 }
 const groundPatternId = (key: string, dims: Dims): string => `dt-${key}-${projTag(dims)}-g`;
 
+/** Sous-chemin d'un bloc nuancé du tracé de sol (rectangle en mètres, retrait déjà pris). */
+const rectSub = (r: { u0: number; v0: number; u1: number; v1: number }): string =>
+  `M${n3(r.u0)},${n3(r.v0)}H${n3(r.u1)}V${n3(r.v1)}H${n3(r.u0)}Z`;
+
 /** Motif de SOL appareillé, CONTINU à travers les tuiles (ancré au plan monde, `userSpaceOnUse`) :
- *  joints en MÈTRES monde projetés par la base du plan. Contrairement aux faces verticales (variantes
- *  par face), le sol est UNE surface continue → un seul motif, période élargie (2×patternWM ×
- *  GROUND_ROWS rangs) ; la « variance par pierre » est CUITE dans le motif (voiles `ao`/`spec` sur des
- *  blocs épars) : elle ne coûte AUCUN nœud par tuile et reste alignée d'une tuile à l'autre. */
+ *  le tracé de période de `detail/courses` (joints en MÈTRES monde) projeté par la base du plan.
+ *  Contrairement aux faces verticales (variantes par face), le sol est UNE surface continue → un seul
+ *  motif, période élargie ; la « variance par pierre » est CUITE dans le motif (voiles `ao`/`spec` sur
+ *  les blocs du tracé) : elle ne coûte AUCUN nœud par tuile et reste alignée d'une tuile à l'autre. */
 function groundCoursesPatternDef(c: Courses, key: string, [ex, ey]: [Pt2, Pt2], dims: Dims): string {
-  const W = 2 * patternWM(c);
-  const r = seedStream(hash32('dtground', key));
-  const wob = c.edgeWobble ?? 0;
-  let joints = '';
-  // Lignes de rang tremblées, extrémités EXACTES (0 et W) → la période boucle sans couture.
-  for (let row = 0; row < GROUND_ROWS; row++) {
-    const y0 = row * c.hM;
-    const SEG = 8;
-    joints += `M0,${n3(y0)}`;
-    for (let i = 1; i <= SEG; i++) joints += `L${n3((W * i) / SEG)},${n3(y0 + (i === SEG ? 0 : (r() * 2 - 1) * wob))}`;
-  }
-  // Joints verticaux + nuances par PIERRE (rangs décalés type appareillage) ; jamais de joint ni de
-  // nuance au bord de période (le bloc y chevauche la couture → périodicité invisible).
-  let light = '';
-  let dark = '';
-  if (c.blockWM) {
-    const [wMin, wMax] = c.blockWM;
-    const mean = (wMin + wMax) / 2;
-    for (let row = 0; row < GROUND_ROWS; row++) {
-      const y0 = row * c.hM;
-      const rr = seedStream(hash32('dtgrow', key, row));
-      let u = row % 2 === 1 ? -(c.stagger ?? 0) * mean : 0;
-      let prev = Math.max(0, u);
-      for (;;) {
-        u += wMin + rr() * (wMax - wMin);
-        if (u >= W - 0.05) break;
-        if (u > 0.05) {
-          joints += `M${n3(u)},${n3(y0)}L${n3(u)},${n3(y0 + c.hM)}`;
-          if (c.paletteVar) {
-            const rv = rr();
-            if (rv < ACCENT_FRAC || rv > 1 - ACCENT_FRAC) {
-              const sub =
-                `M${n3(prev + BLOCK_INSET_M)},${n3(y0 + BLOCK_INSET_M)}H${n3(u - BLOCK_INSET_M)}` +
-                `V${n3(y0 + c.hM - BLOCK_INSET_M)}H${n3(prev + BLOCK_INSET_M)}Z`;
-              if (rv < ACCENT_FRAC) light += sub;
-              else dark += sub;
-            }
-          }
-          prev = u;
-        }
-      }
-    }
-  }
+  const p = groundCoursesPeriod(c, key);
+  const joints = linesPath(p.lines) + verticalsPath(p.verticals);
+  const light = p.light.map(rectSub).join('');
+  const dark = p.dark.map(rectSub).join('');
   const alpha = Math.min(0.2, (c.paletteVar ?? 0) * GROUND_VAR_ALPHA);
   return (
-    `<pattern id="${groundPatternId(key, dims)}" patternUnits="userSpaceOnUse" width="${n3(W)}" height="${n3(GROUND_ROWS * c.hM)}"` +
+    `<pattern id="${groundPatternId(key, dims)}" patternUnits="userSpaceOnUse" width="${n3(p.wM)}" height="${n3(p.hM)}"` +
     ` patternTransform="matrix(${n3(ex[0])} ${n3(ex[1])} ${n3(ey[0])} ${n3(ey[1])} 0 0)">` +
     `<path d="${joints}" fill="none" stroke="${c.joint}" stroke-width="${n3(c.jointW)}" stroke-linecap="round" opacity="0.8"/>` +
     (light ? `<path d="${light}" fill="${spec(alpha)}"/>` : '') +

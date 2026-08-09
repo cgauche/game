@@ -9,6 +9,10 @@ import {
   faceQuads,
   faceQuadsOriented,
   facesGeometry,
+  faceUv1,
+  faceUvFrame,
+  planarFrame,
+  planarUV,
   fanTriangles,
   gpToWorld,
   isConvex,
@@ -352,5 +356,141 @@ describe('CONVERSION des murs — la géométrie rendue est celle que `buildWall
           p.z > (opera.dimensions.h - 1) * mpt + TOL_M,
       );
     expect(hors).toEqual([]);
+  });
+});
+
+describe('UV — la maille MONDE en mètres (attribut `uv`)', () => {
+  /** Distance entre deux UV. */
+  const dUV = (a: { u: number; v: number }, b: { u: number; v: number }) => Math.hypot(a.u - b.u, a.v - b.v);
+  /** Distance monde entre deux sommets. */
+  const d3 = (a: Vec3, b: Vec3) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+
+  /** Un quad par ORIENTATION, en mètres : sol horizontal, mur vertical, pan de toit incliné. */
+  const HORIZONTAL: WorldPoly = [
+    { x: 0, y: 0, z: 0 },
+    { x: 4, y: 0, z: 0 },
+    { x: 4, y: 0, z: 3 },
+    { x: 0, y: 0, z: 3 },
+  ];
+  const VERTICAL: WorldPoly = [
+    { x: 1, y: 5, z: 2 },
+    { x: 6, y: 5, z: 2 },
+    { x: 6, y: 1, z: 2 },
+    { x: 1, y: 1, z: 2 },
+  ];
+  const INCLINE: WorldPoly = [
+    { x: 0, y: 3, z: 0 },
+    { x: 4, y: 3, z: 0 },
+    { x: 4, y: 0, z: 3 },
+    { x: 0, y: 0, z: 3 },
+  ];
+
+  it.each([
+    ['horizontal (sol)', HORIZONTAL],
+    ['vertical (mur)', VERTICAL],
+    ['incliné (pan de toit)', INCLINE],
+  ])('%s : l’UV mesure les MÈTRES du quad (isométrie — chaque arête garde sa longueur)', (_libellé, poly) => {
+    const f = planarFrame(polyNormal(poly));
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i];
+      const b = poly[(i + 1) % poly.length];
+      expect(dUV(planarUV(a, f), planarUV(b, f))).toBeCloseTo(d3(a, b), 9);
+    }
+    // Les diagonales aussi : une isométrie n'est pas qu'une conservation des bords.
+    expect(dUV(planarUV(poly[0], f), planarUV(poly[2], f))).toBeCloseTo(d3(poly[0], poly[2]), 9);
+  });
+
+  it('quad vertical : u court à l’horizontale, v DESCEND (v croît quand y baisse)', () => {
+    const f = planarFrame(polyNormal(VERTICAL));
+    expect(f.eu.y).toBeCloseTo(0, 12);
+    const haut = planarUV({ x: 1, y: 5, z: 2 }, f);
+    const bas = planarUV({ x: 1, y: 1, z: 2 }, f);
+    expect(bas.v - haut.v).toBeCloseTo(4, 9);
+  });
+
+  it('sol : la maille est ancrée au MONDE — deux dalles voisines se raccordent sans couture', () => {
+    const f = planarFrame(polyNormal(HORIZONTAL));
+    // Le sommet partagé par deux dalles adjacentes reçoit la MÊME UV, quel que soit le quad qui le porte.
+    expect(planarUV({ x: 4, y: 0, z: 3 }, f)).toEqual(planarUV({ x: 4, y: 0, z: 3 }, planarFrame(polyNormal(HORIZONTAL))));
+    // …et une dalle décalée d'un mètre voit son UV décalée d'exactement un mètre (jamais remise à 0).
+    expect(planarUV({ x: 5, y: 0, z: 3 }, f).u - planarUV({ x: 4, y: 0, z: 3 }, f).u).toBeCloseTo(1, 12);
+  });
+
+  it('le biais coplanaire (déplacement le long de la NORMALE) ne bouge aucune UV', () => {
+    const f = planarFrame(polyNormal(VERTICAL));
+    const biaisé = biasPoly(VERTICAL, 7);
+    for (let i = 0; i < VERTICAL.length; i++) {
+      expect(planarUV(biaisé[i], f).u).toBeCloseTo(planarUV(VERTICAL[i], f).u, 9);
+      expect(planarUV(biaisé[i], f).v).toBeCloseTo(planarUV(VERTICAL[i], f).v, 9);
+    }
+  });
+
+  it('scène réelle (siege-enceinte) : chaque triangle porte 3 UV monde, à l’échelle métrique de SON quad', () => {
+    const mpt = sceneMetresPerTile(siege);
+    const geoms = facesGeometry(facesOf(siege), mpt);
+    expect(geoms.length).toBeGreaterThan(100);
+    let pires = 0;
+    for (const g of geoms) {
+      expect(g.uv.length).toBe(g.tris.length);
+      g.tris.forEach((tri, t) => {
+        for (let i = 0; i < 3; i++) {
+          const j = (i + 1) % 3;
+          const écart = Math.abs(dUV(g.uv[t][i], g.uv[t][j]) - d3(tri[i], tri[j]));
+          if (écart > 1e-6) pires++;
+        }
+      });
+    }
+    expect(pires).toBe(0);
+  });
+});
+
+describe('UV1 — la FACE d’origine en [0,1]² (attribut `uv1`)', () => {
+  it('une face pleine : ses 4 coins prennent les 4 coins de [0,1]², v=0 en HAUT', () => {
+    const poly: WorldPoly = [
+      { x: 1, y: 5, z: 2 },
+      { x: 6, y: 5, z: 2 },
+      { x: 6, y: 1, z: 2 },
+      { x: 1, y: 1, z: 2 },
+    ];
+    const fr = faceUvFrame(poly);
+    const coins = poly.map((p) => faceUv1(p, fr));
+    expect(coins.map((c) => Math.round(c.v))).toEqual([0, 0, 1, 1]);
+    expect(new Set(coins.map((c) => `${Math.round(c.u)},${Math.round(c.v)}`)).size).toBe(4);
+  });
+
+  it('scène réelle : TOUTES les uv1 sont bornées [0,1] (montants et chants de boîte compris)', () => {
+    for (const [, scène] of [
+      ['siege', siege],
+      ['arene', arene.scene],
+    ] as [string, Scene][]) {
+      const geoms = facesGeometry(facesOf(scène), sceneMetresPerTile(scène));
+      const hors = geoms.flatMap((g) => g.uv1.flat()).filter((c) => c.u < 0 || c.u > 1 || c.v < 0 || c.v > 1);
+      expect(hors).toEqual([]);
+    }
+  });
+
+  it('scène réelle : uv1 EXPLOITE la face (elle n’est pas un aplat de zéros)', () => {
+    const geoms = facesGeometry(facesOf(siege), sceneMetresPerTile(siege));
+    const toutes = geoms.flatMap((g) => g.uv1.flat());
+    expect(toutes.length).toBeGreaterThan(100);
+    expect(toutes.filter((c) => c.u > 0.99).length).toBeGreaterThan(50);
+    expect(toutes.filter((c) => c.v > 0.99).length).toBeGreaterThan(50);
+  });
+
+  it('les DEUX joues d’un mur plein partagent leurs uv1 : le même ornement des deux côtés', () => {
+    const mpt = sceneMetresPerTile(siege);
+    // Une part DÉCORATIVE de mur (panneau, moulure…) : le pivot en fait une copie par JOUE.
+    const face = facesOf(siege).find((f) => {
+      const q = faceQuadsOriented(f, mpt);
+      return q.oriented && q.quads.length === 2;
+    });
+    expect(face).toBeDefined();
+    const fr = faceUvFrame(facePoly(face!, mpt));
+    const [avant, arrière] = faceQuadsOriented(face!, mpt).quads;
+    const uvA = avant.map((p) => faceUv1(p, fr));
+    const uvB = arrière.map((p) => faceUv1(p, fr));
+    // Mêmes 4 coins de part et d'autre (l'ordre de parcours d'une joue est inversé).
+    const clé = (c: { u: number; v: number }) => `${c.u.toFixed(6)},${c.v.toFixed(6)}`;
+    expect(new Set(uvA.map(clé))).toEqual(new Set(uvB.map(clé)));
   });
 });

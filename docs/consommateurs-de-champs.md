@@ -40,7 +40,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `timber` | 2 | `src/gameIso/detail/expand.ts:91` |
 | `speckle` | 6 | `src/gameIso/backends/affineDetail.ts:419` |
 | `tufts` | 9 | `src/gameIso/backends/affineDetail.ts:414` |
-| `tintVar` | 1 | `src/gameIso/backends/webgl/faceColors.ts:115` |
+| `tintVar` | 1 | `src/gameIso/backends/webgl/faceColors.ts:122` |
 | `seedScope` | 2 | `src/gameIso/pov/geometry.ts:330` |
 
 ### `DiceSpec` (src/engine/dice.ts)
