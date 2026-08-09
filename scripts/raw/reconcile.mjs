@@ -35,12 +35,12 @@ const OTHER_LOOSE_RE = new Map(
   BOOKS.filter(([abbr]) => abbr !== 'LDB').map(([abbr]) => [abbr, new RegExp(`\\b${esc(abbr)} (?:ch\\.)?(\\d+)\\b`, 'g')])
 )
 
-// Clé de chapitre canonique pour le Sens A « autres livres » (#434 défaut 9 suite) : le code écrit
-// le numéro zéro-préfixé (`AA 02`, `ADE II ch.03`), l'Atlas écrit les titres sans préfixe (`## [AA 2]`,
-// `## [ADE II 3]`) — comparaison textuelle brute = faux trou. Normalise aux DEUX collectes (code ET
-// Atlas), miroir de `String(Number(nn))` déjà appliqué par `chapterFile` (_lib.mjs) pour résoudre le
-// fichier. Le LDB (codeLDB/atlasLDB) n'en a pas besoin : `ldbRe` capture le numéro tel quel et le LDB
-// est cité uniformément — ne pas y toucher.
+// Clé de chapitre canonique du Sens A (#434 défaut 9 suite, #1156) : le code écrit le numéro
+// zéro-préfixé (`AA 02`, `ADE II ch.03`, `LDB 08`), l'Atlas écrit les titres sans préfixe
+// (`## [AA 2]`, `## [LDB 8]`) — comparaison textuelle brute = faux trou, et exemption catalogue
+// morte pour toute réf zéro-préfixée. Normalise aux DEUX collectes (code ET Atlas) et pour les
+// QUINZE livres, LDB compris (codeCh/codeLDB/atlasCh/catalogCh/atlasLDB), miroir de
+// `String(Number(nn))` déjà appliqué par `chapterFile` (_lib.mjs) pour résoudre le fichier.
 const chKey = (n) => String(Number(n))
 
 /** Calcule la réconciliation CODE↔ATLAS. Pur vis-à-vis de l'écriture de fichier (aucun writeFileSync ici). */
@@ -71,13 +71,13 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
   const codeCh = new Set()       // tout chapitre LDB mentionné (lâche)
   for (const f of SRC) {
     const text = readFileSync(f, 'utf8')
-    for (const m of text.matchAll(/\bLDB (\d+)\b/g)) codeCh.add(m[1])
+    for (const m of text.matchAll(/\bLDB (\d+)\b/g)) codeCh.add(chKey(m[1]))
     const lines = text.split('\n')
     lines.forEach((ln, i) => {
       let m
       LDB_RE.lastIndex = 0
       while ((m = LDB_RE.exec(ln))) {
-        const ch = m[1], start = Number(m[2])
+        const ch = chKey(m[1]), start = Number(m[2])
         if (!codeLDB.has(ch)) codeLDB.set(ch, [])
         codeLDB.get(ch).push({ line: start, file: f.replace(/\\/g, '/'), row: i + 1, text: ln.trim().slice(0, 160) })
       }
@@ -129,12 +129,12 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
   const ownerCount = new Map()
   for (const d of DOCS) {
     const text = readText(d)
-    for (const mm of text.matchAll(/\bLDB (\d+)\b/g)) atlasCh.add(mm[1])
-    if (/catalogue-/.test(d)) for (const mm of text.matchAll(/\bLDB (\d+)\b/g)) catalogCh.add(mm[1])
+    for (const mm of text.matchAll(/\bLDB (\d+)\b/g)) atlasCh.add(chKey(mm[1]))
+    if (/catalogue-/.test(d)) for (const mm of text.matchAll(/\bLDB (\d+)\b/g)) catalogCh.add(chKey(mm[1]))
     let m
     LDB_RE.lastIndex = 0
     while ((m = LDB_RE.exec(text))) {
-      const ch = m[1]
+      const ch = chKey(m[1])
       if (!atlasLDB.has(ch)) atlasLDB.set(ch, [])
       atlasLDB.get(ch).push(span(m[2], m[3]))
       const key = ch + '|' + d
@@ -144,7 +144,7 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
     }
     LDB_FOLIO_RE.lastIndex = 0
     while ((m = LDB_FOLIO_RE.exec(text))) {
-      const ch = m[1]
+      const ch = chKey(m[1])
       const resolved = folioSpan('LDB', ch, m[2], m[3])
       if (!resolved) { folioIgnored++; continue }
       if (!atlasLDB.has(ch)) atlasLDB.set(ch, [])
@@ -257,12 +257,11 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
       if (/non impl[ée]ment[ée]/i.test(ln)) nonImpl.push({ doc: d.split('/').pop(), row: i + 1, text: ln.trim().slice(0, 200) })
     })
   }
-  // B2 : chapitres LDB cités par l'Atlas jamais référencés dans le code. Normalise au point d'agrégation
-  // (`chKey`, #434 défaut 11) — sinon `LDB 06` ET `LDB 6` cohabitent (doublon). Crédite le FOLIO :
-  // un chapitre atteint par une source `{book,page}` de src/data est référencé (donnée), pas hors-code.
-  const atlasChNorm = new Set([...atlasCh].map(chKey))
-  const codeChNorm = new Set([...codeCh].map(chKey))
-  const atlasOnlyBefore = [...atlasChNorm].filter((ch) => !codeChNorm.has(ch)).sort((a, b) => Number(a) - Number(b))
+  // B2 : chapitres LDB cités par l'Atlas jamais référencés dans le code (`atlasCh`/`codeCh` portent
+  // déjà la clé canonique `chKey`, #434 défaut 11 — `LDB 06` et `LDB 6` sont une seule entrée).
+  // Crédite le FOLIO : un chapitre atteint par une source `{book,page}` de src/data est référencé
+  // (donnée), pas hors-code.
+  const atlasOnlyBefore = [...atlasCh].filter((ch) => !codeCh.has(ch)).sort((a, b) => Number(a) - Number(b))
   const atlasOnly = atlasOnlyBefore.filter((ch) => !codeFolioLdbCh.has(ch))
   const atlasOnlyFolioCredited = atlasOnlyBefore.filter((ch) => codeFolioLdbCh.has(ch))
 

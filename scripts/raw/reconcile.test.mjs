@@ -125,6 +125,42 @@ test('Sens A LDB : chapitre couvert par un catalogue → jamais un trou de ligne
   )
 })
 
+test('Sens A LDB : chapitre zéro-préfixé au CODE, catalogue non préfixé → exemption catalogue VIVANTE (#1156)', () => {
+  withFixtures(
+    { 'a.ts': '// règle LDB 08 l.500\n' },
+    { 'catalogue-x.md': '## [LDB 8] Statut\ndonnées verbatim\n' },
+    ({ srcDir, rawDir }) => {
+      const data = computeReconciliation({ srcDir, rawDir })
+      assert.equal(data.hardA.length, 0)
+      assert.equal(data.softA.length, 0)
+    },
+  )
+})
+
+test('Sens A LDB : Atlas zéro-préfixé, code non préfixé → la ligne est pinée (graphies croisées, #1156)', () => {
+  withFixtures(
+    { 'a.ts': '// règle LDB 8 l.500\n' },
+    { 'fiche.md': 'LDB 08 l.3-600\n' },
+    ({ srcDir, rawDir }) => {
+      const data = computeReconciliation({ srcDir, rawDir })
+      assert.equal(data.hardA.length, 0)
+      assert.equal(data.softA.length, 0)
+    },
+  )
+})
+
+test('Sens A LDB : chapitre RÉELLEMENT absent (numéro différent) reste un trou dur malgré la normalisation (#1156)', () => {
+  withFixtures(
+    { 'a.ts': '// règle LDB 09 l.3\n' },
+    { 'catalogue-x.md': '## [LDB 8] Statut\ndonnées verbatim\n' },
+    ({ srcDir, rawDir }) => {
+      const data = computeReconciliation({ srcDir, rawDir })
+      assert.equal(data.hardA.length, 1)
+      assert.equal(data.hardA[0].ch, '9')
+    },
+  )
+})
+
 test('Sens A (autres livres) : chapitre absent de l\'Atlas → trou dur PAR LIVRE', () => {
   withFixtures(
     { 'a.ts': '// règle AA 07 l.3\n' },
