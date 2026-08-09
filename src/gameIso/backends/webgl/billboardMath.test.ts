@@ -10,6 +10,7 @@ import {
   ZOOM_MAX,
   RASTER_PX_MIN,
   RASTER_PX_MAX,
+  JEU_ENT_H_M,
 } from './billboardMath';
 import { pxPerM } from './worldTris';
 import { project, facingView } from '../../rig/facing';
@@ -18,7 +19,7 @@ import { ENT_H_M, PROP_H_M, BB_W, BB_H } from '../../pov/billboardCore';
 import { DIR8_ORDER } from '../../../state/dir8';
 import { TW, type Rot } from '../../../geometry/iso';
 
-describe('taille monde — les deux conventions rendues côte à côte (#1160)', () => {
+describe('taille monde — convention `jeu` du moteur + presets de comparaison de planche (#1160)', () => {
   it('héroïque = boîte iso 150 px × échelle de token ÷ 24 px/m', () => {
     expect(ISO_PX_PER_M).toBe(24); // LEVEL_H 96 px ⇔ METRES_PER_LEVEL 4 m
     // personnage : échelle rig 0.58 (stage/tokens.tsx:172) → 150×0.58 = 87 px → 3.625 m
@@ -36,7 +37,22 @@ describe('taille monde — les deux conventions rendues côte à côte (#1160)',
     expect(billboardHeightM('metrique', 'prop')).toBeCloseTo(1.7, 6);
   });
 
-  it('héroïque est ~2× la métrique — l’écart à arbitrer', () => {
+  it('jeu = convention CIBLE du moteur : 2,3 m debout, prop à la même échelle', () => {
+    // valeurs littérales, indépendantes de la dérivation du module
+    expect(billboardHeightM('jeu', 'personnage')).toBe(2.3);
+    expect(billboardHeightM('jeu', 'personnage')).toBe(JEU_ENT_H_M);
+    expect(billboardHeightM('jeu', 'prop')).toBeCloseTo(2.1722222, 6);
+    expect(billboardHeightM('jeu', 'personnage')).toBeLessThan(billboardHeightM('heroique', 'personnage'));
+    expect(billboardHeightM('jeu', 'personnage')).toBeGreaterThan(billboardHeightM('metrique', 'personnage'));
+  });
+
+  it('jeu/métrique = un SEUL facteur, partagé par toutes les familles', () => {
+    const ratio = billboardHeightM('jeu', 'personnage') / billboardHeightM('metrique', 'personnage');
+    expect(ratio).toBeCloseTo(1.2777778, 6);
+    expect(billboardHeightM('jeu', 'prop') / billboardHeightM('metrique', 'prop')).toBeCloseTo(ratio, 12);
+  });
+
+  it('héroïque est ~2× la métrique — l’écart mesuré sur planche (#1160)', () => {
     expect(billboardHeightM('heroique', 'personnage') / billboardHeightM('metrique', 'personnage')).toBeGreaterThan(1.9);
   });
 });

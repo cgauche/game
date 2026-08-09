@@ -16,7 +16,7 @@
  *
  * Node-safe : `three` est du JS pur (aucun DOM à l'import), aucun renderer n'est créé ici.
  */
-import { Matrix4, OrthographicCamera, PerspectiveCamera, Vector3 } from 'three';
+import { Box3, Matrix4, OrthographicCamera, PerspectiveCamera, Vector3 } from 'three';
 import { CELL, TH, TW, type Rot } from '../../../geometry/iso';
 import type { Scene } from '../../../state/scene';
 import type { Dir8 } from '../../../state/dir8';
@@ -146,6 +146,47 @@ export function affineCamera(
   camera.updateProjectionMatrix();
 
   return { camera, sx, sy, pitch, stretch };
+}
+
+/** Part du cadre que la boîte de contenu occupe une fois cadrée : le reste est la marge. */
+export const FIT_FILL = 0.86;
+
+/** CADRAGE d'une vue affine sur une boîte de contenu : le couple `{ target, zoom }` qui met cette boîte
+ *  au centre du cadre et lui fait occuper `fill` de sa dimension la plus contrainte. C'est un choix
+ *  d'ÉCRAN, jamais une propriété de la caméra : `affineCamera` garde son échelle de production
+ *  (`CELL/mpt` en vue du dessus), et le `zoom` rendu n'agit que par le viewport que l'appelant lui
+ *  passe — la coïncidence pixel avec la projection SVG en sort intacte (`cameras.test.ts`).
+ *
+ *  La projection affine étant LINÉAIRE, l'étendue écran de la boîte est proportionnelle au zoom : la
+ *  mesurer une fois à zoom 1 suffit. Le recentrage se fait en MÈTRES sur les axes écran de la caméra
+ *  (px/m horizontal `sx`, vertical `sy`) — le centre de la boîte PROJETÉE n'est pas la projection du
+ *  centre de la boîte dès que la vue n'est pas alignée sur ses arêtes. */
+export function fitAffineView(
+  kind: AffineKind,
+  yawDeg: number,
+  mpt: number,
+  box: Box3,
+  viewport: Viewport,
+  fill: number = FIT_FILL,
+): { target: Vector3; zoom: number } {
+  const centre = box.getCenter(new Vector3());
+  const { camera, sx, sy } = affineCamera(kind, yawDeg, mpt, viewport, { target: centre });
+  let loX = Infinity, hiX = -Infinity, loY = Infinity, hiY = -Infinity;
+  for (const x of [box.min.x, box.max.x])
+    for (const y of [box.min.y, box.max.y])
+      for (const z of [box.min.z, box.max.z]) {
+        const p = projectToScreen(camera, new Vector3(x, y, z), viewport);
+        loX = Math.min(loX, p.sx); hiX = Math.max(hiX, p.sx);
+        loY = Math.min(loY, p.sy); hiY = Math.max(hiY, p.sy);
+      }
+  const largeur = Math.max(hiX - loX, 1e-6);
+  const hauteur = Math.max(hiY - loY, 1e-6);
+  const zoom = fill * Math.min(viewport.w / largeur, viewport.h / hauteur);
+  const dx = (loX + hiX) / 2 - viewport.w / 2;
+  const dy = (loY + hiY) / 2 - viewport.h / 2;
+  const droite = new Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+  const haut = new Vector3().setFromMatrixColumn(camera.matrixWorld, 1);
+  return { target: centre.clone().addScaledVector(droite, dx / sx).addScaledVector(haut, -dy / sy), zoom };
 }
 
 /** Caméra PERSPECTIVE du POV : œil et cap depuis la SEULE source de pose première personne

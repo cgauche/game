@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { Vector3 } from 'three';
+import { Box3, Vector3 } from 'three';
 import {
   DEPTH_MARGIN_M,
+  FIT_FILL,
   affineCamera,
   affineScales,
+  fitAffineView,
   orthoDepthRange,
   povCamera,
   projectToScreen,
@@ -18,6 +20,8 @@ import { sceneMetresPerTile } from '../../../state/scene';
 import { DIR8_ORDER } from '../../../state/dir8';
 import { VH, VW, makeCamera, project } from '../../pov/camera';
 import { ISO_PX_PER_M, pxPerM } from './worldTris';
+import { buildWorldGeometry, collectBillboards, contentBox, BILLBOARD_BOX_ASPECT } from './sceneMeshes';
+import { anchorAndSize, billboardHeightM } from './billboardMath';
 
 /**
  * LE test du lot : la caméra three doit rendre le MÊME pixel que la projection SVG de production, à
@@ -232,5 +236,93 @@ describe('Échelles affines — dérivées des constantes, jamais posées', () =
     const { sx } = affineScales('iso', mpt);
     const uniform = sx * Math.cos(Math.asin(TH / TW)); // px/m de hauteur d’une ortho UNIFORME à 30°
     expect(Math.abs(uniform - ISO_PX_PER_M)).toBeGreaterThan(0.5);
+  });
+});
+
+describe('CADRAGE — la vue affine tient le CONTENU, sans toucher à la définition de la caméra', () => {
+  const CADRE = { w: 1280, h: 720 };
+  const kinds: AffineKind[] = ['top', 'iso', 'edge'];
+
+  /** Boîte-écran (px du CADRE) du contenu, vue par la caméra cadrée : `zoom` n'agit que par le viewport
+   *  passé à `affineCamera`, la projection reste en NDC → le cadre reste `CADRE`. */
+  function boiteEcran(kind: AffineKind, rot: Rot, box: Box3) {
+    const fit = fitAffineView(kind, rotYaw(rot), mpt, box, CADRE);
+    const { camera } = affineCamera(kind, rotYaw(rot), mpt, { w: CADRE.w / fit.zoom, h: CADRE.h / fit.zoom }, { target: fit.target });
+    let loX = Infinity, hiX = -Infinity, loY = Infinity, hiY = -Infinity;
+    for (const x of [box.min.x, box.max.x])
+      for (const y of [box.min.y, box.max.y])
+        for (const z of [box.min.z, box.max.z]) {
+          const p = projectToScreen(camera, new Vector3(x, y, z), CADRE);
+          loX = Math.min(loX, p.sx); hiX = Math.max(hiX, p.sx);
+          loY = Math.min(loY, p.sy); hiY = Math.max(hiY, p.sy);
+        }
+    return { loX, hiX, loY, hiY, w: hiX - loX, h: hiY - loY };
+  }
+
+  /** Boîte de CONTENU de la scène-témoin (bâti + sujets), à la convention de taille par défaut. */
+  const contenu = (() => {
+    const geoBox = buildWorldGeometry(scene, mpt, () => 1).boundingBox!;
+    const subs = collectBillboards(scene, mpt, () => 1);
+    return contentBox(scene, mpt, subs, (s) => anchorAndSize(billboardHeightM('jeu', s.kind) * s.scaleK, BILLBOARD_BOX_ASPECT), geoBox);
+  })();
+
+  for (const kind of kinds)
+    it(`${kind} : le contenu de siege-enceinte tient ENTIER dans le cadre et en remplit ${FIT_FILL} de la dimension contrainte`, () => {
+      const b = boiteEcran(kind, 0, contenu);
+      expect(b.loX).toBeGreaterThanOrEqual(-0.5);
+      expect(b.loY).toBeGreaterThanOrEqual(-0.5);
+      expect(b.hiX).toBeLessThanOrEqual(CADRE.w + 0.5);
+      expect(b.hiY).toBeLessThanOrEqual(CADRE.h + 0.5);
+      expect(Math.max(b.w / CADRE.w, b.h / CADRE.h)).toBeCloseTo(FIT_FILL, 6);
+    });
+
+  // La couverture en SURFACE est bornée par le rapport de forme : le contenu du siège fait 60,2 × 85,9 m
+  // (mesuré #1176) — plus haut que large, quand le cadre est en 16/9. Vue du dessus, même collé aux bords,
+  // il ne peut couvrir que ~39 % du cadre ; les deux vues inclinées, elles, passent la moitié.
+  for (const kind of ['iso', 'edge'] as const)
+    it(`${kind} : la boîte projetée du contenu couvre au moins la MOITIÉ du cadre`, () => {
+      const b = boiteEcran(kind, 0, contenu);
+      expect((b.w * b.h) / (CADRE.w * CADRE.h)).toBeGreaterThanOrEqual(0.5);
+    });
+
+  it('la vue du dessus cadre le contenu au lieu de le déborder de 4,4× en surface', () => {
+    const nu = affineCamera('top', rotYaw(0), mpt, CADRE, { target: contenu.getCenter(new Vector3()) }).camera;
+    let w = 0, h = 0;
+    for (const x of [contenu.min.x, contenu.max.x])
+      for (const z of [contenu.min.z, contenu.max.z]) {
+        const p = projectToScreen(nu, new Vector3(x, contenu.min.y, z), CADRE);
+        w = Math.max(w, Math.abs(p.sx - CADRE.w / 2) * 2);
+        h = Math.max(h, Math.abs(p.sy - CADRE.h / 2) * 2);
+      }
+    expect((w * h) / (CADRE.w * CADRE.h)).toBeGreaterThan(4); // l'échelle NUE `CELL/mpt` déborde
+    const b = boiteEcran('top', 0, contenu);
+    expect(b.w).toBeLessThanOrEqual(CADRE.w + 0.5);
+    expect(b.h).toBeLessThanOrEqual(CADRE.h + 0.5);
+  });
+
+  it('le cadrage ne dépend PAS du zoom demandé : il rend le facteur, l’appelant compose', () => {
+    const a = fitAffineView('iso', rotYaw(1), mpt, contenu, CADRE);
+    const b = fitAffineView('iso', rotYaw(1), mpt, contenu, { w: CADRE.w / 2, h: CADRE.h / 2 });
+    expect(b.zoom).toBeCloseTo(a.zoom / 2, 9);
+    expect(b.target.distanceTo(a.target)).toBeCloseTo(0, 9);
+  });
+
+  it('une boîte déjà centrée et de la taille du cadre ne se déplace pas', () => {
+    const { sx, sy } = affineScales('top', mpt);
+    const demiX = (CADRE.w * FIT_FILL) / (2 * sx);
+    const demiZ = (CADRE.h * FIT_FILL) / (2 * sy);
+    const box = new Box3(new Vector3(-demiX, 0, -demiZ), new Vector3(demiX, 0, demiZ));
+    const fit = fitAffineView('top', rotYaw(0), mpt, box, CADRE);
+    expect(fit.zoom).toBeCloseTo(1, 9);
+    expect(fit.target.length()).toBeCloseTo(0, 9);
+  });
+
+  it('une boîte DÉCENTRÉE ramène la cible sur elle (le cadrage suit le contenu, pas la carte)', () => {
+    const box = new Box3(new Vector3(200, 0, -400), new Vector3(240, 6, -360));
+    const fit = fitAffineView('iso', rotYaw(0), mpt, box, CADRE);
+    const b = boiteEcran('iso', 0, box);
+    expect((b.loX + b.hiX) / 2).toBeCloseTo(CADRE.w / 2, 6);
+    expect((b.loY + b.hiY) / 2).toBeCloseTo(CADRE.h / 2, 6);
+    expect(fit.target.distanceTo(box.getCenter(new Vector3()))).toBeGreaterThan(0); // la cible n'est PAS le centre 3D
   });
 });

@@ -13,10 +13,10 @@ import { type Rot } from '../../../geometry/iso';
 import { ISO_PX_PER_M } from './worldTris';
 
 // ————————————————————————————————————————————————————————————————
-// 1. TAILLE MONDE — les DEUX conventions de la prod, rendues côte à côte pour arbitrage (#1160)
+// 1. TAILLE MONDE — convention CIBLE `jeu`, plus les deux presets de comparaison de planche (#1160)
 // ————————————————————————————————————————————————————————————————
 
-export type BillboardConvention = 'heroique' | 'metrique';
+export type BillboardConvention = 'jeu' | 'heroique' | 'metrique';
 export type BillboardKind = 'personnage' | 'prop';
 
 /** Échelle de token iso par famille, MESURÉE aux sites de rendu (non exportées là-bas, littéraux en
@@ -24,17 +24,28 @@ export type BillboardKind = 'personnage' | 'prop';
  *  (`speciesScale`/`sizeTokenScale`/`foot.scale` sont des facteurs PAR ENTITÉ, hors de cette base.) */
 const ISO_TOKEN_SCALE: Record<BillboardKind, number> = { personnage: 0.58, prop: 0.55 };
 
+/** Hauteur d'un personnage debout dans la convention du moteur (m) — héroïque modéré,
+ *  arbitrage user 2026-08-09 #1160. */
+export const JEU_ENT_H_M = 2.3;
+
+/** Facteur de la convention `jeu` sur le métrique : DÉRIVÉ de l'unique constante arbitrée
+ *  `JEU_ENT_H_M` — toute autre famille (props…) s'y met à l'échelle, sans second nombre posé. */
+export const JEU_SCALE = JEU_ENT_H_M / ENT_H_M;
+
 /** Pixels iso par mètre monde — SOURCE UNIQUE dans `worldTris.ts`, ré-exportée pour les consommateurs
  *  de billboards. */
 export { ISO_PX_PER_M };
 
 /**
  * Hauteur MONDE (m) d'un billboard selon la convention rendue.
+ * - `jeu` : `JEU_ENT_H_M` pour un personnage, métrique × `JEU_SCALE` pour le reste.
  * - `heroique` : dérivée des sites iso — boîte locale `BB_H` px × échelle de token ÷ `ISO_PX_PER_M`.
  * - `metrique` : constantes du POV (`ENT_H_M` / `PROP_H_M`).
  */
 export function billboardHeightM(convention: BillboardConvention, kind: BillboardKind): number {
-  if (convention === 'metrique') return kind === 'personnage' ? ENT_H_M : PROP_H_M;
+  const metrique = kind === 'personnage' ? ENT_H_M : PROP_H_M;
+  if (convention === 'metrique') return metrique;
+  if (convention === 'jeu') return metrique * JEU_SCALE;
   return (BB_H * ISO_TOKEN_SCALE[kind]) / ISO_PX_PER_M;
 }
 

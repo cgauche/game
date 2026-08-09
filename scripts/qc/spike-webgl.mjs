@@ -13,6 +13,7 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { openApp, gotoScreen, evaluate, waitFor, consoleGuard, sleep, DEFAULT_URL } from '../recette/lib.mjs';
+import { runSpikeChecks } from './spike-checks.mjs';
 
 const OUT_DIR = 'public/qc/spike';
 const SHEET = 'public/qc/spike-webgl.html';
@@ -21,7 +22,7 @@ const SHEET = 'public/qc/spike-webgl.html';
 const SCENES = [
   { id: 'siege-enceinte', label: 'Siège — enceinte', env: 'env-siege-explore.png', envNote: 'siege-explore (même carte de siège, variante explorable)' },
   { id: 'pont-vitrine', label: 'Pont — vitrine (relief)', env: null, envNote: 'aucune planche env-* (scène hors périmètre de render-env.mts)' },
-  { id: 'opera', label: 'Opéra — théâtre', env: 'env-test-opera-theatre.png', envNote: 'test-opera-theatre' },
+  { id: 'opera', label: 'Opéra — théâtre', env: null, envNote: "aucune planche comparable — le panneau monte `opera-staatsoper` (`scenes/opera/floorplan.ts`), alors que `env-test-opera-theatre.png` rend `test-opera-theatre` (`scenes/test-scenarios/opera.ts`) : deux cartes différentes" },
   { id: 'arene', label: 'Arène (hub)', env: 'env-arene-hub.png', envNote: 'arene-hub' },
   { id: 'vitrine-batiments', label: 'Vitrine — bâtiments', env: 'env-vitrine-batiments.png', envNote: 'vitrine-batiments' },
   { id: 'diligence', label: 'La Diligence (2 niveaux)', env: 'diligence.png', envNote: 'diligence (planche render-diligence.mts : 2 étages × 4 rotations)' },
@@ -48,6 +49,8 @@ const DIVERGENCES = [
   "Nuit et fenêtres émissives HORS PÉRIMÈTRE : aucune source ponctuelle n'est montée (la planche SVG en porte un panneau, pas le spike).",
   "Art des props limité à 3 vues + miroir (`propSvg`) : le spike ne lève PAS cette contrainte — un billboard reste un dessin, pas un volume.",
   'Animation hors périmètre : aucune pose de marche, aucun `fx` d’ambiance — chaque capture est un arrêt sur image.',
+  "Murs ÉPAIS (~0,17 m) et COIFFÉS : le backend affine peint des plans d'épaisseur nulle, le spike en fait des boîtes minces avec une coiffe au sommet (`wallBoxPolys`) — les silhouettes divergent de ±2 px, et un mur offre une surface vue du dessus là où le SVG n'en a aucune.",
+  "Disque d'ombre de contact en COULEUR CUITE seulement : en mode éclairé, la silhouette projette sa vraie ombre (`castShadow`) et le disque en ferait une seconde.",
 ];
 
 // Une session CDP ABANDONNÉE (tentative d'ouverture ratée) laisse ses appels en vol se rejeter APRÈS sa
@@ -148,7 +151,7 @@ function sheetHtml(shots, creature) {
   }).join('');
 
   const creatureRow = `<section><h2>Planche CRÉATURE <span class="id">siege-enceinte, cadrage personnage</span></h2>` +
-    `<p class="note">Le même héros riggé (billboard texturé depuis <code>bonesToSvg</code>) aux trois paliers de zoom, dans les DEUX conventions de taille monde (<code>billboardMath</code>) — l'arbitrage de #1160.</p>` +
+    `<p class="note">Le même héros riggé (billboard texturé depuis <code>bonesToSvg</code>) aux trois paliers de zoom, dans les TROIS conventions de taille monde (<code>billboardMath</code>) — <code>jeu</code> (2,3 m, le défaut arbitré #1160) encadrée par ses deux repères.</p>` +
     `<div class="row">${creature.map((s) => figure(s.file, s.label)).join('')}</div></section>`;
 
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Spike WebGL — planches</title>
@@ -169,7 +172,7 @@ function sheetHtml(shots, creature) {
  code { color:#c9b78a; }
 </style></head><body>
 <h1>Spike WebGL — rendu three vs planches SVG</h1>
-<p class="note">Captures du canevas de l'écran DEV <code>webglSpike</code> (1280×720, zoom 1 sauf mention), pilotées par <code>window.__spike.set</code>. Chaque scène est suivie de SA planche de référence SVG (<code>public/qc/env-*.png</code>) — cliquer une image l'ouvre en pleine taille.</p>
+<p class="note">Captures du canevas de l'écran DEV <code>webglSpike</code> — PNG de 2560×1440 (cadre de 1280×720 rendu à <code>setPixelRatio(2)</code>, figé), zoom 1 sauf mention, pilotées par <code>window.__spike.set</code>. Chaque scène est suivie de SA planche de référence SVG (<code>public/qc/env-*.png</code>) — cliquer une image l'ouvre en pleine taille.</p>
 <div class="divergences"><h2>Divergences assumées</h2><ul>${DIVERGENCES.map((d) => `<li>${d}</li>`).join('')}</ul></div>
 ${creatureRow}
 ${sections}
@@ -210,9 +213,9 @@ async function main() {
       await capture(session, { scene: 'siege-enceinte', view: 'iso', yawDeg, zoom: 1, lit: false, focus: 'scene' }, file);
       shots.push({ scene: 'siege-enceinte', mode: 'unlit', libre: true, file, label: `iso lacet ${yawDeg}°` });
     }
-    // Planche CRÉATURE : un héros riggé, 3 zooms × 2 conventions, cadré sur le personnage.
+    // Planche CRÉATURE : un héros riggé, 3 zooms × 3 conventions, cadré sur le personnage.
     const creature = [];
-    for (const convention of ['heroique', 'metrique']) {
+    for (const convention of ['jeu', 'heroique', 'metrique']) {
       for (const zoom of [0.4, 1, 2.6]) {
         const file = `creature-${convention}-zoom${String(zoom).replace('.', '_')}.png`;
         await capture(session, { scene: 'siege-enceinte', view: 'iso', rot: 0, lit: false, focus: 'personnage', convention, zoom }, file);
@@ -232,6 +235,16 @@ async function main() {
       process.exitCode = 1;
     } else {
       console.log('CONSOLE: 0 erreur');
+    }
+    // GARDES DE PLANCHE : les sondes du juge vision, jouées sur les PNG qu'on vient d'écrire. Une garde
+    // qui tombe fait tomber la capture — sinon la planche part en revue avec un défaut déjà mesurable.
+    const gardes = runSpikeChecks(OUT_DIR);
+    for (const l of gardes.lignes) console.log(`  ${l}`);
+    if (!gardes.ok) {
+      console.error('GARDES DE PLANCHE : au moins une est tombée');
+      process.exitCode = 1;
+    } else {
+      console.log('GARDES DE PLANCHE : toutes tenues');
     }
   } finally {
     if (session) await session.close();

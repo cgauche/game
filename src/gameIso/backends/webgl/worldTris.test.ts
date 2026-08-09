@@ -7,14 +7,22 @@ import {
   crossQuadTris,
   facePoly,
   faceQuads,
+  faceQuadsOriented,
   facesGeometry,
   fanTriangles,
   gpToWorld,
   isConvex,
+  montantSaillieM,
+  montantWidthM,
   planarity,
+  polyBounds,
   polyNormal,
   pxPerM,
   uprightWidthM,
+  wallBoxPolys,
+  wallThicknessM,
+  type Bounds,
+  type Vec3,
   type WorldPoly,
 } from './worldTris';
 import { buildFloors } from '../../builders/floors';
@@ -23,6 +31,7 @@ import { buildRoofs } from '../../builders/roofs';
 import { buildScene } from '../../../state/mapSpec';
 import { spec as siegeSpec } from '../../../scenes/test-scenarios/siege-enceinte';
 import { scenario as arene } from '../../../scenes/test-scenarios/arene';
+import { buildOperaFloorplan } from '../../../scenes/opera/floorplan';
 import { sceneMetresPerTile, type Scene } from '../../../state/scene';
 import { TW } from '../../../geometry/iso';
 import type { Face } from '../../builders/types';
@@ -104,6 +113,47 @@ describe('MONTANTS à 2 points — deux quads verticaux croisés, largeur écran
     expect(Math.max(...xs)).toBeCloseTo(10.2, 12);
     expect(Math.min(...zs)).toBeCloseTo(5.8, 12);
     expect(Math.max(...zs)).toBeCloseTo(6.2, 12);
+  });
+
+  it('la croix DÉPASSE les joues du mur : largeur = max(largeur écran, épaisseur de mur) + 2 saillies', () => {
+    expect(montantSaillieM(2)).toBeCloseTo(1 / pxPerM(2), 12);
+    expect(montantSaillieM(2)).toBeGreaterThan(0.03);
+    expect(montantSaillieM(2)).toBeLessThan(0.05);
+    for (const part of ['poteau', 'jambage', 'pillar'])
+      expect(montantWidthM(part, 2)).toBeCloseTo(
+        Math.max(uprightWidthM(part, 2), wallThicknessM(2)) + 2 * montantSaillieM(2),
+        12,
+      );
+    expect(montantWidthM('poteau', 2)).toBeGreaterThan(wallThicknessM(2));
+  });
+
+  it('arène : AUCUN montant n’est entièrement noyé dans la matière des murs', () => {
+    const mpt = sceneMetresPerTile(arene.scene);
+    const faces = facesOf(arene.scene);
+    // Matière = les BOÎTES des faces de mur pleines (5 quads : 2 joues + coiffe + 2 chants).
+    const boites: Bounds[] = [];
+    for (const f of faces) {
+      const { quads, oriented } = faceQuadsOriented(f, mpt);
+      if (oriented && quads.length === 5) boites.push(polyBounds(quads.flat()));
+    }
+    expect(boites.length).toBeGreaterThan(100);
+    const dedans = (p: Vec3) =>
+      boites.some(
+        (b) =>
+          p.x >= b.lo.x - 1e-9 && p.x <= b.hi.x + 1e-9 &&
+          p.y >= b.lo.y - 1e-9 && p.y <= b.hi.y + 1e-9 &&
+          p.z >= b.lo.z - 1e-9 && p.z <= b.hi.z + 1e-9,
+      );
+    let montants = 0;
+    let noyesEntiers = 0;
+    for (const f of faces) {
+      if (f.poly.length !== 2) continue;
+      montants++;
+      const pts = faceQuads(f, mpt).flat();
+      if (pts.every((p) => dedans(p))) noyesEntiers++;
+    }
+    expect(montants).toBeGreaterThan(300);
+    expect(noyesEntiers).toBe(0);
   });
 
   it('les faces à 2 points des builders passent par les quads croisés, jamais par l’éventail', () => {
@@ -199,5 +249,108 @@ describe('BIAIS COPLANAIRE — l’ordre de peinture affine devient une séparat
     const rendus = geoms[iMontant].tris;
     expect(rendus).toHaveLength(nus.length);
     expect(rendus).not.toEqual(nus);
+  });
+});
+
+describe('ÉPAISSEUR de mur — un plan d’épaisseur nulle n’a AUCUNE surface à 90° de plongée', () => {
+  /** Aire (m²) d'un triangle. */
+  const aire = ([a, b, c]: [Vec3, Vec3, Vec3]) => {
+    const u = { x: b.x - a.x, y: b.y - a.y, z: b.z - a.z };
+    const v = { x: c.x - a.x, y: c.y - a.y, z: c.z - a.z };
+    return Math.hypot(u.y * v.z - u.z * v.y, u.z * v.x - u.x * v.z, u.x * v.y - u.y * v.x) / 2;
+  };
+  /** Aire PROJETÉE au sol (ce que la caméra top voit) d'un triangle. */
+  const aireVueDuDessus = (t: [Vec3, Vec3, Vec3]) => {
+    const n = polyNormal(t);
+    return n ? aire(t) * Math.abs(n.y) : 0;
+  };
+
+  const murVertical: WorldPoly = [
+    { x: 0, y: 4, z: 6 },
+    { x: 2, y: 4, z: 6 },
+    { x: 2, y: 0, z: 6 },
+    { x: 0, y: 0, z: 6 },
+  ];
+
+  it('l’épaisseur MONDE est celle du poteau qui encadre le mur (3.8 px d’écran affine)', () => {
+    expect(wallThicknessM(2)).toBeCloseTo(uprightWidthM('poteau', 2), 12);
+    expect(wallThicknessM(2)).toBeGreaterThan(0.15);
+    expect(wallThicknessM(2)).toBeLessThan(0.2);
+  });
+
+  it('un quad de mur devient une boîte : 2 joues + coiffe + 2 chants, AUCUN dessous', () => {
+    const box = wallBoxPolys(murVertical, polyNormal(murVertical)!, 0.2);
+    expect(box).toHaveLength(5);
+    const zs = box.flat().map((p) => p.z);
+    expect(Math.min(...zs)).toBeCloseTo(5.9, 12);
+    expect(Math.max(...zs)).toBeCloseTo(6.1, 12);
+    // La COIFFE : le seul quad horizontal, au sommet ; aucun quad au point bas (dessous omis).
+    const horizontaux = box.filter((q) => Math.abs(polyNormal(q)!.y) > 0.99);
+    expect(horizontaux).toHaveLength(1);
+    expect(horizontaux[0].every((p) => p.y === 4)).toBe(true);
+    // Chaque quad regarde le DEHORS de la boîte (le biais coplanaire pousse hors de la matière).
+    const mid = { x: 1, y: 2, z: 6 };
+    for (const q of box) {
+      const n = polyNormal(q)!;
+      const g = q.reduce((s, p) => ({ x: s.x + p.x / q.length, y: s.y + p.y / q.length, z: s.z + p.z / q.length }), { x: 0, y: 0, z: 0 });
+      expect(n.x * (g.x - mid.x) + n.y * (g.y - mid.y) + n.z * (g.z - mid.z)).toBeGreaterThan(0);
+    }
+  });
+
+  it('une face DÉCORATIVE de mur reste coplanaire à la joue de SON côté (une copie par joue)', () => {
+    const deco: Face = {
+      poly: [{ x: 1, y: 0, h: 3 }, { x: 2, y: 0, h: 3 }, { x: 2, y: 0, h: 1 }, { x: 1, y: 0, h: 1 }],
+      material: { domain: 'structure', id: 'mur-en-bois', part: 'panneau' },
+    };
+    const t = wallThicknessM(2);
+    const quads = faceQuads(deco, 2);
+    expect(quads).toHaveLength(2);
+    const zs = quads.map((q) => q[0].z).sort((a, b) => a - b);
+    expect(zs[1] - zs[0]).toBeCloseTo(t, 12);
+    // Les deux copies regardent chacune vers l'EXTÉRIEUR de la boîte (normales opposées).
+    expect(polyNormal(quads[0])!.z).toBeCloseTo(-polyNormal(quads[1])!.z, 12);
+  });
+
+  const parScene: [string, Scene][] = [
+    ['siege-enceinte', siege],
+    ['arene (hub)', arene.scene],
+  ];
+  for (const [name, scene] of parScene)
+    it(`${name} : les murs offrent une surface NON NULLE vue du dessus (coiffes)`, () => {
+      const mpt = sceneMetresPerTile(scene);
+      const faces = buildWalls(scene).flatMap((el) => el.faces);
+      const tris = facesGeometry(faces, mpt).flatMap((g) => g.tris);
+      const vueDuDessus = tris.reduce((s, t) => s + aireVueDuDessus(t), 0);
+      const coiffes = tris.filter((t) => Math.abs(polyNormal(t)?.y ?? 0) > 0.99).length;
+      expect(coiffes).toBeGreaterThan(0);
+      expect(vueDuDessus).toBeGreaterThan(1); // m² — 2 aplats vides sur la planche `*-top-*` sinon
+    });
+});
+
+describe('CONVERSION des murs — la géométrie rendue est celle que `buildWalls` a émise', () => {
+  // L'opéra dresse 983 segments (aucun diagonal : son ovale est un ESCALIER de segments N/E). La garde
+  // mesure que la conversion n'en PERD ni n'en DÉPLACE aucun — l'aspect « dalles disjointes » de la
+  // planche `opera-iso-rot2-unlit.png` se joue en amont, dans le plan authoré.
+  const opera = buildOperaFloorplan();
+
+  it('opéra : chaque face de mur émise produit des triangles, tous DANS l’emprise de la scène', () => {
+    const mpt = sceneMetresPerTile(opera);
+    const faces = buildWalls(opera).flatMap((el) => el.faces);
+    expect(faces.length).toBeGreaterThan(1000);
+    const geoms = facesGeometry(faces, mpt);
+    expect(geoms.filter((g) => g.tris.length === 0)).toEqual([]);
+    // Emprise MÉTRIQUE de la grille authorée (case 0 → case n−1), à 1 cm près : une tolérance d'une CASE
+    // laissait 2 m de jeu, de quoi loger un mur entier hors de la carte sans que la garde bronche.
+    const TOL_M = 0.01;
+    const hors = geoms
+      .flatMap((g) => g.tris.flat())
+      .filter(
+        (p) =>
+          p.x < -TOL_M ||
+          p.x > (opera.dimensions.w - 1) * mpt + TOL_M ||
+          p.z < -TOL_M ||
+          p.z > (opera.dimensions.h - 1) * mpt + TOL_M,
+      );
+    expect(hors).toEqual([]);
   });
 });

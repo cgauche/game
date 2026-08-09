@@ -3,10 +3,14 @@
  * hauteur en MÈTRES) deviennent des triangles en repère three (Y = haut) : `(x, y, h) → (x·mpt, h, y·mpt)`.
  * Module PUR et Node-safe : ni DOM, ni renderer, ni `three` (des points nus suffisent au maillage).
  *
- * Trois politiques y vivent, chacune une fonction :
+ * Quatre politiques y vivent, chacune une fonction :
  *  - TRIANGULATION en ÉVENTAIL (les faces du pivot sont planes, convexes, ≤ 4 points) ;
+ *  - ÉPAISSEUR de MUR : une face de structure verticale est un plan d'épaisseur NULLE (l'affine peint
+ *    des quads d'écran) — sans surface à 90° de plongée. Les parts PLEINES deviennent une boîte mince
+ *    (`wallBoxPolys`), les parts décoratives une copie par joue ;
  *  - MONTANTS à 2 points (`walls.ts:119`, `floors.ts:163`) : deux quads verticaux CROISÉS, largeur MONDE
- *    dérivée de la largeur écran du backend affine ; ces quads entrent dans le calcul coplanaire au même
+ *    dérivée de la largeur écran du backend affine, portée au-delà des joues du mur par la SAILLIE
+ *    (`montantWidthM`) ; ces quads entrent dans le calcul coplanaire au même
  *    titre que les faces pleines (un bras de la croix est DANS le plan du panneau qu'il décore) ;
  *  - BIAIS COPLANAIRE : l'affine départage les faces empilées d'un même plan par l'ORDRE d'émission ;
  *    au GPU il faut une séparation métrique — rang d'émission × `COPLANAR_BIAS_M` le long de la normale.
@@ -114,6 +118,24 @@ export function uprightWidthM(part: string | undefined, mpt: number): number {
   return px / pxPerM(mpt);
 }
 
+/** Saillie (m) d'un montant hors des joues du mur qu'il encadre — 1 px d'écran affine ramené au monde
+ *  (`pxPerM`), soit ≈ 0,044 m à 2 m/tuile : le plus petit dépassement que la planche distingue.
+ *  Sans elle, la croix d'un montant a EXACTEMENT l'épaisseur de la boîte de mur (`wallThicknessM` est la
+ *  largeur du même poteau) et s'y inscrit à ras — mesuré sur `arene` : 340 montants sur 364 entièrement
+ *  dans la matière, part noyée moyenne 99,2 %. */
+export const MONTANT_SAILLIE_PX = 1;
+
+/** Saillie MONDE d'un montant (m). */
+export function montantSaillieM(mpt: number): number {
+  return MONTANT_SAILLIE_PX / pxPerM(mpt);
+}
+
+/** Largeur MONDE de la croix d'un montant : sa largeur d'écran affine, jamais moins que l'épaisseur du
+ *  mur qu'il encadre, plus une saillie de chaque côté. */
+export function montantWidthM(part: string | undefined, mpt: number): number {
+  return Math.max(uprightWidthM(part, mpt), wallThicknessM(mpt)) + 2 * montantSaillieM(mpt);
+}
+
 /** Les DEUX quads verticaux CROISÉS (X) centrés sur le segment [a,b], de largeur `wM` — la
  *  représentation volumique d'un montant que l'affine dessine en rectangle d'écran. */
 export function crossQuadPolys(a: Vec3, b: Vec3, wM: number): WorldPoly[] {
@@ -130,6 +152,61 @@ export function crossQuadPolys(a: Vec3, b: Vec3, wM: number): WorldPoly[] {
 /** Triangles des deux quads croisés d'un montant. */
 export function crossQuadTris(a: Vec3, b: Vec3, wM: number): Tri[] {
   return crossQuadPolys(a, b, wM).flatMap(fanTriangles);
+}
+
+/** Parts de mur PLEINES (`builders/walls.ts`) : le corps de la courtine (`face`) et les COURONNEMENTS
+ *  (bande haute de bois, parapet dressé, arase, merlons). Toute autre part d'un mur (panneau, moulure,
+ *  plinthe, bande, vitre, vantail, herse…) est un DÉCOR posé sur la joue, pas de la matière. */
+const SOLID_WALL_PARTS = new Set(['face', 'couronnement', 'parapet', 'arase', 'merlon']);
+
+/** ÉPAISSEUR MONDE (m) d'un mur d'arête. Les faces du pivot sont des plans d'épaisseur NULLE (l'affine
+ *  peint des quads d'écran) : à 90° de plongée un mur y a une surface nulle. Épaisseur = la largeur du
+ *  POTEAU qui encadre le mur, ramenée au monde comme toute largeur de montant (`uprightWidthM`) :
+ *  3.8 px / pxPerM(2) ≈ 0.168 m à 2 m/tuile. */
+export function wallThicknessM(mpt: number): number {
+  return uprightWidthM('poteau', mpt);
+}
+
+/** Polygone DÉPLACÉ de `d` le long de `n`. */
+function offsetPoly(poly: WorldPoly, n: Vec3, d: number): WorldPoly {
+  return poly.map((p) => ({ x: p.x + n.x * d, y: p.y + n.y * d, z: p.z + n.z * d }));
+}
+
+/** Polygone parcouru à l'envers : sa normale (donc le sens du biais coplanaire) s'inverse. */
+function reversePoly(poly: WorldPoly): WorldPoly {
+  return [...poly].reverse();
+}
+
+/** BOÎTE MINCE (`tM`) centrée sur le plan vertical `poly` de normale `n` : les deux joues parallèles,
+ *  la coiffe supérieure et les chants d'extrémité — une arête HORIZONTALE au point bas du polygone est
+ *  omise (le dessous d'un mur ne se voit jamais). Chaque quad est réorienté vers le DEHORS de la boîte
+ *  pour que le biais coplanaire pousse ses piles hors de la matière. */
+export function wallBoxPolys(poly: WorldPoly, n: Vec3, tM: number): WorldPoly[] {
+  const h = tM / 2;
+  const front = offsetPoly(poly, n, h);
+  const back = offsetPoly(poly, n, -h);
+  const out: WorldPoly[] = [front, back];
+  const yLo = Math.min(...poly.map((p) => p.y));
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i];
+    const b = poly[(i + 1) % poly.length];
+    if (Math.abs(a.y - yLo) < 1e-9 && Math.abs(b.y - yLo) < 1e-9) continue;
+    out.push([
+      { x: a.x + n.x * h, y: a.y, z: a.z + n.z * h },
+      { x: b.x + n.x * h, y: b.y, z: b.z + n.z * h },
+      { x: b.x - n.x * h, y: b.y, z: b.z - n.z * h },
+      { x: a.x - n.x * h, y: a.y, z: a.z - n.z * h },
+    ]);
+  }
+  const c = polyBounds(out.flat());
+  const mid = { x: (c.lo.x + c.hi.x) / 2, y: (c.lo.y + c.hi.y) / 2, z: (c.lo.z + c.hi.z) / 2 };
+  return out.map((q) => {
+    const qn = polyNormal(q);
+    if (!qn) return q;
+    const g = q.reduce((s, p) => ({ x: s.x + p.x / q.length, y: s.y + p.y / q.length, z: s.z + p.z / q.length }), { x: 0, y: 0, z: 0 });
+    const dehors = qn.x * (g.x - mid.x) + qn.y * (g.y - mid.y) + qn.z * (g.z - mid.z);
+    return dehors >= 0 ? q : reversePoly(q);
+  });
 }
 
 /** Clé de PLAN arrondie au mm : normale CANONIQUE (première composante non nulle positive) + offset. */
@@ -223,27 +300,46 @@ export interface FaceGeom {
   tris: Tri[];
   normal: Vec3 | null;
   rank: number;
+  /** Le sens de parcours des triangles porte déjà le DEHORS (cf. `faceQuadsOriented`). */
+  oriented: boolean;
 }
 
 /** Quads d'une face soumis au biais coplanaire : le polygone lui-même, ou les DEUX quads croisés d'un
- *  montant (2 points). Un bras de la croix est EXACTEMENT dans le plan du panneau qu'il décore : il
- *  entre donc dans le rang coplanaire comme une face pleine (mesuré sur `arene` : 388 paires
- *  montant↔montant + 2 607 paires montant↔face pleine, invisibles tant que les montants étaient exclus). */
+ *  montant (2 points), ou la BOÎTE MINCE d'une face de mur pleine (+ les deux copies d'une face
+ *  décorative de mur, une par joue). Un bras de la croix d'un montant est EXACTEMENT dans le plan du
+ *  panneau qu'il décore : il entre donc dans le rang coplanaire comme une face pleine (mesuré sur
+ *  `arene` : 388 paires montant↔montant + 2 607 paires montant↔face pleine, invisibles tant que les
+ *  montants étaient exclus). */
 export function faceQuads(face: Face, mpt: number): WorldPoly[] {
-  const poly = facePoly(face, mpt);
-  if (poly.length !== 2) return [poly];
-  return crossQuadPolys(poly[0], poly[1], uprightWidthM(face.material.part, mpt));
+  return faceQuadsOriented(face, mpt).quads;
 }
 
-/** Faces → triangles monde, biais coplanaire appliqué, montants développés en croix. Le RANG se calcule
+/** Quads d'une face + le drapeau `oriented` : `true` quand le sens de parcours des quads PORTE déjà une
+ *  information (chaque quad regarde le DEHORS du volume qui vient d'être fabriqué — boîte de mur, copies
+ *  par joue), `false` quand la face est rendue telle que le pivot l'a authorée (aucune convention de
+ *  sens) et qu'il revient au consommateur de l'orienter. */
+export function faceQuadsOriented(face: Face, mpt: number): { quads: WorldPoly[]; oriented: boolean } {
+  const poly = facePoly(face, mpt);
+  if (poly.length === 2)
+    return { quads: crossQuadPolys(poly[0], poly[1], montantWidthM(face.material.part, mpt)), oriented: false };
+  if (face.material.domain !== 'structure') return { quads: [poly], oriented: false };
+  const n = polyNormal(poly);
+  if (!n || Math.abs(n.y) > 1e-6) return { quads: [poly], oriented: false }; // seul un plan VERTICAL a une épaisseur d'arête
+  const t = wallThicknessM(mpt);
+  if (SOLID_WALL_PARTS.has(face.material.part ?? '')) return { quads: wallBoxPolys(poly, n, t), oriented: true };
+  return { quads: [offsetPoly(poly, n, t / 2), reversePoly(offsetPoly(poly, n, -t / 2))], oriented: true };
+}
+
+/** Faces → triangles monde, biais coplanaire appliqué, montants développés en croix et murs en boîtes
+ *  minces. Le RANG se calcule
  *  sur la liste FOURNIE (cf. `coplanarRanks` : la porter à l'échelle de la scène), quads de montants
  *  compris. Le `rank` rendu pour un montant est le PLUS HAUT de ses deux quads. */
 export function facesGeometry(faces: readonly Face[], mpt: number): FaceGeom[] {
-  const quads = faces.map((f) => faceQuads(f, mpt));
-  const ranks = coplanarRanks(quads.flat());
+  const parts = faces.map((f) => faceQuadsOriented(f, mpt));
+  const ranks = coplanarRanks(parts.flatMap((p) => p.quads));
   const out: FaceGeom[] = [];
   let k = 0;
-  for (const qs of quads) {
+  for (const { quads: qs, oriented } of parts) {
     const tris: Tri[] = [];
     let rank = 0;
     let normal: Vec3 | null = null;
@@ -254,7 +350,7 @@ export function facesGeometry(faces: readonly Face[], mpt: number): FaceGeom[] {
       if (qs.length === 1) normal = polyNormal(biased); // une croix de montant n'a pas UNE normale
       tris.push(...fanTriangles(biased));
     }
-    out.push({ tris, normal, rank });
+    out.push({ tris, normal, rank, oriented });
   }
   return out;
 }

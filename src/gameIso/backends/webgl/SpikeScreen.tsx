@@ -24,7 +24,7 @@ import { sceneMetresPerTile, type Scene } from '../../../state/scene';
 import { DIR8_ORDER, facingToward, type Dir8 } from '../../../state/dir8';
 import type { Rot } from '../../../geometry/iso';
 import { makeCamera } from '../../pov/camera';
-import { affineCamera, povCamera, rotYaw, type AffineKind } from './cameras';
+import { affineCamera, fitAffineView, povCamera, rotYaw, type AffineKind } from './cameras';
 import { pxPerM } from './worldTris';
 import { tintFor } from './visibilityTint';
 import {
@@ -37,7 +37,23 @@ import {
   type BillboardConvention,
 } from './billboardMath';
 import { clearBillboardTextures, getBillboardTexture, svgToTexture } from './svgTexture';
-import { buildWorldGeometry, collectBillboards, BILLBOARD_BOX_ASPECT } from './sceneMeshes';
+import {
+  billboardDepthOffsetUnits,
+  billboardPose,
+  buildWorldGeometry,
+  collectBillboards,
+  contactShadow,
+  contentBox,
+  outdoorFog,
+  skyTexture,
+  sunRig,
+  wantsContactShadow,
+  worldShadowBox,
+  AMBIENT_INTENSITY,
+  BILLBOARD_BOX_ASPECT,
+  LIGHT_COLOR,
+  SUN_INTENSITY,
+} from './sceneMeshes';
 import { spec as siegeSpec } from '../../../scenes/test-scenarios/siege-enceinte';
 import { scenario as pontVitrine } from '../../../scenes/test-scenarios/pont-vitrine';
 import { scenario as arene } from '../../../scenes/test-scenarios/arene';
@@ -50,6 +66,10 @@ const CANVAS_W = 1280;
 const CANVAS_H = 720;
 /** Fond des planches QC (`render-env.mts`) — même fond ici pour comparer sans biais de contraste. */
 const BG = 0x14161f;
+/** Échelle de rendu du canevas, FIGÉE à 2 : le tampon fait 2× le cadre CSS (les arêtes fines — merlons,
+ *  montants — cessent de pointiller) pour 4× les pixels à remplir, et deux captures prises sur deux
+ *  machines de densité d'écran différente restent comparables au pixel près. */
+const PIXEL_RATIO = 2;
 
 /** Vues du spike : les 3 familles affines + le POV première personne. */
 type SpikeView = AffineKind | 'pov';
@@ -68,6 +88,9 @@ const SCENES: { id: string; label: string; make: () => Scene }[] = [
 const ZOOM_MIN = 0.4;
 /** Paliers de zoom en raccourcis : le plancher, la référence, le plafond. */
 const ZOOMS = [ZOOM_MIN, 1, ZOOM_MAX];
+/** Conventions de taille monde des billboards, dans l'ordre du sélecteur — `jeu` en tête (le défaut,
+ *  cf. `JEU_ENT_H_M`), les deux autres restant les repères de comparaison de la planche. */
+const CONVENTIONS: BillboardConvention[] = ['jeu', 'heroique', 'metrique'];
 /** Degrés de lacet par pixel de glissement horizontal. */
 const YAW_DEG_PER_PX = 0.35;
 /** Degrés de lacet par seconde, touche de rotation MAINTENUE. */
@@ -105,7 +128,7 @@ const DEFAULT_OPTS: SpikeOpts = {
   yawDeg: 0,
   zoom: 1,
   lit: false,
-  convention: 'heroique',
+  convention: 'jeu',
   vis: false,
   focus: 'scene',
   facing: 'auto',
@@ -179,7 +202,7 @@ export function SpikeScreen(): JSX.Element {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
-    renderer.setPixelRatio(1); // capture DÉTERMINISTE : jamais l'échelle de l'écran hôte
+    renderer.setPixelRatio(PIXEL_RATIO);
     renderer.setSize(CANVAS_W, CANVAS_H, false);
     renderer.setClearColor(BG, 1);
     renderer.shadowMap.enabled = true;
@@ -215,6 +238,16 @@ export function SpikeScreen(): JSX.Element {
       const box = geometry.boundingBox ?? new THREE.Box3(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
       const centre = box.getCenter(new THREE.Vector3());
       const taille = box.getSize(new THREE.Vector3());
+
+      // ── CIEL & BRUME : seule la caméra PERSPECTIVE a un horizon (une ortho n'en a pas). Le POV prend
+      // le dégradé et la courbe de brume du POV SVG (`sceneMeshes` → `AMBIANCE.pov`) : le sol s'y éteint
+      // au lieu de finir sur une arête franche posée sur le fond de planche. Les ortho gardent `BG`.
+      if (opts.view === 'pov') {
+        const ciel = skyTexture();
+        disposables.push(ciel);
+        three.background = ciel;
+        three.fog = outdoorFog(mpt);
+      }
 
       // ── Billboards : vue déléguée à `billboardView` (lacet RÉEL), taille à la convention testée.
       const pose = makeCamera(scene, start, facing);
@@ -252,13 +285,27 @@ export function SpikeScreen(): JSX.Element {
       });
 
       // ── Caméra : les vues de PRODUCTION. Le zoom ortho = l'échelle de `projectToScreen` (viewport ÷ zoom).
-      const target = opts.focus === 'personnage'
-        ? (subjects.find((s) => s.kind === 'personnage')?.anchor.clone().add(new THREE.Vector3(0, 0.9, 0)) ?? centre)
-        : centre;
+      // CADRAGE d'ÉCRAN : à l'échelle FIXE des vues affines (`CELL/mpt` au dessus), une carte de 60×92 m
+      // déborde le cadre de 4,4× en surface (mesuré #1176 : `siege-enceinte` top) et une planche ne montre
+      // plus que la douve. Le cadrage à la SCÈNE part donc de la boîte de CONTENU (bâti + sujets) et en
+      // dérive cible + zoom ; l'utilisateur zoome PAR-DESSUS. Le cadrage au PERSONNAGE garde l'échelle
+      // métrique nue — c'est elle que la planche créature juge (`billboardMath`, conventions de taille).
+      // La boîte de contenu ne se calcule QUE là où le cadrage la lit : elle rejoue les faces du monde
+      // (`contentBox`, mémoïsée par scène) et le POV comme le cadrage au personnage n'en font rien.
+      const quadDe = new Map(quads.map((q) => [q.sub, q.quad]));
+      const fit = opts.view === 'pov' || opts.focus === 'personnage'
+        ? null
+        : fitAffineView(opts.view, opts.yawDeg, mpt, contentBox(scene, mpt, subjects, (s) => quadDe.get(s)!, box), { w: CANVAS_W, h: CANVAS_H });
+      const target = fit
+        ? fit.target
+        : opts.focus === 'personnage'
+          ? (subjects.find((s) => s.kind === 'personnage')?.anchor.clone().add(new THREE.Vector3(0, 0.9, 0)) ?? centre)
+          : centre;
+      const echelle = (fit?.zoom ?? 1) * opts.zoom;
       const distance = Math.max(50, taille.length() * 2);
       // Rayon englobant DEPUIS la scène : c'est lui qui resserre near/far (`orthoDepthRange`).
       const radius = taille.length() / 2 + target.distanceTo(centre) + 8;
-      const viewport = { w: CANVAS_W / opts.zoom, h: CANVAS_H / opts.zoom };
+      const viewport = { w: CANVAS_W / echelle, h: CANVAS_H / echelle };
       const camera = opts.view === 'pov'
         ? povCamera(scene, start, facing, { w: CANVAS_W, h: CANVAS_H })
         : affineCamera(opts.view, opts.yawDeg, mpt, viewport, { target, distance, radius }).camera;
@@ -274,38 +321,54 @@ export function SpikeScreen(): JSX.Element {
         // Quad ALIGNÉ ÉCRAN (quaternion de la caméra) : c'est ce que fait le backend affine, qui dessine
         // le sprite droit dans le plan de l'image ; l'ancre reste les PIEDS, le quad monte de sa demi-hauteur.
         mesh.quaternion.copy(camera.quaternion);
-        const up = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
-        mesh.position.copy(sub.anchor).addScaledVector(up, quad.centerLiftM);
+        mesh.position.copy(billboardPose(sub.anchor, quad.centerLiftM, camera.quaternion));
+        // Un plan aligné écran TRAVERSE la géométrie qu'il effleure (une ligne de crête coupe la
+        // silhouette à mi-corps). Le sujet ne BOUGE pas pour autant : le biais se dépose sur le seul
+        // tampon de profondeur (`billboardDepthOffsetUnits` — bornes de la caméra, distance à l'œil pour
+        // la perspective), sans conséquence ni sur l'ombre projetée ni sur la taille à l'écran.
+        mat.polygonOffset = true;
+        mat.polygonOffsetFactor = -1;
+        mat.polygonOffsetUnits = billboardDepthOffsetUnits(
+          camera.near,
+          camera.far,
+          opts.view === 'pov' ? camera.position.distanceTo(mesh.position) : null,
+        );
         mesh.castShadow = opts.lit;
         three.add(mesh);
+        // Ombre de CONTACT : le rig ne porte aucune ellipse au pied (le décor, si — `catalog/decor`),
+        // et sans elle un personnage flotte en couleur cuite. En mode éclairé, c'est l'ombre PROJETÉE
+        // qui fait foi (`wantsContactShadow`) — sinon le personnage en porte deux.
+        if (wantsContactShadow(sub.kind, opts.lit)) {
+          const disque = contactShadow(sub.anchor, quad.widthM);
+          disque.material.opacity *= sub.tint;
+          disposables.push(disque.geometry, disque.material);
+          three.add(disque);
+        }
       });
 
-      // ── Lumière : le mode éclairé remplace tout ombrage cuit (directionnelle à ombres + ambiante).
+      // ── Lumière : le mode éclairé remplace tout ombrage cuit (directionnelle à ombres + ambiante),
+      // toutes deux NEUTRES et calibrées dans `sceneMeshes` (élévation/azimut fixes, frustum d'ombre
+      // serré sur la sphère englobante, biais en texels).
       if (opts.lit) {
         // Intensités en unités PHYSIQUES (three ≥ r155 : plus de mise à l'échelle héritée par π) — le
-        // facteur `Math.PI` ramène « 0.4 / 1.5 de la couleur de base » à l'écran.
-        const ambient = new THREE.AmbientLight(0xffffff, 0.4 * Math.PI);
-        three.add(ambient);
-        const sun = new THREE.DirectionalLight(0xfff2dc, 1.5 * Math.PI);
-        // Soleil HAUT (sinon les nappes de toit et le sol rasent la lumière et la scène vire à la nuit),
-        // décalé au nord-ouest : les faces sud/est restent lues par l'ambiante.
-        sun.position.copy(centre).add(new THREE.Vector3(-taille.x * 0.5, Math.max(40, taille.y * 3 + Math.max(taille.x, taille.z)), -taille.z * 0.7));
-        sun.target.position.copy(centre);
+        // facteur `Math.PI` ramène les intensités catalogue à leur part de la couleur de base à l'écran.
+        three.add(new THREE.AmbientLight(LIGHT_COLOR, AMBIENT_INTENSITY * Math.PI));
+        // Le frustum d'ombre est SERRÉ : il se calcule sur les casteurs, billboards COMPRIS (un sujet
+        // dépasse la boîte de géométrie — 0,769 m au siège) ; hors frustum, une silhouette ne caste plus.
+        const rig = sunRig(worldShadowBox(box, subjects, (s) => quadDe.get(s)!));
+        const sun = new THREE.DirectionalLight(LIGHT_COLOR, SUN_INTENSITY * Math.PI);
+        sun.position.copy(rig.position);
+        sun.target.position.copy(rig.target);
         sun.castShadow = true;
-        const span = Math.max(taille.x, taille.z) * 0.75 + 4;
-        const dist = sun.position.distanceTo(centre);
         const cam = sun.shadow.camera;
-        cam.left = -span; cam.right = span; cam.top = span; cam.bottom = -span;
-        // Frustum d'ombre SERRÉE sur la scène : une profondeur near/far généreuse ruine la précision de
-        // la carte de profondeur et la géométrie — faite de plans SANS volume — s'auto-ombre entièrement
-        // (mesuré : toute la scène retombait à la seule ambiante).
-        cam.near = Math.max(0.5, dist - span * 2);
-        cam.far = dist + span * 2;
+        cam.left = -rig.span; cam.right = rig.span; cam.top = rig.span; cam.bottom = -rig.span;
+        cam.near = rig.near;
+        cam.far = rig.far;
         cam.updateProjectionMatrix();
-        sun.shadow.mapSize.set(2048, 2048);
+        sun.shadow.mapSize.set(rig.mapSize, rig.mapSize);
         // Décalage le long de la NORMALE (jamais un biais de profondeur seul) : c'est lui qui sépare un
         // plan de son propre rendu dans la carte d'ombre.
-        sun.shadow.normalBias = 0.35;
+        sun.shadow.normalBias = rig.normalBias;
         three.add(sun);
         three.add(sun.target);
       }
@@ -314,7 +377,8 @@ export function SpikeScreen(): JSX.Element {
       setCap(facing);
       setInfo(
         `${scene.nom} — ${scene.dimensions.w}×${scene.dimensions.h}, ${(geometry.getAttribute('position').count / 3) | 0} triangles, ` +
-        `${montables.length} billboards, lacet ${normYaw(opts.yawDeg).toFixed(1)}° (cran ${camRot}), zoom ×${opts.zoom.toFixed(2)}, cap ${facing}`,
+        `${montables.length} billboards, lacet ${normYaw(opts.yawDeg).toFixed(1)}° (cran ${camRot}), zoom ×${echelle.toFixed(2)}` +
+        `${fit ? ` (cadré ×${fit.zoom.toFixed(2)} × réglage ×${opts.zoom.toFixed(2)})` : ''}, cap ${facing}`,
       );
     };
 
@@ -430,9 +494,11 @@ export function SpikeScreen(): JSX.Element {
           <button key={z} type="button" className={on(opts.zoom === z)} onClick={() => patch({ zoom: z })}>zoom ×{z}</button>
         ))}
         <button type="button" className={on(opts.lit)} onClick={() => patch({ lit: !opts.lit })}>{opts.lit ? 'éclairé' : 'couleur cuite'}</button>
-        <button type="button" className={on(opts.convention === 'heroique')} onClick={() => patch({ convention: opts.convention === 'heroique' ? 'metrique' : 'heroique' })}>
-          billboards : {opts.convention}
-        </button>
+        {CONVENTIONS.map((c) => (
+          <button key={c} type="button" className={on(opts.convention === c)} onClick={() => patch({ convention: c })}>
+            billboards : {c}
+          </button>
+        ))}
         <button type="button" className={on(opts.vis)} onClick={() => patch({ vis: !opts.vis })}>visibilité {opts.vis ? 'ON' : 'OFF'}</button>
         <button type="button" className={on(opts.focus === 'personnage')} onClick={() => patch({ focus: opts.focus === 'scene' ? 'personnage' : 'scene' })}>
           cadrage : {opts.focus}
