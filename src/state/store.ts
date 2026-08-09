@@ -1347,7 +1347,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Budget d'heures de voyage CONSOMMÉ le jour calendaire courant (#340) — SOURCE UNIQUE keyée sur
    *  `dayIndex(gameTime)`, remise à zéro au franchissement de jour. `foot`/`mount` = heures à pied / en
    *  selle déjà parcourues aujourd'hui (le budget RAW de 6 h se compte PAR JOUR, pas par trajet) ;
-   *  `marched` = la marche forcée du jour a déjà été testée (un seul Test de Résistance/jour, l.224). */
+   *  `marched` = la marche forcée du jour a déjà été testée (un seul Test de Résistance/jour, LDB 51 l.195). */
   travelDayHours: { day: number; foot: number; mount: number; marched: boolean };
   /** Dernier jour calendaire (index d'horloge) où une NUIT a été jouée (`sleepParty`/`buildNightCascade`)
    *  — garde de la « nuit forcée » maison (#340) : un jour franchi au-delà sans sommeil coûte 1 Exténué. */

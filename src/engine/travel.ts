@@ -1,16 +1,16 @@
 /**
  * Voyage entre lieux (#T2) — Livre de base, section « Voyage » (fichier source
- * `51 - Magie du Chaos.md`, découpage OCR — le contenu est le chapitre MJ « Voyage », l.183-256).
+ * `51 - Magie du Chaos.md`, découpage OCR — le contenu est le chapitre MJ « Voyage », l.149-224).
  *
  * RAW modélisé :
  *  - « Utilisez le Déplacement pour déterminer la vitesse du voyage en kilomètre par heure »
- *    (l.222 ; cf. aussi 05 l.479 « combien de kilomètres par heure vous pouvez aisément parcourir ») ;
- *    à pied, c'est le Mouvement « le plus lent d'un groupe » (l.222) — Mouvement EFFECTIF
+ *    (LDB 51 l.193 ; cf. aussi 05 l.479 « combien de kilomètres par heure vous pouvez aisément parcourir ») ;
+ *    à pied, c'est le Mouvement « le plus lent d'un groupe » (LDB 51 l.193) — Mouvement EFFECTIF
  *    (Encombrement compris, `effectiveMovement`).
  *  - « un groupe peut voyager l'équivalent de 6 heures par jour sans avoir besoin de Tests de
  *    Résistance. S'il voyage plus rapidement ou plus loin, donnez un État Exténué à ceux échouant
- *    à ce Test, et un État Exténué supplémentaire si le Personnage est Encombré » (l.224).
- *  - Coûts de trajet (l.207-219) : « par kilomètre parcouru », diligence Déplacement 6
+ *    à ce Test, et un État Exténué supplémentaire si le Personnage est Encombré » (LDB 51 l.195).
+ *  - Coûts de trajet (LDB 51 l.178-189) : « par kilomètre parcouru », diligence Déplacement 6
  *    (Intérieur 2 sous / Extérieur 1 sou par km), barge Déplacement 8 (Cabine 5 / Pont 2 sous
  *    par km) ; « modèles plus rapides/lents : prix ×2 / ÷2, Mouvement ±1 » → paramétrable.
  *  - Fatigue d'Encombrement (LDB 61 p.295, déjà codée) : `encumbrancePenalties().travelFatigue`
@@ -38,7 +38,7 @@ import vehiclesJson from '../data/vehicles.json';
 export const VEHICLES_LIST = vehiclesJson as VehicleData[];
 const VEHICLE_BY_ID: Map<string, VehicleData> = new Map(VEHICLES_LIST.map((v) => [v.id, v]));
 
-/** Transports payants RAW (l.210-219) = véhicules dotés d'une facette `travel` (passage payant). */
+/** Transports payants RAW (LDB 51 l.180-189) = véhicules dotés d'une facette `travel` (passage payant). */
 export const TRAVEL_VEHICLES: VehicleData[] = VEHICLES_LIST.filter((v) => v.travel);
 
 /** Mode de voyage : `'pied'` (Mouvement du groupe), `'monture'` (bêtes possédées, EDOC 7 — règle
@@ -83,22 +83,22 @@ export function travelModeIcon(mode: TravelMode): string {
 
 /** Défauts paramétrables (surchargés par la carte du monde / la route dans l'éditeur). */
 export const TRAVEL_DEFAULTS = {
-  /** Heures de voyage par jour sans Test de Résistance (RAW l.224). */
+  /** Heures de voyage par jour sans Test de Résistance (RAW LDB 51 l.195). */
   hoursPerDay: 6,
   /** Plafond de marche forcée (heures/jour) — LDB 51 l.195 : silence, valeur maison, paramétrable. */
   forcedMaxHours: 10,
-  /** Seuil du d10 quotidien de péripétie : « événement sur un résultat de 8 » (l.237). 0 = désactivé. */
+  /** Seuil du d10 quotidien de péripétie : « événement sur un résultat de 8 » (LDB 51 l.208). 0 = désactivé. */
   perilDie: 8,
 } as const;
 
-/** Vitesse du groupe à pied = Mouvement EFFECTIF le plus lent (l.222), en km/h. */
+/** Vitesse du groupe à pied = Mouvement EFFECTIF le plus lent (LDB 51 l.193), en km/h. */
 export function partyWalkSpeed(party: Combatant[]): number {
   const alive = party.filter((c) => !c.dead);
   if (!alive.length) return 0;
   return Math.max(0, Math.min(...alive.map((c) => effectiveMovement(c))));
 }
 
-/** Vitesse de voyage (km/h) selon le mode. `movementOverride` = modèle rapide/lent (M ±1, l.208).
+/** Vitesse de voyage (km/h) selon le mode. `movementOverride` = modèle rapide/lent (M ±1, LDB 51 l.178).
  *  `allure` (règle `travel-allures`, EDOC 07 l.140) : en selle, M de la plus lente × 1,5/2,5/3 ; en
  *  attelage forcé au galop, M de l'attelage × 3 ; à pied, une bête Boiteuse MENÉE plafonne le groupe
  *  à la moitié de sa vitesse de marche (EDOC 07 l.157). */
@@ -141,7 +141,7 @@ export function travelPlanCalc(km: number, kmh: number, hoursPerDay: number): Tr
   return { days, hoursLastDay, travelMinutes: Math.round(totalHours * 60) };
 }
 
-/** Coût d'un transport payant : prix/km × km × passagers (l.207 « par kilomètre parcouru »).
+/** Coût d'un transport payant : prix/km × km × passagers (LDB 51 l.178 « par kilomètre parcouru »).
  *  `brassPerKmOverride` = prix d'auteur sur la route (défaut : classe RAW). `null` si `mode` n'a
  *  pas de facette `travel` (ex. `'mer'` = navire de campagne, pas un passage payant à la classe). */
 export function transportCost(
@@ -169,7 +169,7 @@ export interface ForcedMarchResult {
   d: { label: string; base: number; modifier: number; target: number; roll: number; success: boolean; sl: number };
 }
 
-/** Cible du Test de marche forcée (Résistance +0, l.224) — base de l'étape de cascade. */
+/** Cible du Test de marche forcée (Résistance +0, LDB 51 l.195) — base de l'étape de cascade. */
 export function forcedMarchTarget(c: Combatant): number {
   return testValue(c, 'resistance', 'endurance');
 }
@@ -185,7 +185,7 @@ export function applyForcedMarch(c: Combatant, success: boolean): { line: string
   return { line: `${c.label} — marche forcée : ÉCHEC, +${n} Exténué${overloaded ? ' (surchargé)' : ''}.`, gained: n };
 }
 
-/** Marche forcée (l.224) : voyager plus de `hoursPerDay` heures ce jour → Test de Résistance,
+/** Marche forcée (LDB 51 l.195) : voyager plus de `hoursPerDay` heures ce jour → Test de Résistance,
  *  échec = +1 Exténué (+1 de plus si Surchargé/Encombré, p.293). Mute `c` ; null = mort. */
 export function forcedMarchTest(c: Combatant, rng: RNG = defaultRNG): ForcedMarchResult | null {
   if (c.dead) return null;

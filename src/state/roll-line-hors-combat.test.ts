@@ -216,7 +216,7 @@ describe('Nuit — les 5 étapes de `restFlow` montées par `rollStep` (#1153 vo
 
   beforeEach(() => seedBattleRng(1));
 
-  it('Marche forcée : base NUE, État nommé, cible = valeur JETÉE (Résistance +0, LDB 61 l.224)', () => {
+  it('Marche forcée : base NUE, État nommé, cible = valeur JETÉE (Résistance +0, LDB 51 l.195)', () => {
     const marcheur = campeur({ id: 'mar', label: 'Marcheur' });
     fresh([marcheur]);
     const p = { ...restPending([marcheur], 'auberge'), travelMarch: [marcheur.id] } as never as PendingRest;

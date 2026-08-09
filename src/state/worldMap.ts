@@ -5,8 +5,8 @@
  * `engine/travel.ts` + `state/travelFlow.ts` ; ce module ne porte que le schéma et ses helpers purs.
  *
  * Tous les réglages RAW sont PARAMÉTRABLES par l'auteur : km, modes autorisés, prix par mode
- * (sous/km — défauts RAW l.207-219), Déplacement du véhicule (modèles rapides/lents, M ±1, l.208),
- * seuil du d10 de péripétie (défaut 8, l.237 ; 0 = désactivé), péripéties d'auteur (probabilité
+ * (sous/km — défauts RAW LDB 51 l.178-189), Déplacement du véhicule (modèles rapides/lents, M ±1, LDB 51 l.178),
+ * seuil du d10 de péripétie (défaut 8, LDB 51 l.208 ; 0 = désactivé), péripéties d'auteur (probabilité
  * par jour + Effects), cible d'embuscade du « Attaqués ! », heures de voyage/jour et plafond de
  * marche forcée au niveau carte.
  */
@@ -100,16 +100,16 @@ export interface MapRoute {
    *  DISCERNABLES deux routes reliant les mêmes ports (aller/retour, chacune avec son embuscade) : depuis
    *  un port, seule la route de ce sens est offerte au clic (`routesFrom`), l'embuscade est donc déterministe. */
   from?: string;
-  /** Distance en kilomètres (l.207 : les coûts sont « par kilomètre parcouru »). */
+  /** Distance en kilomètres (LDB 51 l.178 : les coûts sont « par kilomètre parcouru »). */
   km: number;
   /** Modes de voyage offerts sur cette route. */
   modes: TravelMode[];
   /** Prix d'auteur (sous/PA par km par passager) pour un transport payant (`id` de `vehicles.json`)
    *  — défaut : classe RAW. */
   prices?: Partial<Record<Exclude<TravelMode, 'pied'>, number>>;
-  /** Déplacement d'auteur par mode (modèle rapide/lent : M ±1, l.208). À pied : force la vitesse. */
+  /** Déplacement d'auteur par mode (modèle rapide/lent : M ±1, LDB 51 l.178). À pied : force la vitesse. */
   speed?: Partial<Record<TravelMode, number>>;
-  /** Seuil du d10 quotidien de péripétie RAW (l.237 « sur un résultat de 8 ») ; 0 = désactivé.
+  /** Seuil du d10 quotidien de péripétie RAW (LDB 51 l.208 « sur un résultat de 8 ») ; 0 = désactivé.
    *  Absent = défaut de la carte (sinon TRAVEL_DEFAULTS.perilDie). */
   perilDie?: number;
   /** Péripéties d'auteur (en PLUS de la table d10 RAW). */
@@ -144,11 +144,11 @@ export interface MapRoute {
 }
 
 export interface WorldMapParams {
-  /** Heures de voyage par jour sans Test (RAW l.224, défaut 6). */
+  /** Heures de voyage par jour sans Test (RAW LDB 51 l.195, défaut 6). */
   hoursPerDay?: number;
   /** Plafond de marche forcée (heures/jour) — LDB 51 l.195 : silence, valeur maison (défaut 10). */
   forcedMaxHours?: number;
-  /** Seuil d10 de péripétie par défaut des routes (défaut 8, l.237 ; 0 = désactivé). */
+  /** Seuil d10 de péripétie par défaut des routes (défaut 8, LDB 51 l.208 ; 0 = désactivé). */
   perilDie?: number;
 }
 

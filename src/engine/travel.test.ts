@@ -41,7 +41,7 @@ describe('vitesse de voyage (LDB 51 l.222 : Déplacement = km/h, le plus lent du
   });
 });
 
-describe('travelPlanCalc (l.224 : 6 h/jour sans Test)', () => {
+describe('travelPlanCalc (LDB 51 l.195 : 6 h/jour sans Test)', () => {
   it('24 km à 4 km/h, 6 h/j → 1 journée pleine', () => {
     const p = travelPlanCalc(24, 4, 6)!;
     expect(p.days).toBe(1);
@@ -84,7 +84,7 @@ describe('transportCost (l.207-219 : prix par km par passager)', () => {
   });
 });
 
-describe('forcedMarchTest (l.224 : Test de Résistance ou Exténué, +1 si Encombré)', () => {
+describe('forcedMarchTest (LDB 51 l.195 : Test de Résistance ou Exténué, +1 si Encombré)', () => {
   it('échec non surchargé → +1 Exténué (résultat structuré : ligne + jet)', () => {
     const c = hero({ endurance: 1 }); // Résistance ≈ 1 ; jet 53 (seed 6) → échec hors bande auto 01-05
     const r = forcedMarchTest(c, makeRNG(6))!;

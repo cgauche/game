@@ -1,7 +1,7 @@
 /**
  * Budget d'heures de voyage PAR JOUR CALENDAIRE + portes d'heure de départ + nuit forcée (#340).
  *
- * Le budget RAW de 6 h sans Test (LDB 51 l.224) se compte PAR JOUR, pas par trajet : des trajets à pied
+ * Le budget RAW de 6 h sans Test (LDB 51 l.195) se compte PAR JOUR, pas par trajet : des trajets à pied
  * ENCHAÎNÉS le même jour cumulent leur budget (l'accumulateur unique `store.travelDayHours` keyé sur
  * `dayIndex(gameTime)`), déclenchent la marche forcée dès que le cumul dépasse 6 h (un seul Test/jour) et
  * butent sur le plafond dur maison (10 h). Portes maison : départ terrestre/fluvial de l'aube au crépuscule

@@ -107,7 +107,7 @@ describe('startTravel — à pied', () => {
     expect(st.journal.some((l) => l.includes('Arrivée à Bourg B'))).toBe(true);
   });
 
-  it('trajet multi-jours (30 km à M4) : 6 h/jour (l.224), HALTE de nuit (modale de Repos), rations consommées', () => {
+  it('trajet multi-jours (30 km à M4) : 6 h/jour (LDB 51 l.195), HALTE de nuit (modale de Repos), rations consommées', () => {
     setup(map({ km: 30 }));
     const t0 = useGame.getState().gameTime;
     useGame.getState().startTravel('r1', 'pied');
@@ -128,7 +128,7 @@ describe('startTravel — à pied', () => {
 
   it('marche forcée (allure > 6 h/jour) : les jets ouvrent la cascade INFLUENÇABLE de la halte de nuit', () => {
     setup(map({ km: 60 })); // assez long pour une halte de nuit après le 1er jour
-    useGame.getState().startTravel('r1', 'pied', { hoursPerDay: 8 }); // > 6 h → marche forcée (l.224)
+    useGame.getState().startTravel('r1', 'pied', { hoursPerDay: 8 }); // > 6 h → marche forcée (LDB 51 l.195)
     const p = useGame.getState().pendingRest!;
     expect(p.phase).toBe('setup');
     expect((p.travelMarch ?? []).length).toBeGreaterThan(0); // héros à tester en marche forcée
@@ -166,7 +166,7 @@ describe('startTravel — à pied', () => {
     const st = useGame.getState();
     expect(st.scene?.id).toBe('lieu-b-scene');
     expect(st.gameTime - t0).toBe(450); // 30 km ÷ 4 km/h = 7 h 30, d'une traite
-    // Marche forcée (l.224) : Tests de Résistance journalisés.
+    // Marche forcée (LDB 51 l.195) : Tests de Résistance journalisés.
     expect(st.journal.some((l) => l.includes('marche forcée'))).toBe(true);
   });
 });

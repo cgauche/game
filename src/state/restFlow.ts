@@ -120,7 +120,7 @@ export interface PendingRest extends PendingBase {
   /** HALTE de voyage : le RAPPORT DU JOUR (km, jets, péripéties) — affiché en tête de la modale
    *  (la journée se lit le soir même, le recap final ne re-déroule plus tout le trajet). */
   travelDay?: import('./travelFlow').TravelRecapDay;
-  /** HALTE de voyage À PIED au-delà des heures RAW : héros à tester en MARCHE FORCÉE (l.224) — leurs
+  /** HALTE de voyage À PIED au-delà des heures RAW : héros à tester en MARCHE FORCÉE (LDB 51 l.195) — leurs
    *  jets ouvrent la cascade de la nuit (influençables), avant l'abri/la récupération. */
   travelMarch?: string[];
 }
@@ -376,7 +376,7 @@ registerCascadeApplier('exposure-heat-drop', (_get, _set, step, hero) => {
 
 registerCascadeApplier('forcedMarch', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
-  return { consequences: freeCons([applyForcedMarch(hero, step.result.success).line]) }; // l.224 : échec → +Exténué
+  return { consequences: freeCons([applyForcedMarch(hero, step.result.success).line]) }; // LDB 51 l.195 : échec → +Exténué
 });
 
 registerCascadeApplier('faim', (_get, _set, step, hero) => {
@@ -521,7 +521,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   party = get().party;
 
   const steps: CascadeStep[] = [];
-  // MARCHE FORCÉE de la journée de voyage (l.224) : un jet par héros — la chaîne ouvre la cascade.
+  // MARCHE FORCÉE de la journée de voyage (LDB 51 l.195) : un jet par héros — la chaîne ouvre la cascade.
   for (const id of p.travelMarch ?? []) {
     const h = party.find((x) => x.id === id);
     if (!h || h.dead) continue;

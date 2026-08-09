@@ -653,7 +653,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     // permettent de voguer de nuit, MDG 15 l.76 — cf. `sea-night-sailing`).
     id: 'travel-departure-gate',
     label: 'Porte d’heure de départ (terre & fleuve)',
-    ref: 'LDB 51 l.224 (budget/jour) — heure de départ non chiffrée, valeur maison (#340)',
+    ref: 'LDB 51 l.195 (budget/jour) — heure de départ non chiffrée, valeur maison (#340)',
     group: 'Voyage',
     kind: 'flag',
     default: true,

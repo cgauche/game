@@ -2,12 +2,12 @@
  * Flux de VOYAGE (#T2) — résolution jour par jour d'un trajet sur la carte du monde.
  *
  * RAW (section « Voyage » du LDB, fichier source `51 - Magie du Chaos.md`) :
- *  - vitesse = Déplacement en km/h, le plus lent du groupe à pied (l.222) ; diligence M6 / barge M8
- *    (l.210-219, prix par km par passager — débités AVANT le départ) ;
+ *  - vitesse = Déplacement en km/h, le plus lent du groupe à pied (LDB 51 l.193) ; diligence M6 / barge M8
+ *    (LDB 51 l.180-189, prix par km par passager — débités AVANT le départ) ;
  *  - 6 h de voyage par jour sans Test ; au-delà (marche forcée), Test de Résistance ou Exténué,
- *    +1 si Encombré (l.224) — à pied seulement (les passagers d'un transport ne marchent pas) ;
+ *    +1 si Encombré (LDB 51 l.195) — à pied seulement (les passagers d'un transport ne marchent pas) ;
  *  - fatigue d'Encombrement par journée de voyage (LDB 61 p.295, `travelFatigue`) — à pied ;
- *  - péripéties (l.237) : d10 quotidien, événement sur `perilDie` (défaut 8, paramétrable, 0 = off)
+ *  - péripéties (LDB 51 l.208, table l.210-221) : d10 quotidien, événement sur `perilDie` (défaut 8, paramétrable, 0 = off)
  *    → tirage sur la table VERBATIM (`data/peripeties.ts`) ; en PLUS, péripéties d'AUTEUR par route
  *    (probabilité par jour + Effects d'éditeur).
  *
@@ -211,7 +211,7 @@ const log = (get: Get, _set: Set, lines: string[]) => {
   if (lines.length) get().log(lines);
 };
 
-/** Heures de voyage/jour SANS Test (RAW l.224, défaut 6) — paramétrable au niveau carte. */
+/** Heures de voyage/jour SANS Test (RAW LDB 51 l.195, défaut 6) — paramétrable au niveau carte. */
 export function baseHoursPerDay(map: WorldMap | null): number {
   return map?.params?.hoursPerDay ?? TRAVEL_DEFAULTS.hoursPerDay;
 }
@@ -250,7 +250,7 @@ function addTravelHoursToday(get: Get, set: Set, dayKey: number, mode: 'pied' | 
   } });
 }
 
-/** Marque la marche forcée du jour `dayKey` comme TESTÉE (un seul Test de Résistance/jour, l.224). */
+/** Marque la marche forcée du jour `dayKey` comme TESTÉE (un seul Test de Résistance/jour, LDB 51 l.195). */
 function markMarchedToday(get: Get, set: Set, dayKey: number): void {
   const acc = get().travelDayHours;
   const prior = acc && acc.day === dayKey ? acc : { day: dayKey, foot: 0, mount: 0, marched: false };
@@ -338,12 +338,12 @@ export function startTravel(
     // Pas de batelier/embarcation : on retombe sur le transport payant (passeur).
   }
 
-  // Transport payant : prix par km PAR PASSAGER (l.207), débité au départ — refus si bourse insuffisante.
+  // Transport payant : prix par km PAR PASSAGER (LDB 51 l.178), débité au départ — refus si bourse insuffisante.
   if (mode !== 'pied' && mode !== 'monture') {
     const passengers = party.filter((h) => !h.dead && !h.outOfRencontre).length;
     const cost = transportCost(route.km, mode, opts.classKey ?? '', passengers, route.prices?.[mode]);
     if (!cost) return; // mode sans facette `travel` (id de véhicule invalide) — rien à débiter, rien à jouer
-    // Dépense de GROUPE (l.207) : passage sans bénéficiaire unique → cotisation gloutonne des bourses.
+    // Dépense de GROUPE (LDB 51 l.178) : passage sans bénéficiaire unique → cotisation gloutonne des bourses.
     if (!payFromGroup(get, set, cost, { purpose: 'passage' })) {
       log(get, set, [`Le passage (${TRAVEL_MODE_LABEL[mode].toLowerCase()}, ${formatMoney(cost)}) dépasse les moyens du groupe.`]);
       return;
@@ -479,7 +479,7 @@ function runTravelDays(get: Get, set: Set): void {
       return; // la clôture de la cascade (continueTravelDayAfterCascade) finalise le jour
     }
     const forced = forcedEligible ? forcedPaceDay(get, set, kmLeft) : null;
-    // BUDGET D'HEURES PAR JOUR CALENDAIRE (#340) : le RAW compte 6 h/JOUR sans Test (l.224), pas
+    // BUDGET D'HEURES PAR JOUR CALENDAIRE (#340) : le RAW compte 6 h/JOUR sans Test (LDB 51 l.195), pas
     // par trajet — les heures déjà parcourues aujourd'hui (`hoursTravelledToday`) grèvent le budget
     // du jour. À pied, le plafond DUR maison (`forcedMaxHours`, défaut 10 h) borne la journée ; en
     // selle, l'endurance au pas (12 h, EDOC 07 l.142). Le jour de l'EFFORT (`today0`) est figé AVANT
@@ -517,7 +517,7 @@ function runTravelDays(get: Get, set: Set): void {
     }
 
     // Fin de journée de route À PIED : fatigue d'Encombrement (p.295, non-jetée) + recensement des
-    // héros en MARCHE FORCÉE (l.224). Le JET de marche forcée est DIFFÉRÉ : s'il y a une halte de
+    // héros en MARCHE FORCÉE (LDB 51 l.195). Le JET de marche forcée est DIFFÉRÉ : s'il y a une halte de
     // nuit, il ouvre la cascade influençable de la nuit ; sinon (arrivée/interruption) il est roulé
     // d'office ici (pas de halte où le présenter).
     const dayLines: string[] = [];
@@ -525,7 +525,7 @@ function runTravelDays(get: Get, set: Set): void {
     if (plan.mode === 'pied') {
       // Décision sur le CUMUL du jour (prior + ce bloc), pas sur ce seul trajet (#340) : la fatigue
       // d'Encombrement s'applique quand le jour franchit le seuil des heures de base (une fois/jour) ;
-      // la marche forcée (l.224) recense les héros dès que le cumul dépasse la base, une seule fois par
+      // la marche forcée (LDB 51 l.195) recense les héros dès que le cumul dépasse la base, une seule fois par
       // jour calendaire (`marched`) — un seul Test de Résistance par jour, quel que soit le nombre de trajets.
       const totalFoot = prior.foot + hoursToday;
       const crossedFatigue = prior.foot < base - 1e-9 && totalFoot >= base - 1e-9;
@@ -588,7 +588,7 @@ function currentSeason(get: Get): Season {
  * Construit les ÉTAPES influençables du JOUR terrestre (cascade `purpose:'travelDay'`) — la MISE EN
  * SCÈNE des jets du jour, dans l'ORDRE de résolution RAW (l.10) : (Étape EDOC) Météo tirée ici
  * (ambiance, 1 tirage), puis les postes d'Activité (l.131) + l'agrégation qui INSÈRE l'Exposition de
- * fin d'Étape (l.73) ; enfin les PÉRIPÉTIES (l.237) — un pas `landPeril` qui, à sa validation, tire les
+ * fin d'Étape (l.73) ; enfin les PÉRIPÉTIES (LDB 51 l.208) — un pas `landPeril` qui, à sa validation, tire les
  * péripéties d'auteur (d100) puis la table d10 et INSÈRE le jet influençable (Survie/Perception) quand
  * la péripétie en demande un. Zéro RNG consommé au build hormis la Météo (les jets vivent dans les
  * étapes / appliers) : le build ne consomme pas d'aléa. Renvoie `[]` s'il n'y a AUCUN jet
@@ -618,7 +618,7 @@ function buildTravelDayCascade(
     steps.push(...buildStageSteps(get, set, w.weather, season));
   }
 
-  // PÉRIPÉTIES du jour (l.237) : un pas de VÉRIFICATION dont l'applier tire les péripéties d'auteur
+  // PÉRIPÉTIES du jour (LDB 51 l.208) : un pas de VÉRIFICATION dont l'applier tire les péripéties d'auteur
   // (d100) puis la table d10 (MÊME ordre RNG qu'inline — APRÈS les jets d'Étape) et, si la péripétie
   // propose un Test (Survie/Perception), INSÈRE le jet influençable juste après. N'est ajouté que s'il
   // y a des péripéties À TIRER (auteur ou table d10) — sinon le jour n'a pas de pas de péripétie (le
@@ -704,7 +704,7 @@ export function continueTravelDayAfterCascade(get: Get, set: Set, done?: Pending
     recap.kmDone = get().travelPlan?.kmDone ?? recap.km;
     set({ travelRecap: { ...recap, days: [...recap.days], then, daysTotal } });
   };
-  // Marche forcée du jour (l.224) : DIFFÉRÉE à la nuit si halte ; sinon roulée EAGER (arrivée/interruption).
+  // Marche forcée du jour (LDB 51 l.195) : DIFFÉRÉE à la nuit si halte ; sinon roulée EAGER (arrivée/interruption).
   const rollMarchEager = () => {
     for (const id of ctx?.marchHeroes ?? []) {
       const h = get().party.find((x) => x.id === id);
@@ -778,7 +778,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
     if (interrupted()) { j.push(...markLandInterrupt(get, set, { kind: 'effects', effects: peril.effects }, destLabel)); return { consequences: freeCons(j) }; }
   }
 
-  // 2. Table d10 RAW (l.237). L'entrée à Test (éreintant/attaque) INSÈRE un jet influençable ; les kinds
+  // 2. Table d10 RAW (LDB 51 l.210-221). L'entrée à Test (éreintant/attaque) INSÈRE un jet influençable ; les kinds
   //    sans jet (reposant/narratif) sont résolus inline (mêmes sous-jets, même ordre).
   const die = route.perilDie ?? get().worldMap?.params?.perilDie ?? TRAVEL_DEFAULTS.perilDie;
   if (die >= 1 && d10(battleRng()) === die) {
@@ -828,7 +828,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
   return { consequences: freeCons(j) };
 });
 
-/** « Voyage éreintant » (l.237) : Survie en extérieur (+20) INFLUENÇABLE ; échec → +1 jour de retard et
+/** « Voyage éreintant » (LDB 51 l.215) : Survie en extérieur (+20) INFLUENÇABLE ; échec → +1 jour de retard et
  *  +1 Exténué chacun (`applyEreintant`). */
 registerCascadeApplier('landPerilSurvie', (get, set, step, hero) => {
   if (!step.result) return;
@@ -838,7 +838,7 @@ registerCascadeApplier('landPerilSurvie', (get, set, step, hero) => {
   return { consequences: freeCons(applyEreintant(get, set)) };
 });
 
-/** « Attaqués ! » (l.237) : Perception (+20) INFLUENÇABLE ; réussie → le groupe les voit venir (sans
+/** « Attaqués ! » (LDB 51 l.221) : Perception (+20) INFLUENÇABLE ; réussie → le groupe les voit venir (sans
  *  surprise) ; l'embuscade configurée est DIFFÉRÉE derrière le récit (le `noSurprise` suit le jet). */
 registerCascadeApplier('landPerilPerception', (get, set, step, hero) => {
   if (!step.result) return;
