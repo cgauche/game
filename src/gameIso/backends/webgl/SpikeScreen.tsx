@@ -38,6 +38,7 @@ import {
   type BillboardConvention,
 } from './billboardMath';
 import { clearBillboardTextures, getBillboardTexture, svgToTexture } from './svgTexture';
+import { clearPeriodTextures, getPeriodTexture } from './periodTexture';
 import {
   billboardDepthOffsetUnits,
   billboardPose,
@@ -177,7 +178,7 @@ export function SpikeScreen(): JSX.Element {
   // Le cache de textures est GLOBAL au module : changer de scène rend TOUTES ses entrées mortes (les
   // clés portent l'identité des sujets de l'ancienne carte). Sans vidange, elles occupent la VRAM du
   // navigateur jusqu'à la fin de la session — et le spike se parcourt scène par scène.
-  useEffect(() => () => clearBillboardTextures(), [scene]);
+  useEffect(() => () => { clearBillboardTextures(); clearPeriodTextures(); }, [scene]);
   const start = useMemo(
     () => startOf(scene) ?? { x: Math.floor(scene.dimensions.w / 2), y: Math.floor(scene.dimensions.h / 2), z: 0 },
     [scene],
@@ -206,7 +207,10 @@ export function SpikeScreen(): JSX.Element {
     renderer.setSize(CANVAS_W, CANVAS_H, false);
     renderer.setClearColor(BG, 1);
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    // `PCFSoftShadowMap` est DÉPRÉCIÉ depuis three 0.185 : le moteur le remplace lui-même par
+    // `PCFShadowMap` à la première frame ombrée (`WebGLShadowMap.render`) en criant à la console —
+    // on pose donc directement le filtre réellement appliqué (rendu identique, console propre).
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     rendererRef.current = renderer;
     return () => {
       renderer.dispose();
@@ -226,11 +230,29 @@ export function SpikeScreen(): JSX.Element {
       // posé en bord de carte regarderait sinon le vide. Les boutons de pivot posent un cap explicite.
       const facing = opts.facing === 'auto' ? facingToward(start, { x: (scene.dimensions.w - 1) / 2, y: (scene.dimensions.h - 1) / 2 }) : opts.facing;
 
-      const material = opts.lit
-        ? new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide, flatShading: true })
-        : new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
-      disposables.push(material);
-      const worldMesh = new THREE.Mesh(geometry, material);
+      // UN MATÉRIAU PAR GROUPE DE SURFACE (`geometry.userData.surfaceGroups`, index = `materialIndex`) :
+      // la géométrie reste FUSIONNÉE, seul le dessin se scinde. Le groupe NU garde la couleur cuite au
+      // sommet ; les autres reçoivent le masque de période de leur surface. Les UV du monde sont en
+      // MÈTRES : la répétition vaut donc l'inverse de la période métrique DU GROUPE (le `v` d'un pan de
+      // toit suit sa pente). La teinte reste portée par la couleur de sommet — la `map` la MULTIPLIE ;
+      // le masque plafonnant à 1, l'éclaircissement des blocs clairs revient à la couleur du matériau.
+      const anisotropy = renderer.capabilities.getMaxAnisotropy();
+      const materials = geometry.userData.surfaceGroups.map((g) => {
+        const mat = opts.lit
+          ? new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide, flatShading: true })
+          : new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
+        disposables.push(mat);
+        const période = g.kind && g.recipe && g.periodM
+          ? getPeriodTexture(g.key, g.recipe, g.variant ?? 0, { kind: g.kind, baseColor: g.color ?? '', anisotropy })
+          : null;
+        if (période && g.periodM) {
+          période.texture.repeat.set(1 / g.periodM.u, 1 / g.periodM.v);
+          mat.map = période.texture;
+          mat.color.setScalar(période.gain);
+        }
+        return mat;
+      });
+      const worldMesh = new THREE.Mesh(geometry, materials);
       worldMesh.castShadow = opts.lit;
       worldMesh.receiveShadow = opts.lit;
       three.add(worldMesh);

@@ -114,10 +114,68 @@ export function couleursUniques(img) {
   return vues.size;
 }
 
+/** Côté (px) de la fenêtre de mesure de MOTIF — la période d'un appareillage mural (2,6 m de large,
+ *  0,7 m de haut, `coursesPeriodM`) tient à l'écran dans quelques dizaines de pixels : plus large, la
+ *  fenêtre déborde la surface ; plus étroite, elle rate le joint. */
+const FENETRE_MOTIF = 24;
+/** Part minimale de la fenêtre qui doit être de la MATIÈRE mesurée (le reste = un bord, un autre
+ *  matériau : la mesure ne serait plus celle d'une surface). */
+const PURETE_FENETRE = 0.9;
+
+/** MOTIF d'une matière : l'écart-type MÉDIAN de luminance parmi les fenêtres `cote`×`cote` remplies de
+ *  cette matière (à `PURETE_FENETRE` près). La MÉDIANE, jamais le maximum : une fenêtre à cheval sur
+ *  deux teintes d'un même bois (face, moulure, plinthe — toutes des multiples NEUTRES du même albédo)
+ *  rend un écart-type élevé sans qu'aucune surface ne porte de motif ; la médiane, elle, dit ce que
+ *  porte la surface COURANTE. Une matière d'APLAT rend 0 quelle que soit sa teinte, un appareillage
+ *  texturé rend le contraste de son masque. `fenetres` = 0 → matière introuvable, la mesure ne dit rien. */
+export function motifLocal(img, hexAlbedo, cote = FENETRE_MOTIF) {
+  const A = albedoLinear(hexAlbedo);
+  const matiere = new Uint8Array(img.w * img.h);
+  const lum = new Float32Array(img.w * img.h);
+  for (let i = 0; i < img.w * img.h; i++) {
+    const k = [0, 1, 2].map((c) => srgbToLinear(img.data[i * 4 + c] / 255) / A[c]);
+    const hi = Math.max(...k), lo = Math.min(...k);
+    matiere[i] = hi <= K_MAX && lo >= K_MIN && hi - lo <= ATTRIBUTION_CLASSE ? 1 : 0;
+    lum[i] = (img.data[i * 4] + img.data[i * 4 + 1] + img.data[i * 4 + 2]) / 3;
+  }
+  const pas = Math.max(1, cote >> 1);
+  const requis = PURETE_FENETRE * cote * cote;
+  const écarts = [];
+  for (let y0 = 0; y0 + cote <= img.h; y0 += pas)
+    for (let x0 = 0; x0 + cote <= img.w; x0 += pas) {
+      let n = 0, s = 0, s2 = 0;
+      for (let y = y0; y < y0 + cote; y++)
+        for (let x = x0; x < x0 + cote; x++) {
+          const i = y * img.w + x;
+          if (!matiere[i]) continue;
+          n++;
+          s += lum[i];
+          s2 += lum[i] * lum[i];
+        }
+      if (n < requis) continue;
+      écarts.push(Math.sqrt(Math.max(0, s2 / n - (s / n) ** 2)));
+    }
+  écarts.sort((a, b) => a - b);
+  return {
+    ecartType: écarts.length ? écarts[Math.floor(0.5 * (écarts.length - 1))] : 0,
+    ecartTypeMax: écarts.length ? écarts[écarts.length - 1] : 0,
+    fenetres: écarts.length,
+  };
+}
+
 /** Albédos de donnée sur lesquels les gardes s'adossent, tels que `faceColors` les rend :
- *  `#3d6630` = `src/state/terrain/defs/herbe.ts:9` (`swatch`) ; `#6e5940` = `src/data/structureAppearance.json:16,53,121,155`. */
+ *  `#3d6630` = `src/state/terrain/defs/herbe.ts:9` (`swatch`) ; `#6e5940` et `#6b6f76` =
+ *  `src/data/structureAppearance.json` (`mur-en-bois`, `mur-en-pierre`). */
 const HERBE = '#3D6630';
 const BOIS = '#6E5940';
+const PIERRE = '#6B6F76';
+
+/** Écart-type médian de luminance sous lequel une pierre appareillée est un APLAT (elle ne montre pas
+ *  son appareillage). Mesuré le 2026-08-09 sur les planches d'AVANT les textures de période : 0,00 sur
+ *  513 fenêtres de pierre du siège (et 0,00 sur 760 à l'arène) — l'aplat parfait. Le masque de période
+ *  vaut, lui, ~22 d'écart-type à pleine résolution (joint à 0,44 × la teinte sur 14,1 % des pixels,
+ *  cf. `periodTexture`) : le seuil laisse 5× de marge à la minification et au filtrage. */
+const MOTIF_MIN = 4;
 
 /** Seuils : chacun porte SA mesure sur les planches FINALES du 2026-08-09 (`public/qc/spike/`). */
 const GARDES = [
@@ -149,6 +207,21 @@ const GARDES = [
     mesurer: (img) => {
       const n = couleursUniques(img);
       return { ok: n > 3, dit: `${n} couleurs uniques` };
+    },
+  },
+  {
+    planche: 'siege-enceinte-iso-rot0-unlit.png',
+    titre: `présence de MOTIF sur la pierre appareillée (albédo ${PIERRE}) : écart-type médian ≥ ${MOTIF_MIN}`,
+    // La planche est jugée en COULEUR CUITE : sans lumière à démêler, tout écart de luminance dans une
+    // fenêtre de pierre vient du MATÉRIAU. La `vitrine-batiments` que le lot visait ne porte aucun mur
+    // de pierre (mesuré : 0 fenêtre) — le siège en porte 513, l'arène 760.
+    mesurer: (img) => {
+      const r = motifLocal(img, PIERRE);
+      if (!r.fenetres) return { ok: false, dit: `pierre introuvable (aucune fenêtre pleine de ${PIERRE})` };
+      return {
+        ok: r.ecartType >= MOTIF_MIN,
+        dit: `écart-type médian ${r.ecartType.toFixed(2)} (max ${r.ecartTypeMax.toFixed(2)}) sur ${r.fenetres} fenêtres de pierre`,
+      };
     },
   },
 ];

@@ -26,6 +26,19 @@ export const coursesKey = (c: Courses): string => hash32(JSON.stringify(c)).toSt
  *  une carte se lit comme un damier. */
 export const N_VARIANTS = 3;
 
+/** Variante de motif d'une face — hash de son identité MONDE (x, y, côté). SOURCE UNIQUE : les deux
+ *  backends (affine, GPU) tombent sur la même variante pour la même face. */
+export const variantOf = (cell: { x: number; y: number }, side: string): number =>
+  hash32('dtvar', cell.x, cell.y, side) % N_VARIANTS;
+
+/** Pas de rang (m) d'un PAN de toit : la pente de l'élément (`pitchM`, à défaut `slopeM`) divisée par
+ *  son nombre ENTIER de rangs — un rang de couverture ne se coupe pas en deux à l'arêtier, donc le pas
+ *  dépend de la PENTE et se calcule par élément. `hM` = hauteur de rang de la recette. */
+export function roofCourseStepM(pitchM: number | undefined, hM: number, slopeM: number): number {
+  const courses = Math.max(1, Math.round((pitchM || slopeM) / hM));
+  return (pitchM ?? slopeM) / courses;
+}
+
 /** Largeur de PÉRIODE d'un appareillage vertical (m) : ~4 blocs moyens (assez large pour casser la
  *  répétition à l'œil). Sans blocs (rangs continus : bardeau, planche), 2 m. */
 export const patternWM = (c: Courses): number => (c.blockWM ? Math.max(1.6, 2 * (c.blockWM[0] + c.blockWM[1])) : 2);

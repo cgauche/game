@@ -11,6 +11,8 @@ import {
   skyTexture,
   sunContrast,
   sunRig,
+  faceGroup,
+  surfaceGrouping,
   wantsContactShadow,
   worldFaces,
   worldShadowBox,
@@ -28,6 +30,10 @@ import { facesGeometry, polyBounds, type Vec3 } from './worldTris';
 import { anchorAndSize, billboardHeightM, BILLBOARD_BOX_ASPECT } from './billboardMath';
 import { TINT_EXPLORED } from './visibilityTint';
 import { faceSurface, tintVarFactor } from './faceColors';
+import { coursesPeriodM, groundPeriodM, roofCourseStepM, variantOf, N_VARIANTS } from '../../detail/courses';
+import { facadeStructureAppearance } from '../../catalog/facades';
+import { roofMaterial } from '../../catalog/roofs';
+import { ROOF_SLOPE_M } from '../../builders/roofs';
 import { TERRAIN_DEFS } from '../../../state/terrain';
 import type { Face } from '../../builders/types';
 import { buildScene } from '../../../state/mapSpec';
@@ -93,13 +99,18 @@ describe('ORIENTATION — les triangles regardent DEHORS (la carte d’ombre en 
    *  le haut (horizontale) ou l'extérieur de la carte (verticale). */
   function bilan(scn: Scene) {
     const m = sceneMetresPerTile(scn);
+    const listées = worldFaces(scn);
     const pos = buildWorldGeometry(scn, m, plein).getAttribute('position').array as Float32Array;
-    const geoms = facesGeometry(worldFaces(scn).map((f) => f.face), m);
+    const geoms = facesGeometry(listées.map((f) => f.face), m);
+    // La fusion émet les faces GROUPÉES par surface (un groupe = un dessin) : le bilan les parcourt
+    // dans CET ordre, sinon il compare le triangle d'une face à la normale d'une autre.
+    const ordre = surfaceGrouping(listées).faceIndices.flat();
     const cx = ((scn.dimensions.w - 1) / 2) * m;
     const cz = ((scn.dimensions.h - 1) / 2) * m;
     let i = 0;
     const b = { volumiques: 0, rentrantes: 0, horizontales: 0, versLeBas: 0, verticales: 0, versLInterieur: 0 };
-    for (const g of geoms) {
+    for (const fi of ordre) {
+      const g = geoms[fi];
       const boite = polyBounds(g.tris.flat());
       const mid: Vec3 = {
         x: (boite.lo.x + boite.hi.x) / 2,
@@ -461,5 +472,68 @@ describe('TEINTE de sommet — la variance par case est CUITE dans `color`', () 
     const a = buildWorldGeometry(scene, mpt, plein).getAttribute('color').array as Float32Array;
     const b = buildWorldGeometry(scene, mpt, plein).getAttribute('color').array as Float32Array;
     expect(Array.from(a)).toEqual(Array.from(b));
+  });
+});
+
+describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde', () => {
+  /** Face nue de matériau `mat`, avec la pente de nappe `pitchM` (pans de toit). */
+  const wf = (mat: Face['material'], pitchM?: number) => ({
+    face: { poly: [], material: mat } as Face,
+    cell: { x: 3, y: 4, z: 0 },
+    cellKey: '3,4,0',
+    pitchM,
+  });
+
+  it('les groupes couvrent EXACTEMENT tous les sommets, chacun une fois', () => {
+    const g = buildWorldGeometry(scene, mpt, plein);
+    const total = g.getAttribute('position').count;
+    expect(g.groups.length).toBe(g.userData.surfaceGroups.length);
+    expect(g.groups.length).toBeGreaterThan(1); // la scène porte plus que le seul groupe nu
+    const couvert = new Uint8Array(total);
+    for (const grp of g.groups) for (let i = grp.start; i < grp.start + grp.count!; i++) couvert[i]++;
+    expect(couvert.every((n) => n === 1)).toBe(true);
+    // `materialIndex` = index du groupe de surface : le contrat du mesh multi-matériaux de l'écran.
+    expect(g.groups.map((x) => x.materialIndex)).toEqual(g.userData.surfaceGroups.map((_, i) => i));
+  });
+
+  it('une face SANS appareillage tombe dans le groupe NU ; une pierre à assises a sa période', () => {
+    const sansAssises = TERRAIN_DEFS.find((t) => !t.detail?.courses)!;
+    const nu = faceGroup(wf({ domain: 'terrain', id: sansAssises.id }));
+    const pierre = faceGroup(wf({ domain: 'structure', id: 'mur-en-pierre', part: 'face' }));
+    expect(pierre.kind).toBe('wall');
+    expect(pierre.periodM).toEqual(coursesPeriodM(facadeStructureAppearance('mur-en-pierre').detail!.courses!));
+    expect(pierre.key).not.toBe(nu.key);
+    // La face nue n'emporte ni recette ni période : rien à texturer.
+    expect([nu.kind, nu.periodM, nu.recipe]).toEqual([null, undefined, undefined]);
+  });
+
+  it('un SOL prend la période élargie du sol, en une seule variante', () => {
+    const c = TERRAIN_DEFS.find((t) => t.detail?.courses)!;
+    const g = faceGroup(wf({ domain: 'terrain', id: c.id }));
+    expect(g.kind).toBe('ground');
+    expect(g.variant).toBe(0);
+    expect(g.periodM).toEqual(groundPeriodM(c.detail!.courses!));
+  });
+
+  it('deux nappes de PENTES différentes ne partagent PAS un groupe (échelle par élément)', () => {
+    const mat: Face['material'] = { domain: 'roof', id: 'tuile', part: 'N' };
+    const hM = roofMaterial('tuile').detail!.courses!.hM;
+    const plat = faceGroup(wf(mat, 1.0));
+    const raide = faceGroup(wf(mat, 2.4));
+    expect(plat.periodM!.v).toBe(2 * roofCourseStepM(1.0, hM, ROOF_SLOPE_M));
+    expect(raide.periodM!.v).toBe(2 * roofCourseStepM(2.4, hM, ROOF_SLOPE_M));
+    expect(plat.periodM!.v).not.toBe(raide.periodM!.v);
+    expect(plat.key).not.toBe(raide.key);
+    // La LARGEUR de période, elle, reste celle de l'appareillage : seule la cadence des rangs change.
+    expect(plat.periodM!.u).toBe(raide.periodM!.u);
+  });
+
+  it('la variante d’anti-périodicité vient de l’identité MONDE de la face (même hash que l’affine)', () => {
+    const mat: Face['material'] = { domain: 'structure', id: 'mur-en-pierre', part: 'face' };
+    const ici = faceGroup(wf(mat));
+    expect(ici.variant).toBe(variantOf({ x: 3, y: 4 }, 'face'));
+    const vus = new Set<number>();
+    for (let x = 0; x < 40; x++) for (let y = 0; y < 40; y++) vus.add(variantOf({ x, y }, 'face'));
+    expect(vus.size).toBe(N_VARIANTS); // les 3 variantes se rencontrent bien sur une carte
   });
 });

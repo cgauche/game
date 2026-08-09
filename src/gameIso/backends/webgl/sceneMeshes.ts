@@ -14,9 +14,12 @@
 import * as THREE from 'three';
 import { buildFloors } from '../../builders/floors';
 import { buildWalls } from '../../builders/walls';
-import { buildRoofs } from '../../builders/roofs';
+import { buildRoofs, ROOF_SLOPE_M } from '../../builders/roofs';
 import { buildProps } from '../../builders/props';
-import type { Face, SceneEl } from '../../builders/types';
+import type { Face, RoofEl, SceneEl } from '../../builders/types';
+import { roofCourseStepM, variantOf } from '../../detail/courses';
+import type { DetailRecipe } from '../../detail/types';
+import type { PeriodKind } from './periodTexture';
 import { facesGeometry, polyNormal } from './worldTris';
 import { faceSurface, tintVarFactor } from './faceColors';
 import { BB_W, BB_H } from '../../pov/billboardCore';
@@ -54,17 +57,100 @@ function faceEls(scene: Scene): SceneEl[] {
 /** Faces MONDE de la scène dans l'ordre de peinture des builders, chacune avec la clé de case qui porte
  *  sa teinte de visibilité — la liste EXACTE que `buildWorldGeometry` fusionne (les gardes s'y adossent
  *  au lieu de la reconstituer). */
-export function worldFaces(scene: Scene): { face: Face; cell: SceneEl['cell']; cellKey: string }[] {
-  const out: { face: Face; cell: SceneEl['cell']; cellKey: string }[] = [];
+export interface WorldFace {
+  face: Face;
+  cell: SceneEl['cell'];
+  cellKey: string;
+  /** Pente (m) de la nappe dont la face vient — un PAN de toit seulement : le pas de rang, donc
+   *  l'échelle verticale de sa texture, en dépend (`roofCourseStepM`). */
+  pitchM?: number;
+}
+
+export function worldFaces(scene: Scene): WorldFace[] {
+  const out: WorldFace[] = [];
   for (const el of faceEls(scene)) {
     if (!('faces' in el)) continue;
     const cellKey = `${el.cell.x},${el.cell.y},${el.cell.z}`;
-    for (const face of el.faces) out.push({ face, cell: el.cell, cellKey });
+    const pitchM = (el as RoofEl).pitch;
+    for (const face of el.faces) out.push({ face, cell: el.cell, cellKey, pitchM });
   }
   return out;
 }
 
-export function buildWorldGeometry(scene: Scene, mpt: number, tintAt: TintAt): THREE.BufferGeometry {
+/** GROUPE DE SURFACE : la maille de fusion du monde. Une géométrie UNIQUE porte toute la scène (jamais
+ *  un mesh par face) et se découpe en `groups` three — un par (surface × variante d'anti-périodicité ×
+ *  échelle de période), plus LE groupe nu des faces sans appareillage. Le nombre de dessins passe de 1
+ *  à quelques dizaines : le prix ASSUMÉ d'une texture répétée qui ne se répète pas à l'œil. */
+export interface SurfaceGroup {
+  /** Identité du groupe (= clé de cache de sa texture). */
+  key: string;
+  /** `null` = groupe NU : aucune période, la couleur de sommet suffit. */
+  kind: PeriodKind | null;
+  surfaceKey?: string;
+  variant?: number;
+  /** Couleur de base de la surface — le masque de période n'en garde que des rapports. */
+  color?: string;
+  recipe?: DetailRecipe;
+  /** Taille MÉTRIQUE de la période SUR CETTE SURFACE (le `v` d'un pan de toit suit sa pente). */
+  periodM?: { u: number; v: number };
+}
+
+const NU: SurfaceGroup = { key: 'nu', kind: null };
+
+/** Groupe d'une face : sa surface (couleur + recette), sa variante de période, et l'échelle métrique de
+ *  celle-ci. Le SOL a une période propre, seedée à la seule recette (`groundCoursesPeriod`) : une seule
+ *  variante. Un PAN DE TOIT garde la largeur de période de l'appareillage mais son pas de rang vient de
+ *  SA pente — deux nappes de pentes différentes ne partagent donc pas un groupe. */
+export function faceGroup(wf: WorldFace): SurfaceGroup {
+  const surface = faceSurface(wf.face);
+  const c = surface.recipe?.courses;
+  if (!surface.uvScaleM || !c) return NU;
+  const { domain, part } = wf.face.material;
+  const kind: PeriodKind = domain === 'terrain' ? 'ground' : 'wall';
+  const variant = kind === 'ground' ? 0 : variantOf(wf.cell, part ?? domain);
+  const periodM =
+    domain === 'roof'
+      ? { u: surface.uvScaleM.u, v: 2 * roofCourseStepM(wf.pitchM, c.hM, ROOF_SLOPE_M) }
+      : surface.uvScaleM;
+  return {
+    key: `${surface.surfaceKey}|${kind}|v${variant}|p${periodM.v.toFixed(4)}`,
+    kind,
+    surfaceKey: surface.surfaceKey,
+    variant,
+    color: surface.color,
+    recipe: surface.recipe,
+    periodM,
+  };
+}
+
+/** Découpage d'une liste de faces en groupes de surface : les groupes DANS L'ORDRE d'émission, et pour
+ *  chacun les index de ses faces (dans l'ordre de peinture des builders — le rang coplanaire, lui, s'est
+ *  calculé sur la liste entière AVANT tout regroupement). */
+export function surfaceGrouping(listées: readonly WorldFace[]): { groups: SurfaceGroup[]; faceIndices: number[][] } {
+  const groups: SurfaceGroup[] = [];
+  const faceIndices: number[][] = [];
+  const rang = new Map<string, number>();
+  listées.forEach((wf, i) => {
+    const g = faceGroup(wf);
+    let k = rang.get(g.key);
+    if (k === undefined) {
+      k = groups.length;
+      rang.set(g.key, k);
+      groups.push(g);
+      faceIndices.push([]);
+    }
+    faceIndices[k].push(i);
+  });
+  return { groups, faceIndices };
+}
+
+/** La géométrie fusionnée porte ses groupes de surface (index = `materialIndex` de `geometry.groups`) :
+ *  c'est le contrat entre le maillage et les matériaux que l'écran monte. */
+export interface WorldGeometry extends THREE.BufferGeometry {
+  userData: { surfaceGroups: SurfaceGroup[] };
+}
+
+export function buildWorldGeometry(scene: Scene, mpt: number, tintAt: TintAt): WorldGeometry {
   const listées = worldFaces(scene);
   const faces = listées.map((f) => f.face);
   const tints = listées.map((f) => tintAt(f.cellKey));
@@ -86,7 +172,8 @@ export function buildWorldGeometry(scene: Scene, mpt: number, tintAt: TintAt): T
   //    l'EXTÉRIEUR de la carte si verticale.
   const cx = ((scene.dimensions.w - 1) / 2) * mpt;
   const cz = ((scene.dimensions.h - 1) / 2) * mpt;
-  geoms.forEach((g, i) => {
+  const pousser = (i: number) => {
+    const g = geoms[i];
     // La couleur de sommet porte l'albédo du matériau × la visibilité de la case × la variance de
     // teinte de la surface : un aplat répété tuile après tuile se lit sinon comme une nappe de peinture.
     const surface = faceSurface(faces[i]);
@@ -106,14 +193,25 @@ export function buildWorldGeometry(scene: Scene, mpt: number, tintAt: TintAt): T
         uv1s.push(g.uv1[t][k].u, g.uv1[t][k].v);
       }
     });
-  });
-  const geometry = new THREE.BufferGeometry();
+  };
+  // Les faces sortent GROUPÉES par surface (un groupe = un dessin) ; à l'intérieur d'un groupe, l'ordre
+  // de peinture des builders est conservé.
+  const { groups, faceIndices } = surfaceGrouping(listées);
+  const spans: [number, number][] = [];
+  for (const idx of faceIndices) {
+    const début = positions.length / 3;
+    for (const i of idx) pousser(i);
+    spans.push([début, positions.length / 3 - début]);
+  }
+  const geometry = new THREE.BufferGeometry() as WorldGeometry;
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   // `uv` = maille MONDE en mètres (textures répétées) ; `uv1` = face d'origine en [0,1]² (ornements
   // cuits par face). Les deux jeux voyagent dans LA géométrie fusionnée — jamais un mesh par surface.
   geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
   geometry.setAttribute('uv1', new THREE.Float32BufferAttribute(uv1s, 2));
+  spans.forEach(([début, count], k) => geometry.addGroup(début, count, k));
+  geometry.userData = { surfaceGroups: groups };
   geometry.computeVertexNormals();
   geometry.computeBoundingBox();
   return geometry;

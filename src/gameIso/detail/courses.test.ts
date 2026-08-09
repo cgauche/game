@@ -6,6 +6,7 @@ import {
   groundCoursesPeriod,
   groundPeriodM,
   patternWM,
+  roofCourseStepM,
   rowBoundaries,
   GROUND_ROWS,
   type Courses,
@@ -148,5 +149,36 @@ describe('groundCoursesPeriod — le tracé d’une période de SOL', () => {
 
   it('DÉTERMINISTE au seed : deux appels rendent le même tracé', () => {
     expect(groundCoursesPeriod(PIERRE, coursesKey(PIERRE))).toEqual(sol);
+  });
+});
+
+describe('roofCourseStepM — le pas de rang d’un PAN suit SA pente', () => {
+  const HM = PIERRE.hM;
+
+  it('sans pente déclarée : la pente de référence, découpée en un nombre ENTIER de rangs', () => {
+    const slope = 1.7;
+    const step = roofCourseStepM(undefined, HM, slope);
+    expect(slope / step).toBeCloseTo(Math.round(slope / step), 10);
+    expect(step).toBeCloseTo(slope / Math.max(1, Math.round(slope / HM)), 10);
+  });
+
+  it('avec pente : le rang ne se coupe jamais en deux à l’arêtier (compte entier, pas ajusté)', () => {
+    for (const pitch of [0.6, 1.2, 2.4, 3.3]) {
+      const step = roofCourseStepM(pitch, HM, 1.7);
+      const n = pitch / step;
+      expect(n).toBeCloseTo(Math.round(n), 10);
+      expect(Math.round(n)).toBeGreaterThanOrEqual(1);
+      // Le pas RESTE proche de la hauteur de rang de la recette (jamais un rang de nature différente).
+      expect(step).toBeGreaterThan(HM / 2);
+      expect(step).toBeLessThan(HM * 2);
+    }
+  });
+
+  it('deux pentes différentes donnent des pas DIFFÉRENTS (l’échelle est par ÉLÉMENT)', () => {
+    expect(roofCourseStepM(1.2, HM, 1.7)).not.toBeCloseTo(roofCourseStepM(1.45, HM, 1.7), 6);
+  });
+
+  it('une pente NULLE ne fabrique pas de rang (pas nul, jamais une division par zéro)', () => {
+    expect(roofCourseStepM(0, HM, 1.7)).toBe(0);
   });
 });
