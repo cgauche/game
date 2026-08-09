@@ -19,7 +19,7 @@
 - [Escalade, Saut, Chute — voir combat.md](#escalade-saut-chute)
 - [Voyage à pied : vitesse, durée, marche forcée](#voyage-a-pied)
 - [Transports payants : Diligence, Barge, Fiacre, Ferry](#transports-payants)
-- [Montures : allures, endurance, incidents](#montures)
+- [Montures : allures, endurance, incidents, sellerie](#montures)
 - [Véhicules tirés : conduite, incidents, tableau](#vehicules)
 - [Encombrement et fatigue de voyage](#encombrement-et-fatigue-de-voyage)
 - [Péripéties de voyage (LdB)](#peripeties-ldb)
@@ -296,6 +296,20 @@ Chevaucher jusqu'à réparation. EDOC 07 l.171-174.
 | Cheval de guerre lourd (Destrier) | 230 CO* | 20 | Limitée |
 
 \* Prix peut doubler ou tripler en temps de guerre.
+
+### Sellerie — selle et harnais
+
+**Source :** LDB 70 l.7-25 · LDB 08 l.551-557
+
+| Objet | Coût | Enc | Contenu | Disponibilité |
+|---|:--:|:--:|:--:|:--:|
+| Selle et Harnais | 6 CO | 4 | – | Commune |
+
+Les Possessions d'un Niveau de Carrière monté nomment la bête ET sa sellerie (LDB 08 l.557,
+Capitaine de la Milice — Or 1) :
+
+> **Possessions :** cheval de selle avec selle et harnais, chapeau de qualité, arme simple de
+> qualité, symbole de grade de qualité
 
 ---
 
@@ -993,7 +1007,7 @@ Pour chaque **semaine (8 jours)** en mer, chaque Personnage peut faire une Activ
 **Voir aussi :** [Entretien du navire (Activité en mer) (MDG)](#entretien-du-navire-activité-en-mer-mdg), [Commerce maritime (MDG)](#commerce-maritime-mdg), [`deplacement.md`](deplacement.md#activités-de-voyage-1-par-étape) (Activités de Voyage EDOC).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.266-306) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `schema`, `SEA_WEEK_DAYS`, `seaActivitiesCatalog`, `pieces-detachees-de-navire`, `surcharge-3`, `sellRefusal`, `bankWithdrawOutcome`, +27 — `src/data/schemas/defs/sea-cargo.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, +7 fichiers
+- `MDG 15` (l.266-306) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `schema`, `SEA_WEEK_DAYS`, `seaActivitiesCatalog`, `pieces-detachees-de-navire`, `port-buy-bargain`, `surcharge-3`, `sellRefusal`, +28 — `src/data/combat-stakes.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/engine/activities.ts`, +8 fichiers
 
 ---
 
@@ -1006,7 +1020,7 @@ Activité de réparation/usure, de préférence au port. En mer : **–20** supp
 **Voir aussi :** [Réparer un navire (MDG)](#réparer-un-navire-mdg), [Salissures de coque (MDG)](#salissures-de-coque-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg) (Entretien).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.302-306) → `SeaActivitiesModal`, `BankDeposit`, `seaActivitiesCatalog`, `pieces-detachees-de-navire`, `surcharge-3`, `bankWithdrawOutcome`, `bankWithdrawInner`, `GameState`, `PendingCascade` — `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/pendings.ts`, `src/state/seaActivities.ts`, +2 fichiers
+- `MDG 15` (l.302-306) → `SeaActivitiesModal`, `BankDeposit`, `seaActivitiesCatalog`, `pieces-detachees-de-navire`, `port-buy-bargain`, `surcharge-3`, `bankWithdrawOutcome`, `bankWithdrawInner`, `GameState`, `PendingCascade` — `src/data/combat-stakes.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/pendings.ts`, +3 fichiers
 
 ---
 
@@ -1027,5 +1041,5 @@ Deux actes : **acheter** une cargaison, la **vendre** ailleurs. Chaque port a un
 **Voir aussi :** [Longs voyages : résolution et vitesse (MDG)](#longs-voyages--résolution-et-vitesse-mdg), [Activités en mer (MDG)](#activités-en-mer-mdg) (Commerce d'opportunité), [`merchantFlow.ts`](../../src/state/merchantFlow.ts) (Marchandage).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.40-47, l.309-436) → `SeaActivitiesModal`, `l-anguille`, `rollSeasonalCargo`, `schema`, `PORT_PRODUITS`, `PortHeader`, `cereales`, `MapPlace`, `marienburg`, `armes`, +47 — `src/data/donnees.manifest.json` ⚠hors-app, `src/data/index.ts`, `src/data/naval-ports.json`, `src/data/schemas/defs/naval-ports.ts`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, +19 fichiers
+- `MDG 15` (l.40-47, l.309-436) → `SeaActivitiesModal`, `l-anguille`, `rollSeasonalCargo`, `schema`, `PORT_PRODUITS`, `PortHeader`, `cereales`, `MapPlace`, `marienburg`, `PortOffer`, +53 — `src/data/combat-stakes.json`, `src/data/donnees.manifest.json` ⚠hors-app, `src/data/index.ts`, `src/data/naval-ports.json`, `src/data/schemas/defs/naval-ports.ts`, `src/data/schemas/defs/sea-cargo.ts`, +21 fichiers
 
