@@ -77,6 +77,13 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    la table « Primitives partagées » + `docs/charte-ui.md`. Vécu 2026-07-12 (« c'est de la
    folie ») : le hub composait le squelette (ScreenShell/MasterDetail) mais des feuilles à la
    main → noir-sur-noir, lignes nues, focus UA. Cliquet #373 garde la classe.
+   **Clause MISE AUX NORMES (credo « zéro dette », demande user 2026-08-09 : « le credo demande
+   de toute maniere a mettre au norme les zones qu'on touche et autour ») : tout brief de codeur
+   porte** — « la zone touchée sort AUX NORMES : nommage COHÉRENT (un concept = un terme, la
+   langue du fichier — jamais deux noms pour la même chose), duplication adjacente MUTUALISÉE ou
+   ticketée, morts adjacents purgés ». Et tout juge de cumul porte la lentille jumelle. Vécu
+   fondateur : `worldTris.ts` né avec `uprightWidthM` ET `montantWidthM` pour le MÊME concept —
+   passé sous QUATRE juges qui regardaient l'architecture, pas la langue.
 3. **Dispatch** — l'effort de chaque étage est MAÎTRISÉ, jamais subi. Trois canaux : Workflow
    `agent()` (opts `model` + `effort` par appel — le seul contrôle par appel) ; tool Agent
    (`model` seul — l'effort vient de la définition du type dans `.claude/agents/*.md`, sinon
