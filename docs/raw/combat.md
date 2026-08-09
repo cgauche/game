@@ -143,7 +143,7 @@ Hors Combat, la mesure du temps des actions est **bien plus flexible**. Mais il 
 **Voir aussi** : Surprise et État Surpris ; Effectuer votre Tour (Action + Mouvement) ; Tests et Degrés de Réussite (DR) ; Tests opposés ; Tests étendus ; Talents affectant l'ordre de combat (Combat instinctif).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 13` (l.11-15, l.19-29, l.31, l.33, l.37-42, l.43, l.46-47, l.50) → `initiativeTitle`, `rollInitiative`, `secondsPerRound`, `resolveSpell`, `ambush-surprise`, `OPTIONAL_RULES`, `pickDoctrine`, `applySurprise`, `EncounterDef`, `initiativeOrder`, +3 — `src/data/combat-stakes.json`, `src/engine/combat.ts`, `src/engine/policy.ts`, `src/engine/suffocation.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, +6 fichiers
+- `LDB 13` (l.11-15, l.19-29, l.31, l.33, l.37-42, l.43, l.46-47, l.50) → `initiativeTitle`, `rollInitiative`, `secondsPerRound`, `resolveSpell`, `ambush-surprise`, `OPTIONAL_RULES`, `pickDoctrine`, `applySurprise`, `EncounterDef`, `embuscade-surprise`, +4 — `src/data/combat-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/policy.ts`, `src/engine/suffocation.ts`, `src/state/ai.ts`, +7 fichiers
 
 ---
 
@@ -210,7 +210,7 @@ L'État *Surpris* signifie : « Vous avez été pris au dépourvu et vous n'ête
 **Voir aussi** : États (Surpris, À terre, Inconscient, Fatigué), Détermination et Résilience, Tests opposés, Initiative et déroulement d'un Round, Perception / Discrétion, Talent Vigilance.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 13` (l.21, l.48-59, l.62-65, l.67-69, l.71) → `initiativeTitle`, `rollInitiative`, `secondsPerRound`, `ExecCtx`, `triggeredTestStepId`, `resolveSpell`, `frozenOpposedBatchStep`, `ambush-surprise`, `OPTIONAL_RULES`, `rollBatchParticipant`, +10 — `src/data/combat-stakes.json`, `src/engine/combat.ts`, `src/engine/policy.ts`, `src/engine/suffocation.ts`, `src/state/ai.ts`, `src/state/cascade.ts`, +10 fichiers
+- `LDB 13` (l.21, l.48-59, l.62-65, l.67-69, l.71) → `initiativeTitle`, `rollInitiative`, `secondsPerRound`, `ExecCtx`, `triggeredTestStepId`, `resolveSpell`, `frozenOpposedBatchStep`, `ambush-surprise`, `OPTIONAL_RULES`, `rollBatchParticipant`, +11 — `src/data/combat-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/policy.ts`, `src/engine/suffocation.ts`, `src/state/ai.ts`, +11 fichiers
 - `LDB 16` (l.132-139) → `STABLE_COND_KINDS`, `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `hemorragique`, `chooseEnemyAction`, `inconscient`, +6 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combat/flowEval.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
 - `LDB 17` (l.61) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, +73 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, +39 fichiers
 - sans code : `NADJ 5` (l.117), `NADJ 6` (l.148)
@@ -298,7 +298,7 @@ Pour votre **Action**, vous pouvez vous mettre **Sur la Défensive** : choisisse
 **Voir aussi** : Structure d'un Round et Initiative ; Surprise et État Surpris ; Attaquer (toucher, localisation, dégâts) ; Avantage en combat ; Déplacement détaillé (Saut, Escalade, Fuite, Poursuite) ; Engagé et Corps à corps.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 13` (l.14-15, l.74-88, l.90, l.93-98, l.105-107, l.108-110, l.117-119, l.170-171) → `ClimbPlan`, `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `engage`, `secondsPerRound`, `ExecCtx`, `entityBlockedAt`, `useHoverTargeting`, `useAttackJetProps`, +34 — `src/data/combat-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, `src/engine/engagement.ts`, `src/engine/policy.ts`, `src/engine/suffocation.ts`, +21 fichiers
+- `LDB 13` (l.14-15, l.74-88, l.90, l.93-98, l.105-107, l.108-110, l.117-119, l.170-171) → `ClimbPlan`, `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `engage`, `secondsPerRound`, `ExecCtx`, `entityBlockedAt`, `useHoverTargeting`, `useAttackJetProps`, +35 — `src/data/combat-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, `src/engine/engagement.ts`, `src/engine/policy.ts`, `src/engine/suffocation.ts`, +21 fichiers
 - `LDB 15` (l.3-4, l.12-16, l.18-32, l.34-42, l.44-54) → `METRES_PER_LEVEL`, `ClimbPlan`, `resolveRun`, `RunModal`, `reachTiles`, `EntityToken`, `gainAdvantage`, `DisengageModal`, `planClimb`, `occupied`, +43 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, `src/engine/advantage.ts`, +26 fichiers
 
 ---
@@ -3251,7 +3251,7 @@ La créature vomit un flot de corruption corrosive. **Pendant son tour, au prix 
 **Voir aussi** : Traits de créature (vue d'ensemble) · États (Sonné, Enflammé, Empoisonné, Brisé, Assourdi, Empêtré) · Tentacules et attaques naturelles · Zones d'effet et Lignes de vue · Avantage en combat · Le sort « Souffle » (Magie des Arcanes)
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.137-138, l.168-169, l.289-290, l.317-331, l.442-447) → `scene`, `planClimb`, `scenario`, `creatureWeapon`, `TraverseCapability`, `useTrampleJetProps`, `Formula`, `sizeDamageMultiplier`, `maxWounds`, `moveEnv`, +101 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +22 fichiers
+- `LDB 85` (l.137-138, l.168-169, l.289-290, l.317-331, l.442-447) → `scene`, `planClimb`, `scenario`, `creatureWeapon`, `TraverseCapability`, `useTrampleJetProps`, `Formula`, `sizeDamageMultiplier`, `moveEnv`, `maxWounds`, +101 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +22 fichiers
 
 ---
 

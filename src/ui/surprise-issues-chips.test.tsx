@@ -21,6 +21,7 @@ import { testScene } from '../scenes/test-fixture';
 import { runCombatFlow } from '../state/combat/triggeredTest';
 import { testFlow, EMPTY_FLOW } from '../state/flow';
 import { CascadeBody } from './CascadeModal';
+import { resolveStake, combatStakeRef, regles } from '../data';
 import type { BattleState } from '../state/store';
 import type { Combatant, TalentInstance } from '../engine/types';
 
@@ -106,6 +107,24 @@ describe('#1117 — la Surprise DIT ses issues en chips d’ops, avant comme apr
     // Le gabarit d'enjeu supprimé ne revient par aucune porte.
     expect(host.textContent).not.toContain('l’embuscade est repérée');
     expect(host.textContent).not.toContain('sauf si le Talent Vigilance');
+  });
+
+  /**
+   * DIVISION ⓘ / chip (arbitrage user 2026-08-09, en jeu : « Pourquoi la popin "Surprise" indique l'état
+   * surpris, de souvenir ce jet fait référence à une règle non ? »). Le ⓘ du titre ouvre la RÈGLE QUI
+   * EXIGE le jet (LDB 13 l.67-71, fiche `regles/embuscade-surprise` — c'est elle qui explique pourquoi
+   * un SEUL embusqué tire) ; la chip d'issue ouvre la CONSÉQUENCE appliquée (l'État Surpris). L'enjeu
+   * ne pointait que l'État : la conséquence tenait lieu de règle.
+   */
+  it('le ⓘ du titre ouvre la RÈGLE d’embuscade, la chip ouvre l’État — deux portes distinctes', () => {
+    const stake = resolveStake(combatStakeRef('ambushSurprise'));
+    expect(stake.rule, 'le foyer du jet est la règle qui l’EXIGE, pas son issue').toEqual({ category: 'regles', id: 'embuscade-surprise' });
+    // La fiche existe, et son texte est le passage du Source qui exige le Test opposé.
+    const fiche = regles.find((r) => r.id === 'embuscade-surprise')!;
+    expect(fiche.desc).toContain('Test opposé de **Discrétion/Perception**');
+    expect(fiche.desc, 'le passage dit POURQUOI un seul embusqué tire').toContain('le Personnage ayant la Discrétion la plus faible');
+    // Le Test de Vigilance, lui, garde son foyer sur le TALENT : c'est le talent qui en énonce la règle.
+    expect(resolveStake(combatStakeRef('ambushVigilance')).rule).toEqual({ category: 'talents', id: 'vigilance' });
   });
 
   it('APRÈS le jet perdu : le verdict est le MÊME bloc, filtré à la branche réalisée', () => {
@@ -199,8 +218,8 @@ describe('#1117 — la Surprise est UNE bande : un jet d’embusqueur, N guetteu
     render();
     // 4 rangées : l'embusqueur (témoin, figé) + les 3 guetteurs.
     expect(host.querySelectorAll('.prow').length).toBe(4);
-    // …et un bloc d'issues PAR guetteur (la rangée témoin n'en porte pas : elle ne décide de rien).
-    expect(issues().length).toBe(3);
+    // …et UN SEUL bloc d'issues : les 3 guetteurs annoncent la même chose, la bande le dit une fois.
+    expect(issues().length, 'annonce MUTUALISÉE : une promesse identique ne se répète pas par ligne').toBe(1);
     expect(host.textContent, 'le sous-titre séquentiel a disparu').not.toContain('jet 1/');
   });
 
@@ -264,5 +283,38 @@ describe('#1117 — la Surprise est UNE bande : un jet d’embusqueur, N guetteu
     act(() => { g().cascadeNext(); });
     const surpris = g().battle!.combatants.find((c) => c.id === 'h')!.conditions.some((x) => x.id === 'surpris');
     expect(surpris, 'le guetteur a REMPORTÉ son Test : aucun État Surpris ne doit être posé').toBe(false);
+  });
+
+  /**
+   * ANNONCE MUTUALISÉE (arbitrage user 2026-08-09, en jeu) — « "Réussite : rien. / Échec : Surpris" sur
+   * chaque ligne de test c'est normal ? » : non. Une promesse IDENTIQUE se dit UNE fois, en tête de bande.
+   * Ce qui reste par rangée : la rangée qui DIVERGE avant le jet, et le verdict d'une rangée résolue.
+   */
+  it('une rangée DIVERGENTE (Vigilance) garde son bloc, les autres restent mutualisées', () => {
+    ambush([{ talentId: 'vigilance', times: 1 }], 3);
+    render();
+    // 2 blocs : l'annonce de bande (h2/h3) + le bloc PROPRE du porteur de Vigilance.
+    expect(issues().length, 'la divergence ne se fond pas dans l’annonce commune').toBe(2);
+    // L'annonce commune porte les DEUX issues, chip Surpris comprise.
+    const commun = issues().find((h) => h.includes('Échec'))!;
+    expect(commun, 'l’annonce de bande dit l’échec des non-porteurs').toContain('Surpris');
+    // Le bloc du porteur, lui, ne PROMET rien sur l'échec (un second Test décide) : il ne dit que la réussite.
+    const divergent = issues().find((h) => !h.includes('Échec'))!;
+    expect(divergent, 'le bloc divergent reste rendu').toContain('Réussite');
+  });
+
+  it('jets PARTIELS : verdicts par rangée jouée, annonce maintenue pour les rangées restantes, puis effacée', () => {
+    ambush([], 3);
+    lancer('h'); lancer('h2');
+    render();
+    // 2 verdicts individuels + l'annonce, toujours due aux rangées qui n'ont pas joué.
+    expect(issues().length, '2 verdicts + l’annonce des rangées restantes').toBe(3);
+    expect(issues().filter((h) => h.includes('Réussite') && h.includes('Échec')).length, 'l’annonce n’est plus que pour les restants').toBe(1);
+
+    lancer('h3');
+    render();
+    // Plus rien à annoncer : 3 verdicts, aucune promesse de bande.
+    expect(issues().length, 'toutes les rangées ont joué : l’annonce disparaît').toBe(3);
+    expect(issues().every((h) => !(h.includes('Réussite') && h.includes('Échec'))), 'aucune promesse ne subsiste après le dernier jet').toBe(true);
   });
 });

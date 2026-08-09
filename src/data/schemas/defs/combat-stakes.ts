@@ -30,7 +30,10 @@ export const schema = z.array(
       /** FORME DÉCLARÉE (garde `night-stake-form.test.ts`, étendue à ce dataset) — qualifie le gabarit :
        *  présente si et seulement s'il y en a un. */
       form: z.enum(['verbatim', 'descripteur']).optional(),
-      /** Id du FOYER de la règle (entité porteuse, ou fiche de `regles.json` à défaut). */
+      /** Id du FOYER de la règle (entité porteuse, ou fiche de `regles.json` à défaut). Le foyer est la
+       *  règle qui EXIGE le jet, JAMAIS son issue : le ⓘ du titre ouvre cette règle, les chips d'issue
+       *  ouvrent la conséquence appliquée (arbitrage user 2026-08-09 : « ce jet fait référence à une
+       *  règle non ? » — la Surprise pointait l'État Surpris, qui n'est que ce qu'on y perd). */
       rule: z.string().optional(),
       /** Catégorie Codex du foyer (`'regles'`, `'etats'`, `'maladies'`…). */
       ruleCategory: z.string().optional(),

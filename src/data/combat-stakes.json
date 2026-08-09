@@ -272,8 +272,8 @@
     "id": "ambush-surprise",
     "label": "Embuscade — repérer les embusqués",
     "kind": "ambushSurprise",
-    "rule": "surpris",
-    "ruleCategory": "etats",
+    "rule": "embuscade-surprise",
+    "ruleCategory": "regles",
     "source": {
       "book": "livre-de-base",
       "page": 157,

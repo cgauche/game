@@ -104,3 +104,29 @@ export function hasStakeRule(node: ReactNode): boolean {
 export function stakeRuleOf(stake: StakeRef) {
   return resolveStake(stake).rule;
 }
+
+/** Égalité STRUCTURELLE de deux valeurs pur-donnée (op, formule imbriquée, tableau) — comparaison par
+ *  CLÉS (ordre des propriétés indifférent) et par POSITION dans un tableau (l'ordre des ops d'une
+ *  branche est celui de sa lecture, il porte du sens). Aucune sérialisation : un `JSON.stringify`
+ *  rendrait le verdict dépendant de l'ordre d'écriture des clés. PURE. */
+function sameData(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (Array.isArray(a) || Array.isArray(b)) {
+    return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((x, i) => sameData(x, b[i]));
+  }
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
+  const ka = Object.keys(a as object);
+  const kb = Object.keys(b as object);
+  return ka.length === kb.length
+    && ka.every((k) => k in (b as object) && sameData((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));
+}
+
+/** Deux rangées ANNONCENT-elles la même chose ? Compare les ops CERTAINES d'une branche par leur
+ *  STRUCTURE (refs et valeurs), jamais par leur rendu : c'est ce qui autorise une fenêtre MULTI à
+ *  n'énoncer qu'UNE fois une promesse commune (« à la table, le MJ l'annonce une fois »). Une branche
+ *  INDÉCIDABLE (`undefined` — un second jet décide) n'est PAS la même chose qu'une branche vide
+ *  (`[]` = « rien ») : la divergence par SILENCE reste une divergence. PURE. */
+export function sameCertainOps(a: GameOp[] | undefined, b: GameOp[] | undefined): boolean {
+  if (a === undefined || b === undefined) return a === b;
+  return sameData(a, b);
+}

@@ -5,7 +5,7 @@ import { availableResistance } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { VsHeader } from './VsHeader';
-import { StakeRule, OutcomeNote } from './StakeNote';
+import { StakeRule, OutcomeNote, sameCertainOps } from './StakeNote';
 import { branchCertainOps } from '../state/combat/flowEval';
 import { resolveStake } from '../data';
 import { useAttackJetProps } from './jetProps/useAttackJetProps';
@@ -569,6 +569,28 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // propre cycle Chance/+1 DR/Pacte/Résilience ; « Continuer » n'agit QUE quand `stepReady` (tous les
   // interactifs ont un `result` — les témoins PNJ, `interactive:false`, ne freinent jamais).
   if (interaction === 'batch') {
+    // ANNONCE MUTUALISÉE de la bande (arbitrage user 2026-08-09, en jeu : « "Réussite : rien. / Échec :
+    // Surpris" sur chaque ligne de test c'est normal ? ») : une promesse IDENTIQUE répétée sur N rangées
+    // est du bruit — à la table, elle s'annonce UNE fois. Les rangées PAS ENCORE jouées qui annoncent la
+    // MÊME chose (égalité STRUCTURELLE des ops certaines, `sameCertainOps` — jamais le HTML rendu) sont
+    // regroupées : leur bloc monte en tête de bande (zone `extra`, sous l'enjeu) et disparaît de leurs
+    // lignes. Restent PAR RANGÉE : (a) une rangée qui DIVERGE avant le jet (porteur de Vigilance : sa
+    // branche d'échec est indécidable, donc silencieuse) ; (b) le VERDICT d'une rangée résolue, individuel
+    // par nature. Quand toutes les rangées ont joué, l'annonce n'a plus d'objet et s'efface.
+    const bandOps = (partId: string) => {
+      const a = pool.find((c) => c.id === partId);
+      return { onSuccess: branchCertainOps(cur.meta?.onSuccess, a, stepCaster), onFail: branchCertainOps(cur.meta?.onFail, a, stepCaster) };
+    };
+    const groupes: { ops: ReturnType<typeof bandOps>; ids: string[] }[] = [];
+    for (const part of cur.participants!.filter((x) => !x.result)) {
+      const o = bandOps(part.id);
+      const g = groupes.find((x) => sameCertainOps(x.ops.onSuccess, o.onSuccess) && sameCertainOps(x.ops.onFail, o.onFail));
+      if (g) g.ids.push(part.id); else groupes.push({ ops: o, ids: [part.id] });
+    }
+    // Le groupe HISSÉ est le plus nombreux, et seulement s'il couvre ≥ 2 rangées : mutualiser une
+    // annonce unique la déplacerait loin de sa ligne sans rien économiser.
+    const mutualise = groupes.filter((g) => g.ids.length >= 2).sort((a, b) => b.ids.length - a.ids.length)[0];
+    const bandNote = mutualise ? <OutcomeNote onSuccess={mutualise.ops.onSuccess} onFail={mutualise.ops.onFail} /> : null;
     // Rangées-participants via le builder mutualisé (#328) : la modale ne fournit QUE la PRÉSENTATION
     // (label/base/mods déjà résolus à la construction, GÉNÉRIQUES) + son bundle d'actions de flux ; les
     // dérivations d'éligibilité (rerollable/darkPactable/forceShow) vivent dans `buildParticipantRows`.
@@ -586,9 +608,10 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
           ? { combatant: actor, d: { label, base: part.base, mods: part.mods, ...(part.difficulty ? { difficulty: part.difficulty } : {}), modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } }
           : { combatant: actor, pending: { label, base: part.base, mods: part.mods ?? [], ...(part.difficulty ? { difficulty: part.difficulty } : {}) } };
       },
-      // ISSUES de la rangée (#1117) : la MÊME dérivation que l'étape MONO, mais PAR PARTICIPANT — la
-      // bande annonce à chacun ce que SON jet met en jeu, puis filtre à la branche qu'il a tranchée.
-      issues: (part) => rowOutcomeNote(part.id, part.result),
+      // ISSUES de la rangée (#1117) : la MÊME dérivation que l'étape MONO, mais PAR PARTICIPANT — le
+      // VERDICT d'une rangée résolue et la promesse d'une rangée DIVERGENTE. Une rangée dont l'annonce est
+      // montée en tête de bande n'a plus rien à dire ici : elle se tait plutôt que de répéter.
+      issues: (part) => (!part.result && mutualise?.ids.includes(part.id) ? undefined : rowOutcomeNote(part.id, part.result)),
       // Test ÉTENDU d'une rangée (cartographie de voyage) : DONNÉE seule — `RollRow` rend la barre (site
       // UNIQUE), visible AVANT et après le jet, persistante (arbitrage user 2026-07-11).
       extendedDrOf: (part) => extendedDrData(part.extendedDrDone, part.extendedDrTarget, part.result),
@@ -608,6 +631,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         title={titleNode}
         subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length })}
         {...stakeProps}
+        extra={bandNote}
         rolled={ready}
         rows={[...doneWitnessRows, ...(oppRow ? [oppRow] : []), ...rows]}
         actions={batchActions}

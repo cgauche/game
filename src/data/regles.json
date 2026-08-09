@@ -1,5 +1,15 @@
 [
   {
+    "id": "encombrement",
+    "label": "Surchargé",
+    "desc": "Les Personnages qui dépassent leur capacité d'Encombrement peuvent être ralentis, et seront fatigués par le voyage. La réduction de Mouvement et la Fatigue du voyage résultant de l'Encombrement se cumulent avec toutes les pénalités d'Armure. De plus, chaque fois que vous gagnez un État *Exténué* en étant Surchargé, pour une raison autre que la Surcharge, gagnez +1 État supplémentaire.\n\n| Enc | Pénalité |\n|---|---|\n| Jusqu'à la limite | Pas de pénalité |\n| Jusqu'au double de la limite | -1 Mouvement (min : 3), -10 en Agilité, +1 Fatigue du voyage |\n| Jusqu'au triple de la limite | -2 Mouvement (min : 2), -20 en Agilité, +2 Fatigue du voyage |\n| Plus de x 3 | Vous ne pouvez pas vous déplacer. |",
+    "source": {
+      "book": "livre-de-base",
+      "page": 293,
+      "note": "LDB 61 « Surchargé »"
+    }
+  },
+  {
     "id": "soutien",
     "label": "Soutien",
     "desc": "Dans certaines situations, il est évident que plusieurs Personnages œuvrant de concert à une même tâche ont plus de chance d'y parvenir qu'un Personnage isolé. Avec l'accord du MJ, un Personnage peut apporter son soutien à un autre sur le point d'effectuer un Test. Lorsque c'est le cas, le Personnage qui possède la plus forte chance de réussite lance les dés. Chaque Personnage qui apporte son soutien octroie un bonus de +10 au Test. Ceci mis à part, le Test est effectué normalement.\n\n**Limites du Soutien**\n\nLes Joueurs peuvent se soutenir dans la plupart des cas, mais il existe certaines limites.\n\n- Pour apporter leur soutien, tous les Personnages doivent posséder au moins une Augmentation dans la Compétence utilisée pour le Test.\n- Le Personnage qui soutient doit normalement être adjacent à celui qui effectue le Test.\n- Vous ne pouvez pas soutenir les Personnages qui font des Tests pour résister à la maladie, au poison, à la peur, au danger, ou toute autre tentative que le MJ jugera inappropriée.\n- Le Personnage qui effectue le Test ne peut pas être soutenu par plus de Personnages que son propre bonus dans la Caractéristique appropriée (voir page 33).",
@@ -46,7 +56,7 @@
     "source": {
       "book": "livre-de-base",
       "page": 161,
-      "note": "LDB 13, Tableau des Difficultés de Combat — Complexe (-20)"
+      "note": "LDB 14, Tableau des Difficultés de Combat — Difficile (-20)"
     }
   },
   {
@@ -56,7 +66,7 @@
     "source": {
       "book": "livre-de-base",
       "page": 161,
-      "note": "LDB 13, Tableau des Difficultés de Combat — Accessible (+20)"
+      "note": "LDB 14, Tableau des Difficultés de Combat — Accessible (+20)"
     }
   },
   {
@@ -76,7 +86,7 @@
     "source": {
       "book": "livre-de-base",
       "page": 161,
-      "note": "LDB 13, Tableau des Difficultés de Combat — Complexe (-10)"
+      "note": "LDB 14, Tableau des Difficultés de Combat — Complexe (-10)"
     }
   },
   {
@@ -747,6 +757,16 @@
       "book": "livre-de-base",
       "page": 154,
       "note": "LDB 12 l.170-174"
+    }
+  },
+  {
+    "id": "embuscade-surprise",
+    "label": "Surprise (embuscade)",
+    "desc": "S'il y a une chance que ceux qui tendent l'embuscade soient repérés, le MJ demandera que soit effectué un Test opposé de **Discrétion/Perception**, le plus souvent entre le Personnage ayant la Discrétion la plus faible et tous les guetteurs potentiels. Si c'est le groupe en embuscade qui remporte le Test, chaque Personnage vaincu subit alors l'État *Surpris* (voir page 169).\n\nSi personne n'est surpris, le Combat se déroule normalement.\n\nSi un Personnage est surpris, il peut utiliser un Point de Détermination pour se débarrasser de l'État *Surpris* (voir page 169).",
+    "source": {
+      "book": "livre-de-base",
+      "page": 157,
+      "note": "LDB 13 l.67-71 « Surprise »"
     }
   }
 ]

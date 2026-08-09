@@ -198,14 +198,14 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `fingerLossPerRound` | 1 | `src/engine/trauma.ts:419` |
-| `amputateAfter1d10Days` | 1 | `src/engine/trauma.ts:420` |
-| `amputateSequel` | 1 | `src/engine/trauma.ts:425` |
-| `medicalAidGate` | 2 | `src/engine/trauma.ts:427` |
-| `bleedOnReinjury` | 2 | `src/engine/trauma.ts:438` |
+| `fingerLossPerRound` | 1 | `src/engine/trauma.ts:420` |
+| `amputateAfter1d10Days` | 1 | `src/engine/trauma.ts:421` |
+| `amputateSequel` | 1 | `src/engine/trauma.ts:426` |
+| `medicalAidGate` | 2 | `src/engine/trauma.ts:428` |
+| `bleedOnReinjury` | 2 | `src/engine/trauma.ts:439` |
 | `onRepeat` | **0 — JAMAIS LU** | — |
-| `onNextCritWhileCondition` | 2 | `src/engine/trauma.ts:450` |
-| `onHealGrant` | 2 | `src/engine/trauma.ts:444` |
+| `onNextCritWhileCondition` | 2 | `src/engine/trauma.ts:451` |
+| `onHealGrant` | 2 | `src/engine/trauma.ts:445` |
 
 ### `Amputation` (src/data/criticals.ts)
 
