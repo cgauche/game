@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene, type SceneEntity, type WallSeg } from '../../state/scene';
 import { buildProps } from './props';
+import { fieldHeightAt, nappeKey, resolveNappes, ROOF_SLOPE_M } from './roofs';
 
 /** BUILDER de props : clés stables, overlays de terrain, géométrie d'empreinte, vérités de scène. */
 describe('buildProps — éléments prop du pivot', () => {
@@ -170,6 +171,43 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
     // Façade (au sol devant la porte) : le toit levé ne l'occulte pas → reste.
     const tav = buildProps(withRoof('taverne', foot, [{ x: 2, y: 5, side: 'N', door: true }]), undefined, { allies: ally }).filter((e) => e.source === 'ornament');
     expect(tav.map((e) => e.ref)).toEqual(['enseigne']);
+  });
+
+  it('le faîteau se pose sur le FAÎTE MESURÉ de la nappe (le champ), jamais sur une boîte englobante (#1186)', () => {
+    // Corps 8×4 à deux pentes (fixture : 30°, 2 m/case) : la flèche vaut 2 cases de demi-portée ×
+    // la pente de la nappe. L'ornement se pose à 60 % de cette flèche au-dessus de l'égout.
+    const s = withRoof('chapelle', { x: 1, y: 1, w: 8, h: 4 });
+    const { field } = resolveNappes(s).get(nappeKey('body-chapelle', 'mass-0'))!;
+    let faite = -Infinity;
+    for (const key of field.domain) {
+      const [x, y] = key.split(',').map(Number);
+      for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]] as const)
+        faite = Math.max(faite, fieldHeightAt(field, { x: x + dx, y: y + dy }));
+    }
+    const fleche = faite - field.shape.eaveHeightM;
+    expect(fleche).toBeCloseTo(2 * field.shape.pitch, 9);
+    const [o] = orns(s);
+    expect(o.liftM!).toBeCloseTo(field.shape.eaveHeightM + 0.6 * fleche, 9);
+    // RÉFUTATION de la lecture par boîte englobante (`min(w,h)/2 × ROOF_SLOPE_M`) : elle rendait une
+    // flèche étrangère à la pente de la nappe.
+    expect(o.liftM!).not.toBeCloseTo(field.shape.eaveHeightM + 0.6 * 2 * ROOF_SLOPE_M, 3);
+  });
+
+  it("masse dont la nappe MANQUE à la carte : son ornement est omis, le reste des props se construit (aucune levée)", () => {
+    // La carte des nappes est mémoïsée par IDENTITÉ de scène : amorcée alors que la réf ne porte
+    // encore aucun corps, elle ne contient la nappe d'aucune masse posée ensuite sur cette réf.
+    const s = withRoof('chapelle', { x: 1, y: 1, w: 4, h: 4 });
+    const bodies = s.architecture!;
+    s.architecture = [];
+    s.entities = [{ id: 'p1', kind: 'prop', pos: { x: 8, y: 8 } }] as SceneEntity[];
+    s.layers[0].tiles[7 * 10 + 7] = 'bois'; // (7,7) : overlay à décor
+    expect(resolveNappes(s).size).toBe(0);
+    s.architecture = bodies;
+    expect(resolveNappes(s).get(nappeKey('body-chapelle', 'mass-0'))).toBeUndefined();
+    const els = buildProps(s);
+    expect(els.filter((e) => e.source === 'ornament')).toHaveLength(0);
+    expect(els.filter((e) => e.source === 'entity').map((e) => e.key)).toEqual(['prop:p1']);
+    expect(els.filter((e) => e.source === 'terrain').map((e) => e.key)).toEqual(['ov:7,7,0']);
   });
 });
 

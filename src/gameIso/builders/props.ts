@@ -15,7 +15,7 @@ import { terrainOverlayProp } from '../../state/terrain';
 import { buildingFeatures } from '../catalog/buildings';
 import { facadeFeatureViz } from '../catalog/facades';
 import { WALL_H_M } from '../iso';
-import { ROOF_SLOPE_M } from './roofs';
+import { fieldHeightAt, nappeKey, resolveNappes } from './roofs';
 import type { FloorView } from './floors';
 import type { PropEl } from './types';
 import { wallEnds } from './walls';
@@ -124,18 +124,27 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
   // Ornements d'IDENTITÉ par TYPE de bâtiment (clocheton/cheminée/enseigne/étal) — dérivés de
   // `buildingFeatures(body.style)`, un jeu par MASSE (#822), posés en billboard SUR (faîte/façade) ou DEVANT (étal) le
   // bâtiment. 100 % donnée : aucun cas en dur par id de scène.
+  const nappes = resolveNappes(scene);
   for (const body of effectiveArchitecture(scene)) {
     const feats = buildingFeatures(body.style);
     if (!feats.length) continue;
     for (const mass of body.masses) {
       const z = mass.z;
       const f = massFootBBox(mass.footprint);
-      // Égout (base des murs, comme `buildRoofs`) + faîte (montée centrale) — approx robuste, indépendante
-      // de la forme exacte de la nappe. Un ornement de FAÎTE se pose à ~60 % de la pente sous l'apex.
-      let maxH = -Infinity;
-      for (let dy = 0; dy < f.h; dy++) for (let dx = 0; dx < f.w; dx++) maxH = Math.max(maxH, heightAt(scene, f.x + dx, f.y + dy, z));
-      const eaveM = WALL_H_M + maxH;
-      const apexM = eaveM + Math.floor(Math.min(f.w, f.h) / 2) * ROOF_SLOPE_M;
+      // Égout et FAÎTE lus sur le CHAMP de la nappe (`resolveNappes`) — la MÊME hauteur que les pans
+      // que `buildRoofs` émet, jamais une seconde formule. Un ornement de FAÎTE se pose à ~60 % de la
+      // pente sous l'apex.
+      // Masse sans nappe : son ornement est OMIS (le reste des props se construit).
+      const nappe = nappes.get(nappeKey(body.id, mass.id));
+      if (!nappe) continue;
+      const { cells, field } = nappe;
+      const eaveM = field.shape.eaveHeightM;
+      let apexM = eaveM;
+      for (const key of cells) {
+        const [x, y] = key.split(',').map(Number);
+        for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]] as const)
+          apexM = Math.max(apexM, fieldHeightAt(field, { x: x + dx, y: y + dy }));
+      }
       const cx = f.x + Math.floor(f.w / 2), cy = f.y + Math.floor(f.h / 2);
       const vis = roofFootVisible(f, z, visible);
       // Cutaway : toit LEVÉ pour montrer l'intérieur (un allié sous l'empreinte) → un ornement de FAÎTE

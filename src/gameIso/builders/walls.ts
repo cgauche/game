@@ -20,8 +20,8 @@ import { METRES_PER_LEVEL, gradeBetween } from '../../state/relief';
 import type { Face, GP, WallEl } from './types';
 import type { FloorView } from './floors';
 import {
-  closureAppearance, edgeKey, facadeEdges, massFootprintCells, massSpaceCells, resolveMass, roofHeightAt,
-  WALL_NB, type FacadeEdge, type RoofShapeSpec,
+  closureAppearance, edgeKey, facadeEdges, fieldHeightAt, massFootprintCells, massSpaceCells, nappeKey, resolveNappes,
+  WALL_NB, type FacadeEdge, type RoofField,
 } from './roofs';
 
 // ── Constantes de FORME (fractions de WALL_H / de l'arête, épaisseurs px-iso converties en mètres) ──
@@ -429,14 +429,15 @@ function crestGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
   return out;
 }
 
-/** Une NAPPE de toit indexée par cellule — pour `roofSeamGeometry` : son emprise+forme PROPRES (une masse par
- *  nappe, #823) donnent la hauteur exacte à n'importe quel coin de son empreinte. */
+/** Une NAPPE de toit indexée par cellule — pour `roofSeamGeometry` : son emprise et le CHAMP de son
+ *  groupe (`resolveNappes`, SOURCE UNIQUE de la hauteur de toit) donnent la hauteur exacte à
+ *  n'importe quel coin de son empreinte. */
 interface RoofNappe {
   bodyId: string;
   massId: string;
   z: number;
   levels: number;
-  shape: RoofShapeSpec;
+  field: RoofField;
   cells: ReadonlySet<string>;
   roomZoneIds: readonly string[];
   /** Cases `x,y,z` du volume que la masse enferme, et de son CORPS entier — les deux lectures larges
@@ -447,14 +448,15 @@ interface RoofNappe {
 
 function indexRoofNappes(scene: Scene): ReadonlyMap<string, RoofNappe> {
   const index = new Map<string, RoofNappe>();
+  const resolved = resolveNappes(scene);
   for (const body of effectiveArchitecture(scene)) {
     const bodySpace = new Set<string>();
     for (const mass of body.masses)
       for (const key of massSpaceCells(mass, massFootprintCells(mass.footprint))) bodySpace.add(key);
     for (const mass of body.masses) {
-      const { cells, shape, roomZoneIds } = resolveMass(scene, mass);
+      const { cells, roomZoneIds, field } = resolved.get(nappeKey(body.id, mass.id))!;
       const nappe: RoofNappe = {
-        bodyId: body.id, massId: mass.id, z: mass.z, levels: mass.levels, shape, cells, roomZoneIds,
+        bodyId: body.id, massId: mass.id, z: mass.z, levels: mass.levels, field, cells, roomZoneIds,
         space: massSpaceCells(mass, cells), bodySpace,
       };
       for (const key of cells) if (!index.has(key)) index.set(key, nappe);
@@ -479,7 +481,7 @@ function roofSeamGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
   const viewZ = view?.viewZ ?? null;
   const out: Viewed<WallEl>[] = [];
   const index = indexRoofNappes(scene);
-  const heightAtCorner = (n: RoofNappe, x: number, y: number) => roofHeightAt({ x, y }, n.cells, n.shape);
+  const heightAtCorner = (n: RoofNappe, x: number, y: number) => fieldHeightAt(n.field, { x, y });
 
   const DIRS: { side: WallSide; nx: number; ny: number; c0: GXY; c1: GXY }[] = [];
   for (const [key, a] of index) {
