@@ -36,7 +36,7 @@ export function isHealable(c: Combatant): boolean {
 }
 
 /** `recovery` = Test ÉTENDU de Guérison qui rend l'usage d'un membre désactivé (« Épaule luxée »/« Genou
- *  démis », LDB l.120/179), après Aide Médicale — hors combat, cf. `medicFlow`. */
+ *  démis », LDB 18 l.120/179), après Aide Médicale — hors combat, cf. `medicFlow`. */
 export type HealMode = 'wounds' | 'bleed' | 'trauma' | 'surgery' | 'recovery' | 'ammo';
 
 /** Modes disponibles pour soigner `target`, compte tenu de la limite « 1 soin de Blessures / rencontre ».
@@ -49,7 +49,7 @@ export function availableHealModes(target: Combatant): HealMode[] {
   if (hasTreatableTrauma(target)) modes.push('trauma');
   if (hasSurgeryTrauma(target) || hasSurgeryLockedCondition(target)) modes.push('surgery'); // Blessure Critique chirurgicale OU État verrouillé « par Chirurgie » (Hémorragie interne, LDB 18) ; gate Talent Chirurgie côté action
   // Récupération d'usage : proposée dès qu'un membre est désactivé (Test étendu de Guérison), MAIS bloquée tant
-  // que l'Aide Médicale n'a pas été reçue (`actBlockReason` : « Aide Médicale d'abord », LDB l.120/179).
+  // que l'Aide Médicale n'a pas été reçue (`actBlockReason` : « Aide Médicale d'abord », LDB 18 l.120/179).
   if (hasRecoverableTrauma(target) || hasLimbAwaitingAid(target)) modes.push('recovery');
   // Retrait de munition Empaleuse logée (LDB 62 l.250) : proposé dès qu'au moins une flèche/carreau/balle
   // reste plantée — même patron que `bleed` (compte de pions → mode). #494 raffinera la distinction

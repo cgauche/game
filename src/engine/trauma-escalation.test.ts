@@ -165,7 +165,7 @@ describe('#166 — « Épaule luxée »/« Genou démis » : membre désactivé 
     expect(traumaMovementHalved(leg)).toBe(true);
   });
 
-  it('récupération BLOQUÉE tant que l’Aide Médicale n’est pas reçue, puis débloquée (LDB l.120/179)', () => {
+  it('récupération BLOQUÉE tant que l’Aide Médicale n’est pas reçue, puis débloquée (LDB 18 l.120/179)', () => {
     const c = C({ traumas: [{ label: 'x', location: 'brasD', awaitingMedicalAid: true, restoreDR: 6, recoveryPenalty: [{ op: 'charMod', char: 'capacite-de-combat', mod: -10 }] }] });
     expect(hasLimbAwaitingAid(c)).toBe(true);
     expect(hasRecoverableTrauma(c)).toBe(false); // le Test étendu demeure indisponible avant l’Aide Médicale

@@ -26,22 +26,22 @@ import type { RNG } from '../engine/dice';
 import type { RollBreakdown } from '../engine/combat';
 import type { RecapTone } from './recapLine';
 import { battleRng } from './battleRng';
-import { partyAssisted, testValue } from '../engine/skills';
+import { partyAssisted } from '../engine/skills';
 import { hasHealSkill } from '../engine/healing';
 import { soberUpDissipate, soberUpHangover } from '../engine/drunkenness';
 import { isOutOfAction, addCondition, removeCondition, loseWounds, addClockCondition } from '../engine/conditions';
-import { restRecovery, restResistVal, applyRecoveryDay, needsRecoveryRoll, recoveryTarget, type RestRoll } from '../engine/rest';
+import { restRecovery, restResistVal, applyRecoveryDay, needsRecoveryRoll, type RestRoll } from '../engine/rest';
 import { rollContraction, DISEASE_DEFS, contagiousDiseases, contractionDue, applyContraction, applyDiseaseGangrene, applyDiseasePersist, activeMalaiseCount } from '../engine/disease';
 import { applyOps } from '../engine/ops';
 import { rule } from '../engine/policy';
 import { type Difficulty } from '../engine/types';
 import { applyFractureEnd } from '../engine/trauma';
 import type { DeferredUpkeepTest } from './upkeep';
-import { weatherExposure, exposureTestCount, expireExposureEffects, exposureShelterFromTent, applyExposureFailure, exposureTarget, exposureCoatMods, sealskinDR, heaviestPossession, dropHeaviestPossession, type ExposureSeverity, type ExposureKind } from '../engine/exposure';
+import { weatherExposure, exposureTestCount, expireExposureEffects, exposureShelterFromTent, applyExposureFailure, exposureCoatMods, sealskinDR, heaviestPossession, dropHeaviestPossession, type ExposureSeverity, type ExposureKind } from '../engine/exposure';
 import { effectiveChar, bonus } from '../engine/characteristics';
-import { forcedMarchTarget, applyForcedMarch } from '../engine/travel';
+import { applyForcedMarch } from '../engine/travel';
 import { registerCascadeApplier, startCascade } from './cascade';
-import { freeCons, rollStep } from './rollSeam';
+import { freeCons, rollStep, testSkillLabel } from './rollSeam';
 import type { CascadeStep, CascadeStepMeta } from './pendings';
 import { isRation, feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
 import { toBrass, fromBrass, formatMoney, priceToMoney, type Money } from '../engine/money';
@@ -268,11 +268,18 @@ function buildExposureSteps(party: Combatant[], camperIds: string[], count: numb
   for (const id of camperIds) {
     const h = party.find((x) => x.id === id);
     if (!h) continue;
+    // `restResistVal` VAUT le Niveau de Compétence nu (mesuré : ≡ `skillBaseValue('resistance')`) ; ce
+    // qui diverge de `testValue`, c'est la composition des ÉTATS — un Test passif n'en subit aucun. Le
+    // drapeau `valeurEtrangere` est donc APPROXIMATIF ici (3ᵉ régime à venir, ticket) : il dit la
+    // vérité utile (rien à décomposer) au prix d'une base pourtant NUE. La pénalité maison « sans
+    // manteau » pèse SUR LA CIBLE, en ligne nommée (`exposureCoatMods`), plus fondue par un helper.
     const resVal = restResistVal(h);
+    const coat = exposureCoatMods(h).mods ?? [];
     for (let i = 0; i < count; i++) {
       steps.push({ id: `expo-${id}-${i}`, kind: 'exposure', actorId: id, label: 'Exposition', icon: 'rest/cold',
-        rollLabel: 'Résistance', base: resVal, difficulty: 'intermediaire', ...exposureCoatMods(h),
-        target: exposureTarget(h, resVal), result: null, interactive: true });
+        rollLabel: 'Résistance', difficulty: 'intermediaire',
+        ...rollStep({ actor: h, valeur: resVal, valeurEtrangere: true, difficulty: 'intermediaire', surLaCible: coat }),
+        result: null, interactive: true });
     }
   }
   return steps;
@@ -392,10 +399,12 @@ registerCascadeApplier('dessoulage', (_get, _set, step, hero) => {
   // de bois, 5−DR h) devient sa PROPRE étape influençable INSÉRÉE ici (patron `insert`) — plus AUCUN jet
   // silencieux dans l'applier (#253) : le joueur peut influencer les DEUX jets (Chance/Résilience).
   const d = soberUpDissipate(hero, step.result.sl);
-  const alc = testValue(hero, 'resistance-a-l-alcool', 'endurance');
+  const alcool = { skill: 'resistance-a-l-alcool', char: 'endurance' } as const;
   const insert: CascadeStep[] = [{
     id: `dessoulageHangover-${hero.id}`, kind: 'dessoulageHangover', actorId: hero.id, icon: 'time/night',
-    rollLabel: 'Résistance', base: alc, difficulty: 'intermediaire', target: alc, label: 'Gueule de bois', result: null, interactive: true,
+    rollLabel: testSkillLabel(alcool) ?? 'Résistance', label: 'Gueule de bois', difficulty: 'intermediaire',
+    ...rollStep({ actor: hero, test: alcool, difficulty: 'intermediaire' }),
+    result: null, interactive: true,
   }];
   return { consequences: freeCons(d.log), insert };
 });
@@ -466,7 +475,10 @@ export function deferredUpkeepSteps(party: Combatant[], deferred: DeferredUpkeep
     const h = party.find((x) => x.id === t.heroId);
     if (!h || h.dead) continue;
     const st: CascadeStep = { id: `${t.kind}-${t.heroId}-${startIndex + steps.length}`, kind: t.kind, actorId: t.heroId, label: t.label,
-      icon: UPKEEP_STEP_ICON[t.kind] ?? 'nav/dice', rollLabel: 'Résistance', base: t.base, difficulty: t.difficulty,
+      // La compétence se DÉRIVE des ids quand le producteur les porte (Dessoûlage = Résistance à
+      // l'alcool, LDB 09 l.485) ; sans ids, le repli reste la Résistance de l'entretien (LDB 18 l.338).
+      icon: UPKEEP_STEP_ICON[t.kind] ?? 'nav/dice', rollLabel: testSkillLabel(t.test ?? {}) ?? 'Résistance',
+      base: t.base, difficulty: t.difficulty,
       ...(t.mods?.length ? { mods: t.mods } : {}), target: t.target, ...(t.clamped ? { clamped: t.clamped } : {}),
       result: null, interactive: true, meta: t.meta as CascadeStepMeta | undefined };
     applyNightStake(st);
@@ -514,7 +526,9 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     const h = party.find((x) => x.id === id);
     if (!h || h.dead) continue;
     steps.push({ id: `march-${id}`, kind: 'forcedMarch', actorId: id, label: 'Marche forcée', icon: 'travel/foot',
-      rollLabel: 'Résistance', base: forcedMarchTarget(h), difficulty: 'intermediaire', target: forcedMarchTarget(h), result: null, interactive: true });
+      rollLabel: 'Résistance', difficulty: 'intermediaire',
+      ...rollStep({ actor: h, test: { skill: 'resistance', char: 'endurance' }, difficulty: 'intermediaire' }),
+      result: null, interactive: true });
   }
   // Tests d'entretien DIFFÉRÉS (faim, soif, maladie, convalescence, dessoûlage) → étapes influençables.
   steps.push(...deferredUpkeepSteps(party, deferred, steps.length));
@@ -543,7 +557,12 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
       const best = partyAssisted(party.filter((h) => !h.dead), 'survie-en-exterieur'); // Soutien (LDB 12)
       if (best) {
         steps.push({ id: 'abri', kind: 'shelter', actorId: best.actor.id, label: 'Abri de fortune', icon: 'rest/camp',
-          rollLabel: 'Survie en extérieur', base: best.value, difficulty: 'intermediaire', target: best.value, result: null, interactive: true,
+          rollLabel: 'Survie en extérieur', difficulty: 'intermediaire',
+          // `best.value` porte le Soutien FONDU : le monteur le ressort en ligne NOMMÉE (LDB 12 l.187-200),
+          // et décompose le reste en Niveau de Compétence nu + composantes.
+          ...rollStep({ actor: best.actor, test: { skill: 'survie-en-exterieur' }, difficulty: 'intermediaire',
+            valeur: best.value, soutien: best.support }),
+          result: null, interactive: true,
           meta: { severity, campers: camperIds.join(',') } });
       } else {
         const count = exposureTestCount(severity, false);
@@ -557,8 +576,13 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   for (const h of party) {
     if (h.dead) continue;
     if (needsRecoveryRoll(h)) {
+      // `restResistVal` VAUT le Niveau de Compétence nu (≡ `skillBaseValue('resistance')`) ; seule la
+      // composition des ÉTATS diverge de `testValue` (Test passif). `valeurEtrangere` est donc
+      // APPROXIMATIF ici — rien à décomposer, mais la base EST nue (3ᵉ régime à venir, ticket).
       steps.push({ id: `recov-${h.id}`, kind: 'recovery', actorId: h.id, label: 'Récupération', icon: 'rest/bed',
-        rollLabel: 'Résistance', base: restResistVal(h), difficulty: 'accessible', target: recoveryTarget(h), result: null, interactive: true });
+        rollLabel: 'Résistance', difficulty: 'accessible',
+        ...rollStep({ actor: h, valeur: restResistVal(h), valeurEtrangere: true, difficulty: 'accessible' }),
+        result: null, interactive: true });
     } else {
       const before = h.wounds.current;
       const { wokeUp } = applyRecoveryDay(h, null);

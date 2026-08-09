@@ -130,11 +130,6 @@ export interface RestRoll {
  * `collect` (modale de Repos) reçoit les JETS structurés (récupération, cauchemars) pour le bilan.
  * (Maladies/convalescence : décomptées par l'entretien quotidien — cf. en-tête #T3.)
  */
-/** Cible du Test de récupération d'une nuit (Résistance Accessible +20, LDB 18 l.296 volet a). */
-export function recoveryTarget(c: Combatant): number {
-  return restResistVal(c) + 20; // Accessible = +20
-}
-
 /** Un héros doit-il LANCER le Test de récupération cette nuit ? (Non si mort/éjecté/instable/affamé/PB
  *  plein.) Sépare la DÉCISION du jet (pour différer en cascade) de son application. */
 export function needsRecoveryRoll(c: Combatant): boolean {

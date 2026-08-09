@@ -3,10 +3,11 @@ import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
 import { beginShipwreck } from './shipwreck';
 import { buildNightCascade, deferredUpkeepSteps, type PendingRest } from './restFlow';
-import { runDailyUpkeep, type DeferredUpkeepTest } from './upkeep';
+import { runDailyUpkeep, dayIndex, type DeferredUpkeepTest } from './upkeep';
 import { bestActivitySkill } from './interludeFlow';
-import { inexplique } from './cascadeTestKit';
-import { skillBaseValue, testValue } from '../engine/skills';
+import { inexplique, soutienDe } from './cascadeTestKit';
+import { skillBaseValue, testValue, partyAssisted } from '../engine/skills';
+import { cascadeAppliers } from './cascade';
 import { effectiveChar } from '../engine/characteristics';
 import { restResistVal } from '../engine/rest';
 import { clampTarget } from '../engine/tests';
@@ -101,9 +102,13 @@ describe('Nuit — contagion / cauchemars / entretien différé montés par `rol
     expect(inexplique(cauchemar), 'aucune chip « autres » sur les Cauchemars').toBe(0);
   });
 
-  it('Entretien différé (Faim) : la pénalité RAW est SUR LA CIBLE et nommée, l’écart est nul', () => {
-    // Faim DÉJÀ installée (2 Tests derrière lui, jour impair) : le jour franchi tombe sur un Test —
-    // avec sa pénalité cumulée « −10 % de plus pour chaque Test » (LDB 18 l.338), donc NON NULLE.
+  it('Entretien différé (Faim) : base = Niveau NU, l’État ET la pénalité RAW ont chacun leur ligne', () => {
+    // RÉÉCRIT depuis la règle (#1153 volet B). Le RAW nomme le Test : « vous devez effectuer un Test
+    // de Résistance tous les deux jours » (LDB 18 l.343), de plus en plus dur « −10 % de plus pour
+    // chaque Test » (l.338). Le producteur DIT donc ses ids — la base redevient le Niveau de
+    // Compétence nu (LDB 09 l.17) et l'État du héros (LDB 16) prend SA chip, à côté de la pénalité
+    // cumulative. L'attendu précédent (une seule ligne, −20) mesurait la base FONDUE : il verrouillait
+    // l'angle mort au lieu de la règle.
     const affame = hero({
       id: 'aff', label: 'Affamé', conditions: [{ id: 'empoisonne', value: 1 }] as never,
       hunger: { days: 1, tests: 2, failures: 0 },
@@ -115,11 +120,192 @@ describe('Nuit — contagion / cauchemars / entretien différé montés par `rol
     const faim = deferred.find((t) => t.kind === 'faim');
     expect(faim, 'un jour sans ration diffère bien le Test de Faim').toBeTruthy();
 
-    const somme = (faim!.mods ?? []).reduce((s, m) => s + m.value, 0);
-    expect(somme, 'la pénalité cumulée est une ligne NOMMÉE, jamais fondue dans la base').toBe(-20);
-    expect(faim!.target).toBe(clampTarget(faim!.base + DIFFICULTY_MODIFIERS[faim!.difficulty] + somme).target);
+    const nue = skillBaseValue(affame, 'resistance', undefined, 'endurance');
+    const jetee = testValue(affame, 'resistance', 'endurance');
+    expect(jetee, 'l’État sépare la nue de la valeur jetée — sinon le test ne prouve rien').toBeLessThan(nue);
+    expect(faim!.test, 'le producteur NOMME son Test (LDB 18 l.343)').toEqual({ skill: 'resistance', char: 'endurance' });
+    expect(faim!.base, 'Niveau de Compétence NU (LDB 09 l.17), plus la valeur fondue').toBe(nue);
+
+    const mods = faim!.mods ?? [];
+    const cumul = mods.filter((m) => m.label === 'Tests déjà subis').reduce((s, m) => s + m.value, 0);
+    expect(cumul, 'la pénalité cumulative (LDB 18 l.338) reste une ligne NOMMÉE').toBe(-20);
+    const etat = mods.filter((m) => m.label !== 'Tests déjà subis').reduce((s, m) => s + m.value, 0);
+    expect(etat, 'l’État Empoisonné a désormais SA chip, il n’est plus fondu dans la base').toBe(jetee - nue);
+    expect(etat).toBeLessThan(0);
+
+    // CIBLE INVARIANTE : exactement ce que roulait le wrapper avant la décomposition.
+    expect(faim!.target).toBe(clampTarget(jetee + DIFFICULTY_MODIFIERS.intermediaire - 20).target);
     const st = deferredUpkeepSteps(get().party, [faim!])[0];
     expect(inexplique(st), 'aucune chip « autres » sur un Test d’entretien').toBe(0);
+  });
+
+  it('TOUTES les étapes d’entretien d’une journée réelle : `inexplique === 0`, héros sous État', () => {
+    // Harnais RÉEL (`runDailyUpkeep`) sur un héros cumulant Faim, Soif, ivresse et convalescence de
+    // fracture — les 4 producteurs joignables en une journée. Ceux qui NOMMENT leur Test se
+    // décomposent, celui qui tire sa valeur de `restResistVal` (convalescence) reste déclaré
+    // étranger : dans les DEUX cas l'écart base→cible doit être INTÉGRALEMENT nommé.
+    const eprouve = hero({
+      id: 'epr', label: 'Éprouvé',
+      conditions: [{ id: 'empoisonne', value: 1 }] as never,
+      skills: [{ skillId: 'resistance', advances: 15, characteristic: 'endurance' },
+        { skillId: 'resistance-a-l-alcool', advances: 10, characteristic: 'endurance' }] as never,
+      hunger: { days: 1, tests: 2, failures: 0 },
+      thirst: { days: 0, tests: 1, failures: 0 },
+      drunk: { failedTests: 2, drunk: true },
+      criticalWounds: 1,
+      traumas: [{ kind: 'fracture', label: 'Fracture du bras', location: 'brasD', severity: 'mineur', recoveryDays: 1 }],
+    } as never);
+    fresh([eprouve]);
+    // Tonneaux à sec → Test de Soif (LDB 18 l.340) ; `lastMoraleWeek` haute neutralise la paie hebdo.
+    set({ lastUpkeepDay: dayIndex(get().gameTime) - 1, vessel: { waterLitres: 0, crew: [], morale: { lastMoraleWeek: 99 } } } as never);
+    const deferred: DeferredUpkeepTest[] = [];
+    runDailyUpkeep(get, set, { onDeferTest: (t) => deferred.push(t) });
+
+    const kinds = deferred.map((t) => t.kind).sort();
+    expect(kinds, 'la journée doit bien produire les 4 familles visées').toEqual(['dessoulage', 'faim', 'soif', 'traumaFracture']);
+    for (const st of deferredUpkeepSteps(get().party, deferred)) {
+      expect(inexplique(st), `chip « autres » sur l’étape ${st.kind}`).toBe(0);
+    }
+    // Les producteurs qui NOMMENT leur Test livrent une base NUE ; celui qui ne le nomme pas garde la sienne.
+    const nomme = deferred.filter((t) => t.test).map((t) => t.kind).sort();
+    expect(nomme, 'faim/soif/dessoûlage nomment leur Test ; la convalescence tire de `restResistVal`').toEqual(['dessoulage', 'faim', 'soif']);
+    const faim = deferred.find((t) => t.kind === 'faim')!;
+    expect(faim.base).toBe(skillBaseValue(eprouve, 'resistance', undefined, 'endurance'));
+    const conv = deferred.find((t) => t.kind === 'traumaFracture')!;
+    expect(conv.base, 'valeur ÉTRANGÈRE assumée (Test passif, aucune pénalité d’État)').toBe(restResistVal(eprouve));
+    expect(conv.mods ?? [], 'rien à nommer sur une valeur étrangère').toEqual([]);
+  });
+
+  it('Dessoûlage : le libellé de compétence est celui du RAW (« Résistance à l’alcool », LDB 09 l.485)', () => {
+    const ivre = hero({
+      id: 'ivr', label: 'Ivre', drunk: { failedTests: 2, drunk: true },
+      skills: [{ skillId: 'resistance-a-l-alcool', advances: 10, characteristic: 'endurance' }] as never,
+      conditions: [{ id: 'empoisonne', value: 1 }] as never,
+    } as never);
+    fresh([ivre]);
+    set({ lastUpkeepDay: -1 } as never);
+    const deferred: DeferredUpkeepTest[] = [];
+    runDailyUpkeep(get, set, { onDeferTest: (t) => deferred.push(t) });
+    const desso = deferred.find((t) => t.kind === 'dessoulage')!;
+    const st = deferredUpkeepSteps(get().party, [desso])[0];
+    // RAW verbatim (LDB 09 l.485) : « effectuez un Test de Résistance à l'alcool Intermédiaire (+0) ».
+    expect(st.rollLabel, 'plus de « Résistance » générique en position de compétence').toBe("Résistance à l'alcool");
+    expect(st.base).toBe(skillBaseValue(ivre, 'resistance-a-l-alcool', undefined, 'endurance'));
+    expect(st.target).toBe(clampTarget(testValue(ivre, 'resistance-a-l-alcool', 'endurance') + DIFFICULTY_MODIFIERS.intermediaire).target);
+    expect(inexplique(st)).toBe(0);
+  });
+});
+
+/**
+ * VOLET A (#1153) — les 5 lignes que `restFlow` montait HORS monteur : leur cible sortait d'un
+ * helper qui intégrait déjà la Difficulté ou la pénalité (`forcedMarchTarget`, `exposureTarget`),
+ * donc ni le cliquet lexical ni `inexplique` ne les voyaient. L'abri de fortune était l'angle mort
+ * DOUBLE (Soutien de `partyAssisted` fondu dans la base, `target = base`).
+ */
+describe('Nuit — les 5 étapes de `restFlow` montées par `rollStep` (#1153 volet A)', () => {
+  const restPending = (party: Combatant[], lodging: string): PendingRest => ({
+    places: { lodging: [], food: [] }, quality: 'normale', days: 1, phase: 'setup',
+    perHero: Object.fromEntries(party.map((h) => [h.id, { lodging, food: 'repas' }])),
+  } as never);
+
+  const campeur = (p: Partial<Combatant>) => hero({
+    conditions: [{ id: 'empoisonne', value: 1 }] as never,
+    skills: [{ skillId: 'resistance', advances: 15, characteristic: 'endurance' }] as never,
+    ...p,
+  } as never);
+
+  beforeEach(() => seedBattleRng(1));
+
+  it('Marche forcée : base NUE, État nommé, cible = valeur JETÉE (Résistance +0, LDB 61 l.224)', () => {
+    const marcheur = campeur({ id: 'mar', label: 'Marcheur' });
+    fresh([marcheur]);
+    const p = { ...restPending([marcheur], 'auberge'), travelMarch: [marcheur.id] } as never as PendingRest;
+    const { steps } = buildNightCascade(get, set, p, { fedDaily: true });
+    const st = steps.find((s) => s.kind === 'forcedMarch')!;
+    const nue = skillBaseValue(marcheur, 'resistance', undefined, 'endurance');
+    const jetee = testValue(marcheur, 'resistance', 'endurance');
+    expect(jetee, 'l’État sépare la nue de la valeur jetée').toBeLessThan(nue);
+    expect(st.base, 'la base n’est plus `forcedMarchTarget` (valeur FONDUE)').toBe(nue);
+    expect(st.target).toBe(clampTarget(jetee + DIFFICULTY_MODIFIERS.intermediaire).target);
+    expect(inexplique(st)).toBe(0);
+  });
+
+  it('Récupération : valeur ÉTRANGÈRE assumée, cible = `restResistVal` + Accessible (LDB 18 l.296)', () => {
+    // Sans Empoisonné : cet État rend le repos INSTABLE (LDB 16 l.105) — aucun Test de récupération.
+    const blesse = campeur({ id: 'ble', label: 'Blessé', wounds: { current: 4, max: 12 }, conditions: [] as never });
+    fresh([blesse]);
+    const { steps } = buildNightCascade(get, set, restPending([blesse], 'auberge'), { fedDaily: true });
+    const st = steps.find((s) => s.kind === 'recovery')!;
+    // `restResistVal` ≠ `testValue` (Test passif : aucune pénalité d'État) → base = valeur, zéro chip.
+    expect(st.base).toBe(restResistVal(blesse));
+    expect(st.mods ?? []).toEqual([]);
+    // CIBLE INVARIANTE : `restResistVal` + Accessible (+20) — la valeur que le site posait, à l'écrêtage près.
+    expect(st.target).toBe(clampTarget(restResistVal(blesse) + DIFFICULTY_MODIFIERS.accessible).target);
+    expect(inexplique(st)).toBe(0);
+  });
+
+  it('Abri de fortune : le Soutien FONDU (LDB 12) ressort en ligne nommée, la cible ne bouge pas', () => {
+    const meneur = campeur({
+      id: 'men', label: 'Meneur',
+      skills: [{ skillId: 'survie-en-exterieur', advances: 30, characteristic: 'agilite' },
+        { skillId: 'resistance', advances: 15, characteristic: 'endurance' }] as never,
+    });
+    const aide = campeur({
+      id: 'aid', label: 'Aide', conditions: [] as never,
+      skills: [{ skillId: 'survie-en-exterieur', advances: 5, characteristic: 'agilite' }] as never,
+    });
+    fresh([meneur, aide]);
+    set({ scene: { ...scene, weather: 'neige' } } as never);
+    const { steps } = buildNightCascade(get, set, restPending([meneur, aide], 'dehors'), { fedDaily: true });
+    const st = steps.find((s) => s.kind === 'shelter')!;
+
+    const assiste = partyAssisted(get().party, 'survie-en-exterieur')!;
+    expect(assiste.support.bonus, 'l’aide doit réellement soutenir — sinon le test ne prouve rien').toBeGreaterThan(0);
+    // CIBLE INVARIANTE : c'est exactement `best.value` que l'ancien montage posait.
+    expect(st.target).toBe(clampTarget(assiste.value + DIFFICULTY_MODIFIERS.intermediaire).target);
+    expect(soutienDe(st), 'le Soutien a SA ligne, il n’est plus fondu dans la base').toBe(assiste.support.bonus);
+    expect(st.base, 'Niveau de Compétence NU du meneur').toBe(skillBaseValue(assiste.actor, 'survie-en-exterieur'));
+    expect(inexplique(st)).toBe(0);
+  });
+
+  it('Exposition : la pénalité « sans manteau » est SUR LA CIBLE et nommée (tente + tempête)', () => {
+    const transi = campeur({
+      id: 'tra', label: 'Transi',
+      items: [{ uid: 't', label: 'Tente', trappingId: 'tente', kind: 'misc', qualities: [], enc: 2, equipped: false }] as never,
+    });
+    fresh([transi]);
+    set({ scene: { ...scene, weather: 'tempete' } } as never);
+    const { steps } = buildNightCascade(get, set, restPending([transi], 'dehors'), { fedDaily: true });
+    const expo = steps.filter((s) => s.kind === 'exposure');
+    expect(expo.length, 'une nuit extrême SOUS TENTE garde le rythme difficile').toBeGreaterThan(0);
+    const st = expo[0];
+    const pen = Number(rule('exposure-no-coat-penalty'));
+    expect(pen, 'sans pénalité de manteau, ce test ne mesure rien').toBeGreaterThan(0);
+    expect(st.base, 'valeur ÉTRANGÈRE (Test passif) : la base EST `restResistVal`').toBe(restResistVal(transi));
+    expect((st.mods ?? []).reduce((s, m) => s + m.value, 0)).toBe(-pen);
+    // CIBLE INVARIANTE vs l'ancien `exposureTarget` (= max(0, resVal − pénalité)), à l'écrêtage près.
+    expect(st.target).toBe(clampTarget(restResistVal(transi) + DIFFICULTY_MODIFIERS.intermediaire - pen).target);
+    expect(inexplique(st)).toBe(0);
+  });
+
+  it('Gueule de bois : l’étape INSÉRÉE par le dessoûlage porte le Test du RAW (LDB 09 l.485)', () => {
+    const ivre = campeur({
+      id: 'ivr', label: 'Ivre', drunk: { failedTests: 2, drunk: true },
+      skills: [{ skillId: 'resistance-a-l-alcool', advances: 10, characteristic: 'endurance' },
+        { skillId: 'resistance', advances: 15, characteristic: 'endurance' }] as never,
+    });
+    fresh([ivre]);
+    set({ lastUpkeepDay: -1 } as never);
+    const { steps } = buildNightCascade(get, set, restPending([ivre], 'auberge'), { fedDaily: true });
+    const desso = steps.find((s) => s.kind === 'dessoulage')!;
+    desso.result = { roll: 50, target: desso.target!, sl: 0, success: true } as never;
+    const out = cascadeAppliers.dessoulage!.apply(get, set, desso, get().party[0], { steps, index: 0 } as never);
+    const st = (out!.insert ?? [])[0];
+    expect(st.kind).toBe('dessoulageHangover');
+    expect(st.rollLabel).toBe("Résistance à l'alcool");
+    expect(st.base, 'base NUE — l’État a sa chip').toBe(skillBaseValue(ivre, 'resistance-a-l-alcool', undefined, 'endurance'));
+    expect(st.target).toBe(clampTarget(testValue(ivre, 'resistance-a-l-alcool', 'endurance') + DIFFICULTY_MODIFIERS.intermediaire).target);
+    expect(inexplique(st)).toBe(0);
   });
 });
 
@@ -140,7 +326,7 @@ describe('Infirmerie / Activité — cibles montées par `rollLine` (#1153 L3)',
     expect(ph.skillValue).toBe(testValue(doc, 'guerison'));
   });
 
-  it('Passe de Rééducation : la cible AFFICHÉE porte l’Accessible +20 que `rollTest` jettera (LDB l.120/179)', () => {
+  it('Passe de Rééducation : la cible AFFICHÉE porte l’Accessible +20 que `rollTest` jettera (LDB 18 l.120/179)', () => {
     const doc = hero({ id: 'doc', label: 'Doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] as never });
     const patient = hero({
       id: 'p', label: 'Patient', wounds: { current: 40, max: 40 },

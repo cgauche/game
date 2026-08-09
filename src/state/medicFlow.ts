@@ -50,7 +50,7 @@ export interface MedicState {
   /** Opération ARMÉE (Test étendu, LDB 12 l.200 : interrompre = perdre le cumul). Deux `kind`, MÊME machinerie
    *  de passes (jet de Guérison influençable → cumul du DR) : `'surgery'` = Chirurgie d'une Blessure Critique
    *  (Talent Chirurgie, chaque passe inflige 1d10 PB + 1 Hémorragie, LDB 10 l.154) ; `'recovery'` = Test étendu
-   *  de Guérison qui rend l'usage d'un membre désactivé (« Épaule luxée »/« Genou démis », LDB l.120/179 — aucun
+   *  de Guérison qui rend l'usage d'un membre désactivé (« Épaule luxée »/« Genou démis », LDB 18 l.120/179 — aucun
    *  dégât, cible DR 6, Accessible +20, pénalité 1d10 j à la clé). */
   surgery?: {
     kind: 'surgery' | 'recovery';
@@ -78,7 +78,7 @@ export interface MedicState {
 import type { Get, Set } from './flowTypes';
 
 /** Meilleur soigneur du groupe pour un acte (Opérer exige AUSSI le Talent Chirurgie, LDB 10 ; la récupération
- *  d'usage est un simple Test étendu de Guérison, sans Chirurgie, LDB l.120/179). */
+ *  d'usage est un simple Test étendu de Guérison, sans Chirurgie, LDB 18 l.120/179). */
 export function bestHealerFor(party: Combatant[], act: HealMode): { actor: Combatant; value: number; support: SupportDetail } | null {
   const pool = act === 'surgery' ? party.filter((c) => hasHealSkill(c) && hasSurgerySkill(c)) : party.filter(hasHealSkill);
   return partyAssisted(pool, 'guerison'); // Soutien (LDB 12) : assistants de chirurgie/soin
@@ -126,7 +126,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
   if (m.surgery && (act === 'surgery' || act === 'trauma' || act === 'recovery')) return; // pendant l'op : seuls Bander/Hémorragie
   const patient = get().party.find((h) => h.id === m.patientId);
   if (!patient || !availableHealModes(patient).includes(act)) return;
-  // Récupération d'usage : bloquée tant que l'Aide Médicale n'a pas été reçue (LDB l.120/179 : « Après
+  // Récupération d'usage : bloquée tant que l'Aide Médicale n'a pas été reçue (LDB 18 l.120/179 : « Après
   // application de cette Aide… ») — l'acte reste proposé (raison affichée) mais ne s'arme pas.
   if (act === 'recovery' && !recoverableTraumas(patient).length) { get().log('Aide Médicale requise avant de rééduquer le membre.'); return; }
 
@@ -152,7 +152,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
   }
 
   if (act === 'surgery' || act === 'recovery') {
-    // Chirurgie : cible MJ 5-10 (LDB 10), Intermédiaire +0. Récupération d'usage : DR 6 fixe (LDB l.120/179),
+    // Chirurgie : cible MJ 5-10 (LDB 10), Intermédiaire +0. Récupération d'usage : DR 6 fixe (LDB 18 l.120/179),
     // Accessible +20 — cible lue sur la séquelle « membre désactivé » (restoreDR).
     const recovery = act === 'recovery';
     const targetDR = recovery ? (recoverableTraumas(patient)[0].restoreDR ?? 6) : 7;
@@ -201,7 +201,7 @@ export function openSurgeryPass(get: Get, set: Set): void {
       healerId: sg.healerId ?? 'pnj-soigneur', healerName: sg.healerName,
       targetId: patient.id, targetName: patient.label,
       skillValue: sg.skill, support: sg.support, intBonus: sg.intBonus, difficulty: sg.difficulty,
-      // La cible PORTE la Difficulté de l'opération (Rééducation = Accessible, `LDB l.120/179`) : c'est
+      // La cible PORTE la Difficulté de l'opération (Rééducation = Accessible, `LDB 18 l.120/179`) : c'est
       // celle que `rollTest` jettera (`FLOWS.surgery`, `simpleTestResolve`). `sg.skill` est l'instantané
       // FIGÉ à l'armement (le chirurgien peut avoir changé d'État depuis) : aucune fiche vivante à en
       // déduire, la valeur reste celle de l'opération engagée.
@@ -217,7 +217,7 @@ export function openSurgeryPass(get: Get, set: Set): void {
  *  - `kind:'surgery'` : chaque passe inflige 1d10 PB + 1 Hémorragie (LDB 10 l.154) ; à 0 PB → interruption.
  *    Cible atteinte → Blessure Critique réparée + Test d'infection du PATIENT (LDB 10 l.365) DIFFÉRÉ en ÉTAPE de
  *    cascade INFLUENÇABLE (`combatEndDisease`, jumeau de fin de combat).
- *  - `kind:'recovery'` (« Épaule luxée »/« Genou démis », LDB l.120/179) : AUCUN dégât. Cible DR 6 atteinte →
+ *  - `kind:'recovery'` (« Épaule luxée »/« Genou démis », LDB 18 l.120/179) : AUCUN dégât. Cible DR 6 atteinte →
  *    usage du membre rendu (séquelle « membre désactivé » retirée) + `recoveryPenalty` posé à la cible avec une
  *    durée d'horloge PARTAGÉE de 1d10 jours (charMod −10 / `moveScale` jambe) ; pas de Test d'infection.
  *  Sinon (les deux) → cumule sur `medic.surgery` et RÉOUVRE la passe suivante. */
@@ -244,7 +244,7 @@ export function surgeryNext(get: Get, set: Set): void {
     if (recovery) {
       const { penalty, log: recLog } = recoverDisabledLimb(patient, sg.traumaIdx);
       log.push(...recLog);
-      // Pénalité 1d10 jours (LDB l.120/179) : durée d'horloge PARTAGÉE (charMod −10 ET Mouvement ÷2 de la jambe
+      // Pénalité 1d10 jours (LDB 18 l.120/179) : durée d'horloge PARTAGÉE (charMod −10 ET Mouvement ÷2 de la jambe
       // expirent ENSEMBLE) — `defaultUntilTime` fournit la même échéance à toutes les ops sans durée propre.
       if (penalty.length) {
         const now = get().gameTime;

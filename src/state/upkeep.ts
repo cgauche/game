@@ -30,7 +30,7 @@ import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { loseWounds, addClockCondition } from '../engine/conditions';
 import { rollTest } from '../engine/tests';
 import { soberUp } from '../engine/drunkenness';
-import { type Difficulty, type UpkeepDeferTest, type NightTestKind } from '../engine/types';
+import { type CharKey, type Difficulty, type UpkeepDeferTest, type NightTestKind } from '../engine/types';
 import { rollStep } from './rollSeam';
 import type { ModLine } from '../engine/combat';
 import { dailyDiseaseUpkeep, restResistVal } from '../engine/rest';
@@ -119,6 +119,9 @@ export interface DeferredUpkeepTest {
   kind: NightTestKind;
   label: string;
   base: number;
+  /** Ids du Test (`UpkeepDeferTest.test`) quand le producteur les porte — la base est alors le Niveau
+   *  de Compétence NU et le libellé de compétence de l'étape s'en DÉRIVE (`testSkillLabel`). */
+  test?: { skill?: string; char?: CharKey; spec?: string };
   /** Difficulté DÉCLARÉE du Test (comprise dans `target`) — la ligne de jet la DIT (#1112). */
   difficulty: Difficulty;
   /** Modificateurs NOMMÉS compris dans `target` (Faim/Soif : « -10 % de plus pour chaque Test », LDB 18 l.338). */
@@ -153,15 +156,24 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
       //  convalescence) est DIFFÉRÉ en étape influençable au lieu d'être roulé ici (sinon témoin
       //  pré-résolu). Le wrapper calcule la cible (base + difficulté + pénalité) et ajoute le héros.
       const defer: UpkeepDeferTest | undefined = opts.onDeferTest
-        ? (spec) => opts.onDeferTest!({
-          heroId: h.id, kind: spec.kind, label: spec.label, difficulty: spec.difficulty,
-          // `spec.base` vient du moteur (`engine/provisions`/`disease`/`rest`/`trauma`), qui ne dit PAS
-          // de quelle formule il la tire (`testValue` pour la Faim/Soif, `restResistVal` pour maladie/
-          // convalescence) : la valeur est donc DÉCLARÉE étrangère ici — la décomposer serait deviner.
-          ...rollStep({ actor: h, valeur: spec.base, valeurEtrangere: true, difficulty: spec.difficulty,
-            ...(spec.penalty ? { surLaCible: [{ label: spec.penalty.label, value: spec.penalty.value, ref: spec.penalty.ref }] } : {}) }),
-          meta: spec.meta,
-        })
+        ? (spec) => {
+          const surLaCible = spec.penalty ? [{ label: spec.penalty.label, value: spec.penalty.value, ref: spec.penalty.ref }] : [];
+          // Le producteur DIT les ids de son Test quand il les connaît (Faim/Soif/Dessoûlage :
+          // `testValue` de Résistance) → la valeur se décompose en Niveau de Compétence nu +
+          // composantes NOMMÉES. Les producteurs qui tirent leur valeur de `restResistVal` (maladie,
+          // convalescence) n'en portent pas : leur valeur reste DÉCLARÉE étrangère — approximation
+          // assumée, `restResistVal` VAUT le Niveau de Compétence nu (≡ `skillBaseValue('resistance')`),
+          // c'est la composition des ÉTATS qui diverge (Test passif). 3ᵉ régime à venir (ticket).
+          const decl = spec.test
+            ? { actor: h, test: spec.test, valeur: spec.base, difficulty: spec.difficulty, surLaCible }
+            : { actor: h, valeur: spec.base, valeurEtrangere: true as const, difficulty: spec.difficulty, surLaCible };
+          opts.onDeferTest!({
+            heroId: h.id, kind: spec.kind, label: spec.label, difficulty: spec.difficulty,
+            ...(spec.test ? { test: spec.test } : {}),
+            ...rollStep(decl),
+            meta: spec.meta,
+          });
+        }
         : undefined;
       // 1. Nourriture (LDB 18 l.337-343).
       const r = dailyFoodUpkeep(h, testValue(h, 'resistance', 'endurance'), bonus(effectiveChar(h, 'endurance')), battleRng(), defer);
@@ -175,10 +187,11 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
       // 1ter. Dessoûlage (LDB 09 l.485) : une nuit sans boire dégrise. Deux Tests de Résistance à l'alcool
       //       Intermédiaires fixent la dissipation (10−DR h) et la gueule de bois (Exténué 5−DR h, horloge).
       if (h.drunk) {
-        const alc = testValue(h, 'resistance-a-l-alcool', 'endurance');
+        const alcool = { skill: 'resistance-a-l-alcool', char: 'endurance' } as const;
+        const alc = testValue(h, alcool.skill, alcool.char);
         // DIFFÉRÉ comme ses voisins (faim/soif) quand un canal influençable existe : le Test de
         // Résistance à l'alcool devient une étape de cascade au lieu d'être roulé ici (sinon pré-résolu).
-        if (defer) defer({ kind: 'dessoulage', label: 'Dessoûlage', base: alc, difficulty: 'intermediaire' });
+        if (defer) defer({ kind: 'dessoulage', label: 'Dessoûlage', base: alc, test: alcool, difficulty: 'intermediaire' });
         else {
           const sr = soberUp(h, get().gameTime, rollTest(alc, 'intermediaire', battleRng()).sl, rollTest(alc, 'intermediaire', battleRng()).sl);
           lines.push(...sr.log);

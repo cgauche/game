@@ -49,6 +49,11 @@ function hungerThirstPenalty(value: number): { value: number; label: string; ref
   return { value, label: 'Tests déjà subis', ref: RULE_REF['faim-et-soif'] };
 }
 
+/** Ids du Test que le RAW nomme pour la Faim comme pour la Soif : `LDB 18 l.338/340/343`. Les DIRE
+ *  au lieu de ne transmettre qu'un nombre laisse le monteur de ligne décomposer `resVal` en Niveau
+ *  de Compétence nu + composantes nommées (un héros Empoisonné lit « −10 Empoisonné » sur l'étape). */
+const RESISTANCE_TEST = { skill: 'resistance', char: 'endurance' } as const satisfies { skill: string; char: CharKey };
+
 /** État de faim d'un personnage (absent = nourri normalement). */
 export interface HungerState {
   /** Jours consécutifs sans manger. */
@@ -224,7 +229,7 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
     if (deferTest) {
       // Cascade de nuit : le Test devient une ÉTAPE influençable (résolue par `applyFaimTest`).
       c.hunger = h; // days++ enregistré ; tests/échecs appliqués à la validation de l'étape
-      deferTest({ kind: 'faim', label: 'Faim', base: resVal, difficulty: 'intermediaire', penalty: hungerThirstPenalty(penalty) });
+      deferTest({ kind: 'faim', label: 'Faim', base: resVal, test: RESISTANCE_TEST, difficulty: 'intermediaire', penalty: hungerThirstPenalty(penalty) });
       return res;
     }
     const t = rollTest(resVal, 'intermediaire', rng, penalty);
@@ -299,7 +304,7 @@ export function dailyWaterUpkeep(c: Combatant, hasWater: boolean, resVal: number
   const penalty = -10 * s.tests || 0; // LDB 18 l.338 : chaque Test est plus dur (cumulatif ; évite −0)
   if (deferTest) {
     c.thirst = s; // days++ enregistré ; tests/échecs appliqués à la validation de l'étape
-    deferTest({ kind: 'soif', label: 'Soif', base: resVal, difficulty: 'intermediaire', penalty: hungerThirstPenalty(penalty) });
+    deferTest({ kind: 'soif', label: 'Soif', base: resVal, test: RESISTANCE_TEST, difficulty: 'intermediaire', penalty: hungerThirstPenalty(penalty) });
     return res;
   }
   const t = rollTest(resVal, 'intermediaire', rng, penalty);

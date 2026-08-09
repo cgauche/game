@@ -373,7 +373,6 @@ function openBattlePending(_get: Get, set: Set, o: {
   set({ pendingActivity: o.opposition ? { ...pa, ...o.opposition } : pa });
 }
 
-
 /** Budget d'Activités restant d'un héros — le budget UNIQUE de l'interlude (LDB 23 l.6 / ADE II 8
  *  l.65). Une prépa de bataille EST une Activité d'interlude : sans interlude ouvert, aucun budget. */
 function heroBudget(get: Get, heroId: string): number {

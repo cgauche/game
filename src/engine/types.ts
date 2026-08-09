@@ -1664,6 +1664,11 @@ export type UpkeepDeferTest = (spec: {
   kind: NightTestKind;
   label: string;
   base: number;
+  /** Ids du Test dont `base` est la valeur, quand le producteur les CONNAÎT (Faim/Soif/Dessoûlage :
+   *  `testValue` de Résistance). Le monteur décompose alors `base` en Niveau de Compétence NU +
+   *  composantes NOMMÉES (États, Encombrement, passifs). ABSENT = la valeur vient d'une autre formule
+   *  (`restResistVal`, Test passif) : elle reste DÉCLARÉE étrangère, aucune composante à deviner. */
+  test?: { skill?: string; char?: CharKey; spec?: string };
   difficulty: Difficulty;
   /** Pénalité NOMMÉE du Test : sa valeur voyage AVEC son étiquette et sa règle, depuis le producteur
    *  qui l'applique (`engine/provisions` pour la Faim/Soif). Couture GÉNÉRIQUE (14 `kind`) : rien n'y

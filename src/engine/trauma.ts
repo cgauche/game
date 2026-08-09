@@ -531,7 +531,7 @@ export function hasRecoverableTrauma(c: Combatant): boolean {
   return recoverableTraumas(c).length > 0;
 }
 /** Un membre désactivé attend-il ENCORE l'Aide Médicale (le Test de récupération est bloqué tant qu'elle
- *  n'est pas donnée, LDB l.120/179 : « Après application de cette Aide… ») ? */
+ *  n'est pas donnée, LDB 18 l.120/179 : « Après application de cette Aide… ») ? */
 export function hasLimbAwaitingAid(c: Combatant): boolean {
   return (c.traumas ?? []).some((t) => t.restoreDR != null && t.awaitingMedicalAid);
 }

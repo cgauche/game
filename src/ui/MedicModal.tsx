@@ -49,7 +49,7 @@ function actBlockReason(patient: Combatant, act: HealMode, hasSurgeon: boolean):
       return null;
     case 'recovery':
       if (recoverableTraumas(patient).length) return null;
-      if (hasLimbAwaitingAid(patient)) return 'Aide Médicale requise d’abord'; // LDB l.120/179 : « Après application de cette Aide… »
+      if (hasLimbAwaitingAid(patient)) return 'Aide Médicale requise d’abord'; // LDB 18 l.120/179 : « Après application de cette Aide… »
       return 'Aucun membre désactivé à rééduquer';
     case 'ammo':
       return lodgedAmmoCount(patient) > 0 ? null : 'Aucune munition logée';

@@ -405,7 +405,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
     useGame.getState().medicAct('recovery'); // ARME la rééducation (pas de jet)
     const sg0 = useGame.getState().medic!.surgery!;
     expect(sg0.kind).toBe('recovery');
-    expect(sg0.difficulty).toBe('accessible'); // Test étendu de Guérison Accessible (+20), LDB l.120/179
+    expect(sg0.difficulty).toBe('accessible'); // Test étendu de Guérison Accessible (+20), LDB 18 l.120/179
     expect(sg0.targetDR).toBe(6);
     // compétence très haute → converge en quelques passes ; on garde la vraie cible DR 6.
     useGame.setState({ medic: { ...useGame.getState().medic!, surgery: { ...sg0, skill: 99 } } });
@@ -422,7 +422,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
     expect(useGame.getState().medic).not.toBeNull();
   });
 
-  it('Récupération BLOQUÉE tant que l’Aide Médicale n’a pas été reçue (LDB l.120/179 : « Après application de cette Aide… »)', () => {
+  it('Récupération BLOQUÉE tant que l’Aide Médicale n’a pas été reçue (LDB 18 l.120/179 : « Après application de cette Aide… »)', () => {
     const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }] });
     const patient = hero({
       id: 'p', label: 'Patient', skills: [], wounds: { current: 40, max: 40 },
