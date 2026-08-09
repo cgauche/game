@@ -536,6 +536,27 @@ export function startCascade(
   });
 }
 
+/**
+ * SEAM `onOwnTestFailed` d'une étape À PARTICIPANTS — calque EXACT du seam MONO (cf. `commitStep`
+ * ci-dessous), joué PAR RANGÉE PERDANTE : le porteur est celui de la rangée (`part.id`), le DR est
+ * celui de SON jet. Un effet déclenché sur ce trigger ne connaît pas la forme de la fenêtre — MSRC 16
+ * l.152-158 (Crampes abdominales) verbatim : « Lorsqu'un Test se solde par un échec normal ou pire,
+ * il se plie en deux de douleur […] et gagne l'État *Sonné*. » Une bande sourde le perdrait pour TOUS
+ * ses héros. L'étampe `meta.noOwnTestFailed` coupe la ré-entrance, au niveau de la BANDE comme d'une
+ * seule RANGÉE (`BatchParticipant.meta`, jumeau du `meta` d'étape).
+ */
+function batchOwnTestFailedLines(get: Get, step: CascadeStep): string[] {
+  if (step.meta?.noOwnTestFailed) return [];
+  const lines: string[] = [];
+  for (const part of step.participants ?? []) {
+    if (!part.result || part.result.success || part.meta?.noOwnTestFailed) continue;
+    const actor = actorIn(get(), part.id);
+    if (!actor) continue;
+    lines.push(...(ownTestFailedEmitter?.(get, actor, part.result.sl) ?? []));
+  }
+  return lines;
+}
+
 /** Applique la conséquence d'une étape + ses insertions ; renvoie le tableau d'étapes mis à jour, les
  *  lignes de journal, et `suspended` (l'applier a fait basculer le slot ACTIF vers un AUTRE contexte —
  *  `startCombat`, cf. `suspendActiveCascade` — PENDANT sa propre exécution). Partagé par les trois
@@ -560,8 +581,13 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   // `meta.noOwnTestFailed` (posée sur le FM de palier 2 des Crampes) coupe la ré-entrance. Émetteur INJECTÉ
   // (`setOwnTestFailedEmitter`, patron `testRouter`) pour éviter le cycle cascade↔triggeredEffects. Sous-Test
   // du FM résolu INLINE (pas de `set` threadé : ouvrir une cascade IMBRIQUÉE dans un commitStep serait fragile).
-  const ownTestFailedLines = (stepInteraction(step) === 'jet' && step.result && !step.result.success && hero && !step.meta?.noOwnTestFailed)
-    ? (ownTestFailedEmitter?.(get, hero, step.result.sl) ?? []) : [];
+  // Une BANDE émet PAR RANGÉE PERDANTE (`batchOwnTestFailedLines`) : le trigger est dû au Test, pas à la
+  // forme de la fenêtre — SOURCE UNIQUE ici pour les deux formes, jamais un second site par applier.
+  const interaction = stepInteraction(step);
+  const ownTestFailedLines = interaction === 'batch'
+    ? batchOwnTestFailedLines(get, step)
+    : ((interaction === 'jet' && step.result && !step.result.success && hero && !step.meta?.noOwnTestFailed)
+      ? (ownTestFailedEmitter?.(get, hero, step.result.sl) ?? []) : []);
   for (const l of ownTestFailedLines) get().log(l);
   // L'étape VALIDÉE garde sa conséquence (`outcome`) pour rester LISIBLE dans la pile à l'écran. Une
   // étape d'AFFICHAGE porte son contenu d'avance (`outcome` pré-rempli) avec un applier muet → on le

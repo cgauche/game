@@ -10,6 +10,7 @@ import { frozenOpposedBatchStep } from './combat/triggeredTest';
 import type { CascadeStep, BatchParticipant } from './pendings';
 import type { Combatant } from '../engine/types';
 import { EMPTY_FLOW, type FlowTest } from './flow';
+import './travelPostes'; // enregistre l'applier de BANDE de voyage `weatherResistance` (EDOC 8 l.86/127)
 
 /**
  * SOCLE des BANDES de cascade (#1117, flux `cascadeBatch`) — les trois capacités qu'une rangée doit
@@ -163,5 +164,65 @@ describe('bande d’un Test tagué MENACE — la construction n’est plus refus
     expect(step).toBeTruthy();
     expect(step!.menace).toBe('maladie');
     expect(step!.participants!.map((p) => p.menace)).toEqual(['maladie', 'maladie']);
+  });
+});
+
+/**
+ * SEAM `onOwnTestFailed` d'une BANDE (#1117 L1, réparation au SOCLE) — `commitStep` l'émet PAR RANGÉE
+ * PERDANTE. Le RAW ne scope pas : MSRC 16 l.152-158 (Crampes abdominales) dit « Lorsqu'un Test se solde
+ * par un échec normal ou pire, il se plie en deux de douleur, incapable de bouger ou d'agir pendant le
+ * prochain Round, et gagne l'État *Sonné*. » — TOUT Test. Les bandes préexistantes (voyage) étaient donc
+ * en DETTE depuis leur naissance ; la réparation au socle les guérit du même geste.
+ */
+const COLIQUE = { id: 'colique', phase: 'active' as const, symptoms: [{ symptomId: 'crampes-abdominales' }], minutesLeft: 1e5, durationMinutes: 1e5 };
+
+/** Pose des jets DÉTERMINISTES sur les rangées de l'étape courante, puis valide (aucun RNG en jeu). */
+function commitRows(results: BatchParticipant['result'][]): void {
+  const pc = useGame.getState().pendingCascade!;
+  const st = pc.participants[pc.cursor];
+  const participants = st.participants!.map((p, k) => ({ ...p, result: results[k] }));
+  useGame.setState({ pendingCascade: { ...pc, participants: pc.participants.map((x, i) => (i === pc.cursor ? { ...x, participants } : x)) } });
+  useGame.getState().cascadeNext();
+}
+
+const LOSE = (target: number) => ({ roll: 99, target, sl: -2, success: false });
+const WIN = (target: number) => ({ roll: 1, target, sl: 2, success: true });
+
+describe('SEAM `onOwnTestFailed` PAR RANGÉE — toute bande, pas seulement la Psychologie', () => {
+  it('bande de VOYAGE (`weatherResistance`, EDOC 8 l.86/127) : la rangée ratée déclenche les Crampes de SON porteur', () => {
+    const h1 = bandHero('h1', { diseases: [{ ...COLIQUE }] });
+    const h2 = bandHero('h2', { diseases: [{ ...COLIQUE }] });
+    useGame.setState({ party: [h1, h2] });
+    startCascade(useGame.getState, useGame.setState, {
+      title: 'Traversée', purpose: 'test',
+      steps: [band('weatherResistance', [row(h1.id), row(h2.id)])],
+    });
+    commitRows([LOSE(50), WIN(50)]);
+    const [a, b] = useGame.getState().party;
+    expect(a.conditions.some((c) => c.id === 'sonne')).toBe(true);
+    expect(b.conditions.some((c) => c.id === 'sonne')).toBe(false);
+    // L'applier de la bande a bien joué SA propre conséquence en plus du seam (Exténué sur l'échec).
+    expect(a.conditions.some((c) => c.id === 'extenue')).toBe(true);
+    expect(b.conditions.some((c) => c.id === 'extenue')).toBe(false);
+  });
+
+  it('étampe `noOwnTestFailed` : au niveau de la BANDE elle coupe tout, au niveau d’une RANGÉE elle ne coupe QUE la sienne', () => {
+    const h1 = bandHero('h1', { diseases: [{ ...COLIQUE }] });
+    const h2 = bandHero('h2', { diseases: [{ ...COLIQUE }] });
+    useGame.setState({ party: [h1, h2] });
+    spyApplier('bande-seam', [], () => null);
+    startCascade(useGame.getState, useGame.setState, {
+      title: 'X', purpose: 'test',
+      steps: [
+        band('bande-seam', [row(h1.id), row(h2.id)], { meta: { noOwnTestFailed: true } }),
+        band('bande-seam', [row(h1.id, { meta: { noOwnTestFailed: true } }), row(h2.id)]),
+      ],
+    });
+    commitRows([LOSE(50), LOSE(50)]); // bande ENTIÈREMENT étampée → personne n'est Sonné
+    expect(useGame.getState().party.every((c) => !c.conditions.some((x) => x.id === 'sonne'))).toBe(true);
+    commitRows([LOSE(50), LOSE(50)]); // 2ᵉ bande : seule la rangée h1 est étampée
+    const [a, b] = useGame.getState().party;
+    expect(a.conditions.some((c) => c.id === 'sonne')).toBe(false);
+    expect(b.conditions.some((c) => c.id === 'sonne')).toBe(true);
   });
 });

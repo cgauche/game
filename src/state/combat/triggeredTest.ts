@@ -270,7 +270,7 @@ export function frozenOpposedBatchStep(
  * la MÊME conséquence partagée (`applyTriggeredTestBranch`) est jouée POUR CHAQUE RANGÉE, contre le
  * résultat de CETTE rangée. Une branche qui porte un second Test (Vigilance, LDB 13 l.67) est routée
  * par `runCombatFlow` et n'APPEND son étape que pour le défenseur concerné. Le seam `onOwnTestFailed`
- * est émis ici par rangée perdante — `commitStep` ne le centralise que pour les étapes MONO (`'jet'`).
+ * est émis par `commitStep` PAR RANGÉE PERDANTE (source unique des deux formes, mono et bande).
  */
 registerCascadeApplier('triggeredBatchTest', (get, set, step) => {
   const onSuccess = step.meta?.onSuccess;
@@ -283,7 +283,6 @@ registerCascadeApplier('triggeredBatchTest', (get, set, step) => {
     const hero = actorIn(get(), part.id);
     if (!hero || !part.result) continue;
     journal.push(...applyTriggeredTestBranch(hero, part.result, { onSuccess, onFail }, { get, set, ...(caster ? { caster } : {}) }));
-    if (!part.result.success && !step.meta?.noOwnTestFailed) journal.push(...fireOwnTestFailed(get, hero, { sl: part.result.sl }));
     syncCombatant(get, set);
     playAfter(get, set, hero, step.meta?.after, step.label ?? 'Effet');
   }

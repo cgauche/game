@@ -178,26 +178,28 @@ describe('Effet inflictThirst (LDB 18 l.340, miroir de la Faim)', () => {
   });
 });
 
-describe('Effet inflictPsychology (Peur/Terreur scénique, LDB 21) — cascade INFLUENÇABLE', () => {
-  it('ouvre UNE cascade de Test de Calme par héros concerné, AUCUN jet résolu (jamais silencieux)', () => {
+describe('Effet inflictPsychology (Peur/Terreur scénique, LDB 21) — BANDE INFLUENÇABLE', () => {
+  it('ouvre UNE bande (une fenêtre pour la règle mise en jeu) à une RANGÉE par héros, AUCUN jet résolu (jamais silencieux)', () => {
     const party = makePregens().slice(0, 2);
     useGame.setState({ party, pendingCascade: null, journal: [] });
     applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictPsychology', kind: 'peur', indice: 2, label: 'Une ombre glaçante', target: 'party' }]);
     const pc = useGame.getState().pendingCascade;
     expect(pc).not.toBeNull();
     const steps = pc!.participants.filter((s) => s.kind === 'encounterPsych');
-    expect(steps).toHaveLength(2);
-    expect(steps.every((s) => s.result == null)).toBe(true);
-    expect(steps.every((s) => s.encounterPsych?.kind === 'peur' && s.encounterPsych?.indice === 2)).toBe(true);
+    expect(steps).toHaveLength(1); // UNE entrée de règle = UNE bande (plus une étape par héros)
+    expect(steps[0].participants?.map((p) => p.id)).toEqual(party.map((h) => h.id));
+    expect(steps[0].participants?.every((p) => p.result == null)).toBe(true);
+    expect(steps[0].encounterPsych?.kind).toBe('peur');
+    expect(steps[0].encounterPsych?.indice).toBe(2);
   });
 
-  it('kind terreur → étape taguée terreur, ciblée sur un seul héros', () => {
+  it('kind terreur → bande taguée terreur, une seule rangée quand un seul héros est ciblé', () => {
     const party = makePregens().slice(0, 1);
     useGame.setState({ party, pendingCascade: null, journal: [] });
     applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictPsychology', kind: 'terreur', indice: 3, label: 'Un spectre hurlant', target: 'hero', heroId: party[0].id }]);
     const step = useGame.getState().pendingCascade!.participants[0];
     expect(step.encounterPsych?.kind).toBe('terreur');
-    expect(step.actorId).toBe(party[0].id);
+    expect(step.participants?.map((p) => p.id)).toEqual([party[0].id]);
   });
 });
 

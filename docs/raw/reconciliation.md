@@ -6,7 +6,7 @@
 > Tolérance ligne = ±20.
 
 **Sens A — code → Atlas (LDB)** : 0 chapitre(s) cités par le code & absents de l'Atlas · 0 chapitre(s) couverts avec des lignes non pinées. Réfs folio (`ABBR NN p.X`, #606) côté Atlas : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).
-**Sens A — code → Atlas (14 autres livres)** : 3 chapitre(s)-livre cités par le code & absents de l'Atlas · 7 chapitre(s)-livre couverts avec des lignes non pinées · 0 réf(s) sans chapitre (non réconciliables par cette mesure).
+**Sens A — code → Atlas (14 autres livres)** : 3 chapitre(s)-livre cités par le code & absents de l'Atlas · 8 chapitre(s)-livre couverts avec des lignes non pinées · 0 réf(s) sans chapitre (non réconciliables par cette mesure).
 **Sens B — Atlas → code (LDB)** : 3 marqueur(s) « (non implémenté) » · 1 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code (avant crédit folio : 12 · 11 crédités par une source folio de `src/data`).
 
 ## A1 — Chapitres appelés par le CODE (LDB), ABSENTS de l'Atlas (trous durs)
@@ -26,7 +26,7 @@ _Aucune._
 | EDO | 0 | 1 | 0 |
 | EDOC | 0 | 1 | 0 |
 | MDG | 1 | 1 | 0 |
-| MSRC | 0 | 1 | 0 |
+| MSRC | 0 | 2 | 0 |
 | PDT | 2 | 0 | 0 |
 | VDM | 0 | 1 | 0 |
 
@@ -35,7 +35,7 @@ _Aucune._
 ### MDG 3 — 5 réf(s) code, 0 dans l'Atlas
 - `src/state/restFlow.ts:67` (l.71) — /** À bord du navire de campagne (hamacs/quartiers, MDG 03 l.71 · 09 l.87) — couchage ABRITÉ (pas
 - `src/state/restFlow.ts:608` (l.71) — if (places.bord) out.push('bord'); // à bord = hamacs (MDG 03 l.71) ; par défaut si offert
-- `src/state/riverVoyageFlow.ts:956` (l.71) — // Sur la rivière on peut mouiller le long de la berge : coucher À BORD (hamacs, MDG 03 l.71) offert
+- `src/state/riverVoyageFlow.ts:1010` (l.71) — // Sur la rivière on peut mouiller le long de la berge : coucher À BORD (hamacs, MDG 03 l.71) offert
 - `src/state/seaActivities.ts:234` (l.71) — // dort à bord (hamacs, MDG 03 l.71) : couchage unique et abrité.
 
 ### PDT 8 — 1 réf(s) code, 0 dans l'Atlas
@@ -78,6 +78,9 @@ _Aucune._
 
 ### EDO 7 — 1/1 ligne(s) code hors couverture
 - l.184 — `src/ui/mono-stake-ratchet.test.ts:67` — // EDO 7 l.184 / PDT 9 l.285 posent un statbloc de porte, PDT 8 l.370 est de la prose de MJ,
+
+### MSRC 5 — 1/1 ligne(s) code hors couverture
+- l.113 — `src/state/riverVoyageFlow.ts:804` — // Réparateur de SUBSTITUTION (`MSRC ch.5 l.113-117`) : le −10 est DÉJÀ fondu dans la valeur jetée,
 
 ## A3-AUTRES — Réfs de CODE sans chapitre (`<ABRÉV> l.X`, pas d'unité chapitre à couvrir)
 

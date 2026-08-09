@@ -316,7 +316,7 @@ Un test opposé est utilisé lorsqu'un personnage doit confronter ses capacités
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.17) → `possesses`, `DispelModal`, `AppraiseModalView`, `BargainModalView`, `useTestJetProps`, `HealRollFlow`, `ragotStep`, `tavernGameBaseValue`, `SurgeryRollFlow`, `skillBaseValue`, +17 — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/cascade.ts`, +17 fichiers
+- `LDB 9` (l.17) → `possesses`, `DispelModal`, `AppraiseModalView`, `BargainModalView`, `useTestJetProps`, `HealRollFlow`, `tavernGameBaseValue`, `SurgeryRollFlow`, `skillBaseValue`, `combatBaseValue`, +14 — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/cascade.ts`, +14 fichiers
 - `LDB 12` (l.152-169) → `useExtendedTestJetProps`, `soutien`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `BargainModalView`, `TestResult`, `useTestJetProps`, `StateRecoveryModalView`, `opposedLines`, +58 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/engine/riverNavigation.ts`, +35 fichiers
 
 ---
@@ -345,7 +345,7 @@ Les tests étendus servent à résoudre des tâches particulièrement longues ou
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.171-180, l.182-185) → `useExtendedTestJetProps`, `soutien`, `AuContactModal`, `GrappleModal`, `useTestJetProps`, `BargainModalView`, `ragotStep`, `StateRecoveryModalView`, `opposedLines`, `TestFields`, +38 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/activities.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, +27 fichiers
+- `LDB 12` (l.171-180, l.182-185) → `useExtendedTestJetProps`, `soutien`, `AuContactModal`, `GrappleModal`, `useTestJetProps`, `BargainModalView`, `StateRecoveryModalView`, `opposedLines`, `TestFields`, `useDefenseJetProps`, +38 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/activities.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, +26 fichiers
 
 ---
 
@@ -371,7 +371,7 @@ Lorsque plusieurs personnages travaillent ensemble à la même tâche, ceux qui 
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.188-200) → `useExtendedTestJetProps`, `soutien`, `useTestJetProps`, `MedicState`, `BargainModalView`, `ragotStep`, `runSceneConsumableFlow`, `RollRequest`, `ActivityModal`, `TestFields`, +42 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, +23 fichiers
+- `LDB 12` (l.188-200) → `useExtendedTestJetProps`, `soutien`, `useTestJetProps`, `MedicState`, `BargainModalView`, `runSceneConsumableFlow`, `RollRequest`, `ActivityModal`, `TestFields`, `OPTIONAL_RULES`, +42 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, +23 fichiers
 
 ---
 
@@ -392,7 +392,7 @@ Parfois, une situation requiert qu'un personnage réussisse deux Compétences di
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.203-208) → `soutien`, `useTestJetProps`, `MedicState`, `BargainModalView`, `runSceneConsumableFlow`, `RollRequest`, `ActivityModal`, `TestFields`, `OPTIONAL_RULES`, `CombinedTestResult`, +25 — `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +16 fichiers
+- `LDB 12` (l.203-208) → `soutien`, `useTestJetProps`, `MedicState`, `BargainModalView`, `runSceneConsumableFlow`, `RollRequest`, `ActivityModal`, `TestFields`, `OPTIONAL_RULES`, `CombinedTestResult`, +24 — `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +16 fichiers
 
 ---
 

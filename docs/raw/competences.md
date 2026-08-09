@@ -45,7 +45,7 @@ Augmentations** dans cette Compétence inscrites sur la Feuille de Personnage.
 **Sources RAW :** LDB 09 l.12-18
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.12-18) → `possesses`, `DispelModal`, `AppraiseModalView`, `BargainModalView`, `useTestJetProps`, `HealRollFlow`, `ragotStep`, `tavernGameBaseValue`, `SurgeryRollFlow`, `skillBaseValue`, +17 — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/cascade.ts`, +17 fichiers
+- `LDB 9` (l.12-18) → `possesses`, `DispelModal`, `AppraiseModalView`, `BargainModalView`, `useTestJetProps`, `HealRollFlow`, `tavernGameBaseValue`, `SurgeryRollFlow`, `skillBaseValue`, `combatBaseValue`, +14 — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/cascade.ts`, +14 fichiers
 
 **Voir aussi :** [Tests & Degrés de Réussite](tests.md) pour l'utilisation de ce niveau en test.
 
@@ -73,7 +73,7 @@ Nécessitent un entraînement. **Impossible de tenter le Test sans au moins une 
 **Sources RAW :** LDB 09 l.22-32
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.22-32) → `hasHealSkill`, `possesses`, `DispelModal`, `AppraiseModalView`, `BargainModalView`, `useTestJetProps`, `redaction`, `HealRollFlow`, `ragotStep`, `buySkillAdvance`, +28 — `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, +28 fichiers
+- `LDB 9` (l.22-32) → `hasHealSkill`, `possesses`, `DispelModal`, `AppraiseModalView`, `BargainModalView`, `useTestJetProps`, `redaction`, `HealRollFlow`, `buySkillAdvance`, `athletisme`, +25 — `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, +25 fichiers
 
 ---
 
