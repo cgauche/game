@@ -46,6 +46,22 @@ describe('RollLine — le compteur de chips « autres » est CÂBLÉ et lu (#115
     expect(ANONYMES.count).toBe(0);
   });
 
+  it('le PLAFOND des Difficultés (LDB 14 l.91-96) se rend en chip NOMMÉE, jamais en « autres »', () => {
+    // Ce jeu de malus somme −50 et se combine à −30 : sans le mode plafonné, les +20 amputés
+    // sortaient en chip « autres » sur la ligne d'attaque (#1153 L3a).
+    const monte = rollLine({
+      difficulty: 'intermediaire', valeur: 60, plafond: 'difficultes',
+      surLaCible: [{ label: 'Sonné', value: -10 }, { label: 'Aveuglé', value: -20 }, { label: 'Empêtré', value: -20 }],
+    });
+    expect(monte.target, 'la fixture doit vraiment faire mordre le plafond').toBe(30);
+    const html = renderToStaticMarkup(
+      <PendingRollLine p={{ label: 'Corps à corps', base: monte.base, target: monte.target, mods: monte.mods, difficulty: 'intermediaire' }} />,
+    );
+    expect(html).toContain('plafond Difficultés');
+    expect(html).not.toContain('autres');
+    expect(ANONYMES.count).toBe(0);
+  });
+
   it('l’ÉCRÊTAGE mesuré se nomme « plafond », il n’est jamais avoué « autres »', () => {
     const monte = rollLine({ difficulty: 'tresFacile', valeur: 90 }); // 90 + 60 → écrêté à 99
     expect(monte.clamped, 'la fixture doit vraiment franchir le plafond').toBeLessThan(0);

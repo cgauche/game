@@ -40,7 +40,9 @@ import type { PairedSense, GameOp } from '../engine/ops';
 import type { CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate } from './pendings';
 import type { RecapLine, RecapTone } from './recapLine';
 import type { ModLine } from '../engine/combat';
-import { combatBaseValue, combatValueModParts, conditionModLines } from '../engine/combat';
+import { combatBaseValue, combatValueModParts, conditionModLines, combatCharKey, combineMods } from '../engine/combat';
+import { volatileCharLines } from '../engine/characteristics';
+import { RULE_REF } from '../engine/ruleRefs';
 import { TestOutcome } from '../engine/testOutcome';
 import { actorIn } from './combatants';
 import { startCascade, runCascadeImmediate } from './cascade';
@@ -309,6 +311,13 @@ interface RollLineBase {
    *  l.38, hors de contrôle l.41, −5 cumulatif du redressement l.40, km déjà au pas de course EDOC 7
    *  l.229). Les déclarer ici les compte UNE fois — dans la cible et sur la ligne. */
   surLaCible?: ModLine[];
+  /** PLAFONNEMENT des `surLaCible` (`LDB 14 l.91-96`) : le monteur combine lui-même les
+   *  modificateurs (`combineMods`, plafonds data-driven `combat-diff-cap-bonus`/`-malus`, lignes
+   *  `uncapped` hors plafond) et, quand la combinaison diffère de la somme brute, ÉMET l'écart en
+   *  ligne NOMMÉE « plafond Difficultés » liée à sa fiche de règle. Sans ce mode, un appelant qui
+   *  plafonnait sa cible à la main laissait l'amputation en chip « autres ». Réservé aux jets de
+   *  COMBAT : hors combat, la table de Difficulté n'a pas de plafond de combinaison. */
+  plafond?: 'difficultes';
 }
 
 /**
@@ -320,9 +329,10 @@ interface RollLineBase {
  *    et pénalité d'États en version COMBAT (`conditionModLines` → `combatTestPenaltyParts`), comptée
  *    une seule fois. Le contrat des deux grandeurs est celui du moteur, pas de ce monteur.
  *
- * DISJOINT de `volatileCharLines` (`engine/characteristics.ts:68`), qui décompose l'intérieur de la
- * CARACTÉRISTIQUE (`effectiveChar`) là où ce canal décompose ce qui s'y AJOUTE : les deux devront se
- * brancher ensemble (L3) — additionner les deux aujourd'hui compterait la ligne deux fois.
+ * BRANCHÉ à `volatileCharLines` (`engine/characteristics.ts:68`) sur `'melee'`/`'ranged'` (#1153 L3a) :
+ * ces lignes décomposent l'intérieur de la CARACTÉRISTIQUE (`effectiveChar`), donc de la valeur NUE.
+ * Le canal les SORT de la base autant qu'il les pose en lignes — la valeur de combat et la cible
+ * restent identiques au point près, seule la répartition base/chips change.
  */
 export type RollLineCombat = { kind: 'melee' | 'ranged'; weapon?: Weapon } | { kind: 'test'; weapon?: never };
 
@@ -392,19 +402,23 @@ function partsHorsEtats(actor: Combatant, t: RollLineBase['test'] = {}): ModLine
  *  canal `combat` : même contrat (`base + Σ mods === valeur`, `exact` DIT si la reconstruction a tenu),
  *  autres jumelles moteur. L'ORACLE est la valeur que le canal SAIT produire (`combatBaseValue + Σ
  *  combatValueModParts`, ou `rawCombatTestBase`) : une `valeur` fournie qui ne s'y réduit pas — au
- *  Soutien et au `fused` déclarés près — est refusée, exactement comme hors combat. */
+ *  Soutien et au `fused` déclarés près — est refusée, exactement comme hors combat.
+ *  Les lignes volatiles de la CARACTÉRISTIQUE (`volatileCharLines` : Bénédiction de Bataille,
+ *  séquelle « Fracture −30 ») vivent DANS `combatBaseValue` via `effectiveChar` : le canal les
+ *  RETIRE de la base à mesure qu'il les pose en lignes, jamais l'un sans l'autre. */
 function combatValueSplit(
   actor: Combatant | undefined, canal: RollLineCombat, t: RollLineBase['test'],
   value: number, support?: SupportDetail, fused = 0,
 ): { base: number; mods: ModLine[]; exact: boolean } {
   const sup = supportSplit(value, support);
   if (!actor) return { ...sup, exact: true };
+  const charLines = canal.kind === 'test' ? [] : volatileCharLines(actor, combatCharKey(canal.kind, canal.weapon));
   const nue = canal.kind === 'test'
     ? skillBaseValue(actor, t?.skill, t?.spec, t?.char)
-    : combatBaseValue(actor, canal.kind, canal.weapon);
+    : combatBaseValue(actor, canal.kind, canal.weapon) - charLines.reduce((s, l) => s + l.value, 0);
   const parts = canal.kind === 'test'
     ? [...partsHorsEtats(actor, t), ...conditionModLines(actor)]
-    : combatValueModParts(actor, canal.kind, canal.weapon);
+    : [...charLines, ...combatValueModParts(actor, canal.kind, canal.weapon)];
   const sum = parts.reduce((s, p) => s + p.value, 0);
   if (nue + sum + fused !== sup.base) return { ...sup, exact: false };
   return { base: sup.base - sum, mods: [...sup.mods, ...parts], exact: true };
@@ -468,10 +482,17 @@ export function rollLine(spec: RollLineSpec): RollLineParts {
     if (import.meta.env?.DEV) throw new Error(msg);
   }
   const surLaCible = spec.surLaCible ?? [];
-  const { target, clamped } = clampTarget(value + dv + surLaCible.reduce((s, m) => s + m.value, 0));
+  const brut = surLaCible.reduce((s, m) => s + m.value, 0);
+  // Mode plafonné (`LDB 14 l.91-96`) : la combinaison est celle du moteur, et son écart à la somme
+  // brute devient une LIGNE. Sans elle, l'amputation ne serait imputable à personne.
+  const combine = spec.plafond === 'difficultes' ? combineMods(surLaCible) : brut;
+  const ecretage: ModLine[] = combine === brut
+    ? []
+    : [{ label: 'plafond Difficultés', value: combine - brut, ref: RULE_REF['combiner-les-difficultes'] }];
+  const { target, clamped } = clampTarget(value + dv + combine);
   return {
     base: split.base - fusedSum,
-    mods: [...split.mods, ...dansLaValeur, ...surLaCible],
+    mods: [...split.mods, ...dansLaValeur, ...surLaCible, ...ecretage],
     target,
     ...(clamped ? { clamped } : {}),
   };

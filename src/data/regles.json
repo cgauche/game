@@ -768,5 +768,15 @@
       "page": 157,
       "note": "LDB 13 l.67-71 « Surprise »"
     }
+  },
+  {
+    "id": "combiner-les-difficultes",
+    "label": "Combiner les Difficultés",
+    "desc": "Il y aura des cas où de multiples facteurs vont rendre une action bien plus difficile que la normale. Il est plus difficile de tirer sur un adversaire lorsque vous vous trouvez dans une forêt lugubre et que votre adversaire est loin que de tirer sur ce même adversaire en plein jour et à découvert. Pour combiner les difficultés, suivez les recommandations suivantes :\n\n- Si la situation nécessite l'ajout de deux pénalités ou plus, contentez-vous de faire la somme des différents modificateurs sans dépasser **Très Difficile -30**. Par exemple, le brouillard ajouté au fait de vouloir toucher une Localisation précise donne un Test de **Capacité de Combat Difficile (-20)**. Lorsqu'il est combiné, le Test devient simplement **Très Difficile (-30)** au lieu de recevoir une pénalité de **-40**. De la même façon, si la situation implique l'addition de deux bonus, faites la somme des modificateurs jusqu'à un maximum de **+60** ou **Très Facile** .\n- Si la situation demande à la fois une pénalité et un bonus, faites-en la somme pour obtenir la nouvelle difficulté. Attaquer un adversaire alors qu'on se trouve dans la neige jusqu'à la taille nécessite normalement un Test **Très Difficile (-30)**. Mais attaquer un adversaire qui est *À Terre* ne nécessite qu'un Test **Facile (+20)**. Dans une situation ou les deux paramètres s'applique, le Test sera **Difficile (-10)** parce que **-30** plus **+20** font **-10** .",
+    "source": {
+      "book": "livre-de-base",
+      "page": 162,
+      "note": "LDB 14 « Combiner les Difficultés »"
+    }
   }
 ]

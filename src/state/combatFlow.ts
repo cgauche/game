@@ -30,7 +30,6 @@ import {
   hasWeaponGroupSkill,
   weaponGroupSkillMode,
   attackModifiers,
-  combineMods,
   rollMeleeAttacker,
   rollDisengageAttack,
   rollGrappleForce,
@@ -789,10 +788,15 @@ export function resolveDualSecond(
   offWeapon = effectiveWeapon(offWeapon, weaponContextOf(attacker, offWeapon, target));
   const { env } = attackEnv(get, attacker, target, offWeapon, {});
   const mods = attackModifiers(attacker, target, offWeapon, { kind: 'melee', location: opts?.location, env });
-  const nue = combatValue(attacker, 'melee', offWeapon); // valeur NUE : départage du Test opposé (LDB 12 l.160)
-  const toHit = nue + combineMods(mods);
+  const valeur = combatValue(attacker, 'melee', offWeapon); // `TestResult.base` : départage du Test opposé (LDB 12 l.160), même grandeur que `rollMeleeAttacker`
+  // Cible par le MONTEUR CANONIQUE (#1153) : plafond des Difficultés (LDB 14 l.91-96) puis MÊME
+  // écrêtage que `rollTest` — la 2ᵉ frappe vise la cible que le moteur jetterait pour la 1ʳᵉ.
+  const toHit = rollLine({
+    actor: attacker, difficulty: 'intermediaire', combat: { kind: 'melee', weapon: offWeapon },
+    surLaCible: mods, plafond: 'difficultes',
+  }).target;
   const atkRoll = opts?.critValue != null ? opts.critValue : reverseRoll(mainRoll);
-  const atk = evaluateTest(atkRoll, toHit, nue);
+  const atk = evaluateTest(atkRoll, toHit, valeur);
   const mode = (cannotDefend(target) || isInanimate(target)) ? 'none' : bestDefenseMode(target); // OBJET INANIMÉ (structure/véhicule/affût) : jamais de défense
   if (mode === 'none') return resolveMeleePassive(attacker, target, offWeapon, atk, opts?.location, env);
   const def = rollMeleeDefender(target, mode, battleRng(), 0, target.weapons[0], offWeapon); // NOUVEAU jet de défense (LDB 10 l.638)
@@ -818,8 +822,13 @@ export interface AttackPreview {
   /** Difficulté du jet d'attaque, POSÉE À LA SOURCE — LDB 13 l.118 : « Lors d'un Combat, les Difficultés
    *  sont supposées être au niveau Intermédiaire (+0). » L'affichage la rend, il ne la devine pas. */
   difficulty: Difficulty;
-  /** Valeur de compétence NUE (combatValue) — décomposition `target = base + Σmods` pour l'affichage. */
+  /** Valeur de combat NUE (`combatBaseValue`, lignes volatiles de Caractéristique sorties) —
+   *  décomposition `target = base + Σ mods` pour l'affichage : la somme est BRUTE, le plafond des
+   *  Difficultés ayant sa propre ligne dans `mods` (#1153 L3a). */
   base: number;
+  /** ÉCRÊTAGE réellement subi par la cible (`TestResult.clamped`) : la seule donnée qui autorise la
+   *  chip « plafond 99 » sur le pré-jet (`PendingRoll.clamped`). Absent = aucun bornage. */
+  clamped?: number;
   /** Dégâts d'arme (Force incluse) AVANT le DR du jet. La Blessure réelle = `dmg` + DR − `soak` (plancher 1). */
   dmg: number;
   /** Encaissé par la cible à la localisation visée (Bonus d'Endurance + PA, réduction d'armure des Atouts déduite). */
@@ -854,17 +863,21 @@ export function previewAttack(
   if (blocked) return { weapon, kind, inRange: true, blocked: true, target: 0, base, mods: [], dmg, soak, difficulty: 'intermediaire' };
   const distanceTiles = kind === 'ranged' ? dist : undefined;
   const mods = attackModifiers(attacker, target, weapon, { kind, location, distanceTiles, env, metresPerTile: mpt });
-  const target0 = base + combineMods(mods);
   const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'force'))); // Portée résolue (jet `{bf}` → BF×N) + modificateur de la munition sélectionnée ; null = hors bande
   const inRange = kind === 'ranged' ? (rangeM != null && rangeBandModifier(dist, rangeM, mpt) != null) : dist <= reachTiles(weapon);
-  // Décomposition affichée (issue #202) : sépare de `base` les contributions volatiles étiquetées de la
-  // Caractéristique résolue (Bénédiction de Bataille, séquelle…) — `combatValue`/`target` restent identiques
-  // (charLines `uncapped`, cf. `combineMods`).
-  const charKey = weapon.resolveChar ?? (kind === 'melee' ? 'capacite-de-combat' : 'capacite-de-tir');
-  const charLines = volatileCharLines(attacker, charKey);
-  const base2 = base - charLines.reduce((s, l) => s + l.value, 0);
-  const mods2 = [...charLines, ...mods];
-  return { weapon, kind, inRange, blocked: false, target: target0, base: base2, mods: mods2, dmg, soak, difficulty: 'intermediaire' };
+  // Ligne montée par le MONTEUR CANONIQUE (#1153) : base de combat NUE, composantes fondues dans la
+  // valeur (lignes volatiles de Caractéristique — issue #202 — et mods de Test char-qualifiés) en
+  // chips, plafond des Difficultés NOMMÉ (LDB 14 l.91-96) et MÊME écrêtage que le jet (`clampTarget`).
+  const line = rollLine({
+    actor: attacker, difficulty: 'intermediaire', combat: { kind, weapon },
+    surLaCible: mods, plafond: 'difficultes',
+  });
+  return {
+    weapon, kind, inRange, blocked: false,
+    target: line.target, base: line.base, mods: line.mods,
+    ...(line.clamped ? { clamped: line.clamped } : {}),
+    dmg, soak, difficulty: 'intermediaire',
+  };
 }
 
 /** Ligne ADVERSE du panneau de jet pré-rempli (modale d'attaque) : ce que le joueur est en droit

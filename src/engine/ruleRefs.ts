@@ -72,6 +72,7 @@ export type RuleId =
   | 'exposition'
   | 'faim-et-soif'
   | 'encombrement'
+  | 'combiner-les-difficultes'
   | 'navigation-derive'
   | 'navigation-greement'
   | 'navigation-chavirage'
@@ -119,6 +120,7 @@ export const RULE_REF: Record<RuleId, CodexTarget> = {
   exposition: { category: 'regles', id: 'exposition' },
   'faim-et-soif': { category: 'regles', id: 'faim-et-soif' },
   encombrement: { category: 'regles', id: 'encombrement' },
+  'combiner-les-difficultes': { category: 'regles', id: 'combiner-les-difficultes' },
   'navigation-derive': { category: 'regles', id: 'navigation-derive' },
   'navigation-greement': { category: 'regles', id: 'navigation-greement' },
   'navigation-chavirage': { category: 'regles', id: 'navigation-chavirage' },

@@ -14,6 +14,7 @@ import { crewRoleValue } from '../engine/crewMorale';
 import { clampTarget } from '../engine/tests';
 import { rule } from '../engine/policy';
 import { findCrewRoleById } from '../data';
+import { RULE_REF } from '../engine/ruleRefs';
 import { DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
 
 /**
@@ -227,10 +228,11 @@ describe('Résilience d’un contributeur d’équipage (shipManeuver) — cible
     expect(inexplique({ base: v, target: cumule.target, mods: [{ label: 'Manque de bras', value: cumule.target - v }] })).toBe(0);
   });
 
-  it('ÉCRÊTAGE aux bornes : une valeur de rôle à 110 force désormais DR 9 (cible 99), non DR 11', () => {
-    // SONDE promue (#1153 L1b) : le seul écart de nombre que ce lot assume. HEAD posait `target = 110`
-    // — une cible que `rollTest` n'aurait jamais jetée (il écrête à 99, `engine/tests.clampTarget`) :
-    // le jet FORCÉ par Résilience rendait donc un DR que le jet ROULÉ ne pouvait pas produire.
+  it('ÉCRÊTAGE aux bornes : une valeur de rôle à 110 force un DR 9 (cible 99)', () => {
+    // Un jet FORCÉ par la Résilience vise la MÊME cible qu'un jet roulé : `clampTarget`
+    // (`engine/tests.ts`) la borne à `targetMax`, et le DR se compte sur cette cible (LDB 12 l.92).
+    // `targetMax` vaut 99 tant que la règle optionnelle « Tests supérieurs à 100 % » (LDB 12
+    // l.73-77, `test-over-100`) est inactive — c'est le régime par défaut mesuré ici.
     const barreur = hero({
       id: 'ba', label: 'Barreur', conditions: ETAT,
       characteristics: { 'capacite-de-combat': 35, 'capacite-de-tir': 40, force: 35, endurance: 40, initiative: 30, agilite: 105, dexterite: 32, intelligence: 40, 'force-mentale': 35, sociabilite: 30 },
@@ -241,7 +243,7 @@ describe('Résilience d’un contributeur d’équipage (shipManeuver) — cible
 
     const forcee = forceCrewRole(barreur, 'timonier')!;
     expect(forcee.target, 'plafond 99 — la même cible que celle du jet roulé').toBe(99);
-    expect(forcee.sl, 'DR 9 (cible 99), là où la cible non écrêtée 110 rendait DR 11').toBe(9);
+    expect(forcee.sl, 'DR 9 : les dizaines de la cible ÉCRÊTÉE (99) moins celles du dé forcé').toBe(9);
   });
 });
 
@@ -361,22 +363,39 @@ describe('SONDES PROMUES (#1153 L1b) — ce que le monteur NE fait PAS encore', 
     expect(inexplique({ ...ligne, difficulty: 'intermediaire' })).toBe(0);
   });
 
-  it('GARDE : le monteur ne PLAFONNE pas — c’est le plafond de l’attaque (`combineMods`) qui amputerait la ligne', () => {
-    const mods: ModLine[] = [
-      { label: 'Sonné', value: -10 }, { label: 'Aveuglé', value: -20 }, { label: 'Empêtré', value: -20 },
-    ];
-    const somme = mods.reduce((s, m) => s + m.value, 0);
-    const capMalus = rule('combat-diff-cap-malus') as number;
-    const applique = combineMods(mods);
-    expect(applique, 'le plafond MORD sur ce jeu de mods (sinon la sonde ne mesure rien)').not.toBe(somme);
-    expect(applique).toBe(-capMalus);
+  /**
+   * MATRICE du mode plafonné (`LDB 14 l.91-96`) — les six régimes de la règle, jugés sur les DEUX
+   * grandeurs : la cible que le combat applique, et l'écart base→cible intégralement nommé. Les
+   * plafonds sont lus de la POLICY (`combat-diff-cap-bonus`/`-malus`, règles optionnelles), jamais
+   * écrits en dur : un jeu de valeurs maison doit faire bouger l'attendu avec le moteur.
+   */
+  const capB = rule('combat-diff-cap-bonus') as number;
+  const capM = rule('combat-diff-cap-malus') as number;
+  const MATRICE: { nom: string; mods: ModLine[]; attendu: number; mord: boolean }[] = [
+    { nom: 'aucun plafond ne mord (un malus, un bonus)', mods: [{ label: 'Sonné', value: -10 }, { label: 'À Terre', value: 20 }], attendu: 10, mord: false },
+    { nom: 'MALUS mordant (Σ −50)', mods: [{ label: 'Sonné', value: -10 }, { label: 'Aveuglé', value: -20 }, { label: 'Empêtré', value: -20 }], attendu: -capM, mord: true },
+    { nom: 'BONUS mordant (Σ +80)', mods: [{ label: 'Viser', value: 40 }, { label: 'À Terre', value: 40 }], attendu: capB, mord: true },
+    { nom: 'BONUS ET MALUS mordants (les deux sommes plafonnent, puis s’ajoutent)', mods: [{ label: 'Viser', value: 40 }, { label: 'À Terre', value: 40 }, { label: 'Aveuglé', value: -20 }, { label: 'Empêtré', value: -20 }, { label: 'Sonné', value: -20 }], attendu: capB - capM, mord: true },
+    { nom: 'AVANTAGE `uncapped` hors plafond, malus mordant à côté', mods: [{ label: 'Avantage', value: 70, uncapped: true }, { label: 'Aveuglé', value: -40 }], attendu: 70 - capM, mord: true },
+    { nom: 'AVANTAGE `uncapped` SEUL : rien à plafonner malgré une somme > +60', mods: [{ label: 'Avantage', value: 70, uncapped: true }], attendu: 70, mord: false },
+  ];
 
-    // Le MONTEUR, lui, somme brut : sa ligne s'explique toujours (rien à avouer « autres »).
-    const monte = rollLine({ difficulty: 'intermediaire', valeur: 60, surLaCible: mods });
-    expect(monte.target).toBe(clampTarget(60 + somme).target);
-    expect(inexplique({ ...monte, difficulty: 'intermediaire' })).toBe(0);
-    // Une ligne d'ATTAQUE, elle, porte `combineMods` en modificateur pour la MÊME liste de chips :
-    // l'écart AMPUTÉ (le plafond) n'a aujourd'hui aucune ligne à son nom — il sortira en chip « autres ».
-    expect(inexplique({ base: 60, target: 60 + applique, mods })).toBe(applique - somme);
+  it.each(MATRICE)('MODE PLAFONNÉ — $nom', ({ mods, attendu, mord }) => {
+    const somme = mods.reduce((s, m) => s + m.value, 0);
+    expect(combineMods(mods), 'la matrice doit décrire la combinaison RÉELLE du moteur').toBe(attendu);
+    expect(attendu !== somme, 'le régime annoncé (mordant ou non) doit être celui que le moteur produit').toBe(mord);
+
+    const l = rollLine({ difficulty: 'intermediaire', valeur: 60, surLaCible: mods, plafond: 'difficultes' });
+    expect(l.target).toBe(clampTarget(60 + attendu).target);
+    const chip = l.mods.find((m) => m.label === 'plafond Difficultés');
+    if (mord) expect(chip).toMatchObject({ value: attendu - somme, ref: RULE_REF['combiner-les-difficultes'] });
+    else expect(chip, 'aucune chip décorative quand rien n’est amputé').toBeUndefined();
+    expect(inexplique({ ...l, difficulty: 'intermediaire' }), 'aucune chip « autres »').toBe(0);
+
+    // HORS mode : la somme reste BRUTE — le plafond est un régime de COMBAT, pas un défaut du monteur.
+    const brut = rollLine({ difficulty: 'intermediaire', valeur: 60, surLaCible: mods });
+    expect(brut.target).toBe(clampTarget(60 + somme).target);
+    expect(brut.mods.some((m) => m.label === 'plafond Difficultés')).toBe(false);
+    expect(inexplique({ ...brut, difficulty: 'intermediaire' })).toBe(0);
   });
 });

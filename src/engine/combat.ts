@@ -177,6 +177,14 @@ function matchGroupSpec(c: Combatant, weapon: Weapon, kind: 'melee' | 'ranged'):
   return null;
 }
 
+/** Caractéristique SUR LAQUELLE se résout un Test de combat : CC/CT, ou la Résolution ALTERNATIVE
+ *  déclarée par l'arme (bélier → Force, ADE II 8 l.233). SOURCE UNIQUE — la sélection de Compétence
+ *  (`combatSkillPick`) et tout écran qui décompose la Caractéristique du jet (`volatileCharLines`)
+ *  lisent la MÊME formule. */
+export function combatCharKey(kind: 'melee' | 'ranged', weapon?: Weapon): CharKey {
+  return weapon?.resolveChar ?? (kind === 'melee' ? 'capacite-de-combat' : 'capacite-de-tir');
+}
+
 /** Compétence RETENUE pour un Test de combat : Caractéristique testée + Spé du Groupe de l'arme
  *  (LDB 62 l.138-139) et ses Augmentations. Aucun modificateur — SÉLECTION pure, partagée par la
  *  valeur NUE (`combatBaseValue`) et la somme des modificateurs (`combatValueMods`). */
@@ -184,7 +192,7 @@ function combatSkillPick(c: Combatant, kind: 'melee' | 'ranged', weapon?: Weapon
   // Résolution ALTERNATIVE déclarée par l'arme (bélier → Force, ADE II 8 l.233) : Caractéristique BRUTE,
   // aucune Compétence associée (comme l'Empoignade, `rollGrappleForce`) — court-circuite CC/CT et la Spé du Groupe.
   if (weapon?.resolveChar) return { charKey: weapon.resolveChar, advances: 0 };
-  const charKey = kind === 'melee' ? 'capacite-de-combat' : 'capacite-de-tir';
+  const charKey = combatCharKey(kind, weapon);
   if (weapon && weaponUnmastered(c, weapon)) return { charKey, advances: 0 }; // arme inhabituelle non maîtrisée : carac brute (ACE 12 l.17-21)
   const skillId = kind === 'melee' ? 'corps-a-corps' : 'projectiles';
   const matching = c.skills.filter((s) => s.skillId === skillId);

@@ -12,7 +12,7 @@
  */
 import type { Get, Set } from './flowTypes';
 import type { Combatant, Weapon } from '../engine/types';
-import { combineMods, attackTestLabel, isHelplessTarget } from '../engine/combat';
+import { attackTestLabel, isHelplessTarget } from '../engine/combat';
 import { castInfo, isMagicMissile, missileDamage, spellRangeTiles } from '../engine/magic';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { effectiveRange } from '../engine/weaponDamage';
@@ -70,7 +70,9 @@ export type HoverTargeting =
       targetName: string;
       /** Libellé de la compétence employée (« Projectiles (Arcs) », « Langue (Magick) »…). */
       skill: string;
-      /** Valeur de compétence nue ; `mod` = somme des modificateurs situationnels (peut être 0). */
+      /** Valeur de compétence NUE, et l'écart `base → cible` que le réticule affiche à côté : `mod`
+       *  couvre TOUT ce qui sépare les deux — modificateurs situationnels, Difficulté, plafond des
+       *  Difficultés et écrêtage de la cible (peut être 0). */
       base: number;
       mod: number;
       /** Dégâts AVANT le DR du jet (arme : Force incluse ; Projectile magique : sort + BFM). null = sans dégâts (buff). */
@@ -292,7 +294,10 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
     targetName: target.label,
     skill: option.freeKind ? weaponSkillLabel(undefined, 'melee') : weaponSkillLabel(p.weapon, p.kind, p.weapon.subType),
     base: p.base,
-    mod: combineMods(p.mods),
+    // L'aperçu porte DÉJÀ sa cible plafonnée et écrêtée (`previewAttack` → `rollLine`) : le réticule
+    // lit l'écart base→cible, il ne recombine rien (une 2ᵉ passe de `combineMods` amputerait la
+    // ligne de plafond que l'aperçu vient de nommer).
+    mod: p.target - p.base,
     dmg: p.dmg, // (gratuite : Dégâts de l'arme tenue = cosmétique ; le chemin/réticule, lui, est exact)
     path: plan.kind === 'attack' ? undefined : plan.path,
     note: plan.kind === 'charge' ? `Charge${plan.adv ? ' (+1 Avantage)' : ''}` : plan.kind === 'moveAttack' ? 'Rejoindre + attaquer' : undefined,
