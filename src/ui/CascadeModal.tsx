@@ -22,7 +22,6 @@ import { OptionChooser, type RollOption } from './OptionChooser';
 import { CriticalBody, RevealBody } from './RevealBody';
 import { ModalSubject } from './ModalSubject';
 import { RecapLineList } from './RecapLine';
-import { RuleDivider } from './Ornaments';
 import { TableRollLine } from './RollLine';
 import { testBreakdown, testPending, opposedLines } from './breakdown';
 import type { ModLine } from '../engine/combat';
@@ -374,19 +373,14 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   if (cur.jet) return JET_RENDERERS[cur.jet]();
   const interaction = stepInteraction(cur);
   const isLast = p.cursor + 1 >= p.participants.length;
-  // Étapes DÉJÀ validées (figées), avec portrait ET conséquence (note) + barre de Test étendu PERSISTANTE
-  // — pile persistante (tous types ; un pas BATCH est déplié en rangées-participants).
-  const doneWitnessRows = p.participants.slice(0, p.cursor).flatMap(stepWitnessRows);
+  // CORPS PURGÉ PAR ÉTAPE (arbitrage user 2026-08-09) : la fenêtre d'une étape COURANTE ne rend QUE
+  // SES rangées — les étapes déjà validées quittent le corps avec leurs verdicts. Une séquence pose
+  // une question à la fois ; garder les rangées d'avant faisait lire des issues d'« Animosité » sous
+  // un titre « Haine ». La mémoire du joueur est portée par le JOURNAL (chaque conséquence y est
+  // écrite par `commitStep`) et par le BILAN de fin de séquence, qui rend TOUTES les étapes.
   // Action « Continuer » / « Terminer » (dernière étape) — bouton primaire d'enchaînement, partagé par
   // les étapes AFFICHAGE et CHOIX (conséquences pures, aucun jet à attendre) : `when:'always'`.
   const continueAction: RollAction = { key: 'next', label: isLast ? 'Terminer' : 'Continuer', onClick: () => next(), when: 'always' };
-  /** Rangées de l'étape COURANTE, coupées de la pile des étapes validées par un filet titré
-   *  (`RuleDivider`, primitive d'ornement partagée) : la prose d'une conséquence déjà appliquée ne
-   *  doit pas se lire comme la légende du tirage en cours. Sans pile, rien à couper. */
-  const currentRows = (rows: RollRowData[]): RollRowData[] =>
-    doneWitnessRows.length && rows.length
-      ? [{ ...rows[0], separator: <RuleDivider label="Étape en cours" /> }, ...rows.slice(1)]
-      : rows;
 
   // MODE TABLE (#942 L3) — les DEUX affordances de POSE du dé d'une étape à table, une seule
   // sémantique (POSER LE DÉ) et un seul délégué : le champ « Fixer le dé » (sélecteur dérivé par la
@@ -455,7 +449,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         title={titleNode}
         subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length })}
         rolled={false}
-        rows={[...doneWitnessRows, ...currentRows(aff.rows)]}
+        rows={aff.rows}
         extra={<TableRollLine table={tableLineLabel(def?.label, cur.label, modalTitle)} />}
         setup={aff.lines}
         actions={tableActions}
@@ -484,7 +478,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
              toujours à qui la révélation s'applique. Le Coup Critique le rend déjà dans son en-tête
              A→B (`CriticalBody`) — une seule surface, jamais deux portraits du même sujet. */
           extra={revSubject && rev.kind !== 'critical' ? <ModalSubject c={revSubject} /> : undefined}
-          rows={doneWitnessRows}
+          rows={[]}
           postRollExtra={<><RevealBody entry={rev} actor={revActor} subject={revSubject} />{autoCloseBar}</>}
           actions={[continueAction]}
           disableEscClose
@@ -503,7 +497,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         rolled
         /* La marque « dé fixé » n'a qu'UNE surface : l'étiquette du sélecteur quand il est servi,
            la pastille de rangée sinon (siège voisin, option éteinte). */
-        rows={[...doneWitnessRows, ...currentRows([...witnessRows([{ combatant: actorOf(cur), note: noteFor(cur) }], !!cur.fixed && !aff.rows.length), ...aff.rows])]}
+        rows={[...witnessRows([{ combatant: actorOf(cur), note: noteFor(cur) }], !!cur.fixed && !aff.rows.length), ...aff.rows]}
         /* `extra` est la zone STABLE de l'étape à table : l'état AVANT tirage la sert déjà (branche
            `table` ci-dessus), celui-ci l'ÉPAISSIT du résultat. Une zone stable qui grossit respecte
            l'invariant de géométrie (`docs/charte-ui.md` § « Invariant de GÉOMÉTRIE d'une fenêtre de
@@ -542,7 +536,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         title={titleNode}
         subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length })}
         rolled
-        rows={doneWitnessRows}
+        rows={[]}
         postRollExtra={
           <>
             {rev?.kind === 'critical' && <CriticalBody entry={rev} actor={revActor} subject={revSubject} />}
@@ -660,7 +654,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         {...stakeProps}
         extra={bandNote}
         rolled={ready}
-        rows={[...doneWitnessRows, ...(oppRow ? [oppRow] : []), ...rows]}
+        rows={[...(oppRow ? [oppRow] : []), ...rows]}
         actions={batchActions}
         disableEscClose
         embedded={embedded}
@@ -756,10 +750,10 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       {...stakeProps}
       extra={<>{oppHeader}{outcomeNote}</>}
       rolled={rolled}
-      /* Rangées : validées FIGÉES (témoins) + rangée de l'adversaire figé (Test opposé, #579) + courante
-         interactive (pré-jet en attente, post-jet résolue). La barre de Test étendu appartient à la
-         RANGÉE qui cumule (`curRow.extendedDr`). */
-      rows={[...doneWitnessRows, ...(oppRow ? [oppRow] : []), curRow]}
+      /* Rangées : rangée de l'adversaire figé (Test opposé, #579) + courante interactive (pré-jet en
+         attente, post-jet résolue). La barre de Test étendu appartient à la RANGÉE qui cumule
+         (`curRow.extendedDr`). */
+      rows={[...(oppRow ? [oppRow] : []), curRow]}
       actions={jetActions}
       disableEscClose
       embedded={embedded}

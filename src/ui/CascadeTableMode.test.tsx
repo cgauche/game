@@ -20,6 +20,8 @@ import { setDesFixes, resetDesFixes } from '../engine/fixedDie';
 import { freeCons } from '../state/rollSeam';
 import { CascadeBody } from './CascadeModal';
 import type { CascadeStep } from '../state/pendings';
+import { createHero } from '../engine/character';
+import { makeRNG } from '../engine/dice';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -456,15 +458,23 @@ describe('Après la pose — l’étape reste lisible à l’état résolu (verd
     expect(host.querySelector('.rm-roll.table .rm-roll-dice')?.textContent ?? '').toContain('1');
   });
 
-  it('CONTRAT 1bis : la pile des étapes VALIDÉES est coupée de l’étape courante par un filet titré', () => {
+  // Arbitrage user 2026-08-09 (« Corps purgé par bande ») : une séquence pose UNE question à la fois.
+  // L'étape validée quitte le corps AVEC ses verdicts — sa mémoire vit au Journal, puis au Bilan.
+  it('CONTRAT 1bis : le corps est PURGÉ au passage d’étape — la prose validée sort de la fenêtre et reste au Journal', () => {
     setDesFixes(true);
     openDeux();
     render();
     act(() => { rowButton('Ligne basse')!.click(); });
-    act(() => { useGame.getState().cascadeNext(); }); // s1 validée → sa prose rejoint la pile
+    // La prose de s1 n'existe qu'À LA VALIDATION (l'applier la produit) : elle ne pouvait apparaître
+    // que dans la PILE des étapes validées — c'est exactement ce que la purge retire.
+    const proseS1 = 'Sigmund — Événement';
+    act(() => { useGame.getState().cascadeNext(); }); // s1 validée → le corps passe à s2
     render();
     expect(useGame.getState().pendingCascade!.cursor).toBe(1);
-    expect(host.textContent, 'aucune coupure entre la prose déjà validée et le tirage en cours').toContain('Étape en cours');
+    expect(host.textContent, 'la prose de s1 traîne encore sous le titre de s2').not.toContain(proseS1);
+    expect(host.textContent, 'un filet « Étape en cours » n’a plus d’objet sans pile').not.toContain('Étape en cours');
+    // La mémoire du joueur : le verdict de s1 est au JOURNAL (écrit par `commitStep`).
+    expect(useGame.getState().journal.some((l) => l.includes(proseS1))).toBe(true);
   });
 
   it('CONTRAT 2 : la barre d’actions est SŒUR du corps défilable (pied fixe), jamais dans le scroll', () => {
@@ -479,5 +489,66 @@ describe('Après la pose — l’étape reste lisible à l’état résolu (verd
     expect(actions.parentElement, 'la barre n’est pas sœur du corps défilable').toBe(scroll!.parentElement);
     // Le contenu long (grille + pile) vit bien DANS le corps défilable.
     expect(scroll!.querySelector('.rm-loc-grid')).not.toBeNull();
+  });
+});
+
+/**
+ * CORPS PURGÉ PAR BANDE (#1117 L1, arbitrage user 2026-08-09) — deux bandes successives (Animosité →
+ * Haine) : la fenêtre de la 2ᵉ ne montre QUE ses rangées. Avant l'arbitrage, les rangées résolues de
+ * la bande précédente restaient empilées au-dessus, sans séparateur : l'écran disait « Haine » en
+ * montrant des issues d'Animosité. Les verdicts partis du corps restent au JOURNAL.
+ */
+describe('bandes successives — le corps ne rend QUE la bande courante', () => {
+  const heroOf = (id: string) => {
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: id, rng: makeRNG(1) });
+    h.id = id;
+    return h;
+  };
+  const bandRow = (id: string, label: string) => ({ id, label, interactive: true, base: 50, target: 50, result: null });
+  const bandStep = (id: string, label: string, rows: ReturnType<typeof bandRow>[]): CascadeStep =>
+    ({ id, kind: 'uiBandProse', label, icon: 'nav/dice', interactive: true, aggregate: 'none', participants: rows }) as CascadeStep;
+
+  function openBandes() {
+    registerCascadeApplier('uiBandProse', (_g, _s, step) => ({
+      consequences: freeCons((step.participants ?? []).map((part) => `${part.label} — verdict`)),
+    }));
+    useGame.setState({
+      battle: null, party: [heroOf('h1'), heroOf('h2')], pendingCascade: null, suspendedCascades: [], journal: [],
+      net: { mode: 'local', mySeat: 0, roomCode: null, seatNames: {}, presence: {}, ownership: {} } as never,
+    });
+    startCascade(useGame.getState, useGame.setState, {
+      title: 'Sang-froid', purpose: 'test',
+      steps: [
+        bandStep('bA', 'Animosité (Elfes)', [bandRow('h1', 'Animosité-A1'), bandRow('h2', 'Animosité-A2')]),
+        bandStep('bB', 'Haine (Elfes)', [bandRow('h1', 'Haine-B1')]),
+      ],
+    });
+  }
+
+  /** Pose des jets DÉTERMINISTES sur les rangées de la bande courante (aucun RNG dans la sonde). */
+  function rollBand() {
+    const pc = useGame.getState().pendingCascade!;
+    const st = pc.participants[pc.cursor];
+    const participants = st.participants!.map((part) => ({ ...part, result: { roll: 99, target: 50, sl: -2, success: false } }));
+    useGame.setState({ pendingCascade: { ...pc, participants: pc.participants.map((x, i) => (i === pc.cursor ? { ...x, participants } : x)) } });
+  }
+
+  it('au passage à la 2ᵉ bande, les rangées de la 1ʳᵉ ont quitté le DOM ; leurs verdicts sont au Journal', () => {
+    openBandes();
+    render();
+    expect(host.textContent).toContain('Animosité-A1');
+    expect(host.textContent).toContain('Animosité-A2');
+    act(() => { rollBand(); });
+    act(() => { useGame.getState().cascadeNext(); });
+    render();
+    expect(useGame.getState().pendingCascade!.cursor).toBe(1);
+    expect(host.textContent, 'le titre de la bande courante est bien celui de la 2ᵉ').toContain('Haine');
+    expect(host.textContent, 'la rangée h1 de la bande précédente est restée sous le titre « Haine »').not.toContain('Animosité-A1');
+    expect(host.textContent, 'la rangée h2 de la bande précédente est restée sous le titre « Haine »').not.toContain('Animosité-A2');
+    expect(host.textContent, 'la rangée de la bande COURANTE doit être rendue').toContain('Haine-B1');
+    // Mémoire du joueur : les verdicts sortis du corps sont au Journal.
+    const journal = useGame.getState().journal;
+    expect(journal.some((l) => l.includes('Animosité-A1 — verdict'))).toBe(true);
+    expect(journal.some((l) => l.includes('Animosité-A2 — verdict'))).toBe(true);
   });
 });
