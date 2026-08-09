@@ -606,6 +606,30 @@ function footprintCells(footprint: readonly ArchitectureRect[]): Set<string> {
   return out;
 }
 
+/** EMPRISE d'un corps PAR ÉTAGE — les `foot` des volumes (`parts[]`) du `storey` de CE `z`. Un corps
+ *  n'occupe pas les mêmes cases à tous ses niveaux (retraits, ailes basses, tour), et un bâtiment
+ *  peut se décrire en PLUSIEURS corps qui se superposent (rez d'un corps, étage d'un autre) : juger
+ *  la couverture sur l'union tous-étages exigerait d'un corps qu'il coiffe l'étage d'un voisin.
+ *  Lue par `validateBuildingMasses` (`state/mapSpec.ts`, portée par-étage de la règle de couverture). */
+export function bodyFootCellsByZ(body: ArchitectureBody): Map<number, Set<string>> {
+  const out = new Map<number, Set<string>>();
+  for (const storey of body.storeys ?? []) {
+    const set = out.get(storey.z) ?? (out.set(storey.z, new Set<string>()).get(storey.z)!);
+    for (const key of footprintCells(storey.parts.map((part) => part.foot))) set.add(key);
+  }
+  return out;
+}
+
+/** EMPRISE d'un corps, tous étages confondus — union de `bodyFootCellsByZ`. BORNE de ce qu'un corps
+ *  peut revendiquer à la dérivation (`deriveArchitectureMasses`) : une colonne se lit du haut de la
+ *  scène vers le bas, donc sur toutes ses cases sans distinction d'étage. Vide = corps sans volume
+ *  déclaré (bâtiment en cours de saisie à l'éditeur) : la dérivation reste alors non bornée. */
+export function bodyFootCells(body: ArchitectureBody): Set<string> {
+  const out = new Set<string>();
+  for (const cells of bodyFootCellsByZ(body).values()) for (const key of cells) out.add(key);
+  return out;
+}
+
 /** Composantes 4-connexes de `cells`. */
 function componentsOf4(cells: ReadonlySet<string>): Set<string>[] {
   const remaining = new Set(cells);
@@ -749,7 +773,11 @@ export function gableSpanMaxTiles(scene: Scene): number {
  *  mesuré #829 : `architecture-0`) — `claimed` est un pool PARTAGÉ, rempli par les surcharges de TOUS
  *  les corps d'abord, puis par chaque dérivation dans l'ORDRE du tableau : un corps ne dérive JAMAIS
  *  une case déjà prise par un autre (surcharge ou dérivation précédente), sinon deux corps se
- *  disputeraient le même plancher et doubleraient le toit. Le reste du plancher réel d'un corps se
+ *  disputeraient le même plancher et doubleraient le toit. L'ordre du tableau ne décide POURTANT de
+ *  rien pour un corps à volumes DÉCLARÉS : il est BORNÉ à son emprise (`bodyFootCells`, tous étages
+ *  confondus — une colonne se lit du haut vers le bas) et, hors d'elle, ne revendique rien. Un corps
+ *  SANS volume (`storeys: []`, saisie en cours à l'éditeur) reste non borné, donc ordre-dépendant.
+ *  Le reste du plancher réel d'un corps se
  *  regroupe par colonne `(topZ, levels)` — le sommet naturel de la colonne (première case non prise en
  *  descendant depuis le haut de la scène) et le nombre de niveaux qu'elle porte en dessous (plancher
  *  contigu, mêmes retraits) — puis chaque groupe se décompose en composantes 4-connexes, et chaque
@@ -799,10 +827,17 @@ export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
   return bodies.map((body) => {
     const overrides = body.masses.filter((mass) => !mass.derived);
     const defaults = body.roofDefaults ?? DEFAULT_ROOF_DEFAULTS;
+    // BORNE d'emprise : un corps ne dérive que SUR SON PROPRE plancher (`bodyFootCells`), jamais sur
+    // celui d'un voisin — `floorAt` rend le plancher de la scène ENTIÈRE, tous corps confondus.
+    // Emprise vide (corps sans volume déclaré) = aucune borne : le pool partagé `claimed` reste le
+    // seul arbitre, comme pour un bâtiment en cours de saisie à l'éditeur.
+    const foot = bodyFootCells(body);
+    const bounded = foot.size > 0;
 
     const groups = new Map<string, Set<string>>(); // "topZ:levels" → cellules "x,y"
     for (let y = 0; y < h; y++)
       for (let x = 0; x < w; x++) {
+        if (bounded && !foot.has(vkey(x, y))) continue;
         let topZ: number | null = null;
         for (const z of layerZs) {
           if (claimed.has(`${x},${y},${z}`)) continue;

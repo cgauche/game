@@ -73,6 +73,7 @@ import {
   realFloorAt,
   roofExclusionsByZ,
   deriveArchitectureMasses,
+  bodyFootCellsByZ,
 } from './sceneEdit';
 
 /** Hauteur (m) par défaut d'une ENCEINTE `cells` sans `height` explicite — chemin de ronde à ~4 m (un
@@ -375,9 +376,10 @@ function applyStairs(s: Scene, spec: MapSpec, cellCells: { char: string; x: numb
  *  comparent, pas seulement l'étage `z` de la masse — sinon un étage entièrement couvert par une masse
  *  à étage serait accusé à tort d'un « plancher sans masse ».
  *  Note #829 : cette fonction tourne sur les masses FINALES (surcharges déclarées + dérivées par
- *  `deriveArchitectureMasses`, cf. `buildScene`). Sa portée est le CORPS : chaque règle se juge sur
- *  les masses d'un corps et sur SON emprise (l'union des `foot` de ses `storeys[].parts[]`) — jamais
- *  sur le plancher de la scène entière, que `realFloorAt` rend tous corps confondus. */
+ *  `deriveArchitectureMasses`, cf. `buildScene`). Deux portées : le CORPS (chaque règle se juge sur
+ *  les masses d'un corps et, PAR ÉTAGE, sur l'emprise que ce corps y déclare — `bodyFootCellsByZ`,
+ *  jamais sur le plancher de la scène entière que `realFloorAt` rend tous corps confondus) ; puis la
+ *  SCÈNE (toute case de plancher réel relève d'un corps — masse ou exclusion à ciel ouvert). */
 function validateBuildingMasses(scene: Scene): void {
   const massCells = (footprint: readonly ArchitectureRect[]): Set<string> => {
     const out = new Set<string>();
@@ -402,12 +404,17 @@ function validateBuildingMasses(scene: Scene): void {
   };
   const layerZs = new Set(scene.layers.map((l) => l.z));
   const floorAt = realFloorAt(scene);
+  /** Ce que CHAQUE corps couvre (masses par étage) ou dispense (ciel ouvert) — relu par la règle de
+   *  COMPLÉTUDE de scène, une fois tous les corps passés. */
+  const covered: { coverage: Map<number, Map<string, string>>; exclusions: Map<number, Set<string>> }[] = [];
 
   for (const body of scene.architecture ?? []) {
     const exclusions = roofExclusionsByZ(body);
-    // EMPRISE du corps : l'union des `foot` de ses volumes déclarés. `floorAt` rend le plancher de la
-    // scène ENTIÈRE (tous corps confondus) — la couverture ne s'exige que sur les cases de CE corps.
-    const bodyFoot = massCells((body.storeys ?? []).flatMap((storey) => storey.parts.map((part) => part.foot)));
+    // EMPRISE du corps PAR ÉTAGE (`bodyFootCellsByZ`) : `floorAt` rend le plancher de la scène
+    // ENTIÈRE (tous corps confondus) et un bâtiment peut se décrire en plusieurs corps SUPERPOSÉS
+    // (rez de l'un, étage de l'autre) — la couverture ne s'exige d'un corps qu'aux étages où il
+    // déclare un volume, et seulement sur les cases de ce volume.
+    const footByZ = bodyFootCellsByZ(body);
     for (const mass of body.masses) {
       if (!Number.isInteger(mass.levels) || mass.levels < 1)
         throw new Error(`masse « ${mass.id} » (corps « ${body.id} ») : \`levels\` invalide (${mass.levels}) — entier ≥ 1 attendu`);
@@ -462,17 +469,36 @@ function validateBuildingMasses(scene: Scene): void {
         }
       }
     }
-    for (const [z, at] of coverage) {
+    // Couverture exigée sur TOUT étage où le corps DÉCLARE un volume — pas seulement sur ceux où il
+    // a POSÉ une masse : un corps dont l'emprise est bâtie mais qui finit SANS aucune masse (masses
+    // authorées retirées et dérivation empêchée — cases déjà revendiquées par la surcharge d'un
+    // autre corps) laisserait sinon son plancher nu sans que rien ne le dise.
+    for (const [z, foot] of [...footByZ].sort((a, b) => a[0] - b[0])) {
+      const at = coverage.get(z) ?? new Map<string, string>();
       const floor = floorAt(z);
       const excluded = exclusions.get(z);
       for (const key of floor) {
-        if (!bodyFoot.has(key)) continue;
+        if (!foot.has(key)) continue;
         if (excluded?.has(key)) continue; // #829 : cour à ciel ouvert déclarée — aucune masse n'est due
         if (!at.has(key)) {
           const [x, y] = key.split(',').map(Number);
           throw new Error(`corps « ${body.id} » : case de plancher (${x},${y}) à l'étage ${z} n'appartient à AUCUNE masse — ajoute-la à une masse existante ou crée une masse qui la couvre`);
         }
       }
+    }
+    covered.push({ coverage, exclusions });
+  }
+
+  // COMPLÉTUDE DE SCÈNE : la règle par-corps ci-dessus ne juge un corps que sur SON emprise déclarée
+  // (`bodyFootCellsByZ`) — un `foot` plus PETIT que l'intérieur réellement clos par les murs laissait
+  // donc la différence hors de toute masse SANS que rien ne le dise (mesuré : mur 4×4, `foot` 2×2 →
+  // 12 cases nues, aucune erreur). Le plancher réel de la scène se juge donc AUSSI en entier : chaque
+  // case appartient à la masse d'un corps, ou à l'exclusion à ciel ouvert d'un corps.
+  for (const z of [...new Set([0, ...layerZs])].sort((a, b) => a - b)) {
+    for (const key of floorAt(z)) {
+      if (covered.some(({ coverage, exclusions }) => coverage.get(z)?.has(key) || exclusions.get(z)?.has(key))) continue;
+      const [x, y] = key.split(',').map(Number);
+      throw new Error(`case de plancher (${x},${y}) à l'étage ${z} n'est couverte par AUCUN corps — étends le \`foot\` du corps qui la contient, déclare une masse qui la couvre, ou une \`roofExclusions\` si elle est à ciel ouvert`);
     }
   }
 }

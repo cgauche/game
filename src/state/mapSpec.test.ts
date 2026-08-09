@@ -5,6 +5,7 @@ import { pathTo, reachable, walkNeighbors } from './path';
 import { edgeWallState } from '../ui/editor/editorState';
 import { sceneZoneTiles } from './zones';
 import { scenario as zonesPieces } from '../scenes/test-scenarios/zones-pieces';
+import { buildVitrineScene, vitrineSpec } from '../scenes/vitrine-batiments';
 import { perimeterEdges } from './sceneEdit.testkit';
 
 /** GOLDEN = spécification exécutable du format `MapSpec`. Chaque bloc verrouille une section de la
@@ -990,10 +991,15 @@ describe('buildScene — la couverture des masses se juge sur l\'EMPRISE du corp
     expect(() => buildScene(specOf([body('corps-a', A), body('corps-b', B)], [A, B]))).not.toThrow();
   });
 
-  it('un corps dont la masse authorée laisse une case de SA PROPRE emprise sans toit → lève, en nommant CE corps', () => {
+  it('une case de SA PROPRE emprise laissée nue par la masse authorée est DÉRIVÉE — par CE corps, jamais par le voisin', () => {
     const trou: Foot = { x: B.x, y: B.y, w: B.w, h: B.h - 1 }; // la rangée y=3 de « corps-b » reste nue
-    expect(() => buildScene(specOf([body('corps-a', A), body('corps-b', B, [trou])], [A, B])))
-      .toThrow(/corps « corps-b » : case de plancher \(\d+,3\) à l'étage 0 n'appartient à AUCUNE masse/);
+    const scene = buildScene(specOf([body('corps-a', A), body('corps-b', B, [trou])], [A, B]));
+    const b = scene.architecture!.find((bd) => bd.id === 'corps-b')!;
+    const comble = b.masses.find((m) => m.derived);
+    expect(comble?.footprint).toEqual([{ x: B.x, y: B.y + B.h - 1, w: B.w, h: 1 }]);
+    const a = scene.architecture!.find((bd) => bd.id === 'corps-a')!;
+    expect(a.masses.every((m) => m.footprint.every((r) => r.x >= A.x && r.x + r.w <= A.x + A.w
+      && r.y >= A.y && r.y + r.h <= A.y + A.h))).toBe(true);
   });
 
   it('non-régression mono-corps : la masse couvrant toute l\'emprise compile, et la couvre bien', () => {
@@ -1006,5 +1012,160 @@ describe('buildScene — la couverture des masses se juge sur l\'EMPRISE du corp
           for (let x = rect.x; x < rect.x + rect.w; x++) covered.add(`${x},${y}`);
     for (let y = A.y; y < A.y + A.h; y++)
       for (let x = A.x; x < A.x + A.w; x++) expect(covered.has(`${x},${y}`)).toBe(true);
+  });
+
+  it('deux corps à volumes DÉCLARÉS : aucun ne dérive sur le plancher de l\'autre, quel que soit leur rang dans le tableau', () => {
+    // « corps-a » (1er du tableau) n'a POSÉ de masse que sur SON emprise ; « corps-b » n'en déclare
+    // aucune. Sans borne d'emprise, la dérivation de « corps-a » balayait la scène entière et coiffait
+    // l'emprise de « corps-b » — matériau et pente du MAUVAIS corps, et « corps-b » restait nu.
+    // Portée : les corps à `storeys` déclarés. Un corps SANS volume (`storeys: []`) reste non borné,
+    // donc sensible à l'ordre — cas suivant, et #1172.
+    const scene = buildScene(specOf([body('corps-a', A), { ...body('corps-b', B), masses: [] }], [A, B]));
+    const [a, b] = scene.architecture!;
+    const cellsOf = (bd: typeof a): Set<string> => {
+      const out = new Set<string>();
+      for (const mass of bd.masses)
+        for (const rect of mass.footprint)
+          for (let y = rect.y; y < rect.y + rect.h; y++)
+            for (let x = rect.x; x < rect.x + rect.w; x++) out.add(`${x},${y}`);
+      return out;
+    };
+    for (const key of cellsOf(a)) {
+      const [x, y] = key.split(',').map(Number);
+      expect(x >= A.x && x < A.x + A.w && y >= A.y && y < A.y + A.h).toBe(true);
+    }
+    // …et « corps-b », borné à SA propre emprise, dérive enfin SON toit.
+    expect(b.masses.some((m) => m.derived)).toBe(true);
+    for (let y = B.y; y < B.y + B.h; y++)
+      for (let x = B.x; x < B.x + B.w; x++) expect(cellsOf(b).has(`${x},${y}`)).toBe(true);
+  });
+
+  it('un corps d\'emprise BÂTIE qui finit sans AUCUNE masse (plancher pris par la surcharge d\'un autre) → lève en nommant CE corps', () => {
+    // « corps-a » authore une masse sur l'emprise de « corps-b » : ces cases sont revendiquées, la
+    // dérivation de « corps-b » ne peut plus rien poser — son plancher resterait nu en silence.
+    const spec = specOf([
+      { ...body('corps-a', A), masses: [...body('corps-a', A).masses, ...body('corps-b', B).masses] },
+      { ...body('corps-b', B), masses: [] },
+    ], [A, B]);
+    expect(() => buildScene(spec))
+      .toThrow(/corps « corps-b » : case de plancher \(\d+,\d+\) à l'étage 0 n'appartient à AUCUNE masse/);
+  });
+
+  it('corps SANS storeys (emprise vide — bâtiment en cours de saisie à l\'éditeur) : dérivation non bornée, tolérée telle quelle', () => {
+    const scene = buildScene({
+      id: 't', nom: 'T', size: [12, 12] as [number, number], terrain: 'herbe',
+      levels: { z0: Array.from({ length: 12 }, () => '.'.repeat(12)).join('\n') },
+      walls: perimeterEdges([A]),
+      architecture: [{ id: 'corps-sans-volume', style: 'maison', storeys: [], facades: [], masses: [] }],
+    });
+    expect(scene.architecture![0].masses.length).toBeGreaterThan(0);
+  });
+});
+
+describe('buildScene — couverture PAR ÉTAGE et COMPLÉTUDE de scène (#1158)', () => {
+  const N = 12;
+  const grid = (at: (x: number, y: number) => string) =>
+    Array.from({ length: N }, (_, y) => Array.from({ length: N }, (_, x) => at(x, y)).join('')).join('\n');
+  const salle = { x: 1, y: 1, w: 4, h: 4 };
+  const dedans = (r: { x: number; y: number; w: number; h: number }, x: number, y: number) =>
+    x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
+  const toit = (id: string, z: number, foot: { x: number; y: number; w: number; h: number }) => ({
+    id, z, footprint: [foot], levels: 1, profile: 'gable' as const, ridge: 'x' as const, pitchDeg: 42, material: 'tuile',
+  });
+  const socle = {
+    id: 't', nom: 'T', size: [N, N] as [number, number], terrain: 'herbe',
+    terrainRects: [{ rect: [salle.x, salle.y, salle.w, salle.h] as [number, number, number, number], terrain: 'plancher' as const }],
+    walls: perimeterEdges([salle]),
+    zoneMap: { z0: grid((x, y) => (dedans(salle, x, y) ? 'S' : '.')) },
+    zoneLegend: { S: { id: 'piece-rez', label: 'Salle', presentation: 'interior' as const } },
+  };
+  const toitees = (scene: ReturnType<typeof buildScene>): Set<string> => {
+    const out = new Set<string>();
+    for (const body of scene.architecture ?? [])
+      for (const mass of body.masses)
+        for (const r of mass.footprint)
+          for (let y = r.y; y < r.y + r.h; y++) for (let x = r.x; x < r.x + r.w; x++) out.add(`${x},${y}`);
+    return out;
+  };
+
+  // Un bâtiment décrit en DEUX corps SUPERPOSÉS : le rez (4×4 à z0) et l'étage en retrait (2×2 à z1),
+  // chacun avec SON storey et SA masse. Jugée sur l'emprise tous-étages confondus, la couverture
+  // exigeait du corps du rez qu'il coiffe l'étage du voisin — et du corps de l'étage qu'il coiffe le rez.
+  const etage = { x: 2, y: 2, w: 2, h: 2 };
+  const deuxCorps = {
+    ...socle,
+    levels: {
+      z0: grid(() => '.'),
+      z1: grid((x, y) => (dedans(etage, x, y) ? 'P' : '.')), // base d'étage = 'vide' hors 'P'
+    },
+    legend: { P: 'plancher' as const },
+    architecture: [
+      {
+        id: 'corps-rez', style: 'maison',
+        storeys: [{ id: 'rez-z0', z: 0, parts: [{ id: 'rez-v', foot: salle }], roomZoneIds: ['piece-rez'] }],
+        facades: [], masses: [toit('toit-rez', 0, salle)],
+      },
+      {
+        id: 'corps-etage', style: 'maison',
+        storeys: [{ id: 'et-z1', z: 1, parts: [{ id: 'et-v', foot: etage }], roomZoneIds: [] }],
+        facades: [], masses: [toit('toit-etage', 1, etage)],
+      },
+    ],
+  };
+
+  it('bâtiment en DEUX corps (rez à z0, étage en retrait à z1) : compile, chaque corps gardant SES masses', () => {
+    const scene = buildScene(deuxCorps);
+    const rez = scene.architecture!.find((b) => b.id === 'corps-rez')!;
+    const et = scene.architecture!.find((b) => b.id === 'corps-etage')!;
+    expect(rez.masses.map((m) => ({ id: m.id, z: m.z }))).toEqual([{ id: 'toit-rez', z: 0 }]);
+    expect(et.masses.map((m) => ({ id: m.id, z: m.z }))).toEqual([{ id: 'toit-etage', z: 1 }]);
+  });
+
+  const avecFoot = (foot: { x: number; y: number; w: number; h: number } | null) => ({
+    ...socle,
+    levels: { z0: grid(() => '.') },
+    architecture: [{
+      id: 'corps', style: 'maison',
+      storeys: foot ? [{ id: 'z0', z: 0, parts: [{ id: 'v', foot }], roomZoneIds: ['piece-rez'] }] : [],
+      facades: [], masses: [],
+    }],
+  });
+
+  it('un `foot` plus PETIT que l\'intérieur clos par les murs LÈVE — la différence ne restait couverte par rien', () => {
+    expect(() => buildScene(avecFoot({ x: 1, y: 1, w: 2, h: 2 })))
+      .toThrow(/case de plancher \(\d+,\d+\) à l'étage 0 n'est couverte par AUCUN corps/);
+  });
+
+  it('contrôle — corps SANS volume déclaré (dérivation non bornée) : compile et coiffe TOUT l\'intérieur', () => {
+    const scene = buildScene(avecFoot(null));
+    expect(toitees(scene).size).toBe(salle.w * salle.h);
+  });
+});
+
+describe('vitrine des bâtiments — chaque corps porte SON toit (#1158)', () => {
+  it('la vitrine intacte compile, et chaque corps garde sa seule masse authorée', () => {
+    const scene = buildVitrineScene();
+    for (const body of scene.architecture!) {
+      expect(body.masses).toHaveLength(1);
+      expect(body.masses[0].id).toBe(`toit-${body.id}`);
+    }
+  });
+
+  it('un corps privé de sa masse la DÉRIVE sur SA propre emprise — aucun voisin ne la lui prend', () => {
+    const spec = {
+      ...vitrineSpec,
+      architecture: vitrineSpec.architecture!.map((body) => (body.id === 'vit-maison' ? { ...body, masses: [] } : body)),
+    };
+    const scene = buildScene(spec);
+    const maison = scene.architecture!.find((b) => b.id === 'vit-maison')!;
+    const taverne = scene.architecture!.find((b) => b.id === 'vit-taverne')!;
+    // La maison couvre son emprise (21,4)-(27,10) par une masse DÉRIVÉE…
+    expect(maison.masses).toHaveLength(1);
+    expect(maison.masses[0].derived).toBe(true);
+    expect(maison.masses[0].footprint).toEqual([{ x: 21, y: 4, w: 7, h: 7 }]);
+    // …et la taverne garde SA seule masse authorée, sur SON emprise.
+    expect(taverne.masses).toHaveLength(1);
+    expect(taverne.masses[0].derived).toBeUndefined();
+    expect(taverne.masses[0].footprint).toEqual([{ x: 3, y: 3, w: 15, h: 10 }]);
   });
 });
