@@ -42,6 +42,12 @@ de `saves-flow.test.ts` (`MIGRATIONS[v]` + fixture `v<v>-*.json` exigées pour c
   PEUPLÉ (scènes `scene-a`/`scene-b` + carte + narratif embarqué). Golden de la version COURANTE : prouve
   le round-trip du snapshot (re-registration des scènes + re-dérivation du narratif au chargement, #766).
 
+- `v16-cascade-psy-mono.json` — cascade de Psychologie EN VOL à la forme MONO (déclaration `encounterPsych`
+  + jet sur l'ÉTAPE, aucun `participants`), motive `MIGRATIONS[16]` (v16→v17, bandification #1117 L1/L2 :
+  les appliers exigent des RANGÉES, une étape mono serait abandonnée en silence). Fixture de version
+  PASSÉE, MINIMALE et écrite à la main (idem `v4-convoi`/`v6-codex-focus-label`), forme legacy relevée
+  dans l'historique (`af7774e2^:src/state/encounterPsychFlow.ts`).
+
 ## Ajouter/régénérer une fixture
 
 Ne JAMAIS écrire un fichier de save à la main. Utiliser `_generate.test.ts` (suite `describe.skip`

@@ -40,7 +40,7 @@ import type { CodexFocus } from './codexFocus';
 import type { PendingCascade, RevealEntry } from './pendings';
 import { revealToStep } from './revealStep';
 
-export const SAVE_VERSION = 16;
+export const SAVE_VERSION = 17;
 
 export interface SaveMeta {
   version: number;
@@ -276,6 +276,19 @@ export const MIGRATIONS: MigrationMap = {
     adoptLegacyReveals(data);
     return { ...doc, version: 16, data };
   },
+  // v16→v17 (#1117 L1/L2) : la Psychologie — à la RENCONTRE comme en COMBAT — n'est plus une étape PAR
+  // HÉROS mais une BANDE par entrée de règle : la déclaration (`encounterPsych`/`combatPsych`) reste sur
+  // l'étape, le JET descend sur les RANGÉES (`participants`, `aggregate:'none'`). Les deux appliers
+  // exigent `step.participants` et RENONCENT sans lui : une save v16 prise EN PLEINE cascade psy se
+  // rechargerait avec une étape MONO dont le Test se lance et la cascade avance, sans que la Peur/le
+  // Trait ciblé soit JAMAIS posé ni une ligne de journal écrite. Chaque étape psy MONO — de la cascade
+  // ACTIVE (`pendingCascade`) comme de la pile SUSPENDUE (`suspendedCascades`) — devient donc une bande
+  // d'UNE rangée : jet posé, Détermination et influences suivent sur la rangée.
+  16: (doc) => {
+    const data = { ...(doc.data as Record<string, unknown>) };
+    bandifyPsychSteps(data);
+    return { ...doc, version: 17, data };
+  },
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus
@@ -387,6 +400,56 @@ function adoptLegacyReveals(data: Record<string, unknown>): void {
   data.pendingCascade = host
     ? { ...host, participants: [...host.participants, ...steps] }
     : { title: steps[0].label ?? 'Conséquences', icon: steps[0].icon ?? 'action/attack', purpose: 'affichage', cursor: 0, log: [], participants: steps };
+}
+
+/** Clés de DÉCLARATION d'une bande de Psychologie sur une étape de cascade (`CascadeStep`) — celles
+ *  dont l'applier exige `participants` depuis #1117 L1/L2. MIGRATIONS[16]. */
+const PSYCH_DECL_KEYS = ['encounterPsych', 'combatPsych'] as const;
+
+/** Champs du jet MONO d'une étape psy v16 qui descendent TELS QUELS sur la rangée (influences et
+ *  Détermination comprises) puis quittent l'étape — MIGRATIONS[16]. */
+const PSYCH_ROW_FIELDS = ['difficulty', 'easedBy', 'mods', 'clamped', 'immune', 'rerolled', 'forced', 'fixed', 'outcome'] as const;
+
+/** Convertit UNE étape psy MONO (v16) en BANDE d'une seule rangée — MIGRATIONS[16]. No-op sur une étape
+ *  sans déclaration psy, déjà en bande (`participants`), ou sans `actorId` (rangée impossible à bâtir :
+ *  patron `normalizeScene`/`adoptLegacyReveals`, tolérant plutôt qu'un crash sur vieille donnée). Mute
+ *  l'étape. */
+function bandifyPsychStep(step: Record<string, unknown>): void {
+  const declKey = PSYCH_DECL_KEYS.find((k) => !!step[k] && typeof step[k] === 'object');
+  if (!declKey || Array.isArray(step.participants) || typeof step.actorId !== 'string') return;
+  const decl = { ...(step[declKey] as Record<string, unknown>) };
+  const stepMeta = { ...(step.meta as Record<string, unknown> | undefined) };
+  const row: Record<string, unknown> = {
+    id: step.actorId, interactive: true, label: step.rollLabel,
+    base: step.base ?? 0, target: step.target ?? 0, result: step.result ?? null,
+  };
+  for (const k of PSYCH_ROW_FIELDS) if (step[k] !== undefined) { row[k] = step[k]; delete step[k]; }
+  // FORME CIBLE : ce qui DIVERGE d'un héros à l'autre vit PAR RANGÉE — le DR cumulé du Test étendu et
+  // l'allègement « Sans Peur » dans `BatchParticipant.meta`, la barre de DR (`extendedDr*`) sur la
+  // rangée elle-même. L'entrée de règle mise en jeu — type/source/cible/Indice — est la DÉCLARATION de
+  // l'étape. FORME SOURCE (v16) : les deux vivaient sur l'étape (déclaration et `meta` d'étape).
+  const rowMeta: Record<string, unknown> = {};
+  for (const k of ['prevDR', 'sansPeur'] as const) if (decl[k] !== undefined) { rowMeta[k] = decl[k]; delete decl[k]; }
+  if (Object.keys(rowMeta).length) row.meta = rowMeta;
+  for (const k of ['extendedDrTarget', 'extendedDrDone'] as const) if (stepMeta[k] !== undefined) { row[k] = stepMeta[k]; delete stepMeta[k]; }
+  for (const k of ['actorId', 'rollLabel', 'base', 'target', 'result'] as const) delete step[k];
+  if (Object.keys(stepMeta).length) step.meta = stepMeta; else delete step.meta;
+  step[declKey] = decl;
+  step.interactive = true;
+  step.aggregate = 'none';
+  step.participants = [row];
+}
+
+/** Bandifie les étapes psy MONO des cascades SÉRIALISÉES — la cascade ACTIVE (`pendingCascade`) et la
+ *  pile des cascades SUSPENDUES (`suspendedCascades`, `cascade.ts`), toutes deux embarquées par
+ *  `snapshotSave`. MIGRATIONS[16]. Mute `data`. */
+function bandifyPsychSteps(data: Record<string, unknown>): void {
+  const stack = Array.isArray(data.suspendedCascades) ? data.suspendedCascades : [];
+  for (const cascade of [data.pendingCascade, ...stack]) {
+    const steps = (cascade as { participants?: unknown } | null | undefined)?.participants;
+    if (!Array.isArray(steps)) continue;
+    for (const step of steps) if (step && typeof step === 'object') bandifyPsychStep(step as Record<string, unknown>);
+  }
 }
 
 /** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE, via la

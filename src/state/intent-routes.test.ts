@@ -79,6 +79,16 @@ describe('#1051 — frontière table ⇄ REPLI universel', () => {
     expect(ROUTES.has('battleSelectAction'), 'un geste de tour ordinaire ne se route pas').toBe(false);
   });
 
+  // Le compte ci-dessus est un CLIQUET : il constate 182 sans dire d'où vient le −1. Ici la population
+  // est DÉRIVÉE — repli et routés PARTITIONNENT l'allowlist — et le mouvement de #1117 est NOMMÉ : la
+  // Détermination se joue PAR RANGÉE de bande, verbe `cascadeBatchDetermine`, qui est routé.
+  it('la population du repli est DÉRIVÉE (partition de l’allowlist) et la Détermination PAR RANGÉE est routée', () => {
+    const routes = [...GUEST_INTENTS].filter((a) => ROUTES.has(a));
+    const repli = [...GUEST_INTENTS].filter((a) => !ROUTES.has(a));
+    expect(repli.length + routes.length, 'partition exacte de l’allowlist').toBe(GUEST_INTENTS.size);
+    expect(ROUTES.has('cascadeBatchDetermine'), 'la Détermination PAR RANGÉE est routée (#1117)').toBe(true);
+  });
+
   it('un intent INCONNU n’a pas de route (il tombe sur le repli, jamais sur une route voisine)', () => {
     expect(ROUTES.has('intentQuiNExistePas')).toBe(false);
   });

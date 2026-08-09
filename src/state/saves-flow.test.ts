@@ -352,6 +352,129 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect(useGame.getState().pendingCascade!.participants[0].reveal?.title).toBe('Mutation — Écailles');
   });
 
+  // #1117 L1/L2 — MIGRATIONS[16] : la Psychologie n'est plus une étape PAR HÉROS mais une BANDE dont
+  // les héros sont les RANGÉES. Les appliers `encounterPsych`/`combatPsych` exigent `step.participants`
+  // et renoncent sans lui : une save v16 prise EN PLEINE cascade psy rechargerait une étape MONO dont le
+  // Test se lance et la cascade avance, la Peur n'étant JAMAIS posée ni journalisée.
+  it('MIGRATIONS[16] (#1117) : une étape psy MONO en vol devient une bande d’UNE rangée (jet descendu, champs mono retirés)', () => {
+    const raw = JSON.parse(readFileSync(new URL('v16-cascade-psy-mono.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const legacyStep = ((raw as { data: Record<string, unknown> }).data.pendingCascade as { participants: Record<string, unknown>[] }).participants[0];
+    expect(legacyStep.actorId).toBe('h1'); // la fixture v16 porte bien la forme MONO…
+    expect(legacyStep.participants).toBeUndefined(); // … sans aucune rangée
+    const migrated = migrateSave(raw);
+    expect(migrated).not.toBeNull();
+    expect(migrated!.version).toBe(SAVE_VERSION);
+    const cascade = (migrated!.data as Record<string, unknown>).pendingCascade as { participants: Record<string, unknown>[] };
+    const band = cascade.participants[0];
+    expect(band.kind).toBe('encounterPsych');
+    expect(band.aggregate).toBe('none');
+    expect((band.encounterPsych as { kind: string; indice: number }).kind).toBe('peur');
+    // Le jet vit sur la RANGÉE ; l'étape n'en porte plus rien (contrat de bande).
+    for (const mono of ['actorId', 'rollLabel', 'base', 'target', 'result']) expect(mono in band).toBe(false);
+    const rows = band.participants as Record<string, unknown>[];
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ id: 'h1', interactive: true, label: 'Calme', base: 29, target: 29, result: null });
+  });
+
+  it('MIGRATIONS[16] (#1117) : la rangée migrée RÉSOUT — le Test de Calme raté POSE la Peur (l’applier ne renonce plus)', () => {
+    const raw = JSON.parse(readFileSync(new URL('v16-cascade-psy-mono.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const migrated = migrateSave(raw)!;
+    expect(saveToSlot(1, migrated)).toBe(true);
+    expect(useGame.getState().loadGame(1)).toBe(true);
+    const pc = useGame.getState().pendingCascade!;
+    const band = pc.participants[0];
+    // Jet POSÉ (déterministe) : Calme raté d'un échec normal.
+    const rows = (band.participants ?? []).map((p) => ({ ...p, result: { roll: 95, target: p.target, sl: -2, success: false } }));
+    useGame.setState({ pendingCascade: { ...pc, participants: [{ ...band, participants: rows }] } });
+    useGame.getState().cascadeNext();
+    const hero = useGame.getState().party.find((h) => h.id === 'h1')!;
+    const peur = (hero.psychState ?? []).find((p) => p.type === 'peur' && p.sourceId === 'scripted:Un spectre hurlant');
+    expect(peur?.indice).toBe(2);
+    expect(peur?.calmeDR).toBe(0); // Test raté : la Peur n'est pas surmontée
+    expect(useGame.getState().journal.some((l) => l.includes('Timoré'))).toBe(true); // conséquence journalisée
+    expect(useGame.getState().pendingCascade).toBeNull();
+  });
+
+  // MIGRATIONS[16] — l'AUTRE porteur d'étapes psy sérialisé par `snapshotSave` : la pile des cascades
+  // SUSPENDUES. Et la charge de RANGÉE de la Psychologie de COMBAT (Test étendu de Peur) : le DR déjà
+  // cumulé et l'allègement « Sans Peur » quittent la déclaration d'étape pour le `meta` de la rangée,
+  // la barre de DR cumulé quitte le `meta` d'étape pour la rangée.
+  it('MIGRATIONS[16] : les cascades SUSPENDUES sont migrées aussi ; prevDR/sansPeur et extendedDr* descendent sur la rangée', () => {
+    const raw = {
+      version: 16, savedAt: '2026', sceneLabel: 's', gameTime: 0,
+      data: {
+        pendingCascade: null,
+        suspendedCascades: [{
+          title: 'Sang-froid', purpose: 'combat', cursor: 0, log: [],
+          participants: [{
+            id: 'psych-h1', kind: 'combatPsych', actorId: 'h1', rollLabel: 'Calme', base: 35, target: 55,
+            label: 'Peur 3 · Sans Peur (+20)', immune: true,
+            combatPsych: { kind: 'peur', sourceId: 'e1', sourceName: 'Bête', indice: 3, prevDR: 1, sansPeur: true },
+            meta: { extendedDrTarget: 3, extendedDrDone: 1 },
+          }],
+        }],
+      },
+    };
+    const migrated = migrateSave(raw);
+    expect(migrated!.version).toBe(SAVE_VERSION);
+    const band = ((migrated!.data as Record<string, unknown>).suspendedCascades as { participants: Record<string, unknown>[] }[])[0].participants[0];
+    expect(band.combatPsych).toEqual({ kind: 'peur', sourceId: 'e1', sourceName: 'Bête', indice: 3 });
+    expect('meta' in band).toBe(false); // le `meta` d'étape ne portait QUE la barre de DR de la rangée
+    const row = (band.participants as Record<string, unknown>[])[0];
+    expect(row).toMatchObject({ id: 'h1', base: 35, target: 55, immune: true, meta: { prevDR: 1, sansPeur: true }, extendedDrTarget: 3, extendedDrDone: 1 });
+    expect('immune' in band).toBe(false); // la Détermination est jouée PAR RANGÉE
+  });
+
+  // MIGRATIONS[16] — trois propriétés qu'aucun des tests ci-dessus ne mesure : une save ANCIENNE traverse
+  // TOUTE la chaîne (v13→v17) avec sa cascade psy en vol ; une étape SUR-CHARGÉE (jet posé, influences
+  // dépensées, `meta` mixte) ne perd RIEN au passage — chaque champ atterrit sur l'étape, la rangée ou
+  // le `meta` de rangée ; et le migrateur est IDEMPOTENT (une étape déjà en bande n'est jamais re-bandifiée).
+  it('MIGRATIONS[16] : chaîne v13→v17 sur une étape SUR-CHARGÉE — rien de perdu, no-op sans actorId, idempotent', () => {
+    const legacyStep = () => ({
+      id: 'psych-h1', kind: 'combatPsych', actorId: 'h1', icon: 'flag/fear', rollLabel: 'Calme',
+      base: 35, target: 55, label: 'Peur 3 · Sans Peur (+20)', menace: 'Peur', committed: true,
+      mods: [{ label: 'Brisé', value: -10 }], clamped: 99, difficulty: 'accessible',
+      result: { roll: 12, target: 55, sl: 4, success: true },
+      rerolled: true, forced: true, fixed: true, immune: true, outcome: [{ text: 'ligne' }],
+      combatPsych: { kind: 'peur', sourceId: 'e1', sourceName: 'Bête', indice: 3, prevDR: 1, sansPeur: true },
+      stake: { key: { dataset: 'combat', kind: 'combatPsych', entryId: 'peur' }, values: { indice: 3 } },
+      meta: { extendedDrTarget: 3, extendedDrDone: 1, sourceKind: 'trait', sourceEntityId: 'peur' },
+    });
+    const doc = (version: number, participants: unknown[]) => ({
+      version, savedAt: '2026', sceneLabel: 's', gameTime: 0,
+      data: { pendingCascade: { title: 'T', purpose: 'combat', cursor: 0, log: [], participants }, suspendedCascades: [] },
+    });
+
+    // CHAÎNE COMPLÈTE : une save v13 traverse MIGRATIONS[13..16] (`migrateSave`), pas seulement [16].
+    const migrated = migrateSave(doc(13, [legacyStep()]))!;
+    expect(migrated.version).toBe(SAVE_VERSION);
+    const step = (migrated.data.pendingCascade as { participants: Record<string, unknown>[] }).participants[0];
+    const row = (step.participants as Record<string, unknown>[])[0];
+    expect(row.id).toBe('h1'); // `actorId` d'étape → porteur de la RANGÉE
+    expect(row.label).toBe('Calme'); // `rollLabel` d'étape → libellé de ligne de la RANGÉE
+    // Aucun champ ABANDONNÉ : tout ce que portait l'étape mono se retrouve sur l'étape, la rangée, ou son `meta`.
+    const logés = new Set([...Object.keys(step), ...Object.keys(row), ...Object.keys(row.meta as object), 'actorId', 'rollLabel']);
+    expect(Object.keys(legacyStep()).filter((k) => !logés.has(k))).toEqual([]);
+    // Ce qui reste à l'ÉTAPE = ce qui est COMMUN à la bande (identité, présentation, enjeu, déclaration) ;
+    // le `meta` d'étape garde ses clés NON-rangée (source de l'effet), délestées de la barre de DR.
+    expect(Object.keys(step).sort()).toEqual(['aggregate', 'combatPsych', 'committed', 'icon', 'id', 'interactive', 'kind', 'label', 'menace', 'meta', 'participants', 'stake']);
+    expect(step.meta).toEqual({ sourceKind: 'trait', sourceEntityId: 'peur' });
+    expect(row).toMatchObject({ result: { roll: 12, sl: 4, success: true }, rerolled: true, forced: true, fixed: true, immune: true, clamped: 99, difficulty: 'accessible' });
+
+    // NO-OP défensif : sans `actorId`, aucune rangée n'est constructible — l'étape est laissée INTACTE
+    // (patron tolérant `adoptLegacyReveals`), jamais mutilée à moitié.
+    const sansActeur: Record<string, unknown> = legacyStep();
+    delete sansActeur.actorId;
+    const intacte = (MIGRATIONS[16](doc(16, [sansActeur])).data as { pendingCascade: { participants: Record<string, unknown>[] } }).pendingCascade.participants[0];
+    expect(intacte.participants).toBeUndefined();
+    expect(intacte).toMatchObject({ base: 35, target: 55, rollLabel: 'Calme' });
+
+    // IDEMPOTENT : une étape DÉJÀ en bande retraverse le migrateur sans bouger (un `participants` présent
+    // suffit à l'écarter — aucune rangée fantôme n'est ajoutée).
+    const rejoué = (MIGRATIONS[16](doc(16, [JSON.parse(JSON.stringify(step))])).data as { pendingCascade: { participants: unknown[] } }).pendingCascade.participants[0];
+    expect(rejoué).toEqual(step);
+  });
+
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {
     for (let v = 1; v < SAVE_VERSION; v++) {
       expect(MIGRATIONS[v], `MIGRATIONS[${v}] manquante — un bump de SAVE_VERSION exige son migrateur`).toBeTypeOf('function');

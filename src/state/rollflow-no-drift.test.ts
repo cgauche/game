@@ -19,8 +19,8 @@ import { join } from 'node:path';
  * signature de RE-CODAGE réapparaît. Il est né de dérives RÉELLES : une session parallèle a dé-lentillé
  * `activity` en recodant le dé forcé à `01` en dur (`evaluateTest(1, cible)` → DR MINIMAL en Fast DR)
  * et un `+1 DR` forçant `success:true` (transforme un échec en réussite, interdit LDB 17 l.84) ; le même
- * `evaluateTest(1, …)` dormait aussi dans `shipManeuver.forceCrewRole` ET `combatSlice.cascadeDetermine`
- * — d'où le scan LARGE (le recodage ne vit pas que dans rollFlowSpecs.ts).
+ * `evaluateTest(1, …)` dormait aussi dans `shipManeuver.forceCrewRole` ET dans la Détermination d'une
+ * étape de cascade — d'où le scan LARGE (le recodage ne vit pas que dans rollFlowSpecs.ts).
  *
  * Portée assumée (comme `roll-modal-invariant.test.ts`) : scan statique — n'attrape pas une obfuscation
  * par variable. Le filet BEHAVIORAL exhaustif (piloter chaque `*ForceSuccess` sous Fast DR et exiger le
