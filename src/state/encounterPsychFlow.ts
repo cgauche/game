@@ -17,11 +17,12 @@ import { Scene } from './scene';
 import type { CascadeStep, BatchParticipant, CascadeRoll } from './pendings';
 import { spawnEnemy } from './spawn';
 import { encounterPsych } from '../engine/encounterPsych';
-import { CIBLE_TYPES, CIBLE_LABEL, PsychType, failConditionAmount, psychResolution, supersededLines, isPsychImmune } from '../engine/psychology';
+import { CIBLE_TYPES, CIBLE_LABEL, PsychType, failConditionAmount, psychResolution, psychBranchOps, psychBranchFlow, supersededLines, isPsychImmune } from '../engine/psychology';
 import { skillBaseValue } from '../engine/skills';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { refLabel, findPsychologyById, combatStakeRef } from '../data';
-import { addCondition } from '../engine/conditions';
+import { applyOps } from '../engine/ops';
+import { t } from '../i18n';
 import { registerCascadeApplier, startCascade } from './cascade';
 import { describeEncounterPsych } from './flowOutcomes';
 import { freeCons, resultLines, type Consequence } from './rollSeam';
@@ -88,6 +89,9 @@ function psychBands(dues: PsychDue[]): CascadeStep[] {
       interactive: true, aggregate: 'none', participants: [psychRow(due.hero, d.kind)],
       encounterPsych: d,
       stake: combatStakeRef('encounterPsych', { entryId: d.kind, values: { indice: d.indice } }),
+      // Les DEUX issues, dérivées des ops que l'applier appliquera (`psychBranchOps`) : la surface
+      // les rend en chips codex-liées avant le jet, et le verdict est le MÊME bloc filtré (#1117).
+      meta: { onSuccess: psychBranchFlow(d, true), onFail: psychBranchFlow(d, false) },
     });
   }
   return [...bands.values()];
@@ -146,40 +150,30 @@ export function openScriptedPsych(get: Get, set: Set, kind: 'peur' | 'terreur', 
 }
 
 /**
- * Conséquence d'un Test de Calme de rencontre POUR UNE RANGÉE : pose le `psychState` (Brisé de Terreur
- * dérivé du DR). La résolution kind-agnostique (`rollTest(Calme)`) est faite par `FLOWS.cascadeBatch` ;
- * ici on interprète le résultat par `kind`. SOURCE UNIQUE de la résolution par héros — l'applier de
- * bande l'appelle pour CHACUNE de ses rangées. Issue de modale = `describeEncounterPsych`. PUR vis-à-vis
- * du store (mute le héros, ne lit rien d'autre) : la rangée porte tout son contexte.
+ * Conséquence d'un Test de Calme de rencontre POUR UNE RANGÉE : applique les `GameOp` de la branche
+ * réalisée (`psychBranchOps`, dérivées de `psychology.json`) — les MÊMES ops que la surface annonce.
+ * La résolution kind-agnostique (`rollTest(Calme)`) est faite par `FLOWS.cascadeBatch` ; ici on ne
+ * décide que de l'ISSUE et du cumul. SOURCE UNIQUE de la résolution par héros — l'applier de bande
+ * l'appelle pour CHACUNE de ses rangées. Issue de modale = `describeEncounterPsych` (les lignes
+ * génériques d'`applyOps` sont couvertes par ce verdict rédigé). PUR vis-à-vis du store (mute le
+ * héros, ne lit rien d'autre) : la rangée porte tout son contexte.
  */
 function resolvePsychRow(hero: Combatant, ep: PsychBandDecl, r: CascadeRoll, immune: boolean): Consequence[] {
-  hero.psychState ??= [];
   // DÉTERMINATION (LDB 17 l.59) : immunité TEMPORAIRE (« Demeurer immunisé à Psychologie jusqu'à la fin
   // du prochain Round »). Pour un Test de rencontre ONE-SHOT (pas de Test étendu), « immune » ≈ « inerte »
-  // = même état final qu'un succès (la source ne se re-déclenche pas) : on pose le marqueur INERTE — pas
-  // de Brisé de Terreur, trait ciblé non actif — avec une issue distincte au journal. Ce qui protège le
-  // porteur pendant la durée est le marqueur d'immunité lui-même, jamais un Indice à 0 : la Peur héritée
-  // d'une Terreur se pose à PLEIN Indice ici aussi (LDB 21 l.56, cf. plus bas), sans quoi l'immunité du
-  // Round vaudrait une Peur vaincue à jamais.
-  const res = psychResolution(ep.kind); // mode + conséquences en DONNÉES (psychology.json)
+  // = même état final qu'un succès (la source ne se re-déclenche pas) : on applique les ops de la branche
+  // de RÉUSSITE — avec une issue distincte au journal. Ce qui protège le porteur pendant la durée est le
+  // marqueur d'immunité lui-même, jamais un Indice à 0 : la Peur héritée d'une Terreur se pose à PLEIN
+  // Indice ici aussi (LDB 21 l.56), sans quoi l'immunité du Round vaudrait une Peur vaincue à jamais.
   if (immune) {
-    if (res.mode === 'terreur') hero.psychState.push({ type: res.becomes ?? 'peur', sourceId: ep.sourceId, indice: ep.indice, calmeDR: 0 });
-    else if (CIBLE_TYPES.has(ep.kind)) hero.psychState.push({ type: ep.kind, cible: ep.cible, sourceId: ep.sourceId, active: false });
-    else hero.psychState.push({ type: 'peur', sourceId: ep.sourceId, indice: ep.indice, calmeDR: ep.indice });
-    return freeCons([`${hero.label} est temporairement insensible à la Psychologie (Détermination).`]);
+    applyOps(hero, psychBranchOps(ep, { success: true, calmeDR: ep.indice }), { source: { kind: 'psychology', id: ep.kind } });
+    return freeCons([t('cf.psychImmune', { name: hero.label })]);
   }
+  const res = psychResolution(ep.kind); // mode + conséquences en DONNÉES (psychology.json)
   const brise = r.success ? 0 : failConditionAmount(res.failAmount, ep.indice, r.sl);
-  if (res.mode === 'terreur') {
-    if (brise > 0 && res.failCondition) addCondition(hero, res.failCondition, brise);
-    // « Une fois ce Test de Psychologie effectué, la créature cause la Peur » (LDB 21 l.56) : phrase
-    // INCONDITIONNELLE — l'exemption du succès (l.54) est scopée à la Terreur SEULE. Plein Indice, jamais
-    // 0 : la Peur qui suit s'affronte selon SES règles (son Test étendu, ses malus, l'approche). #1190
-    if (res.becomes) hero.psychState.push({ type: res.becomes, sourceId: ep.sourceId, indice: ep.indice, calmeDR: 0 });
-  } else if (CIBLE_TYPES.has(ep.kind)) {
-    hero.psychState.push({ type: ep.kind, cible: ep.cible, sourceId: ep.sourceId, active: !r.success });
-  } else {
-    hero.psychState.push({ type: 'peur', sourceId: ep.sourceId, indice: ep.indice, calmeDR: r.success ? ep.indice : 0 });
-  }
+  // Le DR du jet est versé au contexte : la quantité d'État de l'échec (`valuePerSL{onFailure}` de la
+  // branche) s'y résout — même arithmétique que `failConditionAmount`, une seule fois.
+  applyOps(hero, psychBranchOps(ep, { success: r.success, calmeDR: r.success ? ep.indice : 0 }), { sl: r.sl, source: { kind: 'psychology', id: ep.kind } });
   const pe: PendingEncounterPsych = {
     heroId: hero.id, kind: ep.kind, sourceId: ep.sourceId, sourceName: ep.sourceName, indice: ep.indice, cible: ep.cible,
     result: { roll: r.roll, success: r.success, brise, target: r.target, sl: r.sl },

@@ -7,9 +7,9 @@
  * kind SANS id stable (invocation d'arme nommée, marqueur d'atelier…) ou pointant une catégorie hors
  * Codex tombe en `{t:'text'}`. JAMAIS `opSummary` (résumeur d'ATELIER, `editor/GameOpEditor.tsx`).
  */
-import type { GameOp } from '../../engine/ops';
+import { slBonus, type GameOp, type Formula, type PerSL } from '../../engine/ops';
 import type { CodexRow } from './registry';
-import { humanizeOp, humanizeFormula } from './humanize';
+import { humanizeOp, humanizeFormula, humanizePerSL } from './humanize';
 import { CHAR_LABELS, HIT_LOCATION_LABELS } from '../../engine/types';
 import { formatTrait, traitLabelById } from '../../engine/traits/dispatch';
 import { giveTrappingLabel } from '../../engine/items';
@@ -25,9 +25,26 @@ const textRow = (o: GameOp): CodexRow => ({ t: 'text', text: humanizeOp(o) });
  *  pluriel (jamais garanti « un » à l'affichage). Jamais le pluriel-code « (s) ». */
 const plural = (n: unknown, singular: string, pluralForm: string): string => (n === 1 ? singular : pluralForm);
 
+/**
+ * CONTEXTE DE RÉSOLUTION d'un rendu d'ops : ce que le jet a TRANCHÉ et que l'op seule ne dit pas.
+ * `sl` = DR du jet réalisé (verdict). Absent = AVANT le jet (ou hors jet : fiche de Codex, passif) —
+ * la ligne annonce alors la RÈGLE (base + échelle par DR), jamais un nombre qui deviendra faux.
+ */
+export interface OpRowCtx { sl?: number }
+
+/** Quantité d'État telle qu'`applyOps` l'appliquera une fois le DR connu (`ops.ts` : `Math.max(1,
+ *  value + slBonus(ctx.sl, valuePerSL))`) — MÊME arithmétique, jamais une seconde. `undefined` quand
+ *  le DR est inconnu ou que la base n'est pas un littéral (dé, Bonus de Caractéristique). */
+function resolvedCount(value: Formula | undefined, perSL: PerSL | undefined, sl: number | undefined): number | undefined {
+  if (sl == null || perSL == null) return undefined;
+  const base = value ?? 1;
+  if (typeof base !== 'number') return undefined;
+  return Math.max(1, base + slBonus(sl, perSL));
+}
+
 /** Une op → SA ligne Codex. Ancre nominative quand un id résout dans une catégorie EXISTANTE, sinon
- *  repli `humanizeOp`. */
-export function opRow(o: GameOp): CodexRow {
+ *  repli `humanizeOp`. `ctx` : le DR du jet réalisé, quand la ligne est un VERDICT. */
+export function opRow(o: GameOp, ctx?: OpRowCtx): CodexRow {
   switch (o.op) {
     case 'charMod':
       return { t: 'ref', category: 'characteristics', id: o.char, label: CHAR_LABELS[o.char], show: CHAR_LABELS[o.char], badge: `${o.mod >= 0 ? '+' : ''}${o.mod}` };
@@ -86,16 +103,32 @@ export function opRow(o: GameOp): CodexRow {
       const label = psychologyLabel(o.type);
       return { t: 'ref', category: 'psychologies', id: o.type, label, show: label };
     }
+    case 'beginPsych': {
+      const label = psychologyLabel(o.type);
+      // L'Indice (Peur 2, Terreur 3) est le BADGE de la chip : c'est le DR à surmonter, pas un nom.
+      return { t: 'ref', category: 'psychologies', id: o.type, label, show: label, badge: o.cible ?? (o.indice != null ? humanizeFormula(o.indice) : undefined) };
+    }
     case 'condition': {
       const label = conditionLabel(o.id);
-      const show = o.value != null && o.value !== 1 ? `${humanizeFormula(o.value)} × ${label}` : label;
-      const badge = o.durationRounds != null ? `${humanizeFormula(o.durationRounds)} ${plural(o.durationRounds, 'Round', 'Rounds')}` : o.perRound ? 'par Round' : undefined;
+      // Quantité : le nombre RÉSOLU dès que le DR du jet est connu (verdict) — sinon la base, et la
+      // progression par DR passe en badge, pour que l'annonce dise la règle ENTIÈRE et jamais un
+      // nombre que la résolution démentira.
+      const n = resolvedCount(o.value, o.valuePerSL, ctx?.sl);
+      const show = n != null ? `${n} × ${label}`
+        : o.value != null && o.value !== 1 ? `${humanizeFormula(o.value)} × ${label}` : label;
+      const badge = [
+        o.durationRounds != null ? `${humanizeFormula(o.durationRounds)} ${plural(o.durationRounds, 'Round', 'Rounds')}` : o.perRound ? 'par Round' : undefined,
+        n == null && o.valuePerSL ? humanizePerSL(o.valuePerSL) : undefined,
+      ].filter((s): s is string => !!s).join(' · ') || undefined;
       return { t: 'ref', category: 'etats', id: o.id, label, show, badge };
     }
     case 'removeCondition': {
       if (!o.id) return textRow(o); // « au choix » : pas d'ancre
       const label = conditionLabel(o.id);
-      return { t: 'ref', category: 'etats', id: o.id, label, show: label };
+      const n = resolvedCount(o.value, o.valuePerSL, ctx?.sl); // même contrat de quantité que `condition`
+      const show = n != null ? `${n} × ${label}` : label;
+      const badge = n == null && o.valuePerSL ? humanizePerSL(o.valuePerSL) : undefined;
+      return { t: 'ref', category: 'etats', id: o.id, label, show, badge };
     }
     case 'giveTrapping': {
       if (!o.trappingId) return textRow(o); // objet CUSTOM (misc) sans id de catalogue → repli
@@ -158,17 +191,17 @@ const MAX_TABLE_DEPTH = 1;
 /** Rangées `[min,max] → ops` d'une table d'effets → lignes Codex (sous-titre de fourchette + ops de la
  *  rangée passées par la MÊME humanisation récursive). SOURCE UNIQUE, composée par la catégorie Codex
  *  « Tables d'effets » (`registry.ts`) ET par l'expansion générique de l'op `rollTable` ci-dessous. */
-export function tableRows(rows: { min: number; max: number; label?: string; ops: GameOp[] }[], depth = 0): CodexRow[] {
+export function tableRows(rows: { min: number; max: number; label?: string; ops: GameOp[] }[], depth = 0, ctx?: OpRowCtx): CodexRow[] {
   return rows.flatMap((r): CodexRow[] => [
     { t: 'sub', label: tableRowRange(r) },
-    ...r.ops.flatMap((o) => opRowsForOp(o, depth)),
+    ...r.ops.flatMap((o) => opRowsForOp(o, depth, ctx)),
   ]);
 }
 
 /** Une op → SES lignes Codex — 1 pour la plupart des kinds, N pour un `rollTable` (rangées EXPANSÉES,
  *  bornées par `MAX_TABLE_DEPTH`). Réutilisée par `opRows` (liste plate) ET la catégorie « Tables
  *  d'effets » — jamais une 2e implémentation de la projection table → rangées lisibles. */
-function opRowsForOp(o: GameOp, depth: number): CodexRow[] {
+function opRowsForOp(o: GameOp, depth: number, ctx?: OpRowCtx): CodexRow[] {
   if (o.op === 'rollTable') {
     if (depth >= MAX_TABLE_DEPTH) {
       // Table imbriquée déjà sous une rangée expansée : libellé + lien codex (tableId), sinon repli texte
@@ -180,12 +213,13 @@ function opRowsForOp(o: GameOp, depth: number): CodexRow[] {
       return [textRow(o)];
     }
     const rows = 'tableId' in o ? findEffectTableById(o.tableId).rows : o.rows;
-    return tableRows(rows, depth + 1);
+    return tableRows(rows, depth + 1, ctx);
   }
-  return [opRow(o)];
+  return [opRow(o, ctx)];
 }
 
-/** Une liste d'ops → SES lignes Codex, dans l'ordre (un `rollTable` s'expanse en ses rangées). */
-export function opRows(ops: GameOp[]): CodexRow[] {
-  return ops.flatMap((o) => opRowsForOp(o, 0));
+/** Une liste d'ops → SES lignes Codex, dans l'ordre (un `rollTable` s'expanse en ses rangées).
+ *  `ctx` : le DR du jet réalisé quand ces lignes sont un VERDICT (cf. `OpRowCtx`). */
+export function opRows(ops: GameOp[], ctx?: OpRowCtx): CodexRow[] {
+  return ops.flatMap((o) => opRowsForOp(o, 0, ctx));
 }

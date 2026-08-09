@@ -59,7 +59,7 @@ de 10 % d'équipage manquant**).
 comme ressource](#lequipage-comme-ressource--le-round-naval) · [`tests.md`](tests.md) (DR, Succès Minime).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.9, l.13, l.19, l.39, l.53) → `progression`, `skill`, `progression-poursuite`, `rollCrewRole`, `ShipBatteryModal`, `isPassengerInBattle`, `maneuverCrewTotal`, `ShipManeuverModal`, `resolveVolley`, `cascadeSuccessRules`, +42 — `src/data/crew-test-types.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/voyage-stakes.json`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, +16 fichiers
+- `MDG 14` (l.9, l.13, l.19, l.39, l.53) → `progression`, `skill`, `progression-poursuite`, `rollCrewRole`, `ShipBatteryModal`, `isPassengerInBattle`, `ShipManeuverModal`, `resolveVolley`, `maneuverCrewTotal`, `cascadeSuccessRules`, +42 — `src/data/crew-test-types.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/voyage-stakes.json`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, +16 fichiers
 
 **État du code.** ✅ somme des DR, essentiel ×2, Moral, « un jet par poste » (PJ + 1 marin représentant).
 ✅ **Manque de bras** : cumul 2 rôles = +2 crans (`crewActed` + `easeDifficulty(-2)`) ET sous-effectif d'équipage
@@ -266,7 +266,7 @@ peut aussi considérer un résultat de 0 comme un succès en fonction des circon
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 13` (l.656) → `VolleyShot`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction` — `src/data/sea-navigation.json`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/volley.ts`
-- `MDG 14` (l.13, l.126-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `maneuverCrewTotal`, +75 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +17 fichiers
+- `MDG 14` (l.13, l.126-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `resolveVolley`, +75 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +17 fichiers
 
 **État du code.** ✅ **(1)(2)(3)(4-Dégâts)(5)** après refonte : Test d'équipage multi (Artilleur ★) → DR partagé →
 chaque pièce préparée comme le tir individuel (effectif via `crewedFireWeapon`, munition via `weaponWithAmmo`) → Dégâts
@@ -369,7 +369,7 @@ De plus, tous les coups qui touchent une fois que le score de Blessures… est t
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 13` (l.654-674) → `VolleyShot`, `beginShipwreck`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `OPTIONAL_RULES`, `finalizeFastVoyage`, `runSeaDay`, `checkBattleOver` — `src/data/sea-navigation.json`, `src/engine/conditions.ts`, `src/engine/policy.ts`, `src/engine/shipBuild.ts`, `src/engine/volley.ts`, `src/state/combatFlow.ts`, +2 fichiers
-- `MDG 14` (l.13, l.128) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `maneuverCrewTotal`, +75 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +17 fichiers
+- `MDG 14` (l.13, l.128) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `resolveVolley`, +75 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +17 fichiers
 
 **État du code.** ✅ `applyHullCritical` (localisation, Équipage, Éclats, Voie d'eau, En flammes en GameOp, Critiques
 de Coque récursifs). ✅ (R1) **« tout coup à B=0 = Critique »** : `resolveVolley` critique sur `wounds.current ≤ 0`.

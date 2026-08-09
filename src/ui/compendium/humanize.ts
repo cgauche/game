@@ -199,6 +199,14 @@ const RESOURCE_LABEL = { fortune: 'Chance', fate: 'Destin' } as const;
 const ATTR_LABEL = { wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination' } as const;
 const SENSE_LABEL = { vue: 'la vue', ouie: "l'ouïe" } as const;
 
+/** ÉCHELLE « par DR » d'une quantité d'op (`PerSL`) en clair joueur — « +1 par DR d'échec » (Terreur,
+ *  LDB 21 l.57), « +1 par 2 DR ». SOURCE UNIQUE de cette phrase : la chip d'une op qui la porte
+ *  l'affiche AVANT le jet (la règle complète), le nombre RÉSOLU la remplace une fois le DR connu. */
+export function humanizePerSL(p: { every: number; amount: number; onFailure?: boolean }): string {
+  const pas = p.every > 1 ? `${p.every} DR` : 'DR';
+  return `${p.amount >= 0 ? '+' : '−'}${Math.abs(p.amount)} par ${pas}${p.onFailure ? ' d’échec' : ''}`;
+}
+
 /** Effet mécanique (`GameOp`) en verbe d'action JOUEUR (sujet = la cible de l'effet, implicite). SOURCE
  *  UNIQUE joueur des ops. Switch EXHAUSTIF (never en default). */
 export function humanizeOp(o: GameOp): string {
@@ -206,9 +214,10 @@ export function humanizeOp(o: GameOp): string {
     case 'wounds': return `subit ${humanizeFormula(o.amount)} Blessure(s)${o.ignoreAP === false ? '' : ', ignorant les PA'}${o.bypassArmour === 'metal' ? " (perce l'armure métallique)" : o.bypassArmour === 'nonMagic' ? " (perce l'armure non magique)" : ''}`;
     case 'heal': return `récupère ${humanizeFormula(o.amount)} PB`;
     case 'healCaster': return `le lanceur récupère ${humanizeFormula(o.amount)} PB`;
-    case 'condition': return `gagne ${o.value != null && o.value !== 1 ? `${humanizeFormula(o.value)} × ` : ''}l'État ${stateItal(o.id)}${o.durationRounds ? ` pendant ${humanizeFormula(o.durationRounds)} Round(s)` : ''}${o.perRound ? ' à chaque Round' : ''}`;
-    case 'removeCondition': return `perd ${o.id ? `l'État ${stateItal(o.id)}` : 'un État au choix'}`;
+    case 'condition': return `gagne ${o.value != null && o.value !== 1 ? `${humanizeFormula(o.value)} × ` : ''}l'État ${stateItal(o.id)}${o.valuePerSL ? ` (${humanizePerSL(o.valuePerSL)})` : ''}${o.durationRounds ? ` pendant ${humanizeFormula(o.durationRounds)} Round(s)` : ''}${o.perRound ? ' à chaque Round' : ''}`;
+    case 'removeCondition': return `perd ${o.id ? `l'État ${stateItal(o.id)}` : 'un État au choix'}${o.valuePerSL ? ` (${humanizePerSL(o.valuePerSL)})` : ''}`;
     case 'endPsych': return `n'est plus sous l'effet de ${psychologyLabel(o.type)}`;
+    case 'beginPsych': return `tombe sous ${psychologyLabel(o.type)}${o.cible ? ` (${o.cible})` : ''}${o.indice != null ? ` ${humanizeFormula(o.indice)}` : ''}`;
     case 'charMod': return `${o.mod >= 0 ? 'gagne' : 'subit'} ${o.mod >= 0 ? '+' : ''}${o.mod} en ${CHAR_LABELS[o.char]}`;
     case 'ap': return `gagne +${humanizeFormula(o.amount)} PA${o.loc ? ` (${HIT_LOCATION_LABELS[o.loc]})` : ' à toutes les Localisations'}`;
     case 'corruption': return `gagne ${o.amount >= 0 ? '+' : ''}${o.amount} point(s) de Corruption`;

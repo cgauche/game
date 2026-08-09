@@ -309,7 +309,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       onFail={branchCertainOps(cur.meta?.onFail, stepActor, stepCaster)}
       onSuccessBy={branchBlockingEntity(cur.meta?.onSuccess, stepActor, stepCaster)}
       onFailBy={branchBlockingEntity(cur.meta?.onFail, stepActor, stepCaster)}
-      {...(cur.result ? { realized: cur.result.success ? ('success' as const) : ('fail' as const) } : {})}
+      {...(cur.result ? { realized: cur.result.success ? ('success' as const) : ('fail' as const), sl: cur.result.sl } : {})}
     />
   );
   // Le MÊME encadré, pour UNE RANGÉE d'une bande (étape BATCH) : la promesse et le verdict sont
@@ -320,7 +320,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       onFail={branchCertainOps(cur.meta?.onFail, pool.find((c) => c.id === partId), stepCaster)}
       onSuccessBy={branchBlockingEntity(cur.meta?.onSuccess, pool.find((c) => c.id === partId), stepCaster)}
       onFailBy={branchBlockingEntity(cur.meta?.onFail, pool.find((c) => c.id === partId), stepCaster)}
-      {...(res ? { realized: res.success ? ('success' as const) : ('fail' as const) } : {})}
+      {...(res ? { realized: res.success ? ('success' as const) : ('fail' as const), sl: res.sl } : {})}
     />
   );
   // Test OPPOSÉ (#579/#990) : le jet ADVERSAIRE FIGÉ (`meta.opposed.aT`) est une rangée TÉMOIN, masquée

@@ -403,6 +403,15 @@ export type GameOp =
    *  `conditions` : pas de perte d'Avantage à la pose, LDB 21 ≠ LDB 16). GÉNÉRIQUE (paramétré par `type`) :
    *  sortie de Frénésie (`effects: onTurnStart` → fin + Exténué, LDB 21 l.36). Journalisé via `t()`. */
   | { op: 'endPsych'; type: string }
+  /** POSE (ou met à jour) un état PSYCHOLOGIQUE porté — JUMELLE d'`endPsych`, même collection
+   *  `psychState` (DISTINCTE de `conditions` : pas de perte d'Avantage à la pose, LDB 21 ≠ LDB 16).
+   *  UPSERT : l'entrée visée est celle de même `type` ET même `cible` (Traits CIBLÉS), ou — sans
+   *  `cible` — de même `sourceId` (Peur/Terreur : une entrée par créature source) ; absente, créée.
+   *  Charge utile lue par le moteur de Psychologie : `indice` (Indice à surmonter), `calmeDR` (DR
+   *  cumulé du Test étendu), `active` (Trait ciblé subi / résisté), `lastTestRound` (n° de Round du
+   *  dernier Test). Champ absent = INCHANGÉ sur une entrée existante. Journalisé via `t()` ; une
+   *  entrée `active:false` est un marqueur inerte (aucune ligne). */
+  | { op: 'beginPsych'; type: string; cible?: string; sourceId?: string; indice?: Formula; calmeDR?: Formula; active?: boolean; lastTestRound?: number }
   /** Modificateur de caractéristique temporisé (ActiveEffect — meilleur bonus +
    *  pire pénalité sans cumul, LDB l.168). `durationRounds` absent = durée du
    *  contexte (sort : Rounds, horloge, ou permanent — cf. `durationFromCtx`).
@@ -1323,6 +1332,28 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           target.psychState = target.psychState.filter((p) => p.type !== o.type);
           lines.push(t('op.endPsych', { name: target.label, psych: psychologyLabel(o.type) }));
         }
+        break;
+      }
+      case 'beginPsych': {
+        // Pose/mise à jour d'un état psychologique porté (collection `psychState`, ≠ `conditions`).
+        // UPSERT par (`type` + `cible`) pour un Trait CIBLÉ, par (`type` + `sourceId`) sinon : un
+        // re-Test contre la MÊME source met à jour SON entrée au lieu d'en empiler une seconde.
+        const list = [...(target.psychState ?? [])];
+        const at = list.findIndex((p) => p.type === o.type && (o.cible != null ? p.cible === o.cible : p.sourceId === o.sourceId));
+        const next = {
+          ...(at >= 0 ? list[at] : {}),
+          type: o.type as PsychType,
+          ...(o.cible != null ? { cible: o.cible } : {}),
+          ...(o.sourceId != null ? { sourceId: o.sourceId } : {}),
+          ...(o.indice != null ? { indice: Math.max(0, resolveFormula(o.indice, ref, rng, ctx.rolled, ctx.indice, ctx.stacks)) } : {}),
+          ...(o.calmeDR != null ? { calmeDR: Math.max(0, resolveFormula(o.calmeDR, ref, rng)) } : {}),
+          ...(o.active != null ? { active: o.active } : {}),
+          ...(o.lastTestRound != null ? { lastTestRound: o.lastTestRound } : {}),
+        };
+        if (at >= 0) list[at] = next; else list.push(next);
+        target.psychState = list;
+        // `active:false` = marqueur d'affliction RÉSISTÉE (empêche le re-déclenchement) : rien n'est subi.
+        if (o.active !== false) lines.push(t('op.beginPsych', { name: target.label, psych: psychologyLabel(o.type) }));
         break;
       }
       case 'grantPsychTrait': {

@@ -38,7 +38,7 @@
 | 18 | Traumatisme | ✅ | 111 (traumatisme.md ×67) |
 | 19 | Corruption | ✅ | 36 (corruption.md ×29) |
 | 20 | Maladies et infections | ✅ | 30 (maladies.md ×30) |
-| 21 | Psychologie | ✅ | 53 (psychologie.md ×30) |
+| 21 | Psychologie | ✅ | 52 (psychologie.md ×29) |
 | 22 | Événements | ✅ | 6 (activites.md ×5) |
 | 23 | Activités | ✅ | 40 (activites.md ×36) |
 | 24 | Les dieux | 📖 | catalogue (catalogue-*.md) |

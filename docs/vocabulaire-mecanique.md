@@ -46,7 +46,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | Armes : enchanter, altérer, invoquer, désarmer | `augmentWeapon`, `grantWeapon`, `grantNaturalWeapon`, `grantFreeAttack`, `breakBlade`, `maxWeaponHands`, `disarm`, `handGate`, `removeShipPoste`, `weaponRollMod`, `weaponDamageMod`, `armourPierce`, `critOnRoll` |
 | Armure, Points d'Armure, protection | `ap`, `damageArmour`, `arrowWard`, `domeWard`, `attackWardFM`, `weatherWard`, `armourPierce` |
 | Attaquer : touche, attaque gratuite, mot-clé d'attaque | `augmentWeapon`, `critTwice`, `domeWard`, `attackWardFM`, `grantNaturalWeapon`, `grantFreeAttack`, `chain`, `incomingAttackMod`, `incomingAdvantage`, `attackKeyword`, `mitigateIncoming`, `weaponRollMod`, `weaponDamageMod` |
-| Avantage | `endPsych`, `gainAdvantage`, `incomingAdvantage`, `spendAdvantage` |
+| Avantage | `endPsych`, `beginPsych`, `gainAdvantage`, `incomingAdvantage`, `spendAdvantage` |
 | Blessures, dégâts, Coups Critiques | `wounds`, `heal`, `healCaster`, `preventInfection`, `kill`, `cureCriticalWound`, `reduceToZero`, `critTwice`, `suffocate`, `martyr`, `grantWeapon`, `chain`, `rollThreshold`, `endTransform`, `lifeSteal`, `sbBonus`, `mitigateIncoming`, `attrMod`, `handGate`, `weaponDamageMod`, `critOnRoll` |
 | Caractéristiques et attributs (max de Blessures, Chance…) | `charMod`, `charDamage`, `charDRBonus`, `sbBonus`, `attrMod` |
 | Compétences, Talents, Carrières : octroyer, modifier | `castPenalty`, `grantTalent`, `grantCareerSkill`, `grantCareerTalent`, `grantFreeAttack`, `skillMod`, `skillDRBonus`, `incomingSpellDRMod` |
@@ -54,7 +54,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | Corruption, Chaos, mutation, Péché | `corruption`, `sinMod`, `corruptionExposure`, `rollMutation`, `zone`, `attackKeyword`, `moveMod`, `disarm` |
 | Durée, horloge, effet différé, expiration | `charMod`, `gainResource`, `castPenalty`, `statusMod`, `grantReverseToken`, `grantTrait`, `grantTalent`, `augmentWeapon`, `reduceDiseaseDays`, `contractDisease`, `suppressPsych`, `grantNaturalWeapon`, `perRound`, `scheduleRespawn`, `polymorph`, `transform`, `suppressSymptom`, `delayed` |
 | Empoignade, entrave, immobilisation | `condition` |
-| États (LDB 16) : poser, retirer, ignorer une pénalité d'État | `condition`, `removeCondition`, `endPsych`, `ignoreStatePenalties`, `grantFreeAttack` |
+| États (LDB 16) : poser, retirer, ignorer une pénalité d'État | `condition`, `removeCondition`, `endPsych`, `beginPsych`, `ignoreStatePenalties`, `grantFreeAttack` |
 | Faim, provisions, alcool, ivresse | `augmentWeapon`, `noHunger`, `ignoreAnimosity`, `rollThreshold`, `intoxicate` |
 | Invocation, créatures, bestiaire, reconstitution | `grantTrait`, `grantWeapon`, `summon`, `scheduleRespawn`, `polymorph`, `transform`, `offTerrainMod` |
 | Lumière, vision, brouillard de guerre | `light` |
@@ -66,7 +66,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | Navire, coque, équipage, poste d'artillerie | `charDRBonus`, `crewTestMod`, `removeShipPoste`, `teamCommander` |
 | Objets, possessions, inventaire | `giveTrapping`, `disarm` |
 | Position, zone, poussée, téléportation, rebond | `arrowWard`, `push`, `teleport`, `chain`, `zone`, `delayed` |
-| Psychologie : Peur, Terreur, Frénésie, Animosité, Obsession | `endPsych`, `grantTrait`, `grantPsychTrait`, `removePsychTrait`, `grantCareerTalent`, `suppressPsych`, `ignoreAnimosity`, `grantFreeAttack`, `sbBonus` |
+| Psychologie : Peur, Terreur, Frénésie, Animosité, Obsession | `endPsych`, `beginPsych`, `grantTrait`, `grantPsychTrait`, `removePsychTrait`, `grantCareerTalent`, `suppressPsych`, `ignoreAnimosity`, `grantFreeAttack`, `sbBonus` |
 | Ressources : Chance, Destin, Résilience, Détermination | `gainResource`, `kill`, `freeReroll`, `zone`, `attrMod` |
 | Sens et organes : vue, ouïe, cécité, surdité | `senseLoss` |
 | Soin, guérison, régénération, aide médicale | `heal`, `healCaster`, `cureCriticalWound`, `rollThreshold` |
@@ -77,7 +77,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | Traits de créature : octroyer, retirer | `grantTrait`, `grantPsychTrait`, `removePsychTrait`, `suppressPsych`, `polymorph`, `endTransform`, `incomingSpellDRMod`, `moveMod` |
 | Transformation, métamorphose, forme alternative | `polymorph`, `transform`, `endTransform` |
 
-## GameOp — les 102 opérations
+## GameOp — les 103 opérations
 
 | Op | Champs | Résolution | Résolveurs | Donnée | Rôle |
 |---|---|---|---|---|---|
@@ -90,6 +90,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `attrMod` | `attr`, `mod` | exécutée | `engine/talentEffects.ts` | 4 — `talents.json:chanceux`, `talents.json:dur-a-cuire` … | Modificateur d'un ATTRIBUT SECONDAIRE À MAXIMUM (≠ CharKey, ≠ Mouvement) : Blessures (Dur à cuire +BE), Chance (Chanceux), Détermination (Obstiné). |
 | `augmentWeapon` | `addQualities?`, `damageBonus?`, `bypass?`, `requiresWeapon?`, `removeQualities?`, `removeType?`, `suppressEnchants?`, `passive?`, `onHitEffects?` | exécutée | `state/aiSpellValue.ts`, `state/targetingModes.ts` | 11 — `spells.json:benediction-de-droiture`, `spells.json:serres-d-ambre` … | ALTÉRATION d'ARME temporisée — enchantement OU dégradation, une seule primitive (Jalon 2.6 — Bénédiction de Droiture : Magique ; Marteau ardent : Magique +BSoc + En flammes/À Terre à la touche ; Épée ardente : +6 + Percutante + En flammes ; VDM 05 — Arme enchantée « ajouter 1 Atout ou retirer 1 Défaut », Défaut « Tous les Atouts de l'arme disparaissent […] −1 DR à tous les Tests pour attaquer avec elle », enchantements de l'arme neutralisés). |
 | `banish` | `narration?`, `onlyGroups?` | exécutée | `state/aiSpellValue.ts` | 5 — `spells.json:fauche-demon`, `spells.json:le-labyrinthe-de-cristal` … | RETRAIT DU JEU : la cible est destituée, sa forme se dissipe — la force qui la soutenait cède. |
+| `beginPsych` | `type`, `cible?`, `sourceId?`, `indice?`, `calmeDR?`, `active?`, `lastTestRound?` | exécutée | `engine/psychology.ts` | **0** | POSE (ou met à jour) un état PSYCHOLOGIQUE porté — JUMELLE d'`endPsych`, même collection `psychState` (DISTINCTE de `conditions` : pas de perte d'Avantage à la pose, LDB 21 ≠ LDB 16). |
 | `breakBlade` | — | **inerte au switch** | `engine/flowCore.ts`, `state/combat/triggeredTest.ts`, `state/combatFlow.ts` +1 | **0** | Marqueur IMPUR de la branche de VICTOIRE d'un Test opposé de Piège-lame (LDB 62 l.280) : l'adversaire est désarmé (sa lame arrachée) et, sur un Succès Stupéfiant (marge nette ≥ 6 DR), sa lame est BRISÉE à moins qu'elle ne possède l'Atout Incassable. |
 | `castPenalty` | `skill`, `mod?`, `blocked?`, `maxZeroDR?`, `rounds?`, `minutes?`, `hours?`, `days?` | exécutée | `engine/magic.ts`, `engine/miscast.ts`, `state/aiSpellValue.ts` +1 | 17 — `miscast.json:mineure-langue-maladroite`, `miscast.json:majeure-propos-esoteriques` … | Pénalité/blocage d'incantation temporisé (contrecoups, LDB 46/40) : −N à une Compétence de magie, Tests interdits, ou DR de Prière plafonné à 0. |
 | `castWard` | `radius`, `perSL?` | exécutée | `state/aiSpellValue.ts`, `state/targetingModes.ts` | 1 — `spells.json:n-ecoutez-point-la-sorciere` | N'écoutez point la Sorcière (LDB 42) : « Tous les Sorts qui ciblent quelque chose ou quelqu'un dans les (BSoc) mètres subissent -20 aux Tests de Langue (Magick) » — aura portée par la cible (le prêtre), rayon élargi « +BSoc m par +2 DR » via `perSL.radiusFormula`. |
@@ -97,7 +98,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `charDamage` | `char`, `amount` | exécutée | — | 6 — `spells.json:poids-des-annees`, `spells.json:poids-des-annees` … | Perte PERMANENTE de Caractéristique (Vers de carie « −1d10 Initiative… », MSRC 16 l.94-97) : décrémente la Caractéristique de BASE (`c.characteristics`), jamais sous 0 — irréversible « sauf par des moyens magiques ou miraculeux » (l.103). |
 | `charDRBonus` | `char`, `bonus` | exécutée | — | 17 — `sea-shanties.json:camarades-d-equipage-rassemblez-vous`, `tables.json:vdm-marques-arcaniques-lumiere` … | +N DR aux Tests d'une CARACTÉRISTIQUE (chanson « Camarades d'équipage » : +1 DR sur tout Test de Sociabilité, MDG 09 l.236) — variante par carac de `skillDRBonus`. |
 | `charMod` | `char`, `mod`, `durationRounds?`, `durationMinutes?`, `durationHours?` | exécutée | `engine/critical.ts`, `engine/polymorph.ts`, `engine/talentEffects.ts` +3 | 236 — `aa-criticals.json:aa-corps-36`, `aa-criticals.json:aa-jambe-01` … | Modificateur de caractéristique temporisé (ActiveEffect — meilleur bonus + pire pénalité sans cumul, LDB l.168). |
-| `condition` | `id`, `value?`, `durationRounds?`, `perRound?`, `valuePerSL?`, `onlyGroups?`, `onlyIfCondition?`, `unlessCondition?`, `escapeStrength?`, `escapeThreshold?`, `entangleOnFail?`, `struggleDamage?`, `lockedUntil?`, `unlockBy?`, `grapple?`, `durationMinutes?`, `durationHours?` | exécutée | `engine/critical.ts`, `engine/disease.ts`, `engine/miscast.ts` +9 | 427 — `aa-criticals.json:hemorragique`, `aa-criticals.json:sonne` … | Ajout d'un État nommé (LDB 16). |
+| `condition` | `id`, `value?`, `durationRounds?`, `perRound?`, `valuePerSL?`, `onlyGroups?`, `onlyIfCondition?`, `unlessCondition?`, `escapeStrength?`, `escapeThreshold?`, `entangleOnFail?`, `struggleDamage?`, `lockedUntil?`, `unlockBy?`, `grapple?`, `durationMinutes?`, `durationHours?` | exécutée | `engine/critical.ts`, `engine/disease.ts`, `engine/miscast.ts` +10 | 427 — `aa-criticals.json:hemorragique`, `aa-criticals.json:sonne` … | Ajout d'un État nommé (LDB 16). |
 | `contractDisease` | `disease` | exécutée | `engine/disease.ts`, `state/aiSpellValue.ts` | 10 — `criticals.json:blessure-au-ventre`, `criticals.json:hemorragie-interne` … | CONTRACTE instantanément une Maladie (`disease` = id) — incubation 0, durée tirée. |
 | `corruption` | `amount`, `perSL?`, `align?` | exécutée | `engine/miscast.ts`, `state/aiSpellValue.ts`, `state/targetingModes.ts` | 15 — `miscast.json:mineure-murmures-mortels`, `miscast.json:mineure-malediction-de-corruption` … | Points de Corruption (LDB 19). |
 | `corruptionExposure` | `level?`, `skill?`, `easeSteps?` | exécutée | — | 9 — `activities.json:tester-objets-magiques`, `spells.json:bouclier-en-acier-dore` … | EXPOSITION à une Influence corruptrice (LDB 19 l.23-75) : Test différé par MODALE (pendingCorruption) — op IMPURE résolue par la couche state via `ctx.onCorruptionExposure` (même patron que `ctx.onCorruption`) ; sans contexte (moteur pur), journalisée sans jet. |
@@ -184,10 +185,11 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `wounds` | `amount`, `perSL?`, `onlyGroups?`, `ignoreTB?`, `ignoreAP?`, `bypassArmour?`, `apFrom?`, `min?`, `extraAP?`, `weaponHit?` | exécutée | `engine/aaCritical.ts`, `engine/critical.ts`, `engine/disease.ts` +11 | 153 — `criticals.json:blessure-spectaculaire`, `criticals.json:coupure-mineure` … | Blessures subies DIRECTEMENT. |
 | `zone` | `shape`, `radiusMeters?`, `lengthMeters?`, `lengthPerSL?`, `blocksLoS?`, `onCross?`, `perRound?`, `crossTest?`, `barrier?`, `gate?`, `noCorruption?` | **inerte au switch** | `engine/overcast.ts`, `state/combatFlow.ts`, `state/zones.ts` | 13 — `spells.json:vol-du-destin`, `spells.json:grands-feux-d-u-zhul` … | ZONE PERSISTANTE posée par le sort (Mur de feu, Grands feux d'U'Zhul, Vol du Destin). |
 
-_102 ops (103 membres d'union avant fusion des formes) — 79 exécutées par `applyOps`, 15 inertes au switch, 8 hors switch (impures ou passives — cf. « Résolveurs »)._
+_103 ops (104 membres d'union avant fusion des formes) — 80 exécutées par `applyOps`, 15 inertes au switch, 8 hors switch (impures ou passives — cf. « Résolveurs »)._
 
-### Ops à ZÉRO usage en donnée (5)
+### Ops à ZÉRO usage en donnée (6)
 
+- `beginPsych`
 - `breakBlade`
 - `interruptFocus`
 - `spendAdvantage`

@@ -222,7 +222,7 @@ Ces modificateurs s'appliquent **par catégorie d'écart**. Ils sont cumulatifs 
 - `LDB 85 l.339-340` — règle d'agrandissement/réduction.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.276-277, l.339-340) → `creatureWeapon`, `fearSourceFor`, `StatblockEditor`, `woundsForSize`, `resizeBySteps`, `creatureToCombatant`, `resolvePsychAI`, `taille-modificateurs-en-combat`, `bestDefenseMode`, `SpecsSource`, +17 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/psychology.ts`, +6 fichiers
+- `LDB 85` (l.276-277, l.339-340) → `creatureWeapon`, `StatblockEditor`, `fearSourceFor`, `woundsForSize`, `resizeBySteps`, `creatureToCombatant`, `resolvePsychAI`, `taille-modificateurs-en-combat`, `bestDefenseMode`, `SpecsSource`, +17 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/psychology.ts`, +6 fichiers
 
 ---
 
@@ -353,7 +353,7 @@ Ces traits octroient une ou plusieurs manœuvres d'attaque à la créature (`LDB
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.31-35) → `STANDARD_OPTIONALS`, `aaTableFor`, `SceneEntity`, `resolveAACritical`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `critTableKeyFor`, `rollCritical`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
-- `LDB 85` (l.1-382, l.395, l.408, l.442-447) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `creatureWeapon`, `TraumaFiche`, `fearSourceFor`, +160 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +32 fichiers
+- `LDB 85` (l.1-382, l.395, l.408, l.442-447) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `creatureWeapon`, `TraumaFiche`, `cannotStopOn`, +160 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +32 fichiers
 
 ---
 

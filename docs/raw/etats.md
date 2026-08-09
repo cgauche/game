@@ -37,7 +37,7 @@ La durée de chaque État est précisée dans sa description ; cependant, certai
 
 **Voir aussi** : Avantage (`combat.md`), Détermination (`destin.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.7, l.10-11) → `addCondition`, `addClockCondition`, `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `meleeAttackerBonusLines`, `passiveMods`, `passiveGlobalTestParts`, +2 — `src/data/index.ts`, `src/engine/conditions.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`
+- `LDB 16` (l.7, l.10-11) → `addCondition`, `addClockCondition`, `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `meleeAttackerBonusLines`, `ModFamille`, `passiveMods`, +3 — `src/data/index.ts`, `src/engine/conditions.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`
 
 ---
 
@@ -69,7 +69,7 @@ Un personnage peut subir plusieurs fois le même État. Les pénalités s'accumu
 - `LDB 16 l.137` — Surpris ne se cumule pas
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.11, l.12-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `STABLE_COND_KINDS`, `addCondition`, `stopBleedOutcome`, `hitModifiers`, `addClockCondition`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, +42 — `src/data/etats.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, +16 fichiers
+- `LDB 16` (l.11, l.12-15, l.37, l.115, l.137) → `PRONE_POSE`, `unstable`, `STABLE_COND_KINDS`, `addCondition`, `stopBleedOutcome`, `hitModifiers`, `addClockCondition`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, +43 — `src/data/etats.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, +16 fichiers
 
 ---
 
@@ -82,7 +82,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Détermination (`destin.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.20-21) → `addCondition`, `addClockCondition`, `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `HEARING_SKILL`, `meleeAttackerBonusLines`, `AttackOptions`, +7 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, +2 fichiers
+- `LDB 16` (l.20-21) → `addCondition`, `addClockCondition`, `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `HEARING_SKILL`, `meleeAttackerBonusLines`, `ModFamille`, +8 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, +2 fichiers
 
 ---
 
@@ -420,7 +420,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 - `LDB 16 l.28-139` — descriptions individuelles
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.16-17, l.28-139) → `PRONE_POSE`, `combat-fatigue`, `unstable`, `STABLE_COND_KINDS`, `addCondition`, `EnemyAction`, `stopBleedOutcome`, `Formula`, `StateRecoveryModal`, `brise`, +70 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +25 fichiers
+- `LDB 16` (l.16-17, l.28-139) → `PRONE_POSE`, `combat-fatigue`, `unstable`, `STABLE_COND_KINDS`, `addCondition`, `EnemyAction`, `stopBleedOutcome`, `Formula`, `StateRecoveryModal`, `brise`, +71 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +25 fichiers
 
 ---
 

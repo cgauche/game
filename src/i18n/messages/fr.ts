@@ -277,6 +277,7 @@ export const fr = {
   'op.removeCond': '{name} retire {what} {cond}.',
   'op.noCondToRemove': "{name} n'a aucun État à retirer.",
   'op.endPsych': '{name} sort de {psych}.',
+  'op.beginPsych': '{name} tombe sous {psych}.',
   'op.grantPsychTrait': '{name} gagne le Trait {psych} ({src}).',
   'op.removePsychTrait': '{name} se défait du Trait {psych}.',
   'op.noPsychToRemove': "{name} n'a aucun Trait psychologique à retirer.",

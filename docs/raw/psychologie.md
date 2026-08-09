@@ -155,7 +155,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Peur (Indice), État Brisé (`etats.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.54-57) → `nightmare`, `terreur`, `calme-d-approche`, `resolvePsychRow`, `resolvePsychAI`, `failConditionAmount`, `resolveTerreurTest`, `trauma`, `PsychologyData`, `amour`, +4 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, +3 fichiers
+- `LDB 21` (l.54-57) → `nightmare`, `terreur`, `calme-d-approche`, `resolvePsychRow`, `humanizePerSL`, `resolvePsychAI`, `failConditionAmount`, `psychBranchOps`, `resolveTerreurTest`, `trauma`, +6 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, +4 fichiers
 
 ---
 
@@ -232,7 +232,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 - `LDB 21 l.41-51` — définition, succès/échec, comportement obligatoire, conditions de fin
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.41-51) → `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `terreur`, `calme-d-approche`, `aiMaybeFrenzy`, `resolvePsychRow`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, +31 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +19 fichiers
+- `LDB 21` (l.41-51) → `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `terreur`, `calme-d-approche`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `resolvePsychRow`, `Condition`, `isPsychImmune`, +33 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +20 fichiers
 
 ---
 
@@ -396,7 +396,7 @@ La créature cause la Peur (Indice) aux adversaires. Applique les règles de Peu
 **Sources RAW** : `LDB 85 l.266` — renvoi LDB 21 + Indice défini dans le statbloc
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.253, l.266) → `fearSourceFor`, `StatblockEditor`, `resizeBySteps`, `creatureToCombatant`, `immunite-psychologique`, `increvable`, `infecte`, `infravision`, `insensible-a-la-douleur`, `instable`, +30 — `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/engine/size.ts`, `src/state/rollFlowSpecs.ts`, `src/state/spawn.ts`, +1 fichiers
+- `LDB 85` (l.253, l.266) → `StatblockEditor`, `fearSourceFor`, `resizeBySteps`, `creatureToCombatant`, `immunite-psychologique`, `increvable`, `infecte`, `infravision`, `insensible-a-la-douleur`, `instable`, +30 — `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/engine/size.ts`, `src/state/rollFlowSpecs.ts`, `src/state/spawn.ts`, +1 fichiers
 
 ---
 
@@ -448,7 +448,7 @@ Les créatures agressives de grande Taille inspirent automatiquement Peur ou Ter
 - `LDB 85 l.382-383` — règle Peur/Terreur par Taille
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.274, l.282, l.382-384) → `fearSourceFor`, `cannotStopOn`, `StatblockEditor`, `EnemyTurnInput`, `displaceSmaller`, `resizeBySteps`, `MoveEnv`, `creatureToCombatant`, `resolvePsychAI`, `taille-modificateurs-en-combat`, +21 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/engine/size.ts`, +9 fichiers
+- `LDB 85` (l.274, l.282, l.382-384) → `cannotStopOn`, `StatblockEditor`, `fearSourceFor`, `EnemyTurnInput`, `displaceSmaller`, `resizeBySteps`, `MoveEnv`, `creatureToCombatant`, `resolvePsychAI`, `taille-modificateurs-en-combat`, +21 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/engine/size.ts`, +9 fichiers
 
 ---
 
@@ -611,7 +611,7 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.1053) → `fearImmuneVs`, `CombatFeature`, `robuste`, `vampires`, `saut-carpe`, `voies-fluviales`, `soldats`, `seconde-vue`, `seigneur-de-guerre`, `vue` — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
 - `LDB 17` (l.59) → `ResilienceButton`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, `ForcedResolve`, +69 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, +37 fichiers
-- `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `needsRecoveryRoll`, `animosite`, +64 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, +30 fichiers
+- `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `needsRecoveryRoll`, `animosite`, +66 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, +31 fichiers
 - `LDB 85` (l.178-179, l.382-383) → `cannotStopOn`, `Formula`, `EnemyTurnInput`, `displaceSmaller`, `Condition`, `MoveEnv`, `availableAttacks`, `taille-modificateurs-en-combat`, `engagedAdvantageGap`, `knowsCastingSkill`, +54 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, +9 fichiers
 
 ---

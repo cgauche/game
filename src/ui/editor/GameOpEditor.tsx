@@ -51,6 +51,7 @@ export const OP_LABEL: Record<GameOp['op'], string> = {
   incomingSpellDRMod: 'Modif. au DR des Sorts qui l’affectent (par point/Indice)',
   sbBonus: '+Bonus de Force aux Dégâts',
   endPsych: 'Fin d’un état psychologique',
+  beginPsych: 'Entrée dans un état psychologique',
   exposeDisease: 'Exposer à une Maladie (Test post-combat)',
   contractDisease: 'Contracter une Maladie (immédiat)',
   kill: 'Mort directe (Point de Destin sauve)',
@@ -149,7 +150,7 @@ const OP_ICON: Record<GameOp['op'], IconIdInput> = {
   skillDRBonus: 'mechanic/stat-mod', charDRBonus: 'mechanic/stat-mod', offTerrainMod: 'mechanic/stat-mod',
   crewTestMod: 'travel/anchor', incomingAttackMod: 'mechanic/ward', incomingAdvantage: 'flag/focus',
   incomingSpellDRMod: 'mechanic/ward',
-  sbBonus: 'char/f', endPsych: 'mechanic/mind', exposeDisease: 'medical/infection', contractDisease: 'medical/infection',
+  sbBonus: 'char/f', endPsych: 'mechanic/mind', beginPsych: 'mechanic/mind', exposeDisease: 'medical/infection', contractDisease: 'medical/infection',
   kill: 'journal/damage',
   removeShipPoste: 'travel/anchor', teamCommander: 'action/lead', attackKeyword: 'item/weapon',
   mitigateIncoming: 'mechanic/ward', ignoreStatePenalties: 'ui/done', freeReroll: 'resource/fortune',
@@ -184,7 +185,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['Buffs & caractéristiques', ['charMod', 'ap', 'testMod', 'skillDRBonus', 'charDRBonus', 'crewTestMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
   ['Ressources', ['gainResource', 'corruption', 'sinMod', 'corruptionExposure']],
   ['Incantation & contrecoup', ['castPenalty', 'castWard', 'arrowWard', 'domeWard', 'attackWardFM']],
-  ['Invocation & armes', ['summon', 'polymorph', 'transform', 'endTransform', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantPsychTrait', 'removePsychTrait', 'grantTalent', 'augmentWeapon']],
+  ['Invocation & armes', ['summon', 'polymorph', 'transform', 'endTransform', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantPsychTrait', 'removePsychTrait', 'beginPsych', 'grantTalent', 'augmentWeapon']],
   ['Zones', ['zone']],
   ['Projection & téléportation', ['push', 'teleport', 'chain']],
   ['Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound', 'diseaseTestMod', 'suppressSymptom']],
@@ -314,6 +315,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'condition': return { op: 'condition', id: '', value: 1 };
     case 'removeCondition': return { op: 'removeCondition' };
     case 'endPsych': return { op: 'endPsych', type: '' };
+    case 'beginPsych': return { op: 'beginPsych', type: '' };
     case 'sbBonus': return { op: 'sbBonus', amount: 1 };
     case 'incomingSpellDRMod': return { op: 'incomingSpellDRMod', amount: -1 };
     case 'charMod': return { op: 'charMod', char: 'force', mod: -10 };
@@ -416,6 +418,7 @@ export const OP_REF_FIELDS: Partial<Record<GameOp['op'], readonly OpRefField[]>>
   condition: [{ field: 'id', ds: 'etats', label: 'État', required: true }],
   removeCondition: [{ field: 'id', ds: 'etats', label: 'État', required: false }],
   endPsych: [{ field: 'type', ds: 'psychologies', label: 'Trait psychologique', required: true }],
+  beginPsych: [{ field: 'type', ds: 'psychologies', label: 'État psychologique', required: true }],
   grantPsychTrait: [{ field: 'psychType', ds: 'psychologies', label: 'Trait psychologique', required: true }],
   removePsychTrait: [{ field: 'psychType', ds: 'psychologies', label: 'Trait psychologique', required: false }],
   grantTrait: [{ field: 'traitId', ds: 'traits', label: 'Trait', required: true }],
@@ -469,6 +472,7 @@ export function opSummary(o: GameOp): string {
     case 'condition': return `${conditionLabel(o.id)}${o.value && o.value !== 1 ? ` ×${formulaSummary(o.value)}` : ''}${o.perRound ? '/Round' : ''}`;
     case 'removeCondition': return `${o.id ? conditionLabel(o.id) : '(au choix)'}`;
     case 'endPsych': return `${o.type}`;
+    case 'beginPsych': return `${o.type}${o.cible ? ` (${o.cible})` : ''}${o.indice != null ? ` ${formulaSummary(o.indice)}` : ''}`;
     case 'sbBonus': return `+${o.amount} BF aux Dégâts`;
     case 'incomingSpellDRMod': return `${typeof o.amount === 'number' && o.amount >= 0 ? '+' : ''}${formulaSummary(o.amount)} DR de Sort / point`;
     case 'charMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char] ?? o.char}`;
@@ -669,6 +673,16 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'endPsych' && (
           <label className="dr">Type psy<input value={o.type ?? ''} onChange={(e) => upd({ type: e.target.value })} /></label>
+        )}
+        {op.op === 'beginPsych' && (
+          <>
+            <RefField cfg={{ ds: 'psychologies', single: true }} fieldKey="État psychologique"
+              value={o.type ?? ''} onChange={(v) => upd({ type: (v as string) ?? '' })} />
+            <input placeholder="Cible (Groupe — Animosité, Phobie…)" value={o.cible ?? ''}
+              onChange={(e) => upd({ cible: e.target.value || undefined })} />
+            <label className="dr"><input type="checkbox" checked={o.indice != null} onChange={(e) => upd({ indice: e.target.checked ? 1 : undefined })} /> Indice</label>
+            {o.indice != null && <FormulaField label="Valeur" value={o.indice} min={0} onChange={(indice) => upd({ indice })} />}
+          </>
         )}
         {op.op === 'testMod' && (
           <>

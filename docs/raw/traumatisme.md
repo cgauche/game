@@ -110,7 +110,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Voir aussi** : tables complètes → [combat.md § Critiques](combat.md#critiques-et-frappe-mortelle) ; Fractures → [§ 7](#7-fractures-mineure--majeure) ; Déchirures → [§ 8](#8-déchirures-musculaires-mineure--majeure) ; Amputations → [§ 9](#9-amputation--choc-traitement-et-séquelles-permanentes).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `dechirure-autre-mineure`, `aveugle`, `CritEscalation`, `fracture-torse-mineure`, `assourdi`, `trauma-fracture`, `fracture-torse-majeure`, +58 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, +13 fichiers
+- `LDB 18` (l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `HealMode`, `actBlockReason`, `availableHealModes`, `MedicState`, `dechirure-autre-mineure`, `aveugle`, `bestHealerFor`, +67 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, +16 fichiers
 
 ---
 
@@ -345,7 +345,7 @@ Se débarrasser d'une Possession lourde annule 1 Test échoué.
 **Voir aussi** : Possessions accordant bonus/malus aux Tests d'Exposition (LDB 65 p.302 / LDB 74 p.309).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.327-334) → `faim`, `soif`, `recovery`, `availableHealModes`, `hungerThirstPenalty`, `effectiveChar`, `HungerState`, `ThirstState`, `exposure`, `ExposureKind`, +30 — `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/exposure.ts`, +14 fichiers
+- `LDB 18` (l.327-334) → `faim`, `soif`, `recovery`, `availableHealModes`, `hungerThirstPenalty`, `RESISTANCE_TEST`, `effectiveChar`, `HungerState`, `exposure`, `ThirstState`, +32 — `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/exposure.ts`, +14 fichiers
 
 ---
 
@@ -378,7 +378,7 @@ Test de Résistance tous les **deux jours** sans nourriture.
 **Voir aussi** : Provisions / rations → [provisions.md](provisions.md) ; [Guérison des PB](#10-guérison-des-points-de-blessure) (sans provisions : pas de récupération).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.337-343) → `faim`, `soif`, `recovery`, `hungerThirstPenalty`, `effectiveChar`, `HungerState`, `ThirstState`, `exposure`, `breathHoldSeconds`, `prepareBreathHold` ⚠sans-appelant, +35 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, `src/engine/exposure.ts`, +15 fichiers
+- `LDB 18` (l.337-343) → `faim`, `soif`, `recovery`, `hungerThirstPenalty`, `RESISTANCE_TEST`, `effectiveChar`, `HungerState`, `exposure`, `ThirstState`, `breathHoldSeconds`, +37 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, `src/engine/exposure.ts`, +15 fichiers
 
 ---
 
@@ -397,4 +397,4 @@ Source : `LDB 18 l.345-346`.
 **Voir aussi** : États → [etats.md](etats.md) ; sorts infligeant Suffocation (Ombres étrangleuses, Transmutation de Chamon).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.345-346) → `faim`, `soif`, `recovery`, `hungerThirstPenalty`, `effectiveChar`, `HungerState`, `ThirstState`, `exposure`, `breathHoldSeconds`, `prepareBreathHold` ⚠sans-appelant, +28 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, +13 fichiers
+- `LDB 18` (l.345-346) → `faim`, `soif`, `recovery`, `hungerThirstPenalty`, `RESISTANCE_TEST`, `effectiveChar`, `HungerState`, `exposure`, `ThirstState`, `breathHoldSeconds`, +30 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/voyage-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, +13 fichiers

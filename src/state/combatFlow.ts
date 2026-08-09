@@ -194,7 +194,7 @@ import { bearingPostes, mostArmedSide } from './shipBattery';
 import { shipHelmsman, maneuverShip } from './shipManeuver';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
 import { warMachineFireWeapon, warMachineCrewRequired, warMachineCrewPenalty } from '../engine/warMachineCrew';
-import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, supersededLines, psychResolution, gainPhobieIfThreshold, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
+import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, supersededLines, psychResolution, psychBranchOps, psychBranchFlow, gainPhobieIfThreshold, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import {
@@ -820,11 +820,16 @@ export function dualStrikeTargets(battle: BattleState, attacker: Combatant, offW
 export interface AttackPreview {
   weapon: Weapon; kind: 'melee' | 'ranged'; inRange: boolean; blocked: boolean; target: number; mods: ModLine[];
   /** Difficulté du jet d'attaque, POSÉE À LA SOURCE — LDB 13 l.118 : « Lors d'un Combat, les Difficultés
-   *  sont supposées être au niveau Intermédiaire (+0). » L'affichage la rend, il ne la devine pas. */
+   *  sont supposées être au niveau Intermédiaire (+0). » L'affichage la rend, il ne la devine pas.
+   *  Quand des circonstances en composent un autre palier (`LDB 14 l.91-96`), c'est le monteur —
+   *  jamais l'affichage — qui la DÉRIVE, et `difficultyParts` en porte la composition. */
   difficulty: Difficulty;
+  /** Composition du palier DÉRIVÉ (`RollLineParts.difficultyParts`) : ces lignes ne sont PAS dans
+   *  `mods`, le palier les porte. Absente = palier déclaré, tous les modificateurs sont en chips. */
+  difficultyParts?: ModLine[];
   /** Valeur de combat NUE (`combatBaseValue`, lignes volatiles de Caractéristique sorties) —
-   *  décomposition `target = base + Σ mods` pour l'affichage : la somme est BRUTE, le plafond des
-   *  Difficultés ayant sa propre ligne dans `mods` (#1153 L3a). */
+   *  décomposition `target = base + Difficulté + Σ mods` pour l'affichage : la somme des chips est
+   *  BRUTE, ce que le palier absorbe (circonstances, plafond) n'y est plus (#1153 L3b). */
   base: number;
   /** ÉCRÊTAGE réellement subi par la cible (`TestResult.clamped`) : la seule donnée qui autorise la
    *  chip « plafond 99 » sur le pré-jet (`PendingRoll.clamped`). Absent = aucun bornage. */
@@ -867,7 +872,8 @@ export function previewAttack(
   const inRange = kind === 'ranged' ? (rangeM != null && rangeBandModifier(dist, rangeM, mpt) != null) : dist <= reachTiles(weapon);
   // Ligne montée par le MONTEUR CANONIQUE (#1153) : base de combat NUE, composantes fondues dans la
   // valeur (lignes volatiles de Caractéristique — issue #202 — et mods de Test char-qualifiés) en
-  // chips, plafond des Difficultés NOMMÉ (LDB 14 l.91-96) et MÊME écrêtage que le jet (`clampTarget`).
+  // chips, PALIER composé par les circonstances (LDB 14 l.91-96) et MÊME écrêtage que le jet
+  // (`clampTarget`). La Difficulté RENDUE est celle du monteur, jamais celle déclarée à l'entrée.
   const line = rollLine({
     actor: attacker, difficulty: 'intermediaire', combat: { kind, weapon },
     surLaCible: mods, plafond: 'difficultes',
@@ -876,7 +882,8 @@ export function previewAttack(
     weapon, kind, inRange, blocked: false,
     target: line.target, base: line.base, mods: line.mods,
     ...(line.clamped ? { clamped: line.clamped } : {}),
-    dmg, soak, difficulty: 'intermediaire',
+    dmg, soak, difficulty: line.difficulty,
+    ...(line.difficultyParts ? { difficultyParts: line.difficultyParts } : {}),
   };
 }
 
@@ -6450,6 +6457,9 @@ function combatPsychBands(dues: CombatPsychDue[]): CascadeStep[] {
       // L'enjeu descend à l'AFFLICTION affrontée : ses conséquences lui sont propres (`psychResolution`
       // lit `failCondition`/`failAmount`/`becomes` de SON entrée), donc son texte vit sur SON entrée.
       stake: combatStakeRef('combatPsych', { entryId: d.kind, values: { indice: d.indice } }),
+      // Les DEUX issues, dérivées des ops que l'applier appliquera (`psychBranchOps`) : la surface
+      // les rend en chips codex-liées avant le jet, et le verdict est le MÊME bloc filtré (#1117).
+      meta: { onSuccess: psychBranchFlow(d, true), onFail: psychBranchFlow(d, false) },
     });
   }
   return [...bands.values()];
@@ -6542,7 +6552,6 @@ export function openRoundEndCascade(get: Get, set: SetFn): void {
  */
 function resolveCombatPsychRow(get: Get, hero: Combatant, cp: CombatPsychDecl, rm: CombatPsychRowMeta, r: CascadeRoll, immune: boolean): Consequence[] {
   const battle = get().battle;
-  hero.psychState ??= [];
   // DÉTERMINATION (LDB 17 l.62) : immunité TEMPORAIRE — la Peur/Terreur/Trait est IGNORÉE ce Round,
   // PAS vaincue. On NE cumule PAS le DR, on NE pose PAS de Brisé, on N'active PAS le trait ciblé : le
   // `psychState` (et le `calmeDR` d'une Peur déjà entamée) reste INCHANGÉ. Le collecteur de Round saute
@@ -6551,15 +6560,25 @@ function resolveCombatPsychRow(get: Get, hero: Combatant, cp: CombatPsychDecl, r
   let line: string;
   let phobieLine: string | null = null;
   const res = psychResolution(cp.kind);
+  const cible = CIBLE_TYPES.has(cp.kind);
+  // Peur = Test ÉTENDU de Calme (LDB 21 l.25) : cumuler le DR vers l'Indice (calque resolvePeurTest).
+  // Sans Peur (LDB 10 l.864) : « un seul Test (+20) » → une réussite IGNORE la Peur d'emblée
+  // (DR porté à l'Indice) ; un échec laisse le porteur sujet (re-tests suivants = Peur normale +0).
+  // Sinon Test étendu LDB 12 MUTUALISÉ (`extendedTestStep`) — un Round raté RETIRE les DR négatifs
+  // (planché à 0), au lieu de l'ancien cumul add-only (bug : la Peur ne pouvait jamais régresser).
+  // C'est le SEUL terme que la donnée ne porte pas : il voyage dans l'op de pose de la branche.
+  const calmeDR = res.mode === 'terreur' || cible ? undefined
+    : rm.sansPeur && r.success
+      ? Math.max(rm.prevDR, cp.indice)
+      : extendedTestStep(rm.prevDR, r, cp.indice, !!rule('test-extended-min-sl')).total;
+  // CONSÉQUENCES de la branche réalisée, en ops dérivées de `psychology.json` — les MÊMES que la
+  // surface annonce (`meta.onSuccess`/`onFail`). Le DR du jet est versé au contexte : la quantité
+  // d'État de l'échec (`valuePerSL{onFailure}`) s'y résout, même arithmétique que `failConditionAmount`.
+  applyOps(hero, psychBranchOps(cp, { success: r.success, calmeDR, round: battle?.round }), { sl: r.sl, source: { kind: 'psychology', id: cp.kind } });
   if (res.mode === 'terreur') {
     // 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → État `failCondition` = Indice + |DR négatifs| ; devient
-    // l'état `becomes`. Conséquences lues en DONNÉES (psychology.json), plus de `'terreur'`/Brisé codé.
+    // l'état `becomes` (LDB 21 l.56, INCONDITIONNEL, à PLEIN Indice — #1190). Conséquences en DONNÉES.
     const brise = r.success ? 0 : failConditionAmount(res.failAmount, cp.indice, r.sl);
-    if (brise > 0 && res.failCondition) addCondition(hero, res.failCondition, brise);
-    // « Une fois ce Test de Psychologie effectué, la créature cause la Peur, avec un Indice de Peur
-    // équivalent à son Indice de Terreur » (LDB 21 l.56) : INCONDITIONNEL — l'exemption du succès
-    // (l.54) ne couvre que la Terreur. Plein Indice quel que soit le résultat (#1190).
-    if (res.becomes) hero.psychState.push({ type: res.becomes, sourceId: cp.sourceId, indice: cp.indice, calmeDR: 0, lastTestRound: battle?.round });
     line = r.success ? tr('out.terreurHold', { name: hero.label }) : tr('cf.terreurThenFear', { name: hero.label, foe: cp.sourceName, brise, indice: cp.indice });
     // Phobie du noir (ADE II Annexe I, règle facultative `psych-acquisition-optional`) : cumuler les États
     // Brisé subis À CAUSE de la Terreur ; à ≥ Bonus de FM → Phobie liée à la source (son Groupe si connu,
@@ -6574,30 +6593,14 @@ function resolveCombatPsychRow(get: Get, hero: Combatant, cp: CombatPsychDecl, r
         phobieLine = `${hero.label} développe une Phobie durable : ${gained.phobie.cible}.`;
       }
     }
-  } else if (CIBLE_TYPES.has(cp.kind)) {
+  } else if (cible) {
     // Trait ciblé : échec → affliction active ; succès → marqueur inerte (pas de re-déclenchement).
-    let e = hero.psychState.find((p) => p.type === cp.kind && p.cible === cp.cible);
-    if (!e) { e = { type: cp.kind, cible: cp.cible, sourceId: cp.sourceId }; hero.psychState.push(e); }
-    e.lastTestRound = battle?.round;
-    e.active = !r.success;
     const cl = CIBLE_LABEL[cp.kind];
     line = r.success ? tr('out.cibleMaster', { name: hero.label, kind: cl?.label.toLowerCase() ?? cp.kind }) : tr('out.cibleGrip', { name: hero.label, kind: cl?.label.toLowerCase() ?? cp.kind });
   } else {
-    // Peur = Test ÉTENDU de Calme (LDB 21 l.25) : cumuler le DR vers l'Indice (calque resolvePeurTest).
-    // Sans Peur (LDB 10 l.864) : « un seul Test (+20) » → une réussite IGNORE la Peur d'emblée
-    // (DR porté à l'Indice) ; un échec laisse le porteur sujet (re-tests suivants = Peur normale +0).
-    // Sinon Test étendu LDB 12 MUTUALISÉ (`extendedTestStep`) — un Round raté RETIRE les DR négatifs
-    // (planché à 0), au lieu de l'ancien cumul add-only (bug : la Peur ne pouvait jamais régresser).
-    const calmeDR = rm.sansPeur && r.success
-      ? Math.max(rm.prevDR, cp.indice)
-      : extendedTestStep(rm.prevDR, r, cp.indice, !!rule('test-extended-min-sl')).total;
-    let e = hero.psychState.find((p) => p.sourceId === cp.sourceId && p.type === 'peur');
-    if (!e) { e = { type: 'peur', sourceId: cp.sourceId, indice: cp.indice, calmeDR: 0 }; hero.psychState.push(e); }
-    e.calmeDR = calmeDR;
-    e.lastTestRound = battle?.round;
-    line = calmeDR >= cp.indice
+    line = (calmeDR ?? 0) >= cp.indice
       ? `${hero.label} ${rm.sansPeur ? 'ignore la Peur' : 'surmonte sa peur'}${cp.sourceName ? ` de ${cp.sourceName}` : ''}${rm.sansPeur ? ' (Sans Peur)' : ''}.`
-      : `${hero.label} reste sous l'emprise de la Peur (${calmeDR}/${cp.indice} DR).`;
+      : `${hero.label} reste sous l'emprise de la Peur (${calmeDR ?? 0}/${cp.indice} DR).`;
   }
   // Immunités croisées (LDB 21) : Animosité/Préjugé cèdent dès qu'on tombe sous un effet psy dominant.
   return freeCons([line, ...(phobieLine ? [phobieLine] : []), ...supersededLines(hero, hero.label)]);

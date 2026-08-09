@@ -56,13 +56,18 @@ export function StakeNote({ stake }: { stake: StakeRef }) {
  * `realized` — la branche que le jet A TRANCHÉE : l'encadré se FILTRE alors à elle seule et devient le
  * VERDICT (mêmes ops, même rendu, aucune seconde surface à synchroniser). Absent = avant le jet, les
  * deux issues sont annoncées.
+ *
+ * `sl` — le DR de CE jet, versé avec `realized` : une quantité à échelle par DR (Terreur : « Indice +
+ * DR d'échec ») s'affiche au nombre RÉELLEMENT appliqué, celui-là même que le journal énonce. Avant le
+ * jet il n'existe pas, et la chip annonce alors la règle entière (base + échelle).
  */
-export function OutcomeNote({ onSuccess, onFail, onSuccessBy, onFailBy, realized }: {
+export function OutcomeNote({ onSuccess, onFail, onSuccessBy, onFailBy, realized, sl }: {
   onSuccess?: GameOp[];
   onFail?: GameOp[];
   onSuccessBy?: { category: string; id: string };
   onFailBy?: { category: string; id: string };
   realized?: 'success' | 'fail';
+  sl?: number;
 }) {
   const succ = realized === 'fail' ? undefined : onSuccess;
   const fail = realized === 'success' ? undefined : onFail;
@@ -70,7 +75,7 @@ export function OutcomeNote({ onSuccess, onFail, onSuccessBy, onFailBy, realized
   const failBy = realized === 'success' ? undefined : onFailBy;
   if (!succ && !fail && !succBy && !failBy) return null;
   const ligne = (ops: GameOp[] | undefined, by: { category: string; id: string } | undefined) =>
-    ops ? (ops.length ? <GameOpChips ops={ops} /> : 'rien.')
+    ops ? (ops.length ? <GameOpChips ops={ops} {...(sl != null ? { sl } : {})} /> : 'rien.')
       : <EntityRef category={by!.category} id={by!.id} label={refLabel(by!.category, { id: by!.id })} />;
   return (
     <div className="rm-stake">
