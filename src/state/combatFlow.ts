@@ -5,10 +5,10 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, PendingMiscastStep, CascadeStep, PendingCounterspell, CounterParticipant, CounterDeclaration } from './pendings';
+import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, PendingMiscastStep, CascadeStep, CascadeRoll, BatchParticipant, PendingCounterspell, CounterParticipant, CounterDeclaration } from './pendings';
 import { describeReload } from './flowOutcomes';
 import { toRecapLines } from './recapLine';
-import { Combatant, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS, type ShipPoste } from '../engine/types';
+import { Combatant, HitLocation, Weapon, Difficulty, type ShipPoste } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
 import { ev, evLines, type CombatEventKind } from './combatLog';
@@ -131,9 +131,9 @@ import {
   type MiscastSeverity, type MiscastResult,
 } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep, easeDifficulty, hydrateTR } from '../engine/tests';
-import { effectiveChar, bonus, volatileCharLines } from '../engine/characteristics';
-import { testValue, skillBaseValue, type SupportDetail } from '../engine/skills';
-import { findManeuverById, findDomainById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, combatStakeRef, GRAPPLE, type SpellData, type ManeuverDef } from '../data';
+import { effectiveChar, bonus } from '../engine/characteristics';
+import { testValue, type SupportDetail } from '../engine/skills';
+import { findManeuverById, findDomainById, diseaseLabel, refLabel, findPsychologyById, findVehicleById, combatStakeRef, GRAPPLE, type SpellData, type ManeuverDef } from '../data';
 import { applyHullCritical, exposedCrew } from '../engine/shipCritical';
 import { endShanty, resolveShipUnits } from './shipCrew';
 import { beginShipwreck } from './shipwreck';
@@ -195,7 +195,7 @@ import { bearingPostes, mostArmedSide } from './shipBattery';
 import { shipHelmsman, maneuverShip } from './shipManeuver';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
 import { warMachineFireWeapon, warMachineCrewRequired, warMachineCrewPenalty } from '../engine/warMachineCrew';
-import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, psychResolution, gainPhobieIfThreshold, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
+import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, supersededLines, psychResolution, gainPhobieIfThreshold, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import {
@@ -251,7 +251,7 @@ import { resolveRecoverTest } from './combat/recover';
 import { fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // effets de bord de tour (onTurnStart/onTurnEnd, dont la sortie de Frénésie en données) + gate d'action (Mandragore)
 export { collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour la cascade d'upkeep
 export * from './combat/triggeredTest'; // baril : enregistre l'applier de cascade `triggeredTest` + installe le routeur de Test des triggers (effet de bord)
-import { runCombatFlow, rollFrozenOpposedAttacker, frozenOpposedBatchStep } from './combat/triggeredTest'; // usage interne (applyCast : exécuteur de Flow de sort EN COMBAT, after-aware → canal de journal unique ; Surprise : opposition figée + bande de guetteurs)
+import { runCombatFlow, rollFrozenOpposedAttacker, frozenOpposedBatchStep, simpleBatchTestStep } from './combat/triggeredTest'; // usage interne (applyCast : exécuteur de Flow de sort EN COMBAT, after-aware → canal de journal unique ; Surprise : opposition figée + bande de guetteurs)
 export { aiMaybeFrenzy, resolvePsychAI, fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // baril : enregistre les hooks de début de tour ennemi (effet de bord) + ré-export pour frenzy*.test / psych*.test + effets de bord de tour + gate d'action
 // Sauvegardes post-touche en registre `HitModifier` ordonné (state/combat/hitModifiers, module FEUILLE).
 import { runHitModifiers, martyrGuardOf, wardedAgainst } from './combat/hitModifiers'; // usage interne (applyAttackResult + applyCast)
@@ -264,7 +264,7 @@ import {
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type FlowTest, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep, stakeAtTableRow } from './cascade';
-import { freeCons, rollLine, rollStep, rollSansPilote } from './rollSeam';
+import { freeCons, resultLines, rollLine, rollStep, rollSansPilote, type Consequence } from './rollSeam';
 
 /** L'État du défenseur accorde-t-il un Avantage à l'assaillant en mêlée ? Lu en DONNÉES
  *  (`incomingMeleeAdvantage` → `passive` `incomingAdvantage`, kind `etat`). Sonné : « +1 Avantage avant
@@ -1358,7 +1358,7 @@ export function frenzyTarget(get: Get, c: Combatant): Combatant | null {
   })[0];
 }
 
-/** Source de PEUR active dont `dest` RAPPROCHE l'acteur (LDB 21 l.29) — null si aucune, ou si
+/** Source de PEUR active dont `dest` RAPPROCHE l'acteur (LDB 21 l.27) — null si aucune, ou si
  *  immunisé à la Psychologie. « Sous l'emprise » ⟺ Test étendu de Calme pas encore au niveau
  *  de l'Indice (calmeDR < indice). Pure. */
 export function fearedSourceTowards(battle: BattleState, active: Combatant, dest: Pt): Combatant | null {
@@ -1992,10 +1992,11 @@ export function applyAttackResult(
       set((s: GameState) => ({ facing: { ...s.facing, [attacker.id]: facingToward(attacker.pos!, target.pos!), [target.id]: facingToward(target.pos!, attacker.pos!) } }));
     }
     bus.emit(EVT.ANIM_ATTACK, { from: attacker.id, to: target.id, result: res, kind: 'melee', defense: 'none', weapon, parryWeapon: res.parryWeapon, creatureAttack: creatureAttackKind(weapon) });
-    const log = [...battle.log, ev('attack', tr('cf.finishHelpless', { name: attacker.label, foe: target.label }), attacker.id, target.id)];
+    const b = markActed(get, set, battle); // scellé AVANT la copie du journal (le déclencheur y pousse ses lignes)
+    const log = [...b.log, ev('attack', tr('cf.finishHelpless', { name: attacker.label, foe: target.label }), attacker.id, target.id)];
     if (isOutOfAction(target)) log.push(ev('death', tr('cf.outOfAction', { name: target.label }), target.id));
     for (const line of notifySlain(get, set, target)) log.push(ev('death', line, target.id)); // effet « à la mort » (banni…) — mort-auto du désespéré
-    set({ battle: { ...battle, acted: true, action: null, log } });
+    set({ battle: { ...b, action: null, log } });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
     return false; // application complète (mort-auto) — non suspendu côté cascade d'attaque
@@ -3298,7 +3299,7 @@ export function applyGaze(get: Get, set: SetFn, attacker: Combatant): boolean {
   const spent = attacker.advantage; // l'IA met tout (min 1)
   const atk = rollManeuverAttacker(attacker, a.stat ?? 'capacite-de-tir', battleRng());
   const suspended = resolveManeuver(get, set, attacker, a.def, a.indice, atk, spent);
-  set({ battle: { ...get().battle!, acted: true } }); // Regard = Action de la créature (l.238)
+  set({ battle: markActed(get, set, get().battle!) }); // Regard = Action de la créature (l.238)
   if (!suspended) checkBattleOver(get, set); // héros influençable → checkBattleOver à la fermeture de la cascade
   return true;
 }
@@ -3313,7 +3314,7 @@ export function applyChillGrasp(get: Get, set: SetFn, attacker: Combatant): bool
   if (!a) return false;
   const atk = rollManeuverAttacker(attacker, a.stat ?? 'capacite-de-combat', battleRng());
   const suspended = resolveManeuver(get, set, attacker, a.def, a.indice, atk, a.avantage);
-  set({ battle: { ...get().battle!, acted: true } }); // Étreinte = Action de la créature (l.112)
+  set({ battle: markActed(get, set, get().battle!) }); // Étreinte = Action de la créature (l.112)
   if (!suspended) checkBattleOver(get, set); // héros influençable → checkBattleOver à la fermeture de la cascade
   return true;
 }
@@ -3351,7 +3352,7 @@ function aiBattement(get: Get, set: SetFn, enemy: Combatant, foe: Combatant): bo
   if (!battle) return false;
   const atk = rollManeuverAttacker(enemy, 'capacite-de-combat', battleRng());
   const line = resolveBattement(get, enemy, foe, atk);
-  set({ battle: { ...get().battle!, acted: true, action: null, log: [...get().battle!.log, ev('attack', line, enemy.id, foe.id)] } });
+  set({ battle: { ...markActed(get, set, get().battle!), action: null, log: [...get().battle!.log, ev('attack', line, enemy.id, foe.id)] } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
   return true;
@@ -3366,7 +3367,7 @@ function aiDistraire(get: Get, set: SetFn, enemy: Combatant, foe: Combatant): bo
   const atk = rollSansPilote(get, enemy, distraireAttackValue(enemy), 'intermediaire', battleRng());
   const def = rollTest(distraireDefenseValue(foe), 'intermediaire', battleRng());
   const line = resolveDistraire(enemy, foe, atk, def);
-  set({ battle: { ...get().battle!, acted: true, action: null, log: [...get().battle!.log, ev('attack', line, enemy.id, foe.id)] } });
+  set({ battle: { ...markActed(get, set, get().battle!), action: null, log: [...get().battle!.log, ev('attack', line, enemy.id, foe.id)] } });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
   return true;
@@ -3833,8 +3834,9 @@ export function finishPlayerAction(get: Get, set: SetFn, lines: string[], kind: 
     // touché par les ops d'un sort de soutien, OU un rider de Domaine) a pu pousser des lignes dans la
     // file différée APRÈS les drains inline d'`applyCast` → on les folde dans le MÊME `log` réécrit,
     // avant que ce `set` ne le clobbere. File vide (cas commun heal/focus) → no-op.
-    const log = [...battle.log, ...evLines(lines, kind), ...drainPendingLog(get, set)];
-    set({ battle: { ...battle, acted: true, action: null, selectedSpellId: null, log } });
+    const b = markActed(get, set, battle); // scellé AVANT la copie du journal : les lignes du Test d'approche en font partie
+    const log = [...b.log, ...evLines(lines, kind), ...drainPendingLog(get, set)];
+    set({ battle: { ...b, action: null, selectedSpellId: null, log } });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
   } else {
@@ -6008,6 +6010,9 @@ export function advanceTurn(get: Get, set: SetFn) {
   // La Charge ne vaut que pour le tour où elle a lieu (Cornes LDB 85, Épuisante LDB 62 l.319) :
   // consommée au passage au combattant suivant (filet de sécurité, l'IA la consomme aussi en chemin).
   const prevActive = inBattleId(battle, battle.order[battle.turn]);
+  // Seconde porte d'irrévocabilité du déplacement (la première étant l'Action prise, `markActed`) :
+  // passer la main fige ce qui a été parcouru → les approches en attente sont dues (LDB 21 l.27).
+  sealApproachMoves(get, set, prevActive);
   if (prevActive?.chargedThisTurn) prevActive.chargedThisTurn = false;
   if (prevActive?.freeAttacksThisTurn) prevActive.freeAttacksThisTurn = undefined; // Attaques gratuites de manœuvre : 1/tour (compteur remis à zéro)
   fireTurnEndTriggers(get, set, prevActive); // effets de bord « fin de tour » authorés (inerte sans donnée)
@@ -6152,10 +6157,10 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
   // (4) Le combat est-il terminé à ce franchissement ? (morts lentes finalisées ci-dessus → victoire/défaite,
   //     capture des récompenses incluse). On tranche AVANT de proposer la fenêtre d'initiative.
   if (checkBattleOver(get, set)) return;
-  // (4bis) Psychologie de FIN de Round (LDB 21 l.27) : la PEUR est un Test ÉTENDU de Calme « à la fin
+  // (4bis) Psychologie de FIN de Round (LDB 21 l.25) : la PEUR est un Test ÉTENDU de Calme « à la fin
   //     de chaque Round ». APRÈS le Destin (résolu en (1), peut avoir suspendu/re-rappelé) ET les
   //     décomptes UNE-FOIS-PAR-ROUND ci-dessus (Avantage/Nuée/Engagement/zones — DÉJÀ appliqués), on
-  //     ouvre UNE cascade (un héros par étape, applier 'combatPsych') qui SUSPEND la suite jusqu'à
+  //     ouvre UNE cascade (une BANDE par entrée de règle, applier 'combatPsych') qui SUSPEND la suite jusqu'à
   //     résolution. À sa fermeture (`roundBoundary`), le store enchaîne DIRECTEMENT sur `enterRoundStartPause`
   //     — surtout PAS `resolveRoundBoundary` (qui re-jouerait ces décomptes). Sinon (aucune Peur), on
   //     enchaîne ici même.
@@ -6201,40 +6206,92 @@ export function maybeRunEnemyTurn(get: Get, set: SetFn) {
   scheduleCombatTimer(() => runEnemyAI(get, set, active.id), beatHold(get, 'turnHandoff'));
 }
 
-/** LDB 21 (Psychologie) l.29 : « Si la source de votre Peur se rapproche de vous, vous devez réussir un
- *  Test de Calme Intermédiaire (+0) ou gagner un État Brisé. » Appelé APRÈS le déplacement de `mover` (IA) :
- *  tout héros qui le craint (Peur active non vaincue) ET dont il s'est rapproché fait un Test de Calme,
- *  ROUTÉ par l'exécuteur de Flow CADENCE-AWARE (`runCombatFlow`) — héros en cadence MANUELLE → étape de
- *  cascade INFLUENÇABLE (Chance/Résilience) ; ennemi/héros auto → jet inline. La conséquence PURE de
- *  l'échec (1 État Brisé) est une op `condition` portée par la branche `fail`. Plusieurs héros craintifs
- *  testent sur un même déplacement (garde `lastApproachKey` : 1 Test par Tour de la source) ; chaque
- *  `runCombatFlow` APPEND son étape à la MÊME cascade `purpose:'combat'` → file naturelle. */
-export function approachFearTrigger(get: Get, set: SetFn, mover: Combatant, fromPos: Pt): void {
+/** LDB 21 (Psychologie) l.27 : « Si la source de votre Peur se rapproche de vous, vous devez réussir un
+ *  Test de Calme Intermédiaire (+0) ou gagner un État Brisé. » L'unité de la règle est LE DÉPLACEMENT :
+ *  appelé une fois, APRÈS le déplacement COMPLET de `mover`, il compare la position de DÉPART
+ *  (`fromPos`) à sa position d'ARRIVÉE — les cases traversées n'existent pas pour la règle. Tout
+ *  combattant qui le craint (Peur active non vaincue) et dont il a fini plus près fait un Test de
+ *  Calme ; la source, elle, ne jette RIEN (Test simple, aucune opposition). Les craintifs appelés par
+ *  CE déplacement et affrontant la MÊME entrée de règle (la Peur de cette source, à cet Indice) forment
+ *  UNE BANDE influençable quand ils sont pilotés à la main ; les autres (ennemi, héros auto) restent
+ *  résolus INLINE par le même Flow — patron EXACT de la Surprise (`resolveAmbush`). La conséquence PURE
+ *  de l'échec (1 État Brisé) est une op `condition` portée par la branche `fail`. */
+export function approachFearTrigger(get: Get, set: SetFn, mover: Combatant, fromPos: Pt, toPos?: Pt): void {
   const battle = get().battle;
-  if (!battle || !mover.pos) return;
-  const approachKey = `${battle.round}:${battle.turn}`; // UN Test par Tour de la source (l.29) —
-  // un déplacement DÉCOMPOSÉ en segments (ou move-then-attack) ne re-déclenche pas la modale.
+  const arrivee = toPos ?? mover.pos;
+  if (!battle || !arrivee) return;
+  const dues: { c: Combatant; indice: number }[] = [];
   for (const c of battle.combatants) {
     if (c.kind === mover.kind || isOutOfAction(c) || !c.pos) continue;
     const peur = (c.psychState ?? []).find((p) => p.type === 'peur' && p.sourceId === mover.id && (p.calmeDR ?? 0) < (p.indice ?? 0));
-    if (!peur || peur.lastApproachKey === approachKey) continue;
-    if (chebyshev(mover.pos, c.pos) >= chebyshev(fromPos, c.pos)) continue; // ne s'est pas rapproché
-    peur.lastApproachKey = approachKey;
-    const flow = testFlow(
-      {
-        skill: 'calme', difficulty: 'intermediaire', label: 'Approche menaçante',
-        // Le foyer est l'ENTRÉE de psychologie affrontée (`peur`), qui porte déjà son enjeu et sa
-        // fiche — pas un gabarit de `kind` : c'est la MÊME Peur que celle des Tests de Round.
-        stake: combatStakeRef('combatPsych', { entryId: 'peur', values: { indice: peur.indice ?? 0 } }),
-      },
-      EMPTY_FLOW, // réussite : garde son sang-froid, rien à faire
-      { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: COND.brise, value: 1 }] } },
-    );
-    runCombatFlow({ mode: 'combat', get, set, target: c, caster: c, label: 'Approche menaçante' }, flow);
+    if (!peur) continue;
+    if (chebyshev(arrivee, c.pos) >= chebyshev(fromPos, c.pos)) continue; // n'a pas fini plus près
+    dues.push({ c, indice: peur.indice ?? 0 });
+  }
+  if (!dues.length) return;
+  // Le foyer est l'ENTRÉE de psychologie affrontée (`peur`), qui porte déjà son enjeu et sa fiche — pas
+  // un gabarit de `kind` : c'est la MÊME Peur que celle des Tests de Round. Son Indice fait donc partie
+  // de la CLÉ de bande (deux Indices = deux règles en jeu, donc deux fenêtres).
+  const testFor = (indice: number): FlowTest => ({
+    skill: 'calme', difficulty: 'intermediaire', label: 'Approche menaçante',
+    stake: combatStakeRef('combatPsych', { entryId: 'peur', values: { indice } }),
+  });
+  const branches = {
+    onSuccess: EMPTY_FLOW, // réussite : garde son sang-froid, rien à faire
+    onFail: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: COND.brise, value: 1 }] } } as Flow,
+  };
+  const bandes = new Map<number, Combatant[]>();
+  for (const d of dues) {
+    if (!humanControlled(get(), d.c)) continue; // sa résolution reste inline (ci-dessous)
+    bandes.set(d.indice, [...(bandes.get(d.indice) ?? []), d.c]);
+  }
+  for (const [indice, craintifs] of bandes) {
+    const step = simpleBatchTestStep(craintifs, testFor(indice), branches, EMPTY_FLOW, 'intermediaire', `approach-fear-${mover.id}-${indice}`);
+    // DEUX déplacements de la même source dans la même cascade = deux bandes de MÊME clé de règle : la
+    // fabrique à `index` (pushStep) les distingue, sans quoi `cascadeBatchRoll` retrouverait la première.
+    if (step) pushCombatStep(set, (index) => ({ ...step, id: `${step.id}-${index}` }));
+  }
+  for (const d of dues) {
+    if (humanControlled(get(), d.c)) continue; // sa rangée est dans la bande
+    runCombatFlow({ mode: 'combat', get, set, target: d.c, caster: d.c, label: 'Approche menaçante' }, testFlow(testFor(d.indice), branches.onSuccess, branches.onFail));
   }
   // Inline (mover ennemi → héros auto/ennemi craintif) : les lignes partent dans la file différée. Le héros
   // manuel suspend (cascade) et n'en pousse aucune. On les folde dans le `battle.log` que le `move` réécrit.
   battle.log.push(...drainPendingLog(get, set));
+}
+
+/** Enregistre le déplacement COMPLET de `c` (`from` → sa position d'arrivée) comme événement d'approche
+ *  EN ATTENTE. Le déclencheur (LDB 21 l.27) ne s'évalue qu'à l'IRRÉVOCABILITÉ du déplacement : Action
+ *  prise (`markActed`) ou fin de tour (`advanceTurn`) — le premier des deux. Un déplacement encore
+ *  révocable (`cancelMove`, charge annulée avant le jet) est purgé par `clearApproachMoves`. Un
+ *  déplacement = UN événement : deux déplacements dans le tour en laissent deux. */
+export function noteApproachMove(c: Combatant, from: Pt): void {
+  if (!c.pos) return;
+  c.approachMoves = [...(c.approachMoves ?? []), { from: { x: from.x, y: from.y }, to: { x: c.pos.x, y: c.pos.y } }];
+}
+
+/** Purge les événements d'approche en attente de `c` — le déplacement a été DÉFAIT (la position d'avant
+ *  est restaurée), il n'a donc jamais eu lieu. */
+export function clearApproachMoves(c: Combatant | null | undefined): void {
+  if (c) c.approachMoves = undefined;
+}
+
+/** Consomme les événements d'approche en attente de `c` : chacun rejoue `approachFearTrigger` sur SON
+ *  déplacement complet (départ→arrivée de cet événement, la position courante ne décide pas). Consommés
+ *  d'abord : jamais deux Tests pour le même déplacement. */
+export function sealApproachMoves(get: Get, set: SetFn, c: Combatant | null | undefined): void {
+  const moves = c?.approachMoves;
+  if (!c || !moves?.length) return;
+  c.approachMoves = undefined;
+  for (const m of moves) approachFearTrigger(get, set, c, m.from, m.to);
+}
+
+/** SEULE couture qui pose `acted` (Action du Tour consommée) : elle scelle du même geste les
+ *  déplacements en attente de l'acteur — une Action prise interdit désormais `cancelMove`, donc le
+ *  déplacement est irrévocable et son approche est due (LDB 21 l.27). Rend le `BattleState` à poser. */
+export function markActed(get: Get, set: SetFn, battle: BattleState): BattleState {
+  sealApproachMoves(get, set, inBattleId(battle, battle.order[battle.turn]));
+  return { ...get().battle ?? battle, acted: true }; // RE-LU après le scellement : ce qu'il a écrit ne se réverte pas
 }
 
 /** Forme commune d'un Test de Psychologie de combat DÛ pour un héros (cumul `prevDR` = 0 sauf Peur étendue). */
@@ -6272,7 +6329,7 @@ export function collectHeroRoundStartPsych(get: Get, c: Combatant): HeroPsychDue
   return null;
 }
 
-/** Test de Psychologie de FIN de Round dû à `c` (LDB 21 l.27) : une PEUR — nouvelle source de Peur en
+/** Test de Psychologie de FIN de Round dû à `c` (LDB 21 l.25) : une PEUR — nouvelle source de Peur en
  *  Ligne de Vue (Taille gap 1 / causesPeur), ou Peur active non encore vaincue ni testée ce Round. Test
  *  ÉTENDU de Calme (`prevDR` = DR cumulé). Pur de lecture. */
 export function collectHeroRoundEndPsych(get: Get, c: Combatant): HeroPsychDue | null {
@@ -6298,19 +6355,34 @@ export function collectHeroRoundEndPsych(get: Get, c: Combatant): HeroPsychDue |
   return null;
 }
 
-/** Une étape de Psychologie de combat (`combatPsych`) pour le héros `c` si un Test est dû selon
- *  `collect` (début ou fin de Round). La sortie de Frénésie est désormais un effet `onTurnStart` en
- *  DONNÉES (diffusé par `fireTurnStartTriggers`) — plus de force-exit ici. Renvoie `null` sinon. */
-function psychStepFor(get: Get, _set: SetFn, c: Combatant, collect: (get: Get, c: Combatant) => HeroPsychDue | null): import('./pendings').CascadeStep | null {
+/** DÉCLARATION COMMUNE d'une bande de Psychologie de combat — telle qu'elle vit sur l'ÉTAPE. */
+type CombatPsychDecl = NonNullable<CascadeStep['combatPsych']>;
+
+/** Ce qui DIVERGE d'un héros à l'autre DANS une bande (charge utile de RANGÉE, socle L0) : le DR déjà
+ *  cumulé du Test étendu et l'allègement « Sans Peur ». */
+interface CombatPsychRowMeta { prevDR: number; sansPeur: boolean }
+
+/** Charge utile d'une RANGÉE, avec ses défauts neutres (aucun cumul, aucun allègement). */
+function psychRowMeta(part: BatchParticipant): CombatPsychRowMeta {
+  return { prevDR: Number(part.meta?.prevDR ?? 0), sansPeur: !!part.meta?.sansPeur };
+}
+
+/** Un Test de Psychologie de combat DÛ par un héros, avant regroupement : la déclaration de règle qui
+ *  l'appelle (clé de bande), sa RANGÉE, et la présentation qui en découle (commune à toute la bande). */
+interface CombatPsychDue { decl: CombatPsychDecl; row: BatchParticipant; icon: string; label: string }
+
+/** Le Test de Psychologie de combat dû au héros `c` selon `collect` (début ou fin de Round), sous forme
+ *  de RANGÉE + déclaration de règle. La sortie de Frénésie est un effet `onTurnStart` en DONNÉES
+ *  (diffusé par `fireTurnStartTriggers`) — plus de force-exit ici. Renvoie `null` sinon. */
+function psychDueFor(get: Get, c: Combatant, collect: (get: Get, c: Combatant) => HeroPsychDue | null): CombatPsychDue | null {
   const t = collect(get, c);
   if (!t) return null;
   const isCible = CIBLE_TYPES.has(t.kind);
   const cl = isCible ? CIBLE_LABEL[t.kind] : null;
-  // Paramètres du Test EN DONNÉES (psychology.json `test`) : compétence (défaut Calme, valeur NUE par
-  // `skillBaseValue`) + difficulté (défaut Intermédiaire). Plus de Calme/Intermédiaire codé en dur.
+  // Paramètres du Test EN DONNÉES (psychology.json `test`) : compétence (défaut Calme) + difficulté
+  // (défaut Intermédiaire). Plus de Calme/Intermédiaire codé en dur.
   const td = findPsychologyById(t.kind)?.test;
   const skill = td?.skill ?? 'calme';
-  const base = skillBaseValue(c, skill);
   // Sans Peur (Ennemi) (LDB 10 l.864) : face à une NOUVELLE Peur/Terreur de l'ennemi spécifié, « un
   // seul Test de Calme Accessible (+20) » pour l'ignorer. Pas sur les re-tests d'une Peur déjà subie
   // (entrée psychState existante → Test étendu normal +0) ni sur les Traits ciblés.
@@ -6319,27 +6391,55 @@ function psychStepFor(get: Get, _set: SetFn, c: Combatant, collect: (get: Get, c
   const sansPeur = !!sourceFoe && isNewSource && sansPeurVs(c, sourceFoe);
   // Sans Peur force Accessible (+20) ; sinon la difficulté déclarée (défaut Intermédiaire +0).
   const difficulty: Difficulty = sansPeur ? 'accessible' : (td?.difficulty ?? 'intermediaire');
-  const target = base + DIFFICULTY_MODIFIERS[difficulty];
-  // Peur de combat = Test ÉTENDU (LDB 21 l.27) : le cumul `prevDR`→`indice` voyage en `meta`
-  // NEUTRE (`extendedDrTarget`/`extendedDrDone`) — SOURCE UNIQUE de la présentation « barre de DR
-  // cumulé » avec la cartographie de voyage (`travelPostes.ts`) : `CascadeModal` ne recalcule plus
-  // rien depuis `combatPsych` (aucune arithmétique dupliquée, #329 marque 9).
-  const extended = psychResolution(t.kind).mode === 'extended' ? { extendedDrTarget: t.indice, extendedDrDone: t.prevDR } : undefined;
+  const skillLabel = refLabel('skills', { id: skill });
+  // Peur de combat = Test ÉTENDU (LDB 21 l.25) : le cumul `prevDR`→`indice` voyage SUR LA RANGÉE
+  // (`extendedDrTarget`/`extendedDrDone` de `BatchParticipant`) — SOURCE UNIQUE de la présentation
+  // « barre de DR cumulé » avec la cartographie de voyage (`travelPostes.ts`) : `CascadeModal` ne
+  // recalcule rien depuis `combatPsych` (aucune arithmétique dupliquée, #329 marque 9).
+  const extended = psychResolution(t.kind).mode === 'extended';
   return {
-    id: `psych-${c.id}`,
-    kind: 'combatPsych',
-    actorId: c.id,
+    decl: { kind: t.kind, sourceId: t.sourceId, sourceName: t.sourceName, indice: t.indice, cible: t.cible },
+    row: {
+      id: c.id, interactive: true, result: null,
+      // Le Test allégé se lit SUR LA RANGÉE qui en profite (sa Difficulté, son libellé de ligne) : deux
+      // héros face à la MÊME source ne partagent pas forcément le Talent.
+      label: sansPeur ? `${skillLabel} · Sans Peur` : skillLabel,
+      skillId: skill, difficulty,
+      // Ligne montée par le monteur CANONIQUE (#1153), canal `combat` NON-attaque : base NUE, pénalité
+      // d'États NOMMÉE (LDB 16 : « -10 à tous vos Tests » par palier) et comptée UNE fois dans la cible.
+      // La calculer à la main ici l'oubliait : un héros Brisé ×2 testait sa Peur à pleine valeur.
+      ...rollStep({ actor: c, test: { skill }, combat: { kind: 'test' }, difficulty }),
+      ...(extended ? { extendedDrTarget: t.indice, extendedDrDone: t.prevDR } : {}),
+      meta: { prevDR: t.prevDR, ...(sansPeur ? { sansPeur: true } : {}) },
+    },
     icon: cl?.icon ?? (t.kind === 'terreur' ? 'creature/scream' : 'flag/fear'),
-    rollLabel: refLabel('skills', { id: skill }),
-    base,
-    target, // Test (Calme par défaut) à la difficulté déclarée, ou Accessible (+20) avec Sans Peur
-    label: `${cl ? `${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? 'Terreur' : 'Peur'} ${t.indice}`}${sansPeur ? ' · Sans Peur (+20)' : ''}`,
-    combatPsych: { kind: t.kind, sourceId: t.sourceId, sourceName: t.sourceName, indice: t.indice, cible: t.cible, prevDR: t.prevDR, sansPeur },
-    // L'enjeu descend à l'AFFLICTION affrontée : ses conséquences lui sont propres (`psychResolution`
-    // lit `failCondition`/`failAmount`/`becomes` de SON entrée), donc son texte vit sur SON entrée.
-    stake: combatStakeRef('combatPsych', { entryId: t.kind, values: { indice: t.indice } }),
-    ...(extended ? { meta: extended } : {}),
+    label: cl ? `${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? 'Terreur' : 'Peur'} ${t.indice}`,
   };
+}
+
+/**
+ * BANDES de Psychologie de combat (#1117 L2) — la CLÉ d'une bande EST l'entrée de règle mise en jeu :
+ * type psy + source + cible + Indice font UNE fenêtre, dont la DÉCLARATION vit sur l'ÉTAPE et dont les
+ * héros appelés sont les RANGÉES (jets INDÉPENDANTS, `aggregate:'none'`). L'ordre des bandes est celui
+ * de leur première rencontre en parcourant les combattants.
+ */
+function combatPsychBands(dues: CombatPsychDue[]): CascadeStep[] {
+  const bands = new Map<string, CascadeStep>();
+  for (const due of dues) {
+    const d = due.decl;
+    const key = `${d.kind}|${d.sourceId}|${d.cible ?? ''}|${d.indice}`;
+    const band = bands.get(key);
+    if (band) { band.participants!.push(due.row); continue; }
+    bands.set(key, {
+      id: `psych-${d.kind}-${bands.size}`, kind: 'combatPsych', icon: due.icon, label: due.label,
+      interactive: true, aggregate: 'none', participants: [due.row],
+      combatPsych: d,
+      // L'enjeu descend à l'AFFLICTION affrontée : ses conséquences lui sont propres (`psychResolution`
+      // lit `failCondition`/`failAmount`/`becomes` de SON entrée), donc son texte vit sur SON entrée.
+      stake: combatStakeRef('combatPsych', { entryId: d.kind, values: { indice: d.indice } }),
+    });
+  }
+  return [...bands.values()];
 }
 
 /** Une cascade de Round est-elle interdite (modale/cascade bloquante déjà ouverte) ? */
@@ -6348,9 +6448,10 @@ function roundCascadeBlocked(get: Get): boolean {
   return !battle || !!battle.over || !!get().pendingCascade || !!get().pendingFateSave;
 }
 
-/** Construit la cascade de Psychologie de combat (UNE étape par héros DÛ) à partir d'un collecteur.
- *  No-op si une cascade/modale bloquante est ouverte. Met l'IA en pause (purpose:'combat') jusqu'à
- *  résolution ; la reprise est gérée par `cascadeNext`/`cascadeFinish` (→ resumeSuspendedAI). */
+/** Construit la cascade de Psychologie de combat (UNE BANDE par entrée de règle, une RANGÉE par héros
+ *  dû) à partir d'un collecteur. No-op si une cascade/modale bloquante est ouverte. Met l'IA en pause
+ *  (purpose:'combat') jusqu'à résolution ; la reprise est gérée par `cascadeNext`/`cascadeFinish`
+ *  (→ resumeSuspendedAI). */
 function openCombatPsychCascade(
   get: Get,
   set: SetFn,
@@ -6360,30 +6461,35 @@ function openCombatPsychCascade(
   roundBoundary = false,
 ): void {
   if (roundCascadeBlocked(get)) return; // Maladresse = étape de pendingCascade (déjà couverte)
-  const steps: import('./pendings').CascadeStep[] = [];
+  const dues: CombatPsychDue[] = [];
   for (const c of get().battle!.combatants) {
     if (!humanControlled(get(), c) || isOutOfAction(c)) continue;
-    const st = psychStepFor(get, set, c, collect);
-    if (st) steps.push(st);
+    const due = psychDueFor(get, c, collect);
+    if (due) dues.push(due);
   }
+  const steps = combatPsychBands(dues);
   if (!steps.length) return;
   startCascade(get, set, { title, icon, purpose: 'combat', steps, roundBoundary });
 }
 
-/** Cascade de Psychologie de DÉBUT de Round (Traits ciblés + nouvelles Terreurs, LDB 21 l.14) — un héros
- *  par étape. Appelée APRÈS `confirmRoundStart` (acteur posé) ; suspend l'IA jusqu'à résolution. */
+/** Cascade de Psychologie de DÉBUT de Round (Traits ciblés + nouvelles Terreurs, LDB 21 l.14) — une
+ *  bande par entrée de règle. Appelée APRÈS `confirmRoundStart` (acteur posé) ; suspend l'IA jusqu'à
+ *  résolution. */
 export function openRoundStartPsych(get: Get, set: SetFn): void {
   openCombatPsychCascade(get, set, collectHeroRoundStartPsych, 'Sang-froid', 'resource/resolve');
 }
 
 /**
- * Cascade de FIN de Round (combat) — un SEUL `pendingCascade` fusionnant, PAR HÉROS, ses Tests
- * d'upkeep INFLUENÇABLES (Empoisonné → récupération du Brisé → se-fatiguer, LDB 16) PUIS son Test de
- * Peur (Test étendu de Calme, LDB 21 l.27). Les ENNEMIS sont déjà résolus en silence par les hooks
+ * Cascade de FIN de Round (combat) — un SEUL `pendingCascade` fusionnant les Tests d'upkeep
+ * INFLUENÇABLES (Empoisonné → récupération du Brisé → se-fatiguer, LDB 16) PUIS les BANDES de Peur
+ * (Test étendu de Calme, LDB 21 l.25). Les ENNEMIS sont déjà résolus en silence par les hooks
  * `roundBoundary` (poison-resist/broken-recovery/se-fatiguer). Ordre choisi : upkeep AVANT la
  * Peur (les effets de Round RAW — dont les hooks ennemi — précèdent la révélation/Psychologie de fin
- * de Round, et la sortie d'un État Sonné/Brisé peut influer sur l'état d'esprit). Appelée au
- * franchissement de Round APRÈS l'entretien/le Destin ; suspend l'IA jusqu'à résolution.
+ * de Round, et la sortie d'un État Sonné/Brisé peut influer sur l'état d'esprit) ; ENTRE familles cet
+ * ordre est conservé, mais il vaut désormais famille par famille (tous les upkeeps, puis les bandes)
+ * et non plus héros par héros — une bande est UNE question posée à N héros, elle ne peut pas
+ * s'entrelacer avec l'entretien de chacun d'eux. Appelée au franchissement de Round APRÈS
+ * l'entretien/le Destin ; suspend l'IA jusqu'à résolution.
  *
  * Les conséquences d'upkeep RNG-free (retrait « caché » du Brisé, Exténué sans-Test) sont appliquées
  * DÉTERMINISTEment par le collecteur via le `sink` ci-dessous (journal de combat).
@@ -6392,15 +6498,17 @@ export function openRoundEndCascade(get: Get, set: SetFn): void {
   if (roundCascadeBlocked(get)) return;
   const upkeepLines: { line: string; id?: string }[] = [];
   const sink = (line: string, c?: Combatant) => upkeepLines.push({ line, id: c?.id });
-  const steps: import('./pendings').CascadeStep[] = [];
+  const steps: CascadeStep[] = [];
+  const dues: CombatPsychDue[] = [];
   for (const c of get().battle!.combatants) {
     if (!humanControlled(get(), c) || isOutOfAction(c)) continue;
-    // 1) Upkeep du combattant (effets RNG-free). 2) Peur de fin de Round. (La sortie de Frénésie est un
-    //    effet `onTurnStart` en données, jouée au début du tour du héros — plus ici.)
+    // 1) Upkeep du combattant (effets RNG-free). 2) Peur de fin de Round, regroupée en bandes ci-dessous.
+    //    (La sortie de Frénésie est un effet `onTurnStart` en données, jouée au début du tour du héros.)
     steps.push(...collectHeroRoundEndUpkeep(get, c, sink));
-    const psych = psychStepFor(get, set, c, collectHeroRoundEndPsych);
-    if (psych) steps.push(psych);
+    const due = psychDueFor(get, c, collectHeroRoundEndPsych);
+    if (due) dues.push(due);
   }
+  steps.push(...combatPsychBands(dues));
   // Lignes déterministes d'upkeep → journal de combat (les Tests influençables iront au journal de la
   // cascade à leur validation). On applique AVANT d'ouvrir la cascade pour garder l'ordre de lecture.
   if (upkeepLines.length) {
@@ -6411,85 +6519,94 @@ export function openRoundEndCascade(get: Get, set: SetFn): void {
   startCascade(get, set, { title: 'Fin de Round', icon: 'time/clock', purpose: 'combat', steps, roundBoundary: true });
 }
 
-/** Conséquence d'un Test de Calme de COMBAT (étape de cascade) : pose/mets à jour le `psychState`.
- *  La résolution kind-agnostique (`rollTest(Calme)`) est faite par `FLOWS.cascade` ; ici on interprète
- *  le résultat par `kind`. Peur = Test ÉTENDU : cumule `prevDR + DR` vers l'Indice (vainc à ≥ Indice). */
-registerCascadeApplier(
-  'combatPsych',
-  (get, set, step, hero) => {
-    const cp = step.combatPsych;
-    if (!hero || !step.result || !cp) return;
-    const battle = get().battle;
-    const r = step.result;
-    hero.psychState ??= [];
-    // DÉTERMINATION (LDB 17 l.62) : immunité TEMPORAIRE — la Peur/Terreur/Trait est IGNORÉE ce Round,
-    // PAS vaincue. On NE cumule PAS le DR, on NE pose PAS de Brisé, on N'active PAS le trait ciblé : le
-    // `psychState` (et le `calmeDR` d'une Peur déjà entamée) reste INCHANGÉ. Le collecteur de Round saute
-    // ce héros tant que `psychImmuneRoundsLeft > 0` ; à l'expiration, la source reprend.
-    if (step.immune) {
-      set({ party: [...get().party] });
-      if (battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
-      return { consequences: freeCons([tr('cf.psychImmune', { name: hero.label })]) };
-    }
-    let line: string;
-    let phobieLine: string | null = null;
-    const res = psychResolution(cp.kind);
-    if (res.mode === 'terreur') {
-      // 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → État `failCondition` = Indice + |DR négatifs| ; devient
-      // l'état `becomes`. Conséquences lues en DONNÉES (psychology.json), plus de `'terreur'`/Brisé codé.
-      const brise = r.success ? 0 : failConditionAmount(res.failAmount, cp.indice, r.sl);
-      if (brise > 0 && res.failCondition) addCondition(hero, res.failCondition, brise);
-      // « Une fois ce Test de Psychologie effectué, la créature cause la Peur, avec un Indice de Peur
-      // équivalent à son Indice de Terreur » (LDB 21 l.56) : INCONDITIONNEL — l'exemption du succès
-      // (l.54) ne couvre que la Terreur. Plein Indice quel que soit le résultat (#1190).
-      if (res.becomes) hero.psychState.push({ type: res.becomes, sourceId: cp.sourceId, indice: cp.indice, calmeDR: 0, lastTestRound: battle?.round });
-      line = r.success ? tr('out.terreurHold', { name: hero.label }) : tr('cf.terreurThenFear', { name: hero.label, foe: cp.sourceName, brise, indice: cp.indice });
-      // Phobie du noir (ADE II Annexe I, règle facultative `psych-acquisition-optional`) : cumuler les États
-      // Brisé subis À CAUSE de la Terreur ; à ≥ Bonus de FM → Phobie liée à la source (son Groupe si connu,
-      // sinon son nom), puis remise à zéro du compteur. `gainPhobieIfThreshold` porte la garde de la règle.
-      if (brise > 0 && res.failCondition === COND.brise) {
-        hero.briseFromTerreur = (hero.briseFromTerreur ?? 0) + brise;
-        const foe = inBattleId(battle, cp.sourceId);
-        const gained = gainPhobieIfThreshold(hero, hero.briseFromTerreur, foe?.groups?.[0] ?? cp.sourceName ?? '');
-        if (gained) {
-          hero.psychTraits = [...(hero.psychTraits ?? []), gained.phobie];
-          hero.briseFromTerreur = 0;
-          phobieLine = `${hero.label} développe une Phobie durable : ${gained.phobie.cible}.`;
-        }
+/**
+ * Conséquence d'un Test de Calme de COMBAT POUR UNE RANGÉE : pose/met à jour le `psychState` du héros.
+ * La résolution kind-agnostique (`rollTest(Calme)`) est faite par `FLOWS.cascadeBatch` ; ici on
+ * interprète le résultat par `kind`, avec la déclaration COMMUNE de la bande (`cp`) et ce qui est
+ * PROPRE au héros (`rm` : DR déjà cumulé, Sans Peur). Peur = Test ÉTENDU : cumule `prevDR + DR` vers
+ * l'Indice (vainc à ≥ Indice). SOURCE UNIQUE de la résolution par héros — l'applier de bande l'appelle
+ * pour CHACUNE de ses rangées.
+ */
+function resolveCombatPsychRow(get: Get, hero: Combatant, cp: CombatPsychDecl, rm: CombatPsychRowMeta, r: CascadeRoll, immune: boolean): Consequence[] {
+  const battle = get().battle;
+  hero.psychState ??= [];
+  // DÉTERMINATION (LDB 17 l.62) : immunité TEMPORAIRE — la Peur/Terreur/Trait est IGNORÉE ce Round,
+  // PAS vaincue. On NE cumule PAS le DR, on NE pose PAS de Brisé, on N'active PAS le trait ciblé : le
+  // `psychState` (et le `calmeDR` d'une Peur déjà entamée) reste INCHANGÉ. Le collecteur de Round saute
+  // ce héros tant que `psychImmuneRoundsLeft > 0` ; à l'expiration, la source reprend.
+  if (immune) return freeCons([tr('cf.psychImmune', { name: hero.label })]);
+  let line: string;
+  let phobieLine: string | null = null;
+  const res = psychResolution(cp.kind);
+  if (res.mode === 'terreur') {
+    // 1ʳᵉ rencontre (LDB 21 l.55-57) : échec → État `failCondition` = Indice + |DR négatifs| ; devient
+    // l'état `becomes`. Conséquences lues en DONNÉES (psychology.json), plus de `'terreur'`/Brisé codé.
+    const brise = r.success ? 0 : failConditionAmount(res.failAmount, cp.indice, r.sl);
+    if (brise > 0 && res.failCondition) addCondition(hero, res.failCondition, brise);
+    // « Une fois ce Test de Psychologie effectué, la créature cause la Peur, avec un Indice de Peur
+    // équivalent à son Indice de Terreur » (LDB 21 l.56) : INCONDITIONNEL — l'exemption du succès
+    // (l.54) ne couvre que la Terreur. Plein Indice quel que soit le résultat (#1190).
+    if (res.becomes) hero.psychState.push({ type: res.becomes, sourceId: cp.sourceId, indice: cp.indice, calmeDR: 0, lastTestRound: battle?.round });
+    line = r.success ? tr('out.terreurHold', { name: hero.label }) : tr('cf.terreurThenFear', { name: hero.label, foe: cp.sourceName, brise, indice: cp.indice });
+    // Phobie du noir (ADE II Annexe I, règle facultative `psych-acquisition-optional`) : cumuler les États
+    // Brisé subis À CAUSE de la Terreur ; à ≥ Bonus de FM → Phobie liée à la source (son Groupe si connu,
+    // sinon son nom), puis remise à zéro du compteur. `gainPhobieIfThreshold` porte la garde de la règle.
+    if (brise > 0 && res.failCondition === COND.brise) {
+      hero.briseFromTerreur = (hero.briseFromTerreur ?? 0) + brise;
+      const foe = inBattleId(battle, cp.sourceId);
+      const gained = gainPhobieIfThreshold(hero, hero.briseFromTerreur, foe?.groups?.[0] ?? cp.sourceName ?? '');
+      if (gained) {
+        hero.psychTraits = [...(hero.psychTraits ?? []), gained.phobie];
+        hero.briseFromTerreur = 0;
+        phobieLine = `${hero.label} développe une Phobie durable : ${gained.phobie.cible}.`;
       }
-    } else if (CIBLE_TYPES.has(cp.kind)) {
-      // Trait ciblé : échec → affliction active ; succès → marqueur inerte (pas de re-déclenchement).
-      let e = hero.psychState.find((p) => p.type === cp.kind && p.cible === cp.cible);
-      if (!e) { e = { type: cp.kind, cible: cp.cible, sourceId: cp.sourceId }; hero.psychState.push(e); }
-      e.lastTestRound = battle?.round;
-      e.active = !r.success;
-      const cl = CIBLE_LABEL[cp.kind];
-      line = r.success ? tr('out.cibleMaster', { name: hero.label, kind: cl?.label.toLowerCase() ?? cp.kind }) : tr('out.cibleGrip', { name: hero.label, kind: cl?.label.toLowerCase() ?? cp.kind });
-    } else {
-      // Peur = Test ÉTENDU de Calme (LDB 21 l.27) : cumuler le DR vers l'Indice (calque resolvePeurTest).
-      // Sans Peur (LDB 10 l.864) : « un seul Test (+20) » → une réussite IGNORE la Peur d'emblée
-      // (DR porté à l'Indice) ; un échec laisse le porteur sujet (re-tests suivants = Peur normale +0).
-      // Sans Peur : une réussite IGNORE la Peur d'emblée (DR porté à l'Indice). Sinon Test étendu LDB 12
-      // MUTUALISÉ (`extendedTestStep`) — un Round raté RETIRE désormais les DR négatifs (planché à 0),
-      // au lieu de l'ancien cumul add-only (bug : la Peur ne pouvait jamais régresser).
-      const calmeDR = cp.sansPeur && r.success
-        ? Math.max(cp.prevDR, cp.indice)
-        : extendedTestStep(cp.prevDR, r, cp.indice, !!rule('test-extended-min-sl')).total;
-      let e = hero.psychState.find((p) => p.sourceId === cp.sourceId && p.type === 'peur');
-      if (!e) { e = { type: 'peur', sourceId: cp.sourceId, indice: cp.indice, calmeDR: 0 }; hero.psychState.push(e); }
-      e.calmeDR = calmeDR;
-      e.lastTestRound = battle?.round;
-      line = calmeDR >= cp.indice
-        ? `${hero.label} ${cp.sansPeur ? 'ignore la Peur' : 'surmonte sa peur'}${cp.sourceName ? ` de ${cp.sourceName}` : ''}${cp.sansPeur ? ' (Sans Peur)' : ''}.`
-        : `${hero.label} reste sous l'emprise de la Peur (${calmeDR}/${cp.indice} DR).`;
     }
-    // Immunités croisées (LDB 21) : Animosité/Préjugé cèdent dès qu'on tombe sous un effet psy dominant.
-    const superseded = suppressSupersededPsych(hero);
-    set({ party: [...get().party] });
-    if (battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
-    return { consequences: freeCons([line, ...(phobieLine ? [phobieLine] : []), ...superseded.map((tp) => tr('turn.psychSuperseded', { name: hero.label, psych: psychologyLabel(tp) }))]) };
-  },
-);
+  } else if (CIBLE_TYPES.has(cp.kind)) {
+    // Trait ciblé : échec → affliction active ; succès → marqueur inerte (pas de re-déclenchement).
+    let e = hero.psychState.find((p) => p.type === cp.kind && p.cible === cp.cible);
+    if (!e) { e = { type: cp.kind, cible: cp.cible, sourceId: cp.sourceId }; hero.psychState.push(e); }
+    e.lastTestRound = battle?.round;
+    e.active = !r.success;
+    const cl = CIBLE_LABEL[cp.kind];
+    line = r.success ? tr('out.cibleMaster', { name: hero.label, kind: cl?.label.toLowerCase() ?? cp.kind }) : tr('out.cibleGrip', { name: hero.label, kind: cl?.label.toLowerCase() ?? cp.kind });
+  } else {
+    // Peur = Test ÉTENDU de Calme (LDB 21 l.25) : cumuler le DR vers l'Indice (calque resolvePeurTest).
+    // Sans Peur (LDB 10 l.864) : « un seul Test (+20) » → une réussite IGNORE la Peur d'emblée
+    // (DR porté à l'Indice) ; un échec laisse le porteur sujet (re-tests suivants = Peur normale +0).
+    // Sinon Test étendu LDB 12 MUTUALISÉ (`extendedTestStep`) — un Round raté RETIRE les DR négatifs
+    // (planché à 0), au lieu de l'ancien cumul add-only (bug : la Peur ne pouvait jamais régresser).
+    const calmeDR = rm.sansPeur && r.success
+      ? Math.max(rm.prevDR, cp.indice)
+      : extendedTestStep(rm.prevDR, r, cp.indice, !!rule('test-extended-min-sl')).total;
+    let e = hero.psychState.find((p) => p.sourceId === cp.sourceId && p.type === 'peur');
+    if (!e) { e = { type: 'peur', sourceId: cp.sourceId, indice: cp.indice, calmeDR: 0 }; hero.psychState.push(e); }
+    e.calmeDR = calmeDR;
+    e.lastTestRound = battle?.round;
+    line = calmeDR >= cp.indice
+      ? `${hero.label} ${rm.sansPeur ? 'ignore la Peur' : 'surmonte sa peur'}${cp.sourceName ? ` de ${cp.sourceName}` : ''}${rm.sansPeur ? ' (Sans Peur)' : ''}.`
+      : `${hero.label} reste sous l'emprise de la Peur (${calmeDR}/${cp.indice} DR).`;
+  }
+  // Immunités croisées (LDB 21) : Animosité/Préjugé cèdent dès qu'on tombe sous un effet psy dominant.
+  return freeCons([line, ...(phobieLine ? [phobieLine] : []), ...supersededLines(hero, hero.label)]);
+}
+
+/** Applier de BANDE de Psychologie de combat : la déclaration de règle est celle de l'ÉTAPE, la
+ *  conséquence se joue RANGÉE PAR RANGÉE (résultat, charge utile et Détermination du porteur), et
+ *  chaque verdict reste SUR SA rangée (le portrait attribue) — jamais un agrégat (`aggregate:'none'`). */
+registerCascadeApplier('combatPsych', (get, set, step) => {
+  const cp = step.combatPsych;
+  if (!cp || !step.participants) return;
+  for (const part of step.participants) {
+    const hero = actorIn(get(), part.id);
+    if (!hero || !part.result) { part.outcome = []; continue; }
+    const lines = resultLines(resolveCombatPsychRow(get, hero, cp, psychRowMeta(part), part.result, !!part.immune));
+    part.outcome = lines;
+    for (const l of lines) get().log(l.text);
+  }
+  set({ party: [...get().party] });
+  if (get().battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
+  return { consequences: [] };
+});
 
 // === TRACE DE DÉCISION IA (DEV uniquement) ==================================================
 // Buffer en anneau des derniers tours pilotés par l'IA : action CHOISIE + classement des candidats
@@ -6797,7 +6914,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       const def = selfManeuversOf(enemy).find((m) => m.id === action.maneuverId);
       if (!def || !selfManeuverApplicable(enemy, def)) return advanceTurn(get, set);
       resolveManeuver(get, set, enemy, def, 0, null, 0, enemy); // cible = soi
-      set({ battle: { ...get().battle!, acted: true } });
+      set({ battle: markActed(get, set, get().battle!) });
       checkBattleOver(get, set);
       scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'enemyAdvance'));
       return;
@@ -6874,7 +6991,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       else enemy.reloadProgress = progress;
       // Issue = source UNIQUE avec le flux joueur (describeReload : popin ↔ journal).
       const pr: PendingReload = { actorId: enemy.id, actorName: enemy.label, weaponUid: rw.uid ?? '', reload: reloadTarget, progressBefore, skillValue, difficulty: 'intermediaire', roll: test.roll, target: test.target, sl: test.sl, success: test.success };
-      set({ battle: { ...battle, acted: true, log: [...battle.log, ev('reload', describeReload(pr, progress, rw.label), enemy.id)] } });
+      set({ battle: { ...markActed(get, set, battle), log: [...battle.log, ev('reload', describeReload(pr, progress, rw.label), enemy.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
       scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'afterMove'));
       return;
@@ -6925,7 +7042,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // l'emporte (les options Empêtrer/Se libérer restent en DONNÉE, offertes au joueur). Test opposé PARTAGÉ
       // avec l'Attaque gratuite de tentacule/langue (`resolveGrappleOpposed`) ; ici il CONSOMME l'Action (l.161).
       const line = resolveGrappleOpposed(get, enemy, foe);
-      set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('attack', line, enemy.id, foe.id)] } });
+      set({ battle: { ...markActed(get, set, battle), action: null, log: [...battle.log, ev('attack', line, enemy.id, foe.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
       checkBattleOver(get, set);
       scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'postAttack'));
@@ -6940,7 +7057,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       const poste = hull?.postes?.find((p) => p.item.uid === action.posteUid);
       if (!poste || (poste.crewIds ?? []).includes(enemy.id)) return advanceTurn(get, set);
       serveAtPoste(enemy, poste, battle.combatants);
-      set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('detail', tr('cs.manPoste', { name: enemy.label, weapon: poste.item.label }), enemy.id)] } });
+      set({ battle: { ...markActed(get, set, battle), action: null, log: [...battle.log, ev('detail', tr('cs.manPoste', { name: enemy.label, weapon: poste.item.label }), enemy.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
       scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'afterMove'));
       return;
@@ -6986,7 +7103,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         // coût que `battleClickTile`/`stepCost`) sinon un gate qui exige `movementUsed === 0` (Se cabrer,
         // LDB 85 l.314) laisse passer approche + piétinement-gratuit du même tour.
         battle.movementUsed = (battle.movementUsed ?? 0) + Math.max(0, (path?.length ?? 1) - 1);
-        approachFearTrigger(get, set, enemy, fromPos); // LDB 21 l.29 : source de Peur qui s'approche → Test de Calme ou Brisé
+        approachFearTrigger(get, set, enemy, fromPos); // LDB 21 l.27 : source de Peur qui s'approche → Test de Calme ou Brisé
         set({ battle: { ...battle } });
         bus.emit(EVT.SCENE_DIRTY);
         const tgt = targetOf(mv.thenTargetId);

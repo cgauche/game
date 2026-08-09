@@ -308,8 +308,9 @@ function applyAuContact(get: Get, set: Set, mover: Combatant, foe: Combatant, ch
   if (choice === 'contact') setContact(mover, foe);
   else if (choice === 'normal') clearContact(mover, foe);
   const key = choice === 'contact' ? 'cs.auContactClose' : choice === 'normal' ? 'cs.auContactNormal' : 'cs.auContactTie';
-  const log = [...battle.log, ev('attack', t(key, { name: mover.label, foe: foe.label }), mover.id, foe.id)];
-  set({ pendingAuContact: null, battle: { ...markActed(get, set, battle), action: null, log } });
+  const b = markActed(get, set, battle); // scellé AVANT la copie du journal (le déclencheur y pousse ses lignes)
+  const log = [...b.log, ev('attack', t(key, { name: mover.label, foe: foe.label }), mover.id, foe.id)];
+  set({ pendingAuContact: null, battle: { ...b, action: null, log } });
   bus.emit(EVT.SCENE_DIRTY);
 }
 
@@ -573,7 +574,8 @@ export function createCombatSlice(get: Get, set: Set) {
       const foe = inBattleId(battle, pd.foeId);
       set({ pendingDisengage: null, pendingCascade: null });
       if (!mover || !foe) return;
-      const log = [...battle.log];
+      const b = markActed(get, set, battle); // le Test d'Esquive EST l'Action : scellé AVANT la copie du journal
+      const log = [...b.log];
       if (pd.result === 'success') {
         campGain(get, mover); // +1 Avantage (l.89)
         mover.gainedAdvThisRound = true;
@@ -585,18 +587,18 @@ export function createCombatSlice(get: Get, set: Set) {
         for (const f of foes) disengageFrom(mover, f);
         log.push(ev('flee', t('cs.disengageDodge', { name: mover.label }), mover.id, foe.id));
         set({
-          battle: { ...markActed(get, set, battle), action: null, reachable: moveReachFor(mover, scene, mover.pos!, effectiveMovement(mover), moveEnv(battle, mover)), log },
+          battle: { ...b, action: null, reachable: moveReachFor(mover, scene, mover.pos!, effectiveMovement(mover), moveEnv(battle, mover)), log },
         });
       } else if (pd.result === 'tie') {
         // Égalité parfaite du Test opposé : statu quo — pas de fuite, mais pas d'avantage à
         // l'adversaire non plus (LDB Tests). L'Action est consommée par la tentative d'Esquive.
         log.push(ev('flee', t('cs.disengageNeutral', { name: mover.label }), mover.id, foe.id));
-        set({ battle: { ...markActed(get, set, battle), action: null, reachable: new Map(), log } });
+        set({ battle: { ...b, action: null, reachable: new Map(), log } });
       } else {
         campGain(get, foe); // l'adversaire gagne +1, la fuite échoue (l.89)
         foe.gainedAdvThisRound = true;
         log.push(ev('flee', t('cs.disengageFail', { name: mover.label, foe: foe.label }), mover.id, foe.id));
-        set({ battle: { ...markActed(get, set, battle), action: null, reachable: new Map(), log } });
+        set({ battle: { ...b, action: null, reachable: new Map(), log } });
       }
       bus.emit(EVT.SCENE_DIRTY);
     },
@@ -807,8 +809,9 @@ export function createCombatSlice(get: Get, set: Set) {
       if (pd.result === 'success') return set({ pendingGrapple: { ...pd, phase: 'options' }, battle: { ...markActed(get, set, battle), action: null } }); // l'acteur tranche ; Action dépensée
       if (pd.result === 'failure') campGain(get, foe, 1); // l'adversaire l'emporte → +1 Avantage
       const key = pd.result === 'failure' ? 'cs.grappleLose' : 'cs.grappleTie';
-      const log = [...battle.log, ev('attack', t(key, { name: actor.label, foe: foe.label }), actor.id, foe.id)];
-      set({ pendingGrapple: null, battle: { ...markActed(get, set, battle), action: null, log } });
+      const b = markActed(get, set, battle); // scellé AVANT la copie du journal (le déclencheur y pousse ses lignes)
+      const log = [...b.log, ev('attack', t(key, { name: actor.label, foe: foe.label }), actor.id, foe.id)];
+      set({ pendingGrapple: null, battle: { ...b, action: null, log } });
       bus.emit(EVT.SCENE_DIRTY);
     },
     // Le vainqueur tranche : Dégâts (BF+DR, PA ignorés) / Empêtrer l'adversaire / Se libérer (LDB 14 l.161).
@@ -1247,11 +1250,11 @@ export function createCombatSlice(get: Get, set: Set) {
         if (reach.has(`${path[i].x},${path[i].y}`)) { stopIdx = i; break; }
       }
       const stop = stopIdx >= 0 ? path[stopIdx] : null;
-      const log = [...battle.log];
       if (!stop || (stop.x === c.pos!.x && stop.y === c.pos!.y)) {
         // Jet désastreux : aucun pas possible — l'Action est tout de même consommée (le Test a eu lieu).
-        log.push(ev('move', t('cs.runStumble', { name: c.label, skill, roll: pr.result.roll === 100 ? '00' : pr.result.roll }), c.id));
-        set({ battle: { ...markActed(get, set, get().battle!), action: null, runBudget: range, reachable: new Map(), preview: null, log } });
+        const b = markActed(get, set, get().battle!); // scellé AVANT la copie du journal (le déclencheur y pousse ses lignes)
+        const log = [...b.log, ev('move', t('cs.runStumble', { name: c.label, skill, roll: pr.result.roll === 100 ? '00' : pr.result.roll }), c.id)];
+        set({ battle: { ...b, action: null, runBudget: range, reachable: new Map(), preview: null, log } });
         bus.emit(EVT.SCENE_DIRTY);
         return;
       }
@@ -1267,10 +1270,11 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.ANIM_MOVE, { id: c.id, path: sub });
       if (geom !== c) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path: sub });
       const short = stop.x !== pr.dest.x || stop.y !== pr.dest.y;
-      log.push(ev('move', t('cs.run', { name: c.label, skill, roll: pr.result.roll === 100 ? '00' : pr.result.roll, cost, short: short ? t('cs.fragRunShort') : '' }), c.id));
       // Budget du Tour étendu à Marche + Course + DR (l.80) : le reliquat non parcouru reste dépensable
       // en segments (A-M*) — `movementRemaining` lit `runBudget`.
-      set({ battle: { ...markActed(get, set, get().battle!), action: null, runBudget: range, movementUsed: (battle.movementUsed ?? 0) + cost, reachable: new Map(), preview: null, log } });
+      const b = markActed(get, set, get().battle!); // scellé AVANT la copie du journal (le déclencheur y pousse ses lignes)
+      const log = [...b.log, ev('move', t('cs.run', { name: c.label, skill, roll: pr.result.roll === 100 ? '00' : pr.result.roll, cost, short: short ? t('cs.fragRunShort') : '' }), c.id)];
+      set({ battle: { ...b, action: null, runBudget: range, movementUsed: (battle.movementUsed ?? 0) + cost, reachable: new Map(), preview: null, log } });
       bus.emit(EVT.SCENE_DIRTY);
     },
     runCancel: () => set({ pendingRun: null, hoverDelta: null }),
@@ -3527,7 +3531,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // Issue = source UNIQUE avec la popin (describeFrenzy).
       const log = [describeFrenzy(pf, c.label)];
       if (pf.result.success) (c.psychState ??= []).push({ type: 'frenesie' });
-      set({ battle: { ...get().battle!, acted: true, action: null, log: [...battle.log, ...evLines(log, 'frenzy', c.id)] } });
+      set({ battle: { ...markActed(get, set, get().battle!), action: null, log: [...battle.log, ...evLines(log, 'frenzy', c.id)] } });
       checkBattleOver(get, set);
     },
     frenzyCancel: () => set({ pendingFrenzy: null }),

@@ -1327,6 +1327,10 @@ export interface Combatant {
   pendingFreeAttacks?: string[];
   /** A chargé ce tour → ouvre une Attaque gratuite de Cornes (LDB 85) si la créature a le trait. */
   chargedThisTurn?: boolean;
+  /** Déplacements COMPLETS (départ→arrivée) accomplis ce tour, EN ATTENTE du déclencheur d'approche
+   *  (LDB 21 l.27) : l'événement s'évalue à l'IRRÉVOCABILITÉ du déplacement — Action prise
+   *  (`markActed`) ou fin de tour (`advanceTurn`). Un déplacement DÉFAIT les purge. */
+  approachMoves?: { from: { x: number; y: number }; to: { x: number; y: number } }[];
   /** Règle optionnelle « se fatiguer » (LDB 16 l.99) : Rounds d'effort soutenu accumulés ; à BE Rounds,
    *  Test de Résistance → échec = Exténué. Inerte tant que la règle `combat-se-fatiguer` est inactive. */
   effortRounds?: number;

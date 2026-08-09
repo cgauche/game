@@ -17,11 +17,10 @@ import { Scene } from './scene';
 import type { CascadeStep, BatchParticipant, CascadeRoll } from './pendings';
 import { spawnEnemy } from './spawn';
 import { encounterPsych } from '../engine/encounterPsych';
-import { CIBLE_TYPES, CIBLE_LABEL, PsychType, failConditionAmount, psychResolution, suppressSupersededPsych, isPsychImmune } from '../engine/psychology';
+import { CIBLE_TYPES, CIBLE_LABEL, PsychType, failConditionAmount, psychResolution, supersededLines, isPsychImmune } from '../engine/psychology';
 import { skillBaseValue } from '../engine/skills';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
-import { psychologyLabel, refLabel, findPsychologyById, combatStakeRef } from '../data';
-import { t } from '../i18n';
+import { refLabel, findPsychologyById, combatStakeRef } from '../data';
 import { addCondition } from '../engine/conditions';
 import { registerCascadeApplier, startCascade } from './cascade';
 import { describeEncounterPsych } from './flowOutcomes';
@@ -181,13 +180,12 @@ function resolvePsychRow(hero: Combatant, ep: PsychBandDecl, r: CascadeRoll, imm
   } else {
     hero.psychState.push({ type: 'peur', sourceId: ep.sourceId, indice: ep.indice, calmeDR: r.success ? ep.indice : 0 });
   }
-  // Immunités croisées (LDB 21) : un effet psy dominant (Peur/Terreur) annule l'Animosité/Préjugé.
-  const superseded = suppressSupersededPsych(hero);
   const pe: PendingEncounterPsych = {
     heroId: hero.id, kind: ep.kind, sourceId: ep.sourceId, sourceName: ep.sourceName, indice: ep.indice, cible: ep.cible,
     result: { roll: r.roll, success: r.success, brise, target: r.target, sl: r.sl },
   };
-  return freeCons([describeEncounterPsych(pe, hero.label), ...superseded.map((tp) => t('turn.psychSuperseded', { name: hero.label, psych: psychologyLabel(tp) }))]);
+  // Immunités croisées (LDB 21) : un effet psy dominant (Peur/Terreur) annule l'Animosité/Préjugé.
+  return freeCons([describeEncounterPsych(pe, hero.label), ...supersededLines(hero, hero.label)]);
 }
 
 /** Applier de BANDE : la déclaration de règle est celle de l'ÉTAPE, la conséquence se joue RANGÉE PAR

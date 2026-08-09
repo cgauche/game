@@ -45,7 +45,7 @@ import type { GameState } from './store';
 import {
   attackPlan, previewAttack, previewCast, castSightBlocked, selectedAttackOption,
   trampleTarget, auContactEligible, grappleActionEligible, firedAttackBlock,
-  displaceSmaller, fearedSourceTowards, frenzyTarget, applyZoneCrossings,
+  displaceSmaller, fearedSourceTowards, frenzyTarget, applyZoneCrossings, noteApproachMove,
   placingZoneOf, placedZoneValidAt, commitPlacedZone, overcastTargetCandidates,
   cleaveTargets, dualStrikeTargets, castZoneSpell, castSpell, spellSightOf, openAttackCascade,
   captureMoveSnapshot, firedWeapon,
@@ -476,6 +476,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
     };
     const geom = mountOf(battle, active) ?? active;
     approachPath = plan.path;
+    const chargeFrom = { ...active.pos! };
     active.pos = { ...plan.dest };
     if (geom !== active) geom.pos = { ...plan.dest }; // la monture charge sous le cavalier
     displaceSmaller(get, geom); // charge d'un grand : idem dégage les plus petits (85 l.373-374)
@@ -484,6 +485,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
     bus.emit(EVT.ANIM_MOVE, { id: active.id, path: approachPath });
     if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path: approachPath });
     applyZoneCrossings(get, set, active, approachPath); // Mur de feu & co (L11) : charger À TRAVERS coûte
+    noteApproachMove(active, chargeFrom); // LDB 21 l.27 — événement EN ATTENTE : purgé si la charge est annulée avant le jet
     campGain(get, active, plan.adv); // +1 si « fonçant » de ≥ M mètres (l.77, lecture stricte), AVANT le jet
     if (plan.adv > 0) active.gainedAdvThisRound = true;
     active.chargedThisTurn = true; // Charge → Atouts de Dégâts d'une arme Épuisante actifs (LDB 62 l.319) ; consommé en fin de tour
@@ -497,6 +499,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
       const snapshot = (b.movementUsed ?? 0) === 0 ? captureMoveSnapshot(b, get().facing) : b.moveSnapshot ?? null;
       const geom = mountOf(b, active) ?? active;
       approachPath = plan.path;
+      const moveFrom = { ...active.pos! };
       active.pos = { ...plan.dest };
       if (geom !== active) geom.pos = { ...plan.dest };
       displaceSmaller(get, geom);
@@ -505,6 +508,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
       bus.emit(EVT.ANIM_MOVE, { id: active.id, path: approachPath });
       if (geom !== active) bus.emit(EVT.ANIM_MOVE, { id: geom.id, path: approachPath });
       applyZoneCrossings(get, set, active, approachPath); // Mur de feu & co (L11)
+      noteApproachMove(active, moveFrom); // LDB 21 l.27 — événement EN ATTENTE, scellé par l'attaque qui suit
       set({ battle: { ...b, moveSnapshot: snapshot, movementUsed: (b.movementUsed ?? 0) + plan.cost, movedPreAction: b.movedPreAction || !b.acted, action: null, reachable: new Map(), preview: null } });
       bus.emit(EVT.SCENE_DIRTY);
     }

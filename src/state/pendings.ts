@@ -614,7 +614,7 @@ export interface PendingShanty {
   rerolled?: boolean;
   forced?: boolean;
 }
-/** Approche d'une source de PEUR (LDB 21 l.29 : « incapable de vous rapprocher … à moins de réussir un
+/** Approche d'une source de PEUR (LDB 21 l.27 : « incapable de vous rapprocher … à moins de réussir un
  *  Test de Calme Intermédiaire (+0) ») : le clic d'approche est DIFFÉRÉ derrière ce Test sec. Succès →
  *  l'intention est relancée (approches libres ce Tour) ; échec → aucune approche ce Tour (battle.fearGate). */
 export interface PendingApproach {
@@ -1274,6 +1274,12 @@ export interface CascadeStepMeta {
    *  groupe) → `applyTriggeredTestBranch`. Absent ⇒ référent = `hero` lui-même (Mâchoires/Contrôle de
    *  la Frénésie : effet auto-porté). */
   casterId?: string;
+  /** Test ÉTENDU de Peur (LDB 21 l.25) : DR déjà cumulé AVANT ce jet, porté PAR LA RANGÉE d'une bande
+   *  de Psychologie de combat (`BatchParticipant.meta`) — l'applier y ajoute le DR du jet. */
+  prevDR?: number;
+  /** « Sans Peur (Ennemi) » (LDB 10 l.864) sur CETTE rangée : son Test est allégé (Accessible +20) et
+   *  une réussite ignore la Peur d'emblée. Divergence PAR HÉROS d'une bande, jamais de l'étape. */
+  sansPeur?: boolean;
 }
 /** Le jet d'UNE étape de cascade (slot du flux multi SÉQUENTIEL `FLOWS.cascade`). */
 export interface CascadeRoll {
@@ -1520,12 +1526,14 @@ export interface CascadeStepBase extends RollParticipant {
    *  Trait ciblé à l'entrée de scène. Test de Calme générique (`target`=Calme) ; l'applier
    *  'encounterPsych' pose le `psychState` (Brisé de Terreur dérivé du DR). Détermination = immunité. */
   encounterPsych?: { kind: PsychType; sourceId: string; sourceName: string; indice: number; cible?: string };
-  /** Étape-JET de Psychologie EN COMBAT (LDB 21) : un héros face à une source de Peur/Terreur/Trait
-   *  ciblé. Les Traits ciblés ET les NOUVELLES Terreurs se testent au DÉBUT du Round (l.14) ; la Peur
-   *  est un Test ÉTENDU testé à la FIN de chaque Round (l.27) → `prevDR` = DR déjà cumulé, l'applier
-   *  'combatPsych' cumule `prevDR + DR` vers l'Indice (vainc à ≥ Indice, retire la Peur). Distinct de
-   *  `encounterPsych` (simple) car la Peur de combat est ÉTENDUE. Détermination = immunité (LDB 17 l.62). */
-  combatPsych?: { kind: PsychType; sourceId: string; sourceName: string; indice: number; cible?: string; prevDR: number; sansPeur?: boolean };
+  /** DÉCLARATION d'une BANDE de Psychologie EN COMBAT (LDB 21) : l'entrée de règle mise en jeu — type
+   *  psy + source + cible + Indice — face à laquelle les héros appelés sont les RANGÉES
+   *  (`participants`, `aggregate:'none'`). Les Traits ciblés ET les NOUVELLES Terreurs se testent au
+   *  DÉBUT du Round (l.14) ; la Peur est un Test ÉTENDU testé à la FIN de chaque Round (l.25), dont le
+   *  DR déjà cumulé (`meta.prevDR`) et l'allègement Sans Peur (`meta.sansPeur`) vivent PAR RANGÉE.
+   *  Distinct d'`encounterPsych` (simple) car la Peur de combat est ÉTENDUE. Détermination = immunité
+   *  (LDB 17 l.62), jouée par rangée (`BatchParticipant.immune`). */
+  combatPsych?: { kind: PsychType; sourceId: string; sourceName: string; indice: number; cible?: string };
   /** DÉTERMINATION (LDB 17 l.62) sur une étape de Psychologie : le héros gagne une immunité TEMPORAIRE
    *  (≈ 1 Round, `psychImmuneRoundsLeft`) — la Peur/Terreur/Trait est IGNORÉE ce Round, PAS vaincue.
    *  L'applier psy lit ce flag pour NE PAS cumuler le DR (Peur) ni poser le Brisé (Terreur) : il

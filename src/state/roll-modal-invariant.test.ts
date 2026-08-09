@@ -195,7 +195,7 @@ function behavioralFloor(): void {
     E.pos = { x: 11, y: 10 };
     E.causesPeur = 2; // H craint E (adjacent, LdV dégagée)
     openRoundEndCascade(get, set);
-    expect(get().pendingCascade?.participants.some((s) => s.kind === 'combatPsych' && s.actorId === H.id), 'Peur de fin de Round doit REMONTER').toBeTruthy();
+    expect(get().pendingCascade?.participants.some((s) => s.kind === 'combatPsych' && s.participants?.some((p) => p.id === H.id)), 'Peur de fin de Round doit REMONTER').toBeTruthy();
   }
   // 3) Exposition à la Corruption de fin de combat (LDB 19) — gaté `humanControlled`.
   {

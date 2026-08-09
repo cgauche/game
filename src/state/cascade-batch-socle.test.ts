@@ -85,7 +85,7 @@ describe('CHARGE UTILE par rangée (`meta`) — l’applier lit la donnée DE LA
 describe('DÉTERMINATION par rangée (LDB 17 l.62)', () => {
   const psychBand = () =>
     band('bande-psy', [row('h1'), row('h2')], {
-      combatPsych: { kind: 'peur', sourceId: 'e1', sourceName: 'Bête', indice: 2, prevDR: 0 },
+      combatPsych: { kind: 'peur', sourceId: 'e1', sourceName: 'Bête', indice: 2 },
     });
 
   it('le verbe agit sur LA rangée : `immune` posé, Détermination débitée, l’autre rangée intacte', () => {

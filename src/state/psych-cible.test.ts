@@ -7,8 +7,9 @@ import { testScene } from '../scenes/test-fixture';
 
 /**
  * Traits psy CIBLÉS en COMBAT (Animosité/Haine/…, LDB 21 l.14 : Test de Calme « au début du Round »).
- * Depuis le fold : c'est une cascade `purpose:'combat'` ouverte par `openRoundStartPsych` (un héros par
- * étape, applier 'combatPsych'), résolue par les handlers `cascade*`. L'IA reste instantanée (resolvePsychAI).
+ * Depuis la VAGUE MULTI (#1117 L2) : c'est une cascade `purpose:'combat'` ouverte par
+ * `openRoundStartPsych` en BANDES (une étape par entrée de règle, applier 'combatPsych', une RANGÉE par
+ * héros), résolue par les handlers `cascadeBatch*`. L'IA reste instantanée (resolvePsychAI).
  */
 describe('Traits psy ciblés en combat — cascade de DÉBUT de Round (LDB 21)', () => {
   beforeEach(() => {
@@ -55,7 +56,8 @@ describe('Traits psy ciblés en combat — cascade de DÉBUT de Round (LDB 21)',
     const step = c!.participants[0];
     expect(step.combatPsych?.kind).toBe('animosite');
     expect(step.combatPsych?.sourceId).toBe(E.id);
-    useGame.getState().cascadeRoll(step.id);
+    expect(step.participants!.map((p) => p.id)).toEqual([H.id]); // BANDE : le jet vit sur la rangée
+    useGame.getState().cascadeBatchRoll(H.id);
     useGame.getState().cascadeNext();
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect((h.psychState ?? []).some((p) => p.type === 'animosite' && p.active)).toBe(true);
@@ -68,8 +70,7 @@ describe('Traits psy ciblés en combat — cascade de DÉBUT de Round (LDB 21)',
     E.groups = ['Mort-vivant'];
     H.resilience = 1;
     openRoundStartPsych(useGame.getState, useGame.setState);
-    const step = useGame.getState().pendingCascade!.participants[0];
-    useGame.getState().cascadeForceSuccess(step.id); // garantit le succès
+    useGame.getState().cascadeBatchForceSuccess(H.id); // garantit le succès (par rangée)
     useGame.getState().cascadeNext();
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect((h.psychState ?? []).some((p) => p.type === 'animosite' && p.active)).toBe(false);

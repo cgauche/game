@@ -45,7 +45,7 @@ Augmentations** dans cette Compétence inscrites sur la Feuille de Personnage.
 **Sources RAW :** LDB 09 l.12-18
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.12-18) → `possesses`, `DispelModal`, `AppraiseModalView`, `BargainModalView`, `useTestJetProps`, `HealRollFlow`, `tavernGameBaseValue`, `SurgeryRollFlow`, `skillBaseValue`, `combatBaseValue`, +14 — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/cascade.ts`, +14 fichiers
+- `LDB 9` (l.12-18) → `possesses`, `DispelModal`, `AppraiseModalView`, `BargainModalView`, `useTestJetProps`, `HealRollFlow`, `tavernGameBaseValue`, `SurgeryRollFlow`, `skillBaseValue`, `castingBaseValue`, +14 — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/cascade.ts`, +14 fichiers
 
 **Voir aussi :** [Tests & Degrés de Réussite](tests.md) pour l'utilisation de ce niveau en test.
 
@@ -183,7 +183,7 @@ Soin aux animaux, Voile**
 **Sources RAW :** LDB 09 l.65-574 (descriptions individuelles).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.65-574) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `essieu-casse`, `actBlockReason`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, +86 — `src/data/combat-stakes.json`, `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, +31 fichiers
+- `LDB 9` (l.65-574) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `essieu-casse`, `actBlockReason`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, +87 — `src/data/combat-stakes.json`, `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, +31 fichiers
 
 ---
 

@@ -182,6 +182,16 @@ function triggeredTestStepId(c: Combatant, label: string | undefined, skillLabel
   return `triggeredTest-${c.id}-${label && label !== skillLabel ? `${label}-${skillLabel}` : skillLabel}`;
 }
 
+/** CIBLE d'un Test SIMPLE (non opposé) porté par un FLOW en combat — les deux formes de fenêtre de ce
+ *  module, MONO (`simpleTriggeredTestStep`) et BANDE (`simpleBatchTestStep`), la calculent ICI :
+ *  `base` BRUT (sans pénalité d'État) + Difficulté + `combatTestPenalty` comptée UNE seule fois
+ *  (LDB 16). La pénalité d'État PÈSE donc sur la cible de ces Tests ; sa restitution en composantes
+ *  NOMMÉES relève du décomposeur d'affichage (`testValueSplit`, #1178), comme pour les étapes montées
+ *  par le monteur canonique (`rollSeam.rollStep`, canal `combat`/`test`), qui tiennent la MÊME règle. */
+function simpleTestTarget(c: Combatant, base: number, difficulty: Difficulty): number {
+  return base + DIFFICULTY_MODIFIERS[difficulty] + combatTestPenalty(c);
+}
+
 /** SOURCE UNIQUE du squelette d'étape `triggeredTest` d'un Test SIMPLE (non opposé) : convention RAW-correcte
  *  `base` BRUT (`rawCombatTestBase`, sans pénalité d'État) + `combatTestPenalty` UNE seule fois (LDB 16).
  *  Partagée par la voie « push » (`resolveFlowTest`, héros manuel mid-cascade) ET le collecteur de fin de
@@ -196,7 +206,7 @@ export function simpleTriggeredTestStep(
   return {
     id: triggeredTestStepId(c, ft.label, skillLabel),
     kind: 'triggeredTest', actorId: c.id, icon: 'nav/dice', rollLabel: skillLabel,
-    base, target: base + DIFFICULTY_MODIFIERS[difficulty] + combatTestPenalty(c), label: ft.label ?? skillLabel,
+    base, target: simpleTestTarget(c, base, difficulty), label: ft.label ?? skillLabel,
     // ENJEU du Flow (#1117) : le producteur du `FlowTest` le fournit, cette fabrique le transmet —
     // elle est générique et ne peut rien deviner de ce que le Test met en jeu.
     ...(ft.stake ? { stake: ft.stake } : {}),
@@ -262,6 +272,43 @@ export function frozenOpposedBatchStep(
       onSuccess: branches.onSuccess, onFail: branches.onFail, after, casterId: attacker.id,
       opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp.attackerLabel ?? CHAR_LABELS[opp.attacker], difficulty, ...(opp.bonusSL ? { bonusSL: opp.bonusSL } : {}) },
     },
+  };
+}
+
+/**
+ * Étape BATCH d'un Test SIMPLE (non opposé) — N testeurs appelés par la MÊME entrée de règle, une
+ * RANGÉE par testeur dans la MÊME fenêtre (#1117 : une situation = une fenêtre). Jumelle de
+ * `frozenOpposedBatchStep` sans opposition, et calque de la voie MONO simple pour la convention de
+ * `base` : `rawCombatTestBase` (sans pénalité d'État) + `combatTestPenalty` comptée UNE seule fois
+ * (LDB 16), exactement comme `simpleTriggeredTestStep`. `aggregate:'none'` — les rangées sont
+ * INDÉPENDANTES, l'applier `triggeredBatchTest` rejoue la branche `onSuccess`/`onFail` par rangée.
+ * GÉNÉRIQUE : aucune entité nommée ; testeurs, `FlowTest`, branches et `id` viennent du producteur
+ * (c'est lui qui connaît la CLÉ de sa bande). Les testeurs dont la gate du Test est fermée sont
+ * écartés (même décision que `resolveFlowTest`) ; `undefined` s'il ne reste personne.
+ */
+export function simpleBatchTestStep(
+  testers: Combatant[], ft: FlowTest, branches: { onSuccess: Flow; onFail: Flow }, after: Flow,
+  difficulty: Difficulty, id: string,
+): CascadeStep | undefined {
+  const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
+  const participants: BatchParticipant[] = [];
+  for (const c of testers) {
+    if (flowTestGated(ft, c, combatConditionCtx(c, { caster: c }))) continue;
+    const base = rawCombatTestBase(c, ft.skill, ft.characteristic, ft.spec);
+    participants.push({
+      id: c.id, interactive: true, result: null, base, difficulty, label: skillLabel,
+      target: simpleTestTarget(c, base, difficulty),
+      ...(ft.menace ? { menace: ft.menace } : {}),
+      ...(ft.skill ? { skillId: ft.skill } : {}), ...(ft.spec ? { spec: ft.spec } : {}),
+    });
+  }
+  if (!participants.length) return undefined;
+  return {
+    id, kind: 'triggeredBatchTest', icon: 'nav/dice', label: ft.label ?? skillLabel,
+    interactive: true, aggregate: 'none', participants,
+    ...(ft.stake ? { stake: ft.stake } : {}),
+    ...(ft.menace ? { menace: ft.menace } : {}),
+    meta: { onSuccess: branches.onSuccess, onFail: branches.onFail, after },
   };
 }
 

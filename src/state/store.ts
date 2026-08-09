@@ -28,6 +28,7 @@ import { climbMovementCost } from '../engine/movement';
 import { hasAutoClimb, hasClimbFullSpeed } from '../engine/traits/dispatch';
 import { controlsCombatant } from './netOwnership';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
+import { markActed } from './combatFlow';
 import { EMPTY_FLOW, type Flow } from './flow';
 import type { MoveSnapshot } from './combatGeometry';
 export { movementRemaining, canMove } from './mount';
@@ -2504,7 +2505,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (ca && battle) {
       const c = inBattleId(battle, ca.combatantId);
       if (c && effSuccess && (c.advantage ?? 0) < ca.cap) campGain(get, c, 1);
-      set({ battle: { ...battle, acted: true, action: null } });
+      set({ battle: { ...markActed(get, set, battle), action: null } });
     }
     // Branche choisie PUIS continuation (suite du `seq` parent d'un nœud `test`) — exécutées par runFlow
     // (butin de Test → fenêtre d'attribution ; if/test imbriqués gérés).

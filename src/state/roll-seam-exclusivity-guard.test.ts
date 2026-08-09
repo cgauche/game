@@ -563,7 +563,6 @@ describe('REGISTRE des chemins de jet (#1066) — familles CANONIQUES énuméré
 const LIGNE_A_LA_MAIN_STOCK: Record<string, number> = {
   // COMBAT — reste du lot L1b (`combatEffects`/`triggeredTest` non migrés ; `encounterPsychFlow` = la
   // rangée batch du Test de Peur hors rencontre)
-  'src/state/combatFlow.ts': 1, // `psychStepFor` — soldé par #1117 L2 EN VOL, sortira du stock à son atterrissage
   'src/state/combat/triggeredTest.ts': 3,
   'src/state/combatEffects.ts': 5,
   'src/state/encounterPsychFlow.ts': 1,
@@ -574,10 +573,8 @@ const LIGNE_A_LA_MAIN_STOCK: Record<string, number> = {
   'src/state/cascadeTestKit.ts': 1, // le cliquet lui-même (`inexplique`)
 };
 
-/** Dette TOTALE MESURÉE sur `HEAD` + ce lot : 15 occurrences / 8 fichiers, dont 12 en combat — verrou
- *  global : un site déplacé d'un fichier à l'autre ne s'y cache pas. L'arbre de TRAVAIL peut en
- *  afficher moins (14 / 7 / 11 tant que #1117 L2 y est en vol) : c'est le référentiel ci-dessus qui
- *  fait foi, et le test « baseline trop haute » ne mord qu'une dette réellement soldée AU TRONC. */
+/** Dette TOTALE MESURÉE sur `HEAD` + ce lot : 14 occurrences / 7 fichiers, dont 11 en combat — verrou
+ *  global : un site déplacé d'un fichier à l'autre ne s'y cache pas. */
 const TOTAL_DECLARE = Object.values(LIGNE_A_LA_MAIN_STOCK).reduce((s, n) => s + n, 0);
 
 describe('CLIQUET — l’arithmétique de ligne vit dans le monteur, pas dans les flux (#1153)', () => {

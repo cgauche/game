@@ -10,7 +10,7 @@ import { RNG, defaultRNG } from './dice';
 import { rollTest, evaluateTest, extendedTestStep } from './tests';
 import { rule } from './policy';
 import { bonus, effectiveChar } from './characteristics';
-import { findPsychologyById, psychologies } from '../data';
+import { findPsychologyById, psychologies, psychologyLabel } from '../data';
 import { SizeCategory, sizeGap } from './size';
 import { groupMatch, hiddenGroupsOf } from './groups';
 import { bellicosePsychImmune, traitCapability } from './traits/dispatch';
@@ -49,9 +49,6 @@ export interface PsychAffliction {
   calmeDR?: number;
   /** N° de Round du dernier Test de Calme (le Test étendu est UNE fois par Round). */
   lastTestRound?: number;
-  /** Clé `round:turn` du dernier Test de Calme « la source s'approche » (LDB 21 l.29) : UN Test par
-   *  Tour de la source — un déplacement DÉCOMPOSÉ en segments ne re-déclenche pas. */
-  lastApproachKey?: string;
   /** Trait CIBLÉ (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie) : `true` = affliction non résistée
    *  (effets actifs, re-testable pour y mettre fin) ; `false` = testé et résisté (marqueur inerte
    *  empêchant le re-déclenchement ce rencontre). */
@@ -130,6 +127,13 @@ export function suppressSupersededPsych(c: Combatant): PsychType[] {
     if (dominant.some((o) => o !== p)) { p.active = false; out.push(p.type); }
   }
   return out;
+}
+
+/** Les afflictions ÉCLIPSÉES par un effet dominant, SUPPRIMÉES puis NOMMÉES (`LDB 21 l.21`) — SOURCE
+ *  UNIQUE de la queue partagée par les deux résolutions de Test psy (combat et rencontre) : elles
+ *  suppriment et journalisent d'un seul geste au lieu de recomposer la même phrase chacune. */
+export function supersededLines(c: Combatant, name: string): string[] {
+  return suppressSupersededPsych(c).map((tp) => t('turn.psychSuperseded', { name, psych: psychologyLabel(tp) }));
 }
 
 /** `self` possède-t-il « Sans Peur (Ennemi) » (LDB 10 l.864) contre `foe` ? Le porteur n'est PAS
@@ -258,7 +262,7 @@ export function calmeValue(c: Combatant): number {
   return effectiveChar(c, 'force-mentale') + adv;
 }
 
-/** Un Round de Test ÉTENDU de Calme contre la Peur (LDB 21 l.27) : cumule le DR jusqu'à l'Indice.
+/** Un Round de Test ÉTENDU de Calme contre la Peur (LDB 21 l.25) : cumule le DR jusqu'à l'Indice.
  *  `prevDR` = DR déjà accumulé. `vaincue` = la Peur est surmontée (DR cumulé ≥ Indice).
  *  `sansPeur` (Sans Peur (Ennemi), LDB 10 l.864) : « un seul Test de Calme Accessible (+20)… vous
  *  pouvez IGNORER les effets » → Test UNIQUE (binaire) à +20 ; une réussite vainc d'emblée la Peur

@@ -19,6 +19,7 @@ import { type Flow, evalCondition, resolveTestDifficulty, type ConditionCtx } fr
 import { condCtx } from './bourseFlow';
 import { buildActorView, flowTestGated } from './combat/flowEval';
 import { runCombatFlow } from './combat/triggeredTest';
+import { markActed } from './combatFlow';
 import { openSkillTest, runFlow, applyLeafOps, drainPendingLog } from './combatEffects';
 import { gainCorruption } from './corruptionFlow';
 import { touchActors } from './combatOrParty';
@@ -132,7 +133,7 @@ export function battleConsumeItem(get: Get, set: SetFn, active: Combatant, it: I
   const queued = drainPendingLog(get, set); // lignes du Flow (inline) → événements du log de bataille
   set({
     battle: {
-      ...battle, acted: true, action: null,
+      ...markActed(get, set, battle), action: null,
       log: [...battle.log, ev('item', t('cs.useConsumable', { name: active.label, item: it.label }), active.id), ...queued],
     },
   });
