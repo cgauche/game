@@ -282,8 +282,10 @@ function srcLabel(src: CodexTarget | undefined, nature: string): string {
 }
 
 /** Renvoi Codex d'un effet actif : son entité SOURCE (`EffectSource`, table TOTALE
- *  `CATEGORY_BY_SOURCE_KIND`), sinon le sort qui l'a posé. Absent = effet sans ancrage de règle. */
-function effectRef(e: ActiveEffect): CodexTarget | undefined {
+ *  `CATEGORY_BY_SOURCE_KIND`), sinon le sort qui l'a posé. Absent = effet sans ancrage de règle.
+ *  COUTURE UNIQUE effet→fiche pour les `ModLine` : partagée par le détail de pénalité de Test
+ *  (`combatTestPenaltyParts`) et par l'aura anti-Sort (`castWardLine`, state/combatFlow). */
+export function effectRef(e: ActiveEffect): CodexTarget | undefined {
   if (e.source) return { category: CATEGORY_BY_SOURCE_KIND[e.source.kind], id: e.source.id };
   return e.sourceSpellId ? { category: 'spells', id: e.sourceSpellId } : undefined;
 }
@@ -390,23 +392,38 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
 }
 
 /**
- * Bonus pour TOUCHER en mêlée une cible affectée (LDB 16). Deux familles, lues en DONNÉES
- * (`incomingAttackMod` des `passive` d'État, kind `etat`) :
- *  - INCONDITIONNELS (À Terre/Surpris +20, Aveuglé +10) : non-cumul, le MEILLEUR seul (LDB 16 l.13) ;
- *  - flanc/derrière (Assourdi +10, `flankRear:true`) : bonus SUPPLÉMENTAIRE (LDB 16 l.29) ADDITIF, appliqué
- *    SEULEMENT si `opts.flankRear` (l'appelant a établi l'angle via le facing) ; plusieurs Assourdi ne
- *    l'augmentent pas → max entre entrées flankRear (« ce bonus n'est pas augmenté avec de multiples Assourdi »).
+ * Bonus pour TOUCHER en mêlée une cible affectée, en lignes NOMMÉES par l'État qui les octroie —
+ * SOURCE UNIQUE de la somme (`meleeAttackerBonus`) et de son affichage (chip « +20 À Terre »).
+ * Lues en DONNÉES (`incomingAttackMod` des `passive` d'État, kind `etat`). Deux familles :
+ *  - INCONDITIONNELS (À Terre/Surpris +20, Aveuglé +10 — `LDB 16 l.37/l.137/l.43`) : le MEILLEUR
+ *    seul. Ce non-cumul est un arbitrage MAISON, pas une citation : `LDB 16 l.13` ne régit que les
+ *    PÉNALITÉS subies par le porteur, et `l.11` fait au contraire s'accumuler les pions d'un même
+ *    État. À Terre et Surpris ne se cumulent de toute façon pas (l.37/l.137) ; Aveuglé, si — le
+ *    comportement courant est mesuré et ticketé #1138, et n'est PAS modifié ici.
+ *  - flanc/derrière (Assourdi +10, `flankRear:true`, `LDB 16 l.29`) : bonus SUPPLÉMENTAIRE ADDITIF,
+ *    appliqué SEULEMENT si `opts.flankRear` (l'appelant a établi l'angle via le facing) ; « ce bonus
+ *    n'est pas augmenté avec de multiples États *Assourdi* » (l.29) → max entre entrées flankRear.
+ * Ex æquo : le PREMIER dans l'ordre de collecte l'emporte (comparaison stricte), comme `poolWinner`.
  */
-export function meleeAttackerBonus(target: Combatant, opts?: { flankRear?: boolean }): number {
-  let best = 0;  // pool non-cumul des bonus inconditionnels
-  let flank = 0; // bonus flanc/dos ADDITIF (« supplémentaire »)
+export function meleeAttackerBonusLines(target: Combatant, opts?: { flankRear?: boolean }): TestPenaltyPart[] {
+  let best: PoolCandidate | undefined;  // pool non-cumul des bonus inconditionnels
+  let flank: PoolCandidate | undefined; // bonus flanc/dos ADDITIF (« supplémentaire »)
   for (const m of passiveMods(target)) {
-    if (m.kind === 'etat' && m.op.op === 'incomingAttackMod' && (m.op.mode === 'melee' || m.op.mode === 'all')) {
-      if (m.op.flankRear) { if (opts?.flankRear) flank = Math.max(flank, m.op.amount); }
-      else best = Math.max(best, m.op.amount);
-    }
+    if (m.kind !== 'etat' || m.op.op !== 'incomingAttackMod') continue;
+    if (m.op.mode !== 'melee' && m.op.mode !== 'all') continue;
+    const cand: PoolCandidate = { amount: m.op.amount, nature: 'État', src: m.src };
+    if (m.op.flankRear) { if (opts?.flankRear && cand.amount > (flank?.amount ?? 0)) flank = cand; }
+    else if (cand.amount > (best?.amount ?? 0)) best = cand;
   }
-  return best + flank;
+  return [best, flank]
+    .filter((c): c is PoolCandidate => !!c?.amount)
+    .map((c) => ({ label: srcLabel(c.src, c.nature), value: c.amount, ref: c.src }));
+}
+
+/** Σ de `meleeAttackerBonusLines` — la VALEUR que le jet applique (l'affichage et le jet lisent les
+ *  mêmes composantes). */
+export function meleeAttackerBonus(target: Combatant, opts?: { flankRear?: boolean }): number {
+  return meleeAttackerBonusLines(target, opts).reduce((s, l) => s + l.value, 0);
 }
 
 /**

@@ -53,13 +53,10 @@ function refLessProducers(): string[] {
 }
 
 /**
- * CLIQUET — stock des `ModLine` SANS `ref`. Ce qui BLOQUE chacune est MESURÉ :
- *  - « État » : LEVÉE (#1117 L4). `PassiveMod` porte désormais l'identité Codex de sa source (`src`) et
- *    `combatTestPenaltyParts` rend UNE ligne par composante réelle, chacune à son nom (l'État gagnant
- *    du pool, le trait de l'aura, le sort actif, le symptôme) — toutes liées ;
- *  - « Cible vulnérable » (`meleeAttackerBonus`) et « Aura de Sorcière » (`castWardPenalty`) : un pool
- *    d'octroyeurs (États / effets `castWard`) dont le gagnant n'est pas rendu au site — même levée
- *    possible qu'« État » : faire porter au pool l'identité de son gagnant ;
+ * CLIQUET — stock des `ModLine` SANS `ref`. Les pools d'octroyeurs ont TOUS été levés (#1117 L4) :
+ * `PassiveMod` porte l'identité Codex de sa source (`src`), et chaque site rend UNE ligne par
+ * composante réelle, à son nom — pénalités d'État (`combatTestPenaltyParts`), bonus à l'attaquant
+ * (`meleeAttackerBonusLines`), aura anti-Sort (`castWardLine`). Ce qui BLOQUE le reste est MESURÉ :
  *  - libellés DÉRIVÉS d'une donnée déjà nommée ailleurs (météo de scène, force des Vents, lignes
  *    volatiles de Caractéristique) : leur référence se dérive de cette donnée, pas d'une règle.
  */
@@ -68,10 +65,8 @@ const RATCHET = [
   'src/engine/characteristics.ts · e.label',
   'src/engine/characteristics.ts · p.label',
   'src/engine/characteristics.ts · worst.label',
-  "src/engine/combat.ts · 'Cible vulnérable'",
   "src/engine/combat.ts · 'Neige épaisse'",
   "src/engine/combat.ts · 'Rapide'",
-  "src/state/combatFlow.ts · 'Aura de Sorcière'",
   "src/state/combatFlow.ts · 'Contrecoup'",
   "src/state/combatFlow.ts · 'Vents de Magie'",
   'src/state/combatFlow.ts · sc.label',

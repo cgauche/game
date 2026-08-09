@@ -19,7 +19,7 @@ import { weatherTestMods } from './weatherTestMod';
 import { findTableEntry } from './tables';
 import { maxBy } from './pick';
 import locJson from '../data/localisation.json';
-import { combatTestPenaltyParts, meleeAttackerBonus, cannotDefend, hasCondition, COND, activeCharTestMod } from './conditions';
+import { combatTestPenaltyParts, meleeAttackerBonusLines, cannotDefend, hasCondition, COND, activeCharTestMod } from './conditions';
 import { effectiveWeaponDamage, effectiveWeapon, effectiveWeaponRange } from './weaponDamage';
 import { traumaDodgePenalty, damageSBBonus, amputationCombatPenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, SIZE_ORDER, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
@@ -564,8 +564,9 @@ export function attackModifiers(
       if (sm !== 0) out.push({ label: `Taille (cible) — ${SIZE_LABEL[effectiveSize(target.size)]}`, value: sm, ref: RULE_REF['taille-cible-au-tir'] });
     }
   } else if (target) {
-    const vuln = meleeAttackerBonus(target, { flankRear: opts.flankRear });
-    if (vuln) out.push({ label: 'Cible vulnérable', value: vuln });
+    // Cible vulnérable : une ligne PAR État qui l'expose (« +20 À Terre », « +10 Assourdi » de dos),
+    // chacune liée à sa fiche — jamais un « Cible vulnérable » anonyme qui fond deux règles distinctes.
+    out.push(...meleeAttackerBonusLines(target, { flankRear: opts.flankRear }));
     // Parasité (LDB 85 p.340) : −10 pour toucher la créature en Corps à corps (vermine perturbante).
     const para = incomingAttackMod(target, 'melee');
     if (para) out.push({ label: 'Parasité', value: para, ref: RULE_REF.parasite });

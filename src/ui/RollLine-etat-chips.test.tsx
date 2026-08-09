@@ -19,11 +19,16 @@ import { createRoot, type Root } from 'react-dom/client';
 import { RollShell } from './RollShell';
 import type { PendingRoll } from './RollLine';
 import { codexLookupById } from './compendium/registry';
-import { conditionModLines } from '../engine/combat';
+import { conditionModLines, attackModifiers } from '../engine/combat';
 import { addCondition, COND } from '../engine/conditions';
+import { castWardLine } from '../state/combatFlow';
+import { useGame, type GameState } from '../state/store';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import type { Disease } from '../engine/disease';
-import type { Combatant } from '../engine/types';
+import type { Combatant, Weapon } from '../engine/types';
+
+/** Arme de mêlée minimale — l'attaque n'est ici qu'un PORTEUR de modificateurs. */
+const SWORD: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
 
 const mk = (): Combatant => ({
   id: 'x', name: 'X', kind: 'hero', characteristics: {}, skills: [], talents: [], traits: [],
@@ -50,11 +55,12 @@ const mount = (node: React.ReactElement) => {
   return { container, root };
 };
 
-/** La coquille RÉELLE, alimentée par les lignes que le moteur produit pour CE combattant. */
-function shellFor(c: Combatant) {
-  const pending: PendingRoll = { label: 'Corps à corps', base: 55, mods: conditionModLines(c) };
+/** La coquille RÉELLE, alimentée par des `ModLine` que le MOTEUR produit (jamais écrites à la main). */
+function shell(mods: PendingRoll['mods']) {
+  const pending: PendingRoll = { label: 'Corps à corps', base: 55, mods };
   return <RollShell title="Attaque" rows={[{ row: { pending }, rolled: false }]} rolled={false} actions={[]} />;
 }
+const shellFor = (c: Combatant) => shell(conditionModLines(c));
 
 describe('Chips de pénalité — texte EXACT et popover, du Combatant à l’écran (#1117 L4)', () => {
   beforeAll(() => {
@@ -116,5 +122,41 @@ describe('Chips de pénalité — texte EXACT et popover, du Combatant à l’é
     const etatRef = conditionModLines(e)[0].ref!;
     expect(etatRef.category).toBe('etats');
     expect(codexLookupById(etatRef.category, etatRef.id)).toBeTruthy();
+  });
+
+  // ── Bonus à l'ATTAQUANT : la chip vit côté ATTAQUANT (`attackModifiers`, mêlée), pas sur la ligne
+  //    de la victime — elle disait « Cible vulnérable », un intitulé qui fondait deux règles distinctes.
+  it('cible À Terre + Assourdie de dos : DEUX chips nommées côté attaquant, chacune liée à SON État', () => {
+    const target = mk();
+    addCondition(target, COND.aTerre); addCondition(target, COND.assourdi);
+    const mods = attackModifiers(mk(), target, SWORD, { kind: 'melee', flankRear: true });
+    ({ container, root } = mount(shell(mods)));
+    const chips = [...container.querySelectorAll('.rm-mod')];
+    expect(chips.map((n) => n.textContent)).toEqual(['+20 À Terre', '+10 Assourdi']);
+    for (const chip of chips) {
+      expect(chip.classList.contains('codex-ref')).toBe(true);
+      act(() => { chip.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); });
+      expect(document.querySelector('.codex-pop'), `popover de « ${chip.textContent} »`).not.toBeNull();
+      act(() => { chip.dispatchEvent(new MouseEvent('mouseout', { bubbles: true })); });
+    }
+  });
+
+  // ── Aura anti-Sort : le producteur RÉEL est `castWardLine` ; seul le conteneur `battle` est forgé
+  //    (la géométrie exige une bataille). L'effet est celui qu'`applyOps` pose (label + `sourceSpellId`).
+  it('aura anti-Sort : la chip porte le NOM du miracle, sa fiche, et son porteur en provenance', () => {
+    const priest = mk();
+    priest.id = 'P'; priest.label = 'Sœur Gerda'; priest.pos = { x: 10, y: 10 };
+    priest.activeEffects = [{ label: 'N’écoutez point la Sorcière', bonus: 0, duration: { scale: 'rounds', left: 5 }, castWard: { radiusMeters: 4 }, sourceSpellId: 'n-ecoutez-point-la-sorciere' } as NonNullable<Combatant['activeEffects']>[number]];
+    const victim = mk(); victim.id = 'V'; victim.pos = { x: 11, y: 10 };
+    const state = { battle: { combatants: [priest, victim] } } as unknown as GameState;
+    const line = castWardLine(state, victim, { label: 'Flèchette' } as never)!;
+    expect(line).toEqual({ label: 'N’écoutez point la Sorcière', value: -20, ref: { category: 'spells', id: 'n-ecoutez-point-la-sorciere' }, by: [{ id: 'P' }] });
+    expect(codexLookupById(line.ref!.category, line.ref!.id)).toBeTruthy();
+    useGame.setState({ party: [priest], battle: null });
+    ({ container, root } = mount(shell([line])));
+    const chip = container.querySelector('.rm-mod') as HTMLElement;
+    expect(chip.textContent).toBe('−20 N’écoutez point la Sorcière');
+    act(() => { chip.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); });
+    expect(document.querySelector('.codex-pop')?.textContent).toContain('Sœur Gerda'); // le PORTEUR est nommé
   });
 });

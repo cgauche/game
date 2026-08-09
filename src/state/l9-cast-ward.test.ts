@@ -38,8 +38,9 @@ describe('castWard — pénalité −20 aux Sorts ciblant la zone du prêtre', (
     H.pos = { x: 11, y: 10 };
     P.pos = priestPos;
     E.pos = { x: 15, y: 10 };
-    // Aura du miracle posée sur le prêtre (rayon 4 m = 2 cases).
-    P.activeEffects = [{ label: 'N’écoutez point la Sorcière', bonus: 0, duration: { scale: 'rounds', left: 5 }, castWard: { radiusMeters: 4 } }];
+    // Aura du miracle posée sur le prêtre (rayon 4 m = 2 cases). `sourceSpellId` est stampé par `applyOps`
+    // à tout effet durable issu d'un lancement (Prières comprises) : c'est LUI qui relie la chip à la fiche.
+    P.activeEffects = [{ label: 'N’écoutez point la Sorcière', bonus: 0, duration: { scale: 'rounds', left: 5 }, castWard: { radiusMeters: 4 }, sourceSpellId: 'n-ecoutez-point-la-sorciere' }];
     useGame.setState({
       battle: { ...useGame.getState().battle! },
       pendingCast: { casterId: E.id, targetId: H.id, spellId: 'flechette', missile: true, focused: false, result: null },
@@ -56,12 +57,13 @@ describe('castWard — pénalité −20 aux Sorts ciblant la zone du prêtre', (
   });
 
   it('#1064 — le PRÉ-JET annonce la même cible que le jet : le ward entre dans `previewCast`', () => {
-    const { E, H } = setup({ x: 10, y: 10 }); // cible dans l'aura
+    const { E, H, P } = setup({ x: 10, y: 10 }); // cible dans l'aura
     const spell = findSpellById('flechette')!;
     const pv = previewCast(E as Combatant, spell, { missile: true, focused: false, ctx: { s: useGame.getState(), target: H as Combatant } });
     const base = castingValue(E as Combatant, 'langue', 'magick');
     expect(pv.target).toBe(base - 20); // la cible ANNONCÉE est celle que `castRoll` appliquera
-    expect(pv.mods.some((m) => m.label === 'Aura de Sorcière' && m.value === -20)).toBe(true); // …et nommée
+    // …et NOMMÉE par l'entité qui a posé l'aura, avec son renvoi Codex et son PORTEUR en provenance.
+    expect(pv.mods).toContainEqual({ label: 'N’écoutez point la Sorcière', value: -20, ref: { category: 'spells', id: 'n-ecoutez-point-la-sorciere' }, by: [{ id: P.id }] });
     // Contrôle : sans contexte de cible, l'aperçu ne peut pas connaître la protection de la victime.
     expect(previewCast(E as Combatant, spell, { missile: true, focused: false }).target).toBe(base);
   });

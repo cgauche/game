@@ -348,10 +348,17 @@ describe('attackModifiers — modificateurs étiquetés (source unique)', () => 
     const mods = attackModifiers(mk({ label: 'A' }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 28, location: 'tete' });
     expect(mods).toContainEqual({ label: 'Localisation visée', value: -10, ref: RULE_REF['viser-une-localisation'] });
   });
-  it('mêlée vs cible À Terre → mod « Cible vulnérable » +20', () => {
+  it('mêlée vs cible À Terre → la ligne NOMME l’État qui expose la cible (+20 À Terre, lié au Codex)', () => {
     const downed = mk({ label: 'B', conditions: [{ id: 'a-terre', value: 1 }] });
     const mods = attackModifiers(mk({ label: 'A' }), downed, sword, { kind: 'melee' });
-    expect(mods).toContainEqual({ label: 'Cible vulnérable', value: 20 });
+    expect(mods).toContainEqual({ label: 'À Terre', value: 20, ref: { category: 'etats', id: 'a-terre' } });
+  });
+
+  it('bonus de flanc/dos ADDITIF : DEUX lignes nommées (À Terre +20, Assourdi +10), jamais fondues', () => {
+    const target = mk({ label: 'B', conditions: [{ id: 'a-terre', value: 1 }, { id: 'assourdi', value: 1 }] });
+    const mods = attackModifiers(mk({ label: 'A' }), target, sword, { kind: 'melee', flankRear: true });
+    expect(mods).toContainEqual({ label: 'À Terre', value: 20, ref: { category: 'etats', id: 'a-terre' } });
+    expect(mods).toContainEqual({ label: 'Assourdi', value: 10, ref: { category: 'etats', id: 'assourdi' } });
   });
 });
 

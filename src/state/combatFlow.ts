@@ -146,7 +146,7 @@ import { norm } from '../lib/normalize';
 import { recomputeLoadout, weaponWithAmmo, selectedAmmo, consumeAmmo, ammoFamily, ammoFamilyLabel, damageArmour, deviatableArmourAt, buildWeapon, isUnarmed } from '../engine/items';
 import { hasCapability, itemCapability } from '../engine/capabilities';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, removeActiveEffects, COND } from '../engine/conditions';
+import { isOutOfAction, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, removeActiveEffects, effectRef, COND } from '../engine/conditions';
 import { creatureAttacks, selfManeuversOf, selfManeuverApplicable, type CreatureAttack } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
 
@@ -5307,47 +5307,57 @@ export function castNearCorruption(get: Get): boolean {
   return combatants.some((c) => !!malepierreItemOf(c));
 }
 
-/** « N'écoutez point la Sorcière » (LDB 42) : « Tous les Sorts qui ciblent quelque chose ou
- *  quelqu'un dans les (BSoc) mètres subissent une pénalité de -20 aux Tests de Langue (Magick),
- *  en plus de toute autre pénalité. » — −20 si la CIBLE du Sort est dans le rayon d'un porteur
- *  de l'aura (`ActiveEffect.castWard`) encore en état de combattre. Sorts seulement (les Prières
- *  passent par Prière, pas Langue). Une fois, même sous plusieurs auras (toutes à −20). Hors
- *  combat (pas de géométrie), l'aura ne s'applique pas — limitation documentée. */
+/** Aura anti-Sort qui frappe la CIBLE d'un Sort (`ActiveEffect.castWard`, posé par l'op du même nom —
+ *  `LDB 43 l.139-145`), rendue en ligne NOMMÉE : le libellé et le renvoi Codex sont ceux de l'ENTITÉ
+ *  qui a posé l'aura (« N'écoutez point la Sorcière »), la provenance ceux de son PORTEUR. Sorts
+ *  seulement (les Prières passent par Prière, pas Langue). Une SEULE ligne même sous plusieurs auras
+ *  (elles valent toutes −20) : la première rencontrée la nomme, dans l'ordre des combattants puis de
+ *  leurs effets. Hors combat (pas de géométrie), l'aura ne s'applique pas — limitation documentée.
+ *  Aujourd'hui MONO-SOURCE en donnée : `n-ecoutez-point-la-sorciere` est la seule entrée porteuse de
+ *  l'op `castWard` ; la ligne nomme quand même son émetteur, une 2ᵉ entrée n'exigera aucun code. */
+export function castWardLine(s: GameState, target: Combatant, spell: SpellLike): ModLine | null {
+  if (castInfoIsPrayer(spell)) return null;
+  if (!target.pos) return null;
+  for (const w of s.battle?.combatants ?? []) {
+    if (isOutOfAction(w) || !w.pos) continue;
+    for (const e of w.activeEffects ?? []) {
+      if (!e.castWard) continue;
+      if (combatDistance(w, target) > Math.max(1, Math.ceil(e.castWard.radiusMeters / 2))) continue;
+      return { label: e.label, value: -20, ref: effectRef(e), by: [{ id: w.id }] };
+    }
+  }
+  return null;
+}
 /**
  * Modificateurs de CONTEXTE d'un Test d'Incantation, NOMMÉS et chiffrés — SOURCE UNIQUE de la somme
- * que le jet applique et que l'aperçu annonce : « N'écoutez point la Sorcière » (LDB 42, sur la
- * CIBLE), l'attribut de Domaine (Aqshy, LDB 48 l.157) et le bonus d'ENVIRONNEMENT de Domaine
- * (Ghyran, LDB 48 l.690). Les Vents Tourbillonnants restent HORS de cette somme : leur révélation
- * (Seconde vue) décide de leur présence dans l'APERÇU, pas dans le jet.
+ * que le jet applique et que l'aperçu annonce : l'aura anti-Sort sur la CIBLE (`castWardLine`,
+ * LDB 43 l.139-145), l'attribut de Domaine (Aqshy, LDB 48 l.157) et le bonus d'ENVIRONNEMENT de
+ * Domaine (Ghyran, LDB 48 l.690). Les Vents Tourbillonnants restent HORS de cette somme : leur
+ * révélation (Seconde vue) décide de leur présence dans l'APERÇU, pas dans le jet.
  * `skipWard` : Zone non encore posée — aucune cible désignée, donc pas de protection individuelle.
  */
 export function castContextMods(
   s: GameState, caster: Combatant, target: Combatant, spell: SpellLike & { domainId?: string | null },
   opts?: { skipWard?: boolean },
 ): { mods: ModLine[]; total: number; ward: number; domain: number; env: number } {
-  const ward = opts?.skipWard ? 0 : castWardPenalty(s, target, spell);
+  const wardLine = opts?.skipWard ? null : castWardLine(s, target, spell);
+  const ward = wardLine?.value ?? 0;
   const domain = domainCastBonus(s, caster, spell);
   const env = domainEnvironmentBonus(spell, s.scene?.environment);
   // La ligne de Domaine (attribut ET environnement) porte SON Domaine en référence : c'est lui, pas une
   // règle générique, qui décrit le bonus (Aqshy/Ghyran — LDB 48 l.157/690).
   const dref = spell.domainId ? { category: 'domains', id: spell.domainId } : undefined;
   const mods: ModLine[] = [
-    ...(ward ? [{ label: 'Aura de Sorcière', value: ward }] : []),
+    ...(wardLine ? [wardLine] : []),
     ...(domain ? [{ label: 'Domaine', value: domain, ref: dref }] : []),
     ...(env ? [{ label: 'Environnement', value: env, ref: dref }] : []),
   ];
   return { mods, total: ward + domain + env, ward, domain, env };
 }
 
+/** Σ de `castWardLine` — la VALEUR que le jet applique (l'affichage et le jet lisent la même aura). */
 export function castWardPenalty(s: GameState, target: Combatant, spell: SpellLike): number {
-  if (castInfoIsPrayer(spell)) return 0;
-  if (!target.pos) return 0;
-  const warded = (s.battle?.combatants ?? []).some(
-    (w) => !isOutOfAction(w) && w.pos && (w.activeEffects ?? []).some(
-      (e) => e.castWard && combatDistance(w, target) <= Math.max(1, Math.ceil(e.castWard.radiusMeters / 2)),
-    ),
-  );
-  return warded ? -20 : 0;
+  return castWardLine(s, target, spell)?.value ?? 0;
 }
 
 /** Un Test de Contraction de fin de combat DÛ pour un héros (LDB 18/20) : la maladie, sa difficulté de
