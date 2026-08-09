@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { opposedLines } from './breakdown';
-import { baseTestModLines, baseTestMods } from '../engine/combat';
+import { baseTestModLines, baseTestMods, type ModLine } from '../engine/combat';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import type { Combatant } from '../engine/types';
 
@@ -42,8 +42,8 @@ describe('opposedLines — la Difficulté est déclarée UNE fois pour l’oppos
   });
 
   it('les modificateurs circonstanciels restent des chips NOMMÉES, distinctes de la Difficulté', () => {
-    const [a] = opposedLines([{ label: 'Navigation', base: 45, mods: [{ label: 'Hors de contrôle', value: -20 }] }]);
-    expect(a.pending!.mods).toEqual([{ label: 'Hors de contrôle', value: -20 }]);
+    const [a] = opposedLines([{ label: 'Navigation', base: 45, mods: [{ label: 'Hors de contrôle', value: -20, famille: 'jet' }] }]);
+    expect(a.pending!.mods).toEqual([{ label: 'Hors de contrôle', value: -20, famille: 'jet' }]);
     expect(a.pending!.difficulty).toBe('intermediaire');
     expect(a.pending!.target).toBe(25); // 45 + 0 (Difficulté) − 20 (chip nommée)
   });
@@ -96,7 +96,7 @@ describe('lignes opposées de combat — l’écart à la base est TOUJOURS couv
 describe('contrat arithmétique d’une ligne de cascade (#1117 G2)', () => {
   /** Ce que la ligne AFFICHE, tel que `CascadeModal.stepLine` le compose : la `base` de l'étape est
    *  NUE, ses `mods` portent TOUT le nommé (Soutien compris). */
-  const emission = (step: { base?: number; target?: number; mods?: { label: string; value: number }[]; difficulty?: Difficulty }) => {
+  const emission = (step: { base?: number; target?: number; mods?: ModLine[]; difficulty?: Difficulty }) => {
     const base = step.base ?? step.target ?? 0;
     const all = step.mods ?? [];
     const modifier = (step.target ?? 0) - base;
@@ -106,14 +106,14 @@ describe('contrat arithmétique d’une ligne de cascade (#1117 G2)', () => {
 
   it('Soutien + Difficulté : tout l’écart est expliqué, résidu ZÉRO', () => {
     // Cas de la sonde : porteur NU 69, Soutien +20 en ligne de mod, Très difficile (−30) → cible 59.
-    const e = emission({ base: 69, target: 59, mods: [{ label: 'Soutien', value: 20 }], difficulty: 'tresDifficile' });
+    const e = emission({ base: 69, target: 59, mods: [{ label: 'Soutien', value: 20, famille: 'jet' as const }], difficulty: 'tresDifficile' });
     expect(e.base, 'la base affichée est la valeur NUE du porteur').toBe(69);
     expect(e.mods.map((m) => m.label)).toEqual(['Soutien']);
     expect(e.residual, 'aucun résidu : Σchips + Difficulté == modifier').toBe(0);
   });
 
   it('malus NOMMÉ (dérive) + Difficulté : résidu ZÉRO', () => {
-    const e = emission({ base: 45, target: 25, mods: [{ label: 'Hors de contrôle', value: -20 }], difficulty: 'intermediaire' });
+    const e = emission({ base: 45, target: 25, mods: [{ label: 'Hors de contrôle', value: -20, famille: 'jet' }], difficulty: 'intermediaire' });
     expect(e.residual).toBe(0);
   });
 

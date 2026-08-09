@@ -79,5 +79,5 @@ export function teamCommandMod(chief: Combatant, weapon: Weapon, combatants: Com
   if (!cmd) return null;
   const delta = combatValue(cmd, 'ranged', weapon) - combatValue(chief, 'ranged', weapon);
   if (delta === 0) return null; // aucune substitution à montrer
-  return { label: 'Commandant d’équipe', value: delta, uncapped: true, ref: RULE_REF['commandant-d-equipe'] };
+  return { label: 'Commandant d’équipe', value: delta, famille: 'jet', uncapped: true, ref: RULE_REF['commandant-d-equipe'] };
 }

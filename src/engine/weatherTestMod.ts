@@ -19,5 +19,5 @@ import { WEATHER_LABEL, weatherPhysicalTestMod, weatherRef, type Weather } from 
 export function weatherTestMods(weather: Weather | undefined, ck: CharKey | null): ModLine[] {
   if (!weather || !ck) return [];
   const v = weatherPhysicalTestMod(weather, ck);
-  return v ? [{ label: `Météo : ${WEATHER_LABEL[weather]}`, value: v, ref: weatherRef(weather) }] : [];
+  return v ? [{ label: `Météo : ${WEATHER_LABEL[weather]}`, value: v, famille: 'circonstance', ref: weatherRef(weather) }] : [];
 }

@@ -73,7 +73,7 @@ describe('#1178 — `testValueSplit` : la valeur fondue se lit en composantes NO
     // ce n'est pas un échec de décomposition (#1153).
     expect(testValueSplit(undefined, value, { support: SOUTIEN, skill: 'guerison' })).toEqual({
       base: value - SOUTIEN.bonus,
-      mods: [{ label: 'Soutien', value: SOUTIEN.bonus, ref: expect.anything(), by: [{ id: 'h2' }, { id: 'h3' }] }],
+      mods: [{ label: 'Soutien', value: SOUTIEN.bonus, famille: 'jet', ref: expect.anything(), by: [{ id: 'h2' }, { id: 'h3' }] }],
       exact: true,
     });
     expect(testValueSplit(empoisonne(), value)).toEqual({ base: value, mods: [], exact: true });

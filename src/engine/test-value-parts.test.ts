@@ -235,7 +235,7 @@ describe('#1153 — `testValueParts` décompose EXHAUSTIVEMENT `testValue` (socl
   /** SONDES DU JUGE (passe 3) promues en tests : les 3 canaux qui rendaient une chip anonyme/fausse. */
   it('(A) TRAIT : la composante porte le nom du trait, pas « Passif »', () => {
     const parts = testValueParts(withTrait(), 'divertissement');
-    expect(parts).toEqual([{ label: refLabel('traits', { id: 'dresse-divertir' }), value: 10, ref: { category: 'traits', id: 'dresse-divertir' } }]);
+    expect(parts).toEqual([{ label: refLabel('traits', { id: 'dresse-divertir' }), value: 10, famille: 'jet', ref: { category: 'traits', id: 'dresse-divertir' } }]);
   });
 
   /** Canal TALENT : gardé À SA SOURCE (aucun talent ne porte encore de `skillMod`, cf. `TALENT_PASSIF`).

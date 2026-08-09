@@ -962,7 +962,7 @@ function forcedPaceDay(get: Get, set: Set, kmLeft: number): ForcedPaceDayResult 
       // La rangée du récap NOMME ce qui compose la valeur : le Soutien des passagers (LDB 12, fondu
       // dans `driver.value`) et les crans déjà avalés au pas de course.
       d: testDetail('Conduite d’attelage', driverLine.base, roll,
-        [...driverLine.mods, ...(gallopMod ? [{ label: 'pas de course', value: gallopMod }] : [])]),
+        [...driverLine.mods, ...(gallopMod ? [{ label: 'pas de course', value: gallopMod, famille: 'jet' as const }] : [])]),
       text: stupefiant ? 'Échec Stupéfiant — Problème de véhicule !' : 'les bêtes repassent au pas', tone: 'bad',
     });
     // Le jet est DÉJÀ affiché par la rangée `day.entries` (MultiRollList) du même recap — pas de
@@ -1067,7 +1067,7 @@ function buildForcedPaceStep(driver: { actor: Combatant; value: number; support?
     ...rollStep({
       actor: driver.actor, test: { skill: 'conduite-d-attelage' }, valeur: driver.value + penalty,
       soutien: driver.support, difficulty: 'intermediaire',
-      ...(penalty ? { dansLaValeur: [{ label: `Km déjà au pas de course (${galloped})`, value: penalty }] } : {}),
+      ...(penalty ? { dansLaValeur: [{ label: `Km déjà au pas de course (${galloped})`, value: penalty, famille: 'jet' as const }] } : {}),
     }),
     result: null, interactive: true,
     meta: { kmLeft, galloped, km, hours },

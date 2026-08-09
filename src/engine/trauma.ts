@@ -10,7 +10,7 @@
  * defenseModifiers — et ne s'applique qu'aux jets d'arme qui IMPLIQUENT la main blessée (jamais un charMod
  * CC/CT global). Le trauma est enregistré (label+note) même sans effet modélisé.
  */
-import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest, Weapon, effectRef } from './types';
+import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest, Weapon, effectRef, type ModFamille } from './types';
 import { rollTest } from './tests';
 import { RNG, defaultRNG, d10 } from './dice';
 import type { CritEscalation } from '../data/criticals';
@@ -950,9 +950,9 @@ export function passiveGlobalTestMod(c: Combatant): number {
  * `mod` pour `skillMod`/`charMod`, `amount` pour `testMod`). Libellé VIDE = l'émetteur n'a ni entité
  * ni id : seul l'appelant sait si sa famille a un sens (cf. `CHAR_PENALTY_KIND_LABEL`).
  */
-export function passivePartLine(m: PassiveMod, amount: number): { label: string; value: number; ref?: CodexTarget } {
+export function passivePartLine(m: PassiveMod, amount: number): { label: string; value: number; famille: ModFamille; ref?: CodexTarget } {
   const ref = m.src && findById(m.src.category, m.src.id) ? m.src : undefined;
-  return { label: m.label ?? (m.src ? refLabel(m.src.category, { id: m.src.id }) : ''), value: amount, ref };
+  return { label: m.label ?? (m.src ? refLabel(m.src.category, { id: m.src.id }) : ''), value: amount, famille: 'jet', ref };
 }
 
 /** Familles SANS entité émettrice — les SEULES à mériter un repli de famille : la Faim/Soif et

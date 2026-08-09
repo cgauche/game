@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Characteristics, Combatant, ItemInstance } from './types';
+import { Characteristics, Combatant, ItemInstance, type UpkeepDeferTest } from './types';
 import { makeRNG, RNG } from './dice';
 import { dailyFoodUpkeep, applyFaimTest, isStarving, hungerCharPenalties, rationCount, isRation, dailyWaterUpkeep, applySoifTest, isThirsty, isDeprived, thirstCharPenalties, provisioningManifest } from './provisions';
 import { effectiveChar } from './characteristics';
@@ -135,11 +135,11 @@ describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.343)', () =>
     const c = hero({ rations: 0 });
     dailyFoodUpkeep(c, 30, 3, fixed(95)); // jeûne j1 (pas de Test)
     let kind = '';
-    let penalty: { value: number; label: string; ref?: { category: string; id: string } } | undefined;
+    let penalty: Parameters<UpkeepDeferTest>[0]['penalty'];
     const r = dailyFoodUpkeep(c, 30, 3, fixed(95), (spec) => { kind = spec.kind; penalty = spec.penalty; }); // j2 : Test DÛ → différé
     expect(kind).toBe('faim');
     // La pénalité voyage NOMMÉE avec sa règle depuis le producteur (jamais étiquetée à la couture d'entretien).
-    expect(penalty).toEqual({ value: 0, label: 'Tests déjà subis', ref: RULE_REF['faim-et-soif'] }); // 1ᵉʳ Test → pénalité 0
+    expect(penalty).toEqual({ value: 0, label: 'Tests déjà subis', famille: 'jet', ref: RULE_REF['faim-et-soif'] }); // 1ᵉʳ Test → pénalité 0
     expect(r.log).toEqual([]); // RIEN de pré-résolu (pas de « ÉCHEC » dans le journal)
     expect(c.hunger?.tests).toBe(0); // le compteur de Test reste à 0 ici (incrémenté seulement à la validation)
     expect(c.hunger?.days).toBe(2); // la faim a bien progressé d'un jour

@@ -225,7 +225,7 @@ describe('Résilience d’un contributeur d’équipage (shipManeuver) — cible
     expect(forceCrewRole(marin, 'timonier')!.target).toBe(clampTarget(v + DIFFICULTY_MODIFIERS.intermediaire).target);
     const cumule = forceCrewRole(marin, 'timonier', true)!;
     expect(cumule.target).toBeLessThan(v);
-    expect(inexplique({ base: v, target: cumule.target, mods: [{ label: 'Manque de bras', value: cumule.target - v }] })).toBe(0);
+    expect(inexplique({ base: v, target: cumule.target, mods: [{ label: 'Manque de bras', value: cumule.target - v, famille: 'jet' }] })).toBe(0);
   });
 
   it('ÉCRÊTAGE aux bornes : une valeur de rôle à 110 force un DR 9 (cible 99)', () => {
@@ -372,12 +372,12 @@ describe('SONDES PROMUES (#1153 L1b) — ce que le monteur NE fait PAS encore', 
   const capB = rule('combat-diff-cap-bonus') as number;
   const capM = rule('combat-diff-cap-malus') as number;
   const MATRICE: { nom: string; mods: ModLine[]; attendu: number; mord: boolean }[] = [
-    { nom: 'aucun plafond ne mord (un malus, un bonus)', mods: [{ label: 'Sonné', value: -10 }, { label: 'À Terre', value: 20 }], attendu: 10, mord: false },
-    { nom: 'MALUS mordant (Σ −50)', mods: [{ label: 'Sonné', value: -10 }, { label: 'Aveuglé', value: -20 }, { label: 'Empêtré', value: -20 }], attendu: -capM, mord: true },
-    { nom: 'BONUS mordant (Σ +80)', mods: [{ label: 'Viser', value: 40 }, { label: 'À Terre', value: 40 }], attendu: capB, mord: true },
-    { nom: 'BONUS ET MALUS mordants (les deux sommes plafonnent, puis s’ajoutent)', mods: [{ label: 'Viser', value: 40 }, { label: 'À Terre', value: 40 }, { label: 'Aveuglé', value: -20 }, { label: 'Empêtré', value: -20 }, { label: 'Sonné', value: -20 }], attendu: capB - capM, mord: true },
-    { nom: 'AVANTAGE `uncapped` hors plafond, malus mordant à côté', mods: [{ label: 'Avantage', value: 70, uncapped: true }, { label: 'Aveuglé', value: -40 }], attendu: 70 - capM, mord: true },
-    { nom: 'AVANTAGE `uncapped` SEUL : rien à plafonner malgré une somme > +60', mods: [{ label: 'Avantage', value: 70, uncapped: true }], attendu: 70, mord: false },
+    { nom: 'aucun plafond ne mord (un malus, un bonus)', mods: [{ label: 'Sonné', value: -10, famille: 'jet' }, { label: 'À Terre', value: 20, famille: 'circonstance' }], attendu: 10, mord: false },
+    { nom: 'MALUS mordant (Σ −50)', mods: [{ label: 'Sonné', value: -10, famille: 'jet' }, { label: 'Aveuglé', value: -20, famille: 'jet' }, { label: 'Empêtré', value: -20, famille: 'jet' }], attendu: -capM, mord: true },
+    { nom: 'BONUS mordant (Σ +80)', mods: [{ label: 'Viser', value: 40, famille: 'circonstance' }, { label: 'À Terre', value: 40, famille: 'circonstance' }], attendu: capB, mord: true },
+    { nom: 'BONUS ET MALUS mordants (les deux sommes plafonnent, puis s’ajoutent)', mods: [{ label: 'Viser', value: 40, famille: 'circonstance' }, { label: 'À Terre', value: 40, famille: 'circonstance' }, { label: 'Aveuglé', value: -20, famille: 'jet' }, { label: 'Empêtré', value: -20, famille: 'jet' }, { label: 'Sonné', value: -20, famille: 'jet' }], attendu: capB - capM, mord: true },
+    { nom: 'AVANTAGE `uncapped` hors plafond, malus mordant à côté', mods: [{ label: 'Avantage', value: 70, famille: 'jet', uncapped: true }, { label: 'Aveuglé', value: -40, famille: 'jet' }], attendu: 70 - capM, mord: true },
+    { nom: 'AVANTAGE `uncapped` SEUL : rien à plafonner malgré une somme > +60', mods: [{ label: 'Avantage', value: 70, famille: 'jet', uncapped: true }], attendu: 70, mord: false },
   ];
 
   it.each(MATRICE)('MODE PLAFONNÉ — $nom', ({ mods, attendu, mord }) => {

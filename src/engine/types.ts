@@ -591,6 +591,16 @@ export const CATEGORY_BY_SOURCE_KIND: Record<EffectSourceKind, string> = {
   activity: 'activities', rule: 'regles',
 };
 
+/**
+ * Famille d'un modificateur de jet (`ModLine.famille`, `TestPenaltyPart.famille`) — la taxonomie du
+ * contrat d'affichage, #1153 L3b. Elle vit ICI, avec `effectRef`, pour être lisible des collecteurs
+ * (`conditions`, `trauma`) comme du moteur de combat sans cycle d'import.
+ *  - `circonstance` : une entrée de la table des Difficultés de Combat — `LDB 14` (chapeau l.48).
+ *  - `jet` : tout autre modificateur du Test — `LDB 12 l.189`, `LDB 16 l.11`.
+ * POSÉE À L'ÉMISSION, jamais dérivée à l'affichage.
+ */
+export type ModFamille = 'circonstance' | 'jet';
+
 /** Renvoi Codex d'un effet actif : son entité SOURCE (`EffectSource`, table TOTALE
  *  `CATEGORY_BY_SOURCE_KIND` ci-dessus), sinon le sort qui l'a posé. Absent = effet dont le
  *  déclencheur n'a pas propagé la source (seul cas structurellement non liable, cf.
@@ -1677,7 +1687,7 @@ export type UpkeepDeferTest = (spec: {
   /** Pénalité NOMMÉE du Test : sa valeur voyage AVEC son étiquette et sa règle, depuis le producteur
    *  qui l'applique (`engine/provisions` pour la Faim/Soif). Couture GÉNÉRIQUE (14 `kind`) : rien n'y
    *  est codé en dur, un `kind` futur apporte SA règle ou n'affiche aucune chip. */
-  penalty?: { value: number; label: string; ref?: CodexTarget };
+  penalty?: { value: number; label: string; famille: ModFamille; ref?: CodexTarget };
   meta?: Record<string, unknown>; // p.ex. { diseaseName, onFail: GameOp[] } — porté tel quel par l'étape de cascade
 }) => void;
 

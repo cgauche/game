@@ -92,8 +92,8 @@ function weatherModOf(def: ActivityDef, weather: Weather): number {
  *  par `RollLine`. `undefined` si aucun mod (rien à détailler). */
 function stageActivityMods(weather: Weather, wMod: number, pMod: number): ModLine[] | undefined {
   const mods: ModLine[] = [
-    ...(wMod !== 0 ? [{ label: `Météo : ${WEATHER_LABEL[weather]}`, value: wMod, ref: weatherRef(weather) }] : []),
-    ...(pMod !== 0 ? [{ label: 'Tests physiques', value: pMod, ref: weatherRef(weather) }] : []),
+    ...(wMod !== 0 ? [{ label: `Météo : ${WEATHER_LABEL[weather]}`, value: wMod, famille: 'circonstance' as const, ref: weatherRef(weather) }] : []),
+    ...(pMod !== 0 ? [{ label: 'Tests physiques', value: pMod, famille: 'circonstance' as const, ref: weatherRef(weather) }] : []),
   ];
   return mods.length ? mods : undefined;
 }

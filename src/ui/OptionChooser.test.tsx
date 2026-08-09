@@ -67,18 +67,18 @@ describe('OptionChooser — sélecteur d’options de jet partagé', () => {
 
 describe('optionValue / optionPending — forme unique pré-jet', () => {
   it('optionValue = base + combineMods (plafonds de Difficulté inclus)', () => {
-    expect(optionValue(40, [{ label: 'Avantage', value: 10 }])).toBe(50);
+    expect(optionValue(40, [{ label: 'Avantage', value: 10, famille: 'jet' }])).toBe(50);
     // Malus plafonné à −30 (Très Difficile) : 40 + (−40 plafonné −30) = 10.
-    expect(optionValue(40, [{ label: 'X', value: -40 }])).toBe(10);
+    expect(optionValue(40, [{ label: 'X', value: -40, famille: 'circonstance' }])).toBe(10);
     // `uncapped` (Avantage hors table) échappe au plafond des bonus.
-    expect(optionValue(40, [{ label: 'Avantage', value: 100, uncapped: true }])).toBe(140);
+    expect(optionValue(40, [{ label: 'Avantage', value: 100, famille: 'jet', uncapped: true }])).toBe(140);
   });
 
   it('optionPending : { label, base, mods } ; cible omise par défaut, fournie si plafonnée', () => {
-    expect(optionPending('Parade', 45, [{ label: 'Avantage', value: 10 }])).toEqual({
+    expect(optionPending('Parade', 45, [{ label: 'Avantage', value: 10, famille: 'jet' }])).toEqual({
       label: 'Parade',
       base: 45,
-      mods: [{ label: 'Avantage', value: 10 }],
+      mods: [{ label: 'Avantage', value: 10, famille: 'jet' }],
     });
     expect(optionPending('Corps à corps', 38, [], 98)).toEqual({ label: 'Corps à corps', base: 38, mods: [], target: 98 });
   });

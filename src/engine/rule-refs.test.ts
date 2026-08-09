@@ -31,6 +31,7 @@ import { RULE_REF, type RuleId } from './ruleRefs';
 import { weatherRef, type Weather } from './travelStages';
 import { windsModLine, windsModFromRoll } from './windsOfMagic';
 import { codexLookupById } from '../ui/compendium/registry';
+import regles from '../data/regles.json';
 
 describe('RULE_REF — la référence pointe une fiche Codex réelle', () => {
   it('chaque règle référencée existe au catalogue, par id STABLE', () => {
@@ -82,8 +83,10 @@ function tsFiles(dir: string): string[] {
   return out;
 }
 
-/** Les clés de `ModLine` (`engine/combat.ts`) — un littéral qui en porte une autre est d'une autre forme. */
-const MODLINE_KEYS = new Set(['label', 'value', 'uncapped', 'ref', 'by']);
+/** Les clés de `ModLine` (`engine/combat.ts`) — un littéral qui en porte une autre est d'une autre
+ *  forme. DELTA DE CLIQUET (#1153 L3b-1) : `famille` s'y ajoute, sinon tout littéral qui la porte
+ *  sortirait du scan et le stock mesuré s'effondrerait sans qu'aucune règle soit liée. */
+const MODLINE_KEYS = new Set(['label', 'value', 'famille', 'uncapped', 'ref', 'by']);
 
 /** L'expression est-elle syntaxiquement une CHAÎNE ? (`ModLine.value` est un nombre.) */
 function isStringExpr(e: ts.Expression): boolean {
@@ -96,6 +99,19 @@ export interface ModLiteral {
   /** Texte SOURCE du libellé (`'Rapide'`, `sc.label`, `` `Météo : ${…}` ``) — l'identité de la ligne. */
   label: string;
   hasRef: boolean;
+  /** `ModLine.famille` (#1153 L3b) quand elle est posée EN LITTÉRAL au site — `null` si absente, et
+   *  `'?'` si elle est calculée (expression, variable) : présente mais non lisible statiquement. */
+  famille: 'circonstance' | 'jet' | '?' | null;
+  /** Clé `RULE_REF.<x>` / `RULE_REF['x']` de la `ref` quand elle est STATIQUE — sinon `null`. */
+  ruleKey: string | null;
+}
+
+/** Le nom de règle d'une `ref` écrite `RULE_REF.viser` / `RULE_REF['viser']` ; `null` si calculée. */
+function staticRuleKey(e: ts.Expression): string | null {
+  if (ts.isPropertyAccessExpression(e) && ts.isIdentifier(e.expression) && e.expression.text === 'RULE_REF') return e.name.text;
+  if (ts.isElementAccessExpression(e) && ts.isIdentifier(e.expression) && e.expression.text === 'RULE_REF'
+      && ts.isStringLiteral(e.argumentExpression)) return e.argumentExpression.text;
+  return null;
 }
 
 /** Les littéraux de `ModLine` d'un fichier, `ref` présente ou non. */
@@ -115,10 +131,17 @@ export function modLineLiterals(path: string, raw: string): ModLiteral[] {
         const stringValued = !!value && ts.isPropertyAssignment(value) && isStringExpr(value.initializer);
         if (!stringValued) {
           const label = prop('label');
+          const fam = prop('famille');
+          const famText = fam && ts.isPropertyAssignment(fam) ? fam.initializer.getText(sf) : null;
+          const ref = prop('ref');
           found.push({
             line: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1,
             label: label && ts.isPropertyAssignment(label) ? label.initializer.getText(sf).replace(/\s+/g, ' ') : 'label',
             hasRef: names.includes('ref'),
+            famille: famText == null ? null
+              : /^'circonstance'/.test(famText) ? 'circonstance'
+                : /^'jet'/.test(famText) ? 'jet' : '?',
+            ruleKey: ref && ts.isPropertyAssignment(ref) ? staticRuleKey(ref.initializer) : null,
           });
         }
       }
@@ -130,11 +153,13 @@ export function modLineLiterals(path: string, raw: string): ModLiteral[] {
 }
 
 /** TOUS les sites de `ModLine` de `src/**` (hors tests), `fichier · label`, avec l'état de leur `ref`. */
-function modLineSites(): { at: string; hasRef: boolean }[] {
-  const out: { at: string; hasRef: boolean }[] = [];
+function modLineSites(): { at: string; where: string; hasRef: boolean; famille: ModLiteral['famille']; ruleKey: string | null }[] {
+  const out: { at: string; where: string; hasRef: boolean; famille: ModLiteral['famille']; ruleKey: string | null }[] = [];
   for (const f of tsFiles(SRC)) {
     const rel = 'src/' + f.slice(SRC.length).replace(/\\/g, '/');
-    for (const m of modLineLiterals(f, readFileSync(f, 'utf8'))) out.push({ at: `${rel} · ${m.label}`, hasRef: m.hasRef });
+    for (const m of modLineLiterals(f, readFileSync(f, 'utf8'))) {
+      out.push({ at: `${rel} · ${m.label}`, where: `${rel}:${m.line} · ${m.label}`, hasRef: m.hasRef, famille: m.famille, ruleKey: m.ruleKey });
+    }
   }
   return out;
 }
@@ -198,17 +223,117 @@ describe('Cliquet — les ModLine SANS règle liée sont ÉNUMÉRÉES et décroi
 
   it('cas planté : un libellé en GABARIT est DÉTECTÉ (preuve TDD — la forme textuelle des `${…}` était aveugle)', () => {
     const src = 'const m = [{ label: `Météo : ${LABEL[w]}`, value: v }];';
-    expect(modLineLiterals('x.ts', src)).toEqual([{ line: 1, label: '`Météo : ${LABEL[w]}`', hasRef: false }]);
+    expect(modLineLiterals('x.ts', src)).toEqual([{ line: 1, label: '`Météo : ${LABEL[w]}`', hasRef: false, famille: null, ruleKey: null }]);
   });
 
   it('cas planté : un littéral multi-ligne, et la présence d’une `ref`, sont lus sur la STRUCTURE (preuve TDD)', () => {
-    const src = 'const m = {\n  label: "Viser",\n  value: 10,\n  ref: RULE_REF.viser,\n};';
-    expect(modLineLiterals('x.ts', src)).toEqual([{ line: 1, label: '"Viser"', hasRef: true }]);
+    const src = 'const m = {\n  label: "Viser",\n  value: 10,\n  famille: \'circonstance\',\n  ref: RULE_REF.viser,\n};';
+    expect(modLineLiterals('x.ts', src)).toEqual([{ line: 1, label: '"Viser"', hasRef: true, famille: 'circonstance', ruleKey: 'viser' }]);
   });
 
   it('faux positif écarté : un fait de Codex (`value` CHAÎNE, clé `kref`) n’est PAS une ModLine (preuve TDD — forme, jamais fichier)', () => {
     expect(modLineLiterals('x.ts', 'const f = { label, value: String(v) };')).toEqual([]);
     expect(modLineLiterals('x.ts', "const f = { label: 'B', value: n, kref: { category: 'c', id: 'i', label: 'L' } };")).toEqual([]);
     expect(modLineLiterals('x.ts', "const a = { id: 'force', label: a.label, value: 3 };")).toEqual([]);
+  });
+});
+
+/**
+ * GARDE EXHAUSTIVE de `ModLine.famille` (#1153 L3b-1). Le TYPE l'impose déjà à tout littéral
+ * CONTEXTUELLEMENT typé ; ce que la garde verrouille, c'est ce que le compilateur ne voit pas :
+ * un objet littéral monté hors contexte (tableau `const` inféré, `push` sur un `any`), un `as
+ * ModLine`/`as never`, une assertion qui contourne le contrôle de propriétés excédentaires. La
+ * mesure est STRUCTURELLE (le même parseur AST que le cliquet), sur TOUT `src/**` hors tests —
+ * aucune liste de fichiers, aucune exemption de libellé.
+ */
+describe('Famille — chaque ModLine ÉMISE dit si elle DÉTERMINE la Difficulté ou MODIFIE le jet (#1153)', () => {
+  it('aucun site d’émission sans `famille` (le type l’exige, la garde couvre les littéraux non typés et les `as`)', () => {
+    const sans = modLineSites().filter((s) => s.famille === null).map((s) => s.where).sort();
+    expect(sans, 'ModLine sans `famille` : « circonstance » = entrée de la table des Difficultés de Combat (LDB 14), « jet » sinon').toEqual([]);
+  });
+
+  /** Une famille CALCULÉE n'est légitime qu'en RELAI : le site rhabille une composante déjà classée
+   *  par son producteur (`spec.penalty.famille`), il ne la décide pas — la re-décider créerait deux
+   *  classements pour une même règle. Le stock est ÉNUMÉRÉ pour qu'un vrai calcul ne s'y glisse pas. */
+  const RELAIS = [
+    'src/state/upkeep.ts · spec.penalty.label',
+  ].sort();
+
+  it('une famille CALCULÉE n’est qu’un RELAI énuméré (jamais une décision au site)', () => {
+    const opaques = modLineSites().filter((s) => s.famille === '?').map((s) => s.at).sort();
+    expect(opaques, '`famille` posée par expression : relayer une famille déjà classée, ou la poser en LITTÉRAL').toEqual(RELAIS);
+  });
+
+  it('le scan MESURE réellement des familles (contre-preuve : un scan cassé rendrait la garde vide et verte)', () => {
+    const sites = modLineSites();
+    expect(sites.length, 'aucun site mesuré : le parseur ou le périmètre a lâché').toBeGreaterThan(50);
+    expect(sites.some((s) => s.famille === 'circonstance'), 'aucune circonstance mesurée').toBe(true);
+    expect(sites.some((s) => s.famille === 'jet'), 'aucun mod au jet mesuré').toBe(true);
+  });
+
+  it('cas planté : un littéral SANS famille est vu comme tel (preuve TDD)', () => {
+    expect(modLineLiterals('x.ts', "const m = { label: 'Viser', value: 20 };")[0].famille).toBeNull();
+    expect(modLineLiterals('x.ts', "const m = { label: 'X', value: 20, famille: f };")[0].famille).toBe('?');
+  });
+
+  /**
+   * SONDE A — le delta `MODLINE_KEYS` est PORTEUR. `famille` retirée du jeu de clés, un littéral qui
+   * la porte devient « une autre forme » : il sort du scan, et les DEUX gardes (cliquet #1078 et
+   * famille) redeviendraient vertes sur un stock vide. Le détecteur RÉEL est éprouvé ici.
+   */
+  it('sonde A : un littéral PORTANT `famille` reste DÉTECTÉ (retirer la clé du jeu ferait fuir tout le stock)', () => {
+    const src = "const m = { label: 'Viser', value: 20, famille: 'circonstance', ref: RULE_REF.viser };";
+    expect(modLineLiterals('x.ts', src), 'le scan a perdu les littéraux à `famille` : MODLINE_KEYS est désynchronisé de ModLine')
+      .toEqual([{ line: 1, label: "'Viser'", hasRef: true, famille: 'circonstance', ruleKey: 'viser' }]);
+    // Et le stock mesuré en vrai est massivement peuplé — un jeu de clés désynchronisé l'aplatirait.
+    expect(modLineSites().length).toBeGreaterThan(50);
+  });
+
+  /**
+   * SONDE C — les CONTOURNEMENTS d'assertion. Le contrôle de propriétés excédentaires de TypeScript
+   * ne s'applique pas derrière un `as` : c'est la seule voie par laquelle une `ModLine` peut naître
+   * sans `famille` malgré un type obligatoire. La garde lit la FORME du littéral, pas son type — donc
+   * elle voit à travers `as ModLine`, `as never` et `as unknown as`.
+   */
+  it('sonde C : les littéraux derrière `as ModLine` / `as never` / `as unknown as` sont MESURÉS', () => {
+    for (const cast of ['as ModLine', 'as never', 'as unknown as ModLine']) {
+      const lit = modLineLiterals('x.ts', `const m = { label: 'X', value: 20 } ${cast};`);
+      expect(lit.length, `un littéral \`${cast}\` échappe au scan : la garde serait contournable`).toBe(1);
+      expect(lit[0].famille, `\`${cast}\` : famille manquante non vue`).toBeNull();
+    }
+  });
+});
+
+/**
+ * COHÉRENCE ÉMISSION ⇄ DONNÉE (#1153 L3b-1, prépare #1173). Une fiche `regles.json` pourra DÉCLARER
+ * la famille de sa règle ; le jour où elle le fait, toute ligne émise avec cette `ref` doit s'y
+ * accorder — sinon l'écran classerait la même règle des deux côtés selon le site. Tant qu'aucune
+ * fiche ne porte le champ, la garde est SANS OBJET et le dit (elle mordra sans être réécrite).
+ */
+describe('Famille — l’émission s’accorde à la fiche de règle quand la donnée la déclare (#1173)', () => {
+  /** Le comparateur RÉEL — les fiches sont un PARAMÈTRE, pour que la contre-preuve exerce ce même
+   *  code sur une donnée forgée (jamais une simulation parallèle qui ne prouverait rien). */
+  const conflitsDeFamille = (fiches: { id: string; famille?: string }[]): string[] => {
+    const out: string[] = [];
+    for (const s of modLineSites()) {
+      if (!s.ruleKey || s.famille === null || s.famille === '?') continue;
+      const ref = RULE_REF[s.ruleKey as RuleId];
+      if (!ref || ref.category !== 'regles') continue;
+      const attendue = fiches.find((r) => r.id === ref.id)?.famille;
+      if (attendue && attendue !== s.famille) out.push(`${s.where} → émet '${s.famille}', la fiche '${ref.id}' déclare '${attendue}'`);
+    }
+    return out.sort();
+  };
+
+  it('aucun site n’émet une famille contraire à celle de sa fiche `regles.json`', () => {
+    expect(conflitsDeFamille(regles as { id: string; famille?: string }[]),
+      'famille émise ≠ famille déclarée en donnée : une règle ne peut pas être des deux familles').toEqual([]);
+  });
+
+  it('contre-preuve sur le MÊME comparateur : une fiche `viser` déclarée « jet » fait rougir les sites qui l’émettent « circonstance »', () => {
+    const forgees = (regles as { id: string; famille?: string }[]).map((r) => (r.id === 'viser' ? { ...r, famille: 'jet' } : r));
+    const conflits = conflitsDeFamille(forgees);
+    expect(conflits.length, 'le comparateur ne voit pas un désaccord pourtant présent en donnée').toBeGreaterThan(0);
+    expect(conflits.every((c) => c.includes("la fiche 'viser' déclare 'jet'"))).toBe(true);
   });
 });

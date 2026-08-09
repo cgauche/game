@@ -48,7 +48,7 @@ describe('Exemple RAW LDB 14 l.96 — « -30 plus +20 font -10 » (chaîne réel
 
   it('attaquer une cible À Terre depuis une haute épaisseur de neige → -10 net', () => {
     const sc = sceneCombatModifiers({ ambiance: 'exterieur', weather: 'neige' } as Scene, DAY);
-    const env = [{ label: sc.label, value: sc.attackMod }];
+    const env = [{ label: sc.label, value: sc.attackMod, famille: 'circonstance' as const }];
     const mods = attackModifiers(mkc(), mkc({ id: 'b', conditions: [{ id: 'a-terre', value: 1 }] as never }), sword, { kind: 'melee', env });
     expect(mods).toContainEqual(expect.objectContaining({ label: 'Neige épaisse', value: -30 }));
     expect(mods).toContainEqual(expect.objectContaining({ label: 'À Terre', value: 20 }));

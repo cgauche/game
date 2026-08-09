@@ -53,7 +53,7 @@ export function clearGrapple(a: Combatant, b: Combatant): void {
 export function grappleTierMod(attacker: Combatant, target: Combatant, partner: Combatant | undefined): ModLine | null {
   if (!target.grapplingWith?.length || areGrappling(attacker, target) || !partner) return null;
   const lower = target.advantage <= partner.advantage; // cible = Avantage le plus FAIBLE (égalité → +20)
-  return { label: 'Empoignade (cible bloquée)', value: lower ? 20 : 10, ref: RULE_REF.empoignade };
+  return { label: 'Empoignade (cible bloquée)', value: lower ? 20 : 10, famille: 'jet', ref: RULE_REF.empoignade };
 }
 
 /** Résout le partenaire d'Empoignade de `target` dans la liste de combat puis applique `grappleTierMod`

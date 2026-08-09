@@ -551,7 +551,7 @@ describe('chavirage — le redressement s’ouvre Round par Round (#1104a)', () 
     const out0 = cascadeAppliers['riverRighting'].apply(get, set, round0, undefined, { steps: [round0], index: 0 });
     const round1 = out0?.insert?.find((s) => s.kind === 'riverRighting');
     expect(round1, 'le Round 2 s’insère tant qu’il reste des Rounds (BE)').toBeTruthy();
-    expect(malus(round1!)).toEqual([{ label: '−5 cumulatif (Round 2)', value: -5, ref: RULE_REF['navigation-chavirage'] }]);
+    expect(malus(round1!)).toEqual([{ label: '−5 cumulatif (Round 2)', value: -5, famille: 'jet', ref: RULE_REF['navigation-chavirage'] }]);
     const pilote2 = partyAssisted(get().party, 'voile')!;
     expect(round1!.target).toBe(pilote2.value + DIFFICULTY_MODIFIERS.accessible - 5);
     expect(inexplique(round1!)).toBe(0);
@@ -606,7 +606,7 @@ describe('Navigation du jour — Difficulté déclarée, malus NOMMÉS (#1112)',
     const built = buildRiverDayCascade(get, set, get().worldMap!.routes[0], { scene: 'quai-b', label: 'Altdorf' });
     const nav = built.steps.find((s) => s.kind === 'riverNav')!;
     expect(nav.difficulty).toBe('intermediaire'); // le malus n'est PAS une Difficulté
-    expect(malus(nav)).toEqual([{ label: 'Hors de contrôle', value: -20, ref: RULE_REF['navigation-greement'] }]);
+    expect(malus(nav)).toEqual([{ label: 'Hors de contrôle', value: -20, famille: 'jet', ref: RULE_REF['navigation-greement'] }]);
     // Le malus est compris dans la cible, et la ligne explique TOUT l'écart (cliquet).
     expect(inexplique(nav)).toBe(0);
   });
@@ -628,7 +628,7 @@ describe('péril fluvial — l’évitement porte les malus de dérive/hors-cont
     seedBattleRng(2);
     const out = cascadeAppliers['riverPerilCheck'].apply(get, set, check, undefined, { steps: [check], index: 0 });
     const nav = (out?.insert ?? []).find((s) => s.kind === 'riverPerilNav')!;
-    expect(malus(nav)).toEqual([{ label: 'Hors de contrôle', value: -20, ref: RULE_REF['navigation-greement'] }]);
+    expect(malus(nav)).toEqual([{ label: 'Hors de contrôle', value: -20, famille: 'jet', ref: RULE_REF['navigation-greement'] }]);
     expect(nav.difficulty).toBe('intermediaire'); // le malus n'est pas une Difficulté
     expect(inexplique(nav), 'le malus est compris dans la cible, et TOUT l’écart est nommé').toBe(0);
     // Le Test de Navigation du JOUR et l'évitement voient le MÊME modificateur (une seule règle).

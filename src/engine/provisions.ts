@@ -42,11 +42,12 @@ import { itemCapability } from './capabilities';
 import { dailyWaterLitres } from './seaWeather';
 import { findTraitById } from '../data';
 import { RULE_REF, type CodexTarget } from './ruleRefs';
+import type { ModFamille } from './types';
 
 /** La pénalité CUMULATIVE des Tests de Faim/Soif, NOMMÉE et liée à sa règle (LDB 18 l.338) — c'est
  *  le producteur qui la nomme, la couture d'entretien différé ne fait que la porter. */
-function hungerThirstPenalty(value: number): { value: number; label: string; ref: CodexTarget } {
-  return { value, label: 'Tests déjà subis', ref: RULE_REF['faim-et-soif'] };
+function hungerThirstPenalty(value: number): { value: number; label: string; famille: ModFamille; ref: CodexTarget } {
+  return { value, label: 'Tests déjà subis', famille: 'jet', ref: RULE_REF['faim-et-soif'] };
 }
 
 /** Ids du Test que le RAW nomme pour la Faim comme pour la Soif : `LDB 18 l.338/340/343`. Les DIRE

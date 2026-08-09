@@ -314,7 +314,7 @@ export function activityRolls(def: Pick<ActivityDef, 'skills' | 'char' | 'freeSk
  *  `rollFlowSpecs`) et par son RENDU (`ui/ActivityModal.tsx`) : trois littéraux du même fait
  *  divergeaient sinon. Aucun mod ⇒ aucune ligne (jamais un « Modificateur +0 » inventé). PURE. */
 export function activityModLines(mod: number | undefined, modLabel: string | undefined): ModLine[] {
-  return mod ? [{ label: modLabel ?? 'Modificateur', value: mod }] : [];
+  return mod ? [{ label: modLabel ?? 'Modificateur', value: mod, famille: 'jet' as const }] : [];
 }
 
 /** Carrières JAMAIS PERDUES d'un héros (`Combatant.careerHistory`, cumulé — absent = `[career]`) →

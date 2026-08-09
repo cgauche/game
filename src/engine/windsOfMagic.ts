@@ -39,7 +39,7 @@ export interface WindsRoll { roll: number; mod: number }
 export function windsModLine(winds: WindsRoll | null | undefined): ModLine | null {
   if (!winds?.mod) return null;
   const e = findTableEntry(WINDS_TABLE, winds.roll);
-  return { label: e.label, value: winds.mod, ref: { category: 'ventsTourbillonnants', id: e.id } };
+  return { label: e.label, value: winds.mod, famille: 'jet', ref: { category: 'ventsTourbillonnants', id: e.id } };
 }
 
 /** Tirage de la force des Vents (1d10 sur le Tableau, LDB 46 l.183-190). */

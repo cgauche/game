@@ -157,7 +157,7 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
       //  pré-résolu). Le wrapper calcule la cible (base + difficulté + pénalité) et ajoute le héros.
       const defer: UpkeepDeferTest | undefined = opts.onDeferTest
         ? (spec) => {
-          const surLaCible = spec.penalty ? [{ label: spec.penalty.label, value: spec.penalty.value, ref: spec.penalty.ref }] : [];
+          const surLaCible = spec.penalty ? [{ label: spec.penalty.label, value: spec.penalty.value, famille: spec.penalty.famille, ref: spec.penalty.ref }] : [];
           // Le producteur DIT les ids de son Test quand il les connaît (Faim/Soif/Dessoûlage :
           // `testValue` de Résistance) → la valeur se décompose en Niveau de Compétence nu +
           // composantes NOMMÉES. Les producteurs qui tirent leur valeur de `restResistVal` (maladie,

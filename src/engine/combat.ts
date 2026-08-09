@@ -14,7 +14,7 @@ import { woundsFromHit } from './woundsCalc';
 import { isInanimate } from './structures';
 import { agilityTestPenalty } from './encumbrance';
 import { skillBaseValue } from './skills';
-import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS, CHAR_LABELS, type CharKey, type Difficulty } from './types';
+import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS, CHAR_LABELS, type CharKey, type Difficulty, type ModFamille } from './types';
 import { weatherTestMods } from './weatherTestMod';
 import { findTableEntry } from './tables';
 import { maxBy } from './pick';
@@ -346,10 +346,16 @@ export function defenseValue(c: Combatant, mode: DefenseMode, weapon?: Weapon, s
 }
 
 /** Détail d'un jet (pour l'affichage : base, modificateurs, cible, d100 et DR). */
+// La famille d'un modificateur (`ModFamille`) est définie dans `types.ts` — lisible des collecteurs
+// d'États comme du moteur de combat sans cycle d'import.
+export type { ModFamille } from './types';
+
 /** Un modificateur étiqueté du jet (pour l'affichage détaillé : « Courte portée +20 »). */
 export interface ModLine {
   label: string;
   value: number;
+  /** Famille du modificateur, posée à l'ÉMISSION (jamais dérivée à l'affichage) — `LDB 14 l.48`. */
+  famille: ModFamille;
   /** Hors du plafond « Combiner les Difficultés » (ex. Avantage — pas une entrée de la table). */
   uncapped?: boolean;
   /** La RÈGLE qui octroie ce modificateur, en ids STABLES (`RULE_REF`, ou une entité : État,
@@ -548,12 +554,12 @@ export function attackModifiers(
 ): ModLine[] {
   const out: ModLine[] = [];
   const adv = attacker.advantage * 10;
-  if (adv) out.push({ label: 'Avantage', value: adv, uncapped: true, ref: RULE_REF.avantage });
+  if (adv) out.push({ label: 'Avantage', value: adv, famille: 'jet', uncapped: true, ref: RULE_REF.avantage });
   out.push(...conditionModLines(attacker));
-  if (attacker.nextActionPenalty) out.push({ label: 'Maladresse (Round précédent)', value: -attacker.nextActionPenalty, ref: RULE_REF['maladresse-tableau-des-oups'] });
+  if (attacker.nextActionPenalty) out.push({ label: 'Maladresse (Round précédent)', value: -attacker.nextActionPenalty, famille: 'jet', ref: RULE_REF['maladresse-tableau-des-oups'] });
   // Amputation (LDB 18 l.251/263) : pénalité CONTEXTUELLE à l'arme — s'applique ssi l'arme implique la main blessée.
   const amp = amputationCombatPenalty(attacker, weapon);
-  if (amp) out.push({ label: 'Amputation', value: amp, ref: RULE_REF.amputation });
+  if (amp) out.push({ label: 'Amputation', value: amp, famille: 'jet', ref: RULE_REF.amputation });
   // Psychologie (LDB 21) : Peur/Haine/Amour modulent le DR du jet (±1 DR, l.29/22/41/77/82), PAS la valeur
   // cible — appliqué à `atkSL` via `psychDRAdjust` au moment de la résolution (cœur opposé + passes non
   // opposées), jamais ici (un ±10 sur la cible fausserait la probabilité ET le DR, contra RAW).
@@ -565,18 +571,18 @@ export function attackModifiers(
       // Tireur embusqué (LDB 10) : aucune pénalité à Longue distance, moitié à Portée extrême.
       const m = m0 != null ? sniperRangeAdjust(attacker, m0) : null;
       const name = rangeBandName(opts.distanceTiles, rangeM, opts.metresPerTile);
-      if (m != null && m !== 0 && name) out.push({ label: name, value: m, ref: RULE_REF['portee-d-une-arme'] });
+      if (m != null && m !== 0 && name) out.push({ label: name, value: m, famille: 'circonstance', ref: RULE_REF['portee-d-une-arme'] });
     }
-    if (attacker.aiming) out.push({ label: 'Viser', value: 20, ref: RULE_REF.viser }); // LDB 14, Tableau des Difficultés de Combat — Accessible (+20)
+    if (attacker.aiming) out.push({ label: 'Viser', value: 20, famille: 'circonstance', ref: RULE_REF.viser }); // LDB 14, Tableau des Difficultés de Combat — Accessible (+20)
     // Salve (Aux Armes p.126) : chaque tir SUPPLÉMENTAIRE dans le Round subit −10 cumulatif.
     const salvoShots = hasQuality(weapon, 'salve') ? (attacker.shotsThisTurn ?? 0) : 0;
-    if (salvoShots > 0) out.push({ label: 'Salve (tir suivant)', value: -10 * salvoShots, ref: RULE_REF.salve });
+    if (salvoShots > 0) out.push({ label: 'Salve (tir suivant)', value: -10 * salvoShots, famille: 'jet', ref: RULE_REF.salve });
     // Taille de la CIBLE au tir (LDB 14 l.151-170) — valeur absolue −30..+60. Une Nuée ignore la
     // Taille et donne +40 au tir contre elle (LDB 85 l.200).
-    if (target?.swarm) out.push({ label: 'Nuée (tir)', value: 40, ref: RULE_REF.nuee });
+    if (target?.swarm) out.push({ label: 'Nuée (tir)', value: 40, famille: 'circonstance', ref: RULE_REF.nuee });
     else if (target && !ignoresSizeRangedMods(attacker)) { // Tireur d'élite (LDB 10) : ignore la Taille de la cible
       const sm = SIZE_RANGED_MOD[effectiveSize(target.size)];
-      if (sm !== 0) out.push({ label: `Taille (cible) — ${SIZE_LABEL[effectiveSize(target.size)]}`, value: sm, ref: RULE_REF['taille-cible-au-tir'] });
+      if (sm !== 0) out.push({ label: `Taille (cible) — ${SIZE_LABEL[effectiveSize(target.size)]}`, value: sm, famille: 'circonstance', ref: RULE_REF['taille-cible-au-tir'] });
     }
   } else if (target) {
     // Cible vulnérable : une ligne PAR État qui l'expose (« +20 À Terre », « +10 Assourdi » de dos),
@@ -584,32 +590,32 @@ export function attackModifiers(
     out.push(...meleeAttackerBonusLines(target, { flankRear: opts.flankRear }));
     // Parasité (LDB 85 p.340) : −10 pour toucher la créature en Corps à corps (vermine perturbante).
     const para = incomingAttackMod(target, 'melee');
-    if (para) out.push({ label: 'Parasité', value: para, ref: RULE_REF.parasite });
+    if (para) out.push({ label: 'Parasité', value: para, famille: 'jet', ref: RULE_REF.parasite });
     // Option « Longueur d'Arme » (LDB 62 l.215) : arme adverse plus longue → −10 pour la toucher.
     const reach = weaponReachPenalty(weapon, target.weapons?.find((w) => w.type === 'melee'));
-    if (reach) out.push({ label: "Allonge de l'adversaire", value: reach, ref: RULE_REF['allonge-longueur-d-arme'] });
+    if (reach) out.push({ label: "Allonge de l'adversaire", value: reach, famille: 'jet', ref: RULE_REF['allonge-longueur-d-arme'] });
   }
   // +10 au plus petit, mêlée ET tir (LDB 85 l.301-303). Une Nuée ignore TOUTES les règles de Taille (l.200).
-  if (target && !attacker.swarm && !target.swarm && sizeGap(attacker.size, target.size) < 0) out.push({ label: 'Taille (plus petit)', value: 10, ref: RULE_REF['taille-modificateurs-en-combat'] });
+  if (target && !attacker.swarm && !target.swarm && sizeGap(attacker.size, target.size) < 0) out.push({ label: 'Taille (plus petit)', value: 10, famille: 'circonstance', ref: RULE_REF['taille-modificateurs-en-combat'] });
   const precise = qualitySum(weapon, 'attackMod');
   if (precise) {
     // La qualité PORTEUSE est la référence de la ligne quand elle est SEULE à contribuer ; à
     // plusieurs contributrices, aucune ne peut prétendre expliquer le total à elle seule.
     const q = attackModQualityIds(weapon);
-    out.push({ label: 'Précise', value: precise, ref: q.length === 1 ? { category: 'qualities', id: q[0] } : undefined });
+    out.push({ label: 'Précise', value: precise, famille: 'jet', ref: q.length === 1 ? { category: 'qualities', id: q[0] } : undefined });
   }
   // Arme d'équipe en sous-effectif re-recevant un Défaut déjà porté → −10 plat (MDG 12 l.460), baké sur
   // l'arme tirée par `crewedFireWeapon` (≠ le −1 DR d'Imprécise, qui reste sur la qualité).
-  if (weapon.crewedTohitPenalty) out.push({ label: 'Sous-effectif (Défaut redoublé)', value: weapon.crewedTohitPenalty, ref: RULE_REF['arme-d-equipe'] });
+  if (weapon.crewedTohitPenalty) out.push({ label: 'Sous-effectif (Défaut redoublé)', value: weapon.crewedTohitPenalty, famille: 'jet', ref: RULE_REF['arme-d-equipe'] });
   // Machine de guerre en Équipe incomplète (ADE II 8 l.233) : −20 plat, baké par `warMachineFireWeapon`
   // (3ᵉ courbe de sous-effectif, DISTINCTE de celle d'AA ci-dessus).
-  if (weapon.crewTeamPenalty) out.push({ label: 'Équipe incomplète', value: weapon.crewTeamPenalty, ref: RULE_REF['equipe-incomplete-machine-de-guerre'] });
+  if (weapon.crewTeamPenalty) out.push({ label: 'Équipe incomplète', value: weapon.crewTeamPenalty, famille: 'jet', ref: RULE_REF['equipe-incomplete-machine-de-guerre'] });
   // Localisation visée = Difficile −20 (LDB 14 l.73) — SAUF contre une créature de Taille ≥ 2 catégories
   // supérieure : on choisit GRATUITEMENT la zone la plus proche / en Ligne de Vue (LDB « Point
   // d'Impact des Créatures » p.312 / `76` l.39).
   // Frappe assommante (Tête + arme Assommante) / Tir mortel (distance) : pas de pénalité (LDB 10).
   if (opts.location && !(target && sizeGap(target.size, attacker.size) >= 2)
-      && !ignoresCalledShotPenalty(attacker, opts.kind, opts.location, hasQuality(weapon, 'assommante'))) out.push({ label: 'Localisation visée', value: -20, ref: RULE_REF['viser-une-localisation'] });
+      && !ignoresCalledShotPenalty(attacker, opts.kind, opts.location, hasQuality(weapon, 'assommante'))) out.push({ label: 'Localisation visée', value: -20, famille: 'circonstance', ref: RULE_REF['viser-une-localisation'] });
   // Possession pas prévue pour la Taille du porteur (ADE II 2 l.710) : −20 plat, ex. un ogre maniant
   // une arme de Taille Moyenne. Symétrique quand `sizeFor` est POSÉ (une arme taillée pour une Taille
   // devient réellement inadaptée à une autre, ADE II 2 l.604). Sans `sizeFor` (possession ORDINAIRE
@@ -624,12 +630,12 @@ export function attackModifiers(
   const carrierSize = effectiveSize(attacker.size);
   if (!weapon.natural && !weapon.sizeless && gearSize !== carrierSize
       && (weapon.sizeFor !== undefined || SIZE_ORDER[carrierSize] > SIZE_ORDER.moyenne)) {
-    out.push({ label: 'Possession pas à sa taille', value: -20, ref: RULE_REF['possession-pas-a-sa-taille'] });
+    out.push({ label: 'Possession pas à sa taille', value: -20, famille: 'jet', ref: RULE_REF['possession-pas-a-sa-taille'] });
   }
   // Pénalité de main secondaire (LDB 14 l.181) ; Ambidextre la réduit via le registre combatFeatures.
   if (weapon.hand === 'off') {
     const p = offHandPenalty(attacker);
-    if (p) out.push({ label: 'Main secondaire', value: p, ref: RULE_REF['main-secondaire'] });
+    if (p) out.push({ label: 'Main secondaire', value: p, famille: 'circonstance', ref: RULE_REF['main-secondaire'] });
   }
   // Météo « Tests physiques » (EDOC 8 l.82, #341) : CANAL UNIQUE — le Test d'attaque est physique
   // (Corps à corps = CC, Projectiles = CT). Lu depuis `attacker.envWeather` (posé à l'ouverture du combat),
@@ -646,8 +652,8 @@ export function attackModifiers(
  *  contact d'une même cible → +20 (Accessible) ; 3 ou plus → +40 (Facile). `attackers` inclut
  *  l'attaquant courant. Renvoyé en `ModLine` pour injection via `env`. */
 export function outnumberMod(attackers: number): ModLine | null {
-  if (attackers >= 3) return { label: 'Surnombre (3+ c.1)', value: 40, ref: RULE_REF['superiorite-numerique'] };
-  if (attackers === 2) return { label: 'Surnombre (2 c.1)', value: 20, ref: RULE_REF['superiorite-numerique'] };
+  if (attackers >= 3) return { label: 'Surnombre (3+ c.1)', value: 40, famille: 'circonstance', ref: RULE_REF['superiorite-numerique'] };
+  if (attackers === 2) return { label: 'Surnombre (2 c.1)', value: 20, famille: 'circonstance', ref: RULE_REF['superiorite-numerique'] };
   return null;
 }
 
@@ -655,9 +661,9 @@ export function outnumberMod(attackers: number): ModLine | null {
  *  cible noyée dans un groupe serré d'ennemis → 3-6 cibles +20, 7-12 → +40, 13+ → +60. `group` inclut
  *  la cible elle-même. */
 export function crowdMod(group: number): ModLine | null {
-  if (group >= 13) return { label: 'Tirer dans le tas (13+)', value: 60, ref: RULE_REF['tirer-dans-le-tas'] };
-  if (group >= 7) return { label: 'Tirer dans le tas (7-12)', value: 40, ref: RULE_REF['tirer-dans-le-tas'] };
-  if (group >= 3) return { label: 'Tirer dans le tas (3-6)', value: 20, ref: RULE_REF['tirer-dans-le-tas'] };
+  if (group >= 13) return { label: 'Tirer dans le tas (13+)', value: 60, famille: 'circonstance', ref: RULE_REF['tirer-dans-le-tas'] };
+  if (group >= 7) return { label: 'Tirer dans le tas (7-12)', value: 40, famille: 'circonstance', ref: RULE_REF['tirer-dans-le-tas'] };
+  if (group >= 3) return { label: 'Tirer dans le tas (3-6)', value: 20, famille: 'circonstance', ref: RULE_REF['tirer-dans-le-tas'] };
   return null;
 }
 
@@ -682,20 +688,20 @@ export function defenseModifiers(defender: Combatant, mode: DefenseMode, dodgeMo
   const adv = defender.advantage * 10;
   // Avantage HORS table de Difficulté (comme `attackModifiers`) → `uncapped` : ne compte PAS dans le
   // plafond ±30/+60 de `combineMods` — sans ce marqueur, l'affichage défense plafonnerait l'Avantage à tort.
-  if (adv) out.push({ label: 'Avantage', value: adv, uncapped: true, ref: RULE_REF.avantage });
+  if (adv) out.push({ label: 'Avantage', value: adv, famille: 'jet', uncapped: true, ref: RULE_REF.avantage });
   out.push(...conditionModLines(defender));
-  if (defender.defensiveStance) out.push({ label: 'Sur la défensive', value: 20, ref: RULE_REF['sur-la-defensive'] });
-  if (mode === 'esquive' && dodgeMod) out.push({ label: 'Neige épaisse', value: dodgeMod });
+  if (defender.defensiveStance) out.push({ label: 'Sur la défensive', value: 20, famille: 'jet', ref: RULE_REF['sur-la-defensive'] });
+  if (mode === 'esquive' && dodgeMod) out.push({ label: 'Neige épaisse', value: dodgeMod, famille: 'circonstance' });
   if (mode === 'parade') {
     const pp = parryPenalty(defender, weapon);
-    if (pp) out.push({ label: 'Main secondaire', value: pp, ref: RULE_REF['main-secondaire'] });
+    if (pp) out.push({ label: 'Main secondaire', value: pp, famille: 'circonstance', ref: RULE_REF['main-secondaire'] });
     // Amputation (LDB 18) : la parade est un Test d'ARME → même pénalité contextuelle que l'attaque (ssi l'arme de parade implique la main blessée).
     const amp = weapon ? amputationCombatPenalty(defender, weapon) : 0;
-    if (amp) out.push({ label: 'Amputation', value: amp, ref: RULE_REF.amputation });
+    if (amp) out.push({ label: 'Amputation', value: amp, famille: 'jet', ref: RULE_REF.amputation });
   }
   // Substitution sociale (Intimidation/Dressage) : ni arme ni esquive → pas de main secondaire, de
   // neige, ni de malus « maniement deux armes » ; seuls Avantage/État/Sur la défensive s'appliquent.
-  if (mode !== 'social' && defender.dualStrikeDefensePenalty) out.push({ label: 'Maniement deux armes', value: -10, ref: RULE_REF['combat-deux-armes'] }); // LDB 10 l.638
+  if (mode !== 'social' && defender.dualStrikeDefensePenalty) out.push({ label: 'Maniement deux armes', value: -10, famille: 'jet', ref: RULE_REF['combat-deux-armes'] }); // LDB 10 l.638
   // Météo « Tests physiques » (EDOC 8 l.82, #341) : le CANAL UNIQUE `weatherTestMods` lit `defender.envWeather`
   // (posé à l'ouverture du combat), scopé par la carac RÉELLE du mode (Parade = CC, Esquive = Agilité) — jamais
   // recâblé par surface (la garde d'import interdit tout autre lecteur de `weatherPhysicalTestMod`).
@@ -719,7 +725,7 @@ export function baseTestModLines(c: Combatant, ck?: CharKey): ModLine[] {
   const out: ModLine[] = [];
   const adv = c.advantage * 10;
   // Avantage HORS table de Difficulté (comme `attackModifiers`/`defenseModifiers`) → `uncapped`.
-  if (adv) out.push({ label: 'Avantage', value: adv, uncapped: true, ref: RULE_REF.avantage });
+  if (adv) out.push({ label: 'Avantage', value: adv, famille: 'jet', uncapped: true, ref: RULE_REF.avantage });
   out.push(...conditionModLines(c));
   out.push(...weatherTestMods(c.envWeather, ck ?? null));
   return out;
@@ -821,7 +827,7 @@ export function rollMeleeDefender(
   // Rapide (LDB 62 l.320-321) : −10 aux Tests de Corps à corps (Parade) contre une arme Rapide,
   // sauf si l'arme de parade est Rapide elle-même ; l'Esquive défend normalement.
   const rapide = mode === 'parade' ? rapideParryMod(vsWeapon, parryWeapon) : 0;
-  if (rapide) mods.push({ label: 'Rapide', value: rapide, ref: RULE_REF.rapide });
+  if (rapide) mods.push({ label: 'Rapide', value: rapide, famille: 'jet', ref: RULE_REF.rapide });
   return rollTest(defVal, 'intermediaire', rng, combineMods(mods));
 }
 

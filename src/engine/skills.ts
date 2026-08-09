@@ -114,7 +114,7 @@ export function testValueParts(c: Combatant, skill?: string, characteristic?: Ch
   // Encombrement (LDB 61 « Surchargé ») : ne pèse QUE sur un Test d'Agilité — aucune source d'entité à
   // nommer (la charge est un état du sac, pas un élément), d'où la règle elle-même en renvoi Codex.
   const enc = ck === 'agilite' ? agilityTestPenalty(c) : 0;
-  if (enc) out.push({ label: 'Encombrement', value: enc, ref: RULE_REF.encombrement });
+  if (enc) out.push({ label: 'Encombrement', value: enc, famille: 'jet', ref: RULE_REF.encombrement });
   for (const m of traumaSkillPenaltyParts(c, skill, sense)) out.push(passivePartLine(m, (m.op as Extract<GameOp, { op: 'skillMod' }>).mod));
   for (const m of passiveSkillParts(c, skill)) out.push(passivePartLine(m, (m.op as Extract<GameOp, { op: 'skillMod' }>).mod));
   for (const m of passiveTestModParts(c, ck)) out.push(passivePartLine(m, (m.op as Extract<GameOp, { op: 'testMod' }>).amount));
@@ -123,7 +123,7 @@ export function testValueParts(c: Combatant, skill?: string, characteristic?: Ch
   // (`SkillData.tool` — `capability`/`withoutMod`, sans libellé d'affichage), donc le renvoi Codex est
   // la fiche de la Compétence elle-même, qui porte la règle.
   const tool = skillToolMod(c, skill);
-  if (tool && skill) out.push({ label: 'Sans outil', value: tool, ref: { category: 'skills', id: skill } });
+  if (tool && skill) out.push({ label: 'Sans outil', value: tool, famille: 'jet', ref: { category: 'skills', id: skill } });
   return out.filter((l) => l.value !== 0);
 }
 
@@ -341,6 +341,7 @@ export function soutienMod(support?: SupportDetail): ModLine | undefined {
   return {
     label: 'Soutien',
     value: support.bonus,
+    famille: 'jet',
     ref: RULE_REF.soutien,
     by: (support.ids ?? []).map((id) => ({ id })),
   };

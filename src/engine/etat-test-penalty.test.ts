@@ -111,18 +111,18 @@ describe('pénalités de Test d’État lues en DONNÉES (etats.json passive tes
 describe('composantes NOMMÉES de la pénalité de Test (combatTestPenaltyParts)', () => {
   it('Brisé ×3 seul → une ligne « Brisé » −30, liée à sa fiche d’État', () => {
     const c = mk(); addCondition(c, COND.brise); addCondition(c, COND.brise); addCondition(c, COND.brise);
-    expect(combatTestPenaltyParts(c)).toEqual([{ label: 'Brisé', value: -30, ref: { category: 'etats', id: 'brise' } }]);
+    expect(combatTestPenaltyParts(c)).toEqual([{ label: 'Brisé', value: -30, famille: 'jet', ref: { category: 'etats', id: 'brise' } }]);
   });
 
   it('mixte Brisé ×3 + Sonné : le PIRE seul, et c’est LUI qui est nommé (−30 Brisé, pas « État »)', () => {
     const c = mk(); addCondition(c, COND.sonne);
     addCondition(c, COND.brise); addCondition(c, COND.brise); addCondition(c, COND.brise);
-    expect(combatTestPenaltyParts(c)).toEqual([{ label: 'Brisé', value: -30, ref: { category: 'etats', id: 'brise' } }]);
+    expect(combatTestPenaltyParts(c)).toEqual([{ label: 'Brisé', value: -30, famille: 'jet', ref: { category: 'etats', id: 'brise' } }]);
   });
 
   it('Sonné seul → « Sonné » −10', () => {
     const c = mk(); addCondition(c, COND.sonne);
-    expect(combatTestPenaltyParts(c)).toEqual([{ label: 'Sonné', value: -10, ref: { category: 'etats', id: 'sonne' } }]);
+    expect(combatTestPenaltyParts(c)).toEqual([{ label: 'Sonné', value: -10, famille: 'jet', ref: { category: 'etats', id: 'sonne' } }]);
   });
 
   it('ex æquo (Sonné −10 puis Empoisonné −10) : départage DÉTERMINISTE — le premier collecté', () => {
@@ -135,22 +135,22 @@ describe('composantes NOMMÉES de la pénalité de Test (combatTestPenaltyParts)
   it('AURA de trait gagnante (Perturbant −20 projeté dans auraMods) : nommée par SON trait', () => {
     const c = mk(); addCondition(c, COND.sonne); // −10, battu par l'aura
     c.auraMods = [{ op: { op: 'testMod', amount: -20 }, src: { category: 'traits', id: 'perturbant' } }];
-    expect(combatTestPenaltyParts(c)).toEqual([{ label: 'Perturbant', value: -20, ref: { category: 'traits', id: 'perturbant' } }]);
+    expect(combatTestPenaltyParts(c)).toEqual([{ label: 'Perturbant', value: -20, famille: 'jet', ref: { category: 'traits', id: 'perturbant' } }]);
   });
 
   it('ce qui STACKE garde SA ligne : l’effet actif n’est pas fondu dans celle de l’État', () => {
     const c = mk(); addCondition(c, COND.sonne);
     c.activeEffects = [{ label: 'Malédiction de malchance', bonus: 0, duration: { scale: 'rounds', left: 3 }, testMod: -10, source: { kind: 'spell', id: 'malediction-de-malchance' } }];
     expect(combatTestPenaltyParts(c)).toEqual([
-      { label: 'Sonné', value: -10, ref: { category: 'etats', id: 'sonne' } },
-      { label: 'Malédiction de malchance', value: -10, ref: { category: 'spells', id: 'malediction-de-malchance' } },
+      { label: 'Sonné', value: -10, famille: 'jet', ref: { category: 'etats', id: 'sonne' } },
+      { label: 'Malédiction de malchance', value: -10, famille: 'jet', ref: { category: 'spells', id: 'malediction-de-malchance' } },
     ]);
     expect(combatTestPenalty(c)).toBe(-20); // la Σ des composantes = la valeur roulée
   });
 
   it('les trois producteurs servent ces MÊMES lignes (source unique conditionModLines)', () => {
     const c = mk(); addCondition(c, COND.brise);
-    const expected = { label: 'Brisé', value: -10, ref: { category: 'etats', id: 'brise' } };
+    const expected = { label: 'Brisé', value: -10, famille: 'jet', ref: { category: 'etats', id: 'brise' } };
     expect(conditionModLines(c)).toContainEqual(expected);
     expect(baseTestModLines(c)).toContainEqual(expected);
     expect(defenseModifiers(c, 'esquive')).toContainEqual(expected);
@@ -161,7 +161,7 @@ describe('composantes NOMMÉES de la pénalité de Test (combatTestPenaltyParts)
     aura.auraMods = [{ op: { op: 'testMod', amount: -20 } }]; // op projetée sans son trait émetteur
     // Une aura est un TRAIT : dégradée, elle ne s'annonce pas « État » (le gate `ignoreStatePenalties`
     // ne l'annule d'ailleurs pas, LDB 42) — le joueur lirait une règle qui ne la gouverne pas.
-    expect(combatTestPenaltyParts(aura)).toEqual([{ label: 'Aura', value: -20, ref: undefined }]);
+    expect(combatTestPenaltyParts(aura)).toEqual([{ label: 'Aura', value: -20, famille: 'jet', ref: undefined }]);
     // Et une aura IDENTIFIÉE bat un État à magnitude égale de nom : chacun garde le sien.
     const mixte = mk(); addCondition(mixte, COND.sonne);
     mixte.auraMods = [{ op: { op: 'testMod', amount: -20 }, src: { category: 'traits', id: 'perturbant' } }];

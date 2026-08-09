@@ -759,7 +759,7 @@ function LearnPane({ hero, disabled, fails, money, desc }: { hero: Combatant; di
         optionPending(
           CHAR_LABELS[ck],
           effectiveChar(hero, ck),
-          failCount ? [{ label: 'Acharnement', value: failCount * 10, ref: RULE_REF['apprentissage-particulier'] }] : [],
+          failCount ? [{ label: 'Acharnement', value: failCount * 10, famille: 'jet' as const, ref: RULE_REF['apprentissage-particulier'] }] : [],
           undefined,
           'difficile',
         ),

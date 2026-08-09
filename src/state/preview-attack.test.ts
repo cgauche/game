@@ -147,7 +147,7 @@ describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
     expect(withBuff.base).toBe(withoutBuff.base); // le +10 est sorti de `base` vers une ModLine
     expect(inexplique({ base: withBuff.base, mods: withBuff.mods, target: withBuff.target, difficulty: withBuff.difficulty })).toBe(0);
     const line = withBuff.mods.find((m) => m.label === 'Bénédiction de Bataille');
-    expect(line).toEqual({ label: 'Bénédiction de Bataille', value: 10, uncapped: true });
+    expect(line).toEqual({ label: 'Bénédiction de Bataille', value: 10, famille: 'jet', uncapped: true });
   });
 });
 

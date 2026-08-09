@@ -29,7 +29,7 @@ describe('RollLine — détail d’un jet pour la modale', () => {
   it('détaille les modificateurs étiquetés quand ils reconcilient le total', () => {
     const html = renderToStaticMarkup(
       <RollLine
-        d={{ label: 'Projectiles', base: 38, modifier: 60, target: 98, roll: 50, success: true, sl: 4, mods: [{ label: 'Courte portée', value: 40 }, { label: 'Viser', value: 20 }] }}
+        d={{ label: 'Projectiles', base: 38, modifier: 60, target: 98, roll: 50, success: true, sl: 4, mods: [{ label: 'Courte portée', value: 40, famille: 'circonstance' }, { label: 'Viser', value: 20, famille: 'circonstance' }] }}
       />,
     );
     expect(html).toContain('Courte portée');
@@ -41,7 +41,7 @@ describe('RollLine — détail d’un jet pour la modale', () => {
   it('#1072 — la Difficulté se lit SUR LA LIGNE (texte + valeur), JAMAIS en chip', () => {
     const html = renderToStaticMarkup(
       <RollLine
-        d={{ label: 'Crochetage', base: 45, modifier: 30, target: 75, roll: 20, success: true, sl: 5, difficulty: 'facile', mods: [{ label: 'Soutien', value: -10 }] }}
+        d={{ label: 'Crochetage', base: 45, modifier: 30, target: 75, roll: 20, success: true, sl: 5, difficulty: 'facile', mods: [{ label: 'Soutien', value: -10, famille: 'jet' }] }}
       />,
     );
     // Elle dit la NATURE du jet : elle vit dans le libellé de la ligne…
@@ -71,7 +71,7 @@ describe('RollLine — détail d’un jet pour la modale', () => {
 
   it('mods incomplets : les chips RESTENT et l’écart est NOMMÉ (jamais un masquage, #1064)', () => {
     const html = renderToStaticMarkup(
-      <RollLine d={{ label: 'Projectiles', base: 38, modifier: 40, target: 78, roll: 50, success: true, sl: 3, mods: [{ label: 'Viser', value: 20 }] }} />,
+      <RollLine d={{ label: 'Projectiles', base: 38, modifier: 40, target: 78, roll: 50, success: true, sl: 3, mods: [{ label: 'Viser', value: 20, famille: 'circonstance' }] }} />,
     );
     expect(html).toContain('Viser'); // le détail connu ne disparaît pas
     expect(html).toContain('autres'); // …et les 20 non itemisés sont AVOUÉS
@@ -81,7 +81,7 @@ describe('RollLine — détail d’un jet pour la modale', () => {
     // Repro du ticket : 135 (+ Soutien +10, Complexe −10) = 135 → cible ramenée à 99 par `clamp`
     // (`engine/tests.clampTarget`), qui MESURE l'écrêtage (−36) et le fait voyager.
     const html = renderToStaticMarkup(
-      <RollLine d={{ label: 'Force Mentale', base: 135, modifier: -36, target: 99, clamped: -36, difficulty: 'complexe', roll: 50, success: true, sl: 4, mods: [{ label: 'Soutien', value: 10 }] }} />,
+      <RollLine d={{ label: 'Force Mentale', base: 135, modifier: -36, target: 99, clamped: -36, difficulty: 'complexe', roll: 50, success: true, sl: 4, mods: [{ label: 'Soutien', value: 10, famille: 'jet' }] }} />,
     );
     expect(html).toContain('Soutien');
     expect(html).toContain('−36 plafond 99'); // l'écart entier porte le plafond MESURÉ
@@ -118,7 +118,7 @@ describe('RollLine — détail d’un jet pour la modale', () => {
   it('cible 99 SANS écrêtage : AUCUNE chip « plafond » — l’écart inconnu s’avoue « autres » (#1064)', () => {
     // Le piège : la cible VAUT 99 par coïncidence. Sans `clamped` mesuré, la nommer « plafond » ment.
     const html = renderToStaticMarkup(
-      <RollLine d={{ label: 'Force Mentale', base: 89, modifier: 10, target: 99, roll: 50, success: true, sl: 4, mods: [{ label: 'Soutien', value: 20 }] }} />,
+      <RollLine d={{ label: 'Force Mentale', base: 89, modifier: 10, target: 99, roll: 50, success: true, sl: 4, mods: [{ label: 'Soutien', value: 20, famille: 'jet' }] }} />,
     );
     expect(html).not.toContain('plafond');
     expect(html).toContain('−10 autres');
@@ -126,7 +126,7 @@ describe('RollLine — détail d’un jet pour la modale', () => {
 
   it('écrêtage PARTIEL : le plafond ne prend que sa part mesurée, le reste s’avoue « autres »', () => {
     const html = renderToStaticMarkup(
-      <RollLine d={{ label: 'Perception', base: 120, modifier: -21, target: 99, clamped: -11, roll: 50, success: true, sl: 2, mods: [{ label: 'Soutien', value: 10 }] }} />,
+      <RollLine d={{ label: 'Perception', base: 120, modifier: -21, target: 99, clamped: -11, roll: 50, success: true, sl: 2, mods: [{ label: 'Soutien', value: 10, famille: 'jet' }] }} />,
     );
     expect(html).toContain('−11 plafond 99');
     expect(html).toContain('−20 autres'); // −21 d'écart − (−11) plafond… reste −20 après le +10 nommé
@@ -142,7 +142,7 @@ describe('RollLine — détail d’un jet pour la modale', () => {
 
   it('mods qui s’annulent (+10 / −10) → ligne « 55 » SANS « = », mais chips conservées', () => {
     const html = renderToStaticMarkup(
-      <RollLine d={{ label: 'Esquive', base: 55, modifier: 0, target: 55, roll: 40, success: true, sl: 1, mods: [{ label: 'Avantage', value: 10 }, { label: 'Sonné', value: -10 }] }} />,
+      <RollLine d={{ label: 'Esquive', base: 55, modifier: 0, target: 55, roll: 40, success: true, sl: 1, mods: [{ label: 'Avantage', value: 10, famille: 'jet' }, { label: 'Sonné', value: -10, famille: 'jet' }] }} />,
     );
     expect(html).not.toContain('= <b>');
     expect(html).toContain('Avantage'); // chips toujours visibles pour expliquer le wash
@@ -151,7 +151,7 @@ describe('RollLine — détail d’un jet pour la modale', () => {
 
   it('`mask:\'roll\'` (#990) : ni dé, ni ✓/✗ ±DR, ni cible — un « ? » PAR CELLULE, label et chips conservés', () => {
     const html = renderToStaticMarkup(
-      <RollLine d={{ label: 'Force', base: 45, modifier: 10, target: 55, roll: 32, success: true, sl: 2, mask: 'roll', mods: [{ label: 'Avantage', value: 10 }] }} />,
+      <RollLine d={{ label: 'Force', base: 45, modifier: 10, target: 55, roll: 32, success: true, sl: 2, mask: 'roll', mods: [{ label: 'Avantage', value: 10, famille: 'jet' }] }} />,
     );
     expect(html).toContain('Force'); // le libellé du jet reste lisible (on sait CE qui est joué)
     expect(html).toContain('Avantage'); // ModChips conservées
@@ -219,7 +219,7 @@ describe('PendingRollLine — pré-jet (même règle « pas de = redondant »)',
 
   it('avec modificateur → « 45 +10 = 55 »', () => {
     const html = renderToStaticMarkup(
-      <PendingRollLine p={{ label: 'Corps à corps', base: 45, target: 55, mods: [{ label: 'Avantage', value: 10 }] }} />,
+      <PendingRollLine p={{ label: 'Corps à corps', base: 45, target: 55, mods: [{ label: 'Avantage', value: 10, famille: 'jet' }] }} />,
     );
     expect(html).toContain('45');
     expect(html).toContain('= <b>');
@@ -228,7 +228,7 @@ describe('PendingRollLine — pré-jet (même règle « pas de = redondant »)',
 
   it('#1072 — pré-jet : la Difficulté est SUR la ligne et reste DANS la cible dérivée', () => {
     const html = renderToStaticMarkup(
-      <PendingRollLine p={{ label: 'Crochetage', base: 45, difficulty: 'difficile', mods: [{ label: 'Acharnement', value: 10 }] }} />,
+      <PendingRollLine p={{ label: 'Crochetage', base: 45, difficulty: 'difficile', mods: [{ label: 'Acharnement', value: 10, famille: 'jet' }] }} />,
     );
     expect(html).toContain('rm-roll-diff"> — Difficile (−20)');
     expect(html).not.toMatch(/rm-mod[^>]*>[^<]*Difficile/);

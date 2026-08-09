@@ -643,7 +643,7 @@ export function attackEnv(
       if (weatherRangedUseless(dayW)) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc };
       if (weatherPowderUseless(dayW) && isBlackPowderWeapon(weapon)) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc };
       const rm = weatherRangedMod(dayW);
-      if (rm) env.push({ label: `Météo : ${WEATHER_LABEL[dayW]}`, value: rm, ref: weatherRef(dayW) });
+      if (rm) env.push({ label: `Météo : ${WEATHER_LABEL[dayW]}`, value: rm, famille: 'circonstance', ref: weatherRef(dayW) });
     }
     // Commandant d'équipe (AA 13 l.29-35) : un chef de pièce dirigé tire au score de Projectiles de son
     // commandant — re-validé ICI (vivant + à portée de voix) → un delta sur la base du chef (aperçu ET résolution).
@@ -654,10 +654,10 @@ export function attackEnv(
     // des deux (`DeckCoverClass ⊂ CoverClass`). `crewPosteOf` couvre tout l'équipage (chef ET support).
     const posteCover = crewPosteOf(target.id, battle.combatants)?.poste.cover;
     const cover = posteCover ? worstCover(los.cover, posteCover) : los.cover;
-    if (cover !== 'none') env.push({ label: tr('cf.coverLabel', { cover }), value: coverModifier(cover) });
+    if (cover !== 'none') env.push({ label: tr('cf.coverLabel', { cover }), value: coverModifier(cover), famille: 'circonstance' });
     // Vision nocturne / Infravision (LDB 85) ou Talent Vision nocturne : annule la pénalité d'obscurité.
-    if (sc.concealed && !seesInDark(attacker)) env.push({ label: sc.label || 'Obscurité', value: -20, ref: RULE_REF['cible-dissimulee'] }); // cible dissimulée (LDB 14 l.75)
-    else if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod }); // tempête (LDB 14 l.76) / neige (l.82)
+    if (sc.concealed && !seesInDark(attacker)) env.push({ label: sc.label || 'Obscurité', value: -20, famille: 'circonstance', ref: RULE_REF['cible-dissimulee'] }); // cible dissimulée (LDB 14 l.75)
+    else if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod, famille: 'circonstance' }); // tempête (LDB 14 l.76) / neige (l.82)
     // Tir en bougeant (LDB 14 l.101) : −10 si l'on bouge ET tire au même Round. Le Mouvement étant
     // DÉCOMPOSABLE (on peut bouger APRÈS le tir), un HÉROS qui garde sa mobilité encaisse le −10 par défaut ;
     // il ne l'évite qu'en décidant de tirer IMMOBILE (heldGround → consomme son Mouvement, cf. attackConfirm)
@@ -666,7 +666,7 @@ export function attackEnv(
     const mobileShot = attacker.kind === 'hero'
       ? (battle.movementUsed > 0 || (mountMovement(battle, attacker) > 0 && !opts?.heldGround))
       : battle.movementUsed > 0;
-    if (mobileShot) env.push({ label: 'Tir en bougeant', value: -10, ref: RULE_REF['tir-en-mouvement'] });
+    if (mobileShot) env.push({ label: 'Tir en bougeant', value: -10, famille: 'circonstance', ref: RULE_REF['tir-en-mouvement'] });
     // Tir dans la mêlée (LDB 14 l.134) : la cible est Engagée avec un allié du tireur. Règle optionnelle
     // « Tir dans un corps à corps » (LDB 14 l.133) : si désactivée, pas de −20 NI d'artefact d'aperçu
     // (`inMelee` reste false → pas de tir égaré non plus).
@@ -674,7 +674,7 @@ export function attackEnv(
       const ally = inBattleId(battle, id);
       return !!ally && ally.kind === attacker.kind;
     });
-    if (inMelee && !opts?.intoCrowd) env.push({ label: 'Tir dans la mêlée', value: -20, ref: RULE_REF['tir-dans-un-combat-au-corps-a-corps'] }); // « Tirer dans le tas » REMPLACE ce −20 par le bonus (l.136)
+    if (inMelee && !opts?.intoCrowd) env.push({ label: 'Tir dans la mêlée', value: -20, famille: 'circonstance', ref: RULE_REF['tir-dans-un-combat-au-corps-a-corps'] }); // « Tirer dans le tas » REMPLACE ce −20 par le bonus (l.136)
     env.push(...mountedAttackMods(battle, attacker, target, 'ranged')); // Combat monté : +20 cible plus petite que la monture (LDB 14 l.217)
     // « Tirer dans le tas » (LDB 14 l.136/146) : bonus +20/+40/+60 selon la taille du groupe serré.
     const crowd = opts?.intoCrowd ? crowdEligible(battle, attacker, target) : [];
@@ -683,7 +683,7 @@ export function attackEnv(
     return { env, blocked: false, inMelee, crowd, cm, sc };
   }
   // Mêlée : la météo (tempête/neige) pénalise l'attaque ; la neige pénalise aussi l'esquive (dodgeMod).
-  if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod });
+  if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod, famille: 'circonstance' });
   // La pénalité météo « Tests physiques » (EDOC 8 l.82) n'est PLUS ajoutée ici : le CANAL UNIQUE
   // `weatherTestMods` (attackModifiers, lu depuis `attacker.envWeather`) la porte pour l'attaque ET la défense
   // ET les activités — jamais recâblée par surface (#341). Seuls les mods météo WEAPON-contextuels restent (tir).
@@ -691,10 +691,10 @@ export function attackEnv(
   // orientation du défenseur AVANT cette attaque (il se retourne vers l'attaquant ENSUITE, applyAttackResult).
   const tFacing = get().facing?.[target.id]; // `facing` peut être absent (état épars / contexte sans orientation)
   const flankRear = !!(tFacing && isEngaged(target) && attacker.pos && target.pos && isFlankOrRear(tFacing, facingToward(target.pos, attacker.pos)));
-  if (flankRear) env.push({ label: 'Flanc/dos', value: 20, ref: RULE_REF['attaque-de-flanc-ou-de-dos'] });
+  if (flankRear) env.push({ label: 'Flanc/dos', value: 20, famille: 'circonstance', ref: RULE_REF['attaque-de-flanc-ou-de-dos'] });
   // En contrebas (Difficultés de Combat) : l'attaquant le PLUS BAS subit −10 (la hauteur ne donne AUCUN
   // bonus « high-ground » — RAW : seul ce malus existe). Comparaison de la hauteur métrique des surfaces.
-  if ((target.pos?.h ?? 0) - (attacker.pos?.h ?? 0) > STEP_MAX_M) env.push({ label: 'En contrebas de la cible', value: -10, ref: RULE_REF['cible-en-contrebas'] });
+  if ((target.pos?.h ?? 0) - (attacker.pos?.h ?? 0) > STEP_MAX_M) env.push({ label: 'En contrebas de la cible', value: -10, famille: 'circonstance', ref: RULE_REF['cible-en-contrebas'] });
   // Surnombre (LDB 14 l.85/92) : attaquants du camp de l'attaquant au contact de la cible (2 → +20, 3+ → +40).
   const onm = outnumberMod(battle.combatants.filter((c) => c.kind === attacker.kind && !isOutOfAction(c) && c.pos && combatDistance(c, target) <= 1).length);
   if (onm) env.push(onm);
@@ -918,8 +918,8 @@ export function previewCast(
   const ni = opts?.focused ? 0 : spell.cn ?? 0;
   const ctx = opts?.ctx ? castContextMods(opts.ctx.s, caster, opts.ctx.target, spell, { skipWard: opts.ctx.skipWard }) : null;
   const mods: ModLine[] = [
-    ...(advMod ? [{ label: 'Avantage', value: advMod, ref: RULE_REF.avantage }] : []),
-    ...(penMod ? [{ label: 'Contrecoup', value: penMod }] : []),
+    ...(advMod ? [{ label: 'Avantage', value: advMod, famille: 'jet' as const, uncapped: true, ref: RULE_REF.avantage }] : []),
+    ...(penMod ? [{ label: 'Contrecoup', value: penMod, famille: 'jet' as const }] : []),
     ...(ctx?.mods ?? []),
     ...(windsLine ? [windsLine] : []),
   ];
@@ -5350,7 +5350,7 @@ export function castWardLine(s: GameState, target: Combatant, spell: SpellLike):
     for (const e of w.activeEffects ?? []) {
       if (!e.castWard) continue;
       if (combatDistance(w, target) > Math.max(1, Math.ceil(e.castWard.radiusMeters / 2))) continue;
-      return { label: e.label, value: -20, ref: effectRef(e), by: [{ id: w.id }] };
+      return { label: e.label, value: -20, famille: 'jet', ref: effectRef(e), by: [{ id: w.id }] };
     }
   }
   return null;
@@ -5376,8 +5376,8 @@ export function castContextMods(
   const dref = spell.domainId ? { category: 'domains', id: spell.domainId } : undefined;
   const mods: ModLine[] = [
     ...(wardLine ? [wardLine] : []),
-    ...(domain ? [{ label: 'Domaine', value: domain, ref: dref }] : []),
-    ...(env ? [{ label: 'Environnement', value: env, ref: dref }] : []),
+    ...(domain ? [{ label: 'Domaine', value: domain, famille: 'jet' as const, ref: dref }] : []),
+    ...(env ? [{ label: 'Environnement', value: env, famille: 'jet' as const, ref: dref }] : []),
   ];
   return { mods, total: ward + domain + env, ward, domain, env };
 }

@@ -52,10 +52,13 @@ function reconciled(mods: ModLine[], modifier: number, target: number, clamped?:
     ANONYMES.count += 1;
     console.error(`[RollLine] chip « autres » (${rest}) : la ligne ne s'explique pas — itemiser la source à l'ÉMISSION (rollSeam.rollLine).`);
   }
+  // Les deux lignes ci-dessous sont des artefacts de réconciliation d'AFFICHAGE, jamais lus par
+  // `combineMods` : leur `famille` est un DÉFAUT, pas un classement de règle. Elles meurent en L3b-2
+  // (la chip de plafond devient le palier dérivé ; « autres » est un bug à itemiser à l'émission).
   return [
     ...mods,
-    ...(cut ? [{ label: `${cut < 0 ? 'plafond' : 'plancher'} ${target}`, value: cut }] : []),
-    ...(rest ? [{ label: 'autres', value: rest }] : []),
+    ...(cut ? [{ label: `${cut < 0 ? 'plafond' : 'plancher'} ${target}`, value: cut, famille: 'jet' as const }] : []),
+    ...(rest ? [{ label: 'autres', value: rest, famille: 'jet' as const }] : []),
   ];
 }
 

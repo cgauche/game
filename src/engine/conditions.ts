@@ -2,7 +2,7 @@
  * États (conditions) — Livre de base, chapitre « États ».
  * Gestion minimale pour le combat tactique : ajout, empilement, retrait.
  */
-import { Combatant, ActiveEffect, ConditionInstance, effectRef } from './types';
+import { Combatant, ActiveEffect, ConditionInstance, effectRef, type ModFamille } from './types';
 import { evalCondition, type ConditionCtx, type ActorView } from './flowCore';
 import { tickRound } from './duration';
 import { conditionLabel, findConditionById, findPsychologyById, findSpellById, refLabel, skills } from '../data';
@@ -292,7 +292,7 @@ export { effectRef } from './types';
 
 /** UNE composante NOMMÉE de la pénalité de Test de combat — structurellement une `ModLine`
  *  (`engine/combat`), poussée telle quelle par les trois producteurs via `conditionModLines`. */
-export interface TestPenaltyPart { label: string; value: number; ref?: CodexTarget }
+export interface TestPenaltyPart { label: string; value: number; famille: ModFamille; ref?: CodexTarget }
 
 /**
  * Pénalité aux Tests de COMBAT (LDB 16), DÉCOMPOSÉE en lignes nommées — SOURCE UNIQUE du calcul ET
@@ -321,12 +321,12 @@ export function combatTestPenaltyParts(c: Combatant): TestPenaltyPart[] {
   for (const m of c.auraMods ?? []) if (m.op.op === 'testMod' && m.op.char == null) cand.push({ amount: m.op.amount, nature: 'Aura', src: m.src });
   const out: TestPenaltyPart[] = [];
   const best = poolWinner(cand);
-  if (best?.amount) out.push({ label: srcLabel(best.src, best.nature), value: best.amount, ref: best.src });
+  if (best?.amount) out.push({ label: srcLabel(best.src, best.nature), value: best.amount, famille: 'jet', ref: best.src });
   // Modificateur de Sort (Malédiction de malchance) + pénalité GLOBALE de maladie (Crampes abdominales −20,
   // MSRC 16 l.152) : STACKENT tous deux avec l'État (hors pool non-cumul des États, LDB 16 l.20).
   for (const e of c.activeEffects ?? []) {
     const amount = effectGlobalTestMod(e);
-    if (amount) out.push({ label: e.label, value: amount, ref: effectRef(e) });
+    if (amount) out.push({ label: e.label, value: amount, famille: 'jet', ref: effectRef(e) });
   }
   for (const m of passiveGlobalTestParts(c)) {
     const { amount } = m.op as Extract<GameOp, { op: 'testMod' }>;
@@ -364,7 +364,7 @@ export function activeCharTestModParts(c: Combatant, ck: import('./types').CharK
     if (e.testModChar !== ck) continue;
     if (e.testModHand != null && e.testModHand !== ctx.weaponHand) continue;
     if (e.testModMovementOnly && !ctx.movement) continue;
-    if (e.testMod) out.push({ label: e.label, value: e.testMod, ref: effectRef(e) });
+    if (e.testMod) out.push({ label: e.label, value: e.testMod, famille: 'jet', ref: effectRef(e) });
   }
   return out;
 }
@@ -400,12 +400,12 @@ export function testStatePenaltyParts(c: Combatant, skill?: string): TestPenalty
     cand = dropWorst(cand, ignoredStatesCount(c)); // « peut ignorer un État » (MDG 09 l.244)
   }
   const best = poolWinner(cand);
-  if (best?.amount) out.push({ label: srcLabel(best.src, best.nature), value: best.amount, ref: best.src });
+  if (best?.amount) out.push({ label: srcLabel(best.src, best.nature), value: best.amount, famille: 'jet', ref: best.src });
   // Modificateur de Sort + pénalité GLOBALE de maladie (Crampes abdominales −20, MSRC 16 l.152) : STACKENT,
   // hors du non-cumul des États — présents même sans État et malgré Endurance de l'anachorète (LDB 42).
   for (const e of c.activeEffects ?? []) {
     const amount = effectGlobalTestMod(e);
-    if (amount) out.push({ label: e.label, value: amount, ref: effectRef(e) });
+    if (amount) out.push({ label: e.label, value: amount, famille: 'jet', ref: effectRef(e) });
   }
   for (const m of passiveGlobalTestParts(c)) {
     const { amount } = m.op as Extract<GameOp, { op: 'testMod' }>;
@@ -446,7 +446,7 @@ export function meleeAttackerBonusLines(target: Combatant, opts?: { flankRear?: 
   }
   return [best, flank]
     .filter((c): c is PoolCandidate => !!c?.amount)
-    .map((c) => ({ label: srcLabel(c.src, c.nature), value: c.amount, ref: c.src }));
+    .map((c) => ({ label: srcLabel(c.src, c.nature), value: c.amount, famille: 'circonstance' as const, ref: c.src }));
 }
 
 /** Σ de `meleeAttackerBonusLines` — la VALEUR que le jet applique (l'affichage et le jet lisent les

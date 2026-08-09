@@ -35,8 +35,8 @@ export function baseWithTraits(c: Combatant, key: CharKey): number {
  *  (affichage, issue #202). Sépare la BASE (permanente : `characteristics` + `passiveCharSum`) du pool. */
 function volatileCharEntries(c: Combatant, key: CharKey): { label: string; value: number; ref?: CodexTarget }[] {
   // Effet actif : son `label` propre + son renvoi (`effectRef`) — MÊME règle que les passifs (#1153).
-  const entries = (c.activeEffects ?? []).filter((e) => e.char === key).map((e) => ({ label: e.label, value: e.bonus, ref: effectRef(e) }));
-  entries.push(...traumaCharPenaltiesLabeled(c, key).map((p) => ({ label: p.label, value: p.mod, ref: p.ref })));
+  const entries = (c.activeEffects ?? []).filter((e) => e.char === key).map((e) => ({ label: e.label, value: e.bonus, famille: 'jet' as const, ref: effectRef(e) }));
+  entries.push(...traumaCharPenaltiesLabeled(c, key).map((p) => ({ label: p.label, value: p.mod, famille: 'jet' as const, ref: p.ref })));
   return entries;
 }
 
@@ -72,11 +72,11 @@ export function volatileCharLines(c: Combatant, key: CharKey): ModLine[] {
   const lines: ModLine[] = [];
   if (bonuses.length) {
     const best = bonuses.reduce((a, b) => (b.value > a.value ? b : a));
-    lines.push({ label: best.label, value: best.value, uncapped: true, ref: best.ref });
+    lines.push({ label: best.label, value: best.value, famille: 'jet', uncapped: true, ref: best.ref });
   }
   if (penalties.length) {
     const worst = penalties.reduce((a, b) => (b.value < a.value ? b : a));
-    lines.push({ label: worst.label, value: worst.value, uncapped: true, ref: worst.ref });
+    lines.push({ label: worst.label, value: worst.value, famille: 'jet', uncapped: true, ref: worst.ref });
   }
   return lines;
 }

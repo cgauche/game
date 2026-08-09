@@ -44,7 +44,7 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
   // Mod d'environnement (météo maritime — Précipitations, MDG 13 l.187-201) : ligne de mod dédiée,
   // au même titre que la Difficulté — `envMod` est DÉJÀ intégré à `pt.target` (PAS à `skillValue`)
   // par `openSkillTest` (seaWeatherTestMod, POINT UNIQUE), ici seulement pour l'AFFICHAGE.
-  const envMods = pt.envMod ? [{ label: pt.envLabel ?? 'Météo', value: pt.envMod }] : undefined;
+  const envMods = pt.envMod ? [{ label: pt.envLabel ?? 'Météo', value: pt.envMod, famille: 'circonstance' as const }] : undefined;
   // Soutien (LDB 12 l.187-200) ET composantes de la valeur de Test (États, séquelles, passifs, effets,
   // outil — #1178) : FONDUS dans `skillValue` par `openSkillTest`, la primitive partagée les rend à
   // leurs lignes de mod NOMMÉES et rebase l'affichage sur le Niveau de Compétence nu (LDB 09 l.17).

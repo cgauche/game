@@ -125,7 +125,7 @@ export function exposureFirstFailChars(kind: ExposureKind = 'froid'): string {
 export function exposureCoatMods(c: Combatant): { mods?: ModLine[] } {
   if (hasCoat(c)) return {};
   const pen = Number(rule('exposure-no-coat-penalty'));
-  return pen ? { mods: [{ label: 'Sans manteau', value: -pen, ref: RULE_REF.exposition }] } : {};
+  return pen ? { mods: [{ label: 'Sans manteau', value: -pen, famille: 'jet', ref: RULE_REF.exposition }] } : {};
 }
 
 /** Objet le plus lourd porté par `c` (Encombrement le plus élevé, strictement positif) — LA

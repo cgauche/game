@@ -78,7 +78,7 @@ describe('Taille en combat (T1) + env injecté — attackModifiers (LDB 14 l.151
     expect(mods.find((m) => m.label.startsWith('Taille (cible)'))?.value).toBe(20);
   });
   it('tir : env injecté (Couvert -20) figure dans les mods', () => {
-    const mods = attackModifiers(mk(), mk(), bow, { kind: 'ranged', distanceTiles: 28, env: [{ label: 'Couvert (moyenne)', value: -20 }] });
+    const mods = attackModifiers(mk(), mk(), bow, { kind: 'ranged', distanceTiles: 28, env: [{ label: 'Couvert (moyenne)', value: -20, famille: 'circonstance' }] });
     expect(mods.find((m) => m.label.startsWith('Couvert'))?.value).toBe(-20);
   });
   it('+10 au plus petit en mêlée (attaquant Petite vs cible Moyenne, LDB 85 l.301-303)', () => {
@@ -326,39 +326,39 @@ describe('Bandes de portée — échelle métrique de la Scène (#249, metresPer
   });
   it('attackModifiers propage metresPerTile jusqu’au mod de portée affiché', () => {
     const mods = attackModifiers(mk({ label: 'A' }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 3, metresPerTile: 10 });
-    expect(mods).toContainEqual({ label: 'Courte portée', value: 20, ref: RULE_REF['portee-d-une-arme'] });
+    expect(mods).toContainEqual({ label: 'Courte portée', value: 20, famille: 'circonstance', ref: RULE_REF['portee-d-une-arme'] });
   });
   it('sans metresPerTile (défaut 2, terrestre) : même distanceTiles=3 reste Bout Portant/hors-Courte, comportement BYTE-IDENTIQUE', () => {
     const mods = attackModifiers(mk({ label: 'A' }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 3 });
-    expect(mods).toContainEqual({ label: 'Bout portant', value: 40, ref: RULE_REF['portee-d-une-arme'] }); // 6 m ≤ 6, comme avant le câblage
+    expect(mods).toContainEqual({ label: 'Bout portant', value: 40, famille: 'circonstance', ref: RULE_REF['portee-d-une-arme'] }); // 6 m ≤ 6, comme avant le câblage
   });
 });
 
 describe('attackModifiers — modificateurs étiquetés (source unique)', () => {
   it('tir à courte portée → mod « Courte portée » +20', () => {
     const mods = attackModifiers(mk({ label: 'A' }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 10 });
-    expect(mods).toContainEqual({ label: 'Courte portée', value: 20, ref: RULE_REF['portee-d-une-arme'] });
+    expect(mods).toContainEqual({ label: 'Courte portée', value: 20, famille: 'circonstance', ref: RULE_REF['portee-d-une-arme'] });
   });
   it('tireur qui a Visé → mod « Viser » +20 (action Viser, l.90)', () => {
     const mods = attackModifiers(mk({ label: 'A', aiming: true }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 28 });
     // La ligne porte SA règle : la chip du breakdown ouvre `regles/viser` (#1078).
-    expect(mods).toContainEqual({ label: 'Viser', value: 20, ref: RULE_REF.viser });
+    expect(mods).toContainEqual({ label: 'Viser', value: 20, famille: 'circonstance', ref: RULE_REF.viser });
   });
   it('viser une localisation → mod « Localisation visée » −20 (« Une attaque ou un tir qui cherche à atteindre une Localisation particulière », LDB 14 l.73)', () => {
     const mods = attackModifiers(mk({ label: 'A' }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 28, location: 'tete' });
-    expect(mods).toContainEqual({ label: 'Localisation visée', value: -20, ref: RULE_REF['viser-une-localisation'] });
+    expect(mods).toContainEqual({ label: 'Localisation visée', value: -20, famille: 'circonstance', ref: RULE_REF['viser-une-localisation'] });
   });
   it('mêlée vs cible À Terre → la ligne NOMME l’État qui expose la cible (+20 À Terre, lié au Codex)', () => {
     const downed = mk({ label: 'B', conditions: [{ id: 'a-terre', value: 1 }] });
     const mods = attackModifiers(mk({ label: 'A' }), downed, sword, { kind: 'melee' });
-    expect(mods).toContainEqual({ label: 'À Terre', value: 20, ref: { category: 'etats', id: 'a-terre' } });
+    expect(mods).toContainEqual({ label: 'À Terre', value: 20, famille: 'circonstance', ref: { category: 'etats', id: 'a-terre' } });
   });
 
   it('bonus de flanc/dos ADDITIF : DEUX lignes nommées (À Terre +20, Assourdi +10), jamais fondues', () => {
     const target = mk({ label: 'B', conditions: [{ id: 'a-terre', value: 1 }, { id: 'assourdi', value: 1 }] });
     const mods = attackModifiers(mk({ label: 'A' }), target, sword, { kind: 'melee', flankRear: true });
-    expect(mods).toContainEqual({ label: 'À Terre', value: 20, ref: { category: 'etats', id: 'a-terre' } });
-    expect(mods).toContainEqual({ label: 'Assourdi', value: 10, ref: { category: 'etats', id: 'assourdi' } });
+    expect(mods).toContainEqual({ label: 'À Terre', value: 20, famille: 'circonstance', ref: { category: 'etats', id: 'a-terre' } });
+    expect(mods).toContainEqual({ label: 'Assourdi', value: 10, famille: 'circonstance', ref: { category: 'etats', id: 'assourdi' } });
   });
 });
 

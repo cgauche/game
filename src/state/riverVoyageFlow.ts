@@ -39,6 +39,7 @@ import type { StakeRef } from '../data';
 import { partyCargoTotalEnc } from './carriers';
 import { partyAssisted } from '../engine/skills';
 import { rollTest, type TestResult } from '../engine/tests';
+import type { ModLine } from '../engine/combat';
 import { RULE_REF } from '../engine/ruleRefs';
 import { testValue } from '../engine/skills';
 import { addCondition } from '../engine/conditions';
@@ -223,7 +224,7 @@ function resolveRiverDay(get: Get, set: Set, route: MapRoute, to: { scene: strin
  *  énoncée — défaut Intermédiaire +0, LDB 12 l.148) et ses MALUS NOMMÉS (dérive l.38,
  *  hors de contrôle l.41) — SOURCE UNIQUE, partagée par le build de l'étape Nav et l'évitement de
  *  péril `navTest`. Les malus ne sont PAS des Difficultés : ils se lisent en chips sur la ligne. */
-function riverNavTest(river: RiverVoyageState, eff: ReturnType<typeof riverWindEffect>): { difficulty: Difficulty; mods: { label: string; value: number }[] } {
+function riverNavTest(river: RiverVoyageState, eff: ReturnType<typeof riverWindEffect>): { difficulty: Difficulty; mods: ModLine[] } {
   return {
     difficulty: NAV_BASE_DIFFICULTY,
     mods: navPenaltyMods({ drift: !!eff.drift || !!river.broken, outOfControl: !!river.outOfControl }),
@@ -548,13 +549,13 @@ function rightingStep(get: Get, source: CascadeStep, round: number, be: number):
     ? {
       actor: pilot.actor, test: { skill: skillId }, valeur: pilot.value, soutien: pilot.support,
       difficulty: CAPSIZE_RIGHT_DIFFICULTY,
-      ...(penalty ? { surLaCible: [{ label: `−5 cumulatif (Round ${round + 1})`, value: penalty, ref: RULE_REF['navigation-chavirage'] }] } : {}),
+      ...(penalty ? { surLaCible: [{ label: `−5 cumulatif (Round ${round + 1})`, value: penalty, famille: 'jet' as const, ref: RULE_REF['navigation-chavirage'] }] } : {}),
     }
     // Plus de barreur éligible (mort, débarqué) : la valeur figée à la construction tient lieu de
     // seuil — DÉCLARÉE comme valeur d'une autre formule, elle ne prétend pas être un Niveau de Compétence.
     : {
       difficulty: CAPSIZE_RIGHT_DIFFICULTY, valeur: Number(source.meta?.pilotValue ?? source.base ?? 0), valeurEtrangere: true,
-      ...(penalty ? { surLaCible: [{ label: `−5 cumulatif (Round ${round + 1})`, value: penalty, ref: RULE_REF['navigation-chavirage'] }] } : {}),
+      ...(penalty ? { surLaCible: [{ label: `−5 cumulatif (Round ${round + 1})`, value: penalty, famille: 'jet' as const, ref: RULE_REF['navigation-chavirage'] }] } : {}),
     };
   return {
     id: `${source.id}-right-${round}`, kind: 'riverRighting', actorId: source.actorId, icon: 'nautical/tack',
@@ -815,7 +816,7 @@ function bestShipwright(get: Get): { actor: Combatant; value: number; roll: Roll
     actor: c.actor, value,
     roll: {
       actor: c.actor, test: { skill: 'metier', spec: 'Charpentier' }, valeur: value, soutien: c.support,
-      dansLaValeur: [{ label: 'Charpentier', value: penalty, ref: { category: 'skills', id: 'metier' } }],
+      dansLaValeur: [{ label: 'Charpentier', value: penalty, famille: 'jet' as const, ref: { category: 'skills', id: 'metier' } }],
     },
   };
 }

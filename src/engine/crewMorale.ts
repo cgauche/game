@@ -286,7 +286,7 @@ export interface CrewAssignment {
 export function crewTestModParts(c: Combatant): ModLine[] {
   return (c.activeEffects ?? [])
     .filter((e) => !!e.crewTestMod)
-    .map((e) => ({ label: e.label, value: e.crewTestMod!, ref: effectRef(e) }));
+    .map((e) => ({ label: e.label, value: e.crewTestMod!, famille: 'jet' as const, ref: effectRef(e) }));
 }
 
 /** Σ de `crewTestModParts` — SOURCE UNIQUE du montant (le jet et l'affichage lisent les MÊMES parts). */

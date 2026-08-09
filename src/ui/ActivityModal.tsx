@@ -108,7 +108,7 @@ export function ActivityModal() {
     // bonus cumulatif des Rounds tenus (ADE II 08 l.163) en ligne de mod NOMMÉE — même patron que le
     // Soutien du PJ ci-dessus (`supportSplit`). Sans Puissance nue posée, la base reste la cible jetée.
     const enemyBase = pa.enemyBase ?? pa.enemyValue!;
-    const holdMods: ModLine[] = pa.enemyValue! !== enemyBase ? [{ label: 'Rounds tenus', value: pa.enemyValue! - enemyBase }] : [];
+    const holdMods: ModLine[] = pa.enemyValue! !== enemyBase ? [{ label: 'Rounds tenus', value: pa.enemyValue! - enemyBase, famille: 'jet' }] : [];
     rows.push({
       key: 'enemy',
       // La Difficulté de l'opposition est celle DÉCLARÉE par le flux, à défaut Intermédiaire (LDB 12 l.166).

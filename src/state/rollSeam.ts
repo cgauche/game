@@ -488,7 +488,7 @@ export function rollLine(spec: RollLineSpec): RollLineParts {
   const combine = spec.plafond === 'difficultes' ? combineMods(surLaCible) : brut;
   const ecretage: ModLine[] = combine === brut
     ? []
-    : [{ label: 'plafond Difficultés', value: combine - brut, ref: RULE_REF['combiner-les-difficultes'] }];
+    : [{ label: 'plafond Difficultés', value: combine - brut, famille: 'circonstance', ref: RULE_REF['combiner-les-difficultes'] }];
   const { target, clamped } = clampTarget(value + dv + combine);
   return {
     base: split.base - fusedSum,

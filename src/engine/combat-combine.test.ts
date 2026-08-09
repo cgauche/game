@@ -5,21 +5,21 @@ import type { Combatant, Weapon } from './types';
 
 describe('combineMods — Combiner les Difficultés (LDB 14 l.91-96)', () => {
   it('plafonne la somme des malus à -30', () => {
-    expect(combineMods([{ label: 'a', value: -20 }, { label: 'b', value: -20 }])).toBe(-30);
+    expect(combineMods([{ label: 'a', value: -20, famille: 'circonstance' }, { label: 'b', value: -20, famille: 'circonstance' }])).toBe(-30);
   });
   it('plafonne la somme des bonus à +60', () => {
-    expect(combineMods([{ label: 'a', value: 40 }, { label: 'b', value: 40 }])).toBe(60);
+    expect(combineMods([{ label: 'a', value: 40, famille: 'circonstance' }, { label: 'b', value: 40, famille: 'circonstance' }])).toBe(60);
   });
   it('mélange bonus + malus se somme (plafonds séparés)', () => {
-    expect(combineMods([{ label: 'a', value: 40 }, { label: 'b', value: -20 }])).toBe(20);
+    expect(combineMods([{ label: 'a', value: 40, famille: 'circonstance' }, { label: 'b', value: -20, famille: 'circonstance' }])).toBe(20);
   });
   it('Avantage est hors plafond (uncapped)', () => {
     // Avantage +70 hors cap, + malus -40 plafonné -30 → +40
     expect(
       combineMods([
-        { label: 'Avantage', value: 70, uncapped: true },
-        { label: 'x', value: -20 },
-        { label: 'y', value: -20 },
+        { label: 'Avantage', value: 70, famille: 'jet', uncapped: true },
+        { label: 'x', value: -20, famille: 'circonstance' },
+        { label: 'y', value: -20, famille: 'circonstance' },
       ]),
     ).toBe(40);
   });
@@ -31,14 +31,14 @@ describe('combineMods — Combiner les Difficultés (LDB 14 l.91-96)', () => {
 describe('combineMods — plafonds de Difficulté réglables (LDB 14 l.95, règle optionnelle)', () => {
   afterEach(() => { resetRule('combat-diff-cap-bonus'); resetRule('combat-diff-cap-malus'); });
   it('combat-diff-cap-bonus → 20 : la somme des bonus plafonne à +20 (défaut +60)', () => {
-    expect(combineMods([{ label: 'a', value: 40 }, { label: 'b', value: 40 }])).toBe(60);
+    expect(combineMods([{ label: 'a', value: 40, famille: 'circonstance' }, { label: 'b', value: 40, famille: 'circonstance' }])).toBe(60);
     setRule('combat-diff-cap-bonus', 20);
-    expect(combineMods([{ label: 'a', value: 40 }, { label: 'b', value: 40 }])).toBe(20);
+    expect(combineMods([{ label: 'a', value: 40, famille: 'circonstance' }, { label: 'b', value: 40, famille: 'circonstance' }])).toBe(20);
   });
   it('combat-diff-cap-malus → 10 : la somme des malus plafonne à −10 (défaut −30)', () => {
-    expect(combineMods([{ label: 'a', value: -20 }, { label: 'b', value: -20 }])).toBe(-30);
+    expect(combineMods([{ label: 'a', value: -20, famille: 'circonstance' }, { label: 'b', value: -20, famille: 'circonstance' }])).toBe(-30);
     setRule('combat-diff-cap-malus', 10);
-    expect(combineMods([{ label: 'a', value: -20 }, { label: 'b', value: -20 }])).toBe(-10);
+    expect(combineMods([{ label: 'a', value: -20, famille: 'circonstance' }, { label: 'b', value: -20, famille: 'circonstance' }])).toBe(-10);
   });
 });
 

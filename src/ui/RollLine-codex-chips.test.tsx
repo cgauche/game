@@ -52,8 +52,8 @@ describe('ModChips — la chip PORTE sa règle (#1078)', () => {
 
   it('ligne AVEC ref → chip CodexRef cliquable ; ligne SANS ref → span muet', () => {
     ({ container, root } = mount(shell([
-      { label: 'Viser', value: 20, ref: RULE_REF.viser },
-      { label: 'Avantage', value: 10 },
+      { label: 'Viser', value: 20, famille: 'circonstance', ref: RULE_REF.viser },
+      { label: 'Avantage', value: 10, famille: 'jet' },
     ])));
     const chips = [...container.querySelectorAll('.rm-mod')];
     expect(chips).toHaveLength(2);
@@ -68,7 +68,7 @@ describe('ModChips — la chip PORTE sa règle (#1078)', () => {
   });
 
   it('POPOVER dans le corps DÉFILÉ (.rs-scroll) : porté sur document.body, hors du scrollport', () => {
-    ({ container, root } = mount(shell([{ label: 'Viser', value: 20, ref: RULE_REF.viser }])));
+    ({ container, root } = mount(shell([{ label: 'Viser', value: 20, famille: 'circonstance', ref: RULE_REF.viser }])));
     const scroll = container.querySelector('.rs-scroll');
     expect(scroll, 'la coquille rend bien son corps défilable').not.toBeNull();
     const chip = container.querySelector('.rm-mod.codex-ref') as HTMLElement;
@@ -90,7 +90,7 @@ describe('ModChips — la chip PORTE sa règle (#1078)', () => {
   //    rattachés à rien) : ils vivent DANS le popover de la chip, qui porte déjà sa règle.
   it('provenance `by` : AUCUN badge inline — les noms partent au popover de la chip', () => {
     ({ container, root } = mount(shell([
-      { label: 'Soutien', value: 20, ref: RULE_REF.soutien, by: [{ label: 'Perdita' }, { label: 'Valentyn' }] },
+      { label: 'Soutien', value: 20, famille: 'jet', ref: RULE_REF.soutien, by: [{ label: 'Perdita' }, { label: 'Valentyn' }] },
     ])));
     expect(container.querySelectorAll('.rm-roll-mods .entity-badge'), 'plus de badge flottant').toHaveLength(0);
     // La chip reste sobre et porte toujours sa règle (affordance CodexRef).

@@ -28,7 +28,7 @@ describe('RollLine — le compteur de chips « autres » est CÂBLÉ et lu (#115
 
   it('une ligne MONTÉE par `rollLine` ne produit aucune chip anonyme — compteur à 0', () => {
     // Ligne saine : la valeur est la base + les mods DÉCLARÉS, exactement ce que le monteur rend.
-    const monte = rollLine({ difficulty: 'accessible', valeur: 45, surLaCible: [{ label: 'Soutien', value: 10 }] });
+    const monte = rollLine({ difficulty: 'accessible', valeur: 45, surLaCible: [{ label: 'Soutien', value: 10, famille: 'jet' }] });
     const d: RollBreakdown = {
       label: 'Résistance', base: monte.base, modifier: monte.target - monte.base, target: monte.target,
       roll: 30, sl: 2, success: true, difficulty: 'accessible', mods: monte.mods,
@@ -51,7 +51,7 @@ describe('RollLine — le compteur de chips « autres » est CÂBLÉ et lu (#115
     // sortaient en chip « autres » sur la ligne d'attaque (#1153 L3a).
     const monte = rollLine({
       difficulty: 'intermediaire', valeur: 60, plafond: 'difficultes',
-      surLaCible: [{ label: 'Sonné', value: -10 }, { label: 'Aveuglé', value: -20 }, { label: 'Empêtré', value: -20 }],
+      surLaCible: [{ label: 'Sonné', value: -10, famille: 'jet' }, { label: 'Aveuglé', value: -20, famille: 'jet' }, { label: 'Empêtré', value: -20, famille: 'jet' }],
     });
     expect(monte.target, 'la fixture doit vraiment faire mordre le plafond').toBe(30);
     const html = renderToStaticMarkup(
