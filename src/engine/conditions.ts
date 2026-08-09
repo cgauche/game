@@ -2,7 +2,7 @@
  * États (conditions) — Livre de base, chapitre « États ».
  * Gestion minimale pour le combat tactique : ajout, empilement, retrait.
  */
-import { Combatant, ActiveEffect, ConditionInstance, CATEGORY_BY_SOURCE_KIND } from './types';
+import { Combatant, ActiveEffect, ConditionInstance, effectRef } from './types';
 import { evalCondition, type ConditionCtx, type ActorView } from './flowCore';
 import { tickRound } from './duration';
 import { conditionLabel, findConditionById, findPsychologyById, findSpellById, refLabel, skills } from '../data';
@@ -12,7 +12,7 @@ import { rule } from './policy';
 import { groupAdvantage } from './advantagePool';
 import { bonus, effectiveChar } from './characteristics';
 import { d100, RNG, defaultRNG } from './dice';
-import { passiveMods, passiveGlobalTestMod, passiveGlobalTestParts, settleHealedCriticals } from './trauma';
+import { passiveMods, passiveGlobalTestParts, settleHealedCriticals } from './trauma';
 import type { GameOp } from './ops';
 import type { CodexTarget } from './ruleRefs';
 import { rollTest, isDoubleRoll, type TestResult } from './tests';
@@ -222,19 +222,14 @@ export function wakeSleeper(c: Combatant): void {
   if (inc) removeCondition(c, COND.inconscient, inc.value);
 }
 
-/** Le `testMod` GLOBAL porté par UN effet actif — CRITÈRE UNIQUE, partagé par la somme
- *  (`effectTestMod`) et par le détail nommé (`combatTestPenaltyParts`). EXCLUT les mods
+/** Le `testMod` GLOBAL porté par UN effet actif — CRITÈRE UNIQUE, partagé par les deux détails
+ *  nommés (`combatTestPenaltyParts` en combat, `testStatePenaltyParts` hors combat). EXCLUT les mods
  *  char-QUALIFIÉS (`testModChar` — Mystracine ±10 par Caractéristique), lus par `testValue` pour la
- *  seule carac visée. */
+ *  seule carac visée. Modificateur GLOBAL de Sort (Malédiction de malchance −10, etc.) : SOMMÉ par
+ *  ces détails (sources distinctes qui stackent), appliqué PAR-DESSUS la pénalité d'État (≠ État :
+ *  ni non-cumul l.20, ni effacé par `ignoreStatePenalties`). */
 function effectGlobalTestMod(e: ActiveEffect): number {
   return e.testModChar == null ? (e.testMod ?? 0) : 0;
-}
-
-/** Modificateur GLOBAL de Test porté par les effets actifs (Malédiction de malchance −10, etc.) —
- *  SOMMÉ (sources distinctes qui stackent), appliqué PAR-DESSUS la pénalité d'État (≠ État : ni
- *  non-cumul l.20, ni effacé par `ignoreStatePenalties`). */
-export function effectTestMod(c: Combatant): number {
-  return (c.activeEffects ?? []).reduce((s, e) => s + effectGlobalTestMod(e), 0);
 }
 
 /** Les `testMod` portés par les États du combattant (kind `etat`), déjà ×pions (perStack) par le
@@ -274,21 +269,26 @@ function poolWinner(cand: PoolCandidate[]): PoolCandidate | undefined {
   return cand.reduce<PoolCandidate | undefined>((best, x) => (best == null || x.amount < best.amount ? x : best), undefined);
 }
 
-/** Nom d'AFFICHAGE de l'entité SOURCE d'une composante (résolveur de libellé GÉNÉRIQUE `refLabel`,
- *  data — ids en donnée, labels à l'écran). `src` absent = source non identifiée par le collecteur :
- *  reste le nom de la FAMILLE d'où sort la composante, jamais celui d'une autre. */
+/** Nom d'AFFICHAGE d'un candidat du POOL. RÈGLE GÉNÉRALE (#1153) : une composante se nomme par son
+ *  OCTROYEUR, jamais par sa famille — tous les émetteurs d'État/symptôme posent leur `src`, ce chemin
+ *  passe donc toujours par `refLabel`. Le repli `nature` ne subsiste que pour la SEULE famille sans
+ *  entité identifiable : l'aura PROJETÉE par un tiers (`Combatant.auraMods`, dont le hook d'arène ne
+ *  propage pas toujours le trait émetteur) — « Aura » y est un nom de famille assumé, verrouillé par
+ *  `etat-test-penalty.test.ts`. Ajouter une famille ici = un ARBITRAGE, pas un défaut technique. */
 function srcLabel(src: CodexTarget | undefined, nature: string): string {
   return src ? refLabel(src.category, { id: src.id }) : nature;
 }
 
-/** Renvoi Codex d'un effet actif : son entité SOURCE (`EffectSource`, table TOTALE
- *  `CATEGORY_BY_SOURCE_KIND`), sinon le sort qui l'a posé. Absent = effet sans ancrage de règle.
- *  COUTURE UNIQUE effet→fiche pour les `ModLine` : partagée par le détail de pénalité de Test
- *  (`combatTestPenaltyParts`) et par l'aura anti-Sort (`castWardLine`, state/combatFlow). */
-export function effectRef(e: ActiveEffect): CodexTarget | undefined {
-  if (e.source) return { category: CATEGORY_BY_SOURCE_KIND[e.source.kind], id: e.source.id };
-  return e.sourceSpellId ? { category: 'spells', id: e.sourceSpellId } : undefined;
-}
+// Le convertisseur UNIQUE `PassiveMod` → composante nommée (`passivePartLine`) vit dans `trauma.ts`,
+// avec le collecteur qui produit ces `PassiveMod` : les DEUX canaux (`skillMod`/`testMod` ici,
+// `charMod` là-bas) le lisent sans cycle d'import. Ré-exporté pour ses consommateurs.
+import { passivePartLine } from './trauma';
+export { passivePartLine };
+
+// `effectRef` (couture UNIQUE effet→fiche Codex) vit dans `types.ts`, à côté de la table
+// `CATEGORY_BY_SOURCE_KIND` qu'elle indexe : les DEUX collecteurs la lisent sans cycle d'import.
+// Ré-exportée ici pour ses consommateurs historiques — UNE définition, deux chemins d'import.
+export { effectRef } from './types';
 
 /** UNE composante NOMMÉE de la pénalité de Test de combat — structurellement une `ModLine`
  *  (`engine/combat`), poussée telle quelle par les trois producteurs via `conditionModLines`. */
@@ -330,7 +330,7 @@ export function combatTestPenaltyParts(c: Combatant): TestPenaltyPart[] {
   }
   for (const m of passiveGlobalTestParts(c)) {
     const { amount } = m.op as Extract<GameOp, { op: 'testMod' }>;
-    if (amount) out.push({ label: srcLabel(m.src, 'Symptôme'), value: amount, ref: m.src });
+    if (amount) out.push(passivePartLine(m, amount)); // nommé par le SYMPTÔME émetteur (`src`), jamais « Symptôme »
   }
   return out;
 }
@@ -341,12 +341,6 @@ export function combatTestPenalty(c: Combatant): number {
   return combatTestPenaltyParts(c).reduce((s, p) => s + p.value, 0);
 }
 
-/**
- * Pénalité d'États aux Tests HORS COMBAT (LDB 16). Non-cumul (l.20 : la PIRE pénalité seule) ; le
- * modificateur de Sort (effectTestMod) s'ajoute par-dessus. Magnitudes/portées en DONNÉES (etats.json
- * passive `testMod` : `combatOnly`/`movementOnly`/`exceptSkills`), lues via passiveMods (kind `etat`).
- * Les États non classables hors combat (Aveuglé=vue, `combatOnly`) sont exclus ici.
- */
 // Tests « impliquant un déplacement » (LDB 16 l.37/l.85) — classification DÉRIVÉE de la donnée
 // (`SkillData.movement`, éditable au Codex), plus de liste d'ids en dur. Acrobaties (spé de
 // Représentation) non classables à l'id de base → non couvertes.
@@ -364,31 +358,66 @@ export function isMovementSkill(skill?: string): boolean {
  *  parade (Tests d'arme, `weaponHand` gaté) et `defenseValue` Esquive (`movement:true`). `weaponHand`/
  *  `movement` : contexte du Test COURANT, opposé aux gates portés par l'effet (`testModHand`/
  *  `testModMovementOnly`) — absents des DEUX côtés = mod global (comportement historique). */
-export function activeCharTestMod(c: Combatant, ck: import('./types').CharKey, ctx: { weaponHand?: 'main' | 'off'; movement?: boolean } = {}): number {
-  return (c.activeEffects ?? []).reduce((s, e) => {
-    if (e.testModChar !== ck) return s;
-    if (e.testModHand != null && e.testModHand !== ctx.weaponHand) return s;
-    if (e.testModMovementOnly && !ctx.movement) return s;
-    return s + (e.testMod ?? 0);
-  }, 0);
+export function activeCharTestModParts(c: Combatant, ck: import('./types').CharKey, ctx: { weaponHand?: 'main' | 'off'; movement?: boolean } = {}): TestPenaltyPart[] {
+  const out: TestPenaltyPart[] = [];
+  for (const e of c.activeEffects ?? []) {
+    if (e.testModChar !== ck) continue;
+    if (e.testModHand != null && e.testModHand !== ctx.weaponHand) continue;
+    if (e.testModMovementOnly && !ctx.movement) continue;
+    if (e.testMod) out.push({ label: e.label, value: e.testMod, ref: effectRef(e) });
+  }
+  return out;
 }
-export function testStatePenalty(c: Combatant, skill?: string): number {
+
+/** Σ de `activeCharTestModParts` — SOURCE UNIQUE (l'affichage et le jet lisent les mêmes composantes). */
+export function activeCharTestMod(c: Combatant, ck: import('./types').CharKey, ctx: { weaponHand?: 'main' | 'off'; movement?: boolean } = {}): number {
+  return activeCharTestModParts(c, ck, ctx).reduce((s, p) => s + p.value, 0);
+}
+/**
+ * Pénalité d'États aux Tests HORS COMBAT (LDB 16), DÉCOMPOSÉE en lignes nommées — JUMELLE exacte de
+ * `combatTestPenaltyParts` pour les Tests « dans le monde », mêmes trois familles (pool non-cumul l.20,
+ * effets ACTIFS à `testMod` global, `testMod` globaux de symptôme) et même provenance de LIBELLÉ : le
+ * `src` que le collecteur `passiveMods` porte sur chaque `PassiveMod` (donnée `etats.json` →
+ * `refLabel`), JAMAIS un branchement par nom d'entité. SOURCE UNIQUE du calcul ET de son affichage :
+ * `testStatePenalty` n'en est plus que la somme.
+ * Magnitudes/portées en DONNÉES (`etats.json` passive `testMod` : `combatOnly`/`movementOnly`/
+ * `hearingOnly`/`exceptSkills`). Les États non classables hors combat (Aveuglé=vue, `combatOnly`) sont
+ * exclus ici.
+ */
+export function testStatePenaltyParts(c: Combatant, skill?: string): TestPenaltyPart[] {
+  const out: TestPenaltyPart[] = [];
+  let cand: PoolCandidate[] = [];
+  // Endurance de l'anachorète (LDB 42) : aucune pénalité d'État pour la durée (les modificateurs de
+  // Sort/symptôme restent). Pas d'État du tout : rien à mettre au pool non plus.
+  if (c.conditions?.length && !hasActiveFlag(c, 'ignoreStatePenalties')) {
+    for (const m of etatTestMods(c)) {
+      if (m.op.combatOnly) continue; // Aveuglé (vue) : non classé hors combat (faute de classification du Test)
+      if (m.op.movementOnly && !MOVEMENT_SKILL.has(skill ?? '')) continue; // À Terre/Empêtré : Tests de déplacement seuls
+      if (m.op.hearingOnly && !HEARING_SKILL.has(skill ?? '')) continue; // Assourdi : Tests d'audition seuls (Perception)
+      if (m.op.exceptSkills?.includes(skill ?? '')) continue; // Brisé : sauf course (Athlétisme) / dissimulation (Discrétion)
+      cand.push({ amount: m.op.amount, nature: 'État', src: m.src });
+    }
+    cand = dropWorst(cand, ignoredStatesCount(c)); // « peut ignorer un État » (MDG 09 l.244)
+  }
+  const best = poolWinner(cand);
+  if (best?.amount) out.push({ label: srcLabel(best.src, best.nature), value: best.amount, ref: best.src });
   // Modificateur de Sort + pénalité GLOBALE de maladie (Crampes abdominales −20, MSRC 16 l.152) : STACKENT,
   // hors du non-cumul des États — présents même sans État et malgré Endurance de l'anachorète (LDB 42).
-  const effMod = effectTestMod(c) + passiveGlobalTestMod(c);
-  if (!c.conditions?.length) return effMod;
-  // Endurance de l'anachorète (LDB 42) : aucune pénalité d'État pour la durée (le modificateur de Sort reste).
-  if (hasActiveFlag(c, 'ignoreStatePenalties')) return effMod;
-  let cand: PoolCandidate[] = [];
-  for (const m of etatTestMods(c)) {
-    if (m.op.combatOnly) continue; // Aveuglé (vue) : non classé hors combat (faute de classification du Test)
-    if (m.op.movementOnly && !MOVEMENT_SKILL.has(skill ?? '')) continue; // À Terre/Empêtré : Tests de déplacement seuls
-    if (m.op.hearingOnly && !HEARING_SKILL.has(skill ?? '')) continue; // Assourdi : Tests d'audition seuls (Perception)
-    if (m.op.exceptSkills?.includes(skill ?? '')) continue; // Brisé : sauf course (Athlétisme) / dissimulation (Discrétion)
-    cand.push({ amount: m.op.amount, nature: 'État', src: m.src });
+  for (const e of c.activeEffects ?? []) {
+    const amount = effectGlobalTestMod(e);
+    if (amount) out.push({ label: e.label, value: amount, ref: effectRef(e) });
   }
-  cand = dropWorst(cand, ignoredStatesCount(c)); // « peut ignorer un État » (MDG 09 l.244)
-  return (poolWinner(cand)?.amount ?? 0) + effMod;
+  for (const m of passiveGlobalTestParts(c)) {
+    const { amount } = m.op as Extract<GameOp, { op: 'testMod' }>;
+    if (amount) out.push(passivePartLine(m, amount)); // nommé par le SYMPTÔME émetteur (`src`), jamais « Symptôme »
+  }
+  return out;
+}
+
+/** Σ de `testStatePenaltyParts` — la VALEUR que roule `testValue` (l'affichage et le jet ne peuvent
+ *  pas diverger : ils lisent les mêmes composantes), miroir de `combatTestPenalty`. */
+export function testStatePenalty(c: Combatant, skill?: string): number {
+  return testStatePenaltyParts(c, skill).reduce((s, p) => s + p.value, 0);
 }
 
 /**

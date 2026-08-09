@@ -29,7 +29,7 @@ import {
   type TavernGame, type TavernGameResult,
 } from '../engine/tavernGame';
 import type { TestResult } from '../engine/tests';
-import { testValue } from '../engine/skills';
+import { testValue, skillBaseValue } from '../engine/skills';
 import { effectiveChar } from '../engine/characteristics';
 import { battleRng } from './battleRng';
 import { toBrass, fromBrass, formatMoney } from '../engine/money';
@@ -76,6 +76,16 @@ function tavernTestSpec(game: TavernGame): { skill?: string; char?: CharKey; spe
   if (game.skill) return { skill: game.skill, spec: game.spec };
   if (game.characteristic) return { char: game.characteristic };
   return { skill: 'pari' };
+}
+
+/** NIVEAU DE COMPÉTENCE NU d'un joueur pour un jeu (`LDB 09 l.17`) — miroir nu de `tavernGameValue`
+ *  (celle-ci reste la valeur de Test, États/Encombrement compris : c'est la CIBLE). Lu à l'accesseur
+ *  canon `skillBaseValue` sur la MÊME déclaration de Test que celle passée au seam pour le challenger
+ *  (`tavernTestSpec`) : les DEUX camps opposent ainsi la même grandeur au départage à DR égal
+ *  (`LDB 12 l.160`). Adversaire ABSTRAIT : aucun Combatant, la valeur de la table est déjà nue. */
+export function tavernGameBaseValue(hero: Combatant, game: TavernGame): number {
+  const t = tavernTestSpec(game);
+  return skillBaseValue(hero, t.skill, t.spec, t.char);
 }
 
 export function openTavernGames(_get: Get, set: Set): void {
@@ -126,7 +136,12 @@ function openTavernRound(
   get: Get, set: Set, game: TavernGame, challengerId: string, opponentValue: number, opponentName: string,
   opponentId: string | undefined, stakeBrass: number, round: number, cumPlayer: number, cumOpponent: number,
 ): void {
-  const opponentTR = rollTavernTest(opponentValue, battleRng());
+  // L'adversaire roule sur SA valeur de Test (`opponentValue` — États/Encombrement compris : c'est sa
+  // CIBLE), mais oppose au départage son Niveau de Compétence NU, comme le challenger dont le seam pose
+  // déjà la nue en `step.base` (`LDB 12 l.160` : opposer une nue à une fondue compare deux grandeurs).
+  const opponentHero = opponentId ? get().party.find((h) => h.id === opponentId) : undefined;
+  const rolled = rollTavernTest(opponentValue, battleRng());
+  const opponentTR: TestResult = opponentHero ? { ...rolled, base: tavernGameBaseValue(opponentHero, game) } : rolled;
   const attackerLabel = testSkillLabel(tavernTestSpec(game));
   openRoll(get, set, {
     side: { actorId: challengerId },

@@ -252,7 +252,9 @@ export function talentPassiveMods(c: Combatant): PassiveMod[] {
   const out: PassiveMod[] = [];
   for (const t of c.talents ?? []) {
     const ops = findTalentById(t.talentId)?.passive;
-    if (ops) for (let i = 0; i < (t.times ?? 1); i++) for (const op of ops) out.push({ op, kind: 'intrinsèque' });
+    // `src` = LE talent émetteur : il NOMME la composante d'un détail de jet et ouvre sa fiche
+    // (patron des traits/mutations) — jamais le repli de famille (`passivePartLine`).
+    if (ops) for (let i = 0; i < (t.times ?? 1); i++) for (const op of ops) out.push({ op, kind: 'intrinsèque', src: { category: 'talents', id: t.talentId } });
   }
   return out;
 }

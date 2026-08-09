@@ -1,7 +1,8 @@
 /**
  * Calculs dérivés des Caractéristiques — Livre de base, chapitre Personnage.
  */
-import { CharKey, Characteristics, Combatant } from './types';
+import { CharKey, Characteristics, Combatant, effectRef } from './types';
+import type { CodexTarget } from './ruleRefs';
 import { traumaCharPenaltiesLabeled, passiveCharSum } from './trauma';
 import { traitCharMods, traitCapability } from './traits/dispatch';
 import { SizeCategory, woundsForSize, effectiveSize } from './size';
@@ -32,9 +33,10 @@ export function baseWithTraits(c: Combatant, key: CharKey): number {
 /** Pool des contributions VOLATILES étiquetées à une Caractéristique (effets actifs + pénalités passives
  *  non-cumul) — source UNIQUE pour `effectiveChar` (Σ meilleur bonus + pire pénalité) et `volatileCharLines`
  *  (affichage, issue #202). Sépare la BASE (permanente : `characteristics` + `passiveCharSum`) du pool. */
-function volatileCharEntries(c: Combatant, key: CharKey): { label: string; value: number }[] {
-  const entries = (c.activeEffects ?? []).filter((e) => e.char === key).map((e) => ({ label: e.label, value: e.bonus }));
-  entries.push(...traumaCharPenaltiesLabeled(c, key).map((p) => ({ label: p.label, value: p.mod })));
+function volatileCharEntries(c: Combatant, key: CharKey): { label: string; value: number; ref?: CodexTarget }[] {
+  // Effet actif : son `label` propre + son renvoi (`effectRef`) — MÊME règle que les passifs (#1153).
+  const entries = (c.activeEffects ?? []).filter((e) => e.char === key).map((e) => ({ label: e.label, value: e.bonus, ref: effectRef(e) }));
+  entries.push(...traumaCharPenaltiesLabeled(c, key).map((p) => ({ label: p.label, value: p.mod, ref: p.ref })));
   return entries;
 }
 
@@ -70,11 +72,11 @@ export function volatileCharLines(c: Combatant, key: CharKey): ModLine[] {
   const lines: ModLine[] = [];
   if (bonuses.length) {
     const best = bonuses.reduce((a, b) => (b.value > a.value ? b : a));
-    lines.push({ label: best.label, value: best.value, uncapped: true });
+    lines.push({ label: best.label, value: best.value, uncapped: true, ref: best.ref });
   }
   if (penalties.length) {
     const worst = penalties.reduce((a, b) => (b.value < a.value ? b : a));
-    lines.push({ label: worst.label, value: worst.value, uncapped: true });
+    lines.push({ label: worst.label, value: worst.value, uncapped: true, ref: worst.ref });
   }
   return lines;
 }

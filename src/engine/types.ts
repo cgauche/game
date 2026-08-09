@@ -591,6 +591,17 @@ export const CATEGORY_BY_SOURCE_KIND: Record<EffectSourceKind, string> = {
   activity: 'activities', rule: 'regles',
 };
 
+/** Renvoi Codex d'un effet actif : son entité SOURCE (`EffectSource`, table TOTALE
+ *  `CATEGORY_BY_SOURCE_KIND` ci-dessus), sinon le sort qui l'a posé. Absent = effet dont le
+ *  déclencheur n'a pas propagé la source (seul cas structurellement non liable, cf.
+ *  `test-value-parts.test.ts`). COUTURE UNIQUE effet→fiche pour les `ModLine` : elle vit ICI, à côté
+ *  de la table qu'elle indexe, pour être lisible des DEUX collecteurs (`conditions`, `trauma`) sans
+ *  cycle d'import entre eux. */
+export function effectRef(e: ActiveEffect): CodexTarget | undefined {
+  if (e.source) return { category: CATEGORY_BY_SOURCE_KIND[e.source.kind], id: e.source.id };
+  return e.sourceSpellId ? { category: 'spells', id: e.sourceSpellId } : undefined;
+}
+
 /** IDENTITÉ de ce qui a produit un effet — « les GameOps sont rattachés à quelque chose » (arbitrage
  *  user 2026-07-18). Portée par l'`OpsCtx` du déclencheur et stampée par `applyOps` sur tout
  *  `ActiveEffect` posé : c'est ELLE qui relie une pastille à sa règle, par id STABLE (jamais le label). */
@@ -750,7 +761,7 @@ export interface ActiveEffect {
   testMod?: number;
   /** QUALIFIE `testMod` par Caractéristique (op `testMod{char}` exécutée — Mystracine « +10 aux Tests
    *  d'Endurance et de FM, −10 Ag/I/Int », LDB 71 l.33) : le mod ne s'applique qu'aux Tests de cette
-   *  carac, lu par `testValue` (engine/skills) ; EXCLU du global `effectTestMod`. */
+   *  carac, lu par `testValue` (engine/skills) ; EXCLU des `testMod` GLOBAUX (`effectGlobalTestMod`). */
   testModChar?: CharKey;
   /** RESTREINT un `testModChar:'CC'` à l'arme tenue dans CETTE main (op `testMod.weaponHand`, #193 —
    *  Épaule luxée « Tests effectués avec ce bras », LDB 18/AA) : lu par `combatValue`/`defenseValue`

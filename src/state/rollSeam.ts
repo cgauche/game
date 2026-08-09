@@ -42,7 +42,7 @@ import type { RecapLine, RecapTone } from './recapLine';
 import { TestOutcome } from '../engine/testOutcome';
 import { actorIn } from './combatants';
 import { startCascade, runCascadeImmediate } from './cascade';
-import { testValue, partyBest, partyAssisted, type SupportDetail } from '../engine/skills';
+import { testValue, skillBaseValue, partyBest, partyAssisted, soutienMod, type SupportDetail } from '../engine/skills';
 import { humanControlled, pilotedByHuman } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
@@ -291,12 +291,25 @@ export function resolveSurface(get: Get, req: RollRequest, kind: string): Surfac
   return 'I';
 }
 
+/** NIVEAU DE COMPÉTENCE NU d'un Test DÉCLARÉ (`LDB 09 l.17`) — l'accesseur canon `skillBaseValue`
+ *  appliqué aux ids du `RollRequest`, jamais une valeur reconstituée par soustraction. `undefined`
+ *  quand le Test ne déclare ni compétence ni caractéristique (Désertion, Moral : la grandeur n'existe
+ *  pas, la cible posée par l'appelant tient lieu de base). */
+function nakedValue(actor: Combatant, test: RollRequest['test']): number | undefined {
+  if (!test.skill && !test.char) return undefined;
+  return skillBaseValue(actor, test.skill, test.spec, test.char);
+}
+
 /** Résout un test skill/char SIMPLE (mono, `hero-test`/`enemy`/`subi` à `actorId`) en `CascadeStep`
  *  prêt pour `startCascade`/`runCascadeImmediate` — calque `openSkillTest` (`combatEffects.ts:313-397`)
- *  réduit au cas générique (pas de candidats/Soutien/mod social : hors périmètre du seam Ronde 0). */
+ *  réduit au cas générique (pas de candidats/mod social : hors périmètre du seam Ronde 0). */
 function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeStepMeta): CascadeStep {
   const { actorId, actor, baseValue, support } = resolveMonoSide(get, req, meta);
+  // La CIBLE ne bouge pas : elle reste dérivée de la valeur FONDUE (`testValue` pour un acteur
+  // désigné, la valeur SOUTENUE de `partyAssisted`/le seuil `meta.baseValue` sinon).
   const target = effectiveTarget(actor, req.test, req.difficulty, baseValue);
+  const naked = actor ? nakedValue(actor, req.test) : undefined;
+  const soutien = soutienMod(support);
   return {
     id: kind,
     kind,
@@ -312,8 +325,14 @@ function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeS
     // Compétence DÉRIVÉE du catalogue (`testSkillLabel`) — jamais `req.actionLabel` sauf repli (Test
     // SANS compétence/carac déclarée, ex. Désertion : rien à nommer en position de compétence).
     rollLabel: testSkillLabel(req.test) ?? req.actionLabel,
-    base: baseValue ?? (actor ? testValue(actor, req.test.skill, req.test.char, req.test.spec, req.test.sense) : 0),
-    ...(support ? { support } : {}),
+    // `LDB 09 l.17` / `LDB 12 l.160` (cf. INVARIANT, `docs/architecture.md`) : la valeur NUE, par
+    // l'accesseur canon `skillBaseValue` — jamais une soustraction. Les modificateurs (États,
+    // Encombrement, passifs, Soutien, Difficulté) restent dans `target`. Côté SANS acteur
+    // (`worldSide`), rien à dériver : le seuil posé en `meta.baseValue` fait office de base.
+    base: naked ?? baseValue ?? 0,
+    // Le SOUTIEN (LDB 12 l.187-200) est un MODIFICATEUR, pas un morceau de la base : il arrive en
+    // ligne NOMMÉE (`soutienMod`), à sa place dans le breakdown.
+    ...(soutien ? { mods: [soutien] } : {}),
     target,
     result: null,
     interactive: true,

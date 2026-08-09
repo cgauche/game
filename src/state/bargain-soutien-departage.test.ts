@@ -23,8 +23,9 @@ import type { Combatant, SkillInstance } from '../engine/types';
  * DÉPARTAGE d'un Marchandage OPPOSÉ soutenu (LDB 12) — le Soutien est un MODIFICATEUR du Test
  * (l.189-190 : « Chaque Personnage qui apporte son soutien octroie un bonus de +10 au Test ») ; ce
  * qui départage à DR ÉGAL est la Compétence NUE (l.160 : « c'est le groupe avec la Compétence ou la
- * Caractéristique la plus élevée qui l'emporte »). La porte du seam FOND le Soutien dans `step.base`
- * (`rollSeam.buildMonoStep`) — les appliers portuaires le DÉFONT (`supportSplit`) avant `resolveOpposed`.
+ * Caractéristique la plus élevée qui l'emporte »). La porte du seam POSE cette valeur nue dans
+ * `step.base` (`rollSeam.buildMonoStep` → `skillBaseValue`, `LDB 09 l.17`) : les appliers portuaires
+ * la lisent telle quelle, plus rien à défaire.
  */
 const get = useGame.getState.bind(useGame);
 const set = useGame.setState.bind(useGame);
@@ -77,12 +78,12 @@ function probeMerchantSL(seed: number, merchantValue: number): number {
 }
 
 /** Étape de cascade telle que `rollSeam.buildMonoStep` la construit pour un Test de groupe SOUTENU :
- *  `base` = valeur du meneur SOUTENU (Soutien fondu), `support` = son détail. */
+ *  `base` = Niveau de Compétence NU du meneur, `mods` = la ligne de Soutien, cible SOUTENUE. */
 function soutenuStep(kind: string, actorId: string, helperId: string, sl: number, meta: Record<string, unknown>): CascadeStep {
   return {
     id: kind, kind, actorId,
     label: 'Marchandage', rollLabel: 'Marchandage',
-    base: 55, support: { count: 1, bonus: 10, ids: [helperId] },
+    base: 45, mods: [{ label: 'Soutien', value: 10, by: [{ id: helperId }] }],
     target: 55,
     result: { roll: 30, target: 55, sl, success: true },
     interactive: true,
@@ -94,14 +95,16 @@ describe('Marchandage PORTUAIRE soutenu : le Soutien ne départage pas (LDB 12 l
   beforeEach(() => setRule('test-auto-bands', 'off'));
   afterEach(() => resetRule('test-auto-bands'));
 
-  it('CÂBLAGE : la porte du seam fond le Soutien dans `step.base` et en porte le détail (`support`)', () => {
+  it('CÂBLAGE : la porte du seam pose la Compétence NUE en `step.base`, le Soutien en ligne de mod', () => {
     const { leader, helper } = pairAvecSoutien();
     setupPort([leader, helper]);
     get().portBuyCargo('bois', 20);
     const step = get().pendingCascade!.participants[0] as CascadeStep;
     expect(step.kind).toBe('port-buy-bargain');
-    expect(step.support?.bonus).toBe(10); // 1 soutien éligible (l.189-190)
-    expect(step.base).toBe(55); // 45 (Compétence) + 10 (Soutien) — FONDU par `buildMonoStep`
+    expect(step.base).toBe(45); // Niveau de Compétence NU (LDB 09 l.17) — la grandeur du départage (l.160)
+    expect(step.mods?.[0]).toMatchObject({ label: 'Soutien', value: 10 }); // 1 soutien éligible (l.189-190)
+    expect(step.target).toBe(55); // …compris dans la CIBLE, là où le RAW le met
+    expect(step.support).toBeUndefined();
   });
 
   it('ACHAT, DR égal : la Compétence NUE du meneur (45) perd contre le marchand (50) — surcoût, jamais remise', () => {

@@ -5,7 +5,9 @@ import { influencesLocally } from '../state/netOwnership';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { supportSplit, opposedLines } from './breakdown';
+import { soutienMod, opposedLines } from './breakdown';
+import { testValueParts } from '../engine/skills';
+import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeBargain } from '../state/flowOutcomes';
@@ -44,13 +46,20 @@ export function BargainModalView({
   owned?: boolean;
 }) {
   const rolled = pb.roll != null && pb.result != null;
-  // Soutien des conseillers du groupe (LDB 12) : ligne de mod nommée, base SANS le Soutien.
-  const { base, mods: supMods } = supportSplit(pb.playerSkill, pb.support);
+  // #1153 — l'écran montre la grandeur qui TRANCHE : le Niveau de Compétence NU (`pb.playerBase`,
+  // `LDB 09 l.17`), celle que `resolveOpposed` compare à DR égal (`LDB 12 l.160`). Tout le reste est
+  // MODIFICATEUR de la cible et arrive NOMMÉ : le Soutien des conseillers (`LDB 12 l.187-200`) puis
+  // TOUTES les composantes de la valeur de Test, par le décomposeur EXHAUSTIF `testValueParts`
+  // (États, mutations, qualités d'objet, séquelles, effets, outil manquant, Encombrement — libellés et
+  // renvois Codex tirés de la DONNÉE). La CIBLE ne bouge pas : elle reste `pb.playerSkill`, la valeur
+  // que le résolveur a roulée — et `base + Σ mods` la retrouve exactement (invariant du décomposeur).
+  const soutien = soutienMod(pb.support);
+  const playerMods = [...(soutien ? [soutien] : []), ...(actor ? testValueParts(actor, 'marchandage', 'sociabilite') : [])];
   // Jet OPPOSÉ de Marchandage rendu façon Défense : 2 lignes à portrait (joueur + marchand), vainqueur
   // accentué, Difficulté DÉCLARÉE UNE fois pour l'opposition (LDB 12 l.166). Le Marchandage du marchand
   // reste OPAQUE → `mask:'value'` (portrait + dé + DR, sans base/cible).
   const [playerLine, merchantLine] = opposedLines([
-    { label: 'Marchandage', base, r: pb.roll, target: pb.playerSkill, mods: supMods },
+    { label: 'Marchandage', base: pb.playerBase, r: pb.roll, target: pb.playerSkill, mods: playerMods },
     { label: 'Marchandage', base: pb.merchantValue, r: rolled ? pb.merchantRoll : undefined, mask: 'value' },
   ]);
   const playerD = playerLine.d;
@@ -76,10 +85,15 @@ export function BargainModalView({
     darkPactable: rolled && pb.roll!.roll > pb.roll!.target,
     onDarkPact,
   };
-  // Rangée TÉMOIN du marchand (Marchandage opaque), figée post-jet.
-  const merchantRow: RollRowData | undefined = opposed
-    ? { row: { combatant: merchant, d: merchantD! }, rolled, interactive: false }
-    : undefined;
+  // Rangée TÉMOIN du marchand — PRÉSENTE DÈS L'OUVERTURE, portrait compris (arbitrage user 2026-07-30,
+  // #990, patron `frozenOpposedRow` des 7 autres sites à jet figé) : son Marchandage est connu du
+  // pending (`merchantValue`) mais reste OPAQUE (`mask:'value'`, on ne lit pas la fiche d'un inconnu) et
+  // le calendrier le masque ENTIÈREMENT (`mask:'roll'`, strictement plus fort) tant que le négociateur
+  // n'a pas répondu ; à son jet, la rangée retombe sur l'opacité de valeur seule.
+  const merchantRow: RollRowData = frozenOpposedRow(useGame.getState(), {
+    responded: opposedResponded(useGame.getState(), [{ id: pb.playerId, interactive: true, result: pb.roll ?? undefined }]),
+    row: { combatant: merchant, ...(merchantD ? { d: merchantD } : { pending: merchantLine.pending }) },
+  });
   const winnerIndex = opposed ? (pb.result!.attackerWins ? 0 : 1) : null;
 
   const actions: RollAction[] = owned
@@ -94,9 +108,9 @@ export function BargainModalView({
       flowKey="bargain"
       variant="test"
       title={pb.mode === 'buy' ? 'Marchander l’achat' : 'Marchander la vente'}
-      /* Pré-jet (1 ligne) : portrait du négociateur injecté ; post-jet opposé : 2 lignes à portrait. */
+      /* Test OPPOSÉ : 2 lignes à portrait DÈS L'OUVERTURE (#990), l'adverse masquée jusqu'au jet. */
       subtitle={<>{pb.merchantName}{pb.negotiator ? <> · Négociateur</> : null}</>}
-      rows={merchantRow ? [actorRow, merchantRow] : [actorRow]}
+      rows={[actorRow, merchantRow]}
       rolled={rolled}
       winnerIndex={winnerIndex}
       netSL={opposed ? pb.result!.netSL : undefined}

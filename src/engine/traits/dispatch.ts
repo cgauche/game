@@ -202,7 +202,9 @@ export function traitPassiveMods(traits: TraitList | undefined): PassiveMod[] {
   const out: PassiveMod[] = [];
   for (const t of traits ?? []) {
     const ops = traitById.get(t.id)?.passive; // lecture PAR ID stable (≠ jointure par libellé)
-    if (ops) for (const op of ops) out.push({ op, kind: 'intrinsèque' }); // le collecteur affecte le kind (≠ donnée)
+    // `src` = LE trait émetteur : c'est lui qui NOMME la composante d'un détail de jet (« +10 Dressé
+    // pour divertir ») et ouvre sa fiche — jamais le repli de famille (`passivePartLine`).
+    if (ops) for (const op of ops) out.push({ op, kind: 'intrinsèque', src: { category: 'traits', id: t.id } }); // le collecteur affecte le kind (≠ donnée)
   }
   return out;
 }

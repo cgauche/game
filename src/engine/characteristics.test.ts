@@ -59,11 +59,18 @@ describe('volatileCharLines — décomposition étiquetée du pool non-cumul (is
     expect(lines.reduce((s, l) => s + l.value, 0)).toBe(10);
   });
 
-  it('pire pénalité = séquelle (non-cumul) → ligne étiquetée du kind, valeur = worstPenalty', () => {
+  /**
+   * RÉÉCRIT (#1153) : ce test verrouillait le libellé de FAMILLE « Séquelle ». Une composante se nomme
+   * par son OCTROYEUR — la MÊME séquelle disait déjà « Fracture (Majeure) » sur le canal `skillMod`
+   * (`skills.testValueParts`) et « Séquelle » sur le canal `charMod` qui alimente la modale d'ATTAQUE.
+   * Le nom attendu est celui que le `Trauma` PORTE, et il est le même sur les deux canaux.
+   */
+  it('pire pénalité = séquelle (non-cumul) → ligne au NOM de la séquelle, valeur = worstPenalty', () => {
     const trauma = traumaById(dechirureFractureFicheId('fracture', 'majeur', 'corps'), undefined, 'corps');
     const c = mk([], 40, { traumas: [trauma] });
     const lines = volatileCharLines(c, 'force');
-    expect(lines).toEqual([{ label: 'Séquelle', value: -30, uncapped: true }]);
+    expect(lines).toEqual([{ label: trauma.label, value: -30, uncapped: true, ref: undefined }]);
+    expect(lines[0].label).not.toBe('Séquelle'); // le nom de la FAMILLE n'est pas un nom d'octroyeur
     expect(effectiveChar(c, 'force')).toBe(40 - 30);
   });
 });

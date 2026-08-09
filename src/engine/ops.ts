@@ -1008,7 +1008,17 @@ export type PassiveKind =
  *  pour un `kind:'maladie'`, le trait pour une aura) — posée par le collecteur, qui la connaît au
  *  moment où il pousse. Elle sert l'AFFICHAGE nommé d'une composante (chip « −30 Brisé » et son
  *  renvoi Codex, `combatTestPenaltyParts`) ; le calcul ne la lit jamais. */
-export interface PassiveMod { op: GameOp; kind?: PassiveKind; src?: CodexTarget }
+export interface PassiveMod {
+  op: GameOp;
+  kind?: PassiveKind;
+  /** Entité ÉMETTRICE en ids stables — c'est elle qui NOMME la composante d'un détail de jet et lui
+   *  donne son renvoi Codex (`passivePartLine`). À poser à l'ÉMISSION, jamais devinée au rendu. */
+  src?: CodexTarget;
+  /** Nom PROPRE de l'émetteur, pour une entité HORS CATALOGUE (armure forgée à la main, mutation
+   *  maison) : il n'y a aucune fiche à ouvrir, mais la composante doit rester NOMMÉE — jamais repliée
+   *  sur sa famille (« Passif »). Lu par `passivePartLine` quand `src` manque ou ne résout pas. */
+  label?: string;
+}
 
 export interface OpsCtx {
   rng?: RNG;
@@ -1745,7 +1755,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'testMod': {
         // `char` présent = modificateur QUALIFIÉ (Mystracine « +10 aux Tests d'Endurance et de FM,
         // −10 Ag/I/Int », LDB 71 l.33) → `testModChar`, lu par `testValue` pour les seuls Tests de cette
-        // Caractéristique ; absent = mod GLOBAL (lu par `effectTestMod`, qui EXCLUT les qualifiés).
+        // Caractéristique ; absent = mod GLOBAL (lu par `effectGlobalTestMod`, qui EXCLUT les qualifiés).
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,

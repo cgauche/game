@@ -87,14 +87,16 @@ describe('#1064 — le pending PORTE le détail du Soutien (couture)', () => {
     expect(useGame.getState().pendingTest!.clamped).toBeUndefined();
   });
 
-  it('PORTE du seam (`openPartyTest`) : l’étape de cascade porte `support` à côté de sa base soutenue', () => {
+  it('PORTE du seam (`openPartyTest`) : base NUE + Soutien en ligne de mod NOMMÉE, cible soutenue', () => {
     const leader = skilled('h1', undefined, 'perception', 5);
     const help = skilled('h2', undefined);
     useGame.setState({ party: [leader, help] });
     openPartyTest(useGame.getState, useGame.setState, { skill: 'perception', actionLabel: 'Fouiller la pièce', difficulty: 'intermediaire' }, 'testSoutienSeam');
     const step = useGame.getState().pendingCascade!.participants[0];
-    expect(step.base).toBe(45); // 35 + 10 (Soutien fondu dans la valeur du meneur)
-    expect(step.support).toEqual({ count: 1, bonus: 10, ids: ['h2'] });
+    expect(step.base).toBe(35); // Niveau de Compétence NU du meneur (Ag 30 + 5), LDB 09 l.17
+    expect(step.target).toBe(45); // …le Soutien reste un MODIFICATEUR compris dans la cible (l.189-190)
+    expect(step.mods).toEqual([{ label: 'Soutien', value: 10, ref: { category: 'regles', id: 'soutien' }, by: [{ id: 'h2' }] }]);
+    expect(step.support).toBeUndefined(); // rien à défaire : la base n'a jamais fondu le Soutien
   });
 });
 

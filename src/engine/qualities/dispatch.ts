@@ -166,11 +166,16 @@ export function craftTestDRAdjust(w: QualityCarrier | undefined, success: boolea
 
 /** Somme des modificateurs de Sociabilité (Laid -10, LDB 60 l.54) des qualités du porteur — lus dans la DONNÉE
  *  éditable (`qualities.json` → `QualityData.passive`, op `testMod{Soc}`), extraits comme `traitCharMods`. */
-export function qualitySocMod(w: QualityCarrier | undefined): number {
-  let d = 0;
+export function qualitySocMods(w: QualityCarrier | undefined): { id: string; amount: number }[] {
+  const out: { id: string; amount: number }[] = [];
   for (const r of resolveQualities(w))
-    for (const op of passiveOf(r.id)) if (op.op === 'testMod' && op.char === 'sociabilite') d += op.amount;
-  return d;
+    for (const op of passiveOf(r.id)) if (op.op === 'testMod' && op.char === 'sociabilite') out.push({ id: r.id, amount: op.amount });
+  return out;
+}
+
+/** Somme de `qualitySocMods` — SOURCE UNIQUE, pour les sites qui n'ont qu'un nombre à porter. */
+export function qualitySocMod(w: QualityCarrier | undefined): number {
+  return qualitySocMods(w).reduce((s, q) => s + q.amount, 0);
 }
 
 /** Indice d'équipage requis d'une Arme d'équipe (la valeur de la qualité `crewedTeam`), 0 si l'arme n'en a

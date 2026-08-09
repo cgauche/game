@@ -17,7 +17,7 @@
 import { battleRng } from './battleRng';
 import { placeOfScene } from './worldMap';
 import { dayIndex } from './upkeep';
-import { partyAssisted, partyBest, testValue, supportSplit } from '../engine/skills';
+import { partyAssisted, partyBest, testValue, skillBaseValue } from '../engine/skills';
 import { opposedTest, resolveOpposed, SL_ASTOUNDING, difficultyFromModifier, type OpposedResult } from '../engine/tests';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { d100, type RNG } from '../engine/dice';
@@ -215,12 +215,15 @@ function bargainPct(winnerNegotiator: boolean, netSL: number): number {
 }
 
 /** Marchandage OPPOSÉ terrestre (MSRC 13 l.127) : les deux camps jettent, puis `resolveOpposed` est le
- *  SEUL juge (LDB 12 l.160) — le meneur y oppose sa Compétence NUE, `supportSplit` défaisant le Soutien
- *  que `partyAssisted` a fondu dans sa valeur de jet (LDB 12 l.189-190). SOURCE UNIQUE des deux sites
- *  (achat + vente) : plus aucun départage artisanal par `>` au call-site. */
+ *  SEUL juge (LDB 12 l.160) — le meneur y oppose son Niveau de Compétence NU, lu à l'accesseur canon
+ *  (`skillBaseValue`, `LDB 09 l.17`) et non reconstitué par soustraction : sa valeur de jet
+ *  (`partyAssisted`) porte le Soutien et TOUS les modificateurs de la valeur de Test (États, mutation,
+ *  qualité d'objet… — inventaire : `skills.testValueParts`), qui appartiennent à la CIBLE.
+ *  SOURCE UNIQUE des deux sites (achat + vente) : plus aucun départage artisanal par `>` au
+ *  call-site. */
 function bargainOpposed(best: NonNullable<ReturnType<typeof partyAssisted>>, merchant: number, rng: RNG): OpposedResult {
   const rolled = opposedTest(best.value, merchant, rng, 'intermediaire', 'intermediaire');
-  return resolveOpposed({ ...rolled.attacker, base: supportSplit(best.value, best.support).base }, rolled.defender);
+  return resolveOpposed({ ...rolled.attacker, base: skillBaseValue(best.actor, 'marchandage') }, rolled.defender);
 }
 
 /** ACHAT d'une cargaison (MSRC 13 l.129-131) : prix = Enc × prix de base, modulé par le Marchandage opposé et

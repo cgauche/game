@@ -82,7 +82,9 @@ export function opposedLines(
 ): Array<{ d?: RollBreakdown; pending?: PendingRoll }> {
   return specs.map((s) => (s.r
     ? { d: { ...testBreakdown(s.label, s.base, s.r, difficulty, s.mods), ...(s.mask ? { mask: s.mask } : {}) } }
-    : { pending: testPending(s.label, s.base, s.target, difficulty, s.mods) }));
+    // Le masque suit la ligne AVANT le jet comme après : une ligne adverse opaque (`mask:'value'`) le
+    // reste en PRÉ-JET, sinon la rangée figée révélerait la Compétence que le jet, lui, cachera.
+    : { pending: { ...testPending(s.label, s.base, s.target, difficulty, s.mods), ...(s.mask ? { mask: s.mask } : {}) } }));
 }
 
 /**

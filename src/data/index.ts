@@ -2816,6 +2816,7 @@ export function findById(category: string, id: string): { label: string } | unde
     case 'etats': return findConditionById(id);
     case 'psychologies': return findPsychologyById(id); // clé de CATÉGORIE Codex (cf. `CATEGORY_BY_SOURCE_KIND`)
     case 'traits': return findTraitById(id);
+    case 'mutations': return findMutationById(id); // clé de CATÉGORIE Codex (compendium/registry, relations)
     case 'symptoms': return findSymptomById(id);
     case 'maladies': return findDiseaseById(id) ? { label: findDiseaseById(id)!.label } : undefined;
     default: return undefined;

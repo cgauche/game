@@ -24,7 +24,7 @@
  */
 import { battleRng } from './battleRng';
 import { placeOfScene, placeById } from './worldMap';
-import { partyAssisted, supportSplit } from '../engine/skills';
+import { partyAssisted } from '../engine/skills';
 import { resolveOpposed, bumpSL, SL_ASTOUNDING, type TestResult } from '../engine/tests';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, toMoney, priceToMoney } from '../engine/money';
@@ -208,14 +208,13 @@ export function portBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   }, PORT_BUY_BARGAIN_KIND, { cargoId, want, basePrice: offer.basePrice, merchantValue: merchant.value, merchantNegotiator: merchant.negotiator, sellerDR });
 }
 
-/** `TestResult` du héros MARCHANDEUR reconstruit depuis son étape de cascade. La valeur portée en
- *  `base` est la Compétence NUE (`supportSplit` défait le Soutien fondu dans `step.base` par
- *  `rollSeam`) — LDB 12 l.189-190 / l.160 : c'est elle que `resolveOpposed` compare à DR égal.
+/** `TestResult` du héros MARCHANDEUR reconstruit depuis son étape de cascade. `step.base` EST déjà le
+ *  Niveau de Compétence nu posé par la porte du seam (`rollSeam.buildMonoStep`, `LDB 09 l.17`) — la
+ *  grandeur que `resolveOpposed` compare à DR égal (`LDB 12 l.160`) : rien à en défaire ici.
  *  SOURCE UNIQUE des deux appliers de Marchandage portuaire (achat + vente). */
 function bargainHeroTR(step: CascadeStep): TestResult {
   const r = step.result!;
-  const nue = step.base != null ? supportSplit(step.base, step.support).base : undefined;
-  return { roll: r.roll, target: r.target, ...(nue != null ? { base: nue } : {}), success: r.success, sl: r.sl, isDouble: false };
+  return { roll: r.roll, target: r.target, ...(step.base != null ? { base: step.base } : {}), success: r.success, sl: r.sl, isDouble: false };
 }
 
 const PORT_BUY_BARGAIN_KIND = 'port-buy-bargain';

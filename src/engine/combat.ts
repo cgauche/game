@@ -552,7 +552,7 @@ export function attackModifiers(
       const name = rangeBandName(opts.distanceTiles, rangeM, opts.metresPerTile);
       if (m != null && m !== 0 && name) out.push({ label: name, value: m, ref: RULE_REF['portee-d-une-arme'] });
     }
-    if (attacker.aiming) out.push({ label: 'Viser', value: 20, ref: RULE_REF.viser }); // LDB 13, Tableau des Difficultés de Combat — Accessible (+20)
+    if (attacker.aiming) out.push({ label: 'Viser', value: 20, ref: RULE_REF.viser }); // LDB 14, Tableau des Difficultés de Combat — Accessible (+20)
     // Salve (Aux Armes p.126) : chaque tir SUPPLÉMENTAIRE dans le Round subit −10 cumulatif.
     const salvoShots = hasQuality(weapon, 'salve') ? (attacker.shotsThisTurn ?? 0) : 0;
     if (salvoShots > 0) out.push({ label: 'Salve (tir suivant)', value: -10 * salvoShots, ref: RULE_REF.salve });

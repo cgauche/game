@@ -71,6 +71,7 @@ export type RuleId =
   | 'commandant-d-equipe'
   | 'exposition'
   | 'faim-et-soif'
+  | 'encombrement'
   | 'navigation-derive'
   | 'navigation-greement'
   | 'navigation-chavirage'
@@ -117,6 +118,7 @@ export const RULE_REF: Record<RuleId, CodexTarget> = {
   'commandant-d-equipe': { category: 'talents', id: 'commandant-d-equipe' },
   exposition: { category: 'regles', id: 'exposition' },
   'faim-et-soif': { category: 'regles', id: 'faim-et-soif' },
+  encombrement: { category: 'regles', id: 'encombrement' },
   'navigation-derive': { category: 'regles', id: 'navigation-derive' },
   'navigation-greement': { category: 'regles', id: 'navigation-greement' },
   'navigation-chavirage': { category: 'regles', id: 'navigation-chavirage' },

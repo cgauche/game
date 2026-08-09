@@ -163,10 +163,6 @@ function refLessProducers(): string[] {
  *    référence devrait naître au producteur `seaWeatherTestMod`).
  */
 const RATCHET = [
-  'src/engine/characteristics.ts · e.label',
-  'src/engine/characteristics.ts · p.label',
-  'src/engine/characteristics.ts · best.label',
-  'src/engine/characteristics.ts · worst.label',
   "src/engine/combat.ts · 'Neige épaisse'",
   "src/state/combatFlow.ts · tr('cf.coverLabel', { cover })",
   'src/state/combatFlow.ts · sc.label',

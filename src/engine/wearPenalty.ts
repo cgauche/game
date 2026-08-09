@@ -6,16 +6,17 @@
  * double — LDB 60 l.22/58).
  */
 import { Combatant } from './types';
-import type { PassiveMod } from './ops';
-import { hasQuality, qualitySocMod } from './qualities/dispatch';
+import type { GameOp, PassiveMod } from './ops';
+import type { CodexTarget } from './ruleRefs';
+import { hasQuality, qualitySocMods } from './qualities/dispatch';
 
 /** Préfixe d'id des pseudo-qualités de pénalité de port : `en-<skillId>` (`en-discretion`, `en-perception`). */
 const WEAR_PREFIX = 'en-';
 
 /** Pénalités de port (skillId stable, valeur ≤ 0) des armures ÉQUIPÉES, modulées par l'artisanat
  *  (Pratique +10 plancher 0, Peu Fiable ×2). SOURCE UNIQUE : `wornArmourPenalty` + le collecteur passif. */
-function wearEntries(c: Combatant): { skill: string; value: number }[] {
-  const out: { skill: string; value: number }[] = [];
+function wearEntries(c: Combatant): { skill: string; value: number; src?: CodexTarget; label: string }[] {
+  const out: { skill: string; value: number; src?: CodexTarget; label: string }[] = [];
   for (const piece of c.items ?? []) {
     if (!piece.equipped || piece.kind !== 'armor') continue;
     for (const q of piece.qualities ?? []) {
@@ -24,7 +25,11 @@ function wearEntries(c: Combatant): { skill: string; value: number }[] {
       let v = q.value; // négatif (magnitude LDB 63)
       if (hasQuality(piece, 'pratique')) v = Math.min(0, v + 10); // Atout : -1 niveau (LDB 60 l.22)
       if (hasQuality(piece, 'peu-fiable')) v = v * 2; // Défaut : doublée (LDB 60 l.58)
-      if (v) out.push({ skill, value: v });
+      // `src` = LA PIÈCE portée : c'est elle qui NOMME la chip du jet (« −10 Cotte de mailles »), pas la
+      // pseudo-qualité `en-<skill>` dont le libellé de catalogue (« % en discretion ») est un gabarit.
+      // Pièce CUSTOM (forgée à la main, sans `trappingId`) : aucune fiche à ouvrir — son `label` propre
+      // la nomme quand même (arbitrage hors-catalogue, cf. `passivePartLine`).
+      if (v) out.push({ skill, value: v, label: piece.label, ...(piece.trappingId ? { src: { category: 'trappings', id: piece.trappingId } } : {}) });
     }
   }
   return out;
@@ -35,14 +40,25 @@ export function wornArmourPenalty(c: Combatant, skillId: string): number {
   return wearEntries(c).filter((e) => e.skill === skillId).reduce((s, e) => s + e.value, 0);
 }
 
-/** Pénalités de port → ops `skillMod` skill-qualifiées (kind `intrinsèque`, Σ) pour le collecteur passif unifié. */
+/** Pénalités de port → ops `skillMod` skill-qualifiées (kind `intrinsèque`, Σ) pour le collecteur passif
+ *  unifié, chacune ATTRIBUÉE à la pièce qui la porte (`src`) pour que le détail de jet la NOMME. */
 export function qualityWearMods(c: Combatant): PassiveMod[] {
-  return wearEntries(c).map((e) => ({ op: { op: 'skillMod' as const, skill: e.skill, mod: e.value }, kind: 'intrinsèque' as const }));
+  return wearEntries(c).map((e) => ({ op: { op: 'skillMod' as const, skill: e.skill, mod: e.value }, kind: 'intrinsèque' as const, label: e.label, ...(e.src ? { src: e.src } : {}) }));
 }
 
-/** Somme des modificateurs de Sociabilité (≤ 0) des objets ÉQUIPÉS de `c` (objet Laid -10, LDB 60 l.54). */
+/** Modificateurs de Sociabilité (≤ 0) des objets ÉQUIPÉS de `c` (objet Laid −10, LDB 60 l.54), UN PAR
+ *  QUALITÉ émettrice : le `src` porte la qualité, donc le détail de jet la NOMME (« −10 Laid ») au lieu
+ *  d'un total anonyme. SOURCE UNIQUE — `wornSocialMod` n'en est que la somme. */
+export function wornSocialMods(c: Combatant): PassiveMod[] {
+  const out: PassiveMod[] = [];
+  for (const piece of c.items ?? []) {
+    if (!piece.equipped) continue;
+    for (const q of qualitySocMods(piece)) out.push({ op: { op: 'testMod', amount: q.amount, char: 'sociabilite' }, kind: 'intrinsèque', src: { category: 'qualities', id: q.id } });
+  }
+  return out;
+}
+
+/** Somme de `wornSocialMods` — pour les sites qui n'ont qu'un nombre à porter. */
 export function wornSocialMod(c: Combatant): number {
-  let total = 0;
-  for (const piece of c.items ?? []) if (piece.equipped) total += qualitySocMod(piece);
-  return total;
+  return wornSocialMods(c).reduce((s, m) => s + (m.op as Extract<GameOp, { op: 'testMod' }>).amount, 0);
 }

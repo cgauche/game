@@ -13,7 +13,7 @@ import { SL_ASTOUNDING } from '../engine/tests';
 import { craftPriceFactor, shiftAvailability } from '../engine/qualities/craftEconomy';
 import { rule, type RuleValue } from '../engine/policy';
 import type { SceneEntity } from './scene';
-import { partyAssisted, type SupportDetail } from '../engine/skills';
+import { partyAssisted, skillBaseValue, type SupportDetail } from '../engine/skills';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { appraiseEstimate } from '../engine/appraisal';
 import { makeRNG } from '../engine/dice';
@@ -801,7 +801,12 @@ export function startBargain(get: Get, set: Set, mode: 'buy' | 'sell'): void {
   set({ pendingBargain: {
     playerId: best.actor.id, playerName: best.actor.label,
     merchantName: arch?.label ?? 'Marchand', merchantValue: arch?.bargainSkill ?? 40,
-    playerSkill: best.value, support: best.support, mode, negotiator, roll: null, merchantRoll: null, result: null,
+    playerSkill: best.value, support: best.support,
+    // Grandeur du départage à DR égal (`LDB 12 l.160`) : le Niveau de Compétence NU, à l'accesseur
+    // canon — `best.value` est la valeur de TEST, qui porte en plus le Soutien et TOUT modificateur du
+    // Marchandage (États, mutation Visage inversé, objet Laid… — cf. `skills.testValueParts`).
+    playerBase: skillBaseValue(best.actor, 'marchandage', undefined, 'sociabilite'),
+    mode, negotiator, roll: null, merchantRoll: null, result: null,
   } });
 }
 

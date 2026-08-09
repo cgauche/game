@@ -8,10 +8,10 @@ import { itemCapability } from './capabilities';
 import { groupMatch } from './groups';
 import { effectiveChar, bonus } from './characteristics';
 import { assistBonus } from './tests';
-import { testStatePenalty, activeCharTestMod, isMovementSkill } from './conditions';
+import { testStatePenalty, testStatePenaltyParts, activeCharTestMod, activeCharTestModParts, passivePartLine, isMovementSkill } from './conditions';
 import { agilityTestPenalty } from './encumbrance';
-import { traumaSkillPenalty, passiveSkillSum, passiveTestMod } from './trauma';
-import type { PairedSense } from './ops';
+import { traumaSkillPenalty, traumaSkillPenaltyParts, passiveSkillSum, passiveSkillParts, passiveTestMod, passiveTestModParts } from './trauma';
+import type { GameOp, PairedSense } from './ops';
 import type { ModLine } from './combat';
 import { RULE_REF } from './ruleRefs';
 import { rule } from './policy';
@@ -88,10 +88,43 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   const passive = passiveSkillSum(c, skill) + passiveTestMod(c, ck);
   // Mods de Test char-QUALIFIÉS d'effets ACTIFS (op `testMod{char}` exécutée — Mystracine « +10 aux
   // Tests d'E et de FM, −10 Ag/I/Int », LDB 71 l.33) : sommés pour la seule carac testée ; les mods
-  // GLOBAUX (sans char) sont déjà comptés via `testStatePenalty` (→ effectTestMod). `movementOnly`
+  // GLOBAUX (sans char) sont déjà comptés via `testStatePenalty`. `movementOnly`
   // (#193, Genou démis « Tests impliquant cette jambe ») restreint aux Tests classés « déplacement ».
   const fxChar = activeCharTestMod(c, ck, { movement: isMovementSkill(skill) });
   return base + (sk?.advances ?? 0) + states + enc + traumaSkill + passive + fxChar + skillToolMod(c, skill);
+}
+
+/**
+ * DÉCOMPOSITION EXHAUSTIVE de `testValue` en composantes NOMMÉES — LE socle d'affichage de tout Test
+ * hors combat, et la garantie que l'écran annonce ce que le moteur calcule. INVARIANT vérifié par la
+ * garde `test-value-parts.test.ts` :
+ *
+ *     testValue(c, skill, char, spec, sense) === skillBaseValue(c, skill, spec, char) + Σ testValueParts(…)
+ *
+ * Un poste AJOUTÉ à `testValue` sans son producteur de parts casse cette garde — c'est ELLE qui
+ * interdit la dérive, pas ce commentaire. Chaque part tire son libellé de la DONNÉE (le `src` du
+ * collecteur `passiveMods`, via `passivePartLine`/`refLabel`) : aucun branchement par id d'entité.
+ * L'ORDRE des postes suit celui de `testValue`, poste pour poste.
+ */
+export function testValueParts(c: Combatant, skill?: string, characteristic?: CharKey, spec?: string, sense?: PairedSense): ModLine[] {
+  if (!skill && !characteristic) return []; // ni compétence ni caractéristique : `testValue` rend 0
+  const ck = effectiveSkillCharKey(c, skill, { explicit: characteristic, spec });
+  const out: ModLine[] = [];
+  out.push(...testStatePenaltyParts(c, skill)); // États + Sort global + symptôme global (LDB 16 / MSRC 16)
+  // Encombrement (LDB 61 « Surchargé ») : ne pèse QUE sur un Test d'Agilité — aucune source d'entité à
+  // nommer (la charge est un état du sac, pas un élément), d'où la règle elle-même en renvoi Codex.
+  const enc = ck === 'agilite' ? agilityTestPenalty(c) : 0;
+  if (enc) out.push({ label: 'Encombrement', value: enc, ref: RULE_REF.encombrement });
+  for (const m of traumaSkillPenaltyParts(c, skill, sense)) out.push(passivePartLine(m, (m.op as Extract<GameOp, { op: 'skillMod' }>).mod));
+  for (const m of passiveSkillParts(c, skill)) out.push(passivePartLine(m, (m.op as Extract<GameOp, { op: 'skillMod' }>).mod));
+  for (const m of passiveTestModParts(c, ck)) out.push(passivePartLine(m, (m.op as Extract<GameOp, { op: 'testMod' }>).amount));
+  out.push(...activeCharTestModParts(c, ck, { movement: isMovementSkill(skill) }));
+  // Outil manquant (LDB 09 l.168) : c'est la DONNÉE de la Compétence qui déclare l'outil requis
+  // (`SkillData.tool` — `capability`/`withoutMod`, sans libellé d'affichage), donc le renvoi Codex est
+  // la fiche de la Compétence elle-même, qui porte la règle.
+  const tool = skillToolMod(c, skill);
+  if (tool && skill) out.push({ label: 'Sans outil', value: tool, ref: { category: 'skills', id: skill } });
+  return out.filter((l) => l.value !== 0);
 }
 
 /** Malus « sans l'outil de la compétence » (LDB 09 l.168 : les Difficultés de Crochetage « supposent
@@ -113,10 +146,13 @@ export function skillToolMod(c: Combatant, skill?: string): number {
  *  `calmeValue` à toute compétence déclarée en donnée) ET grandeur du départage à DR égal
  *  (`LDB 12 l.160`, `resolveOpposed`). `explicitChar` : Caractéristique IMPOSÉE par l'appelant quand
  *  elle ne se déduit pas de la Compétence (surcharge de Domaine pour Langue (Magick) —
- *  `magic.castingBaseValue`), jamais un recalcul parallèle de la formule. */
-export function skillBaseValue(c: Combatant, skill: string, spec?: string, explicitChar?: CharKey): number {
+ *  `magic.castingBaseValue`), jamais un recalcul parallèle de la formule. `skill` absent = Test de
+ *  PURE Caractéristique (`explicitChar` seule, aucune Augmentation) — même porte que `testValue`,
+ *  qui accepte la même forme ; ni compétence ni caractéristique ⇒ 0 (rien à tester). */
+export function skillBaseValue(c: Combatant, skill?: string, spec?: string, explicitChar?: CharKey): number {
+  if (!skill && !explicitChar) return 0;
   const ck = effectiveSkillCharKey(c, skill, { spec, explicit: explicitChar });
-  const adv = c.skills.find((s) => s.skillId === skill && (spec == null || s.spec === spec))?.advances ?? 0;
+  const adv = skill ? c.skills.find((s) => s.skillId === skill && (spec == null || s.spec === spec))?.advances ?? 0 : 0;
   return effectiveChar(c, ck) + adv;
 }
 
