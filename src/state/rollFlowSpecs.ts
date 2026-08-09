@@ -50,6 +50,8 @@ import { d100, defaultRNG, type RNG } from '../engine/dice';
 import { resolveRun, resolveDeliberateFall, runFromTest, fallFromTest } from '../engine/movement';
 import { rollCrewRole, forceCrewRole } from './shipManeuver';
 import { rollBatchParticipant, forceBatchParticipant, opposedCascadeRoll, stepOpposedFreeze } from './cascade';
+import { rollLine } from './rollSeam';
+import { activityModLines } from '../engine/activities';
 import { testValue, effectiveSkillCharKey, skillBaseValue } from '../engine/skills';
 import { skillDRBonus, charDRBonusOf, offTerrainTestDR } from '../engine/ops';
 import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestDRMods, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, withCastTestDRMods, castTestOf, castingValue, castInfoIsPrayer, malepierreDR, malepierreReserveOf } from '../engine/magic';
@@ -1644,7 +1646,12 @@ export const FLOWS = {
       // l.219 / Planification l.75). Les openers de BATAILLE la pré-cuisent dans `p.target` (mod fondu) ; les
       // openers d'interlude ouvrent avec `target: 0` (rempli ici au 1ᵉʳ jet). On la (re)calcule pour NE JAMAIS
       // relâcher le mod : IDENTIQUE à `p.target` en bataille, renseignée en interlude.
-      const effTarget = Math.max(1, Math.min(99, p.skillValue + DIFFICULTY_MODIFIERS[p.difficulty] + (p.mod ?? 0)));
+      // `skillValue` est BAKÉE dans le pending (le Test d'Activité n'en porte pas les ids) — valeur
+      // déclarée étrangère ; le mod de situation pèse SUR LA CIBLE et se nomme.
+      const effTarget = rollLine({
+        valeur: p.skillValue, valeurEtrangere: true, difficulty: p.difficulty,
+        surLaCible: activityModLines(p.mod, p.modLabel),
+      }).target;
       if (p.ritualSpell) {
         // Rituel (Test étendu de Focalisation, `VDM 02 l.129-141`) : ce Round est un Round de
         // Focalisation — orchestré par `resolveFocus` (`engine/magic.ts`, malepierre/Talent/armure
@@ -1756,7 +1763,8 @@ export const FLOWS = {
     resolve: (_s, p, _actor, _get, forced) => {
       if (forced) {
         if (p.success) return null; // déjà réussi → rien à forcer
-        const target = p.roll?.target ?? p.skillValue + DIFFICULTY_MODIFIERS[p.difficulty]; // cible effective (cf. rollTest)
+        // Cible effective du repli (cf. `rollTest`) : valeur BAKÉE au pending — montée, écrêtée comprise.
+        const target = p.roll?.target ?? rollLine({ valeur: p.skillValue, valeurEtrangere: true, difficulty: p.difficulty }).target;
         const die = bestForcedRoll(target); // dé DR-MAX policy-aware (JAMAIS 01 en dur)
         const actorT = forcedTR(die, target, Math.max(evaluateTest(die, target).sl, p.requireSl ?? 1, 1), p.skillValue);
         if (p.opposed && p.opponentRoll) {

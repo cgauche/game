@@ -5,7 +5,7 @@ import type { ModLine } from '../engine/combat';
 import { evaluateTest } from '../engine/tests';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending, testValueSplit, opposedLines } from './breakdown';
-import { activityById } from '../engine/activities';
+import { activityById, activityModLines } from '../engine/activities';
 import { describeActivity } from '../state/flowOutcomes';
 import { resultLines, freeCons } from '../state/rollSeam';
 import { activityStakeRef, hasActivityStake } from '../data';
@@ -46,8 +46,7 @@ export function ActivityModal() {
   const { base, mods: supMods } = testValueSplit(actor, pa.skillValue, {
     support: pa.support, skill: tested?.skillId, characteristic: tested ? undefined : actDef?.char, spec: tested?.spec,
   });
-  const situationMod: ModLine | undefined = pa.mod ? { label: pa.modLabel ?? 'Modificateur', value: pa.mod } : undefined;
-  const extraMods: ModLine[] = [...supMods, ...(situationMod ? [situationMod] : [])];
+  const extraMods: ModLine[] = [...supMods, ...activityModLines(pa.mod, pa.modLabel)];
   // Cible affichée : celle du jet (pré-cuite dès l'ouverture en bataille, sinon dérivée base+Difficulté).
   const target1 = rolled ? pa.target : undefined;
 
@@ -86,7 +85,8 @@ export function ActivityModal() {
   // Test COMBINÉ (Infiltration/Repérage, l.75/102 — UN jet vs DEUX compétences, LDB 12 l.202-206) : 2ᵉ rangée
   // TÉMOIN de la seconde compétence (même dé), l'issue lit `combinedLevel` (full/partial/fail) via `describeActivity`.
   if (pa.target2 != null && pa.skill2) {
-    const secondMods = situationMod ? [situationMod] : undefined; // le Soutien ne porte que sur la compétence menante
+    const situationLines = activityModLines(pa.mod, pa.modLabel);
+    const secondMods = situationLines.length ? situationLines : undefined; // le Soutien ne porte que sur la compétence menante
     rows.push({
       key: 'skill2',
       row: {

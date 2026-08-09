@@ -23,9 +23,9 @@ import { placeById, placeOfScene, type WorldMap, type MapPlace } from './worldMa
 import { testValue } from '../engine/skills';
 import { isOutOfAction } from '../engine/conditions';
 import { rule } from '../engine/policy';
-import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
+import { DIFFICULTY_LABELS, type Combatant, type Difficulty } from '../engine/types';
 import { startCascade, registerCascadeApplier } from './cascade';
-import { freeCons, rollSansPilote } from './rollSeam';
+import { freeCons, rollSansPilote, rollStep } from './rollSeam';
 import { humanControlled } from './netOwnership';
 import { possessionLabel } from '../engine/possession';
 import type { CascadeStep } from './pendings';
@@ -145,12 +145,13 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
   const meta = { shoreId: shore?.id ?? '', journalMark };
   const steps: CascadeStep[] = swimmers.map((h) => {
     const value = testValue(h, 'natation', 'force');
-    const target = Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS[diff]));
     const human = humanControlled(get(), h);
     const result = human ? null : (() => { const t = rollSansPilote(get, h, value, diff, rng); return { roll: t.roll, target: t.target, sl: t.sl, success: t.success }; })();
     return {
       id: `shipwreck-${h.id}`, kind: 'shipwreckSwim', actorId: h.id, icon: 'nautical/swim',
-      label: `${h.label} — Natation`, rollLabel: 'Natation', base: value, target, result, interactive: human,
+      label: `${h.label} — Natation`, rollLabel: 'Natation', difficulty: diff,
+      ...rollStep({ actor: h, test: { skill: 'natation', char: 'force' }, difficulty: diff }),
+      result, interactive: human,
       meta,
     };
   });

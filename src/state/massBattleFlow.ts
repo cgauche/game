@@ -28,9 +28,11 @@ import { inanimateCombatant } from '../engine/inanimate';
 import { applyOps } from '../engine/ops';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { refLabel } from '../data';
-import { CHAR_LABELS, DIFFICULTY_MODIFIERS } from '../engine/types';
+import { CHAR_LABELS } from '../engine/types';
+import { clampTarget } from '../engine/tests';
+import { rollLine } from './rollSeam';
 import {
-  activityById, activitiesFor, matchBattleOutcomes, battleOutcomeAmount,
+  activityById, activitiesFor, activityModLines, matchBattleOutcomes, battleOutcomeAmount,
   type ActivityDef, type BattleResolution, type BattleOutcome as BattleOutcomeDelta,
 } from '../engine/activities';
 import type { PendingActivity, PendingActivityFields, ActivityOppositionOn } from './interludeFlow';
@@ -347,10 +349,17 @@ function openBattlePending(_get: Get, set: Set, o: {
   heroIds?: string[]; support?: SupportDetail;
 }): void {
   const skillLabel = o.skillId ? refLabel('skills', { id: o.skillId, spec: o.spec }) : o.char ? CHAR_LABELS[o.char] : 'Test';
-  const diffMod = DIFFICULTY_MOD(o.difficulty) + (o.mod ?? 0);
-  const target = Math.max(1, Math.min(99, o.skillValue + diffMod));
+  // Cibles montées par le monteur canonique (`rollLine`, #1153) : le modificateur de SITUATION (Menace
+  // ADE II 8 l.219 / Planification l.75) pèse SUR LA CIBLE (il n'est pas dans la valeur) et se nomme.
+  const surLaCible = activityModLines(o.mod, o.modLabel);
+  const target = rollLine({
+    actor: o.actor,
+    ...(o.skillId || o.char ? { test: { skill: o.skillId, char: o.char, spec: o.spec } } : {}),
+    valeur: o.skillValue, soutien: o.support, difficulty: o.difficulty, surLaCible,
+  }).target;
   const combined = o.combined
-    ? { skill2: o.combined.skillId ? refLabel('skills', { id: o.combined.skillId, spec: o.combined.spec }) : CHAR_LABELS[o.char ?? 'intelligence'], skillValue2: o.combined.value, target2: Math.max(1, Math.min(99, o.combined.value + diffMod)) }
+    ? { skill2: o.combined.skillId ? refLabel('skills', { id: o.combined.skillId, spec: o.combined.spec }) : CHAR_LABELS[o.char ?? 'intelligence'], skillValue2: o.combined.value,
+      target2: rollLine({ actor: o.actor, test: { skill: o.combined.skillId, char: o.char, spec: o.combined.spec }, valeur: o.combined.value, difficulty: o.difficulty, surLaCible }).target }
     : {};
   const pa: PendingActivityFields = {
     heroId: o.actor.id, kind: 'catalog', activityId: o.def.id, battle: o.battle,
@@ -364,7 +373,6 @@ function openBattlePending(_get: Get, set: Set, o: {
   set({ pendingActivity: o.opposition ? { ...pa, ...o.opposition } : pa });
 }
 
-const DIFFICULTY_MOD = (d: Difficulty): number => DIFFICULTY_MODIFIERS[d];
 
 /** Budget d'Activités restant d'un héros — le budget UNIQUE de l'interlude (LDB 23 l.6 / ADE II 8
  *  l.65). Une prépa de bataille EST une Activité d'interlude : sans interlude ouvert, aucun budget. */
@@ -564,7 +572,8 @@ function openHoldScene(get: Get, set: Set, scene: ActivityDef): void {
     ? skillBaseValue(picked.actor, picked.skillId, picked.spec)
     : scene.char ? effectiveChar(picked.actor, scene.char) : undefined;
   const opposition: ActivityOppositionOn = {
-    enemyValue: Math.max(1, Math.min(99, armyMight(mb.enemy) + enemyBonus)),
+    // Seuil de l'opposition (aucune Difficulté : Puissance + tenue) — écrêté par la primitive PARTAGÉE.
+    enemyValue: clampTarget(armyMight(mb.enemy) + enemyBonus).target,
     enemyRoll: d100(battleRng()),
     enemyBase: armyMight(mb.enemy),
     ...(skillBase != null ? { skillBase } : {}),

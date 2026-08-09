@@ -34,14 +34,14 @@ import { restRecovery, restResistVal, applyRecoveryDay, needsRecoveryRoll, recov
 import { rollContraction, DISEASE_DEFS, contagiousDiseases, contractionDue, applyContraction, applyDiseaseGangrene, applyDiseasePersist, activeMalaiseCount } from '../engine/disease';
 import { applyOps } from '../engine/ops';
 import { rule } from '../engine/policy';
-import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
+import { type Difficulty } from '../engine/types';
 import { applyFractureEnd } from '../engine/trauma';
 import type { DeferredUpkeepTest } from './upkeep';
 import { weatherExposure, exposureTestCount, expireExposureEffects, exposureShelterFromTent, applyExposureFailure, exposureTarget, exposureCoatMods, sealskinDR, heaviestPossession, dropHeaviestPossession, type ExposureSeverity, type ExposureKind } from '../engine/exposure';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { forcedMarchTarget, applyForcedMarch } from '../engine/travel';
 import { registerCascadeApplier, startCascade } from './cascade';
-import { freeCons } from './rollSeam';
+import { freeCons, rollStep } from './rollSeam';
 import type { CascadeStep, CascadeStepMeta } from './pendings';
 import { isRation, feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
 import { toBrass, fromBrass, formatMoney, priceToMoney, type Money } from '../engine/money';
@@ -467,7 +467,8 @@ export function deferredUpkeepSteps(party: Combatant[], deferred: DeferredUpkeep
     if (!h || h.dead) continue;
     const st: CascadeStep = { id: `${t.kind}-${t.heroId}-${startIndex + steps.length}`, kind: t.kind, actorId: t.heroId, label: t.label,
       icon: UPKEEP_STEP_ICON[t.kind] ?? 'nav/dice', rollLabel: 'Résistance', base: t.base, difficulty: t.difficulty,
-      ...(t.mods?.length ? { mods: t.mods } : {}), target: t.target, result: null, interactive: true, meta: t.meta as CascadeStepMeta | undefined };
+      ...(t.mods?.length ? { mods: t.mods } : {}), target: t.target, ...(t.clamped ? { clamped: t.clamped } : {}),
+      result: null, interactive: true, meta: t.meta as CascadeStepMeta | undefined };
     applyNightStake(st);
     steps.push(st);
   }
@@ -522,7 +523,11 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     const h = party.find((x) => x.id === c.heroId);
     if (!h || h.dead) continue;
     steps.push({ id: `contagion-${c.heroId}-${steps.length}`, kind: 'contagion', actorId: c.heroId, label: `Contagion (${c.diseaseName})`, icon: 'medical/infection',
-      rollLabel: 'Résistance', base: c.resVal, difficulty: c.difficulty, target: c.resVal + DIFFICULTY_MODIFIERS[c.difficulty], result: null, interactive: true, meta: { diseaseName: c.diseaseName },
+      rollLabel: 'Résistance', difficulty: c.difficulty,
+      // `resVal` = `restResistVal` (E effective + avances de Résistance, `engine/rest.ts`) : une AUTRE
+      // formule que `testValue` (aucune pénalité d'État sur un Test passif) — déclarée comme telle.
+      ...rollStep({ actor: h, valeur: c.resVal, valeurEtrangere: true, difficulty: c.difficulty }),
+      result: null, interactive: true, meta: { diseaseName: c.diseaseName },
       menace: 'maladie' }); // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
   }
   // Campement : Exposition (intempéries) — abri de fortune (STEP) → insère les jets d'Exposition.
@@ -562,7 +567,10 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     }
     if (h.nightmares) {
       steps.push({ id: `nm-${h.id}`, kind: 'nightmare', actorId: h.id, label: 'Cauchemars', icon: 'creature/scream',
-        rollLabel: 'Calme', base: calmeVal(h), difficulty: 'facile', target: calmeVal(h) + DIFFICULTY_MODIFIERS['facile'], result: null, interactive: true });
+        rollLabel: 'Calme', difficulty: 'facile',
+        // `calmeVal` : FM effective + avances de Calme (formule locale, hors `testValue`).
+        ...rollStep({ actor: h, valeur: calmeVal(h), valeurEtrangere: true, difficulty: 'facile' }),
+        result: null, interactive: true });
     }
   }
 

@@ -563,23 +563,16 @@ const LIGNE_A_LA_MAIN_STOCK: Record<string, number> = {
   'src/state/combatEffects.ts': 5,
   'src/state/encounterPsychFlow.ts': 1,
   'src/state/shipManeuver.ts': 1,
-  // HORS COMBAT — dette restante, à router par `rollLine`
-  'src/state/massBattleFlow.ts': 4,
-  'src/state/rollFlowSpecs.ts': 4,
-  'src/state/restFlow.ts': 2,
-  'src/state/innFlow.ts': 1,
-  'src/state/interludeFlow.ts': 1,
-  'src/state/landMarketFlow.ts': 1,
-  'src/state/medicFlow.ts': 1,
-  'src/state/upkeep.ts': 1,
-  'src/state/shipwreck.ts': 2,
+  // HORS COMBAT — les 12 sites du lot précédent sont routés par `rollLine`/`rollStep` ; ce qui reste
+  // n'est pas une cible de jet.
+  'src/state/rollFlowSpecs.ts': 1, // reste : cible du dé d'une MANŒUVRE d'attaque (`combatValue`) — COMBAT, lot dédié
   'src/state/seaVoyageFlow.ts': 1, // reste : conversion Difficulté→DR d'une infestation (pas une cible)
   'src/ui/editor/LogicDock.tsx': 1, // éditeur : APERÇU d'une difficulté authorée, aucun jet
   'src/state/cascadeTestKit.ts': 1, // le cliquet lui-même (`inexplique`)
 };
 
-/** Dette TOTALE mesurée à l'installation du cliquet (37 occurrences / 18 fichiers, dont 17 en combat,
- *  hors périmètre déclaré) — verrou global : un site déplacé d'un fichier à l'autre ne s'y cache pas. */
+/** Dette TOTALE mesurée (21 occurrences / 10 fichiers, dont 17 en combat, hors périmètre déclaré) —
+ *  verrou global : un site déplacé d'un fichier à l'autre ne s'y cache pas. */
 const TOTAL_DECLARE = Object.values(LIGNE_A_LA_MAIN_STOCK).reduce((s, n) => s + n, 0);
 
 describe('CLIQUET — l’arithmétique de ligne vit dans le monteur, pas dans les flux (#1153)', () => {

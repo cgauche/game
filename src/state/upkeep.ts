@@ -30,7 +30,8 @@ import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
 import { loseWounds, addClockCondition } from '../engine/conditions';
 import { rollTest } from '../engine/tests';
 import { soberUp } from '../engine/drunkenness';
-import { DIFFICULTY_MODIFIERS, type Difficulty, type UpkeepDeferTest, type NightTestKind } from '../engine/types';
+import { type Difficulty, type UpkeepDeferTest, type NightTestKind } from '../engine/types';
+import { rollStep } from './rollSeam';
 import type { ModLine } from '../engine/combat';
 import { dailyDiseaseUpkeep, restResistVal } from '../engine/rest';
 import { conditionLabel } from '../data';
@@ -123,6 +124,8 @@ export interface DeferredUpkeepTest {
   /** Modificateurs NOMMÉS compris dans `target` (Faim/Soif : « -10 % de plus pour chaque Test », LDB 18 l.338). */
   mods?: ModLine[];
   target: number;
+  /** Écrêtage RÉELLEMENT subi par la cible (`clampTarget`) — rendu « plafond 99 » sur la ligne. */
+  clamped?: number;
   meta?: Record<string, unknown>; // p.ex. { diseaseName, onFail: GameOp[] } — porté tel quel jusqu'à l'applier
 }
 
@@ -150,10 +153,15 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
       //  convalescence) est DIFFÉRÉ en étape influençable au lieu d'être roulé ici (sinon témoin
       //  pré-résolu). Le wrapper calcule la cible (base + difficulté + pénalité) et ajoute le héros.
       const defer: UpkeepDeferTest | undefined = opts.onDeferTest
-        ? (spec) => opts.onDeferTest!({ heroId: h.id, kind: spec.kind, label: spec.label, base: spec.base,
-          difficulty: spec.difficulty,
-          ...(spec.penalty ? { mods: [{ label: spec.penalty.label, value: spec.penalty.value, ref: spec.penalty.ref }] } : {}),
-          target: spec.base + DIFFICULTY_MODIFIERS[spec.difficulty] + (spec.penalty?.value ?? 0), meta: spec.meta })
+        ? (spec) => opts.onDeferTest!({
+          heroId: h.id, kind: spec.kind, label: spec.label, difficulty: spec.difficulty,
+          // `spec.base` vient du moteur (`engine/provisions`/`disease`/`rest`/`trauma`), qui ne dit PAS
+          // de quelle formule il la tire (`testValue` pour la Faim/Soif, `restResistVal` pour maladie/
+          // convalescence) : la valeur est donc DÉCLARÉE étrangère ici — la décomposer serait deviner.
+          ...rollStep({ actor: h, valeur: spec.base, valeurEtrangere: true, difficulty: spec.difficulty,
+            ...(spec.penalty ? { surLaCible: [{ label: spec.penalty.label, value: spec.penalty.value, ref: spec.penalty.ref }] } : {}) }),
+          meta: spec.meta,
+        })
         : undefined;
       // 1. Nourriture (LDB 18 l.337-343).
       const r = dailyFoodUpkeep(h, testValue(h, 'resistance', 'endurance'), bonus(effectiveChar(h, 'endurance')), battleRng(), defer);

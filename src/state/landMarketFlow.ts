@@ -18,8 +18,7 @@ import { battleRng } from './battleRng';
 import { placeOfScene } from './worldMap';
 import { dayIndex } from './upkeep';
 import { partyAssisted, partyBest, testValue, skillBaseValue } from '../engine/skills';
-import { opposedTest, resolveOpposed, SL_ASTOUNDING, difficultyFromModifier, type OpposedResult } from '../engine/tests';
-import { DIFFICULTY_MODIFIERS } from '../engine/types';
+import { opposedTest, resolveOpposed, SL_ASTOUNDING, shiftDifficulty, type OpposedResult } from '../engine/tests';
 import { d100, type RNG } from '../engine/dice';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { registerCascadeApplier } from './cascade';
@@ -119,7 +118,7 @@ export function openLandMarket(get: Get, set: Set): void {
   openPartyTest(get, set, {
     skill: 'ragot', assisted: false,
     actionLabel: 'Rumeur commerciale',
-    difficulty: difficultyFromModifier(DIFFICULTY_MODIFIERS[gossipRule.difficulty] + gossipRule.mod),
+    difficulty: shiftDifficulty(gossipRule.difficulty, gossipRule.mod),
     stake: combatStakeRef(LAND_GOSSIP_KIND),
   }, LAND_GOSSIP_KIND, { placeId: cur.placeId });
 }

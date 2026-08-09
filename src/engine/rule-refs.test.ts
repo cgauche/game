@@ -159,7 +159,8 @@ function refLessProducers(): string[] {
  *    Difficultés ». Leur dotation attend la fiche, elle ne s'invente pas au site.
  *  - lignes AGRÉGÉES qui doivent d'abord se DÉPLIER par source, comme les pools de L4 : « Contrecoup »
  *    (somme de `castPenalties`), « autres » (résidu de réconciliation), le modificateur d'Activité
- *    (`pa.modLabel`, porté par la donnée de flux) et la météo MARITIME (`pt.envLabel`, dont la
+ *    (`activityModLines`, porté par la donnée de flux — SOURCE UNIQUE depuis #1153 : le calcul de
+ *    cible et son rendu lisent la MÊME ligne) et la météo MARITIME (`pt.envLabel`, dont la
  *    référence devrait naître au producteur `seaWeatherTestMod`).
  */
 const RATCHET = [
@@ -170,7 +171,7 @@ const RATCHET = [
   "src/state/combatFlow.ts · 'Contrecoup'",
   "src/state/travelFlow.ts · 'pas de course'",
   'src/state/travelFlow.ts · `Km déjà au pas de course (${galloped})`',
-  "src/ui/ActivityModal.tsx · pa.modLabel ?? 'Modificateur'",
+  "src/engine/activities.ts · modLabel ?? 'Modificateur'",
   "src/ui/ActivityModal.tsx · 'Rounds tenus'",
   "src/ui/jetProps/useTestJetProps.tsx · pt.envLabel ?? 'Météo'",
   "src/ui/RollLine.tsx · `${cut < 0 ? 'plafond' : 'plancher'} ${target}`",

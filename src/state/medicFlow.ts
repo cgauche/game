@@ -15,7 +15,8 @@
  * débit au clic d'acte ; « Annuler » AVANT le jet rembourse ; arrêter une opération jamais
  * commencée rembourse aussi.
  */
-import { DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
+import { type Combatant, type Difficulty } from '../engine/types';
+import { rollLine } from './rollSeam';
 import { battleRng } from './battleRng';
 import { d10 } from '../engine/dice';
 import { flowStakeRef, type StakeRef } from '../data';
@@ -83,6 +84,18 @@ export function bestHealerFor(party: Combatant[], act: HealMode): { actor: Comba
   return partyAssisted(pool, 'guerison'); // Soutien (LDB 12) : assistants de chirurgie/soin
 }
 
+/** Cible d'un jet de l'infirmerie — SOURCE UNIQUE des deux surfaces (acte simple `pendingHeal`, passe
+ *  d'opération `pendingSurgery`), montée par le monteur canonique (`rollLine`, #1153) : la valeur est
+ *  DÉCOMPOSABLE quand le soigneur est un héros (Guérison + Soutien LDB 12), et sans fiche pour un PNJ
+ *  payant — la cible est alors le seuil fourni, écrêté comme `rollTest` l'écrêtera. */
+function healLineTarget(healer: { actor?: Combatant; skill: number; support?: SupportDetail }, difficulty: Difficulty): number {
+  return rollLine({
+    actor: healer.actor,
+    ...(healer.actor ? { test: { skill: 'guerison' } } : {}),
+    valeur: healer.skill, soutien: healer.support, difficulty,
+  }).target;
+}
+
 /** Ouvre l'infirmerie (hors combat). Patient par défaut : celui demandé, sinon le premier soignable. */
 export function openMedic(get: Get, set: Set, opts?: { patientId?: string; npc?: MedicNpc }): void {
   if (get().battle) return; // en combat : flux ActionBar (un acte = une Action)
@@ -117,7 +130,9 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
   // application de cette Aide… ») — l'acte reste proposé (raison affichée) mais ne s'arme pas.
   if (act === 'recovery' && !recoverableTraumas(patient).length) { get().log('Aide Médicale requise avant de rééduquer le membre.'); return; }
 
-  let healer: { id?: string; label: string; skill: number; intBonus: number; support?: SupportDetail };
+  // `actor` : le soigneur JOUEUR, absent pour un PNJ payant (aucune fiche) — c'est lui qui permet de
+  // décomposer la valeur en Niveau de Compétence nu + composantes nommées (`rollLine`).
+  let healer: { id?: string; actor?: Combatant; label: string; skill: number; intBonus: number; support?: SupportDetail };
   let paidCost: MedicCost | undefined;
   if (m.npc) {
     const offer = m.npc.acts.find((a) => a.act === act);
@@ -133,7 +148,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
   } else {
     const best = bestHealerFor(get().party, act);
     if (!best) return;
-    healer = { id: best.actor.id, label: best.actor.label, skill: best.value, intBonus: bonus(effectiveChar(best.actor, 'intelligence')), support: best.support };
+    healer = { id: best.actor.id, actor: best.actor, label: best.actor.label, skill: best.value, intBonus: bonus(effectiveChar(best.actor, 'intelligence')), support: best.support };
   }
 
   if (act === 'surgery' || act === 'recovery') {
@@ -159,7 +174,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
     pendingHeal: {
       healerId: healer.id ?? 'pnj-soigneur', healerName: healer.label, targetId: patient.id, targetName: patient.label,
       mode: act, intBonus: healer.intBonus, skillValue: healer.skill, support: healer.support,
-      difficulty, target: healer.skill + DIFFICULTY_MODIFIERS[difficulty], roll: null, success: false, sl: 0, paidCost,
+      difficulty, target: healLineTarget(healer, difficulty), roll: null, success: false, sl: 0, paidCost,
     },
   });
 }
@@ -185,7 +200,12 @@ export function openSurgeryPass(get: Get, set: Set): void {
     pendingSurgery: {
       healerId: sg.healerId ?? 'pnj-soigneur', healerName: sg.healerName,
       targetId: patient.id, targetName: patient.label,
-      skillValue: sg.skill, support: sg.support, intBonus: sg.intBonus, difficulty: sg.difficulty, target: sg.skill,
+      skillValue: sg.skill, support: sg.support, intBonus: sg.intBonus, difficulty: sg.difficulty,
+      // La cible PORTE la Difficulté de l'opération (Rééducation = Accessible, `LDB l.120/179`) : c'est
+      // celle que `rollTest` jettera (`FLOWS.surgery`, `simpleTestResolve`). `sg.skill` est l'instantané
+      // FIGÉ à l'armement (le chirurgien peut avoir changé d'État depuis) : aucune fiche vivante à en
+      // déduire, la valeur reste celle de l'opération engagée.
+      target: healLineTarget({ skill: sg.skill, support: sg.support }, sg.difficulty),
       roll: null, success: false, sl: 0,
       traumaIdx: sg.traumaIdx, targetDR: sg.targetDR, cumDR: sg.cumDR, paidCost: sg.paidCost,
     },

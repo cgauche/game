@@ -15,8 +15,6 @@
 import { battleRng } from './battleRng';
 import { activityStakeRef } from '../data';
 import { activityById } from '../engine/activities';
-import { difficultyFromModifier } from '../engine/tests';
-import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { applyOps, type GameOp } from '../engine/ops';
 import { openPartyTest, freeCons } from './rollSeam';
 import { registerCascadeApplier } from './cascade';
@@ -42,7 +40,7 @@ export function gatherInnInfo(get: Get, set: Set): void {
   openPartyTest(get, set, {
     skill: skillId, assisted: false,
     actionLabel: def.label,
-    difficulty: difficultyFromModifier(DIFFICULTY_MODIFIERS[def.difficulty ?? 'intermediaire']),
+    difficulty: def.difficulty ?? 'intermediaire',
     stake: activityStakeRef(ACTIVITY_ID),
   }, INN_GOSSIP_KIND, {});
 }

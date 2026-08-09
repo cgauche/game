@@ -18,7 +18,7 @@ import { extendedTestStep, isImpressiveSuccess, isImpressiveFailure, isAstoundin
 import { INTERLUDE_EVENTS, interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
 import { canFixDie } from './netOwnership';
 import { registerCascadeApplier, registerTableStep, rollTableStep, startCascade } from './cascade';
-import { freeCons } from './rollSeam';
+import { freeCons, rollLine } from './rollSeam';
 import type { CascadeStep, CascadeTableDecl } from './pendings';
 import { fromBrass, toBrass, formatMoney, priceToMoney, canAfford, PA_PER_CO, PA_PER_SC } from '../engine/money';
 import { partyMoneyTotal, bourseOf, payWithAllocation, payFromGroup, soloPayer, creditBourse, debitBourse } from './bourseFlow';
@@ -54,7 +54,7 @@ import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '.
 import { findCareerById, levelsForCareer, findTrappingById, findTalentById, findSpellById, refLabel, skillInstanceLabel, advancementBaseId, qualityRefLabel, qualities, combatStakeRef, type ActivitySkill } from '../data';
 import { findEffectTableById } from '../data/effectTables';
 import { findTableEntry } from '../engine/tables';
-import { CHAR_LABELS, DIFFICULTY_MODIFIERS, type CharKey, type Combatant, type Difficulty, type QualityInstance } from '../engine/types';
+import { CHAR_LABELS, type CharKey, type Combatant, type Difficulty, type QualityInstance } from '../engine/types';
 import { resolveQualities } from '../engine/qualities/dispatch';
 import type { PendingBase } from './rollFlowFactory';
 import { t, t as msg } from '../i18n'; // `msg` : alias local — `t` est aussi le nom d'un trapping résolu dans plusieurs flux
@@ -527,7 +527,7 @@ export function bestActivitySkill(
     .map((ref) => {
       const difficulty = ref.difficulty ?? def.difficulty ?? 'intermediaire';
       const value = testValue(h, ref.skillId, undefined, ref.spec);
-      return { ref, value, difficulty, target: value + DIFFICULTY_MODIFIERS[difficulty] };
+      return { ref, value, difficulty, target: rollLine({ actor: h, test: { skill: ref.skillId, spec: ref.spec }, difficulty }).target };
     })
     .sort((a, b) => b.target - a.target)[0];
 }

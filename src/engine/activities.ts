@@ -21,6 +21,7 @@ import { RNG, defaultRNG, roll as rollDice } from './dice';
 import { Money, fromBrass, toBrass, priceToMoney, PA_PER_SC, PA_PER_CO } from './money';
 import type { Combatant, Difficulty, SkillInstance, Availability } from './types';
 import type { GameOp } from './ops';
+import type { ModLine } from './combat';
 import { resolveSkillBest, bestSkilledOption, testValue, type SkillRef, type TestSpec } from './skills';
 import { DIFFICULTY_MODIFIERS } from './types';
 import { easeDifficulty } from './tests';
@@ -306,6 +307,14 @@ const SKILL_DERIVING_RESOLVERS = new Set(['income', 'craftExtended', 'learnTalen
  *  d'une bataille) n'a rien à mettre en jeu — pas de zone d'enjeu muette. PURE. */
 export function activityRolls(def: Pick<ActivityDef, 'skills' | 'char' | 'freeSkill' | 'resolver'>): boolean {
   return !!(def.skills?.length || def.char || def.freeSkill || SKILL_DERIVING_RESOLVERS.has(def.resolver ?? ''));
+}
+
+/** Ligne de mod du modificateur de SITUATION d'un Test d'Activité (Menace `ADE II 8 l.219`,
+ *  Planification l.75) — SOURCE UNIQUE, partagée par le CALCUL de la cible (`massBattleFlow`,
+ *  `rollFlowSpecs`) et par son RENDU (`ui/ActivityModal.tsx`) : trois littéraux du même fait
+ *  divergeaient sinon. Aucun mod ⇒ aucune ligne (jamais un « Modificateur +0 » inventé). PURE. */
+export function activityModLines(mod: number | undefined, modLabel: string | undefined): ModLine[] {
+  return mod ? [{ label: modLabel ?? 'Modificateur', value: mod }] : [];
 }
 
 /** Carrières JAMAIS PERDUES d'un héros (`Combatant.careerHistory`, cumulé — absent = `[career]`) →
