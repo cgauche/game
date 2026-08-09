@@ -22,6 +22,8 @@
     "h": 16
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -706,6 +708,8 @@
     "h": 40
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -2780,6 +2784,7 @@
      "dialogueId": "dlg-rumeurs",
      "anim": "standing",
      "appearance": {
+      "species": "humains-reiklander",
       "tenue": "mendiant",
       "sex": "F"
      }
@@ -2794,6 +2799,7 @@
      "label": "Villageois",
      "anim": "standing",
      "appearance": {
+      "species": "humains-reiklander",
       "tenue": "mendiant"
      }
     },
@@ -2808,6 +2814,7 @@
      "anim": "cowering",
      "facing": "E",
      "appearance": {
+      "species": "humains-reiklander",
       "tenue": "bourgeois"
      }
     },
@@ -2978,6 +2985,7 @@
       "archetype": "taverniere"
      },
      "appearance": {
+      "species": "humains-reiklander",
       "tenue": "bourgeois",
       "sex": "F",
       "build": 0.55
@@ -3009,6 +3017,7 @@
      "anim": "standing",
      "facing": "O",
      "appearance": {
+      "species": "humains-reiklander",
       "tenue": "mendiant"
      }
     },
@@ -3023,6 +3032,7 @@
      "anim": "standing",
      "facing": "E",
      "appearance": {
+      "species": "humains-reiklander",
       "tenue": "soldat",
       "sex": "M"
      }
@@ -3159,6 +3169,7 @@
      "anim": "cowering",
      "facing": "N",
      "appearance": {
+      "species": "humains-reiklander",
       "tenue": "mendiant",
       "sex": "F"
      }
@@ -3288,6 +3299,7 @@
      "anim": "standing",
      "facing": "O",
      "appearance": {
+      "species": "humains-reiklander",
       "tenue": "artisan",
       "sex": "M",
       "build": 0.4
@@ -3373,6 +3385,7 @@
       "archetype": "herboriste"
      },
      "appearance": {
+      "species": "humains-reiklander",
       "tenue": "bourgeois",
       "sex": "F",
       "build": 0.48
@@ -3389,6 +3402,7 @@
      "anim": "standing",
      "facing": "O",
      "appearance": {
+      "species": "humains-reiklander",
       "tenue": "mendiant"
      }
     },
@@ -6245,6 +6259,8 @@
     "h": 20
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -7235,6 +7251,8 @@
     "h": 18
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -8151,6 +8169,8 @@
     "h": 20
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -9156,6 +9176,8 @@
     "h": 16
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -10017,6 +10039,8 @@
     "h": 25
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -11229,6 +11253,8 @@
     "h": 22
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -12336,6 +12362,8 @@
     "h": 20
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -13268,6 +13296,8 @@
     "h": 22
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -14363,6 +14393,8 @@
     "h": 24
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -15716,6 +15748,8 @@
     "h": 22
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -16899,6 +16933,8 @@
     "h": 20
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -17957,6 +17993,8 @@
     "h": 28
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -19534,6 +19572,8 @@
     "h": 28
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -21237,6 +21277,8 @@
     "h": 26
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -22547,6 +22589,8 @@
     "h": 24
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,
@@ -24430,6 +24474,8 @@
     "h": 14
    },
    "ambiance": "exterieur",
+   "metresPerTile": 2,
+   "ambientLight": "auto",
    "layers": [
     {
      "z": 0,

@@ -190,7 +190,9 @@ export function resetIds() {
 }
 
 /** Personnage (PNJ) : apparence/dialogue/marchand via opts. `weapon`/`appearance.species`/`appearance.tenue`
- *  sont VALIDÉS (ids stables, fail-fast). `species`/`tenue` absents = défauts documentés (Humain / garde-robe de race). */
+ *  sont VALIDÉS (ids stables, fail-fast). `species` absent n'est PAS un défaut : sans réf de créature, le
+ *  rendu retombe sur la race par défaut de `speciesRace.json` EN DIAGNOSTIQUANT la donnée manquante
+ *  (`resolveRender`, `src/gameIso/rig/bodyPlan.ts`) — l'espèce se pose au site d'authoring. */
 export function NPC(id, x, y, label, opts = {}, knownPresetIds) {
   const e = { id, kind: 'personnage', pos: { x, y }, label, ...opts };
   if (e.weapon != null) e.weapon = weaponId(e.weapon);
