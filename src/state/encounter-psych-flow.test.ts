@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { sceneFearSources } from './encounterPsychFlow';
+import { sceneFearSources, openScriptedPsych } from './encounterPsychFlow';
+import { psychDRAdjust } from '../engine/combat';
+import { stacks } from '../engine/conditions';
+import type { Combatant } from '../engine/types';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import type { Scene, SceneEntity, CustomStatblock } from './scene';
@@ -216,5 +219,68 @@ describe('encounterPsychFlow — Psychologie à la rencontre HORS COMBAT (bandes
     useGame.setState({ party: [h] });
     useGame.getState().startScene(scene([ent({ id: 'elfe', statblock: ELFE })]));
     expect(useGame.getState().pendingCascade).toBeNull();
+  });
+});
+
+/**
+ * TERREUR → PEUR (#1190) — LDB 21, § Terreur, verbatim :
+ *   « Sur un succès, vous ne subissez aucun effet supplémentaire à cause de la *Terreur*. Sur un échec,
+ *     vous gagnez autant d'États *Brisé* que l'*Indice* de *Terreur* de la créature […]. »
+ *   « Une fois ce Test de Psychologie effectué, la créature cause la *Peur*, avec un *Indice* de *Peur*
+ *     équivalent à son *Indice* de *Terreur*. »
+ * L'exemption du succès est scopée à LA TERREUR ; la seconde phrase est INCONDITIONNELLE. La Peur qui
+ * suit se pose donc à PLEIN Indice dans les deux cas — et non « déjà surmontée sur une réussite ».
+ * La couture qui mord est le prédicat unique `calmeDR < indice` (`psychDRAdjust`, la même lecture que
+ * le Test de Peur de fin de Round et l'approche menaçante) : Indice 0 la rendait INERTE.
+ */
+describe('Terreur réussie : la Peur qui en découle est due à PLEIN Indice (LDB 21)', () => {
+  const SOURCE_ID = 'scripted:Un spectre hurlant';
+  /** La source, telle que la voit `psychDRAdjust` (l'id est celui posé par `openScriptedPsych`). */
+  const spectre = { id: SOURCE_ID, label: 'Un spectre hurlant', groups: [] } as unknown as Combatant;
+
+  /** Ouvre la bande de Terreur (Indice 3) sur `h`, y POSE le jet voulu, puis valide. */
+  function terreurBand(h: Combatant, result: { success: boolean; sl: number }) {
+    useGame.setState({ party: [h], pendingCascade: null, battle: null });
+    openScriptedPsych(useGame.getState, useGame.setState, 'terreur', 3, 'Un spectre hurlant', [h]);
+    const pc = useGame.getState().pendingCascade!;
+    const band = pc.participants[0];
+    const participants = band.participants!.map((part) => ({
+      ...part, result: { roll: result.success ? 1 : 99, target: part.target, sl: result.sl, success: result.success },
+    }));
+    useGame.setState({ pendingCascade: { ...pc, participants: [{ ...band, participants }] } });
+    useGame.getState().cascadeNext();
+    return useGame.getState().party[0];
+  }
+  const peurOf = (c: Combatant) => (c.psychState ?? []).find((p) => p.type === 'peur' && p.sourceId === SOURCE_ID);
+
+  it('SUCCÈS : aucun Brisé (l’exemption ne couvre que la Terreur), mais Peur d’Indice 3 ACTIVE — le −1 DR mord', () => {
+    const hero = terreurBand(timoreux('H'), { success: true, sl: 2 });
+    expect(stacks(hero, 'brise')).toBe(0); // « aucun effet supplémentaire à cause de la Terreur »
+    const peur = peurOf(hero);
+    expect(peur?.indice).toBe(3); // plein Indice, jamais 0
+    expect(peur?.calmeDR ?? 0).toBe(0); // jamais testée EN TANT QUE Peur
+    // Elle MORD : Peur active non vaincue vs sa source (LDB 21 l.29) — la couture réelle, pas le champ.
+    expect(psychDRAdjust(hero, spectre)).toBe(-1);
+  });
+
+  it('ÉCHEC : États Brisé posés ET la MÊME Peur d’Indice 3 active', () => {
+    const hero = terreurBand(timoreux('H'), { success: false, sl: -2 });
+    expect(stacks(hero, 'brise')).toBeGreaterThan(0);
+    expect(peurOf(hero)?.indice).toBe(3);
+    expect(psychDRAdjust(hero, spectre)).toBe(-1);
+  });
+
+  it('DÉTERMINATION (LDB 17 l.59) : le Test est ignoré, la Peur reste due à PLEIN Indice pour l’après', () => {
+    const h = timoreux('H');
+    h.resolve = 1;
+    useGame.setState({ party: [h], pendingCascade: null, battle: null });
+    openScriptedPsych(useGame.getState, useGame.setState, 'terreur', 3, 'Un spectre hurlant', [h]);
+    useGame.getState().cascadeBatchDetermine(h.id);
+    useGame.getState().cascadeNext();
+    const hero = useGame.getState().party[0];
+    expect(stacks(hero, 'brise')).toBe(0); // le Test de Terreur n'a pas eu lieu
+    expect(peurOf(hero)?.indice).toBe(3); // l'immunité est TEMPORAIRE, jamais une Peur vaincue à jamais
+    // …et pendant l'immunité, c'est le marqueur qui protège (`isPsychImmune` → 0), pas un Indice nul.
+    expect(psychDRAdjust(hero, spectre)).toBe(0);
   });
 });

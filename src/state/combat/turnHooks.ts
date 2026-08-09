@@ -203,7 +203,10 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
         addCondition(enemy, res.failCondition, r.brise);
         log.push(t('turn.terrified', { name: enemy.label, foe: foe.label, brise: r.brise }));
       }
-      if (res.becomes) enemy.psychState.push({ type: res.becomes, sourceId: foe.id, indice: r.success ? 0 : r.devientPeur, calmeDR: 0, lastTestRound: battle.round }); // Terreur → Peur (ignorée si Sans Peur réussit)
+      // Terreur → Peur : `devientPeur` porte DÉJÀ la seule exemption ÉCRITE (Sans Peur réussi → 0, le
+      // Talent ignore « Intimidation, Peur ou Terreur » de l'ennemi désigné). Le résultat du Test de
+      // Terreur, lui, ne change RIEN à l'Indice hérité (LDB 21 l.56, inconditionnel — #1190).
+      if (res.becomes) enemy.psychState.push({ type: res.becomes, sourceId: foe.id, indice: r.devientPeur, calmeDR: 0, lastTestRound: battle.round });
     } else if (sansPeur) {
       // Sans Peur : UN seul Test de Calme Accessible (+20) à la rencontre ; réussi → Peur ignorée d'emblée.
       const r = resolvePeurTest(calmeValue(enemy), src.indice, 0, battleRng(), isColdBlooded(enemy.traits), true);

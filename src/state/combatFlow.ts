@@ -6434,7 +6434,10 @@ registerCascadeApplier(
       // l'état `becomes`. Conséquences lues en DONNÉES (psychology.json), plus de `'terreur'`/Brisé codé.
       const brise = r.success ? 0 : failConditionAmount(res.failAmount, cp.indice, r.sl);
       if (brise > 0 && res.failCondition) addCondition(hero, res.failCondition, brise);
-      if (res.becomes) hero.psychState.push({ type: res.becomes, sourceId: cp.sourceId, indice: r.success ? 0 : cp.indice, calmeDR: 0, lastTestRound: battle?.round });
+      // « Une fois ce Test de Psychologie effectué, la créature cause la Peur, avec un Indice de Peur
+      // équivalent à son Indice de Terreur » (LDB 21 l.56) : INCONDITIONNEL — l'exemption du succès
+      // (l.54) ne couvre que la Terreur. Plein Indice quel que soit le résultat (#1190).
+      if (res.becomes) hero.psychState.push({ type: res.becomes, sourceId: cp.sourceId, indice: cp.indice, calmeDR: 0, lastTestRound: battle?.round });
       line = r.success ? tr('out.terreurHold', { name: hero.label }) : tr('cf.terreurThenFear', { name: hero.label, foe: cp.sourceName, brise, indice: cp.indice });
       // Phobie du noir (ADE II Annexe I, règle facultative `psych-acquisition-optional`) : cumuler les États
       // Brisé subis À CAUSE de la Terreur ; à ≥ Bonus de FM → Phobie liée à la source (son Groupe si connu,

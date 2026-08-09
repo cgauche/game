@@ -156,7 +156,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Peur (Indice), État Brisé (`etats.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.54-57) → `nightmare`, `calme-d-approche`, `resolvePsychRow`, `failConditionAmount`, `resolveTerreurTest`, `trauma`, `PsychologyData`, `amour`, `camaraderie`, `phobie`, +2 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/state/combatFlow.ts`, +1 fichiers
+- `LDB 21` (l.54-57) → `nightmare`, `calme-d-approche`, `resolvePsychRow`, `resolvePsychAI`, `failConditionAmount`, `resolveTerreurTest`, `trauma`, `PsychologyData`, `amour`, `camaraderie`, +3 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/state/combat/turnHooks.ts`, +2 fichiers
 
 ---
 
@@ -233,7 +233,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 - `LDB 21 l.41-51` — définition, succès/échec, comportement obligatoire, conditions de fin
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.41-51) → `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `calme-d-approche`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `resolvePsychRow`, `Condition`, `isPsychImmune`, `isFrenzyCapable`, +30 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +18 fichiers
+- `LDB 21` (l.41-51) → `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `calme-d-approche`, `aiMaybeFrenzy`, `resolvePsychRow`, `availableFreeAttackOps`, `Condition`, `isPsychImmune`, `resolvePsychAI`, +30 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +18 fichiers
 
 ---
 

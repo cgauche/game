@@ -155,13 +155,16 @@ export function openScriptedPsych(get: Get, set: Set, kind: 'peur' | 'terreur', 
  */
 function resolvePsychRow(hero: Combatant, ep: PsychBandDecl, r: CascadeRoll, immune: boolean): Consequence[] {
   hero.psychState ??= [];
-  // DÉTERMINATION (LDB 17 l.62) : immunité TEMPORAIRE. Pour un Test de rencontre ONE-SHOT (pas de Test
-  // étendu), « immune » ≈ « inerte » = même état final qu'un succès (la source ne se re-déclenche pas) :
-  // on pose le marqueur INERTE (comme un succès) — pas de Brisé de Terreur, trait ciblé non actif — mais
-  // avec une issue distincte au journal (« temporairement insensible »). Cohérent avec l'applier combat.
+  // DÉTERMINATION (LDB 17 l.59) : immunité TEMPORAIRE (« Demeurer immunisé à Psychologie jusqu'à la fin
+  // du prochain Round »). Pour un Test de rencontre ONE-SHOT (pas de Test étendu), « immune » ≈ « inerte »
+  // = même état final qu'un succès (la source ne se re-déclenche pas) : on pose le marqueur INERTE — pas
+  // de Brisé de Terreur, trait ciblé non actif — avec une issue distincte au journal. Ce qui protège le
+  // porteur pendant la durée est le marqueur d'immunité lui-même, jamais un Indice à 0 : la Peur héritée
+  // d'une Terreur se pose à PLEIN Indice ici aussi (LDB 21 l.56, cf. plus bas), sans quoi l'immunité du
+  // Round vaudrait une Peur vaincue à jamais.
   const res = psychResolution(ep.kind); // mode + conséquences en DONNÉES (psychology.json)
   if (immune) {
-    if (res.mode === 'terreur') hero.psychState.push({ type: res.becomes ?? 'peur', sourceId: ep.sourceId, indice: 0, calmeDR: 0 });
+    if (res.mode === 'terreur') hero.psychState.push({ type: res.becomes ?? 'peur', sourceId: ep.sourceId, indice: ep.indice, calmeDR: 0 });
     else if (CIBLE_TYPES.has(ep.kind)) hero.psychState.push({ type: ep.kind, cible: ep.cible, sourceId: ep.sourceId, active: false });
     else hero.psychState.push({ type: 'peur', sourceId: ep.sourceId, indice: ep.indice, calmeDR: ep.indice });
     return freeCons([`${hero.label} est temporairement insensible à la Psychologie (Détermination).`]);
@@ -169,7 +172,10 @@ function resolvePsychRow(hero: Combatant, ep: PsychBandDecl, r: CascadeRoll, imm
   const brise = r.success ? 0 : failConditionAmount(res.failAmount, ep.indice, r.sl);
   if (res.mode === 'terreur') {
     if (brise > 0 && res.failCondition) addCondition(hero, res.failCondition, brise);
-    if (res.becomes) hero.psychState.push({ type: res.becomes, sourceId: ep.sourceId, indice: r.success ? 0 : ep.indice, calmeDR: 0 }); // la Terreur devient une Peur (LDB 21 l.57)
+    // « Une fois ce Test de Psychologie effectué, la créature cause la Peur » (LDB 21 l.56) : phrase
+    // INCONDITIONNELLE — l'exemption du succès (l.54) est scopée à la Terreur SEULE. Plein Indice, jamais
+    // 0 : la Peur qui suit s'affronte selon SES règles (son Test étendu, ses malus, l'approche). #1190
+    if (res.becomes) hero.psychState.push({ type: res.becomes, sourceId: ep.sourceId, indice: ep.indice, calmeDR: 0 });
   } else if (CIBLE_TYPES.has(ep.kind)) {
     hero.psychState.push({ type: ep.kind, cible: ep.cible, sourceId: ep.sourceId, active: !r.success });
   } else {
