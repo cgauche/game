@@ -24,6 +24,7 @@ const SCENES = [
   { id: 'opera', label: 'Opéra — théâtre', env: 'env-test-opera-theatre.png', envNote: 'test-opera-theatre' },
   { id: 'arene', label: 'Arène (hub)', env: 'env-arene-hub.png', envNote: 'arene-hub' },
   { id: 'vitrine-batiments', label: 'Vitrine — bâtiments', env: 'env-vitrine-batiments.png', envNote: 'vitrine-batiments' },
+  { id: 'diligence', label: 'La Diligence (2 niveaux)', env: 'diligence.png', envNote: 'diligence (planche render-diligence.mts : 2 étages × 4 rotations)' },
 ];
 
 /** Grille de base : 5 vues × 2 modes de matériau, à zoom 1. */

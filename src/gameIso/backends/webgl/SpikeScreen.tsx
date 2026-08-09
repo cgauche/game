@@ -43,6 +43,7 @@ import { scenario as pontVitrine } from '../../../scenes/test-scenarios/pont-vit
 import { scenario as arene } from '../../../scenes/test-scenarios/arene';
 import { buildOperaFloorplan } from '../../../scenes/opera/floorplan';
 import { buildVitrineScene } from '../../../scenes/vitrine-batiments';
+import { scenario as diligence } from '../../../scenes/test-scenarios/diligence';
 
 /** Canevas de taille FIXE : deux captures ne se comparent qu'à cadre égal. */
 const CANVAS_W = 1280;
@@ -60,6 +61,7 @@ const SCENES: { id: string; label: string; make: () => Scene }[] = [
   { id: 'opera', label: 'Opéra — théâtre', make: () => buildOperaFloorplan() },
   { id: 'arene', label: 'Arène (hub)', make: () => arene.scene },
   { id: 'vitrine-batiments', label: 'Vitrine — bâtiments', make: () => buildVitrineScene() },
+  { id: 'diligence', label: 'La Diligence (2 niveaux)', make: () => diligence.scene },
 ];
 
 /** Plancher de zoom exposé (le plafond est `ZOOM_MAX`, borne haute de `setZoom` en prod). */
