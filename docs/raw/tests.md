@@ -51,7 +51,7 @@ Un arbre de décision guide le choix du type de test :
 
 **Voir aussi** : [Tests opposés](#tests-opposés), [Tests étendus](#tests-étendus)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.6, l.47-51, l.83-88) → `canReroll`, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `ChanceButtons`, `rollTest`, `OPTIONAL_RULES`, `evaluateTest`, `NightEntry`, `opposedForcedFloor`, +15 — `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, +3 fichiers
+- `LDB 12` (l.6, l.47-51, l.83-88) → `canReroll`, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `ChanceButtons`, `OPTIONAL_RULES`, `rollTest`, `evaluateTest`, `NightEntry`, `opposedForcedFloor`, +15 — `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, +3 fichiers
 
 ---
 
@@ -99,7 +99,7 @@ Ces bandes automatiques s'appliquent à *tous* les tests, simples ou spectaculai
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.31-32, l.119-121) → `canReroll`, `ChanceButtons`, `forceCrewRole`, `OPTIONAL_RULES`, `NightEntry`, `evaluateTest`, `double-critique-maladresse`, `bestForcedRoll`, `SUCCES_MINIME_CAP`, `SL_IMPRESSIVE`, +7 — `src/data/regles.json`, `src/engine/crewMorale.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, +8 fichiers
+- `LDB 12` (l.31-32, l.119-121) → `canReroll`, `ChanceButtons`, `forceCrewRole`, `OPTIONAL_RULES`, `NightEntry`, `double-critique-maladresse`, `evaluateTest`, `bestForcedRoll`, `SUCCES_MINIME_CAP`, `SL_IMPRESSIVE`, +7 — `src/data/regles.json`, `src/engine/crewMorale.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, +8 fichiers
 - sans code : `LDB 12` (l.25-28)
 
 ---
@@ -199,7 +199,7 @@ Si aucune Difficulté n'est indiquée pour un test (notamment pour un test oppos
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test), [Tests opposés](#tests-opposés)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.133-139, l.141-150, l.166) → `useExtendedTestJetProps`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `BargainModalView`, `forceCrewRole`, `useTestJetProps`, `StateRecoveryModalView`, `opposedLines`, `OPTIONAL_RULES`, +19 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/riverNavigation.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/combatSlice.ts`, +21 fichiers
+- `LDB 12` (l.133-139, l.141-150, l.166) → `useExtendedTestJetProps`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `BargainModalView`, `forceCrewRole`, `useTestJetProps`, `TestResult`, `StateRecoveryModalView`, `opposedLines`, +49 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/engine/riverNavigation.ts`, +31 fichiers
 
 ---
 
@@ -259,7 +259,7 @@ Autrement dit, on soustrait le **chiffre des dizaines du résultat obtenu** au *
 
 **Voir aussi** : [Table des Résultats](#table-des-résultats), [Tests opposés](#tests-opposés), [Succès et échec automatiques](#succès-et-échec-automatiques)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.90-94, l.96-99, l.101-102, l.119-121) → `bargainBuyFactor`, `forceCrewRole`, `OPTIONAL_RULES`, `evaluateTest`, `double-critique-maladresse`, `opposedForcedFloor`, `bestForcedRoll`, `SUCCES_MINIME_CAP`, `SL_IMPRESSIVE`, `isImpressiveSuccess`, +8 — `src/data/regles.json`, `src/engine/bargain.ts`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, +5 fichiers
+- `LDB 12` (l.90-94, l.96-99, l.101-102, l.119-121) → `bargainBuyFactor`, `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `opposedForcedFloor`, `evaluateTest`, `bestForcedRoll`, `SUCCES_MINIME_CAP`, `SL_IMPRESSIVE`, `isImpressiveSuccess`, +8 — `src/data/regles.json`, `src/engine/bargain.ts`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, +5 fichiers
 
 ---
 
@@ -297,8 +297,8 @@ Un test opposé est utilisé lorsqu'un personnage doit confronter ses capacités
 **Résolution** :
 1. Chaque participant effectue un test spectaculaire avec sa Compétence ou Caractéristique appropriée.
 2. Le participant avec le **DR le plus élevé** remporte le test opposé.
-3. En cas d'**égalité de DR**, c'est le participant dont la Compétence ou Caractéristique (valeur cible) est **strictement la plus élevée** qui l'emporte.
-4. En cas d'**égalité parfaite** (même DR et même valeur cible), le MJ choisit entre : statu quo (rien ne se passe) ou rejouer le test jusqu'à désignation d'un vainqueur.
+3. En cas d'**égalité de DR**, c'est le participant avec la **Compétence ou la Caractéristique la plus élevée** qui l'emporte — le Niveau de Compétence (`LDB 09 l.17`), non la valeur cible modifiée.
+4. En cas d'**égalité parfaite** (même DR et même Compétence ou Caractéristique), le MJ choisit entre : statu quo (rien ne se passe) ou rejouer le test jusqu'à désignation d'un vainqueur.
 
 **DR net** : si l'on souhaite connaître la mesure de la victoire, on calcule la différence entre les deux DR. Ce DR net est utilisé notamment pour les dégâts en combat.
 
@@ -310,13 +310,14 @@ Un test opposé est utilisé lorsqu'un personnage doit confronter ses capacités
 
 **Sources RAW** :
 - `LDB 12 l.152-169` — règles complètes des tests opposés
-- `LDB 12 l.160` — critère de victoire (DR le plus haut, puis valeur cible)
+- `LDB 12 l.160` — critère de victoire (DR le plus haut, puis Compétence ou Caractéristique la plus élevée)
 - `LDB 12 l.164` — DR net du vainqueur
 - `LDB 12 l.166` — Difficulté par défaut = Intermédiaire si non indiquée
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.152-169) → `soutien`, `useExtendedTestJetProps`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `BargainModalView`, `useTestJetProps`, `StateRecoveryModalView`, `opposedLines`, `OPTIONAL_RULES`, +17 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/riverNavigation.ts`, `src/engine/tests.ts`, `src/state/combatSlice.ts`, `src/state/flowOutcomes.ts`, +19 fichiers
+- `LDB 9` (l.17) → `possesses`, `skillBaseValue`, `stepOpenValue`, `combatBaseValue`, `castingBaseValue`, `holdVerdict`, `ActivityOppositionOn`, `defenseBaseValue`, `CastResult`, `openHoldScene` — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/interludeFlow.ts`, +2 fichiers
+- `LDB 12` (l.152-169) → `soutien`, `useExtendedTestJetProps`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `BargainModalView`, `useTestJetProps`, `TestResult`, `StateRecoveryModalView`, `opposedLines`, +48 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/engine/riverNavigation.ts`, +29 fichiers
 
 ---
 
@@ -325,7 +326,7 @@ Un test opposé est utilisé lorsqu'un personnage doit confronter ses capacités
 Les tests étendus servent à résoudre des tâches particulièrement longues ou ardues qui nécessitent d'atteindre un certain DR total cumulé.
 
 **Mécanique** :
-- Le MJ fixe une **valeur cible de DR** à atteindre (par exemple, 5 DR).
+- Le MJ fixe une **valeur cible** exprimée en DR total (`LDB 12 l.174`) à atteindre (par exemple, 5 DR).
 - À chaque Round, le personnage effectue un test spectaculaire.
 - Les DR obtenus sont **additionnés d'un round à l'autre** jusqu'à atteindre la valeur cible.
 - Si le DR total **passe en dessous de 0**, le personnage recommence depuis le début au début du round suivant (perte de tous les DR accumulés).
@@ -344,7 +345,7 @@ Les tests étendus servent à résoudre des tâches particulièrement longues ou
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.171-180, l.182-185) → `soutien`, `useExtendedTestJetProps`, `AuContactModal`, `GrappleModal`, `useTestJetProps`, `BargainModalView`, `StateRecoveryModalView`, `opposedLines`, `useDefenseJetProps`, `ReloadModal`, +30 — `src/data/regles.json`, `src/engine/activities.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, +23 fichiers
+- `LDB 12` (l.171-180, l.182-185) → `soutien`, `useExtendedTestJetProps`, `AuContactModal`, `GrappleModal`, `useTestJetProps`, `BargainModalView`, `StateRecoveryModalView`, `opposedLines`, `ReloadModal`, `TestFields`, +38 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/activities.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, +26 fichiers
 
 ---
 
@@ -370,7 +371,7 @@ Lorsque plusieurs personnages travaillent ensemble à la même tâche, ceux qui 
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.188-200) → `soutien`, `useExtendedTestJetProps`, `MedicState`, `useTestJetProps`, `runSceneConsumableFlow`, `ActivityModal`, `RollRequest`, `TestFields`, `OPTIONAL_RULES`, `CombinedTestResult`, +35 — `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +20 fichiers
+- `LDB 12` (l.188-200) → `soutien`, `useExtendedTestJetProps`, `useTestJetProps`, `MedicState`, `runSceneConsumableFlow`, `ActivityModal`, `RollRequest`, `TestFields`, `bargainPlayerTR`, `OPTIONAL_RULES`, +43 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, +23 fichiers
 
 ---
 
@@ -391,7 +392,7 @@ Parfois, une situation requiert qu'un personnage réussisse deux Compétences di
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.203-208) → `soutien`, `MedicState`, `useTestJetProps`, `runSceneConsumableFlow`, `ActivityModal`, `RollRequest`, `TestFields`, `OPTIONAL_RULES`, `CombinedTestResult`, `hasSkillAdvance`, +24 — `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +15 fichiers
+- `LDB 12` (l.203-208) → `soutien`, `useTestJetProps`, `MedicState`, `runSceneConsumableFlow`, `ActivityModal`, `RollRequest`, `TestFields`, `OPTIONAL_RULES`, `CombinedTestResult`, `hasSkillAdvance`, +24 — `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +15 fichiers
 
 ---
 
@@ -410,7 +411,7 @@ La mécanique du lancer est strictement identique dans les deux cas.
 
 **Voir aussi** : [Lancer le dé — mécanique de base](#lancer-le-dé--mécanique-de-base)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.130-131) → `forceCrewRole`, `OPTIONAL_RULES`, `evaluateTest`, `double-critique-maladresse`, `bestForcedRoll`, `FicheBody`, `resolveAppraise`, `ItemInstance` — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +2 fichiers
+- `LDB 12` (l.130-131) → `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `evaluateTest`, `bestForcedRoll`, `FicheBody`, `resolveAppraise`, `ItemInstance` — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +2 fichiers
 
 ---
 
@@ -456,7 +457,7 @@ La campagne **L'Ennemi dans l'Ombre** introduit deux niveaux de Difficulté supp
 
 **Voir aussi** : [Difficulté — table complète](#difficulté--table-complète), [Succès et échec automatiques](#succès-et-échec-automatiques)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.133-137) → `forceCrewRole`, `OPTIONAL_RULES`, `evaluateTest`, `double-critique-maladresse`, `bestForcedRoll` — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/shipManeuver.ts`
+- `LDB 12` (l.133-137) → `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `evaluateTest`, `bestForcedRoll` — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/shipManeuver.ts`
 
 ---
 
@@ -497,7 +498,7 @@ En dépensant un Point de Résilience, un personnage peut choisir *lui-même* le
 
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé), [Tests opposés](#tests-opposés), Destin et Résilience (domaine propre)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.17-28, l.40-44, l.46-48, l.64-71) → `canReroll`, `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `RunModal`, `fateSaveOrDie`, `hasMeaningfulOption`, `CorruptionModal`, +94 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, +49 fichiers
+- `LDB 17` (l.17-28, l.40-44, l.46-48, l.64-71) → `canReroll`, `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `RunModal`, `fateSaveOrDie`, `hasMeaningfulOption`, `CorruptionModal`, +95 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, +49 fichiers
 
 ---
 
@@ -617,7 +618,7 @@ Ces trois mécaniques constituent des extensions légitimes du système de DR da
 
 **Voir aussi** : [Doubles — Critique et Maladresse](#doubles--critique-et-maladresse), [Influencer un test — Chance, Résilience, Talents](#influencer-un-test--chance-résilience-talents), [Tests étendus](#tests-étendus)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.124-127) → `forceCrewRole`, `OPTIONAL_RULES`, `evaluateTest`, `double-critique-maladresse`, `bestForcedRoll`, `SL_IMPRESSIVE`, `isAstoundingFailure`, `FicheBody`, `resolveAppraise`, `ItemInstance` — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +2 fichiers
-- `LDB 17` (l.22) → `canReroll`, `RunModal`, `fateSaveOrDie`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, `bumpSL`, +11 — `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +11 fichiers
+- `LDB 12` (l.124-127) → `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `evaluateTest`, `bestForcedRoll`, `SL_IMPRESSIVE`, `isAstoundingFailure`, `FicheBody`, `resolveAppraise`, `ItemInstance` — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +2 fichiers
+- `LDB 17` (l.22) → `canReroll`, `RunModal`, `fateSaveOrDie`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, `bonusShipManeuver` ⚠sans-appelant, +11 — `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +11 fichiers
 - `NADJ 16` (l.7, l.11, l.19, l.57, l.97) → `al-zahr`, `alvatafl`, `bras-de-fer`, `bete-tailleurs`, `boules`, `cerevis`, `arene`, `OPTIONAL_RULES` — `src/data/tavernGames.json`, `src/engine/policy.ts`
 - sans code : `NADJ 16` (l.25, l.34)

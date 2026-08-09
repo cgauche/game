@@ -34,7 +34,7 @@ import {
   type TradeRumour, tradeRumourMult,
 } from '../engine/landCargo';
 import { type CargoLot, loadCargo, carrierCanLoad, carrierFreeEnc, transferCargo } from '../engine/cargo';
-import { findLieuServiceById } from '../data/index';
+import { findLieuServiceById, combatStakeRef } from '../data/index';
 import { primaryCargoCarrier, carrierById, persistCarriersCargo } from './carriers';
 import { seasonOfMonth } from '../engine/travelStages';
 import { toDate } from '../engine/clock';
@@ -120,6 +120,7 @@ export function openLandMarket(get: Get, set: Set): void {
     skill: 'ragot', assisted: false,
     actionLabel: 'Rumeur commerciale',
     difficulty: difficultyFromModifier(DIFFICULTY_MODIFIERS[gossipRule.difficulty] + gossipRule.mod),
+    stake: combatStakeRef(LAND_GOSSIP_KIND),
   }, LAND_GOSSIP_KIND, { placeId: cur.placeId });
 }
 
@@ -172,6 +173,7 @@ export function landEvalWine(get: Get, set: Set, cargoId: string): void {
     skill: 'evaluation', assisted: false,
     actionLabel: `Évaluer ${offer.label}`,
     difficulty: diff,
+    stake: combatStakeRef(LAND_WINE_EVAL_KIND),
   }, LAND_WINE_EVAL_KIND, { cargoId });
 }
 

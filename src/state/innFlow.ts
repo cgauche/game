@@ -13,6 +13,7 @@
  * `engine/policy.ts`) : l'horloge de campagne avance quelle que soit l'issue — « tout est horodaté ».
  */
 import { battleRng } from './battleRng';
+import { activityStakeRef } from '../data';
 import { activityById } from '../engine/activities';
 import { difficultyFromModifier } from '../engine/tests';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
@@ -42,6 +43,7 @@ export function gatherInnInfo(get: Get, set: Set): void {
     skill: skillId, assisted: false,
     actionLabel: def.label,
     difficulty: difficultyFromModifier(DIFFICULTY_MODIFIERS[def.difficulty ?? 'intermediaire']),
+    stake: activityStakeRef(ACTIVITY_ID),
   }, INN_GOSSIP_KIND, {});
 }
 

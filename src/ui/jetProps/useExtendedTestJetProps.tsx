@@ -43,6 +43,7 @@ export function useExtendedTestJetProps(): ComponentProps<typeof RollShell> | nu
 
   return {
     flowKey: 'extendedTest',
+    stake: p.stake,
     title: <><Icon id="ui/key" size="sm" /> {p.label}</>,
     subtitle: <>Round {p.rounds.length} · Test étendu (le DR de chaque Round se cumule)</>,
     rolled,

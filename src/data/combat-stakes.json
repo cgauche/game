@@ -337,5 +337,116 @@
       "page": 99,
       "note": "ZI 13 l.314-316 — le moteur retire UN cran fixe à l'échec, le RAW en retire un PAR Degré d'échec : écart ouvert en #1136"
     }
+  },
+  {
+    "id": "team-command",
+    "label": "Diriger une équipe d’arme",
+    "kind": "teamCommand",
+    "template": "Réussite : chaque chef d’équipe à portée de voix est dirigé — son équipe tire ensuite au score de Projectiles du commandant. Échec : rien. L’Action est dépensée dans les deux cas.",
+    "form": "descripteur",
+    "rule": "commandant-d-equipe",
+    "ruleCategory": "talents",
+    "source": {
+      "book": "aux-armes",
+      "page": 140,
+      "note": "AA 13 l.29-35"
+    }
+  },
+  {
+    "id": "skill-advantage",
+    "label": "Cumuler l’Avantage par une Compétence",
+    "kind": "skillAdvantage",
+    "template": "Réussite : +1 Avantage, jusqu’au plafond de cette Compétence — le Bonus de la Caractéristique {capChar}. Échec : aucun. L’Action est dépensée dans les deux cas.",
+    "form": "descripteur",
+    "entryCategory": "skills",
+    "source": {
+      "book": "livre-de-base",
+      "page": 124,
+      "note": "LDB 09 l.308 — le moteur octroie +1 par Test réussi et plafonne au Bonus de Caractéristique ; il ne modélise PAS la condition d'interruption (« à condition que vous soyez capable d'observer vos cibles et que vous ne soyez pas interrompu ») : écart ouvert en #1141"
+    }
+  },
+  {
+    "id": "land-market-gossip",
+    "label": "Rumeur commerciale au marché",
+    "kind": "land-market-gossip",
+    "template": "Réussite : une rumeur commerciale est glanée — les biens qu’elle vise se vendent au double du prix de base au Lieu désigné, sans échéance. Échec : aucune rumeur.",
+    "form": "descripteur",
+    "rule": "ragot",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 74,
+      "note": "MSRC 13 l.180"
+    }
+  },
+  {
+    "id": "land-market-wine-eval",
+    "label": "Évaluation d’un lot de vin",
+    "kind": "land-market-wine-eval",
+    "template": "Réussite : la qualité réelle du lot est révélée. Échec : une fausse qualité est annoncée, d’autant plus éloignée du vrai que le Degré d’échec est grand. Un lot ne s’évalue qu’une fois, quelle que soit l’issue.",
+    "form": "descripteur",
+    "rule": "evaluation",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 72,
+      "note": "MSRC 13 l.95"
+    }
+  },
+  {
+    "id": "merchant-ragot",
+    "label": "Recherche active de Disponibilité",
+    "kind": "merchant-ragot",
+    "template": "Réussite : la journée aux étals paie — le stock du marchand est renouvelé avec +10 % de Disponibilité. Échec : il est renouvelé sans ce bonus. Une journée entière passe dans les deux cas.",
+    "form": "descripteur",
+    "rule": "ragot-au-marche",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 291,
+      "note": "LDB 59 l.50"
+    }
+  },
+  {
+    "id": "port-buy-bargain",
+    "label": "Marchandage d’achat de cargaison",
+    "kind": "port-buy-bargain",
+    "template": "Test opposé de Marchandage contre le commerçant, où son camp compte {sellerDR} DR de vendeur (lot partiel, cargaison en Surplus). Vous l’emportez : le prix baisse de 10 %, ou de 20 % avec le Talent Négociateur ou un DR net stupéfiant. Il l’emporte : le prix monte d’autant.",
+    "form": "descripteur",
+    "rule": "marchandage",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 135,
+      "note": "MDG 15 l.335-341 — le moteur porte le +1 DR de Surplus au VENDEUR ; le RAW l'accorde aux « Tests de Marchandage entrepris pour acheter des marchandises dans la colonne Surplus » (« car les vendeurs locaux peuvent toujours se permettre d'offrir de bons prix sur ce type de cargaison ») : écart ouvert en #1140"
+    }
+  },
+  {
+    "id": "port-sell-bargain",
+    "label": "Marchandage de vente de cargaison",
+    "kind": "port-sell-bargain",
+    "template": "Test opposé de Marchandage contre l’acheteur, où votre camp compte {sellerDR} DR de relation du port au bien. Vous l’emportez : le prix d’offre monte de 10 %, ou de 20 % avec le Talent Négociateur ou un DR net stupéfiant. Il l’emporte : il baisse d’autant.",
+    "form": "descripteur",
+    "rule": "marchandage",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 136,
+      "note": "MDG 15 l.385-397"
+    }
+  },
+  {
+    "id": "port-sell-gossip",
+    "label": "Recherche d’un acheteur au port",
+    "kind": "port-sell-gossip",
+    "template": "Réussite : un acheteur potentiel est approché — le dé de recherche suit. Échec : personne ne s’intéresse à cette cargaison dans ce port.",
+    "form": "descripteur",
+    "rule": "ragot",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 136,
+      "note": "MDG 15 l.366-372"
+    }
   }
 ]

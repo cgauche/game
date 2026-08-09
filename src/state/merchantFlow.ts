@@ -24,7 +24,7 @@ import { priceToMoney, add as moneyAdd, canAfford, fromBrass, toBrass, formatMon
 import { bourseOf, payWithAllocation, payFromGroup, soloPayer, creditBourse } from './bourseFlow';
 import { actorStatus } from '../engine/social';
 import { MINUTES_PER_DAY } from '../engine/clock';
-import { findTrappingById, trappings, findVehicleById, findCreatureById, vehicles, creatures, type TrappingData } from '../data/index';
+import { findTrappingById, trappings, findVehicleById, findCreatureById, vehicles, creatures, combatStakeRef, type TrappingData } from '../data/index';
 import { slugId } from '../data/slug';
 import { MERCHANTS } from './merchants/index';
 import { describeBargain } from './flowOutcomes';
@@ -404,6 +404,7 @@ export function searchAvailability(get: Get, set: Set): void {
     skill: 'ragot', char: 'sociabilite', // Soutien LDB 12 — même valeur que `partyAssisted`
     actionLabel: 'Recherche active',
     difficulty: 'intermediaire',
+    stake: combatStakeRef(MERCHANT_RAGOT_KIND),
   }, MERCHANT_RAGOT_KIND, { entityId: m.entityId, restockPeriod });
 }
 

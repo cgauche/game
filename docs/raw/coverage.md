@@ -26,10 +26,10 @@
 | 06 | Classes | ✅ | 6 (carrieres.md ×3) |
 | 07 | Carrières | ✅ | 69 (avancement.md ×45) |
 | 08 | Statut | ✅ | 42 (carrieres.md ×22) |
-| 09 | Compétences | ✅ | 145 (competences.md ×137) |
+| 09 | Compétences | ✅ | 146 (competences.md ×137) |
 | 10 | Talents | ✅ | 200 (talents.md ×138) |
 | 11 | *(artefact OCR)* | ✅ | 31 (talents.md ×30) |
-| 12 | Tests | ✅ | 46 (tests.md ×41) |
+| 12 | Tests | ✅ | 47 (tests.md ×42) |
 | 13 | Combat | ✅ | 133 (combat.md ×122) |
 | 14 | *(artefact OCR)* | ✅ | 128 (combat.md ×121) |
 | 15 | Déplacement | ✅ | 87 (combat.md ×76) |

@@ -334,6 +334,9 @@ const STAKE_ENTRY_POOLS: Record<string, (id: string) => boolean> = {
   creatures: (id) => creatures.some((c) => c.id === id),
   regles: (id) => regles.some((r) => r.id === id),
   activities: (id) => ACTIVITY_STAKES.some((a) => a.id === id),
+  // La COMPÉTENCE testée est le foyer quand le jet n'existe que par elle (cumuler l'Avantage :
+  // Intuition/Savoir/Survie/Prière portent chacune SA phrase de combat, LDB 09).
+  skills: (id) => !!findSkillById(id),
 };
 
 /** Rangées BRUTES des tables tirées par une étape, réduites à leur id — le résolveur d'enjeu n'a

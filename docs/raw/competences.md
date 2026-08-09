@@ -45,7 +45,7 @@ Augmentations** dans cette Compétence inscrites sur la Feuille de Personnage.
 **Sources RAW :** LDB 09 l.12-18
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.12-18) → `possesses` — `src/engine/axes.ts`, `src/engine/skillCombatApps.ts`
+- `LDB 9` (l.12-18) → `possesses`, `skillBaseValue`, `stepOpenValue`, `combatBaseValue`, `castingBaseValue`, `holdVerdict`, `ActivityOppositionOn`, `defenseBaseValue`, `CastResult`, `openHoldScene` — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/interludeFlow.ts`, +2 fichiers
 
 **Voir aussi :** [Tests & Degrés de Réussite](tests.md) pour l'utilisation de ce niveau en test.
 
@@ -73,7 +73,7 @@ Nécessitent un entraînement. **Impossible de tenter le Test sans au moins une 
 **Sources RAW :** LDB 09 l.22-32
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.22-32) → `hasHealSkill`, `possesses`, `redaction`, `buySkillAdvance`, `athletisme`, `buildAdvancementView`, `createHero`, `entrainementOptions`, `AdvancementPanel`, `GameState`, +2 — `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, +8 fichiers
+- `LDB 9` (l.22-32) → `hasHealSkill`, `possesses`, `redaction`, `buySkillAdvance`, `athletisme`, `skillBaseValue`, `buildAdvancementView`, `stepOpenValue`, `combatBaseValue`, `castingBaseValue`, +11 — `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, +13 fichiers
 
 ---
 
@@ -98,7 +98,7 @@ la description, ou en crée une avec l'accord du MJ.
 **Sources RAW :** LDB 09 l.34-46
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `redaction`, `buySkillAdvance`, `athletisme`, `buildAdvancementView`, `combatValue`, `weaponUnmastered`, `createHero`, `entrainementOptions`, +4 — `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, +9 fichiers
+- `LDB 9` (l.34-46) → `hasHealSkill`, `possesses`, `redaction`, `buySkillAdvance`, `athletisme`, `buildAdvancementView`, `combatBaseValue`, `weaponUnmastered`, `createHero`, `entrainementOptions`, +4 — `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, +9 fichiers
 
 ---
 
@@ -183,7 +183,7 @@ Soin aux animaux, Voile**
 **Sources RAW :** LDB 09 l.65-574 (descriptions individuelles).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.65-574) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `essieu-casse`, `actBlockReason`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, +84 — `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, +30 fichiers
+- `LDB 9` (l.65-574) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `essieu-casse`, `actBlockReason`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, +85 — `src/data/combat-stakes.json`, `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, +31 fichiers
 
 ---
 
@@ -514,7 +514,7 @@ comme non Groupée pour les non-formés.
 **Sources RAW :** LDB 09 l.246-252 ; ADE II 4 l.162, l.180, l.182 (Focalisation sur artefacts magiques).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.65-72, l.75-76, l.80-83, l.86-109, l.111-118, l.121-134, l.137-154, l.157-160, l.163-176, l.179-190, l.193-198, l.201-211, l.214-219, l.222-225, l.228-233, l.236-239, l.242-243, l.246-252, l.275-285) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `drivingAccidentDamage` ⚠sans-appelant, `essieu-casse`, `actBlockReason`, `carryOverState`, `useDefenseJetProps`, `redaction`, `healDifficulty`, +37 — `src/data/driving-mishap.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/driving-mishap.ts`, `src/data/skills.json`, `src/engine/combat.ts`, +15 fichiers
+- `LDB 9` (l.65-72, l.75-76, l.80-83, l.86-109, l.111-118, l.121-134, l.137-154, l.157-160, l.163-176, l.179-190, l.193-198, l.201-211, l.214-219, l.222-225, l.228-233, l.236-239, l.242-243, l.246-252, l.275-285) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `drivingAccidentDamage` ⚠sans-appelant, `essieu-casse`, `actBlockReason`, `carryOverState`, `useDefenseJetProps`, `redaction`, `healDifficulty`, +38 — `src/data/combat-stakes.json`, `src/data/driving-mishap.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/schemas/defs/driving-mishap.ts`, `src/data/skills.json`, +16 fichiers
 - sans code : `ADE II 4` (l.162)
 
 ---
@@ -561,7 +561,7 @@ autoriser Fm (Répurgateur) ou Int (universitaire face à un étudiant). Voir [R
 **Sources RAW :** LDB 09 l.272-294
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.272-294) → `altCharKey`, `healDifficulty`, `OPTIONAL_RULES`, `heal-wounds`, `heal-bleed`, `guerison`, `intimidation`, `intuition`, `noir-parler`, `createCombatSlice` — `src/data/flow-stakes.json`, `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/state/combatSlice.ts`
+- `LDB 9` (l.272-294) → `altCharKey`, `healDifficulty`, `OPTIONAL_RULES`, `heal-wounds`, `heal-bleed`, `skill-advantage`, `guerison`, `intimidation`, `intuition`, `noir-parler`, +1 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, +1 fichiers
 
 ---
 
@@ -625,7 +625,7 @@ Activité Artisanat entre aventures utilise Métier (voir [Activités](activites
 **Sources RAW :** LDB 09 l.349-364
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.305-308, l.311-346, l.348, l.349-364) → `altCharKey`, `skillAdvantageCap`, `OPTIONAL_RULES`, `PendingTest`, `openSkillTest`, `ActionBar`, `intimidation`, `intuition`, `noir-parler`, `marchandage`, +6 — `src/data/skills.json`, `src/engine/policy.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/combatEffects.ts`, `src/state/combatSlice.ts`, +4 fichiers
+- `LDB 9` (l.305-308, l.311-346, l.348, l.349-364) → `altCharKey`, `skillAdvantageCap`, `OPTIONAL_RULES`, `PendingTest`, `openSkillTest`, `skill-advantage`, `ActionBar`, `intimidation`, `intuition`, `noir-parler`, +7 — `src/data/combat-stakes.json`, `src/data/skills.json`, `src/engine/policy.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/combatEffects.ts`, +5 fichiers
 - `ADE II 2` (l.728) → `altCharKey`, `castingCharKey`, `possession-pas-a-sa-taille`, `gueule`, `DomainData`, `ogre`, `bouf-crane`, `broyeur-d-os`, `festin-des-damnes` — `src/data/domains.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/spells.json`, `src/data/traits.json`, `src/engine/magic.ts`, +1 fichiers
 
 ---
@@ -954,7 +954,7 @@ l'Intelligence. (Voir section dédiée.)
 **Sources RAW :** LDB 09 l.293-294 ; LDB 09 l.358 ; ADE II 2 l.728
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.293-294, l.358) → `altCharKey`, `OPTIONAL_RULES`, `heal-wounds`, `heal-bleed`, `guerison`, `intimidation`, `intuition`, `noir-parler`, `marchandage`, `vigneron`, +2 — `src/data/flow-stakes.json`, `src/data/skills.json`, `src/engine/policy.ts`, `src/engine/skills.ts`
+- `LDB 9` (l.293-294, l.358) → `altCharKey`, `OPTIONAL_RULES`, `heal-wounds`, `heal-bleed`, `skill-advantage`, `guerison`, `intimidation`, `intuition`, `noir-parler`, `marchandage`, +3 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/skills.json`, `src/engine/policy.ts`, `src/engine/skills.ts`
 - `ADE II 2` (l.728) → `altCharKey`, `castingCharKey`, `possession-pas-a-sa-taille`, `gueule`, `DomainData`, `ogre`, `bouf-crane`, `broyeur-d-os`, `festin-des-damnes` — `src/data/domains.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/spells.json`, `src/data/traits.json`, `src/engine/magic.ts`, +1 fichiers
 
 ---

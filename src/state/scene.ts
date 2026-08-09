@@ -8,6 +8,8 @@
  */
 import { CharKey, Difficulty } from '../engine/types';
 import type { AuthoredShipPoste, NavalTraitRef } from '../engine/types';
+// Type SEUL (effacé à la compilation — aucun cycle runtime), même patron qu'`engine/flowCore`.
+import type { StakeRef } from '../data';
 import type { EntityAppearance } from '../engine/authoringAppearance';
 import { sanitizeFlow, type Flow, type Condition, type EffectOp } from './flow';
 import { type DayPhaseKey, type ScheduleSpec } from '../engine/clock';
@@ -280,6 +282,9 @@ export type Effect =
       /** DR CUMULÉ à atteindre (ex. serrure complexe = 5). */
       targetDR: number;
       flag?: string;
+      /** ENJEU du Test (#1117) — référence de donnée, résolue par `resolveStake` et affichée par la
+       *  modale du Round. Authorable par site ; à défaut, l'applier pose celui du Test étendu. */
+      stake?: StakeRef;
     }
   /** Enfoncer une PORTE/objet à PLUSIEURS (EDO Appendice 2) : objet (BE = Bonus d'Endurance, B =
    *  Blessures) ; chaque héros frappe (Bagarre, dégâts = DR + BF − BE). `flag` posé quand l'objet cède. */

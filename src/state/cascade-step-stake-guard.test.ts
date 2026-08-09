@@ -230,20 +230,15 @@ export function literalTestsWithoutStake(src: string): number[] {
 
 /** Baseline NOMINATIVE de la 4ᵉ forme — stock mesuré le 2026-08-06 : 19 descripteurs de jet muets
  *  sur 11 fichiers, dont 7 que les trois scans précédents ne voyaient PAS ; 12 sur 8 fichiers depuis
- *  que les producteurs de `testFlow` sont dotés. SUR-ENSEMBLE de `BASELINE_FLOW` (les arguments de
- *  `testFlow` ont la même forme), donc chaque fichier y compte au moins autant. Décroissante comme
+ *  que les producteurs de `testFlow` sont dotés ; 4 sur 3 fichiers depuis que le HORS-COMBAT est doté
+ *  (Test étendu, Commandant d'équipe, Avantage par Compétence, Ragot d'auberge, marché terrestre ×2,
+ *  Chirurgie/rééducation, Recherche active, port ×3). SUR-ENSEMBLE de `BASELINE_FLOW` (les arguments
+ *  de `testFlow` ont la même forme), donc chaque fichier y compte au moins autant. Décroissante comme
  *  les autres : un site doté ABAISSE sa ligne. */
 const BASELINE_LITERAL: Record<string, number> = {
-  // `combatEffects.ts` : la serrure à Test ÉTENDU (invisible au scan `testFlow`) — la Récolte est dotée.
-  'state/combatEffects.ts': 1,
-  // PROPRES à la 4ᵉ forme — jamais mesurés jusqu'ici :
-  'state/combatSlice.ts': 2, // Commandant d'équipe + gain d'Avantage par Compétence (`openSkillTest` direct)
-  'state/innFlow.ts': 1, // Ragot de taverne (`openPartyTest`)
-  'state/landMarketFlow.ts': 2, // marché terrestre : les deux Marchandages
-  'state/medicFlow.ts': 1, // pending de CHIRURGIE (Test étendu du soigneur)
-  'state/merchantFlow.ts': 1, // Marchandage du marchand
-  'state/portFlow.ts': 3, // port : Marchandage d'achat, de vente, et Test de service
-  'state/seaVoyageFlow.ts': 1, // jet de bord — à doter avec le lot maritime
+  // `seaVoyageFlow.ts` : jet de bord — dernier descripteur muet de `src/state`. La ligne NOMME le site
+  // restant : toute dotation l'abaisse à 0, et le fichier ne peut pas en regagner un sans rougir.
+  'state/seaVoyageFlow.ts': 1,
   // Flows AUTHORÉS de scène (couverture `src/scenes`) — mêmes sites que `BASELINE_FLOW`, même dette :
   'scenes/test-scenarios/opera.ts': 2,
   'scenes/test-scenarios/piege-caveau.ts': 1,

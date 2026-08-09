@@ -513,7 +513,7 @@ Le LDB 16 exprime toutes les durées en Rounds. Plusieurs sources introduisent d
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 40` (l.56, l.60-61, l.70, l.71-72, l.82, l.86, l.87-88, l.90, l.94-95, l.99, l.101) → `NestedTest`, `liveTableDecl`, `wrath-table`, `peche`, `CastPenalty`, `CascadeActorCounter`, `sonne`, `colere-pensez-a-vos-actes`, `colere-tenez-compte-de-mes-enseignements`, `a-terre`, +27 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/miscast.json`, `src/engine/miscast.ts`, `src/engine/prayer.ts`, `src/engine/types.ts`, +3 fichiers
-- `LDB 46` (l.36, l.39-40, l.43-44, l.45, l.46, l.47-48, l.49, l.59, l.60, l.63, l.64, l.66, l.68, l.74, l.75, l.78, l.80, l.102, l.126) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `followsCharacterRules`, `mineure-mildiou`, `overcastAxes`, `assourdi`, `MiscastResult`, `mineure-lueur-occulte`, `combat-spell-plus`, `mineure-murmures-mortels`, +75 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/miscast.json`, `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, +12 fichiers
+- `LDB 46` (l.36, l.39-40, l.43-44, l.45, l.46, l.47-48, l.49, l.59, l.60, l.63, l.64, l.66, l.68, l.74, l.75, l.78, l.80, l.102, l.126) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `followsCharacterRules`, `mineure-mildiou`, `overcastAxes`, `assourdi`, `MiscastResult`, `mineure-lueur-occulte`, `combat-spell-plus`, `mineure-murmures-mortels`, +76 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/miscast.json`, `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, +12 fichiers
 
 ---
 
@@ -548,7 +548,7 @@ Les tableaux de Blessures Critiques (LDB 18) génèrent des États dont le **ret
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), section Blessures Critiques
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.64, l.67, l.74-75, l.104, l.123-125, l.148, l.149, l.211, l.213) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `dechirure-autre-mineure`, `aveugle`, `CritEscalation`, `fracture-torse-mineure`, `assourdi`, `trauma-fracture`, `fracture-torse-majeure`, +54 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, +11 fichiers
+- `LDB 18` (l.64, l.67, l.74-75, l.104, l.123-125, l.148, l.149, l.211, l.213) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `dechirure-autre-mineure`, `aveugle`, `CritEscalation`, `fracture-torse-mineure`, `assourdi`, `trauma-fracture`, `fracture-torse-majeure`, +55 — `src/data/combat-stakes.json`, `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, +11 fichiers
 
 ---
 

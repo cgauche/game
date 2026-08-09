@@ -254,8 +254,7 @@ export function rollMerchantOpposition(merchantValue: number, rng: RNG = default
   return rollTest(merchantValue, 'intermediaire', rng);
 }
 
-/** +DR du VENDEUR au Marchandage d'ACHAT (l.339-341) : lot partiel +1 (« il peut se plaindre… »),
- *  cargaison en Surplus +1 (« les vendeurs locaux peuvent toujours se permettre… »). PUR. */
+/** DR de camp du Marchandage d'ACHAT (MDG 15 l.335-341). PUR — écart de camp ouvert en #1140. */
 export function buySellerDR(partial: boolean, surplus: boolean): number {
   return (partial ? CARGO.buy.partialPurchaseSellerDR : 0) + (surplus ? CARGO.buy.surplusSellerDR : 0);
 }

@@ -65,6 +65,7 @@ function actBlockReason(patient: Combatant, act: HealMode, hasSurgeon: boolean):
 function SurgeryRollFlow() {
   const ps = useGame((s) => s.pendingSurgery);
   const kind = useGame((s) => s.medic?.surgery?.kind);
+  const stake = useGame((s) => s.medic?.surgery?.stake); // posé à l'armement — opérer ≠ rééduquer
   const party = useGame((s) => s.party);
   const roll = useGame((s) => s.surgeryRoll);
   const reroll = useGame((s) => s.surgeryReroll);
@@ -108,7 +109,7 @@ function SurgeryRollFlow() {
   return (
     <RollShell
       flowKey="surgery"
-      stake={flowStakeRef('surgery', 'roll', { values: { targetDR: ps.targetDR } })}
+      stake={stake}
       embedded
       title={<><Icon id={HEAL_ACT[kind ?? 'surgery'].icon} size="sm" /> {recovery ? 'Rééduquer (une passe)' : 'Opérer (une passe)'}</>}
       /* AUCUN sous-titre : la passe est EMBARQUÉE dans le dossier d'opération, qui porte déjà l'A→B

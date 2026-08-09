@@ -463,5 +463,35 @@
       "page": 108,
       "note": "MDG 14 l.13-19"
     }
+  },
+  {
+    "id": "surgery-recovery",
+    "label": "Rééducation d’un membre — une passe",
+    "flow": "surgery",
+    "phase": "recovery",
+    "template": "Test étendu de Guérison Accessible (+20) : le DR cumule vers {targetDR}, sans aucun dégât pour le patient. Cible atteinte : l’usage du membre est rendu, au prix d’une pénalité de −10 aux Tests qui l’impliquent pendant 1d10 jours (Mouvement de moitié pour une jambe). Arrêter : le cumul est perdu.",
+    "form": "descripteur",
+    "rule": "guerison",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "livre-de-base",
+      "page": 176,
+      "note": "LDB 18 l.120 (Épaule luxée) et l.179 (Genou démis)"
+    }
+  },
+  {
+    "id": "extended-test-roll",
+    "label": "Test étendu — un Round",
+    "flow": "extendedTest",
+    "phase": "roll",
+    "template": "Le DR de chaque Round s’ajoute au total jusqu’à la cible ; un total passé sous 0 repart de zéro. Cible atteinte : la tâche aboutit et ce qu’elle gardait fermé s’ouvre. Renoncer reste possible à chaque Round — le cumul est alors perdu.",
+    "form": "descripteur",
+    "rule": "tests-etendus",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 154,
+      "note": "LDB 12 l.170-174"
+    }
   }
 ]

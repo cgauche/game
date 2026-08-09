@@ -70,7 +70,7 @@ sa définition vit à la charte. Une prop non encore taguée affiche « — » e
 | `src/ui/HealModal.tsx` | `HealRollFlow` (J) | 1 | ✓ | · | · | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/jetProps/useAttackJetProps.tsx` | `useAttackJetProps` (H) | hook | ✓ | · | ✓ | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `src/ui/jetProps/useDefenseJetProps.tsx` | `useDefenseJetProps` (H) | hook | ✓ | · | ✓ | · | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | · | ✓ |
-| `src/ui/jetProps/useExtendedTestJetProps.tsx` | `useExtendedTestJetProps` (H) | hook | ✓ | · | ✓ | · | · | · | · | · | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
+| `src/ui/jetProps/useExtendedTestJetProps.tsx` | `useExtendedTestJetProps` (H) | hook | ✓ | · | ✓ | · | · | · | ✓ | · | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/jetProps/useFumbleJetProps.tsx` | `useFumbleJetProps` (H) | hook | ✓ | ✓ | ✓ | · | · | · | · | · | · | ✓ | ✓ | · | · | · | · | · | · | ✓ | · | · |
 | `src/ui/jetProps/useTestJetProps.tsx` | `useTestJetProps` (H) | hook | ✓ | ✓ | ✓ | · | · | · | · | · | ✓ | ✓ | ✓ | · | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ |
 | `src/ui/jetProps/useTrampleJetProps.tsx` | `useTrampleJetProps` (H) | hook | ✓ | · | · | · | · | · | · | ✓ | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |

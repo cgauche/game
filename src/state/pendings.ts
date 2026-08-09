@@ -1140,6 +1140,8 @@ export interface PendingExtendedTest extends PendingBase {
    *  qu'il ait ATTEINT sa cible ou buté sur `maxAttempts`. `meta` = paramètres sérialisables (jamais de
    *  closure — coop). Absent ⇒ comportement historique (`flag`/`dispel`, réussite seule). */
   outcome?: { kind: string; meta?: CascadeStepMeta };
+  /** ENJEU du Round (#1117) — référence de donnée résolue par `resolveStake`, rendue par la modale. */
+  stake?: StakeRef;
 }
 
 /** Paramètres SÉRIALISABLES de la conséquence d'une étape (jamais de closure — coop : le pending est

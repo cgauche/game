@@ -7,6 +7,7 @@ import { create } from 'zustand';
 import { Combatant, CharKey, HitLocation } from '../engine/types';
 import { extendedTestStep } from '../engine/tests';
 import type { SupportDetail } from '../engine/skills';
+import type { StakeRef } from '../data';
 import { fixedJetOpen, markFixedDie } from './fixedDieMark';
 import type { ShipMoraleState } from '../engine/crewMorale';
 import { dissipateSpell } from '../engine/dispel';
@@ -1003,7 +1004,7 @@ export interface GameState extends RollFlowActionsMap {
   /** « Laisser passer » : aucun Contre-sort retenu → le Sort se résout tel quel (castConfirm). */
   counterspellCancel: () => void;
   /** Test Étendu SÉQUENTIEL (LDB 12) : ouvre le flux (ex. crocheter DR 5) ; un Round à la fois. */
-  startExtendedTest: (opts: { actorId: string; label: string; skillLabel: string; target: number; targetDR: number; maxAttempts?: number; flag?: string; support?: SupportDetail; dispel?: { spellId: string; casterId: string; label: string }; outcome?: { kind: string; meta?: CascadeStepMeta } }) => void;
+  startExtendedTest: (opts: { actorId: string; label: string; skillLabel: string; target: number; targetDR: number; maxAttempts?: number; flag?: string; support?: SupportDetail; dispel?: { spellId: string; casterId: string; label: string }; outcome?: { kind: string; meta?: CascadeStepMeta }; stake?: StakeRef }) => void;
   // extendedTest{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap, MULTI).
   /** Cumule le DR du Round courant (LDB 12 l.200) ; total < 0 → recommence ; total ≥ cible → réussite. */
   extendedTestNext: () => void;

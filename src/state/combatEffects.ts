@@ -23,7 +23,7 @@ import { traumaOnImpossibleAmbition } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, giveTrappingLabel, withGiveQualities, autoStowNewItem } from '../engine/items';
 import { trappingById, indiceById } from './campaignData';
 import { revealClue, discreditClue } from './clues';
-import { findCreatureById, findVehicleById, refLabel, WATER_EXPOSURE, diseaseLabel, nightStakeRef, combatStakeRef } from '../data';
+import { findCreatureById, findVehicleById, refLabel, WATER_EXPOSURE, diseaseLabel, nightStakeRef, combatStakeRef, flowStakeRef } from '../data';
 import { MORALE_BASE } from '../engine/crewMorale';
 import { clampSaboteurDR } from './shipCrew';
 import { harvestSizeOf, harvestYield } from '../engine/harvest';
@@ -1510,7 +1510,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
   // ── Tests ──────────────────────────────────────────────────────────────
   extendedTest: {
     group: 'Tests', label: 'Test Étendu (DR cumulé : crocheter/forcer un mécanisme)', icon: 'ui/key',
-    make: () => ({ type: 'extendedTest', skill: 'crochetage', difficulty: 'intermediaire', label: 'Crocheter la serrure', targetDR: 5, flag: '' }),
+    make: () => ({ type: 'extendedTest', skill: 'crochetage', difficulty: 'intermediaire', label: 'Crocheter la serrure', targetDR: 5, flag: '', stake: flowStakeRef('extendedTest', 'roll') }),
     apply: (e, env) => {
       // Test ÉTENDU (LDB 12 l.187-200) : le meilleur du groupe enchaîne les Rounds, SOUTENU par les autres
       // membres capables (+10 chacun, plafond Bonus de Carac — `partyAssisted`). Adjacence (l.196) : même
@@ -1523,7 +1523,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       if (!best) return;
       const difficulty = e.difficulty ?? 'intermediaire';
       const target = Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS[difficulty]));
-      env.get().startExtendedTest({ actorId: best.actor.id, label: e.label, skillLabel: e.skill ? refLabel('skills', { id: e.skill, spec: e.spec }) : (e.characteristic ?? 'Test'), target, targetDR: e.targetDR, flag: e.flag, ...(best.support.count > 0 ? { support: best.support } : {}) });
+      env.get().startExtendedTest({ actorId: best.actor.id, label: e.label, skillLabel: e.skill ? refLabel('skills', { id: e.skill, spec: e.spec }) : (e.characteristic ?? 'Test'), target, targetDR: e.targetDR, flag: e.flag, stake: e.stake ?? flowStakeRef('extendedTest', 'roll'), ...(best.support.count > 0 ? { support: best.support } : {}) });
       return 'suspend';
     },
   },

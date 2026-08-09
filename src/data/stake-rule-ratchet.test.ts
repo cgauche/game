@@ -180,7 +180,7 @@ describe('cliquet — un enjeu porte sa RÈGLE (#1117)', () => {
    *  la catégorie), jamais sur une copie parallèle de la table de pools. */
   it('chaque `entryCategory` déclarée fait DESCENDRE le renvoi à l’entrée jouée', () => {
     const POOLS: Record<string, { id: string }[]> = {
-      symptoms, seaShanties, crewTestTypes, maladies, psychologies, maneuvers, spells,
+      symptoms, seaShanties, crewTestTypes, maladies, psychologies, maneuvers, spells, skills,
       // Familles à TABLE (vague 4b) : la ligne tirée est l'entrée jouée — les pools sont lus sur les
       // MÊMES fichiers que le Codex édite, jamais sur une copie du résolveur.
       mutations, mutationTables, interludeEvents,
@@ -197,7 +197,10 @@ describe('cliquet — un enjeu porte sa RÈGLE (#1117)', () => {
       if (!pool?.length) { muettes.push(`${e.id} → catégorie « ${e.entryCategory} » inconnue du test`); continue; }
       const entryId = pool[0].id;
       const kind = 'flow' in e ? `${(e as { flow: string }).flow}/${(e as { phase: string }).phase}` : (e as { kind: string }).kind;
-      const rule = resolveStake({ key: { dataset, kind, entryId } }).rule;
+      // Les TROUS du gabarit sont remplis d'une valeur sonde : `resolveStake` est fail-closed sur un
+      // trou vide, et ce test-ci mesure le RENVOI, pas le texte (la valeur réelle vient du producteur).
+      const values = Object.fromEntries([...e.template.matchAll(/\{(\w+)\}/g)].map((m) => [m[1], '·']));
+      const rule = resolveStake({ key: { dataset, kind, entryId }, values }).rule;
       if (rule?.category !== e.entryCategory || rule.id !== entryId) {
         muettes.push(`${e.id} → attendu ${e.entryCategory}:${entryId}, obtenu ${rule ? `${rule.category}:${rule.id}` : 'aucun renvoi'}`);
       }

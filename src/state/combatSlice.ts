@@ -17,7 +17,7 @@ import { SceneEntity, structureIsDown } from './scene';
 import * as travelFlow from './travelFlow';
 import { continueRestNights } from './restFlow';
 import { continueRiverDayAfterCascade, continueRiverDayAfterExposure } from './riverVoyageFlow';
-import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc, type Weapon } from '../engine/types';
+import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, CHAR_LABELS, type FireArc, type Weapon } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
 import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castContextMods, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, trampleFreeMove, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, applyCounterspellFallback, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, resolveMovement, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
@@ -74,7 +74,7 @@ import { continueSeaActivitiesAfterCascade } from './seaActivities';
 import { resolveCrewTestByRoles, rudeEpreuveMoraleDelta, crewTestSuccess, capToSuccesMinime } from '../engine/crewMorale';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
 import { findSeaShantyById } from '../data';
-import { findCrewTestTypeById, findCrewRoleById, findVehicleById, findStructureById } from '../data';
+import { findCrewTestTypeById, findCrewRoleById, findVehicleById, findStructureById, combatStakeRef } from '../data';
 import { structureCombatant } from '../engine/structures';
 import { targetArc, headingToBear } from './fireArc';
 import { facingToward } from './dir8';
@@ -1607,7 +1607,7 @@ export function createCombatSlice(get: Get, set: Set) {
       };
       set({ battle: { ...battle, acted: true, action: null } }); // le Test EST l'Action (réussite ou non)
       openSkillTest(get, set,
-        { skill: 'commandement', difficulty: 'intermediaire', label: 'Commandant d’équipe' },
+        { skill: 'commandement', difficulty: 'intermediaire', label: 'Commandant d’équipe', stake: combatStakeRef('teamCommand') },
         onSuccess, EMPTY_FLOW, EMPTY_FLOW, { actorId: active.id });
       bus.emit(EVT.SCENE_DIRTY);
     },
@@ -3529,12 +3529,17 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return;
       const cap = skillAdvantageCap(active, skillId);
       if (cap <= 0 || (active.advantage ?? 0) >= cap) return; // pas d'application « Avantage », ou déjà au plafond de la méthode
-      const skillLabel = findSkillById(skillId)?.label ?? skillId;
+      const sd = findSkillById(skillId);
+      const skillLabel = sd?.label ?? skillId;
+      // Le plafond est une DONNÉE PAR COMPÉTENCE (`SkillData.combatAdvantage.cap`, appliquée par
+      // `skillAdvantageCap`) : Intuition relève de l'Initiative mais plafonne au Bonus d'Intelligence
+      // (LDB 09 l.305+308). L'enjeu nomme donc CETTE Caractéristique — id en donnée, label à l'affichage.
+      const capChar = sd?.combatAdvantage ? CHAR_LABELS[sd.combatAdvantage.cap] : '';
       set({ battle: { ...battle, action: null } });
       // COUTURE UNIQUE (`openSkillTest`) : l'observateur reste l'acteur imposé (`actorId`), et son
       // Test est PERSONNEL — `noSupport` (LDB 09 l.308, LDB 12 l.197).
       openSkillTest(get, set,
-        { skill: skillId, difficulty: 'intermediaire', label: `Avantage — ${skillLabel}`, noSupport: true },
+        { skill: skillId, difficulty: 'intermediaire', label: `Avantage — ${skillLabel}`, noSupport: true, stake: combatStakeRef('skillAdvantage', { entryId: skillId, values: { capChar } }) },
         EMPTY_FLOW, EMPTY_FLOW, EMPTY_FLOW,
         { actorId: active.id, combatAdvantage: { combatantId: active.id, cap }, cancellable: true });
     },

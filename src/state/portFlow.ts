@@ -29,7 +29,7 @@ import { resolveOpposed, bumpSL, SL_ASTOUNDING, type TestResult } from '../engin
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, toMoney, priceToMoney } from '../engine/money';
 import { partyMoneyTotal, payFromGroup, distributeCredit } from './bourseFlow';
-import { findVehicleById, findCrewRoleById } from '../data';
+import { findVehicleById, findCrewRoleById, combatStakeRef } from '../data';
 import { weeklyCrewWageBrass } from '../engine/crewMorale';
 import {
   rollCargoAvailability, rollMerchantSkill, rollMerchantOpposition, buySellerDR, cargoBasePrice, rollRandomCargo,
@@ -52,7 +52,7 @@ export interface PortOffer {
   label: string;
   enc: number;
   basePrice: number;
-  /** Cargaison en Surplus du port (l.341 : +1 DR au vendeur NPC à l'achat). */
+  /** Cargaison en Surplus du port (MDG 15 l.341 — écart de camp ouvert en #1140). */
   surplus: boolean;
 }
 
@@ -142,6 +142,10 @@ function bargainPct(winnerNegotiator: boolean, netSL: number): number {
   return winnerNegotiator || netSL >= SL_ASTOUNDING ? 20 : 10;
 }
 
+/** DR de camp SIGNÉ pour l'enjeu affiché (`combat-stakes`, achat et vente) : le gabarit dit « compte
+ *  {sellerDR} DR », le signe fait partie de la valeur — source UNIQUE des deux Marchandages. */
+const signedDR = (dr: number) => (dr >= 0 ? `+${dr}` : String(dr));
+
 /** Finalise l'ACHAT une fois le Marchandage résolu (pct connu) : prix = Enc × prix de base × (1 + pct %),
  *  débité, cargaison ajoutée à la cale (Enc re-clampé au plafond DUR de surcharge, MDG 12 l.75), offre
  *  rafraîchie. SOURCE UNIQUE du dénouement, partagée par le chemin SANS marchandeur (prix plein, pct 0)
@@ -194,12 +198,13 @@ export function portBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
     log(get, set, finalizePortBuy(get, set, cargoId, want, offer.basePrice, 0, 'Aucun marchandeur dans le groupe — prix plein.'));
     return;
   }
-  // Le vendeur NPC porte ses +DR de vente (lot partiel / Surplus) sur SON DR (l.339-341).
+  // DR de camp du vendeur NPC (MDG 15 l.339-341 — écart de camp ouvert en #1140).
   const sellerDR = buySellerDR(partial, offer.surplus);
   openPartyTest(get, set, {
     skill: 'marchandage',
     actionLabel: 'Achat',
     difficulty: 'intermediaire',
+    stake: combatStakeRef(PORT_BUY_BARGAIN_KIND, { values: { sellerDR: signedDR(sellerDR) } }),
   }, PORT_BUY_BARGAIN_KIND, { cargoId, want, basePrice: offer.basePrice, merchantValue: merchant.value, merchantNegotiator: merchant.negotiator, sellerDR });
 }
 
@@ -286,6 +291,7 @@ function openPortSellBargainStep(get: Get, set: Set, cargoIndex: number, sellEnc
     skill: 'marchandage',
     actionLabel: 'Vente',
     difficulty: 'intermediaire',
+    stake: combatStakeRef(PORT_SELL_BARGAIN_KIND, { values: { sellerDR: signedDR(sellerDR) } }),
   }, PORT_SELL_BARGAIN_KIND, { cargoIndex, sellEnc, offerPct, merchantValue: merchant.value, merchantNegotiator: merchant.negotiator, sellerDR });
 }
 
@@ -397,6 +403,7 @@ export function portSellCargo(get: Get, set: Set, cargoIndex: number): void {
       skill: 'ragot',
       actionLabel: 'Recherche d’acheteur',
       difficulty: chance.gossip.difficulty,
+      stake: combatStakeRef(PORT_SELL_GOSSIP_KIND),
     }, PORT_SELL_GOSSIP_KIND, { cargoIndex });
     return;
   }

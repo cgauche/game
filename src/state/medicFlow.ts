@@ -18,6 +18,7 @@
 import { DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10 } from '../engine/dice';
+import { flowStakeRef, type StakeRef } from '../data';
 import { applyOps } from '../engine/ops';
 import { extendedTestStep } from '../engine/tests';
 import { partyAssisted, type SupportDetail } from '../engine/skills';
@@ -62,6 +63,10 @@ export interface MedicState {
     traumaIdx: number;
     targetDR: number;
     cumDR: number;
+    /** ENJEU d'une passe (#1117) — posé à l'ARMEMENT, où le `kind` et la cible de DR sont connus :
+     *  opérer et rééduquer ne mettent pas la même chose en jeu (`flow-stakes`, `surgery/roll` vs
+     *  `surgery/recovery`). Rendu par la zone de jet embarquée (`MedicModal`). */
+    stake: StakeRef;
     /** Dernière passe (affichage DrBar) — absent tant qu'aucune passe n'a été tentée. */
     last?: { roll: number; sl: number };
     /** Prix déjà débité (PNJ) — remboursé si on arrête AVANT la première passe. */
@@ -143,6 +148,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
           kind: act, difficulty: recovery ? 'accessible' : 'intermediaire',
           healerId: healer.id, healerName: healer.label, skill: healer.skill, support: healer.support, intBonus: healer.intBonus,
           traumaIdx: 0, targetDR, cumDR: 0, paidCost,
+          stake: flowStakeRef('surgery', recovery ? 'recovery' : 'roll', { values: { targetDR } }),
         },
       },
     });
