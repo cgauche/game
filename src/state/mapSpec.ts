@@ -375,8 +375,9 @@ function applyStairs(s: Scene, spec: MapSpec, cellCells: { char: string; x: numb
  *  comparent, pas seulement l'étage `z` de la masse — sinon un étage entièrement couvert par une masse
  *  à étage serait accusé à tort d'un « plancher sans masse ».
  *  Note #829 : cette fonction tourne sur les masses FINALES (surcharges déclarées + dérivées par
- *  `deriveArchitectureMasses`, cf. `buildScene`) — la couverture complète est garantie PAR CONSTRUCTION ;
- *  ce garde-fou reste utile pour les SURCHARGES elles-mêmes (contiguïté, ridge ambigu, chevauchement). */
+ *  `deriveArchitectureMasses`, cf. `buildScene`). Sa portée est le CORPS : chaque règle se juge sur
+ *  les masses d'un corps et sur SON emprise (l'union des `foot` de ses `storeys[].parts[]`) — jamais
+ *  sur le plancher de la scène entière, que `realFloorAt` rend tous corps confondus. */
 function validateBuildingMasses(scene: Scene): void {
   const massCells = (footprint: readonly ArchitectureRect[]): Set<string> => {
     const out = new Set<string>();
@@ -404,6 +405,9 @@ function validateBuildingMasses(scene: Scene): void {
 
   for (const body of scene.architecture ?? []) {
     const exclusions = roofExclusionsByZ(body);
+    // EMPRISE du corps : l'union des `foot` de ses volumes déclarés. `floorAt` rend le plancher de la
+    // scène ENTIÈRE (tous corps confondus) — la couverture ne s'exige que sur les cases de CE corps.
+    const bodyFoot = massCells((body.storeys ?? []).flatMap((storey) => storey.parts.map((part) => part.foot)));
     for (const mass of body.masses) {
       if (!Number.isInteger(mass.levels) || mass.levels < 1)
         throw new Error(`masse « ${mass.id} » (corps « ${body.id} ») : \`levels\` invalide (${mass.levels}) — entier ≥ 1 attendu`);
@@ -462,6 +466,7 @@ function validateBuildingMasses(scene: Scene): void {
       const floor = floorAt(z);
       const excluded = exclusions.get(z);
       for (const key of floor) {
+        if (!bodyFoot.has(key)) continue;
         if (excluded?.has(key)) continue; // #829 : cour à ciel ouvert déclarée — aucune masse n'est due
         if (!at.has(key)) {
           const [x, y] = key.split(',').map(Number);
