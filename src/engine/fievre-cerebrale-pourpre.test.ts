@@ -57,7 +57,7 @@ describe('Fièvre Cérébrale Pourpre — EDO App.2 p.145', () => {
     const dz = contractDisease('fievre-cerebrale-pourpre', makeRNG(1), { incubation: 0, duration: 3 })!;
     const c = sick({ diseases: [dz] });
     const ops = diseasePassiveOps(c);
-    const mods = ops.filter((o) => o.op === 'charMod') as { op: string; char: string; mod: number }[];
+    const mods = ops.map((m) => m.op).filter((o) => o.op === 'charMod') as { op: string; char: string; mod: number }[];
     const byChar: Record<string, number> = {};
     for (const m of mods) byChar[m.char] = (byChar[m.char] ?? 0) + m.mod;
     // Convulsions passive (−10 sur CC/CT/F/E/Ag/Dex) + Fièvre passive (−10 sur CC/CT/F/E/Ag/Dex/Soc)

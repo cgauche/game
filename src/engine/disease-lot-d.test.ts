@@ -10,7 +10,7 @@ import type { GameOp } from './ops';
 
 /** Pénalité de Caractéristique due aux maladies actives (lit les GameOp passifs des symptômes). */
 const pen = (c: Combatant, char: string): number[] =>
-  diseasePassiveOps(c).filter((o): o is Extract<GameOp, { op: 'charMod' }> => o.op === 'charMod' && o.char === char).map((o) => o.mod);
+  diseasePassiveOps(c).map((m) => m.op).filter((o): o is Extract<GameOp, { op: 'charMod' }> => o.op === 'charMod' && o.char === char).map((o) => o.mod);
 
 /** Lot D — complément Maladies (LDB 20) : la Litanie de la Pestilence au complet + nouveaux symptômes. */
 

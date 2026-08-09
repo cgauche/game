@@ -271,7 +271,7 @@ Sentiments positifs envers un groupe d'individus.
 - `LDB 21 l.80-83` — définition et effets
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.80-83) → `nightmare`, `calme-d-approche`, `buildExposureSteps`, `Effect`, `gainPhobieIfThreshold`, `nightmareCheck`, `trauma`, `EFFECT_HANDLERS`, `PsychologyData`, `Combatant`, +3 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, `src/engine/psychology.ts`, +4 fichiers
+- `LDB 21` (l.80-83) → `nightmare`, `calme-d-approche`, `buildExposureSteps`, `Effect`, `gainPhobieIfThreshold`, `trauma`, `nightmareCheck`, `EFFECT_HANDLERS`, `PsychologyData`, `Combatant`, +3 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, `src/engine/psychology.ts`, +4 fichiers
 
 ---
 

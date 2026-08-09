@@ -19,7 +19,7 @@ import { weatherTestMods } from './weatherTestMod';
 import { findTableEntry } from './tables';
 import { maxBy } from './pick';
 import locJson from '../data/localisation.json';
-import { combatTestPenalty, meleeAttackerBonus, cannotDefend, hasCondition, COND, activeCharTestMod } from './conditions';
+import { combatTestPenaltyParts, meleeAttackerBonus, cannotDefend, hasCondition, COND, activeCharTestMod } from './conditions';
 import { effectiveWeaponDamage, effectiveWeapon, effectiveWeaponRange } from './weaponDamage';
 import { traumaDodgePenalty, damageSBBonus, amputationCombatPenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, SIZE_ORDER, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
@@ -517,14 +517,12 @@ export function psychDRAdjust(attacker: Combatant, target: Combatant | null): nu
  * (`14 - _GoBack.md`) : Avantage ×10 (LDB Dépl.), portée (l.82-118), Viser +20 (l.90), Précise +10
  * (Armes l.304), Localisation visée −10 (l.104), Cible vulnérable À Terre/Surpris +20 (l.93).
  */
-/** Ligne de mod des ÉTATS d'un combattant (`combatTestPenalty`) — SOURCE UNIQUE de la chip « État »
- *  des trois producteurs (attaque, défense, Test de combat « brut »). Sans `ref` : la pénalité est un
- *  POOL non-cumul dont l'État gagnant n'est pas identifiable au site (`PassiveMod` = `{op, kind?}`,
- *  sans id de source) — une seule entrée au cliquet #1078 au lieu de trois copies. `[]` si aucun État
- *  ne pèse. */
+/** Lignes de mod des ÉTATS d'un combattant — SOURCE UNIQUE des trois producteurs (attaque, défense,
+ *  Test de combat « brut »). Chaque composante de la pénalité arrive NOMMÉE et liée au Codex
+ *  (`combatTestPenaltyParts`) : le gagnant du pool non-cumul porte le nom de SON État (« −30 Brisé »),
+ *  le sort et le symptôme qui stackent gardent chacun leur ligne. `[]` si rien ne pèse. */
 export function conditionModLines(c: Combatant): ModLine[] {
-  const pen = combatTestPenalty(c);
-  return pen ? [{ label: 'État', value: pen }] : [];
+  return combatTestPenaltyParts(c);
 }
 
 export function attackModifiers(

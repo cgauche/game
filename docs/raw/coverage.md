@@ -11,7 +11,7 @@
 > jamais traitée — plus jamais masquée) · `🔻 enfoui` = titre orné (`•`) rétrogradé par l'extraction
 > — un défaut d'extraction, pas une section ordinaire (#454).
 
-**Couverture (profondeur) : ✅ 92 traités par une fiche · 📖 76 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 0 trous** sur 169 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3365 section(s) non couvertes par une fiche : **634 transcrite(s) en catalogue** (recopiées, pas traitées) · **2411 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **262 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅41·📖32·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 94 traités par une fiche · 📖 76 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 0 trous** sur 171 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3361 section(s) non couvertes par une fiche : **633 transcrite(s) en catalogue** (recopiées, pas traitées) · **2335 hors-règle** (chapitre explicitement exclu) · **131 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **262 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅41·📖32·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅4·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
 
 ## LDB — ✅ 41 · 📖 32 · 🟡 0 · ⬜ 0
 
@@ -25,7 +25,7 @@
 | 05 | *(artefact OCR)* | ✅ | 92 (creation.md ×52) |
 | 06 | Classes | ✅ | 6 (carrieres.md ×3) |
 | 07 | Carrières | ✅ | 69 (avancement.md ×45) |
-| 08 | Statut | ✅ | 42 (carrieres.md ×22) |
+| 08 | Statut | ✅ | 44 (carrieres.md ×22) |
 | 09 | Compétences | ✅ | 146 (competences.md ×137) |
 | 10 | Talents | ✅ | 200 (talents.md ×138) |
 | 11 | *(artefact OCR)* | ✅ | 31 (talents.md ×30) |
@@ -87,7 +87,7 @@
 | 67 | Outils et nécessaires | ✅ | 5 (equipement.md ×5) |
 | 68 | Livres et documents | 📖 | catalogue (catalogue-*.md) |
 | 69 | Outils professionnels et Ateliers | 📖 | catalogue (catalogue-*.md) |
-| 70 | Animaux et véhicules | 📖 | catalogue (catalogue-*.md) |
+| 70 | Animaux et véhicules | 📖 | 1 (deplacement.md ×1) |
 | 71 | Drogues et poisons | 📖 | 2 (equipement.md ×2) |
 | 72 | Herbes et potions | ✅ | 8 (equipement.md ×8) |
 | 73 | Prothèses | ✅ | 5 (equipement.md ×5) |
@@ -121,7 +121,6 @@
   - ⬜ l.972-984 « Ambitions » — candidat trou de règle, 0 réf
   - ⬜ l.985-1010 « Corruption et mutation » — candidat trou de règle, 0 réf
 - **LDB 08** (Statut) :
-  - 📖 l.480-764 « Maître Mendiant – Bronze 4 » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.765-772 « Maître duelliste – Or 1 » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.773-899 « Champion de Justice – Or 3 » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.900-1182 « Schéma de Progression d'Intendant » — transcrit en catalogue, jamais traité, 0 réf
@@ -673,7 +672,7 @@
 | 04 | Chapitre 4 - Sur la route de Bögenhafen… | ➖ hors-règle | |
 | 05 | Chapitre 5 - Le faux héritage | ➖ hors-règle | |
 | 06 | Chapitre 6 - La Schaffenfest | ➖ hors-règle | |
-| 07 | Chapitre 7 - Dans les ténèbres | ✅ | 3 (combat.md ×3) |
+| 07 | Chapitre 7 - Dans les ténèbres | ✅ | 6 (combat.md ×3) |
 | 08 | Chapitre 8 - Chasser les ombres | ➖ hors-règle | |
 | 09 | Chapitre 9 - L’heure fatidique | ✅ | 3 (combat.md ×3) |
 | 10 | APPENDICE 1 - Un guide de Bögenhafen | ➖ hors-règle | |
@@ -693,7 +692,6 @@
   - ⬜ l.85-155 « TABLE DES ÉVÉNEMENTS ALÉATOIRES » — bruit de scénario, 0 réf
   - ⬜ l.156-159 « EMPLACEMENTS PRINCIPAUX » — bruit de scénario, 0 réf
   - ⬜ l.160-173 « Lieu d'entrée du gobelin » — bruit de scénario, 0 réf
-  - ⬜ l.174-209 « Porte des Piques Croisées » — bruit de scénario, 0 réf
   - ⬜ l.210-225 « Cadavre de Gottri » — bruit de scénario, 0 réf
   - ⬜ l.226-229 « Tuyaux d'évacuation » — bruit de scénario, 0 réf
   - ⬜ l.230-233 « Canal <sup>à</sup> ciel ouvert » — bruit de scénario, 0 réf
@@ -1013,7 +1011,7 @@
   - ⬜ l.173-176 « Salive analgésique » — candidat trou de règle, 0 réf
   - ⬜ l.177-182 « Salive anticoagulante » — candidat trou de règle, 0 réf
 
-## PDT — ✅ 2 · 📖 2 · 🟡 0 · ⬜ 0
+## PDT — ✅ 4 · 📖 2 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -1025,8 +1023,8 @@
 | 05 | LE PLAN MACHIAVÉLIQUE | ➖ hors-règle | |
 | 06 | Enquêtes préliminaires | ➖ hors-règle | |
 | 07 | LE CARNAVAL | ➖ hors-règle | |
-| 08 | Les pouvoirs en place | ➖ hors-règle | |
-| 09 | LE TRAÎTRE DÉMASQUÉ | ➖ hors-règle | |
+| 08 | Les pouvoirs en place | ✅ | 3 (reconciliation.md ×3) |
+| 09 | LE TRAÎTRE DÉMASQUÉ | ✅ | 3 (reconciliation.md ×3) |
 | 10 | Fiches de PNJ | 📖 | catalogue (catalogue-*.md) |
 | 11 | dopplegänger | 📖 | catalogue (catalogue-*.md) |
 | 12 | HYPNOTISME | ✅ | 6 (competences.md ×6) |
@@ -1035,6 +1033,82 @@
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
+- **PDT 08** (Les pouvoirs en place) :
+  - ⬜ l.9-23 « RENCONTRE AVEC LES PNJ » — bruit de scénario, 0 réf
+  - ⬜ l.24-33 « SUIVRE À LA TRACE » — bruit de scénario, 0 réf
+  - ⬜ l.34-49 « FRÉQUENTATIONS ET MACHINATIONS À LA COUR DE MIDDENHEIM » — bruit de scénario, 0 réf
+  - ⬜ l.50-68 « Toc toc » — bruit de scénario, 0 réf
+  - ⬜ l.69-74 « Ragot » — bruit de scénario, 0 réf
+  - ⬜ l.75-80 « Les bonnes manières » — bruit de scénario, 0 réf
+  - ⬜ l.81-137 « Le Carnaval » — bruit de scénario, 0 réf
+  - ⬜ l.138-204 « AR-ULRIC » — bruit de scénario, 0 réf
+  - ⬜ l.205-211 « DIVERSION » — bruit de scénario, 0 réf
+  - ⬜ l.212-215 « NASTASSIA, L'ESPIONNE » — bruit de scénario, 0 réf
+  - ⬜ l.216-235 « SE SERVIR DE NASTASSIA » — bruit de scénario, 0 réf
+  - ⬜ l.236-260 « VOS PAUPIÈRES SONT LOURDES… » — bruit de scénario, 0 réf
+  - ⬜ l.261-268 « Découverte » — bruit de scénario, 0 réf
+  - ⬜ l.269-303 « Que faire ? » — bruit de scénario, 0 réf
+  - ⬜ l.304-334 « Déshypnotiser Dieter » — bruit de scénario, 0 réf
+  - ⬜ l.335-342 « Après l'hypnose » — bruit de scénario, 0 réf
+  - ⬜ l.343-348 « Ce qu'il faut retenir » — bruit de scénario, 0 réf
+  - ⬜ l.384-398 « Panique à l'auberge » — bruit de scénario, 0 réf
+  - ⬜ l.399-429 « Les skavens » — bruit de scénario, 0 réf
+  - ⬜ l.430-437 « Une aide précieuse » — bruit de scénario, 0 réf
+  - ⬜ l.438-458 « Erina Eberhauer » — bruit de scénario, 0 réf
+  - ⬜ l.459-466 « Le combat » — bruit de scénario, 0 réf
+  - ⬜ l.467-474 « Les prisonniers » — bruit de scénario, 0 réf
+  - ⬜ l.475-478 « UNE CHANCE MITIGÉE » — bruit de scénario, 0 réf
+  - ⬜ l.479-482 « La légende des skavens » — bruit de scénario, 0 réf
+  - ⬜ l.483-503 « LA PHARMALCOOLOGIE » — bruit de scénario, 0 réf
+  - ⬜ l.504-520 « GROGNARDS : SOMMES-NOUS AU BON ENDROIT ? » — bruit de scénario, 0 réf
+  - ⬜ l.521-522 « LE PERSONNEL DE LA FOSSE » — bruit de scénario, 0 réf
+  - ⬜ l.523-538 « Fritz Dreckig, Propriétaire » — bruit de scénario, 0 réf
+  - ⬜ l.539-554 « Otto Geschwur, Serveur » — bruit de scénario, 0 réf
+  - ⬜ l.555-572 « Selena, Serveuse » — bruit de scénario, 0 réf
+  - ⬜ l.573-574 « CLIENTS DE LA FOSSE » — bruit de scénario, 0 réf
+  - ⬜ l.575-605 « Bruno Kohl » — bruit de scénario, 0 réf
+  - ⬜ l.606-615 « Faire affaire avec Bruno » — bruit de scénario, 0 réf
+  - ⬜ l.616-619 « Autres incidents » — bruit de scénario, 0 réf
+- **PDT 09** (LE TRAÎTRE DÉMASQUÉ) :
+  - ⬜ l.7-12 « PIONS DU SORCIER DÉMONIAQUE » — bruit de scénario, 0 réf
+  - ⬜ l.13-37 « LES PIONS » — bruit de scénario, 0 réf
+  - ⬜ l.38-55 « Dagmar Mitschuldige, Mercenaire » — bruit de scénario, 0 réf
+  - ⬜ l.56-73 « Hultz Fleischer, Coupe-jarret » — bruit de scénario, 0 réf
+  - ⬜ l.74-87 « Anton Hundish, sorcier novice » — bruit de scénario, 0 réf
+  - ⬜ l.88-98 « REMARQUE SUR LES POSSESSIONS » — bruit de scénario, 0 réf
+  - ⬜ l.99-122 « « Frau Kenner » » — bruit de scénario, 0 réf
+  - ⬜ l.123-133 « LE REPAIRE DES PIONS » — bruit de scénario, 0 réf
+  - ⬜ l.134-137 « Palier de la cave » — bruit de scénario, 0 réf
+  - ⬜ l.138-141 « Chambre de Dagmar » — bruit de scénario, 0 réf
+  - ⬜ l.142-145 « Chambre de Hultz » — bruit de scénario, 0 réf
+  - ⬜ l.146-151 « Cellier » — bruit de scénario, 0 réf
+  - ⬜ l.152-155 « Latrines » — bruit de scénario, 0 réf
+  - ⬜ l.156-159 « Réserve » — bruit de scénario, 0 réf
+  - ⬜ l.160-170 « Chambre de Brunhilde » — bruit de scénario, 0 réf
+  - ⬜ l.171-174 « Salle de bain » — bruit de scénario, 0 réf
+  - ⬜ l.175-178 « Chambre d'Anton » — bruit de scénario, 0 réf
+  - ⬜ l.179-182 « STRATÉGIE DES PNJ » — bruit de scénario, 0 réf
+  - ⬜ l.183-198 « Faire avancer le scénario » — bruit de scénario, 0 réf
+  - ⬜ l.199-221 « Le plan de Wasmeier » — bruit de scénario, 0 réf
+  - ⬜ l.222-255 « La soirée du Festag » — bruit de scénario, 0 réf
+  - ⬜ l.348-351 « Les appartements de Wasmeier » — bruit de scénario, 0 réf
+  - ⬜ l.352-369 « L'ordre du Graf » — bruit de scénario, 0 réf
+  - ⬜ l.370-410 « La maison de ville de Wasmeier » — bruit de scénario, 0 réf
+  - ⬜ l.411-438 « Écurie » — bruit de scénario, 0 réf
+  - ⬜ l.439-442 « Salle de bain » — bruit de scénario, 0 réf
+  - ⬜ l.443-450 « Bureau » — bruit de scénario, 0 réf
+  - ⬜ l.451-477 « Chambre d'amis » — bruit de scénario, 0 réf
+  - ⬜ l.478-481 « LES SBIRES DE WASMEIER » — bruit de scénario, 0 réf
+  - ⬜ l.482-521 « Swelt Tunger, cuisinier et cambrioleur » — bruit de scénario, 0 réf
+  - ⬜ l.522-537 « Faucon, jardinier et braconnier » — bruit de scénario, 0 réf
+  - ⬜ l.538-571 « PIÈGE À OURS » — bruit de scénario, 0 réf
+  - ⬜ l.572-589 « Lurk, garde du corps » — bruit de scénario, 0 réf
+  - ⬜ l.590-606 « Le Seigneur des Lois attend » — bruit de scénario, 0 réf
+  - ⬜ l.607-614 « Wasmeier prend la fuite » — bruit de scénario, 0 réf
+  - ⬜ l.615-631 « CONCLUSION » — bruit de scénario, 0 réf
+  - ⬜ l.632-677 « RENVERSEMENT DE SITUATION » — bruit de scénario, 0 réf
+  - ⬜ l.678-685 « Préparation pour le Rat Cornu » — bruit de scénario, 0 réf
+  - ⬜ l.686-713 « CONDITIONS NÉCESSAIRES » — bruit de scénario, 0 réf
 - **PDT 10** (Fiches de PNJ) :
   - 📖 l.7-24 « LE CHANCELIER : JOSEF SPARSAM » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.25-28 « Rôle » — transcrit en catalogue, jamais traité, 0 réf

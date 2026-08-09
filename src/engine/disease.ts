@@ -31,7 +31,7 @@ const HUMANOID_LOC = (locJson as { personnage: { shapes: Record<string, { min: n
 const rollBlisterLocation = (rng: RNG): HitLocation => findTableEntry(HUMANOID_LOC, roll(1, 100, rng)).loc;
 import { rollTest } from './tests';
 import { maladies, diseaseLabel, findSymptomById, symptomLabel, conditionLabel, type SymptomCapabilities } from '../data';
-import type { GameOp } from './ops';
+import type { GameOp, PassiveMod } from './ops';
 import type { PsychTrait, PsychType } from './psychology';
 import { t } from '../i18n';
 import { fateSaveOrDie } from './fortune';
@@ -228,17 +228,22 @@ export function activeSymptoms(c: Combatant): DiseaseSymptom[] {
     .filter((d) => d.phase === 'active')
     .flatMap((d) => d.symptoms.filter((s) => !symptomSuppressed(c, s.symptomId)));
 }
-/** GameOp passifs de TOUTES les maladies ACTIVES (collecte unifiée, lue par `passiveMods` kind 'maladie').
+/** Passifs de TOUTES les maladies ACTIVES (collecte unifiée, reprise telle quelle par `passiveMods`).
  *  Un symptôme SUSPENDU (`suppressSymptom`) n'émet rien. Les `visiblePassive` (Vers du Reik −10 Soc) ne
- *  s'émettent que si la lésion tirée (`blisterLocation`) est dans les `visibleLocations` `maison` du symptôme. */
-export function diseasePassiveOps(c: Combatant): GameOp[] {
-  const out: GameOp[] = [];
+ *  s'émettent que si la lésion tirée (`blisterLocation`) est dans les `visibleLocations` `maison` du symptôme.
+ *  Chaque op sort emballée en `PassiveMod` kind `maladie`, `src` = le SYMPTÔME émetteur : c'est lui qui
+ *  nomme la pénalité à l'écran (« −20 Crampes abdominales »), jamais un « Maladie » générique. */
+export function diseasePassiveOps(c: Combatant): PassiveMod[] {
+  const out: PassiveMod[] = [];
   for (const dz of (c.diseases ?? []).filter((d) => d.phase === 'active')) {
     for (const inst of dz.symptoms) {
       if (symptomSuppressed(c, inst.symptomId)) continue;
-      out.push(...symptomPassive(inst));
+      const src = { category: 'symptoms', id: inst.symptomId };
+      for (const op of symptomPassive(inst)) out.push({ op, kind: 'maladie', src });
       const sd = findSymptomById(inst.symptomId);
-      if (sd?.visiblePassive?.length && dz.blisterLocation && (sd.visibleLocations ?? []).includes(dz.blisterLocation)) out.push(...sd.visiblePassive);
+      if (sd?.visiblePassive?.length && dz.blisterLocation && (sd.visibleLocations ?? []).includes(dz.blisterLocation)) {
+        for (const op of sd.visiblePassive) out.push({ op, kind: 'maladie', src });
+      }
     }
   }
   return out;
@@ -251,7 +256,7 @@ export function diseasePassiveOps(c: Combatant): GameOp[] {
  *  Fusionnés aux Traits STOCKÉS par `effectivePsychTraits` (psychology), seul POINT DE LECTURE. */
 export function diseasePsychTraits(c: Combatant): PsychTrait[] {
   const out: PsychTrait[] = [];
-  for (const op of diseasePassiveOps(c)) {
+  for (const { op } of diseasePassiveOps(c)) {
     if (op.op === 'grantPsychTrait') out.push({ type: op.psychType as PsychType, ...(op.cible ? { cible: op.cible } : {}) });
   }
   return out;

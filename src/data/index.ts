@@ -1507,8 +1507,9 @@ export interface TraitData {
   suppressesCapabilities?: (keyof TraitCapabilities)[];
   /** AURA de combat : projette des `passive` GameOp[] sur les combattants À PORTÉE (Perturbant : −20 aux
    *  Tests à `rangeChar` mètres, LDB 85 p.341 ; `affects` = qui est touché). Recalculée chaque Round par le
-   *  hook GÉNÉRIQUE `recompute-auras`, accumulée dans `Combatant.auraMods` (lu par `passiveMods`, kind `etat`
-   *  NON-CUMUL — « une seule fois, peu importe le nombre d'ennemis Perturbants »). Aucun code par-nom. */
+   *  hook GÉNÉRIQUE `recompute-auras`, accumulée dans `Combatant.auraMods` (emballée en `PassiveMod`, le
+   *  trait émetteur en `src`), lue par `combatTestPenaltyParts` — pool NON-CUMUL, « une seule fois, peu
+   *  importe le nombre d'ennemis Perturbants » — et par `skillDRBonus`/`charDRBonusOf`. Aucun code par-nom. */
   aura?: { rangeChar?: CharKey; rangeMeters?: number; affects?: 'enemies' | 'allies' | 'all'; passive: import('../engine/ops').GameOp[] };
   /** Trait STANDARD (LDB 76 l.28-31 : « ajoutés à la liste Facultative de TOUTES les créatures ») —
    *  proposé par le picker de Traits facultatifs sur n'importe quel bestiaire. Édité au Codex. */
@@ -2427,7 +2428,7 @@ export function conditionLabel(id: string): string {
 /** Libellé d'affichage d'un état psychologique par son `id` (`PsychType`), repli sur l'id — délègue au
  *  résolveur de libellé GÉNÉRIQUE (`refLabel`), plus de copie locale du motif `MAP.get(id)?.label ?? id`. */
 export function psychologyLabel(id: string): string {
-  return refLabel('psychology', { id });
+  return refLabel('psychologies', { id });
 }
 const ETAT_ID_BY_LABEL = new Map(etats.map((e) => [e.label.toLowerCase(), e.id]));
 /** Résout un `id` d'État depuis un LIBELLÉ (authoring : parsing de desc/texte) — insensible à la casse. */
@@ -2804,7 +2805,9 @@ export function findById(category: string, id: string): { label: string } | unde
     case 'classes': return findClassById(id);
     case 'races': return findSpeciesById(id);
     case 'etats': return findConditionById(id);
-    case 'psychology': return findPsychologyById(id);
+    case 'psychologies': return findPsychologyById(id); // clé de CATÉGORIE Codex (cf. `CATEGORY_BY_SOURCE_KIND`)
+    case 'traits': return findTraitById(id);
+    case 'symptoms': return findSymptomById(id);
     case 'maladies': return findDiseaseById(id) ? { label: findDiseaseById(id)!.label } : undefined;
     default: return undefined;
   }

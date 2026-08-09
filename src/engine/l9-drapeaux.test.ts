@@ -60,7 +60,7 @@ describe("Endurance de l'anachorète — « ne subit aucune pénalité causée p
   it('combatTestPenalty : l’aura Perturbante (trait, pas un État) n’est PAS annulée', () => {
     const c = mk();
     addCondition(c, 'sonne'); // −10, annulé par le drapeau
-    c.auraMods = [{ op: 'testMod', amount: -20 }]; // aura projetée (recompute-auras) : trait, ≠ État
+    c.auraMods = [{ op: { op: 'testMod', amount: -20 }, src: { category: 'traits', id: 'perturbant' } }]; // aura projetée (recompute-auras) : trait, ≠ État
     c.activeEffects = [{ label: 'Endurance', bonus: 0, duration: { scale: 'rounds', left: 3 }, ignoreStatePenalties: true }];
     expect(combatTestPenalty(c)).toBe(-20); // l'aura survit au drapeau (Endurance de l'anachorète, LDB 42)
   });

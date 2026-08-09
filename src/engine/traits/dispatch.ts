@@ -268,9 +268,15 @@ export function wardSaves(traits: TraitList | undefined): number[] {
 
 /** AURAS de combat déclarées par les traits du porteur (Perturbant : −20 à BE m, LDB 85 p.341 ; toute
  *  future aura). GÉNÉRIQUE — lue par le hook `recompute-auras`, qui projette leurs `passive` sur les
- *  combattants à portée. Aucun trait nommé en dur. */
-export function traitAuras(traits: TraitList | undefined): NonNullable<TraitData['aura']>[] {
-  return (traits ?? []).map((t) => traitById.get(t.id)?.aura).filter((a): a is NonNullable<TraitData['aura']> => !!a);
+ *  combattants à portée. Aucun trait nommé en dur. Le `traitId` ÉMETTEUR voyage avec l'aura : c'est
+ *  lui qui nomme la pénalité chez la cible (chip « −20 Perturbant » et son renvoi Codex). */
+export function traitAuras(traits: TraitList | undefined): { traitId: string; aura: NonNullable<TraitData['aura']> }[] {
+  const out: { traitId: string; aura: NonNullable<TraitData['aura']> }[] = [];
+  for (const t of traits ?? []) {
+    const aura = traitById.get(t.id)?.aura;
+    if (aura) out.push({ traitId: t.id, aura });
+  }
+  return out;
 }
 
 /** Immunité (Type) : types de Dégâts totalement ignorés (en minuscules). */

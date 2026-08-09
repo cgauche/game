@@ -1529,10 +1529,12 @@ export interface Combatant {
   /** Perturbante (LDB 62 l.275-276) : mode « Repousser » armé — la prochaine attaque réussie repousse
    *  d'1 m par DR au lieu de causer des Dégâts. Consommé par l'attaque (héros uniquement). */
   pushbackMode?: boolean;
-  /** `passive` GameOp[] des AURAS de combat à portée desquelles ce combattant se trouve (Perturbant :
+  /** `passive` des AURAS de combat à portée desquelles ce combattant se trouve (Perturbant :
    *  −20 aux Tests, LDB 85 p.341) — recalculé chaque Round par le hook `recompute-auras` à partir des
-   *  `TraitData.aura` voisines, lu par `passiveMods` (kind `etat`, non-cumul). Générique (toute aura). */
-  auraMods?: import('./ops').GameOp[];
+   *  `TraitData.aura` voisines, lu par `combatTestPenaltyParts` (pool non-cumul des pénalités de Test,
+   *  LDB 16 l.13) et par `skillDRBonus`/`charDRBonusOf`. Générique (toute aura). Chaque op voyage
+   *  emballée en `PassiveMod` : son `src` porte le TRAIT émetteur, ce qui NOMME la chip du jet. */
+  auraMods?: import('./ops').PassiveMod[];
   // Avancement par Points d'Expérience (héros uniquement, LDB Carrières)
   /** PX disponibles à dépenser. */
   xp?: number;

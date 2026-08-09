@@ -784,7 +784,7 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   // Caractéristique → pool non-cumul. Producteurs SANS cycle (disease/provisions n'importent ni trauma ni
   // characteristics). Gating UNIFORME sans `t` ; sauté en bloc si annulé (perf : pas de boucle par clé).
   if (c.diseases?.length && modSurvives(c, 'maladie')) {
-    for (const op of diseasePassiveOps(c)) out.push({ op, kind: 'maladie' });
+    out.push(...diseasePassiveOps(c)); // déjà kind `maladie` + `src` = le symptôme émetteur
   }
   if (c.hunger && modSurvives(c, 'faim')) {
     for (const key of Object.keys(c.characteristics) as CharKey[]) for (const mod of hungerCharPenalties(c, key)) out.push({ op: { op: 'charMod', char: key, mod }, kind: 'faim' });
@@ -805,12 +805,12 @@ export function passiveMods(c: Combatant): PassiveMod[] {
     const ed = findConditionById(cond.id);
     if (!ed?.passive?.length) continue;
     const mult = ed.perStack ? Math.max(1, cond.value ?? 1) : 1; // Exténué −10/pion (LDB 16 l.89)
-    for (const op of ed.passive) out.push({ op: scaleEtatOp(op, mult), kind: 'etat' });
+    for (const op of ed.passive) out.push({ op: scaleEtatOp(op, mult), kind: 'etat', src: { category: 'etats', id: cond.id } });
   }
   // États PSYCHOLOGIQUES (LDB 21, `psychology.json`) : leur `passive` (Frénésie → `sbBonus +1`) émis dans le
   // MÊME pool `etat` que les États — MÊME folding générique, zéro chemin parallèle. Inerte sans `passive`.
   for (const p of c.psychState ?? [])
-    for (const op of findPsychologyById(p.type)?.passive ?? []) out.push({ op, kind: 'etat' });
+    for (const op of findPsychologyById(p.type)?.passive ?? []) out.push({ op, kind: 'etat', src: { category: 'psychologies', id: p.type } });
   // Mutations de Corruption (LDB 19) : modifs PERMANENTES du corps → leur `passive: GameOp[]` (vocab unifié,
   // `mutations.json`) émis tel quel en kind `intrinsèque`, COMME les traits. (L'armure naturelle apAll/
   // apLocations est lue à part par recomputeLoadout.) Lu inline (la donnée `c.mutations` est sur le Combatant).
@@ -893,16 +893,22 @@ export function passiveTestMod(c: Combatant, charKey: CharKey): number {
   return pmods(c, 'testMod', true).filter((o) => o.char === charKey).reduce((s, o) => s + o.amount, 0);
 }
 
-/** Σ des `testMod` GLOBAUX (sans `char`) portés par les MALADIES actives (kind `maladie`) — pénalité
- *  « −N à TOUS les Tests » d'un symptôme (Crampes abdominales −20, MSRC 16 l.152). NON exprimable en
- *  `charMod` (qui fausserait les stats DÉRIVÉES — SB/BE/Mouvement/PB max). Additive et CUMULATIVE avec les
- *  États (les maladies ne sont pas dans le pool non-cumul des États, LDB 16 l.20) ; annulable par
- *  Détermination via le gate `maladie` déjà appliqué en amont dans `passiveMods`. Consommée par
- *  `testStatePenalty`/`combatTestPenalty` (conditions.ts), à côté du modificateur de Sort (`effectTestMod`). */
-export function passiveGlobalTestMod(c: Combatant): number {
+/** Les `testMod` GLOBAUX (sans `char`) portés par les MALADIES actives (kind `maladie`), UN PAR
+ *  symptôme émetteur — pénalité « −N à TOUS les Tests » (Crampes abdominales −20, MSRC 16 l.152). NON
+ *  exprimable en `charMod` (qui fausserait les stats DÉRIVÉES — SB/BE/Mouvement/PB max). Additive et
+ *  CUMULATIVE avec les États (les maladies ne sont pas dans le pool non-cumul des États, LDB 16 l.20) ;
+ *  annulable par Détermination via le gate `maladie` déjà appliqué en amont dans `passiveMods`.
+ *  SOURCE UNIQUE de la Σ (`passiveGlobalTestMod`) ET des lignes NOMMÉES du détail de jet
+ *  (`combatTestPenaltyParts`, conditions.ts) : le `src` de chaque `PassiveMod` porte le symptôme. */
+export function passiveGlobalTestParts(c: Combatant): PassiveMod[] {
   return passiveMods(c)
-    .filter((m) => m.kind === 'maladie' && m.op.op === 'testMod' && (m.op as Extract<GameOp, { op: 'testMod' }>).char == null)
-    .reduce((s, m) => s + (m.op as Extract<GameOp, { op: 'testMod' }>).amount, 0);
+    .filter((m) => m.kind === 'maladie' && m.op.op === 'testMod' && (m.op as Extract<GameOp, { op: 'testMod' }>).char == null);
+}
+
+/** Σ de `passiveGlobalTestParts`. Consommée par `testStatePenalty`/`combatTestPenalty` (conditions.ts),
+ *  à côté du modificateur de Sort (`effectTestMod`). */
+export function passiveGlobalTestMod(c: Combatant): number {
+  return passiveGlobalTestParts(c).reduce((s, m) => s + (m.op as Extract<GameOp, { op: 'testMod' }>).amount, 0);
 }
 
 /** Libellé FR d'un `kind` de pénalité de Caractéristique volatile, pour l'affichage étiqueté (issue #202). */

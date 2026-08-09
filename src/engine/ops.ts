@@ -27,6 +27,7 @@ import { rollMutation } from '../data/mutations';
 import { attachMutation, easeExposure, corruptionEaseSteps } from './corruption';
 import { findEffectTableById } from '../data/effectTables';
 import { setGrapple } from './grapple'; // op `condition {grapple:true}` → relation d'Empoignade (côté grapple : import type GameOp erased → pas de cycle runtime)
+import type { CodexTarget } from './ruleRefs'; // module FEUILLE (aucun import) : type de l'identité de source portée par PassiveMod
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { applyAlcoholTest } from './drunkenness';
 import { cureCriticalWounds, receiveMedicalAid, traumaPassiveMods } from './trauma';
@@ -201,7 +202,7 @@ export function skillDRBonus(c: Combatant, skillId: string, spec?: string): numb
   for (const m of traumaPassiveMods(c)) if (m.op.op === 'skillDRBonus' && matches(m.op)) n += resolveFormula(m.op.bonus, c);
   // Auras (Aura de Dhar : +1 DR Focalisation/Langue (Magick) aux casters alliés) — `aura.passive` projeté
   // dans `auraMods` par le hook `recompute-auras`. Sommé (le DR cumule), comme les passifs de trait.
-  for (const op of c.auraMods ?? []) if (op.op === 'skillDRBonus' && matches(op)) n += resolveFormula(op.bonus, c);
+  for (const m of c.auraMods ?? []) if (m.op.op === 'skillDRBonus' && matches(m.op)) n += resolveFormula(m.op.bonus, c);
   // Effets ACTIFS temporisés (op `skillDRBonus` exécutée — chanson de marin « Jacques Bret », MDG 09 l.228).
   for (const e of c.activeEffects ?? []) for (const b of e.drBonus ?? []) if (b.skill != null && matches({ skill: b.skill, spec: b.spec })) n += b.bonus;
   // Objets POSSÉDÉS : leur `passive` skillDRBonus (Boussole : « Les Tests d'Orientation bénéficient de
@@ -270,7 +271,7 @@ export function charDRBonusOf(c: Combatant, char: CharKey | undefined): number {
       if (op.op === 'charDRBonus' && op.char === char) n += resolveFormula(op.bonus, c);
     }
   }
-  for (const op of c.auraMods ?? []) if (op.op === 'charDRBonus' && op.char === char) n += resolveFormula(op.bonus, c);
+  for (const m of c.auraMods ?? []) if (m.op.op === 'charDRBonus' && m.op.char === char) n += resolveFormula(m.op.bonus, c);
   for (const e of c.activeEffects ?? []) for (const b of e.drBonus ?? []) if (b.char === char) n += b.bonus;
   return n;
 }
@@ -1001,8 +1002,13 @@ export type PassiveKind =
   | 'intrinsèque'; // trait/mutation/qualité : inconditionnel ET ADDITIF (Σ dans la base — corps/équipement permanent)
 
 /** Effet PASSIF porté par un élément (trauma/trait/mutation/qualité…) : une op + son profil d'annulation.
- *  Unité du collecteur unifié `passiveMods` ; `kind` absent ⇒ `intrinsèque`. */
-export interface PassiveMod { op: GameOp; kind?: PassiveKind }
+ *  Unité du collecteur unifié `passiveMods` ; `kind` absent ⇒ `intrinsèque`.
+ *
+ *  `src` = IDENTITÉ Codex de l'entité qui porte le passif (l'État pour un `kind:'etat'`, le symptôme
+ *  pour un `kind:'maladie'`, le trait pour une aura) — posée par le collecteur, qui la connaît au
+ *  moment où il pousse. Elle sert l'AFFICHAGE nommé d'une composante (chip « −30 Brisé » et son
+ *  renvoi Codex, `combatTestPenaltyParts`) ; le calcul ne la lit jamais. */
+export interface PassiveMod { op: GameOp; kind?: PassiveKind; src?: CodexTarget }
 
 export interface OpsCtx {
   rng?: RNG;

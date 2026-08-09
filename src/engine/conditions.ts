@@ -2,18 +2,19 @@
  * États (conditions) — Livre de base, chapitre « États ».
  * Gestion minimale pour le combat tactique : ajout, empilement, retrait.
  */
-import { Combatant, ActiveEffect, ConditionInstance } from './types';
+import { Combatant, ActiveEffect, ConditionInstance, CATEGORY_BY_SOURCE_KIND } from './types';
 import { evalCondition, type ConditionCtx, type ActorView } from './flowCore';
 import { tickRound } from './duration';
-import { conditionLabel, findConditionById, findPsychologyById, findSpellById, skills } from '../data';
+import { conditionLabel, findConditionById, findPsychologyById, findSpellById, refLabel, skills } from '../data';
 import { slugId } from '../data/slug';
 import { t } from '../i18n';
 import { rule } from './policy';
 import { groupAdvantage } from './advantagePool';
 import { bonus, effectiveChar } from './characteristics';
 import { d100, RNG, defaultRNG } from './dice';
-import { passiveMods, passiveGlobalTestMod, settleHealedCriticals } from './trauma';
+import { passiveMods, passiveGlobalTestMod, passiveGlobalTestParts, settleHealedCriticals } from './trauma';
 import type { GameOp } from './ops';
+import type { CodexTarget } from './ruleRefs';
 import { rollTest, isDoubleRoll, type TestResult } from './tests';
 import { dropExpiredGrantedTraits } from './grantedTraits';
 import { dropExpiredGrantedResources } from './grantedResources';
@@ -221,25 +222,27 @@ export function wakeSleeper(c: Combatant): void {
   if (inc) removeCondition(c, COND.inconscient, inc.value);
 }
 
-/**
- * Pénalité aux Tests de COMBAT due aux États (LDB 16). Non-cumul (l.20) : on
- * applique la pénalité d'UN SEUL État (la plus forte), mais un même État empile
- * (Exténué×3 = -30). Aveuglé/Brisé/Empoisonné/Sonné = -10 ; Exténué = -10/point.
- * (À Terre/Assourdi/Empêtré ne touchent que les Tests de déplacement/audition.)
- */
+/** Le `testMod` GLOBAL porté par UN effet actif — CRITÈRE UNIQUE, partagé par la somme
+ *  (`effectTestMod`) et par le détail nommé (`combatTestPenaltyParts`). EXCLUT les mods
+ *  char-QUALIFIÉS (`testModChar` — Mystracine ±10 par Caractéristique), lus par `testValue` pour la
+ *  seule carac visée. */
+function effectGlobalTestMod(e: ActiveEffect): number {
+  return e.testModChar == null ? (e.testMod ?? 0) : 0;
+}
+
 /** Modificateur GLOBAL de Test porté par les effets actifs (Malédiction de malchance −10, etc.) —
  *  SOMMÉ (sources distinctes qui stackent), appliqué PAR-DESSUS la pénalité d'État (≠ État : ni
- *  non-cumul l.20, ni effacé par `ignoreStatePenalties`). EXCLUT les mods char-QUALIFIÉS
- *  (`testModChar` — Mystracine ±10 par Caractéristique), lus par `testValue` pour la seule carac visée. */
+ *  non-cumul l.20, ni effacé par `ignoreStatePenalties`). */
 export function effectTestMod(c: Combatant): number {
-  return (c.activeEffects ?? []).reduce((s, e) => s + (e.testModChar == null ? (e.testMod ?? 0) : 0), 0);
+  return (c.activeEffects ?? []).reduce((s, e) => s + effectGlobalTestMod(e), 0);
 }
 
 /** Les `testMod` portés par les États du combattant (kind `etat`), déjà ×pions (perStack) par le
- *  collecteur. Lus en « PIRE seul » par combatTestPenalty/testStatePenalty (non-cumul, LDB 16 l.20). */
-function etatTestMods(c: Combatant): Extract<GameOp, { op: 'testMod' }>[] {
-  const out: Extract<GameOp, { op: 'testMod' }>[] = [];
-  for (const m of passiveMods(c)) if (m.kind === 'etat' && m.op.op === 'testMod') out.push(m.op);
+ *  collecteur, AVEC l'identité Codex de l'État/état psy qui les porte (`PassiveMod.src`). Lus en
+ *  « PIRE seul » par combatTestPenaltyParts/testStatePenalty (non-cumul, LDB 16 l.20). */
+function etatTestMods(c: Combatant): { op: Extract<GameOp, { op: 'testMod' }>; src?: CodexTarget }[] {
+  const out: { op: Extract<GameOp, { op: 'testMod' }>; src?: CodexTarget }[] = [];
+  for (const m of passiveMods(c)) if (m.kind === 'etat' && m.op.op === 'testMod') out.push({ op: m.op, src: m.src });
   return out;
 }
 
@@ -249,32 +252,91 @@ function ignoredStatesCount(c: Combatant): number {
   return (c.activeEffects ?? []).reduce((s, e) => s + (e.ignoreStatesCount ?? 0), 0);
 }
 
+/** Un candidat du POOL non-cumul (LDB 16 l.20), avec l'identité de ce qui l'octroie. `nature` = la
+ *  FAMILLE du candidat (État, aura de trait…), servie à l'affichage quand `src` manque : un candidat
+ *  non identifié ne doit pas emprunter le nom d'une AUTRE famille (une aura n'est pas un État). */
+interface PoolCandidate { amount: number; nature: string; src?: CodexTarget }
+
 /** Retire les N PIRES candidats (les plus négatifs) du pool de pénalités d'État — « ignorer UN État » :
- *  le pool non-cumul (le pire seul s'applique, LDB 16 l.20) rend rationnel d'ignorer le pire d'abord. */
-function dropWorst(cand: number[], n: number): number[] {
-  return n > 0 ? [...cand].sort((a, b) => a - b).slice(n) : cand;
+ *  le pool non-cumul (le pire seul s'applique, LDB 16 l.20) rend rationnel d'ignorer le pire d'abord.
+ *  L'ORDRE DE COLLECTE des survivants est préservé (il départage les ex æquo, cf. `poolWinner`). */
+function dropWorst(cand: PoolCandidate[], n: number): PoolCandidate[] {
+  if (n <= 0) return cand;
+  const dropped = new Set([...cand.keys()].sort((a, b) => cand[a].amount - cand[b].amount).slice(0, n));
+  return cand.filter((_, i) => !dropped.has(i));
 }
 
-export function combatTestPenalty(c: Combatant): number {
-  let cand: number[] = [];
+/** Le gagnant du POOL : « vous choisissez la pénalité la plus importante » (LDB 16 l.13). Le RAW ne
+ *  départage PAS deux candidats de même magnitude ; arbitrage maison DÉTERMINISTE : le PREMIER dans
+ *  l'ordre de collecte (États dans l'ordre de `Combatant.conditions`, puis états psychologiques,
+ *  puis auras projetées) — comparaison STRICTE, un ex æquo ne détrône pas le tenant. */
+function poolWinner(cand: PoolCandidate[]): PoolCandidate | undefined {
+  return cand.reduce<PoolCandidate | undefined>((best, x) => (best == null || x.amount < best.amount ? x : best), undefined);
+}
+
+/** Nom d'AFFICHAGE de l'entité SOURCE d'une composante (résolveur de libellé GÉNÉRIQUE `refLabel`,
+ *  data — ids en donnée, labels à l'écran). `src` absent = source non identifiée par le collecteur :
+ *  reste le nom de la FAMILLE d'où sort la composante, jamais celui d'une autre. */
+function srcLabel(src: CodexTarget | undefined, nature: string): string {
+  return src ? refLabel(src.category, { id: src.id }) : nature;
+}
+
+/** Renvoi Codex d'un effet actif : son entité SOURCE (`EffectSource`, table TOTALE
+ *  `CATEGORY_BY_SOURCE_KIND`), sinon le sort qui l'a posé. Absent = effet sans ancrage de règle. */
+function effectRef(e: ActiveEffect): CodexTarget | undefined {
+  if (e.source) return { category: CATEGORY_BY_SOURCE_KIND[e.source.kind], id: e.source.id };
+  return e.sourceSpellId ? { category: 'spells', id: e.sourceSpellId } : undefined;
+}
+
+/** UNE composante NOMMÉE de la pénalité de Test de combat — structurellement une `ModLine`
+ *  (`engine/combat`), poussée telle quelle par les trois producteurs via `conditionModLines`. */
+export interface TestPenaltyPart { label: string; value: number; ref?: CodexTarget }
+
+/**
+ * Pénalité aux Tests de COMBAT (LDB 16), DÉCOMPOSÉE en lignes nommées — SOURCE UNIQUE du calcul ET
+ * de son affichage. Trois familles, jamais fondues sous un même intitulé :
+ *  1. le POOL non-cumul (l.20) — États, états psychologiques et auras de trait : UNE ligne, celle du
+ *     gagnant, au nom de SON entité (« −30 Brisé ») avec son renvoi Codex ;
+ *  2. les effets ACTIFS à `testMod` global (Malédiction de malchance) : une ligne PAR effet, à son nom ;
+ *  3. les `testMod` globaux de symptôme (Crampes abdominales, MSRC 16 l.152) : une ligne PAR symptôme.
+ * Les familles 2 et 3 STACKENT avec 1 (hors pool, et hors du gate `ignoreStatePenalties`).
+ */
+export function combatTestPenaltyParts(c: Combatant): TestPenaltyPart[] {
+  let cand: PoolCandidate[] = [];
   // Endurance de l'anachorète (LDB 42) : « ne subit aucune pénalité causée par les États » —
   // n'efface QUE les pénalités d'État (l'aura Perturbante est un trait, pas un État).
   if (!hasActiveFlag(c, 'ignoreStatePenalties')) {
     for (const m of etatTestMods(c)) {
-      if (m.movementOnly) continue; // pénalité de DÉPLACEMENT (À Terre/Empêtré) — pas un Test de combat
-      if (m.hearingOnly) continue; // pénalité d'AUDITION (Assourdi) — pas un Test de combat (l.29)
-      cand.push(m.amount); // magnitude/portée en données (etats.json) ; déjà ×pions (Exténué)
+      if (m.op.movementOnly) continue; // pénalité de DÉPLACEMENT (À Terre/Empêtré) — pas un Test de combat
+      if (m.op.hearingOnly) continue; // pénalité d'AUDITION (Assourdi) — pas un Test de combat (l.29)
+      cand.push({ amount: m.op.amount, nature: 'État', src: m.src }); // magnitude/portée en données (etats.json) ; déjà ×pions (Exténué)
     }
     cand = dropWorst(cand, ignoredStatesCount(c)); // « peut ignorer un État » (MDG 09 l.244)
   }
   // Auras de combat (Perturbant : −20 à BE m, LDB 85 p.341) — `testMod` projetés dans `auraMods` par le hook
   // `recompute-auras`. HORS du gate `ignoreStatePenalties` : une aura est un TRAIT, pas un État (Endurance de
-  // l'anachorète ne l'annule pas, LDB 42). Non-cumul = même pool `min` (« une seule fois », LDB 85 l.208).
-  for (const op of c.auraMods ?? []) if (op.op === 'testMod' && op.char == null) cand.push(op.amount);
-  const state = cand.length ? Math.min(...cand) : 0;
+  // l'anachorète ne l'annule pas, LDB 42). Non-cumul = même pool (« une seule fois », LDB 85 l.208).
+  for (const m of c.auraMods ?? []) if (m.op.op === 'testMod' && m.op.char == null) cand.push({ amount: m.op.amount, nature: 'Aura', src: m.src });
+  const out: TestPenaltyPart[] = [];
+  const best = poolWinner(cand);
+  if (best?.amount) out.push({ label: srcLabel(best.src, best.nature), value: best.amount, ref: best.src });
   // Modificateur de Sort (Malédiction de malchance) + pénalité GLOBALE de maladie (Crampes abdominales −20,
   // MSRC 16 l.152) : STACKENT tous deux avec l'État (hors pool non-cumul des États, LDB 16 l.20).
-  return state + effectTestMod(c) + passiveGlobalTestMod(c);
+  for (const e of c.activeEffects ?? []) {
+    const amount = effectGlobalTestMod(e);
+    if (amount) out.push({ label: e.label, value: amount, ref: effectRef(e) });
+  }
+  for (const m of passiveGlobalTestParts(c)) {
+    const { amount } = m.op as Extract<GameOp, { op: 'testMod' }>;
+    if (amount) out.push({ label: srcLabel(m.src, 'Symptôme'), value: amount, ref: m.src });
+  }
+  return out;
+}
+
+/** Σ de `combatTestPenaltyParts` — la VALEUR que roule le résolveur (l'affichage et le jet ne peuvent
+ *  pas diverger : ils lisent les mêmes composantes). */
+export function combatTestPenalty(c: Combatant): number {
+  return combatTestPenaltyParts(c).reduce((s, p) => s + p.value, 0);
 }
 
 /**
@@ -315,16 +377,16 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
   if (!c.conditions?.length) return effMod;
   // Endurance de l'anachorète (LDB 42) : aucune pénalité d'État pour la durée (le modificateur de Sort reste).
   if (hasActiveFlag(c, 'ignoreStatePenalties')) return effMod;
-  let cand: number[] = [];
+  let cand: PoolCandidate[] = [];
   for (const m of etatTestMods(c)) {
-    if (m.combatOnly) continue; // Aveuglé (vue) : non classé hors combat (faute de classification du Test)
-    if (m.movementOnly && !MOVEMENT_SKILL.has(skill ?? '')) continue; // À Terre/Empêtré : Tests de déplacement seuls
-    if (m.hearingOnly && !HEARING_SKILL.has(skill ?? '')) continue; // Assourdi : Tests d'audition seuls (Perception)
-    if (m.exceptSkills?.includes(skill ?? '')) continue; // Brisé : sauf course (Athlétisme) / dissimulation (Discrétion)
-    cand.push(m.amount);
+    if (m.op.combatOnly) continue; // Aveuglé (vue) : non classé hors combat (faute de classification du Test)
+    if (m.op.movementOnly && !MOVEMENT_SKILL.has(skill ?? '')) continue; // À Terre/Empêtré : Tests de déplacement seuls
+    if (m.op.hearingOnly && !HEARING_SKILL.has(skill ?? '')) continue; // Assourdi : Tests d'audition seuls (Perception)
+    if (m.op.exceptSkills?.includes(skill ?? '')) continue; // Brisé : sauf course (Athlétisme) / dissimulation (Discrétion)
+    cand.push({ amount: m.op.amount, nature: 'État', src: m.src });
   }
   cand = dropWorst(cand, ignoredStatesCount(c)); // « peut ignorer un État » (MDG 09 l.244)
-  return (cand.length ? Math.min(...cand) : 0) + effMod;
+  return (poolWinner(cand)?.amount ?? 0) + effMod;
 }
 
 /**

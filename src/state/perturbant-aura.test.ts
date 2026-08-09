@@ -28,7 +28,7 @@ describe('Perturbant — aura de DONNÉE projetée par le hook générique recom
     const p = mk({ id: 'p', kind: 'enemy', traits: [{ id: 'perturbant' }] as never, pos: { x: 5, y: 5 } as never }); // BE 3 → 3 m
     const hero = mk({ id: 'h', kind: 'hero', pos: { x: 6, y: 5 } as never }); // 1 case = 2 m ≤ 3 m
     recompute([p, hero]);
-    expect(hero.auraMods).toEqual([{ op: 'testMod', amount: -20 }]);
+    expect(hero.auraMods).toEqual([{ op: { op: 'testMod', amount: -20 }, src: { category: 'traits', id: 'perturbant' } }]);
     expect(combatTestPenalty(hero)).toBe(-20);
   });
   it('hors de portée → aucune aura', () => {
@@ -62,7 +62,7 @@ describe('Perturbant — aura de DONNÉE projetée par le hook générique recom
     const p = mk({ id: 'p', kind: 'enemy', traits: [{ id: 'perturbant' }] as never, pos: { x: 5, y: 5, h: 3 } as never });
     const hero = mk({ id: 'h', kind: 'hero', pos: { x: 6, y: 5, h: 3 } as never });
     recompute([p, hero]);
-    expect(hero.auraMods).toEqual([{ op: 'testMod', amount: -20 }]);
+    expect(hero.auraMods).toEqual([{ op: { op: 'testMod', amount: -20 }, src: { category: 'traits', id: 'perturbant' } }]);
   });
   it('recalcul intégral : sorti de portée au Round suivant → aura effacée', () => {
     const p = mk({ id: 'p', kind: 'enemy', traits: [{ id: 'perturbant' }] as never, pos: { x: 5, y: 5 } as never });

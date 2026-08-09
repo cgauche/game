@@ -47,9 +47,10 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
   it('divers combat : Champion, Parasité, Perturbant, Instable', () => {
     expect(canCounterOnDefenseWin({ traits: [{ id: 'champion' }] } as never, undefined)).toBe(true); // Champion : sans condition d'arme
     // Perturbant : l'aura (−20 à BE m) vit en DONNÉE (`TraitData.aura`), projetée par le hook générique.
-    const aura = traitAuras([{ id: 'perturbant' }])[0];
-    expect(aura?.rangeChar).toBe('endurance');
-    expect(aura?.passive).toEqual([{ op: 'testMod', amount: -20 }]);
+    const emitted = traitAuras([{ id: 'perturbant' }])[0];
+    expect(emitted?.traitId).toBe('perturbant'); // le trait ÉMETTEUR voyage avec l'aura (il NOMME la pénalité chez la cible)
+    expect(emitted?.aura.rangeChar).toBe('endurance');
+    expect(emitted?.aura.passive).toEqual([{ op: 'testMod', amount: -20 }]);
     expect(isUnstable([{ id: 'instable' }])).toBe(true);
   });
   it('magie : Résistance à la Magie, Immunité (Poison)', () => {

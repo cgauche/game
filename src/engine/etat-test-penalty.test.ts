@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { combatTestPenalty, testStatePenalty, meleeAttackerBonus, addCondition, COND } from './conditions';
+import { combatTestPenalty, combatTestPenaltyParts, testStatePenalty, meleeAttackerBonus, addCondition, COND } from './conditions';
+import { conditionModLines, baseTestModLines, defenseModifiers } from './combat';
 import type { Combatant } from './types';
 import { findConditionById } from '../data';
 
@@ -99,5 +100,71 @@ describe('pénalités de Test d’État lues en DONNÉES (etats.json passive tes
     }
     const c2 = mk(); addCondition(c2, COND.brise); addCondition(c2, COND.brise); addCondition(c2, COND.brise);
     expect(combatTestPenalty(c2)).toBe(-30);
+  });
+});
+
+/**
+ * #1117 L4 — la chip de pénalité NOMME son octroyeur (arbitrage utilisateur 2026-08-07 : « personne ne
+ * veut du "-10 Etat", c'est "-10 Sonné", "-30 Brisé" ») et porte son renvoi Codex (le popover de
+ * `ModChip` naît de `ModLine.ref`). Le pool non-cumul (LDB 16 l.13) rend UNE ligne : celle du gagnant.
+ */
+describe('composantes NOMMÉES de la pénalité de Test (combatTestPenaltyParts)', () => {
+  it('Brisé ×3 seul → une ligne « Brisé » −30, liée à sa fiche d’État', () => {
+    const c = mk(); addCondition(c, COND.brise); addCondition(c, COND.brise); addCondition(c, COND.brise);
+    expect(combatTestPenaltyParts(c)).toEqual([{ label: 'Brisé', value: -30, ref: { category: 'etats', id: 'brise' } }]);
+  });
+
+  it('mixte Brisé ×3 + Sonné : le PIRE seul, et c’est LUI qui est nommé (−30 Brisé, pas « État »)', () => {
+    const c = mk(); addCondition(c, COND.sonne);
+    addCondition(c, COND.brise); addCondition(c, COND.brise); addCondition(c, COND.brise);
+    expect(combatTestPenaltyParts(c)).toEqual([{ label: 'Brisé', value: -30, ref: { category: 'etats', id: 'brise' } }]);
+  });
+
+  it('Sonné seul → « Sonné » −10', () => {
+    const c = mk(); addCondition(c, COND.sonne);
+    expect(combatTestPenaltyParts(c)).toEqual([{ label: 'Sonné', value: -10, ref: { category: 'etats', id: 'sonne' } }]);
+  });
+
+  it('ex æquo (Sonné −10 puis Empoisonné −10) : départage DÉTERMINISTE — le premier collecté', () => {
+    const c = mk(); addCondition(c, COND.sonne); addCondition(c, COND.empoisonne);
+    expect(combatTestPenaltyParts(c).map((p) => p.label)).toEqual(['Sonné']);
+    const c2 = mk(); addCondition(c2, COND.empoisonne); addCondition(c2, COND.sonne);
+    expect(combatTestPenaltyParts(c2).map((p) => p.label)).toEqual(['Empoisonné']);
+  });
+
+  it('AURA de trait gagnante (Perturbant −20 projeté dans auraMods) : nommée par SON trait', () => {
+    const c = mk(); addCondition(c, COND.sonne); // −10, battu par l'aura
+    c.auraMods = [{ op: { op: 'testMod', amount: -20 }, src: { category: 'traits', id: 'perturbant' } }];
+    expect(combatTestPenaltyParts(c)).toEqual([{ label: 'Perturbant', value: -20, ref: { category: 'traits', id: 'perturbant' } }]);
+  });
+
+  it('ce qui STACKE garde SA ligne : l’effet actif n’est pas fondu dans celle de l’État', () => {
+    const c = mk(); addCondition(c, COND.sonne);
+    c.activeEffects = [{ label: 'Malédiction de malchance', bonus: 0, duration: { scale: 'rounds', left: 3 }, testMod: -10, source: { kind: 'spell', id: 'malediction-de-malchance' } }];
+    expect(combatTestPenaltyParts(c)).toEqual([
+      { label: 'Sonné', value: -10, ref: { category: 'etats', id: 'sonne' } },
+      { label: 'Malédiction de malchance', value: -10, ref: { category: 'spells', id: 'malediction-de-malchance' } },
+    ]);
+    expect(combatTestPenalty(c)).toBe(-20); // la Σ des composantes = la valeur roulée
+  });
+
+  it('les trois producteurs servent ces MÊMES lignes (source unique conditionModLines)', () => {
+    const c = mk(); addCondition(c, COND.brise);
+    const expected = { label: 'Brisé', value: -10, ref: { category: 'etats', id: 'brise' } };
+    expect(conditionModLines(c)).toContainEqual(expected);
+    expect(baseTestModLines(c)).toContainEqual(expected);
+    expect(defenseModifiers(c, 'esquive')).toContainEqual(expected);
+  });
+
+  it('identité DÉBRANCHÉE : la chip retombe MUETTE, sur la nature de SA famille — jamais celle d’une autre', () => {
+    const aura = mk();
+    aura.auraMods = [{ op: { op: 'testMod', amount: -20 } }]; // op projetée sans son trait émetteur
+    // Une aura est un TRAIT : dégradée, elle ne s'annonce pas « État » (le gate `ignoreStatePenalties`
+    // ne l'annule d'ailleurs pas, LDB 42) — le joueur lirait une règle qui ne la gouverne pas.
+    expect(combatTestPenaltyParts(aura)).toEqual([{ label: 'Aura', value: -20, ref: undefined }]);
+    // Et une aura IDENTIFIÉE bat un État à magnitude égale de nom : chacun garde le sien.
+    const mixte = mk(); addCondition(mixte, COND.sonne);
+    mixte.auraMods = [{ op: { op: 'testMod', amount: -20 }, src: { category: 'traits', id: 'perturbant' } }];
+    expect(combatTestPenaltyParts(mixte).map((p) => p.label)).toEqual(['Perturbant']);
   });
 });

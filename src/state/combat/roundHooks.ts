@@ -122,7 +122,8 @@ registerCombatHook({
 registerCombatHook({
   // Auras de combat — machinerie GÉOMÉTRIQUE GÉNÉRIQUE : projette les `passive` de toute `TraitData.aura`
   // (Perturbant : −20 aux Tests à BE mètres, LDB 85 p.341) sur les combattants à portée, accumulés dans
-  // `auraMods` (lus par `passiveMods`, kind `etat` non-cumul). Aucun trait nommé en dur ; recalcul/Round.
+  // `auraMods` (lus par `combatTestPenaltyParts` — pool non-cumul, LDB 16 l.13 — et par `skillDRBonus`/
+  // `charDRBonusOf`, qui les SOMMENT). Aucun trait nommé en dur ; recalcul/Round.
   id: 'recompute-auras',
   phase: 'onRoundEnd',
   order: 50,
@@ -134,14 +135,17 @@ registerCombatHook({
     for (const c of battle.combatants) c.auraMods = undefined; // recalcul intégral chaque Round
     for (const src of battle.combatants) {
       if (isOutOfAction(src) || !src.pos) continue;
-      for (const aura of traitAuras(src.traits)) {
+      for (const { traitId, aura } of traitAuras(src.traits)) {
         const rangeM = aura.rangeChar ? bonus(effectiveChar(src, aura.rangeChar)) : (aura.rangeMeters ?? 0);
+        // Le TRAIT émetteur voyage avec chaque op projetée (`PassiveMod.src`) : la pénalité arrive
+        // chez la cible avec son nom et son renvoi Codex, jamais en modificateur anonyme.
+        const projected = aura.passive.map((op) => ({ op, src: { category: 'traits', id: traitId } }));
         for (const c of battle.combatants) {
           if (c.id === src.id || isOutOfAction(c) || !c.pos) continue;
           const sameCamp = c.kind === src.kind;
           if (aura.affects === 'enemies' && sameCamp) continue; // « désoriente ses ENNEMIS » (LDB 85 l.208)
           if (aura.affects === 'allies' && !sameCamp) continue;
-          if (combatDistance(src, c, mpt) * mpt <= rangeM) c.auraMods = [...(c.auraMods ?? []), ...aura.passive];
+          if (combatDistance(src, c, mpt) * mpt <= rangeM) c.auraMods = [...(c.auraMods ?? []), ...projected];
         }
       }
     }
