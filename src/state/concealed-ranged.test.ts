@@ -1,14 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { attackEnv } from './combatFlow';
 import type { Get } from './flowTypes';
+import { attackModifiers, combineMods } from '../engine/combat';
 import type { Combatant, Weapon } from '../engine/types';
 import type { Scene } from './scene';
 
 /**
- * Cible dissimulée par le brouillard/la brume/l'obscurité → malus au TIR de −10 (bande Complexe de la
- * table Difficulté de Combat, LDB 14). PDF FR : l'exemple combiné « brouillard + Localisation précise »
- * donne un Test Difficile −20 par la SOMME des modificateurs → chacun vaut −10. (Le −20/−30 existe pour
- * d'AUTRES cas : météo extrême = Difficile −20 ; tir dans le noir = Très Difficile −30.)
+ * Cible dissimulée par le brouillard / la brume / l'obscurité : la rangée vit dans le bloc −20 de la
+ * table des Difficultés de Combat — `LDB 14 l.75`, marqueur de bloc `l.73`, libellé « Difficile » `l.76`
+ * (échelle des noms : `LDB 12 l.149-151`). La prose `LDB 14 l.95` le chiffre : brouillard + Localisation
+ * précise vaudraient « une pénalité de -40 » avant plafond, soit −20 chacun.
  */
 const bow = { name: 'Arc', type: 'ranged' } as unknown as Weapon;
 const mk = (id: string, kind: 'hero' | 'enemy', x: number): Combatant =>
@@ -19,14 +20,30 @@ const fogScene = (): Scene =>
   ({ id: 's', name: 's', dimensions: { w: 40, h: 40 }, ambiance: 'jour', weather: 'brouillard', metresPerTile: 2,
      layers: [{ z: 0, tiles: new Array(40 * 40).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] }) as unknown as Scene;
 
-describe('attackEnv (tir) — cible dissimulée par le brouillard = −10 (Complexe, LDB 14)', () => {
-  it('brouillard, tireur sans vision nocturne → −10 (et pas −20)', () => {
+describe('attackEnv (tir) — cible dissimulée par le brouillard = −20 (Difficile, LDB 14 l.75)', () => {
+  it('brouillard, tireur sans vision nocturne → −20', () => {
     const attacker = mk('att', 'hero', 5);
     const target = mk('tgt', 'enemy', 8);
     const get = (() => ({ scene: fogScene(), battle: { combatants: [attacker, target], movementUsed: 0 }, facing: {}, gameTime: 12 * 60 })) as unknown as Get;
     const env = attackEnv(get, attacker, target, bow).env;
     const conceal = env.find((m) => m.value < 0); // seul malus de ce setup minimal = la dissimulation
     expect(conceal).toBeTruthy();
-    expect(conceal!.value).toBe(-10);
+    expect(conceal!.value).toBe(-20);
+  });
+});
+
+describe('Exemple RAW LDB 14 l.95 — « le Test devient simplement Très Difficile (-30) au lieu de recevoir une pénalité de -40 »', () => {
+  it('brouillard PRODUIT par la scène + Localisation visée : somme brute −40, plafonnée à −30', () => {
+    const attacker = mk('att', 'hero', 5);
+    const target = mk('tgt', 'enemy', 8);
+    const get = (() => ({ scene: fogScene(), battle: { combatants: [attacker, target], movementUsed: 0 }, facing: {}, gameTime: 12 * 60 })) as unknown as Get;
+    // `heldGround` : le tireur déclare tirer IMMOBILE — isole les deux facteurs de l'exemple du livre
+    // (sans quoi la production ajoute aussi « Tir en bougeant » −10, LDB 14 l.101).
+    const env = attackEnv(get, attacker, target, bow, { heldGround: true }).env; // production RÉELLE, aucune valeur en dur
+    const mods = attackModifiers(attacker, target, bow, { kind: 'ranged', location: 'tete', env });
+    expect(env.find((m) => m.ref?.id === 'cible-dissimulee')?.value).toBe(-20);
+    expect(mods.find((m) => m.label === 'Localisation visée')?.value).toBe(-20);
+    expect(mods.filter((m) => m.value < 0).reduce((s, m) => s + m.value, 0)).toBe(-40); // somme BRUTE
+    expect(combineMods(mods)).toBe(-30); // le plafond mord réellement
   });
 });

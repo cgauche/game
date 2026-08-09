@@ -176,7 +176,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'combat-diff-cap-bonus',
     label: 'Plafond des bonus de Difficulté',
-    ref: 'LDB 14 l.126',
+    ref: 'LDB 14 l.95',
     group: 'Combat',
     kind: 'param',
     default: 60,
@@ -188,7 +188,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'combat-diff-cap-malus',
     label: 'Plafond des malus de Difficulté',
-    ref: 'LDB 14 l.126',
+    ref: 'LDB 14 l.95',
     group: 'Combat',
     kind: 'param',
     default: 30,

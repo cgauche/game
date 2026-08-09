@@ -1,19 +1,21 @@
 import { describe, it, expect } from 'vitest';
 import { sceneCombatModifiers, entityBlockedAt } from './sceneRules';
 import { Scene, SceneEntity, isWalkable } from './scene';
+import { attackModifiers, defenseModifiers, combineMods } from '../engine/combat';
+import type { Combatant, Weapon } from '../engine/types';
 
 const sc = (over: Partial<Scene>): Scene => ({ ambiance: 'exterieur', ...over } as Scene);
 const DAY = 12 * 60;   // midi (clair)
 const NIGHT = 23 * 60; // nuit (obscurité)
 
-describe('sceneCombatModifiers — obscurité (horloge) / météo (LDB 14 l.94-116/107, #T1c)', () => {
+describe('sceneCombatModifiers — obscurité (horloge) / météo (LDB 14 l.75/76/82, #T1c)', () => {
   it('clair de jour → aucun mod', () => {
     expect(sceneCombatModifiers(sc({ weather: 'clair' }), DAY)).toMatchObject({ concealed: false, attackMod: 0, dodgeMod: 0 });
   });
-  it('pluie → aucun mod (flavor, +0 LDB l.94-98)', () => {
+  it('pluie → aucun mod (le modèle ne connaît pas de palier de pluie battante)', () => {
     expect(sceneCombatModifiers(sc({ weather: 'pluie' }), DAY)).toMatchObject({ concealed: false, attackMod: 0, dodgeMod: 0 });
   });
-  it('brouillard → cible dissimulée (concealed), -10 au tir (Complexe)', () => {
+  it('brouillard → cible dissimulée (concealed), -20 au tir (Difficile, LDB 14 l.75)', () => {
     expect(sceneCombatModifiers(sc({ weather: 'brouillard' }), DAY)).toMatchObject({ concealed: true, attackMod: 0, dodgeMod: 0 });
   });
   it('extérieur de nuit (horloge) → concealed (obscurité, l.75)', () => {
@@ -25,11 +27,37 @@ describe('sceneCombatModifiers — obscurité (horloge) / météo (LDB 14 l.94-1
   it('intérieur, même de nuit → jamais obscur (éclairé)', () => {
     expect(sceneCombatModifiers(sc({ ambiance: 'interieur' }), NIGHT).concealed).toBe(false);
   });
-  it('tempête → -20 attaque, esquive 0 (l.108-109)', () => {
+  it('tempête → -20 attaque, esquive 0 (mousson / ouragan / blizzard, LDB 14 l.76)', () => {
     expect(sceneCombatModifiers(sc({ weather: 'tempete' }), DAY)).toMatchObject({ attackMod: -20, dodgeMod: 0 });
   });
-  it('neige → -20 attaque ET -20 esquive (l.115-116)', () => {
-    expect(sceneCombatModifiers(sc({ weather: 'neige' }), DAY)).toMatchObject({ attackMod: -20, dodgeMod: -20 });
+  it('neige → -30 attaque ET -30 esquive (« Attaquer ou esquiver dans une haute épaisseur de neige », LDB 14 l.82)', () => {
+    expect(sceneCombatModifiers(sc({ weather: 'neige' }), DAY)).toMatchObject({ attackMod: -30, dodgeMod: -30 });
+  });
+});
+
+describe('Exemple RAW LDB 14 l.96 — « -30 plus +20 font -10 » (chaîne réelle scène → attaque)', () => {
+  const mkc = (over: Partial<Combatant> = {}): Combatant =>
+    ({
+      id: 'x', name: 'X', kind: 'enemy',
+      characteristics: { 'capacite-de-combat': 50, force: 30, endurance: 30, agilite: 40 },
+      wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], weapons: [],
+      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+      skills: [], talents: [], movement: 4, ...over,
+    }) as unknown as Combatant;
+  const sword = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] } as unknown as Weapon;
+
+  it('attaquer une cible À Terre depuis une haute épaisseur de neige → -10 net', () => {
+    const sc = sceneCombatModifiers({ ambiance: 'exterieur', weather: 'neige' } as Scene, DAY);
+    const env = [{ label: sc.label, value: sc.attackMod }];
+    const mods = attackModifiers(mkc(), mkc({ id: 'b', conditions: [{ id: 'a-terre', value: 1 }] as never }), sword, { kind: 'melee', env });
+    expect(mods).toContainEqual(expect.objectContaining({ label: 'Neige épaisse', value: -30 }));
+    expect(mods).toContainEqual(expect.objectContaining({ label: 'À Terre', value: 20 }));
+    expect(combineMods(mods)).toBe(-10);
+  });
+  it('l’esquive de la cible prise dans la même neige subit le -30 (« Attaquer ou esquiver »)', () => {
+    const sc = sceneCombatModifiers({ ambiance: 'exterieur', weather: 'neige' } as Scene, DAY);
+    expect(combineMods(defenseModifiers(mkc(), 'esquive', sc.dodgeMod))).toBe(-30);
+    expect(combineMods(defenseModifiers(mkc(), 'parade', sc.dodgeMod))).toBe(0);
   });
 });
 

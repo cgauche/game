@@ -41,7 +41,7 @@
 ### Combat
 | nom | réf | type | cx | point de code | note |
 |---|---|---|---|---|---|
-| Plafonds « Combiner les Difficultés » +60/−30 | LDB 14 l.126 | param×2 | S | `combat.ts combineMods:211` | **Lot 1.** point unique attaque+défense. |
+| Plafonds « Combiner les Difficultés » +60/−30 | LDB 14 l.95 | param×2 | S | `combat.ts combineMods:211` | **Lot 1.** point unique attaque+défense. |
 | Plafond d'Avantage = Bonus d'Initiative | LDB 15 l.15 | flag | S→M | `advantage.gainAdvantage` + `ActiveFrame` | plafond PAR combattant ; enrichir `combat-advantage-cap`. |
 | Sur la Défensive (Action → +20 défense) | LDB 13 l.118 | flag | M | `combatFlow` (Action) + `rollFlow` (buff temporisé) | jusqu'au prochain tour. |
 | Retenir ses coups (ignorer les Critiques) | LDB 18 l.45 | flag | M | résolveur d'attaque (flag pré-jet) | ≈ AA l.2500 mais variante AA divergente (→ pack XL). |
