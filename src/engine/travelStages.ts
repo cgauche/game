@@ -16,6 +16,7 @@ import type { RNG } from './dice';
 import { d100 } from './dice';
 import type { CharKey, Difficulty } from './types';
 import { rule } from './policy';
+import type { CodexTarget } from './ruleRefs';
 import { weather, weatherConditions, weatherPhysicalTestChars } from '../data';
 
 /** Les quatre saisons du tableau de Météo (EDOC 8 l.44). */
@@ -53,6 +54,12 @@ export const WEATHER_LABEL: Record<Weather, string> = {
   neige: 'Neige',
   blizzard: 'Blizzard',
 };
+
+/** Fiche Codex de la condition météo (catalogue `weatherConditions`, `weather.json`) — SOURCE UNIQUE
+ *  de la `ref` des lignes de jet que la météo du jour modifie (tir, Tests physiques, Activités). */
+export function weatherRef(w: Weather): CodexTarget {
+  return { category: 'weatherConditions', id: w };
+}
 
 /** Une plage d100 → météo. */
 interface WeatherRange { max: number; weather: Weather; }

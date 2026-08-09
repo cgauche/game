@@ -31,6 +31,7 @@ import { loseWounds, addClockCondition } from '../engine/conditions';
 import { rollTest } from '../engine/tests';
 import { soberUp } from '../engine/drunkenness';
 import { DIFFICULTY_MODIFIERS, type Difficulty, type UpkeepDeferTest, type NightTestKind } from '../engine/types';
+import type { ModLine } from '../engine/combat';
 import { dailyDiseaseUpkeep, restResistVal } from '../engine/rest';
 import { conditionLabel } from '../data';
 import { rule } from '../engine/policy';
@@ -120,7 +121,7 @@ export interface DeferredUpkeepTest {
   /** Difficulté DÉCLARÉE du Test (comprise dans `target`) — la ligne de jet la DIT (#1112). */
   difficulty: Difficulty;
   /** Modificateurs NOMMÉS compris dans `target` (Faim/Soif : « -10 % de plus pour chaque Test », LDB 18 l.338). */
-  mods?: { label: string; value: number }[];
+  mods?: ModLine[];
   target: number;
   meta?: Record<string, unknown>; // p.ex. { diseaseName, onFail: GameOp[] } — porté tel quel jusqu'à l'applier
 }
@@ -151,8 +152,8 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
       const defer: UpkeepDeferTest | undefined = opts.onDeferTest
         ? (spec) => opts.onDeferTest!({ heroId: h.id, kind: spec.kind, label: spec.label, base: spec.base,
           difficulty: spec.difficulty,
-          ...(spec.penalty ? { mods: [{ label: 'Tests déjà subis', value: spec.penalty }] } : {}),
-          target: spec.base + DIFFICULTY_MODIFIERS[spec.difficulty] + (spec.penalty ?? 0), meta: spec.meta })
+          ...(spec.penalty ? { mods: [{ label: spec.penalty.label, value: spec.penalty.value, ref: spec.penalty.ref }] } : {}),
+          target: spec.base + DIFFICULTY_MODIFIERS[spec.difficulty] + (spec.penalty?.value ?? 0), meta: spec.meta })
         : undefined;
       // 1. Nourriture (LDB 18 l.337-343).
       const r = dailyFoodUpkeep(h, testValue(h, 'resistance', 'endurance'), bonus(effectiveChar(h, 'endurance')), battleRng(), defer);

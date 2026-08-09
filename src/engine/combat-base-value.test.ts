@@ -87,7 +87,7 @@ describe('identité combatValue = combatBaseValue + modificateurs (plafond −30
       expect(combatValue(c, 'melee', epee)).toBe(combatBaseValue(c, 'melee', epee) + mods);
     });
   }
-  it('les modificateurs de la VALEUR échappent au plafond de Difficulté (LDB 14 l.126-131)', () => {
+  it('les modificateurs de la VALEUR échappent au plafond de Difficulté (LDB 14 l.91-96)', () => {
     const c = hero({ skills: SKILLS_CC, activeEffects: fx([{ testModChar: 'capacite-de-combat', testMod: -40 }]) });
     expect(combineMods([{ label: 'x', value: -40 }])).toBe(-30); // le plafond, LUI, ampute
     expect(combatValue(c, 'melee', epee)).toBe(10); // 50 − 40, PAS 50 − 30

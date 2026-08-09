@@ -18,7 +18,7 @@ import { beatHold, approachMs, afterApproach } from './combatDirector';
 import { scheduleCombatTimer } from './combatTimers';
 import { facingToward, DIR8_ORDER, type Dir8 } from './dir8';
 import { d10 } from '../engine/dice';
-import { rollWindsOfMagic, hasSecondeVue } from '../engine/windsOfMagic';
+import { rollWindsOfMagic, hasSecondeVue, windsModLine } from '../engine/windsOfMagic';
 import { setVesselHull } from './seaVoyageFlow';
 import {
   resolveMelee,
@@ -199,7 +199,7 @@ import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import {
   WEATHER_LABEL, weatherRangedMod, weatherRangedUseless, weatherPowderUseless,
-  weatherLightningNervous,
+  weatherLightningNervous, weatherRef,
   type Weather,
 } from '../engine/travelStages';
 import { weaponGroupKey } from '../engine/weaponGroup';
@@ -635,7 +635,7 @@ export function attackEnv(
       if (weatherRangedUseless(dayW)) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc };
       if (weatherPowderUseless(dayW) && isBlackPowderWeapon(weapon)) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc };
       const rm = weatherRangedMod(dayW);
-      if (rm) env.push({ label: `Météo : ${WEATHER_LABEL[dayW]}`, value: rm });
+      if (rm) env.push({ label: `Météo : ${WEATHER_LABEL[dayW]}`, value: rm, ref: weatherRef(dayW) });
     }
     // Commandant d'équipe (AA 13 l.29-35) : un chef de pièce dirigé tire au score de Projectiles de son
     // commandant — re-validé ICI (vivant + à portée de voix) → un delta sur la base du chef (aperçu ET résolution).
@@ -648,8 +648,8 @@ export function attackEnv(
     const cover = posteCover ? worstCover(los.cover, posteCover) : los.cover;
     if (cover !== 'none') env.push({ label: tr('cf.coverLabel', { cover }), value: coverModifier(cover) });
     // Vision nocturne / Infravision (LDB 85) ou Talent Vision nocturne : annule la pénalité d'obscurité.
-    if (sc.concealed && !seesInDark(attacker)) env.push({ label: sc.label || 'Obscurité', value: -10, ref: RULE_REF['cible-dissimulee'] }); // cible dissimulée (LDB 14 l.75)
-    else if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod }); // tempête/neige (l.108-116)
+    if (sc.concealed && !seesInDark(attacker)) env.push({ label: sc.label || 'Obscurité', value: -20, ref: RULE_REF['cible-dissimulee'] }); // cible dissimulée (LDB 14 l.75)
+    else if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod }); // tempête (LDB 14 l.76) / neige (l.82)
     // Tir en bougeant (LDB 14 l.101) : −10 si l'on bouge ET tire au même Round. Le Mouvement étant
     // DÉCOMPOSABLE (on peut bouger APRÈS le tir), un HÉROS qui garde sa mobilité encaisse le −10 par défaut ;
     // il ne l'évite qu'en décidant de tirer IMMOBILE (heldGround → consomme son Mouvement, cf. attackConfirm)
@@ -879,7 +879,7 @@ export function previewCast(
     /** Vents Tourbillonnants (LDB 46 l.179-190) : n'entre dans l'APERÇU pré-jet que si RÉVÉLÉS
      *  (Seconde vue) — sinon on subit les Vents sans les avoir repérés (le mod reste appliqué au
      *  jet, cf. `castRoll`/`resolveCasting`, mais n'apparaît qu'au breakdown POST-jet). */
-    windsMod?: number;
+    winds?: { roll: number; mod: number } | null;
     /** CONTEXTE du jet (état + cible visée) : l'aperçu annonce alors la CIBLE RÉELLE — protection de
      *  la victime, attribut et environnement de Domaine (`castContextMods`) compris. Absent (aucune
      *  cible désignée) : aperçu de la seule valeur du lanceur. */
@@ -890,7 +890,8 @@ export function previewCast(
   const target = castingValue(caster, ci.skill, ci.spec);
   const advMod = 10 * (caster.advantage ?? 0); // l'Avantage s'applique aux Tests d'Incantation
   const penMod = castPenaltyMod(caster, ci.skill); // contrecoups actifs (Imparfaite/Colère)
-  const windsMod = opts?.windsMod ?? 0;
+  const windsLine = windsModLine(opts?.winds);
+  const windsMod = opts?.winds?.mod ?? 0;
   const isPrayer = !ci.requireNI; // la branche de résolution, pas un proxy sur `cn`
   const ni = opts?.focused ? 0 : spell.cn ?? 0;
   const ctx = opts?.ctx ? castContextMods(opts.ctx.s, caster, opts.ctx.target, spell, { skipWard: opts.ctx.skipWard }) : null;
@@ -898,7 +899,7 @@ export function previewCast(
     ...(advMod ? [{ label: 'Avantage', value: advMod, ref: RULE_REF.avantage }] : []),
     ...(penMod ? [{ label: 'Contrecoup', value: penMod }] : []),
     ...(ctx?.mods ?? []),
-    ...(windsMod ? [{ label: 'Vents de Magie', value: windsMod }] : []),
+    ...(windsLine ? [windsLine] : []),
   ];
   return {
     label: isPrayer ? tr('cf.prayerLabel') : tr('cf.castLabel', { ni }), // le test reste Langue (Magick) — « Projectile magique » ne change QUE Localisation/Dégâts après réussite (LDB 46 l.155-156)

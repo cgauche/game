@@ -66,7 +66,15 @@ export type RuleId =
   | 'arme-d-equipe'
   | 'nuee'
   | 'parasite'
-  | 'tests-opposes';
+  | 'tests-opposes'
+  | 'rapide'
+  | 'commandant-d-equipe'
+  | 'exposition'
+  | 'faim-et-soif'
+  | 'navigation-derive'
+  | 'navigation-greement'
+  | 'navigation-chavirage'
+  | 'apprentissage-particulier';
 
 /** La fiche Codex de chaque règle, en ids STABLES. Les producteurs de `ModLine` la consomment
  *  (`RULE_REF.viser`), l'affichage la résout en chip cliquable — jamais un `{category, id}` recopié
@@ -105,4 +113,12 @@ export const RULE_REF: Record<RuleId, CodexTarget> = {
   nuee: { category: 'traits', id: 'nuee' },
   parasite: { category: 'traits', id: 'parasite' },
   'tests-opposes': { category: 'regles', id: 'tests-opposes' },
+  rapide: { category: 'qualities', id: 'rapide' },
+  'commandant-d-equipe': { category: 'talents', id: 'commandant-d-equipe' },
+  exposition: { category: 'regles', id: 'exposition' },
+  'faim-et-soif': { category: 'regles', id: 'faim-et-soif' },
+  'navigation-derive': { category: 'regles', id: 'navigation-derive' },
+  'navigation-greement': { category: 'regles', id: 'navigation-greement' },
+  'navigation-chavirage': { category: 'regles', id: 'navigation-chavirage' },
+  'apprentissage-particulier': { category: 'activities', id: 'learn' },
 };

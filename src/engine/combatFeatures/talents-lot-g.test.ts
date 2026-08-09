@@ -51,15 +51,15 @@ describe('dégâts (LDB 10) — Coup puissant / Tir précis / Combat déloyal / 
 });
 
 describe('modificateurs de Test (LDB 10)', () => {
-  it('Frappe assommante : pas de −10 à la Tête avec une arme Assommante', () => {
+  it('Frappe assommante : pas de −20 à la Tête avec une arme Assommante', () => {
     const c = mk([{ name: 'Frappe assommante', times: 1 }]);
     const tgt = mk([], { id: 't' });
     const mods = attackModifiers(c, tgt, w({ qualities: [{ id: 'assommante' }] }), { kind: 'melee', location: 'tete' });
     expect(mods.find((m) => m.label === 'Localisation visée')).toBeUndefined();
     const sans = attackModifiers(mk([]), tgt, w({ qualities: [{ id: 'assommante' }] }), { kind: 'melee', location: 'tete' });
-    expect(sans.find((m) => m.label === 'Localisation visée')?.value).toBe(-10);
+    expect(sans.find((m) => m.label === 'Localisation visée')?.value).toBe(-20); // LDB 14 l.73
   });
-  it('Tir mortel : pas de −10 de Localisation à distance', () => {
+  it('Tir mortel : pas de −20 de Localisation à distance', () => {
     const c = mk([{ name: 'Tir mortel', times: 1 }]);
     const tgt = mk([], { id: 't' });
     const mods = attackModifiers(c, tgt, w({ type: 'ranged', range: 30 }), { kind: 'ranged', location: 'tete', distanceTiles: 5 });

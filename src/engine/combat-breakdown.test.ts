@@ -113,15 +113,15 @@ describe('Taille en combat (T1) + env injecté — attackModifiers (LDB 14 l.151
   });
 });
 
-describe('Esquive sous la neige −20 (LDB 14 l.115-116)', () => {
-  it('defenseModifiers : −20 en esquive seulement (pas en parade)', () => {
-    expect(defenseModifiers(mk(), 'esquive', -20).some((m) => m.value === -20)).toBe(true);
-    expect(defenseModifiers(mk(), 'parade', -20).some((m) => m.value === -20)).toBe(false);
+describe('Esquive dans une haute épaisseur de neige −30 (LDB 14 l.82)', () => {
+  it('defenseModifiers : −30 en esquive seulement (pas en parade)', () => {
+    expect(defenseModifiers(mk(), 'esquive', -30).some((m) => m.value === -30)).toBe(true);
+    expect(defenseModifiers(mk(), 'parade', -30).some((m) => m.value === -30)).toBe(false);
   });
   it('rollMeleeDefender : la neige abaisse la cible de l’esquive, pas de la parade', () => {
     const d = mk();
-    expect(rollMeleeDefender(d, 'esquive', makeRNG(1), -20).target).toBe(rollMeleeDefender(d, 'esquive', makeRNG(1)).target - 20);
-    expect(rollMeleeDefender(d, 'parade', makeRNG(1), -20).target).toBe(rollMeleeDefender(d, 'parade', makeRNG(1)).target);
+    expect(rollMeleeDefender(d, 'esquive', makeRNG(1), -30).target).toBe(rollMeleeDefender(d, 'esquive', makeRNG(1)).target - 30);
+    expect(rollMeleeDefender(d, 'parade', makeRNG(1), -30).target).toBe(rollMeleeDefender(d, 'parade', makeRNG(1)).target);
   });
 });
 
@@ -344,9 +344,9 @@ describe('attackModifiers — modificateurs étiquetés (source unique)', () => 
     // La ligne porte SA règle : la chip du breakdown ouvre `regles/viser` (#1078).
     expect(mods).toContainEqual({ label: 'Viser', value: 20, ref: RULE_REF.viser });
   });
-  it('viser une localisation → mod « Localisation visée » −10', () => {
+  it('viser une localisation → mod « Localisation visée » −20 (« Une attaque ou un tir qui cherche à atteindre une Localisation particulière », LDB 14 l.73)', () => {
     const mods = attackModifiers(mk({ label: 'A' }), mk({ label: 'B' }), bow, { kind: 'ranged', distanceTiles: 28, location: 'tete' });
-    expect(mods).toContainEqual({ label: 'Localisation visée', value: -10, ref: RULE_REF['viser-une-localisation'] });
+    expect(mods).toContainEqual({ label: 'Localisation visée', value: -20, ref: RULE_REF['viser-une-localisation'] });
   });
   it('mêlée vs cible À Terre → la ligne NOMME l’État qui expose la cible (+20 À Terre, lié au Codex)', () => {
     const downed = mk({ label: 'B', conditions: [{ id: 'a-terre', value: 1 }] });

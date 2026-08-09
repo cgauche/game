@@ -30,6 +30,8 @@ import { rollTest } from './tests';
 import { addCondition, hasCondition, loseWounds } from './conditions';
 import { hasCapability, itemCapability } from './capabilities';
 import { rule } from './policy';
+import { RULE_REF } from './ruleRefs';
+import type { ModLine } from './combat';
 
 export type ExposureSeverity = 'clement' | 'difficile' | 'extreme';
 
@@ -120,10 +122,10 @@ export function exposureFirstFailChars(kind: ExposureKind = 'froid'): string {
 /** Modificateur NOMMÉ compris dans `exposureTarget` : la pénalité maison « sans Manteau ni cape »
  *  (`exposure-no-coat-penalty`) se LIT sur la ligne de jet au lieu d'être un −N anonyme dans la cible
  *  (#1112). Renvoie `{}` quand rien ne s'applique (le porteur est couvert). */
-export function exposureCoatMods(c: Combatant): { mods?: { label: string; value: number }[] } {
+export function exposureCoatMods(c: Combatant): { mods?: ModLine[] } {
   if (hasCoat(c)) return {};
   const pen = Number(rule('exposure-no-coat-penalty'));
-  return pen ? { mods: [{ label: 'Sans manteau', value: -pen }] } : {};
+  return pen ? { mods: [{ label: 'Sans manteau', value: -pen, ref: RULE_REF.exposition }] } : {};
 }
 
 /** Objet le plus lourd porté par `c` (Encombrement le plus élevé, strictement positif) — LA

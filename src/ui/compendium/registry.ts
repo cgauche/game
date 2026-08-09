@@ -15,7 +15,7 @@ import {
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names, RACE_KEY_LABEL,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   allAxes,
-  calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel, windsOfMagicTable,
+  calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, weatherConditions, symptoms, symptomLabel, windsOfMagicTable,
   isNamed, specIdsOf, specLabel,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findCreatureById, findVehicleById, findTrappingById, structures, regles,
   CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
@@ -1757,6 +1757,21 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'weather', label: 'Météo de voyage', group: 'Tables', cluster: 'Voyage terrestre',
     build: () => weather.map((s) => ({ id: s.id, label: s.label, sub: `${s.ranges.length} plages d100 (EDOC 8)` })),
+  },
+  {
+    key: 'weatherConditions', label: 'Conditions météo', group: 'Tables', cluster: 'Voyage terrestre',
+    // Effets par condition (EDOC 8) — cible Codex des chips « Météo : … » des lignes de jet
+    // (`engine/weatherTestMod.ts`, `state/combatFlow.ts`, `state/travelPostes.ts`).
+    build: () => weatherConditions.map((c) => ({
+      id: c.id, label: c.label, desc: c.desc, source: src(c.source),
+      meta: facts(
+        fact('Visibilité', c.visibiliteM != null ? `${c.visibiliteM} m` : null),
+        fact('Armes à distance', c.rangedUseless ? 'inutilisables' : c.rangedMod != null ? String(c.rangedMod) : null),
+        fact('Tests physiques', c.physicalTestMod != null ? String(c.physicalTestMod) : null),
+        fact('Mouvement', c.movementWalkOnly ? 'marche seulement' : null),
+        fact('Poudre exposée', c.powderUseless ? 'inutilisable' : null),
+      ),
+    })),
   },
   {
     key: 'raceAppearance', label: 'Apparences (rig)', group: 'Tables', cluster: 'Création de personnage',

@@ -45,7 +45,7 @@ Augmentations** dans cette Compétence inscrites sur la Feuille de Personnage.
 **Sources RAW :** LDB 09 l.12-18
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.12-18) → `possesses`, `skillBaseValue`, `stepOpenValue`, `combatBaseValue`, `castingBaseValue`, `holdVerdict`, `ActivityOppositionOn`, `defenseBaseValue`, `CastResult`, `openHoldScene` — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/interludeFlow.ts`, +2 fichiers
+- `LDB 9` (l.12-18) → `possesses`, `skillBaseValue`, `combatBaseValue`, `castingBaseValue`, `bargainHeroTR`, `bargainOpposed`, `holdVerdict`, `PendingBargain`, `nakedValue`, `ActivityOppositionOn`, +5 — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/interludeFlow.ts`, +6 fichiers
 
 **Voir aussi :** [Tests & Degrés de Réussite](tests.md) pour l'utilisation de ce niveau en test.
 
@@ -73,7 +73,7 @@ Nécessitent un entraînement. **Impossible de tenter le Test sans au moins une 
 **Sources RAW :** LDB 09 l.22-32
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.22-32) → `hasHealSkill`, `possesses`, `redaction`, `buySkillAdvance`, `athletisme`, `skillBaseValue`, `buildAdvancementView`, `stepOpenValue`, `combatBaseValue`, `castingBaseValue`, +11 — `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, +13 fichiers
+- `LDB 9` (l.22-32) → `hasHealSkill`, `possesses`, `redaction`, `buySkillAdvance`, `athletisme`, `skillBaseValue`, `buildAdvancementView`, `combatBaseValue`, `castingBaseValue`, `bargainHeroTR`, +16 — `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, +17 fichiers
 
 ---
 

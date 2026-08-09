@@ -3,7 +3,7 @@ import { findSpellById } from '../data/index';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { castingValue } from '../engine/magic';
-import { windsMagicModOf } from '../state/combatOrParty';
+import { windsMagicLineOf } from '../state/combatOrParty';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
@@ -36,8 +36,8 @@ export function FocusModal() {
   const rolled = !!r;
   // Vents Tourbillonnants (LDB 46 l.179-190) : mod visible au pré-jet SEULEMENT si révélés (Seconde
   // vue), toujours visible au breakdown post-jet (déjà appliqué au Test — cf. `resolveFocus`).
-  const windsMod = windsMagicModOf(battle);
-  const windsMods = windsMod ? [{ label: 'Vents de Magie', value: windsMod }] : undefined;
+  const windsLine = windsMagicLineOf(battle);
+  const windsMods = windsLine ? [windsLine] : undefined;
 
   const actorRow: RollRowData = {
     actor: caster,

@@ -1,9 +1,8 @@
 // @vitest-environment jsdom
 /**
- * #1117 L4 — BOUT-EN-BOUT de la chip de pénalité : du COMBATTANT jusqu'au TEXTE à l'écran et au
- * popover. Arbitrage utilisateur 2026-08-07 (verbatim, ticket #1117) : « personne ne veut du
- * "-10 Etat", c'est "-10 Sonné", "-30 Brisé" si tu veux, mais pas "-10 Etat" » — et la pastille
- * signalée en partie était MUETTE (« une pastille "-10 Etat" sans popover »).
+ * BOUT-EN-BOUT de la chip de pénalité (ref #1117 L4) : du COMBATTANT jusqu'au TEXTE à l'écran et au
+ * popover. CONTRAT : la pastille porte le NOM de l'État qui octroie la pénalité (jamais l'étiquette
+ * de famille « État »), et elle est CLIQUABLE — une pastille muette ne renvoie à aucune règle.
  *
  * Distinct de `RollLine-codex-chips.test.tsx`, qui verrouille le contrat GÉNÉRIQUE de `ModChip` à
  * partir de `ModLine` forgées. Ici le producteur est le RÉEL (`conditionModLines`, source unique des

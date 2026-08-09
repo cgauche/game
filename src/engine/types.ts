@@ -2,6 +2,7 @@
 import { t } from '../i18n';
 import type { Duration } from './duration';
 import type { ReachId } from './items';
+import type { CodexTarget } from './ruleRefs';
 
 /** Libellés d'AFFICHAGE de l'axe d'Allonge, PAR id d'axe (`ReachId`, `engine/items.ts` — LDB 62
  *  l.156-164). Toute LOGIQUE d'Allonge passe par `reachIdOf`/`reachRankOf`, jamais par ce libellé. */
@@ -1653,7 +1654,10 @@ export type UpkeepDeferTest = (spec: {
   label: string;
   base: number;
   difficulty: Difficulty;
-  penalty?: number;
+  /** Pénalité NOMMÉE du Test : sa valeur voyage AVEC son étiquette et sa règle, depuis le producteur
+   *  qui l'applique (`engine/provisions` pour la Faim/Soif). Couture GÉNÉRIQUE (14 `kind`) : rien n'y
+   *  est codé en dur, un `kind` futur apporte SA règle ou n'affiche aucune chip. */
+  penalty?: { value: number; label: string; ref?: CodexTarget };
   meta?: Record<string, unknown>; // p.ex. { diseaseName, onFail: GameOp[] } — porté tel quel par l'étape de cascade
 }) => void;
 

@@ -47,9 +47,9 @@ export interface CombatFeature {
   /** Tir sûr : ignore niveau PA de la cible au tir. */
   rangedAPIgnore?: boolean;
   // ── Modificateurs de Test d'attaque ────────────────────────────────────────
-  /** Frappe assommante : pas de −10 de Localisation visée (Tête) avec une arme Assommante. */
+  /** Frappe assommante : pas de −20 de Localisation visée (Tête) avec une arme Assommante. */
   ignoreCalledShotHead?: boolean;
-  /** Tir mortel : choisit la Localisation au tir — pas de −10 de Localisation visée à distance. */
+  /** Tir mortel : choisit la Localisation au tir — pas de −20 de Localisation visée à distance. */
   ignoreCalledShotRanged?: boolean;
   /** Tireur d'élite : ignore les modificateurs de Taille de la cible au tir. */
   ignoreSizeRangedMods?: boolean;

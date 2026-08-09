@@ -3,7 +3,7 @@ import { combineMods, defenseModifiers, rangeBandModifier, rangeBandName, weapon
 import { setRule, resetRule } from './policy';
 import type { Combatant, Weapon } from './types';
 
-describe('combineMods — Combiner les Difficultés (LDB 14 l.126-131)', () => {
+describe('combineMods — Combiner les Difficultés (LDB 14 l.91-96)', () => {
   it('plafonne la somme des malus à -30', () => {
     expect(combineMods([{ label: 'a', value: -20 }, { label: 'b', value: -20 }])).toBe(-30);
   });
@@ -28,7 +28,7 @@ describe('combineMods — Combiner les Difficultés (LDB 14 l.126-131)', () => {
   });
 });
 
-describe('combineMods — plafonds de Difficulté réglables (LDB 14 l.126, règle optionnelle)', () => {
+describe('combineMods — plafonds de Difficulté réglables (LDB 14 l.95, règle optionnelle)', () => {
   afterEach(() => { resetRule('combat-diff-cap-bonus'); resetRule('combat-diff-cap-malus'); });
   it('combat-diff-cap-bonus → 20 : la somme des bonus plafonne à +20 (défaut +60)', () => {
     expect(combineMods([{ label: 'a', value: 40 }, { label: 'b', value: 40 }])).toBe(60);
@@ -100,12 +100,12 @@ describe('defenseModifiers — Avantage hors plafond, malus plafonnés (B1, pari
     expect(combineMods(mods)).toBe(80);
   });
 
-  it('les malus de défense cumulés sont plafonnés à −30 (LDB 14 l.129) ; l’Avantage reste hors plafond', () => {
-    // Esquive en neige (−20) + aura Perturbante (−20, État) + Maniement de deux armes (−10) = −50 brut
+  it('les malus de défense cumulés sont plafonnés à −30 (LDB 14 l.95) ; l’Avantage reste hors plafond', () => {
+    // Esquive en neige (−30) + aura Perturbante (−20, État) + Maniement de deux armes (−10) = −60 brut
     // → plafonné à −30 ; Avantage +30 hors plafond → net 0.
     const d = { advantage: 3, conditions: [], perturbed: true, weapons: [], defensiveStance: false, dualStrikeDefensePenalty: true } as unknown as Combatant;
-    const mods = defenseModifiers(d, 'esquive', -20);
+    const mods = defenseModifiers(d, 'esquive', -30);
     expect(mods.filter((m) => m.value < 0).every((m) => !m.uncapped)).toBe(true); // les malus NE sont PAS uncapped
-    expect(combineMods(mods)).toBe(0); // +30 (Avantage) + max(−30, −50)
+    expect(combineMods(mods)).toBe(0); // +30 (Avantage) + max(−30, −60)
   });
 });

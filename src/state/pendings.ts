@@ -259,6 +259,11 @@ export interface PendingBargain {
   playerSkill: number; // valeur Marchandage du meilleur négociateur du groupe (Soutien FONDU)
   /** SOUTIEN (LDB 12) des conseillers du groupe, déjà fondu dans `playerSkill` — porté pour l'affichage. */
   support?: SupportDetail;
+  /** NIVEAU DE COMPÉTENCE NU du négociateur (`LDB 09 l.17`) — la grandeur que `resolveOpposed`
+   *  compare à DR égal (`LDB 12 l.160`). Posé à l'accesseur canon (`skillBaseValue`) par le site qui
+   *  SAIT quelle Compétence est testée (`merchantFlow.startBargain`), jamais reconstitué à partir de
+   *  `playerSkill` : celle-ci porte le Soutien, les États et l'Encombrement, tous modificateurs. */
+  playerBase: number;
   mode: 'buy' | 'sell';
   /** Le négociateur possède-t-il le talent Négociateur (−20 % même sans Succès Stupéfiant) ? */
   negotiator: boolean;
@@ -1302,7 +1307,7 @@ export interface BatchParticipant extends RollParticipant {
   /** Cible EFFECTIVE (difficulté déjà appliquée) — l'auto-roll générique évalue le d100 contre elle. */
   target: number;
   /** Détail additif de la rangée (affichage). */
-  mods?: { label: string; value: number }[];
+  mods?: ModLine[];
   /** COMPÉTENCE réellement lancée par ce contributeur (résolue à la construction par le flux
    *  propriétaire — naval : `crewRoleValue().used`) : la ligne de jet NOMME la Compétence (Z5), le
    *  rôle tenu n'étant que la PROVENANCE. */
@@ -1412,17 +1417,21 @@ export interface CascadeStepBase extends RollParticipant {
   /** Fiche de RÈGLE d'une étape SANS enjeu (choix de voie : la règle encadre le choix, aucun jet n'est
    *  encore mis en jeu). Une étape POURVUE d'un `stake` dérive sa règle du dataset — jamais ici. */
   stakeRule?: { category: string; id: string };
-  /** Valeur « brute » du Test (carac/compétence, avant difficulté) — affichage. Un côté de GROUPE
-   *  (`partyAssisted`) y porte le Soutien FONDU ; `support` ci-dessous le rend à l'affichage. */
+  /** Valeur « brute » du Test (carac/compétence, avant difficulté) — affichage ET grandeur du
+   *  départage à DR égal (`LDB 12 l.160`, `engine/tests.openValues`). La porte du seam
+   *  (`rollSeam.buildMonoStep`) y pose le Niveau de Compétence NU (`skillBaseValue`, `LDB 09 l.17`)
+   *  et sort le Soutien en ligne de `mods` ; les flux qui bâtissent leurs étapes à la main y portent
+   *  encore une valeur FONDUE, avec `support` ci-dessous pour la rendre à l'affichage. */
   base?: number;
-  /** SOUTIEN (LDB 12 l.187-200) déjà FONDU dans `base` — porté pour l'AFFICHAGE : `CascadeModal` le
-   *  rend en ligne de mod nommée (`ui/breakdown.supportSplit`), jamais en bonus muet. Posé par la
-   *  porte du seam (`buildMonoStep`) et par les flux qui construisent leurs étapes à la main. */
+  /** SOUTIEN (LDB 12 l.187-200) FONDU dans `base` par un flux qui bâtit son étape à la main — porté
+   *  pour l'AFFICHAGE : `CascadeModal` l'en défait et le rend en ligne de mod nommée
+   *  (`ui/breakdown.supportSplit`), jamais en bonus muet. Une étape de la porte du seam n'en porte
+   *  PAS : son Soutien arrive déjà nommé dans `mods` (`soutienMod`), sa `base` étant nue. */
   support?: SupportDetail;
   /** Modificateurs circonstanciels NOMMÉS de la ligne (compris dans `target`) — un malus RAW qui n'est
    *  PAS une Difficulté (dérive MSRC 7 l.38, hors de contrôle l.41, −5 cumulatif du redressement l.40)
    *  se nomme ICI : aucun +N anonyme dans la cible. La Difficulté, elle, voyage dans `difficulty`. */
-  mods?: { label: string; value: number }[];
+  mods?: ModLine[];
   /** Cible EFFECTIVE (difficulté déjà appliquée → Test « +0 » sur `target`). Absent → étape sans jet. */
   target?: number;
   /** ÉCRÊTAGE réellement subi par `target` aux bornes de `TestPolicy` (`engine/tests.clampTarget`) —

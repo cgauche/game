@@ -43,6 +43,8 @@ import { rationCount } from '../engine/provisions';
 import { itemFromGive, autoStowNewItem } from '../engine/items';
 import { testValue, effectiveSkillCharKey } from '../engine/skills';
 import { DIFFICULTY_MODIFIERS, type Difficulty, type Combatant } from '../engine/types';
+import type { ModLine } from '../engine/combat';
+import { weatherRef } from '../engine/travelStages';
 import { partyWalkSpeed, vehicleTravel, type TravelMode } from '../engine/travel';
 import { partyMounts } from '../engine/mountTravel';
 import type { Possession } from '../engine/possession';
@@ -88,10 +90,10 @@ function weatherModOf(def: ActivityDef, weather: Weather): number {
  *  (`weatherMod`, l.106/56) + « Tests physiques » de la pluie diluvienne (l.82). La DIFFICULTÉ n'y est
  *  PAS (#1072) : elle voyage en donnée de LIGNE (`RollParticipant.difficulty`), rendue en texte + valeur
  *  par `RollLine`. `undefined` si aucun mod (rien à détailler). */
-function stageActivityMods(weather: Weather, wMod: number, pMod: number): { label: string; value: number }[] | undefined {
-  const mods = [
-    ...(wMod !== 0 ? [{ label: `Météo : ${WEATHER_LABEL[weather]}`, value: wMod }] : []),
-    ...(pMod !== 0 ? [{ label: 'Tests physiques', value: pMod }] : []),
+function stageActivityMods(weather: Weather, wMod: number, pMod: number): ModLine[] | undefined {
+  const mods: ModLine[] = [
+    ...(wMod !== 0 ? [{ label: `Météo : ${WEATHER_LABEL[weather]}`, value: wMod, ref: weatherRef(weather) }] : []),
+    ...(pMod !== 0 ? [{ label: 'Tests physiques', value: pMod, ref: weatherRef(weather) }] : []),
   ];
   return mods.length ? mods : undefined;
 }

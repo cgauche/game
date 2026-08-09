@@ -10,6 +10,7 @@
  * `state/combat/roundHooks` `recompute-auras`).
  */
 import { combatValue, type ModLine } from '../engine/combat';
+import { RULE_REF } from '../engine/ruleRefs';
 import { hasCommandTeam } from '../engine/combatFeatures/dispatch';
 import { isOutOfAction } from '../engine/conditions';
 import { rule } from '../engine/policy';
@@ -78,5 +79,5 @@ export function teamCommandMod(chief: Combatant, weapon: Weapon, combatants: Com
   if (!cmd) return null;
   const delta = combatValue(cmd, 'ranged', weapon) - combatValue(chief, 'ranged', weapon);
   if (delta === 0) return null; // aucune substitution à montrer
-  return { label: 'Commandant d’équipe', value: delta, uncapped: true };
+  return { label: 'Commandant d’équipe', value: delta, uncapped: true, ref: RULE_REF['commandant-d-equipe'] };
 }

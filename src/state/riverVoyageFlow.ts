@@ -39,6 +39,7 @@ import type { StakeRef } from '../data';
 import { partyCargoTotalEnc } from './carriers';
 import { partyAssisted, type SupportDetail } from '../engine/skills';
 import { rollTest, type TestResult } from '../engine/tests';
+import { RULE_REF } from '../engine/ruleRefs';
 import { testValue } from '../engine/skills';
 import { addCondition } from '../engine/conditions';
 import { d100, rollExpr, type RNG } from '../engine/dice';
@@ -533,7 +534,7 @@ function rightingStep(source: CascadeStep, round: number, be: number, pilotValue
     rollLabel: source.rollLabel ?? 'Navigation',
     base: pilotValue,
     difficulty: CAPSIZE_RIGHT_DIFFICULTY,
-    ...(penalty ? { mods: [{ label: `−5 cumulatif (Round ${round + 1})`, value: penalty }] } : {}),
+    ...(penalty ? { mods: [{ label: `−5 cumulatif (Round ${round + 1})`, value: penalty, ref: RULE_REF['navigation-chavirage'] }] } : {}),
     target: capsizeRoundTarget(pilotValue, round),
     ...(() => { const st = voyageStakeRef('riverRighting', { nextPenalty: (round + 1) * CAPSIZE_RIGHT_CUMULATIVE, rounds: rounds }); return st ? { stake: st } : {}; })(),
     result: null, interactive: true,

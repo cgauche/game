@@ -79,7 +79,7 @@ describe('Mode de défense « social » branché dans le moteur (LDB 09 l.287)',
     expect(defenseValue(defender(), 'social', undefined, undefined)).toBe(0);
   });
   it('defenseModifiers(social) : ni « Main secondaire », ni « Neige », ni « Maniement deux armes »', () => {
-    const mods = defenseModifiers(defender(), 'social', -20 /*neige ignorée*/, defender().weapons[0]);
+    const mods = defenseModifiers(defender(), 'social', -30 /*neige ignorée*/, defender().weapons[0]);
     expect(mods.some((m) => m.label === 'Maniement deux armes')).toBe(false);
     expect(mods.some((m) => m.label === 'Main secondaire')).toBe(false);
     expect(mods.some((m) => m.label === 'Neige épaisse')).toBe(false);

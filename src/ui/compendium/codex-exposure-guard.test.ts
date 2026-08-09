@@ -132,7 +132,9 @@ const FILE_TO_CATEGORY_KEYS: Record<string, string[]> = {
   'vents-tourbillonnants.json': ['ventsTourbillonnants'],
   'water-exposure.json': ['waterExposure'],
   'weaponGroups.json': ['weaponGroups'],
-  'weather.json': ['weather'],
+  // Deux volets, deux catégories : `seasons` (tables d100 par saison) et `conditions` (effets par
+  // météo — cible Codex des chips « Météo : … » des lignes de jet, #1117 L5b).
+  'weather.json': ['weather', 'weatherConditions'],
 };
 
 /**

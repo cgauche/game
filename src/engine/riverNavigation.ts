@@ -32,6 +32,8 @@ import { findTableEntry } from './tables';
 import { d10, d100, rollExpr, type RNG, defaultRNG } from './dice';
 import { bonus } from './characteristics';
 import { DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from './types';
+import { RULE_REF } from './ruleRefs';
+import type { ModLine } from './combat';
 
 // ── Types de la table des vents (l.21-41) ────────────────────────────────────────────────────────
 
@@ -169,10 +171,10 @@ export function riverDriftKm(baseKmPerDay: number): number {
  *  diriger le bateau subissent un malus de -20 »). Ce sont des MALUS, pas des Difficultés : la
  *  Difficulté du Test reste `NAV_BASE_DIFFICULTY` (MSRC 7 l.15 demande le Test sans en fixer la
  *  Difficulté — le défaut Intermédiaire +0 est celui de la table, LDB 12 l.148). PUR. */
-export function navPenaltyMods(state: { drift?: boolean; outOfControl?: boolean }): { label: string; value: number }[] {
-  const mods: { label: string; value: number }[] = [];
-  if (state.drift) mods.push({ label: 'Dérive', value: DRIFT_NAV_PENALTY });
-  if (state.outOfControl) mods.push({ label: 'Hors de contrôle', value: OUT_OF_CONTROL.navPenalty });
+export function navPenaltyMods(state: { drift?: boolean; outOfControl?: boolean }): ModLine[] {
+  const mods: ModLine[] = [];
+  if (state.drift) mods.push({ label: 'Dérive', value: DRIFT_NAV_PENALTY, ref: RULE_REF['navigation-derive'] });
+  if (state.outOfControl) mods.push({ label: 'Hors de contrôle', value: OUT_OF_CONTROL.navPenalty, ref: RULE_REF['navigation-greement'] });
   return mods;
 }
 

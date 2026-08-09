@@ -104,9 +104,9 @@ describe('pénalités de Test d’État lues en DONNÉES (etats.json passive tes
 });
 
 /**
- * #1117 L4 — la chip de pénalité NOMME son octroyeur (arbitrage utilisateur 2026-08-07 : « personne ne
- * veut du "-10 Etat", c'est "-10 Sonné", "-30 Brisé" ») et porte son renvoi Codex (le popover de
- * `ModChip` naît de `ModLine.ref`). Le pool non-cumul (LDB 16 l.13) rend UNE ligne : celle du gagnant.
+ * CONTRAT (ref #1117 L4) — une pénalité d'État se rend au NOM de l'État qui l'octroie (« Brisé »,
+ * « Sonné »), jamais sous une étiquette de famille (« État »), et porte son renvoi Codex (le popover
+ * de `ModChip` naît de `ModLine.ref`). Le pool non-cumul (LDB 16 l.13) rend UNE ligne : celle du gagnant.
  */
 describe('composantes NOMMÉES de la pénalité de Test (combatTestPenaltyParts)', () => {
   it('Brisé ×3 seul → une ligne « Brisé » −30, liée à sa fiche d’État', () => {

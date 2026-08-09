@@ -17,6 +17,7 @@ import type { RNG } from './dice';
 import { defaultRNG, d10 } from './dice';
 import { findTableEntry } from './tables';
 import type { Combatant } from './types';
+import type { ModLine } from './combat';
 import ventsJson from '../data/vents-tourbillonnants.json';
 
 /** `id`/`label` = affichage (Codex `ventsTourbillonnants`, `src/ui/compendium/registry.ts`) ; le
@@ -30,6 +31,16 @@ export function windsModFromRoll(roll: number): number {
 }
 
 export interface WindsRoll { roll: number; mod: number }
+
+/** LIGNE DE JET des Vents — MAISON UNIQUE des deux couches (aperçu d'Incantation `previewCast`,
+ *  modale de Focalisation) : le libellé EST celui de la ligne tirée du Tableau (« Vents forts »), sa
+ *  `ref` la fiche Codex de cette ligne — label et référence dérivent de la MÊME donnée. `null` quand
+ *  aucun Vent n'est tiré ou que la force est neutre (rien à afficher). */
+export function windsModLine(winds: WindsRoll | null | undefined): ModLine | null {
+  if (!winds?.mod) return null;
+  const e = findTableEntry(WINDS_TABLE, winds.roll);
+  return { label: e.label, value: winds.mod, ref: { category: 'ventsTourbillonnants', id: e.id } };
+}
 
 /** Tirage de la force des Vents (1d10 sur le Tableau, LDB 46 l.183-190). */
 export function rollWindsOfMagic(rng: RNG = defaultRNG): WindsRoll {

@@ -41,6 +41,13 @@ import { hasActiveFlag } from './activeFlags';
 import { itemCapability } from './capabilities';
 import { dailyWaterLitres } from './seaWeather';
 import { findTraitById } from '../data';
+import { RULE_REF, type CodexTarget } from './ruleRefs';
+
+/** La pénalité CUMULATIVE des Tests de Faim/Soif, NOMMÉE et liée à sa règle (LDB 18 l.338) — c'est
+ *  le producteur qui la nomme, la couture d'entretien différé ne fait que la porter. */
+function hungerThirstPenalty(value: number): { value: number; label: string; ref: CodexTarget } {
+  return { value, label: 'Tests déjà subis', ref: RULE_REF['faim-et-soif'] };
+}
 
 /** État de faim d'un personnage (absent = nourri normalement). */
 export interface HungerState {
@@ -217,7 +224,7 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
     if (deferTest) {
       // Cascade de nuit : le Test devient une ÉTAPE influençable (résolue par `applyFaimTest`).
       c.hunger = h; // days++ enregistré ; tests/échecs appliqués à la validation de l'étape
-      deferTest({ kind: 'faim', label: 'Faim', base: resVal, difficulty: 'intermediaire', penalty });
+      deferTest({ kind: 'faim', label: 'Faim', base: resVal, difficulty: 'intermediaire', penalty: hungerThirstPenalty(penalty) });
       return res;
     }
     const t = rollTest(resVal, 'intermediaire', rng, penalty);
@@ -292,7 +299,7 @@ export function dailyWaterUpkeep(c: Combatant, hasWater: boolean, resVal: number
   const penalty = -10 * s.tests || 0; // LDB 18 l.338 : chaque Test est plus dur (cumulatif ; évite −0)
   if (deferTest) {
     c.thirst = s; // days++ enregistré ; tests/échecs appliqués à la validation de l'étape
-    deferTest({ kind: 'soif', label: 'Soif', base: resVal, difficulty: 'intermediaire', penalty });
+    deferTest({ kind: 'soif', label: 'Soif', base: resVal, difficulty: 'intermediaire', penalty: hungerThirstPenalty(penalty) });
     return res;
   }
   const t = rollTest(resVal, 'intermediaire', rng, penalty);

@@ -218,7 +218,7 @@ export function combatBaseValue(c: Combatant, kind: 'melee' | 'ranged', weapon?:
 /**
  * Modificateurs FONDUS dans la valeur de combat, en SOMME : mods de Test char-QUALIFIÉS d'effets
  * ACTIFS (`activeCharTestMod`). Ils vivent DANS la valeur et ne transitent JAMAIS par `combineMods`
- * (plafond « Combiner les Difficultés », LDB 14 l.126-131) — les y verser les amputerait à −30.
+ * (plafond « Combiner les Difficultés », LDB 14 l.91-96) — les y verser les amputerait à −30.
  * #193 : pénalité de récupération « Tests effectués avec ce bras » (Épaule luxée, LDB/AA) — scopée à
  * l'arme tenue dans CETTE main (`weaponHand`), jamais l'autre. Inerte si `weapon` absent (créature sans
  * arme, Piétinement…) ou si aucun effet ne porte `testModHand`.
@@ -311,7 +311,7 @@ export function defenseBaseValue(c: Combatant, mode: DefenseMode, weapon?: Weapo
 /**
  * Modificateurs FONDUS dans la valeur de défense, en SOMME : pénalité de mobilité + mods de Test
  * char-QUALIFIÉS d'effets ACTIFS. Ils vivent DANS la valeur et ne transitent JAMAIS par `combineMods`
- * (plafond « Combiner les Difficultés », LDB 14 l.126-131) — les y verser les amputerait à −30.
+ * (plafond « Combiner les Difficultés », LDB 14 l.91-96) — les y verser les amputerait à −30.
  * L'Esquive subit la pénalité d'Agilité d'Encombrement (Surchargé, LDB 61 p.295).
  */
 export function defenseValueMods(c: Combatant, mode: DefenseMode, weapon?: Weapon): number {
@@ -445,7 +445,7 @@ export const FREE_ATTACK_LABEL: Record<string, string> = {
 };
 
 /**
- * Combiner les Difficultés (LDB `14 - _GoBack.md` l.126-131) : la somme des MALUS et la somme des
+ * Combiner les Difficultés (LDB `14 - _GoBack.md` l.91-96) : la somme des MALUS et la somme des
  * BONUS sont chacune plafonnée (RAW +60 Très Facile / −30 Très Difficile) ; un mélange se somme. Les
  * deux plafonds sont des règles optionnelles (`combat-diff-cap-bonus`/`-malus`). Les lignes `uncapped`
  * (Avantage — hors table de Difficulté) s'ajoutent sans plafond.
@@ -515,7 +515,7 @@ export function psychDRAdjust(attacker: Combatant, target: Combatant | null): nu
  * Modificateurs étiquetés d'un Test d'attaque (source UNIQUE : le moteur les somme pour le jet,
  * l'UI les affiche). Toutes les valeurs sont sourcées dans la table des Difficultés de Combat
  * (`14 - _GoBack.md`) : Avantage ×10 (LDB Dépl.), portée (l.82-118), Viser +20 (l.90), Précise +10
- * (Armes l.304), Localisation visée −10 (l.104), Cible vulnérable À Terre/Surpris +20 (l.93).
+ * (Armes l.304), Localisation visée −20 (LDB 14 l.73), Cible vulnérable À Terre/Surpris +20 (l.93).
  */
 /** Lignes de mod des ÉTATS d'un combattant — SOURCE UNIQUE des trois producteurs (attaque, défense,
  *  Test de combat « brut »). Chaque composante de la pénalité arrive NOMMÉE et liée au Codex
@@ -589,12 +589,12 @@ export function attackModifiers(
   // Machine de guerre en Équipe incomplète (ADE II 8 l.233) : −20 plat, baké par `warMachineFireWeapon`
   // (3ᵉ courbe de sous-effectif, DISTINCTE de celle d'AA ci-dessus).
   if (weapon.crewTeamPenalty) out.push({ label: 'Équipe incomplète', value: weapon.crewTeamPenalty, ref: RULE_REF['equipe-incomplete-machine-de-guerre'] });
-  // Localisation visée = Complexe −10 (l.104) — SAUF contre une créature de Taille ≥ 2 catégories
+  // Localisation visée = Difficile −20 (LDB 14 l.73) — SAUF contre une créature de Taille ≥ 2 catégories
   // supérieure : on choisit GRATUITEMENT la zone la plus proche / en Ligne de Vue (LDB « Point
   // d'Impact des Créatures » p.312 / `76` l.39).
-  // Frappe assommante (Tête + arme Assommante) / Tir mortel (distance) : pas de −10 (LDB 10).
+  // Frappe assommante (Tête + arme Assommante) / Tir mortel (distance) : pas de pénalité (LDB 10).
   if (opts.location && !(target && sizeGap(target.size, attacker.size) >= 2)
-      && !ignoresCalledShotPenalty(attacker, opts.kind, opts.location, hasQuality(weapon, 'assommante'))) out.push({ label: 'Localisation visée', value: -10, ref: RULE_REF['viser-une-localisation'] });
+      && !ignoresCalledShotPenalty(attacker, opts.kind, opts.location, hasQuality(weapon, 'assommante'))) out.push({ label: 'Localisation visée', value: -20, ref: RULE_REF['viser-une-localisation'] });
   // Possession pas prévue pour la Taille du porteur (ADE II 2 l.710) : −20 plat, ex. un ogre maniant
   // une arme de Taille Moyenne. Symétrique quand `sizeFor` est POSÉ (une arme taillée pour une Taille
   // devient réellement inadaptée à une autre, ADE II 2 l.604). Sans `sizeFor` (possession ORDINAIRE
@@ -660,7 +660,7 @@ export function parryPenalty(defender: Combatant, weapon: Weapon | undefined): n
 }
 
 /** Modificateurs étiquetés d'un Test de DÉFENSE (Parade/Esquive). `dodgeMod` = pénalité météo
- *  (neige épaisse −20) appliquée à l'esquive uniquement (LDB 14 l.115-116). `weapon` = arme de parade
+ *  (neige épaisse −30) appliquée à l'esquive uniquement (LDB 14 l.82). `weapon` = arme de parade
  *  (pénalité de main secondaire en Parade, sauf exception Parade+Défensive). */
 export function defenseModifiers(defender: Combatant, mode: DefenseMode, dodgeMod = 0, weapon?: Weapon): ModLine[] {
   const out: ModLine[] = [];
@@ -719,11 +719,11 @@ export function baseTestMods(c: Combatant, ck?: CharKey): number {
 
 export interface AttackOptions {
   defense?: DefenseMode | 'none';
-  /** Localisation visée (Complexe -10 au Test ; sinon localisation = jet inversé). */
+  /** Localisation visée (Difficile −20 au Test, LDB 14 l.73 ; sinon localisation = jet inversé). */
   location?: HitLocation;
   /** Modificateurs dérivés de la scène (couvert/obscurité/météo/mouvement/tir-mêlée), injectés par combatFlow. */
   env?: ModLine[];
-  /** Pénalité météo à l'esquive (neige épaisse −20, LDB 14 l.115-116), injectée par combatFlow. */
+  /** Pénalité météo à l'esquive (neige épaisse −30, LDB 14 l.82), injectée par combatFlow. */
   dodgeMod?: number;
   /** Combat monté — CHARGE (LDB 14 l.183) : pour le calcul des DÉGÂTS seulement, on substitue la Force
    *  (Bonus `sb`) et la Taille de la MONTURE à celles du cavalier (le toucher reste la CC du cavalier). */
@@ -793,7 +793,7 @@ export function rollMeleeDefender(
   defender: Combatant,
   mode: DefenseMode,
   rng: RNG = defaultRNG,
-  dodgeMod = 0, // neige épaisse : −20 à l'esquive (LDB 14 l.115-116) ; n'affecte pas la parade
+  dodgeMod = 0, // neige épaisse : −30 à l'esquive (LDB 14 l.82) ; n'affecte pas la parade
   parryWeapon: Weapon | undefined = defender.weapons[0], // arme de parade choisie (spé + pénalité main 2nde)
   vsWeapon?: Weapon, // arme de l'ATTAQUANT (Rapide : −10 à la parade d'une arme non-Rapide, LDB 62 l.320-321)
   sub?: DefenseSub, // substitution sociale (mode 'social') : base = Test de la Compétence substituée
@@ -801,13 +801,12 @@ export function rollMeleeDefender(
   const defVal = defenseValue(defender, mode, parryWeapon, sub?.base);
   // Modificateurs = SOURCE UNIQUE `defenseModifiers` (Avantage uncapped, État, Sur la défensive, Neige,
   // Main secondaire, Maniement deux armes) + le malus Rapide (qui dépend de l'arme ATTAQUANTE, donc
-  // hors `defenseModifiers`), le tout PLAFONNÉ par `combineMods` comme l'attaque (LDB 14 l.126-131 :
-  // malus ≤ −30, bonus ≤ +60). Avant : somme à la main NON plafonnée (incohérent avec l'affichage).
+  // hors `defenseModifiers`), le tout PLAFONNÉ par `combineMods` comme l'attaque (LDB 14 l.91-96).
   const mods = defenseModifiers(defender, mode, dodgeMod, parryWeapon);
   // Rapide (LDB 62 l.320-321) : −10 aux Tests de Corps à corps (Parade) contre une arme Rapide,
   // sauf si l'arme de parade est Rapide elle-même ; l'Esquive défend normalement.
   const rapide = mode === 'parade' ? rapideParryMod(vsWeapon, parryWeapon) : 0;
-  if (rapide) mods.push({ label: 'Rapide', value: rapide });
+  if (rapide) mods.push({ label: 'Rapide', value: rapide, ref: RULE_REF.rapide });
   return rollTest(defVal, 'intermediaire', rng, combineMods(mods));
 }
 

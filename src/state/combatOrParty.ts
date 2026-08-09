@@ -15,6 +15,8 @@
  * Module-level : NON scanné par le garde-fou (qui n'inspecte que les actions du store).
  */
 import type { Combatant } from '../engine/types';
+import type { ModLine } from '../engine/combat';
+import { windsModLine } from '../engine/windsOfMagic';
 import type { GameState } from './store';
 import type { Get } from './flowTypes';
 import { currentTargetingMode } from './targetingModes';
@@ -60,6 +62,12 @@ export function seaMagicContext(state: GameState): { atSea: boolean; wind: SeaWi
  *  modales (Cast/Focus). 0 hors combat ou option inactive (`battle.windsOfMagic` absent). */
 export function windsMagicModOf(battle: GameState['battle']): number {
   return battle?.windsOfMagic?.mod ?? 0;
+}
+
+/** La LIGNE de jet des Vents COURANTS (`engine/windsOfMagic`) — lecture d'état des deux surfaces
+ *  d'affichage (aperçu d'Incantation, Focalisation). `null` sans Vents actifs. */
+export function windsMagicLineOf(battle: GameState['battle']): ModLine | null {
+  return windsModLine(battle?.windsOfMagic);
 }
 
 export function combatantClickActs(get: Get, combatant: Pick<Combatant, 'id'>): boolean {

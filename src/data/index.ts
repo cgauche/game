@@ -2329,6 +2329,7 @@ const weatherData = weatherJson as {
     visibiliteM?: number; rangedMod?: number; rangedUseless?: boolean; powderUseless?: boolean;
     physicalTestMod?: number; movementWalkOnly?: boolean; lightningNervous?: boolean;
     resistanceTest?: { difficulty: string; onFail: 'extenue'; enjeu?: string };
+    source?: { book?: string; page?: number };
   }[];
 };
 /** 1 entrée par saison, `ranges` = plages d100 → météo (lecture par `rollStageWeather`). */

@@ -20,6 +20,7 @@ import { describeQuality } from '../engine/qualities/describe';
 import { effectiveChar } from '../engine/characteristics';
 import { testValue } from '../engine/skills';
 import { combatValue } from '../engine/combat';
+import { RULE_REF } from '../engine/ruleRefs';
 import { buildWeapon } from '../engine/items';
 import { findTalentById, skillInstanceLabel, findTrappingById, qualities, refLabel, activityStakeRef, hasActivityStake } from '../data';
 import type { Combatant, ConditionId } from '../engine/types';
@@ -758,7 +759,7 @@ function LearnPane({ hero, disabled, fails, money, desc }: { hero: Combatant; di
         optionPending(
           CHAR_LABELS[ck],
           effectiveChar(hero, ck),
-          failCount ? [{ label: 'Acharnement', value: failCount * 10 }] : [],
+          failCount ? [{ label: 'Acharnement', value: failCount * 10, ref: RULE_REF['apprentissage-particulier'] }] : [],
           undefined,
           'difficile',
         ),
