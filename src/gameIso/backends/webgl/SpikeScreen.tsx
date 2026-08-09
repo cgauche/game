@@ -33,6 +33,7 @@ import {
   anchorAndSize,
   rasterPxHeight,
   billboardTextureKey,
+  BILLBOARD_BOX_ASPECT,
   ZOOM_MAX,
   type BillboardConvention,
 } from './billboardMath';
@@ -50,7 +51,6 @@ import {
   wantsContactShadow,
   worldShadowBox,
   AMBIENT_INTENSITY,
-  BILLBOARD_BOX_ASPECT,
   LIGHT_COLOR,
   SUN_INTENSITY,
 } from './sceneMeshes';

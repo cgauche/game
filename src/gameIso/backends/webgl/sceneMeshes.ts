@@ -20,7 +20,7 @@ import type { Face, SceneEl } from '../../builders/types';
 import { facesGeometry, polyNormal } from './worldTris';
 import { faceColor } from './faceColors';
 import { BB_W, BB_H } from '../../pov/billboardCore';
-import { PROP_BOX_ASPECT, type BillboardKind } from './billboardMath';
+import { type BillboardKind } from './billboardMath';
 import { DEFS } from '../../sprites';
 import { propSvg } from '../../catalog/decor';
 import { AMBIANCE } from '../../catalog/ambiance';
@@ -185,9 +185,6 @@ export function collectBillboards(scene: Scene, mpt: number, tintAt: TintAt): Bi
   }
   return out;
 }
-
-/** Aspect (l/h) de la boîte locale d'un billboard — la même 120×150 pour un rig et pour un décor. */
-export const BILLBOARD_BOX_ASPECT = PROP_BOX_ASPECT;
 
 // ————————————————————————————————————————————————————————————————
 // LUMIÈRE — un soleil CALIBRÉ, indépendant de la taille de la carte

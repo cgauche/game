@@ -10,7 +10,7 @@
  *    (`wallBoxPolys`), les parts décoratives une copie par joue ;
  *  - MONTANTS à 2 points (`walls.ts:119`, `floors.ts:163`) : deux quads verticaux CROISÉS, largeur MONDE
  *    dérivée de la largeur écran du backend affine, portée au-delà des joues du mur par la SAILLIE
- *    (`montantWidthM`) ; ces quads entrent dans le calcul coplanaire au même
+ *    (`uprightCrossWidthM`) ; ces quads entrent dans le calcul coplanaire au même
  *    titre que les faces pleines (un bras de la croix est DANS le plan du panneau qu'il décore) ;
  *  - BIAIS COPLANAIRE : l'affine départage les faces empilées d'un même plan par l'ORDRE d'émission ;
  *    au GPU il faut une séparation métrique — rang d'émission × `COPLANAR_BIAS_M` le long de la normale.
@@ -123,17 +123,17 @@ export function uprightWidthM(part: string | undefined, mpt: number): number {
  *  Sans elle, la croix d'un montant a EXACTEMENT l'épaisseur de la boîte de mur (`wallThicknessM` est la
  *  largeur du même poteau) et s'y inscrit à ras — mesuré sur `arene` : 340 montants sur 364 entièrement
  *  dans la matière, part noyée moyenne 99,2 %. */
-export const MONTANT_SAILLIE_PX = 1;
+export const UPRIGHT_OVERHANG_PX = 1;
 
 /** Saillie MONDE d'un montant (m). */
-export function montantSaillieM(mpt: number): number {
-  return MONTANT_SAILLIE_PX / pxPerM(mpt);
+export function uprightOverhangM(mpt: number): number {
+  return UPRIGHT_OVERHANG_PX / pxPerM(mpt);
 }
 
 /** Largeur MONDE de la croix d'un montant : sa largeur d'écran affine, jamais moins que l'épaisseur du
  *  mur qu'il encadre, plus une saillie de chaque côté. */
-export function montantWidthM(part: string | undefined, mpt: number): number {
-  return Math.max(uprightWidthM(part, mpt), wallThicknessM(mpt)) + 2 * montantSaillieM(mpt);
+export function uprightCrossWidthM(part: string | undefined, mpt: number): number {
+  return Math.max(uprightWidthM(part, mpt), wallThicknessM(mpt)) + 2 * uprightOverhangM(mpt);
 }
 
 /** Les DEUX quads verticaux CROISÉS (X) centrés sur le segment [a,b], de largeur `wM` — la
@@ -321,7 +321,7 @@ export function faceQuads(face: Face, mpt: number): WorldPoly[] {
 export function faceQuadsOriented(face: Face, mpt: number): { quads: WorldPoly[]; oriented: boolean } {
   const poly = facePoly(face, mpt);
   if (poly.length === 2)
-    return { quads: crossQuadPolys(poly[0], poly[1], montantWidthM(face.material.part, mpt)), oriented: false };
+    return { quads: crossQuadPolys(poly[0], poly[1], uprightCrossWidthM(face.material.part, mpt)), oriented: false };
   if (face.material.domain !== 'structure') return { quads: [poly], oriented: false };
   const n = polyNormal(poly);
   if (!n || Math.abs(n.y) > 1e-6) return { quads: [poly], oriented: false }; // seul un plan VERTICAL a une épaisseur d'arête

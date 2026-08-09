@@ -5,7 +5,7 @@ import {
   anchorAndSize,
   rasterPxHeight,
   billboardTextureKey,
-  PROP_BOX_ASPECT,
+  BILLBOARD_BOX_ASPECT,
   ISO_PX_PER_M,
   ZOOM_MAX,
   RASTER_PX_MIN,
@@ -128,13 +128,13 @@ describe('sélection de vue — délégation aux résolveurs de prod (#1161)', (
 });
 
 describe('ancrage — quad face caméra, pieds au sol', () => {
-  it('aspect de la boîte prop = 120/150', () => {
-    expect(PROP_BOX_ASPECT).toBeCloseTo(BB_W / BB_H, 10);
-    expect(PROP_BOX_ASPECT).toBeCloseTo(0.8, 10);
+  it('aspect de la boîte de billboard = 120/150', () => {
+    expect(BILLBOARD_BOX_ASPECT).toBeCloseTo(BB_W / BB_H, 10);
+    expect(BILLBOARD_BOX_ASPECT).toBeCloseTo(0.8, 10);
   });
 
   it('largeur = hauteur × aspect, base sur l’ancre, centre à mi-hauteur', () => {
-    const q = anchorAndSize(3.4375, PROP_BOX_ASPECT);
+    const q = anchorAndSize(3.4375, BILLBOARD_BOX_ASPECT);
     expect(q.heightM).toBeCloseTo(3.4375, 6);
     expect(q.widthM).toBeCloseTo(3.4375 * 0.8, 6);
     expect(q.centerLiftM).toBeCloseTo(3.4375 / 2, 6);

@@ -12,12 +12,12 @@ import {
   fanTriangles,
   gpToWorld,
   isConvex,
-  montantSaillieM,
-  montantWidthM,
   planarity,
   polyBounds,
   polyNormal,
   pxPerM,
+  uprightCrossWidthM,
+  uprightOverhangM,
   uprightWidthM,
   wallBoxPolys,
   wallThicknessM,
@@ -116,15 +116,15 @@ describe('MONTANTS à 2 points — deux quads verticaux croisés, largeur écran
   });
 
   it('la croix DÉPASSE les joues du mur : largeur = max(largeur écran, épaisseur de mur) + 2 saillies', () => {
-    expect(montantSaillieM(2)).toBeCloseTo(1 / pxPerM(2), 12);
-    expect(montantSaillieM(2)).toBeGreaterThan(0.03);
-    expect(montantSaillieM(2)).toBeLessThan(0.05);
+    expect(uprightOverhangM(2)).toBeCloseTo(1 / pxPerM(2), 12);
+    expect(uprightOverhangM(2)).toBeGreaterThan(0.03);
+    expect(uprightOverhangM(2)).toBeLessThan(0.05);
     for (const part of ['poteau', 'jambage', 'pillar'])
-      expect(montantWidthM(part, 2)).toBeCloseTo(
-        Math.max(uprightWidthM(part, 2), wallThicknessM(2)) + 2 * montantSaillieM(2),
+      expect(uprightCrossWidthM(part, 2)).toBeCloseTo(
+        Math.max(uprightWidthM(part, 2), wallThicknessM(2)) + 2 * uprightOverhangM(2),
         12,
       );
-    expect(montantWidthM('poteau', 2)).toBeGreaterThan(wallThicknessM(2));
+    expect(uprightCrossWidthM('poteau', 2)).toBeGreaterThan(wallThicknessM(2));
   });
 
   it('arène : AUCUN montant n’est entièrement noyé dans la matière des murs', () => {

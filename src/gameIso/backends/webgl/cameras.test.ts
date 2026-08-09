@@ -20,8 +20,8 @@ import { sceneMetresPerTile } from '../../../state/scene';
 import { DIR8_ORDER } from '../../../state/dir8';
 import { VH, VW, makeCamera, project } from '../../pov/camera';
 import { ISO_PX_PER_M, pxPerM } from './worldTris';
-import { buildWorldGeometry, collectBillboards, contentBox, BILLBOARD_BOX_ASPECT } from './sceneMeshes';
-import { anchorAndSize, billboardHeightM } from './billboardMath';
+import { buildWorldGeometry, collectBillboards, contentBox } from './sceneMeshes';
+import { anchorAndSize, billboardHeightM, BILLBOARD_BOX_ASPECT } from './billboardMath';
 
 /**
  * LE test du lot : la caméra three doit rendre le MÊME pixel que la projection SVG de production, à

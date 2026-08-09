@@ -15,7 +15,6 @@ import {
   worldFaces,
   worldShadowBox,
   AMBIENT_INTENSITY,
-  BILLBOARD_BOX_ASPECT,
   BILLBOARD_DEPTH_BIAS_M,
   CONTACT_SHADOW_LIFT_M,
   DEPTH_BUFFER_BITS,
@@ -26,7 +25,7 @@ import {
   SUN_INTENSITY,
 } from './sceneMeshes';
 import { facesGeometry, polyBounds, type Vec3 } from './worldTris';
-import { anchorAndSize, billboardHeightM } from './billboardMath';
+import { anchorAndSize, billboardHeightM, BILLBOARD_BOX_ASPECT } from './billboardMath';
 import { TINT_EXPLORED } from './visibilityTint';
 import { buildScene } from '../../../state/mapSpec';
 import { spec as siegeSpec } from '../../../scenes/test-scenarios/siege-enceinte';

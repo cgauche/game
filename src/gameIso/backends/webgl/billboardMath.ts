@@ -86,8 +86,9 @@ function orthoView(yawDeg: number, entFacing: Dir8): { view: View; mirror: boole
 // 3. ANCRAGE — quad face caméra, pieds au sol
 // ————————————————————————————————————————————————————————————————
 
-/** Aspect (l/h) de la boîte locale d'un prop : `catalog/decor` dessine en 120×150, pieds en (60,150). */
-export const PROP_BOX_ASPECT = BB_W / BB_H;
+/** Aspect (l/h) de la boîte locale d'un billboard — la même 120×150 pour un rig et pour un décor
+ *  (`catalog/decor` dessine en 120×150, pieds en (60,150)). */
+export const BILLBOARD_BOX_ASPECT = BB_W / BB_H;
 
 /** Quad d'un billboard, exprimé dans le plan face-caméra (u = droite écran, v = haut monde),
  *  en MÈTRES relatifs à l'ancre PIEDS (0,0). */
@@ -136,8 +137,8 @@ export const RASTER_PX_MAX = 2048;
  *  UNIQUE, à passer à `rasterPxHeight` — ce module n'en refait pas une seconde. */
 
 /** Hauteur de rasterisation (px) d'un billboard : sa taille écran au palier de zoom MAX, bornée. */
-export function rasterPxHeight(heightM: number, pxPerMetre: number, maxZoom: number = ZOOM_MAX): number {
-  const px = Math.ceil(heightM * pxPerMetre * maxZoom);
+export function rasterPxHeight(heightM: number, pxPerM: number, maxZoom: number = ZOOM_MAX): number {
+  const px = Math.ceil(heightM * pxPerM * maxZoom);
   return Math.min(RASTER_PX_MAX, Math.max(RASTER_PX_MIN, px));
 }
 
