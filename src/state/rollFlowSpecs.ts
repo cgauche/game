@@ -49,8 +49,8 @@ import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { d100, defaultRNG, type RNG } from '../engine/dice';
 import { resolveRun, resolveDeliberateFall, runFromTest, fallFromTest } from '../engine/movement';
 import { rollCrewRole, forceCrewRole } from './shipManeuver';
-import { rollBatchParticipant, forceBatchParticipant } from './cascade';
-import { testValue, effectiveSkillCharKey, skillBaseValue, supportSplit, type SupportDetail } from '../engine/skills';
+import { rollBatchParticipant, forceBatchParticipant, opposedCascadeRoll, stepOpposedFreeze } from './cascade';
+import { testValue, effectiveSkillCharKey, skillBaseValue } from '../engine/skills';
 import { skillDRBonus, charDRBonusOf, offTerrainTestDR } from '../engine/ops';
 import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestDRMods, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, withCastTestDRMods, castTestOf, castingValue, castInfoIsPrayer, malepierreDR, malepierreReserveOf } from '../engine/magic';
 import { discreetPrayerDifficulty } from '../engine/prayer';
@@ -110,13 +110,14 @@ function opposedForcedFloor(opponentSL: number, cancelled: boolean): number {
   return cancelled ? 0 : Math.max(opponentSL + 1, 1);
 }
 
-/** Jet du MARCHANDEUR prêt pour l'opposition (LDB 59 l.43) : `playerSkill` porte le Soutien déjà FONDU
- *  par `partyAssisted` (LDB 12 l.189-190), qui doit rester dans la CIBLE mais ne départage pas à DR égal
- *  (l.160) — `supportSplit` l'en défait pour la grandeur comparée. SOURCE UNIQUE des jets joueur du flux
- *  `bargain` (lancer, relance, dé de Résilience), calque `bargainHeroTR` (portFlow) et `bargainOpposed`
- *  (landMarketFlow). */
+/** Jet du MARCHANDEUR prêt pour l'opposition (LDB 59 l.43) : `playerSkill` porte le Soutien et TOUS les
+ *  modificateurs de la valeur de Test (États, mutation, qualité d'objet… — `skills.testValueParts` en
+ *  tient l'inventaire), qui restent dans la CIBLE mais ne départagent pas à DR égal (LDB 12 l.160) — la
+ *  grandeur comparée est le Niveau de Compétence NU posé à l'accesseur canon par `startBargain`
+ *  (`PendingBargain.playerBase`), jamais reconstitué ici par soustraction. SOURCE UNIQUE des jets
+ *  joueur du flux `bargain` (lancer, relance, dé de Résilience). */
 function bargainPlayerTR(p: PendingBargain, tr: TestResult): TestResult {
-  return { ...tr, base: supportSplit(p.playerSkill, p.support).base };
+  return { ...tr, base: p.playerBase };
 }
 
 /** Jet d'attaque figé, HONORANT « Je ne faillirai pas ! » (LDB 17 l.68 : « S'il s'agit d'un Test opposé,
@@ -138,29 +139,13 @@ function defenseSubOf(defender: Combatant, p: PendingDefense): DefenseSub | unde
 }
 const DEFENSE_LABEL_FALLBACK = 'Intimidation';
 
-/** Issue d'une étape de cascade `triggeredTest` OPPOSÉE : le DÉFENSEUR (victime) vient de jeter `def` ;
- *  l'ATTAQUANT (porteur) garde son jet FIGÉ `aT`. `resolveOpposed(aT, def)` met l'ATTAQUANT en 1ʳᵉ
- *  position (la victoire RAW « Si vous [attaquant] remportez le Test » et le départage par valeur la
- *  plus haute sont du côté attaquant). Le défenseur RÉSISTE (`success`) si l'attaquant ne l'emporte PAS
- *  — c'est-à-dire défenseur vainqueur OU ÉGALITÉ (LDB 62 l.268 : l'attaquant doit REMPORTER, pas faire
- *  nul). Le `sl` reporté est le DR PROPRE du défenseur (échelle des branches). `bonusSL` (Piège-lame, LDB 62
- *  l.295) s'AJOUTE au DR du défenseur AVANT l'opposition — modifie le vainqueur ET la marge nette, mais PAS
- *  le `sl` reporté (= DR propre, la conséquence recompose la marge via le contexte figé). Calque `disengageOutcome`.
- *  `defBase` = Niveau de Compétence NU du défenseur (`stepOpenValue`), IMPOSÉ ici : le dé de l'étape est
- *  jeté sur la cible DÉJÀ modifiée, donc le `base` que le seam de jet y pose est une cible, pas une
- *  Compétence — l'opposer au `base` nu de l'attaquant comparerait deux grandeurs (LDB 12 l.160). */
-function opposedCascadeRoll(def: TestResult, aT: TestResult, target: number, bonusSL = 0, defBase?: number): { roll: number; target: number; sl: number; success: boolean } {
-  const { base: _posed, ...bare } = def;
-  const o = resolveOpposed(aT, { ...bare, sl: def.sl + bonusSL, ...(defBase != null ? { base: defBase } : {}) });
-  return { roll: def.roll, target, sl: def.sl, success: o.winner !== 'attacker' };
+/** Opposition FIGÉE de l'étape de cascade COURANTE (celle dont le flux `cascadeBatch` lance les
+ *  rangées) — la lecture, jamais une seconde source : `stepOpposedFreeze` (state/cascade.ts) décide
+ *  seul de ce qu'est un freeze. `undefined` hors cascade ou sur une étape non opposée. */
+function currentStepFreeze(s: GameState) {
+  const p = s.pendingCascade;
+  return p ? stepOpposedFreeze(p.participants[p.cursor]) : undefined;
 }
-
-/** Niveau de Compétence NU d'une étape de cascade (`LDB 09 l.17`), pour le départage d'un Test opposé
- *  (`LDB 12 l.160`) : la `base` authorée de l'étape, Soutien du groupe DÉFAIT (`supportSplit` — il est
- *  fondu dedans, cf. `CascadeStepBase.support`). `undefined` sur une étape qui n'en porte pas : les deux
- *  camps retombent alors sur leurs cibles (tout-ou-rien d'`openValues`), jamais un mixte. */
-const stepOpenValue = (st: { base?: number; support?: SupportDetail }): number | undefined =>
-  (st.base != null ? supportSplit(st.base, st.support).base : undefined);
 
 // ── Délégués de jet du store : générateur + types (fin de la duplication ~113 lignes) ──
 //
@@ -954,20 +939,24 @@ export const FLOWS = {
     // ACCESSEUR DE DÉ de l'étape (une étape sans jet — `target` nul — n'en a pas). En Test OPPOSÉ,
     // l'issue reste celle de l'opposition contre le jet FIGÉ de l'attaquant. Aucun `base` ici : le
     // Niveau de Compétence du défenseur est imposé au SEUL point d'opposition (`opposedCascadeRoll`,
-    // via `stepOpenValue`) — l'accesseur n'en est pas une seconde source (LDB 12 l.160).
+    // depuis `st.base`) — l'accesseur n'en est pas une seconde source (LDB 12 l.160).
     die: {
       read: (st) => (st.target != null && st.result ? { roll: st.result.roll, target: st.target, critable: false } : null),
       write: (_s, st, _a, _g, tr) => {
         if (st.target == null) return null;
-        const opp = st.meta?.opposed;
+        const opp = stepOpposedFreeze(st);
         return opp
-          ? { result: opposedCascadeRoll(tr, opp.aT, st.target, opp.bonusSL ?? 0, stepOpenValue(st)) }
+          ? { result: opposedCascadeRoll(tr, opp.aT, st.target, opp.bonusSL ?? 0, st.base) }
           : { result: { roll: tr.roll, target: st.target, sl: tr.sl, success: tr.success } };
       },
+      // Dé CHOISI au titre de la Résilience sur une étape OPPOSÉE : le DR est planché À EMPORTER
+      // (LDB 17 l.68 « S'il s'agit d'un Test opposé, vous l'emportez avec au moins DR +1 ») — sans ce
+      // plancher, la ré-opposition ci-dessus rendrait la réussite ACHETÉE au dé, donc au hasard.
+      floorSL: (st) => { const opp = stepOpposedFreeze(st); return opp ? opposedForcedFloor(opp.aT.sl, false) : 1; },
     },
     resolve: (_s, st, _actor, _get, forced) => {
       if (st.target == null) return null; // étape sans jet → rien à lancer
-      const opp = st.meta?.opposed; // Test OPPOSÉ figé (Assommante) → l'issue vient de resolveOpposed.
+      const opp = stepOpposedFreeze(st); // Test OPPOSÉ figé (Assommante) → l'issue vient de resolveOpposed.
       if (forced?.sl != null) {
         // Résistance (Menace), LDB 10 l.1015-1021 : auto-succès du Test de l'étape (Contraction,
         // Exposition à la Corruption, Venin…) — DR IMPOSÉ = Bonus d'Endurance (pas de choix du dé).
@@ -989,7 +978,7 @@ export const FLOWS = {
       // Test OPPOSÉ : l'issue success/sl du défenseur vient de `resolveOpposed(jetDéfenseur, aT figé)`
       // (l'attaquant garde son jet — calque `recover`/`disengage`), PAS de `roll ≤ target`. Le défenseur
       // RÉSISTE si l'attaquant ne l'emporte PAS (défenseur OU égalité). Simple sinon (réussite ≤ cible).
-      if (opp) return { result: opposedCascadeRoll(t, opp.aT, st.target, opp.bonusSL ?? 0, stepOpenValue(st)) };
+      if (opp) return { result: opposedCascadeRoll(t, opp.aT, st.target, opp.bonusSL ?? 0, st.base) };
       return { result: { roll: t.roll, target: st.target, sl: t.sl, success: t.success } };
     },
     outcome: (st) => testOutcome(st.result),
@@ -1020,7 +1009,7 @@ export const FLOWS = {
     bonus: {
       derive: (_s, st) => {
         if (!st.result) return null;
-        const opp = st.meta?.opposed;
+        const opp = stepOpposedFreeze(st);
         // Chance « +1 DR » (LDB 17 l.26) sur un Test OPPOSÉ : on RE-OPPOSE le jet défenseur amélioré (+1 DR)
         // à l'attaquant FIGÉ (1ʳᵉ position) — le +1 peut FAIRE BASCULER l'issue (calque `disengage.bonus.derive`).
         // `bonusSL` (Piège-lame, LDB 62 l.280) s'AJOUTE en plus au DR du défenseur dans l'opposition (pas au
@@ -1403,10 +1392,36 @@ export const FLOWS = {
    *  construction (`rollBatchParticipant` / `forceBatchParticipant` pour la Résilience). AUCUN concept de
    *  domaine : le flux ne connaît ni rôle ni navire, seule la LOCALISATION des slots diverge (au cursor,
    *  pas au top-level du pending). L'AGRÉGAT (`step.aggregate`) est calculé par `cascade.commitStep` à la
-   *  validation de l'étape — ce flux ne fait QUE le jet individuel. */
+   *  validation de l'étape — ce flux ne fait QUE le jet individuel.
+   *
+   *  Étape OPPOSÉE (`meta.opposed`) : le jet d'adversaire est FIGÉ, jeté UNE fois par le producteur, et
+   *  chaque rangée s'y oppose (LDB 13 l.77) — l'issue vient d'`opposedCascadeRoll`, jamais de
+   *  `roll ≤ cible`, au premier jet comme à chaque influence (calque de l'étape MONO `cascade`). */
   cascadeBatch: makeRollFlow<PendingCascade, BatchParticipant>({
     key: 'pendingCascade',
-    die: roll3Die<BatchParticipant, PendingCascade>(),
+    // ACCESSEUR DE DÉ propre à ce flux (calque de l'étape MONO `cascade`) : un dé CHOISI/FIXÉ doit
+    // écrire une issue COMPLÈTE. L'accesseur générique `roll3Die` n'écrit que `{roll,target,sl}` ;
+    // la rangée porte SON verdict (`CascadeRoll.success`, lu par `outcome`), donc un `success` absent
+    // vaudrait échec — la Résilience se dépenserait pour rien. Étape OPPOSÉE : on RÉ-OPPOSE le dé posé
+    // au jet figé (le dé choisi doit peser sur l'opposition, pas sur un `roll ≤ cible` qui n'est pas
+    // la règle du site) ; sinon l'issue est celle du dé.
+    die: {
+      read: (r: BatchParticipant) => (r.result ? { roll: r.result.roll, target: r.result.target, critable: false } : null),
+      write: (s: GameState, r: BatchParticipant, _a: Combatant | undefined, _g: Get, tr: TestResult) => {
+        const opp = currentStepFreeze(s);
+        return {
+          result: opp
+            ? opposedCascadeRoll(tr, opp.aT, r.target, opp.bonusSL ?? 0, r.base)
+            : { roll: tr.roll, target: r.target, sl: tr.sl, success: tr.success },
+        } as Partial<BatchParticipant>;
+      },
+      // Même plancher que l'étape MONO : sur une bande OPPOSÉE, le dé choisi par la Résilience EMPORTE
+      // l'opposition (LDB 17 l.68), il ne la retente pas.
+      floorSL: (_r: BatchParticipant, _a: Combatant | undefined, p: PendingCascade) => {
+        const opp = stepOpposedFreeze(p.participants[p.cursor]);
+        return opp ? opposedForcedFloor(opp.aT.sl, false) : 1;
+      },
+    },
     multi: {
       slots: (p) => p.participants[p.cursor]?.participants ?? [],
       idOf: (r) => r.id,
@@ -1418,12 +1433,25 @@ export const FLOWS = {
     rolled: (r) => !!r.result,
     actor: (s, r) => actorIn(s, r.id),
     caps: { forced: true },
-    resolve: (_s, r, actor, _get, forced) => {
+    resolve: (s, r, actor, _get, forced) => {
       if (!actor) return null; // rangée sans acteur résoluble (parité historique) — pas de jet
-      return { result: forced ? forceBatchParticipant(r) : rollBatchParticipant(r, battleRng()) };
+      // Résilience : le défenseur d'une opposition RÉSISTE (binaire, `forceBatchParticipant` rend
+      // `success:true`) — l'attaquant figé ne l'emporte plus, comme sur l'étape MONO.
+      return { result: forced ? forceBatchParticipant(r) : rollBatchParticipant(r, battleRng(), currentStepFreeze(s)) };
     },
-    outcome: (r) => cleanRollOutcome(r.result),
-    bonus: { derive: (_s, r) => bumpResultSL(r) },
+    // La rangée PORTE son verdict (`CascadeRoll.success` — opposition comprise) : l'issue le LIT au
+    // lieu de recomparer dé et cible, qui ne décrit qu'un Test simple.
+    outcome: (r) => testOutcome(r.result),
+    // Chance « +1 DR » (LDB 17 l.26) : sur une rangée OPPOSÉE, on RE-OPPOSE le jet amélioré au jet figé
+    // (le +1 peut faire BASCULER l'issue) — sinon simple report du DR.
+    bonus: {
+      derive: (s, r) => {
+        const opp = currentStepFreeze(s);
+        if (!opp || !r.result) return bumpResultSL(r);
+        const def2 = bumpSL(hydrateTR({ roll: r.result.roll, target: r.target, base: r.base, success: r.result.success, sl: r.result.sl }));
+        return { result: opposedCascadeRoll(def2, opp.aT, r.target, opp.bonusSL ?? 0, r.base) };
+      },
+    },
   }),
 
   /** CHANSON DE MARIN (Talent, MDG 09 l.32-40) : Test de **Divertissement (Chant)** du chanteur — la

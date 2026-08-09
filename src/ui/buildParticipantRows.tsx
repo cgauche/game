@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { createElement, Fragment, type ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { refLabel } from '../data';
@@ -38,6 +38,10 @@ export interface ParticipantRowBundle<P extends ParticipantRow> {
   /** Issue courte sous la ligne (DR ×2 essentiel…) — rendue APRÈS le jet seulement, dans le CANAL
    *  UNIQUE de sous-ligne (`PanelRowData.note`, `.rr-note`). */
   note?: (part: P, actor: Combatant, res: NonNullable<P['result']>) => ReactNode;
+  /** ISSUES de la rangée (#1117) — les deux branches annoncées AVANT le jet, la branche réalisée APRÈS :
+   *  rendue aux DEUX phases (c'est ce qui la distingue de `note`, qui ne dit que la conséquence subie).
+   *  Elle occupe la MÊME sous-ligne, en tête ; un site qui fournit les deux les empile dans cet ordre. */
+  issues?: (part: P, actor: Combatant, res: P['result']) => ReactNode;
   /** DONNÉE de Test ÉTENDU d'une rangée (cartographie de voyage…) : la barre est rendue par `RollRow`
    *  (site UNIQUE), visible avant/après le jet et persistante. Le bundle ne pose que la donnée. */
   extendedDrOf?: (part: P, actor: Combatant) => { cum: number; target: number } | undefined;
@@ -89,10 +93,13 @@ export function buildParticipantRows<P extends ParticipantRow>(
         }
       : panelRow0;
     const note = bundle.note && res ? bundle.note(part, actor, res) : undefined;
+    const issues = bundle.issues ? bundle.issues(part, actor, res) : undefined;
+    // Sous-ligne UNIQUE de la rangée : les issues (avant/après le jet) puis la conséquence subie.
+    const sub = issues != null || note != null ? createElement(Fragment, null, issues, note) : undefined;
     return [{
       key: part.id,
       actor,
-      row: note != null ? { ...panelRow, note } : panelRow,
+      row: sub != null ? { ...panelRow, note: sub } : panelRow,
       rolled: !!res,
       interactive: bundle.interactiveOf ? bundle.interactiveOf(part, actor) : part.interactive !== false,
       ...(bundle.rollLabel != null ? { rollLabel: bundle.rollLabel } : {}),

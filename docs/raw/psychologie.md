@@ -285,7 +285,7 @@ Peur spécifique envers un Type de créature, un objet ou une situation.
 - `LDB 21 l.85-89` — définition ; traitement comme Peur 1
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.85-89) → `nightmare`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `recoveryTarget`, `animosite`, `calme-d-approche`, `haine`, `prejuge`, +12 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +7 fichiers
+- `LDB 21` (l.85-89) → `nightmare`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `recoveryTarget`, `animosite`, `haine`, `calme-d-approche`, `prejuge`, +12 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +7 fichiers
 
 ---
 
@@ -302,7 +302,7 @@ Conséquence d'une expérience traumatisante. Peut se manifester de diverses fa�
 
 **Voir aussi** : `src/data/traumatisme.md` (`traumatisme.md` pour les Blessures Critiques)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.91-96) → `nightmare`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `recoveryTarget`, `animosite`, `calme-d-approche`, `haine`, `prejuge`, +11 — `src/data/combat-stakes.json`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, +6 fichiers
+- `LDB 21` (l.91-96) → `nightmare`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `recoveryTarget`, `animosite`, `haine`, `calme-d-approche`, `prejuge`, +11 — `src/data/combat-stakes.json`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, +6 fichiers
 
 ---
 

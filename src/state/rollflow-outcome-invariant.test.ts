@@ -147,6 +147,18 @@ const FIXTURES: Record<string, Fix> = {
     battle: arena(),
     pendingForceDoor: { label: 'Porte', doorBE: 2, doorB: 6, doorBmax: 6, participants: [{ id: 'A', result: { roll: win ? 8 : 95, target: 40, sl: win ? 3 : -5, damage: win ? 4 : 0 } }] },
   }) },
+  // Rangée de BANDE (étape batch de cascade) : issue MULTI-VALEURS — le d100 propre et le verdict
+  // divergent dès que l'étape est OPPOSÉE (`meta.opposed`), où `success` vient de `resolveOpposed`.
+  // La fixture est donc opposante : le dé 8 est SOUS la cible et pourtant PERDANT (l'attaquant figé
+  // l'emporte au DR), exactement le cas où une issue dérivée du d100 mentirait à la Chance.
+  cascadeBatch: { pid: 'A', make: (win) => ({
+    battle: arena(),
+    pendingCascade: { purpose: 'combat', cursor: 0, participants: [{
+      id: 'b1', kind: 'triggeredBatchTest', aggregate: 'none',
+      meta: { opposed: { aT: { roll: 20, target: 60, success: true, sl: 4, isDouble: false, base: 60 } } },
+      participants: [{ id: 'A', interactive: true, base: 40, target: 40, result: { roll: 8, target: 40, sl: win ? 9 : 1, success: win } }],
+    }] },
+  }) },
 };
 
 /** Flux NON couverts par une fixture minimale — justifiés (leur `outcome` est trivial + partagé). */
@@ -154,7 +166,6 @@ const SKIP: Record<string, string> = {
   shipManeuver: 'Test d’équipage par rôle (MDG 14) — fixture de rôle valide lourde ; `outcome` = `cleanRollOutcome` partagé (crewRoleFlowSpec), déjà exercé par la logique numérique de forceDoor',
   shipBattery: 'idem shipManeuver (MÊME crewRoleFlowSpec)',
   crewTest: 'idem shipManeuver (MÊME crewRoleFlowSpec)',
-  cascadeBatch: 'batch GÉNÉRIQUE (dé-navalisé #328) — `outcome` = `cleanRollOutcome` partagé, jet `rollBatchParticipant` (Test « +0 » sur la cible bakée) ; issue mono-valeur déjà exercée par la logique numérique de forceDoor',
 };
 
 beforeEach(() => {
@@ -163,7 +174,7 @@ beforeEach(() => {
 
 describe('Issue canonique (outcome) — la Chance est gatée par l’issue RÉELLE (failed dérivé == won)', () => {
   // Les 11 flux « à risque » (issues multi-valeurs : combiné/opposé/DR/jet-propre-vs-issue) DOIVENT être couverts.
-  const REQUIRED = ['activity', 'attack', 'defense', 'cast', 'counterspell', 'opposition', 'recover', 'bargain', 'disengage', 'flee', 'focus'];
+  const REQUIRED = ['activity', 'attack', 'defense', 'cast', 'counterspell', 'opposition', 'recover', 'bargain', 'disengage', 'flee', 'focus', 'cascadeBatch'];
   it('couvre tous les flux à risque (multi-valeurs)', () => {
     const missing = REQUIRED.filter((p) => !(p in FIXTURES));
     expect(missing, 'flux à risque sans fixture').toEqual([]);

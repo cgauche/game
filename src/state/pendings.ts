@@ -262,7 +262,8 @@ export interface PendingBargain {
   /** NIVEAU DE COMPÉTENCE NU du négociateur (`LDB 09 l.17`) — la grandeur que `resolveOpposed`
    *  compare à DR égal (`LDB 12 l.160`). Posé à l'accesseur canon (`skillBaseValue`) par le site qui
    *  SAIT quelle Compétence est testée (`merchantFlow.startBargain`), jamais reconstitué à partir de
-   *  `playerSkill` : celle-ci porte le Soutien, les États et l'Encombrement, tous modificateurs. */
+   *  `playerSkill` : celle-ci porte le Soutien et TOUS les modificateurs de la valeur de Test
+   *  (inventaire exhaustif : `skills.testValueParts`). */
   playerBase: number;
   mode: 'buy' | 'sell';
   /** Le négociateur possède-t-il le talent Négociateur (−20 % même sans Succès Stupéfiant) ? */
@@ -1425,12 +1426,16 @@ export interface CascadeStepBase extends RollParticipant {
    *  départage à DR égal (`LDB 12 l.160`, `engine/tests.openValues`). La porte du seam
    *  (`rollSeam.buildMonoStep`) y pose le Niveau de Compétence NU (`skillBaseValue`, `LDB 09 l.17`)
    *  et sort le Soutien en ligne de `mods` ; les flux qui bâtissent leurs étapes à la main y portent
-   *  encore une valeur FONDUE, avec `support` ci-dessous pour la rendre à l'affichage. */
+   *  encore une valeur FONDUE, avec `support` ci-dessous pour la rendre à l'affichage.
+   *  Une étape OPPOSÉE (`meta.opposed`) fait EXCEPTION : sa `base` est NUE, sans quoi le départage
+   *  comparerait une valeur soutenue à la valeur nue de l'adversaire — invariant fail-closed tenu par
+   *  `cascade.stepOpposedFreeze`, seul point de passage des résolutions opposées. */
   base?: number;
   /** SOUTIEN (LDB 12 l.187-200) FONDU dans `base` par un flux qui bâtit son étape à la main — porté
    *  pour l'AFFICHAGE : `CascadeModal` l'en défait et le rend en ligne de mod nommée
    *  (`ui/breakdown.supportSplit`), jamais en bonus muet. Une étape de la porte du seam n'en porte
-   *  PAS : son Soutien arrive déjà nommé dans `mods` (`soutienMod`), sa `base` étant nue. */
+   *  PAS : son Soutien arrive déjà nommé dans `mods` (`soutienMod`), sa `base` étant nue. Une étape
+   *  OPPOSÉE n'en porte JAMAIS (cf. `base` ci-dessus) : `stepOpposedFreeze` la REFUSE. */
   support?: SupportDetail;
   /** Modificateurs circonstanciels NOMMÉS de la ligne (compris dans `target`) — un malus RAW qui n'est
    *  PAS une Difficulté (dérive MSRC 7 l.38, hors de contrôle l.41, −5 cumulatif du redressement l.40)

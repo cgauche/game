@@ -250,7 +250,7 @@ import { resolveRecoverTest } from './combat/recover';
 import { fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // effets de bord de tour (onTurnStart/onTurnEnd, dont la sortie de Frénésie en données) + gate d'action (Mandragore)
 export { collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour la cascade d'upkeep
 export * from './combat/triggeredTest'; // baril : enregistre l'applier de cascade `triggeredTest` + installe le routeur de Test des triggers (effet de bord)
-import { runCombatFlow } from './combat/triggeredTest'; // usage interne (applyCast : exécuteur de Flow de sort EN COMBAT, after-aware → canal de journal unifié + voie nested cast↔test)
+import { runCombatFlow, rollFrozenOpposedAttacker, frozenOpposedBatchStep } from './combat/triggeredTest'; // usage interne (applyCast : exécuteur de Flow de sort EN COMBAT, after-aware → canal de journal unique ; Surprise : opposition figée + bande de guetteurs)
 export { aiMaybeFrenzy, resolvePsychAI, fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // baril : enregistre les hooks de début de tour ennemi (effet de bord) + ré-export pour frenzy*.test / psych*.test + effets de bord de tour + gate d'action
 // Sauvegardes post-touche en registre `HitModifier` ordonné (state/combat/hitModifiers, module FEUILLE).
 import { runHitModifiers, martyrGuardOf, wardedAgainst } from './combat/hitModifiers'; // usage interne (applyAttackResult + applyCast)
@@ -261,7 +261,7 @@ import {
   resolveBattement, battementEligible, resolveDistraire, distraireEligible, distraireAttackValue, distraireDefenseValue,
   setManeuverPostHitHook,
 } from './combatManeuvers';
-import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
+import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type FlowTest, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep, stakeAtTableRow } from './cascade';
 import { freeCons, rollSansPilote } from './rollSeam';
 
@@ -464,16 +464,18 @@ export function attackWardGate(attacker: Combatant, target: Combatant, rng: RNG 
 
 // applyZoneCrossings → combatGeometry.ts
 
-/** Surprise au début du combat (LDB 13 l.52-81) : le camp pris en EMBUSCADE (`surprisedSide`) fait, pour
- *  chaque combattant, un Test opposé de Perception vs la Discrétion la plus FAIBLE des embusqueurs (l.77).
- *  Le Test (héros-atteignable) est ROUTÉ par l'exécuteur de Flow CADENCE-AWARE (`runCombatFlow`) : héros en
- *  cadence MANUELLE → étape de cascade INFLUENÇABLE (Chance/Résilience) ; embusqué ennemi / héros auto → jet
- *  inline. L'embusqueur (`sneak`) est le `caster` → l'opposition jette SA Discrétion (figée), Furtif (LDB 85)
- *  baké en `attackerBonusSL`. Sur défaite du guetteur (branche `fail`) : Vigilance (talent, LDB 10) tente un
- *  Test de Perception (+0) pour ignorer la Surprise, sinon l'État `Surpris`. Appelée APRÈS la pose du `battle`
- *  (sujet HORS-TOUR : Round 1 pas encore commencé) ; à la fermeture de la cascade, `resumeSuspendedAI` est un
- *  no-op (turn -1 = aucun acteur). Plusieurs guetteurs testent : chaque `runCombatFlow` APPEND son étape à la
- *  MÊME cascade `purpose:'combat'`. Les lignes inline (ennemi/auto) partent dans la file différée → drainées ici. */
+/** Surprise au début du combat (LDB 13 l.52-81) : le camp pris en EMBUSCADE (`surprisedSide`) subit UN
+ *  Test opposé de Discrétion/Perception (l.77) — la Discrétion la plus FAIBLE des embusqueurs, jetée UNE
+ *  fois, contre TOUS les guetteurs. Ce jet unique (`rollFrozenOpposedAttacker`) est le FREEZE partagé par
+ *  les deux voies : les guetteurs pilotés par un humain forment UNE bande (étape BATCH `triggeredBatchTest`,
+ *  une rangée influençable par guetteur dans la MÊME fenêtre) ; les autres (ennemi embusqué, héros en cadence
+ *  auto) passent par l'exécuteur cadence-aware (`runCombatFlow`, jet inline) avec le MÊME freeze en
+ *  `opposedFreeze`. L'embusqueur (`sneak`) est le `caster` ; Furtif (LDB 85) est baké en `attackerBonusSL`.
+ *  Sur défaite d'un guetteur (branche `fail`) : Vigilance (talent, LDB 10) interpose un Test de Perception
+ *  (+0) pour ignorer la Surprise, sinon l'État `Surpris` — la branche est jouée PAR RANGÉE, donc ce second
+ *  Test n'est appendu à la cascade que pour le porteur concerné. Appelée APRÈS la pose du `battle` (sujet
+ *  HORS-TOUR : Round 1 pas encore commencé) ; à la fermeture de la cascade, `resumeSuspendedAI` est un no-op
+ *  (turn -1 = aucun acteur). Les lignes inline partent dans la file différée → drainées ici. */
 export function applySurprise(get: Get, set: SetFn, surprisedSide: 'party' | 'enemies'): void {
   const battle = get().battle;
   if (!battle) return;
@@ -498,15 +500,21 @@ export function applySurprise(get: Get, set: SetFn, surprisedSide: 'party' | 'en
     then: testFlow({ skill: 'perception', difficulty: 'intermediaire', label: 'Vigilance', stake: combatStakeRef('ambushVigilance') }, EMPTY_FLOW, surprise),
     else: surprise,
   };
+  // Embusqueur (Discrétion, FIGÉE comme attaquant opposé) vs guetteurs (Perception, les défenseurs qui jettent).
+  const difficulty: Difficulty = 'intermediaire';
+  const test: FlowTest = {
+    skill: 'perception', difficulty, label: 'Surprise', stake: combatStakeRef('ambushSurprise'),
+    opposed: { attacker: 'agilite', attackerSkill: 'discretion', attackerLabel: 'Discrétion', attackerBonusSL: sneakDR },
+  };
+  const branches = { onSuccess: EMPTY_FLOW, onFail: onLose }; // le guetteur résiste → pas de Surprise
+  // UN SEUL jet d'embusqueur pour toute l'embuscade (l.77) : tiré ici, partagé par la bande et les inlines.
+  const aT = rollFrozenOpposedAttacker(sneak, test.opposed!, difficulty);
+  const bande = surprised.filter((c) => humanControlled(get(), c));
+  const step = bande.length ? frozenOpposedBatchStep(bande, test, branches, EMPTY_FLOW, difficulty, sneak, aT) : undefined;
+  if (step) pushCombatStep(set, step);
   for (const c of surprised) {
-    // Embusqueur (Discrétion, FIGÉE comme attaquant opposé) vs guetteur (Perception, le défenseur qui jette).
-    const flow = testFlow(
-      { skill: 'perception', difficulty: 'intermediaire', label: 'Surprise', stake: combatStakeRef('ambushSurprise'),
-        opposed: { attacker: 'agilite', attackerSkill: 'discretion', attackerLabel: 'Discrétion', attackerBonusSL: sneakDR } },
-      EMPTY_FLOW, // le guetteur résiste → pas de Surprise
-      onLose,
-    );
-    runCombatFlow({ mode: 'combat', get, set, target: c, caster: sneak, label: 'Surprise' }, flow);
+    if (humanControlled(get(), c)) continue; // sa rangée est dans la bande
+    runCombatFlow({ mode: 'combat', get, set, target: c, caster: sneak, label: 'Surprise', opposedFreeze: aT }, testFlow(test, branches.onSuccess, branches.onFail));
   }
   // Inline (embusqué ennemi / héros auto) : les lignes partent dans la file différée → on les folde dans le
   // journal de combat. Le héros manuel suspend (cascade) et n'en pousse aucune.

@@ -16,7 +16,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useGame } from '../state/store';
 import { applySurprise } from '../state/combatFlow';
-import { seedBattleRng } from '../state/battleRng';
+import { seedBattleRng, battleRng } from '../state/battleRng';
 import { testScene } from '../scenes/test-fixture';
 import { runCombatFlow } from '../state/combat/triggeredTest';
 import { testFlow, EMPTY_FLOW } from '../state/flow';
@@ -30,9 +30,11 @@ beforeAll(() => {
 
 const SOLO = { mode: 'local', mySeat: 0, roomCode: null, seatNames: {}, presence: {}, ownership: {} };
 
-/** Guetteur (Perception FAIBLE : il perd l'opposition) et embusqueur (Agilité/Discrétion FORTE). */
+/** Guetteur (valeur de Perception au choix) et embusqueur (Agilité/Discrétion FORTE).
+ *  La Compétence Perception dérive de l'INITIATIVE (LDB 09) : c'est elle que porte `perception` ici,
+ *  sans quoi la « Perception 5 » du guetteur ne serait pas la valeur que son Test lance. */
 const chars = (perception: number, agilite: number) =>
-  ({ 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 35, endurance: 35, initiative: 30,
+  ({ 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 35, endurance: 35, initiative: perception,
      agilite, dexterite: 30, intelligence: 30, 'force-mentale': 40, sociabilite: 30, perception }) as never;
 
 const mk = (id: string, kind: 'hero' | 'enemy', perception: number, agilite: number): Combatant =>
@@ -45,18 +47,27 @@ const mk = (id: string, kind: 'hero' | 'enemy', perception: number, agilite: num
 let host: HTMLDivElement;
 let root: Root;
 
-/** Ouvre la VRAIE cascade de Surprise : héros embusqué (Perception 5) vs embusqueur (Agilité 80). */
-function ambush(talents: TalentInstance[] = []) {
-  const hero = { ...mk('h', 'hero', 5, 30), talents } as Combatant;
+/** Ouvre la VRAIE cascade de Surprise : N héros embusqués vs embusqueur (Agilité/Discrétion 80).
+ *  `talents` s'applique au PREMIER guetteur (`h`) ; les suivants (`h2`, `h3`…) sont nus. `perception`
+ *  = celle de TOUS les guetteurs (65 : un Test SIMPLE réussirait — seule l'OPPOSITION les fait perdre). */
+function ambush(talents: TalentInstance[] = [], guetteurs = 1, perception = 5) {
+  const heroes = Array.from({ length: guetteurs }, (_, i) =>
+    ({ ...mk(i === 0 ? 'h' : `h${i + 1}`, 'hero', perception, 30), ...(i === 0 ? { talents } : {}) }) as Combatant);
   const foe = mk('e', 'enemy', 30, 80);
+  const ids = [...heroes.map((h) => h.id), 'e'];
   useGame.setState({
-    party: [hero],
-    battle: { combatants: [hero, foe], order: ['h', 'e'], baseOrder: ['h', 'e'], turn: -1, round: 1, action: null,
+    party: heroes,
+    battle: { combatants: [...heroes, foe], order: ids, baseOrder: ids, turn: -1, round: 1, action: null,
       reachable: new Map(), movementUsed: 0, acted: false, log: [], over: null } as unknown as BattleState,
     mode: 'battle', scene: testScene, net: SOLO as never, pendingCascade: null, pendingLogQueue: [],
   });
   applySurprise(useGame.getState, useGame.setState, 'party');
 }
+
+/** La BANDE : l'unique étape de Surprise que la cascade porte. */
+const bande = () => useGame.getState().pendingCascade!.participants[0];
+/** Lance la rangée d'un guetteur (flux `cascadeBatch` — un jet PAR rangée). */
+const lancer = (id: string) => act(() => { useGame.getState().cascadeBatchRoll(id); });
 
 const render = () => act(() => { root.render(<CascadeBody />); });
 /** Le bloc des issues, tel qu'il est rendu (chips comprises). */
@@ -102,11 +113,10 @@ describe('#1117 — la Surprise DIT ses issues en chips d’ops, avant comme apr
     render();
     const echecAvant = ligneEchec();
 
-    const step = useGame.getState().pendingCascade!.participants[0];
-    act(() => { useGame.getState().cascadeRoll(step.id); });
+    lancer('h');
     render();
 
-    const res = useGame.getState().pendingCascade!.participants[0].result!;
+    const res = bande().participants![0].result!;
     expect(res.success, 'le guetteur à Perception 5 perd l’opposition').toBe(false);
     expect(host.querySelector('.rm-stake')!.innerHTML, 'le verdict ne réannonce plus la branche non réalisée').not.toContain('Réussite :');
     expect(echecAvant, 'la branche d’échec était bien annoncée AVANT le jet').toBeTruthy();
@@ -160,8 +170,7 @@ describe('#1117 — la Surprise DIT ses issues en chips d’ops, avant comme apr
     expect(host.textContent, 'un second jet décide : rien à promettre').not.toContain('Échec :');
     expect(chips()).toEqual([]);
 
-    const step = useGame.getState().pendingCascade!.participants[0];
-    act(() => { useGame.getState().cascadeRoll(step.id); });
+    lancer('h');
     act(() => { useGame.getState().cascadeNext(); });
     const suite = useGame.getState().pendingCascade!;
     expect(suite.participants.map((s) => s.label), 'le Test de Vigilance est APPENDU à la cascade').toContain('Vigilance');
@@ -170,5 +179,90 @@ describe('#1117 — la Surprise DIT ses issues en chips d’ops, avant comme apr
     expect(vigilance.label).toBe('Vigilance');
     act(() => { useGame.getState().cascadeRoll(vigilance.id); });
     expect(useGame.getState().pendingCascade!.participants[suite.cursor].result, 'le second jet se lance').toBeTruthy();
+  });
+});
+
+/**
+ * LA BANDE (#1117) — LDB 13 l.77, verbatim Source : « le MJ demandera que soit effectué un Test opposé
+ * de Discrétion/Perception, le plus souvent entre le Personnage ayant la Discrétion la plus faible et
+ * tous les guetteurs potentiels. Si c'est le groupe en embuscade qui remporte le Test, chaque
+ * Personnage vaincu subit alors l'État Surpris ». UN Test d'embusqueur, TOUS les guetteurs, un verdict
+ * PAR guetteur : donc UNE fenêtre, une rangée par héros, et l'embusqueur en rangée témoin unique.
+ */
+describe('#1117 — la Surprise est UNE bande : un jet d’embusqueur, N guetteurs, un verdict par rangée', () => {
+  it('une SEULE étape, une rangée par guetteur, l’embusqueur en rangée témoin unique', () => {
+    ambush([], 3);
+    const cascade = useGame.getState().pendingCascade!;
+    expect(cascade.participants.length, 'une seule étape — plus de séquence « jet 1/3 »').toBe(1);
+    expect(bande().participants!.map((p) => p.id)).toEqual(['h', 'h2', 'h3']);
+    expect(bande().aggregate, 'jets INDÉPENDANTS : rien à agréger, chaque rangée porte sa conséquence').toBe('none');
+    render();
+    // 4 rangées : l'embusqueur (témoin, figé) + les 3 guetteurs.
+    expect(host.querySelectorAll('.prow').length).toBe(4);
+    // …et un bloc d'issues PAR guetteur (la rangée témoin n'en porte pas : elle ne décide de rien).
+    expect(issues().length).toBe(3);
+    expect(host.textContent, 'le sous-titre séquentiel a disparu').not.toContain('jet 1/');
+  });
+
+  it('l’embusqueur ne jette QU’UNE fois pour toute l’embuscade (l.77)', () => {
+    seedBattleRng(11);
+    ambush([], 3);
+    const apres = battleRng().int(1, 100); // 1ᵉʳ tirage APRÈS l'ouverture de la bande
+    const aT = bande().meta!.opposed!.aT;
+    seedBattleRng(11);
+    const rng = battleRng();
+    rng.int(1, 100); // le jet de l'embusqueur…
+    expect(apres, '…et rien d’autre : la bande n’a consommé QU’UN tirage').toBe(rng.int(1, 100));
+    // Le même jet figé sert les 3 rangées : il n'y en a qu'un, porté par l'étape.
+    expect(aT.roll).toBeGreaterThan(0);
+  });
+
+  it('chaque rangée porte SON verdict, et la Vigilance n’ouvre son second jet que pour SON porteur', () => {
+    // Perception 65 : chacun RÉUSSIRAIT son Test simple — c'est l'OPPOSITION au jet figé de
+    // l'embusqueur (Discrétion 80, DR 3) qui les fait perdre, et c'est elle qu'on mesure ici.
+    seedBattleRng(11);
+    ambush([{ talentId: 'vigilance', times: 1 }], 3, 65);
+    lancer('h'); lancer('h2'); lancer('h3');
+    const jets = bande().participants!.map((p) => p.result!);
+    expect(jets.every((r) => r), 'les 3 rangées ont leur jet').toBe(true);
+    expect(jets.every((r) => r.roll <= r.target), 'chaque dé est SOUS la cible : le Test simple serait réussi').toBe(true);
+    expect(jets.every((r) => !r.success), 'et pourtant les 3 PERDENT — l’embusqueur remporte l’opposition').toBe(true);
+    act(() => { useGame.getState().cascadeNext(); });
+    const suite = useGame.getState().pendingCascade!;
+    // UN seul second Test appendu — celui du porteur de Vigilance.
+    expect(suite.participants.filter((s) => s.label === 'Vigilance').map((s) => s.actorId)).toEqual(['h']);
+    // Les deux autres ont DÉJÀ subi l'État Surpris (branche d'échec jouée par rangée).
+    const surpris = (id: string) => useGame.getState().battle!.combatants.find((c) => c.id === id)!.conditions.some((x) => x.id === 'surpris');
+    expect([surpris('h2'), surpris('h3')], 'chaque Personnage vaincu subit l’État Surpris').toEqual([true, true]);
+    expect(surpris('h'), 'le porteur de Vigilance attend son second Test').toBe(false);
+  });
+
+  /**
+   * RÉSILIENCE + dé CHOISI sur une rangée de bande (LDB 17 l.68 : « au lieu de lancer les dés pour un
+   * Test, vous choisissez le résultat »). Bout-en-bout, par les VERBES du store : le point payé achète
+   * une réussite, et le dé choisi la CONSERVE — donc aucun État Surpris à la validation. L'accesseur de
+   * dé de la bande doit ré-opposer le dé posé au jet figé ; s'il n'écrit que `{roll,target,sl}`, le
+   * verdict disparaît, l'issue retombe en échec et le point est dépensé POUR RIEN.
+   */
+  it('Résilience puis dé CHOISI : la réussite payée SURVIT au choix du dé, aucun Surpris posé', () => {
+    ambush([], 1, 65);
+    const g = () => useGame.getState();
+    const resilienceOf = (id: string) => g().battle!.combatants.find((c) => c.id === id)!.resilience ?? 0;
+    const resAvant = resilienceOf('h');
+
+    act(() => { g().cascadeBatchForceSuccess('h'); });
+    expect(bande().participants![0].result!.success, '« Je ne faillirai pas ! » n’a pas produit de réussite').toBe(true);
+    const resApres = resilienceOf('h');
+    expect(resApres, 'le point de Résilience est dépensé').toBe(resAvant - 1);
+
+    act(() => { g().cascadeBatchSetForcedRoll('h', 11); });
+    const apres = bande().participants![0].result!;
+    expect(apres.roll, 'le dé CHOISI est celui appliqué').toBe(11);
+    expect(apres.success, 'la réussite PAYÉE par le point de Résilience a été perdue au choix du dé').toBe(true);
+    expect(resilienceOf('h'), 'le choix du dé a re-dépensé une ressource').toBe(resApres);
+
+    act(() => { g().cascadeNext(); });
+    const surpris = g().battle!.combatants.find((c) => c.id === 'h')!.conditions.some((x) => x.id === 'surpris');
+    expect(surpris, 'le guetteur a REMPORTÉ son Test : aucun État Surpris ne doit être posé').toBe(false);
   });
 });

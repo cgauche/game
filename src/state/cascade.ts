@@ -26,7 +26,7 @@ import type { Consequence } from './rollSeam';
 import { resultLines } from './rollSeam';
 import { toRecapLines } from './recapLine';
 import { actorIn } from './combatants';
-import { rollTest, evaluateTest, bestForcedRoll } from '../engine/tests';
+import { rollTest, evaluateTest, bestForcedRoll, resolveOpposed, type TestResult } from '../engine/tests';
 import { battleRng } from './battleRng';
 
 /**
@@ -262,11 +262,32 @@ export function stepReady(step: CascadeStep): boolean {
   }
 }
 
+/**
+ * ISSUE d'un jet de cascade OPPOSÉ à un jet d'adversaire FIGÉ — SOURCE UNIQUE (étape MONO du flux
+ * `cascade`, rangée d'une étape BATCH) : `resolveOpposed` est le SEUL juge (LDB 12 l.160), le
+ * défenseur RÉSISTE quand l'attaquant ne l'emporte PAS (défenseur OU égalité). `bonusSL` s'ajoute au
+ * DR du défenseur AVANT l'opposition (Piège-lame, LDB 62 l.280) sans entrer dans le `sl` reporté.
+ *
+ * `defBase` = le Niveau de Compétence NU du défenseur, quand l'émetteur l'a posé : il n'entre QUE
+ * dans l'opposition. Absent ⇒ les deux camps retombent sur leurs cibles (tout-ou-rien d'`openValues`) :
+ * le dé est jeté sur une cible DÉJÀ modifiée, l'opposer à un `base` d'attaquant comparerait deux
+ * grandeurs distinctes. PURE.
+ */
+export function opposedCascadeRoll(def: TestResult, aT: TestResult, target: number, bonusSL = 0, defBase?: number): CascadeRoll {
+  const o = resolveOpposed(aT, { ...def, sl: def.sl + bonusSL, base: defBase });
+  return { roll: def.roll, target, sl: def.sl, success: o.winner !== 'attacker' };
+}
+
 /** Jet d'UN participant batch — GÉNÉRIQUE : d100 contre sa cible EFFECTIVE (`target`, difficulté déjà
  *  appliquée à la construction), + `bonusSlOnSuccess` sur une réussite (Talent baké par le flux
- *  propriétaire). PUR (RNG injecté), aucun concept de domaine. */
-export function rollBatchParticipant(p: BatchParticipant, rng: RNG): CascadeRoll {
+ *  propriétaire). PUR (RNG injecté), aucun concept de domaine.
+ *
+ *  `opposed` — jet d'adversaire FIGÉ de l'étape (`meta.opposed`) : la rangée est alors un Test OPPOSÉ
+ *  et son issue vient d'`opposedCascadeRoll`, pas de `roll ≤ cible`. UNE opposition figée vaut pour
+ *  TOUTES les rangées de l'étape (LDB 13 l.77) — c'est le producteur qui l'a jetée, une seule fois. */
+export function rollBatchParticipant(p: BatchParticipant, rng: RNG, opposed?: { aT: TestResult; bonusSL?: number }): CascadeRoll {
   const t = rollTest(p.target, 'intermediaire', rng);
+  if (opposed) return opposedCascadeRoll(t, opposed.aT, p.target, opposed.bonusSL ?? 0, p.base);
   return { roll: t.roll, target: t.target, sl: t.sl + (t.success ? (p.bonusSlOnSuccess ?? 0) : 0), success: t.success };
 }
 
@@ -323,11 +344,35 @@ function aggregateBatchStep(step: CascadeStep): CascadeRoll {
   return { roll: 0, target: 0, sl, success };
 }
 
+/**
+ * OPPOSITION FIGÉE d'une étape, telle que la lisent les résolveurs de rangée (`meta.opposed`) —
+ * SOURCE UNIQUE de la lecture : le jet d'adversaire est jeté UNE fois par le producteur et vaut pour
+ * toutes les rangées. `undefined` = étape non opposée (jet simple sur la cible).
+ *
+ * CONTRAT d'une étape OPPOSÉE : sa `base` est NUE (Niveau de Compétence, `LDB 09 l.17`) — c'est elle
+ * qui DÉPARTAGE à DR égal (`LDB 12 l.160`, `engine/tests.openValues`), et une valeur SOUTENUE y
+ * comparerait deux grandeurs distinctes. Une étape à la fois opposée et porteuse d'un Soutien fondu
+ * (`support`, cf. `CascadeStepBase`) est donc REFUSÉE ici, fail-closed : c'est le seul point de
+ * passage de toute résolution opposée de cascade, mono comme bande.
+ */
+export function stepOpposedFreeze(step: CascadeStep | undefined): { aT: TestResult; bonusSL?: number } | undefined {
+  const opp = step?.meta?.opposed;
+  if (!opp) return undefined;
+  if (step!.support) {
+    throw new Error(
+      `stepOpposedFreeze : l'étape « ${step!.id} » oppose un jet figé mais pose un Soutien FONDU dans sa base — `
+      + 'le départage (LDB 12 l.160) exige une base NUE ; sortir le Soutien en ligne de `mods`.',
+    );
+  }
+  return { aT: opp.aT, ...(opp.bonusSL != null ? { bonusSL: opp.bonusSL } : {}) };
+}
+
 /** Lance d'office les participants SANS influence (pilotes automatiques — `resolveRemainingCascade`/
- *  `runCascadeImmediate`) : même Test générique que la modale (`rollBatchParticipant`), simplement sans
- *  le cycle Chance/Résilience du flux `cascadeBatch`. */
+ *  `runCascadeImmediate`) : même Test générique que la modale (`rollBatchParticipant`), même opposition
+ *  figée, simplement sans le cycle Chance/Résilience du flux `cascadeBatch`. */
 function rollBatchParticipants(step: CascadeStep) {
-  return step.participants!.map((p) => (p.result ? p : { ...p, result: rollBatchParticipant(p, battleRng()) }));
+  const opp = stepOpposedFreeze(step);
+  return step.participants!.map((p) => (p.result ? p : { ...p, result: rollBatchParticipant(p, battleRng(), opp) }));
 }
 
 /** Pose le choix du joueur sur l'étape « choix » COURANTE (valide que `key ∈ options`). Analogue de

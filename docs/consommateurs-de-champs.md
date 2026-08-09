@@ -55,16 +55,16 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 3 | `src/data/index.ts:2869` |
-| `spec` | 1 | `src/data/index.ts:2870` |
+| `id` | 3 | `src/data/index.ts:2870` |
+| `spec` | 1 | `src/data/index.ts:2871` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 1 | `src/data/index.ts:2875` |
+| `id` | 1 | `src/data/index.ts:2876` |
 | `spec` | **0 — JAMAIS LU** | — |
-| `value` | 2 | `src/data/index.ts:2875` |
+| `value` | 2 | `src/data/index.ts:2876` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -91,27 +91,27 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:2919` |
+| `id` | 4 | `src/data/index.ts:2920` |
 | `spec` | 1 | `src/engine/trappingChoices.ts:36` |
-| `count` | 3 | `src/data/index.ts:2920` |
-| `qualities` | 2 | `src/data/index.ts:2923` |
-| `qualityChoice` | 2 | `src/data/index.ts:2921` |
-| `text` | 1 | `src/data/index.ts:2914` |
-| `vehicleId` | 2 | `src/data/index.ts:2916` |
+| `count` | 3 | `src/data/index.ts:2921` |
+| `qualities` | 2 | `src/data/index.ts:2924` |
+| `qualityChoice` | 2 | `src/data/index.ts:2922` |
+| `text` | 1 | `src/data/index.ts:2915` |
+| `vehicleId` | 2 | `src/data/index.ts:2917` |
 | `label` | **0 — JAMAIS LU** | — |
-| `creatureId` | 2 | `src/data/index.ts:2918` |
-| `choice` | 3 | `src/data/index.ts:2911` |
-| `wildcard` | 1 | `src/data/index.ts:2912` |
+| `creatureId` | 2 | `src/data/index.ts:2919` |
+| `choice` | 3 | `src/data/index.ts:2912` |
+| `wildcard` | 1 | `src/data/index.ts:2913` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `ref` | 4 | `src/data/index.ts:2893` |
-| `wildcard` | 5 | `src/data/index.ts:2895` |
-| `specOptions` | 3 | `src/data/index.ts:2894` |
-| `choice` | 4 | `src/data/index.ts:2897` |
-| `random` | 2 | `src/data/index.ts:2898` |
+| `ref` | 4 | `src/data/index.ts:2894` |
+| `wildcard` | 5 | `src/data/index.ts:2896` |
+| `specOptions` | 3 | `src/data/index.ts:2895` |
+| `choice` | 4 | `src/data/index.ts:2898` |
+| `random` | 2 | `src/data/index.ts:2899` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -134,14 +134,14 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `stake` | 2 | `src/state/combat/triggeredTest.ts:197` |
-| `skill` | 9 | `src/state/combat/triggeredTest.ts:189` |
-| `spec` | 8 | `src/state/combat/triggeredTest.ts:189` |
+| `stake` | 3 | `src/state/combat/triggeredTest.ts:202` |
+| `skill` | 12 | `src/state/combat/triggeredTest.ts:194` |
+| `spec` | 11 | `src/state/combat/triggeredTest.ts:194` |
 | `sense` | 1 | `src/state/combatEffects.ts:391` |
-| `characteristic` | 8 | `src/state/combat/triggeredTest.ts:189` |
+| `characteristic` | 10 | `src/state/combat/triggeredTest.ts:194` |
 | `difficulty` | 2 | `src/engine/flowCore.ts:370` |
 | `requireSL` | 1 | `src/state/combatEffects.ts:418` |
-| `label` | 3 | `src/state/combat/triggeredTest.ts:192` |
+| `label` | 5 | `src/state/combat/triggeredTest.ts:197` |
 | `tool` | 1 | `src/state/combatEffects.ts:393` |
 | `vsGroups` | 3 | `src/state/combatEffects.ts:325` |
 | `vsStatus` | 1 | `src/state/combatEffects.ts:324` |
@@ -154,9 +154,9 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `exceptGroups` | 1 | `src/state/combat/flowEval.ts:117` |
 | `gate` | 1 | `src/engine/flowCore.ts:375` |
 | `noSupport` | 1 | `src/state/combatEffects.ts:386` |
-| `menace` | 1 | `src/state/combat/triggeredTest.ts:201` |
+| `menace` | 2 | `src/state/combat/triggeredTest.ts:206` |
 | `difficultyBy` | 1 | `src/engine/flowCore.ts:369` |
-| `opposed` | **0 — JAMAIS LU** | — |
+| `opposed` | 2 | `src/state/combat/triggeredTest.ts:238` |
 
 ### `TravelTableEntry` (src/engine/travelTables.ts)
 
@@ -218,7 +218,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 ## Synthèse
 
-17 types, 120 champs mesurés, **16 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
+17 types, 120 champs mesurés, **15 avec « 0 lecteur » mesuré** (56 % réfutés à la main sur l'échantillon initial — cf. Périmètre mesuré ci-dessus ; pas de cliquet CI sur ce total).
 
 ## Cas fondateur
 

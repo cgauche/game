@@ -33,7 +33,7 @@ import { type Flow, type FlowTest, type ConditionCtx, evalCondition, flowHasImpu
 import { condCtx } from '../bourseFlow';
 import { buildActorView, combatConditionCtx, flowTestGated } from './flowEval';
 import type { Get, Set as SetFn } from '../flowTypes';
-import type { FreeAttackFreeze, BladeTrapFreeze, CascadeStep } from '../pendings';
+import type { FreeAttackFreeze, BladeTrapFreeze, CascadeStep, BatchParticipant } from '../pendings';
 import { battleRng } from '../battleRng';
 import { runPureFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps, drainPendingLog } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
@@ -74,6 +74,11 @@ export interface ExecCtx {
   label: string;
   /** Contexte d'incantation des ops (combat) : sl/durée/location/woundsDealt… (cf. `OpsCtx`). */
   opsCtx?: OpsCtx;
+  /** Jet d'ATTAQUANT DÉJÀ FIGÉ pour les nœuds `test` OPPOSÉS de ce Flow : le producteur l'a jeté
+   *  lui-même (`rollFrozenOpposedAttacker`) parce qu'UNE opposition vaut pour N défenseurs — l'embuscade
+   *  oppose le MÊME Test de Discrétion à tous les guetteurs (LDB 13 l.77). Absent ⇒ `resolveFlowTest`
+   *  jette l'attaquant pour ce défenseur-là (comportement des oppositions à un seul défenseur). */
+  opposedFreeze?: TestResult;
   /** Contexte d'une ATTAQUE GRATUITE de talent (op `grantFreeAttack`) : la CIBLE de la frappe (un TIERS —
    *  le chargeur pour Frappe réactive `onCharged`, la victime touchée pour Assaut féroce `onHit` — distinct
    *  de `target`/`caster` qui sont le porteur), + le plafond /Round (`cap` = niveau du talent) et la `key`
@@ -201,6 +206,88 @@ export function simpleTriggeredTestStep(
     ...(ft.menace ? { menace: ft.menace } : {}),
   };
 }
+
+/** PRÉ-JET FIGÉ de l'ATTAQUANT d'un Test opposé (`FlowTest.opposed`) — SOURCE UNIQUE des deux voies.
+ *  L'attaquant subit la MÊME Difficulté que le défenseur (LDB 12 l.166), et son bonus de DR propre
+ *  (`attackerBonusSL` — Furtif sur la Discrétion, LDB 85) est baké dans le `sl` figé, si bien que la
+ *  voie cascade (`meta.opposed.aT`) et la voie inline ré-opposent à l'identique. Le producteur d'une
+ *  opposition à N défenseurs l'appelle LUI-MÊME, une fois, et passe le résultat en `ctx.opposedFreeze`. */
+export function rollFrozenOpposedAttacker(attacker: Combatant, opp: NonNullable<FlowTest['opposed']>, difficulty: Difficulty): TestResult {
+  const r = rollTest(testValue(attacker, opp.attackerSkill, opp.attacker), difficulty, battleRng());
+  return { ...r, sl: r.sl + (opp.attackerBonusSL ?? 0) };
+}
+
+/**
+ * Étape BATCH d'un Test OPPOSÉ à opposition UNIQUE — UN seul jet d'attaquant FIGÉ (`aT`) contre N
+ * défenseurs, une RANGÉE par défenseur dans la MÊME fenêtre (LDB 13 l.77 : « un Test opposé de
+ * Discrétion/Perception […] entre le Personnage ayant la Discrétion la plus faible et tous les
+ * guetteurs potentiels […] chaque Personnage vaincu subit alors l'État Surpris »).
+ *
+ * `aggregate:'none'` : les rangées sont INDÉPENDANTES — rien à agréger, chacune porte SA conséquence
+ * (l'applier `triggeredBatchTest` rejoue la branche `onSuccess`/`onFail` par rangée, la branche
+ * pouvant appendre à la cascade le second Test du SEUL défenseur concerné). Convention de `base`
+ * identique à la voie MONO opposée : `testValue` (qui porte déjà la pénalité d'État) et AUCUNE
+ * pénalité ajoutée. GÉNÉRIQUE : aucune entité nommée ; défenseurs, `FlowTest` et branches viennent du
+ * producteur. Les défenseurs dont la gate du Test est fermée sont écartés (même décision que
+ * `resolveFlowTest`) ; `undefined` s'il ne reste personne.
+ */
+export function frozenOpposedBatchStep(
+  defenders: Combatant[], ft: FlowTest, branches: { onSuccess: Flow; onFail: Flow }, after: Flow,
+  difficulty: Difficulty, attacker: Combatant, aT: TestResult,
+): CascadeStep | undefined {
+  const opp = ft.opposed;
+  if (!opp) throw new Error('frozenOpposedBatchStep : le FlowTest doit déclarer son opposition (`opposed`).');
+  // Une rangée batch n'offre pas le verbe `resist` (auto-succès du talent Résistance (Menace), LDB 10) :
+  // un Test tagué `menace` ne peut pas être groupé sans lui retirer sa voie de résistance.
+  if (ft.menace) throw new Error(`frozenOpposedBatchStep : Test tagué menace « ${ft.menace} » — la rangée batch n'offre pas l'auto-succès de Résistance.`);
+  const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
+  const participants: BatchParticipant[] = [];
+  for (const c of defenders) {
+    if (flowTestGated(ft, c, combatConditionCtx(c, { caster: attacker }))) continue;
+    const base = testValue(c, ft.skill, ft.characteristic, ft.spec);
+    participants.push({
+      id: c.id, interactive: true, result: null, base, difficulty,
+      target: base + DIFFICULTY_MODIFIERS[difficulty],
+      ...(ft.skill ? { skillId: ft.skill } : {}), ...(ft.spec ? { spec: ft.spec } : {}),
+    });
+  }
+  if (!participants.length) return undefined;
+  return {
+    id: `triggeredBatchTest-${attacker.id}-${ft.label ?? skillLabel}`,
+    kind: 'triggeredBatchTest', icon: 'nav/dice', label: ft.label ?? skillLabel,
+    interactive: true, aggregate: 'none', participants,
+    ...(ft.stake ? { stake: ft.stake } : {}),
+    meta: {
+      onSuccess: branches.onSuccess, onFail: branches.onFail, after, casterId: attacker.id,
+      opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp.attackerLabel ?? CHAR_LABELS[opp.attacker], difficulty, ...(opp.bonusSL ? { bonusSL: opp.bonusSL } : {}) },
+    },
+  };
+}
+
+/**
+ * Étape de cascade GÉNÉRIQUE `triggeredBatchTest` — le pendant MULTI de l'applier `triggeredTest` :
+ * la MÊME conséquence partagée (`applyTriggeredTestBranch`) est jouée POUR CHAQUE RANGÉE, contre le
+ * résultat de CETTE rangée. Une branche qui porte un second Test (Vigilance, LDB 13 l.67) est routée
+ * par `runCombatFlow` et n'APPEND son étape que pour le défenseur concerné. Le seam `onOwnTestFailed`
+ * est émis ici par rangée perdante — `commitStep` ne le centralise que pour les étapes MONO (`'jet'`).
+ */
+registerCascadeApplier('triggeredBatchTest', (get, set, step) => {
+  const onSuccess = step.meta?.onSuccess;
+  const onFail = step.meta?.onFail;
+  if (!onSuccess || !onFail || !step.participants) return;
+  const casterId = typeof step.meta?.casterId === 'string' ? step.meta.casterId : undefined;
+  const caster = casterId ? actorIn(get(), casterId) : undefined;
+  const journal: string[] = [];
+  for (const part of step.participants) {
+    const hero = actorIn(get(), part.id);
+    if (!hero || !part.result) continue;
+    journal.push(...applyTriggeredTestBranch(hero, part.result, { onSuccess, onFail }, { get, set, ...(caster ? { caster } : {}) }));
+    if (!part.result.success && !step.meta?.noOwnTestFailed) journal.push(...fireOwnTestFailed(get, hero, { sl: part.result.sl }));
+    syncCombatant(get, set);
+    playAfter(get, set, hero, step.meta?.after, step.label ?? 'Effet');
+  }
+  return { consequences: freeCons(journal) };
+});
 
 /** Étapes de cascade des Tests de FIN DE ROUND en DONNÉES pour un héros MANUEL — pour chaque SOURCE
  *  d'effets déclenchés (États : récupération d'Empoisonné/Brisé LDB 16 ; TALENTS : Contrôle de la
@@ -351,12 +438,10 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   // Test OPPOSÉ : PRÉ-JET de l'attaquant (porteur), FIGÉ, AVANT le jet du défenseur — même ordre RNG que
   // `opposedTest()` (attaquant puis défenseur). Référent = `ctx.caster` (Force du porteur).
   const attacker = opp ? ctx.caster : undefined;
-  // L'attaquant figé porte SON éventuel bonus de DR (Furtif sur la Discrétion de l'embusqueur, LDB 85)
-  // baké dans `aT.sl` dès le pré-jet → la voie cascade (meta `aT`) ET la voie inline ré-opposent à l'identique.
-  // La Difficulté de l'opposition est UNE et vaut pour les DEUX camps (LDB 12 l.166) : le pré-jet de
-  // l'attaquant la subit comme le jet du défenseur, au lieu d'un « Intermédiaire » fixé en dur ici.
+  // Un freeze FOURNI par le producteur (`ctx.opposedFreeze`) n'est jamais re-jeté : c'est l'opposition
+  // UNIQUE de la situation (N défenseurs, un seul jet d'attaquant — LDB 13 l.77).
   const aT: TestResult | undefined = opp && attacker
-    ? (() => { const r = rollTest(testValue(attacker, opp.attackerSkill, opp.attacker), difficulty, battleRng()); return { ...r, sl: r.sl + (opp.attackerBonusSL ?? 0) }; })()
+    ? (ctx.opposedFreeze ?? rollFrozenOpposedAttacker(attacker, opp, difficulty))
     : undefined;
   // Piège-lame : on COMPLÈTE le freeze avec le DR de l'attaquant que CE Test jette (`aT`), pour que la
   // conséquence `breakBlade` recompose la marge nette sans re-jeter l'attaquant.

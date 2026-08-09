@@ -116,10 +116,16 @@ const FIXTURES: Partial<Record<FlowKey, Fixture>> = {
     pid: 's1',
     read: () => ({ roll: P<{ participants: { result: { roll: number } }[] }>('pendingCascade').participants[0].result.roll, success: P<{ participants: { result: { success: boolean } }[] }>('pendingCascade').participants[0].result.success }),
   },
+  // Rangée de BANDE : elle porte SON verdict (`CascadeRoll.success`) — la garde le LIT. Le dériver du
+  // d100 (`roll ≤ cible`, cf. `partRead`) reviendrait à se fournir la valeur qu'on prétend mesurer :
+  // la garde resterait verte alors même que l'accesseur de dé n'écrirait aucune issue.
   cascadeBatch: {
-    state: { pendingCascade: { cursor: 0, participants: [{ id: 'b1', actorId: 'H', kind: 'batch', participants: [part3()] }] } },
+    state: { pendingCascade: { cursor: 0, participants: [{ id: 'b1', kind: 'batch', aggregate: 'none', participants: [{ id: 'H', interactive: true, base: T, target: T, result: { roll: 88, target: T, sl: -4, success: false } }] }] } },
     pid: 'H',
-    read: partRead(() => P<{ participants: { participants: { result: { roll: number } }[] }[] }>('pendingCascade').participants[0].participants[0].result),
+    read: () => {
+      const r = P<{ participants: { participants: { result: { roll: number; success: boolean } }[] }[] }>('pendingCascade').participants[0].participants[0].result;
+      return { roll: r.roll, success: r.success };
+    },
   },
   flee: {
     state: { pendingDisengage: { moverId: 'E', foeId: 'H', fuir: { participants: [{ id: 'H', kind: 'backstab', interactive: true, result: atkResult }] } } },

@@ -314,6 +314,42 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       {...(cur.result ? { realized: cur.result.success ? ('success' as const) : ('fail' as const) } : {})}
     />
   );
+  // Le MÊME encadré, pour UNE RANGÉE d'une bande (étape BATCH) : la promesse et le verdict sont
+  // PAR PARTICIPANT (chaque rangée gagne ou perd son propre jet), et se replient contre SON acteur.
+  const rowOutcomeNote = (partId: string, res: CascadeRoll | null) => (
+    <OutcomeNote
+      onSuccess={branchCertainOps(cur.meta?.onSuccess, pool.find((c) => c.id === partId), stepCaster)}
+      onFail={branchCertainOps(cur.meta?.onFail, pool.find((c) => c.id === partId), stepCaster)}
+      {...(res ? { realized: res.success ? ('success' as const) : ('fail' as const) } : {})}
+    />
+  );
+  // Test OPPOSÉ (#579/#990) : le jet ADVERSAIRE FIGÉ (`meta.opposed.aT`) est une rangée TÉMOIN, masquée
+  // tant que ce siège n'a pas répondu. Il vaut pour l'étape ENTIÈRE — une bande de N défenseurs
+  // s'oppose à un SEUL jet (LDB 13 l.77), donc la rangée est la MÊME et se pose EN TÊTE, une fois.
+  const opp = cur.meta?.opposed;
+  const oppActor = opp?.attackerId ? pool.find((c) => c.id === opp.attackerId) : undefined;
+  const oppResponders = cur.participants
+    ? cur.participants.map((p) => ({ id: p.id, interactive: p.interactive !== false, result: p.result }))
+    : [{ id: cur.actorId, interactive: true, result: cur.result }];
+  const oppRow: RollRowData | null = opp ? {
+    key: 'opposed-attacker',
+    ...frozenOpposedRow(useGame.getState(), {
+      ownerId: opp.attackerId,
+      responded: opposedResponded(useGame.getState(), oppResponders),
+      row: {
+        combatant: oppActor,
+        // Ligne d'un Test OPPOSÉ : Difficulté déclarée UNE fois à la fabrique (LDB 12 l.166) — celle
+        // de l'opposition, portée par le freeze, donc LUE des deux côtés (le camp qui a pré-jeté
+        // l'affichait « Intermédiaire » par défaut tant qu'elle ne voyageait pas). Base NUE de
+        // l'attaquant (`aT.base`) pour que le modificateur de Difficulté se lise sur la ligne.
+        ...opposedLines([{
+          label: opp.attackerName ? (opp.attackerLabel ? `${opp.attackerName} — ${opp.attackerLabel}` : opp.attackerName) : (opp.attackerLabel ?? 'Adversaire'),
+          base: opp.aT.base ?? opp.aT.target,
+          r: { roll: opp.aT.roll, target: opp.aT.target, sl: opp.aT.sl, success: opp.aT.success },
+        }], opp.difficulty)[0],
+      },
+    }),
+  } : null;
   // ÉTAPE-JET : REGISTRE data-driven du rendu par TYPE de jet (ajouter un type = 1 entrée ici). Les
   // cinq jets RollShell (attaque/défense/Maladresse/Test/Test étendu) sont rendus via leur hook de
   // props dans la MÊME coquille restée montée → jet ET conséquences vivent dans UNE fenêtre jusqu'à
@@ -550,6 +586,9 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
           ? { combatant: actor, d: { label, base: part.base, mods: part.mods, ...(part.difficulty ? { difficulty: part.difficulty } : {}), modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } }
           : { combatant: actor, pending: { label, base: part.base, mods: part.mods ?? [], ...(part.difficulty ? { difficulty: part.difficulty } : {}) } };
       },
+      // ISSUES de la rangée (#1117) : la MÊME dérivation que l'étape MONO, mais PAR PARTICIPANT — la
+      // bande annonce à chacun ce que SON jet met en jeu, puis filtre à la branche qu'il a tranchée.
+      issues: (part) => rowOutcomeNote(part.id, part.result),
       // Test ÉTENDU d'une rangée (cartographie de voyage) : DONNÉE seule — `RollRow` rend la barre (site
       // UNIQUE), visible AVANT et après le jet, persistante (arbitrage user 2026-07-11).
       extendedDrOf: (part) => extendedDrData(part.extendedDrDone, part.extendedDrTarget, part.result),
@@ -570,7 +609,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length })}
         {...stakeProps}
         rolled={ready}
-        rows={[...doneWitnessRows, ...rows]}
+        rows={[...doneWitnessRows, ...(oppRow ? [oppRow] : []), ...rows]}
         actions={batchActions}
         disableEscClose
         embedded={embedded}
@@ -595,31 +634,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // cette séance) + issue encore défavorable → auto-succès offert (avant le jet ou après un échec).
   const resistAvail = !!actor && cur.menace != null && availableResistance(actor, cur.menace) != null && (!res || !res.success);
 
-  // Test OPPOSÉ (#579) : le jet ADVERSAIRE (`meta.opposed.aT`) est un VRAI jet, rendu en rangée témoin —
-  // #579 exigeait la fin du test simple à adversaire invisible, c'est acquis. #990 (arbitrage user
-  // 2026-07-30) en règle le CALENDRIER : la rangée est MASQUÉE (« ? ») tant que ce siège n'a pas
-  // répondu (`frozenOpposedRow`), puis les DEUX jets sont visibles pour la phase d'influence.
-  const opp = cur.meta?.opposed;
-  const oppActor = opp?.attackerId ? pool.find((c) => c.id === opp.attackerId) : undefined;
-  const oppRow: RollRowData | null = opp ? {
-    key: 'opposed-attacker',
-    ...frozenOpposedRow(useGame.getState(), {
-      ownerId: opp.attackerId,
-      responded: opposedResponded(useGame.getState(), [{ id: cur.actorId, interactive: true, result: res }]),
-      row: {
-        combatant: oppActor,
-        // Ligne d'un Test OPPOSÉ : Difficulté déclarée UNE fois à la fabrique (LDB 12 l.166) — celle
-        // de l'opposition, portée par le freeze, donc LUE des deux côtés (le camp qui a pré-jeté
-        // l'affichait « Intermédiaire » par défaut tant qu'elle ne voyageait pas). Base NUE de
-        // l'attaquant (`aT.base`) pour que le modificateur de Difficulté se lise sur la ligne.
-        ...opposedLines([{
-          label: opp.attackerName ? (opp.attackerLabel ? `${opp.attackerName} — ${opp.attackerLabel}` : opp.attackerName) : (opp.attackerLabel ?? 'Adversaire'),
-          base: opp.aT.base ?? opp.aT.target,
-          r: { roll: opp.aT.roll, target: opp.aT.target, sl: opp.aT.sl, success: opp.aT.success },
-        }], opp.difficulty)[0],
-      },
-    }),
-  } : null;
+  // En-tête A→B du Test opposé : il n'existe QUE pour un défenseur unique (une bande n'a pas de « B »
+  // — chaque rangée porte son portrait, la rangée témoin porte l'attaquant).
   const oppHeader = opp && oppActor && actor ? <VsHeader actor={oppActor} target={actor} label={opp.attackerLabel} /> : null;
 
   // Rangée INTERACTIVE de l'étape COURANTE : pré-jet en attente puis résultat, porteuse du cycle
