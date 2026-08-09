@@ -9278,20 +9278,6 @@
      ],
      "facades": [],
      "masses": []
-    },
-    {
-     "id": "architecture-0",
-     "style": "maison",
-     "storeys": [
-      {
-       "id": "z0",
-       "z": 0,
-       "parts": [],
-       "roomZoneIds": []
-      }
-     ],
-     "facades": [],
-     "masses": []
     }
    ],
    "effectZones": [

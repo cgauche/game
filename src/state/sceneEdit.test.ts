@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { emptyScene, type ArchitectureBody, type ArchitectureRect, type BuildingMass, type Scene, type Terrain } from './scene';
 import { METRES_PER_LEVEL } from './relief';
 import {
+  addArchitectureBody,
+  bodyFootCells,
   DEFAULT_ROOF_DEFAULTS,
   ROOF_GABLE_SPAN_MAX_M,
   deriveArchitectureMasses,
@@ -534,5 +536,47 @@ describe('deriveArchitectureMasses — les trémies de La Diligence sont TOITÉE
   it('la nappe est CONTINUE : la trémie porte la MÊME masse que le plancher d’étage voisin', () => {
     expect(porteuse('13,25')!.id).toBe(porteuse('12,25')!.id); // volée ouest, débouché sur l'étage
     expect(porteuse('20,22')!.id).toBe(porteuse('21,22')!.id); // volée est
+  });
+});
+
+/**
+ * L'ATTRIBUTION du plancher résiduel ne doit rien devoir à l'ORDRE du tableau `architecture` (#1172).
+ * La Diligence portait DEUX corps non bornés (`diligence` et un `architecture-0` vide) : la dérivation
+ * donnait ses 654 cases et ses 5 masses au PREMIER du tableau, et tout basculait sur l'autre à l'ordre
+ * inversé. Le corps mort purgé, le résultat est le MÊME dans les deux sens.
+ */
+describe('deriveArchitectureMasses — La Diligence purgée dérive la MÊME toiture quel que soit l’ordre', () => {
+  const scene = parseProject(diligenceProjet).scenes[0];
+  const bilan = (s: Scene) => deriveArchitectureMasses(s)
+    .map((body) => `${body.id}:${body.masses.length}:${cellsOf(body.masses.flatMap((mass) => mass.footprint)).size}`);
+
+  it('un seul corps NON BORNÉ subsiste : le résiduel légitime', () => {
+    const nonBornes = (scene.architecture ?? []).filter((body) => bodyFootCells(body).size === 0);
+    expect(nonBornes.map((body) => body.id)).toEqual(['diligence']);
+  });
+
+  it('5 masses sur 654 cases, à l’endroit comme à l’envers', () => {
+    expect(bilan(scene)).toEqual(['diligence:5:654']);
+    expect(bilan({ ...scene, architecture: [...(scene.architecture ?? [])].reverse() })).toEqual(['diligence:5:654']);
+  });
+});
+
+/**
+ * Un corps CRÉÉ à l'éditeur naît BORNÉ (#1172) : sans emprise, chaque nouvelle maison posée serait un
+ * second résiduel qui se disputerait le plancher avec le premier.
+ */
+describe('addArchitectureBody — le corps naît BORNÉ à l’emprise du geste', () => {
+  it('l’étage z0 porte d’emblée un volume à l’emprise demandée', () => {
+    const { scene, id } = addArchitectureBody(emptyScene(10, 10), 'maison', { x: 3, y: 4, w: 2, h: 2 });
+    const body = scene.architecture!.find((candidate) => candidate.id === id)!;
+    expect(body.storeys[0].parts).toEqual([{ id: 'part-0', foot: { x: 3, y: 4, w: 2, h: 2 } }]);
+    expect([...bodyFootCells(body)].sort()).toEqual(['3,4', '3,5', '4,4', '4,5']);
+  });
+
+  it('l’emprise est bornée à la scène, et le corps n’est JAMAIS non borné', () => {
+    const { scene, id } = addArchitectureBody(emptyScene(10, 10), 'maison', { x: 9, y: 9, w: 4, h: 4 });
+    const body = scene.architecture!.find((candidate) => candidate.id === id)!;
+    expect(body.storeys[0].parts[0].foot).toEqual({ x: 6, y: 6, w: 4, h: 4 });
+    expect(bodyFootCells(body).size).toBeGreaterThan(0);
   });
 });

@@ -87,7 +87,7 @@ function architecturePart(scene: Scene, sel: Extract<Sel, { type: 'architectureP
 
 describe('editorState — architecture', () => {
   it('crée des volumes architecturaux avec ids stables', () => {
-    const body = addArchitectureBody(emptyScene(10, 10), 'maison');
+    const body = addArchitectureBody(emptyScene(10, 10), 'maison', { x: 0, y: 0, w: 1, h: 1 });
     const part = addArchitecturePart(body.scene, body.id, 'z0', { x: 1, y: 1, w: 2, h: 2 });
     if (!part) throw new Error('part architecturale absente');
     const facade = addFacadeSection(part.scene, body.id, { x: 1, y: 2, side: 'N' }, 'mur-a-ossature-en-bois');
@@ -95,7 +95,7 @@ describe('editorState — architecture', () => {
     const roof = addBuildingMass(facade.scene, body.id, { x: 1, y: 1, w: 2, h: 2 }, 2);
     if (!roof) throw new Error('toiture absente');
     expect(body.id).toBe('architecture-0');
-    expect(part.id).toBe('part-0');
+    expect(part.id).toBe('part-1'); // `part-0` est le volume de naissance du corps (borné dès la création)
     expect(facade.id).toBe('facade-0');
     expect(roof.id).toBe('masse-0');
     expect(roof.scene.architecture?.[0]?.masses[0]).toMatchObject({ z: 2, footprint: [{ x: 1, y: 1, w: 2, h: 2 }] });
@@ -106,7 +106,7 @@ describe('editorState — architecture', () => {
     expect(addArchitecturePart(scene, 'absent', 'z0', { x: 0, y: 0, w: 1, h: 1 })).toBeNull();
     expect(addFacadeSection(scene, 'absent', { x: 0, y: 0, side: 'N' }, 'mur')).toBeNull();
     expect(addBuildingMass(scene, 'absent', { x: 0, y: 0, w: 1, h: 1 }, 1)).toBeNull();
-    const body = addArchitectureBody(scene, 'maison');
+    const body = addArchitectureBody(scene, 'maison', { x: 0, y: 0, w: 1, h: 1 });
     expect(addArchitecturePart(body.scene, body.id, 'z-inexistant', { x: 0, y: 0, w: 1, h: 1 })).toBeNull();
   });
 
@@ -155,12 +155,12 @@ describe('editorState — architecture', () => {
 
 describe('editorState — #841 FU-C : corps/étage sélectionnables et supprimables au clic', () => {
   it('addArchitectureStorey ajoute un étage frais sans toucher le premier (z0)', () => {
-    const body = addArchitectureBody(emptyScene(10, 10), 'maison');
+    const body = addArchitectureBody(emptyScene(10, 10), 'maison', { x: 0, y: 0, w: 1, h: 1 });
     const out = addArchitectureStorey(body.scene, body.id, 1);
     if (!out) throw new Error('étage absent');
     const storeys = out.scene.architecture?.[0]?.storeys;
     expect(storeys).toHaveLength(2);
-    expect(storeys?.[0]).toEqual({ id: 'z0', z: 0, parts: [], roomZoneIds: [] });
+    expect(storeys?.[0]).toEqual({ id: 'z0', z: 0, parts: [{ id: 'part-0', foot: { x: 0, y: 0, w: 1, h: 1 } }], roomZoneIds: [] });
     expect(storeys?.[1]).toEqual({ id: out.id, z: 1, parts: [], roomZoneIds: [] });
     expect(out.id).not.toBe('z0');
   });
@@ -189,7 +189,7 @@ describe('editorState — #841 FU-C : corps/étage sélectionnables et supprimab
   });
 
   it('deleteSel(architectureStorey) retire l’étage, mais protège le DERNIER étage du corps', () => {
-    const body = addArchitectureBody(emptyScene(10, 10), 'maison');
+    const body = addArchitectureBody(emptyScene(10, 10), 'maison', { x: 0, y: 0, w: 1, h: 1 });
     const withStorey = addArchitectureStorey(body.scene, body.id, 1);
     if (!withStorey) throw new Error('étage absent');
     const removed = deleteSel(withStorey.scene, { type: 'architectureStorey', bodyId: body.id, id: withStorey.id });
@@ -200,7 +200,7 @@ describe('editorState — #841 FU-C : corps/étage sélectionnables et supprimab
   });
 
   it('le scénario auparavant impossible : créer → sélectionner au clic → ajouter un étage → supprimer', () => {
-    const created = addArchitectureBody(emptyScene(10, 10), 'maison');
+    const created = addArchitectureBody(emptyScene(10, 10), 'maison', { x: 0, y: 0, w: 1, h: 1 });
     // Sélection au CANEVAS (clic dans le vide, corps actif = celui créé — comme le fait EditorCanvas) :
     // à l'étage z0 du corps flambant neuf, le clic désigne son unique étage.
     const pickedStorey = hitAt(created.scene, { x: 4, y: 4 }, DEFAULT_LAYERS, 0, created.id);

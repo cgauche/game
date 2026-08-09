@@ -74,6 +74,7 @@ import {
   roofExclusionsByZ,
   deriveArchitectureMasses,
   bodyFootCellsByZ,
+  bodyFootCells,
   adoptableOpeningsAt,
 } from './sceneEdit';
 
@@ -370,6 +371,62 @@ function applyStairs(s: Scene, spec: MapSpec, cellCells: { char: string; x: numb
   return out;
 }
 
+/** Cellules `"x,y"` d'une couverture de rectangles. */
+function archRectCells(footprint: readonly ArchitectureRect[]): Set<string> {
+  const out = new Set<string>();
+  for (const rect of footprint)
+    for (let y = rect.y; y < rect.y + rect.h; y++)
+      for (let x = rect.x; x < rect.x + rect.w; x++) out.add(`${x},${y}`);
+  return out;
+}
+
+/** Un corps NON BORNÉ (aucun `storeys[].parts[].foot` — `bodyFootCells` vide) dérive sur TOUT le
+ *  plancher que les autres n'ont pas pris : c'est le RÉSIDUEL de la scène, et il n'en tient qu'un. À
+ *  DEUX, la dérivation (`deriveArchitectureMasses`) les départage sur le seul ORDRE du tableau
+ *  `architecture` — mesuré sur La Diligence : ordre déclaré → `diligence` prend les 654 cases et ses 5
+ *  masses, ordre inversé → `architecture-0` les prend toutes. Un tirage au sort silencieux n'est pas
+ *  une attribution : `buildScene` REFUSE.
+ *  Deux verdicts, dans cet ordre (le second n'est SAIN qu'une fois le premier tenu : à résiduel unique,
+ *  ce qu'il dérive ne dépend plus de l'ordre) :
+ *  1. CONCURRENCE — ≥2 corps non bornés alors qu'au moins une case de plancher réel n'est déclarée par
+ *     personne (hors emprise d'un corps borné, hors masse authorée, hors ciel ouvert).
+ *  2. DONNÉE MORTE — un corps non borné qui ne déclare RIEN (aucun `part`, `roomZoneIds`, façade, masse
+ *     authorée ni `roofExclusions`) et ne porte AUCUNE masse dérivée : il ne décrit aucun bâti. */
+export function validateArchitectureResiduals(scene: Scene): void {
+  const bodies = scene.architecture ?? [];
+  const unbounded = bodies.filter((body) => bodyFootCells(body).size === 0);
+  if (!unbounded.length) return;
+
+  const floorAt = realFloorAt(scene);
+  const spokenFor = new Set<string>();
+  for (const body of bodies) {
+    for (const key of bodyFootCells(body)) spokenFor.add(key);
+    for (const mass of body.masses) {
+      if (mass.derived) continue;
+      for (const key of archRectCells(mass.footprint)) spokenFor.add(key);
+    }
+    for (const cells of roofExclusionsByZ(body).values()) for (const key of cells) spokenFor.add(key);
+  }
+  const claimable = new Set<string>();
+  for (const z of new Set([0, ...scene.layers.map((layer) => layer.z)]))
+    for (const key of floorAt(z)) if (!spokenFor.has(key)) claimable.add(key);
+
+  if (unbounded.length > 1 && claimable.size) {
+    const noms = unbounded.map((body) => `« ${body.id} »`).join(', ');
+    throw new Error(`corps NON BORNÉS en concurrence (${noms}) : ${claimable.size} case(s) de plancher ne relèvent d'aucune emprise déclarée, et leur attribution ne tient qu'à l'ORDRE du tableau \`architecture\` — déclare l'emprise (\`storeys[].parts[].foot\`) de l'un des deux, ou supprime le corps de trop`);
+  }
+
+  for (const body of unbounded) {
+    const declare = body.masses.some((mass) => !mass.derived)
+      || body.storeys.some((storey) => storey.parts.length || (storey.roomZoneIds ?? []).length)
+      || body.facades.length > 0
+      || (body.roofExclusions ?? []).length > 0;
+    if (declare) continue;
+    if (body.masses.some((mass) => archRectCells(mass.footprint).size)) continue;
+    throw new Error(`corps « ${body.id} » : ne déclare RIEN (aucun volume, zone de pièce, façade, masse ni exclusion) et ne porte aucune masse dérivée — donnée MORTE, retire-le de \`architecture\``);
+  }
+}
+
 /** Les règles FAIL-FAST d'une masse de bâtiment (#823) — l'auteur est un agent qui ne peut pas juger
  *  son résultat à l'œil : `buildScene` REFUSE une masse incohérente plutôt que de compiler un bâtiment
  *  troué. Chaque message nomme la case/masse fautive et dit QUOI corriger. Une masse à `levels` niveaux
@@ -382,6 +439,7 @@ function applyStairs(s: Scene, spec: MapSpec, cellCells: { char: string; x: numb
  *  jamais sur le plancher de la scène entière que `realFloorAt` rend tous corps confondus) ; puis la
  *  SCÈNE (toute case de plancher réel relève d'un corps — masse ou exclusion à ciel ouvert). */
 function validateBuildingMasses(scene: Scene): void {
+  validateArchitectureResiduals(scene); // à qui revient le plancher non déclaré : à UN seul corps
   const massCells = (footprint: readonly ArchitectureRect[]): Set<string> => {
     const out = new Set<string>();
     for (const rect of footprint)

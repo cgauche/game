@@ -45,9 +45,16 @@ function updateArchitectureBody(scene: Scene, bodyId: string, update: (body: Arc
   return { ...scene, architecture: scene.architecture!.map((candidate) => (candidate.id === bodyId ? update(candidate) : candidate)) };
 }
 
-export function addArchitectureBody(scene: Scene, style: string): { scene: Scene; id: string } {
+/** Crée un corps BORNÉ dès sa naissance : son étage `z0` porte d'emblée un volume (`part`) à `foot`,
+ *  l'emprise que le geste de création connaît (case visée à l'éditeur). Un corps sans aucun `part` est
+ *  NON BORNÉ — sa dérivation (`deriveArchitectureMasses`) n'a plus d'autre arbitre que l'ordre du
+ *  tableau, et deux tels corps se disputent silencieusement le même plancher : au plus UN par scène,
+ *  vérifié par `validateArchitectureResiduals` (`state/mapSpec.ts`). L'auteur redimensionne ensuite ce
+ *  volume (`resizeSel`) au lieu de partir d'un corps qui revendique toute la scène. */
+export function addArchitectureBody(scene: Scene, style: string, foot: Rect): { scene: Scene; id: string } {
   const id = nextEntityId('architecture', (scene.architecture ?? []).map((body) => body.id));
-  const body: ArchitectureBody = { id, style, storeys: [{ id: 'z0', z: 0, parts: [], roomZoneIds: [] }], facades: [], masses: [] };
+  const part: ArchitecturePart = { id: nextEntityId('part', []), foot: boundedRect(scene, foot) };
+  const body: ArchitectureBody = { id, style, storeys: [{ id: 'z0', z: 0, parts: [part], roomZoneIds: [] }], facades: [], masses: [] };
   return { scene: { ...scene, architecture: [...(scene.architecture ?? []), body] }, id };
 }
 
@@ -622,8 +629,9 @@ export function bodyFootCellsByZ(body: ArchitectureBody): Map<number, Set<string
 
 /** EMPRISE d'un corps, tous étages confondus — union de `bodyFootCellsByZ`. BORNE de ce qu'un corps
  *  peut revendiquer à la dérivation (`deriveArchitectureMasses`) : une colonne se lit du haut de la
- *  scène vers le bas, donc sur toutes ses cases sans distinction d'étage. Vide = corps sans volume
- *  déclaré (bâtiment en cours de saisie à l'éditeur) : la dérivation reste alors non bornée. */
+ *  scène vers le bas, donc sur toutes ses cases sans distinction d'étage. Vide = corps NON BORNÉ (le
+ *  résiduel qui prend tout le plancher que les autres n'ont pas déclaré — au plus un par scène,
+ *  `validateArchitectureResiduals` de `state/mapSpec.ts`) : la dérivation y est sans borne. */
 export function bodyFootCells(body: ArchitectureBody): Set<string> {
   const out = new Set<string>();
   for (const cells of bodyFootCellsByZ(body).values()) for (const key of cells) out.add(key);
@@ -824,14 +832,14 @@ export function gableSpanMaxTiles(scene: Scene): number {
  *  couvrir (cour à ciel ouvert). Les masses PORTANT `derived` sont jetées puis recalculées : la
  *  fonction est IDEMPOTENTE et rejouable sur une scène déjà compilée — c'est ce qui permet à
  *  l'éditeur de faire suivre la toiture quand l'intention change (#841), sans repasser par `buildScene`.
- *  Note : plusieurs corps peuvent coexister sur la MÊME scène (l'éditeur en crée un vide au passage,
- *  mesuré #829 : `architecture-0`) — `claimed` est un pool PARTAGÉ, rempli par les surcharges de TOUS
- *  les corps d'abord, puis par chaque dérivation dans l'ORDRE du tableau : un corps ne dérive JAMAIS
- *  une case déjà prise par un autre (surcharge ou dérivation précédente), sinon deux corps se
- *  disputeraient le même plancher et doubleraient le toit. L'ordre du tableau ne décide POURTANT de
- *  rien pour un corps à volumes DÉCLARÉS : il est BORNÉ à son emprise (`bodyFootCells`, tous étages
- *  confondus — une colonne se lit du haut vers le bas) et, hors d'elle, ne revendique rien. Un corps
- *  SANS volume (`storeys: []`, saisie en cours à l'éditeur) reste non borné, donc ordre-dépendant.
+ *  Note : plusieurs corps peuvent coexister sur la MÊME scène — `claimed` est un pool PARTAGÉ, rempli
+ *  par les surcharges de TOUS les corps d'abord, puis par chaque dérivation dans l'ORDRE du tableau :
+ *  un corps ne dérive JAMAIS une case déjà prise par un autre (surcharge ou dérivation précédente),
+ *  sinon deux corps se disputeraient le même plancher et doubleraient le toit. L'ordre du tableau ne
+ *  décide POURTANT de rien pour un corps à volumes DÉCLARÉS : il est BORNÉ à son emprise
+ *  (`bodyFootCells`, tous étages confondus — une colonne se lit du haut vers le bas) et, hors d'elle,
+ *  ne revendique rien. Un corps SANS volume est non borné, donc ordre-dépendant : au plus UN par scène
+ *  (`validateArchitectureResiduals`, `state/mapSpec.ts`), sinon l'attribution serait un tirage au sort.
  *  Le reste du plancher réel d'un corps se
  *  regroupe par colonne `(topZ, levels)` — le sommet naturel de la colonne (première case non prise en
  *  descendant depuis le haut de la scène) et le nombre de niveaux qu'elle porte en dessous (plancher

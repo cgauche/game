@@ -934,22 +934,45 @@ describe('buildScene — dérivation par défaut des masses de bâtiment (#829)'
     for (let y = 1; y <= 5; y++) for (let x = 1; x <= 5; x++) expect(covered.has(`${x},${y}`)).toBe(true);
   });
 
-  it('deux corps sur la MÊME scène (l\'éditeur en crée un vide au passage) ne dérivent JAMAIS le même plancher deux fois', () => {
+  it('deux corps NON BORNÉS sur la MÊME scène → REFUS nommé, quel que soit l’ORDRE du tableau', () => {
+    const deux = [
+      { id: 'diligence', style: 'maison', storeys: [], facades: [], masses: [] },
+      { id: 'architecture-0', style: 'maison', storeys: [], facades: [], masses: [] },
+    ];
+    for (const architecture of [deux, [...deux].reverse()]) {
+      let message = '';
+      expect(() => { try { buildScene(baseSpec({ architecture })); } catch (e) { message = (e as Error).message; throw e; } })
+        .toThrow(/NON BORNÉS en concurrence/);
+      expect(message).toContain('« diligence »');
+      expect(message).toContain('« architecture-0 »');
+      expect(message).toContain('storeys[].parts[].foot');
+    }
+  });
+
+  it('un corps non borné qui ne déclare RIEN et ne dérive RIEN est de la donnée MORTE → REFUS avec message de purge', () => {
+    // Le corps « salle » est BORNÉ à toute l'emprise bâtie : il ne reste aucune case au corps vide.
+    const architecture = [
+      { id: 'salle', style: 'maison', storeys: [{ id: 'z0', z: 0, parts: [{ id: 'p', foot: { x: 1, y: 1, w: 4, h: 4 } }], roomZoneIds: [] }], facades: [], masses: [] },
+      { id: 'architecture-0', style: 'maison', storeys: [{ id: 'z0', z: 0, parts: [], roomZoneIds: [] }], facades: [], masses: [] },
+    ];
+    expect(() => buildScene(baseSpec({ architecture }))).toThrow(/« architecture-0 ».*donnée MORTE/s);
+  });
+
+  it('un SEUL résiduel reste toléré et dérive tout le plancher que les corps bornés n’ont pas pris', () => {
     const scene = buildScene(baseSpec({
       architecture: [
-        { id: 'diligence', style: 'maison', storeys: [], facades: [], masses: [] },
-        { id: 'architecture-0', style: 'maison', storeys: [], facades: [], masses: [] },
+        { id: 'aile', style: 'maison', storeys: [{ id: 'z0', z: 0, parts: [{ id: 'p', foot: { x: 1, y: 1, w: 4, h: 2 } }], roomZoneIds: [] }], facades: [], masses: [] },
+        { id: 'residuel', style: 'maison', storeys: [], facades: [], masses: [] },
       ],
     }));
-    const [corps, vide] = scene.architecture!;
-    expect(corps.masses.length).toBeGreaterThan(0);
-    expect(vide.masses).toHaveLength(0); // rien à dériver : « diligence » a déjà tout pris (1er du tableau)
-    const covered = new Set<string>();
-    for (const mass of [...corps.masses, ...vide.masses])
-      for (const rect of mass.footprint)
-        for (let y = rect.y; y < rect.y + rect.h; y++)
-          for (let x = rect.x; x < rect.x + rect.w; x++) covered.add(`${x},${y}`);
-    for (let y = 1; y <= 4; y++) for (let x = 1; x <= 4; x++) expect(covered.has(`${x},${y}`)).toBe(true);
+    const covered = new Map<string, string>();
+    for (const body of scene.architecture!)
+      for (const mass of body.masses)
+        for (const rect of mass.footprint)
+          for (let y = rect.y; y < rect.y + rect.h; y++)
+            for (let x = rect.x; x < rect.x + rect.w; x++) covered.set(`${x},${y}`, body.id);
+    for (let y = 1; y <= 2; y++) for (let x = 1; x <= 4; x++) expect(covered.get(`${x},${y}`)).toBe('aile');
+    for (let y = 3; y <= 4; y++) for (let x = 1; x <= 4; x++) expect(covered.get(`${x},${y}`)).toBe('residuel');
   });
 });
 
