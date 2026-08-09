@@ -652,6 +652,61 @@ function componentsOf4(cells: ReadonlySet<string>): Set<string>[] {
   return out;
 }
 
+/** Cases de la grille `w×h` ENCLOSES par `sheet` : hors de `sheet`, et sans chemin 4-connexe vers le
+ *  DEHORS de la grille qui évite `sheet`. C'est la lecture géométrique d'un TROU — une trémie, un
+ *  puits, une cour — par opposition à ce qui borde la nappe (une aile basse accolée communique avec le
+ *  dehors, elle n'est enclose de rien). Lue par `deriveArchitectureMasses` : un trou enclos est TOITÉ
+ *  par la nappe qui l'entoure. */
+function enclosedHolesOf(sheet: ReadonlySet<string>, w: number, h: number): Set<string> {
+  const outside = new Set<string>();
+  const queue: [number, number][] = [];
+  const push = (x: number, y: number) => {
+    if (x < 0 || y < 0 || x >= w || y >= h) return;
+    const key = vkey(x, y);
+    if (sheet.has(key) || outside.has(key)) return;
+    outside.add(key);
+    queue.push([x, y]);
+  };
+  for (let x = 0; x < w; x++) { push(x, 0); push(x, h - 1); }
+  for (let y = 0; y < h; y++) { push(0, y); push(w - 1, y); }
+  for (let i = 0; i < queue.length; i++) {
+    const [x, y] = queue[i];
+    push(x - 1, y); push(x + 1, y); push(x, y - 1); push(x, y + 1);
+  }
+  const holes = new Set<string>();
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const key = vkey(x, y);
+      if (!sheet.has(key) && !outside.has(key)) holes.add(key);
+    }
+  return holes;
+}
+
+/** Cases de VOLÉE qui DÉBOUCHENT à l'étage `z` — leurs marches montent du plancher de `z-1` jusqu'à
+ *  celui de `z` (`stairFlightCells`, `planDefects.ts`). Vide dès qu'une des deux couches manque : un
+ *  trou n'est une trémie que s'il y a un plancher à trouer, et au dernier étage l'ouverture au-dessus
+ *  d'une case est le CIEL. Indexée par l'étage de DÉBOUCHÉ, jamais par celui de la marche : c'est la
+ *  seule nappe qu'une volée puisse ouvrir. */
+export function flightOpeningsAt(scene: Scene, z: number): ReadonlySet<string> {
+  const storeyZs = new Set(scene.layers.map((l) => l.z));
+  if (!storeyZs.has(z) || !storeyZs.has(z - 1)) return new Set<string>();
+  return stairFlightCells(scene, z - 1, z);
+}
+
+/** Cases qu'une nappe d'étage `z` peut légitimement COIFFER sans porter de plancher à `z` — les deux
+ *  lectures géométriques de l'ADOPTION (`deriveArchitectureMasses`) : trou ENCLOS du plancher de cet
+ *  étage (`enclosedHolesOf` — puits, cage, trémie), ou case de volée qui y DÉBOUCHE
+ *  (`flightOpeningsAt`). RÈGLE PARTAGÉE avec `validateBuildingMasses` (`state/mapSpec.ts`) : ce
+ *  qu'une masse a le droit de couvrir sans plancher au sommet est exactement ce que la dérivation
+ *  sait adopter. Hors de ces deux lectures, une case sans plancher est un trou d'authoring — et le
+ *  ciel se DÉCLARE (`roofExclusions`). */
+export function adoptableOpeningsAt(scene: Scene, z: number): ReadonlySet<string> {
+  const { w, h } = scene.dimensions;
+  const out = enclosedHolesOf(realFloorAt(scene)(z), w, h);
+  for (const key of flightOpeningsAt(scene, z)) out.add(key);
+  return out;
+}
+
 /** Rectangle PLEIN d'aire maximale inscrit dans `cells` — histogramme de colonnes + pile, une passe
  *  en O(cases) : chaque rectangle maximal est examiné une fois, à la dépile de sa colonne la plus
  *  basse. Départage entièrement DÉTERMINISTE, du plus significatif au moins : aire, puis grand côté
@@ -780,7 +835,9 @@ export function gableSpanMaxTiles(scene: Scene): number {
  *  Le reste du plancher réel d'un corps se
  *  regroupe par colonne `(topZ, levels)` — le sommet naturel de la colonne (première case non prise en
  *  descendant depuis le haut de la scène) et le nombre de niveaux qu'elle porte en dessous (plancher
- *  contigu, mêmes retraits) — puis chaque groupe se décompose en composantes 4-connexes, et chaque
+ *  contigu, mêmes retraits) ; une colonne OUVERTE au sommet (trémie de volée, trou enclos de la nappe)
+ *  ADOPTE le groupe de ses voisines, le toit passe CONTINU au-dessus d'elle (#1181) — puis chaque
+ *  groupe se décompose en composantes 4-connexes, et chaque
  *  composante porte UNE masse : un corps de bâtiment reçoit UN toit. Son emprise se décrit par une
  *  COUVERTURE de rectangles (`rectCoverOf` — un L, un U, un anneau autour d'une cour restent UNE masse),
  *  son faîtage court le long de sa plus grande dimension (`ridgeAxisOf`), et la portée ne règle que la
@@ -798,19 +855,19 @@ export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
 
   // TRÉMIES de volée, indexées par l'étage de la MARCHE. Une case de volée porte bien un plancher (ses
   // marches) : ce qui la sépare du bâti voisin n'est PAS une ligne de toit, c'est l'ABSENCE de plancher
-  // AU-DESSUS d'elle — l'ouverture par laquelle on monte. Elle ne coiffe donc aucun volume et ne fonde
-  // aucune masse : sans cette lecture, la dérivation en fait une composante isolée, donc un édifice, dont
-  // l'égout se pose à la cote de la marche (`resolveMass` : relief + `WALL_H_M`) — soit une nappe plantée
-  // DANS le volume que le bâti voisin enferme, qui ressort en travers de sa façade.
+  // AU-DESSUS d'elle — l'ouverture par laquelle on monte. Sa colonne DÉBOUCHE donc sur la nappe du
+  // dessus et en prend le groupe (adoption ci-dessous) : sans cette lecture, la dérivation en fait une
+  // composante isolée, donc un édifice, dont l'égout se pose à la cote de la marche (`resolveMass` :
+  // relief + `WALL_H_M`) — soit une nappe plantée DANS le volume que le bâti voisin enferme, qui
+  // ressort en travers de sa façade.
   // La définition est celle des audits de plan (`stairFlightCells`, `planDefects.ts`) : la MÊME trémie
   // que `auditStairwells` déclare légitime et que `auditFacade` s'interdit de compter en mur manquant.
   // Une seule vérité géométrique — cotes de marches franchissables jusqu'au plancher du dessus —, jamais
   // un seuil de taille ni un test d'encerclement.
-  // Bornée aux paires d'étages RÉELLES : un trou n'est une trémie que s'il y a un plancher à trouer. Au
-  // dernier étage, l'ouverture au-dessus d'une case est le ciel, et son toit lui revient.
-  const storeyZs = new Set(scene.layers.map((l) => l.z));
+  // Indexées par l'étage de DÉBOUCHÉ (`flightOpeningsAt`), jamais par celui de la marche : une volée
+  // n'ouvre QUE vers la nappe où elle monte.
   const openings = new Map<number, ReadonlySet<string>>();
-  for (const z of layerZs) if (storeyZs.has(z + 1)) openings.set(z, stairFlightCells(scene, z, z + 1));
+  for (const z of layerZs) openings.set(z, flightOpeningsAt(scene, z));
 
   const claimed = new Set<string>(); // `${x},${y},${z}` déjà pris (surcharge/exclusion de N'IMPORTE quel corps)
   for (const body of bodies) {
@@ -824,6 +881,14 @@ export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
       for (const key of cells) claimed.add(`${key},${z}`);
   }
 
+  // CIEL DÉCLARÉ : une `roofExclusions` vaut pour la COLONNE, pas pour le seul étage où elle est
+  // écrite. Retirer la case du seul `z` déclaré laissait la colonne se rabattre d'un cran plus bas et
+  // poser une nappe DANS le volume, sous le ciel que l'auteur venait d'ouvrir. Aucune masse d'aucun
+  // étage ne coiffe une case déclarée à ciel ouvert.
+  const sky = new Set<string>();
+  for (const body of bodies)
+    for (const cells of roofExclusionsByZ(body).values()) for (const key of cells) sky.add(key);
+
   return bodies.map((body) => {
     const overrides = body.masses.filter((mass) => !mass.derived);
     const defaults = body.roofDefaults ?? DEFAULT_ROOF_DEFAULTS;
@@ -834,19 +899,20 @@ export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
     const foot = bodyFootCells(body);
     const bounded = foot.size > 0;
 
-    const groups = new Map<string, Set<string>>(); // "topZ:levels" → cellules "x,y"
+    // COLONNE de chaque case : son sommet naturel (première case non prise en descendant depuis le
+    // haut de la scène) et le nombre de niveaux qu'elle porte en dessous.
+    type Column = { topZ: number; levels: number };
+    const tops = new Map<string, Column>(); // "x,y" → colonne
     for (let y = 0; y < h; y++)
       for (let x = 0; x < w; x++) {
         if (bounded && !foot.has(vkey(x, y))) continue;
+        if (sky.has(vkey(x, y))) continue; // ciel déclaré : la colonne entière est hors nappe
         let topZ: number | null = null;
         for (const z of layerZs) {
           if (claimed.has(`${x},${y},${z}`)) continue;
           if (floorAt(z).has(vkey(x, y))) { topZ = z; break; }
         }
         if (topZ === null) continue;
-        // La case ne domine rien : le vide au-dessus d'elle est la trémie de sa propre volée. Elle
-        // appartient au volume que le bâti voisin enferme, dont le toit la couvre déjà.
-        if (openings.get(topZ)?.has(vkey(x, y))) continue;
         let levels = 0;
         for (let z = topZ; z >= 0; z--) {
           if (claimed.has(`${x},${y},${z}`)) break;
@@ -854,10 +920,57 @@ export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
           levels++;
         }
         if (!levels) continue;
-        const key = `${topZ}:${levels}`;
-        const set = groups.get(key) ?? (groups.set(key, new Set()).get(key)!);
-        set.add(vkey(x, y));
+        tops.set(vkey(x, y), { topZ, levels });
       }
+
+    // ADOPTION des colonnes OUVERTES au sommet (#1181) : une case bâtie dont le plancher s'arrête plus
+    // bas que la nappe qui la borde prend le GROUPE de cette nappe — le toit passe CONTINU au-dessus
+    // d'elle, à la hauteur de ce qui l'entoure, au lieu de laisser un trou de couverture ou de poser
+    // une nappe basse dans le volume. Deux lectures géométriques, jamais un cas « escalier » :
+    // la case est un TROU ENCLOS de la nappe (`enclosedHolesOf` — puits de lumière, cage), ou sa
+    // propre colonne DÉBOUCHE sur CETTE nappe (`openings`, indexé par l'étage de débouché : ses
+    // marches montent jusqu'à ce plancher-là, pas jusqu'à celui d'une tour accolée qui le dépasse).
+    // Ce qui borde la nappe sans être enclos ni déboucher — une aile basse accolée — garde
+    // sa propre hauteur. Le CIEL OUVERT se DÉCLARE (`roofExclusions`) : ses colonnes n'ont pas de
+    // sommet du tout (`sky`), aucune adoption ne les reprend. Une case sans plancher NULLE PART (cour
+    // du rez déclarée `exterior`) n'a pas de colonne, donc rien à adopter. Point fixe : chaque adoption fait monter le
+    // sommet d'une case, la boucle termine sur le nombre d'étages.
+    for (;;) {
+      const sheets = new Map<number, Set<string>>();
+      for (const [key, col] of tops)
+        (sheets.get(col.topZ) ?? sheets.set(col.topZ, new Set<string>()).get(col.topZ)!).add(key);
+      const holes = new Map<number, Set<string>>();
+      for (const [z, sheet] of sheets) holes.set(z, enclosedHolesOf(sheet, w, h));
+      const moves: [string, Column][] = [];
+      for (const [key, col] of tops) {
+        const [x, y] = key.split(',').map(Number);
+        let best: Column | null = null;
+        for (const nk of [vkey(x - 1, y), vkey(x + 1, y), vkey(x, y - 1), vkey(x, y + 1)]) {
+          const nc = tops.get(nk);
+          if (!nc || nc.topZ <= col.topZ) continue;
+          if (floorAt(nc.topZ).has(key)) continue; // la case a SON plancher là-haut : rien d'ouvert
+          const debouche = nc.topZ === col.topZ + 1 && openings.get(nc.topZ)?.has(key);
+          if (!debouche && !holes.get(nc.topZ)?.has(key)) continue;
+          let free = true;
+          for (let z = nc.topZ - nc.levels + 1; z <= nc.topZ; z++) if (claimed.has(`${key},${z}`)) free = false;
+          if (!free) continue;
+          if (!best || nc.topZ > best.topZ || (nc.topZ === best.topZ && nc.levels > best.levels)) best = nc;
+        }
+        if (best) moves.push([key, { topZ: best.topZ, levels: best.levels }]);
+      }
+      if (!moves.length) break;
+      for (const [key, col] of moves) tops.set(key, col);
+    }
+
+    const groups = new Map<string, Set<string>>(); // "topZ:levels" → cellules "x,y"
+    for (const [key, col] of tops) {
+      // Trémie qu'AUCUNE nappe ne domine (dernier étage exclu par construction, ou débouché déjà pris
+      // par une surcharge) : elle ne fonde pas d'édifice à la cote de ses marches.
+      if (openings.get(col.topZ + 1)?.has(key)) continue;
+      const gkey = `${col.topZ}:${col.levels}`;
+      const set = groups.get(gkey) ?? (groups.set(gkey, new Set<string>()).get(gkey)!);
+      set.add(key);
+    }
 
     const derived: BuildingMass[] = [];
     const spanMaxTiles = gableSpanMaxTiles(scene);

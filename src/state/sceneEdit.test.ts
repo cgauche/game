@@ -14,6 +14,9 @@ import {
   ridgeAxisOf,
 } from './sceneEdit';
 import { perimeterWallSegs } from './sceneEdit.testkit';
+import { stairFlightCells } from './planDefects';
+import { parseProject } from './worldMap';
+import diligenceProjet from '../scenes/diligence/diligence-projet.json';
 
 /**
  * Toiture DÉRIVÉE du plan (#829, #930) — UN corps de bâtiment reçoit UN toit. La portée de charpente
@@ -317,15 +320,14 @@ describe('rectCoverOf / ridgeAxisOf — DÉCRIRE un corps, jamais le découper',
 });
 
 /**
- * TRÉMIE de volée (#822 bis) — l'ouverture par laquelle un escalier monte à l'étage est un TROU dans le
- * plancher du dessus, pas la ligne de toit d'un édifice. Mesuré sur La Diligence : ses deux volées
- * fabriquaient quatre masses `z0` posées au milieu du bâti, égout à la cote de la marche — donc des
- * nappes d'ardoise plantées DANS le volume que les murs enferment, ressortant en travers de la façade.
- * La lecture est celle des audits de plan (`stairFlightCells`), la MÊME trémie que `auditStairwells`
- * déclare légitime : cotes de marches franchissables jusqu'au plancher du dessus — aucun seuil de
- * taille, aucun test d'encerclement.
+ * TRÉMIE de volée (#822 bis, #1181) — l'ouverture par laquelle un escalier monte à l'étage est un TROU
+ * dans le plancher du dessus, pas la ligne de toit d'un édifice : elle ne fonde aucune masse à la cote
+ * de ses marches (des nappes d'ardoise plantées DANS le volume que les murs enferment, #822 bis), et
+ * elle ne coûte AUCUN trou de couverture (#1181) — le toit passe CONTINU au-dessus d'elle, à la
+ * hauteur de la nappe qui l'entoure. La colonne ouverte au sommet ADOPTE le groupe de ses voisines ;
+ * le ciel ouvert, lui, se DÉCLARE (`roofExclusions`).
  */
-describe('deriveArchitectureMasses — une trémie de volée ne fabrique pas de bâtiment', () => {
+describe('deriveArchitectureMasses — une colonne OUVERTE au sommet adopte la nappe qui l’entoure', () => {
   const TREMIE = { x: 2, y: 2 };
   const CLE = `${TREMIE.x},${TREMIE.y}`;
   const MAISON = { x: 1, y: 1, w: 4, h: 4 };
@@ -334,7 +336,7 @@ describe('deriveArchitectureMasses — une trémie de volée ne fabrique pas de 
    *  cette case au rez : à `METRES_PER_LEVEL` c'est le palier haut d'une volée (le vide au-dessus est la
    *  trémie par laquelle on monte), à 0 c'est un trou de plancher qu'aucune marche n'explique.
    *  `etage: false` retire la couche du dessus — le vide au-dessus de la case est alors le CIEL. */
-  function maison(reliefM: number, opts: { etage: boolean } = { etage: true }): Scene {
+  function maison(reliefM: number, opts: { etage?: boolean; roofExclusions?: ArchitectureBody['roofExclusions'] } = {}): Scene {
     const size = 8;
     const idx = (x: number, y: number) => y * size + x;
     const dedans = (x: number, y: number) =>
@@ -347,7 +349,7 @@ describe('deriveArchitectureMasses — une trémie de volée ne fabrique pas de 
     cotes[idx(TREMIE.x, TREMIE.y)] = reliefM;
 
     let scene = putLayer(emptyScene(size, size), 0, rez, cotes);
-    if (opts.etage) {
+    if (opts.etage !== false) {
       const etage: Terrain[] = new Array(size * size).fill('vide');
       for (let y = 0; y < size; y++)
         for (let x = 0; x < size; x++)
@@ -355,13 +357,20 @@ describe('deriveArchitectureMasses — une trémie de volée ne fabrique pas de 
       scene = putLayer(scene, 1, etage);
     }
     scene.walls = perimeterWallSegs([MAISON]); // #881 : les murs closent la maison, AUCUNE zone déclarée
-    scene.architecture = [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] }];
+    scene.architecture = [{
+      id: 'corps', style: 'maison', storeys: [], facades: [], masses: [],
+      ...(opts.roofExclusions ? { roofExclusions: opts.roofExclusions } : {}),
+    }];
     return scene;
   }
 
-  it('le palier d’une volée n’appartient à aucune masse — le bâti voisin le couvre déjà', () => {
+  it('le palier d’une volée est COUVERT par la MÊME masse que ses voisines — le toit passe au-dessus de la trémie', () => {
     const masses = massesOf(maison(METRES_PER_LEVEL));
-    expect(masses.some((mass) => cellsOf(mass.footprint).has(CLE))).toBe(false);
+    const porteuse = masses.find((mass) => cellsOf(mass.footprint).has(CLE));
+    expect(porteuse).toBeDefined();
+    // …et c'est la nappe des voisines, pas une masse à elle : même id des quatre côtés.
+    for (const voisine of [`${TREMIE.x - 1},${TREMIE.y}`, `${TREMIE.x + 1},${TREMIE.y}`, `${TREMIE.x},${TREMIE.y - 1}`, `${TREMIE.x},${TREMIE.y + 1}`])
+      expect(masses.find((mass) => cellsOf(mass.footprint).has(voisine))?.id).toBe(porteuse!.id);
   });
 
   it('le bâti se coiffe d’un SEUL tenant, à la hauteur de son étage — aucune masse au rez dans le volume', () => {
@@ -371,20 +380,34 @@ describe('deriveArchitectureMasses — une trémie de volée ne fabrique pas de 
     }
   });
 
-  it('la trémie ne coûte AUCUNE couverture : tout le reste du plancher d’étage reste sous une masse', () => {
+  it('la trémie ne coûte AUCUN trou de couverture : tout le plancher de l’emprise est sous une masse', () => {
     const couvert = new Set<string>();
     for (const mass of massesOf(maison(METRES_PER_LEVEL)))
       for (const key of cellsOf(mass.footprint)) couvert.add(key);
     const attendu = new Set<string>();
     for (let y = MAISON.y; y < MAISON.y + MAISON.h; y++)
-      for (let x = MAISON.x; x < MAISON.x + MAISON.w; x++) if (`${x},${y}` !== CLE) attendu.add(`${x},${y}`);
+      for (let x = MAISON.x; x < MAISON.x + MAISON.w; x++) attendu.add(`${x},${y}`);
     expect([...couvert].sort()).toEqual([...attendu].sort());
   });
 
-  it('un trou de plancher qu’AUCUNE marche n’explique garde sa masse — la règle se cote sur la volée, pas sur la taille', () => {
-    const porteuses = massesOf(maison(0)).filter((mass) => cellsOf(mass.footprint).has(CLE));
-    expect(porteuses).toHaveLength(1);
-    expect(porteuses[0].z).toBe(0);
+  it('un trou de plancher qu’AUCUNE marche n’explique est TOITÉ lui aussi — l’ENCLOSURE suffit, la volée n’est qu’un cas', () => {
+    const masses = massesOf(maison(0));
+    const porteuse = masses.find((mass) => cellsOf(mass.footprint).has(CLE));
+    expect(porteuse?.z).toBe(1); // la nappe de l'étage, jamais une masse au rez plantée dans le volume
+    expect(masses.find((mass) => cellsOf(mass.footprint).has(`${TREMIE.x + 1},${TREMIE.y}`))?.id).toBe(porteuse!.id);
+  });
+
+  it('le CIEL OUVERT se DÉCLARE : `roofExclusions` tient la case hors de TOUTE masse, à n’importe quel z', () => {
+    const rect = { x: TREMIE.x, y: TREMIE.y, w: 1, h: 1 };
+    const voisine = `${TREMIE.x + 1},${TREMIE.y}`;
+    // Déclarée au niveau de la NAPPE comme au niveau du PLANCHER : AUCUNE masse, d'AUCUN étage, ne
+    // coiffe la case. Ne l'exclure que de la nappe laissait la colonne se rabattre d'un cran et poser
+    // une masse au rez DANS le volume, sous le ciel que l'auteur venait d'ouvrir.
+    for (const z of [0, 1]) {
+      const masses = massesOf(maison(0, { roofExclusions: [{ z, rect }] }));
+      expect(masses.some((mass) => cellsOf(mass.footprint).has(CLE)), `exclusion z=${z}`).toBe(false);
+      expect(masses.find((mass) => cellsOf(mass.footprint).has(voisine))?.z, `exclusion z=${z}`).toBe(1);
+    }
   });
 
   it('au DERNIER étage, le vide au-dessus d’une case cotée est le CIEL : sa masse lui revient', () => {
@@ -392,5 +415,124 @@ describe('deriveArchitectureMasses — une trémie de volée ne fabrique pas de 
       .filter((mass) => cellsOf(mass.footprint).has(CLE));
     expect(porteuses).toHaveLength(1);
     expect(porteuses[0].z).toBe(0);
+  });
+});
+
+/**
+ * ADOPTION au DÉBOUCHÉ (#1181) — une volée n'ouvre QUE vers l'étage où elle monte. Élire le voisin le
+ * plus HAUT donnait la trémie à la TOUR qui la borde : une masse de trois niveaux posée sur une case
+ * qui n'en porte qu'un, nappe passée par-dessus le corps au lieu de le coiffer.
+ */
+describe('deriveArchitectureMasses — la colonne ouverte est adoptée au DÉBOUCHÉ, jamais par le voisin le plus haut', () => {
+  const S = 10;
+  const dans = (rect: ArchitectureRect, x: number, y: number) =>
+    x >= rect.x && x < rect.x + rect.w && y >= rect.y && y < rect.y + rect.h;
+
+  /** Bâti à N couches : chaque couche pose `pierre` sur ses rectangles, moins ses `trous`. `cotes`
+   *  cote le rez (palier haut d'une volée à `METRES_PER_LEVEL`). */
+  function bati(
+    couches: { z: number; rects: ArchitectureRect[]; trous?: string[] }[],
+    cotes: Record<string, number>,
+    emprise: ArchitectureRect[],
+  ): Scene {
+    let scene = emptyScene(S, S);
+    for (const couche of couches) {
+      const tiles: Terrain[] = new Array(S * S).fill(couche.z === 0 ? 'herbe' : 'vide');
+      const height = new Array<number>(S * S).fill(0);
+      for (let y = 0; y < S; y++)
+        for (let x = 0; x < S; x++)
+          if (couche.rects.some((r) => dans(r, x, y)) && !(couche.trous ?? []).includes(`${x},${y}`))
+            tiles[y * S + x] = 'pierre';
+      if (couche.z === 0)
+        for (const [key, m] of Object.entries(cotes)) {
+          const [x, y] = key.split(',').map(Number);
+          height[y * S + x] = m;
+        }
+      scene = putLayer(scene, couche.z, tiles, couche.z === 0 ? height : undefined);
+    }
+    scene.walls = perimeterWallSegs(emprise);
+    scene.architecture = [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] }];
+    return scene;
+  }
+  const porteuse = (scene: Scene, key: string) => massesOf(scene).find((mass) => cellsOf(mass.footprint).has(key));
+
+  it('une TOUR accolée ne vole pas la trémie : la volée qui débouche sur l’étage prend la nappe de l’ÉTAGE', () => {
+    // Tour de 3 niveaux (x1..2) contre un corps de 2 (x3..6) ; volée en (3,2), contre la tour, qui
+    // débouche sur le plancher z1 du corps.
+    const scene = bati(
+      [
+        { z: 0, rects: [{ x: 1, y: 1, w: 6, h: 4 }] },
+        { z: 1, rects: [{ x: 1, y: 1, w: 6, h: 4 }], trous: ['3,2'] },
+        { z: 2, rects: [{ x: 1, y: 1, w: 2, h: 4 }] },
+      ],
+      { '3,2': METRES_PER_LEVEL },
+      [{ x: 1, y: 1, w: 6, h: 4 }],
+    );
+    expect([...stairFlightCells(scene, 0, 1)]).toEqual(['3,2']);
+    const tremie = porteuse(scene, '3,2');
+    expect(tremie?.z).toBe(1);
+    expect(tremie?.levels).toBe(2);
+    expect(tremie?.id).toBe(porteuse(scene, '4,2')?.id); // la nappe du corps, celle du débouché
+    expect(porteuse(scene, '2,2')?.z).toBe(2); // la tour garde SA hauteur, sans avoir rien adopté
+  });
+
+  it('un PUITS de deux étages reste adopté par la nappe qui l’enclôt — l’enclosure ne compte pas les crans', () => {
+    const scene = bati(
+      [
+        { z: 0, rects: [{ x: 1, y: 1, w: 6, h: 6 }] },
+        { z: 1, rects: [{ x: 1, y: 1, w: 6, h: 6 }], trous: ['3,3'] },
+        { z: 2, rects: [{ x: 1, y: 1, w: 6, h: 6 }], trous: ['3,3'] },
+      ],
+      {},
+      [{ x: 1, y: 1, w: 6, h: 6 }],
+    );
+    const puits = porteuse(scene, '3,3');
+    expect(puits?.z).toBe(2);
+    expect(puits?.levels).toBe(3);
+    expect(puits?.id).toBe(porteuse(scene, '4,3')?.id);
+  });
+
+  it('une AILE BASSE accolée n’est PAS avalée : elle n’est ni enclose, ni débouchante', () => {
+    const scene = bati(
+      [
+        { z: 0, rects: [{ x: 1, y: 1, w: 6, h: 4 }] },
+        { z: 1, rects: [{ x: 1, y: 1, w: 3, h: 4 }] },
+      ],
+      {},
+      [{ x: 1, y: 1, w: 6, h: 4 }],
+    );
+    expect(porteuse(scene, '5,2')?.z).toBe(0);
+    expect(porteuse(scene, '5,2')?.levels).toBe(1);
+    expect(porteuse(scene, '2,2')?.z).toBe(1);
+  });
+});
+
+/**
+ * LA DILIGENCE RÉELLE (#1181) — le plan livré, pas une maquette : ses deux volées ouvrent huit trémies
+ * dans le plancher de l'étage, et chacune faisait un TROU dans la nappe d'ardoise (diagnostic
+ * utilisateur : « il ne genere pas de toit au dessus d'une case vide, mais en dessous c'est
+ * l'escalier »). Le toit doit passer au-dessus, à la hauteur de la nappe qui l'entoure.
+ */
+describe('deriveArchitectureMasses — les trémies de La Diligence sont TOITÉES', () => {
+  const scene = parseProject(diligenceProjet).scenes[0];
+  const tremies = [...stairFlightCells(scene, 0, 1)].sort();
+  const masses = deriveArchitectureMasses(scene).flatMap((body) => body.masses);
+  const porteuse = (key: string) => masses.find((mass) => cellsOf(mass.footprint).has(key));
+
+  it('les huit cases de volée sont bien les trémies du plan', () => {
+    expect(tremies).toEqual(['13,25', '14,23', '14,24', '14,25', '19,20', '19,21', '19,22', '20,22']);
+  });
+
+  it('chaque trémie est couverte, à la hauteur de l’étage (z1, deux niveaux) — jamais à la cote de la marche', () => {
+    for (const key of tremies) {
+      expect(porteuse(key), key).toBeDefined();
+      expect(porteuse(key)!.z, key).toBe(1);
+      expect(porteuse(key)!.levels, key).toBe(2);
+    }
+  });
+
+  it('la nappe est CONTINUE : la trémie porte la MÊME masse que le plancher d’étage voisin', () => {
+    expect(porteuse('13,25')!.id).toBe(porteuse('12,25')!.id); // volée ouest, débouché sur l'étage
+    expect(porteuse('20,22')!.id).toBe(porteuse('21,22')!.id); // volée est
   });
 });

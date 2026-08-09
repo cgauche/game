@@ -953,6 +953,98 @@ describe('buildScene — dérivation par défaut des masses de bâtiment (#829)'
   });
 });
 
+/**
+ * TRÉMIE de volée (#1181) — bout en bout : la volée ouvre le plancher de l'étage, la dérivation fait
+ * ADOPTER la colonne ouverte par la nappe voisine, et la garde de complétude l'accepte (une masse a le
+ * droit de coiffer une case sans plancher à son sommet dès lors que la colonne est bâtie dans sa plage).
+ */
+describe('buildScene — la nappe passe AU-DESSUS de la trémie d’une volée (#1181)', () => {
+  const VOLEE = ['3,3', '3,4', '3,5', '3,6'];
+  const spec = {
+    id: 't', nom: 'T', size: [8, 8] as [number, number], terrain: 'herbe' as const,
+    levels: {
+      z0: ['........', '.PPPPPP.', '.PPPPPP.', '.PPEPPP.', '.PPEPPP.', '.PPEPPP.', '.PPEPPP.', '........'].join('\n'),
+      z1: ['........', '.QQQQQQ.', '.QQQQQQ.', '........', '........', '........', '........', '........'].join('\n'),
+    },
+    legend: { P: 'plancher' as const, Q: 'plancher' as const },
+    elevate: { Q: 4 }, // le plancher d'étage à sa cote (METRES_PER_LEVEL) — la volée y monte
+    cells: { E: { terrain: 'pierre' as const, stair: { to: 'z1' } } },
+    walls: perimeterEdges([{ x: 1, y: 1, w: 6, h: 6 }]),
+    architecture: [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] }],
+  };
+
+  it('la volée ouvre bien une trémie dans le plancher de l’étage', () => {
+    const scene = buildScene(spec);
+    for (const key of VOLEE) {
+      const [x, y] = key.split(',').map(Number);
+      expect(tileAt(scene, x, y, 1)).toBe('vide');
+      expect(tileAt(scene, x, y, 0)).not.toBe('vide');
+    }
+  });
+
+  it('la trémie est COUVERTE par la masse de l’étage — et la garde de complétude l’accepte', () => {
+    const scene = buildScene(spec); // ne lève pas : la colonne est bâtie sous la nappe qui la coiffe
+    const cellsOfMass = (mass: BuildingMass) => {
+      const out = new Set<string>();
+      for (const rect of mass.footprint)
+        for (let y = rect.y; y < rect.y + rect.h; y++)
+          for (let x = rect.x; x < rect.x + rect.w; x++) out.add(`${x},${y}`);
+      return out;
+    };
+    const masses = scene.architecture!.flatMap((body) => body.masses);
+    const porteuse = (key: string) => masses.find((mass) => cellsOfMass(mass).has(key));
+    for (const key of VOLEE) {
+      expect(porteuse(key), key).toBeDefined();
+      expect(porteuse(key)!.z, key).toBe(1);
+    }
+    expect(porteuse('3,3')!.id).toBe(porteuse('3,2')!.id); // MÊME nappe que le plancher d'étage voisin
+  });
+});
+
+/**
+ * RÈGLE 1, géométrie PARTAGÉE avec l'adoption (#1181) — une masse ne coiffe une case sans plancher à
+ * son sommet que là où la dérivation sait ADOPTER la colonne : trou ENCLOS de la nappe, ou case de
+ * volée qui débouche à cet étage (`adoptableOpeningsAt`). Une simple colonne « bâtie plus bas dans la
+ * plage » ne suffit pas : une encoche de BORD passait alors dès `levels ≥ 2`, en déclarant bâtie une
+ * case que rien ne coiffe.
+ */
+describe('buildScene — règle 1 : seule une OUVERTURE adoptable dispense du plancher au sommet (#1181)', () => {
+  /** Corps 1..6 × 1..4, étage complet SAUF la case `trou` (`ligne` = la rangée trouée du z1). */
+  const specTrou = (z1: string[], levels: number) => ({
+    id: 't', nom: 'T', size: [8, 8] as [number, number], terrain: 'herbe' as const,
+    levels: {
+      z0: ['........', '.PPPPPP.', '.PPPPPP.', '.PPPPPP.', '.PPPPPP.', '........', '........', '........'].join('\n'),
+      z1: z1.join('\n'),
+    },
+    legend: { P: 'plancher' as const, Q: 'plancher' as const },
+    elevate: { Q: 4 },
+    walls: perimeterEdges([{ x: 1, y: 1, w: 6, h: 4 }]),
+    architecture: [{
+      id: 'corps', style: 'maison', storeys: [], facades: [],
+      masses: [{
+        id: 'toit', z: 1, footprint: [{ x: 1, y: 1, w: 6, h: 4 }], levels,
+        profile: 'gable' as const, ridge: 'x' as const, pitchDeg: 42, material: 'tuile',
+      }],
+    }],
+  });
+  /** Encoche au BORD de l'étage (6,4) : jamais enclose (elle communique avec le dehors), aucune
+   *  marche n'y monte — un trou d'authoring, à REFUSER quel que soit le nombre de niveaux. */
+  const ENCOCHE_DE_BORD = ['........', '.QQQQQQ.', '.QQQQQQ.', '.QQQQQQ.', '.QQQQQ..', '........', '........', '........'];
+  /** Trou ENCLOS (5,3), entouré de plancher d'étage sur ses quatre côtés : la nappe le coiffe. */
+  const TROU_ENCLOS = ['........', '.QQQQQQ.', '.QQQQQQ.', '.QQQQ.Q.', '.QQQQQQ.', '........', '........', '........'];
+
+  it('une encoche de BORD est refusée à 1 comme à 2 niveaux — la plage ne la rend pas bâtie', () => {
+    for (const levels of [1, 2])
+      expect(() => buildScene(specTrou(ENCOCHE_DE_BORD, levels) as never), `levels=${levels}`)
+        .toThrow(/case \(6,4\) hors du plancher réel de l'étage 1/);
+  });
+
+  it('un trou ENCLOS de la nappe passe, dès que la masse descend jusqu’au plancher qui le porte', () => {
+    expect(() => buildScene(specTrou(TROU_ENCLOS, 2) as never)).not.toThrow();
+    expect(() => buildScene(specTrou(TROU_ENCLOS, 1) as never)).toThrow(/case \(5,3\) hors du plancher réel de l'étage 1/);
+  });
+});
+
 describe('buildScene — la couverture des masses se juge sur l\'EMPRISE du corps (#1158)', () => {
   type Foot = { x: number; y: number; w: number; h: number };
   const A: Foot = { x: 1, y: 1, w: 4, h: 4 };
