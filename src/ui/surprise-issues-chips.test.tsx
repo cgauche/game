@@ -178,16 +178,21 @@ describe('#1117 — la Surprise DIT ses issues en chips d’ops, avant comme apr
   });
 
   /**
-   * Guetteur porteur du Talent VIGILANCE (LDB 11 l.168) : sa défaite n'a PLUS d'issue certaine — un
-   * second Test s'interpose. Le bloc se TAIT donc sur l'échec (aucune promesse), et la branche est
-   * jouée par l'exécuteur cadence-aware, qui APPEND l'étape « Vigilance » à la MÊME cascade.
+   * Guetteur porteur du Talent VIGILANCE (LDB 11 l.168) : sa défaite n'a pas d'issue CERTAINE — un
+   * second Test s'interpose. L'incertitude a pourtant un RESPONSABLE identifiable, et c'est lui qu'on
+   * montre (arbitrage user 2026-08-07, « Chip du talent ») : la branche d'échec rend la CHIP du Talent,
+   * cliquable vers sa fiche — laquelle énonce le Test de Perception qu'il ouvre. Zéro phrase. La branche
+   * est ensuite jouée par l'exécuteur cadence-aware, qui APPEND l'étape « Vigilance » à la MÊME cascade.
    */
-  it('porteur de Vigilance : l’échec ne PROMET rien et ouvre son second jet (pas d’exception)', () => {
+  it('porteur de Vigilance : l’échec annonce la CHIP du Talent, et ouvre son second jet', () => {
     ambush([{ talentId: 'vigilance', times: 1 }]);
     render();
     expect(host.textContent, 'l’issue de réussite reste certaine').toContain('Réussite :');
-    expect(host.textContent, 'un second jet décide : rien à promettre').not.toContain('Échec :');
-    expect(chips()).toEqual([]);
+    expect(host.textContent, 'l’échec a un responsable : il se NOMME au lieu de se taire').toContain('Échec :');
+    // …et ce responsable est le Talent, en chip codex-liée — jamais l'État Surpris (qu'il évite).
+    expect(chips()).toEqual(['Vigilance']);
+    const chipTalent = host.querySelector('.rm-stake .entity-chip .codex-ref')!;
+    expect(chipTalent.getAttribute('role'), 'la chip ouvre la fiche talents/vigilance').toBe('button');
 
     lancer('h');
     act(() => { useGame.getState().cascadeNext(); });
@@ -290,17 +295,17 @@ describe('#1117 — la Surprise est UNE bande : un jet d’embusqueur, N guetteu
    * chaque ligne de test c'est normal ? » : non. Une promesse IDENTIQUE se dit UNE fois, en tête de bande.
    * Ce qui reste par rangée : la rangée qui DIVERGE avant le jet, et le verdict d'une rangée résolue.
    */
-  it('une rangée DIVERGENTE (Vigilance) garde son bloc, les autres restent mutualisées', () => {
+  it('une rangée DIVERGENTE (Vigilance) garde son bloc — sa chip de Talent, pas la chip commune', () => {
     ambush([{ talentId: 'vigilance', times: 1 }], 3);
     render();
     // 2 blocs : l'annonce de bande (h2/h3) + le bloc PROPRE du porteur de Vigilance.
     expect(issues().length, 'la divergence ne se fond pas dans l’annonce commune').toBe(2);
-    // L'annonce commune porte les DEUX issues, chip Surpris comprise.
-    const commun = issues().find((h) => h.includes('Échec'))!;
-    expect(commun, 'l’annonce de bande dit l’échec des non-porteurs').toContain('Surpris');
-    // Le bloc du porteur, lui, ne PROMET rien sur l'échec (un second Test décide) : il ne dit que la réussite.
-    const divergent = issues().find((h) => !h.includes('Échec'))!;
-    expect(divergent, 'le bloc divergent reste rendu').toContain('Réussite');
+    // Chacun nomme SON objet mécanique : l'État subi pour les non-porteurs, le Talent pour le porteur.
+    const commun = issues().find((h) => h.includes('Surpris'))!;
+    expect(commun, 'l’annonce de bande dit l’échec des non-porteurs').toContain('Échec');
+    const divergent = issues().find((h) => !h.includes('Surpris'))!;
+    expect(divergent, 'la rangée divergente NOMME le Talent qui prend la main').toContain('Vigilance');
+    expect(divergent, 'et le dit sur SA ligne d’échec').toContain('Échec');
   });
 
   it('jets PARTIELS : verdicts par rangée jouée, annonce maintenue pour les rangées restantes, puis effacée', () => {

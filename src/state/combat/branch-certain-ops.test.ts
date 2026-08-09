@@ -12,7 +12,7 @@
  *  · Vigilance (`has talent`) — appartenance figée : elle, se tranche, et le site pilote en vit.
  */
 import { describe, it, expect } from 'vitest';
-import { branchCertainOps, stableCondVerdict, combatConditionCtx } from './flowEval';
+import { branchCertainOps, branchBlockingEntity, stableCondVerdict, combatConditionCtx } from './flowEval';
 import { etats, spells } from '../../data';
 import type { Flow } from '../flow';
 import type { Combatant, TalentInstance } from '../../engine/types';
@@ -72,5 +72,60 @@ describe('#1117 — l’oracle d’affichage tranche ce qu’il SAIT, et se tait
     expect(stableCondVerdict({ kind: 'any', of: [stable, inconnu] }, cc)).toBeUndefined();
     expect(stableCondVerdict({ kind: 'not', of: inconnu }, cc)).toBeUndefined();
     expect(stableCondVerdict({ kind: 'not', of: stable }, cc)).toBe(true);
+  });
+});
+
+/**
+ * RESPONSABLE de l'incertitude (#1117, arbitrage user 2026-08-07 « Chip du talent ») — quand la branche
+ * se tait parce qu'un `if` d'APPARTENANCE rend la main à un second jet, l'objet qui prend le relais est
+ * identifiable : on le NOMME (sa chip). Toute autre forme d'incertitude reste au silence fail-closed —
+ * il n'y a alors personne à désigner, et une chip inventée enseignerait un faux.
+ */
+describe('#1117 — l’objet mécanique responsable d’une branche incertaine se NOMME, ou rien', () => {
+  const vigilance = { kind: 'has', who: 'target', what: 'talent', value: 'vigilance' } as const;
+  const secondJet = {
+    kind: 'test', test: { skill: 'perception', difficulty: 'intermediaire', label: 'Vigilance' },
+    success: { kind: 'seq', steps: [] }, fail: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: 'surpris', value: 1 }] } },
+  } as unknown as Flow;
+  const surpris: Flow = { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: 'surpris', value: 1 }] } };
+  const porteur = () => C({ talents: [{ talentId: 'vigilance', times: 1 }] as TalentInstance[] });
+
+  it('un `if has talent` qui rend la main à un second jet DÉSIGNE le talent, pour son porteur seul', () => {
+    const branch: Flow = { kind: 'if', cond: vigilance, then: secondJet, else: surpris };
+    // Porteur : branche indécidable (le second Test décide) → le Talent est nommé.
+    expect(branchCertainOps(branch, porteur())).toBeUndefined();
+    expect(branchBlockingEntity(branch, porteur())).toEqual({ category: 'talents', id: 'vigilance' });
+    // NON-porteur : la branche est décidable (il subit l'État) → rien à désigner, les ops parlent.
+    expect(branchCertainOps(branch, C())).toEqual([{ op: 'condition', id: 'surpris', value: 1 }]);
+    expect(branchBlockingEntity(branch, C())).toBeUndefined();
+  });
+
+  it('un TRAIT est désigné de la même façon (dérivé de `cond.what`, aucune entité nommée en code)', () => {
+    const branch: Flow = {
+      kind: 'if', cond: { kind: 'has', who: 'target', what: 'trait', value: 'vision-nocturne' } as never,
+      then: secondJet, else: surpris,
+    };
+    const c = C({ traits: [{ id: 'vision-nocturne' }] as never });
+    expect(branchBlockingEntity(branch, c)).toEqual({ category: 'traits', id: 'vision-nocturne' });
+  });
+
+  it('SILENCE maintenu : seuil de DR, `compare` muté en amont, appartenance NON-fiche (`group`)', () => {
+    // slThreshold : le DR n'existe pas avant le jet — personne à désigner.
+    const parDR: Flow = { kind: 'if', cond: { kind: 'slThreshold', op: '<=', value: -6 } as never, then: secondJet, else: surpris };
+    expect(branchBlockingEntity(parDR, C())).toBeUndefined();
+    // `compare` sur un sujet que les ops AMONT mutent (récupération du Sonné, donnée réelle).
+    expect(branchBlockingEntity(recoverySuccess('sonne'), C({ conditions: [{ id: 'sonne', value: 2 }] as never }))).toBeUndefined();
+    // `has group` : appartenance stable, mais pas un objet mécanique à fiche — hors table, donc silence.
+    const parGroupe: Flow = { kind: 'if', cond: { kind: 'has', who: 'target', what: 'group', value: 'humain' } as never, then: secondJet, else: surpris };
+    expect(branchBlockingEntity(parGroupe, C())).toBeUndefined();
+  });
+
+  it('une branche DÉCIDABLE ne désigne personne (ses ops parlent déjà)', () => {
+    const branch: Flow = {
+      kind: 'if', cond: vigilance,
+      then: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: 'extenue' }] } },
+      else: surpris,
+    };
+    expect(branchBlockingEntity(branch, porteur())).toBeUndefined();
   });
 });

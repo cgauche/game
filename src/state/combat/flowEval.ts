@@ -17,7 +17,7 @@ import { immunityTypes } from '../../engine/traits/dispatch';
 import { groupMatch } from '../../engine/groups';
 import type { GameOp, OpsCtx } from '../../engine/ops';
 import { certainFlowOps, evalCondition } from '../../engine/flowCore';
-import { type ActorView, type Condition, type ConditionCtx, type Flow, type FlowTest, flowTestGateOpen } from '../flow';
+import { type ActorView, type Condition, type ConditionCtx, type Flow, type FlowTest, flowTestGateOpen, flowHasTest } from '../flow';
 
 /** Vue d'un combattant pour les Conditions d'acteur (`compare`/`relation`/`has`/`capability`) : PB +
  *  Taille/Avantage + camp + appartenances (Groupes/Talents/Traits) + valeur d'États par nom + niveau des
@@ -105,6 +105,42 @@ export function branchCertainOps(branch: Flow | undefined, target: Combatant | u
   if (!target) return certainFlowOps(branch);
   const cc = combatConditionCtx(target, { caster });
   return certainFlowOps(branch, (cond) => stableCondVerdict(cond, cc));
+}
+
+/** Catégorie Codex d'une appartenance `has` — l'entité de la Condition est une FICHE, et laquelle se
+ *  déduit du `what` (aucun id d'entité en code). Les autres `what` (`group`, `psych`…) n'ont pas de
+ *  fiche d'objet mécanique à ouvrir : ils restent hors de cette table, donc au silence. */
+const HAS_CATEGORY: Partial<Record<string, string>> = { talent: 'talents', trait: 'traits' };
+
+/**
+ * ENTITÉ RESPONSABLE de l'indécidabilité d'une branche (#1117, arbitrage user 2026-08-07 « Chip du
+ * talent ») — quand une branche ne peut RIEN promettre parce qu'un `if` d'APPARTENANCE (Condition
+ * `has` talent/trait, la famille STABLE de `stableCondVerdict`) donne la main à un second jet, ce
+ * n'est pas un inconnu : c'est CET objet mécanique qui prend le relais, et sa fiche dit lequel.
+ * On rend donc son identité (`{category, id}`, dérivée de `cond.what`/`cond.value` — aucun talent
+ * nommé en code) pour que la surface affiche SA chip au lieu de se taire.
+ *
+ * Fail-closed conservé pour tout le reste : une branche indécidable pour une AUTRE raison (seuil de
+ * DR, `compare` mutable par une op amont, contexte de touche absent, choix joueur) rend `undefined`
+ * — l'objet responsable n'y est pas identifiable, et une chip inventée y enseignerait un faux.
+ * Rend aussi `undefined` quand la branche EST décidable (il y a alors des ops à montrer). PURE.
+ */
+export function branchBlockingEntity(
+  branch: Flow | undefined, target: Combatant | undefined, caster?: Combatant,
+): { category: string; id: string } | undefined {
+  if (!branch || !target || branch.kind !== 'if') return undefined;
+  if (branchCertainOps(branch, target, caster) !== undefined) return undefined; // décidable : ses ops parlent
+  const cond = branch.cond;
+  if (cond.kind !== 'has') return undefined;
+  const category = HAS_CATEGORY[cond.what];
+  if (!category || typeof cond.value !== 'string') return undefined;
+  const cc = combatConditionCtx(target, { caster });
+  const verdict = stableCondVerdict(cond, cc);
+  if (verdict === undefined) return undefined; // appartenance elle-même indécidable → silence
+  // La branche EFFECTIVEMENT prise doit être celle qui rend la main à un second jet : c'est le Test
+  // qui suspend la promesse, pas l'appartenance. Sans lui, l'indécidabilité vient d'ailleurs.
+  const taken = verdict ? branch.then : branch.else;
+  return taken && flowHasTest(taken) ? { category, id: cond.value } : undefined;
 }
 
 /** Le Test est-il SAUTÉ (no-op : ni étape ni branche) pour `c` ? Réunit les gates op-level historiques

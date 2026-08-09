@@ -149,9 +149,9 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `vsCapricieux` | 1 | `src/state/combatEffects.ts:333` |
 | `easierIf` | 7 | `src/state/combatEffects.ts:354` |
 | `argDifficulty` | **0 — JAMAIS LU** | — |
-| `unlessImmune` | 1 | `src/state/combat/flowEval.ts:115` |
-| `onlyGroups` | 1 | `src/state/combat/flowEval.ts:116` |
-| `exceptGroups` | 1 | `src/state/combat/flowEval.ts:117` |
+| `unlessImmune` | 1 | `src/state/combat/flowEval.ts:151` |
+| `onlyGroups` | 1 | `src/state/combat/flowEval.ts:152` |
+| `exceptGroups` | 1 | `src/state/combat/flowEval.ts:153` |
 | `gate` | 1 | `src/engine/flowCore.ts:375` |
 | `noSupport` | 1 | `src/state/combatEffects.ts:386` |
 | `menace` | 2 | `src/state/combat/triggeredTest.ts:206` |

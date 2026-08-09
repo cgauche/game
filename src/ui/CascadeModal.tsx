@@ -5,8 +5,8 @@ import { availableResistance } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { VsHeader } from './VsHeader';
-import { StakeRule, OutcomeNote, sameCertainOps } from './StakeNote';
-import { branchCertainOps } from '../state/combat/flowEval';
+import { StakeRule, OutcomeNote, sameCertainOps, sameEntityRef } from './StakeNote';
+import { branchCertainOps, branchBlockingEntity } from '../state/combat/flowEval';
 import { resolveStake } from '../data';
 import { useAttackJetProps } from './jetProps/useAttackJetProps';
 import { useTrampleJetProps } from './jetProps/useTrampleJetProps';
@@ -24,7 +24,7 @@ import { ModalSubject } from './ModalSubject';
 import { RecapLineList } from './RecapLine';
 import { RuleDivider } from './Ornaments';
 import { TableRollLine } from './RollLine';
-import { supportSplit, testBreakdown, testPending, opposedLines } from './breakdown';
+import { testBreakdown, testPending, opposedLines } from './breakdown';
 import type { ModLine } from '../engine/combat';
 import { Icon } from './Icon';
 import { stepInteraction, stepReady, tableStepDefs, tableStepDie, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
@@ -159,18 +159,14 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // Base AFFICHÉE + lignes de mod NOMMÉES d'une étape QUI LANCE (`CascadeRollStep` : cible ET libellé
   // de ligne par le TYPE) : le libellé est la COMPÉTENCE lancée (« Résistance », « Calme »…), comme
   // Défense affiche « Attaque »/« Parade » — pas le texte de l'étape (le but vit dans le sous-titre).
-  // Le Soutien (LDB 12) arrive par DEUX voies selon le producteur de l'étape : la porte du seam pose
-  // une `base` NUE et le Soutien DÉJÀ nommé dans `step.mods` (rien à défaire, `s.support` absent) ;
-  // un flux qui bâtit son étape à la main le FOND encore dans `step.base` et le porte en `s.support`,
-  // que `supportSplit` (primitive PARTAGÉE) en défait ici. La Difficulté, elle, n'est PAS un mod
-  // (#1072) : elle voyage en donnée de LIGNE (`step.difficulty`, posée par la porte du seam et les flux).
-  const stepLine = (s: CascadeRollStep): { label: string; base: number; mods: ModLine[] } => {
-    const raw = s.base ?? s.target;
-    const { base, mods } = supportSplit(raw, s.support);
-    // Les modificateurs circonstanciels NOMMÉS de l'étape (`step.mods`) rejoignent le Soutien : un
-    // malus RAW qui n'est pas une Difficulté se LIT sur la ligne, jamais fondu dans la cible.
-    return { label: s.rollLabel, base, mods: [...mods, ...(s.mods ?? [])] };
-  };
+  // La `base` d'une étape est NUE quel que soit son producteur (`CascadeStepBase.base`) : rien à
+  // défaire ici. Le Soutien (LDB 12) est une ligne de `mods` comme les autres modificateurs
+  // circonstanciels NOMMÉS — un malus RAW qui n'est pas une Difficulté se LIT sur la ligne, jamais
+  // fondu dans la cible. La Difficulté, elle, n'est PAS un mod (#1072) : elle voyage en donnée de
+  // LIGNE (`step.difficulty`).
+  const stepLine = (s: CascadeRollStep): { label: string; base: number; mods: ModLine[] } => (
+    { label: s.rollLabel, base: s.base ?? s.target, mods: s.mods ?? [] }
+  );
   const breakdown = (s: CascadeRollStep, r: CascadeRoll) => {
     const l = stepLine(s);
     // L'ÉCRÊTAGE mesuré à la construction (`step.clamped`) voyage avec la ligne : le réconciliateur
@@ -311,6 +307,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     <OutcomeNote
       onSuccess={branchCertainOps(cur.meta?.onSuccess, stepActor, stepCaster)}
       onFail={branchCertainOps(cur.meta?.onFail, stepActor, stepCaster)}
+      onSuccessBy={branchBlockingEntity(cur.meta?.onSuccess, stepActor, stepCaster)}
+      onFailBy={branchBlockingEntity(cur.meta?.onFail, stepActor, stepCaster)}
       {...(cur.result ? { realized: cur.result.success ? ('success' as const) : ('fail' as const) } : {})}
     />
   );
@@ -320,6 +318,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     <OutcomeNote
       onSuccess={branchCertainOps(cur.meta?.onSuccess, pool.find((c) => c.id === partId), stepCaster)}
       onFail={branchCertainOps(cur.meta?.onFail, pool.find((c) => c.id === partId), stepCaster)}
+      onSuccessBy={branchBlockingEntity(cur.meta?.onSuccess, pool.find((c) => c.id === partId), stepCaster)}
+      onFailBy={branchBlockingEntity(cur.meta?.onFail, pool.find((c) => c.id === partId), stepCaster)}
       {...(res ? { realized: res.success ? ('success' as const) : ('fail' as const) } : {})}
     />
   );
@@ -579,18 +579,22 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     // par nature. Quand toutes les rangées ont joué, l'annonce n'a plus d'objet et s'efface.
     const bandOps = (partId: string) => {
       const a = pool.find((c) => c.id === partId);
-      return { onSuccess: branchCertainOps(cur.meta?.onSuccess, a, stepCaster), onFail: branchCertainOps(cur.meta?.onFail, a, stepCaster) };
+      return {
+        onSuccess: branchCertainOps(cur.meta?.onSuccess, a, stepCaster), onFail: branchCertainOps(cur.meta?.onFail, a, stepCaster),
+        onSuccessBy: branchBlockingEntity(cur.meta?.onSuccess, a, stepCaster), onFailBy: branchBlockingEntity(cur.meta?.onFail, a, stepCaster),
+      };
     };
     const groupes: { ops: ReturnType<typeof bandOps>; ids: string[] }[] = [];
     for (const part of cur.participants!.filter((x) => !x.result)) {
       const o = bandOps(part.id);
-      const g = groupes.find((x) => sameCertainOps(x.ops.onSuccess, o.onSuccess) && sameCertainOps(x.ops.onFail, o.onFail));
+      const g = groupes.find((x) => sameCertainOps(x.ops.onSuccess, o.onSuccess) && sameCertainOps(x.ops.onFail, o.onFail)
+        && sameEntityRef(x.ops.onSuccessBy, o.onSuccessBy) && sameEntityRef(x.ops.onFailBy, o.onFailBy));
       if (g) g.ids.push(part.id); else groupes.push({ ops: o, ids: [part.id] });
     }
     // Le groupe HISSÉ est le plus nombreux, et seulement s'il couvre ≥ 2 rangées : mutualiser une
     // annonce unique la déplacerait loin de sa ligne sans rien économiser.
     const mutualise = groupes.filter((g) => g.ids.length >= 2).sort((a, b) => b.ids.length - a.ids.length)[0];
-    const bandNote = mutualise ? <OutcomeNote onSuccess={mutualise.ops.onSuccess} onFail={mutualise.ops.onFail} /> : null;
+    const bandNote = mutualise ? <OutcomeNote {...mutualise.ops} /> : null;
     // Rangées-participants via le builder mutualisé (#328) : la modale ne fournit QUE la PRÉSENTATION
     // (label/base/mods déjà résolus à la construction, GÉNÉRIQUES) + son bundle d'actions de flux ; les
     // dérivations d'éligibilité (rerollable/darkPactable/forceShow) vivent dans `buildParticipantRows`.

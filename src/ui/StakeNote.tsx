@@ -13,11 +13,12 @@
  * libellé du pas COURANT ; dérivé de la MÊME entrée d'enjeu.
  */
 import { isValidElement, type ReactNode } from 'react';
-import { resolveStake, type StakeRef } from '../data';
+import { resolveStake, refLabel, type StakeRef } from '../data';
 import { CodexRef } from './compendium/CodexRef';
 import { Icon } from './Icon';
 import { Prose } from './Prose';
 import { GameOpChips } from './GameOpChips';
+import { EntityRef } from './EntityChip';
 import type { GameOp } from '../engine/ops';
 
 export function StakeNote({ stake }: { stake: StakeRef }) {
@@ -42,24 +43,41 @@ export function StakeNote({ stake }: { stake: StakeRef }) {
  *
  * Il ne reçoit AUCUN texte : uniquement les `GameOp` CERTAINES de chaque branche (`certainFlowOps`),
  * humanisées par la source unique `GameOpChips`/`opRows` — donc une règle optionnelle qui change les
- * ops change l'encadré, par construction. Une branche INCERTAINE (`undefined` : second jet, choix,
- * `if` non repliable) n'est PAS rendue : promettre ce qui dépend d'une Condition serait pire que se
+ * ops change l'encadré, par construction. Une branche INCERTAINE (`undefined` : seuil de DR, `compare`
+ * mutable, choix joueur) n'est PAS rendue : promettre ce qui dépend d'une Condition serait pire que se
  * taire. Une branche vide se dit (« rien »), c'est une réponse.
+ *
+ * `onSuccessBy`/`onFailBy` — l'OBJET MÉCANIQUE qui prend la main sur une branche incertaine (arbitrage
+ * user 2026-08-07, « Chip du talent ») : quand l'incertitude a un responsable IDENTIFIABLE (un `if`
+ * d'appartenance qui rend la main à un second jet — `branchBlockingEntity`), la branche rend SA CHIP
+ * plutôt qu'un silence. La chip est la même primitive que partout (`EntityRef`, popover + Codex) : sa
+ * fiche dit le Test qu'elle ouvre. Zéro phrase, et le silence reste le défaut sans responsable nommé.
  *
  * `realized` — la branche que le jet A TRANCHÉE : l'encadré se FILTRE alors à elle seule et devient le
  * VERDICT (mêmes ops, même rendu, aucune seconde surface à synchroniser). Absent = avant le jet, les
  * deux issues sont annoncées.
  */
-export function OutcomeNote({ onSuccess, onFail, realized }: { onSuccess?: GameOp[]; onFail?: GameOp[]; realized?: 'success' | 'fail' }) {
+export function OutcomeNote({ onSuccess, onFail, onSuccessBy, onFailBy, realized }: {
+  onSuccess?: GameOp[];
+  onFail?: GameOp[];
+  onSuccessBy?: { category: string; id: string };
+  onFailBy?: { category: string; id: string };
+  realized?: 'success' | 'fail';
+}) {
   const succ = realized === 'fail' ? undefined : onSuccess;
   const fail = realized === 'success' ? undefined : onFail;
-  if (!succ && !fail) return null;
+  const succBy = realized === 'fail' ? undefined : onSuccessBy;
+  const failBy = realized === 'success' ? undefined : onFailBy;
+  if (!succ && !fail && !succBy && !failBy) return null;
+  const ligne = (ops: GameOp[] | undefined, by: { category: string; id: string } | undefined) =>
+    ops ? (ops.length ? <GameOpChips ops={ops} /> : 'rien.')
+      : <EntityRef category={by!.category} id={by!.id} label={refLabel(by!.category, { id: by!.id })} />;
   return (
     <div className="rm-stake">
       <Icon id="journal/info" size="sm" />
       <div>
-        {succ ? <p><b>Réussite :</b> {succ.length ? <GameOpChips ops={succ} /> : 'rien.'}</p> : null}
-        {fail ? <p><b>Échec :</b> {fail.length ? <GameOpChips ops={fail} /> : 'rien.'}</p> : null}
+        {succ || succBy ? <p><b>Réussite :</b> {ligne(succ, succBy)}</p> : null}
+        {fail || failBy ? <p><b>Échec :</b> {ligne(fail, failBy)}</p> : null}
       </div>
     </div>
   );
@@ -129,4 +147,12 @@ function sameData(a: unknown, b: unknown): boolean {
 export function sameCertainOps(a: GameOp[] | undefined, b: GameOp[] | undefined): boolean {
   if (a === undefined || b === undefined) return a === b;
   return sameData(a, b);
+}
+
+/** Deux rangées désignent-elles le MÊME objet mécanique comme responsable de leur incertitude ? Deux
+ *  guetteurs bloqués par des Talents DIFFÉRENTS n'annoncent pas la même chose : leur promesse ne se
+ *  mutualise pas. PURE. */
+export function sameEntityRef(a: { category: string; id: string } | undefined, b: { category: string; id: string } | undefined): boolean {
+  if (a === undefined || b === undefined) return a === b;
+  return a.category === b.category && a.id === b.id;
 }
