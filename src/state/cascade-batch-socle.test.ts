@@ -45,11 +45,14 @@ beforeEach(() => {
 });
 
 describe('parité des VERBES : une bande offre ce qu’offre l’étape mono', () => {
-  it('`cascadeBatch` expose TOUS les verbes de `cascade` (resist + determine compris)', () => {
+  it('`cascadeBatch` expose TOUS les verbes de `cascade` (resist compris) PLUS `determine`', () => {
     const mono = FLOW_VERBS.cascade.verbs as readonly string[];
     const bande = FLOW_VERBS.cascadeBatch.verbs as readonly string[];
     const manquants = mono.filter((v) => !bande.includes(v));
     expect(manquants, 'verbe de l’étape mono absent de la bande — la rangée ne peut pas jouer sa règle').toEqual([]);
+    // La Psychologie ne se testant qu'en bandes, `determine` (LDB 17 l.62) n'est plus exposé QUE là :
+    // le filet de parité ci-dessus ne le couvre plus, il s'exige donc nommément.
+    expect(bande, 'la Détermination n’est plus jouable nulle part').toContain('determine');
   });
 
   it('les délégués de store correspondants existent', () => {

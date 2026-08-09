@@ -992,23 +992,6 @@ export const FLOWS = {
     caps: {
       forced: true,
       resist: true,
-      // Détermination (LDB 17 l.62) sur une étape de PSYCHOLOGIE (combat/rencontre) : immunité TEMPORAIRE,
-      // PAS une réussite forcée. Dépense 1 point de Détermination (`spendResolveForPsychImmunity` →
-      // psychImmuneRoundsLeft) et MARQUE l'étape `immune` ; l'applier psy lit ce flag pour NE PAS cumuler
-      // le DR (Peur) ni poser le Brisé (Terreur) — la source est IGNORÉE ce Round, pas vaincue, et reprend
-      // à l'expiration. Le `result` synthétique (DR 0) ne sert qu'à faire avancer la cascade : c'est
-      // `step.immune` (pas le succès) qui gouverne la conséquence côté applier. Réservé aux étapes psy.
-      determine: (slot, actor, get, _set, commit) => {
-        if (slot.result || slot.target == null) return; // jamais sur une étape déjà résolue / sans jet
-        if (!slot.combatPsych && !slot.encounterPsych) return; // Détermination = immunité PSYCHOLOGIQUE seulement
-        if ((actor.resolve ?? 0) <= 0) return;
-        const msg = spendResolveForPsychImmunity(actor); // dépense + psychImmuneRoundsLeft (ActiveEffect 2 Rounds)
-        if (!msg) return;
-        // Marqueur NEUTRE (DR 0, aucun dé forcé) pour avancer la cascade ; `commit(..,{touch})` rafraîchit
-        // les combattants (combat ⇄ groupe), comme tous les autres verbes de ce flux.
-        commit({ immune: true, result: { roll: slot.target, target: slot.target, sl: 0, success: true } }, { touch: true });
-        get().log(msg);
-      },
     },
     bonus: {
       derive: (_s, st) => {
@@ -1436,9 +1419,9 @@ export const FLOWS = {
     },
     rolled: (r) => !!r.result,
     actor: (s, r) => actorIn(s, r.id),
-    // PARITÉ de verbes avec l'étape MONO `cascade` (`FLOW_VERBS.cascadeBatch`) — une bande met en jeu
-    // les mêmes règles qu'une étape seule, et chaque rangée les joue POUR ELLE : Résilience (`forced`),
-    // Résistance (Menace) (`resist`, LDB 10 l.1015-1021) et Détermination (`determine`, LDB 17 l.62).
+    // Une bande met en jeu les mêmes règles qu'une étape seule, et chaque rangée les joue POUR ELLE :
+    // Résilience (`forced`), Résistance (Menace) (`resist`, LDB 10 l.1015-1021) et Détermination
+    // (`determine`, LDB 17 l.62 — la Psychologie ne se teste qu'en bandes).
     caps: {
       forced: true,
       // Le tag `menace` de la rangée (`PendingBase.menace`, posé à la construction par le producteur de
@@ -1808,7 +1791,7 @@ export const FLOWS = {
     caps: {
       forced: true,
       // Détermination (LDB 17 l.59) sur un Test de scène grevé d'un malus PSYCHOLOGIQUE social.
-      // MÊME verbe `determine` que l'étape de cascade psy, et MÊME source unique de dépense —
+      // MÊME verbe `determine` que la bande de cascade psy, et MÊME source unique de dépense —
       // `spendResolveForPsychImmunity` (engine/psychology) : elle débite le point ET pose l'immunité
       // de Round (`ActiveEffect` psychImmune). La part SPÉCIFIQUE au flux est la répercussion sur le
       // Test EN COURS : `psychMod` est déjà intégré à `skillValue` ET `target` par `openSkillTest`

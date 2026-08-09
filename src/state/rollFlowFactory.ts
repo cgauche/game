@@ -226,7 +226,7 @@ export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = 
     resist?: boolean;
     /** Détermination (immunité PSY temporaire, LDB 17 l.62) : MÊME catégorie que `resist` (dépenser une
      *  ressource pour infléchir un Test psy), PAS une réussite forcée. Le flux DÉCLARE l'effet SPÉCIFIQUE
-     *  (dépense de Détermination + marqueur `immune` sur l'étape psy), la fabrique fournit le CÂBLAGE
+     *  (dépense de Détermination + marqueur `immune` sur le slot psy), la fabrique fournit le CÂBLAGE
      *  (interface store/intent/modale via le verbe `determine` → action `<prefix>Determine`, le handler
      *  ci-dessous GATE `actor` puis dispatche). Exposé par les seuls flux à `caps.determine`. */
     determine?: (slot: Slot, actor: Combatant, get: Get, set: Set, commit: Commit<Slot>) => void;
@@ -255,9 +255,9 @@ export interface RollFlowHandlers {
    *  `caps.resist`, sans tag, sans talent disponible, ou si le Test est déjà réussi. */
   resist: (get: Get, set: Set, pid?: string) => void;
   /** Détermination (immunité PSY temporaire, LDB 17 l.62) : dépense 1 Détermination pour rendre l'acteur
-   *  IMMUNISÉ ce Round sur l'étape psy ciblée (marqueur `immune`) — PAS une réussite forcée (≠ `resist`).
+   *  IMMUNISÉ ce Round sur le slot psy ciblé (marqueur `immune`) — PAS une réussite forcée (≠ `resist`).
    *  No-op sans `caps.determine`, sans acteur. La fabrique GATE `actor` + dispatche ; la garde d'éligibilité
-   *  fine (étape psy, non résolue) + la dépense vivent dans le handler du spec (`caps.determine`). */
+   *  fine (slot psy, non résolu) + la dépense vivent dans le handler du spec (`caps.determine`). */
   determine: (get: Get, set: Set, pid?: string) => void;
   /** Ce flux sait-il RÉÉVALUER un dé saisi (option « Dés fixés ») ? Vrai ssi son ACCESSEUR DE DÉ est
    *  complet (lire où vit le dé ET réécrire l'issue re-dérivée). Faux ⇒ aucune affordance côté UI et

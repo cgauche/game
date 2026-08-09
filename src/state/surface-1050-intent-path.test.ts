@@ -10,7 +10,7 @@
  *  - hotbar (`battleSelectAttack`) : rendue dès `controlsCombatant`, clic invité = no-op silencieux ;
  *  - Tir rapide (`armPreempt`/`preemptRangedShot`, Talent « Tir rapide ») : pendant la pause de début
  *    de Round il n'y a AUCUN combattant actif, donc le repli universel rendait l'hôte ;
- *  - Résistance (Menace) d'une étape de cascade (`cascadeResist`), jumelle de `cascadeDetermine`.
+ *  - Résistance (Menace) d'une étape de cascade (`cascadeResist`).
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame, type BattleState } from './store';

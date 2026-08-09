@@ -1017,9 +1017,8 @@ export interface GameState extends RollFlowActionsMap {
   forceDoorConfirm: () => void;
   forceDoorCancel: () => void;
   /** CASCADE séquentielle (`FLOWS.cascade`) : jet de l'étape courante + cycle Chance/+1 DR/Pacte/
-   *  Résilience (ciblé par `pid` = id d'étape). `Resist` = Résistance (Menace, LDB 10) ; `Determine` =
-   *  Détermination (immunité PSY temporaire, LDB 17 l.62) sur une étape de Psychologie.
-   *  Délégués `cascade{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll,Resist,Determine}` : générés (RollFlowActionsMap, MULTI). */
+   *  Résilience (ciblé par `pid` = id d'étape). `Resist` = Résistance (Menace, LDB 10).
+   *  Délégués `cascade{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll,Resist}` : générés (RollFlowActionsMap, MULTI). */
   /** « Choix » d'une étape de séquence (analogue de cascadeRoll côté jet) : pose l'option retenue. */
   cascadeChoose: (pid: string, key: string) => void;
   /** TIRAGE SUR TABLE d'une étape (analogue de `cascadeRoll` côté Test) : pose `table.result` via le

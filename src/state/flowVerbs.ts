@@ -109,7 +109,7 @@ export const FLOW_VERBS = {
   corruption:   { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist'], jetOwner: { pending: 'pendingCorruption', field: 'heroId' } },
   // Test générique : `actorId` est MUTABLE (`testSetActor` — le Test change de testeur en place) ; la
   // possession se résout À LA LECTURE de l'état, donc sur le testeur COURANT.
-  // `determine` = Détermination (LDB 17 l.62) : même verbe que `cascade`, corps dans `FLOWS.test.caps`.
+  // `determine` = Détermination (LDB 17 l.62) : même verbe que `cascadeBatch`, corps dans `FLOWS.test.caps`.
   test:         { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'determine', 'cancel', 'reverse'], jetOwner: { pending: 'pendingTest', field: 'actorId' } },
   steamSave:    { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingSteamSave', field: 'actorId' } },
   activity:     { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingActivity', field: 'heroId' } },
@@ -125,7 +125,7 @@ export const FLOW_VERBS = {
   // `resist` fait exception : il DÉPENSE le talent de l'acteur de l'étape, donc il est routé sur LUI
   // (`netOwnership.ROUTES.cascadeResist`), jamais sur la fenêtre — une étape de GROUPE ('*') laissait
   // sinon n'importe quel siège brûler la Résistance d'autrui.
-  cascade:      { kind: 'multi', pidIsActor: false, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist', 'determine'], coop: true, resolution: ['cascadeNext', 'cascadeResolveAll', 'cascadeFinish'] },
+  cascade:      { kind: 'multi', pidIsActor: false, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist'], coop: true, resolution: ['cascadeNext', 'cascadeResolveAll', 'cascadeFinish'] },
   opposition:   { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist'], coop: true, resolution: ['oppositionConfirm'] },
   // `pid` = id de ROUND (`ExtendedTestRound.id`), pas un combattant : même politique que `cascade`.
   extendedTest: { kind: 'multi', pidIsActor: false, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, resolution: ['extendedTestNext', 'extendedTestCancel'] },
@@ -135,8 +135,9 @@ export const FLOW_VERBS = {
   crewTest:     { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true, resolution: ['crewTestConfirm', 'crewTestCancel'] },
   // Étape « batch » DANS une cascade : aucune action de clôture propre — c'est la cascade qui avance.
   // PARITÉ de verbes avec l'étape MONO `cascade` : une bande met en jeu les MÊMES règles qu'une étape
-  // seule — `resist` (LDB 10 l.1015-1021) et `determine` (LDB 17 l.62) s'y jouent PAR RANGÉE, routés
-  // par le porteur du participant (`pidIsActor:true`), jamais sur la fenêtre partagée.
+  // seule — `resist` (LDB 10 l.1015-1021) s'y joue PAR RANGÉE, routé par le porteur du participant
+  // (`pidIsActor:true`), jamais sur la fenêtre partagée ; `determine` (LDB 17 l.62) de même, la
+  // Psychologie ne se testant qu'en bandes (déclaration sur l'ÉTAPE, immunité sur la RANGÉE).
   cascadeBatch: { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact', 'resist', 'determine'], coop: true, resolution: [] },
 } as const satisfies Record<string, FlowVerbs>;
 

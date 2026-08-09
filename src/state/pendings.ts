@@ -1361,9 +1361,8 @@ export interface BatchParticipant extends RollParticipant {
    *  Aucun `stake` non plus : la CLÉ d'une bande EST l'entrée de règle mise en jeu (une fenêtre par
    *  règle), donc l'enjeu — et la fiche ⓘ — restent ceux de l'ÉTAPE (#1117). */
   meta?: CascadeStepMeta;
-  /** DÉTERMINATION (LDB 17 l.62) dépensée SUR CETTE RANGÉE : immunité TEMPORAIRE de son porteur, jumelle
-   *  de `CascadeStep.immune` — l'applier de bande lit le flag DE LA RANGÉE pour ne pas lui appliquer la
-   *  conséquence, les autres rangées de la bande gardant la leur. */
+  /** DÉTERMINATION (LDB 17 l.62) dépensée SUR CETTE RANGÉE : l'applier de bande lit le flag DE LA RANGÉE
+   *  pour ne pas lui appliquer la conséquence, les autres rangées de la bande gardant la leur. */
   immune?: boolean;
 }
 
@@ -1522,9 +1521,10 @@ export interface CascadeStepBase extends RollParticipant {
    *  s'en va — orphelin structurellement impossible. Flux : `fumbleRoll` (rollOups → result),
    *  `fumbleConfirm` (applyOups). */
   fumble?: { weapon: Weapon; result: OupsResolved | null };
-  /** Étape-JET de Psychologie À LA RENCONTRE (LDB 21) : un héros face à une source de Peur/Terreur/
-   *  Trait ciblé à l'entrée de scène. Test de Calme générique (`target`=Calme) ; l'applier
-   *  'encounterPsych' pose le `psychState` (Brisé de Terreur dérivé du DR). Détermination = immunité. */
+  /** DÉCLARATION d'une BANDE de Psychologie À LA RENCONTRE (LDB 21) : l'entrée de règle mise en jeu
+   *  — type psy + source + cible + Indice — face à laquelle les héros appelés à l'entrée de scène sont
+   *  les RANGÉES (`participants`, `aggregate:'none'`). L'applier 'encounterPsych' pose le `psychState`
+   *  RANGÉE PAR RANGÉE ; Détermination (LDB 17 l.62) jouée par rangée (`BatchParticipant.immune`). */
   encounterPsych?: { kind: PsychType; sourceId: string; sourceName: string; indice: number; cible?: string };
   /** DÉCLARATION d'une BANDE de Psychologie EN COMBAT (LDB 21) : l'entrée de règle mise en jeu — type
    *  psy + source + cible + Indice — face à laquelle les héros appelés sont les RANGÉES
@@ -1534,11 +1534,6 @@ export interface CascadeStepBase extends RollParticipant {
    *  Distinct d'`encounterPsych` (simple) car la Peur de combat est ÉTENDUE. Détermination = immunité
    *  (LDB 17 l.62), jouée par rangée (`BatchParticipant.immune`). */
   combatPsych?: { kind: PsychType; sourceId: string; sourceName: string; indice: number; cible?: string };
-  /** DÉTERMINATION (LDB 17 l.62) sur une étape de Psychologie : le héros gagne une immunité TEMPORAIRE
-   *  (≈ 1 Round, `psychImmuneRoundsLeft`) — la Peur/Terreur/Trait est IGNORÉE ce Round, PAS vaincue.
-   *  L'applier psy lit ce flag pour NE PAS cumuler le DR (Peur) ni poser le Brisé (Terreur) : il
-   *  enregistre seulement « X est temporairement insensible » ; la source reprend à l'expiration. */
-  immune?: boolean;
   /** Étape « choix » : options présentées au joueur (l'option retenue pilote la conséquence). */
   options?: { key: string; label: string; detail?: string }[];
   /** Option retenue (clé) — analogue de `result` pour une étape « choix ». */

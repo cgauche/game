@@ -75,7 +75,7 @@ describe('#1051 — les familles de routes sont DISJOINTES (invariant verrouill�
 describe('#1051 — frontière table ⇄ REPLI universel', () => {
   it('le repli n’est PAS une entrée de la table : la majorité des intents invités y passe', () => {
     const repli = [...GUEST_INTENTS].filter((a) => !ROUTES.has(a));
-    expect(repli.length, 'population du repli universel (mesure de référence #1051, +12 exposés #1050, −1 routé #1042 : counterspellCancel porte la frontière de phase)').toBe(183);
+    expect(repli.length, 'population du repli universel (mesure de référence #1051, +12 exposés #1050, −1 routé #1042 : counterspellCancel porte la frontière de phase, −1 verbe purgé #1117 : `cascadeDetermine`)').toBe(182);
     expect(ROUTES.has('battleSelectAction'), 'un geste de tour ordinaire ne se route pas').toBe(false);
   });
 

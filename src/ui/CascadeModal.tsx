@@ -112,7 +112,6 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const darkPact = useGame((s) => s.cascadeDarkPact);
   const force = useGame((s) => s.cascadeForceSuccess);
   const resistAct = useGame((s) => s.cascadeResist); // Résistance (Menace) : auto-succès du talent (LDB 10)
-  const determine = useGame((s) => s.cascadeDetermine); // Détermination (immunité Psychologie de rencontre)
   const next = useGame((s) => s.cascadeNext);
   const choose = useGame((s) => s.cascadeChoose); // étape « choix » : pose l'option retenue
   const tableRoll = useGame((s) => s.cascadeTableRoll); // étape « table » : tire le dé sur le tableau déclaré
@@ -684,9 +683,9 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const oppHeader = opp && oppActor && actor ? <VsHeader actor={oppActor} target={actor} label={opp.attackerLabel} /> : null;
 
   // Rangée INTERACTIVE de l'étape COURANTE : pré-jet en attente puis résultat, porteuse du cycle
-  // d'influence (Chance/+1 DR/Pacte/Résilience/forcedRoll/resist/Détermination) — étape MONDIALE
-  // (`worldOwner`, `actor` absent) : cycle d'influence NUL (Chance/Pacte/Résilience/Détermination
-  // sont des ressources de HÉROS), seul « Lancer » reste actionnable pour le siège owner.
+  // d'influence (Chance/+1 DR/Pacte/Résilience/forcedRoll/resist) — étape MONDIALE (`worldOwner`,
+  // `actor` absent) : cycle d'influence NUL (Chance/Pacte/Résilience sont des ressources de HÉROS),
+  // seul « Lancer » reste actionnable pour le siège owner.
   // DONNÉE de Test étendu de CETTE rangée (arbitrage user 2026-07-11 : `RollRow` rend la barre, site
   // UNIQUE ; persistée via `stepWitnessRows`, elle reste lisible aux pas suivants).
   const curExtendedDr = extendedDrData(cur.meta?.extendedDrDone as number | undefined, cur.meta?.extendedDrTarget as number | undefined, res);
@@ -711,8 +710,6 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     onForce: () => force(cur.id),
     forceShow: rolled && !res?.success,
     resist: resistAvail ? { menace: cur.menace!, onResist: () => resistAct(cur.id) } : undefined,
-    // Psychologie (rencontre OU combat) : Détermination (immunité, LDB 17 l.62) AVANT le jet.
-    determination: actor && !res && (cur.encounterPsych || cur.combatPsych) ? { resolve: actor.resolve ?? 0, onResolve: () => determine(cur.id) } : undefined,
   };
 
   const jetActions: RollAction[] = [

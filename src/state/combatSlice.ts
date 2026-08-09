@@ -3277,9 +3277,6 @@ export function createCombatSlice(get: Get, set: Set) {
     cascadeResolveAll: () => { const done = resolveRemainingCascade(get, set); if (done) dispatchCascadeDone(done); },
     cascadeFinish: () => dispatchCascadeDone(finalizeCascade(get, set)),
     pursuitAbandon: () => pursuitAbandon(get, set), // poursuite terrestre : le groupe renonce (state/pursuitFlow)
-    // Détermination (LDB 17 l.62) sur une étape de PSYCHOLOGIE : `cascadeDetermine` est désormais GÉNÉRÉ
-    // par la fabrique (verbe `determine` de `FLOWS.cascade`, corps dans `rollFlowSpecs.ts`) — même nom,
-    // même comportement (immunité temporaire, `step.immune`), plus de snowflake hand-codé ici.
     // Incantation OPPOSÉE (multijet `FLOWS.castOpposition`) : chaque cible oppose son Test ; cible IA
     // = rangée témoin (jet auto-roulé à l'ouverture, cf. openCastOpposition). Mêmes 6 verbes que les autres flux.
     // Préfixe store `opposition` ≠ clé de flux `castOpposition` (handler passé explicitement).
@@ -3506,8 +3503,8 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     // Psychologie de COMBAT (Peur/Terreur/Traits ciblés, LDB 21) : CASCADE de Round (Traits/Terreur au
     // DÉBUT via openRoundStartPsych ; Peur — Test étendu — à la FIN via openRoundEndCascade), applier
-    // 'combatPsych', résolue par les handlers `cascade*`. La
-    // Détermination (immunité, LDB 17 l.62) est offerte sur l'étape par `cascadeDetermine`.
+    // 'combatPsych', résolue par les handlers `cascade*`. La Détermination (LDB 17 l.62) est offerte
+    // sur la RANGÉE par `cascadeBatchDetermine`.
     // Psychologie À LA RENCONTRE (couture C, LDB 21) : cascade équivalente, applier 'encounterPsych',
     // ouverte par `openEncounterPsych` à l'entrée de scène.
 
