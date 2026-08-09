@@ -15,6 +15,43 @@ const CHROME_CANDIDATES = [
 /** Attend `ms` millisecondes. */
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/** Code porté par tout rejet dû à un rechargement de la page (voir `isNavigationError`). */
+export const TARGET_NAVIGATED = 'TARGET_NAVIGATED';
+
+/** Messages CDP émis quand le contexte de page a été recréé sous les pieds de l'appel en vol. */
+const NAV_MESSAGES = [
+  /Inspected target navigated or closed/i,
+  /Execution context was destroyed/i,
+  /Cannot find context with specified id/i,
+  /Target closed/i,
+  /Session with given id not found/i,
+  /No target with given id/i,
+];
+
+/** Sondes d'app évaporée : un helper `window.__x` posé au chargement redevient `undefined`. */
+const CLEARED_GLOBALS = /Cannot read properties of (?:undefined|null) \(reading '[^']+'\)|window\.__\w+ is (?:not a function|undefined)/;
+
+/**
+ * Vrai si l'erreur vient d'un rechargement de page (Vite full-reload déclenché par une écriture
+ * dans `src/` en cours de recette, #1196) plutôt que d'un défaut du scénario : soit le CDP le dit
+ * (`Inspected target navigated or closed`), soit l'évaluation a buté sur un helper de DEV évaporé.
+ * Fonction PURE — testable sans navigateur.
+ */
+export function isNavigationError(err) {
+  if (!err) return false;
+  if (err.code === TARGET_NAVIGATED) return true;
+  const msg = typeof err === 'string' ? err : String(err.message ?? '');
+  if (!msg) return false;
+  return NAV_MESSAGES.some((re) => re.test(msg)) || CLEARED_GLOBALS.test(msg);
+}
+
+/** Fabrique un rejet CATCHABLE typé : les appelants retentent au lieu de mourir. */
+function cdpError(message) {
+  const e = new Error(message);
+  if (isNavigationError(e)) e.code = TARGET_NAVIGATED;
+  return e;
+}
+
 /**
  * Tue TOUT l'arbre de process Chrome (`chrome.kill()` ne tue que le PID racine — Chrome se
  * découpe en crashpad-handler/gpu-process/renderer×N/utility×N, tous ENFANTS survivants qui
@@ -123,15 +160,28 @@ export async function launchSession({ chromePath, width = 1600, height = 900, po
     const listeners = new Set();
     ws.addEventListener('message', (ev) => {
       const m = JSON.parse(typeof ev.data === 'string' ? ev.data : ev.data.toString());
+      if (m.method === 'Runtime.executionContextsCleared' && (!m.sessionId || m.sessionId === session.sessionId)) {
+        session.contextCleared = true;
+      }
       if (m.id && pending.has(m.id)) {
         const { resolve, reject } = pending.get(m.id);
         pending.delete(m.id);
-        if (m.error) reject(new Error(m.error.message)); else resolve(m.result);
+        if (m.error) reject(cdpError(m.error.message)); else resolve(m.result);
       }
       for (const fn of listeners) fn(m);
     });
+    // Socket coupée alors que des appels sont en vol : les rejeter TYPÉS plutôt que de les laisser
+    // pendre pour toujours (un `await session.rpc(...)` jamais réglé fige le script sans message).
+    ws.addEventListener('close', () => {
+      for (const [mid, { reject }] of pending) {
+        pending.delete(mid);
+        const e = new Error('Inspected target navigated or closed');
+        e.code = TARGET_NAVIGATED;
+        reject(e);
+      }
+    });
 
-    const session = { ws, chrome, listeners, sessionId: null, targetId: null, profile };
+    const session = { ws, chrome, listeners, sessionId: null, targetId: null, profile, contextCleared: false };
 
     session.rpc = (method, params = {}) => new Promise((resolve, reject) => {
       const mid = ++id;
@@ -174,7 +224,7 @@ export async function launchSession({ chromePath, width = 1600, height = 900, po
 export async function evaluate(session, expression) {
   const r = await session.rpc('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
   if (r.exceptionDetails) {
-    throw new Error(r.exceptionDetails.exception?.description || JSON.stringify(r.exceptionDetails));
+    throw cdpError(r.exceptionDetails.exception?.description || JSON.stringify(r.exceptionDetails));
   }
   return r.result.value;
 }
@@ -189,6 +239,52 @@ export async function waitFor(session, expression, { timeoutMs = 8000, intervalM
   }
 }
 
+/** Expression d'app prête — `__wfrp.screen` est posé par `installDevtools` (cf. `openApp`). */
+const APP_READY = `typeof window.__wfrp?.screen === 'function'`;
+
+/** Attend l'app SANS lever : pendant un rechargement, chaque évaluation peut elle-même échouer. */
+async function waitForAppSilently(session, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    try {
+      if (await evaluate(session, APP_READY)) return true;
+    } catch {}
+    if (Date.now() >= deadline) return false;
+    await sleep(250);
+  }
+}
+
+/**
+ * Rejoue `fn` quand la page a été RECHARGÉE sous les pieds du scénario (#1196 : une autre session
+ * écrit dans `src/`, Vite full-reload, le contexte de page et ses helpers `window.__*` disparaissent).
+ * Entre deux tentatives : on ré-attend l'app, puis `resettle` remet l'écran courant en place.
+ * Toute erreur qui n'est PAS une navigation remonte telle quelle (aucun masquage de vrai défaut).
+ */
+export async function withReloadRetry(session, fn, { tries = 3, resettle, onRetry, timeoutMs = 20000 } = {}) {
+  let last;
+  for (let i = 0; i < tries; i++) {
+    session.contextCleared = false;
+    try {
+      return await fn();
+    } catch (e) {
+      if (!isNavigationError(e) && !session.contextCleared) throw e;
+      last = e;
+      if (i === tries - 1) break;
+      if (onRetry) await onRetry(e, i + 1, tries);
+      await sleep(500);
+      if (!(await waitForAppSilently(session, timeoutMs))) continue;
+      if (resettle) {
+        try { await resettle(session); } catch (re) { last = re; }
+      }
+    }
+  }
+  throw new Error(
+    `Rechargement de page pendant la recette : ${tries} tentatives épuisées (dernier échec : ${last?.message ?? last}). ` +
+    `arbre src/ en écriture par une autre session ? relancer en fenêtre calme (#1196)`,
+    { cause: last },
+  );
+}
+
 /**
  * Vérifie le serveur, lance Chrome, navigue et attend que `window.__wfrp` soit prêt.
  * `window.__wfrp` existe TÔT (le collecteur d'erreurs le pose en premier, `src/main.tsx`) mais
@@ -201,7 +297,7 @@ export async function openApp(url = DEFAULT_URL, opts = {}) {
   const session = await launchSession(opts);
   try {
     await session.rpc('Page.navigate', { url });
-    await waitFor(session, `typeof window.__wfrp?.screen === 'function'`, { timeoutMs: 10000 });
+    await waitFor(session, APP_READY, { timeoutMs: 10000 });
     return session;
   } catch (e) {
     await session.close();

@@ -12,7 +12,7 @@
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
-import { openApp, gotoScreen, evaluate, waitFor, consoleGuard, sleep, DEFAULT_URL } from '../recette/lib.mjs';
+import { openApp, gotoScreen, evaluate, waitFor, consoleGuard, sleep, withReloadRetry, DEFAULT_URL } from '../recette/lib.mjs';
 import { runSpikeChecks } from './spike-checks.mjs';
 
 const OUT_DIR = 'public/qc/spike';
@@ -43,13 +43,15 @@ const MODES = [
 
 /** DIVERGENCES ASSUMÉES du spike face au backend affine — l'encart de lecture de la planche. */
 const DIVERGENCES = [
-  'Sols en APLAT : une face = une couleur de matériau (`faceColors`), sans le motif de joints ni les accents seedés du backend affine (matériaux v2).',
-  'Aucun dégradé de détail : les nappes/parois ne portent ni pattern ni liseré — la matière se juge à la couleur et à la silhouette.',
+  "Sols, murs et pans de toit portent leur APPAREILLAGE : le masque de période (joints de la recette ; blocs nuancés pour un SOL, dont la période n'est pas seedée) est cuit en logiciel et répété sur l'UV monde. Ce qui manque à une nappe est son DÉGRADÉ cuit par tuile (`stops` d'un `TerrainDef`, clair en haut → sombre en bas) : ici c'est la lumière du renderer qui ombre, l'albédo ne porte que le `swatch`.",
+  "Aucun LISERÉ de contour : le backend affine cerne chaque face d'un trait (`strokeAttr`) que le spike n'a pas — les arêtes se lisent à la silhouette et à l'ombrage, jamais à un trait.",
+  "Accents de SOL absents : touffes d'herbe et mouchetis (`groundAccentsSvg`, LOD 2) sont des semis ancrés au MONDE, sans période — ils relèvent du même canal seedé que les accents muraux ci-dessous.",
   "L'ombrage de FALAISE (assombrissement cuit par orientation) disparaît : en mode éclairé, c'est la lumière directionnelle qui creuse le relief.",
   "Nuit et fenêtres émissives HORS PÉRIMÈTRE : aucune source ponctuelle n'est montée (la planche SVG en porte un panneau, pas le spike).",
   "Art des props limité à 3 vues + miroir (`propSvg`) : le spike ne lève PAS cette contrainte — un billboard reste un dessin, pas un volume.",
   'Animation hors périmètre : aucune pose de marche, aucun `fx` d’ambiance — chaque capture est un arrêt sur image.',
   "Murs ÉPAIS (~0,17 m) et COIFFÉS : le backend affine peint des plans d'épaisseur nulle, le spike en fait des boîtes minces avec une coiffe au sommet (`wallBoxPolys`) — les silhouettes divergent de ±2 px, et un mur offre une surface vue du dessus là où le SVG n'en a aucune.",
+  "Accents SEEDÉS AU MONDE non portés (blocs nuancés d'un appareillage MURAL, mouchetis d'usure) : la cuisson par face du spike ne porte que le canal DÉTERMINISTE (colombage), partagé par gabarit — leur canal dédié est spécifié au #1198.",
   "Disque d'ombre de contact en COULEUR CUITE seulement : en mode éclairé, la silhouette projette sa vraie ombre (`castShadow`) et le disque en ferait une seconde.",
 ];
 
@@ -125,6 +127,29 @@ async function capture(session, opts, file) {
   return { file, bytes: buf.length };
 }
 
+/** Remet l'écran du spike en place après un rechargement de page (#1196). */
+const resettleSpike = (session) => async () => {
+  await gotoScreen(session, 'webglSpike', { settleMs: 300 });
+  await waitFor(session, `typeof window.__spike?.set === 'function'`, { timeoutMs: 20000 });
+  await evaluate(session, `window.__spike.ready`);
+};
+
+let numeroCapture = 0;
+let rejeux = 0;
+
+/** Capture RETENTABLE : une autre session qui écrit dans `src/` recharge la page en plein vol (#1196). */
+async function captureRetry(session, opts, file) {
+  const n = ++numeroCapture;
+  return withReloadRetry(session, () => capture(session, opts, file), {
+    tries: 3,
+    resettle: resettleSpike(session),
+    onRetry: (e, essai, total) => {
+      rejeux++;
+      console.log(`reload détecté, re-jeu capture ${n} (${file}) — tentative ${essai}/${total} : ${String(e.message).split('\n')[0]}`);
+    },
+  });
+}
+
 function figure(file, legende) {
   return `<figure class="shot"><a href="spike/${file}"><img src="spike/${file}" alt="${legende}"></a><figcaption>${legende}</figcaption></figure>`;
 }
@@ -186,16 +211,17 @@ async function main() {
   try {
     session = await openAppTolerant(URL);
     const guard = consoleGuard(session);
-    await gotoScreen(session, 'webglSpike', { settleMs: 300 });
-    await waitFor(session, `typeof window.__spike?.set === 'function'`, { timeoutMs: 20000 });
-    await evaluate(session, `window.__spike.ready`);
+    await withReloadRetry(session, resettleSpike(session), {
+      tries: 3,
+      onRetry: (e, essai, total) => console.log(`reload détecté au chargement de l'écran — tentative ${essai}/${total} : ${String(e.message).split('\n')[0]}`),
+    });
 
     const shots = [];
     for (const scn of SCENES) {
       for (const mode of MODES) {
         for (const vue of VUES) {
           const file = `${scn.id}-${vue.key}-${mode.key}.png`;
-          await capture(session, { scene: scn.id, zoom: 1, focus: 'scene', ...vue.opts, ...mode.opts }, file);
+          await captureRetry(session, { scene: scn.id, zoom: 1, focus: 'scene', ...vue.opts, ...mode.opts }, file);
           shots.push({ scene: scn.id, mode: mode.key, file, label: `${vue.label} — ${mode.label}` });
         }
       }
@@ -203,14 +229,14 @@ async function main() {
     // Rotation ISO complète sur la scène de siège (l'épreuve du tri de profondeur).
     for (const rot of [0, 1, 2, 3]) {
       const file = `siege-enceinte-iso-rot${rot}-unlit.png`;
-      await capture(session, { scene: 'siege-enceinte', view: 'iso', rot, zoom: 1, lit: false, focus: 'scene' }, file);
+      await captureRetry(session, { scene: 'siege-enceinte', view: 'iso', rot, zoom: 1, lit: false, focus: 'scene' }, file);
       shots.push({ scene: 'siege-enceinte', mode: 'unlit', extra: true, file, label: `iso rot${rot}` });
     }
     // LACET LIBRE : deux angles HORS cran (le départage de profondeur n'a plus d'ordre de peinture
     // affine à imiter, et l'art de décor tombe sur son cran le plus proche).
     for (const yawDeg of [25, 65]) {
       const file = `siege-enceinte-iso-yaw${yawDeg}-unlit.png`;
-      await capture(session, { scene: 'siege-enceinte', view: 'iso', yawDeg, zoom: 1, lit: false, focus: 'scene' }, file);
+      await captureRetry(session, { scene: 'siege-enceinte', view: 'iso', yawDeg, zoom: 1, lit: false, focus: 'scene' }, file);
       shots.push({ scene: 'siege-enceinte', mode: 'unlit', libre: true, file, label: `iso lacet ${yawDeg}°` });
     }
     // Planche CRÉATURE : un héros riggé, 3 zooms × 3 conventions, cadré sur le personnage.
@@ -218,7 +244,7 @@ async function main() {
     for (const convention of ['jeu', 'heroique', 'metrique']) {
       for (const zoom of [0.4, 1, 2.6]) {
         const file = `creature-${convention}-zoom${String(zoom).replace('.', '_')}.png`;
-        await capture(session, { scene: 'siege-enceinte', view: 'iso', rot: 0, lit: false, focus: 'personnage', convention, zoom }, file);
+        await captureRetry(session, { scene: 'siege-enceinte', view: 'iso', rot: 0, lit: false, focus: 'personnage', convention, zoom }, file);
         creature.push({ file, label: `${convention} — zoom ×${zoom}` });
       }
     }
@@ -229,6 +255,7 @@ async function main() {
     console.log(`OK: ${shots.length + creature.length} PNG dans ${OUT_DIR}/`);
     for (const s of [...shots, ...creature]) console.log(`  ${OUT_DIR}/${s.file}`);
     console.log(`OK: ${SHEET}`);
+    console.log(`RE-JEUX (rechargements de page absorbés, #1196) : ${rejeux}`);
     if (errs.length) {
       console.error(`CONSOLE: ${errs.length} erreur(s)`);
       for (const e of errs) console.error(`  [${e.type}] ${e.text}`);
