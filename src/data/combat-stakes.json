@@ -272,8 +272,6 @@
     "id": "ambush-surprise",
     "label": "Embuscade — repérer les embusqués",
     "kind": "ambushSurprise",
-    "template": "Test opposé de Discrétion/Perception. Vous l’emportez : l’embuscade est repérée, aucune Surprise. L’embusqueur l’emporte : l’État Surpris — sauf si le Talent Vigilance vous ouvre encore un Test de Perception.",
-    "form": "descripteur",
     "rule": "surpris",
     "ruleCategory": "etats",
     "source": {
@@ -286,8 +284,6 @@
     "id": "ambush-vigilance",
     "label": "Vigilance — éviter la Surprise",
     "kind": "ambushVigilance",
-    "template": "Réussite : vous ignorez la Surprise et agissez normalement au premier Round. Échec : l’État Surpris.",
-    "form": "descripteur",
     "rule": "vigilance",
     "ruleCategory": "talents",
     "source": {

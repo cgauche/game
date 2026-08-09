@@ -622,30 +622,47 @@ export function spellEffectOps<E = EffectOp>(flow: Flow<E> | undefined): GameOp[
  * au lieu d'être écrit à la main : une phrase stockée ment dès qu'une règle optionnelle change les
  * ops appliquées, une dérivation ne le peut pas.
  *
- * FAIL-CLOSED : rend `undefined` dès qu'un nœud rend l'issue INCERTAINE — un `if` (la branche dépend
- * d'une Condition évaluée au moment de l'application), un `test` imbriqué (un second jet), un `choice`
- * (une décision à venir), ou une feuille qui n'est pas une liste d'ops (transition, dialogue). Aplatir
+ * FAIL-CLOSED : rend `undefined` dès qu'un nœud rend l'issue INCERTAINE — un `if` non résolu (la
+ * branche dépend d'une Condition), un `test` imbriqué (un second jet), un `choice` (une décision à
+ * venir), ou une feuille qui n'est pas une liste d'ops (transition, dialogue). Aplatir
  * ces cas produirait un encadré qui PROMET ce qui ne se produira peut-être pas. Une branche vide rend
  * `[]` (« rien ne se produit »), qui est une réponse, pas une absence. PURE.
  *
+ * `evalCond` (optionnel) — ORACLE PARTIEL de Condition : il rend `true`/`false` UNIQUEMENT pour ce
+ * qu'il sait trancher hors exécution, et `undefined` pour tout le reste. Ce troisième cas est le
+ * cœur du contrat : un évaluateur TOTAL (qui répondrait `false` faute de contexte) ferait promettre
+ * la branche `else` d'une Condition qu'il n'a pas su lire — l'encadré enseignerait une règle
+ * AMPUTÉE. Ici, `undefined` ⇒ l'`if` reste incertain ⇒ la branche entière se tait. Sans `evalCond`,
+ * tout `if` est incertain (comportement d'origine). Un `if` sans `else` dont la Condition est
+ * FAUSSE de façon tranchée rend `[]` : rien ne s'applique, c'est une réponse.
+ *
  * PORTÉE de la certitude : elle est STRUCTURELLE — elle porte sur la FORME du Flow (`do`+ops sans
- * `if`/`test`/`choice` en amont), jamais sur le contenu d'une op. Une op dont l'effet est conditionné
- * EN INTERNE (garde dans son propre payload) est rendue comme certaine : sa certitude relève de son
- * exécuteur, `applyOps`. Une op qui doit annoncer une issue conditionnelle expose sa condition dans
- * la STRUCTURE du Flow (`if`), où cette fonction la lit.
+ * `test`/`choice`/`if` non résolu en amont), jamais sur le contenu d'une op. Une op dont l'effet est
+ * conditionné EN INTERNE (garde dans son propre payload) est rendue comme certaine : sa certitude relève
+ * de son exécuteur, `applyOps`. Une op qui doit annoncer une issue conditionnelle expose sa condition
+ * dans la STRUCTURE du Flow (`if`), où cette fonction la lit.
  */
-export function certainFlowOps<E = EffectOp>(flow: Flow<E> | undefined): GameOp[] | undefined {
+export function certainFlowOps<E = EffectOp>(
+  flow: Flow<E> | undefined,
+  evalCond?: (cond: Condition) => boolean | undefined,
+): GameOp[] | undefined {
   if (!flow) return undefined;
   if (flow.kind === 'seq') {
     const out: GameOp[] = [];
     for (const s of flow.steps) {
-      const ops = certainFlowOps(s);
+      const ops = certainFlowOps(s, evalCond);
       if (!ops) return undefined;
       out.push(...ops);
     }
     return out;
   }
   if (flow.kind === 'do') return isEffectOp(flow.effect) ? [...flow.effect.ops] : undefined;
+  if (flow.kind === 'if' && evalCond) {
+    const verdict = evalCond(flow.cond);
+    if (verdict === undefined) return undefined; // l'oracle ne sait pas : on se tait, on ne suppose pas
+    const branch = verdict ? flow.then : flow.else;
+    return branch ? certainFlowOps(branch, evalCond) : [];
+  }
   return undefined;
 }
 

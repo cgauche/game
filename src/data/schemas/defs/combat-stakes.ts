@@ -23,10 +23,13 @@ export const schema = z.array(
       /** `kind` servi : celui de l'applier de cascade quand il en existe un, sinon celui du TIRAGE
        *  (une même étape joue sur deux jeux de tables — Imparfaite / Colère des dieux). */
       kind: z.string(),
-      /** Gabarit du descripteur — trous `{nom}` remplis par le flux (valeurs calculées). */
-      template: z.string(),
-      /** FORME DÉCLARÉE (garde `night-stake-form.test.ts`, étendue à ce dataset). */
-      form: z.enum(['verbatim', 'descripteur']),
+      /** Gabarit du descripteur — trous `{nom}` remplis par le flux (valeurs calculées). OPTIONNEL :
+       *  un jet dont l'issue se LIT en chips d'ops (`OutcomeNote`, #1117) n'a plus de phrase à stocker,
+       *  l'entrée ne garde que son foyer de règle (le ⓘ du titre). */
+      template: z.string().optional(),
+      /** FORME DÉCLARÉE (garde `night-stake-form.test.ts`, étendue à ce dataset) — qualifie le gabarit :
+       *  présente si et seulement s'il y en a un. */
+      form: z.enum(['verbatim', 'descripteur']).optional(),
       /** Id du FOYER de la règle (entité porteuse, ou fiche de `regles.json` à défaut). */
       rule: z.string().optional(),
       /** Catégorie Codex du foyer (`'regles'`, `'etats'`, `'maladies'`…). */
@@ -45,6 +48,12 @@ export const schema = z.array(
       }
       if (e.rule && !e.ruleCategory) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${e.id} : rule sans ruleCategory` });
+      }
+      if (!!e.template !== !!e.form) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${e.id} : la forme qualifie le gabarit — les deux ensemble, ou aucun` });
+      }
+      if (!e.template && !(e.rule && e.ruleCategory)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${e.id} : entrée sans gabarit ET sans foyer — elle ne dirait plus rien` });
       }
     }),
 );

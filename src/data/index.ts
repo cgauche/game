@@ -231,8 +231,10 @@ export interface CombatStakeEntry {
   id: string;
   label: string;
   kind: string;
-  template: string;
-  form: 'verbatim' | 'descripteur';
+  /** Gabarit du descripteur — ABSENT quand l'issue du jet se lit en chips d'ops (#1117) : l'entrée ne
+   *  porte alors que son foyer de règle. `form` le qualifie, donc absente avec lui. */
+  template?: string;
+  form?: 'verbatim' | 'descripteur';
   rule?: string;
   ruleCategory?: string;
   /** Catégorie Codex de l'ENTRÉE jouée — le renvoi descend jusqu'à elle quand la clé la nomme. */
@@ -293,9 +295,11 @@ export interface StakeRef {
 }
 
 /** ENJEU RÉSOLU rendu par la surface : le texte de la donnée (trous remplis) + la fiche de règle
- *  DÉRIVÉE de la même entrée — le producteur ne nomme ni l'un ni l'autre. */
+ *  DÉRIVÉE de la même entrée — le producteur ne nomme ni l'un ni l'autre.
+ *  `text` ABSENT = l'entrée ne porte pas de gabarit (son issue se lit en chips d'ops, #1117) : la
+ *  surface ne rend PAS de phrase, le foyer de règle reste servi. */
 export interface ResolvedStake {
-  text: string;
+  text?: string;
   rule?: { category: string; id: string };
 }
 
@@ -409,7 +413,7 @@ function entryText(key: StakeKey): string | undefined {
   return rule ? STAKE_ENTRY_TEXTS[rule.category]?.(rule.id) : undefined;
 }
 
-function stakeEntry(key: StakeKey): { text: string; rule?: { category: string; id: string } } | undefined {
+function stakeEntry(key: StakeKey): { text?: string; rule?: { category: string; id: string } } | undefined {
   // La fiche de l'ENTRÉE jouée PRIME sur celle du `kind` (une étape « Blessé » renvoie au symptôme
   // Blessé, pas à l'intro du chapitre des maladies) ; à défaut, la fiche du kind.
   const kindRule = (id?: string, category = 'regles') => entryRule(key) ?? (id ? { category, id } : undefined);
@@ -440,7 +444,9 @@ function stakeEntry(key: StakeKey): { text: string; rule?: { category: string; i
     const e = COMBAT_STAKES.find((x) => x.kind === key.kind);
     if (!e) return undefined;
     const rule = kindRule(e.rule, e.ruleCategory ?? 'regles');
-    return { text: entryText(key) ?? e.template, ...(rule ? { rule } : {}) };
+    // Entrée SANS gabarit : le foyer voyage seul (aucune phrase à rendre — l'issue se lit en chips).
+    const text = entryText(key) ?? e.template;
+    return { ...(text ? { text } : {}), ...(rule ? { rule } : {}) };
   }
   if (key.dataset === 'activity') {
     // ACTIVITÉS : `key.kind` = l'id de l'`ActivityDef`. Le FOYER par DÉFAUT est l'Activité ELLE-MÊME
@@ -564,18 +570,20 @@ export function flowStakeRef(
 /** RÉSOLVEUR UNIQUE d'enjeu (#1117) — la seule porte qui transforme une `StakeRef` en texte affichable.
  *  FAIL-CLOSED aux DEUX bouts : une clé sans entrée JETTE (une surface qui demande son enjeu et n'en
  *  reçoit AUCUN en silence, c'est l'étape muette qu'on a supprimée), et un trou sans valeur JETTE
- *  aussi (un « {driftKm} » affiché tel quel serait un texte cassé rendu au joueur). */
+ *  aussi (un « {driftKm} » affiché tel quel serait un texte cassé rendu au joueur).
+ *  Une entrée SANS gabarit rend un enjeu sans `text` : ce n'est pas un silence — son issue est dite
+ *  par les chips d'ops du jet, et son foyer de règle reste rendu. */
 export function resolveStake(ref: StakeRef): ResolvedStake {
   const entry = stakeEntry(ref.key);
   if (!entry) {
     throw new Error(`resolveStake('${ref.key.dataset}/${ref.key.kind}') : aucune entrée d'enjeu — une surface qui LANCE dit ce qu'elle met en jeu`);
   }
-  const text = entry.text.replace(/\{(\w+)\}/g, (_m, name: string) => {
+  const text = entry.text?.replace(/\{(\w+)\}/g, (_m, name: string) => {
     const v = ref.values?.[name];
     if (v == null) throw new Error(`resolveStake('${ref.key.dataset}/${ref.key.kind}') : valeur manquante pour « ${name} »`);
     return String(v);
   });
-  return { text, ...(entry.rule ? { rule: entry.rule } : {}) };
+  return { ...(text ? { text } : {}), ...(entry.rule ? { rule: entry.rule } : {}) };
 }
 
 export interface SpeciesData {

@@ -21,11 +21,15 @@ import { GameOpChips } from './GameOpChips';
 import type { GameOp } from '../engine/ops';
 
 export function StakeNote({ stake }: { stake: StakeRef }) {
+  // Entrée d'enjeu SANS gabarit (#1117) : la donnée ne porte plus que son foyer de règle — le jet dit
+  // ce qu'il met en jeu par ses CHIPS d'ops (`OutcomeNote`), et le verbatim reste au ⓘ du titre.
+  const { text } = resolveStake(stake);
+  if (!text) return null;
   return (
     <div className="rm-stake">
       <Icon id="nav/dice" size="sm" />
       <div>
-        <Prose md={resolveStake(stake).text} />
+        <Prose md={text} />
       </div>
     </div>
   );
@@ -38,18 +42,24 @@ export function StakeNote({ stake }: { stake: StakeRef }) {
  *
  * Il ne reçoit AUCUN texte : uniquement les `GameOp` CERTAINES de chaque branche (`certainFlowOps`),
  * humanisées par la source unique `GameOpChips`/`opRows` — donc une règle optionnelle qui change les
- * ops change l'encadré, par construction. Une branche INCERTAINE (`undefined` : `if`, second jet,
- * choix) n'est PAS rendue : promettre ce qui dépend d'une Condition serait pire que se taire. Une
- * branche vide se dit (« rien »), c'est une réponse.
+ * ops change l'encadré, par construction. Une branche INCERTAINE (`undefined` : second jet, choix,
+ * `if` non repliable) n'est PAS rendue : promettre ce qui dépend d'une Condition serait pire que se
+ * taire. Une branche vide se dit (« rien »), c'est une réponse.
+ *
+ * `realized` — la branche que le jet A TRANCHÉE : l'encadré se FILTRE alors à elle seule et devient le
+ * VERDICT (mêmes ops, même rendu, aucune seconde surface à synchroniser). Absent = avant le jet, les
+ * deux issues sont annoncées.
  */
-export function OutcomeNote({ onSuccess, onFail }: { onSuccess?: GameOp[]; onFail?: GameOp[] }) {
-  if (!onSuccess && !onFail) return null;
+export function OutcomeNote({ onSuccess, onFail, realized }: { onSuccess?: GameOp[]; onFail?: GameOp[]; realized?: 'success' | 'fail' }) {
+  const succ = realized === 'fail' ? undefined : onSuccess;
+  const fail = realized === 'success' ? undefined : onFail;
+  if (!succ && !fail) return null;
   return (
     <div className="rm-stake">
       <Icon id="journal/info" size="sm" />
       <div>
-        {onSuccess ? <p><b>Réussite :</b> {onSuccess.length ? <GameOpChips ops={onSuccess} /> : 'rien.'}</p> : null}
-        {onFail ? <p><b>Échec :</b> {onFail.length ? <GameOpChips ops={onFail} /> : 'rien.'}</p> : null}
+        {succ ? <p><b>Réussite :</b> {succ.length ? <GameOpChips ops={succ} /> : 'rien.'}</p> : null}
+        {fail ? <p><b>Échec :</b> {fail.length ? <GameOpChips ops={fail} /> : 'rien.'}</p> : null}
       </div>
     </div>
   );

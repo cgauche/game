@@ -6,7 +6,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { VsHeader } from './VsHeader';
 import { StakeRule, OutcomeNote } from './StakeNote';
-import { certainFlowOps } from '../engine/flowCore';
+import { branchCertainOps } from '../state/combat/flowEval';
 import { resolveStake } from '../data';
 import { useAttackJetProps } from './jetProps/useAttackJetProps';
 import { useTrampleJetProps } from './jetProps/useTrampleJetProps';
@@ -159,9 +159,11 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // Base AFFICHÉE + lignes de mod NOMMÉES d'une étape QUI LANCE (`CascadeRollStep` : cible ET libellé
   // de ligne par le TYPE) : le libellé est la COMPÉTENCE lancée (« Résistance », « Calme »…), comme
   // Défense affiche « Attaque »/« Parade » — pas le texte de l'étape (le but vit dans le sous-titre).
-  // Le Soutien (LDB 12), FONDU dans `step.base` par la porte du seam / le flux propriétaire, redevient
-  // une ligne (primitive PARTAGÉE `supportSplit`). La Difficulté, elle, n'est PAS un mod (#1072) : elle
-  // voyage en donnée de LIGNE (`step.difficulty`, posée par la porte du seam et les flux).
+  // Le Soutien (LDB 12) arrive par DEUX voies selon le producteur de l'étape : la porte du seam pose
+  // une `base` NUE et le Soutien DÉJÀ nommé dans `step.mods` (rien à défaire, `s.support` absent) ;
+  // un flux qui bâtit son étape à la main le FOND encore dans `step.base` et le porte en `s.support`,
+  // que `supportSplit` (primitive PARTAGÉE) en défait ici. La Difficulté, elle, n'est PAS un mod
+  // (#1072) : elle voyage en donnée de LIGNE (`step.difficulty`, posée par la porte du seam et les flux).
   const stepLine = (s: CascadeRollStep): { label: string; base: number; mods: ModLine[] } => {
     const raw = s.base ?? s.target;
     const { base, mods } = supportSplit(raw, s.support);
@@ -296,10 +298,22 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   );
   // ENCADRÉ « Réussite / Échec » en régime CALCULÉ (#1117) : les deux fabriques d'étape
   // `triggeredTest` (`state/combat/triggeredTest.ts`) SÉRIALISENT déjà les Flows de branche dans le
-  // `meta` — l'encadré se DÉRIVE donc de leurs ops effectives (`certainFlowOps` → `GameOpChips`),
+  // `meta` — l'encadré se DÉRIVE donc de leurs ops effectives (`branchCertainOps` → `GameOpChips`),
   // règles optionnelles comprises, au lieu d'être une phrase stockée qui mentirait dès qu'une option
   // change le comportement. Rendu SEULEMENT quand au moins une branche est certaine.
-  const outcomeNote = <OutcomeNote onSuccess={certainFlowOps(cur.meta?.onSuccess)} onFail={certainFlowOps(cur.meta?.onFail)} />;
+  // Le repli des Conditions se fait contre le combattant de l'étape (et son référent `casterId`) :
+  // une branche gardée par un `if` d'appartenance a une réponse POUR LUI. Une fois le jet tranché
+  // (`cur.result`), le MÊME encadré se filtre à la branche réalisée : c'est le verdict, et il est
+  // structurellement le même objet que la promesse d'avant le jet.
+  const stepActor = actorOf(cur);
+  const stepCaster = typeof cur.meta?.casterId === 'string' ? pool.find((c) => c.id === cur.meta!.casterId) : undefined;
+  const outcomeNote = (
+    <OutcomeNote
+      onSuccess={branchCertainOps(cur.meta?.onSuccess, stepActor, stepCaster)}
+      onFail={branchCertainOps(cur.meta?.onFail, stepActor, stepCaster)}
+      {...(cur.result ? { realized: cur.result.success ? ('success' as const) : ('fail' as const) } : {})}
+    />
+  );
   // ÉTAPE-JET : REGISTRE data-driven du rendu par TYPE de jet (ajouter un type = 1 entrée ici). Les
   // cinq jets RollShell (attaque/défense/Maladresse/Test/Test étendu) sont rendus via leur hook de
   // props dans la MÊME coquille restée montée → jet ET conséquences vivent dans UNE fenêtre jusqu'à
@@ -594,12 +608,15 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       responded: opposedResponded(useGame.getState(), [{ id: cur.actorId, interactive: true, result: res }]),
       row: {
         combatant: oppActor,
-        // Ligne d'un Test OPPOSÉ : Difficulté déclarée UNE fois à la fabrique (LDB 12 l.166).
+        // Ligne d'un Test OPPOSÉ : Difficulté déclarée UNE fois à la fabrique (LDB 12 l.166) — celle
+        // de l'opposition, portée par le freeze, donc LUE des deux côtés (le camp qui a pré-jeté
+        // l'affichait « Intermédiaire » par défaut tant qu'elle ne voyageait pas). Base NUE de
+        // l'attaquant (`aT.base`) pour que le modificateur de Difficulté se lise sur la ligne.
         ...opposedLines([{
           label: opp.attackerName ? (opp.attackerLabel ? `${opp.attackerName} — ${opp.attackerLabel}` : opp.attackerName) : (opp.attackerLabel ?? 'Adversaire'),
-          base: opp.aT.target,
+          base: opp.aT.base ?? opp.aT.target,
           r: { roll: opp.aT.roll, target: opp.aT.target, sl: opp.aT.sl, success: opp.aT.success },
-        }])[0],
+        }], opp.difficulty)[0],
       },
     }),
   } : null;

@@ -1170,6 +1170,10 @@ export interface OpposedFreeze {
   /** Bonus de DR ajouté au jet du DÉFENSEUR avant l'opposition (Piège-lame, LDB 62 l.280) — `FlowTest.
    *  opposed.bonusSL` figé : chaque (re)résolution oppose `def.sl + bonusSL` à `aT`. Absent/0 = Assommante. */
   bonusSL?: number;
+  /** Difficulté de l'OPPOSITION (LDB 12 l.166 : « Dans la plupart des cas, ces modificateurs sont
+   *  appliqués aux deux groupes ») — celle du `FlowTest`, appliquée au pré-jet de l'attaquant comme au
+   *  jet du défenseur, et LUE par les deux lignes. Absente pour un freeze réhydraté sans elle. */
+  difficulty?: Difficulty;
 }
 /** Contexte SÉRIALISABLE d'une DÉFENSE de manœuvre de ZONE (Souffle/Vomi/Regard/Étreinte/Langue, LDB 85)
  *  porté par une étape de cascade `maneuverDefense` : le héros ciblé JETTE sa réaction (Esquive/Initiative/

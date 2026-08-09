@@ -15,7 +15,7 @@ import { RollShell } from './RollShell';
 describe('resolveStake — la porte UNIQUE, fail-closed (#1117)', () => {
   it('rend le texte de la donnée et DÉRIVE la fiche de règle de la même entrée', () => {
     const r = resolveStake(nightStakeRef('recovery'));
-    expect(r.text.length).toBeGreaterThan(10);
+    expect(r.text?.length ?? 0).toBeGreaterThan(10);
     expect(r.rule).toEqual({ category: 'regles', id: 'guerison-des-blessures' });
   });
 

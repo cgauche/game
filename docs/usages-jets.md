@@ -52,7 +52,7 @@ sa définition vit à la charte. Une prop non encore taguée affiche « — » e
 | `src/ui/AppraiseModal.tsx` | `AppraiseModalView` (J) | 1 | ✓ | ✓ | ✓ | · | · | · | ✓ | · | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/ApproachModal.tsx` | `ApproachModal` (J) | 1 | ✓ | · | ✓ | · | · | · | · | · | · | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/AuContactModal.tsx` | `AuContactModal` (J) ×2 | 2 | ✓ | · | · | · | · | · | ✓ | ✓ | · | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ |
-| `src/ui/BargainModal.tsx` | `BargainModalView` (J) | variable | ✓ | ✓ | ✓ | · | · | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ |
+| `src/ui/BargainModal.tsx` | `BargainModalView` (J) | 2 | ✓ | ✓ | ✓ | · | · | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/BattementModal.tsx` | `BattementModal` (J) | 1 | ✓ | · | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/CascadeModal.tsx` | `attack` (J), `CascadeBody` (J) ×7, `defense` (J), `extended` (J), `fumble` (J), `test` (J), `trample` (J) | appel / — / 2+ / variable / 3+ | ✓ | · | ✓ | · | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | · | · | · | · | ✓ | · | ✓ | · | · |
 | `src/ui/CastModal.tsx` | `CastModal` (J) | 1 | ✓ | · | · | · | · | · | · | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ |

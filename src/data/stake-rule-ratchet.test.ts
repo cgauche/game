@@ -199,7 +199,7 @@ describe('cliquet — un enjeu porte sa RÈGLE (#1117)', () => {
       const kind = 'flow' in e ? `${(e as { flow: string }).flow}/${(e as { phase: string }).phase}` : (e as { kind: string }).kind;
       // Les TROUS du gabarit sont remplis d'une valeur sonde : `resolveStake` est fail-closed sur un
       // trou vide, et ce test-ci mesure le RENVOI, pas le texte (la valeur réelle vient du producteur).
-      const values = Object.fromEntries([...e.template.matchAll(/\{(\w+)\}/g)].map((m) => [m[1], '·']));
+      const values = Object.fromEntries([...(e.template ?? '').matchAll(/\{(\w+)\}/g)].map((m) => [m[1], '·']));
       const rule = resolveStake({ key: { dataset, kind, entryId }, values }).rule;
       if (rule?.category !== e.entryCategory || rule.id !== entryId) {
         muettes.push(`${e.id} → attendu ${e.entryCategory}:${entryId}, obtenu ${rule ? `${rule.category}:${rule.id}` : 'aucun renvoi'}`);

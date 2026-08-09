@@ -29,7 +29,7 @@ import { describeTestRoll, type OpsCtx } from '../../engine/ops';
 import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../../engine/types';
 import type { Combatant, Difficulty } from '../../engine/types';
 import { refLabel } from '../../data';
-import { type Flow, type FlowTest, type ConditionCtx, evalCondition, flowHasImpureOp, resolveTestDifficulty, EMPTY_FLOW } from '../flow';
+import { type Flow, type FlowTest, type ConditionCtx, evalCondition, flowHasImpureOp, flowHasTest, resolveTestDifficulty, EMPTY_FLOW } from '../flow';
 import { condCtx } from '../bourseFlow';
 import { buildActorView, combatConditionCtx, flowTestGated } from './flowEval';
 import type { Get, Set as SetFn } from '../flowTypes';
@@ -147,7 +147,11 @@ export function condCtxFor(ctx: ExecCtx): ConditionCtx {
  *    do-loop y résout les hooks injectés), qui EMPILENT leur propre conséquence (frappe / Imparfaite / étape
  *    d'affichage « lame brisée ») → return vide. Détectée par `flowHasImpureOp` (≠ « freeAttack présent » :
  *    tout marqueur à hook). Le contexte `exec` (get/set [+ freeAttack/bladeTrap pour cibler le TIERS]) est
- *    requis. La continuation `after` est jouée À PART (`playAfter`), APRÈS les lignes de branche → ordre correct. */
+ *    requis. La continuation `after` est jouée À PART (`playAfter`), APRÈS les lignes de branche → ordre correct.
+ *  - Branche à SECOND JET (nœud `test` enfoui — la Vigilance interposée par l'échec de la Surprise, LDB 13
+ *    l.67) → `runCombatFlow` AUSSI : lui seul route un `test` en jet cadence-aware (`resolveFlowTest`, qui
+ *    APPEND son étape à la MÊME cascade). `runPureFlowLines` LÈVE sur un tel nœud (garde anti-jet-silencieux) —
+ *    l'y envoyer serait une exception en pleine résolution. */
 export function applyTriggeredTestBranch(
   c: Combatant, t: Pick<TestResult, 'success' | 'sl'>, branches: { onSuccess: Flow; onFail: Flow },
   exec?: { get: Get; set: SetFn; caster?: Combatant; freeAttack?: ExecCtx['freeAttack']; bladeTrap?: ExecCtx['bladeTrap'] },
@@ -157,11 +161,20 @@ export function applyTriggeredTestBranch(
   // (`exec.caster`) quand il est connu et DIFFÈRE de `c` (zone de Sort posée par un tiers), sinon `c`
   // lui-même (Mâchoires/Contrôle de la Frénésie : effet auto-porté, comportement inchangé).
   const caster = exec?.caster ?? c;
-  if (exec && flowHasImpureOp(branch)) {
+  if (exec && (flowHasImpureOp(branch) || flowHasTest(branch))) {
     runCombatFlow({ mode: 'combat', get: exec.get, set: exec.set, target: c, caster, label: 'Effet', opsCtx: { sl: t.sl }, ...(exec.freeAttack ? { freeAttack: exec.freeAttack } : {}), ...(exec.bladeTrap ? { bladeTrap: exec.bladeTrap } : {}) }, branch);
     return [];
   }
   return runPureFlowLines(c, caster, branch, { rng: battleRng(), caster, sl: t.sl });
+}
+
+/** IDENTITÉ d'une étape `triggeredTest` — SOURCE UNIQUE des deux fabriques. La SITUATION entre dans
+ *  l'id quand elle diffère de la Compétence lancée : une branche peut APPENDRE à la même cascade un
+ *  second Test de la MÊME Compétence sur le MÊME acteur (Surprise → Vigilance, deux Tests de
+ *  Perception, LDB 13 l.67), et deux étapes homonymes rendraient la seconde inatteignable
+ *  (`cascadeRoll(id)` retrouve la première, déjà résolue). */
+function triggeredTestStepId(c: Combatant, label: string | undefined, skillLabel: string): string {
+  return `triggeredTest-${c.id}-${label && label !== skillLabel ? `${label}-${skillLabel}` : skillLabel}`;
 }
 
 /** SOURCE UNIQUE du squelette d'étape `triggeredTest` d'un Test SIMPLE (non opposé) : convention RAW-correcte
@@ -176,7 +189,7 @@ export function simpleTriggeredTestStep(
   const base = rawCombatTestBase(c, ft.skill, ft.characteristic, ft.spec);
   const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
   return {
-    id: `triggeredTest-${c.id}-${skillLabel}`,
+    id: triggeredTestStepId(c, ft.label, skillLabel),
     kind: 'triggeredTest', actorId: c.id, icon: 'nav/dice', rollLabel: skillLabel,
     base, target: base + DIFFICULTY_MODIFIERS[difficulty] + combatTestPenalty(c), label: ft.label ?? skillLabel,
     // ENJEU du Flow (#1117) : le producteur du `FlowTest` le fournit, cette fabrique le transmet —
@@ -340,8 +353,10 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   const attacker = opp ? ctx.caster : undefined;
   // L'attaquant figé porte SON éventuel bonus de DR (Furtif sur la Discrétion de l'embusqueur, LDB 85)
   // baké dans `aT.sl` dès le pré-jet → la voie cascade (meta `aT`) ET la voie inline ré-opposent à l'identique.
+  // La Difficulté de l'opposition est UNE et vaut pour les DEUX camps (LDB 12 l.166) : le pré-jet de
+  // l'attaquant la subit comme le jet du défenseur, au lieu d'un « Intermédiaire » fixé en dur ici.
   const aT: TestResult | undefined = opp && attacker
-    ? (() => { const r = rollTest(testValue(attacker, opp.attackerSkill, opp.attacker), 'intermediaire', battleRng()); return { ...r, sl: r.sl + (opp.attackerBonusSL ?? 0) }; })()
+    ? (() => { const r = rollTest(testValue(attacker, opp.attackerSkill, opp.attacker), difficulty, battleRng()); return { ...r, sl: r.sl + (opp.attackerBonusSL ?? 0) }; })()
     : undefined;
   // Piège-lame : on COMPLÈTE le freeze avec le DR de l'attaquant que CE Test jette (`aT`), pour que la
   // conséquence `breakBlade` recompose la marge nette sans re-jeter l'attaquant.
@@ -357,10 +372,10 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     const extraMeta = { ...(ctx.caster && ctx.caster.id !== c.id ? { casterId: ctx.caster.id } : {}), ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}), ...(btFreeze ? { bladeTrap: btFreeze } : {}), ...(ctx.opsCtx?.noReentryOwnTestFailed ? { noOwnTestFailed: true } : {}) };
     pushCombatStep(ctx.set, aT && attacker
       ? {
-          id: `triggeredTest-${c.id}-${skillLabel}`, kind: 'triggeredTest', actorId: c.id, icon: 'nav/dice', rollLabel: skillLabel,
-          base, target: base + DIFFICULTY_MODIFIERS[difficulty] + penalty, label,
+          id: triggeredTestStepId(c, ft.label, skillLabel), kind: 'triggeredTest', actorId: c.id, icon: 'nav/dice', rollLabel: skillLabel,
+          base, target: base + DIFFICULTY_MODIFIERS[difficulty] + penalty, label, difficulty,
           ...(ft.stake ? { stake: ft.stake } : {}),
-          meta: { onSuccess: node.success, onFail: node.fail, after, opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}) }, ...extraMeta },
+          meta: { onSuccess: node.success, onFail: node.fail, after, opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], difficulty, ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}) }, ...extraMeta },
           ...(ft.menace ? { menace: ft.menace } : {}),
         }
       : simpleTriggeredTestStep(c, ft, { onSuccess: node.success, onFail: node.fail }, after, difficulty, extraMeta));
