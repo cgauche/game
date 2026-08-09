@@ -55,6 +55,7 @@ import {
   defenseModifiers,
   DEFENSE_LABEL,
   attackHandGate,
+  conditionModLines,
 } from '../engine/combat';
 import { RULE_REF } from '../engine/ruleRefs';
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, areInContact, reachTiles, meleeReachTiles } from '../engine/engagement';
@@ -146,7 +147,7 @@ import { norm } from '../lib/normalize';
 import { recomputeLoadout, weaponWithAmmo, selectedAmmo, consumeAmmo, ammoFamily, ammoFamilyLabel, damageArmour, deviatableArmourAt, buildWeapon, isUnarmed } from '../engine/items';
 import { hasCapability, itemCapability } from '../engine/capabilities';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, removeActiveEffects, effectRef, COND } from '../engine/conditions';
+import { isOutOfAction, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, incomingMeleeAdvantage, removeActiveEffects, effectRef, COND } from '../engine/conditions';
 import { creatureAttacks, selfManeuversOf, selfManeuverApplicable, type CreatureAttack } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
 
@@ -263,7 +264,7 @@ import {
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type FlowTest, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep, stakeAtTableRow } from './cascade';
-import { freeCons, rollSansPilote } from './rollSeam';
+import { freeCons, rollLine, rollStep, rollSansPilote } from './rollSeam';
 
 /** L'État du défenseur accorde-t-il un Avantage à l'assaillant en mêlée ? Lu en DONNÉES
  *  (`incomingMeleeAdvantage` → `passive` `incomingAdvantage`, kind `etat`). Sonné : « +1 Avantage avant
@@ -2854,9 +2855,11 @@ export function openAttackCascade(get: Get, set: SetFn, pa: PendingAttack, title
   const hand = !skipGate && attacker ? attackHandGate(attacker, pa.weaponUid) : null; // `skipGate` : gate déjà PASSÉ (reprise `handGateConfirm`) → pas de re-test
   if (attacker && hand) {
     const base = effectiveChar(attacker, 'dexterite'); // Dextérité effective (LDB) — +20 « Accessible » via la Difficulté
+    // Cible montée par le MONTEUR : elle passe donc par `clampTarget`, comme celle que `rollTest`
+    // calculera au jet (`FLOWS.handGate`). Effet MESURÉ aux bornes seulement (Dex 85 : 105 → 99).
     set({ pendingHandGate: {
       attackerId: attacker.id, actorName: attacker.label, hand,
-      skillValue: base, difficulty: 'accessible', target: base + DIFFICULTY_MODIFIERS['accessible'],
+      skillValue: base, difficulty: 'accessible', target: rollLine({ actor: attacker, difficulty: 'accessible', valeur: base }).target,
       roll: null, sl: 0, success: false, pa, title, icon,
     } });
     return;
@@ -5492,7 +5495,8 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
     for (const d of decided.diseases) {
       steps.push({
         id: `combatEndDisease-${c.id}-${d.disease}`, kind: 'combatEndDisease', actorId: c.id, icon: 'medical/infection',
-        rollLabel: 'Résistance', base: resVal, target: resVal + DIFFICULTY_MODIFIERS[d.difficulty] + combatTestPenalty(c),
+        rollLabel: 'Résistance', difficulty: d.difficulty,
+        ...rollStep({ actor: c, difficulty: d.difficulty, valeur: resVal, surLaCible: conditionModLines(c) }),
         label: d.label, meta: { disease: d.disease, ...(d.instant ? { instant: true } : {}) },
         stake: combatStakeRef('combatEndDisease', { entryId: d.disease }),
         menace: 'maladie', // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
@@ -5502,7 +5506,8 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
       const res = testValue(c, 'resistance');
       steps.push({
         id: `combatEndCorruption-${c.id}`, kind: 'combatEndCorruption', actorId: c.id, icon: 'nav/mutation',
-        rollLabel: 'Résistance', base: res, target: res + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(c),
+        rollLabel: 'Résistance', difficulty: 'intermediaire',
+        ...rollStep({ actor: c, test: { skill: 'resistance' }, difficulty: 'intermediaire', valeur: res, surLaCible: conditionModLines(c) }),
         label: `Exposition à la Corruption (${corr.label})`, meta: { level: corr.level, exposureLabel: corr.label },
         // L'enjeu DIT le coût de l'échec, lu à l'applier : `corruptionGain(niveau, false, …)` est constant
         // par niveau (1/2/3) — la valeur interpolée vient donc du MÊME calcul que la conséquence.
@@ -5566,7 +5571,7 @@ export function openContractionCascade(get: Get, set: SetFn, patient: Combatant,
     title, icon: 'condition/bleeding', purpose: 'test',
     steps: [{
       id: `infection-${patient.id}-${disease}`, kind: 'combatEndDisease', actorId: patient.id, icon: 'medical/infection',
-      rollLabel: 'Résistance', base: resVal, difficulty, target: resVal + DIFFICULTY_MODIFIERS[difficulty],
+      rollLabel: 'Résistance', difficulty, ...rollStep({ actor: patient, difficulty, valeur: resVal }),
       label: title, result: null, interactive: true, meta: { disease }, menace: 'maladie',
       stake: combatStakeRef('combatEndDisease', { entryId: disease }),
     }],

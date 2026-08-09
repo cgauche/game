@@ -546,37 +546,42 @@ describe('REGISTRE des chemins de jet (#1066) — familles CANONIQUES énuméré
 
 /**
  * CLIQUET « le calcul de ligne ne se réécrit plus à la main » (#1153 L2bis) — l'arithmétique de cible
- * (`DIFFICULTY_MODIFIERS[…]`, écrêtage `Math.min(99, …)`) n'a de place que dans `src/engine/**` (les
- * formules), dans le MONTEUR canonique (`rollSeam.rollLine`) et chez ses LECTEURS d'affichage
- * (`ui/breakdown.ts`, `ui/RollLine.tsx`, harnais de test) — partout ailleurs, elle signe un monteur
- * local qui refait la ligne et peut donc mentir (base fondue, chip fantôme, cible NaN).
+ * (`DIFFICULTY_MODIFIERS[…]` ET `DIFFICULTY_MODIFIERS.…`, écrêtage `Math.min(99, …)`) n'a de place que
+ * dans `src/engine/**` (les formules), dans le MONTEUR canonique (`rollSeam.rollLine`) et chez ses
+ * LECTEURS d'affichage (`ui/breakdown.ts`, `ui/RollLine.tsx`, harnais de test) — partout ailleurs,
+ * elle signe un monteur local qui refait la ligne et peut donc mentir (base fondue, chip fantôme,
+ * cible NaN). Les DEUX notations sont mordues : indexer par crochets ou par point est le même geste,
+ * et n'en voir qu'une laissait 6 sites hors du compte (#1153 L1a).
  *
  * Ce stock est un CLIQUET : il ne peut que DÉCROÎTRE. Toute entrée est un site à router par
- * `rollLine`, sauf le COMBAT — sorti NOMMÉMENT du périmètre (autre arithmétique : `baseTestMods`,
- * Avantage, allonge…), à traiter par son propre lot.
+ * `rollLine` ; le COMBAT y entre lot par lot (#1153 L1b).
+ *
+ * RÉFÉRENTIEL DE MESURE : `HEAD` + le lot COURANT, jamais l'arbre de travail. Une baseline abaissée
+ * sur le WIP NON COMMITTÉ d'une autre session créditerait un travail qui peut ne jamais atterrir —
+ * et le cliquet remonterait en silence si ce WIP était abandonné.
  */
 const LIGNE_A_LA_MAIN_STOCK: Record<string, number> = {
-  // COMBAT — hors périmètre déclaré (arithmétique distincte, lot dédié à ouvrir)
-  'src/state/combatFlow.ts': 4,
-  'src/state/combatSlice.ts': 3,
+  // COMBAT — reste du lot L1b (`combatEffects`/`triggeredTest` non migrés ; `encounterPsychFlow` = la
+  // rangée batch du Test de Peur hors rencontre)
+  'src/state/combatFlow.ts': 1, // `psychStepFor` — soldé par #1117 L2 EN VOL, sortira du stock à son atterrissage
   'src/state/combat/triggeredTest.ts': 3,
   'src/state/combatEffects.ts': 5,
   'src/state/encounterPsychFlow.ts': 1,
-  'src/state/shipManeuver.ts': 1,
-  // HORS COMBAT — les 12 sites du lot précédent sont routés par `rollLine`/`rollStep` ; ce qui reste
-  // n'est pas une cible de jet.
-  'src/state/rollFlowSpecs.ts': 1, // reste : cible du dé d'une MANŒUVRE d'attaque (`combatValue`) — COMBAT, lot dédié
+  'src/state/rollFlowSpecs.ts': 2, // cible du dé d'une MANŒUVRE d'attaque + cible de repli d'un Test opposé — COMBAT
+  // HORS COMBAT — les sites de jet sont routés par `rollLine`/`rollStep` ; ce qui reste n'est pas une cible.
   'src/state/seaVoyageFlow.ts': 1, // reste : conversion Difficulté→DR d'une infestation (pas une cible)
   'src/ui/editor/LogicDock.tsx': 1, // éditeur : APERÇU d'une difficulté authorée, aucun jet
   'src/state/cascadeTestKit.ts': 1, // le cliquet lui-même (`inexplique`)
 };
 
-/** Dette TOTALE mesurée (21 occurrences / 10 fichiers, dont 17 en combat, hors périmètre déclaré) —
- *  verrou global : un site déplacé d'un fichier à l'autre ne s'y cache pas. */
+/** Dette TOTALE MESURÉE sur `HEAD` + ce lot : 15 occurrences / 8 fichiers, dont 12 en combat — verrou
+ *  global : un site déplacé d'un fichier à l'autre ne s'y cache pas. L'arbre de TRAVAIL peut en
+ *  afficher moins (14 / 7 / 11 tant que #1117 L2 y est en vol) : c'est le référentiel ci-dessus qui
+ *  fait foi, et le test « baseline trop haute » ne mord qu'une dette réellement soldée AU TRONC. */
 const TOTAL_DECLARE = Object.values(LIGNE_A_LA_MAIN_STOCK).reduce((s, n) => s + n, 0);
 
 describe('CLIQUET — l’arithmétique de ligne vit dans le monteur, pas dans les flux (#1153)', () => {
-  const LIGNE_RX = /DIFFICULTY_MODIFIERS\[|Math\.min\(99/g;
+  const LIGNE_RX = /DIFFICULTY_MODIFIERS\s*[.[]|Math\.min\(99/g;
   const HORS_CLIQUET = ['src/engine/', 'src/state/rollSeam.ts', 'src/ui/breakdown.ts', 'src/ui/RollLine.tsx'];
 
   const walk = (dir: string, out: string[] = []): string[] => {
@@ -617,6 +622,122 @@ describe('CLIQUET — l’arithmétique de ligne vit dans le monteur, pas dans l
       const abs = join(ROOT, file);
       if (!existsSync(abs)) { perimees.push(`${file} : fichier absent — retirer du stock`); continue; }
       const n = (readFileSync(abs, 'utf8').match(LIGNE_RX) ?? []).length;
+      if (n < attendu) perimees.push(`${file} : baseline ${attendu}, réel ${n} — ABAISSER`);
+    }
+    expect(perimees, `Stock périmé (dette déjà résorbée, à refléter) :\n${perimees.join('\n')}`).toEqual([]);
+  });
+});
+
+/**
+ * SECOND CLIQUET — l'ANGLE MORT du premier (#1153, déclaré au commit 57860131). Une étape-jet peut
+ * être montée à la main SANS jamais écrire d'arithmétique : `base: best.value` + `target = base`, la
+ * Difficulté et le Soutien fondus dans un helper de cible (`exposureTarget`) ou dans `partyAssisted`.
+ * `LIGNE_RX` ne voit rien, et `inexplique` non plus (0 − 0 = 0) : la ligne ment en silence.
+ *
+ * Ce qu'on mesure ici est STRUCTUREL, pas lexical : un littéral d'objet qui pose `kind:` ET `target:`
+ * (donc une étape que `cascade.stepInteraction` classera « jet ») sans que sa ligne vienne du monteur
+ * (`...rollStep(` / `...rollLine(`).
+ *
+ * PÉRIMÈTRE — HORS COMBAT, mais par un geste DIFFÉRENT du premier cliquet : celui-là BASELINE les
+ * fichiers de combat dans son stock, celui-ci les EXCLUT du scan (`HORS_PERIMETRE_COMBAT`), et sur un
+ * SUR-ENSEMBLE (il ajoute `src/state/combat/`, `combatManeuvers`, `targetingModes`, `rollFlowFactory`,
+ * `rollFlowSpecs`). Raison : l'arène a son arithmétique propre (`baseTestMods`, Avantage, allonge) et
+ * son lot dédié — un stock chiffré sur un chantier en cours mesurerait le voisin, pas la dette.
+ *
+ * COUVERTURE DÉCLARÉE (ce que le scanner compte, dette ou pas — le stock est un COMPTE, pas un
+ * verdict) : il attrape aussi (a) les DÉCLARATIONS de type qui portent `kind` + `target`
+ * (`DeferredUpkeepTest`, `PendingExtendedTest`, `RestRoll`…) et (b) les RELAIS d'une ligne déjà
+ * montée ailleurs (`deferredUpkeepSteps` recopie `t.base`/`t.target` du wrapper d'entretien). Ces
+ * deux familles sont annotées entrée par entrée ci-dessous. Faux NÉGATIF assumé : une étape dont le
+ * littéral est éclaté sur plusieurs variables (`const st = {...}; st.target = …`) échappe au scanner.
+ */
+const HORS_PERIMETRE_COMBAT = [
+  'src/state/combat/', 'src/state/combatFlow.ts', 'src/state/combatSlice.ts', 'src/state/combatEffects.ts',
+  'src/state/combatManeuvers.ts', 'src/state/encounterPsychFlow.ts', 'src/state/shipManeuver.ts',
+  'src/state/targetingModes.ts', 'src/state/rollFlowSpecs.ts', 'src/state/rollFlowFactory.ts',
+];
+const ETAPE_A_LA_MAIN_STOCK: Record<string, number> = {
+  // TYPES (aucun montage) — `kind` + `target` en position de DÉCLARATION
+  'src/data/schemas/defs/spells.ts': 1,
+  'src/state/pendings.ts': 1, // PendingExtendedTest
+  'src/state/upkeep.ts': 1, // DeferredUpkeepTest
+  'src/state/interludeFlow.ts': 2, // PendingActivityFields (type) + `target: 0` sentinelle d'ouverture
+  'src/state/store.ts': 1, // signature de `startExtendedTest`
+  // RELAIS d'une ligne DÉJÀ montée par le monteur (rien à recalculer ici)
+  'src/state/restFlow.ts': 1, // `deferredUpkeepSteps` recopie base/target/mods/clamped du wrapper
+  // MONTAGES à la main — dette RÉELLE restante hors combat, à router par `rollStep`
+  'src/engine/rest.ts': 3, // bilan EAGER de la modale de Repos (`RestRoll` : type + 2 collectes)
+  'src/state/seaActivities.ts': 2, // Cartographie + Activité générique : base et cible montées au site
+};
+const TOTAL_ETAPES = Object.values(ETAPE_A_LA_MAIN_STOCK).reduce((s, n) => s + n, 0);
+
+/** Littéraux d'objet (un niveau d'imbrication) — assez pour isoler une étape de cascade. */
+const LITTERAL_RX = /\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/gs;
+
+function etapesALaMain(src: string): number {
+  let n = 0;
+  for (const m of src.matchAll(LITTERAL_RX)) {
+    const lit = m[0];
+    if (!/(^|[\s,{])kind:\s/.test(lit)) continue;
+    if (!/(^|[\s,{])target:\s/.test(lit)) continue;
+    if (/\.\.\.roll(Step|Line)\(/.test(lit)) continue;
+    n++;
+  }
+  return n;
+}
+
+describe('CLIQUET 2 — une étape-JET ne se monte plus à la main, même sans arithmétique (#1153)', () => {
+  const walk = (dir: string, out: string[] = []): string[] => {
+    for (const e of readdirSync(dir)) {
+      const p = join(dir, e);
+      if (statSync(p).isDirectory()) walk(p, out);
+      else if (/\.tsx?$/.test(e) && !/\.test\.tsx?$/.test(e)) out.push(p);
+    }
+    return out;
+  };
+
+  it('le scanner VOIT bien la famille qu’il prétend mesurer (les 5 sites de restFlow d’avant migration)', () => {
+    // Preuve de couverture sur PIÈCE : le montage à base FONDUE tel qu'il s'écrivait (abri de fortune,
+    // Soutien de `partyAssisted` fondu, cible = base) — invisible au premier cliquet ET à `inexplique`.
+    const avant = `
+      steps.push({ id: 'abri', kind: 'shelter', actorId: best.actor.id, label: 'Abri de fortune',
+        rollLabel: 'Survie en extérieur', base: best.value, difficulty: 'intermediaire', target: best.value,
+        result: null, interactive: true });`;
+    expect(etapesALaMain(avant), 'le scanner doit voir le montage à la main').toBe(1);
+    const apres = `
+      steps.push({ id: 'abri', kind: 'shelter', actorId: best.actor.id, label: 'Abri de fortune',
+        rollLabel: 'Survie en extérieur',
+        ...rollStep({ actor: best.actor, test: { skill: 'survie-en-exterieur' }, difficulty: 'intermediaire',
+          valeur: best.value, soutien: best.support }),
+        result: null, interactive: true });`;
+    expect(etapesALaMain(apres), 'routé par le monteur : plus rien à voir').toBe(0);
+  });
+
+  it('aucune NOUVELLE étape montée à la main (le stock ne peut que décroître)', () => {
+    const mesure: Record<string, number> = {};
+    for (const abs of walk(join(ROOT, 'src'))) {
+      const rel = relative(ROOT, abs).replace(/\\/g, '/');
+      if (rel === 'src/state/rollSeam.ts') continue; // le monteur lui-même
+      if (HORS_PERIMETRE_COMBAT.some((p) => rel.startsWith(p))) continue; // frontière déclarée, lot dédié
+      const n = etapesALaMain(readFileSync(abs, 'utf8'));
+      if (n > 0) mesure[rel] = n;
+    }
+    const ecarts: string[] = [];
+    for (const [file, n] of Object.entries(mesure)) {
+      const attendu = ETAPE_A_LA_MAIN_STOCK[file];
+      if (attendu === undefined) ecarts.push(`${file} : ${n} étape(s) NOUVELLE(S) montée(s) à la main — passer par \`rollStep\` (rollSeam.ts)`);
+      else if (n > attendu) ecarts.push(`${file} : ${n} > ${attendu} déclaré(s) — le cliquet ne remonte pas`);
+    }
+    expect(ecarts, `Étape-jet montée à la main :\n${ecarts.join('\n')}`).toEqual([]);
+    expect(Object.values(mesure).reduce((s, n) => s + n, 0)).toBeLessThanOrEqual(TOTAL_ETAPES);
+  });
+
+  it('le stock DÉCLARÉ suit la dette RÉELLE (baseline trop haute = mensonge de 1 site migré)', () => {
+    const perimees: string[] = [];
+    for (const [file, attendu] of Object.entries(ETAPE_A_LA_MAIN_STOCK)) {
+      const abs = join(ROOT, file);
+      if (!existsSync(abs)) { perimees.push(`${file} : fichier absent — retirer du stock`); continue; }
+      const n = etapesALaMain(readFileSync(abs, 'utf8'));
       if (n < attendu) perimees.push(`${file} : baseline ${attendu}, réel ${n} — ABAISSER`);
     }
     expect(perimees, `Stock périmé (dette déjà résorbée, à refléter) :\n${perimees.join('\n')}`).toEqual([]);

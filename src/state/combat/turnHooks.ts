@@ -15,7 +15,7 @@
  */
 import { registerCombatHook } from '../combatHooks';
 import { registerCascadeApplier } from '../cascade';
-import { freeCons, rollSansPilote } from '../rollSeam';
+import { freeCons, rollSansPilote, rollStep } from '../rollSeam';
 import { pushCombatStep } from '../combatEffects';
 import { battleRng } from '../battleRng';
 import { ev, evLines } from '../combatLog';
@@ -23,7 +23,7 @@ import { effectiveChar } from '../../engine/characteristics';
 import { isOutOfAction, addCondition, combatTestPenalty } from '../../engine/conditions';
 import { rawCombatTestBase } from '../../engine/skills';
 import { describeTestRoll } from '../../engine/ops';
-import { CHAR_LABELS, DIFFICULTY_MODIFIERS, CATEGORY_BY_SOURCE_KIND } from '../../engine/types';
+import { CHAR_LABELS, CATEGORY_BY_SOURCE_KIND } from '../../engine/types';
 import { humanControlled } from '../netOwnership';
 import { inBattleId } from '../combatants';
 import { reconcileAdvantageToPool, creditOpposingAdvantage, campSpend } from './advantagePool';
@@ -97,7 +97,6 @@ export function resolveActGates(get: Get, set: SetFn, c: Combatant): ActGateOutc
     const gate = gates.find((e) => e.actGate!.char === char);
     const label = gate?.label ?? 'Effet';
     if (humanControlled(get(), c)) {
-      const base = rawCombatTestBase(c, undefined, char);
       // ENJEU (#1117) : le gabarit dit la mécanique du gate ; le RENVOI descend à l'ENTITÉ qui l'exige
       // (`ActiveEffect.source`, estampillée génériquement par `applyOps`) — la Racine de mandragore
       // ouvre SA fiche d'objet, jamais une fiche de règle générique. La catégorie vient de la table
@@ -105,7 +104,8 @@ export function resolveActGates(get: Get, set: SetFn, c: Combatant): ActGateOutc
       const src = gate?.source;
       pushCombatStep(set, {
         id: `actGate-${c.id}-${char}`, kind: 'actGate', actorId: c.id, icon: 'item/consumable', rollLabel: CHAR_LABELS[char],
-        base, target: base + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(c),
+        difficulty: 'intermediaire',
+        ...rollStep({ actor: c, test: { char }, difficulty: 'intermediaire', combat: { kind: 'test' } }),
         label: t('turn.actGate', { label }),
         stake: combatStakeRef('actGate', src ? { entryId: src.id, entryCategory: CATEGORY_BY_SOURCE_KIND[src.kind] } : {}),
       });

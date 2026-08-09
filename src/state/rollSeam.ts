@@ -34,16 +34,18 @@
  *     `aggregateOpposeSl`, `CascadeStepMeta`) ; par défaut 0/absent.
  */
 import type { Get, Set } from './flowTypes';
-import type { Combatant, CharKey, Difficulty } from '../engine/types';
+import type { Combatant, CharKey, Difficulty, Weapon } from '../engine/types';
 import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import type { PairedSense, GameOp } from '../engine/ops';
 import type { CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate } from './pendings';
 import type { RecapLine, RecapTone } from './recapLine';
 import type { ModLine } from '../engine/combat';
+import { combatBaseValue, combatValueModParts, conditionModLines } from '../engine/combat';
 import { TestOutcome } from '../engine/testOutcome';
 import { actorIn } from './combatants';
 import { startCascade, runCascadeImmediate } from './cascade';
-import { testValue, partyBest, partyAssisted, testValueSplit, type SupportDetail } from '../engine/skills';
+import { testValue, partyBest, partyAssisted, testValueSplit, testValueParts, skillBaseValue, supportSplit, type SupportDetail } from '../engine/skills';
+import { testStatePenaltyParts, testStatePenalty } from '../engine/conditions';
 import { humanControlled, pilotedByHuman } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
@@ -309,8 +311,25 @@ interface RollLineBase {
   surLaCible?: ModLine[];
 }
 
-/** LA valeur du jet — deux régimes EXCLUSIFS, et le compilateur tient l'exclusion :
+/**
+ * CANAL de valeur d'un jet de COMBAT (#1153 L1a) — le combat ne se calcule pas avec `testValue` :
+ *  - `'melee'`/`'ranged'` : valeur d'ATTAQUE/de tir — base `combatBaseValue` (`engine/combat.ts`,
+ *    Caractéristique + Spé du Groupe de l'arme) et composantes `combatValueModParts` ;
+ *  - `'test'` : Test de combat NON-attaque (gate d'Action, Résistance de fin de rencontre) — base
+ *    `rawCombatTestBase` (`engine/skills.ts` : `testValue` privée de la pénalité d'États HORS combat)
+ *    et pénalité d'États en version COMBAT (`conditionModLines` → `combatTestPenaltyParts`), comptée
+ *    une seule fois. Le contrat des deux grandeurs est celui du moteur, pas de ce monteur.
+ *
+ * DISJOINT de `volatileCharLines` (`engine/characteristics.ts:68`), qui décompose l'intérieur de la
+ * CARACTÉRISTIQUE (`effectiveChar`) là où ce canal décompose ce qui s'y AJOUTE : les deux devront se
+ * brancher ensemble (L3) — additionner les deux aujourd'hui compterait la ligne deux fois.
+ */
+export type RollLineCombat = { kind: 'melee' | 'ranged'; weapon?: Weapon } | { kind: 'test'; weapon?: never };
+
+/** LA valeur du jet — trois régimes EXCLUSIFS, et le compilateur tient l'exclusion :
  *  - DÉRIVÉE de l'acteur (`testValue`) : rien d'autre à déclarer ;
+ *  - DÉRIVÉE du COMBAT (`combat`) : la valeur suit le canal, l'appelant peut la fournir FONDUE
+ *    (`valeur`, ex. Soutien des servants d'une pièce) — l'oracle du canal vérifie qu'elle s'y réduit ;
  *  - FOURNIE par l'appelant (`valeur`) : alors, et alors seulement, il peut dire ce qu'il a fondu
  *    dedans (`soutien`, `dansLaValeur`) ou DÉCLARER une valeur d'une AUTRE formule (`valeurEtrangere`).
  *  Un `soutien` sans `valeur` est INEXPRIMABLE : le Soutien n'existe que fondu dans une valeur. */
@@ -324,12 +343,23 @@ type RollLineValeur =
      *  substitution `MSRC 5 l.113-117`) : elles SORTENT de la base pour prendre leur place de ligne.
      *  Les déclarer sans les avoir fondues fausse la base — la garde d'exactitude le refuse. */
     dansLaValeur?: ModLine[];
-    /** La valeur vient d'une AUTRE formule que `testValue` (valeur de combat, soigneur PNJ sans fiche,
-     *  seuil de table) : la décomposition est alors IMPOSSIBLE et le drapeau la DÉCLARE — la base rendue
-     *  n'est PAS un Niveau de Compétence. Sans lui, une reconstruction ratée est un BUG. */
+    /** La valeur vient d'une AUTRE formule que `testValue` (soigneur PNJ sans fiche, seuil de table) :
+     *  la décomposition est alors IMPOSSIBLE et le drapeau la DÉCLARE — la base rendue n'est PAS un
+     *  Niveau de Compétence. Sans lui, une reconstruction ratée est un BUG. Une valeur de COMBAT ne
+     *  relève PLUS de ce drapeau : elle a son canal (`combat`). */
     valeurEtrangere?: true;
+    combat?: never;
   }
-  | { valeur?: never; soutien?: never; dansLaValeur?: never; valeurEtrangere?: never };
+  | {
+    /** Canal COMBAT : la base et les composantes viennent des jumelles de `engine/combat.ts`. */
+    combat: RollLineCombat;
+    /** Valeur de combat DÉJÀ fondue par l'appelant (Soutien des servants) — omise, elle est dérivée. */
+    valeur?: number;
+    soutien?: SupportDetail;
+    dansLaValeur?: ModLine[];
+    valeurEtrangere?: never;
+  }
+  | { valeur?: never; soutien?: never; dansLaValeur?: never; valeurEtrangere?: never; combat?: never };
 
 /** DÉCLARATION d'une ligne de jet — le CONTRAT d'entrée du monteur canonique `rollLine`. Aucun calcul
  *  chez l'appelant : il DIT l'acteur, le Test, la Difficulté, sa valeur et ses poches. */
@@ -350,6 +380,49 @@ export function withDifficulty<T extends RollLineDecl>(decl: T, difficulty: Diff
 /** Ce qu'une étape-jet doit porter pour être lisible : base NUE, lignes NOMMÉES, cible, écrêtage. */
 export interface RollLineParts { base: number; mods: ModLine[]; target: number; clamped?: number }
 
+/** Composantes de `testValue` HORS pénalité d'États : `testValueParts` les NOMME EN TÊTE (il ouvre sur
+ *  `testStatePenaltyParts`, `engine/skills.ts`) — un Test de COMBAT leur substitue `conditionModLines`.
+ *  Le découpage positionnel est VÉRIFIÉ par l'oracle du canal (`rawCombatTestBase`), jamais supposé. */
+function partsHorsEtats(actor: Combatant, t: RollLineBase['test'] = {}): ModLine[] {
+  const etats = testStatePenaltyParts(actor, t.skill).filter((p) => p.value !== 0).length;
+  return testValueParts(actor, t.skill, t.char, t.spec, t.sense).slice(etats);
+}
+
+/** DÉFAIT une valeur de COMBAT en base NUE + composantes NOMMÉES — jumeau de `testValueSplit` pour le
+ *  canal `combat` : même contrat (`base + Σ mods === valeur`, `exact` DIT si la reconstruction a tenu),
+ *  autres jumelles moteur. L'ORACLE est la valeur que le canal SAIT produire (`combatBaseValue + Σ
+ *  combatValueModParts`, ou `rawCombatTestBase`) : une `valeur` fournie qui ne s'y réduit pas — au
+ *  Soutien et au `fused` déclarés près — est refusée, exactement comme hors combat. */
+function combatValueSplit(
+  actor: Combatant | undefined, canal: RollLineCombat, t: RollLineBase['test'],
+  value: number, support?: SupportDetail, fused = 0,
+): { base: number; mods: ModLine[]; exact: boolean } {
+  const sup = supportSplit(value, support);
+  if (!actor) return { ...sup, exact: true };
+  const nue = canal.kind === 'test'
+    ? skillBaseValue(actor, t?.skill, t?.spec, t?.char)
+    : combatBaseValue(actor, canal.kind, canal.weapon);
+  const parts = canal.kind === 'test'
+    ? [...partsHorsEtats(actor, t), ...conditionModLines(actor)]
+    : combatValueModParts(actor, canal.kind, canal.weapon);
+  const sum = parts.reduce((s, p) => s + p.value, 0);
+  if (nue + sum + fused !== sup.base) return { ...sup, exact: false };
+  return { base: sup.base - sum, mods: [...sup.mods, ...parts], exact: true };
+}
+
+/** Valeur DÉRIVÉE d'un canal de combat quand l'appelant n'en fournit aucune. */
+function combatChannelValue(actor: Combatant | undefined, canal: RollLineCombat, t: RollLineBase['test']): number {
+  if (!actor) return 0;
+  // `sense` transite des DEUX côtés (ici comme dans `partsHorsEtats`) : `rawCombatTestBase` ne le
+  // prend pas, donc la valeur dérivée est composée à la main sur la MÊME formule (`testValue` privée
+  // de la pénalité d'États hors combat). Sans cela, un Test de combat sense-scopé (Surdité, LDB 18)
+  // verrait sa valeur et ses composantes diverger, et l'oracle THROW sur un site pourtant correct.
+  return canal.kind === 'test'
+    ? testValue(actor, t?.skill, t?.char, t?.spec, t?.sense) - testStatePenalty(actor, t?.skill)
+      + conditionModLines(actor).reduce((s, m) => s + m.value, 0)
+    : combatBaseValue(actor, canal.kind, canal.weapon) + combatValueModParts(actor, canal.kind, canal.weapon).reduce((s, m) => s + m.value, 0);
+}
+
 /**
  * MONTEUR CANONIQUE d'une ligne de jet (#1153) — le SEUL endroit du jeu où `base`/`mods`/`target`
  * d'une étape se calculent. La porte du seam (`buildMonoStep`) comme les monteurs LOCAUX des flux
@@ -359,9 +432,11 @@ export interface RollLineParts { base: number; mods: ModLine[]; target: number; 
  * INVARIANTS :
  *  - `base` = Niveau de Compétence NU (`skillBaseValue`, `LDB 09 l.17`), la grandeur qui s'affiche et
  *    qui DÉPARTAGE à DR égal (`LDB 12 l.160`) — SAUF côté MONDE (aucun acteur : la base EST le seuil
- *    posé par l'appelant) et SAUF `valeurEtrangere` (formule hors `testValue`, assumée au call-site) ;
+ *    posé par l'appelant), SAUF canal `combat` (base = valeur de combat NUE, `combatBaseValue`) et
+ *    SAUF `valeurEtrangere` (formule hors `testValue`, assumée au call-site) ;
  *  - `base + Σ mods + Difficulté + écrêtage === target` : tout l'écart est NOMMÉ (Soutien, États,
- *    Encombrement, séquelles, passifs, outil manquant — `testValueSplit`), aucune chip « autres » ;
+ *    Encombrement, séquelles, passifs, outil manquant — `testValueSplit`/`combatValueSplit`), aucune
+ *    chip « autres » ;
  *  - la CIBLE dérive de la valeur FONDUE, écrêtée par la MÊME primitive que `rollTest` (`clampTarget`).
  *
  * GARDE D'EXACTITUDE : l'invariant arithmétique seul est TAUTOLOGIQUE (la base est une soustraction,
@@ -376,13 +451,18 @@ export function rollLine(spec: RollLineSpec): RollLineParts {
   const fusedSum = dansLaValeur.reduce((s, m) => s + m.value, 0);
   const dv = DIFFICULTY_MODIFIERS[spec.difficulty];
   if (typeof dv !== 'number') throw new Error(`rollLine : Difficulté inconnue « ${String(spec.difficulty)} » — la cible serait NaN.`);
-  const value = spec.valeur ?? (spec.actor ? testValue(spec.actor, t.skill, t.char, t.spec, t.sense) : 0);
-  const split = testValueSplit(spec.actor, value, {
-    support: spec.soutien, skill: t.skill, characteristic: t.char, spec: t.spec, sense: t.sense, fused: fusedSum,
-  });
+  const value = spec.valeur ?? (spec.combat
+    ? combatChannelValue(spec.actor, spec.combat, t)
+    : (spec.actor ? testValue(spec.actor, t.skill, t.char, t.spec, t.sense) : 0));
+  const split = spec.combat
+    ? combatValueSplit(spec.actor, spec.combat, t, value, spec.soutien, fusedSum)
+    : testValueSplit(spec.actor, value, {
+      support: spec.soutien, skill: t.skill, characteristic: t.char, spec: t.spec, sense: t.sense, fused: fusedSum,
+    });
   if (!split.exact && !spec.valeurEtrangere) {
-    const msg = `[seam] rollLine : la valeur (${value}) ne se reconstruit pas depuis le Niveau de Compétence `
-      + `(${t.skill ?? t.char ?? '?'} de « ${spec.actor?.label ?? '?'} ») + ses composantes + ${fusedSum} déclaré(s) `
+    const formule = spec.combat ? (spec.combat.kind === 'test' ? 'la valeur de Test de combat brute' : 'la valeur de combat NUE') : 'le Niveau de Compétence';
+    const msg = `[seam] rollLine : la valeur (${value}) ne se reconstruit pas depuis ${formule} `
+      + `(${t.skill ?? t.char ?? spec.combat?.kind ?? '?'} de « ${spec.actor?.label ?? '?'} ») + ses composantes + ${fusedSum} déclaré(s) `
       + '— une poche est mal remplie (modificateur non fondu, ou fondu ET redéclaré). La base affichée serait FAUSSE.';
     console.error(msg);
     if (import.meta.env?.DEV) throw new Error(msg);

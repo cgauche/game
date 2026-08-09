@@ -92,7 +92,7 @@ import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficult
 import type { PendingSteamSave, CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
-import { openPartyTest, openWorldTest, composeRollLabel, resolveSurface, freeCons, rollStep, type RollRequest, type Consequence } from './rollSeam';
+import { openPartyTest, openWorldTest, composeRollLabel, resolveSurface, freeCons, rollLine, rollStep, type RollRequest, type Consequence } from './rollSeam';
 import { registerCascadeApplier, registerCascadeSuccessRule, startCascade, runCascadeImmediate } from './cascade';
 
 /** Id du prédicat de succès des Tests d'équipage résolus PAR CASCADE (MDG 14 l.13) — le flux naval
@@ -2029,7 +2029,7 @@ function openSteamSave(get: Get, set: Set, failDamage: string, rng: RNG): void {
   set({
     pendingSteamSave: {
       actorId: eng.id, actorName: eng.label, skillValue: value, difficulty: 'intermediaire',
-      target: value + DIFFICULTY_MODIFIERS.intermediaire,
+      target: rollLine({ actor: eng, test: { char: 'initiative' }, difficulty: 'intermediaire', valeur: value }).target,
       scaldOps: [{ op: 'wounds', amount: dmg, ignoreTB: false, ignoreAP: true }], // « qui ignorent l'Armure » (le BE reste déduit)
       roll: null, success: false, sl: 0,
     } satisfies PendingSteamSave,

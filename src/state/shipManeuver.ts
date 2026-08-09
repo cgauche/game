@@ -15,7 +15,7 @@
  */
 import { battleRng } from './battleRng';
 import { rollTest, evaluateTest, easeDifficulty, bestForcedRoll } from '../engine/tests';
-import { DIFFICULTY_MODIFIERS } from '../engine/types';
+import { rollLine } from './rollSeam';
 import { testValue, partyBest } from '../engine/skills';
 import { resolveShipManeuver, type ShipManeuverOutcome } from '../engine/shipNavigation';
 import { navalMoveMod, navalMoveMult, navalSkillTestDR, navalTestTypeDR, navalNavTestDR } from '../engine/navalTraits';
@@ -55,7 +55,14 @@ export function forceCrewRole(crew: Combatant, roleId: string, cumul = false, se
   // POLICY-AWARE (`bestForcedRoll` : standard → 01 = DR max ; Fast DR → dé le plus haut, LDB 12 l.128) —
   // un 01 en dur DONNERAIT DR 0 en Fast DR (dizaines du jet). `crewTalentDR` (Commandant émérite, MDG 09 l.54)
   // PRÉSERVÉ, ajouté au DR (jamais double-compté).
-  const target = crewRoleValue(crew, role, sense).value + (cumul ? DIFFICULTY_MODIFIERS[easeDifficulty('intermediaire', -2)] : 0);
+  // La cible passe par le MONTEUR, donc par `clampTarget` — le MÊME écrêtage que `rollTest` applique
+  // au jumeau qui roule (`rollCrewRole`, ci-dessus). Effet MESURÉ aux bornes seulement : une valeur
+  // de rôle à 110 forçait un DR 11 et rend désormais DR 9 (cible 99). Alignement VOULU : les deux
+  // voies d'un même Test — roulé et forcé par Résilience — ne peuvent pas jetter sur deux cibles.
+  const target = rollLine({
+    actor: crew, difficulty: cumul ? easeDifficulty('intermediaire', -2) : 'intermediaire',
+    valeur: crewRoleValue(crew, role, sense).value,
+  }).target;
   const die = bestForcedRoll(target);
   return { roll: die, target, sl: evaluateTest(die, target).sl + crewTalentDR(crew, role) };
 }
