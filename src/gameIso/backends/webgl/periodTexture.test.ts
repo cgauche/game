@@ -9,6 +9,7 @@ import { periodTextureData, jointFactor, PERIOD_PX_PER_M } from './periodTexture
 import { coursesPeriod, coursesPeriodM, coursesKey, patternWM, N_VARIANTS } from '../../detail/courses';
 import { facadeStructureAppearance } from '../../catalog/facades';
 import { wallPartColor } from '../../catalog/structures';
+import { roofMaterials } from '../../../data';
 import type { DetailRecipe } from '../../detail/types';
 
 /** Une recette d'appareillage RÉELLE, lue dans la DONNÉE : le mur de pierre (`structureAppearance.json`). */
@@ -60,8 +61,8 @@ describe('periodTextureData — un MASQUE de période, pas un aplat', () => {
     }
     expect(max).toBe(255);
     expect(min).toBeLessThan(255);
-    // Le joint descend au RAPPORT de luminance de la donnée (joint ÷ base), à l'arrondi 8 bits près.
-    expect(min).toBe(Math.round(255 * jointFactor(PIERRE.courses!.joint, BASE)));
+    // Le joint descend au RAPPORT de la donnée (joint ÷ base), canal par canal, à l'arrondi 8 bits près.
+    expect(min).toBe(Math.round(255 * jointFactor(PIERRE.courses!.joint, BASE)[0]));
   });
 
   it('la part de joint tient dans la fourchette DÉRIVÉE de la recette (longueur × épaisseur ÷ aire)', () => {
@@ -115,5 +116,37 @@ describe('periodTextureData — CONTINUITÉ de répétition (le masque est un to
     // …alors qu'à mi-chemin du bord bas, seuls les joints VERTICAUX du rang y passent : c'est bien la
     // couture qui porte la ligne de rang, pas un dessin qui déborderait partout.
     expect(partDessinéeLigne(t.h - 1 - Math.round(t.h / 4))).toBeLessThan(0.25);
+  });
+});
+
+describe('periodTextureData — AUCUN pan ne se cuit en APLAT, quel que soit le côté', () => {
+  /** Amplitude du masque (max − min sur les 3 canaux) : 0 = aplat, la surface ne montre AUCUN joint. */
+  function amplitude(t: { data: Uint8Array; w: number; h: number }): number {
+    let min = 255;
+    let max = 0;
+    for (let i = 0; i < t.w * t.h; i++)
+      for (let c = 0; c < 3; c++) {
+        const v = t.data[i * 4 + c];
+        if (v < min) min = v;
+        if (v > max) max = v;
+      }
+    return max - min;
+  }
+
+  it('les 4 pans de chaque matériau de TOIT à assises portent leur joint (un mortier plus CLAIR aussi)', () => {
+    const pans = roofMaterials.filter((m) => (m.detail as DetailRecipe | undefined)?.courses);
+    expect(pans.length).toBeGreaterThan(0);
+    let mesurés = 0;
+    for (const m of pans)
+      for (const côté of ['N', 'E', 'S', 'O'] as const) {
+        const base = (m as unknown as Record<string, string | undefined>)[côté];
+        if (!base) continue;
+        mesurés++;
+        const t = periodTextureData(m.detail as DetailRecipe, 0, PERIOD_PX_PER_M, { kind: 'wall', baseColor: base })!;
+        // Le côté SUD des trois matériaux porte un joint PLUS CLAIR que son pan (rapports 1,04 à 1,19) :
+        // un plafond à 1 y rendait un masque uniforme, soit 80 à 85 % d'aplat sur la planche.
+        expect([`${m.id}.${côté}`, amplitude(t) > 0]).toEqual([`${m.id}.${côté}`, true]);
+      }
+    expect(mesurés).toBeGreaterThanOrEqual(4 * pans.length);
   });
 });

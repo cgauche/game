@@ -4,12 +4,14 @@
  * rasterise jamais de SVG ici — `coursesPeriod`/`groundCoursesPeriod` rendent des polylignes et des
  * rectangles en mètres, ce module les échantillonne en pixels.
  *
- * MASQUE DE LUMINANCE, jamais une couleur : la texture MULTIPLIE la couleur de base de la surface
- * (albédo de sommet × `map`). 255 = pleine teinte ; un joint descend au rapport de luminance
- * `joint ÷ base` de la DONNÉE (la recette porte la couleur du joint, ce module n'en garde que le
- * rapport) ; un bloc nuancé applique le MÊME dosage que les deux backends écran (`BLOCK_SHADE_K`).
- * Un bloc CLAIR dépasse 1 : la valeur 255 vaut alors `gain` (rendu avec la texture), à reporter sur la
- * couleur du matériau — le masque reste borné, l'éclaircissement passe par ce facteur.
+ * MASQUE MULTIPLICATIF RVB, jamais une couleur absolue : la texture MULTIPLIE la couleur de base de la
+ * surface (albédo de sommet × `map`). 255 = pleine teinte ; un joint y descend au rapport PAR CANAL
+ * `joint ÷ base` de la DONNÉE (`teinteRatio`) — un pixel de joint rend donc EXACTEMENT la couleur de
+ * joint de la recette, sans qu'aucun hex ne vive ici ; un bloc nuancé applique le MÊME dosage que les
+ * deux backends écran (`BLOCK_SHADE_K`).
+ * Un rapport > 1 (bloc CLAIR, ou mortier plus clair que son pan) passe par le `gain` : la valeur 255
+ * vaut alors `gain`, à reporter sur la couleur du matériau — le masque reste borné, l'éclaircissement
+ * passe par ce facteur.
  *
  * CONTINUITÉ DE RÉPÉTITION : tout stamp s'écrit MODULO la période (tore). Le bord gauche prolonge donc
  * exactement le bord droit, et le haut le bas — une ligne de rang posée en v = 0 se retrouve entière à
@@ -42,14 +44,15 @@ export const PERIOD_PX_PER_M = 96;
 const MIN_PX = 16;
 const MAX_PX = 512;
 
-/** Masque cuit d'une période : RGBA 8 bits (les 3 canaux portent la MÊME luminance). */
+/** Masque cuit d'une période : RGBA 8 bits, les 3 canaux portent des rapports multiplicatifs distincts. */
 export interface PeriodTextureData {
   data: Uint8Array;
   w: number;
   h: number;
   /** Taille MÉTRIQUE de la période rendue (u le long de l'appareillage, v vers le bas). */
   periodM: { u: number; v: number };
-  /** Facteur que vaut la valeur 255 du masque (> 1 quand la période porte des blocs CLAIRS). */
+  /** Facteur que vaut la valeur 255 du masque (> 1 quand la période porte du CLAIR : bloc nuancé,
+   *  mortier plus clair que son pan). */
   gain: number;
 }
 
@@ -59,23 +62,51 @@ export interface PeriodTextureOpts {
   baseColor: string;
 }
 
-/** Luminance relative (0..1) d'une couleur de donnée ; `null` si elle n'est pas lisible en hex. */
-function relLum(color: string): number | null {
-  const rgb = parseHex(color);
-  if (!rgb) return null;
-  return (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255;
-}
-
-/** Part de la teinte de base que laisse un joint : le rapport de luminance de la DONNÉE (couleur de
- *  joint ÷ couleur de face), borné à 1 — un joint plus clair que sa pierre ne s'y peint pas en négatif. */
-export function jointFactor(jointColor: string, baseColor: string): number {
-  const lj = relLum(jointColor);
-  const lb = relLum(baseColor);
-  if (lj === null || lb === null || lb <= 0) return 1;
-  return Math.min(1, lj / lb);
-}
-
 const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v);
+
+/** Plafond d'un rapport de teinte : un ornement ne peut pas éclaircir sa surface au-delà de ce facteur
+ *  (au-dessus, le `gain` écraserait la dynamique de tout le masque pour une poignée de pixels). Mesuré
+ *  le 2026-08-09 sur TOUTE la donnée de joints et de colombage (`roofMaterials.json` +
+ *  `structureAppearance.json`) : rapport de canal LINÉAIRE maximal 1,443 (joint `#6a531f` sur le pan sud
+ *  du chaume `#59461a` ; 1,211 en octets sRGB) — cette borne ne mord sur aucune recette d'aujourd'hui. */
+const TEINTE_MAX = 2;
+
+/** Un octet sRGB (0–255) en valeur LINÉAIRE — la transfert standard, celle que three applique aux
+ *  couleurs de sommet et à la sortie du rendu. */
+const srgbToLinear = (octet: number): number => {
+  const u = octet / 255;
+  return u <= 0.04045 ? u / 12.92 : ((u + 0.055) / 1.055) ** 2.4;
+};
+
+/** Rapport de teinte PAR CANAL d'une couleur d'ornement sur une couleur de base, borné à `TEINTE_MAX`.
+ *  `null` si l'une des deux n'est pas lisible en hex (couleur CSS nommée d'une def : la cuisson s'en
+ *  abstient). SOURCE UNIQUE des deux canaux cuits — la période l'applique à ses joints et à rien
+ *  d'autre, `faceBake` à son colombage.
+ *
+ *  Rapport pris en LINÉAIRE, jamais sur les octets sRGB : le masque est un multiplicateur que le GPU
+ *  applique à un albédo DÉJÀ linéarisé (couleur de sommet convertie par three, `map` en `NoColorSpace`).
+ *  Un rapport d'octets sRGB y rendait une teinte trop CLAIRE — mesuré le 2026-08-09 sur
+ *  `vitrine-batiments-iso-rot0-unlit` : le colombage `#3b2e1f` sur panneau `#6e5940` sortait à
+ *  rgb(82,64,44) (luminance 63,3) au lieu de la donnée rgb(59,46,31) (45,3), soit 24,4 de contraste au
+ *  lieu de 42,4 — l'écart-type d'écran du bois plafonnait à 8,32 pour 23,63 au backend affine. */
+export function teinteRatio(ornement: string, base: string): [number, number, number] | null {
+  const o = parseHex(ornement);
+  const b = parseHex(base);
+  if (!o || !b) return null;
+  const r = [0, 1, 2].map((c) => {
+    const bl = srgbToLinear(b[c]);
+    return bl <= 0 ? 1 : clamp(srgbToLinear(o[c]) / bl, 0, TEINTE_MAX);
+  });
+  return [r[0], r[1], r[2]];
+}
+
+/** Part de la teinte de base que laisse un joint, PAR CANAL : le rapport de la DONNÉE (couleur de joint
+ *  ÷ couleur de face). AUCUN plafond à 1 — un mortier plus clair que son pan se dessine PLUS CLAIR, et
+ *  son dépassement se reporte par le `gain`, exactement comme un bloc clair. Un plafond à 1 effaçait
+ *  tout joint des pans SUD des trois matériaux de toit (rapports 1,04 à 1,19 : aplat intégral). */
+export function jointFactor(jointColor: string, baseColor: string): [number, number, number] {
+  return teinteRatio(jointColor, baseColor) ?? [1, 1, 1];
+}
 
 /** Côté cuit d'un axe : la taille métrique × la résolution, ramenée à la puissance de 2 la plus proche
  *  dans les bornes. */
@@ -83,7 +114,7 @@ function sidePx(metres: number, pxPerM: number): number {
   return 2 ** Math.round(Math.log2(clamp(metres * pxPerM, MIN_PX, MAX_PX)));
 }
 
-/** Masque en cours de cuisson — facteurs multiplicatifs, un par pixel, indexés en tore. */
+/** Masque en cours de cuisson — 3 facteurs multiplicatifs par pixel, indexés en tore. */
 interface Mask {
   f: Float32Array;
   w: number;
@@ -95,14 +126,18 @@ interface Mask {
 
 const wrap = (i: number, n: number) => ((i % n) + n) % n;
 
-/** Le plus SOMBRE gagne : deux joints qui se croisent ne creusent pas un puits. */
-function darkenPx(m: Mask, x: number, y: number, factor: number): void {
-  const i = wrap(y, m.h) * m.w + wrap(x, m.w);
-  if (factor < m.f[i]) m.f[i] = factor;
+/** Un joint COUVRE ce qu'il traverse : le rapport de la donnée REMPLACE le pixel, canal par canal. Tous
+ *  les joints d'une période partagent le même rapport — deux joints qui se croisent tombent donc sur la
+ *  même valeur et ne creusent aucun puits, et un joint tracé par-dessus un bloc nuancé se voit, comme le
+ *  mortier d'un appareillage. Une règle du « plus sombre gagne » effaçait, elle, tout joint PLUS CLAIR
+ *  que son pan. */
+function poserJoint(m: Mask, x: number, y: number, ratio: readonly number[]): void {
+  const i = (wrap(y, m.h) * m.w + wrap(x, m.w)) * 3;
+  for (let c = 0; c < 3; c++) m.f[i + c] = ratio[c];
 }
 
 /** Segment MÉTRIQUE épaissi de `wPx` pixels, échantillonné au demi-pixel (chaque pas dépose un carré). */
-function stampSegment(m: Mask, u0: number, v0: number, u1: number, v1: number, wPx: number, factor: number): void {
+function stampSegment(m: Mask, u0: number, v0: number, u1: number, v1: number, wPx: number, ratio: readonly number[]): void {
   const x0 = u0 * m.sx, y0 = v0 * m.sy, x1 = u1 * m.sx, y1 = v1 * m.sy;
   const len = Math.hypot(x1 - x0, y1 - y0);
   const steps = Math.max(1, Math.ceil(len * 2));
@@ -113,24 +148,24 @@ function stampSegment(m: Mask, u0: number, v0: number, u1: number, v1: number, w
     const t = s / steps;
     const cx = Math.round(x0 + (x1 - x0) * t);
     const cy = Math.round(y0 + (y1 - y0) * t);
-    for (let dy = lo; dy <= hi; dy++) for (let dx = lo; dx <= hi; dx++) darkenPx(m, cx + dx, cy + dy, factor);
+    for (let dy = lo; dy <= hi; dy++) for (let dx = lo; dx <= hi; dx++) poserJoint(m, cx + dx, cy + dy, ratio);
   }
 }
 
 /** Ligne de rang tremblée : (0, y0) puis chaque point, en mètres. */
-function stampLine(m: Mask, line: CourseLine, wPx: number, factor: number): void {
+function stampLine(m: Mask, line: CourseLine, wPx: number, ratio: readonly number[]): void {
   let pu = 0;
   let pv = line.y0;
   for (const p of line.pts) {
-    stampSegment(m, pu, pv, p.u, p.y, wPx, factor);
+    stampSegment(m, pu, pv, p.u, p.y, wPx, ratio);
     pu = p.u;
     pv = p.y;
   }
 }
 
 /** Joint vertical entre deux blocs d'un rang. */
-function stampVertical(m: Mask, v: CourseVertical, wPx: number, factor: number): void {
-  stampSegment(m, v.u, v.y0, v.u, v.y1, wPx, factor);
+function stampVertical(m: Mask, v: CourseVertical, wPx: number, ratio: readonly number[]): void {
+  stampSegment(m, v.u, v.y0, v.u, v.y1, wPx, ratio);
 }
 
 /** Bloc nuancé : multiplie la teinte du rectangle (retrait déjà pris par la période). */
@@ -139,7 +174,11 @@ function fillRect(m: Mask, r: CourseRect, factor: number): void {
   const x1 = Math.round(r.u1 * m.sx);
   const y0 = Math.round(r.v0 * m.sy);
   const y1 = Math.round(r.v1 * m.sy);
-  for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) m.f[wrap(y, m.h) * m.w + wrap(x, m.w)] *= factor;
+  for (let y = y0; y < y1; y++)
+    for (let x = x0; x < x1; x++) {
+      const i = (wrap(y, m.h) * m.w + wrap(x, m.w)) * 3;
+      for (let c = 0; c < 3; c++) m.f[i + c] *= factor;
+    }
 }
 
 /** Masque d'une période d'appareillage — `null` quand la recette n'a pas d'assises (rien ne se répète).
@@ -158,7 +197,7 @@ export function periodTextureData(
   const periodM = kind === 'ground' ? groundPeriodM(c) : coursesPeriodM(c);
   const w = sidePx(periodM.u, pxPerM);
   const h = sidePx(periodM.v, pxPerM);
-  const m: Mask = { f: new Float32Array(w * h).fill(1), w, h, sx: w / periodM.u, sy: h / periodM.v };
+  const m: Mask = { f: new Float32Array(w * h * 3).fill(1), w, h, sx: w / periodM.u, sy: h / periodM.v };
 
   const pv = c.paletteVar ?? 0;
   const clair = 1 + pv * BLOCK_SHADE_K;
@@ -183,11 +222,8 @@ export function periodTextureData(
   let gain = 1;
   for (let i = 0; i < m.f.length; i++) if (m.f[i] > gain) gain = m.f[i];
   const data = new Uint8Array(w * h * 4);
-  for (let i = 0; i < m.f.length; i++) {
-    const v = Math.round(255 * clamp(m.f[i] / gain, 0, 1));
-    data[i * 4] = v;
-    data[i * 4 + 1] = v;
-    data[i * 4 + 2] = v;
+  for (let i = 0; i < w * h; i++) {
+    for (let c2 = 0; c2 < 3; c2++) data[i * 4 + c2] = Math.round(255 * clamp(m.f[i * 3 + c2] / gain, 0, 1));
     data[i * 4 + 3] = 255;
   }
   return { data, w, h, periodM, gain };

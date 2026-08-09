@@ -23,6 +23,7 @@ import {
   patternWM,
   rowBoundaries,
   N_VARIANTS,
+  variantOf,
   type Courses,
   type CourseLine,
   type CourseVertical,
@@ -252,9 +253,6 @@ function subtractReserved(v0: number, v1: number, reserved: [number, number][]):
   return spans.filter(([a, b]) => b - a >= 0.08);
 }
 
-/** Variante de motif d'une face — hash de l'identité monde (x, y, côté). */
-const variantOf = (cell: { x: number; y: number }, side: string): number => hash32('dtvar', cell.x, cell.y, side) % N_VARIANTS;
-
 /** Surcouche de STRUCTURE d'une face verticale : le polygone de la face rempli du motif de joints
  *  partagé de son orientation. '' si la recette n'a pas d'assises ou si la face est de chant. */
 export function coursesOverlaySvg(ctx: Pick<VerticalFaceCtx, 'recipe' | 'side' | 'cell' | 'quad' | 'dims' | 'mpt'>): string {
@@ -349,11 +347,12 @@ export function verticalAccentsSvg(ctx: VerticalFaceCtx): string {
   return out;
 }
 
-// Bornes VERTICALES du colombage (fractions de la hauteur de face, depuis le HAUT) : les pans de bois
-// courent entre le couronnement (bande haute [0.86,1]·WALL_H du builder) et la plinthe (0.11 bas) —
-// des FORMES calées sur l'assemblage bois, pas des couleurs.
-const TIMBER_V0 = 0.13;
-const TIMBER_V1 = 0.88;
+/** Bornes VERTICALES du colombage (fractions de la hauteur de face, depuis le HAUT) : les pans de bois
+ *  courent entre le couronnement (bande haute [0.86,1]·WALL_H du builder) et la plinthe (0.11 bas) —
+ *  des FORMES calées sur l'assemblage bois, pas des couleurs. SOURCE UNIQUE des deux backends : la
+ *  cuisson par face du spike WebGL (`webgl/faceBake.ts`) pose son colombage entre les MÊMES marges. */
+export const TIMBER_V0 = 0.13;
+export const TIMBER_V1 = 0.88;
 
 /** COLOMBAGE d'une face verticale (recette `timber`, LOD ≥ 1) : poteaux + écharpes X/V par travée
  *  (expansion déterministe, aucun aléa), bornés entre couronnement et plinthe, UN `<path>` stroké à la

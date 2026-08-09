@@ -163,6 +163,56 @@ export function motifLocal(img, hexAlbedo, cote = FENETRE_MOTIF) {
   };
 }
 
+/** Écart de canal toléré pour reconnaître un albédo AU PIXEL, en couleur cuite (la planche `unlit` rend
+ *  l'albédo tel quel : seuls l'anticrénelage et l'arrondi 8 bits le déplacent). */
+const TOLERANCE_TEINTE = 3;
+/** Fenêtres minimales pour qu'un pan de toit soit MESURABLE (sous ce compte, l'échantillon ne dit rien). */
+const PAN_FENETRES_MIN = 20;
+
+const rgbDe = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+
+/** APLAT des pans de toit : parmi les fenêtres `cote`×`cote` dont le pixel CENTRAL est EXACTEMENT une
+ *  teinte de pan (`teintes` = [{ id, hex }]), la part de celles qui ne portent qu'UNE seule couleur.
+ *  Un pan à assises ne peut pas être uniforme : la mesure dit combien de sa surface est un aplat.
+ *
+ *  L'attribution passe par la teinte EXACTE, jamais par le rapport `k` de `motifLocal` : sur une teinte
+ *  SOMBRE (ardoise `#3d4852`), la fenêtre en `k` de `motifLocal` avale le fond de planche et tout autre
+ *  sombre — mesuré 17 414 fenêtres attribuées à l'ardoise sur `vitrine-batiments`, qui n'en porte que
+ *  quelques toits. */
+export function aplatDePans(img, teintes, cote = FENETRE_MOTIF) {
+  const cibles = teintes.map((t) => ({ id: t.id, rgb: rgbDe(t.hex) }));
+  const par = new Map();
+  for (let y = 0; y + cote <= img.h; y += cote)
+    for (let x = 0; x + cote <= img.w; x += cote) {
+      const c = ((y + (cote >> 1)) * img.w + (x + (cote >> 1))) * 4;
+      const t = cibles.find((t) =>
+        Math.abs(img.data[c] - t.rgb[0]) <= TOLERANCE_TEINTE &&
+        Math.abs(img.data[c + 1] - t.rgb[1]) <= TOLERANCE_TEINTE &&
+        Math.abs(img.data[c + 2] - t.rgb[2]) <= TOLERANCE_TEINTE);
+      if (!t) continue;
+      const vues = new Set();
+      for (let j = 0; j < cote; j++)
+        for (let i = 0; i < cote; i++) {
+          const p = ((y + j) * img.w + (x + i)) * 4;
+          vues.add((img.data[p] << 16) | (img.data[p + 1] << 8) | img.data[p + 2]);
+        }
+      const e = par.get(t.id) ?? { n: 0, aplat: 0 };
+      e.n++;
+      if (vues.size === 1) e.aplat++;
+      par.set(t.id, e);
+    }
+  return par;
+}
+
+/** Teintes de PAN de toit, lues à la DONNÉE (`src/data/roofMaterials.json`) : les 4 côtés N/E/S/O de
+ *  chaque matériau à assises — exactement ce que `faceColors.roofColor` rend en couleur cuite. */
+function teintesDePans() {
+  const src = new URL('../../src/data/roofMaterials.json', import.meta.url);
+  return JSON.parse(readFileSync(src, 'utf8'))
+    .filter((m) => m.detail?.courses)
+    .flatMap((m) => ['N', 'E', 'S', 'O'].filter((k) => typeof m[k] === 'string').map((k) => ({ id: `${m.id}.${k}`, hex: m[k] })));
+}
+
 /** Albédos de donnée sur lesquels les gardes s'adossent, tels que `faceColors` les rend :
  *  `#3d6630` = `src/state/terrain/defs/herbe.ts:9` (`swatch`) ; `#6e5940` et `#6b6f76` =
  *  `src/data/structureAppearance.json` (`mur-en-bois`, `mur-en-pierre`). */
@@ -176,6 +226,17 @@ const PIERRE = '#6B6F76';
  *  vaut, lui, ~22 d'écart-type à pleine résolution (joint à 0,44 × la teinte sur 14,1 % des pixels,
  *  cf. `periodTexture`) : le seuil laisse 5× de marge à la minification et au filtrage. */
 const MOTIF_MIN = 4;
+
+/** Écart-type médian de luminance sous lequel une façade à pans de bois ne MONTRE pas son colombage
+ *  (cf. la garde qui le mesure : 5,94 sans colombage, ~14 attendus avec). */
+const COLOMBAGE_MIN = 9;
+
+/** Part de fenêtres APLATES au-delà de laquelle un pan de toit ne montre PAS son appareillage. Seuil
+ *  DÉRIVÉ du même instrument sur les surfaces qui, elles, portent leur période — toutes à 0 % d'aplat le
+ *  2026-08-09 : mur de pierre du siège (105 fenêtres) et de l'arène (220), mur de bois de la vitrine
+ *  (240) et de l'arène (115), pans d'ardoise N/E/O de la diligence (41 / 238 / 81). Une surface
+ *  appareillée rend donc ZÉRO aplat ; les 10 % laissés ici sont la marge des bords anticrénelés. */
+const APLAT_PAN_MAX = 0.1;
 
 /** Seuils : chacun porte SA mesure sur les planches FINALES du 2026-08-09 (`public/qc/spike/`). */
 const GARDES = [
@@ -221,6 +282,47 @@ const GARDES = [
       return {
         ok: r.ecartType >= MOTIF_MIN,
         dit: `écart-type médian ${r.ecartType.toFixed(2)} (max ${r.ecartTypeMax.toFixed(2)}) sur ${r.fenetres} fenêtres de pierre`,
+      };
+    },
+  },
+  {
+    planche: 'vitrine-batiments-iso-rot0-unlit.png',
+    titre: `présence de COLOMBAGE sur le bois (albédo ${BOIS}) : écart-type médian ≥ ${COLOMBAGE_MIN}`,
+    // MÊME méthode que la garde de motif de la pierre, sur l'albédo de BOIS et la planche qui porte les
+    // façades à pans de bois (`mur-en-bois`, `src/data/structureAppearance.json`).
+    // ÉTAT MESURÉ le 2026-08-09 sur la planche AVANT toute cuisson de colombage : médiane 5,94
+    // (max 17,09) sur 1283 fenêtres de bois — cet écart-là est celui des seuls JOINTS de la texture de
+    // période. VALEUR ANALYTIQUE ATTENDUE une fois le colombage cuit : la bimodale bois clair (luminance
+    // 87,7) / bois d'ossature (45,3) sur une couverture de ~10 % d'une fenêtre rend
+    // 42,4·√(0,1·0,9) ≈ 12,7, qui s'ajoute en VARIANCE au fond de joints : √(5,94² + 12,7²) ≈ 14.
+    // Le seuil se pose entre les deux : la garde est donc ROUGE tant que la planche n'a pas été
+    // recapturée avec le colombage — c'est SA preuve de morsure.
+    mesurer: (img) => {
+      const r = motifLocal(img, BOIS);
+      if (!r.fenetres) return { ok: false, dit: `bois introuvable (aucune fenêtre pleine de ${BOIS})` };
+      return {
+        ok: r.ecartType >= COLOMBAGE_MIN,
+        dit: `écart-type médian ${r.ecartType.toFixed(2)} (max ${r.ecartTypeMax.toFixed(2)}) sur ${r.fenetres} fenêtres de bois`,
+      };
+    },
+  },
+  {
+    planche: 'vitrine-batiments-iso-rot0-unlit.png',
+    titre: `pans de toit NON-APLAT : au plus ${100 * APLAT_PAN_MAX} % de fenêtres uniformes par pan`,
+    // ÉTAT MESURÉ le 2026-08-09 sur la planche capturée AVANT le dé-clampage de `jointFactor` : le pan
+    // SUD de chaque matériau est un aplat massif — tuile 85 % (604 fenêtres), ardoise 80 % (201),
+    // chaume 54 % (26) —, alors que tous les autres côtés du même matériau sont à 0 %. Cause mesurée :
+    // le joint des trois toits est PLUS CLAIR que leur pan sud (rapports de canal 1,04 à 1,21), et un
+    // `Math.min(1, …)` l'effaçait. La garde reste donc ROUGE tant que la planche n'a pas été
+    // recapturée — c'est SA preuve de morsure.
+    mesurer: (img) => {
+      const par = aplatDePans(img, teintesDePans());
+      const mesurés = [...par].filter(([, e]) => e.n >= PAN_FENETRES_MIN);
+      if (!mesurés.length) return { ok: false, dit: 'aucun pan de toit mesurable sur la planche' };
+      const pire = mesurés.reduce((a, b) => (b[1].aplat / b[1].n > a[1].aplat / a[1].n ? b : a));
+      return {
+        ok: mesurés.every(([, e]) => e.aplat / e.n <= APLAT_PAN_MAX),
+        dit: `${mesurés.length} pans mesurés, pire ${pire[0]} à ${(100 * pire[1].aplat / pire[1].n).toFixed(0)} % d'aplat sur ${pire[1].n} fenêtres`,
       };
     },
   },

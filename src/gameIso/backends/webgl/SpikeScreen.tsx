@@ -39,6 +39,7 @@ import {
 } from './billboardMath';
 import { clearBillboardTextures, getBillboardTexture, svgToTexture } from './svgTexture';
 import { clearPeriodTextures, getPeriodTexture } from './periodTexture';
+import { clearFaceBakes, getFaceBake } from './faceBake';
 import {
   billboardDepthOffsetUnits,
   billboardPose,
@@ -178,7 +179,7 @@ export function SpikeScreen(): JSX.Element {
   // Le cache de textures est GLOBAL au module : changer de scène rend TOUTES ses entrées mortes (les
   // clés portent l'identité des sujets de l'ancienne carte). Sans vidange, elles occupent la VRAM du
   // navigateur jusqu'à la fin de la session — et le spike se parcourt scène par scène.
-  useEffect(() => () => { clearBillboardTextures(); clearPeriodTextures(); }, [scene]);
+  useEffect(() => () => { clearBillboardTextures(); clearPeriodTextures(); clearFaceBakes(); }, [scene]);
   const start = useMemo(
     () => startOf(scene) ?? { x: Math.floor(scene.dimensions.w / 2), y: Math.floor(scene.dimensions.h / 2), z: 0 },
     [scene],
@@ -236,12 +237,29 @@ export function SpikeScreen(): JSX.Element {
       // MÈTRES : la répétition vaut donc l'inverse de la période métrique DU GROUPE (le `v` d'un pan de
       // toit suit sa pente). La teinte reste portée par la couleur de sommet — la `map` la MULTIPLIE ;
       // le masque plafonnant à 1, l'éclaircissement des blocs clairs revient à la couleur du matériau.
+      // Un groupe CUIT PAR FACE (colombage) ne répète rien : son image est échantillonnée sur l'UV de
+      // face (`uv1`, `texture.channel = 1`) et porte DÉJÀ le fond de période de sa surface.
       const anisotropy = renderer.capabilities.getMaxAnisotropy();
       const materials = geometry.userData.surfaceGroups.map((g) => {
         const mat = opts.lit
           ? new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide, flatShading: true })
           : new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
         disposables.push(mat);
+        if (g.bake && g.recipe) {
+          const cuisson = getFaceBake(
+            g.key,
+            { color: g.color ?? '', recipe: g.recipe, part: g.part },
+            g.bake.wM,
+            g.bake.hM,
+            g.variant ?? 0,
+            anisotropy,
+          );
+          if (cuisson) {
+            mat.map = cuisson.texture;
+            mat.color.setScalar(cuisson.gain);
+          }
+          return mat;
+        }
         const période = g.kind && g.recipe && g.periodM
           ? getPeriodTexture(g.key, g.recipe, g.variant ?? 0, { kind: g.kind, baseColor: g.color ?? '', anisotropy })
           : null;

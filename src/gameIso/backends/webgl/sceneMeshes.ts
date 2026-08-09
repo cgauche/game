@@ -16,11 +16,12 @@ import { buildFloors } from '../../builders/floors';
 import { buildWalls } from '../../builders/walls';
 import { buildRoofs, ROOF_SLOPE_M } from '../../builders/roofs';
 import { buildProps } from '../../builders/props';
-import type { Face, RoofEl, SceneEl } from '../../builders/types';
+import type { CellSide, Face, RoofEl, SceneEl, WallEl } from '../../builders/types';
 import { roofCourseStepM, variantOf } from '../../detail/courses';
 import type { DetailRecipe } from '../../detail/types';
 import type { PeriodKind } from './periodTexture';
-import { facesGeometry, polyNormal } from './worldTris';
+import { faceBakeKey, needsFaceBake } from './faceBake';
+import { facePoly, faceUvFrame, facesGeometry, polyNormal } from './worldTris';
 import { faceSurface, tintVarFactor } from './faceColors';
 import { BB_W, BB_H } from '../../pov/billboardCore';
 import { type BillboardKind } from './billboardMath';
@@ -38,7 +39,7 @@ import { findCreatureById } from '../../../data';
 import type { View } from '../../rig/facing';
 import type { Rot } from '../../../geometry/iso';
 import type { Dir8 } from '../../../state/dir8';
-import { heightAt, type Scene, type SceneEntity } from '../../../state/scene';
+import { heightAt, type Scene, type SceneEntity, type WallSide } from '../../../state/scene';
 import { memoByRefDeps } from '../../../state/sceneMemo';
 
 /** Teinte de visibilité d'une case `"x,y,z"` (1 = pleine) — fournie par l'appelant (`visibilityTint`). */
@@ -64,6 +65,10 @@ export interface WorldFace {
   /** Pente (m) de la nappe dont la face vient — un PAN de toit seulement : le pas de rang, donc
    *  l'échelle verticale de sa texture, en dépend (`roofCourseStepM`). */
   pitchM?: number;
+  /** CÔTÉ D'ARÊTE de l'élément qui porte la face (mur, falaise, wedge) — l'identité MONDE sur laquelle
+   *  se cale la variante d'anti-périodicité, EXACTEMENT comme le backend affine (`affineWalls` passe
+   *  `el.side`, `affineFloors` passe `f.side`). Absent d'un pan de toit ou d'une nappe de sol. */
+  side?: WallSide | CellSide;
 }
 
 export function worldFaces(scene: Scene): WorldFace[] {
@@ -72,15 +77,17 @@ export function worldFaces(scene: Scene): WorldFace[] {
     if (!('faces' in el)) continue;
     const cellKey = `${el.cell.x},${el.cell.y},${el.cell.z}`;
     const pitchM = (el as RoofEl).pitch;
-    for (const face of el.faces) out.push({ face, cell: el.cell, cellKey, pitchM });
+    const elSide = (el as WallEl).side;
+    for (const face of el.faces) out.push({ face, cell: el.cell, cellKey, pitchM, side: face.side ?? elSide });
   }
   return out;
 }
 
 /** GROUPE DE SURFACE : la maille de fusion du monde. Une géométrie UNIQUE porte toute la scène (jamais
  *  un mesh par face) et se découpe en `groups` three — un par (surface × variante d'anti-périodicité ×
- *  échelle de période), plus LE groupe nu des faces sans appareillage. Le nombre de dessins passe de 1
- *  à quelques dizaines : le prix ASSUMÉ d'une texture répétée qui ne se répète pas à l'œil. */
+ *  échelle de période), plus les CUISSONS PAR FACE (colombage) et LE groupe nu des faces sans
+ *  appareillage. Le nombre de dessins passe de 1 à quelques dizaines : le prix ASSUMÉ d'une texture
+ *  répétée qui ne se répète pas à l'œil. */
 export interface SurfaceGroup {
   /** Identité du groupe (= clé de cache de sa texture). */
   key: string;
@@ -91,23 +98,53 @@ export interface SurfaceGroup {
   /** Couleur de base de la surface — le masque de période n'en garde que des rapports. */
   color?: string;
   recipe?: DetailRecipe;
-  /** Taille MÉTRIQUE de la période SUR CETTE SURFACE (le `v` d'un pan de toit suit sa pente). */
+  /** Taille MÉTRIQUE de la période SUR CETTE SURFACE (le `v` d'un pan de toit suit sa pente). Absente
+   *  d'un groupe CUIT PAR FACE : son image ne se répète pas, elle s'échantillonne sur `uv1`. */
   periodM?: { u: number; v: number };
+  /** Gabarit MÉTRIQUE (quantifié au cm) d'un groupe CUIT PAR FACE — les faces qui le partagent
+   *  partagent leur image (`faceBake`). */
+  bake?: { wM: number; hM: number };
+  /** PART de mur des faces du groupe — seule une part que le colombage habille se cuit (`needsFaceBake`). */
+  part?: string;
 }
 
 const NU: SurfaceGroup = { key: 'nu', kind: null };
 
+/** Dimension de face quantifiée au CENTIMÈTRE : la maille de partage d'une cuisson. */
+const cm = (m: number): number => Math.round(m * 100) / 100;
+
 /** Groupe d'une face : sa surface (couleur + recette), sa variante de période, et l'échelle métrique de
  *  celle-ci. Le SOL a une période propre, seedée à la seule recette (`groundCoursesPeriod`) : une seule
  *  variante. Un PAN DE TOIT garde la largeur de période de l'appareillage mais son pas de rang vient de
- *  SA pente — deux nappes de pentes différentes ne partagent donc pas un groupe. */
-export function faceGroup(wf: WorldFace): SurfaceGroup {
+ *  SA pente — deux nappes de pentes différentes ne partagent donc pas un groupe. Une face à COLOMBAGE
+ *  sort de la période pour sa propre CUISSON, groupée par gabarit (`faceBakeKey`). */
+export function faceGroup(wf: WorldFace, mpt: number): SurfaceGroup {
   const surface = faceSurface(wf.face);
-  const c = surface.recipe?.courses;
-  if (!surface.uvScaleM || !c) return NU;
   const { domain, part } = wf.face.material;
   const kind: PeriodKind = domain === 'terrain' ? 'ground' : 'wall';
-  const variant = kind === 'ground' ? 0 : variantOf(wf.cell, part ?? domain);
+  // La variante se cale sur le CÔTÉ D'ARÊTE de l'élément — la même clé que `variantOf(cell, side)` de
+  // l'affine (`affineDetail.ts`) et que le seed du POV (`pov/geometry.ts`). Sans côté (pan de toit),
+  // la `part` du matériau tient lieu d'identité.
+  const variant = kind === 'ground' ? 0 : variantOf(wf.cell, wf.side ?? part ?? domain);
+  if (needsFaceBake(surface.recipe, kind, part)) {
+    const frame = faceUvFrame(facePoly(wf.face, mpt));
+    const bake = { wM: cm(frame.du), hM: cm(frame.dv) };
+    // La variante d'anti-périodicité ne joue que sur le FOND de période de la cuisson : sans assises,
+    // les N variantes cuisent la MÊME image sous N clés (mesuré : 3 textures identiques par gabarit).
+    const bakeVariant = surface.recipe?.courses ? variant : 0;
+    return {
+      key: faceBakeKey(surface.surfaceKey, bake.wM, bake.hM, bakeVariant),
+      kind,
+      surfaceKey: surface.surfaceKey,
+      variant: bakeVariant,
+      color: surface.color,
+      recipe: surface.recipe,
+      bake,
+      part,
+    };
+  }
+  const c = surface.recipe?.courses;
+  if (!surface.uvScaleM || !c) return NU;
   const periodM =
     domain === 'roof'
       ? { u: surface.uvScaleM.u, v: 2 * roofCourseStepM(wf.pitchM, c.hM, ROOF_SLOPE_M) }
@@ -126,12 +163,12 @@ export function faceGroup(wf: WorldFace): SurfaceGroup {
 /** Découpage d'une liste de faces en groupes de surface : les groupes DANS L'ORDRE d'émission, et pour
  *  chacun les index de ses faces (dans l'ordre de peinture des builders — le rang coplanaire, lui, s'est
  *  calculé sur la liste entière AVANT tout regroupement). */
-export function surfaceGrouping(listées: readonly WorldFace[]): { groups: SurfaceGroup[]; faceIndices: number[][] } {
+export function surfaceGrouping(listées: readonly WorldFace[], mpt: number): { groups: SurfaceGroup[]; faceIndices: number[][] } {
   const groups: SurfaceGroup[] = [];
   const faceIndices: number[][] = [];
   const rang = new Map<string, number>();
   listées.forEach((wf, i) => {
-    const g = faceGroup(wf);
+    const g = faceGroup(wf, mpt);
     let k = rang.get(g.key);
     if (k === undefined) {
       k = groups.length;
@@ -196,7 +233,7 @@ export function buildWorldGeometry(scene: Scene, mpt: number, tintAt: TintAt): W
   };
   // Les faces sortent GROUPÉES par surface (un groupe = un dessin) ; à l'intérieur d'un groupe, l'ordre
   // de peinture des builders est conservé.
-  const { groups, faceIndices } = surfaceGrouping(listées);
+  const { groups, faceIndices } = surfaceGrouping(listées, mpt);
   const spans: [number, number][] = [];
   for (const idx of faceIndices) {
     const début = positions.length / 3;

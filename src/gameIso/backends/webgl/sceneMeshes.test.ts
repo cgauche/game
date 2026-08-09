@@ -16,6 +16,7 @@ import {
   wantsContactShadow,
   worldFaces,
   worldShadowBox,
+  type WorldFace,
   AMBIENT_INTENSITY,
   BILLBOARD_DEPTH_BIAS_M,
   CONTACT_SHADOW_LIFT_M,
@@ -30,10 +31,12 @@ import { facesGeometry, polyBounds, type Vec3 } from './worldTris';
 import { anchorAndSize, billboardHeightM, BILLBOARD_BOX_ASPECT } from './billboardMath';
 import { TINT_EXPLORED } from './visibilityTint';
 import { faceSurface, tintVarFactor } from './faceColors';
+import { faceBakeData, FACE_PX_PER_M } from './faceBake';
 import { coursesPeriodM, groundPeriodM, roofCourseStepM, variantOf, N_VARIANTS } from '../../detail/courses';
 import { facadeStructureAppearance } from '../../catalog/facades';
 import { roofMaterial } from '../../catalog/roofs';
 import { ROOF_SLOPE_M } from '../../builders/roofs';
+import { buildWalls } from '../../builders/walls';
 import { TERRAIN_DEFS } from '../../../state/terrain';
 import type { Face } from '../../builders/types';
 import { buildScene } from '../../../state/mapSpec';
@@ -104,7 +107,7 @@ describe('ORIENTATION — les triangles regardent DEHORS (la carte d’ombre en 
     const geoms = facesGeometry(listées.map((f) => f.face), m);
     // La fusion émet les faces GROUPÉES par surface (un groupe = un dessin) : le bilan les parcourt
     // dans CET ordre, sinon il compare le triangle d'une face à la normale d'une autre.
-    const ordre = surfaceGrouping(listées).faceIndices.flat();
+    const ordre = surfaceGrouping(listées, m).faceIndices.flat();
     const cx = ((scn.dimensions.w - 1) / 2) * m;
     const cz = ((scn.dimensions.h - 1) / 2) * m;
     let i = 0;
@@ -476,12 +479,13 @@ describe('TEINTE de sommet — la variance par case est CUITE dans `color`', () 
 });
 
 describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde', () => {
-  /** Face nue de matériau `mat`, avec la pente de nappe `pitchM` (pans de toit). */
-  const wf = (mat: Face['material'], pitchM?: number) => ({
+  /** Face nue de matériau `mat`, avec la pente de nappe `pitchM` (pans de toit) et son côté d'arête. */
+  const wf = (mat: Face['material'], pitchM?: number, side?: WorldFace['side']): WorldFace => ({
     face: { poly: [], material: mat } as Face,
     cell: { x: 3, y: 4, z: 0 },
     cellKey: '3,4,0',
     pitchM,
+    side,
   });
 
   it('les groupes couvrent EXACTEMENT tous les sommets, chacun une fois', () => {
@@ -498,8 +502,8 @@ describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde',
 
   it('une face SANS appareillage tombe dans le groupe NU ; une pierre à assises a sa période', () => {
     const sansAssises = TERRAIN_DEFS.find((t) => !t.detail?.courses)!;
-    const nu = faceGroup(wf({ domain: 'terrain', id: sansAssises.id }));
-    const pierre = faceGroup(wf({ domain: 'structure', id: 'mur-en-pierre', part: 'face' }));
+    const nu = faceGroup(wf({ domain: 'terrain', id: sansAssises.id }), mpt);
+    const pierre = faceGroup(wf({ domain: 'structure', id: 'mur-en-pierre', part: 'face' }), mpt);
     expect(pierre.kind).toBe('wall');
     expect(pierre.periodM).toEqual(coursesPeriodM(facadeStructureAppearance('mur-en-pierre').detail!.courses!));
     expect(pierre.key).not.toBe(nu.key);
@@ -509,7 +513,7 @@ describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde',
 
   it('un SOL prend la période élargie du sol, en une seule variante', () => {
     const c = TERRAIN_DEFS.find((t) => t.detail?.courses)!;
-    const g = faceGroup(wf({ domain: 'terrain', id: c.id }));
+    const g = faceGroup(wf({ domain: 'terrain', id: c.id }), mpt);
     expect(g.kind).toBe('ground');
     expect(g.variant).toBe(0);
     expect(g.periodM).toEqual(groundPeriodM(c.detail!.courses!));
@@ -518,8 +522,8 @@ describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde',
   it('deux nappes de PENTES différentes ne partagent PAS un groupe (échelle par élément)', () => {
     const mat: Face['material'] = { domain: 'roof', id: 'tuile', part: 'N' };
     const hM = roofMaterial('tuile').detail!.courses!.hM;
-    const plat = faceGroup(wf(mat, 1.0));
-    const raide = faceGroup(wf(mat, 2.4));
+    const plat = faceGroup(wf(mat, 1.0), mpt);
+    const raide = faceGroup(wf(mat, 2.4), mpt);
     expect(plat.periodM!.v).toBe(2 * roofCourseStepM(1.0, hM, ROOF_SLOPE_M));
     expect(raide.periodM!.v).toBe(2 * roofCourseStepM(2.4, hM, ROOF_SLOPE_M));
     expect(plat.periodM!.v).not.toBe(raide.periodM!.v);
@@ -530,10 +534,110 @@ describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde',
 
   it('la variante d’anti-périodicité vient de l’identité MONDE de la face (même hash que l’affine)', () => {
     const mat: Face['material'] = { domain: 'structure', id: 'mur-en-pierre', part: 'face' };
-    const ici = faceGroup(wf(mat));
-    expect(ici.variant).toBe(variantOf({ x: 3, y: 4 }, 'face'));
+    const ici = faceGroup(wf(mat, undefined, 'N'), mpt);
+    expect(ici.variant).toBe(variantOf({ x: 3, y: 4 }, 'N'));
     const vus = new Set<number>();
-    for (let x = 0; x < 40; x++) for (let y = 0; y < 40; y++) vus.add(variantOf({ x, y }, 'face'));
+    for (let x = 0; x < 40; x++) for (let y = 0; y < 40; y++) vus.add(variantOf({ x, y }, 'N'));
     expect(vus.size).toBe(N_VARIANTS); // les 3 variantes se rencontrent bien sur une carte
+  });
+
+  it('PARITÉ avec l’affine : la variante d’une face de MUR est celle de son CÔTÉ D’ARÊTE, jamais de sa `part`', () => {
+    const murs = buildWalls(scene).filter((el) => el.faces.length);
+    expect(murs.length).toBeGreaterThan(10);
+    const parFace = new Map(worldFaces(scene).map((w) => [w.face, w]));
+    let vérifiées = 0;
+    const parts = new Set<string>();
+    for (const el of murs) {
+      // Ce que le backend affine passe à `variantOf` pour CE mur (`affineWalls.ts`, `coursesOverlaySvg`).
+      const attendu = variantOf(el.cell, el.side);
+      for (const f of el.faces) {
+        const w = parFace.get(f);
+        if (!w) continue;
+        const g = faceGroup(w, mpt);
+        if (g.variant === undefined || g.kind !== 'wall') continue;
+        expect([el.key, f.material.part, g.variant]).toEqual([el.key, f.material.part, attendu]);
+        parts.add(f.material.part ?? '');
+        vérifiées++;
+      }
+    }
+    // La mesure porte sur PLUSIEURS parts d'un même appareillage : c'est la `part` qui divergeait.
+    expect(vérifiées).toBeGreaterThan(50);
+    expect(parts.size).toBeGreaterThan(1);
+  });
+
+  it('une façade à COLOMBAGE sort de la période pour sa CUISSON, et les jumelles se partagent une image', () => {
+    let cuits = 0;
+    let facesCuites = 0;
+    let cellulesCuites = 0;
+    for (const [nom, faire] of TEMOINS) {
+      const scn = faire();
+      const m = sceneMetresPerTile(scn);
+      const wfs = worldFaces(scn);
+      const { groups, faceIndices } = surfaceGrouping(wfs, m);
+      const cellules = new Set<string>();
+      groups.forEach((g, i) => {
+        if (!g.bake) return;
+        cuits++;
+        facesCuites += faceIndices[i].length;
+        for (const k of faceIndices[i]) cellules.add(wfs[k].cellKey);
+        // Un groupe CUIT ne répète rien : il n'a pas de période, mais un gabarit et sa recette.
+        expect([nom, g.periodM, g.recipe?.timber !== undefined]).toEqual([nom, undefined, true]);
+        expect([nom, g.bake.wM > 0 && g.bake.hM > 0]).toEqual([nom, true]);
+        // Le gabarit est quantifié au CENTIMÈTRE : c'est la maille de partage.
+        expect([nom, g.bake.wM]).toEqual([nom, Math.round(g.bake.wM * 100) / 100]);
+      });
+      cellulesCuites += cellules.size;
+    }
+    expect(cuits).toBeGreaterThan(0);
+    // Le cache MORD : strictement plus de faces cuites que d'images cuites, et surtout des façades de
+    // CASES DIFFÉRENTES tombent sur la même image — c'est ce qu'une clé re-seedée à l'identité de face
+    // détruirait (une image par mur).
+    expect(facesCuites).toBeGreaterThan(cuits);
+    expect(cellulesCuites).toBeGreaterThan(cuits);
+  });
+
+  it('AUCUNE face hors part `face` ne se colombe — parité avec ce que le backend affine habille', () => {
+    // `affineWalls.ts:160` cherche la face `part === 'face'` d'un mur, `affineWalls.ts:227` écarte tout
+    // le reste avant le colombage de la l.251, et `structureFaceSvg` (l.209) ne reçoit que des
+    // fermetures de comble authorées `part: 'face'`. Une cuisson posée ailleurs (poteau, plinthe,
+    // vitre…) peint des poutres là où le SVG n'en met aucune.
+    const parts = new Set<string>();
+    let cuits = 0;
+    for (const [nom, faire] of TEMOINS) {
+      const scn = faire();
+      const wfs = worldFaces(scn);
+      const { groups, faceIndices } = surfaceGrouping(wfs, sceneMetresPerTile(scn));
+      groups.forEach((g, i) => {
+        if (!g.bake) return;
+        cuits++;
+        for (const k of faceIndices[i]) {
+          const p = wfs[k].face.material.part;
+          parts.add(p ?? '-');
+          expect([nom, g.key, p]).toEqual([nom, g.key, 'face']);
+        }
+      });
+    }
+    expect(cuits).toBeGreaterThan(0);
+    expect([...parts]).toEqual(['face']);
+  });
+
+  it('aucune cuisson ne NOIRCIT sa face : jamais plus de la moitié des pixels sous le plein', () => {
+    // Un masque majoritairement sombre n'est plus un ornement mais un bandeau : c'est ce que rendait la
+    // cuisson d'une part étroite (un poteau de 8 cm de large recevait une ossature entière).
+    let mesurés = 0;
+    for (const [nom, faire] of TEMOINS) {
+      const scn = faire();
+      const { groups } = surfaceGrouping(worldFaces(scn), sceneMetresPerTile(scn));
+      for (const g of groups) {
+        if (!g.bake) continue;
+        const b = faceBakeData({ color: g.color!, recipe: g.recipe, part: g.part }, g.bake.wM, g.bake.hM, FACE_PX_PER_M, g.variant ?? 0);
+        expect([nom, g.key, b !== null]).toEqual([nom, g.key, true]); // une cuisson NEUTRE ne coûte pas un dessin
+        let sombres = 0;
+        for (let k = 0; k < b!.w * b!.h; k++) if (b!.data[k * 4] < 0.9 * 255) sombres++;
+        expect([nom, g.key, sombres / (b!.w * b!.h) < 0.5]).toEqual([nom, g.key, true]);
+        mesurés++;
+      }
+    }
+    expect(mesurés).toBeGreaterThan(10);
   });
 });

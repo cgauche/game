@@ -35,11 +35,11 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `courses` | 6 | `src/gameIso/backends/affineRoofs.ts:130` |
+| `courses` | 6 | `src/gameIso/backends/affineRoofs.ts:136` |
 | `bands` | 1 | `src/gameIso/detail/expand.ts:86` |
-| `timber` | 2 | `src/gameIso/detail/expand.ts:91` |
-| `speckle` | 6 | `src/gameIso/backends/affineDetail.ts:419` |
-| `tufts` | 9 | `src/gameIso/backends/affineDetail.ts:414` |
+| `timber` | 4 | `src/gameIso/backends/webgl/faceBake.ts:87` |
+| `speckle` | 6 | `src/gameIso/backends/affineDetail.ts:418` |
+| `tufts` | 9 | `src/gameIso/backends/affineDetail.ts:413` |
 | `tintVar` | 1 | `src/gameIso/backends/webgl/faceColors.ts:122` |
 | `seedScope` | 2 | `src/gameIso/pov/geometry.ts:330` |
 
@@ -134,14 +134,14 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `stake` | 3 | `src/state/combat/triggeredTest.ts:202` |
-| `skill` | 12 | `src/state/combat/triggeredTest.ts:194` |
-| `spec` | 11 | `src/state/combat/triggeredTest.ts:194` |
+| `stake` | 4 | `src/state/combat/triggeredTest.ts:212` |
+| `skill` | 15 | `src/state/combat/triggeredTest.ts:204` |
+| `spec` | 14 | `src/state/combat/triggeredTest.ts:204` |
 | `sense` | 2 | `src/state/combatEffects.ts:391` |
-| `characteristic` | 10 | `src/state/combat/triggeredTest.ts:194` |
+| `characteristic` | 12 | `src/state/combat/triggeredTest.ts:204` |
 | `difficulty` | 2 | `src/engine/flowCore.ts:370` |
 | `requireSL` | 1 | `src/state/combatEffects.ts:418` |
-| `label` | 5 | `src/state/combat/triggeredTest.ts:197` |
+| `label` | 6 | `src/state/combat/triggeredTest.ts:207` |
 | `tool` | 1 | `src/state/combatEffects.ts:393` |
 | `vsGroups` | 3 | `src/state/combatEffects.ts:325` |
 | `vsStatus` | 1 | `src/state/combatEffects.ts:324` |
@@ -154,9 +154,9 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `exceptGroups` | 1 | `src/state/combat/flowEval.ts:153` |
 | `gate` | 1 | `src/engine/flowCore.ts:375` |
 | `noSupport` | 1 | `src/state/combatEffects.ts:386` |
-| `menace` | 3 | `src/state/combat/triggeredTest.ts:206` |
+| `menace` | 5 | `src/state/combat/triggeredTest.ts:216` |
 | `difficultyBy` | 1 | `src/engine/flowCore.ts:369` |
-| `opposed` | 2 | `src/state/combat/triggeredTest.ts:238` |
+| `opposed` | 2 | `src/state/combat/triggeredTest.ts:248` |
 
 ### `TravelTableEntry` (src/engine/travelTables.ts)
 
