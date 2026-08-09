@@ -426,7 +426,9 @@ function buildMatchBullet(g, matchedSpans, cits, { index, closure }) {
     const name = c.isTs ? symbolFor(index.fileLines.get(c.file), c.row) : c.sym
     if (name) {
       const cur = symFirstRow.get(name)
-      if (cur == null || c.row < cur.row) symFirstRow.set(name, { row: c.row, defFile: c.file })
+      // Départage TOTAL : à `row` égal entre deux fichiers, le chemin lexicographiquement plus petit
+      // fixe `defFile` — sinon le premier VU gagne, et `defFile` alimente `isDeadExport` (⚠sans-appelant).
+      if (cur == null || c.row < cur.row || (c.row === cur.row && c.file < cur.defFile)) symFirstRow.set(name, { row: c.row, defFile: c.file })
     }
   }
   const symbols = [...symFirstRow.entries()]
