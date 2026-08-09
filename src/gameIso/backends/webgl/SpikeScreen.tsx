@@ -56,6 +56,7 @@ import {
   LIGHT_COLOR,
   SUN_INTENSITY,
 } from './sceneMeshes';
+import { accentCounts, buildGroundAccentMeshes, sceneGroundAccents } from './groundAccents';
 import { spec as siegeSpec } from '../../../scenes/test-scenarios/siege-enceinte';
 import { scenario as pontVitrine } from '../../../scenes/test-scenarios/pont-vitrine';
 import { scenario as arene } from '../../../scenes/test-scenarios/arene';
@@ -198,6 +199,10 @@ export function SpikeScreen(): JSX.Element {
   const geometry = useMemo(() => buildWorldGeometry(scene, mpt, tintAt), [scene, mpt, tintAt]);
   useEffect(() => () => geometry.dispose(), [geometry]);
   const subjects = useMemo(() => collectBillboards(scene, mpt, tintAt), [scene, mpt, tintAt]);
+  // ── Accents de SOL : un semis ancré MONDE, sans période — il ne peut passer ni par la texture de
+  // période ni par la cuisson par face. Dérivation PURE mémoïsée (scène × visibilité) ; le montage
+  // instancié, lui, dépend du mode de matériau et se refait à la frame (comme les billboards).
+  const accents = useMemo(() => sceneGroundAccents(scene, mpt, tintAt), [scene, mpt, tintAt]);
 
   // Renderer UNIQUE (le canevas ne se remonte jamais) — `preserveDrawingBuffer` pour `toDataURL`.
   useEffect(() => {
@@ -274,6 +279,17 @@ export function SpikeScreen(): JSX.Element {
       worldMesh.castShadow = opts.lit;
       worldMesh.receiveShadow = opts.lit;
       three.add(worldMesh);
+
+      // ── ACCENTS DE SOL : un `InstancedMesh` par (type × couleur de donnée), teinte de visibilité
+      // portée par `instanceColor`. Ils entrent dans les `disposables` de la frame — changer de scène,
+      // de mode ou de visibilité les évince avec le reste, sans cache à invalider.
+      const accentMeshes = buildGroundAccentMeshes(accents, { lit: opts.lit });
+      for (const m of accentMeshes) {
+        m.castShadow = opts.lit;
+        m.receiveShadow = opts.lit;
+        disposables.push(m.geometry, m.material as THREE.Material, m);
+        three.add(m);
+      }
 
       const box = geometry.boundingBox ?? new THREE.Box3(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
       const centre = box.getCenter(new THREE.Vector3());
@@ -417,7 +433,8 @@ export function SpikeScreen(): JSX.Element {
       setCap(facing);
       setInfo(
         `${scene.nom} — ${scene.dimensions.w}×${scene.dimensions.h}, ${(geometry.getAttribute('position').count / 3) | 0} triangles, ` +
-        `${montables.length} billboards, lacet ${normYaw(opts.yawDeg).toFixed(1)}° (cran ${camRot}), zoom ×${echelle.toFixed(2)}` +
+        `${montables.length} billboards, ${accentCounts(accents).total} accents de sol en ${accentMeshes.length} lots, ` +
+        `lacet ${normYaw(opts.yawDeg).toFixed(1)}° (cran ${camRot}), zoom ×${echelle.toFixed(2)}` +
         `${fit ? ` (cadré ×${fit.zoom.toFixed(2)} × réglage ×${opts.zoom.toFixed(2)})` : ''}, cap ${facing}`,
       );
     };
@@ -439,7 +456,7 @@ export function SpikeScreen(): JSX.Element {
       cancelled = true;
       for (const d of disposables) d.dispose();
     };
-  }, [scene, mpt, start, geometry, subjects, opts]);
+  }, [scene, mpt, start, geometry, subjects, accents, opts]);
 
   // Pilotage headless : `window.__spike.set(...)` résout quand la frame demandée est RENDUE.
   useEffect(() => {

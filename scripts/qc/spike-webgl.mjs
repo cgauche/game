@@ -45,13 +45,12 @@ const MODES = [
 const DIVERGENCES = [
   "Sols, murs et pans de toit portent leur APPAREILLAGE : le masque de période (joints de la recette ; blocs nuancés pour un SOL, dont la période n'est pas seedée) est cuit en logiciel et répété sur l'UV monde. Ce qui manque à une nappe est son DÉGRADÉ cuit par tuile (`stops` d'un `TerrainDef`, clair en haut → sombre en bas) : ici c'est la lumière du renderer qui ombre, l'albédo ne porte que le `swatch`.",
   "Aucun LISERÉ de contour : le backend affine cerne chaque face d'un trait (`strokeAttr`) que le spike n'a pas — les arêtes se lisent à la silhouette et à l'ombrage, jamais à un trait.",
-  "Accents de SOL absents : touffes d'herbe et mouchetis (`groundAccentsSvg`, LOD 2) sont des semis ancrés au MONDE, sans période — ils relèvent du même canal seedé que les accents muraux ci-dessous.",
   "L'ombrage de FALAISE (assombrissement cuit par orientation) disparaît : en mode éclairé, c'est la lumière directionnelle qui creuse le relief.",
   "Nuit et fenêtres émissives HORS PÉRIMÈTRE : aucune source ponctuelle n'est montée (la planche SVG en porte un panneau, pas le spike).",
   "Art des props limité à 3 vues + miroir (`propSvg`) : le spike ne lève PAS cette contrainte — un billboard reste un dessin, pas un volume.",
   'Animation hors périmètre : aucune pose de marche, aucun `fx` d’ambiance — chaque capture est un arrêt sur image.',
   "Murs ÉPAIS (~0,17 m) et COIFFÉS : le backend affine peint des plans d'épaisseur nulle, le spike en fait des boîtes minces avec une coiffe au sommet (`wallBoxPolys`) — les silhouettes divergent de ±2 px, et un mur offre une surface vue du dessus là où le SVG n'en a aucune.",
-  "Accents SEEDÉS AU MONDE non portés (blocs nuancés d'un appareillage MURAL, mouchetis d'usure) : la cuisson par face du spike ne porte que le canal DÉTERMINISTE (colombage), partagé par gabarit — leur canal dédié est spécifié au #1198.",
+  "Accents MURAUX seedés au monde non portés (blocs nuancés d'un appareillage mural, mouchetis d'usure) : la cuisson par face du spike ne porte que le canal DÉTERMINISTE (colombage), partagé par gabarit — leur canal dédié est spécifié au #1198.",
   "Disque d'ombre de contact en COULEUR CUITE seulement : en mode éclairé, la silhouette projette sa vraie ombre (`castShadow`) et le disque en ferait une seconde.",
 ];
 

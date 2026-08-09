@@ -62,7 +62,7 @@ import { reliefMaterial } from '../catalog/relief';
 import { roofMaterial } from '../catalog/roofs';
 import { AMBIANCE } from '../catalog/ambiance';
 import { COURSED } from '../backends/affineWalls';
-import { expandRecipe, ACCENT_FRAC, BLOCK_INSET_M, BLOCK_SHADE_K, type DetailExpansion } from '../detail/expand';
+import { expandRecipe, ACCENT_FRAC, BLOCK_INSET_M, BLOCK_SHADE_K, TUFT_FAN, type DetailExpansion } from '../detail/expand';
 import { hash32, seedStream } from '../detail/hash';
 import { TINT_SPREAD } from '../backends/affineDetail';
 import { shade } from '../shade';
@@ -116,8 +116,6 @@ const TERRAIN_BY_ID = new Map(TERRAIN_DEFS.map((t) => [t.id, t]));
 const LOD = AMBIANCE.pov.depth.lod;
 /** Seuil |shade| d'un bloc d'ACCENT : les 2×ACCENT_FRAC extrêmes de la nuance uniforme [−pv, pv]. */
 const accentThreshold = (paletteVar: number): number => paletteVar * (1 - 2 * ACCENT_FRAC);
-/** Éventail d'une touffe : décalage horizontal MONDE d'un brin latéral, en fraction de sa hauteur. */
-const TUFT_FAN = 0.3;
 /** Épaisseur métrique d'un brin d'herbe (m) — projetée en perspective comme un joint. */
 const TUFT_BLADE_WM = 0.01;
 

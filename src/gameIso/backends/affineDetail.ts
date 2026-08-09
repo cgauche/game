@@ -381,11 +381,24 @@ export function terrainDetail(terrainId: string): DetailRecipe | null {
   return d && (d.tufts || d.speckle) ? d : null;
 }
 
+/** Amplitude du PENCHÉ D'ÉCRAN d'une touffe : le 2ᵉ tirage du flux `blades` est étalé sur
+ *  [−`TUFT_LEAN_AMPLITUDE`, +`TUFT_LEAN_AMPLITUDE`] avant d'entrer dans le tracé SVG. Quantum de CET
+ *  émetteur seul — les backends monde (POV, WebGL) lisent le même rang comme un LACET et n'en ont pas
+ *  l'usage. Exporté pour le test de parité `backends/webgl/groundAccents.test.ts`, qui décode le
+ *  penché depuis le chemin SVG et doit savoir sur quoi il a été étalé. */
+export const TUFT_LEAN_AMPLITUDE = 1.2;
+
 /** ACCENTS de sol d'une tuile (LOD 2) : touffes (3 brins courbés par touffe, dressés à l'écran) et
  *  mouchetis, positions tirées en UV de TUILE puis projetées en GRILLE continue (`projGP`) → le brin
  *  reste sur le même point du MONDE quelle que soit la rotation caméra. BUDGET sol (≤ 2,5 nœuds/tuile) :
  *  la couleur se tire PAR TUILE dans la palette de la recette (UN `<path>` par section) — la variété
- *  de teinte vit ENTRE les tuiles (+ `tintVar`), pas entre les brins d'une même tuile. */
+ *  de teinte vit ENTRE les tuiles (+ `tintVar`), pas entre les brins d'une même tuile.
+ *
+ *  CONTRAT DU FLUX `blades` — il a TROIS consommateurs : cet émetteur (penché d'écran), le POV
+ *  (`pov/geometry.ts`, `groundAccentItems`) et le WebGL (`backends/webgl/groundAccents.ts`), ces deux
+ *  derniers lisant le 2ᵉ rang comme un LACET monde. L'ORDRE des tirages — DEUX par touffe, hauteur
+ *  puis penché — est donc verrouillé : insérer, retirer ou permuter un tirage ici décale les trois
+ *  backends et casse la parité mesurée par `backends/webgl/groundAccents.test.ts`. */
 export function groundAccentsSvg(
   recipe: DetailRecipe,
   cell: { x: number; y: number; z: number },
@@ -404,7 +417,7 @@ export function groundAccentsSvg(
     for (const t of e.tufts) {
       const p = at(t.u, t.v);
       const hp = t.hM * PX_PER_M_V * (0.8 + r() * 0.5);
-      const lean = (r() * 2 - 1) * 1.2;
+      const lean = (r() * 2 - 1) * TUFT_LEAN_AMPLITUDE;
       d +=
         `M${n2(p[0])},${n2(p[1])}q${n2(lean - 1.2)},${n2(-hp * 0.6)} ${n2(lean - 1.7)},${n2(-hp)}` +
         `M${n2(p[0])},${n2(p[1])}l${n2(lean * 0.4)},${n2(-hp * 1.15)}` +

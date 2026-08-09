@@ -43,6 +43,11 @@ export const BLOCK_INSET_M = 0.05;
 /** Amplification des nuances d'un bloc d'accent (× `paletteVar`) — dosage PARTAGÉ (accents iso,
  *  trapèzes nuancés POV, bardeaux de toit). */
 export const BLOCK_SHADE_K = 1.5;
+/** Éventail d'une touffe : décalage horizontal MONDE d'un brin latéral, en fraction de sa hauteur —
+ *  dosage PARTAGÉ par les backends qui posent la touffe EN MONDE (POV `groundAccentItems`, WebGL
+ *  `tuftGeometry`/`accentMatrix`). L'affine, lui, penche ses brins à l'ÉCRAN et n'a pas d'éventail
+ *  monde (`TUFT_LEAN_AMPLITUDE`, `backends/affineDetail.ts`). */
+export const TUFT_FAN = 0.3;
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 

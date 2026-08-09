@@ -204,6 +204,55 @@ export function aplatDePans(img, teintes, cote = FENETRE_MOTIF) {
   return par;
 }
 
+/** TOUFFES sur une nappe : parmi les fenêtres `cote`×`cote` faites de NAPPE (albédo `hexAlbedo`, à la
+ *  fenêtre de `k` de `motifLocal`) ou d'ACCENT (une des teintes `touffes`, reconnue AU PIXEL en couleur
+ *  cuite), la part de celles qui portent au moins un pixel d'accent, et la part moyenne de pixels
+ *  d'accent qu'elles portent.
+ *
+ *  L'attribution des accents passe par la teinte EXACTE et JAMAIS par le rapport `k` de la nappe : un
+ *  brin est une AUTRE couleur de la palette de la recette (`tufts.colors`), et la fenêtre de `k` de
+ *  l'herbe ne l'attrape ni ne doit l'attraper. Les deux masques sont donc DISJOINTS par construction
+ *  (l'accent est testé le premier), ce qui laisse la mesure lire exactement ce qu'elle prétend : la
+ *  densité d'accents SUR la nappe, jamais un mélange de bord. */
+export function touffesSurNappe(img, hexAlbedo, touffes, cote = FENETRE_MOTIF) {
+  const A = albedoLinear(hexAlbedo);
+  const cibles = touffes.map(rgbDe);
+  // 0 = ni l'un ni l'autre, 1 = nappe, 2 = accent.
+  const classe = new Uint8Array(img.w * img.h);
+  for (let i = 0; i < img.w * img.h; i++) {
+    const r = img.data[i * 4], g = img.data[i * 4 + 1], b = img.data[i * 4 + 2];
+    if (cibles.some((t) => Math.abs(r - t[0]) <= TOLERANCE_TEINTE && Math.abs(g - t[1]) <= TOLERANCE_TEINTE && Math.abs(b - t[2]) <= TOLERANCE_TEINTE)) {
+      classe[i] = 2;
+      continue;
+    }
+    const k = [r, g, b].map((v, c) => srgbToLinear(v / 255) / A[c]);
+    const hi = Math.max(...k), lo = Math.min(...k);
+    classe[i] = hi <= K_MAX && lo >= K_MIN && hi - lo <= ATTRIBUTION_CLASSE ? 1 : 0;
+  }
+  const pas = Math.max(1, cote >> 1);
+  const requis = PURETE_FENETRE * cote * cote;
+  let fenetres = 0, avecTouffe = 0, sommePart = 0;
+  for (let y0 = 0; y0 + cote <= img.h; y0 += pas)
+    for (let x0 = 0; x0 + cote <= img.w; x0 += pas) {
+      let sol = 0, accent = 0;
+      for (let y = y0; y < y0 + cote; y++)
+        for (let x = x0; x < x0 + cote; x++) {
+          const c = classe[y * img.w + x];
+          if (c) sol++;
+          if (c === 2) accent++;
+        }
+      if (sol < requis) continue;
+      fenetres++;
+      if (accent) avecTouffe++;
+      sommePart += accent / (cote * cote);
+    }
+  return {
+    fenetres,
+    partAvecTouffe: fenetres ? avecTouffe / fenetres : 0,
+    partPixels: fenetres ? sommePart / fenetres : 0,
+  };
+}
+
 /** Teintes de PAN de toit, lues à la DONNÉE (`src/data/roofMaterials.json`) : les 4 côtés N/E/S/O de
  *  chaque matériau à assises — exactement ce que `faceColors.roofColor` rend en couleur cuite. */
 function teintesDePans() {
@@ -219,6 +268,9 @@ function teintesDePans() {
 const HERBE = '#3D6630';
 const BOIS = '#6E5940';
 const PIERRE = '#6B6F76';
+/** Palette des TOUFFES d'herbe, telle que la donnée la porte (`src/state/terrain/defs/herbe.ts:16`,
+ *  `detail.tufts.colors`) — les seules couleurs qu'un accent de sol d'herbe peut prendre. */
+const TOUFFES_HERBE = ['#5C8A40', '#3A5C28'];
 
 /** Écart-type médian de luminance sous lequel une pierre appareillée est un APLAT (elle ne montre pas
  *  son appareillage). Mesuré le 2026-08-09 sur les planches d'AVANT les textures de période : 0,00 sur
@@ -237,6 +289,14 @@ const COLOMBAGE_MIN = 9;
  *  (240) et de l'arène (115), pans d'ardoise N/E/O de la diligence (41 / 238 / 81). Une surface
  *  appareillée rend donc ZÉRO aplat ; les 10 % laissés ici sont la marge des bords anticrénelés. */
 const APLAT_PAN_MAX = 0.1;
+
+/** Part MINIMALE des fenêtres de nappe d'herbe qui doivent porter au moins un pixel de touffe. Seuil
+ *  DÉRIVÉ des deux mesures encadrantes du 2026-08-09 sur `siege-enceinte-iso-rot0-unlit.png` : 0,51 %
+ *  des 5 264 fenêtres AVANT les accents de sol (du seul bruit d'anticrénelage — 0,00 % de pixels
+ *  d'accent en moyenne), 93,14 % des 5 237 fenêtres APRÈS (1,31 % de pixels). Posé à la MOITIÉ de la
+ *  mesure haute : la moitié d'un semis peut se perdre (minification, culling) sans rougir, et le bruit
+ *  seul reste à 180× sous la barre. */
+const TOUFFES_MIN = 0.45;
 
 /** Seuils : chacun porte SA mesure sur les planches FINALES du 2026-08-09 (`public/qc/spike/`). */
 const GARDES = [
@@ -323,6 +383,34 @@ const GARDES = [
       return {
         ok: mesurés.every(([, e]) => e.aplat / e.n <= APLAT_PAN_MAX),
         dit: `${mesurés.length} pans mesurés, pire ${pire[0]} à ${(100 * pire[1].aplat / pire[1].n).toFixed(0)} % d'aplat sur ${pire[1].n} fenêtres`,
+      };
+    },
+  },
+  {
+    planche: 'siege-enceinte-iso-rot0-unlit.png',
+    titre: `présence de TOUFFES sur l'herbe (albédo ${HERBE}, palette ${TOUFFES_HERBE.join('/')}) : ≥ ${100 * TOUFFES_MIN} % des fenêtres de nappe`,
+    // ÉTAT MESURÉ le 2026-08-09 sur la planche capturée AVANT les accents de sol : 0,51 % des 5 264
+    // fenêtres de nappe d'herbe portaient un pixel de la palette de touffe, pour 0,00 % de pixels
+    // d'accent en moyenne — du seul bruit d'anticrénelage sur une herbe restée un damier de losanges
+    // unis, exactement la nudité que le lot vise. Sur la planche recapturée AVEC les instances :
+    // 93,14 % des 5 237 fenêtres, 1,31 % de pixels. Le seuil (`TOUFFES_MIN`) sépare les deux.
+    //
+    // CE QU'ELLE NE MESURE PAS (angle mort déclaré) :
+    //  (i) UNE planche, `siege-enceinte-iso-rot0-unlit.png`. Les accents peuvent disparaître du mode
+    //      ÉCLAIRÉ et des trois autres rotations sans que cette garde bouge d'un pixel.
+    //  (ii) L'attribution passe par la teinte EXACTE (`TOLERANCE_TEINTE` autour de la palette de
+    //      donnée) : un tonemapping posé sur la planche unlit ferait tomber la garde en ROUGE, pas en
+    //      faux vert — elle ne sait pas distinguer « accents absents » de « accents repeints ».
+    //  (iii) `#3A5C28` est AUSSI le stop 100 % du dégradé de l'herbe (`src/state/terrain/defs/herbe.ts:12`).
+    //      Il ne produit pas de faux vert aujourd'hui : le dégradé n'est pas une surface rendue ici, et
+    //      la mesure d'aplat le confirme (fenêtre la plus chargée à 52 pixels d'accent sur 576). À
+    //      re-mesurer le jour où le dégradé de sol devient une surface rendue par le backend.
+    mesurer: (img) => {
+      const r = touffesSurNappe(img, HERBE, TOUFFES_HERBE);
+      if (!r.fenetres) return { ok: false, dit: `nappe d'herbe introuvable (aucune fenêtre pleine de ${HERBE})` };
+      return {
+        ok: r.partAvecTouffe >= TOUFFES_MIN,
+        dit: `${(100 * r.partAvecTouffe).toFixed(2)} % des ${r.fenetres} fenêtres de nappe portent une touffe (${(100 * r.partPixels).toFixed(2)} % de pixels d'accent en moyenne)`,
       };
     },
   },
