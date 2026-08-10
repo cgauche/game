@@ -5,7 +5,8 @@ import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { seedBattleRng } from '../battleRng';
 import { addCondition, stacks, hasCondition, combatTestPenalty, COND } from '../../engine/conditions';
-import { rawCombatTestBase } from '../../engine/skills';
+import { rawCombatTestBase, skillBaseValue } from '../../engine/skills';
+import { inexplique } from '../cascadeTestKit';
 import { DIFFICULTY_MODIFIERS } from '../../engine/types';
 
 import { testScene } from '../../scenes/test-fixture';
@@ -72,11 +73,18 @@ describe('Mâchoires d’acier — effet onGainCondition cadence-aware (brique t
     seedBattleRng(7);
     const { H } = setup();
     H.talents = [...(H.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
+    // Effet ACTIF char-QUALIFIÉ : il vit dans la valeur TESTÉE de combat et PAS dans la valeur NUE. Sans
+    // lui, `base` vaudrait `rawCombatTestBase` par coïncidence et l'assert ne discriminerait rien.
+    H.activeEffects = [...(H.activeEffects ?? []), { id: 'fx-e', label: 'Mystracine', testModChar: 'endurance', testMod: -10 } as never];
     addCondition(H, COND.sonne, 2); // H porte Sonné AU MOMENT du Test → ancien double-compte de la pénalité
     const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'triggeredTest')!;
-    // `base` = valeur BRUTE (sans pénalité d'État) ; `target` = base + Intermédiaire(0) + `combatTestPenalty` (UNE fois).
-    expect(step.base).toBe(rawCombatTestBase(H, 'resistance'));
+    const nue = skillBaseValue(H, 'resistance');
+    expect(nue, 'sonde inerte : sans écart nue/valeur testée, l’assert passerait par coïncidence').not.toBe(rawCombatTestBase(H, 'resistance'));
+    // `base` = Niveau de Compétence NU (`LDB 09 l.17`) ; `target` = valeur TESTÉE de combat + Intermédiaire(0)
+    // + `combatTestPenalty` (UNE fois) ; tout l'écart entre les deux est NOMMÉ en `mods` (zéro chip anonyme).
+    expect(step.base).toBe(nue);
     expect(step.target).toBe(rawCombatTestBase(H, 'resistance') + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(H));
+    expect(inexplique(step)).toBe(0);
     expect(combatTestPenalty(H)).toBe(-20); // 2 pions de Sonné : −10 par pion (LDB 16 l.11) — comptés une fois
   });
 

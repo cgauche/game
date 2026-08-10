@@ -187,8 +187,10 @@ function refLessProducers(): string[] {
  *  - lignes AGRÉGÉES qui doivent d'abord se DÉPLIER par source, comme les pools de L4 : « Contrecoup »
  *    (somme de `castPenalties`), « autres » (résidu de réconciliation), le modificateur d'Activité
  *    (`activityModLines`, porté par la donnée de flux — SOURCE UNIQUE depuis #1153 : le calcul de
- *    cible et son rendu lisent la MÊME ligne) et la météo MARITIME (`pt.envLabel`, dont la
- *    référence devrait naître au producteur `seaWeatherTestMod`).
+ *    cible et son rendu lisent la MÊME ligne). Les lignes d'un Test de scène — météo maritime
+ *    (`RULE_REF['meteo-maritime']`), malus psy DÉPLIÉ par source (`socialPsychLines`, fiche
+ *    `psychologies/<id>`), Statut (`RULE_REF.statut`) — sont émises AVEC leur fiche et transportées
+ *    par le pending (`PendingTest.mods`), donc hors de ce stock : l'affichage n'en produit plus.
  */
 const RATCHET = [
   "src/engine/combat.ts · 'Neige épaisse'",
@@ -200,7 +202,6 @@ const RATCHET = [
   'src/state/travelFlow.ts · `Km déjà au pas de course (${galloped})`',
   "src/engine/activities.ts · modLabel ?? 'Modificateur'",
   "src/ui/ActivityModal.tsx · 'Rounds tenus'",
-  "src/ui/jetProps/useTestJetProps.tsx · pt.envLabel ?? 'Météo'",
   "src/ui/RollLine.tsx · `${cut < 0 ? 'plafond' : 'plancher'} ${target}`",
   "src/ui/RollLine.tsx · 'autres'",
 ].sort();

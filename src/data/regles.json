@@ -778,5 +778,15 @@
       "page": 162,
       "note": "LDB 14 « Combiner les Difficultés »"
     }
+  },
+  {
+    "id": "statut",
+    "label": "Statut et Charme",
+    "desc": "Le Statut possède un impact important sur le Charme dans le sens où ceux qui disposent d'un Statut élevé obtiennent ce qu'ils veulent, alors que ceux qui ont un Statut inférieur éprouvent des difficultés à asseoir leur influence. Dans la plupart des circonstances, ceux de l'Échelon supérieur obtiennent un bonus de +10 à leur Test de Charme lorsque ce dernier a pour cible des personnes appartenant à un Échelon inférieur. De la même façon, les personnes appartenant à un Échelon inférieur subissent une pénalité de -10 lorsqu'ils doivent influencer des personnes d'Échelon supérieur. Le MJ peut décider, plus rarement, d'appliquer ces modificateurs à ceux qui sont de Standing différent au sein d'un même Échelon.\n\nSi la cible d'une tentative de Charme est atypique, tout risque de se dérouler de manière totalement différente. Un individu qui « Brave le Statut » n'applique aucun modificateur, alors que celui qui a des « Opinions extrêmes » inverse les modificateurs (-10 à la place de +10, par exemple).",
+    "source": {
+      "book": "livre-de-base",
+      "page": 51,
+      "note": "LDB 08 « Charme » — modificateur de Statut aux Tests sociaux (la phrase est à cheval sur les folios 50-51)"
+    }
   }
 ]

@@ -197,16 +197,26 @@ function containedSocialPenalty(tester: Combatant, type: string, targetGroups: s
 /** Les entrées de `psychology.json` qui DÉCLARENT un `containedSocialMod` et dont le malus « contenu »
  *  s'applique à `tester` envers `targetGroups` — SOURCE UNIQUE de la valeur et de l'étiquette : ni −20/−10
  *  ni `animosite`/`prejuge` ne sont écrits dans le moteur (un nouveau Trait le déclare en donnée). */
-function containedSocialEntries(tester: Combatant, targetGroups: string[]): { label: string; mod: number }[] {
+function containedSocialEntries(tester: Combatant, targetGroups: string[]): { id: string; label: string; mod: number }[] {
   return psychologies
     .filter((p) => p.containedSocialMod != null && containedSocialPenalty(tester, p.id, targetGroups))
-    .map((p) => ({ label: p.label, mod: p.containedSocialMod! }));
+    .map((p) => ({ id: p.id, label: p.label, mod: p.containedSocialMod! }));
 }
 
 /** Pénalité de Sociabilité des Traits psy ciblés de `tester` envers les groupes `targetGroups` (LDB 21,
  *  `containedSocialMod`) — cumulable. À consommer sur un Test de Sociabilité ciblé (dialogue/interaction). */
 export function socialPsychMod(tester: Combatant, targetGroups: string[]): number {
   return containedSocialEntries(tester, targetGroups).reduce((sum, e) => sum + e.mod, 0);
+}
+
+/** UNE ligne de mod PAR Trait psy « contenu » qui pèse (LDB 21) — la forme que consomme le monteur de
+ *  jet (`dansLaValeur`) quand ce malus a été FONDU dans une valeur. Chaque ligne porte la fiche Codex
+ *  de SA psychologie — catégorie `psychologies`, celle qui indexe `psychology.json` par id (la
+ *  catégorie `psychologie` liste des TRAITS, elle ne résoudrait que par homonymie) — jamais une somme
+ *  anonyme : c'est la même donnée que `socialPsychMod` (Σ) et `socialPsychLabel` (texte), par source. */
+export function socialPsychLines(tester: Combatant, targetGroups: string[]): ModLine[] {
+  return containedSocialEntries(tester, targetGroups)
+    .map((e) => ({ label: e.label, value: e.mod, famille: 'jet' as const, ref: { category: 'psychologies', id: e.id } }));
 }
 
 /** Libellé lisible du malus psy social (pour la modale de Test), ou undefined si aucun. Ex. « Animosité −20 ». */

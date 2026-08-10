@@ -77,7 +77,13 @@ export type RuleId =
   | 'navigation-derive'
   | 'navigation-greement'
   | 'navigation-chavirage'
-  | 'apprentissage-particulier';
+  | 'apprentissage-particulier'
+  /** Modificateur de Statut aux Tests sociaux (`LDB 08` « Charme »). */
+  | 'statut'
+  /** Modificateurs d'exposition aux maladies transmises par l'eau (`MSRC 16`). */
+  | 'exposition-hydrique'
+  /** Précipitations de la Mer des Griffes, qui modulent les Tests en mer (`MDG 13`). */
+  | 'meteo-maritime';
 
 /** La fiche Codex de chaque règle, en ids STABLES. Les producteurs de `ModLine` la consomment
  *  (`RULE_REF.viser`), l'affichage la résout en chip cliquable — jamais un `{category, id}` recopié
@@ -127,4 +133,7 @@ export const RULE_REF: Record<RuleId, CodexTarget> = {
   'navigation-greement': { category: 'regles', id: 'navigation-greement' },
   'navigation-chavirage': { category: 'regles', id: 'navigation-chavirage' },
   'apprentissage-particulier': { category: 'activities', id: 'learn' },
+  statut: { category: 'regles', id: 'statut' },
+  'exposition-hydrique': { category: 'regles', id: 'exposition-hydrique' },
+  'meteo-maritime': { category: 'seaWeather', id: 'seaWeather' },
 };

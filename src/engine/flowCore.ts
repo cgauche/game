@@ -448,7 +448,7 @@ export interface FlowTest {
   /** Difficulté DYNAMIQUE : la PREMIÈRE Condition vraie impose sa difficulté ; sinon `difficulty` (défaut
    *  Intermédiaire). Brisé (LDB 16 l.58) : caché → Accessible, ennemi à ≤3 → Très difficile, sinon Intermédiaire. */
   difficultyBy?: { cond: Condition; difficulty: Difficulty }[];
-  /** Test OPPOSÉ (Assommante, LDB 62 l.268 : « Test opposé Force/Résistance ») : le côté qui jette CE
+  /** Test OPPOSÉ (Assommante, LDB 62 l.235 : « Test opposé Force/Résistance ») : le côté qui jette CE
    *  Test (`skill`/`characteristic` ci-dessus) est le DÉFENSEUR (la cible/victime) ; l'ATTAQUANT (le
    *  porteur de l'effet) oppose `attacker`[+`attackerSkill`], pré-jeté et FIGÉ. L'issue success/sl du
    *  défenseur vient de `resolveOpposed(jetDéfenseur, jetAttaquantFigé)` (PAS `roll ≤ target`) — le

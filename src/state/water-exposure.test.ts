@@ -89,7 +89,7 @@ describe('Effet de scène `waterExposure` — cascade + contraction DIRECTE', ()
     useGame.setState({ battle: null, scene: null, mode: 'exploration', flags: {}, journal: [], pendingCascade: null, gameTime: 600 });
   });
 
-  it('ouvre UNE étape par héros exposé, base = Résistance + modificateurs cumulés', () => {
+  it('ouvre UNE étape par héros exposé : base = Résistance NUE, les modificateurs cumulés sont des lignes NOMMÉES', () => {
     const h1 = hero('h1', { wounds: { current: 1, max: 12, base: 12 } } as Partial<Combatant>);
     const h2 = hero('h2');
     useGame.setState({ party: [h1, h2] });
@@ -98,10 +98,27 @@ describe('Effet de scène `waterExposure` — cascade + contraction DIRECTE', ()
     expect(pc.participants).toHaveLength(2);
     const s1 = pc.participants.find((s) => s.actorId === 'h1')!;
     const s2 = pc.participants.find((s) => s.actorId === 'h2')!;
-    // La source d'eau (−30) touche les DEUX ; h1 cumule EN PLUS ses mods dérivés : 1 PB restant (−30)
-    // + 11 PB perdus ≥ 5 (−20) → écart de 50 entre les deux bases.
-    expect((s2.base ?? 0) - (s1.base ?? 0)).toBe(50);
     expect(s1.kind).toBe('waterExposure');
+    // La ligne est montée par le monteur canonique : la base est le Niveau de Compétence NU (Résistance,
+    // E 42), IDENTIQUE pour les deux — ce qui les sépare s'AFFICHE au lieu de fondre dans la base.
+    expect([s1.base, s2.base]).toEqual([42, 42]);
+    // La source d'eau (−30) touche les DEUX ; h1 cumule EN PLUS ses mods dérivés : 1 PB restant (−30)
+    // + 11 PB perdus ≥ 5 (−20) — chaque tableau rend SA ligne, liée à la fiche qui l'octroie (MSRC 16).
+    expect(s2.mods).toEqual([
+      { label: 'Grande ville ; marais', value: -30, famille: 'jet', ref: { category: 'regles', id: 'exposition-hydrique' } },
+    ]);
+    expect(s1.mods?.map((m) => [m.label, m.value])).toEqual([
+      ['Grande ville ; marais', -30],
+      ['1 Blessure ou moins restante', -30],
+      ['5 Blessures ou plus perdues', -20],
+    ]);
+    // Ce qui SÉPARE les deux héros (50) se lit dans la somme de leurs lignes.
+    const somme = (s: typeof s1): number => (s.mods ?? []).reduce((t, m) => t + m.value, 0);
+    expect(somme(s2) - somme(s1)).toBe(50);
+    // Cible : Résistance nue + modificateurs + Difficulté (Intermédiaire +0), bornée par la MÊME
+    // primitive que `rollTest` — le plancher subi par h1 est RENDU (`clamped`), il n'est plus muet.
+    expect([s2.target, s2.clamped]).toEqual([12, undefined]); // 42 − 30
+    expect([s1.target, s1.clamped]).toEqual([1, 39]); // 42 − 80 = −38 → plancher 1, écart RENDU
   });
 
   it('échec de l\'étape → maladie contractée DIRECTEMENT (incubation normale, pas de second Test)', () => {

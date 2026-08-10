@@ -65,7 +65,7 @@ describe('approachFearTrigger — source de Peur qui s’approche (LDB 21 l.27)'
 
   it('héros MANUEL : Calme RATÉ (cascadeBatchRoll+Next) → 1 État Brisé', () => {
     seedBattleRng(1);
-    const h = hero({ characteristics: { FM: 1 } as never }); // Calme ~imbattable à rater
+    const h = hero({ characteristics: { 'force-mentale': 1 } as never }); // Calme de cible 1 : ~imbattable à rater
     run([h], mover({ pos: { x: 6, y: 5 } }), { x: 9, y: 5 });
     useGame.getState().cascadeBatchRoll(h.id);
     useGame.getState().cascadeNext(); // valide l’échec → branche fail → op condition `brise`

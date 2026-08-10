@@ -24,10 +24,10 @@
  */
 import { rollTest, resolveOpposed, type TestResult } from '../../engine/tests';
 import { combatTestPenalty } from '../../engine/conditions';
-import { testValue, rawCombatTestBase } from '../../engine/skills';
+import { testValue, rawCombatTestBase, skillBaseValue } from '../../engine/skills';
 import { describeTestRoll, type OpsCtx } from '../../engine/ops';
-import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../../engine/types';
-import type { Combatant, Difficulty } from '../../engine/types';
+import { CHAR_LABELS } from '../../engine/types';
+import type { CharKey, Combatant, Difficulty } from '../../engine/types';
 import { refLabel } from '../../data';
 import { type Flow, type FlowTest, type ConditionCtx, evalCondition, flowHasImpureOp, flowHasTest, resolveTestDifficulty, EMPTY_FLOW } from '../flow';
 import { condCtx } from '../bourseFlow';
@@ -37,7 +37,7 @@ import type { FreeAttackFreeze, BladeTrapFreeze, CascadeStep, BatchParticipant }
 import { battleRng } from '../battleRng';
 import { runPureFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps, drainPendingLog } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
-import { freeCons } from '../rollSeam';
+import { freeCons, rollLine, rollStep } from '../rollSeam';
 import { recoveryGeometry, effectSourcesOf, fireOwnTestFailed } from '../triggeredEffects';
 import { emitCombatEvent } from '../combatEvents';
 import { humanControlled } from '../netOwnership';
@@ -182,18 +182,16 @@ function triggeredTestStepId(c: Combatant, label: string | undefined, skillLabel
   return `triggeredTest-${c.id}-${label && label !== skillLabel ? `${label}-${skillLabel}` : skillLabel}`;
 }
 
-/** CIBLE d'un Test SIMPLE (non opposé) porté par un FLOW en combat — les deux formes de fenêtre de ce
- *  module, MONO (`simpleTriggeredTestStep`) et BANDE (`simpleBatchTestStep`), la calculent ICI :
- *  `base` BRUT (sans pénalité d'État) + Difficulté + `combatTestPenalty` comptée UNE seule fois
- *  (LDB 16). La pénalité d'État PÈSE donc sur la cible de ces Tests ; sa restitution en composantes
- *  NOMMÉES relève du décomposeur d'affichage (`testValueSplit`, #1178), comme pour les étapes montées
- *  par le monteur canonique (`rollSeam.rollStep`, canal `combat`/`test`), qui tiennent la MÊME règle. */
-function simpleTestTarget(c: Combatant, base: number, difficulty: Difficulty): number {
-  return base + DIFFICULTY_MODIFIERS[difficulty] + combatTestPenalty(c);
+/** Ids du Test au format du MONTEUR CANONIQUE (`RollLineSpec.test`) — un `FlowTest` nomme sa
+ *  Caractéristique `characteristic`, le monteur `char` : la traduction se fait ICI, une fois, pour les
+ *  quatre producteurs d'étapes de ce module. */
+function testIds(ft: FlowTest): { skill?: string; char?: CharKey; spec?: string } {
+  return { skill: ft.skill, char: ft.characteristic, spec: ft.spec };
 }
 
-/** SOURCE UNIQUE du squelette d'étape `triggeredTest` d'un Test SIMPLE (non opposé) : convention RAW-correcte
- *  `base` BRUT (`rawCombatTestBase`, sans pénalité d'État) + `combatTestPenalty` UNE seule fois (LDB 16).
+/** SOURCE UNIQUE du squelette d'étape `triggeredTest` d'un Test SIMPLE (non opposé) : ligne montée par
+ *  le MONTEUR CANONIQUE (`rollSeam.rollStep`, canal `combat`/`test`) — `base` = Niveau de Compétence NU
+ *  (`LDB 09 l.17`), États et autres composantes en lignes NOMMÉES (`mods`), Difficulté en donnée de ligne.
  *  Partagée par la voie « push » (`resolveFlowTest`, héros manuel mid-cascade) ET le collecteur de fin de
  *  Round (`collectHeroRoundEndUpkeep` : récupération d'États) → héros et ennemi récupèrent à l'identique.
  *  `extraMeta` porte le contexte sérialisable d'une réaction (Frappe réactive `freeAttack`, Piège-lame
@@ -201,12 +199,12 @@ function simpleTestTarget(c: Combatant, base: number, difficulty: Difficulty): n
 export function simpleTriggeredTestStep(
   c: Combatant, ft: FlowTest, branches: { onSuccess: Flow; onFail: Flow }, after: Flow, difficulty: Difficulty, extraMeta: Record<string, unknown> = {},
 ): CascadeStep {
-  const base = rawCombatTestBase(c, ft.skill, ft.characteristic, ft.spec);
   const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
   return {
     id: triggeredTestStepId(c, ft.label, skillLabel),
     kind: 'triggeredTest', actorId: c.id, icon: 'nav/dice', rollLabel: skillLabel,
-    base, target: simpleTestTarget(c, base, difficulty), label: ft.label ?? skillLabel,
+    ...rollStep({ actor: c, test: testIds(ft), difficulty, combat: { kind: 'test' } }),
+    difficulty, label: ft.label ?? skillLabel,
     // ENJEU du Flow (#1117) : le producteur du `FlowTest` le fournit, cette fabrique le transmet —
     // elle est générique et ne peut rien deviner de ce que le Test met en jeu.
     ...(ft.stake ? { stake: ft.stake } : {}),
@@ -221,10 +219,17 @@ export function simpleTriggeredTestStep(
  *  L'attaquant subit la MÊME Difficulté que le défenseur (LDB 12 l.166), et son bonus de DR propre
  *  (`attackerBonusSL` — Furtif sur la Discrétion, LDB 85) est baké dans le `sl` figé, si bien que la
  *  voie cascade (`meta.opposed.aT`) et la voie inline ré-opposent à l'identique. Le producteur d'une
- *  opposition à N défenseurs l'appelle LUI-MÊME, une fois, et passe le résultat en `ctx.opposedFreeze`. */
+ *  opposition à N défenseurs l'appelle LUI-MÊME, une fois, et passe le résultat en `ctx.opposedFreeze`.
+ *  Ligne montée par le MONTEUR CANONIQUE (HORS canal combat, comme le défenseur qu'il affronte) : le
+ *  jet porte donc sa valeur NUE (`base`), grandeur du départage à DR égal (`LDB 12 l.160`). Le d100 est
+ *  jeté sur la cible DÉJÀ composée par le monteur, d'où la Difficulté neutre passée à `rollTest`.
+ *  Un `TestResult` n'a PAS de canal de modificateurs NOMMÉS : les composantes que `rollLine` a
+ *  produites (États de l'attaquant, passifs) ne franchissent pas ce retour — une rangée d'affichage
+ *  reconstruite depuis ce seul jet en réconcilierait l'écart en chip « autres » (#1153, ticket ouvert). */
 export function rollFrozenOpposedAttacker(attacker: Combatant, opp: NonNullable<FlowTest['opposed']>, difficulty: Difficulty): TestResult {
-  const r = rollTest(testValue(attacker, opp.attackerSkill, opp.attacker), difficulty, battleRng());
-  return { ...r, sl: r.sl + (opp.attackerBonusSL ?? 0) };
+  const line = rollLine({ actor: attacker, test: { skill: opp.attackerSkill, char: opp.attacker }, difficulty });
+  const r = rollTest(line.target, 'intermediaire', battleRng());
+  return { ...r, base: line.base, sl: r.sl + (opp.attackerBonusSL ?? 0), ...(line.clamped ? { clamped: line.clamped } : {}) };
 }
 
 /**
@@ -235,9 +240,9 @@ export function rollFrozenOpposedAttacker(attacker: Combatant, opp: NonNullable<
  *
  * `aggregate:'none'` : les rangées sont INDÉPENDANTES — rien à agréger, chacune porte SA conséquence
  * (l'applier `triggeredBatchTest` rejoue la branche `onSuccess`/`onFail` par rangée, la branche
- * pouvant appendre à la cascade le second Test du SEUL défenseur concerné). Convention de `base`
- * identique à la voie MONO opposée : `testValue` (qui porte déjà la pénalité d'État) et AUCUNE
- * pénalité ajoutée. GÉNÉRIQUE : aucune entité nommée ; défenseurs, `FlowTest` et branches viennent du
+ * pouvant appendre à la cascade le second Test du SEUL défenseur concerné). Ligne montée par le MONTEUR
+ * CANONIQUE (`rollSeam.rollStep`) HORS canal combat, comme la voie MONO opposée : la valeur testée est
+ * `testValue`. GÉNÉRIQUE : aucune entité nommée ; défenseurs, `FlowTest` et branches viennent du
  * producteur. Les défenseurs dont la gate du Test est fermée sont écartés (même décision que
  * `resolveFlowTest`) ; `undefined` s'il ne reste personne.
  */
@@ -253,10 +258,9 @@ export function frozenOpposedBatchStep(
   const participants: BatchParticipant[] = [];
   for (const c of defenders) {
     if (flowTestGated(ft, c, combatConditionCtx(c, { caster: attacker }))) continue;
-    const base = testValue(c, ft.skill, ft.characteristic, ft.spec);
     participants.push({
-      id: c.id, interactive: true, result: null, base, difficulty,
-      target: base + DIFFICULTY_MODIFIERS[difficulty],
+      id: c.id, interactive: true, result: null, difficulty,
+      ...rollStep({ actor: c, test: testIds(ft), difficulty }),
       ...(ft.menace ? { menace: ft.menace } : {}),
       ...(ft.skill ? { skillId: ft.skill } : {}), ...(ft.spec ? { spec: ft.spec } : {}),
     });
@@ -278,9 +282,9 @@ export function frozenOpposedBatchStep(
 /**
  * Étape BATCH d'un Test SIMPLE (non opposé) — N testeurs appelés par la MÊME entrée de règle, une
  * RANGÉE par testeur dans la MÊME fenêtre (#1117 : une situation = une fenêtre). Jumelle de
- * `frozenOpposedBatchStep` sans opposition, et calque de la voie MONO simple pour la convention de
- * `base` : `rawCombatTestBase` (sans pénalité d'État) + `combatTestPenalty` comptée UNE seule fois
- * (LDB 16), exactement comme `simpleTriggeredTestStep`. `aggregate:'none'` — les rangées sont
+ * `frozenOpposedBatchStep` sans opposition, et calque de la voie MONO simple pour sa ligne : montée par
+ * le MONTEUR CANONIQUE (`rollSeam.rollStep`, canal `combat`/`test`), exactement comme
+ * `simpleTriggeredTestStep`. `aggregate:'none'` — les rangées sont
  * INDÉPENDANTES, l'applier `triggeredBatchTest` rejoue la branche `onSuccess`/`onFail` par rangée.
  * GÉNÉRIQUE : aucune entité nommée ; testeurs, `FlowTest`, branches et `id` viennent du producteur
  * (c'est lui qui connaît la CLÉ de sa bande). Les testeurs dont la gate du Test est fermée sont
@@ -294,10 +298,9 @@ export function simpleBatchTestStep(
   const participants: BatchParticipant[] = [];
   for (const c of testers) {
     if (flowTestGated(ft, c, combatConditionCtx(c, { caster: c }))) continue;
-    const base = rawCombatTestBase(c, ft.skill, ft.characteristic, ft.spec);
     participants.push({
-      id: c.id, interactive: true, result: null, base, difficulty, label: skillLabel,
-      target: simpleTestTarget(c, base, difficulty),
+      id: c.id, interactive: true, result: null, difficulty, label: skillLabel,
+      ...rollStep({ actor: c, test: testIds(ft), difficulty, combat: { kind: 'test' } }),
       ...(ft.menace ? { menace: ft.menace } : {}),
       ...(ft.skill ? { skillId: ft.skill } : {}), ...(ft.spec ? { spec: ft.spec } : {}),
     });
@@ -448,7 +451,7 @@ export function runCombatFlow(ctx: ExecCtx, flow: Flow): void {
  *    on ne touche QUE `pendingCascade` (jamais `battle.log` depuis ce hook profond).
  *  - combat sinon (ennemi / cadence auto) → jet INLINE + branche + `after`, lignes → file différée.
  *
- * Test OPPOSÉ (`ft.opposed`, Assommante LDB 62 l.268) : l'ATTAQUANT (`ctx.caster`, le porteur) est
+ * Test OPPOSÉ (`ft.opposed`, Assommante LDB 62 l.235) : l'ATTAQUANT (`ctx.caster`, le porteur) est
  * PRÉ-JETÉ et FIGÉ (`aT`) AVANT que le défenseur (`c`) ne jette — l'issue success/sl du défenseur vient
  * de `resolveOpposed(jetDéfenseur, aT)` (PAS `roll ≤ target`). Côté héros manuel, `aT` voyage dans
  * `meta.opposed` (sérialisable, coop) et la cascade re-oppose à chaque influence (calque `recover`/
@@ -472,7 +475,8 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   // vaillant, ET pions restants ») — SOURCE UNIQUE partagée avec la voie inline (`resolveInlineFlowTest`).
   if (flowTestGated(ft, c, cc)) { playAfter(ctx.get, ctx.set, c, after, ctx.label); return; }
   const opp = ft.opposed;
-  // Pénalité d'État comptée UNE seule fois (RAW : −10 d'Empoisonné/Sonné/… au Test, LDB 16, pas deux) :
+  // Valeur TESTÉE du jet INLINE (le squelette d'étape, lui, vient du monteur canonique) — pénalité d'État
+  // comptée UNE seule fois (RAW : −10 d'Empoisonné/Sonné/… au Test, LDB 16, pas deux) :
   //  · Test SIMPLE → `base` BRUT (`rawCombatTestBase`, sans pénalité d'État) + `combatTestPenalty` (ci-dessous).
   //  · Test OPPOSÉ → `base` = `testValue` (porte déjà la pénalité d'État) + aucune pénalité ajoutée (penalty 0).
   const base = opp ? testValue(c, ft.skill, ft.characteristic, ft.spec) : rawCombatTestBase(c, ft.skill, ft.characteristic, ft.spec);
@@ -496,8 +500,9 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   if (humanControlled(ctx.get(), c)) {
     // Pilote humain en cadence manuelle : étape INFLUENÇABLE, suspendue dans la cascade. Branche + `after` (et,
     // pour une réaction, le contexte sérialisable `freeAttack`/`bladeTrap`) voyagent dans le meta → rejoués
-    // par l'applier. Test OPPOSÉ : squelette construit ICI (base=`testValue`, penalty 0, + `aT` figé dans
-    // le meta pour ré-opposer à chaque influence). Test SIMPLE : `simpleTriggeredTestStep` (source unique).
+    // par l'applier. Test OPPOSÉ : squelette construit ICI — ligne montée par le MONTEUR CANONIQUE
+    // (`rollStep`, HORS canal combat : convention `testValue`) + `aT` figé dans le meta pour ré-opposer à
+    // chaque influence. Test SIMPLE : `simpleTriggeredTestStep` (source unique).
     // `noOwnTestFailed` : ce Test est LUI-MÊME un effet d'un `onOwnTestFailed` (FM de palier 2 des Crampes,
     // MSRC 16) — l'étampe empêche `commitStep` de ré-émettre le trigger à sa résolution (garde de ré-entrance
     // qui survit à la cadence asynchrone du héros).
@@ -505,7 +510,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     pushCombatStep(ctx.set, aT && attacker
       ? {
           id: triggeredTestStepId(c, ft.label, skillLabel), kind: 'triggeredTest', actorId: c.id, icon: 'nav/dice', rollLabel: skillLabel,
-          base, target: base + DIFFICULTY_MODIFIERS[difficulty] + penalty, label, difficulty,
+          ...rollStep({ actor: c, test: testIds(ft), difficulty }), label, difficulty,
           ...(ft.stake ? { stake: ft.stake } : {}),
           meta: { onSuccess: node.success, onFail: node.fail, after, opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], difficulty, ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}) }, ...extraMeta },
           ...(ft.menace ? { menace: ft.menace } : {}),
@@ -524,10 +529,12 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   if (opp && aT && attacker) {
     // Test OPPOSÉ inline : l'attaquant figé (1ʳᵉ position) vs le jet du défenseur → le défenseur RÉSISTE
     // (success) si l'attaquant ne l'emporte PAS (défenseur vainqueur OU égalité). `t.success`/`t.sl` du
-    // jet simple sont REMPLACÉS par l'issue opposée (LDB 62 l.268). Le bonus de DR du défenseur (Piège-lame,
+    // jet simple sont REMPLACÉS par l'issue opposée (LDB 62 l.235). Le bonus de DR du défenseur (Piège-lame,
     // LDB 62 l.280) s'AJOUTE à son `sl` AVANT l'opposition (modifie le vainqueur ET la marge nette).
     const bonusSL = opp.bonusSL ?? 0;
-    const o = resolveOpposed(aT, { ...t, sl: t.sl + bonusSL });
+    // Départage à DR égal (LDB 12 l.160) : les DEUX camps portent leur valeur NUE — l'attaquant depuis
+    // son pré-jet (`rollFrozenOpposedAttacker`), le défenseur posée ICI (le `t` de `rollTest` n'en a pas).
+    const o = resolveOpposed(aT, { ...t, sl: t.sl + bonusSL, base: skillBaseValue(c, ft.skill, ft.spec, ft.characteristic) });
     const defenderResists = o.winner !== 'attacker';
     // Chemin INLINE (défenseur non piloté par un humain — l.358) : ni l'attaquant ni le défenseur
     // n'ont de rangée `CascadeModal`/RollLine — le journal de combat est la SEULE surface des DEUX

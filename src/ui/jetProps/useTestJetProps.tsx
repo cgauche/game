@@ -5,7 +5,7 @@ import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { RollShell, type RollAction } from '../RollShell';
 import { PortraitPicker } from '../PortraitPicker';
-import { testValueSplit, testBreakdown, testPending } from '../breakdown';
+import { testBreakdown, testPending } from '../breakdown';
 import { recapLineOfEvent } from '../../gameIso/combatNarration';
 import { ev } from '../../state/combatLog';
 import { describeTest, amazingTestLabel } from '../../state/flowOutcomes';
@@ -41,18 +41,15 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
   const actor = party.find((c) => c.id === pt.actorId);
   const multi = !rolled && !!pt.candidates && pt.candidates.length > 1;
   const skillLabel = pt.skill ?? pt.label;
-  // Mod d'environnement (météo maritime — Précipitations, MDG 13 l.187-201) : ligne de mod dédiée,
-  // au même titre que la Difficulté — `envMod` est DÉJÀ intégré à `pt.target` (PAS à `skillValue`)
-  // par `openSkillTest` (seaWeatherTestMod, POINT UNIQUE), ici seulement pour l'AFFICHAGE.
-  const envMods = pt.envMod ? [{ label: pt.envLabel ?? 'Météo', value: pt.envMod, famille: 'circonstance' as const }] : undefined;
-  // Soutien (LDB 12 l.187-200) ET composantes de la valeur de Test (États, séquelles, passifs, effets,
-  // outil — #1178) : FONDUS dans `skillValue` par `openSkillTest`, la primitive partagée les rend à
-  // leurs lignes de mod NOMMÉES et rebase l'affichage sur le Niveau de Compétence nu (LDB 09 l.17).
-  // `fused` = le malus psy social, lui aussi fondu mais annoncé par le sous-titre (`psychDetail`).
-  const { base, mods: supMods } = testValueSplit(actor, pt.skillValue, {
-    support: pt.support, skill: pt.skillId, characteristic: pt.char, spec: pt.spec, sense: pt.sense, fused: pt.psychMod ?? 0,
-  });
-  const extraMods = [...supMods, ...(envMods ?? [])];
+  // LIGNE MONTÉE : la base NUE (LDB 09 l.17) et TOUTES les lignes nommées — Soutien (LDB 12), États,
+  // Encombrement, séquelles, passifs, outil, malus psy (LDB 21), Statut (LDB 08), météo maritime
+  // (MDG 13) — sont montées à l'OUVERTURE par le monteur canonique (`rollSeam.rollStep`) et
+  // transportées par le pending. L'affichage les REND telles quelles : leur `famille` et leur fiche
+  // sont posées à l'émission (`engine/types.ModFamille`), donc jamais re-décidées ici. Sans ligne
+  // transportée (pending d'un producteur qui n'en pose pas), la rangée montre la valeur SEULE — elle
+  // ne reconstruit rien : une décomposition d'affichage peut diverger de celle qui a fait la cible.
+  const base = pt.base ?? pt.skillValue;
+  const extraMods = pt.mods ?? [];
   const pendingLine = testPending(skillLabel, base, pt.target, pt.difficulty, extraMods, pt.easedBy, pt.clamped);
   // Capricieux (MSRC 15 l.149-159) : le d10 de l'interlocuteur ne touche NI `skillValue` NI `target` —
   // il décale le DR du Test résolu (`FLOWS.test`), donc il s'affiche comme une ligne de mod de DR.

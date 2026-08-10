@@ -113,6 +113,15 @@ export interface PendingTest {
   difficulty: Difficulty;
   requireSL: number;
   target: number;
+  /** LIGNE MONTÉE du Test, transportée telle quelle depuis le monteur canonique (`rollSeam.rollStep`,
+   *  posée par `openSkillTest`) — MÊME couple que `CascadeStepBase.base`/`.mods` : `base` = Niveau de
+   *  Compétence NU (`LDB 09 l.17`), `mods` = TOUT l'écart nommé (États, Encombrement, passifs, Soutien
+   *  `LDB 12`, malus psy `LDB 21`, Statut `LDB 08`, météo `MDG 13`), chaque ligne portant la `famille`
+   *  et la fiche posées À L'ÉMISSION. L'affichage les REND, il ne les recompose pas : une ligne
+   *  re-dérivée à la modale pourrait contredire celle qui a servi à la cible.
+   *  Change avec le lanceur choisi (`testSetActor` recopie celles du candidat). */
+  base?: number;
+  mods?: ModLine[];
   /** Malus psy de Sociabilité de l'acteur (Animosité −20 / Préjugé −10 envers l'interlocuteur, LDB 21) —
    *  déjà intégré à `skillValue`/`target` ; conservé pour l'affichage en modale. */
   psychMod?: number;
@@ -136,8 +145,9 @@ export interface PendingTest {
   isDouble?: boolean;
   /** Membres du GROUPE pouvant tenter ce Test (le défaut `actorId` = le meilleur) — le joueur CHOISIT
    *  qui lance via `testSetActor` (au lieu d'une désignation automatique). Chaque entrée porte sa
-   *  valeur/cible/malus, pour re-cibler le Test sans recalcul. Absent/≤1 → pas de choix. */
-  candidates?: { id: string; label: string; value: number; target: number; clamped?: number; psychMod?: number; psychDetail?: string; itemUid?: string; support?: SupportDetail }[];
+   *  valeur/cible/malus ET sa LIGNE MONTÉE (`base`/`mods` — le Soutien et les États diffèrent d'un
+   *  candidat à l'autre), pour re-cibler le Test sans recalcul. Absent/≤1 → pas de choix. */
+  candidates?: { id: string; label: string; value: number; target: number; clamped?: number; base?: number; mods?: ModLine[]; psychMod?: number; psychDetail?: string; itemUid?: string; support?: SupportDetail }[];
   /** ÉCRÊTAGE réellement subi par `target` (bornes de `TestPolicy`, `engine/tests.clampTarget`) —
    *  informatif : la modale NOMME « plafond 99 : −N » au lieu de le déduire de la valeur de la cible. */
   clamped?: number;

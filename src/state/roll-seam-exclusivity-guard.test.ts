@@ -561,10 +561,9 @@ describe('REGISTRE des chemins de jet (#1066) — familles CANONIQUES énuméré
  * et le cliquet remonterait en silence si ce WIP était abandonné.
  */
 const LIGNE_A_LA_MAIN_STOCK: Record<string, number> = {
-  // COMBAT — reste du lot L1b (`combatEffects`/`triggeredTest` non migrés ; `encounterPsychFlow` = la
-  // rangée batch du Test de Peur hors rencontre)
-  'src/state/combat/triggeredTest.ts': 3,
-  'src/state/combatEffects.ts': 5,
+  // COMBAT — reste du lot L1b (`encounterPsychFlow` = la rangée batch du Test de Peur hors rencontre).
+  // `combat/triggeredTest.ts` (L3) et `combatEffects.ts` (L2' : `openSkillTest`, Test ÉTENDU,
+  // exposition hydrique) sont SOLDÉS — leurs étapes montent toutes leur ligne par `rollStep`.
   'src/state/encounterPsychFlow.ts': 1,
   'src/state/rollFlowSpecs.ts': 2, // cible du dé d'une MANŒUVRE d'attaque + cible de repli d'un Test opposé — COMBAT
   // HORS COMBAT — les sites de jet sont routés par `rollLine`/`rollStep` ; ce qui reste n'est pas une cible.
@@ -573,7 +572,7 @@ const LIGNE_A_LA_MAIN_STOCK: Record<string, number> = {
   'src/state/cascadeTestKit.ts': 1, // le cliquet lui-même (`inexplique`)
 };
 
-/** Dette TOTALE MESURÉE sur `HEAD` + ce lot : 14 occurrences / 7 fichiers, dont 11 en combat — verrou
+/** Dette TOTALE MESURÉE sur `HEAD` + ce lot : 6 occurrences / 5 fichiers, dont 3 en combat — verrou
  *  global : un site déplacé d'un fichier à l'autre ne s'y cache pas. */
 const TOTAL_DECLARE = Object.values(LIGNE_A_LA_MAIN_STOCK).reduce((s, n) => s + n, 0);
 

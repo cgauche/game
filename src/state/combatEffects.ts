@@ -2,7 +2,8 @@ import type { GameState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear, CascadeStep, CascadeTableDecl, PendingCascade } from './pendings';
 import { revealToStep } from './revealStep';
-import { Combatant, DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
+import { Combatant, CHAR_LABELS, type ModLine } from '../engine/types';
+import { RULE_REF } from '../engine/ruleRefs';
 import { battleRng } from './battleRng';
 import { d10, d100, defaultRNG, roll as rollDice, type RNG } from '../engine/dice';
 import { petitePriereAnswered } from '../engine/prayer';
@@ -12,8 +13,7 @@ import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
 import { effectiveChar } from '../engine/characteristics';
 import { buildActorView } from './combat/flowEval';
-import { partyBest, partyAssisted, soutienDetail, isSocialTest, socialPsychMod, socialPsychLabel, testValue, actorHasSkill } from '../engine/skills';
-import { clampTarget } from '../engine/tests';
+import { partyBest, partyAssisted, soutienDetail, isSocialTest, socialPsychMod, socialPsychLabel, socialPsychLines, testValue, actorHasSkill } from '../engine/skills';
 import { statusCharmMod, statusCharmLabel, actorStatus, capriciousDR } from '../engine/social';
 import { parseStatus } from '../engine/creation';
 import { easeDifficulty } from '../engine/tests';
@@ -53,7 +53,7 @@ import { removeEntity } from './combatGeometry';
 import { playSfx } from '../audio/engine';
 import { combatDistance } from './footprint';
 import { startCascade, registerCascadeApplier, pushStep } from './cascade';
-import { freeCons } from './rollSeam';
+import { freeCons, rollStep } from './rollSeam';
 import { startGroundPursuit } from './pursuitFlow';
 import { sourceExposureMod, autoExposureMods, drawWaterDisease, isWounded } from '../engine/waterExposure';
 import { loseWounds, addCondition, hasCondition } from '../engine/conditions';
@@ -343,6 +343,26 @@ export function openSkillTest(
     if (sl) parts.push(sl);
     return parts.length ? parts.join(' · ') : undefined;
   };
+  // Le mod social FONDU dans la valeur, DÉPLIÉ par source pour le monteur (`dansLaValeur`) : une ligne
+  // par Trait psy « contenu » (LDB 21), chacune liée à SA fiche par le producteur (`socialPsychLines`),
+  // puis la ligne de Statut (LDB 08). Σ de ces lignes === `socialMod(c)` — la garde d'exactitude du
+  // monteur le vérifie à chaque passage.
+  // Sous la règle optionnelle `social-status-reaction-roll`, la VALEUR de la ligne de Statut porte le
+  // d10 de réaction (annulé 1-2, inversé 9-10) alors que son LIBELLÉ décrit la base RAW : les deux
+  // divergent alors — le libellé est celui que la modale affiche déjà en sous-titre (`psychDetail`).
+  const socialLines = (c: Combatant): ModLine[] => {
+    const lines: ModLine[] = psychMod ? socialPsychLines(c, spec.vsGroups!) : [];
+    const st = statusMod ? statusMod(c) : 0;
+    if (st) {
+      lines.push({
+        label: statusCharmLabel(actorStatus(c), tgtStatus!, { begging: spec.begging }) ?? 'Statut',
+        value: st,
+        famille: 'jet',
+        ref: RULE_REF.statut,
+      });
+    }
+    return lines;
+  };
   // `opts.actorId` RESTREINT le Test à UN acteur précis (ex. le Personnage qui prend l'Action « Diriger
   //  l'équipe » — le porteur du Talent, pas le meilleur du groupe) ; sinon le meilleur PJ (partyBest).
   const restrictId = opts?.actorId;
@@ -367,6 +387,12 @@ export function openSkillTest(
   // d'environnement dans un Test : même malus pour tout le monde (indépendant du candidat), au même
   // titre que le mod social ou le Soutien. `undefined` hors voyage en mer / Test de Caractéristique.
   const env = seaWeatherTestMod(get().travelPlan?.sea, spec.skill, spec.spec);
+  // Canal `surLaCible` du monteur : le malus pèse sur la CIBLE, pas sur la valeur (le pending le porte
+  // toujours à part, `envMod`/`envLabel`). Même mod pour tous les candidats — monté une fois. La ligne
+  // porte sa fiche : la table de météo maritime (MDG 13) d'où sort la Précipitation.
+  const envLines: ModLine[] = env
+    ? [{ label: env.label, value: env.mod, famille: 'jet', ref: RULE_REF['meteo-maritime'] }]
+    : [];
   // Pool des héros AVEC leur position à jour si un combat est en cours (`battle.combatants` — `party` seule
   // ne porte pas `pos`, LDB 12 l.196 « adjacent »). Même patron que `effectTargets` ci-dessus.
   const battle = get().battle;
@@ -388,17 +414,30 @@ export function openSkillTest(
     const sout = soutD?.bonus ?? 0;
     // `spec.sense` (vue/ouïe, LDB 18) restreint le malus de Surdité au seul Test de Perception auditif — le
     // Soutien (`sout`, plafonné au Bonus de Carac du meneur) et le mod social ne dépendent pas du sens.
-    const value = testValue(actor, spec.skill, spec.characteristic, spec.spec, spec.sense) + (socialMod ? socialMod(actor) : 0) + sout;
+    const social = socialMod ? socialMod(actor) : 0;
+    const value = testValue(actor, spec.skill, spec.characteristic, spec.spec, spec.sense) + social + sout;
     // Objet catalogué → match par `trappingId` STABLE (id, jamais le libellé).
     const tool = spec.tool ? actor.items?.find((i) => i.trappingId === spec.tool && !i.destroyed) : undefined;
+    // Ligne montée par le MONTEUR CANONIQUE (`rollSeam.rollStep`) : la valeur FONDUE se déclare avec ses
+    // poches — Soutien (LDB 12), mod social FONDU (`dansLaValeur`, LDB 21 / LDB 08) — et la météo pèse
+    // sur la cible. Sa garde d'exactitude juge que cette valeur se reconstruit depuis le Niveau de
+    // Compétence nu ; la cible et l'écrêtage en dérivent par la MÊME primitive que `rollTest`.
+    const line = rollStep({
+      actor,
+      test: { skill: spec.skill, char: spec.characteristic, spec: spec.spec, sense: spec.sense },
+      difficulty,
+      valeur: value,
+      ...(soutD ? { soutien: soutD } : {}),
+      ...(social ? { dansLaValeur: socialLines(actor) } : {}),
+      ...(envLines.length ? { surLaCible: envLines } : {}),
+    });
     return {
       id: actor.id, label: actor.label, value,
-      // `env.mod` reste HORS `value` (comme la Difficulté) : une LIGNE de mod à part dans le breakdown,
-      // pas fondu dans la base — `base + mods = target` reste vérifiable à l'écran.
-      // Cible bornée par la MÊME primitive que `rollTest` : l'écrêtage réel (`clamped`) voyage avec
-      // elle — jamais deviné d'une cible qui vaudrait 99 par coïncidence (chip « plafond 99 : −N »).
-      ...clampTarget(value + DIFFICULTY_MODIFIERS[difficulty] + (env?.mod ?? 0)),
-      psychMod: (socialMod ? socialMod(actor) : 0) || undefined,
+      // La LIGNE MONTÉE voyage avec le candidat : base NUE + lignes nommées telles que le monteur les
+      // a émises (famille et fiche comprises). L'affichage n'a plus rien à recomposer.
+      base: line.base, ...(line.mods ? { mods: line.mods } : {}),
+      target: line.target, ...(line.clamped != null ? { clamped: line.clamped } : {}),
+      psychMod: social || undefined,
       psychDetail: socialDetail(actor),
       itemUid: tool?.uid,
       // Détail du Soutien de CE candidat (il change avec le meneur : le plafond est celui de SA
@@ -415,7 +454,7 @@ export function openSkillTest(
     pendingTest: {
       actorId: def.id, actorName: def.label, label, skill, skillValue: def.value, difficulty,
       skillId: spec.skill, spec: spec.spec, char: spec.characteristic, // réf structurée pour talentTestSLBonus (LDB 10)
-      requireSL: spec.requireSL ?? 0, target: def.target, clamped: def.clamped, psychMod: def.psychMod, psychDetail: def.psychDetail,
+      requireSL: spec.requireSL ?? 0, target: def.target, clamped: def.clamped, base: def.base, mods: def.mods, psychMod: def.psychMod, psychDetail: def.psychDetail,
       itemUid: def.itemUid, isDouble: false, roll: null, success: false, sl: 0,
       support: def.support, easedBy,
       envMod: env?.mod, envLabel: env?.label,
@@ -1235,14 +1274,22 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const steps: CascadeStep[] = heroes.map((h) => {
         const auto = autoExposureMods(h, e.mode); // tableau 2 (gate `appliesTo` interne : immersion seule)
         const parts = [...(src ? [src] : []), ...auto]; // tableau 1 : « à l'ingestion et à l'immersion »
-        const mods = parts.reduce((s, m) => s + m.mod, 0);
-        const base = testValue(h, WATER_EXPOSURE.test.skillId) + mods;
         const detail = parts.map((m) => `${m.label} ${m.mod > 0 ? '+' : ''}${m.mod}`).join(' · ');
         return {
           id: `waterExposure-${h.id}`, kind: 'waterExposure', actorId: h.id, icon: 'travel/wave',
           rollLabel: refLabel('skills', { id: WATER_EXPOSURE.test.skillId }),
           label: t('eff.waterExposure', { mode: e.mode === 'immersion' ? 'immersion' : 'ingestion', detail: detail ? ` (${detail})` : '' }),
-          base, target: Math.max(1, Math.min(99, base + DIFFICULTY_MODIFIERS[WATER_EXPOSURE.test.difficulty])),
+          // Ligne montée par le MONTEUR CANONIQUE : la base est le Niveau de Résistance NU, et les deux
+          // tableaux d'exposition sont des lignes NOMMÉES sur la cible, chacune liée à la fiche qui les
+          // octroie (MSRC 16).
+          ...rollStep({
+            actor: h,
+            test: { skill: WATER_EXPOSURE.test.skillId },
+            difficulty: WATER_EXPOSURE.test.difficulty,
+            surLaCible: parts.map((m): ModLine => ({
+              label: m.label, value: m.mod, famille: 'jet', ref: RULE_REF['exposition-hydrique'],
+            })),
+          }),
           stake: combatStakeRef('waterExposure'),
         };
       });
@@ -1522,7 +1569,12 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const best = leader ? partyAssisted(pool, e.skill, e.characteristic, undefined, e.spec, eligible) : null;
       if (!best) return;
       const difficulty = e.difficulty ?? 'intermediaire';
-      const target = Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS[difficulty]));
+      // Cible montée par le MONTEUR CANONIQUE : la valeur SOUTENUE de `partyAssisted` se déclare avec
+      // son Soutien, l'écrêtage est celui de `rollTest` (`clampTarget`), plus une borne recopiée ici.
+      const { target } = rollStep({
+        actor: best.actor, test: { skill: e.skill, char: e.characteristic, spec: e.spec },
+        difficulty, valeur: best.value, soutien: best.support,
+      });
       env.get().startExtendedTest({ actorId: best.actor.id, label: e.label, skillLabel: e.skill ? refLabel('skills', { id: e.skill, spec: e.spec }) : (e.characteristic ?? 'Test'), target, targetDR: e.targetDR, flag: e.flag, stake: e.stake ?? flowStakeRef('extendedTest', 'roll'), ...(best.support.count > 0 ? { support: best.support } : {}) });
       return 'suspend';
     },
