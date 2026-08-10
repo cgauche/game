@@ -3,7 +3,8 @@
  * chargé par effet de bord depuis combatFlow (comme roundHooks/restFlow peuplent leurs registres) : la
  * séquence de début de tour de l'IA vit ICI, chaque étape étant un hook ordonné par `order`. N'importe RIEN de combatFlow → pas de cycle (les
  * fonctions déplacées ne dépendent que des modules feuilles `engine/*`, `combatLog`, `combatGeometry`,
- * `lineOfSight`, `battleRng`). combatFlow ré-exporte ces fonctions (baril) pour les tests existants.
+ * `lineOfSight`, `battleRng`, `cascade`, `rollSeam` — ce dernier porte la PORTE d'ouverture de jet
+ * (`surfaceOf`, `pushMono`, `choiceStep`, #1262). combatFlow ré-exporte ces fonctions (baril) pour les tests existants.
  *
  * DÉPENDANCE D'ORDRE RAW (commentée à l'origine dans `runEnemyAI`, encodée ici par `order`) : fin de
  * Frénésie (10) → Rage (20) → tentative de Frénésie IA (30) AVANT la psychologie (40) — la Frénésie
@@ -15,8 +16,7 @@
  */
 import { registerCombatHook } from '../combatHooks';
 import { registerCascadeApplier } from '../cascade';
-import { freeCons, rollSansPilote, rollStep } from '../rollSeam';
-import { pushCombatStep } from '../combatEffects';
+import { freeCons, rollSansPilote, surfaceOf, choiceStep, pushMono } from '../rollSeam';
 import { battleRng } from '../battleRng';
 import { ev, evLines } from '../combatLog';
 import { effectiveChar } from '../../engine/characteristics';
@@ -24,7 +24,6 @@ import { isOutOfAction, addCondition, combatTestPenalty } from '../../engine/con
 import { rawCombatTestBase } from '../../engine/skills';
 import { describeTestRoll } from '../../engine/ops';
 import { CHAR_LABELS, CATEGORY_BY_SOURCE_KIND } from '../../engine/types';
-import { humanControlled } from '../netOwnership';
 import { inBattleId } from '../combatants';
 import { reconcileAdvantageToPool, creditOpposingAdvantage, campSpend } from './advantagePool';
 import { mountMovement, riderFearSize } from '../mount';
@@ -77,7 +76,8 @@ function fireTurnEdgeTriggers(get: Get, set: SetFn, c: Combatant | undefined, tr
 // GATE D'ACTION PAR ROUND (op `actGate` — Racine de mandragore, LDB 71 l.35 : « Les utilisateurs
 // doivent réussir un Test de Force Mentale à chaque Round pour effectuer une Action ou un Mouvement
 // (un au choix) »). Résolu au DÉBUT du tour du porteur, cadence-aware :
-//  - héros MANUEL → étape de cascade `actGate` INFLUENÇABLE ; sur un échec, l'applier INSÈRE une étape
+//  - porteur SURFACÉ (`surfaceOf` : un siège humain QUELCONQUE le tient, cadence manuelle) → étape de
+//    cascade `actGate` INFLUENÇABLE ; sur un échec, l'applier INSÈRE une étape
 //    de CHOIX `actGateChoice` (garder l'Action ou le Mouvement) dont l'issue est appliquée directement
 //    sur la battle COURANTE (le tour vient de commencer) ;
 //  - IA / cadence auto → jet inline ; échec = l'Action est GARDÉE (défaut rationnel), le Mouvement est
@@ -96,16 +96,17 @@ export function resolveActGates(get: Get, set: SetFn, c: Combatant): ActGateOutc
   for (const char of chars) {
     const gate = gates.find((e) => e.actGate!.char === char);
     const label = gate?.label ?? 'Effet';
-    if (humanControlled(get(), c)) {
+    if (surfaceOf(get, c)) {
       // ENJEU (#1117) : le gabarit dit la mécanique du gate ; le RENVOI descend à l'ENTITÉ qui l'exige
       // (`ActiveEffect.source`, estampillée génériquement par `applyOps`) — la Racine de mandragore
       // ouvre SA fiche d'objet, jamais une fiche de règle générique. La catégorie vient de la table
       // TOTALE `CATEGORY_BY_SOURCE_KIND` : aucun `if` par nature de source ici.
       const src = gate?.source;
-      pushCombatStep(set, {
-        id: `actGate-${c.id}-${char}`, kind: 'actGate', actorId: c.id, icon: 'item/consumable', rollLabel: CHAR_LABELS[char],
+      pushMono(set, {
+        id: `actGate-${c.id}-${char}`, kind: 'actGate', icon: 'item/consumable', rollLabel: CHAR_LABELS[char],
+        actor: c,
+        ligne: { test: { char }, combat: { kind: 'test' } },
         difficulty: 'intermediaire',
-        ...rollStep({ actor: c, test: { char }, difficulty: 'intermediaire', combat: { kind: 'test' } }),
         label: t('turn.actGate', { label }),
         stake: combatStakeRef('actGate', src ? { entryId: src.id, entryCategory: CATEGORY_BY_SOURCE_KIND[src.kind] } : {}),
       });
@@ -122,17 +123,18 @@ export function resolveActGates(get: Get, set: SetFn, c: Combatant): ActGateOutc
 registerCascadeApplier('actGate', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   if (step.result.success) return { consequences: freeCons([t('turn.actGateOk', { name: hero.label })]) };
+  const choix = choiceStep({
+    id: `actGateChoice-${hero.id}`, kind: 'actGateChoice', actorId: hero.id, icon: 'item/consumable',
+    label: t('turn.actGateChoice'),
+    options: [
+      { key: 'action', label: t('turn.actGateOptAction') },
+      { key: 'move', label: t('turn.actGateOptMove') },
+    ],
+    defaultChoice: 'action',
+  });
   return {
     consequences: freeCons([t('turn.actGateFail', { name: hero.label })]),
-    insert: [{
-      id: `actGateChoice-${hero.id}`, kind: 'actGateChoice', actorId: hero.id, icon: 'item/consumable',
-      label: t('turn.actGateChoice'),
-      options: [
-        { key: 'action', label: t('turn.actGateOptAction') },
-        { key: 'move', label: t('turn.actGateOptMove') },
-      ],
-      defaultChoice: 'action', interactive: true,
-    }],
+    ...(choix ? { insert: [choix] } : {}),
   };
 });
 // Étape `actGateChoice` : applique l'issue sur la battle COURANTE (le tour du héros vient de démarrer).

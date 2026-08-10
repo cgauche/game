@@ -3,11 +3,13 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 /**
- * Garde-fou « un Test REMONTE à un humain vs se résout INLINE » — au CHOKE-POINT du prédicat de
- * contrôleur (`netOwnership`), pas par grep+whitelist. La décision de surfaçage suit QUI CONTRÔLE le
- * camp (`humanControlled`/`pilotedByHuman`/`aiDriven`), jamais le `kind`. Quatre volets :
+ * Garde-fou « un Test REMONTE à un humain vs se résout INLINE » — au CHOKE-POINT du prédicat, pas par
+ * grep+whitelist. La décision de surfaçage suit QUI CONTRÔLE le camp, jamais le `kind` : trois
+ * prédicats d'AFFORDANCE LOCALE vivent dans `netOwnership` (`humanControlled`/`pilotedByHuman`/
+ * `aiDriven`) et un prédicat de SURFACE, seat-agnostique, vit dans `rollSeam` (`surfaceOf`, #1262 —
+ * le porteur d'un AUTRE siège surface aussi). Quatre volets :
  *  (a) STATIQUE minimal : le prédicat de cadence obsolète `roundTestInteractive` est supprimé, et chaque
- *      site de surfaçage connu référence le prédicat de contrôleur ;
+ *      site de surfaçage connu référence CELUI des quatre qu'il déclare ;
  *  (b) BEHAVIORAL : un Test de combattant piloté-humain par contexte (défense, manœuvre, upkeep, psy,
  *      maladie/exposition, corruption, test déclenché) OUVRE un `pending*` influençable ;
  *  (c) FLIP LOCAL : poser le rôle MJ (`net.gmSeat`) fait REMONTER le Test déclenché d'un ennemi conduit
@@ -95,7 +97,7 @@ const SURFACING: { file: keyof typeof SRC; fn: string; pred: RegExp }[] = [
   { file: 'combatFlow', fn: 'openCombatEndCascade', pred: /humanControlled/ },
   { file: 'combatFlow', fn: 'openCombatPsychCascade', pred: /humanControlled/ },
   { file: 'roundHooks', fn: 'collectHeroRoundEndUpkeep', pred: /humanControlled/ },
-  { file: 'turnHooks', fn: 'resolveActGates', pred: /humanControlled/ },
+  { file: 'turnHooks', fn: 'resolveActGates', pred: /surfaceOf/ }, // #1262 V1 : la SURFACE, pas l'affordance locale
   { file: 'turnHooks', fn: 'resolvePsychAI', pred: /aiDriven/ },
   { file: 'triggeredTest', fn: 'resolveFlowTest', pred: /humanControlled/ },
   { file: 'triggeredTest', fn: 'resolveFlowChoice', pred: /humanControlled/ },
