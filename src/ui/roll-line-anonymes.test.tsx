@@ -97,4 +97,43 @@ describe('RollLine — le compteur de chips « autres » est CÂBLÉ et lu (#115
     expect(html).not.toContain('autres');
     expect(ANONYMES.count).toBe(0);
   });
+
+  /**
+   * BALAYAGE — toute somme de circonstances, cran de l'échelle OU PAS, se rend sans rien cacher. Le
+   * cliquet ANONYMES est le juge : une Difficulté « Combinée » dont l'affichage retomberait sur le
+   * modificateur du CRAN déclaré (0) laisserait tout l'écart en chip « autres » sur CHAQUE ligne
+   * hors échelle — c'est exactement ce que `difficultyValue` doit empêcher.
+   */
+  it('AUCUNE chip anonyme, cran ou pas : balayage des sommes de circonstances de −45 à +45', () => {
+    const rendus: string[] = [];
+    for (let a = -30; a <= 20; a += 5) {
+      for (let b = -20; b <= 20; b += 5) {
+        const monte = rollLine({
+          difficulty: 'intermediaire', valeur: 55, plafond: 'difficultes',
+          surLaCible: [
+            { label: 'Brouillard', value: a, famille: 'circonstance' },
+            { label: 'Localisation visée', value: b, famille: 'circonstance' },
+            { label: 'Sonné', value: -10, famille: 'jet' },
+          ],
+        });
+        rendus.push(renderToStaticMarkup(
+          <PendingRollLine p={{
+            label: 'Projectiles', base: monte.base, target: monte.target, mods: monte.mods,
+            difficulty: monte.difficulty, difficultyCombined: monte.difficultyCombined, difficultyParts: monte.difficultyParts,
+          }} />,
+        ));
+        rendus.push(renderToStaticMarkup(
+          <RollLine d={{
+            label: 'Projectiles', base: monte.base, modifier: monte.target - monte.base, target: monte.target,
+            roll: 30, sl: 1, success: true, mods: monte.mods,
+            difficulty: monte.difficulty, difficultyCombined: monte.difficultyCombined, difficultyParts: monte.difficultyParts,
+          } as RollBreakdown} />,
+        ));
+      }
+    }
+    expect(rendus.length, 'le balayage doit VRAIMENT rendre des lignes').toBeGreaterThan(100);
+    expect(rendus.some((h) => h.includes('Combinée')), 'et de VRAIES sommes hors échelle, sinon il ne juge que les crans').toBe(true);
+    expect(rendus.filter((h) => h.includes('autres'))).toEqual([]);
+    expect(ANONYMES.count, 'le cliquet ne bouge d’aucun cran').toBe(0);
+  });
 });

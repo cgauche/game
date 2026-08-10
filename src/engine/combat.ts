@@ -8,13 +8,13 @@
  */
 import { RNG, defaultRNG } from './dice';
 import { t } from '../i18n';
-import { rollTest, resolveOpposed, evaluateTest, opposedReasons, TestResult, type VerdictReason } from './tests';
+import { rollTest, resolveOpposed, evaluateTest, opposedReasons, exactDifficultyFromModifier, TestResult, type VerdictReason } from './tests';
 import { bonus, effectiveChar, baseWithTraits } from './characteristics';
 import { woundsFromHit } from './woundsCalc';
 import { isInanimate } from './structures';
 import { agilityTestPenalty } from './encumbrance';
 import { skillBaseValue } from './skills';
-import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS, CHAR_LABELS, type CharKey, type Difficulty, type ModLine } from './types';
+import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS, CHAR_LABELS, DIFFICULTY_MODIFIERS, type CharKey, type Difficulty, type ModLine } from './types';
 import { weatherTestMods } from './weatherTestMod';
 import { findTableEntry } from './tables';
 import { maxBy } from './pick';
@@ -362,6 +362,10 @@ export interface RollBreakdown {
    *  sur la LIGNE (texte + valeur, `ui/RollLine.tsx`) et n'entre JAMAIS dans `mods` (#1072). Sa
    *  valeur reste comprise dans `modifier`/`target`. */
   difficulty?: Difficulty;
+  /** Modificateur RÉEL des circonstances quand il ne tombe sur AUCUN cran de l'échelle
+   *  (`DifficultyComposition.difficultyCombined`) : présent ⇒ `difficulty` est la DÉCLARÉE et
+   *  l'affichage compose « Combinée (+30) ». DÉRIVÉ — aucun site ne le pose à la main. */
+  difficultyCombined?: number;
   /** COMPOSITION du palier quand il est DÉRIVÉ d'une combinaison de circonstances (`LDB 14 l.91-96`,
    *  mode plafonné de `rollLine`) : ces lignes ne sont PLUS dans `mods` — le palier les porte, et son
    *  popover les détaille. Absente = Difficulté déclarée, `mods` porte tout. */
@@ -443,18 +447,24 @@ export interface AttackResult {
 /** Détail d'AFFICHAGE d'un jet de combat. La valeur nue voyage AVEC lui (`nue`, lue sur le
  *  `TestResult` décrit) : sans elle, tout jet réhydraté du détail (Chance, dé posé, ré-opposition)
  *  reprendrait `base` — la valeur TESTÉE — et rouvrirait le départage mixte (`LDB 12 l.160`). */
-const bd = (label: string, base: number, t: TestResult, mods?: ModLine[], mode?: DefenseMode): RollBreakdown => ({
-  label,
-  ...(mode ? { mode } : {}),
-  base,
-  ...(t.base != null ? { nue: t.base } : {}),
-  modifier: t.target - base,
-  mods,
-  target: t.target,
-  roll: t.roll,
-  success: t.success,
-  sl: t.sl,
-});
+const bd = (label: string, base: number, t: TestResult, c?: DifficultyComposition, mode?: DefenseMode): RollBreakdown => {
+  // La Difficulté n'est PAS recomposée ici : elle est POSÉE par qui a roulé le jet, avec les
+  // modificateurs qui ont fait la cible. `bd` la relaie — un détail d'affichage ne redécide rien.
+  return {
+    label,
+    ...(mode ? { mode } : {}),
+    base,
+    ...(t.base != null ? { nue: t.base } : {}),
+    modifier: t.target - base,
+    ...(c ? { mods: c.mods, difficulty: c.difficulty } : {}),
+    ...(c?.difficultyCombined != null ? { difficultyCombined: c.difficultyCombined } : {}),
+    ...(c?.difficultyParts ? { difficultyParts: c.difficultyParts } : {}),
+    target: t.target,
+    roll: t.roll,
+    success: t.success,
+    sl: t.sl,
+  };
+};
 export const DEFENSE_LABEL: Record<'parade' | 'esquive', string> = { parade: t('defense.parade'), esquive: t('defense.esquive') };
 
 /** Libellé FR de la nature d'une attaque gratuite de créature (`freeKind`) — terminologie de combat,
@@ -499,6 +509,114 @@ export function combineMods(mods: ModLine[]): number {
   const capBonus = rule('combat-diff-cap-bonus') as number;
   const capMalus = rule('combat-diff-cap-malus') as number;
   return free + Math.min(capBonus, pos) + Math.max(-capMalus, neg);
+}
+
+/** Ce que les modificateurs pesant SUR LA CIBLE font de la Difficulté d'un jet de combat — forme
+ *  UNIQUE, lue par le pré-jet (`state/rollSeam.ts`, monteur canonique) comme par le post-jet (`bd`). */
+export interface DifficultyComposition {
+  /** Difficulté à AFFICHER : le palier composé quand il tombe sur un cran de l'échelle, la déclarée sinon. */
+  difficulty: Difficulty;
+  /** Modificateur RÉEL des circonstances quand il ne tombe sur AUCUN cran de l'échelle (`LDB 14` n'en
+   *  nomme pas) : l'AFFICHAGE en compose « Combinée (+30) ». Présent ⇒ `difficulty` est la DÉCLARÉE et
+   *  ne doit JAMAIS s'afficher seule. */
+  difficultyCombined?: number;
+  /** Composition du palier (circonstances + écart du plafond) : ces lignes ne sont PLUS dans `mods`. */
+  difficultyParts?: ModLine[];
+  /** Ce qui reste en CHIPS — hors table (`LDB 14 l.48`), plus l'écart du plafond quand rien n'est composé. */
+  mods: ModLine[];
+  /** Combinaison PLAFONNÉE des seules circonstances (`LDB 14 l.91-96`) — 0 sans circonstance. */
+  circCombined: number;
+}
+
+/**
+ * COMPOSE la Difficulté d'un jet de combat à partir de ce qui pèse sur sa cible (`LDB 14 l.91-96`,
+ * verbatim cité au-dessus de `combineMods`). Quatre conditions, toutes nécessaires :
+ *  (a) au moins une circonstance — sinon le palier nommerait un pur artefact de plafond ;
+ *  (d) une Difficulté déclarée NEUTRE (`DIFFICULTY_MODIFIERS[declared] === 0`) — un site qui DÉCLARE
+ *      sa Difficulté (Test de combat authoré Difficile) la garde, la composition ne peut pas l'avaler ;
+ *      en attaque elle est Intermédiaire d'office (`LDB 13 l.118`), donc la composition opère.
+ * Le modificateur composé tombe sur un cran de l'échelle → ce cran est la Difficulté affichée ; sinon
+ * il voyage tel quel (`difficultyCombined`), et l'affichage le nomme sans jamais le rabattre sur un
+ * cran voisin (`difficultyFromModifier` est un plus proche voisin : un −15 y trouverait −10).
+ */
+export function composeDifficulty(declared: Difficulty, surLaCible: ModLine[]): DifficultyComposition {
+  const circonstances = surLaCible.filter((m) => m.famille === 'circonstance');
+  const circBrut = circonstances.reduce((s, m) => s + m.value, 0);
+  const circCombined = combineMods(circonstances);
+  // L'amputation du plafond est une LIGNE : sans elle, elle ne serait imputable à personne.
+  const ecretage: ModLine[] = circCombined === circBrut
+    ? []
+    : [{ label: 'plafond Difficultés', value: circCombined - circBrut, famille: 'circonstance', ref: RULE_REF['combiner-les-difficultes'] }];
+  if (!circonstances.length || DIFFICULTY_MODIFIERS[declared] !== 0) {
+    return { difficulty: declared, mods: [...surLaCible, ...ecretage], circCombined };
+  }
+  const parts = [...circonstances, ...ecretage];
+  const mods = surLaCible.filter((m) => m.famille !== 'circonstance');
+  const cran = exactDifficultyFromModifier(circCombined);
+  return cran
+    ? { difficulty: cran, difficultyParts: parts, mods, circCombined }
+    : { difficulty: declared, difficultyCombined: circCombined, difficultyParts: parts, mods, circCombined };
+}
+
+/** Difficulté d'un jet de COMBAT composée par ce qui pèse sur sa cible : Intermédiaire à la source
+ *  (`LDB 13 l.118`), puis la table (`LDB 14 l.91-96`). SEUL point d'entrée des résolveurs — ils
+ *  composent avec les modificateurs qui ont RÉELLEMENT fait la cible, une fois. */
+export function composeAttack(mods: ModLine[]): DifficultyComposition {
+  return composeDifficulty('intermediaire', mods);
+}
+
+/**
+ * COMPTEUR des re-dérivations qui ont RECOMPOSÉ faute de composition transportée (#1153 L4) — sonde
+ * partagée, patron `ANONYMES`/`REPLIS_DEUX_CIBLES`. Un site de re-dérivation qui oublie le transport
+ * retombe dans le défaut d'origine (Difficulté d'une attaque qui change parce qu'on dépense sa
+ * Chance) : le repli reste possible — un appel direct hors flux doit rester résoluble — mais il ne
+ * peut plus être SILENCIEUX. Inerte en PROD hors journal.
+ */
+export const REDERIVATIONS = { recomposees: 0 };
+
+/** Repli du transport : compose depuis le contexte APPAUVRI du re-jet, et le DIT. */
+function compoDeRepli(mods: ModLine[], site: string): DifficultyComposition {
+  REDERIVATIONS.recomposees += 1;
+  console.error(`[combat] ${site} : re-dérivation SANS Difficulté transportée — recomposée depuis un contexte appauvri (ni distance, ni env, ni flanc/dos). Passer \`frozenDifficulty(detail d'origine)\` au call-site.`);
+  return composeAttack(mods);
+}
+
+/**
+ * REPREND la Difficulté d'un jet DÉJÀ résolu (`RollBreakdown`) pour la transporter telle quelle vers
+ * une re-dérivation (#1153 L4) — Chance « +1 DR », dé choisi, Résilience, touche déviée. Dépenser un
+ * point ne rejoue pas les circonstances : re-composer depuis le contexte appauvri du re-jet (sans
+ * distance, sans env, sans flanc/dos) changerait la Difficulté AFFICHÉE d'une attaque déjà tranchée.
+ * `circCombined` se relit de la composition portée (les `difficultyParts` en SONT la somme).
+ */
+export function frozenDifficulty(d: RollBreakdown | undefined): DifficultyComposition | undefined {
+  if (!d?.difficulty) return undefined;
+  const parts = d.difficultyParts;
+  return {
+    difficulty: d.difficulty,
+    ...(d.difficultyCombined != null ? { difficultyCombined: d.difficultyCombined } : {}),
+    ...(parts ? { difficultyParts: parts } : {}),
+    mods: d.mods ?? [],
+    circCombined: (parts ?? []).reduce((s, m) => s + m.value, 0),
+  };
+}
+
+/** Modificateurs qui font la CIBLE d'un jet de défense — SOURCE UNIQUE du résolveur (`rollMeleeDefender`),
+ *  de la ligne résolue (`combineOpposed`) et du pré-jet (`previewDefense`) : `defenseModifiers`
+ *  (Avantage, État, Sur la défensive, Neige, Main secondaire, Maniement deux armes) + le malus Rapide,
+ *  qui dépend de l'arme ATTAQUANTE (`LDB 62 l.320-321`) et vit donc hors de `defenseModifiers` : −10
+ *  aux Tests de Corps à corps (Parade) contre une arme Rapide, sauf si l'arme de parade l'est aussi ;
+ *  l'Esquive défend normalement. Trois lecteurs, une liste — sinon l'écran et le dé divergent. */
+export function defenseTargetMods(
+  defender: Combatant,
+  mode: DefenseMode,
+  dodgeMod = 0,
+  parryWeapon?: Weapon,
+  vsWeapon?: Weapon,
+): ModLine[] {
+  const mods = defenseModifiers(defender, mode, dodgeMod, parryWeapon);
+  const rapide = mode === 'parade' ? rapideParryMod(vsWeapon, parryWeapon) : 0;
+  if (rapide) mods.push({ label: 'Rapide', value: rapide, famille: 'jet', ref: RULE_REF.rapide });
+  return mods;
 }
 
 /** Option « Longueur d'Arme » (LDB 62 l.172, règle optionnelle `combat-weapon-reach`) : si l'arme de
@@ -834,15 +952,7 @@ export function rollMeleeDefender(
   sub?: DefenseSub, // substitution sociale (mode 'social') : base = Test de la Compétence substituée
 ): TestResult {
   const defVal = defenseValue(defender, mode, parryWeapon, sub?.base);
-  // Modificateurs = SOURCE UNIQUE `defenseModifiers` (Avantage, État, Sur la défensive, Neige,
-  // Main secondaire, Maniement deux armes) + le malus Rapide (qui dépend de l'arme ATTAQUANTE, donc
-  // hors `defenseModifiers`), le tout PLAFONNÉ par `combineMods` comme l'attaque (LDB 14 l.91-96).
-  const mods = defenseModifiers(defender, mode, dodgeMod, parryWeapon);
-  // Rapide (LDB 62 l.320-321) : −10 aux Tests de Corps à corps (Parade) contre une arme Rapide,
-  // sauf si l'arme de parade est Rapide elle-même ; l'Esquive défend normalement.
-  const rapide = mode === 'parade' ? rapideParryMod(vsWeapon, parryWeapon) : 0;
-  if (rapide) mods.push({ label: 'Rapide', value: rapide, famille: 'jet', ref: RULE_REF.rapide });
-  const t = rollTest(defVal, 'intermediaire', rng, combineMods(mods));
+  const t = rollTest(defVal, 'intermediaire', rng, combineMods(defenseTargetMods(defender, mode, dodgeMod, parryWeapon, vsWeapon)));
   return { ...t, base: defenseBaseValue(defender, mode, parryWeapon, sub?.base) }; // LDB 12 l.160
 }
 
@@ -874,8 +984,17 @@ export function backstabWeapon(foe: Combatant): Weapon {
  *  à corps NON opposé, +20 au toucher (dos tourné), DR = Dégâts comme d'habitude. */
 export function resolveBackstabAttack(foe: Combatant, target: Combatant, rng: RNG = defaultRNG): AttackResult {
   const weapon = backstabWeapon(foe);
-  const atk = rollTest(combatValue(foe, 'melee', weapon), 'intermediaire', rng, baseTestMods(foe, 'capacite-de-combat') + 20);
-  return resolveMeleePassive(foe, target, weapon, atk);
+  // Les lignes qui composent la cible, NOMMÉES : celles du Test de combat brut (`baseTestModLines`,
+  // source unique du jet) + le +20 du dos tourné. Sans cette ligne, le +20 s'imputait à la première
+  // circonstance venue. Son CLASSEMENT (`famille: 'jet'`, donc hors du plafond de combinaison) est un
+  // ARBITRAGE #1218, pas une déduction : deux réfs le revendiquent — `LDB 15 l.66` (Fuite) et
+  // `LDB 14 l.62` (entrée de table, Accessible +20).
+  const mods: ModLine[] = [
+    ...baseTestModLines(foe, 'capacite-de-combat'),
+    { label: 'Dos tourné (adversaire en fuite)', value: 20, famille: 'jet', ref: RULE_REF.fuite },
+  ];
+  const atk = rollTest(combatValue(foe, 'melee', weapon), 'intermediaire', rng, mods.reduce((s, m) => s + m.value, 0));
+  return resolveMeleePassive(foe, target, weapon, atk, undefined, [], undefined, false, composeAttack(mods));
 }
 
 /** Combine un jet d'attaque et un jet de défense DÉJÀ obtenus en AttackResult
@@ -895,8 +1014,9 @@ export function finishMelee(
   parryWeapon: Weapon | undefined = defender.weapons[0], // arme de parade choisie (spé + Atouts + pénalité main 2nde)
   withhold = false, // « Retenir ses coups » (Aux Armes 07 l.59-61)
   sub?: DefenseSub, // substitution sociale (mode 'social') : base + libellé de la Compétence substituée
+  compo?: DifficultyComposition, // Difficulté FIGÉE par la résolution d'origine (#1153 L4) ; absente = composée ici
 ): AttackResult {
-  const atkBd = bd(attackTestLabel(weapon, 'melee'), combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
+  const atkBd = bd(attackTestLabel(weapon, 'melee'), combatValue(attacker, 'melee', weapon), atk, compo ?? composeAttack(attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env })));
   return combineOpposed(attacker, defender, weapon, atk, def, defenseMode, atkBd, { location, dmgProxy, parryWeapon, dodgeMod, withhold, sub });
 }
 
@@ -933,7 +1053,9 @@ function combineOpposed(
     + offTerrainTestDR(defender);
   const opp = resolveOpposed({ ...atk, sl: atkSL }, { ...def, sl: defSL });
   const defLabel = defenseMode === 'social' ? (opts.sub?.label ?? DEFENSE_LABEL.parade) : DEFENSE_LABEL[defenseMode];
-  const defBd = bd(defLabel, defenseValue(defender, defenseMode, parryWeapon, opts.sub?.base), def, defenseModifiers(defender, defenseMode, dodgeMod, parryWeapon), defenseMode);
+  // Difficulté de la DÉFENSE : mêmes modificateurs que le jet réellement roulé (`defenseTargetMods`,
+  // Rapide compris) — sans lui, la ligne résolue annoncerait une Difficulté que la cible contredit.
+  const defBd = bd(defLabel, defenseValue(defender, defenseMode, parryWeapon, opts.sub?.base), def, composeAttack(defenseTargetMods(defender, defenseMode, dodgeMod, parryWeapon, weapon)), defenseMode);
   const usedParry = defenseMode === 'parade' ? parryWeapon : undefined; // arme de parade (Critiques opposés / Piège-lame)
   // Z5c — la RAISON du départage (LDB 12 l.160) va sur la LIGNE du camp qu'elle explique : le
   // résolveur la dit une fois, l'affichage n'a plus rien à déduire ni à recomparer.
@@ -1010,8 +1132,9 @@ export function resolveMeleePassive(
   env: ModLine[] = [],
   dmgProxy?: AttackOptions['dmgProxy'], // Charge montée : Force+Taille de la monture pour les dégâts (LDB 14 l.183)
   withhold = false, // « Retenir ses coups » (Aux Armes 07 l.59-61)
+  compo?: DifficultyComposition, // Difficulté FIGÉE par l'orchestrateur (#1153 L4) ; absente = composée ici
 ): AttackResult {
-  const atkBd = bd(attackTestLabel(weapon, 'melee'), combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
+  const atkBd = bd(attackTestLabel(weapon, 'melee'), combatValue(attacker, 'melee', weapon), atk, compo ?? composeAttack(attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env })));
   if (!atk.success) return miss(attacker, defender, atkBd, 'defender');
   const res = applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon, atk.success) + psychDRAdjust(attacker, defender) + skillDRBonus(attacker, 'corps-a-corps') + offTerrainTestDR(attacker), atk.isDouble && atk.success, location, dmgProxy, 0, withhold); // Imprécise : −1 DR à l'attaque (LDB 62 l.323) ; Pointue (LDB 62 l.288) ; Peur/Haine ±1 DR (LDB 21) ; +DR d'effet actif sur un Test réussi (Jacques Bret) ; hors de son terrain −DR (Créature marine, MDG p.140)
   if (res.hit && (attacker.swarm || sizeGap(dmgProxy?.size ?? attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200) ; charge montée → Taille de la monture
@@ -1040,11 +1163,15 @@ export function resolveMelee(
   if (helpless) atk = helplessTest(atk, 'melee');
   const autoKill = helpless && rule('combat-helpless-mode') === 'mort-auto';
   let res: AttackResult;
+  // Difficulté COMPOSÉE ICI, une fois, avec les mods COMPLETS (flanc/dos compris — `rollMeleeAttacker`
+  // les a déjà pesés sur la cible) : les deux branches la reçoivent FIGÉE, aucune ne la recompose
+  // d'un contexte plus pauvre (#1153 L4).
+  const compo = composeAttack(attackModifiers(attacker, defender, weapon, { kind: 'melee', location: opts.location, env: opts.env, flankRear: opts.flankRear }));
   if (defenseMode === 'none') {
-    res = resolveMeleePassive(attacker, defender, weapon, atk, opts.location, opts.env, opts.dmgProxy, opts.withhold);
+    res = resolveMeleePassive(attacker, defender, weapon, atk, opts.location, opts.env, opts.dmgProxy, opts.withhold, compo);
   } else {
     const def = rollMeleeDefender(defender, defenseMode, rng, opts.dodgeMod, defender.weapons[0], weapon);
-    res = finishMelee(attacker, defender, weapon, atk, def, defenseMode, opts.location, opts.env, opts.dodgeMod, opts.dmgProxy, defender.weapons[0], opts.withhold);
+    res = finishMelee(attacker, defender, weapon, atk, def, defenseMode, opts.location, opts.env, opts.dodgeMod, opts.dmgProxy, defender.weapons[0], opts.withhold, undefined, compo);
   }
   if (autoKill && res.hit) res.autoKill = true;
   return res;
@@ -1166,7 +1293,7 @@ export function resolveRanged(
   const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env, metresPerTile });
   let atk: TestResult = { ...rollTest(atkVal, 'intermediaire', rng, combineMods(mods)), base: combatBaseValue(attacker, 'ranged', weapon) }; // LDB 12 l.160
   if (isHelplessTarget(defender)) atk = helplessTest(atk, 'ranged'); // auto-succès, Dégâts à bout portant (LDB 16 l.112)
-  const atkBd = bd(attackTestLabel(weapon, 'ranged'), atkVal, atk, mods);
+  const atkBd = bd(attackTestLabel(weapon, 'ranged'), atkVal, atk, composeAttack(mods));
   // Tir DÉFENDU (RAW : Protectrice 2+ LDB 62 l.307 / Bout Portant 14 l.62 / tireur Engagé 14 l.70) →
   // Test OPPOSÉ, cœur partagé avec la mêlée (`combineOpposed`). L'Inconscient ne se défend pas.
   if (defense && !isHelplessTarget(defender)) {
@@ -1221,9 +1348,10 @@ export function finishRanged(
   parryWeapon?: Weapon,
   dodgeMod = 0,
   metresPerTile = 2,
+  compo?: DifficultyComposition, // Difficulté FIGÉE par le jet d'origine (#1153 L4) ; absente = composée ici
 ): AttackResult {
   const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env, metresPerTile });
-  const atkBd = bd(attackTestLabel(weapon, 'ranged'), combatValue(attacker, 'ranged', weapon), atk, mods);
+  const atkBd = bd(attackTestLabel(weapon, 'ranged'), combatValue(attacker, 'ranged', weapon), atk, compo ?? composeAttack(mods));
   return combineOpposed(attacker, defender, weapon, atk, def, defenseMode, atkBd, { location, parryWeapon, dodgeMod });
 }
 
@@ -1239,9 +1367,23 @@ export function resolveStrayRangedHit(
   weapon: Weapon,
   roll: number,
   effTarget: number,
+  /** Ligne du tir d'ORIGINE : sa Difficulté est TRANSPORTÉE (c'est le même jet), et ce qui sépare
+   *  `effTarget` de la cible d'origine devient une ligne NOMMÉE — sans quoi la touche déviée
+   *  afficherait une cible chargée sans rien pour l'expliquer (#1153 L4). */
+  origine?: RollBreakdown,
 ): AttackResult {
   const atk = evaluateTest(roll, effTarget);
-  const atkBd = bd(`${attackTestLabel(weapon, 'ranged')} (dévié)`, combatValue(attacker, 'ranged', weapon), atk, []);
+  const base = combatValue(attacker, 'ranged', weapon);
+  // Sans ligne d'origine il n'y a rien à transporter : l'appelant n'en avait pas (appels directs de
+  // pur calcul de Dégâts). Les DEUX chemins de produit la passent — cf. `attackAt` (`combatFlow`).
+  const src = frozenDifficulty(origine);
+  const porte = (src ? src.circCombined : 0) + (src?.mods ?? []).reduce((s, m) => s + m.value, 0);
+  const devie = effTarget - base - porte;
+  const compo: DifficultyComposition | undefined = src && {
+    ...src,
+    mods: devie ? [...src.mods, { label: 'Tir dévié', value: devie, famille: 'jet', ref: RULE_REF['tir-dans-un-combat-au-corps-a-corps'] }] : src.mods,
+  };
+  const atkBd = bd(`${attackTestLabel(weapon, 'ranged')} (dévié)`, base, atk, compo);
   const res = applyHit(attacker, victim, weapon, atkBd, Math.max(0, atk.sl), atk.isDouble && atk.success);
   res.log = `Le tir dévie dans la mêlée et touche ${victim.label} !`;
   return res;
@@ -1253,7 +1395,7 @@ export function resolveTrample(attacker: Combatant, target: Combatant, rng: RNG 
   const fist: Weapon = { label: 'Piétinement', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
   const mods = attackModifiers(attacker, target, fist, { kind: 'melee' });
   const atk = rollTest(combatValue(attacker, 'melee'), 'intermediaire', rng, combineMods(mods));
-  const atkBd = bd('Corps à corps (Piétinement)', combatValue(attacker, 'melee'), atk, mods);
+  const atkBd = bd('Corps à corps (Piétinement)', combatValue(attacker, 'melee'), atk, composeAttack(mods));
   if (!atk.success) return miss(attacker, target, atkBd, null);
   return applyHit(attacker, target, fist, atkBd, atk.sl, atk.isDouble && atk.success);
 }
@@ -1478,10 +1620,12 @@ export function rederivePassiveAttack(
   kind: 'melee' | 'ranged',
   location?: HitLocation,
   withhold = false, // « Retenir ses coups » (Aux Armes 07 l.59-61) — n'agit qu'en mêlée (gardé par applyHit)
+  compo?: DifficultyComposition, // Difficulté FIGÉE par la résolution d'origine (#1153 L4)
 ): AttackResult {
-  // Sans la distance ici, le détail des modificateurs d'un tir omet la bande de portée → la somme
-  // ne reconcilie pas et l'UI retombe sur l'affichage groupé (garde côté RollLine). En mêlée c'est complet.
-  const atkBd = bd(attackTestLabel(weapon, kind), combatValue(attacker, kind, weapon), atk, attackModifiers(attacker, defender, weapon, { kind, location }));
+  // La composition FIGÉE par la résolution d'origine est TRANSPORTÉE : re-composer ici depuis un
+  // contexte appauvri (ni distance, ni env, ni flanc/dos) annoncerait une autre Difficulté et
+  // laisserait l'écart en chip « autres » — dépenser sa Chance ne change pas la Difficulté du jet.
+  const atkBd = bd(attackTestLabel(weapon, kind), combatValue(attacker, kind, weapon), atk, compo ?? compoDeRepli(attackModifiers(attacker, defender, weapon, { kind, location }), 'rederivePassiveAttack'));
   if (!atk.success) {
     return {
       hit: false,

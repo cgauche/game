@@ -51,7 +51,10 @@ import {
   ModLine,
   outnumberMod,
   crowdMod,
-  defenseModifiers,
+  defenseTargetMods,
+  composeAttack,
+  frozenDifficulty,
+  defenseValue,
   DEFENSE_LABEL,
   attackHandGate,
   conditionModLines,
@@ -288,10 +291,15 @@ export function applyIncomingMeleeAdvantage(get: Get, attacker: Combatant, targe
  * Tentacule, elle, A une arme équipée (`nat-tentacule`) → `firedWeapon` la résout normalement.
  */
 export function attackWeaponOf(battle: BattleState, attacker: Combatant, target: Combatant, pa: PendingAttack): Weapon {
+  // L'attaque NATURELLE prime : son arme est SYNTHÉTISÉE (aucune arme tenue ne la porte), donc ni
+  // l'objet figé au jet — qui est l'arme TENUE, `resolveAttack` passant par `firedWeapon` — ni le
+  // repli par uid ne peuvent la rendre.
   const freeNatural = pa.freeKind && !attacker.weapons.some((w) => w.uid === pa.weaponUid)
     ? freeAttackWeapon(pa.freeKind, creatureAttacks(attacker.traits ?? []).find((a) => a.kind === pa.freeKind)?.bonus ?? 0)
     : null;
-  return freeNatural ?? firedWeapon(attacker, target, pa.weaponUid, battle.combatants);
+  // Sinon l'arme FIGÉE au jet (#1153) : `Combatant.weapons` ne porte que le loadout ACTIF, un uid seul
+  // peut donc être introuvable et rendre la main à l'auto-choix. Repli = pending d'avant le gel.
+  return freeNatural ?? pa.weapon ?? firedWeapon(attacker, target, pa.weaponUid, battle.combatants);
 }
 
 /** Arme effectivement tirée : mêlée au contact, distance sinon (Atout Pistolet pour tirer en Combat
@@ -728,7 +736,7 @@ export function resolveAttack(
   const dist = combatDistance(attackGeomOf(battle, attacker, weapon), combatGeomOf(battle, target));
   if (dist > reachTiles(weapon) && weapon.type === 'melee') return null; // hors de portée de mêlée (Allonge incluse, RAW-3)
   // (Sonné → +1 Avantage à l'attaquant en mêlée, LDB 16 l.123 : DÉJÀ géré par le flux d'attaque existant.)
-  const { env, blocked, inMelee, crowd, cm, sc, flankRear } = attackEnv(get, attacker, target, weapon, { intoCrowd, heldGround });
+  const { env, blocked, inMelee, crowd, cm, flankRear } = attackEnv(get, attacker, target, weapon, { intoCrowd, heldGround });
   if (blocked) return null; // pas de Ligne de Vue (mur/décor/fumée) → pas de tir (LDB 13 l.114)
   if (weapon.type === 'ranged') {
     // « Tirer dans le tas » (LDB 14 l.136/146) : un ennemi AU HASARD est touché ; succès dû au seul bonus = 0 DR.
@@ -738,7 +746,7 @@ export function resolveAttack(
         const victim = crowd[battleRng().int(0, crowd.length - 1)]; // « appliqué au hasard parmi les cibles éligibles »
         const ad = res.attackerDetail!;
         const rescued = res.attackerRoll > ad.target - (cm?.value ?? 0); // aurait échoué sans le bonus → 0 DR (l.146)
-        const stray = resolveStrayRangedHit(attacker, victim, weapon, res.attackerRoll, rescued ? res.attackerRoll : ad.target);
+        const stray = resolveStrayRangedHit(attacker, victim, weapon, res.attackerRoll, rescued ? res.attackerRoll : ad.target, ad);
         stray.log = tr('cf.strayHit', { name: victim.label, rescued: rescued ? tr('cf.fragRescued') : '' });
         return { res: stray, weapon, victim };
       }
@@ -749,13 +757,20 @@ export function resolveAttack(
     // `blocked` a déjà rendu null). Un défenseur SURFACÉ (`defenseSurfaced` : héros manuel, ennemi conduit
     // par le siège MJ) la joue dans SA fenêtre réactive → pas d'auto-défense ici. Le `kind` ne décide de
     // rien : un héros `aiControlled` n'est pas surfacé et garde donc son repli.
-    const rd = defenseSurfaced(get(), target) ? undefined : bestRangedDefense(attacker, target, weapon, dist, true, mpt);
+    // La pénalité d'ESQUIVE du contexte (neige épaisse `LDB 14 l.82`, défenseur monté `l.184`) pèse
+    // aussi sur la défense CONTRE UN TIR : même source unique que le pré-jet de la rangée adverse.
+    const rd = defenseSurfaced(get(), target)
+      ? undefined
+      : (() => {
+        const best = bestRangedDefense(attacker, target, weapon, dist, true, mpt);
+        return best && { ...best, dodgeMod: defenseDodgeMod(get, target) };
+      })();
     const res = resolveRanged(attacker, target, weapon, battleRng(), dist, location, env, rd, mpt);
     // Tir dans la mêlée (LDB 14 l.136) : si le −20 a transformé une réussite en échec, le tir dévie
     // et frappe un allié intercalé (touche acquise, dégâts recalculés sur l'allié).
     if (inMelee && !res.hit) {
       const ally = strayShotVictim(res, attacker, target, battle);
-      if (ally) return { res: resolveStrayRangedHit(attacker, ally, weapon, res.attackerRoll, res.attackerDetail!.target + 20), weapon, victim: ally };
+      if (ally) return { res: resolveStrayRangedHit(attacker, ally, weapon, res.attackerRoll, res.attackerDetail!.target + 20, res.attackerDetail), weapon, victim: ally };
     }
     return { res, weapon };
   }
@@ -767,7 +782,7 @@ export function resolveAttack(
   // seul jet d'ATTAQUANT (`defense:'none'`) et l'interposition (`openSurfacedDefense`, chemin piloté) ou la
   // fenêtre réactive (`maybeOpenDefense`, chemin IA) opposera le jet de défense au jet figé.
   const surfaced = defenseSurfaced(get(), target);
-  return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: surfaced ? 'none' : bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod + mountedDodgePenalty(target), dmgProxy, withhold, flankRear }), weapon };
+  return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: surfaced ? 'none' : bestDefenseMode(target), location, env, dodgeMod: defenseDodgeMod(get, target), dmgProxy, withhold, flankRear }), weapon };
 }
 
 /** 2ᵉ attaque du Maniement de deux armes (LDB 10 l.638). Jet d'attaquant IMPOSÉ : `reverseRoll(mainRoll)`,
@@ -797,10 +812,13 @@ export function resolveDualSecond(
   }).target;
   const atkRoll = opts?.critValue != null ? opts.critValue : reverseRoll(mainRoll);
   const atk = evaluateTest(atkRoll, toHit, valeur);
+  // MÊME composition que la cible montée ci-dessus (`mods`, plafond compris) : les deux branches la
+  // reçoivent FIGÉE — la 2ᵉ frappe annonce la Difficulté qui a fait sa cible.
+  const compo = composeAttack(mods);
   const mode = (cannotDefend(target) || isInanimate(target)) ? 'none' : bestDefenseMode(target); // OBJET INANIMÉ (structure/véhicule/affût) : jamais de défense
-  if (mode === 'none') return resolveMeleePassive(attacker, target, offWeapon, atk, opts?.location, env);
+  if (mode === 'none') return resolveMeleePassive(attacker, target, offWeapon, atk, opts?.location, env, undefined, false, compo);
   const def = rollMeleeDefender(target, mode, battleRng(), 0, target.weapons[0], offWeapon); // NOUVEAU jet de défense (LDB 10 l.638)
-  return finishMelee(attacker, target, offWeapon, atk, def, mode, opts?.location, env);
+  return finishMelee(attacker, target, offWeapon, atk, def, mode, opts?.location, env, 0, undefined, target.weapons[0], false, undefined, compo);
 }
 
 /** Cibles VALIDES de la 2ᵉ frappe du Maniement de deux armes (LDB 10 l.638 : « un adversaire disponible de
@@ -824,6 +842,10 @@ export interface AttackPreview {
    *  Quand des circonstances en composent un autre palier (`LDB 14 l.91-96`), c'est le monteur —
    *  jamais l'affichage — qui la DÉRIVE, et `difficultyParts` en porte la composition. */
   difficulty: Difficulty;
+  /** Modificateur RÉEL des circonstances quand il ne tombe sur AUCUN cran de l'échelle
+   *  (`RollLineParts.difficultyCombined`) : présent ⇒ `difficulty` est la DÉCLARÉE, et l'affichage
+   *  compose « Combinée (+30) ». DÉRIVÉ par le monteur — aucun site ne le pose. */
+  difficultyCombined?: number;
   /** Composition du palier DÉRIVÉ (`RollLineParts.difficultyParts`) : ces lignes ne sont PAS dans
    *  `mods`, le palier les porte. Absente = palier déclaré, tous les modificateurs sont en chips. */
   difficultyParts?: ModLine[];
@@ -883,18 +905,47 @@ export function previewAttack(
     target: line.target, base: line.base, mods: line.mods,
     ...(line.clamped ? { clamped: line.clamped } : {}),
     dmg, soak, difficulty: line.difficulty,
+    ...(line.difficultyCombined != null ? { difficultyCombined: line.difficultyCombined } : {}),
     ...(line.difficultyParts ? { difficultyParts: line.difficultyParts } : {}),
   };
 }
 
+/** Pénalité d'ESQUIVE que le contexte impose au défenseur — SOURCE UNIQUE du jet résolu (`attackAt`
+ *  → `resolveMelee({ dodgeMod })`) et du pré-jet (`previewDefense`) : météo de la scène (neige
+ *  épaisse, `LDB 14 l.82`) + défenseur monté (`LDB 14 l.184`). Deux lecteurs, un calcul — sinon la
+ *  rangée adverse annonce une Difficulté que le jet contredit (#1153 L4). */
+export function defenseDodgeMod(get: Get, defender: Combatant): number {
+  const scene = get().scene;
+  return (scene ? sceneCombatModifiers(scene, get().gameTime).dodgeMod : 0) + mountedDodgePenalty(defender);
+}
 /** Ligne ADVERSE du panneau de jet pré-rempli (modale d'attaque) : ce que le joueur est en droit
  *  de savoir de la défense à venir — la compétence probable (« Parade » / « Esquive ») et ses
  *  bonus/malus visibles (Avantage, États, Sur la défensive…), SANS la valeur de compétence ni
- *  l'encaissé. Compétence = meilleure défense (`bestDefenseMode`) ; Bestial → Esquive seule. */
-export function previewDefense(defender: Combatant): { label: string; mods: ModLine[]; difficulty: Difficulty } {
-  const mode = bestDefenseMode(defender);
-  // Difficulté POSÉE À LA SOURCE (LDB 13 l.118, jet de Combat) — voir `AttackPreview.difficulty`.
-  return { label: DEFENSE_LABEL[mode], mods: defenseModifiers(defender, mode, 0, defender.weapons[0]), difficulty: 'intermediaire' };
+ *  l'encaissé. Compétence = meilleure défense (`bestDefenseMode`) par défaut ; Bestial → Esquive
+ *  seule. `forcee` : la défense que le contexte IMPOSE (tir défendu, `bestRangedDefense` — LDB 13 l.135),
+ *  `dodgeMod` la pénalité d'esquive du contexte (neige épaisse, monté) — celle-là même que la
+ *  résolution passera au jet.
+ *
+ *  Montée par le MONTEUR CANONIQUE en mode plafonné, comme l'attaque, sur les modificateurs QUI FONT
+ *  LA CIBLE du jet de défense (`defenseTargetMods` — source unique partagée avec `rollMeleeDefender`
+ *  et la ligne résolue). La valeur est celle du moteur (`defenseValue`) et n'est pas un Niveau de
+ *  Compétence — la rangée la masque de toute façon. */
+export function previewDefense(
+  defender: Combatant,
+  ctx?: { mode?: 'parade' | 'esquive'; parryWeapon?: Weapon; vsWeapon?: Weapon; dodgeMod?: number },
+): { label: string; mods: ModLine[]; difficulty: Difficulty; difficultyCombined?: number; difficultyParts?: ModLine[] } {
+  const mode = ctx?.mode ?? bestDefenseMode(defender);
+  const arme = ctx && 'parryWeapon' in ctx ? ctx.parryWeapon : defender.weapons[0];
+  const line = rollLine({
+    difficulty: 'intermediaire', // LDB 13 l.118
+    valeur: defenseValue(defender, mode, arme), valeurEtrangere: true,
+    surLaCible: defenseTargetMods(defender, mode, ctx?.dodgeMod ?? 0, arme, ctx?.vsWeapon), plafond: 'difficultes',
+  });
+  return {
+    label: DEFENSE_LABEL[mode], mods: line.mods, difficulty: line.difficulty,
+    ...(line.difficultyCombined != null ? { difficultyCombined: line.difficultyCombined } : {}),
+    ...(line.difficultyParts ? { difficultyParts: line.difficultyParts } : {}),
+  };
 }
 
 /** Pré-jet d'INCANTATION pour le panneau de jet (même rôle que previewAttack/previewDefense) : valeur
@@ -2228,8 +2279,11 @@ export function applyAttackResult(
   if (weapon.type === 'melee' && res.advantageTo === 'defender' && res.netSL > 0
       && canCounterOnDefenseWin(target, res.parryWeapon)
       && !isOutOfAction(target) && target.weapons[0]) {
+    // La cible de cette frappe EST celle du jet de défense gagnant : les modificateurs à annoncer sont
+    // donc ceux de la DÉFENSE (`defenderDetail`), pas ceux d'une attaque que personne n'a roulée.
     const riposte = resolveMeleePassive(target, attacker, target.weapons[0],
-      { roll: res.defenderRoll ?? 1, target: res.defenderDetail?.target ?? 1, success: true, sl: res.netSL, isDouble: false });
+      { roll: res.defenderRoll ?? 1, target: res.defenderDetail?.target ?? 1, success: true, sl: res.netSL, isDouble: false },
+      undefined, [], undefined, false, frozenDifficulty(res.defenderDetail));
     if (riposte.hit && riposte.woundsLost) {
       const before = attacker.wounds.current;
       attacker.wounds.current = Math.max(0, before - riposte.woundsLost);
@@ -2718,7 +2772,7 @@ export function applyShieldReaction(get: Get, set: SetFn, defender: Combatant, a
     // l'attaquant, résolue passivement — même voie que la Riposte, surfacée au journal (jet dans le log).
     const weapon = defender.weapons.find((w) => !isUnarmed(w)) ?? defender.weapons[0];
     const atk = rollMeleeAttacker(defender, attacker, weapon, battleRng());
-    const res = resolveMeleePassive(defender, attacker, weapon, atk);
+    const res = resolveMeleePassive(defender, attacker, weapon, atk, undefined, [], undefined, false, composeAttack(attackModifiers(defender, attacker, weapon, { kind: 'melee' })));
     if (res.hit && res.woundsLost) {
       attacker.wounds.current = Math.max(0, attacker.wounds.current - res.woundsLost);
       if (attacker.wounds.current <= 0 && !attacker.dead && !hasCondition(attacker, COND.inconscient)) applyZeroWounds(attacker);
@@ -2762,9 +2816,11 @@ export function maybeOpenDefense(
     const { env } = attackEnv(get, attacker, target, weapon);
     const atk = rollRangedAttacker(attacker, target, weapon, battleRng(), dist, undefined, env, mpt); // tir figé
     const best = bestRangedDefense(attacker, target, weapon, dist, true, mpt);
+    // Composée HORS du littéral : la Difficulté du tir figé, avec les mêmes options que `rollRangedAttacker`.
+    const atkCompo = composeAttack(attackModifiers(attacker, target, weapon, { kind: 'ranged', distanceTiles: dist, env, metresPerTile: mpt }));
     set({
       pendingDefense: {
-        attackerId: attacker.id, defenderId: target.id, weapon, location: null, atk, env,
+        attackerId: attacker.id, defenderId: target.id, weapon, location: null, atk, env, atkCompo,
         mode: best?.mode ?? modes[0], parryWeaponUid: best?.parryWeapon?.uid, modes, distanceTiles: dist, def: null, result: null,
         ...(free ? { free: true, freeKind: free.kind, prevActed: free.prevActed } : {}),
       },
@@ -2785,6 +2841,10 @@ export function maybeOpenDefense(
   // Charge montée (LDB 14 l.183) : Force (Bonus) + Taille de la MONTURE aux DÉGÂTS — la fenêtre porte le
   // proxy, sinon l'opposition différée le perdrait (le chemin inline le passe, resolveAttack).
   const chargeMount = fromCharge ? mountOf(get().battle!, attacker) : undefined;
+  // Composée HORS du littéral, avec les MÊMES options que le jet figé ci-dessus (flanc/dos compris) :
+  // la Difficulté affichée après la fenêtre est celle qui a fait la cible, pas une recomposition d'un
+  // contexte appauvri.
+  const atkCompo = composeAttack(attackModifiers(attacker, target, weapon, { kind: 'melee', env, flankRear }));
   set({
     pendingDefense: {
       attackerId: attacker.id,
@@ -2793,6 +2853,7 @@ export function maybeOpenDefense(
       location: null, // l'IA ne vise pas de localisation
       atk,
       env,
+      atkCompo,
       ...(chargeMount ? { dmgProxy: { sb: bonus(effectiveChar(chargeMount, 'force')), size: chargeMount.size } } : {}),
       mode: bestDefenseMode(target),
       def: null,
@@ -2852,7 +2913,7 @@ export function openSurfacedDefense(get: Get, set: SetFn, attacker: Combatant, t
   const chargeMount = pa.fromCharge ? mountOf(get().battle!, attacker) : undefined;
   const base = {
     attackerId: attacker.id, defenderId: target.id, weapon, location: pa.location, atk, def: null, result: null,
-    env, withhold: pa.withhold,
+    env, withhold: pa.withhold, atkCompo: frozenDifficulty(pa.result!.attackerDetail!),
     ...(chargeMount ? { dmgProxy: { sb: bonus(effectiveChar(chargeMount, 'force')), size: chargeMount.size } } : {}),
     pa: { ...pa, defended: true },
   };

@@ -56,6 +56,7 @@ export type RuleId =
   | 'taille-cible-au-tir'
   | 'superiorite-numerique'
   | 'attaque-de-flanc-ou-de-dos'
+  | 'fuite'
   | 'cible-en-contrebas'
   | 'tir-dans-un-combat-au-corps-a-corps'
   | 'cible-dissimulee'
@@ -104,6 +105,7 @@ export const RULE_REF: Record<RuleId, CodexTarget> = {
   'taille-cible-au-tir': { category: 'regles', id: 'taille-cible-au-tir' },
   'superiorite-numerique': { category: 'regles', id: 'superiorite-numerique' },
   'attaque-de-flanc-ou-de-dos': { category: 'regles', id: 'attaque-de-flanc-ou-de-dos' },
+  fuite: { category: 'regles', id: 'fuite' },
   'cible-en-contrebas': { category: 'regles', id: 'cible-en-contrebas' },
   'tir-dans-un-combat-au-corps-a-corps': { category: 'regles', id: 'tir-dans-un-combat-au-corps-a-corps' },
   'cible-dissimulee': { category: 'regles', id: 'cible-dissimulee' },

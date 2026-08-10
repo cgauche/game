@@ -11,7 +11,7 @@ import type { Effect, Dialogue } from './scene';
 import type { Flow } from './flow';
 import type { GameOp, PairedSense } from '../engine/ops';
 import type { TestResult, OpposedResult } from '../engine/tests';
-import type { AttackResult, DefenseMode, ModLine } from '../engine/combat';
+import type { AttackResult, DefenseMode, DifficultyComposition, ModLine } from '../engine/combat';
 import type { AttackKind } from '../engine/creatureAttacks';
 import type { CriticalResolved } from '../engine/critical';
 import type { OupsResolved } from '../engine/oups';
@@ -324,6 +324,18 @@ export interface PendingAttack {
   location: HitLocation | null;
   /** Arme choisie pour cette attaque (uid d'ItemInstance du loadout actif) ; absent = auto-choix. */
   weaponUid?: string;
+  /** Arme RÉELLEMENT tirée, figée AU JET (#1153) — comme `PendingDefense.weapon` fige celle de
+   *  l'attaquant. Un uid ne suffit pas : `Combatant.weapons` ne porte que le loadout ACTIF
+   *  (`recomputeLoadout`), donc un uid désignant une arme possédée mais non tenue est INTROUVABLE et
+   *  l'auto-choix reprend la main (la mêlée gagne dès qu'elle est à portée). Toute influence de la
+   *  ligne résolue (Chance, Relance, dé choisi, Résilience) re-dérive AVEC cette arme-là. */
+  weapon?: Weapon;
+  /** Contexte du jet FIGÉ à la résolution (#1153), pour que toute re-dérivation retrouve la même
+   *  opposition : distance de tir (bande de portée) et pénalité d'ESQUIVE du contexte
+   *  (`defenseDodgeMod` — neige `LDB 14 l.82`, défenseur monté `l.184`). Un défaut forgé (0, ou une
+   *  distance recalculée) ferait dire au résultat une autre Difficulté que le jet d'origine. */
+  distanceTiles?: number;
+  dodgeMod?: number;
   result: AttackResult | null; // null = pas encore lancé
   /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */
   rerolled?: boolean;
@@ -871,6 +883,11 @@ export interface PendingDefense {
   env?: ModLine[];
   withhold?: boolean;
   dmgProxy?: { sb: number; size: Combatant['size'] };
+  /** Difficulté FIGÉE du jet d'attaque (#1153 L4) : le jet est roulé À L'OUVERTURE, avec un contexte
+   *  (flanc/dos, distance) que la fenêtre ne rejoue pas — `flankRear` n'est même pas un champ du
+   *  pending. Sans elle, la ligne d'attaque affichée après la défense annoncerait une autre
+   *  Difficulté que celle qui a fait sa cible. */
+  atkCompo?: DifficultyComposition;
   def: TestResult | null; // null = pas encore défendu ; écrasé par Chance
   result: AttackResult | null; // calculé par finishMelee après « Défendre »
   /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */

@@ -176,8 +176,8 @@ describe('Attaque — la Difficulté DÉRIVE des circonstances (#1153 L3b-2)', (
     return document.querySelector('.codex-pop')?.textContent ?? '';
   };
   /** L'affordance (i) qui SIGNALE la porte : elle vit DANS le déclencheur (même hit-target), jamais
-   *  accolée à côté, et elle PRÉCÈDE le palier — arbitrage user 2026-08-10 : « Le i devait etre
-   *  devant la difficulté, et la compétence simplement avec un popover ». */
+   *  accolée à côté, et elle SUIT le palier — arbitrage user 2026-08-10 : « le (i) par convention est
+   *  apres et non avant ceux a quoi il fait référence ». */
   const infoPalier = (v: HTMLDivElement) => ligne(v).querySelector('.rm-roll-diff .codex-ref svg.icon');
   /** Le NOM du jet (la Compétence lancée) est-il une porte Codex ? Il l'est PAR SON POPOVER seul :
    *  aucun (i) ne le précède (même arbitrage). */
@@ -185,7 +185,7 @@ describe('Attaque — la Difficulté DÉRIVE des circonstances (#1153 L3b-2)', (
 
   it('RAW l.95 — brouillard + Localisation visée : « Très difficile (−30) », zéro chip de circonstance', () => {
     const v = renderAttack({ ranged: true, fog: true, location: 'tete' });
-    expect(palier(v)).toBe(' — Très difficile (−30)');
+    expect(palier(v)).toBe('Très difficile (−30)');
     expect(chips(v), 'les circonstances vivent dans le palier, pas en chips').toEqual([]);
     expect(ligne(v).textContent).not.toContain('plafond Difficultés');
     expect(ligne(v).textContent).not.toContain('autres');
@@ -194,9 +194,10 @@ describe('Attaque — la Difficulté DÉRIVE des circonstances (#1153 L3b-2)', (
     expect(porte(v), 'le palier DÉRIVÉ porte le popover de sa composition').toBe('Très difficile (−30)');
     const decl = ligne(v).querySelector('.rm-roll-diff .codex-ref')!;
     expect(infoPalier(v), 'la porte se SIGNALE : un (i) dans le déclencheur, pas à côté').toBeTruthy();
-    // `firstChild` et non `firstElementChild` : le palier est un nœud TEXTE — l'ignorer rendrait
-    // l'assertion aveugle à l'ordre (elle passait avec l'icône placée APRÈS).
-    expect(decl.firstChild, 'le (i) PRÉCÈDE le palier, il ne le suit pas').toBe(infoPalier(v));
+    // `lastChild` et non `lastElementChild` : le palier est un nœud TEXTE — l'ignorer rendrait
+    // l'assertion aveugle à l'ordre. Convention utilisateur 2026-08-10, verbatim : « le (i) par
+    // convention est apres et non avant ceux a quoi il fait référence ».
+    expect(decl.lastChild, 'le (i) SUIT le palier, il ne le précède pas').toBe(infoPalier(v));
     expect(
       ligne(v).querySelector('.rm-roll-diff .codex-ref')!.getAttribute('aria-label'),
       'le nom accessible COMMENCE par le texte visible et nomme la règle atteinte',
@@ -204,19 +205,22 @@ describe('Attaque — la Difficulté DÉRIVE des circonstances (#1153 L3b-2)', (
     expect(ANONYMES.count).toBe(0);
   });
 
-  it('attaque simple : palier « Intermédiaire (+0) » (LDB 13 l.118), aucune chip', () => {
+  /** UNIFICATION (#1153) : toute Difficulté affichée a la MÊME grammaire — même (i), même porte vers
+   *  la fiche des Difficultés. Une Difficulté sans composition n'a rien à énumérer, elle reste
+   *  explorable : le joueur qui découvre le (i) sur une ligne le retrouve sur toutes. */
+  it('attaque simple : « Intermédiaire (+0) » (LDB 13 l.118), aucune chip, MÊME affordance', () => {
     const v = renderAttack();
-    expect(palier(v)).toBe(' — Intermédiaire (+0)');
+    expect(palier(v)).toBe('Intermédiaire (+0)');
     expect(chips(v)).toEqual([]);
     expect(calcul(v)).toBe('45');
-    expect(porte(v), 'palier CHOISI : aucun popover de composition à ouvrir').toBeUndefined();
-    expect(infoPalier(v), 'sans composition à montrer, aucune affordance ne promet rien').toBeNull();
+    expect(porte(v), 'la Difficulté déclarée ouvre la même fiche que la composée').toBe('Intermédiaire (+0)');
+    expect(infoPalier(v), 'le (i) ne dépend pas du mode : la grammaire est unique').toBeTruthy();
     expect(ANONYMES.count).toBe(0);
   });
 
   it('l’État du JETEUR (Empoisonné, LDB 16 l.11) reste une CHIP — palier inchangé', () => {
     const v = renderAttack({ conditions: [{ id: 'empoisonne', value: 1 }] });
-    expect(palier(v)).toBe(' — Intermédiaire (+0)');
+    expect(palier(v)).toBe('Intermédiaire (+0)');
     expect(chips(v)).toEqual(['−10 Empoisonné']);
     expect(calcul(v)).toBe('45 −10 = 35');
     expect(ANONYMES.count).toBe(0);
@@ -224,7 +228,7 @@ describe('Attaque — la Difficulté DÉRIVE des circonstances (#1153 L3b-2)', (
 
   it('MIXTE — la chip d’État SURVIT à côté du palier composé par la Localisation visée', () => {
     const v = renderAttack({ location: 'tete', conditions: [{ id: 'empoisonne', value: 1 }] });
-    expect(palier(v)).toBe(' — Difficile (−20)');
+    expect(palier(v)).toBe('Difficile (−20)');
     expect(chips(v)).toEqual(['−10 Empoisonné']);
     expect(calcul(v)).toBe('45 −30 = 15');
     expect(ANONYMES.count).toBe(0);
@@ -242,7 +246,7 @@ describe('Attaque — la Difficulté DÉRIVE des circonstances (#1153 L3b-2)', (
       ranged: true, cases: 5, location: 'tete', enMouvement: true,
       conditions: [{ id: 'empoisonne', value: 1 }],
     });
-    expect(palier(v), 'les circonstances SEULES composent le palier').toBe(' — Complexe (−10)');
+    expect(palier(v), 'les circonstances SEULES composent le palier').toBe('Complexe (−10)');
     expect(porte(v), 'le palier dérivé est explorable').toBeDefined();
     expect(popover(v)).toContain('+20 Courte portée');
     expect(popover(v)).toContain('−20 Localisation visée');

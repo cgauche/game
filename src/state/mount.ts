@@ -108,16 +108,39 @@ function personalWeaponsOf(attacker: Combatant): Weapon[] {
   return posteUid ? attacker.weapons.filter((w) => w.uid !== posteUid) : attacker.weapons;
 }
 
+/**
+ * COMPTEUR des `weaponUid` FOURNIS mais INTROUVABLES dans `attacker.weapons` (#1153) — sonde partagée,
+ * patron `REDERIVATIONS`/`ANONYMES`. `c.weapons` ne contient que le loadout ACTIF (`recomputeLoadout`,
+ * `engine/items.ts`) : un uid d'arme possédée mais non tenue n'y est PAS. Retomber en silence sur le
+ * re-choix (la mêlée l'emporte dès qu'elle est à portée) faisait d'un tir une frappe au 2ᵉ passage.
+ */
+export const ARME_INTROUVABLE = { vues: 0, dites: new Set<string>() };
+
 /** Choix d'arme d'ATTAQUE PAR-ARME (#BUG-A) : l'arme EXPLICITE `weaponUid` si posée (pièce servie
  *  épinglée par l'option « Servir », ou choix de l'IA), sinon la mêlée PERSONNELLE la plus UTILE à
  *  portée (`meleeWeaponInRangeList` sur `personalWeaponsOf` — géométrie propre + `structureImmune` ; la
  *  pièce de siège servie n'est JAMAIS auto-choisie, cf. `personalWeaponsOf`), sinon le fallback générique
  *  `assertAttackWeapon` (préfère une arme à distance). Remplace tout `assertAttackWeapon(weapons, adj)`
  *  où `adj` était calculé PAR-ACTEUR (bug vécu : une arme personnelle héritait de l'allonge de la coque
- *  servie — #203/#210 suite). Variante `List` utilisable hors `BattleState` complet (ex. `firedWeapon`). */
+ *  servie — #203/#210 suite). Variante `List` utilisable hors `BattleState` complet (ex. `firedWeapon`).
+ *
+ *  Un `weaponUid` fourni et INTROUVABLE n'est jamais un choix par défaut : c'est un appelant qui
+ *  désigne une arme que le combattant ne TIENT pas. Le fait se crie (DEV) au lieu de se traduire en
+ *  arme différente — la re-dérivation d'un jet déjà résolu en dépendait. */
 export function pickAttackWeaponList(combatants: Combatant[] | undefined, attacker: Combatant, target: Combatant, weaponUid?: string): Weapon {
   const chosen = weaponUid ? attacker.weapons.find((w) => w.uid === weaponUid) : undefined;
   if (chosen) return chosen;
+  if (weaponUid) {
+    ARME_INTROUVABLE.vues += 1;
+    // UNE fois par uid : les chemins de RENDU (aperçu d'attaque, viseur) rejouent cette résolution à
+    // chaque image — un cri par frame noierait le signal au lieu de le porter.
+    if (!ARME_INTROUVABLE.dites.has(weaponUid)) {
+      ARME_INTROUVABLE.dites.add(weaponUid);
+      console.error(`[combat] arme « ${weaponUid} » demandée mais absente des armes TENUES de ${attacker.label ?? attacker.id} `
+        + `(${attacker.weapons.map((w) => w.uid ?? '—').join(', ') || 'aucune'}) — \`weapons\` ne porte que le loadout ACTIF. `
+        + 'Le choix retombe sur l\'auto-sélection : un jet déjà résolu peut changer d\'arme.');
+    }
+  }
   const personal = personalWeaponsOf(attacker);
   if (!combatants) return assertAttackWeapon(personal, combatDistance(attacker, target) <= meleeReachTiles(personal));
   return meleeWeaponInRangeList(combatants, attacker, target, personal) ?? assertAttackWeapon(personal, false);

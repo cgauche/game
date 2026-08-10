@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { parseQualityInstance } from './qualities/normalize';
-import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers, psychDRAdjust, resolveStrayRangedHit, defenseModifiers, rollMeleeDefender, finishMelee, resolveMeleePassive, resolveTrample, attackTestLabel } from './combat';
+import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers, psychDRAdjust, resolveStrayRangedHit, defenseModifiers, rollMeleeDefender, finishMelee, resolveMeleePassive, resolveTrample, resolveBackstabAttack, rederivePassiveAttack, frozenDifficulty, REDERIVATIONS, attackTestLabel, type ModLine, type RollBreakdown } from './combat';
 import { RULE_REF } from './ruleRefs';
-import { evaluateTest } from './tests';
+import { evaluateTest, hydrateTR, bumpSL } from './tests';
 import { makeRNG } from './dice';
-import { Combatant, Weapon } from './types';
+import { Combatant, Weapon, DIFFICULTY_MODIFIERS } from './types';
 
 const mk = (over: Partial<Combatant> = {}): Combatant =>
   ({
@@ -383,3 +383,105 @@ describe('Charge montée — dégâts à la Force + Taille de la monture (LDB 14
     expect(a.attackerRoll).toBe(b.attackerRoll); // jet d'attaque identique : la CC du cavalier n'est pas touchée
   });
 });
+
+/**
+ * TRANSPORT DE LA DIFFICULTÉ sur les chemins de RE-DÉRIVATION (#1153 L4) — promotion des sondes du
+ * juge adversarial.
+ *
+ * CONTRAT : pour tout `AttackResult` produit par un chemin de re-dérivation (Chance « +1 DR », dé
+ * choisi, Résilience, touche déviée), `attackerDetail` s'explique intégralement (`inexplique === 0`)
+ * ET annonce la MÊME `difficulty`/`difficultyParts` que la résolution d'ORIGINE de la même attaque.
+ *
+ * Le défaut mesuré : le détail recomposait la Difficulté depuis des modificateurs RECONSTRUITS, alors
+ * que la cible venait d'un jet fait ailleurs. Un re-jet ne connaît ni la distance, ni l'`env` de
+ * scène, ni le flanc/dos — la ligne annonçait « Intermédiaire (+0) » sur une attaque à −30 et l'écart
+ * partait en chip « autres ». La Difficulté est désormais COMPOSÉE une fois par qui roule le jet, puis
+ * TRANSPORTÉE (`frozenDifficulty`) : dépenser un point de Chance ne rejoue pas les circonstances.
+ */
+/** L'arithmétique EXACTE de l'écran (`ui/RollLine.tsx` : `reconciled`) — reste ≠ 0 ⇒ chip « autres ». */
+const inexplique = (d: RollBreakdown): number =>
+  d.target - d.base
+  - (d.difficultyCombined ?? (d.difficulty ? DIFFICULTY_MODIFIERS[d.difficulty] : 0))
+  - (d.mods ?? []).reduce((s, m) => s + m.value, 0);
+
+/** Ce que la ligne ANNONCE de sa Difficulté — la grandeur comparée avant/après re-dérivation. */
+const dit = (d: RollBreakdown) => ({
+  difficulty: d.difficulty,
+  combined: d.difficultyCombined,
+  parts: (d.difficultyParts ?? []).map((m: ModLine) => `${m.label}:${m.value}`),
+});
+
+describe('TIR + Chance : la re-dérivation dit la MÊME Difficulté que la résolution (#1153 L4)', () => {
+  /** Trois bandes de portée de la table (`LDB 14`) : le palier composé doit traverser le re-jet. */
+  for (const [dist, palier] of [[10, 'accessible'], [40, 'complexe'], [80, 'tresDifficile']] as const) {
+    it(`à ${dist} cases (${palier}) : même Difficulté, et la ligne s'explique`, () => {
+      const a = mk({ id: 'a', weapons: [bow] });
+      const repli = REDERIVATIONS.recomposees; // aucune re-composition ne doit s'ajouter (#1153 L4, R5)
+      const c = mk({ id: 'c' });
+      const origine = resolveRanged(a, c, bow, makeRNG(9), dist).attackerDetail!;
+      expect(origine.difficulty, 'la fixture doit VRAIMENT composer un palier').toBe(palier);
+      expect(inexplique(origine)).toBe(0);
+      const re = rederivePassiveAttack(a, c, bow, bumpSL(hydrateTR(origine)), 'ranged', undefined, false, frozenDifficulty(origine));
+      expect(dit(re.attackerDetail!)).toEqual(dit(origine));
+      expect(inexplique(re.attackerDetail!), 'aucune chip « autres » après la Chance').toBe(0);
+      expect(REDERIVATIONS.recomposees, 'la Difficulté est TRANSPORTÉE, jamais recomposée').toBe(repli);
+    });
+  }
+});
+
+describe('MÊLÉE + Chance : le surnombre survit au re-jet (#1153 L4)', () => {
+  it('l’`env` de la scène est perdu par la re-dérivation — la Difficulté, elle, voyage', () => {
+    const a = mk({ id: 'a', weapons: [sword] });
+    const repli = REDERIVATIONS.recomposees; // aucune re-composition ne doit s'ajouter (#1153 L4, R5)
+    const b = mk({ id: 'b', weapons: [sword] });
+    const env: ModLine[] = [{ label: 'Surnombre (2 c.1)', value: 20, famille: 'circonstance' }];
+    const r = resolveMelee(a, b, sword, makeRNG(11), { defense: 'parade', env });
+    const origine = r.attackerDetail!;
+    expect(origine.difficulty, 'les circonstances composent Accessible (+20)').toBe('accessible');
+    expect(inexplique(origine)).toBe(0);
+    const re = finishMelee(
+      a, b, sword, bumpSL(hydrateTR(origine)), hydrateTR(r.defenderDetail!), 'parade',
+      undefined, [], 0, undefined, undefined, false, undefined, frozenDifficulty(origine),
+    );
+    expect(dit(re.attackerDetail!)).toEqual(dit(origine));
+    expect(inexplique(re.attackerDetail!)).toBe(0);
+    expect(REDERIVATIONS.recomposees, 'la Difficulté est TRANSPORTÉE, jamais recomposée').toBe(repli);
+  });
+});
+
+describe('COUP DANS LE DOS : le +20 est NOMMÉ à sa cause (#1153 L4)', () => {
+  /** Le +20 vient de la FUITE (`LDB 15 l.66`), pas du Tableau des Difficultés de Combat : il reste une
+   *  chip hors table — il ne peut donc pas s'imputer à une circonstance portée par la cible. */
+  for (const [nom, cible] of [
+    ['cible saine', mk({ id: 'c' })],
+    ['cible À TERRE (une circonstance à qui l’imputer)', mk({ id: 'c', conditions: [{ id: 'a-terre', value: 1 }] as never })],
+  ] as const) {
+    it(`${nom} : la ligne s'explique et nomme le dos tourné`, () => {
+      const d = resolveBackstabAttack(mk({ id: 'f', weapons: [sword] }), cible, makeRNG(3)).attackerDetail!;
+      expect(inexplique(d)).toBe(0);
+      expect((d.mods ?? []).map((m) => `${m.label}:${m.value}`)).toContain('Dos tourné (adversaire en fuite):20');
+      expect(d.difficultyParts, 'aucune circonstance de la table ne porte ce +20').toBeUndefined();
+    });
+  }
+});
+
+describe('PIÉTINEMENT et TIR DÉVIÉ : la ligne s’explique aussi (#1153 L4)', () => {
+  it('Piétinement : la Difficulté est celle des mods qui ont fait la cible', () => {
+    const d = resolveTrample(mk({ id: 'a', size: 'enorme' } as never), mk({ id: 'c' }), makeRNG(5)).attackerDetail!;
+    expect(inexplique(d)).toBe(0);
+  });
+
+  it('tir DÉVIÉ : la cible chargée porte sa ligne nommée, jamais un `mods: []` muet', () => {
+    const a = mk({ id: 'a', weapons: [bow] });
+    const origine = resolveRanged(a, mk({ id: 'c' }), bow, makeRNG(9), 80).attackerDetail!; // bande Extrême (−30)
+    // Le tir dévie vers l'allié intercalé : cible SANS le −20 du tir dans la mêlée (LDB 14 l.136).
+    const d = resolveStrayRangedHit(a, mk({ id: 'x2' }), bow, origine.roll, origine.target + 20, origine).attackerDetail!;
+    expect(d.difficulty, 'même jet, même Difficulté').toBe(origine.difficulty);
+    expect((d.mods ?? []).map((m) => `${m.label}:${m.value}`)).toContain('Tir dévié:20');
+    expect(inexplique(d)).toBe(0);
+  });
+});
+
+/* Le CÂBLAGE des re-dérivations du produit (la Chance passe-t-elle vraiment la composition figée ?)
+   se mesure à l'EXÉCUTION, sur le chemin réel du flux : `preview-attack.test.ts`. Un scan de source
+   dirait « transport présent » d'un argument nommé `compo` qui vaudrait `undefined`. */

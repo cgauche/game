@@ -3,13 +3,13 @@ import { useGame, movementRemaining } from '../../state/store';
 import { FLOWS } from '../../state/rollFlowSpecs';
 import { HitLocation, type Weapon } from '../../engine/types';
 import type { RollLabelRef } from '../RollLine';
-import { crowdMod, bestRangedDefense, DEFENSE_LABEL, defenseModifiers, locationLabel, weaponInflictsFlames, attackTestLabel, isHelplessTarget } from '../../engine/combat';
+import { crowdMod, bestRangedDefense, locationLabel, weaponInflictsFlames, attackTestLabel, isHelplessTarget } from '../../engine/combat';
 import { isUnarmed } from '../../engine/items';
 import { isInanimate } from '../../engine/structures';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { combatDistance } from '../../state/footprint';
-import { attackWeaponOf, crowdEligible, previewAttack, previewDefense, surfacedDefensePending } from '../../state/combatFlow';
+import { attackWeaponOf, crowdEligible, previewAttack, previewDefense, defenseDodgeMod, surfacedDefensePending } from '../../state/combatFlow';
 import { t } from '../../i18n';
 import { itemCapability } from '../../engine/capabilities';
 import { attackModesFor, offHandPenalty } from '../../engine/combatFeatures/dispatch';
@@ -101,11 +101,14 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   const preview = !res ? previewAttack(useGame.getState, attacker, target, pa.location ?? undefined, { intoCrowd: pa.intoCrowd, heldGround: pa.heldGround, weaponUid: pa.weaponUid, harpoonRopeCut: pa.harpoonRopeCut }) : null;
   // LDB 13 l.135
   const rangedDef = !res && weapon?.type === 'ranged' ? bestRangedDefense(attacker, target, weapon, combatDistance(attacker, target)) : undefined;
+  // La rangée adverse annonce la Difficulté que le jet de défense subira VRAIMENT : même pénalité
+  // d'esquive que la résolution (`defenseDodgeMod`) et même arme attaquante (Rapide, LDB 62 l.320).
+  const dodge = defenseDodgeMod(useGame.getState, target);
   const defenderPending = res
     ? undefined
     : weapon?.type === 'ranged'
-      ? (rangedDef ? { label: DEFENSE_LABEL[rangedDef.mode], mods: defenseModifiers(target, rangedDef.mode, 0, rangedDef.parryWeapon), difficulty: 'intermediaire' as const } : undefined) // LDB 13 l.118
-      : isInanimate(target) ? undefined : previewDefense(target);
+      ? (rangedDef ? previewDefense(target, { mode: rangedDef.mode, parryWeapon: rangedDef.parryWeapon, vsWeapon: weapon, dodgeMod: dodge }) : undefined)
+      : isInanimate(target) ? undefined : previewDefense(target, { vsWeapon: weapon, dodgeMod: dodge });
   // LDB États l.113 ; LDB 17 l.68
   const helplessForced = isHelplessTarget(target);
   // LDB 23 l.209 ; LDB 10
@@ -135,6 +138,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               target: Math.max(0, Math.min(100, preview!.target)),
               mods: preview!.mods,
               difficulty: preview!.difficulty, // LDB 13 l.118 ; palier composé LDB 14 l.91-96
+              ...(preview!.difficultyCombined != null ? { difficultyCombined: preview!.difficultyCombined } : {}),
               ...(preview!.difficultyParts ? { difficultyParts: preview!.difficultyParts } : {}),
               ...(preview!.clamped ? { clamped: preview!.clamped } : {}),
             },

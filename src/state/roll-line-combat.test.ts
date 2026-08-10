@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
 import { inexplique } from './cascadeTestKit';
-import { rollLine, type RollLineCombat } from './rollSeam';
+import { rollLine, assertSeparabilite, SEPARABILITE, type RollLineCombat } from './rollSeam';
 import { openCombatEndCascade, openContractionCascade, openAttackCascade } from './combatFlow';
 import { resolveActGates } from './combat/turnHooks';
 import { forceCrewRole } from './shipManeuver';
@@ -11,11 +11,11 @@ import { combatTestPenalty, testStatePenalty, testStatePenaltyParts } from '../e
 import { testValue, testValueParts, skillBaseValue, rawCombatTestBase } from '../engine/skills';
 import { effectiveChar } from '../engine/characteristics';
 import { crewRoleValue } from '../engine/crewMorale';
-import { clampTarget } from '../engine/tests';
-import { rule } from '../engine/policy';
+import { clampTarget, exactDifficultyFromModifier } from '../engine/tests';
+import { rule, setRule, resetRule } from '../engine/policy';
 import { findCrewRoleById } from '../data';
 import { RULE_REF } from '../engine/ruleRefs';
-import { DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
+import { DIFFICULTY_MODIFIERS, DIFFICULTY_LABELS, type Combatant, type Difficulty } from '../engine/types';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 
@@ -367,78 +367,82 @@ describe('SONDES PROMUES (#1153 L1b) — ce que le monteur NE fait PAS encore', 
 
   /**
    * MATRICE du mode plafonné (`LDB 14 l.91-96`) — les six régimes de la règle, jugés sur TROIS
-   * grandeurs : la cible que le combat applique, le PALIER que la ligne annonce, et l'écart
+   * grandeurs : la cible que le combat applique, la DIFFICULTÉ que la ligne annonce, et l'écart
    * base→cible intégralement nommé. Les plafonds sont lus de la POLICY
    * (`combat-diff-cap-bonus`/`-malus`, règles optionnelles), jamais écrits en dur : un jeu de
    * valeurs maison doit faire bouger l'attendu avec le moteur.
    *
-   * `palier` = la Difficulté que les CIRCONSTANCES composent (RAW : « le Test devient simplement
-   * Très Difficile (-30) ») ; absent = aucune n'en compose d'exacte, la ligne garde sa Difficulté
-   * déclarée et TOUT reste en chips, plafond compris.
+   * DEUX formes d'annonce, une seule règle : `palier` = un CRAN de la table que les circonstances
+   * composent exactement (RAW : « le Test devient simplement Très Difficile (-30) ») ; `combine` =
+   * leur modificateur RÉEL quand il ne tombe sur aucun cran (l'échelle n'en nomme pas ; l'affichage
+   * en fait « Combinée (+30) »). Dans les DEUX cas les circonstances quittent les chips et la
+   * composition est portée par la Difficulté. Sans circonstance : rien à composer.
    */
   const capB = rule('combat-diff-cap-bonus') as number;
   const capM = rule('combat-diff-cap-malus') as number;
-  const MATRICE: { nom: string; mods: ModLine[]; attendu: number; mord: boolean; palier?: Difficulty }[] = [
+  const MATRICE: { nom: string; mods: ModLine[]; attendu: number; mord: boolean; palier?: Difficulty; combine?: number }[] = [
     { nom: 'aucun plafond ne mord (un mod au jet, une circonstance)', mods: [{ label: 'Sonné', value: -10, famille: 'jet' }, { label: 'À Terre', value: 20, famille: 'circonstance' }], attendu: 10, mord: false, palier: 'accessible' },
     { nom: 'MALUS de CIRCONSTANCES mordant (Σ −60)', mods: [{ label: 'Brouillard', value: -20, famille: 'circonstance' }, { label: 'Localisation visée', value: -20, famille: 'circonstance' }, { label: 'Main secondaire', value: -20, famille: 'circonstance' }], attendu: -capM, mord: true, palier: 'tresDifficile' },
     { nom: 'ÉTATS du JETEUR : la somme est SÈCHE, aucun plafond (Σ −50, `LDB 16 l.11`)', mods: [{ label: 'Sonné', value: -10, famille: 'jet' }, { label: 'Aveuglé', value: -20, famille: 'jet' }, { label: 'Empêtré', value: -20, famille: 'jet' }], attendu: -50, mord: false },
     { nom: 'BONUS mordant (Σ +80)', mods: [{ label: 'Viser', value: 40, famille: 'circonstance' }, { label: 'À Terre', value: 40, famille: 'circonstance' }], attendu: capB, mord: true, palier: 'tresFacile' },
-    { nom: 'BONUS ET MALUS de circonstances mordants (les deux sommes plafonnent, puis s’ajoutent)', mods: [{ label: 'Viser', value: 40, famille: 'circonstance' }, { label: 'À Terre', value: 40, famille: 'circonstance' }, { label: 'Brouillard', value: -20, famille: 'circonstance' }, { label: 'Main secondaire', value: -20, famille: 'circonstance' }, { label: 'Obscurité', value: -20, famille: 'circonstance' }], attendu: capB - capM, mord: true },
+    { nom: 'BONUS ET MALUS de circonstances mordants (les deux sommes plafonnent, puis s’ajoutent)', mods: [{ label: 'Viser', value: 40, famille: 'circonstance' }, { label: 'À Terre', value: 40, famille: 'circonstance' }, { label: 'Brouillard', value: -20, famille: 'circonstance' }, { label: 'Main secondaire', value: -20, famille: 'circonstance' }, { label: 'Obscurité', value: -20, famille: 'circonstance' }], attendu: capB - capM, mord: true, combine: capB - capM },
     { nom: 'AVANTAGE hors plafond, circonstances mordantes à côté', mods: [{ label: 'Avantage', value: 70, famille: 'jet' }, { label: 'Brouillard', value: -20, famille: 'circonstance' }, { label: 'Obscurité', value: -20, famille: 'circonstance' }], attendu: 70 - capM, mord: true, palier: 'tresDifficile' },
     { nom: 'AVANTAGE SEUL : rien à plafonner malgré une somme > +60', mods: [{ label: 'Avantage', value: 70, famille: 'jet' }], attendu: 70, mord: false },
   ];
 
-  it.each(MATRICE)('MODE PLAFONNÉ — $nom', ({ mods, attendu, mord, palier }) => {
+  it.each(MATRICE)('MODE PLAFONNÉ — $nom', ({ mods, attendu, mord, palier, combine }) => {
     const somme = mods.reduce((s, m) => s + m.value, 0);
     expect(combineMods(mods), 'la matrice doit décrire la combinaison RÉELLE du moteur').toBe(attendu);
     expect(attendu !== somme, 'le régime annoncé (mordant ou non) doit être celui que le moteur produit').toBe(mord);
 
     const l = rollLine({ difficulty: 'intermediaire', valeur: 60, surLaCible: mods, plafond: 'difficultes' });
     expect(l.target).toBe(clampTarget(60 + attendu).target);
-    expect(l.difficulty, 'le PALIER annoncé par la ligne').toBe(palier ?? 'intermediaire');
-    if (palier) {
-      // Palier DÉRIVÉ : les circonstances (et l'écart du plafond) COMPOSENT la Difficulté — elles
-      // quittent les chips, et leur somme EST la valeur du palier affiché.
+    expect(l.difficulty, 'la Difficulté annoncée par la ligne').toBe(palier ?? 'intermediaire');
+    expect(l.difficultyCombined, 'le modificateur COMBINÉ ne paraît que hors des crans').toBe(combine);
+    if (palier || combine != null) {
+      // Difficulté COMPOSÉE : les circonstances (et l'écart du plafond) la font — elles quittent les
+      // chips, et leur somme EST la valeur annoncée (le cran, ou le combiné).
       const parts = l.difficultyParts ?? [];
-      expect(parts.reduce((s, m) => s + m.value, 0)).toBe(DIFFICULTY_MODIFIERS[palier]);
+      expect(parts.reduce((s, m) => s + m.value, 0)).toBe(palier ? DIFFICULTY_MODIFIERS[palier] : combine);
       expect(parts.map((m) => m.label)).toEqual(expect.arrayContaining(mods.filter((m) => m.famille === 'circonstance').map((m) => m.label)));
       expect(l.mods.some((m) => m.famille === 'circonstance'), 'aucune circonstance restée en chip').toBe(false);
       expect(l.mods.map((m) => m.label)).toEqual(mods.filter((m) => m.famille !== 'circonstance').map((m) => m.label));
       if (mord) expect(parts.find((m) => m.label === 'plafond Difficultés')).toMatchObject({ value: attendu - somme, ref: RULE_REF['combiner-les-difficultes'] });
     } else {
-      // Aucun palier exact à composer : la ligne garde sa Difficulté et TOUT se lit en chips —
-      // l'amputation du plafond comprise, sans quoi elle retomberait en « autres ».
+      // Aucune circonstance à composer : la ligne garde sa Difficulté et TOUT se lit en chips.
       expect(l.difficultyParts).toBeUndefined();
-      const chip = l.mods.find((m) => m.label === 'plafond Difficultés');
-      if (mord) expect(chip).toMatchObject({ value: attendu - somme, ref: RULE_REF['combiner-les-difficultes'] });
-      else expect(chip, 'aucune chip décorative quand rien n’est amputé').toBeUndefined();
+      expect(l.mods.find((m) => m.label === 'plafond Difficultés'), 'aucune chip décorative quand rien n’est amputé').toBeUndefined();
     }
     expect(inexplique({ ...l }), 'aucune chip « autres »').toBe(0);
 
-    // HORS mode : la somme reste BRUTE et AUCUN palier ne se dérive — le plafond (et le palier qu'il
-    // compose) est un régime de COMBAT, pas un défaut du monteur.
+    // HORS mode : la somme reste BRUTE et AUCUNE composition ne se fait — le plafond (et la
+    // Difficulté qu'il compose) est un régime de COMBAT, pas un défaut du monteur.
     const brut = rollLine({ difficulty: 'intermediaire', valeur: 60, surLaCible: mods });
     expect(brut.target).toBe(clampTarget(60 + somme).target);
     expect(brut.mods.some((m) => m.label === 'plafond Difficultés')).toBe(false);
     expect(brut.difficulty).toBe('intermediaire');
+    expect(brut.difficultyCombined).toBeUndefined();
     expect(brut.difficultyParts).toBeUndefined();
     expect(inexplique({ ...brut })).toBe(0);
   });
 
   /**
-   * REPLI EXACT-OU-RIEN (garde-fou du juge de design) : `difficultyFromModifier` est un PLUS PROCHE
-   * VOISIN — un −15 y trouve « Complexe (−10) » (MESURÉ), un palier MENTEUR de 5 points. Le monteur
-   * exige donc l'exactitude : à défaut, la circonstance reste une chip. Le −15 est celui que le
-   * combat produit RÉELLEMENT : bande de portée Extrême (−30) halvée par le Talent Tireur embusqué
-   * (`sniperRangeAdjust`, appelé par `attackModifiers` — la ligne reste une circonstance de la table).
+   * HORS DES CRANS DE L'ÉCHELLE — `difficultyFromModifier` est un PLUS PROCHE VOISIN : un −15 y
+   * trouve « Complexe (−10) » (MESURÉ), une Difficulté MENTEUSE de 5 points. Le monteur refuse ce
+   * rabattage ; la circonstance ne retourne pas en chip pour autant (la ligne dirait alors une
+   * Difficulté Intermédiaire que la situation contredit) : elle COMPOSE une Difficulté combinée que
+   * l'affichage nomme telle quelle. Le −15 est celui que le combat produit RÉELLEMENT : bande de
+   * portée Extrême (−30) halvée par le Talent Tireur embusqué (`sniperRangeAdjust`, appelé par
+   * `attackModifiers` — la ligne reste une circonstance de la table).
    */
-  it('MODE PLAFONNÉ — une circonstance qui ne compose AUCUN palier exact (−15) reste en chip', () => {
+  it('MODE PLAFONNÉ — une circonstance hors cran (−15) COMPOSE une Difficulté combinée', () => {
     const mods: ModLine[] = [{ label: 'Distance extrême', value: -15, famille: 'circonstance', ref: RULE_REF['portee-d-une-arme'] }];
     const l = rollLine({ difficulty: 'intermediaire', valeur: 60, surLaCible: mods, plafond: 'difficultes' });
-    expect(l.difficulty, 'aucun palier ne vaut −15 : la Difficulté déclarée tient').toBe('intermediaire');
-    expect(l.difficultyParts).toBeUndefined();
-    expect(l.mods).toEqual(mods);
-    expect(l.target).toBe(45);
+    expect(l.difficulty, 'aucun cran ne vaut −15 : la Difficulté déclarée reste le porteur').toBe('intermediaire');
+    expect(l.difficultyCombined, 'le modificateur RÉEL voyage tel quel').toBe(-15);
+    expect(l.difficultyParts, 'la circonstance est absorbée par la Difficulté combinée').toEqual(mods);
+    expect(l.mods, 'plus une seule chip : la Difficulté porte tout').toEqual([]);
+    expect(l.target, 'la cible ne bouge pas d’un point').toBe(45);
     expect(inexplique({ ...l })).toBe(0);
   });
 
@@ -477,64 +481,89 @@ describe('SONDES PROMUES (#1153 L1b) — ce que le monteur NE fait PAS encore', 
 });
 
 /**
- * CONTRAT DU PALIER DÉRIVÉ — sonde EXHAUSTIVE promue en garde (sonde du juge de design : 7840
- * combinaisons, 0 échec). Elle ne juge AUCUN cas particulier : elle balaie le produit cartésien des
- * régimes (5 Difficultés déclarées × mode plafonné ou non × crans de modificateur × familles ×
- * Avantage hors table × valeur de base écrêtante) et exige de CHAQUE ligne montée les cinq
- * invariants du lot :
+ * CONTRAT DE LA DIFFICULTÉ COMPOSÉE — sonde EXHAUSTIVE promue en garde (sonde du juge de design :
+ * 7840 combinaisons, 0 échec ; élargie #1153 L4 aux modificateurs HORS crans et à un jeu de plafonds
+ * maison). Elle ne juge AUCUN cas particulier : elle balaie le produit cartésien des régimes
+ * (5 Difficultés déclarées × mode plafonné ou non × modificateurs sur et hors crans × familles ×
+ * Avantage hors table × valeur de base écrêtante × plafond de la POLICY) et exige de CHAQUE ligne
+ * montée les six invariants du lot :
  *
  *  1. la CIBLE est celle que le moteur applique — l'affichage ne déplace pas un point ;
- *  2. la ligne s'EXPLIQUE : `base + Σ chips + modificateur du palier AFFICHÉ + écrêtage === cible`
- *     (l'arithmétique exacte de `reconciled` : reste ≠ 0 ⇒ chip « autres » à l'écran) ;
- *  3. un palier dérivé ne MENT jamais : sa composition SOMME à son modificateur ;
- *  4. en mode dérivé, plus AUCUNE circonstance ne reste en chip — le palier les porte ;
- *  5. aucun palier hors mode plafonné, ni sans circonstance à composer.
+ *  2. la ligne s'EXPLIQUE : `base + Σ chips + modificateur de la Difficulté AFFICHÉE + écrêtage ===
+ *     cible` (l'arithmétique exacte de `reconciled` : reste ≠ 0 ⇒ chip « autres » à l'écran) ;
+ *  3. la Difficulté composée ne ment jamais : sa composition SOMME au modificateur qu'elle annonce —
+ *     le CRAN quand elle en nomme un, le COMBINÉ sinon (et alors aucun cran ne valait cette somme) ;
+ *  4. en mode composé, plus AUCUNE circonstance ne reste en chip — la Difficulté les porte ;
+ *  5. aucune composition hors mode plafonné, ni sans circonstance à composer ;
+ *  6. jamais de combiné quand la Difficulté déclarée n'est pas neutre — un palier authoré ne se fait
+ *     jamais avaler (gate explicite de `composeDifficulty`).
  *
  * La matrice ci-dessus vaut pour ses six régimes ; ce balayage vaut pour la RÈGLE — une régression
- * d'une condition de dérivation y rougit sans qu'on ait à deviner la fixture qui la révèle.
+ * d'une condition de composition y rougit sans qu'on ait à deviner la fixture qui la révèle.
  */
-describe('PALIER DÉRIVÉ — contrat balayé sur tout le produit cartésien des régimes (#1153)', () => {
-  /** Crans de la table (`LDB 14`), des deux signes. */
-  const VALEURS = [-40, -30, -20, -10, 10, 20, 40, 60];
+describe('DIFFICULTÉ COMPOSÉE — contrat balayé sur tout le produit cartésien des régimes (#1153)', () => {
+  /** Crans de la table (`LDB 14`), des deux signes — plus un −15 HORS cran (bande de portée Extrême
+   *  halvée par Tireur embusqué), qui ne peut se dire qu'en Difficulté combinée. */
+  const VALEURS = [-40, -30, -20, -15, -10, 10, 20, 40, 60];
   const FAMILLES = ['circonstance', 'jet'] as const;
   /** Difficultés DÉCLARÉES : Intermédiaire (le combat, `LDB 13 l.118`) et quatre autres — un site
-   *  qui déclare la sienne doit la GARDER, le palier ne peut pas l'avaler. */
+   *  qui déclare la sienne doit la GARDER, la composition ne peut pas l'avaler. */
   const DIFFICULTES: Difficulty[] = ['intermediaire', 'accessible', 'difficile', 'tresDifficile', 'facile'];
   /** 45 = cible confortable ; 95 = régime où `clampTarget` mord (l'écrêtage doit rester nommable). */
   const BASES = [45, 95];
   const total = (mods: ModLine[]): number => mods.reduce((s, m) => s + m.value, 0);
 
-  it('cinq invariants, sur des milliers de combinaisons : aucune ligne ne ment ni ne cache', () => {
-    const echecs: string[] = [];
-    let cas = 0;
-    let derives = 0;
+  afterEach(() => { resetRule('combat-diff-cap-malus'); });
 
-    const juge = (difficulty: Difficulty, valeur: number, mods: ModLine[], plafond: boolean) => {
-      cas++;
-      const l = rollLine({ difficulty, valeur, surLaCible: mods, ...(plafond ? { plafond: 'difficultes' as const } : {}) });
-      const ou = `${difficulty}/${valeur}/${plafond ? 'plafonné' : 'brut'}/${JSON.stringify(mods.map((m) => `${m.value} ${m.famille}`))}`;
+  const echecs: string[] = [];
+  let cas = 0;
+  let composees = 0;
+  let combinees = 0;
 
-      // 1. CIBLE : la combinaison du moteur, écrêtée par la primitive du jet.
-      const combine = plafond ? combineMods(mods) : total(mods);
-      const attendue = clampTarget(valeur + DIFFICULTY_MODIFIERS[difficulty] + combine).target;
-      if (l.target !== attendue) echecs.push(`CIBLE ${ou} → ${l.target} ≠ ${attendue}`);
+  const juge = (difficulty: Difficulty, valeur: number, mods: ModLine[], plafond: boolean) => {
+    cas++;
+    const l = rollLine({ difficulty, valeur, surLaCible: mods, ...(plafond ? { plafond: 'difficultes' as const } : {}) });
+    const ou = `${difficulty}/${valeur}/${plafond ? 'plafonné' : 'brut'}/${JSON.stringify(mods.map((m) => `${m.value} ${m.famille}`))}`;
 
-      // 2. La ligne s'EXPLIQUE intégralement (`inexplique` juge la MÊME arithmétique que l'écran).
-      if (inexplique({ ...l }) !== 0) echecs.push(`INEXPLIQUÉ ${ou} → reste ${inexplique({ ...l })}`);
+    // 1. CIBLE : la combinaison du moteur, écrêtée par la primitive du jet.
+    const combine = plafond ? combineMods(mods) : total(mods);
+    const attendue = clampTarget(valeur + DIFFICULTY_MODIFIERS[difficulty] + combine).target;
+    if (l.target !== attendue) echecs.push(`CIBLE ${ou} → ${l.target} ≠ ${attendue}`);
 
-      if (!l.difficultyParts) return;
-      derives++;
-      // 3. Le palier ne ment pas : sa composition somme à son modificateur.
-      if (total(l.difficultyParts) !== DIFFICULTY_MODIFIERS[l.difficulty]) {
-        echecs.push(`PALIER MENTEUR ${ou} → composition ${total(l.difficultyParts)} ≠ ${DIFFICULTY_MODIFIERS[l.difficulty]} (${l.difficulty})`);
+    // 2. La ligne s'EXPLIQUE intégralement (`inexplique` juge la MÊME arithmétique que l'écran).
+    if (inexplique({ ...l }) !== 0) echecs.push(`INEXPLIQUÉ ${ou} → reste ${inexplique({ ...l })}`);
+
+    // 6. Une Difficulté DÉCLARÉE non neutre n'est jamais avalée : ni cran composé, ni combiné.
+    if (DIFFICULTY_MODIFIERS[difficulty] !== 0 && (l.difficulty !== difficulty || l.difficultyCombined != null)) {
+      echecs.push(`DÉCLARÉE AVALÉE ${ou} → ${l.difficulty}/${l.difficultyCombined}`);
+    }
+
+    if (!l.difficultyParts) {
+      if (l.difficultyCombined != null) echecs.push(`COMBINÉ SANS COMPOSITION ${ou}`);
+      return;
+    }
+    composees++;
+    // 3. La Difficulté composée ne ment pas : sa composition somme au modificateur qu'elle annonce.
+    if (l.difficultyCombined != null) {
+      combinees++;
+      if (total(l.difficultyParts) !== l.difficultyCombined) {
+        echecs.push(`COMBINÉ MENTEUR ${ou} → composition ${total(l.difficultyParts)} ≠ ${l.difficultyCombined}`);
       }
-      // 4. Aucune circonstance laissée en chip quand le palier les porte.
-      if (l.mods.some((m) => m.famille === 'circonstance')) echecs.push(`CIRCONSTANCE EN CHIP ${ou}`);
-      // 5. Jamais de palier hors mode plafonné, ni sans circonstance à composer.
-      if (!plafond) echecs.push(`PALIER HORS MODE PLAFONNÉ ${ou}`);
-      if (!l.difficultyParts.some((m) => m.famille === 'circonstance')) echecs.push(`PALIER SANS CIRCONSTANCE ${ou}`);
-    };
+      if (exactDifficultyFromModifier(l.difficultyCombined)) {
+        echecs.push(`COMBINÉ ALORS QU'UN CRAN EXISTE ${ou} → ${l.difficultyCombined}`);
+      }
+      if (l.difficulty !== difficulty) echecs.push(`COMBINÉ SUR UNE AUTRE DIFFICULTÉ ${ou} → ${l.difficulty}`);
+    } else if (total(l.difficultyParts) !== DIFFICULTY_MODIFIERS[l.difficulty]) {
+      echecs.push(`CRAN MENTEUR ${ou} → composition ${total(l.difficultyParts)} ≠ ${DIFFICULTY_MODIFIERS[l.difficulty]} (${l.difficulty})`);
+    }
+    // 4. Aucune circonstance laissée en chip quand la Difficulté les porte.
+    if (l.mods.some((m) => m.famille === 'circonstance')) echecs.push(`CIRCONSTANCE EN CHIP ${ou}`);
+    // 5. Jamais de composition hors mode plafonné, ni sans circonstance à composer.
+    if (!plafond) echecs.push(`COMPOSITION HORS MODE PLAFONNÉ ${ou}`);
+    if (!l.difficultyParts.some((m) => m.famille === 'circonstance')) echecs.push(`COMPOSITION SANS CIRCONSTANCE ${ou}`);
+  };
 
+  const balaye = () => {
     for (const d of DIFFICULTES) {
       for (const plafond of [true, false]) {
         for (const a of VALEURS) {
@@ -552,9 +581,130 @@ describe('PALIER DÉRIVÉ — contrat balayé sur tout le produit cartésien des
         }
       }
     }
+  };
 
+  it('six invariants, sur des milliers de combinaisons : aucune ligne ne ment ni ne cache', () => {
+    balaye();
     expect(cas, 'le balayage doit couvrir des milliers de cas — un produit tronqué ne prouve rien').toBeGreaterThan(7000);
-    expect(derives, 'il doit VRAIMENT produire des paliers dérivés, sinon il ne juge que le repli').toBeGreaterThan(100);
+    expect(composees, 'il doit VRAIMENT produire des Difficultés composées, sinon il ne juge que le repli').toBeGreaterThan(100);
+    expect(combinees, 'et de VRAIES combinées hors crans, sinon la moitié du contrat n’est pas jugée').toBeGreaterThan(100);
     expect(echecs.slice(0, 20)).toEqual([]);
+  });
+
+  /** Le plafond est une DONNÉE de policy (`combat-diff-cap-malus`), pas une constante : sous un jeu
+   *  maison à −50 (l'échelle EDO descend jusqu'à « Impossible (−50) »), la MÊME règle doit tenir —
+   *  et une somme amputée à −50 y trouve un cran là où −30 n'en trouvait plus. */
+  it('les six invariants tiennent avec un plafond de POLICY à −50 (échelle étendue EDO)', () => {
+    setRule('combat-diff-cap-malus', 50);
+    cas = 0; composees = 0; combinees = 0; echecs.length = 0;
+    balaye();
+    expect(combineMods([{ label: 'A', value: -40, famille: 'circonstance' }, { label: 'B', value: -40, famille: 'circonstance' }]), 'la policy doit VRAIMENT avoir bougé').toBe(-50);
+    expect(cas).toBeGreaterThan(7000);
+    expect(composees).toBeGreaterThan(100);
+    expect(echecs.slice(0, 20)).toEqual([]);
+  });
+});
+
+/**
+ * ÉTANCHÉITÉ du mot « Combinée » et du champ dérivé (#1153) — la Difficulté combinée est un fait
+ * d'AFFICHAGE : le mot vit dans le catalogue i18n et l'UI, jamais dans le moteur ni l'état, et
+ * l'échelle de la règle reste à NEUF crans (`LDB 14`, EDO App.2 comprise). Le modificateur combiné,
+ * lui, est DÉRIVÉ par le monteur : aucun site ne peut le déclarer à l'entrée ni l'écrire en donnée.
+ * STRUCTURELLE : elle lit les SOURCES, jamais une liste tenue à la main.
+ */
+describe('DIFFICULTÉ COMBINÉE — étanchéité du vocabulaire et du champ dérivé (#1153)', () => {
+  const sources = (dir: string): string[] => {
+    const out: string[] = [];
+    const walk = (d: string) => {
+      for (const e of readdirSync(d, { withFileTypes: true })) {
+        const p = join(d, e.name);
+        if (e.isDirectory()) walk(p);
+        else if (/\.tsx?$/.test(e.name) && !/\.(test|spec)\./.test(e.name)) out.push(p);
+      }
+    };
+    walk(dir);
+    return out;
+  };
+
+  it('l’échelle de Difficulté reste à NEUF crans — « combinee » n’en est pas un', () => {
+    expect(Object.keys(DIFFICULTY_MODIFIERS)).toHaveLength(9);
+    expect(Object.keys(DIFFICULTY_LABELS)).toHaveLength(9);
+    expect(Object.keys(DIFFICULTY_MODIFIERS)).not.toContain('combinee');
+    expect(Object.keys(DIFFICULTY_LABELS)).not.toContain('combinee');
+  });
+
+  /** Le mot est un fait d'AFFICHAGE : il vit dans le catalogue i18n et l'UI. Ce qui est interdit au
+   *  moteur et à l'état, c'est de le MANIPULER — un littéral de chaîne, une clé, un id. Le mot en
+   *  COMMENTAIRE reste légitime (il explique ce que l'affichage en fera) : le scan neutralise donc
+   *  les commentaires avant de chercher, et cherche accents ET casse confondus. */
+  it('le mot ne se MANIPULE ni dans `src/engine`, ni dans `src/state` — il est de l’affichage', () => {
+    const fichiers = [...sources(resolve(__dirname, '../engine')), ...sources(resolve(__dirname, '.'))];
+    expect(fichiers.length, 'le scan doit VOIR des fichiers — un scan cassé serait vert à vide').toBeGreaterThan(50);
+    const sansCommentaires = (src: string): string => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+    // Les LITTÉRAUX de chaîne du code restant (simples, doubles, gabarits) — c'est là que le mot
+    // deviendrait une donnée de moteur.
+    const litteraux = (src: string): string[] => [...sansCommentaires(src).matchAll(/'([^'\\\n]*)'|"([^"\\\n]*)"|`([^`\\]*)`/g)]
+      .map((m) => m[1] ?? m[2] ?? m[3] ?? '');
+    const fuites = fichiers.filter((f) => litteraux(readFileSync(f, 'utf8')).some((s) => /combin[ée]e/i.test(s)));
+    expect(fuites.map((f) => relative(resolve(__dirname, '..'), f))).toEqual([]);
+    // Le scan MORD : le même détecteur trouve le mot dans le catalogue i18n, sa seule maison.
+    const catalogue = readFileSync(resolve(__dirname, '../i18n/messages/fr.ts'), 'utf8');
+    expect(litteraux(catalogue).some((s) => /combin[ée]e/i.test(s)), 'sinon le détecteur ne mesure rien').toBe(true);
+  });
+
+  it('`difficultyCombined` est DÉRIVÉ : absent de la déclaration d’entrée et de toute donnée', () => {
+    const seam = readFileSync(resolve(__dirname, 'rollSeam.ts'), 'utf8');
+    const decl = seam.slice(seam.indexOf('interface RollLineBase'), seam.indexOf('export type RollLineSpec'));
+    expect(decl.length, 'le découpage doit VOIR la déclaration d’entrée').toBeGreaterThan(200);
+    expect(decl).not.toContain('difficultyCombined');
+    const data = resolve(__dirname, '../data');
+    const json = readdirSync(data).filter((f) => f.endsWith('.json'));
+    expect(json.length).toBeGreaterThan(10);
+    const enDonnee = json.filter((f) => readFileSync(join(data, f), 'utf8').includes('difficultyCombined'));
+    expect(enDonnee).toEqual([]);
+  });
+});
+
+/**
+ * INVARIANT DE SÉPARABILITÉ (#1153) — la partition des modificateurs en DEUX familles (entrées de la
+ * table plafonnées / modificateurs du jeteur hors plafond) est un ARBITRAGE #1218 : `LDB 14 l.95`
+ * énonce la combinaison sans dire d'où vient chaque modificateur. C'est cet arbitrage qui autorise le
+ * monteur à couper la ligne en deux (Difficulté composée d'un côté, chips du jeteur de l'autre), et
+ * `combineMods` qui l'applique. Une combinaison qui mordrait AUSSI les mods du jeteur laisserait le
+ * TOTAL juste et la Difficulté fausse — un mensonge muet.
+ *
+ * Le mock de MODULE est interdit ici (`isolate: false`, garde `src/vi-mock-isolate-guard.test.ts`) :
+ * la régression se simule en appelant l'invariant avec une combinaison qui ment, et le CÂBLAGE se
+ * mesure sur le SOURCE du monteur (même technique que la garde de la trappe `rollStep`).
+ */
+describe('SÉPARABILITÉ du plafond — le monteur refuse une combinaison qui déborde (#1153)', () => {
+  const mods: ModLine[] = [
+    { label: 'Brouillard', value: -20, famille: 'circonstance' },
+    { label: 'Sonné', value: -20, famille: 'jet' },
+  ];
+
+  it('THROW quand la combinaison ampute AUSSI les modificateurs du jeteur', () => {
+    // −30 au lieu de −40 : un plafond qui aurait mordu les deux familles. Les circonstances valent
+    // toujours −20 → 10 points remboursés en douce à la Difficulté.
+    expect(() => assertSeparabilite(mods, -30, -20)).toThrow(/n’est pas séparable|n'est pas séparable/);
+  });
+
+  it('MUET quand elle se sépare — le vrai `combineMods` est dans ce cas', () => {
+    expect(() => assertSeparabilite(mods, combineMods(mods), combineMods(mods.filter((m) => m.famille === 'circonstance')))).not.toThrow();
+    expect(combineMods(mods), 'le moteur RÉEL sépare bien les deux familles').toBe(-40);
+  });
+
+  /** CÂBLAGE mesuré à l'EXÉCUTION : un appel présent dans le source peut être commenté, déplacé dans
+   *  une branche morte ou masqué par un `if` — seul le compteur d'invocations RÉELLES prouve que
+   *  chaque ligne plafonnée y passe. */
+  it('CÂBLÉ : chaque ligne plafonnée passe RÉELLEMENT par l’invariant (compteur d’exécution)', () => {
+    const avant = SEPARABILITE.vus;
+    rollLine({ difficulty: 'intermediaire', valeur: 55, surLaCible: mods, plafond: 'difficultes' });
+    rollLine({ difficulty: 'intermediaire', valeur: 55, surLaCible: mods, plafond: 'difficultes' });
+    expect(SEPARABILITE.vus - avant, 'une ligne plafonnée = un passage par l’invariant').toBe(2);
+    // HORS mode plafonné il n'y a rien à séparer : la garde ne doit pas s'inviter.
+    const horsMode = SEPARABILITE.vus;
+    rollLine({ difficulty: 'intermediaire', valeur: 55, surLaCible: mods });
+    expect(SEPARABILITE.vus - horsMode).toBe(0);
   });
 });

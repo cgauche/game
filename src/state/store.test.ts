@@ -8,7 +8,7 @@ import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import { emptyScene } from './scene';
 import { bus, EVT } from './bus';
-import type { Combatant, ItemInstance, Weapon } from '../engine/types';
+import { DIFFICULTY_MODIFIERS, type Combatant, type ItemInstance, type Weapon } from '../engine/types';
 import { isOutOfAction } from '../engine/conditions';
 import { fleeBackstab, fleeCalme } from './pendings';
 import { applyAttackResult, applyEffects, applyEffectsLoot, runFlow, computeMoveReach } from './combatFlow';
@@ -2548,13 +2548,21 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     expect(h1.aiming).toBe(true);
     expect(useGame.getState().battle!.acted).toBe(true);
     expect(useGame.getState().pendingReload).toBeNull(); // « pas de Test exigé pour viser »
-    // Tirer : le détail du jet inclut « Viser +20 », puis aiming est consommée.
+    // Tirer : la ligne NOMME « Viser +20 », puis aiming est consommée. « Tirer alors que vous avez
+    // passé votre dernière action à viser » est une entrée de la table (`LDB 14`) : elle COMPOSE la
+    // Difficulté du jet (#1153) au lieu de flotter en chip — on lit donc TOUT ce que la ligne nomme.
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: false, action: null } });
     useGame.getState().seedRng(2);
     useGame.getState().battleClickEntity(E.id, { confirm: true });
     useGame.getState().attackRoll();
     const pa = useGame.getState().pendingAttack!;
-    expect((pa.result!.attackerDetail!.mods ?? []).some((m) => m.label === 'Viser' && m.value === 20)).toBe(true);
+    const d = pa.result!.attackerDetail!;
+    const nomme = [...(d.mods ?? []), ...(d.difficultyParts ?? [])];
+    expect(nomme.some((m) => m.label === 'Viser' && m.value === 20)).toBe(true);
+    // …et il PÈSE sur la cible : tout l'écart base→cible est nommé (un +20 annoncé mais non appliqué
+    // — ou l'inverse — casse cette égalité).
+    const dv = d.difficultyCombined ?? (d.difficulty ? DIFFICULTY_MODIFIERS[d.difficulty] : 0);
+    expect(d.target - d.base).toBe(dv + (d.mods ?? []).reduce((s, m) => s + m.value, 0));
     useGame.getState().attackConfirm();
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.aiming).toBe(false);
   });

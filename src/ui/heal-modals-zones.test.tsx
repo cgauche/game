@@ -64,7 +64,7 @@ describe('Guérison (HealRollFlow) — la Difficulté vit sur la LIGNE', () => {
       },
     } as never);
     act(() => root.render(<HealRollFlow />));
-    expect(diffZone(), 'la ligne du jet porte la Difficulté').toEqual([`— ${LABEL}`]);
+    expect(diffZone(), 'la ligne du jet porte la Difficulté').toEqual([LABEL]);
     expect(occurrences(LABEL), 'et elle ne se lit nulle part ailleurs').toBe(1);
     // A→B CANONIQUE (décision utilisateur 2026-08-04) : bandeau de portraits + flèche annotée de
     // l'acte — aucune phrase « A soigne B » ne subsiste dans la fenêtre.
@@ -139,7 +139,7 @@ describe('Chirurgie (MedicModal → SurgeryRollFlow) — la Difficulté vit sur 
       },
     } as never);
     act(() => root.render(<MedicModal />));
-    expect(diffZone(), 'la ligne de la passe porte la Difficulté').toEqual([`— ${LABEL}`]);
+    expect(diffZone(), 'la ligne de la passe porte la Difficulté').toEqual([LABEL]);
     expect(occurrences(LABEL), 'et elle ne se lit nulle part ailleurs').toBe(1);
   });
 });

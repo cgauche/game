@@ -26,6 +26,10 @@ export const fr = {
   // Difficultés extrêmes de L'Ennemi dans l'Ombre (EDO App.2 l.156-165).
   'difficulty.presqueImpossible': 'Presque Impossible (−40)',
   'difficulty.impossible': 'Impossible (−50)',
+  // Difficulté COMBINÉE : le modificateur que composent les circonstances quand il ne tombe sur aucun
+  // cran de l'échelle (LDB 14 l.91-96 en nomme la combinaison, pas ce résultat) — terme validé par
+  // l'utilisateur le 2026-08-10. Même typographie que les crans ci-dessus (moins Unicode U+2212).
+  'difficulty.combinee': 'Combinée ({mod})',
   // Localisations d'impact (LDB) — migré de engine/types.ts (HIT_LOCATION_LABELS).
   'hitloc.tete': 'Tête',
   'hitloc.brasG': 'Bras gauche',

@@ -40,9 +40,8 @@ import type { PairedSense, GameOp } from '../engine/ops';
 import type { CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate } from './pendings';
 import type { RecapLine, RecapTone } from './recapLine';
 import type { ModLine } from '../engine/combat';
-import { combatBaseValue, combatValueModParts, conditionModLines, combatCharKey, combineMods } from '../engine/combat';
+import { combatBaseValue, combatValueModParts, conditionModLines, combatCharKey, combineMods, composeDifficulty } from '../engine/combat';
 import { volatileCharLines } from '../engine/characteristics';
-import { RULE_REF } from '../engine/ruleRefs';
 import { TestOutcome } from '../engine/testOutcome';
 import { actorIn } from './combatants';
 import { startCascade, runCascadeImmediate } from './cascade';
@@ -53,7 +52,7 @@ import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
 import { findSkillById, conditionLabel, type StakeRef } from '../data';
 import { t, type OutKey, type OutVars } from '../i18n';
-import { rollTest, clampTarget, exactDifficultyFromModifier } from '../engine/tests';
+import { rollTest, clampTarget } from '../engine/tests';
 import { defaultRNG, type RNG } from '../engine/dice';
 import type { TestResult } from '../engine/tests';
 
@@ -394,12 +393,16 @@ export interface RollLineParts {
   mods: ModLine[];
   target: number;
   clamped?: number;
-  /** Difficulté à AFFICHER : le palier DÉRIVÉ quand la combinaison des circonstances en compose un
-   *  exactement (`LDB 14 l.91-96`), la Difficulté déclarée sinon. */
+  /** Difficulté à AFFICHER : le palier COMPOSÉ quand les circonstances tombent sur un cran de
+   *  l'échelle (`LDB 14 l.91-96`), la Difficulté déclarée sinon. */
   difficulty: Difficulty;
-  /** Composition du palier DÉRIVÉ (les lignes `famille:'circonstance'` + l'écart du plafond) : elles
-   *  ne sont PLUS dans `mods` — le palier les porte, son popover les détaille. Absente = palier
-   *  déclaré, tous les modificateurs restent en chips. */
+  /** Modificateur RÉEL des circonstances quand il ne tombe sur AUCUN cran de l'échelle (`LDB 14` n'en
+   *  nomme pas) : l'AFFICHAGE en compose « Combinée (+30) ». Présent ⇒ `difficulty` est la DÉCLARÉE
+   *  et ne doit JAMAIS s'afficher seule. DÉRIVÉ : absent de `RollLineSpec`, aucun site ne peut le poser. */
+  difficultyCombined?: number;
+  /** Composition du palier (les lignes `famille:'circonstance'` + l'écart du plafond) : elles ne sont
+   *  PLUS dans `mods` — le palier les porte, son popover les détaille. Absente = Difficulté déclarée,
+   *  tous les modificateurs restent en chips. */
   difficultyParts?: ModLine[];
 }
 
@@ -451,6 +454,38 @@ function combatChannelValue(actor: Combatant | undefined, canal: RollLineCombat,
 }
 
 /**
+ * SÉPARABILITÉ des familles sous plafond — invariant du monteur, pas une lecture du RAW.
+ *
+ * `LDB 14 l.95` dit la combinaison (« faire la somme des différents modificateurs sans dépasser Très
+ * Difficile -30 ») sans distinguer d'où vient chaque modificateur. La partition en DEUX familles
+ * (entrées de la table plafonnées / modificateurs portés par le jeteur hors plafond) est un
+ * ARBITRAGE du projet, consigné #1218 — c'est `combineMods` qui l'applique, et c'est LUI que cette
+ * garde surveille.
+ *
+ * Ce que l'arbitrage autorise : couper la ligne en deux (la Difficulté porte la combinaison des
+ * circonstances, les chips portent le reste). Le jour où la combinaison mordrait aussi sur l'autre
+ * famille, la Difficulté annoncée mentirait exactement de la part remboursée — et le TOTAL resterait
+ * juste, donc le mensonge serait muet. Le fait se crie (THROW en DEV, journal en PROD — patron de la
+ * garde d'exactitude ci-dessous).
+ *
+ * Exportée pour être jugée SEULE : le mock de MODULE est interdit ici (`isolate: false`, garde
+ * `src/vi-mock-isolate-guard.test.ts`), la régression ne peut donc se simuler qu'en appelant
+ * l'invariant avec une combinaison qui ment. `SEPARABILITE.vus` compte les passages RÉELS — c'est ce
+ * compteur, et non la présence d'un appel dans le source, qui prouve le câblage.
+ */
+export const SEPARABILITE = { vus: 0 };
+
+export function assertSeparabilite(surLaCible: ModLine[], combine: number, circCombined: number): void {
+  SEPARABILITE.vus += 1;
+  const horsTable = surLaCible.filter((m) => m.famille !== 'circonstance').reduce((s, m) => s + m.value, 0);
+  if (combine === circCombined + horsTable) return;
+  const msg = `[seam] rollLine : la combinaison plafonnée (${combine}) n'est pas séparable — circonstances ${circCombined} `
+    + `+ hors table ${horsTable} ≠ ${combine} (arbitrage de familles #1218). La Difficulté composée serait FAUSSE.`;
+  console.error(msg);
+  if (import.meta.env?.DEV) throw new Error(msg);
+}
+
+/**
  * MONTEUR CANONIQUE d'une ligne de jet (#1153) — le SEUL endroit du jeu où `base`/`mods`/`target`
  * d'une étape se calculent. La porte du seam (`buildMonoStep`) comme les monteurs LOCAUX des flux
  * (voyage fluvial/maritime/terrestre, embrigadement, activités hors combat) le consomment : un
@@ -496,44 +531,21 @@ export function rollLine(spec: RollLineSpec): RollLineParts {
   }
   const surLaCible = spec.surLaCible ?? [];
   const brut = surLaCible.reduce((s, m) => s + m.value, 0);
-  // Mode plafonné (`LDB 14 l.91-96`) : la combinaison est celle du moteur, et son écart à la somme
-  // brute devient une LIGNE. Sans elle, l'amputation ne serait imputable à personne.
-  const combine = spec.plafond === 'difficultes' ? combineMods(surLaCible) : brut;
-  const ecretage: ModLine[] = combine === brut
-    ? []
-    : [{ label: 'plafond Difficultés', value: combine - brut, famille: 'circonstance', ref: RULE_REF['combiner-les-difficultes'] }];
+  // Mode plafonné (`LDB 14 l.91-96`) : la combinaison est celle du moteur, et la Difficulté AFFICHÉE
+  // est celle que les circonstances composent — MÊME primitive que le post-jet (`bd`, `engine/combat.ts`).
+  const plafonne = spec.plafond === 'difficultes';
+  const combine = plafonne ? combineMods(surLaCible) : brut;
+  const compo = plafonne ? composeDifficulty(spec.difficulty, surLaCible) : undefined;
+  if (compo) assertSeparabilite(surLaCible, combine, compo.circCombined);
   const { target, clamped } = clampTarget(value + dv + combine);
-  // PALIER DÉRIVÉ (`LDB 14 l.91-96` : « le brouillard ajouté au fait de vouloir toucher une
-  // Localisation précise […] le Test devient simplement Très Difficile (-30) ») : en mode plafonné,
-  // les circonstances quittent les chips et COMPOSENT la Difficulté de la ligne. Le palier se dérive
-  // des CIRCONSTANCES SEULES (`combineCirc`) — trois conditions, toutes nécessaires :
-  //  (a) au moins une circonstance — sinon le palier nommerait un pur artefact de plafond ;
-  //  (b) une composition qui SOMME au palier. Comme elle vaut `combineCirc` par construction, cette
-  //      égalité est VRAIE si et seulement si la Difficulté déclarée est Intermédiaire (dv = 0) :
-  //      c'est le gate voulu — un site qui DÉCLARE sa Difficulté (Test de combat authoré Difficile)
-  //      la garde, le palier ne peut pas l'avaler ; en combat d'attaque elle est Intermédiaire
-  //      d'office (`LDB 13 l.118`), donc la dérivation opère ;
-  //  (c) un palier EXACT de l'échelle — un −15 (bande Extrême halvée) n'en compose aucun.
-  // La séparabilité des familles n'est plus une condition : `combineMods` ne plafonne QUE les
-  // circonstances (`LDB 14 l.48/95`), donc `combine === combineCirc + Σ chips` par construction et
-  // l'écrêtage nommé ne peut plus rembourser aux circonstances ce qu'il coupait aux mods au jet.
-  const circonstances = spec.plafond === 'difficultes' ? surLaCible.filter((m) => m.famille === 'circonstance') : [];
-  const composition = [...circonstances, ...ecretage];
-  const enChips = surLaCible.filter((m) => !circonstances.includes(m));
-  const combineCirc = combineMods(circonstances);
-  const palierMod = dv + combineCirc;
-  const palier = circonstances.length && composition.reduce((s, m) => s + m.value, 0) === palierMod
-    ? exactDifficultyFromModifier(palierMod)
-    : undefined;
   return {
     base: split.base - fusedSum,
-    mods: palier
-      ? [...split.mods, ...dansLaValeur, ...enChips]
-      : [...split.mods, ...dansLaValeur, ...surLaCible, ...ecretage],
+    mods: [...split.mods, ...dansLaValeur, ...(compo ? compo.mods : surLaCible)],
     target,
     ...(clamped ? { clamped } : {}),
-    difficulty: palier ?? spec.difficulty,
-    ...(palier ? { difficultyParts: composition } : {}),
+    difficulty: compo?.difficulty ?? spec.difficulty,
+    ...(compo?.difficultyCombined != null ? { difficultyCombined: compo.difficultyCombined } : {}),
+    ...(compo?.difficultyParts ? { difficultyParts: compo.difficultyParts } : {}),
   };
 }
 

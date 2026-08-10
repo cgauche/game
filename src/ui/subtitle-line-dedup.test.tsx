@@ -53,7 +53,7 @@ describe('Chute volontaire — la Compétence et le « +20 » sont à la LIGNE',
     } as never);
     act(() => root.render(<FallModal />));
     expect(rollLabel(), 'la Compétence est le label de la ligne').toContain('Athlétisme');
-    expect(diffZone(), 'et le « +20 » sa Difficulté').toEqual(['— Accessible (+20)']);
+    expect(diffZone(), 'et le « +20 » sa Difficulté').toEqual(['Accessible (+20)']);
     expect(subtitle(), 'le sous-titre garde la SITUATION').toContain('6 m');
     expect(subtitle(), 'sans redire la Compétence').not.toContain('Athlétisme');
     expect(subtitle(), 'ni son modificateur').not.toContain('+20');

@@ -10,10 +10,14 @@ import { RULE_REF, type ModProvenance } from '../engine/ruleRefs';
 import type { StakeRef } from '../data';
 import { actorIn } from '../state/combatants';
 import { useGame, type GameState } from '../state/store';
+import { t } from '../i18n';
 
 /** Valeur de la Difficulté déjà comprise dans le modificateur de la ligne — elle est EXPLIQUÉE par le
- *  texte de la ligne, donc retirée de ce que les chips ont à réconcilier (#1072). */
-function difficultyValue(difficulty?: Difficulty): number {
+ *  texte de la ligne, donc retirée de ce que les chips ont à réconcilier (#1072). Hors des crans de
+ *  l'échelle, c'est le modificateur COMBINÉ qui fait foi (#1153) : le cran de la Difficulté déclarée
+ *  laisserait un écart que `reconciled` avouerait en chip « autres ». */
+function difficultyValue(difficulty?: Difficulty, combined?: number): number {
+  if (combined != null) return combined;
   return difficulty ? DIFFICULTY_MODIFIERS[difficulty] : 0;
 }
 
@@ -30,16 +34,18 @@ export interface RollLabelRef {
   label: string;
 }
 
-/** DÉCOUVRABILITÉ du palier de Difficulté : le glyphe vit DANS le déclencheur, EN TÊTE du texte —
- *  ce n'est pas un second contrôle accolé (cliquet `codex-info-affordance-ratchet.test.ts`), il
- *  annonce celui qui l'englobe. Arbitrage user 2026-08-10 : « j'avoue si tu ne me l'avait pas dit,
- *  je n'aurai jamais deviné que je pouvais mettre ma souris sur la difficulté », puis « Le i devait
- *  etre devant la difficulté, et la compétence simplement avec un popover ».
+/** DÉCOUVRABILITÉ de la Difficulté : le glyphe vit DANS le déclencheur, À LA SUITE du texte — ce
+ *  n'est pas un second contrôle accolé (cliquet `codex-info-affordance-ratchet.test.ts`), il signale
+ *  celui qui l'englobe. Arbitrage user 2026-08-10 : « j'avoue si tu ne me l'avait pas dit, je
+ *  n'aurai jamais deviné que je pouvais mettre ma souris sur la difficulté », puis « la compétence
+ *  simplement avec un popover » ; PLACEMENT corrigé le même jour, verbatim : « le (i) par convention
+ *  est apres et non avant ceux a quoi il fait référence » (posé avant, il s'orphelinait en fin de
+ *  ligne précédente au repli et semblait appartenir à la Compétence).
  *  AUCUN style propre (doctrine user 2026-07-12, #373 — le stock de classes de domaine ne monte
  *  pas) : la primitive `Icon` cale déjà le glyphe sur la ligne de base (`.icon`), sa couleur SUIT
- *  celle du déclencheur (`currentColor`) — atténuée avec le palier, dorée au survol/focus par
- *  `.codex-ref[role='button']:hover`. Seul son ESPACEMENT est posé, par un sélecteur descendant de
- *  `.rm-roll-diff` visant l'élément `svg` — aucun nom de classe de plus. */
+ *  celle du déclencheur (`currentColor`) — atténuée avec la Difficulté, dorée au survol/focus par
+ *  `.codex-ref[role='button']:hover`. Seuls son ESPACEMENT et l'anti-orphelin sont posés, par des
+ *  sélecteurs d'ÉLÉMENT descendant de `.rm-roll-diff` — aucun nom de classe de plus. */
 function InfoDot() {
   return <Icon id="journal/info" size="sm" />;
 }
@@ -58,37 +64,41 @@ function RollLabel({ label, labelRef }: { label: ReactNode; labelRef?: RollLabel
   );
 }
 
-/** Difficulté du Test SUR la ligne, en texte + valeur (« — Accessible (+20) ») : elle dit la
- *  NATURE du jet, pas une circonstance — les chips restent aux modificateurs circonstanciels
- *  (Soutien, Avantage, plafond mesuré…). `easedBy` (`FlowTest.easierIf`) voyage avec elle.
+/** Difficulté du Test SUR la ligne, en texte + valeur (« Accessible (+20) ») : elle dit la NATURE du
+ *  jet, pas une circonstance — les chips restent aux modificateurs circonstanciels (Soutien,
+ *  Avantage, plafond mesuré…). `easedBy` (`FlowTest.easierIf`) voyage avec elle.
  *
- *  DEUX MODES, un seul contrat (#1153 L3b) : la Difficulté est CHOISIE (hors combat — le site qui
- *  ouvre le jet la pose) ou DÉRIVÉE (`parts` : en combat, la combinaison des circonstances compose
- *  le palier, `LDB 14 l.91-96`). Dérivée, le palier DEVIENT sa propre affordance de règle : le
- *  popover porte sa composition et ouvre la fiche « Combiner les Difficultés », et l'`InfoDot` en TÊTE
- *  du déclencheur le fait SAVOIR (un palier net-zéro n'a plus l'air muet). */
-function DifficultyText({ difficulty, easedBy, parts }: { difficulty?: Difficulty; easedBy?: string; parts?: ModLine[] }) {
+ *  Rendue SOUS le nom du jet, sans séparateur : la colonne du libellé (`1.1fr` d'une rangée de ~476 px
+ *  utiles, soit ~117 px) est plus étroite que le plus court couple possible (~148 px), donc le bloc se
+ *  repliait de toute façon — et le tiret cadratin pendouillait en fin de première ligne. Arbitrage
+ *  user 2026-08-10 : « En plus c'est affiché en 2 ligne de ce que je vois, alors pourquoi ce --- ? »
+ *
+ *  DEUX MODES, un seul contrat (#1153) : la Difficulté est CHOISIE (hors combat — le site qui ouvre le
+ *  jet la pose) ou COMPOSÉE (`parts` : en combat, la combinaison des circonstances la compose,
+ *  `LDB 14 l.91-96`). Composée hors des crans de l'échelle, `combined` porte le modificateur RÉEL et le
+ *  texte devient « Combinée (+30) » — jamais le cran voisin, jamais la déclarée toute seule.
+ *  Le déclencheur est le MÊME dans les deux modes : toute Difficulté affichée ouvre la fiche
+ *  « Combiner les Difficultés » et porte l'`InfoDot` à sa SUITE ; seule la composition au popover varie. */
+function DifficultyText({ difficulty, easedBy, parts, combined }: { difficulty?: Difficulty; easedBy?: string; parts?: ModLine[]; combined?: number }) {
   if (!difficulty) return null;
-  const texte = DIFFICULTY_LABELS[difficulty];
+  const texte = combined != null
+    ? t('difficulty.combinee', { mod: `${combined >= 0 ? '+' : '−'}${Math.abs(combined)}` })
+    : DIFFICULTY_LABELS[difficulty];
   const ref = RULE_REF['combiner-les-difficultes'];
   return (
     <span className="rm-roll-diff">
-      {' '}— {parts?.length
-        ? (
-          <CodexRef
-            category={ref.category}
-            id={ref.id}
-            label="Combiner les Difficultés"
-            instance={texte}
-            provenances={parts.map(modText)}
-            /* Le nom accessible COMMENCE par le texte visible (le glyphe, lui, est muet) : il
-               l'enrichit de la règle atteinte, il ne le remplace pas. */
-            ariaLabel={`${texte} — Combiner les Difficultés`}
-          >
-            <InfoDot />{texte}
-          </CodexRef>
-        )
-        : texte}
+      <CodexRef
+        category={ref.category}
+        id={ref.id}
+        label="Combiner les Difficultés"
+        instance={texte}
+        provenances={parts?.map(modText)}
+        /* Le nom accessible COMMENCE par le texte visible (le glyphe, lui, est muet) : il
+           l'enrichit de la règle atteinte, il ne le remplace pas. */
+        ariaLabel={`${texte} — Combiner les Difficultés`}
+      >
+        {texte}<InfoDot />
+      </CodexRef>
       {easedBy ? `, allégée : ${easedBy}` : ''}
     </span>
   );
@@ -241,13 +251,13 @@ function VerdictNote({ r }: { r: VerdictReason }) {
  *  `d.decided` (Z5c) : la RAISON du verdict, annotée sous la ligne — rendue sur les seules lignes SANS
  *  masque (`d.mask`), dont le calcul et le ✓/✗ se lisent tels quels. */
 export function RollLine({ d }: { d: RollBreakdown }) {
-  const dv = difficultyValue(d.difficulty);
+  const dv = difficultyValue(d.difficulty, d.difficultyCombined);
   const mods = reconciled(d.mods ?? [], d.modifier - dv, d.target, d.clamped, dv);
   const masked = d.mask === 'roll';
   return (
     <div className="rm-roll-block">
       <div className={`rm-roll ${masked ? 'masked' : d.success ? 'ok' : 'fail'}`}>
-        <span className="rm-roll-label">{d.label}<DifficultyText difficulty={d.difficulty} easedBy={d.easedBy} parts={d.difficultyParts} /></span>
+        <span className="rm-roll-label">{d.label}<DifficultyText difficulty={d.difficulty} easedBy={d.easedBy} parts={d.difficultyParts} combined={d.difficultyCombined} /></span>
         <RollCalc base={d.base} modifier={d.modifier} target={d.target} mask={d.mask} />
         <span className="rm-roll-dice" title={masked ? MASK_HINT.roll : undefined} aria-label={masked ? MASK_HINT.roll : undefined}>
           <Icon id="nav/dice" size="sm" /> <b>{masked ? '?' : <Dice roll={d.roll} />}</b>
@@ -279,6 +289,10 @@ export interface PendingRoll {
   /** Difficulté du Test — rendue sur la LIGNE, jamais en chip (#1072) ; sa valeur reste
    *  comprise dans la cible (dérivée ici quand `target` est omise). */
   difficulty?: Difficulty;
+  /** Modificateur RÉEL des circonstances hors crans de l'échelle (même donnée que
+   *  `RollBreakdown.difficultyCombined`) : présent ⇒ `difficulty` est la DÉCLARÉE et le texte de la
+   *  ligne devient « Combinée (+30) ». C'est LUI qui est compris dans la cible. */
+  difficultyCombined?: number;
   /** COMPOSITION du palier DÉRIVÉ (même donnée que `RollBreakdown.difficultyParts`) : ces lignes ne
    *  sont PAS dans `mods` — le palier les porte et son popover les détaille. */
   difficultyParts?: ModLine[];
@@ -298,7 +312,7 @@ export interface PendingRoll {
 
 export function PendingRollLine({ p }: { p: PendingRoll }) {
   const declared = p.mods ?? [];
-  const dv = difficultyValue(p.difficulty);
+  const dv = difficultyValue(p.difficulty, p.difficultyCombined);
   const target = p.target ?? (p.base != null ? p.base + dv + declared.reduce((s, m) => s + m.value, 0) : 0);
   const diff = p.base != null ? target - p.base : 0;
   // Pré-jet : MÊME réconciliation que la ligne résolue — une cible déjà plafonnée/portant un mod non
@@ -307,7 +321,7 @@ export function PendingRollLine({ p }: { p: PendingRoll }) {
   return (
     <div className="rm-roll-block">
       <div className="rm-roll pending">
-        <span className="rm-roll-label"><RollLabel label={p.label} labelRef={p.labelRef} /><DifficultyText difficulty={p.difficulty} easedBy={p.easedBy} parts={p.difficultyParts} /></span>
+        <span className="rm-roll-label"><RollLabel label={p.label} labelRef={p.labelRef} /><DifficultyText difficulty={p.difficulty} easedBy={p.easedBy} parts={p.difficultyParts} combined={p.difficultyCombined} /></span>
         {/* MASQUÉE → « ? » (une valeur est cachée) ; SANS base ni masque → cellule vide (il n'y a
             rien à cacher : cette ligne n'a simplement pas de valeur chiffrée). */}
         {p.mask || p.base != null

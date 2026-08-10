@@ -3,6 +3,15 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import { RollLine, PendingRollLine } from './RollLine';
 
+/** Le TEXTE réellement lu à l'écran, balises retirées : la Difficulté est un déclencheur Codex
+ *  (libellé + glyphe), son balisage n'est pas le contrat — sa phrase, si. */
+const texte = (html: string): string => html.replace(/<[^>]*>/g, '');
+/** La ZONE Difficulté seule (`.rm-roll-diff`, ligne propre sous le nom du jet) en texte. */
+const zoneDiff = (html: string): string => {
+  const m = /class="rm-roll-diff">(.*?)<\/span><\/span>/.exec(html);
+  return m ? texte(m[1]) : '';
+};
+
 describe('RollLine — détail d’un jet pour la modale', () => {
   it('réussite : base + modificateur = cible, le d100, et le DR', () => {
     const html = renderToStaticMarkup(
@@ -45,7 +54,7 @@ describe('RollLine — détail d’un jet pour la modale', () => {
       />,
     );
     // Elle dit la NATURE du jet : elle vit dans le libellé de la ligne…
-    expect(html).toContain('rm-roll-label">Crochetage<span class="rm-roll-diff"> — Facile (+40)');
+    expect(zoneDiff(html)).toBe('Facile (+40)');
     // …et JAMAIS dans les chips, réservées au circonstanciel (Soutien reste, lui).
     expect(html).not.toMatch(/rm-mod[^>]*>[^<]*Facile/);
     expect(html).toContain('Soutien');
@@ -58,7 +67,7 @@ describe('RollLine — détail d’un jet pour la modale', () => {
     const html = renderToStaticMarkup(
       <RollLine d={{ label: 'Perception', base: 40, modifier: 20, target: 60, roll: 30, success: true, sl: 3, difficulty: 'accessible', easedBy: 'Crochetage' }} />,
     );
-    expect(html).toContain(' — Accessible (+20), allégée : Crochetage');
+    expect(zoneDiff(html)).toBe('Accessible (+20), allégée : Crochetage');
     expect(html).not.toContain('rm-mod');
   });
 
@@ -95,7 +104,7 @@ describe('RollLine — détail d’un jet pour la modale', () => {
     const html = renderToStaticMarkup(
       <RollLine d={{ label: 'Résistance', base: 95, modifier: 4, target: 99, clamped: -16, difficulty: 'accessible', roll: 50, success: true, sl: 4 }} />,
     );
-    expect(html).toContain(' — Accessible (+20)'); // la Difficulté se lit sur la ligne…
+    expect(zoneDiff(html)).toBe('Accessible (+20)'); // la Difficulté se lit sur la ligne…
     expect(html).toContain('−16 plafond 99'); // …et l'écrêtage n'est PAS avaté par son départ des chips
   });
 
@@ -111,7 +120,7 @@ describe('RollLine — détail d’un jet pour la modale', () => {
     const html = renderToStaticMarkup(
       <RollLine d={{ label: 'Résistance', base: 45, modifier: 20, target: 65, difficulty: 'accessible', roll: 50, success: true, sl: 2 }} />,
     );
-    expect(html).toContain(' — Accessible (+20)');
+    expect(zoneDiff(html)).toBe('Accessible (+20)');
     expect(html).not.toContain('rm-mod'); // la ligne se lit seule : « 45 +20 = 65 »
   });
 
@@ -230,7 +239,7 @@ describe('PendingRollLine — pré-jet (même règle « pas de = redondant »)',
     const html = renderToStaticMarkup(
       <PendingRollLine p={{ label: 'Crochetage', base: 45, difficulty: 'difficile', mods: [{ label: 'Acharnement', value: 10, famille: 'jet' }] }} />,
     );
-    expect(html).toContain('rm-roll-diff"> — Difficile (−20)');
+    expect(zoneDiff(html), 'la Difficulté est sa PROPRE ligne sous le nom du jet').toBe('Difficile (−20)');
     expect(html).not.toMatch(/rm-mod[^>]*>[^<]*Difficile/);
     expect(html).toContain('<b>35</b>'); // 45 −20 (Difficulté) +10 (Acharnement) : la somme ne bouge pas
     expect(html).toContain('Acharnement'); // la chip circonstancielle reste

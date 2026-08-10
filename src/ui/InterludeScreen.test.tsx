@@ -350,8 +350,10 @@ describe('InterludeScreen — Punchausen (AA 12 l.45-49) : le volet et le flux J
     );
     // Le `desc` verbatim de la source cite « Charme Complexe (–10) » (règle 5) : on vérifie la
     // DIFFICULTÉ RENDUE sur la ligne du pré-jet retenu (#1072), pas une occurrence n'importe où.
-    expect(html).toContain('rm-roll-diff"> — Intermédiaire (+0)'); // Divertissement, voie retenue
-    expect(html).not.toContain('rm-roll-diff"> — Complexe'); // PAS la voie Charme (−10)
+    // La zone est lue en TEXTE : la Difficulté est un déclencheur Codex (libellé + glyphe), son
+    // balisage n'est pas le contrat.
+    const zones = [...html.matchAll(/class="rm-roll-diff">(.*?)<\/span><\/span>/g)].map((m) => m[1].replace(/<[^>]*>/g, ''));
+    expect(zones, 'Divertissement, voie retenue — et PAS la voie Charme (−10)').toEqual(['Intermédiaire (+0)']);
 
     useGame.getState().interludeActivity(hero.id, 'punchausen');
     const pa = useGame.getState().pendingActivity!;

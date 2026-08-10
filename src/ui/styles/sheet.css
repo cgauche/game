@@ -292,18 +292,29 @@
   font-weight: 600;
 }
 /* Difficulté du Test SUR la ligne (#1072) : nature du jet, pas une circonstance — texte atténué,
-   poids normal, à la suite du libellé ; les chips (`.rm-mod`) restent au circonstanciel. */
+   poids normal, SOUS le nom du jet ; les chips (`.rm-mod`) restent au circonstanciel. La colonne du
+   libellé (`1.1fr` de la grille ci-dessus) ne peut pas tenir le couple sur une ligne : la structure
+   le DIT au lieu de laisser un séparateur pendouiller au repli (user 2026-08-10). */
 .rm-roll-diff {
+  display: block;
   font-weight: normal;
   color: var(--muted);
 }
-/* Le glyphe d'info qui ANNONCE le palier dérivé : il vit dans le déclencheur, en tête du texte, et
-   n'a besoin que de son espacement — la primitive `Icon` cale son alignement, `currentColor` lui
-   donne la teinte du déclencheur (atténuée au repos, dorée au survol/focus). Ciblé par l'ÉLÉMENT
-   depuis la classe existante : aucun nom de classe de plus dans ce module (doctrine user
-   2026-07-12, #373). */
+/* Le glyphe d'info qui SIGNALE la porte de règle : il vit dans le déclencheur, APRÈS le texte
+   (arbitrage user 2026-08-10, verbatim : « le (i) par convention est apres et non avant ceux a quoi
+   il fait référence »), et n'a besoin que de son espacement — la primitive `Icon` cale son
+   alignement, `currentColor` lui donne la teinte du déclencheur (atténuée au repos, dorée au
+   survol/focus). Ciblé par l'ÉLÉMENT depuis la classe existante : aucun nom de classe de plus dans
+   ce module (doctrine user 2026-07-12, #373). */
 .rm-roll-diff svg {
-  margin-right: 3px;
+  margin-left: 3px;
+}
+/* Le déclencheur (texte de la Difficulté + son glyphe) ne se coupe JAMAIS en deux : replié, le (i)
+   s'orphelinait en fin de ligne précédente et semblait appartenir à la Compétence (user 2026-08-10 :
+   « Le (i) appartient a qui ? La compétence ? […] Pourquoi c'est sur la ligne précédante ? »). La
+   suite « , allégée : … », hors déclencheur, reste libre de se replier. */
+.rm-roll-diff > span {
+  white-space: nowrap;
 }
 .rm-roll-calc {
   color: var(--muted);

@@ -14,7 +14,7 @@ import { RULE_REF } from '../engine/ruleRefs';
 /** Ce qu'il faut porter pour être JUGEABLE par `inexplique` — les quatre grandeurs d'une ligne de jet,
  *  toutes optionnelles. STRUCTUREL, jamais un type de porteur : `CascadeStep`, `BatchParticipant`,
  *  `RollBreakdown`/`PendingRoll` et les `Pending*` du combat les portent chacun à leur façon. */
-export interface LigneJugeable { base?: number; mods?: ModLine[]; target?: number; difficulty?: Difficulty; clamped?: number }
+export interface LigneJugeable { base?: number; mods?: ModLine[]; target?: number; difficulty?: Difficulty; difficultyCombined?: number; clamped?: number }
 
 /**
  * CLIQUET « zéro chip anonyme » (#1117/#1153) : la part de l'écart base→cible qu'une étape n'explique
@@ -25,7 +25,7 @@ export interface LigneJugeable { base?: number; mods?: ModLine[]; target?: numbe
  */
 export function inexplique(st: LigneJugeable): number {
   return (st.target ?? 0) - (st.base ?? 0)
-    - (st.difficulty ? DIFFICULTY_MODIFIERS[st.difficulty] : 0)
+    - (st.difficultyCombined ?? (st.difficulty ? DIFFICULTY_MODIFIERS[st.difficulty] : 0))
     - (st.mods ?? []).reduce((sum, m) => sum + m.value, 0)
     - (st.clamped ?? 0);
 }
