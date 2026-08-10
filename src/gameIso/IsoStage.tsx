@@ -44,6 +44,7 @@ import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
 import { CulledScene, actorCapsuleOf } from './stage/CulledScene';
 import { GameStage3D, type StageWalkAnim } from './stage/GameStage3D';
 import { getStageBackend, subscribeStageBackend } from '../state/stage3d';
+import { getStageYaw, subscribeStageYaw, viewRot, viewYawDeg } from '../state/stageYaw';
 import { tintFor } from './backends/webgl/visibilityTint';
 import { actorPoseKey, type KeepEl, type ActorPose, type TintAt } from './backends/webgl/sceneMeshes';
 import type { PropEl, TokenEl } from './builders/types';
@@ -178,7 +179,25 @@ export function IsoStage() {
   // Nuit (fenêtres allumées) : mise en scène `lightLevel` (≤ 0.5) sinon l'obscurité d'horloge (`sceneIsDark`).
   const night = scene ? (lightLevel != null ? lightLevel <= 0.5 : sceneIsDark(scene, gameTime)) : false;
   const detailOpts = useMemo(() => ({ zoom: LOD_ZOOM[lod], mpt, night }), [lod, mpt, night]);
-  const dims = useMemo<Dims>(() => ({ ...(scene?.dimensions ?? { w: 1, h: 1 }), rot: shownRot, view: viewMode, edge: shownEdge }), [scene, shownRot, viewMode, shownEdge]);
+  // LACET CONTINU (#1176, P2-7) : deux formes du MÊME regard.
+  // `dims` est le CRAN — la géométrie de DÉGAGEMENT et les couches affines pré-triées s'y décident,
+  // et leurs memos ne doivent pas se rejouer soixante fois par seconde pendant une rotation. Son cran
+  // est celui que le lacet RÉEL regarde (`viewRot`), pas celui du store : sous lacet libre `camRot` ne
+  // bouge plus, et un demi-tour laisserait le dégagement au cran du départ. Il ne change qu'au
+  // FRANCHISSEMENT d'un quart — l'abonnement au lacet est ce qui fait re-rendre à ce moment-là.
+  // `dimsVue` porte en plus le lacet RÉEL : c'est la projection que voient la caméra volumique, le
+  // picking et TOUS les overlays SVG — le seul endroit où le lacet libre entre dans le stage,
+  // `tileCenter` s'occupant du reste (`geometry/iso.ts`).
+  // S'ABONNER au lacet EST la dépendance de rendu des deux formes ci-dessous (`viewRot`/`viewYawDeg`
+  // lisent la source, pas une valeur passée) : sans cet abonnement, rien ne suivrait la rotation.
+  useSyncExternalStore(subscribeStageYaw, getStageYaw, getStageYaw);
+  const cranVue = viewRot(shownRot) ?? shownRot;
+  const dims = useMemo<Dims>(() => ({ ...(scene?.dimensions ?? { w: 1, h: 1 }), rot: cranVue, view: viewMode, edge: shownEdge }), [scene, cranVue, viewMode, shownEdge]);
+  const yawVue = viewYawDeg(shownRot, shownEdge); // change à chaque frame de rotation (`yawOffset`)
+  const dimsVue = useMemo<Dims>(
+    () => (yawVue == null ? dims : { ...dims, yawDeg: yawVue }),
+    [dims, yawVue],
+  );
   const patternDefs = useMemo(() => (scene && lod >= 1 ? detailPatternDefs(dims, mpt) : ''), [scene, lod, dims, mpt]);
   const partyLeader = partyLeaderOf(party);
   const wnow = performance.now();
@@ -197,7 +216,7 @@ export function IsoStage() {
     // donc vers ce qui SURPLOMBE le sujet (biais multiplié par le zoom).
     const fc = capsuleCenter(actorCapsuleOf(
       { x: focus.x, y: focus.y, h: heightAt(scene, Math.round(focus.x), Math.round(focus.y), activeZ) },
-      dims,
+      dimsVue,
     ));
     return { x: VW / 2 - fc.x + camPan.x, y: VH / 2 - fc.y + camPan.y };
   };
@@ -241,7 +260,7 @@ export function IsoStage() {
       const now = performance.now();
       const c = camAt(now);
       camRef.current = c;
-      setVisibleTileBounds(computeViewBounds(c, zoom, dims));
+      setVisibleTileBounds(computeViewBounds(c, zoom, dimsVue));
       const g = camGRef.current;
       if (g) g.style.transform = stageCamTransform(c, zoom * (turning ? 0.97 : 1));
       const k = tilesKey(visualTilesAt(now));
@@ -375,7 +394,7 @@ export function IsoStage() {
     (((battle.action === null || battle.action === 'cast') && activeC?.kind === 'hero') ||
       !!preemptAiming || // Tir rapide armé pendant la pause : on suit le survol (réticule + trait de visée) alors qu'il n'y a AUCUN actif
       !!pendingCleave || !!pendingDualStrike || !!pendingCast?.pickingTargets || !!placingZoneOf({ pendingCast, pendingSiegeAim, battle }));
-  const { hover, hoveredPortal, portalHandlers, handlers } = useStagePointer({ svgRef, scene, dims, zoom, camRef, hoverTracking, partyLeader, activeZ });
+  const { hover, hoveredPortal, portalHandlers, handlers } = useStagePointer({ svgRef, scene, dims: dimsVue, zoom, camRef, hoverTracking, partyLeader, activeZ });
   const { hoverAim, hoveredId, hoverMove, explorePath, ghostIds, effHover } = useHoverTargeting(scene, hover, myTurn, hoveredPortal);
 
   if (!scene) return null;
@@ -388,7 +407,7 @@ export function IsoStage() {
   const reticleAnchor = (c: Combatant) => {
     const off = (sizeFootprint(c.size) - 1) / 2;
     const wp = walkPosOf(c.id, c.pos!.x, c.pos!.y);
-    return tileCenter(wp.x + off, wp.y + off, dims);
+    return tileCenter(wp.x + off, wp.y + off, dimsVue);
   };
   const liftOf = (p: Pt) => (p.z ? liftAt(p.x, p.y, p.z) : 0);
 
@@ -410,7 +429,7 @@ export function IsoStage() {
   // ── Caméra : point focal (paire de visée / actif / leader) + culling d'animation ────────────────
   const cam = camAt(wnow);
   camRef.current = cam;
-  const viewBounds = computeViewBounds(cam, zoom, dims);
+  const viewBounds = computeViewBounds(cam, zoom, dimsVue);
   setVisibleTileBounds(viewBounds); // écriture dans un module = pas de re-rendu
 
   // Empreinte du MOBILE actif (sa MONTURE si cavalier) → aperçus/curseur à la BONNE taille.
@@ -430,7 +449,7 @@ export function IsoStage() {
       {webgl && (
         <VolumetricWorld
           scene={scene}
-          dims={dims}
+          dims={dimsVue}
           mpt={mpt}
           cam={cam}
           zoom={zoom * (turning ? 0.97 : 1)}
@@ -455,7 +474,7 @@ export function IsoStage() {
           fog={{ explored: exploredSet }} light={light} roomFocus={roomFocus} />}
         <DoorOverlays
           portals={portals}
-          dims={dims}
+          dims={dimsVue}
           activeZ={activeZ}
           visible={visible}
           hoveredPortalId={hoveredPortal?.id ?? null}
@@ -463,34 +482,34 @@ export function IsoStage() {
           onPortalHover={portalHandlers.onPortalHover}
           onPortalClick={portalHandlers.onPortalClick}
         />
-        <ClimbOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
-        <FallOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
-        {battle && <SiegeHitAreas scene={scene} battle={battle} dims={dims} activeZ={activeZ} visible={visible} />}
-        <EnemyMoveTelegraph actorMove={actorMove} dims={dims} footN={activeMoveN} lift={liftOf} />
+        <ClimbOverlays scene={scene} dims={dimsVue} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
+        <FallOverlays scene={scene} dims={dimsVue} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
+        {battle && <SiegeHitAreas scene={scene} battle={battle} dims={dimsVue} activeZ={activeZ} visible={visible} />}
+        <EnemyMoveTelegraph actorMove={actorMove} dims={dimsVue} footN={activeMoveN} lift={liftOf} />
         <EnemyAimTelegraph targeting={targeting} anchor={reticleAnchor} />
-        <Flies scene={scene} dims={dims} />
-        <FxLayer dims={dims} floats={floats} projs={projs} auras={auras} aoes={aoes} />
-        {battle && hover && <ZdeTemplate battle={battle} hover={hover} pendingCast={pendingCast} pendingSiegeAim={pendingSiegeAim} activeC={activeC} dims={dims} />}
-        {mode === 'battle' && <EnemyAoeTelegraph actorAoe={actorAoe} dims={dims} />}
+        <Flies scene={scene} dims={dimsVue} />
+        <FxLayer dims={dimsVue} floats={floats} projs={projs} auras={auras} aoes={aoes} />
+        {battle && hover && <ZdeTemplate battle={battle} hover={hover} pendingCast={pendingCast} pendingSiegeAim={pendingSiegeAim} activeC={activeC} dims={dimsVue} />}
+        {mode === 'battle' && <EnemyAoeTelegraph actorAoe={actorAoe} dims={dimsVue} />}
         {/* Curseur LIBRE : il se tait dès qu'un ciblage carte tient la scène (verdict du registre
             `mapTargetingActive`) — le réticule/le gabarit du mode prennent alors le relais. */}
         {mode === 'battle' && battle && combatCursor
           && !mapInert && !mapTargeting
-          && !hoverAim?.reticle && <CursorOverlay tile={combatCursor.tile} footN={activeMoveN} dims={dims} liftAt={liftAt} />}
-        {mode === 'battle' && battle && hoverMove && effHover && <HoverMovePreview move={hoverMove} at={effHover} footN={activeMoveN} dims={dims} lift={liftOf} />}
-        {mode === 'exploration' && explorePath && (hover || hoveredPortal) && <ExplorePathPreview path={explorePath} dims={dims} lift={liftOf} walking={anyWalking} />}
+          && !hoverAim?.reticle && <CursorOverlay tile={combatCursor.tile} footN={activeMoveN} dims={dimsVue} liftAt={liftAt} />}
+        {mode === 'battle' && battle && hoverMove && effHover && <HoverMovePreview move={hoverMove} at={effHover} footN={activeMoveN} dims={dimsVue} lift={liftOf} />}
+        {mode === 'exploration' && explorePath && (hover || hoveredPortal) && <ExplorePathPreview path={explorePath} dims={dimsVue} lift={liftOf} walking={anyWalking} />}
         {mode === 'battle' && battle && (
-          <AimOverlay battle={battle} hoverAim={hoverAim} anchor={reticleAnchor} dims={dims}
+          <AimOverlay battle={battle} hoverAim={hoverAim} anchor={reticleAnchor} dims={dimsVue}
             pendingAttack={pendingAttack} pendingDefense={pendingDefense} pendingTrample={pendingTrample} pendingHeal={pendingHeal} pendingCast={pendingCast} />
         )}
         {mode === 'battle' && battle && <CrewTooltip battle={battle} hoveredId={hoveredId} myTurn={myTurn} anchor={reticleAnchor} />}
-        {debugLabels && <DebugMapLabels scene={scene} dims={dims} liftAt={liftAt} />}
+        {debugLabels && <DebugMapLabels scene={scene} dims={dimsVue} liftAt={liftAt} />}
       </g>
       {debugLabels && <DebugLegend />}
       {/* Voiles d'ambiance : la voie AFFINE seule. En volumique, le canevas porte toute la luminosité
           de la scène (`stage/stageLights.ts`, dosé sur la MÊME donnée `nightVeilMax`) — un voile
           par-dessus lui appliquerait le palier de nuit une seconde fois. */}
-      {!webgl && <AmbianceVeils scene={scene} dims={dims} gameTime={gameTime} lightLevel={lightLevel} />}
+      {!webgl && <AmbianceVeils scene={scene} dims={dimsVue} gameTime={gameTime} lightLevel={lightLevel} />}
       {/* Voile de MÉTÉO : même partage que ci-dessus (#1176, P2-6). En volumique, la précipitation
           TOMBE dans le monde (`stage/GameStage3D.tsx` → `weatherParticles.ts`) et ce voile ne se monte
           plus. La porte « y a-t-il une météo à montrer ? » est UNE (`sceneWeatherFx`, la scène

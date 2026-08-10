@@ -27,6 +27,7 @@ import { planFall } from './fallMove';
 import { climbMovementCost } from '../engine/movement';
 import { hasAutoClimb, hasClimbFullSpeed } from '../engine/traits/dispatch';
 import { controlsCombatant } from './netOwnership';
+import { resetStageYaw, viewYawDeg } from './stageYaw';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 import { markActed } from './combatFlow';
 import { EMPTY_FLOW, type Flow } from './flow';
@@ -1892,6 +1893,7 @@ export const useGame = create<GameState>((set, get) => ({
       campaignSceneId: scene.id,
       journal: scene.startMessage ? [scene.startMessage] : [],
     });
+    resetStageYaw(); // le lacet libre de la voie volumique n'est pas un état de partie : la carte s'ouvre à son cran
     // Semis des Possessions de dotation (#617/#618 Lot 1) — ICI, jamais `loadGame` (qui restaure
     // `data.possessions` de la save) : `startScene` est le SEUL seam qui repart d'un registre
     // `possessions` vidé (le reset ci-dessus), pour toute partie neuve (créateur → campagne,
@@ -1979,6 +1981,7 @@ export const useGame = create<GameState>((set, get) => ({
       battle: null,
       campaignSceneId: target.id,
     }));
+    resetStageYaw(); // idem `startScene` : la scène d'arrivée se regarde depuis son cran, pas depuis le lacet de la précédente
     if (target.startMessage) get().log(target.startMessage);
     get().advanceTime(TIME_COST.sceneTransition); // seam « tout est horodaté » : 0 en intérieur (paramétrable, #T2 extérieur/voyage)
     bus.emit(EVT.SCENE_DIRTY);
@@ -2085,7 +2088,7 @@ export const useGame = create<GameState>((set, get) => ({
   stepPartyDir: (dir) => {
     const { scene, mode, partyPos, dialogue, camRot, viewMode, camEdge, party } = get();
     if (!scene || mode !== 'exploration' || dialogue) return;
-    const dims = { w: scene.dimensions.w, h: scene.dimensions.h, rot: camRot, view: viewMode, edge: camEdge };
+    const dims = { w: scene.dimensions.w, h: scene.dimensions.h, rot: camRot, view: viewMode, edge: camEdge, yawDeg: viewYawDeg(camRot, camEdge) };
     const dest = exploreStepDest(scene, partyPos, dir, dims);
     if (!dest) { bus.emit(EVT.MOVE_BLOCKED, {}); return; }
     // Glisse d'1 case via l'anim de marche EXISTANTE (ANIM_MOVE → walkPosOf), puis `moveParty` (z-aware :

@@ -19,24 +19,26 @@
  * (la vue du dessus regarde à la verticale : elle n'en décale rien).
  *
  * PORTÉE (#1176, plan de Phase 2 au commentaire du ticket) : ce module EST le livrable du lot P2-0,
- * avec ses preuves d'égalité. Ses consommateurs de production — caméra de stage, picking, overlays —
- * sont le périmètre des lots P2-2 / P2-3 / P2-7, qui portent leur migration.
+ * avec ses preuves d'égalité. Ses consommateurs de production l'ont rejoint depuis : la caméra de stage
+ * (P2-2, `stage3dCamera.ts`), le picking (P2-3, `useStagePointer.ts`) et les overlays SVG (P2-7, par
+ * `Dims.yawDeg` → `tileCenter`, qui partage désormais SA rotation et SA cadence).
  */
 import {
-  CELL,
-  EDGE_H,
-  EDGE_W,
   LEVEL_H,
-  TH,
-  TW,
+  freeYaw,
   isSquareView,
+  projectStep,
+  rotOffset,
+  stepOf,
   tileCenter,
+  unprojectStep,
   type Dims,
+  type ProjKind,
 } from '../../geometry/iso';
 
 /** Vue projetée : losange 2.5D, « de face » (edge-on, 3D conservée), ou dessus plat. Mêmes trois
  *  familles que `AffineKind` (`backends/webgl/cameras.ts`), exprimées ici sans `three`. */
-export type StageKind = 'iso' | 'edge' | 'top';
+export type StageKind = ProjKind;
 
 /** Pose de la caméra de stage : la vue, son lacet RÉEL en degrés, le PIVOT de grille autour duquel ce
  *  lacet tourne, et le point ÉCRAN où ce pivot atterrit (l'ANCRAGE — ce que l'affine tient par
@@ -64,45 +66,25 @@ export interface StageScreen {
   y: number;
 }
 
-/** Cadence écran d'une vue AXIS-ALIGNÉE (dessus, « de face ») ; `null` en losange, dont la projection
- *  est diagonale. Même partage que `axisStep` de `geometry/iso.ts`. */
-function stageStep(kind: StageKind): { sx: number; sy: number } | null {
-  if (kind === 'top') return { sx: CELL, sy: CELL };
-  if (kind === 'edge') return { sx: EDGE_W, sy: EDGE_H };
-  return null;
-}
-
-/** Rotation d'un offset de grille par le lacet. Un multiple de 90° emprunte le quart de tour ENTIER
- *  (aucun résidu de trigonométrie : les crans restent au pixel de `tileCenter`) — même politique que
- *  `rightTiles` (`backends/webgl/cameras.ts`). */
-function rotOffset(yawDeg: number, d: { x: number; y: number }): { x: number; y: number } {
-  const quarts = yawDeg / 90;
-  if (Number.isInteger(quarts)) {
-    let v = d;
-    for (let i = 0, n = ((quarts % 4) + 4) % 4; i < n; i++) v = { x: v.y, y: -v.x };
-    return v;
-  }
-  const a = (yawDeg * Math.PI) / 180;
-  const cos = Math.cos(a);
-  const sin = Math.sin(a);
-  return { x: d.x * cos + d.y * sin, y: -d.x * sin + d.y * cos };
-}
-
-/** Vue de la pose correspondant à des dimensions de carte. */
+/** Vue de la pose correspondant à des dimensions de carte. Sous lacet LIBRE (`Dims.yawDeg`), la vue est
+ *  le LOSANGE : l'edge-on n'est pas une seconde famille mais le même losange à `+45` — `edge(d) =
+ *  iso(R(45°)·d)`, EDGE_W/EDGE_H valant TW/TH·√½ (mesuré : `lacet-continu.test.ts`). */
 export function stageKindOf(dims: Dims): StageKind {
   if (isSquareView(dims.view)) return 'top';
+  if (freeYaw(dims) != null) return 'iso';
   return dims.edge ? 'edge' : 'iso';
 }
 
-/** Pose CRANTÉE d'une carte : le cas particulier de `Dims`. Le pivot est le centre de la grille, dont
- *  `rotTile` est le point fixe aux quatre crans — son ancrage écran se lit donc directement dans
- *  `tileCenter`, ce qui fait de cette pose l'exact équivalent de `dims` (cf. `projection.test.ts`). */
+/** Pose d'une carte — le cas particulier de `Dims`. Le pivot est le centre de la grille, dont `rotTile`
+ *  est le point fixe aux quatre crans ; son ancrage écran se lit donc directement dans `tileCenter`,
+ *  cran OU lacet libre, ce qui fait de cette pose l'exact équivalent de `dims` dans les deux régimes
+ *  (cf. `projection.test.ts` pour les crans, `lacet-continu.test.ts` pour le lacet libre). */
 export function poseFromDims(dims: Dims): StagePose {
   const pivot = { x: (dims.w - 1) / 2, y: (dims.h - 1) / 2 };
   const { cx, cy } = tileCenter(pivot.x, pivot.y, dims, 0);
   return {
     kind: stageKindOf(dims),
-    yawDeg: (dims.rot ?? 0) * 90,
+    yawDeg: freeYaw(dims) ?? (dims.rot ?? 0) * 90,
     pivot,
     origin: { x: cx, y: cy },
   };
@@ -111,9 +93,7 @@ export function poseFromDims(dims: Dims): StagePose {
 /** Grille continue → pixel écran. Généralise `tileCenter` à un lacet réel. */
 export function worldToScreen(pose: StagePose, world: StageWorld): StageScreen {
   const p = rotOffset(pose.yawDeg, { x: world.x - pose.pivot.x, y: world.y - pose.pivot.y });
-  const step = stageStep(pose.kind);
-  const dx = step ? p.x * step.sx : (p.x - p.y) * (TW / 2);
-  const dy = step ? p.y * step.sy : (p.x + p.y) * (TH / 2);
+  const { dx, dy } = projectStep(stepOf(pose.kind), p);
   return { x: pose.origin.x + dx, y: pose.origin.y + dy - liftPx(pose, world.lift ?? 0) };
 }
 
@@ -125,16 +105,10 @@ export function worldToScreen(pose: StagePose, world: StageWorld): StageScreen {
  *  départage donc rien : en `top`, l'étage se résout AUTREMENT (couche active, occupation de la case),
  *  pas par la projection. */
 export function screenToWorldAtLift(pose: StagePose, screen: StageScreen, lift = 0): { x: number; y: number } {
-  const dx = screen.x - pose.origin.x;
-  const dy = screen.y - pose.origin.y + liftPx(pose, lift);
-  const step = stageStep(pose.kind);
-  const p = step
-    ? { x: dx / step.sx, y: dy / step.sy }
-    : (() => {
-      const a = dx / (TW / 2);
-      const b = dy / (TH / 2);
-      return { x: (a + b) / 2, y: (b - a) / 2 };
-    })();
+  const p = unprojectStep(stepOf(pose.kind), {
+    dx: screen.x - pose.origin.x,
+    dy: screen.y - pose.origin.y + liftPx(pose, lift),
+  });
   const d = rotOffset(-pose.yawDeg, p);
   return { x: d.x + pose.pivot.x, y: d.y + pose.pivot.y };
 }

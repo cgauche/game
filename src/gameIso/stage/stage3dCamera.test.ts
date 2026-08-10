@@ -68,6 +68,9 @@ const dimsFor = (rot: Rot, edge: boolean, top = false): Dims => ({
   view: top ? 'top' : 'iso',
 });
 
+/** La MÊME carte sous lacet LIBRE (#1176, P2-7) : la voie volumique n'a plus de cran, elle a un angle. */
+const dimsLibre = (yawDeg: number): Dims => ({ ...dimsFor(0, false), yawDeg });
+
 describe('Caméra volumique du stage — le pixel de l’écran de jeu, pas seulement l’écart', () => {
   const CADRE = { w: 1600, h: 900 };
   const CAM = { x: 137, y: -62 };
@@ -77,6 +80,22 @@ describe('Caméra volumique du stage — le pixel de l’écran de jeu, pas seul
       it(`cran ${rot}${edge ? ' edge-on' : ''} : le monde volumique tombe au pixel de la projection SVG`, () => {
         expect(ecartMax(dimsFor(rot, edge), CAM, 1, CADRE)).toBeLessThanOrEqual(TOL);
       });
+
+  // LACET LIBRE : le cas de production de la voie volumique, où le cran ne dit plus rien de l'écran.
+  // Ce n'est pas la répétition de `lacet-continu.test.tsx` (qui compare des ÉCARTS à ancrage commun,
+  // le pivot annulé de part et d'autre) : ici, l'ANCRAGE lui-même est en jeu — l'overlay SVG et le
+  // monde three sont mesurés au pixel ABSOLU de l'élément, depuis le MÊME état de caméra du stage.
+  for (const yawDeg of [45, 22.5, 137, -68.25, 312.75])
+    it(`lacet libre ${yawDeg}° : le monde volumique et l’overlay SVG partagent leur ancrage`, () => {
+      expect(ecartMax(dimsLibre(yawDeg), CAM, 1, CADRE)).toBeLessThanOrEqual(TOL);
+    });
+
+  it('…et ce lacet libre DÉPLACE vraiment le pixel (l’ancrage commun n’est pas une projection figée)', () => {
+    const p = (dims: Dims) => pixelSvg(SAMPLES[SAMPLES.length - 1], dims, CAM, 1, CADRE);
+    const a = p(dimsLibre(0));
+    const b = p(dimsLibre(45));
+    expect(Math.max(Math.abs(a.sx - b.sx), Math.abs(a.sy - b.sy))).toBeGreaterThan(50);
+  });
 
   it('vue du dessus : même coïncidence (regard vertical, l’élévation ne décale rien)', () => {
     expect(ecartMax(dimsFor(0, false, true), CAM, 1, CADRE)).toBeLessThanOrEqual(TOL);

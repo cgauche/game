@@ -386,6 +386,13 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
 
 ## Pièges vécus (corrections d'expérience)
 
+- **Le BRIEFING d'entrée de scène avale tous les clics** (vécu 2026-08-10, recette du lacet continu —
+  2 h perdues) : toute entrée de scène avec `startMessage` pousse une étape d'AFFICHAGE
+  (`pushReveal` `sceneEntry` → `CascadeModal`, bouton « Terminer »), qui est une modale bloquante :
+  la carte devient inerte (`modalBlocksMapHover`) et les boutons de l'écran de jeu sont sous son voile.
+  Un clic « qui ne fait rien » juste après un `scenario()`/une transition N'EST PAS un bug de câblage.
+  RÈGLE : FERMER le briefing (« Terminer ») AVANT toute mesure de clic, et le vérifier au DOM
+  (`document.querySelector('.modal-overlay')` nul) plutôt que de conclure à un bouton mort.
 - **Occlusion de la carte du monde sur le panneau latéral** (vécu 2026-08-05, recette 3) : sous 901px
   de large, la mise en page EMPILE carte et panneau ; `.map-canvas-frame` porte un `aspect-ratio` et
   débordait de sa cellule, son SVG recouvrant les commandes du panneau (« Rythme normal / Forcer +1 M »

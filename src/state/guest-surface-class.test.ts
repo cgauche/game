@@ -49,7 +49,6 @@ const HORS_SURFACE_UI: Record<string, string> = {
   clearCursor: CLIENT('curseur clavier'),
   panCamBy: CLIENT('caméra'),
   resetCamPan: CLIENT('caméra'),
-  rotateCam: CLIENT('caméra'),
   setZoom: CLIENT('zoom'),
   togglePov: CLIENT('vue subjective'),
   toggleViewMode: CLIENT('mode de vue'),

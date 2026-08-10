@@ -11,6 +11,7 @@ import { actorIn, inBattleId } from './combatants';
 import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn, applyEffects } from './combatFlow';
 import { setAiTrace } from './ai';
 import { getStageBackend, setStageBackend } from './stage3d';
+import { viewYawDeg } from './stageYaw';
 import { pushCombatStep, gearFromEffects } from './combatEffects';
 import { trappings, findCreatureById } from '../data';
 import { creatureToCombatant } from './spawn';
@@ -413,7 +414,7 @@ export function buildApi() {
       const camGroup = document.querySelector('svg.iso-stage > g') as SVGGraphicsElement | null;
       const ctm = camGroup?.getScreenCTM();
       if (!ctm) return null;
-      const dims: Dims = { ...st.scene.dimensions, rot: st.camRot, view: st.viewMode, edge: st.camEdge };
+      const dims: Dims = { ...st.scene.dimensions, rot: st.camRot, view: st.viewMode, edge: st.camEdge, yawDeg: viewYawDeg(st.camRot, st.camEdge) };
       const c = diamondCorners(tile.x, tile.y, dims, tile.z ?? 0);
       const pts = [c.top, c.right, c.bot, c.left].map(([x, y]) => new DOMPoint(x, y).matrixTransform(ctm));
       const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);

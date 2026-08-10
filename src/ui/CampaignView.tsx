@@ -1,6 +1,7 @@
 import { useState, useSyncExternalStore } from 'react';
 import { useGame } from '../state/store';
 import { getStageBackend, subscribeStageBackend, toggleStageBackend } from '../state/stage3d';
+import { tournerCamera } from '../state/keybindings';
 import { canActFirst, freeActFirst } from '../state/turnEconomy';
 import { preemptShooterIds } from '../state/targeting';
 import { IsoStage } from '../gameIso/IsoStage';
@@ -91,7 +92,6 @@ export function CampaignView() {
   const party = useGame((s) => s.party);
   const zoom = useGame((s) => s.zoom);
   const setZoom = useGame((s) => s.setZoom);
-  const rotateCam = useGame((s) => s.rotateCam);
   const viewMode = useGame((s) => s.viewMode);
   const toggleViewMode = useGame((s) => s.toggleViewMode);
   const povActive = useGame((s) => s.povActive);
@@ -335,13 +335,15 @@ export function CampaignView() {
           journal={journal}
           onOpenHistory={mode === 'exploration' && dialogueHistory.length > 0 ? () => setHistoryOpen(true) : undefined}
         />
+        {/* Orientation : le MÊME geste que Q/E (`tournerCamera`) — au cran en affine, un pas de lacet
+            continu en volumique, sans quoi ces boutons sauteraient là où la touche fait glisser. */}
         <ViewControls
           zoom={zoom}
           onZoomIn={() => setZoom(zoom + 0.3)}
           onZoomOut={() => setZoom(zoom - 0.3)}
           onZoomReset={() => setZoom(1)}
-          onRotateLeft={() => rotateCam(-1)}
-          onRotateRight={() => rotateCam(1)}
+          onRotateLeft={() => tournerCamera(useGame.getState, -1)}
+          onRotateRight={() => tournerCamera(useGame.getState, 1)}
           view={viewMode}
           onToggleView={toggleViewMode}
           pov={povActive}

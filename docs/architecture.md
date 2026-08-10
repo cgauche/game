@@ -139,6 +139,10 @@ src/state/
                               n'est pas du rendu, `gameIso` la ré-importe pour l'orientation écran)
   viewLevel.ts                override DEBUG de l'étage AFFICHÉ (`__wfrp.viewLevel(z)`, #161 : ex-
                               `gameIso/viewLevel.ts`) — SOURCE dans `state`, lu par `gameIso/IsoStage`
+  stage3d.ts                  VOIE DE RENDU du monde (#1176, DEV) : `affine` (couches SVG) ou `webgl`
+                              (`gameIso/stage/GameStage3D`) — store externe, jamais sérialisé en save
+  stageYaw.ts                 LACET CONTINU de la caméra du stage (#1176, P2-7) : cible + courant qui y
+                              court, `viewYawDeg` (projection) et `viewRot` (cran EFFECTIF du dégagement)
   combatLog.ts                CombatEvent/CombatEventKind + CombatTone/toneOf/isImportantEvent/
                               lastEventTone (#161 : cadence des beats, `gameIso/combatNarration` les
                               réutilise pour l'icône/la coloration par camp, hors du périmètre `state`)

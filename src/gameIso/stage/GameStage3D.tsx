@@ -64,7 +64,7 @@
  */
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import type { Dims } from '../../geometry/iso';
+import { freeYaw, type Dims, type Rot } from '../../geometry/iso';
 import type { Scene } from '../../state/scene';
 import { affineCamera } from '../backends/webgl/cameras';
 import { pxPerM } from '../backends/webgl/worldTris';
@@ -205,12 +205,22 @@ function viderGroupe(groupe: THREE.Group): void {
   }
 }
 
+/** CRAN d'ART d'une vue. La CAMÉRA suit le lacet continu (`stage3dFraming` lit `Dims.yawDeg`), mais
+ *  l'art des billboards est DISCRET — l'atlas de décor n'existe qu'aux quarts de tour, et une identité
+ *  de texture qui suivrait le lacet réel recuirait toute la planche à chaque frame de rotation.
+ *  Le lacet se PLANCHÉRISE, il ne s'arrondit pas : l'edge-on est le losange à `+45` (`geometry/iso.ts`),
+ *  donc les huit vues de production tombent aux lacets `r·90` et `r·90+45` — un arrondi au plus proche
+ *  donnerait `r+1` aux quatre vues de face, et l'atlas y peindrait le cran voisin. PUR. */
+export function artRot(dims: Dims): Rot {
+  return ((Math.floor((freeYaw(dims) ?? (dims.rot ?? 0) * 90) / 90) % 4 + 4) % 4) as Rot;
+}
+
 export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors, gameTime, lightLevel, lights, anim }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
   const cameraRef = useRef<THREE.Camera | null>(null);
-  const camRot = dims.rot ?? 0;
+  const camRot = artRot(dims);
 
   const three = useRef<THREE.Scene>();
   const monde = useRef<THREE.Group>();

@@ -14,6 +14,8 @@ import { pickActiveModalKey, modalBlocksMapHover } from './modalArbiter';
 import { hotbar } from './hotbarBridge';
 import { validTargets, preemptShooterIds } from './targeting';
 import type { ScreenDir } from './combatCursor';
+import { getStageBackend } from './stage3d';
+import { nudgeStageYaw } from './stageYaw';
 
 /** Section d'affichage de l'écran Options (remap) — REGROUPE les raccourcis par contexte de jeu.
  *  Purement présentationnel (le `when` de chaque binding reste l'unique arbitre d'exécution). */
@@ -54,6 +56,19 @@ const noModal = (s: GameState) => pickActiveModalKey(s as Parameters<typeof pick
  *  arbitre) : une modale PILOTÉE PAR LA CARTE (désignation de cibles d'un sort) laisse la scène
  *  vivante — la souris y cible, le curseur clavier/manette doit pouvoir en faire autant. */
 const mapLive = (s: GameState) => !modalBlocksMapHover(s as Parameters<typeof modalBlocksMapHover>[0]);
+/** Un cran de la rotation à HUIT crans (coin ↔ face), en degrés — le pas d'une poussée de Q/E. */
+const CRAN_DEG = 45;
+/** UNE poussée de rotation caméra — SOURCE UNIQUE du geste, partagée par le clavier (Q/E) et par les
+ *  boutons d'orientation de l'écran de jeu (`ui/ViewControls`, dont les libellés annoncent Q et E).
+ *  En voie VOLUMIQUE (#1176, P2-7) le lacet est CONTINU : le monde y est une caméra réelle, qui prend
+ *  n'importe quel angle, et les overlays SVG s'y re-projettent (`Dims.yawDeg`) — une poussée vise un
+ *  cran de plus et la caméra y COURT (`state/stageYaw.ts`), maintenir la touche fait tourner sans
+ *  à-coup. En affine, le cran (`rotateCam`) : c'est le seul régime que l'atlas de sprites pré-tournés
+ *  sait peindre. */
+export const tournerCamera = (g: () => GameState, dir: 1 | -1): void => {
+  if (getStageBackend() === 'webgl') nudgeStageYaw(dir * CRAN_DEG);
+  else g().rotateCam(dir);
+};
 /** Contexte de PILOTAGE du combat (fin de tour, barre d'action) : en combat, c'est bien ton tour
  *  (coop), aucune modale ouverte. */
 const cur = (s: GameState) => inBattle(s) && controlsActive(s) && noModal(s);
@@ -90,8 +105,8 @@ export const KEYBINDINGS: KeyBinding[] = [
   { id: 'pov-turn-l', codes: ['KeyQ'], label: 'POV : pivoter le regard à gauche', section: 'pov', when: exploringPov, run: (g) => g().pivotParty(-1) },
   { id: 'pov-turn-r', codes: ['KeyE'], label: 'POV : pivoter le regard à droite', section: 'pov', when: exploringPov, run: (g) => g().pivotParty(1) },
   { id: 'toggle-pov', codes: ['KeyF'], label: 'Basculer la vue subjective (POV)', section: 'pov', when: exploring, run: (g) => g().togglePov() },
-  { id: 'cam-left', codes: ['KeyQ'], label: 'Caméra : tourner à gauche', section: 'camera', when: () => true, run: (g) => g().rotateCam(-1) },
-  { id: 'cam-right', codes: ['KeyE'], label: 'Caméra : tourner à droite', section: 'camera', when: () => true, run: (g) => g().rotateCam(1) },
+  { id: 'cam-left', codes: ['KeyQ'], label: 'Caméra : tourner à gauche', section: 'camera', when: () => true, run: (g) => tournerCamera(g, -1) },
+  { id: 'cam-right', codes: ['KeyE'], label: 'Caméra : tourner à droite', section: 'camera', when: () => true, run: (g) => tournerCamera(g, 1) },
   { id: 'cam-recenter', codes: ['KeyC'], label: 'Caméra : recentrer sur l’actif', section: 'camera', when: inBattle, run: (g) => g().resetCamPan() },
   // Pause d'initiative de début de Round (LDB 17 l.27) : Espace/Entrée = « Commencer le round » (le SEUL
   // geste possible) → passage de Round jouable SANS souris. AVANT les bindings curseur/fin-de-tour (mêmes

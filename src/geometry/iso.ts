@@ -61,15 +61,80 @@ export interface Dims {
   rot?: Rot; // orientation caméra (cran de 90° horaire) ; absent ⇒ 0
   view?: ViewMode; // projection ; absent ⇒ 'iso' (losange). Cf. ViewMode.
   edge?: boolean; // vue « de face » (edge-on) : grille axis-alignée MAIS 3D conservée (crans impairs). ⊥ view.
+  /** LACET CONTINU de la caméra, en degrés, dans la cadence LOSANGE (#1176, P2-7 — voie volumique).
+   *  Présent ⇒ la projection tourne librement autour du CENTRE de la grille et `rot`/`edge` ne
+   *  décident plus rien de l'écran ; absent ⇒ crans (`rot`/`edge`), la voie affine, inchangée.
+   *  L'edge-on y est le losange à `+45` : `edge(d) = iso(R(45°)·d)` (EDGE_W/EDGE_H = TW/TH·√½), donc
+   *  les huit crans de production sont des lacets de cette MÊME famille — cf. `lacet-continu.test.ts`. */
+  yawDeg?: number;
 }
+
+/** Famille de projection : losange 2.5D, « de face » (edge-on, 3D conservée), dessus plat. Mêmes trois
+ *  familles qu'`AffineKind` (`backends/webgl/cameras.ts`) et que `StageKind` (`stage/projection.ts`). */
+export type ProjKind = 'iso' | 'edge' | 'top';
 
 /** Pas écran (sx, sy) d'une tuile en projection AXIS-ALIGNÉE — carré 'top' (CELL) ou « de face » edge-on
  *  (rectangle EDGE_W×EDGE_H = l'iso tourné de 45°) — ou null en iso losange (projection diagonale).
  *  SOURCE UNIQUE : top et edge partagent toute la géométrie axis-alignée, seul le pas diffère. */
-function axisStep(dims: Dims): { sx: number; sy: number } | null {
-  if (dims.view === 'top') return { sx: CELL, sy: CELL };
-  if (dims.edge) return { sx: EDGE_W, sy: EDGE_H };
+export function stepOf(kind: ProjKind): { sx: number; sy: number } | null {
+  if (kind === 'top') return { sx: CELL, sy: CELL };
+  if (kind === 'edge') return { sx: EDGE_W, sy: EDGE_H };
   return null;
+}
+
+function axisStep(dims: Dims): { sx: number; sy: number } | null {
+  return stepOf(dims.view === 'top' ? 'top' : dims.edge ? 'edge' : 'iso');
+}
+
+/** Rotation d'un offset de grille par un lacet en degrés. Un multiple de 90° emprunte le quart de tour
+ *  ENTIER (aucun résidu de trigonométrie : les crans restent au pixel de la projection crantée) — même
+ *  politique que `rightTiles` (`backends/webgl/cameras.ts`). */
+export function rotOffset(yawDeg: number, d: { x: number; y: number }): { x: number; y: number } {
+  const quarts = yawDeg / 90;
+  if (Number.isInteger(quarts)) {
+    let v = d;
+    for (let i = 0, n = ((quarts % 4) + 4) % 4; i < n; i++) v = { x: v.y, y: -v.x };
+    return v;
+  }
+  const a = (yawDeg * Math.PI) / 180;
+  const cos = Math.cos(a);
+  const sin = Math.sin(a);
+  return { x: d.x * cos + d.y * sin, y: -d.x * sin + d.y * cos };
+}
+
+/** Décalage ÉCRAN d'un offset de grille DÉJÀ tourné, à la cadence `step` (`null` = losange, diagonale). */
+export function projectStep(step: { sx: number; sy: number } | null, p: { x: number; y: number }): { dx: number; dy: number } {
+  return step
+    ? { dx: p.x * step.sx, dy: p.y * step.sy }
+    : { dx: (p.x - p.y) * (TW / 2), dy: (p.x + p.y) * (TH / 2) };
+}
+
+/** Inverse de `projectStep` : décalage écran → offset de grille TOURNÉ. */
+export function unprojectStep(step: { sx: number; sy: number } | null, o: { dx: number; dy: number }): { x: number; y: number } {
+  if (step) return { x: o.dx / step.sx, y: o.dy / step.sy };
+  const a = o.dx / (TW / 2);
+  const b = o.dy / (TH / 2);
+  return { x: (a + b) / 2, y: (b - a) / 2 };
+}
+
+/** Lacet CONTINU actif d'une carte, ou `null` si sa projection est CRANTÉE. La vue du DESSUS n'en a
+ *  pas : son plan carré reste au cran (le lacet libre est la famille losange). */
+export function freeYaw(dims: Dims): number | null {
+  return dims.yawDeg == null || isSquareView(dims.view) ? null : dims.yawDeg;
+}
+
+/** Case-PIVOT de la rotation continue : le centre de la grille. */
+function freePivot(dims: Dims): { x: number; y: number } {
+  return { x: (dims.w - 1) / 2, y: (dims.h - 1) / 2 };
+}
+
+/** ANCRAGE ÉCRAN du pivot sous lacet libre : sa position CRANTÉE en losange, la même aux quatre crans
+ *  (`originX` compense exactement le quart de tour : `cx = TW/4·(w+h)` — mesuré au cran par
+ *  `lacet-continu.test.ts`). C'est ce qui fait tourner le monde AUTOUR de son centre au lieu de le
+ *  faire dériver avec la boîte englobante. */
+function freeOrigin(dims: Dims): { cx: number; cy: number } {
+  const p = freePivot(dims);
+  return crantedCenter(p.x, p.y, { w: dims.w, h: dims.h }, 0);
 }
 
 /** Facteur d'échelle d'un BILLBOARD (token/prop ancré aux pieds) selon la projection : la tuile « de
@@ -117,10 +182,9 @@ export function unrotTile(x: number, y: number, dims: Dims): { x: number; y: num
   }
 }
 
-/** Centre écran d'une tuile (x,y), en tenant compte de la rotation caméra, de la projection et de
- *  l'élévation `z` (niveau d'étage) : un niveau plus haut est soulevé de `z·LEVEL_H` px (cy plus
- *  petit), cx inchangé. z=0 (défaut) = comportement plan-sol historique. */
-export function tileCenter(x: number, y: number, dims: Dims, z = 0): { cx: number; cy: number } {
+/** Centre écran d'une tuile (x,y) à la projection CRANTÉE (`rot`/`edge`/`view`) et à l'élévation `z`
+ *  (niveau d'étage) : un niveau plus haut est soulevé de `z·LEVEL_H` px (cy plus petit), cx inchangé. */
+function crantedCenter(x: number, y: number, dims: Dims, z: number): { cx: number; cy: number } {
   const r = rotTile(x, y, dims);
   const lift = isSquareView(dims.view) ? 0 : z * LEVEL_H; // vue du dessus : regard vertical, une élévation NE décale RIEN à l'écran
   const st = axisStep(dims);
@@ -131,6 +195,19 @@ export function tileCenter(x: number, y: number, dims: Dims, z = 0): { cx: numbe
     cx: originX(dims) + (r.x - r.y) * (TW / 2),
     cy: originY() + (r.x + r.y) * (TH / 2) - lift,
   };
+}
+
+/** Centre écran d'une tuile (x,y) — de GRILLE CONTINUE (les coins de case `±0.5` en dépendent) — en
+ *  tenant compte de la rotation caméra (cran OU lacet libre, cf. `Dims.yawDeg`), de la projection et de
+ *  l'élévation `z`. z=0 (défaut) = comportement plan-sol historique. SEULE porte de projection des
+ *  overlays du stage : leur faire suivre un lacet libre se joue ICI, jamais chez chacun d'eux. */
+export function tileCenter(x: number, y: number, dims: Dims, z = 0): { cx: number; cy: number } {
+  const yaw = freeYaw(dims);
+  if (yaw == null) return crantedCenter(x, y, dims, z);
+  const pivot = freePivot(dims);
+  const o = projectStep(stepOf('iso'), rotOffset(yaw, { x: x - pivot.x, y: y - pivot.y }));
+  const a = freeOrigin(dims);
+  return { cx: a.cx + o.dx, cy: a.cy + o.dy - z * LEVEL_H };
 }
 
 /** Taille totale du canvas SVG pour une carte donnée (dimensions effectives). */
@@ -146,8 +223,13 @@ export function stageSize(dims: Dims): { w: number; h: number } {
   };
 }
 
-/** Inverse : point écran (relatif au SVG) → coordonnées de tuile entières (dé-tourne). */
+/** Inverse : point écran (relatif au SVG) → coordonnées de tuile entières (dé-tourne). Sous lacet
+ *  LIBRE l'arrondi tombe APRÈS la dé-rotation (il n'y a plus de grille écran à arrondir avant). */
 export function screenToTile(px: number, py: number, dims: Dims): { x: number; y: number } {
+  if (freeYaw(dims) != null) {
+    const f = screenToTileF(px, py, dims, 0);
+    return { x: Math.round(f.x), y: Math.round(f.y) };
+  }
   const st = axisStep(dims);
   if (st) {
     const rx = Math.round((px - originX(dims)) / st.sx);
@@ -175,6 +257,14 @@ export function screenToTileAtZ(px: number, py: number, dims: Dims, z = 0): { x:
  *  une transformée linéaire, valable sur des flottants). z = étage visé. */
 export function screenToTileF(px: number, py: number, dims: Dims, z = 0): { x: number; y: number } {
   const qy = py + (isSquareView(dims.view) ? 0 : z * LEVEL_H);
+  const yaw = freeYaw(dims);
+  if (yaw != null) {
+    const a = freeOrigin(dims);
+    const p = unprojectStep(stepOf('iso'), { dx: px - a.cx, dy: qy - a.cy });
+    const d = rotOffset(-yaw, p);
+    const pivot = freePivot(dims);
+    return { x: d.x + pivot.x, y: d.y + pivot.y };
+  }
   const st = axisStep(dims);
   if (st) {
     return unrotTile((px - originX(dims)) / st.sx, (qy - originY()) / st.sy, dims);
@@ -186,9 +276,18 @@ export function screenToTileF(px: number, py: number, dims: Dims, z = 0): { x: n
 
 /** Les 4 sommets (et le centre) d'une tuile — source unique de la géométrie, partagée par
  *  diamondPath et le raccord d'arêtes (ground.ts). Losange (TW/TH) en iso ; carré (CELL) en
- *  vue du dessus, où top=NO, right=NE, bot=SE, left=SO (l'ordre compose avec groundTile/diamondPath). */
+ *  vue du dessus, où top=NO, right=NE, bot=SE, left=SO (l'ordre compose avec groundTile/diamondPath).
+ *  Sous lacet LIBRE les quatre sommets sont les COINS DE GRILLE (`±0.5`) projetés — ce qui rend
+ *  exactement les demi-diagonales ci-dessous à chaque cran, et fait tourner le losange avec la vue. */
 export function diamondCorners(x: number, y: number, dims: Dims, z = 0) {
   const { cx, cy } = tileCenter(x, y, dims, z);
+  if (freeYaw(dims) != null) {
+    const coin = (dx: number, dy: number): [number, number] => {
+      const q = tileCenter(x + dx, y + dy, dims, z);
+      return [q.cx, q.cy];
+    };
+    return { cx, cy, top: coin(-0.5, -0.5), right: coin(0.5, -0.5), bot: coin(0.5, 0.5), left: coin(-0.5, 0.5) };
+  }
   const st = axisStep(dims);
   if (st) {
     const hx = st.sx / 2, hy = st.sy / 2;
@@ -239,8 +338,16 @@ export function diamondPath(x: number, y: number, dims: Dims, z = 0): string {
  *  (Z_STEP) : à position écran ÉGALE, l'étage haut passe devant, mais un élément plus AVANT (base plus
  *  grande) à un étage bas reste devant un élément plus arrière d'un étage haut → murs/escaliers
  *  verticaux s'interclassent par leur vraie position écran. z=0 (défaut) = base × BASE_SCALE
- *  (plan-sol historique, à l'échelle près — le tri relatif est inchangé). */
+ *  (plan-sol historique, à l'échelle près — le tri relatif est inchangé). Sous lacet LIBRE, la base est
+ *  la PROFONDEUR ÉCRAN continue de la case (`p.x+p.y` du losange, dont `cy` est l'image directe) :
+ *  comptée depuis le pivot, elle ne diffère du cran que d'une constante commune à toutes les cases. */
 export function depth(x: number, y: number, dims: Dims, z = 0) {
+  const yaw = freeYaw(dims);
+  if (yaw != null) {
+    const pivot = freePivot(dims);
+    const p = rotOffset(yaw, { x: x - pivot.x, y: y - pivot.y });
+    return (p.x + p.y) * BASE_SCALE + z * Z_STEP;
+  }
   const r = rotTile(x, y, dims);
   const st = axisStep(dims); // null en iso losange — la branche r.x+r.y est VIVANTE
   const base = st ? r.y * (dims.w + dims.h) + r.x : r.x + r.y;

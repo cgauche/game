@@ -33,6 +33,7 @@ import { pickActiveModalKey } from './modalArbiter';
 import { mountMovement, mountUp, dismount, mountOf, mountableNear, isControlledMount, insertByInitiative } from './mount';
 import { heroCombatMount } from '../engine/mountTravel';
 import { ev, evLines } from './combatLog';
+import { viewYawDeg } from './stageYaw';
 import { t } from '../i18n';
 import { combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, backstabWeapon, attackHandGate, type DefenseMode } from '../engine/combat';
 import { disengageFrom, isEngaged, setContact, clearContact, meleeReachRank } from '../engine/engagement';
@@ -954,7 +955,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || battle.over || !scene) return;
       const owner = cursorActor(get); // l'ACTIF, ou le tireur Tir rapide ARMÉ pendant la pause (le curseur suit ses yeux)
       if (!owner?.pos) return;
-      const dims = { w: scene.dimensions.w, h: scene.dimensions.h, rot: camRot, view: viewMode, edge: camEdge };
+      const dims = { w: scene.dimensions.w, h: scene.dimensions.h, rot: camRot, view: viewMode, edge: camEdge, yawDeg: viewYawDeg(camRot, camEdge) };
       const mode = currentTargetingMode(get);
       if (mode.tileValidAt) {
         // Mode-CASE (#198, résidus) : le curseur ne navigue QUE l'ensemble VALIDE du mode (Pousser/
