@@ -174,7 +174,7 @@ export function aiMaybeFrenzy(get: Get, set: SetFn, enemy: Combatant): void {
 }
 
 /** Psychologie d'un ENNEMI (IA) au début de son tour (LDB 21) : teste Peur/Terreur des sources
- *  adverses en Ligne de Vue. Terreur ratée → Brisé ; Peur → Test étendu de Calme (cumul). Instantané
+ *  en Ligne de Vue. Terreur ratée → Brisé ; Peur → Test étendu de Calme (cumul). Instantané
  *  et JOURNALISÉ (pas de modale/révélation pour l'IA — le joueur voit l'État Brisé). */
 export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
   if (!aiDriven(get(), enemy) || isOutOfAction(enemy)) return;
@@ -191,7 +191,7 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
   const log: string[] = [];
   // Nouvelles sources de peur/terreur en Ligne de Vue (non encore rencontrées).
   for (const foe of battle.combatants) {
-    if (foe.kind === enemy.kind || isOutOfAction(foe) || !foe.pos) continue;
+    if (foe.id === enemy.id || isOutOfAction(foe) || !foe.pos) continue; // « chez les autres créatures » (LDB 85 l.264-266) : seule exclusion, soi-même
     if (!losClear(scene, enemy.pos, foe.pos, smokeOf(battle))) continue;
     const src = fearSourceFor(enemy, foe, riderFearSize(battle, enemy)); // Cavalier émérite (AA 13 l.25) : Taille = monture face à la Peur de Taille
     if (!src || enemy.psychState.some((p) => p.sourceId === foe.id)) continue;

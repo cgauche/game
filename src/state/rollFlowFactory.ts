@@ -599,7 +599,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       const actor = spec.actor(s, loc.slot, p);
       // Résistance (Menace) : réussite forcée à DR = Bonus d'Endurance (LDB 10). Repli = `resolve(…,{sl})`.
       const resolveResist = L
-        ? (sl: number) => { const tgt = L.dieTarget?.(loc.slot, actor!) ?? 0; return L.applyRoll(s, loc.slot, actor!, get, forcedTR(1, tgt, sl), p); }
+        ? (sl: number) => { const cur = L.actorTR(loc.slot); const tgt = L.dieTarget?.(loc.slot, actor!) ?? 0; return L.applyRoll(s, loc.slot, actor!, get, forcedTR(1, tgt, sl, cur?.base), p); }
         : (sl: number) => spec.resolve(s, loc.slot, actor, get, { sl }, p);
       opResist(slot, actor, spec.rolled(loc.slot), isFailed(loc.slot), resolveResist, loc.commit);
     },

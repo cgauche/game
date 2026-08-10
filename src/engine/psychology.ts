@@ -13,6 +13,7 @@ import { bonus, effectiveChar } from './characteristics';
 import { findPsychologyById, psychologies, psychologyLabel } from '../data';
 import { SizeCategory, sizeGap } from './size';
 import { groupMatch, hiddenGroupsOf } from './groups';
+import { campOf, relationBetween } from './relations';
 import { bellicosePsychImmune, traitCapability } from './traits/dispatch';
 import { fearImmuneVs } from './combatFeatures/dispatch';
 import { diseasePsychTraits } from './disease';
@@ -68,9 +69,23 @@ export const CIBLE_LABEL: Record<string, { icon: string; label: string }> = Obje
   psychologies.filter((p) => p.targeted).map((p) => [p.id, { icon: p.icon ?? '', label: p.label }]),
 );
 
-/** Source de Peur/Terreur que `foe` représente pour `self` : combine la Taille (LDB 85) et l'Indice
- *  inspiré au statbloc (`causesPeur`/`causesTerreur`, Trait « Peur (Indice) » LDB 85 l.266). Terreur
- *  prime ; sinon le plus haut Indice. Pur.
+/** « Si la créature est considérée comme AGRESSIVE » (LDB 85 l.381-383) : porte de la Peur/Terreur de
+ *  TAILLE, lue ENVERS `cible`. Un adversaire l'est par sa relation (`relationBetween` = `opponent`) ; un
+ *  membre du MÊME camp seulement s'il échange des coups avec elle : le lien Engagé, posé par la seule
+ *  résolution d'une attaque de mêlée, est SYMÉTRIQUE (LDB 13 l.169-171) — les deux combattants au corps
+ *  à corps sont donc agressifs l'un envers l'autre.
+ *  Pur : ne lit que la relation et l'état d'Engagement des deux combattants. */
+export function agressifEnvers(source: Pick<Combatant, 'id' | 'kind' | 'engagedWith'>, cible: Pick<Combatant, 'id' | 'kind' | 'engagedWith'>): boolean {
+  if (source.id === cible.id) return false;
+  if (relationBetween({ id: source.id, camp: campOf(source) }, { id: cible.id, camp: campOf(cible) }) === 'opponent') return true;
+  return !!source.engagedWith?.includes(cible.id) || !!cible.engagedWith?.includes(source.id);
+}
+
+/** Source de Peur/Terreur que `foe` représente pour `self` : combine la Taille (LDB 85 l.381-383) et
+ *  l'Indice inspiré au statbloc (`causesPeur`/`causesTerreur`, Trait « Peur (Indice) » LDB 85 l.264-266 :
+ *  « engendre de la Peur surnaturelle chez les autres créatures »). Les deux portes DIFFÈRENT : le Trait
+ *  ne connaît ni camp ni condition, la Taille passe par `agressifEnvers`. Terreur prime ; sinon le plus
+ *  haut Indice. Pur.
  *  NB : « Sans Peur (Ennemi) » (LDB 10 l.864) ne supprime PLUS la source ici (ce n'était pas RAW : le
  *  talent n'accorde pas l'immunité automatique mais « un seul Test de Calme Accessible (+20) » pour
  *  l'ignorer) — la source est donc détectée, et le porteur la teste à +20 (cf. `sansPeurVs`). */
@@ -79,7 +94,7 @@ export function fearSourceFor(self: Combatant, foe: Combatant, selfSizeForSize?:
   // Cavalier émérite (AA 13 l.25) : la Taille prise en compte pour la Peur/Terreur causée UNIQUEMENT par la
   // Taille de l'adversaire est celle de la MONTURE (`selfSizeForSize`, fourni par l'appelant qui connaît la
   // bataille) — les Indices `causesPeur`/`causesTerreur` du statbloc (démon/mort-vivant) restent inchangés.
-  const size = peurTerreurFromSize(foe.size, selfSizeForSize ?? self.size);
+  const size = agressifEnvers(foe, self) ? peurTerreurFromSize(foe.size, selfSizeForSize ?? self.size) : null;
   if (size) cands.push(size);
   if (foe.causesTerreur) cands.push({ kind: 'terreur', indice: foe.causesTerreur });
   if (foe.causesPeur) cands.push({ kind: 'peur', indice: foe.causesPeur });

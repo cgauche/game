@@ -224,7 +224,7 @@ export interface PendingReload {
   /** Soutien générique (LDB 12) déjà FONDU dans `skillValue` : nb de servants assistants + bonus total (affichage). */
   soutien?: SupportDetail;
 }
-/** « Se libérer » / « se rouler au sol » en attente (LDB 16 l.61 Empêtré / l.77 En flammes) :
+/** « Se libérer » / « se rouler au sol » en attente (LDB 16 l.66 Empêtré / l.84 En flammes) :
  *  une Action pour retirer l'État via un Test ; succès ⇒ 1 + DR pions retirés. Empêtré = Test OPPOSÉ
  *  de Force contre la source ; En flammes = Test d'Athlétisme simple. Modale Lancer → DR → Chance. */
 export interface PendingStateRecovery {
@@ -233,10 +233,14 @@ export interface PendingStateRecovery {
   state: 'empetre' | 'en-flammes';
   skillLabel: string; // 'Force' | 'Athlétisme'
   skillValue: number;
+  /** Valeur NUE de l'acteur (`LDB 09 l.17`) — grandeur du départage à DR égal (`LDB 12 l.160`). */
+  skillBase: number;
   difficulty: Difficulty;
   /** Empêtré avec une source vivante → Test opposé ; sinon Test simple. */
   opposed: boolean;
   opponentValue?: number; // Force de la source (Empêtré opposé)
+  /** Valeur NUE de l'entrave (`LDB 12 l.160`), posée avec `opponentValue`. */
+  opponentBase?: number;
   opponentName?: string;
   /** Seuil de DR exigé sur un Test NON opposé (Filets, Zoo Impérial p.29 : DR ≥ Indice du filet). */
   requireSl?: number;

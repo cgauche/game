@@ -18,11 +18,11 @@ describe('Psychologie IA (Peur/Terreur au début du tour)', () => {
     vi.useRealTimers();
   });
 
-  it('fearSourceFor : Énorme vs Moyenne → Terreur 2 ; statbloc Peur 4 ; rien si pas de source', () => {
-    const big = { size: 'enorme' } as Combatant;
-    const med = { size: 'moyenne' } as Combatant;
+  it('fearSourceFor : Énorme AGRESSIVE vs Moyenne → Terreur 2 ; statbloc Peur 4 ; rien si pas de source', () => {
+    const big = { id: 'b', kind: 'enemy', size: 'enorme' } as Combatant; // adversaire → agressive (LDB 85 l.381-383)
+    const med = { id: 'm', kind: 'hero', size: 'moyenne' } as Combatant;
     expect(fearSourceFor(med, big)).toEqual({ kind: 'terreur', indice: 2 });
-    expect(fearSourceFor(med, { size: 'moyenne', causesPeur: 4 } as Combatant)).toEqual({ kind: 'peur', indice: 4 });
+    expect(fearSourceFor(med, { id: 'p', kind: 'enemy', size: 'moyenne', causesPeur: 4 } as Combatant)).toEqual({ kind: 'peur', indice: 4 });
     expect(fearSourceFor(med, med)).toBeNull();
   });
 

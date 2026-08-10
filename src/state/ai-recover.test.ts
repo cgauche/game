@@ -18,7 +18,7 @@ function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnIn
   return { enemy, heroes, scene, blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)), movement: enemy.movement, spells: [], ...extra };
 }
 
-describe('IA — auto-récupération d’État (LDB 16 l.61/77)', () => {
+describe('IA — auto-récupération d’État (LDB 16 l.66/l.84)', () => {
   it('En flammes : un ennemi non frénétique se roule au sol (priorité survie)', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ id: 'en-flammes', value: 1 }] });
     const h = mk('h', 'hero', { x: 5, y: 6 }); // pourtant adjacent → attaquable

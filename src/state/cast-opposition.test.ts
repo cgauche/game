@@ -4,6 +4,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import { modalOwnerOf, ownsLocally, intentAllowedFor } from './netOwnership';
+import { castingBaseValue } from '../engine/magic';
 import type { Combatant } from '../engine/types';
 
 /**
@@ -43,12 +44,14 @@ describe('Incantation opposée (SpellSpec.opposed — multijet)', () => {
     return { H, E };
   }
 
-  /** Pose une incantation RÉUSSIE figée (résultat contrôlé) prête à confirmer. */
+  /** Pose une incantation RÉUSSIE figée (résultat contrôlé) prête à confirmer. La valeur NUE du lanceur
+   *  est celle que `evaluateCasting` pose en prod (`castingBaseValue`) : sans elle, le départage à DR
+   *  égal de l'opposition retomberait sur les cibles (`LDB 12 l.160`). */
   function frozenCast(H: Combatant, E: Combatant, spellId: string, sl: number) {
     useGame.setState({
       pendingCast: {
         casterId: H.id, targetId: E.id, spellId, missile: false, focused: false,
-        result: { cast: true, roll: 30, target: 70, sl, isCritical: false, isFumble: false, log: 'x' },
+        result: { cast: true, roll: 30, target: 70, sl, base: castingBaseValue(H, 'langue', 'magick'), isCritical: false, isFumble: false, log: 'x' },
       },
     });
   }
@@ -156,7 +159,7 @@ describe('Incantation opposée en COOP — la cible d’un autre siège tient sa
       net: { ...useGame.getState().net, mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine', 2: 'Béa' }, ownership: { [T.id]: 1 } },
       pendingCast: {
         casterId: H.id, targetId: T.id, spellId: 'fauche-demon', missile: false, focused: false,
-        result: { cast: true, roll: 30, target: 70, sl: 6, isCritical: false, isFumble: false, log: 'x' },
+        result: { cast: true, roll: 30, target: 70, sl: 6, base: castingBaseValue(H, 'langue', 'magick'), isCritical: false, isFumble: false, log: 'x' },
       },
     });
     const { openCastCascade, openCastOpposition } = await import('./combatFlow');
@@ -231,12 +234,16 @@ describe('#1028 — rangée d’opposition : possession, jamais le kind', () => 
     useGame.setState({ battle: { ...b }, net: { ...useGame.getState().net, mode: 'local', mySeat: 0, gmSeat: undefined, ownership: {} } });
     return { H, P, E };
   }
-  const frozen = (casterId: string, targetId: string) => useGame.setState({
-    pendingCast: {
-      casterId, targetId, spellId: 'parole-de-tzeentch', missile: false, focused: false,
-      result: { cast: true, roll: 30, target: 70, sl: 4, isCritical: false, isFumble: false, log: 'x' },
-    },
-  });
+  /** Incantation figée — nue du lanceur POSÉE comme le fait `evaluateCasting` en prod (`LDB 12 l.160`). */
+  const frozen = (casterId: string, targetId: string) => {
+    const caster = useGame.getState().battle!.combatants.find((c) => c.id === casterId)!;
+    useGame.setState({
+      pendingCast: {
+        casterId, targetId, spellId: 'parole-de-tzeentch', missile: false, focused: false,
+        result: { cast: true, roll: 30, target: 70, sl: 4, base: castingBaseValue(caster, 'langue', 'magick'), isCritical: false, isFumble: false, log: 'x' },
+      },
+    });
+  };
 
   it('SOLO — cible héros `aiControlled` : rangée TÉMOIN auto-roulée, le flux AVANCE (plus de blocage)', () => {
     useGame.getState().seedRng(11);

@@ -837,11 +837,14 @@ export const FLOWS = {
       if (!actor || !pcCast || !pco) return null;
       const castT = castTestOf(pcCast); // l'incantation figée = l'« attaquant » de l'opposition
       const oppVal = testValue(actor, pco.skill, pco.char); // FM / Intelligence de la cible
+      // Valeur NUE de la cible (`LDB 09 l.17`) : le lanceur porte déjà la sienne (`castingBaseValue` via
+      // `evaluateCasting`), les DEUX camps la portent donc au départage à DR égal (`LDB 12 l.160`).
+      const oppBase = skillBaseValue(actor, pco.skill, undefined, pco.char);
       if (forced?.sl != null) {
         // Résistance (Magie), LDB 10 l.1015-1021 : le Test pour résister au Sort réussit d'office —
         // la cible RÉSISTE (interprétation : « réussir le Test pour résister » = l'opposition est
         // tenue), DR imposé = Bonus d'Endurance (nourrit la marge).
-        const oppose = forcedTR(1, oppVal, forced.sl, oppVal); // dé 01 → double=false → identique à l'ancien littéral
+        const oppose = forcedTR(1, oppVal, forced.sl, oppBase); // dé 01 → double=false
         return { result: { oppose, resisted: true, margin: Math.max(0, castT.sl - forced.sl) } };
       }
       if (forced) {
@@ -849,10 +852,10 @@ export const FLOWS = {
         const cur = part.result;
         const roll = cur ? cur.oppose.roll : 1; // 01 = jet propre garanti (LDB 17 l.68)
         const sl = Math.max(cur?.oppose.sl ?? 1, castT.sl + 1, 1);
-        const oppose = forcedTR(roll, oppVal, sl, oppVal);
+        const oppose = forcedTR(roll, oppVal, sl, oppBase);
         return { result: { oppose, resisted: true, margin: Math.max(0, castT.sl - sl) } };
       }
-      const oppose = rollTest(oppVal, 'intermediaire', battleRng());
+      const oppose = { ...rollTest(oppVal, 'intermediaire', battleRng()), base: oppBase };
       const o = resolveOpposed(castT, oppose);
       return { result: { oppose, resisted: o.winner !== 'attacker', margin: Math.max(0, castT.sl - oppose.sl) } };
     },
@@ -1738,7 +1741,8 @@ export const FLOWS = {
     lens: flatRollLens((p) => p.success ? null : p.target),
   }),
 
-  /** « Se libérer » (Empêtré, Test opposé de Force) / « se rouler au sol » (En flammes, Athlétisme) — LDB 16. */
+  /** « Se libérer » (Empêtré, Test opposé de Force, LDB 16 l.66) / « se rouler au sol » (En flammes,
+   *  Athlétisme, LDB 16 l.84). */
   recover: makeRollFlow<PendingStateRecovery>({
     key: 'pendingStateRecovery',
     die: trDie<PendingStateRecovery>(),
@@ -1753,16 +1757,20 @@ export const FLOWS = {
         // Cible effective du repli (cf. `rollTest`) : valeur BAKÉE au pending — montée, écrêtée comprise.
         const target = p.roll?.target ?? rollLine({ valeur: p.skillValue, valeurEtrangere: true, difficulty: p.difficulty }).target;
         const die = bestForcedRoll(target); // dé DR-MAX policy-aware (JAMAIS 01 en dur)
-        const actorT = forcedTR(die, target, Math.max(evaluateTest(die, target).sl, p.requireSl ?? 1, 1), p.skillValue);
+        const actorT = forcedTR(die, target, Math.max(evaluateTest(die, target).sl, p.requireSl ?? 1, 1), p.skillBase);
         if (p.opposed && p.opponentRoll) {
           const opp = resolveOpposed(actorT, p.opponentRoll); // re-oppose vs la source FIGÉE
           return { roll: actorT, netSL: Math.max(1, opp.netSL), success: true }; // l'emporte (DR +1 mini)
         }
         return { roll: actorT, netSL: Math.max(p.requireSl ?? 1, 1), success: true };
       }
-      const actorT = rollTest(p.skillValue, p.difficulty, battleRng());
+      const actorT = { ...rollTest(p.skillValue, p.difficulty, battleRng()), base: p.skillBase };
       if (p.opposed && p.opponentValue != null) {
-        const oppT = rollTest(p.opponentValue, 'intermediaire', battleRng());
+        // LDB 12 l.160 : les DEUX camps portent leur nue (`resolveRecoverTest`), jamais un seul.
+        // Difficultés ASYMÉTRIQUES (LDB 12 l.166) : l'acteur honore `p.difficulty` (donnée), l'entrave
+        // roule `intermediaire` — MÊME choix qu'à la voie IA (`runEnemyAI`, `case 'recover'`),
+        // verrouillé par `combat/ai-recover-departage-nue.test`.
+        const oppT = { ...rollTest(p.opponentValue, 'intermediaire', battleRng()), base: p.opponentBase };
         const opp = resolveOpposed(actorT, oppT);
         return { roll: actorT, opponentRoll: oppT, netSL: opp.netSL, success: opp.attackerWins };
       }
@@ -1771,7 +1779,7 @@ export const FLOWS = {
       return { roll: actorT, netSL, success: p.requireSl != null ? actorT.success && netSL >= p.requireSl : actorT.success };
     },
     reresolve: (_s, p) => {
-      const actorT = rollTest(p.skillValue, p.difficulty, battleRng());
+      const actorT = { ...rollTest(p.skillValue, p.difficulty, battleRng()), base: p.skillBase };
       if (p.opposed && p.opponentRoll) {
         const opp = resolveOpposed(actorT, p.opponentRoll); // la source garde son jet figé
         return { roll: actorT, netSL: opp.netSL, success: opp.attackerWins };

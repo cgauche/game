@@ -13,7 +13,7 @@ function mk(opts: Partial<Combatant> = {}): Combatant {
 }
 
 describe('testValue HORS COMBAT — mêmes modulations qu’en combat (audit, LDB 16/18/61)', () => {
-  it('État Empoisonné → −10 (LDB 16 l.66)', () => {
+  it('État Empoisonné → −10 (LDB 16 l.72)', () => {
     expect(testValue(mk({ conditions: [{ id: 'empoisonne', value: 1 }] }), undefined, 'intelligence')).toBe(20); // 30 − 10
   });
 

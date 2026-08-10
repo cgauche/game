@@ -1180,8 +1180,8 @@ export interface EtatData extends StatusData {
    *  niveau de cette capacité de combat chez la cible — ex. Hémorragique réduit par Endurci (`bleedIgnore`,
    *  LDB 10). Clé de `CombatFeature` ; lu génériquement par `fireConditionEffects` (jamais codé par-nom). */
   stacksReducedBy?: string;
-  /** Récupération de l'État par une ACTION (LDB 16 : Empêtré « se libérer » l.61 = Test OPPOSÉ de Force
-   *  contre la source de l'empêtrement ; En flammes « se rouler » l.77 = Test d'Athlétisme simple). Lue par
+  /** Récupération de l'État par une ACTION (LDB 16 : Empêtré « se libérer » l.66 = Test OPPOSÉ de Force
+   *  contre la source de l'empêtrement ; En flammes « se rouler » l.84 = Test d'Athlétisme simple). Lue par
    *  l'action `recover` (IA inline ET flux joueur — SOURCE UNIQUE `resolveRecoverTest`) au lieu des branches
    *  par-nom. `opposedBy:'source'` → opposé contre la Force d'entrave : `escapeStrength` FIGÉE en priorité
    *  (vaut même source absente), sinon Force de la source VIVANTE. Retire 1 + DR pions sur succès. */

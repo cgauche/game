@@ -1991,7 +1991,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return;
       const n = stacks(active, state);
       if (n <= 0) return; // pas porteur de l'État
-      // Test de récupération (Empêtré « se libérer »/En flammes « se rouler », LDB 16 l.61/77) lu de la
+      // Test de récupération (Empêtré « se libérer »/En flammes « se rouler », LDB 16 l.66/l.84) lu de la
       // DONNÉE (`EtatData.recover`) par la SOURCE UNIQUE `resolveRecoverTest` — Empêtré = opposé de Force
       // (escapeStrength figée prioritaire, sinon source vivante) ; En flammes = Athlétisme simple.
       const rt = resolveRecoverTest(active, state, battle);
@@ -1999,8 +1999,8 @@ export function createCombatSlice(get: Get, set: Set) {
       set({
         pendingStateRecovery: {
           actorId: active.id, actorName: active.label, state,
-          skillLabel: rt.skillLabel, skillValue: rt.skillValue, difficulty: rt.difficulty,
-          opposed: rt.opposed, opponentValue: rt.opponentValue, opponentName: rt.opponentName, requireSl: rt.requireSl,
+          skillLabel: rt.skillLabel, skillValue: rt.skillValue, skillBase: rt.skillBase, difficulty: rt.difficulty,
+          opposed: rt.opposed, opponentValue: rt.opponentValue, opponentBase: rt.opponentBase, opponentName: rt.opponentName, requireSl: rt.requireSl,
           entangleOnFail: rt.entangleOnFail, struggleDamage: rt.struggleDamage, stacks: n,
           roll: null, opponentRoll: null, netSL: 0, success: false,
         },

@@ -209,10 +209,10 @@ export interface OpposedResult {
  * Test opposé — LDB 12 l.160.
  * Arbitrage maison (jeu sans MJ, CLAUDE.md règle 7) : l'égalité résiduelle que la source laisse
  * au choix du MJ est tranchée en statu quo (`tie`), jamais en relance.
- * DANGER : les deux jets sortent de `rollTest` — AUCUN ne porte de valeur nue, le départage à DR égal se
- * fait donc sur les CIBLES. Avec deux Difficultés DIFFÉRENTES, ces cibles ne sont plus comparables
- * (`LDB 12 l.166` applique les modificateurs aux deux groupes) — un appelant qui les dissocie doit
- * poser lui-même les deux nues sur le résultat (`{ ...rolled.attacker, base }`, cf. `landMarketFlow`).
+ * Les deux jets sortent de `rollTest`, qui ne pose AUCUNE valeur nue : sans `bases`, le départage à DR
+ * égal se fait sur les CIBLES — et avec deux Difficultés DIFFÉRENTES, elles ne sont plus comparables
+ * (`LDB 12 l.166` applique les modificateurs aux deux groupes). `bases` porte les nues des DEUX camps
+ * (TOUT-OU-RIEN par construction) : c'est le SEUL canal par lequel une nue entre dans un jet roulé ici.
  */
 export function opposedTest(
   attackerValue: number,
@@ -220,9 +220,11 @@ export function opposedTest(
   rng: RNG = defaultRNG,
   attackerDifficulty: Difficulty = 'intermediaire',
   defenderDifficulty: Difficulty = 'intermediaire',
+  /** Valeurs NUES des deux camps (`LDB 09 l.17`), grandeur du départage à DR égal (`LDB 12 l.160`). */
+  bases?: { attacker: number; defender: number },
 ): OpposedResult {
-  const attacker = rollTest(attackerValue, attackerDifficulty, rng);
-  const defender = rollTest(defenderValue, defenderDifficulty, rng);
+  const attacker = { ...rollTest(attackerValue, attackerDifficulty, rng), ...(bases ? { base: bases.attacker } : {}) };
+  const defender = { ...rollTest(defenderValue, defenderDifficulty, rng), ...(bases ? { base: bases.defender } : {}) };
   return resolveOpposed(attacker, defender);
 }
 

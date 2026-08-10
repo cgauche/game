@@ -6245,7 +6245,7 @@ export function approachFearTrigger(get: Get, set: SetFn, mover: Combatant, from
   if (!battle || !arrivee) return;
   const dues: { c: Combatant; indice: number }[] = [];
   for (const c of battle.combatants) {
-    if (c.kind === mover.kind || isOutOfAction(c) || !c.pos) continue;
+    if (c.id === mover.id || isOutOfAction(c) || !c.pos) continue; // la Peur portée nomme sa source, quel que soit son camp
     const peur = (c.psychState ?? []).find((p) => p.type === 'peur' && p.sourceId === mover.id && (p.calmeDR ?? 0) < (p.indice ?? 0));
     if (!peur) continue;
     if (chebyshev(arrivee, c.pos) >= chebyshev(fromPos, c.pos)) continue; // n'a pas fini plus près
@@ -6335,7 +6335,7 @@ export function collectHeroRoundStartPsych(get: Get, c: Combatant): HeroPsychDue
   const state = c.psychState ?? [];
   // NOUVELLE Terreur en Ligne de Vue (1ʳᵉ rencontre → Brisé, puis devient une Peur — LDB 21 l.55-57).
   for (const foe of battle.combatants) {
-    if (foe.kind === c.kind || isOutOfAction(foe) || !foe.pos) continue;
+    if (foe.id === c.id || isOutOfAction(foe) || !foe.pos) continue; // « chez les autres créatures » (LDB 85 l.264-266) : seule exclusion, soi-même
     if (!losClear(scene, c.pos, foe.pos, smokeOf(battle))) continue;
     const src = fearSourceFor(c, foe, riderFearSize(battle, c)); // Cavalier émérite (AA 13 l.25) : Taille = monture face à la Peur de Taille
     if (!src || src.kind !== 'terreur' || state.some((p) => p.sourceId === foe.id)) continue;
@@ -6362,7 +6362,7 @@ export function collectHeroRoundEndPsych(get: Get, c: Combatant): HeroPsychDue |
   const state = c.psychState ?? [];
   // NOUVELLE source de Peur (pas Terreur — celle-ci passe par le début de Round) en Ligne de Vue.
   for (const foe of battle.combatants) {
-    if (foe.kind === c.kind || isOutOfAction(foe) || !foe.pos) continue;
+    if (foe.id === c.id || isOutOfAction(foe) || !foe.pos) continue; // « chez les autres créatures » (LDB 85 l.264-266) : seule exclusion, soi-même
     if (!losClear(scene, c.pos, foe.pos, smokeOf(battle))) continue;
     const src = fearSourceFor(c, foe, riderFearSize(battle, c)); // Cavalier émérite (AA 13 l.25) : Taille = monture face à la Peur de Taille
     if (!src || src.kind !== 'peur' || state.some((p) => p.sourceId === foe.id)) continue;
@@ -7020,15 +7020,23 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       attackThenAdvance(targetOf(action.targetId));
       return;
     case 'recover': {
-      // Se libérer (Empêtré, Test opposé de Force, l.61) / se rouler (En flammes, Athlétisme, l.77).
+      // Se libérer (Empêtré, Test opposé de Force, l.66) / se rouler (En flammes, Athlétisme, l.84).
       // Paramètres du Test lus de la DONNÉE (`EtatData.recover`) par la SOURCE UNIQUE `resolveRecoverTest`
       // (même résolution que le flux joueur). IA = résolution INSTANTANÉE (pas de modale ni de Chance). Coûte l'Action.
       if (!canAct) return advanceTurn(get, set);
       const rt = resolveRecoverTest(enemy, action.state, battle);
       if (!rt) return advanceTurn(get, set); // État non récupérable par Action (pas de `recover` en donnée)
       let success: boolean, netSL: number;
-      if (rt.opposed && rt.opponentValue != null) {
-        const opp = opposedTest(rt.skillValue, rt.opponentValue, battleRng()); success = opp.attackerWins; netSL = opp.netSL;
+      if (rt.opposed && rt.opponentValue != null && rt.opponentBase != null) {
+        // LDB 12 l.160 : les DEUX camps portent leur nue (`resolveRecoverTest` les pose ENSEMBLE, jamais
+        // l'une sans l'autre), comme la voie joueur (`FLOWS.recover`) — mêmes accesseurs.
+        // Difficultés ASYMÉTRIQUES (LDB 12 l.166) : l'acteur honore `rec.difficulty` (donnée), l'entrave
+        // roule `intermediaire` — MÊME choix qu'au flux joueur (`FLOWS.recover`), verrouillé par
+        // `combat/ai-recover-departage-nue.test`.
+        const opp = opposedTest(rt.skillValue, rt.opponentValue, battleRng(), rt.difficulty, 'intermediaire', {
+          attacker: rt.skillBase, defender: rt.opponentBase,
+        });
+        success = opp.attackerWins; netSL = opp.netSL;
       } else {
         const t = rollSansPilote(get, enemy, rt.skillValue, rt.difficulty, battleRng());
         netSL = Math.max(0, t.sl);
