@@ -11,7 +11,9 @@
  *
  * `stageCamTransform` (la CSS que le stage rend) et `stageScreenPixel` (le pixel que les gardes
  * mesurent) DÉRIVENT toutes deux de `stageCamAffine` : une retouche de l'une ne peut pas laisser
- * l'autre en arrière.
+ * l'autre en arrière. Le PICKING remonte la même chaîne à l'envers (`viewBoxPointAt` puis
+ * `stagePointAt`) — pixel de l'élément → point de projection — sans jamais interroger un CTM de SVG,
+ * que la voie volumique n'a pas.
  */
 import { VH, VW } from './useStageCamera';
 
@@ -65,4 +67,27 @@ export function stageScreenPixel(
     sx: (k * p.cx + tx - VW / 2) * s + canvas.w / 2,
     sy: (k * p.cy + ty - VH / 2) * s + canvas.h / 2,
   };
+}
+
+/** Point de VIEWBOX sous un pixel de l'ÉLÉMENT — premier étage de l'inverse de `stageScreenPixel`
+ *  (recouvrement `slice` centré, seul). C'est le repère qu'un `getScreenCTM()` de SVG rendait ; il ne
+ *  se lit plus d'un CTM, parce qu'un CANEVAS n'en a pas et que les deux voies doivent inverser la MÊME
+ *  chaîne. `px` est relatif au coin haut-gauche de l'élément. */
+export function viewBoxPointAt(px: { sx: number; sy: number }, canvas: StageCanvas): { x: number; y: number } {
+  const s = viewBoxScale(canvas);
+  return {
+    x: (px.sx - canvas.w / 2) / s + VW / 2,
+    y: (px.sy - canvas.h / 2) / s + VH / 2,
+  };
+}
+
+/** Point de PROJECTION (le repère de `tileCenter`/`worldToScreen`) sous un point de viewBox — second
+ *  étage de l'inverse : la caméra du groupe défaite, `p = (q − t)/k`. */
+export function stagePointAt(
+  q: { x: number; y: number },
+  cam: { x: number; y: number },
+  zoom: number,
+): { x: number; y: number } {
+  const { k, tx, ty } = stageCamAffine(cam, zoom);
+  return { x: (q.x - tx) / k, y: (q.y - ty) / k };
 }

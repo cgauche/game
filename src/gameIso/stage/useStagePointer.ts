@@ -1,8 +1,10 @@
 /**
  * Pointeur du stage iso :
  *  - `tileFromEvent` : écran → tuile — en exploration le PAS INTER-ÉTAGES du groupe d'abord (parité
- *    souris↔clavier), puis `activeZ`, puis fallback CROSS-COUCHE (`screenToTileAtZ` + `resolveCursorZ`) ;
- *  - `pickTile` : picking SPRITE-aware en combat (`data-cid` + `elementFromPoint` — hit-test natif) ;
+ *    souris↔clavier), puis `activeZ`, puis fallback CROSS-COUCHE (`screenToTileAtLift` +
+ *    `resolveCursorZ`). Les trois chemins inversent la projection du STAGE (`stage/projection.ts`,
+ *    `stage/stageCam.ts`) — la même que le peintre, affine ou volumique ;
+ *  - `pickTile` : picking SPRITE-aware en combat, hit-test délégué à la voie de rendu (`cidUnderPointer`) ;
  *  - glisser-caméra (seuil PAN_THRESHOLD, l'action de clic est DIFFÉRÉE au relâchement) ;
  *  - `performClick` : sélection / cible / déplacement (combat et exploration) ;
  *  - `moveAlong` : marche pas-à-pas du groupe (sauts par-dessus les gouffres compris) ;
@@ -28,9 +30,11 @@ import { controlsActive } from '../../state/netOwnership';
 import { combatantClickActs } from '../../state/combatOrParty';
 import { hoverClickCommits } from '../../ui/pointerCaps';
 import { bestAttack } from '../../state/attackRelevance';
-import { Dims, screenToTileAtZ } from '../../geometry/iso';
+import { type Dims } from '../../geometry/iso';
 import { STEP_MS } from '../../geometry/walk';
-import { VW, VH } from './useStageCamera';
+import { poseFromDims, screenToTileAtLift } from './projection';
+import { stagePointAt, viewBoxPointAt } from './stageCam';
+import { cidUnderPointer } from './spritePicker';
 import type { RoomPortal } from '../../state/roomPortals';
 
 const PAN_THRESHOLD = 6; // px de glissement avant de passer en panoramique (sinon = clic)
@@ -98,6 +102,10 @@ export function useStagePointer({
     return () => { delete w.__wfrpSetHover; };
   }, []);
 
+  // POSE de projection du rendu courant : les trois chemins d'inversion ci-dessous lisent la MÊME
+  // géométrie que le peintre, quelle que soit la voie.
+  const pose = poseFromDims(dims);
+
   /** Case d'un AUTRE étage visée par le pointeur, BORNÉE au voisinage marchable du groupe
    *  (`walkNeighbors` — exactement la connectivité qu'emprunte le pas clavier `exploreStepDest`) : le
    *  franchissement vertical (marches, rampe, tablier) se CLIQUE donc comme il se pousse au clavier, et
@@ -112,7 +120,7 @@ export function useStagePointer({
     for (const n of walkNeighbors(scene, useGame.getState().partyPos)) {
       const nz = n.z ?? 0;
       if (nz === activeZ) continue; // même étage : la résolution de l'étage actif ci-dessous suffit
-      const { x, y } = screenToTileAtZ(gx, gy, dims, metricToLift(heightAt(scene, n.x, n.y, nz)));
+      const { x, y } = screenToTileAtLift(pose, { x: gx, y: gy }, metricToLift(heightAt(scene, n.x, n.y, nz)));
       if (x === n.x && y === n.y) return n;
     }
     return null;
@@ -129,7 +137,7 @@ export function useStagePointer({
   const walkableAtScreen = (gx: number, gy: number, z: number): Pt | null => {
     if (!scene) return null;
     for (const lift of sceneLifts(scene)) {
-      const { x, y } = screenToTileAtZ(gx, gy, dims, lift);
+      const { x, y } = screenToTileAtLift(pose, { x: gx, y: gy }, lift);
       if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
       if (metricToLift(heightAt(scene, x, y, z)) !== lift) continue; // cette case n'est pas dessinée à ce lift
       if (!isWalkable(scene, x, y, z)) continue;
@@ -138,17 +146,13 @@ export function useStagePointer({
     return null;
   };
 
-  // Écran → tuile : annule le zoom (scale autour du centre viewport) puis la translation caméra.
+  // Écran → tuile : le pixel de l'élément remonte la chaîne d'affichage à l'envers par les DEUX
+  // étages de `stageCam` (recouvrement `slice`, puis caméra du groupe), et retombe dans le repère de
+  // projection où `tileCenter`/`worldToScreen` dessinent.
   const tileFromEvent = (ev: React.PointerEvent): Pt | null => {
-    const svg = svgRef.current;
-    if (!svg || !scene) return null;
-    const pt = svg.createSVGPoint();
-    pt.x = ev.clientX;
-    pt.y = ev.clientY;
-    const loc = pt.matrixTransform(svg.getScreenCTM()!.inverse());
-    const cam = camRef.current!;
-    const gx = (loc.x - VW / 2) / zoom + VW / 2 - cam.x;
-    const gy = (loc.y - VH / 2) / zoom + VH / 2 - cam.y;
+    const vb = clientToSvg(ev);
+    if (!vb || !scene) return null;
+    const { x: gx, y: gy } = stagePointAt(vb, camRef.current!, zoom);
     if (useGame.getState().mode === 'exploration') {
       const step = stepFromScreen(gx, gy);
       if (step) return step;
@@ -158,7 +162,7 @@ export function useStagePointer({
     // Fallback CROSS-COUCHE aligné sur le curseur clavier : chaque couche est inversée à son lift,
     // puis `resolveCursorZ` tranche la surface réelle la plus haute de la case candidate.
     for (const z of scene.layers.map((l) => l.z).sort((a, b) => b - a)) {
-      const { x, y } = screenToTileAtZ(gx, gy, dims, z);
+      const { x, y } = screenToTileAtLift(pose, { x: gx, y: gy }, z);
       if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
       if (resolveCursorZ(scene, x, y) !== z) continue; // la surface réelle la plus haute ici n'est pas cette couche
       return z ? { x, y, z } : { x, y };
@@ -166,30 +170,29 @@ export function useStagePointer({
     return null;
   };
 
-  // Picking SPRITE-aware (combat) : si un TOKEN est réellement dessiné sous le curseur (hit-test natif
-  // du navigateur via `data-cid`), on cible SA tuile — pas la tuile « derrière » le sprite (ancré
-  // au-dessus de sa case en iso, d'où l'ancienne « chasse aux pieds »). Empilement géré nativement :
-  // le token de DEVANT (le plus haut dans le tri de profondeur) gagne. Hors d'un token (sol visible)
-  // → la tuile du sol (tileFromEvent) pour le déplacement. Hors combat → sol direct.
+  // Picking SPRITE-aware (combat) : si un TOKEN est réellement dessiné sous le curseur, on cible SA
+  // tuile — pas la tuile « derrière » le sprite (ancré au-dessus de sa case en iso, d'où l'ancienne
+  // « chasse aux pieds »). Le hit-test lui-même appartient à la VOIE DE RENDU (`cidUnderPointer` :
+  // `elementFromPoint` en affine, lancer de rayon en volumique) — l'empilement s'y tranche, de la
+  // seule façon que la voie sait trancher. Hors d'un token (sol visible) → la tuile du sol
+  // (tileFromEvent) pour le déplacement. Hors combat → sol direct.
   const pickTile = (ev: React.PointerEvent): Pt | null => {
     const st = useGame.getState();
     if (st.mode === 'battle' && st.battle) {
-      const cid = (document.elementFromPoint(ev.clientX, ev.clientY) as Element | null)?.closest('[data-cid]')?.getAttribute('data-cid');
+      const cid = cidUnderPointer(ev.clientX, ev.clientY);
       const c = cid ? st.battle.combatants.find((x) => x.id === cid) : undefined;
       if (c?.pos) return c.pos.z ? { x: c.pos.x, y: c.pos.y, z: c.pos.z } : { x: c.pos.x, y: c.pos.y };
     }
     return tileFromEvent(ev);
   };
 
-  // Écran → coordonnées SVG (repère viewBox), via la CTM — base du panoramique (delta de glissement).
+  // Écran → coordonnées de VIEWBOX — base du panoramique (delta de glissement). Le seul étage de
+  // `stageCam` qui s'inverse ici est le recouvrement `slice` : la caméra du groupe reste en place,
+  // c'est elle qu'on déplace.
   const clientToSvg = (ev: React.PointerEvent): { x: number; y: number } | null => {
-    const svg = svgRef.current;
-    if (!svg) return null;
-    const pt = svg.createSVGPoint();
-    pt.x = ev.clientX;
-    pt.y = ev.clientY;
-    const loc = pt.matrixTransform(svg.getScreenCTM()!.inverse());
-    return { x: loc.x, y: loc.y };
+    const r = svgRef.current?.getBoundingClientRect();
+    if (!r || !r.width || !r.height) return null; // élément sans surface mesurée : aucun pixel à inverser
+    return viewBoxPointAt({ sx: ev.clientX - r.left, sy: ev.clientY - r.top }, { w: r.width, h: r.height });
   };
 
   const pathOpts = (): PathOpts => {

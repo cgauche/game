@@ -13,6 +13,7 @@ import { bus, EVT } from '../../state/bus';
 import { STEP_MS } from '../../geometry/walk';
 import type { Combatant } from '../../engine/types';
 import type { RoomPortal } from '../../state/roomPortals';
+import { VH, VW } from './useStageCamera';
 import { useStagePointer, type StagePointer } from './useStagePointer';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -22,6 +23,18 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 const dims: Dims = { w: 8, h: 8, rot: 0, view: 'iso' };
+
+/** Élément de stage MESURÉ : sa surface vaut exactement le viewBox (VW×VH) posé au coin (0,0) — le
+ *  recouvrement `slice` y vaut donc 1, et un pixel client EST un point de viewBox. C'est le contrat
+ *  que le picking inverse (`viewBoxPointAt` puis `stagePointAt`, `stage/stageCam.ts`) : une géométrie
+ *  d'élément, jamais un CTM de SVG — la voie volumique peint sur un canevas, qui n'en a pas. */
+function stageEl(): SVGSVGElement {
+  return {
+    getBoundingClientRect: () => ({ left: 0, top: 0, width: VW, height: VH }) as DOMRect,
+    setPointerCapture: () => undefined,
+    releasePointerCapture: () => undefined,
+  } as unknown as SVGSVGElement;
+}
 
 const portal: RoomPortal = {
   id: '0:2,2:N:room-a:room-b',
@@ -88,18 +101,7 @@ describe('useStagePointer — picking exploration', () => {
 
     let pointer: StagePointer | undefined;
     const Probe = () => {
-      const svgRef = useRef({
-        createSVGPoint: () => ({
-          x: 0,
-          y: 0,
-          matrixTransform() {
-            return { x: this.x, y: this.y };
-          },
-        }),
-        getScreenCTM: () => ({ inverse: () => ({}) }),
-        setPointerCapture: () => undefined,
-        releasePointerCapture: () => undefined,
-      } as unknown as SVGSVGElement);
+      const svgRef = useRef(stageEl());
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
@@ -141,18 +143,7 @@ describe('useStagePointer — picking exploration', () => {
 
     let pointer: StagePointer | undefined;
     const Probe = () => {
-      const svgRef = useRef({
-        createSVGPoint: () => ({
-          x: 0,
-          y: 0,
-          matrixTransform() {
-            return { x: this.x, y: this.y };
-          },
-        }),
-        getScreenCTM: () => ({ inverse: () => ({}) }),
-        setPointerCapture: () => undefined,
-        releasePointerCapture: () => undefined,
-      } as unknown as SVGSVGElement);
+      const svgRef = useRef(stageEl());
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
@@ -211,18 +202,7 @@ describe('useStagePointer — picking exploration', () => {
 
     let pointer: StagePointer | undefined;
     const Probe = () => {
-      const svgRef = useRef({
-        createSVGPoint: () => ({
-          x: 0,
-          y: 0,
-          matrixTransform() {
-            return { x: this.x, y: this.y };
-          },
-        }),
-        getScreenCTM: () => ({ inverse: () => ({}) }),
-        setPointerCapture: () => undefined,
-        releasePointerCapture: () => undefined,
-      } as unknown as SVGSVGElement);
+      const svgRef = useRef(stageEl());
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
@@ -270,18 +250,7 @@ describe('useStagePointer — picking exploration', () => {
 
     let pointer: StagePointer | undefined;
     const Probe = () => {
-      const svgRef = useRef({
-        createSVGPoint: () => ({
-          x: 0,
-          y: 0,
-          matrixTransform() {
-            return { x: this.x, y: this.y };
-          },
-        }),
-        getScreenCTM: () => ({ inverse: () => ({}) }),
-        setPointerCapture: () => undefined,
-        releasePointerCapture: () => undefined,
-      } as unknown as SVGSVGElement);
+      const svgRef = useRef(stageEl());
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
@@ -325,18 +294,7 @@ describe('useStagePointer — picking exploration', () => {
 
     let pointer: StagePointer | undefined;
     const Probe = () => {
-      const svgRef = useRef({
-        createSVGPoint: () => ({
-          x: 0,
-          y: 0,
-          matrixTransform() {
-            return { x: this.x, y: this.y };
-          },
-        }),
-        getScreenCTM: () => ({ inverse: () => ({}) }),
-        setPointerCapture: () => undefined,
-        releasePointerCapture: () => undefined,
-      } as unknown as SVGSVGElement);
+      const svgRef = useRef(stageEl());
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
@@ -605,18 +563,7 @@ describe('useStagePointer — picking exploration', () => {
 
     let pointer: StagePointer | undefined;
     const Probe = () => {
-      const svgRef = useRef({
-        createSVGPoint: () => ({
-          x: 0,
-          y: 0,
-          matrixTransform() {
-            return { x: this.x, y: this.y };
-          },
-        }),
-        getScreenCTM: () => ({ inverse: () => ({}) }),
-        setPointerCapture: () => undefined,
-        releasePointerCapture: () => undefined,
-      } as unknown as SVGSVGElement);
+      const svgRef = useRef(stageEl());
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,
@@ -657,18 +604,7 @@ describe('useStagePointer — relief et franchissement d’étage à la souris',
   const mountProbe = (scene: ReturnType<typeof emptyScene>, activeZ = 0) => {
     let pointer: StagePointer | undefined;
     const Probe = () => {
-      const svgRef = useRef({
-        createSVGPoint: () => ({
-          x: 0,
-          y: 0,
-          matrixTransform() {
-            return { x: this.x, y: this.y };
-          },
-        }),
-        getScreenCTM: () => ({ inverse: () => ({}) }),
-        setPointerCapture: () => undefined,
-        releasePointerCapture: () => undefined,
-      } as unknown as SVGSVGElement);
+      const svgRef = useRef(stageEl());
       const camRef = useRef({ x: 0, y: 0 });
       pointer = useStagePointer({
         svgRef,

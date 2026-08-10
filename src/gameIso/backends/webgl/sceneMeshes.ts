@@ -399,6 +399,10 @@ export function buildWorldGeometry(scene: Scene, mpt: number, tintAt: TintAt): W
 export interface BillboardSubject {
   /** Identité de cache (hors vue/miroir/palier — cf. `billboardTextureKey`). */
   identity: string;
+  /** Id du COMBATTANT dessiné, quand ce sujet en est un (`actorBillboards`) — ce que le hit-test de
+   *  sprite rend au pointeur (`stage/spritePicker.ts`). Absent pour un figurant ou un décor : ni l'un
+   *  ni l'autre ne porte de `data-cid` en affine, ils n'y sont donc pas cliquables non plus. */
+  cid?: string;
   kind: BillboardKind;
   /** Ancre PIEDS en repère three (mètres). */
   anchor: THREE.Vector3;
@@ -619,6 +623,7 @@ export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt:
     const off = (sizeFootprint(c.size) - 1) / 2;
     out.push({
       identity: `acteur:${c.id}|${hash32(stableStr(inputs)).toString(16)}`, // la signature du DESSIN, cf. `combatantRenderSignature`
+      cid: c.id,
       kind: 'personnage',
       anchor: new THREE.Vector3((x + off) * mpt, heightAt(scene, Math.round(x), Math.round(y), z), (y + off) * mpt),
       facing: facing ?? 'S',

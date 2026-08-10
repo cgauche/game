@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { Vector3 } from 'three';
 import {
   poseFromDims,
+  screenToTileAtLift,
   screenToWorldAtLift,
   stageKindOf,
   worldToScreen,
@@ -191,5 +192,67 @@ describe('PURETÉ — le module de projection ne tire jamais le moteur volumique
     expect(SRC).not.toMatch(/\brequire\(\s*['"]three/);
     expect(SRC).toMatch(/from\s+'\.\.\/\.\.\/geometry\/iso'/);
     expect(SRC.match(/^import\s/gm)?.length).toBe(1);
+  });
+});
+
+/**
+ * BALAYAGE DE L'ÉCRAN ENTIER, AUX QUATRE CRANS ET DANS LES TROIS VUES — la portée EXACTE de la réserve
+ * écrite au JSDoc de `screenToTileAtLift` : son arrondi tombe APRÈS la dé-rotation, celui de la
+ * production (`screenToTileAtZ`) AVANT, et les deux ne peuvent nommer deux cases voisines que là où la
+ * coordonnée continue vaut un demi — sur la frontière EXACTE de deux cases, où il n'y a rien à
+ * départager. Le cran de rotation est le SEUL axe où ces deux ordres d'arrondi divergent : la garde de
+ * picking (`pick-parity.test.tsx`) travaille à `rot: 0`, où l'écart est nul ; ce balayage vise les
+ * crans 1 à 3, où il ne l'est pas. Toute divergence AILLEURS qu'au demi est une vraie régression.
+ */
+describe('Balayage écran — les deux arrondis ne se séparent QUE sur la frontière de deux cases', () => {
+  const CARTE = { w: 12, h: 9 };
+  /** Pas du balayage, en pixels entiers. Premier avec les pas de grille (32/16 px en losange, 56 en
+   *  vue du dessus) : toutes les phases sont visitées, frontières comprises (compteur `frontieres`). */
+  const PAS = 3;
+  const MARGE = 48; // le balayage déborde la carte : hors-grille aussi, les deux chaînes doivent s'accorder
+
+  function dimsSweep(kind: StageKind, rot: Rot): Dims {
+    const base: Dims = { ...CARTE, rot };
+    if (kind === 'edge') return { ...base, edge: true };
+    if (kind === 'top') return { ...base, view: 'top' };
+    return base;
+  }
+
+  it('crans 0-3 × iso/edge/top : toute divergence de case est exactement sur le demi', () => {
+    const hors: string[] = [];
+    let points = 0;
+    let divergences = 0;
+    let frontieres = 0;
+    for (const kind of KINDS)
+      for (const rot of ROTS) {
+        const dims = dimsSweep(kind, rot);
+        const pose = poseFromDims(dims);
+        const coins = [[0, 0], [CARTE.w - 1, 0], [0, CARTE.h - 1], [CARTE.w - 1, CARTE.h - 1]]
+          .map(([x, y]) => worldToScreen(pose, { x, y }));
+        const x0 = Math.floor(Math.min(...coins.map((c) => c.x))) - MARGE;
+        const x1 = Math.ceil(Math.max(...coins.map((c) => c.x))) + MARGE;
+        const y0 = Math.floor(Math.min(...coins.map((c) => c.y))) - MARGE;
+        const y1 = Math.ceil(Math.max(...coins.map((c) => c.y))) + MARGE;
+        for (let px = x0; px <= x1; px += PAS)
+          for (let py = y0; py <= y1; py += PAS) {
+            const a = screenToTileAtLift(pose, { x: px, y: py }, 0);
+            const b = screenToTileAtZ(px, py, dims, 0);
+            const w = screenToWorldAtLift(pose, { x: px, y: py }, 0);
+            const auDemi = Math.min(
+              Math.abs(w.x - Math.floor(w.x) - 0.5),
+              Math.abs(w.y - Math.floor(w.y) - 0.5),
+            ) === 0;
+            points++;
+            if (auDemi) frontieres++;
+            if (a.x !== b.x || a.y !== b.y) {
+              divergences++;
+              if (!auDemi) hors.push(`${kind} rot${rot} (${px},${py}) stage=${a.x},${a.y} production=${b.x},${b.y} continu=${w.x.toFixed(4)},${w.y.toFixed(4)}`);
+            }
+          }
+      }
+    expect(hors.slice(0, 6)).toEqual([]);
+    expect(points).toBeGreaterThan(100_000); // le balayage couvre vraiment les 12 configurations
+    expect(frontieres).toBeGreaterThan(0); // …et il VISITE des frontières : la tolérance n'est pas vide
+    expect(divergences).toBeLessThanOrEqual(frontieres); // aucune divergence hors des frontières visitées
   });
 });

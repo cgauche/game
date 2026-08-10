@@ -27,8 +27,10 @@
  * Trois GROUPES distincts sous la même scène three : le MONDE (une géométrie, un matériau par groupe de
  * surface — remonté au seul changement de cuisson), les ACCENTS de sol (instanciés, remontés à la teinte)
  * et les BILLBOARDS (invalidés à la position visuelle des acteurs, donc à la frame pendant une marche).
- * Le canevas est posé SOUS le SVG du stage et sans événements de pointeur : overlays, picking et voiles
- * restent au SVG (lots P2-3 / P2-7).
+ * Le canevas est posé SOUS le SVG du stage et sans événements de pointeur : les overlays et les voiles
+ * restent au SVG, qui reçoit tous les événements (lot P2-7). Le hit-test de SPRITE, lui, ne peut plus
+ * s'y lire — plus aucun jeton n'y porte de `data-cid` : cet écran INSCRIT son lanceur de rayon auprès
+ * de `stage/spritePicker.ts`, la couture unique où le pointeur pose la question.
  */
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
@@ -64,6 +66,8 @@ import {
   type TintAt,
 } from '../backends/webgl/sceneMeshes';
 import { buildGroundAccentMeshes, maskGroundAccents, sceneGroundAccents } from '../backends/webgl/groundAccents';
+import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/spriteRaycast';
+import { setSpritePicker } from './spritePicker';
 import { stage3dFraming } from './stage3dCamera';
 
 /** Fond du canevas — celui des planches QC, sous les mêmes voiles d'ambiance que l'affine. */
@@ -119,6 +123,7 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
+  const cameraRef = useRef<THREE.Camera | null>(null);
   const camRot = dims.rot ?? 0;
 
   const three = useRef<THREE.Scene>();
@@ -179,8 +184,31 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       b.mesh.position.copy(billboardPose(b.sub.anchor, b.quad.centerLiftM, camera.quaternion));
       b.material.polygonOffsetUnits = billboardDepthOffsetUnits(camera.near, camera.far);
     }
+    cameraRef.current = camera; // la caméra de la DERNIÈRE frame : celle que le rayon de picking doit emprunter
     renderer.render(three.current, camera);
   };
+
+  // HIT-TEST DE SPRITE (lot P2-3) : la voie volumique répond au pointeur par un RAYON — cibles = les
+  // quads montés (ceux d'un combattant portent son id) plus les masses du monde, inscrites sans id
+  // (une masse qui gagne le rayon = rien de cliquable ici, comme un mur peint par-dessus un jeton en
+  // affine). L'inscription vit et meurt avec ce composant, qui n'est monté qu'en volumique.
+  useEffect(() => {
+    setSpritePicker((clientX, clientY) => {
+      const canvas = canvasRef.current;
+      const camera = cameraRef.current;
+      if (!canvas || !camera) return null;
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return null;
+      const cibles: PickTarget[] = [{ cid: null, object: monde.current! }];
+      for (const b of boardsRef.current) cibles.push({ cid: b.sub.cid ?? null, object: b.mesh });
+      return pickNearestCid(
+        camera,
+        cibles,
+        ndcAt({ x: clientX - rect.left, y: clientY - rect.top }, { w: rect.width, h: rect.height }),
+      );
+    });
+    return () => setSpritePicker(null);
+  }, []);
 
   // Renderer UNIQUE (le canevas ne se remonte jamais).
   useEffect(() => {
@@ -315,7 +343,8 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
 
   // Le canevas OCCUPE la boîte du stage : c'est la MÊME boîte que le SVG, donc la même classe
   // (`.iso-stage` — aucun sélecteur de domaine de plus, cf. cliquet CSS `ui-ratchets` xii). Les deux
-  // seules choses qui l'en distinguent sont posées ici : il ne reçoit aucun pointeur (tout le picking
-  // reste au SVG), et il se peint SOUS lui (ordre du DOM).
+  // seules choses qui l'en distinguent sont posées ici : il ne reçoit aucun pointeur (les événements
+  // restent au SVG, qui interroge ce monde par le rayon inscrit ci-dessus), et il se peint SOUS lui
+  // (ordre du DOM).
   return <canvas ref={canvasRef} className="iso-stage" style={{ pointerEvents: 'none' }} aria-hidden="true" />;
 }

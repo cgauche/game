@@ -139,6 +139,17 @@ export function screenToWorldAtLift(pose: StagePose, screen: StageScreen, lift =
   return { x: d.x + pose.pivot.x, y: d.y + pose.pivot.y };
 }
 
+/** CASE ENTIÈRE sous un pixel, au niveau `lift` : l'arrondi de `screenToWorldAtLift`. C'est la forme
+ *  que consomme le picking (`stage/useStagePointer.ts`), dont les trois chemins itèrent les lifts
+ *  d'une scène pour retrouver la case DESSINÉE sous le pixel. Elle rend `screenToTileAtZ`
+ *  (`geometry/iso.ts`) case pour case ; l'arrondi y tombe après la dé-rotation, là où l'ancienne
+ *  l'appliquait avant — les deux ne peuvent se séparer que sur la frontière EXACTE de deux cases, où
+ *  elles nomment deux voisines (mesuré : `stage/pick-parity.test.tsx`). */
+export function screenToTileAtLift(pose: StagePose, screen: StageScreen, lift = 0): { x: number; y: number } {
+  const w = screenToWorldAtLift(pose, screen, lift);
+  return { x: Math.round(w.x), y: Math.round(w.y) };
+}
+
 /** Décalage écran vertical d'une élévation : `LEVEL_H` px par niveau, nul en vue du dessus (une caméra
  *  à la verticale ne sépare pas les étages à l'écran — cf. `screenToWorldAtLift`). */
 function liftPx(pose: StagePose, lift: number): number {
