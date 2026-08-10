@@ -24,7 +24,7 @@ import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { FACADE_APPEARANCE_IDS } from '../../gameIso/catalog/facades';
 import { MERCHANTS } from '../../state/merchants/index';
 import { allMusicDefs } from '../../audio/music';
-import { findCreatureById, creatureLabel, lightLevels, findVehicleById, roofMaterials } from '../../data';
+import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, roofMaterials } from '../../data';
 import { DEFAULT_ROOF_DEFAULTS, rederiveRoofMasses } from '../../state/sceneEdit';
 import { activitiesFor } from '../../engine/activities';
 
@@ -1435,20 +1435,34 @@ function EntityPanel({
             <input
               type="checkbox"
               checked={!!ent.light}
-              onChange={(e) => updateSel({ light: e.target.checked ? { radiusTiles: ent.light?.radiusTiles ?? 3 } : undefined })}
+              onChange={(e) => updateSel({ light: e.target.checked ? { ...ent.light, radiusTiles: ent.light?.radiusTiles ?? 3 } : undefined })}
             />{' '}
             <Icon id="ui/eye" size="sm" /> Source de lumière (override de l'instance — sinon rayon du type de décor)
           </label>
           {ent.light && (
-            <label className="ed-field">
-              Rayon d'éclairage (cases)
-              <input
-                type="number"
-                min={1}
-                value={ent.light.radiusTiles}
-                onChange={(e) => updateSel({ light: { radiusTiles: Math.max(1, Number(e.target.value) || 1) } })}
-              />
-            </label>
+            <>
+              <label className="ed-field">
+                Rayon d'éclairage (cases)
+                <input
+                  type="number"
+                  min={1}
+                  value={ent.light.radiusTiles}
+                  onChange={(e) => updateSel({ light: { ...ent.light!, radiusTiles: Math.max(1, Number(e.target.value) || 1) } })}
+                />
+              </label>
+              <label className="ed-field">
+                Ton de la lumière (apparence — couleur, intensité, vacillement)
+                <select
+                  value={ent.light.tone ?? ''}
+                  onChange={(e) => updateSel({ light: { ...ent.light!, tone: e.target.value || undefined } })}
+                >
+                  <option value="">— (hériter du type de décor) —</option>
+                  {lightTones.map((t) => (
+                    <option key={t.id} value={t.id}>{t.label}</option>
+                  ))}
+                </select>
+              </label>
+            </>
           )}
           <label className="ed-check">
             <input

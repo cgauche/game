@@ -136,6 +136,9 @@ export const GAMEOP_FIELD_TARGETS = {
   'rollMutation.table': { registry: 'mutationTables' },
   // ── Terrain (registre `src/state/terrain/defs/`) ──
   'offTerrainMod.terrain': { registry: 'terrains' },
+  // ── Tons de lumière (lightTones.json) — APPARENCE d'une source, résolue au bord du rendu
+  // (`gameIso/stage/stagePointLights.ts::resolveTone`). Absent = `flamme`.
+  'light.tone': { registry: 'lightTones' },
   // ── Champs qui ne visent AUCUN registre ──
   'narrative.text': { nonRef: 'prose d\'arbitrage, journalisée verbatim (src/engine/ops.ts:956)' },
   'grantWeapon.label': { nonRef: 'nom affiché de l\'arme invoquée (l\'arme n\'a pas d\'entrée de catalogue)' },

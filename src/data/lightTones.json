@@ -1,0 +1,34 @@
+[
+  {
+    "id": "flamme",
+    "label": "Flamme",
+    "color": "#ff8c3a",
+    "intensity": 1,
+    "flicker": {
+      "amplitude": 0.35,
+      "hz": 2.4
+    }
+  },
+  {
+    "id": "lanterne",
+    "label": "Lanterne",
+    "color": "#ffe6b3",
+    "intensity": 0.6
+  },
+  {
+    "id": "chandelle",
+    "label": "Chandelle",
+    "color": "#ffbf66",
+    "intensity": 0.45,
+    "flicker": {
+      "amplitude": 0.45,
+      "hz": 3.6
+    }
+  },
+  {
+    "id": "magique",
+    "label": "Magique",
+    "color": "#8fc8ff",
+    "intensity": 0.85
+  }
+]

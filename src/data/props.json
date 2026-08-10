@@ -17,14 +17,16 @@
     "id": "chandelier",
     "solid": true,
     "light": {
-      "radiusTiles": 3
+      "radiusTiles": 3,
+      "tone": "chandelle"
     }
   },
   {
     "id": "lampadaire",
     "solid": true,
     "light": {
-      "radiusTiles": 5
+      "radiusTiles": 5,
+      "tone": "lanterne"
     }
   },
   {

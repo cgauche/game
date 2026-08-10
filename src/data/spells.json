@@ -1468,7 +1468,8 @@
             "ops": [
               {
                 "op": "light",
-                "radiusTiles": 10
+                "radiusTiles": 10,
+                "tone": "magique"
               },
               {
                 "op": "narrative",
@@ -19702,7 +19703,8 @@
             "ops": [
               {
                 "op": "light",
-                "radiusTiles": 5
+                "radiusTiles": 5,
+                "tone": "magique"
               },
               {
                 "op": "narrative",

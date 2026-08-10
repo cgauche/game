@@ -207,7 +207,7 @@ describe('Billboards — leur lumière est un SCALAIRE, jamais une normale', () 
    *  passe de pose écrit doit donc quelque chose aux lampes, pas seulement au palier de la frame. */
   const LUM_FRAME = 0.3;
   const flaques = (): FrameLights => {
-    const w = { srcId: 'b0', x: 3, y: FLAME_LIFT_M, z: 0, intensity: FLAME_INTENSITY * Math.PI * 0.7, distance: 8 };
+    const w = { srcId: 'b0', x: 3, y: FLAME_LIFT_M, z: 0, intensity: FLAME_INTENSITY * Math.PI * 0.7, distance: 8, color: 0xffffff };
     const lampe = new THREE.PointLight(0xffffff, 0, 0, 0);
     lampe.position.set(w.x, w.y, w.z);
     lampe.intensity = w.intensity;

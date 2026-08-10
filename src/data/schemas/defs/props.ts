@@ -14,7 +14,9 @@ export const schema = z.array(
     solid: z.boolean().optional(),
     opaque: z.boolean().optional(),
     cover: z.enum(['imparfaite', 'moyenne', 'totale']).optional(),
-    light: z.strictObject({ radiusTiles: z.number() }).optional(),
+    // `tone` (#1245, L4) = APPARENCE seule (`lightTones.json` : couleur/intensité/vacillement),
+    // résolue au bord du rendu ; le RAYON reste la seule chose que le moteur lise d'une source.
+    light: z.strictObject({ radiusTiles: z.number(), tone: z.string().optional() }).optional(),
   }),
 );
 

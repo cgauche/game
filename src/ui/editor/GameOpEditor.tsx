@@ -12,7 +12,7 @@ import { Formula, GameOp } from '../../engine/ops';
 import { CHAOS_ALIGN_LABELS, ChaosAlign, EXPOSURE_LABELS, ExposureLevel } from '../../engine/corruption';
 import { CHAR_LABELS, CharKey, ArmourBypass } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
-import { etats, talentConcrete, qualityRefLabel, refLabel, findCrewTestTypeById, CHAR_ABR, effectTables, mutationTables, conditionLabel } from '../../data';
+import { etats, talentConcrete, qualityRefLabel, refLabel, findCrewTestTypeById, CHAR_ABR, effectTables, mutationTables, conditionLabel, lightTones } from '../../data';
 import { RefField } from '../compendium/RefField';
 import type { DatasetKey } from '../../data/overrides';
 import { giveTrappingLabel } from '../../engine/items';
@@ -561,7 +561,7 @@ export function opSummary(o: GameOp): string {
 const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'ap', 'testMod',
   'corruption', 'sinMod', 'corruptionExposure', 'gainResource', 'grantTrait', 'grantTalent', 'grantNaturalWeapon', 'narrative',
-  'summon', 'polymorph', 'lifeSteal', 'push', 'teleport', 'chain', 'rollTable', 'rollMutation', 'armourPierce',
+  'summon', 'polymorph', 'lifeSteal', 'push', 'teleport', 'chain', 'rollTable', 'rollMutation', 'armourPierce', 'light',
 ]);
 
 /** Rangées d'une op `rollTable` (Vers de carie, MSRC 16 l.90) : `[min,max]` (source unique de fourchette,
@@ -793,6 +793,20 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'polymorph' && (
           <RefField cfg={{ ds: 'creatures', single: true }} fieldKey="Forme prise" value={o.ref ?? ''} onChange={(v) => upd({ ref: (v as string) ?? '' })} />
+        )}
+        {op.op === 'light' && (
+          <>
+            <label className="dr">Rayon (cases)
+              <input type="number" min={1} value={o.radiusTiles ?? 1}
+                onChange={(e) => upd({ radiusTiles: Math.max(1, Number(e.target.value) || 1) })} />
+            </label>
+            <label className="dr">Ton
+              <select value={o.tone ?? ''} onChange={(e) => upd({ tone: e.target.value || undefined })}>
+                <option value="">— ton par défaut —</option>
+                {lightTones.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+              </select>
+            </label>
+          </>
         )}
         {op.op === 'lifeSteal' && (
           <>

@@ -989,8 +989,10 @@ export type GameOp =
   | { op: 'spendAdvantage'; amount: number }
   /** Émission de LUMIÈRE (rayon en cases, brouillard de guerre, 1 case=2 m). Côté OBJET (`passive`) :
    *  INERTE dans applyOps — lu par `combatantLights` (vision) pour les objets PORTÉS/TENUS. Côté SORT :
-   *  pousse un `ActiveEffect.light` temporisé (durée), lu au MÊME point. */
-  | { op: 'light'; radiusTiles: number; durationRounds?: Formula }
+   *  pousse un `ActiveEffect.light` temporisé (durée), lu au MÊME point.
+   *  `tone` : id d'un `lightTones` — APPARENCE seule (couleur/intensité/vacillement), résolue au bord
+   *  du rendu et jamais ici ; absent = `flamme`. Le RAYON reste seul à porter une conséquence de règle. */
+  | { op: 'light'; radiusTiles: number; tone?: string; durationRounds?: Formula }
   /** Boisson alcoolisée : enregistre UN échec de Résistance à l'alcool (LDB 09 l.475) sur la cible —
    *  −10 aux CC/CT/Ag/Dex/Int (plafond −30), et Ivresse (1d10) au seuil BE. Posé sur la branche `fail`
    *  du Flow de consommable d'une boisson (le Test de Résistance à l'alcool est le nœud `test` du Flow). */
@@ -2173,7 +2175,8 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const dur: Duration = o.durationRounds != null
           ? { scale: 'rounds', left: resolveFormula(o.durationRounds, ref, rng) }
           : durationFromCtx(ctx);
-        applyActiveEffect(target, { label: ctx.label ?? 'Lumière', bonus: 0, light: { radiusTiles: o.radiusTiles }, duration: dur });
+        const lumière = o.tone ? { radiusTiles: o.radiusTiles, tone: o.tone } : { radiusTiles: o.radiusTiles };
+        applyActiveEffect(target, { label: ctx.label ?? 'Lumière', bonus: 0, light: lumière, duration: dur });
         lines.push(t('op.light', { name: target.label, n: o.radiusTiles, src: ctx.label ?? 'sort' }));
         break;
       }

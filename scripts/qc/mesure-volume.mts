@@ -65,7 +65,7 @@
  * quasi-blanche) — son volume s'y prouve par l'OMBRE, miroir symétrique : part SOMBRE (< seuil
  * base↔ombre) à la place de part claire, `p10SurBase` (« ancrage » bas) à la place de `p90SurBase`.
  */
-import { inflateSync } from 'node:zlib';
+import { decodePng, type PlancheRGBA } from './lib/pngDecode.mjs';
 import { Resvg } from '@resvg/resvg-js';
 import { resolveRig, type ResolvedBone } from '../../src/gameIso/rig/composeRig';
 import { toSvg } from '../../src/gameIso/rig/kinematics';
@@ -170,42 +170,8 @@ const maskBones = new Set<BoneId>([
 const slotIsFlesh = SLOT_BONES[slot].every((b) => FLESH_BONES.includes(b));
 if (!withFlesh) for (const b of FLESH_BONES) if (!slotIsFlesh) maskBones.delete(b);
 
-// ── PNG (RGBA 8-bit, sortie resvg) ────────────────────────────────────────────────────────
-interface Img { w: number; h: number; data: Buffer }
-function decodePng(buf: Buffer): Img {
-  let off = 8, w = 0, h = 0;
-  const idat: Buffer[] = [];
-  while (off < buf.length) {
-    const len = buf.readUInt32BE(off);
-    const type = buf.toString('ascii', off + 4, off + 8);
-    const data = buf.subarray(off + 8, off + 8 + len);
-    if (type === 'IHDR') {
-      w = data.readUInt32BE(0); h = data.readUInt32BE(4);
-      if (data[8] !== 8 || data[9] !== 6) throw new Error(`attendu RGBA 8-bit, reçu depth=${data[8]} color=${data[9]}`);
-    } else if (type === 'IDAT') idat.push(data);
-    else if (type === 'IEND') break;
-    off += 12 + len;
-  }
-  const raw = inflateSync(Buffer.concat(idat));
-  const stride = w * 4;
-  const out = Buffer.alloc(w * h * 4);
-  let prev = Buffer.alloc(stride);
-  for (let y = 0; y < h; y++) {
-    const f = raw[y * (stride + 1)];
-    const line = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1));
-    const cur = Buffer.alloc(stride);
-    for (let x = 0; x < stride; x++) {
-      const a = x >= 4 ? cur[x - 4] : 0, b = prev[x], c = x >= 4 ? prev[x - 4] : 0;
-      let v = line[x];
-      if (f === 1) v += a; else if (f === 2) v += b; else if (f === 3) v += (a + b) >> 1;
-      else if (f === 4) { const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c); v += pa <= pb && pa <= pc ? a : pb <= pc ? b : c; }
-      cur[x] = v & 0xff;
-    }
-    cur.copy(out, y * stride);
-    prev = cur;
-  }
-  return { w, h, data: out };
-}
+// ── PNG (RGBA 8-bit, sortie resvg — décodé par le module partagé `lib/pngDecode.mjs`, #1263) ───
+type Img = PlancheRGBA;
 
 // ── Rendu ─────────────────────────────────────────────────────────────────────────────────
 const boneGroup = (b: ResolvedBone) =>

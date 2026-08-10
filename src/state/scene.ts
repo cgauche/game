@@ -82,8 +82,10 @@ export interface SceneEntity {
    *  Bloque la walkability (entityBlockedAt) et porte le Couvert sur toutes ses cases. */
   foot?: { w: number; h: number };
   /** Source de lumière (brouillard de guerre) : rayon d'éclairage en cases. Override de l'instance ;
-   *  sinon le rayon vient du TYPE de prop (`props.json` `light`). Absent + type sans `light` = pas de lumière. */
-  light?: { radiusTiles: number };
+   *  sinon le rayon vient du TYPE de prop (`props.json` `light`). Absent + type sans `light` = pas de lumière.
+   *  `tone` (#1245, L4) : id d'un `lightTones` — APPARENCE seule (couleur/intensité/vacillement),
+   *  résolue au bord du rendu, hérité du type de prop s'il n'est pas posé ici ; absent = `flamme`. */
+  light?: { radiusTiles: number; tone?: string };
   /** Marchand (#2) : ce PNJ ouvre un panneau d'achat/vente (référence un archétype de `state/merchants`).
    *  `settlement`/`resaleRate`/`buyMarkup` surchargent l'archétype pour cette entité (prix paramétrables :
    *  resaleRate = rachat à la vente, buyMarkup = majoration à l'achat). */

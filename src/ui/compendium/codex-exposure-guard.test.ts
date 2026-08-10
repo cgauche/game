@@ -160,6 +160,7 @@ const CODEX_EXPOSURE_EXEMPT: Record<string, string> = {
   'structureAppearance.json': "presets d'apparence de structure (rendu iso), pas une fiche de contenu.",
   'props.json': 'catalogue de props de décor (rendu iso), pas une fiche de contenu.',
   'lightLevels.json': 'niveaux de lumière (rendu iso/vision), vocabulaire moteur — la RÈGLE de vision est ailleurs, sourcée et exposée via `regles`/`etats`.',
+  'lightTones.json': "tons de lumière (rendu volumique #1245 : couleur/intensité/vacillement d'une source ponctuelle), vocabulaire d'APPARENCE — aucune conséquence de règle, le rayon RAW vit sur la source elle-même.",
   'breath-types.json': 'vocabulaire de catégorisation (id+label uniquement) — aucune fiche autonome, la RÈGLE (souffle de créature) vit sur la créature elle-même.',
   'damage-types.json': 'vocabulaire de catégorisation (id+label uniquement) — aucune fiche autonome.',
   'qualityTypes.json': 'vocabulaire de catégorisation des Qualités/Défauts (Atout/Défaut) — consommé par `qualityTypeLabel`, pas une fiche autonome.',

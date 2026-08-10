@@ -44,7 +44,10 @@
         "precip": {
           "density": 0.3,
           "fallMs": 9,
-          "windMs": { "x": 1.2, "z": 0.5 },
+          "windMs": {
+            "x": 1.2,
+            "z": 0.5
+          },
           "widthM": 0.03,
           "lengthM": 0.45,
           "ceilingM": 9,
@@ -65,7 +68,10 @@
         "precip": {
           "density": 0.22,
           "fallMs": 1.3,
-          "windMs": { "x": 0.45, "z": 0.2 },
+          "windMs": {
+            "x": 0.45,
+            "z": 0.2
+          },
           "widthM": 0.09,
           "lengthM": 0.11,
           "ceilingM": 9,
@@ -82,7 +88,10 @@
         "precip": {
           "density": 0.55,
           "fallMs": 13,
-          "windMs": { "x": 6.5, "z": 2.6 },
+          "windMs": {
+            "x": 6.5,
+            "z": 2.6
+          },
           "widthM": 0.035,
           "lengthM": 0.8,
           "ceilingM": 10,

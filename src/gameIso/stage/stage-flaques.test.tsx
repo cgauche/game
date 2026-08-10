@@ -64,6 +64,17 @@ function avecBraseros(n: number): Scene {
   return scene;
 }
 
+/** Scène d'extérieur portant `n` lampadaires (`props.json` : rayon 5 cases, ton `lanterne`) — la
+ *  source STABLE du décor, celle dont l'intensité ne dépend que de l'heure (#1245, L4). */
+function avecLampadaires(n: number): Scene {
+  const scene = emptyScene(10, 10);
+  scene.ambiance = 'exterieur';
+  scene.entities = Array.from({ length: n }, (_, i) => ({
+    id: `l${i}`, kind: 'prop', pos: { x: 1 + i, y: 2 }, ref: 'lampadaire',
+  })) as unknown as Scene['entities'];
+  return scene;
+}
+
 const source = (over: Partial<LightSource> = {}): LightSource => ({ pos: { x: 3, y: 4 }, radiusTiles: 4, ...over });
 
 /** Les slots ALLUMÉS d'une table, dans l'ordre des slots. */
@@ -413,7 +424,7 @@ describe('Le pool MONTÉ — un compte que rien ne fait varier (la clé de cache
   });
 });
 
-describe('Le pool ÉCRIT — une passe par changement de lumière, aucune par frame de caméra', () => {
+describe('Le pool ÉCRIT — une passe par changement de lumière ; par frame, la seule flamme qui bat', () => {
   /** Compte TOUTE écriture d'intensité sur une lampe ponctuelle, construction comprise. */
   let écritures = 0;
   beforeAll(() => {
@@ -431,8 +442,10 @@ describe('Le pool ÉCRIT — une passe par changement de lumière, aucune par fr
     delete (THREE.PointLight.prototype as unknown as Record<string, unknown>).intensity;
   });
 
-  it('montage puis rendus : la caméra n’écrit RIEN, l’heure écrit UNE passe, la même heure rien', () => {
-    const scene = avecBraseros(2);
+  it('sources STABLES : la caméra n’écrit RIEN, l’heure écrit UNE passe, la même heure rien', () => {
+    // Lampadaires (ton `lanterne`, aucun vacillement) : le régime où l'intensité ne dépend QUE de
+    // l'heure et du palier — celui d'avant #1245 L4, invariant compris.
+    const scene = avecLampadaires(2);
     const p = props(scene, NUIT);
     scènes = [];
     hôte = document.createElement('div');
@@ -458,6 +471,36 @@ describe('Le pool ÉCRIT — une passe par changement de lumière, aucune par fr
     // La MÊME heure re-rendue : rien à réécrire.
     écritures = 0;
     act(() => root!.render(<GameStage3D {...p} gameTime={MIDI} />));
+    expect(écritures).toBe(0);
+  });
+
+  it('sources qui VACILLENT (#1245 L4) : UNE écriture par flamme et par frame, et rien de plus', () => {
+    // C'est le coût ASSUMÉ de la flamme : son intensité EST fonction de l'instant. Ce qui reste
+    // invariant, c'est qu'elle n'écrit QUE l'intensité, et QUE sur les lampes qui vacillent — la
+    // 3ᵉ lampe du décor, stable, ne se réécrit pas parce que ses voisines battent.
+    const scene = avecBraseros(2);          // brasero : ton par défaut `flamme`, donc vacillant
+    scene.entities = [
+      ...scene.entities,
+      { id: 'l0', kind: 'prop', pos: { x: 6, y: 6 }, ref: 'lampadaire' },
+    ] as unknown as Scene['entities'];
+    const p = props(scene, NUIT);
+    scènes = [];
+    hôte = document.createElement('div');
+    document.body.appendChild(hôte);
+    root = createRoot(hôte);
+    act(() => root!.render(<GameStage3D {...p} />));
+
+    // Deux frames de CAMÉRA : 2 flammes × 2 frames. Le lampadaire n'est pas du lot.
+    écritures = 0;
+    act(() => root!.render(<GameStage3D {...p} cam={{ x: 40, y: 12 }} zoom={1.5} />));
+    act(() => root!.render(<GameStage3D {...p} cam={{ x: 80, y: 24 }} zoom={2} />));
+    expect(écritures).toBe(2 * 2);
+
+    // À MIDI les flaques s'éteignent : plus une seule flamme allumée, donc plus une écriture de frame
+    // (et la boucle de vacillement, elle non plus, ne bat pas).
+    act(() => root!.render(<GameStage3D {...p} gameTime={MIDI} />));
+    écritures = 0;
+    act(() => root!.render(<GameStage3D {...p} gameTime={MIDI} cam={{ x: 12, y: 3 }} />));
     expect(écritures).toBe(0);
   });
 

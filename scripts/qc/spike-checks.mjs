@@ -1,60 +1,22 @@
 /**
  * QC — GARDES DE PLANCHE du spike WebGL (#1176) : les sondes du juge vision, rejouables sans œil.
  * Lit les PNG déjà capturés (`public/qc/spike/*.png`, écrits par `spike-webgl.mjs`) et échoue (exit 1)
- * dès qu'une planche retombe sous son seuil. Aucune dépendance : le PNG de `toDataURL` est du RGBA
- * 8 bits non entrelacé, décodé ici par `zlib.inflateSync` + défiltrage.
+ * dès qu'une planche retombe sous son seuil. Le décodage PNG vient du module partagé
+ * `scripts/qc/lib/pngDecode.mjs` (source unique, #1263) — ce module tourne en node NU
+ * (`node scripts/qc/spike-checks.mjs`, et importé par `spike-webgl.mjs`).
  *
  * MÉTHODE — le rendu éclairé multiplie un albédo de donnée par un scalaire de lumière (les deux sources
  * sont NEUTRES, `sceneMeshes.ts`) : un pixel de matière `A` vaut donc `sRGB(linéaire(A) · k)`, et
  * `k = linéaire(pixel) / linéaire(A)` par canal. Une lumière neutre rend les trois `k` égaux ; la
  * SOMBRE (`k` bas) et l'ÉCLAIRÉE (`k` haut) forment deux classes nettes.
  *
- * `decodePng` est un DOUBLON assumé de `scripts/qc/mesure-volume.mts:175` : ce module tourne en node
- * NU (`node scripts/qc/spike-checks.mjs`, et importé par `spike-webgl.mjs`) quand l'autre est un CLI `tsx`.
- *
  *   node scripts/qc/spike-checks.mjs [dossier]
  */
 import { readFileSync, existsSync } from 'node:fs';
-import { inflateSync } from 'node:zlib';
 import { pathToFileURL } from 'node:url';
+import { decodePng } from './lib/pngDecode.mjs';
 
 const DIR = 'public/qc/spike';
-
-/** PNG RGBA 8 bits non entrelacé → { w, h, data }. Doublon de `mesure-volume.mts:175` (cf. en-tête). */
-export function decodePng(buf) {
-  let off = 8, w = 0, h = 0;
-  const idat = [];
-  while (off < buf.length) {
-    const len = buf.readUInt32BE(off);
-    const type = buf.toString('ascii', off + 4, off + 8);
-    const data = buf.subarray(off + 8, off + 8 + len);
-    if (type === 'IHDR') {
-      w = data.readUInt32BE(0); h = data.readUInt32BE(4);
-      if (data[8] !== 8 || data[9] !== 6) throw new Error(`attendu RGBA 8-bit, reçu depth=${data[8]} color=${data[9]}`);
-    } else if (type === 'IDAT') idat.push(data);
-    else if (type === 'IEND') break;
-    off += 12 + len;
-  }
-  const raw = inflateSync(Buffer.concat(idat));
-  const stride = w * 4;
-  const out = Buffer.alloc(w * h * 4);
-  let prev = Buffer.alloc(stride);
-  for (let y = 0; y < h; y++) {
-    const f = raw[y * (stride + 1)];
-    const line = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1));
-    const cur = Buffer.alloc(stride);
-    for (let x = 0; x < stride; x++) {
-      const a = x >= 4 ? cur[x - 4] : 0, b = prev[x], c = x >= 4 ? prev[x - 4] : 0;
-      let v = line[x];
-      if (f === 1) v += a; else if (f === 2) v += b; else if (f === 3) v += (a + b) >> 1;
-      else if (f === 4) { const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c); v += pa <= pb && pa <= pc ? a : pb <= pc ? b : c; }
-      cur[x] = v & 0xff;
-    }
-    cur.copy(out, y * stride);
-    prev = cur;
-  }
-  return { w, h, data: out };
-}
 
 const srgbToLinear = (u) => (u <= 0.04045 ? u / 12.92 : ((u + 0.055) / 1.055) ** 2.4);
 const albedoLinear = (hex) => [1, 3, 5].map((i) => srgbToLinear(parseInt(hex.slice(i, i + 2), 16) / 255));

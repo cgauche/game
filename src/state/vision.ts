@@ -44,6 +44,10 @@ export interface LightSource {
    *  saturé : le décor de la scène garde ses flaques, les porteurs remplissent le reste
    *  (`gameIso/stage/stagePointLights.ts`). Absent = posée. */
   carried?: boolean;
+  /** TON de la source (#1245, L4) : id d'un `lightTones` — APPARENCE seule (couleur, part d'intensité,
+   *  vacillement). Le champ de lumière mécanique l'IGNORE : il ne connaît que le rayon (LDB 74) ; seul
+   *  le rendu le résout (`gameIso/stage/stagePointLights.ts`). Absent = `flamme`. */
+  tone?: string;
 }
 
 /** Champ de lumière : niveau d'éclairement 0..1 d'une case. `sourceLit` = cases éclairées par une
@@ -165,8 +169,12 @@ export function mapLights(scene: Scene): LightSource[] {
   const out: LightSource[] = [];
   for (const e of scene.entities) {
     if (e.kind !== 'prop') continue;
-    const r = e.light?.radiusTiles ?? (e.ref ? findPropById(e.ref)?.light?.radiusTiles : undefined);
-    if (r && r > 0) out.push({ pos: e.pos, z: e.z, radiusTiles: r, srcId: e.id });
+    // Rayon et TON se surchargent CHAMP PAR CHAMP : une instance qui ne pose qu'un rayon garde le ton
+    // de son type de prop, et réciproquement — un override d'instance ne déshabille pas le reste.
+    const inst = e.light;
+    const type = e.ref ? findPropById(e.ref)?.light : undefined;
+    const r = inst?.radiusTiles ?? type?.radiusTiles;
+    if (r && r > 0) out.push({ pos: e.pos, z: e.z, radiusTiles: r, srcId: e.id, tone: inst?.tone ?? type?.tone });
   }
   return out;
 }
@@ -181,25 +189,28 @@ export function combatantLights(c: {
   pos?: Pt;
   items?: { uid?: string; trappingId?: string; equipped?: boolean }[];
   weapons?: { uid?: string }[];
-  activeEffects?: { light?: { radiusTiles: number } }[];
+  activeEffects?: { light?: { radiusTiles: number; tone?: string } }[];
 }): LightSource[] {
   if (!c.pos) return [];
+  // Le TON suit l'émetteur RETENU, jamais le dernier vu : c'est le plus grand rayon qui fait la source,
+   // donc c'est SON apparence qu'elle porte — une bougie au sac ne déteindrait pas sur la lanterne en main.
   let r = 0;
+  let tone: string | undefined;
   for (const it of c.items ?? []) {
     const held = !!it.equipped || (c.weapons ?? []).some((w) => w.uid === it.uid);
     if (!held || !it.trappingId) continue;
     for (const op of findTrappingById(it.trappingId)?.passive ?? []) {
-      if (op.op === 'light' && op.radiusTiles > r) r = op.radiusTiles;
+      if (op.op === 'light' && op.radiusTiles > r) { r = op.radiusTiles; tone = op.tone; }
     }
   }
   for (const e of c.activeEffects ?? []) {
     const lr = e.light?.radiusTiles;
-    if (lr && lr > r) r = lr;
+    if (lr && lr > r) { r = lr; tone = e.light?.tone; }
   }
   // `z` = l'ÉTAGE du porteur : le champ de lumière indexe ses cases par `"x,y,z"` (`computeLightField`
   // lit `s.z ?? 0`), donc une source sans `z` inscrit son halo au SOL — une lanterne portée sur le
   // chemin de ronde éclairait la cour en contrebas et laissait le rempart noir.
-  return r > 0 ? [{ pos: c.pos, z: c.pos.z, radiusTiles: r, srcId: c.id, carried: true }] : [];
+  return r > 0 ? [{ pos: c.pos, z: c.pos.z, radiusTiles: r, srcId: c.id, carried: true, tone }] : [];
 }
 
 /** Portée de vision dans le noir (cases) d'un combattant : max des `darkSightTiles` de ses traits

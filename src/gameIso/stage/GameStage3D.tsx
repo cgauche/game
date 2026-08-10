@@ -99,7 +99,7 @@ import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/sprite
 import { setSpritePicker } from './spritePicker';
 import { stage3dFraming } from './stage3dCamera';
 import { stageLightScalars, stageLights } from './stageLights';
-import { applyPointLights, createPointLightPool, pointLightWrites, POINT_LIGHT_BUDGET, type PointLightSlots } from './stagePointLights';
+import { applyFlicker, applyPointLights, createPointLightPool, hasFlicker, pointLightWrites, POINT_LIGHT_BUDGET, type PointLightSlots } from './stagePointLights';
 import type { LightSource } from '../../state/vision';
 import { scenePrecip } from '../catalog/ambiance';
 import { isSheltered, shelterField } from '../builders/roofs';
@@ -332,6 +332,10 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       distance,
       radius: rayon + (boite ? cible.distanceTo(boite.getCenter(new THREE.Vector3())) : 0) + 8,
     });
+    // VACILLEMENT (#1245, L4) : l'intensité de l'INSTANT, posée sur les lampes montées avant tout le
+    // reste. C'est elle que la passe de pose relit pour exposer les billboards — le personnage au pied
+    // du braséro bat donc avec sa flaque, et par UNE seule valeur : celle que three va rendre.
+    applyFlicker(pool.current, flaquesÉcrites, performance.now() / 1000);
     // Quads ALIGNÉS ÉCRAN, ancrés aux PIEDS — exactement ce que fait le backend affine du sprite ; le
     // glissement de marche de l'instant y entre (`stage/boardPose.ts`, la passe pure), les lampes qu'un
     // marcheur PORTE avec lui, et l'EXPOSITION de chaque quad à l'endroit où il vient de se poser.
@@ -413,6 +417,27 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [champ]);
+
+  // BOUCLE DE VACILLEMENT (#1245, L4) : une flamme vit hors des rendus React, comme l'averse. Elle ne
+  // bat QUE si une lampe qui vacille est allumée — de jour les flaques s'éteignent, et une scène sans
+  // feu (lanternes, lueurs magiques) ne rejoue pas une frame de plus qu'avant ce lot. Même politique
+  // de CESSION que la chute : une image déjà rendue par la marche ou l'averse ne se redessine pas.
+  const vacille = hasFlicker(flaquesÉcrites);
+  useEffect(() => {
+    if (!vacille) return;
+    let vivant = true;
+    let image = 0;
+    const battre = () => {
+      if (!vivant) return;
+      if (performance.now() - dernierRendu.current > 4) dessinerRef.current();
+      image = requestAnimationFrame(battre);
+    };
+    image = requestAnimationFrame(battre);
+    return () => {
+      vivant = false;
+      cancelAnimationFrame(image);
+    };
+  }, [vacille]);
 
   // HIT-TEST DE SPRITE (lot P2-3) : la voie volumique répond au pointeur par un RAYON — cibles = les
   // quads montés (ceux d'un combattant portent son id) plus les masses du monde, inscrites sans id

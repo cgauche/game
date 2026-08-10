@@ -9,7 +9,7 @@ import {
   traits, stars, talents, maneuvers, skills, domains, crewRoles,
   findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById, findSeaShantyById,
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById, findSymptomById,
-  findCreatureById, findVehicleById, findGroupById, findPsychologyById, findTraitById, findCrewTestTypeById,
+  findCreatureById, findVehicleById, findGroupById, findPsychologyById, findTraitById, findCrewTestTypeById, findLightToneById,
   mutationTables,
   specLabel, refLabel, specEntryId, specEntryLabel, SPEC_SOURCES, type SpecsSource,
 } from './index';
@@ -765,6 +765,7 @@ describe('GameOp — toute référence de la donnée committée résout dans son
     mutationTables: (id) => MUTATION_TABLE_IDS.has(id),
     effectTables: (id) => EFFECT_TABLE_IDS.has(id),
     terrains: (id) => id in TERRAINS,
+    lightTones: (id) => !!findLightToneById(id),
   };
 
   const sources = [...collectJsonFiles(DATA_DIR, REPO_ROOT), ...collectJsonFiles(SCENES_DIR, REPO_ROOT)];

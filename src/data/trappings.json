@@ -7364,7 +7364,8 @@
     "passive": [
       {
         "op": "light",
-        "radiusTiles": 5
+        "radiusTiles": 5,
+        "tone": "chandelle"
       }
     ],
     "desc": "Fournit un éclairage sur 10 mètres lorsqu'elle est allumée.",
@@ -7633,7 +7634,8 @@
     "passive": [
       {
         "op": "light",
-        "radiusTiles": 5
+        "radiusTiles": 5,
+        "tone": "lanterne"
       }
     ]
   },
@@ -7652,7 +7654,8 @@
     "passive": [
       {
         "op": "light",
-        "radiusTiles": 10
+        "radiusTiles": 10,
+        "tone": "lanterne"
       }
     ],
     "desc": "Des obturateurs protègent la flamme du vent, et permet également de diriger la lumière dans un arc de 90° ou de l'obscurcir complètement. Fournit un éclairage sur 20 mètres, ou 30 quand il est ciblé.",
@@ -7681,7 +7684,8 @@
     "passive": [
       {
         "op": "light",
-        "radiusTiles": 10
+        "radiusTiles": 10,
+        "tone": "lanterne"
       }
     ],
     "desc": "Fournit un éclairage sur 20 mètres.",

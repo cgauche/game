@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { GameOpEditor, opSummary, newOp, formulaSummary, shapeOf, formulaForShape, OP_LABEL, OP_REF_FIELDS, opMissingRefs, opsMissingRefs } from './GameOpEditor';
 import { datasetArray } from '../../data/overrides';
+import { lightTones } from '../../data';
 import type { GameOp } from '../../engine/ops';
 
 /**
@@ -120,6 +121,17 @@ describe('GameOpEditor — éditeur pour TOUTE op (dédié ou repli JSON)', () =
     const html = renderToStaticMarkup(<GameOpEditor ops={ops} onChange={() => {}} />);
     expect(html).toContain('Le sol tremble.');
     expect(opSummary(ops[0])).toContain('Le sol tremble.');
+  });
+
+  it('light a un éditeur dédié : rayon SAISISSABLE et ton élu dans le catalogue lightTones', () => {
+    const ops: GameOp[] = [{ op: 'light', radiusTiles: 7, tone: 'chandelle' }];
+    const html = renderToStaticMarkup(<GameOpEditor ops={ops} onChange={() => {}} />);
+    expect(html).not.toContain('(JSON)'); // éditeur dédié, pas un repli
+    expect(html).toContain('Rayon (cases)');
+    expect(html).toContain('value="7"'); // rayon éditable
+    // Le select liste TOUT le catalogue (aucune liste en dur), et l'op élue est sélectionnée.
+    for (const t of lightTones) expect(html).toContain(`value="${t.id}"`);
+    expect(html).toContain('value="chandelle" selected');
   });
 
   // (Un Test imbriqué est un nœud de la STRUCTURE Flow `{kind:'test'}` (édité par le FlowEditor, pas

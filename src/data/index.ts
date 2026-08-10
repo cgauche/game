@@ -53,6 +53,7 @@ import spellsJson from './spells.json';
 import maneuversJson from './maneuvers.json';
 import domainsJson from './domains.json';
 import lightLevelsJson from './lightLevels.json';
+import lightTonesJson from './lightTones.json';
 import propsJson from './props.json';
 import eyesJson from './eyes.json';
 import hairsJson from './hairs.json';
@@ -2318,11 +2319,24 @@ export interface LightLevelDef { id: string; label: string; scalar: number; base
 export const lightLevels = lightLevelsJson as LightLevelDef[];
 export const LIGHT_LEVEL_BY_ID = new Map(lightLevels.map((l) => [l.id, l]));
 export const findLightLevelById = (id: string): LightLevelDef | undefined => LIGHT_LEVEL_BY_ID.get(id);
+/** TON de lumière app-owned (#1245, L4) : l'APPARENCE d'une source PONCTUELLE — couleur, part
+ *  d'intensité (facteur du calage anti-saturation du rendu, jamais une intensité absolue) et
+ *  vacillement optionnel. Aucune conséquence de règle : le moteur ne connaît d'une source que son
+ *  RAYON (LDB 74). Référencé par `tone` (prop, instance de scène, op `light`, `ActiveEffect.light`) ;
+ *  absent = `flamme`. Résolu au bord du RENDU (`gameIso/stage/stagePointLights.ts`). */
+export interface LightToneDef { id: string; label: string; color: string; intensity: number; flicker?: { amplitude: number; hz: number } }
+export const lightTones = lightTonesJson as LightToneDef[];
+/** Lookup LIVE — un balayage du tableau, pas une `Map` cuite au chargement : le catalogue se mute EN
+ *  PLACE (`data/overrides.ts`, éditeur du Codex / surcharges de campagne), et un index figé servirait
+ *  encore l'ancien ton après une édition. Quatre entrées : le balayage ne coûte rien. */
+export const findLightToneById = (id: string): LightToneDef | undefined => lightTones.find((t) => t.id === id);
+/** Ton SERVI à une source qui n'en nomme aucun — le feu, le cas du monde (brasero, feu de camp). */
+export const DEFAULT_LIGHT_TONE_ID = 'flamme';
 /** Type de PROP/décor app-owned : couche SÉMANTIQUE (physique `solid`, opacité `opaque`, classe de
  *  `cover`, émission de lumière `light`) — le rendu SVG/label reste dans le catalogue gameIso. Lu par
  *  la walkability (`sceneRules`), la Ligne de Vue/couvert (`lineOfSight`) et la lumière (`vision`).
  *  Édité au Codex. Un prop ABSENT de ce dataset = passable, transparent, sans couvert ni lumière. */
-export interface PropData { id: string; solid?: boolean; opaque?: boolean; cover?: 'imparfaite' | 'moyenne' | 'totale'; light?: { radiusTiles: number } }
+export interface PropData { id: string; solid?: boolean; opaque?: boolean; cover?: 'imparfaite' | 'moyenne' | 'totale'; light?: { radiusTiles: number; tone?: string } }
 export const props = propsJson as PropData[];
 export const PROP_BY_ID = new Map(props.map((p) => [p.id, p]));
 export const findPropById = (id: string): PropData | undefined => PROP_BY_ID.get(id);

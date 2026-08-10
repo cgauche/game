@@ -125,6 +125,7 @@ export const EXEMPT_DATASETS = {
   'props.json': "catalogue de props de décor (rendu iso), pas une donnée RAW.",
   'reliefMaterials.json': 'catalogue de matériaux de relief (rendu iso), pas une donnée RAW.',
   'lightLevels.json': "niveaux de lumière (rendu iso/vision), vocabulaire moteur — pas une table RAW à citer par entrée (la RÈGLE de vision est ailleurs, sourcée).",
+  'lightTones.json': "tons de lumière (#1245 : couleur, part d'intensité, vacillement d'une source ponctuelle) — APPARENCE de rendu, aucune règle à citer : le RAYON, la seule grandeur RAW d'une source (LDB 74), vit sur la source elle-même.",
   'raceAppearance.json': "presets d'apparence (rendu iso) par race — esthétique, pas une règle RAW.",
   'roofMaterials.json': 'catalogue de matériaux de toiture (rendu iso), pas une donnée RAW.',
   'structureAppearance.json': "presets d'apparence de structure (rendu iso), pas une donnée RAW.",

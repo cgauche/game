@@ -570,9 +570,10 @@
         {
           "files": [
             "ambiance.json",
-            "lightLevels.json"
+            "lightLevels.json",
+            "lightTones.json"
           ],
-          "desc": "Ambiance lumineuse (`iso`/`pov`) · niveaux de lumière"
+          "desc": "Ambiance lumineuse (`iso`/`pov`) · niveaux de lumière · TONS de lumière (#1245 : apparence d'une source ponctuelle — couleur, part d'intensité, vacillement ; référencés par `tone`, défaut `flamme`)"
         },
         {
           "files": [

@@ -17,6 +17,13 @@
  * est exactement ce qu'on veut : three coupe la contribution par `pow2(saturate(1 − pow4(d/distance)))`,
  * donc RIEN au-delà de `radiusTiles × mpt` — la flaque ne déborde jamais du rayon RAW de la source.
  *
+ * TON (#1245, L4) : tout ce qui relève de l'APPARENCE d'une source — sa couleur, sa part d'intensité,
+ * son vacillement — vit en DONNÉE (`src/data/lightTones.json`) et se résout ICI, au bord du rendu
+ * (`resolveTone`). Le moteur ne connaît d'une source que son RAYON (LDB 74) ; un ton forgé change donc
+ * ce que l'écran montre sans une ligne de code. Le ton MODULE le calage anti-saturation, il ne le
+ * remplace pas : `intensity` est un facteur ≤ 1 de `FLAME_INTENSITY`, et le vacillement ne fait que
+ * RETRANCHER (`flickerFactor` ∈ ]0,1]) — rien ne passe au-dessus de la marge que ce calage protège.
+ *
  * ÉCARTS CONSIGNÉS (visuels seulement — le champ mécanique, lui, reste la vérité de jeu) :
  *  - three ADDITIONNE les contributions là où `computeLightField` les combine par MAX — d'où
  *    l'intensité CALÉE sous la saturation (`FLAME_INTENSITY`) : sans tone mapping, deux flaques qui
@@ -24,10 +31,23 @@
  *  - les flaques ne sont pas coupées par les murs (le champ mécanique, lui, le sait) ;
  *  - la lampe est levée de `FLAME_LIFT_M` au-dessus du sol (une lampe posée AU sol n'éclairerait pas
  *    le sol : sa direction y est rasante, donc `dotNL` nul) — la flaque au sol est donc un peu plus
- *    courte que le rayon RAW, jamais plus longue.
+ *    courte que le rayon RAW, jamais plus longue ;
+ *  - la COULEUR d'un ton ne peint que le monde lambertien : l'exposition d'un billboard est un
+ *    SCALAIRE (`billboardExposure`, la normale d'un quad est l'axe caméra), donc un personnage au pied
+ *    d'un brasero s'éclaircit et bat avec lui, mais ne s'y teinte pas. Le porter en RGB demanderait
+ *    d'ouvrir le contrat de `billboardMaterial` (une couleur, plus une luminance) ;
+ *  - BORD DE FLAQUE (mesuré 2026-08-10, L4) : ce qui se lit comme un bord net n'est PAS la fenêtre de
+ *    coupure de three. Sur un brasero (rayon 4, mpt 2, palier nuit), le gradient de luminance culmine
+ *    à 0,2016/m à 0,70 m du foyer et tombe à 0,0022/m au rayon — la coupure `pow4`, étant élevée au
+ *    carré, arrive à dérivée NULLE. Le même profil calculé SANS elle garde un gradient max de
+ *    0,2009/m au même endroit (−0,3 %) : le bord vient du `dotNL` d'une flamme à `FLAME_LIFT_M` = 1 m,
+ *    dont le cœur clair n'a que 1,72 m de demi-largeur (3,09 m à 2 m de lift). Un exposant en donnée
+ *    du ton n'y changerait donc rien — et serait de toute façon hors d'atteinte : le `pow4` est écrit
+ *    dans le chunk `getDistanceAttenuation` de three, pas ici. Adoucir demande de rouvrir la HAUTEUR
+ *    de flamme (calage L1 du profil de flaque), pas d'ajouter un champ.
  */
 import * as THREE from 'three';
-import { LIGHT_LEVEL_BY_ID } from '../../data';
+import { LIGHT_LEVEL_BY_ID, findLightToneById, DEFAULT_LIGHT_TONE_ID, type LightToneDef } from '../../data';
 import { heightAt, type Scene } from '../../state/scene';
 import type { LightSource } from '../../state/vision';
 import { ambianceLuminance } from '../catalog/ambiance';
@@ -145,6 +165,67 @@ export function billboardExposure(
   return Math.min(1, surfaceLuminance + part);
 }
 
+/**
+ * TON d'une source (#1245, L4) — l'APPARENCE en donnée (`src/data/lightTones.json`), résolue ICI et
+ * nulle part ailleurs : c'est le BORD du rendu. Le moteur ne connaît d'une source que son rayon
+ * (LDB 74) ; un ton ne change aucun champ de lumière, aucune visibilité, aucun jet.
+ *
+ * `tone` absent = `flamme` : une source de feu — le cas du monde — n'a AUCUNE donnée à porter.
+ * Un id hors catalogue retombe sur le défaut et se signale UNE fois (même politique que
+ * `weaponFromId` : lookup exact, warn hors catalogue — jamais un repli muet).
+ */
+const TONS_INCONNUS = new Set<string>();
+export function resolveTone(id: string | undefined): LightToneDef {
+  const défaut = findLightToneById(DEFAULT_LIGHT_TONE_ID)!;
+  if (!id) return défaut;
+  const ton = findLightToneById(id);
+  if (ton) return ton;
+  if (!TONS_INCONNUS.has(id)) {
+    TONS_INCONNUS.add(id);
+    console.warn(`stagePointLights: ton de lumière « ${id} » hors catalogue (lightTones.json) — ${DEFAULT_LIGHT_TONE_ID} servi.`);
+  }
+  return défaut;
+}
+
+/** Couleur d'un ton en entier three (`#rrggbb` → 0xrrggbb) — la forme que `Color.setHex` attend. */
+export const toneHex = (ton: LightToneDef): number => parseInt(ton.color.slice(1), 16);
+
+/** Nombre d'or : le rapport des DEUX fréquences du bruit de vacillement. Irrationnel, donc la somme
+ *  des deux sinus ne se répète jamais à l'œil — un seul sinus donnerait un clignotant de phare. */
+const PHI = 1.618033988749895;
+
+/** Hachage FNV-1a 32 bits d'un id de source : la GRAINE du vacillement. Deux braséros voisins
+ *  vacillent donc en désordre, et CHACUN reproduit la même série d'une session à l'autre. */
+function graine(srcId: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < srcId.length; i++) {
+    h ^= srcId.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+/**
+ * VACILLEMENT (#1245, L4) — le facteur par lequel l'intensité d'une lampe est multipliée à l'instant
+ * `tSec`, pour une source `srcId`. DÉTERMINISTE par construction : deux sinus de fréquences
+ * incommensurables (`hz` et `hz × PHI`), déphasés par le hachage de l'id — aucun `Math.random`, donc
+ * la même seconde de jeu rend deux fois la même image, et deux clients d'une partie coop voient le
+ * MÊME feu.
+ *
+ * BORNÉ PAR LE HAUT À 1, et c'est structurel : le facteur RETRANCHE (`1 − amplitude × bruit`, bruit
+ * dans [0,1]). Une flamme ne dépasse donc JAMAIS le calage anti-saturation `FLAME_INTENSITY` — sans
+ * quoi le vacillement écrêterait en aplat blanc exactement ce que ce calage existe pour éviter.
+ * Plancher : `1 − amplitude`, soit ≥ 0,5 par la borne du schéma.
+ */
+export function flickerFactor(srcId: string, tSec: number, flicker?: { amplitude: number; hz: number }): number {
+  if (!flicker || flicker.amplitude <= 0) return 1;
+  const h = graine(srcId);
+  const φ1 = (h & 0xffff) / 0x10000;
+  const φ2 = (h >>> 16) / 0x10000;
+  const bruit = (2 + Math.sin(2 * Math.PI * (flicker.hz * tSec + φ1)) + Math.sin(2 * Math.PI * (flicker.hz * PHI * tSec + φ2))) / 4;
+  return 1 - flicker.amplitude * bruit;
+}
+
 /** Ce qu'une frame écrit sur UNE lampe du pool — la décision, avant tout objet three. */
 export interface PointLightWrite {
   /** Porteur de la source (`LightSource.srcId`) : la couture par laquelle une lampe suivra son sujet. */
@@ -153,10 +234,16 @@ export interface PointLightWrite {
   x: number;
   y: number;
   z: number;
-  /** Intensité three (0 = éteinte). */
+  /** Intensité three AU REPOS (0 = éteinte) — le calage anti-saturation multiplié par la part
+   *  d'intensité du TON. Le vacillement de l'instant s'y applique dans la boucle (`applyFlicker`),
+   *  jamais ici : cette table vit une passe entière, la flamme bat à la frame. */
   intensity: number;
   /** Portée : `radiusTiles × mpt` — la flaque s'annule au rayon RAW de la source. */
   distance: number;
+  /** Couleur du TON (0xrrggbb) — l'apparence, en donnée. */
+  color: number;
+  /** Vacillement du TON, quand il en a un. Absent = lampe STABLE (lanterne, lueur magique). */
+  flicker?: { amplitude: number; hz: number };
 }
 
 /** Le POOL, monté une fois pour toutes. Toutes les lampes naissent éteintes (`intensity` 0) et
@@ -214,13 +301,19 @@ export function pointLightWrites(
   const portées = sources.filter((s) => s.carried);
   for (const s of [...posées, ...portées].slice(0, budget)) {
     const z = s.z ?? 0;
+    // Le TON MODULE le calage, il ne le remplace pas : `intensity` du ton est un facteur ≤ 1 de
+    // `FLAME_INTENSITY` — une lanterne est plus pâle qu'un feu, aucune source n'est plus forte que
+    // ce que la marge anti-saturation autorise.
+    const ton = resolveTone(s.tone);
     const w: PointLightWrite = {
       srcId: s.srcId,
       x: s.pos.x * opts.mpt,
       y: heightAt(opts.scene, s.pos.x, s.pos.y, z) + FLAME_LIFT_M,
       z: s.pos.y * opts.mpt,
-      intensity: FLAME_INTENSITY * Math.PI * extinction,
+      intensity: FLAME_INTENSITY * Math.PI * extinction * ton.intensity,
       distance: s.radiusTiles * opts.mpt,
+      color: toneHex(ton),
+      flicker: ton.flicker,
     };
     const tenu = slotPrécédent.get(cléDe(w));
     if (tenu !== undefined && slots[tenu] === null) slots[tenu] = w;
@@ -236,7 +329,8 @@ export function pointLightWrites(
 }
 
 /** Applique la table au POOL, index par index : `null` éteint la lampe. Ni ajout, ni retrait, ni
- *  `visible` — le compte monté ne bouge pas d'un cran (cf. l'en-tête). */
+ *  `visible` — le compte monté ne bouge pas d'un cran (cf. l'en-tête). L'intensité posée est celle
+ *  du REPOS ; la frame la fait battre par `applyFlicker`. */
 export function applyPointLights(pool: readonly THREE.PointLight[], slots: PointLightSlots): void {
   for (let i = 0; i < pool.length; i++) {
     const lampe = pool[i];
@@ -248,5 +342,31 @@ export function applyPointLights(pool: readonly THREE.PointLight[], slots: Point
     lampe.position.set(w.x, w.y, w.z);
     lampe.distance = w.distance;
     lampe.intensity = w.intensity;
+    lampe.color.setHex(w.color);
   }
+}
+
+/**
+ * VACILLEMENT de la frame (#1245, L4) : l'intensité de l'instant, écrite sur les lampes MONTÉES. À
+ * appeler dans la boucle de dessin, AVANT la passe de pose — l'exposition d'un billboard relit la
+ * lampe (`billboardExposure`), si bien que le personnage au pied du braséro bat avec lui SANS second
+ * calcul : une seule vérité de l'intensité de l'instant, celle que three va rendre.
+ *
+ * Une lampe ÉTEINTE ou sans `flicker` n'est pas même touchée — pas une écriture, donc pas une frame
+ * de travail : la lanterne et la lueur magique ne bougent pas d'un cran, et de jour, quand toutes les
+ * flaques sont retombées à 0, cette passe ne fait plus rien du tout.
+ */
+export function applyFlicker(pool: readonly THREE.PointLight[], slots: PointLightSlots, tSec: number): void {
+  for (let i = 0; i < pool.length; i++) {
+    const w = slots[i];
+    if (!w?.flicker || w.intensity <= 0) continue;
+    pool[i].intensity = w.intensity * flickerFactor(cléDe(w), tSec, w.flicker);
+  }
+}
+
+/** Y a-t-il, dans cette table, au moins UNE lampe allumée qui vacille ? C'est la seule condition qui
+ *  justifie une boucle de rendu permanente : sans flamme à l'écran, la frame ne se rejoue qu'aux
+ *  rendus du stage, comme avant ce lot. */
+export function hasFlicker(slots: PointLightSlots): boolean {
+  return slots.some((w) => !!w?.flicker && w.intensity > 0);
 }

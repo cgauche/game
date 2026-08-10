@@ -4,6 +4,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Inspector } from './Inspector';
 import { emptyScene, type Scene, type SceneEntity } from '../../state/scene';
+import { lightTones } from '../../data';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -71,6 +72,45 @@ describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
     await act(async () => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(radiusInput, '6');
       radiusInput.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    expect(h.entOf().light).toEqual({ radiusTiles: 6 });
+    expect(roundTrip(h.sceneOf()).entities[0].light).toEqual({ radiusTiles: 6 });
+
+    await act(async () => {
+      h.root.unmount();
+    });
+    h.container.remove();
+  });
+
+  it('light.tone : le ton d’instance SURVIT au rayon, s’élit/se retire, et survit au round-trip', async () => {
+    const h = mount({ id: 'brasero', kind: 'prop', pos: { x: 0, y: 0 }, ref: 'tonneau', light: { radiusTiles: 4, tone: 'lanterne' } });
+    await h.mount();
+
+    // (1) régler le rayon ne DÉTRUIT pas le ton posé (l’objet `light` se patche, il ne se remplace pas).
+    const radiusInput = Array.from(h.container.querySelectorAll('input[type="number"]'))
+      .find((el) => el.closest('label')?.textContent?.includes("Rayon d'éclairage")) as HTMLInputElement;
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(radiusInput, '6');
+      radiusInput.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    expect(h.entOf().light).toEqual({ radiusTiles: 6, tone: 'lanterne' });
+
+    // (2) le ton est ÉLISABLE dans le catalogue, et retirable (hérité du type de décor).
+    const toneSelect = Array.from(h.container.querySelectorAll('select'))
+      .find((el) => el.closest('label')?.textContent?.includes('Ton de la lumière')) as HTMLSelectElement;
+    expect(toneSelect.value).toBe('lanterne');
+    expect(Array.from(toneSelect.options).map((o) => o.value)).toEqual(['', ...lightTones.map((t) => t.id)]);
+
+    await act(async () => {
+      toneSelect.value = 'chandelle';
+      toneSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(h.entOf().light).toEqual({ radiusTiles: 6, tone: 'chandelle' });
+    expect(roundTrip(h.sceneOf()).entities[0].light).toEqual({ radiusTiles: 6, tone: 'chandelle' });
+
+    await act(async () => {
+      toneSelect.value = '';
+      toneSelect.dispatchEvent(new Event('change', { bubbles: true }));
     });
     expect(h.entOf().light).toEqual({ radiusTiles: 6 });
     expect(roundTrip(h.sceneOf()).entities[0].light).toEqual({ radiusTiles: 6 });

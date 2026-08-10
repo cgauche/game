@@ -84,7 +84,7 @@ const INTENSITE = FLAME_INTENSITY * Math.PI * EXTINCTION;
 const LUM = 0.4; // exposition globale de la frame
 
 /** Une lampe du pool telle que la décision l'a écrite (`stagePointLights`), portée ou posée. */
-const lampe = (srcId: string, x: number, z: number) => ({ srcId, x, y: FLAME_LIFT_M, z, intensity: INTENSITE, distance: PORTEE_M });
+const lampe = (srcId: string, x: number, z: number) => ({ srcId, x, y: FLAME_LIFT_M, z, intensity: INTENSITE, distance: PORTEE_M, color: 0xffffff });
 
 /** Le POOL monté sur cette table — les lampes que la passe de pose déplace, index par index. */
 function flaques(slots: PointLightSlots): FrameLights & { pool: PointLight[] } {
