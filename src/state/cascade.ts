@@ -249,9 +249,15 @@ export function stepInteraction(step: CascadeStep): 'jet' | 'table' | 'batch' | 
 }
 
 /** L'étape est-elle prête à être validée ? jet → lancée (`result`) ; table → tirée (`table.result`) ;
- *  batch → TOUS les participants INTERACTIFS ont un `result` (les témoins — marins PNJ,
- *  `interactive:false` — sont auto-roulés à l'ouverture, jamais un frein) ; choix → tranchée
- *  (`chosen`) ; affichage → toujours. */
+ *  batch → TOUS les participants INTERACTIFS ont un `result` ; choix → tranchée (`chosen`) ;
+ *  affichage → toujours.
+ *
+ *  CONTRAT d'une rangée TÉMOIN (`interactive:false`) : elle NAÎT avec son `result` — c'est son
+ *  PRODUCTEUR qui le roule à la construction (`pursuitFlow.pursuitRow`, `ui/opposedFrozen`). Rien ne
+ *  roule les rangées d'une étape ouverte : `rollBatchParticipants` n'est appelé QUE par les pilotes
+ *  « tout résoudre »/immédiat (`resolveRemainingCascade`/`runCascadeImmediate`). Une témoin sans
+ *  `result` n'en obtiendrait donc jamais — et comme elle ne freine pas ce prédicat, son jet serait
+ *  simplement PERDU à la validation. */
 export function stepReady(step: CascadeStep): boolean {
   switch (stepInteraction(step)) {
     case 'jet': return !!step.result;

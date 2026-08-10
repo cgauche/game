@@ -5,26 +5,32 @@
  * `PURSUIT_ESCAPE_DISTANCE`, primitives PARTAGÉES avec la poursuite NAVALE `seaVoyageFlow`). Ce module
  * n'ajoute que la MISE EN SCÈNE terrestre : la boucle de manches jouée à l'écran.
  *
- * DRAMATURGIE (miroir de la crise « poursuite » du voyage maritime, MDG 13) : une MANCHE par MODALE,
- * la boucle y reste jusqu'à l'issue. Chaque manche est présentée par la CASCADE influençable (state/cascade,
- * `purpose:'pursuite'`) — chaque héros lance son Test de Mouvement (Athlétisme/Chevaucher/Conduite
- * d'attelages, `skill` en DONNÉE, aucun nom en dur), influençable (Chance/Résilience/Pacte) ; les
- * adversaires (PNJ) roulent en clôture de manche. On compare (LDB 15 l.93) le DR le plus BAS des
+ * DRAMATURGIE (miroir de la crise « poursuite » du voyage maritime, MDG 13) : une MANCHE par FENÊTRE,
+ * la boucle y reste jusqu'à l'issue. Une manche est UNE BANDE (`purpose:'pursuite'`, `aggregate:'none'`)
+ * dont les coureurs sont les RANGÉES (`BatchParticipant`) — LDB 15 l.92 : « Tout participant à la
+ * poursuite effectue un Test pour son Mouvement ». Compétence de Mouvement en DONNÉE (`skill` :
+ * Athlétisme/Chevaucher/Conduite d'attelages, aucun nom en dur), rangée influençable (Chance/Résilience/
+ * Pacte) pour tout coureur dont un siège tient le jet (`jetSurfaced`, fenêtre de GROUPE), rangée
+ * AUTO-ROULÉE à la construction sinon (héros conduit par l'IA, cadence Auto/Rapide) ;
+ * les adversaires (PNJ) roulent en clôture de manche. On compare (LDB 15 l.93) le DR le plus BAS des
  * poursuivis au DR le plus HAUT des poursuivants, la Distance varie de la différence, puis l'issue est
  * jugée par `pursuitOutcome` : rattrapés (Distance ≤ 0 → combat) / semés (≥ escapeAt) / la manche suivante.
+ * Les MANCHES restent SÉQUENTIELLES entre elles (une manche = une question, l.94 « on retourne à l'étape 2 »).
  */
 import type { Get, Set } from './flowTypes';
 import { rollTest } from '../engine/tests';
-import { testValue } from '../engine/skills';
 import { effectiveMovement } from '../engine/encumbrance';
 import { pursuitTargetMovementBonus } from '../engine/combatFeatures/dispatch';
-import type { Combatant } from '../engine/types';
+import type { Combatant, Difficulty } from '../engine/types';
 import { findSkillById, combatStakeRef } from '../data/index';
 import { battleRng } from './battleRng';
-import { startCascade, registerCascadeApplier } from './cascade';
-import { freeCons } from './rollSeam';
+import { startCascade, registerCascadeApplier, rollBatchParticipant } from './cascade';
+import { actorIn } from './combatants';
+import { jetSurfaced } from './netOwnership';
+import { cadenceAuto } from '../engine/cadence';
+import { freeCons, rollStep } from './rollSeam';
 import { pursuitOutcome, pursuitMoveBonus, PURSUIT_ESCAPE_DISTANCE } from '../engine/pursuit';
-import type { CascadeStep, PendingCascade } from './pendings';
+import type { BatchParticipant, CascadeStep, PendingCascade } from './pendings';
 
 /** Un adversaire de la poursuite (côté opposé au groupe) — Mouvement (bonus de DR de vitesse, l.105-108)
  *  et valeur de Test de Mouvement. `label` = affichage (aucune logique keyée dessus). */
@@ -60,11 +66,21 @@ export interface PursuitState extends PursuitSpec {
 
 const PURSUIT_MOVE_KIND = 'pursuitMove';
 
-/** Applier de l'étape de manche : MUET côté conséquence (la résolution de la manche est GLOBALE — elle
- *  compare tous les DR à la clôture, `continuePursuitRound`) ; ne pousse qu'une ligne de journal lisible. */
-registerCascadeApplier(PURSUIT_MOVE_KIND, (_get, _set, step, hero) => {
-  const dr = step.result?.sl ?? 0;
-  return { consequences: freeCons([`${hero?.label ?? step.actorId} — ${step.rollLabel ?? 'Mouvement'} : ${dr >= 0 ? '+' : ''}${dr} DR.`]) };
+/** Difficulté du Test de Mouvement d'une manche : LDB 15 l.92 n'en pose aucune — le Test est nu. */
+const PURSUIT_DIFFICULTY: Difficulty = 'intermediaire';
+
+/** Applier de la BANDE de manche : MUET côté conséquence (la résolution de la manche est GLOBALE — elle
+ *  compare tous les DR à la clôture, `continuePursuitRound`) ; ne pousse qu'une ligne de journal lisible
+ *  PAR RANGÉE. Une bande sans rangées RENONCE (fail-closed, patron `registerNightBandApplier`). */
+registerCascadeApplier(PURSUIT_MOVE_KIND, (get, _set, step) => {
+  if (!step.participants) return;
+  const lines: string[] = [];
+  for (const row of step.participants) {
+    const dr = row.result?.sl ?? 0;
+    const who = actorIn(get(), row.id)?.label ?? row.id;
+    lines.push(`${who} — ${row.label ?? 'Mouvement'} : ${dr >= 0 ? '+' : ''}${dr} DR.`);
+  }
+  return { consequences: freeCons(lines) };
 });
 
 /** Héros du groupe ENCORE en course (vivants et dans la rencontre). */
@@ -93,37 +109,103 @@ export function startGroundPursuit(get: Get, set: Set, spec: PursuitSpec): void 
   openPursuitRound(get, set, label);
 }
 
-/** Ouvre une manche : une étape de Test de Mouvement influençable PAR héros en course (cascade). */
+/** RANGÉE d'un coureur dans la manche : son Test de Mouvement, monté par le MONTEUR CANONIQUE
+ *  (`rollSeam.rollStep`, hors canal combat — la poursuite se joue hors arène) : `base` NUE, tout écart
+ *  en `mods` NOMMÉS, cible dérivée.
+ *
+ *  SURFAÇAGE par `jetSurfaced` (SEAT-AGNOSTIQUE, patron `combatFlow.ts` — rangées de Contre-sort et
+ *  d'opposition de cible) : le coureur d'un AUTRE siège garde une rangée à JOUER, c'est son joueur qui
+ *  la roulera (`pilotedByHuman`/`humanControlled` sont des prédicats d'affordance LOCALE : ils
+ *  voleraient le jet de l'invité). Reste TÉMOIN (`interactive:false`) le coureur qu'aucun siège ne
+ *  tient — héros conduit par l'IA — et toute rangée en cadence Auto/Rapide, où les jets se lancent
+ *  sans influence. Une rangée témoin NAÎT avec son `result` (roulé ici) : son DR compte dans la
+ *  comparaison de la manche et `stepReady` ne l'attend jamais. */
+function pursuitRow(get: Get, h: Combatant, skill: string, label: string): BatchParticipant {
+  const row: BatchParticipant = {
+    id: h.id, label, skillId: skill, difficulty: PURSUIT_DIFFICULTY, result: null, interactive: true,
+    ...rollStep({ actor: h, test: { skill }, difficulty: PURSUIT_DIFFICULTY }),
+  };
+  if (!cadenceAuto() && jetSurfaced(get(), h)) return row;
+  return { ...row, interactive: false, result: rollBatchParticipant(row, battleRng()) };
+}
+
+/** Ouvre une manche : UNE bande, une RANGÉE par coureur (LDB 15 l.92). `undefined` sans coureur. */
+function pursuitRoundBand(get: Get, p: PursuitState, label: string): CascadeStep | undefined {
+  const participants = runners(get).map((h) => pursuitRow(get, h, p.skill, label));
+  if (!participants.length) return undefined;
+  return {
+    id: `pursuit-${p.round}`,
+    kind: PURSUIT_MOVE_KIND,
+    icon: 'travel/foot',
+    label: `Manche ${p.round} — ${label}`,
+    interactive: true,
+    // Fenêtre de GROUPE (calque `shareCastStep`/`forceDoor`) : la manche porte les jets de PLUSIEURS
+    // sièges (LDB 15 l.92, « tout participant »). Sans ce drapeau l'arbitre rend `undefined`
+    // (`modalArbiter`, entrée `cascade`) et l'invité ne verrait jamais la manche où se tient son Test.
+    groupOwner: true,
+    aggregate: 'none',
+    participants,
+    stake: combatStakeRef('pursuitMove', { values: { distance: p.distance, evasion: p.escapeAt } }),
+    meta: { round: p.round },
+  };
+}
+
+/** Ouvre une manche : la fenêtre UNIQUE de la manche (bande influençable, cascade `purpose:'pursuite'`). */
 export function openPursuitRound(get: Get, set: Set, skillLabel?: string): void {
   const p = get().pursuit;
   if (!p) return;
   const label = skillLabel ?? findSkillById(p.skill)?.label ?? p.skill;
-  const steps: CascadeStep[] = runners(get).map((h) => {
-    const target = testValue(h, p.skill);
-    return {
-      id: `pursuit-${p.round}-${h.id}`,
-      kind: PURSUIT_MOVE_KIND,
-      actorId: h.id,
-      icon: 'travel/foot',
-      label: `${h.label} — ${label}`,
-      rollLabel: label,
-      base: target,
-      difficulty: 'intermediaire',
-      target,
-      result: null,
-      interactive: true,
-      stake: combatStakeRef('pursuitMove', { values: { distance: p.distance, evasion: p.escapeAt } }),
-    };
-  });
-  if (!steps.length) { set({ pursuit: null }); return; }
   const p2 = { ...p, round: p.round + 1 };
+  const band = pursuitRoundBand(get, p2, label);
+  if (!band) { set({ pursuit: null }); return; }
   set({ pursuit: p2 });
   startCascade(get, set, {
     title: `Poursuite — manche ${p2.round} (Distance ${p.distance}/${p.escapeAt})`,
     icon: 'travel/foot',
     purpose: 'pursuite',
-    steps,
+    steps: [band],
   });
+}
+
+/** Champs du jet MONO d'une manche (forme d'avant la bande) qui DESCENDENT sur la rangée — le reste
+ *  (icône, enjeu, libellé de manche) appartient à la bande. */
+const PURSUIT_ROW_FIELDS = ['base', 'target', 'mods', 'clamped', 'difficulty', 'rerolled', 'forced', 'fixed', 'outcome'] as const;
+
+/** Rang de manche d'une étape MONO de poursuite (`pursuit-<manche>-<coureur>`), `null` si l'étape n'en
+ *  est pas une (autre kind, bande déjà formée, pas de porteur ni de cible). */
+function monoPursuitRound(step: CascadeStep): string | null {
+  if (step.kind !== PURSUIT_MOVE_KIND || step.participants || typeof step.actorId !== 'string' || step.target == null) return null;
+  return /^pursuit-(\d+)-/.exec(step.id)?.[1] ?? '0';
+}
+
+/**
+ * FABRIQUE de bandification des étapes MONO de manche — SOURCE UNIQUE de la conversion, appelée par la
+ * migration de save (`MIGRATIONS[18]`) : une save prise pendant une manche jouée à l'ancienne forme
+ * (une étape PAR coureur) redevient UNE bande par manche, sans quoi son applier — qui exige des
+ * RANGÉES — l'abandonnerait, et la clôture comparerait une manche SANS aucun DR de groupe. Les étapes
+ * hors périmètre traversent INTACTES, à leur place.
+ */
+export function pursuitBands(steps: CascadeStep[]): CascadeStep[] {
+  const out: CascadeStep[] = [];
+  const bands = new Map<string, BatchParticipant[]>();
+  for (const step of steps) {
+    const round = monoPursuitRound(step);
+    if (round == null) { out.push(step); continue; }
+    const row: Record<string, unknown> = { id: step.actorId, interactive: true, result: step.result ?? null, label: step.rollLabel };
+    for (const f of PURSUIT_ROW_FIELDS) if (step[f] !== undefined) row[f] = step[f];
+    const held = bands.get(round);
+    if (held) { held.push(row as unknown as BatchParticipant); continue; }
+    const participants = [row as unknown as BatchParticipant];
+    bands.set(round, participants);
+    out.push({
+      id: `pursuit-${round}`, kind: PURSUIT_MOVE_KIND, icon: step.icon,
+      label: `Manche ${round} — ${step.rollLabel ?? 'Mouvement'}`,
+      interactive: true, aggregate: 'none', participants,
+      ...(step.stake ? { stake: step.stake } : {}),
+      meta: { round: Number(round) },
+    });
+  }
+  return out;
 }
 
 /** Clôture d'une manche (cascade `purpose:'pursuite'` finalisée) : roule les adversaires, actualise la
@@ -131,9 +213,10 @@ export function openPursuitRound(get: Get, set: Set, skillLabel?: string): void 
 export function continuePursuitRound(get: Get, set: Set, done: PendingCascade): void {
   const p = get().pursuit;
   if (!p) return;
+  // Les DR du groupe sont ceux des RANGÉES de la bande de manche (une par coureur).
   const partyRolls = done.participants
     .filter((s) => s.kind === PURSUIT_MOVE_KIND)
-    .map((s) => ({ actorId: s.actorId, sl: s.result?.sl ?? 0 }));
+    .flatMap((s) => (s.participants ?? []).map((r) => ({ actorId: r.id, sl: r.result?.sl ?? 0 })));
   const rng = battleRng();
   // DR de vitesse (l.105-108) : chaque participant plus rapide que le PLUS LENT de la course gagne
   // autant de DR bonus. Plus lent = min des Mouvements de TOUS les participants (héros + adversaires).

@@ -54,6 +54,11 @@ de `saves-flow.test.ts` (`MIGRATIONS[v]` + fixture `v<v>-*.json` exigées pour c
   `MIGRATIONS[17]` (v17→v18, bandification #1117 L3 : les appliers de nuit exigent des RANGÉES, une
   étape mono serait abandonnée en silence). Fixture de version
   PASSÉE, MINIMALE et écrite à la main (idem `v4-convoi`/`v16-cascade-psy-mono`).
+- `v18-poursuite-mono.json` — MANCHE de poursuite terrestre EN VOL à la forme MONO (une étape PAR
+  coureur, la première déjà validée avec son DR, `pursuit` en cours), motive `MIGRATIONS[18]`
+  (v18→v19, bandification #1246 : l'applier de manche exige des RANGÉES, et la clôture compare TOUS
+  les DR — LDB 15 l.93 — donc l'avant-curseur entre AUSSI dans la bande, à la différence des bandes
+  de nuit). Fixture de version PASSÉE, MINIMALE et écrite à la main (idem `v17-nuit-mono`).
 
 ## Ajouter/régénérer une fixture
 

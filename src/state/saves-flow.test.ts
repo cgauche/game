@@ -536,6 +536,88 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     for (const id of ['h1', 'h2']) expect(useGame.getState().party.find((c) => c.id === id)!.hunger?.failures).toBe(1);
   });
 
+  // #1246 — MIGRATIONS[18] : une MANCHE de poursuite terrestre n'est plus N étapes MONO mais UNE bande.
+  // Son applier exige `participants` ; surtout, la manche se résout à la CLÔTURE en comparant TOUS les
+  // DR (LDB 15 l.93) — une étape mono laissée de côté emporterait le DR de son coureur.
+  it('MIGRATIONS[18] (#1246) : la manche de poursuite EN VOL devient UNE bande — DR déjà roulé CONSERVÉ, curseur reposé', () => {
+    const raw = JSON.parse(readFileSync(new URL('v18-poursuite-mono.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const legacy = ((raw as { data: Record<string, unknown> }).data.pendingCascade as { participants: Record<string, unknown>[] }).participants;
+    expect(legacy).toHaveLength(2); // la fixture v18 est bien MONO : une étape PAR coureur
+    expect(legacy.every((s) => s.participants === undefined)).toBe(true);
+
+    const migrated = migrateSave(raw);
+    expect(migrated).not.toBeNull();
+    expect(migrated!.version).toBe(SAVE_VERSION);
+    const casc = (migrated!.data as Record<string, unknown>).pendingCascade as { cursor: number; participants: Record<string, unknown>[] };
+    expect(casc.participants).toHaveLength(1); // UNE fenêtre pour la manche
+    const band = casc.participants[0];
+    expect(band.kind).toBe('pursuitMove');
+    expect(band.aggregate).toBe('none');
+    for (const mono of ['actorId', 'rollLabel', 'base', 'target']) expect(mono in band).toBe(false);
+    const rows = band.participants as { id: string; result: { sl: number } | null }[];
+    expect(rows.map((r) => r.id)).toEqual(['h1', 'h2']);
+    // Le DR DÉJÀ roulé (étape validée AVANT le curseur) descend sur sa rangée : il est encore dû à la
+    // comparaison de clôture — contrairement aux bandes de nuit, l'avant-curseur n'est pas inerte ici.
+    expect(rows[0].result?.sl).toBe(1);
+    expect(rows[1].result).toBeNull();
+    expect(casc.cursor).toBe(0); // la bande n'est pas prête : le curseur revient dessus
+  });
+
+  it('MIGRATIONS[18] : la manche migrée RÉSOUT — les DEUX DR entrent dans la Distance (LDB 15 l.93)', () => {
+    const raw = JSON.parse(readFileSync(new URL('v18-poursuite-mono.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const migrated = migrateSave(raw)!;
+    expect(saveToSlot(1, migrated)).toBe(true);
+    expect(useGame.getState().loadGame(1)).toBe(true);
+    useGame.getState().seedRng(3);
+    const pc = useGame.getState().pendingCascade!;
+    const band = pc.participants[pc.cursor];
+    // La rangée restante roule un DR FIGÉ ; l'autre porte celui de la save (+1).
+    const rows = band.participants!.map((p) => p.result ? p : { ...p, result: { roll: 10, target: p.target, sl: 3, success: true } });
+    useGame.setState({ pendingCascade: { ...pc, participants: pc.participants.map((s, i) => (i === pc.cursor ? { ...s, participants: rows } : s)) } });
+    useGame.getState().cascadeNext();
+    // AVANT la migration : l'applier renonçait et la clôture ne voyait AUCUN DR de groupe.
+    expect(useGame.getState().journal.some((l) => l.includes('Gorik') && l.includes('+1 DR'))).toBe(true);
+    expect(useGame.getState().journal.some((l) => l.includes('Elsa') && l.includes('+3 DR'))).toBe(true);
+    expect(useGame.getState().journal.some((l) => l.includes('Distance'))).toBe(true);
+  });
+
+  it('MIGRATIONS[18] : N coureurs déjà VALIDÉS + un pending → UNE bande qui les porte TOUS, curseur reposé dessus', () => {
+    const mono = (id: string, sl: number | null) => ({
+      id: `pursuit-3-${id}`, kind: 'pursuitMove', actorId: id, icon: 'travel/foot', rollLabel: 'Athlétisme',
+      label: `${id} — Athlétisme`, difficulty: 'intermediaire', base: 35, target: 35, interactive: true,
+      ...(sl == null ? { result: null } : { result: { roll: 20, target: 35, sl, success: true }, committed: true }),
+    });
+    const doc = (participants: unknown[], cursor: number) => ({
+      version: 18, savedAt: '2026', sceneLabel: 's', gameTime: 0,
+      data: { pendingCascade: { title: 'T', purpose: 'pursuite', cursor, log: [], participants }, suspendedCascades: [] },
+    });
+    const out = (MIGRATIONS[18](doc([mono('h1', 1), mono('h2', 2), mono('h3', null)], 2)).data as { pendingCascade: { cursor: number; participants: Record<string, unknown>[] } }).pendingCascade;
+    expect(out.participants).toHaveLength(1);
+    const rows = out.participants[0].participants as { id: string; result: { sl: number } | null }[];
+    // Les DEUX DR déjà roulés sont DANS la bande : la clôture les compare (LDB 15 l.93), les écarter
+    // fausserait la Distance de la manche.
+    expect(rows.map((r) => r.id)).toEqual(['h1', 'h2', 'h3']);
+    expect(rows.map((r) => r.result?.sl ?? null)).toEqual([1, 2, null]);
+    expect(out.cursor).toBe(0); // la bande n'est pas prête (h3 doit rouler)
+  });
+
+  it('MIGRATIONS[18] : une étape ÉTRANGÈRE intercalée traverse INTACTE, à sa place', () => {
+    const mono = (id: string) => ({
+      id: `pursuit-1-${id}`, kind: 'pursuitMove', actorId: id, rollLabel: 'Athlétisme',
+      base: 35, target: 35, result: null, interactive: true,
+    });
+    const etrangere = { id: 'reveal-x', kind: 'reveal', label: 'Une ombre passe', interactive: true, outcome: [{ text: 'ligne' }] };
+    const doc = {
+      version: 18, savedAt: '2026', sceneLabel: 's', gameTime: 0,
+      data: { pendingCascade: { title: 'T', purpose: 'pursuite', cursor: 0, log: [], participants: [mono('h1'), etrangere, mono('h2')] }, suspendedCascades: [] },
+    };
+    const out = (MIGRATIONS[18](doc).data as { pendingCascade: { cursor: number; participants: Record<string, unknown>[] } }).pendingCascade;
+    // La bande prend la place de la PREMIÈRE étape de sa manche ; l'étrangère garde sa position relative.
+    expect(out.participants.map((s) => s.kind)).toEqual(['pursuitMove', 'reveal']);
+    expect(out.participants[1]).toEqual(etrangere);
+    expect((out.participants[0].participants as { id: string }[]).map((r) => r.id)).toEqual(['h1', 'h2']);
+  });
+
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {
     for (let v = 1; v < SAVE_VERSION; v++) {
       expect(MIGRATIONS[v], `MIGRATIONS[${v}] manquante — un bump de SAVE_VERSION exige son migrateur`).toBeTypeOf('function');

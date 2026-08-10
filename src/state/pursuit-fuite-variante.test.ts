@@ -26,11 +26,15 @@ function hero(withTalent: boolean): Combatant {
   return h;
 }
 
-/** Manche FIGÉE : le héros a roulé `sl`, l'adversaire roulera au RNG semé (identique d'un run à l'autre). */
+/** Manche FIGÉE (la BANDE de la manche, une rangée) : le héros a roulé `sl`, l'adversaire roulera au
+ *  RNG semé (identique d'un run à l'autre). */
 function doneRound(h: Combatant, sl: number): PendingCascade {
   const participants: CascadeStep[] = [{
-    id: `pursuit-1-${h.id}`, kind: 'pursuitMove', actorId: h.id, rollLabel: 'Athlétisme', base: 40, target: 40,
-    result: { roll: 40, target: 40, sl, success: sl >= 0 }, interactive: true,
+    id: 'pursuit-1', kind: 'pursuitMove', label: 'Manche 1 — Athlétisme', interactive: true, aggregate: 'none',
+    participants: [{
+      id: h.id, label: 'Athlétisme', base: 40, target: 40, interactive: true,
+      result: { roll: 40, target: 40, sl, success: sl >= 0 },
+    }],
   }];
   return { title: 't', purpose: 'pursuite', participants, cursor: 1, log: [] };
 }

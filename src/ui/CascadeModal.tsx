@@ -380,6 +380,21 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // Action « Continuer » / « Terminer » (dernière étape) — bouton primaire d'enchaînement, partagé par
   // les étapes AFFICHAGE et CHOIX (conséquences pures, aucun jet à attendre) : `when:'always'`.
   const continueAction: RollAction = { key: 'next', label: isLast ? 'Terminer' : 'Continuer', onClick: () => next(), when: 'always' };
+  // Poursuite terrestre (purpose:'pursuite') : renoncer coûte la manche — le groupe qui FUIT se
+  // laisse rattraper (combat si une rencontre est fournie, LDB 15 l.94) ; côté poursuivant, la
+  // proie s'échappe (state/pursuitFlow.pursuitAbandon porte la vraie conséquence). Une manche est
+  // une BANDE : ces actions ne sont servies qu'à la branche BATCH.
+  const pursuitActions: RollAction[] = p.purpose === 'pursuite' ? [{
+    key: 'break',
+    label: pursuit?.partyRole === 'pursuing' ? 'Abandonner la poursuite' : 'Abandonner la fuite',
+    onClick: () => pursuitAbandon(),
+    title: pursuit?.partyRole === 'pursuing'
+      ? 'Le groupe renonce à traquer sa proie — la poursuite est perdue.'
+      : pursuit?.encounter
+        ? 'Le groupe cesse de fuir et fait face — les poursuivants fondent sur lui.'
+        : 'Le groupe cesse de fuir et fait face.',
+    when: 'always',
+  }] : [];
 
   // MODE TABLE (#942 L3) — les DEUX affordances de POSE du dé d'une étape à table, une seule
   // sémantique (POSER LE DÉ) et un seul délégué : le champ « Fixer le dé » (sélecteur dérivé par la
@@ -644,6 +659,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     const batchActions: RollAction[] = [
       ...(rollAllRows ? [{ key: 'rollRows', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: rollAllRows, title: 'Lancer toutes MES rangées non encore lancées (les rangées d’un autre siège lui restent)', when: 'always' } as RollAction] : []),
       ...(!isLast ? [{ key: 'all', label: <><Icon id="nav/dice" size="sm" /> Tout résoudre</>, onClick: () => resolveAll(), title: "Résoudre d'un coup tous les jets restants de la cascade (sans influence)", when: 'always' } as RollAction] : []),
+      ...pursuitActions,
       ...(ready ? [continueAction] : []),
     ];
     return (
@@ -717,20 +733,6 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     // montre le bilan — bouton PRÉSENT avant ET après le jet (parité `cancelAfterRoll`). Pas d'Échap :
     // la cascade est SUBIE, on ne ferme pas — le bouton est une action explicite, pas une sortie.
     ...(!isLast ? [{ key: 'all', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: () => resolveAll(), title: "Résoudre d'un coup tous les jets restants (sans influence)", when: 'always' } as RollAction] : []),
-    // Poursuite terrestre (purpose:'pursuite') : renoncer coûte la manche — le groupe qui FUIT se
-    // laisse rattraper (combat si une rencontre est fournie, LDB 15 l.94) ; côté poursuivant, la
-    // proie s'échappe (state/pursuitFlow.pursuitAbandon porte la vraie conséquence).
-    ...(p.purpose === 'pursuite' ? [{
-      key: 'break',
-      label: pursuit?.partyRole === 'pursuing' ? 'Abandonner la poursuite' : 'Abandonner la fuite',
-      onClick: () => pursuitAbandon(),
-      title: pursuit?.partyRole === 'pursuing'
-        ? 'Le groupe renonce à traquer sa proie — la poursuite est perdue.'
-        : pursuit?.encounter
-          ? 'Le groupe cesse de fuir et fait face — les poursuivants fondent sur lui.'
-          : 'Le groupe cesse de fuir et fait face.',
-      when: 'always',
-    } as RollAction] : []),
     { key: 'next', label: isLast ? 'Terminer' : 'Continuer', onClick: () => next(), when: 'post' },
   ];
 

@@ -40,8 +40,10 @@ import type { CodexFocus } from './codexFocus';
 import type { PendingCascade, RevealEntry, CascadeStep } from './pendings';
 import { revealToStep } from './revealStep';
 import { nightBands } from './nightBands';
+import { pursuitBands } from './pursuitFlow';
+import { stepReady } from './cascade';
 
-export const SAVE_VERSION = 18;
+export const SAVE_VERSION = 19;
 
 export interface SaveMeta {
   version: number;
@@ -304,6 +306,18 @@ export const MIGRATIONS: MigrationMap = {
     bandifyNightSteps(data);
     return { ...doc, version: 18, data };
   },
+  // v18→v19 (#1246) : une manche de POURSUITE terrestre n'est plus N étapes MONO (une par coureur) mais
+  // UNE bande (`state/pursuitFlow`, LDB 15 l.92). Son applier exige `participants` et RENONCE sans :
+  // une save v18 prise en pleine manche se rechargerait avec des étapes dont le jet se lance, la cascade
+  // avance, et dont AUCUN DR n'entrerait dans la comparaison de clôture (LDB 15 l.93) — Distance corrompue.
+  // MÊMES porteurs que MIGRATIONS[17] pour les cascades (ACTIVE + pile SUSPENDUE ; la file
+  // `deferredUpkeepQueue` ne porte que des jets de nuit) et MÊME conversion par la FABRIQUE du jeu ;
+  // la BORNE au curseur, elle, ne s'applique PAS ici (cf. `bandifyPursuitSteps`).
+  18: (doc) => {
+    const data = { ...(doc.data as Record<string, unknown>) };
+    bandifyPursuitSteps(data);
+    return { ...doc, version: 19, data };
+  },
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus
@@ -483,6 +497,33 @@ function bandifyNightSteps(data: Record<string, unknown>): void {
     c.participants = [...steps.slice(0, cursor), ...nightBands(steps.slice(cursor))];
   }
   if (Array.isArray(data.deferredUpkeepQueue)) data.deferredUpkeepQueue = nightBands(data.deferredUpkeepQueue as CascadeStep[]);
+}
+
+/**
+ * Bandifie les étapes MONO de manche de POURSUITE des cascades sérialisées (ACTIVE + pile SUSPENDUE)
+ * — MIGRATIONS[18]. Conversion par la FABRIQUE du jeu (`pursuitBands`).
+ *
+ * DIFFÉRENCE avec `bandifyNightSteps`, qui laisse l'AVANT-CURSEUR intact : la conséquence d'une manche
+ * n'est PAS jouée étape par étape mais à la CLÔTURE (elle compare TOUS les DR, LDB 15 l.93). Une étape
+ * déjà validée n'est donc pas de l'historique inerte — son DR est encore DÛ à la comparaison ; l'écarter
+ * de la bande le perdrait. Toute la manche est bandifiée, résultats déjà posés compris, et le curseur se
+ * REPOSE sur la première étape non prête (une cascade 'pursuite' ne porte que des étapes de sa manche).
+ * Mute `data` ; formes inattendues laissées telles quelles (patron `normalizeScene`).
+ */
+function bandifyPursuitSteps(data: Record<string, unknown>): void {
+  const stack = Array.isArray(data.suspendedCascades) ? data.suspendedCascades : [];
+  for (const cascade of [data.pendingCascade, ...stack]) {
+    const c = cascade as { participants?: unknown; cursor?: unknown } | null | undefined;
+    if (!c || !Array.isArray(c.participants)) continue;
+    const steps = c.participants as CascadeStep[];
+    const bands = pursuitBands(steps);
+    // Rien de bandé ici : la fabrique REND les étapes hors périmètre TELLES QUELLES (même référence) —
+    // une manche à un seul coureur donnerait autrement la même LONGUEUR et passerait pour inchangée.
+    if (bands.every((s, i) => s === steps[i])) continue;
+    const attente = bands.findIndex((s) => !stepReady(s));
+    c.participants = bands;
+    c.cursor = attente < 0 ? bands.length : attente;
+  }
 }
 
 /** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE, via la

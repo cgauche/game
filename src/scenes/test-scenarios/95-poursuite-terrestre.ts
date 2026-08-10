@@ -63,7 +63,7 @@ export const scenario: TestScenario = {
   title: 'Poursuite terrestre',
   tests:
     "L'Effet `startPursuit` (#95, LDB 15 l.87-109) ouvre la boucle de manches JOUABLE (cascade " +
-    "influençable purpose:'pursuite', un Test de Mouvement par héros) dès l'entrée ; rattrapage " +
+    "influençable purpose:'pursuite', UNE bande par manche — une rangée par coureur) dès l'entrée ; rattrapage " +
     '(Distance ≤ 0) bascule en combat contre les mêmes brigands, évasion (Distance ≥ 10) se dénoue au récit.',
   partyNote: 'Groupe fixe (pré-tirés)',
   makeParty: () => makePregens(),
