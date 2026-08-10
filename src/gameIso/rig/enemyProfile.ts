@@ -263,7 +263,7 @@ export function refOf(ent: Pick<SceneEntity, 'ref'>): string | undefined {
   return ent.ref;
 }
 
-/** Profil rig d'une ENTITÉ de scène (perso), dérivation UNIQUE partagée par `pickBackend` (iso) et
+/** Profil rig d'une ENTITÉ de scène (perso), dérivation UNIQUE partagée par `tokenBodyKind` (iso) et
  *  `buildPovBillboards` (POV) : mêmes seed / refName / apparence / équipement (dont `enrolled`). Une
  *  entité sans réf NI Espèce n'a aucune apparence à résoudre : signalée en dev, nommée par son id. */
 export function entityRigProfileFor(ent: SceneEntity, enrolled?: boolean): EnemyRigProfile | null {

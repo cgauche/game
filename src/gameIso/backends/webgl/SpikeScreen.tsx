@@ -46,6 +46,7 @@ import {
   applyVisibilityTint,
   bakeWorldGeometry,
   collectBillboards,
+  wholeSceneBillboardEls,
   contactShadow,
   contentBox,
   outdoorFog,
@@ -203,7 +204,7 @@ export function SpikeScreen(): JSX.Element {
   const baked = useMemo(() => bakeWorldGeometry(scene, mpt), [scene, mpt]);
   useEffect(() => () => baked.geometry.dispose(), [baked]);
   const geometry = useMemo(() => applyVisibilityTint(baked, tintAt), [baked, tintAt]);
-  const subjects = useMemo(() => collectBillboards(scene, mpt, tintAt), [scene, mpt, tintAt]);
+  const subjects = useMemo(() => collectBillboards(scene, mpt, tintAt, wholeSceneBillboardEls(scene)), [scene, mpt, tintAt]);
   // ── Accents de SOL : un semis ancré MONDE, sans période — il ne peut passer ni par la texture de
   // période ni par la cuisson par face. Dérivation PURE mémoïsée (scène × échelle, 12,1 ms sur l'arène) ;
   // le montage instancié, lui, dépend du mode de matériau et porte la teinte par `instanceColor`.

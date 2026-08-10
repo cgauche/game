@@ -79,7 +79,7 @@ export function BodyToken({
   active?: boolean;
   /** Vue du dessus : rendre un disque-portrait centré sur la case (au lieu du corps ancré aux pieds). */
   flat?: boolean;
-  /** viewBox cadrant le visage/haut du corps (depuis pickBackend) — requis en flat. */
+  /** viewBox cadrant le visage/haut du corps (depuis tokenBodyKind) — requis en flat. */
   portraitBox?: string;
   /** Rayon du disque en px (calculé par l'appelant depuis l'empreinte) — requis en flat. */
   discR?: number;

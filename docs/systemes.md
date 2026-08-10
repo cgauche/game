@@ -79,7 +79,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `netOwnership` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `RefField` |  |  |  |  |  |  |  |  |  |  |  |  |  |  | U | U |
 | `Prose` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
-| `resolveRender/pickBackend` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
+| `resolveRender/tokenBodyKind` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `MasterDetail` |  |  |  |  | U |  | U |  |  | U |  |  |  |  | U | U |
 | `gen-registry (_registry.generated)` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 
@@ -93,7 +93,7 @@ Portée : fichiers top-level (hors `*.test.ts`) non atteints par la closure d'im
 manifeste. Informatif — inclut les infra partagées (store, types, helpers transverses) qu'aucun système
 unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec bloquant de ce script.
 
-16 fichier(s) :
+17 fichier(s) :
 
 - `src/engine/axes.ts`
 - `src/engine/names.ts`
@@ -109,5 +109,6 @@ unique ne « possède » légitimement ; à trier au fil de l'eau, pas un échec
 - `src/state/mapQC.ts`
 - `src/state/preferences.ts`
 - `src/state/sceneEdit.testkit.ts`
+- `src/state/stage3d.ts`
 - `src/state/turnEconomy.ts`
 - `src/state/viewLevel.ts`

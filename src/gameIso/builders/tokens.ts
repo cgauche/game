@@ -3,7 +3,7 @@
  * (PNJ/créatures d'ambiance) et COMBATTANTS (branche combat, couples montés compris).
  * Porte l'IDENTITÉ et la position LOGIQUE + toutes les DÉCISIONS de scène (filtres d'étage/brouillard/
  * couverture, ordre d'anneau héros, surplomb) ; la position INTERPOLÉE de marche est PAR-FRAME et reste
- * au stage, comme le corps React (pickBackend/BodyToken). PUR : aucune caméra — seule la bascule
+ * au stage, comme le corps React (tokenBodyKind/BodyToken). PUR : aucune caméra — seule la bascule
  * `top` (pions-portraits : cavalier et monture séparés) est une vérité de MODE DE VUE, pas de pose.
  */
 import type { Scene } from '../../state/scene';
@@ -26,8 +26,13 @@ export interface TokenView {
 
 /** Éléments `token` de la scène — figurants (toujours), puis combattants (si `battle`). Les hors-vue
  *  sont COUPÉS (une créature non vue n'est pas dessinée) → tout token émis est VISIBLE (au-dessus du
- *  voile de brouillard). */
-export function buildTokens(scene: Scene, visible: ReadonlySet<string>, battle: BattleState | null, view: TokenView): TokenEl[] {
+ *  voile de brouillard). `visible` ABSENT = aucune loi de vue (planches QC, spike : elles jugent
+ *  l'environnement, pas le brouillard) — même convention que `buildFloors`/`buildProps`.
+ *
+ *  SOURCE UNIQUE des deux voies de rendu du monde (#1176) : le stage affine en fait des corps React
+ *  (`stage/tokens.tsx`), le monde volumique en fait des billboards (`sceneBillboards`) — les filtres
+ *  (embuscade, enrôlé, couverture, étage, hors-vue) ne se recopient pas, ils se CONSOMMENT. */
+export function buildTokens(scene: Scene, visible: ReadonlySet<string> | undefined, battle: BattleState | null, view: TokenView): TokenEl[] {
   const { activeZ, viewZ, top } = view;
   const out: TokenEl[] = [];
   const inBattle = !!battle;
@@ -45,7 +50,7 @@ export function buildTokens(scene: Scene, visible: ReadonlySet<string>, battle: 
     const ez = ent.z ?? 0;
     if (viewZ != null ? ez !== viewZ : ez > activeZ) continue; // isole ; sinon couche active + dessous
     if (!ez && covered(ent.pos.x, ent.pos.y)) continue; // l'occlusion par combattant ne vaut qu'au sol
-    if (!visible.has(`${ent.pos.x},${ent.pos.y},${ez}`)) continue; // hors-vue → coupé
+    if (visible && !visible.has(`${ent.pos.x},${ent.pos.y},${ez}`)) continue; // hors-vue → coupé
     out.push({
       kind: 'token',
       key: `fig:${ent.id}`,
@@ -74,7 +79,7 @@ export function buildTokens(scene: Scene, visible: ReadonlySet<string>, battle: 
     const isHero = c.kind === 'hero';
     // Brouillard : un ennemi/PNJ que personne du groupe ne voit n'est pas dessiné (les alliés, qui
     // SONT les viewers, restent toujours rendus). Clé z-aware = l'étage du combattant.
-    if (!isHero && !visible.has(`${c.pos.x},${c.pos.y},${cz}`)) continue;
+    if (!isHero && visible && !visible.has(`${c.pos.x},${c.pos.y},${cz}`)) continue;
     // Combat monté (iso) : cavalier rendu EN SELLE (couple composite ci-dessous) ; en vue du dessus,
     // cavalier et monture sont deux pions distincts.
     if (!top && isRider(c)) {

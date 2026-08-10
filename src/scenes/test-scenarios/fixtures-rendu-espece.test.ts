@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { testScenarios } from './index';
-import { pickBackend } from '../../gameIso/pickBackend';
+import { tokenBodyKind } from '../../gameIso/tokenBodyKind';
 import { resetDiagOnce } from '../../gameIso/rig/devDiag';
 import { spawnEnemy } from '../../state/spawn';
 import { enemyRigProfile } from '../../gameIso/rig/enemyProfile';
@@ -12,7 +12,7 @@ import type { SceneEntity } from '../../state/scene';
 /**
  * Chaque personnage AUTHORÉ d'un scénario de test doit être rendable par SA donnée : réf de créature,
  * ou Espèce explicite (`appearance.species`). Le pipeline de rendu diagnostique le manque en console
- * (`[rig]`, `[bodyPlan]`, `[pickBackend]`) — un scénario livré avec un de ces diagnostics oblige toute
+ * (`[rig]`, `[bodyPlan]`, `[tokenBodyKind]`) — un scénario livré avec un de ces diagnostics oblige toute
  * recette navigateur à trier le bruit avant de lire ses vraies erreurs (#936).
  *
  * Les DEUX chemins de rendu sont exercés (ils lisent l'espèce dans des champs différents) : entité de
@@ -52,7 +52,7 @@ describe('scénarios de test — aucun personnage sans espèce résolue (#936)',
       [s.scene, ...(s.extraScenes ?? [])].flatMap((sc) => sc.encounters.flatMap((e) => (e.members ?? []).map((m) => m.entityId))),
     );
     for (const ent of persos(s).filter(authoreIci)) {
-      pickBackend({ kind: 'sceneEntity', ent, enrolled: enroles.has(ent.id) });
+      tokenBodyKind({ kind: 'sceneEntity', ent, enrolled: enroles.has(ent.id) });
       if (!enroles.has(ent.id)) continue; // un figurant qui n'entre jamais en combat n'est jamais spawné
       const preset = ent.presetId ? resolvePresetCreature(ent.presetId) : undefined; // même résolution que `combatSlice`
       const c = spawnEnemy(ent.ref, ent.statblock, ent.id, ent.pos, {
@@ -60,7 +60,7 @@ describe('scénarios de test — aucun personnage sans espèce résolue (#936)',
         appearance: preset?.apparence ?? ent.appearance,
         weapon: ent.weapon,
       });
-      pickBackend({ kind: 'combatant', combatant: c });
+      tokenBodyKind({ kind: 'combatant', combatant: c });
     }
     const dits = [...err.mock.calls, ...warn.mock.calls].map((c) => String(c[0]));
     expect(dits, `scénario « ${id} » : ${dits.join(' | ')}`).toEqual([]);

@@ -10,7 +10,7 @@
 import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import './anim.css';
 import { useGame } from '../state/store';
-import { heightAt, sceneMetresPerTile } from '../state/scene';
+import { heightAt, sceneMetresPerTile, type Scene } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { metricToLift } from '../state/relief';
 import { computeStateVisibleAndLight } from '../state/visionState';
@@ -41,6 +41,12 @@ import { combatHighlightObjs } from './stage/highlightLayer';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
 import { CulledScene, actorCapsuleOf } from './stage/CulledScene';
+import { GameStage3D } from './stage/GameStage3D';
+import { getStageBackend, subscribeStageBackend } from '../state/stage3d';
+import { tintFor } from './backends/webgl/visibilityTint';
+import { actorPoseKey, type KeepEl, type ActorPose, type TintAt } from './backends/webgl/sceneMeshes';
+import type { PropEl, TokenEl } from './builders/types';
+import { stageCamTransform } from './stage/stageCam';
 import { occupiedInteriorZoneIds, roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
 import { NO_CLEARED_SPACE, exteriorWallViewZ, frontFacadeCutaway, cutawayForSection, cutawayOverhead, lidCutaway, spaceCellKey } from './stage/architectureVisibility';
 import { DoorOverlays } from './stage/DoorOverlays';
@@ -101,6 +107,12 @@ export function IsoStage() {
   const pendingDefense = useGame((s) => s.pendingDefense);
   const viewMode = useGame((s) => s.viewMode);
   const debugLabels = useGame((s) => s.debugLabels); // overlay d'annotation de carte (__wfrp.labels)
+  // L'orientation MONDE vivante (store `facing`) n'est lue QUE par la voie volumique : son abonnement
+  // vit dans `VolumetricWorld` (`setFacing` reforge la référence à chaque pas — en affine, le stage ne
+  // doit pas s'en re-rendre).
+  // VOIE DE RENDU du monde (#1176, DEV) — hors store : elle décrit le chantier, pas le monde.
+  const stageBackend = useSyncExternalStore(subscribeStageBackend, getStageBackend, getStageBackend);
+  const webgl = import.meta.env.DEV && stageBackend === 'webgl';
   const combatCursor = useGame((s) => s.combatCursor);
   const hoverCombatantId = useGame((s) => s.hoverCombatantId); // survol de la frise → peek caméra + réticule
   const svgRef = useRef<SVGSVGElement>(null);
@@ -204,6 +216,20 @@ export function IsoStage() {
     }));
     return lidCutaway(clearedSpace(scene, visualAllies, exploredSet), lids, actors);
   }, [scene, visualAllies, exploredSet, roofGeom, dims]);
+  // Les MÊMES vérités, dans la forme que consomme la voie VOLUMIQUE (#1176) : le dégagement en canal
+  // GÉOMÉTRIE (une masse dégagée ne se rend pas), la visibilité en canal TEINTE. Un seul jeu de lois.
+  const keepEl = useMemo<KeepEl>(() => (el) => {
+    if (el.kind === 'roof')
+      return cutawayForSection({
+        sectionId: el.sectionId ?? el.key,
+        roomZoneIds: el.roomZoneIds,
+        cells: el.cells.map((c) => spaceCellKey(c.x, c.y, el.cell.z)),
+      }, cleared) === 'visible';
+    if (cutawayOverhead(el.cell, cleared)) return false;
+    if (el.kind === 'wall') return !frontFacadeCutaway({ ...el, x: el.cell.x, y: el.cell.y, z: el.cell.z }, cleared, dims);
+    return true;
+  }, [cleared, dims]);
+  const tintAt = useMemo(() => (key: string) => tintFor(key, visible, exploredSet), [visible, exploredSet]);
   const floorEls = useMemo(
     () => (scene ? buildFloors(scene, visible, { activeZ, viewZ: layerZ }).filter((el) => !cutawayOverhead(el.cell, cleared)) : []),
     [scene, visible, activeZ, layerZ, cleared],
@@ -321,6 +347,9 @@ export function IsoStage() {
   }
   const objs = mergeByDepth(staticObjs, dyn);
 
+  // ── VOIE VOLUMIQUE (#1176, DEV) : la dérivation des ACTEURS (et l'abonnement à l'orientation vivante
+  // qu'elle demande) vit dans `VolumetricWorld`, monté seulement en volumique — cf. son JSDoc.
+
   // ── Caméra : point focal (paire de visée / actif / leader) + culling d'animation ────────────────
   const targeting = mode === 'battle' && battle ? cameraTargeting(battle, actorAim) : null;
   const focus = stageFocus({ mode, battle, partyPos, partyLeader, walkPosOf, planView, hoverCombatantId, targeting, pendingAttack, pendingCast });
@@ -342,16 +371,36 @@ export function IsoStage() {
   // Transform CAMÉRA (pan/zoom/rotation) — partagée par le groupe principal ET l'overlay d'étiquettes
   // de zone (Bug lisibilité #782 : ce dernier doit suivre la même projection tout en peignant APRÈS
   // le voile d'ambiance, cf. rendu ci-dessous).
-  const camTransform = `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.97 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`;
+  const camTransform = stageCamTransform(cam, zoom * (turning ? 0.97 : 1));
   const camTransition = turning ? 'opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out';
   const camOpacity = turning ? 0.6 : 1;
 
   return (
-    <svg ref={svgRef} className="iso-stage" viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" {...handlers}>
+    <>
+      {/* Voie VOLUMIQUE (#1176, DEV) : le canevas prend la couche MONDE et se pose SOUS le SVG, qui
+          garde ses overlays d'interaction, son picking et ses voiles. */}
+      {webgl && (
+        <VolumetricWorld
+          scene={scene}
+          dims={dims}
+          mpt={mpt}
+          cam={cam}
+          zoom={zoom * (turning ? 0.97 : 1)}
+          tintAt={tintAt}
+          keepEl={keepEl}
+          tokenEls={tokenEls}
+          propEls={propEls}
+          walkPosOf={walkPosOf}
+          partyToken={mode === 'battle' && battle ? null : partyLeader ? { leader: partyLeader, pos: partyPos } : null}
+        />
+      )}
+    {/* Voie volumique : le fond du SVG s'efface (le canevas peint dessous) — un état de CHANTIER,
+        pas un sélecteur de domaine de plus dans la feuille (cliquet `ui-ratchets` xii). */}
+    <svg ref={svgRef} className="iso-stage" style={webgl ? { background: 'transparent' } : undefined} viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" {...handlers}>
       <defs dangerouslySetInnerHTML={{ __html: DEFS + isoAmbianceDefs() + patternDefs }} />
       <g style={{ transform: camTransform, transition: camTransition, opacity: camOpacity }}>
-        <CulledScene objs={objs} dims={dims} cam={cam} zoom={zoom} activeZ={activeZ}
-          fog={{ explored: exploredSet }} light={light} roomFocus={roomFocus} />
+        {!webgl && <CulledScene objs={objs} dims={dims} cam={cam} zoom={zoom} activeZ={activeZ}
+          fog={{ explored: exploredSet }} light={light} roomFocus={roomFocus} />}
         <DoorOverlays
           portals={portals}
           dims={dims}
@@ -389,5 +438,62 @@ export function IsoStage() {
       <AmbianceVeils scene={scene} dims={dims} gameTime={gameTime} lightLevel={lightLevel} />
       <WeatherVeil weather={scene.weather} />
     </svg>
+    </>
   );
+}
+
+/**
+ * MONDE VOLUMIQUE (#1176, DEV) monté SOUS le stage. Composant à part, et c'est STRUCTUREL : les
+ * abonnements au store qui n'ont de sens qu'en volumique vivent ICI, donc ne s'abonnent pas du tout
+ * quand la voie affine est active. `facing` en est le cas d'école — `setFacing` reforge la référence
+ * de la table à chaque orientation (`store.ts`, à chaque pas et à chaque attaque) : lu par `IsoStage`,
+ * il re-rendait le stage ENTIER même l'interrupteur au repos. Un hook conditionnel est interdit ; un
+ * composant conditionnel, non.
+ *
+ * Les ACTEURS se dérivent des ÉLÉMENTS DU BUILDER (`tokenEls`), pas de `battle.combatants` : mêmes
+ * filtres que la voie affine (passager de navire abstrait, structure de siège rendue sur son arête,
+ * étage isolé, surplomb, brouillard). ÉCART RÉSIDUEL : un couple MONTÉ ne rend que sa MONTURE — le
+ * corps composite cavalier+monture (`MountedToken`) n'a pas d'équivalent billboard.
+ */
+function VolumetricWorld({ scene, dims, mpt, cam, zoom, tintAt, keepEl, tokenEls, propEls, walkPosOf, partyToken }: {
+  scene: Scene;
+  dims: Dims;
+  mpt: number;
+  cam: { x: number; y: number };
+  zoom: number;
+  tintAt: TintAt;
+  keepEl: KeepEl;
+  tokenEls: TokenEl[];
+  propEls: PropEl[];
+  walkPosOf: WalkPos;
+  /** Hors combat : le jeton de GROUPE (le meneur visible), à sa case. En combat : `null`. */
+  partyToken: { leader: Combatant; pos: Pt } | null;
+}) {
+  const facings = useGame((s) => s.facing); // orientation MONDE vivante par acteur (Dir8)
+  const poses: ActorPose[] = [];
+  for (const tk of tokenEls) {
+    const s = tk.subject;
+    const unit = s.kind === 'combatant' ? s.c : s.kind === 'mounted' ? s.mount : null;
+    if (!unit?.pos) continue;
+    const wp = walkPosOf(unit.id, unit.pos.x, unit.pos.y, tk.cell.z);
+    poses.push({ c: unit, x: wp.x, y: wp.y, z: tk.cell.z, facing: facings[unit.id] });
+  }
+  if (partyToken) {
+    const z = partyToken.pos.z ?? 0;
+    const wp = walkPosOf(partyToken.leader.id, partyToken.pos.x, partyToken.pos.y, z);
+    poses.push({ c: partyToken.leader, x: wp.x, y: wp.y, z, facing: facings[partyToken.leader.id] });
+  }
+  // RÉFÉRENCE STABLE tant que rien de ce que le billboard dessine n'a bougé — même patron de clé que
+  // `visualAllies` plus haut. Le tableau se reforge à CHAQUE rendu du stage (`walkPosOf` est refait à
+  // la frame), et un tableau neuf démonte puis remonte les quads de TOUS les sujets, à chaque rendu
+  // que le store provoque, marche ou pas. La clé porte tout ce dont la POSE et le DESSIN dépendent :
+  // identité, position visuelle, orientation, et la SIGNATURE des entrées de dessin (garde-robe,
+  // équipement, apparence vivante, état au sol, échelle). `actorPoseKey` la compose depuis la MÊME
+  // signature que l'identité de cache de texture (`BillboardSubject.identity`) : une entrée de dessin
+  // ne peut plus périmer l'une sans l'autre.
+  const posesKey = poses.map(actorPoseKey).join('|');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const actors = useMemo(() => poses, [posesKey]);
+  const els = useMemo(() => ({ tokens: tokenEls, props: propEls }), [tokenEls, propEls]);
+  return <GameStage3D scene={scene} dims={dims} mpt={mpt} cam={cam} zoom={zoom} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} />;
 }

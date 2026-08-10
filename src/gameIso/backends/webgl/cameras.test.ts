@@ -21,7 +21,7 @@ import { DIR8_ORDER } from '../../../state/dir8';
 import { VH, VW, makeCamera, project } from '../../pov/camera';
 import { pxPerM } from './worldTris';
 import { ISO_PX_PER_M } from '../../iso';
-import { buildWorldGeometry, collectBillboards, contentBox } from './sceneMeshes';
+import { buildWorldGeometry, collectBillboards, contentBox, wholeSceneBillboardEls } from './sceneMeshes';
 import { anchorAndSize, billboardHeightM, BILLBOARD_BOX_ASPECT } from './billboardMath';
 
 /**
@@ -263,7 +263,7 @@ describe('CADRAGE — la vue affine tient le CONTENU, sans toucher à la défini
   /** Boîte de CONTENU de la scène-témoin (bâti + sujets), à la convention de taille par défaut. */
   const contenu = (() => {
     const geoBox = buildWorldGeometry(scene, mpt, () => 1).boundingBox!;
-    const subs = collectBillboards(scene, mpt, () => 1);
+    const subs = collectBillboards(scene, mpt, () => 1, wholeSceneBillboardEls(scene));
     return contentBox(scene, mpt, subs, (s) => anchorAndSize(billboardHeightM('jeu', s.kind) * s.scaleK, BILLBOARD_BOX_ASPECT), geoBox);
   })();
 

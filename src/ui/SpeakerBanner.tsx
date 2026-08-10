@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
 import type { SceneEntity } from '../state/scene';
-import { pickBackend } from '../gameIso/pickBackend';
+import { tokenBodyKind } from '../gameIso/tokenBodyKind';
 import { Fleuron } from './Ornaments';
 
 /**
  * Bandeau d'interlocuteur (#371 lot 1) — gabarit visuel UNIQUE d'un PNJ qui s'adresse au joueur :
- * portrait (même pipeline que le rendu iso, `pickBackend` en vue de face) + nom + texte.
+ * portrait (même pipeline que le rendu iso, `tokenBodyKind` en vue de face) + nom + texte.
  *  - `dialogue` : arbre de choix (`DialogueBox`) — zone de choix rendue si fournie ; portrait ABSENT
  *    tant qu'aucune entité n'est liée (comportement historique : une ligne narrateur sans portrait).
  *  - `boniment` : réplique STATIQUE, sans arbre (marchand, aubergiste…) — portrait TOUJOURS montré,
@@ -24,7 +24,7 @@ export interface SpeakerBannerProps {
 }
 
 export function SpeakerBanner({ ent, label, variant = 'dialogue', children, choices, className }: SpeakerBannerProps) {
-  const portrait = ent ? pickBackend({ kind: 'sceneEntity', ent }, 'top') : null;
+  const portrait = ent ? tokenBodyKind({ kind: 'sceneEntity', ent }, 'top') : null;
   const showPortraitSlot = portrait != null || variant === 'boniment';
   return (
     <div className={`dialogue-box${variant === 'boniment' ? ' dlg-boniment' : ''}${className ? ` ${className}` : ''}`}>

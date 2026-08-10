@@ -261,12 +261,14 @@ describe('IsoStage — la caméra vise le milieu de la capsule du sujet', () => 
     vi.restoreAllMocks();
   });
 
-  /** Translation caméra du groupe transformé (dernier `translate(...)` de la chaîne de transform). */
-  function camOf(el: HTMLDivElement): { x: number; y: number } {
-    const transform = el.querySelector('svg > g')!.getAttribute('style')!;
-    const all = [...transform.matchAll(/translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)/g)];
-    const last = all[all.length - 1];
-    return { x: Number(last[1]), y: Number(last[2]) };
+  /** Point de la SCÈNE que la transformation caméra du stage amène au CENTRE du viewport : la `matrix()`
+   *  rendue par `stageCamTransform` (`stage/stageCam.ts`), simplement INVERSÉE — la loi de caméra n'est
+   *  pas répliquée ici. */
+  function viseOf(el: HTMLDivElement): { x: number; y: number } {
+    const style = el.querySelector('svg > g')!.getAttribute('style')!;
+    const m = /matrix\(([^)]+)\)/.exec(style)!;
+    const [k, , , , tx, ty] = m[1].split(',').map(Number);
+    return { x: (VW / 2 - tx) / k, y: (VH / 2 - ty) / k };
   }
 
   function mount(partyPos: { x: number; y: number; z?: number }, height?: number[]) {
@@ -298,8 +300,7 @@ describe('IsoStage — la caméra vise le milieu de la capsule du sujet', () => 
     const dims: Dims = { ...scene.dimensions, rot: 0, view: 'iso', edge: false };
     const z = partyPos.z ?? 0;
     const h = heightAt(scene, partyPos.x, partyPos.y, z);
-    const cam = camOf(container!);
-    const vise = { x: VW / 2 - cam.x, y: VH / 2 - cam.y }; // point de la SCÈNE amené au centre du viewport
+    const vise = viseOf(container!); // point de la SCÈNE amené au centre du viewport
 
     const milieu = capsuleCenter(actorCapsuleOf({ x: partyPos.x, y: partyPos.y, h }, dims));
     expect(vise.x).toBeCloseTo(milieu.x, 6);

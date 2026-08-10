@@ -128,7 +128,7 @@ export function buildPovBillboards(scene: Scene, cam: CamPose, visible: Set<stri
     if (e.kind !== 'personnage') continue; // les props passent par le noyau pur (ci-dessous)
     const z = e.z ?? 0;
     if (!visible.has(`${e.pos.x},${e.pos.y},${z}`)) continue; // 1) culling LdV/brouillard
-    // Résolution de rendu UNIQUE (même dérivation que `pickBackend`) : rig humanoïde ou gabarit.
+    // Résolution de rendu UNIQUE (même dérivation que `tokenBodyKind`) : rig humanoïde ou gabarit.
     const refName = refOf(e);
     const r = resolveRender(e.appearance?.species, findCreatureById(refName)?.traits, refName);
     const a = footAnchor(scene, cam, e.pos.x, e.pos.y, z, ENT_H_M, r.scale); // 2-3) ancre + échelle + culls

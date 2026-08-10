@@ -7,6 +7,7 @@ import { project, type View } from './rig/facing';
 import type { Dir8 } from '../state/dir8';
 import { STEP_MS, walkMs } from '../geometry/walk';
 import { isTileVisible } from './viewport';
+import { lerpPose, planGroundPose } from './groundPose';
 
 const IDLE_MS = 1600; // période de l'anim de repos (battement/ondulation/dodelinement)
 const FLINCH_MS = 240; // durée du recul (touché) / dérobade (attaque esquivée)
@@ -22,12 +23,8 @@ type Mode =
 // Mise à l'échelle d'une pose (amplitude) — sert au repli générique de recul.
 const scalePose = (p: Record<string, number>, k: number): Record<string, number> =>
   Object.fromEntries(Object.entries(p).map(([b, v]) => [b, v * k]));
-// Interpolation de poses (union des os, absent = 0) — pour l'effondrement animé.
-const lerpPose = (a: Record<string, number>, b: Record<string, number>, t: number): Record<string, number> => {
-  const out: Record<string, number> = {};
-  for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) out[k] = (a[k] ?? 0) * (1 - t) + (b[k] ?? 0) * t;
-  return out;
-};
+// L'interpolation de poses et la pose COUCHÉE d'un gabarit vivent dans `groundPose.ts` — la voie
+// volumique pose le même corps au sol sans rejouer cette horloge.
 const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
 
 /**
@@ -122,8 +119,8 @@ export function usePlanAnim(id: string, planId: BodyPlanId, species: string, dea
   // anatomiquement juste sans connaître ses os.
   const flinchPose = (k: number): Record<string, number> =>
     plan!.flinchPose ? plan!.flinchPose(k) : scalePose(plan!.attackPose(1), -0.35 * k);
-  // À Terre VIVANT : affaissé à 85 % vers la pose couchée (un peu moins effondré qu'un mort).
-  const downPose = () => (prone && !dead ? lerpPose(plan!.restPose(), plan!.deathPose(), 0.85) : plan!.deathPose());
+  // Pose COUCHÉE : la résolution partagée (`planGroundPose`) — mort étalé, À Terre vivant affaissé.
+  const downPose = () => planGroundPose(plan!, dead ? 'corpse' : 'prone')!;
   const pose: Record<string, number> = !plan
     ? {}
     : dead || prone

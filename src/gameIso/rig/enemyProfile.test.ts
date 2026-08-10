@@ -228,7 +228,7 @@ describe('entityRigProfile (entité de scène, ambiance hors combat)', () => {
     const p = entityRigProfile('villageois', 1)!;
     expect(p.appearance.species).toBe('humain');
     expect(p.tenue).toBe('villageois'); // tenue DÉCLARÉE par le record ; elle ne se déduit plus du nom (POC retiré)
-    // L'ambiance porte sa tenue via `appearance.tenue` (pickBackend → opts.tenue) — honorée telle quelle (id).
+    // L'ambiance porte sa tenue via `appearance.tenue` (tokenBodyKind → opts.tenue) — honorée telle quelle (id).
     expect(entityRigProfile('villageois', 1, { tenue: 'mendiant' })!.tenue).toBe('mendiant');
     // Une réf qui n'est PAS un id de record (un LIBELLE) ne résout AUCUNE espèce → défaut déclaré en donnée.
     const inconnue = entityRigProfile('Villageois', 1)!;

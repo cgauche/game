@@ -28,7 +28,7 @@ export interface EntityViz {
 }
 
 /**
- * Sprite d'une entité de scène pour le backend SPRITE (pickBackend). Après le passage de tout le
+ * Sprite d'une entité de scène pour le backend SPRITE (tokenBodyKind). Après le passage de tout le
  * bestiaire ET des PNJ au rig, ce backend ne sert plus que le DÉCOR (props → propSprite) ; tout autre
  * kind est routé vers le rig EN AMONT et n'arrive jamais ici → chaîne vide. Partagé par IsoStage (jeu)
  * et l'éditeur (WYSIWYG) — source unique.

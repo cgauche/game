@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { entitySprite, propSprite } from './sprites';
 import { creatureSpeciesOptions } from './rig/creatures';
 
-// Le bestiaire ET les PNJ passent par le RIG (pickBackend) ; le backend sprite (entitySprite) ne sert
+// Le bestiaire ET les PNJ passent par le RIG (tokenBodyKind) ; le backend sprite (entitySprite) ne sert
 // que le DÉCOR (props). Tout kind non-prop est routé vers le rig EN AMONT et n'atteint pas entitySprite
 // → chaîne vide (jamais un sprite de créature monolithique).
 describe('entitySprite — backend sprite = décor uniquement', () => {

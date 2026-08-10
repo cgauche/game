@@ -5,7 +5,7 @@
  * bestiaire. La résolution par clé DOIT reproduire ces snapshots à l'identique : sinon une créature
  * changerait d'apparence.
  *
- * Capture le mapping exact de `enemyProfile`/`pickBackend` :
+ * Capture le mapping exact de `enemyProfile`/`tokenBodyKind` :
  *   classifyEnemy = creaturePlanMatch(name) ? 'creature' : 'rig'
  *   non-bipède → { plan, def, scale=creatureSpeciesScale }
  *   bipède     → { plan:'biped', species=bipedSpeciesMatch ?? 'Humain', def=bipedDef(species), scale=bipedSpeciesScale }

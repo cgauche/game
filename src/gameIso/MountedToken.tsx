@@ -22,7 +22,7 @@ import type { Combatant } from '../engine/types';
  */
 export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combatant }) {
   // Monture : gabarit animé. Plan + espèce RÉSOLUS par la DONNÉE (resolveRender sur `creatureId`,
-  // id STABLE du bestiaire ; `label` = repli ultime d'un statbloc d'auteur, cf. pickBackend).
+  // id STABLE du bestiaire ; `label` = repli ultime d'un statbloc d'auteur, cf. tokenBodyKind).
   // Sa vue/mirror sont autoritaires pour le couple.
   const mr = resolveRender(mount.species, mount.traits, mount.creatureId ?? mount.label);
   const mountA = usePlanAnim(mount.id, mr.plan, mr.species, isOutOfAction(mount), undefined, mount.pos);

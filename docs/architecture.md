@@ -98,7 +98,7 @@ src/state/
                             PNJ nommés (#671) : `resolvePresetCreature` résout un `presetId` de scène en créature mergée
                             (`mergeCreatureProfile`, base globale + surcharges du preset) + apparence embarquée ; câblée au
                             spawn de rencontre (`combatSlice` → `spawnEnemy` canal `presetCreature`, `spawn.ts` reste sans
-                            import de cette couche) et au portrait de dialogue (`gameIso/pickBackend.tsx`).
+                            import de cette couche) et au portrait de dialogue (`gameIso/tokenBodyKind.tsx`).
   store.ts                  store Zustand : GameState + vue (caméra/zoom) + campagne (scènes, dialogues,
                             effets, temps/repos) + actions de combat — délègue aux modules (get,set) :
   combatFlow.ts               flux de combat tour par tour (IA, attaques, effets, fin de combat).
@@ -187,7 +187,7 @@ src/gameIso/                Rendu isométrique SVG (remplace Phaser) :
   rig/                        gabarits corporels (bipède + quadrupède/ailé/serpentin/…) — rend TOUT le bestiaire
                               AJOUTER une créature : suivre docs/creer-une-creature.md (registre defs/,
                               corps nu ≠ tenue, illustration art-ref obligatoire, pièges codifiés)
-  pickBackend.tsx             classifieur unique : rig humanoïde / gabarit animé / sprite décor
+  tokenBodyKind.tsx           classifieur unique : rig humanoïde / gabarit animé / sprite décor
   IsoStage.tsx                composant de rendu (caméra, clics, tokens, surbrillances)
   fx/                         FX de combat pilotés par le bus : useCombatFx (flottants/projectiles/halos/
                               zones) + FxLayer (rendu) + useWalkAnim (marche animée)
@@ -272,7 +272,7 @@ Deux restrictions posées en 0cd24a01 (#232/#91) sans ticket au moment du commit
   compétence interactifs (modal + branches), inventaire/argent/handouts (state party-level).
 - **Inventaire/équipement** : chaque héros a `items: ItemInstance[]` ; `weapons`/`armour`
   ACTIFS dérivés via `recomputeLoadout` (équiper change le combat). Fiche = `CharacterSheet.tsx`.
-- **Rendu des entités** : tout passe par `pickBackend` → le **rig** (`src/gameIso/rig/`) : humanoïdes
+- **Rendu des entités** : tout passe par `tokenBodyKind` → le **rig** (`src/gameIso/rig/`) : humanoïdes
   bipèdes (carrière + arme + armure + mutations visibles) et créatures non-bipèdes via gabarit corporel
   animé (quadrupède/ailé/serpentin/…). `sprites.ts` ne fournit plus que le décor (props).
   Le sprite monolithique (`creatureSprites.json` + `enemySprite`/`creatureView`) a été retiré (juin 2026).

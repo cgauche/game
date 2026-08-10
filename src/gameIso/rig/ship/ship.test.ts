@@ -49,7 +49,7 @@ describe('routage : un véhicule à coque → gabarit navire (resolveRender, dat
   it('un LABEL de véhicule (ids stables uniquement, doctrine ids) ne résout PAS le plan navire', async () => {
     const { resolveRender } = await import('../bodyPlan');
     // « Langskip » est le LABEL (affichage) de l'id `langskip` — passer le label ne doit PAS
-    // matcher la coque (jumelle du garde `pickBackend.tsx:161-162` : la ref doit être un id stable).
+    // matcher la coque (jumelle du garde `tokenBodyKind.tsx:161-162` : la ref doit être un id stable).
     expect(resolveRender(undefined, undefined, 'Langskip').plan).not.toBe('navire');
   });
 });

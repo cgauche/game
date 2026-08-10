@@ -165,7 +165,7 @@ export interface PropEl extends ElBase {
   /** Id de l'entité source (flags `__fouille_<id>`, clés d'affordance). Absent pour un overlay terrain. */
   entId?: string;
 }
-/** Le SUJET d'un token — la donnée d'identité que le stage transforme en corps React (pickBackend/
+/** Le SUJET d'un token — la donnée d'identité que le stage transforme en corps React (tokenBodyKind/
  *  BodyToken). La position INTERPOLÉE de marche est PAR-FRAME : elle reste au stage ; l'élément ne
  *  porte que la position LOGIQUE (`cell`) et les décisions de scène (filtres, ordre d'anneau héros). */
 export type TokenSubjectEl =

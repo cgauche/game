@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { resolveRender } from './bodyPlan';
 import { entityRigProfileFor } from './enemyProfile';
-import { pickBackend } from '../pickBackend';
+import { tokenBodyKind } from '../tokenBodyKind';
 import { resetDiagOnce } from './devDiag';
 import { useGame } from '../../state/store';
 import type { Scene, SceneEntity } from '../../state/scene';
@@ -45,9 +45,9 @@ describe('diagnostics de rendu — une fois par sujet, jamais par frame (#936)',
     expect(err.mock.calls.filter((c) => String(c[0]).startsWith('[rig]'))).toHaveLength(1);
   });
 
-  it('60 pickBackend d’une entité à ref irrésoluble → 1 seul [pickBackend]', () => {
+  it('60 tokenBodyKind d’une entité à ref irrésoluble → 1 seul [tokenBodyKind]', () => {
     const e: SceneEntity = { ...ent('ref-cassee'), ref: 'ref-totalement-inconnue' };
-    for (let i = 0; i < 60; i++) pickBackend({ kind: 'sceneEntity', ent: e });
+    for (let i = 0; i < 60; i++) tokenBodyKind({ kind: 'sceneEntity', ent: e });
     expect(warn).toHaveBeenCalledTimes(1);
   });
 
@@ -55,7 +55,7 @@ describe('diagnostics de rendu — une fois par sujet, jamais par frame (#936)',
   // un seul parle — 12 défauts sur 13 muets à la mesure. La clé porte donc `<scène>/<idEntité>`.
   it('13 personnages SANS réf d’une même scène → 13 [bodyPlan] (aucun sujet avalé par le premier)', () => {
     useGame.setState({ scene: { id: 'scene-a' } as Scene });
-    for (let i = 0; i < 13; i++) pickBackend({ kind: 'sceneEntity', ent: ent(`muet-${i}`) });
+    for (let i = 0; i < 13; i++) tokenBodyKind({ kind: 'sceneEntity', ent: ent(`muet-${i}`) });
     const dits = err.mock.calls.map((c) => String(c[0])).filter((m) => m.startsWith('[bodyPlan]'));
     expect(dits).toHaveLength(13);
     expect(new Set(dits).size).toBe(13); // chaque message NOMME son sujet
@@ -63,9 +63,9 @@ describe('diagnostics de rendu — une fois par sujet, jamais par frame (#936)',
 
   it('le MÊME id d’entité dans DEUX scènes → 2 [bodyPlan] (les ids ne sont uniques que par scène)', () => {
     useGame.setState({ scene: { id: 'echeance' } as Scene });
-    pickBackend({ kind: 'sceneEntity', ent: ent('aubergiste') });
+    tokenBodyKind({ kind: 'sceneEntity', ent: ent('aubergiste') });
     useGame.setState({ scene: { id: 'marche-equipement' } as Scene });
-    pickBackend({ kind: 'sceneEntity', ent: ent('aubergiste') });
+    tokenBodyKind({ kind: 'sceneEntity', ent: ent('aubergiste') });
     expect(err.mock.calls.map((c) => String(c[0])).filter((m) => m.startsWith('[bodyPlan]'))).toHaveLength(2);
   });
 });

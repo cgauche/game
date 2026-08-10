@@ -17,7 +17,7 @@ import type { NarratifBlock } from '../../state/campaignNarratif';
 import type { Settlement } from '../../engine/disponibilite';
 import { hashSeed } from '../../engine/dice';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
-import { pickBackend } from '../../gameIso/pickBackend';
+import { tokenBodyKind } from '../../gameIso/tokenBodyKind';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
@@ -1197,9 +1197,9 @@ function EntityPanel({
               ★
             </text>
           ) : (
-            // Aperçu unifié via le MÊME classifieur que le canvas (pickBackend) — le classifieur route
+            // Aperçu unifié via le MÊME classifieur que le canvas (tokenBodyKind) — le classifieur route
             // par la NATURE de l'entité (`kind`), un décor n'atteint jamais le registre créature/véhicule.
-            pickBackend({ kind: 'sceneEntity', ent }).body
+            tokenBodyKind({ kind: 'sceneEntity', ent }).body
           )}
         </svg>
         <span className="hint">

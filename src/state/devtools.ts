@@ -10,6 +10,7 @@ import { routeDistanceLabel } from '../engine/travel';
 import { actorIn, inBattleId } from './combatants';
 import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn, applyEffects } from './combatFlow';
 import { setAiTrace } from './ai';
+import { getStageBackend, setStageBackend } from './stage3d';
 import { pushCombatStep, gearFromEffects } from './combatEffects';
 import { trappings, findCreatureById } from '../data';
 import { creatureToCombatant } from './spawn';
@@ -552,6 +553,15 @@ export function buildApi() {
       const v = on ?? !g().debugLabels;
       useGame.setState({ debugLabels: v });
       return v ? 'labels ON' : 'labels OFF';
+    },
+
+    /** VOIE DE RENDU du monde (#1176, recette) : `affine` (couches SVG) ou `webgl` (monde volumique).
+     *  Sans argument : BASCULE. Hors du store — la voie décrit le chantier, pas le monde (elle ne part
+     *  donc dans aucune sauvegarde, cf. `state/stage3d.ts`). */
+    stage3d: (on?: boolean) => {
+      const v = on ?? getStageBackend() === 'affine';
+      setStageBackend(v ? 'webgl' : 'affine');
+      return v ? 'monde VOLUMIQUE (webgl)' : 'monde AFFINE (couches SVG)';
     },
 
     /** Survol PROGRAMMATIQUE (combat) : pose la tuile survolée d'IsoStage comme si la souris y

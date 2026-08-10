@@ -1,7 +1,7 @@
 /**
  * CharacterPreview — LA primitive d'aperçu « perso en pied » hors combat (roster, créateur,
  * fiche, marchand…). Rend le rig réel (`RigSprite`) : l'aperçu reflète EXACTEMENT le rendu jeu
- * (mêmes briques que pickBackend, branche rig) — apparence d'état, équipement porté, tenue de
+ * (mêmes briques que tokenBodyKind, branche rig) — apparence d'état, équipement porté, tenue de
  * carrière, calques de mutations/blessures.
  *
  * Deux entrées exclusives :
@@ -89,7 +89,7 @@ const AMBIANCE_CLASS: Record<CharacterPreviewAmbiance, string> = {
 
 function CharacterPreviewBase(props: CharacterPreviewProps) {
   const { view = 'front', pose, mirror = false, size = 'md', ambiance = 'none', fillFraction = FILL_FRACTION, scaleRef, className, hero } = props;
-  // Dérivation « héros » = MÊMES briques que le rendu jeu (cf. pickBackend, branche rig).
+  // Dérivation « héros » = MÊMES briques que le rendu jeu (cf. tokenBodyKind, branche rig).
   const appearance = useMemo(
     () => (hero ? combatantAppearance(hero.appearance ?? defaultAppearance(hero), hero) : props.appearance),
     [hero, props.appearance],

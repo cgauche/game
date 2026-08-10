@@ -5,6 +5,7 @@ import {
   billboardPose,
   buildWorldGeometry,
   collectBillboards,
+  wholeSceneBillboardEls,
   contactShadow,
   contentBox,
   outdoorFog,
@@ -40,7 +41,7 @@ import { wallPartRelief, WALL_PARTS } from '../../catalog/structures';
 import { ROOF_SLOPE_M } from '../../builders/roofs';
 import { buildWalls } from '../../builders/walls';
 import { TERRAIN_DEFS } from '../../../state/terrain';
-import type { Face } from '../../builders/types';
+import type { Face, SceneEl } from '../../builders/types';
 import { buildScene } from '../../../state/mapSpec';
 import { spec as siegeSpec } from '../../../scenes/test-scenarios/siege-enceinte';
 import { scenario as arene } from '../../../scenes/test-scenarios/arene';
@@ -79,11 +80,15 @@ function triNormal(pos: Float32Array | ArrayLike<number>, i: number) {
 }
 
 describe('FUSION — toute la scène en UNE géométrie', () => {
-  it('une seule BufferGeometry non indexée porte position + couleur de tous les triangles', () => {
+  it('une seule BufferGeometry porte position + couleur de tous les triangles, sous un index IDENTITÉ', () => {
     const g = buildWorldGeometry(scene, mpt, plein);
     const pos = g.getAttribute('position');
     const col = g.getAttribute('color');
-    expect(g.index).toBeNull(); // non indexée : `computeVertexNormals` donne la normale de FACE
+    // Aucun sommet PARTAGÉ (`computeVertexNormals` donne donc la normale de FACE) : l'index est
+    // l'identité, et il n'existe que pour donner au masque de dégagement une case à réécrire.
+    const idx = g.getIndex()!;
+    expect(idx.count).toBe(pos.count);
+    expect(Array.from(idx.array as Uint32Array).every((v, i) => v === i)).toBe(true);
     expect(pos.count).toBeGreaterThan(3000);
     expect(pos.count % 3).toBe(0);
     expect(col.count).toBe(pos.count);
@@ -156,7 +161,7 @@ describe('ORIENTATION — les triangles regardent DEHORS (la carte d’ombre en 
 
 describe('BILLBOARDS — sujets de la scène', () => {
   it('les personnages et le décor sont collectés, ancrés aux pieds, avec leur SVG par vue', () => {
-    const subs = collectBillboards(scene, mpt, plein);
+    const subs = collectBillboards(scene, mpt, plein, wholeSceneBillboardEls(scene));
     const persos = subs.filter((s) => s.kind === 'personnage');
     expect(persos.length).toBeGreaterThan(0);
     expect(subs.some((s) => s.kind === 'prop')).toBe(true);
@@ -168,7 +173,7 @@ describe('BILLBOARDS — sujets de la scène', () => {
   });
 
   it('le SVG d\'un PERSONNAGE ignore le cran de caméra, celui d\'un DÉCOR directionnel en dépend — c\'est ce qui règle la clé de cache', () => {
-    const perso = collectBillboards(scene, mpt, plein).find((s) => s.kind === 'personnage')!;
+    const perso = collectBillboards(scene, mpt, plein, wholeSceneBillboardEls(scene)).find((s) => s.kind === 'personnage')!;
     for (const camRot of [1, 2, 3] as const)
       expect(perso.svg('front', false, camRot)).toBe(perso.svg('front', false, 0));
     // Le décor délègue à `propSvg(ref, dir, camRot)` : un prop DIRECTIONNEL (`views`) pivote avec la
@@ -189,7 +194,7 @@ describe('CONTENU — ce qu’un cadrage doit tenir', () => {
       const scn = faire();
       const m = sceneMetresPerTile(scn);
       const geoBox = buildWorldGeometry(scn, m, plein).boundingBox!;
-      const subs = collectBillboards(scn, m, plein);
+      const subs = collectBillboards(scn, m, plein, wholeSceneBillboardEls(scn));
       const box = contentBox(scn, m, subs, quadDe, geoBox);
       const englobante = worldShadowBox(geoBox, subs, quadDe);
       // La boîte englobante vient de l'attribut de position, en FLOAT32 : elle arrondit d'un ULP là où
@@ -215,7 +220,7 @@ describe('CONTENU — ce qu’un cadrage doit tenir', () => {
     const scn = buildVitrineScene();
     const m = sceneMetresPerTile(scn);
     const geoBox = buildWorldGeometry(scn, m, plein).boundingBox!;
-    const subs = collectBillboards(scn, m, plein);
+    const subs = collectBillboards(scn, m, plein, wholeSceneBillboardEls(scn));
     const box = contentBox(scn, m, subs, quadDe, geoBox);
     const t = (b: THREE.Box3) => b.getSize(new THREE.Vector3());
     // Mesuré #1176 : 60×48 m de géométrie pour 51,4×37,1 m de contenu.
@@ -279,7 +284,7 @@ describe('LUMIÈRE — un soleil neutre et calibré', () => {
       const scn = faire();
       const m = sceneMetresPerTile(scn);
       const geoBox = buildWorldGeometry(scn, m, plein).boundingBox!;
-      const subs = collectBillboards(scn, m, plein);
+      const subs = collectBillboards(scn, m, plein, wholeSceneBillboardEls(scn));
       const quadDe = (s: (typeof subs)[number]) =>
         anchorAndSize(billboardHeightM('jeu', s.kind) * s.scaleK, BILLBOARD_BOX_ASPECT);
       const box = worldShadowBox(geoBox, subs, quadDe);
@@ -334,7 +339,7 @@ describe('LUMIÈRE — un soleil neutre et calibré', () => {
   function biaisReel(scn: Scene): number {
     const m = sceneMetresPerTile(scn);
     const geoBox = buildWorldGeometry(scn, m, plein).boundingBox!;
-    const subs = collectBillboards(scn, m, plein);
+    const subs = collectBillboards(scn, m, plein, wholeSceneBillboardEls(scn));
     const biais = (['jeu', 'heroique', 'metrique'] as BillboardConvention[]).map((conv) =>
       sunRig(
         worldShadowBox(geoBox, subs, (s: (typeof subs)[number]) =>
@@ -430,7 +435,11 @@ describe('ATTRIBUTS d’UV — les deux jeux voyagent dans LA géométrie fusion
       const scène = charge();
       const g = buildWorldGeometry(scène, sceneMetresPerTile(scène), plein);
       const n = g.getAttribute('position').count;
-      expect([nom, g.getIndex()]).toEqual([nom, null]); // non indexée : un sommet par coin de triangle
+      // Index IDENTITÉ : un sommet par coin de triangle, aucun partage — la case que le masque de
+      // dégagement réécrit (`applyCutawayMask`), jamais une déduplication de sommets.
+      const idx = g.getIndex()!.array as Uint32Array;
+      expect([nom, idx.length]).toEqual([nom, n]);
+      expect([nom, idx[0], idx[n - 1]]).toEqual([nom, 0, n - 1]);
       expect([nom, n % 3]).toEqual([nom, 0]);
       expect([nom, g.getAttribute('color').count]).toEqual([nom, n]);
       expect([nom, g.getAttribute('uv').count]).toEqual([nom, n]);
@@ -517,13 +526,11 @@ describe('TEINTE de sommet — la variance par case est CUITE dans `color`', () 
 
 describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde', () => {
   /** Face nue de matériau `mat`, avec la pente de nappe `pitchM` (pans de toit) et son côté d'arête. */
-  const wf = (mat: Face['material'], pitchM?: number, side?: WorldFace['side']): WorldFace => ({
-    face: { poly: [], material: mat } as Face,
-    cell: { x: 3, y: 4, z: 0 },
-    cellKey: '3,4,0',
-    pitchM,
-    side,
-  });
+  const wf = (mat: Face['material'], pitchM?: number, side?: WorldFace['side']): WorldFace => {
+    const face = { poly: [], material: mat } as Face;
+    const cell = { x: 3, y: 4, z: 0 };
+    return { face, cell, cellKey: '3,4,0', el: { kind: 'floor', cell, faces: [face] } as unknown as SceneEl, pitchM, side };
+  };
 
   it('les groupes couvrent EXACTEMENT tous les sommets, chacun une fois', () => {
     const g = buildWorldGeometry(scene, mpt, plein);

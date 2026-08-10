@@ -4,8 +4,10 @@
  * SUJETS de billboard (personnages riggés + décor), chacun capable de rendre SA chaîne SVG pour une vue.
  *
  * Deux invariants de ce module :
- *  - FUSION : toutes les faces de la scène tiennent dans UNE `BufferGeometry` non indexée (la couleur
- *    de face est cuite au sommet, le mode de rendu n'est qu'un choix de MATÉRIAU) — jamais un mesh par face ;
+ *  - FUSION : toutes les faces de la scène tiennent dans UNE `BufferGeometry` (la couleur de face est
+ *    cuite au sommet, le mode de rendu n'est qu'un choix de MATÉRIAU) — jamais un mesh par face. Elle
+ *    est INDEXÉE, d'un index IDENTITÉ (un sommet par usage : `computeVertexNormals` donne toujours la
+ *    normale de FACE) que le masque de dégagement compacte sans toucher aux sommets ;
  *  - DÉLÉGATION : aucune couleur, aucune vue, aucun seuil n'est décidé ici — `faceSurface`, `tintFor`,
  *    `facesGeometry` (biais coplanaire compris), `propSvg`, `resolveRender`/`resolveRig` font foi.
  *
@@ -16,7 +18,8 @@ import { buildFloors } from '../../builders/floors';
 import { buildWalls } from '../../builders/walls';
 import { buildRoofs, ROOF_SLOPE_M } from '../../builders/roofs';
 import { buildProps } from '../../builders/props';
-import type { CellSide, Face, RoofEl, SceneEl, WallEl } from '../../builders/types';
+import { buildTokens } from '../../builders/tokens';
+import type { CellSide, Face, PropEl, RoofEl, SceneEl, TokenEl, WallEl } from '../../builders/types';
 import { roofCourseStepM, variantOf } from '../../detail/courses';
 import type { DetailRecipe } from '../../detail/types';
 import type { PeriodKind } from './periodTexture';
@@ -31,12 +34,19 @@ import { propSvg } from '../../catalog/decor';
 import { AMBIANCE } from '../../catalog/ambiance';
 import { bonesToSvg } from '../../rig/renderBones';
 import { resolveRig } from '../../rig/composeRig';
-import { entityRigProfileFor } from '../../rig/enemyProfile';
-import { resolveRender, planById } from '../../rig/bodyPlan';
-import { sizeTokenScale } from '../../sizeScale';
+import type { RigOverlay } from '../../rig/bones';
+import { entityRigProfileFor, enemyRigProfile, rendersFromOwnInventory } from '../../rig/enemyProfile';
+import { planById, planOptsForRecord, type RenderResolution, type ResolveOpts } from '../../rig/bodyPlan';
+import { defaultAppearance, type Appearance } from '../../rig/appearance';
+import { equipFromCombatant, type EquipCtx } from '../../rig/parts/equipment';
+import { combatantAppearance, combatantOverlays } from '../../rig/parts/combatantVisuals';
+import { isStructure } from '../../../engine/structures';
+import type { Combatant } from '../../../engine/types';
+import { combatantRender, combatantTokenScale, entityRender, entityTokenScale, sceneEntityForRender } from '../../sizeScale';
+import { groundStateOf, planGroundPose, rigGroundPose, type GroundState } from '../../groundPose';
+import { hash32 } from '../../detail/hash';
 import { entitySize } from '../../../state/spawn';
 import { sizeFootprint } from '../../../state/footprint';
-import { findCreatureById } from '../../../data';
 import type { View } from '../../rig/facing';
 import type { Rot } from '../../../geometry/iso';
 import type { Dir8 } from '../../../state/dir8';
@@ -45,6 +55,12 @@ import { memoByRefDeps } from '../../../state/sceneMemo';
 
 /** Teinte de visibilité d'une case `"x,y,z"` (1 = pleine) — fournie par l'appelant (`visibilityTint`). */
 export type TintAt = (cellKey: string) => number;
+
+/** Verdict de GÉOMÉTRIE sur un élément de scène : le canal du DÉGAGEMENT (`cleared`), distinct de la
+ *  teinte de visibilité — une masse dégagée ne se rend PAS, elle ne s'estompe pas. Il ne filtre RIEN au
+ *  bake (`applyCutawayMask` le porte, sur le monde déjà cuit) : un appelant sans loi de dégagement
+ *  (planches QC, spike) ne pose simplement aucun masque et rend la scène entière. */
+export type KeepEl = (el: SceneEl) => boolean;
 
 /** Éléments à FACES de la scène, dans l'ordre de peinture des builders (toutes couches pleines, comme
  *  la planche QC `env-panels.ts` : le spike juge l'ENVIRONNEMENT, pas le brouillard de l'étage actif). */
@@ -60,6 +76,9 @@ export interface WorldFace {
   face: Face;
   cell: SceneEl['cell'];
   cellKey: string;
+  /** Élément de PROVENANCE — l'identité sur laquelle se relit la loi de dégagement (`KeepEl`) une fois
+   *  la face fondue dans la géométrie commune. */
+  el: SceneEl;
   /** Pente (m) de la nappe dont la face vient — un PAN de toit seulement : le pas de rang, donc
    *  l'échelle verticale de sa texture, en dépend (`roofCourseStepM`). */
   pitchM?: number;
@@ -76,7 +95,7 @@ export function worldFaces(scene: Scene): WorldFace[] {
     const cellKey = `${el.cell.x},${el.cell.y},${el.cell.z}`;
     const pitchM = (el as RoofEl).pitch;
     const elSide = (el as WallEl).side;
-    for (const face of el.faces) out.push({ face, cell: el.cell, cellKey, pitchM, side: face.side ?? elSide });
+    for (const face of el.faces) out.push({ face, cell: el.cell, cellKey, el, pitchM, side: face.side ?? elSide });
   }
   return out;
 }
@@ -185,11 +204,16 @@ export interface WorldGeometry extends THREE.BufferGeometry {
   userData: { surfaceGroups: SurfaceGroup[] };
 }
 
-/** PLAGE DE TEINTE d'une face dans la géométrie fusionnée : les sommets qu'elle occupe, la case dont
- *  elle prend sa visibilité, et sa couleur NUE (albédo de surface + variance de teinte de tuile) — tout
- *  ce qu'il faut pour ré-écrire sa couleur sans rien retrianguler. */
-export interface FaceTintSpan {
+/** PLAGE d'une face dans la géométrie fusionnée : les sommets qu'elle occupe, le groupe de surface qui
+ *  la dessine, l'élément dont elle vient, la case dont elle prend sa visibilité, et sa couleur NUE
+ *  (albédo de surface + variance de teinte de tuile). C'est le seul index dont les DEUX passes en place
+ *  ont besoin : `applyVisibilityTint` (couleurs) et `applyCutawayMask` (index de dessin). */
+export interface FaceSpan {
   cellKey: string;
+  /** Élément de PROVENANCE — ce que la loi de dégagement (`KeepEl`) interroge. */
+  el: SceneEl;
+  /** Groupe de surface qui dessine la face (= `materialIndex` de `geometry.groups`). */
+  group: number;
   /** Premier sommet de la face, et nombre de sommets. */
   start: number;
   count: number;
@@ -200,24 +224,28 @@ export interface FaceTintSpan {
 }
 
 /** Monde CUIT : la géométrie (positions, uv, uv1, groupes de surface) et l'index qui permet d'en
- *  repeindre les couleurs par case. Le bake est INVARIANT à la visibilité.
+ *  repeindre les couleurs par case et d'en masquer les faces par élément. Le bake est INVARIANT à la
+ *  visibilité ET au dégagement.
  *
- *  CONTRAT DE PROPRIÉTÉ — un bake sert UN consommateur de teinte à la fois : la géométrie rendue EST le
- *  bake (`applyVisibilityTint` réécrit son attribut `color` en place et le rend tel quel), donc deux
- *  vues qui teinteraient le MÊME `BakedWorld` avec deux visibilités s'écraseraient l'une l'autre. Un
- *  second consommateur prend SON bake (`bakeWorldGeometry`), il n'emprunte pas celui d'un autre. */
+ *  CONTRAT DE PROPRIÉTÉ — un bake sert UN consommateur à la fois : la géométrie rendue EST le bake
+ *  (`applyVisibilityTint` réécrit son attribut `color` en place, `applyCutawayMask` son index, et tous
+ *  deux la rendent telle quelle), donc deux vues qui teinteraient ou masqueraient le MÊME `BakedWorld`
+ *  s'écraseraient l'une l'autre. Un second consommateur prend SON bake (`bakeWorldGeometry`), il
+ *  n'emprunte pas celui d'un autre. */
 export interface BakedWorld {
   geometry: WorldGeometry;
-  spans: FaceTintSpan[];
+  spans: FaceSpan[];
 }
 
-/** Géométrie MONDE fusionnée de la scène, SANS teinte de visibilité : une `BufferGeometry` non indexée
- *  (chaque triangle a ses propres sommets → `computeVertexNormals` donne la normale de FACE, l'ombrage
- *  plat du mode éclairé). C'est la passe LOURDE — triangulation, rang coplanaire, UV, groupes de surface
- *  (mesuré #1176, arène : 492 ms, dont 1,3 ms pour les seules couleurs) — et rien de ce qu'elle calcule
- *  ne dépend de ce que le groupe voit : elle ne se rejoue qu'à la scène ou à l'échelle.
- *  Un appelant = un bake (cf. `BakedWorld`) : `SpikeScreen` en cuit un pour lui, et tout écran three qui
- *  viendrait à côté cuit le sien plutôt que de partager celui du spike. */
+/** Géométrie MONDE fusionnée de la scène, SANS teinte de visibilité ni dégagement : une
+ *  `BufferGeometry` dont chaque triangle a ses propres sommets (→ `computeVertexNormals` donne la
+ *  normale de FACE, l'ombrage plat du mode éclairé), indexée d'un index IDENTITÉ que
+ *  `applyCutawayMask` compacte ensuite. C'est la passe LOURDE — triangulation, rang coplanaire, UV,
+ *  groupes de surface (mesuré #1176 : 437 ms sur l'arène, 1 601 ms sur l'opéra) — et rien de ce
+ *  qu'elle calcule ne dépend de ce que le groupe voit ni de ce qui le coiffe : elle ne se rejoue qu'à
+ *  la scène ou à l'échelle.
+ *  Un appelant = un bake (cf. `BakedWorld`) : `SpikeScreen` en cuit un pour lui, `stage/GameStage3D`
+ *  (l'écran de jeu) le sien — aucun des deux ne partage le bake de l'autre. */
 export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   const listées = worldFaces(scene);
   const faces = listées.map((f) => f.face);
@@ -226,7 +254,7 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   const positions: number[] = [];
   const uvs: number[] = [];
   const uv1s: number[] = [];
-  const spans: FaceTintSpan[] = [];
+  const spans: FaceSpan[] = [];
   // ORIENTATION des triangles : le pivot n'a aucune convention de sens de parcours (une face peut être
   // authorée dans un sens ou dans l'autre). Un rendu en `DoubleSide` s'en moque, mais la CARTE D'OMBRE
   // non : le décalage de biais suit la normale, et une normale à l'envers pousse le receveur DANS son
@@ -238,7 +266,7 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   //    l'EXTÉRIEUR de la carte si verticale.
   const cx = ((scene.dimensions.w - 1) / 2) * mpt;
   const cz = ((scene.dimensions.h - 1) / 2) * mpt;
-  const pousser = (i: number) => {
+  const pousser = (i: number, groupe: number) => {
     const g = geoms[i];
     const début = positions.length / 3;
     g.tris.forEach((tri, t) => {
@@ -261,6 +289,8 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
     const surface = faceSurface(faces[i]);
     spans.push({
       cellKey: listées[i].cellKey,
+      el: listées[i].el,
+      group: groupe,
       start: début,
       count: positions.length / 3 - début,
       color: surface.color,
@@ -268,14 +298,16 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
     });
   };
   // Les faces sortent GROUPÉES par surface (un groupe = un dessin) ; à l'intérieur d'un groupe, l'ordre
-  // de peinture des builders est conservé.
+  // de peinture des builders est conservé. Les `spans` en héritent : ils sont CONTIGUS par groupe, et
+  // dans l'ordre des groupes — ce dont le masque de dégagement se sert pour compacter l'index d'une
+  // seule passe linéaire.
   const { groups, faceIndices } = surfaceGrouping(listées, mpt);
   const groupSpans: [number, number][] = [];
-  for (const idx of faceIndices) {
+  faceIndices.forEach((idx, k) => {
     const début = positions.length / 3;
-    for (const i of idx) pousser(i);
+    for (const i of idx) pousser(i, k);
     groupSpans.push([début, positions.length / 3 - début]);
-  }
+  });
   const geometry = new THREE.BufferGeometry() as WorldGeometry;
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   geometry.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(positions.length), 3));
@@ -287,7 +319,51 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   geometry.userData = { surfaceGroups: groups };
   geometry.computeVertexNormals();
   geometry.computeBoundingBox();
+  // INDEX IDENTITÉ : le monde nu se dessine entier, sommet par sommet dans l'ordre où il a été cuit.
+  // Aucun sommet n'est partagé (`computeVertexNormals` ci-dessus a donc bien donné des normales de
+  // FACE) ; l'index n'existe que pour donner au masque de dégagement une case à réécrire.
+  const nbSommets = positions.length / 3;
+  const identité = new Uint32Array(nbSommets);
+  for (let i = 0; i < nbSommets; i++) identité[i] = i;
+  geometry.setIndex(new THREE.BufferAttribute(identité, 1));
   return { geometry, spans };
+}
+
+/** Applique le DÉGAGEMENT d'architecture à un monde cuit : l'index de dessin est ré-écrit EN PLACE en
+ *  COMPACTANT les faces gardées, groupe de surface par groupe de surface, et les `groups` de la
+ *  géométrie sont ré-ancrés sur ces plages. Positions, couleurs, uv, normales et matériaux sont
+ *  INTOUCHÉS : une masse retirée cesse simplement d'être référencée par l'index.
+ *
+ *  C'est le canal GÉOMÉTRIE, jumeau d'`applyVisibilityTint` : il suit le PAS du groupe (`cleared`
+ *  change à chaque case franchie et à chaque cran de caméra) sans jamais rejouer la triangulation.
+ *  Rend LA géométrie du bake, pas une copie — cf. le contrat de propriété de `BakedWorld`. */
+export function applyCutawayMask(baked: BakedWorld, keepEl: KeepEl): WorldGeometry {
+  const { geometry, spans } = baked;
+  const index = geometry.getIndex() as THREE.BufferAttribute;
+  const arr = index.array as Uint32Array;
+  const groups = geometry.groups;
+  let écrit = 0;
+  let groupe = -1;
+  let début = 0;
+  const clore = () => {
+    if (groupe >= 0) {
+      groups[groupe].start = début;
+      groups[groupe].count = écrit - début;
+    }
+  };
+  for (const span of spans) {
+    if (span.group !== groupe) {
+      clore();
+      groupe = span.group;
+      début = écrit;
+    }
+    if (!keepEl(span.el)) continue;
+    const fin = span.start + span.count;
+    for (let i = span.start; i < fin; i++) arr[écrit++] = i;
+  }
+  clore();
+  index.needsUpdate = true;
+  return geometry;
 }
 
 /** Repeint la VISIBILITÉ d'un monde cuit : l'attribut `color` est ré-écrit EN PLACE depuis la couleur
@@ -338,12 +414,15 @@ export interface BillboardSubject {
   svg: (view: View, mirror: boolean, camRot: Rot) => string;
 }
 
-/** SVG d'un personnage : rig humanoïde (`resolveRig`) ou gabarit de créature (`planById`), même
- *  résolution par la DONNÉE que le jeu (`resolveRender`). `null` = aucune apparence résoluble. */
-function personnageSvg(ent: SceneEntity): ((view: View, mirror: boolean) => string) | null {
-  const r = resolveRender(ent.appearance?.species, findCreatureById(ent.ref ?? '')?.traits, ent.ref);
+/** SVG d'un personnage de scène : rig humanoïde (`resolveRig`) ou gabarit de créature (`planById`),
+ *  même résolution par la DONNÉE que le jeu (`entityRender`, preset de PNJ compris) et même
+ *  équipement que l'iso (`entityRigProfileFor`, dont l'appartenance à une rencontre : `enrolled`).
+ *  `null` = aucune apparence résoluble. */
+function personnageSvg(ent: SceneEntity, enrolled: boolean): ((view: View, mirror: boolean) => string) | null {
+  const e = sceneEntityForRender(ent);
+  const r = entityRender(e);
   if (r.kind === 'rig') {
-    const prof = entityRigProfileFor(ent);
+    const prof = entityRigProfileFor(e, enrolled);
     if (!prof) return null;
     return (view, mirror) => bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.tenue, view, [], mirror));
   }
@@ -356,31 +435,55 @@ function personnageSvg(ent: SceneEntity): ((view: View, mirror: boolean) => stri
   };
 }
 
-/** Sujets de billboard de la scène : personnages (`kind:'personnage'`) puis décor (`buildProps`). */
-export function collectBillboards(scene: Scene, mpt: number, tintAt: TintAt): BillboardSubject[] {
+/** Éléments de scène à billboarder : la sortie des BUILDERS, donc les MÊMES filtres que la voie
+ *  affine (embuscade `hiddenUntilCombat`, entité enrôlée que son combattant rend déjà, case couverte
+ *  par un combattant, étage isolé/actif, hors-vue). Il n'y a PAS de second jeu de lois côté volumique :
+ *  l'écran de jeu passe les éléments de SON stage. */
+export interface SceneBillboardEls {
+  tokens: readonly TokenEl[];
+  props: readonly PropEl[];
+}
+
+/** Éléments de la scène ENTIÈRE — pour un appelant SANS loi de vue ni combat en cours (planches QC,
+ *  écran de spike : ils jugent l'ENVIRONNEMENT, pas le brouillard), au même titre que `keepEl` absent.
+ *  Un écran de JEU ne passe JAMAIS ceci : c'est là que se perdraient l'embuscade et le combat. */
+export function wholeSceneBillboardEls(scene: Scene): SceneBillboardEls {
+  const maxZ = Math.max(...scene.layers.map((l) => l.z));
+  return {
+    tokens: buildTokens(scene, undefined, null, { activeZ: maxZ, viewZ: null, top: false }),
+    props: buildProps(scene),
+  };
+}
+
+/** Sujets de billboard de la scène : personnages FIGURANTS (`kind:'personnage'`) puis décor. Les
+ *  COMBATTANTS n'entrent pas ici — ils passent par `actorBillboards`, à leur position visuelle ; c'est
+ *  le builder qui garantit qu'une entité enrôlée n'est pas dessinée deux fois. */
+export function collectBillboards(scene: Scene, mpt: number, tintAt: TintAt, els: SceneBillboardEls): BillboardSubject[] {
   const out: BillboardSubject[] = [];
   const defs = `<defs>${DEFS}</defs>`;
-  for (const ent of scene.entities) {
+  for (const tk of els.tokens) {
+    if (tk.subject.kind !== 'figurant') continue;
+    const { ent, enrolled } = tk.subject;
     if (ent.kind !== 'personnage') continue;
-    const draw = personnageSvg(ent);
+    const draw = personnageSvg(ent, enrolled);
     if (!draw) continue;
     // Empreinte multi-cases : le corps se centre sur l'empreinte (même décalage que `stage/tokens.tsx`).
     const off = (sizeFootprint(entitySize(ent)) - 1) / 2;
     const gx = ent.pos.x + off;
     const gy = ent.pos.y + off;
-    const z = ent.z ?? 0;
+    const z = tk.cell.z;
     out.push({
       identity: `perso:${ent.id}`,
       kind: 'personnage',
       anchor: new THREE.Vector3(gx * mpt, heightAt(scene, ent.pos.x, ent.pos.y, z), gy * mpt),
       facing: ent.facing ?? 'S',
-      scaleK: sizeTokenScale(entitySize(ent)),
+      scaleK: entityTokenScale(ent),
       tint: tintAt(`${ent.pos.x},${ent.pos.y},${z}`),
       box: { w: BB_W, h: BB_H },
       svg: (view, mirror) => defs + draw(view, mirror),
     });
   }
-  for (const el of buildProps(scene)) {
+  for (const el of els.props) {
     const gx = el.cell.x + el.foot.offX;
     const gy = el.cell.y + el.foot.offY;
     const h = heightAt(scene, el.cell.x, el.cell.y, el.cell.z) + (el.liftM ?? 0);
@@ -394,6 +497,135 @@ export function collectBillboards(scene: Scene, mpt: number, tintAt: TintAt): Bi
       box: { w: BB_W, h: BB_H },
       // Le décor délègue sa vue à `propSvg` (dir + cran caméra), exactement comme les deux backends.
       svg: (_view, _mirror, camRot) => defs + propSvg(el.ref, el.facing, camRot),
+    });
+  }
+  return out;
+}
+
+/** ACTEUR à billboarder : le combattant (groupe en exploration, combattants en combat) et sa position
+ *  VISUELLE — celle qui GLISSE pendant la marche, décidée par le stage (`walkPosOf`), jamais relue ici. */
+export interface ActorPose {
+  c: Combatant;
+  x: number;
+  y: number;
+  z: number;
+  /** Orientation MONDE vivante (store `facing`, jamais un champ du combattant). */
+  facing?: Dir8;
+}
+
+/** Tout ce dont le DESSIN d'un acteur dépend, résolu à UN seul endroit : le tracé (`actorBillboards`)
+ *  et la SIGNATURE (`combatantRenderSignature`) lisent la MÊME structure. Aucun des deux ne peut donc
+ *  consommer une entrée que l'autre ignore — c'était la double péremption mesurée (#1176) : une tenue,
+ *  une arme ou une Taille changeaient le dessin sans changer ni la clé de mémo du monde volumique ni
+ *  l'identité de cache de texture. */
+export interface ActorDrawInputs {
+  render: RenderResolution;
+  ground: GroundState;
+  /** Multiplicateur de taille du jeton (espèce × Taille, ou empreinte propre). */
+  scaleK: number;
+  /** Branche RIG (humanoïde) — absente pour un gabarit de créature. */
+  rig?: { appearance: Appearance; equip: EquipCtx; tenue: string | undefined; overlays: RigOverlay[] };
+  /** Branche GABARIT (`plan.resolve`) — opts d'apparence du record + override d'authoring. */
+  plan?: ResolveOpts;
+}
+
+/** Entrées de dessin d'un combattant : profil d'ennemi ou inventaire propre, garde-robe, calques
+ *  d'état (mutations, blessures, métamorphose vivante), pose au sol, échelle de jeton. */
+export function actorDrawInputs(c: Combatant): ActorDrawInputs {
+  const render = combatantRender(c);
+  const ground = groundStateOf(c);
+  const scaleK = combatantTokenScale(c);
+  if (render.kind !== 'rig') return { render, ground, scaleK, plan: planOptsForRecord(c.creatureId, c.appearanceOverride) };
+  const prof = rendersFromOwnInventory(c) ? null : enemyRigProfile(c);
+  return {
+    render,
+    ground,
+    scaleK,
+    rig: {
+      appearance: combatantAppearance(prof?.appearance ?? c.appearance ?? defaultAppearance(c), c),
+      equip: prof?.equip ?? equipFromCombatant(c),
+      tenue: prof?.tenue ?? c.career,
+      overlays: combatantOverlays(c),
+    },
+  };
+}
+
+/** Sérialisation DÉTERMINISTE : clés TRIÉES et champs absents omis — deux résolutions de mêmes entrées
+ *  donnent la même chaîne quel que soit l'ordre d'insertion des objets qui les portent. */
+function stableStr(v: unknown): string {
+  if (v === undefined) return 'u';
+  if (v === null || typeof v !== 'object') return JSON.stringify(v)!;
+  if (Array.isArray(v)) return `[${v.map(stableStr).join(',')}]`;
+  const o = v as Record<string, unknown>;
+  return `{${Object.keys(o).sort().filter((k) => o[k] !== undefined).map((k) => `${k}:${stableStr(o[k])}`).join(',')}}`;
+}
+
+/** SIGNATURE des entrées de dessin d'un combattant — stable tant que le corps rendu ne change pas.
+ *  Consommée par les DEUX péremptions du monde volumique : la clé de mémo des acteurs (`IsoStage`) et
+ *  l'identité de cache de texture (`BillboardSubject.identity`). */
+export function combatantRenderSignature(c: Combatant): string {
+  return hash32(stableStr(actorDrawInputs(c))).toString(16);
+}
+
+/** Clé de MÉMO d'un acteur du monde volumique : ce qui doit reforger le tableau d'acteurs du stage —
+ *  identité, position VISUELLE, orientation, et la signature de ce que le billboard dessine. Même
+ *  source que l'identité de cache de texture : une entrée de dessin ne peut pas périmer l'une sans
+ *  l'autre. */
+export function actorPoseKey(p: ActorPose): string {
+  return `${p.c.id}:${p.x},${p.y},${p.z}:${p.facing ?? ''}:${combatantRenderSignature(p.c)}`;
+}
+
+/** Billboards des ACTEURS (héros, ennemis, alliés) — le pendant volumique de ce que le stage affine
+ *  monte en corps React. Les entrées de dessin sont celles d'`actorDrawInputs` (classifieur de corps,
+ *  profil d'ennemi, équipement, garde-robe, calques d'état, échelle de jeton), l'ÉTAT AU SOL passe par
+ *  les deux moteurs d'animation (`rigGroundPose` / `planGroundPose`) et la FORME rendue est celle de
+ *  `personnageSvg` ci-dessus. Une structure de siège est sautée : elle se rend sur son arête, pas en
+ *  jeton (cf. `tokenBodyKind`).
+ *
+ *  ÉCART RÉSIDUEL MESURÉ (#1176) : le corps au sol prend bien sa POSE couchée, mais pas la BASCULE du
+ *  stage (`rigGroundTiltDeg` : 82° cadavre / 72° À Terre). Cette rotation autour des pieds (60,150)
+ *  envoie la tête d'un rig à x≈208 dans une boîte de rasterisation large de 120 : le corps y serait
+ *  tranché. La porter demande une boîte de sujet et un quad ancrés autrement (largeur ET décalage
+ *  d'ancre) — un chantier de billboard, pas un réglage. */
+export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt: number, tintAt: TintAt): BillboardSubject[] {
+  const defs = `<defs>${DEFS}</defs>`;
+  const out: BillboardSubject[] = [];
+  for (const { c, x, y, z, facing } of actors) {
+    if (isStructure(c)) continue;
+    const inputs = actorDrawInputs(c);
+    const { render: r, ground } = inputs;
+    let draw: ((view: View, mirror: boolean) => string) | null = null;
+    if (inputs.rig) {
+      const { appearance, equip, tenue, overlays } = inputs.rig;
+      const couché = rigGroundPose(ground);
+      draw = (view, mirror) => bonesToSvg(resolveRig(appearance, equip, couché ?? {}, tenue, view, overlays, mirror));
+    } else {
+      const plan = planById(r.plan);
+      if (plan) {
+        // Gabarit AU SOL : pose de mort (ou affaissement À Terre) et ailes ÉTALÉES, comme `usePlanAnim`.
+        const couché = planGroundPose(plan, ground);
+        const opts = inputs.plan ?? {};
+        draw = (view, mirror) => {
+          const body = bonesToSvg(plan.resolve(r.species, view, couché ?? plan.restPose(), {
+            ...opts,
+            ...(ground ? { wings: 'spread' as const } : {}),
+          }));
+          return mirror ? `<g transform="translate(${BB_W},0) scale(-1,1)">${body}</g>` : body;
+        };
+      }
+    }
+    if (!draw) continue;
+    const trace = draw;
+    const off = (sizeFootprint(c.size) - 1) / 2;
+    out.push({
+      identity: `acteur:${c.id}|${hash32(stableStr(inputs)).toString(16)}`, // la signature du DESSIN, cf. `combatantRenderSignature`
+      kind: 'personnage',
+      anchor: new THREE.Vector3((x + off) * mpt, heightAt(scene, Math.round(x), Math.round(y), z), (y + off) * mpt),
+      facing: facing ?? 'S',
+      scaleK: inputs.scaleK,
+      tint: tintAt(`${Math.round(x)},${Math.round(y)},${z}`),
+      box: { w: BB_W, h: BB_H },
+      svg: (view, mirror) => defs + trace(view, mirror),
     });
   }
   return out;

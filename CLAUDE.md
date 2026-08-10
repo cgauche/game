@@ -195,7 +195,7 @@ l'embarquerait → s'assurer que l'arbre est propre/commité avant de pousser en
 ```
 src/engine/   règles WFRP4 PURES + testées (types, tests/DR, combat, ops.ts = GameOp, magic, corruption…)
 src/state/    store Zustand + flux (combatFlow barils, rollFlowFactory/Specs, scene.ts = SCHÉMA, upkeep…)
-src/gameIso/  rendu iso SVG (iso.ts projection, rig/ gabarits corporels, pickBackend, IsoStage, fx/)
+src/gameIso/  rendu iso SVG (iso.ts projection, rig/ gabarits corporels, tokenBodyKind, IsoStage, fx/)
 src/ui/       React (RollShell, OptionChooser, editor/ v2, creator/, compendium/)
 src/data/     base APP-OWNED (JSON commité, éditable au Compendium) + exceptions manuscrites sourcées
 src/scenes/   documents de scène + campagne Arène (arene-projet.json) ; asciiMap.ts = authoring ASCII

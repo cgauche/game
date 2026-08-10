@@ -201,7 +201,7 @@
   },
   {
     "id": "resolveRender",
-    "nom": "resolveRender/pickBackend",
+    "nom": "resolveRender/tokenBodyKind",
     "fichier": "src/gameIso/rig/bodyPlan.ts",
     "concept": "résolution rendu + dispatch backend",
     "perimetre": "tout rendu iso/POV/portrait",

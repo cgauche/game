@@ -651,7 +651,7 @@ export function EditorCanvas({
               const objs: { d: number; el: JSX.Element }[] = [];
               // Décor (props de scène `kind:'prop'`, overlays de terrain bois→arbre, ornements de toit,
               // features de façade) — rendu par le MÊME pipeline que le jeu (`buildProps` → `propLayerObjs`,
-              // cf. IsoStage) : jamais par `pickBackend`/`resolveRender` (registre créature/véhicule), qui
+              // cf. IsoStage) : jamais par `tokenBodyKind`/`resolveRender` (registre créature/véhicule), qui
               // collisionne sur un id de décor homonyme d'un véhicule/créature (ex. `chaise` meuble vs
               // chaise à porteurs de `vehicles.json`). Un décor s'authore comme un décor.
               const propTokenCtx: TokenCtx = { dims, view: viewMode, liftAt };

@@ -26,7 +26,8 @@ import type { DetailRecipe } from '../../detail/types';
 import { terrainDetail } from '../../../state/terrain';
 import type { Scene } from '../../../state/scene';
 import type { Vec3 } from './worldTris';
-import { worldFaces, type TintAt } from './sceneMeshes';
+import type { SceneEl } from '../../builders/types';
+import { worldFaces, type KeepEl, type TintAt } from './sceneMeshes';
 
 /** Largeur du HAUT d'un brin, en fraction de sa base : la lame s'affine vers la pointe. */
 const TUFT_TIP_K = 0.25;
@@ -86,20 +87,37 @@ export function tileGroundAccents(
   return out;
 }
 
+/** Accent SEMÉ SUR LA SCÈNE : l'accent, plus la nappe dont il vient. C'est cette identité que la loi de
+ *  dégagement (`KeepEl`) interroge — un accent est une touffe POSÉE SUR une face, il part avec elle. */
+export interface SceneGroundAccent extends GroundAccent {
+  el: SceneEl;
+}
+
 /** Accents de toute la scène : les faces de TERRAIN NU (`domain === 'terrain'` sans `part` — la même
  *  porte que `floorAccentsSvg`, `affineFloors.ts:164`) portant une recette d'accent, chacune semée à
- *  l'identité de SA case. INVARIANT à la visibilité, comme le bake du monde (`bakeWorldGeometry`) : le
- *  semis coûte 12,1 ms sur l'arène (mesuré #1176) et ne se rejoue qu'à la scène ou à l'échelle. */
-export function sceneGroundAccents(scene: Scene, mpt: number): GroundAccent[] {
-  const out: GroundAccent[] = [];
+ *  l'identité de SA case. INVARIANT à la visibilité ET au dégagement, comme le bake du monde
+ *  (`bakeWorldGeometry`) : le semis coûte 12,1 ms sur l'arène (mesuré #1176) et ne se rejoue qu'à la
+ *  scène ou à l'échelle — c'est `maskGroundAccents` qui en retire ce que le dégagement emporte. */
+export function sceneGroundAccents(scene: Scene, mpt: number): SceneGroundAccent[] {
+  const out: SceneGroundAccent[] = [];
   for (const wf of worldFaces(scene)) {
     const m = wf.face.material;
     if (m.domain !== 'terrain' || m.part) continue;
     const recipe = terrainDetail(m.id);
     if (!recipe) continue;
-    out.push(...tileGroundAccents(recipe, wf.cell, wf.face.poly[0].h, mpt));
+    for (const a of tileGroundAccents(recipe, wf.cell, wf.face.poly[0].h, mpt)) out.push({ ...a, el: wf.el });
   }
   return out;
+}
+
+/** Les accents que le DÉGAGEMENT laisse : la MÊME loi que le masque du monde (`applyCutawayMask`), sur
+ *  la même identité d'élément. Sans elle, les touffes d'une nappe retirée resteraient à flotter à sa
+ *  place — le semis ignore le dégagement, seule son APPLICATION le porte. */
+export function maskGroundAccents(
+  accents: readonly SceneGroundAccent[],
+  keepEl: KeepEl,
+): SceneGroundAccent[] {
+  return accents.filter((a) => keepEl(a.el));
 }
 
 /** Compte d'instances par type — le budget de la scène, mesurable sans monter un seul mesh. */

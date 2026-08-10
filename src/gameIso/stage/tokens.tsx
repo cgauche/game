@@ -1,6 +1,6 @@
 /**
  * Couche TOKENS du stage iso : transforme les éléments des builders (`builders/props`, `builders/tokens`
- * — identité + position LOGIQUE + décisions de scène) en corps React (pickBackend → BodyToken). Les
+ * — identité + position LOGIQUE + décisions de scène) en corps React (tokenBodyKind → BodyToken). Les
  * tokens RESTENT des éléments React individuels (picking `data-cid` + `elementFromPoint`, jamais fusionnés
  * en innerHTML). Les couches STATIQUES (props, figurants) sont memoïsées par IsoStage (réfs stables →
  * React saute les sous-arbres pendant la marche) ; les combattants (position INTERPOLÉE par-frame) et
@@ -15,10 +15,10 @@ import { CELL, Dims, tileCenter, depth, diamondPath } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
 import { BodyToken } from '../BodyToken';
 import { MountedToken } from '../MountedToken';
-import { pickBackend } from '../pickBackend';
+import { tokenBodyKind } from '../tokenBodyKind';
 import { entitySprite, propSprite } from '../sprites';
 import { propDepth } from '../backends/affineProps';
-import { sizeTokenScale, footprintTokenScale } from '../sizeScale';
+import { combatantTokenScale, entityTokenScale } from '../sizeScale';
 import { sizeFootprint, footprintN, footprintTiles } from '../../state/footprint';
 import { entitySize } from '../../state/spawn';
 import { HERO_RING, ENEMY_RING, veilTint, teamShape, relationColor } from '../teamColors';
@@ -154,8 +154,8 @@ export function figurantLayerObjs(tokenEls: TokenEl[], ctx: TokenCtx): StageObj[
     if (tk.subject.kind !== 'figurant') continue;
     const { ent, enrolled, inBattle } = tk.subject;
     const ez = tk.cell.z;
-    const r = pickBackend({ kind: 'sceneEntity', ent, enrolled }, ctx.view);
-    if (r.backend === 'sprite') {
+    const r = tokenBodyKind({ kind: 'sceneEntity', ent, enrolled }, ctx.view);
+    if (r.bodyKind === 'sprite') {
       out.push({
         d: depth(ent.pos.x, ent.pos.y, ctx.dims, ez) + FIGURANT_LIFT,
         z: ez,
@@ -169,7 +169,7 @@ export function figurantLayerObjs(tokenEls: TokenEl[], ctx: TokenCtx): StageObj[
         ),
       });
     } else {
-      const base = r.backend === 'rig' ? 0.58 : 0.55;
+      const base = r.bodyKind === 'rig' ? 0.58 : 0.55;
       const off = (sizeFootprint(entitySize(ent)) - 1) / 2;
       const ex = ent.pos.x + off, ey = ent.pos.y + off;
       out.push({
@@ -178,7 +178,7 @@ export function figurantLayerObjs(tokenEls: TokenEl[], ctx: TokenCtx): StageObj[
         vis: true,
         el: wrap(
           r.id,
-          <BodyToken key={r.id} x={ex} y={ey} z={ctx.liftAt(ent.pos.x, ent.pos.y, ez)} dims={ctx.dims} scale={base * r.speciesScale * sizeTokenScale(entitySize(ent))} bakedDeath flat={isTop} portraitBox={r.portraitBox} discR={discRfn(entitySize(ent))} cid={ent.id}>
+          <BodyToken key={r.id} x={ex} y={ey} z={ctx.liftAt(ent.pos.x, ent.pos.y, ez)} dims={ctx.dims} scale={base * entityTokenScale(ent)} bakedDeath flat={isTop} portraitBox={r.portraitBox} discR={discRfn(entitySize(ent))} cid={ent.id}>
             {r.body}
           </BodyToken>,
           inBattle,
@@ -212,12 +212,12 @@ export function combatantObjs(tokenEls: TokenEl[], ctx: CombatTokenCtx): StageOb
       const isHero = c.kind === 'hero';
       const ring = isHero ? HERO_RING[(heroIndex ?? 0) % HERO_RING.length] : ENEMY_RING;
       const wp = ctx.walkPosOf(c.id, c.pos!.x, c.pos!.y);
-      const r = pickBackend({ kind: 'combatant', combatant: c }, ctx.view);
+      const r = tokenBodyKind({ kind: 'combatant', combatant: c }, ctx.view);
       const fp = footprintN(c);
       const off = (fp - 1) / 2; // ancre (coin NO) → centre du bloc
       const cx = wp.x + off, cy = wp.y + off;
       const fxSum = summarizeEffects(c.conditions, c.activeEffects, 3, combatantFlags(c));
-      const el = tokenNode(ctx, r.id, cx, cy, r.body, 0.62 * r.speciesScale * (c.footprint ? footprintTokenScale(c.footprint) : sizeTokenScale(c.size)), ring, isOutOfAction(c), wp.walking, {
+      const el = tokenNode(ctx, r.id, cx, cy, r.body, 0.62 * combatantTokenScale(c), ring, isOutOfAction(c), wp.walking, {
         hp: c.inert ? undefined : c.wounds, // engin INERTE (immune) = pas de jauge de PV (un objet n'a pas de santé)
         icons: fxSum.visible.map((v) => v.icon),
         iconsMore: fxSum.moreCount,
@@ -241,7 +241,7 @@ export function combatantObjs(tokenEls: TokenEl[], ctx: CombatTokenCtx): StageOb
       const mz = tk.cell.z;
       const wp = ctx.walkPosOf(mount.id, mount.pos!.x, mount.pos!.y, mz); // suit l'animation de marche de la monture
       const cx = wp.x + off, cy = wp.y + off;
-      const mountScale = 0.62 * pickBackend({ kind: 'combatant', combatant: mount }).speciesScale * sizeTokenScale(mount.size);
+      const mountScale = 0.62 * combatantTokenScale(mount);
       const el = tokenNode(ctx, `${mount.id}-mtd`, cx, cy, <MountedToken mount={mount} rider={rider} />, mountScale, undefined, isOutOfAction(mount), wp.walking, { endState: endState(mount) });
       out.push({ d: depth(wp.sortPt.x + off, wp.sortPt.y + off, ctx.dims, mz) + 0.5, z: mz, vis: true, el });
     }
@@ -255,8 +255,8 @@ export function partyLeaderObj(ctx: TokenCtx, partyPos: Pt, partyLeader: Combata
   const wp = partyLeader ? walkPosOf(partyLeader.id, partyPos.x, partyPos.y, partyPos.z ?? 0) : { x: partyPos.x, y: partyPos.y, walking: false, sortPt: { x: partyPos.x, y: partyPos.y } };
   const pZ = partyPos.z ?? 0; // le groupe se rend à son étage (loge) — token soulevé + trié au bon niveau
   // Le jeton de groupe rend TOUJOURS le rig (AnimatedRigToken du meneur, ou jeton vide si groupe vide) :
-  // pickBackend('partyLeader') renvoie toujours un rig, jamais 'sprite'.
-  const r = pickBackend({ kind: 'partyLeader', leader: partyLeader }, ctx.view);
+  // tokenBodyKind('partyLeader') renvoie toujours un rig, jamais 'sprite'.
+  const r = tokenBodyKind({ kind: 'partyLeader', leader: partyLeader }, ctx.view);
   const el = tokenNode(ctx, r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking, { flat: ctx.view === 'top', portraitBox: r.portraitBox, discR: discR(1), cid: partyLeader?.id, bump }, pZ);
   return { d: depth(wp.sortPt.x, wp.sortPt.y, ctx.dims, pZ) + 0.5, z: pZ, vis: true, el }; // le groupe est toujours en vue → au-dessus du voile
 }
