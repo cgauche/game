@@ -462,7 +462,8 @@
     "passive": [
       {
         "op": "armourPierce",
-        "amount": 1
+        "amount": 1,
+        "bypass": "nonMetal"
       }
     ],
     "capabilities": {

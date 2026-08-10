@@ -17,6 +17,7 @@ import {
   rollMeleeDefender,
   finishMelee,
   resolveMeleePassive,
+  woundsFromHit,
 } from './combat';
 
 describe('Portée des tirs (table des Difficultés, 14 - _GoBack.md l.82-118 ; 1 case = 2 m)', () => {
@@ -57,6 +58,43 @@ describe("Atouts d'arme (LDB Les armes)", () => {
       return resolveMelee(atk, def, atk.weapons[0], rngOf(44), { defense: 'none' });
     };
     expect(hit(['Perforante']).woundsLost! - hit([]).woundsLost!).toBe(1);
+  });
+  describe('Perforante — matériau (LDB 62 l.270)', () => {
+    const arme = (perforante: boolean): Weapon =>
+      ({ label: 'W', type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: perforante ? [{ id: 'perforante' }] : [] } as unknown as Weapon);
+    const piece = (over: Partial<ItemInstance>): ItemInstance =>
+      ({ uid: over.uid ?? 'i', name: 'Pièce', kind: 'armor', locs: ['corps'], equipped: true, qualities: [], ...over } as unknown as ItemInstance);
+    const target = (armourCorps: number, items: ItemInstance[] = []): Combatant => {
+      const t = fighter(30);
+      t.armour.corps = armourCorps;
+      t.items = items;
+      return t;
+    };
+
+    it('cuir souple PA 1 + cotte de mailles PA 3 (même localisation) → 2 PA effectifs', () => {
+      const t = target(4, [piece({ uid: 'l', subType: 'cuir-souple', pa: 1 }), piece({ uid: 'm', subType: 'mailles', pa: 3 })]);
+      expect(woundsFromHit(arme(true), t, 'corps', 100)).toBe(100 - 3 - 2);
+    });
+    it('cuir seul PA 2 → 0 (tout le cuir ignoré)', () => {
+      const t = target(2, [piece({ uid: 'l', subType: 'cuir-souple', pa: 2 })]);
+      expect(woundsFromHit(arme(true), t, 'corps', 100)).toBe(100 - 3 - 0);
+    });
+    it('mailles seules PA 3 → 2 (le « premier point », UNE fois)', () => {
+      const t = target(3, [piece({ uid: 'm', subType: 'mailles', pa: 3 })]);
+      expect(woundsFromHit(arme(true), t, 'corps', 100)).toBe(100 - 3 - 2);
+    });
+    it('deux pièces MÉTALLIQUES PA 2 + PA 2 → 3, pas 2 (retrait plat, pas par couche)', () => {
+      const t = target(4, [piece({ uid: 'm1', subType: 'mailles', pa: 2 }), piece({ uid: 'm2', subType: 'plate', pa: 2 })]);
+      expect(woundsFromHit(arme(true), t, 'corps', 100)).toBe(100 - 3 - 3);
+    });
+    it('armure NATURELLE (PA hors item porté) PA 3 → 2 (matériau inconnu NON ignoré, #1255)', () => {
+      const t = target(3, []);
+      expect(woundsFromHit(arme(true), t, 'corps', 100)).toBe(100 - 3 - 2);
+    });
+    it('arme SANS Perforante → aucune des valeurs ci-dessus ne bouge (retrait plat + bypass inertes)', () => {
+      const t = target(4, [piece({ uid: 'l', subType: 'cuir-souple', pa: 1 }), piece({ uid: 'm', subType: 'mailles', pa: 3 })]);
+      expect(woundsFromHit(arme(false), t, 'corps', 100)).toBe(100 - 3 - 4);
+    });
   });
   // Pointue, LDB 62 l.288 : « Gagnez un bonus de +1 DR à tout Test réussi quand vous attaquez avec
   // cette arme. » Le contrat porte sur le DR DU TEST — l'opposition, l'Avantage et les Dégâts en dérivent.
@@ -271,7 +309,7 @@ describe('Avantage en combat (LDB Déplacement l.37 : +10 par point)', () => {
 });
 import { createHero } from './character';
 import { DIFFICULTY_MODIFIERS } from './types';
-import type { ActiveEffect, Characteristics, Combatant, SkillInstance, Weapon } from './types';
+import type { ActiveEffect, Characteristics, Combatant, ItemInstance, SkillInstance, Weapon } from './types';
 import { effectiveChar } from './characteristics';
 import { endOfRound } from './conditions';
 import {

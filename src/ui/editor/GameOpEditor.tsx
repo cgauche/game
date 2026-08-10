@@ -10,7 +10,7 @@
  */
 import { Formula, GameOp } from '../../engine/ops';
 import { CHAOS_ALIGN_LABELS, ChaosAlign, EXPOSURE_LABELS, ExposureLevel } from '../../engine/corruption';
-import { CHAR_LABELS, CharKey } from '../../engine/types';
+import { CHAR_LABELS, CharKey, ArmourBypass } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
 import { etats, talentConcrete, qualityRefLabel, refLabel, findCrewTestTypeById, CHAR_ABR, effectTables, mutationTables, conditionLabel } from '../../data';
 import { RefField } from '../compendium/RefField';
@@ -561,7 +561,7 @@ export function opSummary(o: GameOp): string {
 const DEDICATED: ReadonlySet<GameOp['op']> = new Set([
   'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'skillMod', 'moveMod', 'ap', 'testMod',
   'corruption', 'sinMod', 'corruptionExposure', 'gainResource', 'grantTrait', 'grantTalent', 'grantNaturalWeapon', 'narrative',
-  'summon', 'polymorph', 'lifeSteal', 'push', 'teleport', 'chain', 'rollTable', 'rollMutation',
+  'summon', 'polymorph', 'lifeSteal', 'push', 'teleport', 'chain', 'rollTable', 'rollMutation', 'armourPierce',
 ]);
 
 /** Rangées d'une op `rollTable` (Vers de carie, MSRC 16 l.90) : `[min,max]` (source unique de fourchette,
@@ -832,6 +832,21 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'narrative' && (
           <textarea placeholder="Texte journalisé (arbitrage MJ)" value={o.text ?? ''} onChange={(e) => upd({ text: e.target.value })} />
+        )}
+        {op.op === 'armourPierce' && (
+          <>
+            <label className="dr">PA retirés (plat)<input type="number" min={0} value={o.amount ?? 1} onChange={(e) => upd({ amount: Math.max(0, Number(e.target.value) || 0) })} /></label>
+            <label className="dr">Matériau ignoré
+              <select value={o.bypass ?? ''} onChange={(e) => upd({ bypass: (e.target.value || undefined) as ArmourBypass | undefined })}>
+                <option value="">— aucun —</option>
+                <option value="nonMetal">Non-métal (Perforante, LDB 62 l.270)</option>
+                <option value="metal">Métal</option>
+                <option value="leather">Cuir</option>
+                <option value="nonMagic">Non-magique</option>
+                <option value="all">Toute l'armure</option>
+              </select>
+            </label>
+          </>
         )}
         {op.op === 'rollTable' && (
           <>

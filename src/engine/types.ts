@@ -281,10 +281,12 @@ export interface HeroDetails {
 }
 
 /** Ignorance de PA — descripteur GÉNÉRAL réutilisable (armes enchantées, attributs de Domaine,
- *  Projectiles…). Un NOMBRE = N points ignorés (Perforante = 1) ; sinon une catégorie : 'all' (tous),
- *  'metal' (armures métalliques — Chamon/Azyr), 'leather' (cuir — Ghur), 'nonMagic' (tout le non
- *  magique — Ulgu). Calcul : engine/armourBypass.bypassedAP. */
-export type ArmourBypass = number | 'all' | 'metal' | 'leather' | 'nonMagic';
+ *  Projectiles…). Un NOMBRE = N points ignorés (aucun producteur en donnée actuellement) ; sinon
+ *  une catégorie : 'all' (tous), 'metal' (armures métalliques — Chamon/Azyr), 'leather' (cuir —
+ *  Ghur), 'nonMagic' (tout le non magique — Ulgu), 'nonMetal' (tout le non-métallique —
+ *  Perforante, LDB 62 l.270). Calcul : engine/armourBypass.bypassedAP.
+ */
+export type ArmourBypass = number | 'all' | 'metal' | 'leather' | 'nonMagic' | 'nonMetal';
 
 /** Spécification STRUCTURÉE des Dégâts d'arme (LDB 62). La présence du token `BF` (Bonus de Force) est
  *  PORTEUSE de sens — exprimée explicitement par `plusBF`, jamais par accident de chaîne. `flat` DÉJÀ

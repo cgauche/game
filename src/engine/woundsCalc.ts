@@ -7,14 +7,14 @@
 import type { Weapon, Combatant, HitLocation } from './types';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { bypassedAP } from './armourBypass';
-import { qualitySum, hasQuality } from './qualities/dispatch';
+import { qualitySum, qualityArmourBypasses, hasQuality } from './qualities/dispatch';
 import { talentDamageReduction } from './combatFeatures/dispatch';
 import { isStructure, structureImmune, siegeMultiplier } from './structures';
 
 /**
  * Blessures infligées par un coup : `totalDamage` (Dégâts d'arme + DR + qualités) moins le Bonus
- * d'Endurance et les PA EFFECTIFS à la `location` (armure portée/naturelle + `extraAP` − Perforante,
- * puis ignorance de PA de l'arme `weapon.bypass`). `minWounds` = plancher (1 pour un PERSONNAGE — garantit
+ * d'Endurance et les PA EFFECTIFS à la `location` (armure portée/naturelle + `extraAP`, matériau
+ * ignoré PUIS retrait plat, LDB 62 l.270). `minWounds` = plancher (1 pour un PERSONNAGE — garantit
  * Robuste LDB 10 ; 0 pour un NAVIRE, MDG 13 l.605 : un coup trop faible peut ricocher sur la coque).
  *
  * STRUCTURE de siège (ADE II 8) : on greffe l'Atout Siège data-driven (cf. `engine/structures`). Une arme
@@ -38,12 +38,15 @@ export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLo
   // Robuste (LDB 10) : « Vous réduisez tous les Dégâts subis de 1 par niveau […] toujours un minimum de 1 Blessure ».
   totalDamage -= talentDamageReduction(target);
   const tb = bonus(effectiveChar(target, 'endurance'));
-  // PA effectifs = armure portée/naturelle + PA temporisés de sort + PA conférés par l'arme d'opposition
-  // (`extraAP`), Perforante déduite. `location` ABSENTE (STRUCTURE inanimée, ADE II 8 : pas de
-  // Localisation) → aucune armure de pièce (une structure a 0 PA partout) : le terme d'armure vaut 0.
-  const baseAP = Math.max(0, (location ? effectiveArmourAt(target, location) : 0) + extraAP - qualitySum(weapon, 'armourReduction'));
-  // Ignorance de PA de l'arme (Épée de justice → 'all', etc.) via le moteur GÉNÉRAL (engine/armourBypass).
-  const ap = Math.max(0, baseAP - (location ? bypassedAP(target, location, weapon.bypass, baseAP) : 0));
+  // PA bruts = armure portée/naturelle + PA temporisés de sort + PA conférés par l'arme d'opposition
+  // (`extraAP`). `location` ABSENTE (STRUCTURE inanimée, ADE II 8 : pas de Localisation) → aucune armure
+  // de pièce (une structure a 0 PA partout) : le terme d'armure vaut 0.
+  const rawAP = (location ? effectiveArmourAt(target, location) : 0) + extraAP;
+  // ORDRE (LDB 62 l.270) : bypass (`weapon.bypass` — Épée de justice → 'all', etc. — et les bypass de
+  // qualité, ex. Perforante) sur le reliquat AVANT le retrait plat (`armourReduction`) — jamais l'inverse.
+  let ap = rawAP;
+  if (location) for (const b of [weapon.bypass, ...qualityArmourBypasses(weapon)]) ap = Math.max(0, ap - bypassedAP(target, location, b, ap));
+  ap = Math.max(0, ap - qualitySum(weapon, 'armourReduction'));
   const effAP = inoffensive ? ap * 2 : ap; // LDB 62 l.327 — PA doublés contre cette arme
   return Math.max(minWounds, totalDamage - (tb + effAP));
 }

@@ -8,7 +8,7 @@
  * `passive: GameOp[]` (weaponRollMod/weaponDamageMod/armourPierce/critOnRoll/testMod) pour les
  * modificateurs, `capabilities` pour les drapeaux irréductibles. `QUALITIES` ne porte que le libellé.
  */
-import type { Weapon, QualityInstance } from '../types';
+import type { Weapon, QualityInstance, ArmourBypass } from '../types';
 import type { QualityId } from './ids';
 import { QualityDef } from './registry';
 import { qualityById, findWeaponGroupById, qualityInstance, type QualityCapabilities, type QualityData } from '../../data';
@@ -98,6 +98,15 @@ export function qualitySum(w: QualityCarrier | undefined, field: 'attackMod' | '
     else if (field === 'armourReduction' && op.op === 'armourPierce') n += op.amount;
   }
   return n;
+}
+
+/** Bypass d'armure déclarés par les qualités PRÉSENTES sur l'objet (Perforante `bypass:'nonMetal'`, LDB
+ *  62 l.270) — lu via `weaponPassiveOps` (altérations d'arme comprises). Un objet peut cumuler plusieurs
+ *  bypass (qualité + `Weapon.bypass` d'enchantement) : chacun est appliqué au reliquat, cf. `woundsCalc`. */
+export function qualityArmourBypasses(w: QualityCarrier | undefined): ArmourBypass[] {
+  return weaponPassiveOps(w)
+    .filter((op): op is Extract<GameOp, { op: 'armourPierce' }> => op.op === 'armourPierce' && op.bypass != null)
+    .map((op) => op.bypass!);
 }
 
 /** ids STABLES des qualités PRÉSENTES qui portent un modificateur PLAT au Test d'attaque (part

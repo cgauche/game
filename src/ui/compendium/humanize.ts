@@ -17,7 +17,7 @@ import type { Flow, Condition, EffectOp } from '../../state/flow';
 import type { ActorRef, CompareOp, CompareSubject } from '../../engine/flowCore';
 import type { GameOp, Formula } from '../../engine/ops';
 import type { Camp, Relation } from '../../engine/relations';
-import { CHAR_LABELS, HIT_LOCATION_LABELS, type CharKey } from '../../engine/types';
+import { CHAR_LABELS, HIT_LOCATION_LABELS, type CharKey, type ArmourBypass } from '../../engine/types';
 import { formatTrait, traitLabelById } from '../../engine/traits/dispatch';
 import { giveTrappingLabel } from '../../engine/items';
 import { formatMoney } from '../../engine/money';
@@ -198,6 +198,10 @@ export function humanizeCondition(c: Condition, neg = false): string {
 const RESOURCE_LABEL = { fortune: 'Chance', fate: 'Destin' } as const;
 const ATTR_LABEL = { wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination' } as const;
 const SENSE_LABEL = { vue: 'la vue', ouie: "l'ouïe" } as const;
+const ARMOUR_BYPASS_CAT_LABEL = { all: "toute l'armure", metal: 'le métal', leather: 'le cuir', nonMagic: 'le non-magique', nonMetal: 'le non-métal' } as const;
+/** Libellé JOUEUR du volet matériau d'`armourPierce.bypass` (LDB 62 l.270) — `undefined`/nombre = pas de volet matériau. */
+const armourBypassCatLabel = (b: ArmourBypass | undefined): string | undefined =>
+  typeof b === 'string' ? ARMOUR_BYPASS_CAT_LABEL[b] : undefined;
 
 /** ÉCHELLE « par DR » d'une quantité d'op (`PerSL`) en clair joueur — « +1 par DR d'échec » (Terreur,
  *  LDB 21 l.57), « +1 par 2 DR ». SOURCE UNIQUE de cette phrase : la chip d'une op qui la porte
@@ -312,7 +316,7 @@ export function humanizeOp(o: GameOp): string {
     case 'teamCommander': return `est dirigé par un commandant d'équipe`;
     case 'weaponRollMod': return `modifie une phase de son jet de combat`;
     case 'weaponDamageMod': return `modifie ses Dégâts d'arme`;
-    case 'armourPierce': return `perce ${o.amount} PA`;
+    case 'armourPierce': { const cat = armourBypassCatLabel(o.bypass); return `perce ${o.amount} PA${cat ? ` (ignore ${cat})` : ''}`; }
     case 'critOnRoll': return `déclenche un Critique sur certains jets`;
     case 'spendAdvantage': return `dépense ${o.amount} point(s) d'Avantage`;
     case 'light': return `émet de la lumière sur ${o.radiusTiles} case(s)`;

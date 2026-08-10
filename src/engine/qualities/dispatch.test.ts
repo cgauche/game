@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Weapon } from '../types';
 import { QUALITIES } from './registry';
-import { hasQuality, qualitySum, qualityCritTriggered, parryDRAdjust, isUnbreakable, attackDRAdjust, dangerousNine, reloadDRTarget, magazineSize, resolveQualities } from './dispatch';
+import { hasQuality, qualitySum, qualityCritTriggered, parryDRAdjust, isUnbreakable, attackDRAdjust, dangerousNine, reloadDRTarget, magazineSize, resolveQualities, qualityArmourBypasses } from './dispatch';
 import { craftEncDelta } from './craftEconomy';
 import { findQualityById } from '../../data';
 import { parseQualityInstance } from './normalize';
@@ -201,5 +201,14 @@ describe('parité — toute qualité d’ARME des données est connue (registre 
     const known = new Set(Object.keys(QUALITIES));
     const missing = armures.map((q) => q.label).filter((l) => !known.has(l) && !ARMURE_HORS_REGISTRE.has(l));
     expect(missing).toEqual([]);
+  });
+});
+
+describe('qualityArmourBypasses — Perforante ignore le non-métal (LDB 62 l.270)', () => {
+  it('une arme Perforante déclare le bypass nonMetal', () => {
+    expect(qualityArmourBypasses(w(['Perforante']))).toEqual(['nonMetal']);
+  });
+  it('sans Perforante → aucun bypass', () => {
+    expect(qualityArmourBypasses(w(['Précise']))).toEqual([]);
   });
 });
