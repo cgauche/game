@@ -5,6 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 6dda9f10-baee-4f9e-b534-2933d9905a34
+  modified: 2026-08-04T21:23:30.653Z
 ---
 
 Verbatim user (2026-07-17, à propos des jeux de taverne NADJ) : « Perso les jets opposés sont un
@@ -24,4 +25,13 @@ présentation d'opposition réelle (les deux jets visibles, ré-opposition sous 
 « simple + DR adverse en chiffre ». Le raccourci rencontré se corrige (vécu : tavernFlow, ticket
 ouvert dans le même tour) et tout NOUVEAU flux opposé se câble d'emblée sur la vraie machinerie.
 Sweep de classe : chercher les autres « opposé » résolus en simple-plus-tirage-caché.
-Lié : [[game-rollflow-canonical-system]], [[feedback-audit-modeling-shape-vs-raw-intent]].
+
+**2e OCCURRENCE (2026-08-04, #1090 — Piétinement)** : `resolveTrample` côté héros = jet SIMPLE (défense
+escamotée, sonde 4000 tirages : def CC10 ≡ CC90 à l'octet) alors que le RAW dit « Attaque … Compétence
+Corps à corps » = Test opposé ; l'ennemi passait, lui, par le chemin opposé. La fiche seule n'a PAS
+suffi — le sweep de classe n'avait pas été mécanisé. → La classe se MÉCANISE en garde structurelle
+(DoD #1090) : inventaire des fonctions de résolution attaque-like, chacune route par la machinerie
+opposée OU porte une justification RAW citée de sa simplicité. Corollaire : un recensement (registre
+#1066) ne jure QUE ses axes mesurés — la fidélité de RÉSOLUTION est un axe à part, désormais lentille
+obligatoire du tri #1070.
+Lié : [[game-rollflow-canonical-system]], [[feedback-audit-modeling-shape-vs-raw-intent]], [[feedback-un-detecteur-ne-mesure-que-sa-couverture]].

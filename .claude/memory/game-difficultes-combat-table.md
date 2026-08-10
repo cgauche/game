@@ -7,7 +7,7 @@ metadata:
   originSessionId: e5a266bc-492a-4aac-b27d-9bdea4ea9d63
 ---
 
-Lot **« Table Difficultés de Combat »** (clôt le reliquat Jalon 1 « distance fine ») livré 2026-06-07, moteur pur+testé, ~12 commits, tsc 0 / lint 0 / 681 tests. Spec `docs/superpowers/specs/2026-06-07-difficultes-combat-table-design.md`, plan `docs/superpowers/plans/2026-06-07-difficultes-combat-table.md`.
+Lot **« Table Difficultés de Combat »** (clôt le reliquat Jalon 1 « distance fine ») livré 2026-06-07, moteur pur+testé, ~12 commits, tsc 0 / lint 0 / 681 tests. Spec et plan SUPPRIMÉS le 2026-08-10 (exécutés, décrivaient le partitionnement `uncapped` mort au lot Lv #1153 — git porte l historique).
 
 **Livré (vivant en jeu, auto-dérivé des données de scène) :** Ligne de Vue (gate dur, héros+IA), Couvert 3 niveaux canon (−10/−20/−30 ; terrain `mur`/`bois`, bâtiments, décors par id, **empreinte multi-cases** `SceneEntity.foot {w,h}`, créatures intercalées), Combiner les Difficultés (plafonds −30/+60, Avantage `uncapped`), Taille (champ `Combatant.size` ordinal, dérivé au spawn via `sizeFromTraits`), size-to-hit au tir + **+10 au plus petit** (mêlée ET tir), obscurité/brouillard −20, tempête/neige −20 (neige aussi en **esquive** via `dodgeMod`), tir-dans-la-mêlée −20 + **redirection vers un allié** intercalé (`resolveStrayRangedHit`/`strayShotVictim`), tir-en-bougeant −10 (réutilise `battle.moved`), empreinte décor bloque la walkability.
 

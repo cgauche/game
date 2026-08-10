@@ -28,6 +28,15 @@ commit raw.
    est pré-existante).
 2. Vérifier que régénérer ne CAPTURE PAS le WIP d'autrui : `grep` les refs RAW dans leurs fichiers `M`
    non committés — s'ils n'en ont pas, régénérer reflète le code committé (sûr).
+   ⚠ **Variante SANS issue (vécue 2026-08-09)** : quand le WIP étranger porte LUI-MÊME des refs RAW —
+   pire, quand il a déjà régénéré des fiches dans l'arbre (9 fiches `M` + `graphy-baseline.json`, chantier
+   « enjeux ») — le `chore(raw)` du point 3 est IMPOSSIBLE : régénérer committerait leur travail. Aucune
+   chirurgie d'index ne sauve : elle produit un index propre (vérifié : HEAD + mes 4 lignes de prose, zéro
+   ligne `Implémente`), mais le hook régénère depuis le **WORKING TREE**, pas depuis l'index — il mord quand
+   même (`raw:implemente --check` périmé + `test:raw` « non-régression Sens A » rouge). Le seul geste juste
+   est d'ATTENDRE que l'autre session committe : garder l'édition dans l'arbre, la consigner au ticket, et
+   ne surtout pas « débloquer » en régénérant. Ne jamais `git checkout` sa propre édition pour diagnostiquer
+   (destructif — cf. [[feedback-jamais-git-surgery-arbre-partage-actif]]).
 3. Débloquer proprement en **un commit `chore(raw)` séparé** (resync `npm run raw:implemente` + normalise
    `ABBR ch.NN`→`ABBR NN`, cf. [[game-refs-raw-convention-prefixe-fichier]]), PUIS ton commit par-dessus.
    Ne jamais re-cliqueter une baseline pour masquer ce qui doit être normalisé.

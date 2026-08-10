@@ -1,9 +1,11 @@
 ---
 name: game-index-git-partage-entre-sessions
 description: "L'INDEX git est partagé entre sessions parallèles — `git add <mes chemins>` puis `git commit` emporte TOUT l'index, y compris ce qu'une autre session y a mis. La seule forme sûre est `git commit -- <chemins>`."
-metadata:
+metadata: 
   node_type: memory
   type: feedback
+  originSessionId: 032f0876-8eb3-421a-bddc-50a550c9bc09
+  modified: 2026-08-10T08:10:55.332Z
 ---
 
 **Vécu 2026-07-27.** J'ai commité `5d154d3d` (« une zone se dessine par ses CASES ») avec `git add` de **3**
@@ -38,6 +40,30 @@ réécriture. Rien n'était perdu ni corrompu — du travail commité en avance 
 décrit pas. Un commit vide (`--allow-empty`) portant un RECTIFICATIF nommant les dix fichiers et la
 cause laisse la trace au journal sans toucher à l'histoire. C'est la même réponse qu'un message de
 commit qui ne correspond pas à son contenu.
+
+**RÉCIDIVE 2026-08-10 (`9135f643`, lot #1202)** — la règle existait, je l'ai violée : `git add <mes
+chemins>` puis `git commit -F` NU a emporté ~15 fichiers de la tranche « départage nue » que la session
+voisine venait de stager (recover*, cast-opposition*, tests.ts, rollSeamWhitelist, landMarketFlow…).
+Ce qui a érodé la discipline : plusieurs commits précédents de la même session avaient utilisé le
+commit nu SANS incident (l'index voisin était vide à ces instants) — l'absence de symptôme n'est pas
+une absence de danger. Réparé par commit RECTIFICATIF `--allow-empty` (la fiche le prescrivait).
+
+**NUANCE qui manquait à la fiche — le staging PAR HUNK interdit `git commit -- <chemins>`** : cette
+forme committe le CONTENU DE L'ARBRE des chemins nommés (elle ignore l'index), donc elle emporterait
+les hunks voisins qu'on vient d'exclure. Deux formes sûres, selon le lot :
+1. **Aucun hunk exclu** → `git commit -- <chemins>` (ignore l'index, insensible au voisin) ;
+2. **Staging par hunk** → commit d'index NU, mais SEULEMENT après `git diff --cached --stat`
+   re-vérifié À L'INSTANT du commit (compte de fichiers = ma liste, sinon `git restore --staged`
+   des chemins étrangers — c'est la SEULE commande de restauration licite : elle ne touche que
+   l'index, jamais l'arbre). Le contrôle se refait à CHAQUE tentative (un pre-commit refusé puis
+   re-committé = une fenêtre de plus pour le voisin).
+
+**Leçon CÔTÉ VICTIME (même incident `9135f643`, vécu de l'autre session)** : mon lot L5 était stagé
+chirurgicalement (`git apply --cached`, 17 fichiers) et ATTENDAIT le verdict de la suite complète
+(~10 min). Le commit voisin est tombé dans cette fenêtre et a tout emporté. Un stage qui attend est
+une fenêtre ouverte : **la suite se lance AVANT de stager, et le stage (surtout par hunk) se fait à
+L'INSTANT du commit**, jamais en avance. Si un gate long doit re-tourner, dé-stager (`git restore
+--staged`, seule commande licite) plutôt que laisser le lot parqué dans l'index commun.
 
 **Why** : sur un arbre partagé, l'index n'est pas un espace de travail privé — c'est une ressource
 commune, au même titre que les fichiers. Toute la doctrine « ne committe que TES fichiers » supposait

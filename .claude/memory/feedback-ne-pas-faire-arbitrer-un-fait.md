@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 28c99d31-0f31-42bf-b192-e530e82d7635
-  modified: 2026-08-04T06:11:45.543Z
+  modified: 2026-08-10T06:51:18.560Z
 ---
 
 **User 2026-07-26 (verbatim)** : « Moi je n'en sais rien, c'est tes relevés »
@@ -27,6 +27,16 @@ RAW-d'abord (« consécutives » = rien d'intercalé), l'implémentation existan
 fidèle et il n'y avait RIEN à décider. User : « tu me parlais des activités et interlude, puis tu
 m'as parlé du moteur applicatif en opposant le raw ». Le moteur ne définit pas la règle ; il la
 traduit — présenter sa structure comme le cadre de la décision fabrique de faux arbitrages.
+
+**Corollaire 3 (2026-08-10, Peur d'invocateur, #1202)** : proposer des OPTIONS MAISON à côté d'un
+texte explicite EST une variante du même défaut — l'AskUserQuestion « RAW strict / exemption du
+contrôleur (maison) / exemption de camp (maison) » mettait en scène un choix là où le livre avait
+tranché (« chez les autres créatures », aucune exemption écrite). L'utilisateur a choisi « RAW
+strict » puis rectifié : « ce n'est pas "mon arbitrage" et je ne veux pas le voir dans le code.
+C'est le RAW ». Quand le texte est explicite, il n'y a AUCUNE question à poser — on implémente avec
+la réf nue, sans tag de décision (poison famille 4) ; une règle maison ne se propose qu'après avoir
+établi un vrai silence (et vit alors en règle OPTIONNELLE éditable, cf.
+[[game-preference-vs-regle-optionnelle]]).
 
 Lié : [[feedback-arbitrage-agent-source-en-main]], [[feedback-questions-stop-loop]],
 [[feedback-deleguer-grounding-pas-que-code]], [[game-preference-vs-regle-optionnelle]].
