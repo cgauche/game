@@ -3384,8 +3384,11 @@ function aiBattement(get: Get, set: SetFn, enemy: Combatant, foe: Combatant): bo
 function aiDistraire(get: Get, set: SetFn, enemy: Combatant, foe: Combatant): boolean {
   const battle = get().battle;
   if (!battle) return false;
-  const atk = rollSansPilote(get, enemy, distraireAttackValue(enemy), 'intermediaire', battleRng());
-  const def = rollTest(distraireDefenseValue(foe), 'intermediaire', battleRng());
+  // Athlétisme du mover / Calme du foe : ces valeurs SONT nues (carac effective + avances, LDB 09 l.17)
+  // — elles se posent telles quelles en grandeur de départage (LDB 12 l.160).
+  const atkValue = distraireAttackValue(enemy), defValue = distraireDefenseValue(foe);
+  const atk = { ...rollSansPilote(get, enemy, atkValue, 'intermediaire', battleRng()), base: atkValue };
+  const def = { ...rollTest(defValue, 'intermediaire', battleRng()), base: defValue };
   const line = resolveDistraire(enemy, foe, atk, def);
   set({ battle: { ...markActed(get, set, get().battle!), action: null, log: [...get().battle!.log, ev('attack', line, enemy.id, foe.id)] } });
   bus.emit(EVT.SCENE_DIRTY);

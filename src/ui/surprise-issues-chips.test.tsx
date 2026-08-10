@@ -20,6 +20,7 @@ import { seedBattleRng, battleRng } from '../state/battleRng';
 import { testScene } from '../scenes/test-fixture';
 import { runCombatFlow } from '../state/combat/triggeredTest';
 import { testFlow, EMPTY_FLOW } from '../state/flow';
+import { testValue } from '../engine/skills';
 import { CascadeBody } from './CascadeModal';
 import { resolveStake, combatStakeRef, regles } from '../data';
 import type { BattleState } from '../state/store';
@@ -167,7 +168,10 @@ describe('#1117 — la Surprise DIT ses issues en chips d’ops, avant comme apr
     );
     const step = useGame.getState().pendingCascade!.participants[0];
     const aT = step.meta!.opposed!.aT;
-    expect(aT.target, 'le pré-jet de l’embusqueur SUBIT la Difficulté (−20)').toBe((aT.base ?? 0) - 20);
+    // Oracle = la valeur de Test de l'embusqueur, LUE à sa source (`testValue`) : `aT.base` ne peut pas
+    // servir de référence — un `TestResult` ne porte de valeur nue que si son producteur la POSE
+    // (LDB 12 l.160), et l'opposition de `triggeredTest` n'en pose pas.
+    expect(aT.target, 'le pré-jet de l’embusqueur SUBIT la Difficulté (−20)').toBe(testValue(embusqueur, 'discretion', 'agilite') - 20);
 
     act(() => { useGame.getState().cascadeRoll(step.id); });
     render();

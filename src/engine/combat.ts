@@ -372,8 +372,15 @@ export interface RollBreakdown {
   /** Mode de défense STRUCTUREL (≠ libellé d'affichage) — renseigné sur le jet du DÉFENSEUR pour que
    *  le moteur branche sur la nature de la défense (Esquive = Test de Déplacement) sans matcher le texte. */
   mode?: DefenseMode;
-  /** Valeur de Compétence/Caractéristique de base (avant modificateurs). */
+  /** Valeur de Compétence/Caractéristique de base (avant modificateurs) — la valeur TESTÉE dont la
+   *  ligne rend « base + modificateurs = cible ». En COMBAT elle porte encore les modificateurs de la
+   *  VALEUR (`combatValueMods`/`defenseValueMods`) : elle n'est donc pas le Niveau de Compétence nu. */
   base: number;
+  /** Niveau de Compétence NU du jet décrit (`LDB 09 l.17`) — la SEULE grandeur du départage à DR égal
+   *  (`LDB 12 l.160`). Reconduite du `TestResult` que ce détail décrit : un jet réhydraté de ce détail
+   *  (`hydrateTR`) retrouve ainsi sa nue au lieu de reprendre `base`, qui n'en est pas une en combat.
+   *  Absente quand le producteur du jet n'en pose pas (jet non opposable : piétinement, tir dévié). */
+  nue?: number;
   /** Somme des modificateurs appliqués (Avantage, viser, États, portée, Atouts…). */
   modifier: number;
   /** Détail étiqueté des modificateurs (somme = `modifier` quand renseigné). */
@@ -433,10 +440,14 @@ export interface AttackResult {
   log: string;
 }
 
+/** Détail d'AFFICHAGE d'un jet de combat. La valeur nue voyage AVEC lui (`nue`, lue sur le
+ *  `TestResult` décrit) : sans elle, tout jet réhydraté du détail (Chance, dé posé, ré-opposition)
+ *  reprendrait `base` — la valeur TESTÉE — et rouvrirait le départage mixte (`LDB 12 l.160`). */
 const bd = (label: string, base: number, t: TestResult, mods?: ModLine[], mode?: DefenseMode): RollBreakdown => ({
   label,
   ...(mode ? { mode } : {}),
   base,
+  ...(t.base != null ? { nue: t.base } : {}),
   modifier: t.target - base,
   mods,
   target: t.target,
@@ -810,7 +821,8 @@ export function rollMeleeAttacker(
   flankRear?: boolean,
 ): TestResult {
   const atkVal = combatValue(attacker, 'melee', weapon);
-  return rollTest(atkVal, 'intermediaire', rng, combineMods(attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env, flankRear })));
+  const t = rollTest(atkVal, 'intermediaire', rng, combineMods(attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env, flankRear })));
+  return { ...t, base: combatBaseValue(attacker, 'melee', weapon) }; // LDB 12 l.160
 }
 
 /** Jet du DÉFENSEUR seul (Parade = Corps à corps, Esquive = Agilité + avances ;
@@ -833,21 +845,24 @@ export function rollMeleeDefender(
   // sauf si l'arme de parade est Rapide elle-même ; l'Esquive défend normalement.
   const rapide = mode === 'parade' ? rapideParryMod(vsWeapon, parryWeapon) : 0;
   if (rapide) mods.push({ label: 'Rapide', value: rapide, famille: 'jet', ref: RULE_REF.rapide });
-  return rollTest(defVal, 'intermediaire', rng, combineMods(mods));
+  const t = rollTest(defVal, 'intermediaire', rng, combineMods(mods));
+  return { ...t, base: defenseBaseValue(defender, mode, parryWeapon, sub?.base) }; // LDB 12 l.160
 }
 
 /** Jet de Corps à corps « brut » d'un combattant pour le Test opposé de Désengagement
  *  (LDB 15 l.49 « Esquive/Corps à corps »). Inclut l'Avantage×10 et les pénalités
  *  d'États, mais PAS les Atouts d'arme ni les bonus de cible (ce n'est pas une attaque portée). */
 export function rollDisengageAttack(foe: Combatant, rng: RNG = defaultRNG): TestResult {
-  return rollTest(combatValue(foe, 'melee', foe.weapons[0]), 'intermediaire', rng, baseTestMods(foe, 'capacite-de-combat'));
+  const t = rollTest(combatValue(foe, 'melee', foe.weapons[0]), 'intermediaire', rng, baseTestMods(foe, 'capacite-de-combat'));
+  return { ...t, base: combatBaseValue(foe, 'melee', foe.weapons[0]) }; // LDB 12 l.160
 }
 
 /** Jet de FORCE « brut » pour le Test opposé d'Empoignade (LDB 14 l.161 : « un Test opposé de Force »).
  *  Valeur = caractéristique de Force + Avantage×10 + pénalités d'États (`baseTestMods`), sans Atout
  *  d'arme (c'est une lutte au corps à corps, pas une frappe portée). Partagé flux joueur + IA. */
 export function rollGrappleForce(c: Combatant, rng: RNG = defaultRNG): TestResult {
-  return rollTest(effectiveChar(c, 'force'), 'intermediaire', rng, baseTestMods(c, 'force'));
+  const force = effectiveChar(c, 'force'); // valeur NUE : `baseTestMods` voyage dans le modificateur (LDB 12 l.160)
+  return { ...rollTest(force, 'intermediaire', rng, baseTestMods(c, 'force')), base: force };
 }
 
 /** Arme du coup dans le dos d'une Fuite : c'est un **Test de Corps à corps** (LDB 15 l.63) → l'arme de
@@ -1152,7 +1167,7 @@ export function resolveRanged(
   if (distanceTiles != null && rangeM != null && rangeBandModifier(distanceTiles, rangeM, metresPerTile) == null)
     return { hit: false, attackerRoll: 0, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false, log: `${attacker.label} : cible hors de portée.` };
   const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env, metresPerTile });
-  let atk = rollTest(atkVal, 'intermediaire', rng, combineMods(mods));
+  let atk: TestResult = { ...rollTest(atkVal, 'intermediaire', rng, combineMods(mods)), base: combatBaseValue(attacker, 'ranged', weapon) }; // LDB 12 l.160
   if (isHelplessTarget(defender)) atk = helplessTest(atk, 'ranged'); // auto-succès, Dégâts à bout portant (LDB 16 l.112)
   const atkBd = bd(attackTestLabel(weapon, 'ranged'), atkVal, atk, mods);
   // Tir DÉFENDU (RAW : Protectrice 2+ LDB 62 l.307 / Bout Portant 14 l.62 / tireur Engagé 14 l.70) →
@@ -1189,7 +1204,8 @@ export function rollRangedAttacker(
   metresPerTile = 2,
 ): TestResult {
   const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env, metresPerTile });
-  return rollTest(combatValue(attacker, 'ranged', weapon), 'intermediaire', rng, combineMods(mods));
+  const t = rollTest(combatValue(attacker, 'ranged', weapon), 'intermediaire', rng, combineMods(mods));
+  return { ...t, base: combatBaseValue(attacker, 'ranged', weapon) }; // LDB 12 l.160
 }
 
 /** Test OPPOSÉ d'un TIR DÉFENDU (RAW Protectrice 2+/Bout Portant/tireur Engagé) à partir des jets

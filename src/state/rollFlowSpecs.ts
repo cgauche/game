@@ -1243,7 +1243,9 @@ export const FLOWS = {
   distraire: opposedBinaryFlow<PendingDistraire>({
     key: 'pendingDistraire',
     actorId: (p) => p.moverId,
-    rollActor: (actor) => rollTest(distraireAttackValue(actor), 'intermediaire', battleRng()), // Athlétisme du mover (LDB 10 l.364)
+    // Athlétisme du mover (LDB 10 l.364) : la valeur EST nue (carac effective + avances, LDB 09 l.17)
+    // — elle se pose en grandeur de départage (LDB 12 l.160), comme le Calme figé du foe.
+    rollActor: (actor) => { const v = distraireAttackValue(actor); return { ...rollTest(v, 'intermediaire', battleRng()), base: v }; },
     actorTR: (p) => p.atk, putActorTR: (tr) => ({ atk: tr }), // mover = « attaquant » : son jet = `p.atk`
     foeTR: (p) => p.defRoll, // Calme du foe FIGÉ
   }),
@@ -1943,7 +1945,9 @@ export const FLOWS = {
         return { roll: player, result: { ...result, winner: 'attacker' as const, attackerWins: true, netSL: Math.max(1, result.netSL), decidedBy: 'force' as const } };
       }
       const player = bargainPlayerTR(p, rollTest(p.playerSkill, 'intermediaire'));
-      const merchant = rollTest(p.merchantValue, 'intermediaire');
+      // `merchantValue` = valeur NUE du marchand (archétype tiré, aucun modificateur) — grandeur du
+      // départage à DR égal (LDB 12 l.160), face à la nue du joueur posée par `bargainPlayerTR`.
+      const merchant = { ...rollTest(p.merchantValue, 'intermediaire'), base: p.merchantValue };
       return { roll: player, merchantRoll: merchant, result: resolveOpposed(player, merchant) };
     },
     reresolve: (_s, p) => {

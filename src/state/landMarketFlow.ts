@@ -221,8 +221,11 @@ function bargainPct(winnerNegotiator: boolean, netSL: number): number {
  *  SOURCE UNIQUE des deux sites (achat + vente) : plus aucun départage artisanal par `>` au
  *  call-site. */
 function bargainOpposed(best: NonNullable<ReturnType<typeof partyAssisted>>, merchant: number, rng: RNG): OpposedResult {
+  // `opposedTest` ROULE les deux camps sans poser de nue : son propre verdict est un repli deux-cibles
+  // (journalisé en DEV) dont on ne garde QUE les deux jets — le départage qui fait foi est celui-ci,
+  // sur le Niveau de Compétence du meneur (accesseur canon) et la valeur du marchand, qui EST nue.
   const rolled = opposedTest(best.value, merchant, rng, 'intermediaire', 'intermediaire');
-  return resolveOpposed({ ...rolled.attacker, base: skillBaseValue(best.actor, 'marchandage') }, rolled.defender);
+  return resolveOpposed({ ...rolled.attacker, base: skillBaseValue(best.actor, 'marchandage') }, { ...rolled.defender, base: merchant });
 }
 
 /** ACHAT d'une cargaison (MSRC 13 l.129-131) : prix = Enc × prix de base, modulé par le Marchandage opposé et

@@ -20,7 +20,7 @@ import { Combatant, type Difficulty, CHAR_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { evLines } from './combatLog';
 import type { RNG } from '../engine/dice';
-import { combatValue, defenseValue, DEFENSE_LABEL } from '../engine/combat';
+import { combatValue, combatBaseValue, defenseValue, defenseBaseValue, DEFENSE_LABEL } from '../engine/combat';
 import { isVehicle } from '../engine/vehicle';
 import { rollTest, resolveOpposed, hydrateTR, type TestResult } from '../engine/tests';
 import { effectiveChar, bonus } from '../engine/characteristics';
@@ -305,7 +305,8 @@ export function selectedAttackOption(active: Combatant, battle: BattleState, for
  *  Intermédiaire par défaut. Hurlement n'a PAS de jet d'attaquant (chaque cible teste sa Résistance)
  *  → `stat` absent : `rollManeuverAttacker` n'est jamais appelé pour lui. */
 export function rollManeuverAttacker(attacker: Combatant, stat: 'capacite-de-combat' | 'capacite-de-tir', rng: RNG, difficulty: Difficulty = 'intermediaire'): TestResult {
-  return rollTest(combatValue(attacker, stat === 'capacite-de-combat' ? 'melee' : 'ranged'), difficulty, rng);
+  const kind = stat === 'capacite-de-combat' ? 'melee' : 'ranged';
+  return { ...rollTest(combatValue(attacker, kind), difficulty, rng), base: combatBaseValue(attacker, kind) }; // LDB 12 l.160
 }
 
 /** Difficulté du jet d'ATTAQUANT propre à une manœuvre (seul le Vomissement dévie du +0 : Facile +40
@@ -334,9 +335,12 @@ const tilesOf = (meters: number | null): number | null => (meters == null ? null
  *  'auto' = meilleure réaction ; 'esquive'/'parade' = explicite. */
 function defenderRoll(tgt: Combatant, defense: ManeuverDef['defense']): TestResult | null {
   if (!defense || defense === 'resist') return null;
-  if (defense === 'init') return rollTest(effectiveChar(tgt, 'initiative'), 'intermediaire', battleRng()); // Regard, opposé à l'Initiative (LDB 85)
+  if (defense === 'init') { // Regard, opposé à l'Initiative (LDB 85)
+    const init = effectiveChar(tgt, 'initiative');
+    return { ...rollTest(init, 'intermediaire', battleRng()), base: init };
+  }
   const mode = defense === 'auto' ? bestDefenseMode(tgt) : defense;
-  return rollTest(defenseValue(tgt, mode), 'intermediaire', battleRng());
+  return { ...rollTest(defenseValue(tgt, mode), 'intermediaire', battleRng()), base: defenseBaseValue(tgt, mode) }; // LDB 12 l.160
 }
 
 /** Émet le flash de ZONE (empreinte centre ± rayon, clippée à la scène) — montre pourquoi plusieurs
@@ -602,8 +606,9 @@ export function resolveDistraire(attacker: Combatant, foe: Combatant, atk: TestR
   return t('manv.distraire', { name: attacker.label, foe: foe.label });
 }
 
-/** Valeur de Test d'Athlétisme (Distraire, attaquant) / de Calme (défenseur) — Force Mentale + avances de
- *  la Compétence. SOURCE des jets de `resolveDistraire`. Pur. */
+/** Niveaux de Compétence NUS du Distraire (`LDB 09 l.17`) : Athlétisme sur AGILITÉ pour l'attaquant,
+ *  Calme sur FORCE MENTALE pour le défenseur — Caractéristique effective + Augmentations, sans aucun
+ *  modificateur. SOURCE des jets de `resolveDistraire`, et grandeurs de son départage. Pur. */
 export function distraireAttackValue(c: Combatant): number {
   return effectiveChar(c, 'agilite') + (c.skills.find((s) => s.skillId === 'athletisme')?.advances ?? 0);
 }
@@ -634,6 +639,7 @@ export function startBattement(_get: Get, set: SetFn, attacker: Combatant, foe: 
  *  Athlétisme vs Calme. Le jet de Calme du foe est tiré et FIGÉ d'avance (pattern Désengagement/
  *  Au Contact) ; seul l'Athlétisme du mover se (re)joue dans la modale. */
 export function startDistraire(_get: Get, set: SetFn, mover: Combatant, foe: Combatant): void {
-  const defRoll = rollTest(distraireDefenseValue(foe), 'intermediaire', battleRng()); // Calme du foe, figé (jamais relancé)
+  const defValue = distraireDefenseValue(foe); // valeur NUE (carac effective + avances, LDB 09 l.17)
+  const defRoll = { ...rollTest(defValue, 'intermediaire', battleRng()), base: defValue }; // Calme du foe, figé (jamais relancé)
   set({ pendingDistraire: { moverId: mover.id, foeId: foe.id, atk: null, defRoll, result: null } });
 }

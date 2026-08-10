@@ -70,9 +70,12 @@ export function shiftDifficulty(base: Difficulty, delta: number): Difficulty {
 export interface TestResult {
   roll: number;
   target: number; // valeur effective après difficulté
-  /** Valeur NUE de la Compétence/Caractéristique testée, AVANT Difficulté et modificateurs — la
-   *  même grandeur que `RollBreakdown.base`. C'est elle qui départage un Test opposé à DR égal
-   *  (LDB 12 l.160). Absente quand le jet est réhydraté d'un détail qui ne la portait pas. */
+  /** Niveau de Compétence NU testé (`LDB 09 l.17`) : Caractéristique effective + Augmentations, AVANT
+   *  Difficulté, modificateurs du jet ET modificateurs de la VALEUR (États, Encombrement, effets
+   *  char-qualifiés). C'est elle qui départage un Test opposé à DR égal (`LDB 12 l.160`). ≠
+   *  `RollBreakdown.base` (la valeur TESTÉE, qui en combat porte encore les mods de valeur) : c'est
+   *  `RollBreakdown.nue` qui lui correspond, et `hydrateTR` la relit là. Absente quand le producteur du
+   *  jet n'en pose aucune — le départage retombe alors sur les cibles des DEUX camps (`openValues`). */
   base?: number;
   success: boolean;
   /** Degrés de Réussite (positif = réussite, négatif = échec). */
@@ -86,7 +89,13 @@ export interface TestResult {
   clamped?: number;
 }
 
-/** Effectue un Test simple contre une valeur cible (d100 ≤ valeur, LDB 12 l.7-13). */
+/** Effectue un Test simple contre une valeur cible (d100 ≤ valeur, LDB 12 l.7-13).
+ *  Le `TestResult` rendu ne porte AUCUNE valeur nue (`base`) : `value` est la valeur TESTÉE, qui n'est
+ *  la valeur nue du départage (`LDB 12 l.160`, `LDB 09 l.17`) que par coïncidence. Un site dont le jet
+ *  atteint `resolveOpposed` pose SA nue explicitement (accesseur canon `skillBaseValue`/`combatBaseValue`/
+ *  `defenseBaseValue`, ou la valeur elle-même quand elle EST nue) ; à défaut, `openValues` retombe sur
+ *  les cibles des DEUX camps — jamais un départage mixte, et le repli se JOURNALISE en DEV
+ *  (`REPLIS_DEUX_CIBLES`) : il tranche sur une grandeur que le RAW ne désigne pas. */
 export function rollTest(
   value: number,
   difficulty: Difficulty = 'intermediaire',
@@ -97,7 +106,7 @@ export function rollTest(
   const raw = value + DIFFICULTY_MODIFIERS[difficulty] + modifier;
   const target = clamp(raw, policy);
   const r = d100(rng);
-  const res = evaluateTest(r, target, value, policy);
+  const res = evaluateTest(r, target, undefined, policy);
   return target === raw ? res : { ...res, clamped: target - raw };
 }
 
@@ -200,6 +209,10 @@ export interface OpposedResult {
  * Test opposé — LDB 12 l.160.
  * Arbitrage maison (jeu sans MJ, CLAUDE.md règle 7) : l'égalité résiduelle que la source laisse
  * au choix du MJ est tranchée en statu quo (`tie`), jamais en relance.
+ * DANGER : les deux jets sortent de `rollTest` — AUCUN ne porte de valeur nue, le départage à DR égal se
+ * fait donc sur les CIBLES. Avec deux Difficultés DIFFÉRENTES, ces cibles ne sont plus comparables
+ * (`LDB 12 l.166` applique les modificateurs aux deux groupes) — un appelant qui les dissocie doit
+ * poser lui-même les deux nues sur le résultat (`{ ...rolled.attacker, base }`, cf. `landMarketFlow`).
  */
 export function opposedTest(
   attackerValue: number,
@@ -213,14 +226,28 @@ export function opposedTest(
   return resolveOpposed(attacker, defender);
 }
 
+/** Compteur DEV des départages retombés sur les CIBLES faute de nue (#1153) — sonde partagée, patron
+ *  `ui/RollLine.ANONYMES` : un test ou un écran de recette y prouve qu'un chemin oppose bien deux nues.
+ *  Inerte en PROD. */
+export const REPLIS_DEUX_CIBLES = { count: 0 };
+
 /** Grandeurs COMPARABLES des deux jets pour le départage (LDB 12 l.160) : les valeurs NUES quand les
  *  DEUX côtés la portent, sinon les cibles des deux côtés. TOUT-OU-RIEN : opposer la valeur nue d'un
  *  camp à la cible modifiée de l'autre comparerait deux grandeurs différentes (c'est le défaut que ce
- *  départage corrige) — un jet réhydraté sans `base` fait donc retomber les DEUX sur la cible. */
+ *  départage corrige) — un jet sans `base` fait donc retomber les DEUX sur la cible.
+ *  Ce repli n'est PAS neutre : les cibles portent Difficulté, modificateurs et ÉCRÊTAGE (aux bornes de
+ *  la policy, deux cibles écrêtées à 99 s'égalisent) — il tranche sur une grandeur que le RAW ne
+ *  désigne pas. C'est un MANQUE assumé des chemins non migrés, pas une règle : en DEV il se JOURNALISE
+ *  là où il se produit, au lieu de passer pour un verdict. */
 function openValues(attacker: TestResult, defender: TestResult): [number, number] {
-  return attacker.base != null && defender.base != null
-    ? [attacker.base, defender.base]
-    : [attacker.target, defender.target];
+  if (attacker.base == null || defender.base == null) {
+    if (import.meta.env?.DEV) {
+      REPLIS_DEUX_CIBLES.count += 1;
+      console.error(`[resolveOpposed] départage sans valeur nue (attaquant ${attacker.base ?? '—'}, défenseur ${defender.base ?? '—'}) : repli sur les cibles ${attacker.target}/${defender.target} — poser la nue au PRODUCTEUR du jet (LDB 12 l.160).`);
+    }
+    return [attacker.target, defender.target];
+  }
+  return [attacker.base, defender.base];
 }
 
 export function resolveOpposed(attacker: TestResult, defender: TestResult): OpposedResult {
@@ -275,11 +302,15 @@ export function forcedTR(roll: number, target: number, sl: number, base?: number
   return { roll, target, success: true, sl, isDouble: isDoubleRoll(roll), ...(base != null ? { base } : {}) };
 }
 
-/** `TestResult` RE-HYDRATÉ depuis un détail de jet stocké (RollBreakdown/attackerDetail/…) : ajoute
- *  `isDouble` dérivé du dé. `success` NATUREL préservé (≠ forcedTR qui force success:true). La valeur
- *  nue `base` du détail (présente sur `RollBreakdown`) est reconduite telle quelle. Atome PARTAGÉ. */
-export function hydrateTR(d: { roll: number; target: number; success: boolean; sl: number; base?: number }): TestResult {
-  return { roll: d.roll, target: d.target, success: d.success, sl: d.sl, isDouble: isDoubleRoll(d.roll), ...(d.base != null ? { base: d.base } : {}) };
+/** `TestResult` RE-HYDRATÉ depuis un détail de jet stocké (RollBreakdown/attackerDetail/étape de
+ *  cascade…) : ajoute `isDouble` dérivé du dé. `success` NATUREL préservé (≠ forcedTR qui force
+ *  success:true). La valeur NUE est relue à `nue` EN PRIORITÉ (`RollBreakdown.nue`, `LDB 09 l.17`) et
+ *  à `base` à défaut — les détails de COMBAT ont un `base` qui est la valeur TESTÉE, reprendre celui-là
+ *  rouvrirait le départage mixte que #1153 ferme (`LDB 12 l.160`) ; hors combat les deux coïncident.
+ *  Atome PARTAGÉ. */
+export function hydrateTR(d: { roll: number; target: number; success: boolean; sl: number; base?: number; nue?: number }): TestResult {
+  const nue = d.nue ?? d.base;
+  return { roll: d.roll, target: d.target, success: d.success, sl: d.sl, isDouble: isDoubleRoll(d.roll), ...(nue != null ? { base: nue } : {}) };
 }
 
 /** Test Soutenu (LDB 12 l.187-200) — BONUS de coopération : chaque soutien octroie +10 au Test, MAIS le

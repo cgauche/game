@@ -73,9 +73,12 @@ export function roundSL(t: TestResult, cap?: number): number {
  * l'APPLIER (`state/tavernFlow.ts`, POST-COMMIT du jet du joueur déjà surfacé par `openRoll`) pour
  * rouler le côté ADVERSAIRE (« l'adversaire roule côté monde » — jamais le côté joueur, qui passe par
  * le seam). N'accepte QU'un rng — ne décide rien (#370).
+ * `value` d'un adversaire ABSTRAIT est déjà la valeur NUE de la table : elle se pose en grandeur de
+ * départage (LDB 12 l.160). Un adversaire INCARNÉ (héros) a une valeur de Test fondue — son porteur
+ * (`state/tavernFlow.ts`) réécrit alors `base` à l'accesseur canon.
  */
 export function rollTavernTest(value: number, rng: RNG = defaultRNG): TestResult {
-  return rollTest(value, TAVERN_TEST_DIFFICULTY, rng);
+  return { ...rollTest(value, TAVERN_TEST_DIFFICULTY, rng), base: value };
 }
 
 /** Issue d'UNE manche entre deux `TestResult` DÉJÀ roulés — PUR (aucun rng, aucune décision de

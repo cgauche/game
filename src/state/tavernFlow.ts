@@ -204,7 +204,9 @@ registerCascadeApplier(TAVERN_GAME_KIND, (get, set, step) => {
   // reconstruite ici en succès BRUT (roll ≤ target) pour préserver EXACTEMENT le calcul historique de
   // `resolveTavernRound`/`roundSL` (tie distinct, plafond `drCap` de Boules), qui ne connaît QUE le
   // succès propre au jet — jamais l'issue d'opposition déjà tranchée par la machinerie générique.
-  const playerTR: TestResult = { roll: step.result.roll, target: step.result.target, success: step.result.roll <= step.result.target, sl: step.result.sl, isDouble: false };
+  // `step.base` = Niveau de Compétence NU posé par la porte du seam (`LDB 09 l.17`) — la grandeur du
+  // départage à DR égal (`LDB 12 l.160`), comme l'adversaire figé la porte de son côté.
+  const playerTR: TestResult = { roll: step.result.roll, target: step.result.target, ...(step.base != null ? { base: step.base } : {}), success: step.result.roll <= step.result.target, sl: step.result.sl, isDouble: false };
   const opponentTR: TestResult = step.meta?.opposed?.aT ?? rollTavernTest(opponentValue, battleRng());
 
   if (game.mode === 'extended') {
