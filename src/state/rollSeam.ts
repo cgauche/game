@@ -37,7 +37,7 @@ import type { Get, Set } from './flowTypes';
 import type { Combatant, CharKey, Difficulty, Weapon } from '../engine/types';
 import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import type { PairedSense, GameOp } from '../engine/ops';
-import type { CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate } from './pendings';
+import type { CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate, PendingCascade } from './pendings';
 import type { RecapLine, RecapTone } from './recapLine';
 import type { ModLine } from '../engine/combat';
 import { combatBaseValue, combatValueModParts, conditionModLines, combatCharKey, combineMods, composeDifficulty } from '../engine/combat';
@@ -334,6 +334,19 @@ export function surfaceRow(get: Get, actor: Combatant | undefined, row: BatchPar
   return { ...row, interactive: false, result: row.result ?? rollBatchParticipant(row, battleRng()) };
 }
 
+/**
+ * MARQUE d'origine d'une étape de cascade (#1262). La propriété est OPTIONNELLE : les constructeurs
+ * de la famille (`bandStep`, `choiceStep`) la posent, les littéraux historiques ne la portent pas et
+ * restent assignables. V1 la rend obligatoire sur les fichiers de combat — « monter une étape à la
+ * main » cesse alors de compiler. Le symbole n'est pas exporté : hors de ce module, la marque ne
+ * s'écrit pas. AUCUNE existence à l'exécution (calque `BuiltRollRow`, `ui/rollRowBuild.ts`) : une
+ * étape sérialisée traverse le JSON d'une sauvegarde sans rien perdre.
+ */
+declare const CASCADE_STEP_BRAND: unique symbol;
+
+/** Étape de cascade MONTÉE par la famille d'ouvertures de la porte. */
+export type BuiltCascadeStep = CascadeStep & { readonly [CASCADE_STEP_BRAND]?: true };
+
 /** DÉCLARATION d'une bande : ce que l'appelant sait de la SITUATION (l'entrée de règle mise en jeu).
  *  La POSSESSION (`groupOwner`) n'y est pas — c'est `bandStep` qui la pose. */
 export interface BandSpec {
@@ -366,7 +379,7 @@ export interface BandSpec {
  *
  * `undefined` sans rangée : il n'y a pas de fenêtre à ouvrir sur zéro jet.
  */
-export function bandStep(spec: BandSpec, rows: readonly BatchParticipant[]): CascadeStep | undefined {
+export function bandStep(spec: BandSpec, rows: readonly BatchParticipant[]): BuiltCascadeStep | undefined {
   if (!rows.length) return undefined;
   const porteurs = new Set(rows.map((r) => r.id));
   return {
@@ -797,6 +810,206 @@ export function openWorldTest(
     klass: 'subi',
     ...(spec.stake ? { stake: spec.stake } : {}),
   }, kind, meta);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────────────────────────
+ * LA FAMILLE D'OUVERTURES (#1262) — une porte TYPÉE PAR FORME de jet, qui ÉTEND les trois ouvertures
+ * ci-dessus (`openRoll`/`openPartyTest`/`openWorldTest`) :
+ *   - MONO   : `openRoll` (+ ses deux formes stéréotypées) — un jet, un porteur ;
+ *   - BANDE  : `openBand` — une situation (une entrée de règle), N porteurs, UNE fenêtre ;
+ *   - CHOIX  : `openChoice` — une décision, zéro dé.
+ * `interactive`, `groupOwner` et `actorId` ne sont JAMAIS des champs de déclaration : le socle les
+ * pose (`surfaceRow`/`bandStep`). Les étapes rendues portent la marque `BuiltCascadeStep`.
+ *
+ * DEUX DIVERGENCES ASSUMÉES avec les trois ouvertures MONO :
+ *  1. SIGNATURE — les trois portent `kind` et `meta` en paramètres POSITIONNELS (`(get, set, req,
+ *     kind, meta?)`) ; la famille les met DANS la déclaration (`(get, set, spec)`). C'est le sens même
+ *     de la porte : une seule chose à remplir, et un champ de plus s'ajoute au type sans toucher aux
+ *     appelants — là où un 6ᵉ positionnel les réécrirait tous.
+ *  2. SURFACE I — `openRoll` route l'inline vers `runCascadeImmediate` (aucune fenêtre). `openBand`
+ *     OUVRE sa fenêtre même quand toutes ses rangées naissent témoins (cadence auto) : une bande est
+ *     UNE entrée de règle mise en jeu face à N porteurs, et son bilan par rangée se lit — c'est le
+ *     régime des bandes de nuit/voyage existantes. Le choix est ici, pas dans l'oubli d'un `if`.
+ * ───────────────────────────────────────────────────────────────────────────────────────────────── */
+
+/** Politique de garde de la porte, calque de `rollLine`/`rollSansPilote` : en DEV la violation THROW
+ *  (elle se voit au premier passage), en PROD elle se journalise — l'appelant de la garde décide
+ *  alors de la DÉGRADATION (fenêtre ouverte diminuée, rangée écartée), jamais du silence. */
+function refusePorte(msg: string): void {
+  const m = `[seam] ${msg}`;
+  console.error(m);
+  if (import.meta.env?.DEV) throw new Error(m);
+}
+
+/** Déclaration de LIGNE d'un porteur de bande : celle du monteur canonique, l'ACTEUR et la DIFFICULTÉ
+ *  exceptés (fournis autour). L'omission est DISTRIBUTIVE : chaque régime de valeur de `RollLineDecl`
+ *  garde son exclusivité (un `soutien` sans `valeur` reste inexprimable). */
+export type BandLigne = RollLineDecl extends infer U ? (U extends unknown ? Omit<U, 'actor'> : never) : never;
+
+/** UN porteur d'une bande : qui teste, et la LIGNE de son jet. */
+export interface BandPorteur {
+  /** Le porteur — la rangée prend son id, et sa SURFACE se déduit de lui (`surfaceRow`). */
+  actor: Combatant;
+  /** Ligne du jet. Omise, la ligne se dérive du seul acteur (aucun Test nommé : base `testValue`). */
+  ligne?: BandLigne;
+  /** Difficulté de CETTE rangée, quand elle diverge de celle de la bande (allègement porté par un
+   *  Talent du seul porteur). Absente : celle de la bande. */
+  difficulty?: Difficulty;
+  /** Libellé de rangée. Absent : la Compétence DÉRIVÉE du catalogue (`testSkillLabel`). */
+  label?: string;
+  /** Tag de DONNÉE `menace` — la rangée offre l'auto-succès du talent Résistance (Menace), LDB 10. */
+  menace?: string;
+  /** Contribue DOUBLE à l'agrégat sommé (MDG 14 l.19). */
+  essential?: boolean;
+  /** +DR ajouté au DR d'un jet réussi (Talent baké à la construction). */
+  bonusSlOnSuccess?: number;
+  /** Paramètres sérialisables de la conséquence PROPRE à cette rangée (jumeau du `meta` d'étape). */
+  meta?: CascadeStepMeta;
+}
+
+/** Monte la rangée d'un porteur — ligne par le monteur canonique (`rollStep`), Compétence dérivée du
+ *  catalogue. `interactive` est posé par `surfaceRow`, jamais ici. */
+function bandRow(p: BandPorteur, difficulty: Difficulty): BatchParticipant {
+  const diff = p.difficulty ?? difficulty;
+  const test = p.ligne?.test;
+  const label = p.label ?? testSkillLabel(test ?? {});
+  return {
+    id: p.actor.id,
+    result: null,
+    interactive: true,
+    difficulty: diff,
+    ...rollStep({ ...(p.ligne ?? {}), actor: p.actor, difficulty: diff }),
+    ...(label ? { label } : {}),
+    ...(p.menace ? { menace: p.menace } : {}),
+    ...(test?.skill ? { skillId: test.skill } : {}),
+    ...(test?.spec ? { spec: test.spec } : {}),
+    ...(p.essential ? { essential: true } : {}),
+    ...(p.bonusSlOnSuccess ? { bonusSlOnSuccess: p.bonusSlOnSuccess } : {}),
+    ...(p.meta ? { meta: p.meta } : {}),
+  };
+}
+
+/** DÉCLARATION d'une bande OUVERTE : la situation (`BandSpec`), sa fenêtre (titre + finalisation), et
+ *  ses rangées — DÉCLARÉES par porteur (la porte les monte) ou DÉJÀ montées par un producteur qui
+ *  possède l'arithmétique de sa ligne (opposition figée, agrégat naval). `interactive` est absent des
+ *  deux entrées : c'est la porte qui l'établit. */
+export type BandOpenSpec = BandSpec & { title: string; purpose: PendingCascade['purpose'] } & (
+  | { porteurs: readonly BandPorteur[]; difficulty: Difficulty; rows?: never }
+  | { rows: readonly Omit<BatchParticipant, 'interactive'>[]; porteurs?: never; difficulty?: never }
+);
+
+/**
+ * ÉTAT d'une rangée DÉJÀ montée. L'entrée `rows` sert des rangées NEUVES (dé non tombé) ou
+ * FIGÉES par leur producteur (témoin roulé à la construction, `pursuitFlow.pursuitRow`) — JAMAIS une
+ * rangée MI-JOUÉE : une reprise (`resumeSuspendedCascade`, restauration de sauvegarde) réinstalle son
+ * `pendingCascade` en direct, elle ne repasse pas par la porte. C'est cette borne qui rend la règle
+ * « `result` ⇒ close » exacte : ailleurs dans le cycle, un dé tombé reste influençable pour son
+ * porteur (Chance/Pacte s'appliquent APRÈS le `result`, `rollFlowSpecs.cascadeBatch`) et la rangée y
+ * garde `interactive:true`. Le jour où un appelant voudrait ROUVRIR une bande en vol, ce n'est pas
+ * cette règle qu'il faut assouplir : c'est une entrée à part.
+ *
+ * Rangée ORPHELINE (un `id` qu'aucun combattant ne porte) : refusée. Surfacée, elle nommerait un
+ * propriétaire fantôme ; en témoin, elle roulerait un dé pour personne.
+ */
+function rowSurfacee(get: Get, r: Omit<BatchParticipant, 'interactive'>, cle: string): BatchParticipant | undefined {
+  const actor = actorIn(get(), r.id);
+  if (!actor) {
+    refusePorte(`bande « ${cle} » : rangée « ${r.id} » sans combattant — ni jet, ni propriétaire à lui donner. Rangée écartée.`);
+    return undefined;
+  }
+  if (r.result) return { ...r, interactive: false };
+  return surfaceRow(get, actor, { ...r, interactive: true });
+}
+
+/**
+ * PORTE DE BANDE (#1262) — une entrée de règle mise en jeu face à N porteurs, UNE fenêtre : la porte
+ * monte chaque rangée, la SURFACE (rangée à jouer chez le siège qui tient son porteur, TÉMOIN né
+ * roulé sinon), pose la POSSESSION de l'étape (`bandStep`) et démarre la séquence. La garde de choix
+ * (`assertChoixJamaisPartage`, `cascade.ts`) s'applique à l'ouverture.
+ *
+ * Zéro rangée : aucune fenêtre (rien n'est mis en jeu).
+ */
+export function openBand(get: Get, set: Set, spec: BandOpenSpec): void {
+  const rows = spec.porteurs
+    ? spec.porteurs.map((p) => surfaceRow(get, p.actor, bandRow(p, spec.difficulty)))
+    : (spec.rows ?? []).flatMap((r) => rowSurfacee(get, r, spec.id) ?? []);
+  const step = bandStep(spec, rows);
+  if (!step) return;
+  startCascade(get, set, {
+    title: spec.title,
+    purpose: spec.purpose,
+    ...(spec.icon ? { icon: spec.icon } : {}),
+    steps: [step],
+  });
+}
+
+/** DÉCLARATION d'une étape de CHOIX : une décision, zéro dé (renoncement, Destin, cible de monture,
+ *  déviation d'un Critique). */
+export interface ChoiceSpec {
+  id: string;
+  kind: string;
+  label: string;
+  icon?: string;
+  /** PORTEUR de la décision, REQUIS : l'arbitre (`modalArbiter`) route la fenêtre à son siège. Sans
+   *  lui l'owner serait `undefined` — fenêtre à l'HÔTE SEUL, qui trancherait la voie d'autrui ; avec
+   *  `groupOwner`, l'owner serait `'*'` et n'importe quel siège trancherait (`assertChoixJamaisPartage`,
+   *  `cascade.ts`). Une étape de choix n'a donc QUE cette possession. */
+  actorId: string;
+  options: readonly { key: string; label: string; detail?: string }[];
+  /** Clé retenue d'office par une résolution IMMÉDIATE (`runCascadeImmediate`) — l'une des `options`. */
+  defaultChoice?: string;
+  /** Fiche de RÈGLE qui encadre le choix (une étape sans jet n'a pas d'enjeu à dériver). */
+  stakeRule?: { category: string; id: string };
+  meta?: CascadeStepMeta;
+}
+
+/**
+ * CONSTRUCTEUR d'étape de CHOIX (#1262) — pose la possession du PORTEUR, et rien d'autre : pas de
+ * `groupOwner`, pas de `test: {}` de convenance (un choix ne lance aucun dé).
+ *
+ * DEV : une déclaration fautive THROW. PROD : elle se journalise et la décision se DÉGRADE au lieu de
+ * disparaître — un porteur manquant laisse la fenêtre échoir à l'hôte (visible, jouable), un
+ * `defaultChoice` étranger aux options est écarté (seule la résolution immédiate y perd son
+ * raccourci). `undefined` dans le SEUL cas où il n'y a aucune décision à préserver : zéro option —
+ * la fenêtre serait alors une impasse (`stepReady` attend un `chosen` qu'aucun bouton ne pose).
+ */
+export function choiceStep(spec: ChoiceSpec): BuiltCascadeStep | undefined {
+  if (!spec.options.length) {
+    refusePorte(`choix « ${spec.id} » (${spec.kind}) sans option — la fenêtre serait une impasse. Aucun choix ouvert.`);
+    return undefined;
+  }
+  if (!spec.actorId) {
+    refusePorte(`choix « ${spec.id} » (${spec.kind}) sans PORTEUR — la fenêtre échoit à l'hôte, qui tranche pour autrui.`);
+  }
+  const defaut = spec.defaultChoice != null && spec.options.some((o) => o.key === spec.defaultChoice) ? spec.defaultChoice : undefined;
+  if (spec.defaultChoice != null && defaut == null) {
+    refusePorte(`choix « ${spec.id} » (${spec.kind}) : `
+      + `\`defaultChoice\` « ${spec.defaultChoice} » hors de ses options — écarté ; une résolution immédiate s'arrête sur ce choix.`);
+  }
+  return {
+    id: spec.id,
+    kind: spec.kind,
+    label: spec.label,
+    ...(spec.icon ? { icon: spec.icon } : {}),
+    ...(spec.actorId ? { actorId: spec.actorId } : {}),
+    interactive: true,
+    options: spec.options.map((o) => ({ ...o })),
+    ...(defaut != null ? { defaultChoice: defaut } : {}),
+    ...(spec.stakeRule ? { stakeRule: spec.stakeRule } : {}),
+    ...(spec.meta ? { meta: spec.meta } : {}),
+  };
+}
+
+/** PORTE DE CHOIX (#1262) — `choiceStep` + sa fenêtre. */
+export function openChoice(get: Get, set: Set, spec: ChoiceSpec & { title: string; purpose: PendingCascade['purpose'] }): void {
+  const step = choiceStep(spec);
+  if (!step) return;
+  startCascade(get, set, {
+    title: spec.title,
+    purpose: spec.purpose,
+    ...(spec.icon ? { icon: spec.icon } : {}),
+    steps: [step],
+  });
 }
 
 /** Reconstruit l'issue SCELLÉE (`TestOutcome`) d'une étape déjà résolue — lecture PARTAGÉE pour les
