@@ -12,7 +12,10 @@
  *    dégagée ne se rend pas, elle ne s'estompe pas.
  *  - TEINTE (`applyVisibilityTint`, `instanceColor` des accents) : la visibilité se réécrit en place
  *    sur les couleurs de sommet (`[baked, tintAt]`).
- *  - POSE : la caméra suit les crans du store (`stage3dCamera`), et rien d'autre ne bouge la vue.
+ *  - POSE : la caméra suit les crans du store (`stage3dCamera`) et, pendant une MARCHE, l'intention
+ *    du stage à l'instant de la frame (`anim.cam`) — rien d'autre ne bouge la vue.
+ *  - MARCHE (P2-4) : la boucle de rendu lit elle-même le glissement (`anim.glide`) et ne déplace que
+ *    les matrices des quads concernés. Aucun rendu React, aucun sommet, aucun matériau.
  *
  * CANAUX D'AMBIANCE ENCORE ABSENTS (mesuré #1176, P2-2) — la voie affine (`stage/CulledScene`) les
  * applique OBJET PAR OBJET, cet écran ne porte que la teinte de visibilité (`tintAt`). Ils font partie
@@ -26,7 +29,8 @@
  *
  * Trois GROUPES distincts sous la même scène three : le MONDE (une géométrie, un matériau par groupe de
  * surface — remonté au seul changement de cuisson), les ACCENTS de sol (instanciés, remontés à la teinte)
- * et les BILLBOARDS (invalidés à la position visuelle des acteurs, donc à la frame pendant une marche).
+ * et les BILLBOARDS (invalidés à la case LOGIQUE et à la signature de dessin des sujets, jamais au
+ * glissement de marche : celui-ci ne touche que les matrices, dans la boucle).
  * Le canevas est posé SOUS le SVG du stage et sans événements de pointeur : les overlays et les voiles
  * restent au SVG, qui reçoit tous les événements (lot P2-7). Le hit-test de SPRITE, lui, ne peut plus
  * s'y lire — plus aucun jeton n'y porte de `data-cid` : cet écran INSCRIT son lanceur de rayon auprès
@@ -54,17 +58,15 @@ import {
   applyCutawayMask,
   applyVisibilityTint,
   bakeWorldGeometry,
-  billboardDepthOffsetUnits,
-  billboardPose,
   collectBillboards,
   contactShadow,
   wantsContactShadow,
   type ActorPose,
-  type BillboardSubject,
   type KeepEl,
   type SceneBillboardEls,
   type TintAt,
 } from '../backends/webgl/sceneMeshes';
+import { poseBoards, type Board, type GlideAt } from './boardPose';
 import { buildGroundAccentMeshes, maskGroundAccents, sceneGroundAccents } from '../backends/webgl/groundAccents';
 import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/spriteRaycast';
 import { setSpritePicker } from './spritePicker';
@@ -93,17 +95,29 @@ export interface GameStage3DProps {
   /** Éléments de scène à billboarder — la sortie des BUILDERS du stage, donc les mêmes filtres que la
    *  voie affine (embuscade, enrôlé, couverture, étage, hors-vue). Cet écran ne les recalcule PAS. */
   els: SceneBillboardEls;
-  /** Acteurs à la position VISUELLE de la frame (le glissé de marche). */
+  /** Acteurs à leur case LOGIQUE — le glissement de marche passe par `anim`, pas par cette liste. */
   actors: readonly ActorPose[];
+  /** Cadençage de la MARCHE, quand le stage en offre un (lot P2-4) : sans lui, cet écran ne bouge
+   *  qu'aux rendus du stage. */
+  anim?: StageWalkAnim;
 }
 
-/** Un billboard monté : ce qu'il faut pour le RE-POSER quand la caméra bouge, sans le reconstruire. */
-interface Board {
-  sub: BillboardSubject;
-  quad: { widthM: number; heightM: number; centerLiftM: number };
-  mesh: THREE.Mesh;
-  material: THREE.MeshBasicMaterial;
+/**
+ * MARCHE lue par la BOUCLE DE RENDU (#1176, P2-4). Le stage reste la seule source d'intention : il
+ * décide de la courbe de glissement et du cadrage, cet écran ne fait que les redemander à SA cadence.
+ * Sans cet objet, rien ne bouge entre deux rendus React — le contrat d'avant le lot.
+ */
+export interface StageWalkAnim {
+  /** Abonne une callback au battement de la marche (une passe par frame tant qu'un glissement dure). */
+  subscribe: (onFrame: () => void) => () => void;
+  /** Décalage MONDE (mètres) du sujet `cid` à l'instant de l'appel — `null` s'il ne marche pas. */
+  glide: (cid: string) => { dx: number; dy: number; dz: number } | null;
+  /** Translation caméra à l'instant de l'appel (mêmes unités que `cam`). */
+  cam: () => { x: number; y: number };
 }
+
+/** Rien ne glisse : la pose d'une frame hors marche (la boucle ne demande alors que l'orientation). */
+const AUCUN_GLISSEMENT: GlideAt = () => null;
 
 /** Vide un groupe et libère ce qu'il portait — un groupe se reconstruit ENTIER, jamais par différence.
  *  La géométrie marquée `emprunte` appartient au bake (`bakeWorldGeometry`) : elle survit au groupe. */
@@ -119,7 +133,7 @@ function viderGroupe(groupe: THREE.Group): void {
   }
 }
 
-export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors }: GameStage3DProps): JSX.Element {
+export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors, anim }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
@@ -159,7 +173,8 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   const subjects = useMemo(() => [...decor, ...acteurs], [decor, acteurs]);
 
   /** UNE frame : cadre le canevas sur son élément, dérive la caméra de l'intention du stage, re-pose les
-   *  quads face à elle, dessine. */
+   *  quads face à elle (glissement de marche compris), dessine. Rien n'y est construit : cette passe est
+   *  celle que la MARCHE rejoue soixante fois par seconde, hors de tout rendu React (P2-4). */
   const dessiner = () => {
     const canvas = canvasRef.current;
     const renderer = rendererRef.current;
@@ -168,7 +183,7 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     const h = canvas.clientHeight;
     if (!w || !h) return;
     renderer.setSize(w, h, false);
-    const f = stage3dFraming({ dims, mpt, cam, zoom, canvas: { w, h } });
+    const f = stage3dFraming({ dims, mpt, cam: anim ? anim.cam() : cam, zoom, canvas: { w, h } });
     const cible = new THREE.Vector3(f.centre.x, f.centre.y, f.centre.z);
     const boite = geometry.boundingBox;
     const rayon = boite ? boite.getSize(new THREE.Vector3()).length() / 2 : 100;
@@ -178,12 +193,9 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       distance,
       radius: rayon + (boite ? cible.distanceTo(boite.getCenter(new THREE.Vector3())) : 0) + 8,
     });
-    for (const b of boardsRef.current) {
-      // Quad ALIGNÉ ÉCRAN, ancré aux PIEDS — exactement ce que fait le backend affine du sprite.
-      b.mesh.quaternion.copy(camera.quaternion);
-      b.mesh.position.copy(billboardPose(b.sub.anchor, b.quad.centerLiftM, camera.quaternion));
-      b.material.polygonOffsetUnits = billboardDepthOffsetUnits(camera.near, camera.far);
-    }
+    // Quads ALIGNÉS ÉCRAN, ancrés aux PIEDS — exactement ce que fait le backend affine du sprite ; le
+    // glissement de marche de l'instant y entre (`stage/boardPose.ts`, la passe pure).
+    poseBoards(boardsRef.current, camera, anim ? anim.glide : AUCUN_GLISSEMENT);
     cameraRef.current = camera; // la caméra de la DERNIÈRE frame : celle que le rayon de picking doit emprunter
     renderer.render(three.current, camera);
   };
@@ -282,9 +294,9 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accentsVus, tintAt]);
 
-  // ── GROUPE BILLBOARDS : décor + acteurs. Rebâti quand les sujets changent — donc à la frame pendant
-  // une marche (les textures, elles, restent en cache : seuls les quads se remontent). L'optimisation
-  // « la boucle lit la position » est le lot P2-4.
+  // ── GROUPE BILLBOARDS : décor + acteurs. Rebâti quand les SUJETS changent — l'identité d'un sujet
+  // porte sa case logique et sa signature de dessin, jamais le glissement de la marche : celui-ci
+  // décale des quads déjà montés, dans `dessiner` (P2-4).
   useEffect(() => {
     const groupe = panneaux.current;
     if (!groupe) return;
@@ -319,11 +331,14 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
         mat.polygonOffsetFactor = -1;
         const mesh = new THREE.Mesh(geo, mat);
         groupe.add(mesh);
-        boards.push({ sub: q.sub, quad: q.quad, mesh, material: mat });
-        // Ombre de CONTACT : le rig ne porte aucune ellipse au pied (le décor, si).
+        const board: Board = { sub: q.sub, quad: q.quad, mesh, material: mat };
+        boards.push(board);
+        // Ombre de CONTACT : le rig ne porte aucune ellipse au pied (le décor, si). Elle entre dans le
+        // board — donc dans la passe de pose, donc elle suit le sujet qui glisse.
         if (wantsContactShadow(q.sub.kind, false)) {
           const disque = contactShadow(q.sub.anchor, q.quad.widthM);
           disque.material.opacity *= q.sub.tint;
+          board.shadow = disque;
           groupe.add(disque);
         }
       });
@@ -338,8 +353,14 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subjects, mpt, camRot]);
 
-  // La frame se rejoue à CHAQUE rendu du stage (marche comprise : le glissé re-rend `IsoStage`).
-  useEffect(dessiner);
+  // La frame se rejoue à CHAQUE rendu du stage — et, pendant une MARCHE, au battement de celle-ci :
+  // c'est la boucle de rendu qui lit alors la position visuelle, pas React (P2-4). L'effet n'a pas de
+  // dépendances par CONSTRUCTION : il court après chaque rendu, donc `dessiner` réabonné est toujours
+  // celui des props courantes.
+  useEffect(() => {
+    dessiner();
+    return anim?.subscribe(dessiner);
+  });
 
   // Le canevas OCCUPE la boîte du stage : c'est la MÊME boîte que le SVG, donc la même classe
   // (`.iso-stage` — aucun sélecteur de domaine de plus, cf. cliquet CSS `ui-ratchets` xii). Les deux

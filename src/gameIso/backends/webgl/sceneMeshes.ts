@@ -506,8 +506,9 @@ export function collectBillboards(scene: Scene, mpt: number, tintAt: TintAt, els
   return out;
 }
 
-/** ACTEUR à billboarder : le combattant (groupe en exploration, combattants en combat) et sa position
- *  VISUELLE — celle qui GLISSE pendant la marche, décidée par le stage (`walkPosOf`), jamais relue ici. */
+/** ACTEUR à billboarder : le combattant (groupe en exploration, combattants en combat) et sa case
+ *  LOGIQUE — l'ancre CUITE du quad. Le GLISSEMENT de marche n'entre pas ici : la boucle de rendu le
+ *  redemande par frame (`StageWalkAnim.glide`) et ne décale que la matrice du quad (#1176, P2-4). */
 export interface ActorPose {
   c: Combatant;
   x: number;
@@ -876,6 +877,12 @@ export function contactShadow(
   });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.rotation.x = -Math.PI / 2;
-  mesh.position.set(anchor.x, anchor.y + CONTACT_SHADOW_LIFT_M, anchor.z);
+  poseContactShadow(mesh, anchor);
   return mesh;
+}
+
+/** (Re)plaque un disque d'ombre sous une ancre pieds — le SEUL endroit qui décide de son aplomb, que
+ *  le disque vienne d'être monté ou qu'il suive un sujet qui glisse (`stage/boardPose.ts`). */
+export function poseContactShadow(disque: THREE.Object3D, anchor: THREE.Vector3): void {
+  disque.position.set(anchor.x, anchor.y + CONTACT_SHADOW_LIFT_M, anchor.z);
 }

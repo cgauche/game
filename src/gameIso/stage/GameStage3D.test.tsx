@@ -13,7 +13,7 @@ import { cidUnderPointer, hasSpritePicker } from './spritePicker';
  * La voie de rendu est EXCLUSIVE : le monde se peint une fois, jamais deux. En volumique, la couche
  * monde du SVG (`CulledScene`) ne se monte PAS — et avec elle disparaissent les jetons porteurs de
  * `data-cid`, ce que le hit-test natif interroge. Le picking de TUILE reste intact (il passe par le
- * SVG, resté monté et seul receveur des événements) ; le picking de SPRITE, lui, passe désormais par
+ * SVG, resté monté et seul receveur des événements) ; le picking de SPRITE, lui, passe par
  * la couture `stage/spritePicker.ts`, où cet écran INSCRIT son lancer de rayon (P2-3) — c'est
  * l'inscription, et non un drapeau de voie, qui bascule le pointeur.
  */

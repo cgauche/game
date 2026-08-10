@@ -7,7 +7,7 @@
  * Caméra : `useStageCamera` (8 crans, focus, culling) ; pointeur : `useStagePointer` (picking
  * cross-couche + data-cid, pan, clics) ; visée au survol : `useHoverTargeting`.
  */
-import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type MutableRefObject } from 'react';
 import './anim.css';
 import { useGame } from '../state/store';
 import { heightAt, sceneMetresPerTile, type Scene } from '../state/scene';
@@ -21,15 +21,15 @@ import { placingZoneOf } from '../state/combatFlow';
 import { controlsActive } from '../state/netOwnership';
 import { modalBlocksMapHover } from '../state/modalArbiter';
 import { mapTargetingActive } from '../state/targetingHolder';
-import { Dims, tileCenter, depth, isSquareView, capsuleCenter } from '../geometry/iso';
+import { Dims, tileCenter, isSquareView, capsuleCenter } from '../geometry/iso';
 import { DEFS } from './sprites';
 import { isoAmbianceDefs } from './catalog/ambiance';
 import { detailPatternDefs, lodOf, LOD_ZOOM } from './backends/affineDetail';
 import { getViewZ, subscribeViewZ } from '../state/viewLevel';
 import { setVisibleTileBounds } from './viewport';
-import { walkXY, STEP_MS } from '../geometry/walk';
 import { useCombatFx } from './fx/useCombatFx';
-import { useWalkAnim, useMoveBlockedBump } from './fx/useWalkAnim';
+import { useWalkAnim, useMoveBlockedBump, subscribeWalkFrames } from './fx/useWalkAnim';
+import { walkPoseAt, walkGlideM, type WalkTrack } from './fx/walkPose';
 import { FxLayer } from './fx/FxLayer';
 import { buildFloors } from './builders/floors';
 import { buildWalls } from './builders/walls';
@@ -41,7 +41,7 @@ import { combatHighlightObjs } from './stage/highlightLayer';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
 import { CulledScene, actorCapsuleOf } from './stage/CulledScene';
-import { GameStage3D } from './stage/GameStage3D';
+import { GameStage3D, type StageWalkAnim } from './stage/GameStage3D';
 import { getStageBackend, subscribeStageBackend } from '../state/stage3d';
 import { tintFor } from './backends/webgl/visibilityTint';
 import { actorPoseKey, type KeepEl, type ActorPose, type TintAt } from './backends/webgl/sceneMeshes';
@@ -117,10 +117,16 @@ export function IsoStage() {
   const hoverCombatantId = useGame((s) => s.hoverCombatantId); // survol de la frise → peek caméra + réticule
   const svgRef = useRef<SVGSVGElement>(null);
   const camRef = useRef({ x: 0, y: 0 }); // caméra du rendu courant, lue par les handlers du pointeur
+  const camGRef = useRef<SVGGElement>(null); // groupe à la transform CAMÉRA — recalé hors React pendant une marche volumique
+  // Un pas FRANCHI pendant une marche volumique : le seul rendu que la boucle demande (cf. son battement).
+  const [, setWalkStep] = useState(0);
+  const demandeRef = useRef<string | null>(null);
 
   // ── Caméra (transition 8 crans, zoom, pan) & animations ─────────────────────────────────────────
   const { shownRot, shownEdge, turning, zoom, camPan } = useStageCamera(svgRef);
-  const walksRef = useWalkAnim(); // marche visuelle : le token GLISSE le long du chemin (~60 re-rendus/s)
+  // Marche visuelle : le token GLISSE le long du chemin. En AFFINE le glissement se peint par un rendu
+  // React à la frame ; en VOLUMIQUE la boucle de rendu lit `walksRef` elle-même (#1176, P2-4).
+  const walksRef = useWalkAnim(!webgl);
   const bump = useMoveBlockedBump(); // micro-secousse (#792) du jeton de groupe, pas clavier bloqué
   const { floats, projs, auras, aoes } = useCombatFx();
 
@@ -163,29 +169,43 @@ export function IsoStage() {
   const patternDefs = useMemo(() => (scene && lod >= 1 ? detailPatternDefs(dims, mpt) : ''), [scene, lod, dims, mpt]);
   const partyLeader = party.find((h) => !h.dead && h.wounds.current > 0) ?? party[0];
   const wnow = performance.now();
-  const walkPosOf: WalkPos = (id, x, y, z = 0) => {
-    const w = walksRef.current[id];
-    if (!w) return { x, y, walking: false, sortPt: { x, y } };
-    const elapsed = wnow - w.start;
-    const p = walkXY(w.path, elapsed, STEP_MS);
-    const seg = w.path.length < 2 ? 0 : Math.min(w.path.length - 2, Math.max(0, Math.floor(elapsed / STEP_MS)));
-    const a = w.path[seg], b = w.path[seg + 1] ?? a;
-    const sortPt = depth(b.x, b.y, dims, z) >= depth(a.x, a.y, dims, z) ? { x: b.x, y: b.y } : { x: a.x, y: a.y };
-    return { x: p.x, y: p.y, walking: true, sortPt };
-  };
+  const walkPosOf: WalkPos = (id, x, y, z = 0) => walkPoseAt(walksRef.current[id], x, y, z, dims, wnow);
 
+  // ── CAMÉRA À UN INSTANT (la seule définition) : point focal (paire de visée / actif / leader) puis
+  // translation de la vue. Le rendu la demande à `wnow` ; la boucle volumique la redemande PAR FRAME
+  // pendant une marche, ce qui la fait glisser sans aucun rendu React (#1176, P2-4).
+  const targeting = mode === 'battle' && battle ? cameraTargeting(battle, actorAim) : null;
+  const camAt = (now: number) => {
+    if (!scene) return { x: camPan.x, y: camPan.y };
+    const wp: WalkPos = (id, x, y, z = 0) => walkPoseAt(walksRef.current[id], x, y, z, dims, now);
+    const focus = stageFocus({ mode, battle, partyPos, partyLeader, walkPosOf: wp, planView, hoverCombatantId, targeting, pendingAttack, pendingCast });
+    // Visée du SUJET : le milieu de sa capsule (`actorCapsuleOf`, la même que consomme l'occlusion), et
+    // non le sol de sa case — viser le sol décale le cadre d'une demi-capsule vers le haut de la scène,
+    // donc vers ce qui SURPLOMBE le sujet (biais multiplié par le zoom).
+    const fc = capsuleCenter(actorCapsuleOf(
+      { x: focus.x, y: focus.y, h: heightAt(scene, Math.round(focus.x), Math.round(focus.y), activeZ) },
+      dims,
+    ));
+    return { x: VW / 2 - fc.x + camPan.x, y: VH / 2 - fc.y + camPan.y };
+  };
   // ── BUILDERS (camera-free) : memos qui survivent aux rotations/projections ──────────────────────
-  const rawVisualAllies: { id: string; x: number; y: number; z: number }[] = mode === 'battle' && battle
-    ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => ({ id: c.id, z: c.pos!.z ?? 0, ...walkPosOf(c.id, c.pos!.x, c.pos!.y, c.pos!.z ?? 0) }))
-    : [{ id: partyLeader?.id ?? 'party', z: partyPos.z ?? 0, ...walkPosOf(partyLeader?.id ?? 'party', partyPos.x, partyPos.y, partyPos.z ?? 0) }];
-  // Case ARRONDIE (grille) : la position VISUELLE glisse en continu (~60/s pendant la marche, cf.
-  // `walkPosOf`) mais la case qu'elle OCCUPE (pièce/toit/prop) est un événement DISCRET — la clé ne
-  // change qu'au franchissement d'une case, ce qui stabilise la RÉFÉRENCE `visualAllies` (donc
-  // `cutawayAllies`/`propEls`, #817) tant que le groupe reste dans la même case ; le jeton continue de
-  // glisser sans à-coup ailleurs (`walkPosOf` direct dans `dyn`/la caméra, non affecté par ce memo).
-  const visualAlliesKey = rawVisualAllies.map((a) => `${a.id}:${Math.round(a.x)},${Math.round(a.y)},${a.z}`).join('|');
+  // Cases LOGIQUES des alliés — ce que la marche fait glisser, jamais ce qu'elle fait bouger.
+  const allyBases = mode === 'battle' && battle
+    ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => ({ id: c.id, x: c.pos!.x, y: c.pos!.y, z: c.pos!.z ?? 0 }))
+    : [{ id: partyLeader?.id ?? 'party', x: partyPos.x, y: partyPos.y, z: partyPos.z ?? 0 }];
+  // Case ARRONDIE (grille) : la position VISUELLE glisse en continu (~60/s pendant la marche) mais la
+  // case qu'elle OCCUPE (pièce/toit/prop) est un événement DISCRET — la clé ne change qu'au
+  // franchissement d'une case, ce qui stabilise la RÉFÉRENCE `visualAllies` (donc `cutawayAllies`/
+  // `propEls`, #817) tant que le groupe reste dans la même case ; le jeton continue de glisser sans
+  // à-coup ailleurs (`walkPosOf` direct dans `dyn`/la caméra, non affecté par ce memo).
+  const visualTilesAt = (now: number) => allyBases.map((a) => {
+    const p = walkPoseAt(walksRef.current[a.id], a.x, a.y, a.z, dims, now);
+    return { id: a.id, x: Math.round(p.x), y: Math.round(p.y), z: a.z };
+  });
+  const tilesKey = (tiles: readonly { id: string; x: number; y: number; z: number }[]) => tiles.map((t) => `${t.id}:${t.x},${t.y},${t.z}`).join('|');
+  const visualAlliesKey = tilesKey(visualTilesAt(wnow));
   const visualAllies = useMemo(
-    () => rawVisualAllies.map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), z: a.z })),
+    () => visualTilesAt(wnow).map(({ x, y, z }) => ({ x, y, z })),
     [visualAlliesKey],
   );
   const visualPartyPos = visualAllies[0] ?? partyPos;
@@ -194,6 +214,30 @@ export function IsoStage() {
     [scene, visualPartyPos.x, visualPartyPos.y, visualPartyPos.z],
   );
   const cutawayAllies = roomCutawayAllies(roomFocus, visualAllies);
+  // En VOLUMIQUE, le monde glisse dans la boucle de rendu et React ne rend plus rien entre deux pas.
+  // Ce que le stage écrit HORS de React suit donc la marche à la FRAME : la caméra que lisent les
+  // handlers du pointeur (`camRef` — seule source de l'inversion pixel→tuile, `useStagePointer`), le
+  // cadre de tuiles visibles (`setVisibleTileBounds`) et le transform du groupe d'overlays SVG
+  // (curseur, aperçu de chemin, télégraphes), qui décrocheraient du monde d'une case entière.
+  // Le FRANCHISSEMENT d'une case, lui, n'est pas une affaire d'image : c'est l'événement DISCRET dont
+  // dépendent les vérités de pièce et de dégagement (`visualAllies` → `roomFocus`/`cleared`/`propEls`).
+  // Il demande UN rendu — à la cadence du PAS, jamais à celle de la frame.
+  useEffect(() => {
+    if (!webgl) return;
+    return subscribeWalkFrames(() => {
+      const now = performance.now();
+      const c = camAt(now);
+      camRef.current = c;
+      setVisibleTileBounds(computeViewBounds(c, zoom, dims));
+      const g = camGRef.current;
+      if (g) g.style.transform = stageCamTransform(c, zoom * (turning ? 0.97 : 1));
+      const k = tilesKey(visualTilesAt(now));
+      if (k !== visualAlliesKey && demandeRef.current !== k) {
+        demandeRef.current = k;
+        setWalkStep((n) => n + 1);
+      }
+    });
+  });
   // ESPACE DÉGAGÉ (#818, #907, #950) — UNE loi pour toute l'architecture. Une nappe n'est peinte que
   // si le groupe la VOIT (`seenSections`, nourri des cases explorées de `state/vision.ts`), et ce
   // qui le COIFFE est RETIRÉ, à l'échelle de la MASSE, jamais voilé ni découpé panneau par panneau.
@@ -351,16 +395,7 @@ export function IsoStage() {
   // qu'elle demande) vit dans `VolumetricWorld`, monté seulement en volumique — cf. son JSDoc.
 
   // ── Caméra : point focal (paire de visée / actif / leader) + culling d'animation ────────────────
-  const targeting = mode === 'battle' && battle ? cameraTargeting(battle, actorAim) : null;
-  const focus = stageFocus({ mode, battle, partyPos, partyLeader, walkPosOf, planView, hoverCombatantId, targeting, pendingAttack, pendingCast });
-  // Visée du SUJET : le milieu de sa capsule (`actorCapsuleOf`, la même que consomme l'occlusion), et
-  // non le sol de sa case — viser le sol décale le cadre d'une demi-capsule vers le haut de la scène,
-  // donc vers ce qui SURPLOMBE le sujet (biais multiplié par le zoom).
-  const fc = capsuleCenter(actorCapsuleOf(
-    { x: focus.x, y: focus.y, h: heightAt(scene, Math.round(focus.x), Math.round(focus.y), activeZ) },
-    dims,
-  ));
-  const cam = { x: VW / 2 - fc.x + camPan.x, y: VH / 2 - fc.y + camPan.y };
+  const cam = camAt(wnow);
   camRef.current = cam;
   const viewBounds = computeViewBounds(cam, zoom, dims);
   setVisibleTileBounds(viewBounds); // écriture dans un module = pas de re-rendu
@@ -390,7 +425,8 @@ export function IsoStage() {
           keepEl={keepEl}
           tokenEls={tokenEls}
           propEls={propEls}
-          walkPosOf={walkPosOf}
+          camAt={camAt}
+          walksRef={walksRef}
           partyToken={mode === 'battle' && battle ? null : partyLeader ? { leader: partyLeader, pos: partyPos } : null}
         />
       )}
@@ -398,7 +434,7 @@ export function IsoStage() {
         pas un sélecteur de domaine de plus dans la feuille (cliquet `ui-ratchets` xii). */}
     <svg ref={svgRef} className="iso-stage" style={webgl ? { background: 'transparent' } : undefined} viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" {...handlers}>
       <defs dangerouslySetInnerHTML={{ __html: DEFS + isoAmbianceDefs() + patternDefs }} />
-      <g style={{ transform: camTransform, transition: camTransition, opacity: camOpacity }}>
+      <g ref={camGRef} style={{ transform: camTransform, transition: camTransition, opacity: camOpacity }}>
         {!webgl && <CulledScene objs={objs} dims={dims} cam={cam} zoom={zoom} activeZ={activeZ}
           fog={{ explored: exploredSet }} light={light} roomFocus={roomFocus} />}
         <DoorOverlays
@@ -455,17 +491,20 @@ export function IsoStage() {
  * étage isolé, surplomb, brouillard). ÉCART RÉSIDUEL : un couple MONTÉ ne rend que sa MONTURE — le
  * corps composite cavalier+monture (`MountedToken`) n'a pas d'équivalent billboard.
  */
-function VolumetricWorld({ scene, dims, mpt, cam, zoom, tintAt, keepEl, tokenEls, propEls, walkPosOf, partyToken }: {
+function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, tokenEls, propEls, walksRef, partyToken }: {
   scene: Scene;
   dims: Dims;
   mpt: number;
   cam: { x: number; y: number };
+  /** Caméra à un instant DONNÉ : la boucle de rendu la redemande par frame pendant une marche. */
+  camAt: (now: number) => { x: number; y: number };
   zoom: number;
   tintAt: TintAt;
   keepEl: KeepEl;
   tokenEls: TokenEl[];
   propEls: PropEl[];
-  walkPosOf: WalkPos;
+  /** Marches vivantes — LUES par la boucle de rendu, jamais par un rendu React (cf. `anim` ci-dessous). */
+  walksRef: MutableRefObject<Record<string, WalkTrack>>;
   /** Hors combat : le jeton de GROUPE (le meneur visible), à sa case. En combat : `null`. */
   partyToken: { leader: Combatant; pos: Pt } | null;
 }) {
@@ -475,25 +514,36 @@ function VolumetricWorld({ scene, dims, mpt, cam, zoom, tintAt, keepEl, tokenEls
     const s = tk.subject;
     const unit = s.kind === 'combatant' ? s.c : s.kind === 'mounted' ? s.mount : null;
     if (!unit?.pos) continue;
-    const wp = walkPosOf(unit.id, unit.pos.x, unit.pos.y, tk.cell.z);
-    poses.push({ c: unit, x: wp.x, y: wp.y, z: tk.cell.z, facing: facings[unit.id] });
+    poses.push({ c: unit, x: unit.pos.x, y: unit.pos.y, z: tk.cell.z, facing: facings[unit.id] });
   }
   if (partyToken) {
     const z = partyToken.pos.z ?? 0;
-    const wp = walkPosOf(partyToken.leader.id, partyToken.pos.x, partyToken.pos.y, z);
-    poses.push({ c: partyToken.leader, x: wp.x, y: wp.y, z, facing: facings[partyToken.leader.id] });
+    poses.push({ c: partyToken.leader, x: partyToken.pos.x, y: partyToken.pos.y, z, facing: facings[partyToken.leader.id] });
   }
   // RÉFÉRENCE STABLE tant que rien de ce que le billboard dessine n'a bougé — même patron de clé que
-  // `visualAllies` plus haut. Le tableau se reforge à CHAQUE rendu du stage (`walkPosOf` est refait à
-  // la frame), et un tableau neuf démonte puis remonte les quads de TOUS les sujets, à chaque rendu
-  // que le store provoque, marche ou pas. La clé porte tout ce dont la POSE et le DESSIN dépendent :
-  // identité, position visuelle, orientation, et la SIGNATURE des entrées de dessin (garde-robe,
-  // équipement, apparence vivante, état au sol, échelle). `actorPoseKey` la compose depuis la MÊME
-  // signature que l'identité de cache de texture (`BillboardSubject.identity`) : une entrée de dessin
-  // ne peut plus périmer l'une sans l'autre.
+  // `visualAllies` plus haut. Un tableau neuf démonte puis remonte les quads de TOUS les sujets ; la clé
+  // porte donc tout ce dont la POSE et le DESSIN dépendent : identité, case LOGIQUE, orientation, et la
+  // SIGNATURE des entrées de dessin (garde-robe, équipement, apparence vivante, état au sol, échelle).
+  // `actorPoseKey` la compose depuis la MÊME signature que l'identité de cache de texture
+  // (`BillboardSubject.identity`) : une entrée de dessin ne peut plus périmer l'une sans l'autre.
+  // Le GLISSEMENT de marche n'y entre PAS (#1176, P2-4) : la boucle de rendu le lit elle-même et décale
+  // des quads déjà montés, là où la clé fractionnaire les remontait tous soixante fois par seconde.
   const posesKey = poses.map(actorPoseKey).join('|');
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const actors = useMemo(() => poses, [posesKey]);
   const els = useMemo(() => ({ tokens: tokenEls, props: propEls }), [tokenEls, propEls]);
-  return <GameStage3D scene={scene} dims={dims} mpt={mpt} cam={cam} zoom={zoom} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} />;
+  // MARCHE lue par la BOUCLE (P2-4) : le stage garde l'intention (la courbe `walkPoseAt`, le cadrage
+  // `camAt`), la boucle ne fait que la redemander à SA cadence. Objet reforgé à chaque rendu — c'est
+  // voulu : il doit fermer sur les cases logiques du rendu courant.
+  const bases = new Map(poses.map((p) => [p.c.id, { x: p.x, y: p.y, z: p.z }]));
+  const solM = (x: number, y: number, z: number) => heightAt(scene, Math.round(x), Math.round(y), z);
+  const anim: StageWalkAnim = {
+    subscribe: subscribeWalkFrames,
+    glide: (cid) => {
+      const base = bases.get(cid);
+      return base ? walkGlideM(walksRef.current[cid], base, dims, mpt, performance.now(), solM) : null;
+    },
+    cam: () => camAt(performance.now()),
+  };
+  return <GameStage3D scene={scene} dims={dims} mpt={mpt} cam={cam} zoom={zoom} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} anim={anim} />;
 }

@@ -29,37 +29,53 @@ export function ndcAt(px: { x: number; y: number }, canvas: { w: number; h: numb
 
 const rayon = new THREE.Raycaster();
 
-/** DÉPARTAGE à égalité EXACTE de distance (deux quads coplanaires au même point, un jeton pile dans le
- *  plan d'une masse) : `true` si `candidat` l'emporte sur `tenant`. Relation d'ORDRE TOTAL sur les
- *  cibles, ne lisant que leur `cid` — c'est ce qui rend le verdict indépendant de l'ordre du tableau.
- *  Deux échelons : le MONDE d'abord (un occulteur `cid:null` gagne son égalité, le clic retombe alors
- *  sur la tuile — même issue qu'en affine, où le mur peint par-dessus ne porte pas de `data-cid`),
- *  puis, entre deux jetons, l'ordre lexicographique des ids — arbitraire, mais STABLE. */
-function emporteAEgalite(candidat: PickTarget, tenant: PickTarget): boolean {
-  if (candidat.cid === null) return tenant.cid !== null;
-  if (tenant.cid === null) return false;
-  return candidat.cid < tenant.cid;
+/** DÉPARTAGE à égalité EXACTE de distance entre deux JETONS (deux quads coplanaires au même point,
+ *  deux combattants sur la même case) : l'ordre lexicographique des ids — arbitraire, mais STABLE.
+ *  C'est ce qui rend le verdict indépendant de l'ordre du tableau de cibles. */
+function emporteAEgalite(candidat: string, tenant: string): boolean {
+  return candidat < tenant;
 }
 
-/** Id du combattant sous le rayon : la cible la PLUS PROCHE de la caméra gagne, et à distance égale
- *  `emporteAEgalite` tranche. `null` si c'est un occulteur (masse du monde, décor) ou si rien n'est
- *  touché — dans les deux cas, il n'y a pas de jeton sous ce pixel. L'ordre du tableau de cibles
- *  n'entre JAMAIS dans le verdict. */
+/**
+ * Id du combattant sous le rayon : la cible la PLUS PROCHE de la caméra gagne, et à distance égale
+ * `emporteAEgalite` tranche. `null` si un OCCULTEUR (masse du monde, décor sans id) est au moins aussi
+ * proche que le jeton gagnant, ou si aucun jeton n'est touché — dans les deux cas, il n'y a pas de
+ * jeton sous ce pixel. L'ordre du tableau de cibles n'entre JAMAIS dans le verdict.
+ *
+ * DEUX PASSES, et c'est ce qui tient le coût du survol : les JETONS d'abord (quelques quads de deux
+ * triangles), et la question ne descend dans le MONDE — la masse triangulée de la carte — que si un
+ * jeton a gagné, une seule fois, bornée à la distance de ce gagnant (`raycaster.far`). Le cas
+ * majoritaire du `pointermove` (aucun jeton sous le pixel) ne balaie donc plus la carte du tout.
+ */
 export function pickNearestCid(
   camera: THREE.Camera,
   targets: readonly PickTarget[],
   ndc: { x: number; y: number },
 ): string | null {
+  rayon.far = Infinity;
   rayon.setFromCamera(new THREE.Vector2(ndc.x, ndc.y), camera);
-  let gagnant: PickTarget | null = null;
+  let gagnant: string | null = null;
   let plusProche = Infinity;
   for (const cible of targets) {
+    if (cible.cid === null) continue;
     for (const touche of rayon.intersectObject(cible.object, true)) {
       if (touche.distance > plusProche) continue;
-      if (touche.distance === plusProche && !(gagnant && emporteAEgalite(cible, gagnant))) continue;
+      if (touche.distance === plusProche && !(gagnant && emporteAEgalite(cible.cid, gagnant))) continue;
       plusProche = touche.distance;
-      gagnant = cible;
+      gagnant = cible.cid;
     }
   }
-  return gagnant?.cid ?? null;
+  if (!gagnant) return null;
+  // Un occulteur AU MOINS aussi proche gagne son égalité — même issue qu'en affine, où le mur peint
+  // par-dessus le jeton ne porte pas de `data-cid` et laisse le clic retomber sur la tuile.
+  rayon.far = plusProche;
+  for (const cible of targets) {
+    if (cible.cid !== null) continue;
+    if (rayon.intersectObject(cible.object, true).length) {
+      rayon.far = Infinity;
+      return null;
+    }
+  }
+  rayon.far = Infinity;
+  return gagnant;
 }
