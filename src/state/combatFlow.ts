@@ -695,7 +695,7 @@ export function attackEnv(
   // La pénalité météo « Tests physiques » (EDOC 8 l.82) n'est PLUS ajoutée ici : le CANAL UNIQUE
   // `weatherTestMods` (attackModifiers, lu depuis `attacker.envWeather`) la porte pour l'attaque ET la défense
   // ET les activités — jamais recâblée par surface (#341). Seuls les mods météo WEAPON-contextuels restent (tir).
-  // Flanc/dos (LDB 14 l.91) : +20 pour attaquer un adversaire ENGAGÉ dans le dos ou sur les côtés —
+  // Flanc/dos (LDB 14 l.62) : +20 pour attaquer un adversaire ENGAGÉ dans le dos ou sur les côtés —
   // orientation du défenseur AVANT cette attaque (il se retourne vers l'attaquant ENSUITE, applyAttackResult).
   const tFacing = get().facing?.[target.id]; // `facing` peut être absent (état épars / contexte sans orientation)
   const flankRear = !!(tFacing && isEngaged(target) && attacker.pos && target.pos && isFlankOrRear(tFacing, facingToward(target.pos, attacker.pos)));

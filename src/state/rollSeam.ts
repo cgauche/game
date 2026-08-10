@@ -315,7 +315,8 @@ interface RollLineBase {
    *  aux seules `famille: 'circonstance'`) et, quand la combinaison diffère de la somme brute, ÉMET
    *  l'écart en ligne NOMMÉE « plafond Difficultés » liée à sa fiche de règle. Sans ce mode, un
    *  appelant qui plafonnait sa cible à la main laissait l'amputation en chip « autres ». Réservé aux
-   *  jets de COMBAT : hors combat, la table de Difficulté n'a pas de plafond de combinaison. */
+   *  jets de COMBAT : c'est un ARBITRAGE maison (`LDB 12` n'énonce aucune règle de cumul et `l.137`
+   *  est permissif hors combat ; la combinaison vit au chapitre Combat, `LDB 14 l.46` et `l.93`). */
   plafond?: 'difficultes';
 }
 
@@ -458,7 +459,7 @@ function combatChannelValue(actor: Combatant | undefined, canal: RollLineCombat,
  *
  * `LDB 14 l.95` dit la combinaison (« faire la somme des différents modificateurs sans dépasser Très
  * Difficile -30 ») sans distinguer d'où vient chaque modificateur. La partition en DEUX familles
- * (entrées de la table plafonnées / modificateurs portés par le jeteur hors plafond) est un
+ * (SITUATIONNEL du Test, plafonné / ressource ou état PROPRE du jeteur, hors plafond) est un
  * ARBITRAGE du projet, consigné #1218 — c'est `combineMods` qui l'applique, et c'est LUI que cette
  * garde surveille.
  *

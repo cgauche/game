@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { combineMods, defenseModifiers, rangeBandModifier, rangeBandName, weaponReachPenalty } from './combat';
+import { attackModifiers, combineMods, defenseModifiers, rangeBandModifier, rangeBandName, weaponReachPenalty } from './combat';
 import { setRule, resetRule } from './policy';
 import type { Combatant, ModLine, Weapon } from './types';
 
@@ -130,7 +130,7 @@ describe('combineMods — plafonds de Difficulté réglables (LDB 14 l.95, règl
   });
 });
 
-describe("weaponReachPenalty — Longueur d'arme (LDB 62 l.215, règle optionnelle)", () => {
+describe("weaponReachPenalty — Longueur d'arme (LDB 62 l.172, règle optionnelle)", () => {
   afterEach(() => resetRule('combat-weapon-reach'));
   const w = (reach: string | null) => ({ type: 'melee', reach }) as unknown as Weapon;
   it('off (défaut) : aucun malus de longueur', () => {
@@ -197,5 +197,60 @@ describe('defenseModifiers — Avantage hors plafond, circonstances plafonnées 
     expect(mods.filter((m) => m.value < 0).map((m) => `${m.label} ${m.value} ${m.famille}`))
       .toEqual(['Aveuglé -20 jet', 'Neige épaisse -30 circonstance', 'Maniement deux armes -10 jet']);
     expect(combineMods(mods)).toBe(-30);
+  });
+});
+
+/**
+ * PARTITION CIBLE/JETEUR (#1218) — Parasité (trait de la CIBLE) et l'Allonge de SON arme pèsent sur
+ * la cible : `famille: 'circonstance'`, donc plafonnées avec les autres circonstances (`LDB 14
+ * l.48`, `l.96`). La divergence n'est visible qu'en combat SATURÉ : sous −30 de circonstances, les
+ * deux −10 classés `jet` s'ajoutaient hors plafond (−50) ; classés `circonstance`, le plafond les
+ * absorbe (−30).
+ */
+describe('attackModifiers — Parasité et Allonge pèsent sur la CIBLE (#1218)', () => {
+  afterEach(() => resetRule('combat-weapon-reach'));
+
+  const fighter = (over: Record<string, unknown>): Combatant => ({
+    id: 'x', label: 'X', kind: 'enemy',
+    characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, 'force-mentale': 30, intelligence: 30, sociabilite: 30 },
+    wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],
+    weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    skills: [], talents: [], movement: 4,
+    ...over,
+  } as unknown as Combatant);
+  const melee = (reach: string): Weapon => ({ label: 'Arme', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], reach } as unknown as Weapon);
+
+  it('sous une circonstance SATURÉE, les deux −10 sont absorbés par le plafond (−30, pas −50)', () => {
+    setRule('combat-weapon-reach', true);
+    const arme = melee('Très courte');
+    const attaquant = fighter({ id: 'a', weapons: [arme] });
+    const cible = fighter({ id: 't', traits: [{ id: 'parasite' }], weapons: [melee('Longue')] });
+    // Neige épaisse −30 (`LDB 14 l.82`) : les circonstances sont DÉJÀ au plafond avant les deux −10.
+    const env: ModLine[] = [{ label: 'Neige épaisse', value: -30, famille: 'circonstance' }];
+    const mods = attackModifiers(attaquant, cible, arme, { kind: 'melee', env });
+
+    expect(mods.filter((m) => m.value < 0).map((m) => `${m.label} ${m.value} ${m.famille}`))
+      .toEqual(['Parasité -10 circonstance', "Allonge de l'adversaire -10 circonstance", 'Neige épaisse -30 circonstance']);
+    expect(mods.reduce((s, m) => s + m.value, 0), 'somme BRUTE inchangée').toBe(-50);
+    expect(combineMods(mods), 'le plafond de combinaison les absorbe').toBe(-30);
+  });
+
+  /** BORD EXACT de la bascule — le plafond mord dès que l'environnement atteint −20 (et non −30) :
+   *  la grille balaie la saturation croissante et donne, pour chaque palier, le combiné mesuré en
+   *  `circonstance` et ce qu'il valait en `jet` (somme brute, hors plafond). */
+  it.each([
+    { env: 0, circonstance: -20, jet: -20 },
+    { env: -10, circonstance: -30, jet: -30 },
+    { env: -20, circonstance: -30, jet: -40 }, // 1ᵉʳ palier où le classement DÉPLACE un chiffre (+10)
+    { env: -30, circonstance: -30, jet: -50 },
+  ])('saturation env=$env → combiné $circonstance (en famille jet : $jet)', ({ env, circonstance, jet }) => {
+    setRule('combat-weapon-reach', true);
+    const arme = melee('Très courte');
+    const attaquant = fighter({ id: 'a', weapons: [arme] });
+    const cible = fighter({ id: 't', traits: [{ id: 'parasite' }], weapons: [melee('Longue')] });
+    const envLines: ModLine[] = env ? [{ label: 'Terrain difficile', value: env, famille: 'circonstance' }] : [];
+    const mods = attackModifiers(attaquant, cible, arme, { kind: 'melee', env: envLines });
+    expect(mods.reduce((s, m) => s + m.value, 0), 'somme BRUTE = ce que valait la famille `jet`').toBe(jet);
+    expect(combineMods(mods)).toBe(circonstance);
   });
 });

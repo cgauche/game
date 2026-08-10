@@ -652,7 +652,7 @@ export const FLOWS = {
         const def2 = forcedTR(dDie, p.def.target, Math.max(evaluateTest(dDie, p.def.target).sl, opposedForcedFloor(p.atk.sl, cancelled)), p.def.base);
         return { def: def2, result: finishDefenseResult(attacker, actor, pForced, def2, 0, undefined, mpt) };
       }
-      // Neige −20 + cavalier −20 (LDB 14 l.115-116/225) ; Rapide : −10 à la parade d'une arme non-Rapide (LDB 62 l.320).
+      // Neige −30 (LDB 14 l.82) + cavalier −20 (l.184) ; Rapide : −10 à la parade d'une arme non-Rapide (LDB 62 l.298-302).
       const dodgeMod = (s.scene ? sceneCombatModifiers(s.scene, s.gameTime).dodgeMod : 0) + mountedDodgePenalty(actor);
       const parry = p.parryWeaponUid ? actor.weapons.find((w) => w.uid === p.parryWeaponUid) : undefined;
       const def = rollMeleeDefender(actor, p.mode, battleRng(), dodgeMod, parry, p.weapon, defenseSubOf(actor, p));

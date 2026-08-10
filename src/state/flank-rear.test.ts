@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { isFlankOrRear } from './combatFlow';
 
-// Flanc/dos (LDB 14 l.91) : front = orientation du défenseur ±45° (3 dir. avant) ; flanc/dos = les 5 autres.
-describe('isFlankOrRear — attaque dans le dos ou sur les côtés (LDB 14 l.91)', () => {
+// Flanc/dos (LDB 14 l.62) : front = orientation du défenseur ±45° (3 dir. avant) ; flanc/dos = les 5 autres.
+describe('isFlankOrRear — attaque dans le dos ou sur les côtés (LDB 14 l.62)', () => {
   it('défenseur face au N : attaque depuis le N (front) → NON', () => {
     expect(isFlankOrRear('N', 'N')).toBe(false);
   });

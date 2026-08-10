@@ -102,7 +102,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   // LDB 13 l.135
   const rangedDef = !res && weapon?.type === 'ranged' ? bestRangedDefense(attacker, target, weapon, combatDistance(attacker, target)) : undefined;
   // La rangée adverse annonce la Difficulté que le jet de défense subira VRAIMENT : même pénalité
-  // d'esquive que la résolution (`defenseDodgeMod`) et même arme attaquante (Rapide, LDB 62 l.320).
+  // d'esquive que la résolution (`defenseDodgeMod`) et même arme attaquante (Rapide, LDB 62 l.298-302).
   const dodge = defenseDodgeMod(useGame.getState, target);
   const defenderPending = res
     ? undefined

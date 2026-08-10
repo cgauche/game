@@ -49,11 +49,13 @@ export function clearGrapple(a: Combatant, b: Combatant): void {
  * le plus IMPORTANT. `partner` = l'AUTRE Empoigné (celui avec qui `target` est Empoigné). Renvoie null si
  * la cible n'est pas Empoignée, si l'attaquant EST partie à l'Empoignade, ou si le partenaire est introuvable.
  * Égalité d'Avantage → traité comme « le plus faible » (+20). PUR.
+ * `famille: 'circonstance'` : c'est l'immobilisation de l'ADVERSAIRE qui l'ouvre, pas une ressource
+ * du tiers (l'Avantage n'y CHOISIT que la valeur) — critère de `combineMods`, donc plafonné.
  */
 export function grappleTierMod(attacker: Combatant, target: Combatant, partner: Combatant | undefined): ModLine | null {
   if (!target.grapplingWith?.length || areGrappling(attacker, target) || !partner) return null;
   const lower = target.advantage <= partner.advantage; // cible = Avantage le plus FAIBLE (égalité → +20)
-  return { label: 'Empoignade (cible bloquée)', value: lower ? 20 : 10, famille: 'jet', ref: RULE_REF.empoignade };
+  return { label: 'Empoignade (cible bloquée)', value: lower ? 20 : 10, famille: 'circonstance', ref: RULE_REF.empoignade };
 }
 
 /** Résout le partenaire d'Empoignade de `target` dans la liste de combat puis applique `grappleTierMod`

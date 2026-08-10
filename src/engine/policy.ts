@@ -275,7 +275,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   {
     id: 'combat-weapon-reach',
     label: 'Longueur d’arme',
-    ref: 'LDB 62 l.215',
+    ref: 'LDB 62 l.172',
     group: 'Combat',
     kind: 'flag',
     default: false,

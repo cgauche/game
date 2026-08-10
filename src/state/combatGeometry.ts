@@ -290,7 +290,7 @@ export function applyZoneCrossings(get: Get, set: SetFn, mover: Combatant, path:
 }
 
 const DIR8_RING: Dir8[] = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
-/** Flanc/dos (LDB 14 l.91) : l'attaquant frappe-t-il hors du champ de vision avant du défenseur ?
+/** Flanc/dos (LDB 14 l.62) : l'attaquant frappe-t-il hors du champ de vision avant du défenseur ?
  *  Front = orientation du défenseur ±45° (3 directions avant) ; flanc/dos = les 5 autres (écart ≥ 2 sur l'anneau). */
 export function isFlankOrRear(targetFacing: Dir8, dirToAttacker: Dir8): boolean {
   const a = DIR8_RING.indexOf(targetFacing);

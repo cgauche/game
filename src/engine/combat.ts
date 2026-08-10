@@ -476,11 +476,17 @@ export const FREE_ATTACK_LABEL: Record<string, string> = {
 
 /**
  * Combiner les Difficultés (LDB `14 - _GoBack.md` l.91-96) — le plafond borne la combinaison des
- * CIRCONSTANCES de la table (chapeau l.48), jamais les modificateurs portés par le jeteur : seules
- * les lignes `famille: 'circonstance'` entrent dans les deux sommes plafonnées (RAW +60 Très Facile /
- * −30 Très Difficile), les lignes `famille: 'jet'` (États `LDB 16 l.11`, Soutien `LDB 12 l.189`,
- * Avantage) s'ajoutent hors plafond. Les deux plafonds sont des règles optionnelles
- * (`combat-diff-cap-bonus`/`-malus`).
+ * CIRCONSTANCES, jamais les ressources propres du jeteur. La partition se lit SITUATIONNEL/PROPRE :
+ * tout modificateur SITUATIONNEL du Test — terrain, météo, position, angle, distance, geste (Viser,
+ * Localisation visée, Main secondaire, tir en bougeant), état ou trait de l'ADVERSAIRE — est
+ * `famille: 'circonstance'` et entre dans les deux sommes plafonnées (RAW +60 Très Facile / −30 Très
+ * Difficile) ; ce qui est une RESSOURCE ou un état PROPRE du jeteur (Avantage, SES États, Soutien)
+ * est `famille: 'jet'` et s'ajoute hors plafond. L'appartenance à la table ne fait PAS le classement :
+ * elle n'est qu'un échantillon (chapeau l.48), et l'exemple chiffré l.96 plafonne une situation DU
+ * JETEUR (« alors qu'on se trouve dans la neige jusqu'à la taille ») avec l'État d'un adversaire.
+ * Le classement des États DU JETEUR hors plafond (`LDB 16 l.11`, `l.13` ; Soutien `LDB 12 l.189`)
+ * reste un ARBITRAGE maison : le RAW ne règle pas l'interaction des deux régimes.
+ * Les deux plafonds sont des règles optionnelles (`combat-diff-cap-bonus`/`-malus`).
  *
  * Les deux exemples du livre, VERBATIM (l.95-96) :
  *   « Si la situation nécessite l'ajout de deux pénalités ou plus, contentez-vous de faire la somme
@@ -511,8 +517,9 @@ export function combineMods(mods: ModLine[]): number {
   return free + Math.min(capBonus, pos) + Math.max(-capMalus, neg);
 }
 
-/** Ce que les modificateurs pesant SUR LA CIBLE font de la Difficulté d'un jet de combat — forme
- *  UNIQUE, lue par le pré-jet (`state/rollSeam.ts`, monteur canonique) comme par le post-jet (`bd`). */
+/** Ce que les modificateurs pesant sur la CIBLE DU d100 (le nombre visé) font de la Difficulté d'un
+ *  jet de combat — forme UNIQUE, lue par le pré-jet (`state/rollSeam.ts`, monteur canonique) comme
+ *  par le post-jet (`bd`). « Cible » désigne ici le NOMBRE visé, jamais l'adversaire. */
 export interface DifficultyComposition {
   /** Difficulté à AFFICHER : le palier composé quand il tombe sur un cran de l'échelle, la déclarée sinon. */
   difficulty: Difficulty;
@@ -603,7 +610,7 @@ export function frozenDifficulty(d: RollBreakdown | undefined): DifficultyCompos
 /** Modificateurs qui font la CIBLE d'un jet de défense — SOURCE UNIQUE du résolveur (`rollMeleeDefender`),
  *  de la ligne résolue (`combineOpposed`) et du pré-jet (`previewDefense`) : `defenseModifiers`
  *  (Avantage, État, Sur la défensive, Neige, Main secondaire, Maniement deux armes) + le malus Rapide,
- *  qui dépend de l'arme ATTAQUANTE (`LDB 62 l.320-321`) et vit donc hors de `defenseModifiers` : −10
+ *  qui dépend de l'arme ATTAQUANTE (`LDB 62 l.298-302`) et vit donc hors de `defenseModifiers` : −10
  *  aux Tests de Corps à corps (Parade) contre une arme Rapide, sauf si l'arme de parade l'est aussi ;
  *  l'Esquive défend normalement. Trois lecteurs, une liste — sinon l'écran et le dé divergent. */
 export function defenseTargetMods(
@@ -721,10 +728,10 @@ export function attackModifiers(
     out.push(...meleeAttackerBonusLines(target, { flankRear: opts.flankRear }));
     // Parasité (LDB 85 p.340) : −10 pour toucher la créature en Corps à corps (vermine perturbante).
     const para = incomingAttackMod(target, 'melee');
-    if (para) out.push({ label: 'Parasité', value: para, famille: 'jet', ref: RULE_REF.parasite });
-    // Option « Longueur d'Arme » (LDB 62 l.215) : arme adverse plus longue → −10 pour la toucher.
+    if (para) out.push({ label: 'Parasité', value: para, famille: 'circonstance', ref: RULE_REF.parasite });
+    // Option « Longueur d'Arme » (LDB 62 l.172) : arme adverse plus longue → −10 pour la toucher.
     const reach = weaponReachPenalty(weapon, target.weapons?.find((w) => w.type === 'melee'));
-    if (reach) out.push({ label: "Allonge de l'adversaire", value: reach, famille: 'jet', ref: RULE_REF['allonge-longueur-d-arme'] });
+    if (reach) out.push({ label: "Allonge de l'adversaire", value: reach, famille: 'circonstance', ref: RULE_REF['allonge-longueur-d-arme'] });
   }
   // +10 au plus petit, mêlée ET tir (LDB 85 l.301-303). Une Nuée ignore TOUTES les règles de Taille (l.200).
   if (target && !attacker.swarm && !target.swarm && sizeGap(attacker.size, target.size) < 0) out.push({ label: 'Taille (plus petit)', value: 10, famille: 'circonstance', ref: RULE_REF['taille-modificateurs-en-combat'] });
@@ -948,7 +955,7 @@ export function rollMeleeDefender(
   rng: RNG = defaultRNG,
   dodgeMod = 0, // neige épaisse : −30 à l'esquive (LDB 14 l.82) ; n'affecte pas la parade
   parryWeapon: Weapon | undefined = defender.weapons[0], // arme de parade choisie (spé + pénalité main 2nde)
-  vsWeapon?: Weapon, // arme de l'ATTAQUANT (Rapide : −10 à la parade d'une arme non-Rapide, LDB 62 l.320-321)
+  vsWeapon?: Weapon, // arme de l'ATTAQUANT (Rapide : −10 à la parade d'une arme non-Rapide, LDB 62 l.298-302)
   sub?: DefenseSub, // substitution sociale (mode 'social') : base = Test de la Compétence substituée
 ): TestResult {
   const defVal = defenseValue(defender, mode, parryWeapon, sub?.base);
@@ -986,12 +993,11 @@ export function resolveBackstabAttack(foe: Combatant, target: Combatant, rng: RN
   const weapon = backstabWeapon(foe);
   // Les lignes qui composent la cible, NOMMÉES : celles du Test de combat brut (`baseTestModLines`,
   // source unique du jet) + le +20 du dos tourné. Sans cette ligne, le +20 s'imputait à la première
-  // circonstance venue. Son CLASSEMENT (`famille: 'jet'`, donc hors du plafond de combinaison) est un
-  // ARBITRAGE #1218, pas une déduction : deux réfs le revendiquent — `LDB 15 l.66` (Fuite) et
-  // `LDB 14 l.62` (entrée de table, Accessible +20).
+  // circonstance venue. Classement `circonstance` : l'entrée `LDB 14 l.62` (cf. `LDB 13 l.171` et
+  // `LDB 15 l.68` ; rappel `LDB 15 l.66`).
   const mods: ModLine[] = [
     ...baseTestModLines(foe, 'capacite-de-combat'),
-    { label: 'Dos tourné (adversaire en fuite)', value: 20, famille: 'jet', ref: RULE_REF.fuite },
+    { label: 'Dos tourné (adversaire en fuite)', value: 20, famille: 'circonstance', ref: RULE_REF['attaque-de-flanc-ou-de-dos'] },
   ];
   const atk = rollTest(combatValue(foe, 'melee', weapon), 'intermediaire', rng, mods.reduce((s, m) => s + m.value, 0));
   return resolveMeleePassive(foe, target, weapon, atk, undefined, [], undefined, false, composeAttack(mods));

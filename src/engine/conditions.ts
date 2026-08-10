@@ -429,6 +429,8 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
  *    appliqué SEULEMENT si `opts.flankRear` (l'appelant a établi l'angle via le facing) ; « ce bonus
  *    n'est pas augmenté avec de multiples États *Assourdi* » (l.29) → max entre entrées flankRear.
  * Ex æquo : le PREMIER dans l'ordre de collecte l'emporte (comparaison stricte), comme `poolWinner`.
+ * L'état de l'adversaire est SITUATIONNEL pour qui le frappe : `famille: 'circonstance'` (partition
+ * de `combineMods`, `LDB 14 l.48` et `l.96`), donc plafonné avec les autres circonstances.
  */
 export function meleeAttackerBonusLines(target: Combatant, opts?: { flankRear?: boolean }): ModLine[] {
   let best: PoolCandidate | undefined;  // pool non-cumul des bonus inconditionnels

@@ -185,7 +185,7 @@ const W = {
   /** S'acharner sur une cible NEUTRALISÉE (à terre/inconsciente/0 PB) : malus FORT (anti-acharnement,
    *  Lot 1) — on ne la frappe qu'en dernier recours (aucune menace debout). */
   overkill: 100,
-  /** Frapper au FLANC/DOS (hors champ de vision avant de la cible, LDB 14 l.91) : gratuit → bonus modéré. */
+  /** Frapper au FLANC/DOS (hors champ de vision avant de la cible, LDB 14 l.62) : gratuit → bonus modéré. */
   flankRear: 4,
   /** Gain de COUVERT pour soi en se déplaçant (par cran de couvert gagné : imparfaite/moyenne/totale). */
   coverGain: 3,
@@ -808,7 +808,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   }
   const positionValue = (to: Pt, target: Combatant): number => {
     let v = 0;
-    // Flanc/dos (LDB 14 l.91) : frapper hors du champ de vision avant de la cible (gratuit). Nécessite
+    // Flanc/dos (LDB 14 l.62) : frapper hors du champ de vision avant de la cible (gratuit). Nécessite
     // l'orientation de la cible (lue de `facing`) ; absente → 0 (graceful).
     const tFacing = facing?.[target.id];
     if (tFacing) {

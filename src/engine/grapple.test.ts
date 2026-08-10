@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { areGrappling, setGrapple, clearGrapple, grappleTierMod, grappleEnvMod } from './grapple';
+import { combineMods } from './combat';
 import { applyOps } from './ops';
 import { GRAPPLE } from '../data';
-import type { Combatant } from './types';
+import type { Combatant, ModLine } from './types';
 
 // Empoignade (Issue #42.1, LDB 14 l.159/161/169).
 //  l.159 : « Si vous remportez le Test opposé, vous ET votre adversaire êtes Empoignés, et votre
@@ -68,6 +69,26 @@ describe('grappleTierMod — bonus de tiers +20 / +10 (LDB 14 l.169)', () => {
   it('cible NON Empoignée → null', () => {
     const att = C('att'), target = C('t'), other = C('o');
     expect(grappleTierMod(att, target, other)).toBeNull();
+  });
+  /** Le bonus naît de l'immobilisation de l'ADVERSAIRE : SITUATIONNEL, donc plafonné avec les autres
+   *  circonstances (`LDB 14 l.48`, `l.95`, #1218). En famille `jet`, le +20 s'ajoutait hors plafond. */
+  it('est une CIRCONSTANCE : sous des circonstances saturées, le +20 est absorbé (#1218)', () => {
+    const att = C('att');
+    const low = C('low', { advantage: 1 });
+    const high = C('high', { advantage: 3 });
+    setGrapple(low, high);
+    const m = grappleTierMod(att, low, high)!;
+    expect(m.famille).toBe('circonstance');
+    // Les plafonds jouent PAR SENS : un bonus se sature contre +60 (`LDB 14 l.95`). Surnombre 3 c.1
+    // (+40, `l.56`) + cible À Terre (+20, `l.64`) y sont DÉJÀ.
+    const satures: ModLine[] = [
+      { label: 'Surnombre (3 c.1)', value: 40, famille: 'circonstance' },
+      { label: 'À Terre', value: 20, famille: 'circonstance' },
+    ];
+    expect(combineMods(satures)).toBe(60);
+    expect(combineMods([...satures, m]), 'absorbé : +60 (en famille `jet` : +80)').toBe(60);
+    // Hors saturation, le classement ne déplace aucun chiffre.
+    expect(combineMods([m])).toBe(20);
   });
   it('grappleEnvMod résout le partenaire dans la liste de combat', () => {
     const att = C('att');

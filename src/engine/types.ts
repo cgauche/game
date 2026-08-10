@@ -595,8 +595,10 @@ export const CATEGORY_BY_SOURCE_KIND: Record<EffectSourceKind, string> = {
  * Famille d'un modificateur de jet (`ModLine.famille`) — la taxonomie du contrat d'affichage,
  * #1153 L3b. Elle vit ICI, avec `effectRef`, pour être lisible des collecteurs (`conditions`,
  * `trauma`) comme du moteur de combat sans cycle d'import.
- *  - `circonstance` : une entrée de la table des Difficultés de Combat — `LDB 14` (chapeau l.48).
- *  - `jet` : tout autre modificateur du Test — `LDB 12 l.189`, `LDB 16 l.11`.
+ *  - `circonstance` : modificateur SITUATIONNEL du Test (terrain, position, geste, état ou trait de
+ *    l'adversaire) — `LDB 14` (chapeau l.48, exemple plafonné l.96).
+ *  - `jet` : ressource ou état PROPRE du jeteur (Avantage, SES États, Soutien) — `LDB 12 l.189`,
+ *    `LDB 16 l.11`.
  * POSÉE À L'ÉMISSION, jamais dérivée à l'affichage.
  */
 export type ModFamille = 'circonstance' | 'jet';

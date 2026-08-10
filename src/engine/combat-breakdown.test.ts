@@ -449,18 +449,19 @@ describe('MÊLÉE + Chance : le surnombre survit au re-jet (#1153 L4)', () => {
   });
 });
 
-describe('COUP DANS LE DOS : le +20 est NOMMÉ à sa cause (#1153 L4)', () => {
-  /** Le +20 vient de la FUITE (`LDB 15 l.66`), pas du Tableau des Difficultés de Combat : il reste une
-   *  chip hors table — il ne peut donc pas s'imputer à une circonstance portée par la cible. */
+describe('COUP DANS LE DOS : le +20 est NOMMÉ à sa cause (#1153 L4, #1218)', () => {
+  /** Le +20 du dos tourné est l'entrée `LDB 14 l.62` (`LDB 13 l.171`, `LDB 15 l.68` ; rappel `LDB 15
+   *  l.66`) : il COMPOSE la Difficulté du jet, il n'est pas une chip hors table. */
   for (const [nom, cible] of [
     ['cible saine', mk({ id: 'c' })],
-    ['cible À TERRE (une circonstance à qui l’imputer)', mk({ id: 'c', conditions: [{ id: 'a-terre', value: 1 }] as never })],
+    ['cible À TERRE', mk({ id: 'c', conditions: [{ id: 'a-terre', value: 1 }] as never })],
   ] as const) {
-    it(`${nom} : la ligne s'explique et nomme le dos tourné`, () => {
+    it(`${nom} : la Difficulté porte le dos tourné, et la ligne s'explique`, () => {
       const d = resolveBackstabAttack(mk({ id: 'f', weapons: [sword] }), cible, makeRNG(3)).attackerDetail!;
       expect(inexplique(d)).toBe(0);
-      expect((d.mods ?? []).map((m) => `${m.label}:${m.value}`)).toContain('Dos tourné (adversaire en fuite):20');
-      expect(d.difficultyParts, 'aucune circonstance de la table ne porte ce +20').toBeUndefined();
+      expect((d.difficultyParts ?? []).map((m) => `${m.label}:${m.value}`)).toContain('Dos tourné (adversaire en fuite):20');
+      expect(d.difficulty, 'le +20 composé tombe sur Accessible').toBe('accessible');
+      expect((d.mods ?? []).map((m) => m.label), 'plus aucune chip hors table ne porte ce +20').not.toContain('Dos tourné (adversaire en fuite)');
     });
   }
 });
