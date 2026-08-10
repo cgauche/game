@@ -143,6 +143,7 @@ import * as seaActivities from './seaActivities';
 import * as seaVoyageFlow from './seaVoyageFlow';
 import { applyLandCargoRaid } from './carriers';
 import { startCascade, suspendActiveCascade, resumeSuspendedCascade, dropSceneEntrySteps, extendedTestOutcomeAppliers } from './cascade';
+import { nightBands } from './nightBands';
 import { resultLine, freeCons } from './rollSeam';
 import { describeTest } from './flowOutcomes';
 import { createCombatSlice } from './combatSlice';
@@ -2569,12 +2570,15 @@ export const useGame = create<GameState>((set, get) => ({
       const deferred: DeferredUpkeepTest[] = [];
       const upkeepLines = runDailyUpkeep(get, set, { onDeferTest: (t) => deferred.push(t) });
       if (upkeepLines.length) pushReveal(set, { kind: 'round', title: 'Entretien quotidien', lines: upkeepLines, severity: 'minor' });
-      const steps = restFlow.deferredUpkeepSteps(get().party, deferred);
+      // La file porte des BANDES comme tout le reste de la nuit (#1117 L3) : la fenêtre est formée
+      // ICI, à l'émission — `openCombatEndCascade` n'a plus qu'à trier ses rangées par pilote.
+      const steps = nightBands(restFlow.deferredUpkeepSteps(get().party, deferred));
       if (steps.length) set({ deferredUpkeepQueue: [...get().deferredUpkeepQueue, ...steps] });
     } else {
       const deferred: DeferredUpkeepTest[] = [];
       const upkeepLines = runDailyUpkeep(get, set, { onDeferTest: (t) => deferred.push(t) });
-      const steps = restFlow.deferredUpkeepSteps(get().party, deferred);
+      // 2ᵉ des TROIS bâtisseurs à passer par la fabrique de bandes (#1117 L3).
+      const steps = nightBands(restFlow.deferredUpkeepSteps(get().party, deferred));
       if (steps.length) startCascade(get, set, { title: 'Entretien quotidien', icon: 'time/night', purpose: 'upkeep', steps, log: upkeepLines });
       // Même `purpose:'upkeep'` que la branche à jets ci-dessus : les deux issues du MÊME entretien
       // quotidien ouvrent la MÊME séquence (le témoin groupé est le cas « zéro jet à influencer »).

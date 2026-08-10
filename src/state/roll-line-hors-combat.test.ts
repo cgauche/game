@@ -5,7 +5,7 @@ import { beginShipwreck } from './shipwreck';
 import { buildNightCascade, deferredUpkeepSteps, type PendingRest } from './restFlow';
 import { runDailyUpkeep, dayIndex, type DeferredUpkeepTest } from './upkeep';
 import { bestActivitySkill } from './interludeFlow';
-import { inexplique, soutienDe } from './cascadeTestKit';
+import { inexplique, soutienDe, jetDe } from './cascadeTestKit';
 import { skillBaseValue, testValue, partyAssisted } from '../engine/skills';
 import { cascadeAppliers } from './cascade';
 import { effectiveChar } from '../engine/characteristics';
@@ -90,13 +90,13 @@ describe('Nuit — contagion / cauchemars / entretien différé montés par `rol
       extraContagion: [{ heroId: dormeur.id, diseaseName: 'courante-galopante', difficulty: 'accessible', resVal: restResistVal(dormeur) }],
     } as never);
 
-    const contagion = steps.find((s) => s.kind === 'contagion')!;
+    const contagion = jetDe(steps.find((s) => s.kind === 'contagion')!);
     // `restResistVal` (E effective + avances) est la valeur RAW du Test passif : elle ne subit PAS l'État.
     expect(contagion.target).toBe(clampTarget(restResistVal(dormeur) + DIFFICULTY_MODIFIERS.accessible).target);
     expect(contagion.base).toBe(restResistVal(dormeur));
     expect(inexplique(contagion), 'aucune chip « autres » sur la Contagion').toBe(0);
 
-    const cauchemar = steps.find((s) => s.kind === 'nightmare')!;
+    const cauchemar = jetDe(steps.find((s) => s.kind === 'nightmare')!);
     const calme = effectiveChar(dormeur, 'force-mentale'); // aucune avance de Calme sur la fixture
     expect(cauchemar.target).toBe(clampTarget(calme + DIFFICULTY_MODIFIERS.facile).target);
     expect(inexplique(cauchemar), 'aucune chip « autres » sur les Cauchemars').toBe(0);
@@ -221,7 +221,7 @@ describe('Nuit — les 5 étapes de `restFlow` montées par `rollStep` (#1153 vo
     fresh([marcheur]);
     const p = { ...restPending([marcheur], 'auberge'), travelMarch: [marcheur.id] } as never as PendingRest;
     const { steps } = buildNightCascade(get, set, p, { fedDaily: true });
-    const st = steps.find((s) => s.kind === 'forcedMarch')!;
+    const st = jetDe(steps.find((s) => s.kind === 'forcedMarch')!);
     const nue = skillBaseValue(marcheur, 'resistance', undefined, 'endurance');
     const jetee = testValue(marcheur, 'resistance', 'endurance');
     expect(jetee, 'l’État sépare la nue de la valeur jetée').toBeLessThan(nue);
@@ -235,7 +235,7 @@ describe('Nuit — les 5 étapes de `restFlow` montées par `rollStep` (#1153 vo
     const blesse = campeur({ id: 'ble', label: 'Blessé', wounds: { current: 4, max: 12 }, conditions: [] as never });
     fresh([blesse]);
     const { steps } = buildNightCascade(get, set, restPending([blesse], 'auberge'), { fedDaily: true });
-    const st = steps.find((s) => s.kind === 'recovery')!;
+    const st = jetDe(steps.find((s) => s.kind === 'recovery')!);
     // `restResistVal` ≠ `testValue` (Test passif : aucune pénalité d'État) → base = valeur, zéro chip.
     expect(st.base).toBe(restResistVal(blesse));
     expect(st.mods ?? []).toEqual([]);
@@ -257,7 +257,7 @@ describe('Nuit — les 5 étapes de `restFlow` montées par `rollStep` (#1153 vo
     fresh([meneur, aide]);
     set({ scene: { ...scene, weather: 'neige' } } as never);
     const { steps } = buildNightCascade(get, set, restPending([meneur, aide], 'dehors'), { fedDaily: true });
-    const st = steps.find((s) => s.kind === 'shelter')!;
+    const st = jetDe(steps.find((s) => s.kind === 'shelter')!);
 
     const assiste = partyAssisted(get().party, 'survie-en-exterieur')!;
     expect(assiste.support.bonus, 'l’aide doit réellement soutenir — sinon le test ne prouve rien').toBeGreaterThan(0);
@@ -278,7 +278,7 @@ describe('Nuit — les 5 étapes de `restFlow` montées par `rollStep` (#1153 vo
     const { steps } = buildNightCascade(get, set, restPending([transi], 'dehors'), { fedDaily: true });
     const expo = steps.filter((s) => s.kind === 'exposure');
     expect(expo.length, 'une nuit extrême SOUS TENTE garde le rythme difficile').toBeGreaterThan(0);
-    const st = expo[0];
+    const st = jetDe(expo[0]);
     const pen = Number(rule('exposure-no-coat-penalty'));
     expect(pen, 'sans pénalité de manteau, ce test ne mesure rien').toBeGreaterThan(0);
     expect(st.base, 'valeur ÉTRANGÈRE (Test passif) : la base EST `restResistVal`').toBe(restResistVal(transi));
@@ -298,11 +298,12 @@ describe('Nuit — les 5 étapes de `restFlow` montées par `rollStep` (#1153 vo
     set({ lastUpkeepDay: -1 } as never);
     const { steps } = buildNightCascade(get, set, restPending([ivre], 'auberge'), { fedDaily: true });
     const desso = steps.find((s) => s.kind === 'dessoulage')!;
-    desso.result = { roll: 50, target: desso.target!, sl: 0, success: true } as never;
+    desso.participants![0].result = { roll: 50, target: desso.participants![0].target, sl: 0, success: true } as never;
     const out = cascadeAppliers.dessoulage!.apply(get, set, desso, get().party[0], { steps, index: 0 } as never);
-    const st = (out!.insert ?? [])[0];
-    expect(st.kind).toBe('dessoulageHangover');
-    expect(st.rollLabel).toBe("Résistance à l'alcool");
+    const bande = (out!.insert ?? [])[0];
+    expect(bande.kind).toBe('dessoulageHangover');
+    const st = jetDe(bande);
+    expect(st.label).toBe("Résistance à l'alcool");
     expect(st.base, 'base NUE — l’État a sa chip').toBe(skillBaseValue(ivre, 'resistance-a-l-alcool', undefined, 'endurance'));
     expect(st.target).toBe(clampTarget(testValue(ivre, 'resistance-a-l-alcool', 'endurance') + DIFFICULTY_MODIFIERS.intermediaire).target);
     expect(inexplique(st)).toBe(0);

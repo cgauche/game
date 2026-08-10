@@ -94,6 +94,7 @@ import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
 import { openPartyTest, openWorldTest, composeRollLabel, resolveSurface, freeCons, rollLine, rollStep, type RollRequest, type Consequence } from './rollSeam';
 import { registerCascadeApplier, registerCascadeSuccessRule, startCascade, runCascadeImmediate } from './cascade';
+import { exposureWaveBand } from './nightBands';
 
 /** Id du prédicat de succès des Tests d'équipage résolus PAR CASCADE (MDG 14 l.13) — le flux naval
  *  injecte `crewTestSuccess` (socle unique, règle optionnelle `crew-test-zero-success` comprise) dans
@@ -1488,33 +1489,33 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
       const coat = froid ? (exposureCoatMods(h).mods ?? []) : [];
       const brut = resVal + coat.reduce((s, m) => s + m.value, 0);
       const valeur = froid ? exposureTarget(h, resVal) : Math.max(0, resVal);
-      // Un Test = UNE étape influençable (MDG 13 l.203-225 : la cadence de la bande donne le nombre de
-      // Tests de la Période de travail) — même `kind` (et donc même applier d'escalade) que la nuit.
-      for (let i = 0; i < expCount; i++) {
-        steps.push({
-          id: `sea-exposition-${h.id}-${i}`, kind: 'exposure', actorId: h.id, icon: 'rest/cold',
-          label: `Exposition (${tdef.label})`, rollLabel: 'Résistance',
-          difficulty: expDiff,
-          ...rollStep(valeur === brut
-            ? {
-              actor: h, test: { skill: 'resistance', char: 'endurance' }, valeur,
-              ...(coat.length ? { dansLaValeur: coat } : {}),
-              difficulty: expDiff,
-            }
-            : { valeur, valeurEtrangere: true, difficulty: expDiff }),
-          result: null, interactive: true,
-          stake: voyageStakeRef('exposure', { chars: exposureFirstFailChars(tdef.exposure) }),
-          meta: { kind: tdef.exposure },
-        });
-      }
+      // Une VAGUE = une BANDE influençable (MDG 13 l.203-225 : la cadence de la bande donne le nombre
+      // de Tests de la Période de travail) — même `kind` (et donc même applier d'escalade) que la nuit.
+      steps.push({
+        id: `sea-exposition-${h.id}`, kind: 'exposure', actorId: h.id, icon: 'rest/cold',
+        label: `Exposition (${tdef.label})`, rollLabel: 'Résistance',
+        difficulty: expDiff,
+        ...rollStep(valeur === brut
+          ? {
+            actor: h, test: { skill: 'resistance', char: 'endurance' }, valeur,
+            ...(coat.length ? { dansLaValeur: coat } : {}),
+            difficulty: expDiff,
+          }
+          : { valeur, valeurEtrangere: true, difficulty: expDiff }),
+        result: null, interactive: true,
+        stake: voyageStakeRef('exposure', { chars: exposureFirstFailChars(tdef.exposure) }),
+        meta: { kind: tdef.exposure },
+      });
     }
-    if (steps.length) {
+    // 3ᵉ producteur d'Exposition à passer par la fabrique de vagues (#1117 L3).
+    const band = exposureWaveBand(steps, tdef.exposure, expCount);
+    if (band.length) {
       const subiReq: RollRequest = { side: { worldSide: 'world', ownerId: get().vessel!.vehicleId }, actionLabel: 'Exposition', test: {}, difficulty: 'intermediaire', klass: 'subi' };
       if (resolveSurface(get, subiReq, 'sea-exposition') === 'I') {
-        const resolved = runCascadeImmediate(get, set, steps);
-        tell(get, set, resolved.flatMap((s) => (s.outcome ?? []).map((l) => l.text)));
+        const resolved = runCascadeImmediate(get, set, band);
+        tell(get, set, resolved.flatMap((s) => (s.participants ?? []).flatMap((p) => (p.outcome ?? []).map((l) => l.text))));
       } else {
-        startCascade(get, set, { title: 'Entretien — Exposition', icon: 'rest/cold', purpose: 'seaExposure', steps });
+        startCascade(get, set, { title: 'Entretien — Exposition', icon: 'rest/cold', purpose: 'seaExposure', steps: band });
         return; // clôture reprise par `dispatchCascadeDone` → `continueSeaDayAfterExposure`
       }
     }

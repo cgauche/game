@@ -155,7 +155,7 @@ const BASELINE: string[] = [
   'state/combatFlow.ts | outcome.ops | { rng: battleRng() }', // ops de l'issue d'une manœuvre
   'state/interludeFlow.ts | ops | { rng: battleRng(), now: get().gameTime }', // issues DIFFÉRÉES à la clôture d'un interlude
   'state/medicFlow.ts | penalty | { rng: battleRng(), now, defaultUntilTime: now + d10(battleRng()) * 24 * 60 }', // pénalité posée par un soin raté
-  "state/restFlow.ts | onFail | { rng: battleRng(), sl: step.result.sl }", // ops d'échec d'une étape de repos
+  "state/restFlow.ts | onFail | { rng: battleRng(), sl: row.result!.sl }", // ops d'échec d'une RANGÉE de bande de repos (#1117 L3 : le jet a quitté l'étape pour la rangée — ROTATION du MÊME callsite, la dette ne bouge pas)
   'state/seaVoyageFlow.ts | p.scaldOps | { rng: battleRng(), now: get().gameTime }', // brûlure de vapeur (scaldOps) d'une pièce de machine
   "state/seaVoyageFlow.ts | [{ op: 'grantTalent', talentId: 'chanceux' }] | { label: event.label, rng, defaultUntilTime: until }", // Talent Chanceux octroyé par un événement de bord
   "state/seaVoyageFlow.ts | [ { op: 'skillDRBonus', skill: 'focalisation', bonus: 2 }, { op: 'skillDRBonus', skill: 'guerison', bonus: 2 }, { op: 'skillDRBonus', skill: 'resistance', bonus: 2 }, ] | { label: event.label, rng, defaultUntilTime: until }", // bonus de DR octroyés par un événement de bord

@@ -118,6 +118,11 @@ export interface DeferredUpkeepTest {
   /** Vocabulaire FERMÉ des étapes de nuit (#1117 point 5) — un kind inventé ne compile pas. */
   kind: NightTestKind;
   label: string;
+  /** JOUR calendaire (`dayIndex`) auquel ce Test est DÛ — l'entretien traite chaque franchissement
+   *  (boucle ci-dessous), donc un saut de 3 jours doit 3 Tests de Dessoûlage au MÊME héros. Le jour
+   *  entre dans la CLÉ de bande (`state/nightBands`) : sans lui, ces 3 jets seraient 3 rangées de
+   *  même id dans une seule fenêtre — injoignables. */
+  day: number;
   base: number;
   /** Ids du Test (`UpkeepDeferTest.test`) quand le producteur les porte — la base est alors le Niveau
    *  de Compétence NU et le libellé de compétence de l'étape s'en DÉRIVE (`testSkillLabel`). */
@@ -168,7 +173,7 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
             ? { actor: h, test: spec.test, valeur: spec.base, difficulty: spec.difficulty, surLaCible }
             : { actor: h, valeur: spec.base, valeurEtrangere: true as const, difficulty: spec.difficulty, surLaCible };
           opts.onDeferTest!({
-            heroId: h.id, kind: spec.kind, label: spec.label, difficulty: spec.difficulty,
+            heroId: h.id, kind: spec.kind, label: spec.label, difficulty: spec.difficulty, day: d,
             ...(spec.test ? { test: spec.test } : {}),
             ...rollStep(decl),
             meta: spec.meta,

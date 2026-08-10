@@ -1671,7 +1671,7 @@ describe('Exposition en mer — une étape influençable par Test, une cascade p
     set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 1, milesToday: 50, weather: { ...plan.sea!.weather, temperature: 'glaciale' } } } });
   }
 
-  it('AVEC siège MJ : UNE cascade `seaExposure` porte héros × Tests de la bande, chaque ligne DIT sa Difficulté', async () => {
+  it('AVEC siège MJ : UNE cascade `seaExposure`, une BANDE par VAGUE (héros en rangées), chaque ligne DIT sa Difficulté', async () => {
     const { setGmSeat } = await import('./netFlow');
     setGmSeat(get, set, 1);
     glacialDay();
@@ -1679,10 +1679,14 @@ describe('Exposition en mer — une étape influençable par Test, une cascade p
     const casc = get().pendingCascade!;
     expect(casc.purpose).toBe('seaExposure');
     const living = get().party.filter((h) => !h.dead).length;
-    expect(casc.participants).toHaveLength(living * 4); // 4 Tests/jour (bande 2 h sur 8 h de pont)
-    expect(casc.participants.every((s) => s.kind === 'exposure')).toBe(true); // applier d'escalade PARTAGÉ
-    expect(casc.participants.every((s) => s.difficulty === 'intermediaire')).toBe(true);
-    expect(casc.participants.every((s) => s.interactive)).toBe(true); // aucun jet hors de portée du joueur
+    // 4 Tests/jour (bande 2 h sur 8 h de pont) = 4 VAGUES ; la 1ʳᵉ s'ouvre, les suivantes se
+    // construisent après elle (#1117 L3) — une RANGÉE par héros vivant dans la fenêtre.
+    expect(casc.participants).toHaveLength(1);
+    expect(casc.participants[0].kind).toBe('exposure'); // applier d'escalade PARTAGÉ
+    expect(casc.participants[0].meta?.waves).toBe(4);
+    expect(casc.participants[0].participants).toHaveLength(living);
+    expect(casc.participants[0].participants!.every((r) => r.difficulty === 'intermediaire')).toBe(true);
+    expect(casc.participants[0].participants!.every((r) => r.interactive)).toBe(true); // aucun jet hors de portée du joueur
     let guard = 0;
     while (get().pendingCascade?.purpose === 'seaExposure' && guard++ < 40) stepCascade();
     expect(get().pendingRest).toBeTruthy(); // la journée reprend jusqu'à la halte
@@ -1703,8 +1707,10 @@ describe('Exposition en mer — une étape influençable par Test, une cascade p
     glacialDay();
     continueSeaDayAfterCascade(get, set);
     const casc = get().pendingCascade!;
-    expect(casc.participants.some((s) => s.actorId === party[0].id)).toBe(false);
-    expect(casc.participants).toHaveLength((party.length - 1) * 4);
+    const rows = casc.participants[0].participants!;
+    expect(rows.some((r) => r.id === party[0].id)).toBe(false);
+    expect(rows).toHaveLength(party.length - 1);
+    expect(casc.participants[0].meta?.waves).toBe(4); // les 4 Tests du jour restent dus aux autres
   });
 });
 

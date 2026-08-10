@@ -37,7 +37,7 @@ garantie, pas la justesse de sa glose.
 | `characteristics.json` | Caractéristiques (CC, CT, F… + méta) (19 entrée(s)) |
 | `skills.json` | Compétences (+ `specs` de spécialisation) (48 entrée(s)) |
 | `talents.json` | Talents (187 entrée(s)) |
-| `traits.json` | Traits (créature ET joueur ; `capabilities`/`passive`/`effects`) (130 entrée(s)) |
+| `traits.json` | Traits (créature ET joueur ; `capabilities`/`passive`/`effects`) (131 entrée(s)) |
 | `careers.json` | Carrières (108 entrée(s)) |
 | `careerLevels.json` | Les 4 niveaux de chaque carrière (compétences/talents/possessions gagnés) (432 entrée(s)) |
 | `progression-schemas.derived.json` | GÉNÉRÉ (`python scripts/data/gen-progression-schemas.py`) — le schéma de progression (marque → Caractéristique, par niveau) LU dans les PDF de `Source/` : vérité dérivée contre laquelle `scripts/guards/lib/progressionSchemas.mjs` confronte le `characteristics` de `careerLevels.json`. Ne pas éditer à la main. (objet à sous-catalogues) |
@@ -74,7 +74,7 @@ garantie, pas la justesse de sa glose.
 | `localisation.json` | Tables de localisation d100 (`personnage`/`navire`/`navire-fluvial`) (objet à sous-catalogues) |
 | `tables.json` | Tables d'effets `[min,max] → GameOp[]` référencées par l'op `rollTable` (`tableId`) — Tableau des aspects démoniaques (Allure démoniaque, EDOC 13) par Domaine du Chaos (20 entrée(s)) |
 | `grapple.json` | Lutte / empoignade (objet à sous-catalogues) |
-| `regles.json` | Procédures / options de jeu au texte VERBATIM (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation étendue, Ragot au marché…) — routées en tooltip `CodexRef` (catégorie Codex `regles`), jamais une paraphrase de règle (#392) (78 entrée(s)) |
+| `regles.json` | Procédures / options de jeu au texte VERBATIM (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation étendue, Ragot au marché…) — routées en tooltip `CodexRef` (catégorie Codex `regles`), jamais une paraphrase de règle (#392) (79 entrée(s)) |
 | `damage-types.json` | Types de dégâts (poison, feu, électrique) (4 entrée(s)) |
 | `sizes.json` · `encumbranceTiers.json` | Modif. de Taille au tir · paliers d'Encombrement (objet à sous-catalogues · 4 entrée(s)) |
 | `etats.json` | États / Conditions (À terre, Aveuglé…) (20 entrée(s)) |

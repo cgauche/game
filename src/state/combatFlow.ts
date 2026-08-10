@@ -266,6 +266,7 @@ import {
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type FlowTest, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep, stakeAtTableRow } from './cascade';
+import { nightBands, splitBandRows } from './nightBands';
 import { freeCons, resultLines, rollLine, rollStep, rollSansPilote, type Consequence } from './rollSeam';
 
 /** L'État du défenseur accorde-t-il un Avantage à l'assaillant en mêlée ? Lu en DONNÉES
@@ -5614,16 +5615,28 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
     }
   }
   // Tests d'entretien du FRANCHISSEMENT DE JOUR mis en file pendant le combat (#253) : consommés ICI, à la
-  // MÊME cadence-awareness que les jets de fin de combat — héros piloté-humain manuel → étape influençable
-  // dans la cascade de fin ; sinon (auto/rapide, ou hors d'action) → résolu inline (jamais silencieux, le
-  // journal le porte). La file est VIDÉE (jamais rejouée) ; `lastUpkeepDay` garde l'anti-double-résolution.
+  // MÊME cadence-awareness que les jets de fin de combat — la file porte des BANDES (#1117 L3), qu'on
+  // SCINDE par pilote : les rangées des héros pilotés-humain-manuel rejoignent la cascade de fin
+  // (influençables), les autres (auto/rapide, ou hors d'action) forment une bande résolue d'office
+  // (jamais silencieuse, le journal la porte). 3ᵉ des TROIS bâtisseurs à passer par la fabrique — une
+  // file écrite par un build antérieur y redevient bande au lieu de s'appliquer en MONO.
+  // La file est VIDÉE (jamais rejouée) ; `lastUpkeepDay` garde l'anti-double-résolution.
   const queued = get().deferredUpkeepQueue;
   if (queued.length) {
     set({ deferredUpkeepQueue: [] });
-    for (const st of queued) {
-      const c = st.actorId ? actorIn(get(), st.actorId) : undefined;
-      if (c && humanControlled(get(), c) && !isOutOfAction(c)) steps.push(st);
-      else runCascadeImmediate(get, set, [st]); // conséquence appliquée + journalisée par l'applier
+    const manual = (id: string) => { const c = actorIn(get(), id); return !!c && humanControlled(get(), c) && !isOutOfAction(c); };
+    for (const st of nightBands(queued)) {
+      // Une étape que la fabrique REFUSE de bander (kind hors vocabulaire de nuit, choix, pas d'acteur)
+      // suit le chemin d'origine : elle ne peut pas se dissoudre dans une scission de rangées.
+      if (!st.participants) {
+        const c = st.actorId ? actorIn(get(), st.actorId) : undefined;
+        if (c && manual(c.id)) steps.push(st);
+        else runCascadeImmediate(get, set, [st]);
+        continue;
+      }
+      const { kept, others } = splitBandRows(st, manual);
+      if (kept) steps.push(kept);
+      if (others) runCascadeImmediate(get, set, [others]); // conséquence appliquée + journalisée par l'applier
     }
   }
   if (inlineLines.length) get().log(inlineLines);

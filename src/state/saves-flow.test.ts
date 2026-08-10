@@ -475,6 +475,67 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect(rejoué).toEqual(step);
   });
 
+  // #1117 L3 — MIGRATIONS[17] : les jets de NUIT deviennent des BANDES (une fenêtre par entrée de règle
+  // ET PAR JOUR). Tous leurs appliers exigent `step.participants` et RENONCENT sans lui : une save v17
+  // prise avec des jets de nuit en attente les verrait se lancer sans qu'AUCUNE conséquence s'applique.
+  // Les TROIS porteurs d'étapes de la save sont couverts — le migrateur psy [16] ne parcourait que deux.
+  it('MIGRATIONS[17] (#1117 L3) : les jets de nuit EN ATTENTE deviennent des bandes, dans les TROIS porteurs', () => {
+    const raw = JSON.parse(readFileSync(new URL('v17-nuit-mono.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const legacy = ((raw as { data: Record<string, unknown> }).data.pendingCascade as { participants: Record<string, unknown>[] }).participants;
+    expect(legacy.every((s) => s.participants === undefined)).toBe(true); // la fixture v17 est bien MONO partout
+
+    const migrated = migrateSave(raw);
+    expect(migrated).not.toBeNull();
+    expect(migrated!.version).toBe(SAVE_VERSION);
+    const data = migrated!.data as Record<string, unknown>;
+
+    // 1. Cascade ACTIVE — l'étape DÉJÀ VALIDÉE (avant le curseur) est laissée intacte : historique
+    //    inerte, et la re-bander décalerait le curseur.
+    const active = data.pendingCascade as { cursor: number; participants: Record<string, unknown>[] };
+    expect(active.cursor).toBe(1);
+    expect(active.participants[0]).toMatchObject({ kind: 'forcedMarch', committed: true, actorId: 'h1' });
+    const kinds = active.participants.slice(1).map((s) => s.kind);
+    // Faim : UNE fenêtre à deux rangées. Dessoûlage : DEUX fenêtres pour le MÊME héros — une save v17
+    // ne porte AUCUN `meta.day` (le champ naît avec ce lot), donc c'est le REPLI de dédoublement (#n)
+    // qui sépare, jamais un doublon de rangée injoignable dans une fenêtre unique.
+    expect(kinds).toEqual(['faim', 'dessoulage', 'dessoulage']);
+    const faim = active.participants[1];
+    expect((faim.participants as { id: string }[]).map((r) => r.id)).toEqual(['h1', 'h2']);
+    expect(faim.aggregate).toBe('none');
+    for (const mono of ['actorId', 'rollLabel', 'base', 'target']) expect(mono in faim).toBe(false);
+    const desso = active.participants.slice(2);
+    expect(desso.every((s) => 'meta' in s === false || !(s.meta as Record<string, unknown>).day)).toBe(true); // aucun jour anachronique
+    expect(desso.map((s) => (s.participants as { id: string }[]).map((r) => r.id))).toEqual([['h1'], ['h1']]);
+    expect(new Set(desso.map((s) => s.id)).size, 'deux fenêtres, deux ids DISTINCTS').toBe(2);
+
+    // 2. Pile SUSPENDUE.
+    const susp = (data.suspendedCascades as { participants: Record<string, unknown>[] }[])[0].participants[0];
+    expect(susp.kind).toBe('contagion');
+    expect((susp.participants as { id: string }[]).map((r) => r.id)).toEqual(['h2']);
+    expect(susp.menace).toBe('maladie'); // le tag de Résistance (Menace) survit à la bande
+
+    // 3. File `deferredUpkeepQueue` — le 3ᵉ porteur, celui que MIGRATIONS[16] ne parcourait PAS.
+    const queue = data.deferredUpkeepQueue as Record<string, unknown>[];
+    expect(queue).toHaveLength(1);
+    expect(queue[0].kind).toBe('soif');
+    expect((queue[0].participants as { id: string }[]).map((r) => r.id)).toEqual(['h1', 'h2']);
+  });
+
+  it('MIGRATIONS[17] : la rangée migrée RÉSOUT — le Test de Faim raté COMPTE (l’applier ne renonce plus)', () => {
+    const raw = JSON.parse(readFileSync(new URL('v17-nuit-mono.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const migrated = migrateSave(raw)!;
+    expect(saveToSlot(1, migrated)).toBe(true);
+    expect(useGame.getState().loadGame(1)).toBe(true);
+    const pc = useGame.getState().pendingCascade!;
+    const band = pc.participants[pc.cursor];
+    expect(band.kind).toBe('faim');
+    const rows = band.participants!.map((p) => ({ ...p, result: { roll: 99, target: p.target, sl: -3, success: false } }));
+    useGame.setState({ pendingCascade: { ...pc, participants: pc.participants.map((s, i) => (i === pc.cursor ? { ...s, participants: rows } : s)) } });
+    useGame.getState().cascadeNext();
+    // AVANT la migration : l'applier renonçait (pas de `participants`) — le Test se lançait, rien n'arrivait.
+    for (const id of ['h1', 'h2']) expect(useGame.getState().party.find((c) => c.id === id)!.hunger?.failures).toBe(1);
+  });
+
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {
     for (let v = 1; v < SAVE_VERSION; v++) {
       expect(MIGRATIONS[v], `MIGRATIONS[${v}] manquante — un bump de SAVE_VERSION exige son migrateur`).toBeTypeOf('function');

@@ -37,10 +37,11 @@ import { rule } from '../engine/policy';
 import { type Difficulty } from '../engine/types';
 import { applyFractureEnd } from '../engine/trauma';
 import type { DeferredUpkeepTest } from './upkeep';
-import { weatherExposure, exposureTestCount, expireExposureEffects, exposureShelterFromTent, applyExposureFailure, exposureCoatMods, sealskinDR, heaviestPossession, dropHeaviestPossession, type ExposureSeverity, type ExposureKind } from '../engine/exposure';
+import { weatherExposure, exposureTestCount, expireExposureEffects, exposureShelterFromTent, applyExposureFailure, exposureCoatMods, heaviestPossession, dropHeaviestPossession, type ExposureSeverity, type ExposureKind } from '../engine/exposure';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { applyForcedMarch } from '../engine/travel';
 import { registerCascadeApplier, startCascade } from './cascade';
+import { nightBands, registerNightBandApplier, nightRowId, genuineExposureFail, nextExposureWave, exposureWaveBand } from './nightBands';
 import { freeCons, rollStep, testSkillLabel } from './rollSeam';
 import type { CascadeStep, CascadeStepMeta } from './pendings';
 import { isRation, feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
@@ -262,8 +263,9 @@ export function applyNightStake(st: CascadeStep): void {
   st.stake = nightStakeRef(st.kind, entryId);
 }
 
-/** Jets d'Exposition au froid pour les campeurs (`count` par campeur) — insérés par l'abri. */
-function buildExposureSteps(party: Combatant[], camperIds: string[], count: number): CascadeStep[] {
+/** BANDE d'Exposition au froid des campeurs — PREMIÈRE vague seulement (`count` = nombre TOTAL de
+ *  vagues, déroulées ensuite par `nextExposureWave`). Insérée par l'abri. */
+function buildExposureBand(party: Combatant[], camperIds: string[], count: number): CascadeStep[] {
   const steps: CascadeStep[] = [];
   for (const id of camperIds) {
     const h = party.find((x) => x.id === id);
@@ -275,20 +277,18 @@ function buildExposureSteps(party: Combatant[], camperIds: string[], count: numb
     // manteau » pèse SUR LA CIBLE, en ligne nommée (`exposureCoatMods`), plus fondue par un helper.
     const resVal = restResistVal(h);
     const coat = exposureCoatMods(h).mods ?? [];
-    for (let i = 0; i < count; i++) {
-      steps.push({ id: `expo-${id}-${i}`, kind: 'exposure', actorId: id, label: 'Exposition', icon: 'rest/cold',
-        rollLabel: 'Résistance', difficulty: 'intermediaire',
-        ...rollStep({ actor: h, valeur: resVal, valeurEtrangere: true, difficulty: 'intermediaire', surLaCible: coat }),
-        result: null, interactive: true });
-    }
+    steps.push({ id: `expo-${id}`, kind: 'exposure', actorId: id, label: 'Exposition', icon: 'rest/cold',
+      rollLabel: 'Résistance', difficulty: 'intermediaire',
+      ...rollStep({ actor: h, valeur: resVal, valeurEtrangere: true, difficulty: 'intermediaire', surLaCible: coat }),
+      result: null, interactive: true });
   }
-  return steps;
+  for (const st of steps) applyNightStake(st);
+  return exposureWaveBand(steps, 'froid', count);
 }
 
-registerCascadeApplier('recovery', (_get, _set, step, hero) => {
-  if (!hero || !step.result) return;
+registerNightBandApplier('recovery', (_get, _set, _band, row, hero) => {
   const before = hero.wounds.current;
-  const { wokeUp } = applyRecoveryDay(hero, { sl: step.result.sl, success: step.result.success });
+  const { wokeUp } = applyRecoveryDay(hero, { sl: row.result!.sl, success: row.result!.success });
   const j: string[] = [];
   const healed = hero.wounds.current - before;
   if (healed > 0) j.push(`${hero.label} récupère ${healed} PB.`);
@@ -297,53 +297,37 @@ registerCascadeApplier('recovery', (_get, _set, step, hero) => {
   return { consequences: freeCons(j) };
 });
 
-registerCascadeApplier('nightmare', (_get, _set, step, hero) => {
-  if (!hero || !step.result) return;
-  if (step.result.success) return { consequences: freeCons([`${hero.label} dort d'un sommeil sans rêve.`]) };
+registerNightBandApplier('nightmare', (_get, _set, _band, row, hero) => {
+  if (row.result!.success) return { consequences: freeCons([`${hero.label} dort d'un sommeil sans rêve.`]) };
   addCondition(hero, 'extenue'); // LDB 21 l.92 : Calme +40 raté → Exténué
   return { consequences: freeCons([`${hero.label} est en proie à de terribles cauchemars (Calme +40 raté) → Exténué.`]) };
 });
 
-registerCascadeApplier('shelter', (get, _set, step, hero) => {
-  if (!step.result) return;
-  const sheltered = step.result.success; // Survie en extérieur réussie → abri qui tient (ch.09 l.559)
-  const severity = (step.meta?.severity ?? 'difficile') as ExposureSeverity;
-  const camperIds = String(step.meta?.campers ?? '').split(',').filter(Boolean);
+registerNightBandApplier('shelter', (get, _set, _band, row, hero) => {
+  const sheltered = row.result!.success; // Survie en extérieur réussie → abri qui tient (ch.09 l.559)
+  const severity = (row.meta?.severity ?? 'difficile') as ExposureSeverity;
+  const camperIds = String(row.meta?.campers ?? '').split(',').filter(Boolean);
   const count = exposureTestCount(severity, sheltered);
-  const insert = count > 0 ? buildExposureSteps(get().party, camperIds, count) : [];
   return {
-    consequences: freeCons([sheltered ? `${hero?.label ?? 'Le groupe'} dresse un abri — le camp tient la nuit.` : 'Aucun abri ne protège du temps.']),
-    insert,
+    consequences: freeCons([sheltered ? `${hero.label} dresse un abri — le camp tient la nuit.` : 'Aucun abri ne protège du temps.']),
+    insert: count > 0 ? buildExposureBand(get().party, camperIds, count) : [],
   };
 });
 
-/** Un échec GENUINE d'Exposition à l'index `idx` a-t-il été ANNULÉ par le délestage d'une Possession
- *  lourde (LDB 18 l.332, chaleur) ? L'étape 'exposure-heat-drop' est TOUJOURS insérée juste après
- *  l'étape d'échec qu'elle tranche (cf. `insert` ci-dessous) — jamais de mutation rétroactive. */
-function exposureFailCancelledByDrop(steps: CascadeStep[], idx: number): boolean {
-  const next = steps[idx + 1];
-  return next?.kind === 'exposure-heat-drop' && next.chosen === 'jeter';
-}
-
-registerCascadeApplier('exposure', (_get, _set, step, hero, ctx) => {
-  if (!hero || !step.result) return;
-  // Volet froid/chaleur (l.330/334) porté par l'étape (`meta.kind`) — défaut froid (nuit de repos). La peau
+registerNightBandApplier('exposure', (_get, _set, band, row, hero) => {
+  // Volet froid/chaleur (l.330/334) porté par la BANDE (`meta.kind`) — défaut froid (nuit de repos). La peau
   // de phoque (MDG 14 l.277) retient l'échec de justesse AU FROID (+1 DR) : un échec ainsi tenu ne compte
   // NI comme conséquence NI dans l'escalade — comme le chemin eager `exposureNight`.
-  const kind = (step.meta?.kind as ExposureKind) ?? 'froid';
-  const skin = kind === 'froid' ? sealskinDR(hero) : 0;
-  const genuineFail = (r: CascadeStep['result']) => !!r && !r.success && !(skin > 0 && r.sl + skin >= 1);
-  if (!genuineFail(step.result)) {
-    const held = !step.result.success; // échec de justesse tenu par la peau de phoque
+  const kind = (band.meta?.kind as ExposureKind) ?? 'froid';
+  if (!genuineExposureFail(hero, kind, row.result)) {
+    const held = !row.result!.success; // échec de justesse tenu par la peau de phoque
     return { consequences: freeCons([held
       ? `${hero.label} — la peau de phoque retient le froid (échec de justesse tenu, +1 DR).`
       : `${hero.label} endure ${kind === 'froid' ? 'le froid' : 'la chaleur'} sans dommage.`]) };
   }
-  // Escalade CUMULATIVE (l.330/334) : compte les échecs GENUINE d'Exposition DÉJÀ validés de CE héros pour CE
-  // volet, hors ceux ANNULÉS par un délestage de Possession lourde (LDB 18 l.332).
-  const priorFails = ctx.steps.slice(0, ctx.index)
-    .filter((s, i) => s.kind === 'exposure' && s.actorId === hero.id && ((s.meta?.kind as ExposureKind) ?? 'froid') === kind
-      && genuineFail(s.result) && !exposureFailCancelledByDrop(ctx.steps, i)).length;
+  // Escalade CUMULATIVE (l.330/334) : le rang de l'échec est une DONNÉE DE LA RANGÉE, dotée à la
+  // construction de la vague (`nextExposureWave`) — donc APRÈS les délestages de la vague précédente.
+  const priorFails = Number(row.meta?.priorFails ?? 0);
   // CHALEUR (LDB 18 l.332) : « Vous débarrasser d'une Possession lourde annule 1 Test échoué » — choix
   // du JOUEUR, offert seulement s'il reste une Possession lourde à jeter (aucun seuil inventé, cf.
   // `heaviestPossession`). Sans Possession lourde (ou au FROID, silence du RAW sur ce point) : conséquence
@@ -353,95 +337,98 @@ registerCascadeApplier('exposure', (_get, _set, step, hero, ctx) => {
     return {
       consequences: freeCons([`${hero.label} rate son Test d'Exposition (chaleur) — ${heavy.label} pourrait être jeté pour l'annuler.`]),
       insert: [{
-        id: `${step.id}-drop`, kind: 'exposure-heat-drop', actorId: hero.id, icon: 'item/misc',
+        id: `${band.id}-${row.id}-drop`, kind: 'exposure-heat-drop', actorId: hero.id, icon: 'item/misc',
         label: 'Possession lourde', interactive: true,
         options: [{ key: 'jeter', label: `Jeter ${heavy.label}` }, { key: 'garder', label: 'Garder son paquetage' }],
         defaultChoice: 'garder', // consommé par `runCascadeImmediate` (repos multi-jours) — `resolveRemainingCascade`
         // (« Tout résoudre ») s'arrête TOUJOURS sur ce choix depuis 249e931f, n'applique plus JAMAIS de défaut
-        meta: { failNumber: priorFails + 1 },
+        meta: { failNumber: priorFails + 1, cancelsRowId: nightRowId(band, row) },
       }],
     };
   }
   return { consequences: freeCons(applyExposureFailure(hero, priorFails + 1, battleRng(), kind).log) };
+}, (get, _set, band, ctx, drops) => {
+  // Les délestages restent MONO (un CHOIX ne se joue pas en rangée) et la vague SUIVANTE ne se
+  // construit qu'APRÈS eux — c'est le dernier délestage qui la déclenche (`meta.nextWaveOf`).
+  if (!drops.length) return nextExposureWave(get, band, ctx.steps);
+  const last = drops[drops.length - 1];
+  last.meta = { ...last.meta, nextWaveOf: String(band.id) };
+  return drops;
 });
 
-registerCascadeApplier('exposure-heat-drop', (_get, _set, step, hero) => {
+registerCascadeApplier('exposure-heat-drop', (get, _set, step, hero, ctx) => {
   if (!hero || step.chosen == null) return;
+  const band = ctx.steps.find((s) => s.id === step.meta?.nextWaveOf);
+  const insert = band ? nextExposureWave(get, band, ctx.steps.map((s) => (s.id === step.id ? { ...s, chosen: step.chosen } : s))) : [];
   if (step.chosen === 'jeter') {
     const name = dropHeaviestPossession(hero);
-    return { consequences: freeCons([`${hero.label} se débarrasse de ${name ?? 'sa possession la plus lourde'} — le Test échoué est annulé (LDB 18 l.332).`]) };
+    return { consequences: freeCons([`${hero.label} se débarrasse de ${name ?? 'sa possession la plus lourde'} — le Test échoué est annulé (LDB 18 l.332).`]), insert };
   }
-  return { consequences: freeCons(applyExposureFailure(hero, Number(step.meta?.failNumber ?? 1), battleRng(), 'chaleur').log) };
+  return { consequences: freeCons(applyExposureFailure(hero, Number(step.meta?.failNumber ?? 1), battleRng(), 'chaleur').log), insert };
 });
 
-registerCascadeApplier('forcedMarch', (_get, _set, step, hero) => {
-  if (!hero || !step.result) return;
-  return { consequences: freeCons([applyForcedMarch(hero, step.result.success).line]) }; // LDB 51 l.195 : échec → +Exténué
+registerNightBandApplier('forcedMarch', (_get, _set, _band, row, hero) => {
+  return { consequences: freeCons([applyForcedMarch(hero, row.result!.success).line]) }; // LDB 51 l.195 : échec → +Exténué
 });
 
-registerCascadeApplier('faim', (_get, _set, step, hero) => {
-  if (!hero || !step.result) return;
-  const r = applyFaimTest(hero, step.result.success, bonus(effectiveChar(hero, 'endurance')), battleRng());
+registerNightBandApplier('faim', (_get, _set, _band, row, hero) => {
+  const r = applyFaimTest(hero, row.result!.success, bonus(effectiveChar(hero, 'endurance')), battleRng());
   if (r.damage > 0) loseWounds(hero, r.damage); // 1d10 ignore les PA (l.422)
   return { consequences: freeCons(r.log) };
 });
 
-registerCascadeApplier('soif', (_get, _set, step, hero) => {
-  if (!hero || !step.result) return;
-  const r = applySoifTest(hero, step.result.success, bonus(effectiveChar(hero, 'endurance')), battleRng());
+registerNightBandApplier('soif', (_get, _set, _band, row, hero) => {
+  const r = applySoifTest(hero, row.result!.success, bonus(effectiveChar(hero, 'endurance')), battleRng());
   if (r.damage > 0) loseWounds(hero, r.damage); // 1d10 ignore les PA (l.420)
   return { consequences: freeCons(r.log) };
 });
 
-registerCascadeApplier('dessoulage', (_get, _set, step, hero) => {
-  if (!hero || !step.result) return;
-  // Dessoûlage (LDB 09 l.485) : le 1ᵉʳ Test INFLUENÇABLE fixe la dissipation (10−DR h). Le 2ᵉ Test (gueule
-  // de bois, 5−DR h) devient sa PROPRE étape influençable INSÉRÉE ici (patron `insert`) — plus AUCUN jet
-  // silencieux dans l'applier (#253) : le joueur peut influencer les DEUX jets (Chance/Résilience).
-  const d = soberUpDissipate(hero, step.result.sl);
+registerNightBandApplier('dessoulage', (_get, _set, band, row, hero) => {
+  // Dessoûlage (LDB 09 l.485) : le 1ᵉʳ Test INFLUENÇABLE fixe la dissipation (10−DR h). Le 2ᵉ Test — « Une
+  // fois tous les effets dissipés, effectuez un nouveau Test » — devient sa PROPRE rangée influençable
+  // (patron `insert`, re-bandée par la fabrique) : plus AUCUN jet silencieux (#253), et la gueule de bois
+  // est due par TOUTE rangée du dessoûlage, pas seulement par les perdantes.
+  const d = soberUpDissipate(hero, row.result!.sl);
   const alcool = { skill: 'resistance-a-l-alcool', char: 'endurance' } as const;
   const insert: CascadeStep[] = [{
     id: `dessoulageHangover-${hero.id}`, kind: 'dessoulageHangover', actorId: hero.id, icon: 'time/night',
     rollLabel: testSkillLabel(alcool) ?? 'Résistance', label: 'Gueule de bois', difficulty: 'intermediaire',
     ...rollStep({ actor: hero, test: alcool, difficulty: 'intermediaire' }),
     result: null, interactive: true,
+    ...(band.meta?.day !== undefined ? { meta: { day: band.meta.day } } : {}),
   }];
+  for (const st of insert) applyNightStake(st);
   return { consequences: freeCons(d.log), insert };
 });
 
-registerCascadeApplier('dessoulageHangover', (get, _set, step, hero) => {
-  if (!hero || !step.result) return;
+registerNightBandApplier('dessoulageHangover', (get, _set, _band, row, hero) => {
   // 2ᵉ Test du dessoûlage (l.485), désormais influençable : le DR fixe la durée de la gueule de bois.
-  const h = soberUpHangover(hero, get().gameTime, step.result.sl);
+  const h = soberUpHangover(hero, get().gameTime, row.result!.sl);
   addClockCondition(hero, h.hangover.id, h.hangover.value, h.hangover.until);
   return { consequences: freeCons(h.log) };
 });
 
-registerCascadeApplier('traumaFracture', (_get, _set, step, hero) => {
-  if (!hero || !step.result) return;
-  return { consequences: freeCons(applyFractureEnd(hero, step.result.success, String(step.meta?.severity ?? 'mineur'), String(step.meta?.location ?? ''), String(step.meta?.traumaLabel ?? 'Fracture'))) };
+registerNightBandApplier('traumaFracture', (_get, _set, _band, row, hero) => {
+  return { consequences: freeCons(applyFractureEnd(hero, row.result!.success, String(row.meta?.severity ?? 'mineur'), String(row.meta?.location ?? ''), String(row.meta?.traumaLabel ?? 'Fracture'))) };
 });
 
-registerCascadeApplier('diseaseTick', (_get, _set, step, hero) => {
-  if (!hero || !step.result) return;
+registerNightBandApplier('diseaseTick', (_get, _set, _band, row, hero) => {
   // Échec du Test de cycle quotidien (symptôme Blessé/Toxine) → applique la conséquence GameOp `onFail`
   // du symptôme (ex. Blessé → contractDisease 'blessure-purulente'). Donnée-driven, via applyOps.
-  if (step.result.success) return { consequences: [] };
-  const onFail = (step.meta?.onFail ?? []) as import('../engine/ops').GameOp[];
+  if (row.result!.success) return { consequences: [] };
+  const onFail = (row.meta?.onFail ?? []) as import('../engine/ops').GameOp[];
   // `sl` (DR négatif de l'échec) → alimente `rollTable{addNegativeSL}` (Vers de carie : « ajoutez le
   // nombre de DR négatifs », MSRC 16 l.90) et les échelles `perSL` d'un `onFail`.
-  return { consequences: freeCons(applyOps(hero, onFail, { rng: battleRng(), sl: step.result.sl })) };
+  return { consequences: freeCons(applyOps(hero, onFail, { rng: battleRng(), sl: row.result!.sl })) };
 });
 
-registerCascadeApplier('diseaseGangrene', (_get, _set, step, hero) => {
-  if (!hero || !step.result) return;
-  return { consequences: freeCons(applyDiseaseGangrene(hero, String(step.meta?.diseaseName ?? ''), step.result.success, Number(step.meta?.be ?? 0))) };
+registerNightBandApplier('diseaseGangrene', (_get, _set, _band, row, hero) => {
+  return { consequences: freeCons(applyDiseaseGangrene(hero, String(row.meta?.diseaseName ?? ''), row.result!.success, Number(row.meta?.be ?? 0))) };
 });
 
-registerCascadeApplier('diseasePersist', (_get, _set, step, hero) => {
-  if (!hero || !step.result) return;
+registerNightBandApplier('diseasePersist', (_get, _set, _band, row, hero) => {
   const before = activeMalaiseCount(hero);
-  const journal = applyDiseasePersist(hero, String(step.meta?.diseaseName ?? ''), step.result.success, step.result.sl, battleRng());
+  const journal = applyDiseasePersist(hero, String(row.meta?.diseaseName ?? ''), row.result!.success, row.result!.sl, battleRng());
   // Réconcilie l'Exténué « collant » du malaise (l.153 : maladie guérie → −1) — différé avec le Test.
   const delta = activeMalaiseCount(hero) - before;
   if (delta < 0) removeCondition(hero, 'extenue', -delta);
@@ -449,9 +436,8 @@ registerCascadeApplier('diseasePersist', (_get, _set, step, hero) => {
   return { consequences: freeCons(journal) };
 });
 
-registerCascadeApplier('contagion', (_get, _set, step, hero) => {
-  if (!hero || !step.result) return;
-  return { consequences: freeCons(applyContraction(hero, String(step.meta?.diseaseName ?? ''), step.result.success, battleRng())) };
+registerNightBandApplier('contagion', (_get, _set, _band, row, hero) => {
+  return { consequences: freeCons(applyContraction(hero, String(row.meta?.diseaseName ?? ''), row.result!.success, battleRng())) };
 });
 
 /** Valeur de Calme d'un héros (LDB 21 : FM effective + avances de Calme) — cible du jet de cauchemars. */
@@ -480,7 +466,9 @@ export function deferredUpkeepSteps(party: Combatant[], deferred: DeferredUpkeep
       icon: UPKEEP_STEP_ICON[t.kind] ?? 'nav/dice', rollLabel: testSkillLabel(t.test ?? {}) ?? 'Résistance',
       base: t.base, difficulty: t.difficulty,
       ...(t.mods?.length ? { mods: t.mods } : {}), target: t.target, ...(t.clamped ? { clamped: t.clamped } : {}),
-      result: null, interactive: true, meta: t.meta as CascadeStepMeta | undefined };
+      // Le JOUR rejoint le `meta` : il entre dans la CLÉ de bande (`nightBands`) — trois jours
+      // franchis font trois bandes de Dessoûlage, pas trois rangées de même id dans une seule.
+      result: null, interactive: true, meta: { ...t.meta, day: t.day } as CascadeStepMeta };
     applyNightStake(st);
     steps.push(st);
   }
@@ -552,7 +540,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     if (exposureShelterFromTent(party)) {
       log.push('La tente est montée — le groupe dort à l’abri.');
       const count = exposureTestCount(severity, true); // tente : extrême → rythme difficile, difficile → 0
-      if (count > 0) steps.push(...buildExposureSteps(party, camperIds, count));
+      if (count > 0) steps.push(...buildExposureBand(party, camperIds, count));
     } else {
       const best = partyAssisted(party.filter((h) => !h.dead), 'survie-en-exterieur'); // Soutien (LDB 12)
       if (best) {
@@ -566,7 +554,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
           meta: { severity, campers: camperIds.join(',') } });
       } else {
         const count = exposureTestCount(severity, false);
-        if (count > 0) steps.push(...buildExposureSteps(party, camperIds, count));
+        if (count > 0) steps.push(...buildExposureBand(party, camperIds, count));
       }
     }
     for (const h of campers) expireExposureEffects(h, get().gameTime + Number(rule('exposure-expire-hours')) * 60); // dissipation maison
@@ -603,13 +591,16 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   // `CascadeModal`. MÊME fabrique que les Tests différés (`applyNightStake`) : la clé se dérive de
   // l'étape, donc ce second passage ne peut plus écraser l'ENTRÉE JOUÉE posée par le premier.
   for (const st of steps) applyNightStake(st);
+  // BANDES (#1117 L3) : les Tests qui répondent à la MÊME entrée de règle le MÊME jour font UNE
+  // fenêtre, une rangée par héros appelé — 1er des TROIS bâtisseurs à passer par la fabrique.
+  const banded = nightBands(steps);
 
   // Journal : le titre de nuit + tout ce qui s'est ajouté APRÈS l'entretien (tente, récupération sans
   // jet…) — l'entretien lui-même est déjà dans le journal (`runDailyUpkeep`, écriture unique, #216).
   set({ party: [...get().party] });
   get().log(['— Le groupe dort jusqu’à l’aube —', ...log.slice(upkeepCount)]);
   bus.emit(EVT.SCENE_DIRTY);
-  return { steps, log, slept: { from, to: get().gameTime } };
+  return { steps: banded, log, slept: { from, to: get().gameTime } };
 }
 
 /** Prix RAW de l'hébergement et du repas d'auberge (LDB 66 p.302) — SOURCE UNIQUE le catalogue

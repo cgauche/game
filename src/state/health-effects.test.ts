@@ -50,8 +50,20 @@ describe('Effet inflictHunger (LDB 18 l.337-343)', () => {
   });
 });
 
-describe('Effet exposureNight (LDB 18 l.326-334) — cascade INFLUENÇABLE (plus de jet silencieux)', () => {
-  it('froid → OUVRE `count` étapes influençables par héros, AUCUN jet résolu (result null), rien encaissé en silence', () => {
+/** Pose un jet DÉTERMINISTE sur chaque rangée de l'étape COURANTE puis valide (aucun RNG en jeu). */
+function commitRows(results: { roll: number; target: number; sl: number; success: boolean }[]): void {
+  const pc = useGame.getState().pendingCascade!;
+  const st = pc.participants[pc.cursor];
+  const participants = st.participants!.map((p, k) => ({ ...p, result: results[k] }));
+  useGame.setState({ pendingCascade: { ...pc, participants: pc.participants.map((x, i) => (i === pc.cursor ? { ...x, participants } : x)) } });
+  useGame.getState().cascadeNext();
+}
+
+/** L'étape courante de la cascade ouverte. */
+const current = () => { const pc = useGame.getState().pendingCascade!; return pc.participants[pc.cursor]; };
+
+describe('Effet exposureNight (LDB 18 l.326-334) — BANDE influençable par VAGUE (#1117 L3)', () => {
+  it('froid → UNE bande (la 1ʳᵉ vague) portant le nombre TOTAL de vagues, une rangée par héros, AUCUN jet résolu', () => {
     const party = makePregens().slice(0, 1);
     useGame.setState({ party, pendingCascade: null, journal: [] });
     useGame.getState().seedRng(3); // graine qui produisait des échecs à l'ancien (inline)
@@ -59,49 +71,50 @@ describe('Effet exposureNight (LDB 18 l.326-334) — cascade INFLUENÇABLE (plus
     applyEffects(useGame.getState, useGame.setState, [{ type: 'exposureNight', kind: 'froid', count: 4, target: 'hero', heroId: party[0].id }]);
     const pc = useGame.getState().pendingCascade;
     expect(pc).not.toBeNull(); // le jet est DIFFÉRÉ en modale, pas roulé en boucle
-    const steps = pc!.participants.filter((s) => s.kind === 'exposure' && s.actorId === party[0].id);
-    expect(steps).toHaveLength(4); // un jet influençable par Test
-    expect(steps.every((s) => s.result == null)).toBe(true); // rien résolu → rien de subi encore
-    expect((steps[0].meta as { kind?: string } | undefined)?.kind).toBe('froid');
+    const bands = pc!.participants.filter((s) => s.kind === 'exposure');
+    expect(bands).toHaveLength(1); // UNE fenêtre ouverte : la vague 0 (les suivantes se construisent après)
+    expect(bands[0].meta?.waves).toBe(4); // les 4 Tests RAW sont déclarés, pas perdus
+    expect(bands[0].participants!.map((p) => p.id)).toEqual([party[0].id]);
+    expect(bands[0].participants!.every((p) => p.result == null)).toBe(true); // rien résolu → rien de subi encore
+    expect(bands[0].meta?.kind).toBe('froid');
     expect(useGame.getState().party[0].wounds.current).toBe(beforeW); // aucune Blessure encaissée en silence
   });
 
-  it('chaleur → étapes taguées kind "chaleur" ; SANS Possession lourde, la CONSÉQUENCE d’un échec (applier partagé) pose Exténué + journal chaleur (l.330)', () => {
+  it('chaleur → bande taguée kind "chaleur" ; SANS Possession lourde, la CONSÉQUENCE d’un échec pose Exténué + journal chaleur (l.330)', () => {
     const party = makePregens().slice(0, 1);
     useGame.setState({ party, pendingCascade: null, journal: [] });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'exposureNight', kind: 'chaleur', count: 4, target: 'party' }]);
-    const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'exposure')!;
-    expect((step.meta as { kind?: string } | undefined)?.kind).toBe('chaleur');
-    // Un échec (via l'applier `exposure` partagé) : 1ᵉʳ échec chaleur = −10 Int/FM + Exténué (l.330).
-    // Aucune Possession lourde (items vidés) → conséquence IMMÉDIATE, comme avant l'implémentation du choix.
+    useGame.getState().party[0].items = []; // aucune Possession lourde → conséquence IMMÉDIATE
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'exposureNight', kind: 'chaleur', count: 1, target: 'party' }]);
+    const band = current();
+    expect(band.kind).toBe('exposure');
+    expect(band.meta?.kind).toBe('chaleur');
+    const row = band.participants![0];
+    commitRows([{ roll: 99, target: row.target, sl: -5, success: false }]);
     const h = useGame.getState().party[0];
-    h.items = [];
-    const failed = { ...step, result: { roll: 99, target: step.target!, sl: -5, success: false } } as typeof step;
-    const out = cascadeAppliers['exposure'].apply(
-      useGame.getState, useGame.setState, failed, h, { steps: [failed], index: 0 },
-    );
     expect((h.conditions ?? []).some((c) => c.id === 'extenue')).toBe(true);
-    expect(/chaleur|suffoque|accablé/i.test(resultLine(out?.consequences ?? []))).toBe(true);
-    expect(out?.insert).toBeUndefined();
+    expect(useGame.getState().journal.some((l) => /chaleur|suffoque|accablé/i.test(l))).toBe(true);
   });
 });
 
 describe('Exposition CHALEUR — annulation par délestage d’une Possession lourde (LDB 18 l.332)', () => {
   const heavyItem = { uid: 'sac-1', trappingId: 'grand-sac', name: 'Grand sac à dos', kind: 'misc', qualities: [], equipped: true, enc: 3 } as never;
 
-  it('avec une Possession lourde : AUCUNE conséquence immédiate, un CHOIX est inséré (rien encaissé en silence)', () => {
+  it('avec une Possession lourde : AUCUNE conséquence immédiate, un CHOIX est inséré qui NOMME la rangée qu’il tranche', () => {
     const party = makePregens().slice(0, 1);
     useGame.setState({ party, pendingCascade: null, journal: [] });
+    useGame.getState().party[0].items = [heavyItem];
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'exposureNight', kind: 'chaleur', count: 1, target: 'party' }]);
+    const band = current();
+    const row = band.participants![0];
+    commitRows([{ roll: 99, target: row.target, sl: -5, success: false }]);
     const h = useGame.getState().party[0];
-    h.items = [heavyItem];
-    const step = { id: 'e0', kind: 'exposure', actorId: h.id, target: 50, meta: { kind: 'chaleur' },
-      result: { roll: 99, target: 50, sl: -5, success: false } } as unknown as import('./pendings').CascadeStep;
-    const out = cascadeAppliers['exposure'].apply(useGame.getState, useGame.setState, step, h, { steps: [step], index: 0 });
     expect((h.conditions ?? []).some((c) => c.id === 'extenue')).toBe(false); // choix non encore rendu, rien n'a été tranché
     expect(h.items).toHaveLength(1); // objet toujours en inventaire, rien n'a été jeté
-    expect(out?.insert).toHaveLength(1);
-    expect(out!.insert![0].kind).toBe('exposure-heat-drop');
-    expect(out!.insert![0].options?.map((o) => o.key).sort()).toEqual(['garder', 'jeter']);
+    const choix = current();
+    expect(choix.kind).toBe('exposure-heat-drop');
+    expect(choix.options?.map((o) => o.key).sort()).toEqual(['garder', 'jeter']);
+    // La coordonnée de l'annulation est la RANGÉE, plus l'adjacence : une bande peut en produire N.
+    expect(choix.meta?.cancelsRowId).toBe(`${band.id}:${row.id}`);
   });
 
   it('« jeter » : retire l’objet, ANNULE le Test (aucune escalade)', () => {
@@ -128,23 +141,28 @@ describe('Exposition CHALEUR — annulation par délestage d’une Possession lo
     expect(/chaleur|suffoque|accablé/i.test(resultLine(out?.consequences ?? []))).toBe(true);
   });
 
-  it('escalade : un échec ANNULÉ (jeté) ne compte PAS dans le rang du prochain échec GENUINE', () => {
+  it('escalade : la vague SUIVANTE se construit APRÈS le délestage — l’échec annulé ne compte pas dans son rang', () => {
     const party = makePregens().slice(0, 1);
     useGame.setState({ party, pendingCascade: null, journal: [] });
-    const h = useGame.getState().party[0];
-    h.items = []; // la Possession lourde a déjà été jetée avant ce 2ᵉ Test (plus rien à jeter)
-    const cancelled = { id: 'e0', kind: 'exposure', actorId: h.id, target: 50, meta: { kind: 'chaleur' },
-      result: { roll: 99, target: 50, sl: -5, success: false } } as unknown as import('./pendings').CascadeStep;
-    const drop = { id: 'e0-drop', kind: 'exposure-heat-drop', actorId: h.id, chosen: 'jeter' } as unknown as import('./pendings').CascadeStep;
-    const second = { id: 'e1', kind: 'exposure', actorId: h.id, target: 50, meta: { kind: 'chaleur' },
-      result: { roll: 88, target: 50, sl: -4, success: false } } as unknown as import('./pendings').CascadeStep;
-    const steps = [cancelled, drop, second];
-    const out = cascadeAppliers['exposure'].apply(useGame.getState, useGame.setState, second, h, { steps, index: 2 });
-    // Sans le 1er échec annulé, ce 2ᵉ Test GENUINE est le 1ᵉʳ échec RÉEL (l.330 : −10 Int/FM + Exténué),
-    // PAS le 2ᵉ (qui infligerait −10 aux autres caractéristiques en plus).
-    const line = resultLine(out?.consequences ?? []);
-    expect(line).toMatch(/suffoque/);
-    expect(line).not.toMatch(/accablé/);
+    useGame.getState().party[0].items = [heavyItem];
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'exposureNight', kind: 'chaleur', count: 2, target: 'party' }]);
+    const wave0 = current();
+    commitRows([{ roll: 99, target: wave0.participants![0].target, sl: -5, success: false }]);
+    // Le choix est courant : on JETTE → l'échec de la vague 0 est annulé, et c'est CE choix qui
+    // déclenche la construction de la vague 1 (jamais avant : son escalade compterait l'échec annulé).
+    expect(current().kind).toBe('exposure-heat-drop');
+    useGame.getState().cascadeChoose(current().id, 'jeter');
+    useGame.getState().cascadeNext();
+    const wave1 = current();
+    expect(wave1.kind).toBe('exposure');
+    expect(wave1.meta?.wave).toBe(1);
+    expect(wave1.participants![0].meta?.priorFails).toBe(0); // l'échec ANNULÉ ne compte pas
+    useGame.setState({ journal: [] });
+    commitRows([{ roll: 88, target: wave1.participants![0].target, sl: -4, success: false }]);
+    // Ce 2ᵉ Test GENUINE est donc le 1ᵉʳ échec RÉEL (l.330 : −10 Int/FM + Exténué), PAS le 2ᵉ.
+    const journal = useGame.getState().journal.join(' | ');
+    expect(journal).toMatch(/suffoque/);
+    expect(journal).not.toMatch(/accablé/);
   });
 });
 

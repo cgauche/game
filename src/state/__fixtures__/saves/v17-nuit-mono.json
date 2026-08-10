@@ -1,0 +1,198 @@
+{
+  "version": 17,
+  "savedAt": "2026-08-10T04:00:00.000Z",
+  "sceneLabel": "Campement des Landes",
+  "gameTime": 5760,
+  "data": {
+    "screen": "campaign",
+    "gameTime": 5760,
+    "lastUpkeepDay": 4,
+    "lastNightDay": 4,
+    "battle": null,
+    "party": [
+      {
+        "id": "h1",
+        "label": "Gorik",
+        "kind": "hero",
+        "characteristics": {
+          "capacite-de-combat": 30,
+          "capacite-de-tir": 30,
+          "force": 30,
+          "endurance": 32,
+          "initiative": 30,
+          "agilite": 30,
+          "dexterite": 30,
+          "intelligence": 30,
+          "force-mentale": 30,
+          "sociabilite": 30
+        },
+        "wounds": { "current": 8, "max": 12 },
+        "advantage": 0,
+        "conditions": [],
+        "psychState": [],
+        "weapons": [],
+        "armour": { "tete": 0, "brasG": 0, "brasD": 0, "corps": 0, "jambeG": 0, "jambeD": 0 },
+        "items": [],
+        "skills": [],
+        "talents": [],
+        "movement": 4
+      },
+      {
+        "id": "h2",
+        "label": "Elsa",
+        "kind": "hero",
+        "characteristics": {
+          "capacite-de-combat": 30,
+          "capacite-de-tir": 30,
+          "force": 30,
+          "endurance": 31,
+          "initiative": 30,
+          "agilite": 30,
+          "dexterite": 30,
+          "intelligence": 30,
+          "force-mentale": 30,
+          "sociabilite": 30
+        },
+        "wounds": { "current": 10, "max": 11 },
+        "advantage": 0,
+        "conditions": [],
+        "psychState": [],
+        "weapons": [],
+        "armour": { "tete": 0, "brasG": 0, "brasD": 0, "corps": 0, "jambeG": 0, "jambeD": 0 },
+        "items": [],
+        "skills": [],
+        "talents": [],
+        "movement": 4
+      }
+    ],
+    "pendingCascade": {
+      "title": "Campement",
+      "icon": "time/night",
+      "purpose": "night",
+      "cursor": 1,
+      "log": [],
+      "participants": [
+        {
+          "id": "march-h1",
+          "kind": "forcedMarch",
+          "actorId": "h1",
+          "icon": "travel/foot",
+          "rollLabel": "Résistance",
+          "label": "Marche forcée",
+          "difficulty": "intermediaire",
+          "base": 32,
+          "target": 32,
+          "result": { "roll": 71, "target": 32, "sl": -3, "success": false },
+          "committed": true,
+          "interactive": true
+        },
+        {
+          "id": "faim-h1-1",
+          "kind": "faim",
+          "actorId": "h1",
+          "icon": "rest/feast",
+          "rollLabel": "Résistance",
+          "label": "Faim",
+          "difficulty": "intermediaire",
+          "base": 32,
+          "target": 32,
+          "result": null,
+          "interactive": true
+        },
+        {
+          "id": "faim-h2-2",
+          "kind": "faim",
+          "actorId": "h2",
+          "icon": "rest/feast",
+          "rollLabel": "Résistance",
+          "label": "Faim",
+          "difficulty": "intermediaire",
+          "base": 31,
+          "target": 31,
+          "result": null,
+          "interactive": true
+        },
+        {
+          "id": "dessoulage-h1-3",
+          "kind": "dessoulage",
+          "actorId": "h1",
+          "icon": "nav/dice",
+          "rollLabel": "Résistance à l'alcool",
+          "label": "Dessoûlage",
+          "difficulty": "intermediaire",
+          "base": 32,
+          "target": 32,
+          "result": null,
+          "interactive": true
+        },
+        {
+          "id": "dessoulage-h1-4",
+          "kind": "dessoulage",
+          "actorId": "h1",
+          "icon": "nav/dice",
+          "rollLabel": "Résistance à l'alcool",
+          "label": "Dessoûlage",
+          "difficulty": "intermediaire",
+          "base": 32,
+          "target": 32,
+          "result": null,
+          "interactive": true
+        }
+      ]
+    },
+    "suspendedCascades": [
+      {
+        "title": "Entretien quotidien",
+        "icon": "time/night",
+        "purpose": "upkeep",
+        "cursor": 0,
+        "log": [],
+        "participants": [
+          {
+            "id": "contagion-h2-0",
+            "kind": "contagion",
+            "actorId": "h2",
+            "icon": "medical/infection",
+            "rollLabel": "Résistance",
+            "label": "Contagion (courante-galopante)",
+            "difficulty": "accessible",
+            "base": 31,
+            "target": 51,
+            "result": null,
+            "interactive": true,
+            "menace": "maladie",
+            "meta": { "diseaseName": "courante-galopante" }
+          }
+        ]
+      }
+    ],
+    "deferredUpkeepQueue": [
+      {
+        "id": "soif-h1-0",
+        "kind": "soif",
+        "actorId": "h1",
+        "icon": "nav/dice",
+        "rollLabel": "Résistance",
+        "label": "Soif",
+        "difficulty": "intermediaire",
+        "base": 32,
+        "target": 32,
+        "result": null,
+        "interactive": true
+      },
+      {
+        "id": "soif-h2-1",
+        "kind": "soif",
+        "actorId": "h2",
+        "icon": "nav/dice",
+        "rollLabel": "Résistance",
+        "label": "Soif",
+        "difficulty": "intermediaire",
+        "base": 31,
+        "target": 31,
+        "result": null,
+        "interactive": true
+      }
+    ]
+  }
+}

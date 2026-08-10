@@ -22,17 +22,19 @@ describe('#253.1 — dessoûlage : le 2ᵉ Test (gueule de bois) est une étape 
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     hero.drunk = { failedTests: 3, drunk: true, result: 'joyeux' };
     useGame.setState({ party: [hero], gameTime: 8 * 60 });
-    const step: CascadeStep = { id: 'dessoulage-H-0', kind: 'dessoulage', actorId: hero.id, label: 'Dessoûlage', rollLabel: 'Résistance', base: 40, target: 40, result: { roll: 45, target: 40, sl: 1, success: true } };
+    // BANDE de Dessoûlage (#1117 L3) : la conséquence se joue PAR RANGÉE.
+    const step: CascadeStep = { id: 'bande-dessoulage', kind: 'dessoulage', label: 'Dessoûlage', aggregate: 'none', interactive: true,
+      participants: [{ id: hero.id, interactive: true, label: 'Résistance', base: 40, target: 40, result: { roll: 45, target: 40, sl: 1, success: true } }] };
 
     const out = cascadeAppliers['dessoulage'].apply(get, set, step, hero, { steps: [step], index: 0 });
 
     expect(hero.drunk).toBeUndefined();                          // dissipation appliquée (1er Test)
-    expect(out?.insert?.[0]?.kind).toBe('dessoulageHangover');   // 2ᵉ Test devenu étape influençable
-    expect(out?.insert?.[0]?.result ?? null).toBeNull();         // pas encore lancé (le joueur l'influencera)
+    expect(out?.insert?.[0]?.kind).toBe('dessoulageHangover');   // 2ᵉ Test devenu BANDE influençable
+    expect(out?.insert?.[0]?.participants?.[0]?.result ?? null).toBeNull(); // pas encore lancé (le joueur l'influencera)
     expect(hero.conditions?.some((c) => c.id === 'extenue')).toBeFalsy(); // gueule de bois DIFFÉRÉE au 2ᵉ Test
 
     const hStep = out!.insert![0];
-    hStep.result = { roll: 10, target: hStep.target!, sl: 2, success: true };
+    hStep.participants![0].result = { roll: 10, target: hStep.participants![0].target, sl: 2, success: true };
     cascadeAppliers['dessoulageHangover'].apply(get, set, hStep, hero, { steps: [hStep], index: 0 });
     expect(hero.conditions?.some((c) => c.id === 'extenue')).toBe(true); // posée par le 2ᵉ Test résolu
   });
@@ -57,7 +59,8 @@ describe('#253.2 — combat franchissant minuit : les Tests d\'entretien se mett
     // 2 minutes → franchit minuit (jour 0 → 1) EN COMBAT.
     get().advanceTime(2);
     const q = get().deferredUpkeepQueue;
-    expect(q.some((s) => s.kind === 'dessoulage' && s.actorId === hero.id)).toBe(true);
+    // La file porte des BANDES (#1117 L3) : le porteur est une RANGÉE, plus l'`actorId` de l'étape.
+    expect(q.some((s) => s.kind === 'dessoulage' && (s.participants ?? []).some((p) => p.id === hero.id))).toBe(true);
     expect(get().party[0].drunk).toBeTruthy(); // PAS dessoûlé en silence — le Test attend la fin de combat
   });
 

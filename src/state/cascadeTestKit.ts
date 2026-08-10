@@ -30,9 +30,19 @@ export function inexplique(st: LigneJugeable): number {
     - (st.clamped ?? 0);
 }
 
-/** Le Soutien (LDB 12) porté par une étape, tel qu'il s'AFFICHE : la ou les lignes de mod identifiées
- *  par leur RÈGLE (`soutienMod` — `ref.id`), jamais par leur libellé. `0` si l'étape n'en porte pas. */
-export function soutienDe(st: CascadeStep): number {
+/** LIGNE DE JET d'une étape : la RANGÉE du porteur quand l'étape est une BANDE (#1117 L3 — les jets
+ *  de nuit vivent sur les rangées), l'étape elle-même sinon. `heroId` absent ⇒ la 1ʳᵉ rangée. Rendu
+ *  STRUCTUREL (`LigneJugeable` + le libellé de Compétence), pour que les cliquets de ligne
+ *  (`inexplique`, `soutienDe`) jugent la même chose des deux formes. */
+export function jetDe(st: CascadeStep, heroId?: string): LigneJugeable & { label?: string } {
+  const rows = st.participants;
+  if (!rows?.length) return { ...st, label: st.rollLabel };
+  return (heroId ? rows.find((r) => r.id === heroId) : rows[0]) ?? rows[0];
+}
+
+/** Le Soutien (LDB 12) porté par une ligne, tel qu'il s'AFFICHE : la ou les lignes de mod identifiées
+ *  par leur RÈGLE (`soutienMod` — `ref.id`), jamais par leur libellé. `0` si la ligne n'en porte pas. */
+export function soutienDe(st: LigneJugeable): number {
   return (st.mods ?? [])
     .filter((m) => m.ref?.id === RULE_REF.soutien.id)
     .reduce((sum, m) => sum + m.value, 0);

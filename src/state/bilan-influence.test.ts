@@ -14,7 +14,7 @@ import type { CascadeStep, CascadeRoll } from './pendings';
  * chaque jet est une ÉTAPE lancée puis influençable à la Chance (LDB 17 l.21-27) AVANT de se
  * verrouiller. Ce test prouve, pour la nuit UNIQUE (chemin du bouton Repos, `restSleep` days=1) :
  *  1. le jet apparaît en étape de cascade (jamais pré-résolu dans le journal) ;
- *  2. la Chance est proposable sur l'étape ratée (`cascadeReroll` dépense 1 Point de Chance) ;
+ *  2. la Chance est proposable sur la RANGÉE ratée (`cascadeBatchReroll` dépense 1 Point de Chance) ;
  *  3. la conséquence n'est appliquée qu'UNE fois (à la validation, pas aussi en eager).
  */
 const hero = (p: Partial<Combatant> = {}): Combatant =>
@@ -28,11 +28,13 @@ const hero = (p: Partial<Combatant> = {}): Combatant =>
 
 const ration = (uid: string) => ({ uid, label: 'Ration', trappingId: 'ration', kind: 'misc' as const, qualities: [], enc: 0, equipped: false });
 
-/** Fige un ÉCHEC sur l'étape `stepId` (dé 100, DR négatif) — pour exercer l'influence sur un jet raté. */
-function forceFail(stepId: string): void {
+/** Fige un ÉCHEC sur la RANGÉE `rowId` de la bande `bandId` (dé 100, DR négatif) — pour exercer
+ *  l'influence sur un jet raté. Depuis #1117 L3 le jet d'un Test de nuit vit sur SA rangée. */
+function forceFail(bandId: string, rowId: string): void {
   const p = useGame.getState().pendingCascade!;
-  const parts = p.participants.map((s): CascadeStep => (s.id === stepId
-    ? { ...s, result: { roll: 100, target: s.target!, sl: -5, success: false } as CascadeRoll } : s));
+  const parts = p.participants.map((s): CascadeStep => (s.id === bandId
+    ? { ...s, participants: s.participants!.map((r) => (r.id === rowId
+      ? { ...r, result: { roll: 100, target: r.target, sl: -5, success: false } as CascadeRoll } : r)) } : s));
   useGame.setState({ pendingCascade: { ...p, participants: parts } });
 }
 
@@ -58,7 +60,7 @@ describe('#253 — FAIM du bilan : étape de cascade influençable, pas un jet t
     // 1. Le jet est une ÉTAPE, PAS pré-résolu : hunger.tests/failures encore vierges tant que non validé.
     const faim = stepOfKind('faim');
     expect(faim).toBeTruthy();
-    expect(faim!.actorId).toBe('A');
+    expect(faim!.participants!.map((r) => r.id)).toEqual(['A']); // UNE fenêtre Faim, une rangée par affamé
     expect(faim!.interactive).toBe(true);
     expect(resolveStake(faim!.stake!).text).toContain('Test de Résistance'); // enjeu verbatim surfacé (NIGHT_STAKES)
     const aNow = useGame.getState().party.find((h) => h.id === 'A')!;
@@ -66,13 +68,13 @@ describe('#253 — FAIM du bilan : étape de cascade influençable, pas un jet t
     expect(aNow.hunger!.failures).toBe(0);
 
     // 2. Chance proposable sur l'échec : la relance dépense 1 Point de Chance.
-    forceFail(faim!.id);
+    forceFail(faim!.id, 'A');
     const fortuneBefore = useGame.getState().party.find((h) => h.id === 'A')!.fortune;
-    useGame.getState().cascadeReroll(faim!.id);
+    useGame.getState().cascadeBatchReroll('A');
     expect(useGame.getState().party.find((h) => h.id === 'A')!.fortune).toBe((fortuneBefore ?? 0) - 1);
 
     // 3. Conséquence appliquée 1× à la validation (applyFaimTest) — un seul Test compté, pas de double.
-    forceFail(faim!.id); // re-fige l'échec (la relance a pu réussir) pour vérifier la conséquence
+    forceFail(faim!.id, 'A'); // re-fige l'échec (la relance a pu réussir) pour vérifier la conséquence
     useGame.getState().cascadeNext();
     const aEnd = useGame.getState().party.find((h) => h.id === 'A')!;
     expect(aEnd.hunger!.tests).toBe(1); // exactement UN Test résolu
@@ -94,18 +96,18 @@ describe('#253 — CONTAGION de promiscuité : étape de cascade influençable',
 
     const cont = stepOfKind('contagion');
     expect(cont).toBeTruthy();
-    expect(cont!.actorId).toBe('B'); // c'est le SAIN qui résiste à la Contraction
+    expect(cont!.participants!.map((r) => r.id)).toEqual(['B']); // c'est le SAIN qui résiste à la Contraction
     expect(cont!.interactive).toBe(true);
     expect(cont!.meta?.diseaseName).toBe('verole-urticante');
 
     // Chance proposable sur l'échec.
-    forceFail(cont!.id);
+    forceFail(cont!.id, 'B');
     const fortuneBefore = useGame.getState().party.find((h) => h.id === 'B')!.fortune;
-    useGame.getState().cascadeReroll(cont!.id);
+    useGame.getState().cascadeBatchReroll('B');
     expect(useGame.getState().party.find((h) => h.id === 'B')!.fortune).toBe((fortuneBefore ?? 0) - 1);
 
     // Contraction appliquée 1× (pas de double entrée de maladie) sur un échec verrouillé.
-    forceFail(cont!.id);
+    forceFail(cont!.id, 'B');
     useGame.getState().cascadeNext();
     const bEnd = useGame.getState().party.find((h) => h.id === 'B')!;
     expect(bEnd.diseases!.filter((d) => d.id === 'verole-urticante').length).toBe(1);
@@ -125,7 +127,7 @@ describe("#253 — AVANCE D'HORLOGE (advanceTime) : bilan en cascade influençab
     expect(p!.participants.some((s) => s.kind === 'round')).toBe(false); // pas de témoin groupé quand un jet est différé
     const faim = stepOfKind('faim');
     expect(faim).toBeTruthy();
-    expect(faim!.actorId).toBe('A');
+    expect(faim!.participants!.map((r) => r.id)).toEqual(['A']);
     expect(faim!.interactive).toBe(true);
     const aNow = useGame.getState().party.find((h) => h.id === 'A')!;
     expect(aNow.hunger!.days).toBe(2); // jour ENREGISTRÉ (l.201) mais Test NON roulé (différé)
@@ -133,13 +135,13 @@ describe("#253 — AVANCE D'HORLOGE (advanceTime) : bilan en cascade influençab
     expect(aNow.hunger!.failures).toBe(0);
 
     // 2. Chance proposable sur l'échec.
-    forceFail(faim!.id);
+    forceFail(faim!.id, 'A');
     const fortuneBefore = useGame.getState().party.find((h) => h.id === 'A')!.fortune;
-    useGame.getState().cascadeReroll(faim!.id);
+    useGame.getState().cascadeBatchReroll('A');
     expect(useGame.getState().party.find((h) => h.id === 'A')!.fortune).toBe((fortuneBefore ?? 0) - 1);
 
     // 3. Conséquence appliquée 1× à la validation — un seul Test compté, pas de double-résolution.
-    forceFail(faim!.id);
+    forceFail(faim!.id, 'A');
     useGame.getState().cascadeNext();
     const aEnd = useGame.getState().party.find((h) => h.id === 'A')!;
     expect(useGame.getState().pendingCascade).toBeNull(); // cascade close (purpose upkeep : aucune suite)
@@ -156,13 +158,13 @@ describe("#253 — AVANCE D'HORLOGE (advanceTime) : bilan en cascade influençab
     expect(p!.purpose).toBe('upkeep');
     const step = stepOfKind('dessoulage');
     expect(step).toBeTruthy();
-    expect(step!.actorId).toBe('A');
+    expect(step!.participants!.map((r) => r.id)).toEqual(['A']);
     expect(step!.interactive).toBe(true);
     expect(useGame.getState().party.find((h) => h.id === 'A')!.drunk).toBeTruthy(); // DIFFÉRÉ : encore ivre tant que non validé
 
-    forceFail(step!.id);
+    forceFail(step!.id, 'A');
     const fortuneBefore = useGame.getState().party.find((h) => h.id === 'A')!.fortune;
-    useGame.getState().cascadeReroll(step!.id);
+    useGame.getState().cascadeBatchReroll('A');
     expect(useGame.getState().party.find((h) => h.id === 'A')!.fortune).toBe((fortuneBefore ?? 0) - 1);
 
     // Dessoûlage appliqué 1× à la validation (soberUp lève l'état, quelle que soit l'issue du DR).
@@ -197,16 +199,16 @@ describe('#253 — EXPOSITION de campement : étape de cascade influençable', (
 
     // L'abri de fortune (Survie en extérieur) ouvre la séquence ; son échec INSÈRE les jets d'Exposition.
     const abri = stepOfKind('shelter');
-    if (abri) { forceFail(abri.id); useGame.getState().cascadeNext(); }
+    if (abri) { forceFail(abri.id, 'A'); useGame.getState().cascadeNext(); }
 
     const expo = stepOfKind('exposure');
     expect(expo).toBeTruthy();
-    expect(expo!.actorId).toBe('A');
+    expect(expo!.participants!.map((r) => r.id)).toEqual(['A']);
     expect(expo!.interactive).toBe(true);
 
-    forceFail(expo!.id);
+    forceFail(expo!.id, 'A');
     const fortuneBefore = useGame.getState().party.find((h) => h.id === 'A')!.fortune;
-    useGame.getState().cascadeReroll(expo!.id);
+    useGame.getState().cascadeBatchReroll('A');
     expect(useGame.getState().party.find((h) => h.id === 'A')!.fortune).toBe((fortuneBefore ?? 0) - 1);
   });
 });

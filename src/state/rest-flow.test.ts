@@ -35,38 +35,52 @@ function setGroupPurse(m: Money): void {
   creditBourse(useGame.getState, useGame.setState, useGame.getState().party[0].id, m);
 }
 
+/** Verrouille un ÉCHEC garanti (dé 100, DR négatif) sur l'étape COURANTE — BANDE (une rangée par
+ *  héros, #1117 L3) ou étape mono. No-op sur une étape sans jet. */
+function failCurrent(): void {
+  const p = useGame.getState().pendingCascade!;
+  const cur = p.participants[p.cursor];
+  const ko = (t: number) => ({ roll: 100, target: t, sl: -5, success: false });
+  const at = (patch: Record<string, unknown>) =>
+    useGame.setState({ pendingCascade: { ...p, participants: p.participants.map((s, i) => (i === p.cursor ? { ...s, ...patch } as CascadeStep : s)) } });
+  if (cur.participants) at({ participants: cur.participants.map((r) => (r.result ? r : { ...r, result: ko(r.target) })) });
+  else if (cur.target != null && !cur.result) at({ result: ko(cur.target) });
+}
+
+/** Lance l'étape COURANTE au RNG — bande (chaque rangée) ou mono. */
+function rollCurrent(): void {
+  const p = useGame.getState().pendingCascade!;
+  const cur = p.participants[p.cursor];
+  if (cur.participants) { for (const r of cur.participants) if (!r.result) useGame.getState().cascadeBatchRoll(r.id); }
+  else if (cur.target != null && !cur.result) useGame.getState().cascadeRoll(cur.id);
+}
+
 /** Déroule la cascade de nuit (lance + valide chaque étape) jusqu'à la fin ; renvoie les `kind` vus
  *  (les étapes INSÉRÉES en cours de route — Exposition après l'abri — y figurent). */
 function walkCascade(): string[] {
   const kinds: string[] = [];
   let guard = 0;
   while (useGame.getState().pendingCascade && guard++ < 60) {
-    const p = useGame.getState().pendingCascade!;
-    const cur = p.participants[p.cursor];
-    kinds.push(cur.kind);
-    if (cur.target != null && !cur.result) useGame.getState().cascadeRoll(cur.id);
+    kinds.push(useGame.getState().pendingCascade!.participants[useGame.getState().pendingCascade!.cursor].kind);
+    rollCurrent();
     useGame.getState().cascadeNext();
   }
   return kinds;
 }
 
 /** Force l'abri de fortune à ÉCHOUER (pour exercer l'Exposition) : verrouille un échec sur l'étape
- *  courante avant de la valider. Renvoie les `kind` de la suite. */
-function walkCascadeAbriFails(): string[] {
-  const kinds: string[] = [];
+ *  courante avant de la valider. Renvoie, par étape traversée, son `kind` et son nombre de RANGÉES. */
+function walkCascadeAbriFails(): { kind: string; rows: number }[] {
+  const seen: { kind: string; rows: number }[] = [];
   let guard = 0;
   while (useGame.getState().pendingCascade && guard++ < 60) {
     const p = useGame.getState().pendingCascade!;
     const cur = p.participants[p.cursor];
-    kinds.push(cur.kind);
-    if (cur.target != null && !cur.result) {
-      // Échec garanti : dé 100 (raté), DR négatif — l'abri ne protège pas.
-      const parts = p.participants.map((s) => (s.id === cur.id ? { ...s, result: { roll: 100, target: cur.target!, sl: -5, success: false } } : s));
-      useGame.setState({ pendingCascade: { ...p, participants: parts } });
-    }
+    seen.push({ kind: cur.kind, rows: cur.participants?.length ?? 0 });
+    failCurrent();
     useGame.getState().cascadeNext();
   }
-  return kinds;
+  return seen;
 }
 
 const hero = (p: Partial<Combatant> = {}): Combatant =>
@@ -104,8 +118,10 @@ describe('openRest / choix par héros', () => {
     // Nuit UNIQUE → CASCADE (plus de bilan) : météo clémente → seulement les jets de récupération.
     expect(useGame.getState().pendingRest).toBeNull();
     const cas = useGame.getState().pendingCascade!;
-    expect(cas.participants.length).toBe(2); // 2 héros à soigner (8/12 PB)
-    expect(cas.participants.every((s) => s.kind === 'recovery')).toBe(true);
+    // UNE fenêtre « Récupération » (#1117 L3), une RANGÉE par héros à soigner (8/12 PB).
+    expect(cas.participants.length).toBe(1);
+    expect(cas.participants[0].kind).toBe('recovery');
+    expect(cas.participants[0].participants!.map((r) => r.id)).toEqual(['h1', 'h2']);
     walkCascade();
     expect(useGame.getState().pendingCascade).toBeNull(); // cascade terminée
   });
@@ -134,7 +150,7 @@ describe('openRest / choix par héros', () => {
     expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(5);
   });
 
-  it('campement sous la pluie sans tente : ABRI raté → l’Exposition est INSÉRÉE (2 Tests/campeur)', () => {
+  it('campement sous la pluie sans tente : ABRI raté → l’Exposition est INSÉRÉE (2 VAGUES, 2 campeurs par vague)', () => {
     const sc = emptyScene(10, 10);
     sc.weather = 'pluie'; // difficile → 2 Tests/nuit si pas d'abri
     useGame.setState({ scene: sc });
@@ -144,18 +160,20 @@ describe('openRest / choix par héros', () => {
     expect(cas.participants[0].kind).toBe('shelter'); // l'abri de fortune ouvre la séquence
     // L'Exposition n'est insérée qu'à la validation de l'abri (dépendance) — absente avant.
     expect(cas.participants.some((s) => s.kind === 'exposure')).toBe(false);
-    const kinds = walkCascadeAbriFails(); // abri raté → campement exposé
-    expect(kinds.filter((k) => k === 'exposure').length).toBe(2 * 2); // 2 héros × 2 Tests
+    const seen = walkCascadeAbriFails(); // abri raté → campement exposé
+    // 2 Tests RAW (pluie, sans abri) = 2 VAGUES successives, chacune UNE fenêtre à 2 rangées (2 campeurs) :
+    // les 4 jets RAW sont tous là, mais en DEUX fenêtres au lieu de quatre.
+    expect(seen.filter((s) => s.kind === 'exposure').map((s) => s.rows)).toEqual([2, 2]);
   });
 
   it('cascade : valider une MARCHE FORCÉE ratée applique +Exténué (applicateur forcedMarch)', () => {
     const h = useGame.getState().party[0];
     const exten0 = stacks(h, 'extenue');
-    // Cascade à une étape de marche forcée, jet figé sur un ÉCHEC.
+    // Cascade à une BANDE de marche forcée (#1117 L3), jet de la rangée figé sur un ÉCHEC.
     useGame.setState({ pendingCascade: {
       title: 'Marche', purpose: 'travel', cursor: 0, log: [], participants: [
-        { id: 'm1', kind: 'forcedMarch', actorId: h.id, label: 'Marche forcée', rollLabel: 'Résistance',
-          base: 40, target: 40, result: { roll: 99, target: 40, sl: -4, success: false }, interactive: true },
+        { id: 'bande-m1', kind: 'forcedMarch', label: 'Marche forcée', interactive: true, aggregate: 'none',
+          participants: [{ id: h.id, interactive: true, label: 'Résistance', base: 40, target: 40, result: { roll: 99, target: 40, sl: -4, success: false } }] },
       ],
     } });
     useGame.getState().cascadeNext(); // verrouille l'échec → +Exténué (applyForcedMarch)
@@ -233,16 +251,7 @@ describe('couchage À BORD (MDG) — le navire n’est pas un bivouac', () => {
 });
 
 describe('repos MULTI-JOURS (#347) — chaîne de cascades nuit-par-nuit, jamais un jet pré-résolu', () => {
-  /** Verrouille un ÉCHEC garanti sur l'étape courante avant de la valider (dé 100, DR négatif) —
-   *  comme `walkCascadeAbriFails`, mais sur TOUTE cascade en cours (nuit courante de la chaîne). */
-  function forceFailCurrent(): void {
-    const p = useGame.getState().pendingCascade!;
-    const cur = p.participants[p.cursor];
-    if (cur.target != null && !cur.result) {
-      const parts = p.participants.map((s) => (s.id === cur.id ? { ...s, result: { roll: 100, target: cur.target!, sl: -5, success: false } } : s));
-      useGame.setState({ pendingCascade: { ...p, participants: parts } });
-    }
-  }
+  const forceFailCurrent = failCurrent; // même geste (bande ou mono), sur la nuit courante de la chaîne
 
   /** Déroule TOUTE la chaîne de nuits (échecs garantis sur chaque étape-jet) jusqu'à ce qu'aucune
    *  cascade ne reste pendante — renvoie le nombre de fois où une cascade de nuit s'est ouverte. */

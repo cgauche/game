@@ -47,6 +47,13 @@ de `saves-flow.test.ts` (`MIGRATIONS[v]` + fixture `v<v>-*.json` exigées pour c
   les appliers exigent des RANGÉES, une étape mono serait abandonnée en silence). Fixture de version
   PASSÉE, MINIMALE et écrite à la main (idem `v4-convoi`/`v6-codex-focus-label`), forme legacy relevée
   dans l'historique (`af7774e2^:src/state/encounterPsychFlow.ts`).
+- `v17-nuit-mono.json` — jets de NUIT EN ATTENTE à la forme MONO dans les TROIS porteurs d'étapes
+  (cascade ACTIVE avec une étape déjà validée avant le curseur, pile SUSPENDUE, file
+  `deferredUpkeepQueue`), dont deux Dessoûlages du MÊME héros (aucun `meta.day` : ce champ NAÎT avec
+  #1117 L3 — la séparation se fait par le repli de dédoublement de la fabrique), motive
+  `MIGRATIONS[17]` (v17→v18, bandification #1117 L3 : les appliers de nuit exigent des RANGÉES, une
+  étape mono serait abandonnée en silence). Fixture de version
+  PASSÉE, MINIMALE et écrite à la main (idem `v4-convoi`/`v16-cascade-psy-mono`).
 
 ## Ajouter/régénérer une fixture
 

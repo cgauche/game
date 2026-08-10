@@ -37,10 +37,11 @@ import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { remapCharKeysDeep } from './charKeyMigration';
 import { remapInstanceIdsDeep, remapNameToLabelDeep, remapGameOpNameDeep } from './instanceIdMigration';
 import type { CodexFocus } from './codexFocus';
-import type { PendingCascade, RevealEntry } from './pendings';
+import type { PendingCascade, RevealEntry, CascadeStep } from './pendings';
 import { revealToStep } from './revealStep';
+import { nightBands } from './nightBands';
 
-export const SAVE_VERSION = 17;
+export const SAVE_VERSION = 18;
 
 export interface SaveMeta {
   version: number;
@@ -289,6 +290,20 @@ export const MIGRATIONS: MigrationMap = {
     bandifyPsychSteps(data);
     return { ...doc, version: 17, data };
   },
+  // v17→v18 (#1117 L3) : les jets de NUIT (Faim, Soif, Marche forcée, Dessoûlage, maladies, Contagion,
+  // Récupération, Cauchemars, Abri, Exposition) ne sont plus des étapes MONO mais des BANDES par entrée
+  // de règle et par JOUR (`state/nightBands`). Tous leurs appliers exigent désormais `participants` et
+  // RENONCENT sans : une save v17 prise avec des jets de nuit EN ATTENTE se rechargerait avec des étapes
+  // dont le jet se lance, la cascade avance, et dont AUCUNE conséquence ne serait appliquée. Les TROIS
+  // porteurs d'étapes de la save sont parcourus : la cascade ACTIVE, la pile SUSPENDUE, et la file
+  // `deferredUpkeepQueue` (Tests d'entretien mis en file pendant un combat) — que MIGRATIONS[16] avait
+  // laissée de côté. Les étapes DÉJÀ VALIDÉES (avant le curseur) restent intactes : elles sont de
+  // l'historique inerte, et les re-bander décalerait le curseur.
+  17: (doc) => {
+    const data = { ...(doc.data as Record<string, unknown>) };
+    bandifyNightSteps(data);
+    return { ...doc, version: 18, data };
+  },
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus
@@ -450,6 +465,24 @@ function bandifyPsychSteps(data: Record<string, unknown>): void {
     if (!Array.isArray(steps)) continue;
     for (const step of steps) if (step && typeof step === 'object') bandifyPsychStep(step as Record<string, unknown>);
   }
+}
+
+/** Bandifie les jets de NUIT encore À JOUER des TROIS porteurs d'étapes d'une save (cascade ACTIVE,
+ *  pile SUSPENDUE, file `deferredUpkeepQueue`) — MIGRATIONS[17]. La conversion passe par la FABRIQUE
+ *  du jeu (`nightBands`), source unique de la forme d'une bande : la migration ne redécrit pas une
+ *  forme cible qui dériverait ensuite du code vivant. Seules les étapes AU CURSEUR ET APRÈS sont
+ *  regroupées (celles d'avant sont validées : historique inerte, et le curseur ne bouge pas). Mute
+ *  `data` ; formes inattendues laissées telles quelles (patron `normalizeScene`). */
+function bandifyNightSteps(data: Record<string, unknown>): void {
+  const stack = Array.isArray(data.suspendedCascades) ? data.suspendedCascades : [];
+  for (const cascade of [data.pendingCascade, ...stack]) {
+    const c = cascade as { participants?: unknown; cursor?: unknown } | null | undefined;
+    if (!c || !Array.isArray(c.participants)) continue;
+    const cursor = typeof c.cursor === 'number' ? c.cursor : 0;
+    const steps = c.participants as CascadeStep[];
+    c.participants = [...steps.slice(0, cursor), ...nightBands(steps.slice(cursor))];
+  }
+  if (Array.isArray(data.deferredUpkeepQueue)) data.deferredUpkeepQueue = nightBands(data.deferredUpkeepQueue as CascadeStep[]);
 }
 
 /** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE, via la
