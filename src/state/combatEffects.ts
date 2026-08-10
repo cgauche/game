@@ -53,6 +53,7 @@ import { removeEntity } from './combatGeometry';
 import { playSfx } from '../audio/engine';
 import { combatDistance } from './footprint';
 import { startCascade, registerCascadeApplier, pushStep } from './cascade';
+import { exposureWaveBand } from './nightBands';
 import { freeCons, rollStep } from './rollSeam';
 import { startGroundPursuit } from './pursuitFlow';
 import { sourceExposureMod, autoExposureMods, drawWaterDisease, isWounded } from '../engine/waterExposure';
@@ -1136,17 +1137,18 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         if (isWeatherWarded(c)) { lines.push(`${c.label} ignore ${kind === 'froid' ? 'le froid et les intempéries' : 'la chaleur'} (protection magique).`); continue; }
         const resVal = testValue(c, 'resistance', 'endurance');
         const target = kind === 'froid' ? exposureTarget(c, resVal) : Math.max(0, resVal);
-        for (let i = 0; i < count; i++) {
-          steps.push({
-            id: `expo-${c.id}-${i}`, kind: 'exposure', actorId: c.id, icon: 'rest/cold',
-            rollLabel: 'Résistance', label: kind === 'froid' ? 'Exposition (froid)' : 'Exposition (chaleur)',
-            base: resVal, difficulty: 'intermediaire', ...(kind === 'froid' ? exposureCoatMods(c) : {}),
-            target, result: null, interactive: true, meta: { kind }, stake: nightStakeRef('exposure'),
-          });
-        }
+        steps.push({
+          id: `expo-${c.id}`, kind: 'exposure', actorId: c.id, icon: 'rest/cold',
+          rollLabel: 'Résistance', label: kind === 'froid' ? 'Exposition (froid)' : 'Exposition (chaleur)',
+          base: resVal, difficulty: 'intermediaire', ...(kind === 'froid' ? exposureCoatMods(c) : {}),
+          target, result: null, interactive: true, meta: { kind }, stake: nightStakeRef('exposure'),
+        });
       }
       if (lines.length) { env.set(touchActors(env.get())); lines.forEach((l) => env.log(l)); }
-      if (steps.length) startCascade(env.get, env.set, { title: kind === 'froid' ? 'Exposition au froid' : 'Exposition à la chaleur', icon: 'rest/cold', purpose: 'test', steps });
+      // BANDE d'Exposition (#1117 L3) : une fenêtre par VAGUE, les héros exposés en rangées — les
+      // vagues suivantes se déroulent APRÈS les délestages de la précédente (`nextExposureWave`).
+      const band = exposureWaveBand(steps, kind, count);
+      if (band.length) startCascade(env.get, env.set, { title: kind === 'froid' ? 'Exposition au froid' : 'Exposition à la chaleur', icon: 'rest/cold', purpose: 'test', steps: band });
     },
   },
   inflictTrauma: {
