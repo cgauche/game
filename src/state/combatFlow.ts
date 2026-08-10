@@ -925,7 +925,7 @@ export function previewCast(
   const ni = opts?.focused ? 0 : spell.cn ?? 0;
   const ctx = opts?.ctx ? castContextMods(opts.ctx.s, caster, opts.ctx.target, spell, { skipWard: opts.ctx.skipWard }) : null;
   const mods: ModLine[] = [
-    ...(advMod ? [{ label: 'Avantage', value: advMod, famille: 'jet' as const, uncapped: true, ref: RULE_REF.avantage }] : []),
+    ...(advMod ? [{ label: 'Avantage', value: advMod, famille: 'jet' as const, ref: RULE_REF.avantage }] : []),
     ...(penMod ? [{ label: 'Contrecoup', value: penMod, famille: 'jet' as const }] : []),
     ...(ctx?.mods ?? []),
     ...(windsLine ? [windsLine] : []),

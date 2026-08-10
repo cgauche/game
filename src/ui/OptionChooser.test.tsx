@@ -70,8 +70,8 @@ describe('optionValue / optionPending — forme unique pré-jet', () => {
     expect(optionValue(40, [{ label: 'Avantage', value: 10, famille: 'jet' }])).toBe(50);
     // Malus plafonné à −30 (Très Difficile) : 40 + (−40 plafonné −30) = 10.
     expect(optionValue(40, [{ label: 'X', value: -40, famille: 'circonstance' }])).toBe(10);
-    // `uncapped` (Avantage hors table) échappe au plafond des bonus.
-    expect(optionValue(40, [{ label: 'Avantage', value: 100, famille: 'jet', uncapped: true }])).toBe(140);
+    // `famille: 'jet'` (Avantage, hors table `LDB 14 l.48`) échappe au plafond des bonus.
+    expect(optionValue(40, [{ label: 'Avantage', value: 100, famille: 'jet' }])).toBe(140);
   });
 
   it('optionPending : { label, base, mods } ; cible omise par défaut, fournie si plafonnée', () => {

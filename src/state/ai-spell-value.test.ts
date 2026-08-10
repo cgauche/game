@@ -4,7 +4,7 @@
  * soin / buff marginal / contrôle / invocation / défaut signé) + escompte d'opposition. PUR, déterministe.
  */
 import { describe, it, expect } from 'vitest';
-import { opValue, oppositionDiscount, type OpEvalCtx } from './aiSpellValue';
+import { opValue, oppositionDiscount, hitProbability, type OpEvalCtx } from './aiSpellValue';
 import type { SpellData } from '../data';
 import type { Combatant, Weapon } from '../engine/types';
 
@@ -103,5 +103,26 @@ describe('oppositionDiscount — Sorts de Contact / résistés (LDB 46 l.123-124
   });
   it('Sort NON opposé → ×1 (passe à coup sûr)', () => {
     expect(oppositionDiscount(spell(undefined), caster(), target())).toBe(1);
+  });
+});
+
+/**
+ * MONOTONIE DU SCORING — `hitProbability` est la grandeur par où l'IA ÉVALUE le vrai jet
+ * (`combatValue + combineMods`). Aucune garde ne l'observait : un changement de règle de combinaison
+ * déplaçait ses probabilités en silence (mesuré : 0,20 → 0,10 à 4 pions Exténué, l'espérance de
+ * dégâts divisée par deux). Ici la marche est EXIGÉE, pion par pion : chaque État coûte ses 10 points
+ * de cible (`LDB 16 l.11`), jamais absorbés par le plafond des Difficultés (`LDB 14 l.48/95`).
+ */
+describe('hitProbability — chaque pion d’État coûte sa marche à l’IA (CC 40, monotone)', () => {
+  const cible = () => combatant({ id: 'B', kind: 'hero', pos: { x: 1, y: 0 } });
+  const use = (pions: number) => combatant({ id: 'A', pos: { x: 0, y: 0 }, weapons: [MELEE], ...(pions ? { conditions: [{ id: 'extenue', value: pions }] } : {}) } as Partial<Combatant>);
+
+  it('0 à 5 pions Exténué : 0,40 → 0,05 par marches de 0,10 (plancher 5 %)', () => {
+    const p = [0, 1, 2, 3, 4, 5].map((n) => hitProbability(use(n), cible(), MELEE, 'melee'));
+    expect(p).toEqual([0.4, 0.3, 0.2, 0.1, 0.05, 0.05]);
+    // Non-vacuité : la série doit VRAIMENT décroître (une grandeur constante passerait toute
+    // comparaison « ≤ » sans rien prouver), et le 4ᵉ pion doit peser (le plafond l'aurait mangé).
+    expect(p[0]).toBeGreaterThan(p[5]);
+    for (let i = 1; i < 4; i++) expect(p[i - 1]! - p[i]!).toBeCloseTo(0.1, 10);
   });
 });

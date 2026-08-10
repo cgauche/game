@@ -144,7 +144,7 @@ describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
     expect(p.base).toBe(50); // CC 50, pas de Spé
   });
 
-  it('issue #202 — buff de Caractéristique (Bénédiction de Bataille +10 CC) : target INCHANGÉ, base amputé, ligne étiquetée uncapped', () => {
+  it('issue #202 — buff de Caractéristique (Bénédiction de Bataille +10 CC) : target INCHANGÉ, base amputé, ligne étiquetée `famille: \'jet\'`', () => {
     const a = combatant({ id: 'A', activeEffects: [{ label: 'Bénédiction de Bataille', char: 'capacite-de-combat', bonus: 10 }] as never });
     const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 1, y: 0 } });
     const withoutBuff = previewAttack(mkGet([combatant({ id: 'A' }), b]), combatant({ id: 'A' }), b);
@@ -153,7 +153,7 @@ describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
     expect(withBuff.base).toBe(withoutBuff.base); // le +10 est sorti de `base` vers une ModLine
     expect(inexplique({ base: withBuff.base, mods: withBuff.mods, target: withBuff.target, difficulty: withBuff.difficulty })).toBe(0);
     const line = withBuff.mods.find((m) => m.label === 'Bénédiction de Bataille');
-    expect(line).toEqual({ label: 'Bénédiction de Bataille', value: 10, famille: 'jet', uncapped: true });
+    expect(line).toEqual({ label: 'Bénédiction de Bataille', value: 10, famille: 'jet' });
   });
 });
 
@@ -179,23 +179,42 @@ describe('previewAttack — plafond des Difficultés NOMMÉ et cible écrêtée 
     expect(p.clamped).toBeUndefined();
   });
 
-  it('MALUS mordant : cible INCHANGÉE, mais l’amputation cesse d’être un résidu muet', () => {
-    // Deux sources INDÉPENDANTES : l'État Aveuglé (−20 ; le pool d'États est non-cumul, LDB 16 l.20)
-    // et la Maladresse du Round précédent (−20). Σ = −40 → plafonné à −30.
-    const a = combatant({ id: 'A', conditions: [{ id: 'aveugle', value: 2 }] as never, nextActionPenalty: 20 } as never);
+  it('CIRCONSTANCES mordantes : cible INCHANGÉE, amputation NOMMÉE dans la composition du palier', () => {
+    // Deux entrées de la TABLE des Difficultés de Combat : Localisation visée −20 (`LDB 14 l.73`) et
+    // Main secondaire −20 (l.78). Σ = −40 → la combinaison plafonne à −30 (l.95). Le plafond ne borne
+    // QUE cette famille : c'est le seul régime où il mord.
+    const gauchere = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [], hand: 'off' };
+    const a = combatant({ id: 'A', weapons: [gauchere] as never });
     const b = foe();
-    const p = previewAttack(mkGet([a, b]), a, b);
-    const chips = hors(p);
-    const somme = chips.reduce((s, m) => s + m.value, 0);
-    const combine = combineMods(chips);
-    expect(combine, 'la fixture doit VRAIMENT franchir le plafond des malus').not.toBe(somme);
+    const p = previewAttack(mkGet([a, b]), a, b, 'tete');
+    const mods = attackModifiers(a, b, p.weapon, { kind: 'melee', location: 'tete' });
+    const somme = mods.reduce((s, m) => s + m.value, 0);
+    const combine = combineMods(mods);
+    expect(somme, 'la fixture doit VRAIMENT franchir le plafond des malus').toBe(-40);
+    expect(combine).toBe(-30);
 
-    expect(p.target, 'la cible ne bouge pas d’un point').toBe(cibleNonEcretee(a, 'melee', p.weapon, chips));
-    // Sans la ligne de plafond, l'écart base→cible reste inexpliqué de tout le montant amputé —
-    // c'est exactement ce que `RollLine` avouerait en chip « autres ».
-    expect(inexplique({ base: p.base, mods: chips, target: p.target, difficulty: p.difficulty })).toBe(combine - somme);
-    expect(p.mods.find((m) => m.label === 'plafond Difficultés')?.value).toBe(combine - somme);
+    expect(p.target, 'la cible ne bouge pas d’un point').toBe(cibleNonEcretee(a, 'melee', p.weapon, mods));
+    // L'amputation reste imputable : elle est une COMPOSANTE du palier dérivé (`LDB 14 l.95` : « le
+    // Test devient simplement Très Difficile (-30) »), jamais un résidu muet en chip « autres ».
+    expect(p.difficulty).toBe('tresDifficile');
+    expect(p.difficultyParts?.find((m) => m.label === 'plafond Difficultés')?.value).toBe(combine - somme);
+    expect(p.mods.some((m) => m.famille === 'circonstance'), 'le palier porte les circonstances').toBe(false);
     expect(inexplique({ base: p.base, mods: p.mods, target: p.target, difficulty: p.difficulty })).toBe(0);
+  });
+
+  it('les ÉTATS du jeteur ne se plafonnent PAS : 4 pions Exténué pèsent −40 sur la cible (LDB 16 l.11)', () => {
+    // « si vous avez 3 États *Exténué*, vous subissez une pénalité de -30 à tous vos Tests » — la
+    // règle d'accumulation serait morte au 4ᵉ pion si le plafond des Difficultés (l.95) la bornait.
+    const trois = combatant({ id: 'A', conditions: [{ id: 'extenue', value: 3 }] as never } as never);
+    const quatre = combatant({ id: 'A', conditions: [{ id: 'extenue', value: 4 }] as never } as never);
+    const b = foe();
+    const sain = previewAttack(mkGet([combatant({ id: 'A' }), b]), combatant({ id: 'A' }), b);
+    const p3 = previewAttack(mkGet([trois, b]), trois, b);
+    const p4 = previewAttack(mkGet([quatre, b]), quatre, b);
+    expect(p3.target).toBe(sain.target - 30);
+    expect(p4.target).toBe(sain.target - 40);
+    expect(p4.mods.find((m) => m.label.includes('Exténué'))).toMatchObject({ value: -40, famille: 'jet' });
+    expect(inexplique({ base: p4.base, mods: p4.mods, target: p4.target, difficulty: p4.difficulty })).toBe(0);
   });
 
   it('BORNE : l’Avantage hors plafond ne promet plus une cible > 99 que le jet n’atteindra jamais', () => {
@@ -279,7 +298,9 @@ describe('resolveDualSecond — la 2ᵉ frappe vise la cible que le moteur jette
     expect(res.attackerDetail!.target, 'la 2ᵉ frappe est bornée comme les autres jets').toBe(99);
   });
 
-  it('PLAFOND : la 2ᵉ frappe subit −30 (combinés), jamais la somme brute −40', () => {
+  it('MODS AU JET : la 2ᵉ frappe subit la somme ENTIÈRE des pénalités du jeteur (−40)', () => {
+    // État Aveuglé ×2 (−20, `LDB 16`) + Maladresse du Round précédent (−20, `LDB 14 l.26`) : deux
+    // modificateurs du JETEUR, hors table des Difficultés de Combat — rien à plafonner (l.48/95).
     const a = combatant({ id: 'A', conditions: [{ id: 'aveugle', value: 2 }] as never, nextActionPenalty: 20, weapons: [
       { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [], hand: 'main', hands: 1, uid: 'm' },
       { label: 'Dague', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, reach: 'Très courte', qualities: [], hand: 'main', hands: 1, uid: 'o' },
@@ -289,11 +310,12 @@ describe('resolveDualSecond — la 2ᵉ frappe vise la cible que le moteur jette
     const mods = attackModifiers(a, b, off, { kind: 'melee' });
     const somme = mods.reduce((s, m) => s + m.value, 0);
     expect(somme, 'les deux sources somment −40 brut').toBe(-40);
-    expect(combineMods(mods), 'le plafond des malus les ramène à −30').toBe(-30);
+    expect(mods.every((m) => m.famille === 'jet'), 'aucune entrée de la table ici').toBe(true);
+    expect(combineMods(mods), 'aucun plafond ne mord sur des mods au jet').toBe(-40);
 
     seedBattleRng(7);
     const res = resolveDualSecond(mkGet([a, b]), a, b, off, 50, { critValue: 30 });
-    expect(res.attackerDetail!.target).toBe(combatValue(a, 'melee', off) - 30);
+    expect(res.attackerDetail!.target).toBe(combatValue(a, 'melee', off) - 40);
   });
 });
 

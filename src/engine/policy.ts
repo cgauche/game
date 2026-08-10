@@ -183,7 +183,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     min: 0,
     max: 100,
     step: 10,
-    hint: 'Plafond de la SOMME des bonus de Difficulté d’un Test (RAW +60 = Très Facile). L’Avantage reste hors plafond.',
+    hint: 'Plafond de la SOMME des bonus de CIRCONSTANCE d’un Test de combat (RAW +60 = Très Facile). Les modificateurs du jeteur (Avantage, Soutien, États) restent hors plafond.',
   },
   {
     id: 'combat-diff-cap-malus',
@@ -195,7 +195,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     min: 0,
     max: 100,
     step: 10,
-    hint: 'Plafond de la SOMME des malus de Difficulté d’un Test (RAW −30 = Très Difficile), exprimé en valeur positive. Règle optionnelle EDO (Difficultés extrêmes, réf EDO App.2) : porter ce plafond à 50.',
+    hint: 'Plafond de la SOMME des malus de CIRCONSTANCE d’un Test de combat (RAW −30 = Très Difficile), exprimé en valeur positive ; les modificateurs du jeteur (États, Maladresse…) n’y entrent pas. Règle optionnelle EDO (Difficultés extrêmes, réf EDO App.2) : porter ce plafond à 50.',
   },
   {
     id: 'combat-frappe-mortelle',

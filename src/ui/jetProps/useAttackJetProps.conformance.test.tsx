@@ -214,28 +214,25 @@ describe('Attaque — la Difficulté DÉRIVE des circonstances (#1153 L3b-2)', (
   });
 
   /**
-   * CAS DE RECETTE (bug reproduit 2× par le recetteur, capture `cas3-BUG-label-vs-cible.png`) — le
-   * plafond MORD À CHEVAL sur les deux familles : les circonstances SEULES valent −10 (Complexe),
-   * mais `combineMods` plafonne le pool COMMUN (Σ malus −40 → −30) et rembourse +10 aux
-   * circonstances. Un palier dérivé de ce total annoncerait « Intermédiaire (+0) » — une Difficulté
-   * que la table ne dit pas. Condition (d) : familles non séparables ⇒ REPLI intégral, tout se lit
-   * en chips, l'amputation NOMMÉE comprise.
+   * CAS DE RECETTE — trois circonstances de la table (+20 −20 −10) et un État du jeteur (−10). Les
+   * deux familles ne se mélangent pas : les circonstances composent le palier (`LDB 14 l.95` : leur
+   * somme « devient la nouvelle difficulté »), l'État reste une chip qui pèse EN PLUS sur la cible
+   * (`LDB 16 l.11`). Aucune amputation ici : la somme des circonstances (−10) ne touche pas le
+   * plafond, et rien ne peut plus rembourser à l'une ce qui est coupé à l'autre.
    */
-  it('RECETTE — plafond à CHEVAL sur les deux familles : aucun palier dérivé, tout en chips', () => {
+  it('RECETTE — palier des circonstances D’UN CÔTÉ, chip d’État DE L’AUTRE, sur la même ligne', () => {
     const v = renderAttack({
       ranged: true, cases: 5, location: 'tete', enMouvement: true,
       conditions: [{ id: 'empoisonne', value: 1 }],
     });
-    expect(palier(v), 'la Difficulté DÉCLARÉE tient — aucun palier menteur').toBe(' — Intermédiaire (+0)');
-    expect(porte(v), 'rien à composer : pas de popover de composition').toBeUndefined();
-    expect(chips(v)).toEqual([
-      '−10 Empoisonné', // composante de la VALEUR (État du jeteur) — en tête, avant les mods de cible
-      '+20 Courte portée',
-      '−20 Localisation visée',
-      '−10 Tir en bougeant',
-      '+10 plafond Difficultés', // l'amputation reste NOMMÉE : sans palier à composer, elle est une chip
-    ]);
-    expect(calcul(v)).toBe('40 −10 = 30');
+    expect(palier(v), 'les circonstances SEULES composent le palier').toBe(' — Complexe (−10)');
+    expect(porte(v), 'le palier dérivé est explorable').toBeDefined();
+    expect(popover(v)).toContain('+20 Courte portée');
+    expect(popover(v)).toContain('−20 Localisation visée');
+    expect(popover(v)).toContain('−10 Tir en bougeant');
+    expect(popover(v), 'aucune amputation : le plafond ne mord pas sur −10').not.toContain('plafond Difficultés');
+    expect(chips(v), 'l’État du jeteur ne se dilue jamais dans la Difficulté').toEqual(['−10 Empoisonné']);
+    expect(calcul(v)).toBe('40 −20 = 20');
     expect(ANONYMES.count).toBe(0);
   });
 
@@ -255,7 +252,7 @@ describe('Attaque — la Difficulté DÉRIVE des circonstances (#1153 L3b-2)', (
   });
 
   /**
-   * AVANTAGE 6 (+60 `uncapped`, `LDB 13`) — Capacité de Combat 45 + 60 = 105, au-delà de la borne
+   * AVANTAGE 6 (+60, hors table `LDB 14 l.48`) — Capacité de Combat 45 + 60 = 105, au-delà de la borne
    * `targetMax` : `clampTarget` ramène à 99 et MESURE l'amputation (−6). C'est le bug historique de
    * recette : sans le relai de `clamped` jusqu'au pending, cet écart sortait en chip « autres ».
    * Aucun test d'ÉCRAN ne le verrouillait — celui-ci le fait, sur la ligne réellement rendue.

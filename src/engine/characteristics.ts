@@ -63,8 +63,8 @@ export function effectiveChar(c: Combatant, key: CharKey): number {
 }
 
 /** Lignes ÉTIQUETÉES (≤2) du MEILLEUR bonus et de la PIRE pénalité volatiles gagnants du pool non-cumul
- *  (issue #202 — affichage dans la modale d'attaque). `uncapped` : hors plafond « Combiner les Difficultés »
- *  (comme l'Avantage, `combat.ts`) — ces valeurs sont déjà dans `effectiveChar`, pas de nouveau plafond. */
+ *  (issue #202 — affichage dans la modale d'attaque). `famille: 'jet'` : hors table des Difficultés de
+ *  Combat (`LDB 14 l.48`) — ces valeurs vivent dans `effectiveChar`, aucun plafond de combinaison. */
 export function volatileCharLines(c: Combatant, key: CharKey): ModLine[] {
   const entries = volatileCharEntries(c, key);
   const bonuses = entries.filter((e) => e.value > 0);
@@ -72,11 +72,11 @@ export function volatileCharLines(c: Combatant, key: CharKey): ModLine[] {
   const lines: ModLine[] = [];
   if (bonuses.length) {
     const best = bonuses.reduce((a, b) => (b.value > a.value ? b : a));
-    lines.push({ label: best.label, value: best.value, famille: 'jet', uncapped: true, ref: best.ref });
+    lines.push({ label: best.label, value: best.value, famille: 'jet', ref: best.ref });
   }
   if (penalties.length) {
     const worst = penalties.reduce((a, b) => (b.value < a.value ? b : a));
-    lines.push({ label: worst.label, value: worst.value, famille: 'jet', uncapped: true, ref: worst.ref });
+    lines.push({ label: worst.label, value: worst.value, famille: 'jet', ref: worst.ref });
   }
   return lines;
 }

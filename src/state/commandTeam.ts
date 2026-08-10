@@ -70,8 +70,8 @@ export function effectiveCommander(chief: Combatant, combatants: Combatant[]): C
 /** Substitution « Commandant d'équipe » (AA) en `ModLine` pour `attackEnv` : le `base` du jet est le score
  *  du CHEF → on pousse le DELTA (score du commandant − score du chef), si bien que `base + delta` = score du
  *  commandant. `null` si le chef ne tire pas la pièce servie, n'a pas de commandant lié, ou que le commandant
- *  a lapsé (mort / hors portée). `uncapped` : c'est une substitution de SCORE, hors plafond « Combiner les
- *  Difficultés ». PURE — couvre l'aperçu ET la résolution (même `env`). */
+ *  a lapsé (mort / hors portée). Substitution de SCORE : `famille: 'jet'` — hors du plafond « Combiner
+ *  les Difficultés » (`LDB 14 l.48/95`). PURE — couvre l'aperçu ET la résolution (même `env`). */
 export function teamCommandMod(chief: Combatant, weapon: Weapon, combatants: Combatant[]): ModLine | null {
   // Seulement quand le chef tire l'ARME D'ÉQUIPE servie (« quand ils tirent avec l'arme », AA 13 l.35).
   if (!chief.mannedPoste || chief.teamCommanderId == null || weapon.uid !== chief.mannedPoste.item.uid) return null;
@@ -79,5 +79,5 @@ export function teamCommandMod(chief: Combatant, weapon: Weapon, combatants: Com
   if (!cmd) return null;
   const delta = combatValue(cmd, 'ranged', weapon) - combatValue(chief, 'ranged', weapon);
   if (delta === 0) return null; // aucune substitution à montrer
-  return { label: 'Commandant d’équipe', value: delta, famille: 'jet', uncapped: true, ref: RULE_REF['commandant-d-equipe'] };
+  return { label: 'Commandant d’équipe', value: delta, famille: 'jet', ref: RULE_REF['commandant-d-equipe'] };
 }

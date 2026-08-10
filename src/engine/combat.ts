@@ -454,17 +454,34 @@ export const FREE_ATTACK_LABEL: Record<string, string> = {
 };
 
 /**
- * Combiner les Difficultés (LDB `14 - _GoBack.md` l.91-96) : la somme des MALUS et la somme des
- * BONUS sont chacune plafonnée (RAW +60 Très Facile / −30 Très Difficile) ; un mélange se somme. Les
- * deux plafonds sont des règles optionnelles (`combat-diff-cap-bonus`/`-malus`). Les lignes `uncapped`
- * (Avantage — hors table de Difficulté) s'ajoutent sans plafond.
+ * Combiner les Difficultés (LDB `14 - _GoBack.md` l.91-96) — le plafond borne la combinaison des
+ * CIRCONSTANCES de la table (chapeau l.48), jamais les modificateurs portés par le jeteur : seules
+ * les lignes `famille: 'circonstance'` entrent dans les deux sommes plafonnées (RAW +60 Très Facile /
+ * −30 Très Difficile), les lignes `famille: 'jet'` (États `LDB 16 l.11`, Soutien `LDB 12 l.189`,
+ * Avantage) s'ajoutent hors plafond. Les deux plafonds sont des règles optionnelles
+ * (`combat-diff-cap-bonus`/`-malus`).
+ *
+ * Les deux exemples du livre, VERBATIM (l.95-96) :
+ *   « Si la situation nécessite l'ajout de deux pénalités ou plus, contentez-vous de faire la somme
+ *     des différents modificateurs sans dépasser **Très Difficile -30**. Par exemple, le brouillard
+ *     ajouté au fait de vouloir toucher une Localisation précise donne un Test de **Capacité de
+ *     Combat Difficile (-20)**. Lorsqu'il est combiné, le Test devient simplement **Très Difficile
+ *     (-30)** au lieu de recevoir une pénalité de **-40**. De la même façon, si la situation implique
+ *     l'addition de deux bonus, faites la somme des modificateurs jusqu'à un maximum de **+60** ou
+ *     **Très Facile** . »
+ *   « Si la situation demande à la fois une pénalité et un bonus, faites-en la somme pour obtenir la
+ *     nouvelle difficulté. Attaquer un adversaire alors qu'on se trouve dans la neige jusqu'à la
+ *     taille nécessite normalement un Test **Très Difficile (-30)**. Mais attaquer un adversaire qui
+ *     est *À Terre* ne nécessite qu'un Test **Facile (+20)**. Dans une situation ou les deux
+ *     paramètres s'applique, le Test sera **Difficile (-10)** parce que **-30** plus **+20** font
+ *     **-10** . »
  */
 export function combineMods(mods: ModLine[]): number {
   let pos = 0;
   let neg = 0;
   let free = 0;
   for (const m of mods) {
-    if (m.uncapped) free += m.value;
+    if (m.famille !== 'circonstance') free += m.value;
     else if (m.value >= 0) pos += m.value;
     else neg += m.value;
   }
@@ -542,7 +559,7 @@ export function attackModifiers(
 ): ModLine[] {
   const out: ModLine[] = [];
   const adv = attacker.advantage * 10;
-  if (adv) out.push({ label: 'Avantage', value: adv, famille: 'jet', uncapped: true, ref: RULE_REF.avantage });
+  if (adv) out.push({ label: 'Avantage', value: adv, famille: 'jet', ref: RULE_REF.avantage });
   out.push(...conditionModLines(attacker));
   if (attacker.nextActionPenalty) out.push({ label: 'Maladresse (Round précédent)', value: -attacker.nextActionPenalty, famille: 'jet', ref: RULE_REF['maladresse-tableau-des-oups'] });
   // Amputation (LDB 18 l.251/263) : pénalité CONTEXTUELLE à l'arme — s'applique ssi l'arme implique la main blessée.
@@ -674,9 +691,9 @@ export function parryPenalty(defender: Combatant, weapon: Weapon | undefined): n
 export function defenseModifiers(defender: Combatant, mode: DefenseMode, dodgeMod = 0, weapon?: Weapon): ModLine[] {
   const out: ModLine[] = [];
   const adv = defender.advantage * 10;
-  // Avantage HORS table de Difficulté (comme `attackModifiers`) → `uncapped` : ne compte PAS dans le
-  // plafond ±30/+60 de `combineMods` — sans ce marqueur, l'affichage défense plafonnerait l'Avantage à tort.
-  if (adv) out.push({ label: 'Avantage', value: adv, famille: 'jet', uncapped: true, ref: RULE_REF.avantage });
+  // Avantage HORS table de Difficulté (`LDB 14 l.48`, comme `attackModifiers`) → `famille: 'jet'` : ne
+  // compte pas dans le plafond ±30/+60 de `combineMods`, qui ne combine que les circonstances.
+  if (adv) out.push({ label: 'Avantage', value: adv, famille: 'jet', ref: RULE_REF.avantage });
   out.push(...conditionModLines(defender));
   if (defender.defensiveStance) out.push({ label: 'Sur la défensive', value: 20, famille: 'jet', ref: RULE_REF['sur-la-defensive'] });
   if (mode === 'esquive' && dodgeMod) out.push({ label: 'Neige épaisse', value: dodgeMod, famille: 'circonstance' });
@@ -712,8 +729,8 @@ function defenseTestChar(mode: DefenseMode): CharKey | null {
 export function baseTestModLines(c: Combatant, ck?: CharKey): ModLine[] {
   const out: ModLine[] = [];
   const adv = c.advantage * 10;
-  // Avantage HORS table de Difficulté (comme `attackModifiers`/`defenseModifiers`) → `uncapped`.
-  if (adv) out.push({ label: 'Avantage', value: adv, famille: 'jet', uncapped: true, ref: RULE_REF.avantage });
+  // Avantage HORS table de Difficulté (comme `attackModifiers`/`defenseModifiers`) → `famille: 'jet'`.
+  if (adv) out.push({ label: 'Avantage', value: adv, famille: 'jet', ref: RULE_REF.avantage });
   out.push(...conditionModLines(c));
   out.push(...weatherTestMods(c.envWeather, ck ?? null));
   return out;
@@ -808,7 +825,7 @@ export function rollMeleeDefender(
   sub?: DefenseSub, // substitution sociale (mode 'social') : base = Test de la Compétence substituée
 ): TestResult {
   const defVal = defenseValue(defender, mode, parryWeapon, sub?.base);
-  // Modificateurs = SOURCE UNIQUE `defenseModifiers` (Avantage uncapped, État, Sur la défensive, Neige,
+  // Modificateurs = SOURCE UNIQUE `defenseModifiers` (Avantage, État, Sur la défensive, Neige,
   // Main secondaire, Maniement deux armes) + le malus Rapide (qui dépend de l'arme ATTAQUANTE, donc
   // hors `defenseModifiers`), le tout PLAFONNÉ par `combineMods` comme l'attaque (LDB 14 l.91-96).
   const mods = defenseModifiers(defender, mode, dodgeMod, parryWeapon);

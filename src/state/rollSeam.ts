@@ -312,11 +312,11 @@ interface RollLineBase {
    *  l.229). Les déclarer ici les compte UNE fois — dans la cible et sur la ligne. */
   surLaCible?: ModLine[];
   /** PLAFONNEMENT des `surLaCible` (`LDB 14 l.91-96`) : le monteur combine lui-même les
-   *  modificateurs (`combineMods`, plafonds data-driven `combat-diff-cap-bonus`/`-malus`, lignes
-   *  `uncapped` hors plafond) et, quand la combinaison diffère de la somme brute, ÉMET l'écart en
-   *  ligne NOMMÉE « plafond Difficultés » liée à sa fiche de règle. Sans ce mode, un appelant qui
-   *  plafonnait sa cible à la main laissait l'amputation en chip « autres ». Réservé aux jets de
-   *  COMBAT : hors combat, la table de Difficulté n'a pas de plafond de combinaison. */
+   *  modificateurs (`combineMods`, plafonds data-driven `combat-diff-cap-bonus`/`-malus`, appliqués
+   *  aux seules `famille: 'circonstance'`) et, quand la combinaison diffère de la somme brute, ÉMET
+   *  l'écart en ligne NOMMÉE « plafond Difficultés » liée à sa fiche de règle. Sans ce mode, un
+   *  appelant qui plafonnait sa cible à la main laissait l'amputation en chip « autres ». Réservé aux
+   *  jets de COMBAT : hors combat, la table de Difficulté n'a pas de plafond de combinaison. */
   plafond?: 'difficultes';
 }
 
@@ -506,28 +506,23 @@ export function rollLine(spec: RollLineSpec): RollLineParts {
   // PALIER DÉRIVÉ (`LDB 14 l.91-96` : « le brouillard ajouté au fait de vouloir toucher une
   // Localisation précise […] le Test devient simplement Très Difficile (-30) ») : en mode plafonné,
   // les circonstances quittent les chips et COMPOSENT la Difficulté de la ligne. Le palier se dérive
-  // des CIRCONSTANCES SEULES (`combineCirc`) — quatre conditions, toutes nécessaires :
+  // des CIRCONSTANCES SEULES (`combineCirc`) — trois conditions, toutes nécessaires :
   //  (a) au moins une circonstance — sinon le palier nommerait un pur artefact de plafond ;
   //  (b) une composition qui SOMME au palier. Comme elle vaut `combineCirc` par construction, cette
   //      égalité est VRAIE si et seulement si la Difficulté déclarée est Intermédiaire (dv = 0) :
   //      c'est le gate voulu — un site qui DÉCLARE sa Difficulté (Test de combat authoré Difficile)
   //      la garde, le palier ne peut pas l'avaler ; en combat d'attaque elle est Intermédiaire
   //      d'office (`LDB 13 l.118`), donc la dérivation opère ;
-  //  (c) un palier EXACT de l'échelle — un −15 (bande Extrême halvée) n'en compose aucun ;
-  //  (d) SÉPARABILITÉ des familles : `combineMods` plafonne aujourd'hui les DEUX familles dans un
-  //      même pool, si bien qu'un plafond qui MORD à cheval rembourse aux circonstances ce qu'il a
-  //      coupé aux modificateurs de jet ; le palier hériterait ce remboursement et annoncerait une
-  //      Difficulté que la table ne dit pas (mesuré : +20 −20 −10 de circonstances, net −10, avec un
-  //      État −10 → palier « Intermédiaire » au lieu de « Complexe »). Non séparable = REPLI
-  //      intégral, chips et écrêtage nommé. Décorréler les familles dans le moteur (#1153 Lv) rend
-  //      cette condition toujours vraie et le cas mixte revient au mode dérivé.
+  //  (c) un palier EXACT de l'échelle — un −15 (bande Extrême halvée) n'en compose aucun.
+  // La séparabilité des familles n'est plus une condition : `combineMods` ne plafonne QUE les
+  // circonstances (`LDB 14 l.48/95`), donc `combine === combineCirc + Σ chips` par construction et
+  // l'écrêtage nommé ne peut plus rembourser aux circonstances ce qu'il coupait aux mods au jet.
   const circonstances = spec.plafond === 'difficultes' ? surLaCible.filter((m) => m.famille === 'circonstance') : [];
   const composition = [...circonstances, ...ecretage];
   const enChips = surLaCible.filter((m) => !circonstances.includes(m));
   const combineCirc = combineMods(circonstances);
-  const separable = combine === combineCirc + enChips.reduce((s, m) => s + m.value, 0);
   const palierMod = dv + combineCirc;
-  const palier = circonstances.length && separable && composition.reduce((s, m) => s + m.value, 0) === palierMod
+  const palier = circonstances.length && composition.reduce((s, m) => s + m.value, 0) === palierMod
     ? exactDifficultyFromModifier(palierMod)
     : undefined;
   return {

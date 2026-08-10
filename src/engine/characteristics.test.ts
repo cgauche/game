@@ -40,9 +40,9 @@ describe('volatileCharLines — décomposition étiquetée du pool non-cumul (is
     expect(sum).toBe(effectiveChar(c, 'capacite-de-combat') - c.characteristics['capacite-de-combat'] - passiveCharSum(c, 'capacite-de-combat'));
   });
 
-  it('un seul buff +10 CC → une ligne étiquetée, uncapped', () => {
+  it('un seul buff +10 CC → une ligne étiquetée, `famille: \'jet\'` (hors table des Difficultés)', () => {
     const c = mk([{ char: 'capacite-de-combat', bonus: 10, label: 'Bénédiction de Bataille' }]);
-    expect(volatileCharLines(c, 'capacite-de-combat')).toEqual([{ label: 'Bénédiction de Bataille', value: 10, famille: 'jet', uncapped: true }]);
+    expect(volatileCharLines(c, 'capacite-de-combat')).toEqual([{ label: 'Bénédiction de Bataille', value: 10, famille: 'jet' }]);
   });
 
   it('buffs +20/+10/−10 même carac → seules les lignes gagnantes (+20 et −10), le +10 dominé absent', () => {
@@ -53,8 +53,8 @@ describe('volatileCharLines — décomposition étiquetée du pool non-cumul (is
     ]);
     const lines = volatileCharLines(c, 'capacite-de-combat');
     expect(lines).toEqual([
-      { label: 'Bénédiction de Bataille', value: 20, famille: 'jet', uncapped: true },
-      { label: 'Malédiction', value: -10, famille: 'jet', uncapped: true },
+      { label: 'Bénédiction de Bataille', value: 20, famille: 'jet' },
+      { label: 'Malédiction', value: -10, famille: 'jet' },
     ]);
     expect(lines.reduce((s, l) => s + l.value, 0)).toBe(10);
   });
@@ -69,7 +69,7 @@ describe('volatileCharLines — décomposition étiquetée du pool non-cumul (is
     const trauma = traumaById(dechirureFractureFicheId('fracture', 'majeur', 'corps'), undefined, 'corps');
     const c = mk([], 40, { traumas: [trauma] });
     const lines = volatileCharLines(c, 'force');
-    expect(lines).toEqual([{ label: trauma.label, value: -30, famille: 'jet', uncapped: true, ref: undefined }]);
+    expect(lines).toEqual([{ label: trauma.label, value: -30, famille: 'jet', ref: undefined }]);
     expect(lines[0].label).not.toBe('Séquelle'); // le nom de la FAMILLE n'est pas un nom d'octroyeur
     expect(effectiveChar(c, 'force')).toBe(40 - 30);
   });

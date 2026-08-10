@@ -612,8 +612,6 @@ export interface ModLine {
   /** Famille du modificateur, posée à l'ÉMISSION (jamais dérivée à l'affichage) — `LDB 14 l.48`. */
   famille: ModFamille;
   value: number;
-  /** Hors du plafond « Combiner les Difficultés » (ex. Avantage — pas une entrée de la table). */
-  uncapped?: boolean;
   /** La RÈGLE qui octroie ce modificateur, en ids STABLES (`RULE_REF`, ou une entité : État,
    *  Domaine, qualité d'arme). L'affichage en fait une chip liée au Codex (`ui/RollLine.tsx`) ;
    *  le moteur ne la lit jamais. */

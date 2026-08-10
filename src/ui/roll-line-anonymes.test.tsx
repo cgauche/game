@@ -46,22 +46,24 @@ describe('RollLine — le compteur de chips « autres » est CÂBLÉ et lu (#115
     expect(ANONYMES.count).toBe(0);
   });
 
-  it('le PLAFOND, SANS circonstance à composer, se rend en chip NOMMÉE — jamais en « autres »', () => {
-    // Trois États du JETEUR (famille `jet`) somment −50 et se combinent à −30. Aucune circonstance
-    // n'est en jeu : il n'y a AUCUN palier à composer (`LDB 14 l.91-96` borne la combinaison des
-    // entrées de la table), et l'amputation reste donc une chip nommée — la nommer « Accessible
-    // (+20) » ferait dire à la ligne l'exact contraire de la situation.
+  it('les ÉTATS du jeteur pèsent EN ENTIER : ni palier, ni plafond, ni « autres »', () => {
+    // Trois États du JETEUR (famille `jet`) somment −50, et la ligne les porte tous les trois : le
+    // plafond de `LDB 14 l.91-96` borne la combinaison des entrées de la TABLE, pas les modificateurs
+    // du jeteur (`LDB 16 l.11` : « si vous avez 3 États *Exténué*, vous subissez une pénalité de -30 à
+    // tous vos Tests »). Sans circonstance, il n'y a AUCUN palier à composer non plus — le nommer
+    // « Accessible (+20) » ferait dire à la ligne l'exact contraire de la situation.
     const monte = rollLine({
       difficulty: 'intermediaire', valeur: 60, plafond: 'difficultes',
       surLaCible: [{ label: 'Sonné', value: -10, famille: 'jet' }, { label: 'Aveuglé', value: -20, famille: 'jet' }, { label: 'Empêtré', value: -20, famille: 'jet' }],
     });
-    expect(monte.target, 'la fixture doit vraiment faire mordre le plafond').toBe(30);
+    expect(monte.target, 'les trois États pèsent, aucun n’est absorbé').toBe(10);
     expect(monte.difficulty, 'aucune circonstance ⇒ la Difficulté déclarée tient').toBe('intermediaire');
     expect(monte.difficultyParts).toBeUndefined();
+    expect(monte.mods.map((m) => m.label)).toEqual(['Sonné', 'Aveuglé', 'Empêtré']);
     const html = renderToStaticMarkup(
       <PendingRollLine p={{ label: 'Corps à corps', base: monte.base, target: monte.target, mods: monte.mods, difficulty: monte.difficulty, difficultyParts: monte.difficultyParts }} />,
     );
-    expect(html).toContain('plafond Difficultés');
+    expect(html, 'aucune amputation à nommer : le plafond ne mord pas ici').not.toContain('plafond Difficultés');
     expect(html).not.toContain('autres');
     expect(ANONYMES.count).toBe(0);
   });

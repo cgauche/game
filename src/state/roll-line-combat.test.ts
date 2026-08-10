@@ -379,12 +379,13 @@ describe('SONDES PROMUES (#1153 L1b) — ce que le monteur NE fait PAS encore', 
   const capB = rule('combat-diff-cap-bonus') as number;
   const capM = rule('combat-diff-cap-malus') as number;
   const MATRICE: { nom: string; mods: ModLine[]; attendu: number; mord: boolean; palier?: Difficulty }[] = [
-    { nom: 'aucun plafond ne mord (un malus, un bonus)', mods: [{ label: 'Sonné', value: -10, famille: 'jet' }, { label: 'À Terre', value: 20, famille: 'circonstance' }], attendu: 10, mord: false, palier: 'accessible' },
-    { nom: 'MALUS mordant (Σ −50)', mods: [{ label: 'Sonné', value: -10, famille: 'jet' }, { label: 'Aveuglé', value: -20, famille: 'jet' }, { label: 'Empêtré', value: -20, famille: 'jet' }], attendu: -capM, mord: true },
+    { nom: 'aucun plafond ne mord (un mod au jet, une circonstance)', mods: [{ label: 'Sonné', value: -10, famille: 'jet' }, { label: 'À Terre', value: 20, famille: 'circonstance' }], attendu: 10, mord: false, palier: 'accessible' },
+    { nom: 'MALUS de CIRCONSTANCES mordant (Σ −60)', mods: [{ label: 'Brouillard', value: -20, famille: 'circonstance' }, { label: 'Localisation visée', value: -20, famille: 'circonstance' }, { label: 'Main secondaire', value: -20, famille: 'circonstance' }], attendu: -capM, mord: true, palier: 'tresDifficile' },
+    { nom: 'ÉTATS du JETEUR : la somme est SÈCHE, aucun plafond (Σ −50, `LDB 16 l.11`)', mods: [{ label: 'Sonné', value: -10, famille: 'jet' }, { label: 'Aveuglé', value: -20, famille: 'jet' }, { label: 'Empêtré', value: -20, famille: 'jet' }], attendu: -50, mord: false },
     { nom: 'BONUS mordant (Σ +80)', mods: [{ label: 'Viser', value: 40, famille: 'circonstance' }, { label: 'À Terre', value: 40, famille: 'circonstance' }], attendu: capB, mord: true, palier: 'tresFacile' },
-    { nom: 'BONUS ET MALUS mordants (les deux sommes plafonnent, puis s’ajoutent)', mods: [{ label: 'Viser', value: 40, famille: 'circonstance' }, { label: 'À Terre', value: 40, famille: 'circonstance' }, { label: 'Aveuglé', value: -20, famille: 'jet' }, { label: 'Empêtré', value: -20, famille: 'jet' }, { label: 'Sonné', value: -20, famille: 'jet' }], attendu: capB - capM, mord: true },
-    { nom: 'AVANTAGE `uncapped` hors plafond, malus mordant à côté', mods: [{ label: 'Avantage', value: 70, famille: 'jet', uncapped: true }, { label: 'Aveuglé', value: -40, famille: 'jet' }], attendu: 70 - capM, mord: true },
-    { nom: 'AVANTAGE `uncapped` SEUL : rien à plafonner malgré une somme > +60', mods: [{ label: 'Avantage', value: 70, famille: 'jet', uncapped: true }], attendu: 70, mord: false },
+    { nom: 'BONUS ET MALUS de circonstances mordants (les deux sommes plafonnent, puis s’ajoutent)', mods: [{ label: 'Viser', value: 40, famille: 'circonstance' }, { label: 'À Terre', value: 40, famille: 'circonstance' }, { label: 'Brouillard', value: -20, famille: 'circonstance' }, { label: 'Main secondaire', value: -20, famille: 'circonstance' }, { label: 'Obscurité', value: -20, famille: 'circonstance' }], attendu: capB - capM, mord: true },
+    { nom: 'AVANTAGE hors plafond, circonstances mordantes à côté', mods: [{ label: 'Avantage', value: 70, famille: 'jet' }, { label: 'Brouillard', value: -20, famille: 'circonstance' }, { label: 'Obscurité', value: -20, famille: 'circonstance' }], attendu: 70 - capM, mord: true, palier: 'tresDifficile' },
+    { nom: 'AVANTAGE SEUL : rien à plafonner malgré une somme > +60', mods: [{ label: 'Avantage', value: 70, famille: 'jet' }], attendu: 70, mord: false },
   ];
 
   it.each(MATRICE)('MODE PLAFONNÉ — $nom', ({ mods, attendu, mord, palier }) => {
@@ -479,7 +480,7 @@ describe('SONDES PROMUES (#1153 L1b) — ce que le monteur NE fait PAS encore', 
  * CONTRAT DU PALIER DÉRIVÉ — sonde EXHAUSTIVE promue en garde (sonde du juge de design : 7840
  * combinaisons, 0 échec). Elle ne juge AUCUN cas particulier : elle balaie le produit cartésien des
  * régimes (5 Difficultés déclarées × mode plafonné ou non × crans de modificateur × familles ×
- * Avantage `uncapped` × valeur de base écrêtante) et exige de CHAQUE ligne montée les cinq
+ * Avantage hors table × valeur de base écrêtante) et exige de CHAQUE ligne montée les cinq
  * invariants du lot :
  *
  *  1. la CIBLE est celle que le moteur applique — l'affichage ne déplace pas un point ;
@@ -543,8 +544,8 @@ describe('PALIER DÉRIVÉ — contrat balayé sur tout le produit cartésien des
               for (const fb of FAMILLES) {
                 const paire: ModLine[] = [{ label: 'A', value: a, famille: fa }, { label: 'B', value: b, famille: fb }];
                 for (const base of BASES) juge(d, base, paire, plafond);
-                // Avantage : la seule ligne `uncapped` du jeu (hors table, `LDB 13`).
-                juge(d, 45, [...paire, { label: 'Avantage', value: 60, famille: 'jet', uncapped: true }], plafond);
+                // Avantage : hors table de Difficulté (`LDB 14 l.48`), donc `famille: 'jet'`.
+                juge(d, 45, [...paire, { label: 'Avantage', value: 60, famille: 'jet' }], plafond);
               }
             }
           }

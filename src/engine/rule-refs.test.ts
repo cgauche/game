@@ -14,7 +14,7 @@
  * une regex de texte : les libellés en gabarit (`` `Météo : ${…}` ``) et les littéraux multi-lignes
  * échappaient à la forme textuelle. Un littéral compte comme `ModLine` quand :
  *   - c'est un `ObjectLiteralExpression` portant `label` ET `value` ;
- *   - toutes ses clés appartiennent à `ModLine` (`label`/`value`/`uncapped`/`ref`/`by`) — le contrôle
+ *   - toutes ses clés appartiennent à `ModLine` (`label`/`value`/`famille`/`ref`/`by`) — le contrôle
  *     de propriétés excédentaires de TypeScript garantit qu'une VRAIE `ModLine` n'en porte pas
  *     d'autre, si bien qu'un littéral à clé étrangère (`kref` d'un `CodexFact`, `id` d'un axe,
  *     `tone` d'une zone de fiche) est d'une AUTRE forme ;
@@ -83,10 +83,12 @@ function tsFiles(dir: string): string[] {
   return out;
 }
 
-/** Les clés de `ModLine` (`engine/combat.ts`) — un littéral qui en porte une autre est d'une autre
- *  forme. DELTA DE CLIQUET (#1153 L3b-1) : `famille` s'y ajoute, sinon tout littéral qui la porte
- *  sortirait du scan et le stock mesuré s'effondrerait sans qu'aucune règle soit liée. */
-const MODLINE_KEYS = new Set(['label', 'value', 'famille', 'uncapped', 'ref', 'by']);
+/** Les clés de `ModLine` (`engine/types.ts`) — un littéral qui en porte une autre est d'une autre
+ *  forme. CLIQUET : ce jeu suit le TYPE clé pour clé. Une clé oubliée ici ferait sortir du scan tout
+ *  littéral qui la porte, et le stock mesuré s'effondrerait sans qu'aucune règle soit liée (sonde A
+ *  ci-dessous). La famille `'jet'` dit « hors du plafond des Difficultés » : `combineMods` ne combine
+ *  que les circonstances (`LDB 14 l.48/95`) — aucun drapeau ne double cette information. */
+const MODLINE_KEYS = new Set(['label', 'value', 'famille', 'ref', 'by']);
 
 /** L'expression est-elle syntaxiquement une CHAÎNE ? (`ModLine.value` est un nombre.) */
 function isStringExpr(e: ts.Expression): boolean {
