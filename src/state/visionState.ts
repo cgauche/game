@@ -6,7 +6,7 @@
  */
 import { Scene } from './scene';
 import { Pt } from './path';
-import { computeVisible, computeLightField, ambientScalar, baseSightTiles, darkSightTiles, mapLights, combatantLights, buildOpaque, type Occ } from './vision';
+import { computeVisible, computeLightField, ambientScalar, baseSightTiles, darkSightTiles, mapLights, combatantLights, buildOpaque, type LightSource, type Occ } from './vision';
 import { memoByRef } from './sceneMemo';
 import { smokeOf } from './combatGeometry';
 import { isOutOfAction } from '../engine/conditions';
@@ -23,30 +23,38 @@ export interface VisionInput {
   lightLevel: number | null;
 }
 
+/** Sources de lumière PONCTUELLES de la scène : lumières posées (carte) + lumières portées (les deux
+ *  camps en combat, le groupe en exploration — une torche révèle son porteur). SOURCE UNIQUE : le champ
+ *  mécanique (`sceneLightField`) et le rendu (les lampes du monde volumique) lisent la MÊME liste, donc
+ *  le même gate de port et les mêmes rayons. PUR. */
+export function sceneLightSources(s: Pick<VisionInput, 'scene' | 'battle' | 'party' | 'partyPos'>): LightSource[] {
+  const sources = mapLights(s.scene!);
+  if (s.battle) {
+    for (const c of s.battle.combatants) sources.push(...combatantLights(c));
+    return sources;
+  }
+  // Combattant SYNTHÉTIQUE du groupe : items + armes tenues + effets actifs agrégés → `combatantLights`
+  // applique LE MÊME gate de port qu'en combat (un objet rangé n'éclaire pas ; une lanterne portée /
+  // un sort Lumière oui). Le gate vit en UN seul endroit (combatantLights), pas redupliqué ici.
+  // Aucun `id` : cet agrégat réunit les émetteurs de TOUS les héros à la case du groupe — il n'a pas
+  // de porteur unique à nommer (cf. `LightSource.srcId`).
+  const party = s.party ?? [];
+  sources.push(...combatantLights({
+    pos: s.partyPos,
+    items: party.flatMap((p) => p.items ?? []),
+    weapons: party.flatMap((p) => p.weapons ?? []),
+    activeEffects: party.flatMap((p) => p.activeEffects ?? []),
+  }));
+  return sources;
+}
+
 /** Champ de lumière + fumée de la scène (SOURCE UNIQUE pour la vue du groupe ET la perception ennemie) :
- *  ambiant + lumières posées (carte) + lumières portées (les deux camps en combat, le groupe en
- *  exploration — une torche révèle son porteur). */
+ *  plancher ambiant + `sceneLightSources`. */
 export function sceneLightField(s: VisionInput, occ: Occ = buildOpaque(s.scene!)): { light: ReturnType<typeof computeLightField>; smoke: Pt[] } {
   const scene = s.scene!;
   const ambient = ambientScalar(scene, s.gameTime, s.lightLevel);
-  const sources = mapLights(scene);
-  let smoke: Pt[] = [];
-  if (s.battle) {
-    if (s.battle.zones) smoke = smokeOf(s.battle as never);
-    for (const c of s.battle.combatants) sources.push(...combatantLights(c));
-  } else {
-    // Combattant SYNTHÉTIQUE du groupe : items + armes tenues + effets actifs agrégés → `combatantLights`
-    // applique LE MÊME gate de port qu'en combat (un objet rangé n'éclaire pas ; une lanterne portée /
-    // un sort Lumière oui). Le gate vit en UN seul endroit (combatantLights), pas redupliqué ici.
-    const party = s.party ?? [];
-    sources.push(...combatantLights({
-      pos: s.partyPos,
-      items: party.flatMap((p) => p.items ?? []),
-      weapons: party.flatMap((p) => p.weapons ?? []),
-      activeEffects: party.flatMap((p) => p.activeEffects ?? []),
-    }));
-  }
-  return { light: computeLightField(scene, ambient, sources, smoke, occ), smoke };
+  const smoke: Pt[] = s.battle?.zones ? smokeOf(s.battle as never) : [];
+  return { light: computeLightField(scene, ambient, sceneLightSources(s), smoke, occ), smoke };
 }
 
 /** Triche de recette (`__wfrp.fog`) : révèle TOUTE la carte (brouillard OFF) pour diagnostiquer le RENDU

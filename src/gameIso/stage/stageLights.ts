@@ -78,6 +78,11 @@ export interface StageLightScalars {
   ambientIntensity: number;
   /** Intensité de la directionnelle, en unités three (facteur `π` compris) — 0 quand elle n'est pas montée. */
   sunIntensity: number;
+  /** LUMINANCE du seul PALIER d'ambiance (`ambianceLuminance`), soleil exclu — le complément exact du
+   *  voile de nuit de la voie affine. C'est le scalaire que COMPLÈTENT les flaques de lampe
+   *  (`stagePointLights.ts`) : à 1 (plein jour) il ne reste rien à allumer. Un NOMBRE, sans rapport
+   *  avec `Scene.ambiance`, qui est l'id du LIEU (`exterieur`/`interieur`). */
+  ambianceLum: number;
   /** LUMINANCE d'une surface horizontale de la scène, en part de son albédo — l'exposition globale de
    *  la frame. C'est le scalaire que multiplient les surfaces NON lambertiennes (billboards), qui n'ont
    *  pas de normale exploitable, et la mesure de parité avec la voie affine (sans soleil : elle vaut
@@ -106,6 +111,7 @@ export function stageLightScalars(args: {
     course,
     fade,
     lit: fade > 0,
+    ambianceLum: expo,
     ambientIntensity: expo * partAmbiante * Math.PI,
     sunIntensity: expo * SUN_INTENSITY * fade * Math.PI,
     surfaceLuminance: expo * (partAmbiante + partSolaire),

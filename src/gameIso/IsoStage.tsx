@@ -13,7 +13,7 @@ import { useGame } from '../state/store';
 import { heightAt, sceneMetresPerTile, type Scene } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { metricToLift } from '../state/relief';
-import { computeStateVisibleAndLight } from '../state/visionState';
+import { computeStateVisibleAndLight, sceneLightSources } from '../state/visionState';
 import { Combatant } from '../engine/types';
 import { footprintN, sizeFootprint } from '../state/footprint';
 import { mountOf } from '../state/mount';
@@ -65,6 +65,7 @@ import { useStageCamera, cameraTargeting, stageFocus, computeViewBounds, VW, VH 
 import { useStagePointer } from './stage/useStagePointer';
 import { useHoverTargeting } from './stage/useHoverTargeting';
 import type { Pt } from '../state/path';
+import type { LightSource } from '../state/vision';
 import { portalsForParty } from '../state/roomPortals';
 
 /** `ctx`/`occludesActor` positionnels EXIGÉS par `floorLayerObjs`/`wallLayerObjs` (compat `TopoScene`,
@@ -153,6 +154,17 @@ export function IsoStage() {
   );
   const visible = vl.visible;
   const light = vl.light;
+  // Sources PONCTUELLES (brasero posé, lanterne portée) : la MÊME liste que celle dont `vl` dérive son
+  // champ de lumière (`sceneLightSources`), passée telle quelle à la voie volumique, qui en pose les
+  // flaques. Elle ne dépend NI de l'heure NI du palier — seulement de qui porte quoi, et où.
+  // `party` fait partie des dépendances même en COMBAT, où les sources viennent de `battle` : la purge
+  // d'entretien mute `activeEffects` EN PLACE sur les combattants (`state/upkeep.ts:71`) sans changer la
+  // réf `battle`, et ne repose que `party` (`upkeep.ts:90`). Un sort de Lumière qui se dissipe passerait
+  // donc inaperçu d'un memo qui ne dépendrait que de `battle`.
+  const lightSources = useMemo(
+    () => (scene ? sceneLightSources({ scene, battle, party, partyPos }) : []),
+    [scene, battle, party, partyPos],
+  );
   const exploredSet = useMemo(() => new Set(explored[scene?.id ?? ''] ?? []), [explored, scene?.id]);
   // Accumulation persistante de l'exploré (no-op si rien de neuf → pas de boucle de rendu).
   useEffect(() => {
@@ -429,6 +441,7 @@ export function IsoStage() {
           walksRef={walksRef}
           gameTime={gameTime}
           lightLevel={lightLevel}
+          lights={lightSources}
           partyToken={mode === 'battle' && battle ? null : partyLeader ? { leader: partyLeader, pos: partyPos } : null}
         />
       )}
@@ -500,7 +513,7 @@ export function IsoStage() {
  * étage isolé, surplomb, brouillard). ÉCART RÉSIDUEL : un couple MONTÉ ne rend que sa MONTURE — le
  * corps composite cavalier+monture (`MountedToken`) n'a pas d'équivalent billboard.
  */
-function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, tokenEls, propEls, walksRef, partyToken, gameTime, lightLevel }: {
+function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, tokenEls, propEls, walksRef, partyToken, gameTime, lightLevel, lights }: {
   scene: Scene;
   dims: Dims;
   mpt: number;
@@ -520,6 +533,8 @@ function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, t
    *  soleil suit l'heure et le nord de la scène, l'ambiante suit le palier. Le stage reste la source. */
   gameTime: number;
   lightLevel: number | null | undefined;
+  /** Sources de lumière PONCTUELLES de la scène — celles du champ mécanique, jamais recollectées ici. */
+  lights: readonly LightSource[];
 }) {
   const facings = useGame((s) => s.facing); // orientation MONDE vivante par acteur (Dir8)
   const poses: ActorPose[] = [];
@@ -558,5 +573,5 @@ function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, t
     },
     cam: () => camAt(performance.now()),
   };
-  return <GameStage3D scene={scene} dims={dims} mpt={mpt} cam={cam} zoom={zoom} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} anim={anim} />;
+  return <GameStage3D scene={scene} dims={dims} mpt={mpt} cam={cam} zoom={zoom} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} anim={anim} />;
 }

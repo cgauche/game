@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeVisible, computeLightField, ambientScalar, baseSightTiles, darkSightTiles, mapLights, type LightField } from './vision';
+import { computeVisible, computeLightField, ambientScalar, baseSightTiles, combatantLights, darkSightTiles, mapLights, type LightField } from './vision';
 import { Scene, WallSeg } from './scene';
 import { METRES_PER_LEVEL } from './relief';
 
@@ -190,6 +190,43 @@ describe('mapLights — sources de lumière POSÉES (dataset props)', () => {
     expect(v.has('8,0,0')).toBe(true); // foyer distant éclairé + en vue → visible MALGRÉ rayon 0
     expect(v.has('0,0,0')).toBe(true); // sa propre case
     expect(v.has('2,0,0')).toBe(false); // entre les deux : sombre → invisible
+  });
+});
+
+describe('combatantLights — la source PORTÉE suit son porteur : son ÉTAGE et son identité', () => {
+  /** Deux étages construits — le porteur monte au z=1, la cour reste au z=0. */
+  const deuxEtages = (): Scene => ({
+    ...scene(6, 1),
+    layers: [{ z: 0, tiles: new Array(6).fill('herbe') }, { z: 1, tiles: new Array(6).fill('herbe') }],
+  } as unknown as Scene);
+  const porteur = (z?: number) => ({
+    id: 'h1',
+    pos: { x: 2, y: 0, z },
+    items: [{ uid: 'i1', trappingId: 'lanterne', equipped: true }],
+  });
+
+  it('une lanterne portée à l’ÉTAGE inscrit son halo à cet étage, et laisse le sol noir', () => {
+    const s = deuxEtages();
+    const src = combatantLights(porteur(1));
+    expect(src.length).toBe(1);
+    expect(src[0].z).toBe(1);
+    const f = computeLightField(s, 0, src); // ténèbres + la seule lanterne
+    expect(f.at(2, 0, 1)).toBeCloseTo(1); // l'étage du porteur : le foyer
+    expect(f.at(2, 0, 0)).toBe(0); // la cour en contrebas : rien
+    expect(f.sourceLit!.has('2,0,1')).toBe(true);
+    expect(f.sourceLit!.has('2,0,0')).toBe(false);
+  });
+
+  it('au SOL (aucun z), le halo reste au sol — l’étage du porteur, jamais un défaut', () => {
+    const f = computeLightField(deuxEtages(), 0, combatantLights(porteur()));
+    expect(f.at(2, 0, 0)).toBeCloseTo(1);
+    expect(f.at(2, 0, 1)).toBe(0);
+  });
+
+  it('la source PORTÉE nomme son porteur, la source POSÉE nomme son entité (`srcId`)', () => {
+    expect(combatantLights(porteur(0))[0].srcId).toBe('h1');
+    const s = { ...scene(9, 1), entities: [{ id: 'b7', kind: 'prop', pos: { x: 5, y: 0 }, ref: 'brasero' }] } as unknown as Scene;
+    expect(mapLights(s)[0].srcId).toBe('b7');
   });
 });
 

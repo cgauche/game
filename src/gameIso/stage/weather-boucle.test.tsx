@@ -88,6 +88,7 @@ const props = (scene: Scene, zoom: number) => ({
   actors: [],
   gameTime: 12 * 60,
   lightLevel: null,
+  lights: [],
 });
 
 let root: Root | null = null;

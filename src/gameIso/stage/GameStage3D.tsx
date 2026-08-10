@@ -20,6 +20,9 @@
  * LUMIÈRE (P2-5) : le CANEVAS porte toute la luminosité de la scène — une ambiante au palier de lumière
  * du moment et, dehors et de jour, un SOLEIL qui suit l'heure d'horloge et le nord de la carte
  * (`stage/stageLights.ts`, décision ; cet écran ne fait que monter ses lampes et brancher les ombres).
+ * FLAQUES (#1245) : les sources PONCTUELLES de la scène (brasero posé, lanterne portée — la liste que
+ * le champ mécanique de vision consomme) posent leur lumière par un POOL de compte FIXE dont seules les
+ * intensités bougent (`stage/stagePointLights.ts`, décision ; le pool ne se monte qu'une fois).
  * Le voile de nuit du SVG reste à la voie affine — deux propriétaires de luminosité en peindraient deux
  * paliers l'un sur l'autre. Les matériaux du monde sont TOUJOURS lambertiens : sans soleil, l'ambiante
  * seule les porte, et le lever/coucher n'a plus de régime à basculer.
@@ -93,6 +96,8 @@ import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/sprite
 import { setSpritePicker } from './spritePicker';
 import { stage3dFraming } from './stage3dCamera';
 import { stageLightScalars, stageLights } from './stageLights';
+import { applyPointLights, createPointLightPool, pointLightWrites, POINT_LIGHT_BUDGET, type PointLightSlots } from './stagePointLights';
+import type { LightSource } from '../../state/vision';
 import { scenePrecip } from '../catalog/ambiance';
 import { isSheltered, shelterField } from '../builders/roofs';
 import {
@@ -157,6 +162,10 @@ export interface GameStage3DProps {
   /** Mise en scène de lumière (`state.lightLevel`, 0..1) : prime sur le palier authoré de la scène,
    *  exactement comme pour les voiles du SVG. */
   lightLevel: number | null | undefined;
+  /** Sources de lumière PONCTUELLES de la scène (posées + portées) — la MÊME liste que le champ
+   *  mécanique de vision consomme (`state/visionState.ts` `sceneLightSources`) : cet écran ne les
+   *  recollecte pas, il en monte les flaques (`stage/stagePointLights.ts`). */
+  lights: readonly LightSource[];
   /** Cadençage de la MARCHE, quand le stage en offre un (lot P2-4) : sans lui, cet écran ne bouge
    *  qu'aux rendus du stage. */
   anim?: StageWalkAnim;
@@ -193,7 +202,7 @@ function viderGroupe(groupe: THREE.Group): void {
   }
 }
 
-export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors, gameTime, lightLevel, anim }: GameStage3DProps): JSX.Element {
+export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors, gameTime, lightLevel, lights, anim }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
@@ -205,6 +214,7 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   const touffes = useRef<THREE.Group>();
   const panneaux = useRef<THREE.Group>();
   const lampes = useRef<THREE.Group>();
+  const flaques = useRef<THREE.Group>();
   const intemperies = useRef<THREE.Group>();
   if (!three.current) {
     three.current = new THREE.Scene();
@@ -212,8 +222,12 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     touffes.current = new THREE.Group();
     panneaux.current = new THREE.Group();
     lampes.current = new THREE.Group();
+    // Groupe à part de `lampes` : celui-là se VIDE et se reconstruit (l'ambiante et le soleil suivent
+    // l'heure), le pool de flaques ne se monte QU'UNE fois — un vidage partagé le démonterait avec lui,
+    // et ferait varier le compte de lampes ponctuelles que le pool existe justement pour figer.
+    flaques.current = new THREE.Group();
     intemperies.current = new THREE.Group();
-    three.current.add(monde.current, touffes.current, panneaux.current, lampes.current, intemperies.current);
+    three.current.add(monde.current, touffes.current, panneaux.current, lampes.current, flaques.current, intemperies.current);
   }
 
   // Le cache de textures est GLOBAL au module : changer de scène rend ses entrées mortes (les clés
@@ -244,6 +258,15 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     [scene, gameTime, lightLevel],
   );
   const { course, lit } = lumière;
+  // ── FLAQUES (#1245, L1) : ce que les sources de lumière de la scène écrivent sur le pool de lampes
+  // ponctuelles. Décision PURE (`stagePointLights.ts`), appliquée plus bas sur un pool de compte FIXE.
+  // `prev` = la table de la frame précédente, par quoi une source GARDE son slot tant qu'elle vit :
+  // l'index d'une lampe ne dépend jamais de l'ordre de la liste de sources.
+  const slotsPrécédents = useRef<PointLightSlots | null>(null);
+  const flaquesÉcrites = useMemo(
+    () => pointLightWrites(lights, { scene, mpt, ambianceLum: lumière.ambianceLum, prev: slotsPrécédents.current ?? undefined }),
+    [lights, scene, mpt, lumière.ambianceLum],
+  );
   // Exposition de la frame, lue par la construction ASYNCHRONE des billboards (leur texture arrive après
   // le rendu qui l'a demandée) : la valeur du moment, jamais celle capturée à la demande.
   const lumRef = useRef(lumière.surfaceLuminance);
@@ -591,6 +614,32 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene, gameTime, lightLevel, shadowBox]);
 
+  // ── POOL DE FLAQUES (#1245, L1) : monté UNE fois, jamais reconstruit. Le compte de lampes
+  // ponctuelles entre dans la clé de cache de programme de three (`numPointLights`) : le faire varier
+  // recompilerait les 76 matériaux du monde. L'écran ne fait donc plus qu'écrire des intensités.
+  const pool = useRef<THREE.PointLight[]>([]);
+  useEffect(() => {
+    const groupe = flaques.current;
+    if (!groupe) return;
+    const lampesPonctuelles = createPointLightPool();
+    pool.current = lampesPonctuelles;
+    for (const l of lampesPonctuelles) groupe.add(l);
+    return () => {
+      pool.current = [];
+      for (const l of lampesPonctuelles) { groupe.remove(l); l.dispose(); }
+    };
+  }, []);
+
+  // ── ÉCRITURE des flaques : la SEULE chose qui bouge d'une frame à l'autre (intensité, position,
+  // portée). Aucun montage, aucun démontage, aucun `visible`. La table appliquée devient celle que la
+  // décision suivante relira pour rendre à chaque source SON slot.
+  useEffect(() => {
+    slotsPrécédents.current = flaquesÉcrites;
+    applyPointLights(pool.current, flaquesÉcrites);
+    dessiner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flaquesÉcrites]);
+
   // La frame se rejoue à CHAQUE rendu du stage — et, pendant une MARCHE, au battement de celle-ci :
   // c'est la boucle de rendu qui lit alors la position visuelle, pas React (P2-4). L'effet n'a pas de
   // dépendances par CONSTRUCTION : il court après chaque rendu, donc `dessiner` réabonné est toujours
@@ -611,6 +660,8 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   // (intérieur, nuit, ou soleil encore sous son fondu de lever/coucher).
   // `data-lum` : l'EXPOSITION de la frame (luminance d'une surface horizontale, en part d'albédo). C'est
   // par elle que la parité avec la voie affine et la continuité du crépuscule se mesurent à l'écran.
+  // `data-lampes` : les flaques ALLUMÉES sur le budget MONTÉ (`allumées/budget`) — le compte de droite
+  // ne bouge jamais (c'est tout l'intérêt du pool), celui de gauche tombe à 0 de jour.
   // `data-precip` : le COMPTE de particules du semis d'intempéries — même raison que les deux autres
   // (le canevas n'a pas d'arbre), et la seule trace par laquelle la recette et les tests de montage
   // voient qu'il tombe quelque chose. Absent = rien ne tombe (météo claire, ou scène d'intérieur).
@@ -622,6 +673,7 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       aria-hidden="true"
       data-sun={lit && course ? `${course.azimuthDeg.toFixed(1)},${course.elevationDeg.toFixed(1)}` : undefined}
       data-lum={lumière.surfaceLuminance.toFixed(4)}
+      data-lampes={`${flaquesÉcrites.filter((f) => f && f.intensity > 0).length}/${POINT_LIGHT_BUDGET}`}
       data-precip={champ ? champ.n : undefined}
     />
   );

@@ -34,6 +34,16 @@ export interface LightSource {
   pos: Pt;
   z?: number;
   radiusTiles: number;
+  /** Id de CE QUI PORTE la source — `SceneEntity.id` pour une source posée, `Combatant.id` pour une
+   *  source portée. C'est la couture par laquelle un consommateur (le rendu) retrouve le sujet qui la
+   *  déplace. Absent quand la source n'a pas de porteur UNIQUE (l'agrégat du groupe en exploration :
+   *  il réunit les émetteurs de tous les héros à la case du groupe). */
+  srcId?: string;
+  /** La source est-elle PORTÉE par un sujet qui se déplace (lanterne, sort de Lumière) plutôt que POSÉE
+   *  sur la carte (brasero, torche murale) ? Le rendu s'en sert pour arbitrer un budget de lampes
+   *  saturé : le décor de la scène garde ses flaques, les porteurs remplissent le reste
+   *  (`gameIso/stage/stagePointLights.ts`). Absent = posée. */
+  carried?: boolean;
 }
 
 /** Champ de lumière : niveau d'éclairement 0..1 d'une case. `sourceLit` = cases éclairées par une
@@ -156,7 +166,7 @@ export function mapLights(scene: Scene): LightSource[] {
   for (const e of scene.entities) {
     if (e.kind !== 'prop') continue;
     const r = e.light?.radiusTiles ?? (e.ref ? findPropById(e.ref)?.light?.radiusTiles : undefined);
-    if (r && r > 0) out.push({ pos: e.pos, z: e.z, radiusTiles: r });
+    if (r && r > 0) out.push({ pos: e.pos, z: e.z, radiusTiles: r, srcId: e.id });
   }
   return out;
 }
@@ -167,6 +177,7 @@ export function mapLights(scene: Scene): LightSource[] {
  *  n'éclaire pas (RAW : on s'éclaire avec une lanterne en main, pas au fond du sac). (2) un SORT actif
  *  (`ActiveEffect.light`, ex. Lumière) pendant sa durée. */
 export function combatantLights(c: {
+  id?: string;
   pos?: Pt;
   items?: { uid?: string; trappingId?: string; equipped?: boolean }[];
   weapons?: { uid?: string }[];
@@ -185,7 +196,10 @@ export function combatantLights(c: {
     const lr = e.light?.radiusTiles;
     if (lr && lr > r) r = lr;
   }
-  return r > 0 ? [{ pos: c.pos, radiusTiles: r }] : [];
+  // `z` = l'ÉTAGE du porteur : le champ de lumière indexe ses cases par `"x,y,z"` (`computeLightField`
+  // lit `s.z ?? 0`), donc une source sans `z` inscrit son halo au SOL — une lanterne portée sur le
+  // chemin de ronde éclairait la cour en contrebas et laissait le rempart noir.
+  return r > 0 ? [{ pos: c.pos, z: c.pos.z, radiusTiles: r, srcId: c.id, carried: true }] : [];
 }
 
 /** Portée de vision dans le noir (cases) d'un combattant : max des `darkSightTiles` de ses traits
