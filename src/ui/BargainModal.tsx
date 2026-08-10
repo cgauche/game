@@ -106,11 +106,6 @@ export function BargainModalView({
   return (
     <RollShell
       flowKey="bargain"
-      /* Coquille `roll` (#1153 L2ter) : DEUX rangées à portrait + chips de composantes — le gabarit
-         `test` est celui d'un Test SOLO à une rangée (`.test-modal`, largeur figée à 340px et texte
-         centré). Comme les autres fenêtres d'opposition, celle-ci GRANDIT avec son contenu et garde
-         l'ancrage haut (invariant de géométrie, `docs/charte-ui.md`). */
-      variant="roll"
       title={pb.mode === 'buy' ? 'Marchander l’achat' : 'Marchander la vente'}
       /* Test OPPOSÉ : 2 lignes à portrait DÈS L'OUVERTURE (#990), l'adverse masquée jusqu'au jet. */
       subtitle={<>{pb.merchantName}{pb.negotiator ? <> · Négociateur</> : null}</>}

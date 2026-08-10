@@ -95,7 +95,7 @@
   min-width: min(480px, 92vw);
 }
 /* Quatre RÔLES distincts, quatre classes (#1078 LOT A1, +1 au LOT B2) : `.rm-vs` est la classe de
-   `VsHeader`, la bande d'OPPOSITION A→B ; `.rm-subtitle` le sous-titre de `RollShell` (variant 'roll') ;
+   `VsHeader`, la bande d'OPPOSITION A→B ; `.rm-subtitle` le sous-titre UNIQUE de `RollShell` ;
    `.rm-summary` son bandeau d'issue agrégée ; `.rm-spellinfo` la PORTÉE d'un sort (gabarit de Zone
    d'Effet / « sur lui-même », `CastModal`), qui n'oppose personne. Déclarations IDENTIQUES :
    l'éclatement est une somme nulle visuelle, il rend seulement chaque rôle restylable séparément. */
@@ -321,8 +321,8 @@
 }
 /* RANGÉE de jet (`.prow`, `RollRow`) — CONTENEUR : le ferrage est déclaré ICI, une fois, pour tous ses
    enfants présents et futurs (marque de provenance, issue courte, barre de DR, zone d'actions). Sans lui
-   chaque enfant hérite du `text-align` de la coquille hôte : centré sous `.test-modal`, à gauche sous
-   `.roll-modal` — la même rangée se lisait différemment selon la modale qui l'héberge. */
+   chaque enfant hérite du `text-align` de la coquille hôte, et la même rangée se lit différemment
+   d'une modale à l'autre. */
 .prow {
   text-align: left;
 }
@@ -941,15 +941,6 @@
   margin: 2px 0;
 }
 
-/* Modal de test de compétence */
-.test-modal {
-  width: 340px;
-  text-align: center;
-}
-.test-actor {
-  color: var(--muted);
-  margin: 4px 0 14px;
-}
 /* Lecteur de document / handout */
 .document-modal {
   width: 560px;

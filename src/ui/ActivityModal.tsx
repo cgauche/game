@@ -132,12 +132,6 @@ export function ActivityModal() {
   return (
     <RollShell
       flowKey="activity"
-      /* Coquille `roll` dès que l'Activité rend PLUSIEURS rangées (Test combiné, opposition « Tenez
-         votre position ») — le gabarit `test` est celui d'un Test SOLO (`.test-modal`, 340px figés).
-         Le prédicat se lit sur le PENDING (connu à l'ouverture), jamais sur le nombre de rangées
-         RENDUES : la rangée ennemie n'apparaît qu'après le jet, et la fenêtre ne doit pas changer de
-         gabarit en cours de session (invariant de géométrie, `docs/charte-ui.md`). */
-      variant={pa.enemyValue != null || (pa.target2 != null && !!pa.skill2) ? 'roll' : 'test'}
       title={pa.label}
       /* Z3b : l'enjeu vient de l'ACTIVITÉ jouée (donnée éditable) — le ⓘ du titre s'accole tout seul
          (RollShell), et le foyer de règle est l'Activité elle-même à défaut d'un autre déclaré. */

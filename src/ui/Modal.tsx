@@ -8,7 +8,7 @@ import type { Combatant } from '../engine/types';
  * que son contenu propre (résultat, actions). Le bandeau `subject` (portrait + nom du combattant
  * concerné, via `ModalSubject`) garantit qu'on sait TOUJOURS à qui la modale s'applique.
  *
- * `variant` choisit la famille de classes ('roll' = roll-modal, 'test' = test-modal, 'plain' = boîte
+ * `variant` choisit la famille de classes ('roll' = roll-modal, 'plain' = boîte
  * nue stylée par `className`) ; `className` ajoute une classe spécifique (ex. inspection). Le contenu
  * spécifique passe en `children`.
  */
@@ -163,7 +163,7 @@ export function useModalA11y(boxRef: RefObject<HTMLDivElement>, onClose?: () => 
   }, [boxRef]);
 }
 
-const VARIANT_CLASS = { roll: ' roll-modal', test: ' test-modal', plain: '' } as const;
+const VARIANT_CLASS = { roll: ' roll-modal', plain: '' } as const;
 
 export function Modal({
   title,
@@ -177,7 +177,7 @@ export function Modal({
   title: ReactNode;
   /** Combattant concerné → tuile-portrait en bandeau (omis si absent). */
   subject?: Combatant | null;
-  variant?: 'roll' | 'test' | 'plain';
+  variant?: 'roll' | 'plain';
   className?: string;
   /** Échap = ce callback (l'équivalent du bouton Fermer/Annuler visible). Absent → modale
    *  NON annulable (un jet posé doit être résolu). */

@@ -563,7 +563,7 @@
   background: rgba(255, 255, 255, 0.04);
   font-size: 13px;
   line-height: 1.35;
-  text-align: left; /* ligne de journal : toujours à gauche, même dans .test-modal qui centre tout le reste */
+  text-align: left; /* ligne de journal : toujours à gauche, quelle que soit l'ambiance de la coquille hôte */
 }
 /* Les lignes du cadre d'issue sont rendues par le renderer UNIQUE (`RecapLineRow`, #1078) : dans ce
    cadre elles reprennent la mise en forme du journal (icône en gouttière, texte à pleine couleur).

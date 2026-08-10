@@ -21,7 +21,8 @@ export function MountTargetModal() {
   const mount = battle.combatants.find((c) => c.id === pmt.mountId);
   if (!rider || !mount) return null;
   return (
-    <Modal title="Combat monté — cibler ?" variant="test" onClose={cancel}>
+    /* Décision DE COMBAT : coquille de jet (voile allégé + ancrage haut) — voir le champ de bataille sous la fenêtre sert le choix. */
+    <Modal title="Combat monté — cibler ?" onClose={cancel}>
       <p className="rm-log">
         {rider.label} chevauche {mount.label} (même case — qui frapper ?) : viser le cavalier impose −10 si vous êtes
         plus petit que la monture ; abattre la monture désarçonne le cavalier.

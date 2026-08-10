@@ -35,7 +35,8 @@ export function ShoreLeaveBody({ embedded = false }: { embedded?: boolean } = {}
     </>
   );
   if (embedded) return <div className="rs-embedded"><div className="mini-title">{title}</div>{body}</div>;
-  return <Modal title={title} variant="test">{body}</Modal>;
+  // Fenêtre HORS jet (décision d'accostage) : pas de géométrie de jet (voile allégé + ancrage haut).
+  return <Modal title={title} variant="plain">{body}</Modal>;
 }
 
 export function ShoreLeaveModal() {

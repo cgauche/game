@@ -31,7 +31,7 @@ import type { StakeRef } from '../data';
  *
  * La phase courante est `rolled` (au moins un jet lancé). Les actions déclarent `when` :
  * `'pre'` (avant jet), `'post'` (après), `'always'` (toujours) — le shell filtre. Aucune classe CSS
- * nouvelle : réutilise `Modal`/`roll-modal`·`test-modal`, `test-actor`/`rm-subtitle`, `mini-title`,
+ * nouvelle : réutilise `Modal`/`roll-modal`, `rm-subtitle`, `mini-title`,
  * `cs-rows`, `rm-summary`, `modal-actions` — donc restyler/étendre se fait à UN endroit.
  */
 
@@ -93,7 +93,6 @@ function assertActionVocabulary(flowKey: keyof typeof FLOW_VERBS, actions: RollA
 
 export function RollShell({
   title,
-  variant = 'roll',
   subtitle,
   instruction,
   embedded = false,
@@ -114,8 +113,7 @@ export function RollShell({
   flowKey,
 }: {
   title: ReactNode;
-  /** Famille de classes du sous-titre : 'roll' (rm-subtitle) / 'test' (test-actor). */
-  variant?: 'roll' | 'test';
+  /** Zone Z1 — sous-titre « Acteur — Action (Compétence) », rendu par la coquille en `.rm-subtitle`. */
   subtitle?: ReactNode;
   /** Zone Z2 — CONSIGNE DE GESTE pré-jet, sous le sous-titre (`mini-title`) : ce que les joueurs ont
    *  à FAIRE dans cette fenêtre quand la barre d'actions ne suffit pas à le dire (multi : « Chacun
@@ -172,7 +170,6 @@ export function RollShell({
   // frais à chaque rendu : hook appelé INCONDITIONNELLEMENT, jamais après un retour anticipé.
   useGame((s) => s.net);
   const state = useGame.getState();
-  const subClass = variant === 'test' ? 'test-actor' : 'rm-subtitle';
   // Z3b′ AU SOCLE (recette #1117) : le RENVOI vers la règle est accolé au TITRE par la COQUILLE, plus
   // par discipline au site — une modale qui pose son `stake` l'obtient sans rien faire. La cible est
   // DÉRIVÉE de la même entrée d'enjeu que la phrase (`resolveStake().rule`), le nom accessible du
@@ -250,7 +247,7 @@ export function RollShell({
           `ActivityPane` (corps scrollable, pied fixe) porté ICI, au conteneur : aucune étape de
           cascade n'a à s'en soucier. */}
       <div className="rs-scroll">
-      {subtitle != null && <p className={subClass}>{subtitle}</p>}
+      {subtitle != null && <p className="rm-subtitle">{subtitle}</p>}
       {instruction != null && <div className="mini-title">{instruction}</div>}
       {/* Z3b — l'ENJEU (#1117) : résolu par la coquille depuis la RÉFÉRENCE de donnée, jamais écrit au site. */}
       {stake && <StakeNote stake={stake} />}
@@ -318,14 +315,14 @@ export function RollShell({
   );
   if (embedded) {
     return (
-      <div className={`rs-embedded ${variant === 'test' ? 'test-modal' : 'roll-modal'}`}>
+      <div className="rs-embedded roll-modal">
         <div className="mini-title">{titleNode}</div>
         {body}
       </div>
     );
   }
   return (
-    <Modal title={titleNode} variant={variant} onClose={escClose}>
+    <Modal title={titleNode} onClose={escClose}>
       {body}
     </Modal>
   );

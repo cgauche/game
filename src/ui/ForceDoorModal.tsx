@@ -56,7 +56,6 @@ export function ForceDoorModal() {
     <RollShell
       flowKey="forceDoor"
       title={<><Icon id="map-tool/door" size="sm" /> Enfoncer la porte</>}
-      variant="roll"
       subtitle={<><strong>{p.label}</strong> — Endurance {p.doorBE} · Blessures {p.doorB}/{p.doorBmax}</>}
       instruction="Chacun frappe — Corps à corps (Bagarre), dégâts = DR + Bonus de Force − BE"
       rows={rows}

@@ -353,19 +353,12 @@ describe('RollShell — Z5c : la raison du départage annote la LIGNE gagnante',
 });
 
 describe('RollShell — un RÔLE, une classe (#1078) : la coquille ne pose JAMAIS `.rm-vs`', () => {
-  it('le sous-titre (variant roll) porte `.rm-subtitle`, jamais `.rm-vs`', () => {
+  it('le sous-titre porte `.rm-subtitle`, jamais `.rm-vs`', () => {
     const html = renderToStaticMarkup(
       <RollShell title="T" subtitle="Un jet de Calme" rows={[rolledRow()]} rolled actions={[]} />,
     );
     expect(html).toContain('class="rm-subtitle"');
     expect(html).not.toContain('class="rm-vs"');
-  });
-
-  it('le sous-titre (variant test) garde `.test-actor`', () => {
-    const html = renderToStaticMarkup(
-      <RollShell title="T" variant="test" subtitle="Un jet" rows={[rolledRow()]} rolled actions={[]} />,
-    );
-    expect(html).toContain('class="test-actor"');
   });
 
   it('le bandeau d’issue agrégée porte `.rm-summary`, jamais `.rm-vs`', () => {

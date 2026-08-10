@@ -69,7 +69,6 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
 
   return {
     flowKey: 'test',
-    variant: 'test',
     title: pt.label,
     /* Sous-titre = modulateurs portés par l'INTERLOCUTEUR : le malus psy social (valeur, déjà dans la
        cible) et la table Capricieux (DR du Test résolu). La cible/valeur vit dans le cadre de jet. */

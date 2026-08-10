@@ -309,7 +309,7 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // ici (HandPicker, composé DANS la nouvelle barre d'actions, inchangé).
   // Chartrage du bloc « dé fixé » (juge vision) : +4 (129 -> 133) -- `.prow`, `.prow-act` et
   // `.prow-fixed-mark` EXISTAIENT déjà dans le markup de `RollRow` SANS aucune règle (le défaut mesuré :
-  // ferrage hérité de l'ambiance de la coquille, centré sous `.test-modal` / à gauche sous `.roll-modal`) ;
+  // ferrage hérité de l'ambiance de la coquille, divergent d'une modale à l'autre) ;
   // `.rm-die-pick` remplace le détournement de `.rm-loc-grid` (grille de 3 boutons) par le bloc propre du
   // sélecteur. Aucun nouveau motif d'écran : le champ COMPOSE `.field` (canon), sans classe de domaine.
   // +7 (#942 L7, verdict vision) : pied FIXE de `RollShell` (`.modal:has(> .rs-scroll)`, `.modal > .rs-scroll`,
@@ -323,7 +323,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // +1 (#1078 LOT B2) : `.rm-spellinfo` — la PORTÉE d'un sort (gabarit de ZdE / « sur lui-même »,
   // CastModal) détournait `.rm-vs` alors qu'elle n'oppose personne. MÊME bloc de déclarations : somme
   // nulle visuelle, un rôle de plus nommé.
-  'styles/combat-modals.css': 143,
+  // -2 (143 → 141) : mort de la VARIANTE d'enveloppe `test` — `.test-modal` (largeur figée à 340px,
+  // qui écrasait la coquille standard) et `.test-actor` (sous-titre jumeau de `.rm-subtitle`)
+  // disparaissent ; les fenêtres de jet n'ont plus qu'une enveloppe, gardée par le cliquet (xvi).
+  'styles/combat-modals.css': 141,
   // #1135 : baseline abaissée (112 → 111), bloc mort `.af-hp` purgé — détecteur inchangé.
   // #1135 responsive : -1 (111 → 110) — `.inspect-toggle` MEURT (plus aucun consommateur : la bascule
   // d'inspection a rejoint `ViewControls` et compose `.btn.vc-btn`). La matrice responsive du dock
@@ -495,7 +498,9 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // 145 + 5 - 8 = 142, mesure post-lot. La matrice responsive du HUD n'ajoute AUCUN nom : elle ne cible
   // que des classes déjà définies ici, et le lieu de la pile de contexte est désigné par
   // `[data-hud='place']` (attribut, pas classe). Détecteur inchangé.
-  'styles/hud.css': 142,
+  // -1 (142 → 141) : mort de la variante d'enveloppe `test` — `.rs-embedded.test-modal` n'a plus de
+  // classe à neutraliser, la zone de jet embarquée compose `roll-modal` seule.
+  'styles/hud.css': 141,
   'styles/mass-battle.css': 29,
   'styles/merchant.css': 53,
   'styles/ornaments.css': 13,
@@ -985,6 +990,34 @@ describe('#236 — cliquets d’hygiène UI', () => {
   it('(xv) rangée TÉMOIN porteuse de valeur hors `opposedFrozen.ts` : gelée et décroissante (#990)', () => {
     const files = walk(UI, (e) => /\.tsx?$/.test(e) && !/\.test\./.test(e)).filter((f) => rel(f) !== 'opposedFrozen.ts');
     assertRatchet(scanFrozenValueRows(files), FROZEN_WITNESS_BASELINE, 'rangée témoin à valeur figée hors du calendrier de découverte `frozenOpposedRow` (#990)');
+  });
+
+  // ── (xvi) LARGEUR d'une classe de MODALE : elle appartient à la COQUILLE partagée (`.modal`,
+  //    `components.css`), jamais à une variante d'enveloppe. Défaut mesuré : `.test-modal { width:
+  //    340px }`, importée APRÈS la couche partagée, écrasait `min(520px, 94vw)` pour SEPT modales —
+  //    les rangées de jet (bâties pour ~520px) s'empilaient et débordaient horizontalement. Deux
+  //    volets, tous deux structurels : une largeur en px doit rester BORNÉE à la fenêtre
+  //    (`max-width` en vw dans la MÊME règle), et aucune ne descend SOUS la largeur standard —
+  //    rétrécir est le travail du contenu, pas d'une classe d'enveloppe.
+  it('(xvi) largeur d’une classe de modale : bornée à la fenêtre et jamais plus étroite que la coquille standard', () => {
+    const shared = readFileSync(join(UI, 'styles', 'components.css'), 'utf8');
+    const standard = shared.match(/\.modal\s*\{[^}]*?width:\s*min\((\d+)px/);
+    expect(standard, '`.modal` ne pose plus `width: min(<n>px, …)` dans components.css : le standard de largeur a bougé, cette garde le lit.').toBeTruthy();
+    const standardPx = Number(standard![1]);
+    const offenders: string[] = [];
+    for (const f of walk(UI, (e) => e.endsWith('.css'))) {
+      const css = readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+      for (const m of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+        const sel = m[1].trim().replace(/\s+/g, ' ');
+        if (!/\.[a-z0-9-]*modal\b/i.test(sel)) continue;
+        const body = m[2];
+        const px = body.match(/(?<![a-z-])width:\s*(\d+)px/i);
+        if (!px) continue;
+        if (!/max-width:\s*[\d.]+(?:vw|vmin|%)/i.test(body)) offenders.push(`${rel(f)} — ${sel} : width: ${px[1]}px sans max-width relatif à la fenêtre`);
+        if (Number(px[1]) < standardPx) offenders.push(`${rel(f)} — ${sel} : width: ${px[1]}px < ${standardPx}px (coquille standard \`.modal\`)`);
+      }
+    }
+    expect(offenders, `Largeur FIXE posée par une classe de modale — la largeur appartient à la coquille (\`.modal\`, components.css) :\n${offenders.join('\n')}`).toEqual([]);
   });
 });
 

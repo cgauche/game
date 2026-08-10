@@ -110,7 +110,6 @@ describe('RollShell — coquille de jet unifiée', () => {
     const html = render(
       <RollShell
         title="Test multi"
-        variant="test"
         instruction="Chaque rôle lance"
         rows={[rolledRow(), rolledRow({ row: { d: testBreakdown('Voile', 50, { roll: 30, target: 50, sl: 2, success: true }) } })]}
         rolled={true}
@@ -141,7 +140,6 @@ describe('RollShell — coquille de jet unifiée', () => {
     const html = render(
       <RollShell
         title="Test opposé"
-        variant="test"
         rows={[
           rolledRow(), // rangée 0 (perdante)
           rolledRow({ row: { d: testBreakdown('Opposition', 55, { roll: 12, target: 55, sl: 4, success: true }) }, interactive: false }), // rangée 1 (gagnante, témoin)

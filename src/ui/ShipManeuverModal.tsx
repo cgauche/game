@@ -80,8 +80,6 @@ export function ShipManeuverModal() {
     <RollShell
       flowKey="shipManeuver"
       title={<><Icon id="action/steer-ship" size="sm" /> Manœuvre — Test d’équipage</>}
-      /* Coquille `roll` : N rangées de rôles à portrait — pas un Test SOLO (cf. `BargainModal`, #1153 L2ter). */
-      variant="roll"
       subtitle={<><strong>{ship.label}</strong> — {p.participants.length} rôle{plural(p.participants.length)} à la manœuvre (DR sommés)</>}
       extra={<OptionChooser layout="grid" groupLabel="Virage" options={turnOptions} />}
       rows={rows}

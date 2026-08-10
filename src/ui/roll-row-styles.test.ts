@@ -77,13 +77,13 @@ describe('rangée de jet — les classes du bloc « dé fixé » sont chartrées
   });
 
   // Sonde du juge vision, PROMUE : aucun élément de rangée n'hérite du `text-align` de la coquille. Le
-  // ferrage se déclare sur le CONTENEUR (`.prow`) — mesuré : marque centrée sous `.test-modal`
-  // (`text-align: center`) au-dessus d'un champ ferré à gauche, dans la MÊME rangée.
+  // ferrage se déclare sur le CONTENEUR (`.prow`) — mesuré : marque centrée par l'ambiance hôte
+  // au-dessus d'un champ ferré à gauche, dans la MÊME rangée.
   it('`.prow` (le conteneur) ferre ses enfants EXPLICITEMENT — sinon l’ambiance de la coquille décide', () => {
     const bodies = rulesFor('prow').map((r) => r.body).join('\n');
     expect(
       bodies,
-      '`.prow` sans `text-align` : chaque enfant (marque, issue courte, actions) hérite du centrage de `.test-modal` et diverge de `.roll-modal`.',
+      '`.prow` sans `text-align` : chaque enfant (marque, issue courte, actions) hérite du ferrage de la coquille hôte et diverge d’une modale à l’autre.',
     ).toMatch(/text-align:\s*(left|start)/);
   });
 

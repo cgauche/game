@@ -77,7 +77,6 @@ export function CorruptionModal() {
     <RollShell
       flowKey="corruption"
       stake={flowStakeRef('corruption', seuil ? 'seuil' : (pc.level ?? 'mineure'))}
-      variant="test"
       title={seuil ? <><Icon id="nav/mutation" size="sm" /> Seuil de Corruption ({hero?.corruption ?? '?'} Points)</> : <><Icon id="nav/mutation" size="sm" /> Influence corruptrice ({EXPOSURE_LABELS[pc.level ?? 'mineure']})</>}
       subtitle={
         <>

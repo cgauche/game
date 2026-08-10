@@ -25,7 +25,6 @@ export function useFumbleJetProps(): ComponentProps<typeof RollShell> | null {
   const r = step.fumble.result;
   const rolled = !!r;
   return {
-    variant: 'test',
     title: <><Icon id="nav/dice" size="sm" /> Maladresse</>,
     // Z1 : l'ACTEUR et le FAIT qui ouvre la fenêtre. Le NOM DE LA TABLE se lit sur la ligne de tirage
     // (`TableRollLine`, ci-dessous) et sur le bouton de lancement — jamais une troisième fois ici.

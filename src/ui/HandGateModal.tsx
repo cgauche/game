@@ -58,7 +58,6 @@ export function HandGateModal() {
   return (
     <RollShell
       flowKey="handGate"
-      variant="test"
       title={<><Icon id="condition/bleeding" size="sm" /> Main ensanglantée</>}
       subtitle={
         <>
