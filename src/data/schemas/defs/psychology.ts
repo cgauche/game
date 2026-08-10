@@ -33,6 +33,7 @@ export const schema = z.array(
     immuneWhileActive: z.array(z.string()).optional(),
     containedSocialMod: z.number().optional(),
     targetCauses: z.strictObject({ kind: z.string(), indice: z.number() }).optional(),
+    triggerOn: z.enum(['encounter', 'threatened']).optional(),
     /** ENJEU du Test de Psychologie (#1117 L2) — porté par l'ENTRÉE, pas par un gabarit de `kind` :
      *  les conséquences diffèrent d'une entrée à l'autre (`resolution`/`failCondition`/`failAmount`/
      *  `becomes`), donc un texte au `kind` serait tautologique. Patron `ActivityDef.stake` : l'entité

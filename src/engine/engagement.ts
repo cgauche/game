@@ -71,6 +71,16 @@ export function engage(a: Combatant, b: Combatant): void {
   }
 }
 
+/** Trace ORIENTÉE « `a` a attaqué `b` ce Round » — SOURCE UNIQUE, appelée par TOUS les sites de résolution
+ *  d'attaque (mêlée/tir `applyAttackResult`, manœuvres de créature `resolveManeuver`, Projectile magique
+ *  `applyCast`), touche ou non. Idempotente. À la différence d'`engage` (symétrique, LDB 13 l.169-171),
+ *  elle n'écrit QUE le côté attaquant : hors mêlée aucun texte ne pose de réciprocité. Purgée avec
+ *  `meleeThisRound` par `decayEngagement`. Lue par `agressifEnvers` (LDB 85 l.383). */
+export function markAttacked(a: Combatant, b: Combatant): void {
+  a.attackedThisRound ??= [];
+  if (a.id !== b.id && !a.attackedThisRound.includes(b.id)) a.attackedThisRound.push(b.id);
+}
+
 /** Retire le lien Engagé A↔B des deux côtés (désengagement réussi, ou cible hors d'action). Le lien
  *  « au contact » A↔B (LDB 62 l.176) est un SOUS-ENSEMBLE de l'Engagement → purgé de pair. */
 export function disengageFrom(a: Combatant, b: Combatant): void {
@@ -120,7 +130,8 @@ export function clearContact(a: Combatant, b: Combatant): void {
  *  (LDB 13 l.171), puis vide meleeThisRound. Engagé étant symétrique, un coup dans
  *  UN sens rafraîchit la paire dans les DEUX. Lit un instantané AVANT de muter (sinon la
  *  mutation de A→B casserait la lecture B→A). Purge aussi tout lien vers un combattant
- *  hors d'action (Blessures ≤ 0). */
+ *  hors d'action (Blessures ≤ 0), et la trace d'attaque du Round (`attackedThisRound`, MÊME
+ *  cadence : elle ne porte que « ce Round »). */
 export function decayEngagement(all: Combatant[]): void {
   const fresh = new Map<string, Set<string>>(all.map((c) => [c.id, new Set(c.meleeThisRound ?? [])]));
   const alive = new Set(all.filter((c) => c.wounds.current > 0).map((c) => c.id));
@@ -135,6 +146,7 @@ export function decayEngagement(all: Combatant[]): void {
       c.contactWith = c.contactWith.filter((id) => eng.has(id));
     }
     c.meleeThisRound = [];
+    c.attackedThisRound = [];
   }
 }
 

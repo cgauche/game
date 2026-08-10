@@ -60,7 +60,7 @@ import {
   conditionModLines,
 } from '../engine/combat';
 import { RULE_REF } from '../engine/ruleRefs';
-import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, areInContact, reachTiles, meleeReachTiles } from '../engine/engagement';
+import { engage, markAttacked, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, areInContact, reachTiles, meleeReachTiles } from '../engine/engagement';
 import { areGrappling, clearGrapple, grappleEnvMod } from '../engine/grapple';
 import { gainAdvantage } from '../engine/advantage';
 import { groupAdvantage } from '../engine/advantagePool';
@@ -2052,6 +2052,7 @@ export function applyAttackResult(
     const battle = get().battle!;
     attacker.aiming = false;
     if (weapon.type === 'melee' && !isInanimate(target)) engage(attacker, target); // Engagé symétrique (LDB 13 l.174-175) — jamais avec un objet INANIMÉ
+    if (!isInanimate(target)) markAttacked(attacker, target); // trace orientée du Round (LDB 85 l.383, `agressifEnvers`)
     const currentBefore = target.wounds.current;
     target.wounds.current = 0;
     finalizeHeroDeath(get, set, target, 'hit', currentBefore, attacker); // Destin possible (héros) ; sinon mort directe
@@ -2142,6 +2143,7 @@ export function applyAttackResult(
   if (attacker.nextActionPenalty) attacker.nextActionPenalty = undefined; // pénalité de Maladresse consommée par ce Test
 
   if (weapon.type === 'melee' && !isInanimate(target)) engage(attacker, target); // Engagé symétrique sur toute attaque de mêlée (LDB 13 l.169-171) — jamais avec un objet INANIMÉ
+  if (!isInanimate(target)) markAttacked(attacker, target); // trace orientée du Round (LDB 85 l.383, `agressifEnvers`) — tir compris
   const critLog: string[] = [];
   // Empoignade (LDB 14 l.159) : « vous ET votre adversaire êtes Empoignés, et votre adversaire gagne
   // l'État *Empêtré* ». Pose APRÈS l'Engagement (les deux Empoignés) ; le bloc de Dégâts ci-dessous est
@@ -4827,6 +4829,10 @@ export function applyCast(
   // géométrique : un porteur du Talent présent sur le terrain mais NON ciblé ne confère rien
   // (rétrécissement assumé — lecture retenue, réf #1007).
   const zoneTargets = [target, ...extraTargets];
+  // Projectile magique (LDB 46) : c'est une ATTAQUE (jet du lanceur opposé à la défense de la cible) —
+  // trace orientée du Round posée par le MÊME helper que les armes (`markAttacked`, LDB 85 l.383). Les
+  // autres Sorts passent ici aussi bien pour soigner que pour nuire : rien ne s'y marque.
+  if (missile) for (const t of zoneTargets) markAttacked(caster, t);
   const zoneTalentMod = zoneTalentSpellDRMod(zoneTargets);
   const zoneMod = (t: Combatant): number => (zoneTargets.includes(t) ? zoneTalentMod : talentSpellDRMod(t));
   /** DR du Sort tel que le subit `t` — SITE UNIQUE lu par les Flows, les zones, l'invocation, le NI. */

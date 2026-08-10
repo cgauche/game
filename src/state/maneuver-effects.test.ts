@@ -178,4 +178,45 @@ describe('Hurlement fantomatique — Test de trigger enfoui routé (cadence-awar
     expect(live(goule.id).wounds.current).toBeLessThan(15); // folder-only → CIBLÉE (RAW : « ne possédant pas le trait »)
     expect(live(trueUndead.id).wounds.current).toBe(15); // Trait Mort-vivant porté → EXCLUE
   });
+
+  /**
+   * #1231 — « Toutes les créatures vivantes (ne possédant pas le trait Mort-vivant) » (LDB 85 l.170) :
+   * le Hurlement fantomatique ne connaît AUCUN camp (`targeting:'allAround'`). Un allié de la banshee,
+   * vivant et à portée, le prend comme les autres ; elle-même jamais.
+   */
+  it('un ALLIÉ vivant de la banshee, à portée, subit le hurlement (aucun camp) — l’émettrice non', () => {
+    seedBattleRng(5);
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    useGame.getState().startScene(testScene);
+    useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    const H = b.combatants.find((c) => c.kind === 'hero')!;
+    H.dead = true; H.pos = undefined; // hors-cible : on isole le cas sur la paire d'ennemis ci-dessous
+    const enemies = b.combatants.filter((c) => c.kind === 'enemy');
+    const banshee = enemies[0];
+    banshee.traits = [...(banshee.traits ?? []), { id: 'hurlement-fantomatique', value: 0 }];
+    banshee.pos = { x: 10, y: 10 };
+    banshee.advantage = 3;
+    banshee.wounds = { current: 15, max: 15 };
+    const allie = enemies[1]; // MÊME camp que la banshee, vivant, sans Trait Mort-vivant
+    allie.traits = []; allie.groups = []; allie.pos = { x: 9, y: 10 };
+    allie.wounds = { current: 15, max: 15 };
+    // « créatures VIVANTES » : un chariot (véhicule-coque) n'entend rien et n'est jamais « attaqué ».
+    const chariot = enemies[2];
+    chariot.traits = []; chariot.groups = []; chariot.pos = { x: 11, y: 10 };
+    chariot.dead = false; chariot.bodyShape = 'vehicule'; chariot.wounds = { current: 15, max: 15 };
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingLogQueue: [] });
+
+    applyWail(useGame.getState, useGame.setState, banshee);
+
+    const live = (id: string) => useGame.getState().battle!.combatants.find((c) => c.id === id)!;
+    expect(live(allie.id).wounds.current).toBeLessThan(15);
+    expect(live(banshee.id).wounds.current).toBe(15);
+    expect(live(chariot.id).wounds.current).toBe(15); // INANIMÉ : hors population
+    expect(live(banshee.id).attackedThisRound ?? []).not.toContain(chariot.id); // ni marqué attaqué
+    expect(live(banshee.id).attackedThisRound).toContain(allie.id); // la créature, elle, l'est
+  });
 });

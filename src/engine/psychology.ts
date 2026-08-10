@@ -75,16 +75,24 @@ export const CIBLE_LABEL: Record<string, { icon: string; label: string }> = Obje
   psychologies.filter((p) => p.targeted).map((p) => [p.id, { icon: p.icon ?? '', label: p.label }]),
 );
 
-/** « Si la créature est considérée comme AGRESSIVE » (LDB 85 l.381-383) : porte de la Peur/Terreur de
- *  TAILLE, lue ENVERS `cible`. Un adversaire l'est par sa relation (`relationBetween` = `opponent`) ; un
- *  membre du MÊME camp seulement s'il échange des coups avec elle : le lien Engagé, posé par la seule
- *  résolution d'une attaque de mêlée, est SYMÉTRIQUE (LDB 13 l.169-171) — les deux combattants au corps
- *  à corps sont donc agressifs l'un envers l'autre.
- *  Pur : ne lit que la relation et l'état d'Engagement des deux combattants. */
-export function agressifEnvers(source: Pick<Combatant, 'id' | 'kind' | 'engagedWith'>, cible: Pick<Combatant, 'id' | 'kind' | 'engagedWith'>): boolean {
+/** « Si la créature est considérée comme AGRESSIVE » (LDB 85 l.383) : porte de la Peur/Terreur de
+ *  TAILLE, lue ENVERS `cible`. Deux ADVERSAIRES DÉCLARÉS (camps opposés dont aucun n'est neutre) le
+ *  sont par défaut. Dès qu'un NEUTRE est en jeu, le camp ne dit rien : seul le COMPORTEMENT tranche,
+ *  comme entre membres d'un même camp — le lien Engagé, posé par la résolution d'une attaque de mêlée
+ *  et SYMÉTRIQUE (LDB 13 l.169-171), ou la trace ORIENTÉE d'une attaque portée ce Round
+ *  (`attackedThisRound`, `markAttacked`) : hors mêlée aucun texte ne pose de réciprocité, la victime
+ *  d'un tir n'est donc pas rendue agressive envers son tireur.
+ *  Pur : ne lit que les camps, l'Engagement et les attaques du Round. */
+export function agressifEnvers(
+  source: Pick<Combatant, 'id' | 'kind' | 'engagedWith' | 'attackedThisRound'>,
+  cible: Pick<Combatant, 'id' | 'kind' | 'engagedWith'>,
+): boolean {
   if (source.id === cible.id) return false;
-  if (relationBetween({ id: source.id, camp: campOf(source) }, { id: cible.id, camp: campOf(cible) }) === 'opponent') return true;
-  return !!source.engagedWith?.includes(cible.id) || !!cible.engagedWith?.includes(source.id);
+  const [cs, cc] = [campOf(source), campOf(cible)];
+  if (cs !== 'neutral' && cc !== 'neutral' && relationBetween({ id: source.id, camp: cs }, { id: cible.id, camp: cc }) === 'opponent') return true;
+  return !!source.engagedWith?.includes(cible.id)
+    || !!cible.engagedWith?.includes(source.id)
+    || !!source.attackedThisRound?.includes(cible.id);
 }
 
 /** Source de Peur/Terreur que `foe` représente pour `self` — TROIS portes distinctes : la Taille (LDB 85
@@ -408,9 +416,6 @@ export function resolvePeurTest(
   return { dr: step.total - prevDR, calmeDR: step.total, vaincue: step.done, roll: t.roll, target: t.target, sl: t.sl, success: t.success };
 }
 
-/** Traits ciblés visant un ALLIÉ (on les défend) plutôt qu'un ennemi (LDB 21 : Amour l.74, Camaraderie l.79). */
-const TARGETS_ALLY = new Set<PsychType>(['amour', 'camaraderie']);
-
 /** Traits psychologiques EFFECTIFS de `c` : ceux STOCKÉS (`c.psychTraits` — natifs, mutations, sorts
  *  accordés) PLUS ceux DÉRIVÉS des maladies ACTIVES (symptômes manifestés portant `grantPsychTrait` — Rage
  *  meurtrière → Haine + Frénésie). POINT DE LECTURE UNIQUE des Traits psy possédés : un symptôme actif rend
@@ -434,23 +439,31 @@ export function effectivePsychTraits(c: Combatant): PsychTrait[] {
   return all;
 }
 
-/** Premier Trait psy CIBLÉ de `self` déclenché ce Round : un membre du groupe `cible` est VISIBLE
- *  (ennemi pour animosite/haine/prejuge ; allié pour amour/camaraderie) et le trait n'est pas
- *  déjà en affliction active. `visible` = combattants en Ligne de Vue (filtrée par l'appelant, couche
- *  state). Une Cible indéfinie (« un au choix ») est inerte. Pur.
+/** Premier Trait psy CIBLÉ de `self` déclenché ce Round : un membre du groupe `cible` est VISIBLE dans la
+ *  SITUATION que l'entrée déclare (`triggerOn`, `psychology.json`) et le trait n'est pas déjà en affliction
+ *  active. Aucun filtre de CAMP : les textes ne parlent que du Groupe-Cible (Animosité LDB 21 l.19 « un
+ *  groupe de personnes ou de créatures », Haine l.39, Préjugé l.45, Amour l.75, Camaraderie l.81).
+ *  `triggerOn:'threatened'` (Amour l.75 « Vous devez venir en aide à quelqu'un que vous aimez s'il se
+ *  retrouve menacé », Camaraderie l.81) exige en plus qu'un TIERS visible soit agressif envers ce membre —
+ *  jamais `self` : on ne se porte pas au secours contre soi-même. La menace se mesure par `agressifEnvers`,
+ *  donc un membre NEUTRE de la Cible n'est « menacé » que par un comportement constaté (Engagement ou
+ *  attaque du Round), là où un membre du camp joueur l'est déjà par la présence d'un hostile déclaré.
+ *  `visible` = combattants en Ligne de Vue (filtrée par l'appelant, couche state). Une Cible indéfinie
+ *  (« un au choix ») est inerte. Pur.
  *  Un Trait déclaré `targetCauses` (Phobie, LDB 21 l.87) n'a PAS de Test propre : son objet est une source
  *  de Peur (`fearSourceFor`), et c'est le régime de la Peur qui l'ouvre — jamais une seconde bande. */
 export function targetedTrigger(self: Combatant, visible: Combatant[]): { type: PsychType; cible: string; sourceId: string; indice?: number } | null {
   for (const tr of effectivePsychTraits(self)) {
     if (!tr.cible) continue; // « un au choix » → inerte
-    if (findPsychologyById(tr.type)?.targetCauses) continue; // résolu par le régime de la Peur
+    const d = findPsychologyById(tr.type);
+    if (d?.targetCauses) continue; // résolu par le régime de la Peur
     if ((self.psychState ?? []).some((p) => p.type === tr.type && p.cible === tr.cible)) continue; // déjà testé/actif
-    const wantAlly = TARGETS_ALLY.has(tr.type);
+    const needsThreat = d?.triggerOn === 'threatened';
     const m = visible.find(
       (v) =>
         v.id !== self.id &&
-        (wantAlly ? v.kind === self.kind : v.kind !== self.kind) &&
-        groupMatch(tr.cible!, (v.groups ?? []).filter((g) => !hiddenGroupsOf(v).includes(g))),
+        groupMatch(tr.cible!, (v.groups ?? []).filter((g) => !hiddenGroupsOf(v).includes(g))) &&
+        (!needsThreat || visible.some((a) => a.id !== self.id && agressifEnvers(a, v))),
     );
     if (m) return { type: tr.type, cible: tr.cible, sourceId: m.id, indice: tr.indice };
   }

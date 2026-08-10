@@ -1271,7 +1271,7 @@
     },
     "aura": {
       "rangeChar": "endurance",
-      "affects": "enemies",
+      "affects": "all",
       "passive": [
         {
           "op": "testMod",

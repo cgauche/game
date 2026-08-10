@@ -31,7 +31,7 @@ export const schema = z.array(
     advantageMode: z.enum(['fixed', 'variable', 'all']).optional(),
     stat: z.enum(['capacite-de-combat', 'capacite-de-tir']).optional(),
     defense: z.enum(['esquive', 'parade', 'init', 'resist', 'auto']).optional(),
-    targeting: z.enum(['melee', 'ranged', 'zone', 'allFoes', 'self']),
+    targeting: z.enum(['melee', 'ranged', 'zone', 'allFoes', 'allAround', 'self']),
     range: maneuverMeasure.optional(),
     blast: maneuverMeasure.optional(),
     magic: z.boolean().optional(),

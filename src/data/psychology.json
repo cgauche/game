@@ -206,6 +206,7 @@
     "immuneWhileActive": [
       "peur"
     ],
+    "triggerOn": "threatened",
     "resolution": "binary",
     "test": {
       "skill": "calme",
@@ -228,6 +229,7 @@
       "amount": 1,
       "vs": "any"
     },
+    "triggerOn": "threatened",
     "resolution": "binary",
     "test": {
       "skill": "calme",

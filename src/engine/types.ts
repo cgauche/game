@@ -1628,6 +1628,11 @@ export interface Combatant {
   /** IDs avec qui une attaque de mêlée a été échangée CE Round (upkeep de fin de Round,
    *  parallèle à gainedAdvThisRound) → sert à purger l'Engagement périmé (l.175). */
   meleeThisRound?: string[];
+  /** IDs que ce combattant a ATTAQUÉS ce Round, quel que soit le mode (mêlée, tir, manœuvre de créature,
+   *  Projectile magique) — trace ORIENTÉE attaquant→cible, posée par `markAttacked` aux sites de
+   *  résolution, purgée avec `meleeThisRound` (`decayEngagement`). Lue par `agressifEnvers` : hors mêlée
+   *  aucun texte ne rend la victime agressive en retour, d'où l'absence de réciprocité. */
+  attackedThisRound?: string[];
   /** « Au contact » (LDB 62 l.176, Option « Longueur d'arme ») : adversaires dans la longueur d'arme
    *  desquels ce combattant est entré. Relationnel et symétrique (comme `engagedWith`) ; SOUS-ENSEMBLE
    *  de l'Engagement (purgé par paire dès que l'Engagement A↔B tombe). Toute arme plus longue que Courte

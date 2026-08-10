@@ -10,7 +10,7 @@ export const MANEUVER_ACTIVATION_LABEL: Record<ManeuverDef['activation'], string
   action: 'Action', free: 'Gratuite (coût d’Avantage)', charge: 'À la Charge',
 };
 export const MANEUVER_TARGETING_LABEL: Record<ManeuverDef['targeting'], string> = {
-  melee: 'Mêlée', ranged: 'Distance', zone: 'Zone', allFoes: 'Tous les ennemis', self: 'Sur soi',
+  melee: 'Mêlée', ranged: 'Distance', zone: 'Zone', allFoes: 'Tous les ennemis', allAround: 'Tout le monde alentour', self: 'Sur soi',
 };
 
 /** Portée/Souffle d'une manœuvre (`ManeuverMeasure`, mètres = bonus(carac) + plus) → prose FR DÉRIVÉE

@@ -63,4 +63,26 @@ describe('Psychologie IA (Peur/Terreur au début du tour)', () => {
     expect(e.conditions.some((c) => c.id === 'brise')).toBe(false);
     expect(e.psychState ?? []).toEqual([]);
   });
+
+  /**
+   * #1231 — Belliqueux (LDB 85 l.51) : « Tant qu'elle a plus d'Avantages que son adversaire ». Son
+   * adversaire se lit à l'Engagement (LDB 13 l.169-171, symétrique), pas au camp : une créature engagée
+   * contre un membre de SON camp, avec plus d'Avantages que lui, gagne bien l'Immunité Psychologique.
+   */
+  it('Belliqueux : l’adversaire ENGAGÉ du même camp compte — plus d’Avantages que lui ⇒ immunité psy', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    H.size = 'enorme'; // Terreur 2 pour E s'il n'est pas immunisé
+    E.characteristics['force-mentale'] = 10; // Calme raté à coup sûr
+    E.traits = [...(E.traits ?? []), { id: 'belliqueux' }];
+    E.advantage = 2;
+    const rival = useGame.getState().battle!.combatants.find((c) => c.kind === 'enemy' && c.id !== E.id)!;
+    rival.dead = false; rival.wounds = { current: 10, max: 10 }; rival.advantage = 0; rival.pos = { x: 12, y: 10 };
+    E.engagedWith = [rival.id]; rival.engagedWith = [E.id]; // camarades qui en viennent aux mains
+    useGame.setState({ battle: { ...useGame.getState().battle! } });
+    resolvePsychAI(useGame.getState, useGame.setState, E);
+    const e = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
+    expect(e.conditions.some((c) => c.id === 'brise')).toBe(false);
+    expect(e.psychState ?? []).toEqual([]);
+  });
 });

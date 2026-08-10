@@ -22,6 +22,7 @@ import { evLines } from './combatLog';
 import type { RNG } from '../engine/dice';
 import { combatValue, combatBaseValue, defenseValue, defenseBaseValue, DEFENSE_LABEL } from '../engine/combat';
 import { isVehicle } from '../engine/vehicle';
+import { isInanimate } from '../engine/structures';
 import { rollTest, resolveOpposed, hydrateTR, type TestResult } from '../engine/tests';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { isOutOfAction, applyZeroWounds, stacks, COND, cannotDefend } from '../engine/conditions';
@@ -46,7 +47,7 @@ import { combatantsWithinRadius } from './combatGeometry';
 import { smokeZone } from './lineOfSight';
 import { applyTriggeredEffects } from './triggeredEffects';
 import { canTakeAction } from '../engine/conditions';
-import { isEngagedWith, longerThanShort } from '../engine/engagement';
+import { isEngagedWith, longerThanShort, markAttacked } from '../engine/engagement';
 import { areGrappling } from '../engine/grapple';
 import { rule } from '../engine/policy';
 import { campSpend } from './combat/advantagePool';
@@ -376,6 +377,7 @@ export function resolveManeuver(
   const lines: string[] = [t('manv.trigger', { name: attacker.label, label: def.label || ATTACK_LABEL[def.kind] })];
   emitCreatureAttackAnim(attacker, def.kind);
   const alive = (c: Combatant) => c.kind !== attacker.kind && !isOutOfAction(c) && !!c.pos;
+  const inPlay = (c: Combatant) => c.id !== attacker.id && !isOutOfAction(c) && !!c.pos; // population SANS camp (`allAround`)
   const nearest = (cands: Combatant[]) => cands.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c));
   const flushLog = () => {
     set({ battle: { ...get().battle!, log: [...get().battle!.log, ...evLines(lines, 'attack', attacker.id)] } });
@@ -429,12 +431,18 @@ export function resolveManeuver(
       lines.push(t('manv.smoke', { dur }));
       set({ battle: { ...get().battle!, zones } });
     }
-  } else if (def.targeting === 'allFoes') {
-    // Hurlement fantomatique (LDB 85 l.170) : « créatures vivantes (ne possédant pas le trait Mort-vivant) »
-    // à Initiative mètres — le TRAIT (capability `undead`), PAS le Groupe bestiaire (folder « Morts sans
+  } else if (def.targeting === 'allFoes' || def.targeting === 'allAround') {
+    // Hurlement fantomatique (LDB 85 l.170) : « Toutes les créatures vivantes (ne possédant pas le trait
+    // Mort-vivant) se trouvant à un nombre de mètres égal à l'Initiative » → `allAround`, aucun camp. Le
+    // Mort-vivant se lit au TRAIT (capability `undead`), PAS au Groupe bestiaire (folder « Morts sans
     // repos » sans le Trait, ex. Goule de crypte, reste ciblable — cf. domainAttributes.test.ts).
+    // `allFoes` sert les textes qui DÉSIGNENT le camp (Hurlement de la Bête indomptable, Middenheim 04
+    // l.11 : « effectuer une attaque gratuite de hurlement contre ses ennemis »).
+    // « créatures vivantes » exclut aussi l'objet INANIMÉ (structure de siège, véhicule-coque) — dans les
+    // DEUX populations : un chariot n'entend pas un hurlement.
     const radius = Math.max(1, Math.ceil(effectiveChar(attacker, 'initiative') / 2));
-    affected = combatantsWithinRadius(attacker.pos!, radius, battle.combatants, (c) => alive(c) && !traitCapability(c.traits, 'undead'));
+    const pop = def.targeting === 'allAround' ? inPlay : alive;
+    affected = combatantsWithinRadius(attacker.pos!, radius, battle.combatants, (c) => pop(c) && !isInanimate(c) && !traitCapability(c.traits, 'undead'));
     emitAoe(get, attacker.pos, radius, def.kind, def.label);
   } else {
     // melee / ranged : cible unique (clic joueur, ou la plus proche pour l'IA/auto).
@@ -442,6 +450,9 @@ export function resolveManeuver(
     const tgt = chosenTarget && alive(chosenTarget) ? chosenTarget : foes.length ? nearest(foes) : null;
     affected = tgt ? [tgt] : [];
   }
+  // Trace orientée du Round (LDB 85 l.383, `agressifEnvers`) — MÊME garde qu'aux deux sites de `applyAttackResult` :
+  // jamais contre un objet INANIMÉ (il n'a ni psychologie ni Engagement).
+  for (const t of affected) if (!isInanimate(t)) markAttacked(attacker, t);
 
   // Split : défenseurs PILOTÉS PAR UN HUMAIN influençables (défense en cascade, Chance/Résilience) vs le
   // reste (silencieux, IA en masse). Un défenseur Surpris (`cannotDefend`) ne peut pas réagir → résolu en

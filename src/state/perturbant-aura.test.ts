@@ -5,8 +5,8 @@ import { combatTestPenalty } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
 
 /**
- * Perturbant (LDB 85 p.341) — MIGRÉ en DONNÉES : l'aura (−20 aux Tests à BE mètres, ennemis seulement, NON
- * cumulable) vit dans `TraitData.aura` ; le hook GÉNÉRIQUE `recompute-auras` la projette (par géométrie)
+ * Perturbant (LDB 85 l.260-262) — MIGRÉ en DONNÉES : l'aura (−20 aux Tests à BE mètres, « Toute personne »,
+ * NON cumulable) vit dans `TraitData.aura` ; le hook GÉNÉRIQUE `recompute-auras` la projette (par géométrie)
  * dans `Combatant.auraMods`, lu par `passiveMods` (kind `etat`) → `combatTestPenalty`. Aucun trait nommé.
  */
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
@@ -38,11 +38,19 @@ describe('Perturbant — aura de DONNÉE projetée par le hook générique recom
     expect(hero.auraMods ?? []).toEqual([]);
     expect(combatTestPenalty(hero)).toBe(0);
   });
-  it('un ALLIÉ de la créature Perturbante n’est PAS affecté (affects: enemies)', () => {
+  it('un ALLIÉ dans l’aura subit le −20 comme un ennemi (LDB 85 l.262 : « Toute personne »)', () => {
     const p = mk({ id: 'p', kind: 'enemy', traits: [{ id: 'perturbant' }] as never, pos: { x: 5, y: 5 } as never });
     const ally = mk({ id: 'a', kind: 'enemy', pos: { x: 6, y: 5 } as never });
     recompute([p, ally]);
-    expect(ally.auraMods ?? []).toEqual([]);
+    expect(ally.auraMods).toEqual([{ op: { op: 'testMod', amount: -20 }, src: { category: 'traits', id: 'perturbant' } }]);
+    expect(combatTestPenalty(ally)).toBe(-20);
+  });
+  it('la créature Perturbante elle-même n’est JAMAIS touchée par son aura', () => {
+    const p = mk({ id: 'p', kind: 'enemy', traits: [{ id: 'perturbant' }] as never, pos: { x: 5, y: 5 } as never });
+    const ally = mk({ id: 'a', kind: 'enemy', pos: { x: 6, y: 5 } as never });
+    recompute([p, ally]);
+    expect(p.auraMods ?? []).toEqual([]);
+    expect(combatTestPenalty(p)).toBe(0);
   });
   it('NON-CUMUL : deux créatures Perturbantes adjacentes → −20 (pas −40)', () => {
     const p1 = mk({ id: 'p1', kind: 'enemy', traits: [{ id: 'perturbant' }] as never, pos: { x: 5, y: 5 } as never });

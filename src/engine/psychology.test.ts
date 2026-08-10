@@ -60,12 +60,14 @@ describe('Psychologie (pur)', () => {
     expect(targetedTrigger(self, [other, foe])).toEqual({ type: 'animosite', cible: 'elfe', sourceId: 'f' });
     expect(targetedTrigger(self, [other])).toBeNull(); // aucun membre du groupe visible
   });
-  it('targetedTrigger : Amour cible un ALLIÉ du groupe ; déjà en psychState → pas re-déclenché', () => {
+  it('targetedTrigger : Amour se déclenche sur un membre du groupe MENACÉ (LDB 21 l.75) ; déjà en psychState → pas re-déclenché', () => {
     const self = { id: 's', kind: 'hero', psychTraits: [{ type: 'amour', cible: 'Famille' }], psychState: [] } as unknown as Combatant;
     const ally = { id: 'a', kind: 'hero', groups: ['Famille'] } as unknown as Combatant;
-    expect(targetedTrigger(self, [ally])?.type).toBe('amour');
+    const brigand = { id: 'b', kind: 'enemy' } as unknown as Combatant;
+    expect(targetedTrigger(self, [ally])).toBeNull(); // aimé présent mais non menacé
+    expect(targetedTrigger(self, [ally, brigand])?.type).toBe('amour');
     (self.psychState as { type: string; cible: string }[]).push({ type: 'amour', cible: 'Famille' });
-    expect(targetedTrigger(self, [ally])).toBeNull();
+    expect(targetedTrigger(self, [ally, brigand])).toBeNull();
   });
   it('targetedTrigger : « un au choix » (Cible indéfinie) → inerte', () => {
     const self = { id: 's', kind: 'enemy', psychTraits: [{ type: 'animosite', cible: undefined }], psychState: [] } as unknown as Combatant;

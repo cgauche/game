@@ -799,7 +799,7 @@
     "kind": "hurlement",
     "activation": "free",
     "advantageCost": 2,
-    "targeting": "allFoes",
+    "targeting": "allAround",
     "defense": "resist",
     "advantageMode": "all",
     "effects": [

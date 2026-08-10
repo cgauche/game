@@ -181,10 +181,13 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
   const battle = get().battle;
   const scene = get().scene;
   if (!battle || !scene || !enemy.pos) return;
-  // Belliqueux (LDB 85 p.338) : immunité psy tant qu'il a plus d'Avantages que son adversaire ENGAGÉ.
+  // Belliqueux (LDB 85 l.51) : « Tant qu'elle a plus d'Avantages que son adversaire, elle gagne Immunité
+  // Psychologique ». « Son adversaire » se lit à l'Engagement, jamais au camp : le lien Engagé est posé par
+  // la résolution d'une attaque de mêlée et SYMÉTRIQUE (LDB 13 l.169-171) — un Engagé de son propre camp
+  // est donc son adversaire de fait, comme pour la Peur de Taille (`agressifEnvers`).
   const engagedFoesAdv = (enemy.engagedWith ?? [])
     .map((id) => inBattleId(battle, id))
-    .filter((e): e is Combatant => !!e && e.kind !== enemy.kind && !isOutOfAction(e))
+    .filter((e): e is Combatant => !!e && !isOutOfAction(e))
     .map((e) => e.advantage ?? 0);
   if (isPsychImmune(enemy, engagedFoesAdv.length ? Math.max(...engagedFoesAdv) : undefined)) return; // Immunité (Psychologie) / Frénésie / Détermination temp / Belliqueux
   enemy.psychState ??= [];

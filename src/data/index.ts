@@ -1245,6 +1245,13 @@ export interface PsychologyData extends StatusData {
    *  `indice` est le DÉFAUT, surchargé par l'Indice de l'instance possédée (« Vous pouvez vouloir augmenter
    *  l'Indice de Peur si la Phobie est particulièrement forte » — éditable au Codex). Lu par `fearSourceFor`. */
   targetCauses?: { kind: string; indice: number };
+  /** SITUATION qui EXPOSE au Trait CIBLÉ (LDB 21 l.9), lue par `targetedTrigger` — jamais un camp.
+   *  `'encounter'` (défaut) : « chaque fois que vous rencontrez l'un de ces groupes » (Animosité l.19,
+   *  Préjugé l.45 ; Haine l.39 « Lorsque vous rencontrez ceux qui vous provoquent la Haine »).
+   *  `'threatened'` : « Vous devez venir en aide à quelqu'un que vous aimez s'il se retrouve menacé »
+   *  (Amour l.75 ; Camaraderie l.81 « si ce groupe est menacé ») — un tiers doit être agressif envers
+   *  le membre de la Cible (`agressifEnvers`). */
+  triggerOn?: 'encounter' | 'threatened';
   /** Mode de RÉSOLUTION du Test de Psychologie (LDB 21), lu par l'applier GÉNÉRIQUE `combatPsych` (plus de
    *  dispatch `kind === 'terreur'` codé) : `'extended'` = Test ÉTENDU de Calme cumulant le DR vers l'Indice
    *  (Peur, l.27) ; `'terreur'` = Test BINAIRE dont l'échec inflige `failCondition` (Indice + |DR négatifs|)
@@ -1329,8 +1336,11 @@ export interface ManeuverDef {
   /** Défense opposée : Esquive / Parade, Initiative (Regard), Résistance/auto sans opposition. */
   defense?: 'esquive' | 'parade' | 'init' | 'resist' | 'auto';
   /** Mode de ciblage (le résolveur en dérive la géométrie moteur). `self` = capacité SUR SOI (pas de
-   *  cible adverse ni d'opposition — transformation, mue, auto-buff) : les `effects` s'appliquent au porteur. */
-  targeting: 'melee' | 'ranged' | 'zone' | 'allFoes' | 'self';
+   *  cible adverse ni d'opposition — transformation, mue, auto-buff) : les `effects` s'appliquent au
+   *  porteur. `allFoes` / `allAround` = même géométrie (rayon autour de l'attaquant), populations
+   *  DIFFÉRENTES : le camp adverse quand le texte le désigne (Middenheim 04 l.11 « contre ses ennemis »),
+   *  TOUT le monde quand il ne le désigne pas (LDB 85 l.170 « Toutes les créatures vivantes »). */
+  targeting: 'melee' | 'ranged' | 'zone' | 'allFoes' | 'allAround' | 'self';
   /** Portée / Souffle STRUCTURÉS (`ManeuverMeasure`) — mètres = `bonus(ref) + plus`. `range` résolu contre
    *  l'Attaquant, `blast` contre la cible au centre (RAW l.251). Remplace la formule-chaîne re-parsée au runtime. */
   range?: ManeuverMeasure;
