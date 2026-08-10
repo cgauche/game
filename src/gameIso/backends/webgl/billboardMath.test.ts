@@ -6,13 +6,13 @@ import {
   rasterPxHeight,
   billboardTextureKey,
   BILLBOARD_BOX_ASPECT,
-  ISO_PX_PER_M,
   ZOOM_MAX,
   RASTER_PX_MIN,
   RASTER_PX_MAX,
   JEU_ENT_H_M,
 } from './billboardMath';
 import { pxPerM } from './worldTris';
+import { ISO_PX_PER_M } from '../../iso';
 import { project, facingView } from '../../rig/facing';
 import { povView } from '../../pov/camera';
 import { ENT_H_M, PROP_H_M, BB_W, BB_H } from '../../pov/billboardCore';

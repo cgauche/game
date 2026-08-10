@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { faceSurface, surfaceKeyOf, tintVarFactor } from './faceColors';
 import { coursesPeriodM, groundPeriodM } from '../../detail/courses';
-import { TINT_SPREAD, terrainFillGradient } from '../affineDetail';
+import { terrainFillGradient } from '../affineDetail';
+import { TINT_SPREAD } from '../../detail/expand';
 import { reliefMaterial } from '../../catalog/relief';
 import { roofMaterial } from '../../catalog/roofs';
 import { structureAppearance } from '../../catalog/structures';
@@ -72,11 +73,12 @@ describe('faceSurface — chaque domaine résolu par SON catalogue, jamais un li
     expect(couleur({ domain: 'relief', id: 'pierre', part: 'ramp' })).toBe(PIERRE.slopeTop);
   });
 
-  it('toit : le ton du pan par orientation', () => {
-    expect(couleur({ domain: 'roof', id: 'tuile', part: 'N' })).toBe(TUILE.N);
-    expect(couleur({ domain: 'roof', id: 'tuile', part: 'E' })).toBe(TUILE.E);
-    expect(couleur({ domain: 'roof', id: 'tuile', part: 'S' })).toBe(TUILE.S);
-    expect(couleur({ domain: 'roof', id: 'tuile', part: 'O' })).toBe(TUILE.O);
+  it('toit : les QUATRE cardinaux d’un pan rendent la MÊME matière (la teinte de référence `N`)', () => {
+    for (const part of ['N', 'E', 'S', 'O'])
+      expect(couleur({ domain: 'roof', id: 'tuile', part })).toBe(TUILE.N);
+    // Les trois autres teintes de la donnée sont de l'ombrage cuit par le peintre affine : aucune
+    // n'atteint ce backend, dont la lumière fait le travail.
+    for (const cuit of [TUILE.E, TUILE.S, TUILE.O]) expect(cuit).not.toBe(TUILE.N);
   });
 
   it('toit : le volume d’avant-toit a SES tons (`soffite`, `fascia`), pas ceux d’un pan ni du liseré', () => {

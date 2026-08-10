@@ -204,6 +204,53 @@ export function aplatDePans(img, teintes, cote = FENETRE_MOTIF) {
   return par;
 }
 
+/** MATIÈRE des pans d'un toit, par MATÉRIAU et par teinte de pan : parmi les fenêtres `cote`×`cote`
+ *  dont le pixel CENTRAL est EXACTEMENT une teinte de pan, le nombre de fenêtres, la luminance moyenne
+ *  et l'écart-type MÉDIAN de luminance. Deux versants d'un même toit qui rendent deux luminances ou
+ *  deux textures différentes sortent ici comme deux classes distinctes du MÊME matériau.
+ *
+ *  `teintes` = [{ id: '<materiau>.<cardinal>', hex }] — l'id se scinde au point pour grouper par matériau. */
+export function matiereDePans(img, teintes, cote = FENETRE_MOTIF) {
+  const cibles = teintes.map((t) => ({ id: t.id, rgb: rgbDe(t.hex) }));
+  const par = new Map();
+  for (let y = 0; y + cote <= img.h; y += cote)
+    for (let x = 0; x + cote <= img.w; x += cote) {
+      const c = ((y + (cote >> 1)) * img.w + (x + (cote >> 1))) * 4;
+      const t = cibles.find((t) =>
+        Math.abs(img.data[c] - t.rgb[0]) <= TOLERANCE_TEINTE &&
+        Math.abs(img.data[c + 1] - t.rgb[1]) <= TOLERANCE_TEINTE &&
+        Math.abs(img.data[c + 2] - t.rgb[2]) <= TOLERANCE_TEINTE);
+      if (!t) continue;
+      let n = 0, s = 0, s2 = 0;
+      for (let j = 0; j < cote; j++)
+        for (let i = 0; i < cote; i++) {
+          const p = ((y + j) * img.w + (x + i)) * 4;
+          const l = (img.data[p] + img.data[p + 1] + img.data[p + 2]) / 3;
+          n++; s += l; s2 += l * l;
+        }
+      const e = par.get(t.id) ?? { n: 0, sommeLum: 0, sigmas: [] };
+      e.n++;
+      e.sommeLum += s / n;
+      e.sigmas.push(Math.sqrt(Math.max(0, s2 / n - (s / n) ** 2)));
+      par.set(t.id, e);
+    }
+  const out = new Map();
+  for (const [id, e] of par) {
+    const [materiau, cardinal] = id.split('.');
+    e.sigmas.sort((a, b) => a - b);
+    const classe = {
+      cardinal,
+      fenetres: e.n,
+      lum: e.sommeLum / e.n,
+      sigmaMed: e.sigmas[Math.floor(0.5 * (e.sigmas.length - 1))],
+    };
+    const g = out.get(materiau) ?? [];
+    g.push(classe);
+    out.set(materiau, g);
+  }
+  return out;
+}
+
 /** TOUFFES sur une nappe : parmi les fenêtres `cote`×`cote` faites de NAPPE (albédo `hexAlbedo`, à la
  *  fenêtre de `k` de `motifLocal`) ou d'ACCENT (une des teintes `touffes`, reconnue AU PIXEL en couleur
  *  cuite), la part de celles qui portent au moins un pixel d'accent, et la part moyenne de pixels
@@ -289,6 +336,24 @@ const COLOMBAGE_MIN = 9;
  *  (240) et de l'arène (115), pans d'ardoise N/E/O de la diligence (41 / 238 / 81). Une surface
  *  appareillée rend donc ZÉRO aplat ; les 10 % laissés ici sont la marge des bords anticrénelés. */
 const APLAT_PAN_MAX = 0.1;
+
+/** Rapport de LUMINANCE toléré entre deux versants d'un MÊME toit : au-delà, ils ne portent pas la
+ *  même matière (l'ombrage appartient à la lumière du renderer, pas à l'albédo). 1,3 laisse passer la
+ *  variance de teinte par case (`tintVar`) et l'anticrénelage, jamais un ombrage cuit (mesuré ×1,91). */
+const TOIT_LUM_RATIO_MAX = 1.3;
+/** Rapport d'ÉCART-TYPE toléré entre deux versants d'un même toit : au-delà, l'un d'eux a perdu son
+ *  appareillage. Mesuré ×7,9 (tuile) et ×22,4 (ardoise) quand un versant est nu. */
+const TOIT_SIGMA_RATIO_MAX = 2;
+
+/** Fenêtres attribuées par MATÉRIAU de toit sur `vitrine-batiments-top-unlit.png`, ÉPINGLÉES à la
+ *  mesure du 2026-08-10 : TOUTES teintes déclarées du matériau confondues (le pan porte la teinte `N`
+ *  — 678 / 314 / 31 fenêtres —, les quelques autres tombent sur les teintes E/S/O restées en donnée).
+ *  Une teinte de pan rendue hors de `roofMaterials.json` n'est attribuée à AUCUNE classe : sans ce
+ *  compte, la garde ne mesurerait plus que ce qui reste — les rapports valent 1,00 sur un singleton. */
+const FENETRES_TOIT_REF = { tuile: 693, ardoise: 337, chaume: 33 };
+/** Part MINIMALE du compte épinglé qu'un matériau doit encore présenter. 0,8 laisse la marge des bords
+ *  anticrénelés et d'une recapture voisine, et fait tomber toute repeinte de plus d'un cinquième. */
+const COUVERTURE_TOIT_MIN = 0.8;
 
 /** Part MINIMALE des fenêtres de nappe d'herbe qui doivent porter au moins un pixel de touffe. Seuil
  *  DÉRIVÉ des deux mesures encadrantes du 2026-08-09 sur `siege-enceinte-iso-rot0-unlit.png` : 0,51 %
@@ -384,6 +449,57 @@ const GARDES = [
         ok: mesurés.every(([, e]) => e.aplat / e.n <= APLAT_PAN_MAX),
         dit: `${mesurés.length} pans mesurés, pire ${pire[0]} à ${(100 * pire[1].aplat / pire[1].n).toFixed(0)} % d'aplat sur ${pire[1].n} fenêtres`,
       };
+    },
+  },
+  {
+    planche: 'vitrine-batiments-top-unlit.png',
+    titre: `MATIÈRE UNIQUE par toit : ≥ ${100 * COUVERTURE_TOIT_MIN} % des fenêtres épinglées par matériau, luminances < ×${TOIT_LUM_RATIO_MAX} et écarts-types < ×${TOIT_SIGMA_RATIO_MAX} entre versants, chaque versant au motif ≥ ${MOTIF_MIN}`,
+    // ÉTAT MESURÉ le 2026-08-10 sur la planche AVANT le retrait de l'ombrage directionnel cuit
+    // (`faceColors.roofColor` prenait une teinte PAR CARDINAL) : chaque toit rend DEUX matières.
+    //   tuile   N (300 fen) lum 87,1 σ 9,79  ·  S (629 fen) lum 45,7 σ 1,24  → ×1,91 et ×7,9
+    //   ardoise N (132 fen) lum 102,3 σ 13,44 · S (223 fen) lum 49,1 σ 0,60  → ×2,08 et ×22,4
+    // Le σ du versant sombre est du seul bruit de quantification : le joint de la recette y est PLUS
+    // CLAIR que le pan (rapport linéaire 1,18 en tuile contre 0,295 sur le pan clair), l'appareillage
+    // s'y efface. La vue du DESSUS est la seule qui cadre les deux versants d'un même toit à la fois.
+    // APRÈS le retrait, chaque matériau ne rend plus qu'UNE teinte : tuile 678 fen lum 87,0 σ 9,74 ·
+    // ardoise 314 lum 103,5 σ 13,31 · chaume 31 lum 121,3 σ 13,55. Les rapports valent alors 1,00 par
+    // construction (singleton) — d'où le PLANCHER de couverture (`FENETRES_TOIT_REF`), qui mesure ce
+    // que les rapports ne peuvent plus mesurer ; les rapports, eux, remordent au retour d'une seconde
+    // teinte déclarée.
+    //
+    // CE QU'ELLE NE MESURE PAS (angle mort déclaré) :
+    //  (i) UNE planche, `vitrine-batiments-top-unlit.png` : les six autres scènes et les quatre autres
+    //      vues peuvent diverger sans que la garde bouge.
+    //  (ii) Un versant sous `PAN_FENETRES_MIN` fenêtres est écarté des RAPPORTS (il compte quand même
+    //      dans la couverture, calculée sur les fenêtres brutes).
+    //  (iii) Une repeinte en teinte ABSENTE de `roofMaterials.json` n'est attrapée que par le PLANCHER
+    //      de couverture, jamais par les rapports : les fenêtres repeintes cessent simplement d'être
+    //      attribuées. Une repeinte qui laisse ≥ 80 % des fenêtres d'un matériau intactes PASSE.
+    //  (iv) `MOTIF_MIN` par versant borne le bas, jamais le haut : elle ne distingue pas un
+    //      appareillage d'un bruit de compression de même écart-type.
+    mesurer: (img) => {
+      const par = matiereDePans(img, teintesDePans());
+      const dits = [];
+      let ok = true;
+      for (const [mat, ref] of Object.entries(FENETRES_TOIT_REF)) {
+        const n = (par.get(mat) ?? []).reduce((s, c) => s + c.fenetres, 0);
+        if (n < COUVERTURE_TOIT_MIN * ref) ok = false;
+        dits.push(`${mat} couverture ${n}/${ref}`);
+      }
+      const mesurés = [...par]
+        .map(([mat, classes]) => [mat, classes.filter((c) => c.fenetres >= PAN_FENETRES_MIN)])
+        .filter(([, classes]) => classes.length);
+      if (mesurés.length < 2) return { ok: false, dit: `${dits.join(' | ')} — ${mesurés.length} matériau(x) de toit mesurable(s), il en faut au moins 2` };
+      for (const [mat, classes] of mesurés) {
+        const lums = classes.map((c) => c.lum);
+        const sigmas = classes.map((c) => c.sigmaMed);
+        const rLum = Math.max(...lums) / Math.min(...lums);
+        const rSig = Math.max(...sigmas) / Math.max(Math.min(...sigmas), 1e-9);
+        const motif = Math.min(...sigmas);
+        if (rLum >= TOIT_LUM_RATIO_MAX || rSig >= TOIT_SIGMA_RATIO_MAX || motif < MOTIF_MIN) ok = false;
+        dits.push(`${mat} ${classes.length} versant(s) [${classes.map((c) => `${c.cardinal}:${c.fenetres}f lum${c.lum.toFixed(1)} σ${c.sigmaMed.toFixed(2)}`).join(' ')}] → lum ×${rLum.toFixed(2)}, σ ×${rSig.toFixed(2)}`);
+      }
+      return { ok, dit: dits.join(' | ') };
     },
   },
   {

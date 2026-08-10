@@ -4,9 +4,12 @@
  * `RoofMaterialDef`, `ReliefMaterialDef`, `TerrainDef`) via leur champ optionnel `detail`.
  *
  * `expandRecipe` (expand.ts) déplie la recette en primitives UV en ESPACE DE FACE [0,1]² (+ mètres pour
- * les épaisseurs), consommées par `backends/affineDetail.ts` (iso) et `pov/geometry.ts` (perspective) :
- * chaque backend rasterise à sa résolution, les deux vues retombent sur le MÊME détail parce que le
- * seed est dérivé de l'identité MONDE (`hash32`, jamais stocké).
+ * les épaisseurs), consommées par les TROIS backends : `backends/affineDetail.ts` (iso écran),
+ * `pov/geometry.ts` (perspective) et `backends/webgl/faceBake.ts` (cuisson par face du rendu
+ * volumique) ; le tracé de PÉRIODE (`detail/courses.ts`) a les mêmes trois consommateurs
+ * (`affineDetail`, `pov/geometry`, `backends/webgl/periodTexture.ts`). Chaque backend rasterise à sa
+ * résolution, les vues retombent sur le MÊME détail parce que le seed est dérivé de l'identité MONDE
+ * (`hash32`, jamais stocké).
  *
  * Convention UV : u ∈ [0,1] le long de la face (gauche→droite), v ∈ [0,1] du HAUT (0) vers le BAS (1).
  * Les dimensions physiques (`hM`, `jointW`, `wM`, `rM`…) sont en MÈTRES : l'expansion les convertit en

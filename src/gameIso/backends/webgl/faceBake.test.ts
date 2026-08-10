@@ -3,20 +3,17 @@ import { readFileSync } from 'node:fs';
 import {
   bakeResolution,
   clearFaceBakes,
-  faceAccentBlocks,
   faceBakeData,
   faceBakeKey,
-  faceBakeStats,
   getFaceBake,
   needsFaceBake,
   BEAM_MIN_PX,
   FACE_PX_PER_M,
 } from './faceBake';
 import { teinteRatio } from './periodTexture';
-import { TIMBER_V0, TIMBER_V1, PX_PER_M_V, timberOverlaySvg } from '../affineDetail';
-import { coursesKey, patternWM, rowBoundaries } from '../../detail/courses';
-import { BLOCK_INSET_M, expandRecipe } from '../../detail/expand';
-import { hash32 } from '../../detail/hash';
+import { timberOverlaySvg } from '../affineDetail';
+import { TIMBER_V0, TIMBER_V1, expandRecipe } from '../../detail/expand';
+import { ISO_PX_PER_M } from '../../iso';
 import { structureAppearances } from '../../../data';
 import { parseHex } from '../../shade';
 import type { DetailRecipe } from '../../detail/types';
@@ -113,38 +110,6 @@ describe('faceBake — cuisson par face (canal DÉTERMINISTE seul)', () => {
     expect(src.match(/#[0-9a-fA-F]{6}\b/g)).toBeNull();
   });
 
-  it('les blocs nuancés se calent sur les MÊMES bornes que le motif partagé (rowBoundaries)', () => {
-    const c = RECETTE_PIERRE.courses!;
-    const seed = hash32('wall', 3, 4, 0, 'N');
-    const blocs = faceAccentBlocks(c, W_M, H_M, seed, 1);
-    expect(blocs.length).toBeGreaterThan(0);
-    const key = coursesKey(c);
-    const W = patternWM(c);
-    // La recette DOIT porter des joints verticaux, sinon l'alignement ne se mesure sur rien.
-    expect(rowBoundaries(c, key, 1, 0).length).toBeGreaterThan(0);
-    // Des blocs qui ne courent PAS toute la largeur : le découpage vient bien des joints.
-    expect(blocs.some((b) => b.u1 - b.u0 < W_M - 0.5)).toBe(true);
-    for (const b of blocs) {
-      const parity = (Math.round(b.v0 / c.hM) % 2) as 0 | 1;
-      const bornes = new Set<number>([0, W_M]);
-      for (let n = 0; n * W <= W_M; n++)
-        for (const bd of rowBoundaries(c, key, 1, parity)) if (n * W + bd > 0 && n * W + bd < W_M) bornes.add(n * W + bd);
-      // Chaque arête de bloc est une borne du motif, au retrait de bloc près.
-      const proche = (u: number) => [...bornes].some((x) => Math.abs(Math.abs(x - u) - BLOCK_INSET_M) < 0.005);
-      expect([b.u0, proche(b.u0)]).toEqual([b.u0, true]);
-      expect([b.u1, proche(b.u1)]).toEqual([b.u1, true]);
-    }
-  });
-
-  it('parité de seed du découpage d’accents : même face → mêmes blocs ; seed voisin → blocs différents', () => {
-    const c = RECETTE_PIERRE.courses!;
-    const a = faceAccentBlocks(c, W_M, H_M, hash32('wall', 3, 4, 0, 'N'), 1);
-    const b = faceAccentBlocks(c, W_M, H_M, hash32('wall', 3, 4, 0, 'N'), 1);
-    expect(JSON.stringify(a)).toBe(JSON.stringify(b));
-    const autre = faceAccentBlocks(c, W_M, H_M, hash32('wall', 3, 5, 0, 'N'), 1);
-    expect(JSON.stringify(autre)).not.toBe(JSON.stringify(a));
-  });
-
   it('les accents SEEDÉS d’un mur ne sont PAS cuits : seul le colombage exige une cuisson par face', () => {
     const lisse: DetailRecipe = { seedScope: 'edge', courses: { hM: 0.35, joint: '#000000', jointW: 0.02, blockWM: [0.5, 0.8] } };
     expect(needsFaceBake(lisse, 'wall', FACE)).toBe(false);
@@ -181,14 +146,14 @@ describe('faceBake — cuisson par face (canal DÉTERMINISTE seul)', () => {
   });
 
   it('la LARGEUR de poutre cuite est celle de la source affine, en mètres (aucune épaisseur inventée)', () => {
-    // L'affine stroké sa poutre à `e.timber.wM × PX_PER_M_V` px d'écran (`timberOverlaySvg`). La cuisson
+    // L'affine stroké sa poutre à `e.timber.wM × ISO_PX_PER_M` px d'écran (`timberOverlaySvg`). La cuisson
     // part de la MÊME expansion : on relit la largeur au SVG, on la ramène en mètres, et on la retrouve
     // dans le masque — largeur à mi-couverture d'une colonne de poteau.
     const quad: [number, number][] = [[0, 0], [200, 0], [200, 120], [0, 120]];
     const svg = timberOverlaySvg({ recipe: RECETTE, quad, faceWM: W_M, faceHM: H_M, dims: { view: 'iso', rot: 0, cols: 10, rows: 10, zoom: 1 } as never });
     const strokePx = Number(/stroke-width="([\d.]+)"/.exec(svg)![1]);
     const wM = expandRecipe({ timber: RECETTE.timber, seedScope: RECETTE.seedScope }, W_M, H_M, 0).timber!.wM;
-    expect(strokePx / PX_PER_M_V).toBeCloseTo(wM, 6);
+    expect(strokePx / ISO_PX_PER_M).toBeCloseTo(wM, 6);
     const b = faceBakeData({ color: BOIS.face, recipe: { timber: RECETTE.timber, seedScope: RECETTE.seedScope }, part: FACE }, W_M, H_M)!;
     const y = Math.round(b.h * 0.5);
     const seuil = 1 - (1 - teinteRatio(RECETTE.timber!.color, BOIS.face)![0]) / 2; // mi-couverture
@@ -317,7 +282,6 @@ describe('faceBake — UNE clé déterministe par gabarit, UNE image par clé', 
     const b = getFaceBake(k2, surface, 4, 2.5, 1);
     expect(a).toBeTruthy();
     expect(b).toBe(a); // MÊME objet : une clé redemandée ne recuit rien
-    expect(faceBakeStats()).toEqual({ demandes: 2, cuissons: 1, reutilisation: 0.5 });
     // …et l'image est bien fonction du seul gabarit : deux cuissons directes sont bit-à-bit identiques.
     const i1 = faceBakeData(surface, 4, 2.5)!;
     const i2 = faceBakeData(surface, 4, 2.5)!;
@@ -329,9 +293,13 @@ describe('faceBake — UNE clé déterministe par gabarit, UNE image par clé', 
     expect(faceBakeKey('mur~bois', 3, 2.5, 1)).not.toBe(k);
     expect(faceBakeKey('mur~bois', 4, 2.5, 2)).not.toBe(k);
     expect(faceBakeKey('mur~pierre', 4, 2.5, 1)).not.toBe(k);
-    getFaceBake(k, surface, 4, 2.5, 1);
-    getFaceBake(faceBakeKey('mur~bois', 3, 2.5, 1), surface, 3, 2.5, 1);
-    expect(faceBakeStats().cuissons).toBe(2);
+    const un = getFaceBake(k, surface, 4, 2.5, 1);
+    const autre = getFaceBake(faceBakeKey('mur~bois', 3, 2.5, 1), surface, 3, 2.5, 1);
+    // Deux gabarits, deux images DISTINCTES : la clé ne déduplique que ce qui est identique.
+    // Les deux cuissons doivent EXISTER — `not.toBe` passerait trivialement sur un `null`.
+    expect(un).toBeTruthy();
+    expect(autre).toBeTruthy();
+    expect(autre).not.toBe(getFaceBake(k, surface, 4, 2.5, 1));
   });
 
   it('la texture s’échantillonne sur l’UV de FACE (`uv1`) et ne se répète pas', async () => {

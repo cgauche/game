@@ -22,10 +22,19 @@ export const WALL_PART_KEYS = [
   'gravats', 'gravats-tas',
 ] as const;
 
+/** Parties SURCHARGEABLES par `relief` : les 17 parties des familles `saillie` et `traversant`. Les 7
+ *  parties de la famille `matiere` (`face, poteau, couronnement, jambage, parapet, arase, merlon`) en
+ *  sont ABSENTES : leur volume EST celui du mur (`wallPartDepthM` rend `wallM` sans lire la surcharge),
+ *  et l'épaisseur de cette matière vient de `wallThicknessM` — fossile de transition inscrit au registre
+ *  (#1176). Les y admettre au schéma promettait une surcharge qui n'agit sur rien. */
+export const RELIEF_PART_KEYS = WALL_PART_KEYS.filter(
+  (k) => !(['face', 'poteau', 'couronnement', 'jambage', 'parapet', 'arase', 'merlon'] as readonly string[]).includes(k),
+) as Exclude<(typeof WALL_PART_KEYS)[number], 'face' | 'poteau' | 'couronnement' | 'jambage' | 'parapet' | 'arase' | 'merlon'>[];
+
 /** Profondeur (m) par partie, toutes optionnelles, AUCUNE clé étrangère (`strictObject`). */
 const reliefParPartie = z.strictObject(
-  Object.fromEntries(WALL_PART_KEYS.map((k) => [k, z.number().optional()])) as Record<
-    (typeof WALL_PART_KEYS)[number],
+  Object.fromEntries(RELIEF_PART_KEYS.map((k) => [k, z.number().optional()])) as Record<
+    (typeof RELIEF_PART_KEYS)[number],
     z.ZodOptional<z.ZodNumber>
   >,
 );
@@ -93,8 +102,9 @@ export const schema = z.array(
       })
       .optional(),
     // RELIEF MINCE (m) par partie de mur : `jut` = saillie par côté, `thick` = épaisseur totale d'une
-    // partie traversante (`wallPartDepthM`). Les clés sont CONTRAINTES aux parties existantes — une clé
-    // fautive échoue au CHARGEMENT au lieu d'être ignorée en silence.
+    // partie traversante (`wallPartDepthM`). Les clés sont CONTRAINTES aux parties RÉELLEMENT
+    // surchargeables (`RELIEF_PART_KEYS`) — une clé fautive, comme une clé inerte, échoue au
+    // CHARGEMENT au lieu d'être ignorée en silence.
     relief: z
       .strictObject({
         jut: reliefParPartie.optional(),

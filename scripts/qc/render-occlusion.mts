@@ -33,7 +33,7 @@ const C = {
   flankNaturel: '#e23b3b', // flanc de relief NATUREL (talus/rampe de terre)
   flankBati: '#3b6be2', // flanc de relief BÂTI (masse de maçonnerie, bord élevé)
   deck: '#17b0a0',     // tablier fin (surplomb)
-  pillar: '#444a55',   // pilier de surplomb
+  pilier: '#444a55',   // pilier de surplomb
   crest: '#ff2bd0',    // MUR : crête/parapet/créneaux/linteau
   opening: '#ff7a1f',  // MUR : herse/porte/embrasure/fenêtre
   wall: '#17b26a',     // MUR : cloison pleine
@@ -42,7 +42,7 @@ const C = {
 /** Couleur d'une face de SOL : dessus (terrain) par étage/hauteur, flanc (relief) par matériau/rôle. */
 function floorColor(f: Face, el: FloorEl): string {
   if (f.material.domain === 'relief') {
-    if (f.material.part === 'pillar') return C.pillar;
+    if (f.material.part === 'pilier') return C.pilier;
     if (f.material.part === 'deck') return C.deck;
     return reliefMaterial(f.material.id).built ? C.flankBati : C.flankNaturel;
   }
@@ -89,7 +89,7 @@ function occlusionPanel(scene: Scene, dims: Dims, activeZ: number): { w: number;
 // ── Légende ──────────────────────────────────────────────────────────────────────────────────────
 const LEGEND: [string, string][] = [
   [C.ground, 'sol z0 (~0 m)'], [`#ffcc2b`, 'dessus élevé / rampe'], [C.upper, 'dessus d’étage z≥1'],
-  [C.flankNaturel, 'flanc naturel (talus)'], [C.flankBati, 'flanc bâti (maçonnerie)'], [C.deck, 'tablier'], [C.pillar, 'pilier'],
+  [C.flankNaturel, 'flanc naturel (talus)'], [C.flankBati, 'flanc bâti (maçonnerie)'], [C.deck, 'tablier'], [C.pilier, 'pilier'],
   [C.crest, 'MUR crête/créneaux'], [C.opening, 'MUR herse/porte'], [C.wall, 'MUR cloison'], [C.wedge, 'raccord terrain'],
 ];
 function legendSvg(w: number, h: number): string {

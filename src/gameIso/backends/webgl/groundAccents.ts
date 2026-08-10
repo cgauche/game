@@ -23,7 +23,7 @@ import * as THREE from 'three';
 import { expandRecipe, TUFT_FAN } from '../../detail/expand';
 import { hash32, seedStream } from '../../detail/hash';
 import type { DetailRecipe } from '../../detail/types';
-import { terrainDetail } from '../affineDetail';
+import { terrainDetail } from '../../../state/terrain';
 import type { Scene } from '../../../state/scene';
 import type { Vec3 } from './worldTris';
 import { worldFaces, type TintAt } from './sceneMeshes';

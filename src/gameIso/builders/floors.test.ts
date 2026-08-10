@@ -22,7 +22,7 @@ const setH = (s: Scene, x: number, y: number, h: number) => { s.layers[0].height
 
 const elAt = (els: FloorEl[], x: number, y: number, z = 0) => els.find((e) => e.key === `floor:${x},${y},${z}`);
 /** Faces de RELIEF (parois) d'un élément — exclut base, wedges et piliers. */
-const reliefParts = (el: FloorEl | undefined) => (el?.faces ?? []).filter((f) => f.material.domain === 'relief' && f.material.part !== 'pillar');
+const reliefParts = (el: FloorEl | undefined) => (el?.faces ?? []).filter((f) => f.material.domain === 'relief' && f.material.part !== 'pilier');
 /** Face de BASE (losange de sol) : domaine terrain, sans `part` (≠ wedge). L'orientation « sol » n'est
  *  plus un champ (`plane` retiré) → les backends la dérivent de `domain`+`part`, les tests aussi. */
 const isBaseFace = (f: Face) => f.material.domain === 'terrain' && !f.material.part;
@@ -227,7 +227,7 @@ describe('buildFloors — TOIT d’un bloc plein (chemin de ronde sur le mur), v
     s.layers[1].height![1 * 3 + 1] = 4;
     expect(capsSolid(s, 1, 1, 1)).toBe(true); // tunnel bordé de bloc plein = toit solide
     const roof = elAt(buildFloors(s, undefined, { activeZ: 0 }), 1, 1, 1)!;
-    expect(roof.faces.filter((f) => f.material.part === 'pillar')).toHaveLength(0); // aucun montant dans le tunnel
+    expect(roof.faces.filter((f) => f.material.part === 'pilier')).toHaveLength(0); // aucun montant dans le tunnel
     expect(roof.states.ghost).toBe(false); // toit solide, opaque
   });
 });
@@ -277,11 +277,11 @@ describe('buildFloors — surplomb (tablier au-dessus d’une surface marchable)
     expect(decks.every((f) => f.material.id === 'pierre')).toBe(true);
     // Dalle fine : descend de l'épaisseur du tablier (0.3 m), pas jusqu'au sol.
     expect(decks[0].poly.map((p) => p.h)).toEqual([4, 4, 4 - 0.3, 4 - 0.3]);
-    const pillars = el.faces.filter((f) => f.material.part === 'pillar');
+    const pillars = el.faces.filter((f) => f.material.part === 'pilier');
     expect(pillars).toHaveLength(4); // 4 coins uniques (coins d'arêtes adjacentes dédupliqués)
     expect(pillars.every((f) => f.poly.length === 2 && f.poly[1].h === 0)).toBe(true); // jusqu'à la surface inférieure
     // Ordre de peinture : piliers (les plus en arrière) AVANT les parois, base ensuite, wedges à la fin.
-    expect(el.faces.findIndex((f) => f.material.part === 'pillar')).toBe(0);
+    expect(el.faces.findIndex((f) => f.material.part === 'pilier')).toBe(0);
   });
 
   it('fantôme au-dessus de la zone active : SEULS les surplombs sont émis', () => {

@@ -16,3 +16,8 @@ export const isoPxToM = (px: number): number => (px / LEVEL_H) * METRES_PER_LEVE
  *  exactement `METRES_PER_LEVEL` (4 m) : un mur atteint le plafond, UNE seule échelle de hauteur dans
  *  tout le monde. Vérité partagée builder/backends/POV. */
 export const WALL_H_M = isoPxToM(WALL_H);
+/** CADENCE VERTICALE de la projection : pixels d'ÉCRAN par mètre d'élévation — l'inverse de
+ *  `isoPxToM`, et la SEULE définition de cette grandeur dans le dépôt. Elle sert au backend affine
+ *  (transformée de motif, épaisseurs de trait, hauteurs de brin), aux caméras du backend volumique
+ *  (échelle verticale de la matrice de projection) et à la taille monde d'un billboard héroïque. */
+export const ISO_PX_PER_M = LEVEL_H / METRES_PER_LEVEL;

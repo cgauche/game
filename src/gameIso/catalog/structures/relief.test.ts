@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { wallPartDepthM, wallPartRelief, WALL_PARTS, type WallPart, type WallPartRelief } from './index';
 import { structureAppearance } from './index';
 import { FASCIA_THICK_M, roofFasciaThickM, roofMaterial } from '../roofs';
-import { WALL_PART_KEYS, schema } from '../../../data/schemas/defs/structureAppearance';
+import { WALL_PART_KEYS, RELIEF_PART_KEYS, schema } from '../../../data/schemas/defs/structureAppearance';
 import type { StructureAppearanceDef } from './types';
 
 /** CALIBRAGE épinglé du relief mince (#1176 P1-E) — ce test garde les VALEURS, jamais la topologie :
@@ -89,6 +89,8 @@ describe('RELIEF ÉDITABLE — la surcharge par apparence (et par matériau de t
     expect(wallPartDepthM(surchargee, 'gravats-tas', wallM)).toBeCloseTo(0.8, 12);
   });
 
+  // Défense en profondeur : le schéma REFUSE déjà une telle surcharge au chargement (test plus bas) ;
+  // ce cas-ci mesure le résolveur seul, sur un objet fabriqué en mémoire.
   it('une partie qui EST la matière du mur ignore toute surcharge : son épaisseur est celle du mur', () => {
     const surchargee: StructureAppearanceDef = { ...plain, relief: { jut: { face: 9 }, thick: { face: 9 } } };
     expect(wallPartDepthM(surchargee, 'face', wallM)).toBe(wallM);
@@ -108,6 +110,18 @@ describe('SCHÉMA de `structureAppearance.json` — les clés de relief sont CON
 
   it('la liste de clés du schéma est la MÊME que `WALL_PARTS` (recopie gardée, cf. pureté de src/data)', () => {
     expect([...WALL_PART_KEYS]).toEqual([...WALL_PARTS]);
+  });
+
+  it('les clés de `relief` sont EXACTEMENT les parties non-`matiere` — le schéma ne promet rien d’inerte', () => {
+    const surchargeables = WALL_PARTS.filter((p) => wallPartRelief(p).famille !== 'matiere');
+    expect([...RELIEF_PART_KEYS]).toEqual([...surchargeables]);
+    expect(RELIEF_PART_KEYS.length).toBe(17);
+    // Une partie de la famille `matiere` authorée en surcharge échoue au CHARGEMENT : `wallPartDepthM`
+    // rend l'épaisseur du MUR pour ces parties-là, la surcharge n'agirait sur rien.
+    for (const inerte of WALL_PARTS.filter((p) => wallPartRelief(p).famille === 'matiere')) {
+      expect([inerte, schema.safeParse(entree({ jut: { [inerte]: 0.3 } })).success]).toEqual([inerte, false]);
+      expect([inerte, schema.safeParse(entree({ thick: { [inerte]: 0.3 } })).success]).toEqual([inerte, false]);
+    }
   });
 
   it('la forme réelle `{ jut, thick }` par partie passe', () => {

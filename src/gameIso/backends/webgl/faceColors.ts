@@ -13,13 +13,21 @@
  * dégradé est de la lumière peinte à la main : ici la couleur de base est le `swatch` seul, et le
  * soleil du renderer fait l'ombrage. Seule la variance de teinte PAR TUILE (`detail.tintVar`) est
  * reprise — elle est de l'identité de matériau, pas de la lumière (cf. `tintVarFactor`).
+ *
+ * MÊME DIVERGENCE sur les PANS DE TOIT : un `RoofMaterialDef` porte quatre teintes N/E/S/O, un ombrage
+ * par cardinal cuit par le peintre affine (qui n'a pas de lumière). Ici tous les pans d'un matériau
+ * partent de sa teinte de référence `N` et c'est le soleil qui creuse les versants. Mesuré le
+ * 2026-08-10 sur `vitrine-batiments-top-unlit` AVANT ce choix : les deux versants d'un même toit
+ * rendaient 87,1 contre 45,7 de luminance (×1,91) et 9,79 contre 1,24 d'écart-type — le pan sombre
+ * perdait jusqu'à son appareillage, le joint de la recette y étant PLUS CLAIR que le pan. Garde de
+ * planche « MATIÈRE UNIQUE par toit » (`scripts/qc/spike-checks.mjs`).
  */
 import { reliefMaterial } from '../../catalog/relief';
 import { roofMaterial } from '../../catalog/roofs';
 import { facadeStructureAppearance } from '../../catalog/facades';
 import { wallPartColor, type WallPart } from '../../catalog/structures';
 import { TERRAIN_DEFS } from '../../../state/terrain';
-import { TINT_SPREAD } from '../affineDetail';
+import { TINT_SPREAD } from '../../detail/expand';
 import { coursesPeriodM, groundPeriodM } from '../../detail/courses';
 import { hash32 } from '../../detail/hash';
 import type { DetailRecipe } from '../../detail/types';
@@ -37,11 +45,15 @@ function reliefColor(id: string, part: string | undefined): string {
   return (part === 'ramp' ? m.slopeTop : undefined) ?? m.face;
 }
 
+/** Couleur d'une face de TOITURE. Les PANS partagent tous la teinte de référence `N` du matériau, quel
+ *  que soit leur cardinal : `sh.N` est déjà le repli des deux backends pour une part sans ton propre.
+ *  `soffite` et `fascia` gardent la leur — ce sont des PARTIES distinctes (dessous débordant, planche de
+ *  rive), pas deux orientations d'une même couverture. */
 function roofColor(id: string, part: string | undefined): string {
   const sh = roofMaterial(id);
-  if (part === 'soffite') return sh.soffite ?? sh.S ?? sh.N ?? FLOOR_FALLBACK;
-  if (part === 'fascia') return sh.fascia ?? sh.line ?? sh.S ?? sh.N ?? FLOOR_FALLBACK;
-  return sh[part as 'N' | 'E' | 'S' | 'O'] ?? sh.N ?? FLOOR_FALLBACK;
+  if (part === 'soffite') return sh.soffite ?? sh.N ?? FLOOR_FALLBACK;
+  if (part === 'fascia') return sh.fascia ?? sh.line ?? sh.N ?? FLOOR_FALLBACK;
+  return sh.N ?? FLOOR_FALLBACK;
 }
 
 /** Surface d'une face : ce qu'il faut pour la peindre ET pour la texturer. */

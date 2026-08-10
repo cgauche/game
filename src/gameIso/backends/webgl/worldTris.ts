@@ -16,8 +16,7 @@
  *  - BIAIS COPLANAIRE : l'affine départage les faces empilées d'un même plan par l'ORDRE d'émission ;
  *    au GPU il faut une séparation métrique — rang d'émission × `COPLANAR_BIAS_M` le long de la normale.
  */
-import { LEVEL_H, TW } from '../../../geometry/iso';
-import { METRES_PER_LEVEL } from '../../../state/relief';
+import { TW } from '../../../geometry/iso';
 import type { Face, GP } from '../../builders/types';
 
 /** Point MÉTRIQUE en repère three : X = est, Y = haut, Z = sud. */
@@ -37,16 +36,11 @@ export function pxPerM(mpt: number): number {
   return (TW * Math.SQRT1_2) / mpt;
 }
 
-/** Pixels ÉCRAN par mètre de HAUTEUR de la projection affine : `LEVEL_H` px d'étage ⇔ `METRES_PER_LEVEL`
- *  mètres (`gameIso/iso.ts`). SOURCE UNIQUE de cette cadence — `cameras.ts` (échelle verticale de la
- *  matrice de projection) et `billboardMath.ts` (taille monde héroïque) la consomment tous deux. */
-export const ISO_PX_PER_M = LEVEL_H / METRES_PER_LEVEL;
-
 /** Largeurs ÉCRAN (px) des montants chez le backend affine — `affineWalls.ts:25` (poteau),
  *  `affineWalls.ts:26` (jambage), `affineFloors.ts:33` (pilier de surplomb). L'affine ne les exporte
  *  pas : ces trois nombres existent DEUX fois dans le dépôt, et une largeur de montant se mesure ici en
  *  pixels d'écran. Inscrit au registre des fossiles de transition (#1176). */
-const UPRIGHT_PX: Record<string, number> = { poteau: 3.8, jambage: 3.6, pillar: 5 };
+const UPRIGHT_PX: Record<string, number> = { poteau: 3.8, jambage: 3.6, pilier: 5 };
 
 /** Séparation métrique d'un cran de rang coplanaire. */
 export const COPLANAR_BIAS_M = 0.0015;
@@ -77,7 +71,10 @@ export function polyNormal(poly: WorldPoly): Vec3 | null {
   return { x: nx / len, y: ny / len, z: nz / len };
 }
 
-/** Écart maximal (m) des sommets au plan moyen — 0 pour un polygone plan. */
+/** Écart maximal (m) des sommets au plan moyen — 0 pour un polygone plan. INSTRUMENT DE GARDE, au même
+ *  titre que `coplanarOverlapPairs` : avec `isConvex`, il mesure la PRÉCONDITION de `fanTriangles` sur
+ *  les scènes-témoins (`worldTris.test.ts` : 0 face non-plane, 0 non-convexe). Aucun chemin de rendu ne
+ *  l'appelle — c'est ce que mesure la garde, pas ce qu'elle décore. */
 export function planarity(poly: WorldPoly): number {
   const n = polyNormal(poly);
   if (!n) return 0;
@@ -87,7 +84,10 @@ export function planarity(poly: WorldPoly): number {
   return worst;
 }
 
-/** Convexe : tous les produits vectoriels d'arêtes consécutives pointent du même côté de la normale. */
+/** Convexe : tous les produits vectoriels d'arêtes consécutives pointent du même côté de la normale.
+ *  INSTRUMENT DE GARDE, au même titre que `planarity` : avec lui, il mesure la PRÉCONDITION de
+ *  `fanTriangles` sur les scènes-témoins (`worldTris.test.ts:79-99` : 0 face non-plane, 0 non-convexe).
+ *  Aucun chemin de rendu ne l'appelle. */
 export function isConvex(poly: WorldPoly): boolean {
   const n = polyNormal(poly);
   if (!n) return true;
@@ -149,11 +149,6 @@ export function crossQuadPolys(a: Vec3, b: Vec3, wM: number): WorldPoly[] {
     { x: b.x + e.x, y: b.y + e.y, z: b.z + e.z },
     { x: b.x - e.x, y: b.y - e.y, z: b.z - e.z },
   ]);
-}
-
-/** Triangles des deux quads croisés d'un montant. */
-export function crossQuadTris(a: Vec3, b: Vec3, wM: number): Tri[] {
-  return crossQuadPolys(a, b, wM).flatMap(fanTriangles);
 }
 
 /** PROFONDEUR MONDE (m) du volume d'une face, résolue par l'appelant depuis les catalogues d'apparence

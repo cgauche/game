@@ -17,6 +17,7 @@ import { diamondPath, footprintDepth, isSquareView, tileCenter, type Dims } from
 import { roofMaterial, type RoofMaterialDef } from '../catalog/roofs';
 import { ROOF_SLOPE_M } from '../builders/roofs';
 import { roofCourseStepM } from '../detail/courses';
+import { ISO_PX_PER_M } from '../iso';
 import {
   detailOf,
   projTag,
@@ -24,7 +25,6 @@ import {
   patternWM,
   rowBoundaries,
   N_VARIANTS,
-  PX_PER_M_V,
   type Courses,
   type DetailOpts,
 } from './affineDetail';
@@ -221,9 +221,9 @@ function roofDetailSvg(el: RoofEl, pans: Pan[], det: DetailRecipe, dims: Dims, l
       }
     }
     let inner = '';
-    if (ticks) inner += `<path d="${ticks}" fill="none" stroke="${c.joint}" stroke-width="${n1(c.jointW * PX_PER_M_V)}"/>`;
+    if (ticks) inner += `<path d="${ticks}" fill="none" stroke="${c.joint}" stroke-width="${n1(c.jointW * ISO_PX_PER_M)}"/>`;
     if (wobble)
-      inner += `<path d="${wobble}" fill="none" stroke="${c.joint}" stroke-width="${n1(c.jointW * PX_PER_M_V)}" stroke-linejoin="round" opacity="0.85"/>`;
+      inner += `<path d="${wobble}" fill="none" stroke="${c.joint}" stroke-width="${n1(c.jointW * ISO_PX_PER_M)}" stroke-linejoin="round" opacity="0.85"/>`;
     if (light) inner += `<path d="${light}" fill="${shade(pan.fill, 1 + (c.paletteVar ?? 0) * BLOCK_SHADE_K)}"/>`;
     if (dark) inner += `<path d="${dark}" fill="${shade(pan.fill, 1 - (c.paletteVar ?? 0) * BLOCK_SHADE_K)}"/>`;
     if (straw) {
@@ -274,7 +274,7 @@ function pansSvg(el: RoofEl, dims: Dims, opts?: DetailOpts): string {
   if (c && !wobbly)
     for (const ln of el.lines) {
       if (ln.kind !== 'rang') continue;
-      svg += lineSvg(projGP(ln.a, dims), projGP(ln.b, dims), c.joint, c.jointW * PX_PER_M_V);
+      svg += lineSvg(projGP(ln.a, dims), projGP(ln.b, dims), c.joint, c.jointW * ISO_PX_PER_M);
     }
   if (detailLod >= 1 && sh.detail?.courses) svg += roofDetailSvg(el, pans, sh.detail, dims, detailLod as 1 | 2, mpt);
   for (const ln of el.lines) {

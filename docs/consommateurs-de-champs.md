@@ -36,12 +36,12 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | Champ | Lecteurs | Exemple |
 |---|---|---|
 | `courses` | 6 | `src/gameIso/backends/affineRoofs.ts:136` |
-| `bands` | 1 | `src/gameIso/detail/expand.ts:86` |
-| `timber` | 4 | `src/gameIso/backends/webgl/faceBake.ts:87` |
-| `speckle` | 6 | `src/gameIso/backends/affineDetail.ts:418` |
-| `tufts` | 9 | `src/gameIso/backends/affineDetail.ts:413` |
-| `tintVar` | 1 | `src/gameIso/backends/webgl/faceColors.ts:122` |
-| `seedScope` | 2 | `src/gameIso/pov/geometry.ts:330` |
+| `bands` | 1 | `src/gameIso/detail/expand.ts:101` |
+| `timber` | 4 | `src/gameIso/backends/webgl/faceBake.ts:84` |
+| `speckle` | 9 | `src/gameIso/backends/affineDetail.ts:413` |
+| `tufts` | 12 | `src/gameIso/backends/affineDetail.ts:408` |
+| `tintVar` | 1 | `src/gameIso/backends/webgl/faceColors.ts:134` |
+| `seedScope` | 3 | `src/gameIso/backends/webgl/groundAccents.ts:66` |
 
 ### `DiceSpec` (src/engine/dice.ts)
 

@@ -10,6 +10,7 @@
  */
 import { Dims, depth, diamondCorners, tileCenter } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
+import { terrainDetail } from '../../state/terrain';
 import { terrainGradient } from '../catalog/terrain';
 import { reliefMaterial } from '../catalog/relief';
 import { shade, ao, warm, spec } from '../shade';
@@ -18,7 +19,6 @@ import {
   detailOf,
   terrainFillGradient,
   terrainCoursesPattern,
-  terrainDetail,
   groundAccentsSvg,
   coursesOverlaySvg,
   verticalAccentsSvg,
@@ -147,7 +147,7 @@ function wedgeSvg(f: Face, el: FloorEl, dims: Dims): string {
 export function floorSvg(el: FloorEl, dims: Dims, opts?: DetailOpts): string {
   let svg = '';
   for (const f of el.faces) {
-    if (f.material.domain === 'relief') svg += f.material.part === 'pillar' ? pillarSvg(f, dims) : reliefFaceSvg(f, el, dims, opts);
+    if (f.material.domain === 'relief') svg += f.material.part === 'pilier' ? pillarSvg(f, dims) : reliefFaceSvg(f, el, dims, opts);
     else svg += f.material.part === 'wedge' ? wedgeSvg(f, el, dims) : groundFaceSvg(f, el, dims, opts);
   }
   return svg;

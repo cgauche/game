@@ -162,7 +162,7 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
         faces.push({
           poly: [{ ...c, h: topH }, { ...c, h: lowerH }],
           side,
-          material: { domain: 'relief', id: 'pilier', part: 'pillar' },
+          material: { domain: 'relief', id: 'pilier', part: 'pilier' },
         });
       }
     }

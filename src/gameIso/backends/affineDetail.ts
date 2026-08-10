@@ -15,7 +15,7 @@
  * Toute couleur vient de la recette (donnée) ou dérive du fill par `shade` — aucun littéral ici.
  */
 import { hash32, seedStream } from '../detail/hash';
-import { expandRecipe, ACCENT_FRAC, BLOCK_INSET_M, BLOCK_SHADE_K } from '../detail/expand';
+import { expandRecipe, ACCENT_FRAC, BLOCK_INSET_M, BLOCK_SHADE_K, TIMBER_V0, TIMBER_V1, TINT_SPREAD } from '../detail/expand';
 import {
   coursesKey,
   coursesPeriod,
@@ -30,8 +30,8 @@ import {
 } from '../detail/courses';
 import type { DetailRecipe } from '../detail/types';
 import { shade, ao, spec } from '../shade';
-import { LEVEL_H, isSquareView, type Dims } from '../../geometry/iso';
-import { METRES_PER_LEVEL } from '../../state/relief';
+import { isSquareView, type Dims } from '../../geometry/iso';
+import { ISO_PX_PER_M } from '../iso';
 import { TERRAIN_DEFS } from '../../state/terrain';
 import { structureAppearances, reliefMaterials } from '../../data';
 import { projGP, type Pt2 } from './project';
@@ -52,11 +52,6 @@ export interface DetailOpts { zoom?: number; mpt?: number; night?: boolean }
 export const detailOf = (opts?: DetailOpts): { lod: Lod; mpt: number } => ({ lod: lodOf(opts?.zoom ?? 1), mpt: opts?.mpt ?? 2 });
 
 // ── Constantes du motif ──────────────────────────────────────────────────────────────────────────────
-/** px écran par MÈTRE d'élévation (vérité partagée : LEVEL_H px ⇔ METRES_PER_LEVEL m). */
-export const PX_PER_M_V = LEVEL_H / METRES_PER_LEVEL;
-/** Variantes de dégradé de terrain (variance de teinte par tuile) : étalement des facteurs de shade.
- *  PARTAGÉ avec le POV (`pov/geometry.ts` en tire la MÊME variante par tuile → même amplitude visuelle). */
-export const TINT_SPREAD = [-1, -0.4, 0.35, 1];
 
 const n2 = (v: number) => String(Math.round(v * 100) / 100);
 const n3 = (v: number) => String(Math.round(v * 1000) / 1000);
@@ -104,13 +99,13 @@ const verticalsPath = (vs: readonly CourseVertical[]): string =>
 
 /** Un motif d'appareillage pré-seedé : le tracé de période de `detail/courses` (joints horizontaux
  *  tremblés ancrés aux coutures + joints verticaux par parité de rang, en MÈTRES) posé en écran par le
- *  `patternTransform` (base [eu | (0, PX_PER_M_V)]) de l'orientation donnée. UN SEUL `<path>` par motif. */
+ *  `patternTransform` (base [eu | (0, ISO_PX_PER_M)]) de l'orientation donnée. UN SEUL `<path>` par motif. */
 function coursesPatternDef(c: Courses, key: string, axis: Axis, eu: Pt2, variant: number, dims: Dims): string {
   const p = coursesPeriod(c, key, variant);
   const d = linesPath(p.lines) + verticalsPath(p.verticals);
   return (
     `<pattern id="${patternId(key, axis, variant, dims)}" patternUnits="userSpaceOnUse" width="${n3(p.wM)}" height="${n3(p.hM)}"` +
-    ` patternTransform="matrix(${n3(eu[0])} ${n3(eu[1])} 0 ${PX_PER_M_V} 0 0)">` +
+    ` patternTransform="matrix(${n3(eu[0])} ${n3(eu[1])} 0 ${ISO_PX_PER_M} 0 0)">` +
     `<path d="${d}" fill="none" stroke="${c.joint}" stroke-width="${n3(c.jointW)}" stroke-linecap="round" opacity="0.85"/>` +
     `</pattern>`
   );
@@ -287,9 +282,9 @@ export function verticalAccentsSvg(ctx: VerticalFaceCtx): string {
   let out = '';
 
   if (c?.paletteVar) {
-    // Espace MOTIF (mètres) : p_motif = M⁻¹·p_écran avec M = [eu | (0, PX_PER_M_V)] (sans translation).
-    const inv = (p: Pt2): Pt2 => [p[0] / eu[0], (p[1] - (eu[1] * p[0]) / eu[0]) / PX_PER_M_V];
-    const fwd = (pu: number, pv: number): Pt2 => [eu[0] * pu, eu[1] * pu + PX_PER_M_V * pv];
+    // Espace MOTIF (mètres) : p_motif = M⁻¹·p_écran avec M = [eu | (0, ISO_PX_PER_M)] (sans translation).
+    const inv = (p: Pt2): Pt2 => [p[0] / eu[0], (p[1] - (eu[1] * p[0]) / eu[0]) / ISO_PX_PER_M];
+    const fwd = (pu: number, pv: number): Pt2 => [eu[0] * pu, eu[1] * pu + ISO_PX_PER_M * pv];
     const [tl, tr, , bl] = ctx.quad;
     const a = inv(tl), b = inv(tr);
     const pu0 = Math.min(a[0], b[0]), pu1 = Math.max(a[0], b[0]);
@@ -340,19 +335,12 @@ export function verticalAccentsSvg(ctx: VerticalFaceCtx): string {
     for (const s of e.speckles) {
       const vM = s.v * ctx.faceHM; // mètres depuis le haut de la face
       if (reserved.some(([r0, r1]) => vM >= r0 - 0.03 && vM <= r1 + 0.03)) continue; // sous une ferrure
-      byColor.set(s.color, (byColor.get(s.color) ?? '') + dotSub(uvPoint(ctx.quad, s.u, s.v), s.rM * PX_PER_M_V));
+      byColor.set(s.color, (byColor.get(s.color) ?? '') + dotSub(uvPoint(ctx.quad, s.u, s.v), s.rM * ISO_PX_PER_M));
     }
     for (const [color, d] of byColor) out += `<path d="${d}" fill="${color}" opacity="0.75"/>`;
   }
   return out;
 }
-
-/** Bornes VERTICALES du colombage (fractions de la hauteur de face, depuis le HAUT) : les pans de bois
- *  courent entre le couronnement (bande haute [0.86,1]·WALL_H du builder) et la plinthe (0.11 bas) —
- *  des FORMES calées sur l'assemblage bois, pas des couleurs. SOURCE UNIQUE des deux backends : la
- *  cuisson par face du spike WebGL (`webgl/faceBake.ts`) pose son colombage entre les MÊMES marges. */
-export const TIMBER_V0 = 0.13;
-export const TIMBER_V1 = 0.88;
 
 /** COLOMBAGE d'une face verticale (recette `timber`, LOD ≥ 1) : poteaux + écharpes X/V par travée
  *  (expansion déterministe, aucun aléa), bornés entre couronnement et plinthe, UN `<path>` stroké à la
@@ -371,16 +359,10 @@ export function timberOverlaySvg(ctx: Pick<VerticalFaceCtx, 'recipe' | 'quad' | 
   let d = '';
   for (const u of e.timber.posts) d += `M${pt(u, 0)}L${pt(u, 1)}`;
   for (const b of e.timber.braces) d += `M${pt(b.u0, b.v0)}L${pt(b.u1, b.v1)}`;
-  return `<path d="${d}" fill="none" stroke="${e.timber.color}" stroke-width="${n2(e.timber.wM * PX_PER_M_V)}" stroke-linecap="square"/>`;
+  return `<path d="${d}" fill="none" stroke="${e.timber.color}" stroke-width="${n2(e.timber.wM * ISO_PX_PER_M)}" stroke-linecap="square"/>`;
 }
 
 // ── Sol : accents (touffes d'herbe, cailloux) ancrés MONDE — stables aux 4 rotations ─────────────────
-/** Recette de détail d'un terrain (null si aucune section d'accent). */
-export function terrainDetail(terrainId: string): DetailRecipe | null {
-  const d = TERRAIN_BY_ID.get(terrainId)?.detail;
-  return d && (d.tufts || d.speckle) ? d : null;
-}
-
 /** Amplitude du PENCHÉ D'ÉCRAN d'une touffe : le 2ᵉ tirage du flux `blades` est étalé sur
  *  [−`TUFT_LEAN_AMPLITUDE`, +`TUFT_LEAN_AMPLITUDE`] avant d'entrer dans le tracé SVG. Quantum de CET
  *  émetteur seul — les backends monde (POV, WebGL) lisent le même rang comme un LACET et n'en ont pas
@@ -416,7 +398,7 @@ export function groundAccentsSvg(
     let d = '';
     for (const t of e.tufts) {
       const p = at(t.u, t.v);
-      const hp = t.hM * PX_PER_M_V * (0.8 + r() * 0.5);
+      const hp = t.hM * ISO_PX_PER_M * (0.8 + r() * 0.5);
       const lean = (r() * 2 - 1) * TUFT_LEAN_AMPLITUDE;
       d +=
         `M${n2(p[0])},${n2(p[1])}q${n2(lean - 1.2)},${n2(-hp * 0.6)} ${n2(lean - 1.7)},${n2(-hp)}` +
@@ -427,7 +409,7 @@ export function groundAccentsSvg(
   }
   if (e.speckles.length) {
     let d = '';
-    for (const s of e.speckles) d += dotSub(at(s.u, s.v), s.rM * PX_PER_M_V);
+    for (const s of e.speckles) d += dotSub(at(s.u, s.v), s.rM * ISO_PX_PER_M);
     out += `<path d="${d}" fill="${tileColor(recipe.speckle!.colors, 'dotcol')}" opacity="0.8"/>`;
   }
   return out;

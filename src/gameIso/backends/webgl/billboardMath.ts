@@ -10,7 +10,7 @@ import { project, facingView, type View, type Dir8 } from '../../rig/facing';
 import { povView } from '../../pov/camera';
 import { DIR8_DELTA } from '../../../state/dir8';
 import { type Rot } from '../../../geometry/iso';
-import { ISO_PX_PER_M } from './worldTris';
+import { ISO_PX_PER_M } from '../../iso';
 
 // ————————————————————————————————————————————————————————————————
 // 1. TAILLE MONDE — convention CIBLE `jeu`, plus les deux presets de comparaison de planche (#1160)
@@ -31,10 +31,6 @@ export const JEU_ENT_H_M = 2.3;
 /** Facteur de la convention `jeu` sur le métrique : DÉRIVÉ de l'unique constante arbitrée
  *  `JEU_ENT_H_M` — toute autre famille (props…) s'y met à l'échelle, sans second nombre posé. */
 export const JEU_SCALE = JEU_ENT_H_M / ENT_H_M;
-
-/** Pixels iso par mètre monde — SOURCE UNIQUE dans `worldTris.ts`, ré-exportée pour les consommateurs
- *  de billboards. */
-export { ISO_PX_PER_M };
 
 /**
  * Hauteur MONDE (m) d'un billboard selon la convention rendue.

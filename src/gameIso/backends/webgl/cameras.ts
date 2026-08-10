@@ -21,7 +21,8 @@ import { CELL, TH, TW, type Rot } from '../../../geometry/iso';
 import type { Scene } from '../../../state/scene';
 import type { Dir8 } from '../../../state/dir8';
 import { FOV_X, NEAR, makeCamera } from '../../pov/camera';
-import { ISO_PX_PER_M, pxPerM } from './worldTris';
+import { pxPerM } from './worldTris';
+import { ISO_PX_PER_M } from '../../iso';
 
 /** Viewport en pixels — le cadre dans lequel la projection est comparable à l'affine. */
 export interface Viewport {

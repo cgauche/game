@@ -4,7 +4,7 @@ import {
   biasPoly,
   coplanarOverlapPairs,
   coplanarRanks,
-  crossQuadTris,
+  crossQuadPolys,
   facePoly,
   faceQuads,
   faceQuadsOriented,
@@ -117,11 +117,11 @@ describe('MONTANTS à 2 points — deux quads verticaux croisés, largeur écran
   it('la largeur MONDE est la largeur ÉCRAN divisée par pxPerM', () => {
     expect(uprightWidthM('poteau', 2)).toBeCloseTo(3.8 / pxPerM(2), 12);
     expect(uprightWidthM('jambage', 2)).toBeCloseTo(3.6 / pxPerM(2), 12);
-    expect(uprightWidthM('pillar', 2)).toBeCloseTo(5 / pxPerM(2), 12);
+    expect(uprightWidthM('pilier', 2)).toBeCloseTo(5 / pxPerM(2), 12);
   });
 
   it('un montant produit 4 triangles (2 quads croisés) centrés sur le segment', () => {
-    const tris = crossQuadTris({ x: 10, y: 4, z: 6 }, { x: 10, y: 0, z: 6 }, 0.4);
+    const tris = crossQuadPolys({ x: 10, y: 4, z: 6 }, { x: 10, y: 0, z: 6 }, 0.4).flatMap(fanTriangles);
     expect(tris).toHaveLength(4);
     const xs = tris.flat().map((p) => p.x);
     const zs = tris.flat().map((p) => p.z);
@@ -135,7 +135,7 @@ describe('MONTANTS à 2 points — deux quads verticaux croisés, largeur écran
     expect(uprightOverhangM(2)).toBeCloseTo(1 / pxPerM(2), 12);
     expect(uprightOverhangM(2)).toBeGreaterThan(0.03);
     expect(uprightOverhangM(2)).toBeLessThan(0.05);
-    for (const part of ['poteau', 'jambage', 'pillar'])
+    for (const part of ['poteau', 'jambage', 'pilier'])
       expect(uprightCrossWidthM(part, 2)).toBeCloseTo(
         Math.max(uprightWidthM(part, 2), wallThicknessM(2)) + 2 * uprightOverhangM(2),
         12,

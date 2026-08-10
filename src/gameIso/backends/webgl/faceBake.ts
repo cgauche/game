@@ -23,10 +23,7 @@
  * tore sur la face — une face cuite garde donc ses joints, et sort du groupe de période sans rien perdre.
  */
 import * as THREE from 'three';
-import { ACCENT_FRAC, BLOCK_INSET_M, expandRecipe } from '../../detail/expand';
-import { coursesKey, patternWM, rowBoundaries, type Courses } from '../../detail/courses';
-import { hash32, seedStream } from '../../detail/hash';
-import { TIMBER_V0, TIMBER_V1 } from '../affineDetail';
+import { expandRecipe, TIMBER_V0, TIMBER_V1 } from '../../detail/expand';
 import { periodTextureData, teinteRatio, PERIOD_PX_PER_M } from './periodTexture';
 import type { DetailRecipe } from '../../detail/types';
 
@@ -167,54 +164,6 @@ function stampSegment(m: Mask, u0: number, v0: number, u1: number, v1: number, w
     }
 }
 
-/** BLOCS NUANCÉS d'une face murale, en espace de FACE (mètres depuis le coin haut-gauche) : mêmes
- *  bornes de rangs et de joints que le motif partagé (`rowBoundaries`), même tirage
- *  `hash32(seed,'blk',rang,·)` et mêmes seuils `ACCENT_FRAC` que le backend affine
- *  (`affineDetail.ts`, `verticalAccentsSvg`).
- *
- *  GÉOMÉTRIE SEULE, HORS de la cuisson (#1198) : ces blocs sont SEEDÉS à l'identité monde de la face,
- *  donc incompatibles avec une image partagée par gabarit — ils attendent leur canal dédié, qui lira
- *  ce découpage. Aucun appelant de rendu aujourd'hui.
- *
- *  ÉCART D'ORIGINE assumé : l'affine énumère ses rangs en espace MOTIF ancré au MONDE (il inverse la
- *  projection écran), cette énumération part du HAUT de la face — le rang 0 et la colonne 0 ne tombent
- *  donc pas au même endroit, à seed égal. La structure (mêmes bornes, même flux, même dosage) est
- *  partagée ; l'ancrage ne l'est pas. */
-export function faceAccentBlocks(
-  c: Courses,
-  wM: number,
-  hM: number,
-  seed: number,
-  variant: number,
-): { u0: number; v0: number; u1: number; v1: number; clair: boolean }[] {
-  const key = coursesKey(c);
-  const W = patternWM(c);
-  const out: { u0: number; v0: number; u1: number; v1: number; clair: boolean }[] = [];
-  for (let k = 0; k * c.hM < hM; k++) {
-    const v0 = k * c.hM + BLOCK_INSET_M;
-    const v1 = Math.min((k + 1) * c.hM, hM) - BLOCK_INSET_M;
-    if (v1 - v0 < 0.08) continue;
-    const parity = (k % 2) as 0 | 1;
-    const edges: number[] = [0];
-    for (let n = 0; n * W <= wM; n++)
-      for (const bd of rowBoundaries(c, key, variant, parity)) {
-        const pos = n * W + bd;
-        if (pos > 0 && pos < wM) edges.push(pos);
-      }
-    edges.sort((p, q) => p - q);
-    edges.push(wM);
-    for (let i = 0; i + 1 < edges.length; i++) {
-      const u0 = edges[i] + BLOCK_INSET_M;
-      const u1 = edges[i + 1] - BLOCK_INSET_M;
-      if (u1 - u0 < 0.1) continue;
-      const rv = seedStream(hash32(seed, 'blk', k, Math.round(edges[i] * 20)))();
-      if (rv >= ACCENT_FRAC && rv <= 1 - ACCENT_FRAC) continue;
-      out.push({ u0, v0, u1, v1, clair: rv < ACCENT_FRAC });
-    }
-  }
-  return out;
-}
-
 /** Cuisson LOGICIELLE d'une face de `wM`×`hM` mètres. `null` dans DEUX cas : la face n'exige aucune
  *  cuisson (`needsFaceBake` — la période seule suffit, le chemin de `periodTexture` reste inchangé), ou
  *  le masque cuit est entièrement NEUTRE (rien n'y a été déposé : le gabarit est trop court pour que
@@ -302,23 +251,11 @@ export interface FaceBake {
 }
 
 const CACHE = new Map<string, FaceBake | null>();
-let demandes = 0;
 
 /** Vide le cache (changement de scène) — même patron que `clearPeriodTextures`. */
 export function clearFaceBakes(): void {
   for (const t of CACHE.values()) t?.texture.dispose();
   CACHE.clear();
-  demandes = 0;
-}
-
-/** Compteurs du cache : combien de cuissons demandées, combien d'images RÉELLEMENT cuites, et la part
- *  réutilisée. EN RENDU RÉEL, cette part vaut ZÉRO par construction : `SpikeScreen` appelle `getFaceBake`
- *  une fois par GROUPE de surface et les clés de groupes sont deux à deux distinctes — `demandes` y égale
- *  toujours `cuissons`. La déduplication réelle est en amont, dans `surfaceGrouping`. Ces compteurs
- *  mesurent donc un cache d'APPELS RÉPÉTÉS (une même clé redemandée : re-rendu, test), pas le partage
- *  entre façades. */
-export function faceBakeStats(): { demandes: number; cuissons: number; reutilisation: number } {
-  return { demandes, cuissons: CACHE.size, reutilisation: demandes ? 1 - CACHE.size / demandes : 0 };
 }
 
 /** DataTexture d'une face cuite, une fois par clé. `ClampToEdgeWrapping` : une face ne se répète pas.
@@ -331,7 +268,6 @@ export function getFaceBake(
   variant: number,
   anisotropy = 1,
 ): FaceBake | null {
-  demandes++;
   const hit = CACHE.get(cacheKey);
   if (hit !== undefined) return hit;
   const cuit = faceBakeData(surface, wM, hM, FACE_PX_PER_M, variant);

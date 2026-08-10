@@ -9,7 +9,9 @@ import {
   tileGroundAccents,
   SPECKLE_LIFT_M,
 } from './groundAccents';
-import { groundAccentsSvg, terrainDetail, PX_PER_M_V, TUFT_LEAN_AMPLITUDE } from '../affineDetail';
+import { groundAccentsSvg, TUFT_LEAN_AMPLITUDE } from '../affineDetail';
+import { terrainDetail } from '../../../state/terrain';
+import { ISO_PX_PER_M } from '../../iso';
 import { TUFT_FAN } from '../../detail/expand';
 import { projGP } from '../project';
 import { worldFaces } from './sceneMeshes';
@@ -54,7 +56,7 @@ function svgBrins(svg: string): { lean: number; hp: number }[] {
 
 /** Écarts de parité TOLÉRÉS : exactement le quantum d'arrondi `n2` (2 décimales) du SVG rapporté à
  *  chaque grandeur décodée — au-delà, ce n'est plus de l'arrondi mais un autre tirage.
- *  Hauteur : `n2` sur `−hp·1,15` px ⇒ 0,005/1,15/`PX_PER_M_V` = 1,812e-4 m (mesuré 1,811e-4 sur 1 600 brins).
+ *  Hauteur : `n2` sur `−hp·1,15` px ⇒ 0,005/1,15/`ISO_PX_PER_M` = 1,812e-4 m (mesuré 1,811e-4 sur 1 600 brins).
  *  Lacet : `n2` sur `lean·0,4` ⇒ 0,005/0,4 de `lean`, redéplié sur 2·`TUFT_LEAN_AMPLITUDE` puis étalé
  *  sur 2π = 3,273e-2 rad (mesuré 3,270e-2). Contre-vérifié SENSIBLE : rangs du flux permutés ⇒ 9,9e-2 m
  *  d'écart de hauteur, 550× le seuil. */
@@ -139,7 +141,7 @@ describe('groundAccents — parité de SEED avec le semis affine', () => {
         expect(touffes.length).toBe(brins.length);
         touffes.forEach((a, i) => {
           vus++;
-          pireHauteur = Math.max(pireHauteur, Math.abs(brins[i].hp / PX_PER_M_V - a.sizeM));
+          pireHauteur = Math.max(pireHauteur, Math.abs(brins[i].hp / ISO_PX_PER_M - a.sizeM));
           // Penché d'écran REDÉPLIÉ en son tirage uniforme [0,1] — celui que le POV et le WebGL
           // étalent, eux, sur un tour complet.
           const tirage = (brins[i].lean / TUFT_LEAN_AMPLITUDE + 1) / 2;

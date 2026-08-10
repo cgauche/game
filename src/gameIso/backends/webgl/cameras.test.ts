@@ -19,7 +19,8 @@ import { spec as siegeSpec } from '../../../scenes/test-scenarios/siege-enceinte
 import { sceneMetresPerTile } from '../../../state/scene';
 import { DIR8_ORDER } from '../../../state/dir8';
 import { VH, VW, makeCamera, project } from '../../pov/camera';
-import { ISO_PX_PER_M, pxPerM } from './worldTris';
+import { pxPerM } from './worldTris';
+import { ISO_PX_PER_M } from '../../iso';
 import { buildWorldGeometry, collectBillboards, contentBox } from './sceneMeshes';
 import { anchorAndSize, billboardHeightM, BILLBOARD_BOX_ASPECT } from './billboardMath';
 

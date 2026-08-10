@@ -32,3 +32,15 @@ export function terrainOverlayProp(id: string): string | undefined {
 export function terrainSolidHeightM(id: string): number {
   return DEF_BY_ID[id]?.solidHeightM ?? 0;
 }
+/** Recette de détail d'un terrain, RESTREINTE aux sections d'ACCENT (touffes, mouchetis) — `null`
+ *  quand la def n'en porte aucune. Deux consommateurs la lisent : l'affine (`affineFloors.ts:165`) et
+ *  le volumique (`groundAccents.ts:96`) ; le POV lit la recette NON restreinte en direct
+ *  (`pov/geometry.ts:583`, il consomme aussi `courses`). Elle vit avec le registre qu'elle interroge,
+ *  au même titre que `terrainOverlayProp` et `terrainSolidHeightM`.
+ *
+ *  Type par ACCÈS INDEXÉ sur `TerrainDef` : la garde de pureté state→gameIso (#161) interdit tout
+ *  `import … from '../../gameIso/…'` ici, `import type` compris. */
+export function terrainDetail(id: string): NonNullable<TerrainDef['detail']> | null {
+  const d = DEF_BY_ID[id]?.detail;
+  return d && (d.tufts || d.speckle) ? d : null;
+}
