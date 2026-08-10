@@ -68,7 +68,7 @@ if (process.argv.includes('--stock')) {
   console.log(`stock re-rendu : ${FOLIO_RATCHET.size} -> ${violations.length} clés (en-tête conservé — le mettre à jour à la main).`);
 } else if (process.argv.includes('--stock-titres')) {
   const cible = join(ROOT, 'scripts', 'guards', 'lib', 'folioTitleRatchetStock.mjs');
-  if (titleViolations.length > FOLIO_TITLE_RATCHET.size && FOLIO_TITLE_RATCHET.size > 0) {
+  if (titleViolations.length > FOLIO_TITLE_RATCHET.size) {
     console.error(
       `REFUS : la mesure rend ${titleViolations.length} clés, le stock en porte ${FOLIO_TITLE_RATCHET.size}. Cet outil ne sait que SOLDER.\n` +
         titleViolations

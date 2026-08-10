@@ -21,7 +21,7 @@
     "desc": "à chaque tour, faites un Test d'Intelligence ou de Savoir (Art de la Guerre) Intermédiaire (+0) ; ajoutez ensuite votre Bonus d'Intelligence au nombre de DR. Le total obtenu par le joueur elfe indique combien de pièces naines sont prises ce tour. Le total obtenu par le joueur nain est divisé par quatre (arrondi au supérieur) pour indiquer combien de pièces elfes sont prises ce tour. Sinon, le premier camp à prendre plus de la moitié des pièces de son adversaire l'emporte.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
-      "page": 93
+      "page": 91
     }
   },
   {
@@ -46,7 +46,7 @@
     "desc": "vous avez droit à trois coups pour abattre les 16 quilles. Pour chaque coup, faites un Test de Capacité de Tir Très facile (+60) et ajoutez votre Bonus de Capacité de Tir au nombre de DR obtenus. Le total est le nombre de quilles que vous abattez. Si vous obtenez un Critique, vous renversez toutes les quilles. La difficulté des Tests qui suivent le premier dépend du nombre de quilles à abattre.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
-      "page": 93
+      "page": 92
     }
   },
   {
@@ -59,7 +59,7 @@
     "desc": "chaque joueur dispose de trois boules. À votre tour, effectuez un Test de Projectile (Lancer) Intermédiaire (+0), et notez, pour chacune de vos boules, le nombre de DR obtenus ; Le DR maximal est de 6 DR (votre boule est en contact avec la balle ou le bâton cible) ; un échec signifie que votre boule est hors-jeu. Si vous obtenez le même nombre de DR (ou supérieur) que la boule d'un adversaire, vous pouvez réduire le nombre de DR de cette boule de –1 par DR que vous dépensez pour l'écarter, jusqu'à un minimum de 0. Une fois que tous les joueurs ont lancé leurs trois boules, le joueur à qui appartient la boule qui a le plus de DR gagne ; en cas d'égalité, la partie se solde par un match nul.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
-      "page": 93
+      "page": 92
     }
   },
   {
@@ -131,7 +131,7 @@
     "desc": "avant de lancer un anneau, choisissez une cible et tentez un Test de Projectile (Lancer) avec la difficulté appropriée. En cas de succès, remportez les points indiqués. Un Critique vous permet à la place d'encercler la cible suivante sur la table, ce qui vous fait gagner plus de points. Le joueur qui a obtenu le plus de points après cinq lancers remporte la partie.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
-      "page": 94
+      "page": 93
     }
   }
 ]

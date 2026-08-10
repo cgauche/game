@@ -935,7 +935,7 @@
     "desc": "Fabriqué pour le transport : -1 Point d'Encombrement.",
     "source": {
       "book": "livre-de-base",
-      "page": 286
+      "page": 292
     },
     "capabilities": {
       "encDelta": -1
@@ -949,7 +949,7 @@
     "desc": "+1 DR à un Test raté avec l'objet ; pour une armure, les pénalités de port sont réduites d'un niveau.",
     "source": {
       "book": "livre-de-base",
-      "page": 286
+      "page": 292
     },
     "passive": [
       {
@@ -967,7 +967,7 @@
     "desc": "Travail soigné : signe de statut social (cumulable).",
     "source": {
       "book": "livre-de-base",
-      "page": 286
+      "page": 292
     }
   },
   {
@@ -981,7 +981,7 @@
     },
     "source": {
       "book": "livre-de-base",
-      "page": 286
+      "page": 292
     }
   },
   {
@@ -992,7 +992,7 @@
     "desc": "Fait à la hâte : se casse sur tout Test raté obtenant un double (pour une armure : casse sur un Coup Critique à sa Localisation).",
     "source": {
       "book": "livre-de-base",
-      "page": 286
+      "page": 292
     }
   },
   {
@@ -1003,7 +1003,7 @@
     "desc": "Sans esthétique : jusqu'à -10 aux Tests de Sociabilité associés.",
     "source": {
       "book": "livre-de-base",
-      "page": 286
+      "page": 292
     },
     "passive": [
       {
@@ -1021,7 +1021,7 @@
     "desc": "-1 DR à un Test raté avec l'objet ; pour une armure, les pénalités de port sont doublées.",
     "source": {
       "book": "livre-de-base",
-      "page": 286
+      "page": 292
     },
     "passive": [
       {
@@ -1039,7 +1039,7 @@
     "desc": "+1 Encombrement (1 même porté, pour les vêtements et armures) ; les pénalités de Fatigue sont doublées.",
     "source": {
       "book": "livre-de-base",
-      "page": 286
+      "page": 292
     },
     "capabilities": {
       "encDelta": 1

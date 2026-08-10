@@ -85,9 +85,11 @@ describe('intégrité du folio — source.page pointe sur la page qui porte la d
 });
 
 /**
- * Plafond du stock de la VOIE C, même rôle et même lecture que `FOLIO_RATCHET_MAX`.
+ * Plafond du stock de la VOIE C, même rôle et même lecture que `FOLIO_RATCHET_MAX`. À ZÉRO depuis
+ * le solde des 57 clés de la pose (#1225) : toute réfutation par titre est désormais un échec, il
+ * n'y a plus de dette à cliqueter.
  */
-const FOLIO_TITLE_RATCHET_MAX = 57;
+const FOLIO_TITLE_RATCHET_MAX = 0;
 
 /**
  * Plafond des entrées IRRÉSOLUES — ni desc verbatim, ni titre de section. C'est le compte de ce que

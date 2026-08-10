@@ -49460,7 +49460,7 @@
     "desc": "Les grands cerfs sont bien plus que de simples animaux. Ce sont des créatures transcendantes, les enfants de Kurnous, seigneur des lieux sauvages. Les grands cerfs sont des êtres magiques, la manifestation suprême de l'âme d'une forêt. Leur souffle est celui d'un chant lointain qui s'élève telle la vapeur ; d'innombrables fleurs bourgeonnent sous leurs pas. Partout où ils vont, tous les autres animaux s'inclinent devant eux en signe de révérence.\n\nOn dit que les grands cerfs sont totalement immunisés contre les effets des poisons naturels. C'est sans doute à cause de leur rivalité de longue date avec les ophidiens.\n\nLames de Kurnous : lorsque l'Ombre du fleuve se bat avec ses bois, ceux-ci ont les Atouts Empaleuse, Perforante et Rapide.",
     "source": {
       "book": "zoo-imperial",
-      "page": 11
+      "page": 10
     },
     "appearance": {
       "species": "cheval"
@@ -49645,7 +49645,7 @@
     "desc": "Les araignées géantes qui tissent leur toile dans les forêts sont des prédateurs anormalement énormes, rusés et cruels. Leur corps mesure souvent près de deux mètres de long et pas moins de trois mètres de large si l'on compte leurs pattes. Elles tissent des toiles collantes et résistantes pour capturer leurs proies, qu'elles emballent dans d'épais cocons pour s'en repaître à loisir. Leurs mandibules ressemblent à des pinces, assez puissantes pour perforer l'acier, et sont enduites de toxines mortelles. De toutes les sous-espèces qui arpentent les forêts de l'Empire, aucune n'a une réputation plus épouvantable que la mangeuse d'hommes de la Drakwald, identifiable au cramoisi vif qui orne sa carapace brun sombre.\n\nLorsqu'elles font face à un adversaire particulièrement dangereux ou irritant, les araignées géantes se retirent souvent dans les arbres, d'où elles crachent leur soie collante sur leurs ennemis à l'aide de leur Capacité de Tir.\n\nRancunière : les mangeuses d'hommes de la Drakwald ont le Trait Haine (Anciens adversaires).",
     "source": {
       "book": "zoo-imperial",
-      "page": 12
+      "page": 13
     },
     "appearance": {
       "species": "araignee"
@@ -49721,7 +49721,7 @@
     "desc": "Les gobelins des forêts sont des couards traîtres et perfides. Ils sont particulièrement doués pour tendre des embuscades, et pour prendre la fuite lorsque la situation les dépasse. Ils frappent rapidement du haut de leurs redoutables montures, qui sont en général considérablement plus dangereuses qu'eux. Les gobelins des forêts sont extrêmement minces et agiles de leurs dix doigts. Ils ont la peau verte, un long nez pointu, et des dents acérées. Ils ont tendance à préférer les armes qui leur permettent de rester aussi loin de leurs ennemis que possible, comme les lances et les flèches, qu'ils trempent dans le venin de leur monture. Ils entretiennent une relation étrange et complexe avec les araignées géantes des bois profonds, qui leur servent à la fois de montures, d'animaux de compagnie, et de source de nourriture et de poison.\n\nBravoure d'emprunt : les gobelins des forêts rencontrés hors de leur tribu seront invariablement montés sur des araignées géantes. Les gobelins des forêts montés sur des araignées ignorent les effets de leur Trait Effrayé (Elfes).",
     "source": {
       "book": "zoo-imperial",
-      "page": 14
+      "page": 15
     },
     "appearance": {
       "species": "gobelin"
@@ -49798,7 +49798,7 @@
     "desc": "Les chamanes gobelins des forêts se parent de myriades d'araignées (qui les mordent régulièrement), et consomment quotidiennement des substances hallucinogènes. Leur perception du monde est donc constamment voilée. S'il est attaqué, un chamane n'aura aucun problème à se concentrer sur le combat. Dans le cas contraire, il doit effectuer un Test de Force Mentale Facile (+40) au début de chacun de ses tours. En cas d'échec, il se met à baver, le regard dans le vide : il ne peut pas se déplacer ni entreprendre la moindre Action durant son tour.\n\nBénédictions de la Déesse-araignée : Bataille, Chance, Courage, Grâce, La Chasse, Sauvagerie.",
     "source": {
       "book": "zoo-imperial",
-      "page": 14
+      "page": 15
     },
     "appearance": {
       "species": "gobelin"
@@ -50123,7 +50123,7 @@
     "desc": "Le plus tristement célèbre de tous les razorgors de l'Empire est le Vieux Dos-de-pus du Hochland : un monstre gigantesque à la peau pâle dont le dos suppurant est orné d'une énorme bosse de muscles biscornus et d'os dentelés. Il a dévoré des chasseurs, des caravanes, des détachements entiers de patrouilleurs routiers et même un petit contingent de chevaliers de la Reiksguard envoyés pour l'occire.\n\nLa bosse d'os : des os à la fois souples et durs comme le fer se sont propagés depuis la bosse du Vieux Dos-de-pus sur tout son corps. Ceci l'a rendu plus lent, mais aussi incroyablement coriace.",
     "source": {
       "book": "zoo-imperial",
-      "page": 18
+      "page": 19
     },
     "appearance": {
       "species": "sanglier"
@@ -50323,7 +50323,7 @@
     "desc": "Dans les hauteurs des chaînes de montagnes du Vieux Monde errent des brutes hirsutes et irascibles. D'énormes bêtes à quatre pattes dont le lourd museau est surmonté d'immenses cornes : les rhinox. Leur amour du froid et leur nature belliqueuse, qui les pousse à charger sur-le-champ tout ce qui s'aventure à moins d'un jet de pierre d'eux, leur ont attiré les faveurs d'Ulric. Ce sont des créatures obstinées : elles ne dévient jamais de la trajectoire qu'elles ont choisie et attaquent tout ce qui n'a pas la même odeur qu'elles. Leur très mauvaise vue est compensée par un odorat extrêmement fin. Les ogres se servent parfois des rhinox comme de bêtes de somme.\n\nTrop buté pour mourir : les rhinox ignorent les effets du premier Dégât Critique qu'ils subissent à chaque combat.",
     "source": {
       "book": "zoo-imperial",
-      "page": 28
+      "page": 24
     },
     "appearance": {
       "species": "ours"
@@ -50550,7 +50550,7 @@
     "desc": "Les gobelins de la nuit sont sans doute les membres les plus cruels de leur espèce à l'esprit déjà bien tordu. Ce sont des conspirateurs retors dépourvus de la moindre conscience morale. Ce sont eux qui ont investi la majorité des antiques karak des nains au fil des siècles, ce pourquoi les nains les haïssent par-dessus tout. Ils chassent les squigs depuis des éons, dont ils se servent tantôt comme nourriture, tantôt comme armes vivantes. Ils revêtent des tuniques souillées et s'équipent d'armes rouillées et bardées de crochets.\n\nCertains gobelins de la nuit se servent de filets pour capturer leurs ennemis. Ceux-là ont le Trait d'attaque À distance (Filet 3) +0 (6).\n\nQuelques gobelins de la nuit chevauchent des squigs au combat, ce qui finit généralement mal. Ces chevaucheurs de squigs ont la Compétence Chevaucher (Squig) 40.\n\nAvant le combat, certains gobelins ingurgitent une boisson à base de bonnets de fou et deviennent des fanatiques gobelins de la nuit, armés d'un gigantesque boulet métalliques attaché à une chaîne. Les fanatiques gagnent +10 en Force, ont 16 Blessures et gagnent le Trait Frénésie ainsi que la Compétence Corps à corps (Deux-mains) 40.",
     "source": {
       "book": "zoo-imperial",
-      "page": 31
+      "page": 28
     },
     "appearance": {
       "species": "gobelin"
@@ -50657,7 +50657,7 @@
     "desc": "De toutes les créatures qui peuplent le Vieux Monde, aucune n'est aussi impressionnante que les dragons. Ils sont aussi l'une des plus vieilles espèces à y vivre. Aujourd'hui, il ne reste que peu de ces puissants reptiles, et le battement de leurs ailes s'est fait rare dans l'Empire. Les effets de leur célèbre souffle sont aussi variés que leur apparence, mais suffisent à écraser la plupart de leurs ennemis. Et c'est sans compter leurs griffes et leurs dents plus aiguisées qu'une épée ensorcelée, et leur peau bardée d'écailles capable d'amortir un boulet de canon. Aucun dragon n'est jamais mort de vieillesse : au contraire, ils ne deviennent que plus gros et plus rusés au fil des siècles, capables de parler de nombreuses langues et de manier la magie aussi bien qu'un Maître sorcier.\n\nLa bêtise les perdra : le Souffle soporifique ignore les Points d'Armure. Toute cible blessée par cette attaque doit effectuer un Test de Force Mentale Difficile (-20). En cas d'échec, elle gagne le Trait Stupide pendant un nombre de Rounds égal au Bonus d'Endurance du dragon.\n\nLa forêt est mon bouclier : dans une région boisée, lorsqu'il est entouré d'arbres, un dragon de la forêt ne sera jamais en infériorité numérique. De plus, ses écailles caméléonesques alternent entre l'apparence de l'écorce et celle des feuilles : toutes les attaques à distance qui le prennent pour cible subissent un malus de -20.",
     "source": {
       "book": "zoo-imperial",
-      "page": 33
+      "page": 30
     },
     "appearance": {
       "species": "dragon"
@@ -50781,7 +50781,7 @@
     "desc": "Caledair la Faux de Feu est un dragon de feu antique et monstrueux. Les nains ont des livres des rancunes entiers dédiés à ses déprédations, mais rien ne les a plus outrés que lorsque le dragon a acquis du gromril pour en recouvrir ses griffes.\n\nGriffes « volées » : les griffes de Caledair ignorent totalement les Points d'Armure.",
     "source": {
       "book": "zoo-imperial",
-      "page": 33
+      "page": 31
     },
     "appearance": {
       "species": "dragon"
@@ -50951,8 +50951,14 @@
     "desc": "Halagrundsor est un géant errant des Montagnes du Bord du Monde, vêtu d'habits dépareillés marqués de plusieurs blasons différents, le crâne rasé et la barbe ornée de simples tresses. Il sert d'agent à la disposition des marchands humains qui transportent leurs denrées le long des montagnes, faisant la chasse aux peaux-vertes entre deux chopes. Il ne se sépare jamais de sa chope artisanale de la taille d'un petit tonneau.",
     "source": {
       "book": "zoo-imperial",
-      "page": 36
-    }
+      "page": 34
+    },
+    "alsoIn": [
+      {
+        "book": "zoo-imperial",
+        "page": 35
+      }
+    ]
   },
   {
     "id": "brochet-du-stir",
@@ -51035,7 +51041,7 @@
     "desc": "Les brochets du Stir sont de très gros poissons gris verdâtre, des monstres dangereux et rusés, passés maîtres dans l'art d'échapper aux cannes à pêche, et qui peuvent vivre très, très longtemps. La taille moyenne de ces monstres est de plus de 3,50 mètres, mais certains rapports fiables notent que certaines bêtes particulièrement célèbres atteignent les 6 mètres, et que leur poids se compte en tonnes. Ils ont été trop pêchés, et sont maintenant presque éteints dans la majeure partie du grand Stir.\n\nIl a eu de la chance, c'est tout : les brochets du Stir qui ont vécu assez longtemps pour devenir énormes et pour gagner un surnom semblent protégés par Manann lui-même. Tous ces brochets du Stir ont 3 Points de Chance.\n\nQueue agile : les brochets du Stir peuvent effectuer une attaque caudale par Round sans dépenser d'Avantage.",
     "source": {
       "book": "zoo-imperial",
-      "page": 38
+      "page": 36
     },
     "harvest": {
       "rarity": "Unique",
@@ -51240,7 +51246,7 @@
     "desc": "Les Choses du Bois mort sont d'anciens habitants des villages bordant la forêt maudite, revenus changés et corrompus après s'être aventurés trop loin sous les frondaisons. Ils ne sont pas morts-vivants : pire. Couverts de mutations et d'une rage incontrôlable, ils reviennent traquer ceux qu'ils ont connus de leur vivant.\n\nChoc des retrouvailles : la première fois qu'une personne reconnaît ce que la « chose » était, elle doit effectuer un Test de Force Mentale Complexe (-10). En cas d'échec, elle gagne un État Assommé.",
     "source": {
       "book": "zoo-imperial",
-      "page": 40
+      "page": 37
     },
     "harvest": {
       "rarity": "Exotique",
@@ -51323,7 +51329,7 @@
     "desc": "Les chefs de meute du clan Moulder sont des dompteurs skavens impitoyables, passés maîtres dans l'art de manier leur fouet pour maintenir leurs bêtes de guerre sous contrôle.\n\nMaître du fouet : les rats ogres ordinaires et briseurs d'os menés par un chef de meute ignorent les effets de leur Trait Stupide. Les rats-loups et les rats géants, eux, ignorent leur Trait Nerveux. De plus, les chefs de meute peuvent effectuer des attaques Projectiles (Entraves) au corps à corps sans risquer de toucher leurs alliés (à moins d'obtenir une Maladresse sur leur jet d'attaque).",
     "source": {
       "book": "zoo-imperial",
-      "page": 43
+      "page": 41
     },
     "appearance": {
       "species": "skaven"
@@ -51415,7 +51421,7 @@
     "desc": "Les rats ogres briseurs d'os sont des monstres rarissimes. Ils servent souvent de montures aux skavens puissants, qui les chevauchent grâce à des howdahs construits sur mesure qui ressemblent à des trônes.\n\nJE SUIS INARRÊTABLE ! : tant qu'un skaven est monté sur un briseur d'os, il gagne le Trait Immunité Psychologique. Si un rat ogre briseur d'os meurt, quiconque le chevauchait gagne immédiatement 5 États Brisé, et tous les autres skavens dans un rayon de 10 mètres gagnent immédiatement 1 État Brisé.",
     "source": {
       "book": "zoo-imperial",
-      "page": 43
+      "page": 41
     },
     "appearance": {
       "species": "rat-ogre"
@@ -51514,7 +51520,7 @@
     "desc": "Les rats-loups sont des bêtes de meute créées par le clan Moulder à partir de rats géants façonnés par la chair-sorcellerie skaven. Dressés pour la garde, la chasse et la guerre, ils traquent inlassablement leurs proies.\n\nRat-zoirs : les crocs acérés d'un rat loup ont l'Atout Perforante.",
     "source": {
       "book": "zoo-imperial",
-      "page": 43
+      "page": 41
     },
     "appearance": {
       "species": "rat-loup"
@@ -52164,7 +52170,7 @@
     "desc": "Les sorcières trolls des rivières sont les matriarches malfaisantes, cruelles et dotées d'une intelligence inquiétante de leur espèce. Elles émergent des profondeurs des marais pour mener leurs semblables au combat, pratiquant des arts mystiques obscurs et maudissant leurs ennemis à coups d'invectives trolls effroyables. Elles dépassent largement leurs homologues masculins en taille.\n\nVomissement abondant : elle effectue sa première attaque de Vomissement dans un combat sans dépenser d'Avantage.\n\nOdeur accablante : ceux qui sont exposés à cette puanteur pour la première fois doivent passer un Test de Force Mentale, sans quoi ils se voient infliger l'État Assommé.",
     "source": {
       "book": "zoo-imperial",
-      "page": 48
+      "page": 49
     },
     "appearance": {
       "species": "troll"
@@ -53433,7 +53439,7 @@
     "desc": "Les peaux-de-loup sont des métamorphes déformés souillés par le Chaos, nés d'une terrible malédiction : des monstres déambulant sous une apparence humaine, jusqu'à ce que Morrslieb les fasse émerger de leur prison de chair. La bête qui se trouve à l'intérieur se libère alors à coups de griffes de sa forme humaine — une terrible créature-loup qui se tient debout et sème la dévastation, uniquement vêtue des lambeaux de son ancien corps. Lorsqu'elle a suffisamment massacré, l'humain à l'intérieur doit en sortir à coups de griffes et de morsures.\n\nRage infinie : un peau-de-loup est toujours dans un état de Frénésie.",
     "source": {
       "book": "zoo-imperial",
-      "page": 71
+      "page": 70
     },
     "harvest": {
       "rarity": "Exotique",
@@ -53882,7 +53888,7 @@
     "desc": "Les stégadons sont des reptiles gargantuesques des Terres du Sud et de la Lustrie, qui font trembler la terre sous leurs pas et peuvent réduire les arbres les plus gigantesques en copeaux d'une seule charge. Ils adorent manger des feuilles, mais mangent de tout, et en quantité monumentale.\n\nCharge irrésistible : un stégadon gagne +3 Avantages lorsqu'il Charge.",
     "source": {
       "book": "zoo-imperial",
-      "page": 80
+      "page": 79
     },
     "harvest": {
       "rarity": "Exotique",
@@ -53978,7 +53984,7 @@
     "desc": "Le cornu est un lézard saurien des Terres du Sud, plus petit qu'un carnosaure mais tout aussi dangereux : rapide et mortel, doté de dents acérées et, bizarrement, de cornes pointues. Il chasse habituellement en meute.",
     "source": {
       "book": "zoo-imperial",
-      "page": 81
+      "page": 80
     },
     "harvest": {
       "rarity": "Rare",
@@ -54583,7 +54589,7 @@
     "desc": "Les léviathans sont des créatures gigantesques, qui ressemblent à un croisement entre un énorme bernard-l'ermite et un homard, mesurant près de six mètres de large. Leur carapace est plus dure que l'acier trempé ; flèches et armes à feu de petite taille ne leur font même pas une égratignure. Leurs pinces sont aisément capables de couper un chevalier bretonnien et son destrier caparaçonné en deux. Comme ce sont des créatures des profondeurs, elles font rarement surface, mais elles sont extrêmement dangereuses pour tous les vaisseaux qu'elles croisent. Pour certains, elles sont les messagères du courroux de Manann.\n\nPinces perforatrices : les pinces d'un léviathan ont l'Atout Perforante.\n\nCrustacé : un léviathan peut respirer sous l'eau, et s'y déplacer avec un Mouvement de 8.",
     "source": {
       "book": "zoo-imperial",
-      "page": 92
+      "page": 85
     },
     "harvest": {
       "rarity": "Exotique",
@@ -54666,7 +54672,7 @@
     "desc": "Il Potente Granchio est un léviathan d'une taille et d'une malice exceptionnelles, célèbre pour avoir démantelé un vaisseau avant de repêcher ses marins un à un pour les dévorer.\n\nPinces encore plus perforatrices : les pinces d'Il Potente Granchio ont les Atouts Perforante et Taille.\n\nCrustacé : Il Potente Granchio peut respirer sous l'eau, et s'y déplacer avec un Mouvement de 8.",
     "source": {
       "book": "zoo-imperial",
-      "page": 92
+      "page": 85
     },
     "harvest": {
       "rarity": "Unique",
@@ -54741,7 +54747,7 @@
     "desc": "Les sirènes ont, en dessous du torse, un corps de poisson, et au-dessus ressemblent à de magnifiques damoiselles humaines ou elfes, capables de séduire les marins grâce à leurs chants ensorceleurs. En réalité, elles sont d'apparence extrêmement variée : le bas de leur corps ressemble souvent à celui d'un poisson écailleux, mais certaines ont un corps de serpent, d'autres des tentacules de pieuvre. Si certaines ont une beauté presque sauvage, d'autres sont hideuses et bestiales, et ont des dents aussi pointues que celles des requins. Toutes sont armées de griffes acérées.\n\nChant de la sirène : quiconque entend une sirène chanter doit effectuer un Test de Force Mentale Complexe (-10). En cas d'échec, il est séduit et devient incapable d'entreprendre la moindre action, sauf pour se rapprocher de la source de la chanson, et compte comme s'il avait l'État Inconscient. S'il s'était préparé (oreilles bouchées à la cire), le Test devient Facile (+40). Si une victime séduite est attaquée, elle peut immédiatement effectuer un nouveau Test.\n\nNée de l'eau : les sirènes peuvent respirer sous l'eau et s'y déplacer avec un Mouvement de 8.",
     "source": {
       "book": "zoo-imperial",
-      "page": 94
+      "page": 86
     },
     "harvest": {
       "rarity": "Rare",
@@ -54836,7 +54842,7 @@
     "desc": "Les wyrms des mers sont des êtres terriblement dangereux et incroyablement anciens. On dit qu'ils sont à moitié dragons et à moitié serpents de mer. Leur corps est couvert d'écailles verdâtres argentées et ressemble à celui d'anguilles particulièrement musclées, si ce n'est qu'ils ont quatre petits membres armés de griffes acérées. Ils se propulsent grâce à un mouvement ondulatoire qui leur procure une vitesse surprenante sous l'eau et une démarche preste sur terre. Leur appétit rend insignifiant celui des ogres, et leurs blessures guérissent à une vitesse alarmante.\n\nFléau des baleines : toutes les attaques que le wyrm des mers porte à l'aide de sa gueule bardée de crocs ont le Trait Venin (Complexe).",
     "source": {
       "book": "zoo-imperial",
-      "page": 95
+      "page": 88
     },
     "appearance": {
       "species": "serpent"
@@ -54922,7 +54928,7 @@
     "desc": "Les dragons barbelés sont d'énormes créatures ophidiennes qui règnent sur des cavernes sans lumière situées très loin de la surface. Ils passent leur vie à chasser inlassablement tout ce qu'ils peuvent se mettre sous la dent, causant des dégâts considérables lorsqu'ils pénètrent dans un karak. Leurs membres peuvent se plier dans des positions peu naturelles, sans doute pour mieux se contorsionner dans les passages étroits, et leur venin est tellement acide qu'il peut faire fondre la pierre.\n\nRage frénétique : lorsqu'un dragon barbelé est blessé au combat, il devient immédiatement sujet à une Frénésie impossible à calmer qui lui confère deux attaques de Corps à corps gratuites par Round.\n\nÉcailles rasoir : chaque fois qu'un dragon barbelé est attaqué par un adversaire Engagé avec lui, celui-ci subit 1d10 Blessures (réductibles par le Bonus d'Endurance et les Points d'Armure jusqu'à un minimum de 1).\n\nFonte des roches : la morsure d'un dragon barbelé a le Trait Venin et l'Atout Perforante.",
     "source": {
       "book": "zoo-imperial",
-      "page": 96
+      "page": 90
     },
     "appearance": {
       "species": "dragon"
@@ -55024,7 +55030,7 @@
     "desc": "Le Fantasma est un dragon barbelé particulièrement rusé et malveillant, capable de projeter un gaz toxique provoquant des crises de terreur si intenses qu'il est possible d'en mourir.\n\nSouffle cauchemardesque : toute Blessure infligée par le Souffle du fantasma ignore les Points d'Armure. Les cibles blessées doivent immédiatement faire un Test contre l'effet du Trait Terreur 2 basé sur la Résistance plutôt que sur le Calme. Même les cibles immunisées contre la Peur ou la Terreur doivent effectuer ce Test, car il ne s'agit pas d'un effet psychologique, mais de l'effet distordu d'un poison.\n\nÉcailles rasoir : chaque fois que le fantasma est attaqué par un adversaire Engagé avec lui, celui-ci subit 1d10 Blessures (réductibles jusqu'à un minimum de 1).\n\nFonte des roches : la morsure du fantasma a l'Atout Perforante et le Trait Venin.",
     "source": {
       "book": "zoo-imperial",
-      "page": 96
+      "page": 91
     },
     "appearance": {
       "species": "dragon"
@@ -55126,7 +55132,7 @@
     "desc": "Parfois, lorsqu'un héros particulièrement tenace meurt, il refuse de rester dans sa tombe et devient un revenant : un mort-vivant créé par sa détermination sans faille et maintenu en non-vie par une puissante magie. Les revenants sont toujours engoncés dans l'armure qu'ils portaient lorsqu'ils ont été enterrés ; il leur reste rarement beaucoup de chair, mais leurs yeux brillent d'une lueur sadique et leurs mouvements sont déterminés. Ils portent des lames imbibées de Dhar dont une simple égratignure s'avère bien souvent fatale.\n\nLame spectrale : les armes des revenants ont l'Atout Empaleuse. Lorsqu'un revenant inflige un Critique à l'aide de son arme spectrale, il effectue deux jets sur la Table des Blessures Critiques et inflige le plus haut des deux résultats. Si quelqu'un récupère l'arme d'un revenant, elle devient une arme simple Magique qui inflige +BF+5 Dégâts.",
     "source": {
       "book": "zoo-imperial",
-      "page": 97
+      "page": 93
     },
     "harvest": {
       "rarity": "Rare",
@@ -55189,7 +55195,7 @@
     "desc": "Les technomages qui mènent le clan Skryre au combat mêlent la sorcellerie à la technologie skaven. Ils sont capables de créer des dispositifs pratiques et mortels, quoique hautement instables.\n\nC'est moi que je l'ai fait-fait : le pistolet à malepierre du technomage n'a pas le Défaut Dangereuse.",
     "source": {
       "book": "zoo-imperial",
-      "page": 98
+      "page": 95
     },
     "appearance": {
       "species": "skaven"
@@ -55260,7 +55266,7 @@
     "desc": "Le « Prototype » est un rat ogre modifié par le clan Skryre, pas encore au point pour une production à grande échelle.\n\nTirer-tuer : l'un des bras du prototype a été remplacé par un canon ratling amélioré pour être plus précis. Celui-ci n'a pas le Défaut Imprécise.\n\nMassa-craser : l'autre bras du prototype est surmonté d'un dispositif dévastateur conçu pour écrabouiller roches et chairs à l'aide de pistons pneumatiques. Il a les Atouts Assommante et Percutante.",
     "source": {
       "book": "zoo-imperial",
-      "page": 98
+      "page": 95
     },
     "appearance": {
       "species": "rat-ogre"

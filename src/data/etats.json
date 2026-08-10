@@ -747,7 +747,7 @@
     "label": "Voie d'eau",
     "source": {
       "book": "mer-des-griffes",
-      "page": 124
+      "page": 117
     },
     "desc": "Un vaisseau percé d'une Voie d'eau prend l'eau : à chaque Round, l'Indice (le nombre de pions de cet État) s'ajoute au cumul d'Inondation du navire (MDG 13). L'équipage peut écoper — un Test de Force Intermédiaire (+0) retire 1 au cumul par DR positif.",
     "effects": [

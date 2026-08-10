@@ -29,11 +29,11 @@
 | 09 | Compétences | ✅ | 146 (competences.md ×137) |
 | 10 | Talents | ✅ | 200 (talents.md ×138) |
 | 11 | *(artefact OCR)* | ✅ | 31 (talents.md ×30) |
-| 12 | Tests | ✅ | 47 (tests.md ×42) |
+| 12 | Tests | ✅ | 48 (tests.md ×43) |
 | 13 | Combat | ✅ | 133 (combat.md ×122) |
-| 14 | *(artefact OCR)* | ✅ | 128 (combat.md ×121) |
+| 14 | *(artefact OCR)* | ✅ | 129 (combat.md ×121) |
 | 15 | Déplacement | ✅ | 87 (combat.md ×76) |
-| 16 | États | ✅ | 53 (etats.md ×30) |
+| 16 | États | ✅ | 54 (etats.md ×30) |
 | 17 | Destin et Résistance | ✅ | 51 (destin.md ×27) |
 | 18 | Traumatisme | ✅ | 111 (traumatisme.md ×67) |
 | 19 | Corruption | ✅ | 36 (corruption.md ×29) |

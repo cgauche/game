@@ -226,7 +226,7 @@ Arme d'équipe → **tous les servants** sont touchés (`l.464`).
 Dangereuse = Incident).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.440-464) → `crewedPenalty`, `warMachineCrewPenalty`, `placementPenalty`, `ReloadModalView`, `crewedFireWeapon`, `shipManeuverParams`, `firedWeapon`, `Weapon`, `ActionBar`, `attackModifiers`, +4 — `src/data/qualities.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/engine/warMachineCrew.ts`, `src/state/combatArea.ts`, +7 fichiers
+- `MDG 12` (l.440-464) → `crewedPenalty`, `warMachineCrewPenalty`, `placementPenalty`, `ReloadModalView`, `crewedFireWeapon`, `shipManeuverParams`, `firedWeapon`, `Weapon`, `ActionBar`, `tir-de-zone`, +4 — `src/data/qualities.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/engine/warMachineCrew.ts`, `src/state/combatArea.ts`, +7 fichiers
 
 **État du code.** ✅ (R1) `resolveVolley` dérive l'arme effective de chaque pièce via `crewedFireWeapon(item,
 servantsPrésents)` (exposés non-incapacités) AVANT le calcul de Dégâts → un Canon moyen (Arme d'équipe 3) à 1 servant
@@ -265,8 +265,8 @@ peut aussi considérer un résultat de 0 comme un succès en fonction des circon
 · [Dégâts aux navires](#infliger-des-degats-aux-navires) · [L'équipage comme ressource](#lequipage-comme-ressource--le-round-naval).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.656) → `VolleyShot`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction` — `src/data/sea-navigation.json`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/volley.ts`
-- `MDG 14` (l.13, l.126-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `resolveVolley`, +75 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +17 fichiers
+- `MDG 13` (l.656) → `VolleyShot`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `voie-d-eau` — `src/data/etats.json`, `src/data/sea-navigation.json`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/volley.ts`
+- `MDG 14` (l.13, l.126-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `resolveVolley`, +74 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +17 fichiers
 
 **État du code.** ✅ **(1)(2)(3)(4-Dégâts)(5)** après refonte : Test d'équipage multi (Artilleur ★) → DR partagé →
 chaque pièce préparée comme le tir individuel (effectif via `crewedFireWeapon`, munition via `weaponWithAmmo`) → Dégâts
@@ -308,7 +308,7 @@ générique (cible = personnage, distance via `sceneMetresPerTile`) l'attrape. L
 [Tir de batterie](#tir-de-batterie-la-bordee) · [Pièces et munitions](#artillerie--pieces-et-munitions).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.466-472) → `crewedPenalty`, `ReloadModalView`, `crewedFireWeapon`, `firedWeapon`, `Weapon`, `ActionBar`, `attackModifiers`, `tir-de-zone`, `GameState`, `createCombatSlice`, +1 — `src/data/qualities.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/state/combatArea.ts`, `src/state/combatFlow.ts`, +4 fichiers
+- `MDG 12` (l.466-472) → `crewedPenalty`, `ReloadModalView`, `crewedFireWeapon`, `firedWeapon`, `Weapon`, `ActionBar`, `tir-de-zone`, `attackModifiers`, `GameState`, `createCombatSlice`, +1 — `src/data/qualities.json`, `src/engine/combat.ts`, `src/engine/crewedWeapon.ts`, `src/engine/types.ts`, `src/state/combatArea.ts`, `src/state/combatFlow.ts`, +4 fichiers
 
 **État du code.** ✅ Tir de zone (3 bandes RAW, corrige l'ancien +Indice Blessures brut → +Indice Dégâts ; ajoute la
 bande Extrême) ; ✅ Explosion (rayon Indice + États propagés) ; ✅ branche navale (équipage exposé) ; ✅ extensibilité
@@ -341,7 +341,7 @@ exposé. Le **corps-à-corps** contre la coque touche auto (Localisation au choi
 **Citation** `l.571` : « inversez le résultat obtenu sur le jet d'attaque… **ou lancez 1d100.** »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.567-584, l.616-637) → `meleeVsHullBE`, `PortView`, `resolveVolley`, `RepairTick`, `haute-mer-degagee`, `applyHit`, `GameState` — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/engine/combat.ts`, `src/engine/seaPerils.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, +3 fichiers
+- `MDG 13` (l.567-584, l.616-637) → `meleeVsHullBE`, `PortView`, `resolveVolley`, `RepairTick`, `haute-mer-degagee`, `GameState`, `applyHit` — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/engine/combat.ts`, `src/engine/seaPerils.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, +3 fichiers
 
 **État du code.** ✅ localisation 1d100 par gréement (bordée), BE déduit, plancher 0 (vs plancher 1 perso).
 ⬜ petites armes vs artillerie (seuil de Dégâts), corps-à-corps contre coque, table Taille.
@@ -368,8 +368,8 @@ De plus, tous les coups qui touchent une fois que le score de Blessures… est t
 > **réussi** », « tous les coups qui **touchent** ») sur une touche.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.654-674) → `VolleyShot`, `beginShipwreck`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `OPTIONAL_RULES`, `finalizeFastVoyage`, `runSeaDay`, `checkBattleOver` — `src/data/sea-navigation.json`, `src/engine/conditions.ts`, `src/engine/policy.ts`, `src/engine/shipBuild.ts`, `src/engine/volley.ts`, `src/state/combatFlow.ts`, +2 fichiers
-- `MDG 14` (l.13, l.128) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `resolveVolley`, +75 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +17 fichiers
+- `MDG 13` (l.654-674) → `VolleyShot`, `beginShipwreck`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `voie-d-eau`, `OPTIONAL_RULES`, `finalizeFastVoyage`, `runSeaDay`, `checkBattleOver` — `src/data/etats.json`, `src/data/sea-navigation.json`, `src/engine/conditions.ts`, `src/engine/policy.ts`, `src/engine/shipBuild.ts`, `src/engine/volley.ts`, +3 fichiers
+- `MDG 14` (l.13, l.128) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `resolveVolley`, +74 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +17 fichiers
 
 **État du code.** ✅ `applyHullCritical` (localisation, Équipage, Éclats, Voie d'eau, En flammes en GameOp, Critiques
 de Coque récursifs). ✅ (R1) **« tout coup à B=0 = Critique »** : `resolveVolley` critique sur `wounds.current ≤ 0`.

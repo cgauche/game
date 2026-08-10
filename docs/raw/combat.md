@@ -1435,7 +1435,7 @@ Le **Bras de fer** est un Test opposé **étendu** de **Force Intermédiaire (+0
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 15` (l.2, l.3-5, l.10, l.37, l.40) → `METRES_PER_LEVEL`, `resolveRun`, `RunModal`, `gainAdvantage`, `DisengageModal`, `run-roll`, `sizeFootprintSide`, `disengage-choice`, `verticalTiles`, `disengage-esquive`, +19 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, `src/engine/advantage.ts`, `src/engine/combat.ts`, +15 fichiers
 - `ZI 14` (l.1016-1017, l.1024-1026) → `fouissement` — `src/data/traits.json`
-- sans code : `NADJ 16` (l.34)
+- `NADJ 16` (l.34) → `alvatafl`, `bete-tailleurs`, `boules` — `src/data/tavernGames.json`
 
 ---
 
@@ -3347,7 +3347,7 @@ Les Dégâts dus au **Feu** sont notés à part et **jamais** régénérés. —
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 85` (l.38-39, l.95-98, l.133-134, l.172-173, l.182-183, l.187, l.195, l.198-199, l.256-257, l.265, l.268, l.277-278, l.293-302) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `TraumaFiche`, +137 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, +29 fichiers
-- `ZI 1` (l.79-80) → `empoisonne`, `nuee-d-escampette`, `empetre`, `corps-a-corps`, `affinite-avec-les-animaux`, `sang-corrosif`, `discretion` — `src/data/creatures.json`, `src/data/spells.json`
+- `ZI 1` (l.79-80) → `empoisonne`, `nuee-d-escampette`, `empetre`, `corps-a-corps`, `affinite-avec-les-animaux`, `sang-corrosif` — `src/data/creatures.json`, `src/data/spells.json`
 - `ZI 14` (l.1024, l.1025-1026, l.1045) → `fouissement` — `src/data/traits.json`
 - `EDO 11` (l.224-226) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, `contagieux`, +2 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
 
@@ -3667,7 +3667,7 @@ Le **Zoo Impérial** ajoute un trait de mouvement parallèle à Vol, **Fouisseme
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 85` (l.62-158, l.160-162, l.285-286, l.310-314, l.357-370, l.428-439) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `cannotStopOn`, `StatblockEditor`, `TraverseCapability`, +118 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +26 fichiers
-- `ZI 2` (l.66-70) → `fouissement` — `src/data/traits.json`
+- `ZI 2` (l.66-70) → `fouissement`, `coup-puissant` — `src/data/creatures.json`, `src/data/traits.json`
 - `ZI 14` (l.1029-1035) → `fouissement` — `src/data/traits.json`
 - sans code : `AU1 4` (l.17)
 
@@ -5887,8 +5887,8 @@ Les Dégâts se réparent **définitivement** sur un Test de **Métier (Construc
 **Voir aussi** : Coups Critiques sur un navire (MDG) ; Collisions, Indice de Collision et béliers (MDG) ; Artillerie navale (MDG) ; Taille : catégories et modificateurs de combat ; Tableau de Localisation humanoïde ; Armures : table, PA, dégâts et réparation ; Résolution d'une attaque : les 4 étapes (jet inversé → Localisation).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.56-64, l.221, l.232-236) → `peu-maniable`, `CollisionShip`, `renforce`, `cargoTone`, `schema`, `robuste`, `hullArmourBonus`, `solide`, `resolveCollision`, `scene`, +29 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/sea-cargo.json`, `src/data/ship-construction.json`, `src/engine/collision.ts`, +12 fichiers
-- `MDG 13` (l.464, l.569-571, l.575-584, l.605-607, l.612-616, l.618-637, l.641-651) → `woundsFromHit`, `iceberg`, `VolleyShot`, `meleeVsHullBE`, `debris-marins`, `resolveCollision`, `isArtilleryWeapon`, `rocher`, `bas-fonds`, `faible`, +15 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, `src/data/voyage-stakes.json`, `src/engine/collision.ts`, `src/engine/combat.ts`, +10 fichiers
+- `MDG 12` (l.56-64, l.221, l.232-236) → `peu-maniable`, `CollisionShip`, `renforce`, `cargoTone`, `schema`, `robuste`, `hullArmourBonus`, `solide`, `resolveCollision`, `scene`, +28 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/sea-cargo.json`, `src/data/ship-construction.json`, `src/engine/collision.ts`, +12 fichiers
+- `MDG 13` (l.464, l.569-571, l.575-584, l.605-607, l.612-616, l.618-637, l.641-651) → `woundsFromHit`, `iceberg`, `VolleyShot`, `meleeVsHullBE`, `debris-marins`, `resolveCollision`, `isArtilleryWeapon`, `rocher`, `bas-fonds`, `faible`, +16 — `src/data/etats.json`, `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, `src/data/voyage-stakes.json`, `src/engine/collision.ts`, +11 fichiers
 - sans code : `MDG 13` (l.584)
 
 ## MDG : Coups Critiques sur un navire (Voie d'eau, Éclats, incendies)
@@ -5974,9 +5974,9 @@ Chaque table donne des **Blessures (T = effet temporaire), un effet et une Répa
 **Voir aussi** : Combat naval — Endurance, Blessures et Localisation (MDG) ; Artillerie navale (MDG) ; Critiques et Frappe Mortelle ; AA : système alternatif de Blessures et Critiques ; États (En flammes, À terre) ; Escalade, Saut et Chute (chute du gréement).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.313) → `moteur-broute`, `fuite-de-vapeur`, `perte-de-pression`, `feu-eteint`, `rupture-du-reservoir`, `explosion`, `bandValue`, `steam-save-roll`, `SteamBreakdownEntry`, `effectiveSeaM`, +4 — `src/data/flow-stakes.json`, `src/data/schemas/defs/steam-breakdown.ts`, `src/data/steam-breakdown.json`, `src/engine/shipBuild.ts`, `src/state/seaVoyageFlow.ts`
-- `MDG 13` (l.596-601, l.656, l.660, l.664, l.668, l.672-676, l.680-688, l.747-756, l.758-766) → `woundsFromHit`, `VolleyShot`, `ShipCritEntry`, `isArtilleryWeapon`, `beginShipwreck`, `sea-overspeed`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `OPTIONAL_RULES`, +5 — `src/data/sea-navigation.json`, `src/data/shipCriticals.ts`, `src/data/voyage-stakes.json`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +7 fichiers
-- sans code : `MDG 13` (l.588-592, l.690-692, l.696-702, l.705-718, l.721-744)
+- `MDG 12` (l.313) → `moteur-broute`, `fuite-de-vapeur`, `perte-de-pression`, `feu-eteint`, `rupture-du-reservoir`, `explosion`, `bandValue`, `steam-save-roll`, `SteamBreakdownEntry`, `effectiveSeaM`, +5 — `src/data/flow-stakes.json`, `src/data/naval-traits.json`, `src/data/schemas/defs/steam-breakdown.ts`, `src/data/steam-breakdown.json`, `src/engine/shipBuild.ts`, `src/state/seaVoyageFlow.ts`
+- `MDG 13` (l.596-601, l.656, l.660, l.664, l.668, l.672-676, l.680-688, l.690-692, l.696-702, l.705-718, l.747-756, l.758-766) → `woundsFromHit`, `VolleyShot`, `ShipCritEntry`, `isArtilleryWeapon`, `beginShipwreck`, `sea-overspeed`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `voie-d-eau`, +6 — `src/data/etats.json`, `src/data/sea-navigation.json`, `src/data/shipCriticals.ts`, `src/data/voyage-stakes.json`, `src/engine/conditions.ts`, `src/engine/ops.ts`, +8 fichiers
+- sans code : `MDG 13` (l.588-592, l.721-744)
 
 ## MDG : Collisions, Indice de Collision et béliers
 
@@ -6043,7 +6043,7 @@ Pour résoudre les Dégâts d'un choc contre un péril, le RAW donne des IC type
 **Voir aussi** : Combat naval — Endurance, Blessures et Localisation (MDG) ; Coups Critiques sur un navire (MDG) ; Charge (le pendant terrestre de l'éperonnage) ; Taille : catégories et modificateurs de combat.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.221) → `peu-maniable`, `CollisionShip`, `renforce`, `schema`, `robuste`, `solide`, `resolveCollision`, `ancre`, `belierRam`, `belier`, +14 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/ship-construction.json`, `src/engine/collision.ts`, `src/engine/navalTraits.ts`, +2 fichiers
+- `MDG 12` (l.221) → `peu-maniable`, `CollisionShip`, `renforce`, `schema`, `robuste`, `solide`, `resolveCollision`, `ancre`, `belierRam`, `belier`, +13 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/ship-construction.json`, `src/engine/collision.ts`, `src/engine/navalTraits.ts`, +2 fichiers
 - `MDG 13` (l.427-438, l.442-446, l.448-462, l.464, l.479, l.485, l.497-499, l.526, l.533-537, l.560) → `collisionIndex`, `iceberg`, `SeaHazardDef`, `debris-marins`, `resolveCollision`, `rocher`, `pickSeaHazard`, `bas-fonds`, `perilManagement` ⚠sans-appelant, `faible`, +39 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-perils.json`, `src/data/vehicles.json`, `src/data/voyage-stakes.json`, `src/engine/collision.ts`, `src/engine/policy.ts`, +6 fichiers
 
 ## MDG : Artillerie navale — pièces, portées, recharge et munitions
@@ -6110,7 +6110,7 @@ Un placement équilibré (ou compensé par du lest) n'impose aucune pénalité d
 **Voir aussi** : Atouts et Défauts d'arme (MDG : Arme d'équipe, Tir de zone) ; AA : Structures et armes de Siège (stats d'artillerie jumelles) ; Combat naval — Endurance, Blessures et Localisation (MDG) ; Coups Critiques sur un navire (MDG) ; Armes à distance et munitions (LDB) : groupes et tables ; Portée, Allonge et dégradation des armes ; Atouts et Défauts d'arme (Recharge, Dangereuse, Explosion, Percutante, Empaleuse, Perforante, Pointue).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.356-364, l.369-379, l.381-395, l.401-407, l.413-426, l.430-435, l.462) → `ammoSeq`, `moteur-broute`, `crewedPenalty`, `canon`, `warMachineCrewPenalty`, `fuite-de-vapeur`, `placementPenalty`, `ReloadModalView`, `VolleyShot`, `perte-de-pression`, +28 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/qualities.json`, `src/data/schemas/defs/steam-breakdown.ts`, `src/data/steam-breakdown.json`, `src/engine/combat.ts`, +19 fichiers
+- `MDG 12` (l.356-364, l.369-379, l.381-395, l.401-407, l.413-426, l.430-435, l.462) → `ammoSeq`, `moteur-broute`, `crewedPenalty`, `canon`, `warMachineCrewPenalty`, `fuite-de-vapeur`, `placementPenalty`, `ReloadModalView`, `VolleyShot`, `perte-de-pression`, +29 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/qualities.json`, `src/data/schemas/defs/steam-breakdown.ts`, `src/data/steam-breakdown.json`, +20 fichiers
 - sans code : `MDG 12` (l.377, l.379)
 
 ## MDG : nouveaux Atouts et Défauts d'arme (Arme d'équipe, Tir de zone)

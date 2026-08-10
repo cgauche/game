@@ -48,7 +48,7 @@ BE et PA réduisent les Dégâts **sauf indication contraire** (certaines règle
 **Voir aussi** : États À Terre / Inconscient → [etats.md](etats.md) (LDB 16) ; [Guérison des PB](#10-guérison-des-points-de-blessure).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.12-19) → `followsCharacterRules`, `isHealable`, `outOfCombatUpkeep`, `HealWoundsOptions`, `applyHealWounds`, `critSeverityReduction`, `aaBleedUnconsciousApply`, `TableRollLine`, `ActionBar`, `isOutOfAction`, +14 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +8 fichiers
+- `LDB 18` (l.12-19) → `followsCharacterRules`, `isHealable`, `outOfCombatUpkeep`, `HealWoundsOptions`, `applyHealWounds`, `critSeverityReduction`, `aaBleedUnconsciousApply`, `ActionBar`, `TableRollLine`, `isOutOfAction`, +14 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +8 fichiers
 
 ---
 

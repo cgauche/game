@@ -136,7 +136,7 @@ Lancer **1d100** par Personnage. Certains événements n'affectent que le Person
 L'argent non sécurisé (voir *Opérations Bancaires*) disparaît avant la prochaine aventure. Les Revenus sont crédités **après** le gaspillage (LDB 23 l.191 : « seulement une fois que vous avez disposé de l'argent de votre dernière aventure »).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.14-19, l.191) → `MassBattleState`, `revenus`, `ActivityDef`, `everBelongedClasses`, `heroBudget`, `consumeActivity`, `OPTIONAL_RULES`, `openCatalogActivity`, `confirmActivity`, `Combatant`, +2 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`, `src/state/massBattleFlow.ts`
+- `LDB 23` (l.14-19, l.191) → `MassBattleState`, `revenus`, `ActivityDef`, `everBelongedClasses`, `heroBudget`, `consumeActivity`, `OPTIONAL_RULES`, `openCatalogActivity`, `confirmActivity`, `Combatant`, +3 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`, `src/state/massBattleFlow.ts`
 
 ---
 
@@ -241,7 +241,7 @@ Créer de l'équipement du Guide de l'équipement (LDB 11) si le Personnage poss
 Chaque Activité *Artisanat* = un lancer de Test étendu. Le travail inachevé se conserve.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.75-103) → `craft`, `learn`, `entrainement`, `Combatant`, `dressage` — `src/data/activities.json`, `src/engine/types.ts`
+- `LDB 23` (l.75-103) → `craft`, `learn`, `entrainement`, `dressage`, `Combatant` — `src/data/activities.json`, `src/engine/types.ts`
 
 ---
 
@@ -256,7 +256,7 @@ Avec accord du MJ :
 Le temps illustre présentations, pots-de-vin, licences, etc.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.105-108) → `craft`, `learn`, `entrainement`, `Combatant`, `dressage` — `src/data/activities.json`, `src/engine/types.ts`
+- `LDB 23` (l.105-108) → `craft`, `learn`, `entrainement`, `dressage`, `Combatant` — `src/data/activities.json`, `src/engine/types.ts`
 
 ---
 
@@ -274,7 +274,7 @@ Sur succès d'une consultation de savoir : gagne une **Relance Experte** (utilis
 Une relation établie avec un expert = consultable gratuitement (sans Activité) lors des futurs interludes.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.111-126) → `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `Combatant`, `dressage` — `src/data/activities.json`, `src/engine/types.ts`, `src/state/spawn.ts`
+- `LDB 23` (l.111-126) → `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `dressage`, `Combatant` — `src/data/activities.json`, `src/engine/types.ts`, `src/state/spawn.ts`
 
 ---
 
@@ -376,7 +376,7 @@ Acquérir des objets de rareté **Exotique** (ou très spécialisés, jamais en 
 Un seul objet Exotique par Activité *Passer commande*.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.179-184) → `BankDeposit`, `revenus`, `dernieres-nouvelles`, `entrainement-au-combat` — `src/data/activities.json`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.179-184) → `BankDeposit`, `revenus`, `dernieres-nouvelles`, `entrainement-au-combat`, `observer-une-cible` — `src/data/activities.json`, `src/state/interludeFlow.ts`
 
 ---
 
@@ -405,7 +405,7 @@ Les Personnages aux Niveaux 3-4 qui entreprennent *Revenus* **maintiennent autom
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 8` (l.106-122) → `statusOf`, `openCatalogActivity`, `runActivityResolver` — `src/engine/activities.ts`, `src/engine/social.ts`, `src/state/interludeFlow.ts`
-- `LDB 23` (l.187-193) → `revenus`, `ActivityDef`, `everBelongedClasses`, `openCatalogActivity`, `Combatant`, `dernieres-nouvelles`, `entrainement-au-combat` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.187-193) → `revenus`, `ActivityDef`, `everBelongedClasses`, `openCatalogActivity`, `Combatant`, `dernieres-nouvelles`, `entrainement-au-combat`, `observer-une-cible` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 
 ---
 
@@ -492,7 +492,7 @@ Dépenser de l'argent pour augmenter son Standing de +1 pour la prochaine aventu
 - Échec Stupéfiant (−6) → Standing −1 pour la prochaine aventure entière.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.229-234) → `InterludeHeroState`, `ActivityDef`, `statusIncomeMax`, `PendingActivityFields`, `heroStatus`, `GameOp`, `ActiveEffect`, `openCatalogActivity`, `runActivityResolver`, `observer-une-cible`, +4 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.229-234) → `InterludeHeroState`, `ActivityDef`, `statusIncomeMax`, `PendingActivityFields`, `heroStatus`, `GameOp`, `ActiveEffect`, `openCatalogActivity`, `runActivityResolver`, `recherche-de-savoir`, +3 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 
 ---
 
@@ -517,7 +517,7 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 - Échec → pas de révolte ; Échec de plusieurs DR → la cible apprend vos actions.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.237-249) → `InterludeHeroState`, `handrich`, `ActivityDef`, `statusIncomeMax`, `PendingActivityFields`, `heroStatus`, `GameOp`, `ActiveEffect`, `openCatalogActivity`, `runActivityResolver`, +5 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.237-249) → `InterludeHeroState`, `handrich`, `ActivityDef`, `statusIncomeMax`, `PendingActivityFields`, `heroStatus`, `GameOp`, `ActiveEffect`, `openCatalogActivity`, `runActivityResolver`, +4 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 
 ---
 

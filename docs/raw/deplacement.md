@@ -882,7 +882,7 @@ Réparation permanente : **Test de Métier (Constructeur de navires)** (ou **Mé
 **Voir aussi :** [Salissures de coque (MDG)](#salissures-de-coque-mdg), [Entretien du navire (Activité en mer) (MDG)](#entretien-du-navire-activité-en-mer-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg) (Entretien).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.639-651) → `VolleyShot`, `meleeVsHullBE`, `PortView`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `applyHit`, `GameState` — `src/data/sea-navigation.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, `src/engine/volley.ts`, +2 fichiers
+- `MDG 13` (l.639-651) → `VolleyShot`, `meleeVsHullBE`, `PortView`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `voie-d-eau`, `GameState`, `applyHit` — `src/data/etats.json`, `src/data/sea-navigation.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, +3 fichiers
 
 ---
 
@@ -901,7 +901,7 @@ Un Personnage tenant un rôle lance pour tous ceux du même rôle ; si les PJ ti
 **Voir aussi :** [Moral de l'équipage (MDG)](#moral-de-léquipage-mdg), [Réparer un navire (MDG)](#réparer-un-navire-mdg), [Course-poursuite navale (MDG)](#course-poursuite-navale-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.7-55, l.61-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `progression`, `skill`, `capitaine-competent`, `faveur-de-manann`, `progression-poursuite`, `un-officier-pour-10`, `rollCrewRole`, +108 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +23 fichiers
+- `MDG 14` (l.7-55, l.61-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `progression`, `skill`, `capitaine-competent`, `faveur-de-manann`, `progression-poursuite`, `un-officier-pour-10`, `rollCrewRole`, +107 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +23 fichiers
 
 ---
 
@@ -918,7 +918,7 @@ Modificateurs (extrait) : paie généreuse / capitaine compétent → **+2d10** 
 **Voir aussi :** [Tests d'équipage (MDG)](#tests-dequipage-mdg) (Rude épreuve), [Humeur de Manann et événements en mer (MDG)](#humeur-de-manann-et-événements-en-mer-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.133-202) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `bon-presage`, +76 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/localisation.json`, `src/data/maladies.json`, `src/data/regles.json`, +14 fichiers
+- `MDG 14` (l.133-202) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `bon-presage`, +75 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/localisation.json`, `src/data/maladies.json`, `src/data/regles.json`, +14 fichiers
 
 ---
 

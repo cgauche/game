@@ -51,7 +51,7 @@ Un arbre de décision guide le choix du type de test :
 
 **Voir aussi** : [Tests opposés](#tests-opposés), [Tests étendus](#tests-étendus)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.6, l.47-51, l.83-88) → `canReroll`, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `ChanceButtons`, `OPTIONAL_RULES`, `rollTest`, `NightEntry`, `opposedForcedFloor`, `evaluateTest`, +15 — `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, +3 fichiers
+- `LDB 12` (l.6, l.47-51, l.83-88) → `canReroll`, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `ChanceButtons`, `OPTIONAL_RULES`, `rollTest`, `NightEntry`, `evaluateTest`, `opposedForcedFloor`, +15 — `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, +3 fichiers
 
 ---
 
@@ -228,7 +228,7 @@ Quand **plusieurs facteurs** affectent un même test, on **somme** leurs modific
 **Voir aussi** : [Difficulté — table complète](#difficulté--table-complète), [Modificateurs de test](#modificateurs-de-test), [Extensions de Difficulté (EDO)](#extensions-de-difficulté--presque-impossible-et-impossible-edo)
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 12` (l.189) → `useExtendedTestJetProps`, `soutien`, `useTestJetProps`, `BargainModalView`, `runSceneConsumableFlow`, `RollRequest`, `TestFields`, `buildStageSteps`, `PendingTest`, `hasSkillAdvance`, +35 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +22 fichiers
-- `LDB 14` (l.48, l.91-96) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `OupsMisfireEntry`, `SceneCombatMods`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `isFumble`, `schema`, `10-a-votre-action-au-prochain-round`, `sceneCombatModifiers`, `vous-trebuchez-vous-perdez-votre-prochain-mouvement`, `exactDifficultyFromModifier`, +49 — `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/schemas/defs/oups.ts`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, +15 fichiers
+- `LDB 14` (l.48, l.91-96) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `OupsMisfireEntry`, `SceneCombatMods`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `isFumble`, `schema`, `fr`, `10-a-votre-action-au-prochain-round`, `sceneCombatModifiers`, `vous-trebuchez-vous-perdez-votre-prochain-mouvement`, +56 — `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/schemas/defs/oups.ts`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, +16 fichiers
 - `LDB 16` (l.11) → `addCondition`, `addClockCondition`, `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `meleeAttackerBonusLines`, `FREE_ATTACK_LABEL`, `ModFamille`, +4 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`
 
 ---
@@ -261,7 +261,7 @@ Autrement dit, on soustrait le **chiffre des dizaines du résultat obtenu** au *
 
 **Voir aussi** : [Table des Résultats](#table-des-résultats), [Tests opposés](#tests-opposés), [Succès et échec automatiques](#succès-et-échec-automatiques)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.90-94, l.96-99, l.101-102, l.119-121) → `bargainBuyFactor`, `forceCrewRole`, `OPTIONAL_RULES`, `opposedForcedFloor`, `double-critique-maladresse`, `evaluateTest`, `bestForcedRoll`, `SUCCES_MINIME_CAP`, `SL_IMPRESSIVE`, `resolveCrewTestByRoles`, +8 — `src/data/regles.json`, `src/engine/bargain.ts`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, +5 fichiers
+- `LDB 12` (l.90-94, l.96-99, l.101-102, l.119-121) → `bargainBuyFactor`, `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `evaluateTest`, `opposedForcedFloor`, `bestForcedRoll`, `SUCCES_MINIME_CAP`, `SL_IMPRESSIVE`, `resolveCrewTestByRoles`, +8 — `src/data/regles.json`, `src/engine/bargain.ts`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, +5 fichiers
 
 ---
 
@@ -347,7 +347,7 @@ Les tests étendus servent à résoudre des tâches particulièrement longues ou
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.171-180, l.182-185) → `useExtendedTestJetProps`, `soutien`, `AuContactModal`, `GrappleModal`, `useTestJetProps`, `BargainModalView`, `StateRecoveryModalView`, `opposedLines`, `TestFields`, `useDefenseJetProps`, +42 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +29 fichiers
+- `LDB 12` (l.171-180, l.182-185) → `useExtendedTestJetProps`, `soutien`, `AuContactModal`, `GrappleModal`, `useTestJetProps`, `BargainModalView`, `StateRecoveryModalView`, `opposedLines`, `TestFields`, `useDefenseJetProps`, +43 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +29 fichiers
 
 ---
 
@@ -622,5 +622,4 @@ Ces trois mécaniques constituent des extensions légitimes du système de DR da
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 12` (l.124-127) → `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `evaluateTest`, `bestForcedRoll`, `SL_IMPRESSIVE`, `isAstoundingFailure`, `FicheBody`, `resolveAppraise`, `ItemInstance` — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +2 fichiers
 - `LDB 17` (l.22) → `canReroll`, `RunModal`, `fateSaveOrDie`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, `bonusShipManeuver` ⚠sans-appelant, +11 — `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +11 fichiers
-- `NADJ 16` (l.7, l.11, l.19, l.57, l.97) → `al-zahr`, `alvatafl`, `bras-de-fer`, `bete-tailleurs`, `boules`, `cerevis`, `arene`, `OPTIONAL_RULES` — `src/data/tavernGames.json`, `src/engine/policy.ts`
-- sans code : `NADJ 16` (l.25, l.34)
+- `NADJ 16` (l.7, l.11, l.19, l.25, l.34, l.57, l.97) → `al-zahr`, `alvatafl`, `bras-de-fer`, `bete-tailleurs`, `boules`, `cerevis`, `arene`, `OPTIONAL_RULES` — `src/data/tavernGames.json`, `src/engine/policy.ts`

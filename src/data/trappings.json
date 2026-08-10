@@ -10049,7 +10049,7 @@
     },
     "source": {
       "book": "zoo-imperial",
-      "page": 105
+      "page": 104
     },
     "desc": "Puissant poison de contact extrait du dard d'une vouivre. Les personnes qui subissent une Blessure à cause d'une lame, flèche ou carreau recouvert de baiser de la vouivre doivent réussir un Test de Résistance, sous peine de recevoir immédiatement 5 Blessures supplémentaires qui ignorent l'Endurance et l'Armure. Une arme traitée doit être utilisée dans un délai de 2+1d10 Rounds avant que le poison ne s'évapore.",
     "qualities": []
@@ -10068,7 +10068,7 @@
     },
     "source": {
       "book": "zoo-imperial",
-      "page": 105
+      "page": 104
     },
     "desc": "Poison dérivé du venin d'arachnarok. Un simple contact provoque des boursouflures et fait fondre la chair. Une arme traitée doit être utilisée dans l'heure ; les lames recouvertes sont tachetées de vert, souvent de façon permanente. Quand une arme recouverte de boursoufleur inflige au moins 1 Blessure, elle applique automatiquement 1d10 Blessures supplémentaires. Quiconque en ingère doit faire un Test de Résistance Difficile (-20) ou subir immédiatement une Blessure Critique au torse.",
     "qualities": []
@@ -10125,7 +10125,7 @@
     },
     "source": {
       "book": "zoo-imperial",
-      "page": 106
+      "page": 105
     },
     "desc": "Préparée à partir du sang d'amphisbaena (dont chaque tête mord l'autre, rendant son sang un puissant antidote). Une préparation de sang d'amphisbaena confère un bonus de +40 pour résister aux effets de n'importe quel poison.",
     "qualities": []
@@ -10144,7 +10144,7 @@
     },
     "source": {
       "book": "zoo-imperial",
-      "page": 106
+      "page": 105
     },
     "desc": "Boisson immonde préparée à base de plantes des marais et de parties de créatures (sang de rhinox ou de loup), qui force l'organisme à évacuer l'alcool. Dans la minute, elle annule les pénalités de Caractéristique dues à des Tests de Résistance à l'alcool échoués ou à l'État Ivre. Le buveur subit alors un État Exténué pendant (10 − Bonus d'Endurance) heures.",
     "qualities": []
@@ -10182,7 +10182,7 @@
     },
     "source": {
       "book": "zoo-imperial",
-      "page": 107
+      "page": 106
     },
     "desc": "Sécrétions caustiques du système digestif d'un troll (bile pure), vendues en fioles renforcées. Une seule flasque suffit pour traverser 8 points d'Encombrement d'Équipement et inflige +9 Dégâts de base. Utilisé comme arme de fortune, il possède l'Atout Perforante et le Défaut Dangereuse.",
     "qualities": []
@@ -10201,7 +10201,7 @@
     },
     "source": {
       "book": "zoo-imperial",
-      "page": 107
+      "page": 106
     },
     "desc": "Onguent dérivé de la bave de gueule d'effroi, utilisé par les nains pour manipuler des matériaux brûlants. Un flacon confère 4 PA contre les Dégâts de feu de toutes sortes (y compris magiques) et immunise contre l'État En flammes, mais inflige -20 à l'Agilité et l'Initiative. Agit une heure (ou éliminé avant en frottant avec de l'alcool).",
     "qualities": []
@@ -10758,7 +10758,7 @@
     },
     "source": {
       "book": "zoo-imperial",
-      "page": 115
+      "page": 116
     },
     "desc": "Arme simple (épée) ou dague magique dont la poignée creuse contient une mèche de cheveux de sirène. La lame gagne l'Atout Dévastatrice, mais l'utilisateur est incapable de parler ou de produire le moindre son tant qu'il la manie ; cela vaut aussi pour quiconque est blessé par cette arme. Si la mèche a été prise par la force, l'utilisateur ne peut pas utiliser le Talent Chanceux tant qu'il tient ou porte Silence.",
     "reach": "Moyenne",
@@ -11288,7 +11288,7 @@
     },
     "source": {
       "book": "archives-de-l-empire-2",
-      "page": 29
+      "page": 30
     },
     "shape": "arbalete_lourde",
     "organicProjectile": true

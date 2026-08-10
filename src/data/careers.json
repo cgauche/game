@@ -1731,7 +1731,7 @@
     "desc": "*Vous incarnez les valeurs de Myrmidia et vous chevauchez à l'avant-garde de ses chevaliers templiers.*\n\nLes Chevaliers du Soleil flamboyant sont les templiers de Myrmidia et l'ordre le plus vaste de cette déesse dans l'Empire. Ils ont bonne réputation, mais une certaine méfiance plane souvent autour des chevaliers servant une déesse de la guerre souvent considérée comme étrangère à l'Empire. L'ordre privilégie les nobles prêts à déclarer ouvertement leur foi en Myrmidia et à s'élever au-dessus des rivalités internes mesquines du culte. C'est un ordre riche car un flux d'or constant venant de Tilée, d'Estalie ou d'expéditions dans des terres plus lointaines alimente ses coffres.\n\nLes Soleils flamboyants sont connus pour leur étude de la stratégie et des tactiques, à la fois à la guerre et en combat singulier. Myrmidia apprécie les esprits curieux, l'inventivité et le fait de cultiver des connaissances diverses, c'est pourquoi ses chevaliers perfectionnent leur jugement, leur ingéniosité et leurs talents diplomatiques. Les commandeurs laissent souvent chaque chevalier choisir de manière indépendante comment aborder un ennemi ou une situation.\n\n« Ma déesse est la patronne des stratèges. Si un seul chevalier a été affecté à la garde de son temple, c'est parce qu'un seul chevalier suffisait à cette tâche. Même si je me tiens seul devant vous, Myrmidia elle-même se tient derrière moi. Bien, lequel d'entre vous sera le premier à mourir ? »\n\n– Cristobál Cardana, Chevalier du Soleil flamboyant",
     "source": {
       "book": "aux-armes",
-      "page": 32
+      "page": 34
     }
   },
   {
@@ -1937,7 +1937,7 @@
     "desc": "*Votre travail consiste à abattre les murailles des châteaux et à empêcher les autres d'en faire autant. Que d'autres pauvres idiots prennent d'assaut physiquement les murs ; vous les couvrirez, ou leur fournirez une voie d'accès plus subtile.*\n\n« En les voyant approcher, nos cœurs se sont serrés. Les hommes de Braganza n'avaient jamais été vaincus, ni n'avaient battu en retraite et on savait qu'on était condamné. Notre capitaine a commencé à nous expliquer qu'on était bien en sécurité derrière les murailles, jusqu'à ce qu'un carreau d'arbalète lui traverse la gorge. Personne ne voulait être le suivant. »\n\n– Gunther Friesheim, sur la prise de Schloss Adlerberg\n\nAssiéger des lieux fortifiés est une activité très courante un peu partout dans le Vieux Monde, mais cet art que les humains ont appris auprès des nains a pris sa forme la plus perfectionnée en Tilée. Même les nains admettent à contrecœur que les spécialistes de siège de ce pays sont « passables ».\n\n« Les flèches ne servent à rien contre un château. Vous ne pouvez gagner qu'en utilisant du matériel lourd pour enfoncer les murailles. C'est pour cela que les nains sont bien plus doués pour la guerre de siège. Si vous êtes l'assiégeant, vous ne pouvez rien toucher d'utile avec des flèches. Si vous êtes à l'intérieur du château, vous pourriez penser que des tirs de flèches depuis les tours seraient efficaces, mais par quoi préférez-vous être touché : un bâton pointu ou un rocher de quinze kilos ? »\n\n– Berndt Lance-de-lave, -1778 CI",
     "source": {
       "book": "aux-armes",
-      "page": 46
+      "page": 48
     }
   },
   {
@@ -1960,7 +1960,7 @@
     "desc": "*Vous accompagnez les armées en campagne, à la recherche d'aventure, de protection ou simplement d'un angle d'attaque.*\n\n« Vous voulez acheter cette bague en or arrachée au doigt d'un Bretonnien mort ? Eh bien, non, elle n'est pas trop en or, et non, il n'était pas si bretonnien que ça... et non, il n'était pas si mort que ça non plus ».\n\n– Felix Ramml, suiveur de camp\n\nLa logistique des manœuvres militaires peut être presque incompréhensible. Telles des villes mobiles, les armées du Vieux Monde dépendent de chaînes d'approvisionnement complexes et d'une organisation stricte pour demeurer approvisionnées. Une grande partie de ces tâches relève directement de la compétence de l'armée. Mais l'entreprise privée est toujours à la recherche du profit, de sorte qu'une grande partie d'une armée sera composée d'une bande éclectique de pique-assiettes, de colporteurs, d'entremetteurs, de commerçants, d'artisans et de charlatans. Beaucoup d'entre eux peuvent être décrits dans d'autres Carrières, mais ceux qui se consacrent à suivre les troupes, sans métier ou vocation spécifique, relèvent des suiveurs de camp.\n\n« Ne soulignez pas son manque d'éducation et ses manières grossières. Ne rougissez pas de son bavardage peu sophistiqué. Après tout, elle a épousé un capitaine, et elle ne vaut pas mieux. Sans compter qu'elle vous étripera avec le couteau qu'elle dissimule dans son corsage ».\n\n– Bavardage durant le bal des officiers",
     "source": {
       "book": "aux-armes",
-      "page": 20
+      "page": 22
     }
   },
   {
@@ -1982,7 +1982,7 @@
     "desc": "*Vous êtes engagé pour effectuer des relevés et cartographier des lieux très éloignés les uns des autres. Plus la zone en a besoin, plus le travail risque d'être dangereux.*\n\nIl devient nécessaire de cartographier le monde de manière de plus en plus détaillée, au fur et à mesure qu'il devient complexe. Qu'il s'agisse d'explorer des terres largement inconnues pour y dresser des cartes générales de la région ou d'examiner avec précision de petites parcelles dans le cadre de conflits fonciers mineurs, les cartographes sont de plus en plus demandés.\n\n« La nuit tombait, alors les gars et moi avons rampé dans la boue, traversé les lignes ennemies et éliminé quelques bêtes sur notre chemin. Lorsque nous sommes arrivés au poste, il n'y avait qu'un seul survivant, une plume à la main, recroquevillé sur un rocher. Nous lui avons dit que nous devions partir rapidement. Il a demandé vingt minutes de plus, car il devait terminer une série de relevés particulièrement délicats ».\n\n– Holger Kass, 1er bataillon de hallebardiers de Bögenhafen",
     "source": {
       "book": "aux-armes",
-      "page": 22
+      "page": 16
     }
   },
   {
