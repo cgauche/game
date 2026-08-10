@@ -705,6 +705,36 @@ describe('traumas.prosthesis — trappingId = id du catalogue qui résout', () =
   });
 });
 
+// ── AURA DE TRAIT (traits.json) — `aura.affectsGroups[]` est la ref par laquelle une aura restreint ses
+// bénéficiaires à des Groupes d'appartenance (`groupMatch`, `src/engine/groups.ts:154`, projection
+// `recompute-auras`). Le champ vit sur l'ENTITÉ, pas sur une `GameOp` : il échappe au périmètre dérivé
+// de l'union `GameOp` (`gameOpRefFk.mjs`) et se déclare donc ici. Un id fantôme ne matcherait AUCUN
+// combattant : l'aura deviendrait muette en silence, sans jamais échouer.
+describe('traits.aura.affectsGroups — ids de groups.json qui résolvent', () => {
+  interface AuraRow { id: string; aura?: { affectsGroups?: string[] } }
+  const rows = traits as unknown as AuraRow[];
+
+  const scan = (entries: AuraRow[]): string[] => {
+    const bad: string[] = [];
+    for (const t of entries) {
+      (t.aura?.affectsGroups ?? []).forEach((g, i) => {
+        if (!findGroupById(g)) bad.push(`traits.json(${t.id}).aura.affectsGroups[${i}] → ${JSON.stringify(g)}`);
+      });
+    }
+    return bad;
+  };
+
+  it('chaque Groupe visé par une aura pointe une entrée réelle de groups.json', () => {
+    const bad = scan(rows);
+    expect(bad, bad.join('\n')).toEqual([]);
+  });
+
+  it('la garde n’est pas vacante — une aura à Groupe fantôme est REFUSÉE (contre-épreuve)', () => {
+    expect(rows.some((t) => (t.aura?.affectsGroups?.length ?? 0) > 0)).toBe(true); // le scan a de la matière à voir
+    expect(scan([{ id: 'fixture', aura: { affectsGroups: ['groupe-fantome'] } }])).toHaveLength(1);
+  });
+});
+
 // ── RÉFÉRENCES DES `GameOp` DE LA DONNÉE COMMITÉE (#847) — `applyOps` (`src/engine/ops.ts:1573`)
 // empile sans valider ; le gate d'édition ne voit que ce qui passe par l'UI. Le PÉRIMÈTRE (quels
 // champs d'op portent une référence) est DÉRIVÉ de l'union `GameOp` par le TypeChecker, la CIBLE de

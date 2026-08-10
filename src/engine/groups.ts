@@ -22,6 +22,19 @@ const FOLDER_RULES: { kw: string; group: string }[] = [
   { kw: 'betes', group: 'bete' }, // après hommes-bêtes
 ];
 
+/** Folder bestiaire → id de Groupe de DIEU du Chaos, émis EN PLUS de celui de `FOLDER_RULES` (même
+ *  aplatissement de hiérarchie que `SUBSPECIES_RULES` : un Gardien des Secrets est à la fois « demon »
+ *  ET « slaanesh »). Les 4 Groupes existent déjà dans `groups.json`. Deux consommateurs les visent par
+ *  id : les auras de Dhar (`traits.json`, `aura.affectsGroups`, frenchy-bzh 295 l.233 / 313 l.341) et
+ *  les Cibles psy des Marques du Chaos (`capabilities.psychCible`, EDOC 13 / MDG 07). Sans cette
+ *  dérivation, aucun démon du bestiaire n'appartient au Groupe de son dieu. */
+const FOLDER_GOD_RULES: { kw: string; group: string }[] = [
+  { kw: 'khorne', group: 'khorne' },
+  { kw: 'nurgle', group: 'nurgle' },
+  { kw: 'slaanesh', group: 'slaanesh' },
+  { kw: 'tzeentch', group: 'tzeentch' },
+];
+
 /** Espèce (label data) → id racial. La sous-espèce entre parenthèses est ignorée. */
 const SPECIES_RACIAL: { kw: string; group: string }[] = [
   { kw: 'humain', group: 'humain' },
@@ -92,7 +105,7 @@ function racialFromSpecies(species: string, override?: string | null): string | 
   return null;
 }
 
-/** Ids de Groupe d'appartenance d'un combattant : catégorie(folder) ∪ racial(espèce) ∪ sous-espèce ∪
+/** Ids de Groupe d'appartenance d'un combattant : catégorie(folder) ∪ dieu(folder) ∪ racial(espèce) ∪ sous-espèce ∪
  *  trait(s) ∪ classe/carrière ∪ religieux(Talent Béni) ∪ `group` (surcharge éditable, déjà un id) ∪
  *  extras manuels (déjà des ids). Dédupliqué par id EXACT, ordre stable. */
 export function groupsFor(src: {
@@ -108,7 +121,11 @@ export function groupsFor(src: {
   const push = (g?: string | null) => {
     if (g && !out.includes(g)) out.push(g);
   };
-  if (src.folder) push(categoryFromFolder(src.folder, src.group));
+  if (src.folder) {
+    push(categoryFromFolder(src.folder, src.group));
+    const n = norm(src.folder);
+    for (const r of FOLDER_GOD_RULES) if (n.includes(r.kw)) push(r.group);
+  }
   if (src.species) {
     push(racialFromSpecies(src.species, src.group));
     const n = norm(src.species);

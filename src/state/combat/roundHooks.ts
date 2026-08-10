@@ -25,6 +25,7 @@ import { pushCombatStep } from '../combatEffects';
 import { humanControlled } from '../netOwnership';
 import { inBattleId } from '../combatants';
 import { traitAuras } from '../../engine/traits/dispatch';
+import { groupMatch } from '../../engine/groups';
 import { outnumberCountBonus } from '../../engine/combatFeatures/dispatch';
 import { combatDistance } from '../footprint';
 import { sceneMetresPerTile } from '../scene';
@@ -141,11 +142,16 @@ registerCombatHook({
         // chez la cible avec son nom et son renvoi Codex, jamais en modificateur anonyme.
         const projected = aura.passive.map((op) => ({ op, src: { category: 'traits', id: traitId } }));
         for (const c of battle.combatants) {
-          if (c.id === src.id || isOutOfAction(c) || !c.pos) continue; // l'émetteur ne se touche jamais
+          if (isOutOfAction(c) || !c.pos) continue;
+          // L'émetteur ne se touche que si sa DONNÉE le dit (`includesSelf`) — défaut : jamais.
+          if (c.id === src.id && !aura.includesSelf) continue;
           const sameCamp = c.kind === src.kind;
           // `affects` absent ou `all` = aucun filtre de camp (Perturbant, LDB 85 l.262 : « Toute personne »).
           if (aura.affects === 'enemies' && sameCamp) continue;
           if (aura.affects === 'allies' && !sameCamp) continue;
+          // Filtre d'APPARTENANCE (`affectsGroups`, ids de `groups.json`) : union — la cible doit être
+          // d'au moins un des Groupes listés. Absent = aucun filtre de Groupe.
+          if (aura.affectsGroups && !aura.affectsGroups.some((g) => groupMatch(g, c.groups ?? []))) continue;
           if (combatDistance(src, c, mpt) * mpt <= rangeM) c.auraMods = [...(c.auraMods ?? []), ...projected];
         }
       }

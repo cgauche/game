@@ -55,16 +55,16 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 3 | `src/data/index.ts:2907` |
-| `spec` | 1 | `src/data/index.ts:2908` |
+| `id` | 3 | `src/data/index.ts:2916` |
+| `spec` | 1 | `src/data/index.ts:2917` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 1 | `src/data/index.ts:2913` |
+| `id` | 1 | `src/data/index.ts:2922` |
 | `spec` | **0 — JAMAIS LU** | — |
-| `value` | 2 | `src/data/index.ts:2913` |
+| `value` | 2 | `src/data/index.ts:2922` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -91,27 +91,27 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:2957` |
+| `id` | 4 | `src/data/index.ts:2966` |
 | `spec` | 1 | `src/engine/trappingChoices.ts:36` |
-| `count` | 3 | `src/data/index.ts:2958` |
-| `qualities` | 2 | `src/data/index.ts:2961` |
-| `qualityChoice` | 2 | `src/data/index.ts:2959` |
-| `text` | 1 | `src/data/index.ts:2952` |
-| `vehicleId` | 2 | `src/data/index.ts:2954` |
+| `count` | 3 | `src/data/index.ts:2967` |
+| `qualities` | 2 | `src/data/index.ts:2970` |
+| `qualityChoice` | 2 | `src/data/index.ts:2968` |
+| `text` | 1 | `src/data/index.ts:2961` |
+| `vehicleId` | 2 | `src/data/index.ts:2963` |
 | `label` | **0 — JAMAIS LU** | — |
-| `creatureId` | 2 | `src/data/index.ts:2956` |
-| `choice` | 3 | `src/data/index.ts:2949` |
-| `wildcard` | 1 | `src/data/index.ts:2950` |
+| `creatureId` | 2 | `src/data/index.ts:2965` |
+| `choice` | 3 | `src/data/index.ts:2958` |
+| `wildcard` | 1 | `src/data/index.ts:2959` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `ref` | 4 | `src/data/index.ts:2931` |
-| `wildcard` | 5 | `src/data/index.ts:2933` |
-| `specOptions` | 3 | `src/data/index.ts:2932` |
-| `choice` | 4 | `src/data/index.ts:2935` |
-| `random` | 2 | `src/data/index.ts:2936` |
+| `ref` | 4 | `src/data/index.ts:2940` |
+| `wildcard` | 5 | `src/data/index.ts:2942` |
+| `specOptions` | 3 | `src/data/index.ts:2941` |
+| `choice` | 4 | `src/data/index.ts:2944` |
+| `random` | 2 | `src/data/index.ts:2945` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -137,26 +137,26 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `stake` | 4 | `src/state/combat/triggeredTest.ts:210` |
 | `skill` | 14 | `src/state/combat/triggeredTest.ts:189` |
 | `spec` | 13 | `src/state/combat/triggeredTest.ts:189` |
-| `sense` | 3 | `src/state/combatEffects.ts:413` |
+| `sense` | 3 | `src/state/combatEffects.ts:418` |
 | `characteristic` | 11 | `src/state/combat/triggeredTest.ts:189` |
 | `difficulty` | 2 | `src/engine/flowCore.ts:370` |
-| `requireSL` | 1 | `src/state/combatEffects.ts:449` |
+| `requireSL` | 1 | `src/state/combatEffects.ts:457` |
 | `label` | 6 | `src/state/combat/triggeredTest.ts:204` |
-| `tool` | 1 | `src/state/combatEffects.ts:415` |
-| `vsGroups` | 4 | `src/state/combatEffects.ts:324` |
-| `vsStatus` | 1 | `src/state/combatEffects.ts:323` |
-| `begging` | 3 | `src/state/combatEffects.ts:328` |
-| `vsCapricieux` | 1 | `src/state/combatEffects.ts:332` |
-| `easierIf` | 7 | `src/state/combatEffects.ts:369` |
+| `tool` | 1 | `src/state/combatEffects.ts:420` |
+| `vsGroups` | 4 | `src/state/combatEffects.ts:325` |
+| `vsStatus` | 1 | `src/state/combatEffects.ts:324` |
+| `begging` | 3 | `src/state/combatEffects.ts:329` |
+| `vsCapricieux` | 1 | `src/state/combatEffects.ts:333` |
+| `easierIf` | 7 | `src/state/combatEffects.ts:374` |
 | `argDifficulty` | **0 — JAMAIS LU** | — |
 | `unlessImmune` | 1 | `src/state/combat/flowEval.ts:151` |
 | `onlyGroups` | 1 | `src/state/combat/flowEval.ts:152` |
 | `exceptGroups` | 1 | `src/state/combat/flowEval.ts:153` |
 | `gate` | 1 | `src/engine/flowCore.ts:375` |
-| `noSupport` | 1 | `src/state/combatEffects.ts:407` |
+| `noSupport` | 1 | `src/state/combatEffects.ts:412` |
 | `menace` | 5 | `src/state/combat/triggeredTest.ts:214` |
 | `difficultyBy` | 1 | `src/engine/flowCore.ts:369` |
-| `opposed` | 2 | `src/state/combat/triggeredTest.ts:250` |
+| `opposed` | 2 | `src/state/combat/triggeredTest.ts:253` |
 
 ### `TravelTableEntry` (src/engine/travelTables.ts)
 

@@ -1536,11 +1536,20 @@ export interface TraitData {
    *  `traitCapability` : une capacité supprimée par n'importe quel trait porté répond false. */
   suppressesCapabilities?: (keyof TraitCapabilities)[];
   /** AURA de combat : projette des `passive` GameOp[] sur les combattants À PORTÉE (Perturbant : −20 aux
-   *  Tests à `rangeChar` mètres, LDB 85 p.341 ; `affects` = qui est touché). Recalculée chaque Round par le
-   *  hook GÉNÉRIQUE `recompute-auras`, accumulée dans `Combatant.auraMods` (emballée en `PassiveMod`, le
-   *  trait émetteur en `src`), lue par `combatTestPenaltyParts` — pool NON-CUMUL, « une seule fois, peu
-   *  importe le nombre d'ennemis Perturbants » — et par `skillDRBonus`/`charDRBonusOf`. Aucun code par-nom. */
-  aura?: { rangeChar?: CharKey; rangeMeters?: number; affects?: 'enemies' | 'allies' | 'all'; passive: import('../engine/ops').GameOp[] };
+   *  Tests à `rangeChar` mètres, LDB 85 p.341 ; `affects` = quel camp est touché, `affectsGroups` = à
+   *  quels Groupes d'appartenance la cible doit appartenir, `includesSelf` = l'émetteur se touche aussi).
+   *  Recalculée chaque Round par le hook GÉNÉRIQUE `recompute-auras`, accumulée dans `Combatant.auraMods`
+   *  (emballée en `PassiveMod`, le trait émetteur en `src`), lue par `combatTestPenaltyParts` — pool
+   *  NON-CUMUL, « une seule fois, peu importe le nombre d'ennemis Perturbants » — et par
+   *  `skillDRBonus`/`charDRBonusOf`. Aucun code par-nom. */
+  aura?: {
+    rangeChar?: CharKey;
+    rangeMeters?: number;
+    affects?: 'enemies' | 'allies' | 'all';
+    affectsGroups?: string[];
+    includesSelf?: boolean;
+    passive: import('../engine/ops').GameOp[];
+  };
   /** Trait STANDARD (LDB 76 l.28-31 : « ajoutés à la liste Facultative de TOUTES les créatures ») —
    *  proposé par le picker de Traits facultatifs sur n'importe quel bestiaire. Édité au Codex. */
   standard?: boolean;

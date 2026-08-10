@@ -3,11 +3,11 @@ import { castTestTalentDR } from '../engine/magic';
 import type { Combatant } from '../engine/types';
 
 /**
- * Aura de Dhar (frenchy.bzh) — « +1 DR aux Tests de Focalisation et Langue (Magick) des casters alliés à
- * 10 m, le porteur compris ». Câblé en DONNÉE : `TraitData.aura` (affects allies) + `passive` (porteur)
- * portent des op `skillDRBonus` ; le hook `recompute-auras` les projette dans `auraMods` des cibles, et le
- * LANCEMENT les lit via `castTestTalentDR` (qui somme `skillDRBonus` comme un Talent). Ici on vérifie le
- * versant cast↔aura : un caster dont `auraMods` porte le bonus voit son DR d'incantation augmenté.
+ * Aura de Dhar (frenchy-bzh 295 l.233 / 313 l.341, deux entrées : Slaanesh 10 m, Nurgle 11 m). Câblée en
+ * DONNÉE : `TraitData.aura` porte des op `skillDRBonus` filtrées par Groupe de dieu (`affectsGroups`) et
+ * `includesSelf` ; le hook `recompute-auras` les projette dans `auraMods` des cibles, et le LANCEMENT les
+ * lit via `castTestTalentDR` (qui somme `skillDRBonus` comme un Talent). Ici on vérifie le versant
+ * cast↔aura : un caster dont `auraMods` porte le bonus voit son DR d'incantation augmenté.
  */
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
   id: 'm', name: 'Mage', kind: 'enemy',
@@ -18,7 +18,7 @@ const mk = (over: Partial<Combatant> = {}): Combatant => ({
 
 /** Une op d'aura telle que la PROJETTE le hook `recompute-auras` : emballée en `PassiveMod`, avec le
  *  trait émetteur en `src`. */
-const aura = (op: unknown) => ({ op, src: { category: 'traits', id: 'aura-de-dhar' } });
+const aura = (op: unknown) => ({ op, src: { category: 'traits', id: 'aura-de-dhar-slaanesh' } });
 
 describe('Aura de Dhar — +1 DR au lancement lu depuis auraMods (cast↔aura)', () => {
   it('castTestTalentDR somme le skillDRBonus d’aura (Langue (Magick) ET Focalisation)', () => {

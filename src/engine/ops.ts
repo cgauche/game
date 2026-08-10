@@ -200,8 +200,9 @@ export function skillDRBonus(c: Combatant, skillId: string, spec?: string): numb
   // portent `passiveKind: "intrinsèque"` : liste d'annulateurs VIDE, leur DR survit à la Détermination.
   // Une séquelle à `skillDRBonus` SANS `passiveKind` tomberait, elle, en `douleur` (annulée par Insensible).
   for (const m of traumaPassiveMods(c)) if (m.op.op === 'skillDRBonus' && matches(m.op)) n += resolveFormula(m.op.bonus, c);
-  // Auras (Aura de Dhar : +1 DR Focalisation/Langue (Magick) aux casters alliés) — `aura.passive` projeté
-  // dans `auraMods` par le hook `recompute-auras`. Sommé (le DR cumule), comme les passifs de trait.
+  // Auras (Aura de Dhar : +1 DR Focalisation/Langue (Magick) aux sorciers et démons du dieu à portée,
+  // camp indifférent) — `aura.passive` projeté dans `auraMods` par le hook `recompute-auras`. Sommé
+  // (le DR cumule), comme les passifs de trait.
   for (const m of c.auraMods ?? []) if (m.op.op === 'skillDRBonus' && matches(m.op)) n += resolveFormula(m.op.bonus, c);
   // Effets ACTIFS temporisés (op `skillDRBonus` exécutée — chanson de marin « Jacques Bret », MDG 09 l.228).
   for (const e of c.activeEffects ?? []) for (const b of e.drBonus ?? []) if (b.skill != null && matches({ skill: b.skill, spec: b.spec })) n += b.bonus;
@@ -975,9 +976,10 @@ export type GameOp =
    *  Atouts de Dégâts, `negateAtouts`), Épuisante (`chargeGated` : Percutante/Dévastatrice de l'arme inertes
    *  hors Charge). Lu PAR ID par `qualityDamageStep`. INERTE dans `applyOps`. */
   | { op: 'weaponDamageMod'; mode?: 'maxUnits'; plusUnits?: boolean; negateAtouts?: boolean; chargeGated?: boolean }
-  /** PASSIF d'ARME : Perforante (LDB 62) — ignore `amount` PA (+ la matière non-métal) à la mitigation. Lu
-   *  PAR ID par `qualitySum('armourReduction')`. INERTE dans `applyOps`. */
-  | { op: 'armourPierce'; amount: number }
+  /** PASSIF d'ARME : Perforante (LDB 62 l.270) — `bypass` (ex. `'nonMetal'`) puis `amount` PA retirés du
+   *  reliquat à la mitigation. Lu PAR ID par `qualitySum('armourReduction')`/`qualityArmourBypasses`.
+   *  INERTE dans `applyOps`. */
+  | { op: 'armourPierce'; amount: number; bypass?: ArmourBypass }
   /** PASSIF d'ARME : Empaleuse (LDB 62) — déclenche un Coup Critique quand `roll % mod === equals`
    *  (`{mod:10, equals:0}` = multiple de 10). Forme DÉCLARATIVE sérialisable (remplace le hook fonction
    *  `critTrigger`). Lu PAR ID par `qualityCritTriggered`. INERTE dans `applyOps`. */

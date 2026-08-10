@@ -150,9 +150,12 @@ const DISPATCH = new Set<string>([
   // Redoutable (ZI) : Avantage min = Indice au début du tour — effet `onTurnStart` en donnée (op
   // gainAdvantage, indice baké via withArg, gardé Empêtré/Surpris). Dispatché comme tout `effects`.
   'Redoutable',
-  // Aura de Dhar : aura `affects:'allies'` (10 m) + passive (porteur compris) = `skillDRBonus`
-  // Focalisation/Langue, lue au lancement par `castTestTalentDR`. Dispatché (aura/passive en donnée).
-  'Aura de Dhar',
+  // Aura de Dhar (frenchy-bzh 295 l.233 / 313 l.341) : DEUX entrées, une par dieu — le texte filtre les
+  // bénéficiaires par « de Slaanesh »/« de Nurgle » et n'a pas la même portée (10 m / 11 m). Aura
+  // `affectsGroups:[dieu]` + `includesSelf`, ops `skillDRBonus` Focalisation/Langue lues au lancement par
+  // `castTestTalentDR`. Dispatché (aura en donnée).
+  'Aura de Dhar (Slaanesh)',
+  'Aura de Dhar (Nurgle)',
   // Incantateur hasardeux (VDM 15 folio 214) : `effects` onRoundStart → op `rollTable` sur la table
   // référencée `vdm-incantateur-hasardeux-domaine` (tables.json). Dispatché comme tout `effects`. Le
   // gate RAW « lorsqu'il est attaqué » n'a pas de Trigger (aucun `onAttacked`) : la cadence retenue est

@@ -24,14 +24,14 @@ signe d'un détecteur inadapté plutôt que d'une dette réelle à ce volume. No
 
 | Catalogue | Entités | Orphelines | Taux |
 |---|---|---|---|
-| `traits` | 130 | 7 | 5 % |
+| `traits` | 131 | 7 | 5 % |
 | `talents` | 187 | 5 | 3 % |
 | `qualities` | 59 | 2 | 3 % |
 | `maneuvers` | 20 | 0 | 0 % |
 | `skills` | 48 | 1 | 2 % |
 | `props` | 59 | 0 | 0 % |
 | `vehicles` | 31 | 0 | 0 % |
-| **Total** | **534** | **15** | — |
+| **Total** | **535** | **15** | — |
 
 ### `traits`
 

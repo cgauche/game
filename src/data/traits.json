@@ -2188,16 +2188,19 @@
     }
   },
   {
-    "id": "aura-de-dhar",
-    "label": "Aura de Dhar",
-    "desc": "La créature est enveloppée d'effluves de Dhar. Les sorciers et démons alliés à moins de 10 mètres bénéficient d'un Bonus de +1 DR à leurs Tests de Focalisation et de Langue (Magick) — le porteur de l'Aura compris.",
+    "id": "aura-de-dhar-slaanesh",
+    "label": "Aura de Dhar (Slaanesh)",
+    "desc": "Le démon est enveloppé d’effluves de Dhar. Les sorciers et démons de Slaanesh à moins de 10 mètres bénéficient d’un Bonus de +1 DR à leur Tests de Focalisation et de Langue (Magick). Cela vaut pour le démon porteur de l’Aura également.",
     "source": {
       "book": "frenchy-bzh",
-      "page": 296
+      "page": 295
     },
     "aura": {
       "rangeMeters": 10,
-      "affects": "allies",
+      "affectsGroups": [
+        "slaanesh"
+      ],
+      "includesSelf": true,
       "passive": [
         {
           "op": "skillDRBonus",
@@ -2211,20 +2214,36 @@
           "bonus": 1
         }
       ]
+    }
+  },
+  {
+    "id": "aura-de-dhar-nurgle",
+    "label": "Aura de Dhar (Nurgle)",
+    "desc": "Le démon est enveloppé d’effluves de Dhar. Les sorciers et démons de Nurgle à moins de 11 mètres bénéficient d’un Bonus de +1 DR à leur Tests de Focalisation et de Langue (Magick). Cela vaut pour le démon porteur de l’Aura également.",
+    "source": {
+      "book": "frenchy-bzh",
+      "page": 313
     },
-    "passive": [
-      {
-        "op": "skillDRBonus",
-        "skill": "focalisation",
-        "bonus": 1
-      },
-      {
-        "op": "skillDRBonus",
-        "skill": "langue",
-        "spec": "magick",
-        "bonus": 1
-      }
-    ]
+    "aura": {
+      "rangeMeters": 11,
+      "affectsGroups": [
+        "nurgle"
+      ],
+      "includesSelf": true,
+      "passive": [
+        {
+          "op": "skillDRBonus",
+          "skill": "focalisation",
+          "bonus": 1
+        },
+        {
+          "op": "skillDRBonus",
+          "skill": "langue",
+          "spec": "magick",
+          "bonus": 1
+        }
+      ]
+    }
   },
   {
     "id": "aura-de-mort",
@@ -2234,7 +2253,7 @@
       "book": "frenchy-bzh",
       "page": 560
     },
-    "maison": "DETTE de vocabulaire (#920) : les DEUX volets sont filtrés par le DOMAINE du sort lancé (verbatim ci-dessus : « les sorts de Nécromancie et de Shyish … les sorts de Ghyran, Hysh et Azyr »). L'op `skillDRBonus` ne discrimine que la Compétence et sa spéc (`langue`/`magick`, `focalisation`) : `castTestDRMods` (`src/engine/magic.ts`) ne lui passe JAMAIS de spéc de Domaine, et le jumeau `aura-de-dhar` n'a, lui, aucun filtre de Domaine à porter. Le seul canal indexé sur le Domaine (`domainSeaIncantationDR`/`domainWindDR`) appartient à la DONNÉE du Domaine, pas à une aura d'acteur. Poser l'aura sans filtre l'appliquerait à tous les Domaines."
+    "maison": "DETTE de vocabulaire (#920) : les DEUX volets sont filtrés par le DOMAINE du sort lancé (verbatim ci-dessus : « les sorts de Nécromancie et de Shyish … les sorts de Ghyran, Hysh et Azyr »). L'op `skillDRBonus` ne discrimine que la Compétence et sa spéc (`langue`/`magick`, `focalisation`) : `castTestDRMods` (`src/engine/magic.ts`) ne lui passe JAMAIS de spéc de Domaine, et les jumeaux `aura-de-dhar-slaanesh`/`aura-de-dhar-nurgle` n'ont, eux, aucun filtre de Domaine à porter. Le seul canal indexé sur le Domaine (`domainSeaIncantationDR`/`domainWindDR`) appartient à la DONNÉE du Domaine, pas à une aura d'acteur. Poser l'aura sans filtre l'appliquerait à tous les Domaines."
   },
   {
     "id": "charnier",
