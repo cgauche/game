@@ -194,7 +194,7 @@ import { bearingPostes, mostArmedSide } from './shipBattery';
 import { shipHelmsman, maneuverShip } from './shipManeuver';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
 import { warMachineFireWeapon, warMachineCrewRequired, warMachineCrewPenalty } from '../engine/warMachineCrew';
-import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, supersededLines, psychResolution, psychBranchOps, psychBranchFlow, gainPhobieIfThreshold, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
+import { fearSourceFor, refreshAllDefendedPsych, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, supersededLines, psychResolution, psychBranchOps, psychBranchFlow, gainPhobieIfThreshold, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import {
@@ -2007,6 +2007,7 @@ export function applyAttackResult(
     if (isOutOfAction(target)) {
       clearEngagementOf(get().battle?.combatants ?? [], target.id);
       clearPsychOf(get().battle?.combatants ?? [], target.id);
+      refreshAllDefendedPsych(get().battle?.combatants ?? []); // l’Amour ne se clôt pas à la chute d’UN aimé (l.75) : verdict re-mesuré
     }
     if (attacker.pos && target.pos) {
       set((s: GameState) => ({ facing: { ...s.facing, [attacker.id]: facingToward(attacker.pos!, target.pos!), [target.id]: facingToward(target.pos!, attacker.pos!) } }));
@@ -2178,6 +2179,7 @@ export function applyAttackResult(
     if (isOutOfAction(target)) {
       clearEngagementOf(get().battle?.combatants ?? [], target.id);
       clearPsychOf(get().battle?.combatants ?? [], target.id);
+      refreshAllDefendedPsych(get().battle?.combatants ?? []); // l’Amour ne se clôt pas à la chute d’UN aimé (l.75) : verdict re-mesuré
     }
   }
   // Critiques du Test opposé (LDB 14 l.7) : « Si vous obtenez un Critique, votre adversaire reçoit
@@ -2236,6 +2238,7 @@ export function applyAttackResult(
       if (isOutOfAction(attacker)) {
         clearEngagementOf(get().battle?.combatants ?? [], attacker.id);
         clearPsychOf(get().battle?.combatants ?? [], attacker.id);
+      refreshAllDefendedPsych(get().battle?.combatants ?? []); // l’Amour ne se clôt pas à la chute d’UN aimé (l.75) : verdict re-mesuré
       }
     }
   }
@@ -2722,6 +2725,7 @@ export function applyShieldReaction(get: Get, set: SetFn, defender: Combatant, a
       if (isOutOfAction(attacker)) {
         clearEngagementOf(battle.combatants, attacker.id);
         clearPsychOf(battle.combatants, attacker.id);
+      refreshAllDefendedPsych(battle.combatants); // l’Amour ne se clôt pas à la chute d’UN aimé (l.75) : verdict re-mesuré
       }
     }
     log.push(ev('damage', tr('cf.shieldReactionDamage', { name: defender.label, foe: attacker.label }), defender.id, attacker.id));
@@ -3448,6 +3452,7 @@ export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, de
   if (isOutOfAction(target)) {
     clearEngagementOf(get().battle?.combatants ?? [], target.id);
     clearPsychOf(get().battle?.combatants ?? [], target.id);
+      refreshAllDefendedPsych(get().battle?.combatants ?? []); // l’Amour ne se clôt pas à la chute d’UN aimé (l.75) : verdict re-mesuré
   }
   if (log.length) {
     const b = get().battle;
@@ -6502,6 +6507,13 @@ function openCombatPsychCascade(
  *  bande par entrée de règle. Appelée APRÈS `confirmRoundStart` (acteur posé) ; suspend l'IA jusqu'à
  *  résolution. */
 export function openRoundStartPsych(get: Get, set: SetFn): void {
+  // « tant que vous défendez les êtres aimés » (LDB 21 l.75) : le Round est l'un des DEUX seuls
+  // détenteurs du roster — il rafraîchit ici le verdict de présence porté par `active`, que les
+  // résolutions d'attaque (sans roster) liront ensuite.
+  const battle = get().battle;
+  if (battle && refreshAllDefendedPsych(battle.combatants)) {
+    set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
+  }
   openCombatPsychCascade(get, set, collectHeroRoundStartPsych, 'Sang-froid', 'resource/resolve');
 }
 

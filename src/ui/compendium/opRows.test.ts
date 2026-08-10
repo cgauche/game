@@ -10,6 +10,7 @@ import { opRow, opRows, tableRows } from './opRows';
 import { codexLookupById } from './registry';
 import { characteristics, talents, skills, traits, psychologies, etats, trappings, maladies, symptoms, creatures, findSymptomById, effectTables } from '../../data';
 import type { CharKey } from '../../engine/types';
+import { psychBranchOps } from '../../engine/psychology';
 
 const ALL_KINDS = Object.keys(OP_LABEL) as GameOp['op'][];
 
@@ -202,5 +203,23 @@ describe('opRows — renderer JOUEUR de GameOp[] (#495)', () => {
     expect(cond3.t).toBe('ref');
     if (cond1.t === 'ref') expect(cond1.badge).toBe('1 Round');
     if (cond3.t === 'ref') expect(cond3.badge).toBe('3 Rounds');
+  });
+
+  /** #1224 écart 4 — LDB 21 l.19 : « Sur un succès […] vous ne subirez qu'une pénalité de -20 à vos
+   *  Tests de Sociabilité envers ce groupe ». La branche de RÉUSSITE du Test de Psychologie n'est donc
+   *  pas une issue vide : sa chip DIT la pénalité, dérivée de la MÊME donnée que `socialPsychMod`. */
+  it('la chip de la branche RÉUSSIE d’un Trait ciblé dit son modificateur social « contenu »', () => {
+    const [resiste] = psychBranchOps({ kind: 'animosite', cible: 'hommes-betes', indice: 0 }, { success: true });
+    const row = opRow(resiste);
+    expect(row.t).toBe('ref');
+    if (row.t === 'ref') {
+      expect(row.category).toBe('psychologies');
+      expect(row.show).toBe('Animosité');
+      expect(row.badge).toBe('hommes-betes · −20 Sociabilité');
+    }
+    // La branche d'ÉCHEC (affliction SUBIE) ne porte pas ce malus : le porteur est sous compulsion.
+    const [subi] = psychBranchOps({ kind: 'animosite', cible: 'hommes-betes', indice: 0 }, { success: false });
+    const rowFail = opRow(subi);
+    if (rowFail.t === 'ref') expect(rowFail.badge).toBe('hommes-betes');
   });
 });

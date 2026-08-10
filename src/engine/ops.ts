@@ -411,7 +411,7 @@ export type GameOp =
    *  cumulé du Test étendu), `active` (Trait ciblé subi / résisté), `lastTestRound` (n° de Round du
    *  dernier Test). Champ absent = INCHANGÉ sur une entrée existante. Journalisé via `t()` ; une
    *  entrée `active:false` est un marqueur inerte (aucune ligne). */
-  | { op: 'beginPsych'; type: string; cible?: string; sourceId?: string; indice?: Formula; calmeDR?: Formula; active?: boolean; lastTestRound?: number }
+  | { op: 'beginPsych'; type: string; cible?: string; sourceId?: string; indice?: Formula; calmeDR?: Formula; active?: boolean; lastTestRound?: number; fromTest?: boolean }
   /** Modificateur de caractéristique temporisé (ActiveEffect — meilleur bonus +
    *  pire pénalité sans cumul, LDB l.168). `durationRounds` absent = durée du
    *  contexte (sort : Rounds, horloge, ou permanent — cf. `durationFromCtx`).
@@ -1349,6 +1349,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           ...(o.calmeDR != null ? { calmeDR: Math.max(0, resolveFormula(o.calmeDR, ref, rng)) } : {}),
           ...(o.active != null ? { active: o.active } : {}),
           ...(o.lastTestRound != null ? { lastTestRound: o.lastTestRound } : {}),
+          ...(o.fromTest != null ? { fromTest: o.fromTest } : {}),
         };
         if (at >= 0) list[at] = next; else list.push(next);
         target.psychState = list;

@@ -131,6 +131,7 @@
       "page": 190
     },
     "endedByOtherPsych": true,
+    "containedSocialMod": -20,
     "attackDR": {
       "amount": 1,
       "vs": "group"
@@ -179,6 +180,7 @@
       "page": 190
     },
     "endedByOtherPsych": true,
+    "containedSocialMod": -10,
     "resolution": "binary",
     "test": {
       "skill": "calme",
@@ -201,13 +203,15 @@
       "amount": 1,
       "vs": "any"
     },
-    "cancelsFear": true,
+    "immuneWhileActive": [
+      "peur"
+    ],
     "resolution": "binary",
     "test": {
       "skill": "calme",
       "difficulty": "intermediaire"
     },
-    "stake": "Échec : l’Amour devient ACTIF — +1 DR quand vous défendez l’être aimé, et vous ignorez la Peur tant que vous le défendez.",
+    "stake": "Échec : l’Amour devient ACTIF — +1 DR quand vous défendez l’être aimé, et vous ignorez la Peur tant que vous le défendez, à ses côtés.",
     "stakeForm": "descripteur"
   },
   {
@@ -242,12 +246,9 @@
       "book": "livre-de-base",
       "page": 191
     },
-    "resolution": "binary",
-    "test": {
-      "skill": "calme",
-      "difficulty": "intermediaire"
-    },
-    "stake": "Échec : la Phobie devient ACTIVE envers sa Cible.",
-    "stakeForm": "descripteur"
+    "targetCauses": {
+      "kind": "peur",
+      "indice": 1
+    }
   }
 ]

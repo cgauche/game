@@ -12,6 +12,7 @@ import { rule } from './policy';
 import { bonus, effectiveChar } from './characteristics';
 import { findPsychologyById, psychologies, psychologyLabel } from '../data';
 import { SizeCategory, sizeGap } from './size';
+import { isOutOfAction } from './conditions';
 import { groupMatch, hiddenGroupsOf } from './groups';
 import { campOf, relationBetween } from './relations';
 import { bellicosePsychImmune, traitCapability } from './traits/dispatch';
@@ -56,6 +57,11 @@ export interface PsychAffliction {
    *  (effets actifs, re-testable pour y mettre fin) ; `false` = testé et résisté (marqueur inerte
    *  empêchant le re-déclenchement ce rencontre). */
   active?: boolean;
+  /** Instance NÉE d'un Test de Psychologie (posée par `psychBranchOps`, l'une ou l'autre branche) — par
+   *  opposition à une pose AUTHORÉE (op `beginPsych` d'un effet). Seules les premières sont bornées à leur
+   *  rencontre (`endEncounterPsych`, LDB 21 l.9). La Peur HÉRITÉE d'une Terreur ne le porte pas : elle est
+   *  la mémoire « déjà affrontée » (l.54), pas l'affliction du Test. */
+  fromTest?: boolean;
 }
 
 /** Types de Traits psy CIBLÉS (résolution binaire de Calme, pilotés par un Groupe-Cible, LDB 21) —
@@ -81,11 +87,12 @@ export function agressifEnvers(source: Pick<Combatant, 'id' | 'kind' | 'engagedW
   return !!source.engagedWith?.includes(cible.id) || !!cible.engagedWith?.includes(source.id);
 }
 
-/** Source de Peur/Terreur que `foe` représente pour `self` : combine la Taille (LDB 85 l.381-383) et
- *  l'Indice inspiré au statbloc (`causesPeur`/`causesTerreur`, Trait « Peur (Indice) » LDB 85 l.264-266 :
- *  « engendre de la Peur surnaturelle chez les autres créatures »). Les deux portes DIFFÈRENT : le Trait
- *  ne connaît ni camp ni condition, la Taille passe par `agressifEnvers`. Terreur prime ; sinon le plus
- *  haut Indice. Pur.
+/** Source de Peur/Terreur que `foe` représente pour `self` — TROIS portes distinctes : la Taille (LDB 85
+ *  l.381-383), l'Indice inspiré au statbloc (`causesPeur`/`causesTerreur`, Trait « Peur (Indice) » LDB 85
+ *  l.264-266 : « engendre de la Peur surnaturelle chez les autres créatures »), et le Trait psy CIBLÉ de
+ *  `self` déclaré `targetCauses` (Phobie, LDB 21 l.87). Elles DIFFÈRENT : le Trait de statbloc ne connaît ni
+ *  camp ni condition, la Taille passe par `agressifEnvers`, la Phobie vit sur l'OBSERVATEUR et matche le
+ *  Groupe de `foe`. Terreur prime ; sinon le plus haut Indice. Pur.
  *  NB : « Sans Peur (Ennemi) » (LDB 10 l.864) ne supprime PLUS la source ici (ce n'était pas RAW : le
  *  talent n'accorde pas l'immunité automatique mais « un seul Test de Calme Accessible (+20) » pour
  *  l'ignorer) — la source est donc détectée, et le porteur la teste à +20 (cf. `sansPeurVs`). */
@@ -98,11 +105,13 @@ export function fearSourceFor(self: Combatant, foe: Combatant, selfSizeForSize?:
   if (size) cands.push(size);
   if (foe.causesTerreur) cands.push({ kind: 'terreur', indice: foe.causesTerreur });
   if (foe.causesPeur) cands.push({ kind: 'peur', indice: foe.causesPeur });
+  // Phobie (LDB 21 l.87) : la TROISIÈME porte, portée par l'OBSERVATEUR — l'objet du Trait est traité comme
+  // causant la Peur de son Indice, donc tout le régime de la Peur (Test étendu, −1 DR, approche) s'applique.
+  cands.push(...targetCausedSourcesFor(self, foe));
   if (!cands.length) return null;
   const terr = cands.filter((c) => c.kind === 'terreur');
   const best = (terr.length ? terr : cands).reduce((a, b) => (b.indice > a.indice ? b : a));
-  // Haine (LDB 21) : « immunisé à Peur (mais PAS Terreur) causée par ceux de ce groupe » — data-driven.
-  if (best.kind === 'peur' && psychImmuneToFearFrom(self, foe)) return null;
+  if (best.kind === 'peur' && psychImmuneToFrom(self, foe, 'peur')) return null; // LDB 21 l.41/l.75
   return best;
 }
 
@@ -121,15 +130,107 @@ export function isAfflictionActive(p: PsychAffliction): boolean {
   return false;
 }
 
-/** RAW LDB 21 : un Trait CIBLÉ actif dont la donnée `immuneToFromTarget` inclut `'peur'` (Haine) IMMUNISE
- *  `self` à la Peur causée par un membre de sa Cible. (Pas la Terreur.) Lu par `fearSourceFor` (héros ET IA).
- *  Data-driven : aucune entité nommée. */
-export function psychImmuneToFearFrom(self: Combatant, foe: Pick<Combatant, 'groups'>): boolean {
+/** SIÈGE UNIQUE des immunités psy portées par une affliction ACTIVE de `self`, pour un CANAL donné —
+ *  LDB 21 l.41 (Haine, `immuneToFromTarget` : seulement contre un membre de sa Cible, « mais pas
+ *  Terreur ») et l.75 (Amour, `immuneWhileActive`, hors-groupe). Pour ce second canal, « tant que vous
+ *  défendez les êtres aimés » est PORTÉ PAR `active` : `refreshDefendedPsych` (seul détenteur du
+ *  roster) l'éteint dès qu'aucun aimé n'est présent et en état d'être défendu. Aucun roster n'est donc
+ *  requis ICI — les 3 résolutions d'attaque (`combineOpposed`/`resolveMeleePassive`/`resolveRanged`)
+ *  n'en ont aucun en portée et lisent pourtant le MÊME verdict que `fearSourceFor`/`encounterPsych`.
+ *  Data-driven : aucune entité nommée, aucun canal codé. */
+export function psychImmuneToFrom(self: Combatant, foe: Pick<Combatant, 'groups'>, channel: string): boolean {
   for (const p of self.psychState ?? []) {
-    if (p.active !== true || !p.cible) continue;
-    if (findPsychologyById(p.type)?.immuneToFromTarget?.includes('peur') && groupMatch(p.cible, foe.groups ?? [])) return true;
+    if (p.active !== true) continue;
+    const d = findPsychologyById(p.type);
+    if (d?.immuneWhileActive?.includes(channel)) return true;
+    if (d?.immuneToFromTarget?.includes(channel) && p.cible && groupMatch(p.cible, foe.groups ?? [])) return true;
   }
   return false;
+}
+
+/** LDB 21 l.75 — « tant que vous DÉFENDEZ les êtres aimés » : une affliction déclarée `immuneWhileActive`
+ *  (Amour) cesse d'être ACTIVE dès qu'aucun membre de sa Cible n'est PRÉSENT et en état d'être défendu
+ *  (ni mort ni hors de combat : on ne défend pas un cadavre). Cette fonction n'ÉTEINT que : l'allumage
+ *  reste l'exclusivité de la branche d'ÉCHEC du Test de Psychologie — rallumer ici ressusciterait le
+ *  marqueur d'un Test RÉUSSI (`active:false`), qui partage la même entrée (upsert type+cible).
+ *  Appelée par les détenteurs du roster (ouverture de Round, purge de mort, ouverture de rencontre) pour
+ *  que `active` porte le fait, et que tous les consommateurs purs le lisent sans le recalculer. Mute `c`,
+ *  rend `true` si le verdict a changé. Data-driven : aucune entité nommée. */
+export function refreshDefendedPsych(c: Combatant, present: Combatant[]): boolean {
+  let changed = false;
+  for (const p of c.psychState ?? []) {
+    if (p.active !== true || !p.cible || !findPsychologyById(p.type)?.immuneWhileActive) continue;
+    const defendable = present.some((v) => v.id !== c.id && !v.dead && !isOutOfAction(v) && groupMatch(p.cible!, v.groups ?? []));
+    if (!defendable) { p.active = false; changed = true; }
+  }
+  return changed;
+}
+
+/** `refreshDefendedPsych` pour TOUT un roster (chacun mesuré contre l'ensemble) — forme appelée par les
+ *  détenteurs du roster : ouverture de Round, purge de mort/hors-combat, ouverture de rencontre. */
+export function refreshAllDefendedPsych(all: Combatant[]): boolean {
+  let changed = false;
+  for (const c of all) if (refreshDefendedPsych(c, all)) changed = true;
+  return changed;
+}
+
+/** BORNE DE RENCONTRE (LDB 21 l.9, verbatim) : « Sur un succès, les effets sont annulés jusqu'à la fin de
+ *  la rencontre, même si d'autres Tests peuvent être nécessaires si les circonstances changent. » — les
+ *  afflictions NÉES D'UN TEST (`fromTest`, marqué à l'INSTANCE par `psychBranchOps`) sont bornées à LEUR
+ *  rencontre : ni l'affliction subie, ni le marqueur de Test réussi ne survivent à la suivante, où la même
+ *  source se re-teste. Ne sont PAS balayés : les Traits POSSÉDÉS (`psychTraits`), les poses AUTHORÉES
+ *  (op `beginPsych` d'un effet — elles suivent leur propre règle), et la Peur HÉRITÉE d'une Terreur, qui
+ *  porte la mémoire « déjà affrontée » lue par `collectHeroRoundStartPsych` (LDB 21 l.54 : « pour la
+ *  première fois », pas « une fois par scène »). Mute `c`, rend `true` s'il y avait quelque chose à clore.
+ *  (En combat, la borne existe déjà : `carryOverState` ne reporte pas `psychState`.) */
+export function endEncounterPsych(c: Combatant): boolean {
+  if (!c.psychState?.length) return false;
+  const kept = c.psychState.filter((p) => !p.fromTest);
+  if (kept.length === c.psychState.length) return false;
+  c.psychState = kept;
+  return true;
+}
+
+/** Les Traits psy CIBLÉS de `self` déclarés `targetCauses` (Phobie, LDB 21 l.87 : « Traitez l'objet de la
+ *  Phobie comme causant Peur 1 »), résolus en Cible + régime + Indice. L'Indice de l'instance possédée
+ *  l'emporte sur le défaut de la donnée ; un Indice nul (Trait « Effrayé », Peur 0) reste inerte. */
+function targetCausesEntries(self: Combatant): { cible: string; kind: 'peur' | 'terreur'; indice: number }[] {
+  const out: { cible: string; kind: 'peur' | 'terreur'; indice: number }[] = [];
+  for (const tr of effectivePsychTraits(self)) {
+    const tc = findPsychologyById(tr.type)?.targetCauses;
+    if (!tc || !tr.cible) continue;
+    const indice = tr.indice ?? tc.indice;
+    if (indice > 0) out.push({ cible: tr.cible, kind: tc.kind as 'peur' | 'terreur', indice });
+  }
+  return out;
+}
+
+/** Les sources de Peur/Terreur que `foe` représente pour `self` du seul fait de ses Traits `targetCauses`
+ *  (LDB 21 l.87). Consommé par `fearSourceFor` (combat). Data-driven, pur. */
+export function targetCausedSourcesFor(self: Combatant, foe: Pick<Combatant, 'groups'>): { kind: 'peur' | 'terreur'; indice: number }[] {
+  return targetCausesEntries(self)
+    .filter((e) => groupMatch(e.cible, foe.groups ?? []))
+    .map((e) => ({ kind: e.kind, indice: e.indice }));
+}
+
+/** Premier Test dû à `self` du fait d'un Trait `targetCauses` face aux entités `visible` (LDB 21 l.87) —
+ *  MÊME forme de retour que `targetedTrigger`, pour la porte HORS COMBAT (`encounterPsych`) : l'objet de
+ *  la Phobie ouvre la bande du régime qu'il CAUSE (Peur), pas un Test propre. Une source déjà affrontée
+ *  (affliction portant son `sourceId`) ne se re-déclenche pas, et les immunités du canal s'appliquent
+ *  ICI aussi — MÊME verdict que `fearSourceFor` sur la même situation (l.41/l.75). Pur. */
+export function targetCausedTrigger(self: Combatant, visible: Combatant[]): { kind: 'peur' | 'terreur'; indice: number; sourceId: string; cible: string } | null {
+  for (const e of targetCausesEntries(self)) {
+    const m = visible.find(
+      (v) =>
+        v.id !== self.id &&
+        !(self.psychState ?? []).some((p) => p.type === e.kind && p.sourceId === v.id) &&
+        (e.kind !== 'peur' || !psychImmuneToFrom(self, v, 'peur')) &&
+
+        groupMatch(e.cible, (v.groups ?? []).filter((g) => !hiddenGroupsOf(v).includes(g))),
+    );
+    if (m) return { kind: e.kind, indice: e.indice, sourceId: m.id, cible: e.cible };
+  }
+  return null;
 }
 
 /** RAW LDB 21 : les Traits CIBLÉS `endedByOtherPsych` (Animosité, Préjugé) cessent dès que leur porteur
@@ -244,10 +345,15 @@ export function spendResolveForPsychImmunity(c: Combatant): string | null {
 /** Retire de TOUS les combattants les afflictions psychologiques (Peur/Terreur/traits ciblés)
  *  générées par la créature `deadId` — LDB : les effets psy d'une créature prennent fin à sa mort.
  *  Mute `psychState`. (Les États génériques déjà acquis, ex. Brisé, restent — ils ont leur propre
- *  récupération ; seul le lien Peur↔source disparaît, donc plus de re-Test ni de −1 DR vs la source.) */
+ *  récupération ; seul le lien Peur↔source disparaît, donc plus de re-Test ni de −1 DR vs la source.)
+ *  EXCEPTION : une affliction dont la porte est le GROUPE `cible`, pas l'individu (`immuneWhileActive` —
+ *  Amour, LDB 21 l.75 : « les êtres aimés », au pluriel), ne s'arbitre PAS ici — la chute d'UN aimé ne la
+ *  clôt pas tant qu'un autre est défendable. Son verdict est celui de `refreshDefendedPsych`, que les
+ *  appelants enchaînent avec le roster en main. */
 export function clearPsychOf(all: Combatant[], deadId: string): void {
   for (const c of all) {
-    if (c.psychState?.length) c.psychState = c.psychState.filter((p) => p.sourceId !== deadId);
+    if (!c.psychState?.length) continue;
+    c.psychState = c.psychState.filter((p) => p.sourceId !== deadId || !!findPsychologyById(p.type)?.immuneWhileActive);
   }
 }
 
@@ -329,12 +435,15 @@ export function effectivePsychTraits(c: Combatant): PsychTrait[] {
 }
 
 /** Premier Trait psy CIBLÉ de `self` déclenché ce Round : un membre du groupe `cible` est VISIBLE
- *  (ennemi pour animosite/haine/prejuge/phobie ; allié pour amour/camaraderie) et le trait n'est pas
+ *  (ennemi pour animosite/haine/prejuge ; allié pour amour/camaraderie) et le trait n'est pas
  *  déjà en affliction active. `visible` = combattants en Ligne de Vue (filtrée par l'appelant, couche
- *  state). Une Cible indéfinie (« un au choix ») est inerte. Pur. Phobie porte son Indice (Peur 1). */
+ *  state). Une Cible indéfinie (« un au choix ») est inerte. Pur.
+ *  Un Trait déclaré `targetCauses` (Phobie, LDB 21 l.87) n'a PAS de Test propre : son objet est une source
+ *  de Peur (`fearSourceFor`), et c'est le régime de la Peur qui l'ouvre — jamais une seconde bande. */
 export function targetedTrigger(self: Combatant, visible: Combatant[]): { type: PsychType; cible: string; sourceId: string; indice?: number } | null {
   for (const tr of effectivePsychTraits(self)) {
     if (!tr.cible) continue; // « un au choix » → inerte
+    if (findPsychologyById(tr.type)?.targetCauses) continue; // résolu par le régime de la Peur
     if ((self.psychState ?? []).some((p) => p.type === tr.type && p.cible === tr.cible)) continue; // déjà testé/actif
     const wantAlly = TARGETS_ALLY.has(tr.type);
     const m = visible.find(
@@ -427,17 +536,19 @@ export function psychBranchOps(
         ...(perDeg ? { valuePerSL: { every: 1, amount: perDeg, onFailure: true } } : {}),
       });
     }
+    // `becomes` SANS `fromTest` : la Peur héritée n'est pas l'affliction du Test, c'est la mémoire
+    // « cette créature a déjà inspiré sa Terreur » (l.54) — elle traverse la borne de rencontre.
     if (res.becomes) ops.push({ op: 'beginPsych', type: res.becomes, indice: stake.indice, calmeDR: 0, ...anchor });
     return ops;
   }
   if (CIBLE_TYPES.has(stake.kind)) {
     return [{
-      op: 'beginPsych', type: stake.kind, active: !outcome.success,
+      op: 'beginPsych', type: stake.kind, active: !outcome.success, fromTest: true,
       ...(stake.cible != null ? { cible: stake.cible } : {}), ...anchor,
     }];
   }
   return [{
-    op: 'beginPsych', type: stake.kind, indice: stake.indice,
+    op: 'beginPsych', type: stake.kind, indice: stake.indice, fromTest: true,
     ...(outcome.calmeDR != null ? { calmeDR: outcome.calmeDR } : {}), ...anchor,
   }];
 }

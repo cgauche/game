@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { psychDRAdjust } from './combat';
+import { refreshDefendedPsych } from './psychology';
 import type { Combatant } from './types';
 
 function mk(opts: Partial<Combatant>): Combatant {
@@ -54,7 +55,23 @@ describe('psychDRAdjust — Traits psy modulent le DR de l’attaque (LDB 21)', 
     expect(psychDRAdjust(att, mk({ id: 't', groups: [] }))).toBe(0);
   });
 
-  it('Amour actif → immunité Peur + +1 DR (défend les aimés) → +1 DR net', () => {
+  /** LDB 21 l.75 : « Vous êtes immunisé à la Peur […] tant que vous défendez les êtres aimés » — la
+   *  condition tient à la PRÉSENCE de l'aimé, portée par `active` (`refreshDefendedPsych`), de sorte que
+   *  les 3 résolutions d'attaque — qui n'ont AUCUN roster en portée — lisent le verdict sans le recalculer. */
+  it('Amour actif, l’aimé PRÉSENT → immunité Peur + +1 DR (on le défend) → +1 DR net', () => {
+    const tgt = mk({ id: 't', groups: [] });
+    const aime = mk({ id: 'a', groups: ['Famille'] });
+    const att = mk({
+      psychState: [
+        { type: 'peur', sourceId: 't', indice: 2, calmeDR: 0 },
+        { type: 'amour', cible: 'Famille', active: true },
+      ],
+    });
+    refreshDefendedPsych(att, [att, aime]); // le détenteur du roster pose le verdict de présence
+    expect(psychDRAdjust(att, tgt)).toBe(1); // Peur annulée par Amour, +1 DR défense
+  });
+
+  it('Amour actif mais AUCUN aimé présent → l’immunité s’éteint, la Peur mord seule : −1', () => {
     const tgt = mk({ id: 't', groups: [] });
     const att = mk({
       psychState: [
@@ -62,6 +79,7 @@ describe('psychDRAdjust — Traits psy modulent le DR de l’attaque (LDB 21)', 
         { type: 'amour', cible: 'Famille', active: true },
       ],
     });
-    expect(psychDRAdjust(att, tgt)).toBe(1); // Peur annulée par Amour, +1 DR défense
+    refreshDefendedPsych(att, [att]); // aucun aimé : l’immunité s’éteint
+    expect(psychDRAdjust(att, tgt)).toBe(-1);
   });
 });

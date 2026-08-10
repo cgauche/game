@@ -1223,17 +1223,28 @@ export interface PsychologyData extends StatusData {
   /** RAW LDB 21 : cette affliction CIBLÉE cesse dès que son porteur tombe sous un AUTRE effet psychologique
    *  « dominant » (Peur/Terreur/Haine…) — « Animosité est annulé par Peur et Terreur » ; Préjugé idem. */
   endedByOtherPsych?: boolean;
-  /** RAW LDB 21 : tant que cette affliction CIBLÉE est active, son porteur est IMMUNISÉ aux KINDS psy listés
-   *  causés par un membre de sa Cible (Haine → ['peur'], « mais pas Terreur »). Lu par `fearSourceFor`. */
+  /** RAW LDB 21 l.41 : tant que cette affliction CIBLÉE est active, son porteur est IMMUNISÉ aux CANAUX
+   *  listés causés par un membre de sa Cible (Haine → `['peur']` ; l'Intimidation du RAW attend sa mécanique, #1234).
+   *  Lu par `psychImmuneToFrom` (siège unique : `fearSourceFor` + `psychDRAdjust`). */
   immuneToFromTarget?: string[];
   /** Contribution de cet état psy au DEGRÉ DE RÉUSSITE de l'ATTAQUE de son porteur (LDB 21, ±1 DR) — lu
    *  par `psychDRAdjust` (plus de ±1 codé par-nom). `vs:'source'` = Peur vs sa source (active non vaincue,
    *  l.29) ; `vs:'group'` = Haine/Animosité vs le groupe ciblé actif (l.22/41) ; `vs:'any'` = Amour/
    *  Camaraderie en défense, dès lors qu'actif (l.77/82). */
   attackDR?: { amount: number; vs: 'source' | 'group' | 'any' };
-  /** Actif, cet état ANNULE le malus de Peur de l'attaquant (Amour : « immunisé à la Peur tant que vous
-   *  défendez les êtres aimés », LDB 21 l.77) — généralise, hors-groupe, l'immunité `immuneToFromTarget`. */
-  cancelsFear?: boolean;
+  /** RAW LDB 21 l.75 : tant que cette affliction est active, son porteur est IMMUNISÉ aux CANAUX listés,
+   *  mais SEULEMENT tant que l'affliction est ACTIVE, ce que `refreshDefendedPsych` conditionne à la présence
+   *  d'un membre de sa Cible en état d'être défendu (Amour → `['peur']`). Même siège `psychImmuneToFrom`. */
+  immuneWhileActive?: string[];
+  /** RAW LDB 21 l.19/l.48 : modificateur aux Tests de Sociabilité envers la Cible que subit le porteur du
+   *  Trait tant qu'il n'est PAS en affliction active (issue du Test de Psychologie RÉUSSI — Animosité −20,
+   *  Préjugé −10). Lu par `socialPsychMod`/`socialPsychLabel` (plus de −20/−10 ni de type codé par-nom). */
+  containedSocialMod?: number;
+  /** RAW LDB 21 l.87 : l'OBJET de ce Trait CIBLÉ est traité comme CAUSANT l'état psy `kind` d'Indice
+   *  `indice` (Phobie → Peur 1) — l'entrée n'a donc pas de Test propre : tout le régime de `kind` s'applique.
+   *  `indice` est le DÉFAUT, surchargé par l'Indice de l'instance possédée (« Vous pouvez vouloir augmenter
+   *  l'Indice de Peur si la Phobie est particulièrement forte » — éditable au Codex). Lu par `fearSourceFor`. */
+  targetCauses?: { kind: string; indice: number };
   /** Mode de RÉSOLUTION du Test de Psychologie (LDB 21), lu par l'applier GÉNÉRIQUE `combatPsych` (plus de
    *  dispatch `kind === 'terreur'` codé) : `'extended'` = Test ÉTENDU de Calme cumulant le DR vers l'Indice
    *  (Peur, l.27) ; `'terreur'` = Test BINAIRE dont l'échec inflige `failCondition` (Indice + |DR négatifs|)

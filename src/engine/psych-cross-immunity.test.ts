@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fearSourceFor, psychImmuneToFearFrom, suppressSupersededPsych } from './psychology';
+import { fearSourceFor, psychImmuneToFrom, suppressSupersededPsych } from './psychology';
 import type { Combatant } from './types';
 
 const C = (o: Partial<Combatant>): Combatant => o as unknown as Combatant;
@@ -9,20 +9,20 @@ const C = (o: Partial<Combatant>): Combatant => o as unknown as Combatant;
 describe('Immunités psychologiques croisées (LDB 21) — data-driven', () => {
   it('Haine immunise à la PEUR du groupe haï (mais PAS la Terreur)', () => {
     const hater = C({ psychState: [{ type: 'haine', cible: 'elfe', active: true } as never] });
-    expect(psychImmuneToFearFrom(hater, C({ groups: ['elfe'] }))).toBe(true);
+    expect(psychImmuneToFrom(hater, C({ groups: ['elfe'] }), 'peur')).toBe(true);
     expect(fearSourceFor(hater, C({ groups: ['elfe'], causesPeur: 2 }))).toBeNull(); // Peur annulée
     expect(fearSourceFor(hater, C({ groups: ['elfe'], causesTerreur: 2 }))).toEqual({ kind: 'terreur', indice: 2 }); // Terreur passe
   });
 
   it('Haine n’immunise PAS contre un autre groupe', () => {
     const hater = C({ psychState: [{ type: 'haine', cible: 'elfe', active: true } as never] });
-    expect(psychImmuneToFearFrom(hater, C({ groups: ['orque'] }))).toBe(false);
+    expect(psychImmuneToFrom(hater, C({ groups: ['orque'] }), 'peur')).toBe(false);
     expect(fearSourceFor(hater, C({ groups: ['orque'], causesPeur: 2 }))).toEqual({ kind: 'peur', indice: 2 });
   });
 
   it('Haine INACTIVE (Test réussi) n’immunise pas', () => {
     const hater = C({ psychState: [{ type: 'haine', cible: 'elfe', active: false } as never] });
-    expect(psychImmuneToFearFrom(hater, C({ groups: ['elfe'] }))).toBe(false);
+    expect(psychImmuneToFrom(hater, C({ groups: ['elfe'] }), 'peur')).toBe(false);
   });
 
   it('Animosité est annulée par un effet psy DOMINANT actif (Peur)', () => {

@@ -1,7 +1,8 @@
 /**
  * Psychologie À LA RENCONTRE, hors combat (couture C, LDB 21). À l'entrée d'une scène, chaque héros
- * face à un PNJ inspirant Peur/Terreur (Taille/statbloc) ou un Trait ciblé (Animosité/Haine/Phobie…)
- * fait un Test de Calme.
+ * porteur d'un Trait psy CIBLÉ dont la Cible est présente fait un Test de Calme — Test propre pour
+ * Animosité/Haine/Préjugé/Amour/Camaraderie, bande du régime CAUSÉ pour la Phobie (Peur, LDB 21 l.87).
+ * La Peur/Terreur d'une CRÉATURE croisée reste exclue hors combat (cf. `engine/encounterPsych`).
  *
  * « Une situation = une modale » (#1117 L1) : une BANDE par entrée de règle mise en jeu — une fenêtre
  * « Animosité (Elfes) », une « Terreur »… — dont la DÉCLARATION (type psy, source, cible, Indice) vit
@@ -17,7 +18,7 @@ import { Scene } from './scene';
 import type { CascadeStep, BatchParticipant, CascadeRoll } from './pendings';
 import { spawnEnemy } from './spawn';
 import { encounterPsych } from '../engine/encounterPsych';
-import { CIBLE_TYPES, CIBLE_LABEL, PsychType, failConditionAmount, psychResolution, psychBranchOps, psychBranchFlow, supersededLines, isPsychImmune } from '../engine/psychology';
+import { CIBLE_TYPES, CIBLE_LABEL, PsychType, failConditionAmount, psychResolution, psychBranchOps, psychBranchFlow, supersededLines, isPsychImmune, refreshAllDefendedPsych, endEncounterPsych } from '../engine/psychology';
 import { skillBaseValue } from '../engine/skills';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { refLabel, findPsychologyById, combatStakeRef } from '../data';
@@ -101,12 +102,25 @@ function psychBands(dues: PsychDue[]): CascadeStep[] {
  *  règle, une RANGÉE par héros concerné. No-op en combat, si une cascade est déjà ouverte, ou sans
  *  scène/PNJ. Auto-appelé à l'entrée de scène. */
 export function openEncounterPsych(get: Get, set: Set): void {
+  if (get().battle) return;
+  // BORNE DE RENCONTRE (LDB 21 l.9) : entrer dans une scène CLÔT la rencontre précédente — les afflictions
+  // NÉES D'UN TEST expirent (l'affliction subie comme le marqueur de Test réussi), donc la même source
+  // re-croisée plus tard se re-teste. Survivent : les Traits POSSÉDÉS, les poses AUTHORÉES, et la Peur
+  // héritée d'une Terreur (mémoire « déjà affrontée », l.54). En combat, la borne équivalente est déjà
+  // tenue par `carryOverState` (qui ne reporte pas `psychState`).
+  const party = get().party.map((h) => ({ ...h }));
+  if (party.some(endEncounterPsych)) set({ party });
   const s = get();
-  if (s.battle || s.pendingCascade || !s.scene) return;
+  if (s.pendingCascade || !s.scene) return;
   const npcs = sceneFearSources(s.scene);
   if (!npcs.length) return;
+  // …PUIS le verdict « tant que vous défendez les êtres aimés » (l.75) sur ce qui a SURVÉCU à la borne
+  // (pose authorée d'un Amour, Peur héritée) : le roster de la rencontre est le groupe + les PNJ présents.
+  // Ordre imposé : après la borne, sinon le refresh ne verrait que ce qu'elle vient d'effacer.
+  const refreshed = get().party.map((h) => ({ ...h }));
+  if (refreshAllDefendedPsych([...refreshed, ...npcs])) set({ party: refreshed });
   const dues: PsychDue[] = [];
-  for (const hero of s.party) {
+  for (const hero of get().party) {
     if (hero.dead) continue;
     const trig = encounterPsych(hero, npcs);
     if (!trig) continue;

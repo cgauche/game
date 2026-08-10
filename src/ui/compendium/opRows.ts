@@ -16,7 +16,7 @@ import { giveTrappingLabel } from '../../engine/items';
 import { statName } from '../../engine/statEntry';
 import {
   conditionLabel, psychologyLabel, diseaseLabel, symptomLabel, creatureLabel,
-  refLabel, findTrappingById, findEffectTableById, mutationTables,
+  refLabel, findTrappingById, findEffectTableById, mutationTables, findPsychologyById,
 } from '../../data';
 
 const textRow = (o: GameOp): CodexRow => ({ t: 'text', text: humanizeOp(o) });
@@ -106,7 +106,14 @@ export function opRow(o: GameOp, ctx?: OpRowCtx): CodexRow {
     case 'beginPsych': {
       const label = psychologyLabel(o.type);
       // L'Indice (Peur 2, Terreur 3) est le BADGE de la chip : c'est le DR à surmonter, pas un nom.
-      return { t: 'ref', category: 'psychologies', id: o.type, label, show: label, badge: o.cible ?? (o.indice != null ? humanizeFormula(o.indice) : undefined) };
+      // `active:false` = le Trait ciblé RÉSISTÉ (LDB 21 l.19/l.48) : l'issue n'est pas vide, elle porte le
+      // modificateur social « contenu » déclaré par l'entrée (`containedSocialMod`).
+      const mod = o.active === false ? findPsychologyById(o.type)?.containedSocialMod : undefined;
+      const badge = [
+        o.cible ?? (o.indice != null ? humanizeFormula(o.indice) : undefined),
+        mod != null ? `${mod < 0 ? '−' : '+'}${Math.abs(mod)} Sociabilité` : undefined,
+      ].filter((s): s is string => !!s).join(' · ') || undefined;
+      return { t: 'ref', category: 'psychologies', id: o.type, label, show: label, badge };
     }
     case 'condition': {
       const label = conditionLabel(o.id);

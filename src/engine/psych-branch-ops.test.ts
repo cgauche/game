@@ -63,13 +63,13 @@ describe('#1189 — la branche de RÉUSSITE est l’état qu’un porteur IMMUNI
   it('Peur (Test ÉTENDU) : l’entrée est posée au DR fourni — surmontée quand il atteint l’Indice', () => {
     const c = hero();
     applyOps(c, psychBranchOps({ kind: 'peur', sourceId: 'srcP', indice: 2 }, { success: true, calmeDR: 2 }), {});
-    expect(c.psychState).toEqual([{ type: 'peur', sourceId: 'srcP', indice: 2, calmeDR: 2 }]);
+    expect(c.psychState).toEqual([{ type: 'peur', sourceId: 'srcP', indice: 2, calmeDR: 2, fromTest: true }]);
   });
 
   it('Trait CIBLÉ : marqueur INERTE (`active:false`), non re-déclenchable', () => {
     const c = hero();
     applyOps(c, psychBranchOps({ kind: 'haine', sourceId: 'srcH', cible: 'gobelins', indice: 0 }, { success: true }), {});
-    expect(c.psychState).toEqual([{ type: 'haine', cible: 'gobelins', sourceId: 'srcH', active: false }]);
+    expect(c.psychState).toEqual([{ type: 'haine', cible: 'gobelins', sourceId: 'srcH', active: false, fromTest: true }]);
   });
 
   it('Trait CIBLÉ raté : la MÊME entrée, ACTIVE — jamais une seconde', () => {
@@ -77,7 +77,7 @@ describe('#1189 — la branche de RÉUSSITE est l’état qu’un porteur IMMUNI
     const stake: PsychStake = { kind: 'haine', sourceId: 'srcH', cible: 'gobelins', indice: 0 };
     applyOps(c, psychBranchOps(stake, { success: true }), {});
     applyOps(c, psychBranchOps(stake, { success: false, round: 2 }), {});
-    expect(c.psychState).toEqual([{ type: 'haine', cible: 'gobelins', sourceId: 'srcH', active: true, lastTestRound: 2 }]);
+    expect(c.psychState).toEqual([{ type: 'haine', cible: 'gobelins', sourceId: 'srcH', active: true, fromTest: true, lastTestRound: 2 }]);
   });
 });
 
@@ -92,7 +92,7 @@ describe('#1189 — UPSERT : un second Test contre la MÊME source ne dédouble 
   it('Peur étendue : le DR cumulé calculé par le site est versé sur l’entrée EXISTANTE', () => {
     const c = hero([{ type: 'peur', sourceId: 'sp', indice: 4, calmeDR: 1, lastTestRound: 1 }]);
     applyOps(c, psychBranchOps({ kind: 'peur', sourceId: 'sp', indice: 4 }, { success: false, calmeDR: 0, round: 2 }), { sl: -3 });
-    expect(c.psychState).toEqual([{ type: 'peur', sourceId: 'sp', indice: 4, calmeDR: 0, lastTestRound: 2 }]);
+    expect(c.psychState).toEqual([{ type: 'peur', sourceId: 'sp', indice: 4, calmeDR: 0, fromTest: true, lastTestRound: 2 }]);
   });
 
   it('deux sources DISTINCTES gardent deux entrées', () => {

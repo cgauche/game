@@ -16,7 +16,7 @@ import { bonus, effectiveChar, refreshWounds } from '../../engine/characteristic
 import { addCondition, isOutOfAction, COND, tickDeath, bleedDeathRoll, stacks, endOfRound, hasCondition, pendingPlusExtensions, resolvePlusExtension } from '../../engine/conditions';
 import { suffocationTick } from '../../engine/suffocation';
 import { tickFingerLossEscalation } from '../../engine/trauma';
-import { clearPsychOf } from '../../engine/psychology';
+import { clearPsychOf, refreshAllDefendedPsych } from '../../engine/psychology';
 import { zonesRoundTick } from '../zones';
 import { purgeExpiredSummons } from '../summonFlow';
 import { fireTriggers } from '../triggeredEffects';
@@ -287,7 +287,10 @@ registerCombatHook({
   id: 'clear-psych-of-dead', // effets psy d'une créature morte → fin (catch-all toutes causes de mort)
   phase: 'onRoundEnd',
   order: 79.3,
-  run: ({ battle }) => { for (const c of battle.combatants) if (isOutOfAction(c)) clearPsychOf(battle.combatants, c.id); },
+  run: ({ battle }) => {
+    for (const c of battle.combatants) if (isOutOfAction(c)) clearPsychOf(battle.combatants, c.id);
+    refreshAllDefendedPsych(battle.combatants); // l’Amour suit le GROUPE aimé, pas un individu (LDB 21 l.75)
+  },
 });
 registerCombatHook({
   id: 'purge-expired-summons', // invocations à durée écoulée OU lanceur tombé ; round = battle.round+1 (set après le dispatch)

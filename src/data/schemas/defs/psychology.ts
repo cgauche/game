@@ -30,7 +30,9 @@ export const schema = z.array(
     endedByOtherPsych: z.boolean().optional(),
     immuneToFromTarget: z.array(z.string()).optional(),
     attackDR: z.strictObject({ amount: z.number(), vs: z.enum(['source', 'group', 'any']) }).optional(),
-    cancelsFear: z.boolean().optional(),
+    immuneWhileActive: z.array(z.string()).optional(),
+    containedSocialMod: z.number().optional(),
+    targetCauses: z.strictObject({ kind: z.string(), indice: z.number() }).optional(),
     /** ENJEU du Test de Psychologie (#1117 L2) — porté par l'ENTRÉE, pas par un gabarit de `kind` :
      *  les conséquences diffèrent d'une entrée à l'autre (`resolution`/`failCondition`/`failAmount`/
      *  `becomes`), donc un texte au `kind` serait tautologique. Patron `ActivityDef.stake` : l'entité

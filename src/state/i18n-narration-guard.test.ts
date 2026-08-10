@@ -72,7 +72,6 @@ const BASELINE: Record<string, number> = {
   'src/engine/qualities/craftEconomy.ts': 3,
   'src/engine/rest.ts': 4,
   'src/engine/shipCritical.ts': 5,
-  'src/engine/skills.ts': 2,
   'src/engine/social.ts': 1,
   'src/engine/spellRangeFormat.ts': 3,
   'src/engine/structureCritical.ts': 1,

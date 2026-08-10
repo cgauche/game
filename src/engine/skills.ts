@@ -3,7 +3,7 @@
  * (hors combat) : Caractéristique + Augmentations de la compétence.
  */
 import { Combatant, CharKey, Difficulty } from './types';
-import { findSkillById } from '../data';
+import { findSkillById, psychologies } from '../data';
 import { itemCapability } from './capabilities';
 import { groupMatch } from './groups';
 import { effectiveChar, bonus } from './characteristics';
@@ -178,15 +178,15 @@ function hasSkillAdvance(c: Combatant, skillId: string, spec?: string): boolean 
 }
 
 /** Le malus social « contenu » de `type` s'applique-t-il envers `targetGroups` ? (LDB 21) Vrai si le
- *  tester POSSÈDE le trait visant ce groupe ET n'est PAS en état ACTIF pour lui. Le −20/−10 est en effet
- *  l'issue du Test de Psychologie RÉUSSI (Animosité l.22 / Préjugé l.50) — ou, hors combat (pas de Test
- *  modélisé), la manifestation par défaut du trait possédé. En état ACTIF (Test ÉCHOUÉ) ce malus
+ *  tester POSSÈDE le trait visant ce groupe ET n'est PAS en état ACTIF pour lui. Le modificateur est en
+ *  effet l'issue du Test de Psychologie RÉUSSI (Animosité l.19 / Préjugé l.48) — ou, hors combat (pas de
+ *  Test modélisé), la manifestation par défaut du trait possédé. En état ACTIF (Test ÉCHOUÉ) ce malus
  *  DISPARAÎT : le personnage est sous compulsion (attaquer l.24 / insulter l.52), pas socialement « contenu ».
  *  SIÈGE UNIQUE de la lecture des Traits psy CIBLÉS pour un Test social : `socialPsychMod` (valeur) et
  *  `socialPsychLabel` (affichage) en dépendent tous deux, donc l'immunité à la Psychologie (LDB 17 l.59,
  *  Détermination) s'y lit UNE fois, par le MÊME prédicat que la Peur/Terreur (`isPsychImmune`) : tant
  *  qu'elle dure, aucun de ces malus ne se manifeste, et l'étiquette disparaît avec lui. */
-function containedSocialPenalty(tester: Combatant, type: 'animosite' | 'prejuge', targetGroups: string[]): boolean {
+function containedSocialPenalty(tester: Combatant, type: string, targetGroups: string[]): boolean {
   if (isPsychImmune(tester)) return false;
   const possede = effectivePsychTraits(tester).some((t) => t.type === type && t.cible && groupMatch(t.cible, targetGroups));
   if (!possede) return false;
@@ -194,17 +194,24 @@ function containedSocialPenalty(tester: Combatant, type: 'animosite' | 'prejuge'
   return !actif;
 }
 
-/** Pénalité de Sociabilité des Traits psy ciblés de `tester` envers les groupes `targetGroups` (LDB 21) :
- *  Animosité −20, Préjugé −10, cumulables. À consommer sur un Test de Sociabilité ciblé (dialogue/interaction). */
+/** Les entrées de `psychology.json` qui DÉCLARENT un `containedSocialMod` et dont le malus « contenu »
+ *  s'applique à `tester` envers `targetGroups` — SOURCE UNIQUE de la valeur et de l'étiquette : ni −20/−10
+ *  ni `animosite`/`prejuge` ne sont écrits dans le moteur (un nouveau Trait le déclare en donnée). */
+function containedSocialEntries(tester: Combatant, targetGroups: string[]): { label: string; mod: number }[] {
+  return psychologies
+    .filter((p) => p.containedSocialMod != null && containedSocialPenalty(tester, p.id, targetGroups))
+    .map((p) => ({ label: p.label, mod: p.containedSocialMod! }));
+}
+
+/** Pénalité de Sociabilité des Traits psy ciblés de `tester` envers les groupes `targetGroups` (LDB 21,
+ *  `containedSocialMod`) — cumulable. À consommer sur un Test de Sociabilité ciblé (dialogue/interaction). */
 export function socialPsychMod(tester: Combatant, targetGroups: string[]): number {
-  return (containedSocialPenalty(tester, 'animosite', targetGroups) ? -20 : 0) + (containedSocialPenalty(tester, 'prejuge', targetGroups) ? -10 : 0);
+  return containedSocialEntries(tester, targetGroups).reduce((sum, e) => sum + e.mod, 0);
 }
 
 /** Libellé lisible du malus psy social (pour la modale de Test), ou undefined si aucun. Ex. « Animosité −20 ». */
 export function socialPsychLabel(tester: Combatant, targetGroups: string[]): string | undefined {
-  const parts: string[] = [];
-  if (containedSocialPenalty(tester, 'animosite', targetGroups)) parts.push('Animosité −20');
-  if (containedSocialPenalty(tester, 'prejuge', targetGroups)) parts.push('Préjugé −10');
+  const parts = containedSocialEntries(tester, targetGroups).map((e) => `${e.label} ${e.mod < 0 ? '−' : '+'}${Math.abs(e.mod)}`);
   return parts.length ? parts.join(' · ') : undefined;
 }
 

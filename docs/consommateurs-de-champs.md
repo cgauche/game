@@ -41,7 +41,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `speckle` | 9 | `src/gameIso/backends/affineDetail.ts:413` |
 | `tufts` | 12 | `src/gameIso/backends/affineDetail.ts:408` |
 | `tintVar` | 1 | `src/gameIso/backends/webgl/faceColors.ts:134` |
-| `seedScope` | 3 | `src/gameIso/backends/webgl/groundAccents.ts:67` |
+| `seedScope` | 3 | `src/gameIso/backends/webgl/groundAccents.ts:68` |
 
 ### `DiceSpec` (src/engine/dice.ts)
 
@@ -55,16 +55,16 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 3 | `src/data/index.ts:2870` |
-| `spec` | 1 | `src/data/index.ts:2871` |
+| `id` | 3 | `src/data/index.ts:2881` |
+| `spec` | 1 | `src/data/index.ts:2882` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 1 | `src/data/index.ts:2876` |
+| `id` | 1 | `src/data/index.ts:2887` |
 | `spec` | **0 — JAMAIS LU** | — |
-| `value` | 2 | `src/data/index.ts:2876` |
+| `value` | 2 | `src/data/index.ts:2887` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -91,27 +91,27 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:2920` |
+| `id` | 4 | `src/data/index.ts:2931` |
 | `spec` | 1 | `src/engine/trappingChoices.ts:36` |
-| `count` | 3 | `src/data/index.ts:2921` |
-| `qualities` | 2 | `src/data/index.ts:2924` |
-| `qualityChoice` | 2 | `src/data/index.ts:2922` |
-| `text` | 1 | `src/data/index.ts:2915` |
-| `vehicleId` | 2 | `src/data/index.ts:2917` |
+| `count` | 3 | `src/data/index.ts:2932` |
+| `qualities` | 2 | `src/data/index.ts:2935` |
+| `qualityChoice` | 2 | `src/data/index.ts:2933` |
+| `text` | 1 | `src/data/index.ts:2926` |
+| `vehicleId` | 2 | `src/data/index.ts:2928` |
 | `label` | **0 — JAMAIS LU** | — |
-| `creatureId` | 2 | `src/data/index.ts:2919` |
-| `choice` | 3 | `src/data/index.ts:2912` |
-| `wildcard` | 1 | `src/data/index.ts:2913` |
+| `creatureId` | 2 | `src/data/index.ts:2930` |
+| `choice` | 3 | `src/data/index.ts:2923` |
+| `wildcard` | 1 | `src/data/index.ts:2924` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `ref` | 4 | `src/data/index.ts:2894` |
-| `wildcard` | 5 | `src/data/index.ts:2896` |
-| `specOptions` | 3 | `src/data/index.ts:2895` |
-| `choice` | 4 | `src/data/index.ts:2898` |
-| `random` | 2 | `src/data/index.ts:2899` |
+| `ref` | 4 | `src/data/index.ts:2905` |
+| `wildcard` | 5 | `src/data/index.ts:2907` |
+| `specOptions` | 3 | `src/data/index.ts:2906` |
+| `choice` | 4 | `src/data/index.ts:2909` |
+| `random` | 2 | `src/data/index.ts:2910` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 

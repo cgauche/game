@@ -9,9 +9,10 @@ import { makeRNG } from '../engine/dice';
 import type { Scene, SceneEntity, CustomStatblock } from './scene';
 
 /**
- * Flux de Psychologie À LA RENCONTRE, hors combat (couture C). Depuis 2026-06-10 : Peur/Terreur =
- * COMBAT seulement → hors combat, SEULS les Traits sociaux ciblés (Animosité/Haine/Préjugé/Phobie) se
- * déclenchent à la rencontre. Depuis la VAGUE MULTI (#1117 L1) : c'est UNE cascade `purpose:'test'` de
+ * Flux de Psychologie À LA RENCONTRE, hors combat (couture C). Depuis 2026-06-10 : la Peur/Terreur de
+ * CRÉATURE est COMBAT seulement → hors combat, seuls les Traits psy CIBLÉS du HÉROS se déclenchent —
+ * Animosité/Haine/Préjugé/Amour/Camaraderie par leur Test propre, Phobie par le régime qu'elle CAUSE
+ * (Peur, LDB 21 l.87). Depuis la VAGUE MULTI (#1117 L1) : c'est UNE cascade `purpose:'test'` de
  * BANDES — une étape `kind:'encounterPsych'` PAR ENTRÉE DE RÈGLE mise en jeu (type psy + source), et
  * une RANGÉE (`participants`) par héros concerné, au lieu d'une étape par héros. On vérifie ce contrat.
  */
@@ -219,6 +220,39 @@ describe('encounterPsychFlow — Psychologie à la rencontre HORS COMBAT (bandes
     useGame.setState({ party: [h] });
     useGame.getState().startScene(scene([ent({ id: 'elfe', statblock: ELFE })]));
     expect(useGame.getState().pendingCascade).toBeNull();
+  });
+
+  /** #1224 — LDB 21 l.87 : « Traitez l'objet de la *Phobie* comme causant *Peur 1*. » La porte est portée
+   *  par l'OBSERVATEUR (le Trait du héros), pas par le statbloc croisé : l'exclusion de la Peur de CRÉATURE
+   *  hors combat (playtest 2026-06-10) ne l'atteint pas. Mesuré sur le flux RÉEL (`startScene`). */
+  it('Phobie (Araignées) : une araignée présente ouvre la bande du régime PEUR — hors combat', () => {
+    const h = timoreux('H');
+    h.psychTraits = [{ type: 'phobie', cible: 'araignees', indice: 1 }];
+    useGame.setState({ party: [h] });
+    useGame.getState().startScene(scene([ent({ id: 'arai', statblock: { label: 'Araignée géante', char: { B: 10 }, groups: ['araignees'] } })]));
+    const c = useGame.getState().pendingCascade;
+    expect(c, 'aucune bande : le phobique ne teste plus rien hors combat').toBeTruthy();
+    const step = c!.participants[0];
+    expect(step.kind).toBe('encounterPsych');
+    expect(step.encounterPsych).toMatchObject({ kind: 'peur', indice: 1, sourceId: 'arai', cible: 'araignees' });
+    expect(step.participants!.map((p) => p.id)).toEqual([h.id]);
+  });
+
+  it('Phobie hors de sa Cible : aucune bande (la porte reste bornée au Groupe du Trait)', () => {
+    const h = timoreux('H');
+    h.psychTraits = [{ type: 'phobie', cible: 'araignees', indice: 1 }];
+    useGame.setState({ party: [h] });
+    useGame.getState().startScene(scene([ent({ id: 'elfe', statblock: ELFE })]));
+    expect(useGame.getState().pendingCascade).toBeNull();
+  });
+
+  it('TÉMOIN — l’Animosité garde son Test PROPRE (binaire), la Phobie ne l’a pas absorbée', () => {
+    const h = animosite('H');
+    h.psychTraits = [...h.psychTraits!, { type: 'phobie', cible: 'araignees', indice: 1 }];
+    useGame.setState({ party: [h] });
+    useGame.getState().startScene(scene([ent({ id: 'elfe', statblock: ELFE })]));
+    const step = useGame.getState().pendingCascade!.participants[0];
+    expect(step.encounterPsych).toMatchObject({ kind: 'animosite', cible: 'elfe' });
   });
 });
 

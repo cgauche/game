@@ -26,7 +26,7 @@ import { SIZE_RANGED_MOD, SIZE_LABEL, SIZE_ORDER, sizeGap, effectiveSize, sizeDa
 import { groupMatch } from './groups';
 import { ignoredArmourAP, impenetrableAt, selectedAmmo, activeLoadout, unarmedWeapon } from './items';
 import { incomingAttackMod, incomingDamageNullified, skillDRBonus, offTerrainTestDR } from './ops';
-import { isPsychImmune } from './psychology';
+import { isPsychImmune, psychImmuneToFrom } from './psychology';
 import { qualitySum, attackModQualityIds, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon, resolveQualities } from './qualities/dispatch';
 import { RULE_REF } from './ruleRefs';
 import { spellEffectOps } from './flowCore';
@@ -524,13 +524,10 @@ export function psychDRAdjust(attacker: Combatant, target: Combatant | null): nu
   if (!target || isPsychImmune(attacker)) return 0;
   const psy = attacker.psychState ?? [];
   const groups = target.groups ?? [];
-  // Peur ANNULÉE si un état actif l'immunise : Haine vs le groupe ciblé (`immuneToFromTarget:['peur']`,
-  // LDB 21 l.41) OU Amour (`cancelsFear`, défense des aimés l.77). Lu en DONNÉES (psychology.json).
-  const fearCancelled = psy.some((p) => {
-    if (!p.active) return false;
-    const d = findPsychologyById(p.type);
-    return !!d?.cancelsFear || (!!d?.immuneToFromTarget?.includes('peur') && !!p.cible && groupMatch(p.cible, groups));
-  });
+  // Peur ANNULÉE si une affliction active immunise l'attaquant à ce CANAL (Haine vs son groupe l.41,
+  // Amour l.75 dont l’`active` porte déjà « tant que vous défendez ») — siège UNIQUE `psychImmuneToFrom`,
+  // partagé avec `fearSourceFor` et la porte hors combat : un seul verdict, aucun roster requis ici.
+  const fearCancelled = psychImmuneToFrom(attacker, target, 'peur');
   // Chaque état psy porte sa contribution `attackDR` (±1) + son ciblage `vs` en DONNÉES — plus de ±1 ni de
   // type (`peur`/`haine`/…) codé par-nom : un nouvel état psy (Phobie…) déclare son DR dans le JSON.
   let dr = 0;
