@@ -22,15 +22,18 @@
  * (`stage/stageLights.ts`, décision ; cet écran ne fait que monter ses lampes et brancher les ombres).
  * FLAQUES (#1245) : les sources PONCTUELLES de la scène (brasero posé, lanterne portée — la liste que
  * le champ mécanique de vision consomme) posent leur lumière par un POOL de compte FIXE dont seules les
- * intensités bougent (`stage/stagePointLights.ts`, décision ; le pool ne se monte qu'une fois).
+ * intensités bougent (`stage/stagePointLights.ts`, décision ; le pool ne se monte qu'une fois). Une
+ * lampe PORTÉE suit son porteur sur la MÊME courbe de glissement que son quad (`stage/boardPose.ts`).
  * Le voile de nuit du SVG reste à la voie affine — deux propriétaires de luminosité en peindraient deux
  * paliers l'un sur l'autre. Les matériaux du monde sont TOUJOURS lambertiens : sans soleil, l'ambiante
  * seule les porte, et le lever/coucher n'a plus de régime à basculer.
  * Les BILLBOARDS, eux, ne le sont jamais : la normale d'un quad aligné écran est l'axe caméra, un
  * lambertien y mesurerait l'angle caméra↔soleil et la luminosité d'un personnage suivrait la rotation
- * de la vue. Ils multiplient donc l'exposition GLOBALE de la frame (`surfaceLuminance`, la luminance
- * d'une surface horizontale). RÉSIDU ASSUMÉ de ce choix : un personnage sous l'ombre portée d'un
- * bâtiment garde l'exposition globale — il ne s'assombrit pas en entrant dans l'ombre.
+ * de la vue. Leur lumière est donc un SCALAIRE, mais un scalaire PAR SUJET (#1245, L3) : l'exposition
+ * de la frame (`surfaceLuminance`) PLUS les flaques qui l'atteignent, par la même loi que le sol
+ * (`billboardExposure`) — sans quoi le sol s'allume et les personnages restent plats. RÉSIDU ASSUMÉ :
+ * un personnage sous l'ombre portée d'un bâtiment garde l'exposition de la frame — il ne s'assombrit
+ * pas en entrant dans l'ombre, et la flaque qu'il reçoit est omnidirectionnelle.
  *
  * INTEMPÉRIES (P2-6) : la précipitation authorée de la scène TOMBE dans le volume — un semis de quads
  * instanciés qui descend à la cadence de la frame, borné par le MÊME couvert bâti que le dégagement
@@ -267,10 +270,10 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     () => pointLightWrites(lights, { scene, mpt, ambianceLum: lumière.ambianceLum, prev: slotsPrécédents.current ?? undefined }),
     [lights, scene, mpt, lumière.ambianceLum],
   );
-  // Exposition de la frame, lue par la construction ASYNCHRONE des billboards (leur texture arrive après
-  // le rendu qui l'a demandée) : la valeur du moment, jamais celle capturée à la demande.
-  const lumRef = useRef(lumière.surfaceLuminance);
-  lumRef.current = lumière.surfaceLuminance;
+  // Le POOL de lampes ponctuelles monté (rempli par l'effet de montage plus bas) : la passe de pose s'en
+  // sert pour emmener une lampe PORTÉE avec son porteur qui glisse, et l'exposition d'un billboard se
+  // mesure dessus — c'est la lampe montée, jamais la table, qui dit ce qui éclaire à cet instant.
+  const pool = useRef<THREE.PointLight[]>([]);
   // Demande de recuisson de la carte d'ombre, honorée par la prochaine frame (cf. `dessiner`).
   const ombresARefaire = useRef(true);
   // Boîte des CASTEURS (géométrie + quads de billboard) : c'est elle qui serre le frustum d'ombre.
@@ -330,8 +333,13 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       radius: rayon + (boite ? cible.distanceTo(boite.getCenter(new THREE.Vector3())) : 0) + 8,
     });
     // Quads ALIGNÉS ÉCRAN, ancrés aux PIEDS — exactement ce que fait le backend affine du sprite ; le
-    // glissement de marche de l'instant y entre (`stage/boardPose.ts`, la passe pure).
-    const aGlissé = poseBoards(boardsRef.current, camera, anim ? anim.glide : AUCUN_GLISSEMENT);
+    // glissement de marche de l'instant y entre (`stage/boardPose.ts`, la passe pure), les lampes qu'un
+    // marcheur PORTE avec lui, et l'EXPOSITION de chaque quad à l'endroit où il vient de se poser.
+    const aGlissé = poseBoards(boardsRef.current, camera, anim ? anim.glide : AUCUN_GLISSEMENT, {
+      pool: pool.current,
+      slots: flaquesÉcrites,
+      surfaceLuminance: lumière.surfaceLuminance,
+    });
     // CARTE D'OMBRE : elle ne se recuit QUE quand ce qu'elle contient a bougé — un casteur qui glisse,
     // ou un montage (lampes, monde, billboards) qui l'a demandée. Une rotation de caméra, un zoom, une
     // frame de marche où personne ne glisse : la carte 2048² de la frame précédente reste valide.
@@ -554,9 +562,10 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
           return;
         }
         const geo = new THREE.PlaneGeometry(q.quad.widthM, q.quad.heightM);
-        // Matériau NON lambertien (`billboardMaterial`, cf. l'en-tête) éclairé par l'exposition GLOBALE
-        // de la frame : celle de l'instant où la texture arrive, pas celle de la demande.
-        const mat = billboardMaterial(issue.value, q.sub.tint * lumRef.current);
+        // Matériau NON lambertien (`billboardMaterial`, cf. l'en-tête), monté à la couleur NEUTRE : son
+        // exposition appartient à la passe de pose, qui la lui donne dans le `dessiner()` de cette même
+        // passe de montage, avant toute peinture — une seconde loi ici en ferait deux à tenir d'accord.
+        const mat = billboardMaterial(issue.value, 1);
         const mesh = new THREE.Mesh(geo, mat);
         // Un quad PROJETTE son ombre même en Basic (le casteur ne connaît que sa géométrie et son alpha) ;
         // `receiveShadow` n'aurait, lui, aucun effet sous ce matériau.
@@ -586,14 +595,10 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subjects, mpt, camRot, lit]);
 
-  // ── EXPOSITION des billboards : elle change à l'heure, au palier de lumière et à la porte franchie —
-  // toutes choses qui ne justifient pas de rerasteriser un seul sujet. Une passe à part, qui ne touche
-  // que la couleur des matériaux déjà montés.
-  useEffect(() => {
-    for (const b of boardsRef.current) b.material.color.setScalar(b.sub.tint * lumière.surfaceLuminance);
-    dessiner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lumière.surfaceLuminance, subjects]);
+  // L'EXPOSITION des billboards appartient à la passe de POSE (`poseBoards`) : elle dépend de l'endroit
+  // où chaque sujet se pose, donc elle se recalcule à la cadence de la frame — c'est ainsi qu'un
+  // personnage entre dans une flaque en marchant. Tout rendu de cet écran dessine (l'effet sans
+  // dépendances plus bas) : l'heure et le palier la portent aux matériaux déjà montés, sans rerasteriser.
 
   // ── GROUPE LAMPES : ce que `stageLights` décide, monté tel quel. Groupe à part des trois autres car
   // il vit sur d'autres entrées (l'heure, le palier de lumière, la boîte des casteurs) et ne coûte ni
@@ -614,10 +619,10 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene, gameTime, lightLevel, shadowBox]);
 
-  // ── POOL DE FLAQUES (#1245, L1) : monté UNE fois, jamais reconstruit. Le compte de lampes
-  // ponctuelles entre dans la clé de cache de programme de three (`numPointLights`) : le faire varier
-  // recompilerait les 76 matériaux du monde. L'écran ne fait donc plus qu'écrire des intensités.
-  const pool = useRef<THREE.PointLight[]>([]);
+  // ── POOL DE FLAQUES (#1245, L1) : monté UNE fois, jamais reconstruit (la réf `pool` est déclarée avec
+  // la décision, plus haut). Le compte de lampes ponctuelles entre dans la clé de cache de programme de
+  // three (`numPointLights`) : le faire varier recompilerait les 76 matériaux du monde. L'écran ne fait
+  // donc plus qu'écrire des intensités.
   useEffect(() => {
     const groupe = flaques.current;
     if (!groupe) return;

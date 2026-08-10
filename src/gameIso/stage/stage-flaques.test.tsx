@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * FLAQUES DE LAMPE de l'écran de jeu volumique (#1245, L1) — quatre étages, tous nécessaires :
+ * FLAQUES DE LAMPE de l'écran de jeu volumique (#1245, L1 à L3) — cinq étages, tous nécessaires :
  *
  *  1. la DÉCISION (`stagePointLights.ts`) : ce qu'une source de lumière de la scène écrit sur une lampe
  *     (position monde, portée = rayon RAW, intensité qui COMPLÈTE le palier d'ambiance), et sur QUEL
@@ -13,7 +13,10 @@
  *     scènes livrées ne doit dépasser 1 à aucune heure ;
  *  4. le MONTAGE réel : le compte de lampes ne bouge d'un cran ni à l'heure ni à la scène, aucune
  *     n'est jamais rendue invisible, l'écran porte la trace lisible de ses flaques (`data-lampes`), et
- *     le nombre d'ÉCRITURES sur le pool est celui d'une passe — jamais une par frame de caméra.
+ *     le nombre d'ÉCRITURES sur le pool est celui d'une passe — jamais une par frame de caméra ;
+ *  5. le PERSONNAGE dans la flaque (L3) : un billboard n'a pas de normale, sa lumière est donc un
+ *     scalaire — celui de SA CASE, par la même loi que le sol, sans quoi le sol s'allume et les
+ *     personnages restent plats.
  */
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -23,7 +26,8 @@ import { useGame } from '../../state/store';
 import { emptyScene, heightAt, sceneMetresPerTile, type Scene } from '../../state/scene';
 import { setStageBackend } from '../../state/stage3d';
 import { sceneLightSources } from '../../state/visionState';
-import { ambientScalar, mapLights, type LightSource } from '../../state/vision';
+import { ambientScalar, buildOpaque, computeLightField, mapLights, type LightSource } from '../../state/vision';
+import { poseBoards, type Board } from './boardPose';
 import { ambianceLuminance } from '../catalog/ambiance';
 import { lightLevels } from '../../data';
 import { areneCampaign } from '../../scenes/campaign';
@@ -32,6 +36,7 @@ import type { Dims } from '../../geometry/iso';
 import { GameStage3D, setStageRendererFactory, type StageRenderer } from './GameStage3D';
 import {
   applyPointLights,
+  billboardExposure,
   createPointLightPool,
   extinctionDe,
   flaqueLuminance,
@@ -473,5 +478,156 @@ describe('Le pool ÉCRIT — une passe par changement de lumière, aucune par fr
     const avant = posesDeNuit();
     act(() => root!.render(<GameStage3D {...p} gameTime={MIDI} />));
     expect(posesDeNuit()).toEqual(avant); // chaque lampe est restée sur SA case, seule l'intensité est tombée
+  });
+});
+
+// ── 5. LE PERSONNAGE DANS LA FLAQUE (#1245, L2/L3) ──────────────────────────────────────────────
+
+/** Combattant porteur d'une lanterne, RANGÉE ou en main — le gate de port est celui du champ mécanique. */
+const porteurDeLanterne = (equipped: boolean) => ({
+  id: 'h1', kind: 'hero', pos: { x: 4, y: 4 },
+  items: [{ uid: 'i1', trappingId: 'lanterne', equipped }],
+});
+
+describe('La lampe d’un PORTEUR — celle du champ mécanique, gate de port compris (#1245 L2)', () => {
+  it('une lanterne EN MAIN allume une lampe nommée par son porteur ; RANGÉE, elle n’allume rien', () => {
+    const scene = avecBraseros(0);
+    const opts = { scene, mpt: sceneMetresPerTile(scene), ambianceLum: ambianceLuminance(0.18) };
+    const lampes = (equipped: boolean) => {
+      const sources = sceneLightSources({
+        scene,
+        battle: { combatants: [porteurDeLanterne(equipped)] } as never,
+        party: [],
+        partyPos: { x: 0, y: 0 },
+      });
+      return pointLightWrites(sources, opts).filter((w) => w && w.intensity > 0);
+    };
+    expect(lampes(true).map((w) => [w!.srcId, w!.x, w!.z])).toEqual([['h1', 4 * opts.mpt, 4 * opts.mpt]]);
+    expect(lampes(false)).toEqual([]);
+  });
+});
+
+describe('billboardExposure — le personnage raconte la MÊME flaque que sa case (#1245 L3)', () => {
+  const AMB_NUIT = ambianceLuminance(0.18);
+  const scene = avecBraseros(1); // un brasero (rayon 4 cases) en (1,2)
+  const mpt = sceneMetresPerTile(scene);
+  const D = 4 * mpt;
+
+  /** Le pool MONTÉ sur les sources de `scene` au palier `ambianceLum` — la chaîne réelle, pas un forgé. */
+  function poolDe(ambianceLum: number): THREE.PointLight[] {
+    const pool = createPointLightPool();
+    applyPointLights(pool, pointLightWrites(mapLights(scene), { scene, mpt, ambianceLum }));
+    return pool;
+  }
+
+  /** Ancre d'un billboard aux PIEDS, à `dCases` cases de l'aplomb du brasero. */
+  const ancre = (dCases: number) => ({
+    x: (1 + dCases) * mpt,
+    y: heightAt(scene, 1 + dCases, 2, 0),
+    z: 2 * mpt,
+  });
+
+  it('au FOYER, le billboard est strictement plus clair qu’à six cases (où la flaque ne porte plus)', () => {
+    const pool = poolDe(AMB_NUIT);
+    const foyer = billboardExposure(ancre(0), pool, AMB_NUIT);
+    const loin = billboardExposure(ancre(6), pool, AMB_NUIT);
+    expect(foyer).toBeGreaterThan(loin);
+    expect([+foyer.toFixed(4), +loin.toFixed(4)]).toEqual([0.8497, 0.3276]);
+  });
+
+  it('le billboard et SA CASE racontent la même flaque : son exposition EST la luminance du sol', () => {
+    const pool = poolDe(AMB_NUIT);
+    for (const dCases of [0, 1, 2, 3.5]) {
+      expect(billboardExposure(ancre(dCases), pool, AMB_NUIT)).toBeCloseTo(flaqueLuminance(AMB_NUIT, dCases * mpt, D), 12);
+    }
+  });
+
+  it('AU-DESSUS de la flamme, le billboard reçoit ce que reçoit son propre sol : RIEN', () => {
+    const pool = poolDe(AMB_NUIT);
+    const aplomb = ancre(0);
+    // Le sol d'un étage au-dessus d'une torche reste noir (`dotNL` ≤ 0) : le personnage qui s'y tient
+    // ne peut pas briller. Un mètre au-dessus de la flamme suffit, cent mètres aussi.
+    expect(billboardExposure({ ...aplomb, y: FLAME_LIFT_M + 1 }, pool, AMB_NUIT)).toBe(AMB_NUIT);
+    expect(billboardExposure({ ...aplomb, y: 100 }, pool, AMB_NUIT)).toBe(AMB_NUIT);
+    // …et l'aplomb au SOL, lui, reçoit bien le foyer : le chemin n'est pas éteint pour tout le monde.
+    expect(billboardExposure(aplomb, pool, AMB_NUIT)).toBeGreaterThan(AMB_NUIT);
+  });
+
+  it('HORS de toute source, l’exposition est EXACTEMENT celle de la frame (non-régression à l’octet)', () => {
+    const pool = poolDe(AMB_NUIT);
+    // Au-delà du rayon RAW, et sur une scène sans la moindre source : le même nombre, bit pour bit.
+    expect(billboardExposure(ancre(9), pool, AMB_NUIT)).toBe(AMB_NUIT);
+    expect(billboardExposure(ancre(0), createPointLightPool(), 0.4217)).toBe(0.4217);
+    // À MIDI, les lampes sont éteintes (intensité 0) : le foyer lui-même retrouve l’exposition nue.
+    const jour = poolDe(ambianceLuminance(1));
+    expect(billboardExposure(ancre(0), jour, 0.87)).toBe(0.87);
+  });
+});
+
+// ── 6. LA LAMPE DU GROUPE EN EXPLORATION (#1245) ─────────────────────────────────────────────────
+
+const CAMERA = new THREE.OrthographicCamera(-10, 10, 10, -10, 0.1, 100);
+
+/** Un billboard MONTÉ tel que la passe de pose le manipule (quad + matériau, aucune texture). */
+function boardDe(cid: string, anchor: THREE.Vector3): Board {
+  const material = new THREE.MeshBasicMaterial();
+  const sub = {
+    identity: `sonde:${cid}`, cid, kind: 'personnage', anchor, facing: 'S',
+    scaleK: 1, tint: 1, box: { w: 120, h: 150 }, svg: () => '',
+  };
+  return {
+    sub: sub as unknown as Board['sub'],
+    quad: { widthM: 2, heightM: 3, centerLiftM: 1.5 },
+    mesh: new THREE.Mesh(new THREE.PlaneGeometry(2, 3), material),
+    material,
+  };
+}
+
+/** Héros de roster : ce que le meneur se choisit dessus (vivant, Blessures) et ce que le gate de port lit. */
+const héros = (id: string, items: { uid: string; trappingId: string; equipped: boolean }[] = []) => ({
+  id, kind: 'hero', dead: false, wounds: { current: 3, max: 3 }, items,
+});
+
+describe('La lampe du GROUPE en exploration — portée par le MENEUR (#1245)', () => {
+  const scene = avecBraseros(0);
+  const mpt = sceneMetresPerTile(scene);
+  const AMB_NUIT = ambianceLuminance(0.18);
+  const CASE = { x: 4, y: 4 };
+  // La lanterne est au SECOND héros : l'agrégat reste UN (les émetteurs de tous les héros à la case du
+  // groupe, jamais additionnés), et c'est le jeton qui MARCHE — le meneur — qui le porte.
+  const party = [héros('h1'), héros('h2', [{ uid: 'i1', trappingId: 'lanterne', equipped: true }])];
+  const sourcesDuGroupe = (): LightSource[] =>
+    sceneLightSources({ scene, battle: null, party: party as never, partyPos: CASE });
+
+  it('UNE seule source pour tout le groupe, PORTÉE, et nommée par le meneur', () => {
+    const s = sourcesDuGroupe();
+    expect(s.map((x) => [x.srcId, x.carried, x.pos])).toEqual([['h1', true, CASE]]);
+    expect(s[0].radiusTiles).toBeGreaterThan(0);
+  });
+
+  it('nommer le porteur ne touche RIEN au champ mécanique : la vision est la même, case par case', () => {
+    const amb = ambientScalar(scene, NUIT, null);
+    const champ = (src: LightSource[]) => computeLightField(scene, amb, src, [], buildOpaque(scene));
+    const avec = champ(sourcesDuGroupe());
+    const sans = champ(sourcesDuGroupe().map(({ srcId: _porteur, ...reste }) => reste));
+    for (let y = 0; y < scene.dimensions.h; y++)
+      for (let x = 0; x < scene.dimensions.w; x++) expect([x, y, avec.at(x, y)]).toEqual([x, y, sans.at(x, y)]);
+    expect([...avec.sourceLit!].sort()).toEqual([...sans.sourceLit!].sort());
+  });
+
+  it('le meneur qui MARCHE ne traverse plus sa propre flaque : son quad ne pulse pas du pas', () => {
+    const pool = createPointLightPool();
+    const slots = pointLightWrites(sourcesDuGroupe(), { scene, mpt, ambianceLum: AMB_NUIT });
+    applyPointLights(pool, slots);
+    const f = { pool, slots, surfaceLuminance: AMB_NUIT };
+    const b = boardDe('h1', new THREE.Vector3(CASE.x * mpt, heightAt(scene, CASE.x, CASE.y, 0), CASE.y * mpt));
+    const clartés: number[] = [];
+    for (let i = 0; i <= 8; i++) {
+      poseBoards([b], CAMERA, () => ({ dx: (i / 8) * mpt, dy: 0, dz: 0 }), f);
+      clartés.push(b.material.color.r);
+    }
+    expect(Math.max(...clartés) - Math.min(...clartés)).toBeLessThan(0.01);
+    // …et la flaque du groupe éclaire bel et bien son porteur (sans quoi l'écart serait nul par vide).
+    expect(clartés[0]).toBeGreaterThan(AMB_NUIT);
   });
 });

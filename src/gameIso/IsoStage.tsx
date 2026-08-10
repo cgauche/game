@@ -14,6 +14,7 @@ import { heightAt, sceneMetresPerTile, type Scene } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { metricToLift } from '../state/relief';
 import { computeStateVisibleAndLight, sceneLightSources } from '../state/visionState';
+import { partyLeaderOf } from '../state/combatants';
 import { Combatant } from '../engine/types';
 import { footprintN, sizeFootprint } from '../state/footprint';
 import { mountOf } from '../state/mount';
@@ -179,7 +180,7 @@ export function IsoStage() {
   const detailOpts = useMemo(() => ({ zoom: LOD_ZOOM[lod], mpt, night }), [lod, mpt, night]);
   const dims = useMemo<Dims>(() => ({ ...(scene?.dimensions ?? { w: 1, h: 1 }), rot: shownRot, view: viewMode, edge: shownEdge }), [scene, shownRot, viewMode, shownEdge]);
   const patternDefs = useMemo(() => (scene && lod >= 1 ? detailPatternDefs(dims, mpt) : ''), [scene, lod, dims, mpt]);
-  const partyLeader = party.find((h) => !h.dead && h.wounds.current > 0) ?? party[0];
+  const partyLeader = partyLeaderOf(party);
   const wnow = performance.now();
   const walkPosOf: WalkPos = (id, x, y, z = 0) => walkPoseAt(walksRef.current[id], x, y, z, dims, wnow);
 

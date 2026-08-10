@@ -38,10 +38,21 @@ describe('sceneLightSources — la liste UNIQUE que le champ mécanique et le re
   it('exploration : le brasero POSÉ et la lanterne TENUE du groupe — l’objet rangé n’émet rien', () => {
     const base = { scene: avecBrasero(), battle: null, partyPos: { x: 1, y: 1 } };
     const tenue = sceneLightSources({ ...base, party: [porteur('h1', 1, 1, true)] });
+    // L'agrégat du groupe reste UNE source à la case du groupe, et nomme le MENEUR : c'est son jeton,
+    // et lui seul, qui marche à l'écran (le rendu emmène la lampe sur SA courbe de glissement).
     expect(tenue.map((s) => [s.srcId, s.pos.x, s.pos.y, s.radiusTiles]))
-      .toEqual([['b7', 5, 0, 4], [undefined, 1, 1, 10]]); // posée (props.json) puis agrégat du groupe
+      .toEqual([['b7', 5, 0, 4], ['h1', 1, 1, 10]]); // posée (props.json) puis agrégat du groupe
     const rangée = sceneLightSources({ ...base, party: [porteur('h1', 1, 1, false)] });
     expect(rangée.map((s) => s.srcId)).toEqual(['b7']);
+  });
+
+  it('le meneur nommé par l’agrégat est le premier héros DEBOUT, quel que soit le porteur de la lampe', () => {
+    const mort = { ...porteur('h0', 1, 1, false), dead: true } as Combatant;
+    const sources = sceneLightSources({
+      scene: avecBrasero(), battle: null, partyPos: { x: 1, y: 1 },
+      party: [mort, hero(1, 1), porteur('h2', 1, 1, true)],
+    });
+    expect(sources.map((s) => s.srcId)).toEqual(['b7', 'h11']); // `hero(1,1)` → id « h11 », le premier debout
   });
 
   it('combat : chaque PORTEUR est sa propre source, nommée par son id et posée à sa case', () => {

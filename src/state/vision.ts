@@ -36,8 +36,8 @@ export interface LightSource {
   radiusTiles: number;
   /** Id de CE QUI PORTE la source — `SceneEntity.id` pour une source posée, `Combatant.id` pour une
    *  source portée. C'est la couture par laquelle un consommateur (le rendu) retrouve le sujet qui la
-   *  déplace. Absent quand la source n'a pas de porteur UNIQUE (l'agrégat du groupe en exploration :
-   *  il réunit les émetteurs de tous les héros à la case du groupe). */
+   *  déplace. L'agrégat du groupe en exploration réunit les émetteurs de tous les héros en UNE source,
+   *  et nomme le MENEUR (`state/visionState.ts` : le seul héros qui marche à l'écran). */
   srcId?: string;
   /** La source est-elle PORTÉE par un sujet qui se déplace (lanterne, sort de Lumière) plutôt que POSÉE
    *  sur la carte (brasero, torche murale) ? Le rendu s'en sert pour arbitrer un budget de lampes

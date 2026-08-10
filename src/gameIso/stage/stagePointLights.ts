@@ -63,15 +63,22 @@ const AMBIANCE_NUIT = ambianceLuminance(LIGHT_LEVEL_BY_ID.get('nuit')!.scalar);
  *  voisin) — aucun recouvrement écrêté. */
 export const FLAME_INTENSITY = (FOYER_NUIT_CIBLE - AMBIANCE_NUIT) / (1 - AMBIANCE_NUIT);
 
-/** Part d'albédo qu'une flaque rend au SOL, à `dM` mètres de l'aplomb de sa flamme, pour une portée
- *  `distanceM` et une extinction donnée. DÉFINITION UNIQUE — celle des chunks de three, mesurés
- *  (`stage-flaques.test.tsx`) : `dotNL` (le sol regarde en l'air, la flamme est levée de
- *  `FLAME_LIFT_M`) × la fenêtre de coupure `pow2(saturate(1 − pow4(L/D)))`, avec `L` la distance
- *  RÉELLE à la flamme. C'est par elle que le profil d'une flaque se mesure, jamais à vue. */
-export function flaquePart(dM: number, distanceM: number, extinction: number): number {
+/** Part d'albédo qu'une flaque rend à une surface horizontale située `dM` mètres à l'horizontale de
+ *  l'aplomb de sa flamme et `liftM` mètres SOUS elle, pour une portée `distanceM` et une extinction
+ *  donnée. DÉFINITION UNIQUE — celle des chunks de three, mesurés (`stage-flaques.test.tsx`) :
+ *  `dotNL` (la surface regarde en l'air, la flamme est `liftM` plus haut) × la fenêtre de coupure
+ *  `pow2(saturate(1 − pow4(L/D)))`, avec `L` la distance RÉELLE à la flamme. C'est par elle que le
+ *  profil d'une flaque se mesure, jamais à vue.
+ *
+ *  `liftM` vaut `FLAME_LIFT_M` par défaut : le sol de la case de la source, le cas du monde. Une
+ *  flamme au NIVEAU de la surface (`liftM` nul) ou EN DESSOUS (négatif) ne lui rend rien — `dotNL`
+ *  est saturé à 0 dans three comme ici, et c'est pourquoi le sol d'un étage au-dessus d'une torche
+ *  reste noir. */
+export function flaquePart(dM: number, distanceM: number, extinction: number, liftM: number = FLAME_LIFT_M): number {
   if (distanceM <= 0) return 0;
-  const L = Math.hypot(dM, FLAME_LIFT_M);
-  const dotNL = FLAME_LIFT_M / L;
+  const L = Math.hypot(dM, liftM);
+  if (L <= 0) return 0;
+  const dotNL = Math.max(0, liftM) / L;
   const coupure = Math.min(1, Math.max(0, 1 - Math.pow(L / distanceM, 4)));
   return FLAME_INTENSITY * extinction * dotNL * coupure * coupure;
 }
@@ -85,6 +92,57 @@ export function flaqueLuminance(ambianceLum: number, dM: number, distanceM: numb
 /** Ce qu'il reste à allumer sous le palier d'ambiance : 1 en ténèbres, 0 en plein jour. */
 export function extinctionDe(ambianceLum: number): number {
   return Math.min(1, Math.max(0, 1 - ambianceLum));
+}
+
+/** Une lampe TELLE QU'ELLE ÉCLAIRE à l'instant de la frame — la surface exacte que `THREE.PointLight`
+ *  offre, et rien de plus : c'est la lampe MONTÉE qu'on interroge (donc déjà glissée avec son porteur,
+ *  `stage/boardPose.ts`), jamais la table qui l'a écrite. */
+export interface LitLamp {
+  position: { x: number; y: number; z: number };
+  intensity: number;
+  distance: number;
+}
+
+/**
+ * EXPOSITION d'un BILLBOARD (#1245, L3) — ce qui remplace l'exposition GLOBALE de la frame sur un quad
+ * de personnage. Un billboard n'a pas de normale exploitable (`billboardMaterial`, `boardPose.ts`) :
+ * aucune lampe ponctuelle ne l'atteint par le chemin lambertien de three, si bien qu'un héros au pied
+ * d'un brasero restait exactement aussi clair qu'à vingt mètres — le sol s'allumait, les personnages non.
+ *
+ * La flaque qu'un personnage reçoit est celle de SA CASE, par la MÊME définition que le sol
+ * (`flaquePart`, la loi mesurée sur les chunks de three), et non le dégradé linéaire du champ mécanique
+ * (`state/vision.ts` `falloff`) : deux lois donneraient deux flaques à l'écran, et un héros au bord
+ * serait plus clair que la case sous ses pieds. Elle S'AJOUTE à l'exposition de la frame exactement
+ * comme elle s'ajoute au palier d'ambiance pour le sol (`flaqueLuminance`) — three additionne les
+ * contributions. Le plafond à 1 est celui de l'écran : au-delà, le rendu du sol écrête lui aussi.
+ *
+ * La distance à la lampe est celle des TROIS axes : l'ancre est aux PIEDS du sujet, donc à la hauteur
+ * du sol de sa case, et la flamme est `liftM = lampe.y − ancre.y` au-dessus d'elle — exactement
+ * `FLAME_LIFT_M` quand les deux partagent l'étage. Un sujet posté AU-DESSUS de la flamme reçoit ce
+ * que reçoit le sol sur lequel il se tient : rien (`dotNL` saturé à 0).
+ *
+ * L'extinction de la frame se RELIT sur la lampe (`intensity / (FLAME_INTENSITY × π)`) : la lampe montée
+ * est la seule vérité de ce qui éclaire, et une lampe éteinte (intensité 0) ne contribue à rien.
+ *
+ * RÉSIDUS CONSIGNÉS (mêmes classes que l'ombre portée du billboard) :
+ *  - la lumière reçue est OMNIDIRECTIONNELLE — le quad n'a pas de côté, un personnage éclairé de dos
+ *    l'est comme de face ;
+ *  - la flaque est prise à l'ANCRE, donc au pied : la tête d'un sujet reçoit ce que reçoivent ses
+ *    bottes, un quad ne se dégrade pas sur sa hauteur ;
+ *  - les flaques ne sont pas coupées par les murs (l'écart de l'en-tête, ici aussi).
+ */
+export function billboardExposure(
+  anchor: { x: number; y: number; z: number },
+  lamps: readonly LitLamp[],
+  surfaceLuminance: number,
+): number {
+  let part = 0;
+  for (const l of lamps) {
+    if (l.intensity <= 0 || l.distance <= 0) continue;
+    const dM = Math.hypot(anchor.x - l.position.x, anchor.z - l.position.z);
+    part += flaquePart(dM, l.distance, l.intensity / (FLAME_INTENSITY * Math.PI), l.position.y - anchor.y);
+  }
+  return Math.min(1, surfaceLuminance + part);
 }
 
 /** Ce qu'une frame écrit sur UNE lampe du pool — la décision, avant tout objet three. */
@@ -119,8 +177,8 @@ export function createPointLightPool(budget: number = POINT_LIGHT_BUDGET): THREE
  *  éteinte. La longueur vaut toujours le budget — c'est la table d'occupation, pas une liste. */
 export type PointLightSlots = readonly (PointLightWrite | null)[];
 
-/** Clé de SLOT d'une source : son porteur. L'agrégat du groupe en exploration n'en a pas
- *  (`LightSource.srcId` absent) — il n'y en a qu'un, et cette clé le suit d'une frame à l'autre. */
+/** Clé de SLOT d'une source : son porteur. Une source sans porteur nommé (`LightSource.srcId` absent)
+ *  retombe sur une clé commune — elle garde alors son slot tant qu'elle est seule de son espèce. */
 const SANS_PORTEUR = '(sans porteur)';
 const cléDe = (s: { srcId?: string }): string => s.srcId ?? SANS_PORTEUR;
 

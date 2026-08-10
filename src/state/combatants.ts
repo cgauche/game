@@ -31,3 +31,13 @@ export function actorIn(state: GameState, id: string): Combatant | undefined {
 export function inBattleId(battle: GameState['battle'], id: string | undefined): Combatant | undefined {
   return id == null ? undefined : battle?.combatants.find((c) => c.id === id);
 }
+
+/**
+ * MENEUR du groupe hors combat : le premier héros encore debout, à défaut le premier du roster. C'est
+ * lui que le jeton de groupe DESSINE et fait marcher (`gameIso/stage/tokens.tsx` `partyLeaderObj`), et
+ * donc lui que suivent la caméra et les lampes portées par le groupe (`state/visionState.ts`
+ * `sceneLightSources`). Définition UNIQUE : deux règles feraient marcher un jeton et éclairer l'autre.
+ */
+export function partyLeaderOf(party: readonly Combatant[]): Combatant | undefined {
+  return party.find((h) => !h.dead && h.wounds.current > 0) ?? party[0];
+}

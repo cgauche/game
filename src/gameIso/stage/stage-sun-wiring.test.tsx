@@ -24,7 +24,8 @@ import { setStageBackend } from '../../state/stage3d';
 import { sunJeu } from '../backends/webgl/sunJeu';
 import { AMBIENT_INTENSITY, SUN_INTENSITY } from '../backends/webgl/sceneMeshes';
 import { ambianceLuminance, nightVeilAlpha } from '../catalog/ambiance';
-import { billboardMaterial, poseBoards, type Board } from './boardPose';
+import { billboardMaterial, poseBoards, type Board, type FrameLights } from './boardPose';
+import { FLAME_INTENSITY, FLAME_LIFT_M } from './stagePointLights';
 import { SUN_ACNE_ELEVATION_DEG, stageLightScalars, stageLights, sunFade } from './stageLights';
 import { IsoStage } from '../IsoStage';
 
@@ -202,6 +203,18 @@ describe('Billboards — leur lumière est un SCALAIRE, jamais une normale', () 
     material: billboardMaterial(new THREE.Texture(), luminance),
   });
 
+  /** Les FLAQUES de la frame, RÉELLES : une lampe allumée à trois mètres du sujet — l'exposition que la
+   *  passe de pose écrit doit donc quelque chose aux lampes, pas seulement au palier de la frame. */
+  const LUM_FRAME = 0.3;
+  const flaques = (): FrameLights => {
+    const w = { srcId: 'b0', x: 3, y: FLAME_LIFT_M, z: 0, intensity: FLAME_INTENSITY * Math.PI * 0.7, distance: 8 };
+    const lampe = new THREE.PointLight(0xffffff, 0, 0, 0);
+    lampe.position.set(w.x, w.y, w.z);
+    lampe.intensity = w.intensity;
+    lampe.distance = w.distance;
+    return { pool: [lampe], slots: [w], surfaceLuminance: LUM_FRAME };
+  };
+
   it('le matériau d’un billboard n’est JAMAIS lambertien, et porte l’exposition de la frame', () => {
     const mat = billboardMaterial(new THREE.Texture(), 0.42);
     expect(mat).toBeInstanceOf(THREE.MeshBasicMaterial);
@@ -218,10 +231,13 @@ describe('Billboards — leur lumière est un SCALAIRE, jamais une normale', () 
       return c;
     };
     const lu = () => [b.material.color.r, b.material.color.g, b.material.color.b];
-    poseBoards([b], cam(0), () => null);
+    poseBoards([b], cam(0), () => null, flaques());
     const avant = lu();
+    // L'exposition écrite passe bien par les flaques (elle dépasse le palier de la frame) : la mesure
+    // ci-dessous porte sur le VRAI chemin, pas sur un scalaire que rien ne recalcule.
+    expect(avant[0]).toBeGreaterThan(LUM_FRAME);
     for (const yaw of [90, 180, 270]) {
-      poseBoards([b], cam(yaw), () => null);
+      poseBoards([b], cam(yaw), () => null, flaques());
       expect([yaw, ...lu()]).toEqual([yaw, ...avant]);
       // Le quad, lui, a bien tourné : la passe de pose s'est exécutée (elle n'est pas inerte).
       expect(b.mesh.quaternion.equals(cam(0).quaternion)).toBe(yaw % 360 === 0);
@@ -231,10 +247,10 @@ describe('Billboards — leur lumière est un SCALAIRE, jamais une normale', () 
   it('la carte d’ombre ne se redemande QUE si un casteur a glissé', () => {
     const b = board(1);
     const cam = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
-    expect(poseBoards([b], cam, () => null)).toBe(false);
+    expect(poseBoards([b], cam, () => null, flaques())).toBe(false);
     const glissant = board(1);
     (glissant.sub as { cid: string | null }).cid = 'c1';
-    expect(poseBoards([glissant], cam, () => ({ dx: 1, dy: 0, dz: 0 }))).toBe(true);
+    expect(poseBoards([glissant], cam, () => ({ dx: 1, dy: 0, dz: 0 }), flaques())).toBe(true);
   });
 });
 

@@ -8,6 +8,7 @@ import { Scene } from './scene';
 import { Pt } from './path';
 import { computeVisible, computeLightField, ambientScalar, baseSightTiles, darkSightTiles, mapLights, combatantLights, buildOpaque, type LightSource, type Occ } from './vision';
 import { memoByRef } from './sceneMemo';
+import { partyLeaderOf } from './combatants';
 import { smokeOf } from './combatGeometry';
 import { isOutOfAction } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
@@ -36,10 +37,12 @@ export function sceneLightSources(s: Pick<VisionInput, 'scene' | 'battle' | 'par
   // Combattant SYNTHÉTIQUE du groupe : items + armes tenues + effets actifs agrégés → `combatantLights`
   // applique LE MÊME gate de port qu'en combat (un objet rangé n'éclaire pas ; une lanterne portée /
   // un sort Lumière oui). Le gate vit en UN seul endroit (combatantLights), pas redupliqué ici.
-  // Aucun `id` : cet agrégat réunit les émetteurs de TOUS les héros à la case du groupe — il n'a pas
-  // de porteur unique à nommer (cf. `LightSource.srcId`).
+  // UNE source pour tout le groupe (les émetteurs de TOUS les héros à la case du groupe, jamais
+  // additionnés), PORTÉE par le MENEUR : c'est son jeton, et lui seul, qui marche à l'écran — sans ce
+  // porteur nommé, la lampe du groupe reste clouée à la case logique pendant que le quad la traverse.
   const party = s.party ?? [];
   sources.push(...combatantLights({
+    id: partyLeaderOf(party)?.id,
     pos: s.partyPos,
     items: party.flatMap((p) => p.items ?? []),
     weapons: party.flatMap((p) => p.weapons ?? []),
