@@ -44,10 +44,10 @@ import { combatBaseValue, combatValueModParts, conditionModLines, combatCharKey,
 import { volatileCharLines } from '../engine/characteristics';
 import { TestOutcome } from '../engine/testOutcome';
 import { actorIn } from './combatants';
-import { startCascade, runCascadeImmediate } from './cascade';
+import { startCascade, runCascadeImmediate, rollBatchParticipant } from './cascade';
 import { testValue, partyBest, partyAssisted, testValueSplit, testValueParts, skillBaseValue, supportSplit, type SupportDetail } from '../engine/skills';
 import { testStatePenaltyParts, testStatePenalty } from '../engine/conditions';
-import { humanControlled, pilotedByHuman } from './netOwnership';
+import { jetSurfaced, pilotedByHuman } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
 import { findSkillById, conditionLabel, type StakeRef } from '../data';
@@ -55,6 +55,7 @@ import { t, type OutKey, type OutVars } from '../i18n';
 import { rollTest, clampTarget } from '../engine/tests';
 import { defaultRNG, type RNG } from '../engine/dice';
 import type { TestResult } from '../engine/tests';
+import { battleRng } from './battleRng';
 
 /** Les 4 classes déclaratives (mandat #275). Pilotent la POLICY, jamais le call-site. */
 export type RollClass = 'hero-test' | 'enemy' | 'subi' | 'batch';
@@ -295,8 +296,110 @@ export function resolveSurface(get: Get, req: RollRequest, kind: string): Surfac
 
   // hero-test
   if (autoV) return 'I'; // routine de voyage COMMANDÉE (cf. batch)
-  if (actor && humanControlled(s, actor)) return 'M';
+  // SURFACE, pas affordance locale (#1262) : le héros d'un AUTRE siège garde sa fenêtre — c'est SON
+  // joueur qui la roulera. `pilotedByHuman`/`humanControlled` répondent « qui a la main ICI » et
+  // volaient donc le jet de l'invité, résolu en silence chez l'hôte.
+  if (surfaceOf(get, actor)) return 'M';
   return 'I';
+}
+
+/**
+ * LA DÉFINITION DE SURFACE (#1262) — un jet se surface (fenêtre/rangée à jouer) quand un siège humain
+ * QUELCONQUE possède son porteur (`jetSurfaced`, SEAT-AGNOSTIQUE) ET que la cadence n'est pas déférée
+ * à un automate (`cadenceAuto`, cadence GLOBALE : il n'existe pas de cadence par siège — #1264).
+ *
+ * SOURCE UNIQUE pour le MONO (`resolveSurface`, `rollSansPilote`) comme pour les RANGÉES
+ * (`surfaceRow`). Ce qu'elle N'EST PAS : un prédicat d'affordance LOCALE (`pilotedByHuman`,
+ * `humanControlled`) — ceux-là disent « qui a la main devant CET écran », et bâtir le surfaçage
+ * dessus fait rouler en silence, chez l'hôte, le jet du héros d'un invité.
+ *
+ * `isOutOfAction` n'entre PAS ici : « le sujet peut-il encore jouer » est un critère MÉTIER, tranché
+ * au site (les sites divergent aujourd'hui — arbitrage #1265).
+ */
+export function surfaceOf(get: Get, actor: Combatant | undefined): boolean {
+  return !!actor && !cadenceAuto() && jetSurfaced(get(), actor);
+}
+
+/**
+ * CONSTRUCTEUR de rangée surfacée ou TÉMOIN (#1262) — patron possédé par le socle (calque
+ * `pursuitFlow.pursuitRow`) : une rangée qu'aucun siège ne tient NAÎT roulée (`interactive:false` +
+ * son `result`), sinon elle naît à jouer (`interactive:true`, `result` encore nul). Un témoin né sans
+ * résultat suspendrait sa bande (`stepReady` n'attend jamais un témoin, mais l'agrégat le compte).
+ *
+ * Une rangée qui porte DÉJÀ un résultat (bande restaurée d'une sauvegarde) le garde : pas de second
+ * dé, pas de seconde voie de témoin.
+ */
+export function surfaceRow(get: Get, actor: Combatant | undefined, row: BatchParticipant): BatchParticipant {
+  if (surfaceOf(get, actor)) return { ...row, interactive: true, result: row.result ?? null };
+  return { ...row, interactive: false, result: row.result ?? rollBatchParticipant(row, battleRng()) };
+}
+
+/** DÉCLARATION d'une bande : ce que l'appelant sait de la SITUATION (l'entrée de règle mise en jeu).
+ *  La POSSESSION (`groupOwner`) n'y est pas — c'est `bandStep` qui la pose. */
+export interface BandSpec {
+  /** Id de l'étape. Dédoublé en `#n` par `bandStepId` quand la même clé revient dans une séquence. */
+  id: string;
+  kind: string;
+  label: string;
+  icon?: string;
+  /** Défaut `'none'` : les rangées d'une bande sont des jets INDÉPENDANTS (#351). */
+  aggregate?: RollAggregate;
+  stake?: StakeRef;
+  menace?: string;
+  meta?: CascadeStepMeta;
+}
+
+/**
+ * CONSTRUCTEUR DE BANDE (#1262) — UNE fenêtre, une RANGÉE par porteur, et la POSSESSION posée ICI.
+ *
+ * L'arbitre (`modalArbiter`, entrée `cascade`) prend l'owner de l'étape : `'*'` si `groupOwner`, sinon
+ * son `actorId`, sinon `undefined` — et `undefined` rend la fenêtre à l'HÔTE SEUL
+ * (`netOwnership.ownsLocally`). Une bande doit donc TOUJOURS dire à qui elle appartient :
+ *  - plus d'UN porteur (seul cas où plus d'un siège peut être concerné) → `groupOwner` ;
+ *  - un SEUL porteur → `actorId` = ce porteur (une bande d'un seul porteur EST son porteur) ; sans
+ *    lui, le siège qui possède ce porteur ne voit jamais la fenêtre où se tient sa rangée.
+ * L'influence reste routée rangée par rangée (`netOwnership.seatInfluences`) : un siège ne dépense
+ * jamais les ressources d'autrui, même sous owner `'*'`.
+ *
+ * Quatre feuilles (`combatFlow`, `combatSlice`, `pursuitFlow`, `store`) posent `groupOwner` en direct ;
+ * leur migration vers ce constructeur relève des vagues V1+ (#1262).
+ *
+ * `undefined` sans rangée : il n'y a pas de fenêtre à ouvrir sur zéro jet.
+ */
+export function bandStep(spec: BandSpec, rows: readonly BatchParticipant[]): CascadeStep | undefined {
+  if (!rows.length) return undefined;
+  const porteurs = new Set(rows.map((r) => r.id));
+  return {
+    id: spec.id,
+    kind: spec.kind,
+    label: spec.label,
+    ...(spec.icon ? { icon: spec.icon } : {}),
+    interactive: true,
+    ...(porteurs.size > 1 ? { groupOwner: true } : { actorId: rows[0].id }),
+    aggregate: spec.aggregate ?? 'none',
+    participants: [...rows],
+    ...(spec.stake ? { stake: spec.stake } : {}),
+    ...(spec.menace ? { menace: spec.menace } : {}),
+    ...(spec.meta ? { meta: spec.meta } : {}),
+  };
+}
+
+/**
+ * DÉDOUBLEMENT d'id de bande (#1262) — pli commun des fabriques (calque `nightBands`) : deux jets de
+ * MÊME clé pour le MÊME porteur (deux Convalescences échéant le même jour) ne peuvent pas cohabiter
+ * dans une bande, les surfaces de rangée keyant par id NU — ils ouvrent une bande de PLUS.
+ * Rend la clé libre pour ce porteur (`clé`, `clé#2`, `clé#3`…) ; `bandes` est la Map en cours de
+ * construction, keyée par cette même clé.
+ */
+export function bandStepId<T extends { readonly rows: readonly BatchParticipant[] }>(
+  bandes: ReadonlyMap<string, T>,
+  cle: string,
+  porteurId: string,
+): string {
+  let key = cle;
+  let n = 1;
+  while (bandes.get(key)?.rows.some((r) => r.id === porteurId)) key = `${cle}#${++n}`;
+  return key;
 }
 
 /** Ce qui est VRAI de tout jet : qui teste quoi, à quelle Difficulté, et ce qui pèse SUR LA CIBLE. */
@@ -707,15 +810,15 @@ export function outcomeOfStep(step: CascadeStep): TestOutcome | null {
 
 /**
  * PORTE DE REPLI SANS-PILOTE (#918 phase 2a) — l'autre sortie du seam, jumelle d'`openRoll` : quand
- * AUCUN humain ne pilote l'acteur, il n'y a rien à surfacer, le Test se roule et se rend BRUT. Les
- * flux bricolaient chacun le même invariant (`if (!humanControlled(get(), c)) rollTest(…)`) : la
- * garde tenait dans le call-site, donc rien n'empêchait qu'un chemin voisin y amène un acteur piloté.
- * L'invariant vit désormais ICI, une fois.
+ * AUCUN siège humain ne tient l'acteur, il n'y a rien à surfacer, le Test se roule et se rend BRUT.
+ * Les flux bricolaient chacun le même invariant au call-site, donc rien n'empêchait qu'un chemin
+ * voisin y amène un acteur piloté. L'invariant vit désormais ICI, une fois.
  *
- * Prédicat : `humanControlled` — le MÊME que `resolveSurface` (surface M) et que la garde de surfaçage
- * (`maneuver-defense-cascade.test.ts`), donc CADENCE-AWARE : en Rapide/Auto les jets se lancent seuls
- * sans influence (`netOwnership.humanControlled`), ce repli est alors la voie normale d'un héros.
- * `actor` absent (côté monde, conducteur sans acteur joueur) : aucun pilote possible, invariant vide.
+ * Prédicat : `surfaceOf` — LA définition de surface, la MÊME que `resolveSurface` (surface M), donc
+ * SEAT-AGNOSTIQUE (le héros d'un AUTRE siège a un pilote : son jet n'a rien à faire ici) et
+ * CADENCE-AWARE (en Rapide/Auto les jets se lancent sans influence, ce repli est alors la voie
+ * normale d'un héros). `actor` absent (côté monde, conducteur sans acteur joueur) : aucun pilote
+ * possible, invariant vide.
  *
  * DEV : la violation THROW (le jet silencieux se voit au premier passage) ; en PROD elle se journalise
  * en `console.error` et le jet est rendu quand même — jamais casser une partie en cours.
@@ -730,7 +833,7 @@ export function rollSansPilote(
   rng: RNG = defaultRNG,
   modifier = 0,
 ): TestResult {
-  if (actor && humanControlled(get(), actor)) {
+  if (actor && surfaceOf(get, actor)) {
     const msg = `[seam] jet silencieux d'un acteur piloté (« ${actor.label} ») — router par openRoll/flow.`;
     console.error(msg);
     if (import.meta.env?.DEV) throw new Error(msg);
