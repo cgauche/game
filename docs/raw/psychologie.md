@@ -155,7 +155,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Peur (Indice), État Brisé (`etats.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.54-57) → `nightmare`, `terreur`, `calme-d-approche`, `resolvePsychRow`, `humanizePerSL`, `resolvePsychAI`, `failConditionAmount`, `psychBranchOps`, `resolveTerreurTest`, `trauma`, +6 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, +4 fichiers
+- `LDB 21` (l.54-57) → `nightmare`, `terreur`, `calme-d-approche`, `resolvePsychRow`, `amour`, `humanizePerSL`, `resolvePsychAI`, `camaraderie`, `phobie`, `failConditionAmount`, +6 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, +4 fichiers
 
 ---
 
@@ -254,7 +254,7 @@ Reflète une très forte relation émotionnelle (romantique, familiale, amitié 
 - `LDB 21 l.74-77` — définition et effets
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.74-77) → `nightmare`, `terreur`, `calme-d-approche`, `gainPhobieIfThreshold`, `trauma`, `PsychologyData`, `amour`, `camaraderie`, `phobie` — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`
+- `LDB 21` (l.74-77) → `nightmare`, `terreur`, `calme-d-approche`, `amour`, `camaraderie`, `phobie`, `gainPhobieIfThreshold`, `trauma`, `PsychologyData` — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`
 
 ---
 
@@ -270,7 +270,7 @@ Sentiments positifs envers un groupe d'individus.
 - `LDB 21 l.80-83` — définition et effets
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.80-83) → `nightmare`, `terreur`, `calme-d-approche`, `buildExposureSteps`, `Effect`, `gainPhobieIfThreshold`, `trauma`, `nightmareCheck`, `EFFECT_HANDLERS`, `PsychologyData`, +4 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, +5 fichiers
+- `LDB 21` (l.80-83) → `nightmare`, `terreur`, `calme-d-approche`, `amour`, `camaraderie`, `phobie`, `buildExposureSteps`, `Effect`, `gainPhobieIfThreshold`, `trauma`, +4 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, +5 fichiers
 
 ---
 
@@ -284,7 +284,7 @@ Peur spécifique envers un Type de créature, un objet ou une situation.
 - `LDB 21 l.85-89` — définition ; traitement comme Peur 1
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.85-89) → `nightmare`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `needsRecoveryRoll`, `animosite`, `haine`, `calme-d-approche`, `prejuge`, +12 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +7 fichiers
+- `LDB 21` (l.85-89) → `nightmare`, `combat-psych`, `encounter-psych`, `terreur`, `needsRecoveryRoll`, `calme-d-approche`, `amour`, `camaraderie`, `interlude-event`, `phobie`, +8 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, +7 fichiers
 
 ---
 
@@ -301,7 +301,7 @@ Conséquence d'une expérience traumatisante. Peut se manifester de diverses fa�
 
 **Voir aussi** : `src/data/traumatisme.md` (`traumatisme.md` pour les Blessures Critiques)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.91-96) → `nightmare`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `needsRecoveryRoll`, `animosite`, `haine`, `calme-d-approche`, `prejuge`, +11 — `src/data/combat-stakes.json`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, +6 fichiers
+- `LDB 21` (l.91-96) → `nightmare`, `combat-psych`, `encounter-psych`, `terreur`, `needsRecoveryRoll`, `calme-d-approche`, `amour`, `camaraderie`, `interlude-event`, `phobie`, +7 — `src/data/combat-stakes.json`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, +6 fichiers
 
 ---
 
@@ -448,7 +448,7 @@ Les créatures agressives de grande Taille inspirent automatiquement Peur ou Ter
 - `LDB 85 l.382-383` — règle Peur/Terreur par Taille
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.274, l.282, l.382-384) → `cannotStopOn`, `StatblockEditor`, `fearSourceFor`, `EnemyTurnInput`, `displaceSmaller`, `resizeBySteps`, `MoveEnv`, `creatureToCombatant`, `resolvePsychAI`, `taille-modificateurs-en-combat`, +21 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/engine/size.ts`, +9 fichiers
+- `LDB 85` (l.274, l.282, l.382-384) → `cannotStopOn`, `StatblockEditor`, `fearSourceFor`, `EnemyTurnInput`, `displaceSmaller`, `resizeBySteps`, `peurTerreurFromSize`, `MoveEnv`, `creatureToCombatant`, `resolvePsychAI`, +22 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/engine/size.ts`, +9 fichiers
 
 ---
 
@@ -611,8 +611,8 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.1053) → `fearImmuneVs`, `CombatFeature`, `robuste`, `vampires`, `saut-carpe`, `voies-fluviales`, `soldats`, `seconde-vue`, `seigneur-de-guerre`, `vue` — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
 - `LDB 17` (l.59) → `ResilienceButton`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, `ForcedResolve`, +69 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, +37 fichiers
-- `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `peur`, `combat-psych`, `encounter-psych`, `terreur`, `needsRecoveryRoll`, `animosite`, +66 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, +31 fichiers
-- `LDB 85` (l.178-179, l.382-383) → `cannotStopOn`, `Formula`, `EnemyTurnInput`, `displaceSmaller`, `Condition`, `MoveEnv`, `availableAttacks`, `taille-modificateurs-en-combat`, `engagedAdvantageGap`, `knowsCastingSkill`, +54 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, +9 fichiers
+- `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `combat-psych`, `encounter-psych`, `terreur`, `needsRecoveryRoll`, `supersededLines`, `calme-d-approche`, +62 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, +31 fichiers
+- `LDB 85` (l.178-179, l.382-383) → `cannotStopOn`, `Formula`, `EnemyTurnInput`, `displaceSmaller`, `Condition`, `peurTerreurFromSize`, `MoveEnv`, `availableAttacks`, `taille-modificateurs-en-combat`, `engagedAdvantageGap`, +55 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, +10 fichiers
 
 ---
 

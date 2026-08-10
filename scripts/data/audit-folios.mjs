@@ -18,12 +18,17 @@
 // que l'actuel : l'outil ne sait que SOLDER. Faire croître le stock reste un geste manuel doublé d'un
 // relèvement du plafond dans la garde, donc visible en revue.
 //
-// Usage : node scripts/data/audit-folios.mjs [--json] [--out <fichier>] [--stock]
+// VOIE C (#1200) : quand la desc ne localise rien, le TITRE de section prend le relais. Ses
+// réfutations ont leur propre stock (`folioTitleRatchetStock.mjs`, `--stock-titres`), et ce qu'elle
+// ne résout pas non plus est listé nommément (`--muets`) : plus aucune entrée n'échappe en silence.
+//
+// Usage : node scripts/data/audit-folios.mjs [--json] [--out <fichier>] [--stock] [--stock-titres] [--muets]
 import { writeFileSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { auditFolios, renderStock } from '../guards/lib/folioIntegrity.mjs';
+import { auditFolios, renderStock, renderTitleStock } from '../guards/lib/folioIntegrity.mjs';
 import { FOLIO_RATCHET } from '../guards/lib/folioRatchetStock.mjs';
+import { FOLIO_TITLE_RATCHET } from '../guards/lib/folioTitleRatchetStock.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const DATA_DIR = join(ROOT, 'src', 'data');
@@ -32,7 +37,7 @@ const jsonOut = process.argv.includes('--json');
 const outArgIdx = process.argv.indexOf('--out');
 const outPath = outArgIdx >= 0 ? process.argv[outArgIdx + 1] : null;
 
-const { violations, stats, total, multi } = auditFolios(DATA_DIR);
+const { violations, titleViolations, noteAuthored, unresolved, stats, total, multi } = auditFolios(DATA_DIR);
 
 const fmt = (ranges) =>
   ranges.map((r) => (r.hi === null ? `${r.lo}+` : r.lo === r.hi ? `${r.lo}` : `${r.lo}-${r.hi}`)).join(',');
@@ -61,8 +66,24 @@ if (process.argv.includes('--stock')) {
   const entete = ancien.slice(0, ancien.indexOf('/** @type {ReadonlySet<string>} */')).trimEnd();
   writeFileSync(cible, renderStock(violations, entete));
   console.log(`stock re-rendu : ${FOLIO_RATCHET.size} -> ${violations.length} clés (en-tête conservé — le mettre à jour à la main).`);
+} else if (process.argv.includes('--stock-titres')) {
+  const cible = join(ROOT, 'scripts', 'guards', 'lib', 'folioTitleRatchetStock.mjs');
+  if (titleViolations.length > FOLIO_TITLE_RATCHET.size && FOLIO_TITLE_RATCHET.size > 0) {
+    console.error(
+      `REFUS : la mesure rend ${titleViolations.length} clés, le stock en porte ${FOLIO_TITLE_RATCHET.size}. Cet outil ne sait que SOLDER.\n` +
+        titleViolations
+          .filter((v) => !FOLIO_TITLE_RATCHET.has(v.key))
+          .map((v) => `  ${v.key} p.${v.page} -> ${fmt(v.ranges)}`)
+          .join('\n'),
+    );
+    process.exit(1);
+  }
+  const ancien = readFileSync(cible, 'utf8');
+  const entete = ancien.slice(0, ancien.indexOf('/** @type {ReadonlySet<string>} */')).trimEnd();
+  writeFileSync(cible, renderTitleStock(titleViolations, entete));
+  console.log(`stock titres re-rendu : ${FOLIO_TITLE_RATCHET.size} -> ${titleViolations.length} clés.`);
 } else if (jsonOut || outPath) {
-  const payload = JSON.stringify({ total, stats, rows, multi }, null, 2);
+  const payload = JSON.stringify({ total, stats, rows, multi, titleViolations, noteAuthored, unresolved }, null, 2);
   if (outPath) writeFileSync(outPath, payload);
   else console.log(payload);
 } else {
@@ -71,14 +92,31 @@ if (process.argv.includes('--stock')) {
   console.log('Verdicts :');
   for (const [k, n] of Object.entries(stats).sort((a, b) => b[1] - a[1])) console.log(`  ${k.padEnd(18)} ${n}`);
   console.log(`  ${'(somme)'.padEnd(18)} ${somme}`);
-  const muets = total - (stats['folio-ok'] ?? 0) - violations.length;
-  console.log(`\nRÉFUTÉES : ${violations.length} / ${total} scannées — dont ${
+  const resolusTitre = stats['titre:titre-ok'] ?? 0;
+  console.log(`\nRÉFUTÉES (voie desc) : ${violations.length} / ${total} scannées — dont ${
     rows.filter((r) => r.voie === 'hors-livre').length
   } hors-livre, ${rows.filter((r) => r.voie === 'encadrement').length} par encadrement`);
-  console.log(`ANGLE MORT : ${muets} entrées sur lesquelles la garde ne peut RIEN prouver (desc introuvable/trop courte, sans marqueur, livre hors atlas).\n`);
+  console.log(`VOIE TITRE : ${resolusTitre} entrées confirmées, ${titleViolations.length} réfutées, ${noteAuthored.length} à note authored (jamais cliquetées), ${unresolved.length} irrésolues (ni desc ni titre).\n`);
   for (const r of rows) {
     const tag = r.cliquete ? '' : '  <= HORS CLIQUET (régression)';
     console.log(`  ${r.key.padEnd(48)} ${r.book.padEnd(22)} p.${String(r.declare).padEnd(5)} -> ${r.reel.padEnd(30)} ${r.chapitre}${tag}`);
+  }
+  if (titleViolations.length) {
+    console.log(`\nRÉFUTÉES PAR LE TITRE DE SECTION : ${titleViolations.length} (le folio montré est celui d'un titre HOMONYME, pas un emplacement prouvé)`);
+    for (const v of titleViolations) {
+      const tag = FOLIO_TITLE_RATCHET.has(v.key) ? '' : '  <= HORS CLIQUET (régression)';
+      console.log(`  ${v.key.padEnd(48)} p.${String(v.page).padEnd(5)} -> titre le plus proche ${fmt(v.proche ? [v.proche] : v.ranges).padEnd(10)} écart ${String(v.ecart).padEnd(3)} ${v.proche?.file ?? ''}${tag}`);
+    }
+  }
+  if (noteAuthored.length) {
+    console.log(`\nÀ ARBITRER — réfutées par le titre MAIS porteuses d'une note authored : ${noteAuthored.length}`);
+    for (const n of noteAuthored) {
+      console.log(`  ${n.key.padEnd(48)} p.${String(n.page).padEnd(5)} note : ${n.note}`);
+    }
+  }
+  if (process.argv.includes('--muets')) {
+    console.log(`\nIRRÉSOLUES (ni desc ni titre) : ${unresolved.length}`);
+    for (const u of unresolved) console.log(`  ${u.key.padEnd(48)} p.${String(u.page).padEnd(5)} ${u.descVerdict} / ${u.titreVerdict}`);
   }
   if (multi.length) {
     console.log(`\nÀ ARBITRER — desc trouvée sur PLUSIEURS folios (le livre la porte deux fois) : ${multi.length}`);

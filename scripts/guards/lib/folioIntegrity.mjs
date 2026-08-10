@@ -94,8 +94,9 @@ export function normMap(s) {
 
 const CACHE = new Map()
 
-/** Chapitres d'un livre (par abréviation `BOOKS`), normalisés + marqueurs `data-folio` positionnés.
- *  @param {string} abbr @returns {{ file: string, text: string, idx: number[], folios: [number, number][] }[]} */
+/** Chapitres d'un livre (par abréviation `BOOKS`), normalisés + marqueurs `data-folio` positionnés +
+ *  TITRES de section positionnés (localisateur de secours, voie C).
+ *  @param {string} abbr @returns {{ file: string, text: string, idx: number[], folios: [number, number][], heads: [number, string][] }[]} */
 export function bookDocs(abbr) {
   const hit = CACHE.get(abbr)
   if (hit) return hit
@@ -115,7 +116,10 @@ export function bookDocs(abbr) {
       /** @type {[number, number][]} */
       const folios = []
       for (const m of raw.matchAll(/data-folio="(\d+)"/g)) folios.push([m.index ?? 0, Number(m[1])])
-      docs.push({ file: name, text, idx, folios })
+      /** @type {[number, string][]} */
+      const heads = []
+      for (const m of raw.matchAll(/^#{1,6}[ \t]+(.+)$/gm)) heads.push([m.index ?? 0, m[1]])
+      docs.push({ file: name, text, idx, folios, heads })
     }
   }
   CACHE.set(abbr, docs)
@@ -232,14 +236,180 @@ export function auditFolio({ book, page, desc }) {
   return { verdict: ok ? 'folio-ok' : 'folio-ment', ranges }
 }
 
+// ============================================================================
+// VOIE C — LOCALISATEUR DE SECOURS PAR TITRE DE SECTION (#1200)
+// La voie B ne rend un verdict que si la `desc` se retrouve VERBATIM : 1003 des 2544 entrées citées
+// restaient donc SANS verdict, en silence (779 desc introuvable + 135 desc trop courte + 89 chapitre
+// sans marqueur) — dont les 7 folios faux de `psychology.json` (p.192 déclarée, texte en folio 190
+// pour quatre entrées et 191 pour trois). Le titre de section est un second localisateur : il ne dépend
+// pas de la règle 5, et il est ancré dans la même partition `data-folio`. Il ne REMPLACE pas la desc
+// (une entrée dont la desc est reformulée reste une infraction à la règle 5) : il rend un verdict de
+// FOLIO là où il n'y en avait aucun, et ce qu'il ne résout pas est COMPTÉ et LISTÉ, jamais tu.
+//
+// CE QUE LA VOIE C PROUVE, ET SES DEUX GARDE-FOUS. Retrouver `# **<Label>**` à un folio prouve
+// « une section porte ce titre là », PAS « l'entrée est là » : un livre réemploie ses mots (`# **Mort**`
+// du chapitre Traumatisme n'est pas le Domaine de la Mort). Sans garde-fou, la voie C accusait 25
+// entrées sur la foi d'un homonyme distant de 15 à 257 folios, dont 10 pages PROUVÉES justes au
+// Source. Une réfutation par titre exige donc les DEUX :
+//   (a) le label est ABSENT du texte de la page DÉCLARÉE (`labelSurLaPage` : la tranche de folio, dans
+//       tous les chapitres du livre) — s'il y est, la page est attestée et rien n'est réfuté ;
+//   (b) l'écart au plus proche titre homonyme est ≤ `MAX_ECART_TITRE` — au-delà, l'homonymie est plus
+//       probable que l'erreur de report, verdict `titre-homonyme-lointain`, aucune accusation.
+// ============================================================================
+
+/** Longueur normalisée minimale d'un label pour servir de localisateur par titre. */
+export const MIN_TITLE = 3
+
+/** Écart maximal, en folios, entre la page déclarée et le titre le plus proche pour que l'écart soit
+ *  imputable à une ERREUR DE REPORT. Au-delà, l'homonymie explique mieux la distance : mesure à la
+ *  pose (#1200) — les écarts imputables tiennent en ±5 folios, les 25 accusations abusives partaient
+ *  de 15 et montaient à 257. */
+export const MAX_ECART_TITRE = 10
+
+/** Titre de section normalisé — les balises d'extraction sont retirées d'abord : Marker sème ses
+ *  `<span data-folio="N">` AU MILIEU des titres (`# <span …>**MALADIES ET INFECTIONS**`).
+ *  @param {string} title @returns {string} */
+export function normHeading(title) {
+  return normMap(title.replace(/<[^>]*>/g, ' ')).text.trim()
+}
+
+/**
+ * Folios de la tête d'un chapitre, AVANT son premier marqueur : `folioRange` y rend `null` (aucun
+ * marqueur n'encadre), or la page est connue par CONTINUITÉ — le chapitre précédent finit sur le
+ * folio F, le premier marqueur d'ici ouvre le folio G, donc cette tête vit entre F et G-1. Sans cela
+ * le titre `# **Peur (Indice)**` (l.23 de `21 - Psychologie.md`, avant le premier marqueur) resterait
+ * sans verdict alors que la partition le situe sans ambiguïté en folio 190.
+ * @param {{ folios: [number, number][] }[]} docs @param {number} i
+ * @returns {{ lo: number, hi: number } | null} `null` = continuité non établie (rien à réfuter)
+ */
+export function preMarkerRange(docs, i) {
+  const first = docs[i].folios[0]
+  if (!first) return null
+  const hi = first[1] - 1
+  let lo = 0
+  for (let j = i - 1; j >= 0; j--) {
+    const f = docs[j].folios
+    if (f.length > 0) {
+      lo = f[f.length - 1][1]
+      break
+    }
+  }
+  if (lo === 0 || lo > hi) return null
+  return { lo, hi }
+}
+
+/** Premier index de `arr` (trié) dont la valeur est ≥ `v`. */
+function lowerBound(arr, v) {
+  let lo = 0
+  let hi = arr.length
+  while (lo < hi) {
+    const m = (lo + hi) >> 1
+    if (arr[m] < v) lo = m + 1
+    else hi = m
+  }
+  return lo
+}
+
+/**
+ * TRANCHES de texte normalisé qui composent un folio donné d'un livre : entre son marqueur et le
+ * suivant, dans chaque chapitre qui le porte — plus la TÊTE d'un chapitre quand la continuité l'y
+ * situe (`preMarkerRange`). Un folio peut avoir plusieurs tranches (chapitre qui s'ouvre en cours de
+ * page). @param {string} abbr @param {number} page @returns {{ file: string, text: string }[]}
+ */
+export function pageSlices(abbr, page) {
+  const docs = bookDocs(abbr)
+  const out = []
+  docs.forEach((doc, i) => {
+    const f = doc.folios
+    if (f.length === 0) return
+    for (let k = 0; k < f.length; k++) {
+      if (f[k][1] !== page) continue
+      const a = lowerBound(doc.idx, f[k][0])
+      const b = k + 1 < f.length ? lowerBound(doc.idx, f[k + 1][0]) : doc.text.length
+      out.push({ file: doc.file, text: doc.text.slice(a, b) })
+    }
+    const tete = preMarkerRange(docs, i)
+    if (tete && page >= tete.lo && page <= tete.hi) {
+      out.push({ file: doc.file, text: doc.text.slice(0, lowerBound(doc.idx, f[0][0])) })
+    }
+  })
+  return out
+}
+
+/**
+ * ATTESTATION de la page déclarée : le `label` de l'entrée se lit-il quelque part DANS le folio
+ * annoncé (pas seulement en titre — une ligne de table, une mention en prose suffisent) ? C'est le
+ * garde-fou (a) de la voie C : tant que le livre nomme l'entrée là où la donnée le dit, aucun titre
+ * homonyme trouvé ailleurs ne peut la contredire. Mesuré à la pose : 10 des 25 accusations lointaines
+ * portaient sur une page ainsi attestée (`naval-ports` ×8 au folio 138 de `15 - Longs voyages.md`,
+ * `sea-events:debris-marins` au 132, `spells:enchevetrement` au 244).
+ * @param {string} book @param {number} page @param {string | undefined} label
+ * @returns {string | null} `<chapitre> folio N` si attesté, `null` sinon
+ */
+export function labelSurLaPage(book, page, label) {
+  const abbr = BOOK_ABBR_BY_ID[book]
+  if (!abbr) return null
+  const nl = typeof label === 'string' ? normHeading(label) : ''
+  if (nl.length < MIN_TITLE) return null
+  for (const s of pageSlices(abbr, page)) if (s.text.includes(nl)) return `${s.file} folio ${page}`
+  return null
+}
+
+/**
+ * Verdict de folio par TITRE de section (voie C) — appelé quand la desc n'a rien pu localiser.
+ * Le titre doit correspondre EXACTEMENT au `label` (ou au `label` suivi d'un paramètre parenthésé,
+ * forme du LDB : `# **Animosité (Cible)**`, `# **Peur (Indice)**`) : l'égalité stricte évite qu'un
+ * label court s'accroche à un titre qui le contient.
+ * Trois issues quand aucun titre ne couvre la page déclarée, cf. les garde-fous (a) et (b) en tête de
+ * section : page ATTESTÉE par le label (`titre-page-attestee`), écart trop grand pour une erreur de
+ * report (`titre-homonyme-lointain`), sinon seulement `titre-ment`. Les deux premières n'accusent
+ * personne et rejoignent les irrésolues. `ecart` = distance en folios au titre le plus proche,
+ * `proche` = ce titre (diagnostic : ce qui est prouvé est « un homonyme est là », jamais « l'entrée
+ * est là »).
+ * @param {{ book: string, page: number, label: string | undefined }} entry
+ * @returns {{ verdict: 'titre-ok'|'titre-ment'|'titre-page-attestee'|'titre-homonyme-lointain'|'titre-introuvable'|'titre-sans-marqueur'|'titre-trop-court'|'livre-hors-atlas', ranges?: {lo:number,hi:number|null,file:string}[], ecart?: number, proche?: {lo:number,hi:number|null,file:string}, atteste?: string }}
+ */
+export function auditFolioByTitle({ book, page, label }) {
+  const abbr = BOOK_ABBR_BY_ID[book]
+  if (!abbr) return { verdict: 'livre-hors-atlas' }
+  const docs = bookDocs(abbr)
+  if (docs.length === 0) return { verdict: 'livre-hors-atlas' }
+  const nl = typeof label === 'string' ? normHeading(label) : ''
+  if (nl.length < MIN_TITLE) return { verdict: 'titre-trop-court' }
+  /** @type {{lo:number,hi:number|null,file:string}[]} */
+  const ranges = []
+  let found = false
+  docs.forEach((doc, i) => {
+    for (const [off, title] of doc.heads) {
+      const nt = normHeading(title)
+      if (nt !== nl && !nt.startsWith(`${nl} (`)) continue
+      found = true
+      const r = folioRange(doc.folios, off, off + title.length) ?? preMarkerRange(docs, i)
+      if (r) ranges.push({ lo: r.lo, hi: r.hi, file: doc.file })
+    }
+  })
+  if (!found) return { verdict: 'titre-introuvable' }
+  if (ranges.length === 0) return { verdict: 'titre-sans-marqueur' }
+  if (ranges.some(({ lo, hi }) => page >= lo && (hi === OPEN || page <= hi))) return { verdict: 'titre-ok', ranges }
+  const dist = (r) => Math.min(Math.abs(page - r.lo), Math.abs(page - (r.hi ?? r.lo)))
+  const proche = ranges.reduce((a, b) => (dist(b) < dist(a) ? b : a))
+  const ecart = dist(proche)
+  const atteste = labelSurLaPage(book, page, label)
+  if (atteste) return { verdict: 'titre-page-attestee', ranges, ecart, proche, atteste }
+  if (ecart > MAX_ECART_TITRE) return { verdict: 'titre-homonyme-lointain', ranges, ecart, proche }
+  return { verdict: 'titre-ment', ranges, ecart, proche }
+}
+
 /** Entrées d'un dataset portant `source.book` + `source.page` + `desc`, à TOUTE profondeur : la moitié
  *  des datasets n'est pas un tableau racine (`criticals.json` groupe par localisation, `sea-events.json`
  *  par rubrique…) — s'arrêter au 1er niveau laissait 180 entrées citées hors de tout scan.
  *  Clé = `id` STABLE quand il existe (0 collision mesurée sur les 2082 entrées), sinon le chemin JSON
  *  des 16 entrées anonymes — jamais un libellé (doctrine 2026-07-09).
- *  @param {unknown} data @returns {{ id: string, book: string, page: number, desc: string }[]} */
+ *  Le `label` accompagne l'entrée (localisateur de secours, voie C) — jamais une clé de logique, et
+ *  la `note` authored de `source` (l'auteur y a déjà dit ce qu'il savait de l'emplacement).
+ *  @param {unknown} data @returns {{ id: string, book: string, page: number, desc: string, label: string | undefined, note: string | undefined }[]} */
 export function citedEntriesOf(data) {
-  /** @type {{ id: string, book: string, page: number, desc: string }[]} */
+  /** @type {{ id: string, book: string, page: number, desc: string, label: string | undefined, note: string | undefined }[]} */
   const out = []
   /** @param {unknown} node @param {string} path */
   const walk = (node, path) => {
@@ -258,6 +428,8 @@ export function citedEntriesOf(data) {
           book: s.book,
           page: s.page,
           desc: rec.desc,
+          label: typeof rec.label === 'string' ? rec.label : undefined,
+          note: typeof s.note === 'string' ? s.note : undefined,
         })
       }
     }
@@ -385,13 +557,23 @@ export function auditSecondaries(dataDir) {
  * Scanne `src/data/*.json` et rend les entrées dont le folio est RÉFUTÉ (par l'une ou l'autre voie),
  * le décompte par verdict, le TOTAL scanné (`stats` en somme — aucune catégorie n'est retranchée du
  * rapport), et les entrées MULTI-occurrences à arbitrer.
+ * Quand la desc ne localise rien, la voie C (TITRE de section) reprend la main : ses réfutations
+ * sortent à part (`titleViolations`, stock propre) et ce qu'elle ne résout pas non plus sort dans
+ * `unresolved` — le silence de la voie B devient un skip BRUYANT. `livre-hors-atlas` (aucune
+ * extraction FR) n'entre dans aucune des deux listes : il n'y a rien à mesurer, `stats` le dit.
+ * Une entrée réfutée par le titre mais porteuse d'une `source.note` AUTHORÉE sort dans `noteAuthored`,
+ * jamais dans le stock : l'auteur a déjà décrit l'emplacement (« section continue p.186-188 »…), la
+ * contradiction se tranche par un arbitrage humain, pas par un cliquet qui la fige.
  * @param {string} dataDir
- * @returns {{ violations: {key:string,file:string,id:string,book:string,page:number,voie:'encadrement'|'hors-livre',ranges:{lo:number,hi:number|null,file:string}[],max:number|null}[], stats: Record<string, number>, total: number, multi: {key:string,page:number,ranges:{lo:number,hi:number|null,file:string}[]}[] }}
+ * @returns {{ violations: {key:string,file:string,id:string,book:string,page:number,voie:'encadrement'|'hors-livre',ranges:{lo:number,hi:number|null,file:string}[],max:number|null}[], titleViolations: {key:string,file:string,id:string,book:string,page:number,ecart:number,proche:{lo:number,hi:number|null,file:string}|null,ranges:{lo:number,hi:number|null,file:string}[]}[], noteAuthored: {key:string,file:string,page:number,note:string,proche:{lo:number,hi:number|null,file:string}|null}[], unresolved: {key:string,file:string,page:number,descVerdict:string,titreVerdict:string}[], stats: Record<string, number>, total: number, multi: {key:string,page:number,ranges:{lo:number,hi:number|null,file:string}[]}[] }}
  */
 export function auditFolios(dataDir) {
   /** @type {Record<string, number>} */
   const stats = {}
   const violations = []
+  const titleViolations = []
+  const noteAuthored = []
+  const unresolved = []
   const multi = []
   let total = 0
   const files = readdirSync(dataDir).filter((f) => f.endsWith('.json') && f !== 'books.json').sort()
@@ -420,9 +602,30 @@ export function auditFolios(dataDir) {
           max: r.max ?? null,
         })
       }
+      if (r.verdict === 'desc-introuvable' || r.verdict === 'desc-trop-courte' || r.verdict === 'sans-marqueur') {
+        const t = auditFolioByTitle(e)
+        stats[`titre:${t.verdict}`] = (stats[`titre:${t.verdict}`] ?? 0) + 1
+        if (t.verdict === 'titre-ment' && e.note) {
+          stats['titre:note-authoree'] = (stats['titre:note-authoree'] ?? 0) + 1
+          noteAuthored.push({ key, file: f, page: e.page, note: e.note, proche: t.proche ?? null })
+        } else if (t.verdict === 'titre-ment') {
+          titleViolations.push({
+            key,
+            file: f,
+            id: e.id,
+            book: e.book,
+            page: e.page,
+            ecart: t.ecart ?? 0,
+            proche: t.proche ?? null,
+            ranges: t.ranges ?? [],
+          })
+        } else if (t.verdict !== 'titre-ok') {
+          unresolved.push({ key, file: f, page: e.page, descVerdict: r.verdict, titreVerdict: t.verdict })
+        }
+      }
     }
   }
-  return { violations, stats, total, multi }
+  return { violations, titleViolations, noteAuthored, unresolved, stats, total, multi }
 }
 
 /**
@@ -448,6 +651,28 @@ export function renderStock(violations, entete) {
     lignes.push(`  '${v.key}', // p.${v.page} -> ${reel}`)
   }
   return `${entete}\n/** @type {ReadonlySet<string>} */\nexport const FOLIO_RATCHET = new Set([\n${lignes.join('\n')}\n])\n`
+}
+
+/**
+ * Même office pour le stock de la voie C (`folioTitleRatchetStock.mjs`) : le format des deux stocks
+ * vit dans ce module, jamais dans une ligne recopiée à la main. Le diagnostic dit ce qui est PROUVÉ —
+ * « un titre homonyme est à tel folio » — jamais un emplacement réel que la voie C n'a pas établi.
+ * @param {ReturnType<typeof auditFolios>['titleViolations']} violations @param {string} entete
+ * @returns {string}
+ */
+export function renderTitleStock(violations, entete) {
+  const lignes = []
+  let fichier = null
+  for (const v of [...violations].sort((a, b) => a.key.localeCompare(b.key))) {
+    if (v.file !== fichier) {
+      fichier = v.file
+      lignes.push(`  // ${fichier}`)
+    }
+    const r = v.proche ?? v.ranges[0]
+    const folio = r ? (r.hi === null ? `${r.lo}+` : r.lo === r.hi ? `${r.lo}` : `${r.lo}-${r.hi}`) : '?'
+    lignes.push(`  '${v.key}', // p.${v.page} -> titre le plus proche : folio ${folio} (${r?.file ?? '?'}), écart ${v.ecart}`)
+  }
+  return `${entete}\n/** @type {ReadonlySet<string>} */\nexport const FOLIO_TITLE_RATCHET = new Set([\n${lignes.join('\n')}\n])\n`
 }
 
 export { basename }

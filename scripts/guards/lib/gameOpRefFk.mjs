@@ -84,11 +84,14 @@ export const GAMEOP_FIELD_TARGETS = {
   'banish.onlyGroups': { registry: 'groups' },
   // ── Psychologie (psychology.json) ──
   'endPsych.type': { registry: 'psychology' },
+  'beginPsych.type': { registry: 'psychology' },
   'grantPsychTrait.psychType': { registry: 'psychology' },
   'removePsychTrait.psychType': { registry: 'psychology' },
   // La Cible d'un Trait psy est un id de Groupe (`groupMatch`, src/engine/groups.ts:147-157, où
   // `tout`/`vivant` sont des entrées de `groups.json`).
   'grantPsychTrait.cible': { registry: 'groups' },
+  'beginPsych.cible': { registry: 'groups' },
+  'beginPsych.sourceId': { nonRef: 'id de combattant RUNTIME — la créature SOURCE d\'une Peur/Terreur (`targetedTrigger` le pose depuis `m.id`, src/engine/psychology.ts:331 ; purgé à la mort par `deadId`, l.235), jamais authoré en donnée' },
   // ── Traits / Talents / Compétences ──
   'grantTrait.traitId': { registry: 'traits' },
   'grantTalent.talentId': { registry: 'talents' },

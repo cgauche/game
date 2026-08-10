@@ -16,9 +16,12 @@ import { fileURLToPath } from 'node:url';
 import { books } from './index';
 import { auditFolios } from '../../scripts/guards/lib/folioIntegrity.mjs';
 import { FOLIO_RATCHET } from '../../scripts/guards/lib/folioRatchetStock.mjs';
+import { FOLIO_TITLE_RATCHET } from '../../scripts/guards/lib/folioTitleRatchetStock.mjs';
 
 const DIR = fileURLToPath(new URL('.', import.meta.url));
 const BOOK_IDS = new Set(books.map((b) => b.id));
+/** Scan UNIQUE partagé par les deux voies : il relit tout `Source/`. */
+const AUDIT = auditFolios(DIR);
 
 function collectBooks(o: unknown, acc: Set<string>): void {
   if (o == null || typeof o !== 'object') return;
@@ -54,7 +57,7 @@ describe('relation-livre id-pure — tout source.book est un id de books.json', 
 const FOLIO_RATCHET_MAX = 140;
 
 describe('intégrité du folio — source.page pointe sur la page qui porte la desc (#536)', () => {
-  const { violations } = auditFolios(DIR);
+  const { violations } = AUDIT;
   const found = new Set(violations.map((v) => v.key));
 
   it('aucune entrée NEUVE ne déclare un folio réfuté par son Source', () => {
@@ -80,3 +83,66 @@ describe('intégrité du folio — source.page pointe sur la page qui porte la d
     expect(FOLIO_RATCHET.size).toBeLessThanOrEqual(FOLIO_RATCHET_MAX);
   });
 });
+
+/**
+ * Plafond du stock de la VOIE C, même rôle et même lecture que `FOLIO_RATCHET_MAX`.
+ */
+const FOLIO_TITLE_RATCHET_MAX = 57;
+
+/**
+ * Plafond des entrées IRRÉSOLUES — ni desc verbatim, ni titre de section. C'est le compte de ce que
+ * la garde ne PEUT pas juger ; il ne se solde qu'en recollant des descs au verbatim (règle 5) ou en
+ * nommant les entrées comme leur livre les intitule. Plafonné pour la même raison que les stocks :
+ * sans plafond, « la garde couvre de plus en plus » n'est qu'un commentaire.
+ */
+const UNRESOLVED_MAX = 661;
+
+describe('intégrité du folio — voie TITRE de section, et skip BRUYANT de ce qui reste (#1200)', () => {
+  const { titleViolations, noteAuthored, unresolved, stats, total } = AUDIT;
+  const found = new Set(titleViolations.map((v) => v.key));
+
+  it('aucune entrée NEUVE ne déclare un folio réfuté par le titre de sa section', () => {
+    expect(
+      titleViolations
+        .filter((v) => !FOLIO_TITLE_RATCHET.has(v.key))
+        .map(
+          (v) =>
+            `${v.key} (${v.book}) déclare p.${v.page}, titre le plus proche en folio ${v.proche?.lo ?? '?'} (écart ${v.ecart})`,
+        ),
+    ).toEqual([]);
+  });
+
+  it('le stock des titres ne peut que DÉCROÎTRE — aucune clé soldée n’y traîne', () => {
+    expect([...FOLIO_TITLE_RATCHET].filter((k) => !found.has(k))).toEqual([]);
+  });
+
+  it('le stock des titres ne GROSSIT pas — sa taille est plafonnée par la garde', () => {
+    expect(FOLIO_TITLE_RATCHET.size).toBeLessThanOrEqual(FOLIO_TITLE_RATCHET_MAX);
+  });
+
+  it('ce que NI la desc NI le titre ne résolvent est compté et LISTÉ, jamais tu', () => {
+    const parFichier = new Map<string, string[]>();
+    for (const u of unresolved) {
+      const l = parFichier.get(u.file) ?? [];
+      l.push(`${u.key.slice(u.file.length + 1)} p.${u.page} (${u.descVerdict}/${u.titreVerdict})`);
+      parFichier.set(u.file, l);
+    }
+    console.log(
+      `FOLIO — ${total} entrées citées : ${stats['folio-ok'] ?? 0} prouvées par la desc, ${
+        stats['titre:titre-ok'] ?? 0
+      } par le titre, ${violationsCount(stats)} réfutées, ${noteAuthored.length} à NOTE AUTHORÉE (jamais cliquetées : ${noteAuthored
+        .map((n) => `${n.key} p.${n.page} « ${n.note} »`)
+        .join(' ; ')}), ${unresolved.length} IRRÉSOLUES :\n` +
+        [...parFichier]
+          .sort((a, b) => b[1].length - a[1].length)
+          .map(([f, l]) => `  ${f} (${l.length}) : ${l.join(', ')}`)
+          .join('\n'),
+    );
+    expect(unresolved.length).toBeLessThanOrEqual(UNRESOLVED_MAX);
+  });
+});
+
+/** Somme des verdicts réfutants, pour la ligne de compte du skip bruyant. */
+function violationsCount(stats: Record<string, number>): number {
+  return (stats['folio-ment'] ?? 0) + (stats['folio-impossible'] ?? 0) + (stats['titre:titre-ment'] ?? 0);
+}

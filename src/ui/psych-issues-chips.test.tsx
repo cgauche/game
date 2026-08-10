@@ -94,9 +94,9 @@ describe('#1189 — la bande de Psychologie DIT ses issues en chips d’ops', ()
     render();
     expect(host.textContent).toContain('Réussite :');
     expect(host.textContent).toContain('Échec :');
-    // Chaque chip porte son libellé de fiche + son badge. Le DR n'existe pas encore : la quantité
-    // d'États Brisé s'annonce « 2 (Indice) » AVEC sa progression « +1 par DR d'échec » (LDB 21 l.57),
-    // au lieu d'un « 2 × Brisé » que la résolution démentirait.
+    // PRÉ-jet : le rendu ne dispose d'aucun DR, donc la chip annonce la RÈGLE — la base « 2 (Indice) »
+    // AVEC son échelle « +1 par DR d'échec » (LDB 21 l.57) — et non un « 2 × Brisé » que la résolution
+    // démentirait. Chaque chip porte son libellé de fiche et son badge.
     expect(chips(), 'Réussite = Peur héritée ; Échec = Brisé (règle entière) PUIS Peur héritée')
       .toEqual(['Peur2', '2 × Brisé+1 par DR d’échec', 'Peur2']);
     const chip = host.querySelector('.rm-stake .entity-chip .codex-ref')!;

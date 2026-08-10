@@ -170,7 +170,7 @@ export function restoreSuppressedPsych(c: Combatant, expired: { suppressedPsych?
   }
 }
 
-/** Peur/Terreur inspirée par la Taille (LDB 85 l.317-318), du point de vue de `self` face à `foe` :
+/** Peur/Terreur inspirée par la Taille (LDB 85 l.381-383), du point de vue de `self` face à `foe` :
  *  écart ≥ 1 cat. → Peur (Indice = écart) ; ≥ 2 → Terreur. `foe` plus petit/égal → rien. */
 export function peurTerreurFromSize(foe?: SizeCategory, self?: SizeCategory): { kind: 'peur' | 'terreur'; indice: number } | null {
   const gap = sizeGap(foe, self); // > 0 si `foe` est plus grand

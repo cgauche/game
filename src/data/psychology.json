@@ -2,7 +2,7 @@
   {
     "id": "frenesie",
     "label": "Frénésie",
-    "desc": "Vous pouvez, par le biais d'un Test de Force Mentale, vous mettre dans un état psychologique dans lequel vous allez vous surmotiver, mordre votre bouclier, etc. Sur un succès, vous entrez en Frénésie.\n\nTant que vous êtes en Frénésie, vous êtes immunisé à tous les autres Traits Psychologiques, et sous aucun prétexte vous ne fuirez, ni ne battrez en retraite. À l'inverse, vous devez vous déplacer à votre maximum en direction de l'ennemi le plus proche dans votre Ligne de Vue pour l'attaquer. La seule Action possible est un Test de Capacité de Combat ou un Test d'Athlétisme pour atteindre votre ennemi le plus rapidement possible. De plus, vous pouvez effectuer un Test de Capacité de Combat gratuit chaque Round car vous vous lancez à corps perdu dans votre attaque. Enfin, vous gagnez un Bonus de Force de +1 grâce à votre férocité.\n\nVous restez en Frénésie jusqu'à ce que tous les ennemis dans votre Ligne de Vue soient neutralisés ou que vous gagniez l'État Sonné ou Inconscient. Dès que votre Frénésie s'achève, vous gagnez l'État Exténué.",
+    "desc": "Vous pouvez, par le biais d'un Test de Force Mentale, vous mettre dans un état psychologique dans lequel vous allez vous surmotiver, mordre votre bouclier, etc. Sur un succès, vous entrez en *Frénésie*.\n\nTant que vous êtes en *Frénésie*, vous êtes immunisé à tous les autres Traits Psychologiques, et sous aucun prétexte vous ne fuirez, ni ne battrez en retraite. À l'inverse, vous devez vous déplacer à votre maximum en direction de l'ennemi le plus proche dans votre Ligne de Vue pour l'attaquer. La seule Action possible est un Test de **Capacité de Combat** ou un Test d'**Athlétisme** pour atteindre votre ennemi le plus rapidement possible. De plus, vous pouvez effectuer un Test de **Capacité de Combat** gratuit chaque Round car vous vous lancez à corps perdu dans votre attaque. Enfin, vous gagnez un Bonus de Force de +1 grâce à votre férocité.\n\nVous restez en *Frénésie* jusqu'à ce que tous les ennemis dans votre Ligne de Vue soient neutralisés ou que vous gagniez l'État *Sonné* ou *Inconscient*. Dès que votre *Frénésie* s'achève, vous gagnez l'État *Exténué*.",
     "source": {
       "book": "livre-de-base",
       "page": 190
@@ -80,10 +80,10 @@
     "id": "peur",
     "label": "Peur",
     "icon": "flag/fear",
-    "desc": "La Peur représente une aversion extrême. Une créature qui cause la Peur possède un Indice de Peur : le DR à atteindre en Test ÉTENDU de Calme (un Test à la fin de chaque Round) pour la vaincre. Tant que votre DR cumulé reste inférieur à l'Indice, vous êtes sujet à la Peur : -1 DR à tous les Tests en rapport avec la source, vous ne pouvez vous en rapprocher sans réussir un Test de Calme Intermédiaire (+0), et si elle se rapproche de vous, réussissez un Test de Calme Intermédiaire (+0) ou gagnez un État Brisé.",
+    "desc": "La *Peur* représente une aversion extrême pour quelque chose. Les créatures qui causent la *Peur* possèdent un *Indice* de *Peur* ; cette valeur représente le DR que vous devez atteindre lorsque vous effectuez votre Test étendu de **Calme** pour vaincre cette *Peur*. Vous pouvez effectuer ce Test à la fin de chaque Round jusqu'à ce que votre DR devienne supérieur ou égal à l'*Indice* de *Peur* de la créature. Tant que ce n'est pas le cas, vous êtes sujet à la *Peur*.\n\nLorsque vous êtes sous le coup de la *Peur*, vous subissez -1 DR à tous les Tests en rapport avec la source de votre peur. Vous êtes incapable de vous rapprocher de ce qui provoque cette *Peur* à moins de réussir un Test de **Calme Intermédiaire (+0)**. Si la source de votre *Peur* se rapproche de vous, vous devez réussir un Test de **Calme Intermédiaire (+0)** ou gagner un État *Brisé*.",
     "source": {
       "book": "livre-de-base",
-      "page": 192
+      "page": 190
     },
     "attackDR": {
       "amount": -1,
@@ -125,10 +125,10 @@
     "label": "Animosité",
     "icon": "flag/anger",
     "targeted": true,
-    "desc": "Vous nourrissez une hostilité envers la Cible (un groupe). Test de Psychologie à chaque rencontre : sur un succès, -20 aux Tests de Sociabilité envers ce groupe ; sur un échec, vous subissez Animosité et devez immédiatement vous en prendre aux créatures (verbalement ou physiquement), avec +1 DR contre le groupe. À la fin de chaque Round suivant, un nouveau Test de Psychologie peut y mettre fin ; sinon l'effet cesse quand le groupe en Ligne de Vue se calme/disparaît, ou si vous gagnez Sonné/Inconscient. Annulé par Peur et Terreur.",
+    "desc": "Vous nourrissez une hostilité envers la *Cible*, qui représente un groupe de personnes ou de créatures, comme les « nordlanders » ou les « hommes-bêtes ». Vous devez effectuer un Test de Psychologie chaque fois que vous rencontrez l'un de ces groupes. Sur un succès, il est possible que vous marmonniez et crachiez au sol, mais vous ne subirez qu'une pénalité de -20 à vos Tests de Sociabilité envers ce groupe. Sur un échec, vous subissez *Animosité*. À la fin de chaque Round suivant, vous *pouvez* tenter un nouveau Test de Psychologie pour mettre fin à l'*Animosité*. Si ce n'est pas le cas, les effets d'*Animosité* cesseront naturellement lorsque tous les membres du groupe en question dans votre Ligne de Vue se seront calmés ou auront disparu, que vous aurez gagné un État *Sonné* ou *Inconscient*, ou que vous serez tombé sous le coup d'un autre effet psychologique.\n\nLorsque vous êtes atteint par l'*Animosité*, vous devez immédiatement vous en prendre aux créatures en question, que ce soit verbalement (insultes, sarcasmes ou autres) ou physiquement (le plus souvent avec les poings), en fonction. Vous gagnez également +1 DR dès que vous vous en prenez au groupe, que cela soit socialement ou physiquement. *Animosité* est annulé par *Peur* et *Terreur*.",
     "source": {
       "book": "livre-de-base",
-      "page": 192
+      "page": 190
     },
     "endedByOtherPsych": true,
     "attackDR": {
@@ -148,10 +148,10 @@
     "label": "Haine",
     "icon": "flag/anger",
     "targeted": true,
-    "desc": "Vous ressentez une profonde haine pour la Cible (un groupe). Test de Psychologie à la rencontre ; sur un échec, vous ressentez la Haine et devez tout faire pour détruire le groupe haï, le plus rapidement et violemment possible, avec +1 DR à tous les Tests de Combat contre lui, et immunité à Peur/Intimidation (mais pas Terreur) de ce groupe. À la fin de chaque Round, un Test de Psychologie peut y mettre fin ; sinon l'effet se dissipe quand le groupe en Ligne de Vue meurt/disparaît, ou si vous gagnez Inconscient.",
+    "desc": "Vous ressentez une profonde haine pour la *Cible*, qui représente en général un groupe de personnes ou de créatures, comme les « hochlanders », les « pieuvres des tourbières » ou les « esclavagistes ». Vous n'interagirez jamais avec des personnes que vous haïssez à ce point. Lorsque vous rencontrez ceux qui vous provoquent la *Haine*, vous devez effectuer un Test de Psychologie. Sur un échec, vous ressentez de la *Haine*. À la fin de chaque Round qui suivra, vous pourrez tenter un autre Test de Psychologie afin de mettre fin à votre État de *Haine*. Si vous ne le faites pas, les effets de la *Haine* se dissiperont d'eux-mêmes lorsque tous les membres du groupe concerné dans votre Ligne de Vue seront morts ou auront disparu, ou que vous gagniez l'État *Inconscient*.\n\nTant que vous ressentez de la *Haine*, vous devez faire tout ce qui est en votre pouvoir pour détruire le groupe haï, et ce, le plus rapidement et de manière la plus violente possible. Vous gagnez +1 DR à tous vos Tests de Combat effectués contre le groupe en question, et êtes immunisé à *Peur* et *Intimidation* (mais pas *Terreur*) causés par ceux de ce groupe.",
     "source": {
       "book": "livre-de-base",
-      "page": 192
+      "page": 190
     },
     "immuneToFromTarget": [
       "peur"
@@ -173,10 +173,10 @@
     "label": "Préjugé",
     "icon": "flag/anger",
     "targeted": true,
-    "desc": "Vous ressentez une aversion pour la Cible (un groupe). Test de Psychologie à chaque rencontre : sur un succès, -10 aux Tests de Sociabilité avec ce groupe ; sur un échec, vous devenez sensible aux Préjugés et devez copieusement insulter la Cible à voix haute. À partir du Round suivant, un Test de Psychologie peut y mettre fin ; sinon l'effet cesse quand le groupe en Ligne de Vue disparaît, ou si vous gagnez Sonné/Inconscient.",
+    "desc": "Vous ressentez une profonde aversion pour la *Cible*, en général un groupe de personnes ou de créatures, comme les « ostlanders », les « elfes » ou les « Sorciers ». Vous devez effectuer un Test de Psychologie chaque fois que vous rencontrez l'un de ces groupes. Sur un succès, il est possible que vous fronciez les sourcils, mais cela ne vous empêchera pas de vous comporter normalement. Vous ne subirez qu'une pénalité de -10 à vos Tests de Sociabilité avec ce groupe. Sur un échec, vous devenez sensible aux *Préjugés*. À partir du Round qui suivra, vous pourrez effectuer un autre Test de Psychologie de façon à mettre fin aux *Préjugés*. Si vous ne le faites pas, les effets de *Préjugé* s'arrêteront d'eux-mêmes lorsque tous les membres du groupe qui étaient dans votre Ligne de Vue auront disparu, que vous gagniez l'État *Sonné* ou *Inconscient*, ou que vous soyez sujet à un autre Trait Psychologique.\n\nLorsque vous êtes sujet aux *Préjugés*, vous devez copieusement insulter votre *Cible* à haute et intelligible voix.",
     "source": {
       "book": "livre-de-base",
-      "page": 192
+      "page": 190
     },
     "endedByOtherPsych": true,
     "resolution": "binary",
@@ -192,10 +192,10 @@
     "label": "Amour",
     "icon": "flag/bond",
     "targeted": true,
-    "desc": "Une très forte relation émotionnelle envers un ou plusieurs individus. Vous devez venir en aide à un être aimé menacé (physiquement ou verbalement). Tant que vous défendez les êtres aimés, vous êtes immunisé à la Peur et à l'Intimidation, et gagnez +1 DR à tous les Tests en rapport.",
+    "desc": "Les poètes parlent tout le temps d'amour, et même les bardes du Reikland connaissent des dizaines de chansons qui sont autant d'odes au pouvoir de l'amour. Si votre Personnage possède le Trait Amour envers un ou plusieurs individus, ce dernier reflète une très forte relation émotionnelle entre les deux. Cela peut être l'amour romantique qu'il va éprouver envers sa femme, son mari ou son amoureux, un profond amour familial envers un frère, une sœur, un parent ou un enfant, ou encore une très forte amitié. Vous devez venir en aide à quelqu'un que vous aimez s'il se retrouve menacé, que ce soit physiquement ou verbalement. Vous êtes immunisé à la *Peur* et l'*Intimidation* tant que vous défendez les êtres aimés, et vous gagnez +1 DR à tous les Tests en rapport.",
     "source": {
       "book": "livre-de-base",
-      "page": 192
+      "page": 191
     },
     "attackDR": {
       "amount": 1,
@@ -215,10 +215,10 @@
     "label": "Camaraderie",
     "icon": "flag/bond",
     "targeted": true,
-    "desc": "Des sentiments positifs envers un groupe d'individus. Vous devez leur venir en aide si le groupe est menacé (verbalement ou physiquement), et vous gagnez +1 DR aux Tests effectués pour le défendre.",
+    "desc": "La *Camaraderie* reflète les sentiments positifs ressentis envers un groupe d'individus. Vous devez alors leur venir en aide si ce groupe est menacé (que ce soit verbalement ou physiquement), et vous gagnez +1 DR lors des Tests effectués pour défendre ce groupe.",
     "source": {
       "book": "livre-de-base",
-      "page": 192
+      "page": 191
     },
     "attackDR": {
       "amount": 1,
@@ -237,10 +237,10 @@
     "label": "Phobie",
     "icon": "flag/fear",
     "targeted": true,
-    "desc": "Une peur irrationnelle et incontrôlable d'une Cible précise (un groupe ou un type de créature). Traitée comme un Trait Psychologique ciblé : Test de Psychologie à la rencontre, résolution binaire de Calme.",
+    "desc": "Une phobie reflète une peur spécifique ; cela peut-être envers un *Type* de créature, ou envers un objet ou une situation particulière, tel que *Phobie* (Insectes), *Phobie* (Livres) ou *Phobie* (Espaces clos). Traitez l'objet de la *Phobie* comme causant *Peur 1*. Vous pouvez vouloir augmenter l'*Indice* de *Peur* si la *Phobie* est particulièrement forte.",
     "source": {
       "book": "livre-de-base",
-      "page": 192
+      "page": 191
     },
     "resolution": "binary",
     "test": {
