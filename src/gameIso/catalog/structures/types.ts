@@ -35,15 +35,27 @@ export interface StructureAppearanceDef {
   /** FENÊTRE (croisée décorative sertie dans le mur) : `glass` = verre froid du JOUR, `lit` = verre AMBRÉ
    *  ÉMISSIF de la NUIT (halo chaud), `frame` = cadre/dormant, `mullion` = meneau + traverse (croisillon). */
   window?: { glass: string; lit: string; frame: string; mullion: string };
+  /** RELIEF MINCE (m) des parties, consommé par le backend VOLUMIQUE qui en fait une BOÎTE centrée sur
+   *  le plan médian du mur (`wallPartDepthM`). Deux quantités, une par FAMILLE de partie :
+   *  `jut` = SAILLIE par CÔTÉ d'une partie posée devant de la matière pleine (épaisseur totale =
+   *  épaisseur du mur + 2×`jut`) ; `thick` = épaisseur TOTALE d'une partie qui BOUCHE une ouverture
+   *  (rien derrière elle ; 0 = plan unique au médian). Absent = les défauts par partie de
+   *  `catalog/structures/index.ts`. */
+  relief?: { jut?: Partial<Record<WallPart, number>>; thick?: Partial<Record<WallPart, number>> };
 }
 
-/** Partie NOMMÉE d'un mur assemblé par le builder du pivot (`builders/walls`). Chaque backend résout la
+/** Parties NOMMÉES d'un mur assemblé par le builder du pivot (`builders/walls`) — LISTE RUNTIME dont
+ *  l'union `WallPart` dérive : le `switch` de `wallPartRelief` s'y mesure (garde d'exhaustivité), et le
+ *  schéma de `structureAppearance.json` y contraint les clés de `relief`. Chaque backend résout la
  *  couleur de BASE d'une partie via `wallPartColor` puis applique SA lumière (orientation iso / tint POV). */
-export type WallPart =
-  | 'face' | 'poteau' | 'couronnement' | 'panneau' | 'moulure' | 'plinthe' // panneau bois encadré
-  | 'embrasure' | 'chambranle' | 'jambage' // porte bois ajourée (ouverte)
-  | 'vantail' | 'vantail-planche' | 'poignee' // vantail de porte FERMÉE
-  | 'vitre' | 'meneau' // fenêtre AJOURÉE (vitre transparente + meneau/croisillon ; encadrée par la `face`)
-  | 'parapet' | 'bande' | 'arase' | 'merlon' // fortification crénelée
-  | 'linteau' | 'herse-barreau' | 'herse-traverse' | 'seuil' // corps de garde (herse / seuil d'éboulis)
-  | 'gravats' | 'gravats-tas'; // brèche (structure abattue)
+export const WALL_PARTS = [
+  'face', 'poteau', 'couronnement', 'panneau', 'moulure', 'plinthe', // panneau bois encadré
+  'embrasure', 'chambranle', 'jambage', // porte bois ajourée (ouverte)
+  'vantail', 'vantail-planche', 'poignee', // vantail de porte FERMÉE
+  'vitre', 'meneau', // fenêtre AJOURÉE (vitre transparente + meneau/croisillon ; encadrée par la `face`)
+  'parapet', 'bande', 'arase', 'merlon', // fortification crénelée
+  'linteau', 'herse-barreau', 'herse-traverse', 'seuil', // corps de garde (herse / seuil d'éboulis)
+  'gravats', 'gravats-tas', // brèche (structure abattue)
+] as const;
+
+export type WallPart = (typeof WALL_PARTS)[number];

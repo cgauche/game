@@ -28,13 +28,15 @@ import {
   SUN_INTENSITY,
 } from './sceneMeshes';
 import { facesGeometry, polyBounds, type Vec3 } from './worldTris';
-import { anchorAndSize, billboardHeightM, BILLBOARD_BOX_ASPECT } from './billboardMath';
+import { faceDepthOf } from './faceRelief';
+import { anchorAndSize, billboardHeightM, BILLBOARD_BOX_ASPECT, type BillboardConvention } from './billboardMath';
 import { TINT_EXPLORED } from './visibilityTint';
 import { faceSurface, tintVarFactor } from './faceColors';
 import { faceBakeData, FACE_PX_PER_M } from './faceBake';
 import { coursesPeriodM, groundPeriodM, roofCourseStepM, variantOf, N_VARIANTS } from '../../detail/courses';
 import { facadeStructureAppearance } from '../../catalog/facades';
-import { roofMaterial } from '../../catalog/roofs';
+import { FASCIA_THICK_M, roofMaterial } from '../../catalog/roofs';
+import { wallPartRelief, WALL_PARTS } from '../../catalog/structures';
 import { ROOF_SLOPE_M } from '../../builders/roofs';
 import { buildWalls } from '../../builders/walls';
 import { TERRAIN_DEFS } from '../../../state/terrain';
@@ -104,7 +106,7 @@ describe('ORIENTATION — les triangles regardent DEHORS (la carte d’ombre en 
     const m = sceneMetresPerTile(scn);
     const listées = worldFaces(scn);
     const pos = buildWorldGeometry(scn, m, plein).getAttribute('position').array as Float32Array;
-    const geoms = facesGeometry(listées.map((f) => f.face), m);
+    const geoms = facesGeometry(listées.map((f) => f.face), m, faceDepthOf(m));
     // La fusion émet les faces GROUPÉES par surface (un groupe = un dessin) : le bilan les parcourt
     // dans CET ordre, sinon il compare le triangle d'une face à la normale d'une autre.
     const ordre = surfaceGrouping(listées, m).faceIndices.flat();
@@ -196,7 +198,7 @@ describe('CONTENU — ce qu’un cadrage doit tenir', () => {
       // Toute face NON-TERRAIN (relief, structure, toiture) tient dans la boîte de contenu. Les rangs
       // coplanaires se mesurent sur la liste ENTIÈRE (contrat de `coplanarRanks`) : on filtre APRÈS.
       const toutes = worldFaces(scn).map((f) => f.face);
-      const geoms = facesGeometry(toutes, m);
+      const geoms = facesGeometry(toutes, m, faceDepthOf(m));
       let bati = 0;
       let dehors = 0;
       for (let i = 0; i < toutes.length; i++) {
@@ -315,6 +317,41 @@ describe('LUMIÈRE — un soleil neutre et calibré', () => {
     expect(rig.normalBias).toBeCloseTo(((2 * rig.span) / SHADOW_MAP_SIZE) * SHADOW_NORMAL_BIAS_TEXELS, 9);
     expect(rig.normalBias).toBeLessThan(0.25); // le forfait de 0,35 m mangeait l'ombre des blocs bas
   });
+
+  // ── Le biais de normale grandit avec la scène (il vaut 3 texels de carte d'ombre, et un texel
+  // couvre `2 × rayon / 2048` mètres) : un relief plus mince que lui se noie dans sa propre ombre.
+  // La garde se joue donc scène par scène, sur la boîte des CASTEURS (géométrie + quads de billboard,
+  // `worldShadowBox` — le chemin de l'écran, `SpikeScreen.tsx`), au PIRE des trois conventions de
+  // taille offertes. Une scène plus large que l'opéra rougit ICI, au lieu de noyer le relief en silence.
+  const MIN_RELIEF_M = Math.min(
+    FASCIA_THICK_M,
+    ...WALL_PARTS.map(wallPartRelief).flatMap((r) => (r.famille === 'saillie' ? [r.jutM] : [])),
+  );
+  /** Marge exigée du plus mince relief sur le biais d'ombre de la scène. */
+  const MARGE_MIN = 1.2;
+
+  /** Biais de normale RÉEL d'une scène, au pire des conventions de taille de billboard. */
+  function biaisReel(scn: Scene): number {
+    const m = sceneMetresPerTile(scn);
+    const geoBox = buildWorldGeometry(scn, m, plein).boundingBox!;
+    const subs = collectBillboards(scn, m, plein);
+    const biais = (['jeu', 'heroique', 'metrique'] as BillboardConvention[]).map((conv) =>
+      sunRig(
+        worldShadowBox(geoBox, subs, (s: (typeof subs)[number]) =>
+          anchorAndSize(billboardHeightM(conv, s.kind) * s.scaleK, BILLBOARD_BOX_ASPECT),
+        ),
+      ).normalBias,
+    );
+    return Math.max(...biais);
+  }
+
+  for (const [nom, faire] of TEMOINS)
+    it(`${nom} : le plus MINCE relief du catalogue dépasse le biais d’ombre de la scène (marge ≥ 20 %)`, () => {
+      const biais = biaisReel(faire());
+      expect([nom, biais > 0]).toEqual([nom, true]);
+      expect([nom, MIN_RELIEF_M > biais]).toEqual([nom, true]);
+      expect([nom, MIN_RELIEF_M / biais >= MARGE_MIN]).toEqual([nom, true]);
+    });
 });
 
 describe('CIEL & BRUME — les couleurs du POV, jamais des teintes propres au spike', () => {

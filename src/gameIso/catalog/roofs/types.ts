@@ -32,10 +32,14 @@ export interface RoofMaterialDef {
    *  - `fasciaDropM` : hauteur de la planche de rive VERTICALE pendant du bord extérieur du soffite.
    *    Absent ⇒ pas de fascia dure (bord arrondi, ex. chaume) ;
    *  - `fascia` : ton de la fascia (sombre — c'est l'ombre sous l'avant-toit qui « détache » le toit du mur) ;
+   *  - `fasciaThickM` : ÉPAISSEUR de cette planche de rive, pour le backend VOLUMIQUE qui en fait une
+   *    boîte mince centrée sur son plan (le backend affine l'ignore : il peint un quad d'écran). Absent ⇒
+   *    `FASCIA_THICK_M` ;
    *  - `ridgeCap` : liseré CLAIR du couronnement de FAÎTE (rendu par un trait de faîte renforcé au backend). */
   eaveOverhangM?: number;
   soffite?: string;
   fasciaDropM?: number;
+  fasciaThickM?: number;
   fascia?: string;
   ridgeCap?: string;
 }

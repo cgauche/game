@@ -4,6 +4,7 @@ import { structureAppearances } from '../../../data';
 import { shade } from '../../shade';
 import { catalogEntry, MISSING_ID, MISSING_TONE, MISSING_TONE_DARK } from '../missing';
 export type { StructureAppearanceDef, WallPart } from './types';
+export { WALL_PARTS } from './types';
 
 const MAP: Record<string, StructureAppearanceDef> = Object.fromEntries(structureAppearances.map((s) => [s.id, s]));
 
@@ -65,4 +66,65 @@ export function wallPartColor(app: StructureAppearanceDef, part: WallPart): stri
     case 'gravats': case 'seuil': return app.rubble ?? app.wood?.rubble ?? app.face;
     case 'gravats-tas': return app.rubbleHi ?? app.wood?.rubbleHi ?? app.face;
   }
+}
+
+/** FAMILLE de relief d'une partie de mur — ce qu'il y a DERRIÈRE elle décide de son volume :
+ *  - `matiere` : la partie EST la matière pleine du mur (courtine, couronnements, montants) ;
+ *  - `saillie` : la partie est POSÉE devant de la matière pleine (`jutM` = saillie par côté) ;
+ *  - `traversant` : la partie BOUCHE une ouverture, il n'y a RIEN derrière elle (`thickM` = épaisseur
+ *    totale) — un vantail de porte, un carreau, les barreaux d'une herse, un tas de gravats.
+ *  CALIBRAGE des saillies (#1176 P1-E) : le décalage de la carte d'ombre le long de la normale
+ *  (`sunRig().normalBias`, `sceneMeshes.ts`) suit le rayon englobant des CASTEURS — géométrie ET quads
+ *  de billboard (`worldShadowBox`) —, donc la TAILLE de la scène. Mesuré (m) sur les six scènes-témoins
+ *  du spike, au pire des trois conventions de taille de billboard :
+ *    opera 0,2118 · arene 0,1883 · siege-enceinte 0,1623 · diligence 0,1471 · vitrine-batiments 0,1142 ·
+ *    pont-vitrine 0,0677.
+ *  Un relief plus mince que ce décalage se noie dans sa propre ombre. Les saillies partent donc de
+ *  0,26 m par côté — 22,7 % au-dessus du pire (5,9 px d'écran affine à 2 m/tuile, `pxPerM(2)` =
+ *  22,63 px/m), sur un mur de 0,168 m d'épaisseur : relief FRANC, style épuré assumé. Une scène plus
+ *  large que l'opéra rougit la garde par scène de `sceneMeshes.test.ts` au lieu de noyer le relief en
+ *  silence. Chaque valeur reste éditable par apparence (`StructureAppearanceDef.relief`). */
+export type WallPartRelief =
+  | { famille: 'matiere' }
+  | { famille: 'saillie'; jutM: number }
+  | { famille: 'traversant'; thickM: number };
+
+export function wallPartRelief(part: WallPart): WallPartRelief {
+  switch (part) {
+    case 'face': case 'parapet': case 'arase': case 'merlon': case 'couronnement':
+    case 'poteau': case 'jambage':
+      return { famille: 'matiere' };
+    case 'panneau': case 'plinthe': case 'bande':
+      return { famille: 'saillie', jutM: 0.26 };
+    case 'moulure': case 'chambranle':
+      return { famille: 'saillie', jutM: 0.28 };
+    case 'embrasure': case 'vantail': case 'linteau': case 'seuil':
+      return { famille: 'traversant', thickM: 0.17 };
+    // Porte FERMÉE, trois épaisseurs CROISSANTES : le vantail affleure l'embrasure qu'il bouche, ses
+    // joints de planches sont cloués DESSUS (il en dépasse de part et d'autre), et le bouton traverse
+    // le tout pour saillir des DEUX côtés — c'est ce geste que verrouille `relief.test.ts`.
+    case 'vantail-planche': return { famille: 'traversant', thickM: 0.21 };
+    case 'poignee': return { famille: 'traversant', thickM: 0.28 };
+    case 'meneau': return { famille: 'traversant', thickM: 0.12 };
+    case 'herse-barreau': return { famille: 'traversant', thickM: 0.1 };
+    case 'herse-traverse': return { famille: 'traversant', thickM: 0.13 };
+    case 'gravats': return { famille: 'traversant', thickM: 0.6 };
+    case 'gravats-tas': return { famille: 'traversant', thickM: 0.8 };
+    case 'vitre': return { famille: 'traversant', thickM: 0 };
+  }
+  // Une `part` hors de l'union vient du CODE (un builder qui émettrait une partie non catalogée), jamais
+  // d'une donnée : elle LÈVE en se nommant, là où un id de donnée absent d'un catalogue prend le repli
+  // VISIBLE (`catalogEntry`, #877).
+  throw new Error(`partie de mur inconnue : ${part}`);
+}
+
+/** ÉPAISSEUR MONDE (m) du volume d'une partie de mur — SOURCE UNIQUE du backend volumique, résolue par
+ *  (apparence × partie) comme l'est sa couleur (`wallPartColor`). `wallM` = épaisseur de la matière
+ *  pleine du mur, que seul le backend connaît (elle suit l'échelle métrique de la scène). 0 = la partie
+ *  reste un PLAN unique, au plan médian du mur (le carreau d'une croisée). */
+export function wallPartDepthM(app: StructureAppearanceDef, part: WallPart, wallM: number): number {
+  const relief = wallPartRelief(part);
+  if (relief.famille === 'matiere') return wallM;
+  if (relief.famille === 'saillie') return wallM + 2 * (app.relief?.jut?.[part] ?? relief.jutM);
+  return app.relief?.thick?.[part] ?? relief.thickM;
 }

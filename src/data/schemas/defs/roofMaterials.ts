@@ -25,6 +25,7 @@ export const schema = z.array(
     eaveOverhangM: z.number().optional(),
     soffite: z.string().optional(),
     fasciaDropM: z.number().optional(),
+    fasciaThickM: z.number().optional(),
     fascia: z.string().optional(),
     ridgeCap: z.string().optional(),
   }),

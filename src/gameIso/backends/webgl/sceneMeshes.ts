@@ -23,6 +23,7 @@ import type { PeriodKind } from './periodTexture';
 import { faceBakeKey, needsFaceBake } from './faceBake';
 import { facePoly, faceUvFrame, facesGeometry, polyNormal } from './worldTris';
 import { faceSurface, tintVarFactor } from './faceColors';
+import { faceDepthOf } from './faceRelief';
 import { BB_W, BB_H } from '../../pov/billboardCore';
 import { type BillboardKind } from './billboardMath';
 import { DEFS } from '../../sprites';
@@ -192,7 +193,7 @@ export function buildWorldGeometry(scene: Scene, mpt: number, tintAt: TintAt): W
   const faces = listées.map((f) => f.face);
   const tints = listées.map((f) => tintAt(f.cellKey));
   // Le RANG coplanaire se calcule sur la liste ENTIÈRE de la scène (contrat de `coplanarRanks`).
-  const geoms = facesGeometry(faces, mpt);
+  const geoms = facesGeometry(faces, mpt, faceDepthOf(mpt));
   const positions: number[] = [];
   const colors: number[] = [];
   const uvs: number[] = [];
@@ -522,7 +523,7 @@ function builtFacesBox(scene: Scene, mpt: number): THREE.Box3 | null {
 
 function computeBuiltFacesBox(scene: Scene, mpt: number): THREE.Box3 | null {
   const faces = worldFaces(scene).map((f) => f.face);
-  const geoms = facesGeometry(faces, mpt);
+  const geoms = facesGeometry(faces, mpt, faceDepthOf(mpt));
   const box = new THREE.Box3();
   const p = new THREE.Vector3();
   for (let i = 0; i < faces.length; i++) {

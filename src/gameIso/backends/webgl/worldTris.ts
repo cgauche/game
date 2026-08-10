@@ -5,9 +5,10 @@
  *
  * Quatre politiques y vivent, chacune une fonction :
  *  - TRIANGULATION en ÉVENTAIL (les faces du pivot sont planes, convexes, ≤ 4 points) ;
- *  - ÉPAISSEUR de MUR : une face de structure verticale est un plan d'épaisseur NULLE (l'affine peint
- *    des quads d'écran) — sans surface à 90° de plongée. Les parts PLEINES deviennent une boîte mince
- *    (`wallBoxPolys`), les parts décoratives une copie par joue ;
+ *  - VOLUME d'une face VERTICALE : une face du pivot est un plan d'épaisseur NULLE (l'affine peint des
+ *    quads d'écran) — sans surface à 90° de plongée, sans chant à éclairer. Toute face verticale à qui
+ *    l'appelant résout une profondeur (`FaceDepth`, catalogues d'apparence : `faceRelief.ts`) devient
+ *    une BOÎTE MINCE centrée sur son plan (`wallBoxPolys`) ;
  *  - MONTANTS à 2 points (`walls.ts:119`, `floors.ts:163`) : deux quads verticaux CROISÉS, largeur MONDE
  *    dérivée de la largeur écran du backend affine, portée au-delà des joues du mur par la SAILLIE
  *    (`uprightCrossWidthM`) ; ces quads entrent dans le calcul coplanaire au même
@@ -155,10 +156,11 @@ export function crossQuadTris(a: Vec3, b: Vec3, wM: number): Tri[] {
   return crossQuadPolys(a, b, wM).flatMap(fanTriangles);
 }
 
-/** Parts de mur PLEINES (`builders/walls.ts`) : le corps de la courtine (`face`) et les COURONNEMENTS
- *  (bande haute de bois, parapet dressé, arase, merlons). Toute autre part d'un mur (panneau, moulure,
- *  plinthe, bande, vitre, vantail, herse…) est un DÉCOR posé sur la joue, pas de la matière. */
-const SOLID_WALL_PARTS = new Set(['face', 'couronnement', 'parapet', 'arase', 'merlon']);
+/** PROFONDEUR MONDE (m) du volume d'une face, résolue par l'appelant depuis les catalogues d'apparence
+ *  (`faceRelief.ts`) — ce module ne connaît aucun matériau. `undefined` = pas de profondeur résolue :
+ *  la face garde la matière pleine du mur si elle est de `structure`, et reste un PLAN sinon.
+ *  Une profondeur NULLE laisse elle aussi un plan unique, au plan médian. */
+export type FaceDepth = (face: Face) => number | undefined;
 
 /** ÉPAISSEUR MONDE (m) d'un mur d'arête. Les faces du pivot sont des plans d'épaisseur NULLE (l'affine
  *  peint des quads d'écran) : à 90° de plongée un mur y a une surface nulle. Épaisseur = la largeur du
@@ -312,29 +314,36 @@ export interface FaceGeom {
 }
 
 /** Quads d'une face soumis au biais coplanaire : le polygone lui-même, ou les DEUX quads croisés d'un
- *  montant (2 points), ou la BOÎTE MINCE d'une face de mur pleine (+ les deux copies d'une face
- *  décorative de mur, une par joue). Un bras de la croix d'un montant est EXACTEMENT dans le plan du
+ *  montant (2 points), ou la BOÎTE MINCE de toute face VERTICALE à qui l'appelant a résolu une
+ *  profondeur. Un bras de la croix d'un montant est EXACTEMENT dans le plan du
  *  panneau qu'il décore : il entre donc dans le rang coplanaire comme une face pleine (mesuré sur
  *  `arene` : 388 paires montant↔montant + 2 607 paires montant↔face pleine, invisibles tant que les
  *  montants étaient exclus). */
-export function faceQuads(face: Face, mpt: number): WorldPoly[] {
-  return faceQuadsOriented(face, mpt).quads;
+export function faceQuads(face: Face, mpt: number, depthM?: number): WorldPoly[] {
+  return faceQuadsOriented(face, mpt, depthM).quads;
 }
 
 /** Quads d'une face + le drapeau `oriented` : `true` quand le sens de parcours des quads PORTE déjà une
- *  information (chaque quad regarde le DEHORS du volume qui vient d'être fabriqué — boîte de mur, copies
- *  par joue), `false` quand la face est rendue telle que le pivot l'a authorée (aucune convention de
- *  sens) et qu'il revient au consommateur de l'orienter. */
-export function faceQuadsOriented(face: Face, mpt: number): { quads: WorldPoly[]; oriented: boolean } {
+ *  information (chaque quad regarde le DEHORS de la boîte qui vient d'être fabriquée), `false` quand la
+ *  face est rendue telle que le pivot l'a authorée (aucune convention de sens) et qu'il revient au
+ *  consommateur de l'orienter.
+ *
+ *  UNE forme, deux familles de matière (`catalog/structures` `wallPartRelief`) : une partie POSÉE devant
+ *  la matière pleine (panneau, moulure, plinthe…) comme une partie qui BOUCHE une ouverture (vantail,
+ *  herse, gravats — le pivot n'émet AUCUNE face derrière elles) deviennent la MÊME boîte centrée sur le
+ *  plan médian du mur. Centrée, parce qu'une `Face` de mur ne porte AUCUNE notion de joue intérieure ou
+ *  extérieure (`builders/walls.ts` ne renseigne jamais `face.side`) : il n'y a pas de côté à choisir, un
+ *  seul volume est visible des deux bords. Profondeur NULLE ⇒ plan unique au médian et `oriented: false`
+ *  — un sens de parcours y serait arbitraire, et la carte d'ombre le suivrait. */
+export function faceQuadsOriented(face: Face, mpt: number, depthM?: number): { quads: WorldPoly[]; oriented: boolean } {
   const poly = facePoly(face, mpt);
   if (poly.length === 2)
     return { quads: crossQuadPolys(poly[0], poly[1], uprightCrossWidthM(face.material.part, mpt)), oriented: false };
-  if (face.material.domain !== 'structure') return { quads: [poly], oriented: false };
   const n = polyNormal(poly);
   if (!n || Math.abs(n.y) > 1e-6) return { quads: [poly], oriented: false }; // seul un plan VERTICAL a une épaisseur d'arête
-  const t = wallThicknessM(mpt);
-  if (SOLID_WALL_PARTS.has(face.material.part ?? '')) return { quads: wallBoxPolys(poly, n, t), oriented: true };
-  return { quads: [offsetPoly(poly, n, t / 2), reversePoly(offsetPoly(poly, n, -t / 2))], oriented: true };
+  const t = depthM ?? (face.material.domain === 'structure' ? wallThicknessM(mpt) : 0);
+  if (t <= 0) return { quads: [poly], oriented: false };
+  return { quads: wallBoxPolys(poly, n, t), oriented: true };
 }
 
 // ————————————————————————————————————————————————————————————————
@@ -412,12 +421,12 @@ export function faceUv1(p: Vec3, f: FaceUvFrame): UV {
   return { u: clamp01((uv.u - f.u0) / f.du), v: clamp01((uv.v - f.v0) / f.dv) };
 }
 
-/** Faces → triangles monde, biais coplanaire appliqué, montants développés en croix et murs en boîtes
- *  minces. Le RANG se calcule
+/** Faces → triangles monde, biais coplanaire appliqué, montants développés en croix et faces verticales
+ *  développées en boîtes minces à la profondeur que `depthOf` leur résout. Le RANG se calcule
  *  sur la liste FOURNIE (cf. `coplanarRanks` : la porter à l'échelle de la scène), quads de montants
  *  compris. Le `rank` rendu pour un montant est le PLUS HAUT de ses deux quads. */
-export function facesGeometry(faces: readonly Face[], mpt: number): FaceGeom[] {
-  const parts = faces.map((f) => faceQuadsOriented(f, mpt));
+export function facesGeometry(faces: readonly Face[], mpt: number, depthOf?: FaceDepth): FaceGeom[] {
+  const parts = faces.map((f) => faceQuadsOriented(f, mpt, depthOf?.(f)));
   const ranks = coplanarRanks(parts.flatMap((p) => p.quads));
   const out: FaceGeom[] = [];
   let k = 0;

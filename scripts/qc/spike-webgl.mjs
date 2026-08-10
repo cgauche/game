@@ -50,6 +50,7 @@ const DIVERGENCES = [
   "Art des props limité à 3 vues + miroir (`propSvg`) : le spike ne lève PAS cette contrainte — un billboard reste un dessin, pas un volume.",
   'Animation hors périmètre : aucune pose de marche, aucun `fx` d’ambiance — chaque capture est un arrêt sur image.',
   "Murs ÉPAIS (~0,17 m) et COIFFÉS : le backend affine peint des plans d'épaisseur nulle, le spike en fait des boîtes minces avec une coiffe au sommet (`wallBoxPolys`) — les silhouettes divergent de ±2 px, et un mur offre une surface vue du dessus là où le SVG n'en a aucune.",
+  "ORNEMENTS en RELIEF : panneaux, moulures, plinthes et ferrures SAILLENT du mur (0,20–0,22 m par côté), vantaux, herses, meneaux et gravats sont des volumes qui bouchent leur ouverture des deux côtés — profondeur résolue par apparence × partie (`wallPartDepthM`), éditable en donnée. Le SVG les peint à plat sur la joue : ici leurs chants prennent la lumière du soleil, et un ornement se lit à son ombre portée. Seul le carreau d'une croisée reste un plan (profondeur nulle), en retrait de son chambranle et de son meneau.",
   "Accents MURAUX seedés au monde non portés (blocs nuancés d'un appareillage mural, mouchetis d'usure) : la cuisson par face du spike ne porte que le canal DÉTERMINISTE (colombage), partagé par gabarit — leur canal dédié est spécifié au #1198.",
   "Disque d'ombre de contact en COULEUR CUITE seulement : en mode éclairé, la silhouette projette sa vraie ombre (`castShadow`) et le disque en ferait une seconde.",
 ];

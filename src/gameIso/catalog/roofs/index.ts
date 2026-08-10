@@ -24,3 +24,13 @@ const MISSING: RoofMaterialDef = {
 export function roofMaterial(id: string): RoofMaterialDef {
   return catalogEntry(MAP, id, 'toiture', MISSING);
 }
+
+/** ÉPAISSEUR (m) par défaut d'une planche de rive, quand la def n'en porte pas — MÊME calibrage que les
+ *  saillies de mur (`wallPartRelief`, table des biais mesurés par scène) : au-dessus du décalage de la
+ *  carte d'ombre le plus large des scènes-témoins (0,2118 m à l'opéra), marge comprise. */
+export const FASCIA_THICK_M = 0.26;
+
+/** ÉPAISSEUR MONDE (m) de la planche de rive d'une couverture — SOURCE UNIQUE du backend volumique. */
+export function roofFasciaThickM(mat: RoofMaterialDef): number {
+  return mat.fasciaThickM ?? FASCIA_THICK_M;
+}

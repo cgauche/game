@@ -29,12 +29,16 @@ import {
   type Vec3,
   type WorldPoly,
 } from './worldTris';
+import { faceDepthM, faceDepthOf } from './faceRelief';
+import { wallPartRelief, type WallPart } from '../../catalog/structures';
 import { buildFloors } from '../../builders/floors';
 import { buildWalls } from '../../builders/walls';
 import { buildRoofs } from '../../builders/roofs';
 import { buildScene } from '../../../state/mapSpec';
 import { spec as siegeSpec } from '../../../scenes/test-scenarios/siege-enceinte';
 import { scenario as arene } from '../../../scenes/test-scenarios/arene';
+import { scenario as diligence } from '../../../scenes/test-scenarios/diligence';
+import { buildVitrineScene } from '../../../scenes/vitrine-batiments';
 import { buildOperaFloorplan } from '../../../scenes/opera/floorplan';
 import { sceneMetresPerTile, type Scene } from '../../../state/scene';
 import { TW } from '../../../geometry/iso';
@@ -45,6 +49,14 @@ const siege = buildScene(siegeSpec);
 /** Toutes les faces MONDE d'une scène, dans l'ordre de peinture des builders. */
 function facesOf(scene: Scene): Face[] {
   return [...buildFloors(scene), ...buildWalls(scene), ...buildRoofs(scene)].flatMap((el) => el.faces);
+}
+
+/** Quads MONDE d'une scène à la profondeur que les catalogues d'apparence résolvent (`faceRelief`) —
+ *  la liste EXACTE que `buildWorldGeometry` fusionne, jamais une géométrie de laboratoire. */
+function quadsOf(scene: Scene): WorldPoly[] {
+  const mpt = sceneMetresPerTile(scene);
+  const depthOf = faceDepthOf(mpt);
+  return facesOf(scene).flatMap((f) => faceQuads(f, mpt, depthOf(f)));
 }
 
 describe('gpToWorld — GP (tuiles + mètres) → repère three Y-haut', () => {
@@ -134,11 +146,17 @@ describe('MONTANTS à 2 points — deux quads verticaux croisés, largeur écran
   it('arène : AUCUN montant n’est entièrement noyé dans la matière des murs', () => {
     const mpt = sceneMetresPerTile(arene.scene);
     const faces = facesOf(arene.scene);
-    // Matière = les BOÎTES des faces de mur pleines (5 quads : 2 joues + coiffe + 2 chants).
+    const depthOf = faceDepthOf(mpt);
+    // Matière = les boîtes des faces qui SONT la matière pleine du mur (`wallPartRelief`) — depuis le
+    // relief mince (#1176 P1-E), une partie en SAILLIE produit une boîte elle aussi, mais plus épaisse
+    // que le montant : la mesure porterait à faux si on la comptait comme de la matière.
     const boites: Bounds[] = [];
     for (const f of faces) {
-      const { quads, oriented } = faceQuadsOriented(f, mpt);
-      if (oriented && quads.length === 5) boites.push(polyBounds(quads.flat()));
+      const part = f.material.part as WallPart | undefined;
+      if (f.material.domain !== 'structure' || !part) continue;
+      if (wallPartRelief(part).famille !== 'matiere') continue;
+      const { quads, oriented } = faceQuadsOriented(f, mpt, depthOf(f));
+      if (oriented) boites.push(polyBounds(quads.flat()));
     }
     expect(boites.length).toBeGreaterThan(100);
     const dedans = (p: Vec3) =>
@@ -215,8 +233,7 @@ describe('BIAIS COPLANAIRE — l’ordre de peinture affine devient une séparat
   ];
   for (const [name, scene] of scenes)
     it(`${name} : des paires coplanaires recouvrantes AVANT biais, zéro APRÈS (montants COMPRIS)`, () => {
-      const mpt = sceneMetresPerTile(scene);
-      const quads = facesOf(scene).flatMap((f) => faceQuads(f, mpt));
+      const quads = quadsOf(scene);
       const ranks = coplanarRanks(quads);
       const biased = quads.map((p, i) => biasPoly(p, ranks[i]));
       expect(coplanarOverlapPairs(quads).length).toBeGreaterThan(0);
@@ -226,10 +243,11 @@ describe('BIAIS COPLANAIRE — l’ordre de peinture affine devient une séparat
   it('arène : les quads de MONTANT entrent dans le rang (poteaux/jambages/piliers)', () => {
     const mpt = sceneMetresPerTile(arene.scene);
     const faces = facesOf(arene.scene);
+    const depthOf = faceDepthOf(mpt);
     const quads: WorldPoly[] = [];
     const montant: boolean[] = [];
     for (const f of faces)
-      for (const q of faceQuads(f, mpt)) {
+      for (const q of faceQuads(f, mpt, depthOf(f))) {
         quads.push(q);
         montant.push(f.poly.length === 2);
       }
@@ -245,7 +263,7 @@ describe('BIAIS COPLANAIRE — l’ordre de peinture affine devient une séparat
   it('facesGeometry biaise AUSSI les quads d’un montant (même liste de rangs que faceQuads)', () => {
     const mpt = sceneMetresPerTile(arene.scene);
     const faces = facesOf(arene.scene);
-    const geoms = facesGeometry(faces, mpt);
+    const geoms = facesGeometry(faces, mpt, faceDepthOf(mpt));
     const iMontant = faces.findIndex((f, i) => f.poly.length === 2 && geoms[i].rank > 0);
     expect(iMontant).toBeGreaterThanOrEqual(0);
     // les sommets rendus ne sont plus ceux des quads NUS : le biais les a déplacés.
@@ -301,18 +319,54 @@ describe('ÉPAISSEUR de mur — un plan d’épaisseur nulle n’a AUCUNE surfac
     }
   });
 
-  it('une face DÉCORATIVE de mur reste coplanaire à la joue de SON côté (une copie par joue)', () => {
-    const deco: Face = {
-      poly: [{ x: 1, y: 0, h: 3 }, { x: 2, y: 0, h: 3 }, { x: 2, y: 0, h: 1 }, { x: 1, y: 0, h: 1 }],
-      material: { domain: 'structure', id: 'mur-en-bois', part: 'panneau' },
-    };
-    const t = wallThicknessM(2);
-    const quads = faceQuads(deco, 2);
-    expect(quads).toHaveLength(2);
-    const zs = quads.map((q) => q[0].z).sort((a, b) => a - b);
-    expect(zs[1] - zs[0]).toBeCloseTo(t, 12);
-    // Les deux copies regardent chacune vers l'EXTÉRIEUR de la boîte (normales opposées).
-    expect(polyNormal(quads[0])!.z).toBeCloseTo(-polyNormal(quads[1])!.z, 12);
+  /** Une face de mur de laboratoire, dans le plan z=0, sur le tronçon [1,2] de l'arête. */
+  const partFace = (part: WallPart): Face => ({
+    poly: [{ x: 1, y: 0, h: 3 }, { x: 2, y: 0, h: 3 }, { x: 2, y: 0, h: 1 }, { x: 1, y: 0, h: 1 }],
+    material: { domain: 'structure', id: 'mur-en-bois', part },
+  });
+
+  it('SAILLIE : une boîte CENTRÉE sur le plan médian, épaisseur = mur + 2 × saillie', () => {
+    const relief = wallPartRelief('panneau');
+    expect(relief.famille).toBe('saillie');
+    const jut = relief.famille === 'saillie' ? relief.jutM : 0;
+    const attendue = wallThicknessM(2) + 2 * jut;
+    const face = partFace('panneau');
+    expect(faceDepthM(face, 2)).toBeCloseTo(attendue, 12);
+    const quads = faceQuads(face, 2, faceDepthM(face, 2));
+    const zs = quads.flat().map((p) => p.z);
+    // CENTRÉE : les deux joues encadrent le plan médian (z = 0) à égale distance, et l'épaisseur totale
+    // est bien celle que le catalogue a résolue.
+    expect(Math.min(...zs)).toBeCloseTo(-attendue / 2, 12);
+    expect(Math.max(...zs)).toBeCloseTo(attendue / 2, 12);
+    expect(Math.max(...zs) + Math.min(...zs)).toBeCloseTo(0, 12);
+    expect(attendue).toBeGreaterThan(wallThicknessM(2)); // la saillie DÉPASSE la matière du mur
+  });
+
+  it('TRAVERSANT : le DOS est là — une partie qui bouche une ouverture la bouche des DEUX côtés', () => {
+    for (const part of ['vantail', 'herse-barreau', 'gravats'] as WallPart[]) {
+      expect(wallPartRelief(part).famille).toBe('traversant');
+      const face = partFace(part);
+      const { quads, oriented } = faceQuadsOriented(face, 2, faceDepthM(face, 2));
+      expect(oriented).toBe(true);
+      // 2 joues + coiffe + 2 chants latéraux (le dessous d'une part de mur ne se voit jamais).
+      expect(quads).toHaveLength(5);
+      // Une joue DEVANT et une joue DERRIÈRE, symétriques du plan médian : sans le dos, l'ouverture se
+      // verrait à jour du revers (le pivot n'émet AUCUNE face derrière une partie traversante).
+      const centreZ = (q: WorldPoly) => q.reduce((s, p) => s + p.z, 0) / q.length;
+      const [devant, derrière] = [centreZ(quads[0]), centreZ(quads[1])];
+      expect(Math.sign(devant)).toBe(-Math.sign(derrière));
+      expect(devant).toBeCloseTo(-derrière, 12);
+      expect(Math.abs(devant) * 2).toBeCloseTo(faceDepthM(face, 2)!, 12);
+    }
+  });
+
+  it('PROFONDEUR NULLE (le carreau d’une croisée) : UN plan, au médian, sans orientation propre', () => {
+    const vitre = partFace('vitre');
+    expect(faceDepthM(vitre, 2)).toBe(0);
+    const { quads, oriented } = faceQuadsOriented(vitre, 2, faceDepthM(vitre, 2));
+    expect(quads).toHaveLength(1); // plus AUCUNE copie par joue
+    expect(quads[0]).toEqual(facePoly(vitre, 2)); // au plan médian, inchangé
+    expect(oriented).toBe(false); // un sens de parcours arbitraire orienterait la carte d'ombre
   });
 
   const parScene: [string, Scene][] = [
@@ -323,7 +377,7 @@ describe('ÉPAISSEUR de mur — un plan d’épaisseur nulle n’a AUCUNE surfac
     it(`${name} : les murs offrent une surface NON NULLE vue du dessus (coiffes)`, () => {
       const mpt = sceneMetresPerTile(scene);
       const faces = buildWalls(scene).flatMap((el) => el.faces);
-      const tris = facesGeometry(faces, mpt).flatMap((g) => g.tris);
+      const tris = facesGeometry(faces, mpt, faceDepthOf(mpt)).flatMap((g) => g.tris);
       const vueDuDessus = tris.reduce((s, t) => s + aireVueDuDessus(t), 0);
       const coiffes = tris.filter((t) => Math.abs(polyNormal(t)?.y ?? 0) > 0.99).length;
       expect(coiffes).toBeGreaterThan(0);
@@ -427,7 +481,7 @@ describe('UV — la maille MONDE en mètres (attribut `uv`)', () => {
 
   it('scène réelle (siege-enceinte) : chaque triangle porte 3 UV monde, à l’échelle métrique de SON quad', () => {
     const mpt = sceneMetresPerTile(siege);
-    const geoms = facesGeometry(facesOf(siege), mpt);
+    const geoms = facesGeometry(facesOf(siege), mpt, faceDepthOf(mpt));
     expect(geoms.length).toBeGreaterThan(100);
     let pires = 0;
     for (const g of geoms) {
@@ -463,34 +517,109 @@ describe('UV1 — la FACE d’origine en [0,1]² (attribut `uv1`)', () => {
       ['siege', siege],
       ['arene', arene.scene],
     ] as [string, Scene][]) {
-      const geoms = facesGeometry(facesOf(scène), sceneMetresPerTile(scène));
+      const geoms = facesGeometry(facesOf(scène), sceneMetresPerTile(scène), faceDepthOf(sceneMetresPerTile(scène)));
       const hors = geoms.flatMap((g) => g.uv1.flat()).filter((c) => c.u < 0 || c.u > 1 || c.v < 0 || c.v > 1);
       expect(hors).toEqual([]);
     }
   });
 
   it('scène réelle : uv1 EXPLOITE la face (elle n’est pas un aplat de zéros)', () => {
-    const geoms = facesGeometry(facesOf(siege), sceneMetresPerTile(siege));
+    const geoms = facesGeometry(facesOf(siege), sceneMetresPerTile(siege), faceDepthOf(sceneMetresPerTile(siege)));
     const toutes = geoms.flatMap((g) => g.uv1.flat());
     expect(toutes.length).toBeGreaterThan(100);
     expect(toutes.filter((c) => c.u > 0.99).length).toBeGreaterThan(50);
     expect(toutes.filter((c) => c.v > 0.99).length).toBeGreaterThan(50);
   });
 
-  it('les DEUX joues d’un mur plein partagent leurs uv1 : le même ornement des deux côtés', () => {
+  it('les DEUX joues d’une boîte de mur partagent leurs uv1 : le même ornement des deux côtés', () => {
     const mpt = sceneMetresPerTile(siege);
-    // Une part DÉCORATIVE de mur (panneau, moulure…) : le pivot en fait une copie par JOUE.
-    const face = facesOf(siege).find((f) => {
-      const q = faceQuadsOriented(f, mpt);
-      return q.oriented && q.quads.length === 2;
-    });
+    const depthOf = faceDepthOf(mpt);
+    // Toute face verticale de mur devient une boîte : ses deux premiers quads sont ses JOUES.
+    const face = facesOf(siege).find((f) => faceQuadsOriented(f, mpt, depthOf(f)).oriented);
     expect(face).toBeDefined();
     const fr = faceUvFrame(facePoly(face!, mpt));
-    const [avant, arrière] = faceQuadsOriented(face!, mpt).quads;
+    const [avant, arrière] = faceQuadsOriented(face!, mpt, depthOf(face!)).quads;
     const uvA = avant.map((p) => faceUv1(p, fr));
     const uvB = arrière.map((p) => faceUv1(p, fr));
     // Mêmes 4 coins de part et d'autre (l'ordre de parcours d'une joue est inversé).
     const clé = (c: { u: number; v: number }) => `${c.u.toFixed(6)},${c.v.toFixed(6)}`;
     expect(new Set(uvA.map(clé))).toEqual(new Set(uvB.map(clé)));
+  });
+});
+
+describe('RELIEF MINCE — le prix mesuré du volume (#1176 P1-E)', () => {
+  /** Les faces que le backend FUSIONNE réellement — la liste de `sceneMeshes.worldFaces` (toutes les
+   *  couches pleines, `activeZ` au plus haut étage), pas celle du `facesOf` d'atelier : une scène à deux
+   *  niveaux (`diligence`) n'y émet pas les mêmes planchers, et le compte de triangles s'en ressent. */
+  function facesRendues(scene: Scene): Face[] {
+    const maxZ = Math.max(...scene.layers.map((l) => l.z));
+    return [...buildFloors(scene, undefined, { activeZ: maxZ }), ...buildWalls(scene), ...buildRoofs(scene)]
+      .flatMap((el) => el.faces);
+  }
+
+  /** Ce que le backend produisait AVANT le relief : les parties PLEINES en boîte mince à l'épaisseur du
+   *  mur, TOUTE autre partie de mur en deux copies plates (une par joue), le reste en plan. Réplique
+   *  gardée ICI pour que la hausse se mesure contre un chiffre RECALCULÉ à chaque run, jamais contre une
+   *  constante qui vieillirait en silence dès qu'un builder change son assemblage. */
+  const PLEINES = new Set(['face', 'couronnement', 'parapet', 'arase', 'merlon']);
+  function trisAvantRelief(faces: readonly Face[], mpt: number): number {
+    let n = 0;
+    for (const f of faces) {
+      const poly = facePoly(f, mpt);
+      if (poly.length === 2) { n += 4; continue; } // montant : 2 quads croisés
+      const nn = polyNormal(poly);
+      if (f.material.domain !== 'structure' || !nn || Math.abs(nn.y) > 1e-6) { n += poly.length - 2; continue; }
+      n += PLEINES.has(f.material.part ?? '')
+        ? wallBoxPolys(poly, nn, wallThicknessM(mpt)).reduce((s, q) => s + (q.length - 2), 0)
+        : 2 * (poly.length - 2);
+    }
+    return n;
+  }
+
+  /** MESURES du lot, par scène-témoin du spike : triangles avant/après le relief, et paires coplanaires
+   *  recouvrantes AVANT biais. Les chants de boîte des parties en saillie/traversant recréent des paires
+   *  (une joue de plinthe et son chant croisent les plans voisins) : +13,3 % au siège, +10,2 % à l'arène,
+   *  +11,4 % à la vitrine, +13,9 % à la diligence — toutes séparées par le biais coplanaire, comme
+   *  l'atteste le zéro final. La vitrine porte en plus la RUINE authorée par ce lot (gravats, seuil,
+   *  vantail), d'où un `avant` qui n'est plus celui d'avant l'extension. */
+  const MESURES: [string, () => Scene, { trisAvant: number; trisApres: number; paires: number }][] = [
+    ['siege-enceinte', () => siege, { trisAvant: 6912, trisApres: 7404, paires: 1238 }],
+    ['arene (hub)', () => arene.scene, { trisAvant: 16230, trisApres: 19358, paires: 7070 }],
+    ['vitrine-batiments', buildVitrineScene, { trisAvant: 10454, trisApres: 13116, paires: 5279 }],
+    ['diligence', () => diligence.scene, { trisAvant: 37058, trisApres: 49172, paires: 26255 }],
+  ];
+
+  /** Plafond de hausse ASSUMÉ du lot : au-delà, le relief coûte plus qu'il ne rend et la mesure remonte
+   *  au ticket au lieu de faire monter la borne. Il se juge sur les chiffres du RUN, AVANT les épingles :
+   *  entre deux constantes déjà accordées entre elles il ne dirait rien, et il doit précisément mordre
+   *  au moment du RÉ-ÉPINGLAGE, quand les épingles suivent la géométrie. */
+  const HAUSSE_MAX = 1.35;
+
+  for (const [nom, faire, m] of MESURES)
+    it(`${nom} : ${m.trisAvant} → ${m.trisApres} triangles (hausse sous +35 %)`, () => {
+      const scene = faire();
+      const mpt = sceneMetresPerTile(scene);
+      const faces = facesOf(scene);
+      const avant = trisAvantRelief(faces, mpt);
+      const tris = facesGeometry(faces, mpt, faceDepthOf(mpt)).reduce((s, g) => s + g.tris.length, 0);
+      expect(tris / avant).toBeLessThanOrEqual(HAUSSE_MAX);
+      expect({ avant, tris }).toEqual({ avant: m.trisAvant, tris: m.trisApres });
+    });
+
+  for (const [nom, faire, m] of MESURES)
+    it(`${nom} : ${m.paires} paires coplanaires AVANT biais (bornées), zéro APRÈS`, () => {
+      const scene = faire();
+      const quads = quadsOf(scene);
+      const paires = coplanarOverlapPairs(quads).length;
+      expect(paires).toBeGreaterThan(0);
+      expect(paires).toBeLessThanOrEqual(Math.ceil(m.paires * 1.1));
+      const ranks = coplanarRanks(quads);
+      expect(coplanarOverlapPairs(quads.map((p, i) => biasPoly(p, ranks[i])))).toEqual([]);
+    });
+
+  it('la vitrine porte les parties de RUINE et de porte FERMÉE qu’aucune autre scène-témoin n’émet', () => {
+    const parts = new Set(facesRendues(buildVitrineScene()).map((f) => f.material.part));
+    for (const part of ['gravats', 'gravats-tas', 'seuil', 'vantail', 'vantail-planche', 'poignee'])
+      expect(parts.has(part as WallPart), `${part} absent de la vitrine`).toBe(true);
   });
 });

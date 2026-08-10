@@ -10,7 +10,7 @@
  * (pas de groupe, pas de registre `_registry.generated.ts`, aucune entrée au menu des scénarios).
  */
 import { buildScene, type MapSpec } from '../state/mapSpec';
-import type { Scene } from '../state/scene';
+import { doorKey, structureDownKey, type Scene } from '../state/scene';
 
 function vitrinePerimeterWalls(
   foot: { x: number; y: number; w: number; h: number },
@@ -58,6 +58,36 @@ const VITRINE_BODIES = [
   { id: 'vit-echoppe', label: 'Échoppe', style: 'echoppe', foot: { x: 25, y: 16, w: 3, h: 3 }, material: 'chaume', door: { x: 26, y: 18, side: 'S' as const } },
 ];
 
+/** RUINE de vitrine — la rangée d'arêtes qui porte les parties de BRÈCHE qu'aucune scène-témoin du
+ *  spike ne montrait (mesuré : `gravats`, `gravats-tas` et `seuil` à 0 face sur les six scènes) : une
+ *  courtine ABATTUE (tas de gravats dentelé + moignons de poteau) et un corps de garde ABATTU (seuil
+ *  d'éboulis sous son linteau). S'y ajoutent, en comparaison à vue, le même corps de garde INTACT
+ *  (herse — déjà présente au siège) et une porte de bois FERMÉE (vantail + joints de planches +
+ *  poignée — parties déjà émises par les deux portes closes des bâtiments de la vitrine, dont elle
+ *  n'est qu'une troisième occurrence, isolée du bâti). */
+const VITRINE_RUINE = {
+  y: 22,
+  /** Courtine de pierre abattue (une arête par case). */
+  courtine: [4, 5, 6, 7],
+  /** Corps de garde abattu / intact. */
+  porterieAbattue: 9,
+  porterieIntacte: 11,
+  /** Porte de bois maintenue FERMÉE (flag `__door_…` = false, comme les portes closes des bâtiments). */
+  porteFermee: 13,
+} as const;
+
+const ruineWalls = [
+  ...VITRINE_RUINE.courtine.map((x) => ({ x, y: VITRINE_RUINE.y, side: 'N' as const, structure: 'mur-en-pierre' })),
+  { x: VITRINE_RUINE.porterieAbattue, y: VITRINE_RUINE.y, side: 'N' as const, structure: 'porte-de-ville' },
+  { x: VITRINE_RUINE.porterieIntacte, y: VITRINE_RUINE.y, side: 'N' as const, structure: 'porte-de-ville' },
+  { x: VITRINE_RUINE.porteFermee, y: VITRINE_RUINE.y, side: 'N' as const, structure: 'mur-en-bois', door: true },
+];
+
+const ruineFlags = Object.fromEntries([
+  ...[...VITRINE_RUINE.courtine, VITRINE_RUINE.porterieAbattue].map((x) => [structureDownKey(x, VITRINE_RUINE.y, 'N'), true]),
+  [doorKey(VITRINE_RUINE.porteFermee, VITRINE_RUINE.y, 'N'), false],
+]);
+
 /** Spec de la vitrine — SOURCE UNIQUE (consommée par la planche QC headless ET par le spike WebGL). */
 export const vitrineSpec: MapSpec = {
   size: [30, 24],
@@ -66,9 +96,11 @@ export const vitrineSpec: MapSpec = {
   ambiance: 'exterieur',
   terrain: 'herbe',
   heroStart: { x: 24, y: 22 },
-  flags: { '__door_10_13_N_0': false, '__door_24_11_N_0': false },
+  // Portes CLOSES de la taverne et de la maison — l'arête est celle du côté N de la case du dessous
+  // (une porte authorée 'S' en (x,y) vit sur l'arête N de (x, y+1)).
+  flags: { [doorKey(10, 13, 'N')]: false, [doorKey(24, 11, 'N')]: false, ...ruineFlags },
   architecture: VITRINE_BODIES.map(({ id, label, style, foot, material }) => vitrineBody(id, label, style, foot, material)),
-  walls: VITRINE_BODIES.flatMap(({ foot, door }) => vitrinePerimeterWalls(foot, door)),
+  walls: [...VITRINE_BODIES.flatMap(({ foot, door }) => vitrinePerimeterWalls(foot, door)), ...ruineWalls],
   terrainRects: VITRINE_BODIES.map(({ foot }) => ({ rect: [foot.x, foot.y, foot.w, foot.h] as [number, number, number, number], terrain: 'plancher' })),
   effectZones: VITRINE_BODIES.map(({ id, label, foot }) => ({
     id: `piece-${id}`,

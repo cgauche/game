@@ -8,6 +8,28 @@ import { detailRecipeSchema } from '../common';
 
 export const file = 'structureAppearance.json';
 
+/** Parties de mur admises comme clés de `relief` — RECOPIE de `WALL_PARTS`
+ *  (`src/gameIso/catalog/structures/types.ts`) : `src/data` ne dépend jamais RUNTIME de `src/gameIso`
+ *  (`data-purity.test.ts`). La parité des deux listes est gardée par
+ *  `src/gameIso/catalog/structures/relief.test.ts`. */
+export const WALL_PART_KEYS = [
+  'face', 'poteau', 'couronnement', 'panneau', 'moulure', 'plinthe',
+  'embrasure', 'chambranle', 'jambage',
+  'vantail', 'vantail-planche', 'poignee',
+  'vitre', 'meneau',
+  'parapet', 'bande', 'arase', 'merlon',
+  'linteau', 'herse-barreau', 'herse-traverse', 'seuil',
+  'gravats', 'gravats-tas',
+] as const;
+
+/** Profondeur (m) par partie, toutes optionnelles, AUCUNE clé étrangère (`strictObject`). */
+const reliefParPartie = z.strictObject(
+  Object.fromEntries(WALL_PART_KEYS.map((k) => [k, z.number().optional()])) as Record<
+    (typeof WALL_PART_KEYS)[number],
+    z.ZodOptional<z.ZodNumber>
+  >,
+);
+
 export const schema = z.array(
   z.strictObject({
     id: z.string(),
@@ -68,6 +90,15 @@ export const schema = z.array(
         lit: z.string(),
         frame: z.string(),
         mullion: z.string(),
+      })
+      .optional(),
+    // RELIEF MINCE (m) par partie de mur : `jut` = saillie par côté, `thick` = épaisseur totale d'une
+    // partie traversante (`wallPartDepthM`). Les clés sont CONTRAINTES aux parties existantes — une clé
+    // fautive échoue au CHARGEMENT au lieu d'être ignorée en silence.
+    relief: z
+      .strictObject({
+        jut: reliefParPartie.optional(),
+        thick: reliefParPartie.optional(),
       })
       .optional(),
   }),
