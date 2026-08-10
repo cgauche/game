@@ -5,6 +5,7 @@ import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Difficulty } from '../eng
 import { Dice } from './Dice';
 import { Icon } from './Icon';
 import { CodexRef } from './compendium/CodexRef';
+import { codexLookupById } from './compendium/registry';
 import { RULE_REF, type ModProvenance } from '../engine/ruleRefs';
 import type { StakeRef } from '../data';
 import { actorIn } from '../state/combatants';
@@ -22,6 +23,41 @@ function modText(m: ModLine): string {
   return `${m.value >= 0 ? '+' : '−'}${Math.abs(m.value)} ${m.label}`;
 }
 
+/** Cible Codex d'un texte de rangée (nom du jet) — identité STABLE, jamais un libellé de recherche. */
+export interface RollLabelRef {
+  category: string;
+  id: string;
+  label: string;
+}
+
+/** DÉCOUVRABILITÉ du palier de Difficulté : le glyphe vit DANS le déclencheur, EN TÊTE du texte —
+ *  ce n'est pas un second contrôle accolé (cliquet `codex-info-affordance-ratchet.test.ts`), il
+ *  annonce celui qui l'englobe. Arbitrage user 2026-08-10 : « j'avoue si tu ne me l'avait pas dit,
+ *  je n'aurai jamais deviné que je pouvais mettre ma souris sur la difficulté », puis « Le i devait
+ *  etre devant la difficulté, et la compétence simplement avec un popover ».
+ *  AUCUN style propre (doctrine user 2026-07-12, #373 — le stock de classes de domaine ne monte
+ *  pas) : la primitive `Icon` cale déjà le glyphe sur la ligne de base (`.icon`), sa couleur SUIT
+ *  celle du déclencheur (`currentColor`) — atténuée avec le palier, dorée au survol/focus par
+ *  `.codex-ref[role='button']:hover`. Seul son ESPACEMENT est posé, par un sélecteur descendant de
+ *  `.rm-roll-diff` visant l'élément `svg` — aucun nom de classe de plus. */
+function InfoDot() {
+  return <Icon id="journal/info" size="sm" />;
+}
+
+/** Nom du jet (la Compétence/Caractéristique lancée) — PORTE Codex dès que la ligne fournit sa
+ *  référence stable ET que la fiche existe (sinon aucune affordance morte : le libellé reste nu).
+ *  SANS glyphe d'info : le popover suffit, et l'affordance de repos est celle que `CodexRef` porte déjà pour
+ *  tout déclencheur (`.codex-ref[role='button']` — curseur d'aide, teinte d'or au survol/focus).
+ *  Arbitrage user 2026-08-10 : « la compétence simplement avec un popover ». */
+function RollLabel({ label, labelRef }: { label: ReactNode; labelRef?: RollLabelRef }) {
+  if (!labelRef || !codexLookupById(labelRef.category, labelRef.id)) return <>{label}</>;
+  return (
+    <CodexRef category={labelRef.category} id={labelRef.id} label={labelRef.label}>
+      {label}
+    </CodexRef>
+  );
+}
+
 /** Difficulté du Test SUR la ligne, en texte + valeur (« — Accessible (+20) ») : elle dit la
  *  NATURE du jet, pas une circonstance — les chips restent aux modificateurs circonstanciels
  *  (Soutien, Avantage, plafond mesuré…). `easedBy` (`FlowTest.easierIf`) voyage avec elle.
@@ -29,7 +65,8 @@ function modText(m: ModLine): string {
  *  DEUX MODES, un seul contrat (#1153 L3b) : la Difficulté est CHOISIE (hors combat — le site qui
  *  ouvre le jet la pose) ou DÉRIVÉE (`parts` : en combat, la combinaison des circonstances compose
  *  le palier, `LDB 14 l.91-96`). Dérivée, le palier DEVIENT sa propre affordance de règle : le
- *  popover porte sa composition et ouvre la fiche « Combiner les Difficultés ». */
+ *  popover porte sa composition et ouvre la fiche « Combiner les Difficultés », et l'`InfoDot` en TÊTE
+ *  du déclencheur le fait SAVOIR (un palier net-zéro n'a plus l'air muet). */
 function DifficultyText({ difficulty, easedBy, parts }: { difficulty?: Difficulty; easedBy?: string; parts?: ModLine[] }) {
   if (!difficulty) return null;
   const texte = DIFFICULTY_LABELS[difficulty];
@@ -38,8 +75,17 @@ function DifficultyText({ difficulty, easedBy, parts }: { difficulty?: Difficult
     <span className="rm-roll-diff">
       {' '}— {parts?.length
         ? (
-          <CodexRef category={ref.category} id={ref.id} label="Combiner les Difficultés" instance={texte} provenances={parts.map(modText)}>
-            {texte}
+          <CodexRef
+            category={ref.category}
+            id={ref.id}
+            label="Combiner les Difficultés"
+            instance={texte}
+            provenances={parts.map(modText)}
+            /* Le nom accessible COMMENCE par le texte visible (le glyphe, lui, est muet) : il
+               l'enrichit de la règle atteinte, il ne le remplace pas. */
+            ariaLabel={`${texte} — Combiner les Difficultés`}
+          >
+            <InfoDot />{texte}
           </CodexRef>
         )
         : texte}
@@ -222,6 +268,9 @@ export function RollLine({ d }: { d: RollBreakdown }) {
 export interface PendingRoll {
   /** Libellé du jet — texte, ou nœud riche (ex. compétence en chip `EntityRef` d'un pied de volet). */
   label: ReactNode;
+  /** Fiche Codex du NOM du jet (Compétence/Caractéristique lancée) — identité stable : le libellé
+   *  devient sa propre porte de règle, avec la même affordance que le palier dérivé. */
+  labelRef?: RollLabelRef;
   /** Valeur de compétence de base (absente si `mask`). */
   base?: number;
   /** Cible effective (base + modificateurs COMBINÉS, plafonds inclus) ; défaut : base + Difficulté + somme des chips. */
@@ -258,7 +307,7 @@ export function PendingRollLine({ p }: { p: PendingRoll }) {
   return (
     <div className="rm-roll-block">
       <div className="rm-roll pending">
-        <span className="rm-roll-label">{p.label}<DifficultyText difficulty={p.difficulty} easedBy={p.easedBy} parts={p.difficultyParts} /></span>
+        <span className="rm-roll-label"><RollLabel label={p.label} labelRef={p.labelRef} /><DifficultyText difficulty={p.difficulty} easedBy={p.easedBy} parts={p.difficultyParts} /></span>
         {/* MASQUÉE → « ? » (une valeur est cachée) ; SANS base ni masque → cellule vide (il n'y a
             rien à cacher : cette ligne n'a simplement pas de valeur chiffrée). */}
         {p.mask || p.base != null

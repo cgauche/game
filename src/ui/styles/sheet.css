@@ -297,6 +297,14 @@
   font-weight: normal;
   color: var(--muted);
 }
+/* Le glyphe d'info qui ANNONCE le palier dérivé : il vit dans le déclencheur, en tête du texte, et
+   n'a besoin que de son espacement — la primitive `Icon` cale son alignement, `currentColor` lui
+   donne la teinte du déclencheur (atténuée au repos, dorée au survol/focus). Ciblé par l'ÉLÉMENT
+   depuis la classe existante : aucun nom de classe de plus dans ce module (doctrine user
+   2026-07-12, #373). */
+.rm-roll-diff svg {
+  margin-right: 3px;
+}
 .rm-roll-calc {
   color: var(--muted);
 }

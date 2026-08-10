@@ -1,7 +1,8 @@
 import type { ComponentProps } from 'react';
 import { useGame, movementRemaining } from '../../state/store';
 import { FLOWS } from '../../state/rollFlowSpecs';
-import { HitLocation } from '../../engine/types';
+import { HitLocation, type Weapon } from '../../engine/types';
+import type { RollLabelRef } from '../RollLine';
 import { crowdMod, bestRangedDefense, DEFENSE_LABEL, defenseModifiers, locationLabel, weaponInflictsFlames, attackTestLabel, isHelplessTarget } from '../../engine/combat';
 import { isUnarmed } from '../../engine/items';
 import { isInanimate } from '../../engine/structures';
@@ -23,6 +24,16 @@ import { Icon } from '../Icon';
 import { composeRollLabel } from '../../state/rollSeam';
 
 const LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
+
+/** Fiche Codex du NOM du jet d'attaque — MÊME source que son libellé (`attackTestLabel`) : une
+ *  Résolution alternative déclarée par l'arme pointe la Caractéristique qui résout, sinon la
+ *  Compétence lancée. Ids STABLES, jamais un libellé de recherche. */
+function attackLabelRef(weapon: Weapon | undefined, kind: 'melee' | 'ranged'): RollLabelRef {
+  const label = attackTestLabel(weapon, kind);
+  return weapon?.resolveChar
+    ? { category: 'characteristics', id: weapon.resolveChar, label }
+    : { category: 'skills', id: kind === 'ranged' ? 'projectiles' : 'corps-a-corps', label };
+}
 
 /**
  * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET d'attaque — extrait de `RollModal`
@@ -119,6 +130,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
             combatant: attacker,
             pending: {
               label: attackTestLabel(preview!.weapon, preview!.kind),
+              labelRef: attackLabelRef(preview!.weapon, preview!.kind),
               base: preview!.base,
               target: Math.max(0, Math.min(100, preview!.target)),
               mods: preview!.mods,

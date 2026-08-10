@@ -175,6 +175,13 @@ describe('Attaque — la Difficulté DÉRIVE des circonstances (#1153 L3b-2)', (
     act(() => { trigger.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); });
     return document.querySelector('.codex-pop')?.textContent ?? '';
   };
+  /** L'affordance (i) qui SIGNALE la porte : elle vit DANS le déclencheur (même hit-target), jamais
+   *  accolée à côté, et elle PRÉCÈDE le palier — arbitrage user 2026-08-10 : « Le i devait etre
+   *  devant la difficulté, et la compétence simplement avec un popover ». */
+  const infoPalier = (v: HTMLDivElement) => ligne(v).querySelector('.rm-roll-diff .codex-ref svg.icon');
+  /** Le NOM du jet (la Compétence lancée) est-il une porte Codex ? Il l'est PAR SON POPOVER seul :
+   *  aucun (i) ne le précède (même arbitrage). */
+  const nomDuJet = (v: HTMLDivElement) => ligne(v).querySelector('.rm-roll-label > .codex-ref');
 
   it('RAW l.95 — brouillard + Localisation visée : « Très difficile (−30) », zéro chip de circonstance', () => {
     const v = renderAttack({ ranged: true, fog: true, location: 'tete' });
@@ -185,6 +192,15 @@ describe('Attaque — la Difficulté DÉRIVE des circonstances (#1153 L3b-2)', (
     // Capacité de Tir 40 − 30 = 10, et non 40 − 40 : le plafond a mordu, le palier le DIT.
     expect(calcul(v)).toBe('40 −30 = 10');
     expect(porte(v), 'le palier DÉRIVÉ porte le popover de sa composition').toBe('Très difficile (−30)');
+    const decl = ligne(v).querySelector('.rm-roll-diff .codex-ref')!;
+    expect(infoPalier(v), 'la porte se SIGNALE : un (i) dans le déclencheur, pas à côté').toBeTruthy();
+    // `firstChild` et non `firstElementChild` : le palier est un nœud TEXTE — l'ignorer rendrait
+    // l'assertion aveugle à l'ordre (elle passait avec l'icône placée APRÈS).
+    expect(decl.firstChild, 'le (i) PRÉCÈDE le palier, il ne le suit pas').toBe(infoPalier(v));
+    expect(
+      ligne(v).querySelector('.rm-roll-diff .codex-ref')!.getAttribute('aria-label'),
+      'le nom accessible COMMENCE par le texte visible et nomme la règle atteinte',
+    ).toBe('Très difficile (−30) — Combiner les Difficultés');
     expect(ANONYMES.count).toBe(0);
   });
 
@@ -194,6 +210,7 @@ describe('Attaque — la Difficulté DÉRIVE des circonstances (#1153 L3b-2)', (
     expect(chips(v)).toEqual([]);
     expect(calcul(v)).toBe('45');
     expect(porte(v), 'palier CHOISI : aucun popover de composition à ouvrir').toBeUndefined();
+    expect(infoPalier(v), 'sans composition à montrer, aucune affordance ne promet rien').toBeNull();
     expect(ANONYMES.count).toBe(0);
   });
 
@@ -263,5 +280,27 @@ describe('Attaque — la Difficulté DÉRIVE des circonstances (#1153 L3b-2)', (
     expect(calcul(v)).toBe('45 +54 = 99');
     expect(ligne(v).textContent).not.toContain('autres');
     expect(ANONYMES.count, 'la sonde DEV ne compte aucune chip anonyme').toBe(0);
+  });
+
+  /**
+   * COHÉRENCE DE RANGÉE : le nom du jet (la Compétence lancée) est une porte Codex de plein droit —
+   * sans elle, la rangée apprenait la règle de la Difficulté et taisait celle de la Compétence. Elle
+   * s'ouvre par son SEUL popover : le (i) reste au palier (arbitrage user 2026-08-10).
+   */
+  it('le NOM du jet est une porte Codex — popover SEUL, sans (i)', () => {
+    const v = renderAttack({ ranged: true });
+    const nom = nomDuJet(v);
+    expect(nom, 'le libellé « Projectiles » ouvre sa fiche').toBeTruthy();
+    expect(nom!.textContent).toBe('Projectiles');
+    expect(nom!.getAttribute('role'), 'porte RÉELLE, pas un texte décoré').toBe('button');
+    expect(nom!.querySelector('svg.icon'), 'aucun (i) sur la Compétence : le popover suffit').toBeNull();
+  });
+
+  it('le POPOVER du nom du jet donne la règle de la Compétence lancée', () => {
+    const v = renderAttack();
+    const nom = nomDuJet(v);
+    expect(nom!.textContent).toBe('Corps à corps');
+    act(() => { nom!.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); });
+    expect(document.querySelector('.codex-pop')?.textContent).toContain('Corps à corps');
   });
 });
