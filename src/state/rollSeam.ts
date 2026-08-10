@@ -37,14 +37,17 @@ import type { Get, Set } from './flowTypes';
 import type { Combatant, CharKey, Difficulty, Weapon } from '../engine/types';
 import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import type { PairedSense, GameOp } from '../engine/ops';
-import type { CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate, PendingCascade } from './pendings';
+import type { CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate, PendingCascade, CascadeTableDecl, CascadeTableResult, RevealEntry } from './pendings';
+import type { BuiltCascadeStep } from './stepBrand';
+import type { PendingKey } from './stateFields';
+import type { OupsResolved } from '../engine/oups';
 import type { RecapLine, RecapTone } from './recapLine';
 import type { ModLine } from '../engine/combat';
 import { combatBaseValue, combatValueModParts, conditionModLines, combatCharKey, combineMods, composeDifficulty } from '../engine/combat';
 import { volatileCharLines } from '../engine/characteristics';
 import { TestOutcome } from '../engine/testOutcome';
 import { actorIn } from './combatants';
-import { startCascade, runCascadeImmediate, rollBatchParticipant } from './cascade';
+import { startCascade, runCascadeImmediate, rollBatchParticipant, pushStep, tableStepResolved } from './cascade';
 import { testValue, partyBest, partyAssisted, testValueSplit, testValueParts, skillBaseValue, supportSplit, type SupportDetail } from '../engine/skills';
 import { testStatePenaltyParts, testStatePenalty } from '../engine/conditions';
 import { jetSurfaced, pilotedByHuman } from './netOwnership';
@@ -334,18 +337,9 @@ export function surfaceRow(get: Get, actor: Combatant | undefined, row: BatchPar
   return { ...row, interactive: false, result: row.result ?? rollBatchParticipant(row, battleRng()) };
 }
 
-/**
- * MARQUE d'origine d'une étape de cascade (#1262). La propriété est OPTIONNELLE : les constructeurs
- * de la famille (`bandStep`, `choiceStep`) la posent, les littéraux historiques ne la portent pas et
- * restent assignables. V1 la rend obligatoire sur les fichiers de combat — « monter une étape à la
- * main » cesse alors de compiler. Le symbole n'est pas exporté : hors de ce module, la marque ne
- * s'écrit pas. AUCUNE existence à l'exécution (calque `BuiltRollRow`, `ui/rollRowBuild.ts`) : une
- * étape sérialisée traverse le JSON d'une sauvegarde sans rien perdre.
- */
-declare const CASCADE_STEP_BRAND: unique symbol;
-
-/** Étape de cascade MONTÉE par la famille d'ouvertures de la porte. */
-export type BuiltCascadeStep = CascadeStep & { readonly [CASCADE_STEP_BRAND]?: true };
+/** La marque d'étape mintée vit dans un module FEUILLE (`stepBrand.ts`) : `revealStep.ts` minte lui
+ *  aussi et ne peut pas tirer ce fichier. Ré-exportée ici, où vit la famille d'ouvertures. */
+export type { BuiltCascadeStep };
 
 /** DÉCLARATION d'une bande : ce que l'appelant sait de la SITUATION (l'entrée de règle mise en jeu).
  *  La POSSESSION (`groupOwner`) n'y est pas — c'est `bandStep` qui la pose. */
@@ -394,7 +388,7 @@ export function bandStep(spec: BandSpec, rows: readonly BatchParticipant[]): Bui
     ...(spec.stake ? { stake: spec.stake } : {}),
     ...(spec.menace ? { menace: spec.menace } : {}),
     ...(spec.meta ? { meta: spec.meta } : {}),
-  };
+  } as BuiltCascadeStep;
 }
 
 /**
@@ -889,14 +883,18 @@ function bandRow(p: BandPorteur, difficulty: Difficulty): BatchParticipant {
   };
 }
 
-/** DÉCLARATION d'une bande OUVERTE : la situation (`BandSpec`), sa fenêtre (titre + finalisation), et
- *  ses rangées — DÉCLARÉES par porteur (la porte les monte) ou DÉJÀ montées par un producteur qui
- *  possède l'arithmétique de sa ligne (opposition figée, agrégat naval). `interactive` est absent des
- *  deux entrées : c'est la porte qui l'établit. */
-export type BandOpenSpec = BandSpec & { title: string; purpose: PendingCascade['purpose'] } & (
+/** DÉCLARATION d'une bande : la situation (`BandSpec`) et ses rangées — DÉCLARÉES par porteur (la
+ *  porte les monte) ou DÉJÀ montées par un producteur qui possède l'arithmétique de sa ligne
+ *  (opposition figée, agrégat naval). `interactive` est absent des deux entrées : c'est la porte qui
+ *  l'établit. Sans titre ni finalisation : une bande APPENDUE (`pushBand`) rejoint la fenêtre en
+ *  place, seule une bande OUVRANTE (`BandOpenSpec`) en nomme une. */
+export type BandRowsSpec = BandSpec & (
   | { porteurs: readonly BandPorteur[]; difficulty: Difficulty; rows?: never }
   | { rows: readonly Omit<BatchParticipant, 'interactive'>[]; porteurs?: never; difficulty?: never }
 );
+
+/** La même déclaration, plus la fenêtre qu'elle ouvre (titre + finalisation). */
+export type BandOpenSpec = BandRowsSpec & { title: string; purpose: PendingCascade['purpose'] };
 
 /**
  * ÉTAT d'une rangée DÉJÀ montée. L'entrée `rows` sert des rangées NEUVES (dé non tombé) ou
@@ -922,18 +920,29 @@ function rowSurfacee(get: Get, r: Omit<BatchParticipant, 'interactive'>, cle: st
 }
 
 /**
- * PORTE DE BANDE (#1262) — une entrée de règle mise en jeu face à N porteurs, UNE fenêtre : la porte
- * monte chaque rangée, la SURFACE (rangée à jouer chez le siège qui tient son porteur, TÉMOIN né
- * roulé sinon), pose la POSSESSION de l'étape (`bandStep`) et démarre la séquence. La garde de choix
- * (`assertChoixJamaisPartage`, `cascade.ts`) s'applique à l'ouverture.
+ * CONSTRUCTEUR DE BANDE COMPLET (#1262) — la porte monte chaque rangée, la SURFACE (rangée à jouer
+ * chez le siège qui tient son porteur, TÉMOIN né roulé sinon) puis pose la POSSESSION de l'étape
+ * (`bandStep`). Partagé par l'ouverture (`openBand`) et l'append (`pushBand`) : la surface et la
+ * possession d'une bande ne dépendent pas de la fenêtre qui l'accueille.
+ *
+ * Zéro rangée : `undefined` — rien n'est mis en jeu.
+ */
+export function buildBand(get: Get, spec: BandRowsSpec): BuiltCascadeStep | undefined {
+  const rows = spec.porteurs
+    ? spec.porteurs.map((p) => surfaceRow(get, p.actor, bandRow(p, spec.difficulty)))
+    : (spec.rows ?? []).flatMap((r) => rowSurfacee(get, r, spec.id) ?? []);
+  return bandStep(spec, rows);
+}
+
+/**
+ * PORTE DE BANDE (#1262) — une entrée de règle mise en jeu face à N porteurs, UNE fenêtre
+ * (`buildBand` + `startCascade`). La garde de choix (`assertChoixJamaisPartage`, `cascade.ts`)
+ * s'applique à l'ouverture.
  *
  * Zéro rangée : aucune fenêtre (rien n'est mis en jeu).
  */
 export function openBand(get: Get, set: Set, spec: BandOpenSpec): void {
-  const rows = spec.porteurs
-    ? spec.porteurs.map((p) => surfaceRow(get, p.actor, bandRow(p, spec.difficulty)))
-    : (spec.rows ?? []).flatMap((r) => rowSurfacee(get, r, spec.id) ?? []);
-  const step = bandStep(spec, rows);
+  const step = buildBand(get, spec);
   if (!step) return;
   startCascade(get, set, {
     title: spec.title,
@@ -960,6 +969,13 @@ export interface ChoiceSpec {
   defaultChoice?: string;
   /** Fiche de RÈGLE qui encadre le choix (une étape sans jet n'a pas d'enjeu à dériver). */
   stakeRule?: { category: string; id: string };
+  /** HYBRIDE choix + RÉVÉLATION (#1262 B5) : la décision se prend DEVANT la charge riche qui la motive
+   *  (le Critique pré-tiré d'une déviation). Recopiée telle quelle sur l'étape — `ui/RevealBody` la rend
+   *  sous les options. Le rendu d'une révélation n'est pas une seconde étape à enchaîner. */
+  reveal?: RevealEntry;
+  /** Lignes de conséquence DÉJÀ écrites qui exposent l'enjeu du choix (Piège-lame : ce que chaque voie
+   *  coûte). Structurées (`RecapLine[]`), rendues par le renderer partagé. */
+  outcome?: RecapLine[];
   meta?: CascadeStepMeta;
 }
 
@@ -996,8 +1012,10 @@ export function choiceStep(spec: ChoiceSpec): BuiltCascadeStep | undefined {
     options: spec.options.map((o) => ({ ...o })),
     ...(defaut != null ? { defaultChoice: defaut } : {}),
     ...(spec.stakeRule ? { stakeRule: spec.stakeRule } : {}),
+    ...(spec.reveal ? { reveal: spec.reveal } : {}),
+    ...(spec.outcome ? { outcome: spec.outcome } : {}),
     ...(spec.meta ? { meta: spec.meta } : {}),
-  };
+  } as BuiltCascadeStep;
 }
 
 /** PORTE DE CHOIX (#1262) — `choiceStep` + sa fenêtre. */
@@ -1010,6 +1028,272 @@ export function openChoice(get: Get, set: Set, spec: ChoiceSpec & { title: strin
     ...(spec.icon ? { icon: spec.icon } : {}),
     steps: [step],
   });
+}
+
+/** DÉCLARATION d'une étape MONO : un porteur, un jet, sa ligne. `actorId`/`interactive`/`base`/`mods`/
+ *  `target` ne sont PAS des champs de déclaration — le mint les pose (`rollStep`, monteur canonique). */
+export interface MonoSpec {
+  id: string;
+  kind: string;
+  label: string;
+  icon?: string;
+  /** Le jeteur : la possession de l'étape en dérive (`actorId`), et sa ligne aussi. */
+  actor: Combatant;
+  /** Ligne du jet (même déclaration qu'une rangée de bande). Omise : base `testValue` de l'acteur. */
+  ligne?: BandLigne;
+  difficulty: Difficulty;
+  /** Libellé de la COMPÉTENCE lancée. Absent : dérivé du catalogue (`testSkillLabel`), à défaut `label`. */
+  rollLabel?: string;
+  /** Tag de DONNÉE `menace` (auto-succès du talent Résistance (Menace), LDB 10). */
+  menace?: string;
+  stake?: StakeRef;
+  meta?: CascadeStepMeta;
+  /** HYBRIDE jet + RÉVÉLATION (#1262 B5) : la charge riche qui met le jet en situation. */
+  reveal?: RevealEntry;
+  /** Lignes de conséquence DÉJÀ écrites qui exposent l'enjeu du jet. */
+  outcome?: RecapLine[];
+}
+
+/**
+ * CONSTRUCTEUR d'étape MONO (#1262) — un porteur, un jet, UNE fenêtre : la possession (`actorId`) et
+ * la surface (`interactive`) sont posées ICI, la ligne par le monteur canonique (`rollStep`).
+ *
+ * La CIBLE est le garde-fou : une étape sans `target` est classée `'affichage'` par `stepInteraction`
+ * (`cascade.ts`) — elle serait donc « prête » d'office, validée sans qu'aucun dé ne tombe. Un jet
+ * fantôme, pas une étape muette. `undefined` (DEV : throw) plutôt que cette fenêtre-là.
+ */
+export function monoStep(spec: MonoSpec): BuiltCascadeStep | undefined {
+  const parts = rollStep({ ...(spec.ligne ?? {}), actor: spec.actor, difficulty: spec.difficulty } as RollLineSpec);
+  if (!Number.isFinite(parts.target)) {
+    refusePorte(`mono « ${spec.id} » (${spec.kind}) : cible non calculable pour « ${spec.actor.label} » `
+      + '— l\'étape serait un pur affichage, validé sans qu\'aucun dé ne tombe. Aucun jet ouvert.');
+    return undefined;
+  }
+  return {
+    id: spec.id,
+    kind: spec.kind,
+    label: spec.label,
+    ...(spec.icon ? { icon: spec.icon } : {}),
+    actorId: spec.actor.id,
+    interactive: true,
+    difficulty: spec.difficulty,
+    rollLabel: spec.rollLabel ?? testSkillLabel(spec.ligne?.test ?? {}) ?? spec.label,
+    ...parts,
+    result: null,
+    ...(spec.menace ? { menace: spec.menace } : {}),
+    ...(spec.stake ? { stake: spec.stake } : {}),
+    ...(spec.reveal ? { reveal: spec.reveal } : {}),
+    ...(spec.outcome ? { outcome: spec.outcome } : {}),
+    ...(spec.meta ? { meta: spec.meta } : {}),
+  } as BuiltCascadeStep;
+}
+
+/** DÉCLARATION d'une étape à TABLE : quel tirage, pour qui. La DÉCLARATION du tirage (`table`) est
+ *  celle du registre (`tableStepDefs`, `cascade.ts`) — modificateur, plancher, dé imposé compris. */
+export interface TableSpec {
+  id: string;
+  kind: string;
+  label: string;
+  icon?: string;
+  /** PORTEUR du tirage : l'arbitre route la fenêtre à son siège (un d100 subi a son sujet). */
+  actorId: string;
+  table: CascadeTableDecl;
+  stake?: StakeRef;
+  meta?: CascadeStepMeta;
+}
+
+/**
+ * CONSTRUCTEUR d'étape à TABLE À POSER (#1262) — le dé n'est PAS tombé : l'étape est l'interaction
+ * `'table'` (`stepInteraction`), et c'est la fenêtre qui le jette (ou le pose, option « Dés fixés »).
+ *
+ * DEUX entrées séparées, jamais un drapeau : une table à poser et une table résolue n'ont ni les
+ * mêmes champs (`result`, enjeu redescendu à la ligne jouée) ni le même cycle. Un booléen les
+ * confondrait, et « résolue » sans résultat serait exprimable.
+ */
+export function tableStep(spec: TableSpec): BuiltCascadeStep | undefined {
+  if (spec.table.result != null) {
+    refusePorte(`table « ${spec.id} » (${spec.kind}) : un résultat est DÉJÀ posé sur une table à POSER `
+      + '— le dé serait re-jeté par la fenêtre. Passer par `tableStepDone`. Aucun tirage ouvert.');
+    return undefined;
+  }
+  return {
+    id: spec.id,
+    kind: spec.kind,
+    label: spec.label,
+    ...(spec.icon ? { icon: spec.icon } : {}),
+    actorId: spec.actorId,
+    interactive: true,
+    table: spec.table,
+    ...(spec.stake ? { stake: spec.stake } : {}),
+    ...(spec.meta ? { meta: spec.meta } : {}),
+  } as BuiltCascadeStep;
+}
+
+/** DÉCLARATION d'une étape à table DÉJÀ TIRÉE : la table, son résultat, et le rendu de ce qui vient
+ *  d'arriver (charge riche / lignes de conséquence — l'HYBRIDE table-résolue + révélation, B5). */
+export type TableDoneSpec = TableSpec & {
+  result: CascadeTableResult;
+  reveal?: RevealEntry;
+  outcome?: RecapLine[];
+};
+
+/**
+ * CONSTRUCTEUR d'étape à table RÉSOLUE (#1262) — le tirage a eu lieu chez le producteur (Critique de
+ * Structure), l'étape le RAPPORTE. La pose du résultat passe par le site UNIQUE `tableStepResolved`
+ * (`cascade.ts`), qui fait redescendre l'enjeu à la LIGNE jouée (#1117 L2) : sans lui, une étape
+ * poussée déjà tirée garderait un enjeu qui ne parle que du `kind`.
+ */
+export function tableStepDone(spec: TableDoneSpec): BuiltCascadeStep | undefined {
+  const base: CascadeStep = {
+    id: spec.id,
+    kind: spec.kind,
+    label: spec.label,
+    ...(spec.icon ? { icon: spec.icon } : {}),
+    actorId: spec.actorId,
+    interactive: true,
+    ...(spec.stake ? { stake: spec.stake } : {}),
+    ...(spec.reveal ? { reveal: spec.reveal } : {}),
+    ...(spec.outcome ? { outcome: spec.outcome } : {}),
+    ...(spec.meta ? { meta: spec.meta } : {}),
+  };
+  return tableStepResolved(base, spec.table, spec.result) as BuiltCascadeStep;
+}
+
+/** Les jets qu'une étape peut HÔTER — union fermée de `CascadeStepBase.jet`. */
+export type HostJet = NonNullable<CascadeStep['jet']>;
+
+/**
+ * SLOT `pending*` porteur des données de CHAQUE jet hôté — table TOTALE : ajouter un `jet` à l'union
+ * ne compile plus sans sa ligne ici. `fumble` est le seul à `null` : sa donnée (arme + résultat des
+ * Oups !) vit SUR l'étape (`step.fumble`), il n'y a pas de `pendingFumble` à désynchroniser.
+ */
+const PENDING_BY_JET: Record<HostJet, PendingKey | null> = {
+  attack: 'pendingAttack',
+  trample: 'pendingTrample',
+  defense: 'pendingDefense',
+  fumble: null,
+  cast: 'pendingCast',
+  test: 'pendingTest',
+  extended: 'pendingExtendedTest',
+  disengage: 'pendingDisengage',
+  forceDoor: 'pendingForceDoor',
+};
+
+/** Ce qui est vrai de TOUTE étape hôte : elle nomme son jet et son porteur, et rien du montage. */
+interface HostBase {
+  id: string;
+  kind: string;
+  /** Le jeteur — sa possession route la fenêtre (`modalArbiter`, entrée `cascade`). */
+  actorId: string;
+  label?: string;
+  icon?: string;
+  /** Moment PARTAGÉ (Sort d'un ennemi : opposition de cible + Contre-sort multi) → owner `'*'`. SEUL
+   *  mint à l'exposer : une étape hôte est la seule forme dont la fenêtre porte les jets de N sièges
+   *  sans être une bande. Ailleurs la possession se DÉDUIT (bande) ou est exclue (choix). */
+  groupOwner?: boolean;
+  stake?: StakeRef;
+  meta?: CascadeStepMeta;
+}
+
+/** DÉCLARATION d'une étape HÔTE — union DISCRIMINÉE par `jet` : la Maladresse exige sa charge (elle
+ *  n'a pas de pending), les huit autres n'en portent aucune (la leur vit dans leur `pending*`). */
+export type HostSpec =
+  | (HostBase & { jet: 'fumble'; fumble: { weapon: Weapon; result: OupsResolved | null } })
+  | (HostBase & { jet: Exclude<HostJet, 'fumble'>; fumble?: never });
+
+/**
+ * CONSTRUCTEUR d'étape HÔTE (#1262 B6) — « une situation = une modale » : le jet d'attaque/défense/
+ * incantation/… EST l'étape, et ses données vivent dans le `pending*` coexistant que la fenêtre rend
+ * (`modalArbiter`, entrée `cascade`, `covers`).
+ *
+ * Le pending DOIT déjà être posé : une étape hôte sans sa donnée ouvre une fenêtre que son hook ne
+ * sait pas rendre, et que l'auto-résolution de cadence valide à vide. Le mint le VÉRIFIE (DEV :
+ * throw), d'où le `get` — un constructeur pur ne pourrait pas le savoir.
+ */
+export function hostStep(get: Get, spec: HostSpec): BuiltCascadeStep | undefined {
+  const slot = PENDING_BY_JET[spec.jet];
+  if (slot && get()[slot] == null) {
+    refusePorte(`hôte « ${spec.id} » (jet:'${spec.jet}') : \`${slot}\` n'est pas posé — la fenêtre n'aurait `
+      + 'aucune donnée à rendre, et la cadence auto la validerait à vide. Aucune fenêtre ouverte.');
+    return undefined;
+  }
+  return {
+    id: spec.id,
+    kind: spec.kind,
+    jet: spec.jet,
+    actorId: spec.actorId,
+    ...(spec.label ? { label: spec.label } : {}),
+    ...(spec.icon ? { icon: spec.icon } : {}),
+    ...(spec.groupOwner ? { groupOwner: true } : {}),
+    ...(spec.jet === 'fumble' ? { fumble: spec.fumble } : {}),
+    ...(spec.stake ? { stake: spec.stake } : {}),
+    ...(spec.meta ? { meta: spec.meta } : {}),
+  } as BuiltCascadeStep;
+}
+
+/**
+ * OUVERTURE d'une SÉQUENCE d'étapes MINTÉES (#1262) — `startCascade` typé par la marque : un littéral
+ * monté à la main n'entre pas ici. `startCascade` reste public et non typé : c'est la FRONTIÈRE, celle
+ * par où une séquence restaurée d'une sauvegarde revient dans le slot.
+ */
+export function openSequence(get: Get, set: Set, opts: {
+  title: string;
+  icon?: string;
+  purpose: PendingCascade['purpose'];
+  steps: readonly BuiltCascadeStep[];
+  log?: string[];
+  travelHalt?: boolean;
+  roundBoundary?: boolean;
+  combatEndBoundary?: boolean;
+  restNights?: PendingCascade['restNights'];
+}): void {
+  startCascade(get, set, { ...opts, steps: [...opts.steps] });
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────────────────────────
+ * LES PORTES D'APPEND (#1262) — même famille, autre fenêtre : l'étape REJOINT la séquence de combat
+ * en place (`pushStep(…, 'combat')`, doctrine du slot) au lieu d'en nommer une. L'appelant ne fournit
+ * donc NI titre NI `purpose` : il n'ouvre rien.
+ *
+ * Chaque porte accepte sa déclaration OU une FABRIQUE `(index) => déclaration` : l'index d'append
+ * n'est connu que dans le `set` atomique de `pushStep`, et c'est lui qui distingue deux étapes de
+ * MÊME clé dans une séquence (deux Imparfaites, deux bandes de la même source). Une déclaration
+ * REFUSÉE par son mint n'appende rien (la fabrique de `pushStep` rend `undefined`).
+ * ───────────────────────────────────────────────────────────────────────────────────────────────── */
+
+/** Déclaration DIRECTE ou FABRIQUE indexée. */
+type Declaree<S> = S | ((index: number) => S);
+
+const declare = <S,>(d: Declaree<S>, index: number): S => (typeof d === 'function' ? (d as (i: number) => S)(index) : d);
+
+/** APPEND d'une bande à la séquence de combat. */
+export function pushBand(get: Get, set: Set, spec: Declaree<BandRowsSpec>): void {
+  pushStep(set, (index) => buildBand(get, declare(spec, index)), 'combat');
+}
+
+/** APPEND d'un choix à la séquence de combat. */
+export function pushChoice(set: Set, spec: Declaree<ChoiceSpec>): void {
+  pushStep(set, (index) => choiceStep(declare(spec, index)), 'combat');
+}
+
+/** APPEND d'un jet mono à la séquence de combat. */
+export function pushMono(set: Set, spec: Declaree<MonoSpec>): void {
+  pushStep(set, (index) => monoStep(declare(spec, index)), 'combat');
+}
+
+/** APPEND d'un tirage À POSER à la séquence de combat. */
+export function pushTable(set: Set, spec: Declaree<TableSpec>): void {
+  pushStep(set, (index) => tableStep(declare(spec, index)), 'combat');
+}
+
+/** APPEND d'un tirage DÉJÀ RÉSOLU à la séquence de combat. */
+export function pushTableDone(set: Set, spec: Declaree<TableDoneSpec>): void {
+  pushStep(set, (index) => tableStepDone(declare(spec, index)), 'combat');
+}
+
+/** APPEND d'une étape HÔTE à la séquence de combat. */
+export function pushHost(get: Get, set: Set, spec: Declaree<HostSpec>): void {
+  pushStep(set, (index) => hostStep(get, declare(spec, index)), 'combat');
 }
 
 /** Reconstruit l'issue SCELLÉE (`TestOutcome`) d'une étape déjà résolue — lecture PARTAGÉE pour les

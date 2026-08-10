@@ -345,7 +345,7 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect(step.kind).toBe('mutation');
     expect(step.reveal?.title).toBe('Mutation — Écailles');
     expect(step.actorId).toBe('pregen-101'); // le CONCERNÉ pilote la modale (et porte son portrait)
-    expect(step.autoCloseMs).toBe(9000); // gravité 'grave' → cadence de fermeture longue
+    expect(step.autoCloseMs, 'une révélation reprise d’une save ne s’auto-ferme pas non plus (#1270)').toBeUndefined();
     // Chemin RÉEL : la save migrée se charge et l'étape est celle que la fenêtre affichera.
     expect(saveToSlot(1, migrated!)).toBe(true);
     expect(useGame.getState().loadGame(1)).toBe(true);

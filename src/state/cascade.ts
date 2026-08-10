@@ -484,13 +484,22 @@ export function setCascadeTableForcedRoll(get: Get, set: Set, stepId: string, ro
  *
  *  `purpose` accepte une FONCTION de l'état : un appelant qui n'a que `set` (les sites de conséquence
  *  d'attaque n'ont pas tous le `get`) doit pouvoir choisir sa séquence d'accueil SUR l'état — elle est
- *  alors évaluée DANS le même `set` atomique que l'append, donc sur l'état qui reçoit l'étape. */
-export function pushStep(set: Set, step: CascadeStep | ((index: number) => CascadeStep), purpose: PendingCascade['purpose'] | ((s: GameState) => PendingCascade['purpose'])): void {
+ *  alors évaluée DANS le même `set` atomique que l'append, donc sur l'état qui reçoit l'étape.
+ *
+ *  La FABRIQUE peut rendre `undefined` : un constructeur de la porte qui REFUSE sa déclaration
+ *  (`rollSeam.refusePorte`) n'a aucune étape à donner, et l'index d'append n'est connu qu'ici — sans
+ *  cette sortie, l'appelant devrait mimer la doctrine du slot pour décider en amont.
+ *
+ *  L'invariant de possession `assertChoixJamaisPartage` (ci-dessous) s'applique à l'APPEND comme à
+ *  l'ouverture : une étape de choix de GROUPE glissée par cette voie échapperait sinon à la garde. */
+export function pushStep(set: Set, step: CascadeStep | ((index: number) => CascadeStep | undefined), purpose: PendingCascade['purpose'] | ((s: GameState) => PendingCascade['purpose'])): void {
   set((s) => {
     const p = typeof purpose === 'function' ? purpose(s) : purpose;
     const cur = s.pendingCascade;
     const same = cur && cur.purpose === p ? cur : null;
     const st = typeof step === 'function' ? step(same ? same.participants.length : 0) : step;
+    if (!st) return {};
+    assertChoixJamaisPartage([st]);
     if (same) return { pendingCascade: { ...same, participants: [...same.participants, st] } };
     const fresh: PendingCascade = { title: st.label ?? 'Conséquences', icon: st.icon ?? 'action/attack', purpose: p, cursor: 0, log: [], participants: [st] };
     // Slot occupé par un AUTRE purpose : on le SUSPEND (jamais un écrasement) — même `set` atomique

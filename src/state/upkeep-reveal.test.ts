@@ -52,6 +52,6 @@ describe('Entretien de Round en révélation (store)', () => {
     const round = step?.reveal;
     expect(round).toBeTruthy();
     expect(round!.lines.some((l) => /Hémorragique|Blessure/i.test(l))).toBe(true);
-    expect(step!.autoCloseMs).toBe(3500); // entretien 'minor' → l'étape porte SA cadence de fermeture
+    expect(step!.autoCloseMs, 'l’entretien reste à l’écran jusqu’au clic (#1270)').toBeUndefined();
   });
 });

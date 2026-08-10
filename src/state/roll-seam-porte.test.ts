@@ -238,7 +238,8 @@ describe('#1262 — marque `BuiltCascadeStep` : les constructeurs de la porte la
     expect([marqueBande, marqueChoix]).toEqual([true, true]);
   });
 
-  it('la marque est OPTIONNELLE : un littéral nu reste assignable (aucune étape historique ne casse)', () => {
+  it('la marque est REQUISE : un littéral nu n’est PAS une étape mintée (refusé par le compilateur)', () => {
+    // @ts-expect-error — marque absente : monter une étape à la main ne compile plus
     const nu: BuiltCascadeStep = { id: 'e', kind: 'k', label: 'L', interactive: true };
     expect(nu.id).toBe('e');
   });

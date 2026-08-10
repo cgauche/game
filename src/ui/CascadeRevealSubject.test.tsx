@@ -26,7 +26,8 @@ let root: Root;
 const HERO = () => createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Gunnar', rng: makeRNG(1) });
 
 /** Ouvre une séquence d'affichage à UNE étape portant l'entrée bâtie par `make` (forme exacte de
- *  `revealToStep` : `actorId` = le sujet, `autoCloseMs` versé depuis la gravité). */
+ *  `revealToStep` : `actorId` = le sujet ; `autoCloseMs` n'existe que si le site l'a DÉCLARÉ — la
+ *  fermeture d'une révélation est explicite par défaut, #1270). */
 function openReveal(make: (heroId: string) => RevealEntry, autoCloseMs?: number) {
   const hero = HERO();
   const entry = make(hero.id);

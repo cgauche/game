@@ -6,7 +6,8 @@
  * d'une partie sauvegardée (`MIGRATIONS[15]`, state/saves.ts) — d'où l'extraction hors de
  * `combatEffects` (que `saves.ts` ne peut pas importer : cycle store↔flux).
  */
-import type { CascadeStep, CascadeTableDecl, RevealEntry } from './pendings';
+import type { CascadeTableDecl, RevealEntry } from './pendings';
+import type { BuiltCascadeStep } from './stepBrand';
 import { toRecapLines } from './recapLine';
 import type { IconId } from '../ui/icons';
 
@@ -20,17 +21,25 @@ const REVEAL_ICON: Record<RevealEntry['kind'], IconId> = {
   sceneEntry: 'nav/entry-point', // entrée de zone : mise en contexte narrative (N1 — « le Journal n'est pas lu »)
 };
 
-/** Délai d'AUTO-FERMETURE de l'étape par gravité (arbitrage 2026-06-11) : court pour l'informatif,
- *  long pour le grave (critique/mutation d'un héros). Un clic ferme toujours avant. */
+/** Cadences d'auto-fermeture DÉCLARABLES (`opts.autoClose`), par gravité — court pour l'informatif,
+ *  long pour le grave. Aucune n'est armée d'office : cf. `revealToStep`. */
 export const REVEAL_AUTO_CLOSE_MS: Record<NonNullable<RevealEntry['severity']>, number> = { minor: 3500, grave: 9000 };
 
 /** Une révélation → étape d'AFFICHAGE de la séquence : la charge riche `reveal` voyage TELLE QUELLE
  *  (le rendu est routé par `kind` dans `ui/RevealBody.tsx` — panneau du Critique, parchemin d'entrée
  *  de zone, rangée de tirage + lignes pour le reste). `actorId` = le CONCERNÉ (victime → propriétaire
- *  de la modale en coop, et portrait du sujet dans la fenêtre). `table` = la DÉCLARATION du tirage
+ *  de la modale en coop, et portrait du sujet dans la fenêtre). `opts.table` = la DÉCLARATION du tirage
  *  DÉJÀ résolu qui a produit la révélation (#942 L4 : le d100 de sévérité d'un Critique) — la rangée
- *  `TableRollLine` montre alors le dé et la ligne atteinte, comme sur une étape à table tirée. */
-export function revealToStep(entry: RevealEntry, index: number, table?: CascadeTableDecl): CascadeStep {
+ *  `TableRollLine` montre alors le dé et la ligne atteinte, comme sur une étape à table tirée.
+ *
+ *  `opts.autoClose` : la fenêtre se ferme d'elle-même après la cadence de la gravité DÉCLARÉE. Absent
+ *  — le cas par défaut — l'étape attend le clic (arbitrage #1270). La gravité de la `RevealEntry`
+ *  n'arme rien : elle qualifie la révélation (rendu, bandeau), elle ne décide pas de sa durée. */
+export function revealToStep(
+  entry: RevealEntry,
+  index: number,
+  opts?: { table?: CascadeTableDecl; autoClose?: NonNullable<RevealEntry['severity']> },
+): BuiltCascadeStep {
   return {
     id: `cons-${entry.kind}-${index}`,
     kind: entry.kind,
@@ -39,8 +48,8 @@ export function revealToStep(entry: RevealEntry, index: number, table?: CascadeT
     label: entry.title,
     outcome: toRecapLines(entry.lines),
     reveal: entry,
-    ...(entry.severity ? { autoCloseMs: REVEAL_AUTO_CLOSE_MS[entry.severity] } : {}),
-    table,
+    ...(opts?.autoClose ? { autoCloseMs: REVEAL_AUTO_CLOSE_MS[opts.autoClose] } : {}),
+    table: opts?.table,
     interactive: true,
-  };
+  } as BuiltCascadeStep;
 }

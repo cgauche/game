@@ -53,11 +53,17 @@ describe('révélation → étape d’affichage de cascade', () => {
     expect(c.participants.map((s) => s.id)).toEqual(['cons-round-0', 'cons-effet-1']); // ids uniques dans la séquence
   });
 
-  it('la GRAVITÉ est versée en cadence d’AUTO-FERMETURE sur l’étape (3500 / 9000 ms ; absente = clic seul)', () => {
+  it('la GRAVITÉ n’arme AUCUN timer : la fermeture est EXPLICITE par défaut (arbitrage #1270)', () => {
     pushReveal(useGame.setState, { kind: 'round', title: 'A', lines: [], severity: 'minor' });
     pushReveal(useGame.setState, { kind: 'mutation', title: 'B', lines: [], severity: 'grave' });
     pushReveal(useGame.setState, { kind: 'effet', title: 'C', lines: [] });
-    expect(useGame.getState().pendingCascade!.participants.map((s) => s.autoCloseMs)).toEqual([3500, 9000, undefined]);
+    expect(useGame.getState().pendingCascade!.participants.map((s) => s.autoCloseMs)).toEqual([undefined, undefined, undefined]);
+  });
+
+  it('l’auto-fermeture se DÉCLARE au site, à la cadence de la gravité donnée', () => {
+    pushReveal(useGame.setState, { kind: 'round', title: 'A', lines: [] }, { autoClose: 'minor' });
+    pushReveal(useGame.setState, { kind: 'mutation', title: 'B', lines: [] }, { autoClose: 'grave' });
+    expect(useGame.getState().pendingCascade!.participants.map((s) => s.autoCloseMs)).toEqual([3500, 9000]);
   });
 
   it('`cascadeNext` dépile étape par étape et ferme la séquence à la dernière', () => {
@@ -88,14 +94,14 @@ describe('révélation → étape d’affichage de cascade', () => {
   it('SAVE/LOAD RÉEL (saveGame → loadGame) avec une étape d’affichage EN VOL : la révélation traverse la save', () => {
     (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
     deleteSlot(1);
-    pushReveal(useGame.setState, { kind: 'mutation', title: 'Mutation — Écailles', dice: 42, lines: ['a', 'b'], subjectId: 'h1', severity: 'grave' });
+    pushReveal(useGame.setState, { kind: 'mutation', title: 'Mutation — Écailles', dice: 42, lines: ['a', 'b'], subjectId: 'h1', severity: 'grave' }, { autoClose: 'grave' });
     expect(useGame.getState().saveGame(1)).toBe(true);
     useGame.setState({ pendingCascade: null }); // « nouvelle partie » : l'état est écrasé avant le chargement
     expect(useGame.getState().loadGame(1)).toBe(true); // chemin RÉEL : readSlot → migrateSave → applyLoadedSave
     const step = useGame.getState().pendingCascade!.participants[0];
     expect(step.kind).toBe('mutation');
     expect(step.reveal).toEqual({ kind: 'mutation', title: 'Mutation — Écailles', dice: 42, lines: ['a', 'b'], subjectId: 'h1', severity: 'grave' });
-    expect(step.autoCloseMs).toBe(9000); // la cadence de fermeture est de la DONNÉE : elle survit au JSON
+    expect(step.autoCloseMs).toBe(9000); // la cadence DÉCLARÉE est de la DONNÉE : elle survit au JSON
     useGame.getState().cascadeNext(); // …et la séquence restaurée se dénoue normalement
     expect(useGame.getState().pendingCascade).toBeNull();
     deleteSlot(1);

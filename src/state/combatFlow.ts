@@ -6169,7 +6169,7 @@ export function advanceTurn(get: Get, set: SetFn) {
       // (roundHooks, bus-owned) restent la machinerie du bus. Sans `audience`/`self` → diffusion data
       // vide ici : STRICTEMENT équivalent à l'ancien `runCombatHooks('onRoundEnd', …)`.
       emitCombatEvent('onRoundEnd', { get, set, battle, sink: tickLine });
-      if (heroRoundLines.length) pushReveal(set, { kind: 'round', title: tr('cf.roundEndTitle', { n: round - 1 }), lines: heroRoundLines, severity: 'minor' }); // (entretien HÉROS — auto-fermée)
+      if (heroRoundLines.length) pushReveal(set, { kind: 'round', title: tr('cf.roundEndTitle', { n: round - 1 }), lines: heroRoundLines, severity: 'minor' }); // (entretien HÉROS — fermé au clic, #1270)
       // Maniement de deux armes : le −10 défensif expire au DÉBUT du prochain Tour de son porteur. Si ce
       // porteur est order[0] (il rejoue en premier), c'est ICI (le franchissement de Round) que son Tour démarre.
       const firstNext = inBattleId(battle, battle.order[0]);

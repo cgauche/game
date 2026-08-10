@@ -183,7 +183,7 @@ describe("#253 — AVANCE D'HORLOGE (advanceTime) : bilan en cascade influençab
     expect(c?.purpose).toBe('upkeep');
     expect(c!.participants).toHaveLength(1);
     expect(c!.participants[0].reveal?.title).toBe('Entretien quotidien');
-    expect(c!.participants[0].autoCloseMs).toBe(3500); // gravité 'minor' → auto-fermeture courte
+    expect(c!.participants[0].autoCloseMs, 'la fermeture d’une révélation est EXPLICITE (#1270) — aucun timer non déclaré').toBeUndefined();
   });
 });
 

@@ -698,16 +698,16 @@ export interface PendingFrenzy {
 }
 /** CHARGE d'une étape d'AFFICHAGE de cascade (`CascadeStep.reveal`) : un jet SUBI / sur table /
  *  d'entretien dont le résultat (graine fixe) est montré au joueur après coup — il MONTRE le dé puis
- *  acquitte (pas de Chance). Le `kind` route le RENDU (`ui/RevealBody.tsx`) ; l'étape porte la
- *  cadence de fermeture (`CascadeStep.autoCloseMs`, dérivée de `severity` par `revealToStep`). */
+ *  acquitte (pas de Chance). Le `kind` route le RENDU (`ui/RevealBody.tsx`) ; la fenêtre se ferme au
+ *  clic, sauf cadence DÉCLARÉE par le site (`CascadeStep.autoCloseMs`, arbitrage #1270). */
 export interface RevealEntry {
   kind: 'miscast' | 'critical' | 'round' | 'mutation' | 'effet' | 'sceneEntry';
   title: string;
   dice?: number; // d100/d10 à afficher (le jet), si pertinent
   lines: string[]; // détail (résultat, effets)
-  /** Gravité, VERSÉE en délai d'auto-fermeture sur l'étape (arbitrage 2026-06-11) : 'minor' =
-   *  informative courte (entretien, interruptions…), 'grave' = critique/mutation sur un héros. Un clic
-   *  ferme toujours avant. Absent = pas d'auto-fermeture. Cf. `REVEAL_AUTO_CLOSE_MS`. */
+  /** Gravité de ce qui est révélé : 'minor' = informative (entretien, interruptions…), 'grave' =
+   *  critique/mutation sur un héros. Elle QUALIFIE la révélation (rendu, cadence choisie quand un site
+   *  déclare une auto-fermeture) ; elle n'en arme aucune d'elle-même (#1270). */
   severity?: 'minor' | 'grave';
   /** Combattant CONCERNÉ par la révélation (victime du critique, lanceur de la Colère…) → portrait
    *  + nom dans la modale (« on sait toujours à qui ça s'applique »). Absent pour les entretiens de Round. */
@@ -1521,9 +1521,10 @@ export interface CascadeStepBase extends RollParticipant {
    *  d'auteur, entrée de zone) — rendue par le panneau partagé `ui/RevealBody.tsx`, routé par `kind`. */
   reveal?: RevealEntry;
   /** AUTO-FERMETURE de l'étape d'AFFICHAGE (ms) : passé ce délai, la séquence avance d'elle-même
-   *  (`CascadeModal`), le clic « Continuer » restant toujours servi. Versé par `revealToStep` depuis
-   *  `RevealEntry.severity`. Indépendant de la CADENCE de combat (une cadence manuelle auto-ferme
-   *  quand même : c'est la propriété de l'étape, pas du pilote). Absent = fermeture au clic seul. */
+   *  (`CascadeModal`), le clic « Continuer » restant toujours servi. ABSENT par défaut — la fermeture
+   *  d'une révélation est EXPLICITE (arbitrage #1270) ; un site qui veut le timer le DÉCLARE
+   *  (`revealToStep`, option `autoClose`). Indépendant de la CADENCE de combat (une cadence manuelle
+   *  auto-ferme quand même : c'est la propriété de l'étape, pas du pilote). */
   autoCloseMs?: number;
   /** Étape de CHOIX « déviation » (folding P3a) : porte le Critique pré-tiré + le contexte d'attaque
    *  (JSON-sérialisable) ; l'applier appelle `resolveDeviation(step.deviation, chosen)`. */

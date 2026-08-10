@@ -29,4 +29,26 @@ export default tseslint.config(
       'no-case-declarations': 'off',
     },
   },
+  {
+    // VERROU DES MARQUES D'ORIGINE (#1262) : `BuiltCascadeStep`/`BuiltRollRow` portent une propriété
+    // REQUISE inécrivable hors de leur module (symbole non exporté), donc le SEUL moyen d'en forger
+    // une est le cast. Les minteurs le font, une fois, dans leur corps ; `saves.ts` réhydrate ce que
+    // le JSON a effacé. Partout ailleurs le cast rendrait la marque décorative.
+    //
+    // DEUX formes de cast (`x as T` et `<T>x`), et la référence est cherchée en DESCENDANT : la marque
+    // se forge tout autant sous un tableau (`as BuiltCascadeStep[]`), un `readonly` ou un générique —
+    // c'est même la route RÉALISTE vers `openSequence.steps`. Ce que le lint N'attrape PAS est dit au
+    // JSDoc de `state/stepBrand.ts` (annotation d'un `any`, spread d'une étape mintée).
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ignores: ['src/state/rollSeam.ts', 'src/state/revealStep.ts', 'src/state/saves.ts', 'src/ui/rollRowBuild.ts'],
+    rules: {
+      'no-restricted-syntax': ['error', {
+        selector: 'TSAsExpression TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
+        message: 'Marque d’origine (#1262) : forger un `Built*` par cast rend la marque décorative. Passer par un constructeur de la porte (rollSeam) ou par `revealToStep`.',
+      }, {
+        selector: 'TSTypeAssertion TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
+        message: 'Marque d’origine (#1262) : forger un `Built*` par cast rend la marque décorative. Passer par un constructeur de la porte (rollSeam) ou par `revealToStep`.',
+      }],
+    },
+  },
 );

@@ -274,6 +274,14 @@ const BASELINE: Record<string, number> = {
   'state/travelPostes.ts': 1, // Exposition de fin d'Étape terrestre
   'state/shipwreck.ts': 1, // Natation du naufrage
   'state/embrigadementFlow.ts': 2, // Ragot + Discrétion de l'embrigadement
+  // FAUX POSITIF de FORME, entré dans la mesure le 2026-08-10 (#1262) : `revealToStep` rapporte un
+  // tirage DÉJÀ RÉSOLU (`table.result` posé par son producteur, qui a lui-même fait descendre l'enjeu
+  // à la ligne jouée via `tableStepResolved`) — `stepInteraction` la classe `'affichage'`, elle ne
+  // lance rien. Le scan est TEXTUEL : il voit le champ `table`, pas son résultat. Le site n'est pas
+  // neuf, il était INVISIBLE : le scan matche `table:` mais pas le raccourci `table,`, la forme qu'il
+  // portait jusqu'ici. Angle mort à lever (couvrir `table,` comme `target,` l'est déjà), ce qui
+  // demande de re-mesurer TOUT le stock — le geste porte son ticket : #1271.
+  'state/revealStep.ts': 1,
   // COMBAT — reste du stock mesuré, chacun avec le VERROU qui l'empêche d'être doté aujourd'hui :
   // (`combat/triggeredTest.ts` est SOLDÉ : ses deux fabriques d'étape TRANSMETTENT `FlowTest.stake` —
   //  la dette est remontée chez les PRODUCTEURS de Flow, mesurés par `BASELINE_FLOW` ci-dessus.)
