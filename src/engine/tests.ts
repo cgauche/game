@@ -51,6 +51,15 @@ export function difficultyFromModifier(mod: number): Difficulty {
   return best;
 }
 
+/** Difficulté dont le modificateur vaut EXACTEMENT `mod`, `undefined` sinon — pendant STRICT de
+ *  `difficultyFromModifier` (plus proche voisin : un −15 y rend « Complexe (−10) », un −25
+ *  « Difficile (−20) » — mesuré). Un palier NOMMÉ à partir d'une combinaison de modificateurs
+ *  (`LDB 14 l.91-96`) ne peut se dire qu'à cette condition : à défaut, le jet garde sa Difficulté
+ *  déclarée et ses modificateurs en chips. PUR. */
+export function exactDifficultyFromModifier(mod: number): Difficulty | undefined {
+  return (Object.keys(DIFFICULTY_MODIFIERS) as Difficulty[]).find((k) => DIFFICULTY_MODIFIERS[k] === mod);
+}
+
 /** Difficulté RÉSULTANTE d'une Difficulté RAW assortie d'un modificateur plat (`MSRC 13 l.176`) —
  *  composition PURE `difficultyFromModifier(mod(base) + delta)`. SOURCE UNIQUE : l'arithmétique de
  *  Difficulté vit dans le moteur, jamais recomposée au call-site (cliquet #1153). */

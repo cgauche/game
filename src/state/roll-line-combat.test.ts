@@ -16,6 +16,8 @@ import { rule } from '../engine/policy';
 import { findCrewRoleById } from '../data';
 import { RULE_REF } from '../engine/ruleRefs';
 import { DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, relative, resolve } from 'node:path';
 
 /**
  * MONTEUR CANONIQUE — les sites de COMBAT (#1153 L1b). Chaque site migré est jugé sur DEUX grandeurs
@@ -364,38 +366,194 @@ describe('SONDES PROMUES (#1153 L1b) — ce que le monteur NE fait PAS encore', 
   });
 
   /**
-   * MATRICE du mode plafonné (`LDB 14 l.91-96`) — les six régimes de la règle, jugés sur les DEUX
-   * grandeurs : la cible que le combat applique, et l'écart base→cible intégralement nommé. Les
-   * plafonds sont lus de la POLICY (`combat-diff-cap-bonus`/`-malus`, règles optionnelles), jamais
-   * écrits en dur : un jeu de valeurs maison doit faire bouger l'attendu avec le moteur.
+   * MATRICE du mode plafonné (`LDB 14 l.91-96`) — les six régimes de la règle, jugés sur TROIS
+   * grandeurs : la cible que le combat applique, le PALIER que la ligne annonce, et l'écart
+   * base→cible intégralement nommé. Les plafonds sont lus de la POLICY
+   * (`combat-diff-cap-bonus`/`-malus`, règles optionnelles), jamais écrits en dur : un jeu de
+   * valeurs maison doit faire bouger l'attendu avec le moteur.
+   *
+   * `palier` = la Difficulté que les CIRCONSTANCES composent (RAW : « le Test devient simplement
+   * Très Difficile (-30) ») ; absent = aucune n'en compose d'exacte, la ligne garde sa Difficulté
+   * déclarée et TOUT reste en chips, plafond compris.
    */
   const capB = rule('combat-diff-cap-bonus') as number;
   const capM = rule('combat-diff-cap-malus') as number;
-  const MATRICE: { nom: string; mods: ModLine[]; attendu: number; mord: boolean }[] = [
-    { nom: 'aucun plafond ne mord (un malus, un bonus)', mods: [{ label: 'Sonné', value: -10, famille: 'jet' }, { label: 'À Terre', value: 20, famille: 'circonstance' }], attendu: 10, mord: false },
+  const MATRICE: { nom: string; mods: ModLine[]; attendu: number; mord: boolean; palier?: Difficulty }[] = [
+    { nom: 'aucun plafond ne mord (un malus, un bonus)', mods: [{ label: 'Sonné', value: -10, famille: 'jet' }, { label: 'À Terre', value: 20, famille: 'circonstance' }], attendu: 10, mord: false, palier: 'accessible' },
     { nom: 'MALUS mordant (Σ −50)', mods: [{ label: 'Sonné', value: -10, famille: 'jet' }, { label: 'Aveuglé', value: -20, famille: 'jet' }, { label: 'Empêtré', value: -20, famille: 'jet' }], attendu: -capM, mord: true },
-    { nom: 'BONUS mordant (Σ +80)', mods: [{ label: 'Viser', value: 40, famille: 'circonstance' }, { label: 'À Terre', value: 40, famille: 'circonstance' }], attendu: capB, mord: true },
+    { nom: 'BONUS mordant (Σ +80)', mods: [{ label: 'Viser', value: 40, famille: 'circonstance' }, { label: 'À Terre', value: 40, famille: 'circonstance' }], attendu: capB, mord: true, palier: 'tresFacile' },
     { nom: 'BONUS ET MALUS mordants (les deux sommes plafonnent, puis s’ajoutent)', mods: [{ label: 'Viser', value: 40, famille: 'circonstance' }, { label: 'À Terre', value: 40, famille: 'circonstance' }, { label: 'Aveuglé', value: -20, famille: 'jet' }, { label: 'Empêtré', value: -20, famille: 'jet' }, { label: 'Sonné', value: -20, famille: 'jet' }], attendu: capB - capM, mord: true },
     { nom: 'AVANTAGE `uncapped` hors plafond, malus mordant à côté', mods: [{ label: 'Avantage', value: 70, famille: 'jet', uncapped: true }, { label: 'Aveuglé', value: -40, famille: 'jet' }], attendu: 70 - capM, mord: true },
     { nom: 'AVANTAGE `uncapped` SEUL : rien à plafonner malgré une somme > +60', mods: [{ label: 'Avantage', value: 70, famille: 'jet', uncapped: true }], attendu: 70, mord: false },
   ];
 
-  it.each(MATRICE)('MODE PLAFONNÉ — $nom', ({ mods, attendu, mord }) => {
+  it.each(MATRICE)('MODE PLAFONNÉ — $nom', ({ mods, attendu, mord, palier }) => {
     const somme = mods.reduce((s, m) => s + m.value, 0);
     expect(combineMods(mods), 'la matrice doit décrire la combinaison RÉELLE du moteur').toBe(attendu);
     expect(attendu !== somme, 'le régime annoncé (mordant ou non) doit être celui que le moteur produit').toBe(mord);
 
     const l = rollLine({ difficulty: 'intermediaire', valeur: 60, surLaCible: mods, plafond: 'difficultes' });
     expect(l.target).toBe(clampTarget(60 + attendu).target);
-    const chip = l.mods.find((m) => m.label === 'plafond Difficultés');
-    if (mord) expect(chip).toMatchObject({ value: attendu - somme, ref: RULE_REF['combiner-les-difficultes'] });
-    else expect(chip, 'aucune chip décorative quand rien n’est amputé').toBeUndefined();
-    expect(inexplique({ ...l, difficulty: 'intermediaire' }), 'aucune chip « autres »').toBe(0);
+    expect(l.difficulty, 'le PALIER annoncé par la ligne').toBe(palier ?? 'intermediaire');
+    if (palier) {
+      // Palier DÉRIVÉ : les circonstances (et l'écart du plafond) COMPOSENT la Difficulté — elles
+      // quittent les chips, et leur somme EST la valeur du palier affiché.
+      const parts = l.difficultyParts ?? [];
+      expect(parts.reduce((s, m) => s + m.value, 0)).toBe(DIFFICULTY_MODIFIERS[palier]);
+      expect(parts.map((m) => m.label)).toEqual(expect.arrayContaining(mods.filter((m) => m.famille === 'circonstance').map((m) => m.label)));
+      expect(l.mods.some((m) => m.famille === 'circonstance'), 'aucune circonstance restée en chip').toBe(false);
+      expect(l.mods.map((m) => m.label)).toEqual(mods.filter((m) => m.famille !== 'circonstance').map((m) => m.label));
+      if (mord) expect(parts.find((m) => m.label === 'plafond Difficultés')).toMatchObject({ value: attendu - somme, ref: RULE_REF['combiner-les-difficultes'] });
+    } else {
+      // Aucun palier exact à composer : la ligne garde sa Difficulté et TOUT se lit en chips —
+      // l'amputation du plafond comprise, sans quoi elle retomberait en « autres ».
+      expect(l.difficultyParts).toBeUndefined();
+      const chip = l.mods.find((m) => m.label === 'plafond Difficultés');
+      if (mord) expect(chip).toMatchObject({ value: attendu - somme, ref: RULE_REF['combiner-les-difficultes'] });
+      else expect(chip, 'aucune chip décorative quand rien n’est amputé').toBeUndefined();
+    }
+    expect(inexplique({ ...l }), 'aucune chip « autres »').toBe(0);
 
-    // HORS mode : la somme reste BRUTE — le plafond est un régime de COMBAT, pas un défaut du monteur.
+    // HORS mode : la somme reste BRUTE et AUCUN palier ne se dérive — le plafond (et le palier qu'il
+    // compose) est un régime de COMBAT, pas un défaut du monteur.
     const brut = rollLine({ difficulty: 'intermediaire', valeur: 60, surLaCible: mods });
     expect(brut.target).toBe(clampTarget(60 + somme).target);
     expect(brut.mods.some((m) => m.label === 'plafond Difficultés')).toBe(false);
-    expect(inexplique({ ...brut, difficulty: 'intermediaire' })).toBe(0);
+    expect(brut.difficulty).toBe('intermediaire');
+    expect(brut.difficultyParts).toBeUndefined();
+    expect(inexplique({ ...brut })).toBe(0);
+  });
+
+  /**
+   * REPLI EXACT-OU-RIEN (garde-fou du juge de design) : `difficultyFromModifier` est un PLUS PROCHE
+   * VOISIN — un −15 y trouve « Complexe (−10) » (MESURÉ), un palier MENTEUR de 5 points. Le monteur
+   * exige donc l'exactitude : à défaut, la circonstance reste une chip. Le −15 est celui que le
+   * combat produit RÉELLEMENT : bande de portée Extrême (−30) halvée par le Talent Tireur embusqué
+   * (`sniperRangeAdjust`, appelé par `attackModifiers` — la ligne reste une circonstance de la table).
+   */
+  it('MODE PLAFONNÉ — une circonstance qui ne compose AUCUN palier exact (−15) reste en chip', () => {
+    const mods: ModLine[] = [{ label: 'Distance extrême', value: -15, famille: 'circonstance', ref: RULE_REF['portee-d-une-arme'] }];
+    const l = rollLine({ difficulty: 'intermediaire', valeur: 60, surLaCible: mods, plafond: 'difficultes' });
+    expect(l.difficulty, 'aucun palier ne vaut −15 : la Difficulté déclarée tient').toBe('intermediaire');
+    expect(l.difficultyParts).toBeUndefined();
+    expect(l.mods).toEqual(mods);
+    expect(l.target).toBe(45);
+    expect(inexplique({ ...l })).toBe(0);
+  });
+
+  /**
+   * GARDE DE LA TRAPPE `rollStep` — l'étaleur d'étape ne relaie NI `difficulty` NI `difficultyParts`
+   * (ses 42 appelants posent la Difficulté eux-mêmes après l'étalement). C'est SANS effet tant
+   * qu'aucun d'eux n'ouvre le mode plafonné : lui seul dérive un palier. Le jour où un site
+   * l'ouvrira, ses chips seraient amputées de leurs circonstances SANS le palier qui les porte →
+   * écart « autres » à l'écran. La garde rougit à ce site-là, pas avant. STRUCTURELLE : elle lit le
+   * SOURCE (l'appel et son objet-spec), jamais une liste tenue à la main.
+   */
+  it('TRAPPE — aucun appelant de `rollStep` n’ouvre le mode plafonné (sinon : relayer le palier)', () => {
+    const root = resolve(__dirname, '..');
+    const fichiers: string[] = [];
+    const walk = (dir: string) => {
+      for (const e of readdirSync(dir, { withFileTypes: true })) {
+        const p = join(dir, e.name);
+        if (e.isDirectory()) walk(p);
+        else if (/\.tsx?$/.test(e.name) && !/\.(test|spec)\./.test(e.name)) fichiers.push(p);
+      }
+    };
+    walk(root);
+    const sites: string[] = [];
+    let vus = 0;
+    for (const f of fichiers) {
+      const src = readFileSync(f, 'utf8');
+      // L'appel + son objet-spec (jusqu'à la parenthèse fermante de premier niveau, sur N lignes).
+      for (const m of src.matchAll(/rollStep\(([\s\S]{0,600}?)\)\s*[,;)\]}]/g)) {
+        vus++;
+        if (/plafond\s*:/.test(m[1])) sites.push(`${relative(root, f)} — ${m[1].slice(0, 80).replace(/\s+/g, ' ')}`);
+      }
+    }
+    expect(vus, 'le scan doit VOIR des appels — un scan cassé rendrait la garde vide et verte').toBeGreaterThan(20);
+    expect(sites, 'un appelant plafonné doit relayer `difficulty`/`difficultyParts` depuis `rollLine`').toEqual([]);
+  });
+});
+
+/**
+ * CONTRAT DU PALIER DÉRIVÉ — sonde EXHAUSTIVE promue en garde (sonde du juge de design : 7840
+ * combinaisons, 0 échec). Elle ne juge AUCUN cas particulier : elle balaie le produit cartésien des
+ * régimes (5 Difficultés déclarées × mode plafonné ou non × crans de modificateur × familles ×
+ * Avantage `uncapped` × valeur de base écrêtante) et exige de CHAQUE ligne montée les cinq
+ * invariants du lot :
+ *
+ *  1. la CIBLE est celle que le moteur applique — l'affichage ne déplace pas un point ;
+ *  2. la ligne s'EXPLIQUE : `base + Σ chips + modificateur du palier AFFICHÉ + écrêtage === cible`
+ *     (l'arithmétique exacte de `reconciled` : reste ≠ 0 ⇒ chip « autres » à l'écran) ;
+ *  3. un palier dérivé ne MENT jamais : sa composition SOMME à son modificateur ;
+ *  4. en mode dérivé, plus AUCUNE circonstance ne reste en chip — le palier les porte ;
+ *  5. aucun palier hors mode plafonné, ni sans circonstance à composer.
+ *
+ * La matrice ci-dessus vaut pour ses six régimes ; ce balayage vaut pour la RÈGLE — une régression
+ * d'une condition de dérivation y rougit sans qu'on ait à deviner la fixture qui la révèle.
+ */
+describe('PALIER DÉRIVÉ — contrat balayé sur tout le produit cartésien des régimes (#1153)', () => {
+  /** Crans de la table (`LDB 14`), des deux signes. */
+  const VALEURS = [-40, -30, -20, -10, 10, 20, 40, 60];
+  const FAMILLES = ['circonstance', 'jet'] as const;
+  /** Difficultés DÉCLARÉES : Intermédiaire (le combat, `LDB 13 l.118`) et quatre autres — un site
+   *  qui déclare la sienne doit la GARDER, le palier ne peut pas l'avaler. */
+  const DIFFICULTES: Difficulty[] = ['intermediaire', 'accessible', 'difficile', 'tresDifficile', 'facile'];
+  /** 45 = cible confortable ; 95 = régime où `clampTarget` mord (l'écrêtage doit rester nommable). */
+  const BASES = [45, 95];
+  const total = (mods: ModLine[]): number => mods.reduce((s, m) => s + m.value, 0);
+
+  it('cinq invariants, sur des milliers de combinaisons : aucune ligne ne ment ni ne cache', () => {
+    const echecs: string[] = [];
+    let cas = 0;
+    let derives = 0;
+
+    const juge = (difficulty: Difficulty, valeur: number, mods: ModLine[], plafond: boolean) => {
+      cas++;
+      const l = rollLine({ difficulty, valeur, surLaCible: mods, ...(plafond ? { plafond: 'difficultes' as const } : {}) });
+      const ou = `${difficulty}/${valeur}/${plafond ? 'plafonné' : 'brut'}/${JSON.stringify(mods.map((m) => `${m.value} ${m.famille}`))}`;
+
+      // 1. CIBLE : la combinaison du moteur, écrêtée par la primitive du jet.
+      const combine = plafond ? combineMods(mods) : total(mods);
+      const attendue = clampTarget(valeur + DIFFICULTY_MODIFIERS[difficulty] + combine).target;
+      if (l.target !== attendue) echecs.push(`CIBLE ${ou} → ${l.target} ≠ ${attendue}`);
+
+      // 2. La ligne s'EXPLIQUE intégralement (`inexplique` juge la MÊME arithmétique que l'écran).
+      if (inexplique({ ...l }) !== 0) echecs.push(`INEXPLIQUÉ ${ou} → reste ${inexplique({ ...l })}`);
+
+      if (!l.difficultyParts) return;
+      derives++;
+      // 3. Le palier ne ment pas : sa composition somme à son modificateur.
+      if (total(l.difficultyParts) !== DIFFICULTY_MODIFIERS[l.difficulty]) {
+        echecs.push(`PALIER MENTEUR ${ou} → composition ${total(l.difficultyParts)} ≠ ${DIFFICULTY_MODIFIERS[l.difficulty]} (${l.difficulty})`);
+      }
+      // 4. Aucune circonstance laissée en chip quand le palier les porte.
+      if (l.mods.some((m) => m.famille === 'circonstance')) echecs.push(`CIRCONSTANCE EN CHIP ${ou}`);
+      // 5. Jamais de palier hors mode plafonné, ni sans circonstance à composer.
+      if (!plafond) echecs.push(`PALIER HORS MODE PLAFONNÉ ${ou}`);
+      if (!l.difficultyParts.some((m) => m.famille === 'circonstance')) echecs.push(`PALIER SANS CIRCONSTANCE ${ou}`);
+    };
+
+    for (const d of DIFFICULTES) {
+      for (const plafond of [true, false]) {
+        for (const a of VALEURS) {
+          for (const fa of FAMILLES) {
+            juge(d, 45, [{ label: 'A', value: a, famille: fa }], plafond);
+            for (const b of VALEURS) {
+              for (const fb of FAMILLES) {
+                const paire: ModLine[] = [{ label: 'A', value: a, famille: fa }, { label: 'B', value: b, famille: fb }];
+                for (const base of BASES) juge(d, base, paire, plafond);
+                // Avantage : la seule ligne `uncapped` du jeu (hors table, `LDB 13`).
+                juge(d, 45, [...paire, { label: 'Avantage', value: 60, famille: 'jet', uncapped: true }], plafond);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    expect(cas, 'le balayage doit couvrir des milliers de cas — un produit tronqué ne prouve rien').toBeGreaterThan(7000);
+    expect(derives, 'il doit VRAIMENT produire des paliers dérivés, sinon il ne juge que le repli').toBeGreaterThan(100);
+    expect(echecs.slice(0, 20)).toEqual([]);
   });
 });

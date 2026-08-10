@@ -53,7 +53,7 @@ import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
 import { findSkillById, conditionLabel, type StakeRef } from '../data';
 import { t, type OutKey, type OutVars } from '../i18n';
-import { rollTest, clampTarget } from '../engine/tests';
+import { rollTest, clampTarget, exactDifficultyFromModifier } from '../engine/tests';
 import { defaultRNG, type RNG } from '../engine/dice';
 import type { TestResult } from '../engine/tests';
 
@@ -387,8 +387,21 @@ export function withDifficulty<T extends RollLineDecl>(decl: T, difficulty: Diff
   return { ...decl, difficulty };
 }
 
-/** Ce qu'une étape-jet doit porter pour être lisible : base NUE, lignes NOMMÉES, cible, écrêtage. */
-export interface RollLineParts { base: number; mods: ModLine[]; target: number; clamped?: number }
+/** Ce qu'une étape-jet doit porter pour être lisible : base NUE, lignes NOMMÉES, cible, écrêtage —
+ *  et, en mode plafonné, le PALIER de Difficulté que la combinaison des circonstances compose. */
+export interface RollLineParts {
+  base: number;
+  mods: ModLine[];
+  target: number;
+  clamped?: number;
+  /** Difficulté à AFFICHER : le palier DÉRIVÉ quand la combinaison des circonstances en compose un
+   *  exactement (`LDB 14 l.91-96`), la Difficulté déclarée sinon. */
+  difficulty: Difficulty;
+  /** Composition du palier DÉRIVÉ (les lignes `famille:'circonstance'` + l'écart du plafond) : elles
+   *  ne sont PLUS dans `mods` — le palier les porte, son popover les détaille. Absente = palier
+   *  déclaré, tous les modificateurs restent en chips. */
+  difficultyParts?: ModLine[];
+}
 
 /** Composantes de `testValue` HORS pénalité d'États : `testValueParts` les NOMME EN TÊTE (il ouvre sur
  *  `testStatePenaltyParts`, `engine/skills.ts`) — un Test de COMBAT leur substitue `conditionModLines`.
@@ -490,16 +503,53 @@ export function rollLine(spec: RollLineSpec): RollLineParts {
     ? []
     : [{ label: 'plafond Difficultés', value: combine - brut, famille: 'circonstance', ref: RULE_REF['combiner-les-difficultes'] }];
   const { target, clamped } = clampTarget(value + dv + combine);
+  // PALIER DÉRIVÉ (`LDB 14 l.91-96` : « le brouillard ajouté au fait de vouloir toucher une
+  // Localisation précise […] le Test devient simplement Très Difficile (-30) ») : en mode plafonné,
+  // les circonstances quittent les chips et COMPOSENT la Difficulté de la ligne. Le palier se dérive
+  // des CIRCONSTANCES SEULES (`combineCirc`) — quatre conditions, toutes nécessaires :
+  //  (a) au moins une circonstance — sinon le palier nommerait un pur artefact de plafond ;
+  //  (b) une composition qui SOMME au palier. Comme elle vaut `combineCirc` par construction, cette
+  //      égalité est VRAIE si et seulement si la Difficulté déclarée est Intermédiaire (dv = 0) :
+  //      c'est le gate voulu — un site qui DÉCLARE sa Difficulté (Test de combat authoré Difficile)
+  //      la garde, le palier ne peut pas l'avaler ; en combat d'attaque elle est Intermédiaire
+  //      d'office (`LDB 13 l.118`), donc la dérivation opère ;
+  //  (c) un palier EXACT de l'échelle — un −15 (bande Extrême halvée) n'en compose aucun ;
+  //  (d) SÉPARABILITÉ des familles : `combineMods` plafonne aujourd'hui les DEUX familles dans un
+  //      même pool, si bien qu'un plafond qui MORD à cheval rembourse aux circonstances ce qu'il a
+  //      coupé aux modificateurs de jet ; le palier hériterait ce remboursement et annoncerait une
+  //      Difficulté que la table ne dit pas (mesuré : +20 −20 −10 de circonstances, net −10, avec un
+  //      État −10 → palier « Intermédiaire » au lieu de « Complexe »). Non séparable = REPLI
+  //      intégral, chips et écrêtage nommé. Décorréler les familles dans le moteur (#1153 Lv) rend
+  //      cette condition toujours vraie et le cas mixte revient au mode dérivé.
+  const circonstances = spec.plafond === 'difficultes' ? surLaCible.filter((m) => m.famille === 'circonstance') : [];
+  const composition = [...circonstances, ...ecretage];
+  const enChips = surLaCible.filter((m) => !circonstances.includes(m));
+  const combineCirc = combineMods(circonstances);
+  const separable = combine === combineCirc + enChips.reduce((s, m) => s + m.value, 0);
+  const palierMod = dv + combineCirc;
+  const palier = circonstances.length && separable && composition.reduce((s, m) => s + m.value, 0) === palierMod
+    ? exactDifficultyFromModifier(palierMod)
+    : undefined;
   return {
     base: split.base - fusedSum,
-    mods: [...split.mods, ...dansLaValeur, ...surLaCible, ...ecretage],
+    mods: palier
+      ? [...split.mods, ...dansLaValeur, ...enChips]
+      : [...split.mods, ...dansLaValeur, ...surLaCible, ...ecretage],
     target,
     ...(clamped ? { clamped } : {}),
+    difficulty: palier ?? spec.difficulty,
+    ...(palier ? { difficultyParts: composition } : {}),
   };
 }
 
 /** Étale une ligne montée en CHAMPS d'étape (`CascadeStep`/`BatchParticipant`) : `mods` et `clamped`
- *  ne sont posés que s'ils existent — un monteur local ne réécrit jamais cet étalement à la main. */
+ *  ne sont posés que s'ils existent — un monteur local ne réécrit jamais cet étalement à la main.
+ *
+ *  N'étale NI `difficulty` NI `difficultyParts` : ses 42 appelants posent eux-mêmes la Difficulté
+ *  après l'étalement, et AUCUN n'ouvre le mode plafonné (le seul régime qui DÉRIVE un palier). Le
+ *  jour où l'un le fait, il lui faut relayer les deux champs ensemble — sans quoi les chips
+ *  amputées de leurs circonstances laisseraient un écart « autres ». Verrouillé par la garde
+ *  « `rollStep` + `plafond` » (`src/state/roll-line-combat.test.ts`). */
 export function rollStep(spec: RollLineSpec): { base: number; mods?: ModLine[]; target: number; clamped?: number } {
   const line = rollLine(spec);
   return {

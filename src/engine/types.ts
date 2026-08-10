@@ -2,7 +2,7 @@
 import { t } from '../i18n';
 import type { Duration } from './duration';
 import type { ReachId } from './items';
-import type { CodexTarget } from './ruleRefs';
+import type { CodexTarget, ModProvenance } from './ruleRefs';
 
 /** Libellés d'AFFICHAGE de l'axe d'Allonge, PAR id d'axe (`ReachId`, `engine/items.ts` — LDB 62
  *  l.156-164). Toute LOGIQUE d'Allonge passe par `reachIdOf`/`reachRankOf`, jamais par ce libellé. */
@@ -592,14 +592,36 @@ export const CATEGORY_BY_SOURCE_KIND: Record<EffectSourceKind, string> = {
 };
 
 /**
- * Famille d'un modificateur de jet (`ModLine.famille`, `TestPenaltyPart.famille`) — la taxonomie du
- * contrat d'affichage, #1153 L3b. Elle vit ICI, avec `effectRef`, pour être lisible des collecteurs
- * (`conditions`, `trauma`) comme du moteur de combat sans cycle d'import.
+ * Famille d'un modificateur de jet (`ModLine.famille`) — la taxonomie du contrat d'affichage,
+ * #1153 L3b. Elle vit ICI, avec `effectRef`, pour être lisible des collecteurs (`conditions`,
+ * `trauma`) comme du moteur de combat sans cycle d'import.
  *  - `circonstance` : une entrée de la table des Difficultés de Combat — `LDB 14` (chapeau l.48).
  *  - `jet` : tout autre modificateur du Test — `LDB 12 l.189`, `LDB 16 l.11`.
  * POSÉE À L'ÉMISSION, jamais dérivée à l'affichage.
  */
 export type ModFamille = 'circonstance' | 'jet';
+
+/**
+ * UN modificateur ÉTIQUETÉ d'un jet (« Courte portée +20 », « −30 Brisé ») — FORME UNIQUE de tout
+ * modificateur nommé du jeu : composantes de pénalité d'État, bonus à l'attaquant, lignes montées
+ * par le seam, pénalité d'un Test d'entretien différé. Définie ICI (module socle) pour que les
+ * collecteurs l'émettent sans dépendre du moteur de combat, qui la ré-exporte pour ses lecteurs.
+ */
+export interface ModLine {
+  label: string;
+  /** Famille du modificateur, posée à l'ÉMISSION (jamais dérivée à l'affichage) — `LDB 14 l.48`. */
+  famille: ModFamille;
+  value: number;
+  /** Hors du plafond « Combiner les Difficultés » (ex. Avantage — pas une entrée de la table). */
+  uncapped?: boolean;
+  /** La RÈGLE qui octroie ce modificateur, en ids STABLES (`RULE_REF`, ou une entité : État,
+   *  Domaine, qualité d'arme). L'affichage en fait une chip liée au Codex (`ui/RollLine.tsx`) ;
+   *  le moteur ne la lit jamais. */
+  ref?: CodexTarget;
+  /** Qui octroie ce modificateur, en STRUCTURE (les soutiens d'un Test de groupe) — jamais du
+   *  texte composé dans `label`. Rendu en micro-chips à côté de la chip de la règle. */
+  by?: ModProvenance[];
+}
 
 /** Renvoi Codex d'un effet actif : son entité SOURCE (`EffectSource`, table TOTALE
  *  `CATEGORY_BY_SOURCE_KIND` ci-dessus), sinon le sort qui l'a posé. Absent = effet dont le
@@ -1687,7 +1709,7 @@ export type UpkeepDeferTest = (spec: {
   /** Pénalité NOMMÉE du Test : sa valeur voyage AVEC son étiquette et sa règle, depuis le producteur
    *  qui l'applique (`engine/provisions` pour la Faim/Soif). Couture GÉNÉRIQUE (14 `kind`) : rien n'y
    *  est codé en dur, un `kind` futur apporte SA règle ou n'affiche aucune chip. */
-  penalty?: { value: number; label: string; famille: ModFamille; ref?: CodexTarget };
+  penalty?: ModLine;
   meta?: Record<string, unknown>; // p.ex. { diseaseName, onFail: GameOp[] } — porté tel quel par l'étape de cascade
 }) => void;
 

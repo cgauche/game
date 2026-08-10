@@ -16,14 +16,33 @@ function difficultyValue(difficulty?: Difficulty): number {
   return difficulty ? DIFFICULTY_MODIFIERS[difficulty] : 0;
 }
 
+/** Un modificateur TEL QU'IL SE LIT (« +10 Soutien », « −20 Localisation visée ») — source UNIQUE :
+ *  la chip le rend, et le popover du palier dérivé énumère sa composition avec la MÊME écriture. */
+function modText(m: ModLine): string {
+  return `${m.value >= 0 ? '+' : '−'}${Math.abs(m.value)} ${m.label}`;
+}
+
 /** Difficulté du Test SUR la ligne, en texte + valeur (« — Accessible (+20) ») : elle dit la
  *  NATURE du jet, pas une circonstance — les chips restent aux modificateurs circonstanciels
- *  (Soutien, Avantage, plafond mesuré…). `easedBy` (`FlowTest.easierIf`) voyage avec elle. */
-function DifficultyText({ difficulty, easedBy }: { difficulty?: Difficulty; easedBy?: string }) {
+ *  (Soutien, Avantage, plafond mesuré…). `easedBy` (`FlowTest.easierIf`) voyage avec elle.
+ *
+ *  DEUX MODES, un seul contrat (#1153 L3b) : la Difficulté est CHOISIE (hors combat — le site qui
+ *  ouvre le jet la pose) ou DÉRIVÉE (`parts` : en combat, la combinaison des circonstances compose
+ *  le palier, `LDB 14 l.91-96`). Dérivée, le palier DEVIENT sa propre affordance de règle : le
+ *  popover porte sa composition et ouvre la fiche « Combiner les Difficultés ». */
+function DifficultyText({ difficulty, easedBy, parts }: { difficulty?: Difficulty; easedBy?: string; parts?: ModLine[] }) {
   if (!difficulty) return null;
+  const texte = DIFFICULTY_LABELS[difficulty];
+  const ref = RULE_REF['combiner-les-difficultes'];
   return (
     <span className="rm-roll-diff">
-      {' '}— {DIFFICULTY_LABELS[difficulty]}
+      {' '}— {parts?.length
+        ? (
+          <CodexRef category={ref.category} id={ref.id} label="Combiner les Difficultés" instance={texte} provenances={parts.map(modText)}>
+            {texte}
+          </CodexRef>
+        )
+        : texte}
       {easedBy ? `, allégée : ${easedBy}` : ''}
     </span>
   );
@@ -53,8 +72,8 @@ function reconciled(mods: ModLine[], modifier: number, target: number, clamped?:
     console.error(`[RollLine] chip « autres » (${rest}) : la ligne ne s'explique pas — itemiser la source à l'ÉMISSION (rollSeam.rollLine).`);
   }
   // Les deux lignes ci-dessous sont des artefacts de réconciliation d'AFFICHAGE, jamais lus par
-  // `combineMods` : leur `famille` est un DÉFAUT, pas un classement de règle. Elles meurent en L3b-2
-  // (la chip de plafond devient le palier dérivé ; « autres » est un bug à itemiser à l'émission).
+  // `combineMods` : leur `famille` est un DÉFAUT, pas un classement de règle. « plafond/plancher N »
+  // nomme l'écrêtage MESURÉ de la cible ; « autres » est un bug à itemiser à l'émission.
   return [
     ...mods,
     ...(cut ? [{ label: `${cut < 0 ? 'plafond' : 'plancher'} ${target}`, value: cut, famille: 'jet' as const }] : []),
@@ -94,8 +113,7 @@ function ModChip({ m }: { m: ModLine }) {
   // souscription par chip re-rendrait toute la grille de mods à chaque tick de combat.
   const state = useGame.getState();
   const tone = m.value >= 0 ? 'pos' : 'neg';
-  const amount = `${m.value >= 0 ? '+' : '−'}${Math.abs(m.value)}`;
-  const text = `${amount} ${m.label}`;
+  const text = modText(m);
   // PROVENANCE (qui soutient, qui octroie) : elle vit DANS le popover de la chip — arbitrage user
   // 2026-08-05, verbatim « Normalement les informations de ce genre sont dans le hover codex non ? ».
   // Les noms flottant à côté de la chip (badges inline) ne se rattachaient visuellement à rien : le
@@ -183,7 +201,7 @@ export function RollLine({ d }: { d: RollBreakdown }) {
   return (
     <div className="rm-roll-block">
       <div className={`rm-roll ${masked ? 'masked' : d.success ? 'ok' : 'fail'}`}>
-        <span className="rm-roll-label">{d.label}<DifficultyText difficulty={d.difficulty} easedBy={d.easedBy} /></span>
+        <span className="rm-roll-label">{d.label}<DifficultyText difficulty={d.difficulty} easedBy={d.easedBy} parts={d.difficultyParts} /></span>
         <RollCalc base={d.base} modifier={d.modifier} target={d.target} mask={d.mask} />
         <span className="rm-roll-dice" title={masked ? MASK_HINT.roll : undefined} aria-label={masked ? MASK_HINT.roll : undefined}>
           <Icon id="nav/dice" size="sm" /> <b>{masked ? '?' : <Dice roll={d.roll} />}</b>
@@ -212,6 +230,9 @@ export interface PendingRoll {
   /** Difficulté du Test — rendue sur la LIGNE, jamais en chip (#1072) ; sa valeur reste
    *  comprise dans la cible (dérivée ici quand `target` est omise). */
   difficulty?: Difficulty;
+  /** COMPOSITION du palier DÉRIVÉ (même donnée que `RollBreakdown.difficultyParts`) : ces lignes ne
+   *  sont PAS dans `mods` — le palier les porte et son popover les détaille. */
+  difficultyParts?: ModLine[];
   /** Difficulté ALLÉGÉE (`FlowTest.easierIf`) : libellé de la Compétence/du Talent qui l'a permis. */
   easedBy?: string;
   /** ÉCRÊTAGE mesuré de la cible (même donnée que `RollBreakdown.clamped`) — seule autorisation de
@@ -237,7 +258,7 @@ export function PendingRollLine({ p }: { p: PendingRoll }) {
   return (
     <div className="rm-roll-block">
       <div className="rm-roll pending">
-        <span className="rm-roll-label">{p.label}<DifficultyText difficulty={p.difficulty} easedBy={p.easedBy} /></span>
+        <span className="rm-roll-label">{p.label}<DifficultyText difficulty={p.difficulty} easedBy={p.easedBy} parts={p.difficultyParts} /></span>
         {/* MASQUÉE → « ? » (une valeur est cachée) ; SANS base ni masque → cellule vide (il n'y a
             rien à cacher : cette ligne n'a simplement pas de valeur chiffrée). */}
         {p.mask || p.base != null

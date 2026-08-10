@@ -11,7 +11,7 @@ import { combatDistance } from '../../state/footprint';
 import { attackWeaponOf, crowdEligible, previewAttack, previewDefense, surfacedDefensePending } from '../../state/combatFlow';
 import { t } from '../../i18n';
 import { itemCapability } from '../../engine/capabilities';
-import { attackModesFor } from '../../engine/combatFeatures/dispatch';
+import { attackModesFor, offHandPenalty } from '../../engine/combatFeatures/dispatch';
 import { CritLocationPicker } from '../ForcedRollPicker';
 import { DeterminationButton } from '../DeterminationButton';
 import { CodexRef } from '../compendium/CodexRef';
@@ -62,6 +62,9 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   // et la fenêtre de Défense qui suit ne peuvent plus parler de deux armes différentes.
   const weapon = attackWeaponOf(battle, attacker, target, pa);
   const pickable = attacker.weapons.filter((w) => !isUnarmed(w) && !!w.uid);
+  // LDB 14 (Tableau des Difficultés de Combat, « Attaquer avec votre main secondaire ») — valeur du
+  // MOTEUR, la même que celle qui pèsera sur la cible (`attackModifiers`).
+  const offPen = offHandPenalty(attacker);
   const res = pa.result;
   const rolled = !!res;
   // LDB 10 l.638
@@ -119,7 +122,9 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               base: preview!.base,
               target: Math.max(0, Math.min(100, preview!.target)),
               mods: preview!.mods,
-              difficulty: preview!.difficulty, // LDB 13 l.118
+              difficulty: preview!.difficulty, // LDB 13 l.118 ; palier composé LDB 14 l.91-96
+              ...(preview!.difficultyParts ? { difficultyParts: preview!.difficultyParts } : {}),
+              ...(preview!.clamped ? { clamped: preview!.clamped } : {}),
             },
           },
     rolled,
@@ -183,8 +188,11 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
                 value={pa.weaponUid ?? weapon.uid ?? ''}
                 onChange={(e) => setWeapon(e.target.value || null)}
               >
+                {/* La pénalité affichée est celle du MOTEUR (`offHandPenalty` : le Talent
+                    Ambidextre la réduit puis l'annule) — un « -20 » écrit ici mentirait à l'écran
+                    du personnage qui ne la subit pas. Nulle ⇒ rien à annoncer. */}
                 {pickable.map((w) => (
-                  <option key={w.uid} value={w.uid}>{w.label}{w.hand === 'off' ? ' (2nde -20)' : ''}</option>
+                  <option key={w.uid} value={w.uid}>{w.label}{w.hand === 'off' && offPen ? ` (2nde ${offPen})` : ''}</option>
                 ))}
               </select>
               <CodexRef category="regles" id="main-secondaire" label="Attaque de la main secondaire" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
@@ -200,7 +208,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               >
                 <option value="">Au hasard</option>
                 {LOCS.map((l) => (
-                  <option key={l} value={l}>{locationLabel(l, target.bodyShape)} (-10)</option>
+                  <option key={l} value={l}>{locationLabel(l, target.bodyShape)} (-20)</option>
                 ))}
               </select>
               <CodexRef category="regles" id="viser-une-localisation" label="Viser une Localisation" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>

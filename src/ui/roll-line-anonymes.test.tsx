@@ -46,18 +46,41 @@ describe('RollLine — le compteur de chips « autres » est CÂBLÉ et lu (#115
     expect(ANONYMES.count).toBe(0);
   });
 
-  it('le PLAFOND des Difficultés (LDB 14 l.91-96) se rend en chip NOMMÉE, jamais en « autres »', () => {
-    // Ce jeu de malus somme −50 et se combine à −30 : sans le mode plafonné, les +20 amputés
-    // sortaient en chip « autres » sur la ligne d'attaque (#1153 L3a).
+  it('le PLAFOND, SANS circonstance à composer, se rend en chip NOMMÉE — jamais en « autres »', () => {
+    // Trois États du JETEUR (famille `jet`) somment −50 et se combinent à −30. Aucune circonstance
+    // n'est en jeu : il n'y a AUCUN palier à composer (`LDB 14 l.91-96` borne la combinaison des
+    // entrées de la table), et l'amputation reste donc une chip nommée — la nommer « Accessible
+    // (+20) » ferait dire à la ligne l'exact contraire de la situation.
     const monte = rollLine({
       difficulty: 'intermediaire', valeur: 60, plafond: 'difficultes',
       surLaCible: [{ label: 'Sonné', value: -10, famille: 'jet' }, { label: 'Aveuglé', value: -20, famille: 'jet' }, { label: 'Empêtré', value: -20, famille: 'jet' }],
     });
     expect(monte.target, 'la fixture doit vraiment faire mordre le plafond').toBe(30);
+    expect(monte.difficulty, 'aucune circonstance ⇒ la Difficulté déclarée tient').toBe('intermediaire');
+    expect(monte.difficultyParts).toBeUndefined();
     const html = renderToStaticMarkup(
-      <PendingRollLine p={{ label: 'Corps à corps', base: monte.base, target: monte.target, mods: monte.mods, difficulty: 'intermediaire' }} />,
+      <PendingRollLine p={{ label: 'Corps à corps', base: monte.base, target: monte.target, mods: monte.mods, difficulty: monte.difficulty, difficultyParts: monte.difficultyParts }} />,
     );
     expect(html).toContain('plafond Difficultés');
+    expect(html).not.toContain('autres');
+    expect(ANONYMES.count).toBe(0);
+  });
+
+  it('le PLAFOND des CIRCONSTANCES, lui, se lit dans le PALIER — et disparaît des chips', () => {
+    // MÊME plafond, mais sur des entrées de la table (`LDB 14`, exemple l.95 : brouillard +
+    // Localisation). Le RAW nomme le résultat : « le Test devient simplement Très Difficile (-30) ».
+    const monte = rollLine({
+      difficulty: 'intermediaire', valeur: 60, plafond: 'difficultes',
+      surLaCible: [{ label: 'Brouillard', value: -20, famille: 'circonstance' }, { label: 'Localisation visée', value: -20, famille: 'circonstance' }],
+    });
+    expect(monte.target).toBe(30);
+    expect(monte.difficulty).toBe('tresDifficile');
+    expect(monte.mods, 'plus une seule chip : le palier porte tout').toEqual([]);
+    const html = renderToStaticMarkup(
+      <PendingRollLine p={{ label: 'Projectiles', base: monte.base, target: monte.target, mods: monte.mods, difficulty: monte.difficulty, difficultyParts: monte.difficultyParts }} />,
+    );
+    expect(html).toContain('Très difficile (−30)');
+    expect(html).not.toContain('plafond Difficultés');
     expect(html).not.toContain('autres');
     expect(ANONYMES.count).toBe(0);
   });

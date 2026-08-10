@@ -80,9 +80,15 @@ describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
     const main = previewAttack(get, a, b); // auto → Épée (main), aucune pénalité
     expect(main.weapon.label).toBe('Épée');
     expect(main.mods.some((m) => m.label === 'Main secondaire')).toBe(false);
+    expect(main.difficulty, 'sans circonstance, la Difficulté de combat déclarée').toBe('intermediaire');
     const off = previewAttack(get, a, b, undefined, { weaponUid: 'o' }); // Dague (main secondaire) → -20
     expect(off.weapon.label).toBe('Dague');
-    expect(off.mods.find((m) => m.label === 'Main secondaire')?.value).toBe(-20);
+    // « Attaquer avec votre main secondaire » est une entrée −20 du Tableau des Difficultés de Combat
+    // (LDB 14) : elle COMPOSE le palier de la ligne au lieu d'y flotter en chip (#1153 L3b).
+    expect(off.difficulty).toBe('difficile');
+    expect(off.difficultyParts?.find((m) => m.label === 'Main secondaire')?.value).toBe(-20);
+    expect(off.mods.some((m) => m.label === 'Main secondaire')).toBe(false);
+    expect(off.target, 'le −20 reste porté par la cible, palier ou chip').toBe(main.target - 20);
     seedBattleRng(2);
     const r = resolveAttack(get, a, b, undefined, undefined, undefined, undefined, 'o');
     expect(r!.weapon.label).toBe('Dague'); // parité : la résolution utilise la même arme choisie

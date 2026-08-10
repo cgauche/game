@@ -2,7 +2,7 @@
  * États (conditions) — Livre de base, chapitre « États ».
  * Gestion minimale pour le combat tactique : ajout, empilement, retrait.
  */
-import { Combatant, ActiveEffect, ConditionInstance, effectRef, type ModFamille } from './types';
+import { Combatant, ActiveEffect, ConditionInstance, effectRef, type ModLine } from './types';
 import { evalCondition, type ConditionCtx, type ActorView } from './flowCore';
 import { tickRound } from './duration';
 import { conditionLabel, findConditionById, findPsychologyById, findSpellById, refLabel, skills } from '../data';
@@ -290,10 +290,6 @@ export { passivePartLine };
 // Ré-exportée ici pour ses consommateurs historiques — UNE définition, deux chemins d'import.
 export { effectRef } from './types';
 
-/** UNE composante NOMMÉE de la pénalité de Test de combat — structurellement une `ModLine`
- *  (`engine/combat`), poussée telle quelle par les trois producteurs via `conditionModLines`. */
-export interface TestPenaltyPart { label: string; value: number; famille: ModFamille; ref?: CodexTarget }
-
 /**
  * Pénalité aux Tests de COMBAT (LDB 16), DÉCOMPOSÉE en lignes nommées — SOURCE UNIQUE du calcul ET
  * de son affichage. Trois familles, jamais fondues sous un même intitulé :
@@ -303,7 +299,7 @@ export interface TestPenaltyPart { label: string; value: number; famille: ModFam
  *  3. les `testMod` globaux de symptôme (Crampes abdominales, MSRC 16 l.152) : une ligne PAR symptôme.
  * Les familles 2 et 3 STACKENT avec 1 (hors pool, et hors du gate `ignoreStatePenalties`).
  */
-export function combatTestPenaltyParts(c: Combatant): TestPenaltyPart[] {
+export function combatTestPenaltyParts(c: Combatant): ModLine[] {
   let cand: PoolCandidate[] = [];
   // Endurance de l'anachorète (LDB 42) : « ne subit aucune pénalité causée par les États » —
   // n'efface QUE les pénalités d'État (l'aura Perturbante est un trait, pas un État).
@@ -319,7 +315,7 @@ export function combatTestPenaltyParts(c: Combatant): TestPenaltyPart[] {
   // `recompute-auras`. HORS du gate `ignoreStatePenalties` : une aura est un TRAIT, pas un État (Endurance de
   // l'anachorète ne l'annule pas, LDB 42). Non-cumul = même pool (« une seule fois », LDB 85 l.208).
   for (const m of c.auraMods ?? []) if (m.op.op === 'testMod' && m.op.char == null) cand.push({ amount: m.op.amount, nature: 'Aura', src: m.src });
-  const out: TestPenaltyPart[] = [];
+  const out: ModLine[] = [];
   const best = poolWinner(cand);
   if (best?.amount) out.push({ label: srcLabel(best.src, best.nature), value: best.amount, famille: 'jet', ref: best.src });
   // Modificateur de Sort (Malédiction de malchance) + pénalité GLOBALE de maladie (Crampes abdominales −20,
@@ -358,8 +354,8 @@ export function isMovementSkill(skill?: string): boolean {
  *  parade (Tests d'arme, `weaponHand` gaté) et `defenseValue` Esquive (`movement:true`). `weaponHand`/
  *  `movement` : contexte du Test COURANT, opposé aux gates portés par l'effet (`testModHand`/
  *  `testModMovementOnly`) — absents des DEUX côtés = mod global (comportement historique). */
-export function activeCharTestModParts(c: Combatant, ck: import('./types').CharKey, ctx: { weaponHand?: 'main' | 'off'; movement?: boolean } = {}): TestPenaltyPart[] {
-  const out: TestPenaltyPart[] = [];
+export function activeCharTestModParts(c: Combatant, ck: import('./types').CharKey, ctx: { weaponHand?: 'main' | 'off'; movement?: boolean } = {}): ModLine[] {
+  const out: ModLine[] = [];
   for (const e of c.activeEffects ?? []) {
     if (e.testModChar !== ck) continue;
     if (e.testModHand != null && e.testModHand !== ctx.weaponHand) continue;
@@ -384,8 +380,8 @@ export function activeCharTestMod(c: Combatant, ck: import('./types').CharKey, c
  * `hearingOnly`/`exceptSkills`). Les États non classables hors combat (Aveuglé=vue, `combatOnly`) sont
  * exclus ici.
  */
-export function testStatePenaltyParts(c: Combatant, skill?: string): TestPenaltyPart[] {
-  const out: TestPenaltyPart[] = [];
+export function testStatePenaltyParts(c: Combatant, skill?: string): ModLine[] {
+  const out: ModLine[] = [];
   let cand: PoolCandidate[] = [];
   // Endurance de l'anachorète (LDB 42) : aucune pénalité d'État pour la durée (les modificateurs de
   // Sort/symptôme restent). Pas d'État du tout : rien à mettre au pool non plus.
@@ -434,7 +430,7 @@ export function testStatePenalty(c: Combatant, skill?: string): number {
  *    n'est pas augmenté avec de multiples États *Assourdi* » (l.29) → max entre entrées flankRear.
  * Ex æquo : le PREMIER dans l'ordre de collecte l'emporte (comparaison stricte), comme `poolWinner`.
  */
-export function meleeAttackerBonusLines(target: Combatant, opts?: { flankRear?: boolean }): TestPenaltyPart[] {
+export function meleeAttackerBonusLines(target: Combatant, opts?: { flankRear?: boolean }): ModLine[] {
   let best: PoolCandidate | undefined;  // pool non-cumul des bonus inconditionnels
   let flank: PoolCandidate | undefined; // bonus flanc/dos ADDITIF (« supplémentaire »)
   for (const m of passiveMods(target)) {

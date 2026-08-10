@@ -14,7 +14,7 @@ import { woundsFromHit } from './woundsCalc';
 import { isInanimate } from './structures';
 import { agilityTestPenalty } from './encumbrance';
 import { skillBaseValue } from './skills';
-import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS, CHAR_LABELS, type CharKey, type Difficulty, type ModFamille } from './types';
+import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS, CHAR_LABELS, type CharKey, type Difficulty, type ModLine } from './types';
 import { weatherTestMods } from './weatherTestMod';
 import { findTableEntry } from './tables';
 import { maxBy } from './pick';
@@ -28,7 +28,7 @@ import { ignoredArmourAP, impenetrableAt, selectedAmmo, activeLoadout, unarmedWe
 import { incomingAttackMod, incomingDamageNullified, skillDRBonus, offTerrainTestDR } from './ops';
 import { isPsychImmune } from './psychology';
 import { qualitySum, attackModQualityIds, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon, resolveQualities } from './qualities/dispatch';
-import { RULE_REF, type CodexTarget, type ModProvenance } from './ruleRefs';
+import { RULE_REF } from './ruleRefs';
 import { spellEffectOps } from './flowCore';
 import { findPsychologyById } from '../data';
 import { offHandPenalty, talentDamageBonus, isSlayer, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust } from './combatFeatures/dispatch';
@@ -346,26 +346,10 @@ export function defenseValue(c: Combatant, mode: DefenseMode, weapon?: Weapon, s
 }
 
 /** Détail d'un jet (pour l'affichage : base, modificateurs, cible, d100 et DR). */
-// La famille d'un modificateur (`ModFamille`) est définie dans `types.ts` — lisible des collecteurs
-// d'États comme du moteur de combat sans cycle d'import.
-export type { ModFamille } from './types';
-
-/** Un modificateur étiqueté du jet (pour l'affichage détaillé : « Courte portée +20 »). */
-export interface ModLine {
-  label: string;
-  value: number;
-  /** Famille du modificateur, posée à l'ÉMISSION (jamais dérivée à l'affichage) — `LDB 14 l.48`. */
-  famille: ModFamille;
-  /** Hors du plafond « Combiner les Difficultés » (ex. Avantage — pas une entrée de la table). */
-  uncapped?: boolean;
-  /** La RÈGLE qui octroie ce modificateur, en ids STABLES (`RULE_REF`, ou une entité : État,
-   *  Domaine, qualité d'arme). L'affichage en fait une chip liée au Codex (`ui/RollLine.tsx`) ;
-   *  le moteur ne la lit jamais. */
-  ref?: CodexTarget;
-  /** Qui octroie ce modificateur, en STRUCTURE (les soutiens d'un Test de groupe) — jamais du
-   *  texte composé dans `label`. Rendu en micro-chips à côté de la chip de la règle. */
-  by?: ModProvenance[];
-}
+// Le modificateur étiqueté (`ModLine`) et sa famille (`ModFamille`) sont définis dans `types.ts` —
+// FORME UNIQUE, lisible des collecteurs d'États comme du moteur de combat sans cycle d'import ;
+// ré-exportée ici pour les lecteurs historiques (une définition, deux chemins d'import).
+export type { ModFamille, ModLine } from './types';
 
 /** Degré de masquage d'une ligne de jet à l'écran — DÉFINITION UNIQUE, partagée par le jet RÉSOLU
  *  (`RollBreakdown`) et le pré-jet (`PendingRoll`). Rendu par le site unique `ui/RollLine.tsx`. */
@@ -378,6 +362,10 @@ export interface RollBreakdown {
    *  sur la LIGNE (texte + valeur, `ui/RollLine.tsx`) et n'entre JAMAIS dans `mods` (#1072). Sa
    *  valeur reste comprise dans `modifier`/`target`. */
   difficulty?: Difficulty;
+  /** COMPOSITION du palier quand il est DÉRIVÉ d'une combinaison de circonstances (`LDB 14 l.91-96`,
+   *  mode plafonné de `rollLine`) : ces lignes ne sont PLUS dans `mods` — le palier les porte, et son
+   *  popover les détaille. Absente = Difficulté déclarée, `mods` porte tout. */
+  difficultyParts?: ModLine[];
   /** Difficulté ALLÉGÉE (`FlowTest.easierIf`) : libellé de la Compétence/du Talent qui l'a permis —
    *  annoté avec la difficulté sur la ligne. */
   easedBy?: string;
