@@ -110,6 +110,21 @@ export interface PovDepthDef {
 
 export const AMBIANCE: AmbianceDef = ambiance;
 
+/** Alpha du voile de NUIT à la luminosité `light` (0..1). SOURCE UNIQUE du dosage : le voile SVG de
+ *  l'iso (`stage/Ambiance.tsx`) et le voile du POV (`pov/PovStage.tsx`) le posent tel quel. */
+export function nightVeilAlpha(light: number): number {
+  return (1 - light) * AMBIANCE.iso.nightVeilMax;
+}
+
+/** Part de la LUMINANCE d'origine qui subsiste sous le voile de nuit à la luminosité `light` — soit
+ *  `1 − nightVeilAlpha(light)`, l'autre face de la MÊME donnée. C'est le scalaire d'exposition commun
+ *  aux DEUX voies de rendu du stage : la voie affine l'obtient en peignant son voile par-dessus la
+ *  scène, la voie volumique en dose ses LAMPES avec (`stage/stageLights.ts`) — d'où une parité de
+ *  luminosité par construction, et un plancher non nul à luminosité 0 (`1 − nightVeilMax`). */
+export function ambianceLuminance(light: number): number {
+  return 1 - nightVeilAlpha(light);
+}
+
 const radialVeil = (id: string, v: RadialVeilDef, fadeOut: boolean): string =>
   `<radialGradient id="${id}" cx="${v.cx}" cy="${v.cy}" r="${v.r}">` +
   (fadeOut

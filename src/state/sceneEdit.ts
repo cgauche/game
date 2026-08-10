@@ -482,6 +482,16 @@ export function setAmbientLight(scene: Scene, id: string | undefined): Scene {
   return next;
 }
 
+/** NORD de la carte (degrés horaires depuis `−y`, cf. `Scene.northDeg`). `undefined` = nord implicite
+ *  (0). La valeur est RAMENÉE dans `[0,360[` — un cap est un angle, pas un compteur : 450° et 90°
+ *  désignent le même nord, et une valeur non finie n'en désigne aucun (le champ est alors retiré). */
+export function setNorthDeg(scene: Scene, deg: number | undefined): Scene {
+  const next = { ...scene };
+  if (deg === undefined || !Number.isFinite(deg)) delete next.northDeg;
+  else next.northDeg = ((deg % 360) + 360) % 360;
+  return next;
+}
+
 /** Classification écologique (LDB 48 l.690, bonus de Domaine Vie/Ghyran). `undefined` = non spécifié
  *  (aucun bonus) — c'est une valeur distincte de rural/urbain/sauvage, pas un défaut caché. */
 export function setEnvironment(scene: Scene, env: Scene['environment']): Scene {

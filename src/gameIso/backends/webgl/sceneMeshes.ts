@@ -638,17 +638,23 @@ export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt:
 }
 
 // ————————————————————————————————————————————————————————————————
-// LUMIÈRE — un soleil CALIBRÉ, indépendant de la taille de la carte
+// LUMIÈRE — le soleil de PLANCHE : calibré, FIXE, indépendant de la taille de la carte
 // ————————————————————————————————————————————————————————————————
+//
+// Ce soleil-ci ne bouge JAMAIS : ni l'heure de jeu ni le nord de la carte n'y entrent. C'est le
+// contrat des planches QC (`scripts/qc/spike-webgl.mjs` + ses gardes `spike-checks.mjs`), qui
+// comparent des captures d'une session à l'autre — une planche ne peut pas changer parce que
+// l'horloge a tourné. Le soleil du JEU, lui, suit l'heure et le nord de la scène : `sunJeu.ts`
+// (course) → `stage/stageLights.ts` (montage), et il pose sa direction par `sunRigFrom`.
 
-/** Élévation du soleil au-dessus de l'horizon (degrés). CONSTANTE : une hauteur dérivée de la taille de
- *  la carte met le soleil d'autant plus près du zénith que la scène est grande, et les blocs de terrain
- *  cessent d'y projeter. Mesuré (#1176, lancer de rayon sur les centroïdes de sol) : sol d'HERBE occulté
- *  0,0 % à `siege-enceinte` sous le soleil dérivé, 6,3 % à 38°. */
+/** Élévation du soleil de PLANCHE au-dessus de l'horizon (degrés). CONSTANTE : une hauteur dérivée de la
+ *  taille de la carte met le soleil d'autant plus près du zénith que la scène est grande, et les blocs de
+ *  terrain cessent d'y projeter. Mesuré (#1176, lancer de rayon sur les centroïdes de sol) : sol d'HERBE
+ *  occulté 0,0 % à `siege-enceinte` sous le soleil dérivé, 6,3 % à 38°. */
 export const SUN_ELEVATION_DEG = 38;
 
-/** Azimut du soleil — direction unitaire au sol du point OÙ IL EST (sud-ouest). Mesuré (#1176, même
- *  lancer de rayon) : herbe occultée siège 0,0 % au nord-ouest → 6,3 % au sud-ouest ; arène 21,8 % →
+/** Azimut du soleil de PLANCHE — direction unitaire au sol du point OÙ IL EST (sud-ouest). Mesuré (#1176,
+ *  même lancer de rayon) : herbe occultée siège 0,0 % au nord-ouest → 6,3 % au sud-ouest ; arène 21,8 % →
  *  32,0 %. Le nord-ouest jetait les ombres des remparts vers l'intérieur pavé, jamais sur la plaine. */
 export const SUN_AZIMUTH = { x: -Math.SQRT1_2, z: Math.SQRT1_2 };
 
@@ -688,25 +694,20 @@ export interface SunRig {
   normalBias: number;
 }
 
-/** Soleil d'une scène de boîte englobante `box` : élévation et azimut FIXES, distance et frustum
- *  d'ombre dérivés du seul rayon englobant — toute la scène caste, et rien de plus n'entre dans la
- *  carte d'ombre (chaque mètre de frustum en trop est de la précision perdue). La `box` attendue est
- *  celle des CASTEURS, billboards compris (`worldShadowBox`).
+/** Réglage d'ombre d'une scène de boîte englobante `box` pour une direction de soleil DONNÉE (direction
+ *  unitaire du point OÙ IL EST) : distance et frustum d'ombre dérivés du seul rayon englobant — toute la
+ *  scène caste, et rien de plus n'entre dans la carte d'ombre (chaque mètre de frustum en trop est de la
+ *  précision perdue). La `box` attendue est celle des CASTEURS, billboards compris (`worldShadowBox`).
  *
- *  Ni l'heure de jeu ni le nord de la carte n'entrent dans ce réglage : la course du soleil
- *  (`sunDirection(gameTime, northDeg)`) est spécifiée au #1176. */
-export function sunRig(box: THREE.Box3): SunRig {
+ *  C'est la porte du soleil de JEU (`sunJeu.ts` : heure d'horloge × nord de la scène) ; le soleil de
+ *  PLANCHE passe par `sunRig`, qui n'est que cette fonction à direction FIXE. */
+export function sunRigFrom(box: THREE.Box3, dir: { x: number; y: number; z: number }): SunRig {
   const target = box.getCenter(new THREE.Vector3());
   const radius = box.getSize(new THREE.Vector3()).length() / 2 || 1;
-  const elev = (SUN_ELEVATION_DEG * Math.PI) / 180;
-  const dir = new THREE.Vector3(
-    SUN_AZIMUTH.x * Math.cos(elev),
-    Math.sin(elev),
-    SUN_AZIMUTH.z * Math.cos(elev),
-  ).normalize();
+  const unité = new THREE.Vector3(dir.x, dir.y, dir.z).normalize();
   const distance = radius * 2 + SHADOW_MARGIN_M;
   return {
-    position: target.clone().addScaledVector(dir, distance),
+    position: target.clone().addScaledVector(unité, distance),
     target,
     span: radius,
     near: Math.max(0.1, distance - radius - SHADOW_MARGIN_M),
@@ -714,6 +715,18 @@ export function sunRig(box: THREE.Box3): SunRig {
     mapSize: SHADOW_MAP_SIZE,
     normalBias: ((2 * radius) / SHADOW_MAP_SIZE) * SHADOW_NORMAL_BIAS_TEXELS,
   };
+}
+
+/** Soleil de PLANCHE d'une scène de boîte englobante `box` : élévation et azimut FIXES (cf. l'en-tête de
+ *  section). Ni l'heure de jeu ni le nord de la carte n'y entrent — c'est ce que les gardes de planche
+ *  épinglent, et c'est pourquoi le jeu passe, lui, par `sunRigFrom` + `sunJeu`. */
+export function sunRig(box: THREE.Box3): SunRig {
+  const elev = (SUN_ELEVATION_DEG * Math.PI) / 180;
+  return sunRigFrom(box, {
+    x: SUN_AZIMUTH.x * Math.cos(elev),
+    y: Math.sin(elev),
+    z: SUN_AZIMUTH.z * Math.cos(elev),
+  });
 }
 
 // ————————————————————————————————————————————————————————————————

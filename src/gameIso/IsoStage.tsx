@@ -427,6 +427,8 @@ export function IsoStage() {
           propEls={propEls}
           camAt={camAt}
           walksRef={walksRef}
+          gameTime={gameTime}
+          lightLevel={lightLevel}
           partyToken={mode === 'battle' && battle ? null : partyLeader ? { leader: partyLeader, pos: partyPos } : null}
         />
       )}
@@ -471,7 +473,10 @@ export function IsoStage() {
         {debugLabels && <DebugMapLabels scene={scene} dims={dims} liftAt={liftAt} />}
       </g>
       {debugLabels && <DebugLegend />}
-      <AmbianceVeils scene={scene} dims={dims} gameTime={gameTime} lightLevel={lightLevel} />
+      {/* Voiles d'ambiance : la voie AFFINE seule. En volumique, le canevas porte toute la luminosité
+          de la scène (`stage/stageLights.ts`, dosé sur la MÊME donnée `nightVeilMax`) — un voile
+          par-dessus lui appliquerait le palier de nuit une seconde fois. */}
+      {!webgl && <AmbianceVeils scene={scene} dims={dims} gameTime={gameTime} lightLevel={lightLevel} />}
       <WeatherVeil weather={scene.weather} />
     </svg>
     </>
@@ -491,7 +496,7 @@ export function IsoStage() {
  * étage isolé, surplomb, brouillard). ÉCART RÉSIDUEL : un couple MONTÉ ne rend que sa MONTURE — le
  * corps composite cavalier+monture (`MountedToken`) n'a pas d'équivalent billboard.
  */
-function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, tokenEls, propEls, walksRef, partyToken }: {
+function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, tokenEls, propEls, walksRef, partyToken, gameTime, lightLevel }: {
   scene: Scene;
   dims: Dims;
   mpt: number;
@@ -507,6 +512,10 @@ function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, t
   walksRef: MutableRefObject<Record<string, WalkTrack>>;
   /** Hors combat : le jeton de GROUPE (le meneur visible), à sa case. En combat : `null`. */
   partyToken: { leader: Combatant; pos: Pt } | null;
+  /** Horloge de jeu (minutes) et mise en scène de lumière — la LUMIÈRE du monde volumique (P2-5) : le
+   *  soleil suit l'heure et le nord de la scène, l'ambiante suit le palier. Le stage reste la source. */
+  gameTime: number;
+  lightLevel: number | null | undefined;
 }) {
   const facings = useGame((s) => s.facing); // orientation MONDE vivante par acteur (Dir8)
   const poses: ActorPose[] = [];
@@ -545,5 +554,5 @@ function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, t
     },
     cam: () => camAt(performance.now()),
   };
-  return <GameStage3D scene={scene} dims={dims} mpt={mpt} cam={cam} zoom={zoom} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} anim={anim} />;
+  return <GameStage3D scene={scene} dims={dims} mpt={mpt} cam={cam} zoom={zoom} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} anim={anim} />;
 }

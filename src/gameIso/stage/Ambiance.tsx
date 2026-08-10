@@ -5,7 +5,7 @@
 import { Scene } from '../../state/scene';
 import { ambientScalar } from '../../state/vision';
 import { Dims, tileCenter } from '../../geometry/iso';
-import { AMBIANCE, edgeDepthVeil } from '../catalog/ambiance';
+import { AMBIANCE, edgeDepthVeil, nightVeilAlpha } from '../catalog/ambiance';
 import { VW, VH } from './useStageCamera';
 
 /** Mouches qui tournoient au-dessus de chaque cadavre (faune d'ambiance) — dans le groupe caméra. */
@@ -35,7 +35,7 @@ export function AmbianceVeils({ scene, dims, gameTime, lightLevel }: { scene: Sc
   // Luminosité de la scène = MÊME source que la géométrie et que le POV (`ambientScalar` → honore
   // `scene.ambientLight`). 1 = plein jour (voiles au minimum), 0 = noir. Voile de nuit + vignette dosés.
   const light = ambientScalar(scene, gameTime, lightLevel ?? null);
-  const veil = (1 - light) * AMBIANCE.iso.nightVeilMax;
+  const veil = nightVeilAlpha(light);
   const vigOp = AMBIANCE.iso.dayVignetteFloor + (1 - AMBIANCE.iso.dayVignetteFloor) * (1 - light);
   return (
     <>

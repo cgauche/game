@@ -17,10 +17,22 @@
  *  - MARCHE (P2-4) : la boucle de rendu lit elle-même le glissement (`anim.glide`) et ne déplace que
  *    les matrices des quads concernés. Aucun rendu React, aucun sommet, aucun matériau.
  *
+ * LUMIÈRE (P2-5) : le CANEVAS porte toute la luminosité de la scène — une ambiante au palier de lumière
+ * du moment et, dehors et de jour, un SOLEIL qui suit l'heure d'horloge et le nord de la carte
+ * (`stage/stageLights.ts`, décision ; cet écran ne fait que monter ses lampes et brancher les ombres).
+ * Le voile de nuit du SVG reste à la voie affine — deux propriétaires de luminosité en peindraient deux
+ * paliers l'un sur l'autre. Les matériaux du monde sont TOUJOURS lambertiens : sans soleil, l'ambiante
+ * seule les porte, et le lever/coucher n'a plus de régime à basculer.
+ * Les BILLBOARDS, eux, ne le sont jamais : la normale d'un quad aligné écran est l'axe caméra, un
+ * lambertien y mesurerait l'angle caméra↔soleil et la luminosité d'un personnage suivrait la rotation
+ * de la vue. Ils multiplient donc l'exposition GLOBALE de la frame (`surfaceLuminance`, la luminance
+ * d'une surface horizontale). RÉSIDU ASSUMÉ de ce choix : un personnage sous l'ombre portée d'un
+ * bâtiment garde l'exposition globale — il ne s'assombrit pas en entrant dans l'ombre.
+ *
  * CANAUX D'AMBIANCE ENCORE ABSENTS (mesuré #1176, P2-2) — la voie affine (`stage/CulledScene`) les
- * applique OBJET PAR OBJET, cet écran ne porte que la teinte de visibilité (`tintAt`). Ils font partie
- * de ce qui reste à porter AVANT que la double voie meure (cliquet `stage/double-voie-ratchet.test.ts`,
- * qui compte les consommateurs restants de la voie affine) :
+ * applique OBJET PAR OBJET, cet écran porte la teinte de visibilité (`tintAt`) et la lumière globale
+ * ci-dessus. Ils font partie de ce qui reste à porter AVANT que la double voie meure (cliquet
+ * `stage/double-voie-ratchet.test.ts`, qui compte les consommateurs restants de la voie affine) :
  *  - champ de LUMIÈRE par case (`tileBrightness`, `CulledScene`) ;
  *  - opacité de PIÈCE / focus de salle (`roomOpacityOf`) ;
  *  - filtres de BROUILLARD, exploré vs inconnu (`fogFilterFor`, `FogLayer`).
@@ -65,12 +77,14 @@ import {
   type KeepEl,
   type SceneBillboardEls,
   type TintAt,
+  worldShadowBox,
 } from '../backends/webgl/sceneMeshes';
-import { poseBoards, type Board, type GlideAt } from './boardPose';
+import { billboardMaterial, poseBoards, type Board, type GlideAt } from './boardPose';
 import { buildGroundAccentMeshes, maskGroundAccents, sceneGroundAccents } from '../backends/webgl/groundAccents';
 import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/spriteRaycast';
 import { setSpritePicker } from './spritePicker';
 import { stage3dFraming } from './stage3dCamera';
+import { stageLightScalars, stageLights } from './stageLights';
 
 /** Fond du canevas — celui des planches QC, sous les mêmes voiles d'ambiance que l'affine. */
 const BG = 0x14161f;
@@ -97,6 +111,11 @@ export interface GameStage3DProps {
   els: SceneBillboardEls;
   /** Acteurs à leur case LOGIQUE — le glissement de marche passe par `anim`, pas par cette liste. */
   actors: readonly ActorPose[];
+  /** Horloge de jeu (minutes) — SEULE entrée de la course du soleil, avec le nord de la scène. */
+  gameTime: number;
+  /** Mise en scène de lumière (`state.lightLevel`, 0..1) : prime sur le palier authoré de la scène,
+   *  exactement comme pour les voiles du SVG. */
+  lightLevel: number | null | undefined;
   /** Cadençage de la MARCHE, quand le stage en offre un (lot P2-4) : sans lui, cet écran ne bouge
    *  qu'aux rendus du stage. */
   anim?: StageWalkAnim;
@@ -133,7 +152,7 @@ function viderGroupe(groupe: THREE.Group): void {
   }
 }
 
-export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors, anim }: GameStage3DProps): JSX.Element {
+export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors, gameTime, lightLevel, anim }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
@@ -144,12 +163,14 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   const monde = useRef<THREE.Group>();
   const touffes = useRef<THREE.Group>();
   const panneaux = useRef<THREE.Group>();
+  const lampes = useRef<THREE.Group>();
   if (!three.current) {
     three.current = new THREE.Scene();
     monde.current = new THREE.Group();
     touffes.current = new THREE.Group();
     panneaux.current = new THREE.Group();
-    three.current.add(monde.current, touffes.current, panneaux.current);
+    lampes.current = new THREE.Group();
+    three.current.add(monde.current, touffes.current, panneaux.current, lampes.current);
   }
 
   // Le cache de textures est GLOBAL au module : changer de scène rend ses entrées mortes (les clés
@@ -171,6 +192,30 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   const decor = useMemo(() => collectBillboards(scene, mpt, tintAt, els), [scene, mpt, tintAt, els]);
   const acteurs = useMemo(() => actorBillboards(actors, scene, mpt, tintAt), [actors, scene, mpt, tintAt]);
   const subjects = useMemo(() => [...decor, ...acteurs], [decor, acteurs]);
+
+  // ── LUMIÈRE (P2-5) : la DÉCISION est prise en scalaires purs (`stageLights.ts`), l'écran n'en monte
+  // que les conséquences. `lit` = un soleil éclaire RÉELLEMENT (il est levé ET au-dessus du fondu) :
+  // ombres portées branchées, disque de contact rendu inutile. La même passe rejoue au montage des lampes.
+  const lumière = useMemo(
+    () => stageLightScalars({ scene, gameTime, lightLevel }),
+    [scene, gameTime, lightLevel],
+  );
+  const { course, lit } = lumière;
+  // Exposition de la frame, lue par la construction ASYNCHRONE des billboards (leur texture arrive après
+  // le rendu qui l'a demandée) : la valeur du moment, jamais celle capturée à la demande.
+  const lumRef = useRef(lumière.surfaceLuminance);
+  lumRef.current = lumière.surfaceLuminance;
+  // Demande de recuisson de la carte d'ombre, honorée par la prochaine frame (cf. `dessiner`).
+  const ombresARefaire = useRef(true);
+  // Boîte des CASTEURS (géométrie + quads de billboard) : c'est elle qui serre le frustum d'ombre.
+  const shadowBox = useMemo(
+    () => worldShadowBox(
+      geometry.boundingBox ?? new THREE.Box3(new THREE.Vector3(), new THREE.Vector3(1, 1, 1)),
+      subjects,
+      (s) => anchorAndSize(billboardHeightM(CONVENTION, s.kind) * s.scaleK, BILLBOARD_BOX_ASPECT),
+    ),
+    [geometry, subjects],
+  );
 
   /** UNE frame : cadre le canevas sur son élément, dérive la caméra de l'intention du stage, re-pose les
    *  quads face à elle (glissement de marche compris), dessine. Rien n'y est construit : cette passe est
@@ -195,7 +240,14 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     });
     // Quads ALIGNÉS ÉCRAN, ancrés aux PIEDS — exactement ce que fait le backend affine du sprite ; le
     // glissement de marche de l'instant y entre (`stage/boardPose.ts`, la passe pure).
-    poseBoards(boardsRef.current, camera, anim ? anim.glide : AUCUN_GLISSEMENT);
+    const aGlissé = poseBoards(boardsRef.current, camera, anim ? anim.glide : AUCUN_GLISSEMENT);
+    // CARTE D'OMBRE : elle ne se recuit QUE quand ce qu'elle contient a bougé — un casteur qui glisse,
+    // ou un montage (lampes, monde, billboards) qui l'a demandée. Une rotation de caméra, un zoom, une
+    // frame de marche où personne ne glisse : la carte 2048² de la frame précédente reste valide.
+    if (aGlissé || ombresARefaire.current) {
+      renderer.shadowMap.needsUpdate = true;
+      ombresARefaire.current = false;
+    }
     cameraRef.current = camera; // la caméra de la DERNIÈRE frame : celle que le rayon de picking doit emprunter
     renderer.render(three.current, camera);
   };
@@ -237,6 +289,16 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     }
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
     renderer.setClearColor(BG, 1);
+    renderer.shadowMap.enabled = true;
+    // La carte d'ombre ne se recuit PAS à chaque frame : rien ne la périme tant que ni le soleil ni un
+    // casteur n'ont bougé, et la boucle de marche (P2-4) rend soixante fois par seconde. C'est
+    // `dessiner` qui la redemande, au cas par cas (`shadowMap.needsUpdate`).
+    renderer.shadowMap.autoUpdate = false;
+    ombresARefaire.current = true;
+    // `PCFSoftShadowMap` est DÉPRÉCIÉ depuis three 0.185 : le moteur le remplace lui-même par
+    // `PCFShadowMap` à la première frame ombrée en criant à la console — on pose donc directement le
+    // filtre réellement appliqué (rendu identique, console propre).
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     rendererRef.current = renderer;
     return () => {
       renderer.dispose();
@@ -250,10 +312,11 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     const renderer = rendererRef.current;
     if (!groupe || !renderer) return;
     const anisotropy = renderer.capabilities.getMaxAnisotropy();
-    // UN MATÉRIAU PAR GROUPE DE SURFACE : la géométrie reste fusionnée, seul le dessin se scinde.
-    // Couleur CUITE (aucun éclairage dynamique) — le régime que la parité avec l'affine juge.
+    // UN MATÉRIAU PAR GROUPE DE SURFACE : la géométrie reste fusionnée, seul le dessin se scinde. Le
+    // régime NE BASCULE PLUS avec la lumière : toujours lambertien, même sans soleil — l'ambiante porte
+    // alors la scène à elle seule (`stageLights`), et le crépuscule n'a plus de marche d'escalier.
     const materials = geometry.userData.surfaceGroups.map((g) => {
-      const mat = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
+      const mat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide, flatShading: true });
       if (g.bake && g.recipe) {
         const cuisson = getFaceBake(g.key, { color: g.color ?? '', recipe: g.recipe, part: g.part }, g.bake.wM, g.bake.hM, g.variant ?? 0, anisotropy);
         if (cuisson) {
@@ -274,12 +337,18 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     });
     const mesh = new THREE.Mesh(geometry, materials);
     mesh.userData.emprunte = true;
+    // Le monde caste et reçoit TOUJOURS : sans lampe à ombre, three ne compile aucun chemin d'ombre —
+    // ces deux drapeaux ne coûtent alors rien, et le matériau cesse de dépendre de l'heure.
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
     groupe.add(mesh);
+    ombresARefaire.current = true;
     dessiner();
     return () => viderGroupe(groupe);
-    // Les MATÉRIAUX ne dépendent QUE de la cuisson : ni la teinte (elle vit dans les couleurs de sommet)
-    // ni le dégagement (il vit dans l'index) n'en refont un seul. Remettre `tintAt` ici reconstruisait
-    // les 76 matériaux de l'arène à chaque pas (mesuré #1176).
+    // Les MATÉRIAUX ne dépendent QUE de la cuisson : ni la teinte (elle vit dans les couleurs de sommet),
+    // ni le dégagement (il vit dans l'index), ni l'heure (le régime lambertien ne bascule plus) n'en
+    // refont un seul. Remettre `tintAt` ici reconstruisait les 76 matériaux de l'arène à chaque pas
+    // (mesuré #1176).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geometry]);
 
@@ -288,7 +357,13 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   useEffect(() => {
     const groupe = touffes.current;
     if (!groupe) return;
-    for (const m of buildGroundAccentMeshes(accentsVus, { lit: false, tintAt })) groupe.add(m);
+    // Toujours lambertiens eux aussi — même régime que les faces du monde, dont ils prolongent le sol.
+    for (const m of buildGroundAccentMeshes(accentsVus, { lit: true, tintAt })) {
+      m.castShadow = true;
+      m.receiveShadow = true;
+      groupe.add(m);
+    }
+    ombresARefaire.current = true;
     dessiner();
     return () => viderGroupe(groupe);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -325,17 +400,20 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
           return;
         }
         const geo = new THREE.PlaneGeometry(q.quad.widthM, q.quad.heightM);
-        const mat = new THREE.MeshBasicMaterial({ map: issue.value, transparent: true, alphaTest: 0.5, side: THREE.DoubleSide });
-        mat.color.setScalar(q.sub.tint);
-        mat.polygonOffset = true;
-        mat.polygonOffsetFactor = -1;
+        // Matériau NON lambertien (`billboardMaterial`, cf. l'en-tête) éclairé par l'exposition GLOBALE
+        // de la frame : celle de l'instant où la texture arrive, pas celle de la demande.
+        const mat = billboardMaterial(issue.value, q.sub.tint * lumRef.current);
         const mesh = new THREE.Mesh(geo, mat);
+        // Un quad PROJETTE son ombre même en Basic (le casteur ne connaît que sa géométrie et son alpha) ;
+        // `receiveShadow` n'aurait, lui, aucun effet sous ce matériau.
+        mesh.castShadow = true;
         groupe.add(mesh);
         const board: Board = { sub: q.sub, quad: q.quad, mesh, material: mat };
         boards.push(board);
         // Ombre de CONTACT : le rig ne porte aucune ellipse au pied (le décor, si). Elle entre dans le
-        // board — donc dans la passe de pose, donc elle suit le sujet qui glisse.
-        if (wantsContactShadow(q.sub.kind, false)) {
+        // board — donc dans la passe de pose, donc elle suit le sujet qui glisse. Sous le soleil, c'est
+        // l'ombre PROJETÉE qui fait foi (`wantsContactShadow`) — sinon le personnage en porte deux.
+        if (wantsContactShadow(q.sub.kind, lit)) {
           const disque = contactShadow(q.sub.anchor, q.quad.widthM);
           disque.material.opacity *= q.sub.tint;
           board.shadow = disque;
@@ -343,6 +421,7 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
         }
       });
       boardsRef.current = boards;
+      ombresARefaire.current = true;
       dessiner();
     });
     return () => {
@@ -351,7 +430,35 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       viderGroupe(groupe);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subjects, mpt, camRot]);
+  }, [subjects, mpt, camRot, lit]);
+
+  // ── EXPOSITION des billboards : elle change à l'heure, au palier de lumière et à la porte franchie —
+  // toutes choses qui ne justifient pas de rerasteriser un seul sujet. Une passe à part, qui ne touche
+  // que la couleur des matériaux déjà montés.
+  useEffect(() => {
+    for (const b of boardsRef.current) b.material.color.setScalar(b.sub.tint * lumière.surfaceLuminance);
+    dessiner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lumière.surfaceLuminance, subjects]);
+
+  // ── GROUPE LAMPES : ce que `stageLights` décide, monté tel quel. Groupe à part des trois autres car
+  // il vit sur d'autres entrées (l'heure, le palier de lumière, la boîte des casteurs) et ne coûte ni
+  // géométrie ni matériau : une lampe se remplace, elle ne se reconstruit pas avec le monde.
+  useEffect(() => {
+    const groupe = lampes.current;
+    if (!groupe) return;
+    const { ambient, sun } = stageLights({ scene, gameTime, lightLevel, shadowBox });
+    groupe.add(ambient);
+    if (sun) groupe.add(sun, sun.target);
+    ombresARefaire.current = true;
+    dessiner();
+    return () => {
+      for (const enfant of [...groupe.children]) groupe.remove(enfant);
+      ambient.dispose();
+      sun?.dispose();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene, gameTime, lightLevel, shadowBox]);
 
   // La frame se rejoue à CHAQUE rendu du stage — et, pendant une MARCHE, au battement de celle-ci :
   // c'est la boucle de rendu qui lit alors la position visuelle, pas React (P2-4). L'effet n'a pas de
@@ -367,5 +474,20 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   // seules choses qui l'en distinguent sont posées ici : il ne reçoit aucun pointeur (les événements
   // restent au SVG, qui interroge ce monde par le rayon inscrit ci-dessus), et il se peint SOUS lui
   // (ordre du DOM).
-  return <canvas ref={canvasRef} className="iso-stage" style={{ pointerEvents: 'none' }} aria-hidden="true" />;
+  // `data-sun` : la SEULE trace lisible du soleil réellement MONTÉ (azimut/élévation, degrés) — un
+  // canevas WebGL n'a pas d'arbre à interroger, et la recette navigateur comme les tests de montage ont
+  // besoin de savoir SI une directionnelle est là et OÙ elle est. Absent = aucune directionnelle
+  // (intérieur, nuit, ou soleil encore sous son fondu de lever/coucher).
+  // `data-lum` : l'EXPOSITION de la frame (luminance d'une surface horizontale, en part d'albédo). C'est
+  // par elle que la parité avec la voie affine et la continuité du crépuscule se mesurent à l'écran.
+  return (
+    <canvas
+      ref={canvasRef}
+      className="iso-stage"
+      style={{ pointerEvents: 'none' }}
+      aria-hidden="true"
+      data-sun={lit && course ? `${course.azimuthDeg.toFixed(1)},${course.elevationDeg.toFixed(1)}` : undefined}
+      data-lum={lumière.surfaceLuminance.toFixed(4)}
+    />
+  );
 }

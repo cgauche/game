@@ -6,7 +6,7 @@ import { computeStateVisible, sceneLightField } from '../../state/visionState';
 import { ambientScalar } from '../../state/vision';
 import { makeCamera, VW, VH } from './camera';
 import { buildPovDrawList } from './geometry';
-import { AMBIANCE, povAmbianceDefs } from '../catalog/ambiance';
+import { AMBIANCE, nightVeilAlpha, povAmbianceDefs } from '../catalog/ambiance';
 import { DEFS } from '../sprites';
 import { buildPovBillboards, paintOrder, type Painted } from './billboards';
 import type { DrawItem } from './geometry';
@@ -69,7 +69,7 @@ export function PovStage() {
   // Voile de nuit IDENTIQUE à l'iso (`AmbianceVeils`) : la MÊME luminosité de scène (`ambientScalar` →
   // honore `scene.ambientLight`) assombrit les deux vues d'un cran égal → ISO et POV suivent le niveau
   // ensemble (le POV, jusqu'ici, gardait son ciel clair même de nuit / à bas niveau).
-  const povVeil = (1 - ambientScalar(scene, gameTime, lightLevel ?? null)) * AMBIANCE.iso.nightVeilMax;
+  const povVeil = nightVeilAlpha(ambientScalar(scene, gameTime, lightLevel ?? null));
   // PEINTRE UNIQUE : la géométrie (`view.draw` → un polygone/tracé chacun) ET les billboards (créatures,
   // props) fusionnés dans UN tableau trié loin→près. Deux profondeurs dans le MÊME espace mètres-caméra
   // (DrawItem.depth ⇄ footAnchor.depth) → un mur à 5 m se peint après une créature à 8 m et avant une à 3 m.

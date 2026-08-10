@@ -53,7 +53,7 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { propRefPatch } from './propDefaults';
-import { KIND_LABEL, Sel, type Tool, ROOF_MATERIALS, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, clearEffectZoneCarve, flowEffectCount, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchEntity, patchEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setEnvironment, setSceneFlags } from './editorState';
+import { KIND_LABEL, Sel, type Tool, ROOF_MATERIALS, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, clearEffectZoneCarve, flowEffectCount, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchEntity, patchEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setNorthDeg, setEnvironment, setSceneFlags } from './editorState';
 import { scrollElementIntoPort } from './useEditorView';
 import type { FireArc, StructureData, NavalTraitRef } from '../../engine/types';
 import { DIFFICULTY_LABELS } from '../../engine/types';
@@ -1845,6 +1845,19 @@ function SceneProps({
               <option key={l.id} value={l.id}>{l.label}</option>
             ))}
           </select>
+        </label>
+        <label className="ed-field">
+          Nord de la carte (degrés horaires ; vide = nord vers le haut du plan)
+          {/* Champ VIDABLE : vide → `undefined` → le champ quitte le document. Un `Number(v) || 0`
+              écrivait `northDeg: 0` dès le premier effleurement, et rendait le retrait inatteignable. */}
+          <input
+            type="number"
+            min={0}
+            max={359}
+            step={15}
+            value={scene.northDeg ?? ''}
+            onChange={(e) => setScene(setNorthDeg(scene, e.target.value === '' ? undefined : Number(e.target.value)))}
+          />
         </label>
         <label className="ed-field">
           Environnement (bonus de Domaine Ghyran en rural/sauvage, LDB 48)

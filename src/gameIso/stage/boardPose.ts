@@ -19,13 +19,30 @@ export interface Board {
   sub: BillboardSubject;
   quad: { widthM: number; heightM: number; centerLiftM: number };
   mesh: THREE.Mesh;
-  material: THREE.MeshBasicMaterial;
+  /** Matériau du quad — jamais lambertien (P2-5) : la normale d'un quad aligné écran est l'axe caméra.
+   *  Le type reste ouvert pour l'écran de SPIKE, qui monte les siens. */
+  material: THREE.MeshBasicMaterial | THREE.MeshLambertMaterial;
   /** Disque d'ombre de contact du sujet, quand il en porte un (`wantsContactShadow`). */
   shadow?: THREE.Object3D;
 }
 
 /** Caméra de la frame — l'offset de profondeur des quads se dérive de son plan (`near`/`far`). */
 export type FrameCamera = THREE.Camera & { near: number; far: number };
+
+/**
+ * MATÉRIAU d'un billboard du stage (#1176, P2-5) — TOUJOURS `MeshBasicMaterial`, et c'est structurel :
+ * un quad aligné écran a pour normale l'axe caméra, donc un matériau lambertien y mesure l'angle
+ * caméra↔soleil et la luminosité d'un personnage change quand la vue tourne (mesuré : ×2,36 entre deux
+ * crans). Sa lumière est donc un SCALAIRE : `luminance` = l'exposition globale de la frame
+ * (`stageLights.surfaceLuminance`), multipliée par la teinte de visibilité du sujet.
+ */
+export function billboardMaterial(map: THREE.Texture, luminance: number): THREE.MeshBasicMaterial {
+  const mat = new THREE.MeshBasicMaterial({ map, transparent: true, alphaTest: 0.5, side: THREE.DoubleSide });
+  mat.color.setScalar(luminance);
+  mat.polygonOffset = true;
+  mat.polygonOffsetFactor = -1;
+  return mat;
+}
 
 /** Ancre de travail du glissement — une seule, réutilisée : `billboardPose` ne mute pas ce qu'on lui
  *  donne, et une allocation par billboard et par frame n'a rien à faire dans la boucle. */
@@ -34,15 +51,20 @@ const ANCRE = new THREE.Vector3();
 /** Décalage MONDE du sujet `cid` à l'instant de la frame, `null` s'il ne marche pas. */
 export type GlideAt = (cid: string) => { dx: number; dy: number; dz: number } | null;
 
-/** Re-pose tous les quads face à la caméra de la frame, glissement de marche compris. */
-export function poseBoards(boards: readonly Board[], camera: FrameCamera, glide: GlideAt): void {
+/** Re-pose tous les quads face à la caméra de la frame, glissement de marche compris. Rend `true` si au
+ *  moins un sujet a GLISSÉ — c'est le seul cas où la frame déplace un casteur, donc le seul où la carte
+ *  d'ombre de la frame précédente cesse d'être valide (une rotation de caméra ne bouge aucune ombre). */
+export function poseBoards(boards: readonly Board[], camera: FrameCamera, glide: GlideAt): boolean {
   const units = billboardDepthOffsetUnits(camera.near, camera.far);
+  let aGlissé = false;
   for (const b of boards) {
     const g = b.sub.cid ? glide(b.sub.cid) : null;
+    if (g) aGlissé = true;
     const ancre = g ? ANCRE.set(b.sub.anchor.x + g.dx, b.sub.anchor.y + g.dy, b.sub.anchor.z + g.dz) : b.sub.anchor;
     b.mesh.quaternion.copy(camera.quaternion);
     b.mesh.position.copy(billboardPose(ancre, b.quad.centerLiftM, camera.quaternion));
     b.material.polygonOffsetUnits = units;
     if (b.shadow) poseContactShadow(b.shadow, ancre);
   }
+  return aGlissé;
 }

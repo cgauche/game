@@ -47,6 +47,7 @@ export {
   eraseAt,
   setMetresPerTile,
   setAmbientLight,
+  setNorthDeg,
   setEnvironment,
   setSceneFlags,
   entityAt,
