@@ -93,13 +93,16 @@ const revealPurpose = (site: PendingCascade['purpose'], own: boolean) => (s: Gam
 /** Empile une révélation en étape d'AFFICHAGE de cascade (`pushStep` : append à la séquence d'accueil,
  *  sinon elle l'ouvre). `purpose` = la séquence du SITE d'émission quand il en a une naturelle ;
  *  `own` = la révélation ne rejoint AUCUNE séquence en vol, elle ouvre la sienne (celle en vol est
- *  parquée puis reprise). ÉMETTEUR UNIQUE de toute révélation. */
+ *  parquée puis reprise). ÉMETTEUR UNIQUE de toute révélation.
+ *
+ *  `autoClose` : DÉCLARE que cette révélation-là se referme seule, à la cadence de la gravité donnée
+ *  (arbitrage #1270 — la fermeture explicite est le défaut ; un timer se justifie site par site). */
 export function pushReveal(
   set: SetFn,
   entry: RevealEntry,
-  opts?: { table?: CascadeTableDecl; purpose?: PendingCascade['purpose']; own?: boolean },
+  opts?: { table?: CascadeTableDecl; purpose?: PendingCascade['purpose']; own?: boolean; autoClose?: NonNullable<RevealEntry['severity']> },
 ): void {
-  pushStep(set, (index) => revealToStep(entry, index, opts?.table), revealPurpose(opts?.purpose ?? 'affichage', !!opts?.own));
+  pushStep(set, (index) => revealToStep(entry, index, { table: opts?.table, ...(opts?.autoClose ? { autoClose: opts.autoClose } : {}) }), revealPurpose(opts?.purpose ?? 'affichage', !!opts?.own));
 }
 
 /** Vide la file de lignes de journal différées (`pendingLogQueue`) → événements de combat. SOURCE
