@@ -74,7 +74,7 @@ describe('#1262 — bandStep : la bande pose SA possession', () => {
   it('un SEUL porteur → pas de `groupOwner`, mais l’étape NOMME son porteur (jamais une étape sans owner)', () => {
     const b = bandStep({ id: 'b', kind: 'k', label: 'L' }, [rang('H1')])!;
     expect(b.groupOwner).toBeUndefined();
-    expect(b.actorId, 'sans `actorId`, l’arbitre rend `undefined` → fenêtre HÔTE SEUL').toBe('H1');
+    expect(b.actorId, 'la bande mono NOMME son porteur — c’est ce qui donne à l’arbitre un owner à router (sans `actorId` : fenêtre hôte seul)').toBe('H1');
   });
 
   it('zéro rangée → aucune fenêtre à ouvrir', () => {
@@ -118,7 +118,7 @@ describe('#1262 — une bande est TOUJOURS visible chez le siège de son porteur
 
   it('bande MONO : l’étape désigne son porteur — la fenêtre va au siège qui le possède, pas à l’hôte', () => {
     ouvreBandeChezLHote([rang('H1')]);
-    expect(modalOwnerOf(useGame.getState()), 'owner `undefined` = fenêtre HÔTE SEUL : l’invité ne voit jamais sa rangée').toBe('H1');
+    expect(modalOwnerOf(useGame.getState()), 'owner = le porteur : la fenêtre part au siège qui le tient, jamais à l’hôte').toBe('H1');
     expect(ownsLocally(useGame.getState(), 'H1'), 'chez l’hôte, la fenêtre n’est pas à lui').toBe(false);
     expect(seatOwns(useGame.getState(), 1, 'H1'), 'elle est au siège 1, qui possède le porteur').toBe(true);
   });

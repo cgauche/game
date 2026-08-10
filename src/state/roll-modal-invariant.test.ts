@@ -93,15 +93,15 @@ const SURFACING: { file: keyof typeof SRC; fn: string; pred: RegExp }[] = [
   { file: 'combatFlow', fn: 'autoCleave', pred: /aiDriven/ },
   { file: 'combatFlow', fn: 'maybeHeroCleave', pred: /pilotedByHuman/ },
   { file: 'combatFlow', fn: 'resolveEnemyFumble', pred: /aiDriven/ },
-  { file: 'combatFlow', fn: 'openRoundEndCascade', pred: /humanControlled/ },
+  { file: 'combatFlow', fn: 'openRoundEndCascade', pred: /surfaceOf/ }, // #1262 V1 lot 2 : la SURFACE, pas l'affordance locale
   { file: 'combatFlow', fn: 'openCombatEndCascade', pred: /humanControlled/ },
   { file: 'combatFlow', fn: 'openCombatPsychCascade', pred: /humanControlled/ },
-  { file: 'roundHooks', fn: 'collectHeroRoundEndUpkeep', pred: /humanControlled/ },
+  { file: 'roundHooks', fn: 'collectHeroRoundEndUpkeep', pred: /surfaceOf/ }, // #1262 V1 lot 2
   { file: 'turnHooks', fn: 'resolveActGates', pred: /surfaceOf/ }, // #1262 V1 : la SURFACE, pas l'affordance locale
   { file: 'turnHooks', fn: 'resolvePsychAI', pred: /aiDriven/ },
   { file: 'triggeredTest', fn: 'resolveFlowTest', pred: /humanControlled/ },
   { file: 'triggeredTest', fn: 'resolveFlowChoice', pred: /humanControlled/ },
-  { file: 'triggeredEffects', fn: 'applyTriggeredEffects', pred: /humanControlled/ },
+  { file: 'triggeredEffects', fn: 'applyTriggeredEffects', pred: /surfaceOf/ }, // #1262 V1 lot 2 (voie `deferInteractiveTest`)
   { file: 'corruptionFlow', fn: 'gainCorruption', pred: /pilotedByHuman/ },
 ];
 

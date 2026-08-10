@@ -20,6 +20,7 @@ import { featureLevel } from '../engine/combatFeatures/dispatch';
 import type { CombatFeature } from '../engine/combatFeatures/types';
 import { isOutOfAction, combatTestPenalty } from '../engine/conditions';
 import { humanControlled } from './netOwnership';
+import { surfaceOf } from './rollSeam';
 import { actorIn } from './combatants';
 import { isEngagedWith, isEngaged } from '../engine/engagement';
 import { SIZE_ORDER, effectiveSize } from '../engine/size';
@@ -221,9 +222,11 @@ export interface TriggerCtx { victim?: Combatant; weapon?: Weapon; rng?: RNG; ma
    *  câblé via le hook du store). Absent → pas de routage (les flows non-`test` passent par
    *  `runPureFlowLines`, qui rend le `string[]` tissé inline par l'appelant). */
   set?: SetFn;
-  /** Pose le drapeau `deferInteractiveTest` sur la résolution d'un Test routé : un héros MANUEL ne pousse
-   *  PAS son étape ICI (la cascade n'est pas ouverte au moment où le hook `end-of-round` diffuse) — elle
-   *  est COLLECTÉE par `collectHeroRoundEndUpkeep`. Ennemi/auto restent résolus inline. */
+  /** Pose le drapeau `deferInteractiveTest` sur la résolution d'un Test routé : un porteur SURFACÉ
+   *  (`surfaceOf` — un siège humain QUELCONQUE le tient, cadence manuelle) ne pousse PAS son étape ICI
+   *  (la cascade n'est pas ouverte au moment où le hook `end-of-round` diffuse) — elle est COLLECTÉE par
+   *  `collectHeroRoundEndUpkeep`, qui porte le prédicat MIROIR. Ce que personne ne tient (IA, cadence
+   *  auto) reste résolu inline. */
   deferInteractiveTest?: boolean;
   /** `OpsCtx.onOpposingAdvantage` (Redoutable AA, `MDG 16 l.13`) — fourni par `turnHooks.fireTurnEdgeTriggers`
    *  pour `onTurnStart` ; threadé tel quel dans le `flowCtx` de CHAQUE effet (l'op `gainAdvantage` porteuse
@@ -369,10 +372,13 @@ export function applyTriggeredEffects(
         ...(trigger === 'onOwnTestFailed' ? { noReentryOwnTestFailed: true } : {}) };
       if (flowHasTest(eff.flow)) {
         // Test de FIN DE ROUND (`deferInteractiveTest`, posé par le hook `end-of-round` : la cascade n'est
-        // pas encore ouverte) : un héros MANUEL est COLLECTÉ par `collectHeroRoundEndUpkeep` (on saute ici) ;
-        // ennemi / héros auto → résolu INLINE (lignes RENDUES → sinkées dans le journal comme les dégâts).
+        // pas encore ouverte) : un porteur SURFACÉ (`surfaceOf` — un siège humain QUELCONQUE le tient,
+        // cadence manuelle) est COLLECTÉ par `collectHeroRoundEndUpkeep` (on saute ici) ; personne au
+        // pilotage / cadence auto → résolu INLINE (lignes RENDUES → sinkées dans le journal comme les dégâts).
+        // Prédicat MIROIR de celui du collecteur : le décaler d'un côté PERD le Test (ni différé ni collecté)
+        // ou le DOUBLE (inline + étape).
         if (ctx.deferInteractiveTest) {
-          if (humanControlled(get(), t)) continue;
+          if (surfaceOf(get, t)) continue;
           lines.push(...resolveInlineFlowTest(t, eff.flow, flowCtx, get));
           continue;
         }

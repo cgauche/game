@@ -267,7 +267,7 @@ import {
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type FlowTest, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep, stakeAtTableRow } from './cascade';
 import { nightBands, splitBandRows } from './nightBands';
-import { freeCons, resultLines, rollLine, rollStep, rollSansPilote, type Consequence } from './rollSeam';
+import { freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf, type Consequence } from './rollSeam';
 
 /** L'État du défenseur accorde-t-il un Avantage à l'assaillant en mêlée ? Lu en DONNÉES
  *  (`incomingMeleeAdvantage` → `passive` `incomingAdvantage`, kind `etat`). Sonné : « +1 Avantage avant
@@ -6619,7 +6619,11 @@ export function openRoundEndCascade(get: Get, set: SetFn): void {
   const steps: CascadeStep[] = [];
   const dues: CombatPsychDue[] = [];
   for (const c of get().battle!.combatants) {
-    if (!humanControlled(get(), c) || isOutOfAction(c)) continue;
+    // SURFACE (#1262), pas affordance locale : le porteur d'un AUTRE siège entre dans la cascade — c'est
+    // SON joueur qui roulera. Prédicat MIROIR des hooks `roundBoundary` (roundHooks) et du dispatcher
+    // (`deferInteractiveTest`) : décaler l'un des deux perdrait ou doublerait le Test. `isOutOfAction`
+    // reste le critère MÉTIER du site (divergence :5590 préservée, arbitrage #1265).
+    if (!surfaceOf(get, c) || isOutOfAction(c)) continue;
     // 1) Upkeep du combattant (effets RNG-free). 2) Peur de fin de Round, regroupée en bandes ci-dessous.
     //    (La sortie de Frénésie est un effet `onTurnStart` en données, jouée au début du tour du héros.)
     steps.push(...collectHeroRoundEndUpkeep(get, c, sink));

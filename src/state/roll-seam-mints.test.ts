@@ -46,7 +46,7 @@ const etapes = (): CascadeStep[] => useGame.getState().pendingCascade?.participa
 describe('#1262 — monoStep : un porteur, un jet, une cible', () => {
   it('pose la POSSESSION et la SURFACE, et monte sa ligne par le monteur canonique', () => {
     const step = monoStep({ id: 'calme', kind: 'psych', label: 'Garder son calme', actor: hero('H1'), difficulty: 'intermediaire', ligne: { test: { char: 'force-mentale' } } })!;
-    expect(step.actorId, 'sans porteur, l’arbitre rend `undefined` → fenêtre HÔTE SEUL').toBe('H1');
+    expect(step.actorId, 'le mint NOMME le porteur — c’est ce qui donne à l’arbitre un owner à router (sans lui : fenêtre hôte seul)').toBe('H1');
     expect(step.interactive).toBe(true);
     expect(step.result, 'le dé n’est pas tombé : c’est la fenêtre qui le jette').toBeNull();
     expect(step.target, 'FM 40, Difficulté intermédiaire +0').toBe(40);
@@ -272,7 +272,7 @@ describe('#1262 — pushBand : la bande APPENDUE porte sa possession (assertion 
     });
     const [st] = etapes();
     expect(st.groupOwner).toBeUndefined();
-    expect(st.actorId, 'sans porteur nommé, l’arbitre rend `undefined` → fenêtre HÔTE SEUL').toBe('H1');
+    expect(st.actorId, 'porteur unique → l’étape le NOMME : l’arbitre a un owner à router (sans lui : fenêtre hôte seul)').toBe('H1');
     expect(modalOwnerOf(useGame.getState())).toBe('H1');
     expect(ownsLocally(useGame.getState(), 'H1'), 'chez l’hôte, la fenêtre n’est pas à lui').toBe(false);
     expect(seatOwns(useGame.getState(), 1, 'H1'), 'elle est au siège 1, qui possède le porteur').toBe(true);

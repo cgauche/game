@@ -168,7 +168,7 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
     expect(hasCondition(H, COND.extenue)).toBe(false);    // poison non vidé → pas d'Exténué
   });
 
-  it('cadence AUTO : un héros empoisonné N’ouvre PAS d’étape de cascade (auto-résolu comme un monstre — humanControlled)', () => {
+  it('cadence AUTO : un héros empoisonné N’ouvre PAS d’étape de cascade (auto-résolu comme un monstre — `surfaceOf` exige la cadence manuelle)', () => {
     setCadence('auto');
     try {
       const { H } = setup();
@@ -184,7 +184,7 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
 
   /**
    * Anti DOUBLE-RÉSOLUTION (#918 phase 2a) : le hook inline (`se-fatiguer`, roundHooks) et l'étape de
-   * cascade (`collectHeroRoundEndUpkeep`) sont EXCLUSIFS — le gate `humanControlled` du hook ROUTE, il
+   * cascade (`collectHeroRoundEndUpkeep`) sont EXCLUSIFS — le gate `surfaceOf` du hook ROUTE, il
    * ne fait pas que protéger le jet. La séquence réelle est jouée (hooks PUIS collecte), aux DEUX
    * cadences : Exténué ne doit jamais s'empiler deux fois pour un seul franchissement de Round.
    */

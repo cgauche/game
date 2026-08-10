@@ -8,7 +8,7 @@
  */
 import { registerCombatHook } from '../combatHooks';
 import { registerCascadeApplier } from '../cascade';
-import { freeCons, rollSansPilote } from '../rollSeam';
+import { freeCons, rollSansPilote, surfaceOf } from '../rollSeam';
 import { battleRng } from '../battleRng';
 import { rollTest } from '../../engine/tests';
 import { testValue } from '../../engine/skills';
@@ -22,7 +22,6 @@ import { purgeExpiredSummons } from '../summonFlow';
 import { fireTriggers } from '../triggeredEffects';
 import { collectRoundEndTestSteps } from './triggeredTest';
 import { pushCombatStep } from '../combatEffects';
-import { humanControlled } from '../netOwnership';
 import { inBattleId } from '../combatants';
 import { traitAuras } from '../../engine/traits/dispatch';
 import { groupMatch } from '../../engine/groups';
@@ -58,14 +57,16 @@ registerCombatHook({
       // de fin de Round pour un combattant HORS COMBAT (un cadavre ne brûle/saigne plus — le dispatcher
       // autorise désormais les effets `on:'self'` sur une cible hors-combat, on filtre donc ici).
       // `deferInteractiveTest` : un Test de RÉCUPÉRATION d'État en DONNÉES (Empoisonné Résistance…) routé
-      // pour un héros MANUEL n'est PAS poussé ici (la cascade de fin de Round n'est pas encore ouverte) —
-      // il est COLLECTÉ par `collectHeroRoundEndUpkeep`. Ennemi/auto : résolu inline par le dispatcher.
+      // pour un porteur SURFACÉ (`surfaceOf` : un siège humain QUELCONQUE le tient, cadence manuelle) n'est
+      // PAS poussé ici (la cascade de fin de Round n'est pas encore ouverte) — il est COLLECTÉ par
+      // `collectHeroRoundEndUpkeep`. Ce que personne ne tient (IA, cadence auto) : résolu inline par le dispatcher.
       if (!isOutOfAction(c)) fireTriggers(get, c, 'onRoundEnd', { rng: battleRng(), set, deferInteractiveTest: true }).forEach((l) => sink(l, c));
       // Durée « + » (LDB 47 l.311) : effets GELÉS par `tickDurations` (spell source marqué). PNJ/auto —
       // arbitrage d'implémentation : l'IA prolonge SYSTÉMATIQUEMENT ses propres buffs (elle tente le Test
-      // de Force Mentale à chaque offre) — résolu INLINE ici. HÉROS manuel : différé en étape de cascade
-      // influençable (Chance/Résilience), collectée par `collectHeroRoundEndUpkeep`.
-      if (!humanControlled(get(), c)) {
+      // de Force Mentale à chaque offre) — résolu INLINE ici. Porteur SURFACÉ (`surfaceOf` : un siège humain
+      // QUELCONQUE le tient, cadence manuelle) : différé en étape de cascade influençable (Chance/
+      // Résilience), collectée par `collectHeroRoundEndUpkeep` — MIROIR strict de son prédicat.
+      if (!surfaceOf(get, c)) {
         for (const e of pendingPlusExtensions(c)) {
           const res = rollSansPilote(get, c, testValue(c, undefined, 'force-mentale'), 'intermediaire', battleRng());
           resolvePlusExtension(c, e, res.success).forEach((l) => sink(l, c));
@@ -223,15 +224,15 @@ registerCombatHook({
   // réussir un Test de Résistance Intermédiaire (+0) sous peine de subir immédiatement l'État Inconscient ».
   // RÈGLE DE MORT/machinerie (comme `tick-death`/`bleed-death`) gatée par le mode ; NOMME Hémorragique tout
   // comme `bleed-death`. Résolu AVANT `bleed-death` (77) : un combattant qui tombe Inconscient ICI devient
-  // éligible au jet de mort par hémorragie le même Round. HÉROS manuel → différé à la cascade d'entretien
-  // (collectHeroRoundEndUpkeep) pour rester influençable (Chance/Résilience) ; ennemi/auto → jet inline.
+  // éligible au jet de mort par hémorragie le même Round. Porteur SURFACÉ → différé à la cascade d'entretien
+  // (collectHeroRoundEndUpkeep) pour rester influençable (Chance/Résilience) ; personne au pilotage / auto → jet inline.
   id: 'aa-bleed-unconscious',
   phase: 'onRoundEnd',
   order: 76.5,
   run: ({ get, battle, sink }) => {
     if (rule('combat-aa-blessures') !== 'aa') return; // inerte en LDB (aucun RNG consommé → golden préservé)
     for (const c of battle.combatants) {
-      if (!aaBleedUnconsciousDue(c) || humanControlled(get(), c)) continue; // pilote humain manuel → étape de cascade
+      if (!aaBleedUnconsciousDue(c) || surfaceOf(get, c)) continue; // porteur surfacé → étape de cascade (MIROIR du collecteur)
       const res = rollSansPilote(get, c, testValue(c, 'resistance'), 'intermediaire', battleRng());
       const line = aaBleedUnconsciousApply(c, res.success);
       if (line) sink(line, c);
@@ -334,8 +335,8 @@ registerCombatHook({
       // héros compris (le collecteur de cascade lit `effortRounds` ≥ seuil pour émettre l'étape).
       c.effortRounds = (c.effortRounds ?? 0) + 1;
       if (c.effortRounds < fatigueThreshold(c)) continue;
-      // Pilote humain manuel au seuil : différé à la cascade influençable. Sinon (monstre/rapide/auto) : silence ici.
-      if (humanControlled(get(), c)) continue;
+      // Porteur SURFACÉ au seuil : différé à la cascade influençable (MIROIR du collecteur). Sinon (monstre/rapide/auto) : silence ici.
+      if (surfaceOf(get, c)) continue;
       const t = rollSansPilote(get, c, testValue(c, 'resistance'), 'intermediaire', battleRng());
       const line = fatigueApply(c, t.success, t.sl);
       if (line) sink(line, c);
@@ -359,9 +360,10 @@ registerCombatHook({
  * `sink`) ; seuls les Tests réellement dus deviennent des étapes influençables.
  */
 export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: string, c: Combatant) => void): CascadeStep[] {
-  // Étapes de cascade SEULEMENT pour un pilote HUMAIN en cadence manuelle ; en rapide/auto, le combattant
-  // est auto-résolu COMME un monstre → ses Tests se résolvent silencieusement dans les hooks ci-dessus.
-  if (!humanControlled(get(), c) || isOutOfAction(c)) return [];
+  // Étapes de cascade SEULEMENT pour un porteur SURFACÉ (`surfaceOf` : un siège humain QUELCONQUE le tient,
+  // cadence manuelle) ; en rapide/auto, ou sans siège pour le tenir, il est auto-résolu COMME un monstre →
+  // ses Tests se résolvent silencieusement dans les hooks ci-dessus, qui portent le prédicat MIROIR.
+  if (!surfaceOf(get, c) || isOutOfAction(c)) return [];
   const steps: CascadeStep[] = [];
   // 0) Récupération d'États en DONNÉES (Empoisonné Résistance LDB 16 l.70-72 ; plus tard En Flammes/Sonné) —
   //    chaque État porté dont la donnée déclare un `effects: onRoundEnd` à nœud `test` devient une étape
