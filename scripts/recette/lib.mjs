@@ -142,7 +142,7 @@ export async function launchSession({ chromePath, width = 1600, height = 900, po
   const profile = join(os.tmpdir(), `recette-cdp-profile-${Date.now()}-${Math.floor(Math.random() * 1e6)}`);
   mkdirSync(profile, { recursive: true });
   const chrome = spawn(resolveChromePath(chromePath), [
-    '--headless=new', `--remote-debugging-port=${cdpPort}`, `--user-data-dir=${profile}`,
+    '--headless=new', '--mute-audio', `--remote-debugging-port=${cdpPort}`, `--user-data-dir=${profile}`,
     `--window-size=${width},${height}`, '--no-first-run', '--no-default-browser-check', 'about:blank',
   ], { stdio: 'ignore' });
   const childEntry = { chrome, profile };

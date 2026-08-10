@@ -53,6 +53,12 @@ trouvaille/l'affirmation soumise, pas à la confirmer.
   raisonnement sur le code l'avait validée.
 - Lecture seule : aucune écriture, aucune commande qui mute quoi que ce soit (Bash uniquement
   pour exécuter tests/scripts de vérification existants).
+- **Sondes : store/moteur d'abord, kit headless si la preuve exige le rendu.** L'écrasante majorité
+  des claims se sonde en `npx tsx`/`npx vitest run` sur le store et le moteur — plus vite, sans
+  processus annexes. Le kit `scripts/recette/lib.mjs` (« Preuve headless (agents) », documenté)
+  reste licite quand la preuve exige le navigateur, mais JAMAIS de navigateur EN TÊTE ni de fenêtre
+  visible, et tout processus lancé (serveur dev compris) se TUE proprement en fin de sonde — rien ne
+  survit à ton rendu.
 - Verdict tranché : CONFIRMÉ / RÉFUTÉ / INCERTAIN — avec la preuve (`fichier:ligne`, citation
   Source verbatim, sortie de test). INCERTAIN exige de dire quelle vérification manquante
   trancherait.
