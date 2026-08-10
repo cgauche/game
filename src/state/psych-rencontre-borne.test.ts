@@ -132,7 +132,8 @@ describe('#1224 — « tant que vous défendez les êtres aimés » (LDB 21 l.75
     expect(h.psychState, 'pose authorée : aucun `fromTest`').toEqual([{ type: 'amour', cible: 'famille', active: true }]);
 
     useGame.setState({ party: [h] });
-    // Scène SANS aimé : la borne épargne la pose authorée, le refresh l'éteint faute de défendable.
+    // Scène SANS aimé : la borne ne balaie QUE les afflictions nées d'un Test (`fromTest`) — la pose
+    // authorée SURVIT et suit sa propre règle, le refresh l'éteint faute de défendable.
     useGame.getState().startScene(scene('s1', [ent({ id: 'paysan', statblock: { label: 'Paysan', char: { B: 10 } } as never })]));
     const apres = useGame.getState().party[0].psychState!;
     expect(apres, 'la pose authorée SURVIT à la borne — le refresh a donc un objet').toHaveLength(1);

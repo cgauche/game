@@ -5,6 +5,10 @@
  * résolution). `effects` = `TriggeredEffect<EffectOp>[]` (`src/engine/flowCore.ts`), PROMU dans
  * `common.ts` (`conditionSchema`/`flowSchema`/`triggeredEffectSchema` — partagés avec
  * `qualities.ts`/`talents.ts`/`etats.ts`/`spells.ts`).
+ *
+ * AUCUN champ de PROSE (#1226) : une manœuvre est la PROJECTION mécanique d'un Trait de créature qui la
+ * déclare (`TraitData.grantsManeuvers`) et qui porte SEUL le verbatim + l'ancrage. `strictObject` rejette
+ * donc tout `desc` ré-ajouté ici. Résolution du trait : `traitProjectingManeuver` (`src/data/index.ts`).
  */
 import { z } from 'zod';
 import { charKeySchema, sourceRefSchema, triggeredEffectSchema } from '../common';
@@ -32,8 +36,8 @@ export const schema = z.array(
     blast: maneuverMeasure.optional(),
     magic: z.boolean().optional(),
     effects: z.array(triggeredEffectSchema),
-    desc: z.string().optional(),
-    /** `ManeuverDef.source` est OPTIONNEL en TS mais présent sur les 20/20 entrées réelles. */
+    /** Folio du Trait PROJETANT (`traitProjectingManeuver`), le seul ancrage : LDB 338-343 pour les
+     *  attaques naturelles, Middenheim 115-117 pour les capacités de bestiaire. */
     source: sourceRefSchema,
     priority: z.number().optional(),
     /** ENJEU de l'ENTRÉE (#1117) — ce que la manœuvre met en jeu, COLLÉ à ses `effects` (éditable au

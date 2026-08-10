@@ -19,7 +19,7 @@ import {
   isNamed, specIdsOf, specLabel,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findCreatureById, findVehicleById, findTrappingById, structures, regles,
   CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
-  conditionLabel,
+  conditionLabel, traitProjectingManeuver,
 } from '../../data';
 // #157 (audit d'exposition Codex) : catalogues app-owned chargés par un module dédié plutôt que la
 // façade `index.ts` — réutilisés TELS QUELS (même patron que `POWER_ESTIMATE` etc. ci-dessous, déjà
@@ -1565,8 +1565,10 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'maneuvers', label: 'Manœuvres', group: 'Effets',
+    // Une manœuvre est la PROJECTION mécanique d'un Trait de créature (#1226) : la prose affichée est le
+    // VERBATIM du trait projetant (`traitProjectingManeuver`), jamais un résumé recopié dans la manœuvre.
     build: () => maneuvers.map((m) => ({
-      id: m.id, label: m.label, sub: ATTACK_LABEL[m.kind], desc: m.desc, source: src(m.source),
+      id: m.id, label: m.label, sub: ATTACK_LABEL[m.kind], desc: traitProjectingManeuver(m.id)?.desc, source: src(m.source),
       meta: facts(
         fact('Activation', MANEUVER_ACTIVATION_LABEL[m.activation]),
         fact('Coût Av', m.advantageCost),

@@ -9,10 +9,9 @@
     "defense": "auto",
     "targeting": "melee",
     "effects": [],
-    "desc": "Arme de Corps à corps (dents/griffes). Action normale. Dégâts = Indice (= 4 + Bonus de Force). LDB 85 l.338.",
     "source": {
       "book": "livre-de-base",
-      "page": 85
+      "page": 338
     },
     "stake": "Aucun effet authoré : la touche n’inflige que les Dégâts de l’arme naturelle (Indice).",
     "stakeForm": "descripteur"
@@ -27,10 +26,9 @@
     "defense": "auto",
     "targeting": "melee",
     "effects": [],
-    "desc": "Attaque gratuite en dépensant 1 Avantage. Dégâts = arme naturelle (Indice). LDB 85 l.171.",
     "source": {
       "book": "livre-de-base",
-      "page": 85
+      "page": 340
     },
     "stake": "Aucun effet authoré : la touche n’inflige que les Dégâts de la morsure (Indice).",
     "stakeForm": "descripteur"
@@ -79,10 +77,9 @@
         }
       }
     ],
-    "desc": "Attaque gratuite (1 Avantage). Une cible plus petite qui perd des PB subit À Terre. LDB 85 l.38.",
     "source": {
       "book": "livre-de-base",
-      "page": 85
+      "page": 338
     },
     "stake": "La touche n’inflige que ses Dégâts, sauf à une cible PLUS PETITE que l’attaquant, qui gagne en plus l’État À Terre si elle ne l’a pas déjà.",
     "stakeForm": "descripteur"
@@ -97,10 +94,9 @@
     "defense": "auto",
     "targeting": "melee",
     "effects": [],
-    "desc": "Attaque gratuite gagnée en CHARGEANT (pas de coût d’Avantage). Dégâts = Indice. LDB 85 l.65.",
     "source": {
       "book": "livre-de-base",
-      "page": 85
+      "page": 338
     },
     "stake": "Aucun effet authoré : la charge n’inflige que les Dégâts des cornes (Indice).",
     "stakeForm": "descripteur"
@@ -138,10 +134,9 @@
         }
       }
     ],
-    "desc": "Une Attaque gratuite par tentacule (coût 0). Sur Dégâts → Empêtré (Force d’évasion = Force). LDB 85 l.355.",
     "source": {
       "book": "livre-de-base",
-      "page": 85
+      "page": 343
     },
     "stake": "La touche pose l’État Empêtré — une empoignade dont la Force d’évasion est la Force de l’attaquant — si la cible n’y est pas déjà.",
     "stakeForm": "descripteur"
@@ -203,10 +198,9 @@
         }
       }
     ],
-    "desc": "Attaque gratuite à distance (1 Avantage). Dégâts Indice + Empêtré. LDB 85 l.186/188.",
     "source": {
       "book": "livre-de-base",
-      "page": 85
+      "page": 340
     },
     "stake": "Esquive — réussie : la langue manque sa prise. Ratée : Dégâts égaux à l’Indice (Bonus d’Endurance et PA déduits), puis État Empêtré, dont la Force d’évasion est la Force de l’attaquant.",
     "stakeForm": "descripteur"
@@ -251,10 +245,9 @@
         }
       }
     ],
-    "desc": "2 Avantages + l’Action. Succès → 1d10 + DR Blessures ignorant BE et PA. Magique. LDB 85 l.112.",
     "source": {
       "book": "livre-de-base",
-      "page": 85
+      "page": 339
     },
     "stake": "La touche inflige 1d10 Blessures, +1 par DR, en ignorant le Bonus d’Endurance et les PA.",
     "stakeForm": "descripteur"
@@ -339,10 +332,9 @@
         }
       }
     ],
-    "desc": "Action, +1 DR par Avantage. Marge ≥ 6 DR → Pétrifié (0 PB) ; ≥ 2 DR → Sonné (1 par 2 DR). LDB 85 l.238.",
     "source": {
       "book": "livre-de-base",
-      "page": 85
+      "page": 341
     },
     "stake": "Test opposé d’Initiative — vous l’emportez : le regard glisse. L’attaquant l’emporte de 6 DR ou plus : État Pétrifié et Points de Blessure ramenés à 0 ; de 2 DR ou plus : 1 État Sonné par tranche de 2 DR.",
     "stakeForm": "descripteur"
@@ -366,7 +358,7 @@
     "magic": true,
     "source": {
       "book": "livre-de-base",
-      "page": 85
+      "page": 341
     },
     "effects": [
       {
@@ -409,7 +401,6 @@
         }
       }
     ],
-    "desc": "Zone, jet CT/Esquive. Dégâts Indice (ignore PA) + En flammes. LDB 85 l.249-269.",
     "stake": "Esquive — réussie : le souffle est évité. Ratée : Dégâts égaux à l’Indice, PA ignorées (Bonus d’Endurance déduit), puis État En flammes.",
     "stakeForm": "descripteur"
   },
@@ -432,7 +423,7 @@
     "magic": true,
     "source": {
       "book": "livre-de-base",
-      "page": 85
+      "page": 341
     },
     "effects": [
       {
@@ -475,7 +466,6 @@
         }
       }
     ],
-    "desc": "Zone, jet CT/Esquive. Dégâts Indice + Sonné (RAW : 1 Sonné/5 PB → forfaitaire). LDB 85 l.249-269.",
     "stake": "Esquive — réussie : le souffle est évité. Ratée : Dégâts égaux à l’Indice (Bonus d’Endurance et PA déduits), puis État Sonné.",
     "stakeForm": "descripteur"
   },
@@ -498,7 +488,7 @@
     "magic": true,
     "source": {
       "book": "livre-de-base",
-      "page": 85
+      "page": 341
     },
     "effects": [
       {
@@ -554,7 +544,6 @@
         }
       }
     ],
-    "desc": "Zone, jet CT/Esquive. Dégâts Indice + Sonné + corrosion (cuir seul, RAW : toute matière). LDB 85 l.249-269.",
     "stake": "Esquive — réussie : le souffle est évité. Ratée : Dégâts égaux à l’Indice (Bonus d’Endurance et PA déduits), État Sonné, et l’armure de cuir touchée est rongée.",
     "stakeForm": "descripteur"
   },
@@ -577,7 +566,7 @@
     "magic": true,
     "source": {
       "book": "livre-de-base",
-      "page": 85
+      "page": 341
     },
     "effects": [
       {
@@ -620,7 +609,6 @@
         }
       }
     ],
-    "desc": "Zone, jet CT/Esquive. Dégâts Indice (ignore PA) + Sonné. LDB 85 l.249-269.",
     "stake": "Esquive — réussie : le souffle est évité. Ratée : Dégâts égaux à l’Indice, PA ignorées (Bonus d’Endurance déduit), puis État Sonné.",
     "stakeForm": "descripteur"
   },
@@ -643,7 +631,7 @@
     "magic": true,
     "source": {
       "book": "livre-de-base",
-      "page": 85
+      "page": 341
     },
     "effects": [
       {
@@ -686,7 +674,6 @@
         }
       }
     ],
-    "desc": "Zone, jet CT/Esquive. Dégâts Indice (ignore PA) + Empoisonné. LDB 85 l.249-269.",
     "stake": "Esquive — réussie : le souffle est évité. Ratée : Dégâts égaux à l’Indice, PA ignorées (Bonus d’Endurance déduit), puis État Empoisonné.",
     "stakeForm": "descripteur"
   },
@@ -709,10 +696,9 @@
     "magic": true,
     "source": {
       "book": "livre-de-base",
-      "page": 85
+      "page": 341
     },
     "effects": [],
-    "desc": "Zone : la fumée bloque les Lignes de vue pendant Bonus d’Endurance Rounds (géométrie moteur). LDB 85 l.249-269.",
     "stake": "Esquive — le nuage ne porte AUCUN effet authoré : il ne blesse pas, il coupe les Lignes de vue.",
     "stakeForm": "descripteur"
   },
@@ -800,10 +786,9 @@
         }
       }
     ],
-    "desc": "Zone (3 Avantages). Dégâts BE+4 + Sonné + corrosion (cuir). LDB 85 l.374-378.",
     "source": {
       "book": "livre-de-base",
-      "page": 85
+      "page": 343
     },
     "stake": "Esquive — réussie : la gerbe est évitée. Ratée : Dégâts égaux au Bonus d’Endurance de l’attaquant, puis 4 Dégâts de plus (Bonus d’Endurance et PA déduits), État Sonné, et l’armure de cuir touchée est rongée.",
     "stakeForm": "descripteur"
@@ -886,10 +871,9 @@
         }
       }
     ],
-    "desc": "Tous les ennemis vivants à Initiative mètres : 1d10 (ignore BE+PA) + Test de Résistance ou Brisé + 3 Assourdi. LDB 85 l.136.",
     "source": {
       "book": "livre-de-base",
-      "page": 85
+      "page": 339
     },
     "stake": "Le hurlement inflige 1d10 Blessures ignorant le Bonus d’Endurance et les PA, puis 3 États Assourdi ; un Test de Résistance Accessible (+20) raté y ajoute 1 État Brisé.",
     "stakeForm": "descripteur"
@@ -952,7 +936,6 @@
         }
       }
     ],
-    "desc": "Lors de son tour, le prédateur peut dépenser 1 Avantage pour effectuer une attaque gratuite de hurlement : toute cible vivante à un nombre de mètres égal à son Initiative gagne 3 États Assourdi, puis effectue un Test de Calme Difficile (-10) et gagne 3 États Brisé en cas d'échec. Middenheim p.115.",
     "source": {
       "book": "middenheim",
       "page": 115
@@ -993,7 +976,6 @@
         }
       }
     ],
-    "desc": "En combat, le spectre n'inflige jamais de dégâts. À la place, s'il touche sa cible, il lui inflige 1 État Sonné par DR. Middenheim p.117.",
     "source": {
       "book": "middenheim",
       "page": 117
@@ -1106,7 +1088,6 @@
         }
       }
     ],
-    "desc": "un Enfant d'Ulric peut passer d'une forme à l'autre pour le prix de deux actions.",
     "source": {
       "book": "middenheim",
       "page": 116
@@ -1144,7 +1125,6 @@
         }
       }
     ],
-    "desc": "un Enfant d'Ulric peut passer d'une forme à l'autre pour le prix de deux actions.",
     "source": {
       "book": "middenheim",
       "page": 116

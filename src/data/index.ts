@@ -1340,7 +1340,8 @@ export interface ManeuverDef {
   /** Effets AUTHORÉS (Dégâts `wounds` + États) appliqués quand la manœuvre touche (`onHit`) — MÊME
    *  vocabulaire que les sorts (Flow d'ops), exécutés par `applyTriggeredEffects`. */
   effects?: import('../state/flow').TriggeredEffect[];
-  desc?: string;
+  /** Folio du Trait PROJETANT — la manœuvre ne porte AUCUNE prose (#1226) : sa description est celle du
+   *  trait, résolue à l'affichage par `traitProjectingManeuver`. */
   source?: SourceRef;
   /** Pertinence de BASE pour le scoreur d'attaque (clic droit joueur ET décision IA) : POIDS ÉDITABLE,
    *  plus haut = choisie plus volontiers. Combinée aux bonus situationnels AUTO (dégâts attendus,
@@ -2742,6 +2743,21 @@ export const MANEUVER_BY_ID = new Map(maneuvers.map((m) => [m.id, m]));
 /** Résout une Manœuvre par son `id` STABLE (réf `TraitData.grantsManeuvers` → résolveur générique). */
 export function findManeuverById(id: string): ManeuverDef | undefined {
   return MANEUVER_BY_ID.get(id);
+}
+/** Index INVERSE manœuvre → Trait PROJETANT (#1226), DÉRIVÉ de l'unique déclaration du lien
+ *  (`TraitData.grantsManeuvers`) : aucune seconde source de vérité côté manœuvre. Un trait en projette
+ *  N (Souffle → un id par Type ; Métamorphose → entrée/sortie), d'où la table id-de-manœuvre → trait.
+ *  La relation est de N vers UN : deux traits revendiquant la même manœuvre s'écraseraient ici — le
+ *  contrat d'unicité est tenu par `maneuver-trait-projection.test.ts`. */
+const TRAIT_BY_GRANTED_MANEUVER = new Map<string, TraitData>(
+  traits.flatMap((t) => (t.grantsManeuvers ?? []).map((r) => [r.id, t] as const)),
+);
+/** Le Trait de créature dont la manœuvre est la PROJECTION mécanique — porteur de la prose VERBATIM et
+ *  de l'ancrage `source` (LDB 85 = « TRAITS DE CRÉATURE », folios 338-343). Une entité, une prose :
+ *  l'affichage d'une manœuvre lit la `desc` du trait résolu ici, la manœuvre n'en porte aucune. La
+ *  prose est repérée au FOLIO chez le trait ; les manœuvres ne portent plus d'ancre `l.<ligne>` (#1228). */
+export function traitProjectingManeuver(id: string): TraitData | undefined {
+  return TRAIT_BY_GRANTED_MANEUVER.get(id);
 }
 const GOD_BY_ID = new Map(gods.map((g) => [g.id, g]));
 /** Résout un Culte/Dieu par son id STABLE (« sigmar »). */
