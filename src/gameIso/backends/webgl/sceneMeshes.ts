@@ -53,11 +53,8 @@ function faceEls(scene: Scene): SceneEl[] {
   return [...buildFloors(scene, undefined, { activeZ: maxZ }), ...buildWalls(scene), ...buildRoofs(scene)];
 }
 
-/** Géométrie MONDE fusionnée de la scène : une `BufferGeometry` non indexée (chaque triangle a ses
- *  propres sommets → `computeVertexNormals` donne la normale de FACE, l'ombrage plat du mode éclairé),
- *  couleur de face × teinte de visibilité cuite dans l'attribut `color`. */
 /** Faces MONDE de la scène dans l'ordre de peinture des builders, chacune avec la clé de case qui porte
- *  sa teinte de visibilité — la liste EXACTE que `buildWorldGeometry` fusionne (les gardes s'y adossent
+ *  sa teinte de visibilité — la liste EXACTE que `bakeWorldGeometry` fusionne (les gardes s'y adossent
  *  au lieu de la reconstituer). */
 export interface WorldFace {
   face: Face;
@@ -188,17 +185,48 @@ export interface WorldGeometry extends THREE.BufferGeometry {
   userData: { surfaceGroups: SurfaceGroup[] };
 }
 
-export function buildWorldGeometry(scene: Scene, mpt: number, tintAt: TintAt): WorldGeometry {
+/** PLAGE DE TEINTE d'une face dans la géométrie fusionnée : les sommets qu'elle occupe, la case dont
+ *  elle prend sa visibilité, et sa couleur NUE (albédo de surface + variance de teinte de tuile) — tout
+ *  ce qu'il faut pour ré-écrire sa couleur sans rien retrianguler. */
+export interface FaceTintSpan {
+  cellKey: string;
+  /** Premier sommet de la face, et nombre de sommets. */
+  start: number;
+  count: number;
+  /** Albédo NU de la surface (jamais teinté : la teinte se re-multiplie sur lui, elle ne s'y cumule pas). */
+  color: string;
+  /** Variance de teinte de la tuile — invariante à la visibilité, donc cuite avec la géométrie. */
+  varFactor: number;
+}
+
+/** Monde CUIT : la géométrie (positions, uv, uv1, groupes de surface) et l'index qui permet d'en
+ *  repeindre les couleurs par case. Le bake est INVARIANT à la visibilité.
+ *
+ *  CONTRAT DE PROPRIÉTÉ — un bake sert UN consommateur de teinte à la fois : la géométrie rendue EST le
+ *  bake (`applyVisibilityTint` réécrit son attribut `color` en place et le rend tel quel), donc deux
+ *  vues qui teinteraient le MÊME `BakedWorld` avec deux visibilités s'écraseraient l'une l'autre. Un
+ *  second consommateur prend SON bake (`bakeWorldGeometry`), il n'emprunte pas celui d'un autre. */
+export interface BakedWorld {
+  geometry: WorldGeometry;
+  spans: FaceTintSpan[];
+}
+
+/** Géométrie MONDE fusionnée de la scène, SANS teinte de visibilité : une `BufferGeometry` non indexée
+ *  (chaque triangle a ses propres sommets → `computeVertexNormals` donne la normale de FACE, l'ombrage
+ *  plat du mode éclairé). C'est la passe LOURDE — triangulation, rang coplanaire, UV, groupes de surface
+ *  (mesuré #1176, arène : 492 ms, dont 1,3 ms pour les seules couleurs) — et rien de ce qu'elle calcule
+ *  ne dépend de ce que le groupe voit : elle ne se rejoue qu'à la scène ou à l'échelle.
+ *  Un appelant = un bake (cf. `BakedWorld`) : `SpikeScreen` en cuit un pour lui, et tout écran three qui
+ *  viendrait à côté cuit le sien plutôt que de partager celui du spike. */
+export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   const listées = worldFaces(scene);
   const faces = listées.map((f) => f.face);
-  const tints = listées.map((f) => tintAt(f.cellKey));
   // Le RANG coplanaire se calcule sur la liste ENTIÈRE de la scène (contrat de `coplanarRanks`).
   const geoms = facesGeometry(faces, mpt, faceDepthOf(mpt));
   const positions: number[] = [];
-  const colors: number[] = [];
   const uvs: number[] = [];
   const uv1s: number[] = [];
-  const c = new THREE.Color();
+  const spans: FaceTintSpan[] = [];
   // ORIENTATION des triangles : le pivot n'a aucune convention de sens de parcours (une face peut être
   // authorée dans un sens ou dans l'autre). Un rendu en `DoubleSide` s'en moque, mais la CARTE D'OMBRE
   // non : le décalage de biais suit la normale, et une normale à l'envers pousse le receveur DANS son
@@ -212,10 +240,7 @@ export function buildWorldGeometry(scene: Scene, mpt: number, tintAt: TintAt): W
   const cz = ((scene.dimensions.h - 1) / 2) * mpt;
   const pousser = (i: number) => {
     const g = geoms[i];
-    // La couleur de sommet porte l'albédo du matériau × la visibilité de la case × la variance de
-    // teinte de la surface : un aplat répété tuile après tuile se lit sinon comme une nappe de peinture.
-    const surface = faceSurface(faces[i]);
-    c.set(surface.color).multiplyScalar(tints[i] * tintVarFactor(surface.recipe, listées[i].cell));
+    const début = positions.length / 3;
     g.tris.forEach((tri, t) => {
       const n = polyNormal(tri);
       const centre = { x: (tri[0].x + tri[1].x + tri[2].x) / 3, z: (tri[0].z + tri[1].z + tri[2].z) / 3 };
@@ -226,33 +251,72 @@ export function buildWorldGeometry(scene: Scene, mpt: number, tintAt: TintAt): W
       for (const k of ordre) {
         const p = tri[k];
         positions.push(p.x, p.y, p.z);
-        colors.push(c.r, c.g, c.b);
         uvs.push(g.uv[t][k].u, g.uv[t][k].v);
         uv1s.push(g.uv1[t][k].u, g.uv1[t][k].v);
       }
+    });
+    // La couleur de sommet porte l'albédo du matériau × la variance de teinte de la surface (un aplat
+    // répété tuile après tuile se lit sinon comme une nappe de peinture) × la visibilité de la case —
+    // ce dernier facteur SEUL est réversible, et c'est `applyVisibilityTint` qui le pose.
+    const surface = faceSurface(faces[i]);
+    spans.push({
+      cellKey: listées[i].cellKey,
+      start: début,
+      count: positions.length / 3 - début,
+      color: surface.color,
+      varFactor: tintVarFactor(surface.recipe, listées[i].cell),
     });
   };
   // Les faces sortent GROUPÉES par surface (un groupe = un dessin) ; à l'intérieur d'un groupe, l'ordre
   // de peinture des builders est conservé.
   const { groups, faceIndices } = surfaceGrouping(listées, mpt);
-  const spans: [number, number][] = [];
+  const groupSpans: [number, number][] = [];
   for (const idx of faceIndices) {
     const début = positions.length / 3;
     for (const i of idx) pousser(i);
-    spans.push([début, positions.length / 3 - début]);
+    groupSpans.push([début, positions.length / 3 - début]);
   }
   const geometry = new THREE.BufferGeometry() as WorldGeometry;
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(positions.length), 3));
   // `uv` = maille MONDE en mètres (textures répétées) ; `uv1` = face d'origine en [0,1]² (ornements
   // cuits par face). Les deux jeux voyagent dans LA géométrie fusionnée — jamais un mesh par surface.
   geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
   geometry.setAttribute('uv1', new THREE.Float32BufferAttribute(uv1s, 2));
-  spans.forEach(([début, count], k) => geometry.addGroup(début, count, k));
+  groupSpans.forEach(([début, count], k) => geometry.addGroup(début, count, k));
   geometry.userData = { surfaceGroups: groups };
   geometry.computeVertexNormals();
   geometry.computeBoundingBox();
-  return geometry;
+  return { geometry, spans };
+}
+
+/** Repeint la VISIBILITÉ d'un monde cuit : l'attribut `color` est ré-écrit EN PLACE depuis la couleur
+ *  NUE de chaque face (jamais depuis la couleur affichée — une teinte se re-multiplie, elle ne se cumule
+ *  pas), la géométrie n'est pas touchée. C'est la passe qui suit le PAS du groupe (mesuré #1176, arène :
+ *  1,3 ms pour 19 734 triangles, contre 492 ms de re-bake). Rend la géométrie, pour l'appelant qui
+ *  compose les deux — LA géométrie du bake, pas une copie : le dernier appel fait la couleur affichée.
+ *  D'où le contrat de propriété de `BakedWorld` (un bake = un consommateur de teinte). */
+export function applyVisibilityTint(baked: BakedWorld, tintAt: TintAt): WorldGeometry {
+  const attr = baked.geometry.getAttribute('color') as THREE.BufferAttribute;
+  const arr = attr.array as Float32Array;
+  const c = new THREE.Color();
+  for (const span of baked.spans) {
+    c.set(span.color).multiplyScalar(tintAt(span.cellKey) * span.varFactor);
+    const fin = (span.start + span.count) * 3;
+    for (let i = span.start * 3; i < fin; i += 3) {
+      arr[i] = c.r;
+      arr[i + 1] = c.g;
+      arr[i + 2] = c.b;
+    }
+  }
+  attr.needsUpdate = true;
+  return baked.geometry;
+}
+
+/** Monde cuit ET teinté en un geste — pour un appelant qui n'a pas de teinte à faire varier (gardes,
+ *  cadrage). Un écran qui suit la visibilité garde le bake et ne rejoue que `applyVisibilityTint`. */
+export function buildWorldGeometry(scene: Scene, mpt: number, tintAt: TintAt): WorldGeometry {
+  return applyVisibilityTint(bakeWorldGeometry(scene, mpt), tintAt);
 }
 
 /** Un sujet de billboard prêt à texturer : où il se pose, à quelle échelle, et comment il se dessine. */

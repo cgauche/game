@@ -11,6 +11,7 @@
  * son étage, assombri).
  */
 import type { StageObj } from './stage/objs';
+import { AMBIANCE } from './catalog/ambiance';
 
 export interface FogParams {
   /** Cases déjà vues (accumulées) : `"x,y,z"`. Hors-vue ∩ exploré ⇒ mémorisé ; hors-vue ∖ exploré ⇒ inconnu. */
@@ -18,9 +19,12 @@ export interface FogParams {
 }
 
 // Voiles en CSS `filter` (≠ filtre SVG `url()`) : Chrome les composite au GPU → coût quasi nul même à
-// des centaines d'éléments, là où un `<filter>` SVG re-rastérise au CPU par élément (= rame). `brightness`
-// est un multiplicateur : remembered = assombri + désaturé mais LISIBLE ; unknown = noir atténué.
-const FOG_REMEMBERED = 'brightness(.42) saturate(.45) opacity(.82)';
+// des centaines d'éléments, là où un `<filter>` SVG re-rastérise au CPU par élément (= rame). Le terme
+// `brightness` d'une case MÉMORISÉE est la teinte partagée de la politique de visibilité
+// (`AMBIANCE.fogTint`, la même qu'applique le monde three) ; désaturation et opacité n'ont pas
+// d'équivalent dans un facteur scalaire et restent propres à ce voile. Une case INCONNUE s'éteint ici
+// (`brightness(0)` sur fond de carte), là où un rendu 3D garde un facteur bas non nul.
+const FOG_REMEMBERED = `brightness(${AMBIANCE.fogTint.explored}) saturate(.45) opacity(.82)`;
 const FOG_UNKNOWN = 'brightness(0) opacity(.38)';
 
 /** Valeur de CSS `filter` (voile de brouillard) à appliquer à un objet, ou `undefined` (en vue / non tagué). */

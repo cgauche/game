@@ -5,6 +5,7 @@
 import { ambiance } from '../../data';
 import { ao, spec } from '../shade';
 import type { Dims } from '../../geometry/iso';
+import type { Visibility } from '../../state/visibility';
 
 /** Halo radial (voile chaud / vignette) : centre + rayon en %, couleur et alpha au bord utile. */
 export interface RadialVeilDef { cx: string; cy: string; r: string; color: string; alpha: number; innerOff?: string }
@@ -19,6 +20,13 @@ export interface AmbianceDef {
    *  du clamp de lumière des DEUX vues — POV (`tint`, `pov/camera.ts`) et voile d'occlusion des sols iso
    *  (`backends/affineFloors.ts`) → les deux répondent d'un cran égal. */
   ambientFloor: number;
+  /** APPLICATION de la politique de visibilité (`state/visibility.ts`) en facteur multiplicatif, par
+   *  état de case. Source UNIQUE des trois rendus : couleur de sommet du monde three (`visibilityTint`),
+   *  terme `brightness` du voile CSS de l'iso (`FogLayer`), lumière d'ambiance d'une surface non vue au
+   *  POV (`pov/geometry.ts`). Un filtre CSS composé n'est pas un scalaire : l'iso n'y prend que son
+   *  `brightness` d'`explored`, et sa case inconnue s'éteint (`brightness(0)`) là où un rendu 3D garde
+   *  un facteur bas mais non nul — une silhouette noire y serait illisible. */
+  fogTint: Record<Visibility, number>;
   iso: {
     /** Voile CHAUD (lumière dorée descendante) posé sur toute la scène. */
     warm: RadialVeilDef;

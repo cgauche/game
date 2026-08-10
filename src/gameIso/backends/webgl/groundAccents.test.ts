@@ -159,17 +159,17 @@ describe('groundAccents — semis de SCÈNE et montage instancié', () => {
   const mpt = sceneMetresPerTile(scene);
 
   it('la scène de siège porte un semis MESURABLE', () => {
-    const c = accentCounts(sceneGroundAccents(scene, mpt, () => 1));
+    const c = accentCounts(sceneGroundAccents(scene, mpt));
     expect(c.tufts).toBeGreaterThan(0);
   });
 
-  it('la teinte de visibilité de la case voyage sur la couleur des instances', () => {
-    const eteinte = sceneGroundAccents(scene, mpt, () => 0.25);
-    expect(eteinte.length).toBeGreaterThan(0);
-    for (const a of eteinte) expect(a.tint).toBe(0.25);
-    const meshes = buildGroundAccentMeshes(eteinte.slice(0, 200), { lit: false });
+  it('la teinte de visibilité de la case voyage sur la couleur des instances, JAMAIS sur le semis', () => {
+    const accents = sceneGroundAccents(scene, mpt);
+    expect(accents.length).toBeGreaterThan(0);
+    for (const a of accents) expect(a.cellKey).toMatch(/^-?\d+,-?\d+,-?\d+$/);
+    const meshes = buildGroundAccentMeshes(accents.slice(0, 200), { lit: false, tintAt: () => 0.25 });
     const mesh = meshes[0];
-    const attendue = new THREE.Color().set(eteinte.find((a) => `${a.kind}|${a.color}` === mesh.name)!.color).multiplyScalar(0.25);
+    const attendue = new THREE.Color().set(accents.find((a) => `${a.kind}|${a.color}` === mesh.name)!.color).multiplyScalar(0.25);
     const lue = new THREE.Color();
     mesh.getColorAt(0, lue);
     expect(lue.r).toBeCloseTo(attendue.r, 6);
@@ -177,11 +177,24 @@ describe('groundAccents — semis de SCÈNE et montage instancié', () => {
     expect(lue.b).toBeCloseTo(attendue.b, 6);
   });
 
+  it('le semis est INVARIANT à la visibilité : deux teintes, un seul et même tirage', () => {
+    const a = sceneGroundAccents(scene, mpt);
+    const b = sceneGroundAccents(scene, mpt);
+    expect(b.map((x) => `${x.cellKey}|${x.kind}|${x.pos.x}|${x.pos.z}|${x.sizeM}`))
+      .toEqual(a.map((x) => `${x.cellKey}|${x.kind}|${x.pos.x}|${x.pos.z}|${x.sizeM}`));
+    // La teinte n'entre PAS dans le lot (elle varie par case, `instanceColor` la porte).
+    const lots = groupAccents(a);
+    const eteints = buildGroundAccentMeshes(a, { lit: false, tintAt: () => 0.1 });
+    const pleins = buildGroundAccentMeshes(a, { lit: false, tintAt: () => 1 });
+    expect(eteints.map((m) => `${m.name}:${m.count}`)).toEqual(pleins.map((m) => `${m.name}:${m.count}`));
+    expect(eteints.length).toBe(lots.size);
+  });
+
   it('un lot par (type × couleur), chaque instance à sa pose monde', () => {
-    const accents = sceneGroundAccents(scene, mpt, () => 1);
+    const accents = sceneGroundAccents(scene, mpt);
     const lots = groupAccents(accents);
     expect(lots.size).toBeGreaterThan(1);
-    const meshes = buildGroundAccentMeshes(accents, { lit: false });
+    const meshes = buildGroundAccentMeshes(accents, { lit: false, tintAt: () => 1 });
     expect(meshes.map((m) => m.count).reduce((a, b) => a + b, 0)).toBe(accents.length);
     // CULLING : rien n'est calculé d'avance — three résout la sphère à la première frame
     // (`Frustum.intersectsObject`) et `InstancedMesh` la surcharge pour couvrir SES instances, pas le

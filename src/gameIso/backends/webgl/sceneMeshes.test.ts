@@ -30,7 +30,7 @@ import {
 import { facesGeometry, polyBounds, type Vec3 } from './worldTris';
 import { faceDepthOf } from './faceRelief';
 import { anchorAndSize, billboardHeightM, BILLBOARD_BOX_ASPECT, type BillboardConvention } from './billboardMath';
-import { TINT_EXPLORED } from './visibilityTint';
+import { tintOf } from './visibilityTint';
 import { faceSurface, tintVarFactor } from './faceColors';
 import { faceBakeData, FACE_PX_PER_M } from './faceBake';
 import { coursesPeriodM, groundPeriodM, roofCourseStepM, variantOf, N_VARIANTS } from '../../detail/courses';
@@ -92,10 +92,10 @@ describe('FUSION — toute la scène en UNE géométrie', () => {
 
   it('la teinte de visibilité MULTIPLIE la couleur de face (case explorée = plus sombre)', () => {
     const clair = buildWorldGeometry(scene, mpt, plein).getAttribute('color').array as Float32Array;
-    const sombre = buildWorldGeometry(scene, mpt, () => TINT_EXPLORED).getAttribute('color').array as Float32Array;
+    const sombre = buildWorldGeometry(scene, mpt, () => tintOf('explored')).getAttribute('color').array as Float32Array;
     expect(sombre.length).toBe(clair.length);
     const somme = (a: Float32Array) => a.reduce((s, v) => s + v, 0);
-    expect(somme(sombre)).toBeCloseTo(somme(clair) * TINT_EXPLORED, 1);
+    expect(somme(sombre)).toBeCloseTo(somme(clair) * tintOf('explored'), 1);
   });
 });
 
@@ -503,9 +503,9 @@ describe('TEINTE de sommet — la variance par case est CUITE dans `color`', () 
 
   it('la variance se COMPOSE avec la teinte de visibilité, elle ne l’écrase pas', () => {
     const vue = buildWorldGeometry(nappe, sceneMetresPerTile(nappe), plein).getAttribute('color').array as Float32Array;
-    const explorée = buildWorldGeometry(nappe, sceneMetresPerTile(nappe), () => TINT_EXPLORED).getAttribute('color')
+    const explorée = buildWorldGeometry(nappe, sceneMetresPerTile(nappe), () => tintOf('explored')).getAttribute('color')
       .array as Float32Array;
-    for (let k = 0; k < vue.length; k += 997) expect(explorée[k]).toBeCloseTo(vue[k] * TINT_EXPLORED, 5);
+    for (let k = 0; k < vue.length; k += 997) expect(explorée[k]).toBeCloseTo(vue[k] * tintOf('explored'), 5);
   });
 
   it('la nuance est STABLE : deux constructions de la même scène donnent les mêmes couleurs', () => {

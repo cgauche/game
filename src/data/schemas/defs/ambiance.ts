@@ -31,8 +31,25 @@ const weatherFxSchema = z.strictObject({
   density: z.number().optional(),
 });
 
+/** Facteur multiplicatif de teinte : 0 = éteint, 1 = pleine matière — hors de [0,1] il n'éclaircit
+ *  plus, il sur-expose (ou inverse le signe de la couleur). */
+const tintFactor = z.number().min(0).max(1);
+
 export const schema = z.strictObject({
   ambientFloor: z.number(),
+  // `fogTint` = APPLICATION de la politique de visibilité en facteur MULTIPLICATIF (0..1), partagée par
+  // les trois rendus (`gameIso/catalog/ambiance.ts`). Trois invariants la tiennent : un facteur reste
+  // dans [0,1] ; l'ordre des états ne s'inverse pas (une case jamais vue ne peut pas être plus lumineuse
+  // qu'un souvenir, ni un souvenir plus lumineux que le vu) ; `explored` est le DÉNOMINATEUR du cran
+  // d'ambiance POV (`pov/geometry.ts` : `POV_AMBIENT.unknown`), donc strictement positif.
+  fogTint: z
+    .strictObject({ visible: tintFactor, explored: tintFactor, unknown: tintFactor })
+    .refine((t) => t.explored > 0, {
+      message: 'fogTint.explored doit être > 0 : il divise le cran d’ambiance POV (`POV_AMBIENT.unknown`)',
+    })
+    .refine((t) => t.visible >= t.explored && t.explored >= t.unknown, {
+      message: 'fogTint doit décroître visible ≥ explored ≥ unknown : une case moins connue ne peut pas être plus lumineuse',
+    }),
   iso: z.strictObject({
     warm: radialVeilSchema,
     vignette: radialVeilSchema,

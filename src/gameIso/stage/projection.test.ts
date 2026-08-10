@@ -158,6 +158,29 @@ describe('Involution — l’inverse est exact au lacet libre', () => {
     });
 });
 
+describe('VUE DU DESSUS — l’élévation ne se lit pas à l’écran', () => {
+  const PIX = { x: 811, y: 437 };
+  const LIFTS = [0, 1, 2, 3.5];
+
+  it('en `top`, tous les lifts rendent la MÊME case — le picking multi-hypothèses doit y résoudre l’étage AUTREMENT', () => {
+    // Projection verticale : deux étages superposés tombent sur le même pixel. `screenToWorldAtLift` est
+    // exact (il rend la colonne), mais il ne DÉPARTAGE pas les étages — un appelant qui itère les lifts
+    // en vue du dessus obtient N fois la même case, et doit trancher sur la couche active/l'occupation.
+    const pose = poseFromDims(dimsFor('top', 1));
+    const cases = LIFTS.map((l) => screenToWorldAtLift(pose, PIX, l));
+    for (const c of cases) expect(c).toEqual(cases[0]);
+  });
+
+  it('en `iso`/`edge`, les mêmes lifts rendent des cases DISTINCTES (la dégénérescence est propre à `top`)', () => {
+    for (const kind of ['iso', 'edge'] as const) {
+      const pose = poseFromDims(dimsFor(kind, 1));
+      const cases = LIFTS.map((l) => screenToWorldAtLift(pose, PIX, l));
+      const distinctes = new Set(cases.map((c) => `${c.x.toFixed(6)},${c.y.toFixed(6)}`));
+      expect(distinctes.size).toBe(LIFTS.length);
+    }
+  });
+});
+
 describe('PURETÉ — le module de projection ne tire jamais le moteur volumique', () => {
   const SRC = readFileSync(new URL('./projection.ts', import.meta.url), 'utf8');
 

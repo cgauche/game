@@ -53,6 +53,7 @@ import {
 } from './camera';
 import { sceneMetresPerTile, isIndoor, tileAt, heightAt, type Scene } from '../../state/scene';
 import { TERRAIN_DEFS, terrainSolidHeightM } from '../../state/terrain';
+import { visibilityOf, type Visibility } from '../../state/visibility';
 import { buildFloors, SIDES, NEIGHBOURS } from '../builders/floors';
 import { buildWalls } from '../builders/walls';
 import { buildRoofs } from '../builders/roofs';
@@ -129,16 +130,26 @@ const FLOOR_ZLIFT = 0.04;
 /** Champ de lumière structurel (0..1). */
 type LightField = { at(x: number, y: number, z?: number): number };
 
-/** Facteur POV de la lumière d'AMBIANCE d'une surface STATIQUE non encore VUE (brouillard de guerre) —
- *  DONNÉE (`ambiance.json`). */
+/** Facteur POV de la lumière d'AMBIANCE d'une surface STATIQUE hors champ de vision — DONNÉE
+ *  (`ambiance.json`), le cran d'une case MÉMORISÉE (déjà vue). */
 const AMBIENT_UNSEEN = AMBIANCE.pov.ambientUnseen;
 
+/** APPLICATION POV de la politique de visibilité (`state/visibility.ts`) : un facteur de lumière
+ *  d'ambiance par état. Une case JAMAIS VUE recule d'un cran de plus qu'un souvenir — le rapport
+ *  inconnu ÷ exploré de la teinte partagée (`AMBIANCE.fogTint`), appliqué à l'échelle d'ambiance du
+ *  POV, qui n'est pas celle d'une teinte de couleur (une surface reste éclairée par la scène). */
+const POV_AMBIENT: Record<Visibility, number> = {
+  visible: 1,
+  explored: AMBIENT_UNSEEN,
+  unknown: (AMBIENT_UNSEEN * AMBIANCE.fogTint.unknown) / AMBIANCE.fogTint.explored,
+};
+
 /** Lumière effective d'une case pour la géométrie STATIQUE (sol/mur/toit) : `light.at` si la case est
- *  VUE, sinon la lumière d'AMBIANCE de la scène en retrait (× `AMBIENT_UNSEEN`) — jamais le noir de la
+ *  VUE, sinon la lumière d'AMBIANCE de la scène en retrait (× `POV_AMBIENT`) — jamais le noir de la
  *  lumière-viewer 0. `light.at` a pour PLANCHER l'ambiant jour/nuit de la scène (cf. `computeLightField`)
  *  → un mur lointain est clair-hazé de jour, sombre-hazé de nuit, jamais noir plat ni bleu-ciel plat. */
-const staticLight = (light: LightField, seen: boolean, x: number, y: number, z: number): number =>
-  seen ? light.at(x, y, z) : light.at(x, y, z) * AMBIENT_UNSEEN;
+const staticLight = (light: LightField, état: Visibility, x: number, y: number, z: number): number =>
+  light.at(x, y, z) * POV_AMBIENT[état];
 
 /** Centroïde monde d'un polygone (moyenne des sommets). */
 function centroid(pts: Vec3[]): Vec3 {
@@ -466,11 +477,11 @@ function groundAccentItems(
   return out;
 }
 
-/** Colonnes (x,y) dont on voit le SOL (brouillard) : voir une case, c'est voir les structures qui s'y
- *  dressent (rempart/étage au-dessus compris). Dérivé du set « x,y,z » en retirant le z. */
-function visibleColumns(visible: Set<string>): Set<string> {
+/** Colonnes (x,y) d'un ensemble de cases « x,y,z » : voir (ou avoir vu) une case, c'est voir les
+ *  structures qui s'y dressent (rempart/étage au-dessus compris). Dérivé en retirant le z. */
+function columnsOf(cells: ReadonlySet<string>): Set<string> {
   const cols = new Set<string>();
-  for (const k of visible) cols.add(k.slice(0, k.lastIndexOf(',')));
+  for (const k of cells) cols.add(k.slice(0, k.lastIndexOf(',')));
   return cols;
 }
 
@@ -484,20 +495,26 @@ function visibleColumns(visible: Set<string>): Set<string> {
  *  par COLONNE visible (pas par tuile) pour voir aussi ce qui monte au-dessus. Les TOITS ferment les
  *  bâtiments (pans continus du pivot) — sauf quand le groupe est DESSOUS (cutaway → plafond intérieur).
  *  Tout vient de la scène PARTAGÉE (hauteurs, murs, portes, toits) : éditer en iso impacte le POV.
- *  - `visible` : clés « x,y,z » du brouillard ; `light` : champ `{ at(x,y,z) }` (0..1). */
+ *  - `visible` : clés « x,y,z » du champ de vision courant ; `light` : champ `{ at(x,y,z) }` (0..1) ;
+ *    `explored` : clés « x,y,z » MÉMORISÉES (accumulées par le stage) — une colonne déjà vue se rend en
+ *    souvenir, une jamais vue recule d'un cran de plus (`POV_AMBIENT`, politique `state/visibility`). */
 export function buildPovDrawList(
   scene: Scene,
   cam: CamPose,
   visible: Set<string>,
   light: LightField,
   night = false,
+  explored: ReadonlySet<string> = new Set<string>(),
 ): DrawItem[] {
   const mpt = sceneMetresPerTile(scene);
   const indoor = isIndoor(scene); // intérieur → plafond + brume sombre COURTE ; extérieur → ciel + perspective atmosphérique LONGUE
   const curve = fogCurveOf(indoor);
   const farMetres = farTilesOf(indoor) * mpt;
   const fog = indoor ? FOG_COLOR : AMBIANCE.pov.fogOutdoorSurface;
-  const cols = visibleColumns(visible);
+  const cols = columnsOf(visible);
+  const memoire = columnsOf(explored);
+  /** État de visibilité d'une COLONNE — la loi partagée, appliquée ici en lumière d'ambiance. */
+  const étatDe = (x: number, y: number): Visibility => visibilityOf(`${x},${y}`, cols, memoire);
   const items: DrawItem[] = [];
 
   // TOUTES les couches PLEINES (activeZ = couche max → aucun fantôme de surplomb : le POV voit le monde
@@ -511,11 +528,12 @@ export function buildPovDrawList(
     // « vu » (la lumière n'atteint pas l'intérieur d'un mur, le rayon vers lui est bloqué par lui-même).
     // Comme un WallSeg (posé sur une arête bordant une tuile ouverte), chacune de ses faces s'éclaire et
     // se voit depuis la tuile OUVERTE qu'elle borde, PAS depuis la tuile-bloc elle-même. Les valeurs par
-    // défaut (`seen`/`lv`, de la tuile) restent celles de tout autre sol/relief ; on ne les SURCHARGE par
+    // défaut (`état`/`lv`, de la tuile) restent celles de tout autre sol/relief ; on ne les SURCHARGE par
     // face que pour un bloc solide (`fSeen`/`fLv`, ci-dessous).
     const solid = terrainSolidHeightM(tileAt(scene, x, y, z)) > 0;
-    const seen = cols.has(`${x},${y}`);
-    const lv = staticLight(light, seen, x, y, z);
+    const état = étatDe(x, y);
+    const seen = état === 'visible';
+    const lv = staticLight(light, état, x, y, z);
     el.faces.forEach((f, i) => {
       if (f.poly.length < 3) return; // pilier (2 points) : hors POV
       const corners: Vec3[] = f.poly.map((p) => ({ x: p.x * mpt, y: p.y * mpt, z: p.h }));
@@ -528,7 +546,7 @@ export function buildPovDrawList(
         if (f.side && f.material.domain === 'relief') {
           const [dx, dy] = NEIGHBOURS[f.side];
           fSeen = cols.has(`${x + dx},${y + dy}`);
-          fLv = staticLight(light, fSeen, x + dx, y + dy, z);
+          fLv = staticLight(light, étatDe(x + dx, y + dy), x + dx, y + dy, z);
         } else if (f.material.domain === 'terrain' && !f.material.part) {
           fSeen = false;
           fLv = 0;
@@ -536,7 +554,12 @@ export function buildPovDrawList(
             const [dx, dy] = NEIGHBOURS[s];
             if (cols.has(`${x + dx},${y + dy}`)) { fSeen = true; fLv = Math.max(fLv, light.at(x + dx, y + dy, z)); }
           }
-          if (!fSeen) fLv = light.at(x, y, z) * AMBIENT_UNSEEN; // aucun voisin vu : ambiance de la scène (jamais noir)
+          // Aucun voisin ouvert vu : la lumière retombe sur le cran de la TUILE (`lv`, jamais noir).
+          // C'est `visibilityOf` qui tranche, pas le test des 4 voisins — un ÎLOT DE VISION (colonne vue
+          // par une meurtrière, un coin, un sommet de rempart au-dessus du bloc) garde donc sa PLEINE
+          // ambiance : le joueur voit cette case, elle ne s'assombrit pas parce que ses voisines sont
+          // cachées. Contrat tenu par `geometry.test.ts` (« ÎLOT DE VISION »).
+          if (!fSeen) fLv = lv;
         }
       }
       if (f.material.domain === 'relief') {
@@ -697,8 +720,9 @@ export function buildPovDrawList(
   // structure ABATTUE = faces de brèche (tas de gravats). Les MONTANTS (poteau/jambage, 2 points)
   // restent un ornement d'écran affine.
   for (const el of buildWalls(scene)) {
-    const seen = cols.has(`${el.cell.x},${el.cell.y}`);
-    const lv = staticLight(light, seen, el.cell.x, el.cell.y, el.cell.z);
+    const étatMur = étatDe(el.cell.x, el.cell.y);
+    const seen = étatMur === 'visible';
+    const lv = staticLight(light, étatMur, el.cell.x, el.cell.y, el.cell.z);
     el.faces.forEach((f, i) => {
       if (el.states.open && !f.architectureFeatureId) return;
       if (f.poly.length < 3) return; // montant 2 points : hors POV (LOD minimal)
@@ -763,9 +787,14 @@ export function buildPovDrawList(
   const ceiled = new Set<string>();
   for (const el of buildRoofs(scene, { allies: [eyeCell] })) {
     const z = el.cell.z;
-    let seen = false;
-    for (let dy = -1; dy <= el.span.h && !seen; dy++)
-      for (let dx = -1; dx <= el.span.w && !seen; dx++) if (cols.has(`${el.cell.x + dx},${el.cell.y + dy}`)) seen = true;
+    // État du toit = le MEILLEUR de son empreinte élargie d'1 (une nappe se voit depuis n'importe
+    // laquelle des cases qu'elle borde) : vue > mémorisée > inconnue.
+    let étatToit: Visibility = 'unknown';
+    for (let dy = -1; dy <= el.span.h && étatToit !== 'visible'; dy++)
+      for (let dx = -1; dx <= el.span.w && étatToit !== 'visible'; dx++) {
+        const e = étatDe(el.cell.x + dx, el.cell.y + dy);
+        if (e === 'visible' || étatToit === 'unknown') étatToit = e;
+      }
     if (el.states.roofOccupied) {
       if (indoor) continue;
       for (let dy = 0; dy < el.span.h; dy++)
@@ -782,7 +811,7 @@ export function buildPovDrawList(
       continue;
     }
     const sh = roofMaterial(el.material);
-    const lv = staticLight(light, seen, el.cell.x, el.cell.y, z);
+    const lv = staticLight(light, étatToit, el.cell.x, el.cell.y, z);
     el.faces.forEach((f, i) => {
       const corners: Vec3[] = f.poly.map((p) => ({ x: p.x * mpt, y: p.y * mpt, z: p.h }));
       // VOLUME d'avant-toit : le SOFFITE débordant (dessous ombré) et la FASCIA (planche de rive sombre)

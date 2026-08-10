@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TINT_EXPLORED, TINT_UNKNOWN, TINT_VISIBLE, tintFor } from './visibilityTint';
+import { tintFor, tintOf } from './visibilityTint';
 import { fogFilterFor } from '../../FogLayer';
 import type { StageObj } from '../../stage/objs';
 
@@ -9,39 +9,37 @@ describe('les teintes sont ANCRÉES sur le voile de production (`FogLayer`)', ()
   const memorise = fogFilterFor(decor(1, 2), new Set(['1,2,0']))!;
   const inconnu = fogFilterFor(decor(9, 9), new Set())!;
 
-  it('exploré = le terme `brightness` du voile mémorisé de la prod', () => {
-    expect(TINT_EXPLORED).toBe(brightness(memorise));
+  it('exploré = le terme `brightness` du voile mémorisé de la prod (une seule donnée pour les deux)', () => {
+    expect(tintOf('explored')).toBe(brightness(memorise));
   });
 
   it('inconnu : la prod éteint (`brightness(0)`) + opacité — le scalaire du spike en est une approximation basse, non nulle', () => {
     expect(brightness(inconnu)).toBe(0);
     expect(inconnu).toContain('opacity(.38)');
-    expect(TINT_UNKNOWN).toBeGreaterThan(0);
-    expect(TINT_UNKNOWN).toBeLessThan(TINT_EXPLORED);
+    expect(tintOf('unknown')).toBeGreaterThan(0);
+    expect(tintOf('unknown')).toBeLessThan(tintOf('explored'));
   });
 
   it('vue : aucun voile en prod, facteur plein ici', () => {
     expect(fogFilterFor({ ...decor(1, 2), vis: true } as StageObj, new Set())).toBeUndefined();
-    expect(TINT_VISIBLE).toBe(1);
+    expect(tintOf('visible')).toBe(1);
   });
 });
-describe('tintFor — une seule politique de visibilité, sans caméra', () => {
+
+/** La TABLE DE VÉRITÉ de `visibilityOf` vit dans sa couche (`src/state/visibility.test.ts`) : ici on ne
+ *  teste que l'APPLICATION — le mappage état → teinte, et son ancrage sur le voile de production. */
+describe('tintFor — l’APPLICATION : la politique, puis le mappage état → teinte', () => {
   const visible = new Set(['1,2,0']);
   const explored = new Set(['1,2,0', '3,4,0']);
 
-  it('vue > explorée > inconnue', () => {
-    expect(tintFor('1,2,0', visible, explored)).toBe(TINT_VISIBLE);
-    expect(tintFor('3,4,0', visible, explored)).toBe(TINT_EXPLORED);
-    expect(tintFor('9,9,1', visible, explored)).toBe(TINT_UNKNOWN);
-    expect(TINT_VISIBLE).toBeGreaterThan(TINT_EXPLORED);
-    expect(TINT_EXPLORED).toBeGreaterThan(TINT_UNKNOWN);
+  it('chaque case rend la teinte de SON état', () => {
+    expect(tintFor('1,2,0', visible, explored)).toBe(tintOf('visible'));
+    expect(tintFor('3,4,0', visible, explored)).toBe(tintOf('explored'));
+    expect(tintFor('9,9,1', visible, explored)).toBe(tintOf('unknown'));
   });
 
-  it('la case VUE l’emporte même si elle n’a pas été mémorisée', () => {
-    expect(tintFor('7,7,0', new Set(['7,7,0']), new Set())).toBe(TINT_VISIBLE);
-  });
-
-  it('l’étage fait partie de la clé (`x,y,z`)', () => {
-    expect(tintFor('1,2,1', visible, explored)).toBe(TINT_UNKNOWN);
+  it('les trois teintes se rangent dans l’ordre de la politique', () => {
+    expect(tintOf('visible')).toBeGreaterThan(tintOf('explored'));
+    expect(tintOf('explored')).toBeGreaterThan(tintOf('unknown'));
   });
 });

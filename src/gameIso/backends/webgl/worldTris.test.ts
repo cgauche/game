@@ -52,7 +52,7 @@ function facesOf(scene: Scene): Face[] {
 }
 
 /** Quads MONDE d'une scène à la profondeur que les catalogues d'apparence résolvent (`faceRelief`) —
- *  la liste EXACTE que `buildWorldGeometry` fusionne, jamais une géométrie de laboratoire. */
+ *  la liste EXACTE que `bakeWorldGeometry` fusionne, jamais une géométrie de laboratoire. */
 function quadsOf(scene: Scene): WorldPoly[] {
   const mpt = sceneMetresPerTile(scene);
   const depthOf = faceDepthOf(mpt);

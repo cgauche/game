@@ -119,7 +119,11 @@ export function worldToScreen(pose: StagePose, world: StageWorld): StageScreen {
 
 /** Pixel écran → grille continue AU NIVEAU `lift` donné (niveaux d'étage, cf. `StageWorld`). Inverse
  *  exact de `worldToScreen` ; généralise `screenToTileF`/`screenToTileAtZ`, dont le picking
- *  multi-hypothèses itère les lifts. */
+ *  multi-hypothèses itère les lifts.
+ *  DÉGÉNÉRESCENCE EN VUE DU DESSUS : `liftPx` y est nul (l'élévation ne décale rien à l'écran, la
+ *  projection est verticale) → tous les lifts rendent la MÊME case. Itérer les hypothèses d'étage n'y
+ *  départage donc rien : en `top`, l'étage se résout AUTREMENT (couche active, occupation de la case),
+ *  pas par la projection. */
 export function screenToWorldAtLift(pose: StagePose, screen: StageScreen, lift = 0): { x: number; y: number } {
   const dx = screen.x - pose.origin.x;
   const dy = screen.y - pose.origin.y + liftPx(pose, lift);
@@ -135,7 +139,8 @@ export function screenToWorldAtLift(pose: StagePose, screen: StageScreen, lift =
   return { x: d.x + pose.pivot.x, y: d.y + pose.pivot.y };
 }
 
-/** Décalage écran vertical d'une élévation : `LEVEL_H` px par niveau, nul en vue du dessus. */
+/** Décalage écran vertical d'une élévation : `LEVEL_H` px par niveau, nul en vue du dessus (une caméra
+ *  à la verticale ne sépare pas les étages à l'écran — cf. `screenToWorldAtLift`). */
 function liftPx(pose: StagePose, lift: number): number {
   return pose.kind === 'top' ? 0 : lift * LEVEL_H;
 }

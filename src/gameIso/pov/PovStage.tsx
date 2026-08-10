@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useGame } from '../../state/store';
 import { isIndoor } from '../../state/scene';
 import { sceneIsDark } from '../../state/sceneRules';
@@ -39,8 +39,11 @@ export function PovStage() {
   const facing = useGame((s) => s.facing);
   const gameTime = useGame((s) => s.gameTime);
   const lightLevel = useGame((s) => s.lightLevel);
+  const explored = useGame((s) => s.explored);
+  const markExplored = useGame((s) => s.markExplored);
 
   const dir = (party[0] && facing[party[0].id]) || 'S';
+  const exploredSet = useMemo(() => new Set(explored[scene?.id ?? ''] ?? []), [explored, scene?.id]);
 
   const view = useMemo(() => {
     if (!scene) return null;
@@ -50,8 +53,15 @@ export function PovStage() {
     const { light } = sceneLightField(input);
     // Nuit = mise en scène `lightLevel` (≤ 0.5) sinon l'obscurité d'horloge (`sceneIsDark`) → vitres allumées.
     const night = lightLevel != null ? lightLevel <= 0.5 : sceneIsDark(scene, gameTime);
-    return { cam, visible, draw: buildPovDrawList(scene, cam, visible, light, night) };
-  }, [scene, partyPos, dir, party, gameTime, lightLevel]);
+    return { cam, visible, draw: buildPovDrawList(scene, cam, visible, light, night, exploredSet) };
+  }, [scene, partyPos, dir, party, gameTime, lightLevel, exploredSet]);
+
+  // Accumulation persistante de l'exploré — la MÊME couture que l'iso (`IsoStage`) : explorer en
+  // première personne nourrit la mémoire de carte, et un déjà-vu hors champ se rend en souvenir au
+  // lieu de retomber au cran de l'inconnu (no-op si rien de neuf → pas de boucle de rendu).
+  useEffect(() => {
+    if (view?.visible.size) markExplored([...view.visible]);
+  }, [view?.visible, markExplored]);
 
   if (!scene || !view) return null;
   const indoor = isIndoor(scene);

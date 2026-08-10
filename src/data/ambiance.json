@@ -1,5 +1,10 @@
 {
   "ambientFloor": 0.12,
+  "fogTint": {
+    "visible": 1,
+    "explored": 0.42,
+    "unknown": 0.15
+  },
   "iso": {
     "warm": {
       "cx": "55%",

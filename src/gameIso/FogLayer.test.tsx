@@ -10,6 +10,6 @@ describe('fogFilterFor', () => {
   });
 
   it('conserve le voile mémorisé des cases explorées hors vue', () => {
-    expect(fogFilterFor(hidden, new Set(['2,3,0']))).toBe('brightness(.42) saturate(.45) opacity(.82)');
+    expect(fogFilterFor(hidden, new Set(['2,3,0']))).toBe('brightness(0.42) saturate(.45) opacity(.82)');
   });
 });

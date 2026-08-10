@@ -63,6 +63,29 @@ describe('buildPovDrawList', () => {
     expect(lw.some((it) => it.kind === 'detail' && it.key.startsWith('wall:6,2'))).toBe(false);
   });
 
+  it('SOUVENIR : une case DÉJÀ VUE hors champ se rend plus claire qu’une case jamais vue (politique à 3 états)', () => {
+    // Le POV consomme la MÊME loi que l'iso et le monde three (`state/visibility`) : vue > mémorisée >
+    // inconnue. Sans mémoire, un déjà-vu retombait au cran de l'inconnu — le monde exploré ne se
+    // distinguait en rien du jamais vu.
+    const s = scene();
+    const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
+    const visible = new Set<string>();
+    for (let y = 6; y <= 8; y++) for (let x = 5; x <= 7; x++) visible.add(`${x},${y},0`);
+    const solDe = (list: ReturnType<typeof buildPovDrawList>) => list.find((it) => it.kind === 'floor' && it.key === 'floor:6,2,0')!;
+    const luminance = (fill: string): number => {
+      const [r, g, b] = fill.match(/\d+/g)!.map(Number);
+      return 0.299 * r + 0.587 * g + 0.114 * b;
+    };
+    const inconnue = solDe(buildPovDrawList(s, cam, visible, LIGHT, false, new Set<string>()));
+    const memorisee = solDe(buildPovDrawList(s, cam, visible, LIGHT, false, new Set(['6,2,0'])));
+    const vue = solDe(buildPovDrawList(s, cam, new Set([...visible, '6,2,0']), LIGHT, false, new Set(['6,2,0'])));
+    expect(luminance(memorisee.fill!)).toBeGreaterThan(luminance(inconnue.fill!));
+    expect(luminance(vue.fill!)).toBeGreaterThan(luminance(memorisee.fill!));
+    // …et le souvenir reste une MATIÈRE éclairée en retrait, jamais un aplat de brume ni du noir.
+    expect(memorisee.fill).not.toBe('rgb(0,0,0)');
+    expect(memorisee.fill).not.toBe('rgb(159,178,198)');
+  });
+
   it('structure NON VUE : matière+ambiance FONDUE par la DISTANCE (proche nette, loin délavée ; jamais brume pure ni noir)', () => {
     // Sol plat, RIEN de visible → tout est non vu (lumière d'ambiance). On compare le fond d'une tuile
     // PROCHE (droit devant) à celui d'une tuile LOINTAINE : la lointaine doit être NETTEMENT plus délavée
@@ -361,6 +384,32 @@ describe('buildPovDrawList', () => {
     const roofs = list.filter((it) => it.kind === 'roof');
     expect(roofs.length).toBeGreaterThan(0); // le bâtiment se rend (fondu au loin) au lieu de disparaître
     for (const it of roofs) expect(it.fill).not.toBe('rgb(159,178,198)'); // sa tuile réelle, pas un aplat de brume
+  });
+
+  it('ÎLOT DE VISION : un bloc solide dont la colonne est VUE garde sa PLEINE ambiance, sans aucun voisin vu', () => {
+    // Le sommet d'un bloc solide prend la lumière du MEILLEUR voisin ouvert vu. Quand aucun ne l'est,
+    // c'est `visibilityOf` qui donne son cran à la tuile : une colonne VUE (meurtrière, coin, plateforme
+    // au-dessus du bloc) rend sa pleine ambiance, une MÉMORISÉE le cran du souvenir, une inconnue le cran
+    // du jamais-vu. Un sol que le joueur VOIT ne s'assombrit pas parce que ses voisines sont cachées.
+    const s = emptyScene(12, 12);
+    s.layers = [{ z: 0, tiles: new Array(144).fill('sol') }];
+    s.layers[0].tiles[4 * 12 + 6] = 'mur'; // bloc plein OPAQUE à (6,4)
+    const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
+    const sommet = (visible: string[], explored: string[] = []) =>
+      buildPovDrawList(s, cam, new Set(visible), LIGHT, false, new Set(explored))
+        .find((it) => it.kind === 'floor' && it.key === 'floor:6,4,0')!;
+    const luminance = (fill: string): number => {
+      const [r, g, b] = fill.match(/\d+/g)!.map(Number);
+      return 0.299 * r + 0.587 * g + 0.114 * b;
+    };
+    const ilotVu = sommet(['6,4,0']); // la colonne du bloc est vue ; AUCUN de ses 4 voisins ne l'est
+    const parVoisin = sommet(['6,5,0']); // référence de PLEINE lumière : un voisin ouvert vu
+    const ilotMemorise = sommet([], ['6,4,0']);
+    const jamaisVu = sommet([], []);
+    expect(ilotVu.fill).toBe(parVoisin.fill); // pleine ambiance : l'îlot vaut le voisin vu
+    expect(luminance(ilotVu.fill!)).toBeGreaterThan(luminance(ilotMemorise.fill!));
+    expect(luminance(ilotMemorise.fill!)).toBeGreaterThan(luminance(jamaisVu.fill!));
+    expect(jamaisVu.fill).not.toBe('rgb(0,0,0)'); // jamais du noir : il reste une ambiance de scène
   });
 
   it('LOD murs en FONDU : appareillage complet près, blocs dissous après blocksT+fadeT, rangs JUSQU\'AU LOIN', () => {

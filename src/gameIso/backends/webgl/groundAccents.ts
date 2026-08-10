@@ -37,13 +37,13 @@ const TUFT_TIP_K = 0.25;
  *  assez pour ne pas z-fighter le losange sans décoller à l'œil. */
 export const SPECKLE_LIFT_M = 0.005;
 
-/** Un accent posé : type, couleur de DONNÉE, teinte de visibilité de sa case, pose monde. */
+/** Un accent posé : type, couleur de DONNÉE, case dont il prend sa visibilité, pose monde. */
 export interface GroundAccent {
   kind: 'tuft' | 'speckle';
   /** Couleur tirée dans la palette de la recette, PAR TUILE (`affineDetail.ts:399`). */
   color: string;
-  /** Teinte de visibilité de la case (1 = pleine). */
-  tint: number;
+  /** Case porteuse (`"x,y,z"`) : le MONTAGE y prend la teinte de visibilité, la dérivation l'ignore. */
+  cellKey: string;
   /** Repère three (m) : pied de la touffe / centre au sol du mouchetis. */
   pos: Vec3;
   /** Hauteur (m) d'une touffe, rayon (m) d'un mouchetis. */
@@ -52,8 +52,8 @@ export interface GroundAccent {
   yaw: number;
 }
 
-/** Accents d'UNE tuile de sol, à la teinte NEUE (1) : la dérivation pure. `h` = hauteur (m) de la nappe,
- *  `cell` = la case MONDE dont l'identité seede le semis. */
+/** Accents d'UNE tuile de sol : la dérivation pure. `h` = hauteur (m) de la nappe, `cell` = la case
+ *  MONDE dont l'identité seede le semis. */
 export function tileGroundAccents(
   recipe: DetailRecipe,
   cell: { x: number; y: number; z: number },
@@ -61,6 +61,7 @@ export function tileGroundAccents(
   mpt: number,
 ): GroundAccent[] {
   const seed = hash32('floor', cell.x, cell.y, cell.z);
+  const cellKey = `${cell.x},${cell.y},${cell.z}`;
   // Recette RESTREINTE aux deux sections d'accent, comme le POV (`pov/geometry.ts:424`) : chaque section
   // tire son SOUS-flux (`expandRecipe`), retirer les autres ne décale aucun tirage.
   const e = expandRecipe({ tufts: recipe.tufts, speckle: recipe.speckle, seedScope: recipe.seedScope }, mpt, mpt, seed);
@@ -75,28 +76,28 @@ export function tileGroundAccents(
       // puis angle monde — la formule du POV (`pov/geometry.ts`, `groundAccentItems`).
       const hM = t.hM * (0.8 + r() * 0.5);
       const yaw = r() * Math.PI * 2;
-      out.push({ kind: 'tuft', color, tint: 1, pos: at(t.u, t.v), sizeM: hM, yaw });
+      out.push({ kind: 'tuft', color, cellKey, pos: at(t.u, t.v), sizeM: hM, yaw });
     }
   }
   if (e.speckles.length && recipe.speckle) {
     const color = tileColor(recipe.speckle.colors, 'dotcol');
-    for (const s of e.speckles) out.push({ kind: 'speckle', color, tint: 1, pos: at(s.u, s.v), sizeM: s.rM, yaw: 0 });
+    for (const s of e.speckles) out.push({ kind: 'speckle', color, cellKey, pos: at(s.u, s.v), sizeM: s.rM, yaw: 0 });
   }
   return out;
 }
 
 /** Accents de toute la scène : les faces de TERRAIN NU (`domain === 'terrain'` sans `part` — la même
  *  porte que `floorAccentsSvg`, `affineFloors.ts:164`) portant une recette d'accent, chacune semée à
- *  l'identité de SA case, teintée par la visibilité de cette case. */
-export function sceneGroundAccents(scene: Scene, mpt: number, tintAt: TintAt): GroundAccent[] {
+ *  l'identité de SA case. INVARIANT à la visibilité, comme le bake du monde (`bakeWorldGeometry`) : le
+ *  semis coûte 12,1 ms sur l'arène (mesuré #1176) et ne se rejoue qu'à la scène ou à l'échelle. */
+export function sceneGroundAccents(scene: Scene, mpt: number): GroundAccent[] {
   const out: GroundAccent[] = [];
   for (const wf of worldFaces(scene)) {
     const m = wf.face.material;
     if (m.domain !== 'terrain' || m.part) continue;
     const recipe = terrainDetail(m.id);
     if (!recipe) continue;
-    const tint = tintAt(wf.cellKey);
-    for (const a of tileGroundAccents(recipe, wf.cell, wf.face.poly[0].h, mpt)) out.push({ ...a, tint });
+    out.push(...tileGroundAccents(recipe, wf.cell, wf.face.poly[0].h, mpt));
   }
   return out;
 }
@@ -164,10 +165,11 @@ export function accentMatrix(a: GroundAccent, m = new THREE.Matrix4()): THREE.Ma
 
 /** Les `InstancedMesh` d'une scène : un par lot (type × couleur). Chaque instance porte sa pose et sa
  *  couleur (donnée × teinte de visibilité — la MÊME multiplication que la couleur de sommet du monde,
- *  `buildWorldGeometry`). `lit` choisit le matériau, exactement comme les faces du monde. */
+ *  `applyVisibilityTint`), la teinte voyageant par `instanceColor` : un changement de visibilité ne
+ *  refait ni le semis ni les matrices. `lit` choisit le matériau, exactement comme les faces du monde. */
 export function buildGroundAccentMeshes(
   accents: readonly GroundAccent[],
-  opts: { lit: boolean },
+  opts: { lit: boolean; tintAt: TintAt },
 ): THREE.InstancedMesh[] {
   const out: THREE.InstancedMesh[] = [];
   for (const [key, lot] of groupAccents(accents)) {
@@ -183,7 +185,7 @@ export function buildGroundAccentMeshes(
     const c = new THREE.Color();
     lot.forEach((a, i) => {
       mesh.setMatrixAt(i, accentMatrix(a, m));
-      mesh.setColorAt(i, c.set(a.color).multiplyScalar(a.tint));
+      mesh.setColorAt(i, c.set(a.color).multiplyScalar(opts.tintAt(a.cellKey)));
     });
     mesh.instanceMatrix.needsUpdate = true;
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;

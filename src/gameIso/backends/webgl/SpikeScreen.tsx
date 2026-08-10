@@ -43,7 +43,8 @@ import { clearFaceBakes, getFaceBake } from './faceBake';
 import {
   billboardDepthOffsetUnits,
   billboardPose,
-  buildWorldGeometry,
+  applyVisibilityTint,
+  bakeWorldGeometry,
   collectBillboards,
   contactShadow,
   contentBox,
@@ -195,14 +196,18 @@ export function SpikeScreen(): JSX.Element {
     return (key: string) => (visible ? tintFor(key, visible, explored) : 1);
   }, [scene, start, opts.vis]);
 
-  // ── Monde : UNE géométrie fusionnée, MÉMOÏSÉE (une rotation ne rejoue pas les builders).
-  const geometry = useMemo(() => buildWorldGeometry(scene, mpt, tintAt), [scene, mpt, tintAt]);
-  useEffect(() => () => geometry.dispose(), [geometry]);
+  // ── Monde : UNE géométrie fusionnée, CUITE par (scène × échelle) — la visibilité n'en refait rien.
+  // La triangulation, le rang coplanaire, les UV et les groupes de surface sont invariants à ce que le
+  // groupe voit (mesuré #1176, arène : 492 ms de bake pour 1,3 ms de teinte) : un pas de marche ne
+  // rejoue que la RÉÉCRITURE des couleurs de sommet, en place.
+  const baked = useMemo(() => bakeWorldGeometry(scene, mpt), [scene, mpt]);
+  useEffect(() => () => baked.geometry.dispose(), [baked]);
+  const geometry = useMemo(() => applyVisibilityTint(baked, tintAt), [baked, tintAt]);
   const subjects = useMemo(() => collectBillboards(scene, mpt, tintAt), [scene, mpt, tintAt]);
   // ── Accents de SOL : un semis ancré MONDE, sans période — il ne peut passer ni par la texture de
-  // période ni par la cuisson par face. Dérivation PURE mémoïsée (scène × visibilité) ; le montage
-  // instancié, lui, dépend du mode de matériau et se refait à la frame (comme les billboards).
-  const accents = useMemo(() => sceneGroundAccents(scene, mpt, tintAt), [scene, mpt, tintAt]);
+  // période ni par la cuisson par face. Dérivation PURE mémoïsée (scène × échelle, 12,1 ms sur l'arène) ;
+  // le montage instancié, lui, dépend du mode de matériau et porte la teinte par `instanceColor`.
+  const accents = useMemo(() => sceneGroundAccents(scene, mpt), [scene, mpt]);
 
   // Renderer UNIQUE (le canevas ne se remonte jamais) — `preserveDrawingBuffer` pour `toDataURL`.
   useEffect(() => {
@@ -283,7 +288,7 @@ export function SpikeScreen(): JSX.Element {
       // ── ACCENTS DE SOL : un `InstancedMesh` par (type × couleur de donnée), teinte de visibilité
       // portée par `instanceColor`. Ils entrent dans les `disposables` de la frame — changer de scène,
       // de mode ou de visibilité les évince avec le reste, sans cache à invalider.
-      const accentMeshes = buildGroundAccentMeshes(accents, { lit: opts.lit });
+      const accentMeshes = buildGroundAccentMeshes(accents, { lit: opts.lit, tintAt });
       for (const m of accentMeshes) {
         m.castShadow = opts.lit;
         m.receiveShadow = opts.lit;
@@ -456,7 +461,7 @@ export function SpikeScreen(): JSX.Element {
       cancelled = true;
       for (const d of disposables) d.dispose();
     };
-  }, [scene, mpt, start, geometry, subjects, accents, opts]);
+  }, [scene, mpt, start, geometry, tintAt, subjects, accents, opts]);
 
   // Pilotage headless : `window.__spike.set(...)` résout quand la frame demandée est RENDUE.
   useEffect(() => {

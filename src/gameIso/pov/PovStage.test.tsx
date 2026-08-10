@@ -1,4 +1,8 @@
+// @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
+import { PovStage } from './PovStage';
 import { emptyScene, type WallSeg } from '../../state/scene';
 import { setRevealAll, computeStateVisible, sceneLightField } from '../../state/visionState';
 import { makeCamera } from './camera';
@@ -26,6 +30,20 @@ describe('POV — pipeline intégration (état réel → draw list)', () => {
     setRevealAll(true);
   });
   afterEach(() => setRevealAll(false));
+
+  it('le POV ACCUMULE l’exploré — la mémoire de carte se nourrit aussi en première personne', () => {
+    (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    const scene = useGame.getState().scene!;
+    expect(useGame.getState().explored[scene.id] ?? []).toEqual([]);
+    const container = document.createElement('div');
+    const root = createRoot(container);
+    act(() => root.render(<PovStage />));
+    const memoire = useGame.getState().explored[scene.id] ?? [];
+    expect(memoire.length).toBeGreaterThan(0);
+    expect(memoire).toContain('4,4,0'); // la case du groupe, vue de là où il est
+    act(() => root.unmount());
+    container.remove();
+  });
 
   it('produit une draw list non vide (sols + murs) depuis l’état du store', () => {
     const s = useGame.getState();
