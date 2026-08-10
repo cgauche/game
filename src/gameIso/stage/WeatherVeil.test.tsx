@@ -22,12 +22,12 @@ describe('WeatherVeil — mapping type → voile/particules', () => {
   });
 
   it('clair / absent ne rend rien', () => {
-    expect(renderToStaticMarkup(<WeatherVeil weather="clair" />)).toBe('');
-    expect(renderToStaticMarkup(<WeatherVeil weather={undefined} />)).toBe('');
+    expect(renderToStaticMarkup(<WeatherVeil scene={{ weather: 'clair' }} />)).toBe('');
+    expect(renderToStaticMarkup(<WeatherVeil scene={{}} />)).toBe('');
   });
 
   it('brouillard = voile plein écran teinté, pointer-events none, sans particule', () => {
-    const html = renderToStaticMarkup(<WeatherVeil weather="brouillard" />);
+    const html = renderToStaticMarkup(<WeatherVeil scene={{ weather: 'brouillard' }} />);
     expect(html).toContain('pointer-events="none"');
     expect(html).toContain(`fill="${AMBIANCE.iso.weather.brouillard!.tint}"`);
     expect(html).toContain('<rect');
@@ -35,7 +35,7 @@ describe('WeatherVeil — mapping type → voile/particules', () => {
   });
 
   it('pluie = voile + N stries de pluie animées (densité = donnée)', () => {
-    const html = renderToStaticMarkup(<WeatherVeil weather="pluie" />);
+    const html = renderToStaticMarkup(<WeatherVeil scene={{ weather: 'pluie' }} />);
     const n = (html.match(/class="wx-p wx-pluie"/g) ?? []).length;
     expect(n).toBe(AMBIANCE.iso.weather.pluie!.density);
     expect(html).toContain('<line');
@@ -43,21 +43,29 @@ describe('WeatherVeil — mapping type → voile/particules', () => {
   });
 
   it('neige = pastilles remplies (fill = pcolor), pas de stroke de strie', () => {
-    const html = renderToStaticMarkup(<WeatherVeil weather="neige" />);
+    const html = renderToStaticMarkup(<WeatherVeil scene={{ weather: 'neige' }} />);
     expect(html).toContain('class="wx-p wx-neige"');
     expect(html).toContain('<circle');
     expect(html).toContain(`fill:${AMBIANCE.iso.weather.neige!.pcolor}`);
   });
 
   it('tempete = averse dense', () => {
-    const html = renderToStaticMarkup(<WeatherVeil weather="tempete" />);
+    const html = renderToStaticMarkup(<WeatherVeil scene={{ weather: 'tempete' }} />);
     const n = (html.match(/class="wx-p wx-averse"/g) ?? []).length;
     expect(n).toBe(AMBIANCE.iso.weather.tempete!.density);
   });
 
   it('positions SEEDÉES : deux rendus du même type sont identiques (idempotent, zéro Math.random)', () => {
-    const a = renderToStaticMarkup(<WeatherVeil weather="neige" />);
-    const b = renderToStaticMarkup(<WeatherVeil weather="neige" />);
+    const a = renderToStaticMarkup(<WeatherVeil scene={{ weather: 'neige' }} />);
+    const b = renderToStaticMarkup(<WeatherVeil scene={{ weather: 'neige' }} />);
     expect(a).toBe(b);
+  });
+
+  it('scène d’INTÉRIEUR : rien — il ne pleut pas plus sur l’écran que dans la taverne (#1176 P2-6)', () => {
+    for (const weather of ['pluie', 'neige', 'tempete', 'brouillard'] as const) {
+      expect(renderToStaticMarkup(<WeatherVeil scene={{ weather, ambiance: 'interieur' }} />)).toBe('');
+      // …et la même météo DEHORS se voit : la porte est l'ambiance, pas le type.
+      expect(renderToStaticMarkup(<WeatherVeil scene={{ weather, ambiance: 'exterieur' }} />)).not.toBe('');
+    }
   });
 });

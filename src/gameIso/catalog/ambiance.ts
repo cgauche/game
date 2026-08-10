@@ -6,13 +6,45 @@ import { ambiance } from '../../data';
 import { ao, spec } from '../shade';
 import type { Dims } from '../../geometry/iso';
 import type { Visibility } from '../../state/visibility';
+import { isIndoor, type Scene } from '../../state/scene';
 
 /** Halo radial (voile chaud / vignette) : centre + rayon en %, couleur et alpha au bord utile. */
 export interface RadialVeilDef { cx: string; cy: string; r: string; color: string; alpha: number; innerOff?: string }
 
+/** #1176 P2-6 — PRÉCIPITATION MONDE d'un type de météo : ce qui TOMBE dans le volume de la voie
+ *  volumique (`backends/webgl/weatherParticles.ts`). Toute l'apparence et toute la physique du semis
+ *  sont ici, en donnée : le MOTEUR est N+1-par-donnée — un `WeatherPrecipDef` forgé, absent du dépôt,
+ *  tombe sans une ligne de code (mesuré, `weatherParticles.test.ts`) et aucun consommateur ne connaît
+ *  le nom d'un type. Le VOCABULAIRE des types, lui, est une énumération à TROIS sites — `WeatherFxId`
+ *  ci-dessous, `Scene['weather']` (`state/scene.ts`) et l'objet strict du schéma
+ *  (`data/schemas/defs/ambiance.ts`) : nommer un type de plus édite ces trois-là. */
+export interface WeatherPrecipDef {
+  /** Particules par m² de sol : le BUDGET d'instances de la scène en découle. */
+  density: number;
+  /** Vitesse de chute (m/s). */
+  fallMs: number;
+  /** Dérive du vent (m/s) dans le plan du sol (repère three : `x` = est, `z` = sud). */
+  windMs: { x: number; z: number };
+  /** Largeur et longueur (m) d'une particule ; la longueur court dans le sens de la chute. */
+  widthM: number;
+  lengthM: number;
+  /** Plafond de semis (m) au-dessus du sol : la hauteur du volume où les particules vivent. */
+  ceilingM: number;
+  color: string;
+  opacity: number;
+}
+
 /** #239 — voile de MÉTÉO authorée (`scene.weather`) : teinte plein écran (`tint`/`alpha`) et,
- *  pour la précipitation, un champ de particules (`particles` = classe CSS, `pcolor`, `density`). */
-export interface WeatherFxDef { tint: string; alpha: number; particles?: 'pluie' | 'averse' | 'neige'; pcolor?: string; density?: number }
+ *  pour la précipitation, un champ de particules (`particles` = classe CSS, `pcolor`, `density`) à la
+ *  voie AFFINE, `precip` (ci-dessus) à la voie VOLUMIQUE. */
+export interface WeatherFxDef {
+  tint: string;
+  alpha: number;
+  particles?: 'pluie' | 'averse' | 'neige';
+  pcolor?: string;
+  density?: number;
+  precip?: WeatherPrecipDef;
+}
 export type WeatherFxId = 'pluie' | 'brouillard' | 'neige' | 'tempete';
 
 export interface AmbianceDef {
@@ -109,6 +141,25 @@ export interface PovDepthDef {
 }
 
 export const AMBIANCE: AmbianceDef = ambiance;
+
+/** PORTE UNIQUE de la météo à l'écran (#1176 P2-6) : la scène a-t-elle une météo à MONTRER, et
+ *  laquelle ? Une scène d'INTÉRIEUR n'en montre aucune — il n'y pleut pas plus sur l'écran que dans le
+ *  volume (c'est la même porte que celle des voiles d'ambiance, `stage/Ambiance.tsx`). Les DEUX voies
+ *  la lisent : le voile écran de la voie affine (`stage/WeatherVeil.tsx`) et le semis de particules de
+ *  la voie volumique (`backends/webgl/weatherParticles.ts`) — deux expressions, une seule décision. Le
+ *  verdict d'intérieur lui-même vient de `isIndoor` (`state/scene.ts`), la porte de toutes les vues. */
+export function sceneWeatherFx(scene: Pick<Scene, 'weather' | 'ambiance'>): WeatherFxDef | null {
+  if (isIndoor(scene)) return null;
+  const id = scene.weather;
+  if (!id || id === 'clair') return null;
+  return AMBIANCE.iso.weather[id] ?? null;
+}
+
+/** La PRÉCIPITATION monde de la scène — ce qui tombe, ou `null`. Même porte, lue par la voie
+ *  volumique : un type sans `precip` en donnée (le brouillard) ne fait tomber aucune particule. */
+export function scenePrecip(scene: Pick<Scene, 'weather' | 'ambiance'>): WeatherPrecipDef | null {
+  return sceneWeatherFx(scene)?.precip ?? null;
+}
 
 /** Alpha du voile de NUIT à la luminosité `light` (0..1). SOURCE UNIQUE du dosage : le voile SVG de
  *  l'iso (`stage/Ambiance.tsx`) et le voile du POV (`pov/PovStage.tsx`) le posent tel quel. */

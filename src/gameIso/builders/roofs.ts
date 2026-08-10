@@ -946,6 +946,53 @@ export function massSpaceCells(mass: Pick<BuildingMass, 'z' | 'levels'>, cells: 
   return out;
 }
 
+/** SOUS COUVERT — la définition de référence : cette masse coiffe-t-elle la case `x,y` au niveau `z` ?
+ *  Son emprise contient la case, et sa nappe est au niveau de la case ou au-dessus. Un niveau
+ *  STRICTEMENT plus haut que la nappe est dehors (on est monté sur le toit) ; tout ce qui est dessous
+ *  est abrité, qu'il soit enfermé dans le volume (`levels`) ou seulement coiffé (porche, passage
+ *  couvert). Consommée par le DÉGAGEMENT (`clearedSpace` ci-dessous) et par la MÉTÉO volumique
+ *  (`shelterField`) : deux lecteurs, une vérité — sans quoi il pleuvrait dans la taverne. La
+ *  GÉOMÉTRIE de toit, elle, tient SA propre carte de cases coiffées PAR NIVEAU (`roofedAtZ`, dans
+ *  `buildRoofs`) pour savoir quel bord de pignon fermer (`gableEnds`) : un index de DESSIN, pas un
+ *  second verdict d'abri. */
+export function massCovers(mass: Pick<BuildingMass, 'z'>, cells: ReadonlySet<string>, x: number, y: number, z: number): boolean {
+  return z <= mass.z && cells.has(vk(x, y));
+}
+
+/** Le COUVERT d'une colonne `x,y` : le niveau de la nappe la plus haute qui la coiffe, et la cote
+ *  MÉTRIQUE de cette nappe à son égout — le point bas du toit, donc la hauteur sous laquelle plus
+ *  rien ne tombe du ciel. */
+export interface ShelterColumn { topZ: number; ceilingM: number }
+
+const shelterOfScene = memoByRef((scene: Scene): ReadonlyMap<string, ShelterColumn> => {
+  const out = new Map<string, ShelterColumn>();
+  for (const nappe of resolveNappes(scene).values())
+    for (const key of nappe.cells) {
+      const prev = out.get(key);
+      out.set(key, {
+        topZ: Math.max(prev?.topZ ?? -Infinity, nappe.mass.z),
+        ceilingM: Math.max(prev?.ceilingM ?? -Infinity, nappe.shape.eaveHeightM),
+      });
+    }
+  return out;
+});
+
+/** COUVERT BÂTI de la scène, par colonne — l'agrégat de `massCovers` sur toutes les nappes
+ *  (`resolveNappes`, la source unique des hauteurs de toit), mémoïsé par scène. Il ne dépend NI de la
+ *  vue NI du dégagement : une nappe levée par le cutaway reste un toit, et il n'y pleut pas dessous.
+ *  La mémoïsation est PAR RÉFÉRENCE de scène : tout plan modifié — l'éditeur qui retire une masse
+ *  (`ui/editor/editorState.ts`) — recalcule son couvert. Aucun mécanisme de PARTIE n'abat de masse :
+ *  `structureDown` (`state/scene.ts`) porte sur les arêtes de mur. */
+export function shelterField(scene: Scene): ReadonlyMap<string, ShelterColumn> {
+  return shelterOfScene(scene);
+}
+
+/** La case `x,y` est-elle SOUS COUVERT à la cote `hM` ? Sous l'égout de la nappe qui la coiffe. */
+export function isSheltered(field: ReadonlyMap<string, ShelterColumn>, x: number, y: number, hM: number): boolean {
+  const col = field.get(vk(Math.round(x), Math.round(y)));
+  return !!col && hM < col.ceilingM;
+}
+
 /** ESPACE DÉGAGÉ par les alliés (#818), résolution UNIQUE de la scène — consommée par la loi
  *  `cutawayForSection` (`stage/architectureVisibility.ts`) pour les toits ICI et pour les murs et
  *  façades dans `IsoStage` : une seule vérité, jamais deux qui pourraient diverger.
@@ -996,7 +1043,7 @@ export function clearedSpace(
     for (const id of rooms) zoneIds.add(id);
     let dedans = rooms.size > 0;
     for (const { mass, cells } of masses) {
-      if (z > mass.z || !cells.has(vk(x, y))) continue;
+      if (!massCovers(mass, cells, x, y, z)) continue;
       const bottom = mass.z - mass.levels + 1;
       if (z >= bottom) dedans = true; // dans le VOLUME de la masse, pas seulement sous son couvercle
       if (!rooms.size && z >= bottom) for (const key of massSpaceCells(mass, cells)) roomlessCells.add(key);

@@ -22,6 +22,36 @@ const povFogSchema = z.strictObject({
   fogGamma: z.number(),
 });
 
+/** Couleur écrite en HEXA `#rrggbb` — la forme que lisent `THREE.Color` comme le SVG. */
+const hexColor = z.string().regex(/^#[0-9a-f]{6}$/i, 'couleur hexadécimale « #rrggbb » attendue');
+
+/** #1176 P2-6 — PRÉCIPITATION MONDE d'un type de météo : le semis de particules qui tombe dans le
+ *  volume de la voie volumique. Toutes les bornes sont des bornes de PLAUSIBILITÉ physique et de
+ *  BUDGET : une donnée hors bornes ne fait pas une météo étrange, elle fait un semis qui ne tombe
+ *  pas (vitesse nulle), qui remonte (négative) ou qui noie la frame (densité). */
+const precipSchema = z
+  .strictObject({
+    /** Particules par m² de SOL couvert — c'est elle qui fixe le budget d'instances de la scène. */
+    density: z.number().gt(0).max(2),
+    /** Vitesse de CHUTE (m/s). */
+    fallMs: z.number().gt(0).max(40),
+    /** Dérive du VENT (m/s) dans le plan du sol (`x` = est, `z` = sud). */
+    windMs: z.strictObject({ x: z.number().min(-30).max(30), z: z.number().min(-30).max(30) }),
+    /** Largeur et longueur (m) d'une particule — la longueur court dans le sens de la chute. */
+    widthM: z.number().gt(0).max(1),
+    lengthM: z.number().gt(0).max(4),
+    /** Hauteur (m) du PLAFOND de semis au-dessus du sol : le volume où les particules vivent. */
+    ceilingM: z.number().gt(0).max(60),
+    color: hexColor,
+    opacity: z.number().gt(0).max(1),
+  })
+  .refine((p) => p.lengthM >= p.widthM, {
+    message: 'precip : `lengthM` ≥ `widthM` — une particule s’étire dans le sens de sa chute, elle n’est jamais plus large que longue',
+  })
+  .refine((p) => Math.hypot(p.windMs.x, p.windMs.z) < p.fallMs, {
+    message: 'precip : la dérive du vent doit rester SOUS la vitesse de chute — au-delà, la précipitation file à l’horizontale et ne touche plus le sol',
+  });
+
 // #239 — FX de météo AUTHORÉE de scène (`scene.weather`), par type.
 const weatherFxSchema = z.strictObject({
   tint: z.string(),
@@ -29,6 +59,8 @@ const weatherFxSchema = z.strictObject({
   particles: z.enum(['pluie', 'averse', 'neige']).optional(),
   pcolor: z.string().optional(),
   density: z.number().optional(),
+  /** Absent = ce type ne fait TOMBER aucune particule (le brouillard n'en fait pas). */
+  precip: precipSchema.optional(),
 });
 
 /** Facteur multiplicatif de teinte : 0 = éteint, 1 = pleine matière — hors de [0,1] il n'éclaircit

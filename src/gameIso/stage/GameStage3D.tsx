@@ -29,6 +29,14 @@
  * d'une surface horizontale). RÉSIDU ASSUMÉ de ce choix : un personnage sous l'ombre portée d'un
  * bâtiment garde l'exposition globale — il ne s'assombrit pas en entrant dans l'ombre.
  *
+ * INTEMPÉRIES (P2-6) : la précipitation authorée de la scène TOMBE dans le volume — un semis de quads
+ * instanciés qui descend à la cadence de la frame, borné par le MÊME couvert bâti que le dégagement
+ * (`shelterField`, `builders/roofs.ts`) : rien ne tombe sous un toit, y compris sous une nappe que le
+ * cutaway a levée. La voie affine garde son voile d'écran (`stage/WeatherVeil.tsx`), qui ne se monte
+ * plus ici. PÉRIMÈTRE MESURÉ : ce que la voie volumique exprime, c'est ce qui TOMBE (`precip` en
+ * donnée) — un type de météo qui ne fait rien tomber, le brouillard, n'y sème donc aucune particule ;
+ * sa brume volumique est le ticket #1247.
+ *
  * CANAUX D'AMBIANCE ENCORE ABSENTS (mesuré #1176, P2-2) — la voie affine (`stage/CulledScene`) les
  * applique OBJET PAR OBJET, cet écran porte la teinte de visibilité (`tintAt`) et la lumière globale
  * ci-dessus. Ils font partie de ce qui reste à porter AVANT que la double voie meure (cliquet
@@ -85,12 +93,45 @@ import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/sprite
 import { setSpritePicker } from './spritePicker';
 import { stage3dFraming } from './stage3dCamera';
 import { stageLightScalars, stageLights } from './stageLights';
+import { scenePrecip } from '../catalog/ambiance';
+import { isSheltered, shelterField } from '../builders/roofs';
+import {
+  buildPrecipMesh,
+  precipBasis,
+  retainWeatherField,
+  stepWeatherField,
+  writePrecipMatrices,
+  type PrecipSlot,
+  type ShelteredAt,
+} from '../backends/webgl/weatherParticles';
 
 /** Fond du canevas — celui des planches QC, sous les mêmes voiles d'ambiance que l'affine. */
 const BG = 0x14161f;
 
 /** Convention de taille monde des billboards retenue pour le JEU (cf. `billboardMath`). */
 const CONVENTION = 'jeu' as const;
+
+/** Ce que cet écran DEMANDE à son renderer, et rien de plus — la surface exacte de sa dépendance à
+ *  three côté sortie. Un banc d'essai peut donc en fournir un SANS contexte WebGL : jsdom n'en a
+ *  aucun, et la passe de dessin s'arrêterait à sa première garde sans rien montrer de la boucle. */
+export interface StageRenderer {
+  setPixelRatio(ratio: number): void;
+  setClearColor(color: number, alpha: number): void;
+  setSize(w: number, h: number, updateStyle: boolean): void;
+  render(scene: THREE.Scene, camera: THREE.Camera): void;
+  dispose(): void;
+  shadowMap: { enabled: boolean; autoUpdate: boolean; needsUpdate: boolean; type: THREE.ShadowMapType };
+  capabilities: { getMaxAnisotropy(): number };
+}
+
+/** FABRIQUE du renderer — REGISTRE mutable lu à l'appel, jamais un mock de module (la suite partage
+ *  son graphe, `src/vi-mock-isolate-guard.test.ts`). `null` = le renderer de three, celui du jeu. */
+let fabriqueRenderer: ((canvas: HTMLCanvasElement) => StageRenderer) | null = null;
+
+/** Pose (ou retire, avec `null`) la fabrique de renderer de cet écran. */
+export function setStageRendererFactory(fabrique: ((canvas: HTMLCanvasElement) => StageRenderer) | null): void {
+  fabriqueRenderer = fabrique;
+}
 
 export interface GameStage3DProps {
   scene: Scene;
@@ -154,7 +195,7 @@ function viderGroupe(groupe: THREE.Group): void {
 
 export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors, gameTime, lightLevel, anim }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const rendererRef = useRef<StageRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
   const cameraRef = useRef<THREE.Camera | null>(null);
   const camRot = dims.rot ?? 0;
@@ -164,13 +205,15 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   const touffes = useRef<THREE.Group>();
   const panneaux = useRef<THREE.Group>();
   const lampes = useRef<THREE.Group>();
+  const intemperies = useRef<THREE.Group>();
   if (!three.current) {
     three.current = new THREE.Scene();
     monde.current = new THREE.Group();
     touffes.current = new THREE.Group();
     panneaux.current = new THREE.Group();
     lampes.current = new THREE.Group();
-    three.current.add(monde.current, touffes.current, panneaux.current, lampes.current);
+    intemperies.current = new THREE.Group();
+    three.current.add(monde.current, touffes.current, panneaux.current, lampes.current, intemperies.current);
   }
 
   // Le cache de textures est GLOBAL au module : changer de scène rend ses entrées mortes (les clés
@@ -217,6 +260,31 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     [geometry, subjects],
   );
 
+  // ── INTEMPÉRIES (P2-6) : ce qui TOMBE dans le monde. La PORTE est celle des DEUX voies
+  // (`scenePrecip` → `sceneWeatherFx` : une météo authorée, et jamais en intérieur) ; densité, vitesse
+  // de chute, vent, taille et teinte viennent tous de la donnée — aucun type de météo n'est nommé ici.
+  // `null` = rien ne tombe, et pas une frame ne s'en occupe.
+  const precip = useMemo(() => scenePrecip(scene), [scene]);
+  // Le semis SURVIT aux mutations de scène : il est retenu sur ce qui le DÉTERMINE (scène, type de
+  // météo, emprise du volume — `retainWeatherField`), pas sur la référence de l'objet scène. Un pas de
+  // combattant produit une référence de scène par frame ; re-semer là-dessus téléporterait l'averse
+  // entière (1459/1459 particules mesurées sur La Diligence).
+  const semisRetenu = useRef<PrecipSlot | null>(null);
+  semisRetenu.current = precip ? retainWeatherField(semisRetenu.current, scene, precip, 'meteo') : null;
+  const champ = semisRetenu.current?.champ ?? null;
+  // SOUS COUVERT : le MÊME champ que le dégagement d'architecture interroge (`builders/roofs.ts`) —
+  // une seule vérité de « suis-je sous un toit ? ». Il ignore la vue : une nappe levée par le cutaway
+  // abrite toujours ; le couvert suit le PLAN, et se recalcule avec la scène qui le porte.
+  const abris = useMemo(() => shelterField(scene), [scene]);
+  const sousCouvert = useMemo<ShelteredAt>(
+    () => (xM, zM, yM) => isSheltered(abris, xM / mpt, zM / mpt, yM),
+    [abris, mpt],
+  );
+  const precipMesh = useRef<THREE.InstancedMesh | null>(null);
+  const precipBase = useRef<Float32Array | null>(null);
+  const dernierPas = useRef(0); // horodatage du dernier pas de chute
+  const dernierRendu = useRef(0); // horodatage de la dernière frame dessinée
+
   /** UNE frame : cadre le canevas sur son élément, dérive la caméra de l'intention du stage, re-pose les
    *  quads face à elle (glissement de marche compris), dessine. Rien n'y est construit : cette passe est
    *  celle que la MARCHE rejoue soixante fois par seconde, hors de tout rendu React (P2-4). */
@@ -248,9 +316,72 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       renderer.shadowMap.needsUpdate = true;
       ombresARefaire.current = false;
     }
+    // CHUTE (P2-6) : les particules avancent à la cadence RÉELLE de la frame, ici et nulle part
+    // ailleurs — aucun rendu React, aucune allocation, aucun `Math.random`. Le pas est BORNÉ : un
+    // onglet revenu au premier plan reprend l'averse, il ne la téléporte pas d'un bout à l'autre.
+    // Seule la TRANSLATION de chaque instance se réécrit ; la base (orientation × taille) est commune
+    // au semis et ne se reconstruit qu'au changement d'axe de caméra.
+    const maintenant = performance.now();
+    const semis = precipMesh.current;
+    if (champ && semis) {
+      const dt = Math.min(0.1, Math.max(0, (maintenant - dernierPas.current) / 1000));
+      dernierPas.current = maintenant;
+      stepWeatherField(champ, dt, sousCouvert);
+      const base = precipBasis(champ.def, camera.getWorldDirection(new THREE.Vector3()));
+      const memeBase = precipBase.current !== null && base.every((v, i) => v === precipBase.current![i]);
+      writePrecipMatrices(semis.instanceMatrix.array as Float32Array, champ, base, !memeBase);
+      precipBase.current = base;
+      semis.instanceMatrix.needsUpdate = true;
+    }
+    dernierRendu.current = maintenant;
     cameraRef.current = camera; // la caméra de la DERNIÈRE frame : celle que le rayon de picking doit emprunter
     renderer.render(three.current, camera);
   };
+
+  /** La frame COURANTE, pour les boucles qui battent HORS des rendus React. Elles lisent la réf, jamais
+   *  une closure : `dessiner` capture les props de SON rendu, et une boucle abonnée sur le semis
+   *  peindrait au cadrage du rendu où le semis a changé — une caméra qui tourne sous la pluie s'y
+   *  dessine au zoom périmé. Même patron que `repaintRef` (`fx/useWalkAnim.ts`). */
+  const dessinerRef = useRef(dessiner);
+  dessinerRef.current = dessiner;
+
+  // ── GROUPE INTEMPÉRIES : un `InstancedMesh` unique (un appel de dessin), remonté au seul changement
+  // de SEMIS — c'est-à-dire à la météo de la scène, jamais à la caméra ni au pas du groupe.
+  useEffect(() => {
+    const groupe = intemperies.current;
+    if (!groupe || !champ) return;
+    const semis = buildPrecipMesh(champ);
+    precipMesh.current = semis;
+    precipBase.current = null;
+    dernierPas.current = performance.now();
+    groupe.add(semis);
+    dessiner();
+    return () => {
+      precipMesh.current = null;
+      viderGroupe(groupe);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [champ]);
+
+  // BOUCLE DE CHUTE : une averse vit hors des rendus React — tant qu'un semis existe, la frame se
+  // rejoue. Elle CÈDE le pas à la boucle de MARCHE (P2-4) quand celle-ci vient de dessiner : une même
+  // image ne se rend jamais deux fois, quelle que soit celle des deux boucles qui bat la première.
+  useEffect(() => {
+    if (!champ) return;
+    let vivant = true;
+    let image = 0;
+    const battre = () => {
+      if (!vivant) return;
+      if (performance.now() - dernierRendu.current > 4) dessinerRef.current();
+      image = requestAnimationFrame(battre);
+    };
+    image = requestAnimationFrame(battre);
+    return () => {
+      vivant = false;
+      cancelAnimationFrame(image);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [champ]);
 
   // HIT-TEST DE SPRITE (lot P2-3) : la voie volumique répond au pointeur par un RAYON — cibles = les
   // quads montés (ceux d'un combattant portent son id) plus les masses du monde, inscrites sans id
@@ -280,9 +411,9 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     if (!canvas) return;
     // Aucun contexte WebGL (machine sans accélération, jsdom des tests de montage) : le canevas reste
     // vierge et le stage continue de tourner — il ne se plante pas.
-    let renderer: THREE.WebGLRenderer;
+    let renderer: StageRenderer;
     try {
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      renderer = fabriqueRenderer ? fabriqueRenderer(canvas) : new THREE.WebGLRenderer({ canvas, antialias: true });
     } catch (e) {
       console.warn('GameStage3D: aucun contexte WebGL — le monde volumique reste vierge.', e);
       return;
@@ -480,6 +611,9 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   // (intérieur, nuit, ou soleil encore sous son fondu de lever/coucher).
   // `data-lum` : l'EXPOSITION de la frame (luminance d'une surface horizontale, en part d'albédo). C'est
   // par elle que la parité avec la voie affine et la continuité du crépuscule se mesurent à l'écran.
+  // `data-precip` : le COMPTE de particules du semis d'intempéries — même raison que les deux autres
+  // (le canevas n'a pas d'arbre), et la seule trace par laquelle la recette et les tests de montage
+  // voient qu'il tombe quelque chose. Absent = rien ne tombe (météo claire, ou scène d'intérieur).
   return (
     <canvas
       ref={canvasRef}
@@ -488,6 +622,7 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       aria-hidden="true"
       data-sun={lit && course ? `${course.azimuthDeg.toFixed(1)},${course.elevationDeg.toFixed(1)}` : undefined}
       data-lum={lumière.surfaceLuminance.toFixed(4)}
+      data-precip={champ ? champ.n : undefined}
     />
   );
 }

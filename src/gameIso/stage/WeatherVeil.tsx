@@ -5,14 +5,17 @@
  * Config 100 % DONNÉE (`AMBIANCE.iso.weather`, `src/data/ambiance.json`) : la teinte se VOIT,
  * ce n'est pas un shader. Les particules sont des positions SEEDÉES stables (idempotentes au
  * re-render, mémoïsées par type) et l'animation est du CSS PUR (aucun re-calcul React par frame).
+ *
+ * C'est l'expression de la météo par la voie AFFINE — la voie volumique la fait tomber DANS le monde
+ * (`backends/webgl/weatherParticles.ts`) et ne monte pas ce voile. Les deux passent par la MÊME porte
+ * (`sceneWeatherFx`), d'où le paramètre : la scène, pas son seul champ `weather` — un intérieur ne
+ * reçoit ni voile ni particule (`stage/Ambiance.tsx` gardait déjà sa faune de la même façon).
  */
 import { useMemo, type ReactNode } from 'react';
-import { AMBIANCE, type WeatherFxDef } from '../catalog/ambiance';
+import { sceneWeatherFx, type WeatherFxDef } from '../catalog/ambiance';
 import { makeRNG, hashSeed } from '../../engine/dice';
 import { VW, VH } from './useStageCamera';
 import type { Scene } from '../../state/scene';
-
-type WeatherId = NonNullable<Scene['weather']>;
 
 const DUR: Record<NonNullable<WeatherFxDef['particles']>, [number, number]> = {
   pluie: [19, 28],
@@ -52,9 +55,9 @@ function particleField(fx: WeatherFxDef): ReactNode {
   return nodes;
 }
 
-/** Rend le voile + les particules de la météo authorée. `clair`/absent = rien. */
-export function WeatherVeil({ weather }: { weather: Scene['weather'] }) {
-  const fx = weather && weather !== 'clair' ? AMBIANCE.iso.weather[weather as Exclude<WeatherId, 'clair'>] : undefined;
+/** Rend le voile + les particules de la météo authorée. `clair`/absent, ou intérieur = rien. */
+export function WeatherVeil({ scene }: { scene: Pick<Scene, 'weather' | 'ambiance'> }) {
+  const fx = sceneWeatherFx(scene);
   const particles = useMemo(() => (fx ? particleField(fx) : null), [fx]);
   if (!fx) return null;
   return (

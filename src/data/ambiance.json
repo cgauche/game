@@ -40,7 +40,17 @@
         "alpha": 0.13,
         "particles": "pluie",
         "pcolor": "#aebfd0",
-        "density": 70
+        "density": 70,
+        "precip": {
+          "density": 0.3,
+          "fallMs": 9,
+          "windMs": { "x": 1.2, "z": 0.5 },
+          "widthM": 0.03,
+          "lengthM": 0.45,
+          "ceilingM": 9,
+          "color": "#aebfd0",
+          "opacity": 0.45
+        }
       },
       "brouillard": {
         "tint": "#aab4bd",
@@ -51,14 +61,34 @@
         "alpha": 0.15,
         "particles": "neige",
         "pcolor": "#eef4ff",
-        "density": 55
+        "density": 55,
+        "precip": {
+          "density": 0.22,
+          "fallMs": 1.3,
+          "windMs": { "x": 0.45, "z": 0.2 },
+          "widthM": 0.09,
+          "lengthM": 0.11,
+          "ceilingM": 9,
+          "color": "#eef4ff",
+          "opacity": 0.85
+        }
       },
       "tempete": {
         "tint": "#232a35",
         "alpha": 0.3,
         "particles": "averse",
         "pcolor": "#9fb0c4",
-        "density": 120
+        "density": 120,
+        "precip": {
+          "density": 0.55,
+          "fallMs": 13,
+          "windMs": { "x": 6.5, "z": 2.6 },
+          "widthM": 0.035,
+          "lengthM": 0.8,
+          "ceilingM": 10,
+          "color": "#9fb0c4",
+          "opacity": 0.5
+        }
       }
     }
   },

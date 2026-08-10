@@ -477,7 +477,11 @@ export function IsoStage() {
           de la scène (`stage/stageLights.ts`, dosé sur la MÊME donnée `nightVeilMax`) — un voile
           par-dessus lui appliquerait le palier de nuit une seconde fois. */}
       {!webgl && <AmbianceVeils scene={scene} dims={dims} gameTime={gameTime} lightLevel={lightLevel} />}
-      <WeatherVeil weather={scene.weather} />
+      {/* Voile de MÉTÉO : même partage que ci-dessus (#1176, P2-6). En volumique, la précipitation
+          TOMBE dans le monde (`stage/GameStage3D.tsx` → `weatherParticles.ts`) et ce voile ne se monte
+          plus. La porte « y a-t-il une météo à montrer ? » est UNE (`sceneWeatherFx`, la scène
+          d'intérieur comprise) : les deux voies la lisent, aucune ne la rejoue. */}
+      {!webgl && <WeatherVeil scene={scene} />}
     </svg>
     </>
   );
