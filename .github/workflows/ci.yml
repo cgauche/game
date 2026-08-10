@@ -18,6 +18,7 @@ jobs:
       - run: npm run agents:check
       - run: npm run test:agents
       - run: npm run test:hooks
+      - run: npm run test:recette
       - name: Idempotence des adaptateurs agents
         run: |
           set -e

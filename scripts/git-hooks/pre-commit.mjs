@@ -211,6 +211,17 @@ if (rawInfraStaged) {
   }
 }
 
+// #1211 — même patron diff-scopé pour le kit de recette : la logique de survie au rechargement
+// (classification CDP + rejeu, scripts/recette/lib.mjs) est couverte par `test:recette`.
+const recetteInfraStaged = staged.some((f) => /^scripts\/recette\//.test(f.replace(/\\/g, '/')));
+if (recetteInfraStaged) {
+  try {
+    execFileSync('npm', ['run', 'test:recette'], { cwd: ROOT, stdio: 'inherit', shell: process.platform === 'win32' });
+  } catch {
+    offenders.push('npm run test:recette en échec (kit de recette rouge — corriger, jamais committer le rouge)');
+  }
+}
+
 try {
   execFileSync('npm', ['run', 'agents:check'], {
     cwd: ROOT,
