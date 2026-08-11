@@ -17,7 +17,7 @@
  * tient les étapes LEGACY d'une sauvegarde, qui ne portent aucun discriminant d'entrée.
  */
 import type { CascadeStep, CascadeStepMeta, BatchParticipant } from './pendings';
-import { bandStep, bandStepId, bandCommonMeta, type BandSpec } from './rollSeam';
+import { bandStep, bandStepId, bandCommonMeta, type BandSpec, type BuiltCascadeStep } from './rollSeam';
 
 /** Les `kind` d'étape que cette fabrique regroupe — ceux dont l'applier exige des RANGÉES. */
 const COMBAT_END_KINDS = new Set(['combatEndDisease', 'combatEndCorruption']);
@@ -79,9 +79,12 @@ function combatEndRow(step: CascadeStep): BatchParticipant {
  * bandes de la même séquence ne peuvent donc pas se confondre, et le rang de dédoublement (`#n`) du
  * filet d'id est porté à côté. Ids RUNTIME-ONLY : aucune sauvegarde ne les rejoue (elle restaure la
  * séquence telle quelle ; `MIGRATIONS[19]` les reconstruit par cette même fabrique).
+ *
+ * ENTRE et SORT en étapes MINTÉES (#1262 V2), comme `nightBands` : ce qu'elle regroupe repasse par
+ * `bandStep`, ce qu'elle laisse passer garde la marque de son propre mint.
  */
-export function combatEndBands(steps: CascadeStep[]): CascadeStep[] {
-  const out: CascadeStep[] = [];
+export function combatEndBands(steps: readonly BuiltCascadeStep[]): BuiltCascadeStep[] {
+  const out: BuiltCascadeStep[] = [];
   const bands = new Map<string, { spec: BandSpec; rows: BatchParticipant[]; metas: (CascadeStepMeta | undefined)[]; at: number }>();
   for (const step of steps) {
     if (!bandable(step)) { out.push(step); continue; }

@@ -144,7 +144,7 @@ import * as seaVoyageFlow from './seaVoyageFlow';
 import { applyLandCargoRaid } from './carriers';
 import { startCascade, suspendActiveCascade, resumeSuspendedCascade, dropSceneEntrySteps, extendedTestOutcomeAppliers } from './cascade';
 import { nightBands } from './nightBands';
-import { resultLine } from './rollSeam';
+import { resultLine, openSequence } from './rollSeam';
 import { describeTest } from './flowOutcomes';
 import { createCombatSlice } from './combatSlice';
 
@@ -504,7 +504,7 @@ export interface GameState extends RollFlowActionsMap {
    *  dessoûlage) ne peuvent pas s'ouvrir tout de suite. Ils sont DIFFÉRÉS ici puis CONSOMMÉS par
    *  `openCombatEndCascade` (fin de combat) — jamais roulés en silence. La garde `lastUpkeepDay` reste la
    *  référence anti-double-résolution (l'entretien lui-même n'est appliqué qu'une fois). */
-  deferredUpkeepQueue: import('./pendings').CascadeStep[];
+  deferredUpkeepQueue: import('./rollSeam').BuiltCascadeStep[];
   /** POURSUITE TERRESTRE en cours (LDB 15) : Distance/adversaires persistés entre les manches (chaque
    *  manche est une cascade `purpose:'pursuite'`, cf. state/pursuitFlow). `null` hors poursuite. */
   pursuit: import('./pursuitFlow').PursuitState | null;
@@ -2564,7 +2564,7 @@ export const useGame = create<GameState>((set, get) => ({
       const upkeepLines = runDailyUpkeep(get, set, { onDeferTest: (t) => deferred.push(t) });
       // 2ᵉ des TROIS bâtisseurs à passer par la fabrique de bandes (#1117 L3).
       const steps = nightBands(restFlow.deferredUpkeepSteps(get().party, deferred));
-      if (steps.length) startCascade(get, set, { title: 'Entretien quotidien', icon: 'time/night', purpose: 'upkeep', steps, log: upkeepLines });
+      if (steps.length) openSequence(get, set, { title: 'Entretien quotidien', icon: 'time/night', purpose: 'upkeep', steps, log: upkeepLines });
       // Même `purpose:'upkeep'` que la branche à jets ci-dessus : les deux issues du MÊME entretien
       // quotidien ouvrent la MÊME séquence (le témoin groupé est le cas « zéro jet à influencer »).
       else if (upkeepLines.length) pushReveal(set, { kind: 'round', title: 'Entretien quotidien', lines: upkeepLines, severity: 'minor' }, { purpose: 'upkeep' });

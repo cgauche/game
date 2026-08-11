@@ -265,7 +265,7 @@ import {
   setManeuverPostHitHook,
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type FlowTest, type EffectTrigger } from './flow';
-import { startCascade, registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep } from './cascade';
+import { registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep } from './cascade';
 import { nightBands, splitBandRows } from './nightBands';
 import { combatEndBands, combatEndRowMeta } from './combatEndBands';
 import type { CascadeStepMeta } from './pendings';
@@ -5619,7 +5619,7 @@ function worstCorruptionExposure(battle: BattleState): { level: import('../engin
  * jets de bilan et la file d'entretien différée.
  */
 function routeBandByPilot(
-  get: Get, set: SetFn, band: CascadeStep, steps: import('./pendings').CascadeStep[], manual: (id: string) => boolean,
+  get: Get, set: SetFn, band: BuiltCascadeStep, steps: BuiltCascadeStep[], manual: (id: string) => boolean,
 ): void {
   if (!band.participants) {
     const c = band.actorId ? actorIn(get(), band.actorId) : undefined;
@@ -5651,8 +5651,8 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
   const battle = get().battle;
   if (!battle) return;
   const corr = worstCorruptionExposure(battle);
-  const steps: import('./pendings').CascadeStep[] = [];
-  const monos: CascadeStep[] = [];
+  const steps: BuiltCascadeStep[] = [];
+  const monos: BuiltCascadeStep[] = [];
   const inlineLines: string[] = [];
   // Amputations DIFFÉRÉES à la fin de la rencontre (LDB 18, « Coupure à l'orteil » : « Une fois la rencontre
   // terminée… ») : jet + séquelle/plaie/États résolus ICI pour tout survivant porteur d'un marqueur (mute le
@@ -5712,12 +5712,10 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
     set({ deferredUpkeepQueue: [] });
     for (const st of nightBands(queued)) routeBandByPilot(get, set, st, steps, manual);
   }
-  // `startCascade` et non `openSequence` : la file `deferredUpkeepQueue` est typée `CascadeStep[]` (le
-  // retypage d'`ApplierResult.insert`/de la file appartient à la vague qui migre ses 8 fichiers
-  // producteurs, #1262 B2) — l'étape NON bandable qui la traverse (`routeBandByPilot`) n'est donc pas
-  // mintée, et la séquence entière reste `CascadeStep[]`. Les jets bâtis ICI, eux, passent tous par la
-  // porte (`monoStep`, `combatEndBands`/`splitBandRows` → `bandStep`).
-  if (steps.length) startCascade(get, set, { title: 'Conséquences du combat', icon: 'condition/bleeding', purpose: 'combat', steps, combatEndBoundary: true });
+  // TOUTE la séquence est MINTÉE : les jets bâtis ici (`monoStep`, `combatEndBands`/`splitBandRows` →
+  // `bandStep`) comme ceux venus de la file, qui est elle-même typée à la marque (#1262 V2) — la dernière
+  // ouverture de combat par littéral passe donc par la porte.
+  if (steps.length) openSequence(get, set, { title: 'Conséquences du combat', icon: 'condition/bleeding', purpose: 'combat', steps, combatEndBoundary: true });
 }
 
 /**

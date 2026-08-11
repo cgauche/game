@@ -83,9 +83,13 @@ function nightRow(step: CascadeStep): BatchParticipant {
  * l'HÔTE SEUL et le siège qui tient le dormeur ne voyait jamais la rangée où se joue son jet de nuit.
  * Le DÉDOUBLEMENT de CLÉ (`bandStepId`) est celui du socle aussi — un seul compteur `#n`, jamais deux.
  * L'`id` produit, lui, porte les DEUX discriminants de la clé (jour ET rang) — cf. son site ci-dessous.
+ *
+ * ENTRE et SORT en étapes MINTÉES (#1262 V2) : ce qu'elle regroupe repasse par `bandStep`, ce qu'elle
+ * laisse passer garde la marque de son propre mint — la fabrique n'est donc pas une porte dérobée par
+ * où une étape manuscrite rejoindrait une séquence.
  */
-export function nightBands(steps: CascadeStep[]): CascadeStep[] {
-  const out: CascadeStep[] = [];
+export function nightBands(steps: readonly BuiltCascadeStep[]): BuiltCascadeStep[] {
+  const out: BuiltCascadeStep[] = [];
   const bands = new Map<string, { spec: BandSpec; rows: BatchParticipant[]; metas: (CascadeStep['meta'] | undefined)[]; at: number }>();
   for (const step of steps) {
     if (!bandable(step)) { out.push(step); continue; }
@@ -137,7 +141,7 @@ export type NightRowApplier = (
   row: BatchParticipant,
   hero: Combatant,
   ctx: { steps: CascadeStep[]; index: number },
-) => { consequences?: Consequence[]; insert?: CascadeStep[] } | void;
+) => { consequences?: Consequence[]; insert?: readonly BuiltCascadeStep[] } | void;
 
 /** DÉNOUEMENT de BANDE : décide de la liste FINALE d'étapes insérées, à partir de ce que les rangées
  *  ont demandé. Un `kind` qui n'en fournit pas fait passer les insertions par la fabrique (défaut).
@@ -148,8 +152,8 @@ export type NightBandApplier = (
   set: Set,
   band: CascadeStep,
   ctx: { steps: CascadeStep[]; index: number },
-  rowInserts: CascadeStep[],
-) => CascadeStep[];
+  rowInserts: readonly BuiltCascadeStep[],
+) => BuiltCascadeStep[];
 
 /**
  * Enregistre la conséquence d'un `kind` de nuit SOUS FORME DE BANDE : la boucle par rangée (verdict sur
@@ -161,7 +165,7 @@ export type NightBandApplier = (
 export function registerNightBandApplier(kind: string, rowFn: NightRowApplier, bandFn?: NightBandApplier): void {
   registerCascadeApplier(kind, (get, set, step, _hero, ctx) => {
     if (!step.participants) return;
-    const insert: CascadeStep[] = [];
+    const insert: BuiltCascadeStep[] = [];
     for (const row of step.participants) {
       const hero = actorIn(get(), row.id);
       if (!hero || !row.result) { row.outcome = []; continue; }
@@ -286,7 +290,7 @@ export function nextExposureWave(get: Get, band: CascadeStep, steps: CascadeStep
  *  bandée n'est pas un jet d'Exposition jouable (ni cible, ni porteur, ni `kind` de nuit) : elle est
  *  REFUSÉE, comme toute déclaration qu'un mint ne peut pas monter — jamais glissée telle quelle dans
  *  une vague dont l'applier de bande ne saurait rien faire. */
-export function exposureWaveBand(monoSteps: CascadeStep[], kind: ExposureKind, waves: number): BuiltCascadeStep[] {
+export function exposureWaveBand(monoSteps: readonly BuiltCascadeStep[], kind: ExposureKind, waves: number): BuiltCascadeStep[] {
   if (!monoSteps.length || waves <= 0) return [];
   const seeded = monoSteps.map((s) => ({ ...s, meta: { ...s.meta, kind, priorFails: 0 } }));
   return nightBands(seeded).flatMap((b) => {

@@ -1,6 +1,6 @@
 import type { GameState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear, CascadeStep, CascadeTableDecl, PendingCascade } from './pendings';
+import type { LootGear, CascadeTableDecl, PendingCascade } from './pendings';
 import { revealToStep } from './revealStep';
 import { Combatant, CHAR_LABELS, type ModLine } from '../engine/types';
 import { RULE_REF } from '../engine/ruleRefs';
@@ -1145,18 +1145,22 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const heroes = env.targets(e.target ?? 'party', e.heroId);
       const count = Math.max(1, e.count ?? 2);
       const kind: ExposureKind = e.kind ?? 'froid';
-      const steps: CascadeStep[] = [];
+      const steps: BuiltCascadeStep[] = [];
       const lines: string[] = [];
       for (const c of heroes) {
         if (isWeatherWarded(c)) { lines.push(`${c.label} ignore ${kind === 'froid' ? 'le froid et les intempéries' : 'la chaleur'} (protection magique).`); continue; }
         const resVal = testValue(c, 'resistance', 'endurance');
         const target = kind === 'froid' ? exposureTarget(c, resVal) : Math.max(0, resVal);
-        steps.push({
-          id: `expo-${c.id}`, kind: 'exposure', actorId: c.id, icon: 'rest/cold',
+        // Ligne montée ICI : au FROID la cible vient d'`exposureTarget` (le manteau manquant y est fondu,
+        // et ressort en chip nommée) — une autre arithmétique que celle du monteur, à ne pas refaire.
+        const st = monoStep({
+          id: `expo-${c.id}`, kind: 'exposure', actor: c, icon: 'rest/cold',
           rollLabel: 'Résistance', label: kind === 'froid' ? 'Exposition (froid)' : 'Exposition (chaleur)',
-          base: resVal, difficulty: 'intermediaire', ...(kind === 'froid' ? exposureCoatMods(c) : {}),
-          target, result: null, interactive: true, meta: { kind }, stake: nightStakeRef('exposure'),
+          difficulty: 'intermediaire',
+          montee: { base: resVal, ...(kind === 'froid' ? exposureCoatMods(c) : {}), target },
+          meta: { kind }, stake: nightStakeRef('exposure'),
         });
+        if (st) steps.push(st);
       }
       if (lines.length) { env.set(touchActors(env.get())); lines.forEach((l) => env.log(l)); }
       // BANDE d'Exposition (#1117 L3) : une fenêtre par VAGUE, les héros exposés en rangées — les

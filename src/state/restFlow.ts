@@ -42,7 +42,7 @@ import { effectiveChar, bonus } from '../engine/characteristics';
 import { applyForcedMarch } from '../engine/travel';
 import { registerCascadeApplier, startCascade } from './cascade';
 import { nightBands, registerNightBandApplier, nightRowId, genuineExposureFail, nextExposureWave, exposureWaveBand } from './nightBands';
-import { freeCons, rollStep, testSkillLabel } from './rollSeam';
+import { freeCons, testSkillLabel, monoStep, choiceStep, type BuiltCascadeStep } from './rollSeam';
 import type { CascadeStep, CascadeStepMeta } from './pendings';
 import { isRation, feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
 import { toBrass, fromBrass, formatMoney, priceToMoney, type Money } from '../engine/money';
@@ -265,8 +265,8 @@ export function applyNightStake(st: CascadeStep): void {
 
 /** BANDE d'Exposition au froid des campeurs — PREMIÈRE vague seulement (`count` = nombre TOTAL de
  *  vagues, déroulées ensuite par `nextExposureWave`). Insérée par l'abri. */
-function buildExposureBand(party: Combatant[], camperIds: string[], count: number): CascadeStep[] {
-  const steps: CascadeStep[] = [];
+function buildExposureBand(party: Combatant[], camperIds: string[], count: number): BuiltCascadeStep[] {
+  const steps: BuiltCascadeStep[] = [];
   for (const id of camperIds) {
     const h = party.find((x) => x.id === id);
     if (!h) continue;
@@ -277,10 +277,10 @@ function buildExposureBand(party: Combatant[], camperIds: string[], count: numbe
     // manteau » pèse SUR LA CIBLE, en ligne nommée (`exposureCoatMods`), plus fondue par un helper.
     const resVal = restResistVal(h);
     const coat = exposureCoatMods(h).mods ?? [];
-    steps.push({ id: `expo-${id}`, kind: 'exposure', actorId: id, label: 'Exposition', icon: 'rest/cold',
+    const st = monoStep({ id: `expo-${id}`, kind: 'exposure', actor: h, label: 'Exposition', icon: 'rest/cold',
       rollLabel: 'Résistance', difficulty: 'intermediaire',
-      ...rollStep({ actor: h, valeur: resVal, valeurEtrangere: true, difficulty: 'intermediaire', surLaCible: coat }),
-      result: null, interactive: true });
+      ligne: { valeur: resVal, valeurEtrangere: true, surLaCible: coat } });
+    if (st) steps.push(st);
   }
   for (const st of steps) applyNightStake(st);
   return exposureWaveBand(steps, 'froid', count);
@@ -333,17 +333,18 @@ registerNightBandApplier('exposure', (_get, _set, band, row, hero) => {
   // `heaviestPossession`). Sans Possession lourde (ou au FROID, silence du RAW sur ce point) : conséquence
   // immédiate, comportement inchangé.
   const heavy = kind === 'chaleur' ? heaviestPossession(hero) : undefined;
-  if (heavy) {
+  const drop = heavy ? choiceStep({
+    id: `${band.id}-${row.id}-drop`, kind: 'exposure-heat-drop', actorId: hero.id, icon: 'item/misc',
+    label: 'Possession lourde',
+    options: [{ key: 'jeter', label: `Jeter ${heavy.label}` }, { key: 'garder', label: 'Garder son paquetage' }],
+    defaultChoice: 'garder', // consommé par `runCascadeImmediate` (repos multi-jours) — `resolveRemainingCascade`
+    // (« Tout résoudre ») s'arrête TOUJOURS sur ce choix depuis 249e931f, n'applique plus JAMAIS de défaut
+    meta: { failNumber: priorFails + 1, cancelsRowId: nightRowId(band, row) },
+  }) : undefined;
+  if (heavy && drop) {
     return {
       consequences: freeCons([`${hero.label} rate son Test d'Exposition (chaleur) — ${heavy.label} pourrait être jeté pour l'annuler.`]),
-      insert: [{
-        id: `${band.id}-${row.id}-drop`, kind: 'exposure-heat-drop', actorId: hero.id, icon: 'item/misc',
-        label: 'Possession lourde', interactive: true,
-        options: [{ key: 'jeter', label: `Jeter ${heavy.label}` }, { key: 'garder', label: 'Garder son paquetage' }],
-        defaultChoice: 'garder', // consommé par `runCascadeImmediate` (repos multi-jours) — `resolveRemainingCascade`
-        // (« Tout résoudre ») s'arrête TOUJOURS sur ce choix depuis 249e931f, n'applique plus JAMAIS de défaut
-        meta: { failNumber: priorFails + 1, cancelsRowId: nightRowId(band, row) },
-      }],
+      insert: [drop],
     };
   }
   return { consequences: freeCons(applyExposureFailure(hero, priorFails + 1, battleRng(), kind).log) };
@@ -353,7 +354,7 @@ registerNightBandApplier('exposure', (_get, _set, band, row, hero) => {
   if (!drops.length) return nextExposureWave(get, band, ctx.steps);
   const last = drops[drops.length - 1];
   last.meta = { ...last.meta, nextWaveOf: String(band.id) };
-  return drops;
+  return [...drops];
 });
 
 registerCascadeApplier('exposure-heat-drop', (get, _set, step, hero, ctx) => {
@@ -390,13 +391,13 @@ registerNightBandApplier('dessoulage', (_get, _set, band, row, hero) => {
   // est due par TOUTE rangée du dessoûlage, pas seulement par les perdantes.
   const d = soberUpDissipate(hero, row.result!.sl);
   const alcool = { skill: 'resistance-a-l-alcool', char: 'endurance' } as const;
-  const insert: CascadeStep[] = [{
-    id: `dessoulageHangover-${hero.id}`, kind: 'dessoulageHangover', actorId: hero.id, icon: 'time/night',
+  const hangover = monoStep({
+    id: `dessoulageHangover-${hero.id}`, kind: 'dessoulageHangover', actor: hero, icon: 'time/night',
     rollLabel: testSkillLabel(alcool) ?? 'Résistance', label: 'Gueule de bois', difficulty: 'intermediaire',
-    ...rollStep({ actor: hero, test: alcool, difficulty: 'intermediaire' }),
-    result: null, interactive: true,
+    ligne: { test: alcool },
     ...(band.meta?.day !== undefined ? { meta: { day: band.meta.day } } : {}),
-  }];
+  });
+  const insert = hangover ? [hangover] : [];
   for (const st of insert) applyNightStake(st);
   return { consequences: freeCons(d.log), insert };
 });
@@ -455,20 +456,23 @@ const UPKEEP_STEP_ICON: Record<string, string> = {
  *  convalescence/dessoûlage) en étapes de cascade influençables, avec leur enjeu verbatim (NIGHT_STAKES)
  *  quand il est documenté. SOURCE UNIQUE partagée par la nuit (`buildNightCascade`) et l'avance
  *  d'horloge (`advanceTime`). `startIndex` = décalage d'id quand d'autres étapes précèdent (marche forcée). */
-export function deferredUpkeepSteps(party: Combatant[], deferred: DeferredUpkeepTest[], startIndex = 0): CascadeStep[] {
-  const steps: CascadeStep[] = [];
+export function deferredUpkeepSteps(party: Combatant[], deferred: DeferredUpkeepTest[], startIndex = 0): BuiltCascadeStep[] {
+  const steps: BuiltCascadeStep[] = [];
   for (const t of deferred) {
     const h = party.find((x) => x.id === t.heroId);
     if (!h || h.dead) continue;
-    const st: CascadeStep = { id: `${t.kind}-${t.heroId}-${startIndex + steps.length}`, kind: t.kind, actorId: t.heroId, label: t.label,
+    const st = monoStep({ id: `${t.kind}-${t.heroId}-${startIndex + steps.length}`, kind: t.kind, actor: h, label: t.label,
       // La compétence se DÉRIVE des ids quand le producteur les porte (Dessoûlage = Résistance à
       // l'alcool, LDB 09 l.485) ; sans ids, le repli reste la Résistance de l'entretien (LDB 18 l.338).
       icon: UPKEEP_STEP_ICON[t.kind] ?? 'nav/dice', rollLabel: testSkillLabel(t.test ?? {}) ?? 'Résistance',
-      base: t.base, difficulty: t.difficulty,
-      ...(t.mods?.length ? { mods: t.mods } : {}), target: t.target, ...(t.clamped ? { clamped: t.clamped } : {}),
+      difficulty: t.difficulty,
+      // Ligne montée par le wrapper d'entretien (`upkeep.ts`, `rollStep`) AU MOMENT du Test dû : la
+      // remonter ici la calculerait sur un héros que l'entretien a changé entre-temps.
+      montee: { base: t.base, ...(t.mods?.length ? { mods: t.mods } : {}), target: t.target, ...(t.clamped ? { clamped: t.clamped } : {}) },
       // Le JOUR rejoint le `meta` : il entre dans la CLÉ de bande (`nightBands`) — trois jours
       // franchis font trois bandes de Dessoûlage, pas trois rangées de même id dans une seule.
-      result: null, interactive: true, meta: { ...t.meta, day: t.day } as CascadeStepMeta };
+      meta: { ...t.meta, day: t.day } as CascadeStepMeta });
+    if (!st) continue;
     applyNightStake(st);
     steps.push(st);
   }
@@ -482,7 +486,7 @@ export function deferredUpkeepSteps(party: Combatant[], deferred: DeferredUpkeep
  * récupération (Résistance +20), cauchemars (Calme +40). Réutilise les primitives pures (zéro
  * duplication vs sleepParty). Renvoie les étapes + le journal eager + l'horloge avant/après.
  */
-export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fedDaily?: boolean; extraContagion?: ContagionSpec[] } = {}): { steps: CascadeStep[]; log: string[]; slept: { from: number; to: number } } {
+export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fedDaily?: boolean; extraContagion?: ContagionSpec[] } = {}): { steps: BuiltCascadeStep[]; log: string[]; slept: { from: number; to: number } } {
   let party = get().party;
   const log: string[] = [];
   const from = get().gameTime;
@@ -508,15 +512,15 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   // d'avant l'entretien (sinon perdues au `set({party:[...get().party]})` de clôture, l.551).
   party = get().party;
 
-  const steps: CascadeStep[] = [];
+  const steps: BuiltCascadeStep[] = [];
   // MARCHE FORCÉE de la journée de voyage (LDB 51 l.195) : un jet par héros — la chaîne ouvre la cascade.
   for (const id of p.travelMarch ?? []) {
     const h = party.find((x) => x.id === id);
     if (!h || h.dead) continue;
-    steps.push({ id: `march-${id}`, kind: 'forcedMarch', actorId: id, label: 'Marche forcée', icon: 'travel/foot',
+    const st = monoStep({ id: `march-${id}`, kind: 'forcedMarch', actor: h, label: 'Marche forcée', icon: 'travel/foot',
       rollLabel: 'Résistance', difficulty: 'intermediaire',
-      ...rollStep({ actor: h, test: { skill: 'resistance', char: 'endurance' }, difficulty: 'intermediaire' }),
-      result: null, interactive: true });
+      ligne: { test: { skill: 'resistance', char: 'endurance' } } });
+    if (st) steps.push(st);
   }
   // Tests d'entretien DIFFÉRÉS (faim, soif, maladie, convalescence, dessoûlage) → étapes influençables.
   steps.push(...deferredUpkeepSteps(party, deferred, steps.length));
@@ -524,13 +528,14 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   for (const c of [...collectContagion(party), ...(opts.extraContagion ?? [])]) {
     const h = party.find((x) => x.id === c.heroId);
     if (!h || h.dead) continue;
-    steps.push({ id: `contagion-${c.heroId}-${steps.length}`, kind: 'contagion', actorId: c.heroId, label: `Contagion (${c.diseaseName})`, icon: 'medical/infection',
+    const st = monoStep({ id: `contagion-${c.heroId}-${steps.length}`, kind: 'contagion', actor: h, label: `Contagion (${c.diseaseName})`, icon: 'medical/infection',
       rollLabel: 'Résistance', difficulty: c.difficulty,
       // `resVal` = `restResistVal` (E effective + avances de Résistance, `engine/rest.ts`) : une AUTRE
       // formule que `testValue` (aucune pénalité d'État sur un Test passif) — déclarée comme telle.
-      ...rollStep({ actor: h, valeur: c.resVal, valeurEtrangere: true, difficulty: c.difficulty }),
-      result: null, interactive: true, meta: { diseaseName: c.diseaseName },
+      ligne: { valeur: c.resVal, valeurEtrangere: true },
+      meta: { diseaseName: c.diseaseName },
       menace: 'maladie' }); // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
+    if (st) steps.push(st);
   }
   // Campement : Exposition (intempéries) — abri de fortune (STEP) → insère les jets d'Exposition.
   const campers = party.filter((h) => !h.dead && p.perHero[h.id]?.lodging === 'dehors');
@@ -544,14 +549,13 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     } else {
       const best = partyAssisted(party.filter((h) => !h.dead), 'survie-en-exterieur'); // Soutien (LDB 12)
       if (best) {
-        steps.push({ id: 'abri', kind: 'shelter', actorId: best.actor.id, label: 'Abri de fortune', icon: 'rest/camp',
+        const st = monoStep({ id: 'abri', kind: 'shelter', actor: best.actor, label: 'Abri de fortune', icon: 'rest/camp',
           rollLabel: 'Survie en extérieur', difficulty: 'intermediaire',
           // `best.value` porte le Soutien FONDU : le monteur le ressort en ligne NOMMÉE (LDB 12 l.187-200),
           // et décompose le reste en Niveau de Compétence nu + composantes.
-          ...rollStep({ actor: best.actor, test: { skill: 'survie-en-exterieur' }, difficulty: 'intermediaire',
-            valeur: best.value, soutien: best.support }),
-          result: null, interactive: true,
+          ligne: { test: { skill: 'survie-en-exterieur' }, valeur: best.value, soutien: best.support },
           meta: { severity, campers: camperIds.join(',') } });
+        if (st) steps.push(st);
       } else {
         const count = exposureTestCount(severity, false);
         if (count > 0) steps.push(...buildExposureBand(party, camperIds, count));
@@ -567,10 +571,10 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
       // `restResistVal` VAUT le Niveau de Compétence nu (≡ `skillBaseValue('resistance')`) ; seule la
       // composition des ÉTATS diverge de `testValue` (Test passif). `valeurEtrangere` est donc
       // APPROXIMATIF ici — rien à décomposer, mais la base EST nue (3ᵉ régime à venir, ticket).
-      steps.push({ id: `recov-${h.id}`, kind: 'recovery', actorId: h.id, label: 'Récupération', icon: 'rest/bed',
+      const st = monoStep({ id: `recov-${h.id}`, kind: 'recovery', actor: h, label: 'Récupération', icon: 'rest/bed',
         rollLabel: 'Résistance', difficulty: 'accessible',
-        ...rollStep({ actor: h, valeur: restResistVal(h), valeurEtrangere: true, difficulty: 'accessible' }),
-        result: null, interactive: true });
+        ligne: { valeur: restResistVal(h), valeurEtrangere: true } });
+      if (st) steps.push(st);
     } else {
       const before = h.wounds.current;
       const { wokeUp } = applyRecoveryDay(h, null);
@@ -578,11 +582,11 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
       if (wokeUp) log.push(`${h.label} reprend connaissance.`);
     }
     if (h.nightmares) {
-      steps.push({ id: `nm-${h.id}`, kind: 'nightmare', actorId: h.id, label: 'Cauchemars', icon: 'creature/scream',
+      const st = monoStep({ id: `nm-${h.id}`, kind: 'nightmare', actor: h, label: 'Cauchemars', icon: 'creature/scream',
         rollLabel: 'Calme', difficulty: 'facile',
         // `calmeVal` : FM effective + avances de Calme (formule locale, hors `testValue`).
-        ...rollStep({ actor: h, valeur: calmeVal(h), valeurEtrangere: true, difficulty: 'facile' }),
-        result: null, interactive: true });
+        ligne: { valeur: calmeVal(h), valeurEtrangere: true } });
+      if (st) steps.push(st);
     }
   }
 

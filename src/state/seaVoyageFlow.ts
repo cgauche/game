@@ -92,7 +92,7 @@ import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficult
 import type { PendingSteamSave, CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
-import { openPartyTest, openWorldTest, composeRollLabel, resolveSurface, freeCons, rollLine, rollStep, type RollRequest, type Consequence } from './rollSeam';
+import { openPartyTest, openWorldTest, composeRollLabel, resolveSurface, freeCons, rollLine, rollStep, monoStep, type RollRequest, type Consequence, type BuiltCascadeStep } from './rollSeam';
 import { registerCascadeApplier, registerCascadeSuccessRule, startCascade, runCascadeImmediate } from './cascade';
 import { exposureWaveBand } from './nightBands';
 
@@ -1473,7 +1473,7 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
   const expCount = seaExposureTestsPerDay(sea.weather.temperature);
   if (tdef.exposure && expCount > 0) {
     const expDiff = tdef.difficulty ?? 'intermediaire';
-    const steps: CascadeStep[] = [];
+    const steps: BuiltCascadeStep[] = [];
     for (const h of get().party) {
       if (h.dead) continue;
       if (isWeatherWarded(h)) { // protection magique : aucun Test à jouer
@@ -1491,21 +1491,23 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
       const valeur = froid ? exposureTarget(h, resVal) : Math.max(0, resVal);
       // Une VAGUE = une BANDE influençable (MDG 13 l.203-225 : la cadence de la bande donne le nombre
       // de Tests de la Période de travail) — même `kind` (et donc même applier d'escalade) que la nuit.
-      steps.push({
-        id: `sea-exposition-${h.id}`, kind: 'exposure', actorId: h.id, icon: 'rest/cold',
+      // La ligne est montée ICI : sa branche PLANCHER ne nomme aucun acteur (valeur d'une autre
+      // formule, rien à décomposer) — la faire remonter par le mint la décomposerait.
+      const st = monoStep({
+        id: `sea-exposition-${h.id}`, kind: 'exposure', actor: h, icon: 'rest/cold',
         label: `Exposition (${tdef.label})`, rollLabel: 'Résistance',
         difficulty: expDiff,
-        ...rollStep(valeur === brut
+        montee: rollStep(valeur === brut
           ? {
             actor: h, test: { skill: 'resistance', char: 'endurance' }, valeur,
             ...(coat.length ? { dansLaValeur: coat } : {}),
             difficulty: expDiff,
           }
           : { valeur, valeurEtrangere: true, difficulty: expDiff }),
-        result: null, interactive: true,
         stake: voyageStakeRef('exposure', { chars: exposureFirstFailChars(tdef.exposure) }),
         meta: { kind: tdef.exposure },
       });
+      if (st) steps.push(st);
     }
     // 3ᵉ producteur d'Exposition à passer par la fabrique de vagues (#1117 L3).
     const band = exposureWaveBand(steps, tdef.exposure, expCount);

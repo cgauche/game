@@ -30,8 +30,9 @@ import { seatOwns } from './netOwnership';
 import { checkBattleOver, applyEffects } from './combatFlow';
 import { addCondition } from '../engine/conditions';
 import { contractDisease } from '../engine/disease';
-import type { Combatant } from '../engine/types';
-import type { CascadeStep } from './pendings';
+import type { Combatant, Difficulty } from '../engine/types';
+import type { CascadeStep, CascadeStepMeta } from './pendings';
+import { monoStep, type BuiltCascadeStep } from './rollSeam';
 
 const get = useGame.getState;
 const set = useGame.setState;
@@ -41,6 +42,24 @@ function h(id: string, over: Partial<Combatant> = {}): Combatant {
   c.id = id;
   Object.assign(c, over);
   return c;
+}
+
+/** Étape MONO de nuit MINTÉE : la fabrique n'accepte plus que des produits de la porte (#1262 V2). La
+ *  ligne est posée telle quelle (`montee`) — chaque cas fixe ses propres valeurs de jet. */
+function nuit(spec: {
+  id: string; kind: string; hero?: string; label?: string; rollLabel?: string;
+  base?: number; target?: number; difficulty?: Difficulty; menace?: string; meta?: CascadeStepMeta;
+}): BuiltCascadeStep {
+  const step = monoStep({
+    id: spec.id, kind: spec.kind, actor: h(spec.hero ?? 'h1'), label: spec.label ?? '',
+    rollLabel: spec.rollLabel ?? 'Résistance', difficulty: spec.difficulty ?? 'intermediaire',
+    montee: { base: spec.base ?? 40, target: spec.target ?? 40 },
+    ...(spec.menace ? { menace: spec.menace } : {}),
+    ...(spec.meta ? { meta: spec.meta } : {}),
+  })!;
+  // Une étape restaurée d'une sauvegarde peut n'avoir AUCUN intitulé ; le mint, lui, en exige un.
+  if (spec.label === undefined) delete (step as { label?: string }).label;
+  return step;
 }
 
 /** Toutes les bandes d'un `kind` de la cascade ouverte. */
@@ -82,9 +101,8 @@ describe('CLÉ de bande = (entrée de règle, JOUR)', () => {
   });
 
   it('la fabrique SÉPARE aussi deux jets de même entrée le MÊME jour chez le MÊME héros (deux fenêtres)', () => {
-    const mono = (id: string, day: number): CascadeStep => ({
-      id, kind: 'traumaFracture', actorId: 'h1', label: 'Convalescence', rollLabel: 'Résistance',
-      base: 40, difficulty: 'accessible', target: 60, result: null, interactive: true, meta: { day },
+    const mono = (id: string, day: number) => nuit({
+      id, kind: 'traumaFracture', label: 'Convalescence', base: 40, difficulty: 'accessible', target: 60, meta: { day },
     });
     const out = nightBands([mono('a', 4), mono('b', 4)]);
     expect(out).toHaveLength(2); // deux Convalescences échéant le même jour : deux fenêtres, jamais un doublon
@@ -97,9 +115,8 @@ describe('CLÉ de bande = (entrée de règle, JOUR)', () => {
    * doivent différer : le lookup-par-id de prod (`meta.nextWaveOf`) et les coordonnées de rangée
    * (`nightRowId`) viseraient sinon la mauvaise. Le jour ne suffit pas : il faut aussi le rang.
    */
-  const conv = (id: string, day?: number): CascadeStep => ({
-    id, kind: 'traumaFracture', actorId: 'h1', label: 'Convalescence', rollLabel: 'Résistance',
-    base: 40, difficulty: 'accessible', target: 60, result: null, interactive: true,
+  const conv = (id: string, day?: number) => nuit({
+    id, kind: 'traumaFracture', label: 'Convalescence', base: 40, difficulty: 'accessible', target: 60,
     ...(day !== undefined ? { meta: { day } } : {}),
   });
 
@@ -126,10 +143,7 @@ describe('CLÉ de bande = (entrée de règle, JOUR)', () => {
   /** Une étape de nuit SANS intitulé ne doit pas donner une bande au libellé VIDE : `undefined` traverse
    *  la fabrique, et la fenêtre qui l'accueille prend son repli (`cascade.ts` : « Conséquences »). */
   it('une bande sans libellé ne porte pas de `label` — la fenêtre garde son repli', () => {
-    const sansLabel: CascadeStep = {
-      id: 'faim-h1', kind: 'faim', actorId: 'h1', rollLabel: 'Résistance',
-      base: 40, difficulty: 'intermediaire', target: 40, result: null, interactive: true, meta: { day: 1 },
-    };
+    const sansLabel = nuit({ id: 'faim-h1', kind: 'faim', base: 40, target: 40, meta: { day: 1 } });
     const [band] = nightBands([sansLabel]);
     expect('label' in band, 'aucun libellé vide posé à la place de l’absence').toBe(false);
     pushStep(set, band, 'test');
@@ -140,9 +154,8 @@ describe('CLÉ de bande = (entrée de règle, JOUR)', () => {
    *  d'un héros NON encore présent rejoindrait la fenêtre d'un AUTRE jour — un Test du jour 2 joué
    *  dans la fenêtre du jour 1, sous l'enjeu et le décompte de celle-ci. */
   it('deux JOURS, des porteurs différents : chaque fenêtre ne mêle QUE des rangées de son jour', () => {
-    const mono = (id: string, hero: string, day: number): CascadeStep => ({
-      id, kind: 'faim', actorId: hero, label: 'Faim', rollLabel: 'Résistance',
-      base: 40, difficulty: 'intermediaire', target: 40, result: null, interactive: true, meta: { day },
+    const mono = (id: string, hero: string, day: number) => nuit({
+      id, kind: 'faim', hero, label: 'Faim', base: 40, target: 40, meta: { day },
     });
     const out = nightBands([mono('a', 'h1', 1), mono('b', 'h1', 2), mono('c', 'h2', 2)]);
     expect(out).toHaveLength(2);
@@ -253,9 +266,9 @@ describe('gueule de bois (LDB 09 l.485) — due par TOUTE rangée du dessoûlage
 });
 
 describe('une bande par MALADIE', () => {
-  const contagion = (id: string, hero: string, maladie: string): CascadeStep => ({
-    id, kind: 'contagion', actorId: hero, label: `Contagion (${maladie})`, rollLabel: 'Résistance',
-    base: 40, difficulty: 'accessible', target: 60, result: null, interactive: true,
+  const contagion = (id: string, hero: string, maladie: string) => nuit({
+    id, kind: 'contagion', hero, label: `Contagion (${maladie})`,
+    base: 40, difficulty: 'accessible', target: 60,
     menace: 'maladie', meta: { diseaseName: maladie, day: 2 },
   });
 
@@ -341,8 +354,8 @@ describe('file de fin de combat — SCISSION par pilote (invariant 7)', () => {
     const ennemi = { id: 'e', kind: 'enemy', label: 'Bandit', characteristics: { endurance: 30 } as never,
       wounds: { current: 0, max: 10 }, dead: true, conditions: [], skills: [], items: [], weapons: [], movement: 4, advantage: 0 } as unknown as Combatant;
     const queue = nightBands([
-      { id: 'faim-manuel-0', kind: 'faim', actorId: 'manuel', label: 'Faim', rollLabel: 'Résistance', base: 40, difficulty: 'intermediaire', target: 40, result: null, interactive: true, meta: { day: 1 } },
-      { id: 'faim-temoin-1', kind: 'faim', actorId: 'temoin', label: 'Faim', rollLabel: 'Résistance', base: 35, difficulty: 'intermediaire', target: 35, result: null, interactive: true, meta: { day: 1 } },
+      nuit({ id: 'faim-manuel-0', kind: 'faim', hero: 'manuel', label: 'Faim', base: 40, target: 40, meta: { day: 1 } }),
+      nuit({ id: 'faim-temoin-1', kind: 'faim', hero: 'temoin', label: 'Faim', base: 35, target: 35, meta: { day: 1 } }),
     ]);
     expect(queue).toHaveLength(1); // une SEULE fenêtre est mise en file (même règle, même jour)
     set({
@@ -369,11 +382,10 @@ describe('file de fin de combat — SCISSION par pilote (invariant 7)', () => {
     const ennemi = { id: 'e', kind: 'enemy', label: 'Bandit', characteristics: { endurance: 30 } as never,
       wounds: { current: 0, max: 10 }, dead: true, conditions: [], skills: [], items: [], weapons: [], movement: 4, advantage: 0 } as unknown as Combatant;
     // `combatEndDisease` n'est PAS un `NightTestKind` → `nightBands` la laisse passer INTACTE.
-    const etrangere: CascadeStep = {
-      id: 'combatEndDisease-manuel-x', kind: 'combatEndDisease', actorId: 'manuel', label: 'Résistance',
-      rollLabel: 'Résistance', base: 40, difficulty: 'intermediaire', target: 40, result: null,
-      interactive: true, meta: { disease: 'courante-galopante' },
-    };
+    const etrangere = nuit({
+      id: 'combatEndDisease-manuel-x', kind: 'combatEndDisease', hero: 'manuel', label: 'Résistance',
+      base: 40, target: 40, meta: { disease: 'courante-galopante' },
+    });
     expect(nightBands([etrangere])[0]).toBe(etrangere); // garde du prémisse : elle traverse la fabrique telle quelle
     set({
       party: [manuel],

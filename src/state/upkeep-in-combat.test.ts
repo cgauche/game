@@ -6,6 +6,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
 import type { CascadeStep } from './pendings';
+import { monoStep } from './rollSeam';
 
 /**
  * #253 — DEUX chemins d'entretien qui NE roulaient plus en silence.
@@ -67,7 +68,9 @@ describe('#253.2 — combat franchissant minuit : les Tests d\'entretien se mett
   it('openCombatEndCascade CONSOMME la file : un héros piloté-humain → l\'étape rejoint la cascade de FIN', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(3) });
     const heroClone = { ...hero, kind: 'hero' as const };
-    const queued: CascadeStep = { id: 'faim-H-0', kind: 'faim', actorId: hero.id, label: 'Faim', rollLabel: 'Résistance', base: 40, target: 40, result: null, interactive: true };
+    // La file n'accepte plus qu'une étape MINTÉE (#1262 V2) ; sa ligne est posée telle quelle.
+    const queued = monoStep({ id: 'faim-H-0', kind: 'faim', actor: hero, label: 'Faim', rollLabel: 'Résistance',
+      difficulty: 'intermediaire', montee: { base: 40, target: 40 } })!;
     useGame.setState({
       party: [hero],
       battle: { combatants: [heroClone, deadEnemy()], order: [hero.id, 'e'], turn: 0, round: 1, log: [], over: null } as never,

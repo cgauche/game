@@ -695,6 +695,10 @@ export function rollLine(spec: RollLineSpec): RollLineParts {
   };
 }
 
+/** Ligne de jet ÉTALÉE en champs d'étape — la forme que rend `rollStep`, et la seule par laquelle une
+ *  ligne déjà montée entre dans un mint (`MonoSpec.montee`). Type STRUCTUREL : il dit la FORME, pas la
+ *  provenance — ce qu'elle vaut est tenu par le cliquet, cf. le JSDoc de `MonoSpec`. */
+export type LigneMontee = { base: number; mods?: ModLine[]; target: number; clamped?: number };
 /** Étale une ligne montée en CHAMPS d'étape (`CascadeStep`/`BatchParticipant`) : `mods` et `clamped`
  *  ne sont posés que s'ils existent — un monteur local ne réécrit jamais cet étalement à la main.
  *
@@ -703,7 +707,7 @@ export function rollLine(spec: RollLineSpec): RollLineParts {
  *  jour où l'un le fait, il lui faut relayer les deux champs ensemble — sans quoi les chips
  *  amputées de leurs circonstances laisseraient un écart « autres ». Verrouillé par la garde
  *  « `rollStep` + `plafond` » (`src/state/roll-line-combat.test.ts`). */
-export function rollStep(spec: RollLineSpec): { base: number; mods?: ModLine[]; target: number; clamped?: number } {
+export function rollStep(spec: RollLineSpec): LigneMontee {
   const line = rollLine(spec);
   return {
     base: line.base,
@@ -1077,17 +1081,15 @@ export function openChoice(get: Get, set: Set, spec: ChoiceSpec & { title: strin
   });
 }
 
-/** DÉCLARATION d'une étape MONO : un porteur, un jet, sa ligne. `actorId`/`interactive`/`base`/`mods`/
- *  `target` ne sont PAS des champs de déclaration — le mint les pose (`rollStep`, monteur canonique). */
-export interface MonoSpec {
+/** Ce qui est vrai de TOUTE étape mono : un porteur, un jet, sa situation. `actorId`/`interactive`/
+ *  `base`/`mods`/`target` ne sont PAS des champs de déclaration — le mint les pose. */
+interface MonoBase {
   id: string;
   kind: string;
   label: string;
   icon?: string;
   /** Le jeteur : la possession de l'étape en dérive (`actorId`), et sa ligne aussi. */
   actor: Combatant;
-  /** Ligne du jet (même déclaration qu'une rangée de bande). Omise : base `testValue` de l'acteur. */
-  ligne?: BandLigne;
   difficulty: Difficulty;
   /** Libellé de la COMPÉTENCE lancée. Absent : dérivé du catalogue (`testSkillLabel`), à défaut `label`. */
   rollLabel?: string;
@@ -1102,6 +1104,30 @@ export interface MonoSpec {
 }
 
 /**
+ * DÉCLARATION d'une étape MONO — deux régimes EXCLUSIFS, et le compilateur tient l'exclusion :
+ *  - `ligne` : la déclaration du jet (même forme qu'une rangée de bande), MONTÉE par le mint. Régime
+ *    normal — omise, la base est le `testValue` de l'acteur ;
+ *  - `montee` : ligne DÉJÀ étalée, fournie par le producteur. Régime des jets dont le MONTAGE et
+ *    l'ASSEMBLAGE ne tombent pas au même moment : les Tests d'entretien différés (`upkeep.ts` monte la
+ *    ligne pendant l'entretien, `restFlow.deferredUpkeepSteps` assemble l'étape après) — remonter la
+ *    ligne à l'assemblage la calculerait sur un héros que l'entretien a entre-temps changé (États,
+ *    Blessures), donc sur une AUTRE cible. Ce que `bandStep` admet déjà pour ses rangées.
+ *
+ * CE QUE `montee` NE GARANTIT PAS — dit sans fard : `LigneMontee` est un type STRUCTUREL NU (aucune
+ * marque, aucun lint). Rien n'oblige la ligne à sortir du monteur canonique, et le lot qui a ouvert ce
+ * régime en donne lui-même le contre-exemple (`combatEffects.ts` monte sa cible d'Exposition en
+ * arithmétique locale, `exposureTarget` ; seul `seaVoyageFlow` y passe `rollStep(…)` tel quel). C'est
+ * donc une PORTE DE FORGE, tenue non par le type mais par le CLIQUET : un `montee: { … }` littéral est
+ * COMPTÉ comme montage à la main (`roll-seam-exclusivity-guard`, cliquet 2), un `montee: rollStep(…)`
+ * ne l'est pas. Brander `LigneMontee` reste une option OUVERTE (elle forcerait d'abord les cibles
+ * fabriquées hors monteur à s'exprimer en `rollStep`) — instruite hors de ce lot, #1262.
+ */
+export type MonoSpec = MonoBase & (
+  | { ligne?: BandLigne; montee?: never }
+  | { montee: LigneMontee; ligne?: never }
+);
+
+/**
  * CONSTRUCTEUR d'étape MONO (#1262) — un porteur, un jet, UNE fenêtre : la possession (`actorId`) et
  * la surface (`interactive`) sont posées ICI, la ligne par le monteur canonique (`rollStep`).
  *
@@ -1110,7 +1136,8 @@ export interface MonoSpec {
  * fantôme, pas une étape muette. `undefined` (DEV : throw) plutôt que cette fenêtre-là.
  */
 export function monoStep(spec: MonoSpec): BuiltCascadeStep | undefined {
-  const parts = rollStep({ ...(spec.ligne ?? {}), actor: spec.actor, difficulty: spec.difficulty } as RollLineSpec);
+  const parts = spec.montee
+    ?? rollStep({ ...(spec.ligne ?? {}), actor: spec.actor, difficulty: spec.difficulty } as RollLineSpec);
   if (!Number.isFinite(parts.target)) {
     refusePorte(`mono « ${spec.id} » (${spec.kind}) : cible non calculable pour « ${spec.actor.label} » `
       + '— l\'étape serait un pur affichage, validé sans qu\'aucun dé ne tombe. Aucun jet ouvert.');

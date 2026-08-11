@@ -38,6 +38,7 @@ import { remapCharKeysDeep } from './charKeyMigration';
 import { remapInstanceIdsDeep, remapNameToLabelDeep, remapGameOpNameDeep } from './instanceIdMigration';
 import type { CodexFocus } from './codexFocus';
 import type { PendingCascade, RevealEntry, CascadeStep } from './pendings';
+import type { BuiltCascadeStep } from './stepBrand';
 import { revealToStep } from './revealStep';
 import { nightBands } from './nightBands';
 import { pursuitBands } from './pursuitFlow';
@@ -508,10 +509,13 @@ function bandifyNightSteps(data: Record<string, unknown>): void {
     const c = cascade as { participants?: unknown; cursor?: unknown } | null | undefined;
     if (!c || !Array.isArray(c.participants)) continue;
     const cursor = typeof c.cursor === 'number' ? c.cursor : 0;
-    const steps = c.participants as CascadeStep[];
+    // RÉHYDRATATION : une étape venue du JSON n'a plus la marque de son mint (le brand est un symbole,
+    // effacé à la sérialisation). La migration la rend à la fabrique, qui la re-minte ou la laisse
+    // passer telle quelle — c'est le rôle de frontière de ce fichier (`eslint.config.js`, #1262 V4).
+    const steps = c.participants as BuiltCascadeStep[];
     c.participants = [...steps.slice(0, cursor), ...nightBands(steps.slice(cursor))];
   }
-  if (Array.isArray(data.deferredUpkeepQueue)) data.deferredUpkeepQueue = nightBands(data.deferredUpkeepQueue as CascadeStep[]);
+  if (Array.isArray(data.deferredUpkeepQueue)) data.deferredUpkeepQueue = nightBands(data.deferredUpkeepQueue as BuiltCascadeStep[]);
 }
 
 /**
@@ -560,7 +564,7 @@ function bandifyCombatEndSteps(data: Record<string, unknown>): void {
     const c = cascade as { participants?: unknown; cursor?: unknown } | null | undefined;
     if (!c || !Array.isArray(c.participants)) continue;
     const cursor = typeof c.cursor === 'number' ? c.cursor : 0;
-    const steps = c.participants as CascadeStep[];
+    const steps = c.participants as BuiltCascadeStep[]; // réhydratation : cf. `bandifyNightSteps`
     c.participants = [...steps.slice(0, cursor), ...combatEndBands(steps.slice(cursor))];
   }
 }

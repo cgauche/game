@@ -10,7 +10,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import {
-  monoStep, tableStep, tableStepDone, hostStep, openSequence,
+  monoStep, tableStep, tableStepDone, hostStep, openSequence, rollStep,
   pushMono, pushChoice, pushHost, pushTable, pushTableDone, pushBand,
   type BuiltCascadeStep, type HostJet, type HostSpec,
 } from './rollSeam';
@@ -20,6 +20,8 @@ import { modalOwnerOf } from './modalArbiter';
 import { ownsLocally, seatOwns } from './netOwnership';
 import type { PendingKey } from './stateFields';
 import type { CascadeStep } from './pendings';
+import type { GameState } from './store';
+import { nightBands } from './nightBands';
 import type { Combatant, Weapon } from '../engine/types';
 
 const hero = (id: string): Combatant =>
@@ -309,5 +311,79 @@ describe('#1262 — pushBand : la bande APPENDUE porte sa possession (assertion 
   it('zéro porteur → rien n’est appendu (aucune règle mise en jeu)', () => {
     pushBand(useGame.getState, useGame.setState, { id: 'vide', kind: 'k', label: 'L', difficulty: 'intermediaire', porteurs: [] });
     expect(useGame.getState().pendingCascade).toBeNull();
+  });
+});
+
+/**
+ * #1262 V2 lot 1 — LES DEUX CANAUX DE LA NUIT sont typés À LA MARQUE : la file des Tests d'entretien
+ * différés (`deferredUpkeepQueue`) et la fabrique de bandes (`nightBands`, qui entre et sort en
+ * minté). C'est ce qui permet à la fin de combat d'ouvrir sa séquence par la PORTE (`openSequence`)
+ * au lieu d'un `startCascade` nu.
+ *
+ * Les `@ts-expect-error` ci-dessous sont TUEURS : sous l'ancienne signature (`CascadeStep[]`) le
+ * littéral passe, la directive devient INUTILISÉE et `tsc` rougit (TS2578) — cf. la sonde rejouable
+ * de `built-brand-lint.test.ts`.
+ */
+describe('#1262 V2 — la FILE d’entretien et la FABRIQUE de nuit n’acceptent que du MINTÉ', () => {
+  const LITTERAL = {
+    id: 'faim-H1', kind: 'faim', actorId: 'H1', label: 'Faim', rollLabel: 'Résistance',
+    base: 40, difficulty: 'intermediaire' as const, target: 40, result: null, interactive: true,
+  };
+  const minte = (): BuiltCascadeStep => monoStep({
+    id: 'faim-H1', kind: 'faim', actor: hero('H1'), label: 'Faim', rollLabel: 'Résistance',
+    difficulty: 'intermediaire', montee: { base: 40, target: 40 }, meta: { day: 1 },
+  })!;
+
+  it('la FILE refuse une étape manuscrite, accepte le produit de la porte', () => {
+    const file = (steps: GameState['deferredUpkeepQueue']): number => steps.length;
+    // @ts-expect-error — la file est typée à la MARQUE : une étape montée à la main n'y entre plus.
+    expect(file([LITTERAL])).toBe(1);
+    expect(file([minte()])).toBe(1);
+  });
+
+  it('la FABRIQUE de bandes refuse une étape manuscrite, et rend une bande possédée', () => {
+    // @ts-expect-error — `nightBands` ENTRE à la marque : rien de manuscrit ne rejoint une séquence par là.
+    nightBands([LITTERAL]);
+    const [band] = nightBands([minte()]);
+    expect(band.participants!.map((r) => r.id), 'le porteur descend en RANGÉE').toEqual(['H1']);
+    expect(band.actorId, 'porteur unique → la fenêtre va à SON siège').toBe('H1');
+  });
+
+  it('`montee` : la ligne DÉJÀ montée entre TELLE QUELLE (aucun remontage à l’assemblage)', () => {
+    const st = monoStep({
+      id: 'faim-H1', kind: 'faim', actor: hero('H1'), label: 'Faim', difficulty: 'complexe',
+      montee: { base: 33, target: 23, mods: [{ label: 'Faim (2ᵉ Test)', value: -10, famille: 'jet' }] },
+    })!;
+    expect(st.base, 'la base vient du producteur, pas d’un second calcul').toBe(33);
+    expect(st.target, 'la Difficulté DÉCLARÉE n’est pas ré-appliquée à une cible déjà montée').toBe(23);
+    expect(st.mods).toHaveLength(1);
+  });
+
+  /**
+   * LA RAISON du régime, mesurée : une ligne montée AU MOMENT DÛ ne suit pas le héros. L'entretien
+   * quotidien monte le Test de Faim (`upkeep.ts`) puis continue de MUTER le héros (Blessures, États)
+   * avant que `deferredUpkeepSteps` n'assemble l'étape. La déclarer en `ligne` la ferait recalculer sur
+   * l'état d'APRÈS — un autre jet que celui qui était dû.
+   */
+  it('`montee` fige la ligne du MOMENT DU MONTAGE — `ligne`, elle, suit le héros', () => {
+    const h = hero('H1');
+    h.characteristics.endurance = 34;
+    const dejaMontee = rollStep({ actor: h, test: { char: 'endurance' }, difficulty: 'intermediaire' });
+    expect(dejaMontee.target, 'prémisse : la ligne est montée pendant que l’Endurance vaut 34').toBe(34);
+
+    h.characteristics.endurance = 19; // l'entretien a frappé entre le montage et l'assemblage
+
+    const figee = monoStep({ id: 'faim-H1', kind: 'faim', actor: h, label: 'Faim', difficulty: 'intermediaire', montee: dejaMontee })!;
+    expect(figee.base, 'la ligne DUE est celle du moment où le Test était dû').toBe(34);
+    expect(figee.target).toBe(34);
+
+    const remontee = monoStep({ id: 'faim-H1', kind: 'faim', actor: h, label: 'Faim', difficulty: 'intermediaire', ligne: { test: { char: 'endurance' } } })!;
+    expect(remontee.target, 'remontée à l’assemblage : un AUTRE jet — c’est ce que `montee` évite').toBe(19);
+  });
+
+  it('les deux régimes de ligne sont EXCLUSIFS (déclarer ET fournir ne compile pas)', () => {
+    // @ts-expect-error — `ligne` et `montee` ne peuvent pas coexister : une seule source de ligne.
+    const st = monoStep({ id: 'x', kind: 'faim', actor: hero('H1'), label: 'Faim', difficulty: 'complexe', montee: { base: 1, target: 1 }, ligne: { test: { char: 'force-mentale' } } });
+    expect(st).toBeDefined();
   });
 });

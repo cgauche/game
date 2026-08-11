@@ -643,9 +643,10 @@ describe('CLIQUET — l’arithmétique de ligne vit dans le monteur, pas dans l
  * COUVERTURE DÉCLARÉE (ce que le scanner compte, dette ou pas — le stock est un COMPTE, pas un
  * verdict) : il attrape aussi (a) les DÉCLARATIONS de type qui portent `kind` + `target`
  * (`DeferredUpkeepTest`, `PendingExtendedTest`, `RestRoll`…) et (b) les RELAIS d'une ligne déjà
- * montée ailleurs (`deferredUpkeepSteps` recopie `t.base`/`t.target` du wrapper d'entretien). Ces
- * deux familles sont annotées entrée par entrée ci-dessous. Faux NÉGATIF assumé : une étape dont le
- * littéral est éclaté sur plusieurs variables (`const st = {...}; st.target = …`) échappe au scanner.
+ * montée ailleurs (`deferredUpkeepSteps` recopie `t.base`/`t.target` du wrapper d'entretien, par le
+ * régime `MonoSpec.montee`). Ces deux familles sont annotées entrée par entrée ci-dessous. Faux
+ * NÉGATIF assumé : une étape dont le littéral est éclaté sur plusieurs variables
+ * (`const st = {...}; st.target = …`) échappe au scanner.
  */
 const HORS_PERIMETRE_COMBAT = [
   'src/state/combat/', 'src/state/combatFlow.ts', 'src/state/combatSlice.ts', 'src/state/combatEffects.ts',
@@ -659,19 +660,35 @@ const ETAPE_A_LA_MAIN_STOCK: Record<string, number> = {
   'src/state/upkeep.ts': 1, // DeferredUpkeepTest
   'src/state/interludeFlow.ts': 2, // PendingActivityFields (type) + `target: 0` sentinelle d'ouverture
   'src/state/store.ts': 1, // signature de `startExtendedTest`
-  // RELAIS d'une ligne DÉJÀ montée par le monteur (rien à recalculer ici)
-  'src/state/restFlow.ts': 1, // `deferredUpkeepSteps` recopie base/target/mods/clamped du wrapper
+  // RELAIS d'une ligne DÉJÀ montée par le monteur (rien à recalculer ici) — EXEMPTION AU SITE
+  'src/state/restFlow.ts': 1, // `deferredUpkeepSteps` : `montee` recopie base/target/mods/clamped de la
+  // ligne que `rollStep` a montée AU MOMENT DÛ (upkeep.ts:178). Le scanner est TEXTUEL : il ne voit pas
+  // cette provenance, il compte le littéral — la raison la dit.
   // MONTAGES à la main — dette RÉELLE restante hors combat, à router par `rollStep`
   'src/engine/rest.ts': 3, // bilan EAGER de la modale de Repos (`RestRoll` : type + 2 collectes)
   'src/state/seaActivities.ts': 2, // Cartographie + Activité générique : base et cible montées au site
 };
 const TOTAL_ETAPES = Object.values(ETAPE_A_LA_MAIN_STOCK).reduce((s, n) => s + n, 0);
 
-/** Littéraux d'objet (un niveau d'imbrication) — assez pour isoler une étape de cascade. */
+/** Littéraux d'objet (un niveau d'imbrication) — assez pour isoler une étape de cascade.
+ *
+ *  PROFONDEUR MESURÉE, pas choisie : passer à DEUX niveaux apparie des CORPS DE FONCTION entiers et
+ *  compte un `kind:` et un `target:` appartenant à deux objets DIFFÉRENTS (mesuré : `data/index.ts`
+ *  (interface), `scenes/test-scenarios/18-effets-scriptes.ts` (deux effets d'un même tableau),
+ *  `state/jumpMove.ts` et `state/corruptionFlow.ts` (corps de fonction) faussement comptés, et
+ *  `engine/rest.ts` retombant de 3 à 2 parce qu'un englobant avale deux vrais sites). Le compte
+ *  deviendrait faux dans les DEUX sens. */
 const LITTERAL_RX = /\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/gs;
 
+/** La PORTE DE FORGE de la ligne (#1262 V2) : `MonoSpec.montee` accepte une ligne DÉJÀ étalée. Quand
+ *  elle sort du monteur (`montee: rollStep(…)`) il n'y a rien à compter ; quand c'est un LITTÉRAL
+ *  (`montee: { base: …, target: … }`), la ligne est montée à la main — même dette que le littéral
+ *  d'étape, et le sous-objet est mesuré ICI plutôt qu'en élargissant l'appariement global (ce nid
+ *  `...(cond ? { mods } : {})` est justement ce qui échappe à `LITTERAL_RX`). */
+const MONTEE_FORGEE_RX = /montee:\s*\{/g;
+
 function etapesALaMain(src: string): number {
-  let n = 0;
+  let n = (src.match(MONTEE_FORGEE_RX) ?? []).length;
   for (const m of src.matchAll(LITTERAL_RX)) {
     const lit = m[0];
     if (!/(^|[\s,{])kind:\s/.test(lit)) continue;
@@ -707,6 +724,29 @@ describe('CLIQUET 2 — une étape-JET ne se monte plus à la main, même sans a
           valeur: best.value, soutien: best.support }),
         result: null, interactive: true });`;
     expect(etapesALaMain(apres), 'routé par le monteur : plus rien à voir').toBe(0);
+  });
+
+  /**
+   * LE RÉGIME `montee` EST UNE PORTE DE FORGE — et elle reste SOUS CLIQUET (#1262 V2). Un mint
+   * (`monoStep`) ne garantit que la POSSESSION et la SURFACE ; la ligne, elle, peut y entrer déjà
+   * montée (`MonoSpec.montee`, `LigneMontee` = type structurel nu). Rien n'empêche donc d'y forger de
+   * l'arithmétique à la main — c'est ce que le scanner doit continuer de compter.
+   *
+   * Le cas MORDANT est le NID (`...(cond ? { mods } : {})` DANS `montee`) : le littéral d'étape qui le
+   * porte échappe à `LITTERAL_RX` (un seul niveau d'imbrication), et sans la passe dédiée
+   * (`MONTEE_FORGEE_RX`) la baseline décroîtrait pour la mauvaise raison — un site TOUJOURS là,
+   * simplement devenu invisible.
+   */
+  it('le scanner VOIT une ligne FORGÉE dans `montee`, nid compris — et laisse passer la sortie du monteur', () => {
+    const forgeeAvecNid = `
+      const st = monoStep({ id: 'faim', kind: 'faim', actor: h, label: 'Faim', difficulty: 'intermediaire',
+        montee: { base: v, ...(mods.length ? { mods } : {}), target: v - 10 } });`;
+    expect(etapesALaMain(forgeeAvecNid), 'une ligne montée à la main dans `montee` reste de la dette').toBe(1);
+
+    const parLeMonteur = `
+      const st = monoStep({ id: 'faim', kind: 'faim', actor: h, label: 'Faim', difficulty: 'intermediaire',
+        montee: rollStep({ actor: h, test: { skill: 'resistance' }, difficulty: 'intermediaire' }), target: 0 });`;
+    expect(etapesALaMain(parLeMonteur), 'la SORTIE du monteur canonique n’est pas un montage à la main').toBe(0);
   });
 
   it('aucune NOUVELLE étape montée à la main (le stock ne peut que décroître)', () => {
