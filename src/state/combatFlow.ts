@@ -265,9 +265,10 @@ import {
   setManeuverPostHitHook,
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type FlowTest, type EffectTrigger } from './flow';
-import { startCascade, registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep, stakeAtTableRow } from './cascade';
+import { startCascade, registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep } from './cascade';
 import { nightBands, splitBandRows } from './nightBands';
-import { freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf, type Consequence } from './rollSeam';
+import { freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf, hostStep, openSequence, pushHost, pushTableDone, type Consequence } from './rollSeam';
+import { revealToStep } from './revealStep';
 
 /** L'État du défenseur accorde-t-il un Avantage à l'assaillant en mêlée ? Lu en DONNÉES
  *  (`incomingMeleeAdvantage` → `passive` `incomingAdvantage`, kind `etat`). Sonné : « +1 Avantage avant
@@ -1197,7 +1198,8 @@ export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
   // « Une situation = une modale » : le Désengagement est hôté dans la cascade (rendu par CascadeModal
   // via l'étape `jet:'disengage'`). `pendingDisengage` reste le porteur de données/phases ; les
   // résolveurs ferment LES DEUX. La ligne d'attaque figée du foe et les portraits restent inchangés.
-  startCascade(get, set, { title: 'Se désengager', icon: '↩', purpose: 'combat', steps: [{ id: 'disengage', kind: 'disengageStep', jet: 'disengage', actorId: mover.id }] });
+  const step = hostStep(get, { id: 'disengage', kind: 'disengageStep', jet: 'disengage', actorId: mover.id });
+  if (step) openSequence(get, set, { title: 'Se désengager', icon: '↩', purpose: 'combat', steps: [step] });
 }
 
 /**
@@ -1809,13 +1811,13 @@ export function applyStructureCriticalToTarget(
       kind: 'critical', title: 'Critique de Structure', dice: rolled.roll, lines: rolled.lines,
       subjectId: target.id, severity: outcome.destroyed ? 'grave' : 'minor', actorId: ctx.attackerId, weapon: ctx.weapon, details: [],
     };
-    pushCombatStep(set, {
+    // Étape poussée DÉJÀ tirée : le mint fait descendre l'enjeu à la ligne atteinte (`stakeAtTableRow`
+    // lit la catégorie déclarée par la table), et porte la charge riche dans son slot `reveal`.
+    pushTableDone(set, {
       id: `cons-critical-structure-${target.id}-${target.criticalWounds}`,
       kind: 'critical', actorId: target.id, icon: 'journal/critical', label: entry.title,
-      table: { ...table, result: rolled }, reveal: entry, outcome: toRecapLines(rolled.lines), interactive: true,
-      // Étape poussée DÉJÀ tirée : l'enjeu descend ici même à la ligne atteinte (même porte que la
-      // re-pose des étapes à dé posé — `stakeAtTableRow` lit la catégorie déclarée par la table).
-      stake: stakeAtTableRow(combatStakeRef('structureCritical'), table, rolled),
+      table, result: rolled, reveal: entry, outcome: toRecapLines(rolled.lines),
+      stake: combatStakeRef('structureCritical'),
     });
   }
   return outcome;
@@ -2793,6 +2795,21 @@ export function applyShieldReaction(get: Get, set: SetFn, defender: Combatant, a
   checkBattleOver(get, set);
 }
 
+/** OUVRE la fenêtre de Défense HÔTÉE par la cascade — les trois interpositions (tir réactif, mêlée
+ *  réactive, défense du chemin d'attaque piloté) ouvrent la MÊME fenêtre. `pendingDefense`, posé par
+ *  l'appelant JUSTE avant, porte la donnée que la fenêtre rend ; l'étape porte la possession du
+ *  DÉFENSEUR (`actorId` → son siège), et le mint refuse d'ouvrir sans le pending.
+ *
+ *  RENVOIE si la fenêtre s'est ouverte : en PROD un refus du mint DÉGRADE (journalise, ne jette pas),
+ *  et un appelant qui répondrait `true` d'office laisserait l'attaquant suspendu devant une fenêtre
+ *  qui n'existe pas. Le verdict remonte donc au site d'interposition, à lui de résoudre sans elle. */
+function openDefenseCascade(get: Get, set: SetFn, target: Combatant): boolean {
+  const step = hostStep(get, { id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: target.id });
+  if (!step) return false;
+  openSequence(get, set, { title: 'Défense', icon: 'action/defend', purpose: 'combat', steps: [step] });
+  return true;
+}
+
 /** Ouvre la fenêtre de défense réactive quand le DÉFENSEUR est surfacé (`defenseSurfaced` — le pilote de
  *  l'attaquant n'entre PAS dans la condition), en mêlée, à portée, cible CAPABLE de se défendre (pas
  *  Surpris). Fige le jet d'attaque et suspend le tour de l'attaquant. Retourne true si la fenêtre s'est
@@ -2828,8 +2845,7 @@ export function maybeOpenDefense(
         ...(free ? { free: true, freeKind: free.kind, prevActed: free.prevActed } : {}),
       },
     });
-    startCascade(get, set, { title: 'Défense', icon: 'action/defend', purpose: 'combat', steps: [{ id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: target.id }] });
-    return true;
+    return openDefenseCascade(get, set, target); // fenêtre refusée (PROD dégradé) → le tir se résout sans opposition
   }
   if (weapon?.type !== 'melee') return false;
   if (combatDistance(attacker, target) > reachTiles(weapon)) return false; // Allonge incluse (RAW-3)
@@ -2866,8 +2882,7 @@ export function maybeOpenDefense(
       ...(free ? { free: true, freeKind: free.kind, prevActed: free.prevActed } : {}),
     },
   });
-  startCascade(get, set, { title: 'Défense', icon: 'action/defend', purpose: 'combat', steps: [{ id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: target.id }] });
-  return true;
+  return openDefenseCascade(get, set, target);
 }
 
 /**
@@ -2927,8 +2942,7 @@ export function openSurfacedDefense(get: Get, set: SetFn, attacker: Combatant, t
   } else {
     set({ pendingDefense: { ...base, mode: bestDefenseMode(target) } });
   }
-  startCascade(get, set, { title: 'Défense', icon: 'action/defend', purpose: 'combat', steps: [{ id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: target.id }] });
-  return true;
+  return openDefenseCascade(get, set, target);
 }
 
 /**
@@ -2938,8 +2952,11 @@ export function openSurfacedDefense(get: Get, set: SetFn, attacker: Combatant, t
  * gatée (`attackHandGate`), interpose d'abord un Test de Dextérité (+20) INFLUENÇABLE (`pendingHandGate`,
  * calque `reload`) : sur RÉUSSITE `handGateConfirm` RAPPELLE ce helper (le `pa`/`title`/`icon` FIGÉS →
  * l'attaque s'ouvre telle quelle) ; sur ÉCHEC l'objet glisse (op `disarm`) et l'Action est consommée. Sans
- * gate, ouvre directement la cascade `attackJet`. `pa.weaponUid` doit déjà être résolu (sinon = main directrice). */
-export function openAttackCascade(get: Get, set: SetFn, pa: PendingAttack, title: string, icon: string, skipGate = false): void {
+ * gate, ouvre directement la cascade `attackJet`. `pa.weaponUid` doit déjà être résolu (sinon = main directrice).
+ *
+ * RENVOIE si une fenêtre est ouverte (gate de main OU jet d'attaque) : le mint peut REFUSER l'étape
+ * hôte, et c'est l'appelant — pas la porte — qui décide de ce qu'on fait d'une Action sans fenêtre. */
+export function openAttackCascade(get: Get, set: SetFn, pa: PendingAttack, title: string, icon: string, skipGate = false): boolean {
   const attacker = actorIn(get(), pa.attackerId);
   const hand = !skipGate && attacker ? attackHandGate(attacker, pa.weaponUid) : null; // `skipGate` : gate déjà PASSÉ (reprise `handGateConfirm`) → pas de re-test
   if (attacker && hand) {
@@ -2951,10 +2968,13 @@ export function openAttackCascade(get: Get, set: SetFn, pa: PendingAttack, title
       skillValue: base, difficulty: 'accessible', target: rollLine({ actor: attacker, difficulty: 'accessible', valeur: base }).target,
       roll: null, sl: 0, success: false, pa, title, icon,
     } });
-    return;
+    return true; // la fenêtre ouverte est celle du GATE ; l'attaque s'ouvrira à sa réussite
   }
   set({ pendingAttack: pa });
-  startCascade(get, set, { title, icon, purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: pa.attackerId }] });
+  const step = hostStep(get, { id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: pa.attackerId });
+  if (!step) return false;
+  openSequence(get, set, { title, icon, purpose: 'combat', steps: [step] });
+  return true;
 }
 
 /** Main ensanglantée (AA 07 l.117) — Test de Dextérité (+20) JOUÉ INLINE pour un attaquant PILOTÉ PAR L'IA
@@ -3483,9 +3503,11 @@ function resumeMeleeAfterSuspension(
   autoCleave(get, set, attacker, target, res); // balayage de l'ennemi plus grand sur les AUTRES héros
   // Maladresse du défenseur héros (parade/esquive active ratée sur un double, LDB 14 l.48-51).
   if (target.kind === 'hero' && defenderFumbled(res, target.weapons[0], target) && !isOutOfAction(target)) {
-    // Maladresse = étape APPENDUE à la cascade (donnée SUR l'étape — source unique, plus de `pendingFumble`) ;
-    // la séquence avance déviation → Maladresse, et la reprise IA suit la fermeture (fumbleConfirm → cascadeNext).
-    pushCombatStep(set, { id: `cons-fumble-${target.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: target.id, fumble: { weapon: target.weapons[0], result: null } });
+    // Maladresse = étape APPENDUE à la cascade, et le SEUL jet hôte dont la donnée vit SUR l'étape
+    // (`fumble` : arme + Oups ! à tirer) — la branche `jet:'fumble'` du mint l'exige, il n'y a pas de
+    // pending à poser. La séquence avance déviation → Maladresse, et la reprise IA suit la fermeture
+    // (fumbleConfirm → cascadeNext).
+    pushHost(get, set, { id: `cons-fumble-${target.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: target.id, fumble: { weapon: target.weapons[0], result: null } });
   }
 }
 
@@ -3876,14 +3898,18 @@ function finishMiscast(get: Get, set: SetFn, caster: Combatant, ctx: PendingMisc
   if (affichee) {
     const colere = severity === 'colere';
     const title = colere ? 'Colère des dieux' : 'Incantation Imparfaite';
-    const icon = colere ? 'magic/power' : 'fire/blast';
     // Charge riche `reveal` (table : dé + lignes) — comme le Critique ; le dé reste observable (Péché +10).
     const reveal: RevealEntry = { kind: 'miscast', title, dice: m.rolls[0], lines, subjectId: caster.id, severity: 'grave' };
     // FOLD : l'Imparfaite/Colère est une ÉTAPE de la cascade d'incantation ACTIVE (parité avec le
-    // Critique d'attaque, appendu via pushReveal) — plus une cascade SÉPARÉE. `pushCombatStep` append
-    // à la cascade `purpose:'combat'` en cours (jet d'incantation), ou démarre « Conséquences » si
-    // aucune (Focalisation interrompue suppressReveal / contextes hors-cast).
-    pushCombatStep(set, (index) => ({ id: `cons-miscast-${index}`, kind: 'miscast', actorId: caster.id, icon, label: colere ? 'Colère des dieux' : 'Imparfaite', outcome: toRecapLines(lines), reveal, interactive: true }));
+    // Critique d'attaque, appendu via pushReveal) — plus une cascade SÉPARÉE. L'append vise la
+    // cascade `purpose:'combat'` en cours (jet d'incantation), ou démarre « Conséquences » si aucune
+    // (Focalisation interrompue suppressReveal / contextes hors-cast). Le mint de révélation
+    // (`revealToStep`) monte l'étape ; l'en-tête de la RANGÉE est plus court que le titre de la
+    // charge, et son icône dit la sévérité — d'où les deux surcharges.
+    pushCombatStep(set, (index) => revealToStep(reveal, index, {
+      label: colere ? 'Colère des dieux' : 'Imparfaite',
+      icon: colere ? 'magic/power' : 'fire/blast',
+    }));
   }
   // Test imbriqué de l'entrée (« Résistance ou Sonné ») — résolu CADENCE-AWARE par l'exécuteur de Flow
   // UNIQUE, APRÈS les ops immédiats et l'étape de révélation : un lanceur HÉROS manuel le subit comme une
@@ -4215,6 +4241,11 @@ export function routeCounterspell(get: Get, set: SetFn): boolean {
  * tous — chacun n'influence que SA rangée (gating par rangée + `intentAllowedFor` par participant).
  * SOURCE UNIQUE des deux ouvertures multi de la situation de cast. NB : lanceur ENNEMI → l'étape naît
  * déjà `groupOwner` (`openCastCascade`), cet appel est alors inerte.
+ *
+ * La bascule REMINTE l'étape au lieu de la muter : `hostStep` est le seul mint qui expose `groupOwner`
+ * (#1262 B6), et il revérifie au passage que `pendingCast` — la donnée que la fenêtre partagée rend —
+ * est toujours posé. Une étape hôte ne porte que sa déclaration : la situation vit dans `pendingCast`,
+ * il n'y a donc rien à reprendre de plus que les champs redonnés ici.
  */
 export function shareCastStep(get: Get, set: SetFn, playedIds: string[], casterId: string): void {
   const cascade = get().pendingCascade;
@@ -4222,7 +4253,15 @@ export function shareCastStep(get: Get, set: SetFn, playedIds: string[], casterI
   const cur = cascade.participants[cascade.cursor];
   if (cur?.jet !== 'cast' || cur.groupOwner) return;
   if (!playedIds.some((id) => id !== casterId)) return;
-  set({ pendingCascade: { ...cascade, participants: cascade.participants.map((s, i) => (i === cascade.cursor ? { ...s, groupOwner: true } : s)) } });
+  const step = hostStep(get, {
+    id: cur.id, kind: cur.kind, actorId: cur.actorId ?? casterId, jet: 'cast', groupOwner: true,
+    ...(cur.label ? { label: cur.label } : {}),
+    ...(cur.icon ? { icon: cur.icon } : {}),
+    ...(cur.stake ? { stake: cur.stake } : {}),
+    ...(cur.meta ? { meta: cur.meta } : {}),
+  });
+  if (!step) return;
+  set({ pendingCascade: { ...cascade, participants: cascade.participants.map((s, i) => (i === cascade.cursor ? step : s)) } });
 }
 
 /** Ouvre le multijet d'OPPOSITION d'un Sort `spec.opposed` (Fauche-démon → FM, Parole de Tzeentch →
@@ -4363,12 +4402,18 @@ export function castZoneSpell(get: Get, set: SetFn, caster: Combatant, label: st
  *  ENNEMI → `groupOwner:true` (l'arbitre `cascade` met l'owner à '*' : moment partagé + Contre-sort
  *  multi en coop) ; HÉROS → owner dérivé de `actorId` (le lanceur). Hôte aussi l'incantation HORS
  *  COMBAT (couture D) : `CascadeModal` lit `battle?.combatants ?? party`, l'owner = le héros lanceur,
- *  et les résolveurs de cast ferment le pending directement (jamais `cascadeFinish` → pas de reprise IA). */
-export function openCastCascade(get: Get, set: SetFn, caster: Combatant): void {
-  startCascade(get, set, {
-    title: 'Incantation', icon: 'action/cast', purpose: 'combat',
-    steps: [{ id: `cast-${caster.id}`, kind: 'cast', actorId: caster.id, jet: 'cast', ...(caster.kind === 'enemy' ? { groupOwner: true } : {}) }],
+ *  et les résolveurs de cast ferment le pending directement (jamais `cascadeFinish` → pas de reprise IA).
+ *
+ *  RENVOIE si la fenêtre s'est ouverte : le mint refuse l'étape sans `pendingCast`, et l'appelant reste
+ *  maître de la dégradation (il vient de poser le pending, il sait quoi en faire). */
+export function openCastCascade(get: Get, set: SetFn, caster: Combatant): boolean {
+  const step = hostStep(get, {
+    id: `cast-${caster.id}`, kind: 'cast', jet: 'cast', actorId: caster.id,
+    ...(caster.kind === 'enemy' ? { groupOwner: true } : {}),
   });
+  if (!step) return false;
+  openSequence(get, set, { title: 'Incantation', icon: 'action/cast', purpose: 'combat', steps: [step] });
+  return true;
 }
 
 /** Source UNIQUE de la « pose de zone » en cours — le gabarit qui suit le curseur. Couvre TOUT

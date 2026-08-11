@@ -74,16 +74,17 @@ describe('Incantation CRITIQUE (LDB 46 l.26-32)', () => {
     const w = wiz();
     w.spells = ['armure-aethyrique', ...(w.spells ?? [])];
     useGame.setState({ party: [w] as Combatant[], pendingCast: null, pendingCascade: null });
-    // Situation d'incantation HÔTÉE par la cascade (comme l'aurait ouverte castSpell → openCastCascade).
-    openCastCascade(useGame.getState, useGame.setState, w);
-    expect(useGame.getState().pendingCascade?.title).toBe('Incantation'); // étape jet:'cast' au curseur 0
-    // Jet figé : Maladresse d'un Sort → Imparfaite Mineure (LDB 46) — appendue par applyMiscast.
+    // Jet figé : Maladresse d'un Sort → Imparfaite Mineure (LDB 46) — appendue par applyMiscast. Posé
+    // AVANT l'ouverture, comme sur le chemin de prod (`castSpell` pose `pendingCast` puis hôte).
     useGame.setState({
       pendingCast: {
         casterId: w.id, targetId: w.id, spellId: 'armure-aethyrique', missile: false, focused: false,
         result: { cast: false, roll: 99, target: 40, sl: -3, isCritical: false, isFumble: true, log: 'Maladresse !' },
       },
     });
+    // Situation d'incantation HÔTÉE par la cascade (comme l'aurait ouverte castSpell → openCastCascade).
+    openCastCascade(useGame.getState, useGame.setState, w);
+    expect(useGame.getState().pendingCascade?.title).toBe('Incantation'); // étape jet:'cast' au curseur 0
     useGame.getState().castConfirm();
     const c = useGame.getState().pendingCascade;
     expect(useGame.getState().pendingCast).toBeNull(); // le JET est clos (CastModal disparaît)
@@ -97,13 +98,13 @@ describe('Incantation CRITIQUE (LDB 46 l.26-32)', () => {
     const w = wiz();
     w.spells = ['armure-aethyrique', ...(w.spells ?? [])];
     useGame.setState({ party: [w] as Combatant[], pendingCast: null, pendingCascade: null });
-    openCastCascade(useGame.getState, useGame.setState, w);
     useGame.setState({
       pendingCast: {
         casterId: w.id, targetId: w.id, spellId: 'armure-aethyrique', missile: false, focused: false,
         result: { cast: true, roll: 21, target: 60, sl: 2, isCritical: false, isFumble: false, log: 'ok' },
       },
     });
+    openCastCascade(useGame.getState, useGame.setState, w);
     useGame.getState().castConfirm();
     expect(useGame.getState().pendingCast).toBeNull();
     expect(useGame.getState().pendingCascade).toBeNull(); // aucune conséquence → la situation se clôt

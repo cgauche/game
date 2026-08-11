@@ -48,16 +48,16 @@ describe('Lot 4b — Sort à Test interne (Chute) cadence-aware en contexte d’
     return { W, A, E };
   }
 
-  /** Reproduit `castSpell` de façon DÉTERMINISTE : ouvre la cascade `cast` (étape `jet:'cast'` au
-   *  curseur 0) puis pose un `pendingCast` au résultat figé, prêt à `castConfirm`. */
+  /** Reproduit `castSpell` de façon DÉTERMINISTE, dans SON ordre : pose le `pendingCast` au résultat
+   *  figé, puis ouvre la cascade `cast` qui l'hôte (étape `jet:'cast'` au curseur 0), prêt à `castConfirm`. */
   function frozenCast(W: Combatant, target: Combatant) {
-    openCastCascade(useGame.getState, useGame.setState, W);
     useGame.setState({
       pendingCast: {
         casterId: W.id, targetId: target.id, spellId: 'chute', missile: false, focused: false,
         result: { cast: true, roll: 22, target: 60, sl: 2, isCritical: false, isFumble: false, log: 'ok' },
       },
     });
+    openCastCascade(useGame.getState, useGame.setState, W);
   }
 
   it('la DONNÉE convertie est bien un nœud Flow `test` (plus d’op `test`)', () => {

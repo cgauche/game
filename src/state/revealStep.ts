@@ -34,18 +34,23 @@ export const REVEAL_AUTO_CLOSE_MS: Record<NonNullable<RevealEntry['severity']>, 
  *
  *  `opts.autoClose` : la fenêtre se ferme d'elle-même après la cadence de la gravité DÉCLARÉE. Absent
  *  — le cas par défaut — l'étape attend le clic (arbitrage #1270). La gravité de la `RevealEntry`
- *  n'arme rien : elle qualifie la révélation (rendu, bandeau), elle ne décide pas de sa durée. */
+ *  n'arme rien : elle qualifie la révélation (rendu, bandeau), elle ne décide pas de sa durée.
+ *
+ *  `opts.label`/`opts.icon` : l'EN-TÊTE de l'étape quand la situation qui la pousse la nomme plus
+ *  précisément que la révélation elle-même (une Imparfaite est titrée « Incantation Imparfaite » dans
+ *  sa charge, « Imparfaite » sur la rangée de séquence ; son icône dit la sévérité). La charge `reveal`
+ *  n'est pas touchée : ces deux champs sont l'affichage de l'étape, jamais une seconde vérité. */
 export function revealToStep(
   entry: RevealEntry,
   index: number,
-  opts?: { table?: CascadeTableDecl; autoClose?: NonNullable<RevealEntry['severity']> },
+  opts?: { table?: CascadeTableDecl; autoClose?: NonNullable<RevealEntry['severity']>; label?: string; icon?: IconId },
 ): BuiltCascadeStep {
   return {
     id: `cons-${entry.kind}-${index}`,
     kind: entry.kind,
     actorId: entry.subjectId,
-    icon: REVEAL_ICON[entry.kind],
-    label: entry.title,
+    icon: opts?.icon ?? REVEAL_ICON[entry.kind],
+    label: opts?.label ?? entry.title,
     outcome: toRecapLines(entry.lines),
     reveal: entry,
     ...(opts?.autoClose ? { autoCloseMs: REVEAL_AUTO_CLOSE_MS[opts.autoClose] } : {}),

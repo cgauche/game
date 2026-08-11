@@ -151,7 +151,10 @@ describe('runCombatFlow — test enfoui + continuation after (combat)', () => {
     H.characteristics.force = 90; // Force élevée → branche succès (−5) à la validation
     const before = live(H.id).wounds.current;
 
-    // Un vrai applyCast ouvre cette cascade `jet:'cast'` AVANT de jouer les effets du sort.
+    // Ordre des sites de DÉCLARATION d'incantation (`castSpell`, et le chemin de pose de zone) : le
+    // `pendingCast` — la donnée que la fenêtre rend — est posé, PUIS la cascade `jet:'cast'` l'hôte.
+    // `applyCast`, lui, n'ouvre rien : il joue les effets DANS cette cascade déjà ouverte.
+    useGame.setState({ pendingCast: { casterId: H.id, targetId: H.id, spellId: 'chute', missile: false, focused: false, result: null } });
     openCastCascade(useGame.getState, useGame.setState, H);
     const castCasc = useGame.getState().pendingCascade!;
     expect(castCasc.purpose).toBe('combat');
