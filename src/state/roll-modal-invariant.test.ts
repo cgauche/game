@@ -99,9 +99,9 @@ const SURFACING: { file: keyof typeof SRC; fn: string; pred: RegExp }[] = [
   { file: 'roundHooks', fn: 'collectHeroRoundEndUpkeep', pred: /surfaceOf/ }, // #1262 V1 lot 2
   { file: 'turnHooks', fn: 'resolveActGates', pred: /surfaceOf/ }, // #1262 V1 : la SURFACE, pas l'affordance locale
   { file: 'turnHooks', fn: 'resolvePsychAI', pred: /aiDriven/ },
-  { file: 'triggeredTest', fn: 'resolveFlowTest', pred: /humanControlled/ },
-  { file: 'triggeredTest', fn: 'resolveFlowChoice', pred: /humanControlled/ },
-  { file: 'triggeredEffects', fn: 'applyTriggeredEffects', pred: /surfaceOf/ }, // #1262 V1 lot 2 (voie `deferInteractiveTest`)
+  { file: 'triggeredTest', fn: 'resolveFlowTest', pred: /surfaceOf/ }, // #1262 V1 lot 3 : la SURFACE, pas l'affordance locale
+  { file: 'triggeredTest', fn: 'resolveFlowChoice', pred: /surfaceOf/ }, // #1262 V1 lot 3 : décider revient au siège du décideur
+  { file: 'triggeredEffects', fn: 'applyTriggeredEffects', pred: /surfaceOf/ }, // #1262 V1 lot 2 (voie `deferInteractiveTest`) + lot 3 (l'opt-in)
   { file: 'corruptionFlow', fn: 'gainCorruption', pred: /pilotedByHuman/ },
 ];
 

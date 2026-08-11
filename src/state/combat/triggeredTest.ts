@@ -33,14 +33,13 @@ import { type Flow, type FlowTest, type ConditionCtx, evalCondition, flowHasImpu
 import { condCtx } from '../bourseFlow';
 import { buildActorView, combatConditionCtx, flowTestGated } from './flowEval';
 import type { Get, Set as SetFn } from '../flowTypes';
-import type { FreeAttackFreeze, BladeTrapFreeze, CascadeStep, BatchParticipant } from '../pendings';
+import type { FreeAttackFreeze, BladeTrapFreeze, BatchParticipant } from '../pendings';
 import { battleRng } from '../battleRng';
 import { runPureFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps, drainPendingLog } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
-import { freeCons, rollLine, rollStep } from '../rollSeam';
+import { freeCons, rollLine, rollStep, surfaceOf, bandStep, monoStep, choiceStep, pushChoice, type BuiltCascadeStep } from '../rollSeam';
 import { recoveryGeometry, effectSourcesOf, fireOwnTestFailed } from '../triggeredEffects';
 import { emitCombatEvent } from '../combatEvents';
-import { humanControlled } from '../netOwnership';
 import { inBattleId, actorIn } from '../combatants';
 import { campSpend } from './advantagePool';
 
@@ -192,18 +191,19 @@ function testIds(ft: FlowTest): { skill?: string; char?: CharKey; spec?: string 
 /** SOURCE UNIQUE du squelette d'étape `triggeredTest` d'un Test SIMPLE (non opposé) : ligne montée par
  *  le MONTEUR CANONIQUE (`rollSeam.rollStep`, canal `combat`/`test`) — `base` = Niveau de Compétence NU
  *  (`LDB 09 l.17`), États et autres composantes en lignes NOMMÉES (`mods`), Difficulté en donnée de ligne.
- *  Partagée par la voie « push » (`resolveFlowTest`, héros manuel mid-cascade) ET le collecteur de fin de
+ *  Partagée par la voie « push » (`resolveFlowTest`, porteur surfacé mid-cascade) ET le collecteur de fin de
  *  Round (`collectHeroRoundEndUpkeep` : récupération d'États) → héros et ennemi récupèrent à l'identique.
  *  `extraMeta` porte le contexte sérialisable d'une réaction (Frappe réactive `freeAttack`, Piège-lame
- *  `bladeTrap`) ; absent pour une récupération. */
+ *  `bladeTrap`) ; absent pour une récupération. La possession (`actorId`) et la surface de l'étape sont
+ *  posées par le mint `monoStep`, qui refuse une cible non calculable (`undefined` : aucun jet fantôme). */
 export function simpleTriggeredTestStep(
   c: Combatant, ft: FlowTest, branches: { onSuccess: Flow; onFail: Flow }, after: Flow, difficulty: Difficulty, extraMeta: Record<string, unknown> = {},
-): CascadeStep {
+): BuiltCascadeStep | undefined {
   const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
-  return {
+  return monoStep({
     id: triggeredTestStepId(c, ft.label, skillLabel),
-    kind: 'triggeredTest', actorId: c.id, icon: 'nav/dice', rollLabel: skillLabel,
-    ...rollStep({ actor: c, test: testIds(ft), difficulty, combat: { kind: 'test' } }),
+    kind: 'triggeredTest', icon: 'nav/dice', rollLabel: skillLabel,
+    actor: c, ligne: { test: testIds(ft), combat: { kind: 'test' } },
     difficulty, label: ft.label ?? skillLabel,
     // ENJEU du Flow (#1117) : le producteur du `FlowTest` le fournit, cette fabrique le transmet —
     // elle est générique et ne peut rien deviner de ce que le Test met en jeu.
@@ -212,7 +212,7 @@ export function simpleTriggeredTestStep(
     // Tag de DONNÉE (`FlowTest.menace` — Venin/lames empoisonnées : 'Poison') → l'étape offre
     // l'auto-succès du talent Résistance (Menace) (LDB 10, verbe `cascadeResist`).
     ...(ft.menace ? { menace: ft.menace } : {}),
-  };
+  });
 }
 
 /** PRÉ-JET FIGÉ de l'ATTAQUANT d'un Test opposé (`FlowTest.opposed`) — SOURCE UNIQUE des deux voies.
@@ -238,18 +238,24 @@ export function rollFrozenOpposedAttacker(attacker: Combatant, opp: NonNullable<
  * Discrétion/Perception […] entre le Personnage ayant la Discrétion la plus faible et tous les
  * guetteurs potentiels […] chaque Personnage vaincu subit alors l'État Surpris »).
  *
- * `aggregate:'none'` : les rangées sont INDÉPENDANTES — rien à agréger, chacune porte SA conséquence
+ * `aggregate:'none'` (le défaut de `bandStep`) : les rangées sont INDÉPENDANTES — rien à agréger,
+ * chacune porte SA conséquence
  * (l'applier `triggeredBatchTest` rejoue la branche `onSuccess`/`onFail` par rangée, la branche
  * pouvant appendre à la cascade le second Test du SEUL défenseur concerné). Ligne montée par le MONTEUR
  * CANONIQUE (`rollSeam.rollStep`) HORS canal combat, comme la voie MONO opposée : la valeur testée est
  * `testValue`. GÉNÉRIQUE : aucune entité nommée ; défenseurs, `FlowTest` et branches viennent du
  * producteur. Les défenseurs dont la gate du Test est fermée sont écartés (même décision que
  * `resolveFlowTest`) ; `undefined` s'il ne reste personne.
+ *
+ * La POSSESSION est celle du socle (`bandStep`) : plusieurs défenseurs → `groupOwner` ; un seul → SON
+ * `actorId` (une opposition à un seul défenseur EST la sienne). L'opposition figée voyage dans le
+ * `meta`, recopié tel quel par le socle — `stepOpposedFreeze` et les résolveurs de rangée y lisent la
+ * même chose qu'avant.
  */
 export function frozenOpposedBatchStep(
   defenders: Combatant[], ft: FlowTest, branches: { onSuccess: Flow; onFail: Flow }, after: Flow,
   difficulty: Difficulty, attacker: Combatant, aT: TestResult,
-): CascadeStep | undefined {
+): BuiltCascadeStep | undefined {
   const opp = ft.opposed;
   if (!opp) throw new Error('frozenOpposedBatchStep : le FlowTest doit déclarer son opposition (`opposed`).');
   // Test tagué `menace` : la rangée batch porte le tag ELLE-MÊME (comme l'étape mono), donc le verbe
@@ -265,18 +271,16 @@ export function frozenOpposedBatchStep(
       ...(ft.skill ? { skillId: ft.skill } : {}), ...(ft.spec ? { spec: ft.spec } : {}),
     });
   }
-  if (!participants.length) return undefined;
-  return {
+  return bandStep({
     id: `triggeredBatchTest-${attacker.id}-${ft.label ?? skillLabel}`,
     kind: 'triggeredBatchTest', icon: 'nav/dice', label: ft.label ?? skillLabel,
-    interactive: true, aggregate: 'none', participants,
     ...(ft.stake ? { stake: ft.stake } : {}),
     ...(ft.menace ? { menace: ft.menace } : {}),
     meta: {
       onSuccess: branches.onSuccess, onFail: branches.onFail, after, casterId: attacker.id,
       opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp.attackerLabel ?? CHAR_LABELS[opp.attacker], difficulty, ...(opp.bonusSL ? { bonusSL: opp.bonusSL } : {}) },
     },
-  };
+  }, participants);
 }
 
 /**
@@ -284,16 +288,20 @@ export function frozenOpposedBatchStep(
  * RANGÉE par testeur dans la MÊME fenêtre (#1117 : une situation = une fenêtre). Jumelle de
  * `frozenOpposedBatchStep` sans opposition, et calque de la voie MONO simple pour sa ligne : montée par
  * le MONTEUR CANONIQUE (`rollSeam.rollStep`, canal `combat`/`test`), exactement comme
- * `simpleTriggeredTestStep`. `aggregate:'none'` — les rangées sont
+ * `simpleTriggeredTestStep`. `aggregate:'none'` (le défaut de `bandStep`) — les rangées sont
  * INDÉPENDANTES, l'applier `triggeredBatchTest` rejoue la branche `onSuccess`/`onFail` par rangée.
  * GÉNÉRIQUE : aucune entité nommée ; testeurs, `FlowTest`, branches et `id` viennent du producteur
  * (c'est lui qui connaît la CLÉ de sa bande). Les testeurs dont la gate du Test est fermée sont
  * écartés (même décision que `resolveFlowTest`) ; `undefined` s'il ne reste personne.
+ *
+ * La POSSESSION est celle du socle (`bandStep`) : plusieurs testeurs → `groupOwner` ; un seul → SON
+ * `actorId`. Sans elle, la fenêtre échoyait à l'hôte seul, et le siège qui tient le testeur ne voyait
+ * jamais la rangée où se joue son jet.
  */
 export function simpleBatchTestStep(
   testers: Combatant[], ft: FlowTest, branches: { onSuccess: Flow; onFail: Flow }, after: Flow,
   difficulty: Difficulty, id: string,
-): CascadeStep | undefined {
+): BuiltCascadeStep | undefined {
   const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
   const participants: BatchParticipant[] = [];
   for (const c of testers) {
@@ -305,14 +313,12 @@ export function simpleBatchTestStep(
       ...(ft.skill ? { skillId: ft.skill } : {}), ...(ft.spec ? { spec: ft.spec } : {}),
     });
   }
-  if (!participants.length) return undefined;
-  return {
+  return bandStep({
     id, kind: 'triggeredBatchTest', icon: 'nav/dice', label: ft.label ?? skillLabel,
-    interactive: true, aggregate: 'none', participants,
     ...(ft.stake ? { stake: ft.stake } : {}),
     ...(ft.menace ? { menace: ft.menace } : {}),
     meta: { onSuccess: branches.onSuccess, onFail: branches.onFail, after },
-  };
+  }, participants);
 }
 
 /**
@@ -339,18 +345,19 @@ registerCascadeApplier('triggeredBatchTest', (get, set, step) => {
   return { consequences: freeCons(journal) };
 });
 
-/** Étapes de cascade des Tests de FIN DE ROUND en DONNÉES pour un héros MANUEL — pour chaque SOURCE
- *  d'effets déclenchés (États : récupération d'Empoisonné/Brisé LDB 16 ; TALENTS : Contrôle de la
+/** Étapes de cascade des Tests de FIN DE ROUND en DONNÉES pour un porteur SURFACÉ (`surfaceOf` — un
+ *  siège humain QUELCONQUE le tient, cadence manuelle) : pour chaque SOURCE d'effets déclenchés
+ *  (États : récupération d'Empoisonné/Brisé LDB 16 ; TALENTS : Contrôle de la
  *  Frénésie LDB 10 ; Traits/psy demain) dont un `effects: onRoundEnd` porte un nœud `test`, une étape
  *  INFLUENÇABLE bâtie depuis la MÊME donnée (`simpleTriggeredTestStep`) que la voie inline (ennemi/auto)
  *  et la voie hors-combat. GÉNÉRIQUE (aucune entité nommée). Un effet OPT-IN (`optional`, RAW « Vous
  *  pouvez… ») devient une étape de CHOIX `triggeredChoice` (Oui → le Test est poussé par l'applier ;
  *  Renoncer par défaut), émise APRÈS les Tests obligatoires (du plus mécanique au plus optionnel).
  *  `after` vide : un Test de fin de Round est top-level. Jumeau du dispatcher (`effectSourcesOf` —
- *  MÊME énumération que `fireTriggers`, qui a lui SAUTÉ ces héros via `deferInteractiveTest`). */
-export function collectRoundEndTestSteps(get: Get, c: Combatant): CascadeStep[] {
-  const steps: CascadeStep[] = [];
-  const optional: CascadeStep[] = [];
+ *  MÊME énumération que `fireTriggers`, qui a lui SAUTÉ ces porteurs via `deferInteractiveTest`). */
+export function collectRoundEndTestSteps(get: Get, c: Combatant): BuiltCascadeStep[] {
+  const steps: BuiltCascadeStep[] = [];
+  const optional: BuiltCascadeStep[] = [];
   // `ConditionCtx` de combat (géométrie d'arène : caché/Engagé/proximité du Brisé) — MÊME géométrie que
   // celle injectée par le dispatcher dans la voie inline, pour évaluer GATE et difficulté DYNAMIQUE.
   const cc = combatConditionCtx(c, { caster: c, ...recoveryGeometry(get, c) });
@@ -363,20 +370,22 @@ export function collectRoundEndTestSteps(get: Get, c: Combatant): CascadeStep[] 
         // « Vous pouvez… » : étape de CHOIX (applier générique `triggeredChoice`) — le Oui pousse le
         // Test influençable dans la MÊME cascade (runCombatFlow → resolveFlowTest, liveMerge).
         const prompt = ft.label ?? src.label;
-        optional.push({
+        const choix = choiceStep({
           id: `triggeredChoice-${c.id}-${prompt}`, kind: 'triggeredChoice', actorId: c.id,
           icon: 'ui/think', label: prompt,
           options: [{ key: 'yes', label: prompt }, { key: 'no', label: 'Renoncer' }],
-          defaultChoice: 'no', interactive: true,
+          defaultChoice: 'no',
           meta: { choiceYes: eff.flow, choiceNo: EMPTY_FLOW, after: EMPTY_FLOW },
         });
+        if (choix) optional.push(choix);
         continue;
       }
       // L'ENTITÉ SOURCE voyage dans le `meta` (déjà estampillée par `withSource`) : c'est la
       // coordonnée `entryId` du contrat d'enjeu (#1117) — le renvoi d'un Test déclenché doit viser
       // l'État/le Trait/le Talent/le symptôme qui l'exige, jamais une fiche générique.
-      steps.push(simpleTriggeredTestStep(c, ft, { onSuccess: eff.flow.success, onFail: eff.flow.fail }, EMPTY_FLOW, resolveTestDifficulty(ft, cc),
-        eff.source ? { sourceKind: eff.source.kind, sourceEntityId: eff.source.id } : {}));
+      const step = simpleTriggeredTestStep(c, ft, { onSuccess: eff.flow.success, onFail: eff.flow.fail }, EMPTY_FLOW, resolveTestDifficulty(ft, cc),
+        eff.source ? { sourceKind: eff.source.kind, sourceEntityId: eff.source.id } : {});
+      if (step) steps.push(step);
     }
   }
   return [...steps, ...optional];
@@ -497,25 +506,29 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   // Piège-lame : on COMPLÈTE le freeze avec le DR de l'attaquant que CE Test jette (`aT`), pour que la
   // conséquence `breakBlade` recompose la marge nette sans re-jeter l'attaquant.
   const btFreeze = ctx.bladeTrap && aT ? { ...ctx.bladeTrap, attackerSL: aT.sl } : ctx.bladeTrap;
-  if (humanControlled(ctx.get(), c)) {
-    // Pilote humain en cadence manuelle : étape INFLUENÇABLE, suspendue dans la cascade. Branche + `after` (et,
+  // La SURFACE est le seul critère de cette porte : un porteur hors d'action reçoit son étape (un Test
+  // déclenché le vise LUI, il ne demande pas d'agir — le gate d'Action du tour, lui, filtre ; #1265).
+  if (surfaceOf(ctx.get, c)) {
+    // Porteur SURFACÉ (un siège humain QUELCONQUE le tient, cadence manuelle) : étape INFLUENÇABLE,
+    // suspendue dans la cascade et routée à SON siège. Branche + `after` (et,
     // pour une réaction, le contexte sérialisable `freeAttack`/`bladeTrap`) voyagent dans le meta → rejoués
-    // par l'applier. Test OPPOSÉ : squelette construit ICI — ligne montée par le MONTEUR CANONIQUE
-    // (`rollStep`, HORS canal combat : convention `testValue`) + `aT` figé dans le meta pour ré-opposer à
+    // par l'applier. Test OPPOSÉ : squelette minté ICI (`monoStep`) — ligne montée par le MONTEUR CANONIQUE
+    // HORS canal combat (convention `testValue`) + `aT` figé dans le meta pour ré-opposer à
     // chaque influence. Test SIMPLE : `simpleTriggeredTestStep` (source unique).
     // `noOwnTestFailed` : ce Test est LUI-MÊME un effet d'un `onOwnTestFailed` (FM de palier 2 des Crampes,
     // MSRC 16) — l'étampe empêche `commitStep` de ré-émettre le trigger à sa résolution (garde de ré-entrance
     // qui survit à la cadence asynchrone du héros).
     const extraMeta = { ...(ctx.caster && ctx.caster.id !== c.id ? { casterId: ctx.caster.id } : {}), ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}), ...(btFreeze ? { bladeTrap: btFreeze } : {}), ...(ctx.opsCtx?.noReentryOwnTestFailed ? { noOwnTestFailed: true } : {}) };
-    pushCombatStep(ctx.set, aT && attacker
-      ? {
-          id: triggeredTestStepId(c, ft.label, skillLabel), kind: 'triggeredTest', actorId: c.id, icon: 'nav/dice', rollLabel: skillLabel,
-          ...rollStep({ actor: c, test: testIds(ft), difficulty }), label, difficulty,
-          ...(ft.stake ? { stake: ft.stake } : {}),
-          meta: { onSuccess: node.success, onFail: node.fail, after, opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], difficulty, ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}) }, ...extraMeta },
-          ...(ft.menace ? { menace: ft.menace } : {}),
-        }
-      : simpleTriggeredTestStep(c, ft, { onSuccess: node.success, onFail: node.fail }, after, difficulty, extraMeta));
+    const step = aT && attacker
+      ? monoStep({
+        id: triggeredTestStepId(c, ft.label, skillLabel), kind: 'triggeredTest', icon: 'nav/dice', rollLabel: skillLabel,
+        actor: c, ligne: { test: testIds(ft) }, label, difficulty,
+        ...(ft.stake ? { stake: ft.stake } : {}),
+        meta: { onSuccess: node.success, onFail: node.fail, after, opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], difficulty, ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}) }, ...extraMeta },
+        ...(ft.menace ? { menace: ft.menace } : {}),
+      })
+      : simpleTriggeredTestStep(c, ft, { onSuccess: node.success, onFail: node.fail }, after, difficulty, extraMeta);
+    if (step) pushCombatStep(ctx.set, step);
     return;
   }
   // `exec` (get/set [+ freeAttack/bladeTrap]) TOUJOURS fourni : une branche IMPURE (à hook : interruptFocus /
@@ -607,29 +620,30 @@ function choiceAffordable(decider: Combatant | undefined, cost?: { advantage: nu
  * POINT DE DÉCISION d'un nœud `choice` (décision joueur opt-in) — FRÈRE de `resolveFlowTest`. Le DÉCIDEUR
  * est `ctx.caster` (le porteur de l'effet : Frappe réactive = le héros Chargé). `after` = continuation
  * reprise APRÈS la branche choisie.
- *  - HÉROS décideur en cadence MANUELLE → étape de CHOIX `triggeredChoice` dans la cascade de combat
- *    (`options` yes/no, `interactive`, `defaultChoice:'no'`) ; les Flows
- *    `yes`/`no`, le `cost`, l'`after` et le contexte `freeAttack` voyagent dans le `meta` (sérialisable).
- *    On ne touche QUE `pendingCascade`.
+ *  - DÉCIDEUR SURFACÉ (`surfaceOf` : un siège humain QUELCONQUE le tient, cadence manuelle) → étape de
+ *    CHOIX `triggeredChoice` dans la cascade de combat (`options` yes/no, `defaultChoice:'no'`, la
+ *    possession posée par le mint `choiceStep`) ; les Flows `yes`/`no`, le `cost`, l'`after` et le
+ *    contexte `freeAttack` voyagent dans le `meta` (sérialisable). On ne touche QUE `pendingCascade`.
  *  - ENNEMI / cadence auto → décision AUTO inline : oui si le coût est payable (heuristique simple — l'IA
  *    saisit la réaction quand elle le peut), sinon non. La branche choisie est jouée par `runCombatFlow`
  *    (qui enchaîne sur le Test `yes` cadence-aware en aval), suivie de la continuation `after`.
  */
 export function resolveFlowChoice(ctx: ExecCtx, node: Extract<Flow, { kind: 'choice' }>, after: Flow): void {
   const decider = ctx.caster ?? ctx.target;
-  if (ctx.mode === 'combat' && decider && humanControlled(ctx.get(), decider)) {
-    // Héros manuel : étape de CHOIX influençable (rendue par le chemin CHOIX générique de CascadeModal).
+  if (ctx.mode === 'combat' && decider && surfaceOf(ctx.get, decider)) {
+    // Décideur surfacé : étape de CHOIX influençable (rendue par le chemin CHOIX générique de CascadeModal),
+    // routée au siège qui tient le décideur — l'hôte ne tranche ni ne dépense l'Avantage d'autrui.
     // Le coût (en libellé) est joint au « Oui » ; l'option est tranchée par `cascadeChoose`.
     const yesLabel = node.cost ? `${node.prompt} (${node.cost.advantage} Av)` : node.prompt;
     // CIBLE de la branche : quand la branche vise une AUTRE unité que le décideur (`on:'victim'` —
     // Déstabilisante : le porteur décide, le Test opposé vise la VICTIME), on sérialise son id pour le
     // restaurer en `ctx.target` côté applier (sinon la branche viserait le décideur → Test sur soi-même).
     const branchTargetId = ctx.target && ctx.target.id !== decider.id ? ctx.target.id : undefined;
-    pushCombatStep(ctx.set, {
+    pushChoice(ctx.set, {
       id: `triggeredChoice-${decider.id}-${node.prompt}`,
       kind: 'triggeredChoice', actorId: decider.id, icon: node.icon ?? 'ui/think', label: node.prompt,
       options: [{ key: 'yes', label: yesLabel }, { key: 'no', label: 'Renoncer' }],
-      defaultChoice: 'no', interactive: true,
+      defaultChoice: 'no',
       meta: {
         choiceYes: node.yes, choiceNo: node.no ?? EMPTY_FLOW, after,
         ...(node.cost ? { choiceCost: node.cost.advantage } : {}),

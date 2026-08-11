@@ -19,7 +19,6 @@ import { weaponIdentity } from '../engine/items';
 import { featureLevel } from '../engine/combatFeatures/dispatch';
 import type { CombatFeature } from '../engine/combatFeatures/types';
 import { isOutOfAction, combatTestPenalty } from '../engine/conditions';
-import { humanControlled } from './netOwnership';
 import { surfaceOf } from './rollSeam';
 import { actorIn } from './combatants';
 import { isEngagedWith, isEngaged } from '../engine/engagement';
@@ -354,12 +353,14 @@ export function applyTriggeredEffects(
       // sa propre chute (Démoniaque banni à 0 PB, futur « éclate/se dédouble à la mort »). Les déclencheurs
       // de FRONTIÈRE de round (`onRoundEnd`/`onRoundStart`) filtrent eux-mêmes les hors-combat côté appelant.
       if (isOutOfAction(t) && t.id !== actor.id) continue;
-      // Effet OPT-IN (`optional`, RAW « Vous pouvez… » — Contrôle de la Frénésie LDB 10) : seul un HÉROS
-      // en cadence MANUELLE décide (fin de Round : sauté ici, COLLECTÉ en étape de CHOIX par
+      // Effet OPT-IN (`optional`, RAW « Vous pouvez… » — Contrôle de la Frénésie LDB 10) : seul un porteur
+      // SURFACÉ décide (`surfaceOf` — le siège qui le tient, quel qu'il soit, en cadence manuelle ; fin de
+      // Round : sauté ici, COLLECTÉ en étape de CHOIX par
       // `collectRoundEndTestSteps`). IA / cadence auto ne l'exercent JAMAIS — ni décision silencieuse ni
       // jet caché (la sortie rationnelle de l'IA — plus d'ennemi en vue — est déjà l'effet AUTO de
-      // psychology.json).
-      if (eff.optional && !humanControlled(get(), t)) continue;
+      // psychology.json). MÊME prédicat que la porte du choix (`resolveFlowChoice`) et que celle du Test
+      // (`resolveFlowTest`) : décider, dépenser et rouler appartiennent au MÊME siège.
+      if (eff.optional && !surfaceOf(get, t)) continue;
       // Flow PORTANT un nœud `test` (à n'importe quelle profondeur — top-level Mâchoires, ou enfoui sous
       // `if`/`seq` : Venin/Hurlement/2 enchants) routé vers la voie cadence-aware (héros manuel → cascade
       // influençable ; ennemi/auto → inline) plutôt qu'avalé silencieusement — seulement si l'appelant

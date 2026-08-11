@@ -198,7 +198,7 @@ describe('G4 — producteurs de Tests SIMPLES : leur base est la NUE, aucun dép
     const ft: FlowTest = { skill: 'resistance', label: 'Résister' };
     const nue = skillBaseValue(c, 'resistance');
     expect(nue, 'sonde inerte : sans État, nue et valeur testée se confondraient').not.toBe(testValue(c, 'resistance'));
-    expect(simpleTriggeredTestStep(c, ft, BRANCHES, EMPTY_FLOW, 'intermediaire').base).toBe(nue);
+    expect(simpleTriggeredTestStep(c, ft, BRANCHES, EMPTY_FLOW, 'intermediaire')!.base).toBe(nue);
     expect(simpleBatchTestStep([c], ft, BRANCHES, EMPTY_FLOW, 'intermediaire', 'bande')!.participants![0].base).toBe(nue);
   });
 });

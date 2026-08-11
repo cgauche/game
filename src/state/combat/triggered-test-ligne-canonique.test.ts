@@ -72,7 +72,7 @@ describe('G1 — non-dérive de cible : chaque producteur rend la cible des jume
     for (const p of POSTURES) {
       for (const d of DIFFS) {
         const c = actor({ id: `mono-${p.nom}-${d}`, conditions: p.conditions as never });
-        const st = simpleTriggeredTestStep(c, FT, BRANCHES, EMPTY_FLOW, d);
+        const st = simpleTriggeredTestStep(c, FT, BRANCHES, EMPTY_FLOW, d)!;
         const attendu = rawCombatTestBase(c, FT.skill) + DIFFICULTY_MODIFIERS[d] + combatTestPenalty(c);
         expect(st.target, `${p.nom}/${d}`).toBe(clampTarget(attendu).target);
         expect(st.base, `${p.nom}/${d} : la base est la NUE`).toBe(skillBaseValue(c, FT.skill));
@@ -93,7 +93,7 @@ describe('G1 — non-dérive de cible : chaque producteur rend la cible des jume
         expect(row.base, `${p.nom}/${d} : la base est la NUE`).toBe(skillBaseValue(c, FT.skill));
         expect(inexplique(row), `${p.nom}/${d} : écart base→cible non nommé`).toBe(0);
         expect(row.target, 'la bande et le mono tiennent la MÊME règle')
-          .toBe(simpleTriggeredTestStep(c, FT, BRANCHES, EMPTY_FLOW, d).target);
+          .toBe(simpleTriggeredTestStep(c, FT, BRANCHES, EMPTY_FLOW, d)!.target);
       }
     }
   });
@@ -146,7 +146,7 @@ describe('G2 — anti-piège de canal : la voie OPPOSÉE n’emprunte pas `comba
 describe('G3 — la ligne d’une étape MONO s’explique en entier', () => {
   it('Difficulté ≠ Intermédiaire + État : la Difficulté est posée, l’État est une chip NOMMÉE, zéro reste', () => {
     const c = actor({ id: 'explique', conditions: [{ id: 'sonne', value: 1 }] as never });
-    const st = simpleTriggeredTestStep(c, FT, BRANCHES, EMPTY_FLOW, 'difficile');
+    const st = simpleTriggeredTestStep(c, FT, BRANCHES, EMPTY_FLOW, 'difficile')!;
     expect(st.difficulty).toBe('difficile');
     // La chip d'État est NOMMÉE par son entité (`combatTestPenaltyParts`), jamais un −10 anonyme.
     const etat = (st.mods ?? []).filter((m) => m.value === combatTestPenalty(c) && combatTestPenalty(c) !== 0);
@@ -165,7 +165,7 @@ describe('G7 — écrêtage : la cible STOCKÉE devient la cible JOUÉE, et l’
       characteristics: { ...CHARS, endurance: 120 } as never,
       skills: [{ skillId: 'resistance', advances: 30, characteristic: 'endurance' }] as never,
     });
-    const st = simpleTriggeredTestStep(colosse, FT, BRANCHES, EMPTY_FLOW, 'facile');
+    const st = simpleTriggeredTestStep(colosse, FT, BRANCHES, EMPTY_FLOW, 'facile')!;
     const brut = rawCombatTestBase(colosse, 'resistance') + DIFFICULTY_MODIFIERS.facile + combatTestPenalty(colosse);
     const { target, clamped } = clampTarget(brut);
     expect(brut, 'sonde inerte : sans dépassement, l’écrêtage ne se mesurerait pas').toBeGreaterThan(target);
@@ -196,7 +196,7 @@ describe('SONDE PROMUE — la matrice complète des postures × crans de Difficu
         const c = actor({ id: 'x', conditions: p.conditions as never });
         const ancienne = rawCombatTestBase(c, FT.skill) + DIFFICULTY_MODIFIERS[d] + combatTestPenalty(c);
         const borne = clampTarget(ancienne);
-        const st = simpleTriggeredTestStep(c, FT, BRANCHES, EMPTY_FLOW, d);
+        const st = simpleTriggeredTestStep(c, FT, BRANCHES, EMPTY_FLOW, d)!;
         const bande = simpleBatchTestStep([c], FT, BRANCHES, EMPTY_FLOW, d, 'b')!.participants![0];
         const cle = `${p.nom}/${d}`;
 
