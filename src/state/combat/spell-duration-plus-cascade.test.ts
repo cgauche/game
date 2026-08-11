@@ -4,7 +4,8 @@ import { openRoundEndCascade } from '../combatFlow';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { seedBattleRng } from '../battleRng';
-import { endOfRound, pendingPlusExtensions } from '../../engine/conditions';
+import { endOfRound, pendingPlusExtensions, addCondition, COND } from '../../engine/conditions';
+import { testValue } from '../../engine/skills';
 import { testScene } from '../../scenes/test-fixture';
 
 /**
@@ -72,6 +73,35 @@ describe('Durée « + » — offre de prolongation en cascade héros (#543)', ()
     const test = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'spellPlusTest');
     expect(test).toBeTruthy();
     expect(test!.rollLabel).toBe('Force Mentale');
+  });
+
+  /**
+   * #1262 lot 4 — le Test poussé par l'applier est MINTÉ (`pushMono`) : la cible reste EXACTEMENT celle
+   * du montage manuscrit (`base = target = testValue` de Force Mentale), seule la répartition change
+   * (base NUE + États en lignes nommées). Le porteur est chargé de 2 Exténué (−10/pion) et 3 Aveuglé
+   * (−10/pion, `combatOnly`) : hors canal combat le pool non-cumul retient l'Exténué (−20) et ignore
+   * l'Aveuglé ; le canal `combat` retiendrait l'Aveuglé (−30) — l'autre canal rate la cible de 10
+   * points. Ces deux États ne portent aucun Test de fin de Round : la séquence reste le seul choix.
+   */
+  it('le Test poussé garde sa cible : `testValue` de Force Mentale, base NUE et États en chips', () => {
+    const { H } = setup();
+    addCondition(H, COND.extenue, 2);
+    addCondition(H, COND.aveugle, 3);
+    useGame.setState({ battle: { ...useGame.getState().battle! } });
+    openRoundEndCascade(useGame.getState, useGame.setState);
+    const choice = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'spellPlusChoice')!;
+    useGame.getState().cascadeChoose(choice.id, 'yes');
+    useGame.getState().cascadeNext();
+
+    const test = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'spellPlusTest')!;
+    expect(test, 'le Test est bien poussé dans la MÊME cascade').toBeTruthy();
+    expect(test.target, 'CIBLE inchangée : celle du montage manuscrit (`base = target = testValue`)').toBe(testValue(H, undefined, 'force-mentale'));
+    expect(test.base, 'la base n’est plus la valeur fondue : c’est la Caractéristique NUE').toBeGreaterThan(test.target!);
+    expect((test.base ?? 0) + (test.mods ?? []).reduce((t, m) => t + m.value, 0), 'base + Σ mods = cible').toBe(test.target);
+    expect(test.mods?.some((m) => m.value === -20), 'les 2 Exténué sortent en ligne NOMMÉE').toBe(true);
+    expect(test.difficulty, 'aucune Difficulté n’est indiquée (LDB 47 l.311) → Intermédiaire').toBe('intermediaire');
+    expect({ actorId: test.actorId, interactive: test.interactive, stake: !!test.stake })
+      .toEqual({ actorId: H.id, interactive: true, stake: true });
   });
 
   it('Test réussi → +1 Round (effet dégelé, toujours actif)', () => {

@@ -25,6 +25,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { seedBattleRng } from './battleRng';
 import { addCondition, stacks, hasCondition, COND } from '../engine/conditions';
+import { testValue } from '../engine/skills';
 import { setRule, resetRule } from '../engine/policy';
 import { surfaceOf, rollSansPilote } from './rollSeam';
 import { modalOwnerOf } from './modalArbiter';
@@ -202,6 +203,87 @@ describe('#1262 lot 2 — les deux prédicats du circuit sont COUPLÉS (le déca
     const collecteurRegate = humanControlled(g(), h) ? collectHeroRoundEndUpkeep(g, h, () => {}) : [];
     expect(collecteurRegate, 'le Test n’est nulle part : perdu entre les deux voies').toHaveLength(0);
     expect(collectHeroRoundEndUpkeep(g, h, () => {}).length, 'le collecteur RÉEL, lui, le produit').toBeGreaterThan(0);
+  });
+});
+
+/**
+ * #1262 V1 lot 4 — les PRODUCTEURS de `roundHooks` passent par la porte. Les étapes montées à la main
+ * (`base: res, target: res`, sans Difficulté ni ligne) sont MINTÉES : la possession et la surface
+ * viennent du mint, la ligne du MONTEUR CANONIQUE. Une migration ne change AUCUNE valeur de règle —
+ * c'est ce que ces assertions figent : la cible reste EXACTEMENT celle du montage manuscrit
+ * (`testValue`), et seule la RÉPARTITION base/lignes nommées change (base NUE, États en chips).
+ *
+ * Le porteur est chargé d'États choisis pour que le CANAL de la ligne se voie à la CIBLE, pas
+ * seulement au découpage : 2 Sonné (−10/pion) et 3 Aveuglé (−10/pion, `combatOnly`). Hors canal
+ * combat — celui du montage manuscrit — le pool non-cumul retient le Sonné (−20) et ignore l'Aveuglé ;
+ * le canal `combat` retiendrait l'Aveuglé (−30). Une ligne montée sur l'autre canal rate donc la cible
+ * de 10 points, et ces tests tombent.
+ */
+describe('#1262 lot 4 — les producteurs mintés : la CIBLE ne bouge pas, la base se DÉCOMPOSE', () => {
+  /** Le porteur du lot, à États actifs (cf. en-tête). Le collecteur est appelé DIRECTEMENT : c'est le
+   *  producteur sous test, et le circuit hooks→collecte est déjà figé par les cas du lot 2. */
+  function porteurCharge(): Combatant {
+    const H = setupCoop();
+    H.characteristics.endurance = 45;
+    addCondition(H, COND.sonne, 2);
+    addCondition(H, COND.aveugle, 3);
+    return H;
+  }
+  /** `base + Σ mods` — l'invariant du monteur canonique, Difficulté Intermédiaire (+0) comprise. */
+  const sommeLigne = (s: { base?: number; mods?: { value: number }[] }): number =>
+    (s.base ?? 0) + (s.mods ?? []).reduce((t, m) => t + m.value, 0);
+
+  it('Perte de sang AA (AA 07 l.5) : cible INCHANGÉE (`testValue`), base NUE et États en lignes nommées', () => {
+    setRule('combat-aa-blessures', 'aa');
+    const H = porteurCharge();
+    H.wounds.current = 0;
+    addCondition(H, COND.hemorragique, 1);
+
+    const step = collectHeroRoundEndUpkeep(g, H, () => {}).find((s) => s.kind === 'aaBleedUnconscious')!;
+    expect(step, 'l’étape est produite').toBeTruthy();
+    expect(step.target, 'CIBLE inchangée : celle du montage manuscrit (`base: res, target: res`)').toBe(testValue(H, 'resistance'));
+    expect(step.base, 'la base n’est plus la valeur fondue : c’est le Niveau de Compétence NU').toBeGreaterThan(step.target!);
+    expect(sommeLigne(step), 'base + Σ mods = cible : aucun écart « autres »').toBe(step.target);
+    expect(step.mods?.some((m) => m.value === -20), 'les 2 Sonné sortent en ligne NOMMÉE').toBe(true);
+    expect(step.rollLabel, 'Compétence dérivée du catalogue — même libellé qu’avant').toBe('Résistance');
+    expect(step.difficulty, 'AA 07 l.5 : « Test de Résistance Intermédiaire (+0) »').toBe('intermediaire');
+    expect({ actorId: step.actorId, interactive: step.interactive, stake: !!step.stake })
+      .toEqual({ actorId: H.id, interactive: true, stake: true });
+  });
+
+  it('Effort soutenu (LDB 16 l.97) : cible INCHANGÉE (`testValue`), base NUE et États en lignes nommées', () => {
+    setRule('combat-se-fatiguer', true);
+    const H = porteurCharge();
+    H.effortRounds = 9;
+
+    const step = collectHeroRoundEndUpkeep(g, H, () => {}).find((s) => s.kind === 'fatigue')!;
+    expect(step, 'l’étape est produite').toBeTruthy();
+    expect(step.target, 'CIBLE inchangée : celle du montage manuscrit (`base: res, target: res`)').toBe(testValue(H, 'resistance'));
+    expect(step.base).toBeGreaterThan(step.target!);
+    expect(sommeLigne(step), 'base + Σ mods = cible : aucun écart « autres »').toBe(step.target);
+    expect(step.mods?.some((m) => m.value === -20), 'les 2 Sonné sortent en ligne NOMMÉE').toBe(true);
+    expect(step.rollLabel).toBe('Résistance');
+    expect(step.difficulty, 'aucune Difficulté n’est indiquée au RAW → Intermédiaire, comme le jumeau inline').toBe('intermediaire');
+    expect({ actorId: step.actorId, interactive: step.interactive, stake: !!step.stake })
+      .toEqual({ actorId: H.id, interactive: true, stake: true });
+  });
+
+  it('Durée « + » (LDB 47 l.311) : le CHOIX reste un choix — aucun dé, aucune cible, le porteur possède', () => {
+    const H = porteurCharge();
+    H.activeEffects = [
+      ...(H.activeEffects ?? []),
+      { label: 'Ailes de l’aigle', sourceSpellId: 'ailes-de-l-aigle', awaitingExtension: true, duration: { scale: 'rounds', left: 0 } },
+    ] as Combatant['activeEffects'];
+
+    const step = collectHeroRoundEndUpkeep(g, H, () => {}).find((s) => s.kind === 'spellPlusChoice')!;
+    expect(step, 'l’étape est produite').toBeTruthy();
+    expect({ target: step.target, base: step.base }, 'un choix ne lance aucun dé : ni cible ni base')
+      .toEqual({ target: undefined, base: undefined });
+    expect(step.options?.map((o) => o.key)).toEqual(['yes', 'no']);
+    expect(step.defaultChoice).toBe('no');
+    expect(step.meta?.sourceSpellId, 'l’effet visé reste désigné par son id STABLE (#142)').toBe('ailes-de-l-aigle');
+    expect({ actorId: step.actorId, interactive: step.interactive, groupOwner: step.groupOwner })
+      .toEqual({ actorId: H.id, interactive: true, groupOwner: undefined });
   });
 });
 

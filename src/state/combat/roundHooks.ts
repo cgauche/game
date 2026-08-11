@@ -8,7 +8,7 @@
  */
 import { registerCombatHook } from '../combatHooks';
 import { registerCascadeApplier } from '../cascade';
-import { freeCons, rollSansPilote, surfaceOf } from '../rollSeam';
+import { freeCons, rollSansPilote, surfaceOf, monoStep, choiceStep, pushMono, type BuiltCascadeStep } from '../rollSeam';
 import { battleRng } from '../battleRng';
 import { rollTest } from '../../engine/tests';
 import { testValue } from '../../engine/skills';
@@ -21,7 +21,6 @@ import { zonesRoundTick } from '../zones';
 import { purgeExpiredSummons } from '../summonFlow';
 import { fireTriggers } from '../triggeredEffects';
 import { collectRoundEndTestSteps } from './triggeredTest';
-import { pushCombatStep } from '../combatEffects';
 import { inBattleId } from '../combatants';
 import { traitAuras } from '../../engine/traits/dispatch';
 import { groupMatch } from '../../engine/groups';
@@ -358,13 +357,19 @@ registerCombatHook({
  * mécanique au plus optionnel). Side-effect ASSUMÉ (comme `endFrenzyIfDone` côté psy) : le
  * retrait « caché » du Brisé et l'Exténué SANS-Test sont appliqués ICI (RNG-free, déterministes via
  * `sink`) ; seuls les Tests réellement dus deviennent des étapes influençables.
+ *
+ * Étapes MINTÉES par la porte (#1262) : `monoStep`/`choiceStep` posent la possession (`actorId`), la
+ * surface (`interactive`) et la ligne (`rollStep`). Les deux Tests montés ici passent par le canal
+ * HORS combat (`testValue`), comme leurs jumeaux inline (hooks `aa-bleed-unconscious` et
+ * `se-fatiguer`) : les pénalités que le canal `combat` ajouterait visent les Tests de combat qui
+ * engagent la perception (`LDB 16 l.45`), ce qu'un Test de Résistance d'entretien n'est pas.
  */
-export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: string, c: Combatant) => void): CascadeStep[] {
+export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: string, c: Combatant) => void): BuiltCascadeStep[] {
   // Étapes de cascade SEULEMENT pour un porteur SURFACÉ (`surfaceOf` : un siège humain QUELCONQUE le tient,
   // cadence manuelle) ; en rapide/auto, ou sans siège pour le tenir, il est auto-résolu COMME un monstre →
   // ses Tests se résolvent silencieusement dans les hooks ci-dessus, qui portent le prédicat MIROIR.
   if (!surfaceOf(get, c) || isOutOfAction(c)) return [];
-  const steps: CascadeStep[] = [];
+  const steps: BuiltCascadeStep[] = [];
   // 0) Récupération d'États en DONNÉES (Empoisonné Résistance LDB 16 l.70-72 ; plus tard En Flammes/Sonné) —
   //    chaque État porté dont la donnée déclare un `effects: onRoundEnd` à nœud `test` devient une étape
   //    `triggeredTest` INFLUENÇABLE, bâtie depuis la MÊME donnée que la voie inline (ennemi/auto) et hors-combat
@@ -375,8 +380,12 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: 
   //    Intermédiaire chaque Round ou Inconscience — étape INFLUENÇABLE (le hook `aa-bleed-unconscious` saute
   //    le héros manuel). Le résolveur générique de cascade tire le Test sur `target` ; l'applier applique.
   if (rule('combat-aa-blessures') === 'aa' && aaBleedUnconsciousDue(c)) {
-    const res = testValue(c, 'resistance');
-    steps.push({ id: `aaBleed-${c.id}`, kind: 'aaBleedUnconscious', actorId: c.id, icon: 'condition/bleeding', rollLabel: 'Résistance', base: res, target: res, label: 'Perte de sang', stake: combatStakeRef('aaBleedUnconscious') });
+    const step = monoStep({
+      id: `aaBleed-${c.id}`, kind: 'aaBleedUnconscious', icon: 'condition/bleeding', label: 'Perte de sang',
+      actor: c, ligne: { test: { skill: 'resistance' } }, difficulty: 'intermediaire',
+      stake: combatStakeRef('aaBleedUnconscious'),
+    });
+    if (step) steps.push(step);
   }
   // (Mâchoires d'acier n'est PLUS un Test de fin de Round : c'est un effet `onGainCondition` data-driven,
   //  déclenché à l'acquisition du Sonné — cf. talents.json + brique `combat/triggeredTest`.)
@@ -385,8 +394,12 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: 
   // 3) Se-fatiguer (règle optionnelle) — l'incrément du compteur a déjà eu lieu dans le hook ; ici on
   //    n'émet l'étape que si le seuil est atteint (Test de Résistance différé).
   if (rule('combat-se-fatiguer') && (c.effortRounds ?? 0) >= fatigueThreshold(c)) {
-    const res = testValue(c, 'resistance');
-    steps.push({ id: `fatigue-${c.id}`, kind: 'fatigue', actorId: c.id, icon: 'condition/fatigued', rollLabel: 'Résistance', base: res, target: res, label: 'Effort soutenu', stake: combatStakeRef('fatigue') });
+    const step = monoStep({
+      id: `fatigue-${c.id}`, kind: 'fatigue', icon: 'condition/fatigued', label: 'Effort soutenu',
+      actor: c, ligne: { test: { skill: 'resistance' } }, difficulty: 'intermediaire',
+      stake: combatStakeRef('fatigue'),
+    });
+    if (step) steps.push(step);
   }
   // 4) Durée « + » (LDB 47 l.311) : effets GELÉS (spell source marqué) — « vous POUVEZ effectuer un Test
   //    de Force Mentale pour prolonger » = décision OPT-IN, étape de CHOIX (Oui/Renoncer) ; sur Oui,
@@ -395,13 +408,14 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: 
   for (const e of pendingPlusExtensions(c)) {
     const spellId = e.spell?.spellId ?? e.sourceSpellId;
     if (!spellId) continue; // pas de sort source identifiable — jamais atteint (spellDurationPlusSource l'exige déjà)
-    steps.push({
+    const choix = choiceStep({
       id: `spellPlusChoice-${c.id}-${spellId}`, kind: 'spellPlusChoice', actorId: c.id,
       icon: 'ui/think', label: `Prolonger ${e.label} ?`,
       options: [{ key: 'yes', label: `Tenter (Force Mentale) — ${e.label}` }, { key: 'no', label: 'Renoncer' }],
-      defaultChoice: 'no', interactive: true,
+      defaultChoice: 'no',
       meta: { sourceSpellId: spellId },
     });
+    if (choix) steps.push(choix);
   }
   return steps;
 }
@@ -453,10 +467,14 @@ registerCascadeApplier('spellPlusChoice', (get, set, step, hero) => {
   if (!effect) return;
   const spellId = effect.spell?.spellId ?? effect.sourceSpellId;
   if (step.chosen === 'yes') {
-    const base = testValue(hero, undefined, 'force-mentale');
-    pushCombatStep(set, {
-      id: `spellPlusTest-${hero.id}-${spellId}`, kind: 'spellPlusTest', actorId: hero.id,
-      icon: 'nav/dice', rollLabel: 'Force Mentale', base, target: base, label: `Prolonger ${effect.label}`,
+    // Ligne montée par le MONTEUR CANONIQUE, canal HORS combat (`testValue`) comme son jumeau inline
+    // (hook `end-of-round`) : les pénalités que le canal `combat` ajouterait visent les Tests de combat
+    // qui engagent la perception (`LDB 16 l.45`), ce qu'un Test de Force Mentale de prolongation n'est
+    // pas. Difficulté : aucune n'est indiquée (LDB 47 l.311) → Intermédiaire.
+    pushMono(set, {
+      id: `spellPlusTest-${hero.id}-${spellId}`, kind: 'spellPlusTest',
+      actor: hero, ligne: { test: { char: 'force-mentale' } }, difficulty: 'intermediaire',
+      icon: 'nav/dice', label: `Prolonger ${effect.label}`,
       meta: { sourceSpellId: spellId }, stake: combatStakeRef('spellPlusTest', { entryId: spellId }),
     });
     return;
