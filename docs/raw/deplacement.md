@@ -738,7 +738,7 @@ Lancer 1d10 pour chaque aspect (Précipitations, Température, Visibilité, Vent
 **Voir aussi :** [Vents (MDG)](#vents-mdg), [Orientation et phares (MDG)](#orientation-et-phares-mdg), [`etats.md`](etats.md) (Exposition).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.162-243) → `useTestJetProps`, `carte`, `PendingTest`, `FoulingLevel`, `aucune`, `applyExposureFailure`, `legeres`, `exposureNight`, `voyageTiles`, `abondantes`, +25 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/data/sea-navigation.json`, `src/data/sea-weather.json`, `src/data/trappings.json`, `src/engine/exposure.ts`, +8 fichiers
+- `MDG 13` (l.162-243) → `carte`, `PendingTest`, `FoulingLevel`, `aucune`, `applyExposureFailure`, `legeres`, `exposureNight`, `voyageTiles`, `abondantes`, `seaWeatherTestMod`, +24 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/data/sea-navigation.json`, `src/data/sea-weather.json`, `src/data/trappings.json`, `src/engine/exposure.ts`, +7 fichiers
 
 ---
 
@@ -901,7 +901,7 @@ Un Personnage tenant un rôle lance pour tous ceux du même rôle ; si les PJ ti
 **Voir aussi :** [Moral de l'équipage (MDG)](#moral-de-léquipage-mdg), [Réparer un navire (MDG)](#réparer-un-navire-mdg), [Course-poursuite navale (MDG)](#course-poursuite-navale-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.7-55, l.61-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `progression`, `skill`, `capitaine-competent`, `faveur-de-manann`, `progression-poursuite`, `un-officier-pour-10`, `rollCrewRole`, +107 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +23 fichiers
+- `MDG 14` (l.7-55, l.61-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `progression`, `skill`, `capitaine-competent`, `faveur-de-manann`, `progression-poursuite`, `un-officier-pour-10`, `rollCrewRole`, +108 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +24 fichiers
 
 ---
 
@@ -937,7 +937,7 @@ Modificateurs (extrait) : paie généreuse / capitaine compétent → **+2d10** 
 **Voir aussi :** [Provisions et équipement de navigation (MDG)](#provisions-et-équipement-de-navigation-mdg), [`provisions.md`](provisions.md) (Faim/rations), [`maladies.md`](maladies.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.204-283) → `schema`, `sealskinDR`, `mousse`, `SeaVoyageState`, `shipboardSouls`, `exposureNight`, `dailyWaterLitres`, `chirurgien`, `skillDRBonus`, `weeklyCrewWageBrass`, +28 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/crew-roles.ts`, `src/data/voyage-stakes.json`, +12 fichiers
+- `MDG 14` (l.204-283) → `schema`, `sealskinDR`, `mousse`, `shipboardSouls`, `SeaVoyageState`, `exposureNight`, `dailyWaterLitres`, `chirurgien`, `skillDRBonus`, `genuineExposureFail`, +29 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/crew-roles.ts`, `src/data/voyage-stakes.json`, +13 fichiers
 
 ---
 
@@ -952,7 +952,7 @@ Modificateurs (extrait) : paie généreuse / capitaine compétent → **+2d10** 
 **Voir aussi :** [Orientation et phares (MDG)](#orientation-et-phares-mdg), [Maladies et provisions en mer (MDG)](#maladies-et-provisions-en-mer-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.273-302) → `schema`, `sealskinDR`, `mousse`, `exposureNight`, `chirurgien`, `skillDRBonus`, `weeklyCrewWageBrass`, `crewTalentDR`, `exposureFailCancelledByDrop`, `portHireCrew`, +12 — `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/schemas/defs/crew-roles.ts`, `src/data/trappings.json`, `src/engine/crewMorale.ts`, `src/engine/exposure.ts`, +5 fichiers
+- `MDG 14` (l.273-302) → `schema`, `sealskinDR`, `mousse`, `exposureNight`, `chirurgien`, `skillDRBonus`, `genuineExposureFail`, `weeklyCrewWageBrass`, `crewTalentDR`, `buildExposureBand`, +13 — `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/schemas/defs/crew-roles.ts`, `src/data/trappings.json`, `src/engine/crewMorale.ts`, `src/engine/exposure.ts`, +6 fichiers
 
 ---
 

@@ -100,11 +100,6 @@ export interface PendingTest {
    *  `FlowTest` (skill/spec/characteristic) au build du pending. */
   skillId?: string;
   spec?: string;
-  /** Sens NARRATIVEMENT sollicité par CE Test (LDB 18 — Surdité ne pèse que sur un Test d'ouïe) :
-   *  posé à l'ouverture (`openSkillTest`, qui l'a DÉJÀ passé à `testValue`) et relu par l'affichage
-   *  pour décomposer la MÊME valeur (`testValueSplit`) — sans lui, les parts sense-scopées ne
-   *  reconstruisent pas la valeur jetée et la ligne perd toutes ses chips. */
-  sense?: PairedSense;
   /** RÔLE tenu (id stable de `crew-roles`) — PROVENANCE de la rangée, jamais son libellé de ligne :
    *  la ligne NOMME la Compétence lancée (Z5), le rôle dit d'où vient le jet (#1117). */
   roleId?: string;
@@ -1446,6 +1441,17 @@ export interface CascadeTableResult {
   lines: string[];
 }
 
+/**
+ * ÉTAPE de séquence. Étend `RollParticipant` : une étape MONO est le jet d'un porteur, avec les mêmes
+ * drapeaux d'influence qu'une rangée.
+ *
+ * `interactive` au niveau ÉTAPE : posé par tous les producteurs (et par la migration de save
+ * `MIGRATIONS[17]`), mais AUCUN lecteur de production mesuré (#1262 lot 5a) — les lectures de
+ * `interactive` visent toutes des RANGÉES (`stepReady` batch, `interactiveOf` des modales,
+ * `rollFlowFactory.passive`), la surface d'une étape se décidant par sa possession (`modalArbiter`) et
+ * son interaction (`stepInteraction`). Candidat à la SUPPRESSION en V2, pas ici : le champ voyage dans
+ * les sauvegardes, son retrait est une migration à part entière.
+ */
 export interface CascadeStepBase extends RollParticipant {
   /** Nature de la conséquence (clé de `cascadeAppliers`). Ex. 'recovery' | 'nightmare' | 'exposure'. */
   kind: string;

@@ -39,7 +39,7 @@ import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import type { PairedSense, GameOp } from '../engine/ops';
 import type {
   CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate, PendingCascade, CascadeTableDecl, CascadeTableResult, RevealEntry,
-  PendingDeviation, PendingBladeTrap, PendingCritSeverity, PendingMiscastStep,
+  PendingDeviation, PendingBladeTrap, PendingCritSeverity, PendingMiscastStep, PendingMutationStep,
 } from './pendings';
 import type { BuiltCascadeStep } from './stepBrand';
 import type { PendingKey } from './stateFields';
@@ -350,7 +350,9 @@ export interface BandSpec {
   /** Id de l'étape. Dédoublé en `#n` par `bandStepId` quand la même clé revient dans une séquence. */
   id: string;
   kind: string;
-  label: string;
+  /** Intitulé de la SITUATION. Absent : l'étape n'en porte pas, et la fenêtre qui l'accueille prend
+   *  son repli (`cascade.ts` : « Conséquences »). Une chaîne VIDE, elle, s'affiche vide. */
+  label?: string;
   icon?: string;
   /** Défaut `'none'` : les rangées d'une bande sont des jets INDÉPENDANTS (#351). */
   aggregate?: RollAggregate;
@@ -387,7 +389,7 @@ export function bandStep(spec: BandSpec, rows: readonly BatchParticipant[]): Bui
   return {
     id: spec.id,
     kind: spec.kind,
-    label: spec.label,
+    ...(spec.label !== undefined ? { label: spec.label } : {}),
     ...(spec.icon ? { icon: spec.icon } : {}),
     interactive: true,
     ...(porteurs.size > 1 ? { groupOwner: true } : { actorId: rows[0].id }),
@@ -842,8 +844,12 @@ export function openWorldTest(
 
 /** Politique de garde de la porte, calque de `rollLine`/`rollSansPilote` : en DEV la violation THROW
  *  (elle se voit au premier passage), en PROD elle se journalise — l'appelant de la garde décide
- *  alors de la DÉGRADATION (fenêtre ouverte diminuée, rangée écartée), jamais du silence. */
-function refusePorte(msg: string): void {
+ *  alors de la DÉGRADATION (fenêtre ouverte diminuée, rangée écartée), jamais du silence.
+ *
+ *  EXPORTÉ pour les fabriques qui montent PAR les mints sans être des mints (`nightBands` : elle
+ *  regroupe des déclarations et appelle `bandStep`) — elles refusent par le MÊME canal, jamais par un
+ *  `console.warn` local qui ne casserait rien en DEV. */
+export function refusePorte(msg: string): void {
   const m = `[seam] ${msg}`;
   console.error(m);
   if (import.meta.env?.DEV) throw new Error(m);
@@ -1127,6 +1133,9 @@ export interface TableSpec {
   critSeverity?: PendingCritSeverity;
   /** CHARGE de l'applier « Imparfaite/Colère » (`combatFlow`) : sévérité, domaine, relance en cours. */
   miscast?: PendingMiscastStep;
+  /** CHARGE des appliers de MUTATION (`corruptionFlow`) : le porteur, l'alignement de la source, la
+   *  nature déjà tirée et la table en cours — ce que l'applier LIT pour chaîner le tirage suivant. */
+  mutation?: PendingMutationStep;
   meta?: CascadeStepMeta;
 }
 
@@ -1155,6 +1164,7 @@ export function tableStep(spec: TableSpec): BuiltCascadeStep | undefined {
     ...(spec.stake ? { stake: spec.stake } : {}),
     ...(spec.critSeverity ? { critSeverity: spec.critSeverity } : {}),
     ...(spec.miscast ? { miscast: spec.miscast } : {}),
+    ...(spec.mutation ? { mutation: spec.mutation } : {}),
     ...(spec.meta ? { meta: spec.meta } : {}),
   } as BuiltCascadeStep;
 }
@@ -1184,6 +1194,7 @@ export function tableStepDone(spec: TableDoneSpec): BuiltCascadeStep | undefined
     ...(spec.stake ? { stake: spec.stake } : {}),
     ...(spec.critSeverity ? { critSeverity: spec.critSeverity } : {}),
     ...(spec.miscast ? { miscast: spec.miscast } : {}),
+    ...(spec.mutation ? { mutation: spec.mutation } : {}),
     ...(spec.reveal ? { reveal: spec.reveal } : {}),
     ...(spec.outcome ? { outcome: spec.outcome } : {}),
     ...(spec.meta ? { meta: spec.meta } : {}),

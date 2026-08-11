@@ -135,28 +135,28 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | Champ | Lecteurs | Exemple |
 |---|---|---|
 | `stake` | 4 | `src/state/combat/triggeredTest.ts:210` |
-| `skill` | 14 | `src/state/combat/triggeredTest.ts:189` |
-| `spec` | 13 | `src/state/combat/triggeredTest.ts:189` |
-| `sense` | 3 | `src/state/combatEffects.ts:419` |
-| `characteristic` | 11 | `src/state/combat/triggeredTest.ts:189` |
+| `skill` | 14 | `src/state/combat/triggeredTest.ts:188` |
+| `spec` | 13 | `src/state/combat/triggeredTest.ts:188` |
+| `sense` | 2 | `src/state/combatEffects.ts:431` |
+| `characteristic` | 11 | `src/state/combat/triggeredTest.ts:188` |
 | `difficulty` | 2 | `src/engine/flowCore.ts:370` |
-| `requireSL` | 1 | `src/state/combatEffects.ts:458` |
+| `requireSL` | 1 | `src/state/combatEffects.ts:470` |
 | `label` | 6 | `src/state/combat/triggeredTest.ts:204` |
-| `tool` | 1 | `src/state/combatEffects.ts:421` |
-| `vsGroups` | 4 | `src/state/combatEffects.ts:326` |
-| `vsStatus` | 1 | `src/state/combatEffects.ts:325` |
-| `begging` | 3 | `src/state/combatEffects.ts:330` |
-| `vsCapricieux` | 1 | `src/state/combatEffects.ts:334` |
-| `easierIf` | 7 | `src/state/combatEffects.ts:375` |
+| `tool` | 1 | `src/state/combatEffects.ts:433` |
+| `vsGroups` | 4 | `src/state/combatEffects.ts:338` |
+| `vsStatus` | 1 | `src/state/combatEffects.ts:337` |
+| `begging` | 3 | `src/state/combatEffects.ts:342` |
+| `vsCapricieux` | 1 | `src/state/combatEffects.ts:346` |
+| `easierIf` | 7 | `src/state/combatEffects.ts:387` |
 | `argDifficulty` | **0 — JAMAIS LU** | — |
 | `unlessImmune` | 1 | `src/state/combat/flowEval.ts:151` |
 | `onlyGroups` | 1 | `src/state/combat/flowEval.ts:152` |
 | `exceptGroups` | 1 | `src/state/combat/flowEval.ts:153` |
 | `gate` | 1 | `src/engine/flowCore.ts:375` |
-| `noSupport` | 1 | `src/state/combatEffects.ts:413` |
+| `noSupport` | 1 | `src/state/combatEffects.ts:425` |
 | `menace` | 5 | `src/state/combat/triggeredTest.ts:214` |
 | `difficultyBy` | 1 | `src/engine/flowCore.ts:369` |
-| `opposed` | 2 | `src/state/combat/triggeredTest.ts:253` |
+| `opposed` | 2 | `src/state/combat/triggeredTest.ts:259` |
 
 ### `TravelTableEntry` (src/engine/travelTables.ts)
 

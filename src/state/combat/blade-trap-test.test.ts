@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { parseQualityInstance } from '../../engine/qualities/normalize';
 import { useGame } from '../store';
 import '../combatFlow'; // effet de bord : enregistre l'applier 'bladeTrap' + installe les hooks (breakBlade…)
-import { pushCombatStep } from '../combatEffects';
+import { pushChoice } from '../rollSeam';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { seedBattleRng } from '../battleRng';
@@ -53,10 +53,10 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
    *  et avance → l'applier route le Test opposé cadence-aware (héros manuel → étape `triggeredTest`). */
   function openTrapChoice(H: { id: string }, A: { id: string }, weapon: Weapon, defSL: number) {
     const pbt: PendingBladeTrap = { defenderId: H.id, attackerId: A.id, weapon, parryWeaponUid: 'parry-uid', defSL, roll: 33 };
-    pushCombatStep(useGame.setState, {
-      id: 'cons-bladetrap', kind: 'bladeTrap', actorId: H.id, icon: '🗡️', label: 'Parade — piéger la lame ?',
+    pushChoice(useGame.setState, {
+      id: 'cons-bladetrap', kind: 'bladeTrap', actorId: H.id, icon: 'item/weapon', label: 'Parade — piéger la lame ?',
       options: [{ key: 'trap', label: 'Piéger la lame' }, { key: 'crit', label: 'Coup Critique' }],
-      defaultChoice: 'crit', bladeTrap: pbt, interactive: true,
+      defaultChoice: 'crit', bladeTrap: pbt,
     });
     useGame.getState().cascadeChoose('cons-bladetrap', 'trap');
     useGame.getState().cascadeNext(); // commit du choix → l'applier append l'étape `triggeredTest`

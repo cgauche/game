@@ -24,6 +24,7 @@ import { seedBattleRng } from './battleRng';
 import { emptyScene } from './scene';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { nightBands, splitBandRows } from './nightBands';
+import { pushStep } from './cascade';
 import { modalOwnerOf } from './modalArbiter';
 import { seatOwns } from './netOwnership';
 import { checkBattleOver, applyEffects } from './combatFlow';
@@ -88,6 +89,51 @@ describe('CLÉ de bande = (entrée de règle, JOUR)', () => {
     const out = nightBands([mono('a', 4), mono('b', 4)]);
     expect(out).toHaveLength(2); // deux Convalescences échéant le même jour : deux fenêtres, jamais un doublon
     expect(out.every((b) => b.participants!.length === 1)).toBe(true);
+  });
+
+  /**
+   * #1277 — le DISCRIMINANT d'id. Deux jets de MÊME entrée, MÊME jour, MÊME héros ET MÊME `step.id`
+   * (deux Convalescences échéant ensemble sur la même fiche) font DEUX fenêtres — dont les ids
+   * doivent différer : le lookup-par-id de prod (`meta.nextWaveOf`) et les coordonnées de rangée
+   * (`nightRowId`) viseraient sinon la mauvaise. Le jour ne suffit pas : il faut aussi le rang.
+   */
+  const conv = (id: string, day?: number): CascadeStep => ({
+    id, kind: 'traumaFracture', actorId: 'h1', label: 'Convalescence', rollLabel: 'Résistance',
+    base: 40, difficulty: 'accessible', target: 60, result: null, interactive: true,
+    ...(day !== undefined ? { meta: { day } } : {}),
+  });
+
+  it('deux bandes dédoublées le MÊME jour portent des ids DISTINCTS (#1277)', () => {
+    const out = nightBands([conv('conv-h1', 4), conv('conv-h1', 4)]);
+    expect(out).toHaveLength(2);
+    expect(new Set(out.map((b) => b.id)).size, `ids de bande DUPLIQUÉS : ${out.map((b) => b.id).join(',')}`).toBe(2);
+    // Le JOUR est préfixé `j` (espace de noms qui lui est propre) ; le rang ne s'ajoute qu'au doublon.
+    expect(out[0].id).toBe('bande-conv-h1-j4');
+    expect(out[1].id).toBe('bande-conv-h1-j4#2');
+  });
+
+  /** Les deux discriminants vivent dans des ESPACES DE NOMS SÉPARÉS : une étape SANS jour (la file de
+   *  fin de combat en porte) prend le RANG nu, une étape avec jour prend `j<jour>` — un rang `2` et un
+   *  jour `2` ne peuvent plus se confondre. */
+  it('rang (sans jour) et jour ne partagent pas le même espace de noms (#1277)', () => {
+    const out = nightBands([conv('conv'), conv('conv'), conv('conv', 2)]);
+    expect(out).toHaveLength(3);
+    const ids = out.map((b) => b.id);
+    expect(new Set(ids).size, `ids de bande DUPLIQUÉS : ${ids.join(',')}`).toBe(3);
+    expect(ids).toEqual(['bande-conv-1', 'bande-conv-2', 'bande-conv-j2']);
+  });
+
+  /** Une étape de nuit SANS intitulé ne doit pas donner une bande au libellé VIDE : `undefined` traverse
+   *  la fabrique, et la fenêtre qui l'accueille prend son repli (`cascade.ts` : « Conséquences »). */
+  it('une bande sans libellé ne porte pas de `label` — la fenêtre garde son repli', () => {
+    const sansLabel: CascadeStep = {
+      id: 'faim-h1', kind: 'faim', actorId: 'h1', rollLabel: 'Résistance',
+      base: 40, difficulty: 'intermediaire', target: 40, result: null, interactive: true, meta: { day: 1 },
+    };
+    const [band] = nightBands([sansLabel]);
+    expect('label' in band, 'aucun libellé vide posé à la place de l’absence').toBe(false);
+    pushStep(set, band, 'test');
+    expect(get().pendingCascade!.title).toBe('Conséquences');
   });
 
   /** Le JOUR est dans la CLÉ, pas seulement rattrapé par le filet anti-doublon : sans lui, la rangée
@@ -156,18 +202,13 @@ describe('POSSESSION d’une bande de nuit (#1268)', () => {
   });
 
   /**
-   * RÉSIDU MESURÉ, fixé en l'état (#1262 lot 5c) : `splitBandRows` RECOPIE la bande d'origine
-   * (`{...band, participants}`) — la possession n'est donc PAS re-dérivée sur les moitiés. Une bande
-   * multi-porteurs scindée à UNE rangée garde `groupOwner`, donc l'owner `'*'`.
-   *
-   * Ce n'est PAS le défaut #1268 (qui était `undefined` → fenêtre à l'hôte SEUL, invisible au siège
-   * porteur) : `'*'` est PERMISSIF — le siège porteur voit sa fenêtre, l'influence reste routée rangée
-   * par rangée (`seatInfluences`). Le resserrer (une moitié à un porteur = SON `actorId`) demanderait
-   * soit de dupliquer la règle de possession hors du socle, soit de re-minter depuis une déclaration
-   * que cette fonction n'a pas — c'est au MURAGE de le faire, pas à une migration de possession.
-   * Cette sonde FIXE l'état actuel : elle rougira le jour où le murage l'inversera, à dessein.
+   * MURAGE (#1262 B4) : `splitBandRows` ne RECOPIE plus la bande d'origine — chaque moitié repasse par
+   * le constructeur du socle (`bandStep`) depuis la déclaration relue. La possession se re-DÉRIVE donc
+   * de SES rangées : une moitié à un seul porteur le NOMME (`actorId`), au lieu de garder le
+   * `groupOwner` (owner `'*'`, n'importe quel siège) de la bande multi-porteurs dont elle sort.
+   * L'inverse exact de la sonde-résidu du lot 5c, comme annoncé à son commentaire.
    */
-  it('RÉSIDU : une moitié de `splitBandRows` à UNE rangée garde `groupOwner` (permissif, à inverser au murage)', () => {
+  it('une moitié de `splitBandRows` à UNE rangée NOMME son porteur (possession re-dérivée)', () => {
     set({ party: [affame('h1'), affame('h2')] } as never);
     get().advanceTime(MINUTES_PER_DAY);
     const faim = bandsOf('faim')[0];
@@ -177,9 +218,17 @@ describe('POSSESSION d’une bande de nuit (#1268)', () => {
 
     expect(kept!.participants!.map((r) => r.id)).toEqual(['h1']);
     expect(others!.participants!.map((r) => r.id)).toEqual(['h2']);
-    expect(kept!.groupOwner, 'possession RECOPIÉE, pas re-dérivée').toBe(true);
-    expect(kept!.actorId, 'la moitié ne nomme pas son unique porteur').toBeUndefined();
-    expect(others!.groupOwner).toBe(true);
+    expect(kept!.actorId, 'une bande d’un seul porteur EST son porteur').toBe('h1');
+    expect(kept!.groupOwner, 'et n’est plus une fenêtre partagée').toBeUndefined();
+    expect(others!.actorId).toBe('h2');
+    expect(others!.groupOwner).toBeUndefined();
+
+    // La fenêtre part au siège qui tient le dormeur, plus à l'hôte (assertion COOP, #1262 B7).
+    set({ pendingCascade: { title: 'T', purpose: 'test', cursor: 0, log: [], participants: [kept!] } } as never);
+    set({ net: { ...get().net, mode: 'host', mySeat: 0, slots: [0, 1, 0, 0], ownership: { h1: 1 } } } as never);
+    expect(modalOwnerOf(get())).toBe('h1');
+    expect(seatOwns(get(), 1, 'h1')).toBe(true);
+    expect(seatOwns(get(), 0, 'h1'), 'l’hôte ne tranche pas le jet de l’invité').toBe(false);
   });
 });
 

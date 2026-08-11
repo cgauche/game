@@ -15,6 +15,7 @@ import {
   type BuiltCascadeStep, type HostJet, type HostSpec,
 } from './rollSeam';
 import { pushStep, registerTableStep, stepInteraction } from './cascade';
+import { pushCombatStep } from './combatEffects';
 import { modalOwnerOf } from './modalArbiter';
 import { ownsLocally, seatOwns } from './netOwnership';
 import type { PendingKey } from './stateFields';
@@ -179,6 +180,33 @@ describe('#1262 — la MARQUE mure la porte', () => {
     openSequence(useGame.getState, useGame.setState, { title: 'Titre', purpose: 'test', steps: [step] });
     expect(useGame.getState().pendingCascade!.title).toBe('Titre');
     expect(etapes()).toHaveLength(1);
+  });
+
+  /**
+   * LE MURAGE DE LA VAGUE COMBAT (#1262 B4) — `pushCombatStep` est le point d'append historique des
+   * étapes de combat. Retypé à la MARQUE, il ne prend plus que ce qu'un mint a monté : le site qui
+   * bâtirait son étape à la main NE COMPILE PLUS, dans les deux formes (déclaration directe ET
+   * fabrique indexée). Le verrou est celui du COMPILATEUR : c'est la ligne `@ts-expect-error` qui
+   * l'atteste (sans l'erreur attendue, `tsc` échoue) — l'exécution, elle, ignore les types, et l'étape
+   * atterrit bel et bien dans la séquence. Ce qui suit le mesure, pour ne rien promettre de plus.
+   */
+  it('`pushCombatStep` refuse au TYPE un littéral d’étape monté à la main', () => {
+    // @ts-expect-error — `step` n'accepte que des étapes MINTÉES (marque absente)
+    pushCombatStep(useGame.setState, { id: 'e', kind: 'k', label: 'L', actorId: 'H1', interactive: true });
+    expect(etapes().map((s) => s.id)).toEqual(['e']);
+  });
+
+  it('`pushCombatStep` refuse au TYPE la FABRIQUE qui rend un littéral', () => {
+    // @ts-expect-error — la fabrique doit rendre une étape MINTÉE
+    pushCombatStep(useGame.setState, (index: number) => ({ id: `e-${index}`, kind: 'k', label: 'L', actorId: 'H1', interactive: true }));
+    expect(etapes().map((s) => s.id)).toEqual(['e-0']);
+  });
+
+  it('`pushCombatStep` accepte l’étape MINTÉE (la voie qui reste ouverte)', () => {
+    const step = monoStep({ id: 'm', kind: 'k', label: 'L', actor: hero('H1'), difficulty: 'intermediaire' })!;
+    pushCombatStep(useGame.setState, step);
+    expect(etapes().map((s) => s.id)).toEqual(['m']);
+    expect(useGame.getState().pendingCascade!.purpose).toBe('combat');
   });
 });
 

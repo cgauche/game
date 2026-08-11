@@ -10,6 +10,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { ESLint } from 'eslint';
+import ts from 'typescript';
 
 /** Fichier de test SOUS le périmètre de la règle (jamais un minteur, qui est exempté). */
 const SOUS_LA_REGLE = 'src/state/__sonde-verrou-marque.ts';
@@ -58,5 +59,60 @@ describe('#1262 — le lint mure les ROUTES DE FORGE de la marque', () => {
   it('les MINTEURS restent exemptés : leur cast interne est la seule fabrique légitime', async () => {
     const [res] = await eslint.lintText(`${ENTETE}export const h = o as BuiltCascadeStep;\n`, { filePath: 'src/state/rollSeam.ts', warnIgnored: false });
     expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax')).toHaveLength(0);
+  });
+});
+
+/**
+ * LES `@ts-expect-error` DU MURAGE SONT-ILS TUEURS ? (#1262 B4) — `roll-seam-mints.test.ts` atteste
+ * que `pushCombatStep` refuse un littéral, par des directives `@ts-expect-error`. Une directive ne
+ * vaut que si l'erreur attendue EXISTE : sous l'ancienne signature (`CascadeStep`), elle devient
+ * INUTILISÉE et `tsc` rougit (TS2578) — c'est ce qui rend le test tueur plutôt que décoratif.
+ *
+ * Mesuré ICI sur un programme TypeScript RÉEL (API du compilateur, deux variantes de la MÊME
+ * signature), pas sur une relecture du fichier : la sonde de mutation du lot devient une garde
+ * REJOUABLE, au lieu d'une preuve à refaire à la main.
+ */
+const SONDE = (signature: 'BuiltCascadeStep' | 'CascadeStep') => `
+declare const BRAND: unique symbol;
+type CascadeStep = { id: string; kind: string };
+type BuiltCascadeStep = CascadeStep & { readonly [BRAND]: true };
+declare function pushCombatStep(step: ${signature}): void;
+// @ts-expect-error — littéral nu : la marque de mint est absente
+pushCombatStep({ id: 'e', kind: 'k' });
+`;
+
+function codesDeDiagnostic(code: string): number[] {
+  const fileName = 'sonde-murage.ts';
+  // `types: []` : la sonde ne dépend d'AUCUN `@types` du dépôt — elle mesure la signature, rien d'autre.
+  const options: ts.CompilerOptions = { strict: true, noEmit: true, target: ts.ScriptTarget.ES2020, types: [], skipLibCheck: true };
+  const libPath = ts.getDefaultLibFilePath(options);
+  const sf = ts.createSourceFile(fileName, code, ts.ScriptTarget.ES2020, true);
+  const host: ts.CompilerHost = {
+    // Hors sonde : seule la bibliothèque standard de TypeScript est servie (références `/// <reference lib>`).
+    getSourceFile: (n) => {
+      if (n === fileName) return sf;
+      const texte = ts.sys.readFile(n);
+      return texte === undefined ? undefined : ts.createSourceFile(n, texte, ts.ScriptTarget.ES2020);
+    },
+    writeFile: () => {},
+    getDefaultLibFileName: () => libPath,
+    useCaseSensitiveFileNames: () => false,
+    getCanonicalFileName: (n) => n.toLowerCase(),
+    getCurrentDirectory: () => '',
+    getNewLine: () => '\n',
+    fileExists: (n) => n === fileName || ts.sys.fileExists(n),
+    readFile: (n) => (n === fileName ? code : ts.sys.readFile(n)),
+  };
+  const program = ts.createProgram([fileName], options, host);
+  return ts.getPreEmitDiagnostics(program).map((d) => d.code);
+}
+
+describe('#1262 B4 — la sonde de murage de `pushCombatStep` est TUEUSE', () => {
+  it('signature MURÉE (`BuiltCascadeStep`) : la directive est CONSOMMÉE — zéro diagnostic', () => {
+    expect(codesDeDiagnostic(SONDE('BuiltCascadeStep'))).toEqual([]);
+  });
+
+  it('signature D’AVANT (`CascadeStep`) : le littéral passe, la directive devient INUTILISÉE (TS2578)', () => {
+    expect(codesDeDiagnostic(SONDE('CascadeStep')), 'sans ce rouge, les `@ts-expect-error` du lot ne prouveraient rien').toContain(2578);
   });
 });

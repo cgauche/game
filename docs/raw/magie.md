@@ -170,7 +170,7 @@ La compétence **Prière**, **Langue (Magick)** et **Focalisation** sont des **c
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 46` (l.23-25) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `hasArcaneTalent` ⚠sans-appelant, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `a-terre`, `mineure-delie`, +47 — `src/data/miscast.json`, `src/engine/domainAttributes.ts`, `src/engine/magic.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +4 fichiers
-- `LDB 85` (l.206-207) → `morsure`, `STARTLE_CAUSE_LABELS`, `applySwarmBuild`, `Condition`, `empetre`, `TriggerCtx`, `combatTestPenaltyParts`, `attackModifiers`, `immunite-psychologique`, `increvable`, +21 — `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, +6 fichiers
+- `LDB 85` (l.206-207) → `morsure`, `STARTLE_CAUSE_LABELS`, `applySwarmBuild`, `Condition`, `empetre`, `TriggerCtx`, `combatTestPenaltyParts`, `attackModifiers`, `immunite-psychologique`, `increvable`, +21 — `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, +5 fichiers
 
 ---
 

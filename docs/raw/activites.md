@@ -404,7 +404,7 @@ Test de Compétence de Carrière :
 Les Personnages aux Niveaux 3-4 qui entreprennent *Revenus* **maintiennent automatiquement leur Statut** (voir *Avec le pouvoir*).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 8` (l.106-122) → `statusOf`, `openCatalogActivity`, `runActivityResolver` — `src/engine/activities.ts`, `src/engine/social.ts`, `src/state/interludeFlow.ts`
+- `LDB 8` (l.106-122) → `statusOf`, `openCatalogActivity`, `runActivityResolver`, `statut` — `src/data/regles.json`, `src/engine/activities.ts`, `src/engine/social.ts`, `src/state/interludeFlow.ts`
 - `LDB 23` (l.187-193) → `revenus`, `ActivityDef`, `everBelongedClasses`, `openCatalogActivity`, `Combatant`, `dernieres-nouvelles`, `entrainement-au-combat`, `observer-une-cible` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 
 ---
@@ -474,7 +474,7 @@ Test **Savoir Accessible (+20)** (spécialisation appropriée). Sans la bonne sp
 - Échec Impressionnant → fausse information crue vraie (MJ peut lancer en secret).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.222-227) → `InterludeHeroState`, `statusIncomeMax`, `PendingActivityFields`, `heroStatus`, `GameOp`, `ActiveEffect`, `openCatalogActivity`, `runActivityResolver`, `dernieres-nouvelles`, `entrainement-au-combat`, +5 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.222-227) → `InterludeHeroState`, `statusIncomeMax`, `PendingActivityFields`, `heroStatus`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, `runActivityResolver`, `dernieres-nouvelles`, `entrainement-au-combat`, +5 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 
 ---
 
@@ -492,7 +492,7 @@ Dépenser de l'argent pour augmenter son Standing de +1 pour la prochaine aventu
 - Échec Stupéfiant (−6) → Standing −1 pour la prochaine aventure entière.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.229-234) → `InterludeHeroState`, `ActivityDef`, `statusIncomeMax`, `PendingActivityFields`, `heroStatus`, `GameOp`, `ActiveEffect`, `openCatalogActivity`, `runActivityResolver`, `recherche-de-savoir`, +3 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.229-234) → `InterludeHeroState`, `ActivityDef`, `statusIncomeMax`, `PendingActivityFields`, `heroStatus`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, `runActivityResolver`, `recherche-de-savoir`, +3 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 
 ---
 

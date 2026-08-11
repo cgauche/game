@@ -12,7 +12,8 @@ import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, cl
 import { setAiTrace } from './ai';
 import { getStageBackend, setStageBackend } from './stage3d';
 import { viewYawDeg } from './stageYaw';
-import { pushCombatStep, gearFromEffects } from './combatEffects';
+import { gearFromEffects } from './combatEffects';
+import { pushChoice } from './rollSeam';
 import { trappings, findCreatureById } from '../data';
 import { creatureToCombatant } from './spawn';
 import type { PendingBladeTrap } from './pendings';
@@ -1138,11 +1139,11 @@ export function buildApi() {
       if (!weapon) return `✗ ${attacker.label} n'a pas d'arme active`;
       if (!weapon.uid) weapon.uid = `dev-blade-${attackerId}`; // uid universel requis pour cibler la lame
       const pbt: PendingBladeTrap = { defenderId, attackerId, weapon, parryWeaponUid: defender.weapons?.[0]?.uid ?? 'parry', defSL, roll: 33 };
-      pushCombatStep(useGame.setState, {
-        id: `cons-bladetrap-${defenderId}`, kind: 'bladeTrap', actorId: defenderId, icon: 'journal/backstab',
+      pushChoice(useGame.setState, {
+        id: `cons-bladetrap-${defenderId}`, kind: 'bladeTrap', actorId: defenderId, icon: 'item/weapon',
         label: 'Parade — piéger la lame ?',
         options: [{ key: 'trap', label: 'Piéger la lame' }, { key: 'crit', label: 'Coup Critique' }],
-        defaultChoice: 'crit', bladeTrap: pbt, interactive: true,
+        defaultChoice: 'crit', bladeTrap: pbt,
       });
       useGame.setState((s) => ({ battle: s.battle ? { ...s.battle, combatants: [...s.battle.combatants] } : s.battle }));
       return `✓ Piège-lame : ${defender.label} pare ${attacker.label} (${weapon.label}, +${defSL} DR) → choix Piéger/Critique`;

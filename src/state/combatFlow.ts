@@ -5708,6 +5708,11 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
     }
   }
   if (inlineLines.length) get().log(inlineLines);
+  // `startCascade` et non `openSequence` : la file `deferredUpkeepQueue` est typée `CascadeStep[]` (le
+  // retypage d'`ApplierResult.insert`/de la file appartient à la vague qui migre ses 8 fichiers
+  // producteurs, #1262 B2) — l'étape NON bandable qui la traverse (`steps.push(st)` ci-dessus) n'est
+  // donc pas mintée, et la séquence entière reste `CascadeStep[]`. Les jets bâtis ICI, eux, passent
+  // tous par la porte (`monoStep`, `splitBandRows` → `bandStep`).
   if (steps.length) startCascade(get, set, { title: 'Conséquences du combat', icon: 'condition/bleeding', purpose: 'combat', steps, combatEndBoundary: true });
 }
 

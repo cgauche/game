@@ -25,7 +25,7 @@ import type { Get, Set } from './flowTypes';
 import { isNightTestKind } from '../engine/types';
 import { registerCascadeApplier } from './cascade';
 import { actorIn } from './combatants';
-import { resultLines, bandStep, bandStepId, type Consequence, type BandSpec } from './rollSeam';
+import { resultLines, bandStep, bandStepId, refusePorte, type Consequence, type BandSpec, type BuiltCascadeStep } from './rollSeam';
 import { sealskinDR, type ExposureKind } from '../engine/exposure';
 
 /** Champs du jet MONO qui DESCENDENT sur la rangée (le reste — icône, enjeu, libellé de situation —
@@ -91,7 +91,7 @@ function nightRow(step: CascadeStep): BatchParticipant {
  * `groupOwner`, un seul → SON `actorId`. Sans elle, l'arbitre (`modalArbiter`) rendait la fenêtre à
  * l'HÔTE SEUL et le siège qui tient le dormeur ne voyait jamais la rangée où se joue son jet de nuit.
  * Le DÉDOUBLEMENT de CLÉ (`bandStepId`) est celui du socle aussi — un seul compteur `#n`, jamais deux.
- * Il ne dit RIEN de l'unicité des `id` produits : cf. la borne au site de l'`id` ci-dessous.
+ * L'`id` produit, lui, porte les DEUX discriminants de la clé (jour ET rang) — cf. son site ci-dessous.
  */
 export function nightBands(steps: CascadeStep[]): CascadeStep[] {
   const out: CascadeStep[] = [];
@@ -100,25 +100,28 @@ export function nightBands(steps: CascadeStep[]): CascadeStep[] {
     if (!bandable(step)) { out.push(step); continue; }
     // Deux jets de MÊME entrée le MÊME jour chez le MÊME héros (deux Convalescences échéant ensemble) :
     // une rangée par id, donc une bande de plus — jamais deux rangées injoignables DANS une bande.
-    // BORNE de cette garantie : elle porte sur les RANGÉES, pas sur l'id des bandes produites (cf. `id`
-    // ci-dessous, dont le discriminant `day` court-circuite le rang de dédoublement).
     const cle = nightBandKey(step);
     const key = bandStepId(bands, cle, step.actorId!);
     const held = bands.get(key);
     if (held) { held.rows.push(nightRow(step)); held.metas.push(step.meta); continue; }
-    // Rang de dédoublement de cette clé (`clé`, `clé#2`…) — l'id de bande s'en sert à défaut de jour.
+    // Rang de dédoublement de cette clé (`clé`, `clé#2`…) — porté par l'id de bande à côté du jour.
     const n = key === cle ? 1 : Number(key.slice(cle.length + 1));
+    const jour = step.meta?.day;
     const spec: BandSpec = {
-      // L'id de bande porte le DISCRIMINANT de sa clé (le jour, sinon le rang de dédoublement) : deux
-      // insertions issues du MÊME `step.id` à des jours différents — la gueule de bois de deux
-      // Dessoûlages, `dessoulageHangover-<héros>` — se retrouveraient sinon avec le MÊME id dans la
-      // séquence, et le seul lookup-par-id de prod (`meta.nextWaveOf`) comme les coordonnées de rangée
-      // (`nightRowId`) viseraient la mauvaise fenêtre.
-      // TROU MESURÉ, antérieur à cette fabrique et NON refermé ici : les deux discriminants sont
-      // EXCLUSIFS (`day ?? n`) — quand le jour existe, le rang de dédoublement est jeté, donc deux
-      // bandes dédoublées le MÊME jour (deux Convalescences du même héros) sortent avec le MÊME id.
-      // Collision constructible ; sa fermeture appartient au murage (elle change des ids persistés).
-      id: `bande-${step.id}-${step.meta?.day ?? n}`, kind: step.kind, label: step.label ?? '',
+      // L'id de bande porte les DEUX discriminants de sa clé, dans des ESPACES DE NOMS SÉPARÉS (#1277) :
+      //  - le JOUR (préfixé `j`), car deux insertions issues du MÊME `step.id` à des jours différents —
+      //    la gueule de bois de deux Dessoûlages, `dessoulageHangover-<héros>` — viennent de DEUX appels
+      //    distincts à la fabrique, qui ne peut pas les dédoublonner entre eux ;
+      //  - le RANG de dédoublement, car deux bandes séparées sous la MÊME clé (deux Convalescences du
+      //    même héros) sortiraient sinon avec le même id.
+      // Le préfixe est ce qui les sépare : sans lui, un rang `2` et un jour `2` se confondent (une étape
+      // de nuit peut n'avoir aucun jour — la file de fin de combat en porte). Le seul lookup-par-id de
+      // prod (`meta.nextWaveOf`) et les coordonnées de rangée (`nightRowId`) viseraient la mauvaise
+      // fenêtre. Ids RUNTIME-ONLY : aucune sauvegarde ne les rejoue (elle restaure la séquence telle
+      // quelle ; `MIGRATIONS[17]` les reconstruit par cette même fabrique).
+      id: jour !== undefined ? `bande-${step.id}-j${jour}${n > 1 ? `#${n}` : ''}` : `bande-${step.id}-${n}`,
+      kind: step.kind,
+      ...(step.label !== undefined ? { label: step.label } : {}),
       ...(step.icon ? { icon: step.icon } : {}),
       ...(step.stake ? { stake: step.stake } : {}),
       ...(step.menace ? { menace: step.menace } : {}),
@@ -182,6 +185,23 @@ export function registerNightBandApplier(kind: string, rowFn: NightRowApplier, b
   });
 }
 
+/** DÉCLARATION d'une bande DÉJÀ MONTÉE, relue pour la RE-FABRIQUER (scission, vague suivante) : les
+ *  champs de la déclaration, jamais ceux du jeu (`result`, `committed`, `outcome`, `chosen` — une
+ *  bande re-fabriquée est une bande NEUVE). C'est ce que le mint (`bandStep`) attend, et c'est lui qui
+ *  re-DÉRIVE la possession sur les rangées données. */
+function bandSpecOf(band: CascadeStep): BandSpec {
+  return {
+    id: String(band.id), kind: band.kind,
+    ...(band.label !== undefined ? { label: band.label } : {}),
+    ...(band.icon ? { icon: band.icon } : {}),
+    ...(band.aggregate ? { aggregate: band.aggregate } : {}),
+    ...(band.stake ? { stake: band.stake } : {}),
+    ...(band.menace ? { menace: band.menace } : {}),
+    ...(band.combatPsych ? { combatPsych: band.combatPsych } : {}),
+    ...(band.meta ? { meta: band.meta } : {}),
+  };
+}
+
 /**
  * SCINDE une bande en deux selon un prédicat sur le PORTEUR de chaque rangée — la fenêtre reste UNE
  * par entrée de règle, mais ses rangées peuvent relever de DEUX pilotes (fin de combat : un héros
@@ -189,15 +209,17 @@ export function registerNightBandApplier(kind: string, rowFn: NightRowApplier, b
  * ENTIÈRE, jamais une rangée `interactive:false` glissée dans la bande interactive : le pilote
  * interactif n'auto-roule pas les témoins (`rollBatchParticipants` n'est appelé que par
  * `resolveRemainingCascade`/`runCascadeImmediate`) et la conséquence d'un témoin y serait perdue.
+ *
+ * Chaque moitié est RE-MINTÉE (`bandStep`, #1262 murage) au lieu d'être recopiée : la possession se
+ * re-dérive de SES rangées — une moitié à un seul porteur le NOMME (`actorId`) au lieu de garder le
+ * `groupOwner` de la bande d'origine.
  */
-export function splitBandRows(band: CascadeStep, keep: (rowId: string) => boolean): { kept?: CascadeStep; others?: CascadeStep } {
+export function splitBandRows(band: CascadeStep, keep: (rowId: string) => boolean): { kept?: BuiltCascadeStep; others?: BuiltCascadeStep } {
   const rows = band.participants ?? [];
-  const a = rows.filter((r) => keep(r.id));
-  const b = rows.filter((r) => !keep(r.id));
-  return {
-    ...(a.length ? { kept: { ...band, participants: a } as CascadeStep } : {}),
-    ...(b.length ? { others: { ...band, id: `${band.id}#auto`, participants: b } as CascadeStep } : {}),
-  };
+  const spec = bandSpecOf(band);
+  const kept = bandStep(spec, rows.filter((r) => keep(r.id)));
+  const others = bandStep({ ...spec, id: `${spec.id}#auto` }, rows.filter((r) => !keep(r.id)));
+  return { ...(kept ? { kept } : {}), ...(others ? { others } : {}) };
 }
 
 /** Clé d'une RANGÉE dans la cascade (bande + porteur) — coordonnée que porte le délestage qui ANNULE
@@ -243,8 +265,12 @@ export function exposurePriorFails(steps: CascadeStep[], hero: Combatant, kind: 
  * campeurs ne changent pas), remises à zéro et RE-DOTÉES de leur escalade (`meta.priorFails`) lue sur
  * les étapes déjà jouées. `[]` quand la dernière vague vient d'être jouée. SOURCE UNIQUE des TROIS
  * producteurs d'Exposition (nuit de repos, effet de scène `exposureNight`, entretien de mer).
+ *
+ * La vague est une bande NEUVE, donc RE-MINTÉE (`bandStep`, #1262 murage) : ni le jeu de la vague
+ * précédente (`committed`/`result`/`outcome`) ni sa possession ne se recopient — les deux se
+ * re-dérivent de ses rangées.
  */
-export function nextExposureWave(get: Get, band: CascadeStep, steps: CascadeStep[]): CascadeStep[] {
+export function nextExposureWave(get: Get, band: CascadeStep, steps: CascadeStep[]): BuiltCascadeStep[] {
   const wave = Number(band.meta?.wave ?? 0) + 1;
   if (wave >= Number(band.meta?.waves ?? 1)) return [];
   const kind = (band.meta?.kind as ExposureKind) ?? 'froid';
@@ -253,17 +279,31 @@ export function nextExposureWave(get: Get, band: CascadeStep, steps: CascadeStep
     const meta = { ...row.meta, priorFails: hero ? exposurePriorFails(steps, hero, kind) : 0 };
     return { ...row, result: null, outcome: undefined, rerolled: undefined, forced: undefined, immune: undefined, fixed: undefined, meta };
   });
-  return [{ ...band, id: `${String(band.id).split('#w')[0]}#w${wave}`, participants: rows,
-    committed: undefined, outcome: undefined, result: undefined,
-    meta: { ...band.meta, wave } } as CascadeStep];
+  const suivante = bandStep({
+    ...bandSpecOf(band),
+    id: `${String(band.id).split('#w')[0]}#w${wave}`,
+    meta: { ...band.meta, wave },
+  }, rows);
+  return suivante ? [suivante] : [];
 }
 
 /** Bande d'Exposition d'une PREMIÈRE vague, à partir des étapes MONO d'un producteur : chaque rangée
  *  entre à escalade NULLE (aucun Test d'Exposition n'a encore été subi dans cette séquence) et la bande
- *  porte le nombre TOTAL de vagues, que `nextExposureWave` déroule. `[]` sans campeur ni vague. */
-export function exposureWaveBand(monoSteps: CascadeStep[], kind: ExposureKind, waves: number): CascadeStep[] {
+ *  porte le nombre TOTAL de vagues, que `nextExposureWave` déroule. `[]` sans campeur ni vague.
+ *
+ *  La bande sort RE-MINTÉE avec son `meta` de vague (#1262 murage). Une étape que la fabrique n'a PAS
+ *  bandée n'est pas un jet d'Exposition jouable (ni cible, ni porteur, ni `kind` de nuit) : elle est
+ *  REFUSÉE, comme toute déclaration qu'un mint ne peut pas monter — jamais glissée telle quelle dans
+ *  une vague dont l'applier de bande ne saurait rien faire. */
+export function exposureWaveBand(monoSteps: CascadeStep[], kind: ExposureKind, waves: number): BuiltCascadeStep[] {
   if (!monoSteps.length || waves <= 0) return [];
   const seeded = monoSteps.map((s) => ({ ...s, meta: { ...s.meta, kind, priorFails: 0 } }));
-  const bands = nightBands(seeded);
-  return bands.map((b) => ({ ...b, meta: { ...b.meta, kind, wave: 0, waves } }) as CascadeStep);
+  return nightBands(seeded).flatMap((b) => {
+    if (!b.participants?.length) {
+      refusePorte(`Exposition « ${b.id} » (${b.kind}) : étape non bandable — ni rangée, ni vague à dérouler. Étape écartée.`);
+      return [];
+    }
+    const band = bandStep({ ...bandSpecOf(b), meta: { ...b.meta, kind, wave: 0, waves } }, b.participants);
+    return band ? [band] : [];
+  });
 }

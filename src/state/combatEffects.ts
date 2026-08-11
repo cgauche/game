@@ -52,9 +52,9 @@ import { inRect, combatantsWithinRadius } from './combatGeometry';
 import { removeEntity } from './combatGeometry';
 import { playSfx } from '../audio/engine';
 import { combatDistance } from './footprint';
-import { startCascade, registerCascadeApplier, pushStep } from './cascade';
+import { registerCascadeApplier, pushStep } from './cascade';
 import { exposureWaveBand } from './nightBands';
-import { freeCons, rollStep } from './rollSeam';
+import { freeCons, rollStep, hostStep, monoStep, openSequence, type BuiltCascadeStep } from './rollSeam';
 import { startGroundPursuit } from './pursuitFlow';
 import { sourceExposureMod, autoExposureMods, drawWaterDisease, isWounded } from '../engine/waterExposure';
 import { loseWounds, addCondition, hasCondition } from '../engine/conditions';
@@ -117,13 +117,20 @@ export function drainPendingLog(get: Get, set: SetFn): import('./combatLog').Com
   return q.map((e) => ev('condition', e.line, e.cid));
 }
 
-/** Pousse une ÉTAPE de séquence de combat déjà formée (ex. choix de déviation foldé, P3a) : le cas
- *  `purpose:'combat'` de la primitive générique `pushStep` (state/cascade.ts). La variante FABRIQUE
- *  (`index` = position d'append) est celle de `pushStep` : un `kind` poussé PLUSIEURS fois dans la
- *  même séquence (relance d'Imparfaite, #942 L6) y prend un id unique. La fabrique peut rendre
- *  `undefined` — comme celle de `pushStep` : un constructeur de la porte (`rollSeam`) qui REFUSE sa
- *  déclaration n'a aucune étape à donner, et l'index d'append n'est connu que dans le `set` atomique. */
-export function pushCombatStep(set: SetFn, step: CascadeStep | ((index: number) => CascadeStep | undefined)): void {
+/** Pousse une ÉTAPE de séquence de combat déjà MINTÉE (`BuiltCascadeStep` — un constructeur de la
+ *  porte `rollSeam`, ou `revealToStep`) : le cas `purpose:'combat'` de la primitive générique
+ *  `pushStep` (state/cascade.ts). La variante FABRIQUE (`index` = position d'append) est celle de
+ *  `pushStep` : un `kind` poussé PLUSIEURS fois dans la même séquence (relance d'Imparfaite, #942 L6)
+ *  y prend un id unique. La fabrique peut rendre `undefined` — comme celle de `pushStep` : un
+ *  constructeur de la porte qui REFUSE sa déclaration n'a aucune étape à donner, et l'index d'append
+ *  n'est connu que dans le `set` atomique.
+ *
+ *  MURAGE (#1262 B4) : la marque est REQUISE ici — un littéral d'étape monté à la main ne compile
+ *  plus. Les étapes de combat se déclarent aux portes (`pushBand`/`pushChoice`/`pushMono`/`pushTable`/
+ *  `pushTableDone`/`pushDisplay`/`pushHost`), qui montent, surfacent et possèdent ; ce point d'entrée
+ *  ne sert plus qu'aux étapes déjà mintées par une fabrique tierce (bandes de `combat/triggeredTest`,
+ *  révélations). */
+export function pushCombatStep(set: SetFn, step: BuiltCascadeStep | ((index: number) => BuiltCascadeStep | undefined)): void {
   pushStep(set, step, 'combat');
 }
 
@@ -479,7 +486,9 @@ export function openSkillTest(
   // ENJEU (#1117) : `FlowTest.stake` DESCEND sur l'étape qui lance — c'est elle que `CascadeModal` lit.
   // Second transporteur du champ, à parité avec les deux fabriques de `combat/triggeredTest.ts` : sans
   // lui, tout Flow joué par `runFlow` (Escalade, Saut, Récolte…) porterait un enjeu que rien n'affiche.
-  startCascade(get, set, { title: label, icon: 'nav/dice', purpose: 'test', steps: [{ id: 'test-jet', kind: 'sceneTestJet', jet: 'test', actorId: def.id, ...(spec.stake ? { stake: spec.stake } : {}) }] });
+  const jet = hostStep(get, { id: 'test-jet', kind: 'sceneTestJet', jet: 'test', actorId: def.id, ...(spec.stake ? { stake: spec.stake } : {}) });
+  if (!jet) return false; // le mint ne refuse QUE si `pendingTest` manque — rien à défaire, il vient d'être posé
+  openSequence(get, set, { title: label, icon: 'nav/dice', purpose: 'test', steps: [jet] });
   return true;
 }
 
@@ -1153,7 +1162,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       // BANDE d'Exposition (#1117 L3) : une fenêtre par VAGUE, les héros exposés en rangées — les
       // vagues suivantes se déroulent APRÈS les délestages de la précédente (`nextExposureWave`).
       const band = exposureWaveBand(steps, kind, count);
-      if (band.length) startCascade(env.get, env.set, { title: kind === 'froid' ? 'Exposition au froid' : 'Exposition à la chaleur', icon: 'rest/cold', purpose: 'test', steps: band });
+      if (band.length) openSequence(env.get, env.set, { title: kind === 'froid' ? 'Exposition au froid' : 'Exposition à la chaleur', icon: 'rest/cold', purpose: 'test', steps: band });
     },
   },
   inflictTrauma: {
@@ -1278,29 +1287,29 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const heroes = env.targets(e.target ?? 'hero', e.heroId);
       if (!heroes.length) return;
       const src = sourceExposureMod(e.source);
-      const steps: CascadeStep[] = heroes.map((h) => {
+      const steps = heroes.flatMap((h) => {
         const auto = autoExposureMods(h, e.mode); // tableau 2 (gate `appliesTo` interne : immersion seule)
         const parts = [...(src ? [src] : []), ...auto]; // tableau 1 : « à l'ingestion et à l'immersion »
         const detail = parts.map((m) => `${m.label} ${m.mod > 0 ? '+' : ''}${m.mod}`).join(' · ');
-        return {
-          id: `waterExposure-${h.id}`, kind: 'waterExposure', actorId: h.id, icon: 'travel/wave',
+        // Ligne montée par le MONTEUR CANONIQUE (dans le mint) : la base est le Niveau de Résistance NU,
+        // et les deux tableaux d'exposition sont des lignes NOMMÉES sur la cible, chacune liée à la
+        // fiche qui les octroie (MSRC 16).
+        const step = monoStep({
+          id: `waterExposure-${h.id}`, kind: 'waterExposure', actor: h, icon: 'travel/wave',
           rollLabel: refLabel('skills', { id: WATER_EXPOSURE.test.skillId }),
           label: t('eff.waterExposure', { mode: e.mode === 'immersion' ? 'immersion' : 'ingestion', detail: detail ? ` (${detail})` : '' }),
-          // Ligne montée par le MONTEUR CANONIQUE : la base est le Niveau de Résistance NU, et les deux
-          // tableaux d'exposition sont des lignes NOMMÉES sur la cible, chacune liée à la fiche qui les
-          // octroie (MSRC 16).
-          ...rollStep({
-            actor: h,
+          difficulty: WATER_EXPOSURE.test.difficulty,
+          ligne: {
             test: { skill: WATER_EXPOSURE.test.skillId },
-            difficulty: WATER_EXPOSURE.test.difficulty,
             surLaCible: parts.map((m): ModLine => ({
               label: m.label, value: m.mod, famille: 'jet', ref: RULE_REF['exposition-hydrique'],
             })),
-          }),
+          },
           stake: combatStakeRef('waterExposure'),
-        };
+        });
+        return step ? [step] : [];
       });
-      startCascade(env.get, env.set, { title: t('eff.waterTitle'), icon: 'travel/wave', purpose: 'test', steps });
+      if (steps.length) openSequence(env.get, env.set, { title: t('eff.waterTitle'), icon: 'travel/wave', purpose: 'test', steps });
     },
   },
 

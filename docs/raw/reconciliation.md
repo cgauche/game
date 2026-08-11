@@ -47,9 +47,9 @@ _Aucune._
 ## A2-AUTRES — Lignes appelées par le CODE (autres livres) non pinées par l'Atlas
 
 ### MSRC 12 — 5/11 ligne(s) code hors couverture
-- l.85 — `src/data/index.ts:2132` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
+- l.85 — `src/data/index.ts:2151` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
 - l.107 — `src/engine/naval-traits.test.ts:297` — it('Plat-bord : palier de LONGUEUR (grande barge ~30 m, bande ouverte au-delà de 20 m) → 45 CO / 60 Enc (MSRC 12 l.107/109)', () => {
-- l.111 — `src/data/index.ts:2132` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
+- l.111 — `src/data/index.ts:2151` — *  = `totale` (MDG 12 l.364 / MSRC 12 l.85), Plat-bord = `moyenne` (MSRC 12 l.111). Géométrie de Pont,
 - l.117 — `src/engine/naval-traits.test.ts:300` — it('Allégement : ALLÈGE la coque — weightEnc NÉGATIF (grande barge → −80 Enc, MSRC 12 l.117)', () => {
 - l.137 — `src/data/schemas/defs/sea-weather.ts:106` — /** Gréement de course (MSRC 12 l.137) : DELTA de % voiles ajouté au tableau standard par aspect de vent. */
 
@@ -67,11 +67,11 @@ _Aucune._
 ### VDM 14 — 3/7 ligne(s) code hors couverture
 - l.353 — `src/data/arcanePhenomena.ts:77` — /** Modificateurs de NIVEAU D'INCANTATION apportés par le lieu (`VDM 14 l.353`, l.437, l.489) —
 - l.437 — `src/engine/castingNumber.test.ts:28` — it('Caverne de l’Attache : moitié ARRONDIE À L’INFÉRIEUR, Sorts de la Bête (VDM 14 l.437)', () => {
-- l.489 — `src/data/index.ts:1759` — *  deux natures (`VDM 12 l.646-647`, `VDM 14 l.489`). */
+- l.489 — `src/data/index.ts:1778` — *  deux natures (`VDM 12 l.646-647`, `VDM 14 l.489`). */
 
 ### EDOC 13 — 2/7 ligne(s) code hors couverture
 - l.137 — `src/data/index.ts:849` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
-- l.522 — `src/data/index.ts:1354` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
+- l.522 — `src/data/index.ts:1373` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
 
 ### ADE I 6 — 1/1 ligne(s) code hors couverture
 - l.185 — `src/data/index.ts:849` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).

@@ -396,7 +396,7 @@ La créature cause la Peur (Indice) aux adversaires. Applique les règles de Peu
 **Sources RAW** : `LDB 85 l.266` — renvoi LDB 21 + Indice défini dans le statbloc
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.253, l.266) → `morsure`, `StatblockEditor`, `resizeBySteps`, `resolvePsychAI`, `empetre`, `creatureToCombatant`, `sonne`, `souffle-feu`, `souffle-froid`, `souffle-corrosif`, +40 — `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/size.ts`, `src/state/combat/roundHooks.ts`, `src/state/combat/turnHooks.ts`, `src/state/combatFlow.ts`, +3 fichiers
+- `LDB 85` (l.253, l.266) → `morsure`, `StatblockEditor`, `traitEntrySchema`, `resizeBySteps`, `resolvePsychAI`, `empetre`, `creatureToCombatant`, `sonne`, `souffle-feu`, `souffle-froid`, +41 — `src/data/maneuvers.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/size.ts`, `src/state/combat/roundHooks.ts`, `src/state/combat/turnHooks.ts`, +4 fichiers
 
 ---
 

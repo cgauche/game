@@ -45,7 +45,7 @@ Augmentations** dans cette Compétence inscrites sur la Feuille de Personnage.
 **Sources RAW :** LDB 09 l.12-18
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.12-18) → `RecoverResolution`, `possesses`, `DispelModal`, `AppraiseModalView`, `BargainModalView`, `useTestJetProps`, `HealRollFlow`, `TestResult`, `tavernGameBaseValue`, `SurgeryRollFlow`, +26 — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, +18 fichiers
+- `LDB 9` (l.12-18) → `RecoverResolution`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `HealRollFlow`, `TestResult`, `tavernGameBaseValue`, `SurgeryRollFlow`, +28 — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, +19 fichiers
 
 **Voir aussi :** [Tests & Degrés de Réussite](tests.md) pour l'utilisation de ce niveau en test.
 
@@ -73,7 +73,7 @@ Nécessitent un entraînement. **Impossible de tenter le Test sans au moins une 
 **Sources RAW :** LDB 09 l.22-32
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.22-32) → `RecoverResolution`, `hasHealSkill`, `possesses`, `DispelModal`, `AppraiseModalView`, `BargainModalView`, `useTestJetProps`, `redaction`, `HealRollFlow`, `buySkillAdvance`, +37 — `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, +29 fichiers
+- `LDB 9` (l.22-32) → `RecoverResolution`, `hasHealSkill`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `redaction`, `HealRollFlow`, `buySkillAdvance`, +39 — `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, `src/engine/character.ts`, +30 fichiers
 
 ---
 
@@ -183,7 +183,7 @@ Soin aux animaux, Voile**
 **Sources RAW :** LDB 09 l.65-574 (descriptions individuelles).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.65-574) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `essieu-casse`, `actBlockReason`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, +88 — `src/data/combat-stakes.json`, `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, +31 fichiers
+- `LDB 9` (l.65-574) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `essieu-casse`, `actBlockReason`, `skillAdvantageCap`, `carryOverState`, `useDefenseJetProps`, +89 — `src/data/combat-stakes.json`, `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, +32 fichiers
 
 ---
 

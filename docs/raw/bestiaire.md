@@ -294,7 +294,7 @@ Une créature plus grande peut effectuer une **Attaque de Piétinement comme Act
 **Voir aussi** : [Localisation des créatures non humaines](#localisation-des-creatures-non-humaines) ; [Taille — tir sur créature grande](combat.md#taille-categories-et-modificateurs-de-combat).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 14` (l.142-165) → `GrappleModal`, `areGrappling`, `setGrapple`, `scatter`, `combat-deux-armes`, `empetre`, `grappleTierMod`, `main-secondaire`, `grappleEnvMod`, `effectiveSize`, +45 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, +25 fichiers
+- `LDB 14` (l.142-165) → `GrappleModal`, `areGrappling`, `setGrapple`, `scatter`, `combat-deux-armes`, `empetre`, `grappleTierMod`, `main-secondaire`, `effectiveSize`, `grappleEnvMod`, +45 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, +25 fichiers
 - `LDB 85` (l.357-387) → `cannotStopOn`, `agressifEnvers`, `markAttacked`, `weaponFromTrait`, `EnemyTurnInput`, `woundsForSize`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, `taille-modificateurs-en-combat`, +11 — `src/data/index.ts`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/engagement.ts`, `src/engine/psychology.ts`, +7 fichiers
 
 ---
@@ -353,7 +353,7 @@ Ces traits octroient une ou plusieurs manœuvres d'attaque à la créature (`LDB
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.31-35) → `STANDARD_OPTIONALS`, `aaTableFor`, `SceneEntity`, `resolveAACritical`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `critTableKeyFor`, `rollCritical`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
-- `LDB 85` (l.1-382, l.395, l.408, l.442-447) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `creatureWeapon`, +173 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +33 fichiers
+- `LDB 85` (l.1-382, l.395, l.408, l.442-447) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `creatureWeapon`, +174 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, +34 fichiers
 
 ---
 

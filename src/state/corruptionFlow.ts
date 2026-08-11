@@ -37,7 +37,7 @@ import { species, mutationBodyMaxForSpecies, combatStakeRef } from '../data';
 import { findTableEntry } from '../engine/tables';
 import { registerCascadeApplier, registerTableStep, rollTableStep, pushStep } from './cascade';
 import { touchActors } from './combatOrParty';
-import type { CascadeStep, PendingCascade, PendingMutationStep } from './pendings';
+import type { PendingCascade, PendingMutationStep } from './pendings';
 import { rule } from '../engine/policy';
 import { rollTest } from '../engine/tests';
 import { testValue } from '../engine/skills';
@@ -46,7 +46,7 @@ import { checkPartyWiped } from './partyWipe';
 import { evLines } from './combatLog';
 import { pilotedByHuman, canFixDie } from './netOwnership';
 import { followsCharacterRules } from '../engine/relations';
-import { resultLine, freeCons } from './rollSeam';
+import { resultLine, freeCons, tableStep, type BuiltCascadeStep } from './rollSeam';
 
 /**
  * Ajoute `n` Points de Corruption à `hero`, applique seuil → mutation → limites.
@@ -160,28 +160,26 @@ export function mutationTableIdFor(kind: 'physique' | 'mentale', align?: ChaosAl
  *  cours), en séquence autonome sinon — doctrine du slot (#942 L1) : jamais d'écrasement. */
 const mutationPurpose = (get: Get): PendingCascade['purpose'] => (get().battle ? 'combat' : 'test');
 
-function natureStep(hero: Combatant, align: ChaosAlign | undefined, index: number): CascadeStep {
-  return {
+function natureStep(hero: Combatant, align: ChaosAlign | undefined, index: number): BuiltCascadeStep | undefined {
+  return tableStep({
     id: `mutation-nature-${hero.id}-${index}`,
     kind: 'mutationNature', actorId: hero.id, icon: 'nav/mutation',
     label: 'Dissolution — corps ou esprit',
     table: { tableId: mutationNatureTableId(hero.species), die: 100 },
     mutation: { heroId: hero.id, align },
     stake: combatStakeRef('mutationNature'),
-    interactive: true,
-  };
+  });
 }
 
-function mutationTableStep(hero: Combatant, tableId: string, ctx: PendingMutationStep): CascadeStep {
-  return {
+function mutationTableStep(hero: Combatant, tableId: string, ctx: PendingMutationStep): BuiltCascadeStep | undefined {
+  return tableStep({
     id: `mutation-table-${tableId}-${hero.id}`,
     kind: 'mutationTable', actorId: hero.id, icon: 'nav/mutation',
     label: `Mutation — ${mutationTablePlayerLabel(tableId)}`,
     table: { tableId, die: 100 },
     mutation: { ...ctx, tableId },
     stake: combatStakeRef('mutationTable'),
-    interactive: true,
-  };
+  });
 }
 
 /** ÉTAPE 1 : la LIGNE tirée (`result.id`, l'autorité — jamais un re-lookup sur le dé) donne la nature,
@@ -191,7 +189,8 @@ registerCascadeApplier('mutationNature', (_get, _set, step, hero) => {
   const rolled = step.table?.result;
   if (!ctx || !rolled || !hero) return;
   const kind = rolled.id as 'physique' | 'mentale';
-  return { insert: [mutationTableStep(hero, mutationTableIdFor(kind, ctx.align), { ...ctx, kind, natureRoll: rolled.roll })] };
+  const suivante = mutationTableStep(hero, mutationTableIdFor(kind, ctx.align), { ...ctx, kind, natureRoll: rolled.roll });
+  return suivante ? { insert: [suivante] } : undefined;
 });
 
 /** ÉTAPES 2 et N : la LIGNE tirée (`result.id`) EST la mutation. Ligne à SOUS-TABLE → une étape de plus
@@ -202,7 +201,10 @@ registerCascadeApplier('mutationTable', (get, set, step, hero) => {
   if (!ctx?.tableId || !rolled || !hero) return;
   const m = mutationOfRow(rolled.id, rolled.roll);
   const sub = mutationSubTableFor(ctx.tableId, m);
-  if (sub) return { insert: [mutationTableStep(hero, sub, ctx)] };
+  if (sub) {
+    const suivante = mutationTableStep(hero, sub, ctx);
+    return suivante ? { insert: [suivante] } : undefined;
+  }
   const lines = finishMutation(get, set, hero, m, ctx.kind ?? 'physique', ctx.natureRoll ?? 0);
   set({ ...touchActors(get()) });
   return { consequences: freeCons(lines) };
