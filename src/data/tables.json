@@ -1201,7 +1201,8 @@
           },
           {
             "op": "light",
-            "radiusTiles": 1
+            "radiusTiles": 1,
+            "tone": "magique"
           }
         ]
       },

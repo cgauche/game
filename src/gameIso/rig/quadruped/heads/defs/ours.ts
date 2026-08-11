@@ -6,7 +6,7 @@ export const quadHead: QuadHeadDef = {
   label: 'Ours',
   params: ['ears', 'mane', 'bodyLen'],
   art: {
-    // tête d'OURS rugissant (artwork LDB p.317) : FRONT BOMBÉ, museau COURT et large (truffe
+    // tête d'OURS rugissant (artwork LDB 78 p.317) : FRONT BOMBÉ, museau COURT et large (truffe
     // ramenée sous l'œil, fini le groin pointu), petites oreilles rondes, bajoues en lobes de
     // fourrure ARRONDIS (pas de mèches-piquants), gueule béante à 4 canines.
     profile: `<g transform="rotate(6)">` +
@@ -25,7 +25,7 @@ export const quadHead: QuadHeadDef = {
       `<path d="M3.4 11.4 q-0.7 1.5 -0.3 2.9 M6.2 12.8 q-0.3 1.5 0.3 2.7" stroke="@cheveux" stroke-width="1.1" stroke-linecap="round" opacity="0.8"/>` + // barbe de gorge
       `<path d="M1.6 -6.8 Q4.2 -8 6.6 -6.2" stroke="@corpsO" stroke-width="1.2" fill="none"/>` + // sourcil froncé
       `<g data-eye="D" data-ec="3.8 -4.8"><ellipse cx="3.8" cy="-4.8" rx="1.4" ry="1.6" fill="#15100a"/><circle cx="4.2" cy="-5.3" r="0.5" fill="#fff" opacity="0.7"/></g></g>`,
-    // face d'OURS rugissant (artwork LDB p.317) : crâne large, bajoues hirsutes, gueule OUVERTE
+    // face d'OURS rugissant (artwork LDB 78 p.317) : crâne large, bajoues hirsutes, gueule OUVERTE
     // sous la truffe (mâchoire tombée + crocs) — fini la bouche fermée neutre.
     front: (p) => `<g>${earsFront(p)}` +
       `<path d="M-11 -10 Q-13 4 -5 11 Q-2 13.4 0 13.4 Q2 13.4 5 11 Q13 4 11 -10 Q0 -14 -11 -10 Z" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +

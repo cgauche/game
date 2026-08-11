@@ -4,7 +4,7 @@ export const quadTail: QuadTailDef = {
   key: 'touffe-basse',
   label: 'Touffe basse (loup)',
   art: {
-    // queue de loup (artwork LDB p.317) : TOMBANTE derrière le corps (pas le crochet dressé de
+    // queue de loup (artwork LDB 78 p.317) : TOMBANTE derrière le corps (pas le crochet dressé de
     // 'touffe'), FOURNIE sur toute la longueur (bords en touffes), pointe sombre — l'os `queue`
     // penche à 42°, on redresse dans l'art (rotate -30 ⇒ ~12° de chute vers l'arrière).
     profile: `<g transform="rotate(-30)">` +

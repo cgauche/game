@@ -13,7 +13,7 @@ export const quadHead: QuadHeadDef = {
   // et de dos (l'encolure n'y est pas émise, cf. quadParts).
   bone: { profile: 'encolure' },
   art: {
-    // 5 cous serpentins étagés (artwork ZI p.58) : 2 têtes au rang LOINTAIN (rouge sombre) + 3 au
+    // 5 cous serpentins étagés (artwork ZI 5 p.58) : 2 têtes au rang LOINTAIN (rouge sombre) + 3 au
     // rang PROCHE (rouge vif) — chaque cou ÉMERGE du garrot/poitrail en un point PROPRE (racines
     // étalées, jamais une tige commune) et ondule à sa façon
     profile: (p) => {
@@ -44,7 +44,7 @@ export const quadHead: QuadHeadDef = {
       `<ellipse cx="-11" cy="-12" rx="2.8" ry="3.2" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/><ellipse cx="0" cy="-14" rx="3" ry="3.4" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/><ellipse cx="11" cy="-12" rx="2.8" ry="3.2" fill="@cheveux" stroke="@cheveuxO" stroke-width="0.5"/>` +
       spikes(-11, -14.6) + spikes(0, -16.8) + spikes(11, -14.6) + `</g>`,
   },
-  // haie de PIQUANTS noirs garrot→croupe (artwork ZI p.58 : dos hérissé de longues épines sombres
+  // haie de PIQUANTS noirs garrot→croupe (artwork ZI 5 p.58 : dos hérissé de longues épines sombres
   // — bien plus proéminentes que les 'epines' génériques)
   ridge: (p) => {
     const bl = p.bodyLen;

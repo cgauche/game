@@ -11,8 +11,9 @@ import type { RollRowData } from './RollShell';
  * que le répondant n'a pas lancé ; les deux se révèlent à son jet. Confort de jeu RÉVISABLE —
  * candidat à devenir une option (patron de la cadence).
  *
- * SOURCE UNIQUE des trois sites à jet figé (défense réactive, incantation opposée, étape de cascade
- * `meta.opposed`) : un site qui recompose la règle à la main dérive du calendrier.
+ * SOURCE UNIQUE de TOUS les sites à jet figé (défense réactive, incantation opposée, étape de cascade
+ * `meta.opposed`, Au Contact, Distraire, Empoignade, Désengagement, Marchandage) : un site qui
+ * recompose la règle à la main dérive du calendrier. Aucun décompte ici — il se périme.
  */
 
 /** Participant d'un flux opposé, réduit à ce que le calendrier lit (id, rangée jouée ou témoin, jet posé). */

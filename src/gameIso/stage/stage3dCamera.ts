@@ -24,7 +24,7 @@ export type { StageCanvas };
 /** Ce qu'`affineCamera` attend, dérivé de l'intention du stage. */
 export interface Stage3dFraming {
   kind: StageKind;
-  /** Lacet en degrés — `camRot·90`. */
+  /** Lacet en degrés : le cran (`camRot·90`) ou, en lacet CONTINU (#1176, P2-7), l'angle réel de `Dims.yawDeg`. */
   yawDeg: number;
   /** Point MONDE (mètres, repère three : X est, Y haut, Z sud) au centre du cadre — la CIBLE que
    *  l’appelant passe à `affineCamera`. */

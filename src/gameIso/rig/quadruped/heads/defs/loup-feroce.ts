@@ -6,7 +6,7 @@ export const quadHead: QuadHeadDef = {
   label: 'Loup féroce',
   params: ['ears', 'mane', 'bodyLen'],
   art: {
-    // tête de LOUP GRONDANT (artwork LDB p.317) : même crâne bombé/museau cunéiforme que 'loup',
+    // tête de LOUP GRONDANT (artwork LDB 78 p.317) : même crâne bombé/museau cunéiforme que 'loup',
     // mais gueule GRANDE OUVERTE — babines retroussées plissées, rangées de crocs haut+bas,
     // mâchoire inférieure décrochée, œil ambre froncé. Tête DÉDIÉE au Loup (les félins qui
     // empruntent 'loup' gardent leur gueule fermée).
@@ -43,7 +43,7 @@ export const quadHead: QuadHeadDef = {
       `<g data-eye="D" data-ec="5 -4"><ellipse cx="5" cy="-4" rx="1.6" ry="1.5" fill="#c47b1e"/><circle cx="5" cy="-4" r="0.65" fill="#15100a"/></g></g>`,
     back: (p) => napeGeneric(p),
   },
-  // pelage MÊLÉ du loup (artwork LDB p.317) : POITRAIL beige, bande claire du bas de flanc/ventre
+  // pelage MÊLÉ du loup (artwork LDB 78 p.317) : POITRAIL beige, bande claire du bas de flanc/ventre
   // au-dessus de l'ombre, mèches sombres du dos.
   bodyHi: (p) => {
     const bl = p.bodyLen;

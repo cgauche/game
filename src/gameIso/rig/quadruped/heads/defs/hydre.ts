@@ -14,7 +14,7 @@ export const quadHead: QuadHeadDef = {
   // dos (l'encolure n'y est pas émise, cf. quadParts).
   bone: { profile: 'encolure' },
   art: {
-    // 6 cous serpentins étagés (artwork LDB p.323) : rang LOINTAIN sombre derrière (3 têtes hautes)
+    // 6 cous serpentins étagés (artwork LDB 79 p.323) : rang LOINTAIN sombre derrière (3 têtes hautes)
     // + rang PROCHE devant (3 têtes basses) → entrelacs, pas un éventail plat
     profile: (p) => {
       const L = 30 * p.neckLen;
@@ -46,7 +46,7 @@ export const quadHead: QuadHeadDef = {
       `<ellipse cx="-11" cy="-12" rx="2.8" ry="3.2" fill="@corps" stroke="@corpsO" stroke-width="0.5"/><ellipse cx="0" cy="-14" rx="3" ry="3.4" fill="@corps" stroke="@corpsO" stroke-width="0.5"/><ellipse cx="11" cy="-12" rx="2.8" ry="3.2" fill="@corps" stroke="@corpsO" stroke-width="0.5"/>` +
       spikes(-11, -14.6) + spikes(0, -16.8) + spikes(11, -14.6) + `</g>`,
   },
-  // crête de FLAMMES rouge-orangé (@cheveux) le long du dos — signature artwork LDB p.323
+  // crête de FLAMMES rouge-orangé (@cheveux) le long du dos — signature artwork LDB 79 p.323
   ridge: (p) => {
     const bl = p.bodyLen;
     const fl = (x: number, y: number, h: number) =>
