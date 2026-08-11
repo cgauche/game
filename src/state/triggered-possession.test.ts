@@ -124,7 +124,13 @@ describe('#1262 lot 3 — une BANDE nomme son porteur (sinon sa fenêtre échoit
 });
 
 describe('#1262 lot 3 — un Test déclenché HORS fin de Round ne se roule pas chez l’hôte', () => {
-  it('Surprise (LDB 13 l.67-77) : le héros de l’invité reçoit SON étape opposée au lieu d’un jet muet', () => {
+  /**
+   * Le guetteur d'un autre siège est dans la BANDE depuis le lot 5c : le producteur (`applySurprise`)
+   * compose sa bande sur la SURFACE, plus sur l'affordance locale. Il recevait auparavant une étape
+   * MONO `triggeredTest` par la voie inline — la fenêtre remontait, mais hors de l'entrée de règle
+   * partagée (LDB 13 l.77 : UN jet d'embusqueur contre TOUS les guetteurs).
+   */
+  it('Surprise (LDB 13 l.67-77) : le héros de l’invité tient SA rangée dans la bande, au lieu d’un jet muet', () => {
     const { H } = setupCoop();
     expect(humanControlled(g(), H), 'chez l’hôte, il ne pilote pas ce héros…').toBe(false);
     expect(surfaceOf(g, H), '…mais un siège humain le tient : son jet doit remonter').toBe(true);
@@ -133,10 +139,13 @@ describe('#1262 lot 3 — un Test déclenché HORS fin de Round ne se roule pas 
 
     const h = g().battle!.combatants.find((c) => c.id === H.id)!;
     expect(hasCondition(h, COND.surpris), 'aucune Surprise prononcée en silence chez l’hôte').toBe(false);
-    const step = etapes().find((s) => s.kind === 'triggeredTest');
+    expect(etapes().find((s) => s.kind === 'triggeredTest'), 'plus de voie MONO : la bande le porte').toBeUndefined();
+    const step = bande();
     expect(step, 'l’étape influençable existe').toBeTruthy();
-    expect(step!.actorId).toBe(H.id);
-    expect(step!.result, 'c’est la fenêtre de l’invité qui jette').toBeFalsy();
+    expect(step!.participants!.map((p) => p.id)).toEqual([H.id]);
+    expect(step!.participants![0].interactive, 'sa rangée est À JOUER').toBe(true);
+    expect(step!.participants![0].result, 'c’est la fenêtre de l’invité qui jette').toBeNull();
+    expect(step!.actorId, 'une bande d’un seul porteur EST son porteur').toBe(H.id);
     expect(step!.meta?.opposed, 'l’opposition figée de l’embuscade voyage avec l’étape').toBeTruthy();
     expect(modalOwnerOf(g())).toBe(H.id);
     expect(seatOwns(g(), 1, H.id), 'la fenêtre est au siège 1, qui possède le porteur').toBe(true);

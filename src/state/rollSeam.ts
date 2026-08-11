@@ -356,6 +356,11 @@ export interface BandSpec {
   aggregate?: RollAggregate;
   stake?: StakeRef;
   menace?: string;
+  /** CHARGE de l'applier « Psychologie de combat » (`combatFlow`) : l'entrée de règle affrontée (type,
+   *  source, cible, Indice) dont chaque rangée joue le Test. Recopiée telle quelle — une charge n'est pas
+   *  une forme : elle ne rend rien et ne change pas l'interaction de la bande, elle est ce que l'applier
+   *  LIT pour chaque rangée résolue. */
+  combatPsych?: CascadeStep['combatPsych'];
   meta?: CascadeStepMeta;
 }
 
@@ -371,8 +376,8 @@ export interface BandSpec {
  * L'influence reste routée rangée par rangée (`netOwnership.seatInfluences`) : un siège ne dépense
  * jamais les ressources d'autrui, même sous owner `'*'`.
  *
- * Quatre feuilles (`combatFlow`, `combatSlice`, `pursuitFlow`, `store`) posent `groupOwner` en direct ;
- * leur migration vers ce constructeur relève des vagues V1+ (#1262).
+ * Deux feuilles posent encore `groupOwner` en direct hors des mints (`pursuitFlow`, `store`) ; leur
+ * migration relève des vagues V2+ (#1262). En combat, seul `hostStep` l'expose (moment PARTAGÉ).
  *
  * `undefined` sans rangée : il n'y a pas de fenêtre à ouvrir sur zéro jet.
  */
@@ -390,16 +395,22 @@ export function bandStep(spec: BandSpec, rows: readonly BatchParticipant[]): Bui
     participants: [...rows],
     ...(spec.stake ? { stake: spec.stake } : {}),
     ...(spec.menace ? { menace: spec.menace } : {}),
+    ...(spec.combatPsych ? { combatPsych: spec.combatPsych } : {}),
     ...(spec.meta ? { meta: spec.meta } : {}),
   } as BuiltCascadeStep;
 }
 
 /**
- * DÉDOUBLEMENT d'id de bande (#1262) — pli commun des fabriques (calque `nightBands`) : deux jets de
+ * DÉDOUBLEMENT de CLÉ de bande (#1262) — pli commun des fabriques (calque `nightBands`) : deux jets de
  * MÊME clé pour le MÊME porteur (deux Convalescences échéant le même jour) ne peuvent pas cohabiter
  * dans une bande, les surfaces de rangée keyant par id NU — ils ouvrent une bande de PLUS.
  * Rend la clé libre pour ce porteur (`clé`, `clé#2`, `clé#3`…) ; `bandes` est la Map en cours de
  * construction, keyée par cette même clé.
+ *
+ * PORTÉE : la clé de REGROUPEMENT, pas l'`id` de l'étape produite. Ce qu'une fabrique fait du rang de
+ * dédoublement lui appartient — et si elle le remplace par un autre discriminant (`nightBands` pose le
+ * JOUR quand il existe), deux bandes distinctes peuvent ressortir sous le MÊME id. La garantie d'ids
+ * uniques dans une séquence n'est PAS ici ; elle attend le murage.
  */
 export function bandStepId<T extends { readonly rows: readonly BatchParticipant[] }>(
   bandes: ReadonlyMap<string, T>,

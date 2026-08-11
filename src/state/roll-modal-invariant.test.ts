@@ -94,8 +94,10 @@ const SURFACING: { file: keyof typeof SRC; fn: string; pred: RegExp }[] = [
   { file: 'combatFlow', fn: 'maybeHeroCleave', pred: /pilotedByHuman/ },
   { file: 'combatFlow', fn: 'resolveEnemyFumble', pred: /aiDriven/ },
   { file: 'combatFlow', fn: 'openRoundEndCascade', pred: /surfaceOf/ }, // #1262 V1 lot 2 : la SURFACE, pas l'affordance locale
-  { file: 'combatFlow', fn: 'openCombatEndCascade', pred: /humanControlled/ },
-  { file: 'combatFlow', fn: 'openCombatPsychCascade', pred: /humanControlled/ },
+  { file: 'combatFlow', fn: 'openCombatEndCascade', pred: /surfaceOf/ }, // #1262 V1 lot 5c : la SURFACE, pas l'affordance locale
+  { file: 'combatFlow', fn: 'openCombatPsychCascade', pred: /surfaceOf/ }, // #1262 V1 lot 5c : idem
+  { file: 'combatFlow', fn: 'applySurprise', pred: /surfaceOf/ }, // #1262 V1 lot 5c : le guetteur d'un autre siège entre dans la bande
+  { file: 'combatFlow', fn: 'approachFearTrigger', pred: /surfaceOf/ }, // #1262 V1 lot 5c : idem pour le craintif
   { file: 'roundHooks', fn: 'collectHeroRoundEndUpkeep', pred: /surfaceOf/ }, // #1262 V1 lot 2
   { file: 'turnHooks', fn: 'resolveActGates', pred: /surfaceOf/ }, // #1262 V1 : la SURFACE, pas l'affordance locale
   { file: 'turnHooks', fn: 'resolvePsychAI', pred: /aiDriven/ },

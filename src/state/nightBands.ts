@@ -25,7 +25,7 @@ import type { Get, Set } from './flowTypes';
 import { isNightTestKind } from '../engine/types';
 import { registerCascadeApplier } from './cascade';
 import { actorIn } from './combatants';
-import { resultLines, type Consequence } from './rollSeam';
+import { resultLines, bandStep, bandStepId, type Consequence, type BandSpec } from './rollSeam';
 import { sealskinDR, type ExposureKind } from '../engine/exposure';
 
 /** Champs du jet MONO qui DESCENDENT sur la rangée (le reste — icône, enjeu, libellé de situation —
@@ -86,38 +86,50 @@ function nightRow(step: CascadeStep): BatchParticipant {
  * FABRIQUE : regroupe des étapes MONO de nuit en BANDES, dans l'ordre de leur PREMIÈRE émission. Les
  * étapes hors périmètre (kind hors vocabulaire de nuit, choix, bande déjà formée) traversent INTACTES,
  * à leur place. Ajouter un `kind` de nuit ne coûte rien ici : la clé se dérive de l'étape.
+ *
+ * La POSSESSION des bandes est celle du socle (`bandStep`, #1262/#1268) : plusieurs dormeurs →
+ * `groupOwner`, un seul → SON `actorId`. Sans elle, l'arbitre (`modalArbiter`) rendait la fenêtre à
+ * l'HÔTE SEUL et le siège qui tient le dormeur ne voyait jamais la rangée où se joue son jet de nuit.
+ * Le DÉDOUBLEMENT de CLÉ (`bandStepId`) est celui du socle aussi — un seul compteur `#n`, jamais deux.
+ * Il ne dit RIEN de l'unicité des `id` produits : cf. la borne au site de l'`id` ci-dessous.
  */
 export function nightBands(steps: CascadeStep[]): CascadeStep[] {
   const out: CascadeStep[] = [];
-  const bands = new Map<string, { band: Record<string, unknown>; rows: BatchParticipant[]; metas: (CascadeStep['meta'] | undefined)[] }>();
+  const bands = new Map<string, { spec: BandSpec; rows: BatchParticipant[]; metas: (CascadeStep['meta'] | undefined)[]; at: number }>();
   for (const step of steps) {
     if (!bandable(step)) { out.push(step); continue; }
-    let key = nightBandKey(step);
     // Deux jets de MÊME entrée le MÊME jour chez le MÊME héros (deux Convalescences échéant ensemble) :
-    // une rangée par id, donc une bande de plus — jamais deux rangées injoignables.
-    let n = 1;
-    while (bands.get(key)?.rows.some((r) => r.id === step.actorId)) key = `${nightBandKey(step)}#${++n}`;
+    // une rangée par id, donc une bande de plus — jamais deux rangées injoignables DANS une bande.
+    // BORNE de cette garantie : elle porte sur les RANGÉES, pas sur l'id des bandes produites (cf. `id`
+    // ci-dessous, dont le discriminant `day` court-circuite le rang de dédoublement).
+    const cle = nightBandKey(step);
+    const key = bandStepId(bands, cle, step.actorId!);
     const held = bands.get(key);
     if (held) { held.rows.push(nightRow(step)); held.metas.push(step.meta); continue; }
-    const band: Record<string, unknown> = {
+    // Rang de dédoublement de cette clé (`clé`, `clé#2`…) — l'id de bande s'en sert à défaut de jour.
+    const n = key === cle ? 1 : Number(key.slice(cle.length + 1));
+    const spec: BandSpec = {
       // L'id de bande porte le DISCRIMINANT de sa clé (le jour, sinon le rang de dédoublement) : deux
       // insertions issues du MÊME `step.id` à des jours différents — la gueule de bois de deux
       // Dessoûlages, `dessoulageHangover-<héros>` — se retrouveraient sinon avec le MÊME id dans la
       // séquence, et le seul lookup-par-id de prod (`meta.nextWaveOf`) comme les coordonnées de rangée
       // (`nightRowId`) viseraient la mauvaise fenêtre.
-      id: `bande-${step.id}-${step.meta?.day ?? n}`, kind: step.kind, icon: step.icon, label: step.label,
-      interactive: true, aggregate: 'none', participants: [] as BatchParticipant[],
+      // TROU MESURÉ, antérieur à cette fabrique et NON refermé ici : les deux discriminants sont
+      // EXCLUSIFS (`day ?? n`) — quand le jour existe, le rang de dédoublement est jeté, donc deux
+      // bandes dédoublées le MÊME jour (deux Convalescences du même héros) sortent avec le MÊME id.
+      // Collision constructible ; sa fermeture appartient au murage (elle change des ids persistés).
+      id: `bande-${step.id}-${step.meta?.day ?? n}`, kind: step.kind, label: step.label ?? '',
+      ...(step.icon ? { icon: step.icon } : {}),
+      ...(step.stake ? { stake: step.stake } : {}),
+      ...(step.menace ? { menace: step.menace } : {}),
     };
-    if (step.stake) band.stake = step.stake;
-    if (step.menace) band.menace = step.menace;
-    const entry = { band, rows: [nightRow(step)], metas: [step.meta] };
-    bands.set(key, entry);
-    out.push(band as unknown as CascadeStep);
+    bands.set(key, { spec, rows: [nightRow(step)], metas: [step.meta], at: out.length });
+    out.push(step); // place RÉSERVÉE : la bande la remplace une fois toutes ses rangées connues
   }
-  for (const { band, rows, metas } of bands.values()) {
-    band.participants = rows;
+  for (const { spec, rows, metas, at } of bands.values()) {
     const meta = commonMeta(metas);
-    if (meta) band.meta = meta;
+    const band = bandStep({ ...spec, ...(meta ? { meta } : {}) }, rows);
+    if (band) out[at] = band;
   }
   return out;
 }

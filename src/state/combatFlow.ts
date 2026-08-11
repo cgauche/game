@@ -248,7 +248,7 @@ export * from './combatManeuvers';
 export * from './combatHooks';
 export * from './combatSetup';
 import { collectHeroRoundEndUpkeep } from './combat/roundHooks';
-import { pilotedByHuman, humanControlled, controlsCombatant, canFixDie, defenseSurfaced, jetSurfaced } from './netOwnership';
+import { pilotedByHuman, controlsCombatant, canFixDie, defenseSurfaced, jetSurfaced } from './netOwnership';
 import { resolveRecoverTest } from './combat/recover';
 import { fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // effets de bord de tour (onTurnStart/onTurnEnd, dont la sortie de Frénésie en données) + gate d'action (Mandragore)
 export { collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour la cascade d'upkeep
@@ -268,9 +268,9 @@ import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY
 import { startCascade, registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep } from './cascade';
 import { nightBands, splitBandRows } from './nightBands';
 import {
-  freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf,
+  freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf, bandStep, monoStep,
   hostStep, openSequence, pushHost, pushTableDone, pushTable, pushChoice, pushDisplay, tableStep,
-  type Consequence, type TableSpec,
+  type Consequence, type TableSpec, type BandSpec,
 } from './rollSeam';
 import { revealToStep } from './revealStep';
 import type { BuiltCascadeStep } from './stepBrand';
@@ -524,11 +524,14 @@ export function applySurprise(get: Get, set: SetFn, surprisedSide: 'party' | 'en
   const branches = { onSuccess: EMPTY_FLOW, onFail: onLose }; // le guetteur résiste → pas de Surprise
   // UN SEUL jet d'embusqueur pour toute l'embuscade (l.77) : tiré ici, partagé par la bande et les inlines.
   const aT = rollFrozenOpposedAttacker(sneak, test.opposed!, difficulty);
-  const bande = surprised.filter((c) => humanControlled(get(), c));
+  // SURFACE (#1262), pas affordance locale : le guetteur d'un AUTRE siège entre dans la bande — c'est SON
+  // joueur qui roulera sa rangée. Les deux boucles lisent le MÊME prédicat : décaler l'une perdrait le
+  // Test (ni rangée ni inline) ou le doublerait.
+  const bande = surprised.filter((c) => surfaceOf(get, c));
   const step = bande.length ? frozenOpposedBatchStep(bande, test, branches, EMPTY_FLOW, difficulty, sneak, aT) : undefined;
   if (step) pushCombatStep(set, step);
   for (const c of surprised) {
-    if (humanControlled(get(), c)) continue; // sa rangée est dans la bande
+    if (surfaceOf(get, c)) continue; // sa rangée est dans la bande
     runCombatFlow({ mode: 'combat', get, set, target: c, caster: sneak, label: 'Surprise', opposedFreeze: aT }, testFlow(test, branches.onSuccess, branches.onFail));
   }
   // Inline (embusqué ennemi / héros auto) : les lignes partent dans la file différée → on les folde dans le
@@ -2131,7 +2134,12 @@ export function applyAttackResult(
   }
   // Règle optionnelle « Déviation Critique » (LDB 63 l.63) : si désactivée, on N'OFFRE PAS le choix
   // Dévier/Subir au héros → le Critique est subi directement (chemin normal ci-dessous).
-  if (rule('combat-critical-deflect') && deviated === undefined && res.hit && res.woundsLost && (res.critical || overkill0 > 0) && pilotedByHuman(get(), target) && deviatableArmourAt(target, dloc) > 0) {
+  // La décision appartient à la VICTIME (LDB 63 l.30) : le prédicat est donc celui du SURFAÇAGE
+  // (`jetSurfaced` — un siège humain QUELCONQUE tient la cible), jamais l'affordance LOCALE
+  // (`pilotedByHuman`), qui subissait le Critique en silence pour le héros d'un autre siège. Les deux
+  // chemins JUMEAUX (`applyOpposedCritical`, projectile magique) n'ont jamais porté ce filtre.
+  // Cadence-AGNOSTIQUE comme eux : en Rapide/Auto l'étape s'ouvre et se tranche à son `defaultChoice`.
+  if (rule('combat-critical-deflect') && deviated === undefined && res.hit && res.woundsLost && (res.critical || overkill0 > 0) && jetSurfaced(get(), target) && deviatableArmourAt(target, dloc) > 0) {
     // Pré-tire la Blessure Critique (graine figée) pour l'AFFICHER sur la modale de déviation — choix éclairé
     // Dévier/Subir, une seule modale. Aucune mutation de la cible ici ; « Subir » l'appliquera tel quel.
     const cloc = res.critical ? critWoundLocation(battleRng(), target.bodyShape, res.critLocation) : dloc;
@@ -5639,32 +5647,37 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
   }
   for (const c of battle.combatants) {
     if (!followsCharacterRules(c) || c.dead) continue; // #143 : RAW « Personnage » (LDB 18 l.5, LDB 20 l.14/206) — les créatures génériques et les défaits n'ont pas de jet de maladie/Corruption de fin de combat
-    // Pas piloté-humain-manuel (auto/rapide) OU hors d'action (Inconscient — défaite) → jet inline silencieux.
-    if (!humanControlled(get(), c) || isOutOfAction(c)) { inlineLines.push(...resolveCombatEndHeroTestsInline(get, set, c, corr)); continue; }
+    // Pas SURFACÉ (#1262 : aucun siège humain ne le tient, ou cadence rapide/auto) OU hors d'action
+    // (Inconscient — défaite) → jet inline silencieux. `isOutOfAction` est le critère MÉTIER du site :
+    // ici il fait tomber le Test dans la voie INLINE (il est jeté), là où la fin de Round le SAUTE tout
+    // court (`openRoundEndCascade`) — divergence MESURÉE, en attente d'arbitrage (#1265).
+    if (!surfaceOf(get, c) || isOutOfAction(c)) { inlineLines.push(...resolveCombatEndHeroTestsInline(get, set, c, corr)); continue; }
     const decided = decideCombatEndHeroTests(c, corr?.level ?? null);
     const resVal = combatEndResistVal(c);
     for (const d of decided.diseases) {
-      steps.push({
-        id: `combatEndDisease-${c.id}-${d.disease}`, kind: 'combatEndDisease', actorId: c.id, icon: 'medical/infection',
+      const step = monoStep({
+        id: `combatEndDisease-${c.id}-${d.disease}`, kind: 'combatEndDisease', actor: c, icon: 'medical/infection',
         rollLabel: 'Résistance', difficulty: d.difficulty,
-        ...rollStep({ actor: c, difficulty: d.difficulty, valeur: resVal, surLaCible: conditionModLines(c) }),
+        ligne: { valeur: resVal, surLaCible: conditionModLines(c) },
         label: d.label, meta: { disease: d.disease, ...(d.instant ? { instant: true } : {}) },
         stake: combatStakeRef('combatEndDisease', { entryId: d.disease }),
         menace: 'maladie', // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
       });
+      if (step) steps.push(step);
     }
     if (decided.corruption && corr) {
       const res = testValue(c, 'resistance');
-      steps.push({
-        id: `combatEndCorruption-${c.id}`, kind: 'combatEndCorruption', actorId: c.id, icon: 'nav/mutation',
+      const step = monoStep({
+        id: `combatEndCorruption-${c.id}`, kind: 'combatEndCorruption', actor: c, icon: 'nav/mutation',
         rollLabel: 'Résistance', difficulty: 'intermediaire',
-        ...rollStep({ actor: c, test: { skill: 'resistance' }, difficulty: 'intermediaire', valeur: res, surLaCible: conditionModLines(c) }),
+        ligne: { test: { skill: 'resistance' }, valeur: res, surLaCible: conditionModLines(c) },
         label: `Exposition à la Corruption (${corr.label})`, meta: { level: corr.level, exposureLabel: corr.label },
         // L'enjeu DIT le coût de l'échec, lu à l'applier : `corruptionGain(niveau, false, …)` est constant
         // par niveau (1/2/3) — la valeur interpolée vient donc du MÊME calcul que la conséquence.
         stake: combatStakeRef('combatEndCorruption', { values: { niveau: corr.label, gainEchec: corruptionGain(corr.level, false, 0) } }),
         menace: 'corruption', // Test d'Exposition = « résister à la Corruption » (Résistance (Menace), LDB 10)
       });
+      if (step) steps.push(step);
     }
   }
   // Tests d'entretien du FRANCHISSEMENT DE JOUR mis en file pendant le combat (#253) : consommés ICI, à la
@@ -5677,7 +5690,9 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
   const queued = get().deferredUpkeepQueue;
   if (queued.length) {
     set({ deferredUpkeepQueue: [] });
-    const manual = (id: string) => { const c = actorIn(get(), id); return !!c && humanControlled(get(), c) && !isOutOfAction(c); };
+    // Rangée qui rejoint la cascade influençable : porteur SURFACÉ (#1262 — le héros d'un autre siège
+    // en est, c'est SON joueur qui roule) et pas hors d'action (même critère métier que ci-dessus).
+    const manual = (id: string) => { const c = actorIn(get(), id); return !!c && surfaceOf(get, c) && !isOutOfAction(c); };
     for (const st of nightBands(queued)) {
       // Une étape que la fabrique REFUSE de bander (kind hors vocabulaire de nuit, choix, pas d'acteur)
       // suit le chemin d'origine : elle ne peut pas se dissoudre dans une scission de rangées.
@@ -5730,15 +5745,13 @@ registerCascadeApplier('combatEndCorruption', (get, set, step, hero) => {
  *  Résistance (Menace : Maladie) offerts, jamais un jet silencieux. `combatEndResistVal` fige la Résistance. */
 export function openContractionCascade(get: Get, set: SetFn, patient: Combatant, disease: string, difficulty: Difficulty, title: string): void {
   const resVal = combatEndResistVal(patient);
-  startCascade(get, set, {
-    title, icon: 'condition/bleeding', purpose: 'test',
-    steps: [{
-      id: `infection-${patient.id}-${disease}`, kind: 'combatEndDisease', actorId: patient.id, icon: 'medical/infection',
-      rollLabel: 'Résistance', difficulty, ...rollStep({ actor: patient, difficulty, valeur: resVal }),
-      label: title, result: null, interactive: true, meta: { disease }, menace: 'maladie',
-      stake: combatStakeRef('combatEndDisease', { entryId: disease }),
-    }],
+  const step = monoStep({
+    id: `infection-${patient.id}-${disease}`, kind: 'combatEndDisease', actor: patient, icon: 'medical/infection',
+    rollLabel: 'Résistance', difficulty, ligne: { valeur: resVal },
+    label: title, meta: { disease }, menace: 'maladie',
+    stake: combatStakeRef('combatEndDisease', { entryId: disease }),
   });
+  if (step) openSequence(get, set, { title, icon: 'condition/bleeding', purpose: 'test', steps: [step] });
 }
 
 /** Fin de combat : réécrit l'état persistant de chaque héros (Blessures, critiques, mort, États
@@ -6403,17 +6416,21 @@ export function approachFearTrigger(get: Get, set: SetFn, mover: Combatant, from
   };
   const bandes = new Map<number, Combatant[]>();
   for (const d of dues) {
-    if (!humanControlled(get(), d.c)) continue; // sa résolution reste inline (ci-dessous)
+    // SURFACE (#1262), pas affordance locale : le craintif d'un AUTRE siège a SA rangée dans la bande.
+    if (!surfaceOf(get, d.c)) continue; // sa résolution reste inline (ci-dessous)
     bandes.set(d.indice, [...(bandes.get(d.indice) ?? []), d.c]);
   }
   for (const [indice, craintifs] of bandes) {
-    const step = simpleBatchTestStep(craintifs, testFor(indice), branches, EMPTY_FLOW, 'intermediaire', `approach-fear-${mover.id}-${indice}`);
     // DEUX déplacements de la même source dans la même cascade = deux bandes de MÊME clé de règle : la
     // fabrique à `index` (pushStep) les distingue, sans quoi `cascadeBatchRoll` retrouverait la première.
-    if (step) pushCombatStep(set, (index) => ({ ...step, id: `${step.id}-${index}` }));
+    // La bande est MONTÉE DANS la fabrique (et non recopiée après coup) : l'id indexé fait partie de la
+    // déclaration, et l'étape sort mintée du socle.
+    pushCombatStep(set, (index) => simpleBatchTestStep(
+      craintifs, testFor(indice), branches, EMPTY_FLOW, 'intermediaire', `approach-fear-${mover.id}-${indice}-${index}`,
+    ));
   }
   for (const d of dues) {
-    if (humanControlled(get(), d.c)) continue; // sa rangée est dans la bande
+    if (surfaceOf(get, d.c)) continue; // sa rangée est dans la bande
     runCombatFlow({ mode: 'combat', get, set, target: d.c, caster: d.c, label: 'Approche menaçante' }, testFlow(testFor(d.indice), branches.onSuccess, branches.onFail));
   }
   // Inline (mover ennemi → héros auto/ennemi craintif) : les lignes partent dans la file différée. Le héros
@@ -6583,27 +6600,33 @@ function psychDueFor(get: Get, c: Combatant, collect: (get: Get, c: Combatant) =
  * type psy + source + cible + Indice font UNE fenêtre, dont la DÉCLARATION vit sur l'ÉTAPE et dont les
  * héros appelés sont les RANGÉES (jets INDÉPENDANTS, `aggregate:'none'`). L'ordre des bandes est celui
  * de leur première rencontre en parcourant les combattants.
+ *
+ * La POSSESSION est celle du socle (`bandStep`) : plusieurs porteurs → `groupOwner`, un seul → SON
+ * `actorId`. Les rangées sont déjà montées (`psychDueFor`) et leurs porteurs déjà SURFACÉS par les
+ * collecteurs — c'est la seule chose que la bande ajoute.
  */
-function combatPsychBands(dues: CombatPsychDue[]): CascadeStep[] {
-  const bands = new Map<string, CascadeStep>();
+function combatPsychBands(dues: CombatPsychDue[]): BuiltCascadeStep[] {
+  const bands = new Map<string, { spec: BandSpec; rows: BatchParticipant[] }>();
   for (const due of dues) {
     const d = due.decl;
     const key = `${d.kind}|${d.sourceId}|${d.cible ?? ''}|${d.indice}`;
     const band = bands.get(key);
-    if (band) { band.participants!.push(due.row); continue; }
+    if (band) { band.rows.push(due.row); continue; }
     bands.set(key, {
-      id: `psych-${d.kind}-${bands.size}`, kind: 'combatPsych', icon: due.icon, label: due.label,
-      interactive: true, aggregate: 'none', participants: [due.row],
-      combatPsych: d,
-      // L'enjeu descend à l'AFFLICTION affrontée : ses conséquences lui sont propres (`psychResolution`
-      // lit `failCondition`/`failAmount`/`becomes` de SON entrée), donc son texte vit sur SON entrée.
-      stake: combatStakeRef('combatPsych', { entryId: d.kind, values: { indice: d.indice } }),
-      // Les DEUX issues, dérivées des ops que l'applier appliquera (`psychBranchOps`) : la surface
-      // les rend en chips codex-liées avant le jet, et le verdict est le MÊME bloc filtré (#1117).
-      meta: { onSuccess: psychBranchFlow(d, true), onFail: psychBranchFlow(d, false) },
+      rows: [due.row],
+      spec: {
+        id: `psych-${d.kind}-${bands.size}`, kind: 'combatPsych', icon: due.icon, label: due.label,
+        combatPsych: d,
+        // L'enjeu descend à l'AFFLICTION affrontée : ses conséquences lui sont propres (`psychResolution`
+        // lit `failCondition`/`failAmount`/`becomes` de SON entrée), donc son texte vit sur SON entrée.
+        stake: combatStakeRef('combatPsych', { entryId: d.kind, values: { indice: d.indice } }),
+        // Les DEUX issues, dérivées des ops que l'applier appliquera (`psychBranchOps`) : la surface
+        // les rend en chips codex-liées avant le jet, et le verdict est le MÊME bloc filtré (#1117).
+        meta: { onSuccess: psychBranchFlow(d, true), onFail: psychBranchFlow(d, false) },
+      },
     });
   }
-  return [...bands.values()];
+  return [...bands.values()].flatMap(({ spec, rows }) => bandStep(spec, rows) ?? []);
 }
 
 /** Une cascade de Round est-elle interdite (modale/cascade bloquante déjà ouverte) ? */
@@ -6627,13 +6650,15 @@ function openCombatPsychCascade(
   if (roundCascadeBlocked(get)) return; // Maladresse = étape de pendingCascade (déjà couverte)
   const dues: CombatPsychDue[] = [];
   for (const c of get().battle!.combatants) {
-    if (!humanControlled(get(), c) || isOutOfAction(c)) continue;
+    // SURFACE (#1262), pas affordance locale : le porteur d'un AUTRE siège entre dans la cascade — sa
+    // rangée l'attend, c'est SON joueur qui la roule. `isOutOfAction` reste le critère MÉTIER du site.
+    if (!surfaceOf(get, c) || isOutOfAction(c)) continue;
     const due = psychDueFor(get, c, collect);
     if (due) dues.push(due);
   }
   const steps = combatPsychBands(dues);
   if (!steps.length) return;
-  startCascade(get, set, { title, icon, purpose: 'combat', steps, roundBoundary });
+  openSequence(get, set, { title, icon, purpose: 'combat', steps, roundBoundary });
 }
 
 /** Cascade de Psychologie de DÉBUT de Round (Traits ciblés + nouvelles Terreurs, LDB 21 l.14) — une
@@ -6669,13 +6694,14 @@ export function openRoundEndCascade(get: Get, set: SetFn): void {
   if (roundCascadeBlocked(get)) return;
   const upkeepLines: { line: string; id?: string }[] = [];
   const sink = (line: string, c?: Combatant) => upkeepLines.push({ line, id: c?.id });
-  const steps: CascadeStep[] = [];
+  const steps: BuiltCascadeStep[] = [];
   const dues: CombatPsychDue[] = [];
   for (const c of get().battle!.combatants) {
     // SURFACE (#1262), pas affordance locale : le porteur d'un AUTRE siège entre dans la cascade — c'est
     // SON joueur qui roulera. Prédicat MIROIR des hooks `roundBoundary` (roundHooks) et du dispatcher
     // (`deferInteractiveTest`) : décaler l'un des deux perdrait ou doublerait le Test. `isOutOfAction`
-    // reste le critère MÉTIER du site (divergence :5590 préservée, arbitrage #1265).
+    // reste le critère MÉTIER du site : ici le porteur hors d'action est SAUTÉ, là où la fin de combat
+    // (`openCombatEndCascade`) le fait tomber dans la voie INLINE — divergence préservée (#1265).
     if (!surfaceOf(get, c) || isOutOfAction(c)) continue;
     // 1) Upkeep du combattant (effets RNG-free). 2) Peur de fin de Round, regroupée en bandes ci-dessous.
     //    (La sortie de Frénésie est un effet `onTurnStart` en données, jouée au début du tour du héros.)
@@ -6691,7 +6717,7 @@ export function openRoundEndCascade(get: Get, set: SetFn): void {
     set({ battle: { ...b, log: [...b.log, ...upkeepLines.map((u) => ev('condition', u.line, u.id))] } });
   }
   if (!steps.length) return;
-  startCascade(get, set, { title: 'Fin de Round', icon: 'time/clock', purpose: 'combat', steps, roundBoundary: true });
+  openSequence(get, set, { title: 'Fin de Round', icon: 'time/clock', purpose: 'combat', steps, roundBoundary: true });
 }
 
 /**

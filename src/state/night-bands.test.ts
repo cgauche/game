@@ -24,6 +24,8 @@ import { seedBattleRng } from './battleRng';
 import { emptyScene } from './scene';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { nightBands, splitBandRows } from './nightBands';
+import { modalOwnerOf } from './modalArbiter';
+import { seatOwns } from './netOwnership';
 import { checkBattleOver, applyEffects } from './combatFlow';
 import { addCondition } from '../engine/conditions';
 import { contractDisease } from '../engine/disease';
@@ -116,6 +118,68 @@ describe('une bande, N rangées', () => {
     expect(faim[0].participants!.map((p) => p.id)).toEqual(['h1', 'h2']);
     expect(faim[0].aggregate).toBe('none'); // jets INDÉPENDANTS : chaque rangée porte SA conséquence
     expect(faim[0].participants!.every((p) => p.interactive && p.result === null)).toBe(true);
+  });
+});
+
+/**
+ * POSSESSION des bandes de nuit (#1268, fermé par #1262 V1 lot 5c) — la fabrique passe par le
+ * constructeur du socle (`rollSeam.bandStep`). Sans possession, l'arbitre (`modalArbiter`, entrée
+ * `cascade`) rendait `undefined` : la fenêtre échoyait à l'HÔTE SEUL, et le siège qui tient le
+ * dormeur ne voyait jamais la rangée où se joue son jet de nuit.
+ */
+describe('POSSESSION d’une bande de nuit (#1268)', () => {
+  const affame = (id: string) => h(id, { hunger: { days: 1, tests: 0, failures: 0 } });
+
+  it('DEUX dormeurs → `groupOwner` (chaque siège voit la fenêtre où se tient SA rangée)', () => {
+    set({ party: [affame('h1'), affame('h2')] } as never);
+    get().advanceTime(MINUTES_PER_DAY);
+
+    const faim = bandsOf('faim')[0];
+    expect(faim.groupOwner, 'plus d’un porteur : la fenêtre est partagée').toBe(true);
+    expect(faim.actorId, 'et n’appartient à personne en particulier').toBeUndefined();
+    expect(modalOwnerOf(get())).toBe('*');
+  });
+
+  it('UN dormeur → SON `actorId`, et la fenêtre part à SON siège (plus à l’hôte)', () => {
+    const solo = affame('h1');
+    set({ party: [solo] } as never);
+    get().advanceTime(MINUTES_PER_DAY);
+    const faim = bandsOf('faim')[0];
+    expect(faim.actorId, 'une bande d’un seul porteur EST son porteur').toBe('h1');
+    expect(faim.groupOwner).toBeUndefined();
+
+    // Deux sièges : le siège 1 possède le dormeur — l'hôte ne doit plus être le destinataire par défaut.
+    set({ net: { ...get().net, mode: 'host', mySeat: 0, slots: [0, 1, 0, 0], ownership: { h1: 1 } } } as never);
+    expect(modalOwnerOf(get())).toBe('h1');
+    expect(seatOwns(get(), 1, 'h1'), 'la fenêtre est au siège qui tient le dormeur').toBe(true);
+    expect(seatOwns(get(), 0, 'h1'), 'et plus à l’hôte').toBe(false);
+  });
+
+  /**
+   * RÉSIDU MESURÉ, fixé en l'état (#1262 lot 5c) : `splitBandRows` RECOPIE la bande d'origine
+   * (`{...band, participants}`) — la possession n'est donc PAS re-dérivée sur les moitiés. Une bande
+   * multi-porteurs scindée à UNE rangée garde `groupOwner`, donc l'owner `'*'`.
+   *
+   * Ce n'est PAS le défaut #1268 (qui était `undefined` → fenêtre à l'hôte SEUL, invisible au siège
+   * porteur) : `'*'` est PERMISSIF — le siège porteur voit sa fenêtre, l'influence reste routée rangée
+   * par rangée (`seatInfluences`). Le resserrer (une moitié à un porteur = SON `actorId`) demanderait
+   * soit de dupliquer la règle de possession hors du socle, soit de re-minter depuis une déclaration
+   * que cette fonction n'a pas — c'est au MURAGE de le faire, pas à une migration de possession.
+   * Cette sonde FIXE l'état actuel : elle rougira le jour où le murage l'inversera, à dessein.
+   */
+  it('RÉSIDU : une moitié de `splitBandRows` à UNE rangée garde `groupOwner` (permissif, à inverser au murage)', () => {
+    set({ party: [affame('h1'), affame('h2')] } as never);
+    get().advanceTime(MINUTES_PER_DAY);
+    const faim = bandsOf('faim')[0];
+    expect(faim.groupOwner, 'la bande d’origine est bien partagée').toBe(true);
+
+    const { kept, others } = splitBandRows(faim, (id) => id === 'h1');
+
+    expect(kept!.participants!.map((r) => r.id)).toEqual(['h1']);
+    expect(others!.participants!.map((r) => r.id)).toEqual(['h2']);
+    expect(kept!.groupOwner, 'possession RECOPIÉE, pas re-dérivée').toBe(true);
+    expect(kept!.actorId, 'la moitié ne nomme pas son unique porteur').toBeUndefined();
+    expect(others!.groupOwner).toBe(true);
   });
 });
 
