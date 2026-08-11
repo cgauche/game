@@ -36,7 +36,7 @@ export const ROLL_SEAM_CORE = new Set([
 export const ROLL_SEAM_PHASE2_STOCK = new Map([
   ['src/state/combat/roundHooks.ts', 1],
   ['src/state/combatEffects.ts', 1],
-  ['src/state/combatFlow.ts', 5],
+  ['src/state/combatFlow.ts', 3], // 5 → 3 (#1117 L4 : la voie INLINE des jets de fin de combat meurt — Contraction et Corruption sont des BANDES, résolues d'office pour les porteurs non pilotés)
   ['src/state/combatManeuvers.ts', 4],
   ['src/state/corruptionFlow.ts', 1], // 2 → 1 (#942 L5 : le d100 « corps ou esprit » passe par l'étape à table)
   ['src/state/interludeFlow.ts', 3], // 4 → 3 (#942 L7 : le d100 d'Événement passe par l'étape à table)

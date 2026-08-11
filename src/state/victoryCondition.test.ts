@@ -19,7 +19,10 @@ function drainCombatEndCascade(): void {
     const p = useGame.getState().pendingCascade;
     if (!p?.combatEndBoundary) break;
     const cur = p.participants[p.cursor];
-    if (cur?.target != null && !cur.result) useGame.getState().cascadeRoll(cur.id);
+    // Les jets de bilan de combat sont des BANDES (#1117 L4) : on lance chaque RANGÉE ; une étape MONO
+    // (upkeep différé non bandable) garde son lancer d'étape.
+    if (cur?.participants) { for (const row of cur.participants) if (!row.result) useGame.getState().cascadeBatchRoll(row.id); }
+    else if (cur?.target != null && !cur.result) useGame.getState().cascadeRoll(cur.id);
     useGame.getState().cascadeNext();
   }
 }

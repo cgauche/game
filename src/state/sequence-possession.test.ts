@@ -146,11 +146,13 @@ describe('#1262 lot 5c — la fin de combat ne contracte plus en silence', () =>
     openCombatEndCascade(g, useGame.setState);
 
     const step = parKind('combatEndDisease');
-    expect(step, 'l’étape influençable existe').toBeTruthy();
-    expect(step!.actorId).toBe(H[0].id);
-    expect(step!.result, 'c’est la fenêtre de l’invité qui jette').toBeFalsy();
-    expect(step!.target, 'la cible est calculée — l’étape n’est pas un affichage validé d’office').toBeGreaterThan(0);
-    expect(step!.menace, 'Résistance (Menace : Maladie) offerte, LDB 10').toBe('maladie');
+    expect(step, 'la bande influençable existe').toBeTruthy();
+    expect(step!.actorId, 'une bande d’un seul porteur EST son porteur').toBe(H[0].id);
+    const row = step!.participants!.find((r) => r.id === H[0].id)!;
+    expect(row, 'le porteur de l’invité a SA rangée').toBeTruthy();
+    expect(row.result, 'c’est la fenêtre de l’invité qui jette').toBeFalsy();
+    expect(row.target, 'la cible est calculée — la rangée n’est pas un affichage validé d’office').toBeGreaterThan(0);
+    expect(row.menace, 'Résistance (Menace : Maladie) offerte, LDB 10').toBe('maladie');
     expect(c.diseases ?? [], 'rien n’a été contracté en silence chez l’hôte').toHaveLength(0);
     expect(modalOwnerOf(g())).toBe(H[0].id);
     expect(seatOwns(g(), 1, H[0].id), 'la fenêtre est au siège 1, qui possède le porteur').toBe(true);

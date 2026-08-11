@@ -91,11 +91,10 @@ import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { checkPartyWiped } from './partyWipe';
 import { touchActors } from './combatOrParty';
-import { actorIn, inBattleId } from './combatants';
+import { inBattleId } from './combatants';
 import { fireOwnTestFailed } from './triggeredEffects';
 import { FLOWS, meetsRequiredSL, buildRollFlowActions, type RollFlowActionsMap } from './rollFlowSpecs';
-import { gainCorruption, applyMutation } from './corruptionFlow';
-import { corruptionGain } from '../engine/corruption';
+import { gainCorruption, resolveCorruptionPending, releaseCorruptionSlot } from './corruptionFlow';
 import * as partyFlow from './partyFlow';
 import * as possessionsFlow from './possessionsFlow';
 import type { Possession } from '../engine/possession';
@@ -145,7 +144,7 @@ import * as seaVoyageFlow from './seaVoyageFlow';
 import { applyLandCargoRaid } from './carriers';
 import { startCascade, suspendActiveCascade, resumeSuspendedCascade, dropSceneEntrySteps, extendedTestOutcomeAppliers } from './cascade';
 import { nightBands } from './nightBands';
-import { resultLine, freeCons } from './rollSeam';
+import { resultLine } from './rollSeam';
 import { describeTest } from './flowOutcomes';
 import { createCombatSlice } from './combatSlice';
 
@@ -454,6 +453,11 @@ export interface GameState extends RollFlowActionsMap {
   pendingSteamSave: PendingSteamSave | null;
   /** Exposition à une Influence corruptrice en cours (LDB 19) — Test différé par modale. */
   pendingCorruption: PendingCorruption | null;
+  /** Tests de SEUIL de Corruption (LDB 19 l.70) EN ATTENTE du slot `pendingCorruption`, dans l'ordre où
+   *  ils sont dus — le slot est UNIQUE, et une RAFALE de gains (deux héros franchissant leur seuil dans
+   *  la MÊME bande de fin de combat) y ferait sinon tomber tous les suivants sur le repli auto-résolu :
+   *  un Test RAW roulé en silence. Vidée un à un par `releaseCorruptionSlot` (`corruptionFlow`). */
+  corruptionQueue: PendingCorruption[];
   pendingBargain: PendingBargain | null;
   pendingAppraise: PendingAppraise | null;
   pendingAttack: PendingAttack | null;
@@ -2445,37 +2449,15 @@ export const useGame = create<GameState>((set, get) => ({
     set({ pendingCorruption: { ...pc, skill } });
   },
   /** Acquitte l'exposition (Points selon niveau + DR, puis seuil) OU le Test du SEUIL
-   *  (kind 'seuil', LDB 19 l.80) : succès = Corruption contenue « pour cette fois » ;
-   *  échec = « Je te renie ! » (Résilience) ou mutation (révélation). */
+   *  (kind 'seuil', LDB 19 l.70) : dénouement chez `corruptionFlow`, puis le slot LIBÉRÉ revient au
+   *  seuil suivant en attente (`corruptionQueue`) — la fenêtre suivante s'ouvre, aucun Test ne se
+   *  résout en silence faute de place. */
   resolveCorruption: () => {
     const pc = get().pendingCorruption;
     if (!pc || pc.roll == null) return;
     set({ pendingCorruption: null });
-    const hero = actorIn(get(), pc.heroId);
-    if (!hero) return;
-    if (pc.kind === 'seuil') {
-      // Le jet (roll/target) est DÉJÀ affiché par la rangée de la modale de Corruption — pas de
-      // re-print au journal (#295 Lot 4).
-      if (pc.success) {
-        get().log(resultLine(freeCons([`${hero.label} contient sa Corruption — pour cette fois.`])));
-      } else if ((hero.resilience ?? 0) > 0) {
-        get().log(resultLine(freeCons([`${hero.label} échoue à contenir sa Corruption — la mutation menace…`])));
-        set({ pendingRenounce: { heroId: hero.id, testRoll: pc.roll, testTarget: pc.target ?? 0, align: pc.align } });
-      } else {
-        for (const l of applyMutation(get, set, hero, { roll: pc.roll, target: pc.target ?? 0 }, pc.align)) get().log(l);
-      }
-      set({ ...touchActors(get()) });
-      return;
-    }
-    const gain = corruptionGain(pc.level ?? 'mineure', !!pc.success, pc.sl ?? 0);
-    if (gain <= 0) {
-      // Le jet est DÉJÀ affiché par la rangée de la modale de Corruption — pas de re-print (#295 Lot 5).
-      get().log(resultLine(freeCons([`${hero.label} repousse l'Influence corruptrice.`])));
-      return;
-    }
-    const lines = gainCorruption(get, set, hero, gain, pc.align);
-    for (const l of lines) get().log(l);
-    set({ ...touchActors(get()) });
+    resolveCorruptionPending(get, set, pc);
+    releaseCorruptionSlot(get, set);
   },
 
   /** Acquitte un test de compétence : applique la branche réussite/échec. */

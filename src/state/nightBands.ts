@@ -25,7 +25,7 @@ import type { Get, Set } from './flowTypes';
 import { isNightTestKind } from '../engine/types';
 import { registerCascadeApplier } from './cascade';
 import { actorIn } from './combatants';
-import { resultLines, bandStep, bandStepId, refusePorte, type Consequence, type BandSpec, type BuiltCascadeStep } from './rollSeam';
+import { resultLines, bandStep, bandStepId, bandCommonMeta, refusePorte, type Consequence, type BandSpec, type BuiltCascadeStep } from './rollSeam';
 import { sealskinDR, type ExposureKind } from '../engine/exposure';
 
 /** Champs du jet MONO qui DESCENDENT sur la rangée (le reste — icône, enjeu, libellé de situation —
@@ -58,18 +58,9 @@ function bandable(step: CascadeStep): boolean {
 }
 
 /** `meta` COMMUN à toutes les rangées d'une bande (l'entrée de règle mise en jeu — c'est lui que lit
- *  `applyNightStake`). Ce qui DIVERGE d'un héros à l'autre (Bonus d'Endurance de la Gangrène, siège
- *  d'une Convalescence) reste sur la rangée. */
-function commonMeta(metas: (CascadeStep['meta'] | undefined)[]): CascadeStep['meta'] | undefined {
-  const first = metas[0];
-  if (!first) return undefined;
-  const out: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(first)) {
-    const j = JSON.stringify(v);
-    if (metas.every((m) => m && JSON.stringify(m[k]) === j)) out[k] = v;
-  }
-  return Object.keys(out).length ? (out as CascadeStep['meta']) : undefined;
-}
+ *  `applyNightStake`) : le pli du socle (`bandCommonMeta`). Ce qui DIVERGE d'un héros à l'autre (Bonus
+ *  d'Endurance de la Gangrène, siège d'une Convalescence) reste sur la rangée. */
+const commonMeta = bandCommonMeta;
 
 /** RANGÉE dérivée d'une étape MONO de nuit — le jet descend, la situation reste à la bande. Les
  *  champs de JEU DÉJÀ POSÉ (résultat, influences, issue) descendent aussi : une étape venue d'une

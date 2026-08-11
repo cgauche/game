@@ -425,6 +425,25 @@ export function bandStepId<T extends { readonly rows: readonly BatchParticipant[
   return key;
 }
 
+/**
+ * `meta` COMMUN à N rangées d'une bande (#1262) — second pli des fabriques, jumeau de `bandStepId` :
+ * l'entrée de RÈGLE mise en jeu (ce que TOUTES les rangées partagent) remonte sur la bande, ce qui
+ * DIVERGE d'un porteur à l'autre reste sur la rangée. `undefined` quand rien n'est commun.
+ *
+ * Comparaison par forme sérialisée : le `meta` d'une étape est JSON-sûr par contrat (`CascadeStepMeta`
+ * — un pending est snapshoté), donc deux valeurs de même JSON sont la même charge.
+ */
+export function bandCommonMeta(metas: readonly (CascadeStepMeta | undefined)[]): CascadeStepMeta | undefined {
+  const first = metas[0];
+  if (!first) return undefined;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(first)) {
+    const j = JSON.stringify(v);
+    if (metas.every((m) => m && JSON.stringify(m[k]) === j)) out[k] = v;
+  }
+  return Object.keys(out).length ? (out as CascadeStepMeta) : undefined;
+}
+
 /** Ce qui est VRAI de tout jet : qui teste quoi, à quelle Difficulté, et ce qui pèse SUR LA CIBLE. */
 interface RollLineBase {
   /** Le jeteur. Absent (côté MONDE : seuil d100 posé par l'appelant) ⇒ `valeur` tient lieu de base. */

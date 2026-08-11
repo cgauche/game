@@ -61,12 +61,15 @@ describe('Contagieux (Type) — transmission au toucher (EDO App.2 l.228-230)', 
     const a = mk({ id: 'a', label: 'A', kind: 'hero', diseaseExposure: [{ disease: 'fievre-du-rongeur', difficultyShift: -2, instant: true }] });
     useGame.setState({ battle: { combatants: [a], order: ['a'], turn: 0, round: 1, log: [], over: null } as never, party: [mk({ id: 'a', kind: 'hero' })] });
     openCombatEndCascade(useGame.getState, useGame.setState);
-    const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'combatEndDisease')!;
+    // #1117 L4 : le Test de Contraction est une RANGÉE de la bande de son entrée de règle (Contagion),
+    // et c'est la rangée qui porte la cible et l'incubation propre à CE porteur.
+    const bande = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'combatEndDisease')!;
+    const row = bande.participants!.find((r) => r.id === 'a')!;
     const base = 30; // Résistance = E 30, sans avance
     expect(DISEASE_DEFS['fievre-du-rongeur'].contractDifficulty).toBe('accessible'); // normale : +20
     expect(easeDifficulty('accessible', -2)).toBe('complexe'); // « 2 niveaux plus difficile » : −10
-    expect(step.target).toBe(base + DIFFICULTY_MODIFIERS.complexe); // 30 − 10 = 20 (vs 50 sans Contagieux)
-    expect(step.meta?.instant).toBe(true);
+    expect(row.target).toBe(base + DIFFICULTY_MODIFIERS.complexe); // 30 − 10 = 20 (vs 50 sans Contagieux)
+    expect(row.meta?.instant).toBe(true);
   });
 
   it('contractée → incubation « Instantanée » : la maladie démarre ACTIVE (symptômes immédiats)', () => {
@@ -74,8 +77,8 @@ describe('Contagieux (Type) — transmission au toucher (EDO App.2 l.228-230)', 
     const a = mk({ id: 'a', label: 'A', kind: 'hero', diseaseExposure: [{ disease: 'fievre-du-rongeur', difficultyShift: -2, instant: true }] });
     useGame.setState({ battle: { combatants: [a], order: ['a'], turn: 0, round: 1, log: [], over: null } as never, party: [mk({ id: 'a', kind: 'hero' })] });
     openCombatEndCascade(useGame.getState, useGame.setState);
-    const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'combatEndDisease')!;
-    useGame.getState().cascadeRoll(step.id);
+    const bande = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'combatEndDisease')!;
+    useGame.getState().cascadeBatchRoll(bande.participants![0].id);
     useGame.getState().cascadeNext();
     const dz = a.diseases?.find((d) => d.id === 'fievre-du-rongeur');
     expect(dz).toBeTruthy();
@@ -87,9 +90,9 @@ describe('Contagieux (Type) — transmission au toucher (EDO App.2 l.228-230)', 
     const a = mk({ id: 'a', label: 'A', kind: 'hero', diseaseExposure: [{ disease: 'fievre-du-rongeur' }] });
     useGame.setState({ battle: { combatants: [a], order: ['a'], turn: 0, round: 1, log: [], over: null } as never, party: [mk({ id: 'a', kind: 'hero' })] });
     openCombatEndCascade(useGame.getState, useGame.setState);
-    const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'combatEndDisease')!;
-    expect(step.target).toBe(30 + DIFFICULTY_MODIFIERS.accessible); // 50 — difficulté RAW de la maladie
-    useGame.getState().cascadeRoll(step.id); // 93 → raté
+    const bande = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'combatEndDisease')!;
+    expect(bande.participants![0].target).toBe(30 + DIFFICULTY_MODIFIERS.accessible); // 50 — difficulté RAW de la maladie
+    useGame.getState().cascadeBatchRoll(bande.participants![0].id); // 93 → raté
     useGame.getState().cascadeNext();
     const dz = a.diseases?.find((d) => d.id === 'fievre-du-rongeur');
     expect(dz).toBeTruthy();

@@ -4,9 +4,11 @@
  *  - `gainCorruption` : ajoute des Points, puis applique le SEUIL (l.80) — au-delà
  *    de BFM+BE (+ niveau d'Âme pure, LDB 10), Test de Résistance Intermédiaire en MODALE
  *    différée (pendingCorruption kind 'seuil' — Lancer/Chance/Pacte ; repli auto-résolu +
- *    révélation pour les PNJ et les gains en rafale) ; échec → MUTATION (−BFM Points, d100
+ *    révélation pour les PNJ seuls) ; échec → MUTATION (−BFM Points, d100
  *    corps/esprit par espèce, tirage sur le Tableau physique/mentale) ; puis LIMITES (l.87)
- *    → damné (hors-jeu définitif).
+ *    → damné (hors-jeu définitif). Le slot est UNIQUE : les seuils dus EN RAFALE (une bande de fin
+ *    de combat qui fait déborder deux héros) prennent rang dans `corruptionQueue`, vidée un à un
+ *    par `releaseCorruptionSlot` — jamais un Test roulé en silence faute de fenêtre libre.
  *  - « Je te renie ! » (LDB 17 l.71) : un HÉROS avec de la Résilience peut REFUSER la mutation
  *    (1 Point de Résilience ; « comme vous ne mutez pas, vous ne perdez aucun Point de
  *    Corruption ») → choix par modale (`pendingRenounce`), la mutation est suspendue.
@@ -24,6 +26,7 @@ import { bonus, effectiveChar, refreshWounds } from '../engine/characteristics';
 import { recomputeLoadout } from '../engine/items';
 import {
   corruptionThresholdExceeded,
+  corruptionGain,
   mutationNatureRowsFor,
   mutationLimitExceeded,
   attachMutation,
@@ -37,7 +40,8 @@ import { species, mutationBodyMaxForSpecies, combatStakeRef } from '../data';
 import { findTableEntry } from '../engine/tables';
 import { registerCascadeApplier, registerTableStep, rollTableStep, pushStep } from './cascade';
 import { touchActors } from './combatOrParty';
-import type { PendingCascade, PendingMutationStep } from './pendings';
+import { actorIn } from './combatants';
+import type { PendingCascade, PendingCorruption, PendingMutationStep } from './pendings';
 import { rule } from '../engine/policy';
 import { rollTest } from '../engine/tests';
 import { testValue } from '../engine/skills';
@@ -68,14 +72,19 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, a
   // Intermédiaire (+0) ; succès = contenu « pour cette fois », échec = mutation.
   if (!corruptionThresholdExceeded(hero)) return lines;
   // « Un jet = une modale » : pour un pilote HUMAIN, le Test du seuil est un VRAI jet différé — modale
-  // de Corruption (kind 'seuil', cycle Lancer→Chance→Pacte), résolu dans `resolveCorruption`
-  // (succès = contenu ; échec = « Je te renie ! »/mutation). Repli auto-résolu + révélation
-  // témoin : IA (ne tient pas de modale) et gains en RAFALE (une modale déjà ouverte).
-  if (pilotedByHuman(get(), hero) && !get().pendingCorruption) {
+  // de Corruption (kind 'seuil', cycle Lancer→Chance→Pacte), résolu dans `resolveCorruptionPending`
+  // (succès = contenu ; échec = « Je te renie ! »/mutation). Repli auto-résolu + révélation témoin :
+  // l'IA seule (elle ne tient aucune modale).
+  if (pilotedByHuman(get(), hero)) {
     lines.push(`${hero.label} : la Corruption déborde son seuil — Test de Résistance.`);
     // `menace: 'mutation'` : l'échec du Test de seuil fait MUTER (l.82) → c'est le Test qui « résiste
     // à la Mutation » du talent Résistance (Menace), LDB 10 l.1015-1021.
-    set({ pendingCorruption: { heroId: hero.id, kind: 'seuil', skill: 'resistance', skillLocked: true, align, menace: 'mutation' } });
+    const seuil: PendingCorruption = { heroId: hero.id, kind: 'seuil', skill: 'resistance', skillLocked: true, align, menace: 'mutation' };
+    // RAFALE : le slot est UNIQUE et la fenêtre en place appartient à un autre héros (une bande de fin
+    // de combat appelle N seuils d'affilée) — le Test PREND SON RANG dans la file au lieu de retomber
+    // sur le repli auto-résolu, qui le roulerait en silence chez son porteur.
+    if (get().pendingCorruption || get().pendingRenounce) set({ corruptionQueue: [...get().corruptionQueue, seuil] });
+    else set({ pendingCorruption: seuil });
     return lines;
   }
   const t = rollTest(testValue(hero, 'resistance'), 'intermediaire', rng);
@@ -281,7 +290,7 @@ export function resolveRenounce(get: Get, set: Set, renounce: boolean): void {
   if (!pr) return;
   set({ pendingRenounce: null });
   const hero = corruptionTarget(get(), pr.heroId);
-  if (!hero) return;
+  if (!hero) { releaseCorruptionSlot(get, set); return; }
   const lines: string[] = [];
   if (renounce && (hero.resilience ?? 0) > 0) {
     hero.resilience = (hero.resilience ?? 0) - 1;
@@ -293,6 +302,54 @@ export function resolveRenounce(get: Get, set: Set, renounce: boolean): void {
   const b = get().battle;
   if (b) set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', hero.id)] } });
   else get().log(lines);
+  releaseCorruptionSlot(get, set);
+}
+
+/**
+ * REND le slot `pendingCorruption` au Test de SEUIL SUIVANT en attente (`corruptionQueue`, LDB 19 l.70).
+ * Appelé à CHAQUE sortie des deux résolutions qui libèrent une fenêtre de Corruption
+ * (`resolveCorruptionPending`, `resolveRenounce`) — jamais ailleurs : c'est la seule couture où la file
+ * avance. Ne prend le slot que s'il est LIBRE et qu'aucun « Je te renie ! » n'attend une décision (deux
+ * fenêtres de Corruption ouvertes en même temps se recouvriraient).
+ */
+export function releaseCorruptionSlot(get: Get, set: Set): void {
+  const q = get().corruptionQueue;
+  if (!q.length || get().pendingCorruption || get().pendingRenounce) return;
+  set({ pendingCorruption: q[0], corruptionQueue: q.slice(1) });
+}
+
+/**
+ * DÉNOUEMENT d'une fenêtre de Corruption ACQUITTÉE (`pendingCorruption` déjà retiré du slot par
+ * l'appelant) — Test d'EXPOSITION (Points selon niveau + DR, puis seuil) OU Test du SEUIL
+ * (kind 'seuil', LDB 19 l.70) : succès = Corruption contenue « pour cette fois » ; échec =
+ * « Je te renie ! » (Résilience) ou mutation. Vit ICI, avec `gainCorruption`/`applyMutation` dont il
+ * est la suite — le store ne fait que déléguer et rendre le slot au suivant.
+ */
+export function resolveCorruptionPending(get: Get, set: Set, pc: PendingCorruption): void {
+  const hero = actorIn(get(), pc.heroId);
+  if (!hero || pc.roll == null) return;
+  if (pc.kind === 'seuil') {
+    // Le jet (roll/target) est DÉJÀ affiché par la rangée de la modale de Corruption — pas de
+    // re-print au journal (#295 Lot 4).
+    if (pc.success) {
+      get().log(resultLine(freeCons([`${hero.label} contient sa Corruption — pour cette fois.`])));
+    } else if ((hero.resilience ?? 0) > 0) {
+      get().log(resultLine(freeCons([`${hero.label} échoue à contenir sa Corruption — la mutation menace…`])));
+      set({ pendingRenounce: { heroId: hero.id, testRoll: pc.roll, testTarget: pc.target ?? 0, align: pc.align } });
+    } else {
+      for (const l of applyMutation(get, set, hero, { roll: pc.roll, target: pc.target ?? 0 }, pc.align)) get().log(l);
+    }
+    set({ ...touchActors(get()) });
+    return;
+  }
+  const gain = corruptionGain(pc.level ?? 'mineure', !!pc.success, pc.sl ?? 0);
+  if (gain <= 0) {
+    // Le jet est DÉJÀ affiché par la rangée de la modale de Corruption — pas de re-print (#295 Lot 5).
+    get().log(resultLine(freeCons([`${hero.label} repousse l'Influence corruptrice.`])));
+    return;
+  }
+  for (const l of gainCorruption(get, set, hero, gain, pc.align)) get().log(l);
+  set({ ...touchActors(get()) });
 }
 
 /** Cible d'un effet de Corruption : héros désigné, sinon le premier vivant. #152 (suite #143) : le pool

@@ -371,11 +371,13 @@ describe('Guérison — infirmerie (hors combat)', () => {
     }
     const pc = useGame.getState().pendingCascade;
     expect(pc).not.toBeNull(); // le Test d'infection est une modale différée, pas un jet subi
-    const step = pc!.participants.find((s) => s.kind === 'combatEndDisease' && s.actorId === 'p')!;
-    expect(step).toBeTruthy();
-    expect(step.result).toBeFalsy(); // Infection DIFFÉRÉE : pas encore roulée (influençable d'abord)
-    expect(step.menace).toBe('maladie'); // Résistance (Menace : Maladie) offerte (LDB 10/17)
-    expect((step.meta as { disease?: string } | undefined)?.disease).toBe('infection-mineure');
+    // #1117 L4 : la Contraction est une BANDE (ici d'un seul porteur) — sa possession EST son porteur.
+    const bande = pc!.participants.find((s) => s.kind === 'combatEndDisease' && s.actorId === 'p')!;
+    expect(bande).toBeTruthy();
+    const row = bande.participants!.find((r) => r.id === 'p')!;
+    expect(row.result).toBeFalsy(); // Infection DIFFÉRÉE : pas encore roulée (influençable d'abord)
+    expect(row.menace).toBe('maladie'); // Résistance (Menace : Maladie) offerte (LDB 10/17)
+    expect((bande.meta as { disease?: string } | undefined)?.disease).toBe('infection-mineure');
     const p = useGame.getState().party.find((c) => c.id === 'p')!;
     expect(p.diseases ?? []).toHaveLength(0); // rien contracté en silence AVANT la validation de l'étape
   });

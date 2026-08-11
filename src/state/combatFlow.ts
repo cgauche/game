@@ -267,9 +267,11 @@ import {
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type FlowTest, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep } from './cascade';
 import { nightBands, splitBandRows } from './nightBands';
+import { combatEndBands, combatEndRowMeta } from './combatEndBands';
+import type { CascadeStepMeta } from './pendings';
 import {
   freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf, bandStep, monoStep,
-  hostStep, openSequence, pushHost, pushTableDone, pushTable, pushChoice, pushDisplay, tableStep,
+  hostStep, openSequence, openBand, pushHost, pushTableDone, pushTable, pushChoice, pushDisplay, tableStep,
   type Consequence, type TableSpec, type BandSpec,
 } from './rollSeam';
 import { revealToStep } from './revealStep';
@@ -5531,11 +5533,20 @@ export function castWardPenalty(s: GameState, target: Combatant, spell: SpellLik
   return castWardLine(s, target, spell)?.value ?? 0;
 }
 
-/** Un Test de Contraction de fin de combat DÛ pour un héros (LDB 18/20) : la maladie, sa difficulté de
- *  Résistance (les crans de l'exposition — Contagieux : 2 plus difficile — DÉJÀ appliqués) et le libellé
- *  d'exposition. `instant` (Contagieux, EDO App.2 l.230) : contractée → incubation « Instantanée ».
- *  Le `resistVal` (Résistance effective) est figé à la décision. */
-interface CombatEndDiseaseTest { disease: string; difficulty: Difficulty; label: string; instant?: boolean }
+/**
+ * ENTRÉE DE RÈGLE d'un Test de Contraction (LDB 20) — DISCRIMINANT de bande, jamais un libellé :
+ *  - `infection` : Infection Mineure d'après Blessure critique (LDB 20 l.90) ;
+ *  - `contagion` : exposition à une créature/source infectée (LDB 20 l.25/l.51) ;
+ *  - `chirurgie` : suites d'une opération (LDB 10 l.365, hors combat).
+ * Deux entrées peuvent réclamer la MÊME maladie au MÊME personnage — d'où deux fenêtres, pas une.
+ */
+export type ContractionEntry = 'infection' | 'contagion' | 'chirurgie';
+
+/** Un Test de Contraction de fin de combat DÛ pour un héros (LDB 18/20) : l'entrée de règle qui
+ *  l'appelle, la maladie, sa difficulté de Résistance (les crans de l'exposition — Contagieux : 2 plus
+ *  difficile — DÉJÀ appliqués) et le libellé d'exposition. `instant` (Contagieux, EDO App.2 l.230) :
+ *  contractée → incubation « Instantanée ». Le `resistVal` (Résistance effective) est figé à la décision. */
+interface CombatEndDiseaseTest { entry: ContractionEntry; disease: string; difficulty: Difficulty; label: string; instant?: boolean }
 
 /** Valeur de Résistance d'un héros pour les Tests de Contraction (E + avances de Résistance) — figée à la
  *  décision pour rester stable entre la pose de l'étape et sa résolution. */
@@ -5561,7 +5572,7 @@ function decideCombatEndHeroTests(
   if (c.tookCriticalThisFight) {
     const dressed = c.woundDressed;
     if (!c.dead && !dressed && dm === 'full' && contractionDue(c, 'infection-mineure'))
-      diseases.push({ disease: 'infection-mineure', difficulty: 'tresFacile', label: 'Infection (Blessure critique)' });
+      diseases.push({ entry: 'infection', disease: 'infection-mineure', difficulty: 'tresFacile', label: 'Infection (Blessure critique)' });
   }
   c.tookCriticalThisFight = false; // consommé (idempotent)
   c.woundDressed = false;
@@ -5574,6 +5585,7 @@ function decideCombatEndHeroTests(
     for (const exp of c.diseaseExposure ?? []) {
       const def = DISEASE_DEFS[exp.disease];
       if (def && contractionDue(c, def.id)) diseases.push({
+        entry: 'contagion',
         disease: def.id,
         difficulty: easeDifficulty(def.contractDifficulty, exp.difficultyShift ?? 0),
         label: `Contagion (${diseaseLabel(def.id)})`,
@@ -5598,72 +5610,75 @@ function worstCorruptionExposure(battle: BattleState): { level: import('../engin
   return { level, label: worst };
 }
 
-/** Résout INLINE (jet silencieux + conséquence) les Tests de fin de combat d'un PERSONNAGE NON-INTERACTIF
- *  (héros auto, ou PNJ #143 flagué `followsCharacterRules`, ou cible hors d'action / défaite) — même
- *  conséquence que les appliers de cascade, lignes au journal. Le worst d'exposition à la Corruption est passé (figé). */
-function resolveCombatEndHeroTestsInline(
-  get: Get, set: SetFn, c: Combatant,
-  corr: { level: import('../engine/corruption').ExposureLevel; label: string } | null,
-): string[] {
-  const lines: string[] = [];
-  const decided = decideCombatEndHeroTests(c, corr?.level ?? null);
-  const resVal = combatEndResistVal(c);
-  for (const d of decided.diseases) {
-    const t = rollTest(resVal, d.difficulty, battleRng());
-    lines.push(...applyContraction(c, d.disease, t.success, battleRng(), d.instant ? { instant: true } : undefined));
+/**
+ * ROUTE une bande par PILOTE : les rangées des porteurs pilotés à la main rejoignent la cascade
+ * INFLUENÇABLE (`steps`), les autres (cadence auto, siège absent, hors d'action) forment une bande
+ * RÉSOLUE D'OFFICE — jamais silencieuse : son applier applique et journalise. Une étape que la
+ * fabrique a REFUSÉ de bander suit le chemin d'origine (elle ne peut pas se dissoudre dans une
+ * scission de rangées). Couture COMMUNE aux deux familles que la fin de combat consomme : ses propres
+ * jets de bilan et la file d'entretien différée.
+ */
+function routeBandByPilot(
+  get: Get, set: SetFn, band: CascadeStep, steps: import('./pendings').CascadeStep[], manual: (id: string) => boolean,
+): void {
+  if (!band.participants) {
+    const c = band.actorId ? actorIn(get(), band.actorId) : undefined;
+    if (c && manual(c.id)) steps.push(band);
+    else runCascadeImmediate(get, set, [band]);
+    return;
   }
-  if (decided.corruption && corr) {
-    const t = rollTest(testValue(c, 'resistance'), 'intermediaire', battleRng());
-    const gain = corruptionGain(decided.corruption, t.success, Math.max(0, t.sl));
-    lines.push(tr('cf.corruptionExposure', { name: c.label, label: corr.label, roll: t.roll, target: t.target, gain: gain ? '' : tr('cf.fragResists') }));
-    if (gain > 0) lines.push(...gainCorruption(get, set, c, gain));
-  }
-  return lines;
+  const { kept, others } = splitBandRows(band, manual);
+  if (kept) steps.push(kept);
+  if (others) runCascadeImmediate(get, set, [others]); // conséquence appliquée + journalisée par l'applier
 }
 
 /**
  * CASCADE de fin de combat (LDB 18/19/20) — extrait les JETS de PERSONNAGE de fin de combat de
- * `finalizeBattle` pour les rendre cadence-aware AVANT l'écran de victoire. Pour chaque PERSONNAGE
- * vivant (héros, ou combattant flagué #143 `followsCharacterRules` — PAS un proxy `kind`) :
- *  - INTERACTIF (cadence MANUELLE, conscient) → étapes INFLUENÇABLES (`combatEndDisease` par
- *    maladie, `combatEndCorruption` si exposition) — Chance/Résilience offertes, conséquence à la validation.
- *  - sinon (auto/rapide, ou hors d'action — défaite) → jet SILENCIEUX inline (journal), comme avant.
+ * `finalizeBattle` pour les rendre cadence-aware AVANT l'écran de victoire.
+ *
+ * « Une situation = une fenêtre » (#1117 L4) : les Tests dus sont bâtis pour TOUS les PERSONNAGES
+ * vivants (héros, ou combattant flagué #143 `followsCharacterRules` — PAS un proxy `kind`), puis
+ * REGROUPÉS par ENTRÉE DE RÈGLE (`combatEndBands`) — une bande par (Infection post-critique | Contagion
+ * d'une maladie), UNE bande pour l'Exposition à la Corruption (le Degré est GLOBAL : le pire des
+ * créatures affrontées). Chaque bande est ensuite SCINDÉE par pilote (`routeBandByPilot`) : rangées
+ * pilotées à la main dans la cascade influençable (Chance/Résilience offertes, conséquence à la
+ * validation), les autres résolues d'office.
+ *
  * Les marqueurs sont CONSOMMÉS ici (source unique). La cascade ouverte porte `combatEndBoundary:true` :
- * à sa fermeture, le store enchaîne sur `finishCombatEnd` (writeback + écran de victoire). RNG-free pour
- * les personnages interactifs (le jet vit dans l'étape) ; les non-interactifs consomment `battleRng` inline.
+ * à sa fermeture, le store enchaîne sur `finishCombatEnd` (writeback + écran de victoire).
  */
 export function openCombatEndCascade(get: Get, set: SetFn): void {
   const battle = get().battle;
   if (!battle) return;
   const corr = worstCorruptionExposure(battle);
   const steps: import('./pendings').CascadeStep[] = [];
+  const monos: CascadeStep[] = [];
   const inlineLines: string[] = [];
   // Amputations DIFFÉRÉES à la fin de la rencontre (LDB 18, « Coupure à l'orteil » : « Une fois la rencontre
   // terminée… ») : jet + séquelle/plaie/États résolus ICI pour tout survivant porteur d'un marqueur (mute le
-  // combattant → repris par `carryOverState` au writeback). Jet silencieux (journal), comme la voie inline.
+  // combattant → repris par `carryOverState` au writeback). Jet silencieux (journal) — cette famille-ci
+  // n'est PAS bandée (deux Tests ENCHAÎNÉS et conditionnels, hors du périmètre L4).
   for (const c of battle.combatants) {
     if (c.dead) continue;
     inlineLines.push(...resolvePostEncounterAmputations(c, battleRng()));
   }
   for (const c of battle.combatants) {
     if (!followsCharacterRules(c) || c.dead) continue; // #143 : RAW « Personnage » (LDB 18 l.5, LDB 20 l.14/206) — les créatures génériques et les défaits n'ont pas de jet de maladie/Corruption de fin de combat
-    // Pas SURFACÉ (#1262 : aucun siège humain ne le tient, ou cadence rapide/auto) OU hors d'action
-    // (Inconscient — défaite) → jet inline silencieux. `isOutOfAction` est le critère MÉTIER du site :
-    // ici il fait tomber le Test dans la voie INLINE (il est jeté), là où la fin de Round le SAUTE tout
-    // court (`openRoundEndCascade`) — divergence MESURÉE, en attente d'arbitrage (#1265).
-    if (!surfaceOf(get, c) || isOutOfAction(c)) { inlineLines.push(...resolveCombatEndHeroTestsInline(get, set, c, corr)); continue; }
     const decided = decideCombatEndHeroTests(c, corr?.level ?? null);
     const resVal = combatEndResistVal(c);
     for (const d of decided.diseases) {
+      // L'id porte l'ENTRÉE DE RÈGLE en plus de la maladie : l'Infection post-critique et la Contagion
+      // peuvent viser la MÊME maladie chez le MÊME personnage (LDB 20 l.90 vs l.25/l.51) — deux étapes de
+      // même id étaient injoignables (la surface de rangée keye par id nu).
       const step = monoStep({
-        id: `combatEndDisease-${c.id}-${d.disease}`, kind: 'combatEndDisease', actor: c, icon: 'medical/infection',
+        id: `combatEndDisease-${c.id}-${d.entry}-${d.disease}`, kind: 'combatEndDisease', actor: c, icon: 'medical/infection',
         rollLabel: 'Résistance', difficulty: d.difficulty,
         ligne: { valeur: resVal, surLaCible: conditionModLines(c) },
-        label: d.label, meta: { disease: d.disease, ...(d.instant ? { instant: true } : {}) },
+        label: d.label, meta: { entry: d.entry, disease: d.disease, ...(d.instant ? { instant: true } : {}) },
         stake: combatStakeRef('combatEndDisease', { entryId: d.disease }),
         menace: 'maladie', // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
       });
-      if (step) steps.push(step);
+      if (step) monos.push(step);
     }
     if (decided.corruption && corr) {
       const res = testValue(c, 'resistance');
@@ -5677,86 +5692,99 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
         stake: combatStakeRef('combatEndCorruption', { values: { niveau: corr.label, gainEchec: corruptionGain(corr.level, false, 0) } }),
         menace: 'corruption', // Test d'Exposition = « résister à la Corruption » (Résistance (Menace), LDB 10)
       });
-      if (step) steps.push(step);
+      if (step) monos.push(step);
     }
   }
+  // Rangée qui rejoint la cascade influençable : porteur SURFACÉ (#1262 — le héros d'un autre siège en
+  // est, c'est SON joueur qui roule) et pas hors d'action. `isOutOfAction` est le critère MÉTIER du
+  // site : ici il fait tomber le Test dans la voie RÉSOLUE D'OFFICE (il est jeté), là où la fin de Round
+  // le SAUTE tout court (`openRoundEndCascade`) — divergence MESURÉE, en attente d'arbitrage (#1265).
+  const manual = (id: string) => { const c = actorIn(get(), id); return !!c && surfaceOf(get, c) && !isOutOfAction(c); };
+  if (inlineLines.length) get().log(inlineLines);
+  for (const band of combatEndBands(monos)) routeBandByPilot(get, set, band, steps, manual);
   // Tests d'entretien du FRANCHISSEMENT DE JOUR mis en file pendant le combat (#253) : consommés ICI, à la
-  // MÊME cadence-awareness que les jets de fin de combat — la file porte des BANDES (#1117 L3), qu'on
-  // SCINDE par pilote : les rangées des héros pilotés-humain-manuel rejoignent la cascade de fin
-  // (influençables), les autres (auto/rapide, ou hors d'action) forment une bande résolue d'office
-  // (jamais silencieuse, le journal la porte). 3ᵉ des TROIS bâtisseurs à passer par la fabrique — une
-  // file écrite par un build antérieur y redevient bande au lieu de s'appliquer en MONO.
+  // MÊME cadence-awareness que les jets de fin de combat — la file porte des BANDES (#1117 L3), scindées
+  // par le MÊME routage. 3ᵉ des TROIS bâtisseurs à passer par la fabrique — une file écrite par un build
+  // antérieur y redevient bande au lieu de s'appliquer en MONO.
   // La file est VIDÉE (jamais rejouée) ; `lastUpkeepDay` garde l'anti-double-résolution.
   const queued = get().deferredUpkeepQueue;
   if (queued.length) {
     set({ deferredUpkeepQueue: [] });
-    // Rangée qui rejoint la cascade influençable : porteur SURFACÉ (#1262 — le héros d'un autre siège
-    // en est, c'est SON joueur qui roule) et pas hors d'action (même critère métier que ci-dessus).
-    const manual = (id: string) => { const c = actorIn(get(), id); return !!c && surfaceOf(get, c) && !isOutOfAction(c); };
-    for (const st of nightBands(queued)) {
-      // Une étape que la fabrique REFUSE de bander (kind hors vocabulaire de nuit, choix, pas d'acteur)
-      // suit le chemin d'origine : elle ne peut pas se dissoudre dans une scission de rangées.
-      if (!st.participants) {
-        const c = st.actorId ? actorIn(get(), st.actorId) : undefined;
-        if (c && manual(c.id)) steps.push(st);
-        else runCascadeImmediate(get, set, [st]);
-        continue;
-      }
-      const { kept, others } = splitBandRows(st, manual);
-      if (kept) steps.push(kept);
-      if (others) runCascadeImmediate(get, set, [others]); // conséquence appliquée + journalisée par l'applier
-    }
+    for (const st of nightBands(queued)) routeBandByPilot(get, set, st, steps, manual);
   }
-  if (inlineLines.length) get().log(inlineLines);
   // `startCascade` et non `openSequence` : la file `deferredUpkeepQueue` est typée `CascadeStep[]` (le
   // retypage d'`ApplierResult.insert`/de la file appartient à la vague qui migre ses 8 fichiers
-  // producteurs, #1262 B2) — l'étape NON bandable qui la traverse (`steps.push(st)` ci-dessus) n'est
-  // donc pas mintée, et la séquence entière reste `CascadeStep[]`. Les jets bâtis ICI, eux, passent
-  // tous par la porte (`monoStep`, `splitBandRows` → `bandStep`).
+  // producteurs, #1262 B2) — l'étape NON bandable qui la traverse (`routeBandByPilot`) n'est donc pas
+  // mintée, et la séquence entière reste `CascadeStep[]`. Les jets bâtis ICI, eux, passent tous par la
+  // porte (`monoStep`, `combatEndBands`/`splitBandRows` → `bandStep`).
   if (steps.length) startCascade(get, set, { title: 'Conséquences du combat', icon: 'condition/bleeding', purpose: 'combat', steps, combatEndBoundary: true });
 }
 
-/** Applier d'une étape `combatEndDisease` (LDB 18/20) : Test de Résistance RÉSOLU → échec = contracte la
- *  maladie (`applyContraction`). Lit `step.result` (posé par `FLOWS.cascade`) + `step.meta.disease`. */
-registerCascadeApplier('combatEndDisease', (get, set, step, hero) => {
-  if (!hero || !step.result) return;
-  const disease = typeof step.meta?.disease === 'string' ? step.meta.disease : undefined;
-  if (!disease) return;
-  const lines = applyContraction(hero, disease, step.result.success, battleRng(), step.meta?.instant === true ? { instant: true } : undefined);
-  set({ party: [...get().party] });
-  if (get().battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
-  return { consequences: freeCons(lines.length ? lines : [tr('cf.resistsInfection', { name: hero.label })]) };
+/**
+ * Enregistre la conséquence d'un `kind` de fin de combat SOUS FORME DE BANDE (#1117 L4) : la boucle
+ * PAR RANGÉE (verdict sur SA rangée, conséquence attribuée à SON porteur) est écrite ICI une fois pour
+ * toutes — calque de `registerNightBandApplier`. Une étape sans rangées RENONCE (fail-closed) : plus
+ * aucun jet de bilan de combat ne s'applique en MONO depuis L4.
+ *
+ * `consequences: []` : les lignes partent au journal PAR RANGÉE (`row.outcome` les rend dans la
+ * fenêtre), jamais en bloc d'étape — deux porteurs ne partagent pas une issue.
+ */
+function registerCombatEndBandApplier(
+  kind: string,
+  rowFn: (get: Get, set: SetFn, band: CascadeStep, row: BatchParticipant, hero: Combatant, meta: CascadeStepMeta) => string[],
+): void {
+  registerCascadeApplier(kind, (get, set, step) => {
+    if (!step.participants) return;
+    for (const row of step.participants) {
+      const hero = actorIn(get(), row.id);
+      if (!hero || !row.result) { row.outcome = []; continue; }
+      const lines = rowFn(get, set as SetFn, step, row, hero, combatEndRowMeta(step, row));
+      row.outcome = resultLines(freeCons(lines));
+      for (const l of lines) get().log(l);
+    }
+    set({ party: [...get().party] });
+    if (get().battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
+    return { consequences: [] };
+  });
+}
+
+/** Conséquence d'une RANGÉE de bande `combatEndDisease` (LDB 18/20) : Test de Résistance RÉSOLU →
+ *  échec = contracte la maladie (`applyContraction`). La maladie et l'incubation « Instantanée »
+ *  (Contagieux) sont lues dans la charge de rangée, la bande portant l'entrée de règle commune. */
+registerCombatEndBandApplier('combatEndDisease', (_get, _set, _band, row, hero, meta) => {
+  const disease = typeof meta.disease === 'string' ? meta.disease : undefined;
+  if (!disease) return [];
+  const lines = applyContraction(hero, disease, row.result!.success, battleRng(), meta.instant === true ? { instant: true } : undefined);
+  return lines.length ? lines : [tr('cf.resistsInfection', { name: hero.label })];
 });
 
-/** Applier d'une étape `combatEndCorruption` (LDB 19) : Test de Résistance RÉSOLU → `corruptionGain` selon
- *  le niveau et le DR, puis `gainCorruption` (seuil/mutation via sa propre modale). */
-registerCascadeApplier('combatEndCorruption', (get, set, step, hero) => {
-  if (!hero || !step.result) return;
-  const level = step.meta?.level as import('../engine/corruption').ExposureLevel | undefined;
-  const label = typeof step.meta?.exposureLabel === 'string' ? step.meta.exposureLabel : '';
-  if (!level) return;
-  const gain = corruptionGain(level, step.result.success, Math.max(0, step.result.sl));
+/** Conséquence d'une RANGÉE de bande `combatEndCorruption` (LDB 19) : Test de Résistance RÉSOLU →
+ *  `corruptionGain` selon le Degré et le DR, puis `gainCorruption` (seuil/mutation via sa propre
+ *  modale, mise en file quand le slot est déjà pris). */
+registerCombatEndBandApplier('combatEndCorruption', (get, set, _band, row, hero, meta) => {
+  const level = meta.level as import('../engine/corruption').ExposureLevel | undefined;
+  const label = typeof meta.exposureLabel === 'string' ? meta.exposureLabel : '';
+  if (!level) return [];
+  const gain = corruptionGain(level, row.result!.success, Math.max(0, row.result!.sl));
   // Le verdict (roll/target) est déjà porté par la rangée de jet (RollLine ✓/✗ ±DR) — la conséquence ne
   // re-décrit QUE ce qui a été appliqué (#295 Lot 1, Décision 1b) : le gain RÉEL, ou une résistance nue.
-  const lines = gain > 0 ? gainCorruption(get, set, hero, gain) : [tr('out.corruptExposureResist', { name: hero.label, label })];
-  set({ party: [...get().party] });
-  if (get().battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
-  return { consequences: freeCons(lines) };
+  return gain > 0 ? gainCorruption(get, set, hero, gain) : [tr('out.corruptExposureResist', { name: hero.label, label })];
 });
 
-/** Ouvre une cascade INFLUENÇABLE à UNE étape de Contraction de maladie pour `patient` (Test de Résistance
- *  `difficulty` → `applyContraction` à la validation, via l'applier `combatEndDisease`) — HORS combat.
- *  Réutilisé par la Chirurgie (infection post-opératoire, LDB 10 l.365) : Chance/Résilience + auto-succès
- *  Résistance (Menace : Maladie) offerts, jamais un jet silencieux. `combatEndResistVal` fige la Résistance. */
+/** Ouvre une cascade INFLUENÇABLE à UNE bande de Contraction de maladie pour `patient` (Test de
+ *  Résistance `difficulty` → `applyContraction` à la validation, via l'applier `combatEndDisease`) —
+ *  HORS combat. Réutilisé par la Chirurgie (infection post-opératoire, LDB 10 l.365) : Chance/Résilience
+ *  + auto-succès Résistance (Menace : Maladie) offerts, jamais un jet silencieux. `combatEndResistVal`
+ *  fige la Résistance. Une bande d'UN porteur — la forme est celle de l'applier, pas celle du nombre. */
 export function openContractionCascade(get: Get, set: SetFn, patient: Combatant, disease: string, difficulty: Difficulty, title: string): void {
-  const resVal = combatEndResistVal(patient);
-  const step = monoStep({
-    id: `infection-${patient.id}-${disease}`, kind: 'combatEndDisease', actor: patient, icon: 'medical/infection',
-    rollLabel: 'Résistance', difficulty, ligne: { valeur: resVal },
-    label: title, meta: { disease }, menace: 'maladie',
+  openBand(get, set, {
+    id: `infection-${patient.id}-${disease}`, kind: 'combatEndDisease', icon: 'medical/infection',
+    label: title, menace: 'maladie', meta: { entry: 'chirurgie', disease },
     stake: combatStakeRef('combatEndDisease', { entryId: disease }),
+    difficulty,
+    porteurs: [{ actor: patient, ligne: { valeur: combatEndResistVal(patient) }, label: 'Résistance', menace: 'maladie' }],
+    title, purpose: 'test',
   });
-  if (step) openSequence(get, set, { title, icon: 'condition/bleeding', purpose: 'test', steps: [step] });
 }
 
 /** Fin de combat : réécrit l'état persistant de chaque héros (Blessures, critiques, mort, États

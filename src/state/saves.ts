@@ -42,8 +42,9 @@ import { revealToStep } from './revealStep';
 import { nightBands } from './nightBands';
 import { pursuitBands } from './pursuitFlow';
 import { stepReady } from './cascade';
+import { combatEndBands } from './combatEndBands';
 
-export const SAVE_VERSION = 19;
+export const SAVE_VERSION = 20;
 
 export interface SaveMeta {
   version: number;
@@ -318,6 +319,20 @@ export const MIGRATIONS: MigrationMap = {
     bandifyPursuitSteps(data);
     return { ...doc, version: 19, data };
   },
+  // v19→v20 (#1117 L4) : les jets de BILAN DE COMBAT (Contraction de maladie LDB 20, Exposition à la
+  // Corruption LDB 19) ne sont plus des étapes MONO par personnage mais des BANDES par entrée de règle
+  // (`state/combatEndBands`). Leurs deux appliers exigent désormais `participants` et RENONCENT sans :
+  // une save v19 prise avec des jets de fin de combat EN ATTENTE se rechargerait avec des étapes dont le
+  // jet se lance, la cascade avance, et dont AUCUNE maladie ni AUCUN Point de Corruption ne serait
+  // appliqué. MÊMES porteurs que MIGRATIONS[18] (cascade ACTIVE + pile SUSPENDUE) : la file
+  // `deferredUpkeepQueue` n'a qu'un producteur (`store.ts`, entretien de FRANCHISSEMENT DE JOUR) et ne
+  // porte donc jamais ces `kind`. Les étapes DÉJÀ VALIDÉES (avant le curseur) restent intactes :
+  // historique inerte, et les re-bander décalerait le curseur.
+  19: (doc) => {
+    const data = { ...(doc.data as Record<string, unknown>) };
+    bandifyCombatEndSteps(data);
+    return { ...doc, version: 20, data };
+  },
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus
@@ -523,6 +538,30 @@ function bandifyPursuitSteps(data: Record<string, unknown>): void {
     const attente = bands.findIndex((s) => !stepReady(s));
     c.participants = bands;
     c.cursor = attente < 0 ? bands.length : attente;
+  }
+}
+
+/**
+ * Bandifie les jets de BILAN DE COMBAT encore À JOUER des cascades sérialisées (ACTIVE + pile
+ * SUSPENDUE) — MIGRATIONS[19]. Conversion par la FABRIQUE du jeu (`combatEndBands`), source unique de
+ * la forme d'une bande : la migration ne redécrit pas une forme cible qui dériverait ensuite.
+ *
+ * MÊME borne au curseur que `bandifyNightSteps` (les étapes d'avant sont validées : historique inerte,
+ * et le curseur ne bouge pas). Le cas LEGACY qui exige cette fabrique-ci et pas un regroupement naïf :
+ * une save v19 peut porter DEUX étapes de MÊME id pour un même personnage (l'Infection post-critique,
+ * `LDB 20 l.90`, et la Contagion, `LDB 20 l.25`/`l.51`, visant la même maladie —
+ * `combatEndDisease-<héros>-<maladie>` des deux côtés) — les
+ * fondre en une bande donnerait deux rangées de même id, injoignables. Le filet d'id de la fabrique
+ * (`bandStepId`) les sépare en deux bandes. Mute `data` ; formes inattendues laissées telles quelles.
+ */
+function bandifyCombatEndSteps(data: Record<string, unknown>): void {
+  const stack = Array.isArray(data.suspendedCascades) ? data.suspendedCascades : [];
+  for (const cascade of [data.pendingCascade, ...stack]) {
+    const c = cascade as { participants?: unknown; cursor?: unknown } | null | undefined;
+    if (!c || !Array.isArray(c.participants)) continue;
+    const cursor = typeof c.cursor === 'number' ? c.cursor : 0;
+    const steps = c.participants as CascadeStep[];
+    c.participants = [...steps.slice(0, cursor), ...combatEndBands(steps.slice(cursor))];
   }
 }
 

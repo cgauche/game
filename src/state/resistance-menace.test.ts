@@ -122,11 +122,15 @@ describe('Résistance (Maladie) — Contraction de fin de combat (LDB 20 l.32/49
     useGame.setState({ party: [hero()] });
     openCombatEndCascade(useGame.getState, useGame.setState);
     const p = useGame.getState().pendingCascade!;
-    const step = p.participants.find((s) => s.kind === 'combatEndDisease')!;
-    expect(step.menace).toBe('maladie');
-    useGame.getState().cascadeResist(step.id);
-    const rolled = useGame.getState().pendingCascade!.participants.find((s) => s.id === step.id)!;
-    expect(rolled.result).toEqual({ roll: 1, target: step.target, sl: bonus(43), success: true });
+    // #1117 L4 : bande par entrée de règle — le tag `menace` et l'auto-succès vivent SUR LA RANGÉE
+    // (deux porteurs d'une même bande ne partagent ni leur Talent ni leur consommation).
+    const bande = p.participants.find((s) => s.kind === 'combatEndDisease')!;
+    const row = bande.participants!.find((r) => r.id === a.id)!;
+    expect(row.menace).toBe('maladie');
+    useGame.getState().cascadeBatchResist(row.id);
+    const rolled = useGame.getState().pendingCascade!.participants
+      .find((s) => s.id === bande.id)!.participants!.find((r) => r.id === a.id)!;
+    expect(rolled.result).toEqual({ roll: 1, target: row.target, sl: bonus(43), success: true });
     useGame.getState().cascadeNext();
     expect(a.diseases ?? []).toHaveLength(0); // résisté → pas de Blessure Purulente
     expect(a.resistanceUsed).toContain('maladie');

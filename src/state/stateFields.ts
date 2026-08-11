@@ -34,6 +34,7 @@ export type PendingKey = { [K in keyof GameState]-?: K extends `pending${string}
 const STATE_FIELDS = {
   pendingTest: { init: null, resetOn: ['scene'] },
   pendingCorruption: { init: null, resetOn: ['scene'] },
+  corruptionQueue: { init: [], resetOn: ['scene'] },
   pendingBargain: { init: null, resetOn: [] },
   pendingAppraise: { init: null, resetOn: [] },
   pendingAttack: { init: null, resetOn: ['scene', 'combatStart'] },

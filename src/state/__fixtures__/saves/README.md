@@ -59,6 +59,14 @@ de `saves-flow.test.ts` (`MIGRATIONS[v]` + fixture `v<v>-*.json` exigées pour c
   (v18→v19, bandification #1246 : l'applier de manche exige des RANGÉES, et la clôture compare TOUS
   les DR — LDB 15 l.93 — donc l'avant-curseur entre AUSSI dans la bande, à la différence des bandes
   de nuit). Fixture de version PASSÉE, MINIMALE et écrite à la main (idem `v17-nuit-mono`).
+- `v19-fin-de-combat-mono.json` — cascade de BILAN DE COMBAT EN VOL à la forme MONO (une étape par
+  personnage et par Test : Contraction de maladie, Exposition à la Corruption), motive
+  `MIGRATIONS[19]` (v19→v20, bandification #1117 L4 : les deux appliers exigent des RANGÉES). Elle
+  porte le cas legacy CRITIQUE : `h1` a DEUX étapes de MÊME id `combatEndDisease-h1-infection-mineure`
+  — l'Infection post-critique (LDB 20 l.72) et la Contagion (LDB 20 l.32-49) visaient la même maladie
+  et l'id d'étape v19 ne portait aucun discriminant d'entrée. Les fondre en une bande donnerait deux
+  rangées de même id, injoignables : le filet d'id de la fabrique doit les rendre en DEUX bandes.
+  Fixture de version PASSÉE, MINIMALE et écrite à la main (idem `v18-poursuite-mono`).
 
 ## Ajouter/régénérer une fixture
 

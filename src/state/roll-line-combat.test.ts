@@ -151,10 +151,11 @@ describe('Fin de rencontre (combatFlow) — Contraction et Corruption', () => {
     const diff: Difficulty = 'tresFacile';
 
     openContractionCascade(get, set, patient, 'courante-galopante', diff, 'Infection');
-    const step = get().pendingCascade!.participants[0];
-    expect(step.base).toBe(resVal);
-    expect(step.target).toBe(clampTarget(resVal + DIFFICULTY_MODIFIERS[diff]).target);
-    expect(inexplique(step), 'aucune chip « autres »').toBe(0);
+    // #1117 L4 : bande d'UN porteur — l'arithmétique du jet vit sur la RANGÉE.
+    const row = get().pendingCascade!.participants[0].participants![0];
+    expect(row.base).toBe(resVal);
+    expect(row.target).toBe(clampTarget(resVal + DIFFICULTY_MODIFIERS[diff]).target);
+    expect(inexplique(row), 'aucune chip « autres »').toBe(0);
   });
 
   it('Cascade de fin de combat : Contraction ET Corruption portent la pénalité de COMBAT en chips NOMMÉES', () => {
@@ -171,14 +172,14 @@ describe('Fin de rencontre (combatFlow) — Contraction et Corruption', () => {
     const penalite = combatTestPenalty(survivant);
     expect(penalite, 'l’État doit peser sur les Tests de COMBAT — sinon la fixture ne prouve rien').toBeLessThan(0);
 
-    const maladie = steps.find((s) => s.kind === 'combatEndDisease');
+    const maladie = steps.find((s) => s.kind === 'combatEndDisease')?.participants?.find((r) => r.id === 'sv');
     if (maladie) {
       const resVal = effectiveChar(survivant, 'endurance') + 10;
       expect(maladie.base).toBe(resVal);
       expect(maladie.target).toBe(clampTarget(resVal + DIFFICULTY_MODIFIERS[maladie.difficulty!] + penalite).target);
       expect(inexplique(maladie), 'la pénalité de combat est NOMMÉE, pas « autres »').toBe(0);
     }
-    const corruption = steps.find((s) => s.kind === 'combatEndCorruption');
+    const corruption = steps.find((s) => s.kind === 'combatEndCorruption')?.participants?.find((r) => r.id === 'sv');
     if (corruption) {
       const res = testValue(survivant, 'resistance');
       expect(corruption.base, 'base = Niveau de Compétence NU (l’État sort en chip)').toBe(skillBaseValue(survivant, 'resistance'));
@@ -189,7 +190,11 @@ describe('Fin de rencontre (combatFlow) — Contraction et Corruption', () => {
       expect(corruption.target).toBe(clampTarget(res + DIFFICULTY_MODIFIERS.intermediaire + penalite).target);
       expect(inexplique(corruption)).toBe(0);
     }
-    expect([maladie, corruption].map((s) => s?.kind), 'les DEUX familles d’étape doivent être produites').toEqual(['combatEndDisease', 'combatEndCorruption']);
+    // Les DEUX familles de BANDE doivent être produites, chacune avec la rangée du survivant (#1117 L4).
+    // La fixture porte les DEUX entrées de Contraction (Blessure critique + exposition) : deux bandes.
+    expect(steps.map((s) => s.kind), 'les DEUX familles de bande doivent être produites')
+      .toEqual(['combatEndDisease', 'combatEndDisease', 'combatEndCorruption']);
+    expect([maladie, corruption].map((r) => r?.id)).toEqual(['sv', 'sv']);
   });
 });
 

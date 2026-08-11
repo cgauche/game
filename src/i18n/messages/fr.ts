@@ -714,8 +714,6 @@ export const fr = {
   'cf.teleportFree': '{name} se téléporte ({m} m) — repositionnement libre hors combat.',
   'cf.wrathTriggered': 'Le dé des unités ({units}) trahit les Péchés de {name} ({sin}) — Colère des dieux !',
   'cf.zonePersists': '{spell} : la zone persiste — hors grille de combat, arbitrage MJ.',
-  'cf.corruptionExposure': '{name} — exposition à la Corruption ({label}) : Résistance {roll}/{target}{gain}.',
-  'cf.fragResists': ', résiste',
   'cf.resistsInfection': '{name} résiste à l’infection.',
   'cf.defeat': 'Défaite…',
   'cf.victory': 'Victoire !',
