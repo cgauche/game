@@ -453,7 +453,8 @@ describe('SONDES PROMUES (#1153 L1b) — ce que le monteur NE fait PAS encore', 
 
   /**
    * GARDE DE LA TRAPPE `rollStep` — l'étaleur d'étape ne relaie NI `difficulty` NI `difficultyParts`
-   * (ses 42 appelants posent la Difficulté eux-mêmes après l'étalement). C'est SANS effet tant
+   * (ses appelants posent la Difficulté eux-mêmes après l'étalement ; ils DÉCROISSENT à mesure que les
+   * mints de la porte absorbent les montages — 18 mesurés au lot 2 V2, #1262). C'est SANS effet tant
    * qu'aucun d'eux n'ouvre le mode plafonné : lui seul dérive un palier. Le jour où un site
    * l'ouvrira, ses chips seraient amputées de leurs circonstances SANS le palier qui les porte →
    * écart « autres » à l'écran. La garde rougit à ce site-là, pas avant. STRUCTURELLE : elle lit le
@@ -480,7 +481,7 @@ describe('SONDES PROMUES (#1153 L1b) — ce que le monteur NE fait PAS encore', 
         if (/plafond\s*:/.test(m[1])) sites.push(`${relative(root, f)} — ${m[1].slice(0, 80).replace(/\s+/g, ' ')}`);
       }
     }
-    expect(vus, 'le scan doit VOIR des appels — un scan cassé rendrait la garde vide et verte').toBeGreaterThan(20);
+    expect(vus, 'le scan doit VOIR des appels — un scan cassé rendrait la garde vide et verte').toBeGreaterThan(16);
     expect(sites, 'un appelant plafonné doit relayer `difficulty`/`difficultyParts` depuis `rollLine`').toEqual([]);
   });
 });

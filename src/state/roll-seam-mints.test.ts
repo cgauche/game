@@ -8,6 +8,7 @@
  *  - la voie d'APPEND passe par la garde de possession et distingue ses ids par l'index.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
+import ts from 'typescript';
 import { useGame } from './store';
 import {
   monoStep, tableStep, tableStepDone, hostStep, openSequence, rollStep,
@@ -385,5 +386,88 @@ describe('#1262 V2 — la FILE d’entretien et la FABRIQUE de nuit n’accepten
     // @ts-expect-error — `ligne` et `montee` ne peuvent pas coexister : une seule source de ligne.
     const st = monoStep({ id: 'x', kind: 'faim', actor: hero('H1'), label: 'Faim', difficulty: 'complexe', montee: { base: 1, target: 1 }, ligne: { test: { char: 'force-mentale' } } });
     expect(st).toBeDefined();
+  });
+
+  /**
+   * LA BORNE du régime, mesurée (#1262 V2 lot 2) : une valeur ÉTRANGÈRE (seuil figé, formule hors
+   * `testValue`) n'a JAMAIS besoin de `montee`. Sans Test nommé, le monteur n'a rien à décomposer
+   * (`testValueSplit` : « rien à décomposer » dès qu'aucune compétence ni caractéristique n'est
+   * déclarée) — il rend la valeur EN BASE, que l'acteur soit nommé ou non. Le lot 2 avait d'abord
+   * ouvert la porte de forge pour ce cas (redressement de bateau sans barreur, `riverVoyageFlow`) :
+   * cette équivalence est ce qui l'a refermée, et ce qui empêchera de la rouvrir pour le même motif.
+   */
+  it('valeur ÉTRANGÈRE : `ligne` et `montee` rendent la MÊME étape — la forge n’a rien à faire ici', () => {
+    const h = hero('H1');
+    h.characteristics['force-mentale'] = 71; // le héros a SES composantes : elles ne doivent PAS entrer
+    const cumul = [{ label: '−5 cumulatif (Round 2)', value: -5, famille: 'jet' as const }];
+    const commun = { id: 'right-1', kind: 'riverRighting', actor: h, label: 'Redressement', difficulty: 'accessible' as const };
+
+    const parLigne = monoStep({ ...commun, ligne: { valeur: 42, valeurEtrangere: true, surLaCible: cumul } })!;
+    const parMontee = monoStep({ ...commun, montee: rollStep({ difficulty: 'accessible', valeur: 42, valeurEtrangere: true, surLaCible: cumul }) })!;
+
+    expect(parLigne.base, 'la valeur fournie EST la base (aucune décomposition possible)').toBe(42);
+    expect(parLigne.target, '42 + 20 (Accessible) − 5 (cumulatif)').toBe(57);
+    expect(parLigne.base).toBe(parMontee.base);
+    expect(parLigne.target).toBe(parMontee.target);
+    expect(parLigne.mods).toEqual(parMontee.mods);
+    expect(parLigne.actorId, 'et le porteur nomme la fenêtre dans les DEUX régimes').toBe(parMontee.actorId);
+  });
+});
+
+/**
+ * LE NÉGATIF DE TYPE de l'union `DisplaySpec` (#1262 V2 lot 2) — la possession d'une étape d'affichage
+ * est EXCLUSIVE : son concerné (`actorId`) OU le monde (`worldOwner`), jamais les deux, jamais aucun.
+ * Aucun scanner ne tient cet invariant : c'est le compilateur, et cette sonde mesure qu'il le tient
+ * VRAIMENT (mêmes API que la sonde de murage de `built-brand-lint`, programme TypeScript réel).
+ */
+const SONDE_DISPLAY = (decl: string) => `
+type RecapLine = { text: string };
+type Meta = Record<string, unknown>;
+interface DisplayBase { id: string; kind: string; label: string; icon?: string; outcome?: RecapLine[]; meta?: Meta }
+type DisplaySpec = DisplayBase & ({ actorId: string; worldOwner?: never } | { worldOwner: true; actorId?: never });
+declare function displayStep(spec: DisplaySpec): void;
+displayStep({ id: 'x', kind: 'k', label: 'L'${decl} });
+`;
+
+function diagnosticsDisplay(code: string): number[] {
+  const fileName = 'sonde-display.ts';
+  // `types: []` : la sonde ne dépend d'AUCUN `@types` du dépôt — elle mesure la FORME de l'union, rien d'autre.
+  const options: ts.CompilerOptions = { strict: true, noEmit: true, target: ts.ScriptTarget.ES2020, types: [], skipLibCheck: true };
+  const libPath = ts.getDefaultLibFilePath(options);
+  const sf = ts.createSourceFile(fileName, code, ts.ScriptTarget.ES2020, true);
+  const host: ts.CompilerHost = {
+    getSourceFile: (n) => {
+      if (n === fileName) return sf;
+      const texte = ts.sys.readFile(n);
+      return texte === undefined ? undefined : ts.createSourceFile(n, texte, ts.ScriptTarget.ES2020);
+    },
+    writeFile: () => {},
+    getDefaultLibFileName: () => libPath,
+    useCaseSensitiveFileNames: () => false,
+    getCanonicalFileName: (n) => n.toLowerCase(),
+    getCurrentDirectory: () => '',
+    getNewLine: () => '\n',
+    fileExists: (n) => n === fileName || ts.sys.fileExists(n),
+    readFile: (n) => (n === fileName ? code : ts.sys.readFile(n)),
+  };
+  return ts.getPreEmitDiagnostics(ts.createProgram([fileName], options, host)).map((d) => d.code);
+}
+
+describe('#1262 V2 — la possession d’un AFFICHAGE est exclusive (négatif de type)', () => {
+  it('un concerné SEUL compile ; le MONDE seul compile', () => {
+    expect(diagnosticsDisplay(SONDE_DISPLAY(", actorId: 'h1'"))).toEqual([]);
+    expect(diagnosticsDisplay(SONDE_DISPLAY(', worldOwner: true'))).toEqual([]);
+  });
+
+  it('les DEUX ensemble ne compilent pas', () => {
+    expect(diagnosticsDisplay(SONDE_DISPLAY(", actorId: 'h1', worldOwner: true"))).not.toEqual([]);
+  });
+
+  it('AUCUNE des deux ne compile pas (une étape sans possession échoit à l’hôte seul)', () => {
+    expect(diagnosticsDisplay(SONDE_DISPLAY(''))).not.toEqual([]);
+  });
+
+  it('`worldOwner: false` ne compile pas (le monde se DÉCLARE, il ne se désactive pas)', () => {
+    expect(diagnosticsDisplay(SONDE_DISPLAY(', worldOwner: false'))).not.toEqual([]);
   });
 });

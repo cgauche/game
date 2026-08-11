@@ -664,7 +664,7 @@ Le détail : chaque Personnage dispose d'**une Activité par semaine de 8 jours*
 **Voir aussi** : [Activités Répandues (LDB 23)](#activités-répandues-ldb-23) (Apprentissage particulier, Artisanat, Entraînement, Invention !), [Activités de Classe (LDB 23)](#activités-de-classe-ldb-23) (Recherche de savoir, Semer la dissension, Entraînement au combat), [Activités de Guerrier — AA Annexe II](#activités-de-guerrier--aa-annexe-ii), [Commerce d'opportunité (en mer)](#commerce-dopportunité-en-mer), [Cartographie (Activité en mer)](#cartographie-activité-en-mer), [Entraînement d'équipage](#entraînement-déquipage), [Entretien du navire](#entretien-du-navire).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.17, l.266-272) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `WorldMapView`, `SeaVoyageState`, `SEA_WEEK_DAYS`, `startTravel`, `surcharge-3`, `cruiseM`, `embrigadement`, `runSeaDay`, +23 — `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/state/pendings.ts`, `src/state/seaActivities.ts`, `src/state/seaVoyageFlow.ts`, `src/state/store.ts`, +3 fichiers
+- `MDG 15` (l.17, l.266-272) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `WorldMapView`, `SeaVoyageState`, `SEA_WEEK_DAYS`, `startTravel`, `surcharge-3`, `cruiseM`, `embrigadement`, `pretre-de-manann`, +23 — `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/state/pendings.ts`, `src/state/seaActivities.ts`, `src/state/seaVoyageFlow.ts`, `src/state/store.ts`, +3 fichiers
 
 ---
 

@@ -70,10 +70,13 @@ export function stepsWithoutStake(src: string): number[] {
   //  - `...rollStep({…})` = la MÊME cible, posée par le MONTEUR CANONIQUE (#1153) : depuis que les
   //    flux DÉCLARENT leur ligne au lieu de la calculer, la cible n'est plus un littéral de l'étape.
   //    Sans cette forme, le cliquet devient AVEUGLE sur tout site migré (couverture, pas exemption) ;
+  //  - `actor:` = la DÉCLARATION d'un mint MONO (`monoStep`, #1262) : la cible n'est plus même montée
+  //    au site, c'est le mint qui la pose — seul le porteur déclaré (`actor`, jamais `actorId`) et le
+  //    `kind` restent visibles. Même raison que ci-dessus : sans elle, migrer rendrait le cliquet vert ;
   //  - `'table'` = un TIRAGE SUR TABLEAU (`table: <expr>`), qui met tout autant en jeu (Blessure
   //    critique, Oups, Colère des dieux, mutation) et n'a PAS de `target` — angle mort jumeau de
   //    celui d'`interactive`, levé ici.
-  for (const m of s.matchAll(/(?<=[{,]\s*)(?:target\s*(?::\s*[^\s,}]|[,}])|table\s*:\s*[^\s,}])|\.\.\.rollStep\(/g)) {
+  for (const m of s.matchAll(/(?<=[{,]\s*)(?:target\s*(?::\s*[^\s,}]|[,}])|table\s*:\s*[^\s,}]|actor\s*:\s*[^\s,}])|\.\.\.rollStep\(/g)) {
     const i = m.index!;
     let depth = 0;
     let start = -1;
@@ -96,7 +99,7 @@ export function stepsWithoutStake(src: string): number[] {
     const lit = s.slice(start, end);
     if (!hasTopLevelKey(lit, 'kind')) continue; // CONTRIBUTEUR batch (aucun kind) / pending d'un autre flux
 
-    if (!/\b(actorId|worldOwner|rollLabel)\s*[:,}]/.test(lit)) continue; // aucun lanceur nommé : pas une étape
+    if (!/\b(actorId|actor|worldOwner|rollLabel)\s*[:,}]/.test(lit)) continue; // aucun lanceur nommé : pas une étape
     // `stake:`, raccourci `stake,` — et `{ …, stake }` en dernière propriété (le littéral est tranché
     // AVANT son accolade fermante : la fin de chaîne y tient lieu de délimiteur).
     if (/\bstake\s*(?:[,:]|$)/.test(lit)) continue;
@@ -475,6 +478,33 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
     expect(stepsWithoutStake(corpsDeFonction), 'un corps de fonction n’est pas un littéral d’étape').toHaveLength(0);
     expect(stepsWithoutStake(tableSans), 'un TIRAGE sur tableau met en jeu autant qu’un Test').toHaveLength(1);
     expect(stepsWithoutStake(tableAvec)).toHaveLength(0);
+  });
+
+  /**
+   * FAIL-CLOSED du volet `actor:` (#1262 V2 lot 2) — depuis que les flux passent par les MINTS, la cible
+   * n'est plus montée au site : ce que le scan voit d'une étape mono, c'est la DÉCLARATION (`actor` +
+   * `kind`). Sans ce volet, migrer un fichier rendait le cliquet VERT à zéro sans qu'un seul enjeu ait
+   * été doté — c'est exactement ce qui s'est produit au lot 2 (baselines travelFlow/travelPostes/
+   * embrigadement tombées à 0 avant l'extension, ré-alignées après).
+   *
+   * DEUX TROUS MESURÉS, dits ici plutôt que tus (ticket #1271, qui porte déjà l'angle mort jumeau
+   * `table,`) :
+   *  - le RACCOURCI `actor,` (propriété abrégée) n'est pas vu — le scan exige `actor: <expr>` ;
+   *  - un `kind` apporté par SPREAD (`{ ...commun, actor }`) n'est pas vu — `hasTopLevelKey` lit les
+   *    propriétés littérales, pas ce qu'un spread apporte.
+   * Les deux se lèvent avec la re-mesure complète du stock, pas à la pièce.
+   */
+  it('FAIL-CLOSED : un MINT mono sans enjeu est DÉTECTÉ, avec enjeu il ne l’est pas', () => {
+    const sans = `const st = monoStep({ id: 'expo-1', kind: 'stageExposure', actor: h, label: 'Exposition', difficulty: diff, ligne: { test: { skill: 'resistance' } } });`;
+    const avec = `const st = monoStep({ id: 'expo-1', kind: 'stageExposure', actor: h, label: 'Exposition', difficulty: diff, ligne: { test: { skill: 'resistance' } }, stake: voyageStakeRef('exposure') });`;
+    const porteur = `const p = { actor: h, ligne: { test: { skill: 'ramer' } } };`;
+    const raccourci = `const st = monoStep({ id: 'x', kind: 'k', actor, label: 'L', difficulty: diff });`;
+    const parSpread = `const st = monoStep({ ...commun, actor: h, ligne: { valeur: 40 } });`;
+    expect(stepsWithoutStake(sans)).toHaveLength(1);
+    expect(stepsWithoutStake(avec)).toHaveLength(0);
+    expect(stepsWithoutStake(porteur), 'un PORTEUR de bande (aucun `kind`) : l’enjeu est porté par la bande').toHaveLength(0);
+    expect(stepsWithoutStake(raccourci), 'TROU CONNU (#1271) : le raccourci `actor,` échappe au scan').toHaveLength(0);
+    expect(stepsWithoutStake(parSpread), 'TROU CONNU (#1271) : un `kind` apporté par spread échappe au scan').toHaveLength(0);
   });
 });
 

@@ -57,8 +57,9 @@ import {
 } from '../engine/riverNavigation';
 import { DIFFICULTY_LABELS, type Combatant, type Difficulty } from '../engine/types';
 import { startCascade, registerCascadeApplier, runCascadeImmediate } from './cascade';
-import { freeCons, rollStep, withDifficulty, type Consequence, type RollLineDecl, type RollLineSpec } from './rollSeam';
-import { humanControlled } from './netOwnership';
+import { freeCons, monoStep, choiceStep, displayStep, refusePorte, surfaceOf, type Consequence, type BandLigne } from './rollSeam';
+import type { BuiltCascadeStep } from './stepBrand';
+import { actorIn } from './combatants';
 import { riverAutoResolves, DEFAULT_VOYAGE_ORDERS, type VoyageCadence, type VoyageOrders } from './voyageCadence';
 import type { CascadeStep, CascadeStepMeta } from './pendings';
 import type { Get, Set } from './flowTypes';
@@ -233,21 +234,16 @@ function riverNavTest(river: RiverVoyageState, eff: ReturnType<typeof riverWindE
 
 /** Une étape-JET fluviale prête à influencer : la Difficulté est comprise dans `target` ET portée en
  *  DONNÉE de l'étape (`difficulty`) — la ligne de jet la DIT, l'affichage ne la devine pas. La LIGNE
- *  (base nue + toutes ses composantes nommées + cible + écrêtage) est montée par le MONTEUR CANONIQUE
- *  `rollStep` : ce monteur fluvial ne calcule rien, il DÉCRIT (`RollLineSpec`) et habille. */
+ *  (base nue + toutes ses composantes nommées + cible + écrêtage) et la POSSESSION sont posées par le
+ *  mint : ce monteur fluvial ne calcule rien, il DÉCLARE (`BandLigne`) et habille. */
 function riverStep(
-  id: string, kind: string, actorId: string | undefined, label: string, icon: string, rollLabel: string,
-  roll: RollLineSpec, meta: CascadeStepMeta | undefined,
+  id: string, kind: string, actor: Combatant, label: string, icon: string, rollLabel: string,
+  ligne: BandLigne, difficulty: Difficulty, meta: CascadeStepMeta | undefined,
   // `stake` REQUIS (#1117) : une étape fluviale qui LANCE dit ce qu'elle met en jeu — le compilateur
   // tient le contrat pour les étapes construites ici (le cliquet textuel ne voit que les littéraux).
   opts: { stake: StakeRef },
-): CascadeStep {
-  return {
-    id, kind, actorId, icon, label, rollLabel, difficulty: roll.difficulty,
-    ...rollStep(roll),
-    stake: opts.stake,
-    result: null, interactive: true, meta,
-  };
+): BuiltCascadeStep | undefined {
+  return monoStep({ id, kind, actor, icon, label, rollLabel, difficulty, ligne, stake: opts.stake, meta });
 }
 
 /** Libellé de la COMPÉTENCE de barre du bateau EN COURS (Voile si gréé, Ramer sinon — MSRC 7 l.15),
@@ -265,12 +261,12 @@ function riverPilotSkillLabel(get: Get): string {
  * (`river.day`) que la clôture relira pour les km. Renvoie aussi les lignes de journal d'ambiance
  * (vent du jour) déjà connues. Consomme ZÉRO RNG (les jets vivent dans les étapes / appliers).
  */
-export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { scene: string; entry?: string; label: string }): { steps: CascadeStep[]; log: string[] } {
+export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { scene: string; entry?: string; label: string }): { steps: BuiltCascadeStep[]; log: string[] } {
   const plan = get().travelPlan!;
   const river = plan.river!;
   const worldMap = get().worldMap as WorldMap;
   const coque = plan.vehicle!;
-  const steps: CascadeStep[] = [];
+  const steps: BuiltCascadeStep[] = [];
   const logs: string[] = [];
 
   const eff = riverWindEffect(river.windForce, river.windDir);
@@ -291,23 +287,25 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
   // DÉCLARATION du jet de barre, faite UNE fois : les quatre étapes de barre et l'évitement de péril
   // testent la MÊME grandeur (même barreur, même Compétence, même Soutien) — seuls la Difficulté et
   // les modificateurs de situation changent.
-  const pilotRoll = pilot
-    ? { actor: pilot.actor, test: { skill: skillId }, valeur: pilot.value, soutien: pilot.support }
+  const pilotLigne: BandLigne | undefined = pilot
+    ? { test: { skill: skillId }, valeur: pilot.value, soutien: pilot.support }
     : undefined;
+  // Une déclaration REFUSÉE par son mint n'ajoute rien à la journée (`refusePorte` a déjà crié).
+  const pousse = (st: BuiltCascadeStep | undefined) => { if (st) steps.push(st); };
 
   // 1. Réparation du gréement/avirons brisés d'une étape précédente (l.78-82 / note 5) : rend le contrôle.
   if ((river.broken || river.outOfControl)) {
     const repair = bestShipwright(get);
-    if (repair) steps.push(riverStep('river-repair', 'riverControlRepair', repair.actor.id, 'Réparation du gréement', 'travel/repair',
-      'Métier', withDifficulty(repair.roll, TEMPORARY_REPAIR.difficulty), undefined,
+    if (repair) pousse(riverStep('river-repair', 'riverControlRepair', repair.actor, 'Réparation du gréement', 'travel/repair',
+      'Métier', repair.ligne, TEMPORARY_REPAIR.difficulty, undefined,
       { stake: voyageStakeRef('riverControlRepair', { driftPenalty: DRIFT_NAV_PENALTY, outOfControlPenalty: OUT_OF_CONTROL.navPenalty }) }));
     else logs.push('Gréement/avirons hors d\'usage — personne pour les réparer, le bateau dérive.');
   }
 
   // 2. AGILITÉ de rame (l.17) : échec → −20 % ; Échec spectaculaire (−6 DR) → ÷2.
   if (pilot) {
-    steps.push(riverStep('river-agility', 'riverAgility', pilot.actor.id, 'Agilité de rame', 'travel/rowboat',
-      'Agilité', { actor: pilot.actor, test: { char: 'agilite' }, difficulty: ROWING_AGILITY_DIFFICULTY }, undefined,
+    pousse(riverStep('river-agility', 'riverAgility', pilot.actor, 'Agilité de rame', 'travel/rowboat',
+      'Agilité', { test: { char: 'agilite' } }, ROWING_AGILITY_DIFFICULTY, undefined,
       { stake: voyageStakeRef('riverAgility', {
         // La SOURCE parle en POURCENTAGE et en DIVISION (MSRC 7 l.17) : le facteur ×0.8 est la langue du
         // moteur, pas celle du joueur — la ligne d'échec dit déjà « −20 % » / « ÷2 ».
@@ -321,8 +319,8 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
   if (pilot) {
     const savoir = savoirVoiesFluvialesBonus(pilot.actor);
     const navTest = riverNavTest(river, eff);
-    steps.push(riverStep('river-nav', 'riverNav', pilot.actor.id, `Navigation (${refLabel('skills', { id: skillId })})`, 'travel/sail-ship',
-      refLabel('skills', { id: skillId }), { ...pilotRoll!, difficulty: navTest.difficulty, surLaCible: navTest.mods }, { savoir },
+    pousse(riverStep('river-nav', 'riverNav', pilot.actor, `Navigation (${refLabel('skills', { id: skillId })})`, 'travel/sail-ship',
+      refLabel('skills', { id: skillId }), { ...pilotLigne!, surLaCible: navTest.mods }, navTest.difficulty, { savoir },
       { stake: voyageStakeRef('riverNav', { driftKm: Math.round(riverDriftKm(baseKm)), driftPct: DRIFT_PCT_OF_SPEED }) }));
   } else {
     logs.push('Aucun batelier à la barre — le fleuve emporte l\'embarcation à sa guise.');
@@ -331,23 +329,23 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
   }
 
   // 4. LOUVOYAGE (note 3, l.39) : le +% de vent de côté Modéré/Fort n'est acquis qu'avec un Test réussi.
-  if (eff.tack && pilot) steps.push(riverStep('river-tack', 'riverTack', pilot.actor.id, 'Louvoyage', 'nautical/tack',
-    refLabel('skills', { id: skillId }), { ...pilotRoll!, difficulty: TACK_DIFFICULTY }, { savoir: savoirVoiesFluvialesBonus(pilot.actor) },
+  if (eff.tack && pilot) pousse(riverStep('river-tack', 'riverTack', pilot.actor, 'Louvoyage', 'nautical/tack',
+    refLabel('skills', { id: skillId }), pilotLigne!, TACK_DIFFICULTY, { savoir: savoirVoiesFluvialesBonus(pilot.actor) },
     { stake: voyageStakeRef('riverTack', { windPct: eff.pct ?? 0 }) }));
 
   // 5. Sauvegardes de VENT (l.40-41).
   if (eff.capsizeRisk) {
     // `pilotValue` = la valeur FONDUE du barreur, portée en DONNÉE : le redressement qui suit un
     // chavirage (`riverCapsize` → `rightingStep`) en dérive sa cible, et la `base` de l'étape est nue.
-    if (pilot) steps.push(riverStep('river-capsize', 'riverCapsize', pilot.actor.id, 'Retirer la voile (chavirage)', 'nautical/wind',
-      refLabel('skills', { id: skillId }), { ...pilotRoll!, difficulty: CAPSIZE.removeSailDifficulty },
+    if (pilot) pousse(riverStep('river-capsize', 'riverCapsize', pilot.actor, 'Retirer la voile (chavirage)', 'nautical/wind',
+      refLabel('skills', { id: skillId }), pilotLigne!, CAPSIZE.removeSailDifficulty,
       { savoir: savoirVoiesFluvialesBonus(pilot.actor), pilotValue: pilot.value },
       { stake: voyageStakeRef('riverCapsize', { rounds: Math.max(1, capsizeSinkTurns(effectiveChar(coque, 'endurance'))) }) }));
     else { sinkBoat(get, set, (l) => logs.push(...l), 'Sans barreur, le bateau se renverse sous le vent violent et coule.'); }
   }
   if (eff.riggingRisk) {
-    if (pilot) steps.push(riverStep('river-rigging', 'riverRigging', pilot.actor.id, 'Préserver le gréement', 'nautical/wind',
-      refLabel('skills', { id: skillId }), { ...pilotRoll!, difficulty: CAPSIZE.removeSailDifficulty }, { savoir: savoirVoiesFluvialesBonus(pilot.actor) },
+    if (pilot) pousse(riverStep('river-rigging', 'riverRigging', pilot.actor, 'Préserver le gréement', 'nautical/wind',
+      refLabel('skills', { id: skillId }), pilotLigne!, CAPSIZE.removeSailDifficulty, { savoir: savoirVoiesFluvialesBonus(pilot.actor) },
       { stake: voyageStakeRef('riverRigging', { outOfControlPenalty: OUT_OF_CONTROL.navPenalty }) }));
     else { steps.push(...applyBoatCriticalNoPilot(get, set, coque, (l) => logs.push(...l))); }
   }
@@ -366,14 +364,19 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
   for (const [i, spawn] of (route.riverPerils ?? []).entries()) {
     const peril = findRiverPeril(spawn.perilId);
     if (!peril) continue;
-    steps.push({ id: `river-peril-${i}`, kind: 'riverPerilCheck', actorId: pilot?.actor.id, icon: 'ui/warning', label: peril.label,
+    const commun = {
+      id: `river-peril-${i}`, kind: 'riverPerilCheck', icon: 'ui/warning', label: peril.label,
       meta: { perilId: spawn.perilId, chancePct: spawn.chancePct, savoir: pilot ? savoirVoiesFluvialesBonus(pilot.actor) : 0,
         hasPilot: !!pilot, navSkill: skillId,
         navDrift: !!eff.drift || !!river.broken, navOutOfControl: !!river.outOfControl,
         // Libellé de la LIGNE du Test d'évitement inséré par l'applier : la compétence du barreur
         // (l.15), RÉSOLUE par la couture id→label du catalogue et portée en donnée — l'applier n'a
         // plus à la deviner.
-        navLabel: riverPilotSkillLabel(get) } });
+        navLabel: riverPilotSkillLabel(get) },
+    };
+    // Sans barreur, ce pas n'est celui de PERSONNE : c'est le fleuve qui vérifie (étape MONDE,
+    // routée au siège MJ), pas un héros qu'il faudrait nommer pour la forme.
+    steps.push(pilot ? displayStep({ ...commun, actorId: pilot.actor.id }) : displayStep({ ...commun, worldOwner: true }));
   }
 
   return { steps, log: logs };
@@ -382,7 +385,7 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
 /** Coup Critique au gréement SANS barreur (note 5) — Critique + dérive hors de contrôle. Le jet d'éclats
  *  reste possiblement INFLUENÇABLE (#270, `applyBoatCritical`) même sans barreur (l'esquive porte sur la
  *  victime exposée, pas sur le pilote). */
-function applyBoatCriticalNoPilot(get: Get, set: Set, coque: Combatant, tell: (l: string[]) => void): CascadeStep[] {
+function applyBoatCriticalNoPilot(get: Get, set: Set, coque: Combatant, tell: (l: string[]) => void): BuiltCascadeStep[] {
   tell(['Vent très fort contraire — aucun barreur : le gréement lâche.']);
   const insert = applyBoatCritical(get, set, get().travelPlan!, get().travelPlan!.river!, coque, 'greement', tell, battleRng(), 'river-rigging-nopilot');
   set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, outOfControl: true } } });
@@ -536,7 +539,7 @@ registerCascadeApplier('riverTack', (get, set, step) => {
  *  Test de Navigation (`MSRC 7 note 4` : « un seul Test de Navigation Accessible (+20) par Round pour
  *  essayer de redresser le bateau ») : le barreur et son Soutien se re-résolvent ici, et le +1 DR de
  *  Savoir (Voies fluviales, l.13) se résout AU DR dans l'applier (`riverControlKept`), pas dans la cible. */
-function rightingStep(get: Get, source: CascadeStep, round: number, be: number): CascadeStep {
+function rightingStep(get: Get, source: CascadeStep, round: number, be: number): BuiltCascadeStep | undefined {
   const rounds = Math.max(1, be); // plancher : au moins UNE tentative (parité avec le nb de Rounds joués)
   const penalty = round * CAPSIZE_RIGHT_CUMULATIVE;
   // Le barreur est RE-RÉSOLU ici (acteur + Soutien du moment) : la ligne se remonte par le monteur
@@ -545,28 +548,35 @@ function rightingStep(get: Get, source: CascadeStep, round: number, be: number):
   const skillId = riverPilotSkill(findVehicleById(get().travelPlan?.vehicle?.creatureId ?? '')?.ship?.sail != null);
   const pilot = riverPilot(get, skillId);
   const savoir = pilot ? savoirVoiesFluvialesBonus(pilot.actor) : Number(source.meta?.savoir ?? 0);
-  const roll: RollLineSpec = pilot
-    ? {
-      actor: pilot.actor, test: { skill: skillId }, valeur: pilot.value, soutien: pilot.support,
-      difficulty: CAPSIZE_RIGHT_DIFFICULTY,
-      ...(penalty ? { surLaCible: [{ label: `−5 cumulatif (Round ${round + 1})`, value: penalty, famille: 'jet' as const, ref: RULE_REF['navigation-chavirage'] }] } : {}),
-    }
-    // Plus de barreur éligible (mort, débarqué) : la valeur figée à la construction tient lieu de
-    // seuil — DÉCLARÉE comme valeur d'une autre formule, elle ne prétend pas être un Niveau de Compétence.
-    : {
-      difficulty: CAPSIZE_RIGHT_DIFFICULTY, valeur: Number(source.meta?.pilotValue ?? source.base ?? 0), valeurEtrangere: true,
-      ...(penalty ? { surLaCible: [{ label: `−5 cumulatif (Round ${round + 1})`, value: penalty, famille: 'jet' as const, ref: RULE_REF['navigation-chavirage'] }] } : {}),
-    };
-  return {
-    id: `${source.id}-right-${round}`, kind: 'riverRighting', actorId: source.actorId, icon: 'nautical/tack',
+  const cumul = penalty
+    ? [{ label: `−5 cumulatif (Round ${round + 1})`, value: penalty, famille: 'jet' as const, ref: RULE_REF['navigation-chavirage'] }]
+    : undefined;
+  // PORTEUR de l'étape : le barreur DU MOMENT quand il en reste un — le Test est le sien, donc la
+  // fenêtre aussi. C'est un CHANGEMENT assumé : l'étape reprenait jusqu'ici l'`actorId` du chavirage,
+  // qui pouvait n'être plus celui qui roule. À défaut de barreur, le porteur du chavirage garde
+  // l'étape (le bateau est le sien) : sans lui, la fenêtre échoirait à l'hôte.
+  const porteur = pilot?.actor ?? actorIn(get(), source.actorId ?? '');
+  if (!porteur) {
+    refusePorte(`redressement « ${source.id} » (Round ${round + 1}) : plus aucun porteur à bord — sans lui `
+      + 'le bateau ne serait ni redressé ni coulé, la note 4 (l.40) resterait en suspens. Aucun jet ouvert.');
+    return undefined;
+  }
+  return monoStep({
+    id: `${source.id}-right-${round}`, kind: 'riverRighting', actor: porteur, icon: 'nautical/tack',
     label: `Redressement du bateau — Round ${round + 1}/${rounds}`,
     rollLabel: source.rollLabel ?? 'Navigation',
     difficulty: CAPSIZE_RIGHT_DIFFICULTY,
-    ...rollStep(roll),
-    ...(() => { const st = voyageStakeRef('riverRighting', { nextPenalty: (round + 1) * CAPSIZE_RIGHT_CUMULATIVE, rounds: rounds }); return st ? { stake: st } : {}; })(),
-    result: null, interactive: true,
+    stake: voyageStakeRef('riverRighting', { nextPenalty: (round + 1) * CAPSIZE_RIGHT_CUMULATIVE, rounds: rounds }),
     meta: { rightRound: round, rightRounds: rounds, savoir },
-  };
+    // Barreur en poste : sa valeur SOUTENUE se décompose. Plus de barreur éligible (mort, débarqué) :
+    // la valeur figée à la construction tient lieu de seuil, DÉCLARÉE comme venant d'une autre formule
+    // (`valeurEtrangere`) — sans Test nommé, le monteur n'a RIEN à décomposer et rend la valeur en base
+    // (`testValueSplit` : « rien à décomposer » dès qu'aucune compétence ni caractéristique n'est
+    // déclarée), porteur nommé ou non. Les deux régimes passent donc par la MÊME entrée `ligne`.
+    ligne: pilot
+      ? { test: { skill: skillId }, valeur: pilot.value, soutien: pilot.support, ...(cumul ? { surLaCible: cumul } : {}) }
+      : { valeur: Number(source.meta?.pilotValue ?? source.base ?? 0), valeurEtrangere: true, ...(cumul ? { surLaCible: cumul } : {}) },
+  });
 }
 
 /** Chavirage (note 4, l.40) : voile retirée à temps → dérive ; sinon le redressement s'ouvre Round par
@@ -577,9 +587,10 @@ registerCascadeApplier('riverCapsize', (get, set, step) => {
   patchDay(get, set, { forceDrift: true });
   if (step.result.success) return { consequences: freeCons([{ text: 'Voile affalée à temps — le chavirage est évité.', tone: 'ok' }]) };
   const be = capsizeSinkTurns(effectiveChar(get().travelPlan!.vehicle!, 'endurance'));
+  const premier = rightingStep(get, step, 0, be);
   return {
     consequences: freeCons([{ text: 'Trop tard — le bateau chavire !', tone: 'bad' }]),
-    insert: [rightingStep(get, step, 0, be)],
+    ...(premier ? { insert: [premier] } : {}),
   };
 });
 
@@ -597,9 +608,10 @@ registerCascadeApplier('riverRighting', (get, set, step) => {
     return { consequences: freeCons([{ text: `Le bateau est redressé au Round ${round + 1}${savoirNote} — il dérive le temps de reprendre le contrôle.`, tone: 'ok' }]) };
   }
   if (round + 1 < be) {
+    const suivant = rightingStep(get, { ...step, id: step.id.replace(/-right-\d+$/, '') }, round + 1, be);
     return {
       consequences: freeCons([{ text: `Le bateau reste sur le flanc (Round ${round + 1}/${be}).`, tone: 'bad' }]),
-      insert: [rightingStep(get, { ...step, id: step.id.replace(/-right-\d+$/, '') }, round + 1, be)],
+      ...(suivant ? { insert: [suivant] } : {}),
     };
   }
   const j: import('./rollSeam').FreeConsLine[] = [];
@@ -640,34 +652,39 @@ registerCascadeApplier('riverPerilCheck', (get, set, step) => {
     const skillId = String(step.meta?.navSkill ?? riverPilotSkill(findVehicleById(get().travelPlan?.vehicle?.creatureId ?? '')?.ship?.sail != null));
     const pilot = riverPilot(get, skillId as 'voile' | 'ramer');
     if (!hasPilot || !pilot) return resolveRiverPerilConsequence(get, set, peril, { ...step, result: null } as CascadeStep, rng);
-    const insert: CascadeStep[] = [{
-      id: `${step.id}-nav`, kind: 'riverPerilNav', actorId: step.actorId, icon: 'nautical/snag', label: `${peril.label} — évitement`,
+    const st = monoStep({
+      id: `${step.id}-nav`, kind: 'riverPerilNav', actor: pilot.actor, icon: 'nautical/snag', label: `${peril.label} — évitement`,
       rollLabel: String(step.meta?.navLabel ?? riverPilotSkillLabel(get)), difficulty: NAV_BASE_DIFFICULTY,
-      ...rollStep({
-        actor: pilot.actor, test: { skill: skillId }, valeur: pilot.value, soutien: pilot.support,
-        difficulty: NAV_BASE_DIFFICULTY,
+      ligne: {
+        test: { skill: skillId }, valeur: pilot.value, soutien: pilot.support,
         surLaCible: navPenaltyMods({ drift: !!step.meta?.navDrift, outOfControl: !!step.meta?.navOutOfControl }),
-      }),
-      result: null, interactive: true,
+      },
       ...(peril.onFail ? { stake: voyageStakeRef('riverPerilNav', { hits: peril.onFail.hullHits, damagePerHit: peril.onFail.damagePerHit }) } : {}),
       meta: { perilId, savoir: Number(step.meta?.savoir ?? 0) },
-    }];
-    return { insert };
+    });
+    return st ? { insert: [st] } : undefined;
   }
   if (peril.kind === 'obstacle' && peril.obstacle) {
     // Barrage (l.128) : CHOIX joueur — forcer au bélier (Dégâts à la coque) OU déblayer à la main (temps,
     // coque intacte). L'Endurance/les Blessures du barrage sont tirées ici pour la lisibilité du choix.
     const b = rollBarrage(peril.obstacle, rng);
-    return { insert: [{
-      id: `${step.id}-obstacle`, kind: 'riverObstacleChoice', actorId: step.actorId, icon: 'ui/warning',
+    // PORTEUR de la décision : le barreur du pas de vérification, sinon celui qui la mettrait en œuvre
+    // (Force soutenue — bélier comme déblaiement), sinon le premier vivant. La porte de choix exige un
+    // porteur : sans lui la fenêtre échoit à l'hôte, qui trancherait pour un autre siège.
+    const decideur = step.actorId
+      ?? partyAssisted(get().party.filter((h) => !h.dead), undefined, 'force')?.actor.id
+      ?? get().party.find((h) => !h.dead)?.id ?? '';
+    const st = choiceStep({
+      id: `${step.id}-obstacle`, kind: 'riverObstacleChoice', actorId: decideur, icon: 'ui/warning',
       label: `${peril.label} (Endurance ${b.endurance}, ${b.wounds} Blessures) — forcer ou déblayer ?`,
       options: [
         { key: 'deblayer', label: 'Déblayer à la main', detail: 'Dégager les débris (3d10 objets) : du temps perdu, mais la coque est épargnée.' },
         { key: 'forcer', label: 'Forcer au bélier', detail: `Enfoncer le barrage : +${peril.obstacle.ramDamage} Dégâts à la coque.` },
       ],
       // Cadence commandée : défaut = le MOINS destructif (déblayer, coque intacte) — MSRC 7 l.128.
-      defaultChoice: 'deblayer', interactive: true, meta: { perilId },
-    }] };
+      defaultChoice: 'deblayer', meta: { perilId },
+    });
+    return st ? { insert: [st] } : undefined;
   }
   // detect : jet de détection GATÉ (#270, conducteur JOUEUR → étape insérée `riverPerilDetect` ; sinon
   // résolution inline, sous-jets dans le même ordre qu'inline).
@@ -747,32 +764,35 @@ registerCascadeApplier('riverPerilDetect', (get, set, step) => {
   const coque = plan.vehicle!;
   damageVesselHull(get, set, coque, impact.hullDamage);
   j.push(`${peril.label} : la coque subit ${impact.hullDamage} Dégâts (reste ${coque.wounds.current}/${coque.wounds.max}).`);
-  const insert: CascadeStep[] = [];
+  const insert: BuiltCascadeStep[] = [];
   if (impact.echoue) insert.push(...applyEchouageSteps(get, set, step.id, j));
   if (impact.holed) insert.push(...applyBoatCritical(get, set, plan, plan.river!, coque, 'coque', (l) => j.push(...l), rng, step.id));
   return { consequences: freeCons(j), insert: insert.length ? insert : undefined };
 });
 
 /** Applique un Coup Critique de bateau (l.72-94) : Dégâts d'éclats à l'équipage — esquive INFLUENÇABLE
- *  (#270, Initiative) si la victime exposée est pilotée par un humain, sinon inline — États, dérive, ou
+ *  (#270, Initiative) quand le jet de la victime exposée se surface, sinon inline — États, dérive, ou
  *  coque percée (réparation elle-même GATÉE, `holeBoat`). Renvoie les étapes-jet à INSÉRER, propagées par
  *  l'appelant (build-time `applyBoatCriticalNoPilot` ou applier `riverRigging`/`riverPerilDetect`). */
-function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoyageState, _coque: Combatant, location: string, tell: (l: string[]) => void, rng: RNG, idPrefix: string): CascadeStep[] {
+function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoyageState, _coque: Combatant, location: string, tell: (l: string[]) => void, rng: RNG, idPrefix: string): BuiltCascadeStep[] {
   const crit = riverCritical(location);
   if (!crit) return [];
-  const insert: CascadeStep[] = [];
+  const insert: BuiltCascadeStep[] = [];
   if (crit.splinterDamage) {
     // Éclats à un membre d'équipage exposé (l.78-94) : le barreur/premier héros vivant encaisse. Le RAW
     // gréement/superstructure OFFRE un Test d'Initiative pour ÉVITER les +5 Dégâts (et l'Empêtré, l.78).
     const victim = get().party.find((h) => !h.dead);
-    if (victim && crit.initiativeTest && humanControlled(get(), victim)) {
-      insert.push({
-        id: `${idPrefix}-splinter`, kind: 'riverSplinterDodge', actorId: victim.id, icon: 'ui/warning',
+    const dodgeStep = victim && crit.initiativeTest && surfaceOf(get, victim)
+      ? monoStep({
+        id: `${idPrefix}-splinter`, kind: 'riverSplinterDodge', actor: victim, icon: 'ui/warning',
         label: `Critique au ${location} — éclats`, rollLabel: 'Initiative', difficulty: 'intermediaire',
-        ...rollStep({ actor: victim, test: { char: 'initiative' }, difficulty: 'intermediaire' }),
+        ligne: { test: { char: 'initiative' } },
         stake: voyageStakeRef('riverSplinterDodge', { damage: crit.splinterDamage ?? 0, condition: conditionLabel(crit.conditionId ?? 'empetre') }),
-        result: null, interactive: true, meta: { dmg: crit.splinterDamage, conditionId: crit.conditionId ?? '', location },
-      });
+        meta: { dmg: crit.splinterDamage, conditionId: crit.conditionId ?? '', location },
+      })
+      : undefined;
+    if (dodgeStep) {
+      insert.push(dodgeStep);
     } else if (victim) {
       // Repli SANS pilote humain (pas d'étape insérée ci-dessus) : aucune rangée nulle part pour ce
       // jet — le journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
@@ -796,14 +816,14 @@ function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoy
 
 /** Le meilleur réparateur de bateau (l.107-117) : Métier (Construction de bateaux), sinon Métier
  *  (Charpentier) à −10. Soutien LDB 12. `null` si personne. Source UNIQUE (calfatage + réparation du
- *  gréement) — rend AUSSI la DÉCLARATION du jet (`roll`), le malus du réparateur de substitution
+ *  gréement) — rend AUSSI la DÉCLARATION du jet (`ligne`), le malus du réparateur de substitution
  *  compris : c'est ici, et nulle part ailleurs, qu'on sait quelle spécialisation a servi. */
-function bestShipwright(get: Get): { actor: Combatant; value: number; roll: RollLineDecl } | null {
+function bestShipwright(get: Get): { actor: Combatant; value: number; ligne: BandLigne } | null {
   const build = partyAssisted(get().party, 'metier', undefined, undefined, 'Construction de bateaux');
   if (build) {
     return {
       actor: build.actor, value: build.value,
-      roll: { actor: build.actor, test: { skill: 'metier', spec: 'Construction de bateaux' }, valeur: build.value, soutien: build.support },
+      ligne: { test: { skill: 'metier', spec: 'Construction de bateaux' }, valeur: build.value, soutien: build.support },
     };
   }
   const c = partyAssisted(get().party, 'metier', undefined, undefined, 'Charpentier');
@@ -814,8 +834,8 @@ function bestShipwright(get: Get): { actor: Combatant; value: number; roll: Roll
   const value = c.value + penalty;
   return {
     actor: c.actor, value,
-    roll: {
-      actor: c.actor, test: { skill: 'metier', spec: 'Charpentier' }, valeur: value, soutien: c.support,
+    ligne: {
+      test: { skill: 'metier', spec: 'Charpentier' }, valeur: value, soutien: c.support,
       dansLaValeur: [{ label: 'Charpentier', value: penalty, famille: 'jet' as const, ref: { category: 'skills', id: 'metier' } }],
     },
   };
@@ -823,20 +843,20 @@ function bestShipwright(get: Get): { actor: Combatant; value: number; roll: Roll
 
 /** Coque PERCÉE (« Y a un trou », l.101-105) : le bateau prend l'eau et coule en E minutes ; on tente une
  *  réparation temporaire (Métier Construction de bateaux/Charpentier, Complexe — l.113-117), INFLUENÇABLE
- *  (#270, `riverHoleRepair`) si le réparateur est piloté par un humain — sinon inline. */
-function holeBoat(get: Get, set: Set, plan: TravelPlan, tell: (l: string[]) => void, idPrefix: string): CascadeStep[] {
+ *  (#270, `riverHoleRepair`) quand le jet du réparateur se surface — sinon inline. */
+function holeBoat(get: Get, set: Set, plan: TravelPlan, tell: (l: string[]) => void, idPrefix: string): BuiltCascadeStep[] {
   tell(spoilVesselCargoOnLeak(get, set)); // la coque prend l'eau → voie d'eau gâte 1d10 Enc (lot D #327)
   const minutes = holeSinkMinutes(effectiveChar(plan.vehicle!, 'endurance')); // « coule en E minutes » (l.103)
   const repair = bestShipwright(get);
-  if (repair && humanControlled(get(), repair.actor)) {
+  if (repair && surfaceOf(get, repair.actor)) {
     tell([`Coque percée (le bateau coule en ${minutes} min, l.103) — calfatage d'urgence en cours…`]);
-    return [{
-      id: `${idPrefix}-hole`, kind: 'riverHoleRepair', actorId: repair.actor.id, icon: 'travel/repair',
+    const st = monoStep({
+      id: `${idPrefix}-hole`, kind: 'riverHoleRepair', actor: repair.actor, icon: 'travel/repair',
       label: 'Calfatage d’urgence', rollLabel: 'Métier', difficulty: TEMPORARY_REPAIR.difficulty,
-      ...rollStep(withDifficulty(repair.roll, TEMPORARY_REPAIR.difficulty)),
-      result: null, interactive: true,
+      ligne: repair.ligne,
       stake: voyageStakeRef('riverHoleRepair', { minutes }),
-    }];
+    });
+    if (st) return [st];
   }
   const rng = battleRng();
   if (repair) {
@@ -866,13 +886,13 @@ function sinkBoat(get: Get, set: Set, tell: (l: string[]) => void, reason: strin
 /** CONSÉQUENCE d'un PÉRIL de rivière (l.119-166) SURVENU, résolue selon le `kind` (`river-perils.json`).
  *  Pour `navTest` (Débris) le jet d'évitement est INFLUENÇABLE (lu dans `step.result`) ; `obstacle`
  *  (Barrage) passe par le CHOIX `riverObstacleChoice` ; `detect` GATE sa détection (#270, `riverPerilDetect`,
- *  cf. `registerCascadeApplier` ci-dessus) — sans barreur qualifié piloté par un humain, résolution inline. */
-function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<ReturnType<typeof findRiverPeril>>, step: CascadeStep, rng: RNG): { consequences: Consequence[]; insert?: CascadeStep[] } {
+ *  cf. `registerCascadeApplier` ci-dessus) — sans barreur qualifié dont le jet se surface, résolution inline. */
+function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<ReturnType<typeof findRiverPeril>>, step: CascadeStep, rng: RNG): { consequences: Consequence[]; insert?: BuiltCascadeStep[] } {
   const plan = get().travelPlan!;
   const river = plan.river!;
   const coque = plan.vehicle!;
   const j: string[] = [];
-  const insert: CascadeStep[] = [];
+  const insert: BuiltCascadeStep[] = [];
   const damageHull = (dmg: number, note: string) => {
     damageVesselHull(get, set, coque, dmg);
     j.push(`${peril.label} : la coque subit ${dmg} Dégâts${note} (reste ${coque.wounds.current}/${coque.wounds.max}).`);
@@ -886,21 +906,21 @@ function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<Ret
     if (!avoided) for (let i = 0; i < peril.onFail.hullHits; i++) damageHull(peril.onFail.damagePerHit, ' (collision)');
   } else if (peril.kind === 'detect' && peril.onHit) {
     // Rochers / eaux peu profondes (l.136) : succès AUTO avec la Compétence Navigation ; sinon Agilité (+0),
-    // INFLUENÇABLE (#270) si le barreur est piloté par un humain (`riverPerilDetect`).
+    // INFLUENÇABLE (#270) si le jet se surface pour le barreur (`riverPerilDetect`).
     const pilotId = step.actorId;
     const pilot = pilotId ? get().party.find((h) => h.id === pilotId) : undefined;
     const skilled = pilot && (pilot.skills ?? []).some((s) => (s.skillId === 'voile' || s.skillId === 'ramer') && s.advances > 0);
     if (skilled) {
       j.push(`${peril.label} — le barreur connaît le passage et l'évite (Navigation, l.136).`);
-    } else if (pilot && humanControlled(get(), pilot)) {
-      insert.push({
-        id: `${step.id}-detect`, kind: 'riverPerilDetect', actorId: pilot.id, icon: 'nautical/snag', label: `${peril.label} — détection`,
+    } else if (pilot && surfaceOf(get, pilot)) {
+      const st = monoStep({
+        id: `${step.id}-detect`, kind: 'riverPerilDetect', actor: pilot, icon: 'nautical/snag', label: `${peril.label} — détection`,
         rollLabel: 'Agilité', difficulty: 'intermediaire',
-        ...rollStep({ actor: pilot, test: { char: 'agilite' }, difficulty: 'intermediaire' }),
-        result: null, interactive: true,
-        ...(peril.onHit ? { stake: voyageStakeRef('riverPerilDetect', { damage: peril.onHit.hullDamage }) } : {}),
+        ligne: { test: { char: 'agilite' } },
+        stake: voyageStakeRef('riverPerilDetect', { damage: peril.onHit.hullDamage }),
         meta: { perilId: peril.id },
       });
+      if (st) insert.push(st);
     } else {
       const detect = pilot ? rollTest(testValue(pilot, undefined, 'agilite'), 'intermediaire', rng) : { success: false };
       j.push(`${peril.label} — détection (Agilité +0) : ${'roll' in detect ? (detect as TestResult).roll : '—'} → ${detect.success ? 'évité.' : 'impact !'}`);
@@ -946,11 +966,11 @@ function echouageDifficulty(get: Get): { difficulty: Difficulty; encTxt: string 
 }
 
 /** ÉCHOUAGE (#270) : Dégâts fixes appliqués immédiatement (non-jetés) ; le renflouage (Test de Force)
- *  devient une étape-jet INFLUENÇABLE (`riverEchouageForce`) si l'acteur est piloté par un humain —
+ *  devient une étape-jet INFLUENÇABLE (`riverEchouageForce`) quand le jet de l'acteur se surface —
  *  sinon délègue à `applyEchouage` (chemin IA/synchrone inchangé). */
-function applyEchouageSteps(get: Get, set: Set, idPrefix: string, j: import('./rollSeam').FreeConsLine[]): CascadeStep[] {
+function applyEchouageSteps(get: Get, set: Set, idPrefix: string, j: import('./rollSeam').FreeConsLine[]): BuiltCascadeStep[] {
   const force = partyAssisted(get().party, undefined, 'force');
-  if (!force || !humanControlled(get(), force.actor)) {
+  if (!force || !surfaceOf(get, force.actor)) {
     applyEchouage(get, set, (l) => j.push(...l));
     return [];
   }
@@ -958,14 +978,14 @@ function applyEchouageSteps(get: Get, set: Set, idPrefix: string, j: import('./r
   damageVesselHull(get, set, coque, echouageDamage());
   const { difficulty, encTxt } = echouageDifficulty(get);
   j.push(`Le bateau s'échoue (coque −${echouageDamage()} Dégâts, l.99).`);
-  return [{
-    id: `${idPrefix}-echouage`, kind: 'riverEchouageForce', actorId: force.actor.id, icon: 'travel/repair',
+  const st = monoStep({
+    id: `${idPrefix}-echouage`, kind: 'riverEchouageForce', actor: force.actor, icon: 'travel/repair',
     label: 'Renflouage', rollLabel: 'Force', difficulty,
-    ...rollStep({ actor: force.actor, test: { char: 'force' }, valeur: force.value, soutien: force.support, difficulty }),
-    result: null, interactive: true,
+    ligne: { test: { char: 'force' }, valeur: force.value, soutien: force.support },
     stake: voyageStakeRef('riverEchouageForce'),
     meta: { encTxt },
-  }];
+  });
+  return st ? [st] : [];
 }
 
 /** Renflouage INFLUENÇABLE (#270, Force) — MÊME issue que `applyEchouage`, jet différé. */

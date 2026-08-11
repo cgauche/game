@@ -54,14 +54,14 @@ import { seasonOfMonth, rollStageWeather, WEATHER_LABEL, type Season } from '../
 import { stageAssignmentFromRoles, type StagePosting } from '../engine/activities';
 import { buildStageSteps, buildWeatherResistanceSteps, type StageContext } from './travelPostes';
 import { startCascade, registerCascadeApplier } from './cascade';
-import { freeCons, rollSansPilote, rollStep } from './rollSeam';
+import { freeCons, rollSansPilote, monoStep, displayStep, surfaceOf } from './rollSeam';
 import { t } from '../i18n';
 import type { CascadeStep, PendingCascade } from './pendings';
 import type { RecapLine } from './recapLine';
 import { toRecapLines, phaseOfKind } from './recapLine';
 import { buildSeaPlan, runSeaDay, startFastVoyage, syncHullWoundsFromVessel } from './seaVoyageFlow';
 import { buildRiverPlan, runRiverDays } from './riverVoyageFlow';
-import { humanControlled } from './netOwnership';
+import type { BuiltCascadeStep } from './stepBrand';
 import type { Combatant } from '../engine/types';
 
 import type { Get, Set } from './flowTypes';
@@ -464,18 +464,20 @@ function runTravelDays(get: Get, set: Set): void {
     const kmLeft = plan.km - plan.kmDone;
     const forcedEligible = plan.allure === 'galop' && plan.mode !== 'monture' && !plan.vehicleLame && !!vehicleTravel(plan.mode)?.draft;
     const forcedDriver = forcedEligible ? partyAssisted(party, 'conduite-d-attelage') : null;
-    // Conducteur JOUEUR (#270) : chaque Test de Conduite d'attelage au km devient une ÉTAPE de la
-    // cascade `travelDay` (Chance/Pacte/Résilience possibles), chaînée par insertions successives
-    // jusqu'au premier échec (`buildForcedPaceDaySteps`) — gameTime/kmDone sont alors DIFFÉRÉS à la
-    // clôture (`continueTravelDayAfterCascade`), comme la progression fluviale (`riverVoyageFlow`).
-    // Repli : pas de conducteur / conducteur IA-piloté → chemin SYNCHRONE historique (`forcedPaceDay`).
-    if (forcedEligible && forcedDriver && humanControlled(get(), forcedDriver.actor)) {
+    // Conducteur dont le jet se SURFACE (#1262) : chaque Test de Conduite d'attelage au km devient une
+    // ÉTAPE de la cascade `travelDay` (Chance/Pacte/Résilience possibles), chaînée par insertions
+    // successives jusqu'au premier échec (`buildForcedPaceDaySteps`) — gameTime/kmDone sont alors
+    // DIFFÉRÉS à la clôture (`continueTravelDayAfterCascade`), comme la progression fluviale.
+    // Repli : pas de conducteur / aucun siège humain ne le tient → chemin SYNCHRONE (`forcedPaceDay`).
+    const premierKm = forcedEligible && forcedDriver && surfaceOf(get, forcedDriver.actor)
+      ? buildForcedPaceStep(forcedDriver, kmLeft)
+      : undefined;
+    if (premierKm) {
       const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: plan.kmDone, hours: 0, lines: [], entries: [] };
       recap?.days.push(recapDay);
       if (recap) set({ travelPlan: { ...get().travelPlan!, recap } });
       const daySteps = buildTravelDayCascade(get, set, route, recapDay, [], { toScene: to.scene, toEntry: to.entry, toLabel: to.label, destLabel: to.label });
-      const first = buildForcedPaceStep(forcedDriver, kmLeft);
-      startCascade(get, set, { title: 'Journée de route — allure forcée', icon: 'travel/cart', purpose: 'travelDay', steps: [first, ...daySteps] });
+      startCascade(get, set, { title: 'Journée de route — allure forcée', icon: 'travel/cart', purpose: 'travelDay', steps: [premierKm, ...daySteps] });
       return; // la clôture de la cascade (continueTravelDayAfterCascade) finalise le jour
     }
     const forced = forcedEligible ? forcedPaceDay(get, set, kmLeft) : null;
@@ -625,8 +627,12 @@ function buildTravelDayCascade(
   // chemin de base sans péripétie reste sans cascade quand la règle Étapes est éteinte).
   const perilDie = route.perilDie ?? get().worldMap?.params?.perilDie ?? TRAVEL_DEFAULTS.perilDie;
   if ((route.perils ?? []).length > 0 || perilDie >= 1) {
-    steps.push({ id: 'land-peril', kind: 'landPeril', icon: 'ui/warning', label: 'Péripéties de la route', interactive: true,
-      meta: { destLabel: dest.destLabel } });
+    // Le tirage des péripéties n'est le pas d'AUCUN héros : c'est la route qui le lance (étape MONDE,
+    // routée au siège MJ) — les Tests qu'elle appelle, eux, nomment leur jeteur à l'insertion.
+    steps.push(displayStep({
+      id: 'land-peril', kind: 'landPeril', icon: 'ui/warning', label: 'Péripéties de la route',
+      worldOwner: true, meta: { destLabel: dest.destLabel },
+    }));
   }
 
   // Contexte du jour relu par la clôture (arrivée/halte, recalculée depuis `plan.kmDone` — posé avant
@@ -802,24 +808,25 @@ registerCascadeApplier('landPeril', (get, set, step) => {
     } else if (entry.kind === 'ereintant') {
       // Survie en extérieur Accessible (+20) INFLUENÇABLE → étape-jet insérée (échec = retard + Exténué).
       const best = partyAssisted(party, 'survie-en-exterieur'); // Soutien (LDB 12)
-      if (best) return { consequences: freeCons(j), insert: [{
-        id: 'peril-survie', kind: 'landPerilSurvie', actorId: best.actor.id, icon: 'travel/compass', label: 'Survie en extérieur',
+      const st = best && monoStep({
+        id: 'peril-survie', kind: 'landPerilSurvie', actor: best.actor, icon: 'travel/compass', label: 'Survie en extérieur',
         rollLabel: 'Survie en extérieur', difficulty: 'accessible',
-        ...rollStep({ actor: best.actor, test: { skill: 'survie-en-exterieur' }, valeur: best.value, soutien: best.support, difficulty: 'accessible' }),
-        result: null, interactive: true,
-      }] };
+        ligne: { test: { skill: 'survie-en-exterieur' }, valeur: best.value, soutien: best.support },
+      });
+      if (st) return { consequences: freeCons(j), insert: [st] };
       j.push(...applyEreintant(get, set)); // personne pour tester : retard direct
     } else if (entry.kind === 'attaque') {
       // Perception Accessible (+20) INFLUENÇABLE → étape-jet insérée ; son applier pose l'embuscade
       // différée (le `noSurprise` suit le jet). Sans tester (aucun héros vivant) : interruption directe.
       const configured = !!(route.ambush?.scene && route.ambush.encounter);
       const best = partyAssisted(party, 'perception'); // Soutien (LDB 12)
-      if (best) return { consequences: freeCons(j), insert: [{
-        id: 'peril-perception', kind: 'landPerilPerception', actorId: best.actor.id, icon: 'ui/eye', label: 'Perception',
+      const st = best && monoStep({
+        id: 'peril-perception', kind: 'landPerilPerception', actor: best.actor, icon: 'ui/eye', label: 'Perception',
         rollLabel: 'Perception', difficulty: 'accessible',
-        ...rollStep({ actor: best.actor, test: { skill: 'perception' }, valeur: best.value, soutien: best.support, difficulty: 'accessible' }),
-        result: null, interactive: true,
-        meta: { destLabel, configured, ambushScene: route.ambush?.scene ?? '', ambushEntry: route.ambush?.entry ?? '', ambushEnc: route.ambush?.encounter ?? '' } }] };
+        ligne: { test: { skill: 'perception' }, valeur: best.value, soutien: best.support },
+        meta: { destLabel, configured, ambushScene: route.ambush?.scene ?? '', ambushEntry: route.ambush?.entry ?? '', ambushEnc: route.ambush?.encounter ?? '' },
+      });
+      if (st) return { consequences: freeCons(j), insert: [st] };
       if (configured) { j.push(...markLandInterrupt(get, set, { kind: 'ambush', scene: route.ambush!.scene, entry: route.ambush!.entry, encounter: route.ambush!.encounter, noSurprise: false }, destLabel)); return { consequences: freeCons(j) }; }
       j.push('(Aucune rencontre d’embuscade n’est configurée sur cette route — l’alerte reste sans suite.)');
     }
@@ -1058,20 +1065,18 @@ function forcedPaceDriver(get: Get) {
  *  −10/km déjà galopé (`EDOC 07 l.229`), DÉJÀ fondue dans la valeur jetée et déclarée en `dansLaValeur` :
  *  elle compte UNE fois (chip nommée + cible), jamais deux. `meta` porte l'accumulateur (km/heures déjà
  *  acquis) relu par l'applier pour chaîner le km SUIVANT (`insert`) ou finaliser (`finalizeForcedPace`). */
-function buildForcedPaceStep(driver: { actor: Combatant; value: number; support?: SupportDetail }, kmLeft: number, galloped = 0, km = 0, hours = 0): CascadeStep {
+function buildForcedPaceStep(driver: { actor: Combatant; value: number; support?: SupportDetail }, kmLeft: number, galloped = 0, km = 0, hours = 0): BuiltCascadeStep | undefined {
   const penalty = -10 * galloped; // l.229
-  return {
-    id: `land-forced-${galloped}`, kind: 'landForcedPace', actorId: driver.actor.id, icon: 'travel/cart',
+  return monoStep({
+    id: `land-forced-${galloped}`, kind: 'landForcedPace', actor: driver.actor, icon: 'travel/cart',
     label: `${driver.actor.label} — Conduite d'attelage (allure forcée)`, rollLabel: 'Conduite d’attelage',
     difficulty: 'intermediaire',
-    ...rollStep({
-      actor: driver.actor, test: { skill: 'conduite-d-attelage' }, valeur: driver.value + penalty,
-      soutien: driver.support, difficulty: 'intermediaire',
+    ligne: {
+      test: { skill: 'conduite-d-attelage' }, valeur: driver.value + penalty, soutien: driver.support,
       ...(penalty ? { dansLaValeur: [{ label: `Km déjà au pas de course (${galloped})`, value: penalty, famille: 'jet' as const }] } : {}),
-    }),
-    result: null, interactive: true,
+    },
     meta: { kmLeft, galloped, km, hours },
-  };
+  });
 }
 
 /** Pose l'aggrégat FINAL de l'attelage forcé sur `travelPlan.land` (relu par `continueTravelDayAfterCascade`
@@ -1106,7 +1111,8 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
     // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
     const j = [`${name} — Conduite d'attelage (allure forcée) : l'attelage tient l'allure de course.`];
     if (hours < plan.hoursPerDay - 1e-9 && km < kmLeft - 1e-9 && step.actorId && hero && driver) {
-      return { consequences: freeCons(j), insert: [buildForcedPaceStep(driver, kmLeft, galloped + 1, km, hours)] };
+      const suivant = buildForcedPaceStep(driver, kmLeft, galloped + 1, km, hours);
+      if (suivant) return { consequences: freeCons(j), insert: [suivant] };
     }
     finalizeForcedPace(get, set, { km: Math.min(km, kmLeft), hours, vehicleOut: false, vehicleLame: false });
     return { consequences: freeCons(j) };
@@ -1133,17 +1139,17 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
   if (entry.id === 'incontrolable') {
     j.push(`Problème de véhicule — ${entry.label}.`);
     if (step.actorId && hero && driver) {
-      return { consequences: freeCons(j), insert: [{
-        id: `${step.id}-control`, kind: 'landForcedPaceControl', actorId: driver.actor.id, icon: 'travel/cart',
+      const st = monoStep({
+        id: `${step.id}-control`, kind: 'landForcedPaceControl', actor: driver.actor, icon: 'travel/cart',
         label: `${driver.actor.label} — reprendre le contrôle`, rollLabel: 'Conduite d’attelage',
         difficulty: 'intermediaire',
         // MÊME jet que le km (Conduite d'attelage soutenue, `LDB 12 l.189`) : ni la pénalité de km
         // (`EDOC 07 l.253` ne la reconduit pas), ni une valeur figée. Les deux surfaces — étape
         // influençable et repli sans pilote ci-dessous — lisent le MÊME conducteur soutenu.
-        ...rollStep({ actor: driver.actor, test: { skill: 'conduite-d-attelage' }, valeur: driver.value, soutien: driver.support, difficulty: 'intermediaire' }),
-        result: null, interactive: true,
+        ligne: { test: { skill: 'conduite-d-attelage' }, valeur: driver.value, soutien: driver.support },
         meta: { finalKm, finalHours },
-      }] };
+      });
+      if (st) return { consequences: freeCons(j), insert: [st] };
     }
     // Repli SANS acteur joueur (pas d'étape insérée ci-dessus) : aucune rangée nulle part pour ce jet
     // — le journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement). MÊME

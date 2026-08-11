@@ -23,6 +23,7 @@ import { findTableEntry } from '../engine/tables';
 import type { CascadeStep, PendingCascade, CascadeRoll, BatchParticipant, CascadeAggregate, CascadeTableDecl, CascadeTableResult } from './pendings';
 import type { StakeRef } from '../data';
 import type { Consequence } from './rollSeam';
+import type { BuiltCascadeStep } from './stepBrand';
 import { resultLines } from './rollSeam';
 import { toRecapLines } from './recapLine';
 import { actorIn } from './combatants';
@@ -40,6 +41,11 @@ import { battleRng } from './battleRng';
  *
  * `consequences` (`Consequence[]`, rendu par `resultLine`) est la SEULE voie de dénouement — aucun
  * canal de chaîne libre n'existe dans ce type, le compilateur interdit toute réapparition.
+ *
+ * `insert` est MURÉ (#1262 V2) : une étape insérée porte la marque `BuiltCascadeStep`, donc elle sort
+ * d'un constructeur de la porte (`rollSeam`/`revealStep`) — un littéral d'étape monté à la main dans
+ * une conséquence ne compile plus. C'est le second canal d'entrée d'étapes du moteur, après la file
+ * (`openSequence`) : les deux sont désormais fermés par le type.
  */
 export type CascadeApplier = (
   get: Get,
@@ -47,7 +53,7 @@ export type CascadeApplier = (
   step: CascadeStep,
   hero: Combatant | undefined,
   ctx: { steps: CascadeStep[]; index: number },
-) => { consequences?: Consequence[]; insert?: CascadeStep[] } | void;
+) => { consequences?: Consequence[]; insert?: readonly BuiltCascadeStep[] } | void;
 
 /** Une entrée de registre : la conséquence appliquée (`apply`) seule. L'affichage de l'issue de
  *  modale a pour source UNIQUE `resultLine`/`Consequence[]` (#295 Lot 2 : `cons` vide ⇒ `''`, la

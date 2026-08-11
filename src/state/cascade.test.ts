@@ -3,9 +3,10 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { startCascade, registerCascadeApplier, stepInteraction, stepReady, buildConsequenceSteps, runCascadeImmediate, pushStep, stepOpposedFreeze } from './cascade';
-import { freeCons } from './rollSeam';
+import { freeCons, monoStep, displayStep, type BuiltCascadeStep } from './rollSeam';
 import { spyApplier } from './cascadeTestKit';
 import type { CascadeStep, BatchParticipant } from './pendings';
+import type { Combatant } from '../engine/types';
 
 /**
  * CASCADE séquentielle influençable (jets de NUIT / VOYAGE) — cœur générique. 3ᵉ consommateur de la
@@ -65,9 +66,11 @@ describe('Cascade séquentielle influençable', () => {
     const h = hero();
     spyApplier('shelter', applied, (step) => ({ kind: step.kind, success: !!step.result?.success }),
       // Abri raté → 2 jets d'Exposition insérés ; réussi → aucun.
-      (step) => ({ insert: step.result?.success ? [] : [step1Insert(h.id, 'expo-a'), step1Insert(h.id, 'expo-b')] }));
-    function step1Insert(actorId: string, id: string): CascadeStep {
-      return { id, kind: 'tally', actorId, label: id, rollLabel: 'Résistance', base: 40, target: 40, result: null, interactive: true };
+      (step) => ({ insert: step.result?.success ? [] : [step1Insert(h, 'expo-a'), step1Insert(h, 'expo-b')] }));
+    // Une étape insérée passe par un mint de la porte (`insert` n'accepte plus de littéral) : valeur
+    // FOURNIE (40) à Intermédiaire (+0) — base 40, cible 40, comme le montage à la main d'avant.
+    function step1Insert(actor: Combatant, id: string): BuiltCascadeStep {
+      return monoStep({ id, kind: 'tally', actor, label: id, rollLabel: 'Résistance', difficulty: 'intermediaire', ligne: { valeur: 40, valeurEtrangere: true } })!;
     }
     // Abri FORCÉ raté (dé 99) → insère 2 étapes d'Exposition.
     const shelter: CascadeStep = { id: 'abri', kind: 'shelter', actorId: h.id, label: 'Abri', rollLabel: 'Survie', base: 40, target: 40, result: { roll: 99, target: 40, sl: -5, success: false }, interactive: true };
@@ -121,7 +124,7 @@ describe('Cascade séquentielle influençable', () => {
   it('étape « choix » : no-op sans choix, puis l’option pilote la conséquence + insertion', () => {
     const h = hero();
     spyApplier('pick', applied, (step) => ({ kind: step.kind, success: step.chosen === 'devier' }),
-      (step) => (step.chosen === 'devier' ? { insert: [{ id: 'suite', kind: 'note', actorId: h.id, interactive: true }] } : {}));
+      (step) => (step.chosen === 'devier' ? { insert: [displayStep({ id: 'suite', kind: 'note', actorId: h.id, label: 'Suite' })] } : {}));
     spyApplier('note', applied, (step) => ({ kind: step.kind, success: true }), (step) => ({ consequences: freeCons([`${step.id}`]) }));
     const choix: CascadeStep = { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'devier', label: 'Dévier' }, { key: 'subir', label: 'Subir' }], interactive: true };
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [choix] });

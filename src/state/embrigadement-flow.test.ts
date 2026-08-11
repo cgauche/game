@@ -133,11 +133,12 @@ describe('Embrigadement — recouvrement (MDG 15 l.245, #164)', () => {
     expect(get().pendingCascade).toBeNull(); // recover === 0 → openEmbrigadementRecovery s'arrête
   });
 
-  it('TENTER sans personne à bord pour mener le Ragot (équipage = les PJ, MDG 14 l.39, tous morts) : cascade close SANS Test, journal explicite', () => {
+  it('personne à bord pour mener le Ragot (équipage = les PJ, MDG 14 l.39, tous morts) : AUCUNE fenêtre, journal explicite', () => {
     set({ party: get().party.map((h) => ({ ...h, dead: true })) });
     resolvePortArrival(get, set, undefined, ones);
-    choose('tenter');
-    expect(get().pendingCascade).toBeNull(); // aucun meneur → pas d'étape Ragot insérée
+    // Le meneur PORTE la décision de tenter : sans meneur, il n'y a pas de décision à ouvrir — la voie
+    // n'a plus qu'une issue, et elle se dit au journal au lieu d'une fenêtre à un seul bouton.
+    expect(get().pendingCascade).toBeNull();
     expect(get().vessel!.crewLost).toBe(2); // perte de base inchangée, pas de récupération tentée
     expect(get().journal.some((l) => l.includes('Personne à bord ne peut mener l\'enquête'))).toBe(true);
   });

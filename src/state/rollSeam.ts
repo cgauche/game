@@ -702,7 +702,7 @@ export type LigneMontee = { base: number; mods?: ModLine[]; target: number; clam
 /** Étale une ligne montée en CHAMPS d'étape (`CascadeStep`/`BatchParticipant`) : `mods` et `clamped`
  *  ne sont posés que s'ils existent — un monteur local ne réécrit jamais cet étalement à la main.
  *
- *  N'étale NI `difficulty` NI `difficultyParts` : ses 42 appelants posent eux-mêmes la Difficulté
+ *  N'étale NI `difficulty` NI `difficultyParts` : ses appelants posent eux-mêmes la Difficulté
  *  après l'étalement, et AUCUN n'ouvre le mode plafonné (le seul régime qui DÉRIVE un palier). Le
  *  jour où l'un le fait, il lui faut relayer les deux champs ensemble — sans quoi les chips
  *  amputées de leurs circonstances laisseraient un écart « autres ». Verrouillé par la garde
@@ -1248,15 +1248,13 @@ export function tableStepDone(spec: TableDoneSpec): BuiltCascadeStep | undefined
   return tableStepResolved(base, spec.table, spec.result) as BuiltCascadeStep;
 }
 
-/** DÉCLARATION d'une étape d'AFFICHAGE : une conséquence DÉJÀ arrivée, donnée à LIRE. Zéro dé, zéro
- *  décision — l'étape est l'interaction `'affichage'` (`stepInteraction`), acquittée par « Continuer ». */
-export interface DisplaySpec {
+/** Ce qui est vrai de TOUTE étape d'AFFICHAGE : une conséquence DÉJÀ arrivée, donnée à LIRE. Zéro dé,
+ *  zéro décision — l'étape est l'interaction `'affichage'` (`stepInteraction`), acquittée par « Continuer ». */
+interface DisplayBase {
   id: string;
   kind: string;
   label: string;
   icon?: string;
-  /** Le CONCERNÉ : l'arbitre route la fenêtre à son siège (la conséquence est la SIENNE). */
-  actorId: string;
   /** Ce qui vient d'arriver, en lignes déjà écrites (`RecapLine[]`), rendues par le renderer partagé. */
   outcome?: RecapLine[];
   /** CHARGE de l'applier « reprise de fuite » (`combatFlow`) : qui fuit, devant qui, et combien de
@@ -1264,6 +1262,19 @@ export interface DisplaySpec {
   fleeMove?: NonNullable<CascadeStep['fleeMove']>;
   meta?: CascadeStepMeta;
 }
+
+/**
+ * DÉCLARATION d'une étape d'AFFICHAGE — deux possessions EXCLUSIVES, et le compilateur tient l'exclusion :
+ *  - `actorId` : le CONCERNÉ (l'arbitre route la fenêtre à son siège — la conséquence est la SIENNE) ;
+ *  - `worldOwner` : aucun personnage n'est concerné (la vérification d'un péril de la route, le d100
+ *    du monde) — même sentinel que le côté `worldSide` d'`openWorldTest` (`buildMonoStep`) : l'arbitre
+ *    route au siège MJ (`WORLD_STEP_OWNER`, `netOwnership.seatOwns`), à l'hôte à défaut. Sans cette
+ *    entrée, une étape sans concerné devait mentir en nommant un porteur, ou rester hors de la porte.
+ */
+export type DisplaySpec = DisplayBase & (
+  | { actorId: string; worldOwner?: never }
+  | { worldOwner: true; actorId?: never }
+);
 
 /**
  * CONSTRUCTEUR d'étape d'AFFICHAGE (#1262) — la forme la plus pauvre de la porte, et c'est le point :
@@ -1282,7 +1293,7 @@ export function displayStep(spec: DisplaySpec): BuiltCascadeStep {
     kind: spec.kind,
     label: spec.label,
     ...(spec.icon ? { icon: spec.icon } : {}),
-    actorId: spec.actorId,
+    ...(spec.worldOwner ? { worldOwner: true } : { actorId: spec.actorId }),
     interactive: true,
     ...(spec.outcome ? { outcome: spec.outcome } : {}),
     ...(spec.fleeMove ? { fleeMove: spec.fleeMove } : {}),

@@ -17,18 +17,25 @@
  * donc toujours (aucune décision de relâche n'existe pour le désactiver).
  */
 import type { Get, Set } from './flowTypes';
-import type { CascadeStep } from './pendings';
-import { startCascade, registerCascadeApplier } from './cascade';
-import { freeCons, rollStep, withDifficulty, type RollLineDecl } from './rollSeam';
+import type { BuiltCascadeStep } from './stepBrand';
+import { registerCascadeApplier } from './cascade';
+import { freeCons, monoStep, choiceStep, openChoice, type BandLigne } from './rollSeam';
 import { applyVesselCrewLoss } from './shipCrew';
 import { payFromGroup } from './bourseFlow';
 import { partyAssisted } from '../engine/skills';
 import { toMoney } from '../engine/money';
-import { DIFFICULTY_LABELS, type Difficulty } from '../engine/types';
+import { DIFFICULTY_LABELS, type Combatant, type Difficulty } from '../engine/types';
 import { refLabel } from '../data';
 
 const num = (v: unknown, d = 0): number => (typeof v === 'number' ? v : d);
 const diff = (v: unknown, d: Difficulty): Difficulty => (typeof v === 'string' ? (v as Difficulty) : d);
+
+/** Le MENEUR de l'enquête (Ragot soutenu, LDB 12) : il PORTE la décision de tenter — la porte de choix
+ *  exige un porteur (`choiceStep`), et c'est ce meneur que la tentative engage. `null` = personne. */
+const ragotLead = (get: Get) => partyAssisted(get().party.filter((h: Combatant) => !h.dead), 'ragot');
+
+/** Sans meneur, il n'y a rien à tenter : la voie est close AVANT la décision (elle n'a plus qu'une issue). */
+const SANS_MENEUR = 'Personne à bord ne peut mener l\'enquête : vos compagnons restent captifs.';
 
 /** Ouvre la séquence de recouvrement d'un Embrigadement (MDG 15 l.245). Applique d'abord la perte de
  *  2d10 marins (persistée, plafonnée), puis — s'il reste des marins RÉELLEMENT enlevés — ouvre la
@@ -41,37 +48,37 @@ export function openEmbrigadementRecovery(
   for (const l of applyVesselCrewLoss(get, set, r.lost)) get().log(l);
   const recover = (get().vessel?.crewLost ?? 0) - before; // marins RÉELLEMENT enlevés (perte plafonnée au nominal)
   if (recover <= 0) return; // rien à récupérer
-  startCascade(get, set, {
+  const lead = ragotLead(get);
+  if (!lead) { get().log([SANS_MENEUR]); return; }
+  openChoice(get, set, {
     title: 'Embrigadement', icon: 'nav/dice', purpose: 'test',
-    steps: [{
-      id: 'embrig-decision', kind: 'embrigadementDecision', icon: 'nav/dice',
-      label: `${recover} membre(s) d'équipage embrigadé(s) — tenter de les récupérer ?`,
-      options: [
-        { key: 'tenter', label: 'Tenter la récupération', detail: 'Retrouver leur trace (Ragot) puis les libérer — un Test raté coûte 1d10 membres d\'équipage de plus.' },
-        { key: 'renoncer', label: 'Renoncer', detail: 'Accepter la perte sans risquer d\'autres membres d\'équipage.' },
-      ],
-      meta: { recover, ransomCO: r.ransomCO, extraLoss: r.extraLoss, gossipDiff: r.gossipDiff, stealthDiff: r.stealthDiff },
-    }],
+    id: 'embrig-decision', kind: 'embrigadementDecision', actorId: lead.actor.id,
+    label: `${recover} membre(s) d'équipage embrigadé(s) — tenter de les récupérer ?`,
+    options: [
+      { key: 'tenter', label: 'Tenter la récupération', detail: 'Retrouver leur trace (Ragot) puis les libérer — un Test raté coûte 1d10 membres d\'équipage de plus.' },
+      { key: 'renoncer', label: 'Renoncer', detail: 'Accepter la perte sans risquer d\'autres membres d\'équipage.' },
+    ],
+    meta: { recover, ransomCO: r.ransomCO, extraLoss: r.extraLoss, gossipDiff: r.gossipDiff, stealthDiff: r.stealthDiff },
   });
 }
 
 /** Étape-jet Ragot Intermédiaire (MDG 15 l.245) : menée par le plus compétent (+ Soutien) — insérée
  *  quand le groupe choisit de TENTER la récupération. */
 function ragotStep(
-  // DÉCLARATION du jet (`RollLineSpec`) : le meneur, sa valeur SOUTENUE et son Soutien — la ligne
-  // (base nue, chips, cible ÉCRÊTÉE) est montée par le monteur canonique.
-  lead: { actorId: string; roll: RollLineDecl },
+  // DÉCLARATION du jet : le meneur, sa valeur SOUTENUE et son Soutien — la ligne (base nue, chips,
+  // cible ÉCRÊTÉE) et la possession sont posées par le mint.
+  lead: { actor: Combatant; ligne: BandLigne },
   recover: number, ransomCO: number, extraLoss: number, gossipDiff: Difficulty, stealthDiff: Difficulty,
-): CascadeStep {
-  return {
-    id: 'embrig-ragot', kind: 'embrigadementRagot', actorId: lead.actorId,
+): BuiltCascadeStep | undefined {
+  return monoStep({
+    id: 'embrig-ragot', kind: 'embrigadementRagot', actor: lead.actor,
     icon: 'nav/dice',
     rollLabel: refLabel('skills', { id: 'ragot' }),
     difficulty: gossipDiff,
-    ...rollStep(withDifficulty(lead.roll, gossipDiff)),
+    ligne: lead.ligne,
     label: `Retrouver l'équipage — Ragot ${DIFFICULTY_LABELS[gossipDiff]}`,
     meta: { recover, ransomCO, extraLoss, stealthDiff },
-  };
+  });
 }
 
 // Décision opt-in (MDG 15 l.245 « Vous POUVEZ les récupérer ») : TENTER (insère le Ragot, au risque de
@@ -80,29 +87,31 @@ registerCascadeApplier(
   'embrigadementDecision',
   (get, _set, step) => {
     if (step.chosen !== 'tenter') return { consequences: freeCons(['Vous renoncez à récupérer vos compagnons embrigadés.']) };
-    const lead = partyAssisted(get().party.filter((h) => !h.dead), 'ragot');
-    if (!lead) return { consequences: freeCons(['Personne à bord ne peut mener l\'enquête : vos compagnons restent captifs.']) };
-    return {
-      insert: [ragotStep(
-        { actorId: lead.actor.id, roll: { actor: lead.actor, test: { skill: 'ragot' }, valeur: lead.value, soutien: lead.support } },
-        num(step.meta?.recover), num(step.meta?.ransomCO), num(step.meta?.extraLoss),
-        diff(step.meta?.gossipDiff, 'intermediaire'), diff(step.meta?.stealthDiff, 'complexe'),
-      )],
-    };
+    // Le meneur est RE-RÉSOLU au moment dû (la décision peut avoir attendu : un mort, un Soutien de plus).
+    const lead = ragotLead(get);
+    if (!lead) return { consequences: freeCons([SANS_MENEUR]) };
+    const st = ragotStep(
+      { actor: lead.actor, ligne: { test: { skill: 'ragot' }, valeur: lead.value, soutien: lead.support } },
+      num(step.meta?.recover), num(step.meta?.ransomCO), num(step.meta?.extraLoss),
+      diff(step.meta?.gossipDiff, 'intermediaire'), diff(step.meta?.stealthDiff, 'complexe'),
+    );
+    return st ? { insert: [st] } : undefined;
   },
 );
 
-/** Étape « choix » : rançon (2d10 CO) OU Discrétion Complexe (−10) — insérée quand le Ragot réussit. */
-function choiceStep(recover: number, ransomCO: number, extraLoss: number, stealthDiff: Difficulty): CascadeStep {
-  return {
-    id: 'embrig-choix', kind: 'embrigadementChoix', icon: 'nav/dice',
+/** Étape « choix » : rançon (2d10 CO) OU Discrétion Complexe (−10) — insérée quand le Ragot réussit.
+ *  `leadId` = le meneur du Ragot, qui vient de jouer : la libération est la suite de SA tentative, donc
+ *  c'est lui qui porte la décision (la porte de choix exige un porteur). */
+function liberationChoice(leadId: string, recover: number, ransomCO: number, extraLoss: number, stealthDiff: Difficulty): BuiltCascadeStep | undefined {
+  return choiceStep({
+    id: 'embrig-choix', kind: 'embrigadementChoix', icon: 'nav/dice', actorId: leadId,
     label: 'Comment libérer vos compagnons ?',
     options: [
       { key: 'payer', label: `Payer ${ransomCO} CO`, detail: 'Racheter les marins embrigadés à l\'autre équipage.' },
       { key: 'discretion', label: `Discrétion (${DIFFICULTY_LABELS[stealthDiff]})`, detail: 'Les libérer en douce (un échec coûte 1d10 marins de plus).' },
     ],
     meta: { recover, ransomCO, extraLoss, stealthDiff },
-  };
+  });
 }
 
 // Ragot Intermédiaire (MDG 15 l.245) : réussite → CHOIX du joueur (insertion) ; échec → 1d10 marins de plus.
@@ -113,9 +122,10 @@ registerCascadeApplier(
     const recover = num(step.meta?.recover);
     const extraLoss = num(step.meta?.extraLoss);
     if (step.result.success) {
+      const st = liberationChoice(step.actorId ?? '', recover, num(step.meta?.ransomCO), extraLoss, diff(step.meta?.stealthDiff, 'complexe'));
       return {
         consequences: freeCons(['Vous retrouvez la trace de vos compagnons embrigadés — reste à les libérer.']),
-        insert: [choiceStep(recover, num(step.meta?.ransomCO), extraLoss, diff(step.meta?.stealthDiff, 'complexe'))],
+        ...(st ? { insert: [st] } : {}),
       };
     }
     return { consequences: freeCons(applyVesselCrewLoss(get, set, extraLoss)) }; // l'autre navire prend la mer (1d10 de plus)
@@ -138,17 +148,16 @@ registerCascadeApplier(
     const stealthDiff = diff(step.meta?.stealthDiff, 'complexe');
     const lead = partyAssisted(get().party.filter((h) => !h.dead), 'discretion');
     if (!lead) return { consequences: freeCons(['Personne à bord n\'est assez discret pour tenter la libération.']) };
-    return {
-      insert: [{
-        id: 'embrig-discretion', kind: 'embrigadementDiscretion', actorId: lead.actor.id,
-        icon: 'nav/dice',
-        rollLabel: refLabel('skills', { id: 'discretion' }),
-        difficulty: stealthDiff,
-        ...rollStep({ actor: lead.actor, test: { skill: 'discretion' }, valeur: lead.value, soutien: lead.support, difficulty: stealthDiff }),
-        label: `Libérer en douce — Discrétion ${DIFFICULTY_LABELS[stealthDiff]}`,
-        meta: { recover, extraLoss },
-      }],
-    };
+    const st = monoStep({
+      id: 'embrig-discretion', kind: 'embrigadementDiscretion', actor: lead.actor,
+      icon: 'nav/dice',
+      rollLabel: refLabel('skills', { id: 'discretion' }),
+      difficulty: stealthDiff,
+      ligne: { test: { skill: 'discretion' }, valeur: lead.value, soutien: lead.support },
+      label: `Libérer en douce — Discrétion ${DIFFICULTY_LABELS[stealthDiff]}`,
+      meta: { recover, extraLoss },
+    });
+    return st ? { insert: [st] } : undefined;
   },
 );
 

@@ -29,7 +29,7 @@ import { applyHealWounds } from '../engine/healing';
 import { removeCondition, stacks } from '../engine/conditions';
 import { extendedTestStep } from '../engine/tests';
 import { registerCascadeApplier } from './cascade';
-import { freeCons, resultLines, rollStep, type Consequence } from './rollSeam';
+import { freeCons, resultLines, rollStep, monoStep, type Consequence, type BuiltCascadeStep } from './rollSeam';
 import { toRecapLines } from './recapLine';
 import { t } from '../i18n';
 import { rule } from '../engine/policy';
@@ -371,21 +371,24 @@ registerCascadeApplier('stageAggregate', (get, set, step) => {
 
 /** Jets d'EXPOSITION de fin d'Étape (l.73) à insérer : un par héros vivant devant un Test de Résistance
  *  (météo × équipement via `stageExposureDifficulty`). Protection magique = pas de jet (issue directe). */
-function buildExposureSteps(state: { party: Combatant[] }, stage: StageContext): CascadeStep[] {
+function buildExposureSteps(state: { party: Combatant[] }, stage: StageContext): BuiltCascadeStep[] {
   if (!rule('travel-attraper-froid')) return [];
   const party = state.party;
   const tent = partyHasTent(party);
-  const out: CascadeStep[] = [];
+  const out: BuiltCascadeStep[] = [];
   for (const id of stage.livingIds) {
     const h = party.find((x) => x.id === id);
     if (!h || h.dead) continue;
     const diff = stageExposureDifficulty(stage.weather, hasCoat(h), tent);
     if (!diff) continue; // bien équipé sous pluie/neige normale, ou beau temps → aucun Test
-    out.push({ id: `expo-${id}`, kind: 'stageExposure', actorId: id, icon: 'rest/cold', label: 'Exposition',
+    const st = monoStep({
+      id: `expo-${id}`, kind: 'stageExposure', actor: h, icon: 'rest/cold', label: 'Exposition',
       rollLabel: 'Résistance', difficulty: diff as Difficulty,
-      ...rollStep({ actor: h, test: { skill: 'resistance', char: 'endurance' }, difficulty: diff as Difficulty }),
-      result: null, interactive: true, menace: 'Exposition',
-      meta: { weatherLabel: WEATHER_LABEL[stage.weather], warded: isWeatherWarded(h), coldSeason: isColdSeason(stage.season) } });
+      ligne: { test: { skill: 'resistance', char: 'endurance' } },
+      menace: 'Exposition',
+      meta: { weatherLabel: WEATHER_LABEL[stage.weather], warded: isWeatherWarded(h), coldSeason: isColdSeason(stage.season) },
+    });
+    if (st) out.push(st);
   }
   return out;
 }
