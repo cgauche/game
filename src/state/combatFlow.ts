@@ -267,8 +267,13 @@ import {
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type FlowTest, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep } from './cascade';
 import { nightBands, splitBandRows } from './nightBands';
-import { freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf, hostStep, openSequence, pushHost, pushTableDone, type Consequence } from './rollSeam';
+import {
+  freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf,
+  hostStep, openSequence, pushHost, pushTableDone, pushTable, pushChoice, pushDisplay, tableStep,
+  type Consequence, type TableSpec,
+} from './rollSeam';
 import { revealToStep } from './revealStep';
+import type { BuiltCascadeStep } from './stepBrand';
 
 /** L'État du défenseur accorde-t-il un Avantage à l'assaillant en mêlée ? Lu en DONNÉES
  *  (`incomingMeleeAdvantage` → `passive` `incomingAdvantage`, kind `etat`). Sonné : « +1 Avantage avant
@@ -1925,11 +1930,11 @@ function enemyAutoDeviate(
 /** Pousse l'étape de cascade « Coup Critique — dévier ? » (choix Dévier/Subir + révélation riche du
  *  Critique pré-tiré dans la MÊME modale). Builder UNIQUE des 3 chemins. */
 function pushDeviationStep(set: SetFn, dev: PendingDeviation): void {
-  pushCombatStep(set, {
+  pushChoice(set, {
     id: `cons-deviation-${dev.targetId}`, kind: 'deviation', actorId: dev.targetId, icon: 'fire/blast',
     label: 'Coup Critique — dévier ?',
     options: [{ key: 'devier', label: 'Dévier (−1 PA)' }, { key: 'subir', label: 'Subir' }],
-    defaultChoice: 'devier', deviation: dev, reveal: dev.reveal, interactive: true,
+    defaultChoice: 'devier', deviation: dev, reveal: dev.reveal,
   });
 }
 
@@ -2111,12 +2116,12 @@ export function applyAttackResult(
       && !isStructure(target) && target.bodyShape !== 'vehicule' && critSeverityInSeam(twice) && canFixDie(get(), target.id)) {
     const cloc = res.critical ? critWoundLocation(battleRng(), target.bodyShape, res.critLocation) : dloc;
     if (res.critical) res.critLocation = cloc; // LDB 18 l.55 (#80) : loc FIGÉE avant la suspension (jamais re-tirée)
-    pushCombatStep(set, {
+    pushTable(set, {
       id: `cons-crit-severity-${target.id}-${(target.criticalWounds ?? 0) + 1}`,
       // Le titre d'étape porte la LOCALISATION : c'est elle qui dit sur QUELLE table le dé se pose.
       kind: 'critSeverity', actorId: target.id, icon: 'journal/critical',
       label: `Blessure critique (${locationLabel(cloc, target.bodyShape)})`,
-      table: critSeverityDecl(target, cloc, overkill0, twice), interactive: true,
+      table: critSeverityDecl(target, cloc, overkill0, twice),
       critSeverity: { attackerId: attacker.id, targetId: target.id, weapon, res, location: cloc, overkill: overkill0, twice },
       // Avant le dé, l'enjeu est celui du TABLEAU (fiche `blessures-critiques`) ; après, la re-pose
       // le fait descendre à la Blessure tirée (catégorie déclarée par la table de la Localisation).
@@ -2260,7 +2265,7 @@ export function applyAttackResult(
         // Folding P3b : le choix Piéger/Critique devient une ÉTAPE de la séquence (texte + options),
         // au lieu d'une modale `pendingBladeTrap` séparée. L'applier 'bladeTrap' appelle resolveBladeTrap.
         const pbt: PendingBladeTrap = { defenderId: target.id, attackerId: attacker.id, weapon, parryWeaponUid: res.parryWeapon.uid!, defSL: dd.sl, roll: dd.roll };
-        pushCombatStep(set, {
+        pushChoice(set, {
           id: `cons-bladetrap-${target.id}`, kind: 'bladeTrap', actorId: target.id, icon: 'item/weapon',
           label: 'Parade — piéger la lame ?',
           options: [{ key: 'trap', label: 'Piéger la lame' }, { key: 'crit', label: 'Coup Critique' }],
@@ -2269,7 +2274,6 @@ export function applyAttackResult(
             `${target.label} place un Critique en parant avec ${res.parryWeapon.label} — la lame de ${attacker.label} (${weapon.label}) est à portée.`,
             `Piéger : Test opposé de Force (+${dd.sl} DR). Succès → ${attacker.label} lâche sa lame (Stupéfiant → brisée).`,
           ]),
-          interactive: true,
         });
       } else {
         critLog.push(tr('cf.critOnDefense', { name: target.label }));
@@ -3744,9 +3748,11 @@ export function miscastTableDecl(ctx: PendingMiscastStep): CascadeTableDecl {
   };
 }
 
-/** Étape à TABLE d'une Imparfaite/Colère (dé à poser), sous l'`id` que l'appelant lui donne : une
- *  relance pousse une étape de plus dans la MÊME séquence, chacune avec son id. */
-function miscastTableStep(caster: Combatant, ctx: PendingMiscastStep, id: string): CascadeStep {
+/** DÉCLARATION de l'étape à TABLE d'une Imparfaite/Colère (dé à poser), sous l'`id` que l'appelant
+ *  lui donne : une relance pousse une étape de plus dans la MÊME séquence, chacune avec son id. La
+ *  déclaration se rend NUE (jamais mintée ici) — l'append la passe à `pushTable`, la relance de
+ *  l'applier à `tableStep` : deux fenêtres différentes, un seul mint chacune. */
+function miscastTableSpec(caster: Combatant, ctx: PendingMiscastStep, id: string): TableSpec {
   const colere = ctx.severity === 'colere';
   return {
     id,
@@ -3758,7 +3764,6 @@ function miscastTableStep(caster: Combatant, ctx: PendingMiscastStep, id: string
     // et la sanction divine (LDB 40, +10 par Point de Péché) ne mettent pas la même chose en jeu.
     stake: combatStakeRef(colere ? 'wrathTable' : 'miscastTable'),
     miscast: ctx,
-    interactive: true,
   };
 }
 
@@ -3794,8 +3799,11 @@ registerCascadeApplier('miscastTable', (get, set, step, caster) => {
     const lines = sorceryCorruptionLines(get, set, caster, ctx, m.tableRolls);
     // Les lancers d'une relance ne portent PAS le +10 de Péché (la Colère ne relance jamais).
     const relance = (over: Partial<PendingMiscastStep>, suffixe: string) =>
-      miscastTableStep(caster, { ...ctx, ...over }, `${step.id}-${suffixe}`);
-    const sortie = (insert: CascadeStep[]) => ({ insert, ...(lines.length ? { consequences: freeCons(lines) } : {}) });
+      tableStep(miscastTableSpec(caster, { ...ctx, ...over }, `${step.id}-${suffixe}`));
+    // Un mint qui REFUSE n'insère rien (politique de la porte : DEV throw, PROD dégradé) — le canal
+    // `insert` ne porte donc que les étapes réellement montées.
+    const sortie = (insert: readonly (BuiltCascadeStep | undefined)[]) =>
+      ({ insert: insert.filter((s): s is BuiltCascadeStep => !!s), ...(lines.length ? { consequences: freeCons(lines) } : {}) });
     if (ctx.rerollHigh && rolled.die >= 91) return sortie([relance({}, 'relance')]);
     if (m.reroll === 'mineure-x2') return sortie([relance({ rerollHigh: true }, 'x2-0'), relance({ rerollHigh: true }, 'x2-1')]);
     return sortie([relance({ severity: 'majeure', rerollHigh: false }, 'majeure')]);
@@ -3838,7 +3846,7 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
   // et AUCUN effet n'est appliqué avant la pose du dernier dé (relances comprises). Sans l'option ni
   // le contrôle : le dé est tiré ici, par le MÊME résolveur — zéro friction, flux RNG identique.
   if (canFixDie(get(), caster.id)) {
-    pushCombatStep(set, (index) => miscastTableStep(caster, ctx, `miscast-table-${caster.id}-${index}`));
+    pushTable(set, (index) => miscastTableSpec(caster, ctx, `miscast-table-${caster.id}-${index}`));
     return emitMiscastTriggered(get, set, caster); // l'Imparfaite EST déclenchée, seule sa ligne reste à tirer
   }
   // Colère des dieux : +10 au jet par Point de Péché du lanceur (LDB 40 l.53), lu À L'INSTANT du jet.
@@ -6032,7 +6040,7 @@ function lockedGauntletHolds(wielder: Combatant, drop: Weapon, round: number): b
  * NETTE `(DR final du défenseur + bt.defSL) − bt.attackerSL` ≥ 6 (Succès Stupéfiant, LDB 62 l.280) → la lame
  * est BRISÉE à moins qu'elle ne possède l'Atout Incassable (sauvegarde Solide gérée par `wearActiveWeapon`).
  * Échec/égalité au Test ⇒ branche `fail` (pas d'op, l'adversaire libère sa lame) → cette fonction n'est pas
- * appelée. La conséquence est EMPILÉE comme étape d'AFFICHAGE propre dans la cascade (`pushCombatStep` →
+ * appelée. La conséquence est EMPILÉE comme étape d'AFFICHAGE propre dans la cascade (`pushDisplay` →
  * `bladeTrapResult`, applier muet) — MÊME paradigme que le Coup Critique (une étape visible « l'un sous
  * l'autre », acquittée par « Continuer/Terminer ») plutôt qu'une ligne noyée. `defenderSL` = le DR PROPRE du
  * jet résolu (la marge nette se recompose avec `bt`). */
@@ -6058,7 +6066,7 @@ export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: Bl
   // ne sauve pas une arme brisée). Sinon, la 1re fois dans la période le porteur GARDE l'arme (−20/1 Round) ;
   // le 2e évènement de lâcher la fait tomber. Capacité lue en DONNÉE (`preventForcedDrop`), jamais par nom.
   if (!drop.destroyed && lockedGauntletHolds(attacker, drop, battle.round)) {
-    pushCombatStep(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: 'action/defend', label: tr('cf.bladeTrapLabel'), outcome: toRecapLines([tr('cf.lockedGauntletHold', { name: attacker.label, weapon: drop.label })]), interactive: true });
+    pushDisplay(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: 'action/defend', label: tr('cf.bladeTrapLabel'), outcome: toRecapLines([tr('cf.lockedGauntletHold', { name: attacker.label, weapon: drop.label })]) });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
     return;
@@ -6066,7 +6074,7 @@ export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: Bl
   attacker.weapons = attacker.weapons.filter((w) => w !== drop);
   // Étape d'AFFICHAGE empilée (comme un Coup Critique) : visible « l'un sous l'autre », acquittée par le
   // joueur. `actorId` = le défenseur piégeur (propriétaire de la modale en coop). Applier muet (préserve `outcome`).
-  pushCombatStep(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: 'item/weapon', label: tr('cf.bladeTrapLabel'), outcome: toRecapLines([line]), interactive: true });
+  pushDisplay(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: 'item/weapon', label: tr('cf.bladeTrapLabel'), outcome: toRecapLines([line]) });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
 }

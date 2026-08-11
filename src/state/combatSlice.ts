@@ -18,10 +18,10 @@ import * as travelFlow from './travelFlow';
 import { continueRestNights } from './restFlow';
 import { continueRiverDayAfterCascade, continueRiverDayAfterExposure } from './riverVoyageFlow';
 import { Combatant, HitLocation, CHAR_LABELS, type FireArc, type Weapon } from '../engine/types';
-import { rollLine } from './rollSeam';
+import { rollLine, hostStep, openSequence, pushHost, pushDisplay } from './rollSeam';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { defenseDodgeMod, activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castContextMods, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, trampleFreeMove, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, applyCounterspellFallback, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, resolveMovement, fearedSourceTowards, markActed, noteApproachMove, clearApproachMoves, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
+import { defenseDodgeMod, activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castContextMods, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, trampleFreeMove, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, applyCounterspellFallback, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, resolveMovement, fearedSourceTowards, markActed, noteApproachMove, clearApproachMoves, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { losClear } from './lineOfSight';
 import { smokeOf, captureMoveSnapshot } from './combatGeometry';
@@ -108,7 +108,7 @@ import { combatDistance } from './footprint';
 import { combatOrder } from './combatSetup';
 import { isMerScene, sceneMetresPerTile } from './scene';
 import { bus, EVT } from './bus';
-import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, rollCascadeTable, setCascadeTableForcedRoll, suspendActiveCascade, resumeSuspendedCascade, setOwnTestFailedEmitter } from './cascade';
+import { advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, rollCascadeTable, setCascadeTableForcedRoll, suspendActiveCascade, resumeSuspendedCascade, setOwnTestFailedEmitter } from './cascade';
 import { continuePursuitRound, pursuitAbandon } from './pursuitFlow';
 import { checkPartyWiped } from './partyWipe';
 import { describeFrenzy, describeReload, describeStateRecovery } from './flowOutcomes';
@@ -297,7 +297,7 @@ function pushDefenderFumble(get: Get, set: Set, defender: Combatant, pd: Pending
   const parry = parryWeaponOf(defender, pd);
   if (!pd.result || !parry || pd.mode === 'social' || isOutOfAction(defender)) return false;
   if (!defenseSurfaced(get(), defender) || !defenderFumbled(pd.result, parry, defender)) return false;
-  pushCombatStep(set, { id: `cons-fumble-${defender.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: defender.id, fumble: { weapon: parry, result: null } });
+  pushHost(get, set, { id: `cons-fumble-${defender.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: defender.id, fumble: { weapon: parry, result: null } });
   return true;
 }
 
@@ -620,6 +620,21 @@ export function createCombatSlice(get: Get, set: Set) {
       const partyIds = new Set(get().party.map((h) => h.id));
       const played = (c: Combatant) => partyIds.has(c.id);
       const cascade = get().pendingCascade;
+      const cur = cascade?.participants[cascade.cursor];
+      // Deux acteurs JOUÉS (potentiellement de deux SIÈGES) sur la même fenêtre → étape de GROUPE :
+      // l'arbitre coop met l'owner à '*' et chacun influence SON slot (calque `forceDoor`). La bascule
+      // REMINTE l'étape hôte au lieu de la muter — `hostStep` est le seul mint qui expose `groupOwner`
+      // (#1262 B6), et il revérifie au passage que `pendingDisengage`, la donnée que la fenêtre rend,
+      // est toujours posé. Une étape hôte ne porte que sa déclaration : la situation vit dans le pending.
+      const partagee = cascade && cur?.jet === 'disengage' && played(foe) && played(mover)
+        ? hostStep(get, {
+          id: cur.id, kind: cur.kind, jet: 'disengage', actorId: cur.actorId ?? mover.id, groupOwner: true,
+          ...(cur.label ? { label: cur.label } : {}),
+          ...(cur.icon ? { icon: cur.icon } : {}),
+          ...(cur.stake ? { stake: cur.stake } : {}),
+          ...(cur.meta ? { meta: cur.meta } : {}),
+        })
+        : undefined;
       set({
         battle: { ...battle },
         pendingDisengage: {
@@ -632,10 +647,8 @@ export function createCombatSlice(get: Get, set: Set) {
             ],
           },
         },
-        // Deux acteurs JOUÉS (potentiellement de deux SIÈGES) sur la même fenêtre → étape de GROUPE :
-        // l'arbitre coop met l'owner à '*' et chacun influence SON slot (calque `forceDoor`).
-        ...(cascade && played(foe) && played(mover) && cascade.participants[cascade.cursor]?.jet === 'disengage'
-          ? { pendingCascade: { ...cascade, participants: cascade.participants.map((s, i) => (i === cascade.cursor ? { ...s, groupOwner: true } : s)) } }
+        ...(cascade && partagee
+          ? { pendingCascade: { ...cascade, participants: cascade.participants.map((s, i) => (i === cascade.cursor ? partagee : s)) } }
           : {}),
       });
       bus.emit(EVT.SCENE_DIRTY);
@@ -694,14 +707,14 @@ export function createCombatSlice(get: Get, set: Set) {
         // Déviation Critique du fuyard : `applyAttackResult` a EMPILÉ son étape de choix — le coup gratuit
         // n'est PAS résolu. La fuite (Brisé + Course) attend SA résolution, dans la même fenêtre, via
         // l'étape de reprise `fleeMove` (LDB 15 l.68 : « une fois que ce coup gratuit est résolu… »).
-        pushCombatStep(set, { id: `flee-move-${mover.id}`, kind: 'fleeMove', actorId: mover.id, icon: 'melee/flee', label: 'Fuite', fleeMove: { moverId: mover.id, foeId: foe.id, broken } });
+        pushDisplay(set, { id: `flee-move-${mover.id}`, kind: 'fleeMove', actorId: mover.id, icon: 'melee/flee', label: 'Fuite', fleeMove: { moverId: mover.id, foeId: foe.id, broken } });
         const casc = get().pendingCascade;
         if (casc?.participants[casc.cursor]?.jet === 'disengage') get().cascadeNext(); // avancer sur l'étape de Déviation
         return;
       }
       completeFlee(get, set, mover.id, foe.id, broken);
       // Cascade-hôte : on ne ferme QUE si l'application n'a rien empilé (Coup Critique…) — jamais une
-      // cascade FRAÎCHE créée par la conséquence elle-même (`pushCombatStep` en ouvre une s'il n'y en a pas).
+      // cascade FRAÎCHE créée par la conséquence elle-même (une porte d'append en ouvre une s'il n'y en a pas).
       const seq = get().pendingCascade;
       if (!seq) return; // rien à fermer
       if (!seqBefore) return; // cascade FRAÎCHE ouverte par la conséquence (Coup Critique) : elle est déjà sur SON étape
@@ -1027,7 +1040,8 @@ export function createCombatSlice(get: Get, set: Set) {
       // vivent dans UNE fenêtre. `pendingTrample` coexiste comme porteur de données (résolu par
       // trampleConfirm) ; le jet se fait au clic « Lancer ».
       set({ pendingTrample: { attackerId: active.id, targetId: target.id, result: null }, battle: { ...battle, action: null } });
-      startCascade(get, set, { title: 'Piétinement', icon: 'melee/trample', purpose: 'combat', steps: [{ id: 'trample-jet', kind: 'trampleJet', jet: 'trample', actorId: active.id }] });
+      const step = hostStep(get, { id: 'trample-jet', kind: 'trampleJet', jet: 'trample', actorId: active.id });
+      if (step) openSequence(get, set, { title: 'Piétinement', icon: 'melee/trample', purpose: 'combat', steps: [step] });
     },
     // ── Sélection d'ATTAQUE (« Attaque ▾ ») : arme une `AttackOption` (Arme + gratuites/zone/Piétinement/
     // Tentacule). Source des entrées : `availableAttacks` (combatFlow). Le clic-ennemi résout l'armée. ──
@@ -2310,7 +2324,7 @@ export function createCombatSlice(get: Get, set: Set) {
         if (controlsCombatant(get(), attacker) && attackerFumbled(pa.result, weapon, attacker)) {
           // Maladresse = étape de la cascade d'attaque (comme le Critique) ; advanceCombatJet l'enchaîne au bout.
           // La donnée (arme/résultat) vit SUR l'étape — source unique, plus de `pendingFumble` à désynchroniser.
-          pushCombatStep(set, { id: `cons-fumble-${attacker.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: attacker.id, fumble: { weapon, result: null } });
+          pushHost(get, set, { id: `cons-fumble-${attacker.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: attacker.id, fumble: { weapon, result: null } });
           set({ pendingCleave: null });
         } else if (!isDualMain && !isDualSecond && !pa.freeKind) {
           // Frappe Mortelle (LDB 14 l.12 / 85 l.299) : démarre/poursuit le balayage d'un héros plus grand
@@ -2518,7 +2532,7 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       if (defender && pushDefenderFumble(get, set, defender, pd)) {
         // Positionne le curseur défense → Maladresse quand la défense est l'étape courante (sinon
-        // `pushCombatStep` a créé une cascade neuve déjà au curseur 0 sur la Maladresse).
+        // `pushHost` a créé une cascade neuve déjà au curseur 0 sur la Maladresse).
         const casc = get().pendingCascade;
         if (casc && casc.participants[casc.cursor]?.jet === 'defense') get().cascadeNext();
         return;
@@ -3037,7 +3051,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (openCastOppositionStep(get, set)) return;
       // FOLD : on ne ferme PLUS la cascade d'incantation ici — seulement le JET (CastModal disparaît).
       // La cascade `purpose:'combat'` (étape `jet:'cast'`) reste ACTIVE pour qu'un Critique de Sort
-      // (pushReveal 'critical') ou une Imparfaite/Colère (pushCombatStep) s'y APPENDENT comme l'attaque.
+      // (pushReveal 'critical') ou une Imparfaite/Colère (étape appendue) s'y APPENDENT comme l'attaque.
       // On repère l'étape `jet:'cast'` SOUS le curseur AVANT applyCast (présente seulement si l'incantation
       // a été ouverte par openCastCascade ; absente quand un test/IA pose pendingCast à la main).
       const cascBefore = get().pendingCascade;

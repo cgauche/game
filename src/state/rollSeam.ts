@@ -37,7 +37,10 @@ import type { Get, Set } from './flowTypes';
 import type { Combatant, CharKey, Difficulty, Weapon } from '../engine/types';
 import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import type { PairedSense, GameOp } from '../engine/ops';
-import type { CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate, PendingCascade, CascadeTableDecl, CascadeTableResult, RevealEntry } from './pendings';
+import type {
+  CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate, PendingCascade, CascadeTableDecl, CascadeTableResult, RevealEntry,
+  PendingDeviation, PendingBladeTrap, PendingCritSeverity, PendingMiscastStep,
+} from './pendings';
 import type { BuiltCascadeStep } from './stepBrand';
 import type { PendingKey } from './stateFields';
 import type { OupsResolved } from '../engine/oups';
@@ -976,6 +979,12 @@ export interface ChoiceSpec {
   /** Lignes de conséquence DÉJÀ écrites qui exposent l'enjeu du choix (Piège-lame : ce que chaque voie
    *  coûte). Structurées (`RecapLine[]`), rendues par le renderer partagé. */
   outcome?: RecapLine[];
+  /** CHARGE de l'applier « déviation » (`combatFlow`) : le Critique pré-tiré et le contexte d'attaque
+   *  dont la voie choisie décide. Recopiée telle quelle — une charge n'est pas une forme : elle ne
+   *  rend rien et ne change pas l'interaction de l'étape, elle est ce que l'applier LIT au commit. */
+  deviation?: PendingDeviation;
+  /** CHARGE de l'applier « piège-lame » (`combatFlow`) : le contexte du Test opposé de Force. */
+  bladeTrap?: PendingBladeTrap;
   meta?: CascadeStepMeta;
 }
 
@@ -1014,6 +1023,8 @@ export function choiceStep(spec: ChoiceSpec): BuiltCascadeStep | undefined {
     ...(spec.stakeRule ? { stakeRule: spec.stakeRule } : {}),
     ...(spec.reveal ? { reveal: spec.reveal } : {}),
     ...(spec.outcome ? { outcome: spec.outcome } : {}),
+    ...(spec.deviation ? { deviation: spec.deviation } : {}),
+    ...(spec.bladeTrap ? { bladeTrap: spec.bladeTrap } : {}),
     ...(spec.meta ? { meta: spec.meta } : {}),
   } as BuiltCascadeStep;
 }
@@ -1099,6 +1110,12 @@ export interface TableSpec {
   actorId: string;
   table: CascadeTableDecl;
   stake?: StakeRef;
+  /** CHARGE de l'applier « sévérité du Critique » (`combatFlow`) : de quel coup le d100 posé décide.
+   *  Recopiée telle quelle — une charge n'est pas une forme : elle ne rend rien et ne change pas
+   *  l'interaction de l'étape, elle est ce que l'applier LIT quand le dé est posé. */
+  critSeverity?: PendingCritSeverity;
+  /** CHARGE de l'applier « Imparfaite/Colère » (`combatFlow`) : sévérité, domaine, relance en cours. */
+  miscast?: PendingMiscastStep;
   meta?: CascadeStepMeta;
 }
 
@@ -1125,6 +1142,8 @@ export function tableStep(spec: TableSpec): BuiltCascadeStep | undefined {
     interactive: true,
     table: spec.table,
     ...(spec.stake ? { stake: spec.stake } : {}),
+    ...(spec.critSeverity ? { critSeverity: spec.critSeverity } : {}),
+    ...(spec.miscast ? { miscast: spec.miscast } : {}),
     ...(spec.meta ? { meta: spec.meta } : {}),
   } as BuiltCascadeStep;
 }
@@ -1152,11 +1171,55 @@ export function tableStepDone(spec: TableDoneSpec): BuiltCascadeStep | undefined
     actorId: spec.actorId,
     interactive: true,
     ...(spec.stake ? { stake: spec.stake } : {}),
+    ...(spec.critSeverity ? { critSeverity: spec.critSeverity } : {}),
+    ...(spec.miscast ? { miscast: spec.miscast } : {}),
     ...(spec.reveal ? { reveal: spec.reveal } : {}),
     ...(spec.outcome ? { outcome: spec.outcome } : {}),
     ...(spec.meta ? { meta: spec.meta } : {}),
   };
   return tableStepResolved(base, spec.table, spec.result) as BuiltCascadeStep;
+}
+
+/** DÉCLARATION d'une étape d'AFFICHAGE : une conséquence DÉJÀ arrivée, donnée à LIRE. Zéro dé, zéro
+ *  décision — l'étape est l'interaction `'affichage'` (`stepInteraction`), acquittée par « Continuer ». */
+export interface DisplaySpec {
+  id: string;
+  kind: string;
+  label: string;
+  icon?: string;
+  /** Le CONCERNÉ : l'arbitre route la fenêtre à son siège (la conséquence est la SIENNE). */
+  actorId: string;
+  /** Ce qui vient d'arriver, en lignes déjà écrites (`RecapLine[]`), rendues par le renderer partagé. */
+  outcome?: RecapLine[];
+  /** CHARGE de l'applier « reprise de fuite » (`combatFlow`) : qui fuit, devant qui, et combien de
+   *  rangs de Brisé attendent la fin du coup gratuit (LDB 15 l.68). */
+  fleeMove?: NonNullable<CascadeStep['fleeMove']>;
+  meta?: CascadeStepMeta;
+}
+
+/**
+ * CONSTRUCTEUR d'étape d'AFFICHAGE (#1262) — la forme la plus pauvre de la porte, et c'est le point :
+ * `reveal`, `table`, `options`, `target` n'y sont PAS déclarables. Une conséquence sans dé rendue par
+ * `revealToStep` prendrait la forme d'une RÉVÉLATION — rangée `TableRollLine` et dé à l'appui — et
+ * annoncerait un tirage qui n'a pas eu lieu (une lame arrachée des mains, une fuite qui reprend) ; en
+ * plus, ce mint DÉRIVE `id` et `kind` de la `RevealEntry`, ce que les appliers enregistrés par `kind`
+ * ne survivraient pas.
+ *
+ * Rien à refuser ici : une étape d'affichage est toujours prête (`stepReady`), il n'existe pas de
+ * déclaration qui la rendrait injouable.
+ */
+export function displayStep(spec: DisplaySpec): BuiltCascadeStep {
+  return {
+    id: spec.id,
+    kind: spec.kind,
+    label: spec.label,
+    ...(spec.icon ? { icon: spec.icon } : {}),
+    actorId: spec.actorId,
+    interactive: true,
+    ...(spec.outcome ? { outcome: spec.outcome } : {}),
+    ...(spec.fleeMove ? { fleeMove: spec.fleeMove } : {}),
+    ...(spec.meta ? { meta: spec.meta } : {}),
+  } as BuiltCascadeStep;
 }
 
 /** Les jets qu'une étape peut HÔTER — union fermée de `CascadeStepBase.jet`. */
@@ -1289,6 +1352,11 @@ export function pushTable(set: Set, spec: Declaree<TableSpec>): void {
 /** APPEND d'un tirage DÉJÀ RÉSOLU à la séquence de combat. */
 export function pushTableDone(set: Set, spec: Declaree<TableDoneSpec>): void {
   pushStep(set, (index) => tableStepDone(declare(spec, index)), 'combat');
+}
+
+/** APPEND d'un AFFICHAGE à la séquence de combat. */
+export function pushDisplay(set: Set, spec: Declaree<DisplaySpec>): void {
+  pushStep(set, (index) => displayStep(declare(spec, index)), 'combat');
 }
 
 /** APPEND d'une étape HÔTE à la séquence de combat. */
