@@ -58,6 +58,14 @@ les hunks voisins qu'on vient d'exclure. Deux formes sûres, selon le lot :
    l'index, jamais l'arbre). Le contrôle se refait à CHAQUE tentative (un pre-commit refusé puis
    re-committé = une fenêtre de plus pour le voisin).
 
+**LES DEUX FORMES NE SE MÉLANGENT JAMAIS dans un même commit** (récidive 2026-08-10, lot L3,
+`acf2a447`) : j'ai stagé `combatEffects.ts` par hunk (`git apply --cached`) PUIS committé le lot en
+forme pathspec — la pathspec a committé l'ARBRE des chemins nommés et a IGNORÉ mes hunks stagés :
+le fichier au hunk exclu n'était pas dans la liste, il est resté dehors, le tronc était incohérent
+(commit de complément `17ce3cab` dans la minute). Un lot MIXTE (fichiers entiers + un fichier par
+hunk) se committe en DEUX commits — pathspec pour les entiers, index nu pour le par-hunk — ou tout
+en index nu avec le contrôle du point 2.
+
 **Leçon CÔTÉ VICTIME (même incident `9135f643`, vécu de l'autre session)** : mon lot L5 était stagé
 chirurgicalement (`git apply --cached`, 17 fichiers) et ATTENDAIT le verdict de la suite complète
 (~10 min). Le commit voisin est tombé dans cette fenêtre et a tout emporté. Un stage qui attend est
