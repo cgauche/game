@@ -13,7 +13,8 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { QUAD_HARNAIS, quadHarnaisDeco, harnaisOptions } from './index';
@@ -83,16 +84,25 @@ describe('registre des sets d\'équipement quadrupèdes : étanchéité', () => 
 // ── pipeline d'atelier : dessin de set → compilé, sous la porte `--check` ─────────────────────
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../..');
 const SET = 'set-factice-l1';
-const DESSIN = join(ROOT, `src/gameIso/rig/quadruped/atelier/harnais/${SET}@boeuf-profil.dessin.mts`);
-const COMPILE = join(ROOT, 'src/gameIso/rig/quadruped/harnais/setFacticeL1ProfilCompile.ts');
 
-const compilateur = (...args: string[]) =>
+/**
+ * Le pipeline tourne dans un BAC À SABLE hors de l'arbre (`QUAD_RIG_RACINE`, cf.
+ * `scripts/rig/compile-dessin-quad.mts`) : dessin et compilé sont des fichiers TRANSITOIRES, et
+ * `src/` est scanné en parallèle par les gardes de corpus (walkers de `src/name-field-guard.test.ts`,
+ * `src/ui/registry-id-branch-guard.test.ts`, `src/engine/rule-refs.test.ts`). Le gabarit, lui, reste
+ * lu du moteur réel : c'est bien `boeuf` du registre d'espèces qui est cuit.
+ */
+const compilateurDe = (racine: string) => (...args: string[]) =>
   spawnSync(process.execPath, [join(ROOT, 'node_modules/tsx/dist/cli.mjs'), join(ROOT, 'scripts/rig/compile-dessin-quad.mts'), ...args],
-    { cwd: ROOT, encoding: 'utf8' });
+    { cwd: ROOT, encoding: 'utf8', env: { ...process.env, QUAD_RIG_RACINE: racine } });
 const md5 = (f: string) => createHash('md5').update(readFileSync(f)).digest('hex');
 
 describe('compilation d\'un dessin de SET (gabarit lu du suffixe @espèce)', () => {
   it('compile, reste idempotent, ROUGIT à la désynchro et REVERDIT après régénération', () => {
+    const BAC = mkdtempSync(join(tmpdir(), 'quad-harnais-'));
+    const DESSIN = join(BAC, 'atelier', 'harnais', `${SET}@boeuf-profil.dessin.mts`);
+    const COMPILE = join(BAC, 'harnais', 'setFacticeL1ProfilCompile.ts');
+    const compilateur = compilateurDe(BAC);
     mkdirSync(dirname(DESSIN), { recursive: true });
     writeFileSync(DESSIN, [
       '/** Fixture de test (#1128 L1) — écrite et supprimée par quad-harnais.test.ts. */',
@@ -133,8 +143,7 @@ describe('compilation d\'un dessin de SET (gabarit lu du suffixe @espèce)', () 
       expect(md5(COMPILE)).toBe(empreinte);
       expect(compilateur('--check', SET).status).toBe(0);
     } finally {
-      rmSync(DESSIN, { force: true });
-      rmSync(COMPILE, { force: true });
+      rmSync(BAC, { recursive: true, force: true });
     }
   }, 180_000);
 });

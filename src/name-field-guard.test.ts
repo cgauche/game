@@ -45,6 +45,18 @@ function tsFiles(dir: string): string[] {
   return out;
 }
 
+/**
+ * Lecture TOLÉRANTE d'un fichier LISTÉ à l'étape précédente : entre le listage et la lecture, un
+ * fichier peut avoir disparu — un autre worker de la suite écrit puis supprime des fichiers de
+ * travail sous `src/` (pipeline d'atelier). Un ENOENT y désigne donc un fichier TRANSITOIRE, sauté
+ * en silence. ANGLE MORT ASSUMÉ : une suppression concurrente d'un fichier RÉEL du dépôt serait
+ * sautée pareillement — le scan mesurerait un corpus incomplet sans le dire.
+ */
+function lireSiPresent(f: string): string | null {
+  try { return readFileSync(f, 'utf8'); }
+  catch (e) { if ((e as NodeJS.ErrnoException).code === 'ENOENT') return null; throw e; }
+}
+
 /** La valeur d'un `PropertyAssignment` désigne-t-elle un appel de schéma zod (`z.string()`,
  *  `z.string().optional()`, `z.object({...})`…) — en remontant la chaîne d'appels/accès jusqu'à
  *  l'identifiant racine `z` ? */
@@ -103,7 +115,8 @@ function nameFieldSites(): string[] {
   const out: string[] = [];
   for (const f of tsFiles(SRC)) {
     const rel = 'src/' + f.slice(SRC.length).replace(/\\/g, '/');
-    const raw = readFileSync(f, 'utf8');
+    const raw = lireSiPresent(f);
+    if (raw === null) continue;
     for (const line of nameFieldLines(f, raw)) out.push(`${rel}:${line}`);
   }
   return out;

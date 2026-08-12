@@ -38,9 +38,16 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve, basename, relative } from 'node:path';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const ATELIER = resolve(ROOT, 'src/gameIso/rig/quadruped/atelier');
+/** Racine du dossier `quadruped/` — l'atelier lu (`<racine>/atelier`) et les sorties écrites
+ *  (`<racine>/`, `<racine>/harnais/`). Surchargeable par `QUAD_RIG_RACINE` : un harnais de test
+ *  compile alors dans un bac à sable, hors de l'arbre `src/` que les gardes scannent. Le gabarit,
+ *  le squelette et la pose viennent toujours de `ROOT` (le moteur réel). */
+const RACINE = process.env.QUAD_RIG_RACINE
+  ? resolve(process.env.QUAD_RIG_RACINE)
+  : resolve(ROOT, 'src/gameIso/rig/quadruped');
+const ATELIER = resolve(RACINE, 'atelier');
 const ATELIER_SETS = resolve(ATELIER, 'harnais');
-const DEST_DIR = resolve(ROOT, 'src/gameIso/rig/quadruped');
+const DEST_DIR = RACINE;
 const DEST_SETS = resolve(DEST_DIR, 'harnais');
 const CHECK = process.argv.includes('--check');
 const FILTRE = process.argv.slice(2).filter((a) => !a.startsWith('--'));

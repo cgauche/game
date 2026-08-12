@@ -83,6 +83,18 @@ function tsFiles(dir: string): string[] {
   return out;
 }
 
+/**
+ * Lecture TOLÉRANTE d'un fichier LISTÉ à l'étape précédente : entre le listage et la lecture, un
+ * fichier peut avoir disparu — un autre worker de la suite écrit puis supprime des fichiers de
+ * travail sous `src/` (pipeline d'atelier). Un ENOENT y désigne donc un fichier TRANSITOIRE, sauté
+ * en silence. ANGLE MORT ASSUMÉ : une suppression concurrente d'un fichier RÉEL du dépôt serait
+ * sautée pareillement — le scan mesurerait un corpus incomplet sans le dire.
+ */
+function lireSiPresent(f: string): string | null {
+  try { return readFileSync(f, 'utf8'); }
+  catch (e) { if ((e as NodeJS.ErrnoException).code === 'ENOENT') return null; throw e; }
+}
+
 /** Les clés de `ModLine` (`engine/types.ts`) — un littéral qui en porte une autre est d'une autre
  *  forme. CLIQUET : ce jeu suit le TYPE clé pour clé. Une clé oubliée ici ferait sortir du scan tout
  *  littéral qui la porte, et le stock mesuré s'effondrerait sans qu'aucune règle soit liée (sonde A
@@ -159,7 +171,9 @@ function modLineSites(): { at: string; where: string; hasRef: boolean; famille: 
   const out: { at: string; where: string; hasRef: boolean; famille: ModLiteral['famille']; ruleKey: string | null }[] = [];
   for (const f of tsFiles(SRC)) {
     const rel = 'src/' + f.slice(SRC.length).replace(/\\/g, '/');
-    for (const m of modLineLiterals(f, readFileSync(f, 'utf8'))) {
+    const raw = lireSiPresent(f);
+    if (raw === null) continue;
+    for (const m of modLineLiterals(f, raw)) {
       out.push({ at: `${rel} · ${m.label}`, where: `${rel}:${m.line} · ${m.label}`, hasRef: m.hasRef, famille: m.famille, ruleKey: m.ruleKey });
     }
   }

@@ -63,13 +63,30 @@ const KNOWN: Record<string, number> = {
 /** Plafond GLOBAL du jour (= somme de `KNOWN`), destiné à tomber à 0. */
 const CEILING = Object.values(KNOWN).reduce((s, n) => s + n, 0);
 
+/**
+ * Lecture TOLÉRANTE d'un fichier LISTÉ à l'étape précédente : entre le listage et la lecture, un
+ * fichier peut avoir disparu — un autre worker de la suite écrit puis supprime des fichiers de
+ * travail sous `src/` (pipeline d'atelier). Un ENOENT y désigne donc un fichier TRANSITOIRE, sauté
+ * en silence (`statSync` du walker compris). ANGLE MORT ASSUMÉ : une suppression concurrente d'un
+ * fichier RÉEL du dépôt serait sautée pareillement — le scan mesurerait un corpus incomplet sans
+ * le dire.
+ */
+const TRANSITOIRE = (e: unknown): boolean => (e as NodeJS.ErrnoException)?.code === 'ENOENT';
+function lireSiPresent(f: string): string | null {
+  try { return readFileSync(f, 'utf8'); }
+  catch (e) { if (TRANSITOIRE(e)) return null; throw e; }
+}
+
 function scanFiles(dirs: string[]): string[] {
   const files: string[] = [];
   const walk = (dir: string) => {
     for (const e of readdirSync(dir)) {
       if (e === 'node_modules') continue;
       const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
+      let dossier: boolean;
+      try { dossier = statSync(p).isDirectory(); }
+      catch (err) { if (TRANSITOIRE(err)) continue; throw err; }
+      if (dossier) walk(p);
       else if (SCAN_EXTS.some((x: string) => e.endsWith(x))) files.push(p);
     }
   };
@@ -82,7 +99,9 @@ function findingsIn(dirs: string[]): { rel: string; line: number; detail: string
   for (const f of scanFiles(dirs)) {
     const rel = relative(ROOT, f).split('\\').join('/');
     if (isRegistryIdBranchExcluded(rel)) continue;
-    for (const fd of scanRegistryIdBranch(rel, readFileSync(f, 'utf8'))) out.push({ rel, ...fd });
+    const raw = lireSiPresent(f);
+    if (raw === null) continue;
+    for (const fd of scanRegistryIdBranch(rel, raw)) out.push({ rel, ...fd });
   }
   return out;
 }
