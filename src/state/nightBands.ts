@@ -58,7 +58,7 @@ function bandable(step: CascadeStep): boolean {
  * (`bandStepId` — deux jets de MÊME entrée le MÊME jour chez le MÊME héros, deux Convalescences
  * échéant ensemble, ouvrent une bande de PLUS), la place réservée et le mint (`bandStep`, qui pose la
  * POSSESSION : plusieurs dormeurs → `groupOwner`, un seul → SON `actorId`) sont ceux du socle. Le
- * `meta` COMMUN (l'entrée de règle mise en jeu, que lit `applyNightStake`) remonte par
+ * `meta` COMMUN (l'entrée de règle mise en jeu, que porte la clé d'enjeu de l'étape) remonte par
  * `bandCommonMeta` ; ce qui DIVERGE d'un héros à l'autre (Bonus d'Endurance de la Gangrène, siège
  * d'une Convalescence) reste sur la rangée.
  *

@@ -41,7 +41,7 @@ import { itemFromTrappingById, recomputeLoadout, autoStowNewItem } from '../engi
 import { toBrass, fromBrass, formatMoney, PA_PER_CO } from '../engine/money';
 import { partyMoneyTotal, payFromGroup, payWithAllocation, soloPayer, distributeCredit, bourseOf } from './bourseFlow';
 import { cargoTotalEnc, OPPORTUNITE, opportunityTradePct } from '../engine/seaVoyage';
-import { findVehicleById } from '../data';
+import { findVehicleById, activityStakeRef } from '../data';
 import type { Combatant } from '../engine/types';
 import type { TravelRecapDay } from './travelFlow';
 import { toRecapLines } from './recapLine';
@@ -119,6 +119,8 @@ function buildSeaChartStep(hero: Combatant, def: ActivityDef, pick: SeaActivityP
   return monoStep({
     id: `sea-activity-chart-${hero.id}`, kind: 'sea-activity-chart', actor: hero,
     label: composeRollLabel(hero, 'Cartographie', test), difficulty, rollLabel: 'Métier (Cartographe)',
+    // L'enjeu d'une Activité EST l'Activité choisie : il vit sur SA fiche (`ActivityDef.stake`).
+    stake: activityStakeRef(def.id),
     ligne: { test },
     meta: { stashGold: pick.stashGold ?? 0 },
   });
@@ -148,6 +150,8 @@ export function buildSeaGenericStep(get: Get, set: Set, hero: Combatant, def: Ac
   return monoStep({
     id: `sea-activity-generic-${hero.id}`, kind: 'sea-activity-generic', actor: hero,
     label: composeRollLabel(hero, def.label, test), difficulty, rollLabel: def.label,
+    // Idem : l'enjeu descend à l'Activité jouée, quelle qu'elle soit (fail-closed si elle n'en a pas).
+    stake: activityStakeRef(def.id),
     ligne: { test },
     meta: { activityId: def.id },
   });

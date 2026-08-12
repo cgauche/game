@@ -30,6 +30,7 @@ import { humanControlled } from './netOwnership';
 import { possessionLabel } from '../engine/possession';
 import type { CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
+import { voyageStakeRef } from '../data';
 
 /** Lieu le plus proche d'un point de la carte (distance euclidienne sur `pos`). */
 function nearestPlaceTo(map: WorldMap, pos: { x: number; y: number }): MapPlace | undefined {
@@ -153,6 +154,7 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
       id: `shipwreck-${h.id}`, kind: 'shipwreckSwim', actorId: h.id, icon: 'nautical/swim',
       label: `${h.label} — Natation`, rollLabel: 'Natation', difficulty: diff,
       ...rollStep({ actor: h, test: { skill: 'natation', char: 'force' }, difficulty: diff }),
+      stake: voyageStakeRef('shipwreckSwim'),
       result,
       meta,
     };

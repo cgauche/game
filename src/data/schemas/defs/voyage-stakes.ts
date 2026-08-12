@@ -24,9 +24,13 @@ export const schema = z.array(
     kind: z.string(),
     /** Gabarit du descripteur mécanique — trous `{nom}` remplis par le flux (valeurs calculées). */
     template: z.string(),
-    /** Fiche de RÈGLE du Codex (`regles.json`) derrière cette étape — la règle est à UN CLIC depuis
-     *  l'enjeu (#1117). Absente = aucune fiche ne couvre encore ce `kind`. */
+    /** FOYER de la règle derrière cette étape — la règle est à UN CLIC depuis l'enjeu (#1117).
+     *  Absent = aucune fiche ne couvre encore ce `kind`. */
     rule: z.string().optional(),
+    /** Catégorie Codex du foyer (`'regles'` par défaut, `'skills'`, `'etats'`…) — même contrat que
+     *  `flow-stakes`/`combat-stakes` : le renvoi vise l'entité qui PORTE déjà la règle (la Compétence
+     *  jetée, l'État subi), `regles.json` n'étant que le foyer des règles de cadre. */
+    ruleCategory: z.string().optional(),
     source: sourceRefSchema,
   }),
 );

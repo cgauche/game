@@ -39,7 +39,7 @@ import { rollVehicleProblem } from '../engine/travelTables';
 import { applyOps } from '../engine/ops';
 import { applyFall } from './combatEffects';
 import { applyHealWounds } from '../engine/healing';
-import { findVehicleById } from '../data';
+import { findVehicleById, voyageStakeRef } from '../data';
 import { PERIPETIES } from '../data/peripeties';
 import { rollTest, testDetail } from '../engine/tests';
 import { partyAssisted, supportSplit, testValue, type SupportDetail } from '../engine/skills';
@@ -811,6 +811,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
       const st = best && monoStep({
         id: 'peril-survie', kind: 'landPerilSurvie', actor: best.actor, icon: 'travel/compass', label: 'Survie en extérieur',
         rollLabel: 'Survie en extérieur', difficulty: 'accessible',
+        stake: voyageStakeRef('landPerilSurvie'),
         ligne: { test: { skill: 'survie-en-exterieur' }, valeur: best.value, soutien: best.support },
       });
       if (st) return { consequences: freeCons(j), insert: [st] };
@@ -823,6 +824,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
       const st = best && monoStep({
         id: 'peril-perception', kind: 'landPerilPerception', actor: best.actor, icon: 'ui/eye', label: 'Perception',
         rollLabel: 'Perception', difficulty: 'accessible',
+        stake: voyageStakeRef('landPerilPerception'),
         ligne: { test: { skill: 'perception' }, valeur: best.value, soutien: best.support },
         meta: { destLabel, configured, ambushScene: route.ambush?.scene ?? '', ambushEntry: route.ambush?.entry ?? '', ambushEnc: route.ambush?.encounter ?? '' },
       });
@@ -1071,6 +1073,7 @@ function buildForcedPaceStep(driver: { actor: Combatant; value: number; support?
     id: `land-forced-${galloped}`, kind: 'landForcedPace', actor: driver.actor, icon: 'travel/cart',
     label: `${driver.actor.label} — Conduite d'attelage (allure forcée)`, rollLabel: 'Conduite d’attelage',
     difficulty: 'intermediaire',
+    stake: voyageStakeRef('landForcedPace'),
     ligne: {
       test: { skill: 'conduite-d-attelage' }, valeur: driver.value + penalty, soutien: driver.support,
       ...(penalty ? { dansLaValeur: [{ label: `Km déjà au pas de course (${galloped})`, value: penalty, famille: 'jet' as const }] } : {}),
@@ -1143,6 +1146,7 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
         id: `${step.id}-control`, kind: 'landForcedPaceControl', actor: driver.actor, icon: 'travel/cart',
         label: `${driver.actor.label} — reprendre le contrôle`, rollLabel: 'Conduite d’attelage',
         difficulty: 'intermediaire',
+        stake: voyageStakeRef('landForcedPaceControl'),
         // MÊME jet que le km (Conduite d'attelage soutenue, `LDB 12 l.189`) : ni la pénalité de km
         // (`EDOC 07 l.253` ne la reconduit pas), ni une valeur figée. Les deux surfaces — étape
         // influençable et repli sans pilote ci-dessous — lisent le MÊME conducteur soutenu.

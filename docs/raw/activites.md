@@ -664,7 +664,7 @@ Le détail : chaque Personnage dispose d'**une Activité par semaine de 8 jours*
 **Voir aussi** : [Activités Répandues (LDB 23)](#activités-répandues-ldb-23) (Apprentissage particulier, Artisanat, Entraînement, Invention !), [Activités de Classe (LDB 23)](#activités-de-classe-ldb-23) (Recherche de savoir, Semer la dissension, Entraînement au combat), [Activités de Guerrier — AA Annexe II](#activités-de-guerrier--aa-annexe-ii), [Commerce d'opportunité (en mer)](#commerce-dopportunité-en-mer), [Cartographie (Activité en mer)](#cartographie-activité-en-mer), [Entraînement d'équipage](#entraînement-déquipage), [Entretien du navire](#entretien-du-navire).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.17, l.266-272) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `WorldMapView`, `SeaVoyageState`, `SEA_WEEK_DAYS`, `startTravel`, `surcharge-3`, `cruiseM`, `embrigadement`, `runSeaDay`, +23 — `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/state/pendings.ts`, `src/state/seaActivities.ts`, `src/state/seaVoyageFlow.ts`, `src/state/store.ts`, +3 fichiers
+- `MDG 15` (l.17, l.266-272) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `WorldMapView`, `SeaVoyageState`, `SEA_WEEK_DAYS`, `startTravel`, `sea-embrigadement-ragot`, `sea-embrigadement-discretion`, `surcharge-3`, `cruiseM`, +25 — `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/data/voyage-stakes.json`, `src/state/pendings.ts`, `src/state/seaActivities.ts`, `src/state/seaVoyageFlow.ts`, +4 fichiers
 
 ---
 
@@ -688,7 +688,7 @@ Activité de spéculation rapide lors d'une escale appropriée. Le Personnage **
 **Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [`economie.md`](economie.md) (Marchandage, couronnes d'or, Encombrement).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.274-286) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `schema`, `SEA_WEEK_DAYS`, `seaActivitiesCatalog`, `surcharge-3`, `sellRefusal`, `bankWithdrawOutcome`, `buildPostProgressionSteps`, +25 — `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`, +6 fichiers
+- `MDG 15` (l.274-286) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `schema`, `SEA_WEEK_DAYS`, `seaActivitiesCatalog`, `sea-embrigadement-ragot`, `sea-embrigadement-discretion`, `surcharge-3`, `sellRefusal`, +27 — `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/data/voyage-stakes.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, +7 fichiers
 
 ---
 

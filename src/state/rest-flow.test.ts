@@ -10,7 +10,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatFlow';
-import { restPlacesHere, lodgingOptions, applyNightStake } from './restFlow';
+import { restPlacesHere, lodgingOptions } from './restFlow';
 import { resolveStake } from '../data';
 import { contractDisease, tickDisease } from '../engine/disease';
 import { effectiveChar } from '../engine/characteristics';
@@ -407,21 +407,5 @@ describe('CHEMIN RÉEL — la règle d’une étape de maladie est celle du SYMP
     expect(recovery, 'la nuit porte aussi le Test de Récupération').toBeTruthy();
     expect(recovery!.stake!.key.entryId, 'aucune entrée jouée : pas d’entryId fabriqué').toBeUndefined();
     expect(resolveStake(recovery!.stake!).rule).toEqual({ category: 'regles', id: 'guerison-des-blessures' });
-  });
-
-  /** IDEMPOTENCE de la fabrique — c'est ELLE qui rend l'écrasement impossible entre les deux
-   *  bâtisseurs : redoter une étape déjà dotée doit rendre EXACTEMENT la même clé. */
-  it('`applyNightStake` est IDEMPOTENTE (×2 == ×1) — l’ordre des bâtisseurs ne compte plus', () => {
-    const etape = (kind: string, meta?: Record<string, unknown>): CascadeStep => ({
-      id: `x-${kind}`, kind, actorId: 'h', label: kind, rollLabel: 'Résistance', base: 40, difficulty: 'accessible', target: 60,
-      result: null, ...(meta ? { meta: meta as never } : {}),
-    });
-    for (const st of [etape('diseaseTick', { symptomId: 'blesse' }), etape('diseaseTick'), etape('recovery')]) {
-      applyNightStake(st);
-      const une = JSON.stringify(st.stake);
-      applyNightStake(st);
-      applyNightStake(st);
-      expect(JSON.stringify(st.stake), `${st.kind} : la clé change au 2ᵉ passage`).toBe(une);
-    }
   });
 });

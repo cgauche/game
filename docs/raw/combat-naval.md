@@ -368,7 +368,7 @@ De plus, tous les coups qui touchent une fois que le score de Blessures… est t
 > **réussi** », « tous les coups qui **touchent** ») sur une touche.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.654-674) → `VolleyShot`, `beginShipwreck`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `voie-d-eau`, `OPTIONAL_RULES`, `finalizeFastVoyage`, `runSeaDay`, `checkBattleOver` — `src/data/etats.json`, `src/data/sea-navigation.json`, `src/engine/conditions.ts`, `src/engine/policy.ts`, `src/engine/shipBuild.ts`, `src/engine/volley.ts`, +3 fichiers
+- `MDG 13` (l.654-674) → `VolleyShot`, `beginShipwreck`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `voie-d-eau`, `OPTIONAL_RULES`, `finalizeFastVoyage`, `runSeaDay`, `checkBattleOver` — `src/data/etats.json`, `src/data/sea-navigation.json`, `src/data/voyage-stakes.json`, `src/engine/conditions.ts`, `src/engine/policy.ts`, `src/engine/shipBuild.ts`, +4 fichiers
 - `MDG 14` (l.13, l.128) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `resolveVolley`, +75 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/localisation.json`, `src/data/regles.json`, +18 fichiers
 
 **État du code.** ✅ `applyHullCritical` (localisation, Équipage, Éclats, Voie d'eau, En flammes en GameOp, Critiques

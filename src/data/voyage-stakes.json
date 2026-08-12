@@ -222,10 +222,11 @@
     "label": "Exposition",
     "kind": "exposure",
     "template": "Échec : −10 en {chars} ; 2ᵉ échec : toutes les autres ; 3ᵉ+ : 1d10 Dégâts (ignorent les PA).",
+    "rule": "exposition",
     "source": {
       "book": "livre-de-base",
       "page": 181,
-      "note": "LDB 18 l.330/334"
+      "note": "LDB 18 l.330/334 — Test d'Exposition, celui-là même que l'étape terrestre de fin d'Étape convoque (EDOC 08 l.90)"
     }
   },
   {
@@ -381,6 +382,109 @@
       "book": "mer-des-griffes",
       "page": 104,
       "note": "MDG 13 l.66-75"
+    }
+  },
+  {
+    "id": "land-peril-survie",
+    "label": "Voyage éreintant — itinéraire de substitution",
+    "kind": "landPerilSurvie",
+    "template": "Réussi : un bon itinéraire de substitution est trouvé. Échec : tout le monde arrive un jour plus tard avec un État Exténué.",
+    "rule": "extenue",
+    "ruleCategory": "etats",
+    "source": {
+      "book": "livre-de-base",
+      "page": 263,
+      "note": "LDB 51 l.215 (table des péripéties de voyage, 4)"
+    }
+  },
+  {
+    "id": "land-peril-perception",
+    "label": "Attaqués ! — repérer l'embuscade",
+    "kind": "landPerilPerception",
+    "template": "Réussi : l'attaque est vue venir, personne n'est Surpris. Échec : le groupe tombe dans l'embuscade.",
+    "rule": "embuscade-surprise",
+    "source": {
+      "book": "livre-de-base",
+      "page": 263,
+      "note": "LDB 51 l.221 (table des péripéties de voyage, 10). MAISON : le RAW laisse la survenue au MJ (« ils peuvent même tomber dans une embuscade ») ; sans MJ elle est déterministe, l'issue modélisée en État Surpris."
+    }
+  },
+  {
+    "id": "land-forced-pace",
+    "label": "Attelage à l'allure forcée",
+    "kind": "landForcedPace",
+    "template": "Échec : les animaux repassent au pas et chacun teste sa Résistance ou gagne un État Exténué ; Échec Stupéfiant (−6 DR) : tirage sur les Problèmes de véhicule.",
+    "rule": "conduite-d-attelage",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 27,
+      "note": "EDOC 07 l.229 (Test par kilomètre, −10 par km déjà couru) et l.253 (Échec Stupéfiant)"
+    }
+  },
+  {
+    "id": "land-forced-pace-control",
+    "label": "Attelage incontrôlable — reprendre le contrôle",
+    "kind": "landForcedPaceControl",
+    "template": "Réussi : l'attelage est maîtrisé. Échec : Accident — 2d10 Blessures aux occupants, modifiées par le Bonus d'Endurance et les Points d'Armure (minimum 1).",
+    "rule": "conduite-d-attelage",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 28,
+      "note": "MAISON (#270) : EDOC 07 l.284-286 ne nomme aucun Test — « s'il ne prend pas des mesures pour l'arrêter » en 1d10 rounds. L'enjeu énonce la conséquence CODÉE (Accident, l.255), pas une règle de la Source."
+    }
+  },
+  {
+    "id": "sea-shipwreck-swim",
+    "label": "Naufrage — rejoindre la côte",
+    "kind": "shipwreckSwim",
+    "template": "Réussi : le nageur rejoint la côte, rescapé. Échec : emporté par les flots — il se noie.",
+    "rule": "natation",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "livre-de-base",
+      "page": 181,
+      "note": "LDB 18 l.344 (Noyade et Suffocation) ; naufrage MDG 13 l.674. Difficulté MAISON éditable (`sea-shipwreck-swim`, #244) — la Source ne la chiffre pas."
+    }
+  },
+  {
+    "id": "sea-embrigadement-ragot",
+    "label": "Embrigadement — retrouver l'équipage",
+    "kind": "embrigadementRagot",
+    "template": "Réussi : la trace des embrigadés est retrouvée, reste à les libérer. Échec : l'autre navire prend la mer — 1d10 membres d'équipage de plus perdus.",
+    "rule": "ragot",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 133,
+      "note": "MDG 15 l.245 (événement d'escale 1, Embrigadement)"
+    }
+  },
+  {
+    "id": "sea-embrigadement-discretion",
+    "label": "Embrigadement — libérer en douce",
+    "kind": "embrigadementDiscretion",
+    "template": "Réussi : les compagnons sont libérés dans l'ombre. Échec : repéré — 1d10 membres d'équipage de plus perdus.",
+    "rule": "discretion",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 133,
+      "note": "MDG 15 l.245 (événement d'escale 1, Embrigadement)"
+    }
+  },
+  {
+    "id": "sea-priere-manann",
+    "label": "Présage divin — Prière à Manann",
+    "kind": "sea-priere",
+    "template": "Le présage se joue sur ce Test : {manann} d'Humeur de Manann et {moral} de Moral — un présage favorable ne s'obtient qu'en réussissant, un présage funeste ne s'évite qu'ainsi.",
+    "rule": "priere",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 132,
+      "note": "MDG 15 l.197-198 (albatros, −2d10/−1d10) et l.230-232 (feu bleu, +2d10/+1d10)"
     }
   }
 ]

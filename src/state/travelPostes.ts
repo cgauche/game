@@ -21,7 +21,7 @@ import {
   type ActivityDef, type TravelActivityResult,
 } from '../engine/activities';
 import type { SkillRef } from '../engine/skills';
-import { refLabel, weatherStakeRef } from '../data';
+import { refLabel, weatherStakeRef, voyageStakeRef } from '../data';
 import { stageEncounterCategory } from '../engine/travelEncounter';
 import { rollEncounter, type EncounterCategory } from '../engine/travelTables';
 import { applyOps, type GameOp } from '../engine/ops';
@@ -38,7 +38,7 @@ import {
   isColdSeason, WEATHER_LABEL, type Weather, type Season,
 } from '../engine/travelStages';
 import { weatherTestMods } from '../engine/weatherTestMod'; // CANAL UNIQUE « Tests physiques » (#341) — jamais weatherPhysicalTestMod en direct
-import { hasCoat, partyHasTent, applyExposureFailure, isWeatherWarded } from '../engine/exposure';
+import { hasCoat, partyHasTent, applyExposureFailure, isWeatherWarded, exposureFirstFailChars } from '../engine/exposure';
 import { rationCount } from '../engine/provisions';
 import { itemFromGive, autoStowNewItem } from '../engine/items';
 import { effectiveSkillCharKey } from '../engine/skills';
@@ -389,6 +389,8 @@ function buildExposureSteps(state: { party: Combatant[] }, stage: StageContext):
     const st = monoStep({
       id: `expo-${id}`, kind: 'stageExposure', actor: h, icon: 'rest/cold', label: 'Exposition',
       rollLabel: 'Résistance', difficulty: diff as Difficulty,
+      // MÊME Test d'Exposition que la nuit de repos : EDOC 08 l.90 renvoie à LDB p181, donc MÊME entrée.
+      stake: voyageStakeRef('exposure', { chars: exposureFirstFailChars('froid') }),
       ligne: { test: { skill: 'resistance', char: 'endurance' } },
       menace: 'Exposition',
       meta: { weatherLabel: WEATHER_LABEL[stage.weather], warded: isWeatherWarded(h), coldSeason: isColdSeason(stage.season) },

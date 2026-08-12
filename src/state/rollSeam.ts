@@ -1179,6 +1179,15 @@ interface MonoBase {
   rollLabel?: string;
   /** Tag de DONNÉE `menace` (auto-succès du talent Résistance (Menace), LDB 10). */
   menace?: string;
+  /** ENJEU du jet (#1117). ENCORE optionnel, et le reste est CHIFFRÉ : des 43 sites d'appel du mint
+   *  en production, 20 étaient muets à la sonde `tsc` du lot (« `stake` requis ») ; 18 sont dotés,
+   *  il en reste DEUX, et c'est le MÊME maillon — les fabriques d'étape de `combat/triggeredTest.ts`
+   *  (l.203 simple, l.523 opposée), génériques : elles TRANSMETTENT `FlowTest.stake`, optionnel parce qu'un
+   *  Flow AUTHORÉ dans un document de scène n'a aujourd'hui aucun dataset d'enjeu où pointer
+   *  (3 sites, `BASELINE_FLOW` de `cascade-step-stake-guard`). Leur donner un repli générique serait
+   *  l'enjeu tautologique que le contrat interdit (« le transport n'en invente pas »,
+   *  `flowtest-stake-wiring.test.ts`). Le murage de cette famille attend donc CETTE porte-là, pas une
+   *  dotation de plus. */
   stake?: StakeRef;
   meta?: CascadeStepMeta;
   /** HYBRIDE jet + RÉVÉLATION (#1262 B5) : la charge riche qui met le jet en situation. */

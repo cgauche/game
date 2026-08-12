@@ -21,7 +21,9 @@ import miscastRawJson from './miscast.json';
 
 
 /** Entrées d'enjeu de VOYAGE encore sans fiche — chacune attend SA curation verbatim (patron L0a).
- *  Mesuré le 2026-08-06 : 12 sur 33. Retirer un id d'ici est le geste de solde. */
+ *  Mesuré le 2026-08-06 : 12 sur 33 ; 11 sur 41 depuis que l'Exposition renvoie à SA fiche (#1262 V2
+ *  L6b — EDOC 08 l.90 convoque le Test de LDB p181 : UNE entrée sert la nuit ET l'Étape terrestre).
+ *  Retirer un id d'ici est le geste de solde. */
 const VOYAGE_SANS_REGLE = [
   // Fluvial — périls de rivière (MSRC 7 : tables de dangers) et esquive d'éclats.
   'river-peril-nav',
@@ -35,7 +37,6 @@ const VOYAGE_SANS_REGLE = [
   'sea-mal-de-mer',
   'sea-tonneau-expose',
   'sea-tonneau-contamine',
-  'exposure',
   'sea-degagement',
 ];
 
@@ -81,7 +82,7 @@ describe('cliquet — un enjeu porte sa RÈGLE (#1117)', () => {
   });
 
   it('le stock DÉCROÎT : le plafond mesuré ne remonte pas', () => {
-    expect(VOYAGE_STAKES.filter((e) => !e.rule).length).toBeLessThanOrEqual(12);
+    expect(VOYAGE_STAKES.filter((e) => !e.rule).length).toBeLessThanOrEqual(11);
   });
 
   /**

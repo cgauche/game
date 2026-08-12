@@ -198,8 +198,11 @@ export interface VoyageStakeEntry {
   label: string;
   kind: string;
   template: string;
-  /** Fiche de règle du Codex derrière l'étape (`regles.json`). */
+  /** Id du FOYER de la règle — l'entité qui la PORTE (Compétence, État…), à défaut la fiche de cadre
+   *  de `regles.json`. Même contrat que `flow-stakes`/`combat-stakes`. */
   rule?: string;
+  /** Catégorie Codex du foyer (`'regles'` par défaut, `'skills'`, `'etats'`…). */
+  ruleCategory?: string;
   source: SourceRef;
 }
 export const VOYAGE_STAKES = voyageStakesJson as VoyageStakeEntry[];
@@ -460,7 +463,7 @@ function stakeEntry(key: StakeKey): { text?: string; rule?: { category: string; 
   }
   const e = VOYAGE_STAKES.find((x) => x.kind === key.kind);
   if (!e) return undefined;
-  const rule = kindRule(e.rule);
+  const rule = kindRule(e.rule, e.ruleCategory ?? 'regles');
   return { text: e.template, ...(rule ? { rule } : {}) };
 }
 

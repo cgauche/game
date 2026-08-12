@@ -650,6 +650,10 @@ registerCascadeApplier('riverPerilCheck', (get, set, step) => {
     const skillId = String(step.meta?.navSkill ?? riverPilotSkill(findVehicleById(get().travelPlan?.vehicle?.creatureId ?? '')?.ship?.sail != null));
     const pilot = riverPilot(get, skillId as 'voile' | 'ramer');
     if (!hasPilot || !pilot) return resolveRiverPerilConsequence(get, set, peril, { ...step, result: null } as CascadeStep, rng);
+    // Un péril à Test PORTE sa conséquence (`onFail`, exigée par le schéma de `river-perils`) : sans
+    // elle, il n'y a rien à mettre en jeu, donc pas de jet à ouvrir — la conséquence se résout seule.
+    const onFail = peril.onFail;
+    if (!onFail) return resolveRiverPerilConsequence(get, set, peril, { ...step, result: null } as CascadeStep, rng);
     const st = monoStep({
       id: `${step.id}-nav`, kind: 'riverPerilNav', actor: pilot.actor, icon: 'nautical/snag', label: `${peril.label} — évitement`,
       rollLabel: String(step.meta?.navLabel ?? riverPilotSkillLabel(get)), difficulty: NAV_BASE_DIFFICULTY,
@@ -657,7 +661,7 @@ registerCascadeApplier('riverPerilCheck', (get, set, step) => {
         test: { skill: skillId }, valeur: pilot.value, soutien: pilot.support,
         surLaCible: navPenaltyMods({ drift: !!step.meta?.navDrift, outOfControl: !!step.meta?.navOutOfControl }),
       },
-      ...(peril.onFail ? { stake: voyageStakeRef('riverPerilNav', { hits: peril.onFail.hullHits, damagePerHit: peril.onFail.damagePerHit }) } : {}),
+      stake: voyageStakeRef('riverPerilNav', { hits: onFail.hullHits, damagePerHit: onFail.damagePerHit }),
       meta: { perilId, savoir: Number(step.meta?.savoir ?? 0) },
     });
     return st ? { insert: [st] } : undefined;

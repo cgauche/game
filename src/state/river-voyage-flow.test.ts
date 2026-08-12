@@ -4,7 +4,7 @@ import { buildRiverPlan, buildRiverDayCascade, runRiverDays, hasBatelier, applyE
 import { buildApi } from './devtools';
 import { cascadeAppliers } from './cascade';
 import { inexplique, soutienDe } from './cascadeTestKit';
-import { findSkillById, resolveStake, voyageStakeRef, VOYAGE_STAKES, regles } from '../data';
+import { findSkillById, resolveStake, voyageStakeRef, VOYAGE_STAKES, regles, skills, etats } from '../data';
 import { creditBourse } from './bourseFlow';
 import { seedBattleRng } from './battleRng';
 import { createHero, skillCharacteristicById } from '../engine/character';
@@ -739,9 +739,14 @@ describe('renvoi Codex au niveau ÉTAPE (#1117)', () => {
   });
 
   it('chaque fiche référencée EXISTE au catalogue (aucun renvoi mort)', () => {
+    // Le foyer d'un enjeu de voyage peut être une ENTITÉ (la Compétence jetée, l'État subi) : sa
+    // catégorie voyage avec l'id (`ruleCategory`, défaut `regles`) — le catalogue interrogé suit.
+    const FOYERS: Record<string, { id: string }[]> = { regles, skills, etats };
     for (const e of VOYAGE_STAKES) {
       if (!e.rule) continue;
-      expect(regles.some((r) => r.id === e.rule), `fiche introuvable : ${e.rule}`).toBe(true);
+      const cat = e.ruleCategory ?? 'regles';
+      expect(FOYERS[cat], `catégorie de foyer inconnue : ${cat}`).toBeTruthy();
+      expect(FOYERS[cat].some((r) => r.id === e.rule), `fiche introuvable : ${cat}:${e.rule}`).toBe(true);
     }
   });
 

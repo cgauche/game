@@ -10,6 +10,7 @@ import { skillBaseValue, testValue, soutienDetail } from '../engine/skills';
 import { skillCharacteristicById } from '../engine/character';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { inexplique, soutienDe } from './cascadeTestKit';
+import { resolveStake } from '../data';
 
 /**
  * EMBRIGADEMENT — recouvrement d'équipage (MDG 15 l.245, #164). La perte de 2d10 marins est persistée,
@@ -95,6 +96,28 @@ describe('Embrigadement — recouvrement (MDG 15 l.245, #164)', () => {
     expect(get().pendingCascade).toBeNull();
     expect(get().vessel!.crewLost).toBe(0);
     expect(partyMoneyTotal(get).gold).toBe(100); // bourse intacte
+  });
+
+  /**
+   * ENJEU (#1117/#1262 V2 L6b) — mesuré sur le CHEMIN RÉEL : les deux étapes-jet de la séquence
+   * portent leur `stake`, et le texte rendu est celui que `resolveStake` produit pour la modale.
+   * Le renvoi descend à la Compétence jetée : c'est elle qui porte la règle du Test.
+   */
+  it('les deux étapes-jet DISENT ce qu’elles mettent en jeu (Ragot, puis Discrétion)', () => {
+    resolvePortArrival(get, set, undefined, ones);
+    choose('tenter');
+    const ragot = get().pendingCascade!.participants[get().pendingCascade!.cursor];
+    expect(ragot.kind).toBe('embrigadementRagot');
+    const eRagot = resolveStake(ragot.stake!);
+    expect(eRagot.text, 'le joueur doit lire ce que l’échec coûte').toContain('1d10 membres d\'équipage de plus');
+    expect(eRagot.rule).toEqual({ category: 'skills', id: 'ragot' });
+    jet(true);
+    choose('discretion');
+    const disc = get().pendingCascade!.participants[get().pendingCascade!.cursor];
+    expect(disc.kind).toBe('embrigadementDiscretion');
+    const eDisc = resolveStake(disc.stake!);
+    expect(eDisc.text).toContain('libérés');
+    expect(eDisc.rule).toEqual({ category: 'skills', id: 'discretion' });
   });
 
   it('Ragot RATÉ : l\'autre navire lève l\'ancre → 1d10 marins de plus perdus', () => {

@@ -25,7 +25,7 @@ import { payFromGroup } from './bourseFlow';
 import { partyAssisted } from '../engine/skills';
 import { toMoney } from '../engine/money';
 import { DIFFICULTY_LABELS, type Combatant, type Difficulty } from '../engine/types';
-import { refLabel } from '../data';
+import { refLabel, voyageStakeRef } from '../data';
 
 const num = (v: unknown, d = 0): number => (typeof v === 'number' ? v : d);
 const diff = (v: unknown, d: Difficulty): Difficulty => (typeof v === 'string' ? (v as Difficulty) : d);
@@ -75,6 +75,7 @@ function ragotStep(
     icon: 'nav/dice',
     rollLabel: refLabel('skills', { id: 'ragot' }),
     difficulty: gossipDiff,
+    stake: voyageStakeRef('embrigadementRagot'),
     ligne: lead.ligne,
     label: `Retrouver l'équipage — Ragot ${DIFFICULTY_LABELS[gossipDiff]}`,
     meta: { recover, ransomCO, extraLoss, stealthDiff },
@@ -153,6 +154,7 @@ registerCascadeApplier(
       icon: 'nav/dice',
       rollLabel: refLabel('skills', { id: 'discretion' }),
       difficulty: stealthDiff,
+      stake: voyageStakeRef('embrigadementDiscretion'),
       ligne: { test: { skill: 'discretion' }, valeur: lead.value, soutien: lead.support },
       label: `Libérer en douce — Discrétion ${DIFFICULTY_LABELS[stealthDiff]}`,
       meta: { recover, extraLoss },

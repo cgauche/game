@@ -57,10 +57,12 @@ function hasTopLevelKey(lit: string, name: string): boolean {
 /** Étapes qui LANCENT (cible posée), sans `stake` — renvoie leurs numéros de ligne (1-based). */
 export function stepsWithoutStake(src: string): number[] {
   const s = stripLiterals(src);
-  // POSE DIFFÉRÉE : un flux qui dote ses étapes APRÈS construction (`st.stake = nightStake(st.kind)`,
-  // cascade de nuit) couvre ses littéraux hors de leur portée lexicale — le scan ne peut pas les lire
-  // comme muets. La dotation reste vérifiée par le catalogue d'enjeux de CE flux.
-  if (/\.stake\s*=\s*/.test(s)) return [];
+  // VOLET MORT, RETIRÉ (#1262 V2 L6b) : l'abandon de fichier sur POSE DIFFÉRÉE (`st.stake = …`).
+  // Il masquait les 8 étapes de la nuit de repos, dotées APRÈS construction par une fabrique — elles
+  // le sont désormais À LA DÉCLARATION (`monoStep({ …, stake })`, `restFlow`), et plus AUCUN site de
+  // `src/state`/`src/scenes` n'affecte `stake` après coup (mesuré : 0 occurrence). Un volet qui ne
+  // peut plus rien abandonner rendait le scan aveugle sur un fichier entier au premier `.stake =`
+  // réintroduit — c'est ce trou-là qui meurt avec lui.
   const lines: number[] = [];
   const seen = new Set<number>();
   // Les formes qui LANCENT, telles que `stepInteraction` les reconnaît (`state/cascade.ts`) :
@@ -252,13 +254,11 @@ export function literalTestsWithoutStake(src: string): number[] {
  *  sur 11 fichiers, dont 7 que les trois scans précédents ne voyaient PAS ; 12 sur 8 fichiers depuis
  *  que les producteurs de `testFlow` sont dotés ; 4 sur 3 fichiers depuis que le HORS-COMBAT est doté
  *  (Test étendu, Commandant d'équipe, Avantage par Compétence, Ragot d'auberge, marché terrestre ×2,
- *  Chirurgie/rééducation, Recherche active, port ×3). SUR-ENSEMBLE de `BASELINE_FLOW` (les arguments
- *  de `testFlow` ont la même forme), donc chaque fichier y compte au moins autant. Décroissante comme
- *  les autres : un site doté ABAISSE sa ligne. */
+ *  Chirurgie/rééducation, Recherche active, port ×3) ; 3 sur 2 depuis que la Prière d'un Présage dit
+ *  le sien (#1262 V2 L6b) — `src/state` est SOLDÉ pour cette forme. SUR-ENSEMBLE de `BASELINE_FLOW`
+ *  (les arguments de `testFlow` ont la même forme), donc chaque fichier y compte au moins autant.
+ *  Décroissante comme les autres : un site doté ABAISSE sa ligne. */
 const BASELINE_LITERAL: Record<string, number> = {
-  // `seaVoyageFlow.ts` : jet de bord — dernier descripteur muet de `src/state`. La ligne NOMME le site
-  // restant : toute dotation l'abaisse à 0, et le fichier ne peut pas en regagner un sans rougir.
-  'state/seaVoyageFlow.ts': 1,
   // Flows AUTHORÉS de scène (couverture `src/scenes`) — mêmes sites que `BASELINE_FLOW`, même dette :
   'scenes/test-scenarios/opera.ts': 2,
   'scenes/test-scenarios/piege-caveau.ts': 1,
@@ -275,32 +275,22 @@ const BASELINE_FLOW: Record<string, number> = {
   'scenes/test-scenarios/piege-caveau.ts': 1, // Athlétisme (esquiver les piques de la dalle) : idem
 };
 
-/** Baseline NOMINATIVE (fichier → étapes qui lancent, encore sans enjeu). ZÉRO ailleurs.
- *  Stock RE-MESURÉ le 2026-08-12 (#1262 V2 L6) : 10 étapes muettes sur 5 fichiers, toutes MONO
- *  (`monoStep`). Ce que le scan TEXTUEL mesure est un SOUS-ENSEMBLE de ce que le TYPE verrait : rendre
- *  `stake` requis sur `MonoSpec`/`BandSpec`/`HostSpec`/`RollRequest` rougit 49 sites de `src/state`
- *  (mesure tsc du lot) — la pose DIFFÉRÉE (`st.stake = …`, `restFlow`) et le transport optionnel
- *  (`stake?: StakeRef` relayé) échappent au texte. Le murage au type se fait FAMILLE par famille, le
- *  jour où la famille tombe à 0 : `TableSpec` est la première (L6). */
+/**
+ * Baseline NOMINATIVE (fichier → étapes qui lancent, encore sans enjeu). VIDE depuis #1262 V2 L6b :
+ * les 12 sites terrestres/maritimes qui restaient muets (périls de route ×2, attelage forcé ×2,
+ * Exposition d'Étape, Natation du naufrage, Embrigadement ×2, Activités en mer ×2, Prière d'un
+ * Présage) sont dotés, et la nuit de repos pose son enjeu À LA DÉCLARATION.
+ *
+ * CE QUE CE SCAN GARDE (le type ne l'attrape pas) : les étapes montées À LA MAIN, hors mint — un
+ * littéral `{ kind, actorId, target, … }` que rien n'oblige à passer par `monoStep` (`shipwreck.ts`
+ * en produit un). Baseline vide = tout site NEUF, minté ou manuscrit, rougit.
+ */
 const BASELINE: Record<string, number> = {
-  // VOYAGE (fluvial + maritime) = 0 : le périmètre soldé par #1117.
-  // Une ACTIVITÉ en mer (MDG 15 l.266-306) est un CHOIX du joueur : ce qu'elle met en jeu EST
-  // l'activité choisie, énoncée par son panneau de sélection — l'étape ne redit pas le choix.
-  'state/seaActivities.ts': 2,
-  // HORS périmètre déjà soldé — stock gelé et décroissant : chaque famille dotera ses enjeux avec le
-  // lot qui la traite (le catalogue `voyage-stakes.json` est déjà le gabarit à suivre).
-  'state/travelFlow.ts': 4, // voyage TERRESTRE : périls de route (Survie/Perception), attelage forcé ×2
-  'state/travelPostes.ts': 1, // Exposition de fin d'Étape terrestre
-  'state/shipwreck.ts': 1, // Natation du naufrage
-  'state/embrigadementFlow.ts': 2, // Ragot + Discrétion de l'embrigadement
-  // COMBAT — reste du stock mesuré, chacun avec le VERROU qui l'empêche d'être doté aujourd'hui :
-  // (`combat/triggeredTest.ts` est SOLDÉ : ses deux fabriques d'étape TRANSMETTENT `FlowTest.stake` —
-  //  la dette est remontée chez les PRODUCTEURS de Flow, mesurés par `BASELINE_FLOW` ci-dessus.)
-  // (gate d'Action SOLDÉ : `CATEGORY_BY_SOURCE_KIND` est descendue en couche neutre — `engine/types.ts`,
-  //  consommée par `gameIso` ET `state` — et l'étape renvoie à l'ENTITÉ qui exige le jet.)
   // ÉTAPES À TABLE : le TYPE les tient (#1262 V2 L6, `TableSpec.stake` requis) — plus de baseline, plus
   // de volet de scan (cf. `stepsWithoutStake`). L'enjeu posé à la construction DESCEND ensuite à la
   // ligne jouée, `stakeAtTableRow` (`state/cascade.ts`).
+  // ÉTAPES MONO : `MonoSpec.stake` reste optionnel — le stock restant (2 relais génériques) et son
+  // verrou sont chiffrés au champ lui-même (`rollSeam.ts`), pas ici.
 };
 
 describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', () => {

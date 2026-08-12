@@ -1152,8 +1152,14 @@ registerCascadeApplier('sea-force-pace', (get, set, step) => {
   return { consequences: freeCons(j) };
 });
 
-/** Prière d'un Présage (ch.15 l.236, `klass:'hero-test'`) : bon présage → il faut RÉUSSIR pour
- *  l'appliquer ; mauvais présage → RÉUSSIR l'évite (`manannD >= 0 ? success : !success`, logique
+/** Compte SIGNÉ de d10 d'un présage, tel que le joueur le lit (« +2d10 » / « −1d10 ») — le signe EST
+ *  le sens du présage (favorable / funeste), il ne se perd pas dans un texte d'enjeu. */
+function signedD10(n: number): string {
+  return `${n < 0 ? '−' : '+'}${Math.abs(n)}d10`;
+}
+
+/** Prière d'un Présage (MDG 15 l.197-198 albatros / l.231-232 feu bleu, `klass:'hero-test'`) : bon
+ *  présage → il faut RÉUSSIR pour l'appliquer ; mauvais présage → RÉUSSIR l'évite (`manannD >= 0 ? success : !success`, logique
  *  inchangée). `tell()` pour la même raison recap que `sea-force-pace` ci-dessus. La reprise du jour à
  *  la fermeture est portée par `dispatchCascadeDone` (purpose `test` en mer → `runSeaDay`), pas ici. */
 registerCascadeApplier('sea-priere', (get, set, step) => {
@@ -2335,10 +2341,14 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
           skill: 'priere',
           actionLabel: 'Prière',
           difficulty: pd,
+          // Le SIGNE des dés dit de quel présage il s'agit : favorable, il ne s'obtient qu'en
+          // réussissant ; funeste, il ne s'évite qu'ainsi (applier `sea-priere`).
+          stake: voyageStakeRef('sea-priere', { manann: signedD10(manannD), moral: signedD10(moraleD) }),
         }, 'sea-priere', { manannD, moraleD });
         return;
       }
-      // Pas de Test de Prière requis, ou aucun prêtre : bon/mauvais présage s'applique d'office (RAW l.236).
+      // Pas de Test de Prière requis, ou aucun prêtre : bon/mauvais présage s'applique d'office
+      // (MDG 15 l.197-198 / l.231-232 : « sauf si … réussit un Test de Prière »).
       if (manannD) tellManann(get, set, manannD);
       if (moraleD && ship) {
         const delta = Math.sign(moraleD) * rollDice(Math.abs(moraleD), 10, rng);

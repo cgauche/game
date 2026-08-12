@@ -43,12 +43,11 @@ import { applyForcedMarch } from '../engine/travel';
 import { registerCascadeApplier, startCascade } from './cascade';
 import { nightBands, registerNightBandApplier, nightRowId, genuineExposureFail, nextExposureWave, exposureWaveBand } from './nightBands';
 import { freeCons, testSkillLabel, monoStep, choiceStep, pousseSi, type BuiltCascadeStep } from './rollSeam';
-import type { CascadeStep, CascadeStepMeta } from './pendings';
+import type { CascadeStepMeta } from './pendings';
 import { isRation, feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
 import { toBrass, fromBrass, formatMoney, priceToMoney, type Money } from '../engine/money';
 import { payFromGroup } from './bourseFlow';
 import { findTrappingById, nightStakeRef, type StakeRef } from '../data';
-import { isNightTestKind } from '../engine/types';
 import { minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { runDailyUpkeep, dayIndex } from './upkeep';
 import { continueTravelAfterNight } from './travelFlow';
@@ -247,20 +246,10 @@ function collectContagion(party: Combatant[]): ContagionSpec[] {
 //    — zéro duplication de formule vs la nuit eager (sleepParty/restRecovery). Une défaillance
 //    impacte la suite (escalade Exposition, abri → nombre de jets) → c'est pourquoi c'est séquentiel.
 
-/**
- * DOTATION de l'ENJEU d'une étape de nuit — FABRIQUE UNIQUE (#1117).
- *
- * La nuit a DEUX bâtisseurs (les Tests d'entretien différés, et les étapes construites par
- * `buildNightCascade`) : tant que chacun posait `stake` à sa façon, le second ÉCRASAIT la clé du
- * premier — l'étape « Blessé » perdait son symptôme en chemin et renvoyait à l'intro du chapitre des
- * maladies (défaut vu en RECETTE, invisible aux tests qui n'appelaient qu'un seul bâtisseur).
- * Les deux passent désormais ICI : la clé se DÉRIVE de l'étape (son `kind`, et l'ENTRÉE JOUÉE portée
- * par son `meta`), donc redoter une étape est IDEMPOTENT — plus aucun ordre de passage ne compte.
- */
-export function applyNightStake(st: CascadeStep): void {
-  if (!isNightTestKind(st.kind)) return; // hors vocabulaire de nuit (révélation, agrégat) : rien à mettre en jeu
-  const entryId = typeof st.meta?.symptomId === 'string' ? st.meta.symptomId : undefined;
-  st.stake = nightStakeRef(st.kind, entryId);
+/** Symptôme JOUÉ par un Test d'entretien différé, quand le producteur en nomme un — l'ENTRÉE que la
+ *  clé d'enjeu doit nommer pour que le renvoi descende à SA fiche (et non à l'intro du chapitre). */
+function symptomOf(meta: CascadeStepMeta | undefined): string | undefined {
+  return typeof meta?.symptomId === 'string' ? meta.symptomId : undefined;
 }
 
 /** BANDE d'Exposition au froid des campeurs — PREMIÈRE vague seulement (`count` = nombre TOTAL de
@@ -279,10 +268,10 @@ function buildExposureBand(party: Combatant[], camperIds: string[], count: numbe
     const coat = exposureCoatMods(h).mods ?? [];
     const st = monoStep({ id: `expo-${id}`, kind: 'exposure', actor: h, label: 'Exposition', icon: 'rest/cold',
       rollLabel: 'Résistance', difficulty: 'intermediaire',
+      stake: nightStakeRef('exposure'),
       ligne: { valeur: resVal, valeurEtrangere: true, surLaCible: coat } });
     pousseSi(steps, st);
   }
-  for (const st of steps) applyNightStake(st);
   return exposureWaveBand(steps, 'froid', count);
 }
 
@@ -394,12 +383,11 @@ registerNightBandApplier('dessoulage', (_get, _set, band, row, hero) => {
   const hangover = monoStep({
     id: `dessoulageHangover-${hero.id}`, kind: 'dessoulageHangover', actor: hero, icon: 'time/night',
     rollLabel: testSkillLabel(alcool) ?? 'Résistance', label: 'Gueule de bois', difficulty: 'intermediaire',
+    stake: nightStakeRef('dessoulageHangover'),
     ligne: { test: alcool },
     ...(band.meta?.day !== undefined ? { meta: { day: band.meta.day } } : {}),
   });
-  const insert = hangover ? [hangover] : [];
-  for (const st of insert) applyNightStake(st);
-  return { consequences: freeCons(d.log), insert };
+  return { consequences: freeCons(d.log), insert: hangover ? [hangover] : [] };
 });
 
 registerNightBandApplier('dessoulageHangover', (get, _set, _band, row, hero) => {
@@ -466,6 +454,8 @@ export function deferredUpkeepSteps(party: Combatant[], deferred: DeferredUpkeep
       // l'alcool, LDB 09 l.485) ; sans ids, le repli reste la Résistance de l'entretien (LDB 18 l.338).
       icon: UPKEEP_STEP_ICON[t.kind] ?? 'nav/dice', rollLabel: testSkillLabel(t.test ?? {}) ?? 'Résistance',
       difficulty: t.difficulty,
+      // L'ENTRÉE JOUÉE (le symptôme dû ce jour) entre dans la clé : le renvoi descend à SA fiche.
+      stake: nightStakeRef(t.kind, symptomOf(t.meta as CascadeStepMeta | undefined)),
       // Ligne montée par le wrapper d'entretien (`upkeep.ts`, `rollStep`) AU MOMENT du Test dû : la
       // remonter ici la calculerait sur un héros que l'entretien a changé entre-temps.
       montee: { base: t.base, ...(t.mods?.length ? { mods: t.mods } : {}), target: t.target, ...(t.clamped ? { clamped: t.clamped } : {}) },
@@ -473,7 +463,6 @@ export function deferredUpkeepSteps(party: Combatant[], deferred: DeferredUpkeep
       // franchis font trois bandes de Dessoûlage, pas trois rangées de même id dans une seule.
       meta: { ...t.meta, day: t.day } as CascadeStepMeta });
     if (!st) continue;
-    applyNightStake(st);
     steps.push(st);
   }
   return steps;
@@ -519,6 +508,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     if (!h || h.dead) continue;
     const st = monoStep({ id: `march-${id}`, kind: 'forcedMarch', actor: h, label: 'Marche forcée', icon: 'travel/foot',
       rollLabel: 'Résistance', difficulty: 'intermediaire',
+      stake: nightStakeRef('forcedMarch'),
       ligne: { test: { skill: 'resistance', char: 'endurance' } } });
     pousseSi(steps, st);
   }
@@ -530,6 +520,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     if (!h || h.dead) continue;
     const st = monoStep({ id: `contagion-${c.heroId}-${steps.length}`, kind: 'contagion', actor: h, label: `Contagion (${c.diseaseName})`, icon: 'medical/infection',
       rollLabel: 'Résistance', difficulty: c.difficulty,
+      stake: nightStakeRef('contagion'),
       // `resVal` = `restResistVal` (E effective + avances de Résistance, `engine/rest.ts`) : une AUTRE
       // formule que `testValue` (aucune pénalité d'État sur un Test passif) — déclarée comme telle.
       ligne: { valeur: c.resVal, valeurEtrangere: true },
@@ -551,6 +542,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
       if (best) {
         const st = monoStep({ id: 'abri', kind: 'shelter', actor: best.actor, label: 'Abri de fortune', icon: 'rest/camp',
           rollLabel: 'Survie en extérieur', difficulty: 'intermediaire',
+          stake: nightStakeRef('shelter'),
           // `best.value` porte le Soutien FONDU : le monteur le ressort en ligne NOMMÉE (LDB 12 l.187-200),
           // et décompose le reste en Niveau de Compétence nu + composantes.
           ligne: { test: { skill: 'survie-en-exterieur' }, valeur: best.value, soutien: best.support },
@@ -573,6 +565,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
       // APPROXIMATIF ici — rien à décomposer, mais la base EST nue (3ᵉ régime à venir, ticket).
       const st = monoStep({ id: `recov-${h.id}`, kind: 'recovery', actor: h, label: 'Récupération', icon: 'rest/bed',
         rollLabel: 'Résistance', difficulty: 'accessible',
+        stake: nightStakeRef('recovery'),
         ligne: { valeur: restResistVal(h), valeurEtrangere: true } });
       pousseSi(steps, st);
     } else {
@@ -584,17 +577,13 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     if (h.nightmares) {
       const st = monoStep({ id: `nm-${h.id}`, kind: 'nightmare', actor: h, label: 'Cauchemars', icon: 'creature/scream',
         rollLabel: 'Calme', difficulty: 'facile',
+        stake: nightStakeRef('nightmare'),
         // `calmeVal` : FM effective + avances de Calme (formule locale, hors `testValue`).
         ligne: { valeur: calmeVal(h), valeurEtrangere: true } });
       pousseSi(steps, st);
     }
   }
 
-
-  // ENJEU (#331/#1117) : chaque étape de nuit porte ce qu'elle met en jeu, affiché sous le titre par
-  // `CascadeModal`. MÊME fabrique que les Tests différés (`applyNightStake`) : la clé se dérive de
-  // l'étape, donc ce second passage ne peut plus écraser l'ENTRÉE JOUÉE posée par le premier.
-  for (const st of steps) applyNightStake(st);
   // BANDES (#1117 L3) : les Tests qui répondent à la MÊME entrée de règle le MÊME jour font UNE
   // fenêtre, une rangée par héros appelé — 1er des TROIS bâtisseurs à passer par la fabrique.
   const banded = nightBands(steps);
