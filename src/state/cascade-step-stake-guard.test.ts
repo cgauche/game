@@ -73,10 +73,16 @@ export function stepsWithoutStake(src: string): number[] {
   //  - `actor:` = la DÉCLARATION d'un mint MONO (`monoStep`, #1262) : la cible n'est plus même montée
   //    au site, c'est le mint qui la pose — seul le porteur déclaré (`actor`, jamais `actorId`) et le
   //    `kind` restent visibles. Même raison que ci-dessus : sans elle, migrer rendrait le cliquet vert ;
-  //  - `'table'` = un TIRAGE SUR TABLEAU (`table: <expr>`), qui met tout autant en jeu (Blessure
-  //    critique, Oups, Colère des dieux, mutation) et n'a PAS de `target` — angle mort jumeau de
-  //    celui d'`interactive`, levé ici.
-  for (const m of s.matchAll(/(?<=[{,]\s*)(?:target\s*(?::\s*[^\s,}]|[,}])|table\s*:\s*[^\s,}]|actor\s*:\s*[^\s,}])|\.\.\.rollStep\(/g)) {
+  // VOLET MORT, RETIRÉ (#1262 V2 L6) : le TIRAGE SUR TABLEAU (`table:`). DEUX fabriques seulement
+  // peuvent produire une étape à table qui LANCE (marque `BuiltCascadeStep`, lint de forge mesuré par
+  // `built-brand-lint`) — `tableStep`/`tableStepDone`, dont `TableSpec.stake` est REQUIS
+  // (`rollSeam.ts`) : un tirage muet ne compile plus. La 3ᵉ fabrique exemptée du lint, `revealToStep`,
+  // ne peut plus en produire du tout : son `opts.table` est une déclaration RÉSOLUE au type
+  // (`CascadeTableDone`, `revealStep.ts`) — c'était le trou que ce volet masquait en le comptant en
+  // baseline. Un scan qui ne peut plus rien attraper double le compilateur ; la preuve du murage est
+  // la paire de sondes TUEUSES : `built-brand-lint.test.ts` (enjeu requis) et `reveal.test.ts`
+  // (« `revealToStep` ne produit jamais un tirage À FAIRE »).
+  for (const m of s.matchAll(/(?<=[{,]\s*)(?:target\s*(?::\s*[^\s,}]|[,}])|actor\s*:\s*[^\s,}])|\.\.\.rollStep\(/g)) {
     const i = m.index!;
     let depth = 0;
     let start = -1;
@@ -158,7 +164,12 @@ const BASELINE_REQ: Record<string, number> = {
   // ne décrit aucun jet propre — elle route les étapes DÉJÀ mintées vers M ou I. L'enjeu de ces étapes
   // est l'Activité choisie, énoncée par son panneau (même arbitrage que la baseline d'étapes).
   'state/seaActivities.ts': 1,
-  'state/seaVoyageFlow.ts': 3, // jets de bord passant par le seam : à doter avec le lot maritime
+  // RE-MESURÉ le 2026-08-12 (#1262 V2 L6) : les trois sites (`seaVoyageFlow.ts:1413/1512/1565`) sont
+  // des SONDES DE SURFACE (`resolveSurface`), même nature que celle de `seaActivities.ts` ci-dessus —
+  // elles ne décrivent aucun jet propre, elles routent des étapes DÉJÀ mintées (dotées, elles) vers M
+  // ou I. Ce ne sont pas des jets de bord à doter : c'est la FORME `RollRequest` employée en argument
+  // de routage que le scan ne distingue pas de celle employée en description.
+  'state/seaVoyageFlow.ts': 3,
 };
 
 /**
@@ -265,10 +276,12 @@ const BASELINE_FLOW: Record<string, number> = {
 };
 
 /** Baseline NOMINATIVE (fichier → étapes qui lancent, encore sans enjeu). ZÉRO ailleurs.
- *  Stock RE-MESURÉ le 2026-08-06 (#1117 L2) à la FORME : l'ancienne mesure filtrait sur
- *  `interactive: true` + `result: null`, deux champs qui ne gouvernent pas le rendu d'une étape mono
- *  (cf. en-tête) — 11 sites vus, 27 réels, puis 33 quand les étapes à TABLE sont entrées dans la
- *  mesure. 20 dotés à ce jour. */
+ *  Stock RE-MESURÉ le 2026-08-12 (#1262 V2 L6) : 10 étapes muettes sur 5 fichiers, toutes MONO
+ *  (`monoStep`). Ce que le scan TEXTUEL mesure est un SOUS-ENSEMBLE de ce que le TYPE verrait : rendre
+ *  `stake` requis sur `MonoSpec`/`BandSpec`/`HostSpec`/`RollRequest` rougit 49 sites de `src/state`
+ *  (mesure tsc du lot) — la pose DIFFÉRÉE (`st.stake = …`, `restFlow`) et le transport optionnel
+ *  (`stake?: StakeRef` relayé) échappent au texte. Le murage au type se fait FAMILLE par famille, le
+ *  jour où la famille tombe à 0 : `TableSpec` est la première (L6). */
 const BASELINE: Record<string, number> = {
   // VOYAGE (fluvial + maritime) = 0 : le périmètre soldé par #1117.
   // Une ACTIVITÉ en mer (MDG 15 l.266-306) est un CHOIX du joueur : ce qu'elle met en jeu EST
@@ -280,22 +293,14 @@ const BASELINE: Record<string, number> = {
   'state/travelPostes.ts': 1, // Exposition de fin d'Étape terrestre
   'state/shipwreck.ts': 1, // Natation du naufrage
   'state/embrigadementFlow.ts': 2, // Ragot + Discrétion de l'embrigadement
-  // FAUX POSITIF de FORME, entré dans la mesure le 2026-08-10 (#1262) : `revealToStep` rapporte un
-  // tirage DÉJÀ RÉSOLU (`table.result` posé par son producteur, qui a lui-même fait descendre l'enjeu
-  // à la ligne jouée via `tableStepResolved`) — `stepInteraction` la classe `'affichage'`, elle ne
-  // lance rien. Le scan est TEXTUEL : il voit le champ `table`, pas son résultat. Le site n'est pas
-  // neuf, il était INVISIBLE : le scan matche `table:` mais pas le raccourci `table,`, la forme qu'il
-  // portait jusqu'ici. Angle mort à lever (couvrir `table,` comme `target,` l'est déjà), ce qui
-  // demande de re-mesurer TOUT le stock — le geste porte son ticket : #1271.
-  'state/revealStep.ts': 1,
   // COMBAT — reste du stock mesuré, chacun avec le VERROU qui l'empêche d'être doté aujourd'hui :
   // (`combat/triggeredTest.ts` est SOLDÉ : ses deux fabriques d'étape TRANSMETTENT `FlowTest.stake` —
   //  la dette est remontée chez les PRODUCTEURS de Flow, mesurés par `BASELINE_FLOW` ci-dessus.)
   // (gate d'Action SOLDÉ : `CATEGORY_BY_SOURCE_KIND` est descendue en couche neutre — `engine/types.ts`,
   //  consommée par `gameIso` ET `state` — et l'étape renvoie à l'ENTITÉ qui exige le jet.)
-  // ÉTAPES À TABLE : SOLDÉES (vague 4b). L'enjeu se pose à la construction PUIS DESCEND à la ligne
-  // jouée après le dé — `stakeAtTableRow` (`state/cascade.ts`) verse l'`entryId` tiré et la catégorie
-  // Codex déclarée par la table (`TableStepDef.entryCategory`), sur les quatre pilotes de tirage.
+  // ÉTAPES À TABLE : le TYPE les tient (#1262 V2 L6, `TableSpec.stake` requis) — plus de baseline, plus
+  // de volet de scan (cf. `stepsWithoutStake`). L'enjeu posé à la construction DESCEND ensuite à la
+  // ligne jouée, `stakeAtTableRow` (`state/cascade.ts`).
 };
 
 describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', () => {
@@ -479,7 +484,7 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
     expect(stepsWithoutStake(cibleTexte), 'la cible d’un EFFET (`target: \'party\'`) n’est pas une cible de jet').toHaveLength(0);
     expect(stepsWithoutStake(contributeur), 'CONTRIBUTEUR d’une étape batch : l’enjeu est porté par l’ÉTAPE').toHaveLength(0);
     expect(stepsWithoutStake(corpsDeFonction), 'un corps de fonction n’est pas un littéral d’étape').toHaveLength(0);
-    expect(stepsWithoutStake(tableSans), 'un TIRAGE sur tableau met en jeu autant qu’un Test').toHaveLength(1);
+    expect(stepsWithoutStake(tableSans), 'le TIRAGE est tenu par le TYPE (`TableSpec.stake` requis) — hors scan').toHaveLength(0);
     expect(stepsWithoutStake(tableAvec)).toHaveLength(0);
   });
 

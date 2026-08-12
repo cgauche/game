@@ -1,6 +1,6 @@
 import type { GameState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear, CascadeTableDecl, PendingCascade } from './pendings';
+import type { LootGear, CascadeTableDone, PendingCascade } from './pendings';
 import { revealToStep } from './revealStep';
 import { Combatant, CHAR_LABELS, type ModLine } from '../engine/types';
 import { RULE_REF } from '../engine/ruleRefs';
@@ -100,7 +100,7 @@ const revealPurpose = (site: PendingCascade['purpose'], own: boolean) => (s: Gam
 export function pushReveal(
   set: SetFn,
   entry: RevealEntry,
-  opts?: { table?: CascadeTableDecl; purpose?: PendingCascade['purpose']; own?: boolean; autoClose?: NonNullable<RevealEntry['severity']> },
+  opts?: { table?: CascadeTableDone; purpose?: PendingCascade['purpose']; own?: boolean; autoClose?: NonNullable<RevealEntry['severity']> },
 ): void {
   pushStep(set, (index) => revealToStep(entry, index, { table: opts?.table, ...(opts?.autoClose ? { autoClose: opts.autoClose } : {}) }), revealPurpose(opts?.purpose ?? 'affichage', !!opts?.own));
 }

@@ -116,3 +116,32 @@ describe('#1262 B4 — la sonde de murage de `pushCombatStep` est TUEUSE', () =>
     expect(codesDeDiagnostic(SONDE('CascadeStep')), 'sans ce rouge, les `@ts-expect-error` du lot ne prouveraient rien').toContain(2578);
   });
 });
+
+/**
+ * L'ENJEU D'UN TIRAGE EST REQUIS AU TYPE (#1262 V2 L6) — `TableSpec.stake` a perdu son `?`
+ * (`rollSeam.ts`), et le cliquet textuel a perdu son volet `table:` dans le même geste
+ * (`cascade-step-stake-guard.test.ts`). Le murage n'est complet qu'à DEUX serrures : celle-ci ferme
+ * les mints (`tableStep`/`tableStepDone`), et `revealStep.ts` ferme la 3ᵉ fabrique exemptée du lint
+ * ci-dessus — son `opts.table` n'accepte plus qu'une déclaration RÉSOLUE (`CascadeTableDone`), mesuré
+ * par `reveal.test.ts`. Ce qui remplace le scan doit MORDRE : la sonde rejoue les DEUX signatures sur
+ * un programme TypeScript réel — requise, la directive est consommée ; optionnelle, elle devient
+ * inutilisée (TS2578). Sans ce rouge, les `@ts-expect-error` de `roll-seam-mints` ne prouveraient
+ * rien, et le lot aurait retiré un scan sans rien mettre à sa place.
+ */
+const SONDE_ENJEU = (enjeu: 'stake: Stake' | 'stake?: Stake') => `
+type Stake = { key: { dataset: string; kind: string } };
+type TableSpec = { id: string; kind: string; label: string; actorId: string; table: { tableId: string }; ${enjeu} };
+declare function tableStep(spec: TableSpec): void;
+// @ts-expect-error — tirage MUET : l'enjeu est requis
+tableStep({ id: 't', kind: 'k', label: 'Tirage', actorId: 'H1', table: { tableId: 'x' } });
+`;
+
+describe('#1262 V2 L6 — la sonde du murage de l’ENJEU des tirages est TUEUSE', () => {
+  it('enjeu REQUIS : la directive est CONSOMMÉE — zéro diagnostic', () => {
+    expect(codesDeDiagnostic(SONDE_ENJEU('stake: Stake'))).toEqual([]);
+  });
+
+  it('enjeu OPTIONNEL (l’état d’avant) : le tirage muet passe, la directive devient INUTILISÉE (TS2578)', () => {
+    expect(codesDeDiagnostic(SONDE_ENJEU('stake?: Stake')), 'sans ce rouge, retirer le volet `table:` du cliquet laisserait un trou').toContain(2578);
+  });
+});

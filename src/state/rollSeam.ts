@@ -1255,7 +1255,13 @@ export interface TableSpec {
   /** PORTEUR du tirage : l'arbitre route la fenêtre à son siège (un d100 subi a son sujet). */
   actorId: string;
   table: CascadeTableDecl;
-  stake?: StakeRef;
+  /** ENJEU du tirage — REQUIS au TYPE (#1117/#1262 V2 L6) : la famille des étapes à table est le seul
+   *  mint dont TOUS les sites de production sont dotés (mesure du lot : 0 site muet hors tests), donc
+   *  le compilateur y remplace le cliquet textuel. `tableStepDone` en hérite (`TableDoneSpec`), et
+   *  l'enjeu redescend ensuite à la ligne jouée (`stakeAtTableRow`, `cascade.ts`). Les autres mints
+   *  (`MonoSpec`, `BandSpec`, `HostSpec`, `RollRequest`) gardent `stake?` : leur stock est mesuré et
+   *  non nul — la mesure vit dans `cascade-step-stake-guard.test.ts`. */
+  stake: StakeRef;
   /** CHARGE de l'applier « sévérité du Critique » (`combatFlow`) : de quel coup le d100 posé décide.
    *  Recopiée telle quelle — une charge n'est pas une forme : elle ne rend rien et ne change pas
    *  l'interaction de l'étape, elle est ce que l'applier LIT quand le dé est posé. */
@@ -1289,7 +1295,7 @@ export function tableStep(spec: TableSpec): BuiltCascadeStep | undefined {
     ...(spec.icon ? { icon: spec.icon } : {}),
     actorId: spec.actorId,
     table: spec.table,
-    ...(spec.stake ? { stake: spec.stake } : {}),
+    stake: spec.stake,
     ...(spec.critSeverity ? { critSeverity: spec.critSeverity } : {}),
     ...(spec.miscast ? { miscast: spec.miscast } : {}),
     ...(spec.mutation ? { mutation: spec.mutation } : {}),
@@ -1318,7 +1324,7 @@ export function tableStepDone(spec: TableDoneSpec): BuiltCascadeStep | undefined
     label: spec.label,
     ...(spec.icon ? { icon: spec.icon } : {}),
     actorId: spec.actorId,
-    ...(spec.stake ? { stake: spec.stake } : {}),
+    stake: spec.stake,
     ...(spec.critSeverity ? { critSeverity: spec.critSeverity } : {}),
     ...(spec.miscast ? { miscast: spec.miscast } : {}),
     ...(spec.mutation ? { mutation: spec.mutation } : {}),

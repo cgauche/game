@@ -76,7 +76,7 @@ describe('#1262 — monoStep : un porteur, un jet, une cible', () => {
 
 describe('#1262 — tableStep / tableStepDone : DEUX entrées, jamais un drapeau', () => {
   it('table À POSER : le dé n’est pas tombé, l’interaction est `table`', () => {
-    const step = tableStep({ id: 'tir', kind: 'mutation', label: 'Tirage', actorId: 'H1', table: { tableId: TABLE } })!;
+    const step = tableStep({ id: 'tir', kind: 'mutation', label: 'Tirage', actorId: 'H1', table: { tableId: TABLE }, stake: { key: { dataset: 'combat', kind: 'mutation' } } })!;
     expect(step.table!.result).toBeUndefined();
     expect(stepInteraction(step)).toBe('table');
     expect(step.actorId).toBe('H1');
@@ -86,6 +86,7 @@ describe('#1262 — tableStep / tableStepDone : DEUX entrées, jamais un drapeau
     expect(() => tableStep({
       id: 'tir', kind: 'mutation', label: 'Tirage', actorId: 'H1',
       table: { tableId: TABLE, result: { roll: 60, die: 60, id: 'haute', lines: ['x'] } },
+      stake: { key: { dataset: 'combat', kind: 'mutation' } },
     })).toThrow(/tableStepDone/);
   });
 
@@ -100,6 +101,19 @@ describe('#1262 — tableStep / tableStepDone : DEUX entrées, jamais un drapeau
     expect(stepInteraction(step), 'une table résolue s’affiche, elle ne se retire pas').toBe('affichage');
     expect(step.stake!.key.entryId, 'la ligne jouée, pas le kind').toBe('haute');
     expect(step.stake!.key.entryCategory, 'catégorie DÉCLARÉE PAR LA TABLE').toBe('mutations');
+  });
+
+  /**
+   * MURAGE AU TYPE (#1262 V2 L6) — l'ENJEU d'un tirage est REQUIS : `TableSpec.stake` n'est plus
+   * optionnel, donc les deux directives ci-dessous sont TUEUSES (sous `stake?`, elles deviendraient
+   * INUTILISÉES et `tsc` rougirait en TS2578 — c'est ce que rejoue la sonde de `built-brand-lint`).
+   * Le cliquet textuel a perdu son volet `table:` dans le même geste : le compilateur le remplace.
+   */
+  it('un tirage MUET ne compile plus — ni à poser, ni résolu', () => {
+    // @ts-expect-error — `stake` manquant : un tirage qui LANCE dit ce qu'il met en jeu
+    expect(() => tableStep({ id: 'muet', kind: 'mutation', label: 'Tirage', actorId: 'H1', table: { tableId: TABLE } })).toBeTypeOf('function');
+    // @ts-expect-error — même exigence sur la table DÉJÀ tirée (`TableDoneSpec` hérite de `TableSpec`)
+    expect(() => tableStepDone({ id: 'muet2', kind: 'mutation', label: 'Tirage', actorId: 'H1', table: { tableId: TABLE }, result: { roll: 60, die: 60, id: 'haute', lines: [] } })).toBeTypeOf('function');
   });
 });
 
@@ -231,6 +245,7 @@ describe('#1262 — les portes d’APPEND', () => {
     expect(() => pushTable(useGame.setState, {
       id: 'ko', kind: 'k', label: 'L', actorId: 'H1',
       table: { tableId: TABLE, result: { roll: 60, die: 60, id: 'haute', lines: [] } },
+      stake: { key: { dataset: 'combat', kind: 'mutation' } },
     })).toThrow(/tableStepDone/);
     expect(etapes().map((s) => s.id), 'la séquence n’a pas bougé').toEqual(['ok']);
   });

@@ -1447,6 +1447,13 @@ export interface CascadeTableResult {
   lines: string[];
 }
 
+/** Déclaration de tirage DÉJÀ RÉSOLU — `result` requis (et non nul). Ce que RAPPORTE une surface qui
+ *  montre un dé tombé (`revealToStep`), par opposition à la déclaration ouverte `CascadeTableDecl`
+ *  qu'une étape à table fait JETER par sa fenêtre (`tableStep`). La distinction est au TYPE : une
+ *  déclaration sans résultat passée à une surface de rapport rendrait `stepInteraction` `'table'` —
+ *  un tirage à faire, ouvert par une porte qui n'en est pas une, et sans enjeu (#1262 V2 L6). */
+export type CascadeTableDone = CascadeTableDecl & { result: CascadeTableResult };
+
 /**
  * ÉTAPE de séquence. Étend `RollParticipant` : une étape MONO est le jet d'un porteur, avec les mêmes
  * drapeaux d'influence qu'une rangée.

@@ -6,7 +6,7 @@
  * d'une partie sauvegardée (`MIGRATIONS[15]`, state/saves.ts) — d'où l'extraction hors de
  * `combatEffects` (que `saves.ts` ne peut pas importer : cycle store↔flux).
  */
-import type { CascadeTableDecl, RevealEntry } from './pendings';
+import type { CascadeTableDone, RevealEntry } from './pendings';
 import type { BuiltCascadeStep } from './stepBrand';
 import { toRecapLines } from './recapLine';
 import type { IconId } from '../ui/icons';
@@ -30,7 +30,10 @@ export const REVEAL_AUTO_CLOSE_MS: Record<NonNullable<RevealEntry['severity']>, 
  *  de zone, rangée de tirage + lignes pour le reste). `actorId` = le CONCERNÉ (victime → propriétaire
  *  de la modale en coop, et portrait du sujet dans la fenêtre). `opts.table` = la DÉCLARATION du tirage
  *  DÉJÀ résolu qui a produit la révélation (#942 L4 : le d100 de sévérité d'un Critique) — la rangée
- *  `TableRollLine` montre alors le dé et la ligne atteinte, comme sur une étape à table tirée.
+ *  `TableRollLine` montre alors le dé et la ligne atteinte, comme sur une étape à table tirée. Le TYPE
+ *  le tient (`CascadeTableDone`, `result` requis) et non plus cette phrase : une déclaration OUVERTE
+ *  passerait ici en `stepInteraction` `'table'` — un tirage à faire, hors des portes qui en ouvrent
+ *  (`tableStep`) et sans enjeu (#1262 V2 L6).
  *
  *  `opts.autoClose` : la fenêtre se ferme d'elle-même après la cadence de la gravité DÉCLARÉE. Absent
  *  — le cas par défaut — l'étape attend le clic (arbitrage #1270). La gravité de la `RevealEntry`
@@ -43,7 +46,7 @@ export const REVEAL_AUTO_CLOSE_MS: Record<NonNullable<RevealEntry['severity']>, 
 export function revealToStep(
   entry: RevealEntry,
   index: number,
-  opts?: { table?: CascadeTableDecl; autoClose?: NonNullable<RevealEntry['severity']>; label?: string; icon?: IconId },
+  opts?: { table?: CascadeTableDone; autoClose?: NonNullable<RevealEntry['severity']>; label?: string; icon?: IconId },
 ): BuiltCascadeStep {
   return {
     id: `cons-${entry.kind}-${index}`,

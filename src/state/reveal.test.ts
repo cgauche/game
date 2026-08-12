@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { pushReveal } from './combatFlow';
+import { revealToStep } from './revealStep';
+import { stepInteraction } from './cascade';
+import type { RevealEntry } from './pendings';
 import { deleteSlot } from './saves';
 import { suspendActiveCascade } from './cascade';
 import { registerScene } from './store';
@@ -201,5 +204,29 @@ describe('carte d’entrée de zone — préséance et durée de vie', () => {
     const voyage = useGame.getState().suspendedCascades.find((c) => c.purpose === 'travelDay')!;
     expect(voyage.cursor).toBe(1);
     expect(voyage.participants.map((s) => s.id)).toEqual(['j1', 'j2', 'j3']);
+  });
+});
+
+/**
+ * UNE RÉVÉLATION RAPPORTE UN TIRAGE, ELLE N'EN OUVRE PAS (#1262 V2 L6) — `revealToStep` est la seule
+ * fabrique d'étape EXEMPTÉE du lint de forge (`eslint.config.js`) hors des mints de `rollSeam` : tant
+ * que son `opts.table` acceptait une déclaration OUVERTE (`result` optionnel), elle pouvait produire
+ * une étape d'interaction `'table'` — un tirage à faire, sans enjeu, qu'aucune porte n'a montée. Le
+ * type le refuse désormais (`CascadeTableDone`) ; ce couple test + directive en est la mesure.
+ */
+describe('#1262 V2 L6 — `revealToStep` ne produit jamais un tirage À FAIRE', () => {
+  const ENTRY: RevealEntry = { kind: 'miscast', title: 'Colère des dieux', lines: ['ligne 77'], subjectId: 'H1' };
+
+  it('table RÉSOLUE : l’étape reste un AFFICHAGE, dé et ligne portés par la rangée', () => {
+    const step = revealToStep(ENTRY, 0, {
+      table: { tableId: 'wrath-table', die: 100, result: { roll: 77, die: 77, id: 'blaspheme', lines: ['ligne 77'] } },
+    });
+    expect(stepInteraction(step), 'un dé DÉJÀ tombé se lit, il ne se relance pas').toBe('affichage');
+    expect(step.table!.result!.roll).toBe(77);
+  });
+
+  it('déclaration OUVERTE : refusée au TYPE — la directive est TUEUSE (sous `CascadeTableDecl`, elle serait inutilisée)', () => {
+    // @ts-expect-error — `result` requis (`CascadeTableDone`) : sans lui l'étape LANCERAIT un tirage muet
+    expect(() => revealToStep(ENTRY, 0, { table: { tableId: 'wrath-table', die: 100 } })).toBeTypeOf('function');
   });
 });

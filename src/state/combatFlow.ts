@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, PendingMiscastStep, CascadeStep, CascadeRoll, BatchParticipant, PendingCounterspell, CounterParticipant, CounterDeclaration } from './pendings';
+import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, CascadeTableDone, PendingMiscastStep, CascadeStep, CascadeRoll, BatchParticipant, PendingCounterspell, CounterParticipant, CounterDeclaration } from './pendings';
 import { describeReload } from './flowOutcomes';
 import { toRecapLines } from './recapLine';
 import { Combatant, HitLocation, Weapon, Difficulty, type ShipPoste } from '../engine/types';
@@ -1621,7 +1621,7 @@ export function critSeverityDecl(target: Combatant, location: HitLocation, overk
  */
 export function resolveCritSeverity(
   target: Combatant, location: HitLocation, overkill: number, twice?: boolean, forcedNatural?: number,
-): { crit: CriticalResolved; table?: CascadeTableDecl } {
+): { crit: CriticalResolved; table?: CascadeTableDone } {
   if (!critSeverityInSeam(twice)) return { crit: rollCritical(target, location, battleRng(), overkill, twice) };
   const decl = critSeverityDecl(target, location, overkill, twice);
   const rolled = rollTableStep({ ...decl, forcedRoll: forcedNatural }, battleRng());
