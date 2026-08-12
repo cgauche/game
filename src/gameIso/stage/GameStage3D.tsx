@@ -107,6 +107,9 @@ import type { HighlightEl } from '../builders/highlights';
 import { NO_DYNAMIC_MARKS, type DynamicMarks } from '../builders/dynamicMarks';
 import { DYN_MARK_SLOTS, buildDynamicMarkMesh } from '../backends/webgl/dynamicMarkMeshes';
 import { poseDynamicMarks, type DynMarkPools } from './dynamicMarkPose';
+import { NO_INTERACTION_HALOS, type InteractionHalos } from '../builders/interactHalos';
+import { HALO_SLOTS, buildHaloMesh } from '../backends/webgl/interactHaloMeshes';
+import { poseInteractHalos, type HaloPools } from './interactHaloPose';
 import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/spriteRaycast';
 import { setSpritePicker } from './spritePicker';
 import { stage3dFraming } from './stage3dCamera';
@@ -189,6 +192,11 @@ export interface GameStage3DProps {
    *  MÊME dérivation pure que la voie affine (`builders/dynamicMarks`), en cases LOGIQUES. Leur
    *  position se prend à la FRAME, sur le glissement de `anim` — jamais à un rendu React. */
   dynMarks?: DynamicMarks;
+  /** HALOS D'INTERACTION (#1176, P3-0g) — affordance de fouille d'un décor, halo de survol d'un PNJ
+   *  interlocuteur : la MÊME dérivation pure que la voie affine (`builders/interactHalos`). Leurs
+   *  PULSATIONS sont des fonctions de la frame (`stage/interactHaloPose`), là où la voie affine les
+   *  laisse à ses keyframes CSS. Absents = aucun halo, et pas une frame de plus. */
+  halos?: InteractionHalos;
   /** ALLURE des jetons (#1176, P3-0f) — fantôme hors Ligne de Vue, corps hors d'action, cible
    *  survolée : la même dérivation pure que la voie affine (`builders/tokenChrome`), demandée à la
    *  FRAME et posée sur le matériau des quads déjà montés. Absente = aucun jeton ne se distingue. */
@@ -239,7 +247,7 @@ export function artRot(dims: Dims): Rot {
   return ((Math.floor((freeYaw(dims) ?? (dims.rot ?? 0) * 90) / 90) % 4 + 4) % 4) as Rot;
 }
 
-export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, chromeAt, anim }: GameStage3DProps): JSX.Element {
+export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
@@ -255,6 +263,7 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   const intemperies = useRef<THREE.Group>();
   const marques = useRef<THREE.Group>();
   const marquesDyn = useRef<THREE.Group>();
+  const halosGroupe = useRef<THREE.Group>();
   if (!three.current) {
     three.current = new THREE.Scene();
     monde.current = new THREE.Group();
@@ -273,7 +282,11 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     // capacité d'état — ils sont montés une fois à capacité fixe, et réécrits à la FRAME (jamais à un
     // rendu React, comme les marques de case du groupe voisin).
     marquesDyn.current = new THREE.Group();
-    three.current.add(monde.current, touffes.current, panneaux.current, lampes.current, flaques.current, intemperies.current, marques.current, marquesDyn.current);
+    // Groupe des HALOS D'INTERACTION (P3-0g) : même politique que le précédent — capacité fixe, contenu
+    // réécrit à la frame. À part de lui parce qu'il vit hors du combat, et que ses pools PULSENT (leur
+    // opacité de matériau change à chaque frame, cf. `stage/interactHaloPose`).
+    halosGroupe.current = new THREE.Group();
+    three.current.add(monde.current, touffes.current, panneaux.current, lampes.current, flaques.current, intemperies.current, marques.current, marquesDyn.current, halosGroupe.current);
   }
 
   // Le cache de textures est GLOBAL au module : changer de scène rend ses entrées mortes (les clés
@@ -308,6 +321,9 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   // ── MARQUES DYNAMIQUES (P3-0d) : trois pools à capacité FIXE, montés une fois (l'effet plus bas).
   // Leur contenu ne se déduit d'aucun état React — il se réécrit à la frame, dans `dessiner`.
   const poolsDyn = useRef<DynMarkPools>({});
+  // ── HALOS D'INTERACTION (P3-0g) : même politique de pool, et un contenu qui BAT (l'opacité de leurs
+  // matériaux est une fonction de la frame — la conversion des keyframes CSS vit dans la passe de pose).
+  const poolsHalos = useRef<HaloPools>({});
   // Le SOL d'une case, la même convention que le builder de marques (0 au rez, la surface réelle en
   // hauteur) : c'est la hauteur d'où le glissement vertical de la marche se compte.
   const solM = (x: number, y: number, z: number) => (z ? heightAt(scene, Math.round(x), Math.round(y), z) : 0);
@@ -413,6 +429,17 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       yawDeg: f.yawDeg, // les tirets de l'anneau d'équipe se mesurent à l'ÉCRAN : ils suivent la vue
       chromeAt: chromeAt ?? AUCUN_CHROME, // l'anneau d'un corps estompé s'estompe avec lui (P3-0f)
     });
+    // HALOS D'INTERACTION (P3-0g) : posés au même endroit, et pour une raison de plus — leur PULSATION
+    // est une fonction de l'horloge, donc elle ne s'écrit que dans la frame. `camQuat` : l'étincelle
+    // est un quad aligné écran, et son décalage se mesure en pixels d'écran comme en affine.
+    poseInteractHalos(poolsHalos.current, halos ?? NO_INTERACTION_HALOS, {
+      mpt,
+      groundM: solM,
+      kind: f.kind,
+      yawDeg: f.yawDeg,
+      camQuat: camera.quaternion,
+      tSec: performance.now() / 1000,
+    });
     // CARTE D'OMBRE : elle ne se recuit QUE quand ce qu'elle contient a bougé — un casteur qui glisse,
     // ou un montage (lampes, monde, billboards) qui l'a demandée. Une rotation de caméra, un zoom, une
     // frame de marche où personne ne glisse : la carte 2048² de la frame précédente reste valide.
@@ -507,6 +534,27 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       cancelAnimationFrame(image);
     };
   }, [vacille]);
+
+  // BOUCLE DE PULSATION DES HALOS (P3-0g) : un halo d'affordance bat hors des rendus React, comme la
+  // flamme et l'averse — c'est ce que la voie affine obtient de ses keyframes CSS. Elle ne bat QUE si
+  // un halo est à l'écran : une scène sans décor fouillable et sans PNJ survolé ne rejoue pas une frame
+  // de plus qu'avant ce lot. Même politique de CESSION que les deux autres boucles.
+  const pulseHalos = !!halos && (halos.fouilles.length > 0 || halos.pnjs.length > 0);
+  useEffect(() => {
+    if (!pulseHalos) return;
+    let vivant = true;
+    let image = 0;
+    const battre = () => {
+      if (!vivant) return;
+      if (performance.now() - dernierRendu.current > 4) dessinerRef.current();
+      image = requestAnimationFrame(battre);
+    };
+    image = requestAnimationFrame(battre);
+    return () => {
+      vivant = false;
+      cancelAnimationFrame(image);
+    };
+  }, [pulseHalos]);
 
   // HIT-TEST DE SPRITE (lot P2-3) : la voie volumique répond au pointeur par un RAYON — cibles = les
   // quads montés (ceux d'un combattant portent son id) plus les masses du monde, inscrites sans id
@@ -690,6 +738,31 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     dessiner();
     return () => {
       for (const slot of DYN_MARK_SLOTS) {
+        const mesh = pools[slot];
+        if (!mesh) continue;
+        groupe.remove(mesh);
+        mesh.geometry.dispose();
+        (mesh.material as THREE.Material).dispose();
+        delete pools[slot];
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── POOLS DE HALOS (P3-0g) : même politique que les pools dynamiques ci-dessus — montés UNE fois, à
+  // capacité fixe, contenu et OPACITÉ réécrits à chaque frame (`poseInteractHalos`).
+  useEffect(() => {
+    const groupe = halosGroupe.current;
+    if (!groupe) return;
+    const pools = poolsHalos.current;
+    for (const slot of HALO_SLOTS) {
+      const mesh = buildHaloMesh(slot);
+      pools[slot] = mesh;
+      groupe.add(mesh);
+    }
+    dessiner();
+    return () => {
+      for (const slot of HALO_SLOTS) {
         const mesh = pools[slot];
         if (!mesh) continue;
         groupe.remove(mesh);

@@ -41,6 +41,7 @@ import { floorLayerObjs, wallLayerObjs, roofLayerObjs, elOccluder, type LayerCtx
 import { combatHighlightObjs, combatHighlightsView, type HighlightOpts } from './stage/highlightLayer';
 import { buildHighlights, type HighlightEl } from './builders/highlights';
 import { dynamicMarks, type DynamicMarks } from './builders/dynamicMarks';
+import { interactionHalos, type InteractionHalos } from './builders/interactHalos';
 import { tokenChromes, type TokenChromeMark } from './builders/tokenChrome';
 import { TokenChromeOverlay } from './stage/TokenChromeOverlay';
 import type { ChromeAt } from './stage/boardPose';
@@ -438,14 +439,18 @@ export function IsoStage() {
   // le peint DANS son corps (`combatantObjs` reprend la dérivation jeton par jeton) ; la voie volumique
   // le peint en overlay au-dessus des têtes et en porte l'allure au matériau des quads.
   const chromes: TokenChromeMark[] = combatBattle ? tokenChromes(tokenEls, { ghostIds, hoveredId }) : [];
+  // HALOS D'INTERACTION (P3-0g) : même partage que les marques dynamiques — dérivés UNE fois
+  // (`builders/interactHalos`) et servis aux DEUX voies ; le contexte qui les autorise (exploration,
+  // combat ouvert) se tranche ici, et nulle part ailleurs.
+  const halos = interactionHalos(propEls, scene, flags, hover, { exploring: mode === 'exploration', combat: mode === 'battle' && !!battle });
   // Éléments DYNAMIQUES de la frame, dans l'ordre d'émission historique : tether/halo de l'actif,
   // affordances de fouille, puis tokens (combat : combattants+montés ; exploration : halo PNJ + groupe).
   const dyn: StageObj[] = dynamicHighlightObjs(tokenCtx, marquesDyn, walkPosOf);
-  dyn.push(...interactHaloObjs(propEls, tokenCtx, flags, hover, mode === 'exploration'));
+  dyn.push(...interactHaloObjs(halos.fouilles, tokenCtx));
   if (mode === 'battle' && battle) {
     dyn.push(...combatantObjs(tokenEls, { ...tokenCtx, walkPosOf, ghostIds, hoveredId, activeId: activeC?.id ?? null }));
   } else {
-    dyn.push(...npcHoverHaloObjs(scene, hover, tokenCtx));
+    dyn.push(...npcHoverHaloObjs(halos.pnjs, tokenCtx));
     dyn.push(partyLeaderObj(tokenCtx, partyPos, partyLeader, walkPosOf, bump));
   }
   const objs = mergeByDepth(staticObjs, dyn);
@@ -492,6 +497,7 @@ export function IsoStage() {
           battle={combatBattle}
           highlightOpts={highlightOpts}
           dynMarks={marquesDyn}
+          halos={halos}
           partyToken={partyToken}
           chromes={chromes}
         />
@@ -569,7 +575,7 @@ export function IsoStage() {
  * étage isolé, surplomb, brouillard). ÉCART RÉSIDUEL : un couple MONTÉ ne rend que sa MONTURE — le
  * corps composite cavalier+monture (`MountedToken`) n'a pas d'équivalent billboard.
  */
-function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, tokenEls, propEls, walksRef, partyToken, gameTime, lightLevel, lights, battle, highlightOpts, dynMarks, chromes }: {
+function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, tokenEls, propEls, walksRef, partyToken, gameTime, lightLevel, lights, battle, highlightOpts, dynMarks, halos, chromes }: {
   scene: Scene;
   dims: Dims;
   mpt: number;
@@ -597,6 +603,8 @@ function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, t
   highlightOpts: HighlightOpts;
   /** MARQUES DYNAMIQUES déjà dérivées par le stage — les DEUX voies consomment cette même liste. */
   dynMarks: DynamicMarks;
+  /** HALOS D'INTERACTION déjà dérivés par le stage — même partage, même liste pour les deux voies. */
+  halos: InteractionHalos;
   /** CHROME des jetons déjà dérivé par le stage — cet écran n'en consomme que l'ALLURE (le reste se
    *  peint en overlay SVG, `stage/TokenChromeOverlay`). */
   chromes: readonly TokenChromeMark[];
@@ -648,5 +656,5 @@ function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, t
   // reforge à chaque rendu, comme `anim` — un survol change trois nombres de matériau, rien de monté.
   const allures = new Map(chromes.map((m) => [m.id, { ghost: m.ghost, dim: m.dim, highlight: m.highlight }]));
   const chromeAt: ChromeAt = (cid) => allures.get(cid) ?? null;
-  return <GameStage3D scene={scene} dims={dims} mpt={mpt} cam={cam} zoom={zoom} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} highlights={highlights} dynMarks={dynMarks} chromeAt={chromeAt} anim={anim} />;
+  return <GameStage3D scene={scene} dims={dims} mpt={mpt} cam={cam} zoom={zoom} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} highlights={highlights} dynMarks={dynMarks} halos={halos} chromeAt={chromeAt} anim={anim} />;
 }

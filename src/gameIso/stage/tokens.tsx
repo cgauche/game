@@ -7,11 +7,11 @@
  * les affordances (halos, dépendants du survol/flags) se recalculent à la frame.
  */
 import type { ReactNode } from 'react';
-import { Scene } from '../../state/scene';
+import { HALO_CY_PX, HALO_FILL_OPACITY, HALO_RX_PX, HALO_STROKE_OPACITY, HALO_STROKE_PX, NPC_FILL_OPACITY, NPC_HALO_RX_PX, NPC_HALO_STROKE_PX, NPC_STROKE_OPACITY, PING_STROKE_PX, SPARK_DX_PX, SPARK_DY_PX, sparkPathD, type InteractHalo, type NpcHalo } from '../builders/interactHalos';
 import { Combatant } from '../../engine/types';
 import { tokenChrome, mountChrome } from '../builders/tokenChrome';
 import { COMBAT_TOKEN_BASE, PARTY_TOKEN_BASE, TETHER_DASH_PX, TETHER_GAP_PX, TETHER_STROKE_PX, discR, teamRingDecor, type DynamicMarks } from '../builders/dynamicMarks';
-import { Dims, tileCenter, depth, diamondPath } from '../../geometry/iso';
+import { Dims, tileCenter, depth, diamondPath, footprintDepth } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
 import { BodyToken } from '../BodyToken';
 import { MountedToken } from '../MountedToken';
@@ -85,40 +85,38 @@ export function propLayerObjs(propEls: PropEl[], ctx: TokenCtx): StageObj[] {
   return out;
 }
 
-/** Affordance « fouille » d'un prop interactif (masquée dès l'objet épuisé, flag `__fouille_<id>`) :
- *  halo pulsé + onde « sonar » au sol, et étincelle dorée flottant AU-DESSUS du décor — l'objet
- *  cliquable se repère de loin, sans texte (cf. anim.css). DYNAMIQUE (survol/flags). */
-export function interactHaloObjs(propEls: PropEl[], ctx: TokenCtx, flags: Record<string, boolean | undefined>, hover: Pt | null, exploring: boolean): StageObj[] {
+/** Affordance « fouille » d'un décor interactif : halo pulsé + onde « sonar » au sol, et étincelle
+ *  dorée flottant AU-DESSUS du décor — l'objet cliquable se repère de loin, sans texte. La DÉRIVATION
+ *  (qui porte un halo, lequel est survolé) est partagée avec la voie volumique
+ *  (`builders/interactHalos`) ; cette fonction n'en est plus que la PROJECTION affine, dont les
+ *  pulsations restent des animations CSS (`anim.css`). DYNAMIQUE (survol/flags). */
+export function interactHaloObjs(halos: readonly InteractHalo[], ctx: TokenCtx): StageObj[] {
   const out: StageObj[] = [];
-  for (const el of propEls) {
-    if (el.source !== 'entity' || !el.interact || flags[`__fouille_${el.entId}`]) continue;
-    const ez = el.cell.z;
-    const px = el.cell.x + el.foot.offX, py = el.cell.y + el.foot.offY;
-    const pd = propDepth(el, ctx.dims);
-    const c = tileCenter(px, py, ctx.dims, ctx.liftAt(px, py, ez));
-    // SURVOL direct du décor (hors combat) : la tuile sous le curseur == la tuile du prop → halo renforcé.
-    const haloHovered = exploring && !!hover && hover.x === el.cell.x && hover.y === el.cell.y && (hover.z ?? 0) === ez;
+  for (const h of halos) {
+    const ez = h.cell.z;
+    const pd = footprintDepth(h.cell.x, h.cell.y, h.span.w, h.span.h, ctx.dims, ez);
+    const c = tileCenter(h.centre.x, h.centre.y, ctx.dims, ctx.liftAt(h.centre.x, h.centre.y, ez));
     out.push({
       d: pd - 0.02, // juste sous le sprite
       z: ez,
-      vis: el.states.visible,
+      vis: h.visible,
       el: (
-        <g key={`halo-${el.entId}`} pointerEvents="none">
-          <g className={haloHovered ? 'interact-halo hovered' : 'interact-halo'}>
-            <ellipse cx={c.cx} cy={c.cy + 4} rx={17 * el.foot.scale} ry={8.5 * el.foot.scale} fill={HALO_TINT} opacity={0.26} />
-            <ellipse cx={c.cx} cy={c.cy + 4} rx={17 * el.foot.scale} ry={8.5 * el.foot.scale} fill="none" stroke={GOLD_TINT} strokeWidth={2} opacity={0.9} />
+        <g key={`halo-${h.id}`} pointerEvents="none">
+          <g className={h.hovered ? 'interact-halo hovered' : 'interact-halo'}>
+            <ellipse cx={c.cx} cy={c.cy + HALO_CY_PX} rx={HALO_RX_PX * h.scale} ry={(HALO_RX_PX / 2) * h.scale} fill={HALO_TINT} opacity={HALO_FILL_OPACITY} />
+            <ellipse cx={c.cx} cy={c.cy + HALO_CY_PX} rx={HALO_RX_PX * h.scale} ry={(HALO_RX_PX / 2) * h.scale} fill="none" stroke={GOLD_TINT} strokeWidth={HALO_STROKE_PX} opacity={HALO_STROKE_OPACITY} />
           </g>
-          <ellipse className="halo-ping" cx={c.cx} cy={c.cy + 4} rx={17 * el.foot.scale} ry={8.5 * el.foot.scale} fill="none" stroke={GOLD_TINT} strokeWidth={1.6} />
+          <ellipse className="halo-ping" cx={c.cx} cy={c.cy + HALO_CY_PX} rx={HALO_RX_PX * h.scale} ry={(HALO_RX_PX / 2) * h.scale} fill="none" stroke={GOLD_TINT} strokeWidth={PING_STROKE_PX} />
         </g>
       ),
     });
     out.push({
       d: pd + 0.02, // au-dessus du sprite : l'étincelle « il y a quelque chose ici »
       z: ez,
-      vis: el.states.visible,
+      vis: h.visible,
       el: (
-        <g key={`spark-${el.entId}`} className="halo-spark" pointerEvents="none" transform={`translate(${c.cx + 9 * el.foot.scale}, ${c.cy - 26 * el.foot.scale})`}>
-          <path d="M0,-6 L1.7,-1.7 L6,0 L1.7,1.7 L0,6 L-1.7,1.7 L-6,0 L-1.7,-1.7 Z" fill={GOLD_TINT} stroke={GOLD_DARK_TINT} strokeWidth={0.7} />
+        <g key={`spark-${h.id}`} className="halo-spark" pointerEvents="none" transform={`translate(${c.cx + SPARK_DX_PX * h.scale}, ${c.cy - SPARK_DY_PX * h.scale})`}>
+          <path d={sparkPathD()} fill={GOLD_TINT} stroke={GOLD_DARK_TINT} strokeWidth={0.7} />
         </g>
       ),
     });
@@ -266,23 +264,21 @@ export function partyLeaderObj(ctx: TokenCtx, partyPos: Pt, partyLeader: Combata
 
 /** Halo de SURVOL d'un PNJ interlocuteur (dialogue/marchand) : PAS de halo permanent (ils ne
  *  « réclament » pas comme une fouille) — révélé au survol seul, cohérent avec le curseur main.
- *  1 seule tuile à la fois, peu coûteux (hors du memo figurants, qui ignore `hover`). */
-export function npcHoverHaloObjs(scene: Scene, hover: Pt | null, ctx: TokenCtx): StageObj[] {
-  if (!hover) return [];
+ *  1 seule tuile à la fois, peu coûteux (hors du memo figurants, qui ignore `hover`). Même partage que
+ *  le halo de fouille : la DÉRIVATION vit dans `builders/interactHalos`, ceci en est la projection. */
+export function npcHoverHaloObjs(halos: readonly NpcHalo[], ctx: TokenCtx): StageObj[] {
   const out: StageObj[] = [];
-  for (const ent of scene.entities) {
-    if (ent.kind === 'prop' || ent.interact) continue; // fouille = halo permanent (interactHaloObjs)
-    if (!ent.dialogueId && !ent.merchant) continue;
-    if (ent.pos.x !== hover.x || ent.pos.y !== hover.y || (ent.z ?? 0) !== (hover.z ?? 0)) continue;
-    const cc = tileCenter(ent.pos.x, ent.pos.y, ctx.dims, ctx.liftAt(ent.pos.x, ent.pos.y, ent.z ?? 0));
+  for (const h of halos) {
+    const ez = h.cell.z;
+    const cc = tileCenter(h.cell.x, h.cell.y, ctx.dims, ctx.liftAt(h.cell.x, h.cell.y, ez));
     out.push({
-      d: depth(ent.pos.x, ent.pos.y, ctx.dims, ent.z ?? 0) + 0.55,
-      z: ent.z ?? 0,
+      d: depth(h.cell.x, h.cell.y, ctx.dims, ez) + 0.55,
+      z: ez,
       vis: true, // survol d'un PNJ interlocuteur (en vue) → halo au-dessus du voile
       el: (
-        <g key={`npc-halo-${ent.id}`} className="interact-halo hovered" pointerEvents="none">
-          <ellipse cx={cc.cx} cy={cc.cy + 4} rx={15} ry={7.5} fill={HALO_TINT} opacity={0.2} />
-          <ellipse cx={cc.cx} cy={cc.cy + 4} rx={15} ry={7.5} fill="none" stroke={GOLD_TINT} strokeWidth={1.8} opacity={0.85} />
+        <g key={`npc-halo-${h.id}`} className="interact-halo hovered" pointerEvents="none">
+          <ellipse cx={cc.cx} cy={cc.cy + HALO_CY_PX} rx={NPC_HALO_RX_PX} ry={NPC_HALO_RX_PX / 2} fill={HALO_TINT} opacity={NPC_FILL_OPACITY} />
+          <ellipse cx={cc.cx} cy={cc.cy + HALO_CY_PX} rx={NPC_HALO_RX_PX} ry={NPC_HALO_RX_PX / 2} fill="none" stroke={GOLD_TINT} strokeWidth={NPC_HALO_STROKE_PX} opacity={NPC_STROKE_OPACITY} />
         </g>
       ),
     });

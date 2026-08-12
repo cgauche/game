@@ -1,0 +1,132 @@
+import { describe, expect, it } from 'vitest';
+import { emptyScene, type Scene, type SceneEntity } from '../../state/scene';
+import { RING_A_PX } from './dynamicMarks';
+import { HALO_RX_PX, SPARK_BRANCHES, SPARK_INNER_R_PX, SPARK_R_PX, haloRadiusK, interactionHalos, sparkPathD, sparkPoints, NO_INTERACTION_HALOS } from './interactHalos';
+import type { PropEl } from './types';
+
+/**
+ * DÉRIVATION PARTAGÉE des halos d'interaction (#1176, P3-0g) : c'est ELLE qui décide qui appelle le
+ * joueur — un décor fouillable non épuisé, un PNJ interlocuteur sous le curseur. Les deux voies de
+ * rendu la consomment SANS rien re-décider, donc tout ce qui est mesuré ici vaut pour les deux ; ce
+ * qu'aucune des deux ne pourrait rattraper, c'est un halo dérivé pour un objet déjà fouillé.
+ */
+function décor(id: string, x: number, y: number, extra: Partial<PropEl> = {}): PropEl {
+  return {
+    kind: 'prop',
+    key: `prop:${id}`,
+    cell: { x, y, z: 0 },
+    source: 'entity',
+    entId: id,
+    ref: 'tonneau',
+    foot: { offX: 0, offY: 0, scale: 1 },
+    interact: true,
+    states: { visible: true },
+    ...extra,
+  };
+}
+
+function scèneAvec(...entities: SceneEntity[]): Scene {
+  const s = emptyScene(10, 10);
+  return { ...s, entities: [...s.entities, ...entities] };
+}
+
+const pnj = (id: string, x: number, y: number, extra: Partial<SceneEntity> = {}): SceneEntity =>
+  ({ id, kind: 'personnage', pos: { x, y }, dialogueId: 'd1', ...extra }) as SceneEntity;
+
+const EXPLORE = { exploring: true, combat: false };
+
+describe('Halos d’interaction — le décor FOUILLABLE (#1176 P3-0g)', () => {
+  it('un décor interactif porte un halo ; le flag d’épuisement l’éteint', () => {
+    const els = [décor('coffre', 3, 4)];
+    const vivants = interactionHalos(els, scèneAvec(), {}, null, EXPLORE);
+    expect(vivants.fouilles.map((h) => h.id)).toEqual(['coffre']);
+    expect(interactionHalos(els, scèneAvec(), { __fouille_coffre: true }, null, EXPLORE).fouilles).toHaveLength(0);
+    // et le flag d'un AUTRE décor n'éteint pas celui-ci
+    expect(interactionHalos(els, scèneAvec(), { __fouille_tonneau: true }, null, EXPLORE).fouilles).toHaveLength(1);
+  });
+
+  it('ni un décor NON interactif ni un overlay de TERRAIN n’appellent le joueur', () => {
+    const els = [
+      décor('mort', 1, 1, { interact: false }),
+      { ...décor('arbre', 2, 2), source: 'terrain' as const, entId: undefined, interact: false },
+    ];
+    expect(interactionHalos(els, scèneAvec(), {}, null, EXPLORE).fouilles).toHaveLength(0);
+  });
+
+  it('le halo est aux PIEDS du décor : le centre de l’empreinte, et son étage', () => {
+    const [h] = interactionHalos(
+      [décor('epave', 4, 6, { cell: { x: 4, y: 6, z: 2 }, span: { w: 2, h: 2 }, foot: { offX: 0.5, offY: 0.5, scale: 2 } })],
+      scèneAvec(),
+      {},
+      null,
+      EXPLORE,
+    ).fouilles;
+    expect(h.cell).toEqual({ x: 4, y: 6, z: 2 });
+    expect(h.centre).toEqual({ x: 4.5, y: 6.5 });
+    expect(h.span).toEqual({ w: 2, h: 2 });
+    expect(h.scale, 'un grand décor porte un grand halo').toBe(2);
+  });
+
+  it('le SURVOL renforce le halo — sur SA case, à SON étage, et seulement en exploration', () => {
+    const els = [décor('coffre', 3, 4, { cell: { x: 3, y: 4, z: 1 } })];
+    const survolé = (hover: { x: number; y: number; z?: number } | null, ctx = EXPLORE) =>
+      interactionHalos(els, scèneAvec(), {}, hover, ctx).fouilles[0].hovered;
+    expect(survolé({ x: 3, y: 4, z: 1 })).toBe(true);
+    expect(survolé({ x: 3, y: 4, z: 0 }), 'un étage plus bas n’est pas ce décor').toBe(false);
+    expect(survolé({ x: 3, y: 5, z: 1 })).toBe(false);
+    expect(survolé(null)).toBe(false);
+    expect(survolé({ x: 3, y: 4, z: 1 }, { exploring: false, combat: false }), 'hors exploration, pas de renfort').toBe(false);
+  });
+
+  it('le RAYON monde du halo est la projection de l’ellipse affine — la même loi que l’anneau d’équipe', () => {
+    // l'affine trace `rx = 17·échelle` px ; `RING_A_PX` px valent UNE case de rayon monde.
+    expect(haloRadiusK(HALO_RX_PX)).toBeCloseTo(HALO_RX_PX / RING_A_PX, 12);
+    expect(haloRadiusK(HALO_RX_PX) * RING_A_PX).toBeCloseTo(HALO_RX_PX, 12);
+  });
+});
+
+describe('Halos d’interaction — le PNJ INTERLOCUTEUR (#1176 P3-0g)', () => {
+  it('révélé au SURVOL seul, et jamais sans interlocution', () => {
+    const scène = scèneAvec(pnj('marchand', 5, 5), pnj('badaud', 6, 5, { dialogueId: undefined }));
+    expect(interactionHalos([], scène, {}, null, EXPLORE).pnjs, 'aucun survol, aucun halo').toHaveLength(0);
+    expect(interactionHalos([], scène, {}, { x: 5, y: 5 }, EXPLORE).pnjs.map((p) => p.id)).toEqual(['marchand']);
+    expect(interactionHalos([], scène, {}, { x: 6, y: 5 }, EXPLORE).pnjs, 'un badaud sans dialogue ne s’allume pas').toHaveLength(0);
+  });
+
+  it('un MARCHAND sans dialogue s’allume quand même (il ouvre son panneau)', () => {
+    const scène = scèneAvec(pnj('etal', 2, 2, { dialogueId: undefined, merchant: { archetype: 'general' } } as Partial<SceneEntity>));
+    expect(interactionHalos([], scène, {}, { x: 2, y: 2 }, EXPLORE).pnjs.map((p) => p.id)).toEqual(['etal']);
+  });
+
+  it('en COMBAT, aucun halo de PNJ — le survol y sert au ciblage', () => {
+    const scène = scèneAvec(pnj('marchand', 5, 5));
+    expect(interactionHalos([], scène, {}, { x: 5, y: 5 }, { exploring: false, combat: true }).pnjs).toHaveLength(0);
+    // mais le décor fouillable, lui, garde son halo permanent
+    expect(interactionHalos([décor('coffre', 3, 4)], scène, {}, { x: 5, y: 5 }, { exploring: false, combat: true }).fouilles).toHaveLength(1);
+  });
+
+  it('la valeur VIDE est gelée — une voie ne peut pas la salir pour l’autre', () => {
+    expect(Object.isFrozen(NO_INTERACTION_HALOS)).toBe(true);
+    expect(Object.isFrozen(NO_INTERACTION_HALOS.fouilles)).toBe(true);
+    expect(Object.isFrozen(NO_INTERACTION_HALOS.pnjs)).toBe(true);
+  });
+});
+
+describe('GLYPHE de l’étincelle — une seule définition pour les deux voies (#1176 P3-0g)', () => {
+  it('le tracé rendu est l’étoile à QUATRE branches que la voie affine peignait à la main', () => {
+    expect(sparkPathD()).toBe('M0,-6 L1.7,-1.7 L6,0 L1.7,1.7 L0,6 L-1.7,1.7 L-6,0 L-1.7,-1.7 Z');
+  });
+
+  it('quatre POINTES sur les axes de l’écran, quatre CREUX sur les diagonales', () => {
+    const pts = sparkPoints();
+    expect(pts).toHaveLength(2 * SPARK_BRANCHES);
+    const rayons = pts.map((p) => Math.hypot(p.x, p.y));
+    for (let i = 0; i < pts.length; i++) expect(rayons[i]).toBeCloseTo(i % 2 === 0 ? SPARK_R_PX : SPARK_INNER_R_PX, 12);
+    // la première pointe est vers le HAUT de l'écran (y SVG vers le bas)
+    expect(pts[0].x).toBeCloseTo(0, 12);
+    expect(pts[0].y).toBeCloseTo(-SPARK_R_PX, 12);
+    // et le creux tombe sur la diagonale, à 1,7 px de chaque axe
+    expect(Math.abs(pts[1].x)).toBeCloseTo(1.7, 12);
+    expect(Math.abs(pts[1].y)).toBeCloseTo(1.7, 12);
+  });
+});

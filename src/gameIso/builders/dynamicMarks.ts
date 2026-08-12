@@ -43,9 +43,12 @@ const PAS_DE_CASE_PX = Math.hypot(projectStep(null, { x: 1, y: 0 }).dx, projectS
  *  son pointillé à l'ÉCRAN, le volumique le sien dans le MONDE, et la projection isométrique n'a pas la
  *  même échelle dans toutes les directions. Un lien de mêlée relie des cases au CONTACT (#1176) :
  *  l'écart y reste sous le tiret. */
-export const TETHER_WIDTH_K = TETHER_STROKE_PX / PAS_DE_CASE_PX;
-export const TETHER_DASH_K = TETHER_DASH_PX / PAS_DE_CASE_PX;
-export const TETHER_GAP_K = TETHER_GAP_PX / PAS_DE_CASE_PX;
+export function strokeWidthK(px: number): number {
+  return px / PAS_DE_CASE_PX;
+}
+export const TETHER_WIDTH_K = strokeWidthK(TETHER_STROKE_PX);
+export const TETHER_DASH_K = strokeWidthK(TETHER_DASH_PX);
+export const TETHER_GAP_K = strokeWidthK(TETHER_GAP_PX);
 
 /** Case LOGIQUE d'une marque dynamique (l'étage compris). */
 export interface MarkCell {
@@ -195,7 +198,7 @@ export function ringPhaseRad(kind: ProjKind): number {
 
 /** Épaisseur du trait, en fraction de case — même convention que le lien de mêlée (`TETHER_WIDTH_K`),
  *  et même écart assumé : l'affine mesure son trait à l'écran, le volumique le sien dans le monde. */
-export const TEAM_RING_WIDTH_K = TEAM_RING_STROKE_PX / PAS_DE_CASE_PX;
+export const TEAM_RING_WIDTH_K = strokeWidthK(TEAM_RING_STROKE_PX);
 
 /** BASES d'échelle des jetons dans le repère SVG (`stage/tokens`) : le combattant, et le meneur du
  *  groupe hors combat. L'anneau se mesure sur la MÊME échelle que le corps qu'il entoure — la base

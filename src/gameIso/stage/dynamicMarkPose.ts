@@ -175,6 +175,45 @@ export function ringDashes(rK: number, motif: { dashPx: number; gapPx: number } 
   return out;
 }
 
+/**
+ * ÉCRIT UN ANNEAU PLAT dans un pool : le chapelet de cordes `tirets` posé sur le cercle de centre
+ * `centre` et de rayon `rM`, chaque corde large de `largeurM`. `phi0` = le décalage qui mène du
+ * paramètre d'ellipse ÉCRAN à l'angle MONDE (phase de vue + lacet caméra) ; `teinte` = la couleur par
+ * instance d'un pool qui en porte une, absente pour un pool à teinte de matériau. Rend l'indice
+ * d'écriture SUIVANT.
+ *
+ * Primitive PARTAGÉE : les anneaux d'ÉQUIPE (ci-dessous) et les halos d'INTERACTION
+ * (`stage/interactHaloPose`) posent le même objet — un cercle plat de largeur constante — et la
+ * moindre divergence de convention (le lacet de la corde, le sens de l'angle) donnerait deux anneaux
+ * qui ne tournent pas ensemble. L'appelant garde la SATURATION : lui seul sait ce qu'il refuse
+ * d'entamer.
+ */
+export function writeRingChords(
+  mesh: THREE.InstancedMesh,
+  from: number,
+  centre: THREE.Vector3,
+  rM: number,
+  largeurM: number,
+  tirets: readonly RingDash[],
+  phi0: number,
+  teinte?: THREE.Color,
+): number {
+  let n = from;
+  for (const tiret of tirets) {
+    const phi = tiret.u + phi0;
+    const cos = Math.cos(phi);
+    const sin = Math.sin(phi);
+    // La corde est TANGENTE au cercle : sa direction de grille est `(−sin φ, cos φ)`, et `rotY(θ)`
+    // envoie +X sur `(cos θ, 0, −sin θ)` (même lacet que le chapelet du lien de mêlée).
+    Q.setFromAxisAngle(AXE_Y, Math.atan2(-cos, -sin));
+    S.set(2 * rM * Math.sin(tiret.span / 2), 1, largeurM);
+    P.set(centre.x + rM * cos, centre.y, centre.z + rM * sin);
+    if (teinte) mesh.setColorAt(n, teinte);
+    mesh.setMatrixAt(n++, M.compose(P, Q, S));
+  }
+  return n;
+}
+
 /** Écrit les ANNEAUX d'équipe : par jeton posté, un chapelet de cordes posées sur le cercle de ses
  *  pieds, chacune emmenée par le glissement de SON combattant et teintée de SA couleur d'équipe.
  *  Même SATURATION ATOMIQUE que le lien de mêlée : un anneau qui ne rentre pas n'est pas entamé — un
@@ -205,18 +244,7 @@ function poserAnneaux(mesh: THREE.InstancedMesh, marks: DynamicMarks, f: DynMark
     // l'atténuation s'y lit en luminosité — un anneau à teinte pleine sous un fantôme le rendrait plus
     // présent que le corps qu'il ceint.
     TEINTE.set(anneau.color).multiplyScalar(boardChromeOpacity((f.chromeAt ?? AUCUN_CHROME)(anneau.id)));
-    for (const tiret of tirets) {
-      const phi = tiret.u + phase + lacet;
-      const cos = Math.cos(phi);
-      const sin = Math.sin(phi);
-      // La corde est TANGENTE au cercle : sa direction de grille est `(−sin φ, cos φ)`, et `rotY(θ)`
-      // envoie +X sur `(cos θ, 0, −sin θ)` (même lacet que le chapelet du lien de mêlée).
-      Q.setFromAxisAngle(AXE_Y, Math.atan2(-cos, -sin));
-      S.set(2 * rM * Math.sin(tiret.span / 2), 1, largeurM);
-      P.set(CENTRE.x + rM * cos, CENTRE.y, CENTRE.z + rM * sin);
-      mesh.setColorAt(n, TEINTE);
-      mesh.setMatrixAt(n++, M.compose(P, Q, S));
-    }
+    n = writeRingChords(mesh, n, CENTRE, rM, largeurM, tirets, phase + lacet, TEINTE);
   }
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
   return n;
