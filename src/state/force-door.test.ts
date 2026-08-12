@@ -3,12 +3,13 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { setRule, resetRule } from '../engine/policy';
+import { modalOwnerOf } from './modalArbiter';
 
 /** Enfoncer une porte à PLUSIEURS (EDO Appendice 2, « Portes ») — flux multi PARALLÈLE, métier =
  *  DÉGÂTS sur objet (BE / B). Chaque héros frappe indépendamment (Bagarre → DR + BF − BE) avec son
  *  propre cycle d'influence ; la somme ronge les Blessures jusqu'à céder. Objets : PAS de minimum 1. */
 describe('Enfoncer une porte à plusieurs (objet BE/B, jets indépendants)', () => {
-  beforeEach(() => { useGame.setState({ battle: null, pendingForceDoor: null, flags: {} }); });
+  beforeEach(() => { useGame.setState({ battle: null, pendingForceDoor: null, pendingCascade: null, suspendedCascades: [], flags: {} } as never); });
   afterEach(() => resetRule('test-fast-sl'));
 
   function heroes() {
@@ -36,6 +37,25 @@ describe('Enfoncer une porte à plusieurs (objet BE/B, jets indépendants)', () 
     expect(useGame.getState().pendingForceDoor).toBeNull(); // la porte a cédé
     expect(useGame.getState().flags.cave_ouverte).toBe(true); // ouverture en jeu (flag de scène)
     expect(guard).toBeGreaterThanOrEqual(1);
+  });
+
+  /**
+   * #1262 V2 L4 — l'enfoncement était le DERNIER `groupOwner` monté à la main (une étape littérale
+   * hors de la porte). Il passe par `hostStep` en forme de GROUPE : jet de groupe SANS porteur nommé.
+   * La possession `'*'` est ce qui donne la fenêtre à TOUS les sièges (chacun n'influençant que SA
+   * rangée) — sans elle, l'arbitre la rendrait à l'hôte seul.
+   */
+  it('l’étape est MINTÉE en forme de GROUPE : `groupOwner`, aucun porteur nommé, fenêtre à tous les sièges', () => {
+    const [a, b] = heroes();
+    useGame.getState().startForceDoor({ label: 'Porte', doorBE: 0, doorB: 8, heroIds: [a.id, b.id] });
+    const casc = useGame.getState().pendingCascade!;
+    expect(casc.participants).toHaveLength(1);
+    const st = casc.participants[0];
+    expect(Object.keys(st).sort(), 'la déclaration, et rien d’autre').toEqual(['groupOwner', 'id', 'jet', 'kind']);
+    expect(st.jet).toBe('forceDoor');
+    expect(st.groupOwner).toBe(true);
+    expect(st.actorId, 'un jet de GROUPE n’a pas d’acteur unique').toBeUndefined();
+    expect(modalOwnerOf(useGame.getState()), 'fenêtre ouverte à tous les sièges').toBe('*');
   });
 
   it('EDO : DR + BF < BE → 0 dégât (la porte ne bouge pas) — objets sans minimum 1', () => {

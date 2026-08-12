@@ -36,7 +36,7 @@ let root: Root;
 
 /** Étape à table (aucun acteur : le tirage est du MONDE — le siège hôte/MJ le contrôle). */
 const tableStep = (tableId: string, mod?: number): CascadeStep =>
-  ({ id: 'tm', kind: 'uiTableSpy', label: 'Tirage sur tableau', icon: 'nav/dice', table: { tableId, ...(mod != null ? { mod } : {}) }, interactive: true });
+  ({ id: 'tm', kind: 'uiTableSpy', label: 'Tirage sur tableau', icon: 'nav/dice', table: { tableId, ...(mod != null ? { mod } : {}) }});
 
 function openTable(mod?: number, tableId = T) {
   useGame.setState({
@@ -380,7 +380,7 @@ describe('Mode table — plancher ≠ 1 : l’écran affiche le dé du RÉSOLVEU
     // tomberait juste même avec un recalcul — la sonde ne prouverait alors rien.
     startCascade(useGame.getState, useGame.setState, {
       title: 'Tirage', purpose: 'test',
-      steps: [{ id: 'tm', kind: 'uiTableSpy', label: 'Tirage', icon: 'nav/dice', table: { tableId: T11, mod: -20, clamp: true, forcedRoll: 15 }, interactive: true }],
+      steps: [{ id: 'tm', kind: 'uiTableSpy', label: 'Tirage', icon: 'nav/dice', table: { tableId: T11, mod: -20, clamp: true, forcedRoll: 15 }}],
     });
     render();
     act(() => { useGame.getState().cascadeTableRoll('tm'); });
@@ -505,8 +505,13 @@ describe('bandes successives — le corps ne rend QUE la bande courante', () => 
     return h;
   };
   const bandRow = (id: string, label: string) => ({ id, label, interactive: true, base: 50, target: 50, result: null });
+  // POSSESSION dérivée des rangées comme dans `rollSeam.bandStep` : une bande anonyme n'entre plus dans
+  // une séquence (#1262 V2 L4, `cascade.assertBandeDeclarePossession`).
   const bandStep = (id: string, label: string, rows: ReturnType<typeof bandRow>[]): CascadeStep =>
-    ({ id, kind: 'uiBandProse', label, icon: 'nav/dice', interactive: true, aggregate: 'none', participants: rows }) as CascadeStep;
+    ({
+      id, kind: 'uiBandProse', label, icon: 'nav/dice', aggregate: 'none', participants: rows,
+      ...(new Set(rows.map((r) => r.id)).size > 1 ? { groupOwner: true } : { actorId: rows[0].id }),
+    }) as CascadeStep;
 
   function openBandes() {
     registerCascadeApplier('uiBandProse', (_g, _s, step) => ({

@@ -298,7 +298,6 @@ describe('#270 — allure forcée (attelage) : gate contrôleur', () => {
     expect(pc?.purpose).toBe('travelDay');
     const first = pc!.participants[0];
     expect(first.kind).toBe('landForcedPace');
-    expect(first.interactive).toBe(true);
     expect(first.result ?? null).toBeNull(); // pas encore roulé → influençable (Chance/Résilience)
   });
 

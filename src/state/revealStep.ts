@@ -55,6 +55,5 @@ export function revealToStep(
     reveal: entry,
     ...(opts?.autoClose ? { autoCloseMs: REVEAL_AUTO_CLOSE_MS[opts.autoClose] } : {}),
     table: opts?.table,
-    interactive: true,
   } as BuiltCascadeStep;
 }

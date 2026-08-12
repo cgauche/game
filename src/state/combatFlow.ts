@@ -5766,7 +5766,10 @@ registerCombatEndBandApplier('combatEndCorruption', (get, set, _band, row, hero,
   const gain = corruptionGain(level, row.result!.success, Math.max(0, row.result!.sl));
   // Le verdict (roll/target) est déjà porté par la rangée de jet (RollLine ✓/✗ ±DR) — la conséquence ne
   // re-décrit QUE ce qui a été appliqué (#295 Lot 1, Décision 1b) : le gain RÉEL, ou une résistance nue.
-  return gain > 0 ? gainCorruption(get, set, hero, gain) : [tr('out.corruptExposureResist', { name: hero.label, label })];
+  // Le DEGRÉ affronté est nommé des DEUX côtés (#1281, critère 2) : il l'était sur la seule réussite,
+  // et l'échec ne laissait qu'un « +N Point(s) de Corruption » qui ne disait pas à quoi le porteur avait cédé.
+  if (gain <= 0) return [tr('out.corruptExposureResist', { name: hero.label, label })];
+  return [tr('out.corruptExposureFail', { name: hero.label, label }), ...gainCorruption(get, set, hero, gain)];
 });
 
 /** Ouvre une cascade INFLUENÇABLE à UNE bande de Contraction de maladie pour `patient` (Test de

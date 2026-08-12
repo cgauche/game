@@ -86,7 +86,6 @@ function soutenuStep(kind: string, actorId: string, helperId: string, sl: number
     base: 45, mods: [{ label: 'Soutien', value: 10, by: [{ id: helperId }] }],
     target: 55,
     result: { roll: 30, target: 55, sl, success: true },
-    interactive: true,
     meta,
   } as CascadeStep;
 }

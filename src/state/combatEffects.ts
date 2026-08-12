@@ -9,7 +9,7 @@ import { d10, d100, defaultRNG, roll as rollDice, type RNG } from '../engine/dic
 import { petitePriereAnswered } from '../engine/prayer';
 import { applyOps, resolveFormula, type OpsCtx } from '../engine/ops';
 import { rule } from '../engine/policy';
-import { gainCorruption, corruptionTarget } from './corruptionFlow';
+import { gainCorruption, corruptionTarget, poseCorruptionPending } from './corruptionFlow';
 import { eligibleTalent } from '../engine/grimoire';
 import { effectiveChar } from '../engine/characteristics';
 import { buildActorView } from './combat/flowEval';
@@ -1252,7 +1252,9 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       // `e.skill` présent = déterminé en amont (verrouillé) ; absent = nature indéterminée → le
       // joueur choisira Résistance/Calme dans la modale (défaut affiché : Résistance).
       // Test d'Exposition = « résister à la Corruption » → Résistance (Menace : Corruption) offerte (LDB 10).
-      if (hero) env.set({ pendingCorruption: { heroId: hero.id, level: e.level, skill: e.skill ?? 'resistance', skillLocked: e.skill != null, align: e.align, menace: 'corruption' } });
+      // La pose passe par LA PORTE du slot (#1282) : une fenêtre de Corruption déjà ouverte n'est pas
+      // écrasée — l'Exposition prend rang (`corruptionQueue`).
+      if (hero) poseCorruptionPending(env.get, env.set, { heroId: hero.id, level: e.level, skill: e.skill ?? 'resistance', skillLocked: e.skill != null, align: e.align, menace: 'corruption' });
     },
   },
   giveSin: {

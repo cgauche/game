@@ -51,7 +51,6 @@ describe('#1262 — monoStep : un porteur, un jet, une cible', () => {
   it('pose la POSSESSION et la SURFACE, et monte sa ligne par le monteur canonique', () => {
     const step = monoStep({ id: 'calme', kind: 'psych', label: 'Garder son calme', actor: hero('H1'), difficulty: 'intermediaire', ligne: { test: { char: 'force-mentale' } } })!;
     expect(step.actorId, 'le mint NOMME le porteur — c’est ce qui donne à l’arbitre un owner à router (sans lui : fenêtre hôte seul)').toBe('H1');
-    expect(step.interactive).toBe(true);
     expect(step.result, 'le dé n’est pas tombé : c’est la fenêtre qui le jette').toBeNull();
     expect(step.target, 'FM 40, Difficulté intermédiaire +0').toBe(40);
     expect(step.base).toBe(40);

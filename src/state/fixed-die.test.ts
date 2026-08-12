@@ -424,7 +424,7 @@ describe('journal — la marque appartient à l’ÉTAPE qui émet, pas au slot 
   const applied: string[] = [];
 
   const etape = (id: string): CascadeStep =>
-    ({ id, kind: 'markSpy', label: 'Tirage', icon: 'nav/dice', table: { tableId: TBL }, interactive: true });
+    ({ id, kind: 'markSpy', label: 'Tirage', icon: 'nav/dice', table: { tableId: TBL }});
 
   beforeEach(() => {
     applied.length = 0;

@@ -53,6 +53,24 @@ import { followsCharacterRules } from '../engine/relations';
 import { resultLine, freeCons, tableStep, type BuiltCascadeStep } from './rollSeam';
 
 /**
+ * LA PORTE du slot `pendingCorruption` (#1282) — SOURCE UNIQUE de sa pose, quel que soit le
+ * producteur : Test de SEUIL (`gainCorruption`), Test d'EXPOSITION d'un effet de scène
+ * (`combatEffects.corruptionExposure`) ou d'une Activité d'interlude (`interludeFlow`).
+ *
+ * Le slot est UNIQUE, et deux fenêtres de Corruption peuvent se réclamer d'affilée (une bande de fin
+ * de combat fait déborder N héros ; une Exposition s'ouvre pendant qu'un seuil est affiché) : la
+ * seconde PREND SON RANG dans `corruptionQueue` (LDB 19 l.70) au lieu d'ÉCRASER la fenêtre en place —
+ * ce qui supprimerait un Test dû. `releaseCorruptionSlot` reste la couture de sortie unique.
+ *
+ * Un « Je te renie ! » en attente (`pendingRenounce`) tient le slot tout autant : sa décision est la
+ * suite d'un Test déjà joué.
+ */
+export function poseCorruptionPending(get: Get, set: Set, pending: PendingCorruption): void {
+  if (get().pendingCorruption || get().pendingRenounce) set({ corruptionQueue: [...get().corruptionQueue, pending] });
+  else set({ pendingCorruption: pending });
+}
+
+/**
  * Ajoute `n` Points de Corruption à `hero`, applique seuil → mutation → limites.
  * Mute le héros EN PLACE (l'appelant pousse le patch de re-rendu) et renvoie les
  * lignes de journal. La révélation (dés du Test/de la table) est poussée en étape d'AFFICHAGE de
@@ -73,36 +91,22 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, a
   if (!corruptionThresholdExceeded(hero)) return lines;
   // « Un jet = une modale » : pour un pilote HUMAIN, le Test du seuil est un VRAI jet différé — modale
   // de Corruption (kind 'seuil', cycle Lancer→Chance→Pacte), résolu dans `resolveCorruptionPending`
-  // (succès = contenu ; échec = « Je te renie ! »/mutation). Repli auto-résolu + révélation témoin :
-  // l'IA seule (elle ne tient aucune modale).
+  // (succès = contenu ; échec = « Je te renie ! »/mutation — les DEUX fenêtres partent de là). Repli
+  // auto-résolu : l'IA seule (elle ne tient aucune modale).
   if (pilotedByHuman(get(), hero)) {
     lines.push(`${hero.label} : la Corruption déborde son seuil — Test de Résistance.`);
     // `menace: 'mutation'` : l'échec du Test de seuil fait MUTER (l.82) → c'est le Test qui « résiste
     // à la Mutation » du talent Résistance (Menace), LDB 10 l.1015-1021.
     const seuil: PendingCorruption = { heroId: hero.id, kind: 'seuil', skill: 'resistance', skillLocked: true, align, menace: 'mutation' };
-    // RAFALE : le slot est UNIQUE et la fenêtre en place appartient à un autre héros (une bande de fin
-    // de combat appelle N seuils d'affilée) — le Test PREND SON RANG dans la file au lieu de retomber
-    // sur le repli auto-résolu, qui le roulerait en silence chez son porteur.
-    if (get().pendingCorruption || get().pendingRenounce) set({ corruptionQueue: [...get().corruptionQueue, seuil] });
-    else set({ pendingCorruption: seuil });
+    poseCorruptionPending(get, set, seuil);
     return lines;
   }
+  // REPLI AUTO-RÉSOLU — atteint SEULEMENT quand aucun humain ne pilote le porteur (le `return`
+  // ci-dessus a déjà emporté tous les autres) : l'IA ne tient aucune modale, ni de seuil, ni de
+  // renoncement. Le Test est donc jeté ici et la mutation appliquée d'office.
   const t = rollTest(testValue(hero, 'resistance'), 'intermediaire', rng);
   if (t.success) {
-    // Le dé de Résistance est DÉJÀ affiché par la rangée `TableRollLine` de la révélation (dice: t.roll,
-    // ci-dessous) — pas de re-print (#295 Lot 4).
     lines.push(resultLine(freeCons([`${hero.label} contient sa Corruption — pour cette fois.`])));
-    if (pilotedByHuman(get(), hero))
-      pushReveal(set, { kind: 'mutation', title: 'Corruption contenue', dice: t.roll, lines: [...lines], subjectId: hero.id, severity: 'minor' });
-    return lines;
-  }
-
-  // « Je te renie ! » (LDB 17 l.71) : un pilote humain avec de la Résilience peut refuser la mutation —
-  // choix par modale ; la mutation (applyMutation) n'est appliquée qu'à la résolution.
-  if (pilotedByHuman(get(), hero) && (hero.resilience ?? 0) > 0) {
-    // Le jet (roll/target) est repris par la rangée de `RenounceModal` juste ensuite — pas de re-print (#295 Lot 5).
-    lines.push(`${hero.label} échoue à contenir sa Corruption — la mutation menace…`);
-    set({ pendingRenounce: { heroId: hero.id, testRoll: t.roll, testTarget: t.target, align } });
     return lines;
   }
   lines.push(...applyMutation(get, set, hero, { roll: t.roll, target: t.target }, align));

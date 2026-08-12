@@ -247,8 +247,8 @@ describe('#1262 lot 4 — les producteurs mintés : la CIBLE ne bouge pas, la ba
     expect(step.mods?.some((m) => m.value === -20), 'les 2 Sonné sortent en ligne NOMMÉE').toBe(true);
     expect(step.rollLabel, 'Compétence dérivée du catalogue — même libellé qu’avant').toBe('Résistance');
     expect(step.difficulty, 'AA 07 l.5 : « Test de Résistance Intermédiaire (+0) »').toBe('intermediaire');
-    expect({ actorId: step.actorId, interactive: step.interactive, stake: !!step.stake })
-      .toEqual({ actorId: H.id, interactive: true, stake: true });
+    expect({ actorId: step.actorId, stake: !!step.stake })
+      .toEqual({ actorId: H.id, stake: true });
   });
 
   it('Effort soutenu (LDB 16 l.97) : cible INCHANGÉE (`testValue`), base NUE et États en lignes nommées', () => {
@@ -264,8 +264,8 @@ describe('#1262 lot 4 — les producteurs mintés : la CIBLE ne bouge pas, la ba
     expect(step.mods?.some((m) => m.value === -20), 'les 2 Sonné sortent en ligne NOMMÉE').toBe(true);
     expect(step.rollLabel).toBe('Résistance');
     expect(step.difficulty, 'aucune Difficulté n’est indiquée au RAW → Intermédiaire, comme le jumeau inline').toBe('intermediaire');
-    expect({ actorId: step.actorId, interactive: step.interactive, stake: !!step.stake })
-      .toEqual({ actorId: H.id, interactive: true, stake: true });
+    expect({ actorId: step.actorId, stake: !!step.stake })
+      .toEqual({ actorId: H.id, stake: true });
   });
 
   it('Durée « + » (LDB 47 l.311) : le CHOIX reste un choix — aucun dé, aucune cible, le porteur possède', () => {
@@ -282,8 +282,8 @@ describe('#1262 lot 4 — les producteurs mintés : la CIBLE ne bouge pas, la ba
     expect(step.options?.map((o) => o.key)).toEqual(['yes', 'no']);
     expect(step.defaultChoice).toBe('no');
     expect(step.meta?.sourceSpellId, 'l’effet visé reste désigné par son id STABLE (#142)').toBe('ailes-de-l-aigle');
-    expect({ actorId: step.actorId, interactive: step.interactive, groupOwner: step.groupOwner })
-      .toEqual({ actorId: H.id, interactive: true, groupOwner: undefined });
+    expect({ actorId: step.actorId, groupOwner: step.groupOwner })
+      .toEqual({ actorId: H.id, groupOwner: undefined });
   });
 });
 

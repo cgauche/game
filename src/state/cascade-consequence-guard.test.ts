@@ -121,6 +121,10 @@ const CONTENT_BASELINE: Record<string, number> = {
   'src/state/shipwreck.ts': 1, // Natation, repli SANS pilote humain à bord (aucune cascade démarrée).
   'src/state/pursuitFlow.ts': 1, // Mouvement des adversaires (pas des PJ, aucune rangée).
   'src/state/combat/triggeredTest.ts': 2, // Test opposé INLINE (attaquant ET défenseur, aucun piloté humain) — SEULE surface des deux jets.
+  // #1281 `cascade.autoResolvedTraceLines` (rangée RÉSOLUE D'OFFICE — aucune fenêtre ne s'ouvre dessus,
+  // le journal est SA SEULE surface) n'apparaît PAS ici : son patron vit au CATALOGUE
+  // (`i18n/messages/fr.ts`, `casc.autoRowTrace`), hors du périmètre de ce scan. COUVERTURE, dite : tout
+  // re-print routé par `t(...)` échappe à ce cliquet — c'est le garde i18n qui tient cette surface.
   // #410 (2026-07-13) — stock révélé par l'inversion, GELÉ, à résorber (doctrine #295)
   'src/state/merchantFlow.ts': 2, // re-print roll/target hors rangée (l.206,226) — à migrer freeCons/rangée dédiée.
   'src/state/portFlow.ts': 2, // re-print roll/target hors rangée (l.361,364) — à migrer freeCons/rangée dédiée.

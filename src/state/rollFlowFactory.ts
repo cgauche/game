@@ -25,6 +25,7 @@ import { canReroll } from '../engine/fortune';
 import { availableResistance, markResistanceUsed, resistanceForcedSL } from '../engine/menace';
 import { hasActiveFlag, consumeActiveFlag } from '../engine/activeFlags';
 import { touchActors } from './combatOrParty';
+import { surfaceOf } from './rollSeam';
 import { gainCorruption } from './corruptionFlow';
 
 import type { Get, Set } from './flowTypes';
@@ -442,10 +443,22 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       ...(opts?.touch ? touch(get()) : {}),
     } as Partial<GameState>) };
   };
-  // Rangée TÉMOIN d'un multi (façon MultiRollList) : pas d'INFLUENCE joueur (Résilience). Son jet
-  // INITIAL est tout de même résolu (auto-roulé à l'ouverture par l'`openX` — ex. cible IA d'une
-  // incantation opposée) ; c'est l'UI (boutons masqués) + les gardes de point qui la rendent passive.
-  const passive = (slot: Slot) => !!spec.multi && (slot as Partial<RollParticipant>).interactive === false;
+  // Slot TÉMOIN d'un multi (façon MultiRollList) : pas d'INFLUENCE joueur (Résilience, Résistance
+  // (Menace), renversement). Son jet est NÉ ROULÉ chez un porteur qu'aucun siège ne surface (cible IA
+  // d'une incantation opposée, marin PNJ d'un Test d'équipage, nageur d'un naufrage non piloté) — il n'y
+  // a personne, devant aucun écran, à qui offrir de le retoucher.
+  //
+  // DÉRIVÉ, jamais DÉCLARÉ (#1262 V2 L4) : jet POSÉ (`spec.rolled`) + porteur NON SURFACÉ (`surfaceOf`,
+  // LA définition de surface du seam). Le drapeau d'étape `interactive` qui portait ce rôle était
+  // write-only côté rangée et n'était posé à `false` que par un seul producteur — un booléen dont
+  // personne ne garantissait la cohérence avec le jet réellement posé.
+  //
+  // `spec.rolled` SEUL ne suffit pas — MESURÉ : la Résilience (LDB 17 l.68) et la Résistance (Menace)
+  // (LDB 10 l.1015-1021) se jouent APRÈS un échec, et les trois verbes de renversement EXIGENT un jet
+  // posé (`spec.rolled`, ci-dessous). Un `passive = rolled` fermerait le cas nominal et tuerait le
+  // renversement entier. C'est la POSSESSION qui tranche, pas la seule présence du dé.
+  const passive = (slot: Slot, s: GameState, get: Get, p: P) =>
+    !!spec.multi && spec.rolled(slot) && !surfaceOf(get, spec.actor(s, slot, p));
   const reresolveOf = (s: GameState, slot: Slot, actor: Combatant, get: Get, p: P) =>
     spec.reresolve ? spec.reresolve(s, slot, actor, get, p) : spec.resolve(s, slot, actor, get, undefined, p);
   const L = spec.lens; // lentille de dérivation des verbes d'influence (Chance/Résilience/Résistance)
@@ -528,7 +541,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
     forceSuccess(get, set, pid) {
       if (!spec.caps?.forced) return;
       const s = get(); const p = pendingOf(s); if (!p) return;
-      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot)) return;
+      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot, s, get, p)) return;
       const actor = spec.actor(s, loc.slot, p);
       // Résilience « Je ne faillirai pas ! » (LDB 17 l.68) : réussite MINIMALE forcée (DR planché). Lentille :
       // opposé binaire/flip → `forceWin` ; sinon `applyRoll(forcedTR au plancher)`. Repli = `resolve(…,{})`.
@@ -590,7 +603,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
     resist(get, set, pid) {
       if (!spec.caps?.resist) return;
       const s = get(); const p = pendingOf(s); if (!p) return;
-      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot)) return;
+      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot, s, get, p)) return;
       // Le tag `menace` vit sur le SLOT (étape de cascade, RANGÉE d'une bande) ou sur le PENDING entier
       // (opposition de sort : ses participants ne sont pas tagués, la FENÊTRE l'est). PRÉCÉDENCE : le tag
       // du slot PRIME ; le repli ne sert qu'aux flux dont les rangées n'en portent pas. Une BANDE tague
@@ -630,7 +643,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
     reverse(get, set, pid) {
       if (!spec.reverse) return;
       const s = get(); const p = pendingOf(s); if (!p) return;
-      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot)) return;
+      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot, s, get, p)) return;
       if (!spec.rolled(loc.slot)) return;
       const actor = spec.actor(s, loc.slot, p); if (!actor) return;
       const cur = spec.reverse.current(loc.slot); if (!cur) return;
@@ -642,7 +655,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
     reverseAvailable(get, set, pid) {
       if (!spec.reverse) return false;
       const s = get(); const p = pendingOf(s); if (!p) return false;
-      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot)) return false;
+      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot, s, get, p)) return false;
       if (!spec.rolled(loc.slot)) return false;
       const actor = spec.actor(s, loc.slot, p); if (!actor) return false;
       const cur = spec.reverse.current(loc.slot); if (!cur) return false;
@@ -652,7 +665,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
     reversePreview(get, set, pid) {
       if (!spec.reverse) return null;
       const s = get(); const p = pendingOf(s); if (!p) return null;
-      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot)) return null;
+      const loc = locate(set, get, p, pid); if (!loc || passive(loc.slot, s, get, p)) return null;
       if (!spec.rolled(loc.slot)) return null;
       const actor = spec.actor(s, loc.slot, p); if (!actor) return null;
       const cur = spec.reverse.current(loc.slot); if (!cur) return null;

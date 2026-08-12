@@ -128,7 +128,7 @@ describe('Voie d’eau — la coque percée/heurtée gâte 1d10 Enc (#327 D)', (
 
 describe('Cogue pirate — se soumettre : pillage + tribut (#327 A5.3)', () => {
   const hailStep = (): CascadeStep => ({
-    id: 'sea-pirate-hail', kind: 'sea-pirate-hail', label: 'Cogue pirate', interactive: true, defaultChoice: 'fuir',
+    id: 'sea-pirate-hail', kind: 'sea-pirate-hail', label: 'Cogue pirate', defaultChoice: 'fuir',
     meta: { crisisLabel: 'Cogue pirate', crisisDesc: 'desc' },
     options: [
       { key: 'fuir', label: 'Fuir' }, { key: 'combattre', label: 'Combattre' }, { key: 'soumettre', label: 'Se soumettre' },

@@ -525,7 +525,6 @@ describe('chavirage — le redressement s’ouvre Round par Round (#1104a)', () 
     const out = cascadeAppliers['riverCapsize'].apply(get, set, step, undefined, { steps: [step], index: 0 });
     const r1 = out?.insert?.find((s) => s.kind === 'riverRighting');
     expect(r1, 'le Round 1 du redressement est une étape INFLUENÇABLE').toBeTruthy();
-    expect(r1!.interactive).toBe(true);
     expect(r1!.difficulty).toBe('accessible'); // +20 RAW, jamais fondu dans un +N anonyme
     // Le redressement est un Test de NAVIGATION : le barreur et son Soutien sont RE-RÉSOLUS au moment
     // de l'insertion (#1153 décision (c)) — la cible suit la composition RÉELLE du bord, pas une valeur

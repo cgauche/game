@@ -380,8 +380,8 @@ export interface BandSpec {
  * L'influence reste routée rangée par rangée (`netOwnership.seatInfluences`) : un siège ne dépense
  * jamais les ressources d'autrui, même sous owner `'*'`.
  *
- * Une feuille pose encore `groupOwner` en direct hors des mints (`store`) ; sa migration relève des
- * vagues V2+ (#1262). En combat, seul `hostStep` l'expose (moment PARTAGÉ).
+ * `groupOwner` ne se DÉCLARE que sur une étape HÔTE (`hostStep`, moment PARTAGÉ) ; partout ailleurs il
+ * se DÉDUIT des rangées, ici.
  *
  * `undefined` sans rangée : il n'y a pas de fenêtre à ouvrir sur zéro jet.
  */
@@ -393,7 +393,6 @@ export function bandStep(spec: BandSpec, rows: readonly BatchParticipant[]): Bui
     kind: spec.kind,
     ...(spec.label !== undefined ? { label: spec.label } : {}),
     ...(spec.icon ? { icon: spec.icon } : {}),
-    interactive: true,
     ...(porteurs.size > 1 ? { groupOwner: true } : { actorId: rows[0].id }),
     aggregate: spec.aggregate ?? 'none',
     participants: [...rows],
@@ -829,7 +828,6 @@ function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeS
     target: line.target,
     ...(line.clamped ? { clamped: line.clamped } : {}),
     result: null,
-    interactive: true,
     menace: req.test.menace,
     ...(req.stake ? { stake: req.stake } : {}),
     meta,
@@ -846,13 +844,17 @@ function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeS
 function buildBatchStep(get: Get, req: RollRequest, kind: string, meta?: CascadeStepMeta): CascadeStep {
   const participants = 'participants' in req.side ? req.side.participants : [];
   void get;
+  // POSSESSION dérivée des rangées, MÊME règle que `bandStep` (#1262 V2 L4) : plusieurs porteurs →
+  // `groupOwner` (owner `'*'`, chaque siège tient SA rangée), un seul → SON `actorId`. Sans elle,
+  // l'arbitre rendait la fenêtre à l'HÔTE SEUL — le siège du contributeur ne voyait jamais son jet.
+  const porteurs = new Set(participants.map((p) => p.id));
   return {
     id: kind,
     kind,
     label: req.actionLabel,
+    ...(porteurs.size > 1 ? { groupOwner: true } : participants.length ? { actorId: participants[0].id } : {}),
     participants,
     aggregate: req.aggregate ?? 'summed-dr',
-    interactive: true,
     ...(req.stake ? { stake: req.stake } : {}),
     meta,
   };
@@ -933,8 +935,9 @@ export function openWorldTest(
  *   - MONO   : `openRoll` (+ ses deux formes stéréotypées) — un jet, un porteur ;
  *   - BANDE  : `openBand` — une situation (une entrée de règle), N porteurs, UNE fenêtre ;
  *   - CHOIX  : `openChoice` — une décision, zéro dé.
- * `interactive`, `groupOwner` et `actorId` ne sont JAMAIS des champs de déclaration : le socle les
- * pose (`surfaceRow`/`bandStep`). Les étapes rendues portent la marque `BuiltCascadeStep`.
+ * `groupOwner` et `actorId` ne sont JAMAIS des champs de déclaration : le socle les pose (`bandStep`) ;
+ * `interactive` ne vit plus qu'au niveau RANGÉE, où `surfaceRow` le pose. Les étapes rendues portent la
+ * marque `BuiltCascadeStep`.
  *
  * DEUX DIVERGENCES ASSUMÉES avec les trois ouvertures MONO :
  *  1. SIGNATURE — les trois portent `kind` et `meta` en paramètres POSITIONNELS (`(get, set, req,
@@ -1139,7 +1142,6 @@ export function choiceStep(spec: ChoiceSpec): BuiltCascadeStep | undefined {
     label: spec.label,
     ...(spec.icon ? { icon: spec.icon } : {}),
     ...(spec.actorId ? { actorId: spec.actorId } : {}),
-    interactive: true,
     options: spec.options.map((o) => ({ ...o })),
     ...(defaut != null ? { defaultChoice: defaut } : {}),
     ...(spec.stakeRule ? { stakeRule: spec.stakeRule } : {}),
@@ -1163,8 +1165,8 @@ export function openChoice(get: Get, set: Set, spec: ChoiceSpec & { title: strin
   });
 }
 
-/** Ce qui est vrai de TOUTE étape mono : un porteur, un jet, sa situation. `actorId`/`interactive`/
- *  `base`/`mods`/`target` ne sont PAS des champs de déclaration — le mint les pose. */
+/** Ce qui est vrai de TOUTE étape mono : un porteur, un jet, sa situation. `actorId`/`base`/`mods`/
+ *  `target` ne sont PAS des champs de déclaration — le mint les pose. */
 interface MonoBase {
   id: string;
   kind: string;
@@ -1210,8 +1212,8 @@ export type MonoSpec = MonoBase & (
 );
 
 /**
- * CONSTRUCTEUR d'étape MONO (#1262) — un porteur, un jet, UNE fenêtre : la possession (`actorId`) et
- * la surface (`interactive`) sont posées ICI, la ligne par le monteur canonique (`rollStep`).
+ * CONSTRUCTEUR d'étape MONO (#1262) — un porteur, un jet, UNE fenêtre : la possession (`actorId`) est
+ * posée ICI, la ligne par le monteur canonique (`rollStep`).
  *
  * La CIBLE est le garde-fou : une étape sans `target` est classée `'affichage'` par `stepInteraction`
  * (`cascade.ts`) — elle serait donc « prête » d'office, validée sans qu'aucun dé ne tombe. Un jet
@@ -1231,7 +1233,6 @@ export function monoStep(spec: MonoSpec): BuiltCascadeStep | undefined {
     label: spec.label,
     ...(spec.icon ? { icon: spec.icon } : {}),
     actorId: spec.actor.id,
-    interactive: true,
     difficulty: spec.difficulty,
     rollLabel: spec.rollLabel ?? testSkillLabel(spec.ligne?.test ?? {}) ?? spec.label,
     ...parts,
@@ -1287,7 +1288,6 @@ export function tableStep(spec: TableSpec): BuiltCascadeStep | undefined {
     label: spec.label,
     ...(spec.icon ? { icon: spec.icon } : {}),
     actorId: spec.actorId,
-    interactive: true,
     table: spec.table,
     ...(spec.stake ? { stake: spec.stake } : {}),
     ...(spec.critSeverity ? { critSeverity: spec.critSeverity } : {}),
@@ -1318,7 +1318,6 @@ export function tableStepDone(spec: TableDoneSpec): BuiltCascadeStep | undefined
     label: spec.label,
     ...(spec.icon ? { icon: spec.icon } : {}),
     actorId: spec.actorId,
-    interactive: true,
     ...(spec.stake ? { stake: spec.stake } : {}),
     ...(spec.critSeverity ? { critSeverity: spec.critSeverity } : {}),
     ...(spec.miscast ? { miscast: spec.miscast } : {}),
@@ -1376,7 +1375,6 @@ export function displayStep(spec: DisplaySpec): BuiltCascadeStep {
     label: spec.label,
     ...(spec.icon ? { icon: spec.icon } : {}),
     ...(spec.worldOwner ? { worldOwner: true } : { actorId: spec.actorId }),
-    interactive: true,
     ...(spec.outcome ? { outcome: spec.outcome } : {}),
     ...(spec.fleeMove ? { fleeMove: spec.fleeMove } : {}),
     ...(spec.meta ? { meta: spec.meta } : {}),
@@ -1403,27 +1401,38 @@ const PENDING_BY_JET: Record<HostJet, PendingKey | null> = {
   forceDoor: 'pendingForceDoor',
 };
 
-/** Ce qui est vrai de TOUTE étape hôte : elle nomme son jet et son porteur, et rien du montage. */
+/** Ce qui est vrai de TOUTE étape hôte : elle nomme son jet, et rien du montage. */
 interface HostBase {
   id: string;
   kind: string;
-  /** Le jeteur — sa possession route la fenêtre (`modalArbiter`, entrée `cascade`). */
-  actorId: string;
   label?: string;
   icon?: string;
-  /** Moment PARTAGÉ (Sort d'un ennemi : opposition de cible + Contre-sort multi) → owner `'*'`. SEUL
-   *  mint à l'exposer : une étape hôte est la seule forme dont la fenêtre porte les jets de N sièges
-   *  sans être une bande. Ailleurs la possession se DÉDUIT (bande) ou est exclue (choix). */
-  groupOwner?: boolean;
   stake?: StakeRef;
   meta?: CascadeStepMeta;
 }
 
+/**
+ * POSSESSION d'une étape HÔTE — deux formes, et le compilateur tient l'exclusion (calque `DisplaySpec`) :
+ *  - `actorId` : le JETEUR, dont la possession route la fenêtre (`modalArbiter`, entrée `cascade`).
+ *    `groupOwner` peut s'y ajouter pour un moment PARTAGÉ (Sort d'un ennemi : opposition de cible +
+ *    Contre-sort multi, désengagement à deux acteurs joués) → owner `'*'`, le porteur restant nommé ;
+ *  - `groupOwner` SEUL : un jet de GROUPE sans porteur nommé (enfoncer une porte à plusieurs, EDO
+ *    Appendice 2) — chacun pilote ses héros, aucun acteur unique n'existe. Sans cette forme, le
+ *    dernier producteur de `groupOwner` devait monter son étape À LA MAIN, hors de la porte (#1262 V2 L4).
+ *
+ * Une étape hôte dit donc TOUJOURS à qui elle appartient : `{}` ne compile pas — et `undefined`
+ * rendrait la fenêtre à l'HÔTE SEUL (`netOwnership.ownsLocally`), volant le jet des autres sièges.
+ */
+type HostOwner =
+  | { actorId: string; groupOwner?: boolean }
+  | { groupOwner: true; actorId?: never };
+
 /** DÉCLARATION d'une étape HÔTE — union DISCRIMINÉE par `jet` : la Maladresse exige sa charge (elle
  *  n'a pas de pending), les huit autres n'en portent aucune (la leur vit dans leur `pending*`). */
-export type HostSpec =
+export type HostSpec = HostOwner & (
   | (HostBase & { jet: 'fumble'; fumble: { weapon: Weapon; result: OupsResolved | null } })
-  | (HostBase & { jet: Exclude<HostJet, 'fumble'>; fumble?: never });
+  | (HostBase & { jet: Exclude<HostJet, 'fumble'>; fumble?: never })
+);
 
 /**
  * CONSTRUCTEUR d'étape HÔTE (#1262 B6) — « une situation = une modale » : le jet d'attaque/défense/
@@ -1445,7 +1454,7 @@ export function hostStep(get: Get, spec: HostSpec): BuiltCascadeStep | undefined
     id: spec.id,
     kind: spec.kind,
     jet: spec.jet,
-    actorId: spec.actorId,
+    ...(spec.actorId ? { actorId: spec.actorId } : {}),
     ...(spec.label ? { label: spec.label } : {}),
     ...(spec.icon ? { icon: spec.icon } : {}),
     ...(spec.groupOwner ? { groupOwner: true } : {}),

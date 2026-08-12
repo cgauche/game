@@ -39,7 +39,7 @@ import { isFumble } from '../engine/oups';
 import { combatValue } from '../engine/combat';
 import { spellCost, ritualReduction } from '../engine/grimoire';
 import { focusSkillFor, castingValue, consumeMalepierre } from '../engine/magic';
-import { gainCorruption } from './corruptionFlow';
+import { gainCorruption, poseCorruptionPending } from './corruptionFlow';
 import { fireOwnTestFailed } from './triggeredEffects';
 import { applyMiscast } from './combatFlow';
 import { buySpell as partyBuySpell } from './partyFlow';
@@ -154,7 +154,6 @@ function eventStep(hero: Combatant): CascadeStep {
     label: `Événement — ${hero.label}`,
     table: INTERLUDE_EVENT_DECL,
     stake: combatStakeRef('interludeEvent'),
-    interactive: true,
   };
 }
 
@@ -165,7 +164,6 @@ function purseStep(): CascadeStep {
     id: 'interlude-purse',
     kind: 'interludePurse', icon: 'resource/gold-purse',
     label: 'Les bourses du groupe',
-    interactive: true,
   };
 }
 
@@ -1220,7 +1218,8 @@ export function confirmActivity(get: Get, set: Set): void {
           rng: battleRng(), label: def.label, now: get().gameTime, source: { kind: 'activity', id: def.id }, sl: pa.sl,
           onCorruption: (n: number, align?: ChaosAlign) => gainCorruption(get, set, h, n, align),
           onCorruptionExposure: (level: ExposureLevel, skill?: 'resistance' | 'calme') => {
-            set({ pendingCorruption: { heroId: h.id, level, skill: skill ?? 'resistance', skillLocked: skill != null, menace: 'corruption' } });
+            // LA PORTE du slot (#1282) : un Test de Corruption déjà affiché ne se fait plus écraser — celui-ci prend rang.
+            poseCorruptionPending(get, set, { heroId: h.id, level, skill: skill ?? 'resistance', skillLocked: skill != null, menace: 'corruption' });
             return [`${h.label} — Test d'Exposition ${level} à la Corruption à réaliser.`];
           },
         }));

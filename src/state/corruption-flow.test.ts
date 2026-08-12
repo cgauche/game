@@ -18,7 +18,7 @@ function party2() {
 }
 
 beforeEach(() => {
-  useGame.setState({ battle: null, party: [], journal: [], pendingCorruption: null, pendingTest: null });
+  useGame.setState({ battle: null, party: [], journal: [], pendingCorruption: null, pendingTest: null, pendingRenounce: null, corruptionQueue: [] });
   useGame.getState().seedRng(13);
 });
 
@@ -74,6 +74,32 @@ describe('Effet corruptionExposure → modale → resolveCorruption', () => {
     expect(pc?.kind).toBe('seuil');
     expect(pc?.skill).toBe('resistance');
     expect(pc?.skillLocked).toBe(true);
+  });
+
+  /**
+   * #1282 — LA PORTE du slot. Les deux producteurs d'Exposition (effet de scène `corruptionExposure`,
+   * Activité d'interlude) ÉCRASAIENT `pendingCorruption` sans le tester : un Test de SEUIL affiché
+   * (LDB 19 l.70) disparaissait avec sa fenêtre. La rafale croisée le prouve.
+   */
+  it('Exposition ouverte PENDANT un Test de SEUIL affiché : le seuil SURVIT, l’Exposition prend rang', () => {
+    const { a, b, party } = party2();
+    a.corruption = 99; // au-delà du seuil (BFM+BE) : le prochain gain fait déborder
+    useGame.setState({ party });
+    gainCorruption(useGame.getState, useGame.setState, a, 1);
+    const seuil = useGame.getState().pendingCorruption!;
+    expect(seuil.kind, 'la fenêtre en place est le Test de seuil de a').toBe('seuil');
+
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'corruptionExposure', level: 'majeure', skill: 'resistance', heroId: b.id }]);
+
+    expect(useGame.getState().pendingCorruption, 'le seuil n’a pas été écrasé').toEqual(seuil);
+    expect(useGame.getState().corruptionQueue.map((q) => q.heroId), 'l’Exposition prend RANG').toEqual([b.id]);
+
+    // Le seuil acquitté (réussite : Corruption contenue), la fenêtre passe à l'Exposition en file.
+    useGame.setState({ pendingCorruption: { ...useGame.getState().pendingCorruption!, roll: 1, target: 40, sl: 4, success: true } });
+    useGame.getState().resolveCorruption();
+    expect(useGame.getState().pendingCorruption?.heroId, 'les deux fenêtres se succèdent').toBe(b.id);
+    expect(useGame.getState().pendingCorruption?.level).toBe('majeure');
+    expect(useGame.getState().corruptionQueue).toEqual([]);
   });
 
   it('exposition repoussée (DR suffisant) → aucun Point', () => {

@@ -30,7 +30,7 @@ function hero(withTalent: boolean): Combatant {
  *  RNG semé (identique d'un run à l'autre). */
 function doneRound(h: Combatant, sl: number): PendingCascade {
   const participants: CascadeStep[] = [{
-    id: 'pursuit-1', kind: 'pursuitMove', label: 'Manche 1 — Athlétisme', interactive: true, aggregate: 'none',
+    id: 'pursuit-1', kind: 'pursuitMove', label: 'Manche 1 — Athlétisme', aggregate: 'none',
     participants: [{
       id: h.id, label: 'Athlétisme', base: 40, target: 40, interactive: true,
       result: { roll: 40, target: 40, sl, success: sl >= 0 },

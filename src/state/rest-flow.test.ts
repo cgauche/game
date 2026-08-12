@@ -172,7 +172,7 @@ describe('openRest / choix par héros', () => {
     // Cascade à une BANDE de marche forcée (#1117 L3), jet de la rangée figé sur un ÉCHEC.
     useGame.setState({ pendingCascade: {
       title: 'Marche', purpose: 'travel', cursor: 0, log: [], participants: [
-        { id: 'bande-m1', kind: 'forcedMarch', label: 'Marche forcée', interactive: true, aggregate: 'none',
+        { id: 'bande-m1', kind: 'forcedMarch', label: 'Marche forcée', aggregate: 'none',
           participants: [{ id: h.id, interactive: true, label: 'Résistance', base: 40, target: 40, result: { roll: 99, target: 40, sl: -4, success: false } }] },
       ],
     } });
@@ -287,7 +287,6 @@ describe('repos MULTI-JOURS (#347) — chaîne de cascades nuit-par-nuit, jamais
     expect(cas1.restNights).toEqual({ p: expect.objectContaining({ days: 4 }), nightsLeft: 3 }); // 3 nuits ENCORE à enchaîner
     const faim1 = cas1.participants.find((s) => s.kind === 'faim')!;
     expect(faim1).toBeTruthy();
-    expect(faim1.interactive).toBe(true);
     expect(useGame.getState().party[0].hunger!.tests).toBe(0); // DIFFÉRÉ, pas roulé en eager
 
     // Valider la nuit 1 (échec garanti) → conséquence appliquée UNE fois.
@@ -415,7 +414,7 @@ describe('CHEMIN RÉEL — la règle d’une étape de maladie est celle du SYMP
   it('`applyNightStake` est IDEMPOTENTE (×2 == ×1) — l’ordre des bâtisseurs ne compte plus', () => {
     const etape = (kind: string, meta?: Record<string, unknown>): CascadeStep => ({
       id: `x-${kind}`, kind, actorId: 'h', label: kind, rollLabel: 'Résistance', base: 40, difficulty: 'accessible', target: 60,
-      result: null, interactive: true, ...(meta ? { meta: meta as never } : {}),
+      result: null, ...(meta ? { meta: meta as never } : {}),
     });
     for (const st of [etape('diseaseTick', { symptomId: 'blesse' }), etape('diseaseTick'), etape('recovery')]) {
       applyNightStake(st);

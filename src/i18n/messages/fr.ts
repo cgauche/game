@@ -498,6 +498,7 @@ export const fr = {
   'out.corruptRepel': "{name} repousse l'Influence corruptrice.",
   'out.corruptGain': '{name} subit {gain} Point{s} de Corruption.',
   'out.corruptExposureResist': '{name} — exposition à la Corruption ({label}) : résiste.',
+  'out.corruptExposureFail': '{name} — exposition à la Corruption ({label}) : cède.',
   'out.craftDone': 'L’ouvrage est achevé !',
   'out.craftProgress': 'L’ouvrage avance ({after}/{target} DR).',
   'out.identifyFull': 'L’artefact est identifié — ses Particularités sont révélées.',
@@ -715,6 +716,12 @@ export const fr = {
   'cf.wrathTriggered': 'Le dé des unités ({units}) trahit les Péchés de {name} ({sin}) — Colère des dieux !',
   'cf.zonePersists': '{spell} : la zone persiste — hors grille de combat, arbitrage MJ.',
   'cf.resistsInfection': '{name} résiste à l’infection.',
+  // TRACE d'une rangée RÉSOLUE D'OFFICE (#1281) — aucune fenêtre ne l'affiche : le journal est sa seule
+  // surface, et il porte donc le dé, la cible et l'issue. `issue` vient de `casc.autoRowHit|autoRowMiss`.
+  'casc.autoRowTrace': '{who} — {label} : {roll}/{target} → {issue} (DR {dr}).',
+  'casc.autoRowHit': 'réussi',
+  'casc.autoRowMiss': 'échec',
+  'casc.autoRowFallbackLabel': 'Test',
   'cf.defeat': 'Défaite…',
   'cf.victory': 'Victoire !',
   'cf.bladeBroken': 'La lame de {name} ({weapon}) est BRISÉE par la manœuvre !',

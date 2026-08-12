@@ -6,9 +6,9 @@
  *
  * Cascade INFLUENÇABLE (#269) : chaque héros conscient à bord tente de rejoindre la surface à la NAGE —
  * Test de Natation (LDB 09 l.372 : « votre capacité à nager dans l'eau sans vous noyer… dans des courants
- * difficiles… un Test sera nécessaire »), une ÉTAPE par héros, interactive (Chance/Pacte/Résilience) si CE
- * héros est piloté par un humain, sinon résolue-témoin (même formule, pré-roulée à l'ouverture — mêlant les
- * deux dans une même cascade, cf. `state/cascade.ts`). Aucun héros humain à bord (IA/rafale/cadence auto) →
+ * difficiles… un Test sera nécessaire »), une ÉTAPE par héros — influençable (Chance/Pacte/Résilience) si CE
+ * héros est piloté par un humain, sinon PRÉ-ROULÉE à l'ouverture (même formule) et donnée à lire — mêlant les
+ * deux dans une même cascade, cf. `state/cascade.ts`. Aucun héros humain à bord (IA/rafale/cadence auto) →
  * résolution inline visible (patron `corruptionFlow`). Difficulté d'un naufrage en pleine mer : ancrage RAW
  * le plus proche = la noyade du Tourbillon (MDG 13 l.522 : « Natation Complexe (–10) sous peine de commencer
  * à se noyer ») → défaut MAISON `sea-shipwreck-swim` (#244, éditable). Échec = noyade (LDB 18 l.344, sans
@@ -138,10 +138,12 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
     return;
   }
 
-  // Cascade influençable : une étape de Natation par nageur conscient, interactive SI ce héros est
-  // humanControlled — sinon pré-roulée (même formule) et rendue en témoin (`interactive:false`). La
-  // clôture (dernière étape validée) exécute `finishShipwreck` — `purpose:'test'` : aucun crochet
-  // dédié requis dans le store (générique, `dispatchCascadeDone` n'a rien à router).
+  // Cascade influençable : une étape de Natation par nageur conscient. Le héros qu'aucun siège ne
+  // pilote voit son jet PRÉ-ROULÉ (même formule) et l'étape n'est plus qu'une lecture — c'est le jet
+  // POSÉ + la non-surface du porteur qui la rendent passive au socle (`rollFlowFactory.passive`),
+  // plus un drapeau d'étape. La clôture (dernière étape validée) exécute `finishShipwreck` —
+  // `purpose:'test'` : aucun crochet dédié requis dans le store (générique, `dispatchCascadeDone`
+  // n'a rien à router).
   const meta = { shoreId: shore?.id ?? '', journalMark };
   const steps: CascadeStep[] = swimmers.map((h) => {
     const value = testValue(h, 'natation', 'force');
@@ -151,7 +153,7 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
       id: `shipwreck-${h.id}`, kind: 'shipwreckSwim', actorId: h.id, icon: 'nautical/swim',
       label: `${h.label} — Natation`, rollLabel: 'Natation', difficulty: diff,
       ...rollStep({ actor: h, test: { skill: 'natation', char: 'force' }, difficulty: diff }),
-      result, interactive: human,
+      result,
       meta,
     };
   });

@@ -168,6 +168,10 @@ function bandSpecOf(band: CascadeStep): BandSpec {
  * Chaque moitié est RE-MINTÉE (`bandStep`, #1262 murage) au lieu d'être recopiée : la possession se
  * re-dérive de SES rangées — une moitié à un seul porteur le NOMME (`actorId`) au lieu de garder le
  * `groupOwner` de la bande d'origine.
+ *
+ * L'étampe de TRACE (`meta.autoResolved`, #1281) ne se pose PAS ici : mesuré sur `src/state`, les
+ * rangées de la moitié `others` naissent TOUTES non roulées (33/33) — c'est `runCascadeImmediate` qui
+ * les jette, et c'est donc lui qui les étampe (`cascade.rollBatchParticipants`).
  */
 export function splitBandRows(band: CascadeStep, keep: (rowId: string) => boolean): { kept?: BuiltCascadeStep; others?: BuiltCascadeStep } {
   const rows = band.participants ?? [];

@@ -32,9 +32,15 @@ const bandHero = (id: string, over: Partial<Combatant> = {}): Combatant => {
   return h;
 };
 
-/** Bande GÉNÉRIQUE (`aggregate:'none'` — jets indépendants) : une rangée par héros, cible 50. */
+/** Bande GÉNÉRIQUE (`aggregate:'none'` — jets indépendants) : une rangée par héros, cible 50. La
+ *  POSSESSION se dérive des rangées comme dans `bandStep` (plusieurs porteurs → `groupOwner`, un seul →
+ *  SON `actorId`) : une bande anonyme n'entre plus dans une séquence (#1262 V2 L4). */
 const band = (kind: string, parts: BatchParticipant[], over: Partial<CascadeStep> = {}): CascadeStep =>
-  ({ id: 'bande', kind, label: 'Bande', interactive: true, aggregate: 'none', participants: parts, result: null, ...over }) as CascadeStep;
+  ({
+    id: 'bande', kind, label: 'Bande', aggregate: 'none', participants: parts, result: null,
+    ...(new Set(parts.map((p) => p.id)).size > 1 ? { groupOwner: true } : { actorId: parts[0]?.id }),
+    ...over,
+  }) as CascadeStep;
 
 const row = (id: string, over: Partial<BatchParticipant> = {}): BatchParticipant =>
   ({ id, interactive: true, base: 50, target: 50, result: null, ...over });

@@ -24,7 +24,7 @@ describe('#253.1 — dessoûlage : le 2ᵉ Test (gueule de bois) est une étape 
     hero.drunk = { failedTests: 3, drunk: true, result: 'joyeux' };
     useGame.setState({ party: [hero], gameTime: 8 * 60 });
     // BANDE de Dessoûlage (#1117 L3) : la conséquence se joue PAR RANGÉE.
-    const step: CascadeStep = { id: 'bande-dessoulage', kind: 'dessoulage', label: 'Dessoûlage', aggregate: 'none', interactive: true,
+    const step: CascadeStep = { id: 'bande-dessoulage', kind: 'dessoulage', label: 'Dessoûlage', aggregate: 'none',
       participants: [{ id: hero.id, interactive: true, label: 'Résistance', base: 40, target: 40, result: { roll: 45, target: 40, sl: 1, success: true } }] };
 
     const out = cascadeAppliers['dessoulage'].apply(get, set, step, hero, { steps: [step], index: 0 });

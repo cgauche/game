@@ -49,7 +49,7 @@ describe('#T3 — cascade d’horloge (maladies/convalescence/purge sur franchis
     const p = useGame.getState().pendingCascade;
     expect(p).toBeTruthy();
     expect(p!.purpose).toBe('upkeep');
-    expect(p!.participants.some((s) => s.kind === 'faim' && s.interactive === true)).toBe(true);
+    expect(p!.participants.some((s) => s.kind === 'faim')).toBe(true);
     expect(p!.participants.some((s) => s.kind === 'round')).toBe(false); // plus de témoin quand un jet est différé
     useGame.setState({ pendingCascade: null }); // ne pas geler l'IA des tests suivants (piège connu)
   });

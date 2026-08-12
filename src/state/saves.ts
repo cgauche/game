@@ -45,7 +45,7 @@ import { pursuitBands } from './pursuitFlow';
 import { stepReady } from './cascade';
 import { combatEndBands } from './combatEndBands';
 
-export const SAVE_VERSION = 20;
+export const SAVE_VERSION = 21;
 
 export interface SaveMeta {
   version: number;
@@ -334,6 +334,18 @@ export const MIGRATIONS: MigrationMap = {
     bandifyCombatEndSteps(data);
     return { ...doc, version: 20, data };
   },
+  // v20→v21 (#1262 V2 L4) : `interactive` n'existe plus au niveau ÉTAPE (`CascadeStepBase`) — son
+  // unique lecteur (`rollFlowFactory.passive`, cinq verbes d'influence) lit désormais une définition
+  // DÉRIVÉE (jet posé + porteur non surfacé), donc plus personne ne consulte le champ. Il se retire des
+  // étapes persistées : une save v20 rechargée porterait un champ hors type, que le prochain snapshot
+  // re-sérialiserait indéfiniment. Les RANGÉES gardent le leur. MÊMES porteurs d'étapes que
+  // MIGRATIONS[17] (cascade ACTIVE + pile SUSPENDUE + file `deferredUpkeepQueue`) — toutes les étapes,
+  // avant curseur comprises : le champ n'a aucune valeur historique.
+  20: (doc) => {
+    const data = { ...(doc.data as Record<string, unknown>) };
+    dropStepInteractive(data);
+    return { ...doc, version: 21, data };
+  },
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus
@@ -477,10 +489,12 @@ function bandifyPsychStep(step: Record<string, unknown>): void {
   for (const k of ['prevDR', 'sansPeur'] as const) if (decl[k] !== undefined) { rowMeta[k] = decl[k]; delete decl[k]; }
   if (Object.keys(rowMeta).length) row.meta = rowMeta;
   for (const k of ['extendedDrTarget', 'extendedDrDone'] as const) if (stepMeta[k] !== undefined) { row[k] = stepMeta[k]; delete stepMeta[k]; }
-  for (const k of ['actorId', 'rollLabel', 'base', 'target', 'result'] as const) delete step[k];
+  // Le JET quitte l'étape pour la rangée ; la POSSESSION reste : une bande d'UN porteur EST son porteur
+  // (`rollSeam.bandStep`) — sans `actorId`, l'arbitre rendrait la fenêtre à l'hôte seul et le siège du
+  // héros ne verrait jamais sa rangée (invariant fermé par `cascade.assertBandeDeclarePossession`).
+  for (const k of ['rollLabel', 'base', 'target', 'result'] as const) delete step[k];
   if (Object.keys(stepMeta).length) step.meta = stepMeta; else delete step.meta;
   step[declKey] = decl;
-  step.interactive = true;
   step.aggregate = 'none';
   step.participants = [row];
 }
@@ -567,6 +581,24 @@ function bandifyCombatEndSteps(data: Record<string, unknown>): void {
     const steps = c.participants as BuiltCascadeStep[]; // réhydratation : cf. `bandifyNightSteps`
     c.participants = [...steps.slice(0, cursor), ...combatEndBands(steps.slice(cursor))];
   }
+}
+
+/**
+ * RETIRE `interactive` des ÉTAPES des TROIS porteurs d'une save (cascade ACTIVE, pile SUSPENDUE, file
+ * `deferredUpkeepQueue`) — MIGRATIONS[20]. Les RANGÉES (`participants[]`) gardent le leur : c'est un
+ * AUTRE champ (il dit si le porteur joue son jet ou le reçoit tout roulé). Mute `data` ; formes
+ * inattendues laissées telles quelles (patron `normalizeScene`).
+ */
+function dropStepInteractive(data: Record<string, unknown>): void {
+  const strip = (steps: unknown): void => {
+    if (!Array.isArray(steps)) return;
+    for (const st of steps) if (st && typeof st === 'object') delete (st as Record<string, unknown>).interactive;
+  };
+  const stack = Array.isArray(data.suspendedCascades) ? data.suspendedCascades : [];
+  for (const cascade of [data.pendingCascade, ...stack]) {
+    strip((cascade as { participants?: unknown } | null | undefined)?.participants);
+  }
+  strip(data.deferredUpkeepQueue);
 }
 
 /** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE, via la

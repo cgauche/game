@@ -67,6 +67,12 @@ de `saves-flow.test.ts` (`MIGRATIONS[v]` + fixture `v<v>-*.json` exigées pour c
   et l'id d'étape v19 ne portait aucun discriminant d'entrée. Les fondre en une bande donnerait deux
   rangées de même id, injoignables : le filet d'id de la fabrique doit les rendre en DEUX bandes.
   Fixture de version PASSÉE, MINIMALE et écrite à la main (idem `v18-poursuite-mono`).
+- `v20-etape-interactive.json` — save v20 dont les ÉTAPES portent encore `interactive` au niveau ÉTAPE,
+  dans les TROIS porteurs (cascade ACTIVE, pile SUSPENDUE, file `deferredUpkeepQueue`), motive
+  `MIGRATIONS[20]` (v20→v21, #1262 V2 L4 : le champ write-only quitte `CascadeStepBase`). Les RANGÉES
+  gardent le leur (`interactive: true`/`false` sur `participants[]`) — c'est un AUTRE champ, et la
+  fixture porte les deux valeurs pour le prouver. Fixture de version PASSÉE, MINIMALE et écrite à la
+  main (idem `v19-fin-de-combat-mono`).
 
 ## Ajouter/régénérer une fixture
 

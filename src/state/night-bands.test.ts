@@ -333,7 +333,7 @@ describe('les TROIS producteurs d’Exposition passent par la MÊME fabrique de 
 describe('file de fin de combat — SCISSION par pilote (invariant 7)', () => {
   it('`splitBandRows` rend DEUX bandes entières, aucune rangée `interactive:false` dans la jouée', () => {
     const band: CascadeStep = {
-      id: 'bande-faim', kind: 'faim', label: 'Faim', interactive: true, aggregate: 'none',
+      id: 'bande-faim', kind: 'faim', label: 'Faim', aggregate: 'none',
       participants: [
         { id: 'manuel', interactive: true, label: 'Résistance', base: 40, target: 40, result: null },
         { id: 'temoin', interactive: true, label: 'Résistance', base: 35, target: 35, result: null },

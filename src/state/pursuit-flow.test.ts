@@ -30,7 +30,7 @@ function heroes() {
  *  Mouvement (`sl` imposé) — sert à tester la résolution de manche (`continuePursuitRound`) sans UI. */
 function doneRound(party: { id: string }[], sl: number): PendingCascade {
   const participants: CascadeStep[] = [{
-    id: 'pursuit-1', kind: 'pursuitMove', label: 'Manche 1 — Athlétisme', interactive: true, aggregate: 'none',
+    id: 'pursuit-1', kind: 'pursuitMove', label: 'Manche 1 — Athlétisme', aggregate: 'none',
     participants: party.map((h) => ({
       id: h.id, label: 'Athlétisme', base: 40, target: 40, interactive: true,
       result: { roll: 40, target: 40, sl, success: sl >= 0 },

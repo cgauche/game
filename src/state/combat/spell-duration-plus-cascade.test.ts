@@ -100,8 +100,8 @@ describe('Durée « + » — offre de prolongation en cascade héros (#543)', ()
     expect((test.base ?? 0) + (test.mods ?? []).reduce((t, m) => t + m.value, 0), 'base + Σ mods = cible').toBe(test.target);
     expect(test.mods?.some((m) => m.value === -20), 'les 2 Exténué sortent en ligne NOMMÉE').toBe(true);
     expect(test.difficulty, 'aucune Difficulté n’est indiquée (LDB 47 l.311) → Intermédiaire').toBe('intermediaire');
-    expect({ actorId: test.actorId, interactive: test.interactive, stake: !!test.stake })
-      .toEqual({ actorId: H.id, interactive: true, stake: true });
+    expect({ actorId: test.actorId, stake: !!test.stake })
+      .toEqual({ actorId: H.id, stake: true });
   });
 
   it('Test réussi → +1 Round (effet dégelé, toujours actif)', () => {

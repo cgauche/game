@@ -89,7 +89,6 @@ describe('#1262 — sonde B : le gate d’Action d’un héros d’INVITÉ ne se
     expect(st, 'une étape de cascade INFLUENÇABLE est ouverte').toBeTruthy();
     expect(st.kind).toBe('actGate');
     expect(st.actorId, 'le mint NOMME le porteur → l’arbitre rend son id, et la fenêtre part à SON siège').toBe('H1');
-    expect(st.interactive).toBe(true);
     expect(st.result, 'le dé n’est pas tombé : c’est la fenêtre qui le jette').toBeNull();
     expect(st.target, 'FM 20, Difficulté intermédiaire +0').toBe(20);
     expect(st.base).toBe(20);
@@ -129,7 +128,6 @@ describe('#1262 — l’étape de CHOIX insérée par l’applier naît du mint 
     expect(choix.kind).toBe('actGateChoice');
     expect(choix.actorId, 'le choix porte SON porteur : l’hôte ne tranche pas la voie de l’invité').toBe('H1');
     expect(choix.groupOwner, '`options` + `groupOwner` = n’importe quel siège tranche pour autrui').toBeUndefined();
-    expect(choix.interactive).toBe(true);
     expect(choix.defaultChoice).toBe('action');
     expect(choix.options!.map((o) => o.key)).toEqual(['action', 'move']);
   });

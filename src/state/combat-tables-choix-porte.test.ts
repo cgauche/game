@@ -266,7 +266,7 @@ describe('#1262 lot 5b — AFFICHAGES : une conséquence sans dé ne se rend pas
       target: 40,
     } as never;
     const st = displayStep(contrebande) as unknown as Record<string, unknown>;
-    expect(Object.keys(st).sort(), 'l’affichage minté, et rien d’autre').toEqual(['actorId', 'id', 'interactive', 'kind', 'label']);
+    expect(Object.keys(st).sort(), 'l’affichage minté, et rien d’autre').toEqual(['actorId', 'id', 'kind', 'label']);
     expect(stepInteraction(st as unknown as CascadeStep), 'aucune des formes de contrebande ne prend').toBe('affichage');
   });
 });

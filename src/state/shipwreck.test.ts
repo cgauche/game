@@ -114,7 +114,7 @@ describe('beginShipwreck — cascade de survie (héros pilotés par un humain, d
     const casc = get().pendingCascade!;
     expect(casc).toBeTruthy();
     expect(casc.participants).toHaveLength(2);
-    expect(casc.participants.every((s) => s.kind === 'shipwreckSwim' && s.interactive)).toBe(true);
+    expect(casc.participants.every((s) => s.kind === 'shipwreckSwim' && s.rollLabel === 'Natation')).toBe(true);
     expect(get().party[1].dead).toBe(true); // Inconscient → noyé d'office, avant même la cascade
 
     drainSwimCascade();
@@ -215,6 +215,98 @@ describe('beginShipwreck — cascade de survie (héros pilotés par un humain, d
   });
 });
 
+/**
+ * SLOT PASSIF (#1262 V2 L4) — sonde du juge promue. Une étape dont le jet est NÉ ROULÉ chez un porteur
+ * qu'aucun siège ne surface ne se retouche pas : ni Résilience (LDB 17 l.68), ni Résistance (Menace),
+ * ni renversement. Le naufrage est le SEUL producteur d'un tel mélange (un nageur piloté à la main, un
+ * autre conduit par l'IA, dans la MÊME cascade).
+ *
+ * La passivité est DÉRIVÉE (`rollFlowFactory.passive` : jet posé + porteur non surfacé), plus déclarée
+ * par un drapeau d'étape : ces deux cas sont donc la mesure du contrat, pas celle d'un booléen.
+ */
+describe('#1262 V2 L4 — un jet NÉ ROULÉ sans pilote ne se force pas ; un jet VIVANT, si', () => {
+  beforeEach(freshState);
+
+  /** Nageur conduit par l'IA : son jet naît roulé (`beginShipwreck`), et il a de quoi payer. */
+  function mixte(): { humain: string; ia: string } {
+    const [a, b] = get().party;
+    const humain = { ...swim(a, 200), resilience: 2 };
+    const ia = { ...swim(b, 1), aiControlled: true, resilience: 2 } as Combatant;
+    set({ party: [humain, ia] } as never);
+    return { humain: humain.id, ia: ia.id };
+  }
+
+  it('étape NÉE-ROULÉE d’un porteur non surfacé : la Résilience ne la retouche pas, aucun point dépensé', () => {
+    setRule('sea-shipwreck-swim', 'intermediaire');
+    const { ia } = mixte();
+
+    beginShipwreck(get, set);
+
+    const etape = get().pendingCascade!.participants.find((s) => s.actorId === ia)!;
+    expect(etape.result, 'le jet de l’IA naît ROULÉ (aucune fenêtre ne le lui demandera)').toBeTruthy();
+    expect(etape.result!.success, 'et il est RATÉ (Natation 1) — il y aurait donc de quoi forcer').toBe(false);
+    const avant = { ...etape.result! };
+
+    get().cascadeForceSuccess(etape.id);
+
+    const apres = get().pendingCascade!.participants.find((s) => s.actorId === ia)!;
+    expect(apres.result, 'le jet d’un slot PASSIF ne se force pas').toEqual(avant);
+    expect(get().party.find((h) => h.id === ia)!.resilience, 'et aucun point n’est débité').toBe(2);
+  });
+
+  it('étape VIVANTE d’un porteur surfacé : la Résilience la force et débite SON point', () => {
+    setRule('sea-shipwreck-swim', 'intermediaire');
+    const { humain } = mixte();
+
+    beginShipwreck(get, set);
+
+    const casc = get().pendingCascade!;
+    const etape = casc.participants.find((s) => s.actorId === humain)!;
+    expect(etape.result, 'le porteur surfacé garde SON jet à jouer').toBeNull();
+    // Échec POSÉ (aucun dé ambiant) : c'est l'état nominal où la Résilience se dépense (LDB 17 l.68).
+    set({ pendingCascade: { ...casc, participants: casc.participants.map((s) => (s.id === etape.id
+      ? { ...s, result: { roll: 88, target: s.target!, sl: -5, success: false } } : s)) } });
+
+    get().cascadeForceSuccess(etape.id);
+
+    const apres = get().pendingCascade!.participants.find((s) => s.actorId === humain)!;
+    expect(apres.result!.success, 'le verbe reste OUVERT sur un jet vivant').toBe(true);
+    expect(get().party.find((h) => h.id === humain)!.resilience).toBe(1);
+  });
+
+  /**
+   * CONTRAT FIGÉ, dit (#1262 V2 L4) — la passivité inclut la CADENCE, que l'ancien drapeau ignorait :
+   * `surfaceOf` = `!cadenceAuto() && jetSurfaced(...)`. En cadence AUTO, le jet posé d'un héros même
+   * surfacé devient donc PASSIF : « en cadence auto, on ne joue pas », y compris on ne dépense pas.
+   *
+   * Défense en PROFONDEUR : mesuré, le cas n'est atteignable par AUCUN écran (en cadence auto la modale
+   * de cascade ne s'ouvre pas). Ce test fige le verbe lui-même, pas l'affordance qui n'existe pas.
+   */
+  it('CADENCE : verbe OUVERT en cadence normale, FERMÉ en cadence auto (même étape, même porteur)', () => {
+    setRule('sea-shipwreck-swim', 'intermediaire');
+    const { humain } = mixte();
+    beginShipwreck(get, set);
+
+    const casc = get().pendingCascade!;
+    const etape = casc.participants.find((s) => s.actorId === humain)!;
+    /** Échec POSÉ, identique dans les deux régimes : seule la cadence change entre les deux mesures. */
+    const rate = () => set({ pendingCascade: { ...get().pendingCascade!, participants: get().pendingCascade!.participants
+      .map((s) => (s.id === etape.id ? { ...s, result: { roll: 97, target: 40, sl: -6, success: false }, forced: false } : s)) } });
+    const resultOf = () => get().pendingCascade!.participants.find((s) => s.id === etape.id)!.result!;
+
+    rate();
+    setCadence('auto');
+    get().cascadeForceSuccess(etape.id);
+    expect(resultOf(), 'cadence AUTO : le jet posé est PASSIF — rien n’est retouché').toEqual({ roll: 97, target: 40, sl: -6, success: false });
+    expect(get().party.find((h) => h.id === humain)!.resilience, 'et aucun point n’est débité').toBe(2);
+
+    resetCadence();
+    rate();
+    get().cascadeForceSuccess(etape.id);
+    expect(resultOf().success, 'cadence NORMALE : le même verbe, sur la même étape, force la réussite').toBe(true);
+    expect(get().party.find((h) => h.id === humain)!.resilience, 'et débite SON point').toBe(1);
+  });
+});
 describe('beginShipwreck — repli IA/rafale (aucun pilote humain à bord) : inline VISIBLE', () => {
   beforeEach(freshState);
 

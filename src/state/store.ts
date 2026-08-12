@@ -142,9 +142,9 @@ import * as innFlow from './innFlow';
 import * as seaActivities from './seaActivities';
 import * as seaVoyageFlow from './seaVoyageFlow';
 import { applyLandCargoRaid } from './carriers';
-import { startCascade, suspendActiveCascade, resumeSuspendedCascade, dropSceneEntrySteps, extendedTestOutcomeAppliers } from './cascade';
+import { suspendActiveCascade, resumeSuspendedCascade, dropSceneEntrySteps, extendedTestOutcomeAppliers } from './cascade';
 import { nightBands } from './nightBands';
-import { resultLine, openSequence } from './rollSeam';
+import { resultLine, openSequence, hostStep, pousseSi, type BuiltCascadeStep } from './rollSeam';
 import { describeTest } from './flowOutcomes';
 import { createCombatSlice } from './combatSlice';
 
@@ -2355,7 +2355,11 @@ export const useGame = create<GameState>((set, get) => ({
 
   startExtendedTest: (opts) => {
     set({ pendingExtendedTest: { ...opts, total: 0, rounds: [{ id: 'round-1', interactive: true, result: null }] } });
-    startCascade(get, set, { title: opts.label, icon: 'ui/key', purpose: 'test', steps: [{ id: 'ext-jet', kind: 'extendedJet', jet: 'extended', actorId: opts.actorId }] });
+    // Par la PORTE (#1262 V2 L4) : dernier hôte manuscrit de `src/state`. Le mint vérifie que
+    // `pendingExtendedTest` est posé — il vient de l'être, ligne au-dessus.
+    const steps: BuiltCascadeStep[] = [];
+    pousseSi(steps, hostStep(get, { id: 'ext-jet', kind: 'extendedJet', jet: 'extended', actorId: opts.actorId }));
+    if (steps.length) openSequence(get, set, { title: opts.label, icon: 'ui/key', purpose: 'test', steps });
   },
   extendedTestNext: () => {
     const p = get().pendingExtendedTest;
@@ -2400,7 +2404,11 @@ export const useGame = create<GameState>((set, get) => ({
     // via l'étape `jet:'forceDoor'`). `pendingForceDoor` reste le porteur des données/participants ;
     // ses résolveurs ferment LES DEUX quand la porte cède. `groupOwner` → l'arbitre coop met l'owner à
     // '*' (action de GROUPE : chacun pilote ses héros), faute d'acteur unique sur l'étape.
-    startCascade(get, set, { title: 'Enfoncer la porte', icon: 'action/force', purpose: 'combat', steps: [{ id: 'forceDoor', kind: 'forceDoorStep', jet: 'forceDoor', groupOwner: true }] });
+    // #1262 V2 L4 : par la PORTE (`hostStep`, forme de GROUPE) — l'étape n'est plus un littéral, et le
+    // mint vérifie que `pendingForceDoor` est posé (il vient de l'être).
+    const steps: BuiltCascadeStep[] = [];
+    pousseSi(steps, hostStep(get, { id: 'forceDoor', kind: 'forceDoorStep', jet: 'forceDoor', groupOwner: true }));
+    if (steps.length) openSequence(get, set, { title: 'Enfoncer la porte', icon: 'action/force', purpose: 'combat', steps });
   },
   forceDoorConfirm: () => {
     const p = get().pendingForceDoor;

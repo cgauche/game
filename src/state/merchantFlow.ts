@@ -288,7 +288,6 @@ function openStockRevealCascade(
     id: `${MERCHANT_STOCK_KIND}:${entityId}:${now}`,
     kind: MERCHANT_STOCK_KIND,
     label: `Réassort — ${arch?.label ?? archetype}`,
-    interactive: true,
     ...(outcome?.length ? { outcome: toRecapLines(outcome) } : {}),
     meta: { entityId, archetype, settlement, now, restockPeriod, gossipDay, resaleRate, buyMarkup, ...(backdrop != null ? { backdrop } : {}) },
   };

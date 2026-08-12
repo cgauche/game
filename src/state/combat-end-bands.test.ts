@@ -22,6 +22,7 @@ import { openCombatEndCascade } from './combatFlow';
 import { combatEndBands } from './combatEndBands';
 import { splitBandRows } from './nightBands';
 import { stepReady } from './cascade';
+import { setCadence, resetCadence } from '../engine/cadence';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { seedBattleRng } from './battleRng';
@@ -87,12 +88,14 @@ beforeEach(() => {
   vi.clearAllTimers();
   seedBattleRng(4);
   resetDesFixes();
+  resetCadence();
   useGame.setState({ battle: null, pendingCascade: null, suspendedCascades: [], pendingCorruption: null, pendingRenounce: null, corruptionQueue: [], pendingLogQueue: [] } as never);
 });
 afterEach(() => {
   vi.clearAllTimers();
   vi.useRealTimers();
   resetDesFixes();
+  resetCadence();
   useGame.setState({ net: NET0, battle: null, pendingCascade: null, suspendedCascades: [], pendingCorruption: null, pendingRenounce: null, corruptionQueue: [] } as never);
 });
 
@@ -253,6 +256,67 @@ describe('#1117 L4 — RAFALE de seuils de Corruption (LDB 19 l.70) : une file, 
     expect(porteurs[0].resilience, '1 Point de Résilience dépensé').toBe(1);
     expect(porteurs[0].mutations ?? [], 'refusée').toHaveLength(0);
     expect(porteurs[1].mutations ?? [], 'et le second n’a toujours rien subi sans son Test').toHaveLength(0);
+  });
+});
+
+describe('#1281 — une rangée RÉSOLUE D’OFFICE laisse SA ligne de dé (zéro jet silencieux)', () => {
+  /** Ligne de trace du socle : « porteur — libellé : dé/cible → issue (DR ±n). » */
+  const TRACE = /^(.+) — (.+) : (\d+)\/(\d+) → (réussi|échec) \(DR [+-]\d+\)\.$/;
+  const traces = () => g().journal.filter((l) => TRACE.test(l));
+
+  it('cadence RAPIDE, fin de combat : chaque rangée auto-résolue porte SA ligne de dé au journal', () => {
+    const { H, E } = setupCoop({ heros: 2 });
+    E[0].traits = [{ id: 'corruption', arg: 'Mineure' }] as Combatant['traits'];
+    E[0].dead = true; // la créature affrontée est tombée : seuls les héros passent leur Test (LDB 19)
+    setCadence('rapide'); // aucun jet ne se surface → la bande entière part en résolution d'office
+
+    openCombatEndCascade(g, useGame.setState);
+
+    expect(g().pendingCascade, 'aucune fenêtre : tout est résolu d’office').toBeNull();
+    const lignes = traces();
+    expect(lignes.length, 'UNE ligne de dé par rangée auto-résolue').toBe(2);
+    expect(lignes.map((l) => l.match(TRACE)![1]).sort()).toEqual(H.map((h) => h.label).sort());
+    for (const l of lignes) expect(l.match(TRACE)![2]).toBe('Résistance');
+  });
+
+  /**
+   * Le cas MESURÉ par le juge L4 : l'Exposition en ÉCHEC ne laissait AUCUNE ligne de jet — seulement
+   * « +1 Point de Corruption », sans dé ni Degré. CHEMIN RÉEL de bout en bout (`openCombatEndCascade`
+   * en cadence rapide) : aucune rangée fabriquée à la main, aucun appel de socle en direct.
+   *
+   * L'échec est rendu CERTAIN par la donnée, pas par une valeur forcée : Endurance 1 et aucune
+   * Compétence → cible au plancher, que seul un 01 franchirait (le test le vérifie).
+   */
+  it('Exposition en ÉCHEC : le Degré ET le dé PRÉCÈDENT la conséquence, au lieu de disparaître', () => {
+    const { H, E } = setupCoop({ heros: 1 });
+    E[0].traits = [{ id: 'corruption', arg: 'Mineure' }] as Combatant['traits'];
+    E[0].dead = true; // seule la rangée du héros reste (LDB 19 : le Test échoit aux survivants)
+    const porteur = g().battle!.combatants.find((x) => x.id === H[0].id)!;
+    porteur.characteristics.endurance = 1;
+    porteur.skills = [];
+    setCadence('rapide');
+    useGame.setState({ journal: [] } as never);
+
+    openCombatEndCascade(g, useGame.setState);
+
+    const journal = g().journal;
+    const iDe = journal.findIndex((l) => TRACE.test(l));
+    const iGain = journal.findIndex((l) => l.includes('Point de Corruption'));
+    expect(iDe, 'la ligne de dé EXISTE (elle disparaissait entièrement avant #1281)').toBeGreaterThanOrEqual(0);
+    const m = journal[iDe].match(TRACE)!;
+    expect(m[1]).toBe(H[0].label);
+    expect(m[2]).toBe('Résistance');
+    // C'est la CIBLE qui doit être au plancher, pas le dé observé : assérer le dé laisserait le test
+    // VERT en mentant si la donnée remontait la cible (l'échec ne viendrait plus alors que du hasard).
+    expect(Number(m[4]), 'cible au plancher : seul un 01 la franchirait — l’échec vient de la DONNÉE').toBeLessThanOrEqual(1);
+    expect(Number(m[3]), 'et le dé tombé n’est pas ce 01').toBeGreaterThan(1);
+    expect(m[5], 'le jet est bien un ÉCHEC').toBe('échec');
+    // Critère #2 du ticket : le DEGRÉ d'exposition est nommé sur l'échec comme il l'est sur la réussite.
+    const iDegre = journal.findIndex((l) => l.includes('Corruption (Mineure)'));
+    expect(iDegre, 'le Degré affronté est NOMMÉ sur l’échec (il ne l’était que sur la réussite)').toBeGreaterThanOrEqual(0);
+    expect(iGain, 'la conséquence est là aussi').toBeGreaterThanOrEqual(0);
+    expect(iDe, 'le dé se lit AVANT son effet').toBeLessThan(iGain);
+    expect(iDegre).toBeLessThan(iGain);
   });
 });
 

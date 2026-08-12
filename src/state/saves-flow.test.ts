@@ -370,7 +370,11 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect(band.aggregate).toBe('none');
     expect((band.encounterPsych as { kind: string; indice: number }).kind).toBe('peur');
     // Le jet vit sur la RANGÉE ; l'étape n'en porte plus rien (contrat de bande).
-    for (const mono of ['actorId', 'rollLabel', 'base', 'target', 'result']) expect(mono in band).toBe(false);
+    for (const mono of ['rollLabel', 'base', 'target', 'result']) expect(mono in band).toBe(false);
+    // …mais la POSSESSION reste : une bande d'UN porteur EST son porteur (`bandStep`). La migration
+    // l'effaçait (#1262 V2 L4) — la fenêtre échoyait alors à l'hôte seul.
+    expect(band.actorId).toBe('h1');
+    expect('interactive' in band, 'le champ write-only d’étape a disparu (MIGRATIONS[20])').toBe(false);
     const rows = band.participants as Record<string, unknown>[];
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ id: 'h1', interactive: true, label: 'Calme', base: 29, target: 29, result: null });
@@ -457,7 +461,8 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect(Object.keys(legacyStep()).filter((k) => !logés.has(k))).toEqual([]);
     // Ce qui reste à l'ÉTAPE = ce qui est COMMUN à la bande (identité, présentation, enjeu, déclaration) ;
     // le `meta` d'étape garde ses clés NON-rangée (source de l'effet), délestées de la barre de DR.
-    expect(Object.keys(step).sort()).toEqual(['aggregate', 'combatPsych', 'committed', 'icon', 'id', 'interactive', 'kind', 'label', 'menace', 'meta', 'participants', 'stake']);
+    // `actorId` RESTE (une bande d'un porteur EST son porteur) ; `interactive` d'étape a disparu (v21).
+    expect(Object.keys(step).sort()).toEqual(['actorId', 'aggregate', 'combatPsych', 'committed', 'icon', 'id', 'kind', 'label', 'menace', 'meta', 'participants', 'stake']);
     expect(step.meta).toEqual({ sourceKind: 'trait', sourceEntityId: 'peur' });
     expect(row).toMatchObject({ result: { roll: 12, sl: 4, success: true }, rerolled: true, forced: true, fixed: true, immune: true, clamped: 99, difficulty: 'accessible' });
 
@@ -616,6 +621,37 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect(out.participants.map((s) => s.kind)).toEqual(['pursuitMove', 'reveal']);
     expect(out.participants[1]).toEqual(etrangere);
     expect((out.participants[0].participants as { id: string }[]).map((r) => r.id)).toEqual(['h1', 'h2']);
+  });
+
+  /**
+   * #1262 V2 L4 — MIGRATIONS[20] : `interactive` disparaît du niveau ÉTAPE. Son unique lecteur
+   * (`rollFlowFactory.passive`) lit désormais une définition DÉRIVÉE (jet posé + porteur non surfacé),
+   * donc le champ persisté n'est plus consulté par personne. Il se retire des TROIS porteurs d'étapes
+   * de la save ; les RANGÉES gardent le leur — homonyme, mais AUTRE champ (il dit qui JOUE son jet).
+   */
+  it('MIGRATIONS[20] : `interactive` quitte les ÉTAPES des trois porteurs, les RANGÉES gardent le leur', () => {
+    const raw = JSON.parse(readFileSync(new URL('v20-etape-interactive.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const brut = (raw as { data: Record<string, unknown> }).data;
+    const etapesBrutes = [
+      ...(brut.pendingCascade as { participants: Record<string, unknown>[] }).participants,
+      ...(brut.suspendedCascades as { participants: Record<string, unknown>[] }[])[0].participants,
+      ...(brut.deferredUpkeepQueue as Record<string, unknown>[]),
+    ];
+    expect(etapesBrutes.every((s) => s.interactive === true), 'la fixture v20 porte bien le champ sur SES étapes').toBe(true);
+
+    const migrated = migrateSave(raw)!;
+    expect(migrated.version).toBe(SAVE_VERSION);
+    const data = migrated.data as Record<string, unknown>;
+    const etapes = [
+      ...(data.pendingCascade as { participants: Record<string, unknown>[] }).participants,
+      ...(data.suspendedCascades as { participants: Record<string, unknown>[] }[])[0].participants,
+      ...(data.deferredUpkeepQueue as Record<string, unknown>[]),
+    ];
+    expect(etapes).toHaveLength(3);
+    for (const st of etapes) expect('interactive' in st, `étape ${String(st.id)} : le champ d’étape survit`).toBe(false);
+    // Les rangées, elles, sont INTACTES — les deux valeurs de la fixture comprises.
+    const rangees = etapes.flatMap((st) => (st.participants as Record<string, unknown>[]) ?? []);
+    expect(rangees.map((r) => r.interactive)).toEqual([true, false, true, true]);
   });
 
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {

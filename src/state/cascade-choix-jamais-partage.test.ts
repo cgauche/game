@@ -24,7 +24,12 @@ import type { CascadeStep } from './pendings';
 const STATE_DIR = fileURLToPath(new URL('.', import.meta.url));
 
 /** Fichiers de `src/state` (hors tests) qui POSENT `groupOwner` sur une étape — mesuré, pas supposé.
- *  Une entrée = un producteur relu : il ne pose AUCUN `options` sur la même étape. */
+ *  Une entrée = un producteur relu : il ne pose AUCUN `options` sur la même étape.
+ *
+ *  #1262 V2 L4 : plus AUCUN de ces sites ne monte une étape à la main — ils DÉCLARENT `groupOwner` à un
+ *  MINT (`rollSeam.hostStep` : `combatFlow` cast partagé, `combatSlice` désengagement à deux joués,
+ *  `store` enfoncement de porte ; `rollSeam` lui-même l'expose et le POSE, `bandStep` le dérivant du
+ *  nombre de porteurs). Le registre ne mesure donc plus que la surface de DÉCLARATION. */
 const PRODUCTEURS_GROUP_OWNER = ['combatFlow.ts', 'combatSlice.ts', 'rollSeam.ts', 'store.ts'];
 
 /** Retire commentaires de bloc et de ligne : une réf à `groupOwner:true` en prose n'est pas un site. */
@@ -50,7 +55,7 @@ function sources(dir = STATE_DIR, rel = ''): string[] {
 }
 
 const etape = (over: Partial<CascadeStep>): CascadeStep =>
-  ({ id: 'e', kind: 'sonde-choix', label: 'Étape', interactive: true, result: null, ...over }) as CascadeStep;
+  ({ id: 'e', kind: 'sonde-choix', label: 'Étape', result: null, ...over }) as CascadeStep;
 
 describe('#1262 — une étape de CHOIX n’est jamais une étape de GROUPE', () => {
   beforeEach(() => {
@@ -82,5 +87,44 @@ describe('#1262 — une étape de CHOIX n’est jamais une étape de GROUPE', ()
   it('aucun fichier inscrit n’a disparu (entrée morte du registre)', () => {
     const tous = new Set(sources());
     expect(PRODUCTEURS_GROUP_OWNER.filter((f) => !tous.has(f))).toEqual([]);
+  });
+});
+
+/**
+ * GARDE DE PALIER (#1262 V2 L4) — « une étape à RANGÉES DÉCLARE sa possession ».
+ *
+ * Toutes les fabriques passent par `bandStep`, qui la POSE (plusieurs porteurs → `groupOwner`, un seul
+ * → SON `actorId`). La garde ferme la FORME à la frontière : une bande sans possession rendrait la
+ * fenêtre à l'hôte seul (`modalArbiter` → `undefined`), et le siège du porteur ne verrait jamais sa
+ * rangée. Elle lit l'ÉTAPE, jamais un call-site (leçon #1271 : pas de regex de site).
+ */
+describe('#1262 V2 L4 — une bande DÉCLARE sa possession', () => {
+  beforeEach(() => {
+    useGame.setState({ pendingCascade: null, suspendedCascades: [] } as never);
+  });
+
+  const bande = (over: Partial<CascadeStep>): CascadeStep =>
+    ({ id: 'b', kind: 'sonde-bande', label: 'Bande', aggregate: 'none', ...over }) as CascadeStep;
+  const rangee = (id: string) => ({ id, interactive: true, label: 'Résistance', base: 40, target: 40, result: null });
+  const ouvrir = (st: CascadeStep) => () => startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [st] });
+
+  it('DEUX porteurs sans `groupOwner` → REFUSÉE (la fenêtre échoirait à l’hôte seul)', () => {
+    expect(ouvrir(bande({ participants: [rangee('h1'), rangee('h2')] }))).toThrow(/possession/);
+  });
+
+  it('UN porteur sans `actorId` ni `groupOwner` → REFUSÉE (son siège ne verrait pas sa rangée)', () => {
+    expect(ouvrir(bande({ participants: [rangee('h1')] }))).toThrow(/possession/);
+  });
+
+  it('les deux formes POSÉES passent : `groupOwner` à plusieurs, `actorId` à un seul', () => {
+    expect(ouvrir(bande({ id: 'multi', groupOwner: true, participants: [rangee('h1'), rangee('h2')] }))).not.toThrow();
+    useGame.setState({ pendingCascade: null, suspendedCascades: [] } as never);
+    expect(ouvrir(bande({ id: 'solo', actorId: 'h1', participants: [rangee('h1')] }))).not.toThrow();
+  });
+
+  it('une étape SANS rangées n’est pas concernée (mono, choix, affichage)', () => {
+    expect(ouvrir(bande({ id: 'mono', actorId: 'h1', rollLabel: 'Résistance', target: 40 }))).not.toThrow();
+    useGame.setState({ pendingCascade: null, suspendedCascades: [] } as never);
+    expect(ouvrir(bande({ id: 'affichage' }))).not.toThrow();
   });
 });

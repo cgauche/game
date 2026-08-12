@@ -81,7 +81,7 @@ const BASELINE: Record<string, number> = {
   'src/engine/trauma.ts': 10,
   'src/state/combat/roundHooks.ts': 1,
   'src/state/combatEffects.ts': 7,
-  'src/state/corruptionFlow.ts': 4,
+  'src/state/corruptionFlow.ts': 3, // 4 → 3 (#1262 V2 L4 : la branche « Je te renie ! » du repli auto-résolu était du code MORT — supprimée)
   // #839 : -3 (44 → 41) — messages de réglage MUTUALISÉS entre `rules()` et `prefs()` (forme, détail,
   // remise au défaut, valeur invalide) : une seule copie de chaque libellé pour les deux registres.
   // `src/state/devtools.ts` : plus de baseline — DISPENSÉ par nature (`DEV_ONLY`, #1117).

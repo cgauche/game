@@ -197,7 +197,7 @@ describe('#1262 — openChoice : une décision PORTÉE, jamais partagée', () =>
   /** La branche DE PROD (porteur manquant → fenêtre dégradée) est masquée par le throw de DEV : la
    *  forme qu'elle produit se monte donc directement, comme l'arbitre la recevra. */
   it('forme DÉGRADÉE (choix sans porteur) : la fenêtre EXISTE et échoit à l’hôte — l’invité voit celle d’autrui, jamais une fenêtre morte', () => {
-    const sansPorteur: CascadeStep = { id: 'degrade', kind: 'pick', label: 'Choix', interactive: true, options: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }] };
+    const sansPorteur: CascadeStep = { id: 'degrade', kind: 'pick', label: 'Choix', options: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }] };
     deuxSieges([hero('H1'), hero('H2')]);
     expect(() => startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [sansPorteur] })).not.toThrow();
     expect(useGame.getState().pendingCascade, 'une décision supprimée serait pire qu’une fenêtre à l’hôte').not.toBeNull();

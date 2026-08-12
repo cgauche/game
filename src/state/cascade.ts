@@ -29,6 +29,7 @@ import { toRecapLines } from './recapLine';
 import { actorIn } from './combatants';
 import { rollTest, evaluateTest, bestForcedRoll, resolveOpposed, type TestResult } from '../engine/tests';
 import { battleRng } from './battleRng';
+import { t } from '../i18n';
 
 /**
  * Conséquence d'une étape, appliquée à la VALIDATION. Mute le héros (via get/set), renvoie les
@@ -372,12 +373,50 @@ export function stepOpposedFreeze(step: CascadeStep | undefined): { aT: TestResu
   return { aT: opp.aT, ...(opp.bonusSL != null ? { bonusSL: opp.bonusSL } : {}) };
 }
 
-/** Lance d'office les participants SANS influence (pilotes automatiques — `resolveRemainingCascade`/
- *  `runCascadeImmediate`) : même Test générique que la modale (`rollBatchParticipant`), même opposition
- *  figée, simplement sans le cycle Chance/Résilience du flux `cascadeBatch`. */
-function rollBatchParticipants(step: CascadeStep) {
+/**
+ * Lance d'office les participants SANS influence (pilotes automatiques — `resolveRemainingCascade`/
+ * `runCascadeImmediate`) : même Test générique que la modale (`rollBatchParticipant`), même opposition
+ * figée, simplement sans le cycle Chance/Résilience du flux `cascadeBatch`.
+ *
+ * `autoResolved` — la rangée est roulée SANS FENÊTRE (`runCascadeImmediate` : bande de témoins d'une
+ * fin de combat, cadence auto) : elle porte l'étampe `meta.autoResolved`, que `commitStep` lit pour
+ * émettre SA ligne de trace (#1281). « Tout lancer » (`resolveRemainingCascade`) ne la pose PAS : sa
+ * modale reste ouverte sur le BILAN, où chaque rangée montre son dé.
+ */
+function rollBatchParticipants(step: CascadeStep, autoResolved = false) {
   const opp = stepOpposedFreeze(step);
-  return step.participants!.map((p) => (p.result ? p : { ...p, result: rollBatchParticipant(p, battleRng(), opp) }));
+  return step.participants!.map((p) => (p.result ? p : {
+    ...p,
+    ...(autoResolved ? { meta: { ...p.meta, autoResolved: true } } : {}),
+    result: rollBatchParticipant(p, battleRng(), opp),
+  }));
+}
+
+/**
+ * TRACES des rangées RÉSOLUES D'OFFICE d'une étape (#1281) — une ligne par rangée étampée
+ * `meta.autoResolved` : porteur — libellé : dé/cible → issue. SOCLE, une fois pour TOUTES les bandes
+ * (nuit, fin de combat, à venir).
+ *
+ * C'est le seul endroit du moteur où le dé se redit en clair : la rangée qui le porte n'est JAMAIS
+ * affichée (aucune fenêtre ne s'ouvre sur une résolution d'office), donc le journal est SA SEULE
+ * surface — le cas nominatif que la doctrine #295 réserve (cf. `cascade-consequence-guard.test.ts`).
+ * `game-trigger-cadence-aware-no-silent` : moins d'interruptions, jamais moins de traces.
+ */
+function autoResolvedTraceLines(get: Get, step: CascadeStep): string[] {
+  const out: string[] = [];
+  for (const row of step.participants ?? []) {
+    if (!row.meta?.autoResolved || !row.result) continue;
+    const r = row.result;
+    out.push(t('casc.autoRowTrace', {
+      who: actorIn(get(), row.id)?.label ?? row.id,
+      label: row.label ?? step.rollLabel ?? t('casc.autoRowFallbackLabel'),
+      roll: r.roll,
+      target: r.target,
+      issue: t(r.success ? 'casc.autoRowHit' : 'casc.autoRowMiss'),
+      dr: `${r.sl >= 0 ? '+' : ''}${r.sl}`,
+    }));
+  }
+  return out;
 }
 
 /** Pose le choix du joueur sur l'étape « choix » COURANTE (valide que `key ∈ options`). Analogue de
@@ -506,6 +545,7 @@ export function pushStep(set: Set, step: CascadeStep | ((index: number) => Casca
     const st = typeof step === 'function' ? step(same ? same.participants.length : 0) : step;
     if (!st) return {};
     assertChoixJamaisPartage([st]);
+    assertBandeDeclarePossession([st]);
     if (same) return { pendingCascade: { ...same, participants: [...same.participants, st] } };
     const fresh: PendingCascade = { title: st.label ?? 'Conséquences', icon: st.icon ?? 'action/attack', purpose: p, cursor: 0, log: [], participants: [st] };
     // Slot occupé par un AUTRE purpose : on le SUSPEND (jamais un écrasement) — même `set` atomique
@@ -533,6 +573,45 @@ function assertChoixJamaisPartage(steps: readonly CascadeStep[]): void {
 }
 
 /**
+ * INVARIANT DE POSSESSION D'UNE BANDE (#1262 V2 L4, verdict de palier) : une étape À RANGÉES DÉCLARE
+ * à qui elle appartient — plus d'UN porteur ⇒ `groupOwner` (owner `'*'` : chaque siège voit la fenêtre
+ * où se tient SA rangée) ; un SEUL porteur ⇒ `actorId` = ce porteur. Sans l'un des deux, l'arbitre
+ * (`modalArbiter`, entrée `cascade`) rend `undefined`, donc la fenêtre à l'HÔTE SEUL — et le siège du
+ * porteur ne voit jamais sa rangée (`netOwnership.ownsLocally`).
+ *
+ * Les mints (`rollSeam.bandStep`, `buildBatchStep`) POSENT cette possession : la garde ne corrige
+ * rien, elle FERME la forme — un montage manuscrit qui la perdrait n'entre pas dans une séquence.
+ *
+ * PORTÉE EXACTE, dite (garde de FORME : elle lit l'étape, jamais un call-site) — les DEUX portes
+ * d'ENTRÉE d'étapes dans le slot, `startCascade` et `pushStep`. Ce qu'elle ne voit PAS :
+ *  - une séquence RESTAURÉE d'une sauvegarde (`store.loadGame`) écrit le slot en direct. Ce sont les
+ *    migrations qui en répondent — INÉGALEMENT : `bandifyNightSteps`/`bandifyPursuitSteps`/
+ *    `bandifyCombatEndSteps` repassent par les FABRIQUES du jeu (donc par `bandStep`), mais
+ *    `bandifyPsychStep` monte sa bande À LA MAIN (`saves.ts`) — sa possession n'est tenue que par son
+ *    propre code et par son test ;
+ *  - `runCascadeImmediate` bloqué sur un CHOIX sans défaut authoré : il installe `pendingCascade` en
+ *    direct pour surfacer l'impasse (#351) — les étapes qu'il porte viennent de son appelant ;
+ *  - les REMPLACEMENTS d'étape courante en vol : insertion de conséquence (`commitStep`), reminte du
+ *    `cast` partagé (`combatFlow`) et du désengagement à deux joués (`combatSlice`) — ils réécrivent
+ *    une étape DÉJÀ entrée, sans repasser par une porte.
+ * DEV : la violation THROW ; en PROD elle se journalise et la séquence s'ouvre (même politique).
+ */
+function assertBandeDeclarePossession(steps: readonly CascadeStep[]): void {
+  for (const st of steps) {
+    const rows = st.participants;
+    if (!rows?.length) continue;
+    const porteurs = new Set(rows.map((r) => r.id)).size;
+    if (st.groupOwner) continue;               // possession de GROUPE : toute forme
+    if (porteurs <= 1 && st.actorId) continue; // porteur UNIQUE : nommé
+    const msg = `[cascade] bande « ${st.id} » (${st.kind}) : ${porteurs} porteur(s) et AUCUNE possession déclarée `
+      + '(`groupOwner` au-delà d\'un porteur, `actorId` pour un seul) — la fenêtre échoirait à l\'hôte seul, '
+      + 'et le siège du porteur ne verrait jamais sa rangée.';
+    console.error(msg);
+    if (import.meta.env?.DEV) throw new Error(msg);
+  }
+}
+
+/**
  * Ouvre une séquence interactive (≥ 1 étape influençable). Le curseur démarre sur la 1ʳᵉ étape.
  * Applique la DOCTRINE DU SLOT ci-dessus (append même purpose / suspension sinon) : aucun écrasement.
  * `restNights` du fragment déjà en place l'emporte (`??`) — un séjour multi-nuits porte SON compteur,
@@ -545,6 +624,7 @@ export function startCascade(
 ): void {
   if (!opts.steps.length) return;
   assertChoixJamaisPartage(opts.steps);
+  assertBandeDeclarePossession(opts.steps);
   const cur = get().pendingCascade;
   if (cur && cur.purpose === opts.purpose) {
     set({
@@ -603,6 +683,10 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   let step = steps[i];
   if (step.participants && !step.result && step.aggregate !== 'none') step = { ...step, result: aggregateBatchStep(step) };
   const hero = step.actorId ? actorIn(get(), step.actorId) : undefined;
+  // TRACE des rangées résolues d'office (#1281) — AVANT la conséquence : le dé se lit d'abord, l'effet
+  // ensuite, comme dans la fenêtre qui ne s'est pas ouverte.
+  const traces = autoResolvedTraceLines(get, step);
+  for (const l of traces) get().log(l);
   const out = cascadeAppliers[step.kind]?.apply(get, set, step, hero, { steps, index: i });
   // `consequences` (#295 Lot 0) : rendu en LIGNES STRUCTURÉES (#349, `resultLines`) — seule voie de
   // dénouement. Le journal texte (`get().log`) reste alimenté depuis le même texte (`l.text`).
@@ -646,7 +730,7 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   const after = get().pendingCascade;
   const parked = before !== null && get().suspendedCascades.lastIndexOf(before) >= 0;
   const suspended = before !== null && (after === null || parked);
-  return { steps: next, journal: [...lines.map((l) => l.text), ...ownTestFailedLines], suspended };
+  return { steps: next, journal: [...traces, ...lines.map((l) => l.text), ...ownTestFailedLines], suspended };
 }
 
 /** Cascade EN COURS de résolution suspendue EN PLEIN VOL (`commitStep` a détecté `suspended`) : MET À
@@ -839,7 +923,7 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ct
       const rolled = rollTableStep(table, battleRng());
       cur = cur.map((x, k) => (k === i ? tableStepResolved(x, table, rolled) : x));
     } else if (stepInteraction(st) === 'batch') {
-      cur = cur.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(st) } : x));
+      cur = cur.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(st, true) } : x)); // résolue d'office → étampe de trace (#1281)
     } else if (stepInteraction(st) === 'choix' && st.chosen == null) {
       if (st.defaultChoice == null) {
         // Aucun défaut AUTEURISÉ (patron `resolveRemainingCascade` l.317-320) : on ne tranche PAS en
@@ -890,6 +974,5 @@ export function buildConsequenceSteps(groups: ConsequenceGroup[]): CascadeStep[]
       icon: g.icon,
       label: g.label,
       outcome: toRecapLines(g.lines),
-      interactive: true,
     }));
 }

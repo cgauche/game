@@ -1306,6 +1306,12 @@ export interface CascadeStepMeta {
   /** « Sans Peur (Ennemi) » (LDB 10 l.864) sur CETTE rangée : son Test est allégé (Accessible +20) et
    *  une réussite ignore la Peur d'emblée. Divergence PAR HÉROS d'une bande, jamais de l'étape. */
   sansPeur?: boolean;
+  /** RANGÉE RÉSOLUE D'OFFICE (#1281) : aucune fenêtre ne s'ouvrira sur elle. POSÉE par le seul pilote
+   *  qui roule sans surface — `cascade.runCascadeImmediate` (moitié auto d'une bande scindée par
+   *  pilote, cadence rapide, reprise commandée). Le socle (`cascade.commitStep`) en émet la ligne de
+   *  trace — porteur, libellé, dé/cible, issue — le journal étant SA SEULE surface. Étampe de RANGÉE
+   *  (`BatchParticipant.meta`), jamais d'étape. */
+  autoResolved?: boolean;
 }
 /** Le jet d'UNE étape de cascade (slot du flux multi SÉQUENTIEL `FLOWS.cascade`). */
 export interface CascadeRoll {
@@ -1445,14 +1451,20 @@ export interface CascadeTableResult {
  * ÉTAPE de séquence. Étend `RollParticipant` : une étape MONO est le jet d'un porteur, avec les mêmes
  * drapeaux d'influence qu'une rangée.
  *
- * `interactive` au niveau ÉTAPE : posé par tous les producteurs (et par la migration de save
- * `MIGRATIONS[17]`), mais AUCUN lecteur de production mesuré (#1262 lot 5a) — les lectures de
- * `interactive` visent toutes des RANGÉES (`stepReady` batch, `interactiveOf` des modales,
- * `rollFlowFactory.passive`), la surface d'une étape se décidant par sa possession (`modalArbiter`) et
- * son interaction (`stepInteraction`). Candidat à la SUPPRESSION en V2, pas ici : le champ voyage dans
- * les sauvegardes, son retrait est une migration à part entière.
+ * SAUF `interactive`, RETIRÉ du niveau ÉTAPE (#1262 V2 L4). Il avait UN lecteur — `rollFlowFactory`
+ * `passive`, atteint par `FLOWS.cascade` dont les slots SONT les étapes, qui gardait cinq verbes
+ * (Résilience, Résistance (Menace), les trois du renversement) — et UN producteur qui le posait à
+ * `false` (`shipwreck`, jet pré-roulé d'un nageur non piloté). Ce couple est remplacé par une
+ * définition DÉRIVÉE, non déclarable : un slot est passif quand son jet est POSÉ et que son porteur
+ * n'est pas SURFACÉ (`rollSeam.surfaceOf`) — plus de booléen qu'un producteur pourrait oublier, ni
+ * contredire. Le reste des lectures visait déjà des RANGÉES (`stepReady` batch, `interactiveOf` des
+ * modales, `CascadeModal.rollAllRows`), la surface d'une étape se décidant par sa POSSESSION
+ * (`modalArbiter`) et son INTERACTION (`stepInteraction`). Les sauvegardes le perdent par
+ * `MIGRATIONS[20]` — la nouvelle définition ne le lit plus, la migration reste donc une pure purge.
+ * Les RANGÉES gardent le leur (`BatchParticipant`, homonyme mais autre champ : il dit qui JOUE, et
+ * c'est `surfaceRow` qui le pose).
  */
-export interface CascadeStepBase extends RollParticipant {
+export interface CascadeStepBase extends Omit<RollParticipant, 'interactive'> {
   /** Nature de la conséquence (clé de `cascadeAppliers`). Ex. 'recovery' | 'nightmare' | 'exposure'. */
   kind: string;
   /** Héros qui lance (résolu via `actorIn`). Absent → étape de groupe (rare). */

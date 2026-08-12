@@ -61,7 +61,6 @@ describe('#253 — FAIM du bilan : étape de cascade influençable, pas un jet t
     const faim = stepOfKind('faim');
     expect(faim).toBeTruthy();
     expect(faim!.participants!.map((r) => r.id)).toEqual(['A']); // UNE fenêtre Faim, une rangée par affamé
-    expect(faim!.interactive).toBe(true);
     expect(resolveStake(faim!.stake!).text).toContain('Test de Résistance'); // enjeu verbatim surfacé (NIGHT_STAKES)
     const aNow = useGame.getState().party.find((h) => h.id === 'A')!;
     expect(aNow.hunger!.tests).toBe(0); // DIFFÉRÉ, pas roulé en eager
@@ -97,7 +96,6 @@ describe('#253 — CONTAGION de promiscuité : étape de cascade influençable',
     const cont = stepOfKind('contagion');
     expect(cont).toBeTruthy();
     expect(cont!.participants!.map((r) => r.id)).toEqual(['B']); // c'est le SAIN qui résiste à la Contraction
-    expect(cont!.interactive).toBe(true);
     expect(cont!.meta?.diseaseName).toBe('verole-urticante');
 
     // Chance proposable sur l'échec.
@@ -128,7 +126,6 @@ describe("#253 — AVANCE D'HORLOGE (advanceTime) : bilan en cascade influençab
     const faim = stepOfKind('faim');
     expect(faim).toBeTruthy();
     expect(faim!.participants!.map((r) => r.id)).toEqual(['A']);
-    expect(faim!.interactive).toBe(true);
     const aNow = useGame.getState().party.find((h) => h.id === 'A')!;
     expect(aNow.hunger!.days).toBe(2); // jour ENREGISTRÉ (l.201) mais Test NON roulé (différé)
     expect(aNow.hunger!.tests).toBe(0);
@@ -159,7 +156,6 @@ describe("#253 — AVANCE D'HORLOGE (advanceTime) : bilan en cascade influençab
     const step = stepOfKind('dessoulage');
     expect(step).toBeTruthy();
     expect(step!.participants!.map((r) => r.id)).toEqual(['A']);
-    expect(step!.interactive).toBe(true);
     expect(useGame.getState().party.find((h) => h.id === 'A')!.drunk).toBeTruthy(); // DIFFÉRÉ : encore ivre tant que non validé
 
     forceFail(step!.id, 'A');
@@ -204,7 +200,6 @@ describe('#253 — EXPOSITION de campement : étape de cascade influençable', (
     const expo = stepOfKind('exposure');
     expect(expo).toBeTruthy();
     expect(expo!.participants!.map((r) => r.id)).toEqual(['A']);
-    expect(expo!.interactive).toBe(true);
 
     forceFail(expo!.id, 'A');
     const fortuneBefore = useGame.getState().party.find((h) => h.id === 'A')!.fortune;
