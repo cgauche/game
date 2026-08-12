@@ -45,6 +45,7 @@ import { combatDistance } from './footprint';
 import { chebyshev, type Pt } from './path';
 import { combatantsWithinRadius } from './combatGeometry';
 import { smokeZone } from './lineOfSight';
+import { clampZoneTiles, inMapBounds } from './zones';
 import { applyTriggeredEffects } from './triggeredEffects';
 import { canTakeAction } from '../engine/conditions';
 import { isEngagedWith, longerThanShort, markAttacked } from '../engine/engagement';
@@ -352,7 +353,7 @@ function emitAoe(get: Get, center: Pt, radius: number, kind: AttackKind, type?: 
   for (let dx = -radius; dx <= radius; dx++)
     for (let dy = -radius; dy <= radius; dy++) {
       const x = center.x + dx, y = center.y + dy;
-      if (sc && x >= 0 && y >= 0 && x < sc.dimensions.w && y < sc.dimensions.h) tiles.push({ x, y });
+      if (sc && inMapBounds(sc.dimensions, { x, y })) tiles.push({ x, y });
     }
   bus.emit(EVT.ANIM_AOE, { tiles, kind, type });
 }
@@ -422,7 +423,7 @@ export function resolveManeuver(
     // Fumée (souffle-fumee) : la zone bloque les Lignes de vue pendant BE Rounds — GÉOMÉTRIE moteur (pas un GameOp).
     if (def.id === 'souffle-fumee') {
       const dur = Math.max(1, bonus(effectiveChar(attacker, 'endurance')));
-      const rawTiles = smokeZone(attacker.pos!, center.pos!, blast);
+      const rawTiles = clampZoneTiles(smokeZone(attacker.pos!, center.pos!, blast), get().scene?.dimensions); // bornée à la carte au site d'écriture
       // z propagé (cf. placeZoneFromOp/combatFlow, zoneAreaTiles §782/#799) : la fumée posée à l'étage du centre
       // ne bloque pas la Ligne de Vue à un autre étage de même (x,y).
       const cz = center.pos!.z;

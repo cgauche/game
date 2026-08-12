@@ -163,7 +163,7 @@ function critRollTwiceFor(c: Combatant | undefined | null): boolean {
   return !!c && (hasActiveFlag(c, 'critRollTwice') || hasCritRollTwiceTalent(c));
 }
 import { domainOnHitEffects, domainCasterOps, isSorceryDomain, domainEnvironmentBonus } from '../engine/domainAttributes';
-import { decayZones, discTiles, wallTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
+import { decayZones, discTiles, wallTiles, clampZoneTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
 import { carryOverState } from '../engine/persistence';
 import { contractionDue, applyContraction, hasActiveCapability, DISEASE_DEFS } from '../engine/disease';
 import { rollCritical, critWoundLocation, critImmediateSummary, resolvePostEncounterAmputations, critSeverityReduction, critTableKeyFor, critTableRows, type CriticalResolved, type CritTableKey } from '../engine/critical';
@@ -5386,9 +5386,11 @@ function placeZoneFromOp(get: Get, caster: Combatant, target: Combatant, pz: Ext
   const battle = get().battle;
   if (!battle || !target.pos || !caster.pos) { logLines.push(tr('cf.zonePersists', { spell: label })); return; }
   const discRadiusM = pz.radiusMeters != null ? Math.max(0, resolveFormula(pz.radiusMeters, caster, battleRng())) : fallbackRadiusM;
-  const rawTiles = pz.shape === 'wall'
+  // Cases BORNÉES à la carte au SITE D'ÉCRITURE (`clampZoneTiles`) : la géométrie de pose est non
+  // bornée, une zone posée au coin déborderait en cases négatives stockées dans `battle.zones`.
+  const rawTiles = clampZoneTiles(pz.shape === 'wall'
     ? wallTiles(caster.pos, target.pos, metersToTiles(resolveZoneMeters(pz.lengthMeters ?? 2, pz.lengthPerSL, caster, sl, battleRng())))
-    : discTiles(target.pos, metersToTiles(discRadiusM));
+    : discTiles(target.pos, metersToTiles(discRadiusM)), get().scene?.dimensions);
   // z propagé sur chaque case (défaut 0, cf. zoneAreaTiles §782/#799) : une zone posée à l'étage `target.pos.z`
   // ne couvre pas les cases de même (x,y) à un autre étage (zoneCovers compare `t.z ?? 0` / `p.z ?? 0`).
   const tiles = target.pos.z ? rawTiles.map((t) => ({ ...t, z: target.pos!.z })) : rawTiles;

@@ -12,6 +12,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { castCommitZone, applyCast } from './combatFlow';
 import { zoneCovers } from './zones';
+import { emptyScene } from './scene';
 import { pregen, PREGEN } from '../data/pregens';
 import { findSpell } from '../data';
 import type { Combatant } from '../engine/types';
@@ -79,5 +80,21 @@ describe('Placement de zone — z-blindness (#798)', () => {
     expect(zone.tiles.some((t) => t.x === 5 && t.y === 10 && (t.z ?? 0) === 1)).toBe(true);
     expect(zoneCovers(zone, { x: 5, y: 10, z: 0 })).toBe(false); // même case, étage 0 : PAS couverte
     expect(zoneCovers(zone, { x: 5, y: 10, z: 1 })).toBe(true); // étage de la cible : couverte
+  });
+
+  // #1176 : la géométrie de pose (discTiles/wallTiles) n'est pas bornée — une zone posée au COIN
+  // stockait des cases négatives dans `battle.zones`, que le builder de surbrillances émettait telles
+  // quelles. L'invariant se tient au SITE D'ÉCRITURE (`clampZoneTiles`).
+  it('placeZoneFromOp : une zone posée au coin ne stocke QUE des cases de la carte', () => {
+    const c = caster(0, 0, 0);
+    c.pos = { x: 0, y: 0 };
+    const battle = { combatants: [c], order: [c.id], baseOrder: [c.id], turn: 0, round: 1, acted: false, log: [], over: null, zones: [] } as never;
+    useGame.setState({ battle, scene: emptyScene(6, 6), party: [] });
+    applyCast(useGame.getState, useGame.setState, c, c, findSpell('Sang de la Terre')!, okCast(), false, false);
+    const zone = (useGame.getState().battle!.zones ?? []).find((z) => z.label === findSpell('Sang de la Terre')!.label)!;
+    expect(zone).toBeTruthy();
+    expect(zone.tiles.length).toBeGreaterThan(0);
+    expect(zone.tiles.filter((t) => t.x < 0 || t.y < 0 || t.x >= 6 || t.y >= 6)).toEqual([]);
+    expect(zone.tiles.some((t) => t.x === 0 && t.y === 0)).toBe(true); // le centre reste posé
   });
 });

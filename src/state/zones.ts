@@ -75,6 +75,21 @@ export function discTiles(center: Pt, radiusTiles: number, z?: number): Pt[] {
   return out;
 }
 
+/** Dimensions de la carte (`Scene.dimensions`) — porteuses de la BORNE des zones. */
+export type MapDims = { w: number; h: number };
+
+/** La case est-elle DANS la carte ? Prédicat in-bounds partagé (les sites `scene.ts`/`combatManeuvers.ts`
+ *  l'inlinaient chacun de leur côté). Dimensions inconnues (`undefined`) → aucune borne connue : vrai. */
+export const inMapBounds = (dims: MapDims | undefined, p: Pt): boolean =>
+  !dims || (p.x >= 0 && p.y >= 0 && p.x < dims.w && p.y < dims.h);
+
+/** INVARIANT d'ÉCRITURE de `battle.zones[].tiles` : une zone ne stocke QUE des cases de la carte.
+ *  Toute géométrie de pose (`discTiles`/`wallTiles`/`smokeZone`) est non bornée par construction —
+ *  un disque posé au coin déborde en coordonnées négatives, et les lecteurs (surbrillances, LdV,
+ *  barrières) propagent alors des cases hors carte. Se pose au SITE D'ÉCRITURE, jamais chez les lecteurs. */
+export const clampZoneTiles = (tiles: Pt[], dims: MapDims | undefined): Pt[] =>
+  tiles.filter((t) => inMapBounds(dims, t));
+
 /** Cases couvertes par une aire authorée (rectangle plein ou disque de Chebyshev) — `z` propagé sur
  *  chaque case (défaut 0, cf. `SceneEffectZone.z`, #782/#799) : une zone d'étage 1 ne couvre pas les
  *  cases de même (x,y) au rez. */
@@ -100,12 +115,13 @@ export function sceneZoneTiles(zone: SceneEffectZone): Pt[] {
  *  `battle.zones` au début du combat) — réutilise le runtime des zones de Sort (crossZones/
  *  zonesRoundTick/losBlockingTiles). `rounds` est ignoré (permanent) mais posé à 1 pour le typage.
  *  Les zones DESCRIPTIVES (`isDescriptiveZone`, nom de pièce sans champ mécanique) sont IGNORÉES —
- *  jamais peintes comme un pavé de danger en combat (#782). */
-export function sceneZonesToBattle(zones: SceneEffectZone[] | undefined): BattleZone[] {
+ *  jamais peintes comme un pavé de danger en combat (#782). `dims` borne les cases à la carte (même
+ *  invariant d'écriture que les zones posées au runtime — une aire authorée peut déborder du cadre). */
+export function sceneZonesToBattle(zones: SceneEffectZone[] | undefined, dims?: MapDims): BattleZone[] {
   return (zones ?? []).filter((z) => !isDescriptiveZone(z)).map((z) => ({
     id: z.id,
     label: z.label,
-    tiles: sceneZoneTiles(z),
+    tiles: clampZoneTiles(sceneZoneTiles(z), dims),
     rounds: 1,
     permanent: true,
     blocksLoS: z.blocksLoS,

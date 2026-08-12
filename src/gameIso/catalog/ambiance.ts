@@ -147,12 +147,15 @@ export const AMBIANCE: AmbianceDef = ambiance;
  *  volume (c'est la même porte que celle des voiles d'ambiance, `stage/Ambiance.tsx`). Les DEUX voies
  *  la lisent : le voile écran de la voie affine (`stage/WeatherVeil.tsx`) et le semis de particules de
  *  la voie volumique (`backends/webgl/weatherParticles.ts`) — deux expressions, une seule décision. Le
- *  verdict d'intérieur lui-même vient de `isIndoor` (`state/scene.ts`), la porte de toutes les vues. */
+ *  verdict d'intérieur lui-même vient de `isIndoor` (`state/scene.ts`), la porte de toutes les vues.
+ *  C'est le REGISTRE qui décide de ce qui se montre : un id sans entrée au catalogue — `clair`
+ *  compris — ne montre rien. */
 export function sceneWeatherFx(scene: Pick<Scene, 'weather' | 'ambiance'>): WeatherFxDef | null {
   if (isIndoor(scene)) return null;
   const id = scene.weather;
-  if (!id || id === 'clair') return null;
-  return AMBIANCE.iso.weather[id] ?? null;
+  if (!id) return null;
+  const registre: Partial<Record<string, WeatherFxDef>> = AMBIANCE.iso.weather;
+  return registre[id] ?? null;
 }
 
 /** La PRÉCIPITATION monde de la scène — ce qui tombe, ou `null`. Même porte, lue par la voie
