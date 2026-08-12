@@ -8,7 +8,7 @@
  */
 import { registerCombatHook } from '../combatHooks';
 import { registerCascadeApplier } from '../cascade';
-import { freeCons, rollSansPilote, surfaceOf, monoStep, choiceStep, pushMono, type BuiltCascadeStep } from '../rollSeam';
+import { freeCons, rollSansPilote, surfaceOf, monoStep, choiceStep, pushMono, pousseSi, type BuiltCascadeStep } from '../rollSeam';
 import { battleRng } from '../battleRng';
 import { rollTest } from '../../engine/tests';
 import { testValue } from '../../engine/skills';
@@ -385,7 +385,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: 
       actor: c, ligne: { test: { skill: 'resistance' } }, difficulty: 'intermediaire',
       stake: combatStakeRef('aaBleedUnconscious'),
     });
-    if (step) steps.push(step);
+    pousseSi(steps, step);
   }
   // (Mâchoires d'acier n'est PLUS un Test de fin de Round : c'est un effet `onGainCondition` data-driven,
   //  déclenché à l'acquisition du Sonné — cf. talents.json + brique `combat/triggeredTest`.)
@@ -399,7 +399,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: 
       actor: c, ligne: { test: { skill: 'resistance' } }, difficulty: 'intermediaire',
       stake: combatStakeRef('fatigue'),
     });
-    if (step) steps.push(step);
+    pousseSi(steps, step);
   }
   // 4) Durée « + » (LDB 47 l.311) : effets GELÉS (spell source marqué) — « vous POUVEZ effectuer un Test
   //    de Force Mentale pour prolonger » = décision OPT-IN, étape de CHOIX (Oui/Renoncer) ; sur Oui,
@@ -415,7 +415,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: 
       defaultChoice: 'no',
       meta: { sourceSpellId: spellId },
     });
-    if (choix) steps.push(choix);
+    pousseSi(steps, choix);
   }
   return steps;
 }

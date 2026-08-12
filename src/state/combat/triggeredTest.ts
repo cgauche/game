@@ -37,7 +37,7 @@ import type { FreeAttackFreeze, BladeTrapFreeze, BatchParticipant } from '../pen
 import { battleRng } from '../battleRng';
 import { runPureFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps, drainPendingLog } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
-import { freeCons, rollLine, rollStep, surfaceOf, bandStep, monoStep, choiceStep, pushChoice, type BuiltCascadeStep } from '../rollSeam';
+import { freeCons, rollLine, rollStep, surfaceOf, bandStep, monoStep, choiceStep, pushChoice, pousseSi, type BuiltCascadeStep } from '../rollSeam';
 import { recoveryGeometry, effectSourcesOf, fireOwnTestFailed } from '../triggeredEffects';
 import { emitCombatEvent } from '../combatEvents';
 import { inBattleId, actorIn } from '../combatants';
@@ -377,7 +377,7 @@ export function collectRoundEndTestSteps(get: Get, c: Combatant): BuiltCascadeSt
           defaultChoice: 'no',
           meta: { choiceYes: eff.flow, choiceNo: EMPTY_FLOW, after: EMPTY_FLOW },
         });
-        if (choix) optional.push(choix);
+        pousseSi(optional, choix);
         continue;
       }
       // L'ENTITÉ SOURCE voyage dans le `meta` (déjà estampillée par `withSource`) : c'est la
@@ -385,7 +385,7 @@ export function collectRoundEndTestSteps(get: Get, c: Combatant): BuiltCascadeSt
       // l'État/le Trait/le Talent/le symptôme qui l'exige, jamais une fiche générique.
       const step = simpleTriggeredTestStep(c, ft, { onSuccess: eff.flow.success, onFail: eff.flow.fail }, EMPTY_FLOW, resolveTestDifficulty(ft, cc),
         eff.source ? { sourceKind: eff.source.kind, sourceEntityId: eff.source.id } : {});
-      if (step) steps.push(step);
+      pousseSi(steps, step);
     }
   }
   return [...steps, ...optional];

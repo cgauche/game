@@ -7,12 +7,15 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatFlow';
-import { startGroundPursuit, continuePursuitRound, pursuitAbandon } from './pursuitFlow';
+import { startGroundPursuit, continuePursuitRound, pursuitAbandon, pursuitBands } from './pursuitFlow';
+import { startCascade } from './cascade';
+import { monoStep, displayStep, type BuiltCascadeStep } from './rollSeam';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { skillBaseValue, testValue } from '../engine/skills';
 import { intentAllowedFor } from './netOwnership';
 import { modalOwnerOf } from './modalArbiter';
+import type { Combatant } from '../engine/types';
 import type { GameState } from './store';
 import type { PendingCascade, CascadeStep } from './pendings';
 
@@ -180,5 +183,67 @@ describe('Poursuite terrestre (#95)', () => {
     expect(casc.participants).toHaveLength(1);
     expect(casc.participants[0].participants?.map((r) => r.id).sort()).toEqual(party.map((h) => h.id).sort());
     expect(casc.participants[0].participants?.every((r) => !r.result)).toBe(true);
+  });
+});
+
+/**
+ * MANCHE RESTAURÉE (#1262 V2 lot 3) — la fabrique de bandification des saves (`pursuitBands`,
+ * MIGRATIONS[18]) rendait un littéral SANS possession : `modalOwnerOf` `undefined`, fenêtre à l'HÔTE
+ * SEUL, alors que la manche VIVE, elle, était partagée. Depuis la déclaration au socle
+ * (`makeBandFactory`), les deux chemins sortent par le MÊME mint.
+ */
+describe('Poursuite — la manche restaurée d’une save se possède comme la manche vive', () => {
+  /** Étape MONO de manche à l'ANCIENNE forme (une par coureur), MINTÉE : la fabrique n'accepte que des
+   *  produits de la porte (#1262 V2), et une save réhydratée y repasse (`saves.ts`). */
+  const mono = (h: Combatant, round: string): BuiltCascadeStep => monoStep({
+    id: `pursuit-${round}-${h.id}`, kind: 'pursuitMove', actor: h, icon: 'travel/foot',
+    label: `Manche ${round}`, rollLabel: 'Athlétisme', difficulty: 'intermediaire',
+    montee: { base: 40, target: 40 },
+  })!;
+
+  it('N coureurs → fenêtre PARTAGÉE ; un seul → la manche EST la sienne', () => {
+    const [a, b] = heroes();
+    const deux = pursuitBands([mono(a, '1'), mono(b, '1')]);
+    expect(deux).toHaveLength(1);
+    expect(deux[0].groupOwner, 'deux coureurs : fenêtre de groupe').toBe(true);
+    startCascade(useGame.getState, useGame.setState, { title: 'Manche', purpose: 'pursuite', steps: deux });
+    expect(modalOwnerOf(useGame.getState()), 'jamais `undefined` : c’était la fenêtre hôte-seul').toBe('*');
+
+    useGame.setState({ pendingCascade: null });
+    const seul = pursuitBands([mono(b, '2')]);
+    expect(seul[0].groupOwner).toBeUndefined();
+    expect(seul[0].actorId, 'un seul coureur : la manche EST son étape').toBe(b.id);
+  });
+
+  it('une étape ÉTRANGÈRE traverse INTACTE (même référence — la migration compare pour savoir si rien n’a bougé)', () => {
+    const [a] = heroes();
+    const etrangere = displayStep({ id: 'reveal-x', kind: 'reveal', label: 'Une ombre', worldOwner: true });
+    const out = pursuitBands([mono(a, '1'), etrangere]);
+    expect(out[1]).toBe(etrangere);
+  });
+
+  /**
+   * CE QUI DESCEND de l'étape MONO vers la RANGÉE, NOMMÉ (#1262 V2 lot 3) : la bandification passe par
+   * le pli UNIQUE du socle (`bandRowOfStep`), donc une manche restaurée recopie aussi `menace` et
+   * `meta` — que la fabrique locale d'avant laissait tomber. Inerte aujourd'hui (les monos de manche
+   * sortent de `rollStep` sans `menace`), mais `menace` sur une rangée ALLUME l'affordance Résistance
+   * (Menace) de la modale (`CascadeModal`) : ce test force la décision consciente le jour où un mono
+   * de manche en porterait une.
+   */
+  it('les champs qui DESCENDENT sur la rangée sont ceux-là, et pas d’autres', () => {
+    const [a] = heroes();
+    const source = mono(a, '1');
+    const rangee = pursuitBands([source])[0].participants![0];
+    expect(Object.keys(rangee).sort()).toEqual(['base', 'difficulty', 'id', 'interactive', 'label', 'result', 'target']);
+    expect(rangee.menace, 'aucune Menace sur un mono de manche AUJOURD’HUI').toBeUndefined();
+    expect(rangee.meta, 'ni charge de rangée').toBeUndefined();
+    // …et quand l'étape en porte, elles descendent (pli du socle, jamais un oubli local).
+    const avecMenace = monoStep({
+      id: `pursuit-9-${a.id}`, kind: 'pursuitMove', actor: a, label: 'Manche 9', rollLabel: 'Athlétisme',
+      difficulty: 'intermediaire', montee: { base: 40, target: 40 }, menace: 'Poursuite', meta: { round: 9 },
+    })!;
+    const r2 = pursuitBands([avecMenace])[0].participants![0];
+    expect(r2.menace).toBe('Poursuite');
+    expect(r2.meta).toEqual({ round: 9 });
   });
 });

@@ -270,9 +270,9 @@ import { nightBands, splitBandRows } from './nightBands';
 import { combatEndBands, combatEndRowMeta } from './combatEndBands';
 import type { CascadeStepMeta } from './pendings';
 import {
-  freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf, bandStep, monoStep,
-  hostStep, openSequence, openBand, pushHost, pushTableDone, pushTable, pushChoice, pushDisplay, tableStep,
-  type Consequence, type TableSpec, type BandSpec,
+  freeCons, resultLines, rollLine, rollStep, rollSansPilote, surfaceOf, monoStep, pousseSi,
+  hostStep, openSequence, openBand, pushHost, pushTableDone, pushTable, pushChoice, pushDisplay, tableStep, makeBandFactory,
+  type Consequence, type TableSpec,
 } from './rollSeam';
 import { revealToStep } from './revealStep';
 import type { BuiltCascadeStep } from './stepBrand';
@@ -5678,7 +5678,7 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
         stake: combatStakeRef('combatEndDisease', { entryId: d.disease }),
         menace: 'maladie', // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
       });
-      if (step) monos.push(step);
+      pousseSi(monos, step);
     }
     if (decided.corruption && corr) {
       const res = testValue(c, 'resistance');
@@ -5692,7 +5692,7 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
         stake: combatStakeRef('combatEndCorruption', { values: { niveau: corr.label, gainEchec: corruptionGain(corr.level, false, 0) } }),
         menace: 'corruption', // Test d'Exposition = « résister à la Corruption » (Résistance (Menace), LDB 10)
       });
-      if (step) monos.push(step);
+      pousseSi(monos, step);
     }
   }
   // Rangée qui rejoint la cascade influençable : porteur SURFACÉ (#1262 — le héros d'un autre siège en
@@ -6632,33 +6632,25 @@ function psychDueFor(get: Get, c: Combatant, collect: (get: Get, c: Combatant) =
  * héros appelés sont les RANGÉES (jets INDÉPENDANTS, `aggregate:'none'`). L'ordre des bandes est celui
  * de leur première rencontre en parcourant les combattants.
  *
- * La POSSESSION est celle du socle (`bandStep`) : plusieurs porteurs → `groupOwner`, un seul → SON
- * `actorId`. Les rangées sont déjà montées (`psychDueFor`) et leurs porteurs déjà SURFACÉS par les
- * collecteurs — c'est la seule chose que la bande ajoute.
+ * DÉCLARATION au socle (`makeBandFactory`, #1262 V2) : Map keyée, dédoublement de clé, place réservée
+ * et mint. La POSSESSION est celle du socle (`bandStep`) : plusieurs porteurs → `groupOwner`, un seul
+ * → SON `actorId`. Les rangées sont déjà montées (`psychDueFor`) et leurs porteurs déjà SURFACÉS par
+ * les collecteurs — c'est la seule chose que la bande ajoute.
  */
-function combatPsychBands(dues: CombatPsychDue[]): BuiltCascadeStep[] {
-  const bands = new Map<string, { spec: BandSpec; rows: BatchParticipant[] }>();
-  for (const due of dues) {
-    const d = due.decl;
-    const key = `${d.kind}|${d.sourceId}|${d.cible ?? ''}|${d.indice}`;
-    const band = bands.get(key);
-    if (band) { band.rows.push(due.row); continue; }
-    bands.set(key, {
-      rows: [due.row],
-      spec: {
-        id: `psych-${d.kind}-${bands.size}`, kind: 'combatPsych', icon: due.icon, label: due.label,
-        combatPsych: d,
-        // L'enjeu descend à l'AFFLICTION affrontée : ses conséquences lui sont propres (`psychResolution`
-        // lit `failCondition`/`failAmount`/`becomes` de SON entrée), donc son texte vit sur SON entrée.
-        stake: combatStakeRef('combatPsych', { entryId: d.kind, values: { indice: d.indice } }),
-        // Les DEUX issues, dérivées des ops que l'applier appliquera (`psychBranchOps`) : la surface
-        // les rend en chips codex-liées avant le jet, et le verdict est le MÊME bloc filtré (#1117).
-        meta: { onSuccess: psychBranchFlow(d, true), onFail: psychBranchFlow(d, false) },
-      },
-    });
-  }
-  return [...bands.values()].flatMap(({ spec, rows }) => bandStep(spec, rows) ?? []);
-}
+const combatPsychBands = makeBandFactory<CombatPsychDue>({
+  cle: ({ decl: d }) => `${d.kind}|${d.sourceId}|${d.cible ?? ''}|${d.indice}`,
+  rangee: (due) => due.row,
+  situation: ({ decl: d, icon, label }, { index }) => ({
+    id: `psych-${d.kind}-${index}`, kind: 'combatPsych', icon, label,
+    combatPsych: d,
+    // L'enjeu descend à l'AFFLICTION affrontée : ses conséquences lui sont propres (`psychResolution`
+    // lit `failCondition`/`failAmount`/`becomes` de SON entrée), donc son texte vit sur SON entrée.
+    stake: combatStakeRef('combatPsych', { entryId: d.kind, values: { indice: d.indice } }),
+    // Les DEUX issues, dérivées des ops que l'applier appliquera (`psychBranchOps`) : la surface
+    // les rend en chips codex-liées avant le jet, et le verdict est le MÊME bloc filtré (#1117).
+    meta: { onSuccess: psychBranchFlow(d, true), onFail: psychBranchFlow(d, false) },
+  }),
+});
 
 /** Une cascade de Round est-elle interdite (modale/cascade bloquante déjà ouverte) ? */
 function roundCascadeBlocked(get: Get): boolean {

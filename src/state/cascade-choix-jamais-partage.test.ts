@@ -25,7 +25,7 @@ const STATE_DIR = fileURLToPath(new URL('.', import.meta.url));
 
 /** Fichiers de `src/state` (hors tests) qui POSENT `groupOwner` sur une étape — mesuré, pas supposé.
  *  Une entrée = un producteur relu : il ne pose AUCUN `options` sur la même étape. */
-const PRODUCTEURS_GROUP_OWNER = ['combatFlow.ts', 'combatSlice.ts', 'pursuitFlow.ts', 'rollSeam.ts', 'store.ts'];
+const PRODUCTEURS_GROUP_OWNER = ['combatFlow.ts', 'combatSlice.ts', 'rollSeam.ts', 'store.ts'];
 
 /** Retire commentaires de bloc et de ligne : une réf à `groupOwner:true` en prose n'est pas un site. */
 function stripComments(src: string): string {

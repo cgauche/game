@@ -308,6 +308,18 @@ describe('#1117 L4 — MIGRATIONS[19] : une save v19 en pleine cascade de bilan 
     expect(corr[0].participants!.map((r) => r.id)).toEqual(['h1', 'h2']);
   });
 
+  /** POSSESSION d'une bande RESTAURÉE (#1262 V2 lot 3) : c'est le SEUL chemin où la possession posée
+   *  par `combatEndBands` arrive telle quelle au joueur — la cascade vive, elle, re-minte en aval
+   *  (`routeBandByPilot` → `splitBandRows`). Sans `groupOwner`/`actorId`, l'arbitre (`modalArbiter`,
+   *  entrée `cascade`) rend la fenêtre à l'HÔTE SEUL et le siège du porteur ne voit jamais sa rangée. */
+  it('toute bande restaurée DÉCLARE sa possession (jamais une fenêtre anonyme)', () => {
+    const migrated = migrateSave(fixture())!;
+    const steps = (migrated.data as { pendingCascade: { participants: CascadeStep[] } }).pendingCascade.participants;
+    const bandes = steps.filter((s) => s.participants);
+    expect(bandes.length, 'la save porte bien des bandes').toBeGreaterThan(0);
+    for (const b of bandes) expect(!!b.groupOwner || !!b.actorId, `bande ${b.id} sans propriétaire`).toBe(true);
+  });
+
   /** SONDE F promue (#1259) : la bandification NE DÉPLACE PAS le curseur (contrairement à
    *  `bandifyPursuitSteps`, qui le REPOSE parce qu'une manche se juge à la clôture). Une bande dont
    *  TOUTES les rangées sont déjà roulées reste PRÊTE à valider — jamais sautée, jamais rejouée. */

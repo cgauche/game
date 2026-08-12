@@ -17,18 +17,10 @@
  * tient les étapes LEGACY d'une sauvegarde, qui ne portent aucun discriminant d'entrée.
  */
 import type { CascadeStep, CascadeStepMeta, BatchParticipant } from './pendings';
-import { bandStep, bandStepId, bandCommonMeta, type BandSpec, type BuiltCascadeStep } from './rollSeam';
+import { bandRowOfStep, bandCommonMeta, makeBandFactory, type BuiltCascadeStep } from './rollSeam';
 
 /** Les `kind` d'étape que cette fabrique regroupe — ceux dont l'applier exige des RANGÉES. */
 const COMBAT_END_KINDS = new Set(['combatEndDisease', 'combatEndCorruption']);
-
-/** Champs du jet MONO qui DESCENDENT sur la rangée (le reste — icône, enjeu, libellé de situation —
- *  appartient à la bande : c'est l'entrée de règle qui les porte). */
-const ROW_FIELDS = ['base', 'target', 'mods', 'clamped', 'difficulty', 'menace'] as const;
-
-/** Champs de JEU DÉJÀ POSÉ qui descendent aussi sur la rangée (influences, issue) — vides sur toute
- *  étape fraîchement construite, peuplés sur une étape venue d'une sauvegarde. */
-const PLAY_FIELDS = ['rerolled', 'forced', 'fixed', 'outcome'] as const;
 
 /** Discriminants d'ENTRÉE DE RÈGLE d'une étape de fin de combat, lus dans son `meta` : l'entrée
  *  (`entry` — Infection post-critique vs Contagion vs suites d'opération), la maladie visée et le
@@ -54,63 +46,41 @@ function bandable(step: CascadeStep): boolean {
     && typeof step.actorId === 'string' && step.target != null;
 }
 
-/** RANGÉE dérivée d'une étape MONO — le jet descend, la situation reste à la bande. Les champs de JEU
- *  DÉJÀ POSÉ (résultat, influences, issue) descendent aussi : une étape venue d'une save peut avoir
- *  été lancée avant la sauvegarde. Le `meta` ENTIER voyage sur la rangée : ce qui diverge d'un porteur
- *  à l'autre (l'incubation « Instantanée » d'un Contagieux) n'est lisible que là. */
-function combatEndRow(step: CascadeStep): BatchParticipant {
-  const row: Record<string, unknown> = { id: step.actorId, interactive: true, result: step.result ?? null, label: step.rollLabel };
-  for (const f of ROW_FIELDS) if (step[f] !== undefined) row[f] = step[f];
-  for (const f of PLAY_FIELDS) if (step[f] !== undefined) row[f] = step[f];
-  if (step.meta) row.meta = step.meta;
-  return row as unknown as BatchParticipant;
-}
-
 /**
  * FABRIQUE : regroupe des étapes MONO de fin de combat en BANDES, dans l'ordre de leur PREMIÈRE
  * émission. Les étapes hors périmètre (autre `kind`, bande déjà formée, pas de porteur ni de cible)
  * traversent INTACTES, à leur place. SOURCE UNIQUE de la conversion : la migration de sauvegarde
  * (`MIGRATIONS[19]`) l'appelle, elle ne redécrit pas une forme cible qui dériverait ensuite.
  *
- * La POSSESSION des bandes est celle du socle (`bandStep`, #1262) : plusieurs porteurs →
- * `groupOwner`, un seul → SON `actorId`.
+ * DÉCLARATION au socle (`makeBandFactory`, #1262 V2), comme `nightBands` : Map keyée, dédoublement de
+ * clé (deux entrées DISTINCTES réclamant la même maladie au même personnage — Infection post-critique
+ * `LDB 20 l.90` et Contagion `l.25`/`l.51` — ouvrent deux bandes), place réservée, `meta` commun et
+ * mint (`bandStep`, qui pose la POSSESSION : plusieurs porteurs → `groupOwner`, un seul → SON
+ * `actorId`). Le `meta` ENTIER de l'étape voyage sur la rangée : ce qui diverge d'un porteur à l'autre
+ * (l'incubation « Instantanée » d'un Contagieux) n'est lisible que là.
  *
  * L'`id` de bande est dérivé de la CLÉ (jamais du premier `step.id`, qui nomme un porteur) : deux
  * bandes de la même séquence ne peuvent donc pas se confondre, et le rang de dédoublement (`#n`) du
  * filet d'id est porté à côté. Ids RUNTIME-ONLY : aucune sauvegarde ne les rejoue (elle restaure la
  * séquence telle quelle ; `MIGRATIONS[19]` les reconstruit par cette même fabrique).
  *
- * ENTRE et SORT en étapes MINTÉES (#1262 V2), comme `nightBands` : ce qu'elle regroupe repasse par
- * `bandStep`, ce qu'elle laisse passer garde la marque de son propre mint.
+ * ENTRE et SORT en étapes MINTÉES (#1262 V2) : ce qu'elle regroupe repasse par `bandStep`, ce qu'elle
+ * laisse passer garde la marque de son propre mint.
  */
-export function combatEndBands(steps: readonly BuiltCascadeStep[]): BuiltCascadeStep[] {
-  const out: BuiltCascadeStep[] = [];
-  const bands = new Map<string, { spec: BandSpec; rows: BatchParticipant[]; metas: (CascadeStepMeta | undefined)[]; at: number }>();
-  for (const step of steps) {
-    if (!bandable(step)) { out.push(step); continue; }
-    const cle = combatEndBandKey(step);
-    const key = bandStepId(bands, cle, step.actorId!);
-    const held = bands.get(key);
-    if (held) { held.rows.push(combatEndRow(step)); held.metas.push(step.meta); continue; }
-    const n = key === cle ? 1 : Number(key.slice(cle.length + 1));
-    const spec: BandSpec = {
-      id: ['bande', step.kind, ...entryParts(step.meta)].join('-') + (n > 1 ? `#${n}` : ''),
-      kind: step.kind,
-      ...(step.label !== undefined ? { label: step.label } : {}),
-      ...(step.icon ? { icon: step.icon } : {}),
-      ...(step.stake ? { stake: step.stake } : {}),
-      ...(step.menace ? { menace: step.menace } : {}),
-    };
-    bands.set(key, { spec, rows: [combatEndRow(step)], metas: [step.meta], at: out.length });
-    out.push(step); // place RÉSERVÉE : la bande la remplace une fois toutes ses rangées connues
-  }
-  for (const { spec, rows, metas, at } of bands.values()) {
-    const meta = bandCommonMeta(metas);
-    const band = bandStep({ ...spec, ...(meta ? { meta } : {}) }, rows);
-    if (band) out[at] = band;
-  }
-  return out;
-}
+export const combatEndBands = makeBandFactory<BuiltCascadeStep>({
+  passe: (step) => (bandable(step) ? null : step),
+  cle: combatEndBandKey,
+  rangee: bandRowOfStep,
+  situation: (step, { rang }) => ({
+    id: ['bande', step.kind, ...entryParts(step.meta)].join('-') + (rang > 1 ? `#${rang}` : ''),
+    kind: step.kind,
+    ...(step.label !== undefined ? { label: step.label } : {}),
+    ...(step.icon ? { icon: step.icon } : {}),
+    ...(step.stake ? { stake: step.stake } : {}),
+    ...(step.menace ? { menace: step.menace } : {}),
+  }),
+  meta: (steps) => bandCommonMeta(steps.map((s) => s.meta)),
+});
 
 /** CHARGE utile d'une rangée de bande de fin de combat : le `meta` de la BANDE (l'entrée de règle
  *  commune) enrichi de celui de la RANGÉE (ce qui diverge par porteur). SOURCE UNIQUE de lecture des

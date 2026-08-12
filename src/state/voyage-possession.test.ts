@@ -12,12 +12,16 @@
  *
  * En SOLO les deux prédicats coïncident (tout est à l'hôte) : ces régressions y sont INVISIBLES —
  * d'où le harnais à deux sièges (#1262 B7).
+ *
+ * LOT 3 y ajoute les POSTES d'Étape (voyage terrestre, `travelPostes`) : la bande des Activités et la
+ * bande de Résistance de traversée naissaient de littéraux SANS possession — même fenêtre hôte-seul.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { buildSeaPlan, runSeaDay, resolvePortArrival } from './seaVoyageFlow';
 import { buildRiverDayCascade } from './riverVoyageFlow';
+import { buildStageSteps, buildWeatherResistanceSteps } from './travelPostes';
 import { startCascade } from './cascade';
 import { creditBourse } from './bourseFlow';
 import { seedBattleRng } from './battleRng';
@@ -300,5 +304,44 @@ describe('#1262 V2 — l’allure FORCÉE ouvre sa cascade pour le conducteur d�
     useGame.setState({ party: [pnj], net: { ...NET0, mode: 'host', mySeat: 0, slots: [0, 1, 0, 0], ownership: {} } } as never);
     expect(humanControlled(get(), pnj)).toBe(false);
     expect(surfaceOf(get, pnj)).toBe(false);
+  });
+});
+
+// ── POSTES D'ÉTAPE (voyage terrestre) ────────────────────────────────────────────────────────────
+
+describe('#1262 V2 lot 3 — les BANDES de l’Étape se possèdent (classe #1268)', () => {
+  it('bande des Postes et bande de Résistance de traversée : jamais une fenêtre sans propriétaire', () => {
+    seedBattleRng(3);
+    const a = createHero({ speciesId: 'humains-reiklander', careerId: 'garde', label: 'Poste A', motivation: 'x', rng: makeRNG(41), id: 'p-a' });
+    const b = createHero({ speciesId: 'humains-reiklander', careerId: 'garde', label: 'Poste B', motivation: 'x', rng: makeRNG(42), id: 'p-b' });
+    useGame.setState({
+      party: [a, b], battle: null, pendingCascade: null, suspendedCascades: [],
+      travelPlan: { routeId: 'r', km: 24, postes: { [a.id]: { activityId: 'plein-air' }, [b.id]: { activityId: 'plein-air' } } },
+    } as never);
+    deuxSieges(b.id); // A à l'hôte, B à l'invité
+
+    const postes = buildStageSteps(get, set, 'beau', 'ete').find((s) => s.kind === 'stagePosteBatch')!;
+    expect(postes.participants!.map((p) => p.id).sort()).toEqual([a.id, b.id].sort());
+    expect(postes.groupOwner, 'deux héros postés : fenêtre PARTAGÉE').toBe(true);
+    startCascade(get, set, { title: 'Étape', purpose: 'travelDay', steps: [postes] });
+    // Owner « * » : chaque siège voit la fenêtre où se tient SA rangée — jamais `undefined`, qui la
+    // rendait à l'hôte SEUL (`netOwnership.ownsLocally`), lequel jouait alors le poste de l'invité.
+    expect(modalOwnerOf(get())).toBe('*');
+
+    // Résistance de traversée (Neige, l.86) : même bande, même possession.
+    set({ pendingCascade: null });
+    const trav = buildWeatherResistanceSteps(get, 'neige')[0];
+    expect(trav.groupOwner).toBe(true);
+    startCascade(get, set, { title: 'Traversée', purpose: 'travelDay', steps: [trav] });
+    expect(modalOwnerOf(get())).toBe('*');
+
+    // UN SEUL voyageur : la bande EST la sienne (le porteur, jamais l'hôte par défaut).
+    set({ party: [b], pendingCascade: null });
+    const seul = buildWeatherResistanceSteps(get, 'neige')[0];
+    expect(seul.groupOwner).toBeUndefined();
+    expect(seul.actorId).toBe(b.id);
+    startCascade(get, set, { title: 'Traversée', purpose: 'travelDay', steps: [seul] });
+    expect(seatOwns(get(), 1, modalOwnerOf(get()) as string), 'la fenêtre suit le siège du seul porteur').toBe(true);
+    expect(seatOwns(get(), 0, modalOwnerOf(get()) as string), 'et pas l’hôte').toBe(false);
   });
 });

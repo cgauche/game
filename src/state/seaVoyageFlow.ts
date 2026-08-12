@@ -92,15 +92,10 @@ import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficult
 import type { PendingSteamSave, CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
-import { openPartyTest, openWorldTest, composeRollLabel, resolveSurface, freeCons, rollLine, rollStep, monoStep, bandStep, choiceStep, openChoice, type RollRequest, type Consequence, type BuiltCascadeStep } from './rollSeam';
+import { openPartyTest, openWorldTest, composeRollLabel, resolveSurface, freeCons, rollLine, rollStep, monoStep, bandStep, choiceStep, openChoice, pousseSi, type RollRequest, type Consequence, type BuiltCascadeStep } from './rollSeam';
 import { registerCascadeApplier, registerCascadeSuccessRule, startCascade, runCascadeImmediate } from './cascade';
 import { exposureWaveBand } from './nightBands';
 
-/** Ajoute une étape SI son mint l'a acceptée — une déclaration refusée (`refusePorte` a déjà crié) ne
- *  laisse pas de trou dans la journée. */
-function pousseSi(out: BuiltCascadeStep[], st: BuiltCascadeStep | undefined): void {
-  if (st) out.push(st);
-}
 /** Id du prédicat de succès des Tests d'équipage résolus PAR CASCADE (MDG 14 l.13) — le flux naval
  *  injecte `crewTestSuccess` (socle unique, règle optionnelle `crew-test-zero-success` comprise) dans
  *  la machinerie générique, qui reste ignorante du domaine (quarantaine d'import #328 intacte). */
@@ -704,7 +699,7 @@ function buildPostProgressionSteps(get: Get, set: Set): BuiltCascadeStep[] {
   // n'arrête PAS la Progression (contrairement à l'Échouage, `sea.stranded`).
   if (sea.entangled) {
     const st = buildStrandedOrEntangledStep(get, sea.entangled.label, sea.entangled.difficulty, 'sea-degagement-debris');
-    if (st) out.push(st);
+    pousseSi(out, st);
   }
   // « ÇA VA LÂCHER, CAPITAINE ! » (MDG 13 l.121-142, #443) : la Progression du jour a dépassé M+4
   // (M de conception) → Test(s) de Résistance sous peine de Dégâts de coque (`sea-overspeed`).
@@ -725,26 +720,26 @@ function buildPostProgressionSteps(get: Get, set: Set): BuiltCascadeStep[] {
   const milesLeft = plan.km - plan.kmDone - sea.milesToday;
   if (lighthouse && milesLeft <= 15 && lighthouseSpotDifficulty(Math.max(1, Math.round(milesLeft))) != null) {
     const st = buildVoyageCrewStep(get, 'perception', 'phare', { sense: 'vue' });
-    if (st) out.push(st);
+    pousseSi(out, st);
   }
   // 5. Orientation quotidienne (« un Test par jour de voyage », ch.13 l.311), + Carte marine (+DR, MDG 15 l.290).
   const chartDR = get().party.some((h) => h.items?.some((it) => it.trappingId === 'carte-marine'))
     ? Number(rule('sea-chart-orientation-dr')) : 0;
   const orientStep = buildVoyageCrewStep(get, 'orientation', 'orientation', chartDR ? { extraDR: chartDR } : {});
-  if (orientStep) out.push(orientStep);
+  pousseSi(out, orientStep);
   // 7. Infestation active : Test étendu d'EXTERMINATION (1d10 h/Test, MDG 14 l.98-104) — la difficulté
   // de l'événement (posée à `resolveBoardEvent`, `sea-events.json#params.difficulty`) descend en DR
   // plat sur l'agrégat (même canal que l'Ouragan → Affaler, `case 'ouragan'` ci-dessus).
   if (sea.infestation) {
     const extraDR = DIFFICULTY_MODIFIERS[sea.infestation.difficulty] / 10;
     const st = buildVoyageCrewStep(get, 'extermination-nuisibles', 'extermination', extraDR ? { extraDR } : {});
-    if (st) out.push(st);
+    pousseSi(out, st);
   }
   // 9a. Coque endommagée → Test d'équipage d'ENTRETIEN (remplace le Métier à −2 DR, MDG 14 l.116-124).
   const hull = plan.vehicle!;
   if (hull.wounds.current < hull.wounds.max) {
     const st = buildVoyageCrewStep(get, 'entretien', 'entretien');
-    if (st) out.push(st);
+    pousseSi(out, st);
   }
   return out;
 }
@@ -766,7 +761,7 @@ function buildSeaDayCascade(get: Get, set: Set): { steps: BuiltCascadeStep[]; lo
     tell(get, set, [`Le navire reste ÉCHOUÉ sur ${strandedSea.stranded.label} — impossible de progresser tant qu'il n'est pas dégagé (MDG 13 l.473).`]);
     patchSea(get, set, { milesToday: 0 });
     const st = buildStrandedOrEntangledStep(get, strandedSea.stranded.label, strandedSea.stranded.difficulty, 'sea-degagement');
-    if (st) steps.push(st);
+    pousseSi(steps, st);
     steps.push(...buildPostProgressionSteps(get, set));
     return { steps, log: [] };
   }
@@ -776,7 +771,7 @@ function buildSeaDayCascade(get: Get, set: Set): { steps: BuiltCascadeStep[]; lo
   if (eff.sail && eff.m === null && eff.affaler) {
     patchSea(get, set, { sailsDown: true });
     const st = buildVoyageCrewStep(get, 'affaler', 'affaler');
-    if (st) steps.push(st);
+    pousseSi(steps, st);
   }
   // 3. Progression du jour (MDG 14 l.61-65 ; ±10 %/DR ch.15 l.78) — Encalminé (l.296) ou voiles
   // affalées (l.294) : AUCUN Test de Progression (rien à naviguer), ancre si le navire en a une,
@@ -1509,7 +1504,7 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
         stake: voyageStakeRef('exposure', { chars: exposureFirstFailChars(tdef.exposure) }),
         meta: { kind: tdef.exposure },
       });
-      if (st) steps.push(st);
+      pousseSi(steps, st);
     }
     // 3ᵉ producteur d'Exposition à passer par la fabrique de vagues (#1117 L3).
     const band = exposureWaveBand(steps, tdef.exposure, expCount);

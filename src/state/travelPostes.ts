@@ -29,7 +29,7 @@ import { applyHealWounds } from '../engine/healing';
 import { removeCondition, stacks } from '../engine/conditions';
 import { extendedTestStep } from '../engine/tests';
 import { registerCascadeApplier } from './cascade';
-import { freeCons, resultLines, rollStep, monoStep, type Consequence, type BuiltCascadeStep } from './rollSeam';
+import { freeCons, resultLines, rollStep, monoStep, displayStep, bandStep, pousseSi, type Consequence, type BuiltCascadeStep } from './rollSeam';
 import { toRecapLines } from './recapLine';
 import { t } from '../i18n';
 import { rule } from '../engine/policy';
@@ -48,7 +48,7 @@ import { weatherRef } from '../engine/travelStages';
 import { partyWalkSpeed, vehicleTravel, type TravelMode } from '../engine/travel';
 import { partyMounts } from '../engine/mountTravel';
 import type { Possession } from '../engine/possession';
-import type { CascadeStep, CascadeStepMeta, BatchParticipant } from './pendings';
+import type { CascadeStepMeta, BatchParticipant } from './pendings';
 import type { Get, Set } from './flowTypes';
 
 const POSTE_ICON: Record<string, string> = {
@@ -119,7 +119,7 @@ function groupMinMovement(party: Combatant[], possessions: Possession[], mode: T
   return speed > 0 ? speed : undefined;
 }
 
-export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Season): CascadeStep[] {
+export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Season): BuiltCascadeStep[] {
   const plan = get().travelPlan;
   const party = get().party;
   if (!plan?.postes || Object.keys(plan.postes).length === 0) return [];
@@ -129,7 +129,7 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
   const stage: StageContext = { weather, season, livingIds, results: [] };
   set({ travelPlan: { ...plan, stage } });
 
-  const steps: CascadeStep[] = [];
+  const steps: BuiltCascadeStep[] = [];
   // Postes AVEC Test → UN SEUL pas BATCH (une rangée par héros, jets INDÉPENDANTS — arbitrage user
   // 2026-07-11 : « chacun a son propre jet », pas de séquence « jet 1/5 »). Primitive #328 (`BatchParticipant`,
   // flux `cascadeBatch`). Postes SANS Test → pas d'affichage à conséquence immédiate.
@@ -144,15 +144,15 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
     // PAS chaque jour, sinon le cumul déborde son plafond « 5/2 », « 6/2 » à chaque re-complétion) : le
     // poste n'a plus d'objet → un pas d'AFFICHAGE « achevée », aucun jet ni accumulation (F1).
     if (spec.drTarget != null && (plan.extendedProgress ?? 0) >= spec.drTarget) {
-      steps.push({ id: `poste-${hero.id}`, kind: 'stagePosteDone', actorId: hero.id, icon: POSTE_ICON[def.id] ?? 'travel/compass',
-        label: def.label, interactive: true, outcome: toRecapLines([`${def.label} : déjà achevée (${spec.drTarget}/${spec.drTarget} DR).`]) });
+      steps.push(displayStep({ id: `poste-${hero.id}`, kind: 'stagePosteDone', actorId: hero.id, icon: POSTE_ICON[def.id] ?? 'travel/compass',
+        label: def.label, outcome: toRecapLines([`${def.label} : déjà achevée (${spec.drTarget}/${spec.drTarget} DR).`]) }));
       continue;
     }
     if (spec.target == null) {
       // Activité SANS Test (Récupérer) : pas de rangée de jet — un pas d'affichage dont l'applier applique l'issue.
       const meta: CascadeStepMeta = { activityId: def.id };
       if (posting.freeSkill?.skillId) { meta.freeSkillId = posting.freeSkill.skillId; if (posting.freeSkill.spec) meta.freeSkillSpec = posting.freeSkill.spec; }
-      steps.push({ id: `poste-${hero.id}`, kind: 'stagePoste', actorId: hero.id, icon: POSTE_ICON[def.id] ?? 'travel/compass', label: def.label, interactive: true, meta });
+      steps.push(displayStep({ id: `poste-${hero.id}`, kind: 'stagePoste', actorId: hero.id, icon: POSTE_ICON[def.id] ?? 'travel/compass', label: def.label, meta }));
     } else {
       // label = Compétence RÉELLEMENT utilisée, résolue AVEC sa spec (« Métier (Cartographe) ») via
       // `refLabel` ; base/cible déjà influençables. Test ÉTENDU (Établir des cartes, EDOC 8 l.161) : la
@@ -180,13 +180,15 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
       });
     }
   }
-  if (batchParts.length) {
-    steps.push({ id: 'stage-postes', kind: 'stagePosteBatch', icon: 'travel/compass', label: 'Postes de l’Étape',
-      participants: batchParts, aggregate: 'none', interactive: true }); // jets INDÉPENDANTS (#351, cf. l'applier)
-  }
+  // Une bande par le mint (`bandStep`) : jets INDÉPENDANTS (#351, cf. l'applier) et POSSESSION posée —
+  // plusieurs héros postés → fenêtre de GROUPE, un seul → SON `actorId`. Sans elle, l'arbitre rendait la
+  // fenêtre à l'HÔTE SEUL et le siège qui tient le posté ne voyait jamais sa rangée (classe #1268).
+  pousseSi(steps, bandStep({ id: 'stage-postes', kind: 'stagePosteBatch', icon: 'travel/compass', label: 'Postes de l’Étape' }, batchParts));
   // Pas d'agrégation de fin d'Étape (fourrage cumulé, camp, cartes, Rencontre) + insertion des Expositions.
-  steps.push({ id: 'stage-agg', kind: 'stageAggregate', icon: 'ui/tally', label: 'Bilan de l’Étape', interactive: true,
-    meta: { weatherLabel: WEATHER_LABEL[weather], stages } });
+  // Bilan de l'ÉTAPE : aucun personnage n'en est le concerné (c'est la journée du groupe qui se solde) —
+  // étape de MONDE, routée au siège MJ (`worldOwner`), jamais une fenêtre sans propriétaire déclaré.
+  steps.push(displayStep({ id: 'stage-agg', kind: 'stageAggregate', icon: 'ui/tally', label: 'Bilan de l’Étape', worldOwner: true,
+    meta: { weatherLabel: WEATHER_LABEL[weather], stages } }));
   return steps;
 }
 
@@ -250,11 +252,13 @@ registerCascadeApplier('stagePosteBatch', (get, set, step) => {
   return { consequences: [] };
 });
 
-/** Test de RÉSISTANCE de traversée (Neige l.86 / Blizzard l.127) au DÉMARRAGE du jour de voyage : UN pas
- *  BATCH (une rangée par héros voyageant, jets INDÉPENDANTS influençables) — DISTINCT de l'Exposition de
- *  fin d'Étape. L'ENJEU verbatim (donnée `resistanceTest.enjeu`) est porté sur le pas ; l'échec octroie un
- *  Exténué (applier `weatherResistance`). Renvoie `[]` si la météo du jour n'impose aucun Test de traversée. */
-export function buildWeatherResistanceSteps(get: Get, weather: Weather): CascadeStep[] {
+/** Test de RÉSISTANCE de traversée (Neige l.86 / Blizzard l.127) au DÉMARRAGE du jour de voyage : UNE
+ *  BANDE (une rangée par héros voyageant, jets INDÉPENDANTS influençables) — DISTINCTE de l'Exposition
+ *  de fin d'Étape. L'ENJEU verbatim (donnée `resistanceTest.enjeu`) est porté sur la bande ; l'échec
+ *  octroie un Exténué (applier `weatherResistance`). La POSSESSION est posée par le mint (`bandStep`) :
+ *  plusieurs voyageurs → fenêtre de GROUPE, un seul → SON `actorId`. Renvoie `[]` si la météo du jour
+ *  n'impose aucun Test de traversée. */
+export function buildWeatherResistanceSteps(get: Get, weather: Weather): BuiltCascadeStep[] {
   const rt = weatherResistanceTest(weather);
   if (!rt) return [];
   const parts: BatchParticipant[] = [];
@@ -267,11 +271,11 @@ export function buildWeatherResistanceSteps(get: Get, weather: Weather): Cascade
       result: null,
     });
   }
-  if (!parts.length) return [];
   const stake = rt.enjeu ? weatherStakeRef(weather) : undefined; // ENJEU = la RÉFÉRENCE de la condition (#1117), résolue au rendu
-  return [{ id: 'weather-resistance', kind: 'weatherResistance', icon: 'rest/cold',
-    label: `Traversée — ${WEATHER_LABEL[weather]}`, participants: parts, aggregate: 'none', // jets INDÉPENDANTS (#351, cf. l'applier)
-    interactive: true, ...(stake ? { stake } : {}) }];
+  const out: BuiltCascadeStep[] = [];
+  pousseSi(out, bandStep({ id: 'weather-resistance', kind: 'weatherResistance', icon: 'rest/cold',
+    label: `Traversée — ${WEATHER_LABEL[weather]}`, ...(stake ? { stake } : {}) }, parts));
+  return out;
 }
 
 /** Test de RÉSISTANCE de traversée (l.86/127) : échec → Exténué (op `condition`, patron #338/#340), ligne
@@ -388,7 +392,7 @@ function buildExposureSteps(state: { party: Combatant[] }, stage: StageContext):
       menace: 'Exposition',
       meta: { weatherLabel: WEATHER_LABEL[stage.weather], warded: isWeatherWarded(h), coldSeason: isColdSeason(stage.season) },
     });
-    if (st) out.push(st);
+    pousseSi(out, st);
   }
   return out;
 }

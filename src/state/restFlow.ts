@@ -42,7 +42,7 @@ import { effectiveChar, bonus } from '../engine/characteristics';
 import { applyForcedMarch } from '../engine/travel';
 import { registerCascadeApplier, startCascade } from './cascade';
 import { nightBands, registerNightBandApplier, nightRowId, genuineExposureFail, nextExposureWave, exposureWaveBand } from './nightBands';
-import { freeCons, testSkillLabel, monoStep, choiceStep, type BuiltCascadeStep } from './rollSeam';
+import { freeCons, testSkillLabel, monoStep, choiceStep, pousseSi, type BuiltCascadeStep } from './rollSeam';
 import type { CascadeStep, CascadeStepMeta } from './pendings';
 import { isRation, feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
 import { toBrass, fromBrass, formatMoney, priceToMoney, type Money } from '../engine/money';
@@ -280,7 +280,7 @@ function buildExposureBand(party: Combatant[], camperIds: string[], count: numbe
     const st = monoStep({ id: `expo-${id}`, kind: 'exposure', actor: h, label: 'Exposition', icon: 'rest/cold',
       rollLabel: 'Résistance', difficulty: 'intermediaire',
       ligne: { valeur: resVal, valeurEtrangere: true, surLaCible: coat } });
-    if (st) steps.push(st);
+    pousseSi(steps, st);
   }
   for (const st of steps) applyNightStake(st);
   return exposureWaveBand(steps, 'froid', count);
@@ -520,7 +520,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     const st = monoStep({ id: `march-${id}`, kind: 'forcedMarch', actor: h, label: 'Marche forcée', icon: 'travel/foot',
       rollLabel: 'Résistance', difficulty: 'intermediaire',
       ligne: { test: { skill: 'resistance', char: 'endurance' } } });
-    if (st) steps.push(st);
+    pousseSi(steps, st);
   }
   // Tests d'entretien DIFFÉRÉS (faim, soif, maladie, convalescence, dessoûlage) → étapes influençables.
   steps.push(...deferredUpkeepSteps(party, deferred, steps.length));
@@ -535,7 +535,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
       ligne: { valeur: c.resVal, valeurEtrangere: true },
       meta: { diseaseName: c.diseaseName },
       menace: 'maladie' }); // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
-    if (st) steps.push(st);
+    pousseSi(steps, st);
   }
   // Campement : Exposition (intempéries) — abri de fortune (STEP) → insère les jets d'Exposition.
   const campers = party.filter((h) => !h.dead && p.perHero[h.id]?.lodging === 'dehors');
@@ -555,7 +555,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
           // et décompose le reste en Niveau de Compétence nu + composantes.
           ligne: { test: { skill: 'survie-en-exterieur' }, valeur: best.value, soutien: best.support },
           meta: { severity, campers: camperIds.join(',') } });
-        if (st) steps.push(st);
+        pousseSi(steps, st);
       } else {
         const count = exposureTestCount(severity, false);
         if (count > 0) steps.push(...buildExposureBand(party, camperIds, count));
@@ -574,7 +574,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
       const st = monoStep({ id: `recov-${h.id}`, kind: 'recovery', actor: h, label: 'Récupération', icon: 'rest/bed',
         rollLabel: 'Résistance', difficulty: 'accessible',
         ligne: { valeur: restResistVal(h), valeurEtrangere: true } });
-      if (st) steps.push(st);
+      pousseSi(steps, st);
     } else {
       const before = h.wounds.current;
       const { wokeUp } = applyRecoveryDay(h, null);
@@ -586,7 +586,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
         rollLabel: 'Calme', difficulty: 'facile',
         // `calmeVal` : FM effective + avances de Calme (formule locale, hors `testValue`).
         ligne: { valeur: calmeVal(h), valeurEtrangere: true } });
-      if (st) steps.push(st);
+      pousseSi(steps, st);
     }
   }
 

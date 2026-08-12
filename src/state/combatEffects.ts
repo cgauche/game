@@ -54,7 +54,7 @@ import { playSfx } from '../audio/engine';
 import { combatDistance } from './footprint';
 import { registerCascadeApplier, pushStep } from './cascade';
 import { exposureWaveBand } from './nightBands';
-import { freeCons, rollStep, hostStep, monoStep, openSequence, type BuiltCascadeStep } from './rollSeam';
+import { freeCons, rollStep, hostStep, monoStep, openSequence, pousseSi, type BuiltCascadeStep } from './rollSeam';
 import { startGroundPursuit } from './pursuitFlow';
 import { sourceExposureMod, autoExposureMods, drawWaterDisease, isWounded } from '../engine/waterExposure';
 import { loseWounds, addCondition, hasCondition } from '../engine/conditions';
@@ -1160,7 +1160,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
           montee: { base: resVal, ...(kind === 'froid' ? exposureCoatMods(c) : {}), target },
           meta: { kind }, stake: nightStakeRef('exposure'),
         });
-        if (st) steps.push(st);
+        pousseSi(steps, st);
       }
       if (lines.length) { env.set(touchActors(env.get())); lines.forEach((l) => env.log(l)); }
       // BANDE d'Exposition (#1117 L3) : une fenêtre par VAGUE, les héros exposés en rangées — les

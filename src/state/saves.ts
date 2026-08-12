@@ -37,7 +37,7 @@ import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { remapCharKeysDeep } from './charKeyMigration';
 import { remapInstanceIdsDeep, remapNameToLabelDeep, remapGameOpNameDeep } from './instanceIdMigration';
 import type { CodexFocus } from './codexFocus';
-import type { PendingCascade, RevealEntry, CascadeStep } from './pendings';
+import type { PendingCascade, RevealEntry } from './pendings';
 import type { BuiltCascadeStep } from './stepBrand';
 import { revealToStep } from './revealStep';
 import { nightBands } from './nightBands';
@@ -534,7 +534,7 @@ function bandifyPursuitSteps(data: Record<string, unknown>): void {
   for (const cascade of [data.pendingCascade, ...stack]) {
     const c = cascade as { participants?: unknown; cursor?: unknown } | null | undefined;
     if (!c || !Array.isArray(c.participants)) continue;
-    const steps = c.participants as CascadeStep[];
+    const steps = c.participants as BuiltCascadeStep[]; // réhydratation : cf. `bandifyNightSteps`
     const bands = pursuitBands(steps);
     // Rien de bandé ici : la fabrique REND les étapes hors périmètre TELLES QUELLES (même référence) —
     // une manche à un seul coureur donnerait autrement la même LONGUEUR et passerait pour inchangée.

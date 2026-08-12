@@ -28,7 +28,7 @@ import { startCascade, registerCascadeApplier, rollBatchParticipant } from './ca
 import { actorIn } from './combatants';
 import { jetSurfaced } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
-import { freeCons, rollStep } from './rollSeam';
+import { freeCons, rollStep, bandStep, bandRowOfStep, makeBandFactory, type BuiltCascadeStep } from './rollSeam';
 import { pursuitOutcome, pursuitMoveBonus, PURSUIT_ESCAPE_DISTANCE } from '../engine/pursuit';
 import type { BatchParticipant, CascadeStep, PendingCascade } from './pendings';
 
@@ -129,25 +129,20 @@ function pursuitRow(get: Get, h: Combatant, skill: string, label: string): Batch
   return { ...row, interactive: false, result: rollBatchParticipant(row, battleRng()) };
 }
 
-/** Ouvre une manche : UNE bande, une RANGÉE par coureur (LDB 15 l.92). `undefined` sans coureur. */
-function pursuitRoundBand(get: Get, p: PursuitState, label: string): CascadeStep | undefined {
+/** Ouvre une manche : UNE bande, une RANGÉE par coureur (LDB 15 l.92). `undefined` sans coureur.
+ *  La POSSESSION est posée par le mint (`bandStep`) : plusieurs coureurs → fenêtre de GROUPE (LDB 15
+ *  l.92, « tout participant » — sans elle l'arbitre rend `undefined` et l'invité ne verrait jamais la
+ *  manche où se tient son Test), un seul coureur → SON `actorId`. */
+function pursuitRoundBand(get: Get, p: PursuitState, label: string): BuiltCascadeStep | undefined {
   const participants = runners(get).map((h) => pursuitRow(get, h, p.skill, label));
-  if (!participants.length) return undefined;
-  return {
+  return bandStep({
     id: `pursuit-${p.round}`,
     kind: PURSUIT_MOVE_KIND,
     icon: 'travel/foot',
     label: `Manche ${p.round} — ${label}`,
-    interactive: true,
-    // Fenêtre de GROUPE (calque `shareCastStep`/`forceDoor`) : la manche porte les jets de PLUSIEURS
-    // sièges (LDB 15 l.92, « tout participant »). Sans ce drapeau l'arbitre rend `undefined`
-    // (`modalArbiter`, entrée `cascade`) et l'invité ne verrait jamais la manche où se tient son Test.
-    groupOwner: true,
-    aggregate: 'none',
-    participants,
     stake: combatStakeRef('pursuitMove', { values: { distance: p.distance, evasion: p.escapeAt } }),
     meta: { round: p.round },
-  };
+  }, participants);
 }
 
 /** Ouvre une manche : la fenêtre UNIQUE de la manche (bande influençable, cascade `purpose:'pursuite'`). */
@@ -167,10 +162,6 @@ export function openPursuitRound(get: Get, set: Set, skillLabel?: string): void 
   });
 }
 
-/** Champs du jet MONO d'une manche (forme d'avant la bande) qui DESCENDENT sur la rangée — le reste
- *  (icône, enjeu, libellé de manche) appartient à la bande. */
-const PURSUIT_ROW_FIELDS = ['base', 'target', 'mods', 'clamped', 'difficulty', 'rerolled', 'forced', 'fixed', 'outcome'] as const;
-
 /** Rang de manche d'une étape MONO de poursuite (`pursuit-<manche>-<coureur>`), `null` si l'étape n'en
  *  est pas une (autre kind, bande déjà formée, pas de porteur ni de cible). */
 function monoPursuitRound(step: CascadeStep): string | null {
@@ -183,30 +174,25 @@ function monoPursuitRound(step: CascadeStep): string | null {
  * migration de save (`MIGRATIONS[18]`) : une save prise pendant une manche jouée à l'ancienne forme
  * (une étape PAR coureur) redevient UNE bande par manche, sans quoi son applier — qui exige des
  * RANGÉES — l'abandonnerait, et la clôture comparerait une manche SANS aucun DR de groupe. Les étapes
- * hors périmètre traversent INTACTES, à leur place.
+ * hors périmètre traversent INTACTES, à leur place (MÊME référence : la migration compare pour savoir
+ * si rien n'a bougé).
+ *
+ * DÉCLARATION au socle (`makeBandFactory`, #1262 V2) : la manche restaurée sort MINTÉE comme la manche
+ * vive (`pursuitRoundBand`) — même clé de regroupement, même possession posée par `bandStep`. Avant ce
+ * mint, une manche venue d'une save n'en portait AUCUNE : l'arbitre rendait la fenêtre à l'hôte seul
+ * et l'invité ne voyait pas la manche où se tient son Test (classe #1268).
  */
-export function pursuitBands(steps: CascadeStep[]): CascadeStep[] {
-  const out: CascadeStep[] = [];
-  const bands = new Map<string, BatchParticipant[]>();
-  for (const step of steps) {
-    const round = monoPursuitRound(step);
-    if (round == null) { out.push(step); continue; }
-    const row: Record<string, unknown> = { id: step.actorId, interactive: true, result: step.result ?? null, label: step.rollLabel };
-    for (const f of PURSUIT_ROW_FIELDS) if (step[f] !== undefined) row[f] = step[f];
-    const held = bands.get(round);
-    if (held) { held.push(row as unknown as BatchParticipant); continue; }
-    const participants = [row as unknown as BatchParticipant];
-    bands.set(round, participants);
-    out.push({
-      id: `pursuit-${round}`, kind: PURSUIT_MOVE_KIND, icon: step.icon,
-      label: `Manche ${round} — ${step.rollLabel ?? 'Mouvement'}`,
-      interactive: true, aggregate: 'none', participants,
-      ...(step.stake ? { stake: step.stake } : {}),
-      meta: { round: Number(round) },
-    });
-  }
-  return out;
-}
+export const pursuitBands = makeBandFactory<BuiltCascadeStep>({
+  passe: (step) => (monoPursuitRound(step) == null ? step : null),
+  cle: (step) => monoPursuitRound(step)!,
+  rangee: bandRowOfStep,
+  situation: (step) => ({
+    id: `pursuit-${monoPursuitRound(step)}`, kind: PURSUIT_MOVE_KIND, icon: step.icon,
+    label: `Manche ${monoPursuitRound(step)} — ${step.rollLabel ?? 'Mouvement'}`,
+    ...(step.stake ? { stake: step.stake } : {}),
+    meta: { round: Number(monoPursuitRound(step)) },
+  }),
+});
 
 /** Clôture d'une manche (cascade `purpose:'pursuite'` finalisée) : roule les adversaires, actualise la
  *  Distance (LDB 15 l.93) et juge l'issue. Reprend une manche tant que la poursuite continue. */

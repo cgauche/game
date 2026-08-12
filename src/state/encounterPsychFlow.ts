@@ -26,7 +26,7 @@ import { applyOps } from '../engine/ops';
 import { t } from '../i18n';
 import { registerCascadeApplier, startCascade } from './cascade';
 import { describeEncounterPsych } from './flowOutcomes';
-import { freeCons, resultLines, type Consequence } from './rollSeam';
+import { freeCons, resultLines, makeBandFactory, type Consequence } from './rollSeam';
 import { actorIn } from './combatants';
 
 /** Forme d'un Test de Psychologie de rencontre résolu — conservée pour `describeEncounterPsych`
@@ -77,26 +77,24 @@ function psychRow(hero: Combatant, kind: PsychType): BatchParticipant {
  * jeu : type psy + source + cible + Indice font UNE fenêtre, dont la déclaration vit sur l'ÉTAPE et
  * dont les héros appelés sont les RANGÉES (jets INDÉPENDANTS, `aggregate:'none'`). L'ordre des bandes
  * est celui de leur première rencontre en parcourant le groupe.
+ *
+ * DÉCLARATION au socle (`makeBandFactory`, #1262 V2) : la POSSESSION est posée par le mint
+ * (`bandStep`) — plusieurs héros appelés → `groupOwner`, un seul → SON `actorId`. Sans elle, l'arbitre
+ * (`modalArbiter`) rendait la fenêtre à l'HÔTE SEUL et le siège qui tient le héros ne voyait jamais la
+ * rangée où se joue SON Test de Calme (classe #1268).
  */
-function psychBands(dues: PsychDue[]): CascadeStep[] {
-  const bands = new Map<string, CascadeStep>();
-  for (const due of dues) {
-    const d = due.decl;
-    const key = `${d.kind}|${d.sourceId}|${d.cible ?? ''}|${d.indice}`;
-    const band = bands.get(key);
-    if (band) { band.participants!.push(psychRow(due.hero, d.kind)); continue; }
-    bands.set(key, {
-      id: `psych-${d.kind}-${bands.size}`, kind: 'encounterPsych', icon: due.icon, label: due.label,
-      interactive: true, aggregate: 'none', participants: [psychRow(due.hero, d.kind)],
-      encounterPsych: d,
-      stake: combatStakeRef('encounterPsych', { entryId: d.kind, values: { indice: d.indice } }),
-      // Les DEUX issues, dérivées des ops que l'applier appliquera (`psychBranchOps`) : la surface
-      // les rend en chips codex-liées avant le jet, et le verdict est le MÊME bloc filtré (#1117).
-      meta: { onSuccess: psychBranchFlow(d, true), onFail: psychBranchFlow(d, false) },
-    });
-  }
-  return [...bands.values()];
-}
+const psychBands = makeBandFactory<PsychDue>({
+  cle: ({ decl: d }) => `${d.kind}|${d.sourceId}|${d.cible ?? ''}|${d.indice}`,
+  rangee: (due) => psychRow(due.hero, due.decl.kind),
+  situation: ({ decl: d, icon, label }, { index }) => ({
+    id: `psych-${d.kind}-${index}`, kind: 'encounterPsych', icon, label,
+    encounterPsych: d,
+    stake: combatStakeRef('encounterPsych', { entryId: d.kind, values: { indice: d.indice } }),
+    // Les DEUX issues, dérivées des ops que l'applier appliquera (`psychBranchOps`) : la surface
+    // les rend en chips codex-liées avant le jet, et le verdict est le MÊME bloc filtré (#1117).
+    meta: { onSuccess: psychBranchFlow(d, true), onFail: psychBranchFlow(d, false) },
+  }),
+});
 
 /** Ouvre la CASCADE des Tests de Psychologie de rencontre dus (hors combat) — une BANDE par entrée de
  *  règle, une RANGÉE par héros concerné. No-op en combat, si une cascade est déjà ouverte, ou sans

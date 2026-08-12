@@ -358,11 +358,13 @@ export interface BandSpec {
   aggregate?: RollAggregate;
   stake?: StakeRef;
   menace?: string;
-  /** CHARGE de l'applier « Psychologie de combat » (`combatFlow`) : l'entrée de règle affrontée (type,
-   *  source, cible, Indice) dont chaque rangée joue le Test. Recopiée telle quelle — une charge n'est pas
-   *  une forme : elle ne rend rien et ne change pas l'interaction de la bande, elle est ce que l'applier
-   *  LIT pour chaque rangée résolue. */
+  /** CHARGES d'applier — l'entrée de règle affrontée (type, source, cible, Indice) dont chaque rangée
+   *  joue le Test : « Psychologie de combat » (`combatFlow`) et « Psychologie de rencontre »
+   *  (`encounterPsychFlow`). Recopiées telles quelles — une charge n'est pas une forme : elle ne rend
+   *  rien et ne change pas l'interaction de la bande, elle est ce que l'applier LIT pour chaque rangée
+   *  résolue. */
   combatPsych?: CascadeStep['combatPsych'];
+  encounterPsych?: CascadeStep['encounterPsych'];
   meta?: CascadeStepMeta;
 }
 
@@ -378,8 +380,8 @@ export interface BandSpec {
  * L'influence reste routée rangée par rangée (`netOwnership.seatInfluences`) : un siège ne dépense
  * jamais les ressources d'autrui, même sous owner `'*'`.
  *
- * Deux feuilles posent encore `groupOwner` en direct hors des mints (`pursuitFlow`, `store`) ; leur
- * migration relève des vagues V2+ (#1262). En combat, seul `hostStep` l'expose (moment PARTAGÉ).
+ * Une feuille pose encore `groupOwner` en direct hors des mints (`store`) ; sa migration relève des
+ * vagues V2+ (#1262). En combat, seul `hostStep` l'expose (moment PARTAGÉ).
  *
  * `undefined` sans rangée : il n'y a pas de fenêtre à ouvrir sur zéro jet.
  */
@@ -398,6 +400,7 @@ export function bandStep(spec: BandSpec, rows: readonly BatchParticipant[]): Bui
     ...(spec.stake ? { stake: spec.stake } : {}),
     ...(spec.menace ? { menace: spec.menace } : {}),
     ...(spec.combatPsych ? { combatPsych: spec.combatPsych } : {}),
+    ...(spec.encounterPsych ? { encounterPsych: spec.encounterPsych } : {}),
     ...(spec.meta ? { meta: spec.meta } : {}),
   } as BuiltCascadeStep;
 }
@@ -442,6 +445,85 @@ export function bandCommonMeta(metas: readonly (CascadeStepMeta | undefined)[]):
     if (metas.every((m) => m && JSON.stringify(m[k]) === j)) out[k] = v;
   }
   return Object.keys(out).length ? (out as CascadeStepMeta) : undefined;
+}
+
+/** Champs du jet MONO qui DESCENDENT sur la rangée quand une bande regroupe des étapes déjà montées —
+ *  le reste (icône, enjeu, libellé de situation) appartient à la bande : c'est l'entrée de règle qui
+ *  les porte. Les champs de JEU DÉJÀ POSÉ (influences, issue) descendent aussi : vides sur une étape
+ *  fraîchement construite, peuplés sur une étape venue d'une sauvegarde. */
+const ROW_DEPUIS_ETAPE = [
+  'base', 'target', 'mods', 'clamped', 'difficulty', 'menace',
+  'rerolled', 'forced', 'fixed', 'outcome',
+] as const;
+
+/** RANGÉE dérivée d'une étape MONO — le jet descend, la situation reste à la bande. Le `meta` ENTIER
+ *  voyage sur la rangée : ce qui diverge d'un porteur à l'autre n'est lisible que là. SOURCE UNIQUE
+ *  des fabriques qui bandifient des étapes (nuit, fin de combat, poursuite). */
+export function bandRowOfStep(step: CascadeStep): BatchParticipant {
+  const row: Record<string, unknown> = { id: step.actorId, interactive: true, result: step.result ?? null, label: step.rollLabel };
+  for (const f of ROW_DEPUIS_ETAPE) if (step[f] !== undefined) row[f] = step[f];
+  if (step.meta) row.meta = step.meta;
+  return row as unknown as BatchParticipant;
+}
+
+/** DÉCLARATION d'une FABRIQUE DE BANDES (#1262) — ce qu'une famille sait de son regroupement. */
+export interface BandFactoryDecl<I> {
+  /** Item HORS périmètre : l'étape à rendre TELLE QUELLE, à sa place (identité préservée — une
+   *  migration de sauvegarde compare les références pour savoir si rien n'a bougé). `null` = l'item
+   *  entre en bande. Absent : tous les items entrent (la fabrique ne reçoit que du dû). */
+  passe?: (item: I) => BuiltCascadeStep | null;
+  /** CLÉ de regroupement — l'ENTRÉE DE RÈGLE mise en jeu : deux items de même clé font UNE fenêtre. */
+  cle: (item: I) => string;
+  /** RANGÉE de cet item (son porteur = `row.id`, qui sert aussi au dédoublement de clé). */
+  rangee: (item: I) => BatchParticipant;
+  /** SITUATION de la bande, DÉCLARÉE par le premier item de sa clé. `rang` = rang de dédoublement de
+   *  la clé (`bandStepId` : 1, 2, 3…), `index` = ordinal de la bande dans la sortie. */
+  situation: (item: I, rangs: { rang: number; index: number }) => BandSpec;
+  /** `meta` de la bande dérivé de TOUS ses items (typiquement `bandCommonMeta`). Absent : la situation
+   *  porte le sien. */
+  meta?: (items: readonly I[]) => CascadeStepMeta | undefined;
+}
+
+/**
+ * FABRIQUE DE BANDES (#1262) — le pli que CINQ familles réécrivaient (nuit, fin de combat, poursuite,
+ * Psychologie de rencontre, Psychologie de combat) : la Map keyée par entrée de règle, le
+ * DÉDOUBLEMENT de clé (`bandStepId` : deux jets de même clé pour le même porteur ouvrent une bande de
+ * PLUS — deux rangées de même id seraient injoignables, les surfaces keyant par id nu), l'ORDRE de
+ * PREMIÈRE émission (place réservée), et la SORTIE par le mint (`bandStep`, qui pose la POSSESSION).
+ *
+ * Chaque famille ne DÉCLARE plus que ce qui lui est propre (clé, rangée, situation, `meta` commun) :
+ * la possession et l'invariant d'unicité de rangée ne sont plus refaits à la main, donc plus
+ * oubliables — c'est ce qui manquait à la Psychologie de rencontre et aux manches de poursuite
+ * restaurées (fenêtres HÔTE SEUL, classe #1268).
+ */
+export function makeBandFactory<I>(decl: BandFactoryDecl<I>): (items: readonly I[]) => BuiltCascadeStep[] {
+  return (items: readonly I[]): BuiltCascadeStep[] => {
+    const out: (BuiltCascadeStep | undefined)[] = [];
+    const bandes = new Map<string, { spec: BandSpec; rows: BatchParticipant[]; items: I[]; at: number }>();
+    for (const item of items) {
+      const intacte = decl.passe?.(item) ?? null;
+      if (intacte) { out.push(intacte); continue; }
+      const row = decl.rangee(item);
+      const cle = decl.cle(item);
+      const key = bandStepId(bandes, cle, row.id);
+      const tenue = bandes.get(key);
+      if (tenue) { tenue.rows.push(row); tenue.items.push(item); continue; }
+      const rang = key === cle ? 1 : Number(key.slice(cle.length + 1));
+      bandes.set(key, { spec: decl.situation(item, { rang, index: bandes.size }), rows: [row], items: [item], at: out.length });
+      out.push(undefined); // place RÉSERVÉE : la bande la prend une fois toutes ses rangées connues
+    }
+    for (const { spec, rows, items: siens, at } of bandes.values()) {
+      const meta = decl.meta?.(siens);
+      out[at] = bandStep(meta ? { ...spec, meta } : spec, rows);
+    }
+    return out.filter((s): s is BuiltCascadeStep => !!s);
+  };
+}
+
+/** Ajoute une étape SI son mint l'a acceptée (#1262) — une déclaration REFUSÉE (`refusePorte` a déjà
+ *  crié) ne laisse pas de trou dans la journée, et l'idiome ne se réécrit pas d'un flux à l'autre. */
+export function pousseSi(out: BuiltCascadeStep[], st: BuiltCascadeStep | undefined): void {
+  if (st) out.push(st);
 }
 
 /** Ce qui est VRAI de tout jet : qui teste quoi, à quelle Difficulté, et ce qui pèse SUR LA CIBLE. */

@@ -8,6 +8,7 @@ import { testScene } from '../scenes/test-fixture';
 import type { Combatant } from '../engine/types';
 import type { BatchParticipant, CascadeStep } from './pendings';
 import { addCondition, COND } from '../engine/conditions';
+import { modalOwnerOf } from './modalArbiter';
 
 /**
  * Psychologie de COMBAT — régime CASCADE de Round (LDB 21). Les Traits ciblés et les NOUVELLES
@@ -293,6 +294,29 @@ describe('Psychologie de combat — regroupement en BANDES', () => {
       .filter((x) => x.kind === 'hero')
       .map((h) => (h.psychState ?? []).filter((p) => p.type === 'animosite').length);
     expect(psy).toEqual([1, 1]); // chaque rangée a reçu SA conséquence
+  });
+
+  // POSSESSION de la bande (#1262 V2 lot 3) : le mint la pose — plusieurs porteurs → fenêtre PARTAGÉE,
+  // un seul → SON `actorId`. Un owner `undefined` rendrait la fenêtre à l'HÔTE SEUL (`modalArbiter`,
+  // entrée `cascade`) : l'hôte roulerait le Test de Calme du héros d'un invité (classe #1268).
+  it('POSSESSION : deux héros appelés → fenêtre PARTAGÉE ; un seul → la bande EST la sienne', () => {
+    useGame.getState().seedRng(7);
+    const { A, B, E1 } = duo();
+    E1.groups = ['Mort-vivant'];
+    for (const h of [A, B]) h.psychTraits = [{ type: 'animosite', cible: 'Mort-vivant' }];
+    openRoundStartPsych(useGame.getState, useGame.setState);
+    const deux = useGame.getState().pendingCascade!.participants[0];
+    expect(deux.groupOwner).toBe(true);
+    expect(modalOwnerOf(useGame.getState())).toBe('*');
+
+    useGame.setState({ pendingCascade: null });
+    A.psychTraits = [];
+    openRoundStartPsych(useGame.getState, useGame.setState);
+    const seule = useGame.getState().pendingCascade!.participants[0];
+    expect(seule.participants!.map((p) => p.id)).toEqual([B.id]);
+    expect(seule.groupOwner).toBeUndefined();
+    expect(seule.actorId).toBe(B.id);
+    expect(modalOwnerOf(useGame.getState())).toBe(B.id);
   });
 
   it('FIN de Round : deux héros craignant la MÊME source → une bande ; deux sources → deux bandes', () => {

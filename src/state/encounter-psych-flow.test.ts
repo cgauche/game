@@ -1,6 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { sceneFearSources, openScriptedPsych } from './encounterPsychFlow';
+import { modalOwnerOf } from './modalArbiter';
+import { seatOwns } from './netOwnership';
 import { psychDRAdjust } from '../engine/combat';
 import { stacks } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
@@ -316,5 +318,35 @@ describe('Terreur réussie : la Peur qui en découle est due à PLEIN Indice (LD
     expect(peurOf(hero)?.indice).toBe(3); // l'immunité est TEMPORAIRE, jamais une Peur vaincue à jamais
     // …et pendant l'immunité, c'est le marqueur qui protège (`isPsychImmune` → 0), pas un Indice nul.
     expect(psychDRAdjust(hero, spectre)).toBe(0);
+  });
+});
+
+/**
+ * COOP (#1262 V2 lot 3) — la bande de Psychologie de RENCONTRE ne déclarait AUCUNE possession : son
+ * `modalOwnerOf` valait `undefined`, c'est-à-dire fenêtre à l'HÔTE SEUL (`netOwnership.ownsLocally`),
+ * qui jouait alors le Test de Calme du héros d'un invité (classe #1268). Le mint (`bandStep`, via
+ * `makeBandFactory`) la pose : plusieurs appelés → `groupOwner`, un seul → SON porteur.
+ */
+describe('encounterPsychFlow — POSSESSION de la bande (classe #1268)', () => {
+  const NET0 = useGame.getState().net;
+  afterEach(() => useGame.setState({ net: NET0, pendingCascade: null } as never));
+
+  it('deux héros appelés → fenêtre PARTAGÉE ; un seul → la bande EST la sienne', () => {
+    const a = timoreux('A'); a.id = 'psy-a';
+    const b = timoreux('B'); b.id = 'psy-b';
+    useGame.setState({ party: [a, b], pendingCascade: null, battle: null, net: { ...NET0, mode: 'host', mySeat: 0, slots: [0, 1, 0, 0], ownership: { [b.id]: 1 } } } as never);
+    openScriptedPsych(useGame.getState, useGame.setState, 'terreur', 2, 'Une vision', [a, b]);
+    const bande = useGame.getState().pendingCascade!.participants[0];
+    expect(bande.participants!.map((p) => p.id)).toEqual([a.id, b.id]);
+    expect(bande.groupOwner).toBe(true);
+    expect(modalOwnerOf(useGame.getState()), 'jamais `undefined` : c’était la fenêtre hôte-seul').toBe('*');
+
+    useGame.setState({ pendingCascade: null });
+    openScriptedPsych(useGame.getState, useGame.setState, 'terreur', 2, 'Une vision', [b]);
+    const seule = useGame.getState().pendingCascade!.participants[0];
+    expect(seule.groupOwner).toBeUndefined();
+    expect(seule.actorId).toBe(b.id);
+    expect(seatOwns(useGame.getState(), 1, modalOwnerOf(useGame.getState()) as string), 'la fenêtre est au siège qui tient le héros').toBe(true);
+    expect(seatOwns(useGame.getState(), 0, modalOwnerOf(useGame.getState()) as string), 'et plus à l’hôte').toBe(false);
   });
 });

@@ -57,7 +57,7 @@ import {
 } from '../engine/riverNavigation';
 import { DIFFICULTY_LABELS, type Combatant, type Difficulty } from '../engine/types';
 import { startCascade, registerCascadeApplier, runCascadeImmediate } from './cascade';
-import { freeCons, monoStep, choiceStep, displayStep, refusePorte, surfaceOf, type Consequence, type BandLigne } from './rollSeam';
+import { freeCons, monoStep, choiceStep, displayStep, refusePorte, surfaceOf, pousseSi, type Consequence, type BandLigne } from './rollSeam';
 import type { BuiltCascadeStep } from './stepBrand';
 import { actorIn } from './combatants';
 import { riverAutoResolves, DEFAULT_VOYAGE_ORDERS, type VoyageCadence, type VoyageOrders } from './voyageCadence';
@@ -290,13 +290,11 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
   const pilotLigne: BandLigne | undefined = pilot
     ? { test: { skill: skillId }, valeur: pilot.value, soutien: pilot.support }
     : undefined;
-  // Une déclaration REFUSÉE par son mint n'ajoute rien à la journée (`refusePorte` a déjà crié).
-  const pousse = (st: BuiltCascadeStep | undefined) => { if (st) steps.push(st); };
 
   // 1. Réparation du gréement/avirons brisés d'une étape précédente (l.78-82 / note 5) : rend le contrôle.
   if ((river.broken || river.outOfControl)) {
     const repair = bestShipwright(get);
-    if (repair) pousse(riverStep('river-repair', 'riverControlRepair', repair.actor, 'Réparation du gréement', 'travel/repair',
+    if (repair) pousseSi(steps, riverStep('river-repair', 'riverControlRepair', repair.actor, 'Réparation du gréement', 'travel/repair',
       'Métier', repair.ligne, TEMPORARY_REPAIR.difficulty, undefined,
       { stake: voyageStakeRef('riverControlRepair', { driftPenalty: DRIFT_NAV_PENALTY, outOfControlPenalty: OUT_OF_CONTROL.navPenalty }) }));
     else logs.push('Gréement/avirons hors d\'usage — personne pour les réparer, le bateau dérive.');
@@ -304,7 +302,7 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
 
   // 2. AGILITÉ de rame (l.17) : échec → −20 % ; Échec spectaculaire (−6 DR) → ÷2.
   if (pilot) {
-    pousse(riverStep('river-agility', 'riverAgility', pilot.actor, 'Agilité de rame', 'travel/rowboat',
+    pousseSi(steps, riverStep('river-agility', 'riverAgility', pilot.actor, 'Agilité de rame', 'travel/rowboat',
       'Agilité', { test: { char: 'agilite' } }, ROWING_AGILITY_DIFFICULTY, undefined,
       { stake: voyageStakeRef('riverAgility', {
         // La SOURCE parle en POURCENTAGE et en DIVISION (MSRC 7 l.17) : le facteur ×0.8 est la langue du
@@ -319,7 +317,7 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
   if (pilot) {
     const savoir = savoirVoiesFluvialesBonus(pilot.actor);
     const navTest = riverNavTest(river, eff);
-    pousse(riverStep('river-nav', 'riverNav', pilot.actor, `Navigation (${refLabel('skills', { id: skillId })})`, 'travel/sail-ship',
+    pousseSi(steps, riverStep('river-nav', 'riverNav', pilot.actor, `Navigation (${refLabel('skills', { id: skillId })})`, 'travel/sail-ship',
       refLabel('skills', { id: skillId }), { ...pilotLigne!, surLaCible: navTest.mods }, navTest.difficulty, { savoir },
       { stake: voyageStakeRef('riverNav', { driftKm: Math.round(riverDriftKm(baseKm)), driftPct: DRIFT_PCT_OF_SPEED }) }));
   } else {
@@ -329,7 +327,7 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
   }
 
   // 4. LOUVOYAGE (note 3, l.39) : le +% de vent de côté Modéré/Fort n'est acquis qu'avec un Test réussi.
-  if (eff.tack && pilot) pousse(riverStep('river-tack', 'riverTack', pilot.actor, 'Louvoyage', 'nautical/tack',
+  if (eff.tack && pilot) pousseSi(steps, riverStep('river-tack', 'riverTack', pilot.actor, 'Louvoyage', 'nautical/tack',
     refLabel('skills', { id: skillId }), pilotLigne!, TACK_DIFFICULTY, { savoir: savoirVoiesFluvialesBonus(pilot.actor) },
     { stake: voyageStakeRef('riverTack', { windPct: eff.pct ?? 0 }) }));
 
@@ -337,14 +335,14 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
   if (eff.capsizeRisk) {
     // `pilotValue` = la valeur FONDUE du barreur, portée en DONNÉE : le redressement qui suit un
     // chavirage (`riverCapsize` → `rightingStep`) en dérive sa cible, et la `base` de l'étape est nue.
-    if (pilot) pousse(riverStep('river-capsize', 'riverCapsize', pilot.actor, 'Retirer la voile (chavirage)', 'nautical/wind',
+    if (pilot) pousseSi(steps, riverStep('river-capsize', 'riverCapsize', pilot.actor, 'Retirer la voile (chavirage)', 'nautical/wind',
       refLabel('skills', { id: skillId }), pilotLigne!, CAPSIZE.removeSailDifficulty,
       { savoir: savoirVoiesFluvialesBonus(pilot.actor), pilotValue: pilot.value },
       { stake: voyageStakeRef('riverCapsize', { rounds: Math.max(1, capsizeSinkTurns(effectiveChar(coque, 'endurance'))) }) }));
     else { sinkBoat(get, set, (l) => logs.push(...l), 'Sans barreur, le bateau se renverse sous le vent violent et coule.'); }
   }
   if (eff.riggingRisk) {
-    if (pilot) pousse(riverStep('river-rigging', 'riverRigging', pilot.actor, 'Préserver le gréement', 'nautical/wind',
+    if (pilot) pousseSi(steps, riverStep('river-rigging', 'riverRigging', pilot.actor, 'Préserver le gréement', 'nautical/wind',
       refLabel('skills', { id: skillId }), pilotLigne!, CAPSIZE.removeSailDifficulty, { savoir: savoirVoiesFluvialesBonus(pilot.actor) },
       { stake: voyageStakeRef('riverRigging', { outOfControlPenalty: OUT_OF_CONTROL.navPenalty }) }));
     else { steps.push(...applyBoatCriticalNoPilot(get, set, coque, (l) => logs.push(...l))); }
@@ -920,7 +918,7 @@ function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<Ret
         stake: voyageStakeRef('riverPerilDetect', { damage: peril.onHit.hullDamage }),
         meta: { perilId: peril.id },
       });
-      if (st) insert.push(st);
+      pousseSi(insert, st);
     } else {
       const detect = pilot ? rollTest(testValue(pilot, undefined, 'agilite'), 'intermediaire', rng) : { success: false };
       j.push(`${peril.label} — détection (Agilité +0) : ${'roll' in detect ? (detect as TestResult).roll : '—'} → ${detect.success ? 'évité.' : 'impact !'}`);
