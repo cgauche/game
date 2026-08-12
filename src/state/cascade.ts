@@ -543,8 +543,8 @@ export function setCascadeTableForcedRoll(get: Get, set: Set, stepId: string, ro
  *  (`rollSeam.refusePorte`) n'a aucune étape à donner, et l'index d'append n'est connu qu'ici — sans
  *  cette sortie, l'appelant devrait mimer la doctrine du slot pour décider en amont.
  *
- *  L'invariant de possession `assertChoixJamaisPartage` (ci-dessous) s'applique à l'APPEND comme à
- *  l'ouverture : une étape de choix de GROUPE glissée par cette voie échapperait sinon à la garde. */
+ *  L'invariant de possession de bande (`assertBandeDeclarePossession`, ci-dessous) s'applique à l'APPEND
+ *  comme à l'ouverture : une bande sans possession glissée par cette voie échapperait sinon à la garde. */
 export function pushStep(set: Set, step: CascadeStep | ((index: number) => CascadeStep | undefined), purpose: PendingCascade['purpose'] | ((s: GameState) => PendingCascade['purpose'])): void {
   set((s) => {
     const p = typeof purpose === 'function' ? purpose(s) : purpose;
@@ -552,7 +552,6 @@ export function pushStep(set: Set, step: CascadeStep | ((index: number) => Casca
     const same = cur && cur.purpose === p ? cur : null;
     const st = typeof step === 'function' ? step(same ? same.participants.length : 0) : step;
     if (!st) return {};
-    assertChoixJamaisPartage([st]);
     assertBandeDeclarePossession([st]);
     if (same) return { pendingCascade: { ...same, participants: [...same.participants, st] } };
     const fresh: PendingCascade = { title: st.label ?? 'Conséquences', icon: st.icon ?? 'action/attack', purpose: p, cursor: 0, log: [], participants: [st] };
@@ -560,24 +559,6 @@ export function pushStep(set: Set, step: CascadeStep | ((index: number) => Casca
     // que `suspendActiveCascade`, dont `pushStep` n'a pas le `get`.
     return cur ? { pendingCascade: fresh, suspendedCascades: [...s.suspendedCascades, cur] } : { pendingCascade: fresh };
   });
-}
-
-/**
- * INVARIANT DE POSSESSION (#1262) : une étape de CHOIX (`options`) n'est JAMAIS une étape de GROUPE
- * (`groupOwner`). `groupOwner` fait rendre l'owner `'*'` par l'arbitre (`modalArbiter`, entrée
- * `cascade`) pour que chaque siège voie la fenêtre où se tient SA rangée ; mais le choix, lui, se pose
- * au niveau de l'ÉTAPE (`setCascadeChoice`) et n'a pas de porteur — n'importe quel siège trancherait
- * alors la voie d'autrui. Aucun producteur ne croise les deux aujourd'hui : la garde le VERROUILLE.
- * DEV : la violation THROW ; en PROD elle se journalise et la séquence s'ouvre — jamais casser une
- * partie en cours (même politique que les gardes de `rollSeam`).
- */
-function assertChoixJamaisPartage(steps: readonly CascadeStep[]): void {
-  for (const st of steps) {
-    if (!st.options?.length || !st.groupOwner) continue;
-    const msg = `[cascade] étape « ${st.id} » (${st.kind}) : \`options\` ET \`groupOwner\` — un choix de GROUPE laisserait n'importe quel siège trancher pour autrui.`;
-    console.error(msg);
-    if (import.meta.env?.DEV) throw new Error(msg);
-  }
 }
 
 /**
@@ -631,7 +612,6 @@ export function startCascade(
   opts: { title: string; icon?: string; purpose: PendingCascade['purpose']; steps: CascadeStep[]; log?: string[]; travelHalt?: boolean; roundBoundary?: boolean; combatEndBoundary?: boolean; restNights?: PendingCascade['restNights'] },
 ): void {
   if (!opts.steps.length) return;
-  assertChoixJamaisPartage(opts.steps);
   assertBandeDeclarePossession(opts.steps);
   const cur = get().pendingCascade;
   if (cur && cur.purpose === opts.purpose) {

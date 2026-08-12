@@ -526,9 +526,11 @@ function bandifyNightSteps(data: Record<string, unknown>): void {
     // RÉHYDRATATION : une étape venue du JSON n'a plus la marque de son mint (le brand est un symbole,
     // effacé à la sérialisation). La migration la rend à la fabrique, qui la re-minte ou la laisse
     // passer telle quelle — c'est le rôle de frontière de ce fichier (`eslint.config.js`, #1262 V4).
+    // eslint-disable-next-line no-restricted-syntax -- réhydratation : la marque est POSTULÉE sur une étape venue du JSON (seul site licite, cf. `eslint.config.js`)
     const steps = c.participants as BuiltCascadeStep[];
     c.participants = [...steps.slice(0, cursor), ...nightBands(steps.slice(cursor))];
   }
+  // eslint-disable-next-line no-restricted-syntax -- réhydratation : cf. ci-dessus (file `deferredUpkeepQueue`)
   if (Array.isArray(data.deferredUpkeepQueue)) data.deferredUpkeepQueue = nightBands(data.deferredUpkeepQueue as BuiltCascadeStep[]);
 }
 
@@ -548,7 +550,8 @@ function bandifyPursuitSteps(data: Record<string, unknown>): void {
   for (const cascade of [data.pendingCascade, ...stack]) {
     const c = cascade as { participants?: unknown; cursor?: unknown } | null | undefined;
     if (!c || !Array.isArray(c.participants)) continue;
-    const steps = c.participants as BuiltCascadeStep[]; // réhydratation : cf. `bandifyNightSteps`
+    // eslint-disable-next-line no-restricted-syntax -- réhydratation : cf. `bandifyNightSteps` (seul site licite, cf. `eslint.config.js`)
+    const steps = c.participants as BuiltCascadeStep[];
     const bands = pursuitBands(steps);
     // Rien de bandé ici : la fabrique REND les étapes hors périmètre TELLES QUELLES (même référence) —
     // une manche à un seul coureur donnerait autrement la même LONGUEUR et passerait pour inchangée.
@@ -578,7 +581,8 @@ function bandifyCombatEndSteps(data: Record<string, unknown>): void {
     const c = cascade as { participants?: unknown; cursor?: unknown } | null | undefined;
     if (!c || !Array.isArray(c.participants)) continue;
     const cursor = typeof c.cursor === 'number' ? c.cursor : 0;
-    const steps = c.participants as BuiltCascadeStep[]; // réhydratation : cf. `bandifyNightSteps`
+    // eslint-disable-next-line no-restricted-syntax -- réhydratation : cf. `bandifyNightSteps` (seul site licite, cf. `eslint.config.js`)
+    const steps = c.participants as BuiltCascadeStep[];
     c.participants = [...steps.slice(0, cursor), ...combatEndBands(steps.slice(cursor))];
   }
 }

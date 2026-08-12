@@ -32,8 +32,11 @@ export default tseslint.config(
   {
     // VERROU DES MARQUES D'ORIGINE (#1262) : `BuiltCascadeStep`/`BuiltRollRow` portent une propriété
     // REQUISE inécrivable hors de leur module (symbole non exporté), donc le SEUL moyen d'en forger
-    // une est le cast. Les minteurs le font, une fois, dans leur corps ; `saves.ts` réhydrate ce que
-    // le JSON a effacé. Partout ailleurs le cast rendrait la marque décorative.
+    // une est le cast. L'exemption est AUX MINTEURS (`rollSeam`, `revealStep`, `rollRowBuild` : forger la
+    // marque EST leur corps de métier, une fois, dans leur corps). `saves.ts` — seul FORGEUR licite, la
+    // réhydratation POSTULE une marque que le JSON a effacée — l'a AU SITE et non au fichier (#1262 V4) :
+    // chacun de ses casts porte sa `eslint-disable-next-line` et sa raison, tout autre y échoue.
+    // Partout ailleurs le cast rendrait la marque décorative.
     //
     // DEUX formes de cast (`x as T` et `<T>x`), et la référence est cherchée en DESCENDANT : la marque
     // se forge tout autant sous un tableau (`as BuiltCascadeStep[]`), un `readonly` ou un générique —
@@ -50,7 +53,7 @@ export default tseslint.config(
     // Restent donc hors portée (dit au JSDoc de `state/stepBrand.ts`) : l'alias GÉNÉRIQUE ou calculé
     // (`type A<T> = …`, type conditionnel, accès indexé) et le renommage à l'import.
     files: ['src/**/*.ts', 'src/**/*.tsx'],
-    ignores: ['src/state/rollSeam.ts', 'src/state/revealStep.ts', 'src/state/saves.ts', 'src/ui/rollRowBuild.ts'],
+    ignores: ['src/state/rollSeam.ts', 'src/state/revealStep.ts', 'src/ui/rollRowBuild.ts'],
     rules: {
       'no-restricted-syntax': ['error', {
         selector: 'TSAsExpression TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',

@@ -11,6 +11,7 @@
 import { describe, it, expect } from 'vitest';
 import { ESLint } from 'eslint';
 import ts from 'typescript';
+import { readFileSync } from 'node:fs';
 
 /** Fichier de test SOUS le périmètre de la règle (jamais un minteur, qui est exempté). */
 const SOUS_LA_REGLE = 'src/state/__sonde-verrou-marque.ts';
@@ -105,6 +106,30 @@ describe('#1262 — le lint mure les ROUTES DE FORGE de la marque', () => {
   it('les MINTEURS restent exemptés : leur cast interne est la seule fabrique légitime', async () => {
     const [res] = await eslint.lintText(`${ENTETE}export const h = o as BuiltCascadeStep;\n`, { filePath: 'src/state/rollSeam.ts', warnIgnored: false });
     expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax')).toHaveLength(0);
+  });
+
+  /**
+   * `saves.ts` EST SOUS LA RÈGLE (#1262 V4 M1) — l'exemption y est passée du FICHIER aux SITES : ses
+   * casts de réhydratation portent chacun leur `eslint-disable-next-line`, et un cast de PLUS échoue.
+   * Mesuré sur le fichier RÉEL (`lintFiles`, puis son propre texte augmenté d'une 5ᵉ forge) : une sonde
+   * synthétique ne dirait rien de l'état des directives posées dans ce fichier-ci.
+   *
+   * DEUX effets de bord MESURÉS de la forme `disable-next-line` (`--max-warnings 0`, `npm run lint`) :
+   * la directive couvre les TROIS sélecteurs de la règle sur sa ligne (une ligne portant alias ET cast
+   * est muette d'un coup), et une directive INUTILISÉE rend un avertissement — donc une exemption morte
+   * échoue la CI et se retire d'elle-même.
+   */
+  it('`saves.ts` (le FORGEUR) passe la règle : ses casts de réhydratation sont exemptés AU SITE', async () => {
+    const [res] = await eslint.lintFiles(['src/state/saves.ts']);
+    expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax'), 'les directives posées couvrent les casts existants').toHaveLength(0);
+    expect(res.errorCount, 'aucune autre erreur de lint sur le fichier sorti de l’ignore').toBe(0);
+  });
+
+  it('un cast de PLUS dans `saves.ts` (sans sa directive) est REFUSÉ — l’exemption n’est plus au fichier', async () => {
+    const reel = readFileSync('src/state/saves.ts', 'utf8');
+    const cinquieme = `${reel}\ndeclare const sonde: unknown;\nexport const forge5 = sonde as BuiltCascadeStep;\n`;
+    const [res] = await eslint.lintText(cinquieme, { filePath: 'src/state/saves.ts' });
+    expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax'), 'un 5ᵉ cast non justifié doit rougir').toHaveLength(1);
   });
 });
 
@@ -248,5 +273,38 @@ describe('#1262 V3 Lf — le murage de la RANGÉE de jet est TUEUR', () => {
 
   it('marque OPTIONNELLE (l’état d’avant) : le littéral nu passe, la directive devient INUTILISÉE (TS2578)', () => {
     expect(codesDeDiagnostic(SONDE_RANGEE('readonly [BRAND]?: true')), 'sans ce rouge, la mort du cliquet laisserait un trou').toContain(2578);
+  });
+});
+
+/**
+ * UN CHOIX N'EST JAMAIS DE GROUPE — MURÉ AU TYPE (#1262 V4 M2). `groupOwner` fait rendre l'owner `'*'`
+ * par l'arbitre ; le choix, lui, se pose au niveau de l'ÉTAPE (`setCascadeChoice`) et n'a pas de
+ * porteur — n'importe quel siège trancherait la voie d'autrui. La garde RUNTIME qui le vérifiait
+ * (`cascade.assertChoixJamaisPartage`) est morte avec son registre : mesuré, l'unique producteur
+ * d'étape à `options` est `rollSeam.choiceStep`, et les deux poseurs de `groupOwner` (`bandStep`,
+ * `hostStep`) n'exposent aucun champ `options`. Reste la déclaration — fermée par `groupOwner?: never`.
+ *
+ * CE QUE LE `never` AJOUTE, mesuré ici : sur un LITTÉRAL frais, la propriété excédentaire suffisait
+ * déjà (les deux signatures sont vertes) ; c'est l'objet ÉLARGI passé par variable ou épandage qui
+ * passait en silence sans lui. La sonde joue donc la forme SPREAD — sans elle, retirer le `never`
+ * ne ferait rougir aucun test.
+ */
+const SONDE_CHOIX = (go: 'groupOwner?: never' | '') => `
+type Option = { key: string; label: string };
+type ChoiceSpec = { id: string; kind: string; label: string; actorId: string; options: readonly Option[]; ${go} };
+declare function pushChoice(spec: ChoiceSpec): void;
+declare const base: { id: string; kind: string; label: string; actorId: string; options: readonly Option[] };
+const large = { ...base, groupOwner: true };
+// @ts-expect-error — un choix de GROUPE : le champ est refusé au type
+pushChoice(large);
+`;
+
+describe('#1262 V4 M2 — le murage du CHOIX DE GROUPE est TUEUR', () => {
+  it('`groupOwner?: never` : l’objet élargi est REFUSÉ, la directive est CONSOMMÉE', () => {
+    expect(codesDeDiagnostic(SONDE_CHOIX('groupOwner?: never'))).toEqual([]);
+  });
+
+  it('SANS le champ (l’état d’avant) : l’épandage passe, la directive devient INUTILISÉE (TS2578)', () => {
+    expect(codesDeDiagnostic(SONDE_CHOIX('')), 'sans ce rouge, la mort de la garde runtime laisserait un trou').toContain(2578);
   });
 });

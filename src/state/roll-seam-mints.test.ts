@@ -299,10 +299,13 @@ describe('#1262 — les portes d’APPEND', () => {
     expect(etapes()[0].actorId).toBe('H1');
   });
 
+  /** La possession de BANDE est ce que la voie d'APPEND doit encore refuser : la garde jumelle du CHOIX
+   *  DE GROUPE est morte au profit du type (`ChoiceSpec.groupOwner?: never`, #1262 V4 M2). */
   it('la GARDE de possession mord sur la voie d’APPEND, comme à l’ouverture (#1262 B8)', () => {
-    const partage = { id: 'e', kind: 'sonde-choix', label: 'Étape', interactive: true, groupOwner: true, options: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }] } as CascadeStep;
-    expect(() => pushStep(useGame.setState, partage, 'combat')).toThrow(/groupOwner/);
-    expect(useGame.getState().pendingCascade, 'aucune étape partagée n’a été appendue').toBeNull();
+    const rangee = (id: string) => ({ id, interactive: true, label: 'Résistance', base: 40, target: 40, result: null });
+    const sansPossession = { id: 'e', kind: 'sonde-bande', label: 'Bande', aggregate: 'none', participants: [rangee('H1'), rangee('H2')] } as CascadeStep;
+    expect(() => pushStep(useGame.setState, sansPossession, 'combat')).toThrow(/possession/);
+    expect(useGame.getState().pendingCascade, 'aucune bande sans possession n’a été appendue').toBeNull();
   });
 
   it('`pushTableDone` : la table résolue rejoint la séquence, enjeu DESCENDU à la ligne tirée', () => {

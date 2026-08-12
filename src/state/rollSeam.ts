@@ -1064,8 +1064,7 @@ export function buildBand(get: Get, spec: BandRowsSpec): BuiltCascadeStep | unde
 
 /**
  * PORTE DE BANDE (#1262) — une entrée de règle mise en jeu face à N porteurs, UNE fenêtre
- * (`buildBand` + `startCascade`). La garde de choix (`assertChoixJamaisPartage`, `cascade.ts`)
- * s'applique à l'ouverture.
+ * (`buildBand` + `startCascade`).
  *
  * Zéro rangée : aucune fenêtre (rien n'est mis en jeu).
  */
@@ -1088,10 +1087,14 @@ export interface ChoiceSpec {
   label: string;
   icon?: string;
   /** PORTEUR de la décision, REQUIS : l'arbitre (`modalArbiter`) route la fenêtre à son siège. Sans
-   *  lui l'owner serait `undefined` — fenêtre à l'HÔTE SEUL, qui trancherait la voie d'autrui ; avec
-   *  `groupOwner`, l'owner serait `'*'` et n'importe quel siège trancherait (`assertChoixJamaisPartage`,
-   *  `cascade.ts`). Une étape de choix n'a donc QUE cette possession. */
+   *  lui l'owner serait `undefined` — fenêtre à l'HÔTE SEUL, qui trancherait la voie d'autrui. Une
+   *  étape de choix n'a donc QUE cette possession (cf. `groupOwner` ci-dessous). */
   actorId: string;
+  /** POSSESSION DE GROUPE REFUSÉE AU TYPE (#1262 V4) : sous owner `'*'`, le choix se posant au niveau de
+   *  l'ÉTAPE (`setCascadeChoice`), n'importe quel siège trancherait la voie d'autrui. Calque de
+   *  `HostOwner` : un littéral frais était déjà refusé (propriété excédentaire), ce `never` ferme en
+   *  plus la voie d'un objet ÉLARGI passé par variable ou épandage. */
+  groupOwner?: never;
   options: readonly { key: string; label: string; detail?: string }[];
   /** Clé retenue d'office par une résolution IMMÉDIATE (`runCascadeImmediate`) — l'une des `options`. */
   defaultChoice?: string;

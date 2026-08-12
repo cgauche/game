@@ -92,7 +92,7 @@ describe('#1262 lot 5b — CHOIX : la charge de l’applier voyage par la décla
     expect(st.deviation!.targetId).toBe(hero.id);
     expect(st.deviation!.crit, 'le Critique est PRÉ-TIRÉ : le choix est éclairé').toBeTruthy();
     expect(st.reveal, 'la charge riche se lit SOUS les options, sans seconde étape').toBeTruthy();
-    expect(st.groupOwner, 'un choix n’est jamais de GROUPE (assertChoixJamaisPartage)').toBeUndefined();
+    expect(st.groupOwner, 'un choix n’est jamais de GROUPE (`ChoiceSpec.groupOwner?: never`)').toBeUndefined();
     // COOP : la fenêtre revient au siège de la victime, jamais à l'hôte qui tient l'attaquant.
     expect(modalOwnerOf(useGame.getState())).toBe(hero.id);
     expect(seatOwns(useGame.getState(), 1, hero.id)).toBe(true);
