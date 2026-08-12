@@ -5,6 +5,7 @@ import { combatValue } from '../engine/combat';
 import { creatureAttacks } from '../engine/creatureAttacks';
 import { MANEUVER_ICON } from '../state/combatFlow';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { Icon } from './Icon';
 import { OptionChooser, type RollOption } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
@@ -47,14 +48,13 @@ export function ManeuverModal() {
       }))
     : [];
 
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor: attacker,
     row: {
       combatant: attacker,
       d: r ? testBreakdown(label, base, { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, difficulty) : undefined,
       pending: testPending(label, base, undefined, difficulty),
     },
-    rolled,
     freeReroll: freeRerollOf(attacker),
     onRoll: roll,
     rerollable: !!r && !r.success && canReroll(true, !!pm.rerolled),
@@ -67,7 +67,7 @@ export function ManeuverModal() {
     // LDB 17 l.68 : réussite forcée = dé PAR DÉFAUT (DR max), et le joueur peut CHOISIR ce dé — le
     // sélecteur est dérivé par la coquille (`RollShell` → `rowForcedDie`), sans code ici. Le dé ne
     // nourrit que le DR de l'opposition (`resolveManeuver`) : aucun Coup Critique n'en dépend.
-  };
+  });
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'always' },

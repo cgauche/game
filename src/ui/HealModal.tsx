@@ -3,6 +3,7 @@ import { flowStakeRef } from '../data';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { OptionChooser } from './OptionChooser';
 import { testValueSplit, testBreakdown, testPending } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
@@ -60,15 +61,13 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
   // (LDB 09 l.17). Soigneur PNJ tarifé (aucune fiche dans le pool) : la garde de reconstruction de la
   // primitive laisse l'affichage inchangé.
   const { base, mods: supMods } = testValueSplit(healer, ph.skillValue, { support: ph.support, skill: 'guerison' });
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor: healer,
     row: {
       combatant: healer,
       d: rolled ? testBreakdown('Guérison', base, { roll: ph.roll!, target: ph.target, sl: ph.sl, success: ph.success }, ph.difficulty, supMods) : undefined,
       pending: testPending('Guérison', base, ph.target, ph.difficulty, supMods),
     },
-    rolled,
-    fortune,
     freeReroll,
     rerollable: rolled && canReroll(ph.roll! > ph.target, !!ph.rerolled) && (fortune > 0 || freeReroll),
     onRoll: roll,
@@ -76,10 +75,12 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
     onBonusSL: bonusSL,
     darkPactable: rolled && ph.roll! > ph.target && healer?.kind === 'hero',
     onDarkPact: darkPact,
-    resilience: healer?.resilience ?? 0,
     onForce: force,
     forceShow: !ph.success,
-  };
+  }, {
+    fortune,
+    resilience: healer?.resilience ?? 0,
+  });
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'pre' },

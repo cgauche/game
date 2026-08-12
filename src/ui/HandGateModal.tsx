@@ -2,6 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { testBreakdown, testPending } from './breakdown';
 import { Icon } from './Icon';
 import { resultLines, freeCons } from '../state/rollSeam';
@@ -29,15 +30,13 @@ export function HandGateModal() {
   const fortune = actor?.fortune ?? 0;
   const freeReroll = freeRerollOf(actor);
 
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor,
     row: {
       combatant: actor,
       d: rolled ? testBreakdown('Dextérité', pg.skillValue, { roll: pg.roll!, target: pg.target, sl: pg.sl, success: pg.success }, pg.difficulty) : undefined,
       pending: testPending('Dextérité', pg.skillValue, pg.target, pg.difficulty),
     },
-    rolled,
-    fortune,
     freeReroll,
     rerollable: rolled && canReroll(pg.roll! > pg.target, !!pg.rerolled) && (fortune > 0 || freeReroll),
     onRoll: roll,
@@ -45,10 +44,12 @@ export function HandGateModal() {
     onBonusSL: bonusSL,
     darkPactable: rolled && pg.roll! > pg.target && actor?.kind === 'hero',
     onDarkPact: darkPact,
-    resilience: actor?.resilience ?? 0,
     onForce: force,
     forceShow: !pg.success,
-  };
+  }, {
+    fortune,
+    resilience: actor?.resilience ?? 0,
+  });
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'pre' },

@@ -19,7 +19,7 @@ import { Modal } from './Modal';
 import { Icon } from './Icon';
 import { opposedLines, testBreakdown } from './breakdown';
 import { opposedResponded } from './opposedFrozen';
-import { frozenOpposedRow } from './rollRowBuild';
+import { buildRollRow, frozenOpposedRow } from './rollRowBuild';
 
 /**
  * Modale de Désengagement (LDB 15 l.43-68). Trois phases, une seule coquille de jet PARTAGÉE :
@@ -183,11 +183,9 @@ export function DisengageModal() {
     }),
   };
   // Rangée [1] = INTERACTIVE : Esquive du mover, porteuse de son cycle d'influence.
-  const moverRow: RollRowData = {
-    key: 'mover',
+  const moverRow: RollRowData = buildRollRow({
     actor: mover,
     row: { combatant: mover, d: moverLine.d },
-    rolled: true,
     rerollable,
     onReroll: reroll,
     onBonusSL: bonusSL,
@@ -195,7 +193,7 @@ export function DisengageModal() {
     onDarkPact: darkPact,
     onForce: forceSuccess,
     forceShow: pd.result !== 'success',
-  };
+  }, { key: 'mover' });
 
   const actions: RollAction[] = [
     { key: 'confirm', label: 'Appliquer', onClick: confirm, when: 'post' },

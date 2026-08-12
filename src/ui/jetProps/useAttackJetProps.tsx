@@ -17,6 +17,7 @@ import { CritLocationPicker } from '../ForcedRollPicker';
 import { DeterminationButton } from '../DeterminationButton';
 import { CodexRef } from '../compendium/CodexRef';
 import { RollShell, type RollRowData, type RollAction } from '../RollShell';
+import { buildRollRow, witnessRow } from '../rollRowBuild';
 import { VsHeader } from '../VsHeader';
 import { recapLineOfEvent } from '../../gameIso/combatNarration';
 import { ev } from '../../state/combatLog';
@@ -123,7 +124,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   const awaitingDefense = !!res && surfacedDefensePending(useGame.getState(), attacker, target, weapon, pa);
 
   // Rangée [0] = MON attaque (interactive, cycle d'influence).
-  const attackerRow: RollRowData = {
+  const attackerRow: RollRowData = buildRollRow({
     actor: attacker,
     row: res
       ? { combatant: attacker, d: res.attackerDetail }
@@ -143,27 +144,27 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               ...(preview!.clamped ? { clamped: preview!.clamped } : {}),
             },
           },
-    rolled,
-    rollFrisson: true,
-    fortune: attacker.fortune ?? 0,
     freeReroll: freeRerollOf(attacker),
     rerollable,
     onReroll: reroll,
     onBonusSL: bonusSL,
     darkPactable: attacker.kind === 'hero' && !pa.dualSecond && !!res && !res.attackerDetail?.success,
     onDarkPact: darkPact,
-    resilience: attacker.resilience ?? 0,
     onForce: forceSuccess,
-    preRollForce: () => { roll(); forceSuccess(); },
     forceShow: !!res && !res.hit,
-    noForcedDie: helplessForced,
     onRoll: roll,
+  }, {
+    rollFrisson: true,
+    fortune: attacker.fortune ?? 0,
+    resilience: attacker.resilience ?? 0,
+    preRollForce: () => { roll(); forceSuccess(); },
+    noForcedDie: helplessForced,
     reverse: reverseAvail ? { onReverse: reverseVerb, preview: reversePreview } : undefined,
-  };
+  });
   // Rangée [1] éventuelle = défense adverse : aperçu pré-jet (compétence + mods, sans valeur) ou résultat témoin.
   const defenderRow: RollRowData | null = res
-    ? (res.defenderDetail ? { row: { combatant: target, d: res.defenderDetail }, rolled, interactive: false } : null)
-    : (!blocked && defenderPending ? { row: { combatant: target, pending: { ...defenderPending, mask: 'value' as const } }, rolled, interactive: false } : null);
+    ? (res.defenderDetail ? witnessRow({ row: { combatant: target, d: res.defenderDetail } }) : null)
+    : (!blocked && defenderPending ? buildRollRow({ row: { combatant: target, pending: { ...defenderPending, mask: 'value' as const } } }, { interactive: false }) : null);
   const rows = [attackerRow, ...(defenderRow ? [defenderRow] : [])];
   const attackTest = weapon?.resolveChar
     ? { char: weapon.resolveChar }

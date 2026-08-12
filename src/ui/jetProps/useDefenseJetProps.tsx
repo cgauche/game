@@ -11,7 +11,7 @@ import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { RollShell, type RollAction } from '../RollShell';
 import { opposedResponded } from '../opposedFrozen';
-import { frozenOpposedRow } from '../rollRowBuild';
+import { buildRollRow, frozenOpposedRow } from '../rollRowBuild';
 import { OptionChooser } from '../OptionChooser';
 import { optionValue, opposedLines } from '../breakdown';
 import { VsHeader } from '../VsHeader';
@@ -114,27 +114,27 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
     },
   });
   // Rangée [1] = INTERACTIVE : MA défense (pré-remplie puis résolue), porteuse du cycle d'influence.
-  const defenderRow = {
+  const defenderRow = buildRollRow({
     actor: defender,
     row: res
       ? { combatant: defender, d: res.defenderDetail }
       : { combatant: defender, pending: defenseLine.pending },
-    rolled,
     onRoll: roll,
-    rollFrisson: true,
-    fortune: defender.fortune ?? 0,
     freeReroll: freeRerollOf(defender),
     rerollable,
     onReroll: reroll,
     onBonusSL: bonusSL,
     darkPactable: defender.kind === 'hero' && !pd.def?.success,
     onDarkPact: darkPact,
-    resilience: defender.resilience ?? 0,
     onForce: forceSuccess,
-    preRollForce: () => { roll(); forceSuccess(); },
     forceShow: !!res && res.hit,
+  }, {
+    rollFrisson: true,
+    fortune: defender.fortune ?? 0,
+    resilience: defender.resilience ?? 0,
+    preRollForce: () => { roll(); forceSuccess(); },
     reverse: reverseAvail ? { onReverse: reverseVerb, preview: reversePreview } : undefined,
-  };
+  });
 
   const actions: RollAction[] = [
     { key: 'confirm', label: 'Appliquer', onClick: confirm, when: 'post' },

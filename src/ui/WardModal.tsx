@@ -4,6 +4,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { effectiveChar } from '../engine/characteristics';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { testBreakdown, testPending } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
@@ -32,14 +33,13 @@ export function WardModal() {
   const r = pw.result;
   const rolled = !!r;
 
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor: attacker,
     row: {
       combatant: attacker,
       d: r ? testBreakdown('Force Mentale', effectiveChar(attacker, 'force-mentale'), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, 'accessible') : undefined,
       pending: testPending('Force Mentale', effectiveChar(attacker, 'force-mentale'), undefined, 'accessible'),
     },
-    rolled,
     freeReroll: freeRerollOf(attacker),
     onRoll: roll,
     rerollable: !!r && !r.success && canReroll(true, !!pw.rerolled),
@@ -48,7 +48,7 @@ export function WardModal() {
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !r?.success,
-  };
+  });
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'pre' },

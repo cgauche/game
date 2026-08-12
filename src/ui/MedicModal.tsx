@@ -10,6 +10,7 @@ import { Coins } from './Coins';
 import { DrBar } from './DrBar';
 import { HealRollFlow } from './HealModal';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { testValueSplit, testBreakdown, testPending } from './breakdown';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
@@ -83,15 +84,13 @@ function SurgeryRollFlow() {
   // passifs, effets — #1178) : lignes de mod NOMMÉES, base rebasée sur le Niveau de Compétence nu
   // (LDB 09 l.17). Chirurgien PNJ tarifé (aucune fiche) : affichage inchangé (garde de reconstruction).
   const { base, mods: supMods } = testValueSplit(surgeon, ps.skillValue, { support: ps.support, skill: 'guerison' });
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor: surgeon,
     row: {
       combatant: surgeon,
       d: rolled ? testBreakdown('Guérison', base, { roll: ps.roll!, target: ps.target, sl: ps.sl, success: ps.success }, ps.difficulty, supMods) : undefined,
       pending: testPending('Guérison', base, ps.target, ps.difficulty, supMods),
     },
-    rolled,
-    fortune,
     freeReroll,
     rerollable: rolled && canReroll(ps.roll! > ps.target, !!ps.rerolled) && (fortune > 0 || freeReroll),
     onRoll: roll,
@@ -99,10 +98,12 @@ function SurgeryRollFlow() {
     onBonusSL: bonusSL,
     darkPactable: rolled && ps.roll! > ps.target && surgeon?.kind === 'hero',
     onDarkPact: darkPact,
-    resilience: surgeon?.resilience ?? 0,
     onForce: force,
     forceShow: !ps.success,
-  };
+  }, {
+    fortune,
+    resilience: surgeon?.resilience ?? 0,
+  });
   const recovery = kind === 'recovery';
   const actions: RollAction[] = [
     { key: 'cancel', label: recovery ? 'Arrêter la rééducation' : 'Arrêter l’opération', onClick: cancel, when: 'pre' },

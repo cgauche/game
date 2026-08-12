@@ -4,6 +4,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { effectiveChar } from '../engine/characteristics';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { testBreakdown, testPending } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
@@ -30,25 +31,25 @@ export function FrenzyModal() {
   const r = pf.result;
   const rolled = !!r;
 
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor: c,
     row: {
       combatant: c,
       d: r ? testBreakdown('Force Mentale', effectiveChar(c, 'force-mentale'), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }) : undefined,
       pending: testPending('Force Mentale', effectiveChar(c, 'force-mentale')),
     },
-    rolled,
-    fortune: c.fortune ?? 0,
     freeReroll: freeRerollOf(c),
     rerollable: !!r && !r.success && canReroll(true, !!pf.rerolled),
     onRoll: roll,
     onReroll: reroll,
     darkPactable: !!r && !r.success && c.kind === 'hero',
     onDarkPact: darkPact,
-    resilience: c.resilience ?? 0,
     onForce: force,
     forceShow: !r?.success,
-  };
+  }, {
+    fortune: c.fortune ?? 0,
+    resilience: c.resilience ?? 0,
+  });
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'pre' },

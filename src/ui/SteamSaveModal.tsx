@@ -3,6 +3,7 @@ import { flowStakeRef } from '../data';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { testBreakdown, testPending } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
@@ -26,24 +27,24 @@ export function SteamSaveModal() {
   const actor = party.find((c) => c.id === p.actorId);
   const rolled = p.roll != null;
 
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor,
     row: rolled
       ? { combatant: actor, d: testBreakdown('Initiative', p.skillValue, { roll: p.roll!, target: p.target, sl: p.sl, success: p.success }, p.difficulty) }
       : { combatant: actor, pending: testPending('Initiative', p.skillValue, p.target, p.difficulty) },
-    rolled,
     onRoll: roll,
-    fortune: actor?.fortune ?? 0,
     freeReroll: freeRerollOf(actor),
     rerollable: rolled && canReroll(p.roll! > p.target, !!p.rerolled),
     onReroll: reroll,
     onBonusSL: bonusSL,
     darkPactable: rolled && p.roll! > p.target,
     onDarkPact: darkPact,
-    resilience: actor?.resilience ?? 0,
     onForce: forceSuccess,
     forceShow: rolled && !p.success,
-  };
+  }, {
+    fortune: actor?.fortune ?? 0,
+    resilience: actor?.resilience ?? 0,
+  });
 
   const actions: RollAction[] = [{ key: 'confirm', label: 'Appliquer', onClick: confirm, when: 'post' }];
   const text = !rolled

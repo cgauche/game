@@ -4,6 +4,7 @@ import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { combatValue } from '../../engine/combat';
 import { RollShell, type RollAction, type RollRowData } from '../RollShell';
+import { buildRollRow } from '../rollRowBuild';
 import { testPending } from '../breakdown';
 import { recapLineOfEvent } from '../../gameIso/combatNarration';
 import { ev } from '../../state/combatLog';
@@ -39,14 +40,13 @@ export function useTrampleJetProps(): ComponentProps<typeof RollShell> | null {
   // la fenêtre annonce est exactement ce que `trampleConfirm` dépense.
   const freeMoveAction = trampleFreeMove(battle, attacker);
 
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor: attacker,
     row: {
       combatant: attacker,
       d: r?.attackerDetail,
       pending: testPending('Bagarre', combatValue(attacker, 'melee')),
     },
-    rolled,
     freeReroll: freeRerollOf(attacker),
     onRoll: roll,
     rerollable: !!r && canReroll(!r.attackerDetail?.success, !!pt.rerolled),
@@ -55,10 +55,11 @@ export function useTrampleJetProps(): ComponentProps<typeof RollShell> | null {
     darkPactable: !!r && !r.attackerDetail?.success && attacker.kind === 'hero',
     onDarkPact: darkPact,
     onForce: force,
+    forceShow: !r?.hit,
+  }, {
     // Résilience AVANT le jet (LDB 17 l.68) : on lance puis on force la réussite.
     preRollForce: () => { roll(); force(); },
-    forceShow: !r?.hit,
-  };
+  });
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'always' },

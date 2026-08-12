@@ -871,6 +871,25 @@ function callScope(src: string, open: number): string {
   return src.slice(open);
 }
 
+/** Constructeurs de la porte `rollRowBuild.ts` (le montage y prend son 1ᵉʳ argument et ses EXTRAS au 2ᵉ). */
+const PORTE_CTOR = /\b(buildRollRow|participantRow|tableRow|worldRow|witnessRow|frozenOpposedRow)$/;
+
+/** Appel de la PORTE englobant l'indice donné — sa portée est l'APPEL ENTIER (les deux arguments).
+ *  Sans lui, `interactive:false` posé dans les EXTRAS (2ᵉ argument) se lirait seul, sans le `d:`/`pending:`
+ *  resté au 1ᵉʳ : une rangée sortirait du radar en passant par la porte, sans que le stock ait bougé. */
+function enclosingPorteCall(src: string, idx: number): string | null {
+  let depth = 0;
+  for (let i = idx; i >= 0; i--) {
+    const c = src[i];
+    if (c === ')') depth++;
+    else if (c === '(') {
+      if (depth === 0) return PORTE_CTOR.test(src.slice(Math.max(0, i - 32), i)) ? callScope(src, i) : null;
+      depth--;
+    }
+  }
+  return null;
+}
+
 function scanFrozenValueRows(files: string[]): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const f of files) {
@@ -885,7 +904,9 @@ function scanFrozenValueRows(files: string[]): Record<string, number> {
     while ((m = re.exec(src))) {
       // La portée d'un appel de constructeur est SON argument (jusqu'à la parenthèse équilibrée) —
       // pas le bloc englobant, qui ferait compter la ligne d'un voisin.
-      const scope = m[0].startsWith('witnessRow') ? callScope(src, re.lastIndex - 1) : rowScope(src, m.index, m[1] === '={');
+      const scope = m[0].startsWith('witnessRow')
+        ? callScope(src, re.lastIndex - 1)
+        : (enclosingPorteCall(src, m.index) ?? rowScope(src, m.index, m[1] === '={'));
       if (/\bd\s*[,:]|\bpending\s*[,:]/.test(scope)) n++;
     }
     if (n > 0) counts[rel(f)] = n;

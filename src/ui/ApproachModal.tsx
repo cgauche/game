@@ -3,6 +3,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { calmeValue } from '../engine/psychology';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { Icon } from './Icon';
 import { testBreakdown, testPending } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
@@ -30,25 +31,25 @@ export function ApproachModal() {
   const r = pa.result;
   const rolled = !!r;
 
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor: c,
     row: {
       combatant: c,
       d: r ? testBreakdown('Calme', calmeValue(c), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, 'intermediaire') : undefined,
       pending: testPending('Calme', calmeValue(c), undefined, 'intermediaire'),
     },
-    rolled,
-    fortune: c.fortune ?? 0,
     freeReroll: freeRerollOf(c),
     rerollable: !!r && !r.success && canReroll(true, !!pa.rerolled),
     onRoll: roll,
     onReroll: reroll,
     darkPactable: !!r && !r.success && c.kind === 'hero',
     onDarkPact: darkPact,
-    resilience: c.resilience ?? 0,
     onForce: force,
     forceShow: !r?.success,
-  };
+  }, {
+    fortune: c.fortune ?? 0,
+    resilience: c.resilience ?? 0,
+  });
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'pre' },

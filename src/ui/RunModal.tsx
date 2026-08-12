@@ -4,6 +4,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { testValue } from '../engine/skills';
 import { flowStakeRef, refLabel } from '../data';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { testBreakdown, testPending } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
@@ -35,14 +36,13 @@ export function RunModal() {
   const skillLabel = refLabel('skills', { id: skillId });
   const rolled = !!r;
 
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor: c,
     row: {
       combatant: c,
       d: r ? testBreakdown(skillLabel, testValue(c, skillId), { roll: r.roll, target: r.target, sl: r.dr, success: r.success }, 'accessible') : undefined,
       pending: testPending(skillLabel, testValue(c, skillId), undefined, 'accessible'),
     },
-    rolled,
     freeReroll: freeRerollOf(c),
     onRoll: roll,
     rerollable: !!r && !r.success && canReroll(true, !!pr.rerolled),
@@ -52,7 +52,7 @@ export function RunModal() {
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !r?.success,
-  };
+  });
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'pre' },

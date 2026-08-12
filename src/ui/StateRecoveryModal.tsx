@@ -4,6 +4,7 @@ import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow, witnessRow } from './rollRowBuild';
 import { opposedLines } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
@@ -47,15 +48,13 @@ export function StateRecoveryModalView({
   // résolveur `recover`) est une donnée de la ligne.
   const [actorLine] = opposedLines([{ label: sr.skillLabel, base: sr.skillValue, r: sr.roll ?? undefined }], sr.difficulty);
   // Rangée INTERACTIVE du joueur (pré-jet en attente puis résultat), porteuse de son cycle d'influence.
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor,
     row: {
       combatant: actor,
       d: actorLine.d,
       pending: actorLine.pending,
     },
-    rolled,
-    fortune,
     freeReroll,
     rerollable: rolled && canReroll(!sr.success, !!sr.rerolled),
     onRoll,
@@ -63,15 +62,13 @@ export function StateRecoveryModalView({
     onBonusSL,
     darkPactable: rolled && !sr.success,
     onDarkPact,
-  };
+  }, { fortune });
   // Test opposé : rangée TÉMOIN de la source (Force), figée post-jet.
   const witness: RollRowData | undefined = rolled && sr.opposed && sr.opponentRoll && sr.opponentValue != null
-    ? {
+    ? witnessRow({
         // La source oppose sa Force à Difficulté Intermédiaire — ce que roule le résolveur (LDB 12 l.166).
         row: opposedLines([{ label: `${sr.opponentName ?? 'Source'} — Force`, base: sr.opponentValue, r: sr.opponentRoll }])[0],
-        rolled,
-        interactive: false,
-      }
+      })
     : undefined;
 
   const actions: RollAction[] = [

@@ -4,6 +4,7 @@ import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { testBreakdown, testPending, supportSplit } from './breakdown';
 import { combatValueModParts } from '../engine/combat';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
@@ -48,15 +49,13 @@ export function ReloadModalView({
   const base = supBase - valueParts.reduce((s, p) => s + p.value, 0);
   const mods = [...supMods, ...valueParts];
 
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor,
     row: {
       combatant: actor,
       d: rolled ? testBreakdown('Projectiles', base, { roll: pr.roll!, target: pr.target, sl: pr.sl, success: pr.success }, pr.difficulty, mods) : undefined,
       pending: testPending('Projectiles', base, pr.target, pr.difficulty, mods),
     },
-    rolled,
-    fortune,
     freeReroll,
     rerollable: rolled && pr.roll != null && canReroll(pr.roll > pr.target, !!pr.rerolled),
     onRoll,
@@ -64,9 +63,11 @@ export function ReloadModalView({
     onBonusSL,
     darkPactable: rolled && pr.roll! > pr.target,
     onDarkPact,
+  }, {
+    fortune,
     /* Test ÉTENDU (Rechargement) : barre de DR de RANGÉE — site unique `RollRow` (arbitrage user 2026-07-11). */
     extendedDr: { cum: rolled ? after : pr.progressBefore, target: pr.reload },
-  };
+  });
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', onClick: onCancel, when: 'pre' },

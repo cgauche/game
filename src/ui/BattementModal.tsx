@@ -5,6 +5,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { combatValue } from '../engine/combat';
 import { battementFoes } from '../state/combatFlow';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
@@ -38,14 +39,13 @@ export function BattementModal() {
   const rolled = !!r;
   const foes = battementFoes(attacker, battle);
 
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor: attacker,
     row: {
       combatant: attacker,
       d: r ? testBreakdown('Corps à corps', combatValue(attacker, 'melee'), r) : undefined,
       pending: testPending('Corps à corps', combatValue(attacker, 'melee')),
     },
-    rolled,
     freeReroll: freeRerollOf(attacker),
     onRoll: roll,
     rerollable: !!r && canReroll(!r.success, !!pb.rerolled),
@@ -54,11 +54,12 @@ export function BattementModal() {
     darkPactable: !!r && !r.success && attacker.kind === 'hero',
     onDarkPact: darkPact,
     onForce: force,
+    forceShow: !r?.success,
+  }, {
     // Résilience AVANT le jet (LDB 17 l.68) : on lance puis on force la réussite (dé PAR DÉFAUT = DR max
     // → plus d'Avantage retiré). PAS de choix du dé : l'Avantage retiré ne dépend que du DR.
     preRollForce: () => { roll(); force(); },
-    forceShow: !r?.success,
-  };
+  });
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'always' },

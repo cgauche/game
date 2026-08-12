@@ -5,6 +5,7 @@ import { canReroll } from '../engine/fortune';
 import { influencesLocally } from '../state/netOwnership';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { testValueSplit, testBreakdown, testPending } from './breakdown';
 import { APPRAISE_SKILL } from '../state/merchantFlow';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
@@ -48,16 +49,13 @@ export function AppraiseModalView({
   // La Compétence testée vient de la SOURCE UNIQUE du flux (`APPRAISE_SKILL`), par id.
   const { base, mods: supMods } = testValueSplit(actor, pa.skillValue, { support: pa.support, ...APPRAISE_SKILL[pa.mode ?? 'evaluate'] });
 
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor,
-    interactive: owned,
     row: {
       combatant: actor,
       d: rolled ? testBreakdown(skill, base, { roll: pa.roll!, target: pa.target, sl: pa.sl, success: pa.success }, pa.difficulty, supMods) : undefined,
       pending: testPending(skill, base, pa.target, pa.difficulty, supMods),
     },
-    rolled,
-    fortune,
     freeReroll,
     rerollable: rolled && pa.roll != null && canReroll(pa.roll > pa.target, !!pa.rerolled),
     onRoll,
@@ -65,7 +63,10 @@ export function AppraiseModalView({
     onBonusSL,
     darkPactable: rolled && pa.roll! > pa.target,
     onDarkPact,
-  };
+  }, {
+    interactive: owned,
+    fortune,
+  });
 
   const actions: RollAction[] = owned
     ? [

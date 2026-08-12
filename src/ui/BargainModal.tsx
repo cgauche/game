@@ -8,7 +8,7 @@ import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { soutienMod, opposedLines } from './breakdown';
 import { testValueParts } from '../engine/skills';
 import { opposedResponded } from './opposedFrozen';
-import { frozenOpposedRow } from './rollRowBuild';
+import { buildRollRow, frozenOpposedRow } from './rollRowBuild';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeBargain } from '../state/flowOutcomes';
@@ -68,16 +68,13 @@ export function BargainModalView({
   const opposed = rolled && !!actor && !!merchant && !!playerD && !!merchantD;
 
   // Rangée INTERACTIVE du négociateur (pré-jet en attente puis résultat), porteuse de son influence.
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor,
-    interactive: owned,
     row: {
       combatant: actor,
       d: playerD,
       pending: playerLine.pending,
     },
-    rolled,
-    fortune,
     freeReroll,
     rerollable: rolled && pb.roll != null && canReroll(pb.roll.roll > pb.roll.target, !!pb.rerolled),
     onRoll,
@@ -85,7 +82,10 @@ export function BargainModalView({
     onBonusSL,
     darkPactable: rolled && pb.roll!.roll > pb.roll!.target,
     onDarkPact,
-  };
+  }, {
+    interactive: owned,
+    fortune,
+  });
   // Rangée TÉMOIN du marchand — PRÉSENTE DÈS L'OUVERTURE, portrait compris (arbitrage user 2026-07-30,
   // #990, patron `frozenOpposedRow` des 7 autres sites à jet figé) : son Marchandage est connu du
   // pending (`merchantValue`) mais reste OPAQUE (`mask:'value'`, on ne lit pas la fiche d'un inconnu) et

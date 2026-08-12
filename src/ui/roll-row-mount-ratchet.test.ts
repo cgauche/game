@@ -86,39 +86,9 @@ export function compteRangeesManuscrites(nom: string, src: string): number {
 /** Stock recensé au L0 (base f7b2104a). Les TESTS sont dans la population : sinon le requis terminal
  *  au type leur casserait dessus en bloc. */
 const BASELINE: Record<string, number> = {
-  // ── PROD ──
-  'ui/ActivityModal.tsx': 3,
-  'ui/jetProps/useAttackJetProps.tsx': 3,
-  'ui/StateRecoveryModal.tsx': 2,
-  'ui/AppraiseModal.tsx': 1,
-  'ui/ApproachModal.tsx': 1,
-  'ui/AuContactModal.tsx': 1,
-  'ui/BargainModal.tsx': 1,
-  'ui/BattementModal.tsx': 1,
-  'ui/CastModal.tsx': 1,
-  'ui/CorruptionModal.tsx': 1,
-  'ui/DisengageModal.tsx': 1,
-  'ui/DispelModal.tsx': 1,
-  'ui/DistraireModal.tsx': 1,
-  'ui/FallModal.tsx': 1,
-  'ui/FocusModal.tsx': 1,
-  'ui/FrenzyModal.tsx': 1,
-  'ui/GrappleModal.tsx': 1,
-  'ui/HandGateModal.tsx': 1,
-  'ui/HealModal.tsx': 1,
-  'ui/jetProps/useDefenseJetProps.tsx': 1,
-  'ui/jetProps/useExtendedTestJetProps.tsx': 1,
-  'ui/jetProps/useFumbleJetProps.tsx': 1,
-  'ui/jetProps/useTestJetProps.tsx': 1,
-  'ui/jetProps/useTrampleJetProps.tsx': 1,
-  'ui/ManeuverModal.tsx': 1,
-  'ui/MedicModal.tsx': 1,
+  // ── PROD ── (L2 : les MONOS sont passés par la porte ; ce qui reste est nommé avec sa raison)
+  'ui/jetProps/useFumbleJetProps.tsx': 1, // TIRAGE DE TABLE sans dé : la rangée ne porte qu'une `note`, `rolled` ne se dérive d'aucun `row.d`
   'ui/opposedFrozen.ts': 1, // `maskOpposedRow` RECONSTRUIT la rangée qu'on lui donne (masque) : il n'en mint pas
-  'ui/ReloadModal.tsx': 1,
-  'ui/RunModal.tsx': 1,
-  'ui/ShantyModal.tsx': 1,
-  'ui/SteamSaveModal.tsx': 1,
-  'ui/WardModal.tsx': 1,
   // ── TESTS ──
   'ui/rollRowBuild.test.ts': 1, // le contrôle NÉGATIF du test de marque : une rangée manuscrite, exprès
   'ui/forcedDieRow.pre-roll.test.tsx': 4,

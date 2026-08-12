@@ -3,6 +3,7 @@ import { flowStakeRef } from '../data';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { testBreakdown, testPending, testValueSplit } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { Icon } from './Icon';
@@ -37,14 +38,13 @@ export function DispelModal() {
   const { base, mods: supMods } = testValueSplit(caster, pd.value, { support: pd.support, skill: 'langue', spec: 'magick' });
   const rolled = !!r;
 
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor: caster,
     row: {
       combatant: caster,
       d: r ? testBreakdown('Langue (Magick)', base, { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, undefined, supMods) : undefined,
       pending: testPending('Langue (Magick)', base, undefined, undefined, supMods),
     },
-    rolled,
     freeReroll: freeRerollOf(caster),
     onRoll: roll,
     rerollable: !!r && canReroll(!r.success, !!pd.rerolled),
@@ -54,9 +54,10 @@ export function DispelModal() {
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !r?.success,
+  }, {
     /* Test ÉTENDU (Dissipation) : barre de DR de RANGÉE — site unique `RollRow` (arbitrage user 2026-07-11). */
     extendedDr: { cum, target: pd.ni },
-  };
+  });
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'always' },

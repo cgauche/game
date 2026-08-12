@@ -4,6 +4,7 @@ import { FLOWS } from '../../state/rollFlowSpecs';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { RollShell, type RollAction } from '../RollShell';
+import { buildRollRow } from '../rollRowBuild';
 import { PortraitPicker } from '../PortraitPicker';
 import { testBreakdown, testPending } from '../breakdown';
 import { recapLineOfEvent } from '../../gameIso/combatNarration';
@@ -103,28 +104,28 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
       />
     ) : undefined,
     rows: [
-      {
+      buildRollRow({
         /* Pré-jet : ligne en attente (portrait sauf en mode picker — le picker montre déjà qui) ;
            post-jet : la ligne PORTE le portrait de l'acteur (comme la cascade). */
         row: rolled
           ? { combatant: actor, d: testBreakdown(skillLabel, base, { roll: pt.roll!, target: pt.target, sl: pt.sl, success: pt.success, clamped: pt.clamped }, pt.difficulty, extraMods, pt.easedBy) }
           : (multi ? { pending: pendingLine } : { combatant: actor, pending: pendingLine }),
-        rolled,
         onRoll: roll,
-        fortune: actor?.fortune ?? 0,
         freeReroll: freeRerollOf(actor),
         rerollable: rolled && pt.roll != null && canReroll(pt.roll > pt.target, !!pt.rerolled),
         onReroll: reroll,
         onBonusSL: bonusSL,
         darkPactable: rolled && pt.roll! > pt.target,
         onDarkPact: darkPact,
-        resilience: actor?.resilience ?? 0,
         onForce: forceSuccess,
         forceShow: rolled && !pt.success,
+      }, {
+        fortune: actor?.fortune ?? 0,
+        resilience: actor?.resilience ?? 0,
         reverse: reverseAvail ? { onReverse: reverseVerb, preview: reversePreview } : undefined,
         /* Détermination (LDB 17 l.62) : AVANT le jet, si un malus psy social pèse, la dépense l'ignore. */
         determination: !rolled && pt.psychMod ? { resolve: actor?.resolve ?? 0, onResolve: determination } : undefined,
-      },
+      }),
     ],
     outcome: rolled ? [recapLineOfEvent(ev('info', describeTest(pt), pt.actorId), party)] : undefined,
     /* Option « Succès / échec stupéfiants » (LDB 12 l.151) : badge du double (libellé seul, aucune

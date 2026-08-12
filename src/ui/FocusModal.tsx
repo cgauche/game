@@ -5,6 +5,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { castingValue } from '../engine/magic';
 import { windsMagicLineOf } from '../state/combatOrParty';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { testBreakdown, testPending } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
@@ -39,14 +40,13 @@ export function FocusModal() {
   const windsLine = windsMagicLineOf(battle);
   const windsMods = windsLine ? [windsLine] : undefined;
 
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor: caster,
     row: {
       combatant: caster,
       d: r ? testBreakdown('Focalisation', castingValue(caster, 'focalisation'), { roll: r.roll, target: r.target, sl: r.sl ?? r.dr, success: r.dr > 0 }, undefined, windsMods) : undefined,
       pending: testPending('Focalisation', castingValue(caster, 'focalisation'), undefined, undefined, battle?.windsOfMagic?.revealed ? windsMods : undefined),
     },
-    rolled,
     freeReroll: freeRerollOf(caster),
     onRoll: roll,
     rerollable: !!r && canReroll(r.dr === 0, !!pf.rerolled),
@@ -56,9 +56,10 @@ export function FocusModal() {
     onDarkPact: darkPact,
     onForce: force,
     forceShow: r?.dr === 0,
+  }, {
     /* Test ÉTENDU (Focalisation) : barre de DR de RANGÉE — site unique `RollRow` (arbitrage user 2026-07-11). */
     extendedDr: { cum: Math.min(ni, prev + (r?.dr ?? 0)), target: ni },
-  };
+  });
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'always' },

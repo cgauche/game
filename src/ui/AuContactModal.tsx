@@ -10,7 +10,7 @@ import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { opposedLines } from './breakdown';
 import { opposedResponded } from './opposedFrozen';
-import { frozenOpposedRow } from './rollRowBuild';
+import { buildRollRow, frozenOpposedRow } from './rollRowBuild';
 
 /**
  * Modale « Au Contact » (LDB 62 l.176, Option « Longueur d'arme »). Test OPPOSÉ de Corps à corps
@@ -60,12 +60,9 @@ export function AuContactModal() {
     row: { combatant: foe, d: foeLine.d },
   });
   // Rangée INTERACTIVE : Corps à corps du mover (héros), porteur de son cycle d'influence.
-  const actorRow = {
-    combatant: mover,
+  const actorRow = buildRollRow({
     actor: mover,
     row: { combatant: mover, d: moverLine.d },
-    rolled,
-    rollLabel: 'Lancer',
     onRoll: roll,
     rerollable,
     onReroll: reroll,
@@ -73,10 +70,12 @@ export function AuContactModal() {
     darkPactable: mover.kind === 'hero' && !!pd.def && !pd.def.success,
     onDarkPact: darkPact,
     onForce: force,
+    forceShow: pd.result !== 'success',
+  }, {
+    rollLabel: 'Lancer',
     // Résilience AVANT le jet (LDB 17 l.68) : Corps à corps forcé à l'emporter.
     preRollForce: () => { roll(); force(); },
-    forceShow: pd.result !== 'success',
-  };
+  });
 
   const issue = pd.def
     ? [recapLineOfEvent(ev(pd.result === 'success' ? 'dodge' : 'attack', outcome, mover.id, foe.id), battle.combatants)]

@@ -9,7 +9,7 @@ import { ev } from '../state/combatLog';
 import { baseTestModLines } from '../engine/combat';
 import { opposedLines } from './breakdown';
 import { opposedResponded } from './opposedFrozen';
-import { frozenOpposedRow } from './rollRowBuild';
+import { buildRollRow, frozenOpposedRow } from './rollRowBuild';
 import { Icon } from './Icon';
 
 /**
@@ -59,12 +59,9 @@ export function GrappleModal() {
     row: { combatant: foe, d: foeLine.d },
   });
   // Rangée INTERACTIVE : Force de l'acteur, porteur de son cycle d'influence.
-  const actorRow = {
-    combatant: actor,
+  const actorRow = buildRollRow({
     actor,
     row: { combatant: actor, d: actorLine.d },
-    rolled,
-    rollLabel: 'Lancer (Force)',
     onRoll: roll,
     rerollable,
     onReroll: reroll,
@@ -72,10 +69,12 @@ export function GrappleModal() {
     darkPactable: actor.kind === 'hero' && !!pd.def && !pd.def.success,
     onDarkPact: darkPact,
     onForce: force,
+    forceShow: pd.result !== 'success',
+  }, {
+    rollLabel: 'Lancer (Force)',
     // Résilience AVANT le jet (LDB 17 l.68) : Force forcée à l'emporter.
     preRollForce: () => { roll(); force(); },
-    forceShow: pd.result !== 'success',
-  };
+  });
 
   const issue = pd.def
     ? [recapLineOfEvent(ev(pd.result === 'success' ? 'dodge' : 'attack', outcome, actor.id, foe.id), battle.combatants)]

@@ -20,6 +20,7 @@ import { VsHeader } from './VsHeader';
 import { RollRow } from './RollRow';
 import { rowForcedDie } from './forcedDieRow';
 import { maskOpposedRow, opposedResponded, opposedRevealed } from './opposedFrozen';
+import { buildRollRow } from './rollRowBuild';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { testBreakdown, testPending, soutienMod, opposedLines } from './breakdown';
@@ -159,28 +160,28 @@ export function CastModal() {
   // affordance n'est offerte. Elle passe ENSUITE par le calendrier #990 — `maskOpposedRow` ENVELOPPE la
   // rangée, donc aucun champ posé ici ne peut ré-armer une affordance masquée, quel que soit l'ordre
   // d'écriture.
-  const castRow: RollRowData = maskOpposedRow(useGame.getState(), { ownerId: pc.casterId, responded }, {
-    interactive: influencesLocally(useGame.getState(), pc.casterId),
+  const castRow: RollRowData = maskOpposedRow(useGame.getState(), { ownerId: pc.casterId, responded }, buildRollRow({
     actor: caster,
     row: res
       ? { combatant: caster, d: testBreakdown(castLabel, previewRolled.base, { roll: res.roll, target: res.target, sl: res.sl, success: res.cast }, undefined, previewRolled.mods) }
       : { combatant: caster, pending: testPending(castLabel, preview.base, preview.target, undefined, preview.mods) },
-    rolled: !!res,
     onRoll: roll,
     rerollable,
     onReroll: reroll,
     onBonusSL: bonusSL,
     darkPactable: caster.kind === 'hero' && res != null && res.roll > 0 && res.roll > res.target,
     onDarkPact: darkPact,
-    fortune: caster.fortune ?? 0,
     freeReroll: freeRerollOf(caster),
-    resilience: caster.resilience ?? 0,
     onForce: forceSuccess,
+    forceShow: !!res && !res.cast,
+  }, {
+    interactive: influencesLocally(useGame.getState(), pc.casterId),
+    fortune: caster.fortune ?? 0,
+    resilience: caster.resilience ?? 0,
     // Résilience PRÉ-JET : même geste en deux temps que le dé fixé pré-armé — rendu ATOMIQUE (#1029),
     // sinon le routage du Contre-sort déciderait sur le jet naturel, avant la réussite forcée.
     preRollForce: () => withPreRollFixedDie(useGame.getState, useGame.setState, roll, forceSuccess),
-    forceShow: !!res && !res.cast,
-  });
+  }));
 
   const issue = res && castRevealed && outcome
     ? [recapLineOfEvent(ev(res.isCritical ? 'crit' : 'cast', outcome, caster.id, selfTarget ? undefined : target.id), pool)]

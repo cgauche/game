@@ -6,6 +6,7 @@ import { EXPOSURE_LABELS } from '../engine/corruption';
 import { testValue } from '../engine/skills';
 import { flowStakeRef, refLabel } from '../data';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { OptionChooser } from './OptionChooser';
 import { Icon } from './Icon';
 import { testBreakdown, testPending } from './breakdown';
@@ -48,14 +49,13 @@ export function CorruptionModal() {
   const base = hero ? testValue(hero, pc.skill) : 0;
   const skillLabel = refLabel('skills', { id: pc.skill }); // 'Résistance' / 'Calme' (affichage)
 
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor: hero,
     row: {
       combatant: hero,
       d: rolled ? testBreakdown(`Test de ${skillLabel}`, base, { roll: pc.roll!, target: pc.target, sl: pc.sl, success: pc.success }, 'intermediaire') : undefined,
       pending: testPending(`Test de ${skillLabel}`, base, undefined, 'intermediaire'),
     },
-    rolled,
     freeReroll: freeRerollOf(hero),
     onRoll: roll,
     rerollable: rolled && canReroll(pc.roll! > (pc.target ?? 0), !!pc.rerolled),
@@ -63,11 +63,12 @@ export function CorruptionModal() {
     onBonusSL: bonusSL,
     darkPactable: rolled && pc.roll! > (pc.target ?? 0),
     onDarkPact: darkPact,
-    resist: resistAvail ? { menace: pc.menace!, onResist: resistAct } : undefined,
-    resilience: hero?.resilience ?? 0,
     onForce: forceSuccess,
     forceShow: rolled && pc.success === false,
-  };
+  }, {
+    resist: resistAvail ? { menace: pc.menace!, onResist: resistAct } : undefined,
+    resilience: hero?.resilience ?? 0,
+  });
 
   const actions: RollAction[] = [
     { key: 'confirm', label: 'Continuer', onClick: resolve, when: 'post' },

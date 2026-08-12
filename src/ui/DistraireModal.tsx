@@ -12,7 +12,7 @@ import { ev } from '../state/combatLog';
 import { testBreakdown } from './breakdown';
 import { describeDistraire } from '../state/flowOutcomes';
 import { opposedResponded } from './opposedFrozen';
-import { frozenOpposedRow } from './rollRowBuild';
+import { buildRollRow, frozenOpposedRow } from './rollRowBuild';
 
 /**
  * Modale de Distraire (LDB 10 l.364 / AA 13 l.51) : Mouvement, Test OPPOSÉ Athlétisme (mover) vs Calme
@@ -52,12 +52,9 @@ export function DistraireModal() {
     row: { combatant: foe, d: testBreakdown('Calme', distraireDefenseValue(foe), pd.defRoll, 'intermediaire') },
   });
   // Rangée INTERACTIVE : Athlétisme du mover, porteur de son cycle d'influence.
-  const actorRow = {
-    combatant: mover,
+  const actorRow = buildRollRow({
     actor: mover,
     row: { combatant: mover, d: pd.atk ? testBreakdown('Athlétisme', distraireAttackValue(mover), pd.atk, 'intermediaire') : undefined },
-    rolled,
-    rollLabel: 'Lancer',
     onRoll: roll,
     rerollable,
     onReroll: reroll,
@@ -65,10 +62,12 @@ export function DistraireModal() {
     darkPactable: mover.kind === 'hero' && !!pd.atk && !pd.atk.success,
     onDarkPact: darkPact,
     onForce: force,
+    forceShow: pd.result !== 'success',
+  }, {
+    rollLabel: 'Lancer',
     // Résilience AVANT le jet (LDB 17 l.68) : Athlétisme forcé à l'emporter.
     preRollForce: () => { roll(); force(); },
-    forceShow: pd.result !== 'success',
-  };
+  });
 
   const issue = pd.atk
     ? [recapLineOfEvent(ev(pd.result === 'success' ? 'dodge' : 'attack', describeDistraire(pd, mover.label, foe.label), mover.id, foe.id), battle.combatants)]

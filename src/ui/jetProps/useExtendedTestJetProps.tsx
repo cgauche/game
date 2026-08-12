@@ -3,6 +3,7 @@ import { useGame } from '../../state/store';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { RollShell } from '../RollShell';
+import { buildRollRow } from '../rollRowBuild';
 import { testBreakdown, testPending } from '../breakdown';
 import { Icon } from '../Icon';
 import { resultLines, freeCons } from '../../state/rollSeam';
@@ -48,25 +49,25 @@ export function useExtendedTestJetProps(): ComponentProps<typeof RollShell> | nu
     subtitle: <>Round {p.rounds.length} · Test étendu (le DR de chaque Round se cumule)</>,
     rolled,
     rows: [
-      {
+      buildRollRow({
         /* QUI lance → portrait dans la ligne de jet. Progression = barre de DR de RANGÉE. */
         row: res
           ? { combatant: actor, d: testBreakdown(p.skillLabel, p.target, { roll: res.roll, target: p.target, sl: res.sl, success: res.success }) }
           : { combatant: actor, pending: testPending(p.skillLabel, p.target) },
-        rolled,
         onRoll: () => roll(cur.id),
-        fortune: actor.fortune ?? 0,
         freeReroll: freeRerollOf(actor),
         rerollable: rolled && canReroll(!res!.success, !!cur.rerolled),
         onReroll: () => reroll(cur.id),
         onBonusSL: () => bonusSL(cur.id),
         darkPactable: actor.kind === 'hero' && rolled && !res!.success,
         onDarkPact: () => darkPact(cur.id),
-        resilience: actor.resilience ?? 0,
         onForce: () => force(cur.id),
         forceShow: rolled,
+      }, {
+        fortune: actor.fortune ?? 0,
+        resilience: actor.resilience ?? 0,
         extendedDr: { cum, target: p.targetDR },
-      },
+      }),
     ],
     /* La PROGRESSION (DR du Round, cumul vers la cible) est rendue par les zones qui la possèdent :
        ✓/✗ ±DR sur la ligne de jet, cumul/cible sur la barre de DR de la rangée. L'issue ne porte donc

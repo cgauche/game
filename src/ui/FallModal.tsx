@@ -4,6 +4,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { testValue } from '../engine/skills';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { ChoiceButtons } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { Icon } from './Icon';
@@ -57,14 +58,13 @@ export function FallModal() {
 
   const r = p.result;
   const rolled = !!r;
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor: c,
     row: {
       combatant: c,
       d: r ? testBreakdown('Athlétisme', testValue(c, 'athletisme'), { roll: r.roll, target: r.target, sl: r.dr, success: r.success }, 'accessible') : undefined,
       pending: testPending('Athlétisme', testValue(c, 'athletisme'), undefined, 'accessible'),
     },
-    rolled,
     freeReroll: freeRerollOf(c),
     onRoll: roll,
     rerollable: !!r && !r.success && canReroll(true, !!p.rerolled),
@@ -74,7 +74,7 @@ export function FallModal() {
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !r?.success,
-  };
+  });
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'pre' },

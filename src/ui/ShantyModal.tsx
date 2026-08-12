@@ -5,6 +5,7 @@ import { testValue } from '../engine/skills';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
 import { findSeaShantyById, flowStakeRef } from '../data';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { Icon } from './Icon';
@@ -35,14 +36,13 @@ export function ShantyModal() {
   const value = testValue(singer, 'divertissement', undefined, 'chant');
   const rolled = !!r;
 
-  const actorRow: RollRowData = {
+  const actorRow: RollRowData = buildRollRow({
     actor: singer,
     row: {
       combatant: singer,
       d: r ? testBreakdown('Divertissement (Chant)', value, { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, 'intermediaire') : undefined,
       pending: testPending('Divertissement (Chant)', value, undefined, 'intermediaire'),
     },
-    rolled,
     freeReroll: freeRerollOf(singer),
     onRoll: roll,
     rerollable: !!r && !r.success && canReroll(true, !!p.rerolled),
@@ -52,7 +52,7 @@ export function ShantyModal() {
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !r?.success,
-  };
+  });
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'pre' },

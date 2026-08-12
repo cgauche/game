@@ -4,6 +4,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import type { ModLine } from '../engine/combat';
 import { evaluateTest } from '../engine/tests';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildRollRow, witnessRow } from './rollRowBuild';
 import { testBreakdown, testPending, testValueSplit, opposedLines } from './breakdown';
 import { activityById, activityModLines } from '../engine/activities';
 import { describeActivity } from '../state/flowOutcomes';
@@ -59,16 +60,13 @@ export function ActivityModal() {
       ? !pa.success
       : (pa.roll ?? 0) > pa.target;
 
-  const actorRow: RollRowData = {
-    key: 'actor',
+  const actorRow: RollRowData = buildRollRow({
     actor,
     row: {
       combatant: actor,
       d: rolled ? testBreakdown(pa.skillLabel, base, { roll: pa.roll!, target: pa.target, sl: pa.sl, success: pa.success }, pa.difficulty, extraMods.length ? extraMods : undefined) : undefined,
       pending: testPending(pa.skillLabel, base, target1, pa.difficulty, extraMods.length ? extraMods : undefined),
     },
-    rolled,
-    fortune: actor?.fortune ?? 0,
     freeReroll: freeRerollOf(actor),
     rerollable: rolled && pa.roll != null && canReroll(failed, !!pa.rerolled),
     onRoll: roll,
@@ -76,9 +74,12 @@ export function ActivityModal() {
     onBonusSL: bonusSL,
     darkPactable: rolled && failed,
     onDarkPact: darkPact,
+  }, {
+    key: 'actor',
+    fortune: actor?.fortune ?? 0,
     /* Test ÉTENDU (Artisanat) : barre de DR de RANGÉE — site unique `RollRow` (arbitrage user 2026-07-11). */
     extendedDr: pa.drTarget != null ? { cum: rolled ? after : pa.drBefore ?? 0, target: pa.drTarget } : undefined,
-  };
+  });
 
   const rows: RollRowData[] = [actorRow];
 
@@ -87,15 +88,15 @@ export function ActivityModal() {
   if (pa.target2 != null && pa.skill2) {
     const situationLines = activityModLines(pa.mod, pa.modLabel);
     const secondMods = situationLines.length ? situationLines : undefined; // le Soutien ne porte que sur la compétence menante
-    rows.push({
-      key: 'skill2',
+    rows.push(buildRollRow({
       row: {
         d: rolled ? testBreakdown(pa.skill2, pa.skillValue2 ?? 0, { roll: pa.roll!, target: pa.target2, sl: pa.sl2 ?? 0, success: pa.success2 }, pa.difficulty, secondMods) : undefined,
         pending: testPending(pa.skill2, pa.skillValue2 ?? 0, rolled ? pa.target2 : undefined, pa.difficulty, secondMods),
       },
-      rolled,
+    }, {
+      key: 'skill2',
       interactive: false,
-    });
+    }));
   }
 
   // Test OPPOSÉ « Tenez votre position » (l.161) : rangée TÉMOIN de l'ennemi (jet FIGÉ à l'ouverture),
@@ -109,13 +110,11 @@ export function ActivityModal() {
     // Soutien du PJ ci-dessus (`supportSplit`). Sans Puissance nue posée, la base reste la cible jetée.
     const enemyBase = pa.enemyBase ?? pa.enemyValue!;
     const holdMods: ModLine[] = pa.enemyValue! !== enemyBase ? [{ label: 'Rounds tenus', value: pa.enemyValue! - enemyBase, famille: 'jet' }] : [];
-    rows.push({
+    rows.push(witnessRow({
       key: 'enemy',
       // La Difficulté de l'opposition est celle DÉCLARÉE par le flux, à défaut Intermédiaire (LDB 12 l.166).
       row: opposedLines([{ label: `${enemyName} · Puissance`, base: enemyBase, r: enemyT, mods: holdMods.length ? holdMods : undefined }], pa.difficulty)[0],
-      rolled,
-      interactive: false,
-    });
+    }));
   }
   // Vainqueur du Test opposé : le PJ TIENT (`pa.success`) → rangée 0 accentuée, sinon l'ennemi (rangée 1).
   // DR net rapporté au PJ (positif = la position tient de cette marge) : `−enemySL` (enemySL positif = l'ennemi progresse).
