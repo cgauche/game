@@ -16,8 +16,8 @@ import { attackModesFor, offHandPenalty } from '../../engine/combatFeatures/disp
 import { CritLocationPicker } from '../ForcedRollPicker';
 import { DeterminationButton } from '../DeterminationButton';
 import { CodexRef } from '../compendium/CodexRef';
-import { RollShell, type RollRowData, type RollAction } from '../RollShell';
-import { buildRollRow, witnessRow } from '../rollRowBuild';
+import { RollShell, type RollAction } from '../RollShell';
+import { buildRollRow, witnessRow, type BuiltRollRow } from '../rollRowBuild';
 import { VsHeader } from '../VsHeader';
 import { recapLineOfEvent } from '../../gameIso/combatNarration';
 import { ev } from '../../state/combatLog';
@@ -124,7 +124,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   const awaitingDefense = !!res && surfacedDefensePending(useGame.getState(), attacker, target, weapon, pa);
 
   // Rangée [0] = MON attaque (interactive, cycle d'influence).
-  const attackerRow: RollRowData = buildRollRow({
+  const attackerRow: BuiltRollRow = buildRollRow({
     actor: attacker,
     row: res
       ? { combatant: attacker, d: res.attackerDetail }
@@ -162,7 +162,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
     reverse: reverseAvail ? { onReverse: reverseVerb, preview: reversePreview } : undefined,
   });
   // Rangée [1] éventuelle = défense adverse : aperçu pré-jet (compétence + mods, sans valeur) ou résultat témoin.
-  const defenderRow: RollRowData | null = res
+  const defenderRow: BuiltRollRow | null = res
     ? (res.defenderDetail ? witnessRow({ row: { combatant: target, d: res.defenderDetail } }) : null)
     : (!blocked && defenderPending ? buildRollRow({ row: { combatant: target, pending: { ...defenderPending, mask: 'value' as const } } }, { interactive: false }) : null);
   const rows = [attackerRow, ...(defenderRow ? [defenderRow] : [])];

@@ -3,6 +3,7 @@ import { useGame } from '../../state/store';
 import { RollShell } from '../RollShell';
 import { TableRollLine } from '../RollLine';
 import { Icon } from '../Icon';
+import { drawRow } from '../rollRowBuild';
 
 /**
  * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET de Maladresse (Tableau des Oups !,
@@ -30,18 +31,15 @@ export function useFumbleJetProps(): ComponentProps<typeof RollShell> | null {
     // (`TableRollLine`, ci-dessous) et sur le bouton de lancement — jamais une troisième fois ici.
     subtitle: `${combatant.label} — Test de combat raté sur un double`,
     rolled,
-    // Rangée UNIQUE : un tirage de table sans influence — seulement « Lancer » (le cycle reste vide).
+    // Rangée UNIQUE, par la porte : un TIRAGE VIF de table (`drawRow`) — pas de ligne de jet, la
+    // note du tirage est tout le rendu, et `rolled` s'y dérive de sa présence.
     rows: [
-      {
+      drawRow({
         row: { note: r ? <TableRollLine table="Tableau des Oups !" roll={r.roll} result={r.label} /> : undefined },
-        rolled,
         rollLabel: <><Icon id="nav/dice" size="sm" /> Lancer sur le Tableau des Oups !</>,
         onRoll: roll,
         rollFrisson: true,
-        // Aucune influence : la Chance agit AVANT qu'un Test ne devienne une Maladresse ; une fois actée, on subit.
-        rerollable: false,
-        onReroll: () => {},
-      },
+      }),
     ],
     actions: [{ key: 'confirm', label: 'Appliquer', onClick: confirm, when: 'post' }],
   };

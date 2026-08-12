@@ -12,6 +12,7 @@ import type { RecapLine } from '../state/recapLine';
 import { StakeNote, StakeRule, hasStakeRule, stakeRuleOf } from './StakeNote';
 import { nodeText } from './compendium/CodexRef';
 import type { StakeRef } from '../data';
+import type { BuiltRollRow } from './rollRowBuild';
 
 /**
  * RollShell — LA coquille UNIQUE des modales de jet différé (mono, opposé, ou N contributeurs).
@@ -134,8 +135,9 @@ export function RollShell({
   extra?: ReactNode;
   /** Contenu métier PRÉ-JET uniquement (options : choix d'arme/localisation, Parade/Esquive…). */
   setup?: ReactNode;
-  /** Les rangées de jet, rendues via `RollRow`. 1 = mono ; 2 = opposé ; N = multi. */
-  rows: RollRowData[];
+  /** Les rangées de jet, rendues via `RollRow`. 1 = mono ; 2 = opposé ; N = multi. Elles NAISSENT de
+   *  la porte (`rollRowBuild.ts`) : la marque est requise, un littéral monté à la main ne compile pas. */
+  rows: readonly BuiltRollRow[];
   /** Phase GLOBALE : au moins un jet lancé (défaut de `RollRow.rolled` si la rangée ne le porte pas). */
   rolled: boolean;
   /** Test opposé (2 rangées) : index de la rangée gagnante — passé à `RollRow`/RollPanel via `row`. */

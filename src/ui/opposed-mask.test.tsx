@@ -15,7 +15,8 @@ import { testScene } from '../scenes/test-fixture';
 import { fmtD100 } from './Dice';
 import { CascadeBody } from './CascadeModal';
 import { maskOpposedRow } from './opposedFrozen';
-import { RollShell, type RollRowData } from './RollShell';
+import { RollShell } from './RollShell';
+import { buildRollRow, witnessRow } from './rollRowBuild';
 import { CastModal } from './CastModal';
 import { GrappleModal } from './GrappleModal';
 import { DistraireModal } from './DistraireModal';
@@ -211,17 +212,22 @@ describe('#990 site 2 — incantation opposée : la rangée du lanceur ET son ve
     putBattle([A, E], ['E', 'A']);
     const s = useGame.getState();
     const onRoll = () => {};
-    const base: RollRowData = {
-      // La sous-ligne (issue en clair) vit DANS la ligne : c'est le canal unique `PanelRowData.note`.
-      row: { combatant: E, pending: { label: 'Incantation', base: 45 }, note: 'DR net +2' },
-      rolled: false, interactive: true, onRoll, actor: E, fortune: 3, resilience: 2,
-      // Les dérivés de rangée, tous renseignés : un champ non neutralisé se voit.
-      forceShow: true, rerollable: true, darkPactable: true,
-      reverse: { onReverse: () => {}, preview: { roll: 32, sl: 2, success: true } },
-      resist: { menace: 'magie', onResist: () => {} },
-      extendedDr: { cum: 3, target: 5 },
-      winner: 'win',
-    };
+    const base = buildRollRow(
+      {
+        // La sous-ligne (issue en clair) vit DANS la ligne : c'est le canal unique `PanelRowData.note`.
+        row: { combatant: E, pending: { label: 'Incantation', base: 45 }, note: 'DR net +2' },
+        onRoll, actor: E,
+        // Les dérivés de rangée, tous renseignés : un champ non neutralisé se voit.
+        forceShow: true, rerollable: true, darkPactable: true,
+      },
+      {
+        interactive: true, fortune: 3, resilience: 2,
+        reverse: { onReverse: () => {}, preview: { roll: 32, sl: 2, success: true } },
+        resist: { menace: 'magie', onResist: () => {} },
+        extendedDr: { cum: 3, target: 5 },
+        winner: 'win',
+      },
+    );
     const DERIVES = ['forceShow', 'rerollable', 'darkPactable', 'reverse', 'resist', 'extendedDr', 'winner'] as const;
 
     const masked = maskOpposedRow(s, { ownerId: 'E', responded: false }, base);
@@ -263,8 +269,8 @@ describe('#990 site 2 — incantation opposée : la rangée du lanceur ET son ve
         <RollShell
           title="Empoignade"
           rolled
-          rows={[{ row: { combatant: E, d: masked }, rolled: true, interactive: false },
-                 { row: { combatant: A, d: mine }, rolled: true }]}
+          rows={[witnessRow({ row: { combatant: E, d: masked } }),
+                 buildRollRow({ row: { combatant: A, d: mine } })]}
           winnerIndex={0}
           netSL={2}
           actions={[]}

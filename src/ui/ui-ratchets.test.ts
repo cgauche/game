@@ -872,7 +872,7 @@ function callScope(src: string, open: number): string {
 }
 
 /** Constructeurs de la porte `rollRowBuild.ts` (le montage y prend son 1ᵉʳ argument et ses EXTRAS au 2ᵉ). */
-const PORTE_CTOR = /\b(buildRollRow|participantRow|tableRow|worldRow|witnessRow|frozenOpposedRow)$/;
+const PORTE_CTOR = /\b(buildRollRow|participantRow|tableRow|drawRow|worldRow|witnessRow|frozenOpposedRow)$/;
 
 /** Appel de la PORTE englobant l'indice donné — sa portée est l'APPEL ENTIER (les deux arguments).
  *  Sans lui, `interactive:false` posé dans les EXTRAS (2ᵉ argument) se lirait seul, sans le `d:`/`pending:`

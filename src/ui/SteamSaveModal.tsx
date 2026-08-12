@@ -2,8 +2,8 @@ import { useGame } from '../state/store';
 import { flowStakeRef } from '../data';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { buildRollRow } from './rollRowBuild';
+import { RollShell, type RollAction } from './RollShell';
+import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { testBreakdown, testPending } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
@@ -27,7 +27,7 @@ export function SteamSaveModal() {
   const actor = party.find((c) => c.id === p.actorId);
   const rolled = p.roll != null;
 
-  const actorRow: RollRowData = buildRollRow({
+  const actorRow: BuiltRollRow = buildRollRow({
     actor,
     row: rolled
       ? { combatant: actor, d: testBreakdown('Initiative', p.skillValue, { roll: p.roll!, target: p.target, sl: p.sl, success: p.success }, p.difficulty) }

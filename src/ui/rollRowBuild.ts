@@ -1,16 +1,16 @@
 /**
  * PORTE UNIQUE du montage d'une rangée de jet (#1262) — le NOYAU (`RollRowCore` → `buildRollRow`) et
  * la FAMILLE de constructeurs qui en dérivent : `participantRow` (l'unité du monteur MULTI),
- * `tableRow` (rangée porte-sélecteur d'un tirage sur table), `worldRow` (rangée sans acteur),
- * `witnessRow` (témoin d'un jet déjà subi, `rolled` par construction) et `frozenOpposedRow` (témoin à
- * jet figé, calendrier de découverte `opposedFrozen`).
+ * `tableRow` (rangée porte-sélecteur d'un tirage sur table), `drawRow` (tirage VIF sans ligne de
+ * jet), `worldRow` (rangée sans acteur), `witnessRow` (témoin d'un jet déjà subi, `rolled` par
+ * construction) et `frozenOpposedRow` (témoin à jet figé, calendrier de découverte `opposedFrozen`).
  *
  * Le montage est de l'AFFICHAGE : aucune règle, aucun RNG, et surtout aucune décision de POSSESSION —
  * elle est posée au mint côté `state` (`rollFlowFactory`/`rollSeam.surfaceOf`) et seulement LUE ici.
  *
- * Chaque constructeur POSE la marque `ROLL_ROW_BRAND` : une rangée montée à la main ne la porte pas.
- * La propriété reste OPTIONNELLE au type (les littéraux historiques restent assignables) — la
- * transition est tenue par le cliquet `ui-ratchets` (xvii), pas par `tsc`, jusqu'au requis terminal.
+ * La marque est REQUISE (`BuiltRollRow`) et `RollShell.rows` l'exige : un littéral nu ne compile plus.
+ * C'est `tsc` qui tient la porte — le cliquet de comptage qui la tenait pendant la transition est mort
+ * avec ce requis.
  */
 import type { Combatant } from '../engine/types';
 import type { GameState } from '../state/store';
@@ -19,30 +19,28 @@ import type { PanelRowData } from './RollPanel';
 import { maskOpposedRow } from './opposedFrozen';
 
 /**
- * ÉTIQUETTE d'origine d'une rangée d'affichage, posée par les constructeurs de CE module — et
- * SEULEMENT une étiquette : PORTÉE de l'instrument, à ne pas lire comme le murage du jumeau
- * `BuiltCascadeStep` (`state/stepBrand.ts`), qui documente l'INVERSE (propriété REQUISE, symbole
- * non exporté, forge murée au lint).
+ * MARQUE D'ORIGINE d'une rangée d'affichage, posée par les constructeurs de CE module. Elle est
+ * REQUISE au type et son symbole est NON REPRODUCTIBLE : `Symbol()` (pas `Symbol.for`), non exporté —
+ * aucun module tiers ne peut écrire la propriété. Le CAST (`as BuiltRollRow`, sous tableau/générique
+ * compris) ET l'ALIAS de type qui le déguiserait (`type A = BuiltRollRow`) sont murés par le lint
+ * `no-restricted-syntax`, mesurés par `state/built-brand-lint.test.ts`. Ce qui reste ouvert est dit
+ * NOMMÉMENT au JSDoc du jumeau `state/stepBrand.ts` (annotation d'une valeur élargie, renommage à
+ * l'import) : les mêmes limites, la même liste — aucune couverture affirmée ici qui n'y soit mesurée.
  *
- * Ce qu'elle donne : une marque MESURABLE à l'exécution — « ce constructeur cesse de poser la
- * marque » est une mutation rejouable en vitest. C'est la raison du choix divergent : avec un
- * `declare const` phantom (patron `stepBrand`), la marque n'existe qu'au type, seul `tsc` la voit,
- * et la mutation du lot n'aurait été ni rouge ni rejouable tant que `RollShell.rows` n'exige rien.
+ * Divergence VOULUE avec le jumeau `BuiltCascadeStep` (`declare const`, marque purement typologique) :
+ * ici le symbole EXISTE à l'exécution, ce qui garde `isBuiltRollRow` mesurable en vitest — « ce
+ * constructeur cesse de poser la marque » reste une mutation ROUGE et rejouable, pas seulement une
+ * erreur de compilation. Le prix est nul côté données : `RollRowData` n'est jamais sérialisé
+ * (affichage pur), et une propriété à clé Symbol est de toute façon ignorée par `JSON.stringify`.
  *
- * Ce qu'elle NE donne PAS : aucune garantie de provenance. La propriété est OPTIONNELLE, donc un
- * `RollRowData` nu reste assignable à `BuiltRollRow` (types structurellement identiques) ; le
- * symbole est EXPORTÉ et `Symbol.for` est reproductible partout, donc la marque est forgeable sans
- * cast — le lint anti-`as BuiltRollRow` ne mord sur aucune de ces routes. Ce qui tient la
- * transition d'ici là, c'est le cliquet `ui/roll-row-mount-ratchet.test.ts`, pas le compilateur.
- *
- * Le murage vient au lot terminal : propriété REQUISE + `RollShell.rows: readonly BuiltRollRow[]`.
- * L'adoption du patron `stepBrand` (symbole non reproductible) s'y tranchera — décision de ce
- * lot-là, pas d'ici.
+ * LIMITE, la même qu'au jumeau : le SPREAD blanchit — `{ ...rangéeMontée, winner }` porte encore la
+ * marque alors que rien n'a été revérifié. C'est VOULU ici (le post-traitement d'un site est licite et
+ * mesuré) ; ce qui est interdit, c'est de FABRIQUER une rangée hors de ce module.
  */
-export const ROLL_ROW_BRAND: unique symbol = Symbol.for('wfrp.builtRollRow');
+const ROLL_ROW_BRAND: unique symbol = Symbol('wfrp.builtRollRow');
 
-/** Rangée d'affichage MONTÉE par un constructeur de ce module (étiquette optionnelle, cf. ci-dessus). */
-export type BuiltRollRow = RollRowData & { readonly [ROLL_ROW_BRAND]?: true };
+/** Rangée d'affichage MONTÉE par un constructeur de ce module (marque REQUISE — cf. ci-dessus). */
+export type BuiltRollRow = RollRowData & { readonly [ROLL_ROW_BRAND]: true };
 
 /** La rangée porte-t-elle la marque ? (le post-traitement par spread la conserve). */
 export function isBuiltRollRow(row: RollRowData): boolean {
@@ -50,7 +48,7 @@ export function isBuiltRollRow(row: RollRowData): boolean {
 }
 
 /** Estampille — site UNIQUE de pose de la marque. */
-function mark<T extends RollRowData>(row: T): T & { readonly [ROLL_ROW_BRAND]?: true } {
+function mark<T extends RollRowData>(row: T): T & { readonly [ROLL_ROW_BRAND]: true } {
   return { [ROLL_ROW_BRAND]: true, ...row };
 }
 
@@ -118,6 +116,39 @@ export function tableRow(core: {
     key,
     ...(forcedRoll ? { forcedRoll } : {}),
     ...(fixedMark !== undefined ? { fixedMark } : {}),
+  });
+}
+
+/**
+ * Rangée de TIRAGE VIF sur une table (Maladresse — Tableau des Oups !, LDB 14) : le tirage se fait
+ * DANS la rangée (`onRoll`) et ne laisse AUCUNE ligne de jet — pas de cible, pas de DR, pas de `d` :
+ * son seul rendu est la NOTE (`TableRollLine`), qui n'existe qu'une fois le tirage fait. `rolled` s'y
+ * dérive donc de la PRÉSENCE DE LA NOTE ; la dérivation du noyau (`!!row.d`) rendrait `false` après
+ * le tirage et rallumerait la phase pré-jet sur une rangée qui n'a plus rien à lancer.
+ *
+ * Forme IRRÉDUCTIBLE au noyau, mesuré : élargir la dérivation à `!!(row.d ?? row.note)` basculerait
+ * les rangées-participants, dont la note porte aussi les issues PRÉ-jet (`buildParticipantRows`,
+ * `bundle.issues` appelé sans résultat) — d'où un constructeur dédié plutôt qu'un noyau élargi.
+ *
+ * Sœur de `tableRow` (même absence de ligne de jet), qu'elle ne remplace pas : `tableRow` est le
+ * porte-SÉLECTEUR d'un dé forcé, sans `onRoll` ; ici, la rangée lance. Aucun cycle d'influence : la
+ * Chance agit AVANT qu'un Test ne devienne une Maladresse ; une fois actée, l'Oups ! est subi.
+ */
+export function drawRow(core: {
+  key?: RollRowData['key'];
+  row: PanelRowData;
+  rollLabel?: RollRowData['rollLabel'];
+  onRoll?: () => void;
+  rollFrisson?: boolean;
+}): BuiltRollRow {
+  const { key, row, rollLabel, onRoll, rollFrisson } = core;
+  return mark({
+    row,
+    rolled: row.note != null,
+    ...(key !== undefined ? { key } : {}),
+    ...(rollLabel != null ? { rollLabel } : {}),
+    ...(onRoll ? { onRoll } : {}),
+    ...(rollFrisson !== undefined ? { rollFrisson } : {}),
   });
 }
 

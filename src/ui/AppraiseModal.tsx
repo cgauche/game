@@ -4,8 +4,8 @@ import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { influencesLocally } from '../state/netOwnership';
 import { freeRerollOf } from '../engine/activeFlags';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { buildRollRow } from './rollRowBuild';
+import { RollShell, type RollAction } from './RollShell';
+import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { testValueSplit, testBreakdown, testPending } from './breakdown';
 import { APPRAISE_SKILL } from '../state/merchantFlow';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
@@ -49,7 +49,7 @@ export function AppraiseModalView({
   // La Compétence testée vient de la SOURCE UNIQUE du flux (`APPRAISE_SKILL`), par id.
   const { base, mods: supMods } = testValueSplit(actor, pa.skillValue, { support: pa.support, ...APPRAISE_SKILL[pa.mode ?? 'evaluate'] });
 
-  const actorRow: RollRowData = buildRollRow({
+  const actorRow: BuiltRollRow = buildRollRow({
     actor,
     row: {
       combatant: actor,

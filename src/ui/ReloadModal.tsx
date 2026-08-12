@@ -3,8 +3,8 @@ import { flowStakeRef } from '../data';
 import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { buildRollRow } from './rollRowBuild';
+import { RollShell, type RollAction } from './RollShell';
+import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { testBreakdown, testPending, supportSplit } from './breakdown';
 import { combatValueModParts } from '../engine/combat';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
@@ -49,7 +49,7 @@ export function ReloadModalView({
   const base = supBase - valueParts.reduce((s, p) => s + p.value, 0);
   const mods = [...supMods, ...valueParts];
 
-  const actorRow: RollRowData = buildRollRow({
+  const actorRow: BuiltRollRow = buildRollRow({
     actor,
     row: {
       combatant: actor,

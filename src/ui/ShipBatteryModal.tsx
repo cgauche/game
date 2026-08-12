@@ -4,7 +4,8 @@ import { easeDifficulty } from '../engine/tests';
 import { findCrewRoleById } from '../data';
 import { crewRoleValue } from '../engine/crewMorale';
 import { maneuverCrewTotal } from '../state/shipManeuver';
-import { RollShell, type RollRowData, type RollAction } from './RollShell';
+import { RollShell, type RollAction } from './RollShell';
+import type { BuiltRollRow } from './rollRowBuild';
 import { buildParticipantRows, rollAllUnrolledRows } from './buildParticipantRows';
 import { Icon } from './Icon';
 import { testBreakdown, testPending } from './breakdown';
@@ -39,7 +40,7 @@ export function ShipBatteryModal() {
   const sign = (n: number) => (n >= 0 ? `+${n}` : `${n}`);
 
   // Rangées via le builder mutualisé (#328) — présentation crew-roles ici, éligibilité dans le builder.
-  const rows: RollRowData[] = buildParticipantRows(p.participants, battle.combatants, {
+  const rows: BuiltRollRow[] = buildParticipantRows(p.participants, battle.combatants, {
     onRoll: roll, onReroll: reroll, onBonusSL: bonus, onDarkPact: darkPact, onForce: force,
     interactiveOf: (part) => !!part.interactive && owns(part.id),
     row: (part, actor, res) => {

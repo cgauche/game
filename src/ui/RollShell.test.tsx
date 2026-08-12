@@ -2,33 +2,31 @@ import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { RollShell, type RollRowData, type RollAction } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
+import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { StakeRule, stakeRuleOf } from './StakeNote';
 import { flowStakeRef } from '../data';
 
 const noop = () => {};
 
-/** Rangée EN ATTENTE (pré-jet) sans `Combatant` — primitives d'influence, testable en `node`. */
-const pendingRow = (over: Partial<RollRowData> = {}): RollRowData => ({
-  row: { pending: testPending('Athlétisme', 45) },
-  rolled: false,
-  fortune: 1,
-  resilience: 1,
-  onRoll: noop,
-  onReroll: noop,
-  onBonusSL: noop,
+/** Rangée EN ATTENTE (pré-jet) sans `Combatant` — primitives d'influence, testable en `node`.
+ *  Montée par la porte : `rolled` s'y dérive de l'absence de dé. */
+const pendingRow = (over: Partial<RollRowData> = {}): BuiltRollRow => ({
+  ...buildRollRow(
+    { row: { pending: testPending('Athlétisme', 45) }, onRoll: noop, onReroll: noop, onBonusSL: noop },
+    { fortune: 1, resilience: 1 },
+  ),
   ...over,
 });
 
 /** Rangée RÉSOLUE (post-jet) — issue de `testBreakdown`, primitives d'influence. */
-const rolledRow = (over: Partial<RollRowData> = {}): RollRowData => ({
-  row: { d: testBreakdown('Athlétisme', 45, { roll: 22, target: 45, sl: 2, success: true }) },
-  rolled: true,
-  fortune: 1,
-  resilience: 1,
-  rerollable: true,
-  onRoll: noop,
-  onReroll: noop,
-  onBonusSL: noop,
+const rolledRow = (over: Partial<RollRowData> = {}): BuiltRollRow => ({
+  ...buildRollRow(
+    {
+      row: { d: testBreakdown('Athlétisme', 45, { roll: 22, target: 45, sl: 2, success: true }) },
+      rerollable: true, onRoll: noop, onReroll: noop, onBonusSL: noop,
+    },
+    { fortune: 1, resilience: 1 },
+  ),
   ...over,
 });
 
@@ -142,7 +140,7 @@ describe('RollShell — coquille de jet unifiée', () => {
         title="Test opposé"
         rows={[
           rolledRow(), // rangée 0 (perdante)
-          rolledRow({ row: { d: testBreakdown('Opposition', 55, { roll: 12, target: 55, sl: 4, success: true }) }, interactive: false }), // rangée 1 (gagnante, témoin)
+          { ...rolledRow({ row: { d: testBreakdown('Opposition', 55, { roll: 12, target: 55, sl: 4, success: true }) } }), interactive: false }, // rangée 1 (gagnante, témoin)
         ]}
         rolled
         winnerIndex={1}

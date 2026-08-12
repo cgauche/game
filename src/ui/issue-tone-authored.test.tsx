@@ -10,6 +10,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useGame } from '../state/store';
 import { RollShell } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { ShantyModal } from './ShantyModal';
 import { resultLines, freeCons } from '../state/rollSeam';
 import type { Combatant } from '../engine/types';
@@ -43,9 +44,8 @@ afterEach(() => {
 /** Classes de la ligne d'issue rendue dans le cadre `.rm-journal`. */
 const issueClasses = () => [...host.querySelectorAll('.rm-journal .recap-line')].map((e) => e.className.trim());
 
-const rolledRow = () => ({
+const rolledRow = () => buildRollRow({
   row: { d: { label: 'Athlétisme', base: 45, modifier: 0, target: 45, roll: 22, success: true, sl: 2 } },
-  rolled: true,
   onRoll: () => {},
 });
 

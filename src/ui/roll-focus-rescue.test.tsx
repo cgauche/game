@@ -11,6 +11,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from
 import { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { RollShell } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { testPending } from './breakdown';
 
 beforeAll(() => {
@@ -61,15 +62,23 @@ function Harness({ picker }: { picker: boolean }) {
       title="Jet"
       rolled={rolled}
       rows={[{
-        row: { pending: testPending('Corps à corps', 45) },
+        // Montée par la porte, puis RETOUCHÉE par spread : le harnais bascule de phase sans jamais
+        // poser de `d` (fixture minimale), là où la porte dérive `rolled` de la donnée du jet.
+        ...buildRollRow(
+          {
+            row: { pending: testPending('Corps à corps', 45) },
+            onRoll: () => setRolled(true),
+            onForce: () => setRolled(true),
+          },
+          {
+            interactive: true,
+            resilience: 2,
+            rollFrisson: false,
+            preRollForce: () => setRolled(true),
+            forcedRoll: picker && rolled ? { roll: 5, target: 45, onSet: () => {} } : undefined,
+          },
+        ),
         rolled,
-        interactive: true,
-        resilience: 2,
-        rollFrisson: false,
-        onRoll: () => setRolled(true),
-        onForce: () => setRolled(true),
-        preRollForce: () => setRolled(true),
-        forcedRoll: picker && rolled ? { roll: 5, target: 45, onSet: () => {} } : undefined,
       }]}
       actions={[
         { key: 'cancel', label: 'Annuler', when: 'pre', onClick: () => {} },

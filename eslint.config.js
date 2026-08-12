@@ -37,8 +37,18 @@ export default tseslint.config(
     //
     // DEUX formes de cast (`x as T` et `<T>x`), et la référence est cherchée en DESCENDANT : la marque
     // se forge tout autant sous un tableau (`as BuiltCascadeStep[]`), un `readonly` ou un générique —
-    // c'est même la route RÉALISTE vers `openSequence.steps`. Ce que le lint N'attrape PAS est dit au
-    // JSDoc de `state/stepBrand.ts` (annotation d'un `any`, spread d'une étape mintée).
+    // c'est même la route RÉALISTE vers `openSequence.steps`. TROISIÈME forme, sans quoi les deux
+    // premières ne valent rien : l'ALIAS (`type A = BuiltRollRow; x as A`) — les deux sélecteurs
+    // ci-dessus filtrent par NOM, donc une ligne d'alias suffisait à sortir du radar (mesuré : tsc ET
+    // eslint verts avant fermeture).
+    //
+    // L'alias se refuse à sa DÉCLARATION, mais SEULEMENT quand le type ALIASÉ EST la marque (nu, en
+    // tableau, `readonly`, ou en union). La forme descendante « toute référence sous un alias » a été
+    // MESURÉE et REJETÉE : elle fauche 4 sites LÉGITIMES (`state/nightBands.ts` l.104/115/116,
+    // `state/cascade.ts` l.57) — des types de CALLBACK qui EXIGENT des étapes mintées en entrée/sortie,
+    // c'est-à-dire le murage lui-même. Employer la marque dans une signature n'est pas la déguiser.
+    // Restent donc hors portée (dit au JSDoc de `state/stepBrand.ts`) : l'alias GÉNÉRIQUE ou calculé
+    // (`type A<T> = …`, type conditionnel, accès indexé) et le renommage à l'import.
     files: ['src/**/*.ts', 'src/**/*.tsx'],
     ignores: ['src/state/rollSeam.ts', 'src/state/revealStep.ts', 'src/state/saves.ts', 'src/ui/rollRowBuild.ts'],
     rules: {
@@ -48,6 +58,16 @@ export default tseslint.config(
       }, {
         selector: 'TSTypeAssertion TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
         message: 'Marque d’origine (#1262) : forger un `Built*` par cast rend la marque décorative. Passer par un constructeur de la porte (rollSeam) ou par `revealToStep`.',
+      }, {
+        selector: [
+          'TSTypeAliasDeclaration > TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
+          'TSTypeAliasDeclaration > TSArrayType > TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
+          'TSTypeAliasDeclaration > TSTypeOperator > TSArrayType > TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
+          'TSTypeAliasDeclaration > TSUnionType > TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
+          'TSTypeAliasDeclaration > TSUnionType > TSArrayType > TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
+          'TSTypeAliasDeclaration > TSUnionType > TSTypeOperator > TSArrayType > TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
+        ].join(', '),
+        message: 'Marque d’origine (#1262) : aliaser un `Built*` rouvre la route de forge par cast (le verrou filtre par NOM). Nommer la marque au site, ou passer par un constructeur de la porte.',
       }],
     },
   },

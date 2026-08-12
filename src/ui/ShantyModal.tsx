@@ -4,8 +4,8 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { testValue } from '../engine/skills';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
 import { findSeaShantyById, flowStakeRef } from '../data';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { buildRollRow } from './rollRowBuild';
+import { RollShell, type RollAction } from './RollShell';
+import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { Icon } from './Icon';
@@ -36,7 +36,7 @@ export function ShantyModal() {
   const value = testValue(singer, 'divertissement', undefined, 'chant');
   const rolled = !!r;
 
-  const actorRow: RollRowData = buildRollRow({
+  const actorRow: BuiltRollRow = buildRollRow({
     actor: singer,
     row: {
       combatant: singer,

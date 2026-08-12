@@ -4,8 +4,8 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { combatValue } from '../engine/combat';
 import { battementFoes } from '../state/combatFlow';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { buildRollRow } from './rollRowBuild';
+import { RollShell, type RollAction } from './RollShell';
+import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
@@ -39,7 +39,7 @@ export function BattementModal() {
   const rolled = !!r;
   const foes = battementFoes(attacker, battle);
 
-  const actorRow: RollRowData = buildRollRow({
+  const actorRow: BuiltRollRow = buildRollRow({
     actor: attacker,
     row: {
       combatant: attacker,

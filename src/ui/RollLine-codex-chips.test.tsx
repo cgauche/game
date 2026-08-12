@@ -12,6 +12,7 @@ import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { RollShell } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { RULE_REF } from '../engine/ruleRefs';
 import type { PendingRoll } from './RollLine';
 import { soutienMod, partyAssisted, supportSplit } from '../engine/skills';
@@ -32,7 +33,7 @@ function shell(mods: PendingRoll['mods']) {
   return (
     <RollShell
       title="Tir"
-      rows={[{ row: { pending: pending(mods) }, rolled: false }]}
+      rows={[buildRollRow({ row: { pending: pending(mods) } })]}
       rolled={false}
       actions={[]}
     />

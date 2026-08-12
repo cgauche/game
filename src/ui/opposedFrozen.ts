@@ -10,9 +10,11 @@ import type { RollRowData } from './RollShell';
  * que le répondant n'a pas lancé ; les deux se révèlent à son jet. Confort de jeu RÉVISABLE —
  * candidat à devenir une option (patron de la cadence).
  *
- * SOURCE UNIQUE de TOUS les sites à jet figé (défense réactive, incantation opposée, étape de cascade
- * `meta.opposed`, Au Contact, Distraire, Empoignade, Désengagement, Marchandage) : un site qui
- * recompose la règle à la main dérive du calendrier. Aucun décompte ici — il se périme.
+ * SOURCE UNIQUE du CALENDRIER de découverte, pour tous les sites à jet figé (défense réactive,
+ * incantation opposée, étape de cascade `meta.opposed`, Au Contact, Distraire, Empoignade,
+ * Désengagement, Marchandage) : un site qui recompose la règle à la main dérive du calendrier. Le
+ * MONTAGE de la rangée, lui, vit à la porte `rollRowBuild.ts` (`frozenOpposedRow`) : ici on masque
+ * une rangée reçue, on n'en fabrique aucune. Aucun décompte ici — il se périme.
  */
 
 /** Participant d'un flux opposé, réduit à ce que le calendrier lit (id, rangée jouée ou témoin, jet posé). */
@@ -43,9 +45,10 @@ export function opposedRevealed(s: GameState, ownerId: string | undefined, respo
 }
 
 /**
- * Pose le calendrier sur une rangée DÉJÀ construite — la forme à employer quand la rangée porte aussi
- * son cycle d'influence (rangée du LANCEUR d'une incantation opposée). ENVELOPPE la rangée : le résultat
- * ne dépend d'aucun ordre de composition côté appelant.
+ * Pose le calendrier sur une rangée DÉJÀ MONTÉE — la forme à employer quand la rangée porte aussi
+ * son cycle d'influence (rangée du LANCEUR d'une incantation opposée). Elle PRÉSERVE la rangée
+ * reçue : le résultat est la rangée d'origine (marque de montage comprise) plus les seules
+ * surcharges du masque — rien n'est remonté ici, le montage vit à la porte (`rollRowBuild.ts`).
  *
  * Une rangée MASQUÉE neutralise TOUT ce qui DÉRIVE du résultat — liste EXPLICITE et exhaustive, car un
  * champ oublié rend le dé caché inutile : `forceShow` (« Je ne faillirai pas ! » n'est offert qu'après
@@ -62,14 +65,7 @@ export function maskOpposedRow<T extends RollRowData>(
 ): T {
   if (opposedRevealed(s, o.ownerId, o.responded)) return row;
   const { d, pending } = row.row;
-  return {
-    ...row,
-    row: {
-      ...row.row,
-      note: undefined,
-      ...(d ? { d: { ...d, mask: 'roll' as const } } : {}),
-      ...(pending ? { pending: { ...pending, mask: 'roll' as const } } : {}),
-    },
+  const masque = {
     forceShow: false,
     rerollable: false,
     darkPactable: false,
@@ -77,5 +73,12 @@ export function maskOpposedRow<T extends RollRowData>(
     resist: undefined,
     extendedDr: undefined,
     winner: undefined,
+  } satisfies Partial<RollRowData>;
+  const ligne = {
+    ...row.row,
+    note: undefined,
+    ...(d ? { d: { ...d, mask: 'roll' as const } } : {}),
+    ...(pending ? { pending: { ...pending, mask: 'roll' as const } } : {}),
   };
+  return { ...row, row: ligne, ...masque };
 }

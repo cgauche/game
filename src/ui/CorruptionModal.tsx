@@ -5,8 +5,8 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { EXPOSURE_LABELS } from '../engine/corruption';
 import { testValue } from '../engine/skills';
 import { flowStakeRef, refLabel } from '../data';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { buildRollRow } from './rollRowBuild';
+import { RollShell, type RollAction } from './RollShell';
+import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { OptionChooser } from './OptionChooser';
 import { Icon } from './Icon';
 import { testBreakdown, testPending } from './breakdown';
@@ -49,7 +49,7 @@ export function CorruptionModal() {
   const base = hero ? testValue(hero, pc.skill) : 0;
   const skillLabel = refLabel('skills', { id: pc.skill }); // 'Résistance' / 'Calme' (affichage)
 
-  const actorRow: RollRowData = buildRollRow({
+  const actorRow: BuiltRollRow = buildRollRow({
     actor: hero,
     row: {
       combatant: hero,

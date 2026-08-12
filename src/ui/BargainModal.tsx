@@ -4,11 +4,11 @@ import { spawnEnemy } from '../state/spawn';
 import { influencesLocally } from '../state/netOwnership';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { RollShell, type RollAction } from './RollShell';
 import { soutienMod, opposedLines } from './breakdown';
 import { testValueParts } from '../engine/skills';
 import { opposedResponded } from './opposedFrozen';
-import { buildRollRow, frozenOpposedRow } from './rollRowBuild';
+import { buildRollRow, frozenOpposedRow, type BuiltRollRow } from './rollRowBuild';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { describeBargain } from '../state/flowOutcomes';
@@ -68,7 +68,7 @@ export function BargainModalView({
   const opposed = rolled && !!actor && !!merchant && !!playerD && !!merchantD;
 
   // Rangée INTERACTIVE du négociateur (pré-jet en attente puis résultat), porteuse de son influence.
-  const actorRow: RollRowData = buildRollRow({
+  const actorRow: BuiltRollRow = buildRollRow({
     actor,
     row: {
       combatant: actor,
@@ -91,7 +91,7 @@ export function BargainModalView({
   // pending (`merchantValue`) mais reste OPAQUE (`mask:'value'`, on ne lit pas la fiche d'un inconnu) et
   // le calendrier le masque ENTIÈREMENT (`mask:'roll'`, strictement plus fort) tant que le négociateur
   // n'a pas répondu ; à son jet, la rangée retombe sur l'opacité de valeur seule.
-  const merchantRow: RollRowData = frozenOpposedRow(useGame.getState(), {
+  const merchantRow: BuiltRollRow = frozenOpposedRow(useGame.getState(), {
     responded: opposedResponded(useGame.getState(), [{ id: pb.playerId, interactive: true, result: pb.roll ?? undefined }]),
     row: { combatant: merchant, ...(merchantD ? { d: merchantD } : { pending: merchantLine.pending }) },
   });

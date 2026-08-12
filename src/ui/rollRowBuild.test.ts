@@ -3,7 +3,7 @@
  * Résilience s'en dérivent au rendu), `rolled` dérivé de la donnée du jet, extras typés du site.
  */
 import { describe, it, expect } from 'vitest';
-import { buildRollRow, participantRow, tableRow, worldRow, frozenOpposedRow, isBuiltRollRow } from './rollRowBuild';
+import { buildRollRow, participantRow, tableRow, drawRow, worldRow, frozenOpposedRow, isBuiltRollRow } from './rollRowBuild';
 import type { GameState } from '../state/store';
 import type { Combatant } from '../engine/types';
 
@@ -52,20 +52,31 @@ describe('#1262 — buildRollRow', () => {
 });
 
 /**
- * #1262 L0 — la FAMILLE de constructeurs de la porte : chacun POSE la marque (`isBuiltRollRow`), un
- * littéral manuscrit ne l'a pas. Les formes irréductibles ont leur constructeur DÉDIÉ plutôt qu'un
- * littéral au site : porte-sélecteur de table, rangée-monde sans acteur, témoin à jet figé.
+ * #1262 — la FAMILLE de constructeurs de la porte : chacun POSE la marque (`isBuiltRollRow`), un
+ * littéral manuscrit ne l'a pas (et ne compile plus : la marque est REQUISE). Les formes
+ * irréductibles ont leur constructeur DÉDIÉ plutôt qu'un littéral au site : porte-sélecteur de table,
+ * tirage vif sans ligne de jet, rangée-monde sans acteur, témoin à jet figé.
  */
 describe('#1262 L0 — la famille de la porte', () => {
   const d = { roll: 30, target: 40, sl: 1, success: true } as never;
 
-  it('les 5 constructeurs posent la marque ; un littéral manuscrit ne la porte pas', () => {
+  it('les 6 constructeurs posent la marque ; un littéral manuscrit ne la porte pas', () => {
     expect(isBuiltRollRow(buildRollRow({ row: {} }))).toBe(true);
     expect(isBuiltRollRow(participantRow({ key: 'h1', row: {}, actor: hero() }))).toBe(true);
     expect(isBuiltRollRow(tableRow({ key: 's:die', row: {} }))).toBe(true);
+    expect(isBuiltRollRow(drawRow({ row: {}, onRoll: () => {} }))).toBe(true);
     expect(isBuiltRollRow(worldRow({ row: {}, onRoll: () => {} }))).toBe(true);
     expect(isBuiltRollRow(frozenOpposedRow({} as GameState, { responded: true, row: { d } }))).toBe(true);
     expect(isBuiltRollRow({ row: {}, rolled: false })).toBe(false);
+  });
+
+  it('`drawRow` : TIRAGE VIF sans ligne de jet — `rolled` suit la NOTE, jamais un `row.d` absent', () => {
+    const avant = drawRow({ row: {}, rollLabel: 'Lancer sur le Tableau des Oups !', onRoll: () => {} });
+    expect([avant.rolled, avant.rollLabel], 'pré-tirage : rien à afficher, la phase reste pré-jet').toEqual([false, 'Lancer sur le Tableau des Oups !']);
+    const apres = drawRow({ row: { note: 'Oups ! 42 — Vous vous entaillez' }, onRoll: () => {} });
+    expect(apres.rolled, 'la note EST le rendu du tirage : la dérivation du noyau (`!!row.d`) rendrait `false` ici').toBe(true);
+    // Aucune influence, aucun cycle : la rangée ne porte que ce qu'on lui a donné.
+    expect(Object.keys(apres).sort()).toEqual(['onRoll', 'rolled', 'row']);
   });
 
   it('la marque SURVIT au post-traitement par spread (le site retouche sa rangée)', () => {

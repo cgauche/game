@@ -51,9 +51,55 @@ describe('#1262 — le lint mure les ROUTES DE FORGE de la marque', () => {
     expect(await messagesDeVerrou(code), 'documentée au JSDoc de `stepBrand.ts` — jamais un oubli').toHaveLength(0);
   });
 
+  /**
+   * LA ROUTE DE L'ALIAS (#1262 V3 Lf) — les sélecteurs de cast filtrent par NOM d'identifiant : une
+   * seule ligne (`type A = BuiltRollRow`) suffisait à sortir du radar, et le cast passait alors tsc ET
+   * eslint (mesuré EXIT 0 avant fermeture). L'alias est donc refusé À SA DÉCLARATION — mais seulement
+   * quand le type ALIASÉ EST la marque : « aucun alias légitime n'existe » est FAUX, mesuré (4 sites,
+   * `nightBands.ts` l.104/115/116 + `cascade.ts` l.57, types de CALLBACK qui exigent des étapes
+   * mintées). Employer la marque dans une signature n'est pas la déguiser — les deux cas sont ici.
+   */
+  it('`type A = BuiltRollRow` — l’ALIAS est refusé à sa DÉCLARATION (sinon le cast repasse par un autre nom)', async () => {
+    const code = [
+      "import type { BuiltRollRow } from '../ui/rollRowBuild';",
+      'declare const o: unknown;',
+      'type AliasSonde = BuiltRollRow;',
+      'export const i = o as AliasSonde;',
+    ].join('\n');
+    expect(await messagesDeVerrou(code), 'la route alias doit être MURÉE, pas seulement dite').toHaveLength(1);
+  });
+
+  it('l’alias sous un TABLEAU (`type B = readonly BuiltCascadeStep[]`) est refusé aussi', async () => {
+    const code = [
+      "import type { BuiltCascadeStep } from './stepBrand';",
+      'declare const o: unknown;',
+      'type AliasTab = readonly BuiltCascadeStep[];',
+      'export const j = o as AliasTab;',
+    ].join('\n');
+    expect(await messagesDeVerrou(code)).toHaveLength(1);
+  });
+
   it('un cast SANS rapport avec la marque n’est pas touché (la règle ne mord que `Built*`)', async () => {
     const code = "import type { CascadeStep } from './pendings';\ndeclare const o: unknown;\nexport const g = o as CascadeStep;\n";
     expect(await messagesDeVerrou(code)).toHaveLength(0);
+  });
+
+  it('un type de CALLBACK qui EXIGE des étapes mintées passe : employer la marque n’est pas la déguiser', async () => {
+    const code = [
+      "import type { BuiltCascadeStep } from './stepBrand';",
+      'type Applier = (rowInserts: readonly BuiltCascadeStep[]) => BuiltCascadeStep[];',
+      'export const l: Applier = (r) => [...r];',
+    ].join('\n');
+    expect(await messagesDeVerrou(code), 'forme RÉELLE de `nightBands.ts`/`cascade.ts` — la fauche serait le murage lui-même').toHaveLength(0);
+  });
+
+  it('LIMITE ASSUMÉE : le RENOMMAGE À L’IMPORT échappe encore — dit au JSDoc de `stepBrand.ts`, jamais un oubli', async () => {
+    const code = [
+      "import type { BuiltRollRow as S } from '../ui/rollRowBuild';",
+      'declare const o: unknown;',
+      'export const k = o as S;',
+    ].join('\n');
+    expect(await messagesDeVerrou(code), 'résidu MESURÉ (le sélecteur filtre par nom) : il est dit, pas couvert').toHaveLength(0);
   });
 
   it('les MINTEURS restent exemptés : leur cast interne est la seule fabrique légitime', async () => {
@@ -173,5 +219,34 @@ describe('#1262 V2 L6d — la sonde du murage de l’ENJEU des étapes MONO est 
 
   it('enjeu OPTIONNEL (l’état d’avant) : l’étape muette passe, la directive devient INUTILISÉE (TS2578)', () => {
     expect(codesDeDiagnostic(SONDE_MONO('stake?: Stake')), 'sans ce rouge, le murage des monos ne prouverait rien').toContain(2578);
+  });
+});
+
+/**
+ * LA RANGÉE DE JET EST MURÉE AU TYPE (#1262 V3 Lf) — jumelle de la marque d'étape : `BuiltRollRow`
+ * porte désormais une propriété REQUISE et `RollShell.rows` l'exige (`readonly BuiltRollRow[]`), donc
+ * un littéral monté à la main ne compile plus. C'est ce requis qui a REMPLACÉ le cliquet de comptage
+ * `ui/roll-row-mount-ratchet.test.ts` (mort au même lot) : sans cette sonde, plus rien ne mesurerait
+ * la porte au type, et un retour à la propriété optionnelle passerait en silence.
+ *
+ * Deux signatures rejouées sur un programme TypeScript réel : requise, la directive est consommée ;
+ * optionnelle (l'état d'avant), le littéral nu passe et la directive devient INUTILISÉE (TS2578).
+ */
+const SONDE_RANGEE = (marque: 'readonly [BRAND]: true' | 'readonly [BRAND]?: true') => `
+declare const BRAND: unique symbol;
+type RollRowData = { row: { d?: { roll: number } }; rolled?: boolean; onRoll?: () => void };
+type BuiltRollRow = RollRowData & { ${marque} };
+declare function RollShell(props: { rows: readonly BuiltRollRow[] }): void;
+// @ts-expect-error — rangée montée À LA MAIN : la marque de la porte est absente
+RollShell({ rows: [{ row: {}, rolled: false }] });
+`;
+
+describe('#1262 V3 Lf — le murage de la RANGÉE de jet est TUEUR', () => {
+  it('marque REQUISE : la directive est CONSOMMÉE — zéro diagnostic', () => {
+    expect(codesDeDiagnostic(SONDE_RANGEE('readonly [BRAND]: true'))).toEqual([]);
+  });
+
+  it('marque OPTIONNELLE (l’état d’avant) : le littéral nu passe, la directive devient INUTILISÉE (TS2578)', () => {
+    expect(codesDeDiagnostic(SONDE_RANGEE('readonly [BRAND]?: true')), 'sans ce rouge, la mort du cliquet laisserait un trou').toContain(2578);
   });
 });

@@ -3,8 +3,8 @@ import { useGame } from '../../state/store';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { combatValue } from '../../engine/combat';
-import { RollShell, type RollAction, type RollRowData } from '../RollShell';
-import { buildRollRow } from '../rollRowBuild';
+import { RollShell, type RollAction } from '../RollShell';
+import { buildRollRow, type BuiltRollRow } from '../rollRowBuild';
 import { testPending } from '../breakdown';
 import { recapLineOfEvent } from '../../gameIso/combatNarration';
 import { ev } from '../../state/combatLog';
@@ -40,7 +40,7 @@ export function useTrampleJetProps(): ComponentProps<typeof RollShell> | null {
   // la fenêtre annonce est exactement ce que `trampleConfirm` dépense.
   const freeMoveAction = trampleFreeMove(battle, attacker);
 
-  const actorRow: RollRowData = buildRollRow({
+  const actorRow: BuiltRollRow = buildRollRow({
     actor: attacker,
     row: {
       combatant: attacker,

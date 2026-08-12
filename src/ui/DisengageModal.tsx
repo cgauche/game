@@ -8,7 +8,7 @@ import { retreatAdvantageCost } from '../engine/combatFeatures/dispatch';
 import { canReroll } from '../engine/fortune';
 import { ResilienceButton } from './ResilienceButton';
 import { OptionChooser } from './OptionChooser';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { RollShell, type RollAction } from './RollShell';
 import { buildParticipantRows, type ParticipantRow } from './buildParticipantRows';
 import { VsHeader } from './VsHeader';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
@@ -19,7 +19,7 @@ import { Modal } from './Modal';
 import { Icon } from './Icon';
 import { opposedLines, testBreakdown } from './breakdown';
 import { opposedResponded } from './opposedFrozen';
-import { buildRollRow, frozenOpposedRow } from './rollRowBuild';
+import { buildRollRow, frozenOpposedRow, type BuiltRollRow } from './rollRowBuild';
 
 /**
  * Modale de Désengagement (LDB 15 l.43-68). Trois phases, une seule coquille de jet PARTAGÉE :
@@ -174,7 +174,7 @@ export function DisengageModal() {
   ]);
   // Rangée [0] = TÉMOIN : Corps à corps du foe, figé à l'ouverture (jamais relancé, aucun bouton) —
   // même calendrier de découverte que les autres jets figés (#990 : `pd.def` = la réponse du mover).
-  const foeRow: RollRowData = {
+  const foeRow: BuiltRollRow = {
     key: 'foe',
     ...frozenOpposedRow(useGame.getState(), {
       ownerId: pd.foeId,
@@ -183,7 +183,7 @@ export function DisengageModal() {
     }),
   };
   // Rangée [1] = INTERACTIVE : Esquive du mover, porteuse de son cycle d'influence.
-  const moverRow: RollRowData = buildRollRow({
+  const moverRow: BuiltRollRow = buildRollRow({
     actor: mover,
     row: { combatant: mover, d: moverLine.d },
     rerollable,

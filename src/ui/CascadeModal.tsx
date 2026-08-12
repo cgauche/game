@@ -2,7 +2,7 @@ import { useEffect, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { availableResistance } from '../engine/menace';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { RollShell, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
 import { StakeRule, OutcomeNote, sameCertainOps, sameEntityRef } from './StakeNote';
 import { branchCertainOps, branchBlockingEntity } from '../state/combat/flowEval';
@@ -29,7 +29,7 @@ import { stepInteraction, stepReady, tableStepDefs, tableStepDie, naturalRollFor
 import { useOwns } from './ownership';
 import { tableStepForcedDie } from './forcedDieRow';
 import { opposedResponded } from './opposedFrozen';
-import { frozenOpposedRow, tableRow, witnessRow, buildRollRow } from './rollRowBuild';
+import { frozenOpposedRow, tableRow, witnessRow, buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import type { CascadeStep, CascadeRollStep, CascadeRoll, BatchParticipant } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 import { buildParticipantRows, rollAllUnrolledRows } from './buildParticipantRows';
@@ -201,7 +201,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   };
   // Un panneau figé (`PanelRow` : breakdown + note) → rangées TÉMOINS du shell (constructeur
   // `witnessRow` : lecture seule, jet déjà subi). Source unique de la conversion « pile figée → rangées ».
-  const witnessRows = (panelRows: PanelRow[], fixedMark = false): RollRowData[] =>
+  const witnessRows = (panelRows: PanelRow[], fixedMark = false): BuiltRollRow[] =>
     panelRows.map((r, i) => witnessRow({ key: i, row: r, fixedMark }));
   // DONNÉE de Test ÉTENDU d'une rangée (arbitrage user 2026-07-11 : la barre est RENDUE par `RollRow`
   // — site UNIQUE — pas ici ; ceci ne calcule que `{cum, target}`). `done` = DR cumulés AVANT ce jet,
@@ -221,7 +221,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   };
   // Rangées TÉMOINS d'un pas VALIDÉ (pile persistante) — un pas BATCH est DÉPLIÉ en une rangée par
   // participant (breakdown + sa note + sa barre de Test étendu PERSISTANTE) ; les autres pas → une rangée.
-  const stepWitnessRows = (s: CascadeStep): RollRowData[] => {
+  const stepWitnessRows = (s: CascadeStep): BuiltRollRow[] => {
     if (s.participants) {
       return s.participants.flatMap((part) => {
         const a = pool.find((c) => c.id === part.id);
@@ -330,7 +330,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const oppResponders = cur.participants
     ? cur.participants.map((p) => ({ id: p.id, interactive: p.interactive !== false, result: p.result }))
     : [{ id: cur.actorId, interactive: true, result: cur.result }];
-  const oppRow: RollRowData | null = opp ? {
+  const oppRow: BuiltRollRow | null = opp ? {
     key: 'opposed-attacker',
     ...frozenOpposedRow(useGame.getState(), {
       ownerId: opp.attackerId,
@@ -409,7 +409,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // ré-éditable) et la grille des LIGNES (clic = le dé naturel qui atteint cette ligne, `mod`
   // compris — sinon la ligne cliquée glisserait sous le modificateur). Servies AVANT le tirage comme
   // APRÈS (l'étape passe alors en interaction `'affichage'`) : un dé posé se corrige, il ne se subit pas.
-  const tableAffordances = (s: CascadeStep): { rows: RollRowData[]; lines: ReactNode } => {
+  const tableAffordances = (s: CascadeStep): { rows: BuiltRollRow[]; lines: ReactNode } => {
     // La déclaration servie à l'écran est celle qui TIRERA (`liveTableDecl` : modificateur vivant) —
     // une grille calculée sur un `mod` périmé ferait glisser la ligne cliquée.
     const decl = s.table && liveTableDecl(useGame.getState(), s);
@@ -620,7 +620,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     // clé + duplication visuelle. `buildParticipantRows` keye par id nu (correct pour ses 6 autres
     // appelants MONO-étape) ; ici on re-scope au site qui compose plusieurs pas.
     // Rangées du flux `cascadeBatch` (la coquille hôte porte la cascade) : `flowKey` de RANGÉE.
-    const rows: RollRowData[] = buildParticipantRows(cur.participants!, pool, {
+    const rows: BuiltRollRow[] = buildParticipantRows(cur.participants!, pool, {
       onRoll: batchRoll, onReroll: batchReroll, onBonusSL: batchBonusSL, onDarkPact: batchDarkPact, onForce: batchForce,
       interactiveOf: (part) => part.interactive !== false && owns(part.id),
       row: (part, actor, res) => {
@@ -715,7 +715,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // Chance / relance gratuite / Résilience ne sont PAS recopiées ici : `RollRow`/`InfluenceRow` les
   // DÉRIVENT de `actor` (site unique). `rolled` est dérivé par le noyau du dé de la ligne (`row.d`) —
   // identique à la phase de l'étape, une étape-JET portant toujours sa cible (`stepInteraction`).
-  const curRow: RollRowData = buildRollRow(
+  const curRow: BuiltRollRow = buildRollRow(
     {
       actor,
       row: res && isRollStep(cur) ? { combatant: actor, d: breakdown(cur, res) } : curPending,

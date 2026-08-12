@@ -132,7 +132,7 @@ seraient une colonne vide de bout en bout.
 | `src/ui/jetProps/useAttackJetProps.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | ✓ | · | · | ✓ | · | · | ✓ | · |
 | `src/ui/jetProps/useDefenseJetProps.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | · | · | ✓ | · |
 | `src/ui/jetProps/useExtendedTestJetProps.tsx` | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | ✓ | · | · | · | · | · | · | · | ✓ |
-| `src/ui/jetProps/useFumbleJetProps.tsx` | · | · | · | · | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | ✓ | · |
+| `src/ui/jetProps/useFumbleJetProps.tsx` | · | · | · | · | ✓ | ✓ | · | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | ✓ | · |
 | `src/ui/jetProps/useTestJetProps.tsx` | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | ✓ | · | ✓ | · | ✓ | · | · | · | · |
 | `src/ui/jetProps/useTrampleJetProps.tsx` | ✓ | · | ✓ | · | ✓ | ✓ | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | · | · | · | · | · |
 | `src/ui/ManeuverModal.tsx` | ✓ | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | · | · | · | · | · | · |

@@ -3,8 +3,8 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import type { ModLine } from '../engine/combat';
 import { evaluateTest } from '../engine/tests';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { buildRollRow, witnessRow } from './rollRowBuild';
+import { RollShell, type RollAction } from './RollShell';
+import { buildRollRow, witnessRow, type BuiltRollRow } from './rollRowBuild';
 import { testBreakdown, testPending, testValueSplit, opposedLines } from './breakdown';
 import { activityById, activityModLines } from '../engine/activities';
 import { describeActivity } from '../state/flowOutcomes';
@@ -60,7 +60,7 @@ export function ActivityModal() {
       ? !pa.success
       : (pa.roll ?? 0) > pa.target;
 
-  const actorRow: RollRowData = buildRollRow({
+  const actorRow: BuiltRollRow = buildRollRow({
     actor,
     row: {
       combatant: actor,
@@ -81,7 +81,7 @@ export function ActivityModal() {
     extendedDr: pa.drTarget != null ? { cum: rolled ? after : pa.drBefore ?? 0, target: pa.drTarget } : undefined,
   });
 
-  const rows: RollRowData[] = [actorRow];
+  const rows: BuiltRollRow[] = [actorRow];
 
   // Test COMBINÉ (Infiltration/Repérage, l.75/102 — UN jet vs DEUX compétences, LDB 12 l.202-206) : 2ᵉ rangée
   // TÉMOIN de la seconde compétence (même dé), l'issue lit `combinedLevel` (full/partial/fail) via `describeActivity`.

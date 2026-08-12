@@ -16,6 +16,7 @@ import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { RollShell } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import type { PendingRoll } from './RollLine';
 import { codexLookupById } from './compendium/registry';
 import { conditionModLines, attackModifiers } from '../engine/combat';
@@ -57,7 +58,7 @@ const mount = (node: React.ReactElement) => {
 /** La coquille RÉELLE, alimentée par des `ModLine` que le MOTEUR produit (jamais écrites à la main). */
 function shell(mods: PendingRoll['mods']) {
   const pending: PendingRoll = { label: 'Corps à corps', base: 55, mods };
-  return <RollShell title="Attaque" rows={[{ row: { pending }, rolled: false }]} rolled={false} actions={[]} />;
+  return <RollShell title="Attaque" rows={[buildRollRow({ row: { pending } })]} rolled={false} actions={[]} />;
 }
 const shellFor = (c: Combatant) => shell(conditionModLines(c));
 

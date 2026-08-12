@@ -15,6 +15,7 @@ import { setDesFixes, resetDesFixes } from '../engine/fixedDie';
 import { rowForcedDie } from './forcedDieRow';
 import { RollRow } from './RollRow';
 import { RollShell } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { Modal } from './Modal';
 import { testPending, testBreakdown } from './breakdown';
 import type { Combatant } from '../engine/types';
@@ -568,7 +569,10 @@ describe('CTA HISSÉ de la coquille (hôte réel d’une cascade) — le dé sai
           flowKey="attack"
           title="Journée de descente"
           rolled={false}
-          rows={[{ key: 'r', actor: VIEW, row: { combatant: VIEW, pending: testPending('Voile', 45) }, rolled: false, interactive: true, rollFrisson: false, onRoll: () => { resolveRoll(); rolls.push(useGame.getState().pendingAttack!.result!.attackerRoll); } }]}
+          rows={[buildRollRow(
+            { actor: VIEW, row: { combatant: VIEW, pending: testPending('Voile', 45) }, onRoll: () => { resolveRoll(); rolls.push(useGame.getState().pendingAttack!.result!.attackerRoll); } },
+            { key: 'r', interactive: true, rollFrisson: false },
+          )]}
           actions={[]}
           onCancel={() => {}}
         />,
@@ -616,16 +620,19 @@ describe('« Tout lancer » d’une fenêtre MULTI — chaque rangée consomme S
     setDesFixes(true);
     setupPreRoll();
     const rolls: string[] = [];
-    const mkRow = (id: string, label: string) => ({
-      key: id,
-      actor: { ...VIEW, id },
-      row: { combatant: { ...VIEW, id }, pending: testPending(label, 45) },
-      rolled: false,
-      interactive: true,
-      rollFrisson: false,
-      onRoll: () => { rolls.push(`${id}:naturel`); },
-      forcedRoll: { roll: null, target: 45, fixed: true, commitOnBlur: false, onSet: (r: number) => { rolls.push(`${id}:${r}`); } },
-    });
+    const mkRow = (id: string, label: string) => buildRollRow(
+      {
+        actor: { ...VIEW, id },
+        row: { combatant: { ...VIEW, id }, pending: testPending(label, 45) },
+        onRoll: () => { rolls.push(`${id}:naturel`); },
+      },
+      {
+        key: id,
+        interactive: true,
+        rollFrisson: false,
+        forcedRoll: { roll: null, target: 45, fixed: true, commitOnBlur: false, onSet: (r: number) => { rolls.push(`${id}:${r}`); } },
+      },
+    );
     act(() => {
       root.render(
         <RollShell
@@ -695,7 +702,10 @@ describe('ORDRE RÉEL blur → clic : les 3 hôtes consomment quand même le dé
     act(() => {
       root.render(
         <RollShell flowKey="attack" title="Journée de descente" rolled={false}
-          rows={[{ key: 'r', actor: VIEW, row: { combatant: VIEW, pending: testPending('Voile', 45) }, rolled: false, interactive: true, rollFrisson: false, onRoll: () => { resolveRoll(); } }]}
+          rows={[buildRollRow(
+            { actor: VIEW, row: { combatant: VIEW, pending: testPending('Voile', 45) }, onRoll: () => { resolveRoll(); } },
+            { key: 'r', interactive: true, rollFrisson: false },
+          )]}
           actions={[]} onCancel={() => {}} />,
       );
     });
@@ -712,12 +722,16 @@ describe('ORDRE RÉEL blur → clic : les 3 hôtes consomment quand même le dé
     setDesFixes(true);
     setupPreRoll();
     const rolls: string[] = [];
-    const mkRow = (id: string, label: string) => ({
-      key: id, actor: { ...VIEW, id }, row: { combatant: { ...VIEW, id }, pending: testPending(label, 45) },
-      rolled: false, interactive: true, rollFrisson: false,
-      onRoll: () => { rolls.push(`${id}:naturel`); },
-      forcedRoll: { roll: null, target: 45, fixed: true, commitOnBlur: false, onSet: (r: number) => { rolls.push(`${id}:${r}`); } },
-    });
+    const mkRow = (id: string, label: string) => buildRollRow(
+      {
+        actor: { ...VIEW, id }, row: { combatant: { ...VIEW, id }, pending: testPending(label, 45) },
+        onRoll: () => { rolls.push(`${id}:naturel`); },
+      },
+      {
+        key: id, interactive: true, rollFrisson: false,
+        forcedRoll: { roll: null, target: 45, fixed: true, commitOnBlur: false, onSet: (r: number) => { rolls.push(`${id}:${r}`); } },
+      },
+    );
     act(() => {
       root.render(
         <RollShell flowKey="crewTest" title="Test d’équipage" rolled={false}

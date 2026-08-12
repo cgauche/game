@@ -2,8 +2,8 @@ import { useGame } from '../state/store';
 import { flowStakeRef } from '../data';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { buildRollRow } from './rollRowBuild';
+import { RollShell, type RollAction } from './RollShell';
+import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { OptionChooser } from './OptionChooser';
 import { testValueSplit, testBreakdown, testPending } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
@@ -61,7 +61,7 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
   // (LDB 09 l.17). Soigneur PNJ tarifé (aucune fiche dans le pool) : la garde de reconstruction de la
   // primitive laisse l'affichage inchangé.
   const { base, mods: supMods } = testValueSplit(healer, ph.skillValue, { support: ph.support, skill: 'guerison' });
-  const actorRow: RollRowData = buildRollRow({
+  const actorRow: BuiltRollRow = buildRollRow({
     actor: healer,
     row: {
       combatant: healer,

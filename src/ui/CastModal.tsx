@@ -15,12 +15,12 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { rule } from '../engine/policy';
 import { CharFrame } from './CharFrame';
 import { OptionChooser } from './OptionChooser';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { RollShell, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
 import { RollRow } from './RollRow';
 import { rowForcedDie } from './forcedDieRow';
 import { maskOpposedRow, opposedResponded, opposedRevealed } from './opposedFrozen';
-import { buildRollRow } from './rollRowBuild';
+import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { testBreakdown, testPending, soutienMod, opposedLines } from './breakdown';
@@ -160,7 +160,7 @@ export function CastModal() {
   // affordance n'est offerte. Elle passe ENSUITE par le calendrier #990 — `maskOpposedRow` ENVELOPPE la
   // rangée, donc aucun champ posé ici ne peut ré-armer une affordance masquée, quel que soit l'ordre
   // d'écriture.
-  const castRow: RollRowData = maskOpposedRow(useGame.getState(), { ownerId: pc.casterId, responded }, buildRollRow({
+  const castRow: BuiltRollRow = maskOpposedRow(useGame.getState(), { ownerId: pc.casterId, responded }, buildRollRow({
     actor: caster,
     row: res
       ? { combatant: caster, d: testBreakdown(castLabel, previewRolled.base, { roll: res.roll, target: res.target, sl: res.sl, success: res.cast }, undefined, previewRolled.mods) }

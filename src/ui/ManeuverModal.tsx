@@ -4,8 +4,8 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { combatValue } from '../engine/combat';
 import { creatureAttacks } from '../engine/creatureAttacks';
 import { MANEUVER_ICON } from '../state/combatFlow';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { buildRollRow } from './rollRowBuild';
+import { RollShell, type RollAction } from './RollShell';
+import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { Icon } from './Icon';
 import { OptionChooser, type RollOption } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
@@ -48,7 +48,7 @@ export function ManeuverModal() {
       }))
     : [];
 
-  const actorRow: RollRowData = buildRollRow({
+  const actorRow: BuiltRollRow = buildRollRow({
     actor: attacker,
     row: {
       combatant: attacker,

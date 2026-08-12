@@ -2,8 +2,8 @@ import { useGame } from '../state/store';
 import { flowStakeRef } from '../data';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { buildRollRow } from './rollRowBuild';
+import { RollShell, type RollAction } from './RollShell';
+import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { testBreakdown, testPending, testValueSplit } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { Icon } from './Icon';
@@ -38,7 +38,7 @@ export function DispelModal() {
   const { base, mods: supMods } = testValueSplit(caster, pd.value, { support: pd.support, skill: 'langue', spec: 'magick' });
   const rolled = !!r;
 
-  const actorRow: RollRowData = buildRollRow({
+  const actorRow: BuiltRollRow = buildRollRow({
     actor: caster,
     row: {
       combatant: caster,

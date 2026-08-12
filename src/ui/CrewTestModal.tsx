@@ -6,7 +6,8 @@ import { crewRoleValue, rudeEpreuveMoraleDelta, crewTestSuccess } from '../engin
 import { maneuverCrewTotal } from '../state/shipManeuver';
 import type { PendingCrewTest } from '../state/pendings';
 import type { Combatant } from '../engine/types';
-import { RollShell, type RollRowData, type RollAction } from './RollShell';
+import { RollShell, type RollAction } from './RollShell';
+import type { BuiltRollRow } from './rollRowBuild';
 import { buildParticipantRows, rollAllUnrolledRows } from './buildParticipantRows';
 import { Icon } from './Icon';
 import { testBreakdown, testPending } from './breakdown';
@@ -71,7 +72,7 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
 
   // Rangées via le builder mutualisé (#328) : la modale ne fournit QUE la PRÉSENTATION (crew-roles) + ses
   // actions ; les dérivations d'éligibilité (rerollable/darkPactable/forceShow) vivent dans le builder.
-  const rows: RollRowData[] = buildParticipantRows(p.participants, pool, {
+  const rows: BuiltRollRow[] = buildParticipantRows(p.participants, pool, {
     onRoll: roll, onReroll: reroll, onBonusSL: bonus, onDarkPact: darkPact, onForce: force,
     interactiveOf: (part) => !!part.interactive && owns(part.id),
     row: (part, actor, res) => {

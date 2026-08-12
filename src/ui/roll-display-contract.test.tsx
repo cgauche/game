@@ -13,6 +13,7 @@ import { RollShell, type RollRowData, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
 import { buildParticipantRows } from './buildParticipantRows';
 import { testBreakdown, testPending } from './breakdown';
+import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { toRecapLines } from '../state/recapLine';
@@ -30,10 +31,8 @@ const mk = (id: string, kind: 'hero' | 'enemy'): Combatant =>
      species: 'humains-reiklander', bodyShape: 'humanoide', movement: 4,
      armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 } } as unknown as Combatant);
 
-const rolledRow = (label = 'Athlétisme', over: Partial<RollRowData> = {}): RollRowData => ({
-  row: { d: testBreakdown(label, 45, { roll: 22, target: 45, sl: 2, success: true }) },
-  rolled: true,
-  onRoll: noop,
+const rolledRow = (label = 'Athlétisme', over: Partial<RollRowData> = {}): BuiltRollRow => ({
+  ...buildRollRow({ row: { d: testBreakdown(label, 45, { roll: 22, target: 45, sl: 2, success: true }) }, onRoll: noop }),
   ...over,
 });
 
@@ -204,7 +203,7 @@ describe('CLIQUET — `.rm-vs` n’est écrit QUE par `VsHeader`', () => {
 
 describe('RollShell — sous MASQUE, l’issue se tait (#990)', () => {
   /** Rangée dont le DÉ est masqué (`mask: 'roll'`) : le spectateur ne doit rien pouvoir déduire. */
-  const maskedRow = (): RollRowData => {
+  const maskedRow = (): BuiltRollRow => {
     const r = rolledRow('Furtivité');
     return { ...r, row: { ...r.row, d: { ...r.row.d!, mask: 'roll' } } };
   };
@@ -255,7 +254,7 @@ describe('RollShell — Z5c : la raison du départage annote la LIGNE gagnante',
   /** Les MOTS du RAW (LDB 12 l.160) tels que la ligne les rend — la condition est DITE. */
   const PHRASE_VALEUR = 'DR égaux — la Compétence ou Caractéristique la plus élevée';
   /** Rangée résolue portant la raison du verdict, telle que le résolveur la pose sur son détail. */
-  const withReason = (label: string, decided: VerdictReason, over: Partial<RollRowData> = {}): RollRowData => {
+  const withReason = (label: string, decided: VerdictReason, over: Partial<RollRowData> = {}): BuiltRollRow => {
     const r = rolledRow(label, over);
     return { ...r, row: { ...r.row, d: { ...r.row.d!, decided } } };
   };
@@ -314,7 +313,7 @@ describe('RollShell — Z5c : la raison du départage annote la LIGNE gagnante',
   });
 
   it('panneau MASQUÉ : la raison se tait — elle CITERAIT la valeur que la ligne adverse cache', () => {
-    const masque = (r: RollRowData, mask: 'roll' | 'value'): RollRowData => ({ ...r, row: { ...r.row, d: { ...r.row.d!, mask } } });
+    const masque = (r: BuiltRollRow, mask: 'roll' | 'value'): BuiltRollRow => ({ ...r, row: { ...r.row, d: { ...r.row.d!, mask } } });
     for (const mask of ['roll', 'value'] as const) {
       const html = renderToStaticMarkup(
         <RollShell
@@ -455,7 +454,7 @@ function scrollChildren(html: string): string[] {
  * un, exprès.
  */
 describe('RollShell — ORDRE DU DOCUMENT : rien de volatile au-dessus des rangées (#1142)', () => {
-  const preRow: RollRowData = { ...rolledRow(), rolled: false, row: { pending: testPending('Athlétisme', 45) } };
+  const preRow = buildRollRow({ row: { pending: testPending('Athlétisme', 45) }, onRoll: noop });
   const setupNode = <div className="rm-options">Parade / Esquive</div>;
   /** Nœuds STABLES d'un site, servis en Fragment : présents aux deux états, ils décalent l'index
    *  des enfants directs de `.rs-scroll` sans toucher à l'ordre relatif que le contrat mesure. */

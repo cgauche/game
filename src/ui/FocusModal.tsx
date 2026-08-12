@@ -4,8 +4,8 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { castingValue } from '../engine/magic';
 import { windsMagicLineOf } from '../state/combatOrParty';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { buildRollRow } from './rollRowBuild';
+import { RollShell, type RollAction } from './RollShell';
+import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { testBreakdown, testPending } from './breakdown';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
@@ -40,7 +40,7 @@ export function FocusModal() {
   const windsLine = windsMagicLineOf(battle);
   const windsMods = windsLine ? [windsLine] : undefined;
 
-  const actorRow: RollRowData = buildRollRow({
+  const actorRow: BuiltRollRow = buildRollRow({
     actor: caster,
     row: {
       combatant: caster,

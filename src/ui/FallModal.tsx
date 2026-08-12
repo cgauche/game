@@ -3,8 +3,8 @@ import { flowStakeRef } from '../data';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { testValue } from '../engine/skills';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { buildRollRow } from './rollRowBuild';
+import { RollShell, type RollAction } from './RollShell';
+import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { ChoiceButtons } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
 import { Icon } from './Icon';
@@ -58,7 +58,7 @@ export function FallModal() {
 
   const r = p.result;
   const rolled = !!r;
-  const actorRow: RollRowData = buildRollRow({
+  const actorRow: BuiltRollRow = buildRollRow({
     actor: c,
     row: {
       combatant: c,

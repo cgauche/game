@@ -107,10 +107,6 @@ describe('#1262 L0 — la rangée-participant vient du NOYAU (contrat mesuré su
     });
   }
 
-  it('une rangée montée À LA MAIN ne porte pas la marque (ce que le cliquet compte)', () => {
-    expect(isBuiltRollRow({ row: {}, rolled: false })).toBe(false);
-  });
-
   it('`rolled` suit la DONNÉE AFFICHÉE (définition du noyau), pas le résultat du participant', () => {
     // Présentation qui tait le dé malgré un résultat (forme de DisengageModal:130, `d` conditionnel).
     const rows = buildParticipantRows([{ id: 'h1', interactive: true, result: OK }], [actor], {

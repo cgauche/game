@@ -9,8 +9,8 @@ import { TeamPortrait } from './TeamPortrait';
 import { Coins } from './Coins';
 import { DrBar } from './DrBar';
 import { HealRollFlow } from './HealModal';
-import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { buildRollRow } from './rollRowBuild';
+import { RollShell, type RollAction } from './RollShell';
+import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { testValueSplit, testBreakdown, testPending } from './breakdown';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
@@ -84,7 +84,7 @@ function SurgeryRollFlow() {
   // passifs, effets — #1178) : lignes de mod NOMMÉES, base rebasée sur le Niveau de Compétence nu
   // (LDB 09 l.17). Chirurgien PNJ tarifé (aucune fiche) : affichage inchangé (garde de reconstruction).
   const { base, mods: supMods } = testValueSplit(surgeon, ps.skillValue, { support: ps.support, skill: 'guerison' });
-  const actorRow: RollRowData = buildRollRow({
+  const actorRow: BuiltRollRow = buildRollRow({
     actor: surgeon,
     row: {
       combatant: surgeon,

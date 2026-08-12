@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { RollShell, type RollRowData } from './RollShell';
+import { RollShell } from './RollShell';
+import { buildRollRow } from './rollRowBuild';
 import { testBreakdown } from './breakdown';
 import { useGame } from '../state/store';
 import { setDesFixes, resetDesFixes } from '../engine/fixedDie';
@@ -41,12 +42,11 @@ function open() {
 /** La rangée QUE REND `HandGateModal` (mêmes données), sous le `flowKey` qu'elle déclare. */
 function shellHtml() {
   const pg = useGame.getState().pendingHandGate!;
-  const row: RollRowData = {
+  const row = buildRollRow({
     actor: HERO,
     row: { combatant: HERO, d: testBreakdown('Dextérité', pg.skillValue, { roll: pg.roll!, target: pg.target, sl: pg.sl, success: pg.success }, pg.difficulty) },
-    rolled: true,
     onForce: () => {},
-  };
+  });
   return renderToStaticMarkup(<RollShell flowKey="handGate" title="Main ensanglantée" rows={[row]} rolled actions={[]} />);
 }
 

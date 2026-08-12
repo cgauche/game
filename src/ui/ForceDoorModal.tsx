@@ -1,7 +1,8 @@
 import { useGame } from '../state/store';
 import { useOwns } from './ownership';
 import { testValue } from '../engine/skills';
-import { RollShell, type RollRowData, type RollAction } from './RollShell';
+import { RollShell, type RollAction } from './RollShell';
+import type { BuiltRollRow } from './rollRowBuild';
 import { buildParticipantRows } from './buildParticipantRows';
 import { testBreakdown, testPending } from './breakdown';
 import { Icon } from './Icon';
@@ -33,7 +34,7 @@ export function ForceDoorModal() {
   const cede = roundDmg >= p.doorB;
 
   // Rangées via le builder mutualisé (#328) — présentation « Bagarre » ici, éligibilité dans le builder.
-  const rows: RollRowData[] = buildParticipantRows(p.participants, pool, {
+  const rows: BuiltRollRow[] = buildParticipantRows(p.participants, pool, {
     onRoll: roll, onReroll: reroll, onBonusSL: bonusSL, onDarkPact: darkPact, onForce: force,
     interactiveOf: (part) => owns(part.id),
     rollLabel: <><Icon id="action/attack" size="sm" /> Frapper</>,
