@@ -9,6 +9,7 @@ import { firedWeapon } from '../../state/combatFlow';
 import { Dims, tileCenter } from '../../geometry/iso';
 import { TargetReticle } from '../TargetReticle';
 import { relationColor } from '../teamColors';
+import { GOLD_TINT, ENEMY_CUE_TINT, RING_ALLY_TINT } from '../highlightTints';
 import { IconG } from '../../ui/Icon';
 import type { HoverAim } from './useHoverTargeting';
 
@@ -28,15 +29,15 @@ export function AimOverlay({ battle, hoverAim, anchor, dims, pendingAttack, pend
     const a = byId(pendingAttack.attackerId), t = byId(pendingAttack.victimId ?? pendingAttack.targetId);
     if (!a || !t) return null;
     const ranged = firedWeapon(a, t, pendingAttack.weaponUid).type === 'ranged';
-    return <TargetReticle from={anchor(a)} to={anchor(t)} line={ranged ? 'dashed' : 'solid'} lineColor={a.kind === 'hero' ? 'var(--combat-gold)' : 'var(--combat-enemy)'} />;
+    return <TargetReticle from={anchor(a)} to={anchor(t)} line={ranged ? 'dashed' : 'solid'} lineColor={a.kind === 'hero' ? GOLD_TINT : ENEMY_CUE_TINT} />;
   }
   if (pendingDefense) {
     const a = byId(pendingDefense.attackerId), t = byId(pendingDefense.defenderId);
-    return a && t ? <TargetReticle from={anchor(a)} to={anchor(t)} line={pendingDefense.weapon.type === 'ranged' ? 'dashed' : 'solid'} lineColor="var(--combat-enemy)" /> : null;
+    return a && t ? <TargetReticle from={anchor(a)} to={anchor(t)} line={pendingDefense.weapon.type === 'ranged' ? 'dashed' : 'solid'} lineColor={ENEMY_CUE_TINT} /> : null;
   }
   if (pendingTrample) {
     const a = byId(pendingTrample.attackerId), t = byId(pendingTrample.targetId);
-    return a && t ? <TargetReticle from={anchor(a)} to={anchor(t)} line="solid" lineColor={a.kind === 'hero' ? 'var(--combat-gold)' : 'var(--combat-enemy)'} /> : null;
+    return a && t ? <TargetReticle from={anchor(a)} to={anchor(t)} line="solid" lineColor={a.kind === 'hero' ? GOLD_TINT : ENEMY_CUE_TINT} /> : null;
   }
   if (pendingCast && !pendingCast.pickingTargets) {
     const a = byId(pendingCast.casterId);
@@ -47,7 +48,7 @@ export function AimOverlay({ battle, hoverAim, anchor, dims, pendingAttack, pend
       : t ? anchor(t) : null;
     if (!a || !to) return null;
     const self = !pendingCast.zone && pendingCast.casterId === pendingCast.targetId; // sort sur SOI : réticule seul
-    return <TargetReticle from={self ? null : anchor(a)} to={to} line={self ? null : 'dashed'} lineColor={a.kind === 'hero' ? 'var(--combat-gold)' : 'var(--combat-enemy)'} />;
+    return <TargetReticle from={self ? null : anchor(a)} to={to} line={self ? null : 'dashed'} lineColor={a.kind === 'hero' ? GOLD_TINT : ENEMY_CUE_TINT} />;
   }
   if (pendingHeal) {
     const t = byId(pendingHeal.targetId);
@@ -95,13 +96,13 @@ export function AimOverlay({ battle, hoverAim, anchor, dims, pendingAttack, pend
         let y = -h + 44; // la compétence démarre sous nom+titre ; chaque ligne suivante descend de 14
         return (
           <g transform={`translate(${to.cx},${to.cy - 60})`}>
-            <rect x={-w / 2} y={-h} width={w} height={h} rx={6} fill="var(--tooltip-bg)" fillOpacity={0.95} stroke="var(--combat-gold)" strokeOpacity={0.75} strokeWidth={1} />
-            <text x={x0} y={-h + 16} fill="var(--combat-gold)" fontSize={11.5} fontWeight={700}>{tip.targetName}</text>
+            <rect x={-w / 2} y={-h} width={w} height={h} rx={6} fill="var(--tooltip-bg)" fillOpacity={0.95} stroke={GOLD_TINT} strokeOpacity={0.75} strokeWidth={1} />
+            <text x={x0} y={-h + 16} fill={GOLD_TINT} fontSize={11.5} fontWeight={700}>{tip.targetName}</text>
             <text x={x0} y={-h + 30} fill="var(--tooltip-muted)" fontSize={10}>{tip.title}</text>
             <text x={x0} y={y} fontSize={10.5}>
               <tspan fill="var(--tooltip-muted)">{tip.skill}</tspan>
               <tspan fill="var(--tooltip-fg)" fontWeight={700}>{`  ${eff}`}</tspan>
-              {tip.mod !== 0 && <tspan fill={tip.mod > 0 ? 'var(--combat-ally)' : 'var(--combat-enemy)'} fontWeight={700}>{modTxt}</tspan>}
+              {tip.mod !== 0 && <tspan fill={tip.mod > 0 ? RING_ALLY_TINT : ENEMY_CUE_TINT} fontWeight={700}>{modTxt}</tspan>}
             </text>
             {l3 && (
               <text x={x0} y={(y += 14)} fontSize={10.5}>

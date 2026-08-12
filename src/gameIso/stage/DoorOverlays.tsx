@@ -2,6 +2,7 @@ import type { Dims } from '../../geometry/iso';
 import { tileEdge } from '../../geometry/iso';
 import type { RoomPortal } from '../../state/roomPortals';
 import type { Pt } from '../../state/path';
+import { GOLD_TINT } from '../highlightTints';
 
 interface DoorOverlaysProps {
   portals: RoomPortal[];
@@ -64,7 +65,7 @@ export function DoorOverlays({
             highlighted ? 'portal-highlight' : '',
           ].filter(Boolean).join(' ');
           const stroke = portal.exterior
-            ? 'var(--combat-gold)'
+            ? GOLD_TINT
             : portal.kind === 'door-closed'
               ? 'var(--iso-door-closed)'
               : 'var(--iso-door-open)';

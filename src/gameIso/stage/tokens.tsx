@@ -22,6 +22,7 @@ import { combatantTokenScale, entityTokenScale } from '../sizeScale';
 import { sizeFootprint, footprintN, footprintTiles } from '../../state/footprint';
 import { entitySize } from '../../state/spawn';
 import { HERO_RING, ENEMY_RING, veilTint, teamShape, relationColor } from '../teamColors';
+import { GOLD_TINT, GOLD_DARK_TINT, HALO_TINT, ENGAGE_TINT, ACTIVE_HALO_TINT } from '../highlightTints';
 import { summarizeEffects, combatantFlags } from '../effectIcons';
 import { mountOf } from '../../state/mount';
 import type { Pt } from '../../state/path';
@@ -108,10 +109,10 @@ export function interactHaloObjs(propEls: PropEl[], ctx: TokenCtx, flags: Record
       el: (
         <g key={`halo-${el.entId}`} pointerEvents="none">
           <g className={haloHovered ? 'interact-halo hovered' : 'interact-halo'}>
-            <ellipse cx={c.cx} cy={c.cy + 4} rx={17 * el.foot.scale} ry={8.5 * el.foot.scale} fill="var(--combat-halo)" opacity={0.26} />
-            <ellipse cx={c.cx} cy={c.cy + 4} rx={17 * el.foot.scale} ry={8.5 * el.foot.scale} fill="none" stroke="var(--combat-gold)" strokeWidth={2} opacity={0.9} />
+            <ellipse cx={c.cx} cy={c.cy + 4} rx={17 * el.foot.scale} ry={8.5 * el.foot.scale} fill={HALO_TINT} opacity={0.26} />
+            <ellipse cx={c.cx} cy={c.cy + 4} rx={17 * el.foot.scale} ry={8.5 * el.foot.scale} fill="none" stroke={GOLD_TINT} strokeWidth={2} opacity={0.9} />
           </g>
-          <ellipse className="halo-ping" cx={c.cx} cy={c.cy + 4} rx={17 * el.foot.scale} ry={8.5 * el.foot.scale} fill="none" stroke="var(--combat-gold)" strokeWidth={1.6} />
+          <ellipse className="halo-ping" cx={c.cx} cy={c.cy + 4} rx={17 * el.foot.scale} ry={8.5 * el.foot.scale} fill="none" stroke={GOLD_TINT} strokeWidth={1.6} />
         </g>
       ),
     });
@@ -121,7 +122,7 @@ export function interactHaloObjs(propEls: PropEl[], ctx: TokenCtx, flags: Record
       vis: el.states.visible,
       el: (
         <g key={`spark-${el.entId}`} className="halo-spark" pointerEvents="none" transform={`translate(${c.cx + 9 * el.foot.scale}, ${c.cy - 26 * el.foot.scale})`}>
-          <path d="M0,-6 L1.7,-1.7 L6,0 L1.7,1.7 L0,6 L-1.7,1.7 L-6,0 L-1.7,-1.7 Z" fill="var(--combat-gold)" stroke="var(--combat-gold-dk)" strokeWidth={0.7} />
+          <path d="M0,-6 L1.7,-1.7 L6,0 L1.7,1.7 L0,6 L-1.7,1.7 L-6,0 L-1.7,-1.7 Z" fill={GOLD_TINT} stroke={GOLD_DARK_TINT} strokeWidth={0.7} />
         </g>
       ),
     });
@@ -278,8 +279,8 @@ export function npcHoverHaloObjs(scene: Scene, hover: Pt | null, ctx: TokenCtx):
       vis: true, // survol d'un PNJ interlocuteur (en vue) → halo au-dessus du voile
       el: (
         <g key={`npc-halo-${ent.id}`} className="interact-halo hovered" pointerEvents="none">
-          <ellipse cx={cc.cx} cy={cc.cy + 4} rx={15} ry={7.5} fill="var(--combat-halo)" opacity={0.2} />
-          <ellipse cx={cc.cx} cy={cc.cy + 4} rx={15} ry={7.5} fill="none" stroke="var(--combat-gold)" strokeWidth={1.8} opacity={0.85} />
+          <ellipse cx={cc.cx} cy={cc.cy + 4} rx={15} ry={7.5} fill={HALO_TINT} opacity={0.2} />
+          <ellipse cx={cc.cx} cy={cc.cy + 4} rx={15} ry={7.5} fill="none" stroke={GOLD_TINT} strokeWidth={1.8} opacity={0.85} />
         </g>
       ),
     });
@@ -313,7 +314,7 @@ export function dynamicHighlightObjs(
         const ca = tileCenter(pa.x, pa.y, dims, za ? liftAt(pa.x, pa.y, za) : 0);
         const cb = tileCenter(pb.x, pb.y, dims, zb ? liftAt(pb.x, pb.y, zb) : 0);
         // tether posé à la profondeur de l'extrémité la plus PROCHE caméra (+0.25 ⇒ sous les jetons)
-        out.push({ d: Math.max(depth(pa.x, pa.y, dims, za), depth(pb.x, pb.y, dims, zb)) + 0.25, el: <line key={`eng-${c.id}-${oid}`} x1={ca.cx} y1={ca.cy} x2={cb.cx} y2={cb.cy} stroke="var(--iso-engage)" strokeWidth={2} strokeDasharray="4 3" opacity={0.6} pointerEvents="none" /> });
+        out.push({ d: Math.max(depth(pa.x, pa.y, dims, za), depth(pb.x, pb.y, dims, zb)) + 0.25, el: <line key={`eng-${c.id}-${oid}`} x1={ca.cx} y1={ca.cy} x2={cb.cx} y2={cb.cy} stroke={ENGAGE_TINT} strokeWidth={2} strokeDasharray="4 3" opacity={0.6} pointerEvents="none" /> });
       }
     }
     const activeC = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
@@ -322,10 +323,10 @@ export function dynamicHighlightObjs(
       const hz = (haloUnit.pos as { z?: number }).z ?? 0;
       const ap = walkPosOf(haloUnit.id, haloUnit.pos!.x, haloUnit.pos!.y); // le halo SUIT le token qui glisse
       for (const t of footprintTiles(ap, footprintN(haloUnit)))
-        out.push({ d: depth(t.x, t.y, dims, hz) + 0.25, el: <path key={`active-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims, liftAt(t.x, t.y, hz))} fill="none" stroke="var(--iso-active-halo)" strokeWidth={3} /> });
+        out.push({ d: depth(t.x, t.y, dims, hz) + 0.25, el: <path key={`active-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims, liftAt(t.x, t.y, hz))} fill="none" stroke={ACTIVE_HALO_TINT} strokeWidth={3} /> });
     }
   }
   if (mode === 'exploration' && !dialogue)
-    out.push({ d: depth(partyPos.x, partyPos.y, dims, partyPos.z ?? 0) + 0.25, el: <path key="party-pos" d={diamondPath(partyPos.x, partyPos.y, dims, liftAt(partyPos.x, partyPos.y, partyPos.z ?? 0))} fill="none" stroke="var(--iso-active-halo)" strokeWidth={1.5} opacity={0.5} /> });
+    out.push({ d: depth(partyPos.x, partyPos.y, dims, partyPos.z ?? 0) + 0.25, el: <path key="party-pos" d={diamondPath(partyPos.x, partyPos.y, dims, liftAt(partyPos.x, partyPos.y, partyPos.z ?? 0))} fill="none" stroke={ACTIVE_HALO_TINT} strokeWidth={1.5} opacity={0.5} /> });
   return out;
 }

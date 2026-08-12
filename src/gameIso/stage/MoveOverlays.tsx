@@ -7,6 +7,7 @@
 import { Dims, diamondPath } from '../../geometry/iso';
 import { footprintTiles } from '../../state/footprint';
 import { movePreviewEls } from './movePreview';
+import { GOLD_TINT } from '../highlightTints';
 import type { Pt } from '../../state/path';
 
 /** Losange du CURSEUR clavier/manette : repère de case TOUJOURS visible tant qu'aucune modale de jet à
@@ -30,7 +31,7 @@ export function CursorOverlay({ tile, footN, dims, liftAt }: { tile: Pt; footN: 
 export function HoverMovePreview({ move, at, footN, dims, lift }: { move: { path: Pt[]; label: string }; at: Pt; footN: number; dims: Dims; lift: (p: Pt) => number }) {
   return (
     <g pointerEvents="none">
-      {movePreviewEls(move.path, at, move.label, dims, 'hmv', 'var(--combat-gold)', footN, lift)}
+      {movePreviewEls(move.path, at, move.label, dims, 'hmv', GOLD_TINT, footN, lift)}
     </g>
   );
 }
@@ -41,5 +42,5 @@ export function HoverMovePreview({ move, at, footN, dims, lift }: { move: { path
 export function ExplorePathPreview({ path, dims, lift, walking = false }: { path: Pt[]; dims: Dims; lift: (p: Pt) => number; walking?: boolean }) {
   if (walking) return null;
   const destination = path[path.length - 1] ?? null;
-  return <g pointerEvents="none">{movePreviewEls(path, destination, null, dims, 'exp', 'var(--combat-gold)', 1, lift)}</g>;
+  return <g pointerEvents="none">{movePreviewEls(path, destination, null, dims, 'exp', GOLD_TINT, 1, lift)}</g>;
 }

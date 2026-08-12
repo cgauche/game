@@ -15,8 +15,8 @@ import { join, relative } from 'node:path';
  * PÉRIMÈTRE MESURÉ : les modules de PRODUCTION sous `src/gameIso`, hors `backends/` (les backends
  * affines sont l'implémentation mesurée, pas ses consommateurs), hors `pov/` (le POV est une
  * TROISIÈME voie, hors de ce chantier) et hors fichiers de test. HORS PÉRIMÈTRE, délibérément :
- * `src/ui/editor/EditorCanvas.tsx` — l'éditeur de carte n'est pas l'écran de jeu, et rien au #1176 ne
- * prévoit de l'y faire passer.
+ * `src/ui/editor/EditorCanvas.tsx` — l'éditeur EST au périmètre de la Phase 3 du #1176 (« Exploration,
+ * combat, POV, top et éditeur sur le backend WebGL »), mais pas de CE cliquet, qui compte l'écran de jeu.
  *
  * Ce que le compte NE voit PAS : un consommateur qui passerait par un ré-export intermédiaire, ou par
  * un `import()` dynamique. Le test « aucun ré-export » ci-dessous ferme la première porte.

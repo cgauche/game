@@ -7,6 +7,7 @@ import type { BattleState } from '../../state/store';
 import { Combatant } from '../../engine/types';
 import { serveTargetPoste, isPosteManned, servingCrewPresent, posteCrewSplit, isCrewQualified } from '../../state/shipPostes';
 import { weaponGroupLabel } from '../../data';
+import { GOLD_TINT, ENEMY_CUE_TINT, RING_ALLY_TINT } from '../highlightTints';
 
 export function CrewTooltip({ battle, hoveredId, myTurn, anchor }: {
   battle: BattleState;
@@ -33,17 +34,17 @@ export function CrewTooltip({ battle, hoveredId, myTurn, anchor }: {
     const aideNames = aides.filter((c) => c.id !== chefId).map((c) => c.label);
     const present = chef ? servingCrewPresent(chef, battle.combatants) : undefined;
     const groupLabel = p.item.weaponGroup ? weaponGroupLabel(p.item.weaponGroup) : '';
-    lines.push({ text: indice > 0 ? `${p.item.label} · Arme d’équipe ${indice}` : p.item.label, color: 'var(--combat-gold)', bold: true });
+    lines.push({ text: indice > 0 ? `${p.item.label} · Arme d’équipe ${indice}` : p.item.label, color: GOLD_TINT, bold: true });
     lines.push({ text: `Chef : ${manned ? chef?.label ?? 'aucun' : 'aucun'}`, color: 'var(--tooltip-fg)' });
     if (renforts.length) lines.push({ text: `Renforts : ${renforts.join(', ')}`, color: 'var(--tooltip-muted)' });
     if (aideNames.length) lines.push({ text: `Aides (non qual.) : ${aideNames.join(', ')}`, color: 'var(--tooltip-dim)' });
-    if (indice > 0 && present != null) lines.push({ text: `Effectif (qualifié) : ${present}/${indice}${present < indice ? ' sous-effectif' : ''}`, color: present < indice ? 'var(--combat-enemy)' : 'var(--combat-ally)' });
+    if (indice > 0 && present != null) lines.push({ text: `Effectif (qualifié) : ${present}/${indice}${present < indice ? ' sous-effectif' : ''}`, color: present < indice ? ENEMY_CUE_TINT : RING_ALLY_TINT });
     // Carte d'ACTION du héros actif : SA qualification pour CETTE pièce (même check RAW que l'effectif),
     // affichée DÈS le survol (même non adjacent) → on sait d'un coup d'œil si ce héros peut l'armer.
     if (active && active.kind === 'hero' && myTurn) {
       const canServeNow = !!(servePoste && servePoste.item.uid === p.item.uid); // adjacent + servable maintenant
       if (isCrewQualified(active, p)) {
-        lines.push({ text: `✓ Qualifié${groupLabel ? ` (Projectiles ${groupLabel})` : ''}`, color: 'var(--combat-ally)', bold: true });
+        lines.push({ text: `✓ Qualifié${groupLabel ? ` (Projectiles ${groupLabel})` : ''}`, color: RING_ALLY_TINT, bold: true });
         lines.push({ text: !canServeNow ? '↳ approchez-vous pour servir' : manned ? '↳ compte pour l’effectif' : '↳ chef : peut tirer (pièce libre)', color: 'var(--tooltip-ok)' });
       } else {
         lines.push({ text: `✗ NON qualifié (Projectiles ${groupLabel})`, color: 'var(--tooltip-warn)', bold: true });
@@ -57,7 +58,7 @@ export function CrewTooltip({ battle, hoveredId, myTurn, anchor }: {
   const x0 = -w / 2 + 10;
   return (
     <g pointerEvents="none" transform={`translate(${at.cx},${at.cy - 64})`}>
-      <rect x={-w / 2} y={-h} width={w} height={h} rx={6} fill="var(--tooltip-bg)" fillOpacity={0.95} stroke="var(--combat-gold)" strokeOpacity={0.6} strokeWidth={1} />
+      <rect x={-w / 2} y={-h} width={w} height={h} rx={6} fill="var(--tooltip-bg)" fillOpacity={0.95} stroke={GOLD_TINT} strokeOpacity={0.6} strokeWidth={1} />
       {lines.map((l, i) => (
         <text key={i} x={x0} y={-h + 15 + i * 14} fontSize={l.bold ? 11.5 : 10.5} fontWeight={l.bold ? 700 : 500} fill={l.color}>{l.text}</text>
       ))}

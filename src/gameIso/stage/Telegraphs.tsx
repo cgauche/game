@@ -8,17 +8,18 @@ import { Combatant } from '../../engine/types';
 import { Dims, diamondPath } from '../../geometry/iso';
 import { TargetReticle } from '../TargetReticle';
 import { movePreviewEls } from './movePreview';
+import { ENEMY_CUE_TINT, THREAT_TINT } from '../highlightTints';
 import type { Pt } from '../../state/path';
 
 export function EnemyMoveTelegraph({ actorMove, dims, footN, lift }: { actorMove: { path: Pt[] } | null; dims: Dims; footN: number; lift: (p: Pt) => number }) {
   if (!actorMove || actorMove.path.length === 0) return null;
   // Même tracé que l'aperçu héros (movePreviewEls), teinté ennemi.
-  return <>{movePreviewEls(actorMove.path, actorMove.path[actorMove.path.length - 1], null, dims, 'enmv', 'var(--combat-enemy)', footN, lift)}</>;
+  return <>{movePreviewEls(actorMove.path, actorMove.path[actorMove.path.length - 1], null, dims, 'enmv', ENEMY_CUE_TINT, footN, lift)}</>;
 }
 
 export function EnemyAimTelegraph({ targeting, anchor }: { targeting: { from: Combatant; to: Combatant; melee?: boolean } | null; anchor: (c: Combatant) => { cx: number; cy: number } }) {
   if (!targeting) return null;
-  return <TargetReticle from={anchor(targeting.from)} to={anchor(targeting.to)} line={targeting.melee ? 'solid' : 'dashed'} lineColor="var(--combat-enemy)" />;
+  return <TargetReticle from={anchor(targeting.from)} to={anchor(targeting.to)} line={targeting.melee ? 'solid' : 'dashed'} lineColor={ENEMY_CUE_TINT} />;
 }
 
 export function EnemyAoeTelegraph({ actorAoe, dims }: { actorAoe: { center: Pt; radius: number } | null; dims: Dims }) {
@@ -29,7 +30,7 @@ export function EnemyAoeTelegraph({ actorAoe, dims }: { actorAoe: { center: Pt; 
     for (let dx = -radius; dx <= radius; dx++) {
       const x = center.x + dx, y = center.y + dy;
       if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
-      tiles.push(<path key={`aoe${x}-${y}`} d={diamondPath(x, y, dims)} fill="var(--iso-threat)" opacity={0.25} pointerEvents="none" />);
+      tiles.push(<path key={`aoe${x}-${y}`} d={diamondPath(x, y, dims)} fill={THREAT_TINT} opacity={0.25} pointerEvents="none" />);
     }
   // Teinte de MENACE rouge (≠ orange/bleu de l'aperçu joueur).
   return <g pointerEvents="none">{tiles}</g>;

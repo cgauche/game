@@ -6,12 +6,13 @@
 import { Dims, tileCenter, diamondPath } from '../../geometry/iso';
 import { footprintTiles } from '../../state/footprint';
 import type { Pt } from '../../state/path';
+import { GOLD_TINT } from '../highlightTints';
 
 // `lift` = élévation-écran (px) d'un point selon son étage z (multi-niveau) ; défaut `() => 0` ⇒ tracé
 // plan-sol byte-identique pour tous les appelants mono-niveau (z absent ⇒ lift 0 ⇒ tileCenter/diamondPath
 // sans 4ᵉ argument). Un appelant de COMBAT passe `(p) => p.z ? liftAt(...) : 0` → chemin/destination posés
 // au bon étage (rempart) au lieu d'être écrasés sur la cour.
-export function movePreviewEls(path: Pt[], dest: Pt | null, label: string | null, d: Dims, keyPrefix: string, color = 'var(--combat-gold)', footN = 1, lift: (p: Pt) => number = () => 0): JSX.Element[] {
+export function movePreviewEls(path: Pt[], dest: Pt | null, label: string | null, d: Dims, keyPrefix: string, color: string = GOLD_TINT, footN = 1, lift: (p: Pt) => number = () => 0): JSX.Element[] {
   const els: JSX.Element[] = [];
   if (path.length > 1) {
     const pts = path.map((p) => tileCenter(p.x, p.y, d, lift(p))).map((p) => `${p.cx},${p.cy}`).join(' ');

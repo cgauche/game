@@ -23,6 +23,7 @@ import { Dims, depth, diamondPath } from '../../geometry/iso';
 import { buildHighlights, type HighlightsView } from '../builders/highlights';
 import { highlightDepth, highlightJsx } from '../backends/affineHighlights';
 import { movePreviewEls } from './movePreview';
+import { GOLD_TINT } from '../highlightTints';
 import type { Pt } from '../../state/path';
 import type { StageObj } from './objs';
 
@@ -112,12 +113,12 @@ function tapPreviewObjs(battle: BattleState, activeC: Combatant | undefined, dim
   const pvLbl = pv.kind === 'move' ? `Aller (${pv.cost})` : pv.kind === 'run' ? 'Courir' : pv.kind === 'charge' ? (pv.adv ? 'Charger (+1 Av)' : 'Charger') : pv.kind === 'moveAttack' ? 'Rejoindre + attaquer' : 'Attaquer';
   const pvZ = pvDest?.z ?? 0;
   const pvD = pvDest ? depth(pvDest.x, pvDest.y, dims, pvZ) + 0.25 : 0;
-  for (const el of movePreviewEls(pv.kind === 'attack' ? [] : pv.path, pvDest ?? null, pvLbl, dims, 'pv', 'var(--combat-gold)', pv.kind === 'attack' ? 1 : activeC ? footprintN(mountOf(battle, activeC) ?? activeC) : 1, liftOf))
+  for (const el of movePreviewEls(pv.kind === 'attack' ? [] : pv.path, pvDest ?? null, pvLbl, dims, 'pv', GOLD_TINT, pv.kind === 'attack' ? 1 : activeC ? footprintN(mountOf(battle, activeC) ?? activeC) : 1, liftOf))
     out.push({ d: pvD, el });
   if (pvTgt?.pos) {
     const tz = pvTgt.pos.z ?? 0;
     for (const t of footprintTiles(pvTgt.pos, footprintN(pvTgt)))
-      out.push({ d: depth(t.x, t.y, dims, tz) + 0.25, el: <path key={`pv-tgt-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims, tz ? liftAt(t.x, t.y, tz) : 0)} fill="var(--combat-gold)" opacity={0.18} pointerEvents="none" /> }); // tout le bloc N×N d'un grand
+      out.push({ d: depth(t.x, t.y, dims, tz) + 0.25, el: <path key={`pv-tgt-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims, tz ? liftAt(t.x, t.y, tz) : 0)} fill={GOLD_TINT} opacity={0.18} pointerEvents="none" /> }); // tout le bloc N×N d'un grand
   }
   return out;
 }

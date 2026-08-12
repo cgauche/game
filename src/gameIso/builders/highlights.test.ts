@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { emptyScene } from '../../state/scene';
 import type { BattleState } from '../../state/store';
 import { Combatant } from '../../engine/types';
-import { buildHighlights, rangeBandTone, type HighlightsView } from './highlights';
+import { buildHighlights, rangeBandTone, type HighlightEl, type HighlightsView } from './highlights';
 
 function cbt(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number; z?: number }, extra: Partial<Combatant> = {}): Combatant {
   return { id, name: id, kind, pos, size: 'moyenne', conditions: [], wounds: { current: 10, max: 10 }, ...extra } as unknown as Combatant;
@@ -102,23 +102,51 @@ describe('rangeBandTone — teinte dérivée du SIGNE de rangeBandModifier', () 
 });
 
 describe('buildHighlights — bandes de portée du tireur survolé (rangeBandSource)', () => {
-  const scene = () => emptyScene(6, 6);
+  const carte = () => emptyScene(40, 40);
+  const horsCarte = (e: HighlightEl, w: number, h: number) => e.cell.x < 0 || e.cell.y < 0 || e.cell.x >= w || e.cell.y >= h;
 
   it('colore les cases autour du tireur selon la bande de portée (bonus/neutre/malus), rien au-delà de la portée max', () => {
     const b = { combatants: [], zones: [] } as unknown as BattleState;
-    const rangeM = 20;
-    const els = buildHighlights(scene(), b, { ...VIEW, rangeBandSource: { pos: { x: 5, y: 5 }, rangeM } });
+    const rangeM = 20; // Portée×3 = 60 m = 30 cases (mpt = 2)
+    const els = buildHighlights(carte(), b, { ...VIEW, rangeBandSource: { pos: { x: 0, y: 0 }, rangeM } });
     const rb = els.filter((e) => e.kind === 'rangeBand');
-    const at = (dx: number, dy: number) => rb.find((e) => e.cell.x === 5 + dx && e.cell.y === 5 + dy);
+    const at = (dx: number, dy: number) => rb.find((e) => e.cell.x === dx && e.cell.y === dy);
     expect(at(1, 0)).toMatchObject({ tone: 'bonus' });
     expect(at(10, 0)).toMatchObject({ tone: 'neutre' });
     expect(at(25, 0)).toMatchObject({ tone: 'malus' });
-    expect(at(50, 0)).toBeUndefined(); // hors de portée : aucun élément
+    expect(at(31, 0)).toBeUndefined(); // hors de portée : aucun élément
+  });
+
+  it('le semis est BORNÉ à la carte : aucune case hors des dimensions, plafond = w×h', () => {
+    const b = { combatants: [], zones: [] } as unknown as BattleState;
+    // Tireur au centre d'une carte 40×40, Portée 150 m → rayon théorique 225 cases : sans borne le semis
+    // émettait 203 401 éléments (451²) au lieu des 1 600 cases de la carte.
+    const els = buildHighlights(carte(), b, { ...VIEW, rangeBandSource: { pos: { x: 20, y: 20 }, rangeM: 150 } });
+    const rb = els.filter((e) => e.kind === 'rangeBand');
+    expect(rb.filter((e) => horsCarte(e, 40, 40))).toHaveLength(0);
+    expect(rb).toHaveLength(1600); // 40×40 : toute la carte est dans la bande, rien de plus
+  });
+
+  it('un tireur au BORD ne peint que le quart de bandes qui tombe sur la carte', () => {
+    const b = { combatants: [], zones: [] } as unknown as BattleState;
+    const els = buildHighlights(emptyScene(6, 6), b, { ...VIEW, rangeBandSource: { pos: { x: 5, y: 5 }, rangeM: 20 } });
+    const rb = els.filter((e) => e.kind === 'rangeBand');
+    expect(rb.filter((e) => horsCarte(e, 6, 6))).toHaveLength(0);
+    expect(rb).toHaveLength(36);
+  });
+
+  it('empreinte N×N débordant le bord : seules les cases DE LA CARTE reçoivent la teinte d’équipe', () => {
+    // Grande créature (empreinte 2×2) au coin bas-droit : 3 des 4 cases tombent hors carte.
+    const g = cbt('g1', 'enemy', { x: 5, y: 5 }, { size: 'grande' } as Partial<Combatant>);
+    const b = { combatants: [g], zones: [] } as unknown as BattleState;
+    const els = buildHighlights(emptyScene(6, 6), b, VIEW);
+    expect(els.filter((e) => horsCarte(e, 6, 6))).toHaveLength(0);
+    expect(els.map((e) => e.key)).toEqual(['ttg1-0-0']);
   });
 
   it('rangeBandSource absent : aucun élément rangeBand', () => {
     const b = { combatants: [], zones: [] } as unknown as BattleState;
-    const els = buildHighlights(scene(), b, VIEW);
+    const els = buildHighlights(emptyScene(6, 6), b, VIEW);
     expect(els.some((e) => e.kind === 'rangeBand')).toBe(false);
   });
 });

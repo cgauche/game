@@ -12,6 +12,7 @@ import { placingZoneOf, placedZoneValidAt, castSightBlocked } from '../../state/
 import { Dims, diamondPath, diamondCorners } from '../../geometry/iso';
 import { chebyshev } from '../../state/path';
 import type { Pt } from '../../state/path';
+import { ENEMY_CUE_TINT } from '../highlightTints';
 
 export function ZdeTemplate({ battle, hover, pendingCast, pendingSiegeAim, activeC, dims }: {
   battle: BattleState;
@@ -42,7 +43,7 @@ export function ZdeTemplate({ battle, hover, pendingCast, pendingSiegeAim, activ
     }
   }
   if (radius == null || !caster?.pos || ok == null) return null;
-  const col = ok ? 'var(--combat-enemy)' : 'var(--iso-invalid)';
+  const col = ok ? ENEMY_CUE_TINT : 'var(--iso-invalid)';
   const tiles: JSX.Element[] = [];
   for (let dy = -radius; dy <= radius; dy++)
     for (let dx = -radius; dx <= radius; dx++) {

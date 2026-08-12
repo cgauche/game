@@ -57,6 +57,8 @@ export interface HighlightsView {
 
 export function buildHighlights(scene: Scene, battle: BattleState, view: HighlightsView): HighlightEl[] {
   const out: HighlightEl[] = [];
+  const { w: sw, h: sh } = scene.dimensions;
+  const inScene = (x: number, y: number) => x >= 0 && y >= 0 && x < sw && y < sh;
   // Hauteur métrique d'une case : 0 au sol (byte-identique mono-niveau), sinon la surface réelle.
   const hAt = (x: number, y: number, z: number) => (z ? heightAt(scene, x, y, z) : 0);
   const parse = (k: string): [number, number, number] => {
@@ -86,12 +88,14 @@ export function buildHighlights(scene: Scene, battle: BattleState, view: Highlig
     for (let dx = 0; dx < fp; dx++)
       for (let dy = 0; dy < fp; dy++) {
         const x = c.pos.x + dx, y = c.pos.y + dy;
+        if (!inScene(x, y)) continue; // une empreinte N×N débordant le bord ne peint que ses cases de carte
         out.push({ key: `tt${c.id}-${dx}-${dy}`, cell: { x, y, z: cz }, h: hAt(x, y, cz), kind: 'team', hero: c.kind === 'hero', active });
       }
   }
   // Zones persistantes (L11) : fumée opaque / feu translucide — l'occupant voit le danger, à la
   // hauteur RÉELLE de la tuile de zone (t.z) — une zone de fumée/feu d'un combat en hauteur se peint
-  // sur SON étage.
+  // sur SON étage. La borne de carte des zones vit à l'ÉCRITURE (`clampZoneTiles`, zones.ts, appliqué
+  // aux sites de pose) — le builder propage sa source telle quelle.
   (battle.zones ?? []).forEach((zone, zi) => {
     for (const t of zone.tiles) {
       const tz = t.z ?? 0;
@@ -123,18 +127,20 @@ export function buildHighlights(scene: Scene, battle: BattleState, view: Highlig
       out.push({ key: `cand-${id}`, cell: { x: t.pos.x, y: t.pos.y, z: tz }, h: hAt(t.pos.x, t.pos.y, tz), kind: 'ring', tone });
     }
   // Bandes de portée (Bout Portant→Extrême) du tireur SURVOLÉ, au sol autour de sa position — distance
-  // de Chebyshev en cases (même métrique que `combatDistance`, 1x1). Rayon = Portée×3 (hors de portée).
+  // de Chebyshev en cases (même métrique que `combatDistance`, 1x1). Rayon = Portée×3 (hors de portée),
+  // BORNÉ à la carte : le semis ne peint jamais hors des `scene.dimensions` (plafond = w×h cases).
   if (view.rangeBandSource) {
     const { pos, rangeM } = view.rangeBandSource;
     const mpt = sceneMetresPerTile(scene);
     const maxTiles = Math.ceil((rangeM * 3) / mpt); // 1 case = mpt m (LDB Déplacement l.55, défaut 2)
-    for (let dx = -maxTiles; dx <= maxTiles; dx++)
-      for (let dy = -maxTiles; dy <= maxTiles; dy++) {
-        const distanceTiles = Math.max(Math.abs(dx), Math.abs(dy));
+    const x0 = Math.max(0, pos.x - maxTiles), x1 = Math.min(sw - 1, pos.x + maxTiles);
+    const y0 = Math.max(0, pos.y - maxTiles), y1 = Math.min(sh - 1, pos.y + maxTiles);
+    const z = pos.z ?? 0;
+    for (let x = x0; x <= x1; x++)
+      for (let y = y0; y <= y1; y++) {
+        const distanceTiles = Math.max(Math.abs(x - pos.x), Math.abs(y - pos.y));
         const tone = rangeBandTone(distanceTiles, rangeM, mpt);
         if (!tone) continue;
-        const x = pos.x + dx, y = pos.y + dy;
-        const z = pos.z ?? 0;
         out.push({ key: `rb-${x}-${y}`, cell: { x, y, z }, h: hAt(x, y, z), kind: 'rangeBand', tone });
       }
   }
