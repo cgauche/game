@@ -1,6 +1,7 @@
 import { flowFromEffects, testFlow, EMPTY_FLOW } from '../state/flow';
 import { describe, it, expect } from 'vitest';
 import { validateScene, type Warning } from './validateScene';
+import { resolveStake } from '../data';
 import { emptyScene } from './scene';
 import { METRES_PER_LEVEL } from './relief';
 import type { WorldMap, MapPlace } from './worldMap';
@@ -305,6 +306,95 @@ describe('validateScene', () => {
       flow: testFlow({ skill: 'perception' }, flowFromEffects([{ type: 'startDialogue', dialogue: 'absent' }]), EMPTY_FLOW),
     });
     expect(msgs(validateScene([s])).some((m) => /dialogue inexistant/.test(m))).toBe(true);
+  });
+
+  /**
+   * ENJEU d'un Flow AUTHORÉ (#1117, arbitrage user 2026-08-12 / #1262) : « l'enjeu d'un Flow authoré
+   * s'AUTHORE DANS LA SCÈNE — champ stake dans l'éditeur de Flow […] Le validateur de scène exige le
+   * champ sur tout Flow qui LANCE un Test. » Ce que le jet met en jeu appartient au document : aucun
+   * dataset app-owned ne peut le servir, et personne ne peut le deviner à sa place.
+   */
+  it('nœud Test SANS enjeu → erreur ; avec enjeu authoré → aucune', () => {
+    const s = base();
+    s.triggers.push({
+      id: 't-muet',
+      rect: { x: 0, y: 0, w: 1, h: 1 },
+      flow: testFlow({ skill: 'perception', label: 'Guetter la ruelle' }, EMPTY_FLOW, EMPTY_FLOW),
+    });
+    const muet = validateScene([s]);
+    expect(muet.some((w) => w.level === 'error' && w.refId === 't-muet' && /sans enjeu/.test(w.message))).toBe(true);
+
+    const dote = base();
+    dote.triggers.push({
+      id: 't-dote',
+      rect: { x: 0, y: 0, w: 1, h: 1 },
+      flow: testFlow(
+        { skill: 'perception', label: 'Guetter la ruelle', stake: { authored: 'Repérer le guet avant qu’il ne vous repère : sinon l’alarme est donnée.' } },
+        EMPTY_FLOW, EMPTY_FLOW,
+      ),
+    });
+    expect(validateScene([dote])).toEqual([]);
+  });
+
+  it('le jet d’un Flow d’INTERACTION d’entité est validé lui aussi (même porte)', () => {
+    const s = base();
+    s.entities.push({
+      id: 'coffre', kind: 'prop', pos: { x: 1, y: 1 },
+      interact: { flow: testFlow({ skill: 'crochetage', label: 'Crocheter' }, EMPTY_FLOW, EMPTY_FLOW) },
+    });
+    expect(validateScene([s]).some((w) => w.level === 'error' && w.refId === 'coffre' && /sans enjeu/.test(w.message))).toBe(true);
+  });
+
+  /**
+   * G1 — le validateur juge l'enjeu au MÊME critère que le runtime (`stakeSpeaks`) : un enjeu authoré
+   * BLANC est un enjeu absent. Un document de campagne est PORTABLE (édité hors app, à la main ou par
+   * un outil tiers) : tester la seule présence laisserait passer `'   '`, que `resolveStake` refuse
+   * ensuite d'afficher — l'authoring déclarerait bon ce qui casse au jeu.
+   */
+  it('enjeu authoré BLANC = enjeu absent (même critère que `resolveStake`)', () => {
+    const s = base();
+    s.triggers.push({
+      id: 't-blanc',
+      rect: { x: 0, y: 0, w: 1, h: 1 },
+      flow: testFlow({ skill: 'perception', label: 'Guetter', stake: { authored: '   ' } }, EMPTY_FLOW, EMPTY_FLOW),
+    });
+    const w = validateScene([s]).filter((x) => x.level === 'error' && /sans enjeu/.test(x.message));
+    expect(w).toHaveLength(1);
+    expect(() => resolveStake({ authored: '   ' }), 'le runtime refuse déjà ce blanc — les deux portes disent la même chose').toThrow();
+  });
+
+  /**
+   * G2 — un Flow PORTÉ par une feuille d'effet est validé comme tout autre. `petitePriere.reward`
+   * (`scene.ts`) en porte un, et rien ne le déclare : le parcours les trouve PAR LA FORME
+   * (`carriedFlows`) — sans quoi un jet muet y serait silencieux quand le même jet, posé sur un
+   * trigger, est refusé.
+   */
+  it('un jet muet dans un Flow PORTÉ par un effet est refusé comme sur un trigger', () => {
+    const muet = testFlow({ skill: 'priere', label: 'Exaucée ?' }, EMPTY_FLOW, EMPTY_FLOW);
+    const s = base();
+    s.triggers.push({
+      id: 't-priere',
+      rect: { x: 0, y: 0, w: 1, h: 1 },
+      flow: flowFromEffects([{ type: 'petitePriere', reward: muet }]),
+    });
+    const porte = validateScene([s]).filter((w) => w.level === 'error' && /sans enjeu/.test(w.message));
+
+    const temoin = base();
+    temoin.triggers.push({ id: 't-temoin', rect: { x: 0, y: 0, w: 1, h: 1 }, flow: muet });
+    const direct = validateScene([temoin]).filter((w) => w.level === 'error' && /sans enjeu/.test(w.message));
+
+    expect(porte.map((w) => w.message), 'le Flow porté doit dire EXACTEMENT ce que dit le témoin').toEqual(direct.map((w) => w.message));
+    expect(porte).toHaveLength(1);
+  });
+
+  it('l’échéance d’un `delayedEffect` reste validée par le MÊME parcours générique', () => {
+    const s = base();
+    s.triggers.push({
+      id: 't-differe',
+      rect: { x: 0, y: 0, w: 1, h: 1 },
+      flow: flowFromEffects([{ type: 'delayedEffect', afterMinutes: 10, flow: testFlow({ skill: 'perception', label: 'Plus tard' }, EMPTY_FLOW, EMPTY_FLOW) }]),
+    });
+    expect(validateScene([s]).some((w) => w.level === 'error' && /sans enjeu/.test(w.message))).toBe(true);
   });
 
   it('zoneBlast : aucun effet mécanique → erreur ; centre hors carte → avertissement', () => {

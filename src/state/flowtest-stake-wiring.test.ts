@@ -56,6 +56,25 @@ describe('l’enjeu d’un `FlowTest` DESCEND jusqu’à l’étape qui lance, v
     expect(firstStep().stake).toBeUndefined();
   });
 
+  /**
+   * ENJEU AUTHORÉ (#1262 V2 L6c, arbitrage user 2026-08-12) — la forme que porte un Flow de DOCUMENT :
+   * le texte voyage avec la scène, et il descend par le MÊME transport que la référence de dataset,
+   * jusqu'à la MÊME zone de la fenêtre (`resolveStake`, porte unique). Le transport n'invente toujours
+   * rien : ce qui s'affiche est mot pour mot ce que l'auteur a écrit.
+   */
+  it('un enjeu AUTHORÉ par le document descend jusqu’à l’étape et se résout tel qu’écrit', () => {
+    const stake = { authored: 'Franchir la corniche sans tomber : sinon la chute, et l’alerte donnée.' };
+    runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'escalade', stake, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    const step = firstStep();
+    expect(step.stake).toEqual(stake);
+    expect(resolveStake(step.stake!).text).toBe(stake.authored);
+    expect(resolveStake(step.stake!).rule, 'un document ne renvoie à aucune fiche Codex').toBeUndefined();
+  });
+
+  it('FAIL-CLOSED : un enjeu authoré VIDE jette au lieu d’afficher un blanc', () => {
+    expect(() => resolveStake({ authored: '   ' })).toThrow(/enjeu vide/);
+  });
+
   it('bout en bout : le plan d’ESCALADE joué par `runFlow` porte l’enjeu de SA hauteur', () => {
     const plan = planClimb(cliff(), { x: 2, y: 1 }, { x: 2, y: 0 }, false);
     expect(plan?.kind, 'la falaise doit produire un plan à Test (sinon la sonde ne mesure rien)').toBe('test');

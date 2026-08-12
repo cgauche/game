@@ -3511,7 +3511,10 @@
           "test": {
            "skill": "crochetage",
            "difficulty": "intermediaire",
-           "label": "Crocheter le coffre"
+           "label": "Crocheter le coffre",
+           "stake": {
+            "authored": "Forcer la serrure : 5 couronnes dans le coffre, sinon le mécanisme rouillé tient bon."
+           }
           },
           "success": {
            "kind": "seq",
@@ -4616,7 +4619,10 @@
           "test": {
            "skill": "discretion",
            "difficulty": "difficile",
-           "label": "Piller le tronc sous l’œil de Sigmar"
+           "label": "Piller le tronc sous l’œil de Sigmar",
+           "stake": {
+            "authored": "Faire main basse sans être vu : 30 pistoles à la clé ; pris sur le fait, le tronc bascule et vous gagnez 1 Point de Péché."
+           }
           },
           "success": {
            "kind": "seq",
@@ -8032,7 +8038,10 @@
       "test": {
        "skill": "resistance",
        "difficulty": "facile",
-       "label": "Miasmes des égouts"
+       "label": "Miasmes des égouts",
+       "stake": {
+        "authored": "Tenir le coup dans l’air des égouts : sinon la Fièvre du Rongeur vous prend."
+       }
       },
       "success": {
        "kind": "seq",
@@ -8888,7 +8897,10 @@
        "test": {
         "skill": "resistance",
         "difficulty": "intermediaire",
-        "label": "Fouiller les morts du charnier"
+        "label": "Fouiller les morts du charnier",
+        "stake": {
+         "authored": "Fouiller sans se blesser : 18 pistoles dans la bourse du fossoyeur, sinon une Blessure Purulente."
+        }
        },
        "success": {
         "kind": "seq",
@@ -11982,7 +11994,10 @@
        "test": {
         "skill": "athletisme",
         "difficulty": "intermediaire",
-        "label": "Éventrer le cocon sans s’y prendre"
+        "label": "Éventrer le cocon sans s’y prendre",
+        "stake": {
+         "authored": "Ouvrir la soie sans se faire mordre : une potion de guérison intacte, sinon une Infection Mineure."
+        }
        },
        "success": {
         "kind": "seq",
@@ -15539,7 +15554,10 @@
           "test": {
            "skill": "crochetage",
            "difficulty": "accessible",
-           "label": "Crocheter la cage du garde-manger"
+           "label": "Crocheter la cage du garde-manger",
+           "stake": {
+            "authored": "Ouvrir la cage du colporteur : sa liberté, sa bourse de 40 pistoles et 50 XP ; raté, le crochet ripe et il reste dedans."
+           }
           },
           "success": {
            "kind": "seq",
@@ -19273,7 +19291,10 @@
        "test": {
         "skill": "discretion",
         "difficulty": "difficile",
-        "label": "Chiper l’or sous l’œil clos du dragon"
+        "label": "Chiper l’or sous l’œil clos du dragon",
+        "stake": {
+         "authored": "Prendre l’or sans un tintement : 8 couronnes ; un seul bruit et le dragon se réveille — combat."
+        }
        },
        "success": {
         "kind": "seq",
@@ -22396,7 +22417,10 @@
        "test": {
         "skill": "resistance",
         "difficulty": "facile",
-        "label": "Fouiller le noyé sans frémir"
+        "label": "Fouiller le noyé sans frémir",
+        "stake": {
+         "authored": "Faire les poches du noyé sans y laisser sa santé : 22 pistoles, sinon une Infection Mineure."
+        }
        },
        "success": {
         "kind": "seq",
@@ -23686,7 +23710,10 @@
       "test": {
        "skill": "resistance",
        "difficulty": "intermediaire",
-       "label": "Les remontées du puits maudit"
+       "label": "Les remontées du puits maudit",
+       "stake": {
+        "authored": "Encaisser les miasmes du puits : sinon la Courante Galopante se déclare."
+       }
       },
       "success": {
        "kind": "seq",

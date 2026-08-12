@@ -255,25 +255,21 @@ export function literalTestsWithoutStake(src: string): number[] {
  *  que les producteurs de `testFlow` sont dotés ; 4 sur 3 fichiers depuis que le HORS-COMBAT est doté
  *  (Test étendu, Commandant d'équipe, Avantage par Compétence, Ragot d'auberge, marché terrestre ×2,
  *  Chirurgie/rééducation, Recherche active, port ×3) ; 3 sur 2 depuis que la Prière d'un Présage dit
- *  le sien (#1262 V2 L6b) — `src/state` est SOLDÉ pour cette forme. SUR-ENSEMBLE de `BASELINE_FLOW`
- *  (les arguments de `testFlow` ont la même forme), donc chaque fichier y compte au moins autant.
- *  Décroissante comme les autres : un site doté ABAISSE sa ligne. */
-const BASELINE_LITERAL: Record<string, number> = {
-  // Flows AUTHORÉS de scène (couverture `src/scenes`) — mêmes sites que `BASELINE_FLOW`, même dette :
-  'scenes/test-scenarios/opera.ts': 2,
-  'scenes/test-scenarios/piege-caveau.ts': 1,
-};
+ *  le sien (#1262 V2 L6b) ; VIDE depuis que les Flows AUTHORÉS de scène ont leur forme d'enjeu
+ *  (#1262 V2 L6c, `AuthoredStake`) — `src/state` ET `src/scenes` sont soldés pour cette forme.
+ *  SUR-ENSEMBLE de `BASELINE_FLOW` (les arguments de `testFlow` ont la même forme), donc chaque
+ *  fichier y compte au moins autant. Décroissante comme les autres : un site doté ABAISSE sa ligne. */
+const BASELINE_LITERAL: Record<string, number> = {};
 
 /** Baseline NOMINATIVE des `FlowTest` muets. `src/state` est SOLDÉ (vague 5) : ses 7 producteurs de
  *  Flow, joués par `runCombatFlow` OU `runFlow`, fournissent leur `FlowTest.stake` (Escalade et Saut →
  *  la fiche Chute ; Surprise → l'État Surpris ; Vigilance → le Talent ; Focalisation interrompue et
- *  Récolte → leur fiche ; Piège-lame → l'Atout qui la porte). Restent les Flows AUTHORÉS des documents
- *  de scène, entrés dans la couverture avec `src/scenes` — leur enjeu s'authore DANS le document
- *  (`FlowTest.stake` est pur-donnée, sérialisable), il ne se code pas ici. */
-const BASELINE_FLOW: Record<string, number> = {
-  'scenes/test-scenarios/opera.ts': 2, // Perception (repérer les pétards / le voleur) : enjeu à authorer avec la scène
-  'scenes/test-scenarios/piege-caveau.ts': 1, // Athlétisme (esquiver les piques de la dalle) : idem
-};
+ *  Récolte → leur fiche ; Piège-lame → l'Atout qui la porte). VIDE depuis #1262 V2 L6c : les Flows
+ *  AUTHORÉS des documents de scène ont leur forme d'enjeu (`AuthoredStake` — le texte voyage avec le
+ *  document, arbitrage user 2026-08-12), et c'est `validateScene` qui les tient (structurel, il voit
+ *  AUSSI les Flows des projets JSON que ce scan de sources ne lit pas). Ce scan garde ce que le
+ *  validateur ne voit pas : un `testFlow` de source TS hors document validé. */
+const BASELINE_FLOW: Record<string, number> = {};
 
 /**
  * Baseline NOMINATIVE (fichier → étapes qui lancent, encore sans enjeu). VIDE depuis #1262 V2 L6b :
@@ -536,5 +532,42 @@ describe('« un signe, un sens » — les enjeux et leurs conséquences parlent 
     expect(FACTEUR.test('vitesse −20 % aujourd’hui')).toBe(false);
     expect(FACTEUR.test('vitesse ÷2 aujourd’hui')).toBe(false);
     expect(FACTEUR.test('Survitesse M+5 — 2 Dégât(s)')).toBe(false); // un multiplicateur ENTIER n'est pas visé
+  });
+});
+
+/**
+ * L'enjeu AUTHORÉ reste au CONTENU (#1262 V2 L6c). `AuthoredStake` (`{ authored: '…' }`) est la forme
+ * ouverte aux DOCUMENTS de campagne par l'arbitrage user du 2026-08-12 — « l'enjeu d'un Flow authoré
+ * s'AUTHORE DANS LA SCÈNE ». Ce n'est PAS une amnistie du texte au call-site : le MOTEUR (`src/state`,
+ * `src/engine`) continue de passer par les portes fail-closed de dataset, sans quoi la zone d'enjeu
+ * redeviendrait le champ libre que l'arbitrage Z5 a fermé — et une paraphrase de règle y rentrerait
+ * par la fenêtre.
+ *
+ * COUVERTURE, nommée : les sources de `src/state` et `src/engine`, hors tests. L'ÉDITEUR
+ * (`src/ui/editor`) en écrit, lui, par construction — c'est la plume de l'auteur ; les documents
+ * (`src/scenes`, projets JSON) en portent.
+ */
+describe('l’enjeu AUTHORÉ reste au contenu — le moteur passe par les datasets (#1262 V2 L6c)', () => {
+  const MOTEUR = [join(SRC, 'state'), join(SRC, 'engine')];
+  // La FORME du littéral d'enjeu authoré : `{ authored: … }` — `AuthoredStake` n'a que ce champ (ses
+  // deux autres sont `never`), il ouvre donc toujours son accolade. Une ANNOTATION de paramètre
+  // (`captureMutation(current: Scene, authored: Scene)`) ne pose aucun enjeu et suit une virgule.
+  const AUTHORED = /\{\s*authored\s*:/;
+
+  it('aucun enjeu authoré à la main dans `src/state` / `src/engine`', () => {
+    const fautifs: string[] = [];
+    for (const f of MOTEUR.flatMap(sourceFiles)) {
+      const s = stripLiterals(readFileSync(f, 'utf8'));
+      if (AUTHORED.test(s)) fautifs.push(keyOf(f));
+    }
+    expect(fautifs, ['Enjeu AUTHORÉ dans le moteur — un jet du moteur nomme son dataset (`combatStakeRef`…), il n’écrit pas sa phrase :', ...fautifs].join('\n')).toEqual([]);
+  });
+
+  it('FAIL-CLOSED : le motif attrape bien un enjeu authoré, et laisse passer une réf de dataset', () => {
+    expect(AUTHORED.test(stripLiterals(`const s = { stake: { authored: 'ce que le jet met en jeu' } };`))).toBe(true);
+    expect(AUTHORED.test(stripLiterals(`const s = { stake: combatStakeRef('climbTest') };`))).toBe(false);
+    expect(AUTHORED.test(stripLiterals(`// authored: un commentaire n'est pas un site`))).toBe(false);
+    expect(AUTHORED.test(stripLiterals(`export function captureMutation(current: Scene, authored: Scene) {}`)), 'une ANNOTATION de type n’est pas un enjeu posé').toBe(false);
+    expect(AUTHORED.test(stripLiterals(`const s = { stake: { authored: texte } };`)), 'valeur par variable : un enjeu posé quand même').toBe(true);
   });
 });

@@ -176,6 +176,18 @@
     }
   },
   {
+    "id": "miscast-row-test",
+    "label": "Incantation Imparfaite — Test de la ligne tirée",
+    "kind": "miscastRowTest",
+    "rule": "incantation-imparfaite",
+    "ruleCategory": "regles",
+    "source": {
+      "book": "livre-de-base",
+      "page": 236,
+      "note": "LDB 46 l.85"
+    }
+  },
+  {
     "id": "wrath-table",
     "label": "Colère des dieux",
     "kind": "wrathTable",

@@ -225,12 +225,13 @@ export function rollTableStep(decl: CascadeTableDecl, rng: RNG): CascadeTableRes
  * la catégorie Codex DÉCLARÉE PAR LA TABLE (`TableStepDef.entryCategory`) — le pilote de tirage n'a
  * donc rien à nommer, et un `kind` qui tire sur N tables descend chaque fois dans la bonne.
  *
- * SANS enjeu posé, ou table sans catégorie : la référence est rendue TELLE QUELLE (repli déclaré sur
- * le foyer du `kind`, jamais un renvoi fabriqué). PURE.
+ * SANS enjeu posé, table sans catégorie, ou enjeu AUTHORÉ par un document (aucune clé de dataset où
+ * descendre) : la référence est rendue TELLE QUELLE (repli déclaré sur le foyer du `kind`, jamais un
+ * renvoi fabriqué). PURE.
  */
 export function stakeAtTableRow(stake: StakeRef | undefined, decl: CascadeTableDecl, result: CascadeTableResult): StakeRef | undefined {
   const category = tableStepDefs[decl.tableId]?.entryCategory;
-  if (!stake || !category) return stake;
+  if (!stake || !category || stake.key == null) return stake;
   return { ...stake, key: { ...stake.key, entryId: result.id, entryCategory: category } };
 }
 

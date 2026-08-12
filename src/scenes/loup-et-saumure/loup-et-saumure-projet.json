@@ -685,7 +685,10 @@
           "test": {
            "skill": "intuition",
            "difficulty": "difficile",
-           "label": "Intuition — quelque chose cloche chez Kramer"
+           "label": "Intuition — quelque chose cloche chez Kramer",
+           "stake": {
+            "authored": "Percer le masque de Dame Kramer : vous la soupçonnez pour la suite du voyage ; raté, elle passe pour une négociante ordinaire."
+           }
           },
           "success": {
            "kind": "seq",
@@ -2072,7 +2075,10 @@
           "test": {
            "skill": "intuition",
            "difficulty": "difficile",
-           "label": "Intuition — la nuit du chat"
+           "label": "Intuition — la nuit du chat",
+           "stake": {
+            "authored": "La coincer sur son alibi : démasquée, le sabotage du Grimm cesse ; raté, elle garde les mains libres et le navire continue de souffrir."
+           }
           },
           "success": {
            "kind": "seq",

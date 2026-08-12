@@ -21,7 +21,7 @@
 import { RNG, defaultRNG, d100, type DiceSpec } from './dice';
 import { findTableEntry } from './tables';
 import { rule } from './policy';
-import { findDomainById } from '../data';
+import { findDomainById, combatStakeRef } from '../data';
 import { GameOp, Formula } from './ops';
 import { Difficulty } from './types';
 // Type-only (effacé à la compilation, comme `domainAttributes`/`ops` importent déjà `TriggeredEffect`) :
@@ -352,10 +352,21 @@ function miscastTables(): Record<MiscastSeverity, Row[]> {
  *  le combattant qui subit la maladresse — c'est lui la « cible » du sous-Flow joué par `applyMiscast`). */
 const doOps = (ops: GameOp[]): Flow => ({ kind: 'do', effect: { type: 'ops', on: 'target', ops } });
 
+/** Catégorie Codex de la LIGNE tirée, par table — porte (b) de `entryCategoryOf` (`src/data`) : le
+ *  `kind` d'enjeu sert les trois tables, seule la sévérité dit sur laquelle la ligne vit. */
+const MISCAST_ROW_CATEGORY: Record<MiscastSeverity, string> = {
+  mineure: 'miscastMinor',
+  majeure: 'miscastMajor',
+  colere: 'miscastWrath',
+};
+
 /** Construit le nœud de Flow `test` d'une entrée (« Test de X Difficulté ou onFail » ; palier
  *  `onFailHard` via Condition Flow `slThreshold ≤ dr` dans la branche d'échec — comme Lot 4b). La
- *  branche `success` est vide (le Test réussi = aucun effet). */
-function mkTest(t: NestedTest): Flow {
+ *  branche `success` est vide (le Test réussi = aucun effet). L'ENJEU (#1117) descend à la LIGNE qui
+ *  exige ce Test : sa fiche est le foyer, et l'issue se lit aux chips d'ops de la branche d'échec —
+ *  l'entrée de catalogue ne porte donc aucun gabarit. Forme DÉJÀ EMPLOYÉE, mesurée : 3 entrées sur 34
+ *  de `combat-stakes.json` (miscast-row-test, ambush-surprise, ambush-vigilance). */
+function mkTest(t: NestedTest, rowId: string, severity: MiscastSeverity): Flow {
   const fail: Flow = t.onFailHard
     ? {
         kind: 'seq',
@@ -367,7 +378,10 @@ function mkTest(t: NestedTest): Flow {
     : doOps(t.onFail);
   return {
     kind: 'test',
-    test: { ...(t.skill ? { skill: t.skill } : {}), ...(t.characteristic ? { characteristic: t.characteristic } : {}), difficulty: t.difficulty },
+    test: {
+      ...(t.skill ? { skill: t.skill } : {}), ...(t.characteristic ? { characteristic: t.characteristic } : {}), difficulty: t.difficulty,
+      stake: combatStakeRef('miscastRowTest', { entryId: rowId, entryCategory: MISCAST_ROW_CATEGORY[severity] }),
+    },
     success: { kind: 'seq', steps: [] },
     fail,
   };
@@ -477,7 +491,7 @@ export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, si
       }
       labels.push(`${sub.label} (${r})`);
       ops.push(...rowOps(sub, 0, domainId));
-      if (sub.test) tests.push(mkTest(sub.test));
+      if (sub.test) tests.push(mkTest(sub.test, sub.id, 'mineure'));
     }
     return {
       severity,
@@ -493,7 +507,7 @@ export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, si
   }
 
   const ops = rowOps(row, sinPoints, domainId);
-  const testFlow = row.test ? mkTest(row.test) : undefined;
+  const testFlow = row.test ? mkTest(row.test, row.id, severity) : undefined;
   const applied = ops.length || testFlow ? ` [appliqué]` : ` [arbitrage MJ]`;
   return {
     severity,

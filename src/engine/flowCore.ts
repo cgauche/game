@@ -379,11 +379,14 @@ export function flowTestGateOpen(ft: FlowTest, cc: ConditionCtx): boolean {
  *  SANS les branches (portées par le nœud Flow `test`). Source UNIQUE : `Effect` 'test' est normalisé
  *  vers cette forme à l'exécution (un seul ouvreur de modale `openSkillTest`). */
 export interface FlowTest {
-  /** ENJEU du Test (#1117) — RÉFÉRENCE de donnée, jamais un texte. C'est la TROISIÈME forme qui lance
-   *  (après l'étape de cascade posée à la main et la `RollRequest` du seam) : `resolveFlowTest` bâtit
-   *  son étape via `simpleTriggeredTestStep`, qui n'a aucun moyen de deviner ce que le Flow met en
-   *  jeu. Le producteur du Flow le fournit ici — y compris un Flow AUTHORÉ (la clé est pur-donnée,
-   *  sérialisable). */
+  /** ENJEU du Test (#1117). C'est la TROISIÈME forme qui lance (après l'étape de cascade posée à la
+   *  main et la `RollRequest` du seam) : `resolveFlowTest` bâtit son étape via
+   *  `simpleTriggeredTestStep`, qui n'a aucun moyen de deviner ce que le Flow met en jeu — le
+   *  producteur le fournit ici. DEUX provenances, une seule porte de résolution (`resolveStake`) :
+   *  le MOTEUR nomme un dataset (`combatStakeRef`…), un DOCUMENT de campagne écrit sa phrase
+   *  (`AuthoredStake` — arbitrage user 2026-08-12, l'enjeu d'un Flow authoré s'authore dans la scène,
+   *  et `validateScene` le refuse muet). Pur-donnée dans les deux cas : la valeur voyage en save et
+   *  en JSON de campagne. */
   stake?: StakeRef;
   skill?: string;
   /** Spécialisation ciblée (Métier (Serrurier), Savoir (Magie)…) — précise QUELLE instance de `skill`
@@ -804,6 +807,42 @@ export function sanitizeFlow<E = EffectOp>(flow: Flow<E> | null | undefined, san
   }
 }
 
+/** Champ COMPAGNON obligatoire de chaque forme de nœud (`Flow`) — le second critère de reconnaissance :
+ *  un `kind` seul ne suffit pas (l'algèbre des `Condition` en porte un aussi, et rien n'interdit à une
+ *  donnée future de nommer un champ `kind`). Un objet qui a LES DEUX est un nœud de Flow. */
+const FLOW_SHAPE: Record<string, string> = { seq: 'steps', do: 'effect', if: 'then', test: 'success', choice: 'yes' };
+
+/** Cette valeur EST-elle un nœud de Flow ? Reconnaissance par la FORME (kind + champ compagnon), jamais
+ *  par l'endroit où on l'a trouvée. PURE. */
+export function isFlowNode(v: unknown): v is Flow<unknown> {
+  if (typeof v !== 'object' || v === null) return false;
+  const kind = (v as { kind?: unknown }).kind;
+  return typeof kind === 'string' && kind in FLOW_SHAPE && FLOW_SHAPE[kind] in (v as object);
+}
+
+/**
+ * Flows PORTÉS par une feuille d'effet, trouvés PAR LA FORME — un effet peut en embarquer (l'échéance
+ * d'un `delayedEffect`, la récompense d'une `petitePriere`), et rien dans le vocabulaire des effets ne
+ * les DÉCLARE : ce sont des champs `Flow` ordinaires, sur n'importe quel type, à n'importe quelle
+ * profondeur. Une liste nominative de types porteurs serait donc périmée au prochain effet écrit — et
+ * ce qui échappe à ce parcours échappe à TOUTE validation d'arbre (jets muets compris).
+ *
+ * Le parcours descend dans les objets et tableaux de la feuille, s'arrête au PREMIER nœud rencontré
+ * (l'arbre sous lui est celui de `walkFlow`, qui le reprendra), et se protège des cycles. PURE.
+ */
+export function carriedFlows<E>(effect: E): Flow<E>[] {
+  const out: Flow<E>[] = [];
+  const seen = new Set<object>();
+  const walk = (v: unknown) => {
+    if (v == null || typeof v !== 'object' || seen.has(v as object)) return;
+    seen.add(v as object);
+    if (Array.isArray(v)) { for (const x of v) walk(x); return; }
+    if (isFlowNode(v)) { out.push(v as Flow<E>); return; }
+    for (const x of Object.values(v as Record<string, unknown>)) walk(x);
+  };
+  walk(effect);
+  return out;
+}
 /** Visite RÉCURSIVE de tous les nœuds d'un Flow (branches `if`/`test` comprises) — pour la validation
  *  (effets référencés, bornes des conditions horaires) sur l'arbre ENTIER, pas seulement le 1er niveau. */
 export function walkFlow<E = EffectOp>(flow: Flow<E>, visit: (node: Flow<E>) => void): void {

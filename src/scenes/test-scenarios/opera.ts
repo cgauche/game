@@ -130,6 +130,7 @@ const ents: SceneEntity[] = [
           skill: 'Perception', difficulty: 'complexe',
           easierIf: { hasSkill: { id: 'projectiles', spec: 'poudre-noire' }, steps: 1 },
           label: 'Examiner la plante en pot',
+          stake: { authored: 'Trouver le détonateur sous le feuillage : sinon la charge de l’antichambre reste amorcée, et la loge royale saute à l’heure dite.' },
         },
         flowFromEffects([
           { type: 'journal', text: 'Sous le feuillage : le pot est bourré de poudre à canon, relié à un détonateur. Vous arrachez le détonateur — la bombe est neutralisée.' },
@@ -248,7 +249,10 @@ const spec: MapSpec = {
               { kind: 'do', effect: { type: 'zoneBlast', center: { x: 9, y: 8 }, radius: 1, ops: [{ op: 'wounds', amount: 2 }] } },
               { kind: 'do', effect: { type: 'journal', text: 'Une volée de pétards éclate sur le siège du professeur Pakker ! Le spectacle s’interrompt dans les cris — mais sans panique. Dans le brouhaha, une petite silhouette se faufile sous son fauteuil…' } },
               testFlow(
-                { skill: 'Perception', difficulty: 'difficile', label: 'Repérer le voleur dans le brouhaha' },
+                {
+                  skill: 'Perception', difficulty: 'difficile', label: 'Repérer le voleur dans le brouhaha',
+                  stake: { authored: 'Repérer la silhouette glissée sous le fauteuil du professeur Pakker : sinon les clés de l’École impériale d’artillerie partent avec elle.' },
+                },
                 flowFromEffects([
                   { type: 'journal', text: 'Vous surprenez un gnome glissé sous le fauteuil du professeur — il détale les mains vides. Les clés de l’École d’artillerie sont sauves.' },
                   { type: 'setFlag', flag: 'glimbrinDejoue' },

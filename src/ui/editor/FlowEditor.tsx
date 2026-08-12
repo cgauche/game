@@ -63,6 +63,24 @@ export function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: F
         {/* Outil : picker catalogue (stocke l'id) avec repli nom pour les objets CUSTOM. */}
         <RefField cfg={{ ds: 'trappings', freeText: true }} value={test.tool} onChange={(v) => upd({ tool: v as string | undefined })} />
       </div>
+      {/* ENJEU (#1117, arbitrage user 2026-08-12 / #1262) : ce que le jet met en jeu s'authore ICI, avec
+          la scène — `validateScene` refuse un jet muet. Un enjeu de CATALOGUE (Flow produit par le
+          moteur, jamais par cet éditeur) reste en lecture seule : sa phrase vit dans la donnée. */}
+      <div className="tf-row">
+        {test.stake?.key ? (
+          <span className="dr" title="Enjeu servi par un dataset du moteur — il s’édite dans sa donnée, pas dans la scène.">
+            Enjeu : {test.stake.key.dataset}/{test.stake.key.kind} (catalogue)
+          </span>
+        ) : (
+          <input
+            style={{ flex: 1 }}
+            placeholder="Enjeu — ce que ce jet met en jeu, annoncé au joueur AVANT de lancer"
+            title="Enjeu du jet : la phrase lue par le joueur dans la fenêtre de jet. Dites la conséquence RÉELLE des branches (ce que la réussite gagne, ce que l’échec coûte)."
+            value={test.stake?.authored ?? ''}
+            onChange={(e) => upd({ stake: e.target.value.trim() ? { authored: e.target.value } : undefined })}
+          />
+        )}
+      </div>
       {isSocialTest(test.skill, test.characteristic) && (
         <div className="tf-row">
           <input

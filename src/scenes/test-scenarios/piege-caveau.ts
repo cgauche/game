@@ -77,7 +77,10 @@ const scene = buildScene({
       rect: { x: 5, y: 4, w: 2, h: 3 },
       once: true,
       flow: testFlow(
-        { skill: 'Athlétisme', difficulty: 'intermediaire', label: 'Esquiver les piques de la dalle' },
+        {
+          skill: 'Athlétisme', difficulty: 'intermediaire', label: 'Esquiver les piques de la dalle',
+          stake: { authored: 'Se figer à temps sur la dalle : sinon les piques frappent le groupe, l’alarme retentit et la herse du trésor se verrouille.' },
+        },
         flowFromEffects([{ type: 'journal', text: 'Un déclic — vous vous figez juste à temps, les piques claquent dans le vide.' }]),
         flowFromEffects([
           { type: 'ops', on: 'party', ops: [{ op: 'wounds', amount: 5 }, { op: 'condition', id: 'a-terre' }] },

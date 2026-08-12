@@ -399,13 +399,13 @@ describe('CHEMIN RÉEL — la règle d’une étape de maladie est celle du SYMP
     const step = p!.participants.find((s) => s.kind === 'diseaseTick');
     expect(step, 'la nuit d’un malade porte le Test de cycle du symptôme').toBeTruthy();
     expect(step!.meta?.symptomId, 'le symptôme voyage jusqu’à l’étape').toBe('blesse');
-    expect(step!.stake!.key.entryId, 'la clé d’enjeu NOMME l’entrée jouée').toBe('blesse');
+    expect(step!.stake!.key!.entryId, 'la clé d’enjeu NOMME l’entrée jouée').toBe('blesse');
     expect(resolveStake(step!.stake!).rule, 'le renvoi pointe la fiche du SYMPTÔME').toEqual({ category: 'symptoms', id: 'blesse' });
     // REPLI prouvé AU BÂTISSEUR, sur le MÊME chemin réel : une étape SANS entrée jouée (Récupération)
     // ne fabrique aucun `entryId` et garde la fiche de son `kind`.
     const recovery = p!.participants.find((s) => s.kind === 'recovery');
     expect(recovery, 'la nuit porte aussi le Test de Récupération').toBeTruthy();
-    expect(recovery!.stake!.key.entryId, 'aucune entrée jouée : pas d’entryId fabriqué').toBeUndefined();
+    expect(recovery!.stake!.key!.entryId, 'aucune entrée jouée : pas d’entryId fabriqué').toBeUndefined();
     expect(resolveStake(recovery!.stake!).rule).toEqual({ category: 'regles', id: 'guerison-des-blessures' });
   });
 });

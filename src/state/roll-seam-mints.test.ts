@@ -99,8 +99,8 @@ describe('#1262 — tableStep / tableStepDone : DEUX entrées, jamais un drapeau
     })!;
     expect(step.table!.result!.id).toBe('haute');
     expect(stepInteraction(step), 'une table résolue s’affiche, elle ne se retire pas').toBe('affichage');
-    expect(step.stake!.key.entryId, 'la ligne jouée, pas le kind').toBe('haute');
-    expect(step.stake!.key.entryCategory, 'catégorie DÉCLARÉE PAR LA TABLE').toBe('mutations');
+    expect(step.stake!.key!.entryId, 'la ligne jouée, pas le kind').toBe('haute');
+    expect(step.stake!.key!.entryCategory, 'catégorie DÉCLARÉE PAR LA TABLE').toBe('mutations');
   });
 
   /**
@@ -277,7 +277,7 @@ describe('#1262 — les portes d’APPEND', () => {
     });
     const [st] = etapes();
     expect(st.table!.result!.id).toBe('haute');
-    expect(st.stake!.key.entryId, 'un append ne court-circuite pas la re-pose post-tirage').toBe('haute');
+    expect(st.stake!.key!.entryId, 'un append ne court-circuite pas la re-pose post-tirage').toBe('haute');
     expect(st.outcome).toHaveLength(1);
   });
 });

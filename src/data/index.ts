@@ -290,13 +290,36 @@ export interface StakeKey {
   entryCategory?: string;
 }
 
-/** RÉFÉRENCE d'enjeu portée par une entrée de jet (étape de cascade, pending) : la clé de la donnée
- *  + les valeurs CALCULÉES par le flux pour ses trous. C'est la SEULE forme acceptée par le type —
- *  un littéral de texte au call-site ne compile pas (arbitrage Z5 appliqué à la zone d'enjeu). */
-export interface StakeRef {
+/** RÉFÉRENCE d'enjeu vers un DATASET : la clé de la donnée + les valeurs CALCULÉES par le flux pour
+ *  ses trous. Seule forme ouverte au MOTEUR — un littéral de texte au call-site n'y compile pas
+ *  (arbitrage Z5 appliqué à la zone d'enjeu), les producteurs passent par les portes fail-closed
+ *  (`combatStakeRef`, `flowStakeRef`, `nightStakeRef`, `voyageStakeRef`, `activityStakeRef`,
+ *  `weatherStakeRef`). */
+export interface CatalogStake {
   key: StakeKey;
   values?: Record<string, string | number>;
+  authored?: never;
 }
+
+/** ENJEU AUTHORÉ par un DOCUMENT DE CONTENU (Flow d'une scène/campagne) — arbitrage user 2026-08-12
+ *  (#1262) : « l'enjeu d'un Flow authoré s'AUTHORE DANS LA SCÈNE — champ stake dans l'éditeur de Flow,
+ *  comme le reste du contenu de campagne ». Un jet de scène met en jeu SA situation, pas une règle du
+ *  moteur : son enjeu voyage avec le document (JSON portable), il ne pointe aucun dataset app-owned —
+ *  une réf de catalogue y serait pendante à la première campagne tierce.
+ *
+ *  RÉSERVÉ au contenu : `src/state`/`src/engine` n'en écrivent aucun (garde
+ *  `cascade-step-stake-guard.test.ts`, volet « l'enjeu AUTHORÉ reste au contenu ») — c'est la porte
+ *  ouverte par l'arbitrage, pas une amnistie du texte au call-site. Aucun foyer de règle : le
+ *  document ne renvoie à aucune fiche Codex. */
+export interface AuthoredStake {
+  authored: string;
+  key?: never;
+  values?: never;
+}
+
+/** ENJEU d'une entrée de jet (étape de cascade, pending, `FlowTest`) : réf de dataset OU texte
+ *  authoré par le document. Les deux passent par la MÊME porte de résolution (`resolveStake`). */
+export type StakeRef = CatalogStake | AuthoredStake;
 
 /** ENJEU RÉSOLU rendu par la surface : le texte de la donnée (trous remplis) + la fiche de règle
  *  DÉRIVÉE de la même entrée — le producteur ne nomme ni l'un ni l'autre.
@@ -571,13 +594,30 @@ export function flowStakeRef(
   };
 }
 
+/** L'enjeu PARLE-t-il ? PRÉDICAT partagé par le RÉSOLVEUR (qui jette sinon) et par le VALIDATEUR de
+ *  scène (qui refuse le document) — une seule définition de « utilisable », sans quoi l'authoring
+ *  déclarerait bon ce que le runtime refuse. Un enjeu authoré BLANC ne dit rien : un document portable
+ *  peut être édité hors de l'app (JSON à la main, outil tiers), et `'   '` y passerait la présence.
+ *  Une réf de dataset parle par construction (ses portes sont fail-closed à la construction). PUR. */
+export function stakeSpeaks(stake: StakeRef | undefined): boolean {
+  if (!stake) return false;
+  return stake.authored != null ? !!stake.authored.trim() : true;
+}
+
 /** RÉSOLVEUR UNIQUE d'enjeu (#1117) — la seule porte qui transforme une `StakeRef` en texte affichable.
  *  FAIL-CLOSED aux DEUX bouts : une clé sans entrée JETTE (une surface qui demande son enjeu et n'en
  *  reçoit AUCUN en silence, c'est l'étape muette qu'on a supprimée), et un trou sans valeur JETTE
  *  aussi (un « {driftKm} » affiché tel quel serait un texte cassé rendu au joueur).
  *  Une entrée SANS gabarit rend un enjeu sans `text` : ce n'est pas un silence — son issue est dite
- *  par les chips d'ops du jet, et son foyer de règle reste rendu. */
+ *  par les chips d'ops du jet, et son foyer de règle reste rendu.
+ *  ENJEU AUTHORÉ (`AuthoredStake`, Flow d'un document de scène) : le document EST la source, il n'y a
+ *  ni entrée à chercher ni trou à remplir — le texte sort tel qu'authoré, sans foyer de règle. La
+ *  porte reste UNIQUE : la surface ne connaît toujours que `resolveStake`. */
 export function resolveStake(ref: StakeRef): ResolvedStake {
+  if (ref.authored != null) {
+    if (!stakeSpeaks(ref)) throw new Error('resolveStake(authoré) : enjeu vide — un Flow qui LANCE dit ce qu\'il met en jeu');
+    return { text: ref.authored };
+  }
   const entry = stakeEntry(ref.key);
   if (!entry) {
     throw new Error(`resolveStake('${ref.key.dataset}/${ref.key.kind}') : aucune entrée d'enjeu — une surface qui LANCE dit ce qu'elle met en jeu`);

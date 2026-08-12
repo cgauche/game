@@ -1182,12 +1182,16 @@ interface MonoBase {
   /** ENJEU du jet (#1117). ENCORE optionnel, et le reste est CHIFFRÉ : des 43 sites d'appel du mint
    *  en production, 20 étaient muets à la sonde `tsc` du lot (« `stake` requis ») ; 18 sont dotés,
    *  il en reste DEUX, et c'est le MÊME maillon — les fabriques d'étape de `combat/triggeredTest.ts`
-   *  (l.203 simple, l.523 opposée), génériques : elles TRANSMETTENT `FlowTest.stake`, optionnel parce qu'un
-   *  Flow AUTHORÉ dans un document de scène n'a aujourd'hui aucun dataset d'enjeu où pointer
-   *  (3 sites, `BASELINE_FLOW` de `cascade-step-stake-guard`). Leur donner un repli générique serait
-   *  l'enjeu tautologique que le contrat interdit (« le transport n'en invente pas »,
-   *  `flowtest-stake-wiring.test.ts`). Le murage de cette famille attend donc CETTE porte-là, pas une
-   *  dotation de plus. */
+   *  (l.203 simple, l.523 opposée), génériques : elles TRANSMETTENT `FlowTest.stake`.
+   *
+   *  CE QUI TIENT ENCORE LA PORTE, re-mesuré le 2026-08-12 (#1262 V2 L6c) : ce n'est PLUS le vocabulaire
+   *  d'authoring (les Flows de DOCUMENT ont leur forme, `AuthoredStake`, et `validateScene` les exige),
+   *  ce sont les FlowTest authorés en DONNÉE app-owned — 74 nœuds `kind:'test'` muets dans
+   *  `src/data/*.json` (spells 46, trappings 14, etats 3, talents 3, traits 3, maneuvers 2, qualities 2,
+   *  symptoms 1), hors de la couverture du cliquet (il ne scanne que des sources TS). Rendre `stake`
+   *  requis ICI ferait de chacun d'eux un jet refusé au runtime. Le murage attend leur dotation, pas
+   *  une porte de plus ; un repli générique resterait l'enjeu tautologique que le contrat interdit
+   *  (« le transport n'en invente pas », `flowtest-stake-wiring.test.ts`). */
   stake?: StakeRef;
   meta?: CascadeStepMeta;
   /** HYBRIDE jet + RÉVÉLATION (#1262 B5) : la charge riche qui met le jet en situation. */

@@ -79,7 +79,7 @@ describe('MultiRollList — PV du jour : une bande par rubrique, une rangée par
       const parGroupe = new Map<string, Set<string>>();
       for (const e of es) {
         if (!e.group || !e.stake) continue;
-        const cle = `${e.stake.key.dataset}/${e.stake.key.kind}/${e.stake.key.entryId ?? ''}`;
+        const cle = `${e.stake.key!.dataset}/${e.stake.key!.kind}/${e.stake.key!.entryId ?? ''}`;
         parGroupe.set(e.group, (parGroupe.get(e.group) ?? new Set()).add(cle));
       }
       return [...parGroupe].filter(([, cles]) => cles.size > 1).map(([g]) => g);

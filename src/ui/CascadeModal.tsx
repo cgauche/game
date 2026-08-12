@@ -358,13 +358,21 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // BESPOKE (non-RollShell) rendent leur propre modale : désengagement (menu 3 phases, choix d'abord),
   // enfoncement de porte (multi PARALLÈLE, rangées par participant), incantation (`CastModal` — s'efface
   // pendant un ciblage CARTE (pickingTargets / pose de zone) pour déférer à la carte).
+  //
+  // ENJEU d'une étape HÔTE (#1117 / #1262 V2 L6c) : il est posé sur l'ÉTAPE par son mint
+  // (`hostStep`), pas sur le `pending*` — un hook de props ne peut donc pas le connaître, et sans ce
+  // relais la zone Z3b reste VIDE pour TOUT jet hôté (recette : le jet de scène de la dalle piégée
+  // ouvrait sa fenêtre sans jamais dire ce qu'il mettait en jeu, l'enjeu authoré pourtant présent sur
+  // l'étape). Il est donc versé ICI, à la coquille, pour les six rendus `RollShell` — spread AVANT
+  // les props du hook : celui qui porte DÉJÀ son enjeu (Test étendu, dont le pending le transporte)
+  // garde le sien, sans jamais deux `StakeNote`.
   const JET_RENDERERS: Record<NonNullable<CascadeStep['jet']>, () => JSX.Element | null> = {
-    attack: () => (attackProps ? <RollShell {...attackProps} embedded={embedded} /> : null),
-    trample: () => (trampleProps ? <RollShell {...trampleProps} embedded={embedded} /> : null),
-    defense: () => (defenseProps ? <RollShell {...defenseProps} embedded={embedded} /> : null),
-    fumble: () => (fumbleProps ? <RollShell {...fumbleProps} embedded={embedded} /> : null),
-    test: () => (testProps ? <RollShell {...testProps} embedded={embedded} /> : null),
-    extended: () => (extendedProps ? <RollShell {...extendedProps} embedded={embedded} /> : null),
+    attack: () => (attackProps ? <RollShell {...stakeProps} {...attackProps} embedded={embedded} /> : null),
+    trample: () => (trampleProps ? <RollShell {...stakeProps} {...trampleProps} embedded={embedded} /> : null),
+    defense: () => (defenseProps ? <RollShell {...stakeProps} {...defenseProps} embedded={embedded} /> : null),
+    fumble: () => (fumbleProps ? <RollShell {...stakeProps} {...fumbleProps} embedded={embedded} /> : null),
+    test: () => (testProps ? <RollShell {...stakeProps} {...testProps} embedded={embedded} /> : null),
+    extended: () => (extendedProps ? <RollShell {...stakeProps} {...extendedProps} embedded={embedded} /> : null),
     disengage: () => <DisengageModal />,
     forceDoor: () => <ForceDoorModal />,
     cast: () => (pendingCast && !pendingCast.pickingTargets && !pendingCast.zone?.placing ? <CastModal /> : null),
