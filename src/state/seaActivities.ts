@@ -36,7 +36,6 @@
 import { battleRng } from './battleRng';
 import { openRest, placesOfKind } from './restFlow';
 import { activityById, activitiesFor, travelActivitySpec, applyTravelActivityResult, type ActivityDef } from '../engine/activities';
-import { testValue } from '../engine/skills';
 import { applyOps } from '../engine/ops';
 import { itemFromTrappingById, recomputeLoadout, autoStowNewItem } from '../engine/items';
 import { toBrass, fromBrass, formatMoney, PA_PER_CO } from '../engine/money';
@@ -47,9 +46,9 @@ import type { Combatant } from '../engine/types';
 import type { TravelRecapDay } from './travelFlow';
 import { toRecapLines } from './recapLine';
 import type { Get, Set } from './flowTypes';
-import type { CascadeStep } from './pendings';
-import { composeRollLabel, effectiveTarget, resolveSurface, freeCons, type RollRequest } from './rollSeam';
-import { registerCascadeApplier, registerExtendedTestOutcome, runCascadeImmediate, startCascade } from './cascade';
+import type { BuiltCascadeStep } from './stepBrand';
+import { composeRollLabel, effectiveTarget, monoStep, openSequence, pousseSi, resolveSurface, freeCons, type RollRequest } from './rollSeam';
+import { registerCascadeApplier, registerExtendedTestOutcome, runCascadeImmediate } from './cascade';
 import { noteSeaLine, patchSea } from './seaVoyageFlow';
 import { actorIn } from './combatants';
 
@@ -114,21 +113,26 @@ function eligibleSeaActivityPicks(get: Get, picks: Record<string, SeaActivityPic
 }
 
 /** Étape MONO « Cartographie » (l.288-290, `sea-activity-chart`) : Métier (Cartographe), Complexe (−10). */
-function buildSeaChartStep(hero: Combatant, def: ActivityDef, pick: SeaActivityPick): CascadeStep {
+function buildSeaChartStep(hero: Combatant, def: ActivityDef, pick: SeaActivityPick): BuiltCascadeStep | undefined {
   const test: RollRequest['test'] = { skill: 'metier', spec: 'Cartographe' };
   const difficulty = def.difficulty ?? 'complexe';
-  return {
-    id: `sea-activity-chart-${hero.id}`, kind: 'sea-activity-chart', actorId: hero.id,
+  return monoStep({
+    id: `sea-activity-chart-${hero.id}`, kind: 'sea-activity-chart', actor: hero,
     label: composeRollLabel(hero, 'Cartographie', test), difficulty, rollLabel: 'Métier (Cartographe)',
-    base: testValue(hero, 'metier', undefined, 'Cartographe'), target: effectiveTarget(hero, test, difficulty),
-    result: null, meta: { stashGold: pick.stashGold ?? 0 },
-  };
+    ligne: { test },
+    meta: { stashGold: pick.stashGold ?? 0 },
+  });
 }
 
 /** Étape MONO chemin GÉNÉRIQUE data-driven (`sea-activity-generic`) : `travelActivitySpec` choisit la
  *  MEILLEURE compétence de l'acteur (identique `resolveTravelActivity`), la porte lance le Test.
- *  `null` = Activité SANS Test (Récupérer…) — appliquée d'office par l'appelant, aucune étape à jouer. */
-function buildSeaGenericStep(get: Get, set: Set, hero: Combatant, def: ActivityDef): CascadeStep | null {
+ *  `undefined` = Activité SANS Test (Récupérer…) — appliquée d'office ici, aucune étape à jouer.
+ *
+ *  EXPORTÉE pour être mesurée SEULE : aucune entrée de contexte 'mer' d'`activities.json` n'emprunte
+ *  ce résolveur aujourd'hui (les trois sont `seaChart`, `opportunityTrade`, `crewTraining`), et le
+ *  catalogue est un module partagé qu'un test ne peut pas peupler sans fuir (`isolate: false`). Le
+ *  `def` étant un ARGUMENT, la fonction s'exerce telle quelle avec une Activité réelle. */
+export function buildSeaGenericStep(get: Get, set: Set, hero: Combatant, def: ActivityDef): BuiltCascadeStep | undefined {
   const spec = travelActivitySpec(hero, def);
   if (spec.target == null) {
     const out = applyTravelActivityResult(spec, def, null);
@@ -137,28 +141,29 @@ function buildSeaGenericStep(get: Get, set: Set, hero: Combatant, def: ActivityD
       set({ party: [...get().party] });
       noteSeaLine(get, set, opLines);
     }
-    return null;
+    return undefined;
   }
   const difficulty = def.difficulty ?? 'intermediaire';
   const test: RollRequest['test'] = { skill: spec.used?.skillId, spec: spec.used?.spec };
-  return {
-    id: `sea-activity-generic-${hero.id}`, kind: 'sea-activity-generic', actorId: hero.id,
+  return monoStep({
+    id: `sea-activity-generic-${hero.id}`, kind: 'sea-activity-generic', actor: hero,
     label: composeRollLabel(hero, def.label, test), difficulty, rollLabel: def.label,
-    base: spec.value, target: spec.target, result: null, meta: { activityId: def.id },
-  };
+    ligne: { test },
+    meta: { activityId: def.id },
+  });
 }
 
 /** Résout les Activités MONO (Cartographie + générique) de la semaine en une CASCADE (#273 Étape 2) —
  *  routées par la porte (klass `hero-test`, `resolveSurface` : jour-par-jour → M influençable, route
  *  COMMANDÉE → I inline). Le Commerce d'opportunité est mis de côté (`oppHeroIds`, Test étendu SÉQUENCÉ
  *  ailleurs — `openRoll` ne porte pas de multi-Round). */
-function buildSeaActivitiesCascade(get: Get, set: Set, picks: Record<string, SeaActivityPick | null>): { steps: CascadeStep[]; oppHeroIds: string[] } {
-  const steps: CascadeStep[] = [];
+function buildSeaActivitiesCascade(get: Get, set: Set, picks: Record<string, SeaActivityPick | null>): { steps: BuiltCascadeStep[]; oppHeroIds: string[] } {
+  const steps: BuiltCascadeStep[] = [];
   const oppHeroIds: string[] = [];
   for (const { hero, pick, def } of eligibleSeaActivityPicks(get, picks)) {
     if (def.resolver === 'opportunityTrade') { oppHeroIds.push(hero.id); continue; }
     const step = def.resolver === 'seaChart' ? buildSeaChartStep(hero, def, pick) : buildSeaGenericStep(get, set, hero, def);
-    if (step) steps.push(step);
+    pousseSi(steps, step);
   }
   return { steps, oppHeroIds };
 }
@@ -173,15 +178,15 @@ export function seaActivitiesConfirm(get: Get, set: Set, picks: Record<string, S
   const { steps, oppHeroIds } = buildSeaActivitiesCascade(get, set, picks);
   set({ pendingSeaActivities: { ...pending, picks, opportunityQueue: oppHeroIds } });
   if (!steps.length) { continueSeaActivitiesAfterCascade(get, set); return; }
-  const iSteps: CascadeStep[] = [];
-  const surfacedSteps: CascadeStep[] = [];
+  const iSteps: BuiltCascadeStep[] = [];
+  const surfacedSteps: BuiltCascadeStep[] = [];
   for (const step of steps) {
     const req: RollRequest = { side: { actorId: step.actorId! }, actionLabel: step.label ?? step.kind, test: {}, difficulty: 'intermediaire', klass: 'hero-test' };
     (resolveSurface(get, req, step.kind) === 'I' ? iSteps : surfacedSteps).push(step);
   }
   if (iSteps.length) runCascadeImmediate(get, set, iSteps);
   if (surfacedSteps.length) {
-    startCascade(get, set, { title: 'Activités de la semaine', icon: 'travel/anchor', purpose: 'seaActivities', steps: surfacedSteps });
+    openSequence(get, set, { title: 'Activités de la semaine', icon: 'travel/anchor', purpose: 'seaActivities', steps: surfacedSteps });
     return;
   }
   continueSeaActivitiesAfterCascade(get, set);

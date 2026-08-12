@@ -160,7 +160,8 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
       // sur SA rangée, persistante (arbitrage user). L'accumulation réelle vit dans `stageAggregate`.
       // Mods de rangée : Difficulté + Météo (déjà dans `spec.target`) + « Tests physiques » de la pluie
       // diluvienne (l.82), CE dernier ajouté ici car keyé sur la carac de la compétence utilisée par CE
-      // héros (`effectiveSkillCharKey`) — le −10 s'ajoute au mod météo (recalcul de la cible, borné 1..99).
+      // héros (`effectiveSkillCharKey`) — le −10 s'ajoute au mod météo (recalcul de la cible, dont les
+      // bornes viennent de `getTestPolicy` via `clampTarget`, jamais d'un plafond écrit ici).
       const wMod = weatherModOf(def, weather);
       const char = spec.used ? effectiveSkillCharKey(hero, spec.used.skillId, { spec: spec.used.spec }) : undefined;
       const pMod = weatherTestMods(weather, char ?? null).reduce((s, l) => s + l.value, 0); // CANAL UNIQUE (#341)

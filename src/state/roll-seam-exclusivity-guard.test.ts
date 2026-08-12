@@ -666,7 +666,6 @@ const ETAPE_A_LA_MAIN_STOCK: Record<string, number> = {
   // cette provenance, il compte le littéral — la raison la dit.
   // MONTAGES à la main — dette RÉELLE restante hors combat, à router par `rollStep`
   'src/engine/rest.ts': 3, // bilan EAGER de la modale de Repos (`RestRoll` : type + 2 collectes)
-  'src/state/seaActivities.ts': 2, // Cartographie + Activité générique : base et cible montées au site
 };
 const TOTAL_ETAPES = Object.values(ETAPE_A_LA_MAIN_STOCK).reduce((s, n) => s + n, 0);
 
