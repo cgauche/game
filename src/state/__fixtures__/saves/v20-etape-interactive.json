@@ -1,0 +1,161 @@
+{
+  "version": 20,
+  "savedAt": "2026-08-11T21:00:00.000Z",
+  "sceneLabel": "Clairière des Mutants",
+  "gameTime": 1140,
+  "data": {
+    "screen": "campaign",
+    "gameTime": 1140,
+    "battle": null,
+    "party": [
+      {
+        "id": "h1",
+        "label": "Gorik",
+        "kind": "hero",
+        "characteristics": {
+          "capacite-de-combat": 30,
+          "capacite-de-tir": 30,
+          "force": 30,
+          "endurance": 32,
+          "initiative": 30,
+          "agilite": 34,
+          "dexterite": 30,
+          "intelligence": 30,
+          "force-mentale": 30,
+          "sociabilite": 30
+        },
+        "wounds": { "current": 11, "max": 12 },
+        "advantage": 0,
+        "conditions": [],
+        "psychState": [],
+        "weapons": [],
+        "armour": { "tete": 0, "brasG": 0, "brasD": 0, "corps": 0, "jambeG": 0, "jambeD": 0 },
+        "items": [],
+        "skills": [],
+        "talents": [],
+        "movement": 4
+      },
+      {
+        "id": "h2",
+        "label": "Elsa",
+        "kind": "hero",
+        "characteristics": {
+          "capacite-de-combat": 30,
+          "capacite-de-tir": 30,
+          "force": 30,
+          "endurance": 31,
+          "initiative": 30,
+          "agilite": 36,
+          "dexterite": 30,
+          "intelligence": 30,
+          "force-mentale": 30,
+          "sociabilite": 30
+        },
+        "wounds": { "current": 10, "max": 11 },
+        "advantage": 0,
+        "conditions": [],
+        "psychState": [],
+        "weapons": [],
+        "armour": { "tete": 0, "brasG": 0, "brasD": 0, "corps": 0, "jambeG": 0, "jambeD": 0 },
+        "items": [],
+        "skills": [],
+        "talents": [],
+        "movement": 4
+      }
+    ],
+    "pendingCascade": {
+      "title": "Conséquences du combat",
+      "icon": "condition/bleeding",
+      "purpose": "combat",
+      "cursor": 0,
+      "log": [],
+      "combatEndBoundary": true,
+      "participants": [
+        {
+          "id": "combatEndCorruption",
+          "kind": "combatEndCorruption",
+          "icon": "nav/mutation",
+          "label": "Exposition à la Corruption (Mineure)",
+          "groupOwner": true,
+          "aggregate": "none",
+          "menace": "corruption",
+          "interactive": true,
+          "meta": { "level": "mineure", "exposureLabel": "Mineure" },
+          "participants": [
+            {
+              "id": "h1",
+              "label": "Résistance",
+              "difficulty": "intermediaire",
+              "base": 32,
+              "target": 32,
+              "result": null,
+              "interactive": true
+            },
+            {
+              "id": "h2",
+              "label": "Résistance",
+              "difficulty": "intermediaire",
+              "base": 31,
+              "target": 31,
+              "result": null,
+              "interactive": false
+            }
+          ]
+        }
+      ]
+    },
+    "suspendedCascades": [
+      {
+        "title": "Bilan de la nuit",
+        "icon": "condition/hunger",
+        "purpose": "nuit",
+        "cursor": 0,
+        "log": [],
+        "participants": [
+          {
+            "id": "faim-1",
+            "kind": "faim",
+            "icon": "condition/hunger",
+            "label": "Faim",
+            "actorId": "h1",
+            "aggregate": "none",
+            "interactive": true,
+            "participants": [
+              {
+                "id": "h1",
+                "label": "Résistance",
+                "difficulty": "intermediaire",
+                "base": 32,
+                "target": 32,
+                "result": null,
+                "interactive": true
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "deferredUpkeepQueue": [
+      {
+        "id": "soif-1",
+        "kind": "soif",
+        "icon": "condition/thirst",
+        "label": "Soif",
+        "actorId": "h2",
+        "aggregate": "none",
+        "interactive": true,
+        "participants": [
+          {
+            "id": "h2",
+            "label": "Résistance",
+            "difficulty": "intermediaire",
+            "base": 31,
+            "target": 31,
+            "result": null,
+            "interactive": true
+          }
+        ]
+      }
+    ]
+  }
+}
