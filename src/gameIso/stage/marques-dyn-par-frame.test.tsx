@@ -6,7 +6,8 @@ import * as THREE from 'three';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
 import type { Dims } from '../../geometry/iso';
 import { GameStage3D, setStageRendererFactory, type StageRenderer, type StageWalkAnim } from './GameStage3D';
-import type { DynamicMarks } from '../builders/dynamicMarks';
+import { COMBAT_TOKEN_BASE, teamRingRadiusK, topRingRadiusK, type DynamicMarks } from '../builders/dynamicMarks';
+import { HERO_RING } from '../teamColors';
 
 /**
  * PAR FRAME, PAS PAR ÉVÉNEMENT (#1176, P3-0d) — le fait qui distingue une marque DYNAMIQUE d'une
@@ -21,11 +22,13 @@ const TAILLE = { w: 800, h: 600 };
 const SCENE: Scene = emptyScene(10, 10);
 const DIMS: Dims = { w: SCENE.dimensions.w, h: SCENE.dimensions.h, rot: 0, view: 'iso' };
 
-/** Un lien d'engagement et le contour de l'actif, sur `h1` — le sujet que le banc fait glisser. */
+/** Un lien d'engagement, le contour de l'actif et l'anneau d'équipe, sur `h1` — le sujet que le banc
+ *  fait glisser. */
 const MARQUES: DynamicMarks = {
   tethers: [{ a: { id: 'h1', cell: { x: 2, y: 2, z: 0 } }, b: { id: 'e1', cell: { x: 4, y: 2, z: 0 } } }],
   active: { id: 'h1', cell: { x: 2, y: 2, z: 0 }, n: 1 },
   party: null,
+  rings: [{ id: 'h1', cell: { x: 2, y: 2, z: 0 }, rK: teamRingRadiusK(COMBAT_TOKEN_BASE), rTopK: topRingRadiusK(1), color: HERO_RING[0] }],
 };
 
 let scènes: THREE.Scene[] = [];
@@ -114,6 +117,8 @@ describe('Marques dynamiques — la pose se prend à la FRAME (#1176 P3-0d)', ()
     expect(battre, 'l’écran doit s’être abonné au battement de marche').toBeTypeOf('function');
     const départTether = positionDe('marquesDyn:tether', 0).clone();
     const départActif = positionDe('marquesDyn:actif', 0).clone();
+    const départAnneau = positionDe('marquesDyn:anneau', 0).clone();
+    expect(pool('marquesDyn:anneau').count, 'le témoin doit VRAIMENT peindre un anneau').toBeGreaterThan(0);
     expect(pool('marquesDyn:tether').count, 'le témoin doit VRAIMENT peindre un lien').toBeGreaterThan(0);
 
     // Le glissement change SANS aucune écriture React (ni store, ni prop, ni état) : tant que la frame
@@ -128,6 +133,7 @@ describe('Marques dynamiques — la pose se prend à la FRAME (#1176 P3-0d)', ()
     expect(scènes.length).toBe(rendusAvant + 1);
     expect(positionDe('marquesDyn:tether', 0).x).toBeCloseTo(départTether.x + 3, 4);
     expect(positionDe('marquesDyn:actif', 0).x).toBeCloseTo(départActif.x + 3, 4);
+    expect(positionDe('marquesDyn:anneau', 0).x, 'l’anneau d’équipe suit son porteur').toBeCloseTo(départAnneau.x + 3, 4);
     // L'autre extrémité du lien ne glisse pas : le dernier tiret reste où il était.
     const dernier = pool('marquesDyn:tether').count - 1;
     expect(positionDe('marquesDyn:tether', dernier).x).toBeLessThanOrEqual(4 * sceneMetresPerTile(SCENE));
@@ -137,5 +143,6 @@ describe('Marques dynamiques — la pose se prend à la FRAME (#1176 P3-0d)', ()
     battre!();
     expect(positionDe('marquesDyn:tether', 0).x).toBeCloseTo(départTether.x, 4);
     expect(positionDe('marquesDyn:actif', 0).x).toBeCloseTo(départActif.x, 4);
+    expect(positionDe('marquesDyn:anneau', 0).x).toBeCloseTo(départAnneau.x, 4);
   });
 });

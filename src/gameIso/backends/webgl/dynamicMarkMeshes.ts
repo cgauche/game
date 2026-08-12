@@ -1,10 +1,11 @@
 /**
  * BACKEND VOLUMIQUE des marques DYNAMIQUES (#1176, P3-0d) — le pendant three des trois repères que la
  * voie affine trace à la frame (`stage/tokens.dynamicHighlightObjs`) : lien d'ENGAGEMENT, contour de
- * l'unité ACTIVE, repère de position du GROUPE. Même partage que `highlightMeshes.ts` : le MONTAGE est
- * ici, la POSE par frame vit dans `stage/dynamicMarkPose.ts`.
+ * l'unité ACTIVE, repère de position du GROUPE — plus l'ANNEAU D'ÉQUIPE aux pieds de chaque jeton
+ * (P3-0e), que l'affine peint DANS son jeton (`BodyToken`). Même partage que `highlightMeshes.ts` : le
+ * MONTAGE est ici, la POSE par frame vit dans `stage/dynamicMarkPose.ts`.
  *
- * TROIS POOLS de capacité FIXE, montés une fois pour la vie de l'écran. Contrairement aux marques
+ * QUATRE POOLS de capacité FIXE, montés une fois pour la vie de l'écran. Contrairement aux marques
  * statiques, la capacité ne suit même pas des paliers : ces marques se réécrivent SOIXANTE FOIS PAR
  * SECONDE (elles suivent la glisse de marche), et un pool qui se redimensionne dans la boucle de rendu
  * est un pool qui alloue dans la boucle de rendu.
@@ -27,29 +28,34 @@ import { RING_FRAME_K, tileFrameGeometry, tileQuadGeometry } from './highlightMe
 import { SPECKLE_LIFT_M } from './groundAccents';
 
 /** Un pool de marques dynamiques. */
-export type DynMarkSlot = 'tether' | 'actif' | 'groupe';
+export type DynMarkSlot = 'tether' | 'actif' | 'groupe' | 'anneau';
 
-/** Les trois pools, dans l'ordre de RANG croissant. */
-export const DYN_MARK_SLOTS: readonly DynMarkSlot[] = ['tether', 'actif', 'groupe'];
+/** Les quatre pools, dans l'ordre de RANG croissant. */
+export const DYN_MARK_SLOTS: readonly DynMarkSlot[] = ['tether', 'actif', 'groupe', 'anneau'];
 
 /** RANG de superposition, dans la MÊME échelle que les marques statiques (`highlightMeshes.SLOT_RANK`,
- *  qui s'arrête à 8) : ces trois-là passent AU-DESSUS de toutes les marques de case, comme en affine où
- *  elles sont émises après le builder. */
-export const DYN_SLOT_RANK: Record<DynMarkSlot, number> = { tether: 9, actif: 10, groupe: 11 };
+ *  qui s'arrête à 8) : ces quatre-là passent AU-DESSUS de toutes les marques de case, comme en affine où
+ *  elles sont émises après le builder. L'ANNEAU d'équipe passe au-dessus des trois autres : la voie
+ *  affine le peint DANS le jeton (profondeur `+0.5`, `stage/tokens.combatantObjs`) quand elle pose ces
+ *  trois-là sous les jetons (`+0.25`, `dynamicHighlightObjs`). */
+export const DYN_SLOT_RANK: Record<DynMarkSlot, number> = { tether: 9, actif: 10, groupe: 11, anneau: 12 };
 
 /** Décollement (m) d'un pool au-dessus de la surface qui le porte. */
 export function dynSlotLiftM(slot: DynMarkSlot): number {
   return (DYN_SLOT_RANK[slot] + 1) * SPECKLE_LIFT_M;
 }
 
-/** Opacités de la voie affine, à l'identique (le contour de l'actif n'y porte pas d'`opacity`). */
-export const DYN_SLOT_OPACITY: Record<DynMarkSlot, number> = { tether: 0.6, actif: 1, groupe: 0.5 };
+/** Opacités de la voie affine, à l'identique (ni le contour de l'actif ni l'anneau d'équipe n'y
+ *  portent d'`opacity`). */
+export const DYN_SLOT_OPACITY: Record<DynMarkSlot, number> = { tether: 0.6, actif: 1, groupe: 0.5, anneau: 1 };
 
-/** Teintes — le MÊME catalogue que la voie affine (`highlightTints`). */
-export const DYN_SLOT_TINT: Record<DynMarkSlot, string> = {
+/** Teintes — le MÊME catalogue que la voie affine (`highlightTints`). `null` = teinte PAR INSTANCE :
+ *  l'anneau d'équipe porte celle de son combattant (`builders/dynamicMarks.teamRingDecor`). */
+export const DYN_SLOT_TINT: Record<DynMarkSlot, string | null> = {
   tether: ENGAGE_TINT,
   actif: ACTIVE_HALO_TINT,
   groupe: ACTIVE_HALO_TINT,
+  anneau: null,
 };
 
 /** Épaisseur du cadre du repère de GROUPE : la MOITIÉ de celle du contour d'actif — le rapport exact
@@ -58,23 +64,30 @@ export const PARTY_FRAME_K = RING_FRAME_K / 2;
 
 /** Capacité FIXE de chaque pool. `tether` : une dizaine de quads par lien, donc de l'ordre de vingt
  *  liens simultanés ; `actif` : l'empreinte de la plus grande unité (5×5 = 25) ; `groupe` : le repère
- *  est unique. Au-delà, la pose écrit ce qu'elle peut et s'arrête à la capacité — elle ne réalloue
- *  jamais dans la boucle de rendu. */
-export const DYN_SLOT_CAPACITY: Record<DynMarkSlot, number> = { tether: 256, actif: 32, groupe: 4 };
+ *  est unique ; `anneau` : une trentaine de cordes par anneau (le trait plein en demande plus que le
+ *  pointillé), donc de l'ordre de vingt jetons postés simultanément. Au-delà, la pose écrit ce qu'elle
+ *  peut et s'arrête à la capacité — elle ne réalloue jamais dans la boucle de rendu. */
+export const DYN_SLOT_CAPACITY: Record<DynMarkSlot, number> = { tether: 256, actif: 32, groupe: 4, anneau: 768 };
 
-/** Pool d'un slot : géométrie du slot (quad plein pour un tiret de lien, cadre pour un contour),
- *  matériau NON éclairé et TEINTÉ à la couleur du slot — un repère de jeu ne s'assombrit pas la nuit,
- *  et ces trois-là ne portent qu'une teinte chacun (pas d'`instanceColor` à tenir). */
+/** Pool d'un slot : géométrie du slot (quad plein pour un tiret de lien ou d'anneau, cadre pour un
+ *  contour), matériau NON éclairé — un repère de jeu ne s'assombrit pas la nuit. Un slot dont la teinte
+ *  est `null` la porte PAR INSTANCE (`instanceColor` alloué dès la construction, comme
+ *  `buildHighlightMesh`) : l'anneau d'équipe change de couleur d'un combattant à l'autre. */
 export function buildDynamicMarkMesh(slot: DynMarkSlot, capacity = DYN_SLOT_CAPACITY[slot]): THREE.InstancedMesh {
-  const geo = slot === 'tether' ? tileQuadGeometry() : tileFrameGeometry(slot === 'groupe' ? PARTY_FRAME_K : RING_FRAME_K);
+  const teinte = DYN_SLOT_TINT[slot];
+  const geo = slot === 'tether' || slot === 'anneau' ? tileQuadGeometry() : tileFrameGeometry(slot === 'groupe' ? PARTY_FRAME_K : RING_FRAME_K);
   const mat = new THREE.MeshBasicMaterial({
-    color: new THREE.Color(DYN_SLOT_TINT[slot]),
+    color: new THREE.Color(teinte ?? 0xffffff),
     side: THREE.DoubleSide,
     transparent: true,
     opacity: DYN_SLOT_OPACITY[slot],
     depthWrite: false,
   });
   const mesh = new THREE.InstancedMesh(geo, mat, capacity);
+  if (!teinte) {
+    const blanc = new THREE.Color(1, 1, 1);
+    for (let i = 0; i < capacity; i++) mesh.setColorAt(i, blanc);
+  }
   mesh.name = `marquesDyn:${slot}`;
   mesh.frustumCulled = false; // ces marques suivent l'action : la sphère du pool vaudrait la scène
   mesh.count = 0;

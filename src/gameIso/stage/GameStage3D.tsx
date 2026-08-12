@@ -405,6 +405,8 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       mpt,
       glide: anim ? anim.glide : AUCUN_GLISSEMENT,
       groundM: solM,
+      kind: f.kind, // l'anneau d'équipe n'a ni le même rayon ni la même compensation selon la vue
+      yawDeg: f.yawDeg, // les tirets de l'anneau d'équipe se mesurent à l'ÉCRAN : ils suivent la vue
     });
     // CARTE D'OMBRE : elle ne se recuit QUE quand ce qu'elle contient a bougé — un casteur qui glisse,
     // ou un montage (lampes, monde, billboards) qui l'a demandée. Une rotation de caméra, un zoom, une

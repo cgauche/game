@@ -1,10 +1,11 @@
-import { CELL, type Dims } from '../geometry/iso';
+import { type Dims } from '../geometry/iso';
 import { BodyToken } from './BodyToken';
 import { tokenBodyKind } from './tokenBodyKind';
 import { sizeTokenScale } from './sizeScale';
 import { sizeFootprint, decorFootGeometry } from '../state/footprint';
 import { entitySize } from '../state/spawn';
 import type { SceneEntity } from '../state/scene';
+import { discR as discRPx } from './builders/dynamicMarks';
 
 /**
  * Rendu d'une ENTITÉ de scène posée sur sa tuile — SOURCE UNIQUE partagée par le jeu (IsoStage)
@@ -23,7 +24,7 @@ export function EntityToken({ ent, dims, scale = 0.55, enrolled }: { ent: SceneE
   const sz = entitySize(ent);
   const fg = decorFootGeometry(ent.kind === 'prop' ? ent.foot : undefined);
   const off = (sizeFootprint(sz) - 1) / 2;
-  const discR = (Math.max(sizeFootprint(sz), fg.scale) * CELL) / 2 * 0.85;
+  const discR = discRPx(Math.max(sizeFootprint(sz), fg.scale));
   return (
     <BodyToken
       z={ent.z ?? 0}

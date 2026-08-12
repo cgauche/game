@@ -4,12 +4,15 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { useGame, type BattleState } from '../../state/store';
-import { emptyScene } from '../../state/scene';
+import { emptyScene, sceneMetresPerTile } from '../../state/scene';
 import { setStageBackend } from '../../state/stage3d';
 import type { Combatant } from '../../engine/types';
 import { IsoStage } from '../IsoStage';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 import { ACTIVE_HALO_TINT, ENGAGE_TINT } from '../highlightTints';
+import { ENEMY_RING, HERO_RING, teamShape } from '../teamColors';
+import { RING_A_PX, dashPattern } from '../builders/dynamicMarks';
+import { ringDashes } from './dynamicMarkPose';
 import { TH, TW } from '../../geometry/iso';
 import { PARTY_FRAME_K } from '../backends/webgl/dynamicMarkMeshes';
 import { RING_FRAME_K } from '../backends/webgl/highlightMeshes';
@@ -119,16 +122,55 @@ function comptesAffines(el: HTMLElement): Record<string, number> {
   return { tether: liens.length, actif: contours.length, groupe: groupe.length };
 }
 
-/** Ce que la voie VOLUMIQUE a posé : le `count` de chaque pool de la dernière frame rendue. */
+/** Ce que la voie VOLUMIQUE a posé : le `count` des trois pools de marques de la dernière frame rendue
+ *  (l'anneau d'équipe se compte à part — un anneau y vaut un chapelet de cordes, cf. `anneaux`). */
 function comptesVolumiques(): Record<string, number> {
   const scene = scènes[scènes.length - 1];
   const out: Record<string, number> = { tether: 0, actif: 0, groupe: 0 };
   scene.traverse((o) => {
     const m = o as THREE.InstancedMesh;
     if (!m.isInstancedMesh || !m.name.startsWith('marquesDyn:')) return;
-    out[m.name.slice('marquesDyn:'.length)] = m.count;
+    const slot = m.name.slice('marquesDyn:'.length);
+    if (slot in out) out[slot] = m.count;
   });
   return out;
+}
+
+/** Les anneaux d'ÉQUIPE que la voie affine a peints : les ellipses de contour dont la couleur vient du
+ *  catalogue d'équipe (`teamColors`) — l'art d'un rig porte, lui aussi, des ellipses de contour. */
+function baguesAffines(el: HTMLElement): Element[] {
+  const catalogue = new Set<string>([...HERO_RING, ENEMY_RING]);
+  return [...el.querySelectorAll('svg.iso-stage ellipse')].filter(
+    (e) => e.getAttribute('fill') === 'none' && catalogue.has(e.getAttribute('stroke') ?? ''),
+  );
+}
+
+/** Anneaux d'équipe posés en volumique, RANGÉS PAR CENTRE : chaque corde est rattachée au jeton dont
+ *  elle entoure les pieds (le plus proche), et l'on rend, par centre, le compte de cordes. Le rayon
+ *  ATTENDU (mètres) est fourni par l'appelant — il vient de la formule affine, jamais de la mesure :
+ *  une corde s'y confronte, elle ne s'y résume pas. C'est la parité de POPULATION : un anneau par jeton
+ *  posté, comme en affine. */
+function anneaux(centres: { x: number; z: number; rM: number }[]): { cordes: number }[] {
+  const p = poolsVolumiques().anneau;
+  const lots = centres.map(() => ({ cordes: 0 }));
+  const m = new THREE.Matrix4();
+  const pos = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) {
+    p.getMatrixAt(i, m);
+    pos.setFromMatrixPosition(m);
+    let meilleur = 0;
+    let d = Infinity;
+    centres.forEach((c, k) => {
+      const dk = Math.hypot(pos.x - c.x, pos.z - c.z);
+      if (dk < d) {
+        d = dk;
+        meilleur = k;
+      }
+    });
+    lots[meilleur].cordes++;
+    expect(d, 'chaque corde est sur le cercle ATTENDU de son jeton').toBeCloseTo(centres[meilleur].rM, 4);
+  }
+  return lots;
 }
 
 /** Les pools volumiques de la dernière frame, par slot. */
@@ -196,7 +238,7 @@ describe('Marques dynamiques — les deux voies peignent les mêmes repères (#1
     expect(comptesVolumiques()).toEqual({ tether: 0, actif: 0, groupe: 1 });
   });
 
-  it('en volumique, les trois pools sont montés d’emblée et portent la teinte du catalogue', () => {
+  it('en volumique, les quatre pools sont montés d’emblée et portent la teinte du catalogue', () => {
     monter('webgl', 'battle');
     const scene = scènes[scènes.length - 1];
     const teintes = new Map<string, string>();
@@ -206,10 +248,14 @@ describe('Marques dynamiques — les deux voies peignent les mêmes repères (#1
       teintes.set(m.name, `#${(m.material as THREE.MeshBasicMaterial).color.getHexString()}`);
       expect(m.count, 'un compte dessiné borné par la capacité du pool').toBeLessThanOrEqual(m.instanceMatrix.count);
     });
-    expect([...teintes.keys()].sort()).toEqual(['marquesDyn:actif', 'marquesDyn:groupe', 'marquesDyn:tether']);
+    expect([...teintes.keys()].sort()).toEqual(['marquesDyn:actif', 'marquesDyn:anneau', 'marquesDyn:groupe', 'marquesDyn:tether']);
     expect(teintes.get('marquesDyn:tether')).toBe(ENGAGE_TINT.toLowerCase());
     expect(teintes.get('marquesDyn:actif')).toBe(ACTIVE_HALO_TINT.toLowerCase());
     expect(teintes.get('marquesDyn:groupe')).toBe(ACTIVE_HALO_TINT.toLowerCase());
+    // L'anneau d'équipe change de couleur d'un combattant à l'autre : son matériau reste NEUTRE et la
+    // teinte voyage PAR INSTANCE (`instanceColor`), comme les marques de case.
+    expect(teintes.get('marquesDyn:anneau')).toBe('#ffffff');
+    expect(poolsVolumiques().anneau.instanceColor, 'l’anneau porte sa teinte par instance').toBeTruthy();
   });
 });
 
@@ -234,6 +280,7 @@ describe('Marques dynamiques — ALLURE et EXCLUSIVITÉ des deux voies (#1176 P3
   it('AUCUNE DOUBLE PEINTURE : en webgl la voie affine n’émet pas ses marques, en affine rien n’est posé en volumique', () => {
     monter('webgl', 'battle');
     expect(comptesAffines(conteneur!), 'le SVG ne doit plus peindre les marques dynamiques en volumique').toEqual({ tether: 0, actif: 0, groupe: 0 });
+    expect(baguesAffines(conteneur!), 'ni les anneaux d’équipe, qui vivent dans le jeton').toHaveLength(0);
     expect(comptesVolumiques().tether).toBeGreaterThan(0);
     démonter();
 
@@ -288,6 +335,65 @@ describe('Marques dynamiques — ALLURE et EXCLUSIVITÉ des deux voies (#1176 P3
     ]);
     const opacité = (m: THREE.InstancedMesh) => (m.material as THREE.MeshBasicMaterial).opacity;
     expect([opacité(p.tether), opacité(p.actif), opacité(p.groupe)]).toEqual([0.6, 1, 0.5]);
+  });
+
+  it('ANNEAUX D’ÉQUIPE : un par combattant posté des deux côtés, au MÊME rayon et au MÊME pointillé', () => {
+    const bagues = baguesAffines(monter('affine', 'battle'));
+    expect(bagues.map((b) => b.getAttribute('stroke')), 'un anneau par jeton, à la couleur de son équipe').toEqual([
+      HERO_RING[0],
+      ENEMY_RING,
+    ]);
+    // R9 : la FORME encode l'équipe — le héros plein, l'ennemi pointillé.
+    expect(bagues.map((b) => b.getAttribute('stroke-dasharray'))).toEqual([null, teamShape(false)!]);
+    const rxAffine = bagues.map((b) => Number(b.getAttribute('rx')));
+    démonter();
+
+    monter('webgl', 'battle');
+    // h1 (3,3) et e1 (4,3), à `mpt` mètres par case (`emptyScene` : la valeur par défaut).
+    const mpt = sceneMetresPerTile(emptyScene(10, 10));
+    // Le rayon ATTENDU vient de l'ellipse AFFINE (`rx` px, à `RING_A_PX` px par case) : c'est LUI que
+    // les cordes volumiques doivent retrouver, jamais leur propre moyenne.
+    const rMAttendu = rxAffine.map((rx) => (rx / RING_A_PX) * mpt);
+    const lots = anneaux([{ x: 3 * mpt, z: 3 * mpt, rM: rMAttendu[0] }, { x: 4 * mpt, z: 3 * mpt, rM: rMAttendu[1] }]);
+    expect(lots.map((l) => l.cordes > 0), 'CHAQUE jeton posté porte son anneau').toEqual([true, true]);
+    lots.forEach((lot, i) => {
+      // et le chapelet compte ce que le pointillé de CETTE équipe demande : plein pour le héros,
+      // pointillé « 5 3 » pour l'ennemi.
+      expect(lot.cordes).toBe(ringDashes(rMAttendu[i] / mpt, i === 0 ? null : dashPattern(teamShape(false)), 'iso').length);
+    });
+  });
+
+  it('HORS COMBAT, le jeton de GROUPE porte lui aussi son anneau des deux côtés', () => {
+    const bagues = baguesAffines(monter('affine', 'exploration'));
+    expect(bagues.map((b) => b.getAttribute('stroke'))).toEqual([HERO_RING[0]]);
+    const rxAffine = Number(bagues[0].getAttribute('rx'));
+    démonter();
+
+    monter('webgl', 'exploration');
+    const mpt = sceneMetresPerTile(emptyScene(10, 10));
+    expect(anneaux([{ x: 6 * mpt, z: 6 * mpt, rM: (rxAffine / RING_A_PX) * mpt }])[0].cordes).toBeGreaterThan(0);
+  });
+
+  it('un MENEUR non-héros ne teinte pas le jeton de groupe en ennemi — même anneau des deux côtés', () => {
+    // Le code de groupe s'en garde ailleurs (`state/partyFlow`), mais la DÉCORATION ne doit pas dépendre
+    // de cette hypothèse : le jeton de groupe dit « le groupe est ici », pas « à quelle équipe ».
+    const escorte = [{ ...hero('h1', { x: 6, y: 6 }), kind: 'npc' } as unknown as Combatant];
+    const bagues = baguesAffines(monter('affine', 'exploration', { party: escorte }));
+    expect(bagues.map((b) => b.getAttribute('stroke')), 'anneau du groupe : jamais le rouge ennemi').toEqual([HERO_RING[0]]);
+    expect(bagues[0].getAttribute('stroke-dasharray'), 'ni pointillé').toBeNull();
+    const rxAffine = Number(bagues[0].getAttribute('rx'));
+    démonter();
+
+    monter('webgl', 'exploration', { party: escorte });
+    const mpt = sceneMetresPerTile(emptyScene(10, 10));
+    const rK = rxAffine / RING_A_PX;
+    const lot = anneaux([{ x: 6 * mpt, z: 6 * mpt, rM: rK * mpt }])[0];
+    // trait PLEIN des deux côtés : un chapelet pointillé en compterait bien moins
+    expect(lot.cordes).toBe(ringDashes(rK, null, 'iso').length);
+    expect(lot.cordes).toBeGreaterThan(ringDashes(rK, dashPattern(teamShape(false)), 'iso').length);
+    const teinte = new THREE.Color();
+    poolsVolumiques().anneau.getColorAt(0, teinte);
+    expect(`#${teinte.getHexString()}`).toBe(HERO_RING[0].toLowerCase());
   });
 
   it('un DIALOGUE ouvert coupe le repère du groupe dans les DEUX voies', () => {

@@ -423,8 +423,11 @@ export function IsoStage() {
   const liftOf = (p: Pt) => (p.z ? liftAt(p.x, p.y, p.z) : 0);
 
   // MARQUES DYNAMIQUES : dérivées UNE fois (`builders/dynamicMarks`) et servies aux DEUX voies — le
-  // contexte qui les autorise (mode, dialogue ouvert) se tranche ici, et nulle part ailleurs.
-  const marquesDyn = dynamicMarks(mode === 'battle' ? battle : null, mode === 'exploration' && !dialogue ? partyPos : null);
+  // contexte qui les autorise (mode, dialogue ouvert) se tranche ici, et nulle part ailleurs. Les
+  // ANNEAUX d'équipe (P3-0e) se dérivent des jetons du builder et du meneur hors combat : la population
+  // des jetons RÉELLEMENT postés, celle-là même que les deux voies dessinent.
+  const partyToken = combatBattle ? null : partyLeader ? { leader: partyLeader, pos: partyPos } : null;
+  const marquesDyn = dynamicMarks(mode === 'battle' ? battle : null, mode === 'exploration' && !dialogue ? partyPos : null, tokenEls, partyToken);
   // Éléments DYNAMIQUES de la frame, dans l'ordre d'émission historique : tether/halo de l'actif,
   // affordances de fouille, puis tokens (combat : combattants+montés ; exploration : halo PNJ + groupe).
   const dyn: StageObj[] = dynamicHighlightObjs(tokenCtx, marquesDyn, walkPosOf);
@@ -479,7 +482,7 @@ export function IsoStage() {
           battle={combatBattle}
           highlightOpts={highlightOpts}
           dynMarks={marquesDyn}
-          partyToken={combatBattle ? null : partyLeader ? { leader: partyLeader, pos: partyPos } : null}
+          partyToken={partyToken}
         />
       )}
     {/* Voie volumique : le fond du SVG s'efface (le canevas peint dessous) — un état de CHANTIER,
