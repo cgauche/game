@@ -689,6 +689,144 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
   distincts vers le même `CharacterSheet`. Piloter au clavier/souris réel (doctrine ci-dessus) ;
   `__wfrp.state()`/`entities()` n'exposent PAS `sheetId` (état de composant, pas du store).
 
+## Recette COOP — deux navigateurs (hôte + invité)
+
+Le seul flux du jeu qui exige DEUX pages : la possession (`net.ownership`, `net.gmSeat`) est un fait
+d'AFFICHAGE — l'état, lui, voyage ENTIER (snapshot hôte→invité). Une recette coop se juge donc à ce
+que CHAQUE page rend, jamais à un `pending*` (identique des deux côtés, cf. invariants ci-dessous).
+
+### Le relay
+
+| Cas | Commande | Contrôle |
+|---|---|---|
+| **Défaut — aucun setup** | `npm run dev` seul | `relayHttpUrl` (`src/net/relay.ts`) retombe sur `RELAY_URL_PROD` = le Worker Cloudflare DÉPLOYÉ : héberger fonctionne sans rien lancer d'autre |
+| Relay LOCAL (Worker modifié / hors ligne) | `npm run relay:dev` (= `npm --prefix server run dev`, wrangler dev, port 8787) dans un terminal, **puis** Vite relancé avec la variable | `POST http://localhost:8787/rooms` doit rendre `{"code":…,"hostToken":…}` |
+
+`VITE_RELAY_URL` est lue via `import.meta.env` **au démarrage de Vite** : la poser après coup ne
+change rien, il faut relancer le serveur de dev. Syntaxe PowerShell (shell canon de cette machine) :
+
+```powershell
+$env:VITE_RELAY_URL = 'http://localhost:8787'; npm run dev
+```
+
+(bash : `VITE_RELAY_URL=http://localhost:8787 npm run dev`). L'URL WebSocket en est DÉRIVÉE
+(`http`→`ws`, `roomWsUrl`) — une seule variable pour les deux.
+
+### Le kit deux-navigateurs (`scripts/recette/lib.mjs`)
+
+Deux appels d'`openApp` dans le MÊME script node = **deux Chrome headless indépendants** : profil
+temporaire tiré au hasard pour chacun (`os.tmpdir()`), port CDP tiré au hasard, donc deux
+`window.__wfrp`, deux `localStorage`/`sessionStorage` (le token de reprise de siège compris). L'option
+`port` de `launchSession` (transmise par `openApp`) ne fixe QUE le port CDP — inutile de la poser.
+
+**Teardown** : `session.close` pour CHAQUE session dans un `finally` (ferme le target, tue l'ARBRE
+Chrome — `taskkill /T`, seul fiable sous Windows — et purge le profil). Le `process.on('exit')` du
+socle est un filet pour les chemins d'échec non couverts, PAS un teardown.
+
+**Console** : un `consoleGuard` par session (le CDP multiplexe les sessions sur une connexion ; le
+filtre par `sessionId` est déjà dans le socle).
+
+```js
+import { openApp, evaluate, waitFor, consoleGuard } from './scripts/recette/lib.mjs';
+const APP = 'http://localhost:5173/';
+const hote = await openApp(APP);
+const gHote = consoleGuard(hote);
+try {
+  // 1. HÉBERGER — aucun helper __wfrp n'expose le réseau : VRAIE action du store (pas un setState).
+  await evaluate(hote, `window.__wfrp.store.getState().netHostStart('Hôte')`);
+  await waitFor(hote, `!!window.__wfrp.store.getState().net.roomCode`);
+  const code = await evaluate(hote, `window.__wfrp.store.getState().net.roomCode`);
+
+  // 2. REJOINDRE — le lien d'invitation bascule l'invité sur l'écran 'coop' et pré-remplit le code.
+  const invite = await openApp(`${APP}?join=${code}`);
+  const gInvite = consoleGuard(invite);
+  try {
+    await evaluate(invite, `window.__wfrp.store.getState().netJoin(${JSON.stringify(code)}, 'Invité')`);
+    await waitFor(invite, `window.__wfrp.store.getState().net.mode === 'guest'`);
+    await waitFor(hote, `Object.keys(window.__wfrp.store.getState().net.seatNames).length === 2`);
+    // … recette …
+  } finally { await invite.close(); }
+} finally { await hote.close(); }
+```
+
+### Le flux hôte / invité
+
+| Étape | Où | Geste RÉEL (joueur) | Raccourci de SETUP mesuré |
+|---|---|---|---|
+| Héberger | hôte | menu principal → **« Jouer en ligne »** (`MainMenu`, écran `coop`) → champ « Votre nom » → bouton **« Héberger »** (`src/ui/CoopLobby.tsx`) | `__wfrp.store.getState().netHostStart('Hôte')` — le champ de nom est un input React CONTRÔLÉ (le remplir par `evaluate` est sans effet, cf. « Pièges vécus ») |
+| Lire le code | hôte | code à 6 caractères + « Lien d'invitation » (`CoopRoomPanel`, `src/ui/CoopPanels.tsx`) | `__wfrp.store.getState().net.roomCode` — `__wfrp.state()` n'expose PAS `net` |
+| Rejoindre | invité | même écran → code + nom → **« Rejoindre »** | ouvrir l'app sur `?join=<CODE>` (bascule sur l'écran `coop`, code pré-rempli, `src/ui/App.tsx`) puis `netJoin` |
+| Contrôler la liaison | les deux | liste « Joueurs connectés » (`CoopSeatList`) | `net.mode` = `host`/`guest`, `net.mySeat` = 0/1, `net.seatNames` = les deux noms des DEUX côtés |
+| Composer le groupe | hôte | **« Composer le groupe → »** → écran d'équipe : l'hôte attribue les EMPLACEMENTS (`netAssignSlot`), chaque joueur remplit les siens | poser le groupe d'un coup par un scénario (ci-dessous) |
+| Attribuer les héros | hôte | rubrique « Attribution des héros » (`CoopAssignList`, un `<select>` par héros ; `GmSeatSelect` y pose le rôle MJ) — lobby ET menu ☰ en partie (`CoopMenuSection`) | `__wfrp.store.getState().netAssign(heroId, 1)` (hôte-autoritaire : refusé en mode invité) |
+| Jouer | hôte | tout le pilotage de MISE EN PLACE | `scenario`, `goto`, `fight`, `turn`, `combatEnd`… **depuis l'HÔTE uniquement** |
+
+⚠ **Ne jamais mettre en place depuis l'invité** : `interceptGuestActions` (`src/state/netFlow.ts`)
+n'enrobe QUE les actions de l'allowlist (`GUEST_INTENTS`, `src/net/intents.ts`) — toute autre action
+(`setParty`, `startScene`, `scenario`…) s'exécute en LOCAL chez l'invité puis est écrasée au snapshot
+suivant. Ce qui ressemble à « ça a marché puis c'est revenu en arrière » n'est pas un bug.
+
+### Invariants OBSERVABLES
+
+| # | Invariant | Vérité de code | Ce qu'on OBSERVE |
+|---|---|---|---|
+| 1 | **Un jet possédé par l'invité surface CHEZ LUI** | `ActiveModal` (`src/ui/ActiveModal.tsx`) ne monte la modale que si le siège local possède le concerné (`modalOwnerOf` + `ownsLocal`) ; `'*'` = tous | **invité** : la modale est rendue (`.modal-overlay`) — **hôte** : rien. Pendant le TOUR du héros distant l'hôte n'a MÊME PAS de puce (anti-doublon) : c'est la barre d'action qui porte « <siège> joue <héros>… » (`.establishing-bar` > `.ready-chip`, `src/ui/ActionBar.tsx`). Hors tour du concerné (défense réactive), l'hôte a la puce `.spectator-chip` |
+| 2 | **Le `pending*` NE prouve rien** | l'état voyage entier (`netSnapshot`) | `__wfrp.modal()` répond PAREIL des deux côtés — la possession se lit au DOM, jamais au pending. C'est le piège n°1 d'une recette coop |
+| 3 | **Le choix de GROUPE va au meneur** | dialogue = décision de groupe : `chooseDialogue`/`closeDialogue`/`interactEntity` sont routés `seat === (net.gmSeat ?? 0)` (`ROUTES`, `src/state/netOwnership.ts`) ET absents de `GUEST_INTENTS` | l'invité VOIT le dialogue (miroir) ; seul le choix de l'HÔTE fait avancer le nœud/le flag/le combat des deux côtés. Chez l'invité, `state().inDialogue` et le nœud affiché suivent l'hôte |
+| 4 | **Une bande partagée : chaque siège ses rangées** | `bandStep` (`src/state/rollSeam.ts`) pose `groupOwner` dès >1 porteur → `modalOwnerOf` rend `'*'` → fenêtre chez TOUS ; chaque rangée n'est actionnable que par le siège qui possède son acteur (`useOwns`, `src/ui/ownership.ts` — `rollAllUnrolledRows` filtré par `owns`) | la MÊME fenêtre est ouverte des deux côtés ; le bouton de jet d'une rangée n'est servi qu'au siège propriétaire ; « Tout lancer » ne roule QUE les rangées du siège qui clique |
+| 5 | **La Résilience de l'invité sur SA rangée** | `seatInfluences` : un héros non piloté par l'IA n'est influençable que par SON siège (`src/state/netOwnership.ts`) ; `canFixDie` (option « Dés fixés ») en dérive | chez l'invité, Chance/Résilience/Pacte ne sont offerts QUE sur sa rangée ; la rangée d'un héros de l'hôte les porte chez l'hôte et pas chez lui |
+| 6 | **Console 0 des DEUX côtés** | — | `guard.errors()` vide pour chacune des deux sessions (un `consoleGuard` par page) |
+
+### Pièges coop
+
+- **Attendre la PROPAGATION avant d'asserter chez le pair** : la diffusion est throttlée (trailing
+  **~120 ms** + coalescing, `scheduleBroadcast`, `src/state/netFlow.ts`) et le trajet Worker s'y
+  ajoute. Après un geste côté A, poller la CONDITION attendue côté B (`waitFor`), jamais un délai fixe.
+- **Les deux `__wfrp` sont ÉTRANGERS** : un helper appelé sur la page hôte ne se voit sur la page
+  invitée qu'après un snapshot. Toujours nommer la session dans le script (`hote` / `invite`).
+- **Clavier neutralisé — normal, pas un bug** : les raccourcis de combat exigent
+  `controlsActive` **ET** aucune modale ouverte (`src/state/keybindings.ts`) → pendant le tour d'un
+  autre siège, ou tant qu'une fenêtre (dialogue, pause de Round, cascade) est ouverte, rien ne répond.
+  Fermer la fenêtre, ou rendre la main au bon siège, AVANT de conclure à une régression clavier.
+- **`__wfrp.gmSeat` ne sert QUE le solo/l'hôte** : il pose le siège **0** (`setGmSeat(0)`). En coop, le
+  MJ se désigne par siège au `<select>` « Maître du Jeu » (`GmSeatSelect`) ou par
+  `store.getState().setGmSeat(1)` côté hôte. Le siège MJ SURVIT à `scenario()` (piège mesuré #1028
+  ci-dessus) : le remettre à zéro entre deux recettes.
+- **Reprise de siège** : le token vit en `sessionStorage` par room — un reload de l'onglet invité
+  reprend le MÊME siège, un Chrome au profil NEUF prend un siège NEUF. `netJoin` refuse hors mode
+  local et exige 6 caractères `[A-Z0-9]`.
+- **Arbre GELÉ** (règle générale, ci-dessus) : elle vaut DOUBLE ici — un full-reload Vite ramène au
+  menu **une** des deux pages et casse la session réseau, pas les deux.
+
+### Scénario « coop minimal » — un jet d'invité + un choix de groupe
+
+Le plus court chemin qui porte les DEUX : `embuscade` (`src/scenes/test-scenarios/embuscade.ts`) —
+exploration → dialogue (choix de GROUPE) → combat (jet d'invité). Tout depuis l'HÔTE sauf l'étape 7.
+
+1. Relay au défaut (prod) ou local (§ ci-dessus), `npm run dev`, arbre gelé.
+2. Ouvrir les deux pages et lier les sièges (script du kit ci-dessus) — contrôler `net.mode`/
+   `net.mySeat` des deux côtés.
+3. HÔTE : `__wfrp.scenario('embuscade')` → groupe de 4 posé, scène chargée ; l'invité la reçoit au
+   snapshot (contrôler `__wfrp.state().sceneId === 'ambush-test'` chez l'INVITÉ).
+4. HÔTE : relever les ids (`__wfrp.state().party`) et attribuer le 2ᵉ héros au siège 1 :
+   `__wfrp.store.getState().netAssign('<id>', 1)`. Contrôler chez l'invité :
+   `net.ownership['<id>'] === 1`.
+5. HÔTE : `__wfrp.goto({ x: 9, y: 6 })` — la zone `approche` déclenche le dialogue `dlg-ambush`.
+   **Choix de GROUPE** : `state().inDialogue` doit passer à `true` des DEUX côtés (invariant 3).
+6. Cliquer chez l'INVITÉ la réponse « Fondre sur les charognards… » : rien ne doit avancer
+   durablement (le nœud/le combat ne bougent pas). Puis cliquer la MÊME réponse chez l'HÔTE : le
+   combat `enc-mutants` s'ouvre des deux côtés.
+7. HÔTE : `__wfrp.turn('<id du héros de l'invité>')` (rend le tour ET le Mouvement plein).
+   INVITÉ : `__wfrp.store.getState().battleRun()` — action de l'allowlist, donc VRAI trajet
+   intent → hôte → snapshot. **Jet d'invité** : la modale de Course est rendue chez l'invité,
+   l'hôte affiche « Invité joue <héros>… » (invariant 1). Rien ne s'ouvre ? le héros est SURPRIS
+   (`surprise: 'party'` de la rencontre, LDB 13) : passer au Round suivant (`fastForward`) puis
+   refaire `turn`.
+8. Bande partagée + Résilience (invariants 4/5) : HÔTE `__wfrp.combatEnd()` → la cascade de fin de
+   combat s'ouvre CHEZ LES DEUX ; vérifier qu'une rangée n'est jouable que par son siège et que la
+   Résilience n'est offerte à l'invité que sur SA rangée.
+9. Les deux `guard.errors()` doivent être vides ; fermer les deux sessions dans les `finally`.
+
 ## Collecteur d'erreurs de playtest (#304)
 
 Les erreurs d'une soirée de playtest ne remontent que si le joueur les VOIT (console jamais
