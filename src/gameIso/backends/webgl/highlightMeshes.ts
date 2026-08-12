@@ -136,7 +136,7 @@ export function highlightTint(el: HighlightEl): string {
 }
 
 /** Épaisseur du cadre d'un anneau-contour, en fraction de case. */
-const RING_FRAME_K = 0.09;
+export const RING_FRAME_K = 0.09;
 
 /** Matrice d'INSTANCE : le carré UNITÉ posé au centre de sa case, à la hauteur métrique de sa surface
  *  plus le décollement de son slot. `(x, y, h) → (x·mpt, h, y·mpt)`, la conversion du monde
@@ -180,10 +180,12 @@ export function tileQuadGeometry(): THREE.BufferGeometry {
   return geo;
 }
 
-/** Gabarit UNITÉ d'un CONTOUR de case : quatre bandes horizontales formant un cadre de côté 1. */
-export function tileFrameGeometry(): THREE.BufferGeometry {
+/** Gabarit UNITÉ d'un CONTOUR de case : quatre bandes horizontales formant un cadre de côté 1. `k` =
+ *  épaisseur du cadre en fraction de case — un cadre PLUS FIN est le même gabarit, jamais une seconde
+ *  géométrie écrite à la main (repère du groupe hors combat, `backends/webgl/dynamicMarkMeshes`). */
+export function tileFrameGeometry(k = RING_FRAME_K): THREE.BufferGeometry {
   const o = 0.5;
-  const i = o - RING_FRAME_K;
+  const i = o - k;
   const pos: number[] = [];
   const bande = (x0: number, x1: number, z0: number, z1: number) => {
     pos.push(x0, 0, z0, x1, 0, z0, x1, 0, z1, x0, 0, z0, x1, 0, z1, x0, 0, z1);

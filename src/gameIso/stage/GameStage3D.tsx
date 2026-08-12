@@ -65,7 +65,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { freeYaw, type Dims, type Rot } from '../../geometry/iso';
-import type { Scene } from '../../state/scene';
+import { heightAt, type Scene } from '../../state/scene';
 import { affineCamera } from '../backends/webgl/cameras';
 import { pxPerM } from '../backends/webgl/worldTris';
 import {
@@ -104,6 +104,9 @@ import {
   type HighlightSlot,
 } from '../backends/webgl/highlightMeshes';
 import type { HighlightEl } from '../builders/highlights';
+import { NO_DYNAMIC_MARKS, type DynamicMarks } from '../builders/dynamicMarks';
+import { DYN_MARK_SLOTS, buildDynamicMarkMesh } from '../backends/webgl/dynamicMarkMeshes';
+import { poseDynamicMarks, type DynMarkPools } from './dynamicMarkPose';
 import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/spriteRaycast';
 import { setSpritePicker } from './spritePicker';
 import { stage3dFraming } from './stage3dCamera';
@@ -182,6 +185,10 @@ export interface GameStage3DProps {
    *  même que la voie affine projette en losanges. Cet écran ne les recalcule pas : il les pose à plat
    *  dans le monde. */
   highlights?: readonly HighlightEl[];
+  /** MARQUES DYNAMIQUES (#1176, P3-0d) — lien d'engagement, contour de l'actif, repère du groupe : la
+   *  MÊME dérivation pure que la voie affine (`builders/dynamicMarks`), en cases LOGIQUES. Leur
+   *  position se prend à la FRAME, sur le glissement de `anim` — jamais à un rendu React. */
+  dynMarks?: DynamicMarks;
   /** Cadençage de la MARCHE, quand le stage en offre un (lot P2-4) : sans lui, cet écran ne bouge
    *  qu'aux rendus du stage. */
   anim?: StageWalkAnim;
@@ -228,7 +235,7 @@ export function artRot(dims: Dims): Rot {
   return ((Math.floor((freeYaw(dims) ?? (dims.rot ?? 0) * 90) / 90) % 4 + 4) % 4) as Rot;
 }
 
-export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors, gameTime, lightLevel, lights, highlights, anim }: GameStage3DProps): JSX.Element {
+export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, anim }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
@@ -243,6 +250,7 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   const flaques = useRef<THREE.Group>();
   const intemperies = useRef<THREE.Group>();
   const marques = useRef<THREE.Group>();
+  const marquesDyn = useRef<THREE.Group>();
   if (!three.current) {
     three.current = new THREE.Scene();
     monde.current = new THREE.Group();
@@ -257,7 +265,11 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     // Groupe des MARQUES (P3-0c) : monté une fois, jamais vidé par événement de combat — ses pools ne
     // se redimensionnent qu'au PALIER de capacité, leur contenu se réécrit en place.
     marques.current = new THREE.Group();
-    three.current.add(monde.current, touffes.current, panneaux.current, lampes.current, flaques.current, intemperies.current, marques.current);
+    // Groupe FRÈRE des marques DYNAMIQUES (P3-0d) : à part parce que ses pools ne dépendent d'AUCUNE
+    // capacité d'état — ils sont montés une fois à capacité fixe, et réécrits à la FRAME (jamais à un
+    // rendu React, comme les marques de case du groupe voisin).
+    marquesDyn.current = new THREE.Group();
+    three.current.add(monde.current, touffes.current, panneaux.current, lampes.current, flaques.current, intemperies.current, marques.current, marquesDyn.current);
   }
 
   // Le cache de textures est GLOBAL au module : changer de scène rend ses entrées mortes (les clés
@@ -289,6 +301,12 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   );
   const clésCapacités = capacités.join(',');
   const poolsMarques = useRef(new Map<HighlightSlot, THREE.InstancedMesh>());
+  // ── MARQUES DYNAMIQUES (P3-0d) : trois pools à capacité FIXE, montés une fois (l'effet plus bas).
+  // Leur contenu ne se déduit d'aucun état React — il se réécrit à la frame, dans `dessiner`.
+  const poolsDyn = useRef<DynMarkPools>({});
+  // Le SOL d'une case, la même convention que le builder de marques (0 au rez, la surface réelle en
+  // hauteur) : c'est la hauteur d'où le glissement vertical de la marche se compte.
+  const solM = (x: number, y: number, z: number) => (z ? heightAt(scene, Math.round(x), Math.round(y), z) : 0);
 
   // ── LUMIÈRE (P2-5) : la DÉCISION est prise en scalaires purs (`stageLights.ts`), l'écran n'en monte
   // que les conséquences. `lit` = un soleil éclaire RÉELLEMENT (il est levé ET au-dessus du fondu) :
@@ -380,6 +398,13 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       pool: pool.current,
       slots: flaquesÉcrites,
       surfaceLuminance: lumière.surfaceLuminance,
+    });
+    // MARQUES DYNAMIQUES (P3-0d) : elles suivent la MÊME glisse que les quads, à la même frame et sur
+    // le même canal — un lien d'engagement posé à un rendu React attendrait le marcheur à l'arrivée.
+    poseDynamicMarks(poolsDyn.current, dynMarks ?? NO_DYNAMIC_MARKS, {
+      mpt,
+      glide: anim ? anim.glide : AUCUN_GLISSEMENT,
+      groundM: solM,
     });
     // CARTE D'OMBRE : elle ne se recuit QUE quand ce qu'elle contient a bougé — un casteur qui glisse,
     // ou un montage (lampes, monde, billboards) qui l'a demandée. Une rotation de caméra, un zoom, une
@@ -641,6 +666,32 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       }
       pools.clear();
     };
+  }, []);
+
+  // ── POOLS DYNAMIQUES (P3-0d) : montés UNE fois, à capacité fixe, et jamais retouchés jusqu'à la mort
+  // de l'écran. Aucune dépendance : ni le combat, ni la scène, ni l'échelle n'en refont un — leur
+  // contenu ENTIER se réécrit à chaque frame (`poseDynamicMarks`), y compris le compte dessiné.
+  useEffect(() => {
+    const groupe = marquesDyn.current;
+    if (!groupe) return;
+    const pools = poolsDyn.current;
+    for (const slot of DYN_MARK_SLOTS) {
+      const mesh = buildDynamicMarkMesh(slot);
+      pools[slot] = mesh;
+      groupe.add(mesh);
+    }
+    dessiner();
+    return () => {
+      for (const slot of DYN_MARK_SLOTS) {
+        const mesh = pools[slot];
+        if (!mesh) continue;
+        groupe.remove(mesh);
+        mesh.geometry.dispose();
+        (mesh.material as THREE.Material).dispose();
+        delete pools[slot];
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── GROUPE BILLBOARDS : décor + acteurs. Rebâti quand les SUJETS changent — l'identité d'un sujet

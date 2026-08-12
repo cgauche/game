@@ -10,7 +10,7 @@ import type { ReactNode } from 'react';
 import { Scene } from '../../state/scene';
 import { Combatant } from '../../engine/types';
 import { isOutOfAction, endState } from '../../engine/conditions';
-import type { BattleState } from '../../state/store';
+import { TETHER_DASH_PX, TETHER_GAP_PX, TETHER_STROKE_PX, type DynamicMarks } from '../builders/dynamicMarks';
 import { CELL, Dims, tileCenter, depth, diamondPath } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
 import { BodyToken } from '../BodyToken';
@@ -24,7 +24,6 @@ import { entitySize } from '../../state/spawn';
 import { HERO_RING, ENEMY_RING, veilTint, teamShape, relationColor } from '../teamColors';
 import { GOLD_TINT, GOLD_DARK_TINT, HALO_TINT, ENGAGE_TINT, ACTIVE_HALO_TINT } from '../highlightTints';
 import { summarizeEffects, combatantFlags } from '../effectIcons';
-import { mountOf } from '../../state/mount';
 import type { Pt } from '../../state/path';
 import type { PropEl, TokenEl } from '../builders/types';
 import type { StageObj } from './objs';
@@ -289,44 +288,29 @@ export function npcHoverHaloObjs(scene: Scene, hover: Pt | null, ctx: TokenCtx):
 }
 
 /** Tether d'ENGAGEMENT (R7) + halo de l'ACTIF + repère du groupe : éléments DYNAMIQUES qui SUIVENT le
- *  token qui glisse — recalculés à la frame (peu coûteux), hors du builder. */
-export function dynamicHighlightObjs(
-  ctx: TokenCtx,
-  battle: BattleState | null,
-  mode: string,
-  dialogue: unknown,
-  partyPos: Pt,
-  walkPosOf: WalkPos,
-): StageObj[] {
+ *  token qui glisse — projetés à la frame (peu coûteux). La DÉRIVATION est partagée avec la voie
+ *  volumique (`builders/dynamicMarks`) ; cette fonction n'est plus que sa PROJECTION affine. */
+export function dynamicHighlightObjs(ctx: TokenCtx, marks: DynamicMarks, walkPosOf: WalkPos): StageObj[] {
   const { dims, liftAt } = ctx;
   const out: StageObj[] = [];
-  if (mode === 'battle' && battle) {
-    // État ENGAGÉ (R7) : tether de mêlée entre paires Engagées (zone de contrôle). Dédupliqué (id < otherId).
-    for (const c of battle.combatants) {
-      if (!c.pos || isOutOfAction(c)) continue;
-      for (const oid of c.engagedWith ?? []) {
-        if (c.id >= oid) continue; // une seule ligne par paire
-        const o = battle.combatants.find((x) => x.id === oid);
-        if (!o?.pos || isOutOfAction(o)) continue;
-        const za = c.pos.z ?? 0, zb = o.pos.z ?? 0; // chaque extrémité posée à l'étage de SON combattant
-        const pa = walkPosOf(c.id, c.pos.x, c.pos.y);
-        const pb = walkPosOf(o.id, o.pos.x, o.pos.y);
-        const ca = tileCenter(pa.x, pa.y, dims, za ? liftAt(pa.x, pa.y, za) : 0);
-        const cb = tileCenter(pb.x, pb.y, dims, zb ? liftAt(pb.x, pb.y, zb) : 0);
-        // tether posé à la profondeur de l'extrémité la plus PROCHE caméra (+0.25 ⇒ sous les jetons)
-        out.push({ d: Math.max(depth(pa.x, pa.y, dims, za), depth(pb.x, pb.y, dims, zb)) + 0.25, el: <line key={`eng-${c.id}-${oid}`} x1={ca.cx} y1={ca.cy} x2={cb.cx} y2={cb.cy} stroke={ENGAGE_TINT} strokeWidth={2} strokeDasharray="4 3" opacity={0.6} pointerEvents="none" /> });
-      }
-    }
-    const activeC = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
-    if (activeC?.pos) {
-      const haloUnit = mountOf(battle, activeC) ?? activeC; // cavalier → halo sur l'empreinte de la MONTURE (2×2)
-      const hz = (haloUnit.pos as { z?: number }).z ?? 0;
-      const ap = walkPosOf(haloUnit.id, haloUnit.pos!.x, haloUnit.pos!.y); // le halo SUIT le token qui glisse
-      for (const t of footprintTiles(ap, footprintN(haloUnit)))
-        out.push({ d: depth(t.x, t.y, dims, hz) + 0.25, el: <path key={`active-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims, liftAt(t.x, t.y, hz))} fill="none" stroke={ACTIVE_HALO_TINT} strokeWidth={3} /> });
-    }
+  for (const { a, b } of marks.tethers) {
+    const za = a.cell.z, zb = b.cell.z; // chaque extrémité posée à l'étage de SON combattant
+    const pa = walkPosOf(a.id, a.cell.x, a.cell.y);
+    const pb = walkPosOf(b.id, b.cell.x, b.cell.y);
+    const ca = tileCenter(pa.x, pa.y, dims, za ? liftAt(pa.x, pa.y, za) : 0);
+    const cb = tileCenter(pb.x, pb.y, dims, zb ? liftAt(pb.x, pb.y, zb) : 0);
+    // tether posé à la profondeur de l'extrémité la plus PROCHE caméra (+0.25 ⇒ sous les jetons)
+    out.push({ d: Math.max(depth(pa.x, pa.y, dims, za), depth(pb.x, pb.y, dims, zb)) + 0.25, el: <line key={`eng-${a.id}-${b.id}`} x1={ca.cx} y1={ca.cy} x2={cb.cx} y2={cb.cy} stroke={ENGAGE_TINT} strokeWidth={TETHER_STROKE_PX} strokeDasharray={`${TETHER_DASH_PX} ${TETHER_GAP_PX}`} opacity={0.6} pointerEvents="none" /> });
   }
-  if (mode === 'exploration' && !dialogue)
-    out.push({ d: depth(partyPos.x, partyPos.y, dims, partyPos.z ?? 0) + 0.25, el: <path key="party-pos" d={diamondPath(partyPos.x, partyPos.y, dims, liftAt(partyPos.x, partyPos.y, partyPos.z ?? 0))} fill="none" stroke={ACTIVE_HALO_TINT} strokeWidth={1.5} opacity={0.5} /> });
+  if (marks.active) {
+    const { id, cell, n } = marks.active;
+    const ap = walkPosOf(id, cell.x, cell.y); // le halo SUIT le token qui glisse
+    for (const t of footprintTiles(ap, n))
+      out.push({ d: depth(t.x, t.y, dims, cell.z) + 0.25, el: <path key={`active-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims, liftAt(t.x, t.y, cell.z))} fill="none" stroke={ACTIVE_HALO_TINT} strokeWidth={3} /> });
+  }
+  if (marks.party) {
+    const p = marks.party;
+    out.push({ d: depth(p.x, p.y, dims, p.z) + 0.25, el: <path key="party-pos" d={diamondPath(p.x, p.y, dims, liftAt(p.x, p.y, p.z))} fill="none" stroke={ACTIVE_HALO_TINT} strokeWidth={1.5} opacity={0.5} /> });
+  }
   return out;
 }

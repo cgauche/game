@@ -40,6 +40,7 @@ import { buildTokens } from './builders/tokens';
 import { floorLayerObjs, wallLayerObjs, roofLayerObjs, elOccluder, type LayerCtx } from './stage/layers';
 import { combatHighlightObjs, combatHighlightsView, type HighlightOpts } from './stage/highlightLayer';
 import { buildHighlights, type HighlightEl } from './builders/highlights';
+import { dynamicMarks, type DynamicMarks } from './builders/dynamicMarks';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
 import { CulledScene, actorCapsuleOf } from './stage/CulledScene';
@@ -421,9 +422,12 @@ export function IsoStage() {
   };
   const liftOf = (p: Pt) => (p.z ? liftAt(p.x, p.y, p.z) : 0);
 
+  // MARQUES DYNAMIQUES : dérivées UNE fois (`builders/dynamicMarks`) et servies aux DEUX voies — le
+  // contexte qui les autorise (mode, dialogue ouvert) se tranche ici, et nulle part ailleurs.
+  const marquesDyn = dynamicMarks(mode === 'battle' ? battle : null, mode === 'exploration' && !dialogue ? partyPos : null);
   // Éléments DYNAMIQUES de la frame, dans l'ordre d'émission historique : tether/halo de l'actif,
   // affordances de fouille, puis tokens (combat : combattants+montés ; exploration : halo PNJ + groupe).
-  const dyn: StageObj[] = dynamicHighlightObjs(tokenCtx, battle, mode, dialogue, partyPos, walkPosOf);
+  const dyn: StageObj[] = dynamicHighlightObjs(tokenCtx, marquesDyn, walkPosOf);
   dyn.push(...interactHaloObjs(propEls, tokenCtx, flags, hover, mode === 'exploration'));
   if (mode === 'battle' && battle) {
     dyn.push(...combatantObjs(tokenEls, { ...tokenCtx, walkPosOf, ghostIds, hoveredId, activeId: activeC?.id ?? null }));
@@ -474,6 +478,7 @@ export function IsoStage() {
           lights={lightSources}
           battle={combatBattle}
           highlightOpts={highlightOpts}
+          dynMarks={marquesDyn}
           partyToken={combatBattle ? null : partyLeader ? { leader: partyLeader, pos: partyPos } : null}
         />
       )}
@@ -545,7 +550,7 @@ export function IsoStage() {
  * étage isolé, surplomb, brouillard). ÉCART RÉSIDUEL : un couple MONTÉ ne rend que sa MONTURE — le
  * corps composite cavalier+monture (`MountedToken`) n'a pas d'équivalent billboard.
  */
-function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, tokenEls, propEls, walksRef, partyToken, gameTime, lightLevel, lights, battle, highlightOpts }: {
+function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, tokenEls, propEls, walksRef, partyToken, gameTime, lightLevel, lights, battle, highlightOpts, dynMarks }: {
   scene: Scene;
   dims: Dims;
   mpt: number;
@@ -571,6 +576,8 @@ function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, t
   battle: BattleState | null;
   /** Contexte de tour/ciblage dont les marques dérivent (`stage/highlightLayer`). */
   highlightOpts: HighlightOpts;
+  /** MARQUES DYNAMIQUES déjà dérivées par le stage — les DEUX voies consomment cette même liste. */
+  dynMarks: DynamicMarks;
 }) {
   const facings = useGame((s) => s.facing); // orientation MONDE vivante par acteur (Dir8)
   const poses: ActorPose[] = [];
@@ -615,5 +622,5 @@ function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, t
     },
     cam: () => camAt(performance.now()),
   };
-  return <GameStage3D scene={scene} dims={dims} mpt={mpt} cam={cam} zoom={zoom} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} highlights={highlights} anim={anim} />;
+  return <GameStage3D scene={scene} dims={dims} mpt={mpt} cam={cam} zoom={zoom} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} highlights={highlights} dynMarks={dynMarks} anim={anim} />;
 }
