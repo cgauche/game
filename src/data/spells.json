@@ -10645,7 +10645,7 @@
                   "every": 2,
                   "amount": 1
                 },
-                "custom": "Ration (1 jour)"
+                "trappingId": "ration"
               },
               {
                 "op": "narrative",
@@ -12348,7 +12348,7 @@
                 "ops": [
                   {
                     "op": "giveTrapping",
-                    "custom": "Ration (1 jour)"
+                    "trappingId": "ration"
                   }
                 ]
               }

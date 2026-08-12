@@ -66,7 +66,7 @@ const scene = buildScene({
     { id: 'tresor', kind: 'prop', ref: 'coffre', pos: { x: 12, y: 5 }, label: 'Coffre du trésor',
       interact: { consume: true, flow: flowFromEffects([
         { type: 'giveMoney', gold: 5 },
-        { type: 'giveTrapping', custom: 'Épée', qualities: ['precise'], identified: false },
+        { type: 'giveTrapping', trappingId: 'arme-simple', qualities: ['precise'], identified: false },
         { type: 'journal', text: 'Le coffre regorge d’or et d’une lame finement ouvragée.' },
       ]) } },
   ],

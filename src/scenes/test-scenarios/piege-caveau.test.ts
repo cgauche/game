@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { evalCondition, flowHasTest, flowEffects } from '../../state/flow';
 import { validateScene } from '../../state/validateScene';
 import { useGame } from '../../state/store';
-import { runFlow } from '../../state/combatEffects';
+import { runFlow, assignGearAt } from '../../state/combatEffects';
 import { layerTiles } from '../../state/scene';
 import { scenario } from './piege-caveau';
 
@@ -58,6 +58,31 @@ describe('Scénario « Le Caveau piégé » : vitrine Flow + Condition', () => {
     expect(useGame.getState().flags.levier_tire).toBe(true);
     // la fouille de la clé donne l'objet « Clé en fer » — c'est lui que la condition hasItem de la herse lit.
     expect(flowEffects(cle.interact!.flow).some((e) => e.type === 'giveTrapping' && e.custom === 'Clé en fer')).toBe(true);
+  });
+
+  it('le coffre donne une ARME de catalogue (LDB 62 l.125-127), Précise et non identifiée, tenable en main', () => {
+    const tresor = scene.entities.find((e) => e.id === 'tresor')!;
+    useGame.setState({ battle: null, flags: {}, party: scenario.makeParty(), scene, pendingLoot: null });
+    runFlow(useGame.getState, useGame.setState, tresor.interact!.flow);
+    const gear = useGame.getState().pendingLoot!.gear;
+    expect(gear.length).toBe(1);
+    const heroId = useGame.getState().party[0].id;
+    const avant = new Set((useGame.getState().party[0].items ?? []).map((i) => i.uid)); // le héros porte déjà l'équipement de sa carrière
+    assignGearAt(useGame.getState, useGame.setState, 'pendingLoot', 0, heroId);
+    const hero = useGame.getState().party.find((h) => h.id === heroId)!;
+    const lame = hero.items!.find((i) => !avant.has(i.uid));
+    expect(lame).toBeDefined();
+    expect(lame!.trappingId).toBe('arme-simple');
+    expect(lame!.kind).toBe('melee'); // une FICHE d'arme, pas une étiquette custom (kind 'misc', sans Dégâts)
+    expect(lame!.damage).toEqual({ plusBF: true, flat: 4 });
+    expect(lame!.qualities.map((q) => q.id)).toContain('precise');
+    expect(lame!.identified).toBe(false);
+    // tenue en main (loadout actif) → elle devient une arme JOUABLE, qualité Précise comprise
+    useGame.getState().setLoadoutSlot(heroId, hero.activeLoadoutId!, 'main', lame!.uid);
+    const armed = useGame.getState().party.find((h) => h.id === heroId)!;
+    const w = armed.weapons.find((x) => x.uid === lame!.uid);
+    expect(w).toBeDefined();
+    expect(w!.qualities.map((q) => q.id)).toContain('precise');
   });
 
   beforeEach(() => useGame.setState({ battle: null, flags: {}, pendingTest: null }));
