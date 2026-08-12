@@ -37,7 +37,7 @@ const SRC = fileURLToPath(new URL('..', import.meta.url)); // src/
 const PORTE = 'ui/rollRowBuild.ts';
 
 /** Les constructeurs de la porte : leur argument n'est pas une rangée manuscrite, c'est une DÉCLARATION. */
-const CONSTRUCTEURS = new Set(['buildRollRow', 'participantRow', 'tableRow', 'worldRow', 'frozenOpposedRow']);
+const CONSTRUCTEURS = new Set(['buildRollRow', 'participantRow', 'tableRow', 'worldRow', 'witnessRow', 'frozenOpposedRow']);
 
 /** Champs PROPRES à `RollRowData`/`RollRowProps` — leur présence à côté de `row` fait la rangée. */
 const CHAMPS_DE_RANGEE = new Set([
@@ -87,7 +87,6 @@ export function compteRangeesManuscrites(nom: string, src: string): number {
  *  au type leur casserait dessus en bloc. */
 const BASELINE: Record<string, number> = {
   // ── PROD ──
-  'ui/CascadeModal.tsx': 5,
   'ui/ActivityModal.tsx': 3,
   'ui/jetProps/useAttackJetProps.tsx': 3,
   'ui/StateRecoveryModal.tsx': 2,
@@ -147,7 +146,7 @@ describe('#1262 L0 — cliquet des rangées MONTÉES À LA MAIN (gelé, décrois
       const b = BASELINE[f] ?? 0;
       if (n > b) hausses.push(`${f} : ${n} (baseline ${b})`);
     }
-    expect(hausses, `Rangée montée à la main hors de la porte — passer par un constructeur de \`rollRowBuild.ts\` (participantRow/tableRow/worldRow/frozenOpposedRow), ou ABAISSER une baseline migrée :\n${hausses.join('\n')}`).toEqual([]);
+    expect(hausses, `Rangée montée à la main hors de la porte — passer par un constructeur de \`rollRowBuild.ts\` (participantRow/tableRow/worldRow/witnessRow/frozenOpposedRow), ou ABAISSER une baseline migrée :\n${hausses.join('\n')}`).toEqual([]);
     const perimees: string[] = [];
     for (const [f, b] of Object.entries(BASELINE)) {
       const n = counts[f] ?? 0;

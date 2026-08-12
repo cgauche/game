@@ -1,8 +1,9 @@
 /**
  * PORTE UNIQUE du montage d'une rangée de jet (#1262) — le NOYAU (`RollRowCore` → `buildRollRow`) et
  * la FAMILLE de constructeurs qui en dérivent : `participantRow` (l'unité du monteur MULTI),
- * `tableRow` (rangée porte-sélecteur d'un tirage sur table), `worldRow` (rangée sans acteur) et
- * `frozenOpposedRow` (témoin à jet figé, calendrier de découverte `opposedFrozen`).
+ * `tableRow` (rangée porte-sélecteur d'un tirage sur table), `worldRow` (rangée sans acteur),
+ * `witnessRow` (témoin d'un jet déjà subi, `rolled` par construction) et `frozenOpposedRow` (témoin à
+ * jet figé, calendrier de découverte `opposedFrozen`).
  *
  * Le montage est de l'AFFICHAGE : aucune règle, aucun RNG, et surtout aucune décision de POSSESSION —
  * elle est posée au mint côté `state` (`rollFlowFactory`/`rollSeam.surfaceOf`) et seulement LUE ici.
@@ -135,5 +136,29 @@ export function frozenOpposedRow(
   s: GameState,
   o: { ownerId?: string; responded: boolean; row: PanelRowData },
 ): BuiltRollRow {
-  return maskOpposedRow(s, o, mark({ row: o.row, rolled: true, interactive: false }));
+  return maskOpposedRow(s, o, witnessRow({ row: o.row }));
+}
+
+/**
+ * Rangée TÉMOIN d'un jet DÉJÀ SUBI (pile figée d'une séquence, rangées d'un pas validé) : lecture
+ * seule (`interactive:false`, aucun cycle d'influence) et `rolled:true` par CONSTRUCTION — c'est ce
+ * qui la distingue du noyau, dont le `rolled` se dérive du dé (`!!row.d`). Un témoin porte parfois
+ * une NOTE seule (étape d'affichage/choix validée, pas figé sans ligne de jet) : la dériver rendrait
+ * `false` et rallumerait la phase pré-jet sur une rangée qui n'a plus rien à lancer.
+ */
+export function witnessRow(core: {
+  key?: RollRowData['key'];
+  row: PanelRowData;
+  fixedMark?: boolean;
+  extendedDr?: RollRowData['extendedDr'];
+}): BuiltRollRow {
+  const { key, row, fixedMark, extendedDr } = core;
+  return mark({
+    row,
+    rolled: true,
+    interactive: false as const,
+    ...(key !== undefined ? { key } : {}),
+    ...(fixedMark !== undefined ? { fixedMark } : {}),
+    ...(extendedDr ? { extendedDr } : {}),
+  });
 }

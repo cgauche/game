@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useGame, type GameState } from '../state/store';
 import type { NetState } from '../state/netFlow';
+import { ownsLocalNet } from './ownership';
 import { makePregensWithWealth } from '../data/pregens';
 import { rosterLoad, rosterRemove, rosterAdd, rosterExport, rosterImport } from '../state/roster';
 import { downloadText, fileSlug } from '../state/fileIo';
@@ -383,7 +384,8 @@ export function PartyScreenView({
   const views = coop
     ? slotViews(party, net.slots ?? [0, 0, 0, 0], net.ownership)
     : slotMap.map((id) => ({ seat: 0, hero: id ? party.find((h) => h.id === id) : undefined }));
-  const ownsHero = (id: string) => !coop || (net.ownership[id] ?? 0) === net.mySeat;
+  // Porte UI UNIQUE (#1262) : le siège se lit par le routage d'état, jamais par une comparaison recopiée.
+  const ownsHero = (id: string) => ownsLocalNet(net, id);
   /** Un siège attribué à un invité n'est pas rempli → l'hôte ne peut pas lancer. */
   const guestPending = views.some((v) => v.seat !== 0 && !v.hero);
 

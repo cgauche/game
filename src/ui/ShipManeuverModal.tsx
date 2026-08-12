@@ -1,5 +1,5 @@
 import { useGame } from '../state/store';
-import { ownsLocally } from '../state/netFlow';
+import { useOwns } from './ownership';
 import { easeDifficulty } from '../engine/tests';
 import { findCrewRoleById } from '../data';
 import { crewRoleValue } from '../engine/crewMorale';
@@ -23,13 +23,13 @@ const TURN_OPTIONS: { key: string; label: string; steps: number }[] = [
 /**
  * Modale de MANŒUVRE navale = TEST D'ÉQUIPAGE (MDG 13-14) — flux MULTI, patron `ForceDoorModal`. Pré-jet : choix
  * du virage (`OptionChooser` → `shipManeuverSetTurn`, ⟂ jet). Chaque rôle tenu = une `RollRow` : un PJ lance
- * SON Test (Chance/+1 DR/Pacte/Résilience sur SON jet, gated `ownsLocally`) ; un marin PNJ est un TÉMOIN auto-roulé.
+ * SON Test (Chance/+1 DR/Pacte/Résilience sur SON jet, gaté par la possession locale — `ui/ownership`) ; un marin PNJ est un TÉMOIN auto-roulé.
  * Le bandeau somme les DR (essentiel ×2) + Moral → DR final ; « Manœuvrer » vire le cap + avance (`…Confirm`).
  */
 export function ShipManeuverModal() {
   const p = useGame((s) => s.pendingShipManeuver);
   const battle = useGame((s) => s.battle);
-  const net = useGame((s) => s.net);
+  const owns = useOwns(); // possession locale à l'affichage (#1262) — hook : AVANT tout retour anticipé
   const setTurn = useGame((s) => s.shipManeuverSetTurn);
   const roll = useGame((s) => s.shipManeuverRoll);
   const reroll = useGame((s) => s.shipManeuverReroll);
@@ -41,7 +41,6 @@ export function ShipManeuverModal() {
   if (!p || !battle) return null;
   const ship = battle.combatants.find((c) => c.id === p.shipId);
   if (!ship) return null;
-  const owns = (id: string) => net.mode === 'local' || ownsLocally(useGame.getState(), id);
 
   const allRolled = p.participants.every((x) => x.result);
   const rollAll = rollAllUnrolledRows(p.participants, roll, (x) => !!x.interactive && owns(x.id));

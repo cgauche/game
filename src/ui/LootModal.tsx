@@ -1,5 +1,5 @@
 import { useGame } from '../state/store';
-import { ownsLocally } from '../state/netFlow';
+import { ownsLocal } from './ownership';
 import { Modal } from './Modal';
 import { Coins } from './Coins';
 import { GearAssignList } from './GearAssignList';
@@ -23,8 +23,8 @@ export function LootModal() {
   const appraising = useGame((s) => !!s.pendingAppraise);
   const state = useGame();
   if (!pl || battle) return null; // un combat a éclaté : la fenêtre réapparaîtra après (Ramasser/victoire ont leurs flux)
-  const online = net.mode !== 'local';
-  const assignable = online ? party.filter((h) => ownsLocally(state, h.id)) : party;
+  // Attribuables = les héros de CE siège (solo : tous — `ownsLocal` le rend déjà, #1262).
+  const assignable = party.filter((h) => ownsLocal(state, h.id));
   return (
     <Modal title={pl.title} variant="plain" className="loot-modal" onClose={appraising ? undefined : dismiss}>
       {(pl.messages?.length ?? 0) > 0 && (

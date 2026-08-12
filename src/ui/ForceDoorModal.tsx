@@ -1,5 +1,5 @@
 import { useGame } from '../state/store';
-import { ownsLocally } from '../state/netFlow';
+import { useOwns } from './ownership';
 import { testValue } from '../engine/skills';
 import { RollShell, type RollRowData, type RollAction } from './RollShell';
 import { buildParticipantRows } from './buildParticipantRows';
@@ -17,7 +17,7 @@ import { resultLine, freeCons } from '../state/rollSeam';
 export function ForceDoorModal() {
   const battle = useGame((s) => s.battle);
   const party = useGame((s) => s.party);
-  const net = useGame((s) => s.net);
+  const owns = useOwns(); // possession locale à l'affichage (#1262) — hook : AVANT tout retour anticipé
   const p = useGame((s) => s.pendingForceDoor);
   const roll = useGame((s) => s.forceDoorRoll);
   const reroll = useGame((s) => s.forceDoorReroll);
@@ -28,7 +28,6 @@ export function ForceDoorModal() {
   const cancel = useGame((s) => s.forceDoorCancel);
   if (!p) return null;
   const pool = battle?.combatants ?? party;
-  const owns = (id: string) => net.mode === 'local' || ownsLocally(useGame.getState(), id);
   const roundDmg = p.participants.reduce((s, x) => s + (x.result?.damage ?? 0), 0);
   const allRolled = p.participants.every((x) => x.result);
   const cede = roundDmg >= p.doorB;

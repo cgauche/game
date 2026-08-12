@@ -1,5 +1,5 @@
 import { useGame } from '../state/store';
-import { ownsLocally } from '../state/netFlow';
+import { useOwns } from './ownership';
 import { easeDifficulty } from '../engine/tests';
 import { findCrewRoleById } from '../data';
 import { crewRoleValue } from '../engine/crewMorale';
@@ -18,7 +18,7 @@ import { testBreakdown, testPending } from './breakdown';
 export function ShipBatteryModal() {
   const p = useGame((s) => s.pendingShipBattery);
   const battle = useGame((s) => s.battle);
-  const net = useGame((s) => s.net);
+  const owns = useOwns(); // possession locale à l'affichage (#1262) — hook : AVANT tout retour anticipé
   const roll = useGame((s) => s.shipBatteryRoll);
   const reroll = useGame((s) => s.shipBatteryReroll);
   const bonus = useGame((s) => s.shipBatteryBonusSL);
@@ -30,7 +30,6 @@ export function ShipBatteryModal() {
   const ship = battle.combatants.find((c) => c.id === p.shipId);
   const target = battle.combatants.find((c) => c.id === p.targetId);
   if (!ship || !target) return null;
-  const owns = (id: string) => net.mode === 'local' || ownsLocally(useGame.getState(), id);
 
   const allRolled = p.participants.every((x) => x.result);
   const rollAll = rollAllUnrolledRows(p.participants, roll, (x) => !!x.interactive && owns(x.id));

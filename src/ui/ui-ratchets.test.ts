@@ -861,15 +861,32 @@ function rowScope(src: string, idx: number, jsx: boolean): string {
   return src.slice(open, j + 1);
 }
 
+/** Portée d'un APPEL : l'argument, de la parenthèse ouvrante (indice `open`) à sa fermante équilibrée. */
+function callScope(src: string, open: number): string {
+  let depth = 0;
+  for (let j = open; j < src.length; j++) {
+    if (src[j] === '(') depth++;
+    else if (src[j] === ')') { depth--; if (depth === 0) return src.slice(open, j + 1); }
+  }
+  return src.slice(open);
+}
+
 function scanFrozenValueRows(files: string[]): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const f of files) {
     const src = readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-    const re = /interactive(:\s*|=\{)false/g;
+    // Deux ÉCRITURES d'une rangée témoin, une seule population : le champ posé à la main
+    // (`interactive:false`) et le constructeur `witnessRow(` de la porte (#1262), qui le pose pour
+    // le site. Sans la seconde, la migration d'un site vers la porte VIDERAIT ce cliquet sans que
+    // le stock réel (une valeur figée affichée hors calendrier) ait bougé d'une ligne.
+    const re = /interactive(:\s*|=\{)false|witnessRow\(/g;
     let m: RegExpExecArray | null;
     let n = 0;
     while ((m = re.exec(src))) {
-      if (/\bd\s*[,:]|\bpending\s*[,:]/.test(rowScope(src, m.index, m[1] === '={'))) n++;
+      // La portée d'un appel de constructeur est SON argument (jusqu'à la parenthèse équilibrée) —
+      // pas le bloc englobant, qui ferait compter la ligne d'un voisin.
+      const scope = m[0].startsWith('witnessRow') ? callScope(src, re.lastIndex - 1) : rowScope(src, m.index, m[1] === '={');
+      if (/\bd\s*[,:]|\bpending\s*[,:]/.test(scope)) n++;
     }
     if (n > 0) counts[rel(f)] = n;
   }

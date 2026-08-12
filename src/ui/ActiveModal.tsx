@@ -1,5 +1,5 @@
 import { useGame } from '../state/store';
-import { ownsLocally } from '../state/netFlow';
+import { ownsLocal } from './ownership';
 import { modalOwnerOf } from '../state/modalArbiter';
 import { willAutoResolve } from '../state/combatAuto';
 import type { JSX } from 'react';
@@ -74,7 +74,7 @@ export function ActiveModal(): JSX.Element | null {
   if (willAutoResolve(s)) return null;
   if (s.net.mode !== 'local') {
     const ownerId = modalOwnerOf(s);
-    if (ownerId !== '*' && ownerId !== null && !ownsLocally(s, ownerId)) {
+    if (ownerId !== '*' && ownerId !== null && !ownsLocal(s, ownerId)) {
       // Anti-doublon : pendant le TOUR d'un héros distant, la barre d'action affiche déjà
       // « X joue Héros… » — la puce ne sert que si la modale concerne un AUTRE combattant
       // (ex. défense réactive d'un héros distant pendant un tour ennemi).

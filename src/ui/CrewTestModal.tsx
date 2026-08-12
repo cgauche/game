@@ -1,5 +1,5 @@
 import { useGame, type BattleState } from '../state/store';
-import { ownsLocally } from '../state/netFlow';
+import { useOwns } from './ownership';
 import { easeDifficulty } from '../engine/tests';
 import { findCrewRoleById, findCrewTestTypeById, flowStakeRef } from '../data';
 import { crewRoleValue, rudeEpreuveMoraleDelta, crewTestSuccess } from '../engine/crewMorale';
@@ -25,7 +25,7 @@ export function CrewTestModal() {
   const p = useGame((s) => s.pendingCrewTest);
   const battle = useGame((s) => s.battle);
   const party = useGame((s) => s.party);
-  const net = useGame((s) => s.net);
+  const owns = useOwns(); // possession locale à l'affichage (#1262) — hook : AVANT tout retour anticipé
   const roll = useGame((s) => s.crewTestRoll);
   const reroll = useGame((s) => s.crewTestReroll);
   const bonus = useGame((s) => s.crewTestBonusSL);
@@ -34,7 +34,6 @@ export function CrewTestModal() {
   const confirm = useGame((s) => s.crewTestConfirm);
   const cancel = useGame((s) => s.crewTestCancel);
   if (!p) return null;
-  const owns = (id: string) => net.mode === 'local' || ownsLocally(useGame.getState(), id);
   return (
     <CrewTestModalView
       p={p} battle={battle} party={party} owns={owns}

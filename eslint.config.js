@@ -51,4 +51,22 @@ export default tseslint.config(
       }],
     },
   },
+  {
+    // POLICE DE LA POSSESSION À L'AFFICHAGE (#1262 L1) : une fenêtre demande « ce siège pilote-t-il ce
+    // combattant ? » par la porte UI `src/ui/ownership.ts`, jamais en important le prédicat d'état.
+    // Ce n'est PAS un verrou : `ownsLocally` est exporté par `netOwnership` (6 consommateurs internes)
+    // et ré-exporté par `netFlow` — l'import reste écrivable, la CI le refuse. Le nom seul est
+    // restreint : les autres exports de ces modules (types `NetState`, `initialNet`…) passent.
+    files: ['src/ui/**/*.ts', 'src/ui/**/*.tsx'],
+    ignores: ['src/ui/ownership.ts'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [{
+          group: ['**/state/netOwnership', '**/state/netFlow'],
+          importNames: ['ownsLocally'],
+          message: 'Possession à l’affichage (#1262) : passer par `ui/ownership.ts` (`ownsLocal`/`useOwns`) — le terme `net.mode === "local"` y est déjà mort.',
+        }],
+      }],
+    },
+  },
 );

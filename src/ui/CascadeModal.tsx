@@ -2,7 +2,6 @@ import { useEffect, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { availableResistance } from '../engine/menace';
-import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { VsHeader } from './VsHeader';
 import { StakeRule, OutcomeNote, sameCertainOps, sameEntityRef } from './StakeNote';
@@ -27,10 +26,10 @@ import { testBreakdown, testPending, opposedLines } from './breakdown';
 import type { ModLine } from '../engine/combat';
 import { Icon } from './Icon';
 import { stepInteraction, stepReady, tableStepDefs, tableStepDie, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
-import { ownsLocally } from '../state/netOwnership';
+import { useOwns } from './ownership';
 import { tableStepForcedDie } from './forcedDieRow';
 import { opposedResponded } from './opposedFrozen';
-import { frozenOpposedRow } from './rollRowBuild';
+import { frozenOpposedRow, tableRow, witnessRow, buildRollRow } from './rollRowBuild';
 import type { CascadeStep, CascadeRollStep, CascadeRoll, BatchParticipant } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 import { buildParticipantRows, rollAllUnrolledRows } from './buildParticipantRows';
@@ -125,18 +124,20 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const fumbleProps = useFumbleJetProps(); // étape-jet de Maladresse : Tableau des Oups ! dans la MÊME fenêtre
   const testProps = useTestJetProps(); // étape-jet de Test de scène : même coquille, une seule fenêtre
   const extendedProps = useExtendedTestJetProps(); // étape-jet de Test étendu (Rounds cumulés)
-  const net = useGame((s) => s.net);
+  // COOP : une rangée n'est pilotable que par le siège qui possède son acteur — porte UI UNIQUE
+  // (`ui/ownership`), lue jamais redécidée ; hook AVANT tout retour anticipé.
+  const owns = useOwns();
 
   // AUTO-FERMETURE d'une étape d'AFFICHAGE (#942 L8) : l'étape qui DÉCLARE `autoCloseMs` (gravité de
   // sa révélation) enchaîne d'elle-même passé le délai — « Continuer » reste servi et ferme avant. Le
   // minuteur est réarmé PAR ÉTAPE (clé = son id) ; il n'a rien à voir avec la Cadence de combat (une
   // cadence MANUELLE auto-ferme aussi : c'était le comportement de la révélation témoin). COOP : seul
-  // le siège PROPRIÉTAIRE de l'étape l'arme (`actorId` absent ⇒ l'hôte, cf. `ownsLocally`) — deux
+  // le siège PROPRIÉTAIRE de l'étape l'arme (`actorId` absent ⇒ l'hôte, cf. `ui/ownership`) — deux
   // sièges qui tirent `cascadeNext` avanceraient de deux crans.
   const autoStep = p ? p.participants[p.cursor] : undefined;
   const autoCloseMs = autoStep?.autoCloseMs;
   const autoStepId = autoStep?.id;
-  const autoOwned = autoStep ? ownsLocally(useGame.getState(), autoStep.actorId) : false;
+  const autoOwned = autoStep ? owns(autoStep.actorId) : false;
   useEffect(() => {
     if (autoCloseMs == null || !autoOwned) return;
     const t = window.setTimeout(() => useGame.getState().cascadeNext(), autoCloseMs);
@@ -153,9 +154,6 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   if (!p) return null;
   const pool: Combatant[] = battle?.combatants ?? party;
   const actorOf = (s: CascadeStep) => (s.actorId ? pool.find((c) => c.id === s.actorId) : undefined);
-  // COOP : une rangée par participant n'est pilotable que par le siège qui possède son acteur (patron
-  // `ShipManeuverModal`/`CrewTestModal`) — sinon l'affordance est morte (l'intent est refusé par l'hôte).
-  const owns = (id: string) => net.mode === 'local' || ownsLocally(useGame.getState(), id);
 
   // Base AFFICHÉE + lignes de mod NOMMÉES d'une étape QUI LANCE (`CascadeRollStep` : cible ET libellé
   // de ligne par le TYPE) : le libellé est la COMPÉTENCE lancée (« Résistance », « Calme »…), comme
@@ -201,10 +199,10 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     if (s.outcome?.length) return { combatant: a, note: noteFor(s) }; // affichage/choix validé : note seule
     return null;
   };
-  // Un panneau figé (`PanelRow` : breakdown + note) → rangées TÉMOINS du shell (`interactive:false`,
-  // aucun cycle d'influence : jet déjà subi). Source unique de la conversion « pile figée → rangées ».
+  // Un panneau figé (`PanelRow` : breakdown + note) → rangées TÉMOINS du shell (constructeur
+  // `witnessRow` : lecture seule, jet déjà subi). Source unique de la conversion « pile figée → rangées ».
   const witnessRows = (panelRows: PanelRow[], fixedMark = false): RollRowData[] =>
-    panelRows.map((r, i) => ({ key: i, row: r, rolled: true, interactive: false as const, fixedMark }));
+    panelRows.map((r, i) => witnessRow({ key: i, row: r, fixedMark }));
   // DONNÉE de Test ÉTENDU d'une rangée (arbitrage user 2026-07-11 : la barre est RENDUE par `RollRow`
   // — site UNIQUE — pas ici ; ceci ne calcule que `{cum, target}`). `done` = DR cumulés AVANT ce jet,
   // `+ SL` du jet réussi. Générique : mono (`meta`) ou batch (participant), toute la CLASSE des jets étendus.
@@ -231,7 +229,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         const res = part.result;
         const d = res ? { label: part.label ?? a.label, base: part.base, mods: part.mods, ...(part.difficulty ? { difficulty: part.difficulty } : {}), modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } : undefined;
         const extendedDr = extendedDrData(part.extendedDrDone, part.extendedDrTarget, res);
-        return [{ key: witnessRowKey(s.id, part.id), row: { combatant: a, d, note: partNote(part) }, rolled: true, interactive: false as const, ...(extendedDr ? { extendedDr } : {}) }];
+        return [witnessRow({ key: witnessRowKey(s.id, part.id), row: { combatant: a, d, note: partNote(part) }, extendedDr })];
       });
     }
     const pr = rowOf(s);
@@ -239,7 +237,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     const extendedDr = extendedDrData(s.meta?.extendedDrDone as number | undefined, s.meta?.extendedDrTarget as number | undefined, s.result);
     // `fixedMark` : le dé de l'étape a été SAISI (option « Dés fixés ») — la marque suit le jet dans la
     // pile figée comme dans le journal (`step.fixed`, écrit par la fabrique de flux ou le mode table).
-    return [{ key: witnessRowKey(s.id), row: pr, rolled: true, interactive: false as const, fixedMark: !!s.fixed, ...(extendedDr ? { extendedDr } : {}) }];
+    return [witnessRow({ key: witnessRowKey(s.id), row: pr, fixedMark: !!s.fixed, extendedDr })];
   };
 
   // Nombre de JETS DE DÉ réels (arbitrage user 2026-07-11) : un pas BATCH = ses N rangées ; un pas-jet
@@ -439,9 +437,9 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     });
     const unreachable = options.filter((o) => o.disabled).length;
     return {
-      // Rangée porteuse du SEUL sélecteur (un tirage sur table n'a ni cible ni DR à pré-afficher) :
-      // `rolled:false` sans `onRoll` → ni bouton de rangée, ni « Lancer » hissé, ni cycle d'influence.
-      rows: [{ key: `${s.id}:die`, row: { combatant: actorOf(s) }, rolled: false, forcedRoll: die.forcedRoll, fixedMark: die.fixedMark }],
+      // Rangée porteuse du SEUL sélecteur — constructeur `tableRow` (ni cible ni DR à pré-afficher,
+      // aucun `onRoll` : ni bouton de rangée, ni « Lancer » hissé, ni cycle d'influence).
+      rows: [tableRow({ key: `${s.id}:die`, row: { combatant: actorOf(s) }, forcedRoll: die.forcedRoll, fixedMark: die.fixedMark })],
       lines: (
         <>
           <OptionChooser layout="grid" groupLabel="Choisir la ligne" options={options} />
@@ -714,28 +712,31 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // DONNÉE de Test étendu de CETTE rangée (arbitrage user 2026-07-11 : `RollRow` rend la barre, site
   // UNIQUE ; persistée via `stepWitnessRows`, elle reste lisible aux pas suivants).
   const curExtendedDr = extendedDrData(cur.meta?.extendedDrDone as number | undefined, cur.meta?.extendedDrTarget as number | undefined, res);
-  const curRow: RollRowData = {
-    // Étape COURANTE du flux `cascade` : `key` = son id de slot → `RollShell` dérive le sélecteur
-    // de dé sur la BONNE étape (la coquille n'a pas de `flowKey` propre).
-    flowKey: 'cascade',
-    key: cur.id,
-    actor,
-    row: res && isRollStep(cur) ? { combatant: actor, d: breakdown(cur, res) } : curPending,
-    rolled,
-    ...(curExtendedDr ? { extendedDr: curExtendedDr } : {}),
-    onRoll: () => roll(cur.id),
-    fortune: actor?.fortune ?? 0,
-    freeReroll: freeRerollOf(actor),
-    rerollable: !!res && canReroll(failed, !!cur.rerolled),
-    onReroll: () => reroll(cur.id),
-    onBonusSL: () => bonusSL(cur.id),
-    darkPactable: !!res && failed && actor?.kind === 'hero',
-    onDarkPact: () => darkPact(cur.id),
-    resilience: actor?.resilience ?? 0,
-    onForce: () => force(cur.id),
-    forceShow: rolled && !res?.success,
-    resist: resistAvail ? { menace: cur.menace!, onResist: () => resistAct(cur.id) } : undefined,
-  };
+  // Chance / relance gratuite / Résilience ne sont PAS recopiées ici : `RollRow`/`InfluenceRow` les
+  // DÉRIVENT de `actor` (site unique). `rolled` est dérivé par le noyau du dé de la ligne (`row.d`) —
+  // identique à la phase de l'étape, une étape-JET portant toujours sa cible (`stepInteraction`).
+  const curRow: RollRowData = buildRollRow(
+    {
+      actor,
+      row: res && isRollStep(cur) ? { combatant: actor, d: breakdown(cur, res) } : curPending,
+      onRoll: () => roll(cur.id),
+      rerollable: !!res && canReroll(failed, !!cur.rerolled),
+      onReroll: () => reroll(cur.id),
+      onBonusSL: () => bonusSL(cur.id),
+      darkPactable: !!res && failed && actor?.kind === 'hero',
+      onDarkPact: () => darkPact(cur.id),
+      onForce: () => force(cur.id),
+      forceShow: rolled && !res?.success,
+    },
+    {
+      // Étape COURANTE du flux `cascade` : `key` = son id de slot → `RollShell` dérive le sélecteur
+      // de dé sur la BONNE étape (la coquille n'a pas de `flowKey` propre).
+      flowKey: 'cascade',
+      key: cur.id,
+      ...(curExtendedDr ? { extendedDr: curExtendedDr } : {}),
+      resist: resistAvail ? { menace: cur.menace!, onResist: () => resistAct(cur.id) } : undefined,
+    },
+  );
 
   const jetActions: RollAction[] = [
     // « Tout lancer » : tant qu'il reste >1 jet, résout d'un coup le reste (RNG, sans influence) PUIS

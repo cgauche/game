@@ -10,7 +10,7 @@ import { partyMoneyTotal } from '../state/bourseFlow';
 import { weatherExposure, exposureTestCount, exposureShelterFromTent } from '../engine/exposure';
 import { hasCondition } from '../engine/conditions';
 import { toBrass } from '../engine/money';
-import { ownsLocally } from '../state/netFlow';
+import { ownsLocal } from './ownership';
 import { Icon } from './Icon';
 import type { IconIdInput } from './icons';
 import type { Combatant } from '../engine/types';
@@ -83,7 +83,7 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
 
   // Héros affichés (vivants, dotés d'un réglage) ; ÉDITABLES = ceux que le siège local contrôle.
   const heroes = party.filter((h) => !h.dead && p.perHero[h.id]);
-  const editable = heroes.filter((h) => !online || ownsLocally(state, h.id));
+  const editable = heroes.filter((h) => ownsLocal(state, h.id)); // solo : tous (#1262)
   // FOLLOWERS = éditables NON personnalisés : le choix maître « Pour toute la troupe » les pilote.
   const followers = editable.filter((h) => !expanded.has(h.id));
   const cfgOf = (h: Combatant) => p.perHero[h.id];
@@ -127,7 +127,7 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
       <div className="rest-rows">
         {heroes.map((h) => {
           const cfg = cfgOf(h);
-          const mine = !online || ownsLocally(state, h.id);
+          const mine = ownsLocal(state, h.id);
           const isOpen = expanded.has(h.id);
           const warns = heroWarnings(h, cfg.lodging, cfg.food, exposureTests);
           const share = heroCost(h);

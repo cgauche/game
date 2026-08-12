@@ -26,6 +26,7 @@ import { findTalentById, skillInstanceLabel, findTrappingById, qualities, refLab
 import type { Combatant, ConditionId } from '../engine/types';
 import { rule } from '../engine/policy';
 import { effectiveEntry } from '../engine/variants';
+import { ownsLocalNet } from './ownership';
 import { ActiveModal } from './ActiveModal';
 import { TavernGameModal } from './TavernGameModal';
 import { Modal } from './Modal';
@@ -157,8 +158,9 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
   const heroes = party.filter((h) => !h.dead && interlude.perHero[h.id]);
   const activeHero = heroes.find((h) => h.id === activeHeroId) ?? heroes[0];
   const mecenat = catalog.find((d) => d.resolver === 'mecenat');
-  // Possession coop (audit M7) : chaque joueur mène les Activités de SES héros ; l'hôte clôt.
-  const ownsHero = (id: string) => net.mode === 'local' || (net.ownership[id] ?? 0) === net.mySeat;
+  // Possession coop (audit M7) : chaque joueur mène les Activités de SES héros ; l'hôte clôt. Porte
+  // UI UNIQUE (#1262) : le siège se lit par le routage d'état, jamais par une comparaison recopiée.
+  const ownsHero = (id: string) => ownsLocalNet(net, id);
   const ownerName = (id: string) => net.seatNames[net.ownership[id] ?? 0] ?? 'L’hôte';
   const isGuest = net.mode === 'guest';
   return (

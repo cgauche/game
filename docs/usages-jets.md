@@ -115,7 +115,7 @@ seraient une colonne vide de bout en bout.
 | `src/ui/AuContactModal.tsx` | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · |
 | `src/ui/BargainModal.tsx` | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · | · |
 | `src/ui/BattementModal.tsx` | ✓ | · | ✓ | · | ✓ | ✓ | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/CascadeModal.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | · | · | · | · | ✓ |
+| `src/ui/CascadeModal.tsx` | ✓ | · | · | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | · | · | · | · | ✓ |
 | `src/ui/CastModal.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | · | ✓ | ✓ | · | · |
 | `src/ui/CorruptionModal.tsx` | ✓ | · | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | ✓ | · | · | · | · | · |
 | `src/ui/CrewTestModal.tsx` | · | · | · | · | ✓ | · | · | · | ✓ | · | ✓ | ✓ | · | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · |
@@ -220,6 +220,10 @@ est un angle mort, et les voici :
   `flowKey`… d'un pending, d'une spec) coche la même case. Une rangée assemblée par un helper partagé
   (`src/ui/buildParticipantRows.tsx`) est comptée chez le HELPER, pas chez ses appelants — mais le
   BUNDLE que l'appelant lui passe porte les mêmes clés, ce qui explique la densité de cette matrice.
+  Une rangée MINTÉE par la porte (`src/ui/rollRowBuild.ts` : `buildRollRow`/`tableRow`/`witnessRow`…)
+  n'est comptée NULLE PART : les zones que le constructeur pose pour le site (`rolled`, `interactive`)
+  quittent la ligne de l'appelant, et la porte elle-même n'a aucun site `RollShell` qui la ferait
+  entrer dans la population. Une case `·` peut donc signifier « posé par la porte », pas « absent ».
 - La **cardinalité** n'est lisible que sur un tableau littéral ; `rows={variable}` ou `rows={appel(…)}`
   ne se compte pas — la valeur affichée est alors la FORME, jamais un nombre supposé.
 - Les **spreads** (`<RollShell {...props} />`) ne déclarent aucune zone : le consommateur réel est le

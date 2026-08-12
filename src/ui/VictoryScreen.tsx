@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useGame } from '../state/store';
-import { ownsLocally } from '../state/netFlow';
+import { ownsLocal } from './ownership';
 import { harvestProfileFor } from '../engine/harvest';
 import { Coins } from './Coins';
 import { TeamPortrait } from './TeamPortrait';
@@ -52,7 +52,7 @@ export function VictoryScreen() {
   useModalA11y(boxRef, continueAction);
   if (!battle || battle.over !== 'victory' || !revealed) return null;
   const seats = Object.entries(net.seatNames).map(([s, n]) => ({ seat: Number(s), name: n }));
-  const assignable = online ? party.filter((h) => ownsLocally(state, h.id)) : party;
+  const assignable = party.filter((h) => ownsLocal(state, h.id)); // solo : tous (#1262)
 
   const xp = pv?.xp ?? 0;
   const gold = pv?.gold ?? { gold: 0, silver: 0, brass: 0 };
