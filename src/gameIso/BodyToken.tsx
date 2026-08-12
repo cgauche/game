@@ -1,12 +1,9 @@
 import type { ReactNode } from 'react';
 import { tileCenter, billboardScale, type Dims } from '../geometry/iso';
-import { hpColor, ACTIVE_RING } from './teamColors';
-import { IconG } from '../ui/Icon';
+import { ACTIVE_RING } from './teamColors';
 import type { IconId } from '../ui/icons';
 import type { EndState } from '../engine/conditions';
-import { END_STATE_VISUAL } from '../ui/endStateVisual';
-
-const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
+import { TokenChromeMarks } from './TokenChromeMarks';
 
 /**
  * Coquille de positionnement PARTAGÉE de tout token de scène (combat + exploration + éditeur).
@@ -94,12 +91,7 @@ export function BodyToken({
   endState?: EndState | null;
 }) {
   const { cx, cy } = tileCenter(x, y, dims, z); // feetY = cy : pieds au centre de la tuile (étage z)
-  const endMark = endState ? END_STATE_VISUAL[endState] : null;
   const s = scale * billboardScale(dims); // échelle effective du billboard : réduite en vue « de face »
-  const hpRatio = hp && hp.max > 0 ? clamp01(hp.current / hp.max) : null;
-  const iconList = icons ?? [];
-  const nIcons = iconList.length + (iconsMore > 0 ? 1 : 0);
-  const iconStart = -(nIcons * 11) / 2 + 5.5;
   // Ancre haute du bloc de badges (PV + icônes) : au-dessus du disque en flat, au-dessus de la tête en iso.
   const R = discR ?? 22;
   const badgeY = flat ? -R : -150 * s;
@@ -136,35 +128,9 @@ export function BodyToken({
           {veil && <ellipse cx={0} cy={-44 * s} rx={17 * s} ry={34 * s} fill={veil} opacity={0.11} pointerEvents="none" />}
         </>
       )}
-      {(hpRatio != null || nIcons > 0) && (
-        <g transform={`translate(0,${badgeY - 8})`} pointerEvents="none">
-          {nIcons > 0 && (
-            <g style={{ color: '#f2eef8' }}>
-              {iconList.map((ic, i) => (
-                <IconG key={i} id={ic} x={iconStart + i * 11 - 5} y={-13} size={10} />
-              ))}
-              {iconsMore > 0 && (
-                <text x={iconStart + iconList.length * 11} y={-4} fontSize={8} fill="#cdb8d8" textAnchor="middle">+{iconsMore}</text>
-              )}
-            </g>
-          )}
-          {hpRatio != null && (
-            <>
-              <rect x={-13} y={0} width={26} height={4} rx={2} fill="#000" opacity={0.65} />
-              <rect x={-13} y={0} width={26 * hpRatio} height={4} rx={2} fill={hpColor(hpRatio)} />
-            </>
-          )}
-        </g>
-      )}
-      {endMark && (
-        // Pastille d'état de FIN (#237) : disque teinté par état (classe es-*) + icône du registre,
-        // au-dessus de la tête (iso) ou du disque-portrait (flat). Distincte de la barre d'icônes d'États.
-        <g className={`token-endmark ${endMark.className}`} transform={`translate(0,${badgeY - 22})`} pointerEvents="none">
-          <title>{endMark.label}</title>
-          <circle cx={0} cy={0} r={8.5} />
-          <IconG id={endMark.icon} x={-6} y={-6} size={12} />
-        </g>
-      )}
+      {/* Chrome d'écran (barre de PV, icônes d'États, pastille d'état de FIN) : le peintre PARTAGÉ
+          des deux voies (`TokenChromeMarks`), monté ici à la hauteur de tête du jeton affine. */}
+      <TokenChromeMarks hp={hp} icons={icons} iconsMore={iconsMore} endState={endState} badgeY={badgeY} />
     </g>
     </g>
   );

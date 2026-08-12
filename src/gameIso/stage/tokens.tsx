@@ -9,7 +9,7 @@
 import type { ReactNode } from 'react';
 import { Scene } from '../../state/scene';
 import { Combatant } from '../../engine/types';
-import { isOutOfAction, endState } from '../../engine/conditions';
+import { tokenChrome, mountChrome } from '../builders/tokenChrome';
 import { COMBAT_TOKEN_BASE, PARTY_TOKEN_BASE, TETHER_DASH_PX, TETHER_GAP_PX, TETHER_STROKE_PX, discR, teamRingDecor, type DynamicMarks } from '../builders/dynamicMarks';
 import { Dims, tileCenter, depth, diamondPath } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
@@ -21,9 +21,9 @@ import { propDepth } from '../backends/affineProps';
 import { combatantTokenScale, entityTokenScale } from '../sizeScale';
 import { sizeFootprint, footprintN, footprintTiles } from '../../state/footprint';
 import { entitySize } from '../../state/spawn';
-import { HERO_RING, veilTint, relationColor } from '../teamColors';
+import { HERO_RING, veilTint } from '../teamColors';
 import { GOLD_TINT, GOLD_DARK_TINT, HALO_TINT, ENGAGE_TINT, ACTIVE_HALO_TINT } from '../highlightTints';
-import { summarizeEffects, combatantFlags } from '../effectIcons';
+import type { IconId } from '../../ui/icons';
 import type { Pt } from '../../state/path';
 import type { PropEl, TokenEl } from '../builders/types';
 import type { StageObj } from './objs';
@@ -48,7 +48,7 @@ function token(ctx: TokenCtx, id: string, x: number, y: number, inner: string, s
   );
 }
 
-type TokenExtras = { hp?: { current: number; max: number }; icons?: import('../../ui/icons').IconId[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string; highlight?: string; endState?: import('../../engine/conditions').EndState | null; bump?: number };
+type TokenExtras = { hp?: { current: number; max: number }; icons?: IconId[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string; highlight?: string; endState?: import('../../engine/conditions').EndState | null; bump?: number };
 function tokenNode(ctx: TokenCtx, id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean, extras?: TokenExtras, z = 0) {
   return (
     <BodyToken key={id} x={x} y={y} z={ctx.liftAt(x, y, z)} dims={ctx.dims} scale={scale} ring={ringColor} ringDash={extras?.ringDash} dim={dim} ghost={extras?.ghost} walking={walking} bakedDeath
@@ -213,21 +213,23 @@ export function combatantObjs(tokenEls: TokenEl[], ctx: CombatTokenCtx): StageOb
       const fp = footprintN(c);
       const off = (fp - 1) / 2; // ancre (coin NO) → centre du bloc
       const cx = wp.x + off, cy = wp.y + off;
-      const fxSum = summarizeEffects(c.conditions, c.activeEffects, 3, combatantFlags(c));
-      const el = tokenNode(ctx, r.id, cx, cy, r.body, COMBAT_TOKEN_BASE * combatantTokenScale(c), decor.color, isOutOfAction(c), wp.walking, {
-        hp: c.inert ? undefined : c.wounds, // engin INERTE (immune) = pas de jauge de PV (un objet n'a pas de santé)
-        icons: fxSum.visible.map((v) => v.icon),
-        iconsMore: fxSum.moreCount,
+      // CHROME du jeton (PV, États, état de fin, allure) : la MÊME dérivation pure que la voie
+      // volumique (`builders/tokenChrome`) — cette voie-ci ne fait que la peindre dans son corps.
+      const chrome = tokenChrome(c, { ghostIds: ctx.ghostIds, hoveredId: ctx.hoveredId });
+      const el = tokenNode(ctx, r.id, cx, cy, r.body, COMBAT_TOKEN_BASE * combatantTokenScale(c), decor.color, chrome.dim, wp.walking, {
+        hp: chrome.hp ?? undefined,
+        icons: chrome.icons,
+        iconsMore: chrome.iconsMore,
         veil: veilTint(isHero),
         active: c.id === ctx.activeId,
         ringDash: decor.dash, // R9 : ennemi = anneau pointillé (indice d'équipe non-coloré)
         flat: top,
         portraitBox: r.portraitBox,
         discR: discR(fp),
-        ghost: ctx.ghostIds.has(c.id), // hors-LdV du tireur actif → fantomatique
+        ghost: chrome.ghost,
         cid: c.id, // ciblage DOM (recettes Playwright : survol/clic par data-cid)
-        highlight: c.id === ctx.hoveredId ? relationColor(c.kind) : undefined, // FOCUS (survol token/frise) → halo couleur de relation
-        endState: endState(c), // #237 : pastille d'état de fin distincte (mort/inconscient/rendu/hors-combat)
+        highlight: chrome.highlight ?? undefined,
+        endState: chrome.endState,
       }, cz);
       out.push({ d: depth(wp.sortPt.x + off, wp.sortPt.y + off, ctx.dims, cz) + 0.5, z: cz, vis: true, el }); // en vue → au-dessus du voile ; tri constant sur le pas (sortPt)
     } else if (tk.subject.kind === 'mounted') {
@@ -239,7 +241,8 @@ export function combatantObjs(tokenEls: TokenEl[], ctx: CombatTokenCtx): StageOb
       const wp = ctx.walkPosOf(mount.id, mount.pos!.x, mount.pos!.y, mz); // suit l'animation de marche de la monture
       const cx = wp.x + off, cy = wp.y + off;
       const mountScale = COMBAT_TOKEN_BASE * combatantTokenScale(mount);
-      const el = tokenNode(ctx, `${mount.id}-mtd`, cx, cy, <MountedToken mount={mount} rider={rider} />, mountScale, undefined, isOutOfAction(mount), wp.walking, { endState: endState(mount) });
+      const chrome = mountChrome(mount); // même dérivation partagée : le couple ne montre que son état de fin
+      const el = tokenNode(ctx, `${mount.id}-mtd`, cx, cy, <MountedToken mount={mount} rider={rider} />, mountScale, undefined, chrome.dim, wp.walking, { endState: chrome.endState });
       out.push({ d: depth(wp.sortPt.x + off, wp.sortPt.y + off, ctx.dims, mz) + 0.5, z: mz, vis: true, el });
     }
   }

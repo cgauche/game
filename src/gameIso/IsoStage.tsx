@@ -41,6 +41,9 @@ import { floorLayerObjs, wallLayerObjs, roofLayerObjs, elOccluder, type LayerCtx
 import { combatHighlightObjs, combatHighlightsView, type HighlightOpts } from './stage/highlightLayer';
 import { buildHighlights, type HighlightEl } from './builders/highlights';
 import { dynamicMarks, type DynamicMarks } from './builders/dynamicMarks';
+import { tokenChromes, type TokenChromeMark } from './builders/tokenChrome';
+import { TokenChromeOverlay } from './stage/TokenChromeOverlay';
+import type { ChromeAt } from './stage/boardPose';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
 import { CulledScene, actorCapsuleOf } from './stage/CulledScene';
@@ -203,7 +206,10 @@ export function IsoStage() {
   const patternDefs = useMemo(() => (scene && lod >= 1 ? detailPatternDefs(dims, mpt) : ''), [scene, lod, dims, mpt]);
   const partyLeader = partyLeaderOf(party);
   const wnow = performance.now();
-  const walkPosOf: WalkPos = (id, x, y, z = 0) => walkPoseAt(walksRef.current[id], x, y, z, dims, wnow);
+  // Position VISUELLE des jetons à un instant donné : le rendu la demande au sien, les boucles hors
+  // React (caméra volumique, chrome des jetons) la redemandent à chaque frame de marche.
+  const walkPosAt = (now: number): WalkPos => (id, x, y, z = 0) => walkPoseAt(walksRef.current[id], x, y, z, dims, now);
+  const walkPosOf: WalkPos = walkPosAt(wnow);
 
   // ── CAMÉRA À UN INSTANT (la seule définition) : point focal (paire de visée / actif / leader) puis
   // translation de la vue. Le rendu la demande à `wnow` ; la boucle volumique la redemande PAR FRAME
@@ -211,7 +217,7 @@ export function IsoStage() {
   const targeting = mode === 'battle' && battle ? cameraTargeting(battle, actorAim) : null;
   const camAt = (now: number) => {
     if (!scene) return { x: camPan.x, y: camPan.y };
-    const wp: WalkPos = (id, x, y, z = 0) => walkPoseAt(walksRef.current[id], x, y, z, dims, now);
+    const wp = walkPosAt(now);
     const focus = stageFocus({ mode, battle, partyPos, partyLeader, walkPosOf: wp, planView, hoverCombatantId, targeting, pendingAttack, pendingCast });
     // Visée du SUJET : le milieu de sa capsule (`actorCapsuleOf`, la même que consomme l'occlusion), et
     // non le sol de sa case — viser le sol décale le cadre d'une demi-capsule vers le haut de la scène,
@@ -428,6 +434,10 @@ export function IsoStage() {
   // des jetons RÉELLEMENT postés, celle-là même que les deux voies dessinent.
   const partyToken = combatBattle ? null : partyLeader ? { leader: partyLeader, pos: partyPos } : null;
   const marquesDyn = dynamicMarks(mode === 'battle' ? battle : null, mode === 'exploration' && !dialogue ? partyPos : null, tokenEls, partyToken);
+  // CHROME DES JETONS (P3-0f) : même partage, même population (les jetons du builder). La voie affine
+  // le peint DANS son corps (`combatantObjs` reprend la dérivation jeton par jeton) ; la voie volumique
+  // le peint en overlay au-dessus des têtes et en porte l'allure au matériau des quads.
+  const chromes: TokenChromeMark[] = combatBattle ? tokenChromes(tokenEls, { ghostIds, hoveredId }) : [];
   // Éléments DYNAMIQUES de la frame, dans l'ordre d'émission historique : tether/halo de l'actif,
   // affordances de fouille, puis tokens (combat : combattants+montés ; exploration : halo PNJ + groupe).
   const dyn: StageObj[] = dynamicHighlightObjs(tokenCtx, marquesDyn, walkPosOf);
@@ -483,6 +493,7 @@ export function IsoStage() {
           highlightOpts={highlightOpts}
           dynMarks={marquesDyn}
           partyToken={partyToken}
+          chromes={chromes}
         />
       )}
     {/* Voie volumique : le fond du SVG s'efface (le canevas peint dessous) — un état de CHANTIER,
@@ -511,6 +522,11 @@ export function IsoStage() {
         <FxLayer dims={dimsVue} floats={floats} projs={projs} auras={auras} aoes={aoes} />
         {battle && hover && <ZdeTemplate battle={battle} hover={hover} pendingCast={pendingCast} pendingSiegeAim={pendingSiegeAim} activeC={activeC} dims={dimsVue} />}
         {mode === 'battle' && <EnemyAoeTelegraph actorAoe={actorAoe} dims={dimsVue} />}
+        {/* CHROME des jetons (P3-0f) : la voie VOLUMIQUE seule. En affine il vit dans le corps du
+            jeton (`BodyToken`) — le monter ici le peindrait deux fois. Il se peint APRÈS les
+            affordances de SOL (portes, télégraphes, gabarits) : l'état d'un combattant se lit
+            par-dessus ce qui est peint sur le sol, jamais dessous. */}
+        {webgl && <TokenChromeOverlay chromes={chromes} dims={dimsVue} liftAt={liftAt} walkPosAt={walkPosAt} />}
         {/* Curseur LIBRE : il se tait dès qu'un ciblage carte tient la scène (verdict du registre
             `mapTargetingActive`) — le réticule/le gabarit du mode prennent alors le relais. */}
         {mode === 'battle' && battle && combatCursor
@@ -553,7 +569,7 @@ export function IsoStage() {
  * étage isolé, surplomb, brouillard). ÉCART RÉSIDUEL : un couple MONTÉ ne rend que sa MONTURE — le
  * corps composite cavalier+monture (`MountedToken`) n'a pas d'équivalent billboard.
  */
-function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, tokenEls, propEls, walksRef, partyToken, gameTime, lightLevel, lights, battle, highlightOpts, dynMarks }: {
+function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, tokenEls, propEls, walksRef, partyToken, gameTime, lightLevel, lights, battle, highlightOpts, dynMarks, chromes }: {
   scene: Scene;
   dims: Dims;
   mpt: number;
@@ -581,6 +597,9 @@ function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, t
   highlightOpts: HighlightOpts;
   /** MARQUES DYNAMIQUES déjà dérivées par le stage — les DEUX voies consomment cette même liste. */
   dynMarks: DynamicMarks;
+  /** CHROME des jetons déjà dérivé par le stage — cet écran n'en consomme que l'ALLURE (le reste se
+   *  peint en overlay SVG, `stage/TokenChromeOverlay`). */
+  chromes: readonly TokenChromeMark[];
 }) {
   const facings = useGame((s) => s.facing); // orientation MONDE vivante par acteur (Dir8)
   const poses: ActorPose[] = [];
@@ -625,5 +644,9 @@ function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, t
     },
     cam: () => camAt(performance.now()),
   };
-  return <GameStage3D scene={scene} dims={dims} mpt={mpt} cam={cam} zoom={zoom} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} highlights={highlights} dynMarks={dynMarks} anim={anim} />;
+  // ALLURE des quads : la table du rendu courant, interrogée PAR FRAME dans la passe de pose. Elle se
+  // reforge à chaque rendu, comme `anim` — un survol change trois nombres de matériau, rien de monté.
+  const allures = new Map(chromes.map((m) => [m.id, { ghost: m.ghost, dim: m.dim, highlight: m.highlight }]));
+  const chromeAt: ChromeAt = (cid) => allures.get(cid) ?? null;
+  return <GameStage3D scene={scene} dims={dims} mpt={mpt} cam={cam} zoom={zoom} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} highlights={highlights} dynMarks={dynMarks} chromeAt={chromeAt} anim={anim} />;
 }

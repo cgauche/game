@@ -93,7 +93,7 @@ import {
   type TintAt,
   worldShadowBox,
 } from '../backends/webgl/sceneMeshes';
-import { billboardMaterial, poseBoards, type Board, type GlideAt } from './boardPose';
+import { AUCUN_CHROME, billboardMaterial, poseBoards, type Board, type ChromeAt, type GlideAt } from './boardPose';
 import { buildGroundAccentMeshes, maskGroundAccents, sceneGroundAccents } from '../backends/webgl/groundAccents';
 import {
   HIGHLIGHT_SLOTS,
@@ -129,7 +129,7 @@ import {
 const BG = 0x14161f;
 
 /** Convention de taille monde des billboards retenue pour le JEU (cf. `billboardMath`). */
-const CONVENTION = 'jeu' as const;
+export const CONVENTION = 'jeu' as const;
 
 /** Ce que cet écran DEMANDE à son renderer, et rien de plus — la surface exacte de sa dépendance à
  *  three côté sortie. Un banc d'essai peut donc en fournir un SANS contexte WebGL : jsdom n'en a
@@ -189,6 +189,10 @@ export interface GameStage3DProps {
    *  MÊME dérivation pure que la voie affine (`builders/dynamicMarks`), en cases LOGIQUES. Leur
    *  position se prend à la FRAME, sur le glissement de `anim` — jamais à un rendu React. */
   dynMarks?: DynamicMarks;
+  /** ALLURE des jetons (#1176, P3-0f) — fantôme hors Ligne de Vue, corps hors d'action, cible
+   *  survolée : la même dérivation pure que la voie affine (`builders/tokenChrome`), demandée à la
+   *  FRAME et posée sur le matériau des quads déjà montés. Absente = aucun jeton ne se distingue. */
+  chromeAt?: ChromeAt;
   /** Cadençage de la MARCHE, quand le stage en offre un (lot P2-4) : sans lui, cet écran ne bouge
    *  qu'aux rendus du stage. */
   anim?: StageWalkAnim;
@@ -235,7 +239,7 @@ export function artRot(dims: Dims): Rot {
   return ((Math.floor((freeYaw(dims) ?? (dims.rot ?? 0) * 90) / 90) % 4 + 4) % 4) as Rot;
 }
 
-export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, anim }: GameStage3DProps): JSX.Element {
+export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, chromeAt, anim }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
@@ -398,7 +402,7 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       pool: pool.current,
       slots: flaquesÉcrites,
       surfaceLuminance: lumière.surfaceLuminance,
-    });
+    }, chromeAt ?? AUCUN_CHROME);
     // MARQUES DYNAMIQUES (P3-0d) : elles suivent la MÊME glisse que les quads, à la même frame et sur
     // le même canal — un lien d'engagement posé à un rendu React attendrait le marcheur à l'arrivée.
     poseDynamicMarks(poolsDyn.current, dynMarks ?? NO_DYNAMIC_MARKS, {
@@ -407,6 +411,7 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       groundM: solM,
       kind: f.kind, // l'anneau d'équipe n'a ni le même rayon ni la même compensation selon la vue
       yawDeg: f.yawDeg, // les tirets de l'anneau d'équipe se mesurent à l'ÉCRAN : ils suivent la vue
+      chromeAt: chromeAt ?? AUCUN_CHROME, // l'anneau d'un corps estompé s'estompe avec lui (P3-0f)
     });
     // CARTE D'OMBRE : elle ne se recuit QUE quand ce qu'elle contient a bougé — un casteur qui glisse,
     // ou un montage (lampes, monde, billboards) qui l'a demandée. Une rotation de caméra, un zoom, une

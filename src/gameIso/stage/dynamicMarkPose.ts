@@ -18,7 +18,7 @@ import { TEAM_RING_WIDTH_K, TETHER_DASH_K, TETHER_GAP_K, TETHER_WIDTH_K, dashPat
 import type { ProjKind } from '../../geometry/iso';
 import { dynSlotLiftM, type DynMarkSlot } from '../backends/webgl/dynamicMarkMeshes';
 import { diagOnce } from '../rig/devDiag';
-import type { GlideAt } from './boardPose';
+import { boardChromeOpacity, AUCUN_CHROME, type ChromeAt, type GlideAt } from './boardPose';
 
 /** Les pools montés, par slot — un slot absent n'est simplement pas peint. */
 export type DynMarkPools = Partial<Record<DynMarkSlot, THREE.InstancedMesh>>;
@@ -38,6 +38,10 @@ export interface DynMarkFrame {
   /** Lacet de la CAMÉRA (degrés) — seuls les ANNEAUX s'en servent : leurs tirets se mesurent à
    *  l'écran. Absent = cran zéro. */
   yawDeg?: number;
+  /** ALLURE d'un jeton à l'instant de la frame (#1176, P3-0f) — SEUL l'anneau d'équipe s'en sert :
+   *  il appartient au jeton, et la voie affine estompe le GROUPE entier d'un corps hors d'action ou
+   *  hors Ligne de Vue, anneau compris. Absente = aucun jeton ne s'estompe. */
+  chromeAt?: ChromeAt;
 }
 
 /** Comptes d'instances écrites, par slot. */
@@ -197,7 +201,10 @@ function poserAnneaux(mesh: THREE.InstancedMesh, marks: DynamicMarks, f: DynMark
     }
     const rM = rK * f.mpt;
     poseCase(anneau.cell, f.glide(anneau.id) ?? IMMOBILE, 'anneau', f, CENTRE);
-    TEINTE.set(anneau.color);
+    // ALLURE du jeton portée sur SON anneau : le pool n'a qu'un canal par instance (la teinte), donc
+    // l'atténuation s'y lit en luminosité — un anneau à teinte pleine sous un fantôme le rendrait plus
+    // présent que le corps qu'il ceint.
+    TEINTE.set(anneau.color).multiplyScalar(boardChromeOpacity((f.chromeAt ?? AUCUN_CHROME)(anneau.id)));
     for (const tiret of tirets) {
       const phi = tiret.u + phase + lacet;
       const cos = Math.cos(phi);
