@@ -11,7 +11,8 @@ import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { testBreakdown } from './breakdown';
 import { describeDistraire } from '../state/flowOutcomes';
-import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
+import { opposedResponded } from './opposedFrozen';
+import { frozenOpposedRow } from './rollRowBuild';
 
 /**
  * Modale de Distraire (LDB 10 l.364 / AA 13 l.51) : Mouvement, Test OPPOSÉ Athlétisme (mover) vs Calme

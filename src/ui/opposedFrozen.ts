@@ -1,6 +1,5 @@
 import type { GameState } from '../state/store';
 import { rolledLocally } from '../state/netOwnership';
-import type { PanelRowData } from './RollPanel';
 import type { RollRowData } from './RollShell';
 
 /**
@@ -79,12 +78,4 @@ export function maskOpposedRow<T extends RollRowData>(
     extendedDr: undefined,
     winner: undefined,
   };
-}
-
-/** Rangée TÉMOIN d'un jet figé d'adversaire (figée, sans cycle d'influence), masquée jusqu'au jet de réponse. */
-export function frozenOpposedRow(
-  s: GameState,
-  o: { ownerId?: string; responded: boolean; row: PanelRowData },
-): RollRowData {
-  return maskOpposedRow(s, o, { row: o.row, rolled: true, interactive: false });
 }

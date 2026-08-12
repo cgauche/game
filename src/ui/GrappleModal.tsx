@@ -8,7 +8,8 @@ import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { baseTestModLines } from '../engine/combat';
 import { opposedLines } from './breakdown';
-import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
+import { opposedResponded } from './opposedFrozen';
+import { frozenOpposedRow } from './rollRowBuild';
 import { Icon } from './Icon';
 
 /**

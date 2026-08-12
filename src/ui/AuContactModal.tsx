@@ -9,7 +9,8 @@ import { Icon } from './Icon';
 import { recapLineOfEvent } from '../gameIso/combatNarration';
 import { ev } from '../state/combatLog';
 import { opposedLines } from './breakdown';
-import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
+import { opposedResponded } from './opposedFrozen';
+import { frozenOpposedRow } from './rollRowBuild';
 
 /**
  * Modale « Au Contact » (LDB 62 l.176, Option « Longueur d'arme »). Test OPPOSÉ de Corps à corps

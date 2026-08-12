@@ -2,8 +2,8 @@ import { createElement, Fragment, type ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { refLabel } from '../data';
-import type { RollRowData } from './RollShell';
 import type { PanelRowData } from './RollPanel';
+import { participantRow, type BuiltRollRow } from './rollRowBuild';
 
 /**
  * SOURCE UNIQUE des rangées-participants d'une modale MULTI (#328) — les DÉRIVATIONS d'éligibilité
@@ -72,7 +72,7 @@ export function buildParticipantRows<P extends ParticipantRow>(
   participants: P[],
   pool: Combatant[],
   bundle: ParticipantRowBundle<P>,
-): RollRowData[] {
+): BuiltRollRow[] {
   return participants.flatMap((part) => {
     const actor = pool.find((c) => c.id === part.id);
     if (!actor) return [];
@@ -96,11 +96,12 @@ export function buildParticipantRows<P extends ParticipantRow>(
     const issues = bundle.issues ? bundle.issues(part, actor, res) : undefined;
     // Sous-ligne UNIQUE de la rangée : les issues (avant/après le jet) puis la conséquence subie.
     const sub = issues != null || note != null ? createElement(Fragment, null, issues, note) : undefined;
-    return [{
+    // La rangée naît de la PORTE (#1262) — `rolled` y est dérivé de la donnée affichée (`row.d`),
+    // définition unique du socle : le multi ne la recalcule plus depuis `part.result`.
+    return [participantRow({
       key: part.id,
       actor,
       row: sub != null ? { ...panelRow, note: sub } : panelRow,
-      rolled: !!res,
       interactive: bundle.interactiveOf ? bundle.interactiveOf(part, actor) : part.interactive !== false,
       ...(bundle.rollLabel != null ? { rollLabel: bundle.rollLabel } : {}),
       onRoll: () => bundle.onRoll(part.id),
@@ -112,6 +113,6 @@ export function buildParticipantRows<P extends ParticipantRow>(
       onForce: () => bundle.onForce(part.id),
       forceShow: !!res,
       ...(extendedDr ? { extendedDr } : {}),
-    }];
+    })];
   });
 }

@@ -1,6 +1,10 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
-import { buildParticipantRows } from './buildParticipantRows';
+import { renderToStaticMarkup } from 'react-dom/server';
+import type { ReactNode } from 'react';
+import { buildParticipantRows, type ParticipantRow } from './buildParticipantRows';
+import { isBuiltRollRow } from './rollRowBuild';
+import { RollShell } from './RollShell';
 import { refLabel } from '../data';
 import type { Combatant } from '../engine/types';
 
@@ -46,5 +50,84 @@ describe('buildParticipantRows — le libellé de ligne vient de {skillId, spec}
       [actor], withResult as never,
     );
     expect(rows[0].row.d!.label).toBe(refLabel('skills', { id: 'ramer' }));
+  });
+});
+
+/**
+ * #1262 L0 — le monteur MULTI naît de la PORTE (`participantRow`) : équivalence MESURÉE à la bascule
+ * par sonde différentielle (6 consommateurs — CascadeModal:624, CrewTestModal:75, DisengageModal:123,
+ * ForceDoorModal:37, ShipBatteryModal:43, ShipManeuverModal:57 — × 4 phases : pré-jet, post-jet
+ * réussi, raté, résultat NU sans `success`), zéro delta champ à champ. Ce test fige le CONTRAT que la
+ * sonde a mesuré : le jeu de champs produit, la définition UNIQUE de `rolled`, la marque de montage.
+ */
+type Res = ParticipantRow['result'];
+const OK: Res = { roll: 34, target: 45, sl: 1, success: true };
+
+const dRow = (label: string) => (a: Combatant, res: Res) => (res
+  ? { combatant: a, d: { label, base: 40, modifier: 5, target: res.target, roll: res.roll, success: res.success, sl: res.sl } }
+  : { combatant: a, pending: { label, base: 40, target: 45 } });
+
+const CHAMPS = ['actor', 'darkPactable', 'forceShow', 'interactive', 'key', 'onBonusSL', 'onDarkPact', 'onForce', 'onReroll', 'onRoll', 'rerollable', 'rolled', 'row'];
+
+/** Les 6 consommateurs, par ce qui les DISTINGUE au monteur (le reste est identique par construction). */
+const profils: { nom: string; bundle: Record<string, unknown>; champs: string[] }[] = [
+  { nom: 'CascadeModal:624 — issues + Test étendu + interactiveOf',
+    bundle: { row: (_p: ParticipantRow, a: Combatant, res: Res) => dRow('Ténacité')(a, res),
+      issues: (_p: ParticipantRow, _a: Combatant, res: Res) => (res ? 'issue-post' : 'issue-pré') as ReactNode,
+      extendedDrOf: () => ({ cum: 2, target: 5 }), interactiveOf: (p: ParticipantRow) => p.interactive !== false },
+    champs: [...CHAMPS, 'extendedDr'] },
+  { nom: 'CrewTestModal:75 — note + interactiveOf',
+    bundle: { row: (_p: ParticipantRow, a: Combatant, res: Res) => dRow('Timonier ★')(a, res), note: () => 'note' as ReactNode, interactiveOf: (p: ParticipantRow) => !!p.interactive },
+    champs: CHAMPS },
+  { nom: 'DisengageModal:123 — présentation SANS pending (d conditionnel)',
+    bundle: { row: (_p: ParticipantRow, a: Combatant, res: Res) => ({ combatant: a, d: res ? { label: 'Corps à corps (dans le dos)', base: 40, modifier: 0, target: res.target, roll: res.roll, success: res.success, sl: res.sl } : undefined }), note: () => 'dos' as ReactNode },
+    champs: CHAMPS },
+  { nom: 'ForceDoorModal:37 — rollLabel de bundle',
+    bundle: { row: (_p: ParticipantRow, a: Combatant, res: Res) => dRow('Bagarre')(a, res), note: () => 'porte' as ReactNode, interactiveOf: () => true, rollLabel: 'Frapper' as ReactNode },
+    champs: [...CHAMPS, 'rollLabel'] },
+  { nom: 'ShipBatteryModal:43 — note + interactiveOf',
+    bundle: { row: (_p: ParticipantRow, a: Combatant, res: Res) => dRow('Canonnier ★')(a, res), note: () => 'DR ×2' as ReactNode, interactiveOf: (p: ParticipantRow) => !!p.interactive },
+    champs: CHAMPS },
+  { nom: 'ShipManeuverModal:57 — note + interactiveOf',
+    bundle: { row: (_p: ParticipantRow, a: Combatant, res: Res) => dRow('Timonier')(a, res), note: () => 'DR' as ReactNode, interactiveOf: (p: ParticipantRow) => !!p.interactive },
+    champs: CHAMPS },
+];
+
+describe('#1262 L0 — la rangée-participant vient du NOYAU (contrat mesuré sur les 6 consommateurs)', () => {
+  for (const p of profils) {
+    it(`${p.nom} : mêmes champs aux DEUX phases, et la marque de montage`, () => {
+      for (const res of [null, OK] as Res[]) {
+        const rows = buildParticipantRows([{ id: 'h1', interactive: true, result: res }], [actor], p.bundle as never);
+        expect(Object.keys(rows[0]).sort()).toEqual([...p.champs].sort());
+        expect(isBuiltRollRow(rows[0]), 'la rangée porte la marque du monteur').toBe(true);
+        // Post-traitement par SPREAD (CascadeModal:644, DisengageModal:137) : la marque survit.
+        expect(isBuiltRollRow({ ...rows[0], flowKey: 'cascadeBatch' as const })).toBe(true);
+        expect(rows[0].rolled, 'sur ces 6 présentations, « un dé affiché » ⇔ « un résultat »').toBe(!!res);
+      }
+    });
+  }
+
+  it('une rangée montée À LA MAIN ne porte pas la marque (ce que le cliquet compte)', () => {
+    expect(isBuiltRollRow({ row: {}, rolled: false })).toBe(false);
+  });
+
+  it('`rolled` suit la DONNÉE AFFICHÉE (définition du noyau), pas le résultat du participant', () => {
+    // Présentation qui tait le dé malgré un résultat (forme de DisengageModal:130, `d` conditionnel).
+    const rows = buildParticipantRows([{ id: 'h1', interactive: true, result: OK }], [actor], {
+      onRoll: () => {}, onReroll: () => {}, onBonusSL: () => {}, onDarkPact: () => {}, onForce: () => {},
+      row: (_p: ParticipantRow, a: Combatant) => ({ combatant: a }),
+    } as never);
+    expect(rows[0].rolled).toBe(false);
+  });
+
+  it('la relance GRATUITE d’un participant vient de son ACTEUR (dérivée UNE fois, jamais recopiée)', () => {
+    const beni = { ...actor, fortune: 0, activeEffects: [{ label: 'Bénédiction de Chance', bonus: 0, duration: { scale: 'rounds', left: 6 }, freeReroll: true }] } as unknown as Combatant;
+    const rows = buildParticipantRows([{ id: 'h1', interactive: true, result: { roll: 78, target: 45, sl: -3, success: false } }], [beni], {
+      onRoll: () => {}, onReroll: () => {}, onBonusSL: () => {}, onDarkPact: () => {}, onForce: () => {},
+      row: (_p: ParticipantRow, a: Combatant, res: Res) => dRow('Ténacité')(a, res),
+    } as never);
+    expect(rows[0].freeReroll, 'aucun champ recopié sur la rangée').toBeUndefined();
+    const html = renderToStaticMarkup(<RollShell title="T" rows={rows} rolled actions={[]} />);
+    expect(html, 'sans Point de Chance, la relance offerte est celle de la Bénédiction').toContain('Bénédiction de Chance');
   });
 });

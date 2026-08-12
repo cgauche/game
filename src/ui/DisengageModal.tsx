@@ -18,7 +18,8 @@ import { fleeBackstab, fleeCalme, fleeNeedCalme } from '../state/pendings';
 import { Modal } from './Modal';
 import { Icon } from './Icon';
 import { opposedLines, testBreakdown } from './breakdown';
-import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
+import { opposedResponded } from './opposedFrozen';
+import { frozenOpposedRow } from './rollRowBuild';
 
 /**
  * Modale de Désengagement (LDB 15 l.43-68). Trois phases, une seule coquille de jet PARTAGÉE :
