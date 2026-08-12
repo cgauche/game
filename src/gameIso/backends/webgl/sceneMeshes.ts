@@ -878,13 +878,30 @@ export const DEPTH_BUFFER_BITS = 24;
 
 /** `polygonOffsetUnits` (négatif = vers l'œil) qui vaut `BILLBOARD_DEPTH_BIAS_M` pour une caméra de
  *  bornes `near`/`far`. ORTHO : la profondeur fenêtre est linéaire, un mètre y vaut `1/(far−near)`.
- *  PERSPECTIVE (`distanceM` fourni) : elle ne l'est pas — un mètre à la distance `d` vaut
- *  `near·far/((far−near)·d²)`. */
-export function billboardDepthOffsetUnits(near: number, far: number, distanceM: number | null = null): number {
-  const parMetre = distanceM === null
+ *  PERSPECTIVE (`depthM` fourni) : elle ne l'est pas — `z_w = a + b/z_view`, donc un mètre à la
+ *  PROFONDEUR `z` vaut `near·far/((far−near)·z²)`. La grandeur attendue est `z_view` (`billboardViewDepth`),
+ *  jamais la distance euclidienne à l'œil. */
+export function billboardDepthOffsetUnits(near: number, far: number, depthM: number | null = null): number {
+  const parMetre = depthM === null
     ? 1 / (far - near)
-    : (near * far) / ((far - near) * Math.max(distanceM, near) ** 2);
+    : (near * far) / ((far - near) * Math.max(depthM, near) ** 2);
   return -BILLBOARD_DEPTH_BIAS_M * parMetre * 2 ** DEPTH_BUFFER_BITS;
+}
+
+/** Œil et axe de VISÉE de travail — la caméra les redonne à chaque appel, et une allocation par
+ *  billboard et par frame n'a rien à faire dans une boucle de pose. */
+const OEIL_VUE = new THREE.Vector3();
+const AVANT_VUE = new THREE.Vector3();
+
+/** `z_view` d'un point sous `camera` : sa profondeur le long de l'axe de visée — la SEULE grandeur dont
+ *  dépend la profondeur fenêtre d'une perspective. Un quad aligné écran est parallèle au plan image,
+ *  donc son `z_view` est constant sur toute sa surface (ancre et centre compris), là où sa distance à
+ *  l'œil croît vers les bords du champ : mesuré au FOV_X 75° (16/9), la distance ne rendait que
+ *  0,185 m de biais au coin de l'écran pour 0,300 m demandés. */
+export function billboardViewDepth(camera: THREE.Camera, p: THREE.Vector3): number {
+  camera.getWorldPosition(OEIL_VUE);
+  AVANT_VUE.set(0, 0, -1).applyQuaternion(camera.quaternion);
+  return (p.x - OEIL_VUE.x) * AVANT_VUE.x + (p.y - OEIL_VUE.y) * AVANT_VUE.y + (p.z - OEIL_VUE.z) * AVANT_VUE.z;
 }
 
 /** Position MONDE du centre d'un quad de billboard aligné écran : l'ancre PIEDS est EXACTE, le quad

@@ -13,7 +13,7 @@
  * marcheur sur sa case d'arrivée ; une lanterne laissée là éclairerait la case qu'il vient de quitter.
  */
 import * as THREE from 'three';
-import { billboardDepthOffsetUnits, billboardPose, poseContactShadow, type BillboardSubject } from '../backends/webgl/sceneMeshes';
+import { billboardDepthOffsetUnits, billboardPose, billboardViewDepth, poseContactShadow, type BillboardSubject } from '../backends/webgl/sceneMeshes';
 import { billboardExposure, type PointLightSlots } from './stagePointLights';
 
 /** Un billboard monté : ce qu'il faut pour le RE-POSER quand la caméra bouge, sans le reconstruire. */
@@ -28,8 +28,10 @@ export interface Board {
   shadow?: THREE.Object3D;
 }
 
-/** Caméra de la frame — l'offset de profondeur des quads se dérive de son plan (`near`/`far`). */
-export type FrameCamera = THREE.Camera & { near: number; far: number };
+/** Caméra de la frame — l'offset de profondeur des quads se dérive de son plan (`near`/`far`), et de la
+ *  DISTANCE à l'œil quand elle est en perspective (la profondeur fenêtre n'y est pas linéaire).
+ *  `isPerspectiveCamera` est le drapeau que three pose lui-même sur ses caméras. */
+export type FrameCamera = THREE.Camera & { near: number; far: number; isPerspectiveCamera?: boolean };
 
 /** SEUIL de découpe des texels d'un sprite : sous lui, le fragment est REJETÉ (le sprite garde sa
  *  silhouette au lieu d'un rectangle voilé). Exporté : l'allure d'un jeton se pose sous ce seuil et
@@ -225,9 +227,16 @@ const GLISSEMENTS: ({ dx: number; dy: number; dz: number } | null)[] = [];
  *
  *  L'ALLURE du corps (#1176, P3-0f) se pose au même endroit et sur le même matériau : fantôme hors
  *  Ligne de Vue, corps hors d'action, cible survolée. `chromeAt` est demandé à la frame, comme le
- *  glissement — un survol ne remonte donc AUCUN quad, il en réécrit trois nombres. */
+ *  glissement — un survol ne remonte donc AUCUN quad, il en réécrit trois nombres.
+ *
+ *  Le BIAIS DE PROFONDEUR des quads (#1176, P3-1b) se prend PAR BOARD sous une caméra perspective :
+ *  la profondeur fenêtre n'y est pas linéaire, donc un même biais métrique ne vaut pas le même nombre
+ *  d'unités à 1 m et à 30 m (`billboardDepthOffsetUnits`, branche `depthM`). La grandeur qui la
+ *  gouverne est `z_view` (`billboardViewDepth`), pas la distance à l'œil. En ortho, la profondeur EST
+ *  linéaire : une seule valeur pour toute la frame. */
 export function poseBoards(boards: readonly Board[], camera: FrameCamera, glide: GlideAt, lights: FrameLights, chromeAt: ChromeAt = AUCUN_CHROME): boolean {
-  const units = billboardDepthOffsetUnits(camera.near, camera.far);
+  const perspective = camera.isPerspectiveCamera === true;
+  const unitsOrtho = perspective ? 0 : billboardDepthOffsetUnits(camera.near, camera.far);
   let aGlissé = false;
   reposerLampes(lights);
   GLISSEMENTS.length = boards.length;
@@ -245,7 +254,9 @@ export function poseBoards(boards: readonly Board[], camera: FrameCamera, glide:
     const ancre = g ? ANCRE.set(b.sub.anchor.x + g.dx, b.sub.anchor.y + g.dy, b.sub.anchor.z + g.dz) : b.sub.anchor;
     b.mesh.quaternion.copy(camera.quaternion);
     b.mesh.position.copy(billboardPose(ancre, b.quad.centerLiftM, camera.quaternion));
-    b.material.polygonOffsetUnits = units;
+    b.material.polygonOffsetUnits = perspective
+      ? billboardDepthOffsetUnits(camera.near, camera.far, billboardViewDepth(camera, b.mesh.position))
+      : unitsOrtho;
     const chrome = b.sub.cid ? chromeAt(b.sub.cid) : null;
     if (b.shadow) {
       poseContactShadow(b.shadow, ancre);

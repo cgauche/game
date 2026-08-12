@@ -1,6 +1,7 @@
-import { Mesh, MeshBasicMaterial, OrthographicCamera, PlaneGeometry, PointLight, Vector3 } from 'three';
+import { Mesh, MeshBasicMaterial, OrthographicCamera, PerspectiveCamera, PlaneGeometry, PointLight, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { CONTACT_SHADOW_LIFT_M, contactShadow, type BillboardSubject } from '../backends/webgl/sceneMeshes';
+import { billboardDepthOffsetUnits, BILLBOARD_DEPTH_BIAS_M, CONTACT_SHADOW_LIFT_M, contactShadow, DEPTH_BUFFER_BITS, type BillboardSubject } from '../backends/webgl/sceneMeshes';
+import { FOV_X } from '../pov/camera';
 import { poseBoards, type Board, type FrameLights } from './boardPose';
 import { billboardExposure, FLAME_INTENSITY, FLAME_LIFT_M, type PointLightSlots } from './stagePointLights';
 
@@ -180,5 +181,128 @@ describe('poseBoards — le personnage ENTRE dans la flaque (#1245 L3)', () => {
     }
     expect(clartés).toEqual([...clartés].sort((a, c) => a - c));
     expect(clartés[6]).toBeGreaterThan(clartés[0]);
+  });
+});
+
+/**
+ * LE BIAIS DE PROFONDEUR SOUS UNE CAMÉRA PERSPECTIVE (#1176, P3-1b — sonde du juge, promue). La
+ * profondeur FENÊTRE d'une perspective n'est pas linéaire : un biais métrique constant y vaut
+ * `near·far/d²` unités, pas `1/(far−near)`. La passe appelait la branche ORTHO pour TOUTE caméra —
+ * au POV, la silhouette qui touche le sol ou un mur en était tranchée, faute de biais.
+ */
+const NEAR = 0.1;
+const FAR = 4000; // le far par défaut de `povCamera` (`backends/webgl/cameras.ts`)
+const PERSPECTIVE = new PerspectiveCamera(60, 4 / 3, NEAR, FAR);
+PERSPECTIVE.updateMatrixWorld(true);
+
+/** Un board dont le CENTRE de quad tombe à `distanceM` devant une caméra à l'origine (regard −z,
+ *  quaternion identité : le quad monte de son `centerLiftM` le long de +y). */
+function boardÀ(distanceM: number): Board {
+  const b = board(undefined, new Vector3(0, -1.5, -distanceM), false);
+  b.material.polygonOffset = true;
+  return b;
+}
+
+describe('poseBoards — le biais de profondeur suit la DISTANCE en perspective (#1176 P3-1b)', () => {
+  it('à 1 m, les unités sont celles de la branche PERSPECTIVE — jamais de l’ortho', () => {
+    const b = boardÀ(1);
+    poseBoards([b], PERSPECTIVE, () => null, flaques([]));
+    expect(b.mesh.position.distanceTo(PERSPECTIVE.position), 'la sonde doit vraiment être à 1 m').toBeCloseTo(1, 9);
+    expect(b.material.polygonOffsetUnits).toBeCloseTo(billboardDepthOffsetUnits(NEAR, FAR, 1), 6);
+    // …et l'écart n'est pas cosmétique : la branche ortho vaut `near·far/d²` fois moins à cette
+    // distance (0,1 × 4000 = 400 pour le far par défaut du POV).
+    const ortho = billboardDepthOffsetUnits(NEAR, FAR);
+    expect(b.material.polygonOffsetUnits / ortho).toBeCloseTo(NEAR * FAR, 6);
+  });
+
+  it('deux boards à des distances DIFFÉRENTES reçoivent des biais différents (par board, pas par frame)', () => {
+    const près = boardÀ(1);
+    const loin = boardÀ(4);
+    poseBoards([près, loin], PERSPECTIVE, () => null, flaques([]));
+    expect(loin.material.polygonOffsetUnits).toBeCloseTo(billboardDepthOffsetUnits(NEAR, FAR, 4), 6);
+    // Loi en 1/d² : quatre fois plus loin, seize fois moins d'unités.
+    expect(près.material.polygonOffsetUnits / loin.material.polygonOffsetUnits).toBeCloseTo(16, 6);
+  });
+
+  it('TÉMOIN ortho : la profondeur y est linéaire — une seule valeur pour toute la frame', () => {
+    const près = boardÀ(1);
+    const loin = boardÀ(40);
+    poseBoards([près, loin], CAMERA, () => null, flaques([]));
+    const attendu = billboardDepthOffsetUnits(CAMERA.near, CAMERA.far);
+    expect(près.material.polygonOffsetUnits).toBeCloseTo(attendu, 12);
+    expect(loin.material.polygonOffsetUnits).toBeCloseTo(attendu, 12);
+  });
+});
+
+/**
+ * LE BIAIS OBTENU EN TOUT POINT DE L'ÉCRAN (#1176, P3-1b — sonde B du juge, promue). La profondeur
+ * FENÊTRE d'une perspective ne dépend QUE de `z_view` : un quad aligné écran est parallèle au plan
+ * image, donc son `z_view` est constant sur toute sa surface, là où sa distance à l'œil croît vers les
+ * bords du champ. Mesurer la distance rendait un biais de 0,185 m au coin de l'écran pour 0,300 m
+ * demandés (56 % du biais visé, FOV_X 75°) — la silhouette y retombait dans la géométrie qu'elle
+ * effleure, précisément là où le champ est le plus large.
+ */
+const AR = 16 / 9;
+/** La caméra du POV telle que `povCamera` la fabrique : `FOV_X` horizontal, pixels carrés, far à 4000. */
+const POV = new PerspectiveCamera((2 * Math.atan(Math.tan(FOV_X / 2) / AR) * 180) / Math.PI, AR, NEAR, FAR);
+POV.position.set(0, 1.7, 0);
+POV.updateMatrixWorld(true);
+
+const TAN_X = Math.tan(FOV_X / 2);
+const TAN_Y = TAN_X / AR;
+
+/** Un board dont le CENTRE de quad tombe à la profondeur `d`, aux fractions d'écran `u`/`v` (±1 = le
+ *  bord du champ). Le quad monte de son `centerLiftM` le long de +y : l'ancre en descend d'autant. */
+function boardÉcran(d: number, u: number, v: number): Board {
+  const b = board(undefined, new Vector3(u * TAN_X * d, 1.7 + v * TAN_Y * d - 1.5, -d), false);
+  b.material.polygonOffset = true;
+  return b;
+}
+
+/** Le biais MÉTRIQUE que les unités écrites valent RÉELLEMENT à la profondeur du quad : la marche de
+ *  profondeur fenêtre obtenue, divisée par ce qu'un mètre y vaut. */
+function biaisObtenuM(b: Board): number {
+  const z = Math.abs(b.mesh.position.clone().applyMatrix4(POV.matrixWorldInverse).z);
+  const parMetre = (NEAR * FAR) / ((FAR - NEAR) * z ** 2);
+  return Math.abs(b.material.polygonOffsetUnits * 2 ** -DEPTH_BUFFER_BITS) / parMetre;
+}
+
+describe('poseBoards — le biais métrique tient EN TOUT POINT de l’écran (#1176 P3-1b)', () => {
+  const POINTS: [string, number, number, number][] = [
+    ['axe, 3 m', 3, 0, 0],
+    ['bord droit, 3 m', 3, 0.98, 0],
+    ['bord haut, 3 m', 3, 0, 0.98],
+    ['coin, 3 m', 3, 0.98, 0.98],
+    ['coin, 1 m', 1, 0.98, 0.98],
+    ['coin, 12 m', 12, 0.98, 0.98],
+  ];
+
+  it('les six positions sont bien RÉPARTIES à l’écran (la sonde n’est pas vide)', () => {
+    for (const [nom, d, u, v] of POINTS) {
+      const b = boardÉcran(d, u, v);
+      poseBoards([b], POV, () => null, flaques([]));
+      const ndc = b.mesh.position.clone().project(POV);
+      expect(ndc.x, `${nom} : abscisse écran`).toBeCloseTo(u, 6);
+      expect(ndc.y, `${nom} : ordonnée écran`).toBeCloseTo(v, 6);
+    }
+  });
+
+  it('le biais obtenu vaut 0,300 m à 1 % près, du centre au coin du champ', () => {
+    for (const [nom, d, u, v] of POINTS) {
+      const b = boardÉcran(d, u, v);
+      poseBoards([b], POV, () => null, flaques([]));
+      const obtenu = biaisObtenuM(b);
+      expect(Math.abs(obtenu - BILLBOARD_DEPTH_BIAS_M) / BILLBOARD_DEPTH_BIAS_M, `${nom} : ${obtenu.toFixed(4)} m`).toBeLessThanOrEqual(0.01);
+    }
+  });
+
+  it('la DISTANCE à l’œil n’est PAS la grandeur : au coin, elle dépasse la profondeur d’un tiers', () => {
+    const b = boardÉcran(3, 0.98, 0.98);
+    poseBoards([b], POV, () => null, flaques([]));
+    const z = Math.abs(b.mesh.position.clone().applyMatrix4(POV.matrixWorldInverse).z);
+    const d = POV.position.distanceTo(b.mesh.position);
+    expect(d / z).toBeGreaterThan(1.3);
+    // …et un biais pris sur la distance y perdrait ce facteur AU CARRÉ : le témoin de la mutation.
+    expect(BILLBOARD_DEPTH_BIAS_M * (z / d) ** 2).toBeLessThan(0.19);
   });
 });

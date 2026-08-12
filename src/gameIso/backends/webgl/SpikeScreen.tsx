@@ -24,6 +24,7 @@ import { sceneMetresPerTile, type Scene } from '../../../state/scene';
 import { DIR8_ORDER, facingToward, type Dir8 } from '../../../state/dir8';
 import type { Rot } from '../../../geometry/iso';
 import { makeCamera } from '../../pov/camera';
+import { povArtRot } from '../../stage/GameStage3D';
 import { affineCamera, fitAffineView, povCamera, rotYaw, type AffineKind } from './cameras';
 import { pxPerM } from './worldTris';
 import { tintFor } from './visibilityTint';
@@ -41,6 +42,7 @@ import { clearFaceBakes, getFaceBake } from './faceBake';
 import {
   billboardDepthOffsetUnits,
   billboardPose,
+  billboardViewDepth,
   applyVisibilityTint,
   bakeWorldGeometry,
   collectBillboards,
@@ -316,8 +318,8 @@ export function SpikeScreen(): JSX.Element {
         : ({ kind: 'ortho', yawDeg: opts.yawDeg } as const);
       const pxm = pxPerM(mpt);
       // L'art de décor n'existe qu'aux crans (`propSvg(ref, dir, camRot)`) : entre deux crans, le plus
-      // proche. POV : cran 0, comme la prod.
-      const camRot: Rot = opts.view === 'pov' ? 0 : nearestRot(opts.yawDeg);
+      // proche. POV : le cran se DÉRIVE du cap, par la même loi que la prod (`povArtRot`).
+      const camRot: Rot = opts.view === 'pov' ? povArtRot(facing) : nearestRot(opts.yawDeg);
       const quads = subjects.map((sub) => {
         const { view, mirror } = billboardView(bbCam, sub.facing);
         // Le quad se taille sur la BOÎTE du sujet (un composite monté est plus haut que la boîte
@@ -385,14 +387,14 @@ export function SpikeScreen(): JSX.Element {
         mesh.position.copy(billboardPose(sub.anchor, quad.centerLiftM, camera.quaternion));
         // Un plan aligné écran TRAVERSE la géométrie qu'il effleure (une ligne de crête coupe la
         // silhouette à mi-corps). Le sujet ne BOUGE pas pour autant : le biais se dépose sur le seul
-        // tampon de profondeur (`billboardDepthOffsetUnits` — bornes de la caméra, distance à l'œil pour
-        // la perspective), sans conséquence ni sur l'ombre projetée ni sur la taille à l'écran.
+        // tampon de profondeur (`billboardDepthOffsetUnits` — bornes de la caméra, et `z_view` pour la
+        // perspective), sans conséquence ni sur l'ombre projetée ni sur la taille à l'écran.
         mat.polygonOffset = true;
         mat.polygonOffsetFactor = -1;
         mat.polygonOffsetUnits = billboardDepthOffsetUnits(
           camera.near,
           camera.far,
-          opts.view === 'pov' ? camera.position.distanceTo(mesh.position) : null,
+          opts.view === 'pov' ? billboardViewDepth(camera, mesh.position) : null,
         );
         mesh.castShadow = opts.lit;
         three.add(mesh);

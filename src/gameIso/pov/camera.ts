@@ -82,19 +82,27 @@ export function groundUnderM(scene: Scene, x: number, y: number, z: number): num
   return (h00 * (1 - tx) + h10 * tx) * (1 - ty) + (h01 * (1 - tx) + h11 * tx) * ty;
 }
 
+/** REPÈRE SOL d'un cap Dir8, en unités de GRILLE : `fwd` = son delta unitaire (diagonale ÷ √2),
+ *  `right` = (−fwd.y, fwd.x) — cap N (0,−1) → right (1,0) = est. PUR, et SOURCE UNIQUE de cette
+ *  dérivation : la caméra première personne s'en bâtit, et la vue d'entité en perspective des
+ *  billboards du monde volumique s'y branche (`billboardView`, #1176 P3-1b). */
+export function dir8Basis(facing: Dir8): { fwd: { x: number; y: number }; right: { x: number; y: number } } {
+  const d = DIR8_DELTA[facing];
+  const len = Math.hypot(d.gx, d.gy) || 1; // diagonale → √2 ; cardinale → 1
+  const fwd = { x: d.gx / len, y: d.gy / len };
+  return { fwd, right: { x: -fwd.y, y: fwd.x } };
+}
+
 /** Construit la pose de caméra depuis la scène, la position du groupe et son cap Dir8. PUR.
- *  eye.z = sol sous le groupe + `EYE_H` ; fwd = delta grille du cap (diagonale /√2) ; right = (−fwd.y, fwd.x)
- *  (cap N (0,−1) → right (1,0) = est). `mpt` = échelle métrique de la case.
+ *  eye.z = sol sous le groupe + `EYE_H` ; `fwd`/`right` = le repère du cap (`dir8Basis`).
+ *  `mpt` = échelle métrique de la case.
  *  `partyPos` peut être CONTINU (la marche volumique fait glisser l'œil, #1176 P3-1a) : la hauteur de
  *  l'œil suit alors la pente CONTINUE du sol (`groundUnderM`) : à mi-pas d'un ressaut, l'œil est à
  *  mi-hauteur du ressaut, et sa montée s'étale sur toutes les frames du pas. */
 export function makeCamera(scene: Scene, partyPos: { x: number; y: number; z?: number }, facing: Dir8): CamPose {
   const mpt = sceneMetresPerTile(scene);
   const z = partyPos.z ?? 0;
-  const d = DIR8_DELTA[facing];
-  const len = Math.hypot(d.gx, d.gy) || 1; // diagonale → √2 ; cardinale → 1
-  const fwd = { x: d.gx / len, y: d.gy / len };
-  const right = { x: -fwd.y, y: fwd.x };
+  const { fwd, right } = dir8Basis(facing);
   const eye: Vec3 = {
     x: partyPos.x * mpt,
     y: partyPos.y * mpt,

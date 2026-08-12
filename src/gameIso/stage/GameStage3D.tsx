@@ -72,15 +72,16 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { freeYaw, type Dims, type Rot } from '../../geometry/iso';
 import { heightAt, type Scene } from '../../state/scene';
-import type { Dir8 } from '../../state/dir8';
+import { DIR8_ORDER, type Dir8 } from '../../state/dir8';
 import { affineCamera, povCamera } from '../backends/webgl/cameras';
-import { farTilesOf } from '../pov/camera';
+import { dir8Basis, farTilesOf } from '../pov/camera';
 import { pxPerM } from '../backends/webgl/worldTris';
 import {
   billboardTextureKey,
   billboardView,
   rasterPxHeight,
   subjectQuad,
+  type BillboardCamera,
 } from '../backends/webgl/billboardMath';
 import { clearBillboardTextures, getBillboardTexture, svgToTexture } from '../backends/webgl/svgTexture';
 import { clearPeriodTextures, getPeriodTexture } from '../backends/webgl/periodTexture';
@@ -275,15 +276,34 @@ export function artRot(dims: Dims): Rot {
   return ((Math.floor((freeYaw(dims) ?? (dims.rot ?? 0) * 90) / 90) % 4 + 4) % 4) as Rot;
 }
 
+/** LACET (degrés, convention de `freeYaw`/`artRot`) du regard PREMIÈRE PERSONNE de cap `facing`.
+ *  La caméra affine du cran `r` regarde la diagonale `DIR8_ORDER[(7 + 2r) % 8]` : à ce cap, `povView`
+ *  rend exactement ce que rend `project(·, r)` sur les huit orientations (parité mesurée,
+ *  `billboards-pov.test.tsx`). Les huit caps se répartissent donc tous les 45°, le cap N à 45°. PUR. */
+export function povYawDeg(facing: Dir8): number {
+  return ((DIR8_ORDER.indexOf(facing) + 1) * 45) % 360;
+}
+
+/** CRAN d'ART d'un regard première personne (#1176, P3-1b) : le lacet de son cap, PLANCHÉRISÉ par la
+ *  MÊME loi qu'`artRot` — l'atlas de décor n'existe qu'aux quarts de tour (`propSvg(ref, dir, camRot)`),
+ *  et les quatre caps CARDINAUX tombent entre deux crans. Sans lui, les props d'une vue première
+ *  personne gardent le cran de la dernière vue de plateau. PUR. */
+export function povArtRot(facing: Dir8): Rot {
+  return (Math.floor(povYawDeg(facing) / 90) % 4) as Rot;
+}
+
 export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
   const cameraRef = useRef<THREE.Camera | null>(null);
   const pov = frame.mode === 'pov';
-  // ÉCART DÉCLARÉ (#1176, P3-1a → P3-1b) : en POV l'art des billboards reste au cran 0 de la voie
-  // ortho ; le lacet de l'œil ne le choisit pas encore.
-  const camRot = frame.mode === 'affine' ? artRot(frame.dims) : (0 as Rot);
+  // CAP du regard première personne — 8 états DISCRETS, et la SEULE entrée d'art de cette vue : la vue
+  // d'entité s'y branche (`billboardView` perspective), et le cran de l'atlas de décor s'en dérive.
+  // Les deux sortent du MÊME examen du cadre : le cap est la source du cran, pas un second calcul.
+  const { povFacing, camRot } = frame.mode === 'pov'
+    ? { povFacing: frame.facing, camRot: povArtRot(frame.facing) }
+    : { povFacing: null, camRot: artRot(frame.dims) };
 
   const three = useRef<THREE.Scene>();
   const monde = useRef<THREE.Group>();
@@ -839,6 +859,13 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
     if (!groupe) return;
     let annule = false;
     const pxm = pxPerM(mpt);
+    // REGARD qui choisit la vue d'une entité : en première personne le CAP du meneur (8 états
+    // discrets, repère `dir8Basis`), sur la vue de plateau le cran d'art. Le repère se prend au cap et
+    // NON à la caméra de la frame : fwd/right recalculés par frame recuiraient toute la planche de
+    // textures à chaque frame (le piège que documente `artRot`).
+    const bbCam: BillboardCamera = povFacing
+      ? { kind: 'perspective', ...dir8Basis(povFacing) }
+      : { kind: 'ortho', yawDeg: camRot * 90 };
     const quads = subjects.map((sub) => {
       // Le quad se taille sur la BOÎTE du sujet : un composite plus haut que la boîte canonique
       // (couple monté) gagne du quad au lieu d'être tranché à la rasterisation.
@@ -846,7 +873,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
       // L'art de décor n'existe qu'AUX crans (`propSvg(ref, dir, camRot)`) ; celui d'un personnage
       // l'ignore — l'y mettre rasteriserait quatre fois la MÊME image.
       const identity = sub.kind === 'prop' ? `${sub.identity}|r${camRot}` : sub.identity;
-      const { view, mirror } = billboardView({ kind: 'ortho', yawDeg: camRot * 90 }, sub.facing);
+      const { view, mirror } = billboardView(bbCam, sub.facing);
       const pxHeight = rasterPxHeight(quad.heightM, pxm);
       const key = billboardTextureKey(identity, view, mirror, pxHeight);
       return { sub, quad, texture: getBillboardTexture(key, () => svgToTexture(sub.svg(view, mirror, camRot), sub.box, pxHeight)) };
@@ -894,7 +921,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
       viderGroupe(groupe);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subjects, mpt, camRot, lit]);
+  }, [subjects, mpt, camRot, povFacing, lit]);
 
   // L'EXPOSITION des billboards appartient à la passe de POSE (`poseBoards`) : elle dépend de l'endroit
   // où chaque sujet se pose, donc elle se recalcule à la cadence de la frame — c'est ainsi qu'un
