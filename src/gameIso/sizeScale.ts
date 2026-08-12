@@ -23,7 +23,11 @@ import { findCreatureById } from '../data';
 import { presetPnjById } from '../state/campaignData';
 import { entitySize } from '../state/spawn';
 import { resolveRender, type RenderResolution } from './rig/bodyPlan';
-import { refOf } from './rig/enemyProfile';
+import { enemyRigProfile, refOf, rendersFromOwnInventory } from './rig/enemyProfile';
+import { bodyTopFrac } from './rig/composeRig';
+import { combatantAppearance } from './rig/parts/combatantVisuals';
+import { defaultAppearance } from './rig/appearance';
+import { isStructure } from '../engine/structures';
 
 // Ancré sur les PROPORTIONS face à un humain (un cheval Grande ≈ ×1.3-1.5, un Géant Énorme ≈ ×2.4),
 // PAS sur le remplissage de l'empreinte N×N (T6) — l'empreinte reste la vérité d'OCCUPATION,
@@ -85,4 +89,18 @@ export function entityTokenScale(ent: SceneEntity): number {
  *  EMPREINTE propre pour un objet sans Taille de créature (un NAVIRE, cf. `footprintTokenScale`). */
 export function combatantTokenScale(c: Combatant): number {
   return combatantRender(c).scale * (c.footprint ? footprintTokenScale(c.footprint) : sizeTokenScale(c.size));
+}
+
+/** OÙ la tête DESSINÉE d'un combattant arrive dans sa boîte de corps, en fraction de celle-ci —
+ *  SOURCE UNIQUE de l'ancrage du chrome des DEUX voies (`BodyToken` affine, `TokenChromeOverlay`
+ *  volumique). Elle sort de la toise du gabarit (`bodyTopFrac` → `bodyHeight`, `composeRig`), la
+ *  MÊME que l'aperçu de personnage à échelle vraie.
+ *
+ *  Un corps de GABARIT (créature non bipède, structure de siège) rend 1 : sa hauteur dessinée n'est
+ *  stockée nulle part (`BodyPlan` ne déclare que sa `portraitBox`, un CADRAGE de portrait — pas une
+ *  toise), et le haut de boîte est l'ancre que les deux voies posaient déjà. */
+export function combatantBodyTopFrac(c: Combatant): number {
+  if (isStructure(c) || combatantRender(c).kind !== 'rig') return 1;
+  const prof = rendersFromOwnInventory(c) ? null : enemyRigProfile(c);
+  return bodyTopFrac(combatantAppearance(prof?.appearance ?? c.appearance ?? defaultAppearance(c), c));
 }

@@ -45,6 +45,7 @@ export function BodyToken({
   highlight,
   endState,
   bump,
+  bodyTopFrac = 1,
 }: {
   x: number;
   y: number;
@@ -89,12 +90,18 @@ export function BodyToken({
   /** État de FIN (#237) — pastille distincte par-dessus la tête (mort/inconscient/rendu/hors-combat),
    *  langage visuel UNIQUE (endStateVisual). Absent = combattant en état. */
   endState?: EndState | null;
+  /** Part de la boîte de corps (150 unités) que le sujet DESSINÉ remplit, des pieds au sommet de tête
+   *  (`combatantBodyTopFrac`, toise du gabarit) — c'est elle qui porte le chrome à la vraie tête. Défaut
+   *  1 (haut de boîte) : un corps sans toise connue (gabarit de créature, sprite, décor). */
+  bodyTopFrac?: number;
 }) {
   const { cx, cy } = tileCenter(x, y, dims, z); // feetY = cy : pieds au centre de la tuile (étage z)
   const s = scale * billboardScale(dims); // échelle effective du billboard : réduite en vue « de face »
-  // Ancre haute du bloc de badges (PV + icônes) : au-dessus du disque en flat, au-dessus de la tête en iso.
+  // Ancre haute du bloc de badges (PV + icônes) : au-dessus du disque en flat, au SOMMET DESSINÉ du
+  // corps en iso — la boîte fait 150 unités, le corps n'en remplit que `bodyTopFrac` (toise du gabarit,
+  // `composeRig`), et c'est la MÊME fraction dont la voie volumique rabat son quad (`chromeHeadPx`).
   const R = discR ?? 22;
-  const badgeY = flat ? -R : -150 * s;
+  const badgeY = flat ? -R : -150 * s * bodyTopFrac;
   const clipId = `disc-${Math.round(cx)}-${Math.round(cy)}`;
   return (
     <g data-cid={cid} style={{ transform: `translate(${cx}px,${cy}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? (flat ? 0.5 : 0.82) : ghost ? 0.45 : 1, filter: [ghost && !dim ? 'grayscale(0.85)' : '', highlight ? `drop-shadow(0 0 3px ${highlight}) drop-shadow(0 0 7px ${highlight})` : ''].filter(Boolean).join(' ') || undefined }}>

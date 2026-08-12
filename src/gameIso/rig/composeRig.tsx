@@ -95,6 +95,28 @@ export function bodyHeight(appearance: Appearance): number {
   return GROUND_Y - bodyHeadTopY(appearance);
 }
 
+/** Clé de la toise : les SEULS champs d'apparence que `groundedBodySkeleton` lit (espèce, difformités
+ *  morpho, carrure, jambes, sexe, gabarit explicite). Deux apparences de même clé ont la même toise. */
+function toiseKey(a: Appearance): string {
+  return `${a.species}|${a.sex}|${a.build}|${a.legs ?? 1}|${a.gabarit ?? ''}|${(a.features ?? []).join(',')}`;
+}
+const TOP_FRAC = new Map<string, number>();
+
+/** La toise d'une apparence RAPPORTÉE À SA BOÎTE (`GROUND_Y`) : 1 = un corps qui remplit la boîte
+ *  120×150 de bas en haut, 0,55 = un halfling qui n'en occupe que la moitié basse. C'est le nombre
+ *  qui dit OÙ est la tête DESSINÉE dans le cadre, quelle que soit la voie de rendu qui l'affiche —
+ *  la boîte affine (`BodyToken`) et le quad texturé (`billboardMath`) la remplissent toutes deux.
+ *  Borné à 1 : le fragment est rasterisé dans un `viewBox="0 0 120 150"` (`svgTexture`), un corps
+ *  dessiné au-dessus du cadre y est coupé. Mémoïsé sur `toiseKey` (appelé par frame et par jeton). */
+export function bodyTopFrac(appearance: Appearance): number {
+  const k = toiseKey(appearance);
+  const hit = TOP_FRAC.get(k);
+  if (hit !== undefined) return hit;
+  const v = Math.min(1, bodyHeight(appearance) / GROUND_Y);
+  TOP_FRAC.set(k, v);
+  return v;
+}
+
 /**
  * COMPOSITION d'un rig : tout ce qui décrit le personnage et NE dépend PAS de l'instant — squelette,
  * parts résolues, palette appliquée, échelles, profondeurs, ordre du peintre. Seule la POSE change

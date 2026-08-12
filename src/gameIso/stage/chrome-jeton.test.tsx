@@ -29,10 +29,12 @@ import { buildDynamicMarkMesh } from '../backends/webgl/dynamicMarkMeshes';
 import { COMBAT_TOKEN_BASE, discR, teamRingRadiusK, topRingRadiusK, type DynamicMarks } from '../builders/dynamicMarks';
 import { tokenChrome } from '../builders/tokenChrome';
 import { ALLY_TINT, ENEMY_TINT, NEUTRAL_TINT, hpColor } from '../teamColors';
-import { combatantTokenScale } from '../sizeScale';
+import { combatantBodyTopFrac, combatantTokenScale } from '../sizeScale';
 import { billboardHeightM } from '../backends/webgl/billboardMath';
 import { ISO_PX_PER_M } from '../iso';
 import { tileCenter, type Dims } from '../../geometry/iso';
+import { GROUND_Y, bodyHeight } from '../rig/composeRig';
+import type { Appearance } from '../rig/appearance';
 import { contactShadow } from '../backends/webgl/sceneMeshes';
 import type { BillboardSubject } from '../backends/webgl/sceneMeshes';
 
@@ -148,6 +150,13 @@ function badgesDe(g: SVGGElement): (string | null)[] {
   return [...g.querySelectorAll('g')].map((n) => n.getAttribute('transform')).filter((t) => t?.startsWith('translate(0,'));
 }
 
+/** L'ordonnée de l'ANCRE DE TÊTE d'un chrome peint, relue au DOM : le peintre partagé pose le bloc de
+ *  badges à `ancre − 8` et la pastille de fin à `ancre − 22` — la plus HAUTE des deux redonne l'ancre. */
+function ancreDe(g: SVGGElement): number {
+  const ys = badgesDe(g).map((t) => Number(/^translate\(0,(-?[\d.e+-]+)\)$/.exec(t!)![1]));
+  return Math.max(...ys) + 8;
+}
+
 beforeAll(() => {
   Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => TAILLE.w });
   Object.defineProperty(HTMLCanvasElement.prototype, 'clientHeight', { configurable: true, get: () => TAILLE.h });
@@ -206,17 +215,19 @@ describe('Chrome des jetons — UNE dérivation, UN peintre, deux voies (#1176 P
     expect(webgl.querySelectorAll('svg.iso-stage g[data-cid]'), 'aucun corps de jeton affine monté en volumique').toHaveLength(0);
   });
 
-  it('le chrome volumique s’ancre à la TÊTE DU BILLBOARD en losange, et au DISQUE-PORTRAIT en vue du dessus', () => {
-    const scaleK = combatantTokenScale(combatChromé().combatants[0]);
-    const marque = { scaleK, n: 1 }; // le héros de la sonde : taille moyenne, empreinte d'une case
+  it('le chrome volumique s’ancre à la TÊTE DESSINÉE en losange, et au DISQUE-PORTRAIT en vue du dessus', () => {
+    const h = combatChromé().combatants[0];
+    const scaleK = combatantTokenScale(h);
+    const frac = combatantBodyTopFrac(h);
+    const marque = { scaleK, n: 1, bodyTopFrac: frac }; // le héros de la sonde : taille moyenne, empreinte d'une case
     const el = monter('webgl');
     const h1 = chromeVolumique(el, 'h1')!;
     const dims: Dims = { ...emptyScene(10, 10).dimensions, rot: 0, view: 'iso', edge: false } as Dims;
     const { cx, cy } = tileCenter(3, 3, dims, 0);
     expect(h1.getAttribute('transform'), 'ancré aux PIEDS de sa case, comme le jeton').toBe(`translate(${cx},${cy})`);
-    // LOSANGE : la hauteur MONDE du quad, à la cadence verticale de la projection affine — la toise du
-    // BILLBOARD, celle que la voie volumique monte, et non les 150 unités de boîte du rig affine.
-    const tête = billboardHeightM(CONVENTION, 'personnage') * scaleK * ISO_PX_PER_M;
+    // LOSANGE : la hauteur MONDE du quad, à la cadence verticale de la projection affine, RABATTUE sur
+    // la part de boîte que le corps remplit — la toise du gabarit, pas le haut du cadre.
+    const tête = billboardHeightM(CONVENTION, 'personnage') * scaleK * frac * ISO_PX_PER_M;
     expect(chromeHeadPx(dims, marque)).toBeCloseTo(tête, 9);
     // Le bloc de badges est posé à `badgeY − 8`, `badgeY` valant cette ancre.
     expect(badgesDe(h1)).toContain(`translate(0,${-tête - 8})`);
@@ -482,5 +493,62 @@ describe('Chrome des jetons — la POSITION suit la marche à la FRAME (#1176 P3
     expect(new Set(vues).size, 'trois positions distinctes').toBe(3);
     // Le chrome de l'autre combattant, lui, n'a pas bougé d'un pixel : la glisse est keyée par id.
     expect(posé(el, 'e1')).toBe(e1Avant);
+  });
+});
+
+describe('Ancre du chrome — la TOISE du gabarit, jamais une constante par famille (#1176 P3-0f)', () => {
+  /** Espèces de RIG mesurées à l'écran par le juge de vision : leur échelle d'art vaut 1 pour les cinq
+   *  (`resolveSpecies(...).scale`), et leur Taille est Moyenne — seule la TOISE de leur gabarit les
+   *  sépare. Un chrome ancré au haut de boîte les posait donc TOUS à la même hauteur d'écran. */
+  const ESPÈCES = ['humain', 'nain', 'halfling', 'elfe', 'gobelin'];
+  const app = (sp: string) => ({ species: sp, sex: 'M', build: 0.5, seed: 1 } as unknown as Appearance);
+  const perso = (sp: string): Combatant => ({ ...hero('h1', { x: 3, y: 3 }), appearance: app(sp) } as unknown as Combatant);
+  const dims: Dims = { ...emptyScene(10, 10).dimensions, rot: 0, view: 'iso', edge: false } as Dims;
+  /** Ancre volumique d'un combattant, par le chemin de production (builder → `chromeHeadPx`). */
+  const ancreVol = (c: Combatant) => chromeHeadPx(dims, { scaleK: combatantTokenScale(c), n: 1, bodyTopFrac: combatantBodyTopFrac(c) });
+
+  it('cinq espèces, cinq ancres : la fraction sort de `bodyHeight`, pas d’un nombre par famille', () => {
+    const fracs = ESPÈCES.map((sp) => combatantBodyTopFrac(perso(sp)));
+    ESPÈCES.forEach((sp, i) => {
+      expect(fracs[i], sp).toBeCloseTo(Math.min(1, bodyHeight(app(sp)) / GROUND_Y), 12);
+    });
+    expect(new Set(fracs).size, 'cinq toises distinctes').toBe(ESPÈCES.length);
+    expect(combatantBodyTopFrac(perso('nain'))).toBeLessThan(combatantBodyTopFrac(perso('humain')));
+    // Et l'ancre d'écran en hérite : une par espèce, là où la constante de famille n'en donnait qu'une.
+    expect(new Set(ESPÈCES.map((sp) => ancreVol(perso(sp)))).size, 'cinq ancres volumiques distinctes').toBe(ESPÈCES.length);
+  });
+
+  it('l’écart BARRE→TÊTE DESSINÉE reste sous 6 px à 100 %, pour les cinq', () => {
+    for (const sp of ESPÈCES) {
+      const c = perso(sp);
+      // La tête DESSINÉE, sans rabat de boîte : la toise brute du gabarit à la cadence du quad.
+      const têtePx = billboardHeightM(CONVENTION, 'personnage') * combatantTokenScale(c) * (bodyHeight(app(sp)) / GROUND_Y) * ISO_PX_PER_M;
+      expect(Math.abs(ancreVol(c) - têtePx), `${sp} : barre → tête`).toBeLessThanOrEqual(6);
+    }
+  });
+
+  it('PARITÉ des deux voies : le rapport nain/humain des ancres peintes est celui des toises', () => {
+    const nain = perso('nain');
+    const humain = perso('humain');
+    const monterAvec = (backend: 'affine' | 'webgl', c: Combatant) => {
+      const b = combatChromé();
+      return monter(backend, { battle: { ...b, combatants: [{ ...b.combatants[0], appearance: c.appearance }, b.combatants[1]] }, party: [c] });
+    };
+    const corpsAffine = (el: HTMLElement) => el.querySelector<SVGGElement>('svg.iso-stage g[data-cid="h1"]')!;
+
+    const affineNain = ancreDe(corpsAffine(monterAvec('affine', nain)));
+    démonter();
+    const affineHumain = ancreDe(corpsAffine(monterAvec('affine', humain)));
+    démonter();
+    const volNain = ancreDe(chromeVolumique(monterAvec('webgl', nain), 'h1')!);
+    démonter();
+    const volHumain = ancreDe(chromeVolumique(monterAvec('webgl', humain), 'h1')!);
+
+    // Chaque voie a SA toise (boîte de 150 unités contre quad en mètres) : les pixels diffèrent, la
+    // FRACTION non — c'est elle, et elle seule, que les deux tirent de la même dérivation.
+    const attendu = combatantBodyTopFrac(nain) / combatantBodyTopFrac(humain);
+    expect(affineNain / affineHumain, 'voie affine').toBeCloseTo(attendu, 9);
+    expect(volNain / volHumain, 'voie volumique').toBeCloseTo(attendu, 9);
+    expect(attendu, 'un nain n’arrive pas à la tête d’un humain').toBeLessThan(0.7);
   });
 });

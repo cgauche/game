@@ -15,11 +15,14 @@
  * chaque jeton porte donc une RÉF, et le battement de la marche y réécrit un `transform` — le patron du
  * groupe caméra du stage (`IsoStage`, `camGRef`), sans un `setState` par frame.
  *
- * HAUTEUR : celle du BILLBOARD (`billboardHeightM` × échelle du sujet), jamais les 150 unités de la
- * boîte du rig affine — les deux voies n'ont pas la même toise (leçon #1288), et un chrome ancré à
- * la mauvaise flotterait au-dessus de la tête ou lui entrerait dedans. En VUE DU DESSUS il n'y a plus
- * de tête à surmonter : la voie affine y remplace le corps par un disque-portrait et pose son chrome au
- * bord de CE disque (`BodyToken`, branche `flat` : `badgeY = −discR`) — même ancre ici.
+ * HAUTEUR : celle du CORPS DESSINÉ, pas celle de son cadre — la toise du gabarit (`bodyTopFrac`,
+ * `composeRig`) dit quelle part de la boîte 120×150 le sujet remplit, et les DEUX voies en tirent
+ * leur ancre : la boîte affine (`BodyToken`) et le quad volumique (`billboardHeightM` × échelle du
+ * sujet) la multiplient par la même fraction. Sans elle l'ancre était une CONSTANTE par famille : le
+ * nain, le halfling et le gobelin voyaient leur barre flotter à mi-chemin d'un voisin. En VUE DU
+ * DESSUS il n'y a plus de tête à surmonter : la voie affine y remplace le corps par un disque-portrait
+ * et pose son chrome au bord de CE disque (`BodyToken`, branche `flat` : `badgeY = −discR`) — même
+ * ancre ici.
  */
 import { useEffect, useRef } from 'react';
 import { isSquareView, tileCenter, type Dims } from '../../geometry/iso';
@@ -37,12 +40,13 @@ export type LiftAt = (x: number, y: number, z?: number) => number;
 
 /** Hauteur ÉCRAN (px) à laquelle le chrome d'un jeton s'ancre, sous la vue `dims` :
  *  - LOSANGE : la hauteur MONDE de son billboard, à la cadence verticale de la projection affine
- *    (`ISO_PX_PER_M` — un mètre de haut y vaut toujours ces pixels, quel que soit le lacet) ;
+ *    (`ISO_PX_PER_M` — un mètre de haut y vaut toujours ces pixels, quel que soit le lacet),
+ *    RABATTUE sur la part de la boîte que le corps occupe vraiment (`bodyTopFrac`) ;
  *  - DESSUS : le rayon du disque-portrait de son empreinte (`discR`), la même ancre que l'affine. */
-export function chromeHeadPx(dims: Dims, mark: { scaleK: number; n: number }): number {
+export function chromeHeadPx(dims: Dims, mark: { scaleK: number; n: number; bodyTopFrac: number }): number {
   return isSquareView(dims.view)
     ? discR(mark.n)
-    : billboardHeightM(CONVENTION, 'personnage') * mark.scaleK * ISO_PX_PER_M;
+    : billboardHeightM(CONVENTION, 'personnage') * mark.scaleK * mark.bodyTopFrac * ISO_PX_PER_M;
 }
 
 /** Position ÉCRAN du chrome d'un jeton à l'instant que porte `wp` : le CENTRE de son bloc d'empreinte,

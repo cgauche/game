@@ -18,7 +18,7 @@ import { footprintN } from '../../state/footprint';
 import type { IconId } from '../../ui/icons';
 import { combatantFlags, summarizeEffects } from '../effectIcons';
 import { relationColor } from '../teamColors';
-import { combatantTokenScale } from '../sizeScale';
+import { combatantBodyTopFrac, combatantTokenScale } from '../sizeScale';
 import type { MarkCell } from './dynamicMarks';
 import type { TokenEl } from './types';
 
@@ -74,7 +74,7 @@ export function mountChrome(mount: Combatant): TokenChrome {
 /** Le chrome d'un jeton posté, avec de quoi le POSER : sa case d'ancrage (coin NO, celle que la marche
  *  fait glisser), le côté de son EMPREINTE et l'échelle de son corps — c'est d'eux que chaque voie tire
  *  le centre du bloc et la hauteur à laquelle la tête arrive (le disque-portrait en vue du dessus se
- *  mesure à l'empreinte, le billboard à l'échelle). */
+ *  mesure à l'empreinte ; le billboard, à l'échelle du corps ET à la toise de son gabarit). */
 export interface TokenChromeMark extends TokenChrome {
   id: string;
   /** Case d'ANCRAGE (coin NO de l'empreinte) — la position logique, sans glissement. */
@@ -83,6 +83,8 @@ export interface TokenChromeMark extends TokenChrome {
   n: number;
   /** Multiplicateur de taille du corps (espèce × Taille). */
   scaleK: number;
+  /** Où la TÊTE DESSINÉE arrive dans la boîte de corps, en fraction de celle-ci (`combatantBodyTopFrac`). */
+  bodyTopFrac: number;
 }
 
 /** Les chromes de la frame : UN par jeton posté (combattant, ou monture d'un couple monté). */
@@ -97,6 +99,7 @@ export function tokenChromes(tokens: readonly TokenEl[], ctx: ChromeCtx): TokenC
       cell: { x: unit.pos.x, y: unit.pos.y, z: tk.cell.z },
       n: footprintN(unit),
       scaleK: combatantTokenScale(unit),
+      bodyTopFrac: combatantBodyTopFrac(unit),
       ...(s.kind === 'combatant' ? tokenChrome(s.c, ctx) : mountChrome(unit)),
     });
   }

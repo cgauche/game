@@ -18,7 +18,7 @@ import { MountedToken } from '../MountedToken';
 import { tokenBodyKind } from '../tokenBodyKind';
 import { entitySprite, propSprite } from '../sprites';
 import { propDepth } from '../backends/affineProps';
-import { combatantTokenScale, entityTokenScale } from '../sizeScale';
+import { combatantBodyTopFrac, combatantTokenScale, entityTokenScale } from '../sizeScale';
 import { sizeFootprint, footprintN, footprintTiles } from '../../state/footprint';
 import { entitySize } from '../../state/spawn';
 import { HERO_RING, veilTint } from '../teamColors';
@@ -48,12 +48,12 @@ function token(ctx: TokenCtx, id: string, x: number, y: number, inner: string, s
   );
 }
 
-type TokenExtras = { hp?: { current: number; max: number }; icons?: IconId[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string; highlight?: string; endState?: import('../../engine/conditions').EndState | null; bump?: number };
+type TokenExtras = { hp?: { current: number; max: number }; icons?: IconId[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string; highlight?: string; endState?: import('../../engine/conditions').EndState | null; bump?: number; bodyTopFrac?: number };
 function tokenNode(ctx: TokenCtx, id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean, extras?: TokenExtras, z = 0) {
   return (
     <BodyToken key={id} x={x} y={y} z={ctx.liftAt(x, y, z)} dims={ctx.dims} scale={scale} ring={ringColor} ringDash={extras?.ringDash} dim={dim} ghost={extras?.ghost} walking={walking} bakedDeath
       hp={extras?.hp} icons={extras?.icons} iconsMore={extras?.iconsMore} veil={extras?.veil} active={extras?.active}
-      flat={extras?.flat} portraitBox={extras?.portraitBox} discR={extras?.discR} cid={extras?.cid} highlight={extras?.highlight} endState={extras?.endState} bump={extras?.bump}>
+      flat={extras?.flat} portraitBox={extras?.portraitBox} discR={extras?.discR} cid={extras?.cid} highlight={extras?.highlight} endState={extras?.endState} bump={extras?.bump} bodyTopFrac={extras?.bodyTopFrac}>
       {child}
     </BodyToken>
   );
@@ -230,6 +230,7 @@ export function combatantObjs(tokenEls: TokenEl[], ctx: CombatTokenCtx): StageOb
         cid: c.id, // ciblage DOM (recettes Playwright : survol/clic par data-cid)
         highlight: chrome.highlight ?? undefined,
         endState: chrome.endState,
+        bodyTopFrac: combatantBodyTopFrac(c), // toise du gabarit : la barre se pose à la tête DESSINÉE (nain ≠ elfe)
       }, cz);
       out.push({ d: depth(wp.sortPt.x + off, wp.sortPt.y + off, ctx.dims, cz) + 0.5, z: cz, vis: true, el }); // en vue → au-dessus du voile ; tri constant sur le pas (sortPt)
     } else if (tk.subject.kind === 'mounted') {
@@ -242,7 +243,7 @@ export function combatantObjs(tokenEls: TokenEl[], ctx: CombatTokenCtx): StageOb
       const cx = wp.x + off, cy = wp.y + off;
       const mountScale = COMBAT_TOKEN_BASE * combatantTokenScale(mount);
       const chrome = mountChrome(mount); // même dérivation partagée : le couple ne montre que son état de fin
-      const el = tokenNode(ctx, `${mount.id}-mtd`, cx, cy, <MountedToken mount={mount} rider={rider} />, mountScale, undefined, chrome.dim, wp.walking, { endState: chrome.endState });
+      const el = tokenNode(ctx, `${mount.id}-mtd`, cx, cy, <MountedToken mount={mount} rider={rider} />, mountScale, undefined, chrome.dim, wp.walking, { endState: chrome.endState, bodyTopFrac: combatantBodyTopFrac(mount) });
       out.push({ d: depth(wp.sortPt.x + off, wp.sortPt.y + off, ctx.dims, mz) + 0.5, z: mz, vis: true, el });
     }
   }
