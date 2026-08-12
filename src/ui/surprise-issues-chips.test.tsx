@@ -161,7 +161,11 @@ describe('#1117 — la Surprise DIT ses issues en chips d’ops, avant comme apr
     runCombatFlow(
       { mode: 'combat', get: useGame.getState, set: useGame.setState, target: guetteur, caster: embusqueur, label: 'Surprise' },
       testFlow(
-        { skill: 'perception', difficulty: 'difficile', label: 'Guet',
+        // MÊME DÉCLARATION que le producteur réel (`applySurprise`, `state/combatFlow`) : un jet de
+        // Surprise dit ce qu'il met en jeu (`ambushSurprise`). SEULE divergence, celle que ce test
+        // mesure : la Difficulté DIFFICILE (le site réel oppose à l'Intermédiaire, où un défaut
+        // d'affichage de la Difficulté passerait inaperçu).
+        { skill: 'perception', difficulty: 'difficile', label: 'Guet', stake: combatStakeRef('ambushSurprise'),
           opposed: { attacker: 'agilite', attackerSkill: 'discretion', attackerLabel: 'Discrétion' } },
         EMPTY_FLOW, EMPTY_FLOW,
       ),
