@@ -95,6 +95,15 @@ import {
 } from '../backends/webgl/sceneMeshes';
 import { billboardMaterial, poseBoards, type Board, type GlideAt } from './boardPose';
 import { buildGroundAccentMeshes, maskGroundAccents, sceneGroundAccents } from '../backends/webgl/groundAccents';
+import {
+  HIGHLIGHT_SLOTS,
+  buildHighlightMesh,
+  groupHighlights,
+  slotCapacity,
+  writeHighlightInstances,
+  type HighlightSlot,
+} from '../backends/webgl/highlightMeshes';
+import type { HighlightEl } from '../builders/highlights';
 import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/spriteRaycast';
 import { setSpritePicker } from './spritePicker';
 import { stage3dFraming } from './stage3dCamera';
@@ -169,6 +178,10 @@ export interface GameStage3DProps {
    *  mécanique de vision consomme (`state/visionState.ts` `sceneLightSources`) : cet écran ne les
    *  recollecte pas, il en monte les flaques (`stage/stagePointLights.ts`). */
   lights: readonly LightSource[];
+  /** MARQUES DE CASES du combat (#1176, P3-0c) — la sortie du builder PUR `builders/highlights`, la
+   *  même que la voie affine projette en losanges. Cet écran ne les recalcule pas : il les pose à plat
+   *  dans le monde. */
+  highlights?: readonly HighlightEl[];
   /** Cadençage de la MARCHE, quand le stage en offre un (lot P2-4) : sans lui, cet écran ne bouge
    *  qu'aux rendus du stage. */
   anim?: StageWalkAnim;
@@ -215,7 +228,7 @@ export function artRot(dims: Dims): Rot {
   return ((Math.floor((freeYaw(dims) ?? (dims.rot ?? 0) * 90) / 90) % 4 + 4) % 4) as Rot;
 }
 
-export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors, gameTime, lightLevel, lights, anim }: GameStage3DProps): JSX.Element {
+export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors, gameTime, lightLevel, lights, highlights, anim }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
@@ -229,6 +242,7 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   const lampes = useRef<THREE.Group>();
   const flaques = useRef<THREE.Group>();
   const intemperies = useRef<THREE.Group>();
+  const marques = useRef<THREE.Group>();
   if (!three.current) {
     three.current = new THREE.Scene();
     monde.current = new THREE.Group();
@@ -240,7 +254,10 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     // et ferait varier le compte de lampes ponctuelles que le pool existe justement pour figer.
     flaques.current = new THREE.Group();
     intemperies.current = new THREE.Group();
-    three.current.add(monde.current, touffes.current, panneaux.current, lampes.current, flaques.current, intemperies.current);
+    // Groupe des MARQUES (P3-0c) : monté une fois, jamais vidé par événement de combat — ses pools ne
+    // se redimensionnent qu'au PALIER de capacité, leur contenu se réécrit en place.
+    marques.current = new THREE.Group();
+    three.current.add(monde.current, touffes.current, panneaux.current, lampes.current, flaques.current, intemperies.current, marques.current);
   }
 
   // Le cache de textures est GLOBAL au module : changer de scène rend ses entrées mortes (les clés
@@ -262,6 +279,16 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   const decor = useMemo(() => collectBillboards(scene, mpt, tintAt, els), [scene, mpt, tintAt, els]);
   const acteurs = useMemo(() => actorBillboards(actors, scene, mpt, tintAt), [actors, scene, mpt, tintAt]);
   const subjects = useMemo(() => [...decor, ...acteurs], [decor, acteurs]);
+  // ── MARQUES DE CASES (P3-0c) : les éléments du builder, rangés par SLOT de montage. La CAPACITÉ des
+  // pools ne suit que les paliers (`slotCapacity`) — un anneau de cible qui apparaît ne redimensionne
+  // rien, il s'écrit dans le pool déjà là.
+  const marquesGroupées = useMemo(() => groupHighlights(highlights ?? []), [highlights]);
+  const capacités = useMemo(
+    () => HIGHLIGHT_SLOTS.map((s) => slotCapacity(marquesGroupées.get(s)?.length ?? 0)),
+    [marquesGroupées],
+  );
+  const clésCapacités = capacités.join(',');
+  const poolsMarques = useRef(new Map<HighlightSlot, THREE.InstancedMesh>());
 
   // ── LUMIÈRE (P2-5) : la DÉCISION est prise en scalaires purs (`stageLights.ts`), l'écran n'en monte
   // que les conséquences. `lit` = un soleil éclaire RÉELLEMENT (il est levé ET au-dessus du fondu) :
@@ -565,6 +592,56 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     return () => viderGroupe(groupe);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accentsVus, tintAt]);
+
+  // ── POOLS DE MARQUES (P3-0c) : la CAPACITÉ, et rien d'autre. Un pool ne naît, ne grandit ou ne meurt
+  // qu'au changement de palier — c'est la seule passe qui alloue une géométrie ou un matériau de marque.
+  // Le contenu, lui, s'écrit dans la passe suivante ; le patron est celui du pool de flaques (#1245).
+  useEffect(() => {
+    const groupe = marques.current;
+    if (!groupe) return;
+    HIGHLIGHT_SLOTS.forEach((slot, i) => {
+      const voulue = capacités[i];
+      const courant = poolsMarques.current.get(slot);
+      if (courant && courant.instanceMatrix.count === voulue) return;
+      if (courant) {
+        groupe.remove(courant);
+        courant.geometry.dispose();
+        (courant.material as THREE.Material).dispose();
+        poolsMarques.current.delete(slot);
+      }
+      if (voulue <= 0) return;
+      const mesh = buildHighlightMesh(slot, voulue);
+      poolsMarques.current.set(slot, mesh);
+      groupe.add(mesh);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clésCapacités]);
+
+  // ── ÉCRITURE des marques : matrices et teintes réécrites EN PLACE dans des pools déjà montés. Aucun
+  // montage, aucun démontage, aucune allocation — un tour de combat ne fait que repasser ici.
+  useEffect(() => {
+    for (const slot of HIGHLIGHT_SLOTS) {
+      const mesh = poolsMarques.current.get(slot);
+      if (mesh) writeHighlightInstances(mesh, marquesGroupées.get(slot) ?? [], mpt);
+    }
+    dessiner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [marquesGroupées, mpt]);
+
+  // Le groupe des marques ne se vide qu'à la MORT de l'écran (un `viderGroupe` par changement de
+  // dépendance rendrait le pool inutile).
+  useEffect(() => {
+    const groupe = marques.current;
+    const pools = poolsMarques.current;
+    return () => {
+      for (const mesh of pools.values()) {
+        groupe?.remove(mesh);
+        mesh.geometry.dispose();
+        (mesh.material as THREE.Material).dispose();
+      }
+      pools.clear();
+    };
+  }, []);
 
   // ── GROUPE BILLBOARDS : décor + acteurs. Rebâti quand les SUJETS changent — l'identité d'un sujet
   // porte sa case logique et sa signature de dessin, jamais le glissement de la marche : celui-ci

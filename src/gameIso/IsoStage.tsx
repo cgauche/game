@@ -9,7 +9,7 @@
  */
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type MutableRefObject } from 'react';
 import './anim.css';
-import { useGame } from '../state/store';
+import { useGame, type BattleState } from '../state/store';
 import { heightAt, sceneMetresPerTile, type Scene } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { metricToLift } from '../state/relief';
@@ -38,7 +38,8 @@ import { buildRoofs, clearedSpace } from './builders/roofs';
 import { buildProps } from './builders/props';
 import { buildTokens } from './builders/tokens';
 import { floorLayerObjs, wallLayerObjs, roofLayerObjs, elOccluder, type LayerCtx } from './stage/layers';
-import { combatHighlightObjs } from './stage/highlightLayer';
+import { combatHighlightObjs, combatHighlightsView, type HighlightOpts } from './stage/highlightLayer';
+import { buildHighlights, type HighlightEl } from './builders/highlights';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
 import { CulledScene, actorCapsuleOf } from './stage/CulledScene';
@@ -354,9 +355,18 @@ export function IsoStage() {
   const floorObjs = useMemo(() => (scene ? floorLayerObjs(floorEls, scene, dims, NEUTRAL_LAYER_CTX, lod, detailOpts, true) : []), [scene, floorEls, dims, lod, detailOpts]);
   const wallObjs = useMemo(() => wallLayerObjs(wallEls, dims, NO_OCCLUDE, lod, detailOpts, true), [wallEls, dims, lod, detailOpts]);
   const roofObjs = useMemo(() => roofLayerObjs(roofEls, dims, detailOpts, true), [roofEls, dims, detailOpts]);
+  // Les vérités de surbrillance sont assemblées UNE fois (`combatHighlightsView`) et servent les DEUX
+  // voies : la projection affine ci-dessous, les quads au sol du monde volumique (`VolumetricWorld`).
+  const combatBattle = mode === 'battle' && battle ? battle : null;
+  const highlightOpts = useMemo<HighlightOpts>(
+    () => ({ myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast }),
+    [myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast],
+  );
+  // La projection affine ne sert QUE la couche SVG (`CulledScene`, montée sur `!webgl`) : en volumique
+  // ces objets ne sont jamais consommés, et leur construction (un JSX par case de portée) est pure perte.
   const highlightObjs = useMemo(
-    () => (scene && mode === 'battle' && battle ? combatHighlightObjs(useGame.getState, scene, battle, dims, liftAt, { myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast }) : []),
-    [scene, dims, mode, battle, myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast],
+    () => (!webgl && scene && combatBattle ? combatHighlightObjs(useGame.getState, scene, combatBattle, dims, liftAt, highlightOpts) : []),
+    [webgl, scene, dims, combatBattle, highlightOpts],
   );
   const tokenCtx: TokenCtx = { dims, view: viewMode, liftAt };
   const propObjs = useMemo(() => propLayerObjs(propEls, { dims, view: viewMode, liftAt }), [propEls, dims, viewMode, scene]);
@@ -462,7 +472,9 @@ export function IsoStage() {
           gameTime={gameTime}
           lightLevel={lightLevel}
           lights={lightSources}
-          partyToken={mode === 'battle' && battle ? null : partyLeader ? { leader: partyLeader, pos: partyPos } : null}
+          battle={combatBattle}
+          highlightOpts={highlightOpts}
+          partyToken={combatBattle ? null : partyLeader ? { leader: partyLeader, pos: partyPos } : null}
         />
       )}
     {/* Voie volumique : le fond du SVG s'efface (le canevas peint dessous) — un état de CHANTIER,
@@ -533,7 +545,7 @@ export function IsoStage() {
  * étage isolé, surplomb, brouillard). ÉCART RÉSIDUEL : un couple MONTÉ ne rend que sa MONTURE — le
  * corps composite cavalier+monture (`MountedToken`) n'a pas d'équivalent billboard.
  */
-function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, tokenEls, propEls, walksRef, partyToken, gameTime, lightLevel, lights }: {
+function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, tokenEls, propEls, walksRef, partyToken, gameTime, lightLevel, lights, battle, highlightOpts }: {
   scene: Scene;
   dims: Dims;
   mpt: number;
@@ -555,6 +567,10 @@ function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, t
   lightLevel: number | null | undefined;
   /** Sources de lumière PONCTUELLES de la scène — celles du champ mécanique, jamais recollectées ici. */
   lights: readonly LightSource[];
+  /** Combat en cours, ou `null` hors combat : la seule entrée des MARQUES DE CASES (P3-0c). */
+  battle: BattleState | null;
+  /** Contexte de tour/ciblage dont les marques dérivent (`stage/highlightLayer`). */
+  highlightOpts: HighlightOpts;
 }) {
   const facings = useGame((s) => s.facing); // orientation MONDE vivante par acteur (Dir8)
   const poses: ActorPose[] = [];
@@ -580,6 +596,12 @@ function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, t
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const actors = useMemo(() => poses, [posesKey]);
   const els = useMemo(() => ({ tokens: tokenEls, props: propEls }), [tokenEls, propEls]);
+  // MARQUES DE CASES (P3-0c) : le MÊME builder pur que la voie affine, sur la MÊME vue assemblée
+  // (`combatHighlightsView`). L'écran volumique n'en connaît que la liste — il la pose à plat au sol.
+  const highlights = useMemo<HighlightEl[]>(
+    () => (battle ? buildHighlights(scene, battle, combatHighlightsView(useGame.getState, battle, highlightOpts)) : []),
+    [scene, battle, highlightOpts],
+  );
   // MARCHE lue par la BOUCLE (P2-4) : le stage garde l'intention (la courbe `walkPoseAt`, le cadrage
   // `camAt`), la boucle ne fait que la redemander à SA cadence. Objet reforgé à chaque rendu — c'est
   // voulu : il doit fermer sur les cases logiques du rendu courant.
@@ -593,5 +615,5 @@ function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, t
     },
     cam: () => camAt(performance.now()),
   };
-  return <GameStage3D scene={scene} dims={dims} mpt={mpt} cam={cam} zoom={zoom} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} anim={anim} />;
+  return <GameStage3D scene={scene} dims={dims} mpt={mpt} cam={cam} zoom={zoom} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} highlights={highlights} anim={anim} />;
 }

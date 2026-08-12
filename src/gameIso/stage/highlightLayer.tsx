@@ -13,6 +13,7 @@ import { Combatant } from '../../engine/types';
 import { crowdEligible, eligibleAttackTargetIds, displayedReach, computeRunReach, hasFreeWeaponAttack } from '../../state/combatFlow';
 import { currentTargetingMode } from '../../state/targetingModes';
 import { controlsCombatant } from '../../state/netOwnership';
+import { inBattleId } from '../../state/combatants';
 import { footprintN, footprintTiles } from '../../state/footprint';
 import { mountOf } from '../../state/mount';
 import { attackWeapon } from '../../engine/combat';
@@ -35,16 +36,28 @@ export interface HighlightOpts {
   pendingCast: PendingCast | null;
 }
 
-export function combatHighlightObjs(
+/**
+ * Les vérités du STORE qu'un élément de surbrillance demande, assemblées UNE fois : la voie affine
+ * (ci-dessous) et la voie volumique (`IsoStage.VolumetricWorld`) consomment le MÊME
+ * `buildHighlights(scene, battle, view)`. Aucune projection ici — cette fonction ne connaît ni caméra
+ * ni couleur.
+ */
+export function combatHighlightsView(get: () => GameState, battle: BattleState, opts: HighlightOpts): HighlightsView {
+  return highlightsViewAndActive(get, battle, opts).view;
+}
+
+/**
+ * La vue ET l'unité active RÉSOLUE. L'assemblage cherche déjà le combattant dont c'est le tour (la vue
+ * n'en garde que l'`activeId`, le builder restant pur) ; l'aperçu tap-1 de la voie affine a besoin de
+ * l'entité elle-même (empreinte de sa monture) — une seule résolution sert les deux.
+ */
+export function highlightsViewAndActive(
   get: () => GameState,
-  scene: Scene,
   battle: BattleState,
-  dims: Dims,
-  liftAt: (x: number, y: number, z?: number) => number,
   opts: HighlightOpts,
-): StageObj[] {
+): { view: HighlightsView; activeC: Combatant | undefined } {
   const { myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast } = opts;
-  const activeC = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+  const activeC = inBattleId(battle, battle.order[battle.turn]);
   // COOP : le tour du héros d'un AUTRE joueur s'affiche comme un tour ennemi — aucune affordance
   // (ni grille de déplacement, ni anneaux de cible, ni aperçu) ; teintes d'équipe/zones restent.
   // (Plus AUCUN indicateur de distance au sol — la portée se lit au survol : réticule = cible valide.)
@@ -69,9 +82,8 @@ export function combatHighlightObjs(
     // Soin (alliés → anneau AMI) ; flux différés (ennemis → anneau hostile, déjà cochés en vert).
     candidates: (() => {
       if (!myTurn || pendingAttack || !(pendingCleave || pendingDualStrike || pendingCast?.pickingTargets || battle.action === 'heal')) return null;
-      const active = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
       const tmode = currentTargetingMode(get);
-      const cands = active ? tmode.candidates?.(get, active) ?? [] : [];
+      const cands = activeC ? tmode.candidates?.(get, activeC) ?? [] : [];
       return {
         ids: cands.map((c: Combatant) => c.id),
         friendly: tmode.id === 'heal', // soin = anneau ami (vert)
@@ -89,11 +101,23 @@ export function combatHighlightObjs(
       return rangeM != null ? { pos: c.pos, rangeM } : null;
     })(),
   };
+  return { view, activeC };
+}
+
+export function combatHighlightObjs(
+  get: () => GameState,
+  scene: Scene,
+  battle: BattleState,
+  dims: Dims,
+  liftAt: (x: number, y: number, z?: number) => number,
+  opts: HighlightOpts,
+): StageObj[] {
+  const { view, activeC } = highlightsViewAndActive(get, battle, opts);
   const els = buildHighlights(scene, battle, view);
   const objs: StageObj[] = els.map((el) => ({ d: highlightDepth(el, dims), el: highlightJsx(el, dims) }));
   // Aperçu tap-1 (tactile) INTERCALÉ entre les grilles (walk/run) et le reste (teintes/zones/anneaux)
   // — l'ordre d'émission historique, qui départage les ex æquo de profondeur au tri stable.
-  const pv = tapPreviewObjs(battle, activeC, dims, liftAt, myTurn);
+  const pv = tapPreviewObjs(battle, activeC, dims, liftAt, opts.myTurn);
   if (!pv.length) return objs;
   const cut = els.findIndex((e) => e.kind !== 'walk' && e.kind !== 'run');
   const at = cut < 0 ? objs.length : cut;
