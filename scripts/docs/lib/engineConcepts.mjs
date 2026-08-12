@@ -145,6 +145,7 @@ export const FILE_CONCEPTS = new Map([
   ['src/engine/testPolicy.ts', 'Politique de test'],
   ['src/engine/tests.ts', 'Tests (jets de caractéristique)'],
   ['src/engine/timeCost.ts', 'Coût en temps'],
+  ['src/engine/traceLine.ts', 'Ligne de dé du journal (dériveur)'],
   ['src/engine/traits/dispatch.ts', 'Aiguillage des traits'],
   ['src/engine/traits/registry.ts', 'Registre des traits'],
   ['src/engine/traits/types.ts', 'Types de traits'],

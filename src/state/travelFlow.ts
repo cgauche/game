@@ -65,6 +65,7 @@ import type { BuiltCascadeStep } from './stepBrand';
 import type { Combatant } from '../engine/types';
 
 import type { Get, Set } from './flowTypes';
+import { traceLineOf } from '../engine/traceLine';
 
 /** Une journée du récapitulatif de voyage (audit M4) : progression + ce qui s'y est passé. */
 export interface TravelRecapDay {
@@ -1018,8 +1019,13 @@ function applyVehicleProblemToTravel(get: Get, set: Set, out: Pick<ForcedPaceDay
     const driver = partyAssisted(get().party, 'conduite-d-attelage');
     const rt = rollTest(driver?.value ?? 0, 'intermediaire', battleRng());
     // Repli IA/synchrone (`forcedPaceDay`) : aucune rangée nulle part pour ce jet — le journal est
-    // la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
-    out.lines.push(`Problème de véhicule — ${entry.label}.`, `${driver?.actor.label ?? 'Le conducteur'} tente de reprendre le contrôle : ${rt.roll}/${rt.target} → ${rt.success ? 'l’attelage est maîtrisé.' : 'ACCIDENT !'}`);
+    // la SEULE surface, et sa ligne se DÉRIVE (`traceLineOf`), porteur fondu dans le libellé (la phrase
+    // NOMME déjà le conducteur).
+    out.lines.push(`Problème de véhicule — ${entry.label}.`, traceLineOf({
+      label: `${driver?.actor.label ?? 'Le conducteur'} tente de reprendre le contrôle`,
+      roll: rt.roll, target: rt.target, success: rt.success,
+      issue: rt.success ? 'l’attelage est maîtrisé' : 'ACCIDENT',
+    }));
     if (rt.success) return { vehicleOut: false, vehicleLame: false };
     entry = rollVehicleProblem(96); // 96-00 = Accident (table verbatim)
   } else if (entry.id === 'casse') {
@@ -1156,11 +1162,15 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
       if (st) return { consequences: freeCons(j), insert: [st] };
     }
     // Repli SANS acteur joueur (pas d'étape insérée ci-dessus) : aucune rangée nulle part pour ce jet
-    // — le journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement). MÊME
-    // valeur que la surface influençable : le conducteur soutenu (`forcedPaceDriver`), jamais une
-    // grandeur seconde. Sans conducteur du tout, il ne reste que la valeur nue de l'acteur de l'étape.
+    // — le journal est la SEULE surface, et sa ligne se DÉRIVE (`traceLineOf`). MÊME valeur que la
+    // surface influençable : le conducteur soutenu (`forcedPaceDriver`), jamais une grandeur seconde.
+    // Sans conducteur du tout, il ne reste que la valeur nue de l'acteur de l'étape.
     const rt = rollSansPilote(get, driver?.actor ?? hero, driver?.value ?? testValue(hero!, 'conduite-d-attelage'), 'intermediaire', battleRng());
-    j.push(`${name} tente de reprendre le contrôle : ${rt.roll}/${rt.target} → ${rt.success ? 'l’attelage est maîtrisé.' : 'ACCIDENT !'}`);
+    j.push(traceLineOf({
+      label: `${name} tente de reprendre le contrôle`,
+      roll: rt.roll, target: rt.target, success: rt.success,
+      issue: rt.success ? 'l’attelage est maîtrisé' : 'ACCIDENT',
+    }));
     if (rt.success) { finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, vehicleOut: false, vehicleLame: false }); return { consequences: freeCons(j) }; }
     entry = rollVehicleProblem(96);
   } else if (entry.id === 'casse') {

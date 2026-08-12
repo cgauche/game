@@ -44,6 +44,7 @@ import { traitById, talentIdByLabel, findTalentById, findDomainById, findGodById
 import { effectiveTalents, talentPassiveMods } from './talentEffects';
 import { effectiveEntry } from './variants';
 import { ritualReduction, type RitualReduced } from './grimoire';
+import { traceLineOf } from './traceLine';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
 export interface SpellLike {
@@ -850,9 +851,12 @@ export function counterspellOutcomeFrom(counter: Combatant, counterT: TestResult
     dispelled,
     counter: nue,
     casterNetSL: net,
-    log: dispelled
-      ? `Contre-sort de ${counter.label} (${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : le Sort est DISSIPÉ.`
-      : `Contre-sort de ${counter.label} (${counterT.roll}/${counterT.target}, DR ${counterT.sl}) : insuffisant — l'incantation se résout à DR ${net}.`,
+    // Le jet du contre-lanceur n'a AUCUNE rangée : sa ligne se DÉRIVE (`traceLineOf`), au patron unique.
+    log: traceLineOf({
+      label: `Contre-sort de ${counter.label}`,
+      roll: counterT.roll, target: counterT.target, sl: counterT.sl, success: dispelled,
+      issue: dispelled ? 'le Sort est DISSIPÉ' : `insuffisant — l'incantation se résout à DR ${net}`,
+    }),
   };
 }
 

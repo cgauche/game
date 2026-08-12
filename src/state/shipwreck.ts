@@ -31,6 +31,7 @@ import { possessionLabel } from '../engine/possession';
 import type { CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import { voyageStakeRef } from '../data';
+import { traceLineOf } from '../engine/traceLine';
 
 /** Lieu le plus proche d'un point de la carte (distance euclidienne sur `pos`). */
 function nearestPlaceTo(map: WorldMap, pos: { x: number; y: number }): MapPlace | undefined {
@@ -128,10 +129,13 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
     const lines: string[] = [];
     for (const h of swimmers) {
       // Aucune rangée nulle part sur ce chemin (repli sans pilote humain, aucune cascade démarrée) —
-      // le journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
+      // le journal est la SEULE surface, et sa ligne se DÉRIVE (`traceLineOf`) comme toute ligne de dé.
       const value = testValue(h, 'natation', 'force');
       const t = rollSansPilote(get, h, value, diff, rng);
-      lines.push(`${h.label} — Natation (${DIFFICULTY_LABELS[diff]}) : ${t.roll}/${t.target} → ${t.success ? 'rejoint la surface et nage vers la côte.' : 'emporté par les flots (noyé, LDB 18 l.344).'}`);
+      lines.push(traceLineOf({
+        who: h.label, label: `Natation (${DIFFICULTY_LABELS[diff]})`, roll: t.roll, target: t.target, success: t.success,
+        issue: t.success ? 'rejoint la surface et nage vers la côte' : 'emporté par les flots (noyé, LDB 18 l.344)',
+      }));
       if (t.success) { h.outOfRencontre = false; h.exitReason = undefined; } else h.dead = true;
     }
     set({ party: [...get().party] });

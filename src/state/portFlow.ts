@@ -44,6 +44,7 @@ import type { CascadeStep } from './pendings';
 import { openPartyTest, openWorldTest, freeCons } from './rollSeam';
 import { actorIn } from './combatants';
 import { scheduleFlowTimer } from './combatTimers';
+import { traceLineOf } from '../engine/traceLine';
 import type { Get, Set } from './flowTypes';
 
 /** Une offre d'achat générée à l'escale (l.319-331) — Enc disponible + prix de base NOTÉ (le Vin fige son 3d10). */
@@ -371,11 +372,16 @@ registerCascadeApplier(PORT_SELL_GOSSIP_KIND, (get, set, step) => {
   if (!st || !vessel || !lot) return {};
   const label = findCargoById(lot.cargoId)?.label ?? lot.cargoId;
   const actor = step.actorId ? actorIn(get(), step.actorId) : undefined;
+  // Le Test de Ragot n'a pas de rangée propre : sa ligne se DÉRIVE (`traceLineOf`), jamais ré-imprimée à la main.
+  const gossip = (issue: string) => freeCons([traceLineOf({
+    who: actor?.label ?? 'Le groupe', label: `Ragot — ${label}`,
+    roll: step.result!.roll, target: step.result!.target, sl: step.result!.sl, success: step.result!.success, issue,
+  })]);
   if (!step.result.success) {
-    return { consequences: freeCons([`${label} — ce port ${sellRelation(st.port, lot.cargoId) === 'surplus' ? 'en regorge' : 'en produit'} : le Test de Ragot (${actor?.label ?? '?'} ${step.result.roll}/${step.result.target}) échoue — aucun acheteur trouvé.`]) };
+    return { consequences: gossip(`échoue — aucun acheteur trouvé (ce port ${sellRelation(st.port, lot.cargoId) === 'surplus' ? 'en regorge' : 'en produit'})`) };
   }
   chainStep(get, () => openPortSellBuyerStep(get, set, cargoIndex, lot.enc, false, 1));
-  return { consequences: freeCons([`${actor?.label ?? 'Le groupe'} — Ragot : ${step.result.roll}/${step.result.target} → un acheteur potentiel est approché.`]) };
+  return { consequences: gossip('un acheteur potentiel est approché') };
 });
 
 /** VENTE d'un lot de cargaison (l.351-397) : trouver un acheteur (relation du port au bien),

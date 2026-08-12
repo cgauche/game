@@ -849,3 +849,40 @@ describe('Navigation du jour — base NUE + Soutien NOMMÉ, cible invariante (#1
     expect(inexplique(nav), 'aucune chip « autres » : États compris, tout est nommé').toBe(0);
   });
 });
+
+/**
+ * VOLET MONO du journal-projection (#1262 V3 Lj) sur le CHEMIN RÉEL : une journée de descente en
+ * route COMMANDÉE se joue d'un bloc par le pilote IMMÉDIAT (`riverAutoResolves` → `runCascadeImmediate`),
+ * donc AUCUNE fenêtre ne montre les dés. Avant ce lot, ces jets mono étaient MUETS au journal (seule
+ * une bande en laissait trace, #1281). Le dériveur les rend, une fois chacun.
+ *
+ * `game-trigger-cadence-aware-no-silent` : la cadence commandée supprime des INTERRUPTIONS, jamais des
+ * TRACES.
+ */
+describe('#1262 V3 Lj — journée fluviale COMMANDÉE : chaque jet mono laisse SA ligne de dé (aucune fenêtre)', () => {
+  /** Lignes du journal au patron du dériveur (`{qui —} libellé : dé/cible → issue`). */
+  const traceLines = () => get().journal.filter((l) => / : \d+\/\d+ → /.test(l));
+
+  it('aucune fenêtre ne s’ouvre sur le jour, et ses jets sont TRACÉS (un par jet, zéro doublon)', () => {
+    launch();
+    seedBattleRng(7);
+    get().startTravel('r-reik', 'barge', { cadence: 'commande' });
+    // Route COMMANDÉE : la journée s'est résolue d'un bloc — aucune cascade de JOUR n'est restée ouverte
+    // (une halte de nuit peut suivre : c'est une AUTRE surface, elle ne montre pas les dés du jour).
+    expect(get().pendingCascade?.purpose ?? null, 'aucune modale de JOUR').not.toBe('travelDay');
+    const lignes = traceLines();
+    expect(lignes.length, `journal :\n${get().journal.join('\n')}`).toBeGreaterThanOrEqual(2);
+    expect(new Set(lignes).size, 'aucune ligne de dé en DOUBLE (le jet ne se redit pas)').toBe(lignes.length);
+    // Chaque ligne porte le dé, la cible ET l'issue — jamais un dé nu.
+    for (const l of lignes) expect(l, l).toMatch(/^.+ : \d+\/\d+ → .+\.$/);
+  });
+
+  it('cadence JOUR-PAR-JOUR (la fenêtre s’ouvre) : AUCUNE ligne de dé au journal — la rangée les montre', () => {
+    launch();
+    seedBattleRng(7);
+    get().startTravel('r-reik', 'barge'); // défaut = jour-par-jour → cascade interactive
+    expect(get().pendingCascade?.purpose).toBe('travelDay');
+    drainCascade(); // le joueur roule chaque étape DANS la fenêtre
+    expect(traceLines(), 'la fenêtre a montré les dés : le journal ne les redit pas').toEqual([]);
+  });
+});

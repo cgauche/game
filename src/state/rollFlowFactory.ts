@@ -125,7 +125,7 @@ export interface RollFlowLens<P extends PendingBase, Slot extends PendingBase = 
  */
 export type RollOutcome = TestOutcome;
 
-export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = P> {
+export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = P, Ctx = void> {
   /** Clé du pending dans le store (ex. `'pendingTrample'`). */
   key: keyof GameState & string;
   /**
@@ -156,6 +156,19 @@ export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = 
    * le « a-t-il été lancé ? » reste porté par `rolled(slot)` (Chance : LDB 12, jet propre raté, 1× max).
    */
   outcome: (slot: Slot) => RollOutcome;
+  /**
+   * ISSUE JOURNALISÉE du flux — la MÊME donnée que la fenêtre montre (`describeX` de `flowOutcomes`),
+   * DÉCLARÉE ici et rendue par le verbe terminal `apply` : le site d'acquittement ne compose plus la
+   * ligne, il acquitte. `ctx` porte ce que seule l'APPLICATION connaît (le DR cumulé réalisé, le nom
+   * résolu de l'arme) — des données, jamais du texte. Chaîne vide / `null` = rien à journaliser.
+   */
+  issue?: (p: P, s: GameState, ctx: Ctx) => string | string[] | null | undefined;
+  /**
+   * CANAL de rendu de l'issue : `'log'` (journal narratif — défaut) ou `'battle'` (journal de combat,
+   * `ev()`/`battle.log`) où `apply` REND les lignes sans les écrire : le site les tisse dans son propre
+   * `set({ battle })` atomique (une écriture séparée écraserait le `battle` qu'il tient déjà).
+   */
+  issueChannel?: 'log' | 'battle';
   /** Chance « +1 DR » (absent → le flux ne l'offre pas). `guard` → cas interdits (ex. Test binaire). */
   bonus?: { guard?: (slot: Slot) => boolean; derive: (s: GameState, slot: Slot, actor: Combatant, p?: P) => Partial<Slot> | null };
   /**
@@ -281,6 +294,17 @@ export interface RollFlowHandlers {
    *  de possession (`FLOW_VERBS.jetOwner`) au site qui dépense. `undefined` si le pending est fermé,
    *  le `pid` inconnu, ou l'acteur absent de l'état. */
   actorOf: (get: Get, pid?: string) => Combatant | undefined;
+  /**
+   * VERBE TERMINAL — acquittement : DÉRIVE l'issue du flux (`spec.issue`) et la rend, UNE fois, sur
+   * son canal (`spec.issueChannel`). C'est LE point de journalisation des flux à fenêtre : un site
+   * d'acquittement ne compose plus de ligne, il appelle `apply` (avant de fermer le pending — l'issue
+   * se lit sur le pending qui l'a produite).
+   *
+   * `p` : pending FOURNI (voie sans fenêtre — l'IA qui rejoue le même flux sans pending posé) ; sinon
+   * le pending du store. `ctx` : les données que seule l'application connaît (`spec.issue`).
+   * Renvoie TOUJOURS les lignes (le canal `'battle'` laisse le site les tisser dans son `set`).
+   */
+  apply(get: Get, opts?: { p?: PendingBase; ctx?: unknown }): string[];
   cancel: (get: Get, set: Set) => void;
   /** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER un Test raté —
    *  autorisé même après la relance de Chance, répétable (chaque usage corrompt). Héros only. */
@@ -422,7 +446,7 @@ function opDarkPact<P extends PendingBase>(
  * MULTI → `participants[pid]` (ou le 1er), ré-inséré via la lentille `spec.multi`. Le câblage des
  * 7 verbes est écrit UNE fois — plus de `makeMultiRollFlow` qui recopiait la structure.
  */
-export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P>(spec: RollFlowSpec<P, Slot>): RollFlowHandlers {
+export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P, Ctx = void>(spec: RollFlowSpec<P, Slot, Ctx>): RollFlowHandlers {
   const pendingOf = (s: GameState) => s[spec.key] as P | null | undefined;
   const touch = spec.touch ?? touchActors;
   const locate = (set: Set, get: Get, p: P, pid?: string): { slot: Slot; commit: Commit<Slot> } | null => {
@@ -503,6 +527,18 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       if (!spec.multi) return p as unknown as PendingBase;
       const slots = spec.multi.slots(p);
       return (pid != null ? slots.find((x) => spec.multi!.idOf(x) === pid) : slots[0]) ?? null;
+    },
+    // GOULOT d'acquittement des flux à fenêtre : l'issue est DÉRIVÉE de la déclaration du flux
+    // (`spec.issue`), jamais composée au site. La LIGNE DE DÉ n'y est pas ré-émise : la fenêtre l'a
+    // montrée (les jets SANS fenêtre reçoivent la leur du dériveur, au goulot des cascades).
+    apply(get, opts) {
+      const s = get();
+      const p = (opts?.p as P | undefined) ?? pendingOf(s);
+      if (!p || !spec.issue) return [];
+      const out = spec.issue(p, s, opts?.ctx as Ctx);
+      const lines = (Array.isArray(out) ? out : [out]).filter((l): l is string => !!l);
+      if (spec.issueChannel !== 'battle') for (const l of lines) s.log(l);
+      return lines;
     },
     actorOf(get, pid) {
       const s = get(); const p = pendingOf(s); if (!p) return undefined;

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ESLint } from 'eslint';
 
 /**
  * Cliquet du composeur d'affichage (#295, verrou 2) — le canal `journal:` d'un `CascadeApplier` a
@@ -104,33 +105,29 @@ describe('cliquet composeur — canal journal: déprécié des CascadeApplier (#
  * engine/provisions ; engine/travel), qu'un nouveau flow aurait franchi en silence. Tout nouveau
  * fichier naît couvert (baseline 0).
  *
- * BASELINE ZÉRO pour tout fichier sans re-print. BASELINE > 0 = STOCK GELÉ par fichier — soit sites
- * GARDÉS nominativement (journal = SEULE surface du jet : replis IA/synchrones, sous-jets internes
- * sans étape de cascade propre, adversaires sans PJ, Test opposé inline défenseur non piloté par un
- * humain — doctrine #295), soit stock #410 à RÉSORBER (offenders révélés par l'inversion). Toute
- * hausse au-delà = régression ; toute baisse doit ABAISSER la baseline (cliquet décroissant).
+ * BASELINE ZÉRO pour tout fichier sans re-print. BASELINE > 0 = STOCK GELÉ par fichier — les sites
+ * que le dériveur (`engine/traceLine.ts`) ne peut PAS rendre (raison mesurée en regard de chacun).
+ * Toute hausse au-delà = régression ; toute baisse doit ABAISSER la baseline (cliquet décroissant).
+ *
+ * CE QUE CE SCAN NE VOIT PAS, dit sans détour (il ne lit qu'un motif de TEXTE `${x.roll}/${x.target}`) :
+ * une recopie du dé par un autre gabarit (`${roll} sur ${target}`, concaténation, `join`), une recopie
+ * routée par une clé de catalogue (`t('out.…')` — le garde i18n ne fait que compter des littéraux FR
+ * par fichier, il ne juge AUCUN contenu), et tout re-print hors `src/state`/`src/engine`. Le dériveur
+ * lui-même échappe au motif par construction : c'est le volet « canal » (lint AST) plus bas qui tient
+ * la porte d'entrée, pas ce compteur.
  */
 const CONTENT_DIRS = ['src/state', 'src/engine'];
 
-/** Baseline par fichier — voir doc ci-dessus. Sites gardés nominativement (#295) et stock #410. */
+/** Baseline par fichier — voir doc ci-dessus. Reste 9 occurrences dans 4 fichiers : les IRRÉDUCTIBLES
+ *  au dériveur, chacun avec SA raison mesurée (#1262 V3 Lj). */
 const CONTENT_BASELINE: Record<string, number> = {
-  // #295 — sites GARDÉS nominativement (journal = SEULE surface du jet)
-  'src/state/seaVoyageFlow.ts': 1, // redémarrage vapeur (`runRestart`) : équipage/ambiance hors modale — l'Exposition est passée en étapes influençables.
-  'src/state/travelFlow.ts': 4, // bêtes de l'attelage (×2, sans rangée dédiée) + reprise de contrôle IA (×2, repli sans acteur joueur).
-  'src/state/riverVoyageFlow.ts': 4, // éclats/calfatage/renflouage IA (repli sans pilote humain, ×4) — le redressement est passé en étapes Round par Round.
-  'src/state/shipwreck.ts': 1, // Natation, repli SANS pilote humain à bord (aucune cascade démarrée).
-  'src/state/pursuitFlow.ts': 1, // Mouvement des adversaires (pas des PJ, aucune rangée).
-  'src/state/combat/triggeredTest.ts': 2, // Test opposé INLINE (attaquant ET défenseur, aucun piloté humain) — SEULE surface des deux jets.
-  // #1281 `cascade.autoResolvedTraceLines` (rangée RÉSOLUE D'OFFICE — aucune fenêtre ne s'ouvre dessus,
-  // le journal est SA SEULE surface) n'apparaît PAS ici : son patron vit au CATALOGUE
-  // (`i18n/messages/fr.ts`, `casc.autoRowTrace`), hors du périmètre de ce scan. COUVERTURE, dite : tout
-  // re-print routé par `t(...)` échappe à ce cliquet — c'est le garde i18n qui tient cette surface.
-  // #410 (2026-07-13) — stock révélé par l'inversion, GELÉ, à résorber (doctrine #295)
-  'src/state/merchantFlow.ts': 2, // re-print roll/target hors rangée (l.206,226) — à migrer freeCons/rangée dédiée.
-  'src/state/portFlow.ts': 2, // re-print roll/target hors rangée (l.361,364) — à migrer freeCons/rangée dédiée.
-  'src/engine/magic.ts': 2,
-  'src/engine/provisions.ts': 2,
-  'src/engine/travel.ts': 1,
+  // #295 — sites GARDÉS nominativement (journal = SEULE surface du jet) que le dériveur ne peut PAS rendre :
+  'src/state/seaVoyageFlow.ts': 1, // redémarrage vapeur (`runRestart`) : la ligne porte le DR CUMULÉ du Test étendu (`lastDR`), pas le DR du jet — le patron dirait un autre nombre.
+  'src/state/travelFlow.ts': 2, // bêtes de l'attelage (×2) : porteur SANS identité, dé parenthétique en justification d'un effet déjà narré (l'ordre phrase/issue s'inverserait).
+  'src/state/riverVoyageFlow.ts': 4, // éclats/calfatage/renflouage IA (×4) : jet INCISÉ dans une narration d'ÉVÉNEMENT — il faudrait scinder en deux lignes.
+  'src/state/combat/triggeredTest.ts': 2, // Test opposé INLINE : DEUX jets sur UNE ligne — exigerait un dériveur d'OPPOSÉ (inexistant).
+  // RÉSORBÉS dans le dériveur (#1262 V3 Lj) : stock #410 (merchantFlow ×2, portFlow ×2, engine/magic ×2,
+  // engine/provisions ×2, engine/travel ×1) + 4 sites #295 (pursuitFlow, shipwreck, travelFlow ×2).
 };
 
 function jetEchoCount(src: string): number {
@@ -178,5 +175,84 @@ describe('cliquet composeur — CONTENU des conséquences : re-print roll/target
   it('fail-closed : le compteur détecte un re-print roll/target SYNTHÉTIQUE hors littéral journal:', () => {
     const regressed = "  return { consequences: freeCons([`${hero.name} : ${step.result.roll}/${step.result.target} → réussi.`]) };";
     expect(jetEchoCount(regressed)).toBe(1);
+  });
+});
+
+/**
+ * VOLET ISSUE (#1262 V3 Lj) — le canal de l'ISSUE d'un jet. Le murage par export est impossible
+ * (`get().log` sert le narratif légitime, `describeX` sert AUSSI l'affichage des fenêtres de
+ * `src/ui`) : la police est un LINT D'IMPORT AST (`no-restricted-imports`, `eslint.config.js`, patron
+ * `ownsLocally`), borné à `src/state` — la couche qui décidait — et MESURÉ ici sur la config RÉELLE
+ * (API ESLint, jamais une copie de règle : une regex maison laissait passer les guillemets doubles).
+ *
+ * Deux goulots exemptés, nommés, et RIEN d'autre : la DÉCLARATION d'issue d'un flux à fenêtre
+ * (`rollFlowSpecs.ts`, `spec.issue`, rendue par le verbe `apply`) et la conséquence d'étape de
+ * cascade (`encounterPsychFlow.ts` → `freeCons` → `commitStep`).
+ *
+ * CE QUE CETTE POLICE NE VOIT PAS, mesuré (cf. les deux derniers tests, qui l'attestent au lieu de
+ * l'affirmer) : l'import DYNAMIQUE (`await import('./flowOutcomes')`), le `require()`, et surtout
+ * toute recopie qui ne passe PAS par un import — réécrire la phrase à la main, ou la router par la
+ * clé de catalogue (`t('out.reload', …)`). Aucune garde du dépôt ne tient cette dernière porte : le
+ * garde i18n compte des littéraux FR par fichier, il ne juge aucun contenu. La limite est écrite ici
+ * plutôt que couverte à tort.
+ */
+const ISSUE_GOULOTS = [
+  'src/state/rollFlowSpecs.ts', // DÉCLARATION `spec.issue` des flux à fenêtre → verbe `apply`
+  'src/state/encounterPsychFlow.ts', // conséquence d'étape (freeCons → commitStep)
+];
+
+/** Fichier de sonde SOUS le périmètre de la règle (aucun goulot, hors test). */
+const SOUS_LA_REGLE = 'src/state/__sonde-canal-issue.ts';
+const eslint = new ESLint({ cwd: ROOT });
+
+/** Occurrences de la règle d'import restreint sur un CODE donné (config réelle). */
+async function violationsCanal(code: string, filePath = SOUS_LA_REGLE): Promise<number> {
+  const [res] = await eslint.lintText(code, { filePath, warnIgnored: false });
+  return res.messages.filter((m) => m.ruleId === 'no-restricted-imports').length;
+}
+
+describe('cliquet du canal — l’ISSUE d’un jet ne se compose qu’aux GOULOTS (#1262 V3 Lj)', () => {
+  it('src/state RÉEL : aucun fichier ne compose d’issue hors goulot (la population EST le contrat)', async () => {
+    // Pré-filtre par SOUS-CHAÎNE nue (« flowOutcomes ») — aucune forme d'import n'y échappe, et seuls
+    // les candidats sont lintés (linter tout `src/state` coûte ~8 s à chaque run pour le même verdict).
+    const candidats: string[] = [];
+    const walk = (dir: string) => {
+      for (const e of readdirSync(dir)) {
+        const p = join(dir, e);
+        if (statSync(p).isDirectory()) walk(p);
+        else if (/\.tsx?$/.test(e) && readFileSync(p, 'utf8').includes('flowOutcomes')) candidats.push(p);
+      }
+    };
+    walk(join(ROOT, 'src', 'state'));
+    const res = await eslint.lintFiles(candidats);
+    const offenders = res.flatMap((r) => r.messages
+      .filter((m) => m.ruleId === 'no-restricted-imports')
+      .map(() => relative(ROOT, r.filePath).split('\\').join('/')));
+    expect(offenders, 'Issue composée hors goulot — déclarer `spec.issue` et acquitter par `flow.apply` :').toEqual([]);
+  });
+
+  it('les GOULOTS sont exemptés NOMMÉMENT (et eux seuls) : le même import y passe', async () => {
+    for (const g of ISSUE_GOULOTS) {
+      expect(await violationsCanal("import { describeReload } from './flowOutcomes';", g), g).toBe(0);
+    }
+  });
+
+  it('fail-closed : la règle MORD, quelles que soient les guillemets, la forme d’import ou l’alias', async () => {
+    expect(await violationsCanal("import { describeReload } from './flowOutcomes';"), 'guillemets simples').toBe(1);
+    expect(await violationsCanal('import { describeReload } from "./flowOutcomes";'), 'guillemets DOUBLES').toBe(1);
+    expect(await violationsCanal("import * as FO from './flowOutcomes';\nexport const x = FO;"), 'namespace').toBe(1);
+    expect(await violationsCanal("import { describeReload } from '../flowOutcomes';"), 'chemin remontant').toBe(1);
+    expect(await violationsCanal("import { describeReload } from '@/state/flowOutcomes';"), 'alias').toBe(1);
+    expect(await violationsCanal("export { describeReload } from './flowOutcomes';"), 're-export').toBe(1);
+    expect(await violationsCanal("import { ev } from './combatLog';\nexport const w = ev;"), 'un autre import ne mord pas').toBe(0);
+  });
+
+  it('LIMITES ASSUMÉES, mesurées : import dynamique, `require`, et recopie par CLÉ i18n passent', async () => {
+    expect(await violationsCanal("export const f = async () => (await import('./flowOutcomes')).describeReload;"), 'import dynamique').toBe(0);
+    expect(await violationsCanal("const FO = require('./flowOutcomes');\nexport const y = FO;"), 'require').toBe(0);
+    expect(
+      await violationsCanal("import { t } from '../i18n';\nexport const z = () => t('out.reload', { name: 'x', weapon: 'w', after: 1, reload: 2 });"),
+      'recopie par clé de catalogue : AUCUNE garde ne la tient — dit au JSDoc ci-dessus',
+    ).toBe(0);
   });
 });

@@ -69,4 +69,28 @@ export default tseslint.config(
       }],
     },
   },
+  {
+    // POLICE DU CANAL D'ISSUE (#1262 V3 Lj) : la ligne d'ISSUE d'un jet se DÉCLARE au flux
+    // (`RollFlowSpec.issue`, rendue par le verbe `apply`) — un flux de `src/state` n'importe plus un
+    // `describeX` pour composer sa propre ligne (c'est le doublon modale ↔ journal que le lot ferme).
+    // Ce n'est PAS un verrou : `flowOutcomes` reste exporté (les fenêtres de `src/ui` l'affichent) —
+    // l'import reste écrivable, la CI le refuse. Règle AST : insensible aux guillemets, à l'alias et
+    // à la forme d'import (namespace, `export … from`). Ce qu'elle N'attrape PAS est dit au JSDoc du
+    // volet « canal » de `cascade-consequence-guard.test.ts`, qui la mesure sur la config réelle.
+    files: ['src/state/**/*.ts', 'src/state/**/*.tsx'],
+    ignores: [
+      'src/state/flowOutcomes.ts', // la source elle-même
+      'src/state/rollFlowSpecs.ts', // GOULOT : déclaration `spec.issue` des flux à fenêtre
+      'src/state/encounterPsychFlow.ts', // GOULOT : conséquence d'étape (freeCons → commitStep)
+      'src/state/**/*.test.ts', 'src/state/**/*.test.tsx', // les tests mesurent les describeX eux-mêmes
+    ],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [{
+          group: ['**/flowOutcomes'],
+          message: 'Canal d’issue (#1262 V3 Lj) : déclarer `issue` au flux (`RollFlowSpec.issue`) et acquitter par `flow.apply(get, …)` — un site ne rédige plus sa ligne d’issue.',
+        }],
+      }],
+    },
+  },
 );

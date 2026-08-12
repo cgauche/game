@@ -27,12 +27,13 @@ import { MINUTES_PER_DAY } from '../engine/clock';
 import { findTrappingById, trappings, findVehicleById, findCreatureById, vehicles, creatures, combatStakeRef, type TrappingData } from '../data/index';
 import { slugId } from '../data/slug';
 import { MERCHANTS } from './merchants/index';
-import { describeBargain } from './flowOutcomes';
+import { FLOWS } from './rollFlowSpecs';
 import { registerCascadeApplier, startCascade } from './cascade';
 import { freeCons, openPartyTest } from './rollSeam';
 import { actorIn } from './combatants';
 import type { CascadeStep } from './pendings';
 import { addPossession } from './possessionsFlow';
+import { traceLineOf } from '../engine/traceLine';
 
 import type { Get, Set } from './flowTypes';
 
@@ -171,6 +172,13 @@ function partyAvailabilityBonus(party: Combatant[], gossipDay = false): number {
   return availabilitySearchBonus({ coherentCareer: coherent, gossipDay });
 }
 
+/** Ligne de journal d'un tirage de Disponibilité (LDB 59 l.50) — le dé n'a AUCUNE rangée : le journal
+ *  est sa seule surface, la ligne se DÉRIVE (`traceLineOf`) comme toutes les autres. Source unique du
+ *  pré-tirage affiché (`openStockRevealCascade`) ET de la conséquence de l'étape. Le tirage n'est pas
+ *  un Test de Compétence : c'est l'ARTICLE qui nomme la ligne, avec la nature du dé. */
+function stockTraceLine(l: StockLine): string {
+  return traceLineOf({ label: `${l.label} — Disponibilité`, roll: l.test!.roll, target: l.test!.target, success: true, issue: `disponible ×${l.qty}` });
+}
 /** Instantané de stock FRAIS d'un archétype à un instant `now`, avec un bonus de Disponibilité (Carrière
  *  cohérente + éventuelle recherche active, LDB 59 l.50). PUR (aucun `set`/`log`) — SOURCE UNIQUE de calcul,
  *  seedée déterministe pour un `(entityId, période, gossipDay)` donné : le siège qui la lance (local inline
@@ -262,7 +270,7 @@ registerCascadeApplier(MERCHANT_STOCK_KIND, (get, set, step) => {
     return { merchant: { entityId, archetype, settlement, resaleRate, buyMarkup, backdrop, stock, cart: [], bargainLocked: persisted?.bargainLocked ?? false } };
   });
   return {
-    consequences: freeCons(tested.map((l) => `${l.label} — d100 ${l.test!.roll}/${l.test!.target} ✔ ×${l.qty}`)),
+    consequences: freeCons(tested.map(stockTraceLine)),
   };
 });
 
@@ -282,7 +290,7 @@ function openStockRevealCascade(
   const ent = get().scene?.entities.find((e) => e.id === entityId);
   const outcome = arch
     ? computeFreshStockLines(get, ent, arch, entityId, settlement, now, restockPeriod, gossipDay)
-        .tested.map((l) => `${l.label} — d100 ${l.test!.roll}/${l.test!.target} ✔ ×${l.qty}`)
+        .tested.map(stockTraceLine)
     : undefined;
   const step: CascadeStep = {
     id: `${MERCHANT_STOCK_KIND}:${entityId}:${now}`,
@@ -820,12 +828,13 @@ export function bargainConfirm(get: Get, set: Set): void {
   const botch = !won && drNet >= SL_ASTOUNDING;
   const outcome = { won, drNet, negotiator: pb.negotiator };
   const patch = pb.mode === 'buy' ? { bargainBuy: outcome } : { bargainSell: outcome };
+  // ACQUITTEMENT par le goulot (`FLOWS.bargain.apply`) : le verdict est déclaré AU FLUX (`spec.issue`),
+  // journalisé là — ici on acquitte, avant de fermer le pending qui le porte.
+  FLOWS.bargain.apply(get);
   set((s) => ({
     pendingBargain: null,
     merchant: s.merchant ? { ...s.merchant, ...patch, soured: s.merchant.soured || botch } : s.merchant,
   }));
-  // Verdict = source UNIQUE avec la popin (describeBargain).
-  get().log(describeBargain(pb) + '.');
 }
 
 /** Talent « Détection d'artefact » (LDB 10 l.310-312) : Test d'Intuition au toucher — succès =

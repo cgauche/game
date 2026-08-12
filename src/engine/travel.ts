@@ -32,6 +32,7 @@ import {
   type Allure, ALLURE_KMH_PER_M, mountedSpeedKmh, partyMounts, mountProfileById, lameLedCapKmh,
 } from './mountTravel';
 import { VehicleData } from './types';
+import { traceLineOf } from './traceLine';
 import vehiclesJson from '../data/vehicles.json';
 
 /** FOYER UNIQUE des véhicules/embarcations (`src/data/vehicles.json`), data-driven (cf. `VehicleData`). */
@@ -193,7 +194,13 @@ export function forcedMarchTest(c: Combatant, rng: RNG = defaultRNG): ForcedMarc
   const t = rollTest(base, 'intermediaire', rng);
   const d = testDetail('Résistance', base, t);
   const r = applyForcedMarch(c, t.success);
-  return { line: `${c.label} — marche forcée : Test de Résistance ${t.roll}/${t.target} → ${t.success ? "il tient l'allure." : `ÉCHEC, +${r.gained} Exténué${r.gained > 1 ? ' (surchargé)' : ''}.`}`, gained: r.gained, d };
+  // Test résolu SANS fenêtre (jour de marche) : sa ligne se DÉRIVE (`traceLineOf`).
+  const line = traceLineOf({
+    who: c.label, label: 'marche forcée : Test de Résistance',
+    roll: t.roll, target: t.target, sl: t.sl, success: t.success,
+    issue: t.success ? "il tient l'allure" : `ÉCHEC, +${r.gained} Exténué${r.gained > 1 ? ' (surchargé)' : ''}`,
+  });
+  return { line, gained: r.gained, d };
 }
 
 /** Fatigue d'Encombrement d'une journée de voyage à pied (LDB 61 p.295 — `travelFatigue` enfin

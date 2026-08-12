@@ -6,7 +6,7 @@
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
 import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, CascadeTableDone, PendingMiscastStep, CascadeStep, CascadeRoll, BatchParticipant, PendingCounterspell, CounterParticipant, CounterDeclaration } from './pendings';
-import { describeReload } from './flowOutcomes';
+import { FLOWS } from './rollFlowSpecs';
 import { toRecapLines } from './recapLine';
 import { Combatant, HitLocation, Weapon, Difficulty, type ShipPoste, type EffectSource } from '../engine/types';
 import { rule } from '../engine/policy';
@@ -7225,9 +7225,11 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       const progress = Math.max(0, progressBefore + test.sl + drBonus); // Test étendu : cumul, plancher 0
       if (progress >= reloadTarget) { enemy.loaded = true; enemy.reloadProgress = 0; enemy.chambered = magazineSize(rw); }
       else enemy.reloadProgress = progress;
-      // Issue = source UNIQUE avec le flux joueur (describeReload : popin ↔ journal).
+      // ISSUE dérivée par le MÊME goulot que le flux joueur (`FLOWS.reload.apply`, canal COMBAT) : la voie
+      // IA n'ouvre aucune fenêtre, elle FOURNIT son pending — même déclaration, même ligne.
       const pr: PendingReload = { actorId: enemy.id, actorName: enemy.label, weaponUid: rw.uid ?? '', reload: reloadTarget, progressBefore, skillValue, difficulty: 'intermediaire', roll: test.roll, target: test.target, sl: test.sl, success: test.success };
-      set({ battle: { ...markActed(get, set, battle), log: [...battle.log, ev('reload', describeReload(pr, progress, rw.label), enemy.id)] } });
+      const aiReloadIssue = FLOWS.reload.apply(get, { p: pr, ctx: { after: progress, weapon: rw.label } });
+      set({ battle: { ...markActed(get, set, battle), log: [...battle.log, ...evLines(aiReloadIssue, 'reload', enemy.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
       scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'afterMove'));
       return;

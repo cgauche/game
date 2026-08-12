@@ -61,6 +61,7 @@ import { rule } from '../engine/policy';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { resolveFrenzyEntry, calmeValue, spendResolveForPsychImmunity } from '../engine/psychology';
 import { t } from '../i18n';
+import { describeTest, describeBargain, describeReload, describeStateRecovery, describeFrenzy } from './flowOutcomes';
 import { findSpellById, findSkillById } from '../data/index';
 
 /** Re-dérive une attaque FIGÉE avec un jet d'attaquant modifié (Chance +1 DR / Résilience / dé
@@ -1592,6 +1593,11 @@ export const FLOWS = {
       return { result: resolveFrenzyEntry(effectiveChar(actor, 'force-mentale'), battleRng()) };
     },
     outcome: (p) => testOutcome(p.result),
+    // ISSUE au goulot (`apply`) — canal COMBAT (`frenzyConfirm` la tisse dans son `set({ battle })`).
+    // Le porteur est garanti au site (`if (!c) return` avant l'appel) : le repli couvre le seul appel
+    // hors combat, où le flux n'a pas d'issue à dire.
+    issueChannel: 'battle',
+    issue: (p, s) => describeFrenzy(p, actorIn(s, p.combatantId)?.label ?? ''),
   }),
 
   /** Approche d'une source de Peur (LDB 21 l.29) : Test SEC de Calme Intermédiaire (+0) pour oser
@@ -1743,7 +1749,7 @@ export const FLOWS = {
   }),
 
   /** Rechargement (LDB 63 l.28-29) : Test ÉTENDU de Projectiles — le DR se cumule à l'Appliquer. */
-  reload: makeRollFlow<PendingReload>({
+  reload: makeRollFlow<PendingReload, PendingReload, { after: number; weapon: string }>({
     key: 'pendingReload',
     rolled: (p) => p.roll != null,
     actor: (s, p) => actorIn(s, p.actorId),
@@ -1755,6 +1761,11 @@ export const FLOWS = {
     // Chance « +1 DR » (le Test étendu cumule le DR) + Résilience GLOBALE via la lentille plate ; le garde du
     // forceSuccess (déjà réussi → rien à forcer, LDB 17 l.68) vit dans `dieTarget` (→ null), pas dans `actorTR`.
     lens: flatRollLens((p) => p.success ? null : p.target),
+    // ISSUE au goulot (`apply`) — canal COMBAT : le site tisse la ligne rendue dans son `set({ battle })`.
+    // `ctx` : le DR cumulé RÉALISÉ (bonus de Talent compris) et le NOM résolu de l'arme, connus de la
+    // seule application. La voie IA (aucune fenêtre) acquitte le MÊME goulot avec son pending fourni.
+    issueChannel: 'battle',
+    issue: (p, _s, ctx: { after: number; weapon: string }) => describeReload(p, ctx.after, ctx.weapon),
   }),
 
   /** Main ensanglantée (AA 07 l.117) : Test de Dextérité Accessible (+20) PAR ACTION, AVANT d'ouvrir une
@@ -1819,6 +1830,9 @@ export const FLOWS = {
     },
     outcome: (p) => sealOutcome(!!p.success, p.netSL ?? 0, p.roll?.roll ?? 0, p.roll?.target ?? 0),
     bonus: { derive: (_s, p) => ({ netSL: p.netSL + 1, success: p.requireSl != null ? (p.netSL + 1 >= p.requireSl) : p.success }) },
+    // ISSUE au goulot (`apply`) — canal COMBAT : `recoverConfirm` la tisse dans ses lignes d'Action.
+    issueChannel: 'battle',
+    issue: (p, s) => describeStateRecovery(p, actorIn(s, p.actorId)?.label ?? p.actorName),
   }),
 
   /** Test de compétence interactif (Effet de scène `test`). `requireSL` = seuil de DR exigé. */
@@ -1828,6 +1842,8 @@ export const FLOWS = {
     rolled: (p) => p.roll != null,
     actor: (s, p) => actorIn(s, p.actorId),
     touch: touchActors,
+    // ISSUE au goulot (`apply`) — canal NARRATIF : `resolveTest` acquitte, il ne compose plus sa ligne.
+    issue: (p) => describeTest(p),
     caps: {
       forced: true,
       // Détermination (LDB 17 l.59) sur un Test de scène grevé d'un malus PSYCHOLOGIQUE social.
@@ -1953,6 +1969,8 @@ export const FLOWS = {
   /** Marchandage (LDB 59 l.43) : Test OPPOSÉ joueur vs marchand — le marchand garde son jet figé. */
   bargain: makeRollFlow<PendingBargain>({
     key: 'pendingBargain',
+    // ISSUE au goulot (`apply`) — canal NARRATIF : `bargainConfirm` acquitte, il ne compose plus sa ligne.
+    issue: (p) => describeBargain(p) + '.',
     die: {
       ...trDie<PendingBargain>(),
       // Test opposé vs un marchand FIGÉ : le plancher RAW est « l'emporter d'au moins DR +1 » (LDB 17 l.68).

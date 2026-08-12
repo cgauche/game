@@ -111,7 +111,7 @@ import { bus, EVT } from './bus';
 import { advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, rollCascadeTable, setCascadeTableForcedRoll, suspendActiveCascade, resumeSuspendedCascade, setOwnTestFailedEmitter } from './cascade';
 import { continuePursuitRound, pursuitAbandon } from './pursuitFlow';
 import { checkPartyWiped } from './partyWipe';
-import { describeFrenzy, describeReload, describeStateRecovery } from './flowOutcomes';
+import { FLOWS } from './rollFlowSpecs';
 
 /** Un flux DIFFÉRÉ tient la main (modale de jet/révélation, ciblage par carte : Frappe Mortelle,
  *  2ᵉ frappe, Surincantation +Cible, pose de zone) :
@@ -1940,9 +1940,12 @@ export function createCombatSlice(get: Get, set: Set) {
         const step = crewedReloadStep(w ?? ({ reload: pr.reload, qualities: [] } as never), pr.progressBefore, pr.sl + reloadTalent);
         if (step.done) { poste.loaded = true; poste.reloadProgress = 0; } else poste.reloadProgress = step.progress;
         if (pr.success && reloadGrantsAssessAdvantage(chef)) campGain(get, chef, 1); // AA 13 l.9/90 : recharger = Action Évaluer → +1 Avantage (mode groupe)
+        // ISSUE dérivée par le goulot (`FLOWS.reload.apply`, canal COMBAT) : le pending est FOURNI (il
+        // vient d'être fermé), le `ctx` porte le DR réalisé et le nom résolu de la pièce.
+        const crewIssue = FLOWS.reload.apply(get, { p: pr, ctx: { after: step.progress, weapon: w?.label ?? 'pièce' } });
         set({ battle: { ...battle, action: null,
           crewActed: withCrewActed(battle.crewActed, ship.id, poste.crewIds ?? []), // chef + servants OCCUPÉS ce Round
-          log: [...battle.log, ev('reload', describeReload(pr, step.progress, w?.label ?? 'pièce'), chef.id)] } });
+          log: [...battle.log, ...evLines(crewIssue, 'reload', chef.id)] } });
         bus.emit(EVT.SCENE_DIRTY);
         return;
       }
@@ -1963,9 +1966,11 @@ export function createCombatSlice(get: Get, set: Set) {
         a.reloadProgress = progress;
       }
       if (pr.success && reloadGrantsAssessAdvantage(a)) campGain(get, a, 1); // AA 13 l.9/90 : recharger = Action Évaluer → +1 Avantage (mode groupe)
-      // Issue = source UNIQUE avec la popin (describeReload) — `progress` inclut le bonus de Talent (réalisé à l'application).
-      const reloadName = a.weapons.find((w) => w.uid === pr.weaponUid)?.label ?? 'arme'; // uid → NOM (affichage)
-      set({ battle: { ...markActed(get, set, battle), action: null, log: [...battle.log, ev('reload', describeReload(pr, progress, reloadName), a.id)] } });
+      // ISSUE dérivée par le goulot (`FLOWS.reload.apply`, canal COMBAT) : `progress` inclut le bonus de
+      // Talent (réalisé à l'application), le nom d'arme est résolu ici (uid → NOM d'affichage).
+      const reloadName = a.weapons.find((w) => w.uid === pr.weaponUid)?.label ?? 'arme';
+      const reloadIssue = FLOWS.reload.apply(get, { p: pr, ctx: { after: progress, weapon: reloadName } });
+      set({ battle: { ...markActed(get, set, battle), action: null, log: [...battle.log, ...evLines(reloadIssue, 'reload', a.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
       // Acteur PILOTÉ par l'IA (Auto-combat) : son tour était suspendu par la modale → reprise (comme cast/défense).
       if (aiDriven(get(), a) && get().battle) resumeEnemyTurn(get, set);
@@ -2035,8 +2040,10 @@ export function createCombatSlice(get: Get, set: Set) {
       if (removed > 0) removeCondition(a, sr.state, removed);
       // Filets (Zoo Impérial p.29) : un échec de libération AGGRAVE l'Empêtré (≠ Immobilisante générique).
       if (!sr.success && sr.entangleOnFail) addCondition(a, sr.state, 1);
-      // Issue = source UNIQUE avec la popin (describeStateRecovery).
-      finishPlayerAction(get, set, [...struggleLines, describeStateRecovery(sr, a.label)], 'condition'); // consomme l'Action
+      // ISSUE dérivée par le goulot (`FLOWS.recover.apply`, canal COMBAT) : le pending est FOURNI (fermé
+      // juste avant), les Dégâts de débattement restent la conséquence propre du site.
+      const recoverIssue = FLOWS.recover.apply(get, { p: sr });
+      finishPlayerAction(get, set, [...struggleLines, ...recoverIssue], 'condition'); // consomme l'Action
     },
     recoverCancel: () => set({ pendingStateRecovery: null }), // avant le jet : aucun coût
     steamSaveConfirm: () => {
@@ -3546,8 +3553,8 @@ export function createCombatSlice(get: Get, set: Set) {
       const c = inBattleId(battle, pf.combatantId);
       set({ pendingFrenzy: null });
       if (!c) return;
-      // Issue = source UNIQUE avec la popin (describeFrenzy).
-      const log = [describeFrenzy(pf, c.label)];
+      // ISSUE dérivée par le goulot (`FLOWS.frenzy.apply`, canal COMBAT) : pending FOURNI (fermé juste avant).
+      const log = FLOWS.frenzy.apply(get, { p: pf });
       if (pf.result.success) (c.psychState ??= []).push({ type: 'frenesie' });
       set({ battle: { ...markActed(get, set, get().battle!), action: null, log: [...battle.log, ...evLines(log, 'frenzy', c.id)] } });
       checkBattleOver(get, set);

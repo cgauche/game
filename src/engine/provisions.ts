@@ -42,6 +42,7 @@ import { itemCapability } from './capabilities';
 import { dailyWaterLitres } from './seaWeather';
 import { findTraitById } from '../data';
 import { RULE_REF, type CodexTarget } from './ruleRefs';
+import { traceLineOf } from './traceLine';
 import type { ModFamille } from './types';
 
 /** La pénalité CUMULATIVE des Tests de Faim/Soif, NOMMÉE et liée à sa règle (LDB 18 l.338) — c'est
@@ -235,9 +236,11 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
     }
     const t = rollTest(resVal, 'intermediaire', rng, penalty);
     h.tests += 1;
-    res.log.push(
-      `${c.label} — Faim : Test de Résistance${h.tests > 1 ? ` (−${(h.tests - 1) * 10})` : ''} : ${t.roll}/${t.target} → ${t.success ? 'il tient bon' : 'ÉCHEC'}.`,
-    );
+    // Test résolu SANS fenêtre (entretien du jour) : sa ligne se DÉRIVE (`traceLineOf`).
+    res.log.push(traceLineOf({
+      who: c.label, label: `Faim : Test de Résistance${h.tests > 1 ? ` (−${(h.tests - 1) * 10})` : ''}`,
+      roll: t.roll, target: t.target, sl: t.sl, success: t.success, issue: t.success ? 'il tient bon' : 'ÉCHEC',
+    }));
     if (!t.success) {
       h.failures += 1;
       if (h.failures === 1) {
@@ -310,7 +313,10 @@ export function dailyWaterUpkeep(c: Combatant, hasWater: boolean, resVal: number
   }
   const t = rollTest(resVal, 'intermediaire', rng, penalty);
   s.tests += 1;
-  res.log.push(`${c.label} — Soif : Test de Résistance${s.tests > 1 ? ` (−${(s.tests - 1) * 10})` : ''} : ${t.roll}/${t.target} → ${t.success ? 'il tient bon' : 'ÉCHEC'}.`);
+  res.log.push(traceLineOf({
+    who: c.label, label: `Soif : Test de Résistance${s.tests > 1 ? ` (−${(s.tests - 1) * 10})` : ''}`,
+    roll: t.roll, target: t.target, sl: t.sl, success: t.success, issue: t.success ? 'il tient bon' : 'ÉCHEC',
+  }));
   if (!t.success) {
     s.failures += 1;
     if (s.failures === 1) res.log.push(`${c.label} a la gorge sèche : −10 en Intelligence, Force Mentale et Sociabilité.`);

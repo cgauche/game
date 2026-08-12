@@ -31,6 +31,7 @@ import { cadenceAuto } from '../engine/cadence';
 import { freeCons, rollStep, bandStep, bandRowOfStep, makeBandFactory, type BuiltCascadeStep } from './rollSeam';
 import { pursuitOutcome, pursuitMoveBonus, PURSUIT_ESCAPE_DISTANCE } from '../engine/pursuit';
 import type { BatchParticipant, CascadeStep, PendingCascade } from './pendings';
+import { traceLineOf } from '../engine/traceLine';
 
 /** Un adversaire de la poursuite (côté opposé au groupe) — Mouvement (bonus de DR de vitesse, l.105-108)
  *  et valeur de Test de Mouvement. `label` = affichage (aucune logique keyée dessus). */
@@ -204,6 +205,8 @@ export function continuePursuitRound(get: Get, set: Set, done: PendingCascade): 
     .filter((s) => s.kind === PURSUIT_MOVE_KIND)
     .flatMap((s) => (s.participants ?? []).map((r) => ({ actorId: r.id, sl: r.result?.sl ?? 0 })));
   const rng = battleRng();
+  // Libellé de la COMPÉTENCE de la manche — même source que les rangées des coureurs (`openPursuitRound`).
+  const skillLabel = findSkillById(p.skill)?.label ?? p.skill;
   // DR de vitesse (l.105-108) : chaque participant plus rapide que le PLUS LENT de la course gagne
   // autant de DR bonus. Plus lent = min des Mouvements de TOUS les participants (héros + adversaires).
   const heroM = runners(get).map((h) => ({ id: h.id, m: pursuedMovement(h, p.partyRole) }));
@@ -211,9 +214,11 @@ export function continuePursuitRound(get: Get, set: Set, done: PendingCascade): 
   const partyTotals = partyRolls.map((r) => r.sl + pursuitMoveBonus(heroM.find((h) => h.id === r.actorId)?.m ?? slowest, slowest));
   const foeTotals = p.foes.map((f) => {
     // Adversaires (pas des PJ) : aucune rangée nulle part pour leur jet — le journal est la SEULE
-    // surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
+    // surface, et sa ligne se DÉRIVE (`traceLineOf`) comme toute ligne de dé. Le libellé NOMME la
+    // Compétence de la manche (Z5) — la MÊME que celle des rangées des coureurs, jamais un mot de
+    // situation. L'issue de CE jet est son DR (il alimente la Distance, l.93).
     const t = rollTest(f.skill, 'intermediaire', rng);
-    get().log(`${f.label} — Mouvement : ${t.roll}/${t.target} → ${t.sl >= 0 ? '+' : ''}${t.sl} DR.`);
+    get().log(traceLineOf({ who: f.label, label: skillLabel, roll: t.roll, target: t.target, success: t.success, issue: `${t.sl >= 0 ? '+' : ''}${t.sl} DR` }));
     return t.sl + pursuitMoveBonus(f.movement, slowest);
   });
   const fleeingTotals = p.partyRole === 'fleeing' ? partyTotals : foeTotals;

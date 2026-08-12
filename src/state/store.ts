@@ -145,7 +145,6 @@ import { applyLandCargoRaid } from './carriers';
 import { suspendActiveCascade, resumeSuspendedCascade, dropSceneEntrySteps, extendedTestOutcomeAppliers } from './cascade';
 import { nightBands } from './nightBands';
 import { resultLine, openSequence, hostStep, pousseSi, type BuiltCascadeStep } from './rollSeam';
-import { describeTest } from './flowOutcomes';
 import { createCombatSlice } from './combatSlice';
 
 /** Source unique des écrans valides — `Screen` en dérive (`typeof SCREENS[number]`) : un id absent
@@ -2472,10 +2471,12 @@ export const useGame = create<GameState>((set, get) => ({
   resolveTest: () => {
     const pt = get().pendingTest;
     if (!pt || pt.roll == null) return; // pas d'acquittement avant le jet
+    // ACQUITTEMENT par le goulot (`FLOWS.test.apply`) : l'issue est déclarée AU FLUX (`spec.issue`),
+    // journalisée là — ici on acquitte, avant de fermer (l'issue se lit sur le pending qui l'a produite).
+    FLOWS.test.apply(get);
     // Le Test EST une cascade-hôte à une étape (rendu par CascadeModal) : on ferme LES DEUX avant de
     // lancer la branche (qui peut ouvrir d'autres pendings — combat, autre Test…).
     set({ pendingTest: null, pendingCascade: null });
-    get().log(describeTest(pt)); // issue du jet journalisée (source UNIQUE avec la popin), puis la conséquence
     const actor = get().party.find((c) => c.id === pt.actorId);
     const tool = pt.itemUid ? actor?.items?.find((i) => i.uid === pt.itemUid) : undefined;
     // Pratique/Peu Fiable : ±1 DR sur un Test RATÉ (LDB 60 l.22/58). Ne repêche qu'un échec qui a

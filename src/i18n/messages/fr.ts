@@ -716,9 +716,14 @@ export const fr = {
   'cf.wrathTriggered': 'Le dé des unités ({units}) trahit les Péchés de {name} ({sin}) — Colère des dieux !',
   'cf.zonePersists': '{spell} : la zone persiste — hors grille de combat, arbitrage MJ.',
   'cf.resistsInfection': '{name} résiste à l’infection.',
-  // TRACE d'une rangée RÉSOLUE D'OFFICE (#1281) — aucune fenêtre ne l'affiche : le journal est sa seule
-  // surface, et il porte donc le dé, la cible et l'issue. `issue` vient de `casc.autoRowHit|autoRowMiss`.
+  // PATRON UNIQUE de la ligne de dé du journal (`engine/traceLine.ts`) — la fenêtre qui l'aurait
+  // montré ne s'est pas ouverte : la ligne porte le dé, la cible, l'issue et le DR. `issue` vient de
+  // `casc.autoRowHit|autoRowMiss` par défaut, du domaine quand il en a une plus précise.
   'casc.autoRowTrace': '{who} — {label} : {roll}/{target} → {issue} (DR {dr}).',
+  // Variante SANS porteur (le libellé nomme déjà qui lance) et variante SANS DR (le jet n'en porte pas).
+  'casc.rowTraceAnon': '{label} : {roll}/{target} → {issue} (DR {dr}).',
+  'casc.rowTraceNoDr': '{who} — {label} : {roll}/{target} → {issue}.',
+  'casc.rowTraceAnonNoDr': '{label} : {roll}/{target} → {issue}.',
   'casc.autoRowHit': 'réussi',
   'casc.autoRowMiss': 'échec',
   'casc.autoRowFallbackLabel': 'Test',

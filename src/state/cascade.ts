@@ -29,7 +29,7 @@ import { toRecapLines } from './recapLine';
 import { actorIn } from './combatants';
 import { rollTest, evaluateTest, bestForcedRoll, resolveOpposed, type TestResult } from '../engine/tests';
 import { battleRng } from './battleRng';
-import { t } from '../i18n';
+import { traceLineOf } from '../engine/traceLine';
 
 /**
  * Conséquence d'une étape, appliquée à la VALIDATION. Mute le héros (via get/set), renvoie les
@@ -394,27 +394,34 @@ function rollBatchParticipants(step: CascadeStep, autoResolved = false) {
 }
 
 /**
- * TRACES des rangées RÉSOLUES D'OFFICE d'une étape (#1281) — une ligne par rangée étampée
- * `meta.autoResolved` : porteur — libellé : dé/cible → issue. SOCLE, une fois pour TOUTES les bandes
- * (nuit, fin de combat, à venir).
+ * TRACES des jets d'une étape que NULLE FENÊTRE n'a montrés — une ligne par jet, DÉRIVÉE par le socle
+ * (`traceLineOf`) : porteur — libellé : dé/cible → issue (DR). Deux formes, un seul dériveur :
+ *  - BANDE : les rangées étampées `meta.autoResolved` (posée par `rollBatchParticipants(step, true)`) ;
+ *  - MONO : l'étape à jet résolue par un pilote SANS fenêtre — le pilote le DÉCLARE (`unwitnessed`,
+ *    `runCascadeImmediate`), il n'est pas déduit d'un champ d'étape (rien n'entre dans la sauvegarde).
  *
- * C'est le seul endroit du moteur où le dé se redit en clair : la rangée qui le porte n'est JAMAIS
- * affichée (aucune fenêtre ne s'ouvre sur une résolution d'office), donc le journal est SA SEULE
- * surface — le cas nominatif que la doctrine #295 réserve (cf. `cascade-consequence-guard.test.ts`).
- * `game-trigger-cadence-aware-no-silent` : moins d'interruptions, jamais moins de traces.
+ * PARTITION : « Tout lancer » (`resolveRemainingCascade`) n'étampe rien et ne déclare rien — sa modale
+ * reste ouverte sur le BILAN, où chaque rangée montre son dé.
+ *
+ * Le journal est la SEULE surface de ces jets — le cas nominatif que la doctrine #295 réserve (cf.
+ * `cascade-consequence-guard.test.ts`). `game-trigger-cadence-aware-no-silent` : moins d'interruptions,
+ * jamais moins de traces.
  */
-function autoResolvedTraceLines(get: Get, step: CascadeStep): string[] {
+function unwitnessedTraceLines(get: Get, step: CascadeStep, unwitnessed: boolean): string[] {
   const out: string[] = [];
   for (const row of step.participants ?? []) {
     if (!row.meta?.autoResolved || !row.result) continue;
-    const r = row.result;
-    out.push(t('casc.autoRowTrace', {
+    out.push(traceLineOf({
       who: actorIn(get(), row.id)?.label ?? row.id,
-      label: row.label ?? step.rollLabel ?? t('casc.autoRowFallbackLabel'),
-      roll: r.roll,
-      target: r.target,
-      issue: t(r.success ? 'casc.autoRowHit' : 'casc.autoRowMiss'),
-      dr: `${r.sl >= 0 ? '+' : ''}${r.sl}`,
+      label: row.label ?? step.rollLabel ?? undefined,
+      ...row.result,
+    }));
+  }
+  if (unwitnessed && !step.participants && step.result && stepInteraction(step) === 'jet') {
+    out.push(traceLineOf({
+      ...(step.actorId ? { who: actorIn(get(), step.actorId)?.label ?? step.actorId } : {}),
+      label: step.rollLabel ?? step.label ?? undefined,
+      ...step.result,
     }));
   }
   return out;
@@ -674,8 +681,11 @@ function batchOwnTestFailedLines(get: Get, step: CascadeStep): string[] {
 /** Applique la conséquence d'une étape + ses insertions ; renvoie le tableau d'étapes mis à jour, les
  *  lignes de journal, et `suspended` (l'applier a fait basculer le slot ACTIF vers un AUTRE contexte —
  *  `startCombat`, cf. `suspendActiveCascade` — PENDANT sa propre exécution). Partagé par les trois
- *  pilotes (interactif, « tout résoudre », immédiat). */
-function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMerge = false): { steps: CascadeStep[]; journal: string[]; suspended: boolean } {
+ *  pilotes (interactif, « tout résoudre », immédiat).
+ *
+ *  `unwitnessed` : le pilote DÉCLARE qu'aucune fenêtre n'a montré le jet de cette étape (pilote
+ *  immédiat) — le goulot en dérive alors la ligne de dé (`unwitnessedTraceLines`). */
+function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMerge = false, unwitnessed = false): { steps: CascadeStep[]; journal: string[]; suspended: boolean } {
   const before = get().pendingCascade;
   // Étape « batch » (participants — seam de jet #275 Décision 4 cran 1) : AGRÈGE les contributeurs
   // (déjà tous résolus, `stepReady`) en UN `CascadeRoll` scalaire — l'applier lit `step.result` comme
@@ -684,9 +694,9 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   let step = steps[i];
   if (step.participants && !step.result && step.aggregate !== 'none') step = { ...step, result: aggregateBatchStep(step) };
   const hero = step.actorId ? actorIn(get(), step.actorId) : undefined;
-  // TRACE des rangées résolues d'office (#1281) — AVANT la conséquence : le dé se lit d'abord, l'effet
+  // TRACE des jets qu'aucune fenêtre n'a montrés — AVANT la conséquence : le dé se lit d'abord, l'effet
   // ensuite, comme dans la fenêtre qui ne s'est pas ouverte.
-  const traces = autoResolvedTraceLines(get, step);
+  const traces = unwitnessedTraceLines(get, step, unwitnessed);
   for (const l of traces) get().log(l);
   const out = cascadeAppliers[step.kind]?.apply(get, set, step, hero, { steps, index: i });
   // `consequences` (#295 Lot 0) : rendu en LIGNES STRUCTURÉES (#349, `resultLines`) — seule voie de
@@ -915,10 +925,14 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ct
   let cur = steps;
   for (let i = 0; i < cur.length; i++) {
     const st = cur[i];
+    // Jet POSÉ PAR CE PILOTE : aucune fenêtre ne s'ouvrira dessus — le goulot (`commitStep`) en dérive
+    // sa ligne de dé. Une étape qui ARRIVE déjà résolue (jet montré ailleurs) n'en reçoit pas.
+    let unwitnessed = false;
     if (stepInteraction(st) === 'jet' && !st.result) {
       const t = rollTest(st.target!, 'intermediaire', battleRng());
       const result: CascadeRoll = { roll: t.roll, target: st.target!, sl: t.sl, success: t.success };
       cur = cur.map((x, k) => (k === i ? { ...x, result } : x));
+      unwitnessed = true;
     } else if (stepInteraction(st) === 'table') {
       const table = liveTableDecl(get(), st); // même composition de déclaration que la modale
       const rolled = rollTableStep(table, battleRng());
@@ -938,7 +952,7 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ct
       }
       cur = cur.map((x, k) => (k === i ? { ...x, chosen: st.defaultChoice! } : x));
     } // affichage : rien à résoudre avant la conséquence
-    const r = commitStep(get, set, cur, i);
+    const r = commitStep(get, set, cur, i, false, unwitnessed);
     cur = r.steps;
     // Un combat s'est ouvert PENDANT cette résolution immédiate (l'applier a appelé `startCombat` —
     // no-op de suspension ici puisque CE tableau n'était PAS dans le slot actif) : le reste du tableau

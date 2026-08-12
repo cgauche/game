@@ -18,6 +18,7 @@ import { seedBattleRng } from './battleRng';
 import type { AttackResult } from '../engine/combat';
 import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
 import { setRule, resetRule } from '../engine/policy';
+import { FLOWS } from './rollFlowSpecs';
 import { TIME_COST } from '../engine/timeCost';
 import { toBrass, type Money } from '../engine/money';
 import { partyMoneyTotal, creditBourse } from './bourseFlow';
@@ -2475,6 +2476,31 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     }
     expect(useGame.getState().battle!.acted).toBe(true);
     expect(useGame.getState().pendingReload).toBeNull();
+  });
+
+  /**
+   * #1262 V3 Lj — l'ISSUE du rechargement est DÉRIVÉE au goulot (`FLOWS.reload.apply`, `spec.issue`) :
+   * le site n'écrit plus la phrase. Canal COMBAT : la ligne entre dans `battle.log` (événement `reload`)
+   * et JAMAIS dans le journal narratif. PARITÉ : la voie IA (aucune fenêtre, pending FOURNI) passe par
+   * le MÊME goulot avec la MÊME donnée — donc la MÊME ligne, au caractère près.
+   */
+  it('l’issue du rechargement vient du GOULOT (canal combat), et la voie IA rend la MÊME ligne', () => {
+    const { H } = archer();
+    H.loaded = false;
+    H.reloadProgress = 0;
+    useGame.getState().seedRng(2);
+    useGame.getState().battleReload();
+    useGame.getState().reloadRoll();
+    const pr = { ...useGame.getState().pendingReload! };
+    const journalAvant = useGame.getState().journal.length;
+    useGame.getState().reloadConfirm();
+    const evs = useGame.getState().battle!.log.filter((e) => e.kind === 'reload');
+    expect(evs, 'UNE ligne d’issue, dans le journal de COMBAT').toHaveLength(1);
+    expect(useGame.getState().journal.length, 'canal COMBAT : rien dans le journal narratif').toBe(journalAvant);
+    // Voie IA : même pending, même DR réalisé, même nom d'arme → ligne IDENTIQUE (aucun 2ᵉ rédacteur).
+    const progress = Math.max(0, pr.progressBefore + pr.sl);
+    const ia = FLOWS.reload.apply(useGame.getState, { p: pr, ctx: { after: progress, weapon: 'Arbalète' } });
+    expect(ia, 'parité joueur ⇄ IA : une seule déclaration d’issue').toEqual([evs[0].text]);
   });
 
   it('reloadConfirm : un DR insuffisant (Recharge 2) laisse l’arme déchargée et garde le progrès', () => {
