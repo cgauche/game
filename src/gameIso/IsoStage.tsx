@@ -7,10 +7,10 @@
  * Caméra : `useStageCamera` (8 crans, focus, culling) ; pointeur : `useStagePointer` (picking
  * cross-couche + data-cid, pan, clics) ; visée au survol : `useHoverTargeting`.
  */
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type MutableRefObject } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import './anim.css';
-import { useGame, type BattleState } from '../state/store';
-import { heightAt, sceneMetresPerTile, type Scene } from '../state/scene';
+import { useGame } from '../state/store';
+import { heightAt, sceneMetresPerTile } from '../state/scene';
 import { sceneIsDark } from '../state/sceneRules';
 import { metricToLift } from '../state/relief';
 import { computeStateVisibleAndLight, sceneLightSources } from '../state/visionState';
@@ -30,7 +30,7 @@ import { getViewZ, subscribeViewZ } from '../state/viewLevel';
 import { setVisibleTileBounds } from './viewport';
 import { useCombatFx } from './fx/useCombatFx';
 import { useWalkAnim, useMoveBlockedBump, subscribeWalkFrames } from './fx/useWalkAnim';
-import { walkPoseAt, walkGlideM, type WalkTrack } from './fx/walkPose';
+import { walkPoseAt } from './fx/walkPose';
 import { FxLayer } from './fx/FxLayer';
 import { buildFloors } from './builders/floors';
 import { buildWalls } from './builders/walls';
@@ -38,22 +38,19 @@ import { buildRoofs, clearedSpace } from './builders/roofs';
 import { buildProps } from './builders/props';
 import { buildTokens } from './builders/tokens';
 import { floorLayerObjs, wallLayerObjs, roofLayerObjs, elOccluder, type LayerCtx } from './stage/layers';
-import { combatHighlightObjs, combatHighlightsView, type HighlightOpts } from './stage/highlightLayer';
-import { buildHighlights, type HighlightEl } from './builders/highlights';
-import { dynamicMarks, type DynamicMarks } from './builders/dynamicMarks';
-import { interactionHalos, type InteractionHalos } from './builders/interactHalos';
+import { combatHighlightObjs, type HighlightOpts } from './stage/highlightLayer';
+import { dynamicMarks } from './builders/dynamicMarks';
+import { interactionHalos } from './builders/interactHalos';
 import { tokenChromes, type TokenChromeMark } from './builders/tokenChrome';
 import { TokenChromeOverlay } from './stage/TokenChromeOverlay';
-import type { ChromeAt } from './stage/boardPose';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
 import { CulledScene, actorCapsuleOf } from './stage/CulledScene';
-import { GameStage3D, type StageWalkAnim } from './stage/GameStage3D';
+import { VolumetricWorld } from './stage/VolumetricWorld';
 import { getStageBackend, subscribeStageBackend } from '../state/stage3d';
 import { getStageYaw, subscribeStageYaw, viewRot, viewYawDeg } from '../state/stageYaw';
 import { tintFor } from './backends/webgl/visibilityTint';
-import { actorPoseKey, actorPoses, type KeepEl, type ActorPose, type TintAt } from './backends/webgl/sceneMeshes';
-import type { PropEl, TokenEl } from './builders/types';
+import { type KeepEl } from './backends/webgl/sceneMeshes';
 import { stageCamTransform } from './stage/stageCam';
 import { occupiedInteriorZoneIds, roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
 import { NO_CLEARED_SPACE, exteriorWallViewZ, frontFacadeCutaway, cutawayForSection, cutawayOverhead, lidCutaway, spaceCellKey } from './stage/architectureVisibility';
@@ -73,7 +70,6 @@ import { useStageCamera, cameraTargeting, stageFocus, computeViewBounds, VW, VH 
 import { useStagePointer } from './stage/useStagePointer';
 import { useHoverTargeting } from './stage/useHoverTargeting';
 import type { Pt } from '../state/path';
-import type { LightSource } from '../state/vision';
 import { portalsForParty } from '../state/roomPortals';
 
 /** `ctx`/`occludesActor` positionnels EXIGÉS par `floorLayerObjs`/`wallLayerObjs` (compat `TopoScene`,
@@ -481,15 +477,12 @@ export function IsoStage() {
       {webgl && (
         <VolumetricWorld
           scene={scene}
-          dims={dimsVue}
           mpt={mpt}
-          cam={cam}
-          zoom={zoom * (turning ? 0.97 : 1)}
+          frame={{ mode: 'affine', dims: dimsVue, cam, camAt, zoom: zoom * (turning ? 0.97 : 1) }}
           tintAt={tintAt}
           keepEl={keepEl}
           tokenEls={tokenEls}
           propEls={propEls}
-          camAt={camAt}
           walksRef={walksRef}
           gameTime={gameTime}
           lightLevel={lightLevel}
@@ -560,96 +553,4 @@ export function IsoStage() {
     </svg>
     </>
   );
-}
-
-/**
- * MONDE VOLUMIQUE (#1176, DEV) monté SOUS le stage. Composant à part, et c'est STRUCTUREL : les
- * abonnements au store qui n'ont de sens qu'en volumique vivent ICI, donc ne s'abonnent pas du tout
- * quand la voie affine est active. `facing` en est le cas d'école — `setFacing` reforge la référence
- * de la table à chaque orientation (`store.ts`, à chaque pas et à chaque attaque) : lu par `IsoStage`,
- * il re-rendait le stage ENTIER même l'interrupteur au repos. Un hook conditionnel est interdit ; un
- * composant conditionnel, non.
- *
- * Les ACTEURS se dérivent des ÉLÉMENTS DU BUILDER (`tokenEls`), pas de `battle.combatants` : mêmes
- * filtres que la voie affine (passager de navire abstrait, structure de siège rendue sur son arête,
- * étage isolé, surplomb, brouillard). Un couple MONTÉ y entre comme UN acteur : la monture porte la
- * case et l'échelle, le cavalier voyage avec elle (`ActorPose.rider`) et les deux sortent en UN seul
- * billboard composite — le pendant du `MountedToken` affine.
- */
-function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, tokenEls, propEls, walksRef, partyToken, gameTime, lightLevel, lights, battle, highlightOpts, dynMarks, halos, chromes }: {
-  scene: Scene;
-  dims: Dims;
-  mpt: number;
-  cam: { x: number; y: number };
-  /** Caméra à un instant DONNÉ : la boucle de rendu la redemande par frame pendant une marche. */
-  camAt: (now: number) => { x: number; y: number };
-  zoom: number;
-  tintAt: TintAt;
-  keepEl: KeepEl;
-  tokenEls: TokenEl[];
-  propEls: PropEl[];
-  /** Marches vivantes — LUES par la boucle de rendu, jamais par un rendu React (cf. `anim` ci-dessous). */
-  walksRef: MutableRefObject<Record<string, WalkTrack>>;
-  /** Hors combat : le jeton de GROUPE (le meneur visible), à sa case. En combat : `null`. */
-  partyToken: { leader: Combatant; pos: Pt } | null;
-  /** Horloge de jeu (minutes) et mise en scène de lumière — la LUMIÈRE du monde volumique (P2-5) : le
-   *  soleil suit l'heure et le nord de la scène, l'ambiante suit le palier. Le stage reste la source. */
-  gameTime: number;
-  lightLevel: number | null | undefined;
-  /** Sources de lumière PONCTUELLES de la scène — celles du champ mécanique, jamais recollectées ici. */
-  lights: readonly LightSource[];
-  /** Combat en cours, ou `null` hors combat : la seule entrée des MARQUES DE CASES (P3-0c). */
-  battle: BattleState | null;
-  /** Contexte de tour/ciblage dont les marques dérivent (`stage/highlightLayer`). */
-  highlightOpts: HighlightOpts;
-  /** MARQUES DYNAMIQUES déjà dérivées par le stage — les DEUX voies consomment cette même liste. */
-  dynMarks: DynamicMarks;
-  /** HALOS D'INTERACTION déjà dérivés par le stage — même partage, même liste pour les deux voies. */
-  halos: InteractionHalos;
-  /** CHROME des jetons déjà dérivé par le stage — cet écran n'en consomme que l'ALLURE (le reste se
-   *  peint en overlay SVG, `stage/TokenChromeOverlay`). */
-  chromes: readonly TokenChromeMark[];
-}) {
-  const facings = useGame((s) => s.facing); // orientation MONDE vivante par acteur (Dir8)
-  const poses: ActorPose[] = actorPoses(tokenEls, facings);
-  if (partyToken) {
-    const z = partyToken.pos.z ?? 0;
-    poses.push({ c: partyToken.leader, x: partyToken.pos.x, y: partyToken.pos.y, z, facing: facings[partyToken.leader.id] });
-  }
-  // RÉFÉRENCE STABLE tant que rien de ce que le billboard dessine n'a bougé — même patron de clé que
-  // `visualAllies` plus haut. Un tableau neuf démonte puis remonte les quads de TOUS les sujets ; la clé
-  // porte donc tout ce dont la POSE et le DESSIN dépendent : identité, case LOGIQUE, orientation, et la
-  // SIGNATURE des entrées de dessin (garde-robe, équipement, apparence vivante, état au sol, échelle).
-  // `actorPoseKey` la compose depuis la MÊME signature que l'identité de cache de texture
-  // (`BillboardSubject.identity`) : une entrée de dessin ne peut plus périmer l'une sans l'autre.
-  // Le GLISSEMENT de marche n'y entre PAS (#1176, P2-4) : la boucle de rendu le lit elle-même et décale
-  // des quads déjà montés, là où la clé fractionnaire les remontait tous soixante fois par seconde.
-  const posesKey = poses.map(actorPoseKey).join('|');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const actors = useMemo(() => poses, [posesKey]);
-  const els = useMemo(() => ({ tokens: tokenEls, props: propEls }), [tokenEls, propEls]);
-  // MARQUES DE CASES (P3-0c) : le MÊME builder pur que la voie affine, sur la MÊME vue assemblée
-  // (`combatHighlightsView`). L'écran volumique n'en connaît que la liste — il la pose à plat au sol.
-  const highlights = useMemo<HighlightEl[]>(
-    () => (battle ? buildHighlights(scene, battle, combatHighlightsView(useGame.getState, battle, highlightOpts)) : []),
-    [scene, battle, highlightOpts],
-  );
-  // MARCHE lue par la BOUCLE (P2-4) : le stage garde l'intention (la courbe `walkPoseAt`, le cadrage
-  // `camAt`), la boucle ne fait que la redemander à SA cadence. Objet reforgé à chaque rendu — c'est
-  // voulu : il doit fermer sur les cases logiques du rendu courant.
-  const bases = new Map(poses.map((p) => [p.c.id, { x: p.x, y: p.y, z: p.z }]));
-  const solM = (x: number, y: number, z: number) => heightAt(scene, Math.round(x), Math.round(y), z);
-  const anim: StageWalkAnim = {
-    subscribe: subscribeWalkFrames,
-    glide: (cid) => {
-      const base = bases.get(cid);
-      return base ? walkGlideM(walksRef.current[cid], base, dims, mpt, performance.now(), solM) : null;
-    },
-    cam: () => camAt(performance.now()),
-  };
-  // ALLURE des quads : la table du rendu courant, interrogée PAR FRAME dans la passe de pose. Elle se
-  // reforge à chaque rendu, comme `anim` — un survol change trois nombres de matériau, rien de monté.
-  const allures = new Map(chromes.map((m) => [m.id, { ghost: m.ghost, dim: m.dim, highlight: m.highlight }]));
-  const chromeAt: ChromeAt = (cid) => allures.get(cid) ?? null;
-  return <GameStage3D scene={scene} dims={dims} mpt={mpt} cam={cam} zoom={zoom} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} highlights={highlights} dynMarks={dynMarks} halos={halos} chromeAt={chromeAt} anim={anim} />;
 }

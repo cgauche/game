@@ -98,10 +98,8 @@ describe('Marques dynamiques — la pose se prend à la FRAME (#1176 P3-0d)', ()
     act(() => root!.render(
       <GameStage3D
         scene={SCENE}
-        dims={DIMS}
         mpt={sceneMetresPerTile(SCENE)}
-        cam={{ x: 0, y: 0 }}
-        zoom={1}
+        frame={{ mode: 'affine', dims: DIMS, cam: { x: 0, y: 0 }, zoom: 1 }}
         tintAt={() => 1}
         keepEl={() => true}
         els={{ tokens: [], props: [] }}

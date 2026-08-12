@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 /**
- * #1176 — l'interrupteur DEV « Monde volumique » ne gouverne que le monde de la vue ISO : en POV, le
- * bouton serait une affordance morte (clic sans effet). Monté pour de VRAI (patron `createRoot`/`act`
- * du repo) : c'est l'ÉCRAN qui est jugé, pas le prédicat.
+ * #1176 — l'interrupteur DEV « Monde volumique » gouverne la voie de rendu des DEUX vues du jeu : la vue
+ * iso comme le POV, qui monte lui aussi `GameStage3D` en webgl (`gameIso/pov/PovStage.tsx:64`). Monté pour
+ * de VRAI (patron `createRoot`/`act` du repo) : c'est l'ÉCRAN qui est jugé, pas le prédicat.
  */
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
 import { act } from 'react';
@@ -50,11 +50,16 @@ describe('CampaignView — interrupteur DEV « Monde volumique »', () => {
     expect(el.querySelector(`[aria-label="${VOLUMIQUE}"]`)).not.toBeNull();
   });
 
-  it('ne rend pas le bouton volumique quand le POV est actif', () => {
+  it('rend le bouton volumique ACTIF quand le POV est actif, et le clic y bascule la voie de rendu', () => {
     const el = monter(true);
-    expect(el.querySelector(`[aria-label="${VOLUMIQUE}"]`)).toBeNull();
-    // Le POV reste bien monté : c'est le bouton mort qui disparaît, pas la vue.
+    // Le POV est bien monté : c'est SA voie de rendu que l'interrupteur gouverne ici.
     expect(el.querySelector('[aria-label="Vue normale (au-dessus)"]')).not.toBeNull();
+    const bouton = el.querySelector(`[aria-label="${VOLUMIQUE}"]`);
+    expect(bouton).not.toBeNull();
+    expect(getStageBackend()).toBe('affine');
+    act(() => { bouton!.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true })); });
+    expect(getStageBackend()).toBe('webgl');
+    expect(el.querySelector('[aria-label="Monde en couches SVG (DEV)"]')).not.toBeNull();
   });
 
   it('le CLIC sur le bouton bascule la voie de rendu (le câblage part du bouton, pas du store)', () => {

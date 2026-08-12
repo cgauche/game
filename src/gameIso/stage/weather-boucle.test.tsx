@@ -78,10 +78,8 @@ const dimsDe = (scene: Scene): Dims => ({ w: scene.dimensions.w, h: scene.dimens
 
 const props = (scene: Scene, zoom: number) => ({
   scene,
-  dims: dimsDe(scene),
   mpt: sceneMetresPerTile(scene),
-  cam: { x: 0, y: 0 },
-  zoom,
+  frame: { mode: 'affine', dims: dimsDe(scene), cam: { x: 0, y: 0 }, zoom } as const,
   tintAt: () => 1,
   keepEl: () => true,
   els: { tokens: [], props: [] },

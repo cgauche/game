@@ -358,10 +358,8 @@ const TAILLE = { w: 800, h: 600 };
 const dimsDe = (scene: Scene): Dims => ({ w: scene.dimensions.w, h: scene.dimensions.h, rot: 0, view: 'iso' });
 const props = (scene: Scene, gameTime: number) => ({
   scene,
-  dims: dimsDe(scene),
   mpt: sceneMetresPerTile(scene),
-  cam: { x: 0, y: 0 },
-  zoom: 1,
+  frame: { mode: 'affine', dims: dimsDe(scene), cam: { x: 0, y: 0 }, zoom: 1 } as const,
   tintAt: () => 1,
   keepEl: () => true,
   els: { tokens: [], props: [] },
@@ -459,8 +457,8 @@ describe('Le pool ÉCRIT — une passe par changement de lumière ; par frame, l
 
     // Rendus de CAMÉRA : ni la translation ni le zoom ne touchent la lumière.
     écritures = 0;
-    act(() => root!.render(<GameStage3D {...p} cam={{ x: 40, y: 12 }} zoom={1.5} />));
-    act(() => root!.render(<GameStage3D {...p} cam={{ x: 80, y: 24 }} zoom={2} />));
+    act(() => root!.render(<GameStage3D {...p} frame={{ ...p.frame, cam: { x: 40, y: 12 }, zoom: 1.5 }} />));
+    act(() => root!.render(<GameStage3D {...p} frame={{ ...p.frame, cam: { x: 80, y: 24 }, zoom: 2 }} />));
     expect(écritures).toBe(0);
 
     // Changement d'HEURE : une seule passe sur le pool (12 lampes), jamais un remontage.
@@ -492,15 +490,15 @@ describe('Le pool ÉCRIT — une passe par changement de lumière ; par frame, l
 
     // Deux frames de CAMÉRA : 2 flammes × 2 frames. Le lampadaire n'est pas du lot.
     écritures = 0;
-    act(() => root!.render(<GameStage3D {...p} cam={{ x: 40, y: 12 }} zoom={1.5} />));
-    act(() => root!.render(<GameStage3D {...p} cam={{ x: 80, y: 24 }} zoom={2} />));
+    act(() => root!.render(<GameStage3D {...p} frame={{ ...p.frame, cam: { x: 40, y: 12 }, zoom: 1.5 }} />));
+    act(() => root!.render(<GameStage3D {...p} frame={{ ...p.frame, cam: { x: 80, y: 24 }, zoom: 2 }} />));
     expect(écritures).toBe(2 * 2);
 
     // À MIDI les flaques s'éteignent : plus une seule flamme allumée, donc plus une écriture de frame
     // (et la boucle de vacillement, elle non plus, ne bat pas).
     act(() => root!.render(<GameStage3D {...p} gameTime={MIDI} />));
     écritures = 0;
-    act(() => root!.render(<GameStage3D {...p} gameTime={MIDI} cam={{ x: 12, y: 3 }} />));
+    act(() => root!.render(<GameStage3D {...p} gameTime={MIDI} frame={{ ...p.frame, cam: { x: 12, y: 3 } }} />));
     expect(écritures).toBe(0);
   });
 

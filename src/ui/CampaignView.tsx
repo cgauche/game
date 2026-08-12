@@ -351,7 +351,7 @@ export function CampaignView() {
           inspectEnabled={inspectEnabled}
           onToggleInspect={mode === 'battle' ? toggleInspect : undefined}
           stage3d={stageBackend === 'webgl'}
-          onToggleStage3d={import.meta.env.DEV && !povActive ? toggleStageBackend : undefined}
+          onToggleStage3d={import.meta.env.DEV ? toggleStageBackend : undefined}
         />
         {mode === 'exploration' && povActive && <PovControls />}
         {dialogue && <DialogueBox />}

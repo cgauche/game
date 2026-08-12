@@ -17,6 +17,12 @@
  *  - MARCHE (P2-4) : la boucle de rendu lit elle-même le glissement (`anim.glide`) et ne déplace que
  *    les matrices des quads concernés. Aucun rendu React, aucun sommet, aucun matériau.
  *
+ * DEUX REGARDS, UN SEUL MONDE (#1176, P3-1a) : le cadre de la frame est une UNION (`StageFrame`) —
+ * ortho affine cadrée par le stage SVG (`IsoStage`), ou PERSPECTIVE à hauteur d'homme cadrée par la
+ * pose du groupe (`PovStage`). Tout le reste de cet écran l'ignore : mêmes cuisson, teinte, lumière,
+ * billboards et intempéries. La première personne n'a ni marques de sol, ni halos, ni picker inscrit —
+ * ce sont des affordances de la vue de plateau, et le POV n'en a jamais porté.
+ *
  * LUMIÈRE (P2-5) : le CANEVAS porte toute la luminosité de la scène — une ambiante au palier de lumière
  * du moment et, dehors et de jour, un SOLEIL qui suit l'heure d'horloge et le nord de la carte
  * (`stage/stageLights.ts`, décision ; cet écran ne fait que monter ses lampes et brancher les ombres).
@@ -66,7 +72,9 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { freeYaw, type Dims, type Rot } from '../../geometry/iso';
 import { heightAt, type Scene } from '../../state/scene';
-import { affineCamera } from '../backends/webgl/cameras';
+import type { Dir8 } from '../../state/dir8';
+import { affineCamera, povCamera } from '../backends/webgl/cameras';
+import { farTilesOf } from '../pov/camera';
 import { pxPerM } from '../backends/webgl/worldTris';
 import {
   billboardTextureKey,
@@ -91,7 +99,7 @@ import {
   type TintAt,
   worldShadowBox,
 } from '../backends/webgl/sceneMeshes';
-import { AUCUN_CHROME, billboardMaterial, poseBoards, type Board, type ChromeAt, type GlideAt } from './boardPose';
+import { AUCUN_CHROME, billboardMaterial, poseBoards, type Board, type ChromeAt, type FrameCamera, type GlideAt } from './boardPose';
 import { buildGroundAccentMeshes, maskGroundAccents, sceneGroundAccents } from '../backends/webgl/groundAccents';
 import {
   HIGHLIGHT_SLOTS,
@@ -110,7 +118,7 @@ import { HALO_SLOTS, buildHaloMesh } from '../backends/webgl/interactHaloMeshes'
 import { poseInteractHalos, type HaloPools } from './interactHaloPose';
 import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/spriteRaycast';
 import { setSpritePicker } from './spritePicker';
-import { stage3dFraming } from './stage3dCamera';
+import { stage3dFraming, type Stage3dFraming } from './stage3dCamera';
 import { stageLightScalars, stageLights } from './stageLights';
 import { applyFlicker, applyPointLights, createPointLightPool, hasFlicker, pointLightWrites, POINT_LIGHT_BUDGET, type PointLightSlots } from './stagePointLights';
 import type { LightSource } from '../../state/vision';
@@ -154,16 +162,38 @@ export function setStageRendererFactory(fabrique: ((canvas: HTMLCanvasElement) =
   fabriqueRenderer = fabrique;
 }
 
+/**
+ * CADRE d'une frame : ce dont la caméra se dérive, et RIEN de plus. Une UNION, parce que les deux
+ * regards n'ont aucune entrée commune — l'affine se cadre par la transformation d'écran du stage
+ * (`stage3dFraming` → `affineCamera`), le POV par la pose du groupe (`povCamera`). Ce que le mode
+ * n'utilise pas ne lui est donc pas fournissable : la vue première personne n'a ni cran, ni zoom, ni
+ * translation de viewBox à fabriquer pour satisfaire une signature.
+ *
+ * Le POV N'ENTRE PAS dans `ProjKind`/`Dims` (#1176, P3-1a) : la projection affine, le picking et les
+ * trois modules purs qui en dérivent (`geometry/iso`, `stage/projection`, `stage3dCamera`) resteraient
+ * à couvrir un cas qu'aucun d'eux ne sait exprimer.
+ */
+export type StageFrame =
+  /** Regard AFFINE : le cran/lacet, la translation caméra et le zoom du stage SVG. */
+  | { mode: 'affine'; dims: Dims; cam: { x: number; y: number }; zoom: number }
+  /**
+   * Regard PREMIÈRE PERSONNE : la case du groupe, son cap, et le milieu (dont dépend la portée).
+   * `cid` = le sujet dont le GLISSEMENT de marche déplace l'œil (`anim.glide`) : la caméra suit la
+   * position CONTINUE du meneur, comme la caméra volumique affine suit `anim.cam()`. ARBITRAGE
+   * D'INGÉNIERIE (#1176, P3-1a, révisable au goût final) : le pas-à-pas du POV SVG était une forme
+   * du PEINTRE (une projection recalculée par pas), pas une intention de jeu — `makeCamera` accepte
+   * une position continue, et les billboards du monde glissent déjà.
+   * Le LACET, lui, reste SEC : `facing` est un `Dir8`, donc l'œil pivote de 45° d'un coup là où la
+   * position, elle, glisse. Statu quo du POV SVG — même arbitrage d'ingénierie, révisable au goût.
+   */
+  | { mode: 'pov'; partyPos: { x: number; y: number; z?: number }; facing: Dir8; indoor: boolean; cid: string | null };
+
 export interface GameStage3DProps {
   scene: Scene;
-  /** Dimensions de carte AFFICHÉES (cran, edge-on, projection) — la même valeur que consomme le SVG. */
-  dims: Dims;
   /** Mètres par tuile. */
   mpt: number;
-  /** Translation caméra du stage (unités de viewBox). */
-  cam: { x: number; y: number };
-  /** Zoom APPLIQUÉ (creux de transition de cran compris). */
-  zoom: number;
+  /** D'où la caméra de la frame se dérive (cf. `StageFrame`). */
+  frame: StageFrame;
   /** Teinte de visibilité par case. */
   tintAt: TintAt;
   /** Verdict de dégagement d'architecture (canal GÉOMÉTRIE). */
@@ -245,12 +275,15 @@ export function artRot(dims: Dims): Rot {
   return ((Math.floor((freeYaw(dims) ?? (dims.rot ?? 0) * 90) / 90) % 4 + 4) % 4) as Rot;
 }
 
-export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim }: GameStage3DProps): JSX.Element {
+export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
   const cameraRef = useRef<THREE.Camera | null>(null);
-  const camRot = artRot(dims);
+  const pov = frame.mode === 'pov';
+  // ÉCART DÉCLARÉ (#1176, P3-1a → P3-1b) : en POV l'art des billboards reste au cran 0 de la voie
+  // ortho ; le lacet de l'œil ne le choisit pas encore.
+  const camRot = frame.mode === 'affine' ? artRot(frame.dims) : (0 as Rot);
 
   const three = useRef<THREE.Scene>();
   const monde = useRef<THREE.Group>();
@@ -395,16 +428,36 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     const h = canvas.clientHeight;
     if (!w || !h) return;
     renderer.setSize(w, h, false);
-    const f = stage3dFraming({ dims, mpt, cam: anim ? anim.cam() : cam, zoom, canvas: { w, h } });
-    const cible = new THREE.Vector3(f.centre.x, f.centre.y, f.centre.z);
-    const boite = geometry.boundingBox;
-    const rayon = boite ? boite.getSize(new THREE.Vector3()).length() / 2 : 100;
-    const distance = Math.max(50, rayon * 4);
-    const { camera } = affineCamera(f.kind, f.yawDeg, mpt, f.viewport, {
-      target: cible,
-      distance,
-      radius: rayon + (boite ? cible.distanceTo(boite.getCenter(new THREE.Vector3())) : 0) + 8,
-    });
+    // CAMÉRA DE LA FRAME : l'union de cadre (`StageFrame`) dit laquelle des deux se dérive, et rien
+    // au-delà de ces quelques lignes ne connaît le regard employé.
+    let camera: FrameCamera;
+    let f: Stage3dFraming | null = null;
+    if (frame.mode === 'pov') {
+      // La caméra GLISSE avec le marcheur : la case logique du groupe plus le décalage MONDE de
+      // l'instant (`anim.glide`, mètres → cases). Repère de `walkGlideM` : dx = est, dz = sud.
+      const g = frame.cid && anim ? anim.glide(frame.cid) : null;
+      const pos = g
+        ? { x: frame.partyPos.x + g.dx / mpt, y: frame.partyPos.y + g.dz / mpt, z: frame.partyPos.z }
+        : frame.partyPos;
+      // PORTÉE : la distance de rendu du milieu (`farTilesOf`, donnée d'ambiance), jamais un far
+      // généreux. Le ratio near/far d'un far de 4 km quantifie la profondeur au point que la
+      // séparation coplanaire ne survit plus (`backends/webgl/cameras.ts`, `orthoDepthRange`).
+      // ÉCART RÉSIDUEL : cet écran ne pose NI brume NI ciel (`outdoorFog`/`skyTexture`,
+      // `backends/webgl/sceneMeshes.ts`, consommés par le seul `SpikeScreen`) — l'horizon est donc
+      // tranché net sur le fond `BG` à cette distance. Câblage prévu au lot P3-1c.
+      camera = povCamera(scene, pos, frame.facing, { w, h }, farTilesOf(frame.indoor) * mpt);
+    } else {
+      f = stage3dFraming({ dims: frame.dims, mpt, cam: anim ? anim.cam() : frame.cam, zoom: frame.zoom, canvas: { w, h } });
+      const cible = new THREE.Vector3(f.centre.x, f.centre.y, f.centre.z);
+      const boite = geometry.boundingBox;
+      const rayon = boite ? boite.getSize(new THREE.Vector3()).length() / 2 : 100;
+      const distance = Math.max(50, rayon * 4);
+      camera = affineCamera(f.kind, f.yawDeg, mpt, f.viewport, {
+        target: cible,
+        distance,
+        radius: rayon + (boite ? cible.distanceTo(boite.getCenter(new THREE.Vector3())) : 0) + 8,
+      }).camera;
+    }
     // VACILLEMENT (#1245, L4) : l'intensité de l'INSTANT, posée sur les lampes montées avant tout le
     // reste. C'est elle que la passe de pose relit pour exposer les billboards — le personnage au pied
     // du braséro bat donc avec sa flaque, et par UNE seule valeur : celle que three va rendre.
@@ -417,27 +470,30 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       slots: flaquesÉcrites,
       surfaceLuminance: lumière.surfaceLuminance,
     }, chromeAt ?? AUCUN_CHROME);
-    // MARQUES DYNAMIQUES (P3-0d) : elles suivent la MÊME glisse que les quads, à la même frame et sur
-    // le même canal — un lien d'engagement posé à un rendu React attendrait le marcheur à l'arrivée.
-    poseDynamicMarks(poolsDyn.current, dynMarks ?? NO_DYNAMIC_MARKS, {
-      mpt,
-      glide: anim ? anim.glide : AUCUN_GLISSEMENT,
-      groundM: solM,
-      kind: f.kind, // l'anneau d'équipe n'a ni le même rayon ni la même compensation selon la vue
-      yawDeg: f.yawDeg, // les tirets de l'anneau d'équipe se mesurent à l'ÉCRAN : ils suivent la vue
-      chromeAt: chromeAt ?? AUCUN_CHROME, // l'anneau d'un corps estompé s'estompe avec lui (P3-0f)
-    });
-    // HALOS D'INTERACTION (P3-0g) : posés au même endroit, et pour une raison de plus — leur PULSATION
-    // est une fonction de l'horloge, donc elle ne s'écrit que dans la frame. `camQuat` : l'étincelle
-    // est un quad aligné écran, et son décalage se mesure en pixels d'écran comme en affine.
-    poseInteractHalos(poolsHalos.current, halos ?? NO_INTERACTION_HALOS, {
-      mpt,
-      groundM: solM,
-      kind: f.kind,
-      yawDeg: f.yawDeg,
-      camQuat: camera.quaternion,
-      tSec: performance.now() / 1000,
-    });
+    // MARQUES DYNAMIQUES (P3-0d) et HALOS D'INTERACTION (P3-0g) : ils suivent la MÊME glisse que les
+    // quads, à la même frame et sur le même canal — un lien d'engagement posé à un rendu React
+    // attendrait le marcheur à l'arrivée. Marques de sol et halos se mesurent à l'ÉCRAN d'une vue
+    // affine (`kind`/`yawDeg`) : la première personne n'en pose aucun (#1176, P3-1a).
+    if (f) {
+      poseDynamicMarks(poolsDyn.current, dynMarks ?? NO_DYNAMIC_MARKS, {
+        mpt,
+        glide: anim ? anim.glide : AUCUN_GLISSEMENT,
+        groundM: solM,
+        kind: f.kind, // l'anneau d'équipe n'a ni le même rayon ni la même compensation selon la vue
+        yawDeg: f.yawDeg, // les tirets de l'anneau d'équipe se mesurent à l'ÉCRAN : ils suivent la vue
+        chromeAt: chromeAt ?? AUCUN_CHROME, // l'anneau d'un corps estompé s'estompe avec lui (P3-0f)
+      });
+      // La PULSATION d'un halo est une fonction de l'horloge, donc elle ne s'écrit que dans la frame.
+      // `camQuat` : l'étincelle est un quad aligné écran, et son décalage se mesure en pixels d'écran.
+      poseInteractHalos(poolsHalos.current, halos ?? NO_INTERACTION_HALOS, {
+        mpt,
+        groundM: solM,
+        kind: f.kind,
+        yawDeg: f.yawDeg,
+        camQuat: camera.quaternion,
+        tSec: performance.now() / 1000,
+      });
+    }
     // CARTE D'OMBRE : elle ne se recuit QUE quand ce qu'elle contient a bougé — un casteur qui glisse,
     // ou un montage (lampes, monde, billboards) qui l'a demandée. Une rotation de caméra, un zoom, une
     // frame de marche où personne ne glisse : la carte 2048² de la frame précédente reste valide.
@@ -558,7 +614,10 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   // quads montés (ceux d'un combattant portent son id) plus les masses du monde, inscrites sans id
   // (une masse qui gagne le rayon = rien de cliquable ici, comme un mur peint par-dessus un jeton en
   // affine). L'inscription vit et meurt avec ce composant, qui n'est monté qu'en volumique.
+  // En PREMIÈRE PERSONNE, aucun picker n'est inscrit : cette vue n'a jamais eu d'affordance de clic
+  // (le SVG du POV n'en portait aucune) — l'inscrire en ouvrirait une par le seul changement de voie.
   useEffect(() => {
+    if (pov) return;
     setSpritePicker((clientX, clientY) => {
       const canvas = canvasRef.current;
       const camera = cameraRef.current;
@@ -574,7 +633,7 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       );
     });
     return () => setSpritePicker(null);
-  }, []);
+  }, [pov]);
 
   // Renderer UNIQUE (le canevas ne se remonte jamais).
   useEffect(() => {
@@ -912,6 +971,7 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
   // `data-precip` : le COMPTE de particules du semis d'intempéries — même raison que les deux autres
   // (le canevas n'a pas d'arbre), et la seule trace par laquelle la recette et les tests de montage
   // voient qu'il tombe quelque chose. Absent = rien ne tombe (météo claire, ou scène d'intérieur).
+  // `data-vue` : le REGARD de la frame (`affine` | `pov`) — même raison que les autres traces.
   return (
     <canvas
       ref={canvasRef}
@@ -922,6 +982,7 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
       data-lum={lumière.surfaceLuminance.toFixed(4)}
       data-lampes={`${flaquesÉcrites.filter((f) => f && f.intensity > 0).length}/${POINT_LIGHT_BUDGET}`}
       data-precip={champ ? champ.n : undefined}
+      data-vue={frame.mode}
     />
   );
 }

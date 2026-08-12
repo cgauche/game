@@ -60,9 +60,34 @@ export type CamPose = {
   z: number;
 };
 
+/** Cote de SOL sous une position CONTINUE (mètres). `heightAt` indexe un tableau de CASES : une
+ *  position fractionnaire n'y répond rien, et l'arrondir ferait sauter la cote d'un cran entier au
+ *  milieu d'un pas (un ressaut franchissable vaut jusqu'à `STEP_MAX_M` = 1 m). Les quatre cases qui
+ *  entourent la position sont donc interpolées bilinéairement : à une position ENTIÈRE le résultat
+ *  est exactement `heightAt` de la case, entre deux il suit la pente. Hors grille, l'échantillon est
+ *  pris à la case de BORD (jamais le 0 de `heightAt` hors bornes, qui creuserait le sol au bord d'une
+ *  carte surélevée). PUR. */
+export function groundUnderM(scene: Scene, x: number, y: number, z: number): number {
+  const { w, h } = scene.dimensions;
+  const x0 = Math.floor(x);
+  const y0 = Math.floor(y);
+  const tx = x - x0;
+  const ty = y - y0;
+  const cx = (i: number): number => (i < 0 ? 0 : i > w - 1 ? w - 1 : i);
+  const cy = (j: number): number => (j < 0 ? 0 : j > h - 1 ? h - 1 : j);
+  const h00 = heightAt(scene, cx(x0), cy(y0), z);
+  const h10 = heightAt(scene, cx(x0 + 1), cy(y0), z);
+  const h01 = heightAt(scene, cx(x0), cy(y0 + 1), z);
+  const h11 = heightAt(scene, cx(x0 + 1), cy(y0 + 1), z);
+  return (h00 * (1 - tx) + h10 * tx) * (1 - ty) + (h01 * (1 - tx) + h11 * tx) * ty;
+}
+
 /** Construit la pose de caméra depuis la scène, la position du groupe et son cap Dir8. PUR.
- *  eye.z = surface sous le groupe + `EYE_H` ; fwd = delta grille du cap (diagonale /√2) ; right = (−fwd.y, fwd.x)
- *  (cap N (0,−1) → right (1,0) = est). `mpt` = échelle métrique de la case. */
+ *  eye.z = sol sous le groupe + `EYE_H` ; fwd = delta grille du cap (diagonale /√2) ; right = (−fwd.y, fwd.x)
+ *  (cap N (0,−1) → right (1,0) = est). `mpt` = échelle métrique de la case.
+ *  `partyPos` peut être CONTINU (la marche volumique fait glisser l'œil, #1176 P3-1a) : la hauteur de
+ *  l'œil suit alors la pente CONTINUE du sol (`groundUnderM`) : à mi-pas d'un ressaut, l'œil est à
+ *  mi-hauteur du ressaut, et sa montée s'étale sur toutes les frames du pas. */
 export function makeCamera(scene: Scene, partyPos: { x: number; y: number; z?: number }, facing: Dir8): CamPose {
   const mpt = sceneMetresPerTile(scene);
   const z = partyPos.z ?? 0;
@@ -73,7 +98,7 @@ export function makeCamera(scene: Scene, partyPos: { x: number; y: number; z?: n
   const eye: Vec3 = {
     x: partyPos.x * mpt,
     y: partyPos.y * mpt,
-    z: heightAt(scene, partyPos.x, partyPos.y, z) + EYE_H,
+    z: groundUnderM(scene, partyPos.x, partyPos.y, z) + EYE_H,
   };
   return { eye, fwd, right, mpt, z };
 }
