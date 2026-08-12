@@ -118,6 +118,23 @@ export function anchorAndSize(heightM: number, aspectRatio: number): BillboardQu
   };
 }
 
+/** Ce qu'il faut d'un sujet pour en tailler le quad : sa famille, son échelle de jeton et sa BOÎTE
+ *  LOCALE (celle du fragment SVG rendu — `BillboardSubject.box`). */
+export interface QuadSubject {
+  kind: BillboardKind;
+  scaleK: number;
+  box: { w: number; h: number };
+}
+
+/** Quad d'un sujet : la hauteur monde de sa famille × son échelle, RAPPORTÉE à sa boîte locale.
+ *  L'échelle art→monde reste celle de la boîte canonique (`BB_H`) : une boîte plus haute AGRANDIT le
+ *  quad d'autant — le sujet y garde sa taille apparente au lieu d'être écrasé dedans. Boîte canonique
+ *  (tout sujet simple : rig, gabarit, décor) ⇒ facteur 1 et `BILLBOARD_BOX_ASPECT`. */
+export function subjectQuad(convention: BillboardConvention, sub: QuadSubject): BillboardQuad {
+  const heightM = (billboardHeightM(convention, sub.kind) * sub.scaleK * sub.box.h) / BB_H;
+  return anchorAndSize(heightM, sub.box.w / sub.box.h);
+}
+
 // ————————————————————————————————————————————————————————————————
 // 4. PALIER DE RASTERISATION
 // ————————————————————————————————————————————————————————————————

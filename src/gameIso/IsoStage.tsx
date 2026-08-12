@@ -52,7 +52,7 @@ import { GameStage3D, type StageWalkAnim } from './stage/GameStage3D';
 import { getStageBackend, subscribeStageBackend } from '../state/stage3d';
 import { getStageYaw, subscribeStageYaw, viewRot, viewYawDeg } from '../state/stageYaw';
 import { tintFor } from './backends/webgl/visibilityTint';
-import { actorPoseKey, type KeepEl, type ActorPose, type TintAt } from './backends/webgl/sceneMeshes';
+import { actorPoseKey, actorPoses, type KeepEl, type ActorPose, type TintAt } from './backends/webgl/sceneMeshes';
 import type { PropEl, TokenEl } from './builders/types';
 import { stageCamTransform } from './stage/stageCam';
 import { occupiedInteriorZoneIds, roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
@@ -572,8 +572,9 @@ export function IsoStage() {
  *
  * Les ACTEURS se dérivent des ÉLÉMENTS DU BUILDER (`tokenEls`), pas de `battle.combatants` : mêmes
  * filtres que la voie affine (passager de navire abstrait, structure de siège rendue sur son arête,
- * étage isolé, surplomb, brouillard). ÉCART RÉSIDUEL : un couple MONTÉ ne rend que sa MONTURE — le
- * corps composite cavalier+monture (`MountedToken`) n'a pas d'équivalent billboard.
+ * étage isolé, surplomb, brouillard). Un couple MONTÉ y entre comme UN acteur : la monture porte la
+ * case et l'échelle, le cavalier voyage avec elle (`ActorPose.rider`) et les deux sortent en UN seul
+ * billboard composite — le pendant du `MountedToken` affine.
  */
 function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, tokenEls, propEls, walksRef, partyToken, gameTime, lightLevel, lights, battle, highlightOpts, dynMarks, halos, chromes }: {
   scene: Scene;
@@ -610,13 +611,7 @@ function VolumetricWorld({ scene, dims, mpt, cam, camAt, zoom, tintAt, keepEl, t
   chromes: readonly TokenChromeMark[];
 }) {
   const facings = useGame((s) => s.facing); // orientation MONDE vivante par acteur (Dir8)
-  const poses: ActorPose[] = [];
-  for (const tk of tokenEls) {
-    const s = tk.subject;
-    const unit = s.kind === 'combatant' ? s.c : s.kind === 'mounted' ? s.mount : null;
-    if (!unit?.pos) continue;
-    poses.push({ c: unit, x: unit.pos.x, y: unit.pos.y, z: tk.cell.z, facing: facings[unit.id] });
-  }
+  const poses: ActorPose[] = actorPoses(tokenEls, facings);
   if (partyToken) {
     const z = partyToken.pos.z ?? 0;
     poses.push({ c: partyToken.leader, x: partyToken.pos.x, y: partyToken.pos.y, z, facing: facings[partyToken.leader.id] });

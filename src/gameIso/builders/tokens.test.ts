@@ -105,6 +105,37 @@ describe('buildTokens — combattants', () => {
     expect(els.filter((e) => e.subject.kind === 'combatant').map((e) => e.id).sort()).toEqual(['h1', 'm1']);
   });
 
+  it('un couple ENNEMI subit les MÊMES filtres qu’un ennemi à pied : brouillard et étage le coupent', () => {
+    const s = scene6();
+    const couple = (z = 0) => battleOf([
+      cbt('h1', 'hero', { x: 0, y: 0 }), // le viewer (sinon rien à voir depuis nulle part)
+      cbt('e1', 'enemy', { x: 4, y: 4, z }, { mountId: 'm1' }),
+      cbt('m1', 'enemy', { x: 4, y: 4, z }, { riderId: 'e1' }),
+    ]);
+    // Brouillard : aucune case vue → le couple ne s'affiche pas, comme le témoin à pied.
+    const rienDeVu = new Set(['0,0,0']);
+    expect(buildTokens(s, rienDeVu, couple(), VIEW).map((e) => e.key)).toEqual(['cbt:h1']);
+    const àPied = battleOf([cbt('h1', 'hero', { x: 0, y: 0 }), cbt('p1', 'enemy', { x: 4, y: 4 })]);
+    expect(buildTokens(s, rienDeVu, àPied, VIEW).map((e) => e.key)).toEqual(['cbt:h1']); // témoin
+    // La sonde mord : la case vue, le couple sort bien en composite.
+    const vu = new Set(['0,0,0', '4,4,0']);
+    expect(buildTokens(s, vu, couple(), VIEW).map((e) => e.key)).toEqual(['cbt:h1', 'mtd:m1']);
+    // Étage : un couple au z1 sur du VIDE (pas un surplomb) est coupé depuis l'étage actif 0.
+    s.layers.push({ z: 1, tiles: new Array(36).fill('vide') });
+    s.layers[0].tiles[4 * 6 + 4] = 'vide';
+    expect(buildTokens(s, new Set([...vu, '4,4,1']), couple(1), VIEW).map((e) => e.key)).toEqual(['cbt:h1']);
+  });
+
+  it('un couple HÉROS reste rendu dans le brouillard (les alliés sont les viewers)', () => {
+    const s = scene6();
+    // La monture porte le camp de son record (ennemi) : c'est le CAVALIER héros qui fait le viewer.
+    const b = battleOf([
+      cbt('h1', 'hero', { x: 4, y: 4 }, { mountId: 'm1' }),
+      cbt('m1', 'enemy', { x: 4, y: 4 }, { riderId: 'h1' }),
+    ]);
+    expect(buildTokens(s, new Set(), b, VIEW).map((e) => e.key)).toEqual(['mtd:m1']);
+  });
+
   it('saute une STRUCTURE de siège (rendue sur son arête) et un combattant d’étage supérieur non-surplomb', () => {
     const s = scene6();
     s.layers.push({ z: 1, tiles: new Array(36).fill('vide') });

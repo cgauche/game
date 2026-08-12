@@ -28,12 +28,10 @@ import { affineCamera, fitAffineView, povCamera, rotYaw, type AffineKind } from 
 import { pxPerM } from './worldTris';
 import { tintFor } from './visibilityTint';
 import {
-  billboardHeightM,
   billboardView,
-  anchorAndSize,
   rasterPxHeight,
   billboardTextureKey,
-  BILLBOARD_BOX_ASPECT,
+  subjectQuad,
   ZOOM_MAX,
   type BillboardConvention,
 } from './billboardMath';
@@ -322,9 +320,10 @@ export function SpikeScreen(): JSX.Element {
       const camRot: Rot = opts.view === 'pov' ? 0 : nearestRot(opts.yawDeg);
       const quads = subjects.map((sub) => {
         const { view, mirror } = billboardView(bbCam, sub.facing);
-        const heightM = billboardHeightM(opts.convention, sub.kind) * sub.scaleK;
-        const quad = anchorAndSize(heightM, BILLBOARD_BOX_ASPECT);
-        const pxHeight = rasterPxHeight(heightM, pxm);
+        // Le quad se taille sur la BOÎTE du sujet (un composite monté est plus haut que la boîte
+        // canonique — il gagne du quad, il ne s'y écrase pas).
+        const quad = subjectQuad(opts.convention, sub);
+        const pxHeight = rasterPxHeight(quad.heightM, pxm);
         // Le cran de caméra n'entre dans l'identité que pour le DÉCOR — `propSvg(ref, dir, camRot)`
         // en dépend, alors que le SVG d'un personnage l'ignore (`collectBillboards`, `sceneMeshes.ts`) :
         // l'y mettre rasterisait quatre fois la MÊME image.

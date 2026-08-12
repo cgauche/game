@@ -94,19 +94,27 @@ export function mountedPlanOpts(recordId: string | undefined, override?: EntityA
 }
 
 /**
- * Assoit `riderBones` sur `mountBones` (tous deux boîte 120×150) → composite trié. L'ancre de
- * SELLE est dérivée de l'os `tronc` de la monture (haut du barillet) → s'adapte à toute monture
- * et toute vue. Le cavalier est ramené dans la boîte de la monture (échelle relative k).
+ * POSE du cavalier dans la boîte de la monture : échelle relative k + ancre de SELLE dérivée de l'os
+ * `tronc` (haut du barillet) → s'adapte à toute monture et toute vue. Sa translation `y` est le HAUT
+ * de la boîte 0..150 du cavalier ramené dans la boîte de la monture : négative, le composite déborde
+ * par le haut de cette boîte (ce que la rasterisation doit savoir avant de dessiner).
  */
-export function seatRiderOnMount(mountBones: ResolvedBone[], riderBones: ResolvedBone[], opts: SeatOpts): ResolvedBone[] {
-  const { view, mountScale, riderScale, pelvisY = 96, lift = 4 } = opts;
+export function seatPlacement(mountBones: ResolvedBone[], opts: SeatOpts): Matrix {
+  const { mountScale, riderScale, pelvisY = 96, lift = 4 } = opts;
   const k = riderScale / mountScale;
   const tronc = mountBones.find((b) => b.id === 'tronc') ?? mountBones[0];
   // haut du barillet en coords boîte monture (matrice de l'os × point local échellé par la part).
   const saddle = tronc ? apply(tronc.matrix, { x: 0, y: SADDLE_LOCAL_Y * tronc.scale[1] }) : { x: 60, y: 75 };
-  const place: Matrix = [k, 0, 0, k, saddle.x - 60 * k, saddle.y - lift - pelvisY * k];
+  return [k, 0, 0, k, saddle.x - 60 * k, saddle.y - lift - pelvisY * k];
+}
+
+/**
+ * Assoit `riderBones` sur `mountBones` (tous deux boîte 120×150) → composite trié. Le cavalier est
+ * ramené dans la boîte de la monture par `seatPlacement`.
+ */
+export function seatRiderOnMount(mountBones: ResolvedBone[], riderBones: ResolvedBone[], opts: SeatOpts): ResolvedBone[] {
   return composeComposite([
-    { bones: mountBones, z: (b) => b.z },                 // monture : z natif du gabarit
-    { bones: riderBones, place, z: riderZForQuad(view) }, // cavalier : remappé + assis
+    { bones: mountBones, z: (b) => b.z },                                            // monture : z natif du gabarit
+    { bones: riderBones, place: seatPlacement(mountBones, opts), z: riderZForQuad(opts.view) }, // cavalier : remappé + assis
   ]);
 }

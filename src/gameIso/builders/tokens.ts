@@ -24,6 +24,22 @@ export interface TokenView {
   top: boolean;
 }
 
+/** Filtres de CASE d'un combattant — étage isolé/actif, surplomb de muraille, brouillard. Les mêmes
+ *  pour un fantassin et pour un couple monté (qui les prend à la case de sa MONTURE) : un couple ne
+ *  peut pas rester visible là où le même ennemi à pied est coupé. `héros` = allié VIEWER (jamais
+ *  masqué par sa propre vue) ; pour un couple, l'un OU l'autre des deux corps suffit. */
+function cutByView(scene: Scene, visible: ReadonlySet<string> | undefined, view: TokenView, pos: { x: number; y: number; z?: number }, héros: boolean): { cut: boolean; overhang: boolean } {
+  const cz = pos.z ?? 0;
+  // Jeton de muraille vu d'en bas : un combattant posé sur un SURPLOMB au-dessus de la zone active
+  // reste rendu (défenseurs/pièces ciblables depuis la cour — parité avec le picking cross-couche).
+  const overhang = view.viewZ == null && cz > view.activeZ && isOverhang(scene, pos.x, pos.y, cz);
+  if (view.viewZ != null ? cz !== view.viewZ : cz > view.activeZ && !overhang) return { cut: true, overhang };
+  // Brouillard : un ennemi/PNJ que personne du groupe ne voit n'est pas dessiné (les alliés, qui
+  // SONT les viewers, restent toujours rendus). Clé z-aware = l'étage du combattant.
+  if (!héros && visible && !visible.has(`${pos.x},${pos.y},${cz}`)) return { cut: true, overhang };
+  return { cut: false, overhang };
+}
+
 /** Éléments `token` de la scène — figurants (toujours), puis combattants (si `battle`). Les hors-vue
  *  sont COUPÉS (une créature non vue n'est pas dessinée) → tout token émis est VISIBLE (au-dessus du
  *  voile de brouillard). `visible` ABSENT = aucune loi de vue (planches QC, spike : elles jugent
@@ -72,14 +88,9 @@ export function buildTokens(scene: Scene, visible: ReadonlySet<string> | undefin
     // Structure de siège : AUCUN jeton de case — elle se rend sur son ARÊTE (hit-area `data-cid`).
     if (isStructure(c)) continue;
     const cz = c.pos.z ?? 0;
-    // Jeton de muraille vu d'en bas : un combattant posé sur un SURPLOMB au-dessus de la zone active
-    // reste rendu (défenseurs/pièces ciblables depuis la cour — parité avec le picking cross-couche).
-    const overhang = viewZ == null && cz > activeZ && isOverhang(scene, c.pos.x, c.pos.y, cz);
-    if (viewZ != null ? cz !== viewZ : cz > activeZ && !overhang) continue;
     const isHero = c.kind === 'hero';
-    // Brouillard : un ennemi/PNJ que personne du groupe ne voit n'est pas dessiné (les alliés, qui
-    // SONT les viewers, restent toujours rendus). Clé z-aware = l'étage du combattant.
-    if (!isHero && visible && !visible.has(`${c.pos.x},${c.pos.y},${cz}`)) continue;
+    const { cut, overhang } = cutByView(scene, visible, view, c.pos, isHero);
+    if (cut) continue;
     // Combat monté (iso) : cavalier rendu EN SELLE (couple composite ci-dessous) ; en vue du dessus,
     // cavalier et monture sont deux pions distincts.
     if (!top && isRider(c)) {
@@ -96,18 +107,26 @@ export function buildTokens(scene: Scene, visible: ReadonlySet<string> | undefin
       states: { visible: true },
     });
   }
-  // Couples MONTÉS (iso seulement) : UN corps composite à la tuile/empreinte de la monture.
+  // Couples MONTÉS (iso seulement) : UN corps composite à la tuile/empreinte de la monture, filtré
+  // comme n'importe quel combattant — équipage abstrait, étage, surplomb, brouillard.
+  //
+  // ÉCART RÉSIDUEL DÉCLARÉ (#1176, P3-5) : en vue du DESSUS (`top`), le couple redevient DEUX pions
+  // superposés (branche ci-dessus) — c'est le comportement des pions-portraits de la voie affine, et
+  // le monde volumique en hérite deux billboards à la même case. La vue du dessus tactique le tranche.
   if (!top)
     for (const mount of battle.combatants) {
       if (!isMount(mount) || !mount.pos) continue;
       const rider = riderOf(battle, mount);
       if (!rider) continue;
-      const mz = mount.pos.z ?? 0;
+      if (isPassengerInBattle(mount, battle.combatants, isMerScene(scene))) continue;
+      // Un couple est VIEWER dès que l'un des deux corps est un héros (le cheval d'un héros ne
+      // disparaît pas parce que le record de la monture est d'un autre camp).
+      if (cutByView(scene, visible, view, mount.pos, mount.kind === 'hero' || rider.kind === 'hero').cut) continue;
       out.push({
         kind: 'token',
         key: `mtd:${mount.id}`,
         id: mount.id,
-        cell: { x: mount.pos.x, y: mount.pos.y, z: mz },
+        cell: { x: mount.pos.x, y: mount.pos.y, z: mount.pos.z ?? 0 },
         subject: { kind: 'mounted', mount, rider },
         states: { visible: true },
       });

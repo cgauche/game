@@ -38,11 +38,13 @@ import type { RigOverlay } from '../../rig/bones';
 import { entityRigProfileFor, enemyRigProfile, rendersFromOwnInventory } from '../../rig/enemyProfile';
 import { planById, planOptsForRecord, type RenderResolution, type ResolveOpts } from '../../rig/bodyPlan';
 import { defaultAppearance, type Appearance } from '../../rig/appearance';
-import { equipFromCombatant, type EquipCtx } from '../../rig/parts/equipment';
+import { equipFromCombatant, isShield, type EquipCtx } from '../../rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from '../../rig/parts/combatantVisuals';
+import { mountedPlanOpts, mountedRest, seatPlacement, seatRiderOnMount } from '../../rig/mountedRig';
+import { diagOnce } from '../../rig/devDiag';
 import { isStructure } from '../../../engine/structures';
 import type { Combatant } from '../../../engine/types';
-import { combatantRender, combatantTokenScale, entityRender, entityTokenScale, sceneEntityForRender } from '../../sizeScale';
+import { combatantRender, combatantTokenScale, entityRender, entityTokenScale, sceneEntityForRender, sizeTokenScale } from '../../sizeScale';
 import { groundStateOf, planGroundPose, rigGroundPose, type GroundState } from '../../groundPose';
 import { hash32 } from '../../detail/hash';
 import { entitySize } from '../../../state/spawn';
@@ -516,6 +518,24 @@ export interface ActorPose {
   z: number;
   /** Orientation MONDE vivante (store `facing`, jamais un champ du combattant). */
   facing?: Dir8;
+  /** CAVALIER du couple, quand `c` est une MONTURE portée (`TokenSubjectEl` `mounted`) : le sujet
+   *  devient alors UN billboard COMPOSITE (cavalier assis sur la monture, trié à l'os), à la case et
+   *  à l'échelle de la monture — comme le `BodyToken` unique de la voie affine. */
+  rider?: Combatant;
+}
+
+/** Poses d'acteur des ÉLÉMENTS DU BUILDER — la SEULE dérivation acteurs du monde volumique (l'écran
+ *  n'a aucun second jeu de lois : les filtres de rendu sont déjà ceux du builder). Un couple MONTÉ
+ *  donne UNE pose : la monture porte case et échelle, le cavalier voyage avec elle. */
+export function actorPoses(tokenEls: readonly TokenEl[], facings: Record<string, Dir8 | undefined>): ActorPose[] {
+  const out: ActorPose[] = [];
+  for (const tk of tokenEls) {
+    const s = tk.subject;
+    const unit = s.kind === 'combatant' ? s.c : s.kind === 'mounted' ? s.mount : null;
+    if (!unit?.pos) continue;
+    out.push({ c: unit, x: unit.pos.x, y: unit.pos.y, z: tk.cell.z, facing: facings[unit.id], ...(s.kind === 'mounted' ? { rider: s.rider } : {}) });
+  }
+  return out;
 }
 
 /** Tout ce dont le DESSIN d'un acteur dépend, résolu à UN seul endroit : le tracé (`actorBillboards`)
@@ -577,7 +597,69 @@ export function combatantRenderSignature(c: Combatant): string {
  *  source que l'identité de cache de texture : une entrée de dessin ne peut pas périmer l'une sans
  *  l'autre. */
 export function actorPoseKey(p: ActorPose): string {
-  return `${p.c.id}:${p.x},${p.y},${p.z}:${p.facing ?? ''}:${combatantRenderSignature(p.c)}`;
+  const monté = p.rider ? `+${p.rider.id}:${combatantRenderSignature(p.rider)}` : '';
+  return `${p.c.id}:${p.x},${p.y},${p.z}:${p.facing ?? ''}:${combatantRenderSignature(p.c)}${monté}`;
+}
+
+/** Les trois vues d'un corps. La boîte d'un sujet est UNE (le quad ne change pas quand la caméra
+ *  tourne) : une boîte dérivée du dessin se mesure donc sur les trois. */
+const VUES: readonly View[] = ['front', 'profile', 'back'];
+
+/** Couple MONTÉ (LDB 14 l.175-187) rendu comme UN SEUL corps : le cavalier est ASSIS sur les os réels
+ *  de la monture (`seatRiderOnMount` : ancre de selle dérivée de l'os `tronc`, z du cavalier remappé
+ *  dans l'échelle du quadrupède), et le composite trié à l'os sort en UN fragment SVG — la MÊME
+ *  composition que le corps affine (`MountedToken`), sans ses hooks d'animation. La monture donne la
+ *  vue et le miroir du couple ; le cavalier prend la pose montée (`mountedRest`, selon l'arme tenue).
+ *
+ *  Le couple est le premier sujet à DÉBORDER la boîte canonique : assis, le cavalier monte au-dessus
+ *  du garrot, et son crâne sortait par le haut d'une boîte de rasterisation 120×150 (mesuré #1176 :
+ *  −18,6 en face). La boîte rendue est donc HAUSSÉE du débord et le fragment descend d'autant — pieds
+ *  de la monture au bas de la boîte, ancre inchangée, quad plus haut (`subjectQuad`).
+ *
+ *  `null` = monture sans gabarit ou cavalier sans rig : l'appelant retombe sur le corps SEUL de la
+ *  monture (le cavalier disparaît — défaut de DONNÉE, dit une fois en dev). */
+function mountedSvg(
+  mount: Combatant,
+  rider: Combatant,
+  riderInputs: ActorDrawInputs,
+): { draw: (view: View, mirror: boolean) => string; box: { w: number; h: number } } | null {
+  const mr = combatantRender(mount);
+  const plan = planById(mr.plan);
+  if (!plan || !riderInputs.rig) {
+    if (import.meta.env?.DEV)
+      diagOnce(`monté:${mount.id}+${rider.id}`, () =>
+        console.error(
+          `[bodyPlan] couple monté « ${mount.creatureId ?? mount.label} » + « ${rider.creatureId ?? rider.label} » : ${plan ? 'cavalier sans rig humanoïde' : 'monture sans gabarit'} — seule la monture est dessinée, donnée à corriger.`,
+        ),
+      );
+    return null;
+  }
+  const { appearance, equip, tenue, overlays } = riderInputs.rig;
+  const ground = groundStateOf(mount);
+  const couché = planGroundPose(plan, ground);
+  const opts: ResolveOpts = {
+    ...mountedPlanOpts(mount.creatureId, mount.appearanceOverride),
+    ...(ground ? { wings: 'spread' as const } : {}),
+  };
+  const arme = equip.weapons?.find((w) => !isShield(w)) ?? equip.weapons?.[0];
+  // k : échelle du cavalier DANS la boîte de la monture — chaîne d'échelles monde (art × Taille),
+  // la même dérivation que `MountedToken`, jamais une constante.
+  const k = combatantRender(rider).scale / (mr.scale * sizeTokenScale(mount.size));
+  const osMonture = (view: View) => plan.resolve(mr.species, view, couché ?? plan.restPose(), opts);
+  const assise = (view: View) => ({ view, mountScale: 1, riderScale: k });
+  // Haut de la boîte du cavalier (0..150, contrat du rig) ramenée dans la boîte de la monture, pris
+  // à la vue la plus haute : négatif = ce qui manque de ciel au-dessus des 150 px.
+  const haut = Math.min(...VUES.map((v) => seatPlacement(osMonture(v), assise(v))[5]));
+  const débord = Math.max(0, Math.ceil(-haut));
+  return {
+    box: { w: BB_W, h: BB_H + débord },
+    draw: (view, mirror) => {
+      const riderBones = resolveRig(appearance, equip, mountedRest(view, arme), tenue, view, overlays, mirror);
+      const body = bonesToSvg(seatRiderOnMount(osMonture(view), riderBones, assise(view)));
+      const posé = mirror ? `<g transform="translate(${BB_W},0) scale(-1,1)">${body}</g>` : body;
+      return débord ? `<g transform="translate(0,${débord})">${posé}</g>` : posé;
+    },
+  };
 }
 
 /** Billboards des ACTEURS (héros, ennemis, alliés) — le pendant volumique de ce que le stage affine
@@ -595,16 +677,23 @@ export function actorPoseKey(p: ActorPose): string {
 export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt: number, tintAt: TintAt): BillboardSubject[] {
   const defs = `<defs>${DEFS}</defs>`;
   const out: BillboardSubject[] = [];
-  for (const { c, x, y, z, facing } of actors) {
+  for (const { c, x, y, z, facing, rider } of actors) {
     if (isStructure(c)) continue;
     const inputs = actorDrawInputs(c);
     const { render: r, ground } = inputs;
-    let draw: ((view: View, mirror: boolean) => string) | null = null;
-    if (inputs.rig) {
+    // Couple MONTÉ : UN sujet composite (jamais deux quads superposés), à la case et à l'échelle de
+    // la monture — le pendant du `BodyToken` unique de la voie affine (`stage/tokens.tsx`). Une monture
+    // sans gabarit ou un cavalier sans rig retombe sur le corps SEUL de la monture, ci-dessous.
+    // Les entrées du cavalier sont résolues UNE fois : le tracé du composite et sa signature les
+    // partagent (`actorDrawInputs` traverse tout l'équipement et la garde-robe).
+    const riderInputs = rider ? actorDrawInputs(rider) : undefined;
+    const monté = rider && riderInputs ? mountedSvg(c, rider, riderInputs) : null;
+    let draw: ((view: View, mirror: boolean) => string) | null = monté?.draw ?? null;
+    if (!draw && inputs.rig) {
       const { appearance, equip, tenue, overlays } = inputs.rig;
       const couché = rigGroundPose(ground);
       draw = (view, mirror) => bonesToSvg(resolveRig(appearance, equip, couché ?? {}, tenue, view, overlays, mirror));
-    } else {
+    } else if (!draw) {
       const plan = planById(r.plan);
       if (plan) {
         // Gabarit AU SOL : pose de mort (ou affaissement À Terre) et ailes ÉTALÉES, comme `usePlanAnim`.
@@ -620,17 +709,20 @@ export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt:
       }
     }
     if (!draw) continue;
+    const composite = monté ? rider : undefined; // cavalier RÉELLEMENT entré dans le fragment
     const trace = draw;
     const off = (sizeFootprint(c.size) - 1) / 2;
     out.push({
-      identity: `acteur:${c.id}|${hash32(stableStr(inputs)).toString(16)}`, // la signature du DESSIN, cf. `combatantRenderSignature`
+      // la signature du DESSIN, cf. `combatantRenderSignature` — le couple monté a SA clé (les deux
+      // corps y entrent) : ni la monture seule ni le cavalier à pied ne peuvent la resservir.
+      identity: `acteur:${c.id}${composite ? `+${composite.id}` : ''}|${hash32(stableStr(composite ? [inputs, riderInputs] : inputs)).toString(16)}`,
       cid: c.id,
       kind: 'personnage',
       anchor: new THREE.Vector3((x + off) * mpt, heightAt(scene, Math.round(x), Math.round(y), z), (y + off) * mpt),
       facing: facing ?? 'S',
       scaleK: inputs.scaleK,
       tint: tintAt(`${Math.round(x)},${Math.round(y)},${z}`),
-      box: { w: BB_W, h: BB_H },
+      box: monté?.box ?? { w: BB_W, h: BB_H },
       svg: (view, mirror) => defs + trace(view, mirror),
     });
   }

@@ -69,12 +69,10 @@ import { heightAt, type Scene } from '../../state/scene';
 import { affineCamera } from '../backends/webgl/cameras';
 import { pxPerM } from '../backends/webgl/worldTris';
 import {
-  BILLBOARD_BOX_ASPECT,
-  anchorAndSize,
-  billboardHeightM,
   billboardTextureKey,
   billboardView,
   rasterPxHeight,
+  subjectQuad,
 } from '../backends/webgl/billboardMath';
 import { clearBillboardTextures, getBillboardTexture, svgToTexture } from '../backends/webgl/svgTexture';
 import { clearPeriodTextures, getPeriodTexture } from '../backends/webgl/periodTexture';
@@ -356,7 +354,7 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     () => worldShadowBox(
       geometry.boundingBox ?? new THREE.Box3(new THREE.Vector3(), new THREE.Vector3(1, 1, 1)),
       subjects,
-      (s) => anchorAndSize(billboardHeightM(CONVENTION, s.kind) * s.scaleK, BILLBOARD_BOX_ASPECT),
+      (s) => subjectQuad(CONVENTION, s),
     ),
     [geometry, subjects],
   );
@@ -783,13 +781,14 @@ export function GameStage3D({ scene, dims, mpt, cam, zoom, tintAt, keepEl, els, 
     let annule = false;
     const pxm = pxPerM(mpt);
     const quads = subjects.map((sub) => {
-      const heightM = billboardHeightM(CONVENTION, sub.kind) * sub.scaleK;
-      const quad = anchorAndSize(heightM, BILLBOARD_BOX_ASPECT);
+      // Le quad se taille sur la BOÎTE du sujet : un composite plus haut que la boîte canonique
+      // (couple monté) gagne du quad au lieu d'être tranché à la rasterisation.
+      const quad = subjectQuad(CONVENTION, sub);
       // L'art de décor n'existe qu'AUX crans (`propSvg(ref, dir, camRot)`) ; celui d'un personnage
       // l'ignore — l'y mettre rasteriserait quatre fois la MÊME image.
       const identity = sub.kind === 'prop' ? `${sub.identity}|r${camRot}` : sub.identity;
       const { view, mirror } = billboardView({ kind: 'ortho', yawDeg: camRot * 90 }, sub.facing);
-      const pxHeight = rasterPxHeight(heightM, pxm);
+      const pxHeight = rasterPxHeight(quad.heightM, pxm);
       const key = billboardTextureKey(identity, view, mirror, pxHeight);
       return { sub, quad, texture: getBillboardTexture(key, () => svgToTexture(sub.svg(view, mirror, camRot), sub.box, pxHeight)) };
     });
