@@ -1179,20 +1179,17 @@ interface MonoBase {
   rollLabel?: string;
   /** Tag de DONNÉE `menace` (auto-succès du talent Résistance (Menace), LDB 10). */
   menace?: string;
-  /** ENJEU du jet (#1117). ENCORE optionnel, et le reste est CHIFFRÉ : des 43 sites d'appel du mint
-   *  en production, 20 étaient muets à la sonde `tsc` du lot (« `stake` requis ») ; 18 sont dotés,
-   *  il en reste DEUX, et c'est le MÊME maillon — les fabriques d'étape de `combat/triggeredTest.ts`
-   *  (l.203 simple, l.523 opposée), génériques : elles TRANSMETTENT `FlowTest.stake`.
+  /** ENJEU du jet (#1117) — DÉCLARATION REQUISE (#1262 V2 L6d) : le champ n'est plus optionnel, une
+   *  étape mono ne peut PLUS se déclarer sans parler de son enjeu. La valeur peut être `undefined`
+   *  (résiduel : un porteur non résoluble, cf. `monoStep`, qui le REFUSE bruyamment) — ce que le type
+   *  supprime, c'est l'omission SILENCIEUSE, celle qui ne se voyait qu'au scan textuel.
    *
-   *  CE QUI TIENT ENCORE LA PORTE, re-mesuré le 2026-08-12 (#1262 V2 L6c) : ce n'est PLUS le vocabulaire
-   *  d'authoring (les Flows de DOCUMENT ont leur forme, `AuthoredStake`, et `validateScene` les exige),
-   *  ce sont les FlowTest authorés en DONNÉE app-owned — 74 nœuds `kind:'test'` muets dans
-   *  `src/data/*.json` (spells 46, trappings 14, etats 3, talents 3, traits 3, maneuvers 2, qualities 2,
-   *  symptoms 1), hors de la couverture du cliquet (il ne scanne que des sources TS). Rendre `stake`
-   *  requis ICI ferait de chacun d'eux un jet refusé au runtime. Le murage attend leur dotation, pas
-   *  une porte de plus ; un repli générique resterait l'enjeu tautologique que le contrat interdit
-   *  (« le transport n'en invente pas », `flowtest-stake-wiring.test.ts`). */
-  stake?: StakeRef;
+   *  CE QUI A OUVERT LA PORTE, mesuré le 2026-08-12 : les 74 `FlowTest` authorés en DONNÉE app-owned
+   *  (spells 46, trappings 14, etats 3, talents 3, traits 3, maneuvers 2, qualities 2, symptoms 1) ne
+   *  sont plus muets — ils DÉRIVENT leur enjeu de l'entité qui les exige (`derivedStake`, arbitrage
+   *  user 2026-08-12), résolu au montage par `withDerivedStake` (`combat/triggeredTest.ts`). Les deux
+   *  fabriques génériques de ce module TRANSMETTENT donc un enjeu toujours calculé, jamais deviné. */
+  stake: StakeRef | undefined;
   meta?: CascadeStepMeta;
   /** HYBRIDE jet + RÉVÉLATION (#1262 B5) : la charge riche qui met le jet en situation. */
   reveal?: RevealEntry;
@@ -1231,6 +1228,10 @@ export type MonoSpec = MonoBase & (
  * La CIBLE est le garde-fou : une étape sans `target` est classée `'affichage'` par `stepInteraction`
  * (`cascade.ts`) — elle serait donc « prête » d'office, validée sans qu'aucun dé ne tombe. Un jet
  * fantôme, pas une étape muette. `undefined` (DEV : throw) plutôt que cette fenêtre-là.
+ *
+ * L'ENJEU est le second : le TYPE oblige à le déclarer (`MonoSpec.stake`), la porte REFUSE sa valeur
+ * muette (DEV : throw ; PROD : journalisée, la fenêtre s'ouvre sans phrase plutôt que de perdre le
+ * jet — la dégradation est visible, jamais silencieuse).
  */
 export function monoStep(spec: MonoSpec): BuiltCascadeStep | undefined {
   const parts = spec.montee
@@ -1239,6 +1240,10 @@ export function monoStep(spec: MonoSpec): BuiltCascadeStep | undefined {
     refusePorte(`mono « ${spec.id} » (${spec.kind}) : cible non calculable pour « ${spec.actor.label} » `
       + '— l\'étape serait un pur affichage, validé sans qu\'aucun dé ne tombe. Aucun jet ouvert.');
     return undefined;
+  }
+  if (!spec.stake) {
+    refusePorte(`mono « ${spec.id} » (${spec.kind}) : enjeu MUET — ni déclaré par le producteur, ni dérivable `
+      + 'de l\'entité porteuse. La fenêtre s\'ouvre sans dire ce qui se joue.');
   }
   return {
     id: spec.id,
@@ -1271,9 +1276,20 @@ export interface TableSpec {
   /** ENJEU du tirage — REQUIS au TYPE (#1117/#1262 V2 L6) : la famille des étapes à table est le seul
    *  mint dont TOUS les sites de production sont dotés (mesure du lot : 0 site muet hors tests), donc
    *  le compilateur y remplace le cliquet textuel. `tableStepDone` en hérite (`TableDoneSpec`), et
-   *  l'enjeu redescend ensuite à la ligne jouée (`stakeAtTableRow`, `cascade.ts`). Les autres mints
-   *  (`MonoSpec`, `BandSpec`, `HostSpec`, `RollRequest`) gardent `stake?` : leur stock est mesuré et
-   *  non nul — la mesure vit dans `cascade-step-stake-guard.test.ts`. */
+   *  l'enjeu redescend ensuite à la ligne jouée (`stakeAtTableRow`, `cascade.ts`). `MonoSpec` l'a
+   *  rejoint (#1262 V2 L6d).
+   *
+   *  LES TROIS FAMILLES QUI RESTENT OUVERTES, chiffrées au TYPE le 2026-08-12 (sonde : rendre le champ
+   *  requis, compter les sites de PRODUCTION qui ne compilent plus) — aucune ne tombe à 0, donc aucune
+   *  ne se mure :
+   *   · `RollRequest` : 7 sites (2 RELAIS génériques ici même — `openPartyTest`/`openWorldTest`
+   *     transmettent l'enjeu de leur appelant ; 4 SONDES DE SURFACE `resolveSurface` — `seaActivities`,
+   *     `seaVoyageFlow` ×3, qui ne décrivent aucun jet propre ; 1 jet de taverne à curer, `tavernFlow`) ;
+   *   · `BandSpec` : 9 sites (dont 4 FABRIQUES de bande génériques — `nightBands`, `combatEndBands`,
+   *     `pursuitFlow`, les 2 batch de `combat/triggeredTest` — qui transmettent l'enjeu de l'étape) ;
+   *   · `HostSpec` : 13 sites (les jets HÔTES d'attaque/défense/incantation/maladresse, dont l'enjeu
+   *     est porté par la fenêtre du jet lui-même, cf. #1262 V2 lot 5a).
+   *  La mesure textuelle survivante vit dans `cascade-step-stake-guard.test.ts` (baselines nominatives). */
   stake: StakeRef;
   /** CHARGE de l'applier « sévérité du Critique » (`combatFlow`) : de quel coup le d100 posé décide.
    *  Recopiée telle quelle — une charge n'est pas une forme : elle ne rend rien et ne change pas

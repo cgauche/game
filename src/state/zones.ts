@@ -10,7 +10,7 @@
  * l'ancienne fumée. La TÉLÉPORTATION ne « traverse » pas (apparition — exempte d'onCross).
  */
 import type { Pt } from './path';
-import type { Combatant } from '../engine/types';
+import type { Combatant, EffectSource } from '../engine/types';
 import type { RNG } from '../engine/dice';
 import { Formula, GameOp, resolveFormula, applyOps } from '../engine/ops';
 import type { FlowTest } from '../engine/flowCore';
@@ -51,6 +51,10 @@ export interface BattleZone {
   noCorruption?: boolean;
   /** Référent des formules de l'effet (« votre BFM » = le lanceur) — résolu à l'application. */
   casterId?: string;
+  /** ENTITÉ qui a POSÉ la zone (ids stables, `EffectSource`) — le sort/trait dont elle est l'œuvre.
+   *  Le Test de traversée (`crossTest`) en DÉRIVE son enjeu et son renvoi Codex (#1262 V2 L6d) :
+   *  sans elle, la fenêtre demanderait un jet sans dire ce qui barre le passage. */
+  source?: EffectSource;
 }
 
 /** Le combattant `mover` est-il GATÉ par la zone `z` (ciblé par sa barrière / son `perRound`) ? `gate:

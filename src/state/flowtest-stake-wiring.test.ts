@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { runFlow } from './combatFlow';
 import { testFlow, EMPTY_FLOW } from './flow';
-import { combatStakeRef, resolveStake } from '../data';
+import { combatStakeRef, resolveStake, findSpellById } from '../data';
+import { routeTriggeredTest } from './combat/triggeredTest';
 import { planClimb } from './climbMove';
 import { emptyScene, type Scene } from './scene';
 import type { Combatant } from '../engine/types';
@@ -51,9 +52,34 @@ describe('l’enjeu d’un `FlowTest` DESCEND jusqu’à l’étape qui lance, v
     expect(resolveStake(step.stake!).rule).toEqual({ category: 'regles', id: 'chute' });
   });
 
-  it('sans enjeu authoré, l’étape reste sans `stake` (le transport n’en invente pas)', () => {
+  it('sans enjeu déclaré NI porteur, l’étape reste sans `stake` (le transport n’en invente pas)', () => {
     runFlow(useGame.getState, useGame.setState, testFlow({ skill: 'escalade', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(firstStep().stake).toBeUndefined();
+  });
+
+  /**
+   * LES DEUX ÉTAGES du contrat (#1262 V2 L6d, arbitrage user 2026-08-12 : « Le socle dérive l'enjeu de
+   * l'entité porteuse […]. Un auteur PEUT toujours surcharger par un texte authoré. ») — mesurés sur le
+   * CHEMIN RÉEL du Test déclenché (`routeTriggeredTest` → l'étape qui lance), pas sur la fonction pure :
+   *  · étage 2 — un `FlowTest` de DONNÉE, muet, exigé par une entité : l'étape dit « ce qui se joue »
+   *    en NOMMANT cette entité, et son renvoi Codex vise SA fiche ;
+   *  · étage 1 — le même jet, déclaré : l'enjeu déclaré PRIME, le porteur ne le recouvre pas.
+   */
+  it('étage 2 : un jet MUET exigé par une entité DÉRIVE son enjeu du porteur, jusqu’à l’étape', () => {
+    routeTriggeredTest(useGame.getState, useGame.setState, useGame.getState().party[0], useGame.getState().party[0],
+      testFlow({ skill: 'escalade', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW), { source: { kind: 'spell', id: 'chute' } });
+    const stake = firstStep().stake;
+    expect(stake, 'jet muet : le porteur n’a pas été lu').toBeTruthy();
+    const resolu = resolveStake(stake!);
+    expect(resolu.text, 'l’enjeu doit NOMMER l’entité porteuse').toContain(findSpellById('chute')!.label);
+    expect(resolu.rule, 'le renvoi Codex vise la fiche de l’entité').toEqual({ category: 'spells', id: 'chute' });
+  });
+
+  it('étage 1 : l’enjeu DÉCLARÉ prime — la dérivation ne recouvre jamais l’auteur', () => {
+    const stake = combatStakeRef('climbTest', { values: { metres: 4 } });
+    routeTriggeredTest(useGame.getState, useGame.setState, useGame.getState().party[0], useGame.getState().party[0],
+      testFlow({ skill: 'escalade', stake, requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW), { source: { kind: 'spell', id: 'chute' } });
+    expect(firstStep().stake).toEqual(stake);
   });
 
   /**

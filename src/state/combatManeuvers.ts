@@ -46,7 +46,7 @@ import { chebyshev, type Pt } from './path';
 import { combatantsWithinRadius } from './combatGeometry';
 import { smokeZone } from './lineOfSight';
 import { clampZoneTiles, inMapBounds } from './zones';
-import { applyTriggeredEffects } from './triggeredEffects';
+import { applyTriggeredEffects, maneuverEffects } from './triggeredEffects';
 import { canTakeAction } from '../engine/conditions';
 import { isEngagedWith, longerThanShort, markAttacked } from '../engine/engagement';
 import { areGrappling } from '../engine/grapple';
@@ -100,7 +100,7 @@ export function applyManeuverEffects(
   const lines: string[] = [];
   const hadEmpetre = stacks(tgt, COND.empetre);
   const before = tgt.wounds.current;
-  lines.push(...applyTriggeredEffects(get, attacker, def.effects ?? [], 'onHit', { victim: tgt, margin, indice, rng, set }));
+  lines.push(...applyTriggeredEffects(get, attacker, maneuverEffects(def), 'onHit', { victim: tgt, margin, indice, rng, set }));
   const wl = before - tgt.wounds.current;
   if (wl > 0) floatDamage(tgt, wl);
   if (tgt.wounds.current <= 0) applyZeroWounds(tgt);
@@ -402,7 +402,7 @@ export function resolveManeuver(
 
   // SUR SOI (transformation, mue, auto-buff) : aucune cible adverse ni opposition — jamais de cascade.
   if (def.targeting === 'self') {
-    lines.push(...applyTriggeredEffects(get, attacker, def.effects ?? [], 'onHit', { victim: attacker, indice, rng, set }));
+    lines.push(...applyTriggeredEffects(get, attacker, maneuverEffects(def), 'onHit', { victim: attacker, indice, rng, set }));
     flushLog();
     return false;
   }

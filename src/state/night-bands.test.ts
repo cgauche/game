@@ -33,6 +33,7 @@ import { contractDisease } from '../engine/disease';
 import type { Combatant, Difficulty } from '../engine/types';
 import type { CascadeStep, CascadeStepMeta } from './pendings';
 import { monoStep, type BuiltCascadeStep } from './rollSeam';
+import { nightStakeRef } from '../data';
 
 const get = useGame.getState;
 const set = useGame.setState;
@@ -54,6 +55,7 @@ function nuit(spec: {
     id: spec.id, kind: spec.kind, actor: h(spec.hero ?? 'h1'), label: spec.label ?? '',
     rollLabel: spec.rollLabel ?? 'Résistance', difficulty: spec.difficulty ?? 'intermediaire',
     montee: { base: spec.base ?? 40, target: spec.target ?? 40 },
+    stake: nightStakeRef('faim'),
     ...(spec.menace ? { menace: spec.menace } : {}),
     ...(spec.meta ? { meta: spec.meta } : {}),
   })!;

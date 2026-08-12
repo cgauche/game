@@ -13,12 +13,12 @@
  * garde son échéance quel que soit l'exécuteur qui la reprend (`applyLeafOps`/`leafOpsCtx`). Les ops
  * IMPURES `delayed` (Bonnet de fou/Délice de Ranald/Belladone) sont PROGRAMMÉES (`scheduleDelayedOps`).
  */
-import type { Combatant, ItemInstance } from '../engine/types';
+import type { Combatant, ItemInstance, EffectSource } from '../engine/types';
 import { isConsumable, consumableUntilTime, bakeConsumableFlow } from '../engine/consumables';
 import { type Flow, evalCondition, resolveTestDifficulty, type ConditionCtx } from './flow';
 import { condCtx } from './bourseFlow';
 import { buildActorView, flowTestGated } from './combat/flowEval';
-import { runCombatFlow } from './combat/triggeredTest';
+import { runCombatFlow, withDerivedStake } from './combat/triggeredTest';
 import { markActed } from './combatFlow';
 import { openSkillTest, runFlow, applyLeafOps, drainPendingLog } from './combatEffects';
 import { gainCorruption } from './corruptionFlow';
@@ -43,7 +43,7 @@ function drinkerCtx(get: Get, hero: Combatant): ConditionCtx {
  *  `choice` (aucun consommable n'en porte) prend sa branche `no` — défaut conservateur, pas de décision
  *  silencieuse. Les branches d'un `test` suspendu sont reprises par `resolveTest`→`runFlow` : leurs
  *  feuilles BAKÉES (`on:'hero'` + untilTime) y retombent sur le handler `ops` (applyLeafOps). */
-function runSceneConsumableFlow(get: Get, set: SetFn, hero: Combatant, flow: Flow, label: string): void {
+function runSceneConsumableFlow(get: Get, set: SetFn, hero: Combatant, flow: Flow, label: string, source?: EffectSource): void {
   const stack: Flow[] = [flow];
   while (stack.length) {
     const node = stack.shift()!;
@@ -52,6 +52,10 @@ function runSceneConsumableFlow(get: Get, set: SetFn, hero: Combatant, flow: Flo
         if (node.effect.type === 'ops') {
           const lines = applyLeafOps(get, set, hero, node.effect, {
             rng: battleRng(),
+            // PROVENANCE du produit bu : un poison qui enduit la lame (`augmentWeapon`) garde SON
+            // identité sur les effets fondus dans l'arme (`stampSource`, engine/ops) — sans elle, le
+            // Test qu'il exige nommerait l'ÉPÉE au lieu du poison (#1262 V2 L6d).
+            ...(source ? { source } : {}),
             onCorruption: (n, align) => gainCorruption(get, set, hero, n, align),
           });
           set(touchActors(get()));
@@ -74,7 +78,9 @@ function runSceneConsumableFlow(get: Get, set: SetFn, hero: Combatant, flow: Flo
         // Le BUVEUR encaisse seul ce que le produit lui fait (LDB 12 l.197) — défaut de la VOIE,
         // tri-état : la donnée le rouvre là où le Test n'est pas une résistance (`noSupport:false`,
         // Nécessaire antipoison : Test de Guérison).
-        const ft = { ...node.test, difficulty: resolveTestDifficulty(node.test, cc), noSupport: node.test.noSupport ?? true };
+        // Enjeu DÉRIVÉ du PRODUIT bu quand la donnée n'en déclare pas (#1262 V2 L6d) : « ce qui se joue »
+        // EST le consommable, et sa fiche Codex porte déjà sa règle verbatim.
+        const ft = { ...withDerivedStake(node.test, source), difficulty: resolveTestDifficulty(node.test, cc), noSupport: node.test.noSupport ?? true };
         // Modale RESTREINTE au buveur ; impossible (mort) → continuation directe.
         if (!openSkillTest(get, set, ft, node.success, node.fail, after, { actorId: hero.id })) runFlow(get, set, after, label);
         return;
@@ -94,13 +100,16 @@ export function runConsumable(get: Get, set: SetFn, hero: Combatant, item: ItemI
   const untilTime = consumableUntilTime(item, now, hero, battleRng());
   const baked = bakeConsumableFlow(item.consumable, hero.id, untilTime, item.label);
   const inBattle = !!get().battle && get().battle!.combatants.some((c) => c.id === hero.id);
+  // ENTITÉ PORTEUSE du Flow : la POSSESSION bue (id de catalogue). Un objet CUSTOM (hors catalogue)
+  // n'en a pas — il n'a pas de fiche où renvoyer, la dérivation d'enjeu se tait alors (#1262 V2 L6d).
+  const source: EffectSource | undefined = item.trappingId ? { kind: 'trapping', id: item.trappingId } : undefined;
   if (inBattle) {
     runCombatFlow({
       mode: 'combat', get, set, target: hero, caster: hero, label: item.label,
-      opsCtx: { now, ...(untilTime != null ? { defaultUntilTime: untilTime } : {}), label: item.label },
+      opsCtx: { now, ...(untilTime != null ? { defaultUntilTime: untilTime } : {}), label: item.label, ...(source ? { source } : {}) },
     }, baked);
   } else {
-    runSceneConsumableFlow(get, set, hero, baked, item.label);
+    runSceneConsumableFlow(get, set, hero, baked, item.label, source);
   }
 }
 

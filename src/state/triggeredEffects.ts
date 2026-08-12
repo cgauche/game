@@ -119,13 +119,20 @@ function effectsOf(actor: Combatant, weapon?: Weapon): TriggeredEffect[] {
   return effectSourcesOf(actor, weapon).filter((s) => !isStatusSource(s)).flatMap((s) => s.effects);
 }
 
-/** Ops d'un déclencheur `trigger` portées par le combattant (Traits/Talents/Atouts), à plat. Sert à
- *  RÉSOUDRE les ops IMPURES (summon, zone : grille/initiative) au SITE du trigger — elles sont inertes
- *  dans `applyOps` (moteur pur) et n'étaient résolues qu'au lancement de sort. GÉNÉRIQUE (pas limité à
- *  summon) : l'appelant (state) filtre par `op.op` et dispatche vers le résolveur idoine (applySummon,
- *  placeZoneFromOp…). `on:'self'/'caster'/'target'` désignent tous le porteur dans un effet de trait. */
-export function triggerEffectOps(actor: Combatant, trigger: EffectTrigger): GameOp[] {
-  return effectsOf(actor).filter((e) => e.trigger === trigger).flatMap((e) => spellEffectOps(e.flow));
+/** Ops d'un déclencheur `trigger` portées par le combattant (Traits/Talents/Atouts), à plat, CHACUNE
+ *  AVEC L'ENTITÉ qui la porte (`source`, taguée par `withSource`). Sert à RÉSOUDRE les ops IMPURES
+ *  (summon, zone : grille/initiative) au SITE du trigger — elles sont inertes dans `applyOps` (moteur
+ *  pur) et n'étaient résolues qu'au lancement de sort. GÉNÉRIQUE (pas limité à summon) : l'appelant
+ *  (state) filtre par `op.op` et dispatche vers le résolveur idoine (applySummon, placeZoneFromOp…).
+ *  `on:'self'/'caster'/'target'` désignent tous le porteur dans un effet de trait.
+ *
+ *  La `source` voyage AVEC l'op parce que ce qu'elle produit (une zone à `crossTest`, une créature)
+ *  peut à son tour exiger un jet : c'est d'elle que l'enjeu se dérive (#1262 V2 L6d). L'aplatir en
+ *  `GameOp[]` nu perdait le porteur, et le jet se serait ouvert muet. */
+export function triggerEffectOps(actor: Combatant, trigger: EffectTrigger): { op: GameOp; source?: EffectSource }[] {
+  return effectsOf(actor)
+    .filter((e) => e.trigger === trigger)
+    .flatMap((e) => spellEffectOps(e.flow).map((op) => ({ op, ...(e.source ? { source: e.source } : {}) })));
 }
 
 /** Une SOURCE d'effets déclenchés du combattant, AVEC son identité (`key`) et son plafond (`cap`) —
@@ -487,17 +494,27 @@ export function firePsychEffects(get: Get, c: Combatant, trigger: EffectTrigger,
   return fireStatusEffects(get, c, trigger, ctx, effectSourcesOf(c).filter((s) => s.key.startsWith('psy:')).map((s) => ({ effects: s.effects, stacks: s.stacks ?? 1 })));
 }
 
+/** Effets AUTHORÉS d'une MANŒUVRE, tagués de leur manœuvre source (`withSource`) — SOURCE UNIQUE des
+ *  deux entrées : le chemin de mêlée FREE (`maneuverEffectsOf`, par `kind`) et la résolution de manœuvre
+ *  (`applyManeuverEffects`, qui tient déjà la `def`). L'identité de l'entité voyage donc dans l'`OpsCtx`
+ *  jusqu'aux `ActiveEffect` posés ET jusqu'à l'enjeu d'un Test qu'elle exige (#1262 V2 L6d). */
+export function maneuverEffects(def: { id: string; effects?: TriggeredEffect[] }): TriggeredEffect[] {
+  return withSource(def.effects ?? [], { kind: 'maneuver', id: def.id });
+}
+
 /** Effets onHit AUTHORÉS de la manœuvre `kind` portée par `actor` (Caudale → À Terre, Tentacules →
  *  Empêtré…) — lus de la MANŒUVRE octroyée (`TraitData.grantsManeuvers` → `findManeuverById`) dont la
  *  `def.kind` correspond. Vide si la créature n'a pas cette manœuvre. Sert le chemin de mêlée FREE
  *  (`freeKind` → arme + onHit) : la touche est résolue comme un coup d'arme, mais les États propres à
- *  la manœuvre (À Terre/Empêtré) viennent de SA donnée éditable. */
+ *  la manœuvre (À Terre/Empêtré) viennent de SA donnée éditable. TAGUÉS de leur manœuvre source
+ *  (`withSource`, comme toute autre source du dispatcher) : la pastille d'effet ouvre sa fiche, et un
+ *  Test qu'elle exige en dérive son enjeu (#1262 V2 L6d). */
 export function maneuverEffectsOf(actor: Combatant, kind: string): TriggeredEffect[] {
   for (const raw of actor.traits ?? []) {
     const td = traitById.get(raw.id);
     for (const ref of td?.grantsManeuvers ?? []) {
       const def = findManeuverById(ref.id);
-      if (def?.kind === kind) return def.effects ?? [];
+      if (def?.kind === kind) return maneuverEffects(def);
     }
   }
   return [];

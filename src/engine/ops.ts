@@ -1191,6 +1191,22 @@ export function describeTestRoll(
 }
 
 /**
+ * PROVENANCE d'effets déclenchés qu'une op FOND dans un objet (`augmentWeapon`/`grantWeapon` :
+ * l'enchantement d'un sort, le poison d'un consommable, l'arme invoquée) — les effets gardent
+ * l'ENTITÉ qui les a posés (`ctx.source`), au lieu d'hériter de celle de l'ARME porteuse au moment
+ * du dispatch (`effectSourcesOf`, qui ne tague QUE ce qui n'a pas déjà de source).
+ *
+ * Sans elle, la Morsure de l'hiver enduite sur une épée se présente comme l'ÉPÉE : la pastille
+ * d'effet ouvrirait la fiche de l'arme, et l'enjeu du Test qu'elle exige dirait « ce qui se joue :
+ * Épée » au lieu du sort (#1262 V2 L6d). Immuable (clone partiel) ; sans `source`, inchangés — un
+ * effet EN PROPRE de l'objet (Déchireur de sociabilité) reste, lui, attribué à l'objet, ce qui est juste.
+ */
+function stampSource(effects: TriggeredEffect[], source?: EffectSource): TriggeredEffect[] {
+  if (!source) return effects;
+  return effects.map((e) => (e.source ? e : { ...e, source }));
+}
+
+/**
  * Exécute une liste d'ops sur `target`. Les `charMod` consécutifs d'une même
  * source sont appliqués individuellement mais journalisés en UNE ligne (format
  * historique de l'incantation). Renvoie les lignes de journal.
@@ -1578,7 +1594,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
             ...(o.addQualities?.length ? { addQualities: o.addQualities } : {}),
             ...(dmg ? { damageBonus: dmg } : {}),
             ...(o.bypass != null ? { bypass: o.bypass } : {}),
-            ...(o.onHitEffects?.length ? { onHitEffects: o.onHitEffects } : {}),
+            ...(o.onHitEffects?.length ? { onHitEffects: stampSource(o.onHitEffects, ctx.source) } : {}),
             ...(o.removeQualities?.length ? { removeQualities: o.removeQualities } : {}),
             ...(o.removeType != null ? { removeType: o.removeType } : {}),
             ...(o.suppressEnchants ? { suppressEnchants: true } : {}),
@@ -1998,7 +2014,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // Effets « à la touche » (Épée ardente → En flammes) PORTÉS PAR L'OBJET invoqué (enchant) ;
         // equipConjuredWeapon recompose le loadout → repliés dans l'arme active. Pas d'enchantRef :
         // l'objet est retiré en bloc à l'expiration (dropExpiredGrantedWeapons).
-        if (o.onHitEffects?.length) item.enchants = [{ id: newUid(), onHitEffects: o.onHitEffects }];
+        if (o.onHitEffects?.length) item.enchants = [{ id: newUid(), onHitEffects: stampSource(o.onHitEffects, ctx.source) }];
         const conjuredSet = equipConjuredWeapon(target, item);
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({

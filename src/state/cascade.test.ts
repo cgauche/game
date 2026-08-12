@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { combatStakeRef } from '../data';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -70,7 +71,7 @@ describe('Cascade séquentielle influençable', () => {
     // Une étape insérée passe par un mint de la porte (`insert` n'accepte plus de littéral) : valeur
     // FOURNIE (40) à Intermédiaire (+0) — base 40, cible 40, comme le montage à la main d'avant.
     function step1Insert(actor: Combatant, id: string): BuiltCascadeStep {
-      return monoStep({ id, kind: 'tally', actor, label: id, rollLabel: 'Résistance', difficulty: 'intermediaire', ligne: { valeur: 40, valeurEtrangere: true } })!;
+      return monoStep({ id, kind: 'tally', actor, label: id, rollLabel: 'Résistance', difficulty: 'intermediaire', stake: combatStakeRef('fatigue'), ligne: { valeur: 40, valeurEtrangere: true } })!;
     }
     // Abri FORCÉ raté (dé 99) → insère 2 étapes d'Exposition.
     const shelter: CascadeStep = { id: 'abri', kind: 'shelter', actorId: h.id, label: 'Abri', rollLabel: 'Survie', base: 40, target: 40, result: { roll: 99, target: 40, sl: -5, success: false }};

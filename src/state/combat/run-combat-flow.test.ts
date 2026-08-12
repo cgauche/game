@@ -20,6 +20,10 @@ import { resetCadence, setCadence } from '../../engine/cadence';
  *  - ENNEMI → jet INLINE + branche + `after`, SANS étape de cascade.
  * Jumeau de `run-flow.test` (scène) et de `round-upkeep-cascade.test` (cascade).
  */
+/** ENTITÉ PORTEUSE du Flow joué, comme en production : c'est d'elle que le Test muet DÉRIVE son enjeu
+ *  (#1262 V2 L6d) — un Flow de combat n'est jamais orphelin, il est l'œuvre de quelque chose. */
+const PORTEUR = { kind: 'spell', id: 'chute' } as const;
+
 const wounds = (amount: number): Flow => ({ kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'wounds', amount }] } });
 
 /** Flow `seq[ do(−pre PB), test{F → success/fail}, do(−post PB) ]` — le `do` final est la CONTINUATION
@@ -75,7 +79,7 @@ describe('runCombatFlow — test enfoui + continuation after (combat)', () => {
     const { H } = setup();
     const before = live(H.id).wounds.current;
 
-    runCombatFlow({ mode: 'combat', get: useGame.getState, set: useGame.setState, target: H, caster: H, label: 'Flux' }, flow(3, 5, 99, 7));
+    runCombatFlow({ mode: 'combat', get: useGame.getState, set: useGame.setState, target: H, caster: H, label: 'Flux', opsCtx: { source: PORTEUR } }, flow(3, 5, 99, 7));
 
     // Le `do` AVANT le test est appliqué tout de suite ; le test suspend ; la continuation attend.
     expect(live(H.id).wounds.current).toBe(before - 3);
@@ -96,7 +100,7 @@ describe('runCombatFlow — test enfoui + continuation after (combat)', () => {
     H.characteristics.force = 90; // Force élevée → Test réussi (branche success = −5)
     const before = live(H.id).wounds.current;
 
-    runCombatFlow({ mode: 'combat', get: useGame.getState, set: useGame.setState, target: H, caster: H, label: 'Flux' }, flow(3, 5, 99, 7));
+    runCombatFlow({ mode: 'combat', get: useGame.getState, set: useGame.setState, target: H, caster: H, label: 'Flux', opsCtx: { source: PORTEUR } }, flow(3, 5, 99, 7));
     const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'triggeredTest')!;
     useGame.getState().cascadeRoll(step.id);
     useGame.getState().cascadeNext();
@@ -128,7 +132,7 @@ describe('runCombatFlow — test enfoui + continuation after (combat)', () => {
       H.characteristics.force = 90;
       const before = live(H.id).wounds.current;
 
-      runCombatFlow({ mode: 'combat', get: useGame.getState, set: useGame.setState, target: H, caster: H, label: 'Flux' }, flow(3, 5, 99, 7));
+      runCombatFlow({ mode: 'combat', get: useGame.getState, set: useGame.setState, target: H, caster: H, label: 'Flux', opsCtx: { source: PORTEUR } }, flow(3, 5, 99, 7));
 
       expect(useGame.getState().pendingCascade).toBeNull(); // auto → inline
       expect(live(H.id).wounds.current).toBe(before - (3 + 5 + 7));
@@ -163,7 +167,7 @@ describe('runCombatFlow — test enfoui + continuation after (combat)', () => {
 
     // Le sous-Flow du sort (avec un Test interne) joué EN CONTEXTE CAST (opsCtx propagé : sl/label).
     runCombatFlow(
-      { mode: 'combat', get: useGame.getState, set: useGame.setState, target: H, caster: H, label: 'Sort', opsCtx: { sl: 2, label: 'Sort', caster: H } },
+      { mode: 'combat', get: useGame.getState, set: useGame.setState, target: H, caster: H, label: 'Sort', opsCtx: { sl: 2, label: 'Sort', caster: H, source: PORTEUR } },
       flow(3, 5, 99, 7),
     );
 

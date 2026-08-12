@@ -8,7 +8,7 @@ import type { Get, Set as SetFn } from './flowTypes';
 import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, CascadeTableDone, PendingMiscastStep, CascadeStep, CascadeRoll, BatchParticipant, PendingCounterspell, CounterParticipant, CounterDeclaration } from './pendings';
 import { describeReload } from './flowOutcomes';
 import { toRecapLines } from './recapLine';
-import { Combatant, HitLocation, Weapon, Difficulty, type ShipPoste } from '../engine/types';
+import { Combatant, HitLocation, Weapon, Difficulty, type ShipPoste, type EffectSource } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
 import { ev, evLines, type CombatEventKind } from './combatLog';
@@ -3267,8 +3267,10 @@ export function resolveFreeAttacks(get: Get, set: SetFn, actor: Combatant, trigg
   for (const src of freeAttackSourcesOf(actor)) {
     for (const eff of src.effects) {
       if (eff.trigger !== trigger || !flowHasFreeAttack(eff.flow)) continue;
+      // L'ENTITÉ PORTEUSE de la réaction (Talent/Trait/Atout, taguée par `withSource`) voyage dans
+      // l'`opsCtx` : un Test enfoui dans son Flow en DÉRIVE son enjeu (#1262 V2 L6d).
       runCombatFlow(
-        { mode: 'combat', get, set, target: actor, caster: actor, label: src.label, freeAttack: { targetId: victim.id, cap: src.cap, key: src.key } },
+        { mode: 'combat', get, set, target: actor, caster: actor, label: src.label, freeAttack: { targetId: victim.id, cap: src.cap, key: src.key }, ...(eff.source ? { opsCtx: { source: eff.source } } : {}) },
         eff.flow,
       );
     }
@@ -4850,9 +4852,15 @@ export type CastCritChoice = 'critique' | 'puissance' | 'ineluctable';
  * pousse son journal dans la file différée `pendingLogQueue` ; `drainPendingLog` la vide ici et rend les
  * lignes (`.text`) — la file capte AUSSI les lignes des hooks profonds déclenchés par les ops du sort
  * (`onGainCondition` d'un ennemi → Mâchoires), donc elles ne sont plus orphelines. Aucun sort n'ayant
- * ENCORE de nœud Flow `test`, `runCombatFlow` s'exécute de bout en bout (do/if seulement). */
+ * ENCORE de nœud Flow `test`, `runCombatFlow` s'exécute de bout en bout (do/if seulement).
+ *
+ * L'ENTITÉ PORTEUSE (`source: {kind:'spell', id}`) entre dans l'`opsCtx` ICI, une fois pour les trois
+ * appelants : c'est elle que les `ActiveEffect` posés portent, et c'est d'elle que les 46 `FlowTest`
+ * authorés dans `spells.json` DÉRIVENT leur enjeu (#1262 V2 L6d) — « ce qui se joue » EST le sort. */
 function runCastFlow(get: Get, set: SetFn, target: Combatant, caster: Combatant, flow: Flow, opsCtx: OpsCtx): string[] {
-  runCombatFlow({ mode: 'combat', get, set, target, caster, label: opsCtx.label ?? caster.label, opsCtx }, flow);
+  const source = opsCtx.source ?? (opsCtx.sourceSpellId ? { kind: 'spell' as const, id: opsCtx.sourceSpellId } : undefined);
+  const withSpell: OpsCtx = { ...opsCtx, ...(source ? { source } : {}) };
+  runCombatFlow({ mode: 'combat', get, set, target, caster, label: withSpell.label ?? caster.label, opsCtx: withSpell }, flow);
   return drainPendingLog(get, set).map((e) => e.text);
 }
 
@@ -5364,7 +5372,7 @@ function placeSpellZone(
   get: Get,
   caster: Combatant,
   target: Combatant,
-  spell: { label: string; effects?: Flow; duration?: import('../engine/spellDuration').SpellDuration | null; target?: import('../engine/spellRange').SpellTarget | null },
+  spell: { id?: string; label: string; effects?: Flow; duration?: import('../engine/spellDuration').SpellDuration | null; target?: import('../engine/spellRange').SpellTarget | null },
   _spec: unknown,
   sl: number,
   durationMult: number,
@@ -5376,13 +5384,16 @@ function placeSpellZone(
   const rounds = Math.max(1, baseRounds * Math.max(1, durationMult));
   // Rayon par défaut (si l'op n'a pas de `radiusMeters`) : dérivé de la `target` du sort (« Zone Diamètre
   // BFM m » → rayon BFM/2). Protection de Phâ : Zone centrée sur le lanceur (range self).
-  placeZoneFromOp(get, caster, target, pz, spell.label, rounds, sl, (zdeDiameterMeters(spell.target, caster) ?? 4) / 2, logLines);
+  placeZoneFromOp(get, caster, target, pz, spell.label, rounds, sl, (zdeDiameterMeters(spell.target, caster) ?? 4) / 2, logLines,
+    spell.id ? { kind: 'spell', id: spell.id } : undefined);
 }
 
 /** Pose une ZONE persistante depuis un op `zone` (op-based, réutilisable HORS sort : effets déclenchés —
  *  zone laissée à la mort/touche…). `label`/`rounds`/`fallbackRadiusM` sont fournis par l'appelant (un
- *  sort les tire de sa durée/ZdE ; un trigger fournit des défauts). `target.pos` = centre du disque. */
-function placeZoneFromOp(get: Get, caster: Combatant, target: Combatant, pz: Extract<GameOp, { op: 'zone' }>, label: string, rounds: number, sl: number, fallbackRadiusM: number, logLines: string[]): void {
+ *  sort les tire de sa durée/ZdE ; un trigger fournit des défauts). `target.pos` = centre du disque.
+ *  `source` = l'ENTITÉ qui pose la zone (ids) : elle voyage SUR la zone, et le Test de TRAVERSÉE
+ *  (`crossTest`) en dérive son enjeu — ce qui se joue est le sort qui barre le passage (#1262 V2 L6d). */
+function placeZoneFromOp(get: Get, caster: Combatant, target: Combatant, pz: Extract<GameOp, { op: 'zone' }>, label: string, rounds: number, sl: number, fallbackRadiusM: number, logLines: string[], source?: EffectSource): void {
   const battle = get().battle;
   if (!battle || !target.pos || !caster.pos) { logLines.push(tr('cf.zonePersists', { spell: label })); return; }
   const discRadiusM = pz.radiusMeters != null ? Math.max(0, resolveFormula(pz.radiusMeters, caster, battleRng())) : fallbackRadiusM;
@@ -5403,6 +5414,7 @@ function placeZoneFromOp(get: Get, caster: Combatant, target: Combatant, pz: Ext
     ...(pz.barrier ? { barrier: {} } : {}),
     ...(pz.gate ? { gate: pz.gate } : {}),
     ...(pz.noCorruption ? { noCorruption: true } : {}),
+    ...(source ? { source } : {}),
   };
   battle.zones = [...(battle.zones ?? []), zone];
   logLines.push(tr('cf.zonePersistsRounds', { spell: label, rounds }));
@@ -5417,10 +5429,12 @@ function placeZoneFromOp(get: Get, caster: Combatant, target: Combatant, pz: Ext
  *  breakBlade) fonctionnent déjà dans leur propre contexte (frappe gratuite / réactions de combat). */
 export function resolveTriggerImpureOps(get: Get, set: SetFn, actor: Combatant, trigger: EffectTrigger): string[] {
   const lines: string[] = [];
-  for (const op of triggerEffectOps(actor, trigger)) {
+  for (const { op, source } of triggerEffectOps(actor, trigger)) {
     if (op.op === 'summon') lines.push(...applySummon(get, set, actor, op, { rng: battleRng() }));
     else if (op.op === 'scheduleRespawn') lines.push(...scheduleRespawnFromOp(get, set, actor, op));
-    else if (op.op === 'zone') placeZoneFromOp(get, actor, actor, op, actor.label, op.perRound ? 3 : 1, 0, 2, lines);
+    // La ZONE garde l'ENTITÉ qui l'a posée (le Trait/Talent porteur) : son `crossTest` en dérive son
+    // enjeu, exactement comme une zone de sort (#1262 V2 L6d).
+    else if (op.op === 'zone') placeZoneFromOp(get, actor, actor, op, actor.label, op.perRound ? 3 : 1, 0, 2, lines, source);
   }
   return lines;
 }

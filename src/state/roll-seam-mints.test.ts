@@ -7,7 +7,7 @@
  *  - table À POSER et table RÉSOLUE sont DEUX entrées, et la résolue fait descendre l'enjeu ;
  *  - la voie d'APPEND passe par la garde de possession et distingue ses ids par l'index.
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import ts from 'typescript';
 import { useGame } from './store';
 import {
@@ -24,6 +24,7 @@ import type { CascadeStep } from './pendings';
 import type { GameState } from './store';
 import { nightBands } from './nightBands';
 import type { Combatant, Weapon } from '../engine/types';
+import { combatStakeRef, type StakeRef } from '../data';
 
 const hero = (id: string): Combatant =>
   ({
@@ -33,6 +34,11 @@ const hero = (id: string): Combatant =>
   }) as unknown as Combatant;
 
 const TABLE = 'test-mints-table';
+
+/** ENJEU de sonde (#1262 V2 L6d) : `MonoSpec.stake` est REQUIS — une étape mono ne se DÉCLARE plus
+ *  sans dire ce qui se joue. Les tests ci-dessous mesurent d'autres champs, mais ils le déclarent
+ *  comme tout producteur réel : c'est précisément ce que le murage rend inévitable. */
+const ENJEU: StakeRef = combatStakeRef('fatigue');
 
 beforeEach(() => {
   useGame.setState({ battle: null, party: [hero('H1')], pendingCascade: null, suspendedCascades: [] } as never);
@@ -45,11 +51,15 @@ beforeEach(() => {
   });
 });
 
+// `stubEnv('DEV')` (contrat du résiduel muet) et les espions de journal sont RENDUS entre les cas :
+// `isolate: false` partage le module — un DEV resté faux éteindrait les throws des tests suivants.
+afterEach(() => { vi.unstubAllEnvs(); vi.restoreAllMocks(); });
+
 const etapes = (): CascadeStep[] => useGame.getState().pendingCascade?.participants ?? [];
 
 describe('#1262 — monoStep : un porteur, un jet, une cible', () => {
   it('pose la POSSESSION et la SURFACE, et monte sa ligne par le monteur canonique', () => {
-    const step = monoStep({ id: 'calme', kind: 'psych', label: 'Garder son calme', actor: hero('H1'), difficulty: 'intermediaire', ligne: { test: { char: 'force-mentale' } } })!;
+    const step = monoStep({ id: 'calme', kind: 'psych', label: 'Garder son calme', actor: hero('H1'), difficulty: 'intermediaire', stake: ENJEU, ligne: { test: { char: 'force-mentale' } } })!;
     expect(step.actorId, 'le mint NOMME le porteur — c’est ce qui donne à l’arbitre un owner à router (sans lui : fenêtre hôte seul)').toBe('H1');
     expect(step.result, 'le dé n’est pas tombé : c’est la fenêtre qui le jette').toBeNull();
     expect(step.target, 'FM 40, Difficulté intermédiaire +0').toBe(40);
@@ -60,17 +70,45 @@ describe('#1262 — monoStep : un porteur, un jet, une cible', () => {
 
   it('cible NON CALCULABLE → refusé (DEV : throw) : une étape sans cible serait « prête » d’office', () => {
     expect(() => monoStep({
-      id: 'fantome', kind: 'k', label: 'L', actor: hero('H1'), difficulty: 'intermediaire',
+      id: 'fantome', kind: 'k', label: 'L', actor: hero('H1'), difficulty: 'intermediaire', stake: ENJEU,
       ligne: { valeur: Number.NaN, valeurEtrangere: true },
     })).toThrow(/cible non calculable/);
   });
 
   it('les slots HYBRIDES (révélation, lignes de conséquence) voyagent tels quels', () => {
     const step = monoStep({
-      id: 'h', kind: 'k', label: 'L', actor: hero('H1'), difficulty: 'intermediaire',
+      id: 'h', kind: 'k', label: 'L', actor: hero('H1'), difficulty: 'intermediaire', stake: ENJEU,
       reveal: { kind: 'effet', title: 'Ce qui vient d’arriver', lines: ['a'] },
     })!;
     expect(step.reveal!.title).toBe('Ce qui vient d’arriver');
+  });
+
+  /**
+   * LE RÉSIDUEL DU MURAGE, FIGÉ (#1262 V2 L6d) — `MonoSpec.stake` est requis à la DÉCLARATION, mais sa
+   * valeur peut être `undefined` (aucun enjeu déclaré, aucun porteur résoluble). Ce que fait la porte
+   * alors n'est PAS ce qu'elle fait d'une cible non calculable, et la différence est un CHOIX :
+   *  · cible non calculable → `undefined` : l'étape serait un jet fantôme, validé sans qu'aucun dé ne
+   *    tombe — mieux vaut ne rien ouvrir ;
+   *  · enjeu muet → l'étape s'ouvre QUAND MÊME (le jet est dû ; le taire coûterait au joueur son jet),
+   *    et le refus est JOURNALISÉ (DEV : throw ; PROD : `console.error`).
+   * Sans ce contrat, transformer le journal en `return undefined` passerait toutes les suites, et un
+   * jet DÛ disparaîtrait en silence — exactement ce que ce chantier combat.
+   */
+  it('enjeu MUET → l’étape s’ouvre QUAND MÊME, et le refus est journalisé (PROD simulée)', () => {
+    vi.stubEnv('DEV', false);
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const step = monoStep({ id: 'muet', kind: 'k', label: 'Jet dû', actor: hero('H1'), difficulty: 'intermediaire', stake: undefined, ligne: { test: { char: 'force-mentale' } } });
+    expect(step, 'le jet DÛ ne disparaît pas : l’étape existe').toBeTruthy();
+    expect(step!.target, 'et elle lance pour de vrai (cible calculée)').toBe(40);
+    expect(stepInteraction(step!)).toBe('jet');
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(String(spy.mock.calls[0][0])).toMatch(/enjeu MUET/);
+  });
+
+  it('enjeu MUET en DEV → THROW : la dégradation se voit au premier passage', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(() => monoStep({ id: 'muet', kind: 'k', label: 'Jet dû', actor: hero('H1'), difficulty: 'intermediaire', stake: undefined }))
+      .toThrow(/enjeu MUET/);
   });
 });
 
@@ -192,7 +230,7 @@ describe('#1262 — la MARQUE mure la porte', () => {
   });
 
   it('`openSequence` ouvre la séquence d’une étape MINTÉE', () => {
-    const step = monoStep({ id: 'm', kind: 'k', label: 'L', actor: hero('H1'), difficulty: 'intermediaire' })!;
+    const step = monoStep({ id: 'm', kind: 'k', label: 'L', actor: hero('H1'), difficulty: 'intermediaire', stake: ENJEU })!;
     openSequence(useGame.getState, useGame.setState, { title: 'Titre', purpose: 'test', steps: [step] });
     expect(useGame.getState().pendingCascade!.title).toBe('Titre');
     expect(etapes()).toHaveLength(1);
@@ -219,7 +257,7 @@ describe('#1262 — la MARQUE mure la porte', () => {
   });
 
   it('`pushCombatStep` accepte l’étape MINTÉE (la voie qui reste ouverte)', () => {
-    const step = monoStep({ id: 'm', kind: 'k', label: 'L', actor: hero('H1'), difficulty: 'intermediaire' })!;
+    const step = monoStep({ id: 'm', kind: 'k', label: 'L', actor: hero('H1'), difficulty: 'intermediaire', stake: ENJEU })!;
     pushCombatStep(useGame.setState, step);
     expect(etapes().map((s) => s.id)).toEqual(['m']);
     expect(useGame.getState().pendingCascade!.purpose).toBe('combat');
@@ -228,20 +266,20 @@ describe('#1262 — la MARQUE mure la porte', () => {
 
 describe('#1262 — les portes d’APPEND', () => {
   it('l’appelant ne fournit NI titre NI purpose : l’étape rejoint la séquence de combat', () => {
-    pushMono(useGame.setState, { id: 'a', kind: 'k', label: 'Étape A', actor: hero('H1'), difficulty: 'intermediaire' });
+    pushMono(useGame.setState, { id: 'a', kind: 'k', label: 'Étape A', actor: hero('H1'), difficulty: 'intermediaire', stake: ENJEU });
     expect(useGame.getState().pendingCascade!.purpose).toBe('combat');
     expect(etapes()[0].id).toBe('a');
   });
 
   it('FABRIQUE-INDEX : deux étapes de MÊME clé prennent des ids DISTINCTS dans la séquence', () => {
-    const decl = (index: number) => ({ id: `miscast-${index}`, kind: 'k', label: 'Imparfaite', actor: hero('H1'), difficulty: 'intermediaire' as const });
+    const decl = (index: number) => ({ id: `miscast-${index}`, kind: 'k', label: 'Imparfaite', actor: hero('H1'), difficulty: 'intermediaire' as const, stake: ENJEU });
     pushMono(useGame.setState, decl);
     pushMono(useGame.setState, decl);
     expect(etapes().map((s) => s.id)).toEqual(['miscast-0', 'miscast-1']);
   });
 
   it('une déclaration REFUSÉE par son mint n’appende RIEN', () => {
-    pushMono(useGame.setState, { id: 'ok', kind: 'k', label: 'L', actor: hero('H1'), difficulty: 'intermediaire' });
+    pushMono(useGame.setState, { id: 'ok', kind: 'k', label: 'L', actor: hero('H1'), difficulty: 'intermediaire', stake: ENJEU });
     expect(() => pushTable(useGame.setState, {
       id: 'ko', kind: 'k', label: 'L', actorId: 'H1',
       table: { tableId: TABLE, result: { roll: 60, die: 60, id: 'haute', lines: [] } },
@@ -346,7 +384,7 @@ describe('#1262 V2 — la FILE d’entretien et la FABRIQUE de nuit n’accepten
   };
   const minte = (): BuiltCascadeStep => monoStep({
     id: 'faim-H1', kind: 'faim', actor: hero('H1'), label: 'Faim', rollLabel: 'Résistance',
-    difficulty: 'intermediaire', montee: { base: 40, target: 40 }, meta: { day: 1 },
+    difficulty: 'intermediaire', stake: ENJEU, montee: { base: 40, target: 40 }, meta: { day: 1 },
   })!;
 
   it('la FILE refuse une étape manuscrite, accepte le produit de la porte', () => {
@@ -366,7 +404,7 @@ describe('#1262 V2 — la FILE d’entretien et la FABRIQUE de nuit n’accepten
 
   it('`montee` : la ligne DÉJÀ montée entre TELLE QUELLE (aucun remontage à l’assemblage)', () => {
     const st = monoStep({
-      id: 'faim-H1', kind: 'faim', actor: hero('H1'), label: 'Faim', difficulty: 'complexe',
+      id: 'faim-H1', kind: 'faim', actor: hero('H1'), label: 'Faim', difficulty: 'complexe', stake: ENJEU,
       montee: { base: 33, target: 23, mods: [{ label: 'Faim (2ᵉ Test)', value: -10, famille: 'jet' }] },
     })!;
     expect(st.base, 'la base vient du producteur, pas d’un second calcul').toBe(33);
@@ -388,17 +426,17 @@ describe('#1262 V2 — la FILE d’entretien et la FABRIQUE de nuit n’accepten
 
     h.characteristics.endurance = 19; // l'entretien a frappé entre le montage et l'assemblage
 
-    const figee = monoStep({ id: 'faim-H1', kind: 'faim', actor: h, label: 'Faim', difficulty: 'intermediaire', montee: dejaMontee })!;
+    const figee = monoStep({ id: 'faim-H1', kind: 'faim', actor: h, label: 'Faim', difficulty: 'intermediaire', stake: ENJEU, montee: dejaMontee })!;
     expect(figee.base, 'la ligne DUE est celle du moment où le Test était dû').toBe(34);
     expect(figee.target).toBe(34);
 
-    const remontee = monoStep({ id: 'faim-H1', kind: 'faim', actor: h, label: 'Faim', difficulty: 'intermediaire', ligne: { test: { char: 'endurance' } } })!;
+    const remontee = monoStep({ id: 'faim-H1', kind: 'faim', actor: h, label: 'Faim', difficulty: 'intermediaire', stake: ENJEU, ligne: { test: { char: 'endurance' } } })!;
     expect(remontee.target, 'remontée à l’assemblage : un AUTRE jet — c’est ce que `montee` évite').toBe(19);
   });
 
   it('les deux régimes de ligne sont EXCLUSIFS (déclarer ET fournir ne compile pas)', () => {
     // @ts-expect-error — `ligne` et `montee` ne peuvent pas coexister : une seule source de ligne.
-    const st = monoStep({ id: 'x', kind: 'faim', actor: hero('H1'), label: 'Faim', difficulty: 'complexe', montee: { base: 1, target: 1 }, ligne: { test: { char: 'force-mentale' } } });
+    const st = monoStep({ id: 'x', kind: 'faim', actor: hero('H1'), label: 'Faim', difficulty: 'complexe', stake: ENJEU, montee: { base: 1, target: 1 }, ligne: { test: { char: 'force-mentale' } } });
     expect(st).toBeDefined();
   });
 
@@ -414,7 +452,7 @@ describe('#1262 V2 — la FILE d’entretien et la FABRIQUE de nuit n’accepten
     const h = hero('H1');
     h.characteristics['force-mentale'] = 71; // le héros a SES composantes : elles ne doivent PAS entrer
     const cumul = [{ label: '−5 cumulatif (Round 2)', value: -5, famille: 'jet' as const }];
-    const commun = { id: 'right-1', kind: 'riverRighting', actor: h, label: 'Redressement', difficulty: 'accessible' as const };
+    const commun = { id: 'right-1', kind: 'riverRighting', actor: h, label: 'Redressement', difficulty: 'accessible' as const, stake: ENJEU };
 
     const parLigne = monoStep({ ...commun, ligne: { valeur: 42, valeurEtrangere: true, surLaCible: cumul } })!;
     const parMontee = monoStep({ ...commun, montee: rollStep({ difficulty: 'accessible', valeur: 42, valeurEtrangere: true, surLaCible: cumul }) })!;

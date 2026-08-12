@@ -7,6 +7,7 @@ import { makeRNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
 import type { CascadeStep } from './pendings';
 import { monoStep } from './rollSeam';
+import { nightStakeRef } from '../data';
 
 /**
  * #253 — DEUX chemins d'entretien qui NE roulaient plus en silence.
@@ -70,7 +71,7 @@ describe('#253.2 — combat franchissant minuit : les Tests d\'entretien se mett
     const heroClone = { ...hero, kind: 'hero' as const };
     // La file n'accepte plus qu'une étape MINTÉE (#1262 V2) ; sa ligne est posée telle quelle.
     const queued = monoStep({ id: 'faim-H-0', kind: 'faim', actor: hero, label: 'Faim', rollLabel: 'Résistance',
-      difficulty: 'intermediaire', montee: { base: 40, target: 40 } })!;
+      difficulty: 'intermediaire', montee: { base: 40, target: 40 }, stake: nightStakeRef('faim') })!;
     useGame.setState({
       party: [hero],
       battle: { combatants: [heroClone, deadEnemy()], order: [hero.id, 'e'], turn: 0, round: 1, log: [], over: null } as never,

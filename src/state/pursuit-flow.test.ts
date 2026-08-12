@@ -10,6 +10,7 @@ import { applyEffects } from './combatFlow';
 import { startGroundPursuit, continuePursuitRound, pursuitAbandon, pursuitBands } from './pursuitFlow';
 import { startCascade } from './cascade';
 import { monoStep, displayStep, type BuiltCascadeStep } from './rollSeam';
+import { combatStakeRef } from '../data';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { skillBaseValue, testValue } from '../engine/skills';
@@ -198,7 +199,7 @@ describe('Poursuite — la manche restaurée d’une save se possède comme la m
   const mono = (h: Combatant, round: string): BuiltCascadeStep => monoStep({
     id: `pursuit-${round}-${h.id}`, kind: 'pursuitMove', actor: h, icon: 'travel/foot',
     label: `Manche ${round}`, rollLabel: 'Athlétisme', difficulty: 'intermediaire',
-    montee: { base: 40, target: 40 },
+    montee: { base: 40, target: 40 }, stake: combatStakeRef('pursuitMove', { values: { distance: 10, evasion: 3 } }),
   })!;
 
   it('N coureurs → fenêtre PARTAGÉE ; un seul → la manche EST la sienne', () => {
@@ -241,6 +242,7 @@ describe('Poursuite — la manche restaurée d’une save se possède comme la m
     const avecMenace = monoStep({
       id: `pursuit-9-${a.id}`, kind: 'pursuitMove', actor: a, label: 'Manche 9', rollLabel: 'Athlétisme',
       difficulty: 'intermediaire', montee: { base: 40, target: 40 }, menace: 'Poursuite', meta: { round: 9 },
+      stake: combatStakeRef('pursuitMove', { values: { distance: 10, evasion: 3 } }),
     })!;
     const r2 = pursuitBands([avecMenace])[0].participants![0];
     expect(r2.menace).toBe('Poursuite');

@@ -72,9 +72,13 @@ export function stepsWithoutStake(src: string): number[] {
   //  - `...rollStep({…})` = la MÊME cible, posée par le MONTEUR CANONIQUE (#1153) : depuis que les
   //    flux DÉCLARENT leur ligne au lieu de la calculer, la cible n'est plus un littéral de l'étape.
   //    Sans cette forme, le cliquet devient AVEUGLE sur tout site migré (couverture, pas exemption) ;
-  //  - `actor:` = la DÉCLARATION d'un mint MONO (`monoStep`, #1262) : la cible n'est plus même montée
-  //    au site, c'est le mint qui la pose — seul le porteur déclaré (`actor`, jamais `actorId`) et le
-  //    `kind` restent visibles. Même raison que ci-dessus : sans elle, migrer rendrait le cliquet vert ;
+  // VOLET MORT, RETIRÉ (#1262 V2 L6d) : la DÉCLARATION d'un mint MONO (`actor:` + `kind`). Elle est
+  // désormais tenue par le COMPILATEUR — `MonoSpec.stake` est REQUIS (`rollSeam.ts`) : une étape mono
+  // déclarée sans parler de son enjeu ne compile plus, et une valeur muette est refusée bruyamment par
+  // `monoStep` (`refusePorte`). Ce que ce volet attrapait est exactement ce que le type interdit ; un
+  // scan qui double le compilateur n'ajoute que du bruit et une fausse baseline à entretenir. La preuve
+  // du murage est la sonde TUEUSE `built-brand-lint.test.ts` (« l'ENJEU des étapes MONO »), qui rejoue
+  // les deux signatures sur un programme TypeScript réel.
   // VOLET MORT, RETIRÉ (#1262 V2 L6) : le TIRAGE SUR TABLEAU (`table:`). DEUX fabriques seulement
   // peuvent produire une étape à table qui LANCE (marque `BuiltCascadeStep`, lint de forge mesuré par
   // `built-brand-lint`) — `tableStep`/`tableStepDone`, dont `TableSpec.stake` est REQUIS
@@ -84,7 +88,7 @@ export function stepsWithoutStake(src: string): number[] {
   // baseline. Un scan qui ne peut plus rien attraper double le compilateur ; la preuve du murage est
   // la paire de sondes TUEUSES : `built-brand-lint.test.ts` (enjeu requis) et `reveal.test.ts`
   // (« `revealToStep` ne produit jamais un tirage À FAIRE »).
-  for (const m of s.matchAll(/(?<=[{,]\s*)(?:target\s*(?::\s*[^\s,}]|[,}])|actor\s*:\s*[^\s,}])|\.\.\.rollStep\(/g)) {
+  for (const m of s.matchAll(/(?<=[{,]\s*)target\s*(?::\s*[^\s,}]|[,}])|\.\.\.rollStep\(/g)) {
     const i = m.index!;
     let depth = 0;
     let start = -1;
@@ -285,8 +289,11 @@ const BASELINE: Record<string, number> = {
   // ÉTAPES À TABLE : le TYPE les tient (#1262 V2 L6, `TableSpec.stake` requis) — plus de baseline, plus
   // de volet de scan (cf. `stepsWithoutStake`). L'enjeu posé à la construction DESCEND ensuite à la
   // ligne jouée, `stakeAtTableRow` (`state/cascade.ts`).
-  // ÉTAPES MONO : `MonoSpec.stake` reste optionnel — le stock restant (2 relais génériques) et son
-  // verrou sont chiffrés au champ lui-même (`rollSeam.ts`), pas ici.
+  // ÉTAPES MONO : le TYPE les tient aussi (#1262 V2 L6d, `MonoSpec.stake` requis) — plus de baseline,
+  // plus de volet `actor:` (cf. `stepsWithoutStake`). Les deux derniers relais génériques (les
+  // fabriques de `combat/triggeredTest.ts`) reçoivent l'enjeu DÉRIVÉ de l'entité porteuse quand la
+  // donnée n'en déclare pas ; la complétude de cette dérivation sur les 74 `FlowTest` de
+  // `src/data/*.json` est mesurée par `flowtest-derived-stake.test.ts`.
 };
 
 describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', () => {
@@ -475,30 +482,23 @@ describe('cliquet — une étape de cascade qui LANCE dit son ENJEU (#1117)', ()
   });
 
   /**
-   * FAIL-CLOSED du volet `actor:` (#1262 V2 lot 2) — depuis que les flux passent par les MINTS, la cible
-   * n'est plus montée au site : ce que le scan voit d'une étape mono, c'est la DÉCLARATION (`actor` +
-   * `kind`). Sans ce volet, migrer un fichier rendait le cliquet VERT à zéro sans qu'un seul enjeu ait
-   * été doté — c'est exactement ce qui s'est produit au lot 2 (baselines travelFlow/travelPostes/
-   * embrigadement tombées à 0 avant l'extension, ré-alignées après).
-   *
-   * DEUX TROUS MESURÉS, dits ici plutôt que tus (ticket #1271, qui porte déjà l'angle mort jumeau
-   * `table,`) :
-   *  - le RACCOURCI `actor,` (propriété abrégée) n'est pas vu — le scan exige `actor: <expr>` ;
-   *  - un `kind` apporté par SPREAD (`{ ...commun, actor }`) n'est pas vu — `hasTopLevelKey` lit les
-   *    propriétés littérales, pas ce qu'un spread apporte.
-   * Les deux se lèvent avec la re-mesure complète du stock, pas à la pièce.
+   * PARTITION du volet `actor:`, RETIRÉ en #1262 V2 L6d — ce qu'il attrapait est passé au TYPE
+   * (`MonoSpec.stake` requis), et ce qui reste au SCAN est nommé ici plutôt que supposé :
+   *  - la DÉCLARATION d'un mint mono (avec ou sans enjeu) sort du scan : le compilateur la tient, et
+   *    les deux trous connus du volet (raccourci `actor,`, `kind` apporté par SPREAD — #1271) meurent
+   *    avec lui, puisque le type ne se laisse berner par aucune des deux formes ;
+   *  - l'étape MANUSCRITE (hors mint) reste vue par le volet `target:` — c'est la seule chose que le
+   *    type ne peut pas atteindre, et c'est ce que le scan garde.
    */
-  it('FAIL-CLOSED : un MINT mono sans enjeu est DÉTECTÉ, avec enjeu il ne l’est pas', () => {
-    const sans = `const st = monoStep({ id: 'expo-1', kind: 'stageExposure', actor: h, label: 'Exposition', difficulty: diff, ligne: { test: { skill: 'resistance' } } });`;
-    const avec = `const st = monoStep({ id: 'expo-1', kind: 'stageExposure', actor: h, label: 'Exposition', difficulty: diff, ligne: { test: { skill: 'resistance' } }, stake: voyageStakeRef('exposure') });`;
-    const porteur = `const p = { actor: h, ligne: { test: { skill: 'ramer' } } };`;
+  it('PARTITION : la déclaration d’un mint mono sort du scan (le TYPE la tient), le manuscrit y reste', () => {
+    const mint = `const st = monoStep({ id: 'expo-1', kind: 'stageExposure', actor: h, label: 'Exposition', difficulty: diff, ligne: { test: { skill: 'resistance' } } });`;
     const raccourci = `const st = monoStep({ id: 'x', kind: 'k', actor, label: 'L', difficulty: diff });`;
     const parSpread = `const st = monoStep({ ...commun, actor: h, ligne: { valeur: 40 } });`;
-    expect(stepsWithoutStake(sans)).toHaveLength(1);
-    expect(stepsWithoutStake(avec)).toHaveLength(0);
-    expect(stepsWithoutStake(porteur), 'un PORTEUR de bande (aucun `kind`) : l’enjeu est porté par la bande').toHaveLength(0);
-    expect(stepsWithoutStake(raccourci), 'TROU CONNU (#1271) : le raccourci `actor,` échappe au scan').toHaveLength(0);
-    expect(stepsWithoutStake(parSpread), 'TROU CONNU (#1271) : un `kind` apporté par spread échappe au scan').toHaveLength(0);
+    const manuscrit = `const s = { id: 'x', kind: 'k', actorId: h.id, base: 40, target: 40, result: null };`;
+    expect(stepsWithoutStake(mint), 'le mint mono est tenu par `MonoSpec.stake` (requis) — hors scan').toHaveLength(0);
+    expect(stepsWithoutStake(raccourci), 'ancien trou #1271 (raccourci `actor,`) : sans objet, le type ne s’y trompe pas').toHaveLength(0);
+    expect(stepsWithoutStake(parSpread), 'ancien trou #1271 (`kind` par spread) : idem').toHaveLength(0);
+    expect(stepsWithoutStake(manuscrit), 'l’étape MANUSCRITE reste la part du scan').toHaveLength(1);
   });
 });
 

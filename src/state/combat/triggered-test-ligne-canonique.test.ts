@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { seedBattleRng, battleRng } from '../battleRng';
-import { simpleTriggeredTestStep, simpleBatchTestStep, frozenOpposedBatchStep, rollFrozenOpposedAttacker } from './triggeredTest';
+import { simpleTriggeredTestStep, simpleBatchTestStep, frozenOpposedBatchStep, rollFrozenOpposedAttacker, withDerivedStake } from './triggeredTest';
 import { inexplique } from '../cascadeTestKit';
 import { EMPTY_FLOW, type FlowTest } from '../flow';
 import { rollStep } from '../rollSeam';
@@ -61,8 +61,12 @@ const POSTURES: { nom: string; conditions: unknown[] }[] = [
 const TOUS_CRANS = Object.keys(DIFFICULTY_MODIFIERS) as Difficulty[];
 const DIFFS: Difficulty[] = ['intermediaire', 'difficile'];
 
-const FT: FlowTest = { skill: 'resistance', label: 'Résister' };
-const FT_OPP: FlowTest = { skill: 'resistance', label: 'Résister', opposed: { attacker: 'force' } };
+/** PORTEUR de la sonde : un `FlowTest` de donnée n'est jamais orphelin — il est exigé par une entité,
+ *  et c'est d'elle que son enjeu se DÉRIVE (#1262 V2 L6d). Les deux descripteurs ci-dessous passent
+ *  donc par la MÊME porte que la production (`withDerivedStake`). */
+const PORTEUR = { kind: 'condition', id: 'empoisonne' } as const;
+const FT: FlowTest = withDerivedStake({ skill: 'resistance', label: 'Résister' }, PORTEUR);
+const FT_OPP: FlowTest = withDerivedStake({ skill: 'resistance', label: 'Résister', opposed: { attacker: 'force' } }, PORTEUR);
 const BRANCHES = { onSuccess: EMPTY_FLOW, onFail: EMPTY_FLOW };
 
 beforeEach(() => { seedBattleRng(1); });

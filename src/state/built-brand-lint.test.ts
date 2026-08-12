@@ -145,3 +145,33 @@ describe('#1262 V2 L6 — la sonde du murage de l’ENJEU des tirages est TUEUSE
     expect(codesDeDiagnostic(SONDE_ENJEU('stake?: Stake')), 'sans ce rouge, retirer le volet `table:` du cliquet laisserait un trou').toContain(2578);
   });
 });
+
+/**
+ * L'ENJEU D'UNE ÉTAPE MONO EST REQUIS AU TYPE (#1262 V2 L6d) — deuxième famille murée, après les
+ * tirages. La différence de forme est VOULUE et se lit ici : `stake: StakeRef | undefined` (et non
+ * `stake: StakeRef`) supprime l'OMISSION — le déclarant DOIT parler de son enjeu — tout en laissant
+ * exprimable le résiduel honnête (un porteur non résoluble), que la porte `monoStep` refuse alors
+ * bruyamment (`refusePorte` : DEV throw, PROD journalisé). Une valeur muette ne peut donc plus
+ * arriver par distraction, seulement par déclaration explicite — et elle se voit.
+ *
+ * La sonde rejoue les DEUX signatures sur un programme TypeScript réel : requise, la directive est
+ * consommée ; optionnelle, elle devient inutilisée (TS2578). Sans ce rouge, le champ pourrait
+ * redevenir `stake?:` sans qu'aucun test ne bouge.
+ */
+const SONDE_MONO = (enjeu: 'stake: Stake | undefined' | 'stake?: Stake') => `
+type Stake = { key: { dataset: string; kind: string } };
+type MonoSpec = { id: string; kind: string; label: string; actor: { id: string }; ${enjeu} };
+declare function monoStep(spec: MonoSpec): void;
+// @ts-expect-error — étape mono MUETTE : l'enjeu doit être déclaré
+monoStep({ id: 'm', kind: 'k', label: 'L', actor: { id: 'H1' } });
+`;
+
+describe('#1262 V2 L6d — la sonde du murage de l’ENJEU des étapes MONO est TUEUSE', () => {
+  it('enjeu REQUIS (valeur possiblement `undefined`) : la directive est CONSOMMÉE', () => {
+    expect(codesDeDiagnostic(SONDE_MONO('stake: Stake | undefined'))).toEqual([]);
+  });
+
+  it('enjeu OPTIONNEL (l’état d’avant) : l’étape muette passe, la directive devient INUTILISÉE (TS2578)', () => {
+    expect(codesDeDiagnostic(SONDE_MONO('stake?: Stake')), 'sans ce rouge, le murage des monos ne prouverait rien').toContain(2578);
+  });
+});

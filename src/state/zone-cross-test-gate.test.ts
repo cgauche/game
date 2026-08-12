@@ -19,7 +19,10 @@ import type { Combatant } from '../engine/types';
 import type { CascadeStep } from './pendings';
 
 const CROSS_TEST_ZONE: BattleZone = {
+  // `source` = l'ENTITÉ qui a posé la zone, comme `placeZoneFromOp` la pose en production (#1262 V2
+  // L6d) : le Test de traversée en DÉRIVE son enjeu (« ce qui se joue : Forêt d'épines »).
   label: "Forêt d'épines", tiles: [{ x: 6, y: 10 }], rounds: 4, casterId: 'CASTER',
+  source: { kind: 'spell', id: 'foret-d-epines' },
   onCross: [
     { op: 'condition', id: 'hemorragique' },
     { op: 'condition', id: 'empetre', escapeStrength: { charOf: 'force-mentale' } },

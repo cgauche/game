@@ -27,6 +27,7 @@ import { bus, EVT } from './bus';
 // vers lui → cycle) ; la résolution cadence-aware est déléguée au hook `setZoneCrossTestHook`
 // (inversion de dépendance, calque `setFreeAttackHook`/`setBladeTrapHook`, installé par le store).
 import type { Flow as CoreFlow, EffectOp } from '../engine/flowCore';
+import type { EffectSource } from '../engine/types';
 import { EMPTY_FLOW } from '../engine/flowCore';
 
 /**
@@ -251,7 +252,7 @@ export const smokeOf = (battle: BattleState): Pt[] => losBlockingTiles(battle.zo
  *  manuel → étape de cascade influençable ; ennemi/auto → jet inline (journal). Inversion de dépendance
  *  (ce module reste sans import de `combat/triggeredTest` → pas de cycle, cf. import ci-dessus). Absent
  *  (hors store, ex. test unitaire de cette seule brique) ⇒ no-op — comme les autres hooks. */
-type ZoneCrossTestHook = (get: Get, set: SetFn, mover: Combatant, caster: Combatant, flow: CoreFlow<EffectOp>, label: string) => void;
+type ZoneCrossTestHook = (get: Get, set: SetFn, mover: Combatant, caster: Combatant, flow: CoreFlow<EffectOp>, label: string, source?: EffectSource) => void;
 let zoneCrossTestHook: ZoneCrossTestHook | undefined;
 export function setZoneCrossTestHook(fn: ZoneCrossTestHook): void { zoneCrossTestHook = fn; }
 
@@ -285,7 +286,8 @@ export function applyZoneCrossings(get: Get, set: SetFn, mover: Combatant, path:
       kind: 'test', test: z.crossTest, success: EMPTY_FLOW,
       fail: z.onCross?.length ? { kind: 'do', effect: { type: 'ops', ops: z.onCross, on: 'target' } } : EMPTY_FLOW,
     };
-    zoneCrossTestHook?.(get, set, mover, caster, flow, z.label);
+    // L'ENTITÉ qui a posé la zone voyage avec le Test : la fenêtre dit ce qui barre le passage (#1262 V2 L6d).
+    zoneCrossTestHook?.(get, set, mover, caster, flow, z.label, z.source);
   }
 }
 

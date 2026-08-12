@@ -10,7 +10,7 @@ import { resetCadence } from '../../engine/cadence';
 import { hasCondition } from '../../engine/conditions';
 import { REPLIS_DEUX_CIBLES, evaluateTest, resolveOpposed, bumpSL, type TestResult } from '../../engine/tests';
 import { testValue, skillBaseValue } from '../../engine/skills';
-import { frozenOpposedBatchStep, rollFrozenOpposedAttacker, simpleTriggeredTestStep, simpleBatchTestStep } from './triggeredTest';
+import { frozenOpposedBatchStep, rollFrozenOpposedAttacker, simpleTriggeredTestStep, simpleBatchTestStep, withDerivedStake } from './triggeredTest';
 import { resolveRecoverTest } from './recover';
 import { rollBatchParticipant } from '../cascade';
 import { EMPTY_FLOW, type FlowTest } from '../flow';
@@ -195,7 +195,8 @@ describe('G4 — VOIE MONO : cascade opposée influençable et jet INLINE', () =
 describe('G4 — producteurs de Tests SIMPLES : leur base est la NUE, aucun départage à alimenter', () => {
   it('mono et bande simples posent `skillBaseValue`, jamais une valeur fondue', () => {
     const c = combatant({ id: 'simple', conditions: [{ id: 'sonne', value: 1 }] as never });
-    const ft: FlowTest = { skill: 'resistance', label: 'Résister' };
+    // L'enjeu vient du PORTEUR, comme en production (#1262 V2 L6d) : `MonoSpec.stake` est requis.
+    const ft: FlowTest = withDerivedStake({ skill: 'resistance', label: 'Résister' }, { kind: 'condition', id: 'empoisonne' });
     const nue = skillBaseValue(c, 'resistance');
     expect(nue, 'sonde inerte : sans État, nue et valeur testée se confondraient').not.toBe(testValue(c, 'resistance'));
     expect(simpleTriggeredTestStep(c, ft, BRANCHES, EMPTY_FLOW, 'intermediaire')!.base).toBe(nue);

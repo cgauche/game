@@ -10,6 +10,7 @@ import type { MerchantArchetypeDef } from '../state/merchants/types';
 import { slugId } from './slug';
 import { norm } from '../lib/normalize';
 import { effectiveEntry } from '../engine/variants';
+import { CATEGORY_BY_SOURCE_KIND, type EffectSource } from '../engine/types';
 import characteristicsJson from './characteristics.json';
 import speciesJson from './species.json';
 import classesJson from './classes.json';
@@ -299,6 +300,7 @@ export interface CatalogStake {
   key: StakeKey;
   values?: Record<string, string | number>;
   authored?: never;
+  from?: never;
 }
 
 /** ENJEU AUTHORÉ par un DOCUMENT DE CONTENU (Flow d'une scène/campagne) — arbitrage user 2026-08-12
@@ -315,11 +317,33 @@ export interface AuthoredStake {
   authored: string;
   key?: never;
   values?: never;
+  from?: never;
 }
 
-/** ENJEU d'une entrée de jet (étape de cascade, pending, `FlowTest`) : réf de dataset OU texte
- *  authoré par le document. Les deux passent par la MÊME porte de résolution (`resolveStake`). */
-export type StakeRef = CatalogStake | AuthoredStake;
+/** ENJEU DÉRIVÉ DU PORTEUR — arbitrage user 2026-08-12 (#1262), verbatim au ticket : « Le socle dérive
+ *  l'enjeu de l'entité porteuse ("ce qui se joue : [sort/objet X]" + renvoi Codex — même motif que
+ *  l'arbitrage Activités de mer : l'enjeu EST l'entité choisie). Zéro saisie […]. Un auteur PEUT
+ *  toujours surcharger par un texte authoré. »
+ *
+ *  C'est la forme des jets exigés par une ENTITÉ (un `FlowTest` authoré en donnée app-owned : sort,
+ *  consommable, Trait, Talent, Atout, État, symptôme, manœuvre) — l'entité qui exige le jet EST ce qui
+ *  se joue, et elle porte déjà sa règle en `desc` verbatim dans sa fiche Codex.
+ *
+ *  IDS SEULEMENT (`EffectSource` = `{kind, id}`) : le libellé est résolu À L'AFFICHAGE par
+ *  `resolveStake`. La forme est CALCULÉE au montage de l'étape par le socle (`derivedStake`), jamais
+ *  authorée en JSON — aucune migration de sauvegarde : une étape déjà persistée garde la forme sous
+ *  laquelle elle a été mintée. */
+export interface DerivedStake {
+  from: EffectSource;
+  key?: never;
+  values?: never;
+  authored?: never;
+}
+
+/** ENJEU d'une entrée de jet (étape de cascade, pending, `FlowTest`) : réf de dataset, texte authoré
+ *  par le document, OU dérivé de l'entité porteuse. Les trois passent par la MÊME porte de résolution
+ *  (`resolveStake`) — une surface n'en connaît toujours qu'une. */
+export type StakeRef = CatalogStake | AuthoredStake | DerivedStake;
 
 /** ENJEU RÉSOLU rendu par la surface : le texte de la donnée (trous remplis) + la fiche de règle
  *  DÉRIVÉE de la même entrée — le producteur ne nomme ni l'un ni l'autre.
@@ -594,13 +618,33 @@ export function flowStakeRef(
   };
 }
 
+/** ENTITÉ PORTEUSE d'un enjeu dérivé, résolue en `{catégorie Codex, fiche}` — `undefined` si la
+ *  nature de source n'a pas de foyer interrogeable ou si l'id n'y existe pas. FAIL-CLOSED : sans
+ *  entité résolue il n'y a NI texte NI renvoi, donc pas d'enjeu dérivé (jamais une phrase qui nomme
+ *  un id brut ou un foyer mort). */
+function derivedEntry(from: EffectSource): { category: string; entry: { label: string } } | undefined {
+  const category = CATEGORY_BY_SOURCE_KIND[from.kind];
+  const entry = category ? findById(category, from.id) : undefined;
+  return entry ? { category, entry } : undefined;
+}
+
+/** PORTE de l'enjeu DÉRIVÉ du porteur (#1262 V2 L6d) — la troisième provenance, à côté du dataset
+ *  (`combatStakeRef`…) et du document (`AuthoredStake`). Rend `undefined` quand la source manque ou
+ *  ne nomme aucune fiche : le producteur n'a alors rien à dire, et il vaut mieux se taire qu'inventer.
+ *  PURE : aucun texte ici — seuls les IDS entrent dans la référence. */
+export function derivedStake(from: EffectSource | undefined): StakeRef | undefined {
+  return from && derivedEntry(from) ? { from: { kind: from.kind, id: from.id } } : undefined;
+}
+
 /** L'enjeu PARLE-t-il ? PRÉDICAT partagé par le RÉSOLVEUR (qui jette sinon) et par le VALIDATEUR de
  *  scène (qui refuse le document) — une seule définition de « utilisable », sans quoi l'authoring
  *  déclarerait bon ce que le runtime refuse. Un enjeu authoré BLANC ne dit rien : un document portable
  *  peut être édité hors de l'app (JSON à la main, outil tiers), et `'   '` y passerait la présence.
- *  Une réf de dataset parle par construction (ses portes sont fail-closed à la construction). PUR. */
+ *  Une réf de dataset parle par construction (ses portes sont fail-closed à la construction) ; un
+ *  enjeu DÉRIVÉ parle si son entité porteuse a toujours sa fiche. PUR. */
 export function stakeSpeaks(stake: StakeRef | undefined): boolean {
   if (!stake) return false;
+  if (stake.from != null) return !!derivedEntry(stake.from);
   return stake.authored != null ? !!stake.authored.trim() : true;
 }
 
@@ -611,9 +655,16 @@ export function stakeSpeaks(stake: StakeRef | undefined): boolean {
  *  Une entrée SANS gabarit rend un enjeu sans `text` : ce n'est pas un silence — son issue est dite
  *  par les chips d'ops du jet, et son foyer de règle reste rendu.
  *  ENJEU AUTHORÉ (`AuthoredStake`, Flow d'un document de scène) : le document EST la source, il n'y a
- *  ni entrée à chercher ni trou à remplir — le texte sort tel qu'authoré, sans foyer de règle. La
- *  porte reste UNIQUE : la surface ne connaît toujours que `resolveStake`. */
+ *  ni entrée à chercher ni trou à remplir — le texte sort tel qu'authoré, sans foyer de règle.
+ *  ENJEU DÉRIVÉ (`DerivedStake`) : l'entité porteuse EST ce qui se joue — son LIBELLÉ est résolu ICI
+ *  (l'étape ne porte que des ids) et sa fiche est le foyer de règle. La porte reste UNIQUE : la
+ *  surface ne connaît toujours que `resolveStake`. */
 export function resolveStake(ref: StakeRef): ResolvedStake {
+  if (ref.from != null) {
+    const found = derivedEntry(ref.from);
+    if (!found) throw new Error(`resolveStake(dérivé '${ref.from.kind}/${ref.from.id}') : entité porteuse introuvable — une surface qui LANCE dit ce qu'elle met en jeu`);
+    return { text: `Ce qui se joue : ${found.entry.label}.`, rule: { category: found.category, id: ref.from.id } };
+  }
   if (ref.authored != null) {
     if (!stakeSpeaks(ref)) throw new Error('resolveStake(authoré) : enjeu vide — un Flow qui LANCE dit ce qu\'il met en jeu');
     return { text: ref.authored };
