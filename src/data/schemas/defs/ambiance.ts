@@ -109,6 +109,44 @@ const weatherFxSchema = z.strictObject({
  *  plus, il sur-expose (ou inverse le signe de la couleur). */
 const tintFactor = z.number().min(0).max(1);
 
+/** #1300 — MODELÉ DE FORME de la voie volumique : facteur d'irradiance ambiante par FAMILLE
+ *  D'ORIENTATION, multiplié dans la couleur de chaque face selon la direction qu'elle regarde. Terme
+ *  d'exposition au ciel et aux ouvertures, PAS une lampe — aucune source ne s'y ajoute, et une face
+ *  d'une famille sombre reste sous une face d'une autre famille éclairée à l'identique.
+ *  Six familles : les deux horizontales (`haut` = sol/toit, `bas` = soffite), et les quatre verticales
+ *  dans l'ORDRE CYCLIQUE de la grille — `verticales[0..3]` = −z, +x, +z, −x.
+ *
+ *  Bornes : un facteur RETIRE de la lumière, il n'en ajoute pas (0 exclu, 1 compris). Les quatre
+ *  verticales DÉCROISSENT strictement le long du cycle : c'est ce qui interdit qu'une paire
+ *  cycliquement adjacente soit jumelle — le bouclage compris, la première étant alors la plus grande.
+ *  Deux familles adjacentes jumelles ne modèlent plus l'angle qu'elles forment, ce qui est le défaut
+ *  que ce bloc corrige. La PREMIÈRE verticale passe SOUS l'horizontale haute pour la même raison : le
+ *  sol et le mur qu'il rejoint sont covisibles à chaque plinthe, et à valeur égale leur arête
+ *  disparaît. Le rapport max/min des verticales est plafonné : au-delà, la famille la plus sombre
+ *  passe sous le plancher de luminance de la scène (palier `tenebres` × `fogTint.explored`).
+ *
+ *  `bas` est INATTEIGNABLE en l'état : `wallBoxPolys` (`gameIso/backends/webgl/worldTris.ts`) omet le
+ *  dessous d'un mur, et aucune autre face ne présente de normale vers le bas — mesuré à 0 triangle sur
+ *  l'arène, l'opéra et le siège. Le régler ne change donc rien à l'écran aujourd'hui ; la valeur tient
+ *  la place du soffite pour le jour où une face en produira un. */
+const faceShadeSchema = z
+  .strictObject({
+    haut: z.number().gt(0).max(1),
+    verticales: z.array(z.number().gt(0).max(1)).length(4),
+    bas: z.number().gt(0).max(1),
+  })
+  .refine((s) => s.verticales.every((v, i) => i === 0 || v < s.verticales[i - 1]), {
+    message:
+      'faceShade.verticales : les quatre facteurs doivent DÉCROÎTRE strictement le long du cycle (−z, +x, +z, −x) — deux familles cycliquement adjacentes égales laissent l’angle qu’elles forment sans modelé',
+  })
+  .refine((s) => s.verticales[0] < s.haut, {
+    message:
+      'faceShade : la première verticale doit passer SOUS `haut` — un sol et le mur qu’il rejoint sont covisibles à chaque plinthe, et à valeur égale leur arête disparaît',
+  })
+  .refine((s) => Math.max(...s.verticales) / Math.min(...s.verticales) <= 2, {
+    message: 'faceShade.verticales : rapport max/min ≤ 2 — au-delà, la famille la plus sombre passe sous le plancher de luminance',
+  });
+
 export const schema = z.strictObject({
   ambientFloor: z.number(),
   // `fogTint` = APPLICATION de la politique de visibilité en facteur MULTIPLICATIF (0..1), partagée par
@@ -124,6 +162,7 @@ export const schema = z.strictObject({
     .refine((t) => t.visible >= t.explored && t.explored >= t.unknown, {
       message: 'fogTint doit décroître visible ≥ explored ≥ unknown : une case moins connue ne peut pas être plus lumineuse',
     }),
+  faceShade: faceShadeSchema,
   iso: z.strictObject({
     warm: radialVeilSchema,
     vignette: radialVeilSchema,

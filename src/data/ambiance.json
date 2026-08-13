@@ -5,6 +5,16 @@
     "explored": 0.42,
     "unknown": 0.15
   },
+  "faceShade": {
+    "haut": 1,
+    "verticales": [
+      0.95,
+      0.86,
+      0.7,
+      0.58
+    ],
+    "bas": 0.55
+  },
   "iso": {
     "warm": {
       "cx": "55%",

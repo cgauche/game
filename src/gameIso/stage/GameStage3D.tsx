@@ -472,8 +472,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   const accents = accentsRetenus(jeton, bakeDeps, () => sceneGroundAccents(scene, mpt));
   // ── DÉGAGEMENT : compactage de l'index du monde cuit (aucun sommet touché, aucun matériau refait).
   useEffect(() => { applyCutawayMask(baked, keepEl); }, [baked, keepEl]);
-  // ── TEINTE : réécriture en place des couleurs de sommet (elle ne retriangule rien).
-  useEffect(() => { applyVisibilityTint(baked, tintAt); }, [baked, tintAt]);
+  // ── TEINTE : elle vit plus bas, avec la lumière — son read-set contient le fondu du soleil (#1300).
   // Les touffes d'une nappe dégagée partent avec elle — MÊME loi, appliquée sur le MÊME semis cuit.
   const accentsVus = useMemo(() => maskGroundAccents(accents, keepEl), [accents, keepEl]);
   // BILLBOARDS : leur seule lecture de scène est `heightAt` (`sceneHeightDeps`) — tout le reste leur
@@ -514,7 +513,16 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [scene.ambiance, scene.northDeg, scene.ambientLight, scene.weather, gameTime, lightLevel],
   );
-  const { course, lit } = lumière;
+  const { course, lit, fade } = lumière;
+  // ── TEINTE : réécriture en place des couleurs de sommet (elle ne retriangule rien). Son read-set
+  // porte le FONDU du soleil (#1300) : c'est la porte du modelé de forme — plein sous un ciel qui
+  // n'éclaire pas (intérieur, nuit), effacé sous le soleil qui modèle lui-même, et CONTINU entre les
+  // deux. Un nombre, donc une dépendance d'effet stable : deux frames de même fondu ne repeignent rien.
+  // PORTÉE de ce modelé : les faces du monde CUIT. Les accents de sol (`buildGroundAccentMeshes`) et
+  // les billboards sont des maillages à part, hors `spans` : ils gardent l'exposition horizontale de la
+  // frame — ce qui est la bonne famille pour une touffe posée au sol, et un écart déclaré pour un
+  // billboard, dont la normale est l'axe caméra et qu'aucune famille d'orientation ne décrit.
+  useEffect(() => { applyVisibilityTint(baked, tintAt, fade); }, [baked, tintAt, fade]);
   // FOND du canevas sous cette météo — un NOMBRE, donc une dépendance d'effet stable (deux frames de
   // même météo ne réappliquent rien).
   const fondCanevas = stageClearColor(lumière.meteo);

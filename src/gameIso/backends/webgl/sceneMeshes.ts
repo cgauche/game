@@ -487,8 +487,9 @@ export function applyCutawayMask(baked: BakedWorld, keepEl: KeepEl): WorldGeomet
 
 /** Repeint la VISIBILITÉ d'un monde cuit : l'attribut `color` est ré-écrit EN PLACE depuis la couleur
  *  NUE de chaque face (jamais depuis la couleur affichée — une teinte se re-multiplie, elle ne se cumule
- *  pas), la géométrie n'est pas touchée. C'est la passe qui suit le PAS du groupe (mesuré #1176, arène :
- *  1,3 ms pour 19 734 triangles, contre 492 ms de re-bake). Rend la géométrie, pour l'appelant qui
+ *  pas), la géométrie n'est pas touchée. C'est la passe qui suit le PAS du groupe (re-mesurée #1300 sur
+ *  l'arène, MODELÉ COMPRIS — une lecture et trois multiplications de plus par sommet : 1,34 ms médian
+ *  pour 19 358 triangles / 58 074 sommets, contre 492 ms de re-bake). Rend la géométrie, pour l'appelant qui
  *  compose les deux — LA géométrie du bake, pas une copie : le dernier appel fait la couleur affichée.
  *  D'où le contrat de propriété de `BakedWorld` (un bake = un consommateur de teinte).
  *

@@ -8,7 +8,10 @@
  * gate. Les deux voies sont réglées sur la MÊME donnée (`catalog/ambiance.ts`, `ambianceLuminance` →
  * `nightVeilMax`) : la voie affine peint son voile par-dessus la scène, celle-ci dose ses lampes avec
  * le complément — d'où une parité de luminance PAR CONSTRUCTION, et un plancher non nul à luminosité 0
- * (le palier `tenebres` rend `1 − nightVeilMax`, jamais un écran noir).
+ * (le palier `tenebres` rend `1 − nightVeilMax`, jamais un écran noir). Les deux grandeurs se lisent sur
+ * une surface HORIZONTALE, la surface de référence de `surfaceLuminance` : depuis le modelé de forme
+ * (#1300), une face VERTICALE rend ce plancher multiplié par le facteur de sa famille d'orientation
+ * (`AMBIANCE.faceShade`), et le voile de l'affine, lui, ne connaît pas d'orientation.
  *
  * DEUX lampes au plus, et la seconde a une PORTE :
  *  - l'AMBIANTE existe toujours. Son intensité suit le palier de lumière de la scène (`ambientScalar` →
@@ -28,11 +31,10 @@
  * Le soleil de PLANCHE (fixe) reste au spike (`backends/webgl/sceneMeshes.ts`) : les gardes QC
  * l'épinglent, et c'est pourquoi il ne se règle pas ici.
  *
- * RÉSIDU CONSIGNÉ (frustum d'ombre) : `sunRigFrom` serre son frustum sur la SPHÈRE englobante des
- * casteurs, donc un cube — à soleil bas, l'essentiel de la carte d'ombre 2048² tombe hors géométrie.
- * Le serrer à la hauteur réelle demanderait de projeter la boîte dans le repère de la lampe DANS
- * `sunRigFrom`, que le soleil de PLANCHE partage : la planche QC changerait. À reprendre quand le
- * spike aura son propre chemin de rig.
+ * FRUSTUM D'OMBRE : `sunRigFrom` serre son frustum sur la SPHÈRE englobante des casteurs, donc un cube
+ * — à soleil bas, l'essentiel de la carte d'ombre 2048² tombe hors géométrie. Le serrer à la hauteur
+ * réelle demande de projeter la boîte dans le repère de la lampe DANS `sunRigFrom`, que le soleil de
+ * PLANCHE partage : la planche QC change avec.
  */
 import * as THREE from 'three';
 import type { Scene } from '../../state/scene';
