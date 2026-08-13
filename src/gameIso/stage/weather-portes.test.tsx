@@ -7,7 +7,7 @@ import { emptyScene, type Scene } from '../../state/scene';
 import { setStageBackend } from '../../state/stage3d';
 import type { Combatant } from '../../engine/types';
 import { IsoStage } from '../IsoStage';
-import { AMBIANCE } from '../catalog/ambiance';
+import { AMBIANCE, weatherLightScalars } from '../catalog/ambiance';
 
 /**
  * PORTES DE LA MÉTÉO (#1176, P2-6) — une météo authorée a UNE expression par voie, jamais deux, et
@@ -63,6 +63,11 @@ const voile = (el: HTMLElement, meteo: Scene['weather']): Element | null => {
 };
 /** Le semis volumique : le compte de particules inscrit par le canevas. */
 const semis = (el: HTMLElement) => el.querySelector('canvas.iso-stage')?.getAttribute('data-precip') ?? null;
+/** Les nappes de brume MONTÉES dans le volume, et les deux traces de teinte du canevas (#1247). */
+const canevas = (el: HTMLElement) => el.querySelector('canvas.iso-stage');
+const nappes = (el: HTMLElement) => canevas(el)?.getAttribute('data-brume') ?? null;
+const exposition = (el: HTMLElement) => Number(canevas(el)?.getAttribute('data-lum'));
+const fond = (el: HTMLElement) => canevas(el)?.getAttribute('data-bg') ?? null;
 
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
@@ -125,5 +130,108 @@ describe('Météo — une expression par voie, jamais deux (#1176 P2-6)', () => 
     container = null;
     setStageBackend('affine');
     expect(voile(monter('brouillard'), 'brouillard')).not.toBeNull();
+  });
+});
+
+/**
+ * CE QUE LA VOIE VOLUMIQUE MONTRE (#1247) — le lot P2-6 n'exprimait que ce qui TOMBE : le brouillard
+ * n'y était rien, et le ciel restait clair sous l'orage. Les contrats POSITIFS de ce lot :
+ *  - le brouillard pose des NAPPES dans le volume (`data-brume`) ;
+ *  - toute météo authorée assombrit la LUMIÈRE (`data-lum`) et teinte le FOND (`data-bg`) ;
+ *  - et cet assombrissement est la MÊME donnée que le voile d'écran de la voie affine — pas une
+ *    seconde valeur authorée, donc les deux voies ne peuvent pas diverger.
+ */
+const AVEC_BRUME = (['brouillard', 'tempete'] as const).filter((m) => AMBIANCE.iso.weather[m]?.brume);
+const AUTHORÉES = (['pluie', 'brouillard', 'neige', 'tempete'] as const);
+
+describe('Météo volumique — brume, lumière et fond (#1247)', () => {
+  it('BROUILLARD en volumique : des nappes de brume, et toujours aucune particule', () => {
+    setStageBackend('webgl');
+    const el = monter('brouillard');
+    expect(semis(el)).toBeNull();
+    expect(Number(nappes(el)), 'le brouillard doit avoir une expression volumique').toBe(
+      AMBIANCE.iso.weather.brouillard!.brume!.layers.length,
+    );
+  });
+
+  it('les types SANS brume authorée n’en montent aucune (la pluie, la neige)', () => {
+    for (const meteo of ['pluie', 'neige'] as const) {
+      setStageBackend('webgl');
+      const el = monter(meteo);
+      expect(AMBIANCE.iso.weather[meteo]?.brume, 'témoin : la donnée n’en porte pas').toBeUndefined();
+      expect(nappes(el)).toBeNull();
+      act(() => root!.unmount());
+      root = null;
+      el.remove();
+      container = null;
+    }
+  });
+
+  it('INTÉRIEUR : aucune nappe, même sous un brouillard authoré (la porte est celle des deux voies)', () => {
+    setStageBackend('webgl');
+    expect(nappes(monter('brouillard', 'interieur'))).toBeNull();
+  });
+
+  it('la TEMPÊTE éteint la lumière et teinte le fond ; le beau temps ne touche ni l’un ni l’autre', () => {
+    setStageBackend('webgl');
+    const clair = monter('clair');
+    const lumClair = exposition(clair);
+    const fondClair = fond(clair);
+    act(() => root!.unmount());
+    root = null;
+    clair.remove();
+    container = null;
+
+    const orage = monter('tempete');
+    expect(exposition(orage), 'le monde s’assombrit sous l’orage').toBeLessThan(lumClair);
+    expect(fond(orage), 'le ciel ne peut pas rester clair sur un monde éteint').not.toBe(fondClair);
+  });
+
+  it('PARITÉ : le voile affine et la lumière volumique sortent de la MÊME donnée, et vont dans le MÊME sens', () => {
+    // Référence de beau temps, une fois pour toutes les météos.
+    setStageBackend('webgl');
+    const clair = monter('clair');
+    const lumClair = exposition(clair);
+    act(() => root!.unmount());
+    root = null;
+    clair.remove();
+    container = null;
+
+    for (const meteo of AUTHORÉES) {
+      const { dim } = weatherLightScalars({ weather: meteo, ambiance: 'exterieur' });
+      setStageBackend('affine');
+      const aff = monter(meteo);
+      expect(voile(aff, meteo), `voie affine : ${meteo} porte son voile`).not.toBeNull();
+      act(() => root!.unmount());
+      root = null;
+      aff.remove();
+      container = null;
+
+      setStageBackend('webgl');
+      const vol = monter(meteo);
+      // Le facteur APPARIÉ EN LUMINANCE de la dérivation partagée arrive tel quel sur l'exposition de
+      // la frame — c'est le câblage. Comparaison ABSOLUE au millième : la trace `data-lum` est
+      // arrondie à quatre décimales, et un rapport de deux valeurs arrondies porte l'erreur des deux.
+      expect(exposition(vol), `${meteo} : l’exposition suit le facteur météo dérivé`).toBeCloseTo(lumClair * dim, 3);
+      // …et le SENS suit celui du voile d'écran (le contrat, mesuré à part sur les 4 météos réelles).
+      expect(Math.sign(exposition(vol) - lumClair), `${meteo} : même sens que le voile affine`).toBe(Math.sign(dim - 1));
+      act(() => root!.unmount());
+      root = null;
+      vol.remove();
+      container = null;
+    }
+  });
+
+  it('les types à brume sont ceux que la DONNÉE désigne — aucun nom de météo au code', () => {
+    expect(AVEC_BRUME.length).toBeGreaterThan(0);
+    for (const meteo of AVEC_BRUME) {
+      setStageBackend('webgl');
+      const el = monter(meteo);
+      expect(Number(nappes(el))).toBe(AMBIANCE.iso.weather[meteo]!.brume!.layers.length);
+      act(() => root!.unmount());
+      root = null;
+      el.remove();
+      container = null;
+    }
   });
 });

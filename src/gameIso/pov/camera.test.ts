@@ -9,6 +9,7 @@ import {
   fogAt,
   fogCurveOf,
   farTilesOf,
+  povDepth,
   mixHex,
   EYE_H,
   NEAR,
@@ -253,6 +254,44 @@ describe('fogAt — courbes de brume en DONNÉE (ambiance.json)', () => {
     expect(farTilesOf(true)).toBe(ind.end);
     expect(farTilesOf(false)).toBe(out.end);
     expect(farTilesOf(false)).toBeGreaterThanOrEqual(28); // profondeur : portée étendue
+  });
+});
+
+/**
+ * `povDepth` (#1247) — le RESSERREMENT météo de la première personne. Il n'a de sens qu'appliqué aux
+ * DEUX consommateurs de portée à la fois : la courbe de brume et le plan lointain de la caméra. Ce
+ * banc tient l'invariant qui l'exprime — la brume atteint 1 EXACTEMENT à la portée rendue, quel que
+ * soit le facteur.
+ */
+describe('povDepth — la portée resserrée par la météo (#1247)', () => {
+  it('sans facteur (ou à 1) : la courbe du milieu, à l’identique', () => {
+    for (const indoor of [false, true]) {
+      expect(povDepth(indoor).curve).toEqual(fogCurveOf(indoor));
+      expect(povDepth(indoor, 1).curve).toEqual(fogCurveOf(indoor));
+      expect(povDepth(indoor).farTiles).toBe(farTilesOf(indoor));
+    }
+  });
+
+  it('le facteur resserre le DÉBUT du voile ET la portée — jamais l’un sans l’autre', () => {
+    const base = fogCurveOf(false);
+    const serre = povDepth(false, 0.45).curve;
+    expect(serre.start).toBeCloseTo(base.start * 0.45, 12);
+    expect(serre.end).toBeCloseTo(base.end * 0.45, 12);
+    expect(serre.gamma, 'le gamma est une FORME de courbe, pas une distance').toBe(base.gamma);
+  });
+
+  it('la brume atteint 1 EXACTEMENT à la portée rendue (aucune arête franche au bout du monde)', () => {
+    for (const k of [1, 0.7, 0.45, 0.2]) {
+      const { curve, farTiles } = povDepth(false, k);
+      expect(farTiles, 'un seul nombre pour les deux consommateurs').toBe(curve.end);
+      expect(fogAt(farTiles, curve)).toBe(1);
+      expect(fogAt(farTiles * 0.999, curve)).toBeLessThan(1);
+    }
+  });
+
+  it('un facteur hors bornes est ramené dans [0,1] — la météo ne RALLONGE jamais la portée', () => {
+    expect(povDepth(false, 4).farTiles).toBe(farTilesOf(false));
+    expect(povDepth(false, -1).farTiles).toBe(0);
   });
 });
 

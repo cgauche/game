@@ -30,6 +30,18 @@ export function mix(a: string, b: string, t: number): string {
   return ca && cb ? toHex(ca[0] + (cb[0] - ca[0]) * t, ca[1] + (cb[1] - ca[1]) * t, ca[2] + (cb[2] - ca[2]) * t) : a;
 }
 
+/** Pondération de LUMINANCE PERÇUE (Rec. 709) — source unique des deux lecteurs : la luminance d'une
+ *  couleur hexa ci-dessous, et celle d'une couleur `three` déjà parsée (`luminance709`,
+ *  `stage/boardPose.ts`). Deux jeux de poids en feraient deux gris différents. */
+export const LUMA_709 = { r: 0.2126, g: 0.7152, b: 0.0722 } as const;
+
+/** LUMINANCE PERÇUE (0..1) d'une couleur `#rrggbb`, dans l'espace où elle est ÉCRITE (sRGB — les
+ *  octets de la donnée, ceux que compose le voile d'écran de la voie affine). `null` si non-hex. */
+export function luminanceHex(hex: string): number | null {
+  const c = parseHex(hex);
+  return c ? (LUMA_709.r * c[0] + LUMA_709.g * c[1] + LUMA_709.b * c[2]) / 255 : null;
+}
+
 // Facteurs de LUMIÈRE (source en haut-gauche) — pas des identités de matériau (celles-ci sont en JSON).
 /** Face N (bas-droite, ombre) : ×0.86, calibré sur la palette bois iso (unifie 0.845→0.883 hand-tunés). */
 export const SIDE_N = 0.86;

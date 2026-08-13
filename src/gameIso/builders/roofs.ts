@@ -959,19 +959,28 @@ export function massCovers(mass: Pick<BuildingMass, 'z'>, cells: ReadonlySet<str
   return z <= mass.z && cells.has(vk(x, y));
 }
 
-/** Le COUVERT d'une colonne `x,y` : le niveau de la nappe la plus haute qui la coiffe, et la cote
- *  MÉTRIQUE de cette nappe à son égout — le point bas du toit, donc la hauteur sous laquelle plus
- *  rien ne tombe du ciel. */
-export interface ShelterColumn { topZ: number; ceilingM: number }
+/** Le COUVERT d'une colonne `x,y` : le niveau de la nappe la plus haute qui la coiffe, la cote
+ *  MÉTRIQUE d'égout la plus haute — le point bas du toit, donc la hauteur sous laquelle plus rien ne
+ *  tombe du ciel — et la SECTION à laquelle appartient CETTE cote.
+ *
+ *  `sectionId` suit `ceilingM`, PAS `topZ`. Les deux peuvent désigner deux masses différentes sur une
+ *  même colonne : une masse basse posée sur une butte a son égout plus HAUT qu'une masse haute posée
+ *  dans le creux. C'est l'égout qui ARRÊTE la pluie (`isSheltered`), donc c'est SA masse que la météo
+ *  doit interroger — sinon la vue répond pour une autre nappe et la pluie s'arrête encore en l'air
+ *  (#1247). `sectionId` est la MASSE (`mass.id`), la clé même que lit la loi de dégagement
+ *  (`cutawayForSection`, `liftedSections`/`seenSections`) : aucun second verdict n'est reposé. */
+export interface ShelterColumn { topZ: number; ceilingM: number; sectionId: string }
 
 const shelterOfScene = memoByRef((scene: Scene): ReadonlyMap<string, ShelterColumn> => {
   const out = new Map<string, ShelterColumn>();
   for (const nappe of resolveNappes(scene).values())
     for (const key of nappe.cells) {
       const prev = out.get(key);
+      const arreteLaPluie = !prev || nappe.shape.eaveHeightM > prev.ceilingM; // l'égout le plus HAUT
       out.set(key, {
         topZ: Math.max(prev?.topZ ?? -Infinity, nappe.mass.z),
         ceilingM: Math.max(prev?.ceilingM ?? -Infinity, nappe.shape.eaveHeightM),
+        sectionId: arreteLaPluie ? nappe.mass.id : prev.sectionId,
       });
     }
   return out;
@@ -991,6 +1000,13 @@ export function shelterField(scene: Scene): ReadonlyMap<string, ShelterColumn> {
 export function isSheltered(field: ReadonlyMap<string, ShelterColumn>, x: number, y: number, hM: number): boolean {
   const col = field.get(vk(Math.round(x), Math.round(y)));
   return !!col && hM < col.ceilingM;
+}
+
+/** La SECTION qui COIFFE la case `x,y`, ou `null` si elle est à ciel ouvert — le même index et la
+ *  même vérité qu'`isSheltered`, lus par la clé de la loi de dégagement. C'est la couture par
+ *  laquelle la météo volumique demande à la VUE ce qu'elle fait du toit qui l'arrête (#1247). */
+export function shelterSectionAt(field: ReadonlyMap<string, ShelterColumn>, x: number, y: number): string | null {
+  return field.get(vk(Math.round(x), Math.round(y)))?.sectionId ?? null;
 }
 
 /** ESPACE DÉGAGÉ par les alliés (#818), résolution UNIQUE de la scène — consommée par la loi

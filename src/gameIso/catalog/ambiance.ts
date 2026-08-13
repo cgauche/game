@@ -3,7 +3,7 @@
  *  nuit. Les stages (IsoStage/PovStage) et la QC headless consomment les MÊMES defs SVG assemblées ici —
  *  plus aucune de ces couleurs en dur dans un renderer. */
 import { ambiance } from '../../data';
-import { ao, spec } from '../shade';
+import { ao, luminanceHex, spec } from '../shade';
 import type { Dims } from '../../geometry/iso';
 import type { Visibility } from '../../state/visibility';
 import { isIndoor, type Scene } from '../../state/scene';
@@ -34,6 +34,19 @@ export interface WeatherPrecipDef {
   opacity: number;
 }
 
+/** #1247 — BRUME MONDE d'un type de météo : les nappes horizontales que la voie volumique pose dans
+ *  le volume (`backends/webgl/weatherSheets.ts`). `hM` est une cote ABSOLUE au-dessus du sol le plus
+ *  BAS de la carte — la référence du semis de précipitation (`precipArea`). `povTightenK` resserre la
+ *  portée de la première personne (`povDepth`, `pov/camera.ts`), les deux consommateurs de portée à
+ *  la fois. Aucun type de météo n'est nommé au code : tout vient de `src/data/ambiance.json`. */
+export interface WeatherBrumeLayer { hM: number; alpha: number }
+export interface WeatherBrumeDef {
+  color: string;
+  /** Nappes, cotes STRICTEMENT croissantes (garanti au schéma). */
+  layers: readonly WeatherBrumeLayer[];
+  povTightenK?: number;
+}
+
 /** #239 — voile de MÉTÉO authorée (`scene.weather`) : teinte plein écran (`tint`/`alpha`) et,
  *  pour la précipitation, un champ de particules (`particles` = classe CSS, `pcolor`, `density`) à la
  *  voie AFFINE, `precip` (ci-dessus) à la voie VOLUMIQUE. */
@@ -44,6 +57,7 @@ export interface WeatherFxDef {
   pcolor?: string;
   density?: number;
   precip?: WeatherPrecipDef;
+  brume?: WeatherBrumeDef;
 }
 export type WeatherFxId = 'pluie' | 'brouillard' | 'neige' | 'tempete';
 
@@ -162,6 +176,65 @@ export function sceneWeatherFx(scene: Pick<Scene, 'weather' | 'ambiance'>): Weat
  *  volumique : un type sans `precip` en donnée (le brouillard) ne fait tomber aucune particule. */
 export function scenePrecip(scene: Pick<Scene, 'weather' | 'ambiance'>): WeatherPrecipDef | null {
   return sceneWeatherFx(scene)?.precip ?? null;
+}
+
+/** La BRUME monde de la scène — les nappes à poser, ou `null` (#1247). Même porte que le semis : un
+ *  type sans `brume` en donnée (la pluie, la neige) n'en pose aucune. */
+export function sceneBrume(scene: Pick<Scene, 'weather' | 'ambiance'>): WeatherBrumeDef | null {
+  return sceneWeatherFx(scene)?.brume ?? null;
+}
+
+/** Ce que la météo fait à la LUMIÈRE de la scène (#1247). */
+export interface WeatherLight {
+  /** Facteur d'exposition sous la météo — multiplie ambiante, soleil et exposition des billboards.
+   *  Il DÉPASSE 1 sous une météo plus CLAIRE que la scène (brouillard, neige) : c'est un facteur
+   *  d'exposition, pas une transmittance. */
+  dim: number;
+  /** Couleur vers laquelle la lumière et le fond se déplacent (`null` = aucune météo à l'écran). */
+  tint: string | null;
+  /** Dosage de ce déplacement — l'`alpha` de la donnée. */
+  k: number;
+}
+
+/** Météo sans effet : la scène garde sa lumière entière. */
+export const METEO_SANS_EFFET: WeatherLight = { dim: 1, tint: null, k: 0 };
+
+/** ALBÉDO DE RÉFÉRENCE de l'appariement ci-dessous : le gris moyen (128/255), en sRGB — l'espace où
+ *  la donnée de météo est ÉCRITE et où le voile d'écran de la voie affine compose. */
+export const ALBEDO_REF = 0.5;
+
+/**
+ * LUMIÈRE DÉRIVÉE de la météo — le pendant VOLUMIQUE du voile d'écran de la voie affine, tiré de la
+ * MÊME donnée (`tint`/`alpha`) : aucun champ de lumière n'est authoré, donc les deux voies ne peuvent
+ * pas diverger, et un type de météo qui n'a que `tint`/`alpha` (la neige) est servi sans une ligne de
+ * code de plus.
+ *
+ * APPARIEMENT EN LUMINANCE, sur l'albédo de référence. Le voile affine compose
+ * `(1 − a)·scène + a·teinte` : il ÉCLAIRCIT dès que la teinte est plus claire que la scène (mesuré sur
+ * gris moyen : brouillard 128 → 140, neige 128 → 140 ; pluie 128 → 120, tempête 128 → 102). Une lumière,
+ * elle, MULTIPLIE — et `1 − a` seul assombrissait donc TOUTES les météos, à rebours de la moitié
+ * d'entre elles. Le facteur rendu est celui qui reproduit la composition affine sur cet albédo :
+ *   `dim = (1 − a) + a · L(teinte) / ALBEDO_REF`,
+ * avec `L` la luminance perçue (Rec. 709, `luminanceHex`) en sRGB — l'espace des octets de la donnée,
+ * celui où l'affine mélange. Il dépasse 1 pour une teinte claire : les intensités de three ne sont pas
+ * bornées à 1, et c'est ce qui fait qu'une neige ÉCLAIRE la scène des deux côtés.
+ *
+ * CE QUE L'APPARIEMENT NE TIENT PAS, en fait : il est exact sur l'albédo de référence et approché
+ * ailleurs (une lumière multiplie, un voile interpole — les deux ne coïncident qu'en un point). Un
+ * albédo sombre reste donc un peu plus sombre en volumique qu'en affine, un albédo clair un peu plus
+ * clair ; le SENS de l'effet, lui, est le même partout (le facteur est > 1 ou < 1 pour tous les
+ * albédos à la fois). La TEINTE (hue) ne passe pas par ce scalaire : elle vit dans la couleur des
+ * lampes et du fond (`meteoLightColor`, `stageClearColor`), dont la luminance est bornée par
+ * construction — aucun déplacement de couleur ne relèverait à lui seul l'exposition.
+ */
+export function weatherLightScalars(scene: Pick<Scene, 'weather' | 'ambiance'>): WeatherLight {
+  const fx = sceneWeatherFx(scene);
+  if (!fx) return METEO_SANS_EFFET;
+  const k = Math.min(1, Math.max(0, fx.alpha));
+  const L = luminanceHex(fx.tint);
+  // Teinte non hexa (CSS `var(--x)`) : aucune luminance mesurable, on s'en tient à la transmittance.
+  const dim = L === null ? 1 - k : (1 - k) + (k * L) / ALBEDO_REF;
+  return { dim, tint: fx.tint, k };
 }
 
 /** Alpha du voile de NUIT à la luminosité `light` (0..1). SOURCE UNIQUE du dosage : le voile SVG de

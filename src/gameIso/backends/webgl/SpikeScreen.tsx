@@ -57,6 +57,7 @@ import {
   worldShadowBox,
   AMBIENT_INTENSITY,
   LIGHT_COLOR,
+  STAGE_BG,
   SUN_INTENSITY,
 } from './sceneMeshes';
 import { accentCounts, buildGroundAccentMeshes, sceneGroundAccents } from './groundAccents';
@@ -70,8 +71,9 @@ import { scenario as diligence } from '../../../scenes/test-scenarios/diligence'
 /** Canevas de taille FIXE : deux captures ne se comparent qu'à cadre égal. */
 const CANVAS_W = 1280;
 const CANVAS_H = 720;
-/** Fond des planches QC (`render-env.mts`) — même fond ici pour comparer sans biais de contraste. */
-const BG = 0x14161f;
+/** Fond des planches QC (`render-env.mts`) — SOURCE UNIQUE partagée avec l'écran de jeu
+ *  (`sceneMeshes.STAGE_BG`) : deux fonds différents biaiseraient toute comparaison de contraste. */
+const BG = STAGE_BG;
 /** Échelle de rendu du canevas, FIGÉE à 2 : le tampon fait 2× le cadre CSS (les arêtes fines — merlons,
  *  montants — cessent de pointiller) pour 4× les pixels à remplir, et deux captures prises sur deux
  *  machines de densité d'écran différente restent comparables au pixel près. */

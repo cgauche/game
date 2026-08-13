@@ -38,6 +38,7 @@ import {
   ZONE_SMOKE_TINT,
 } from '../../highlightTints';
 import { SPECKLE_LIFT_M } from './groundAccents';
+import { withRenderRank } from './renderRanks';
 
 /** Un lot de MONTAGE : kind du builder divisé par son opacité de matériau. */
 export type HighlightSlot =
@@ -249,7 +250,8 @@ export function buildHighlightMesh(slot: HighlightSlot, capacity: number): THREE
   const blanc = new THREE.Color(1, 1, 1);
   for (let i = 0; i < capacity; i++) mesh.setColorAt(i, blanc);
   mesh.count = 0;
-  return mesh;
+  // Rang `monde` : ces marques sont POSÉES au sol, sous les pions (registre `renderRanks.ts`).
+  return withRenderRank(mesh, 'monde');
 }
 
 /** Réécrit EN PLACE le contenu d'un pool : matrices, teintes, et le COMPTE d'instances dessinées. Rien

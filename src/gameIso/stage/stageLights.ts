@@ -37,7 +37,7 @@
 import * as THREE from 'three';
 import type { Scene } from '../../state/scene';
 import { ambientScalar } from '../../state/vision';
-import { ambianceLuminance } from '../catalog/ambiance';
+import { ambianceLuminance, weatherLightScalars, type WeatherLight } from '../catalog/ambiance';
 import {
   AMBIENT_INTENSITY,
   LIGHT_COLOR,
@@ -74,6 +74,10 @@ export interface StageLightScalars {
   fade: number;
   /** Un soleil éclaire-t-il RÉELLEMENT la scène (donc : ombres portées, disque de contact inutile). */
   lit: boolean;
+  /** Ce que la MÉTÉO authorée fait à la lumière (#1247) — dérivé de `tint`/`alpha`, la donnée même du
+   *  voile d'écran de la voie affine. `dim` est déjà appliqué aux trois grandeurs ci-dessous ; `tint`
+   *  et `k` servent à la COULEUR des lampes et du fond. */
+  meteo: WeatherLight;
   /** Intensité de l'ambiante, en unités three (facteur `π` compris). */
   ambientIntensity: number;
   /** Intensité de la directionnelle, en unités three (facteur `π` compris) — 0 quand elle n'est pas montée. */
@@ -96,13 +100,18 @@ export interface StageLightScalars {
  * l'intensité à sa part d'albédo à l'écran. Même conversion qu'au spike.
  */
 export function stageLightScalars(args: {
-  scene: Pick<Scene, 'ambiance' | 'northDeg' | 'ambientLight'>;
+  scene: Pick<Scene, 'ambiance' | 'northDeg' | 'ambientLight' | 'weather'>;
   gameTime: number;
   lightLevel: number | null | undefined;
 }): StageLightScalars {
   const course = sceneSun(args.scene as Scene, args.gameTime);
   const palier = ambientScalar(args.scene as Scene, args.gameTime, args.lightLevel ?? null);
-  const expo = ambianceLuminance(palier);
+  // MÉTÉO (#1247) : la MÊME donnée que le voile d'écran de la voie affine (`tint`/`alpha`), dérivée en
+  // scalaires (`weatherLightScalars`). `dim` est le facteur d'exposition APPARIÉ EN LUMINANCE au voile
+  // de l'affine sur l'albédo de référence — il vaut plus de 1 sous une météo plus CLAIRE que la scène
+  // (neige, brouillard). L'orage se joue par les LAMPES, jamais par un rect posé par-dessus.
+  const meteo = weatherLightScalars(args.scene);
+  const expo = ambianceLuminance(palier) * meteo.dim;
   const fade = course ? sunFade(course.elevationDeg) : 0;
   // L'ambiante cède au soleil À MESURE qu'il s'allume : pleine sans lui, `AMBIENT_INTENSITY` sous lui.
   const partAmbiante = 1 - (1 - AMBIENT_INTENSITY) * fade;
@@ -111,7 +120,10 @@ export function stageLightScalars(args: {
     course,
     fade,
     lit: fade > 0,
-    ambianceLum: expo,
+    meteo,
+    // `ambianceLum` reste le PALIER seul : c'est le complément exact du voile de nuit, et le socle que
+    // COMPLÈTENT les flaques de lampe (`stagePointLights`). Une flamme ne faiblit pas sous l'averse.
+    ambianceLum: ambianceLuminance(palier),
     ambientIntensity: expo * partAmbiante * Math.PI,
     sunIntensity: expo * SUN_INTENSITY * fade * Math.PI,
     surfaceLuminance: expo * (partAmbiante + partSolaire),
@@ -127,7 +139,18 @@ export interface StageLights extends StageLightScalars {
 
 /** Lampes de la scène à l'instant `gameTime`. `shadowBox` = la boîte des CASTEURS (géométrie +
  *  billboards, `worldShadowBox`), qui serre le frustum d'ombre. `lightLevel` = la mise en scène runtime
- *  (`state.lightLevel`), prioritaire sur le palier authoré — exactement comme pour les voiles. */
+ *  (`state.lightLevel`), prioritaire sur le palier authoré — exactement comme pour les voiles.
+ *
+ *  COULEUR sous la météo (#1247) : les deux lampes du CIEL se déplacent vers la teinte authorée, du
+ *  dosage de son alpha — c'est ce qui rend l'orage bleu-gris et la brume laiteuse. Les lampes
+ *  PONCTUELLES (`stagePointLights.ts`, pool à part) n'en reçoivent RIEN : une flamme reste une flamme
+ *  sous l'orage, et c'est le CONTRASTE entre un ciel éteint et un braséro intact qui rend l'orage
+ *  lisible — la dimmer ferait un écran uniformément gris. */
+export function meteoLightColor(meteo: WeatherLight): THREE.Color {
+  const base = new THREE.Color(LIGHT_COLOR);
+  return meteo.tint ? base.lerp(new THREE.Color(meteo.tint), meteo.k) : base;
+}
+
 export function stageLights(args: {
   scene: Scene;
   gameTime: number;
@@ -135,10 +158,11 @@ export function stageLights(args: {
   shadowBox: THREE.Box3;
 }): StageLights {
   const scalars = stageLightScalars(args);
-  const ambient = new THREE.AmbientLight(LIGHT_COLOR, scalars.ambientIntensity);
+  const teinte = meteoLightColor(scalars.meteo);
+  const ambient = new THREE.AmbientLight(teinte, scalars.ambientIntensity);
   if (!scalars.lit || !scalars.course) return { ...scalars, ambient, sun: null };
   const rig = sunRigFrom(args.shadowBox, scalars.course.dir);
-  const sun = new THREE.DirectionalLight(LIGHT_COLOR, scalars.sunIntensity);
+  const sun = new THREE.DirectionalLight(teinte, scalars.sunIntensity);
   sun.position.copy(rig.position);
   sun.target.position.copy(rig.target);
   sun.castShadow = true;

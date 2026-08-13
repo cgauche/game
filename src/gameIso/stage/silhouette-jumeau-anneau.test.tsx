@@ -9,6 +9,7 @@ import { GameStage3D, setStageRendererFactory, type StageRenderer, type StageWal
 import { COMBAT_TOKEN_BASE, teamRingRadiusK, topRingRadiusK, type DynamicMarks } from '../builders/dynamicMarks';
 import { HERO_RING } from '../teamColors';
 import { SILHOUETTE_TWIN_OPACITY } from '../backends/webgl/dynamicMarkMeshes';
+import { RENDER_ORDER } from '../backends/webgl/renderRanks';
 
 /**
  * SILHOUETTE À TRAVERS LES MURS (#1297, LOT A) — l'anneau d'équipe d'un jeton occlus par la géométrie
@@ -112,7 +113,8 @@ describe('Anneau d’équipe à travers les murs — jumeau de POOL (#1297 LOT A
     expect(mat.opacity).toBe(SILHOUETTE_TWIN_OPACITY);
     expect(mat.fog, 'chrome d’interface : la brume du POV ne le mange pas (#1176 P3-1c)').toBe(false);
     expect(mat.color.getHex(), 'la teinte vient de instanceColor, pas du matériau').toBe(0xffffff);
-    expect(jumeau.renderOrder, 'AVANT les billboards : rendu après, il peindrait par-dessus des corps VISIBLES').toBe(-1);
+    expect(jumeau.renderOrder, 'AVANT les billboards : rendu après, il peindrait par-dessus des corps VISIBLES').toBe(RENDER_ORDER.jumeau);
+    expect(RENDER_ORDER.jumeau, 'le rang vient du registre, jamais d’un littéral au site').toBeLessThan(RENDER_ORDER.pions);
     expect(jumeau.frustumCulled).toBe(false);
   });
 

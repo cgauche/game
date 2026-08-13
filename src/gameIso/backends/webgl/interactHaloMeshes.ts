@@ -35,6 +35,7 @@ import {
 } from '../../builders/interactHalos';
 import { tileQuadGeometry } from './highlightMeshes';
 import { SPECKLE_LIFT_M } from './groundAccents';
+import { withRenderRank } from './renderRanks';
 
 /** Un pool de halo d'interaction. */
 export type HaloSlot =
@@ -183,5 +184,5 @@ export function buildHaloMesh(slot: HaloSlot, capacity = HALO_SLOT_CAPACITY[slot
   mesh.name = `halos:${slot}`;
   mesh.frustumCulled = false; // ces halos suivent le décor de toute la carte : la sphère du pool la vaudrait
   mesh.count = 0;
-  return mesh;
+  return withRenderRank(mesh, 'chrome');
 }

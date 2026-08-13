@@ -26,6 +26,7 @@ import * as THREE from 'three';
 import { ACTIVE_HALO_TINT, ENGAGE_TINT } from '../../highlightTints';
 import { RING_FRAME_K, tileFrameGeometry, tileQuadGeometry } from './highlightMeshes';
 import { SPECKLE_LIFT_M } from './groundAccents';
+import { withRenderRank } from './renderRanks';
 
 /** Un pool de marques dynamiques. */
 export type DynMarkSlot = 'tether' | 'actif' | 'groupe' | 'anneau';
@@ -108,7 +109,7 @@ export function buildDynamicMarkMesh(slot: DynMarkSlot, capacity = DYN_SLOT_CAPA
   mesh.name = `marquesDyn:${slot}`;
   mesh.frustumCulled = false; // ces marques suivent l'action : la sphère du pool vaudrait la scène
   mesh.count = 0;
-  return mesh;
+  return withRenderRank(mesh, 'chrome');
 }
 
 /** Opacité du JUMEAU DE SILHOUETTE (#1297, LOT A). Le jumeau ne peint QUE des pixels occlus, sur une
@@ -128,9 +129,9 @@ export const SILHOUETTE_TWIN_OPACITY = 0.65;
  * (pas des copies), donc la pose par frame (`stage/dynamicMarkPose`) les alimente tous les deux d'une
  * seule écriture — seul le `count` se propage (`silhouetteTwinOf`).
  *
- * `renderOrder = -1` : le jumeau passe AVANT les billboards. Ceux-ci trichent de 0,3 m vers la caméra
- * et écrivent leur profondeur APRÈS le passage du jumeau ; rendu après eux, il couvrirait des corps
- * VISIBLES (marge mesurée : 36 472 pas ortho, 503 329 pas POV).
+ * Rang `jumeau` (registre `renderRanks.ts`) : il passe AVANT les billboards. Ceux-ci trichent de 0,3 m
+ * vers la caméra et écrivent leur profondeur APRÈS le passage du jumeau ; rendu après eux, il
+ * couvrirait des corps VISIBLES (marge mesurée : 36 472 pas ortho, 503 329 pas POV).
  *
  * ÉCART DÉCLARÉ : le jumeau ne révèle l'anneau qu'à travers la géométrie OPAQUE du monde. Un anneau
  * caché derrière un autre BILLBOARD reste invisible — ce sprite n'a pas écrit sa profondeur au moment
@@ -159,7 +160,7 @@ export function buildSilhouetteTwin(source: THREE.InstancedMesh): THREE.Instance
   jumeau.instanceColor = source.instanceColor;
   jumeau.name = `${source.name}:silhouette`;
   jumeau.frustumCulled = false;
-  jumeau.renderOrder = -1;
+  withRenderRank(jumeau, 'jumeau');
   jumeau.count = source.count;
   jumeau.userData.emprunte = true; // géométrie et buffers appartiennent à l'original (`viderGroupe`)
   (source.userData as { silhouette?: THREE.InstancedMesh }).silhouette = jumeau;

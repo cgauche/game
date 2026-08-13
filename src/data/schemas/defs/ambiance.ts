@@ -56,6 +56,41 @@ const precipSchema = z
     message: 'precip : la dérive du vent doit rester SOUS la vitesse de chute — au-delà, la précipitation file à l’horizontale et ne touche plus le sol',
   });
 
+/** #1247 — BRUME MONDE d'un type de météo : des nappes horizontales translucides posées à des cotes
+ *  fixes au-dessus du sol, dans le volume de la voie volumique (`backends/webgl/weatherSheets.ts`).
+ *
+ *  RÉFÉRENCE de `hM` : cote ABSOLUE monde, comptée au-dessus du sol le plus BAS de l'emprise de la
+ *  carte — la même référence que le recyclage du semis de précipitation (`precipArea`,
+ *  `backends/webgl/weatherParticles.ts`), pour que les deux expressions d'une même météo se posent
+ *  dans le même repère. Une carte à fort relief a donc des nappes qui rasent ses creux et enterrent
+ *  ses sommets : c'est le prix d'une cote unique par scène, et c'est mesurable à l'authoring.
+ *
+ *  Les bornes sont des bornes de BUDGET et de TRI : quatre nappes au plus (au-delà, c'est un voile
+ *  plein), des cotes STRICTEMENT croissantes (deux nappes à la même cote ne se trient pas — leur
+ *  ordre de mélange dépendrait de l'ordre de montage), et un alpha non nul (une nappe invisible se
+ *  supprime, elle ne s'écrit pas `alpha: 0`). */
+const brumeSchema = z
+  .strictObject({
+    color: hexColor,
+    layers: z
+      .array(
+        z.strictObject({
+          /** Cote (m) de la nappe au-dessus du sol le plus BAS de la carte. */
+          hM: z.number().min(0).max(60),
+          alpha: z.number().gt(0).max(1),
+        }),
+      )
+      .min(1)
+      .max(4),
+    /** RESSERREMENT de la portée première personne sous cette météo (part de la portée du milieu) :
+     *  1 = portée intacte. Appliqué EN AMONT de la courbe de brume ET du plan lointain de la caméra
+     *  (`povDepth`, `gameIso/pov/camera.ts`) — les deux ou aucun. */
+    povTightenK: z.number().gt(0).max(1).optional(),
+  })
+  .refine((b) => b.layers.every((l, i) => i === 0 || l.hM > b.layers[i - 1].hM), {
+    message: 'brume : les cotes `hM` doivent croître STRICTEMENT — deux nappes à la même cote ne se trient pas',
+  });
+
 // #239 — FX de météo AUTHORÉE de scène (`scene.weather`), par type.
 const weatherFxSchema = z.strictObject({
   tint: z.string(),
@@ -65,6 +100,9 @@ const weatherFxSchema = z.strictObject({
   density: z.number().optional(),
   /** Absent = ce type ne fait TOMBER aucune particule (le brouillard n'en fait pas). */
   precip: precipSchema.optional(),
+  /** Absent = ce type ne pose AUCUNE nappe de brume (la pluie et la neige n'en posent pas : leur
+   *  expression volumique est le semis plus la teinte dérivée de `tint`/`alpha`). */
+  brume: brumeSchema.optional(),
 });
 
 /** Facteur multiplicatif de teinte : 0 = éteint, 1 = pleine matière — hors de [0,1] il n'éclaircit

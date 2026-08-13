@@ -99,3 +99,59 @@ describe('ambiance.json — `weather[].precip` est borné (#1176 P2-6)', () => {
     if (!large.success) expect(large.error.issues.map((i) => i.message).join('\n')).toContain('`lengthM` ≥ `widthM`');
   });
 });
+
+/**
+ * `weather[].brume` (#1247) — les NAPPES de brume volumique. Le schéma doit refuser au CHARGEMENT ce
+ * qui ne se trie pas (deux nappes à la même cote), ce qui ne se voit pas (alpha nul), ce qui noie la
+ * frame (plus de quatre nappes) et ce qui ferme le POV (resserrement nul ou > 1).
+ */
+const avecBrume = (brume: unknown) => {
+  const base = ambianceJson as unknown as { iso: { weather: Record<string, unknown> } };
+  return {
+    ...base,
+    iso: { ...base.iso, weather: { ...base.iso.weather, brouillard: { ...(base.iso.weather.brouillard as object), brume } } },
+  };
+};
+const BRUME_BONNE = {
+  color: '#aab4bd',
+  layers: [{ hM: 0.6, alpha: 0.3 }, { hM: 2.2, alpha: 0.22 }, { hM: 4.5, alpha: 0.14 }],
+  povTightenK: 0.45,
+};
+
+describe('ambiance.json — `weather[].brume` est bornée (#1247)', () => {
+  it('la donnée réelle passe, et le témoin de ce fichier EST la donnée réelle', () => {
+    expect(schema.safeParse(ambianceJson).success).toBe(true);
+    expect((ambianceJson as unknown as { iso: { weather: { brouillard: { brume: unknown } } } }).iso.weather.brouillard.brume)
+      .toEqual(BRUME_BONNE);
+  });
+
+  it('un type SANS brume reste valide — la pluie n’en pose aucune', () => {
+    expect(schema.safeParse(avecBrume(undefined)).success).toBe(true);
+  });
+
+  const refuses: [string, Record<string, unknown>][] = [
+    ['cotes NON croissantes — deux nappes qui se croisent ne se trient pas', { ...BRUME_BONNE, layers: [{ hM: 2, alpha: 0.2 }, { hM: 1, alpha: 0.2 }] }],
+    ['deux nappes à la MÊME cote', { ...BRUME_BONNE, layers: [{ hM: 2, alpha: 0.2 }, { hM: 2, alpha: 0.1 }] }],
+    ['alpha nul — une nappe invisible se supprime, elle ne s’écrit pas', { ...BRUME_BONNE, layers: [{ hM: 1, alpha: 0 }] }],
+    ['alpha > 1', { ...BRUME_BONNE, layers: [{ hM: 1, alpha: 1.2 }] }],
+    ['aucune nappe — une brume sans nappe ne se montre pas', { ...BRUME_BONNE, layers: [] }],
+    ['cinq nappes — au-delà de quatre, c’est un voile plein', {
+      ...BRUME_BONNE,
+      layers: [1, 2, 3, 4, 5].map((h) => ({ hM: h, alpha: 0.1 })),
+    }],
+    ['couleur qui n’en est pas une', { ...BRUME_BONNE, color: 'gris' }],
+    ['resserrement POV nul — la vue se ferme au nez du joueur', { ...BRUME_BONNE, povTightenK: 0 }],
+    ['resserrement POV > 1 — une météo n’ALLONGE pas la portée du milieu', { ...BRUME_BONNE, povTightenK: 1.5 }],
+    ['champ inconnu (frappe de l’auteur)', { ...BRUME_BONNE, epaisseur: 3 }],
+  ];
+  for (const [cas, brume] of refuses)
+    it(`REFUSÉ : ${cas}`, () => {
+      expect(schema.safeParse(avecBrume(brume)).success).toBe(false);
+    });
+
+  it('le message d’erreur DIT la règle', () => {
+    const desordre = schema.safeParse(avecBrume({ ...BRUME_BONNE, layers: [{ hM: 2, alpha: 0.2 }, { hM: 1, alpha: 0.2 }] }));
+    expect(desordre.success).toBe(false);
+    if (!desordre.success) expect(desordre.error.issues.map((i) => i.message).join('\n')).toContain('croître STRICTEMENT');
+  });
+});

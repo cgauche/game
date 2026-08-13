@@ -29,11 +29,11 @@ import { facePoly, faceUvFrame, facesGeometry, polyNormal } from './worldTris';
 import { faceSurface, tintVarFactor } from './faceColors';
 import { faceDepthOf } from './faceRelief';
 import { BB_W, BB_H } from '../../pov/billboardCore';
-import { fogCurveOf } from '../../pov/camera';
+import { povDepth } from '../../pov/camera';
 import { type BillboardKind } from './billboardMath';
 import { DEFS } from '../../sprites';
 import { propSvg } from '../../catalog/decor';
-import { AMBIANCE } from '../../catalog/ambiance';
+import { AMBIANCE, METEO_SANS_EFFET, type WeatherLight } from '../../catalog/ambiance';
 import { bonesToSvg } from '../../rig/renderBones';
 import { resolveRig } from '../../rig/composeRig';
 import type { RigOverlay } from '../../rig/bones';
@@ -853,11 +853,32 @@ function srgb(hex: string): THREE.Color {
   return new THREE.Color().setStyle(hex, THREE.LinearSRGBColorSpace);
 }
 
+/** TEINTE MÉTÉO d'une couleur de ciel, de brume ou de fond (#1247) : elle se déplace vers la teinte du
+ *  voile authoré, dosée par son alpha (`weatherLightScalars`, `catalog/ambiance.ts`). C'est la MÊME
+ *  donnée que celle qui dose les lampes de la scène (`stage/stageLights.ts`) — le ciel ne peut donc pas
+ *  rester clair sur un monde assombri par l'orage. Rend une couleur NEUVE : `base` est intacte. PURE. */
+export function weatherTinted(base: THREE.Color, meteo: WeatherLight = METEO_SANS_EFFET): THREE.Color {
+  return meteo.tint ? base.clone().lerp(new THREE.Color(meteo.tint), meteo.k) : base.clone();
+}
+
+/** FOND du canevas volumique — celui des planches QC (`render-env.mts`), donc les captures et le jeu
+ *  se comparent sans biais de contraste. SOURCE UNIQUE : l'écran de jeu et celui du spike le lisent
+ *  ici. La météo le teinte (`stageClearColor`). */
+export const STAGE_BG = 0x14161f;
+
+/** Couleur d'effacement du canevas sous cette météo — le fond suit le même déplacement que la lumière
+ *  et que le ciel du POV. PURE. */
+export function stageClearColor(meteo: WeatherLight = METEO_SANS_EFFET): number {
+  return weatherTinted(new THREE.Color(STAGE_BG), meteo).getHex();
+}
+
 /** Fond de CIEL : dégradé vertical `skyTop` (haut) → `fogOutdoor` (horizon à mi-hauteur, et dessous),
- *  soit EXACTEMENT le dégradé `pov-sky` du POV SVG (`povAmbianceDefs`) — aucune teinte propre au spike. */
-export function skyTexture(): THREE.DataTexture {
-  const haut = srgb(AMBIANCE.pov.skyTop);
-  const horizon = srgb(AMBIANCE.pov.fogOutdoor);
+ *  soit EXACTEMENT le dégradé `pov-sky` du POV SVG (`povAmbianceDefs`) — aucune teinte propre au spike.
+ *  La météo déplace les DEUX bouts du dégradé (#1247) : sous l'orage, l'horizon ne tranche pas avec
+ *  des sols assombris. */
+export function skyTexture(meteo: WeatherLight = METEO_SANS_EFFET): THREE.DataTexture {
+  const haut = weatherTinted(srgb(AMBIANCE.pov.skyTop), meteo);
+  const horizon = weatherTinted(srgb(AMBIANCE.pov.fogOutdoor), meteo);
   const data = new Uint8Array(SKY_STEPS * 4);
   for (let i = 0; i < SKY_STEPS; i++) {
     const v = i / (SKY_STEPS - 1); // 0 = bas de l'image
@@ -875,26 +896,31 @@ export function skyTexture(): THREE.DataTexture {
 /** FOND de la première personne : le dégradé de ciel dehors, la brume d'intérieur dedans (le POV n'y
  *  dessine aucun plafond — ce qui n'est pas peint est cette nappe sombre). DEUX couleurs, et c'est
  *  structurel : le fond porte la brume du CIEL (`fogOutdoor`), les surfaces la leur (`povFog`
- *  ci-dessous) — cf. le JSDoc de `AMBIANCE.pov.fogOutdoorSurface`. */
-export function povBackground(indoor: boolean): THREE.DataTexture | THREE.Color {
-  return indoor ? new THREE.Color(AMBIANCE.pov.fogIndoor) : skyTexture();
+ *  ci-dessous) — cf. le JSDoc de `AMBIANCE.pov.fogOutdoorSurface`.
+ *  La météo ne touche QUE le dehors : entré sous un toit, on est sorti d'elle. */
+export function povBackground(indoor: boolean, meteo: WeatherLight = METEO_SANS_EFFET): THREE.DataTexture | THREE.Color {
+  return indoor ? new THREE.Color(AMBIANCE.pov.fogIndoor) : skyTexture(meteo);
 }
 
-/** Brume atmosphérique des SURFACES du POV : la courbe du milieu (`fogCurveOf`, en CASES → mètres) et
+/** Brume atmosphérique des SURFACES du POV : la courbe du milieu (`povDepth`, en CASES → mètres) et
  *  la brume qui lui répond — extérieur clair et chaud (`fogOutdoorSurface`, jamais le bleu du ciel :
  *  les sols lointains s'y relèveraient, « délavé »), intérieur sombre (`fogIndoor`). Le sol s'y éteint
  *  au lieu de finir sur une arête franche. Le GAMMA de la courbe, lui, vit au shader (`installFogGamma`
  *  + `applyFogGamma`) : `THREE.Fog` ne sait qu'interpoler en smoothstep.
  *
- *  ESPACE DE MÉLANGE — écart déclaré (réf juge de design P3-1c) : three mélange la brume en LINÉAIRE
- *  (le fragment travaille après conversion), la voie affine la mélange en sRGB (`mixHex`). Pour un même
- *  facteur, les deux voies ne rendent donc pas le même octet : 13,3/255 par canal à mi-course sur un
- *  couple gris sombre → brume claire (8,1/255 à trois quarts). Le facteur, lui, est identique aux deux
- *  voies (la courbe est vérifiée à 1e-9 par `sceneMeshes.test.ts`). Rien n'est corrigé ici : c'est un
- *  écart PERCEPTUEL, à juger à l'écran au goût final, pas une erreur de courbe. */
-export function povFog(mpt: number, indoor: boolean): THREE.Fog {
-  const c = fogCurveOf(indoor);
-  return new THREE.Fog(indoor ? AMBIANCE.pov.fogIndoor : AMBIANCE.pov.fogOutdoorSurface, c.start * mpt, c.end * mpt);
+ *  MÉTÉO (#1247) : dehors, une brume authorée (`brume.color`) REMPLACE la couleur du milieu et son
+ *  `povTightenK` resserre la courbe — le resserrement vient de `povDepth`, qui sert AUSSI le plan
+ *  lointain de la caméra : la brume atteint 1 exactement à la coupure de rendu, jamais avant ni après.
+ *
+ *  ESPACE DE MÉLANGE (réf juge de design P3-1c) : three mélange la brume en LINÉAIRE (le fragment
+ *  travaille après conversion), la voie affine la mélange en sRGB (`mixHex`). À facteur égal, les deux
+ *  voies rendent donc des octets différents : 13,3/255 par canal à mi-course sur un couple gris sombre
+ *  → brume claire, 8,1/255 à trois quarts. Le FACTEUR, lui, est le même des deux côtés (courbe vérifiée
+ *  à 1e-9, `sceneMeshes.test.ts`) : l'écart est perceptuel, il se juge à l'écran. */
+export function povFog(mpt: number, indoor: boolean, brume?: { color: string; povTightenK?: number } | null): THREE.Fog {
+  const c = povDepth(indoor, brume?.povTightenK).curve;
+  const teinte = !indoor && brume ? brume.color : indoor ? AMBIANCE.pov.fogIndoor : AMBIANCE.pov.fogOutdoorSurface;
+  return new THREE.Fog(teinte, c.start * mpt, c.end * mpt);
 }
 
 /** Nom du `#define` par lequel un matériau réclame le gamma de la courbe POV. Un matériau qui ne le

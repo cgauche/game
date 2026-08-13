@@ -53,13 +53,16 @@ export type WorldFrame =
     }
   | { mode: 'pov'; partyPos: { x: number; y: number; z?: number }; facing: Dir8; indoor: boolean; cid: string | null };
 
-export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, tokenEls, propEls, walksRef, partyToken, gameTime, lightLevel, lights, battle, highlightOpts, dynMarks, halos, chromes }: {
+export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, tokenEls, propEls, walksRef, partyToken, gameTime, lightLevel, lights, battle, highlightOpts, dynMarks, halos, chromes }: {
   scene: Scene;
   mpt: number;
   /** Le REGARD de cet hôte — et la seule chose qui distingue les deux vues (cf. `WorldFrame`). */
   frame: WorldFrame;
   tintAt: TintAt;
   keepEl: KeepEl;
+  /** Le même verdict de vue, rendu par SECTION de toiture (#1247) — ce que l'écrêtage de la pluie
+   *  interroge. Absent = tout se dessine. */
+  nappeVue?: (sectionId: string) => boolean;
   tokenEls: TokenEl[];
   propEls: PropEl[];
   /** Marches vivantes — LUES par la boucle de rendu, jamais par un rendu React (cf. `anim` ci-dessous). */
@@ -135,5 +138,5 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, tokenEls, p
   const frameCam: StageFrame = frame.mode === 'affine'
     ? { mode: 'affine', dims: frame.dims, cam: frame.cam, zoom: frame.zoom }
     : { mode: 'pov', partyPos: frame.partyPos, facing: frame.facing, indoor: frame.indoor, cid: frame.cid };
-  return <GameStage3D scene={scene} mpt={mpt} frame={frameCam} tintAt={tintAt} keepEl={keepEl} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} highlights={highlights} dynMarks={dynMarks ?? NO_DYNAMIC_MARKS} halos={halos ?? NO_INTERACTION_HALOS} chromeAt={chromeAt} anim={anim} />;
+  return <GameStage3D scene={scene} mpt={mpt} frame={frameCam} tintAt={tintAt} keepEl={keepEl} nappeVue={nappeVue} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} highlights={highlights} dynMarks={dynMarks ?? NO_DYNAMIC_MARKS} halos={halos ?? NO_INTERACTION_HALOS} chromeAt={chromeAt} anim={anim} />;
 }

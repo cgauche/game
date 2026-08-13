@@ -11,7 +11,7 @@ import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import type { Dims } from '../../geometry/iso';
 import { AMBIANCE } from '../catalog/ambiance';
-import { fogCurveOf } from '../pov/camera';
+import { fogCurveOf, povDepth } from '../pov/camera';
 import { PovStage } from '../pov/PovStage';
 import { FOG_GAMMA_DEFINE, type MatériauEmbrumable } from '../backends/webgl/sceneMeshes';
 import { GameStage3D, setStageRendererFactory, type StageRenderer } from './GameStage3D';
@@ -196,6 +196,106 @@ describe('POV volumique — la BRUME du milieu (#1176 P3-1c)', () => {
     for (const m of embrumés) {
       expect(m.defines?.[FOG_GAMMA_DEFINE], 'un gamma sans brume = une clé de programme orpheline').toBeUndefined();
     }
+  });
+});
+
+/**
+ * MÉTÉO EN PREMIÈRE PERSONNE (#1247) — la brume authorée MODULE la brume de distance existante, elle
+ * n'ouvre pas un canal concurrent : sa couleur remplace celle du milieu, son `povTightenK` resserre la
+ * portée, et la porte est le milieu de la FRAME (entrer sous un toit éteint la modulation).
+ */
+describe('POV volumique — la météo module la brume du milieu (#1247)', () => {
+  /** Monte la première personne sur une scène EXTÉRIEURE embrumée, au milieu que dit la frame. */
+  function monterPov(indoor: boolean, meteo: Scene['weather']): { scene: Scene; mpt: number } {
+    const scene = poser('exterieur');
+    scene.weather = meteo;
+    useGame.setState({ scene: { ...scene } } as never);
+    const s = useGame.getState().scene!;
+    const mpt = sceneMetresPerTile(s);
+    monter(
+      <GameStage3D
+        scene={s}
+        mpt={mpt}
+        frame={{ mode: 'pov', partyPos: { x: 4, y: 4 }, facing: 'N', indoor, cid: null }}
+        tintAt={() => 1}
+        keepEl={() => true}
+        els={{ tokens: [], props: [] }}
+        actors={[]}
+        gameTime={720}
+        lightLevel={1}
+        lights={[]}
+      />,
+    );
+    return { scene: s, mpt };
+  }
+
+  it('DEHORS sous le brouillard : sa couleur remplace celle du milieu et la portée se resserre', () => {
+    const brume = AMBIANCE.iso.weather.brouillard!.brume!;
+    const { mpt } = monterPov(false, 'brouillard');
+    const fog = dernièreScène().fog as THREE.Fog;
+    expect(hex(fog.color), 'la brume authorée EST la brume de distance').toBe(brume.color.toLowerCase());
+    const serre = povDepth(false, brume.povTightenK);
+    expect(fog.far).toBeCloseTo(serre.curve.end * mpt, 6);
+    expect(fog.near).toBeCloseTo(serre.curve.start * mpt, 6);
+    expect(fog.far, 'la portée s’est VRAIMENT resserrée').toBeLessThan(fogCurveOf(false).end * mpt);
+  });
+
+  it('la même scène par BEAU TEMPS garde la brume et la portée du milieu (aucune modulation)', () => {
+    const { mpt } = monterPov(false, 'clair');
+    const fog = dernièreScène().fog as THREE.Fog;
+    expect(hex(fog.color)).toBe(AMBIANCE.pov.fogOutdoorSurface.toLowerCase());
+    expect(fog.far).toBeCloseTo(fogCurveOf(false).end * mpt, 6);
+  });
+
+  it('ENTRÉ SOUS UN TOIT (milieu de la FRAME) : la modulation s’éteint — la tempête ne déteint pas dans la taverne', () => {
+    const { mpt } = monterPov(true, 'brouillard');
+    const fog = dernièreScène().fog as THREE.Fog;
+    expect(hex(fog.color), 'dedans, c’est la brume d’intérieur').toBe(AMBIANCE.pov.fogIndoor.toLowerCase());
+    expect(fog.far).toBeCloseTo(fogCurveOf(true).end * mpt, 6);
+  });
+
+  it('aucune NAPPE de brume en première personne : elle a la brume de distance, pas des plafonds', () => {
+    monterPov(false, 'brouillard');
+    let nappes = 0;
+    dernièreScène().traverse((o) => { if (/^brume:/.test(o.name)) nappes++; });
+    expect(nappes).toBe(0);
+  });
+
+  /** ÉCART DÉCLARÉ du lot : en vue du DESSUS (tangage 90°, `affineScales`), les nappes se projettent
+   *  l'une sur l'autre — l'empilement dégénère en voile plein écran. La météo y reste la teinte de
+   *  lumière et le semis. */
+  it('vue de PLATEAU : des nappes en losange, AUCUNE en vue du dessus', () => {
+    const scene = poser('exterieur');
+    scene.weather = 'brouillard';
+    useGame.setState({ scene: { ...scene } } as never);
+    const s = useGame.getState().scene!;
+    const compter = () => {
+      let n = 0;
+      dernièreScène().traverse((o) => { if (/^brume:/.test(o.name)) n++; });
+      return n;
+    };
+    const monterVue = (view: Dims['view']) => monter(
+      <GameStage3D
+        scene={s}
+        mpt={sceneMetresPerTile(s)}
+        frame={{ mode: 'affine', dims: { w: s.dimensions.w, h: s.dimensions.h, rot: 0, view }, cam: { x: 0, y: 0 }, zoom: 1 }}
+        tintAt={() => 1}
+        keepEl={() => true}
+        els={{ tokens: [], props: [] }}
+        actors={[]}
+        gameTime={720}
+        lightLevel={1}
+        lights={[]}
+      />,
+    );
+    monterVue('iso');
+    expect(compter(), 'la vue de plateau porte la brume dans le volume').toBe(
+      AMBIANCE.iso.weather.brouillard!.brume!.layers.length,
+    );
+    démonter();
+
+    monterVue('top');
+    expect(compter(), 'à 90° de tangage, l’empilement dégénère en voile plein écran').toBe(0);
   });
 });
 

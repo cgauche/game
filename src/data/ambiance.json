@@ -57,7 +57,25 @@
       },
       "brouillard": {
         "tint": "#aab4bd",
-        "alpha": 0.24
+        "alpha": 0.24,
+        "brume": {
+          "color": "#aab4bd",
+          "layers": [
+            {
+              "hM": 0.6,
+              "alpha": 0.3
+            },
+            {
+              "hM": 2.2,
+              "alpha": 0.22
+            },
+            {
+              "hM": 4.5,
+              "alpha": 0.14
+            }
+          ],
+          "povTightenK": 0.45
+        }
       },
       "neige": {
         "tint": "#c6d4e6",
@@ -97,6 +115,20 @@
           "ceilingM": 10,
           "color": "#9fb0c4",
           "opacity": 0.5
+        },
+        "brume": {
+          "color": "#6d7887",
+          "layers": [
+            {
+              "hM": 1.2,
+              "alpha": 0.1
+            },
+            {
+              "hM": 5,
+              "alpha": 0.07
+            }
+          ],
+          "povTightenK": 0.7
         }
       }
     }

@@ -342,6 +342,11 @@ export function IsoStage() {
     }, cleared) === 'visible'),
     [roofGeom, cleared],
   );
+  // Le MÊME verdict, rendu par SECTION : les nappes que la frame PEINT. La météo volumique s'en sert
+  // pour écrêter ce qui tombe au-dessus d'un toit levé (#1247) — la pluie s'y arrêtait en l'air. Il se
+  // LIT sur `roofEls`, la sortie même de la loi de dégagement : aucune seconde application.
+  const nappesVues = useMemo(() => new Set(roofEls.map((el) => el.sectionId ?? el.key)), [roofEls]);
+  const nappeVue = useMemo(() => (sectionId: string) => nappesVues.has(sectionId), [nappesVues]);
   const propEls = useMemo(
     () => (scene ? buildProps(scene, visible, { activeZ, viewZ: layerZ, allies: cutawayAllies }).filter((el) => !cutawayOverhead(el.cell, cleared)) : []),
     [scene, visible, activeZ, layerZ, cutawayAllies, cleared],
@@ -481,6 +486,7 @@ export function IsoStage() {
           frame={{ mode: 'affine', dims: dimsVue, cam, camAt, zoom: zoom * (turning ? 0.97 : 1) }}
           tintAt={tintAt}
           keepEl={keepEl}
+          nappeVue={nappeVue}
           tokenEls={tokenEls}
           propEls={propEls}
           walksRef={walksRef}

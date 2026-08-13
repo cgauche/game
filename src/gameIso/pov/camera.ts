@@ -42,6 +42,30 @@ export function fogCurveOf(indoor: boolean): FogCurve {
 export function farTilesOf(indoor: boolean): number {
   return (indoor ? DEPTH.indoor : DEPTH.outdoor).farTiles;
 }
+/**
+ * PROFONDEUR de la première personne, RESSERRÉE (#1247) : la courbe de brume ET la portée de rendu du
+ * milieu, sorties d'un SEUL calcul. `tightenK` (part de la portée, `brume.povTightenK` en donnée) les
+ * multiplie toutes deux — début de voile compris, sinon la brume mangerait la vue de près.
+ *
+ * UNE fonction pour les DEUX consommateurs, et c'est le fait qui la justifie : la courbe alimente le
+ * `THREE.Fog` des surfaces (`povFog`) et `end` alimente le plan LOINTAIN de la caméra
+ * (`stage/GameStage3D.tsx`). Resserrer un seul des deux donne soit une brume saturée bien avant la
+ * coupure (portée intacte), soit une arête FRANCHE au bout du monde (caméra seule resserrée).
+ *
+ * `tightenK` absent ou 1 : la courbe du milieu, à l'identique. PUR.
+ *
+ * PÉRIMÈTRE MESURÉ : la voie POV SVG lit la portée SANS passer par ici — `farTilesOf`/`fogCurveOf`
+ * directement (`pov/billboardCore.ts` `footAnchor`, `pov/geometry.ts` `buildPovDrawList`). Sans effet
+ * aujourd'hui : la météo n'a d'expression qu'à la voie VOLUMIQUE (le voile d'écran de l'affine ne
+ * touche pas la profondeur). Qui brancherait la météo sur le SVG passerait par ici, ou aurait deux
+ * portées.
+ */
+export function povDepth(indoor: boolean, tightenK?: number): { curve: FogCurve; farTiles: number } {
+  const base = fogCurveOf(indoor);
+  const k = tightenK === undefined ? 1 : Math.min(1, Math.max(0, tightenK));
+  const curve: FogCurve = { start: base.start * k, end: base.end * k, gamma: base.gamma };
+  return { curve, farTiles: curve.end };
+}
 /** Brume de distance INTÉRIEURE (sombre) — identité en DONNÉE (`ambiance.json`), partagée avec l'iso. */
 export const FOG_COLOR = AMBIANCE.pov.fogIndoor;
 /** Luminosité plancher (une surface éclairée à 0 n'est jamais totalement noire) — DONNÉE partagée

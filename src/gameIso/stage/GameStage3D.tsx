@@ -41,13 +41,18 @@
  * un personnage sous l'ombre portée d'un bâtiment garde l'exposition de la frame — il ne s'assombrit
  * pas en entrant dans l'ombre, et la flaque qu'il reçoit est omnidirectionnelle.
  *
- * INTEMPÉRIES (P2-6) : la précipitation authorée de la scène TOMBE dans le volume — un semis de quads
- * instanciés qui descend à la cadence de la frame, borné par le MÊME couvert bâti que le dégagement
- * (`shelterField`, `builders/roofs.ts`) : rien ne tombe sous un toit, y compris sous une nappe que le
- * cutaway a levée. La voie affine garde son voile d'écran (`stage/WeatherVeil.tsx`), qui ne se monte
- * plus ici. PÉRIMÈTRE MESURÉ : ce que la voie volumique exprime, c'est ce qui TOMBE (`precip` en
- * donnée) — un type de météo qui ne fait rien tomber, le brouillard, n'y sème donc aucune particule ;
- * sa brume volumique est le ticket #1247.
+ * INTEMPÉRIES (P2-6, #1247) : la météo authorée de la scène a TROIS expressions dans le volume, toutes
+ * dérivées de la MÊME donnée (`iso.weather`, `src/data/ambiance.json`) — la voie affine garde son voile
+ * d'écran (`stage/WeatherVeil.tsx`), qui ne se monte plus ici :
+ *  - ce qui TOMBE (`precip`) : un semis de quads instanciés qui descend à la cadence de la frame, borné
+ *    par le MÊME couvert bâti que le dégagement (`shelterField`, `builders/roofs.ts`) — rien ne tombe
+ *    sous un toit, y compris sous une nappe que le cutaway a levée, et rien ne se REND au-dessus d'une
+ *    nappe que la vue ne peint plus (`nappeVue`) ;
+ *  - ce qui STAGNE (`brume`) : des nappes horizontales aux cotes de la donnée, sur les seules colonnes à
+ *    ciel ouvert (`backends/webgl/weatherSheets.ts`) — vue de plateau seulement ;
+ *  - ce qui TEINTE (`tint`/`alpha`) : l'assombrissement et la couleur des LAMPES, du fond de canevas et
+ *    du ciel du POV (`weatherLightScalars`), jamais un voile posé par-dessus la scène.
+ * Un type de météo qui n'a que `tint`/`alpha` (la neige) est donc servi sans une ligne de code.
  *
  * CANAUX D'AMBIANCE ENCORE ABSENTS (mesuré #1176, P2-2) — la voie affine (`stage/CulledScene`) les
  * applique OBJET PAR OBJET, cet écran porte la teinte de visibilité (`tintAt`) et la lumière globale
@@ -68,13 +73,13 @@
  * s'y lire — plus aucun jeton n'y porte de `data-cid` : cet écran INSCRIT son lanceur de rayon auprès
  * de `stage/spritePicker.ts`, la couture unique où le pointeur pose la question.
  */
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { freeYaw, type Dims, type Rot } from '../../geometry/iso';
 import { heightAt, type Scene } from '../../state/scene';
 import { DIR8_ORDER, type Dir8 } from '../../state/dir8';
 import { affineCamera, povCamera } from '../backends/webgl/cameras';
-import { dir8Basis, farTilesOf, fogCurveOf } from '../pov/camera';
+import { dir8Basis, fogCurveOf, povDepth } from '../pov/camera';
 import { pxPerM } from '../backends/webgl/worldTris';
 import {
   billboardTextureKey,
@@ -96,6 +101,7 @@ import {
   contactShadow,
   povBackground,
   povFog,
+  stageClearColor,
   wantsContactShadow,
   type ActorPose,
   type KeepEl,
@@ -126,20 +132,20 @@ import { stage3dFraming, type Stage3dFraming } from './stage3dCamera';
 import { stageLightScalars, stageLights } from './stageLights';
 import { applyFlicker, applyPointLights, createPointLightPool, hasFlicker, pointLightWrites, POINT_LIGHT_BUDGET, type PointLightSlots } from './stagePointLights';
 import type { LightSource } from '../../state/vision';
-import { scenePrecip } from '../catalog/ambiance';
-import { isSheltered, shelterField } from '../builders/roofs';
+import { sceneBrume, scenePrecip } from '../catalog/ambiance';
+import { isSheltered, shelterField, shelterSectionAt } from '../builders/roofs';
+import { buildBrumeSheets, retainBrumeSheets, type BrumeSlot } from '../backends/webgl/weatherSheets';
 import {
   buildPrecipMesh,
   precipBasis,
   retainWeatherField,
   stepWeatherField,
   writePrecipMatrices,
+  type ClippedAt,
   type PrecipSlot,
   type ShelteredAt,
 } from '../backends/webgl/weatherParticles';
-
-/** Fond du canevas — celui des planches QC, sous les mêmes voiles d'ambiance que l'affine. */
-const BG = 0x14161f;
+import { withRenderRank } from '../backends/webgl/renderRanks';
 
 /** Convention de taille monde des billboards retenue pour le JEU (cf. `billboardMath`). */
 export const CONVENTION = 'jeu' as const;
@@ -202,6 +208,11 @@ export interface GameStage3DProps {
   tintAt: TintAt;
   /** Verdict de dégagement d'architecture (canal GÉOMÉTRIE). */
   keepEl: KeepEl;
+  /** La nappe de cette SECTION de toiture est-elle DESSINÉE dans la frame ? Le même verdict de vue
+   *  que `keepEl` rend sur les éléments de toit (`cutawayForSection`, `seenSections` compris), rendu
+   *  ici par la clé de section — c'est ce que la pluie doit savoir pour ne pas s'arrêter en l'air
+   *  au-dessus d'un toit qu'on ne peint plus (#1247). Absent = tout se dessine (POV, spike, QC). */
+  nappeVue?: (sectionId: string) => boolean;
   /** Éléments de scène à billboarder — la sortie des BUILDERS du stage, donc les mêmes filtres que la
    *  voie affine (embuscade, enrôlé, couverture, étage, hors-vue). Cet écran ne les recalcule PAS. */
   els: SceneBillboardEls;
@@ -299,7 +310,7 @@ export function povArtRot(facing: Dir8): Rot {
   return (Math.floor(povYawDeg(facing) / 90) % 4) as Rot;
 }
 
-export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim }: GameStage3DProps): JSX.Element {
+export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
@@ -312,10 +323,33 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
     ? { povFacing: frame.facing, camRot: povArtRot(frame.facing) }
     : { povFacing: null, camRot: artRot(frame.dims) };
   // MILIEU de la première personne (`null` = vue de plateau) : la SEULE entrée de la brume et du fond.
-  // La portée de rendu s'en dérive déjà (`farTilesOf`) — même donnée, même verdict d'intérieur.
+  // La portée de rendu s'en dérive déjà (`povDepth`) — même donnée, même verdict d'intérieur.
   const povIndoor = frame.mode === 'pov' ? frame.indoor : null;
   // GAMMA de la courbe de brume du milieu (`AMBIANCE.pov.depth`), posé au shader dans la frame.
   const gammaBrume = povIndoor === null ? null : fogCurveOf(povIndoor).gamma;
+  // BRUME authorée de la scène (#1247) — même porte que le semis (`sceneWeatherFx` : une météo
+  // authorée, jamais en intérieur). Elle a DEUX expressions selon le regard, jamais les deux à la
+  // fois : des NAPPES dans le volume sur la vue de plateau, le resserrement de la brume de distance
+  // en première personne.
+  const brume = useMemo(() => sceneBrume(scene), [scene]);
+  // La brume ne MODULE le POV que DEHORS : entré dans un bâtiment (verdict par FRAME, `povIndoor`), on
+  // bascule sur la courbe intérieure et la tempête cesse de déteindre dans la taverne.
+  const brumePov = povIndoor === false ? brume : null;
+  // NAPPES réellement montées — la trace du canevas les compte (`data-brume`) : une carte entièrement
+  // coiffée n'en reçoit aucune, quelle que soit la donnée.
+  const [nappesMontées, setNappesMontées] = useState(0);
+  // NAPPES AU MONDE : la vue de plateau, sauf le DESSUS. À 90° de tangage (`affineScales`, pitch
+  // mesuré 25,2° en losange et de face contre 90,0° au-dessus), les nappes se projettent l'une sur
+  // l'autre : l'empilement dégénère en voile plein écran, à rebours de la lisibilité de plateau que
+  // demande cette vue. La première personne n'en monte aucune non plus — elle a la brume de distance.
+  const nappesAuMonde = frame.mode === 'affine' && frame.dims.view !== 'top' ? brume : null;
+  // Le PLAN de nappes SURVIT aux mutations de scène, exactement comme le semis : il est retenu sur ce
+  // qui le DÉTERMINE (`retainBrumeSheets`), jamais sur la référence de l'objet scène — un pas de
+  // combattant en produit une par frame, et re-bâtir là-dessus recalculait tout le couvert (6,9 ms
+  // mesurés sur 60×60 à 81 masses) pour une géométrie identique.
+  const planRetenu = useRef<BrumeSlot | null>(null);
+  planRetenu.current = nappesAuMonde ? retainBrumeSheets(planRetenu.current, scene, mpt, nappesAuMonde) : null;
+  const planNappes = planRetenu.current?.plan ?? null;
 
   const three = useRef<THREE.Scene>();
   const monde = useRef<THREE.Group>();
@@ -324,6 +358,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
   const lampes = useRef<THREE.Group>();
   const flaques = useRef<THREE.Group>();
   const intemperies = useRef<THREE.Group>();
+  const brumes = useRef<THREE.Group>();
   const marques = useRef<THREE.Group>();
   const marquesDyn = useRef<THREE.Group>();
   const halosGroupe = useRef<THREE.Group>();
@@ -338,6 +373,10 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
     // et ferait varier le compte de lampes ponctuelles que le pool existe justement pour figer.
     flaques.current = new THREE.Group();
     intemperies.current = new THREE.Group();
+    // Groupe FRÈRE des NAPPES DE BRUME (#1247) : à part du semis parce qu'il vit sur d'autres entrées
+    // — le semis se remonte au CHAMP (météo), les nappes à la scène, à la météo et au REGARD (aucune
+    // en vue du dessus). Un groupe partagé démonterait l'un en remontant l'autre.
+    brumes.current = new THREE.Group();
     // Groupe des MARQUES (P3-0c) : monté une fois, jamais vidé par événement de combat — ses pools ne
     // se redimensionnent qu'au PALIER de capacité, leur contenu se réécrit en place.
     marques.current = new THREE.Group();
@@ -349,7 +388,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
     // réécrit à la frame. À part de lui parce qu'il vit hors du combat, et que ses pools PULSENT (leur
     // opacité de matériau change à chaque frame, cf. `stage/interactHaloPose`).
     halosGroupe.current = new THREE.Group();
-    three.current.add(monde.current, touffes.current, panneaux.current, lampes.current, flaques.current, intemperies.current, marques.current, marquesDyn.current, halosGroupe.current);
+    three.current.add(monde.current, touffes.current, panneaux.current, lampes.current, flaques.current, intemperies.current, brumes.current, marques.current, marquesDyn.current, halosGroupe.current);
   }
 
   // Le cache de textures est GLOBAL au module : changer de scène rend ses entrées mortes (les clés
@@ -399,6 +438,9 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
     [scene, gameTime, lightLevel],
   );
   const { course, lit } = lumière;
+  // FOND du canevas sous cette météo — un NOMBRE, donc une dépendance d'effet stable (deux frames de
+  // même météo ne réappliquent rien).
+  const fondCanevas = stageClearColor(lumière.meteo);
   // ── FLAQUES (#1245, L1) : ce que les sources de lumière de la scène écrivent sur le pool de lampes
   // ponctuelles. Décision PURE (`stagePointLights.ts`), appliquée plus bas sur un pool de compte FIXE.
   // `prev` = la table de la frame précédente, par quoi une source GARDE son slot tant qu'elle vit :
@@ -444,6 +486,22 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
     () => (xM, zM, yM) => isSheltered(abris, xM / mpt, zM / mpt, yM),
     [abris, mpt],
   );
+  // ÉCRÊTAGE AU CUTAWAY (#1247) : la pluie s'arrête sous le couvert du PLAN (ci-dessus, qui ignore la
+  // vue) — donc au-dessus d'une nappe que la VUE ne peint plus, elle s'arrêtait EN L'AIR. La colonne
+  // entière cesse alors de se rendre : pas « à partir du faîte », sinon la pluie réapparaîtrait entre
+  // l'égout et le faîte du toit levé. La question posée est celle du VERDICT DE VUE de la section qui
+  // coiffe la colonne (`nappeVue`, la même loi que `keepEl` sert aux éléments de toit) — jamais un
+  // second calcul d'abri, et jamais l'emprise du semis : changer `area` changerait `precipFieldKey`,
+  // donc re-sèmerait les 1459 particules à chaque pas du cutaway.
+  const ecrete = useMemo<ClippedAt>(
+    () => (nappeVue
+      ? (xM, zM) => {
+        const section = shelterSectionAt(abris, xM / mpt, zM / mpt);
+        return section !== null && !nappeVue(section);
+      }
+      : () => false),
+    [abris, mpt, nappeVue],
+  );
   const precipMesh = useRef<THREE.InstancedMesh | null>(null);
   const precipBase = useRef<Float32Array | null>(null);
   const dernierPas = useRef(0); // horodatage du dernier pas de chute
@@ -471,12 +529,14 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
       const pos = g
         ? { x: frame.partyPos.x + g.dx / mpt, y: frame.partyPos.y + g.dz / mpt, z: frame.partyPos.z }
         : frame.partyPos;
-      // PORTÉE : la distance de rendu du milieu (`farTilesOf`, donnée d'ambiance), jamais un far
-      // généreux. Le ratio near/far d'un far de 4 km quantifie la profondeur au point que la
-      // séparation coplanaire ne survit plus (`backends/webgl/cameras.ts`, `orthoDepthRange`).
-      // La brume du milieu s'éteint EXACTEMENT à cette portée (`povFog`, montée plus bas) : rien n'y
-      // arrive à la coupure autrement qu'entièrement délavé, et l'horizon n'est plus tranché.
-      camera = povCamera(scene, pos, frame.facing, { w, h }, farTilesOf(frame.indoor) * mpt);
+      // PORTÉE : la distance de rendu du milieu (`povDepth`, donnée d'ambiance, resserrée par la
+      // météo), jamais un far généreux. Le ratio near/far d'un far de 4 km quantifie la profondeur au
+      // point que la séparation coplanaire ne survit plus (`backends/webgl/cameras.ts`,
+      // `orthoDepthRange`). La brume du milieu s'éteint EXACTEMENT à cette portée (`povFog`, montée
+      // plus bas, sur le MÊME `povDepth`) : rien n'arrive à la coupure autrement qu'entièrement
+      // délavé, et l'horizon n'est jamais tranché.
+      const portee = povDepth(frame.indoor, brumePov?.povTightenK).farTiles;
+      camera = povCamera(scene, pos, frame.facing, { w, h }, portee * mpt);
     } else {
       f = stage3dFraming({ dims: frame.dims, mpt, cam: anim ? anim.cam() : frame.cam, zoom: frame.zoom, canvas: { w, h } });
       const cible = new THREE.Vector3(f.centre.x, f.centre.y, f.centre.z);
@@ -545,7 +605,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
       stepWeatherField(champ, dt, sousCouvert);
       const base = precipBasis(champ.def, camera.getWorldDirection(new THREE.Vector3()));
       const memeBase = precipBase.current !== null && base.every((v, i) => v === precipBase.current![i]);
-      writePrecipMatrices(semis.instanceMatrix.array as Float32Array, champ, base, !memeBase);
+      writePrecipMatrices(semis.instanceMatrix.array as Float32Array, champ, base, !memeBase, ecrete);
       precipBase.current = base;
       semis.instanceMatrix.needsUpdate = true;
     }
@@ -583,6 +643,25 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [champ]);
+
+  // ── GROUPE BRUME (#1247) : les nappes de la météo, montées au seul changement de PLAN — c'est-à-dire
+  // à la scène, à la météo, au bâti et au regard, jamais au pas du groupe (le plan est retenu plus haut).
+  // Leur géométrie ne dépend NI du cutaway NI de la marche : elle ne couvre que les colonnes à CIEL
+  // OUVERT (`shelterField`, la vérité d'abri du dépôt), donc l'intérieur qu'un dégagement révèle est
+  // propre sans qu'aucune passe n'ait à l'y nettoyer.
+  useEffect(() => {
+    const groupe = brumes.current;
+    if (!groupe || !nappesAuMonde || !planNappes) return;
+    const nappes = buildBrumeSheets(planNappes, nappesAuMonde);
+    for (const nappe of nappes) groupe.add(nappe);
+    setNappesMontées(nappes.length); // la trace `data-brume` dit ce qui est MONTÉ, jamais ce qui est authoré
+    dessiner();
+    return () => {
+      setNappesMontées(0);
+      viderGroupe(groupe);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [planNappes, nappesAuMonde]);
 
   // BOUCLE DE CHUTE : une averse vit hors des rendus React — tant qu'un semis existe, la frame se
   // rejoue. Elle CÈDE le pas à la boucle de MARCHE (P2-4) quand celle-ci vient de dessiner : une même
@@ -685,7 +764,6 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
       return;
     }
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-    renderer.setClearColor(BG, 1);
     renderer.shadowMap.enabled = true;
     // La carte d'ombre ne se recuit PAS à chaque frame : rien ne la périme tant que ni le soleil ni un
     // casteur n'ont bougé, et la boucle de marche (P2-4) rend soixante fois par seconde. C'est
@@ -708,12 +786,15 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
   // QC de l'iso avec). DEUX couleurs, et c'est structurel : les SURFACES se fondent dans la brume de
   // surface du milieu (`povFog`), le FOND porte celle du ciel (`povBackground`) — sans quoi les sols
   // lointains se relèvent vers le bleu froid (cf. le JSDoc d'`AMBIANCE.pov.fogOutdoorSurface`).
-  // ÉCART ASSUMÉ (réf juge de design P3-1) : les sprites d'entité s'embrument AVEC le monde (three
-  // embrume tout matériau `fog`), là où le POV SVG les laissait nets.
+  // Les sprites d'entité s'embrument AVEC le monde (three embrume tout matériau `fog`), là où le POV
+  // SVG les laissait nets — réf juge de design P3-1.
+  // MÉTÉO (#1247) : dehors, la brume authorée REMPLACE la couleur du milieu et resserre la portée ; le
+  // FOND suit la même dérivation de teinte que les lampes (`weatherLightScalars`), sans quoi le ciel
+  // reste clair au-dessus d'un monde éteint par l'orage. Dedans, rien : `brumePov` y est nul.
   useEffect(() => {
     const scène3d = three.current!;
-    const fond = povIndoor === null ? null : povBackground(povIndoor);
-    scène3d.fog = povIndoor === null ? null : povFog(mpt, povIndoor);
+    const fond = povIndoor === null ? null : povBackground(povIndoor, lumière.meteo);
+    scène3d.fog = povIndoor === null ? null : povFog(mpt, povIndoor, brumePov);
     scène3d.background = fond;
     dessiner();
     return () => {
@@ -726,7 +807,17 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
       applyFogGamma(scène3d, null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [povIndoor, mpt]);
+  }, [povIndoor, mpt, brumePov, lumière.meteo]);
+
+  // ── FOND DU CANEVAS (#1247) : effet À PART de la création du renderer, qui n'a AUCUNE dépendance —
+  // une couleur d'effacement posée là-bas ne serait plus jamais réappliquée, et le fond resterait au
+  // gris de beau temps sous l'orage. Il suit la MÊME dérivation que les lampes et que le ciel du POV
+  // (`weatherLightScalars` → `stageClearColor`) : une seule donnée, trois surfaces d'accord.
+  useEffect(() => {
+    rendererRef.current?.setClearColor(fondCanevas, 1);
+    dessiner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fondCanevas]);
 
   // ── GROUPE MONDE : la géométrie fusionnée, un matériau par groupe de surface.
   useEffect(() => {
@@ -763,7 +854,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
     // ces deux drapeaux ne coûtent alors rien, et le matériau cesse de dépendre de l'heure.
     mesh.castShadow = true;
     mesh.receiveShadow = true;
-    groupe.add(mesh);
+    groupe.add(withRenderRank(mesh, 'monde'));
     ombresARefaire.current = true;
     dessiner();
     return () => viderGroupe(groupe);
@@ -783,7 +874,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
     for (const m of buildGroundAccentMeshes(accentsVus, { lit: true, tintAt })) {
       m.castShadow = true;
       m.receiveShadow = true;
-      groupe.add(m);
+      groupe.add(withRenderRank(m, 'monde'));
     }
     ombresARefaire.current = true;
     dessiner();
@@ -936,7 +1027,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
         // Un quad PROJETTE son ombre même en Basic (le casteur ne connaît que sa géométrie et son alpha) ;
         // `receiveShadow` n'aurait, lui, aucun effet sous ce matériau.
         mesh.castShadow = true;
-        groupe.add(mesh);
+        groupe.add(withRenderRank(mesh, 'pions'));
         const board: Board = { sub: q.sub, quad: q.quad, mesh, material: mat };
         boards.push(board);
         // SILHOUETTE À TRAVERS LES MURS (#1297, LOT C) : le corps d'un jeton occulté par la matière
@@ -952,7 +1043,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
           const disque = contactShadow(q.sub.anchor, q.quad.widthM);
           disque.material.opacity *= q.sub.tint;
           board.shadow = disque;
-          groupe.add(disque);
+          groupe.add(withRenderRank(disque, 'pions'));
         }
       });
       boardsRef.current = boards;
@@ -1043,6 +1134,10 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
   // (le canevas n'a pas d'arbre), et la seule trace par laquelle la recette et les tests de montage
   // voient qu'il tombe quelque chose. Absent = rien ne tombe (météo claire, ou scène d'intérieur).
   // `data-vue` : le REGARD de la frame (`affine` | `pov`) — même raison que les autres traces.
+  // `data-bg` : la COULEUR D'EFFACEMENT réellement posée sur le renderer. Un banc headless stubbe
+  // `setClearColor` en no-op — sans cette trace, la teinte du fond ne serait mesurable nulle part.
+  // `data-brume` : le nombre de NAPPES de brume montées dans le volume. Absent = aucune (météo sans
+  // brume authorée, intérieur, vue du dessus, première personne).
   return (
     <canvas
       ref={canvasRef}
@@ -1054,6 +1149,8 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
       data-lampes={`${flaquesÉcrites.filter((f) => f && f.intensity > 0).length}/${POINT_LIGHT_BUDGET}`}
       data-precip={champ ? champ.n : undefined}
       data-vue={frame.mode}
+      data-bg={`#${fondCanevas.toString(16).padStart(6, '0')}`}
+      data-brume={nappesMontées || undefined}
     />
   );
 }

@@ -15,6 +15,8 @@
 import * as THREE from 'three';
 import { billboardDepthOffsetUnits, billboardPose, billboardViewDepth, poseContactShadow, type BillboardSubject } from '../backends/webgl/sceneMeshes';
 import { billboardExposure, type PointLightSlots } from './stagePointLights';
+import { withRenderRank } from '../backends/webgl/renderRanks';
+import { LUMA_709 } from '../shade';
 
 /** Un billboard monté : ce qu'il faut pour le RE-POSER quand la caméra bouge, sans le reconstruire. */
 export interface Board {
@@ -133,9 +135,9 @@ export function silhouetteMaterial(corps: Board['material'], teamColor: string):
  *
  * Le jumeau est un ENFANT du quad : géométrie EMPRUNTÉE (`userData.emprunte`, comme le jumeau
  * d'anneau) et transformation héritée de son parent — la passe de pose ne le connaît donc pas, et une
- * frame de marche n'écrit rien de plus pour lui. `renderOrder = -1` : il passe AVANT les billboards,
- * qui trichent de 0,3 m vers la caméra et écrivent leur profondeur ensuite ; rendu après eux, il
- * couvrirait des corps VISIBLES.
+ * frame de marche n'écrit rien de plus pour lui. Rang `jumeau` (registre
+ * `backends/webgl/renderRanks.ts`) : il passe AVANT les billboards, qui trichent de 0,3 m vers la
+ * caméra et écrivent leur profondeur ensuite ; rendu après eux, il couvrirait des corps VISIBLES.
  *
  * FRONTIÈRE avec le DÉGAGEMENT D'ARCHITECTURE (#818/#907/#950) : les deux se complètent au lieu de se
  * remplacer — le cutaway retire du MONDE ce qui masque la scène (murs et toits de la pièce regardée),
@@ -148,7 +150,7 @@ export function silhouetteMaterial(corps: Board['material'], teamColor: string):
 export function attachBodySilhouette(board: Board, teamColor: string): THREE.Mesh {
   const jumeau = new THREE.Mesh(board.mesh.geometry, silhouetteMaterial(board.material, teamColor));
   jumeau.name = `silhouette:${board.sub.cid ?? board.sub.identity}`;
-  jumeau.renderOrder = -1;
+  withRenderRank(jumeau, 'jumeau');
   jumeau.userData.emprunte = true;
   // Le rayon de picking descend dans les enfants d'un quad (`spriteRaycast`) : le jumeau doublerait
   // chaque cible sans changer aucun verdict. Il ne se lance pas, il se regarde.
@@ -182,9 +184,11 @@ export const GHOST_DESAT = 0.85;
  *  goût (LOT D). */
 export const SILHOUETTE_BODY_OPACITY = 1;
 
-/** LUMINANCE perçue d'une couleur (Rec. 709) — la même pondération que la désaturation du fragment. */
+/** LUMINANCE perçue d'une couleur `three` déjà parsée (Rec. 709) — la même pondération que la
+ *  désaturation du fragment, et les MÊMES poids que la luminance d'une couleur hexa (`LUMA_709`,
+ *  `gameIso/shade.ts`) : une seule définition du gris. */
 export function luminance709(c: THREE.Color): number {
-  return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+  return LUMA_709.r * c.r + LUMA_709.g * c.g + LUMA_709.b * c.b;
 }
 
 /** TEINTE du quad : son exposition, portée sur la couleur de relation quand ce jeton est la cible

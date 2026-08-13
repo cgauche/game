@@ -7,6 +7,7 @@ import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
 import type { Dims } from '../../geometry/iso';
 import { GameStage3D, setStageRendererFactory, type StageFrame, type StageRenderer, type StageWalkAnim } from './GameStage3D';
+import { RENDER_ORDER } from '../backends/webgl/renderRanks';
 import {
   ALPHA_TEST,
   GHOST_OPACITY,
@@ -168,7 +169,8 @@ describe('Corps à travers les murs — le jumeau MONTÉ sur le quad (#1297 LOT 
     const matCorps = corps.material as THREE.MeshBasicMaterial;
     expect(mat.depthFunc, 'sans GreaterDepth le jumeau repeint ce qui est DÉJÀ visible').toBe(THREE.GreaterDepth);
     expect(mat.depthWrite).toBe(false);
-    expect(jumeau.renderOrder, 'AVANT les corps : rendu après, il peindrait par-dessus des corps VISIBLES').toBe(-1);
+    expect(jumeau.renderOrder, 'AVANT les corps : rendu après, il peindrait par-dessus des corps VISIBLES').toBe(RENDER_ORDER.jumeau);
+    expect(RENDER_ORDER.jumeau, 'le rang vient du registre, jamais d’un littéral au site').toBeLessThan(RENDER_ORDER.pions);
     expect(mat.transparent).toBe(true);
     expect(mat.alphaTest, 'la découpe suit le texel BRUT du rig, comme le corps').toBe(ALPHA_TEST);
     expect(mat.map, 'même texture de rig que le corps qu’il double').toBe(matCorps.map);

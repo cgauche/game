@@ -37,6 +37,7 @@ import * as THREE from 'three';
 import type { WeatherPrecipDef } from '../../catalog/ambiance';
 import { hash32, seedStream } from '../../detail/hash';
 import { heightAt, sceneMetresPerTile, type Scene } from '../../../state/scene';
+import { withRenderRank } from './renderRanks';
 
 /** BUDGET DUR d'instances du semis : au-delà, la densité de donnée est écrêtée. Une carte de ville
  *  entière sous la tempête demanderait des dizaines de milliers de quads pour un gain nul — au-delà
@@ -63,6 +64,22 @@ export interface PrecipArea {
 export function precipArea(scene: Scene, def: WeatherPrecipDef): PrecipArea {
   const mpt = sceneMetresPerTile(scene);
   const { w, h } = scene.dimensions;
+  const { groundM, topGroundM } = sceneGroundSpan(scene);
+  return {
+    x0: -0.5 * mpt,
+    x1: (w - 0.5) * mpt,
+    z0: -0.5 * mpt,
+    z1: (h - 0.5) * mpt,
+    groundM,
+    topM: topGroundM + def.ceilingM,
+  };
+}
+
+/** Cotes EXTRÊMES du sol de la carte, tous niveaux confondus — la référence verticale des deux
+ *  expressions volumiques de la météo : le recyclage du semis part du sol le plus BAS (ci-dessus), et
+ *  les nappes de brume s'y empilent (`weatherSheets.ts`). Une seule mesure, donc un seul repère. PURE. */
+export function sceneGroundSpan(scene: Scene): { groundM: number; topGroundM: number } {
+  const { w, h } = scene.dimensions;
   let groundM = Infinity;
   let topGroundM = -Infinity;
   for (const layer of scene.layers)
@@ -72,15 +89,9 @@ export function precipArea(scene: Scene, def: WeatherPrecipDef): PrecipArea {
         if (cote < groundM) groundM = cote;
         if (cote > topGroundM) topGroundM = cote;
       }
-  if (!Number.isFinite(groundM)) groundM = 0;
-  if (!Number.isFinite(topGroundM)) topGroundM = 0;
   return {
-    x0: -0.5 * mpt,
-    x1: (w - 0.5) * mpt,
-    z0: -0.5 * mpt,
-    z1: (h - 0.5) * mpt,
-    groundM,
-    topM: topGroundM + def.ceilingM,
+    groundM: Number.isFinite(groundM) ? groundM : 0,
+    topGroundM: Number.isFinite(topGroundM) ? topGroundM : 0,
   };
 }
 
@@ -101,6 +112,9 @@ export interface WeatherField {
   pos: Float32Array;
   /** Facteur de vitesse propre à chaque particule (une pluie n'est pas un peigne). */
   jitter: Float32Array;
+  /** État d'ÉCRÊTAGE retenu de chaque particule (0 = rendue, 1 = effondrée) — l'écriture des
+   *  matrices ne refait la base que de celles qui viennent d'en changer (`writePrecipMatrices`). */
+  ecrete: Uint8Array;
   /** Flux pseudo-aléatoire SEEDÉ du champ : le recyclage y puise, donc un même seed rejoue la même
    *  averse — aucun `Math.random` sur le chemin de rendu. */
   rng: () => number;
@@ -126,7 +140,7 @@ export function makeWeatherField(def: WeatherPrecipDef, area: PrecipArea, seed: 
     pos[i * 3 + 2] = area.z0 + rng() * (area.z1 - area.z0);
     jitter[i] = 0.8 + rng() * 0.4;
   }
-  return { def, area, n, pos, jitter, rng };
+  return { def, area, n, pos, jitter, ecrete: new Uint8Array(n), rng };
 }
 
 /** Un semis RETENU et la clé qui le détermine — ce que l'écran garde d'un rendu à l'autre. */
@@ -238,24 +252,50 @@ export function precipBasis(def: WeatherPrecipDef, camDir: { x: number; y: numbe
   return out;
 }
 
-/** Écrit les matrices d'instance (colonne-majeur, la convention de three) du semis dans `out`.
- *  `basis` change quand la caméra tourne ; les POSITIONS changent à chaque frame — d'où deux écritures
- *  séparées, et `full=false` ne touche que la translation (3 flottants par particule). */
-export function writePrecipMatrices(out: Float32Array, field: WeatherField, basis: Float32Array, full = true): void {
-  const { pos, n } = field;
+/** Une colonne ÉCRÊTÉE, en coordonnées MONDE (mètres) : `true` = ce qui tombe ici ne se REND pas. */
+export type ClippedAt = (xM: number, zM: number) => boolean;
+
+/** Rien n'est écrêté — le semis se rend en entier. */
+export const RIEN_ECRETE: ClippedAt = () => false;
+
+/**
+ * Écrit les matrices d'instance (colonne-majeur, la convention de three) du semis dans `out`.
+ * `basis` change quand la caméra tourne ; les POSITIONS changent à chaque frame — d'où deux écritures
+ * séparées, et `full=false` ne touche que la translation (3 flottants par particule).
+ *
+ * ÉCRÊTAGE (#1247) : une particule dont la colonne est écrêtée reçoit une base NULLE — son quad se
+ * réduit à un point, donc il ne peint rien, sans jamais toucher au champ (ni au compte, ni aux
+ * positions, ni à la clé de rétention : aucun re-semis). L'état d'écrêtage de chaque particule est
+ * RETENU (`field.ecrete`) : seule celle qui vient d'entrer ou de sortir d'une colonne écrêtée coûte
+ * ses douze flottants de base, les autres gardent l'écriture à trois flottants du lot P2-6.
+ */
+export function writePrecipMatrices(
+  out: Float32Array,
+  field: WeatherField,
+  basis: Float32Array,
+  full = true,
+  clipped: ClippedAt = RIEN_ECRETE,
+): void {
+  const { pos, n, ecrete } = field;
   for (let i = 0; i < n; i++) {
     const m = i * 16;
-    if (full) {
-      out[m] = basis[0]; out[m + 1] = basis[1]; out[m + 2] = basis[2]; out[m + 3] = 0;
-      out[m + 4] = basis[3]; out[m + 5] = basis[4]; out[m + 6] = basis[5]; out[m + 7] = 0;
-      out[m + 8] = basis[6]; out[m + 9] = basis[7]; out[m + 10] = basis[8]; out[m + 11] = 0;
+    const coupee = clipped(pos[i * 3], pos[i * 3 + 2]) ? 1 : 0;
+    if (full || coupee !== ecrete[i]) {
+      const b = coupee ? ZERO_BASIS : basis;
+      out[m] = b[0]; out[m + 1] = b[1]; out[m + 2] = b[2]; out[m + 3] = 0;
+      out[m + 4] = b[3]; out[m + 5] = b[4]; out[m + 6] = b[5]; out[m + 7] = 0;
+      out[m + 8] = b[6]; out[m + 9] = b[7]; out[m + 10] = b[8]; out[m + 11] = 0;
       out[m + 15] = 1;
+      ecrete[i] = coupee;
     }
     out[m + 12] = pos[i * 3];
     out[m + 13] = pos[i * 3 + 1];
     out[m + 14] = pos[i * 3 + 2];
   }
 }
+
+/** Base d'une particule écrêtée : le quad s'effondre sur son centre. */
+const ZERO_BASIS = new Float32Array(9);
 
 /** Le MESH du semis : un quad unité (plan XY, centré) instancié `n` fois, matériau non éclairé et
  *  translucide (une goutte n'a pas de normale à éclairer), qui n'écrit PAS la profondeur — deux gouttes
@@ -275,5 +315,5 @@ export function buildPrecipMesh(field: WeatherField): THREE.InstancedMesh {
   mesh.frustumCulled = false; // le semis couvre la carte entière : sa sphère englobante ne cull rien
   mesh.castShadow = false;
   mesh.receiveShadow = false;
-  return mesh;
+  return withRenderRank(mesh, 'pluie');
 }
