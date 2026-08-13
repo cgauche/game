@@ -579,7 +579,8 @@ export interface CastPenalty {
  *  catégorie du Codex (table `CATEGORY_BY_SOURCE_KIND` ci-dessous). */
 export type EffectSourceKind =
   | 'spell' | 'prayer' | 'talent' | 'trait' | 'trapping' | 'quality' | 'disease' | 'symptom'
-  | 'mutation' | 'condition' | 'psychology' | 'maneuver' | 'creature' | 'activity' | 'rule';
+  | 'mutation' | 'condition' | 'psychology' | 'maneuver' | 'creature' | 'activity' | 'rule'
+  | 'tavernGame';
 
 /** Catégorie Codex de CHAQUE nature de source — table TOTALE, SOURCE UNIQUE des deux consommateurs :
  *  le routage d'affichage d'une pastille (`chipCodex`, `src/gameIso/effectIcons.ts`) ET la descente de
@@ -590,7 +591,7 @@ export const CATEGORY_BY_SOURCE_KIND: Record<EffectSourceKind, string> = {
   spell: 'spells', prayer: 'spells', talent: 'talents', trait: 'traits', trapping: 'trappings',
   quality: 'qualities', disease: 'maladies', symptom: 'symptoms', mutation: 'mutations',
   condition: 'etats', psychology: 'psychologies', maneuver: 'maneuvers', creature: 'creatures',
-  activity: 'activities', rule: 'regles',
+  activity: 'activities', rule: 'regles', tavernGame: 'tavernGames',
 };
 
 /**

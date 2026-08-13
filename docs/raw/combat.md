@@ -804,7 +804,7 @@ Le « Lancer pour Toucher » de Corps à corps étant un Test opposé, le **déf
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.127, l.178-183, l.184) → `useDefenseJetProps`, `AuContactModal`, `GrappleModal`, `engage`, `markAttacked`, `agressifEnvers`, `FLOW_VERBS`, `useHoverTargeting`, `useAttackJetProps`, `decayEngagement`, +21 — `src/data/localisation.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, +14 fichiers
-- `LDB 14` (l.8-15, l.18-19, l.29-34) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `schema`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `10-a-votre-action-au-prochain-round`, `vous-trebuchez-vous-perdez-votre-prochain-mouvement`, `viser-une-localisation`, `vous-lachez-ou-ratez-vous-perdez-votre-prochaine-action`, `TavernGame`, `viser`, `vous-vous-tordez-la-cheville-dechirure-musculaire-mineure-compte-comme-blessure-critique`, +27 — `src/data/oups.json`, `src/data/regles.json`, `src/data/schemas/defs/oups.ts`, `src/data/schemas/defs/tavernGames.ts`, `src/engine/combat.ts`, `src/engine/policy.ts`, +7 fichiers
+- `LDB 14` (l.8-15, l.18-19, l.29-34) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `schema`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `10-a-votre-action-au-prochain-round`, `vous-trebuchez-vous-perdez-votre-prochain-mouvement`, `viser-une-localisation`, `vous-lachez-ou-ratez-vous-perdez-votre-prochaine-action`, `viser`, `vous-vous-tordez-la-cheville-dechirure-musculaire-mineure-compte-comme-blessure-critique`, `TavernGame`, +27 — `src/data/oups.json`, `src/data/regles.json`, `src/data/schemas/defs/oups.ts`, `src/data/schemas/defs/tavernGames.ts`, `src/engine/combat.ts`, `src/engine/policy.ts`, +7 fichiers
 - `LDB 62` (l.98-104) → `armes-d-hast`, `bagarre`, `base`, `cavalerie`, `deux-mains`, `empaleuse`, `a-enroulement`, `defensive`, `poudre-noire-et-ingenierie`, `munitions`, +19 — `src/data/trappings.json`, `src/data/weaponGroups.json`
 - `LDB 63` (l.2-3, l.13-14) → `applyAttackResult` — `src/state/combatFlow.ts`
 
@@ -1435,7 +1435,7 @@ Le **Bras de fer** est un Test opposé **étendu** de **Force Intermédiaire (+0
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 15` (l.2, l.3-5, l.10, l.37, l.40) → `METRES_PER_LEVEL`, `resolveRun`, `RunModal`, `gainAdvantage`, `DisengageModal`, `run-roll`, `sizeFootprintSide`, `disengage-choice`, `verticalTiles`, `disengage-esquive`, +19 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/sizes.ts`, `src/engine/advantage.ts`, `src/engine/combat.ts`, +15 fichiers
 - `ZI 14` (l.1016-1017, l.1024-1026) → `fouissement` — `src/data/traits.json`
-- `NADJ 16` (l.34) → `alvatafl`, `bete-tailleurs`, `boules`, `tavern-game` — `src/data/combat-stakes.json`, `src/data/tavernGames.json`
+- `NADJ 16` (l.34) → `elfe`, `tavern-game`, `bete-tailleurs`, `boules` — `src/data/combat-stakes.json`, `src/data/tavernGames.json`
 
 ---
 

@@ -25,7 +25,10 @@ import type { PendingCascade } from './pendings';
 import type { BuiltCascadeStep } from './rollSeam';
 import type { RNG } from '../engine/dice';
 import type { CharKey } from '../engine/types';
-import type { SequencePhases, SequencePotRules, SequenceRoundOps, SequenceTableRow } from '../engine/sequenceVocab';
+import type {
+  SequencePhases, SequencePotRules, SequenceRoundOps, SequenceTableRow, SequenceSide, SequenceVolleyRules,
+  SequenceCombinedRules,
+} from '../engine/sequenceVocab';
 
 /** Borne PAR DÉFAUT de manches — une séquence dont aucun camp ne conclut S'ARRÊTE (le `round >= 50`
  *  que chaque jeu bricolait chez lui). C'est le plafond de qui ne déclare rien. */
@@ -46,12 +49,15 @@ export const SEQUENCE_BORNE = 'borne';
 /** `purpose` des fenêtres ouvertes pour une manche : la clôture se route dessus (store). */
 export const SEQUENCE_PURPOSE = 'sequence' as const;
 
-/** Le VOCABULAIRE DE DONNÉE des familles (2) table par plage, (4) effets de manche, (5) mise/pot et
- *  (6) phases vit dans le MOTEUR (`engine/sequenceVocab`) : ce sont des formes de RÈGLE, déclarées par
- *  les catalogues et republiées ici en paramètres — un catalogue du moteur ne dépend jamais du store. */
+/** Le VOCABULAIRE DE DONNÉE des familles (2) table par plage, (4) effets de manche, (5) mise/pot,
+ *  (6) phases, (7) volée de lancers et (8) camps asymétriques vit dans le MOTEUR
+ *  (`engine/sequenceVocab`) : ce sont des formes de RÈGLE, déclarées par les catalogues et republiées
+ *  ici en paramètres — un catalogue du moteur ne dépend jamais du store. */
 export type {
   SequenceTableRow, SequenceRoundOps, SequencePhases,
   SequenceDice, SequencePotRow, SequencePotRules, SequencePotTurn, SequencePotOutcome,
+  SequenceVolleyRow, SequenceVolleyRules, SequenceThrowTurn, SequenceThrowOutcome, SequenceSide,
+  SequenceCombinedRules,
 } from '../engine/sequenceVocab';
 
 /** PARAMÈTRES D'AUTEUR d'une séquence — de la DONNÉE, sérialisée avec l'état : ce qui règle la
@@ -84,6 +90,12 @@ export interface SequenceParams {
   scoreThreshold?: number;
   /** (5) Mise, pot, abandon, élimination (Al-zahr NADAJ 16 l.17). */
   pot?: SequencePotRules;
+  /** (7) Volée de lancers (Bête NADAJ 16 l.42, Arène l.65, Fléchettes l.83, Boules l.57). */
+  volley?: SequenceVolleyRules;
+  /** (8) Camps asymétriques (Alvatafl NADAJ 16 l.27-28). */
+  sides?: readonly SequenceSide[];
+  /** (9) Test combiné à conséquences distinctes (Cerevis NADAJ 16 l.97). */
+  combined?: SequenceCombinedRules;
 }
 
 /** ÉTAT d'une séquence EN COURS — GÉNÉRIQUE sur sa charge utile : l'orchestrateur ne lit JAMAIS
@@ -164,6 +176,10 @@ export interface SequenceBoard {
   rounds?: number;
   /** Phase courante, déjà libellée par le système (« 1ʳᵉ mi-temps »). */
   phase?: string;
+  /** UNITÉ du score, au pluriel, déjà libellée par le système (« quilles », « points », « pièces
+   *  prises »). AFFICHAGE : l'UI l'écrit telle quelle. Absente : des DR (l'unité par défaut d'une
+   *  séquence de Tests). Une famille qui ne compte pas des DR le DIT — sinon le tableau ment. */
+  unit?: string;
 }
 
 /**

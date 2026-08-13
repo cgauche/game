@@ -3,9 +3,13 @@
  * par `src/engine/tavernGame.ts:44` (type `TavernGame`, 11 entrées réelles). `skill` = `id` de
  * `skills.json` ou `null` (aucune Compétence indiquée → Pari, variante rapide l.11) — string libre
  * car free-form FK non validée ici (grep du JSON : "savoir"/"projectiles"/"pari"/"corps-a-corps").
- * `characteristic` réutilise l'enum `CharKey` du moteur (`src/engine/types.ts:18`). `read` : seule
- * "units-tens" apparaît dans le JSON réel ; "sl" ajouté car explicitement dans le type consommateur
- * (`TavernGame.read`, `src/engine/tavernGame.ts:38`).
+ * `characteristic` réutilise l'enum `CharKey` du moteur (`src/engine/types.ts:18`).
+ *
+ * `desc` = la règle RECOPIÉE (CLAUDE.md règle 5), Markdown de la source compris. UNE normalisation
+ * est ASSUMÉE, et c'est la seule : l'extraction Marker de `NADAJ 16 l.65` porte « vous permet à la
+ * place d' encercler » (espace parasite né de la coupure d'italique) ; le folio imprimé ne porte pas
+ * cet espace, la donnée écrit donc « d'encercler ». Recopier l'artefact serait recopier l'outil, pas
+ * la source.
  */
 import { z } from 'zod';
 import { difficultySchema, gameOpSchema, sourceRefSchema } from '../common';
@@ -15,6 +19,13 @@ export const file = 'tavernGames.json';
 const charKeySchema = z.enum([
   'capacite-de-combat', 'capacite-de-tir', 'force', 'endurance', 'initiative', 'agilite', 'dexterite',
   'intelligence', 'force-mentale', 'sociabilite',
+]);
+
+/** Les effets de LANCER enregistrés (`registerSequenceThrow`, `src/state/sequenceCore.ts`) — ce qui
+ *  indexe est le nom d'un EFFET, jamais l'identité d'une entrée de catalogue. */
+const throwEffectSchema = z.enum([
+  'dr', 'dr-ecrete', 'toute-la-reserve', 'points-de-la-ligne', 'points-de-la-ligne-suivante',
+  'chiffres-du-de', 'gain-au-choix', 'aucun-gain', 'termine-le-passage',
 ]);
 
 export const schema = z.array(
@@ -47,7 +58,7 @@ export const schema = z.array(
     team: z.strictObject({ size: z.number() }).optional(),
     /** FORME d'un tour (capacité DÉCLARÉE, jamais déduite d'un effectif) : `team` = tous testent et on
      *  somme par équipe (Middenball l.121) ; `thrower` = un tour, un lanceur (Torchon l.111). */
-    roundShape: z.enum(['team', 'thrower', 'pot']).optional(),
+    roundShape: z.enum(['team', 'thrower', 'pot', 'volley']).optional(),
     /** Options de Test d'une manche (Middenball l.121 : Bagarre (+20) OU Athlétisme (+0)) — le choix
      *  va au joueur ; la 1ʳᵉ option est celle que suivent les porteurs sans siège et les figurants. */
     options: z.array(z.strictObject({
@@ -71,7 +82,58 @@ export const schema = z.array(
     table: z.array(z.strictObject({
       min: z.number(), max: z.number(), points: z.number(), label: z.string(),
     })).optional(),
-    read: z.enum(['sl', 'units-tens']).optional(),
+    /** VOLÉE de lancers (famille 7 du socle) : Bête l.42, Arène l.65, Fléchettes l.83, Boules l.57.
+     *  `gain`/`critique`/`maladresse`/`depassement` nomment un effet de lancer ENREGISTRÉ
+     *  (`registerSequenceThrow`, `src/state/sequenceCore.ts`), jamais un id de jeu. */
+    volley: z.strictObject({
+      throws: z.number(),
+      reserve: z.number().optional(),
+      pick: z.enum(['reserve', 'choix']).optional(),
+      rows: z.array(z.strictObject({
+        min: z.number().optional(),
+        max: z.number().optional(),
+        difficulty: difficultySchema.optional(),
+        points: z.number().optional(),
+        label: z.string(),
+      })).optional(),
+      gain: throwEffectSchema,
+      critique: throwEffectSchema.optional(),
+      maladresse: throwEffectSchema.optional(),
+      depassement: throwEffectSchema.optional(),
+      libre: z.strictObject({ min: z.number(), max: z.number() }).optional(),
+      exact: z.number().optional(),
+      manches: z.number().optional(),
+      ordre: z.enum(['declare', 'tirage']).optional(),
+      /** Unité de borne de la famille quand la règle ne fixe aucun terme (anti-boucle, pas une règle). */
+      manchesBorne: z.number().optional(),
+    }).optional(),
+    /** TEST COMBINÉ à conséquences distinctes (famille 9 du socle) — Cerevis l.97 : un seul dé, deux
+     *  lectures. `tours` est un ARBITRAGE MAISON ÉDITABLE (le RAW ne dit pas quand la partie s'arrête). */
+    combined: z.strictObject({
+      second: z.strictObject({
+        skill: z.string().optional(),
+        spec: z.string().optional(),
+        char: charKeySchema.optional(),
+      }),
+      failEvery: z.number().optional(),
+      eraseEvery: z.number().optional(),
+      ops: z.array(gameOpSchema).optional(),
+      markLoser: z.boolean().optional(),
+      /** Id d'État (`etats.json`) dont l'apparition arrête la partie (l.88 « rouler sous la table »). */
+      stopCondition: z.string().optional(),
+      tours: z.number().optional(),
+    }).optional(),
+    /** Unité de ce que le jeu compte, au pluriel (affichage : « quilles », « points »…). */
+    scoreUnit: z.string().optional(),
+    /** CAMPS ASYMÉTRIQUES (famille 8 du socle) — Alvatafl l.27-28 : chaque camp convertit son total en
+     *  prises sur l'adversaire (`div`), et sa victoire au Critique se lit au dé des unités (`mult`). */
+    sides: z.array(z.strictObject({
+      id: z.string(),
+      label: z.string(),
+      pieces: z.number(),
+      div: z.number(),
+      mult: z.number(),
+    })).optional(),
     /** MISE / POT / ABANDON / ÉLIMINATION (Al-zahr l.17) — famille (5) du socle de séquence,
      *  consommée par `SequenceParams.pot` (`src/state/sequenceCore.ts`). `effect` est le nom d'un
      *  effet de pot ENREGISTRÉ (`registerSequencePotEffect`), jamais un id de jeu. */

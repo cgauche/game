@@ -39,12 +39,13 @@ export function SequencePanel() {
                 max={camp.target}
                 label={camp.label}
                 tone={(v, m) => (v >= m ? 'ok' : 'neutral')}
-                format={(v, m) => `${v}/${m} DR`}
+                format={(v, m) => `${v}/${m} ${board.unit ?? 'DR'}`}
               />
             ) : (
               <p data-seq-score>
                 <span>{camp.label}</span>
                 <b>{camp.score}</b>
+                {board.unit && <span className="muted"> {board.unit}</span>}
               </p>
             )}
             {camp.note && <p data-seq-note className="muted">{camp.note}</p>}

@@ -88,8 +88,9 @@ describe('SequencePanel — une partie de Bras de fer n’est plus aveugle', () 
   it('aucune séquence en cours : aucun tableau de marque (la fenêtre n’invente pas de score)', () => {
     const [a] = makePregens().slice(0, 1) as [Combatant];
     useGame.setState({ party: [a] });
-    // Boules contre la salle : une manche UNIQUE sans cible de cumul — rien à suivre d'une manche à l'autre.
-    get().playTavernGame({ gameId: 'boules', challengerId: a.id, opponent: { kind: 'abstract', value: 40 } });
+    // Dominos contre la salle : une manche UNIQUE sans cible de cumul — rien à suivre d'une manche à
+    // l'autre (un jeu de LANCERS, lui, a un passage en cours à montrer : il porte un tableau).
+    get().playTavernGame({ gameId: 'dominos', challengerId: a.id, opponent: { kind: 'abstract', value: 40 } });
     render();
     expect(get().pendingCascade, 'la fenêtre de manche est bien ouverte').not.toBeNull();
     expect(board()).toBeNull();

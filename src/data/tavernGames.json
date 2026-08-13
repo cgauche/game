@@ -63,6 +63,35 @@
     "spec": "Art de la Guerre",
     "characteristic": "intelligence",
     "mode": "opposed",
+    "options": [
+      {
+        "char": "intelligence",
+        "difficulty": "intermediaire"
+      },
+      {
+        "skill": "savoir",
+        "spec": "Art de la Guerre",
+        "difficulty": "intermediaire"
+      }
+    ],
+    "drBonus": "intelligence",
+    "sides": [
+      {
+        "id": "nain",
+        "label": "le joueur nain",
+        "pieces": 48,
+        "div": 4,
+        "mult": 1
+      },
+      {
+        "id": "elfe",
+        "label": "le joueur elfe",
+        "pieces": 12,
+        "div": 1,
+        "mult": 4
+      }
+    ],
+    "scoreUnit": "pièces prises",
     "desc": "à chaque tour, faites un Test d'**Intelligence** ou de **Savoir (Art de la Guerre) Intermédiaire (+0)** ; ajoutez ensuite votre Bonus d'Intelligence au nombre de DR. Le total obtenu par le joueur elfe indique combien de pièces naines sont prises ce tour. Le total obtenu par le joueur nain est divisé par quatre (arrondi au supérieur) pour indiquer combien de pièces elfes sont prises ce tour. Si vous obtenez un Critique, vous remportez automatiquement la partie, pour peu qu'une des conditions suivantes soit remplie : vous êtes le joueur nain et le nombre obtenu sur le dé des unités est égal ou inférieur au nombre de pièces elfes que vous avez prises ; vous êtes le joueur elfe et le nombre obtenu sur le dé des unités, multiplié par quatre (c'est-à-dire qu'un jet réussi de 33 compterait pour 12, puisque 4 × 3 = 12) est égal ou inférieur au nombre de pièces naines que vous avez prises. Sinon, le premier camp à prendre plus de la moitié des pièces de son adversaire l'emporte. Si les deux équipes atteignent la condition gagnante dans le même tour, la partie se solde par un match nul.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
@@ -107,7 +136,62 @@
     "skill": "projectiles",
     "characteristic": "capacite-de-tir",
     "mode": "opposed",
-    "desc": "vous avez droit à trois coups pour abattre les 16 quilles. Pour chaque coup, faites un Test de Capacité de Tir Très facile (+60) et ajoutez votre Bonus de Capacité de Tir au nombre de DR obtenus. Le total est le nombre de quilles que vous abattez. Si vous obtenez un Critique, vous renversez toutes les quilles. La difficulté des Tests qui suivent le premier dépend du nombre de quilles à abattre.",
+    "drBonus": "capacite-de-tir",
+    "roundShape": "volley",
+    "volley": {
+      "throws": 3,
+      "reserve": 16,
+      "pick": "reserve",
+      "rows": [
+        {
+          "min": 12,
+          "max": 16,
+          "difficulty": "tresFacile",
+          "label": "12 quilles ou plus"
+        },
+        {
+          "min": 10,
+          "max": 11,
+          "difficulty": "facile",
+          "label": "10-11 quilles"
+        },
+        {
+          "min": 8,
+          "max": 9,
+          "difficulty": "accessible",
+          "label": "8-9 quilles"
+        },
+        {
+          "min": 6,
+          "max": 7,
+          "difficulty": "intermediaire",
+          "label": "6-7 quilles"
+        },
+        {
+          "min": 3,
+          "max": 5,
+          "difficulty": "complexe",
+          "label": "3-5 quilles"
+        },
+        {
+          "min": 2,
+          "max": 2,
+          "difficulty": "difficile",
+          "label": "2 quilles"
+        },
+        {
+          "min": 1,
+          "max": 1,
+          "difficulty": "intermediaire",
+          "label": "1 quille"
+        }
+      ],
+      "gain": "dr-ecrete",
+      "critique": "toute-la-reserve",
+      "manches": 1
+    },
+    "scoreUnit": "quilles",
+    "desc": "vous avez droit à trois coups pour abattre les 16 quilles. Pour chaque coup, faites un Test de **Capacité de Tir Très facile (+60)** et ajoutez votre Bonus de Capacité de Tir au nombre de DR obtenus. Le total est le nombre de quilles que vous abattez. Si vous obtenez un Critique, vous renversez toutes les quilles. La difficulté des Tests qui suivent le premier dépend du nombre de quilles à abattre, comme suit :",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
       "page": 92
@@ -121,7 +205,14 @@
     "mode": "opposed",
     "drCap": 6,
     "tieBreak": "nul",
-    "desc": "chaque joueur dispose de trois boules. À votre tour, effectuez un Test de Projectile (Lancer) Intermédiaire (+0), et notez, pour chacune de vos boules, le nombre de DR obtenus ; Le DR maximal est de 6 DR (votre boule est en contact avec la balle ou le bâton cible) ; un échec signifie que votre boule est hors-jeu. Si vous obtenez le même nombre de DR (ou supérieur) que la boule d'un adversaire, vous pouvez réduire le nombre de DR de cette boule de –1 par DR que vous dépensez pour l'écarter, jusqu'à un minimum de 0. Une fois que tous les joueurs ont lancé leurs trois boules, le joueur à qui appartient la boule qui a le plus de DR gagne ; en cas d'égalité, la partie se solde par un match nul.",
+    "campScore": "max",
+    "roundShape": "volley",
+    "volley": {
+      "throws": 3,
+      "gain": "dr",
+      "manches": 1
+    },
+    "desc": "chaque joueur dispose de trois boules. À votre tour, effectuez un Test de **Projectile (Lancer) Intermédiaire (+0)**, et notez, pour chacune de vos boules, le nombre de DR obtenus ; Le DR maximal est de 6 DR (votre boule est en contact avec la balle ou le bâton cible) ; un échec signifie que votre boule est hors-jeu. Si vous obtenez le même nombre de DR (ou supérieur) que la boule d'un adversaire, vous pouvez réduire le nombre de DR de cette boule de –1 par DR que vous dépensez pour l'écarter, jusqu'à un minimum de 0 (auquel cas la boule adverse est complètement dégagée). Une fois que tous les joueurs ont lancé leurs trois boules, le joueur à qui appartient la boule qui a le plus de DR gagne ; en cas d'égalité, la partie se solde par un match nul. Si vous jouez pour des points, chacune de vos boules qui obtient plus de DR que la boule adverse avec le plus de DR vous permet de marquer un point. Normalement, la personne (ou l'équipe) qui a le plus de points après trois manches remporte la partie.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
       "page": 92
@@ -133,7 +224,29 @@
     "skill": "pari",
     "characteristic": "initiative",
     "mode": "opposed",
-    "desc": "à chaque tour de Cerevis, chaque joueur effectue un Test combiné d'Initiative et de Pari Accessible (+20). Le joueur qui a obtenu le moins de DR à son Test de Pari perd le tour, et doit marquer une chouette. En cas d'échec du Test d'Initiative, le joueur utilise accidentellement le nom correct d'une des cartes et doit prendre une grosse gorgée. Pour chaque 3 Tests d'Initiative auxquels vous échouez et pour chaque 2 chouettes que vous effacez, faites un Test de Résistance à l'alcool Intermédiaire (+0).",
+    "options": [
+      {
+        "skill": "pari",
+        "difficulty": "accessible"
+      }
+    ],
+    "combined": {
+      "second": {
+        "char": "initiative"
+      },
+      "failEvery": 3,
+      "eraseEvery": 2,
+      "markLoser": true,
+      "stopCondition": "inconscient",
+      "tours": 6,
+      "ops": [
+        {
+          "op": "intoxicate"
+        }
+      ]
+    },
+    "scoreUnit": "chouettes",
+    "desc": "à chaque tour de Cerevis, chaque joueur effectue un Test combiné d'**Initiative** et de **Pari Accessible (+20)**. Le joueur qui a obtenu le moins de DR à son Test de **Pari** perd le tour, et doit marquer une chouette. En cas d'échec du Test d'Initiative, le joueur utilise accidentellement le nom correct d'une des cartes et doit prendre une grosse gorgée. Pour chaque 3 Tests d'Initiative auxquels vous échouez et pour chaque 2 chouettes que vous effacez, faites un Test de **Résistance à l'alcool Intermédiaire (+0)**. Les résultats de ce Test et son impact se trouvent sur le Tableau Ivre dans le Livre de Règles page 129.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
       "page": 94
@@ -145,8 +258,23 @@
     "skill": "projectiles",
     "spec": "lancer",
     "mode": "opposed",
-    "read": "units-tens",
-    "desc": "jetez une pièce de monnaie pour déterminer qui joue en premier. À votre tour, lancez 3 fléchettes. Pour chaque fléchette, faites un Test de Projectile (Lancer) Intermédiaire (+0). Si vous réussissez, vous marquez un nombre de points égal à votre dé d'unités ou de dizaines, ou à dix fois la valeur obtenue sur votre dé d'unités ou de dizaines, selon votre choix : ainsi, un jet réussi de 26 peut vous donner 2, 6, 20 ou 60 points. En cas d'échec, vous marquez un nombre de points égal à votre dé des unités : ainsi, un jet raté de 73 vous donne 3 points. En cas de Critique, marquez autant de points que vous le souhaitez, entre 1 et 100 points. En cas d'Échec critique, vous ratez complètement la cible. Le but est de marquer un total d'exactement 501 points.",
+    "roundShape": "volley",
+    "volley": {
+      "throws": 3,
+      "gain": "chiffres-du-de",
+      "critique": "gain-au-choix",
+      "libre": {
+        "min": 1,
+        "max": 100
+      },
+      "maladresse": "aucun-gain",
+      "exact": 501,
+      "depassement": "termine-le-passage",
+      "ordre": "tirage",
+      "manchesBorne": 60
+    },
+    "scoreUnit": "points",
+    "desc": "jetez une pièce de monnaie pour déterminer qui joue en premier. À votre tour, lancez 3 fléchettes. Pour chaque fléchette, faites un Test de **Projectile (Lancer) Intermédiaire (+0)**. Si vous réussissez, vous marquez un nombre de points égal à votre dé d'unités ou de dizaines, ou à dix fois la valeur obtenue sur votre dé d'unités ou de dizaines, selon votre choix : ainsi, un jet réussi de 26 peut vous donner 2, 6, 20 ou 60 points. En cas d'échec, vous marquez un nombre de points égal à votre dé des unités : ainsi, un jet raté de 73 vous donne 3 points. En cas de Critique, marquez autant de points que vous le souhaitez, entre 1 et 100 points. En cas d'Échec critique, vous ratez complètement la cible. Le but est de marquer un total d'exactement 501 points. Si vous marquez plus, votre tour est terminé, et les points marqués par votre dernière fléchette sont ignorés.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
       "page": 95
@@ -250,7 +378,53 @@
     "skill": "projectiles",
     "spec": "lancer",
     "mode": "opposed",
-    "desc": "avant de lancer un anneau, choisissez une cible et tentez un Test de Projectile (Lancer) avec la difficulté appropriée. En cas de succès, remportez les points indiqués. Un Critique vous permet à la place d'encercler la cible suivante sur la table, ce qui vous fait gagner plus de points. Le joueur qui a obtenu le plus de points après cinq lancers remporte la partie.",
+    "roundShape": "volley",
+    "volley": {
+      "throws": 5,
+      "pick": "choix",
+      "rows": [
+        {
+          "points": 10,
+          "difficulty": "tresFacile",
+          "label": "Bâton sur le nez"
+        },
+        {
+          "points": 20,
+          "difficulty": "facile",
+          "label": "Bâton sur le front"
+        },
+        {
+          "points": 30,
+          "difficulty": "accessible",
+          "label": "Cornes"
+        },
+        {
+          "points": 40,
+          "difficulty": "intermediaire",
+          "label": "Bâton sur les oreilles"
+        },
+        {
+          "points": 50,
+          "difficulty": "complexe",
+          "label": "Bâton sur les joues"
+        },
+        {
+          "points": 75,
+          "difficulty": "difficile",
+          "label": "Bâton sur la barbe"
+        },
+        {
+          "points": 100,
+          "difficulty": "tresDifficile",
+          "label": "Bâton sur la gorge"
+        }
+      ],
+      "gain": "points-de-la-ligne",
+      "critique": "points-de-la-ligne-suivante",
+      "manches": 1
+    },
+    "scoreUnit": "points",
+    "desc": "avant de lancer un anneau, choisissez une cible et tentez un Test de **Projectile (Lancer)** avec la difficulté appropriée. En cas de succès, remportez les points indiqués. Un Critique vous permet à la place d'encercler la cible suivante sur la table, ce qui vous fait gagner plus de points. Le joueur qui a obtenu le plus de points après cinq lancers remporte la partie.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
       "page": 93

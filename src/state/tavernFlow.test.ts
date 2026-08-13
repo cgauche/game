@@ -52,7 +52,7 @@ describe('playTavernGame', () => {
     const [a, b] = twoHeroes();
     useGame.setState({ party: [a, b] });
     get().openTavernGames();
-    get().playTavernGame({ gameId: 'boules', challengerId: a.id, opponent: { kind: 'hero', id: b.id }, stakeBrass: 20 });
+    get().playTavernGame({ gameId: 'dominos', challengerId: a.id, opponent: { kind: 'hero', id: b.id }, stakeBrass: 20 });
     expect(get().tavernGames?.result).toBeNull();
     expect(get().pendingCascade).not.toBeNull();
     const step = get().pendingCascade!.participants[0];
@@ -72,11 +72,11 @@ describe('playTavernGame', () => {
     creditBourse(get, useGame.setState, a.id, { gold: 5, silver: 0, brass: 0 });
     const purseBefore = toBrass(partyMoneyTotal(get));
     get().openTavernGames();
-    get().playTavernGame({ gameId: 'boules', challengerId: a.id, opponent: { kind: 'hero', id: b.id }, stakeBrass: 20 });
+    get().playTavernGame({ gameId: 'dominos', challengerId: a.id, opponent: { kind: 'hero', id: b.id }, stakeBrass: 20 });
     await drain();
     const res = get().tavernGames?.result;
     expect(res).toBeTruthy();
-    expect(res!.gameLabel).toBe('Les boules');
+    expect(res!.gameLabel).toBe('Les dominos');
     expect(['player', 'opponent', 'tie']).toContain(res!.winner);
     // Mise ignorée entre compagnons (aucune bourse ne bouge).
     expect(res!.stakeBrass).toBe(0);
@@ -97,7 +97,7 @@ describe('playTavernGame', () => {
   it('Test opposé RÉEL (#579) : contre la SALLE, le jet adverse est roulé et FIGÉ AVANT que le joueur ne lance', () => {
     const [a] = twoHeroes();
     useGame.setState({ party: [a] });
-    get().playTavernGame({ gameId: 'boules', challengerId: a.id, opponent: { kind: 'abstract', value: 40 } });
+    get().playTavernGame({ gameId: 'dominos', challengerId: a.id, opponent: { kind: 'abstract', value: 40 } });
     const step = get().pendingCascade!.participants[0];
     expect(step.result).toBeNull(); // le joueur n'a pas encore lancé SON jet
     expect(step.meta?.opposed?.aT).toBeTruthy(); // la salle, elle, a DÉJÀ un jet FIGÉ
@@ -108,7 +108,7 @@ describe('playTavernGame', () => {
   it('adversaire ABSTRAIT (table) : jet figé sans attackerId (aucun Combatant réel)', () => {
     const [a] = twoHeroes();
     useGame.setState({ party: [a] });
-    get().playTavernGame({ gameId: 'flechettes', challengerId: a.id, opponent: { kind: 'abstract', value: 30 } });
+    get().playTavernGame({ gameId: 'cerevis', challengerId: a.id, opponent: { kind: 'abstract', value: 30 } });
     const step = get().pendingCascade!.participants[0];
     expect(step.meta?.opposed?.aT).toBeTruthy();
     expect(step.meta?.opposed?.attackerId).toBeUndefined();
@@ -119,7 +119,7 @@ describe('playTavernGame', () => {
     const [a] = twoHeroes();
     a.fortune = 3;
     useGame.setState({ party: [a] });
-    get().playTavernGame({ gameId: 'boules', challengerId: a.id, opponent: { kind: 'abstract', value: 40 } });
+    get().playTavernGame({ gameId: 'dominos', challengerId: a.id, opponent: { kind: 'abstract', value: 40 } });
     const stepId = get().pendingCascade!.participants[0].id;
     get().cascadeRoll(stepId);
     const before = get().pendingCascade!.participants[0];
@@ -146,33 +146,35 @@ describe('playTavernGame', () => {
     addCondition(a, COND.empoisonne);
     addCondition(b, COND.empoisonne);
     useGame.setState({ party: [a, b] });
-    const game = findTavernGameById('boules')!;
-    // `b` (Compétence 28) défie `a` (Compétence 33) : `b` est le PLUS FAIBLE des deux — mais sa
-    // Compétence NUE dépasse la valeur de Test EMPOISONNÉE de `a` (23). C'est le piège du mixte.
-    expect(skillBaseValue(b, game.skill!, game.spec)).toBe(28);
-    expect(tavernGameValue(b, game)).toBe(18);
-    expect(skillBaseValue(a, game.skill!, game.spec)).toBe(33);
-    expect(tavernGameValue(a, game)).toBe(23);
-    get().playTavernGame({ gameId: 'boules', challengerId: b.id, opponent: { kind: 'hero', id: a.id } });
+    const game = findTavernGameById('dominos')!;
+    // Le défiant est le PLUS FAIBLE des deux — mais sa Compétence NUE dépasse la valeur de Test
+    // EMPOISONNÉE de son vis-à-vis. C'est le piège du mixte, et il ne tient que si les deux nues
+    // diffèrent : l'assertion le VERROUILLE au lieu de le supposer.
+    const nue = (h: Combatant): number => skillBaseValue(h, game.skill!, game.spec);
+    const [faible, fort] = nue(a) <= nue(b) ? [a, b] : [b, a];
+    expect(nue(faible), 'les deux nues diffèrent, sinon rien ne trancherait').toBeLessThan(nue(fort));
+    expect(tavernGameValue(faible, game), 'l’État n’entre pas dans la NUE').toBe(nue(faible) - 10);
+    expect(tavernGameValue(fort, game)).toBe(nue(fort) - 10);
+    get().playTavernGame({ gameId: 'dominos', challengerId: faible.id, opponent: { kind: 'hero', id: fort.id } });
     const pc = get().pendingCascade!;
     const band = pc.participants[0];
-    const rb = band.participants!.find((r) => r.id === b.id)!;
-    const ra = band.participants!.find((r) => r.id === a.id)!;
-    expect(rb.base).toBe(28); // Compétence NUE de chaque camp, posée par le monteur…
-    expect(ra.base).toBe(33);
-    expect(rb.target).toBe(18); // …et l'État dans la CIBLE, des deux côtés (invariante)
-    expect(ra.target).toBe(23);
+    const rb = band.participants!.find((r) => r.id === faible.id)!;
+    const ra = band.participants!.find((r) => r.id === fort.id)!;
+    expect(rb.base).toBe(nue(faible)); // Compétence NUE de chaque camp, posée par le monteur…
+    expect(ra.base).toBe(nue(fort));
+    expect(rb.target).toBe(nue(faible) - 10); // …et l'État dans la CIBLE, des deux côtés (invariante)
+    expect(ra.target).toBe(nue(fort) - 10);
     // DR ÉGAL POSÉ sur les deux rangées : seule la Compétence NUE peut trancher.
     const pose = (r: typeof rb) => ({ ...r, result: { roll: 11, target: r.target, sl: 2, success: true } });
     useGame.setState({ pendingCascade: { ...pc, participants: [{ ...band, participants: [pose(rb), pose(ra)] }] } });
     get().cascadeNext();
-    expect(get().tavernGames!.result!.winner, '33 > 28 : l’adversaire l’emporte').toBe('opponent');
+    expect(get().tavernGames!.result!.winner, 'la nue la plus haute l’emporte').toBe('opponent');
   });
 
   it('zéro divergence de maths avec `resolveTavernRound` : le verdict final recompose EXACTEMENT depuis le meta figé', async () => {
     const [a] = twoHeroes();
     useGame.setState({ party: [a] });
-    get().playTavernGame({ gameId: 'boules', challengerId: a.id, opponent: { kind: 'abstract', value: 40 } });
+    get().playTavernGame({ gameId: 'dominos', challengerId: a.id, opponent: { kind: 'abstract', value: 40 } });
     const step = get().pendingCascade!.participants[0];
     const aT = step.meta!.opposed!.aT;
     await drain();
@@ -182,7 +184,7 @@ describe('playTavernGame', () => {
     const opp = resolveOpposed({ roll: 0, target: 0, sl: res.playerSL, success: res.playerSL > 0, isDouble: false }, aT);
     const expectedWinner = opp.winner === 'attacker' ? 'player' : opp.winner === 'defender' ? 'opponent' : 'tie';
     expect(res.winner).toBe(expectedWinner);
-    expect(res.opponentSL).toBe(Math.min(aT.sl, 6)); // Boules : plafond 6 DR (drCap) sur une réussite
+    expect(res.opponentSL).toBe(aT.sl); // aucun plafond déclaré : le DR adverse passe entier
   });
 });
 

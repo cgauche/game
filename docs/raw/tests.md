@@ -373,7 +373,7 @@ Lorsque plusieurs personnages travaillent ensemble à la même tâche, ceux qui 
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.188-200) → `useExtendedTestJetProps`, `soutien`, `MedicState`, `BargainModalView`, `SequenceParams`, `runSceneConsumableFlow`, `ActivityModal`, `RollRequest`, `TestFields`, `OPTIONAL_RULES`, +45 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +26 fichiers
+- `LDB 12` (l.188-200) → `useExtendedTestJetProps`, `soutien`, `MedicState`, `BargainModalView`, `SequenceParams`, `runSceneConsumableFlow`, `ActivityModal`, `RollRequest`, `TestFields`, `OPTIONAL_RULES`, +48 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +28 fichiers
 
 ---
 
@@ -394,7 +394,7 @@ Parfois, une situation requiert qu'un personnage réussisse deux Compétences di
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.203-208) → `soutien`, `MedicState`, `BargainModalView`, `runSceneConsumableFlow`, `ActivityModal`, `RollRequest`, `TestFields`, `OPTIONAL_RULES`, `PendingTest`, `CombinedTestResult`, +24 — `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +16 fichiers
+- `LDB 12` (l.203-208) → `soutien`, `MedicState`, `BargainModalView`, `runSceneConsumableFlow`, `ActivityModal`, `RollRequest`, `TestFields`, `OPTIONAL_RULES`, `PendingTest`, `CombinedTestResult`, +27 — `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +18 fichiers
 
 ---
 
@@ -622,4 +622,4 @@ Ces trois mécaniques constituent des extensions légitimes du système de DR da
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 12` (l.124-127) → `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `evaluateTest`, `bestForcedRoll`, `SL_IMPRESSIVE`, `isAstoundingFailure`, `FicheBody`, `resolveAppraise`, `ItemInstance` — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +2 fichiers
 - `LDB 17` (l.22) → `canReroll`, `RunModal`, `fateSaveOrDie`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, `bonusShipManeuver` ⚠sans-appelant, +11 — `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +11 fichiers
-- `NADJ 16` (l.7, l.11, l.19, l.25, l.34, l.57, l.97) → `al-zahr`, `alvatafl`, `extenue`, `bete-tailleurs`, `boules`, `cerevis`, `tavern-game`, `arene`, `OPTIONAL_RULES` — `src/data/combat-stakes.json`, `src/data/tavernGames.json`, `src/engine/policy.ts`
+- `NADJ 16` (l.7, l.11, l.19, l.25, l.34, l.57, l.97) → `al-zahr`, `elfe`, `extenue`, `tavern-game`, `bete-tailleurs`, `boules`, `cerevis`, `OPTIONAL_RULES`, `arene` — `src/data/combat-stakes.json`, `src/data/tavernGames.json`, `src/engine/policy.ts`

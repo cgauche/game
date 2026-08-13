@@ -76,6 +76,7 @@ import godsJson from './gods.json';
 import pregensJson from './pregens.json';
 import oupsJson from './oups.json';
 import interludeEventsJson from './interludeEvents.json';
+import tavernGamesJson from './tavernGames.json';
 import peripetiesJson from './peripeties.json';
 import massBattleJson from './mass-battle.json';
 import grappleJson from './grapple.json';
@@ -378,6 +379,9 @@ const STAKE_ENTRY_POOLS: Record<string, (id: string) => boolean> = {
   mutations: (id) => mutations.some((m) => m.id === id),
   mutationTables: (id) => mutationTables.some((t) => t.id === id),
   interludeEvents: (id) => interludeEvents.some((e) => e.id === id),
+  // Un jeu de taverne PORTE sa règle (sa fiche Codex la recopie verbatim) : c'est le foyer des effets
+  // qu'une partie inflige (l'ivresse d'un jeu à boire, NADAJ 16 l.97).
+  tavernGames: (id) => (tavernGamesJson as { id: string }[]).some((g) => g.id === id),
   // Catégories atteignables par l'ENTITÉ SOURCE d'un effet (`CATEGORY_BY_SOURCE_KIND`, engine/types) —
   // la table est TOTALE côté source, donc le pool l'est aussi : sans elles, un jet exigé par un objet
   // ou un Talent replierait en silence sur le foyer de son `kind`.

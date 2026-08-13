@@ -11,7 +11,10 @@
 import { RNG, defaultRNG } from './dice';
 import { rollTest, resolveOpposed, TestResult } from './tests';
 import { Difficulty, CharKey } from './types';
-import type { SequencePhases, SequencePotRules, SequenceRoundOps, SequenceTableRow } from './sequenceVocab';
+import type {
+  SequencePhases, SequencePotRules, SequenceRoundOps, SequenceTableRow, SequenceSide, SequenceVolleyRules,
+  SequenceCombinedRules,
+} from './sequenceVocab';
 import tavernGamesJson from '../data/tavernGames.json';
 
 export interface TavernGame {
@@ -54,9 +57,11 @@ export interface TavernGame {
   /** FORME d'un tour — la CAPACITÉ que le jeu déclare, jamais déduite d'un effectif :
    *  · `team` : tous les joueurs testent le même tour, on somme par équipe (Middenball l.121) ;
    *  · `thrower` : un tour = UN lanceur, chacun le sien jusqu'au dernier (Torchon l.111) ;
-   *  · `pot` : un tour = UN joueur qui lance les dés devant un pot (Al-zahr l.17).
+   *  · `pot` : un tour = UN joueur qui lance les dés devant un pot (Al-zahr l.17) ;
+   *  · `volley` : un tour = UN lancer d'un PASSAGE en nombre fixe (Bête l.42, Arène l.65,
+   *    Fléchettes l.83, Boules l.57).
    *  Absente : une manche opposée ordinaire (variante rapide, l.9-11). */
-  roundShape?: 'team' | 'thrower' | 'pot';
+  roundShape?: 'team' | 'thrower' | 'pot' | 'volley';
   /** OPTIONS de Test d'une manche quand la règle en offre plusieurs (Middenball l.121 : « un Test de
    *  Corps à corps (Bagarre) Accessible (+20) **ou** d'Athlétisme Intermédiaire (+0) »). Le RAW ne dit
    *  pas QUI choisit : le choix va au JOUEUR (credo « pas de MJ », jamais un défaut silencieux). La
@@ -81,9 +86,19 @@ export interface TavernGame {
   dancers?: number;
   /** TABLE de score par plage de DR (Torchon l.111 : jambe / corps ≥3 DR / tête ≥6 DR). */
   table?: SequenceTableRow[];
-  /** Variante de lecture du score (Fléchettes = unités/dizaines/×10) — documentaire ; le moteur rapide lit
-   *  le DR (l.11). */
-  read?: 'sl' | 'units-tens';
+  /** VOLÉE de lancers (famille 7 du socle) : Bête l.42 (trois coups, quilles ÉCRÊTÉES à ce qu'il en
+   *  reste), Arène l.65 (cinq lancers, cible CHOISIE), Fléchettes l.83 (trois fléchettes, total
+   *  EXACT), Boules l.57 (trois boules, la meilleure compte). Consommé par `SequenceParams.volley`. */
+  volley?: SequenceVolleyRules;
+  /** CAMPS ASYMÉTRIQUES (famille 8 du socle) — Alvatafl l.27-28. Consommé par `SequenceParams.sides`. */
+  sides?: SequenceSide[];
+  /** TEST COMBINÉ à conséquences distinctes (famille 9 du socle) — Cerevis l.97. Consommé par
+   *  `SequenceParams.combined`. */
+  combined?: SequenceCombinedRules;
+  /** UNITÉ de ce que le jeu COMPTE, au pluriel (« quilles » l.42, « points » l.65/l.83, « pièces
+   *  prises » l.27, « chouettes » l.97). AFFICHAGE : tableau de marque et dénouement l'écrivent telle
+   *  quelle. Absente : des DR — l'unité du jeu rapide (l.11). */
+  scoreUnit?: string;
   /** MISE, POT, ABANDON, ÉLIMINATION (Al-zahr, l.17) — famille (5) du socle de séquence : les dés du
    *  tour, la plage du nombre cible, les plages de résultat et leur effet de pot. Consommé par
    *  `SequenceParams.pot` (`state/sequenceCore`). */
@@ -127,8 +142,8 @@ export function roundSL(t: TestResult, cap?: number): number {
  * départage (LDB 12 l.160). Un adversaire INCARNÉ (héros) a une valeur de Test fondue — son porteur
  * (`state/tavernFlow.ts`) réécrit alors `base` à l'accesseur canon.
  */
-export function rollTavernTest(value: number, rng: RNG = defaultRNG): TestResult {
-  return { ...rollTest(value, TAVERN_TEST_DIFFICULTY, rng), base: value };
+export function rollTavernTest(value: number, rng: RNG = defaultRNG, difficulty: Difficulty = TAVERN_TEST_DIFFICULTY): TestResult {
+  return { ...rollTest(value, difficulty, rng), base: value };
 }
 
 /** Issue d'UNE manche entre deux `TestResult` DÉJÀ roulés — PUR (aucun rng, aucune décision de

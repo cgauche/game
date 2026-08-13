@@ -47,7 +47,7 @@ const PROBE_ID: Record<string, string> = {
   qualities: qualities[0].id, maladies: maladies[0].id, symptoms: symptoms[0].id,
   mutations: mutations[0].id, etats: etats[0].id, psychologies: psychologies[0].id,
   maneuvers: maneuvers[0].id, creatures: creatures[0].id, activities: ACTIVITY_STAKES[0].id,
-  regles: regles[0].id,
+  regles: regles[0].id, tavernGames: 'cerevis',
 };
 
 describe('cliquet — un enjeu porte sa RÈGLE (#1117)', () => {

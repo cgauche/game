@@ -13,7 +13,7 @@ import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { seedBattleRng } from './battleRng';
 import { findTavernGameById, TAVERN_GAMES } from '../engine/tavernGame';
-import { resolveSequenceTie, closeSequenceRound, type SequenceState } from './sequenceCore';
+import { resolveSequenceTie, closeSequenceRound, sequenceVolleyRounds, type SequenceState } from './sequenceCore';
 import { TAVERN_SEQUENCE, TAVERN_ROUND_KIND, type TavernPayload } from './tavernFlow';
 import type { Combatant } from '../engine/types';
 import type { PendingCascade, CascadeStep } from './pendings';
@@ -91,6 +91,10 @@ describe('Les dominos — départage d’égalité au dé d’unités (NADAJ 16 
         ...(jeu.scoreThreshold != null ? { scoreThreshold: jeu.scoreThreshold } : {}),
         ...(jeu.campScore ? { score: { player: jeu.campScore, opponent: jeu.campScore } } : {}),
         ...(jeu.table ? { table: jeu.table } : {}),
+        ...(jeu.drBonus ? { drBonus: jeu.drBonus } : {}),
+        ...(jeu.volley ? { volley: jeu.volley, maxRounds: sequenceVolleyRounds(jeu.volley, 2) } : {}),
+        ...(jeu.sides ? { sides: jeu.sides } : {}),
+        ...(jeu.combined ? { combined: jeu.combined } : {}),
       });
     }
   });

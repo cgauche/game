@@ -329,7 +329,8 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   // Rubrique de VENT (`windModifiers`, #729) : tableau top-level d'objets → éditeur GÉNÉRIQUE commun.
   if (categoryKey === 'domains') add('windModifiers');
   if (categoryKey === 'characteristics') add('options'); // dépenses d'une ressource → éditeur GÉNÉRIQUE commun
-  if (categoryKey === 'tavernGames') add('options', 'table'); // options de Test (l.121) + barème par plage de DR (l.111) → MÊME éditeur générique
+  // options de Test (l.121), barème par plage de DR (l.111), camps asymétriques (l.27) → MÊME éditeur générique
+  if (categoryKey === 'tavernGames') add('options', 'table', 'sides');
   if (categoryKey === 'creatures') add('traits', 'optionals', 'harvest');
   if (categoryKey === 'details') add('texts');
   if (SHIP_CRIT_CATEGORIES.includes(categoryKey)) add('crewTest'); // {skillId?,difficulty?,crewTarget?,onFail}

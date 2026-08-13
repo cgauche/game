@@ -5,7 +5,7 @@
  * `tavernGames.json`) et par le contrat d'orchestrateur du store (`state/sequenceContract.ts`), qui
  * les republie dans ses `SequenceParams`. Aucune logique ici : ce fichier ne fait que DIRE.
  */
-import type { CharKey } from './types';
+import type { CharKey, Difficulty } from './types';
 import type { GameOp } from './ops';
 
 /** UNE LIGNE de table de score par PLAGE de DR — lue par `findTableEntry` (`engine/tables.ts`).
@@ -110,4 +110,136 @@ export interface SequencePotOutcome {
   owes?: number;
   /** Nouvelle cible pour le joueur suivant. */
   target?: number;
+}
+
+/* ── FAMILLE (7) : VOLÉE — un PASSAGE de lancers en nombre fixe ──────────────────────────────────
+ * Une séquence où l'on ne s'oppose pas manche par manche : chacun son PASSAGE de N lancers, chaque
+ * lancer rapporte, et le total décide. Premiers clients : `NADAJ 16 l.42`, `l.65`, `l.83`, `l.57`.
+ *
+ * FORME — directive utilisateur du 2026-08-13 (verbatim au ticket #1279) : « Comme les games iOS
+ * [GameOps], rendre le vocabulaire le plus générique et parametrable possible ». D'où : aucun champ
+ * ne nomme son premier client, et ce que RAPPORTE un lancer est un NOM ENREGISTRÉ résolu par une
+ * fonction pure (`registerSequenceThrow`, `state/sequenceCore`) — patron `GameOp` et patron des
+ * effets de pot (famille 5) : un verbe générique + ses paramètres. Un jeu de lancers N+1 dont les
+ * verbes existent déjà est une entrée JSON, zéro ligne de TS.
+ */
+
+/** UNE LIGNE de volée : ce qui règle un lancer (Difficulté) et ce qu'il rapporte (points). `min`/`max`
+ *  n'existent que pour les lignes DÉSIGNÉES par une grandeur (`pick: 'reserve'`, lues par
+ *  `findTableEntry`) ; une ligne que le LANCEUR choisit (`pick: 'choix'`) n'a pas de plage. `label`
+ *  est de l'AFFICHAGE. */
+export interface SequenceVolleyRow {
+  min?: number;
+  max?: number;
+  difficulty?: Difficulty;
+  points?: number;
+  label: string;
+}
+
+/** RÈGLES DE VOLÉE d'une séquence, en donnée. */
+export interface SequenceVolleyRules {
+  /** Lancers d'un passage. */
+  throws: number;
+  /** RÉSERVE d'un passage — ce qu'il reste à prendre. Un effet ÉCRÊTANT y borne son gain, et la
+   *  réserve décroît d'autant ; épuisée, le passage s'arrête (il n'y a plus rien à prendre).
+   *  Absente : aucune réserve, aucun écrêtage. */
+  reserve?: number;
+  /** Ce qui DÉSIGNE la ligne d'un lancer : la RÉSERVE restante (`findTableEntry`), ou le LANCEUR. */
+  pick?: 'reserve' | 'choix';
+  rows?: readonly SequenceVolleyRow[];
+  /** Effet ENREGISTRÉ d'un lancer ORDINAIRE (`registerSequenceThrow`). */
+  gain: string;
+  /** Effet ENREGISTRÉ d'une réussite EXCEPTIONNELLE — un double sur un Test réussi (`NADAJ 16 l.7`). */
+  critique?: string;
+  /** Effet ENREGISTRÉ d'un échec EXCEPTIONNEL — un double sur un Test raté (`NADAJ 16 l.7`). */
+  maladresse?: string;
+  /** PLAGE d'un gain que le lanceur fixe LIBREMENT (lue par l'effet qui l'offre). */
+  libre?: { min: number; max: number };
+  /** TOTAL EXACT visé : le camp qui l'atteint conclut, et un gain qui le DÉPASSE déclenche
+   *  `depassement`. Absent : aucune cible exacte, les totaux se comparent au bout des manches. */
+  exact?: number;
+  /** Effet ENREGISTRÉ du gain qui dépasse `exact`. Absent : le gain passe tel quel. */
+  depassement?: string;
+  /** Passages complets PRÉVUS par la règle. */
+  manches?: number;
+  /** ORDRE de passage : DÉCLARÉ (le challenger ouvre) ou TIRÉ AU SORT (`NADAJ 16 l.83` : « jetez une
+   *  pièce de monnaie pour déterminer qui joue en premier »). */
+  ordre?: 'declare' | 'tirage';
+  /** BORNE en passages, quand la règle n'en fixe aucun (séquence à cible EXACTE). Ce n'est PAS une
+   *  règle : c'est l'unité de borne de cette famille — un tour n'y est qu'UN lancer d'UN joueur,
+   *  quand le socle, lui, compte des manches. La borne effective s'en dérive (passages × lanceurs ×
+   *  lancers), sous le plafond absolu du contrat. */
+  manchesBorne?: number;
+}
+
+/** CE QUE VOIT un effet de lancer — le jet, son DR (plafond et Bonus déjà appliqués), ses formes
+ *  exceptionnelles, la réserve restante, le score acquis, la ligne désignée et la plage libre. PUR :
+ *  un effet ne lit rien d'autre, et ne connaît ni joueur ni camp. */
+export interface SequenceThrowTurn {
+  roll: number;
+  sl: number;
+  success: boolean;
+  critique: boolean;
+  maladresse: boolean;
+  reserve?: number;
+  points: number;
+  row?: SequenceVolleyRow;
+  rowIndex?: number;
+  rows: readonly SequenceVolleyRow[];
+  libre?: { min: number; max: number };
+  /** Gain DÉJÀ calculé, quand l'effet est rappelé pour en juger (dépassement de la cible exacte). */
+  gain?: number;
+}
+
+/** CE QUE REND un effet de lancer — le réducteur du domaine l'applique, l'effet ne mute rien. */
+export interface SequenceThrowOutcome {
+  /** Ce que le lancer rapporte. */
+  gain?: number;
+  /** Le passage du lanceur s'arrête là (ses lancers restants ne sont pas joués). */
+  ends?: boolean;
+  /** Le LANCEUR tranche son gain parmi ces valeurs (le RAW lui en laisse la main). */
+  choix?: readonly number[];
+}
+
+/* ── FAMILLE (8) : CAMPS ASYMÉTRIQUES — chacun sa CONVERSION et sa prise ─────────────────────────
+ * Une séquence où les deux camps ne jouent pas le même jeu : le total d'une manche s'y CONVERTIT en
+ * prises sur l'adversaire, selon un diviseur propre au camp, et la partie se gagne quand un camp a
+ * pris plus de la moitié des pièces d'en face (`NADAJ 16 l.27-28`). */
+export interface SequenceSide {
+  /** Id du camp (donnée : écrit dans les saves). */
+  id: string;
+  label: string;
+  /** PIÈCES du camp — ce que l'ADVERSAIRE doit lui prendre. */
+  pieces: number;
+  /** DIVISEUR du total de manche pour obtenir la prise (arrondi au SUPÉRIEUR). */
+  div: number;
+  /** MULTIPLICATEUR du dé des unités dans la condition de victoire exceptionnelle. */
+  mult: number;
+}
+
+/* ── FAMILLE (9) : TEST COMBINÉ À CONSÉQUENCES DISTINCTES ────────────────────────────────────────
+ * UN seul dé, DEUX lectures, et chacune sa conséquence propre (`LDB 12 l.203-208` : « On lance un
+ * seul d100, comparé successivement aux deux valeurs cibles » ; `NADAJ 16 l.97`). La première lecture
+ * est le Test que la séquence joue déjà (Compétence/Difficulté de l'entrée) ; la seconde est déclarée
+ * ici, avec ce qu'elle coûte quand elle échoue et le RYTHME auquel ce coût se paie. */
+export interface SequenceCombinedRules {
+  /** La SECONDE valeur confrontée au même dé (Compétence ou Caractéristique). */
+  second: { skill?: string; spec?: string; char?: CharKey };
+  /** Tous les combien d'échecs de la SECONDE lecture les `ops` se paient (`NADAJ 16 l.97` : « Pour
+   *  chaque 3 Tests d'Initiative auxquels vous échouez »). 0/absent : à chaque échec. */
+  failEvery?: number;
+  /** Tous les combien de MARQUES effacées les `ops` se paient (`l.97` : « pour chaque 2 chouettes que
+   *  vous effacez »). */
+  eraseEvery?: number;
+  /** Ce que coûte l'échéance (échecs cumulés, ou marques effacées) — appliqué au porteur. */
+  ops?: readonly GameOp[];
+  /** Le camp qui obtient le MOINS de DR à la première lecture prend une MARQUE (`l.97`). */
+  markLoser?: boolean;
+  /** État dont l'apparition ARRÊTE la partie avant terme — id d'`etats.json`, DÉCLARÉ (le code ne
+   *  nomme aucun État). Cerevis l.88 : « peuvent envoyer même les buveurs les plus chevronnés rouler
+   *  sous la table ». */
+  stopCondition?: string;
+  /** TOURS de la partie. ARBITRAGE MAISON ÉDITABLE : la source ne dit PAS quand la partie s'arrête
+   *  (`l.97` s'achève sur le Tableau Ivre) — ce nombre est de la donnée, jamais du RAW. */
+  tours?: number;
 }

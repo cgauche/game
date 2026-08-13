@@ -33,13 +33,14 @@ import {
 } from './sequenceContract';
 import { runCascadeImmediate } from './cascade';
 import { extendedTestStep } from '../engine/tests';
-import { findTableEntry } from '../engine/tables';
+import { findTableEntry, findTableEntryIndex } from '../engine/tables';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { applyOps } from '../engine/ops';
 import type { Combatant } from '../engine/types';
 import type {
   SequenceBoard, SequenceRoundActors, SequenceTableRow,
   SequencePotRow, SequencePotTurn, SequencePotOutcome,
+  SequenceVolleyRow, SequenceVolleyRules, SequenceThrowTurn, SequenceThrowOutcome,
 } from './sequenceContract';
 import { actorIn } from './combatants';
 import { battleRng } from './battleRng';
@@ -54,6 +55,8 @@ export type {
   SequenceDef, SequenceParams, SequenceState, SequenceRound, SequenceVerdict, SequenceCloseCtx,
   SequenceTableRow, SequenceRoundOps, SequencePhases, SequenceBoard, SequenceBoardCamp, SequenceRoundActors,
   SequenceDice, SequencePotRow, SequencePotRules, SequencePotTurn, SequencePotOutcome,
+  SequenceVolleyRow, SequenceVolleyRules, SequenceThrowTurn, SequenceThrowOutcome, SequenceSide,
+  SequenceCombinedRules,
 } from './sequenceContract';
 
 /** Registre des définitions, peuplé par les modules de DOMAINE à leur chargement. */
@@ -191,6 +194,95 @@ export function sequencePotIssue(outcome: SequencePotOutcome): string | undefine
   if (outcome.choose) return t('seqPot.issueRemise');
   if (outcome.target != null) return t('seqPot.issueCible', { cible: outcome.target });
   return undefined;
+}
+
+/* ── FAMILLE (7) : VOLÉE — CE QUE RAPPORTE UN LANCER ─────────────────────────────────────────────
+ * Un passage rend N lancers ; chaque lancer rapporte ce que son EFFET DÉCLARÉ dit qu'il rapporte
+ * (`SequenceVolleyRules.gain`, et ses formes exceptionnelles `critique`/`maladresse`/`depassement`).
+ * MÊME registre ouvert que les formules de score, les départages et les effets de pot : ce qui indexe
+ * est le nom d'un EFFET (un rôle), jamais l'identité d'une entrée de catalogue (garde
+ * `registry-id-branch`, doctrine #842). Les effets sont PURS : ils lisent le lancer, ils rendent un
+ * gain — le réducteur du domaine tient les camps, les passages et les scores. */
+export type SequenceThrowFn = (turn: SequenceThrowTurn) => SequenceThrowOutcome;
+
+const sequenceThrows: Record<string, SequenceThrowFn> = {};
+
+/** Enregistre (ou remplace) un effet de lancer, sous le nom que la donnée emploiera. */
+export function registerSequenceThrow(effet: string, fn: SequenceThrowFn): void {
+  sequenceThrows[effet] = fn;
+}
+
+/** Le DR du lancer, jamais négatif — sans égard à ce qu'il reste à prendre. */
+registerSequenceThrow('dr', (t) => ({ gain: Math.max(0, t.sl) }));
+/** Le DR du lancer, ÉCRÊTÉ à la réserve restante : on ne prend pas plus qu'il n'y a (`NADAJ 16 l.42`). */
+registerSequenceThrow('dr-ecrete', (t) => ({ gain: Math.max(0, Math.min(t.sl, t.reserve ?? t.sl)) }));
+/** TOUTE la réserve restante (`NADAJ 16 l.42`). */
+registerSequenceThrow('toute-la-reserve', (t) => ({ gain: t.reserve ?? 0 }));
+/** Les points de la LIGNE désignée, sur une réussite (`NADAJ 16 l.65`). */
+registerSequenceThrow('points-de-la-ligne', (t) => ({ gain: t.success ? (t.row?.points ?? 0) : 0 }));
+/** Les points de la ligne SUIVANTE de la table (`NADAJ 16 l.65`) — la dernière ligne n'en a pas de
+ *  suivante : elle rend la sienne. */
+registerSequenceThrow('points-de-la-ligne-suivante', (t) => ({
+  gain: t.rows[(t.rowIndex ?? -1) + 1]?.points ?? t.row?.points ?? 0,
+}));
+/** Les CHIFFRES du dé : sur une réussite, le lanceur tranche entre unités, dizaines et leurs dizaines ;
+ *  sur un échec, le chiffre des unités (`NADAJ 16 l.83`). */
+registerSequenceThrow('chiffres-du-de', (t) => {
+  const unites = t.roll % 10;
+  const dizaines = Math.floor(t.roll / 10) % 10;
+  if (!t.success) return { gain: unites };
+  return { choix: [...new Set([unites, dizaines, unites * 10, dizaines * 10])].sort((a, b) => a - b) };
+});
+/** Un gain que le lanceur fixe LIBREMENT dans la plage déclarée (`NADAJ 16 l.83`). */
+registerSequenceThrow('gain-au-choix', (t) => {
+  const plage = t.libre;
+  if (!plage) return {};
+  const choix: number[] = [];
+  for (let n = plage.min; n <= plage.max; n++) choix.push(n);
+  return { choix };
+});
+/** Aucun gain (`NADAJ 16 l.83`). */
+registerSequenceThrow('aucun-gain', () => ({ gain: 0 }));
+/** Aucun gain, et le PASSAGE s'arrête là (`NADAJ 16 l.83`). */
+registerSequenceThrow('termine-le-passage', () => ({ gain: 0, ends: true }));
+
+/** La LIGNE que DÉSIGNE une grandeur (`pick: 'reserve'`), avec son rang — `{}` si la séquence n'en
+ *  déclare aucune, ou si aucune plage ne la couvre. Lue par la primitive PARTAGÉE du dépôt
+ *  (`findTableEntryIndex`) — aucun `find` par fourchette n'est réécrit. */
+export function sequenceThrowRow(rules: SequenceVolleyRules, valeur: number): { row?: SequenceVolleyRow; rowIndex?: number } {
+  const plages = (rules.rows ?? []).filter((r): r is SequenceVolleyRow & { min: number; max: number } => r.min != null && r.max != null);
+  if (!plages.length) return {};
+  const i = findTableEntryIndex([...plages], valeur);
+  return i < 0 ? {} : { row: plages[i], rowIndex: rules.rows!.indexOf(plages[i]) };
+}
+
+/** CE QUE RAPPORTE un lancer : l'effet de sa forme (Critique, Maladresse, ordinaire), appelé avec le
+ *  tour. Effet inconnu ou non déclaré : aucun gain (jamais un repli qui invente un score). */
+export function resolveSequenceThrow(rules: SequenceVolleyRules, turn: SequenceThrowTurn): SequenceThrowOutcome {
+  const nom = turn.critique && rules.critique ? rules.critique
+    : turn.maladresse && rules.maladresse ? rules.maladresse
+      : rules.gain;
+  const fn = nom ? sequenceThrows[nom] : undefined;
+  return fn ? fn({ ...turn, libre: turn.libre ?? rules.libre }) : {};
+}
+
+/** CE QUE DEVIENT un gain face à la cible EXACTE déclarée : le dépasser déclenche l'effet DÉCLARÉ
+ *  (`depassement`). Sans cible ni effet, le gain passe tel quel — le socle n'invente rien. */
+export function sequenceThrowGain(rules: SequenceVolleyRules, turn: SequenceThrowTurn, gain: number): SequenceThrowOutcome {
+  if (rules.exact == null || turn.points + gain <= rules.exact) return { gain };
+  const fn = rules.depassement ? sequenceThrows[rules.depassement] : undefined;
+  return fn ? fn({ ...turn, gain }) : { gain };
+}
+
+/** BORNE en manches d'une volée : ses passages (déclarés par la règle, ou l'unité de borne quand la
+ *  règle n'en fixe aucun) × lanceurs × lancers — une manche de cette famille n'est QU'UN lancer. La
+ *  ligne CHOISIE par le lanceur en coûte une seconde (la décision précède le jet, et personne ne
+ *  lance avant d'avoir dit ce qu'il vise). 0 si la séquence ne déclare aucun passage : la borne du
+ *  socle s'applique alors. */
+export function sequenceVolleyRounds(rules: SequenceVolleyRules, lanceurs: number): number {
+  const passages = rules.manches ?? rules.manchesBorne ?? 0;
+  const parLancer = rules.pick === 'choix' ? 2 : 1;
+  return passages > 0 ? passages * Math.max(1, lanceurs) * Math.max(1, rules.throws) * parLancer : 0;
 }
 
 /* ── FAMILLE (1) : ACCUMULATEUR PAR CAMP ─────────────────────────────────────────────────────────*/

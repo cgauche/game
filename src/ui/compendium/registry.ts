@@ -2336,9 +2336,15 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       meta: facts(
         fact('Compétence', g.skill ? refLabel('skills', { id: g.skill, spec: g.spec }) : 'Pari (aucune Compétence)'),
         fact('Caractéristique', g.characteristic ? CHAR_LABELS[g.characteristic] : null),
-        fact('Mode', g.pot ? `Mise et pot (${g.pot.dice.count}d${g.pot.dice.faces})` : g.mode === 'extended' ? `Étendu (${g.target ?? '?'} DR)` : 'Opposé simple'),
+        fact('Mode', g.pot ? `Mise et pot (${g.pot.dice.count}d${g.pot.dice.faces})`
+          : g.volley ? `Volée de ${g.volley.throws} lancers`
+            : g.mode === 'extended' ? `Étendu (${g.target ?? '?'} DR)` : 'Opposé simple'),
         fact('Plafond de DR', g.drCap ?? null),
         fact('Nombre cible', g.pot?.targetRange ? `de ${g.pot.targetRange.min} à ${g.pot.targetRange.max}` : null),
+        fact('Total exact', g.volley?.exact ?? null),
+        fact('À abattre', g.volley?.reserve ?? null),
+        fact('Camps', g.sides?.length ? g.sides.map((s) => `${s.label} (${s.pieces} pièces)`).join(' contre ') : null),
+        fact('Tours (maison)', g.combined?.tours ?? null),
       ),
     })),
   },
