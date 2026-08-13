@@ -359,7 +359,7 @@ export function Editor({
 
   function createArchitecturePart() {
     if (!architectureBody || !architectureStorey) return;
-    const out = addArchitecturePart(scene, architectureBody.id, architectureStorey.id, { x: 0, y: 0, w: 1, h: 1 });
+    const out = addArchitecturePart(scene, architectureBody.id, architectureStorey.id, { ...hoverRef.current, w: 1, h: 1 });
     if (!out) return;
     setScene(out.scene);
     setSel({ type: 'architecturePart', bodyId: architectureBody.id, storeyId: architectureStorey.id, id: out.id });
@@ -367,7 +367,7 @@ export function Editor({
 
   function createRoofSection() {
     if (!architectureBody || !architectureStorey) return;
-    const out = addBuildingMass(scene, architectureBody.id, { x: 0, y: 0, w: 1, h: 1 }, architectureStorey.z);
+    const out = addBuildingMass(scene, architectureBody.id, { ...hoverRef.current, w: 1, h: 1 }, architectureStorey.z);
     if (!out) return;
     setScene(out.scene);
     setSel({ type: 'roofSection', bodyId: architectureBody.id, id: out.id });
