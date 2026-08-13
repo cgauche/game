@@ -125,11 +125,37 @@
     "skill": "projectiles",
     "spec": "lancer",
     "mode": "opposed",
-    "desc": "lorsque vous balancez le torchon, faites un Test opposé Projectiles (Lancer) / Esquive d'un joueur choisi aléatoirement parmi les 11 danseurs. En cas de succès, vous le touchez à la jambe pour 1 point. Avec au moins 3 DR, vous marquez à la place un coup au corps, qui vous rapporte 2 points. Si vous faites au moins 6 DR, vous marquez à la place un coup à la tête, qui vous rapporte 3 points. Si vous ratez, vous devez descendre une pinte de bière et faire un Test de Résistance à l'alcool Intermédiaire (+0).",
+    "team": {
+      "size": 12
+    },
+    "dancers": 11,
+    "table": [
+      {
+        "min": -99,
+        "max": 2,
+        "points": 1,
+        "label": "à la jambe"
+      },
+      {
+        "min": 3,
+        "max": 5,
+        "points": 2,
+        "label": "au corps"
+      },
+      {
+        "min": 6,
+        "max": 99,
+        "points": 3,
+        "label": "à la tête"
+      }
+    ],
+    "campScore": "sum",
+    "desc": "lorsque vous balancez le torchon, faites un Test opposé **Projectiles (Lancer) / Esquive** d'un joueur choisi aléatoirement parmi les 11 danseurs. En cas de succès, vous le touchez à la jambe pour 1 point. Avec au moins 3 DR, vous marquez à la place un coup au corps, qui vous rapporte 2 points. Si vous faites au moins 6 DR, vous marquez à la place un coup à la tête, qui vous rapporte 3 points. Si vous ratez, vous devez descendre une pinte de bière et faire un Test de **Résistance à l'alcool Intermédiaire (+0)**. En cas d'échec, vous ne parvenez pas à vider le pot avant que la serviette n'ait été passée tout au long de la ligne de vos adversaires, et votre équipe perd 1 point. Le jeu se termine lorsque tous les joueurs ont lancé la serviette. À ce stade, chaque joueur qui n'a pas encore fait de jet sur le Tableau Ivre (voir **WFJDR**, page 129) est considéré comme trop sobre et fait perdre 1 point à son équipe. C'est l'équipe qui a le plus de points qui gagne.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
       "page": 95
-    }
+    },
+    "roundShape": "thrower"
   },
   {
     "id": "middenball",
@@ -170,7 +196,8 @@
     "source": {
       "book": "nuits-agitees-et-dures-journees",
       "page": 95
-    }
+    },
+    "roundShape": "team"
   },
   {
     "id": "arene",

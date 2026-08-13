@@ -90,6 +90,7 @@ describe('Les dominos — départage d’égalité au dé d’unités (NADAJ 16 
         ...(jeu.phases ? { phases: jeu.phases } : {}),
         ...(jeu.scoreThreshold != null ? { scoreThreshold: jeu.scoreThreshold } : {}),
         ...(jeu.campScore ? { score: { player: jeu.campScore, opponent: jeu.campScore } } : {}),
+        ...(jeu.table ? { table: jeu.table } : {}),
       });
     }
   });

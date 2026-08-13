@@ -22,7 +22,9 @@ import {
   findTavernGameById, resolveTavernRound, rollTavernTest, tavernOpposedLog, tavernExtendedLog,
   TAVERN_TEST_DIFFICULTY, type TavernGame, type TavernGameResult,
 } from '../engine/tavernGame';
-import type { TestResult } from '../engine/tests';
+import { resolveOpposed, type TestResult } from '../engine/tests';
+import { isDrunk } from '../engine/drunkenness';
+import { applyOps } from '../engine/ops';
 import { testValue } from '../engine/skills';
 import { effectiveChar } from '../engine/characteristics';
 import { battleRng } from './battleRng';
@@ -38,7 +40,7 @@ import { registerCascadeApplier, rollBatchParticipant, pushStep } from './cascad
 import { combatStakeRef, refLabel } from '../data/index';
 import {
   registerSequence, startSequence, resolveSequenceTie, sequenceCumRound, sequenceDrBonus,
-  sequencePhaseOf, sequenceScoreOf, activeSequence, setSequencePayload, SEQUENCE_PURPOSE,
+  sequencePhaseOf, sequenceScoreOf, sequenceTableRow, activeSequence, setSequencePayload, SEQUENCE_PURPOSE,
   type SequenceBoard, type SequenceCloseCtx, type SequenceParams, type SequenceRound,
   type SequenceState, type SequenceVerdict,
 } from './sequenceCore';
@@ -46,6 +48,7 @@ import type { RNG } from '../engine/dice';
 import { actorIn } from './combatants';
 import { jetSurfaced } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
+import { t } from '../i18n';
 
 /** Adversaire d'une partie : un compagnon du groupe (ses vraies valeurs) ou une valeur ABSTRAITE fixée
  *  par la table (le MJ — le jeu sans MJ n'invente pas de stats de PNJ). */
@@ -129,6 +132,10 @@ export interface TavernPayload {
    *  le leur sur leur fiche (op `gainAdvantage`) ; les figurants n'ont pas de fiche, leur camp le
    *  porte ici — sans quoi une équipe de figurants ne pourrait JAMAIS gagner d'Avantage. */
   advantage?: { player: number; opponent: number };
+  /** TORCHON : l'ORDRE de passage des lanceurs (un tour = un lanceur, l.111), figé à l'ouverture. */
+  throwers?: { id: string; label: string; camp: 'player' | 'opponent'; value?: number }[];
+  /** TORCHON : les POINTS de chaque équipe (l.111-113). */
+  points?: { player: number; opponent: number };
 }
 
 /** Clés de camp de l'accumulateur du socle — le challenger et son vis-à-vis. */
@@ -137,6 +144,9 @@ const CAMP_OPPONENT = 'opponent';
 
 /** Kind de l'étape de CHOIX d'option de Test (Middenball l.121) — une par héros surfacé. */
 const TAVERN_CHOICE_KIND = 'tavern-option';
+
+/** Kind de l'étape de Résistance à l'alcool d'un lancer RATÉ (Torchon l.111). */
+const TAVERN_DRINK_KIND = 'tavern-drink';
 
 /**
  * PARAMÈTRES DE SÉQUENCE d'un jeu — TOUS lus de son entrée de données : aucune valeur de règle n'est
@@ -151,6 +161,7 @@ export function tavernParams(game: TavernGame): SequenceParams {
     ...(game.roundOps ? { rounds: game.roundOps } : {}),
     ...(game.phases ? { phases: game.phases } : {}),
     ...(game.scoreThreshold != null ? { scoreThreshold: game.scoreThreshold } : {}),
+    ...(game.table ? { table: game.table } : {}),
     ...(game.campScore ? { score: { [CAMP_PLAYER]: game.campScore, [CAMP_OPPONENT]: game.campScore } } : {}),
   };
 }
@@ -194,13 +205,14 @@ export function playTavernGame(
 
 /** Applier de la manche : MUET côté conséquence (l'issue est GLOBALE — elle se décide à la clôture,
  *  dans le réducteur du socle) ; ne pousse que la ligne de récit de ce qui est tombé. */
-registerCascadeApplier(TAVERN_ROUND_KIND, (get, _set, step) => {
+registerCascadeApplier(TAVERN_ROUND_KIND, (get, set, step) => {
   const dr = (n: number) => `${n >= 0 ? '+' : ''}${n} DR`;
   if (step.participants) {
     const lines = step.participants.map((row) => {
       const who = actorIn(get(), row.id)?.label ?? row.label ?? row.id;
       return `${who} : ${dr(row.result?.sl ?? 0)}.`;
     });
+    lines.push(...torchonRate(get, set, step.participants));
     return { consequences: freeCons(lines) };
   }
   if (!step.result) return {};
@@ -238,7 +250,14 @@ function tavernRow(get: Get, h: Combatant, game: TavernGame): BatchParticipant {
  * la modale) — c'est la seule grandeur maison, et elle est éditable, jamais figée au code. */
 
 /** UNE OPTION de Test d'une manche (celle que l'entrée déclare, ou le repli du jeu). */
-type TavernOption = { skill?: string; spec?: string; char?: CharKey; difficulty: Difficulty; combatTest?: boolean };
+type TavernOption = { skill?: string; spec?: string; char?: CharKey; difficulty?: Difficulty; combatTest?: boolean };
+
+/** La Difficulté d'une option : la sienne, ou celle du jeu rapide (« Test opposé de Compétence
+ *  Intermédiaire (+0) », l.11) quand l'option n'en nomme pas — un camp qui se contente d'ESQUIVER ne
+ *  porte pas de Difficulté propre. */
+function difficulteOf(opt: TavernOption): Difficulty {
+  return opt.difficulty ?? TAVERN_TEST_DIFFICULTY;
+}
 
 /**
  * L'AVANTAGE d'un camp, en ligne NOMMÉE sur la cible (`LDB 14 l.30` : +10 par point à un Test de
@@ -263,9 +282,11 @@ function avantageSurLaCible(opt: TavernOption, porteur: Combatant | number): Mod
  *  comme pour un héros (l'Avantage est gagné par l'ÉQUIPE, l.121, pas par ses seuls héros). */
 function figurantRow(id: string, label: string, valeur: number, opt: TavernOption, avantage: number): BatchParticipant {
   const surLaCible = avantageSurLaCible(opt, avantage);
+  const difficulty = difficulteOf(opt);
   const row: BatchParticipant = {
-    id, label, difficulty: opt.difficulty, result: null, interactive: false,
-    ...rollStep({ valeur, valeurEtrangere: true, difficulty: opt.difficulty, ...(surLaCible.length ? { surLaCible } : {}) }),
+    id, label, difficulty, result: null, interactive: false,
+    ...(opt.skill ? { skillId: opt.skill } : {}),
+    ...rollStep({ valeur, valeurEtrangere: true, difficulty, ...(surLaCible.length ? { surLaCible } : {}) }),
   };
   return { ...row, result: rollBatchParticipant(row, battleRng()) };
 }
@@ -288,14 +309,15 @@ function equipierRow(get: Get, h: Combatant, game: TavernGame, choix: number | u
   const opt = optionOf(game, choix);
   const test = { ...(opt.skill ? { skill: opt.skill } : {}), ...(opt.spec ? { spec: opt.spec } : {}), ...(opt.char ? { char: opt.char } : {}) };
   const surLaCible = avantageSurLaCible(opt, h);
+  const difficulty = difficulteOf(opt);
   const row: BatchParticipant = {
     id: h.id,
     label: testSkillLabel(test) ?? game.label,
     ...(opt.skill ? { skillId: opt.skill } : {}),
-    difficulty: opt.difficulty,
+    difficulty,
     result: null,
     interactive: true,
-    ...rollStep({ actor: h, test, difficulty: opt.difficulty, ...(surLaCible.length ? { surLaCible } : {}) }),
+    ...rollStep({ actor: h, test, difficulty, ...(surLaCible.length ? { surLaCible } : {}) }),
   };
   if (!cadenceAuto() && jetSurfaced(get(), h)) return row;
   return { ...row, interactive: false, result: rollBatchParticipant(row, battleRng()) };
@@ -307,7 +329,7 @@ function equipierRow(get: Get, h: Combatant, game: TavernGame, choix: number | u
 function equipeBande(get: Get, seq: SequenceState<TavernPayload>): { band: BuiltCascadeStep; teams: { player: string[]; opponent: string[] } } | undefined {
   const p = seq.payload;
   const game = findTavernGameById(p.gameId);
-  if (!game?.team) return undefined;
+  if (game?.roundShape !== 'team' || !game.team) return undefined;
   const heros = equipiers(get);
   if (!heros.length) return undefined;
   const rows: BatchParticipant[] = heros.map((h) => equipierRow(get, h, game, p.choices?.[h.id]));
@@ -318,7 +340,7 @@ function equipeBande(get: Get, seq: SequenceState<TavernPayload>): { band: Built
   // sans elle, vos figurants joueraient sur la valeur de l'ADVERSAIRE.
   for (let i = heros.length; i < game.team.size; i++) {
     const id = `figurant-p-${seq.round}-${i}`;
-    rows.push(figurantRow(id, `Équipier ${i + 1}`, p.allyValue ?? p.opponentValue, optFigurant, p.advantage?.player ?? 0));
+    rows.push(figurantRow(id, t('tavern.equipier', { rang: i + 1 }), p.allyValue ?? p.opponentValue, optFigurant, p.advantage?.player ?? 0));
     mien.push(id);
   }
   for (let i = 0; i < game.team.size; i++) {
@@ -361,6 +383,174 @@ registerCascadeApplier(TAVERN_CHOICE_KIND, (get, set, step) => {
     pushStep(set, monte.band, SEQUENCE_PURPOSE);
   }
   return option ? { consequences: freeCons([option.label]) } : {};
+});
+
+/* ── LE TORCHON TREMPÉ (NADAJ 16 l.109-113) ──────────────────────────────────────────────────────
+ * « Il fait intervenir deux équipes de 12 personnes, placées en deux cercles de 11 joueurs qui dansent
+ * main dans la main autour d'un membre de l'équipe adverse » (l.109) — d'où `team.size` 12 et
+ * `dancers` 11, tous deux en donnée. « lorsque vous balancez le torchon, faites un Test opposé
+ * Projectiles (Lancer) / Esquive d'un joueur choisi aléatoirement parmi les 11 danseurs » (l.111).
+ *
+ * UN TOUR = UN LANCEUR, et « le jeu se termine lorsque tous les joueurs ont lancé la serviette »
+ * (l.111) : la borne de la séquence EST l'effectif des deux camps. L'ORDRE de passage n'est pas dit
+ * par la source ; il est ici l'ordre des camps en alternance — et c'est sans conséquence mesurable :
+ * chaque lancer est indépendant (cible tirée au sort, points additifs, un lancer par personne), donc
+ * aucune décision de jeu n'en dépend. Seuls les lancers des HÉROS ouvrent une fenêtre ; les lancers de
+ * figurants se résolvent sans en montrer aucune. */
+
+/** L'ORDRE de passage, figé à l'ouverture : les héros et les figurants de votre camp, puis ceux d'en
+ *  face, en ALTERNANCE (l.109 : deux équipes qui se font face). */
+function torchonThrowers(get: Get, p: TavernPayload, game: TavernGame): TavernPayload['throwers'] {
+  const taille = game.team?.size ?? 1;
+  const heros = equipiers(get);
+  const mien: NonNullable<TavernPayload['throwers']> = heros.map((h) => ({ id: h.id, label: h.label, camp: 'player' as const }));
+  for (let i = heros.length; i < taille; i++) {
+    mien.push({ id: `figurant-p-${i}`, label: t('tavern.equipier', { rang: i + 1 }), camp: 'player', value: p.allyValue ?? p.opponentValue });
+  }
+  const sien: NonNullable<TavernPayload['throwers']> = [];
+  for (let i = 0; i < taille; i++) {
+    sien.push({ id: `figurant-o-${i}`, label: `${p.opponentName} ${i + 1}`, camp: 'opponent', value: p.opponentValue });
+  }
+  const ordre: NonNullable<TavernPayload['throwers']> = [];
+  for (let i = 0; i < taille; i++) {
+    if (mien[i]) ordre.push(mien[i]);
+    if (sien[i]) ordre.push(sien[i]);
+  }
+  return ordre;
+}
+
+/** FABRIQUE d'un tour de Torchon : le lanceur du rang, et LE DANSEUR tiré au sort dans le cercle d'en
+ *  face (l.111) — les deux dans la MÊME bande, le danseur en témoin (son Esquive est roulée côté
+ *  monde). La comparaison est faite à la clôture, comme toute bande. */
+function torchonRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): SequenceRound<TavernPayload> | undefined {
+  const game = findTavernGameById(seq.payload.gameId);
+  if (game?.roundShape !== 'thrower' || !game.dancers) return undefined;
+  const throwers = seq.payload.throwers?.length ? seq.payload.throwers : torchonThrowers(get, seq.payload, game);
+  const lanceur = throwers?.[seq.round - 1];
+  if (!lanceur) return undefined;
+  const p: TavernPayload = { ...seq.payload, throwers };
+  const test = tavernTestSpec(game);
+  const heros = lanceur.camp === 'player' ? get().party.find((h) => h.id === lanceur.id) : undefined;
+  const lanceurRow: BatchParticipant = heros
+    ? {
+      id: lanceur.id, label: testSkillLabel(test) ?? game.label, ...(test.skill ? { skillId: test.skill } : {}),
+      difficulty: TAVERN_TEST_DIFFICULTY, result: null, interactive: true,
+      ...rollStep({ actor: heros, test, difficulty: TAVERN_TEST_DIFFICULTY }),
+    }
+    : figurantRow(lanceur.id, lanceur.label, lanceur.value ?? p.opponentValue, { difficulty: TAVERN_TEST_DIFFICULTY }, 0);
+  const jouable = !!heros && !cadenceAuto() && jetSurfaced(get(), heros);
+  // Un héros qu'aucun siège ne tient reste monté sur SA fiche (`equipierRow` l'a déjà roulé) : seule
+  // sa rangée devient témoin. Il ne passe jamais par la porte des figurants, qui n'ont pas de fiche.
+  const rows: BatchParticipant[] = [jouable ? lanceurRow : { ...lanceurRow, interactive: false, result: lanceurRow.result ?? rollBatchParticipant(lanceurRow, rng) }];
+  // LE DANSEUR : tiré AU SORT parmi les 11 du cercle d'en face (l.111), il ESQUIVE (témoin). Le RANG
+  // tiré est COSMÉTIQUE, et c'est fidèle : la source ne distingue les 11 danseurs par AUCUN trait —
+  // ni valeur propre, ni effet de cible (l.109-111). Il ne sert donc qu'à nommer la rangée ; c'est
+  // l'Esquive du cercle (valeur du camp) qui s'oppose au lancer. Le jour où une source distinguerait
+  // les danseurs, ce tirage deviendrait mécanique et cette phrase tomberait.
+  const rang = rng.int(1, game.dancers);
+  const camp = lanceur.camp === 'player' ? p.opponentName : t('tavern.campMien');
+  const valeur = lanceur.camp === 'player' ? p.opponentValue : (p.allyValue ?? p.opponentValue);
+  rows.push(figurantRow(`danseur-${seq.round}`, t('tavern.danseur', { rang, camp }), valeur, { skill: 'esquive' }, 0));
+  const band = bandStep({
+    id: `${TAVERN_ROUND_KIND}-${seq.round}`,
+    kind: TAVERN_ROUND_KIND,
+    icon: 'nav/dice',
+    label: `${game.label} — ${lanceur.label} balance le torchon`,
+    stake: combatStakeRef('tavernGame', { values: { jeu: game.label, adversaire: p.opponentName, mise: 'aucune' } }),
+    meta: { gameId: game.id, opponentName: p.opponentName, stakeBrass: 0, round: seq.round },
+  }, rows);
+  if (!band) return undefined;
+  return {
+    title: `${game.label} — lancer ${seq.round}/${throwers!.length}`,
+    icon: 'nav/dice',
+    steps: [band],
+    immediate: !jouable,
+    payload: p,
+  };
+}
+
+/** APPLIER du Test de Résistance à l'alcool (l.111) : l'échec fait perdre 1 point à l'équipe — c'est la
+ *  CLÔTURE qui le compte (elle lit la rangée) ; ici, la seule ligne de récit. L'op `intoxicate` (LDB 09
+ *  l.475) est appliquée sur l'échec : c'est ELLE qui tire le Tableau d'Ivresse au seuil du Bonus
+ *  d'Endurance, et le franchissement est noté dans la charge utile (balayage final, l.113). */
+/**
+ * LE RATÉ d'un lancer de torchon (l.111) : « vous devez descendre une pinte de bière et faire un Test
+ * de Résistance à l'alcool Intermédiaire (+0) ». Un HÉROS tenu par un siège reçoit son étape, APPENDÉE
+ * à la fenêtre du lancer (patron du choix d'option) ; tout autre lanceur (figurant, héros sans siège)
+ * boit d'office, sans fenêtre. Rendu : les lignes de récit du chemin d'office (vide sinon).
+ */
+function torchonRate(get: Get, set: Set, rows: readonly BatchParticipant[]): string[] {
+  const seq = activeSequence<TavernPayload>(get);
+  const p = seq?.payload;
+  const game = p ? findTavernGameById(p.gameId) : undefined;
+  if (!seq || !p || game?.roundShape !== 'thrower') return [];
+  const lanceur = p.throwers?.[seq.round - 1];
+  const jet = rows.find((r) => r.id === lanceur?.id);
+  const danseur = rows.find((r) => r.id.startsWith('danseur-'));
+  if (!lanceur || !jet?.result || !danseur?.result) return [];
+  const asTest = (r: BatchParticipant): TestResult => ({
+    roll: r.result!.roll, target: r.result!.target, base: r.base,
+    success: r.result!.roll <= r.result!.target, sl: r.result!.sl, isDouble: false,
+  });
+  if (resolveOpposed(asTest(jet), asTest(danseur)).attackerWins) return [];
+  const heros = actorIn(get(), lanceur.id);
+  const etape = heros && !cadenceAuto() && jetSurfaced(get(), heros)
+    ? monoStep({
+      id: `${TAVERN_DRINK_KIND}-${seq.round}`,
+      kind: TAVERN_DRINK_KIND,
+      icon: 'nav/dice',
+      label: composeRollLabel(heros, 'Descendre une pinte', { skill: 'resistance-a-l-alcool' }),
+      actor: heros,
+      difficulty: TAVERN_TEST_DIFFICULTY, // « Résistance à l'alcool Intermédiaire (+0) » (l.111)
+      ligne: { test: { skill: 'resistance-a-l-alcool' } },
+      stake: combatStakeRef('tavernGame', { values: { jeu: game.label, adversaire: p.opponentName, mise: 'aucune' } }),
+      meta: { camp: lanceur.camp, who: lanceur.label },
+    })
+    : undefined;
+  if (etape) {
+    pushStep(set, etape, SEQUENCE_PURPOSE);
+    return [];
+  }
+  // Aucun siège : le Test se joue d'office, monté par le MÊME monteur que partout — sur la FICHE du
+  // héros quand il y en a une (chemin acteur, patron `equipierRow`), en valeur de table pour un
+  // figurant, qui n'a pas de fiche. Jamais un jet forgé à la main.
+  const id = `${TAVERN_DRINK_KIND}-${seq.round}`;
+  const test = { skill: 'resistance-a-l-alcool' };
+  const pinte: BatchParticipant = heros
+    ? {
+      id, label: testSkillLabel(test) ?? lanceur.label, skillId: test.skill,
+      difficulty: TAVERN_TEST_DIFFICULTY, result: null, interactive: false,
+      ...rollStep({ actor: heros, test, difficulty: TAVERN_TEST_DIFFICULTY }),
+    }
+    : figurantRow(id, lanceur.label, lanceur.value ?? p.opponentValue, test, 0);
+  const jete = pinte.result ?? rollBatchParticipant(pinte, battleRng());
+  return torchonBoit(get, set, lanceur.id, lanceur.camp, lanceur.label, jete.success);
+}
+
+function torchonBoit(get: Get, set: Set, lanceurId: string, camp: 'player' | 'opponent', label: string, success: boolean): string[] {
+  const seq = activeSequence<TavernPayload>(get);
+  if (!seq) return [];
+  if (success) return [t('tavern.torchonVide', { who: label })];
+  const p = seq.payload;
+  const points = { player: p.points?.player ?? 0, opponent: p.points?.opponent ?? 0 };
+  points[camp] -= 1; // « votre équipe perd 1 point » (l.111)
+  const acteur = actorIn(get(), lanceurId);
+  const lignes: string[] = [t('tavern.torchonPot', { who: label })];
+  if (acteur) {
+    // L'op `intoxicate` (LDB 09 l.475) porte TOUT : l'échec de Résistance, la pénalité, et le tirage
+    // du Tableau d'Ivresse au seuil du Bonus d'Endurance — qui laisse sa marque sur la FICHE, où le
+    // balayage final la lira.
+    lignes.push(...applyOps(acteur, [{ op: 'intoxicate' }], { rng: battleRng() }));
+  }
+  setSequencePayload(get, set, { ...p, points });
+  return lignes;
+}
+
+registerCascadeApplier(TAVERN_DRINK_KIND, (get, set, step) => {
+  const meta = step.meta as { camp?: 'player' | 'opponent'; who?: string } | undefined;
+  if (!step.result || !step.actorId || !meta?.camp) return {};
+  const label = actorIn(get(), step.actorId)?.label ?? meta.who ?? step.actorId;
+  return { consequences: freeCons(torchonBoit(get, set, step.actorId, meta.camp, label, step.result.success)) };
 });
 
 /** FABRIQUE d'un TOUR d'équipe : les CHOIX d'option des héros surfacés (la bande suivra, appendée par
@@ -408,7 +598,8 @@ function tavernRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Seq
   const game = findTavernGameById(p.gameId);
   const challenger = get().party.find((h) => h.id === p.challengerId);
   if (!game || !challenger) return undefined;
-  if (game.team) return tavernTeamRound(get, seq);
+  if (game.roundShape === 'thrower') return torchonRound(get, seq, rng);
+  if (game.roundShape === 'team') return tavernTeamRound(get, seq);
   const opponentHero = p.opponentId ? get().party.find((h) => h.id === p.opponentId) : undefined;
   const title = `${game.label} — ${challenger.label} contre ${p.opponentName}`;
   const stake = combatStakeRef('tavernGame', {
@@ -492,6 +683,63 @@ function tavernSides(ctx: SequenceCloseCtx<TavernPayload>): {
 }
 
 /**
+ * RÉDUCTEUR DE CLÔTURE d'un lancer de TORCHON (`NADAJ 16 l.111-113` — la règle vit à l'Atlas et dans
+ * la `desc` de l'entrée, ici ce qu'en fait le code) :
+ *  · Test OPPOSÉ lanceur / danseur, barème de points par la TABLE déclarée en donnée, lue par le socle
+ *    (`sequenceTableRow`, famille 2) sur le DR NET de l'opposition ;
+ *  · lancer manqué : étape de Résistance à l'alcool APPENDÉE à la même fenêtre pour un héros, résolue
+ *    d'office sinon ; son échec coûte 1 point à l'équipe (compté par l'applier de cette étape) ;
+ *  · dernier lanceur : BALAYAGE final sur les lanceurs de CHAQUE camp, −1 point par lanceur qui n'a
+ *    pas roulé sur le Tableau Ivre de la partie.
+ */
+function torchonClose(ctx: SequenceCloseCtx<TavernPayload>): SequenceVerdict<TavernPayload> {
+  const { get, seq, done } = ctx;
+  const p = seq.payload;
+  const band = done.participants.find((s) => s.kind === TAVERN_ROUND_KIND);
+  const lanceur = p.throwers?.[seq.round - 1];
+  if (!band?.participants || !lanceur) return { go: 'end', outcome: 'tie' };
+  const jet = band.participants.find((r) => r.id === lanceur.id);
+  const danseur = band.participants.find((r) => r.id.startsWith('danseur-'));
+  const points = { player: p.points?.player ?? 0, opponent: p.points?.opponent ?? 0 };
+  const log: string[] = [];
+  const asTest = (r: BatchParticipant): TestResult => ({
+    roll: r.result!.roll, target: r.result!.target, base: r.base,
+    success: r.result!.roll <= r.result!.target, sl: r.result!.sl, isDouble: false,
+  });
+  if (jet?.result && danseur?.result) {
+    const opp = resolveOpposed(asTest(jet), asTest(danseur));
+    if (opp.attackerWins) {
+      const ligne = sequenceTableRow(seq.params, opp.netSL);
+      const gain = ligne?.points ?? 0;
+      points[lanceur.camp] += gain;
+      log.push(t('tavern.torchonTouche', { who: lanceur.label, ou: ligne?.label ?? '', points: gain, s: gain > 1 ? 's' : '', dr: opp.netSL }));
+    } else {
+      log.push(t('tavern.torchonManque', { who: lanceur.label }));
+    }
+  }
+  // La perte de point du pot non vidé (l.111) est comptée par l'applier du Test d'alcool, qui la
+  // pose dans la charge utile : elle est donc DÉJÀ dans `p.points` quand la clôture les relit.
+  const dernier = seq.round >= (p.throwers?.length ?? 0);
+  const payload: TavernPayload = { ...p, points, last: { playerSL: points.player, opponentSL: points.opponent } };
+  if (!dernier) return { go: 'continue', payload, log };
+
+  // BALAYAGE FINAL (`NADAJ 16 l.111`) : le critère porte sur le jet du Tableau d'Ivresse, sans borne
+  // de partie — c'est donc l'ÉTAT du personnage qui répond (`isDrunk`, `engine/drunkenness` : un
+  // résultat du Tableau a été tiré), y compris pour un lanceur arrivé ivre à la taverne. Un figurant
+  // n'a pas de fiche : il n'a jamais bu, il compte — pour les DEUX camps (symétrie).
+  const sobres = { player: 0, opponent: 0 };
+  for (const lanceurDuBalayage of p.throwers ?? []) {
+    const fiche = actorIn(get(), lanceurDuBalayage.id);
+    if (!fiche || !isDrunk(fiche)) sobres[lanceurDuBalayage.camp] += 1;
+  }
+  points.player -= sobres.player;
+  points.opponent -= sobres.opponent;
+  log.push(t('tavern.torchonSobres', { mien: sobres.player, sien: sobres.opponent }));
+  const issue: TavernGameResult['winner'] = points.player > points.opponent ? 'player' : points.opponent > points.player ? 'opponent' : 'tie';
+  return { go: 'end', outcome: issue, payload: { ...payload, points, last: { playerSL: points.player, opponentSL: points.opponent } }, log };
+}
+
+/**
  * RÉDUCTEUR DE CLÔTURE d'un TOUR D'ÉQUIPE (Middenball NADAJ 16 l.121, verbatim) : « On additionne le
  * nombre de DR obtenus pour chaque équipe. L'équipe qui obtient le total le plus élevé gagne +1
  * Avantage pour le tour suivant […], et marquera un but si son total est de +25 ou plus. Une partie
@@ -556,7 +804,8 @@ function tavernClose(ctx: SequenceCloseCtx<TavernPayload>): SequenceVerdict<Tave
   const { seq } = ctx;
   const p = seq.payload;
   const game = findTavernGameById(p.gameId);
-  if (game?.team) return tavernTeamClose(ctx, game);
+  if (game?.roundShape === 'thrower') return torchonClose(ctx);
+  if (game?.roundShape === 'team') return tavernTeamClose(ctx, game);
   const sides = tavernSides(ctx);
   if (!game || !sides) return { go: 'end', outcome: 'tie' };
 
@@ -601,9 +850,16 @@ function tavernSettle(get: Get, set: Set, seq: SequenceState<TavernPayload>, out
   if (!game || !challenger) return;
   const winner: TavernGameResult['winner'] = outcome === 'player' || outcome === 'opponent' ? outcome : 'tie';
   const rounds = Math.max(1, seq.round);
+  // TORCHON (l.111-113) : ce qui se compte, ce sont les POINTS d'équipe — jamais des DR ni des buts.
+  if (game.roundShape === 'thrower') {
+    const pts = p.points ?? { player: 0, opponent: 0 };
+    finalizeTavernGame(get, set, game, challenger, p.opponentName, winner, pts.player, pts.opponent, rounds, 0,
+      t('tavern.torchonFinal', { mien: pts.player, sien: pts.opponent, lancers: rounds }));
+    return;
+  }
   // JEU D'ÉQUIPE : ce qui se dit à la fin, ce sont les BUTS (l.121) — la somme de DR n'était que le
   // moyen de les marquer. Le score affiché est donc le compte de buts de chaque camp.
-  if (game.team) {
+  if (game.roundShape === 'team') {
     const buts = p.goals ?? { player: 0, opponent: 0 };
     finalizeTavernGame(get, set, game, challenger, p.opponentName, winner, buts.player, buts.opponent, rounds, 0,
       `${game.label} : ${buts.player} but${buts.player > 1 ? 's' : ''} contre ${buts.opponent} en ${rounds} tour${rounds > 1 ? 's' : ''}.`);
@@ -628,12 +884,24 @@ function tavernBoard(get: Get, seq: SequenceState<TavernPayload>): SequenceBoard
   if (!game || !challenger) return undefined;
   const ph = sequencePhaseOf(seq.params, seq.round);
   const phase = ph.total > 0 ? { rounds: ph.total, phase: `${ph.phase}/${ph.count}` } : {};
-  if (game.team) {
-    const somme = (n: number | undefined): string => `${n ?? 0} DR au dernier tour`;
+  // TORCHON : le score d'un camp EST son total de points (l.111) — aucun cumul, aucune cible.
+  if (game.roundShape === 'thrower') {
     return {
       title: game.label,
       camps: [
-        { id: CAMP_PLAYER, label: 'Votre équipe', score: p.goals?.player ?? 0, note: somme(p.last?.playerSL) },
+        { id: CAMP_PLAYER, label: t('tavern.campMien'), score: p.points?.player ?? 0 },
+        { id: CAMP_OPPONENT, label: p.opponentName, score: p.points?.opponent ?? 0 },
+      ],
+      round: seq.round,
+      ...(p.throwers?.length ? { rounds: p.throwers.length } : {}),
+    };
+  }
+  if (game.roundShape === 'team') {
+    const somme = (n: number | undefined): string => t('tavern.sommeTour', { n: n ?? 0 });
+    return {
+      title: game.label,
+      camps: [
+        { id: CAMP_PLAYER, label: t('tavern.campMien'), score: p.goals?.player ?? 0, note: somme(p.last?.playerSL) },
         { id: CAMP_OPPONENT, label: p.opponentName, score: p.goals?.opponent ?? 0, note: somme(p.last?.opponentSL) },
       ],
       round: seq.round,

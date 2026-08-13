@@ -11,7 +11,7 @@
 import { RNG, defaultRNG } from './dice';
 import { rollTest, resolveOpposed, TestResult } from './tests';
 import { Difficulty, CharKey } from './types';
-import type { SequencePhases, SequenceRoundOps } from './sequenceVocab';
+import type { SequencePhases, SequenceRoundOps, SequenceTableRow } from './sequenceVocab';
 import tavernGamesJson from '../data/tavernGames.json';
 
 export interface TavernGame {
@@ -51,6 +51,11 @@ export interface TavernGame {
    *  2026-08-13 : « chaque camp complète à 11 avec des figurants PNJ (patrons de taverne, valeur
    *  simple éditable) — les héros portent leurs jets, les figurants roulent en témoins auto »). */
   team?: { size: number };
+  /** FORME d'un tour — la CAPACITÉ que le jeu déclare, jamais déduite d'un effectif :
+   *  · `team` : tous les joueurs testent le même tour, on somme par équipe (Middenball l.121) ;
+   *  · `thrower` : un tour = UN lanceur, chacun le sien jusqu'au dernier (Torchon l.111).
+   *  Absente : une manche opposée ordinaire (variante rapide, l.9-11). */
+  roundShape?: 'team' | 'thrower';
   /** OPTIONS de Test d'une manche quand la règle en offre plusieurs (Middenball l.121 : « un Test de
    *  Corps à corps (Bagarre) Accessible (+20) **ou** d'Athlétisme Intermédiaire (+0) »). Le RAW ne dit
    *  pas QUI choisit : le choix va au JOUEUR (credo « pas de MJ », jamais un défaut silencieux). La
@@ -69,6 +74,12 @@ export interface TavernGame {
   scoreThreshold?: number;
   /** PHASES de la partie (Middenball l.121 : « deux mi-temps de trois tours chacune »). */
   phases?: SequencePhases;
+  /** Effectif du CERCLE qui esquive (Torchon l.109 : « deux cercles de 11 joueurs qui dansent main
+   *  dans la main autour d'un membre de l'équipe adverse ») — la cible d'un lancer est tirée AU SORT
+   *  parmi eux (l.111). */
+  dancers?: number;
+  /** TABLE de score par plage de DR (Torchon l.111 : jambe / corps ≥3 DR / tête ≥6 DR). */
+  table?: SequenceTableRow[];
   /** Variante de lecture du score (Fléchettes = unités/dizaines/×10) — documentaire ; le moteur rapide lit
    *  le DR (l.11). */
   read?: 'sl' | 'units-tens';

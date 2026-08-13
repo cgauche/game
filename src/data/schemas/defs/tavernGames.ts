@@ -44,6 +44,9 @@ export const schema = z.array(
     /** Effectif RAW d'un camp d'un jeu d'ÉQUIPE (Middenball l.119 : 11 par équipe) — le groupe le
      *  complète de figurants (`src/state/tavernFlow.ts`). */
     team: z.strictObject({ size: z.number() }).optional(),
+    /** FORME d'un tour (capacité DÉCLARÉE, jamais déduite d'un effectif) : `team` = tous testent et on
+     *  somme par équipe (Middenball l.121) ; `thrower` = un tour, un lanceur (Torchon l.111). */
+    roundShape: z.enum(['team', 'thrower']).optional(),
     /** Options de Test d'une manche (Middenball l.121 : Bagarre (+20) OU Athlétisme (+0)) — le choix
      *  va au joueur ; la 1ʳᵉ option est celle que suivent les porteurs sans siège et les figurants. */
     options: z.array(z.strictObject({
@@ -61,6 +64,12 @@ export const schema = z.array(
     scoreThreshold: z.number().optional(),
     /** Mi-temps (Middenball l.121 : deux mi-temps de trois tours). */
     phases: z.strictObject({ count: z.number(), rounds: z.number() }).optional(),
+    /** Effectif du cercle qui esquive (Torchon l.109-111 : 11 danseurs, cible tirée au sort). */
+    dancers: z.number().optional(),
+    /** Table de score par plage de DR (Torchon l.111) — lue par `findTableEntry` via le socle. */
+    table: z.array(z.strictObject({
+      min: z.number(), max: z.number(), points: z.number(), label: z.string(),
+    })).optional(),
     read: z.enum(['sl', 'units-tens']).optional(),
     stake: z.string().optional(),
     source: sourceRefSchema,

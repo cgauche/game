@@ -821,4 +821,15 @@ export const fr = {
   'pursuit.caught': 'Rattrapés ! Les poursuivants fondent sur le groupe (LDB 15 l.94).',
   'pursuit.caughtPrey': 'Le groupe rejoint sa proie (LDB 15 l.94).',
   'seq.borne': 'La séquence s’arrête sur sa borne de {max} manches.',
+  // Torchon trempé (NADAJ 16 l.111-113).
+  'tavern.torchonPot': '{who} n’a pas vidé le pot à temps : son équipe perd 1 point.',
+  'tavern.torchonSobres': 'Trop sobres : {mien} de votre équipe, {sien} en face — autant de points perdus.',
+  'tavern.torchonFinal': '{mien} points contre {sien} en {lancers} lancers.',
+  'tavern.torchonTouche': '{who} touche {ou} : {points} point{s} ({dr} DR).',
+  'tavern.torchonManque': '{who} manque son coup et doit descendre une pinte.',
+  'tavern.torchonVide': '{who} vide son pot sans broncher.',
+  'tavern.danseur': 'Danseur {rang} ({camp})',
+  'tavern.equipier': 'Équipier {rang}',
+  'tavern.campMien': 'Votre équipe',
+  'tavern.sommeTour': '{n} DR au dernier tour',
 } as const;
