@@ -692,6 +692,43 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect(suspendues.map((c) => c.purpose)).toEqual(['sequence']);
   });
 
+  /**
+   * #1279 S1 — MIGRATIONS[22] : le mode ÉTENDU des jeux de taverne (Bras de fer, NADAJ 16 l.34) quitte
+   * son chemin d'applier (`tavern-game`, qui s'auto-enchaînait en portant ses cumuls dans le `meta` de
+   * l'étape) pour le socle de séquence. Une save v22 prise EN PLEINE PARTIE porte donc une étape dont
+   * plus aucun applier ne lit le résultat : son jet se lancerait, la cascade avancerait, et la partie ne
+   * se dénouerait jamais. Le contrat livré est une INVALIDATION EXPLICITE : la partie en vol est
+   * retirée (ses cumuls sont FAUX au regard du Test étendu, LDB 12 l.174 — ils ont été calculés en
+   * planchant chaque manche), la sauvegarde, elle, se recharge intacte.
+   */
+  it('MIGRATIONS[22] (#1279 S1) : la partie de Bras de fer EN VOL du chemin legacy est retirée, la save se recharge', () => {
+    const raw = JSON.parse(readFileSync(new URL('v22-bras-de-fer-legacy.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const brut = (raw as { data: Record<string, unknown> }).data;
+    const etape = (brut.pendingCascade as { participants: { kind: string; meta: Record<string, unknown> }[] }).participants[0];
+    expect(etape.kind, 'la fixture v22 porte bien l’étape du chemin legacy').toBe('tavern-game');
+    expect(etape.meta.cumPlayer, '…et ses cumuls calculés au plancher PAR MANCHE').toBeGreaterThan(0);
+
+    const migrated = migrateSave(raw)!;
+    expect(migrated.version).toBe(SAVE_VERSION);
+    const data = migrated.data as Record<string, unknown>;
+    expect(data.pendingCascade, 'aucune étape sans applier ne survit').toBeNull();
+    expect(data.tavernGames, 'et la modale de jeu ne reste pas ouverte sur une partie fantôme').toBeNull();
+    // La save se recharge : c'est la PARTIE qui est perdue, jamais la sauvegarde.
+    expect(saveToSlot(1, migrated)).toBe(true);
+    expect(useGame.getState().loadGame(1)).toBe(true);
+    expect(useGame.getState().party.length).toBeGreaterThan(0);
+    expect(useGame.getState().pendingCascade).toBeNull();
+  });
+
+  /** L'autre moitié du même geste : une partie en mode OPPOSÉ, elle, vivait DÉJÀ dans le slot de
+   *  séquence — seule sa définition change de nom (une seule sert désormais les deux régimes). */
+  it('MIGRATIONS[22] (#1279 S1) : `sequence.def` « tavern-opposed » devient « tavern »', () => {
+    const raw = JSON.parse(readFileSync(new URL('v22-bras-de-fer-legacy.json', FIXTURES_DIR), 'utf-8')) as { version: number; data: Record<string, unknown> };
+    const v22 = { ...raw, data: { ...raw.data, pendingCascade: null, sequence: { def: 'tavern-opposed', round: 1, cum: {}, params: {}, payload: {} } } };
+    const migrated = migrateSave(v22)!;
+    expect((migrated.data as { sequence: { def: string } }).sequence.def).toBe('tavern');
+  });
+
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {
     for (let v = 1; v < SAVE_VERSION; v++) {
       expect(MIGRATIONS[v], `MIGRATIONS[${v}] manquante — un bump de SAVE_VERSION exige son migrateur`).toBeTypeOf('function');

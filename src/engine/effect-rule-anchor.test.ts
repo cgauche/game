@@ -161,6 +161,14 @@ const BASELINE: string[] = [
   "state/seaVoyageFlow.ts | [ { op: 'skillDRBonus', skill: 'focalisation', bonus: 2 }, { op: 'skillDRBonus', skill: 'guerison', bonus: 2 }, { op: 'skillDRBonus', skill: 'resistance', bonus: 2 }, ] | { label: event.label, rng, defaultUntilTime: until }", // bonus de DR octroyés par un événement de bord
   'state/travelFlow.ts | r.entry.occupantOps | { rng: battleRng() }', // ops subies par l'occupant d'une rencontre de voyage
   'state/travelPostes.ts | [op] | ', // Exténué du Test de résistance de traversée (État : ancré par son condId)
+  // #1279 S1 — EFFETS PAR MANCHE d'une séquence : les ops viennent de la DONNÉE de l'entrée qui joue
+  // (`SequenceParams.rounds`), pas du socle, qui ne peut donc pas les ancrer lui-même. Aujourd'hui
+  // seule la taverne en déclare (+1 Avantage au vainqueur de manche, +1 Exténué d'attrition — NADAJ 16
+  // l.34-35) : aucune ne pose d'`ActiveEffect`, et l'État est ancré par son `condId`. L'ancrage propre
+  // est une DÉCLARATION à ajouter à l'entrée de données (les jeux de taverne n'ont pas d'entrée Codex
+  // à viser à ce jour) — les deux lignes s'ôtent d'ici le jour où elle existe.
+  'state/sequenceCore.ts | [...decl.winner] | { caster: c }', // ops de manche au vainqueur de la manche
+  'state/sequenceCore.ts | [...decl.attrition] | { caster: c }', // ops d'attrition d'intervalle
   'state/zones.ts | z.onCross | { caster: resolveCaster(z.casterId), rng, label: z.label }', // ops de franchissement d'une zone d'effet
   'state/zones.ts | z.perRound | { caster, rng, label: z.label }', // ops récurrentes d'une zone d'effet
 ];

@@ -158,7 +158,6 @@ const BASELINE_REQ: Record<string, number> = {
   // `openWorldTest` TRANSMETTENT désormais le `stake` de leur appelant (donc soldées) ; la dernière
   // est la forme qui n'a pas encore de spec porteuse.
   'state/rollSeam.ts': 1,
-  'state/tavernFlow.ts': 1, // jeux de taverne (NADJ) : fiche de règle à curer
   // SONDE DE SURFACE des Activités en mer (`seaActivitiesConfirm`, `resolveSurface`) : la `RollRequest`
   // ne décrit aucun jet propre — elle route les étapes DÉJÀ mintées vers M ou I. L'enjeu de ces étapes
   // est l'Activité choisie, énoncée par son panneau (même arbitrage que la baseline d'étapes).

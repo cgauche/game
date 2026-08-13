@@ -33,6 +33,12 @@ import {
 } from './sequenceContract';
 import { runCascadeImmediate } from './cascade';
 import { extendedTestStep } from '../engine/tests';
+import { findTableEntry } from '../engine/tables';
+import { bonus, charBonus } from '../engine/characteristics';
+import { applyOps } from '../engine/ops';
+import type { Combatant } from '../engine/types';
+import type { SequenceBoard, SequenceRoundActors, SequenceTableRow } from './sequenceContract';
+import { actorIn } from './combatants';
 import { battleRng } from './battleRng';
 import { t } from '../i18n';
 
@@ -43,6 +49,7 @@ export {
 } from './sequenceContract';
 export type {
   SequenceDef, SequenceParams, SequenceState, SequenceRound, SequenceVerdict, SequenceCloseCtx,
+  SequenceTableRow, SequenceRoundOps, SequencePhases, SequenceBoard, SequenceBoardCamp, SequenceRoundActors,
 } from './sequenceContract';
 
 /** Registre des définitions, peuplé par les modules de DOMAINE à leur chargement. */
@@ -61,30 +68,35 @@ export function sequenceDefOf(id: string): SequenceDef<never> | undefined {
 /* ── FAMILLE (3) : FORMULE DE SCORE PAR CAMP ─────────────────────────────────────────────────────
  * Un camp rend UN nombre à partir des DR de ses participants. Poursuite (LDB 15 l.93) : les poursuivis
  * comptent leur DR le plus BAS, les poursuivants le plus HAUT. Middenball (NADAJ 16 l.121) : la SOMME
- * de l'équipe. La formule est un id en donnée (`params.score`), jamais un `if` par jeu. */
+ * de l'équipe. La formule est NOMMÉE en donnée (`params.score`), jamais un `if` par jeu.
+ *
+ * REGISTRE OUVERT, patron `registerCascadeApplier` (`state/cascade.ts`) : la table naît VIDE et se
+ * peuple par sa porte d'enregistrement — ce qu'on y lit est le nom d'une FORMULE (un rôle), jamais
+ * l'identité d'une entrée de catalogue (garde `registry-id-branch`, doctrine #842). */
 export type SequenceScore = (values: readonly number[]) => number;
 
-const sequenceScores: Record<string, SequenceScore> = {
-  min: (v) => (v.length ? Math.min(...v) : 0),
-  max: (v) => (v.length ? Math.max(...v) : 0),
-  sum: (v) => v.reduce((n, x) => n + x, 0),
-  first: (v) => v[0] ?? 0,
-};
+const sequenceScores: Record<string, SequenceScore> = {};
 
-/** Enregistre (ou remplace) une formule de score de camp. */
-export function registerSequenceScore(id: string, fn: SequenceScore): void {
-  sequenceScores[id] = fn;
+/** Enregistre (ou remplace) une formule de score de camp, sous le nom que la donnée emploiera. */
+export function registerSequenceScore(formule: string, fn: SequenceScore): void {
+  sequenceScores[formule] = fn;
 }
 
-/** Applique la formule de score du camp — id inconnu : `sum` (aucun camp ne perd son score). */
-export function sequenceScoreOf(id: string | undefined, values: readonly number[]): number {
-  const fn = (id ? sequenceScores[id] : undefined) ?? sequenceScores.sum;
+registerSequenceScore('min', (v) => (v.length ? Math.min(...v) : 0));
+registerSequenceScore('max', (v) => (v.length ? Math.max(...v) : 0));
+registerSequenceScore('sum', (v) => v.reduce((n, x) => n + x, 0));
+registerSequenceScore('first', (v) => v[0] ?? 0);
+
+/** Applique la formule de score du camp — formule inconnue : `sum` (aucun camp ne perd son score). */
+export function sequenceScoreOf(formule: string | undefined, values: readonly number[]): number {
+  const fn = (formule ? sequenceScores[formule] : undefined) ?? sequenceScores.sum;
   return fn(values);
 }
 
 /* ── FAMILLE (1bis) : DÉPARTAGE D'ÉGALITÉ DÉCLARÉ ────────────────────────────────────────────────
  * Deux camps à égalité : ce que le jeu en fait est un PARAMÈTRE (`params.tieBreak`), résolu par un
- * réducteur enregistré. `units-lowest` = Dominos (NADAJ 16 l.107) ; `nul` = Boules (l.57). */
+ * réducteur enregistré. `units-lowest` = Dominos (NADAJ 16 l.107) ; `nul` = Boules (l.57). MÊME
+ * registre ouvert que les formules de score : ce qui indexe est le nom d'un DÉPARTAGE, pas un id. */
 export interface SequenceTieSide {
   /** Le d100 obtenu — son chiffre des unités est le « dé d'unités » du départage. */
   roll: number;
@@ -92,26 +104,26 @@ export interface SequenceTieSide {
 }
 export type SequenceTieBreak = (a: SequenceTieSide, b: SequenceTieSide) => 'a' | 'b' | 'tie';
 
-const sequenceTieBreaks: Record<string, SequenceTieBreak> = {
-  /** L'égalité reste une égalité. */
-  nul: () => 'tie',
-  /** « les joueurs comparent le résultat de leur dé d'unités pour ce Test. Celui qui a le nombre le
-   *  plus bas gagne » (NADAJ 16 l.107). Le chiffre des unités d'un d100 : 100 → 0. */
-  'units-lowest': (a, b) => {
-    const ua = a.roll % 10;
-    const ub = b.roll % 10;
-    return ua < ub ? 'a' : ub < ua ? 'b' : 'tie';
-  },
-};
+const sequenceTieBreaks: Record<string, SequenceTieBreak> = {};
 
-/** Enregistre (ou remplace) un départage d'égalité. */
-export function registerSequenceTieBreak(id: string, fn: SequenceTieBreak): void {
-  sequenceTieBreaks[id] = fn;
+/** Enregistre (ou remplace) un départage d'égalité, sous le nom que la donnée emploiera. */
+export function registerSequenceTieBreak(departage: string, fn: SequenceTieBreak): void {
+  sequenceTieBreaks[departage] = fn;
 }
 
-/** Départage une égalité selon l'id DÉCLARÉ. Aucun id (ou id inconnu) : l'égalité reste. */
-export function resolveSequenceTie(id: string | undefined, a: SequenceTieSide, b: SequenceTieSide): 'a' | 'b' | 'tie' {
-  const fn = id ? sequenceTieBreaks[id] : undefined;
+/** L'égalité reste une égalité. */
+registerSequenceTieBreak('nul', () => 'tie');
+/** « les joueurs comparent le résultat de leur dé d'unités pour ce Test. Celui qui a le nombre le
+ *  plus bas gagne » (NADAJ 16 l.107). Le chiffre des unités d'un d100 : 100 → 0. */
+registerSequenceTieBreak('units-lowest', (a, b) => {
+  const ua = a.roll % 10;
+  const ub = b.roll % 10;
+  return ua < ub ? 'a' : ub < ua ? 'b' : 'tie';
+});
+
+/** Départage une égalité selon le nom DÉCLARÉ. Aucun (ou inconnu) : l'égalité reste. */
+export function resolveSequenceTie(departage: string | undefined, a: SequenceTieSide, b: SequenceTieSide): 'a' | 'b' | 'tie' {
+  const fn = departage ? sequenceTieBreaks[departage] : undefined;
   return fn ? fn(a, b) : 'tie';
 }
 
@@ -143,11 +155,116 @@ export function sequenceCumRound<P>(
   return { cum, done };
 }
 
+/* ── FAMILLE (2) : TABLE DE SCORE PAR PLAGE DE DR ────────────────────────────────────────────────
+ * Le foyer des tables est la DONNÉE (`params.table`) ; la lecture est la primitive PARTAGÉE du
+ * dépôt (`findTableEntry`, `engine/tables.ts`) — aucun jeu ne réécrit un `find` par fourchette. */
+
+/** L'entrée de table couvrant ce DR, ou `undefined` si la séquence n'en déclare aucune. */
+export function sequenceTableRow(params: SequenceParams, sl: number): SequenceTableRow | undefined {
+  const table = params.table;
+  return table?.length ? findTableEntry([...table], sl) : undefined;
+}
+
+/* ── FAMILLE (3bis) : BONUS DE CARACTÉRISTIQUE AJOUTÉ AU DR ──────────────────────────────────────*/
+
+/** Bonus de Caractéristique DÉCLARÉ (`params.drBonus`) d'un porteur, 0 sans déclaration. Un camp
+ *  ABSTRAIT n'a pas de Combatant : son Bonus se lit sur la valeur nue que la table lui donne
+ *  (chiffre des dizaines, `engine/characteristics.bonus`). */
+export function sequenceDrBonus(params: SequenceParams, actor: Combatant | undefined, valeurNue?: number): number {
+  if (!params.drBonus) return 0;
+  return actor ? charBonus(actor.characteristics, params.drBonus) : bonus(valeurNue ?? 0);
+}
+
+/* ── FAMILLE (4) : EFFETS PAR MANCHE ─────────────────────────────────────────────────────────────
+ * Le socle DÉCLENCHE ce que la donnée DÉCLARE (`params.rounds`), `applyOps` exécute : aucune op
+ * n'est écrite ici, aucun jeu n'est nommé. */
+
+/** Intervalle d'attrition EFFECTIF pour un porteur (nombre fixe, ou son Bonus de Caractéristique) —
+ *  0 (ou moins) = aucune attrition possible pour lui. */
+export function sequenceAttritionEvery(params: SequenceParams, actor: Combatant | undefined): number {
+  const every = params.rounds?.attritionEvery;
+  if (every == null) return 0;
+  if (typeof every === 'number') return every;
+  return actor ? charBonus(actor.characteristics, every.charBonus) : 0;
+}
+
+/**
+ * Applique les ops DÉCLARÉES d'une manche : `winner` aux vainqueurs de la manche, `attrition` à tous
+ * les porteurs dont l'intervalle échoit à cette manche. Les porteurs sont NOMMÉS PAR ID (résolus ici,
+ * `actorIn`) : c'est le socle qui déclenche, le réducteur du domaine reste PUR. Rend les lignes.
+ *
+ * `conclut` = la manche a CONCLU la séquence. L'ATTRITION ne s'y applique pas : elle est le prix des
+ * manches qui PASSENT sans que la partie se décide (« Pour chaque Bonus d'Endurance tours qui passent
+ * sans que personne n'ait gagné », NADAJ 16 l.35) — la manche qui donne un vainqueur n'est pas de
+ * celles-là. C'est un invariant de la FAMILLE, tenu ICI : aucun client n'a à s'en souvenir. Les ops de
+ * `winner`, elles, tombent aussi sur la manche conclusive (le vainqueur du tour reste le vainqueur du
+ * tour, l.34).
+ */
+export function sequenceRoundOps<P>(
+  get: Get,
+  seq: SequenceState<P>,
+  round: number,
+  targets: SequenceRoundActors,
+  conclut = false,
+): string[] {
+  const decl = seq.params.rounds;
+  if (!decl) return [];
+  const porteur = (id: string): Combatant | undefined => actorIn(get(), id);
+  const lines: string[] = [];
+  if (decl.winner?.length) {
+    for (const id of targets.winners ?? []) {
+      const c = porteur(id);
+      if (c) lines.push(...applyOps(c, [...decl.winner], { caster: c }));
+    }
+  }
+  if (decl.attrition?.length && !conclut) {
+    for (const id of targets.all ?? []) {
+      const c = porteur(id);
+      const every = c ? sequenceAttritionEvery(seq.params, c) : 0;
+      if (c && every > 0 && round % every === 0) lines.push(...applyOps(c, [...decl.attrition], { caster: c }));
+    }
+  }
+  return lines;
+}
+
+/* ── FAMILLE (6) : PHASES (mi-temps) ─────────────────────────────────────────────────────────────*/
+
+/** Découpe d'une manche en PHASES déclarées : la phase courante (1-based), son rang interne, et si
+ *  c'est la DERNIÈRE manche prévue. Sans déclaration : une seule phase, jamais la dernière. */
+export function sequencePhaseOf(params: SequenceParams, round: number): {
+  phase: number; count: number; roundInPhase: number; rounds: number; total: number; last: boolean;
+} {
+  const ph = params.phases;
+  if (!ph || ph.count < 1 || ph.rounds < 1) {
+    return { phase: 1, count: 1, roundInPhase: round, rounds: 0, total: 0, last: false };
+  }
+  const total = ph.count * ph.rounds;
+  const borne = Math.max(1, Math.min(round, total));
+  return {
+    phase: Math.min(ph.count, Math.floor((borne - 1) / ph.rounds) + 1),
+    count: ph.count,
+    roundInPhase: ((borne - 1) % ph.rounds) + 1,
+    rounds: ph.rounds,
+    total,
+    last: round >= total,
+  };
+}
+
+/** TABLEAU DE MARQUE de la séquence en cours (affichage) — rendu par la définition du système, jamais
+ *  dérivé par l'UI. `null` sans séquence, ou quand le système n'en déclare pas. */
+export function sequenceBoardOf(get: Get): SequenceBoard | null {
+  const seq = activeSequence(get);
+  if (!seq) return null;
+  return sequenceDefOf(seq.def)?.board?.(get, seq as SequenceState<never>) ?? null;
+}
+
 /* ── LE CYCLE : ouvrir → clore → rouvrir/dénouer ─────────────────────────────────────────────────*/
 
-/** Borne EFFECTIVE de manches (jamais au-dessus de l'invariant du socle). */
+/** Borne EFFECTIVE de manches (jamais au-dessus de l'invariant du socle). Une séquence à PHASES
+ *  (famille 6) borne AUSSI au total qu'elle déclare : ses mi-temps ne se jouent pas indéfiniment. */
 function borneOf(params: SequenceParams): number {
-  return Math.min(params.maxRounds ?? SEQUENCE_MAX_ROUNDS, SEQUENCE_MAX_ROUNDS);
+  const total = sequencePhaseOf(params, 1).total;
+  return Math.min(params.maxRounds ?? SEQUENCE_MAX_ROUNDS, total > 0 ? total : SEQUENCE_MAX_ROUNDS, SEQUENCE_MAX_ROUNDS);
 }
 
 /**
@@ -236,8 +353,14 @@ export function closeSequenceRound(get: Get, set: Set, done: PendingCascade): vo
     ...(verdict.cum ? { cum: verdict.cum } : {}),
     ...(verdict.payload !== undefined ? { payload: verdict.payload } : {}),
   };
-  for (const l of verdict.log ?? []) get().log(l);
   const borne = verdict.go === 'continue' && apres.round >= borneOf(apres.params);
+  // EFFETS DE MANCHE (famille 4) : le socle DÉCLENCHE ce que la donnée déclare, sur les porteurs que
+  // le verdict NOMME — le réducteur du domaine, lui, ne mute rien. La manche qui CONCLUT (verdict de
+  // fin, ou borne atteinte) est dite comme telle : l'attrition ne frappe que les manches qui passent.
+  const effets = verdict.roundActors
+    ? sequenceRoundOps(get, apres, apres.round, verdict.roundActors, verdict.go === 'end' || borne)
+    : [];
+  for (const l of [...(verdict.log ?? []), ...effets]) get().log(l);
   if (verdict.go === 'continue' && !borne) {
     set({ sequence: apres });
     openSequenceRound(get, set);

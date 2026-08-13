@@ -73,6 +73,13 @@ de `saves-flow.test.ts` (`MIGRATIONS[v]` + fixture `v<v>-*.json` exigées pour c
   gardent le leur (`interactive: true`/`false` sur `participants[]`) — c'est un AUTRE champ, et la
   fixture porte les deux valeurs pour le prouver. Fixture de version PASSÉE, MINIMALE et écrite à la
   main (idem `v19-fin-de-combat-mono`).
+- `v22-bras-de-fer-legacy.json` — partie de BRAS DE FER EN VOL par le chemin LEGACY (étape
+  `tavern-game` du mode `extended`, dont le `meta` porte `round`/`cumPlayer`/`cumOpponent`), motive
+  `MIGRATIONS[22]` (v22→v23, #1279 S1 : le mode étendu passe au socle de séquence et l'applier de ce
+  `kind` disparaît). Contrat livré = INVALIDATION EXPLICITE : l'étape est retirée et la partie
+  abandonnée — ses cumuls ont été calculés en planchant CHAQUE manche, là où le Test étendu additionne
+  les DR avec leur signe (LDB 12 l.174), donc ils ne se reportent pas. Générée par le VRAI chemin
+  (`_generate.test.ts`) AVANT la bascule du code.
 
 ## Ajouter/régénérer une fixture
 

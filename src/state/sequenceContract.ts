@@ -24,6 +24,8 @@ import type { Get, Set } from './flowTypes';
 import type { PendingCascade } from './pendings';
 import type { BuiltCascadeStep } from './rollSeam';
 import type { RNG } from '../engine/dice';
+import type { CharKey } from '../engine/types';
+import type { SequencePhases, SequenceRoundOps, SequenceTableRow } from '../engine/sequenceVocab';
 
 /** Borne DURE de manches — invariant DU CONTRAT : une séquence dont aucun camp ne conclut S'ARRÊTE
  *  (le `round >= 50` que chaque jeu bricolait chez lui). Aucune implémentation ne peut la dépasser. */
@@ -35,6 +37,11 @@ export const SEQUENCE_BORNE = 'borne';
 
 /** `purpose` des fenêtres ouvertes pour une manche : la clôture se route dessus (store). */
 export const SEQUENCE_PURPOSE = 'sequence' as const;
+
+/** Le VOCABULAIRE DE DONNÉE des familles (2) table par plage, (4) effets de manche et (6) phases vit
+ *  dans le MOTEUR (`engine/sequenceVocab`) : ce sont des formes de RÈGLE, déclarées par les catalogues
+ *  et republiées ici en paramètres — un catalogue du moteur ne dépend jamais du store. */
+export type { SequenceTableRow, SequenceRoundOps, SequencePhases } from '../engine/sequenceVocab';
 
 /** PARAMÈTRES D'AUTEUR d'une séquence — de la DONNÉE, sérialisée avec l'état : ce qui règle la
  *  machinerie sans la recompiler (cible de cumul, plafond, départage, borne, formules de score).
@@ -50,6 +57,16 @@ export interface SequenceParams {
   maxRounds?: number;
   /** Formule de score PAR CAMP (id enregistré : `min`/`max`/`sum`/`first`), keyée par camp. */
   score?: Record<string, string>;
+  /** (2) Table de score par plage de DR. */
+  table?: readonly SequenceTableRow[];
+  /** (3bis) Bonus de Caractéristique AJOUTÉ au DR de chaque manche (Bras de fer NADAJ 16 l.34,
+   *  Alvatafl l.20, Bête l.42) — la Caractéristique est nommée, le Bonus est son chiffre des
+   *  dizaines (`engine/characteristics.bonus`). */
+  drBonus?: CharKey;
+  /** (4) Effets par manche. */
+  rounds?: SequenceRoundOps;
+  /** (6) Phases (mi-temps). */
+  phases?: SequencePhases;
 }
 
 /** ÉTAT d'une séquence EN COURS — GÉNÉRIQUE sur sa charge utile : l'orchestrateur ne lit JAMAIS
@@ -83,8 +100,18 @@ export interface SequenceRound<P = unknown> {
 /** VERDICT du réducteur de clôture : la séquence continue (avec son état à jour) ou s'achève sur une
  *  issue NOMMÉE par le système (`outcome`, lue par son `settle`). `cum`/`payload` omis = inchangés. */
 export type SequenceVerdict<P> =
-  | { go: 'continue'; cum?: Record<string, number>; payload?: P; log?: string[] }
-  | { go: 'end'; outcome: string; cum?: Record<string, number>; payload?: P; log?: string[] };
+  | { go: 'continue'; cum?: Record<string, number>; payload?: P; log?: string[]; roundActors?: SequenceRoundActors }
+  | { go: 'end'; outcome: string; cum?: Record<string, number>; payload?: P; log?: string[]; roundActors?: SequenceRoundActors };
+
+/** PORTEURS de la manche close, NOMMÉS PAR ID (un verdict se snapshote : aucune référence d'objet n'y
+ *  entre). C'est sur eux que l'implémentation DÉCLENCHE les effets de manche DÉCLARÉS
+ *  (`SequenceParams.rounds`) — le réducteur reste PUR, il ne mute rien lui-même. */
+export interface SequenceRoundActors {
+  /** Vainqueur(s) de la MANCHE (pas de la partie) — `winner` leur est appliqué. */
+  winners?: readonly string[];
+  /** Tous les porteurs de la manche — `attrition` s'applique à ceux dont l'intervalle échoit. */
+  all?: readonly string[];
+}
 
 /** Ce que le réducteur de clôture REÇOIT : l'état, les rangées CLOSES de la manche, et un RNG injecté
  *  (les jets d'un camp sans porteur jouable s'y roulent — un réducteur ne tire jamais son propre dé). */
@@ -93,6 +120,30 @@ export interface SequenceCloseCtx<P> {
   seq: SequenceState<P>;
   done: PendingCascade;
   rng: RNG;
+}
+
+/** UN CAMP au TABLEAU DE MARQUE d'une séquence — ce qu'une fenêtre de manche montre du score en
+ *  cours. `label` est de l'AFFICHAGE ; `id` est la clé de camp de l'accumulateur. */
+export interface SequenceBoardCamp {
+  id: string;
+  label: string;
+  score: number;
+  /** Score à atteindre (cumul vers cible) — absent : le camp n'a pas de jauge, juste un score. */
+  target?: number;
+  /** Complément d'une ligne (buts marqués, acquis de manche) — AFFICHAGE. */
+  note?: string;
+}
+
+/** TABLEAU DE MARQUE d'une séquence EN COURS : ce que le système accepte de montrer pendant ses
+ *  manches (score par camp, manche N/M, phase). Sans lui, une partie de six manches est AVEUGLE. */
+export interface SequenceBoard {
+  title: string;
+  camps: readonly SequenceBoardCamp[];
+  round: number;
+  /** Nombre de manches PRÉVUES (phases × manches, ou borne déclarée) — absent : partie ouverte. */
+  rounds?: number;
+  /** Phase courante, déjà libellée par le système (« 1ʳᵉ mi-temps »). */
+  phase?: string;
 }
 
 /**
@@ -110,4 +161,6 @@ export interface SequenceDef<P = unknown> {
   close: (ctx: SequenceCloseCtx<P>) => SequenceVerdict<P>;
   /** DÉNOUEMENT terminal (bourse, combat, modale de résultat) — appelé APRÈS le retrait de l'état. */
   settle?: (get: Get, set: Set, seq: SequenceState<P>, outcome: string) => void;
+  /** TABLEAU DE MARQUE (affichage seul, PUR) — le système NOMME ses camps ; l'UI ne dérive rien. */
+  board?: (get: Get, seq: SequenceState<P>) => SequenceBoard | undefined;
 }

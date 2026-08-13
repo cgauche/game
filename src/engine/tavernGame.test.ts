@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
-import { rollTest } from './tests';
-import { findTavernGameById, resolveTavernRound, rollTavernTest, roundSL, TAVERN_GAMES, TAVERN_TEST_DIFFICULTY } from './tavernGame';
+import { rollTest, extendedTestStep, type TestResult } from './tests';
+import { findTavernGameById, resolveTavernRound, rollTavernTest, TAVERN_GAMES, TAVERN_TEST_DIFFICULTY } from './tavernGame';
 
 describe('Jeux de taverne — moteur générique (NADJ 16)', () => {
   it('les 11 jeux sont en données, chacun avec une règle verbatim et une source', () => {
@@ -35,19 +35,41 @@ describe('Jeux de taverne — moteur générique (NADJ 16)', () => {
     expect(a).toEqual(b);
   });
 
-  it('mode ÉTENDU (Bras de fer, l.34) : joué jusqu’à 10 DR cumulés, plusieurs manches — accumulation pure', () => {
+  /**
+   * LE TEST OPPOSÉ ÉTENDU DU BRAS DE FER (l.34 : « faites un Test opposé étendu de Force ») — donc le
+   * cumul du LDB 12 l.174 verbatim : « les DR obtenus à chaque Round sont additionnés jusqu'à
+   * atteindre une valeur cible […]. Si le DR total passe en dessous de 0, vous pouvez recommencer
+   * depuis le début ». Le DR d'une manche entre AVEC SON SIGNE ; c'est le TOTAL qui est planché.
+   * Ce test remplace celui qui recopiait `Math.max(0, DR)` PAR MANCHE : cette forme-là n'est nulle
+   * part dans la source, et elle rendait un cumul de 9 là où le Test étendu en rend 6.
+   */
+  it('mode ÉTENDU (Bras de fer, l.34) : le DR de chaque manche s’AJOUTE AVEC SON SIGNE, le TOTAL est planché (LDB 12 l.174)', () => {
     const bras = findTavernGameById('bras-de-fer')!;
     expect(bras.mode).toBe('extended');
-    const target = bras.target ?? 10;
-    const rng = makeRNG(1);
-    let p = 0, o = 0, rounds = 0;
-    while (p < target && o < target && rounds < 50) {
-      rounds++;
-      p += Math.max(0, roundSL(rollTest(55, TAVERN_TEST_DIFFICULTY, rng), bras.drCap));
-      o += Math.max(0, roundSL(rollTavernTest(40, rng), bras.drCap));
-    }
-    expect(rounds).toBeGreaterThanOrEqual(1);
-    expect(Math.max(p, o)).toBeGreaterThanOrEqual(target);
+    expect(bras.target).toBe(10);
+    const manches = [4, 3, -3, 2]; // DR de manche POSÉS : aucun dé, l'arithmétique seule est en cause
+    let total = 0;
+    for (const sl of manches) total = extendedTestStep(total, { success: sl >= 0, sl }, bras.target!).total;
+    expect(total, 'le Test étendu : 4+3−3+2').toBe(6);
+    // La forme ÉCARTÉE (plancher PAR MANCHE) ignorerait la manche perdue et rendrait 9 — l'écart est
+    // exactement celui que la correction supprime.
+    expect(manches.reduce((n, sl) => n + Math.max(0, sl), 0)).toBe(9);
+    // Et le plancher du TOTAL, lui, existe bien : une chute sous 0 ramène à 0 (« recommencez »).
+    expect(extendedTestStep(2, { success: false, sl: -9 }, 10)).toEqual({ total: 0, done: false });
+  });
+
+  /** « à chaque tour, ajoutez votre Bonus de Force au nombre de DR que vous avez obtenus » (l.34) —
+   *  le Bonus s'ajoute APRÈS le plafond de manche, PAR CAMP, et peut renverser la manche. */
+  it('mode ÉTENDU : le Bonus de Caractéristique s’ajoute au DR de la manche, par camp (l.34)', () => {
+    const bras = findTavernGameById('bras-de-fer')!;
+    expect(bras.drBonus).toBe('force');
+    const fort: TestResult = { roll: 30, target: 45, sl: 1, success: true, isDouble: false, base: 45 };
+    const faible: TestResult = { roll: 20, target: 35, sl: 2, success: true, isDouble: false, base: 35 };
+    expect(resolveTavernRound(bras, fort, faible).winner, 'sans Bonus, 1 DR contre 2').toBe('opponent');
+    const avec = resolveTavernRound(bras, fort, faible, { player: 4, opponent: 1 });
+    expect(avec.playerSL).toBe(5);
+    expect(avec.opponentSL).toBe(3);
+    expect(avec.winner, 'Bonus de Force compris, la manche bascule').toBe('player');
   });
 
   it('plafond de DR par manche (Boules = 6, drCap)', () => {

@@ -1,49 +1,50 @@
 /**
- * Jeux de taverne (Nuits agitées & dures journées, ch.16) — FLUX de jeu (état + résolution), branché
- * sur le moteur PUR `engine/tavernGame` (variante « jeu rapide », Test opposé Intermédiaire (+0), le
- * plus de DR l'emporte). Test OPPOSÉ RÉEL (#579) : l'ADVERSAIRE (compagnon ou table abstraite) roule
- * D'ABORD (`rollTavernTest`, `battleRng`), FIGÉ dans `meta.opposed.aT` (`OpposedFreeze`, `pendings.ts`)
- * — puis le jet du CHALLENGER (joueur) s'ouvre par le seam de jet (`openRoll`, `state/rollSeam.ts` —
- * hero-test) sur la MÊME machinerie d'opposition que `combat/triggeredTest.ts`/`combatManeuvers.ts`
- * (`FLOWS.cascade` `resolve`/`bonus.derive`, `rollFlowSpecs.ts:696-765` : chaque influence — Chance
- * « +1 DR », Résilience, dé forcé — RÉ-OPPOSE contre l'adversaire figé, jamais un second tirage caché).
- * `CascadeModal` affiche les DEUX jets (rangée témoin de l'adversaire + `VsHeader` quand l'adversaire
- * est un Combatant réel). Avant #579, l'adversaire roulait côté MONDE dans l'applier, POST-COMMIT du
- * jet du joueur (le joueur ne voyait qu'un chiffre de DR final) — patron copié du Marchandage de
- * `portFlow.ts` (`rollMerchantOpposition`), qui porte ENCORE ce travers (migration hors périmètre
- * #579, ticketée séparément). Mode `extended` (Bras de fer) : ENCHAÎNE une nouvelle étape `openRoll`
- * par manche — CHAQUE manche fige un NOUVEAU jet adverse avant d'ouvrir celui du joueur, jusqu'à ce
- * qu'un camp atteigne `target` DR cumulés (patron Ragot→acheteur→Marchandage de `portFlow.ts`). La
- * mise éventuelle et le résultat (gains/pertes) sont appliqués par l'applier après résolution.
- * Réservé aux tables qui activent l'option `tavern-games`.
+ * Jeux de taverne (Nuits agitées & dures journées, ch.16) — FLUX de jeu branché sur le SOCLE DE
+ * SÉQUENCE (`state/sequenceCore`, #1279) : UN état de séquence, UNE fabrique de manche, UN réducteur
+ * de clôture. Il n'y a plus de « mode qui s'enchaîne à part » — le Test opposé simple (variante
+ * rapide, ch.16 l.9-11) et le Test opposé ÉTENDU (Bras de fer, l.34) sont la MÊME séquence, dont la
+ * donnée règle la cible de cumul, le plafond de DR, le départage, le Bonus de Caractéristique et les
+ * effets de manche.
  *
- * Attention, parité RNG : le tirage adverse (`battleRng`) a lieu AVANT l'ouverture du jet du joueur — inversion
- * assumée vs l'ordre pré-#579 (joueur puis adversaire) : même compte de tirages par manche, ORDRE
- * différent. Les tests seedés du périmètre taverne (`tavernFlow.test.ts`) sont adaptés à ce nouvel
- * ordre ; aucun autre flux ne partage ce seed.
+ * DEUX MONTAGES DE MANCHE, un seul réducteur :
+ *  - HÉROS contre HÉROS → BANDE, une RANGÉE PAR CAMP (patron `pursuitFlow`) : chaque siège joue SON
+ *    jet, avec ses influences (#1279 S1). Le camp adverse n'est plus roulé côté monde puis figé —
+ *    ce montage-là volait le jet du second héros.
+ *  - HÉROS contre la SALLE (adversaire ABSTRAIT, valeur fixée par la table) → MONO à jet adverse
+ *    FIGÉ (`meta.opposed.aT`, #579) : chaque influence du joueur RÉ-OPPOSE contre ce jet, jamais un
+ *    second tirage caché.
+ *
+ * Réservé aux tables qui activent l'option `tavern-games`.
  */
 import type { CharKey, Combatant } from '../engine/types';
 import type { Get, Set } from './flowTypes';
 import {
-  findTavernGameById, resolveTavernRound, rollTavernTest, roundSL, tavernOpposedLog, tavernExtendedLog,
+  findTavernGameById, resolveTavernRound, rollTavernTest, tavernOpposedLog, tavernExtendedLog,
   TAVERN_TEST_DIFFICULTY, type TavernGame, type TavernGameResult,
 } from '../engine/tavernGame';
 import type { TestResult } from '../engine/tests';
-import { testValue, skillBaseValue } from '../engine/skills';
+import { testValue } from '../engine/skills';
 import { effectiveChar } from '../engine/characteristics';
 import { battleRng } from './battleRng';
 import { toBrass, fromBrass, formatMoney } from '../engine/money';
 import { bourseOf, creditBourse, payWithAllocation, soloPayer } from './bourseFlow';
-import { openRoll, freeCons, testSkillLabel, monoStep, composeRollLabel, surfaceOf, type Consequence } from './rollSeam';
-import { registerCascadeApplier } from './cascade';
+import {
+  freeCons, testSkillLabel, monoStep, bandStep, rollStep, composeRollLabel, surfaceOf,
+  type Consequence,
+} from './rollSeam';
+import type { BatchParticipant } from './pendings';
+import { registerCascadeApplier, rollBatchParticipant } from './cascade';
 import { combatStakeRef } from '../data/index';
 import {
-  registerSequence, startSequence, resolveSequenceTie, SEQUENCE_MAX_ROUNDS,
-  type SequenceCloseCtx, type SequenceRound, type SequenceState, type SequenceVerdict,
+  registerSequence, startSequence, resolveSequenceTie, sequenceCumRound, sequenceDrBonus,
+  sequencePhaseOf,
+  type SequenceBoard, type SequenceCloseCtx, type SequenceParams, type SequenceRound,
+  type SequenceState, type SequenceVerdict,
 } from './sequenceCore';
 import type { RNG } from '../engine/dice';
 import { actorIn } from './combatants';
-import { scheduleFlowTimer } from './combatTimers';
+import { jetSurfaced } from './netOwnership';
+import { cadenceAuto } from '../engine/cadence';
 
 /** Adversaire d'une partie : un compagnon du groupe (ses vraies valeurs) ou une valeur ABSTRAITE fixée
  *  par la table (le MJ — le jeu sans MJ n'invente pas de stats de PNJ). */
@@ -77,21 +78,11 @@ export function tavernGameValue(hero: Combatant, game: TavernGame): number {
 }
 
 /** Déclaration du Test (skill/char/spec) d'un jeu — MÊME repli que `tavernGameValue` (Pari si rien
- *  d'indiqué), réutilisée par `openRoll` (`req.test`, calcule lui-même `testValue` par acteur). */
+ *  d'indiqué), réutilisée par les mints (`req.test`, qui calculent eux-mêmes la valeur par acteur). */
 function tavernTestSpec(game: TavernGame): { skill?: string; char?: CharKey; spec?: string } {
   if (game.skill) return { skill: game.skill, spec: game.spec };
   if (game.characteristic) return { char: game.characteristic };
   return { skill: 'pari' };
-}
-
-/** NIVEAU DE COMPÉTENCE NU d'un joueur pour un jeu (`LDB 09 l.17`) — miroir nu de `tavernGameValue`
- *  (celle-ci reste la valeur de Test, États/Encombrement compris : c'est la CIBLE). Lu à l'accesseur
- *  canon `skillBaseValue` sur la MÊME déclaration de Test que celle passée au seam pour le challenger
- *  (`tavernTestSpec`) : les DEUX camps opposent ainsi la même grandeur au départage à DR égal
- *  (`LDB 12 l.160`). Adversaire ABSTRAIT : aucun Combatant, la valeur de la table est déjà nue. */
-export function tavernGameBaseValue(hero: Combatant, game: TavernGame): number {
-  const t = tavernTestSpec(game);
-  return skillBaseValue(hero, t.skill, t.spec, t.char);
 }
 
 export function openTavernGames(_get: Get, set: Set): void {
@@ -102,12 +93,52 @@ export function closeTavernGames(_get: Get, set: Set): void {
   set({ tavernGames: null });
 }
 
+/** Id de la définition de séquence des jeux de taverne (donnée : écrit dans les saves). */
+export const TAVERN_SEQUENCE = 'tavern';
+
+/** Kind de l'étape-jet d'une manche (bande OU mono) — UNIQUE depuis #1279 S1. */
+export const TAVERN_ROUND_KIND = 'tavern-round';
+
+/** Une étape appartient-elle à une partie de taverne en cours ? — lecture de l'UI, qui masque le
+ *  formulaire de réglage pendant qu'une manche est surfacée (#370 point 4). */
+export function isTavernStep(kind: string): boolean {
+  return kind === TAVERN_ROUND_KIND;
+}
+
+/** CHARGE UTILE d'une partie jouée par le socle — la table, l'adversaire, la mise. */
+export interface TavernPayload {
+  gameId: string;
+  challengerId: string;
+  opponentValue: number;
+  opponentName: string;
+  opponentId?: string;
+  stakeBrass: number;
+  /** Scores de la manche close (lus par le dénouement d'une partie à manche unique). */
+  last?: { playerSL: number; opponentSL: number };
+}
+
+/** Clés de camp de l'accumulateur du socle — le challenger et son vis-à-vis. */
+const CAMP_PLAYER = 'player';
+const CAMP_OPPONENT = 'opponent';
+
 /**
- * Joue une partie : fige le jet ADVERSAIRE puis OUVRE le jet du challenger par le seam (`openRoll`,
- * hero-test — modale influençable, opposée au jet figé) ; la mise se résout dans l'applier
- * `TAVERN_GAME_KIND` après commit. `stakeBrass` n'est pris en compte que si le jeu porte une mise
- * (`game.stake`) ET que l'adversaire est ABSTRAIT (la maison) — une mise entre deux héros ne
- * bougerait pas la bourse commune. La mise est plafonnée à la bourse.
+ * PARAMÈTRES DE SÉQUENCE d'un jeu — TOUS lus de son entrée de données : aucune valeur de règle n'est
+ * écrite ici, aucun `if` par id de jeu. Un jeu N+1 à mécanismes connus n'est qu'une entrée de plus.
+ */
+export function tavernParams(game: TavernGame): SequenceParams {
+  return {
+    ...(game.target != null ? { target: game.target } : {}),
+    ...(game.drCap != null ? { drCap: game.drCap } : {}),
+    ...(game.tieBreak ? { tieBreak: game.tieBreak } : {}),
+    ...(game.drBonus ? { drBonus: game.drBonus } : {}),
+    ...(game.roundOps ? { rounds: game.roundOps } : {}),
+  };
+}
+
+/**
+ * Joue une partie : instancie le socle de séquence, qui ouvre la 1ʳᵉ manche. `stakeBrass` n'est pris
+ * en compte que si le jeu porte une mise (`game.stake`) ET que l'adversaire est ABSTRAIT (la maison) —
+ * une mise entre deux héros ne bougerait pas la bourse commune. La mise est plafonnée à la bourse.
  */
 export function playTavernGame(
   get: Get, set: Set,
@@ -130,69 +161,88 @@ export function playTavernGame(
   // La mise sort de la bourse du CHALLENGER (il paie s'il perd, encaisse s'il gagne) : plafonnée à SA bourse.
   const stakeBrass = Math.min(wantStake, toBrass(bourseOf(challenger)));
 
-  if (game.mode === 'opposed') {
-    // PAR LE SOCLE DE SÉQUENCE (#1279) : une manche, un réducteur de clôture, le départage d'égalité
-    // DÉCLARÉ par l'entrée du jeu (`tieBreak`) — plus aucune arithmétique de manche au call-site.
-    startSequence<TavernPayload>(get, set, {
-      def: TAVERN_SEQUENCE,
-      params: {
-        ...(game.tieBreak ? { tieBreak: game.tieBreak } : {}),
-        ...(game.drCap != null ? { drCap: game.drCap } : {}),
-      },
-      payload: { gameId: game.id, challengerId: challenger.id, opponentValue, opponentName, ...(opponentId ? { opponentId } : {}), stakeBrass },
+  startSequence<TavernPayload>(get, set, {
+    def: TAVERN_SEQUENCE,
+    params: tavernParams(game),
+    payload: {
+      gameId: game.id, challengerId: challenger.id, opponentValue, opponentName,
+      ...(opponentId ? { opponentId } : {}), stakeBrass,
+    },
+  });
+}
+
+/** Applier de la manche : MUET côté conséquence (l'issue est GLOBALE — elle se décide à la clôture,
+ *  dans le réducteur du socle) ; ne pousse que la ligne de récit de ce qui est tombé. */
+registerCascadeApplier(TAVERN_ROUND_KIND, (get, _set, step) => {
+  const dr = (n: number) => `${n >= 0 ? '+' : ''}${n} DR`;
+  if (step.participants) {
+    const lines = step.participants.map((row) => {
+      const who = actorIn(get(), row.id)?.label ?? row.label ?? row.id;
+      return `${who} : ${dr(row.result?.sl ?? 0)}.`;
     });
-    return;
+    return { consequences: freeCons(lines) };
   }
-  openTavernRound(get, set, game, challenger.id, opponentValue, opponentName, opponentId, stakeBrass, 1, 0, 0);
-}
-
-/** Id de la définition de séquence des jeux de taverne en Test OPPOSÉ (donnée : écrit dans les saves). */
-export const TAVERN_SEQUENCE = 'tavern-opposed';
-
-/** CHARGE UTILE d'une partie jouée par le socle — la table, l'adversaire figé, la mise. */
-export interface TavernPayload {
-  gameId: string;
-  challengerId: string;
-  opponentValue: number;
-  opponentName: string;
-  opponentId?: string;
-  stakeBrass: number;
-  /** Scores de la manche close (lus par le dénouement). */
-  last?: { playerSL: number; opponentSL: number };
-}
-
-/** Kind de l'étape-jet d'une manche jouée PAR LE SOCLE — distinct du kind legacy (mode `extended`),
- *  dont l'applier FINALISE la partie : ici la partie se dénoue dans le réducteur du socle, l'étape ne
- *  porte que sa ligne de récit. */
-export const TAVERN_ROUND_KIND = 'tavern-round';
-
-/** Une étape appartient-elle à une partie de taverne en cours (les deux chemins) ? — lecture de l'UI,
- *  qui masque le formulaire de réglage pendant qu'une manche est surfacée (#370 point 4). */
-export function isTavernStep(kind: string): boolean {
-  return kind === TAVERN_GAME_KIND || kind === TAVERN_ROUND_KIND;
-}
-
-registerCascadeApplier(TAVERN_ROUND_KIND, (_get, _set, step) => {
   if (!step.result) return {};
-  const sl = step.result.sl;
-  return { consequences: freeCons([`${step.rollLabel ?? 'Jeu'} : ${sl >= 0 ? '+' : ''}${sl} DR.`]) };
+  return { consequences: freeCons([`${step.rollLabel ?? 'Jeu'} : ${dr(step.result.sl)}.`]) };
 });
 
-/** FABRIQUE DE MANCHE (socle) : l'adversaire est roulé ICI et FIGÉ (`meta.opposed`, #579 — chaque
- *  influence du joueur RÉ-OPPOSE contre ce jet, jamais un second tirage caché), puis l'étape du
- *  challenger est MINTÉE (`monoStep`). `immediate` quand aucun siège humain ne tient le challenger
- *  (cadence Auto/Rapide, héros conduit par l'IA) : la manche se résout sans fenêtre, comme avant. */
+/** RANGÉE d'un camp HÉROS dans une bande de manche — patron `pursuitFlow.pursuitRow` : ligne montée
+ *  par le monteur canonique (`rollStep`), surfaçage SEAT-AGNOSTIQUE (`jetSurfaced`) pour que le héros
+ *  d'un AUTRE siège garde son jet À JOUER. Le porteur qu'aucun siège ne tient (ou toute rangée en
+ *  cadence Auto/Rapide) naît TÉMOIN, son jet déjà roulé. */
+function tavernRow(get: Get, h: Combatant, game: TavernGame): BatchParticipant {
+  const test = tavernTestSpec(game);
+  const row: BatchParticipant = {
+    id: h.id,
+    label: testSkillLabel(test) ?? game.label,
+    ...(test.skill ? { skillId: test.skill } : {}),
+    difficulty: TAVERN_TEST_DIFFICULTY, // « Test opposé de Compétence Intermédiaire (+0) » (l.11)
+    result: null,
+    interactive: true,
+    ...rollStep({ actor: h, test, difficulty: TAVERN_TEST_DIFFICULTY }),
+  };
+  if (!cadenceAuto() && jetSurfaced(get(), h)) return row;
+  return { ...row, interactive: false, result: rollBatchParticipant(row, battleRng()) };
+}
+
+/**
+ * FABRIQUE DE MANCHE (socle). Héros contre HÉROS : une BANDE, une rangée par camp — chaque siège joue
+ * SON jet. Héros contre la SALLE : l'adversaire abstrait est roulé ICI et FIGÉ (`meta.opposed`, #579),
+ * puis l'étape du challenger est MINTÉE (`monoStep`) ; `immediate` quand aucun siège humain ne tient
+ * le challenger (cadence Auto/Rapide, héros conduit par l'IA).
+ */
 function tavernRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): SequenceRound<TavernPayload> | undefined {
   const p = seq.payload;
   const game = findTavernGameById(p.gameId);
   const challenger = get().party.find((h) => h.id === p.challengerId);
   if (!game || !challenger) return undefined;
   const opponentHero = p.opponentId ? get().party.find((h) => h.id === p.opponentId) : undefined;
+  const title = `${game.label} — ${challenger.label} contre ${p.opponentName}`;
+  const stake = combatStakeRef('tavernGame', {
+    values: {
+      jeu: game.label, adversaire: p.opponentName,
+      mise: p.stakeBrass > 0 ? formatMoney(fromBrass(p.stakeBrass)) : 'aucune',
+    },
+  });
+
+  if (opponentHero) {
+    const rows = [tavernRow(get, challenger, game), tavernRow(get, opponentHero, game)];
+    const band = bandStep({
+      id: `${TAVERN_ROUND_KIND}-${seq.round}`,
+      kind: TAVERN_ROUND_KIND,
+      icon: 'nav/dice',
+      label: `${game.label} — manche ${seq.round}`,
+      stake,
+      meta: { gameId: game.id, opponentName: p.opponentName, stakeBrass: p.stakeBrass, round: seq.round },
+    }, rows);
+    if (!band) return undefined;
+    return {
+      title, icon: 'nav/dice', steps: [band],
+      immediate: rows.every((r) => r.interactive === false),
+    };
+  }
+
   const rolled = rollTavernTest(p.opponentValue, rng);
-  // L'adversaire roule sur SA valeur de Test (États/Encombrement compris : c'est sa CIBLE), mais oppose
-  // au départage son Niveau de Compétence NU, comme le challenger dont le mint pose déjà la nue en
-  // `step.base` (`LDB 12 l.160` : opposer une nue à une fondue compare deux grandeurs).
-  const opponentTR: TestResult = opponentHero ? { ...rolled, base: tavernGameBaseValue(opponentHero, game) } : rolled;
   const test = tavernTestSpec(game);
   const step = monoStep({
     id: `${TAVERN_ROUND_KIND}-${seq.round}`,
@@ -202,47 +252,105 @@ function tavernRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Seq
     actor: challenger,
     difficulty: TAVERN_TEST_DIFFICULTY, // « Test opposé de Compétence Intermédiaire (+0) » (l.11)
     ligne: { test },
-    stake: combatStakeRef('tavernGame', { values: { jeu: game.label, adversaire: p.opponentName, mise: p.stakeBrass > 0 ? formatMoney(fromBrass(p.stakeBrass)) : 'aucune' } }),
+    stake,
     meta: {
-      gameId: game.id, opponentValue: p.opponentValue, opponentName: p.opponentName, stakeBrass: p.stakeBrass, round: seq.round,
-      opposed: { aT: opponentTR, ...(p.opponentId ? { attackerId: p.opponentId } : {}), attackerName: p.opponentName, attackerLabel: testSkillLabel(test) },
+      gameId: game.id, opponentValue: p.opponentValue, opponentName: p.opponentName,
+      stakeBrass: p.stakeBrass, round: seq.round,
+      opposed: { aT: rolled, attackerName: p.opponentName, attackerLabel: testSkillLabel(test) },
     },
   });
   if (!step) return undefined;
   return {
-    title: `${game.label} — ${challenger.label} contre ${p.opponentName}`,
-    icon: 'nav/dice',
-    steps: [step],
+    title, icon: 'nav/dice', steps: [step],
     immediate: !surfaceOf(get, challenger),
   };
 }
 
-/** RÉDUCTEUR DE CLÔTURE (socle) : décide la manche depuis les DEUX jets déjà tombés, puis DÉPARTAGE
- *  l'égalité selon le paramètre DÉCLARÉ par l'entrée du jeu (Dominos NADAJ 16 l.107 : dé d'unités, le
- *  plus BAS gagne). Ne mute rien — la bourse et la modale de résultat sont le dénouement. */
-function tavernClose(ctx: SequenceCloseCtx<TavernPayload>): SequenceVerdict<TavernPayload> {
-  const { seq, done } = ctx;
+/** Les DEUX jets d'une manche close, quel que soit son montage — SOURCE UNIQUE de lecture du
+ *  réducteur (bande : une rangée par camp ; mono : le jet du challenger et le jet adverse FIGÉ). */
+function tavernSides(ctx: SequenceCloseCtx<TavernPayload>): {
+  player: TestResult; opponent: TestResult; playerActor?: Combatant; opponentActor?: Combatant;
+} | undefined {
+  const { get, seq, done } = ctx;
   const p = seq.payload;
-  const game = findTavernGameById(p.gameId);
   const step = done.participants.find((s) => s.kind === TAVERN_ROUND_KIND);
-  if (!game || !step?.result) return { go: 'end', outcome: 'tie' };
-  // Succès BRUT (roll ≤ target) : `resolveTavernRound`/`roundSL` ne connaissent QUE le succès propre au
-  // jet (tie distinct, plafond `drCap` de Boules) — jamais l'issue d'opposition déjà tranchée ailleurs.
-  const playerTR: TestResult = {
-    roll: step.result.roll, target: step.result.target, ...(step.base != null ? { base: step.base } : {}),
-    success: step.result.roll <= step.result.target, sl: step.result.sl, isDouble: false,
+  if (!step) return undefined;
+  const asTest = (r: { roll: number; target: number; sl: number }, base?: number): TestResult => ({
+    roll: r.roll, target: r.target, ...(base != null ? { base } : {}),
+    // Succès BRUT (roll ≤ target) : la comparaison de manche ne connaît QUE le succès propre au jet —
+    // jamais l'issue d'opposition déjà tranchée ailleurs (tie distinct, plafond `drCap` de Boules).
+    success: r.roll <= r.target, sl: r.sl, isDouble: false,
+  });
+  if (step.participants) {
+    const mien = step.participants.find((r) => r.id === p.challengerId);
+    const sien = step.participants.find((r) => r.id === p.opponentId);
+    if (!mien?.result || !sien?.result) return undefined;
+    return {
+      player: asTest(mien.result, mien.base), opponent: asTest(sien.result, sien.base),
+      playerActor: actorIn(get(), p.challengerId), opponentActor: p.opponentId ? actorIn(get(), p.opponentId) : undefined,
+    };
+  }
+  if (!step.result) return undefined;
+  return {
+    player: asTest(step.result, step.base),
+    opponent: step.meta?.opposed?.aT ?? rollTavernTest(p.opponentValue, ctx.rng),
+    playerActor: actorIn(get(), p.challengerId),
   };
-  const opponentTR: TestResult = step.meta?.opposed?.aT ?? rollTavernTest(p.opponentValue, ctx.rng);
-  const { winner, playerSL, opponentSL } = resolveTavernRound(game, playerTR, opponentTR);
-  const departage = winner === 'tie'
-    ? resolveSequenceTie(seq.params.tieBreak, { roll: playerTR.roll, sl: playerSL }, { roll: opponentTR.roll, sl: opponentSL })
-    : 'tie';
-  const issue: TavernGameResult['winner'] = winner !== 'tie' ? winner : departage === 'a' ? 'player' : departage === 'b' ? 'opponent' : 'tie';
-  return { go: 'end', outcome: issue, payload: { ...p, last: { playerSL, opponentSL } } };
 }
 
-/** DÉNOUEMENT (socle) : mise, modale de résultat, journal — la SOURCE UNIQUE partagée avec le mode
- *  étendu (`finalizeTavernGame`). */
+/**
+ * RÉDUCTEUR DE CLÔTURE (socle) — LE SEUL juge d'une manche, quel que soit son montage :
+ *  1. DR de manche de chaque camp = DR du jet (plafonné `drCap`) + Bonus de Caractéristique DÉCLARÉ
+ *     (Bras de fer l.34 : « à chaque tour, ajoutez votre Bonus de Force au nombre de DR ») ;
+ *  2. vainqueur de la manche par `resolveTavernRound`, égalité DÉPARTAGÉE par le paramètre déclaré
+ *     (Dominos l.107) ;
+ *  3. sans cible de cumul : la partie s'achève sur cette manche (variante rapide, l.11) ;
+ *  4. avec cible : CUMUL par le socle (`sequenceCumRound` → `extendedTestStep`, LDB 12 l.174 — le DR
+ *     du Round s'ajoute AVEC SON SIGNE, seul le TOTAL est planché à 0) jusqu'à `target`.
+ * Ne mute rien : les effets de manche déclarés (famille 4) sont DÉCLENCHÉS par le socle sur les
+ * porteurs que le verdict nomme.
+ */
+function tavernClose(ctx: SequenceCloseCtx<TavernPayload>): SequenceVerdict<TavernPayload> {
+  const { seq } = ctx;
+  const p = seq.payload;
+  const game = findTavernGameById(p.gameId);
+  const sides = tavernSides(ctx);
+  if (!game || !sides) return { go: 'end', outcome: 'tie' };
+
+  const bonusPlayer = sequenceDrBonus(seq.params, sides.playerActor);
+  const bonusOpponent = sequenceDrBonus(seq.params, sides.opponentActor, p.opponentValue);
+  const { winner, playerSL, opponentSL } = resolveTavernRound(game, sides.player, sides.opponent, {
+    player: bonusPlayer, opponent: bonusOpponent,
+  });
+  const departage = winner === 'tie'
+    ? resolveSequenceTie(seq.params.tieBreak, { roll: sides.player.roll, sl: playerSL }, { roll: sides.opponent.roll, sl: opponentSL })
+    : 'tie';
+  const manche: TavernGameResult['winner'] = winner !== 'tie'
+    ? winner
+    : departage === 'a' ? 'player' : departage === 'b' ? 'opponent' : 'tie';
+
+  // PORTEURS des effets de manche (famille 4) : le vainqueur de la manche (Bras de fer l.34, +1
+  // Avantage), et tous les participants pour l'attrition d'intervalle (l.35, +1 Exténué).
+  const all = [p.challengerId, ...(p.opponentId ? [p.opponentId] : [])];
+  const gagnantId = manche === 'player' ? p.challengerId : manche === 'opponent' ? p.opponentId : undefined;
+  const roundActors = { ...(gagnantId ? { winners: [gagnantId] } : {}), all };
+
+  if (seq.params.target == null) {
+    return { go: 'end', outcome: manche, payload: { ...p, last: { playerSL, opponentSL } }, roundActors };
+  }
+
+  const { cum, done } = sequenceCumRound(seq, {
+    [CAMP_PLAYER]: { success: sides.player.success, sl: playerSL },
+    [CAMP_OPPONENT]: { success: sides.opponent.success, sl: opponentSL },
+  });
+  if (!done.length) return { go: 'continue', cum, payload: { ...p, last: { playerSL, opponentSL } }, roundActors };
+  const cp = cum[CAMP_PLAYER] ?? 0;
+  const co = cum[CAMP_OPPONENT] ?? 0;
+  const issue: TavernGameResult['winner'] = cp > co ? 'player' : co > cp ? 'opponent' : 'tie';
+  return { go: 'end', outcome: issue, cum, payload: { ...p, last: { playerSL: cp, opponentSL: co } }, roundActors };
+}
+
+/** DÉNOUEMENT (socle) : mise, modale de résultat, journal. */
 function tavernSettle(get: Get, set: Set, seq: SequenceState<TavernPayload>, outcome: string): void {
   const p = seq.payload;
   const game = findTavernGameById(p.gameId);
@@ -251,49 +359,38 @@ function tavernSettle(get: Get, set: Set, seq: SequenceState<TavernPayload>, out
   const winner: TavernGameResult['winner'] = outcome === 'player' || outcome === 'opponent' ? outcome : 'tie';
   const playerSL = p.last?.playerSL ?? 0;
   const opponentSL = p.last?.opponentSL ?? 0;
-  finalizeTavernGame(get, set, game, challenger, p.opponentName, winner, playerSL, opponentSL, 1, p.stakeBrass,
-    tavernOpposedLog(game, playerSL, opponentSL, winner));
+  const rounds = Math.max(1, seq.round);
+  const log = seq.params.target != null
+    ? tavernExtendedLog(game, playerSL, opponentSL, rounds)
+    : tavernOpposedLog(game, playerSL, opponentSL, winner);
+  finalizeTavernGame(get, set, game, challenger, p.opponentName, winner, playerSL, opponentSL, rounds, p.stakeBrass, log);
 }
 
-registerSequence<TavernPayload>(TAVERN_SEQUENCE, { round: tavernRound, close: tavernClose, settle: tavernSettle });
-
-/** Ouvre l'étape-jet du challenger pour UNE manche (mono, opposée ou étendue) — SOURCE UNIQUE d'ouverture,
- *  réutilisée par `playTavernGame` (manche 1) et par l'applier (manches suivantes, mode `extended`). Test
- *  OPPOSÉ RÉEL (#579) : l'adversaire est roulé ICI, AVANT l'ouverture — figé dans `meta.opposed` (calque
- *  `combat/triggeredTest.ts`/`combatManeuvers.ts` : `FLOWS.cascade` ré-oppose à chaque influence héros,
- *  cf. `rollFlowSpecs.ts:696-765`). */
-function openTavernRound(
-  get: Get, set: Set, game: TavernGame, challengerId: string, opponentValue: number, opponentName: string,
-  opponentId: string | undefined, stakeBrass: number, round: number, cumPlayer: number, cumOpponent: number,
-): void {
-  // L'adversaire roule sur SA valeur de Test (`opponentValue` — États/Encombrement compris : c'est sa
-  // CIBLE), mais oppose au départage son Niveau de Compétence NU, comme le challenger dont le seam pose
-  // déjà la nue en `step.base` (`LDB 12 l.160` : opposer une nue à une fondue compare deux grandeurs).
-  const opponentHero = opponentId ? get().party.find((h) => h.id === opponentId) : undefined;
-  const rolled = rollTavernTest(opponentValue, battleRng());
-  const opponentTR: TestResult = opponentHero ? { ...rolled, base: tavernGameBaseValue(opponentHero, game) } : rolled;
-  const attackerLabel = testSkillLabel(tavernTestSpec(game));
-  openRoll(get, set, {
-    side: { actorId: challengerId },
-    actionLabel: game.label,
-    test: tavernTestSpec(game),
-    difficulty: 'intermediaire', // « Test opposé de Compétence Intermédiaire (+0) » (l.11)
-    klass: 'hero-test',
-  }, TAVERN_GAME_KIND, {
-    gameId: game.id, opponentValue, opponentName, stakeBrass, round, cumPlayer, cumOpponent,
-    opposed: { aT: opponentTR, ...(opponentId ? { attackerId: opponentId } : {}), attackerName: opponentName, attackerLabel },
-  });
+/** TABLEAU DE MARQUE d'une partie EN COURS (affichage) : score par camp, cible, manche, phase. Une
+ *  partie à manche UNIQUE sans cible n'a rien à montrer avant son verdict — pas de tableau. */
+function tavernBoard(get: Get, seq: SequenceState<TavernPayload>): SequenceBoard | undefined {
+  const p = seq.payload;
+  const game = findTavernGameById(p.gameId);
+  const challenger = actorIn(get(), p.challengerId);
+  if (!game || !challenger) return undefined;
+  const ph = sequencePhaseOf(seq.params, seq.round);
+  if (seq.params.target == null && ph.total === 0) return undefined;
+  return {
+    title: game.label,
+    camps: [
+      { id: CAMP_PLAYER, label: challenger.label, score: seq.cum[CAMP_PLAYER] ?? 0, ...(seq.params.target != null ? { target: seq.params.target } : {}) },
+      { id: CAMP_OPPONENT, label: p.opponentName, score: seq.cum[CAMP_OPPONENT] ?? 0, ...(seq.params.target != null ? { target: seq.params.target } : {}) },
+    ],
+    round: seq.round,
+    ...(ph.total > 0 ? { rounds: ph.total, phase: `${ph.phase}/${ph.count}` } : {}),
+  };
 }
 
-/** Rejoue une cascade différée si la cascade EN COURS n'a pas fini de committer son étape (patron
- *  `portFlow.ts` `chainStep`) — sinon exécute directement (chemin inline/immédiat). */
-function chainRound(get: Get, open: () => void): void {
-  if (get().pendingCascade) scheduleFlowTimer(open, 0);
-  else open();
-}
+registerSequence<TavernPayload>(TAVERN_SEQUENCE, {
+  round: tavernRound, close: tavernClose, settle: tavernSettle, board: tavernBoard,
+});
 
-/** Dénoue la partie : applique la mise, pose le résultat affiché par la modale, journalise. SOURCE
- *  UNIQUE des deux modes (partagée par l'applier `opposed`/`extended`). */
+/** Dénoue la partie : applique la mise, pose le résultat affiché par la modale, journalise. */
 function finalizeTavernGame(
   get: Get, set: Set, game: TavernGame, challenger: Combatant, opponentName: string,
   winner: TavernGameResult['winner'], playerSL: number, opponentSL: number, rounds: number, stakeBrass: number, log: string,
@@ -314,43 +411,3 @@ function finalizeTavernGame(
   const stakeTxt = netBrass > 0 ? ` — gain ${formatMoney(fromBrass(netBrass))}` : netBrass < 0 ? ` — perte ${formatMoney(fromBrass(-netBrass))}` : '';
   return { consequences: freeCons([`${game.label} — ${challenger.label} contre ${opponentName} : ${log}${stakeTxt}`]) };
 }
-
-/** Kind de l'étape-jet du challenger en mode ÉTENDU (Bras de fer) — le mode OPPOSÉ passe par le socle
- *  de séquence (`TAVERN_ROUND_KIND`). Exporté avec `isTavernStep` pour que la modale sache masquer le
- *  formulaire de réglage pendant qu'une manche est EN COURS (cascade surfacée par-dessus, #370 point 4). */
-export const TAVERN_GAME_KIND = 'tavern-game';
-registerCascadeApplier(TAVERN_GAME_KIND, (get, set, step) => {
-  if (!step.result) return {};
-  const gameId = String(step.meta?.gameId ?? '');
-  const game = findTavernGameById(gameId);
-  const challenger = step.actorId ? actorIn(get(), step.actorId) : undefined;
-  if (!game || !challenger) return {};
-  const opponentValue = Number(step.meta?.opponentValue ?? 0);
-  const opponentName = String(step.meta?.opponentName ?? 'un adversaire de la salle');
-  const opponentId = step.meta?.opposed?.attackerId;
-  const stakeBrass = Number(step.meta?.stakeBrass ?? 0);
-
-  // Le défenseur (challenger) a joué contre l'adversaire FIGÉ AVANT l'ouverture (`meta.opposed.aT`,
-  // #579) — `success` générique porte l'issue OPPOSÉE (`resolveOpposed`, tie inclus dans « résiste »),
-  // reconstruite ici en succès BRUT (roll ≤ target) pour préserver EXACTEMENT le calcul historique de
-  // `resolveTavernRound`/`roundSL` (tie distinct, plafond `drCap` de Boules), qui ne connaît QUE le
-  // succès propre au jet — jamais l'issue d'opposition déjà tranchée par la machinerie générique.
-  // `step.base` = Niveau de Compétence NU posé par la porte du seam (`LDB 09 l.17`) — la grandeur du
-  // départage à DR égal (`LDB 12 l.160`), comme l'adversaire figé la porte de son côté.
-  const playerTR: TestResult = { roll: step.result.roll, target: step.result.target, ...(step.base != null ? { base: step.base } : {}), success: step.result.roll <= step.result.target, sl: step.result.sl, isDouble: false };
-  const opponentTR: TestResult = step.meta?.opposed?.aT ?? rollTavernTest(opponentValue, battleRng());
-
-  // Ce kind ne sert QUE le Test opposé ÉTENDU (Bras de fer, l.34) : le mode `opposed` s'ouvre, se clôt
-  // et se dénoue dans le socle de séquence (`TAVERN_SEQUENCE`), qui n'appelle jamais cet applier.
-  if (game.mode !== 'extended') return {};
-  const target = game.target ?? 10;
-  const round = Number(step.meta?.round ?? 1);
-  const cumPlayer = Number(step.meta?.cumPlayer ?? 0) + Math.max(0, roundSL(playerTR, game.drCap));
-  const cumOpponent = Number(step.meta?.cumOpponent ?? 0) + Math.max(0, roundSL(opponentTR, game.drCap));
-  if (cumPlayer < target && cumOpponent < target && round < SEQUENCE_MAX_ROUNDS) {
-    chainRound(get, () => openTavernRound(get, set, game, challenger.id, opponentValue, opponentName, opponentId, stakeBrass, round + 1, cumPlayer, cumOpponent));
-    return {};
-  }
-  const winner = cumPlayer > cumOpponent ? 'player' : cumOpponent > cumPlayer ? 'opponent' : 'tie';
-  return finalizeTavernGame(get, set, game, challenger, opponentName, winner, cumPlayer, cumOpponent, round, stakeBrass, tavernExtendedLog(game, cumPlayer, cumOpponent, round));
-});

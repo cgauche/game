@@ -160,3 +160,26 @@
 .creator-band-right:has(.notch-gauge + .notch-gauge) .notch-gauge:not([data-fixed]) [role='meter'] {
   width: 110px;
 }
+
+/* ══════════════ Tableau de marque de séquence (`SequencePanel.tsx`, #1279 S1) ══════════════
+   Le CORPS d'une bande titrée : une ligne par camp (jauge de cumul vers cible, ou score nu). Aucune
+   matière propre — la bande porte la sienne ; ici, seulement la mise en colonne.
+   Les nœuds se nomment par DATA-ATTRIBUT sous `.creator-band`, jamais par une classe : le stock de
+   classes du module est GELÉ (cliquet xii, `ui-ratchets.test.ts`) et la convention du module emploie
+   déjà l'attribut pour ses variantes (`[data-fixed]` ci-dessus). Trois nœuds de mise en page ne valent
+   pas trois noms de classe de plus. */
+.creator-band [data-seq-board] {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.creator-band [data-seq-score] {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+}
+.creator-band [data-seq-note] {
+  margin: 2px 0 0;
+  font-size: 0.85em;
+}

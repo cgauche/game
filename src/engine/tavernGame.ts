@@ -11,6 +11,7 @@
 import { RNG, defaultRNG } from './dice';
 import { rollTest, resolveOpposed, TestResult } from './tests';
 import { Difficulty, CharKey } from './types';
+import type { SequenceRoundOps } from './sequenceVocab';
 import tavernGamesJson from '../data/tavernGames.json';
 
 export interface TavernGame {
@@ -38,6 +39,12 @@ export interface TavernGame {
    *  a le nombre le plus bas gagne » (l.107) → `units-lowest` ; Boules « en cas d'égalité, la partie se
    *  solde par un match nul » (l.57) → `nul`. Absent : l'égalité reste. */
   tieBreak?: string;
+  /** Bonus de CARACTÉRISTIQUE ajouté au DR de chaque manche — Bras de fer l.34 (Force), Alvatafl l.20
+   *  (Intelligence), Bête l.42 (Capacité de Tir). Consommé par le socle (`SequenceParams.drBonus`). */
+  drBonus?: CharKey;
+  /** EFFETS PAR MANCHE en donnée (`GameOp[]`) — Bras de fer l.34-35 : +1 Avantage au vainqueur de
+   *  chaque tour, +1 État Exténué tous les (Bonus d'Endurance) tours sans vainqueur. */
+  roundOps?: SequenceRoundOps;
   /** Variante de lecture du score (Fléchettes = unités/dizaines/×10) — documentaire ; le moteur rapide lit
    *  le DR (l.11). */
   read?: 'sl' | 'units-tens';
@@ -95,14 +102,25 @@ export interface TavernRoundOutcome {
 }
 
 /**
+ * `drBonus` = Bonus de Caractéristique AJOUTÉ au DR de la manche, PAR CAMP (Bras de fer NADAJ 16
+ * l.34 : « à chaque tour, ajoutez votre Bonus de Force au nombre de DR que vous avez obtenus »).
+ * Son ORDRE vis-à-vis du plafond de manche (`drCap`) est une DÉCISION D'INGÉNIERIE, pas une règle :
+ * aucune entrée du catalogue ne porte les deux à la fois, l'écart est donc inobservable en jeu. Le
+ * choix retenu — plafonner le DR OBTENU au Test, puis ajouter le Bonus — suit la seule entrée qui
+ * plafonne (Boules l.57 : « Le DR maximal est de 6 DR », dit du DR du jet). À réexaminer le jour où
+ * une entrée cumule les deux.
+ *
  * Décide UNE manche depuis deux `TestResult` DÉJÀ roulés par l'appelant (#370) : elle ne roule RIEN —
  * rouler ET décider ici contournerait le seam de jet côté joueur. Elle ne fait QUE décider, comme
  * `resolveOpposed`. Sert au mode `opposed` (manche unique) et, manche par
  * manche, au mode `extended` (Bras de fer, l'appelant cumule `playerSL`/`opponentSL` jusqu'à `target`).
  */
-export function resolveTavernRound(game: TavernGame, playerTR: TestResult, opponentTR: TestResult): TavernRoundOutcome {
-  const ps = roundSL(playerTR, game.drCap);
-  const os = roundSL(opponentTR, game.drCap);
+export function resolveTavernRound(
+  game: TavernGame, playerTR: TestResult, opponentTR: TestResult,
+  drBonus: { player?: number; opponent?: number } = {},
+): TavernRoundOutcome {
+  const ps = roundSL(playerTR, game.drCap) + (drBonus.player ?? 0);
+  const os = roundSL(opponentTR, game.drCap) + (drBonus.opponent ?? 0);
   const opp = resolveOpposed({ ...playerTR, sl: ps }, { ...opponentTR, sl: os });
   const winner = opp.winner === 'attacker' ? 'player' : opp.winner === 'defender' ? 'opponent' : 'tie';
   return { winner, playerSL: ps, opponentSL: os };

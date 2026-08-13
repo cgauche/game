@@ -28,6 +28,7 @@ import { Icon } from './Icon';
 import { stepInteraction, stepReady, tableStepDefs, tableStepDie, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
 import { useOwns } from './ownership';
 import { pursuitOf } from '../state/pursuitFlow';
+import { SequencePanel } from './SequencePanel';
 import { tableStepForcedDie } from './forcedDieRow';
 import { opposedResponded } from './opposedFrozen';
 import { frozenOpposedRow, tableRow, witnessRow, buildRollRow, type BuiltRollRow } from './rollRowBuild';
@@ -675,7 +676,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         title={titleNode}
         subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length })}
         {...stakeProps}
-        extra={bandNote}
+        extra={<><SequencePanel />{bandNote}</>}
         rolled={ready}
         rows={[...(oppRow ? [oppRow] : []), ...rows]}
         actions={batchActions}
@@ -758,7 +759,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         prefix: 'jet ',
       })}
       {...stakeProps}
-      extra={<>{oppHeader}{outcomeNote}</>}
+      extra={<><SequencePanel />{oppHeader}{outcomeNote}</>}
       rolled={rolled}
       /* Rangées : rangée de l'adversaire figé (Test opposé, #579) + courante interactive (pré-jet en
          attente, post-jet résolue). La barre de Test étendu appartient à la RANGÉE qui cumule

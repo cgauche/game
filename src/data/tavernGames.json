@@ -31,6 +31,25 @@
     "characteristic": "force",
     "mode": "extended",
     "target": 10,
+    "drBonus": "force",
+    "roundOps": {
+      "winner": [
+        {
+          "op": "gainAdvantage",
+          "amount": 1
+        }
+      ],
+      "attrition": [
+        {
+          "op": "condition",
+          "id": "extenue",
+          "value": 1
+        }
+      ],
+      "attritionEvery": {
+        "charBonus": "endurance"
+      }
+    },
     "desc": "faites un Test opposé étendu de Force Intermédiaire (+0) ; à chaque tour, ajoutez votre Bonus de Force au nombre de DR que vous avez obtenus. Le gagnant de chaque tour gagne +1 Avantage, pouvant être utilisé dans le cadre de cette partie de bras de fer, en suivant les règles normales. Le premier Personnage qui atteint au moins 10 DR est le vainqueur. Pour chaque Bonus d'Endurance tours qui passent sans que personne n'ait gagné, vous gagnez + 1 État Exténué (que vous pourrez récupérer après 5 minutes de repos).",
     "source": {
       "book": "nuits-agitees-et-dures-journees",

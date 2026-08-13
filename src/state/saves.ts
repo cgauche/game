@@ -45,7 +45,7 @@ import { pursuitBands, PURSUIT_POLICY_DEFAUT } from './pursuitFlow';
 import { stepReady } from './cascade';
 import { combatEndBands } from './combatEndBands';
 
-export const SAVE_VERSION = 22;
+export const SAVE_VERSION = 23;
 
 export interface SaveMeta {
   version: number;
@@ -355,6 +355,15 @@ export const MIGRATIONS: MigrationMap = {
     pursuitToSequence(data);
     return { ...doc, version: 22, data };
   },
+  // v22→v23 (#1279 S1) : le mode ÉTENDU des jeux de taverne (Bras de fer) quitte son chemin d'applier
+  // pour le socle de séquence, et la définition de séquence des jeux devient UNIQUE (`tavern`). Une
+  // save v22 prise en pleine partie porte donc soit une étape `tavern-game` sans applier, soit un
+  // `sequence.def` inconnu — les deux se rechargeraient en partie fantôme (cf. `retireLegacyTavernGame`).
+  22: (doc) => {
+    const data = { ...(doc.data as Record<string, unknown>) };
+    retireLegacyTavernGame(data);
+    return { ...doc, version: 23, data };
+  },
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus
@@ -650,6 +659,45 @@ function pursuitToSequence(data: Record<string, unknown>): void {
       retires: [],
     },
   };
+}
+
+/**
+ * INVALIDE la partie de taverne EN VOL du chemin LEGACY et RENOMME la définition de séquence —
+ * MIGRATIONS[22] (#1279 S1). Deux gestes :
+ *  1. une étape `tavern-game` d'une save v22 est sans applier : rechargée telle quelle, son jet se
+ *     lancerait, la cascade avancerait, et la partie ne se dénouerait jamais. Elle est RETIRÉE — et les
+ *     cumuls que porte son `meta` ne se reportent PAS : ils sont calculés en planchant CHAQUE manche,
+ *     là où le Test étendu additionne les DR avec leur signe (LDB 12 l.174). Les reprendre propagerait
+ *     un score faux ; la partie est perdue, pas la sauvegarde (une partie de taverne est un
+ *     divertissement borné, sans effet différé — seule la mise, jamais engagée avant le dénouement).
+ *  2. `sequence.def` 'tavern-opposed' devient 'tavern' : une MÊME définition sert désormais les deux
+ *     régimes (opposé simple et étendu). Sans ce renommage, une partie en vol se rechargerait sous un
+ *     id qu'aucun réducteur ne connaît — le socle la retirerait sans dénouement.
+ * Mute `data` ; formes inattendues laissées telles quelles (patron `normalizeScene`).
+ */
+function retireLegacyTavernGame(data: Record<string, unknown>): void {
+  const seq = data.sequence as { def?: unknown } | null | undefined;
+  if (seq && seq.def === 'tavern-opposed') seq.def = 'tavern';
+  const stack = Array.isArray(data.suspendedCascades) ? data.suspendedCascades : [];
+  const purge = (cascade: unknown): boolean => {
+    const c = cascade as { participants?: unknown; cursor?: unknown } | null | undefined;
+    if (!c || !Array.isArray(c.participants)) return false;
+    const restantes = c.participants.filter((st) => (st as { kind?: unknown })?.kind !== 'tavern-game');
+    if (restantes.length === c.participants.length) return false;
+    c.participants = restantes;
+    c.cursor = Math.min(typeof c.cursor === 'number' ? c.cursor : 0, restantes.length);
+    return true;
+  };
+  if (purge(data.pendingCascade) && !(data.pendingCascade as { participants: unknown[] }).participants.length) {
+    data.pendingCascade = null;
+    data.tavernGames = null;
+  }
+  for (const cascade of stack) purge(cascade);
+  if (Array.isArray(data.suspendedCascades)) {
+    data.suspendedCascades = data.suspendedCascades.filter(
+      (c) => ((c as { participants?: unknown[] })?.participants?.length ?? 0) > 0,
+    );
+  }
 }
 
 /** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE, via la

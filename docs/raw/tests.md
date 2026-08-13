@@ -199,7 +199,7 @@ Si aucune Difficulté n'est indiquée pour un test (notamment pour un test oppos
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test), [Tests opposés](#tests-opposés)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.133-139, l.141-150, l.166) → `useExtendedTestJetProps`, `RecoverResolution`, `SequenceParams`, `TraceOpposed`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `BargainModalView`, `forceCrewRole`, `useTestJetProps`, +85 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +44 fichiers
+- `LDB 12` (l.133-139, l.141-150, l.166) → `useExtendedTestJetProps`, `RecoverResolution`, `TraceOpposed`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `SequenceParams`, `BargainModalView`, `forceCrewRole`, `useTestJetProps`, +83 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +45 fichiers
 
 ---
 
@@ -318,8 +318,8 @@ Un test opposé est utilisé lorsqu'un personnage doit confronter ses capacités
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.17) → `RecoverResolution`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `HealRollFlow`, `TestResult`, `SurgeryRollFlow`, `tavernGameBaseValue`, +28 — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, +19 fichiers
-- `LDB 12` (l.152-169) → `useExtendedTestJetProps`, `RecoverResolution`, `soutien`, `SequenceParams`, `TraceOpposed`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `BargainModalView`, `useTestJetProps`, +84 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +42 fichiers
+- `LDB 9` (l.17) → `RecoverResolution`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `HealRollFlow`, `TestResult`, `SurgeryRollFlow`, `rollTest`, +26 — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, +18 fichiers
+- `LDB 12` (l.152-169) → `useExtendedTestJetProps`, `RecoverResolution`, `soutien`, `TraceOpposed`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `SequenceParams`, `BargainModalView`, `useTestJetProps`, +82 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +43 fichiers
 
 ---
 
@@ -347,7 +347,7 @@ Les tests étendus servent à résoudre des tâches particulièrement longues ou
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.171-180, l.182-185) → `useExtendedTestJetProps`, `soutien`, `SequenceParams`, `AuContactModal`, `GrappleModal`, `BargainModalView`, `StateRecoveryModalView`, `opposedLines`, `ReloadModal`, `useDefenseJetProps`, +43 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +29 fichiers
+- `LDB 12` (l.171-180, l.182-185) → `useExtendedTestJetProps`, `soutien`, `AuContactModal`, `GrappleModal`, `SequenceParams`, `BargainModalView`, `StateRecoveryModalView`, `opposedLines`, `ReloadModal`, `useDefenseJetProps`, +45 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +31 fichiers
 
 ---
 
@@ -373,7 +373,7 @@ Lorsque plusieurs personnages travaillent ensemble à la même tâche, ceux qui 
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.188-200) → `useExtendedTestJetProps`, `soutien`, `SequenceParams`, `MedicState`, `BargainModalView`, `runSceneConsumableFlow`, `ActivityModal`, `RollRequest`, `TestFields`, `OPTIONAL_RULES`, +45 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +26 fichiers
+- `LDB 12` (l.188-200) → `useExtendedTestJetProps`, `soutien`, `MedicState`, `SequenceParams`, `BargainModalView`, `runSceneConsumableFlow`, `ActivityModal`, `RollRequest`, `TestFields`, `OPTIONAL_RULES`, +45 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +26 fichiers
 
 ---
 
@@ -622,4 +622,4 @@ Ces trois mécaniques constituent des extensions légitimes du système de DR da
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 12` (l.124-127) → `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `evaluateTest`, `bestForcedRoll`, `SL_IMPRESSIVE`, `isAstoundingFailure`, `FicheBody`, `resolveAppraise`, `ItemInstance` — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +2 fichiers
 - `LDB 17` (l.22) → `canReroll`, `RunModal`, `fateSaveOrDie`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, `bonusShipManeuver` ⚠sans-appelant, +11 — `src/data/flow-stakes.json`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +11 fichiers
-- `NADJ 16` (l.7, l.11, l.19, l.25, l.34, l.57, l.97) → `al-zahr`, `alvatafl`, `bras-de-fer`, `bete-tailleurs`, `boules`, `cerevis`, `arene`, `tavern-game`, `OPTIONAL_RULES` — `src/data/combat-stakes.json`, `src/data/tavernGames.json`, `src/engine/policy.ts`
+- `NADJ 16` (l.7, l.11, l.19, l.25, l.34, l.57, l.97) → `al-zahr`, `alvatafl`, `extenue`, `bete-tailleurs`, `boules`, `cerevis`, `tavern-game`, `arene`, `OPTIONAL_RULES` — `src/data/combat-stakes.json`, `src/data/tavernGames.json`, `src/engine/policy.ts`

@@ -8,7 +8,7 @@
  * (`TavernGame.read`, `src/engine/tavernGame.ts:38`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { gameOpSchema, sourceRefSchema } from '../common';
 
 export const file = 'tavernGames.json';
 
@@ -31,6 +31,16 @@ export const schema = z.array(
     /** Id du départage d'égalité résolu par le socle de séquence (`units-lowest` Dominos l.107,
      *  `nul` Boules l.57) — consommé par `src/state/sequenceCore.ts` (`resolveSequenceTie`). */
     tieBreak: z.enum(['units-lowest', 'nul']).optional(),
+    /** Bonus de Caractéristique ajouté au DR de chaque manche (Bras de fer l.34 : Force) — consommé
+     *  par `SequenceParams.drBonus` (`src/state/sequenceCore.ts`). */
+    drBonus: charKeySchema.optional(),
+    /** Effets PAR MANCHE en `GameOp[]` (Bras de fer l.34-35 : +1 Avantage au vainqueur du tour,
+     *  +1 Exténué tous les (Bonus d'Endurance) tours) — `SequenceParams.rounds`. */
+    roundOps: z.strictObject({
+      winner: z.array(gameOpSchema).optional(),
+      attrition: z.array(gameOpSchema).optional(),
+      attritionEvery: z.union([z.number(), z.strictObject({ charBonus: charKeySchema })]).optional(),
+    }).optional(),
     read: z.enum(['sl', 'units-tens']).optional(),
     stake: z.string().optional(),
     source: sourceRefSchema,

@@ -53,6 +53,45 @@ describe.skip('génération des fixtures golden (à lancer À LA MAIN, jamais en
     (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
   });
 
+  // #1279 S1 — v22 : partie de BRAS DE FER EN VOL par le chemin LEGACY (mode `extended` de
+  // `state/tavernFlow`, étape `tavern-game` dont le `meta` porte `cumPlayer`/`cumOpponent`). Motive
+  // `MIGRATIONS[22]` : ce chemin meurt (le mode étendu passe au socle de séquence) et les cumuls
+  // qu'il transporte ont été calculés en planchant CHAQUE manche, ce que le Test étendu ne fait pas
+  // (LDB 12 l.174) — ils ne se reportent pas.
+  it('bras de fer en vol (chemin legacy `tavern-game`, cumuls en meta)', async () => {
+    seedBattleRng(3);
+    const [a, b] = makePregens().slice(0, 2);
+    useGame.setState({
+      party: [a, b], battle: null, tavernGames: null, pendingCascade: null, sequence: null,
+      scene: {
+        id: 'test-fixture', nom: 'Taverne du Sanglier', description: 'Scène de test.',
+        dimensions: { w: 8, h: 8 }, ambiance: 'interieur',
+        layers: [{ z: 0, tiles: Array(64).fill('bois') }],
+        entities: [{ id: 'start', kind: 'heroStart', pos: { x: 4, y: 4 } }],
+        dialogues: [], triggers: [], encounters: [], flags: {},
+      } as never,
+      gameTime: 21 * 60,
+    } as never);
+    const get = useGame.getState.bind(useGame);
+    get().openTavernGames();
+    get().playTavernGame({ gameId: 'bras-de-fer', challengerId: a.id, opponent: { kind: 'hero', id: b.id } });
+    // Une manche jouée : la SUIVANTE s'ouvre en portant les cumuls dans son `meta`.
+    for (let i = 0; i < 4 && get().pendingCascade; i++) {
+      const p = get().pendingCascade!;
+      const cur = p.participants[p.cursor];
+      if (cur && cur.target != null && !cur.result) get().cascadeRoll(cur.id);
+      get().cascadeNext();
+      await new Promise<void>((r) => setTimeout(r, 0));
+      const step = get().pendingCascade?.participants[0];
+      if (step && Number(step.meta?.round ?? 0) >= 2) break;
+    }
+    expect(get().pendingCascade!.participants[0].kind).toBe('tavern-game');
+    expect(get().pendingCascade!.participants[0].meta?.round).toBeGreaterThanOrEqual(2);
+    deleteSlot(1);
+    expect(useGame.getState().saveGame(1)).toBe(true);
+    write('bras-de-fer-legacy', 1);
+  });
+
   it('voyage maritime : navire de campagne + équipage (le groupe) + plan de traversée actif', () => {
     seedBattleRng(1);
     const seaMap: WorldMap = {

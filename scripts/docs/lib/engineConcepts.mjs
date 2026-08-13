@@ -140,6 +140,7 @@ export const FILE_CONCEPTS = new Map([
   ['src/engine/suffocation.ts', 'Suffocation'],
   ['src/engine/tables.ts', 'Tables d100 (lookup)'],
   ['src/engine/talentEffects.ts', 'Effets de talent'],
+  ['src/engine/sequenceVocab.ts', 'Séquence — vocabulaire de donnée (table, effets de manche, phases)'],
   ['src/engine/tavernGame.ts', 'Jeux de taverne'],
   ['src/engine/testOutcome.ts', 'Issue de test (Degrés de Réussite)'],
   ['src/engine/testPolicy.ts', 'Politique de test'],

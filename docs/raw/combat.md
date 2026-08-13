@@ -1748,7 +1748,7 @@ Un participant dont la **Caractéristique de Mouvement (M)** est supérieure gag
 **Voir aussi** : Désengagement et fuite (Attaque gratuite, +1 Avantage, Calme / Brisé) ; Mouvement & Course (Tableau des Mouvements, M en mètres) ; Saut et Chute ; Tests opposés & Degrés de Réussite (DR).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 15` (l.87-89, l.90, l.92, l.93, l.94, l.95, l.96, l.98-102, l.105-106, l.108) → `FallPlan`, `assourdi`, `scene`, `planJump`, `fall-choice`, `FallModal`, `hasMeaningfulOption`, `fall-roll`, `a-terre`, `SequenceScore`, +41 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combatFeatures/types.ts`, `src/engine/movement.ts`, +24 fichiers
+- `LDB 15` (l.87-89, l.90, l.92, l.93, l.94, l.95, l.96, l.98-102, l.105-106, l.108) → `FallPlan`, `assourdi`, `scene`, `planJump`, `fall-choice`, `FallModal`, `hasMeaningfulOption`, `fall-roll`, `a-terre`, `scenario`, +41 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combatFeatures/types.ts`, `src/engine/movement.ts`, +24 fichiers
 - sans code : `NADJ 6` (l.150)
 
 ---
