@@ -81,6 +81,8 @@ export function buildTokens(scene: Scene, visible: ReadonlySet<string> | undefin
 
   // ── COMBATTANTS : mêmes filtres et même ORDRE D'ANNEAU héros que la branche combat historique. ────
   let hi = 0; // ordinal d'anneau héros — consommé AUSSI par un cavalier non dessiné (couleur stable)
+  // L'ordinal réservé par un cavalier héros : c'est l'identité d'équipe que portera son COUPLE plus bas.
+  const riderHi = new Map<string, number>();
   for (const c of battle.combatants) {
     if (!c.pos) continue;
     // Échelle MER : l'équipage d'un navire est ABSTRAIT (la coque le représente, MDG 14).
@@ -94,7 +96,7 @@ export function buildTokens(scene: Scene, visible: ReadonlySet<string> | undefin
     // Combat monté (iso) : cavalier rendu EN SELLE (couple composite ci-dessous) ; en vue du dessus,
     // cavalier et monture sont deux pions distincts.
     if (!top && isRider(c)) {
-      if (isHero) hi++;
+      if (isHero) riderHi.set(c.id, hi++);
       continue;
     }
     if (!top && isMount(c)) continue;
@@ -127,7 +129,7 @@ export function buildTokens(scene: Scene, visible: ReadonlySet<string> | undefin
         key: `mtd:${mount.id}`,
         id: mount.id,
         cell: { x: mount.pos.x, y: mount.pos.y, z: mount.pos.z ?? 0 },
-        subject: { kind: 'mounted', mount, rider },
+        subject: { kind: 'mounted', mount, rider, ...(riderHi.has(rider.id) ? { heroIndex: riderHi.get(rider.id) } : {}) },
         states: { visible: true },
       });
     }

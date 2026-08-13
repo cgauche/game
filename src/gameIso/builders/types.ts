@@ -174,8 +174,10 @@ export type TokenSubjectEl =
   /** Combattant (branche combat). `heroIndex` = ordinal d'anneau héros ; `overhang` = jeton de
    *  muraille rendu AU-DESSUS de la zone active (chemin de ronde vu d'en bas). */
   | { kind: 'combatant'; c: Combatant; heroIndex?: number; overhang: boolean }
-  /** Couple monté (iso) : UN corps composite à la tuile/empreinte de la monture. */
-  | { kind: 'mounted'; mount: Combatant; rider: Combatant };
+  /** Couple monté (iso) : UN corps composite à la tuile/empreinte de la monture. `heroIndex` = ordinal
+   *  d'anneau du CAVALIER (celui qu'il a réservé sans être dessiné) — l'identité d'équipe du couple se
+   *  lit au cavalier, le record de la monture pouvant porter un autre camp. */
+  | { kind: 'mounted'; mount: Combatant; rider: Combatant; heroIndex?: number };
 export interface TokenEl extends ElBase {
   kind: 'token';
   id: string;

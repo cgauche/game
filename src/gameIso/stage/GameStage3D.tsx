@@ -103,7 +103,7 @@ import {
   type TintAt,
   worldShadowBox,
 } from '../backends/webgl/sceneMeshes';
-import { AUCUN_CHROME, billboardMaterial, poseBoards, type Board, type ChromeAt, type FrameCamera, type GlideAt } from './boardPose';
+import { AUCUN_CHROME, attachBodySilhouette, billboardMaterial, poseBoards, type Board, type ChromeAt, type FrameCamera, type GlideAt } from './boardPose';
 import { buildGroundAccentMeshes, maskGroundAccents, sceneGroundAccents } from '../backends/webgl/groundAccents';
 import {
   HIGHLIGHT_SLOTS,
@@ -256,16 +256,20 @@ export interface StageWalkAnim {
 const AUCUN_GLISSEMENT: GlideAt = () => null;
 
 /** Vide un groupe et libère ce qu'il portait — un groupe se reconstruit ENTIER, jamais par différence.
- *  La géométrie marquée `emprunte` appartient au bake (`bakeWorldGeometry`) : elle survit au groupe. */
+ *  La géométrie marquée `emprunte` appartient à un autre (le bake de `bakeWorldGeometry`, le corps
+ *  d'un jumeau de silhouette) : elle survit au groupe. La descente est RÉCURSIVE — ce qu'un objet
+ *  porte en enfant (le jumeau de silhouette d'un quad, #1297) a son propre matériau à libérer. */
 function viderGroupe(groupe: THREE.Group): void {
   for (const enfant of [...groupe.children]) {
     groupe.remove(enfant);
-    const porteur = enfant as THREE.Mesh;
-    if (porteur.material) {
-      const mats = Array.isArray(porteur.material) ? porteur.material : [porteur.material];
-      for (const m of mats) m.dispose();
-    }
-    if (porteur.geometry && !porteur.userData.emprunte) porteur.geometry.dispose();
+    enfant.traverse((o) => {
+      const porteur = o as THREE.Mesh;
+      if (porteur.material) {
+        const mats = Array.isArray(porteur.material) ? porteur.material : [porteur.material];
+        for (const m of mats) m.dispose();
+      }
+      if (porteur.geometry && !porteur.userData.emprunte) porteur.geometry.dispose();
+    });
   }
 }
 
@@ -935,6 +939,12 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
         groupe.add(mesh);
         const board: Board = { sub: q.sub, quad: q.quad, mesh, material: mat };
         boards.push(board);
+        // SILHOUETTE À TRAVERS LES MURS (#1297, LOT C) : le corps d'un jeton occulté par la matière
+        // du monde garde un JUMEAU à test de profondeur retourné, teinté de sa couleur d'équipe —
+        // enfant du quad, donc porté par la MÊME pose (aucune écriture de plus par frame). Les deux
+        // regards du cadre en héritent : c'est le montage des quads, pas une passe de vue.
+        // Un sujet sans équipe (décor, figurant) n'en reçoit aucun : il n'y a rien à y signaler.
+        if (q.sub.teamColor) attachBodySilhouette(board, q.sub.teamColor);
         // Ombre de CONTACT : le rig ne porte aucune ellipse au pied (le décor, si). Elle entre dans le
         // board — donc dans la passe de pose, donc elle suit le sujet qui glisse. Sous le soleil, c'est
         // l'ombre PROJETÉE qui fait foi (`wantsContactShadow`) — sinon le personnage en porte deux.

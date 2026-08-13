@@ -78,6 +78,85 @@ export function billboardMaterial(map: THREE.Texture, luminance: number): THREE.
   return mat;
 }
 
+/**
+ * MATÉRIAU du JUMEAU DE SILHOUETTE d'un corps (#1297, LOT C) : la MÊME texture de rig que le corps,
+ * mais peinte en APLAT de la couleur d'équipe du jeton, et sous un test de profondeur RETOURNÉ
+ * (`GreaterDepth`) — il ne reste donc que les pixels où la géométrie du monde a déjà écrit devant le
+ * corps, c'est-à-dire exactement là où celui-ci est occulté. Même patron que le jumeau d'anneau
+ * (`backends/webgl/dynamicMarkMeshes.buildSilhouetteTwin`), à l'échelle d'un quad.
+ *
+ * TROIS points que le fragment porte, et qui ne se règlent pas par propriétés de matériau :
+ *  - l'APLAT : `map_fragment` MULTIPLIE le texel par la teinte, donc la couleur d'équipe y sortirait
+ *    assombrie par l'art du rig. La couleur du matériau REMPLACE le texel, dont seul l'alpha survit ;
+ *  - la DÉCOUPE au texel BRUT : `alphaTest` reste le seul juge de la forme, comme pour le corps ;
+ *  - l'ALPHA, multiplié APRÈS la découpe (même raison qu'au corps : sous le seuil, `opacity` efface le
+ *    sujet ENTIER, texels opaques compris). Il reprend l'uniforme d'allure DU CORPS — le MÊME objet,
+ *    pas une copie : la passe de pose l'écrit une fois et alimente les deux, et une silhouette ne peut
+ *    pas dériver de l'allure de son corps.
+ *
+ * `fog` reste celui du corps (allumé) : cette silhouette est de la MATIÈRE de jeton, pas du chrome
+ * d'interface — elle s'embrume donc comme le billboard qu'elle double, sinon un jeton lointain se
+ * lirait plus net à travers un mur qu'à découvert.
+ */
+export function silhouetteMaterial(corps: Board['material'], teamColor: string): THREE.MeshBasicMaterial {
+  const mat = new THREE.MeshBasicMaterial({
+    map: corps.map,
+    transparent: true,
+    alphaTest: ALPHA_TEST,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+    depthFunc: THREE.GreaterDepth,
+  });
+  mat.color.set(teamColor);
+  // L'uniforme d'ALLURE du corps, partagé (cf. ci-dessus). Un corps sans uniforme (matériau d'un
+  // appelant qui monte les siens) reçoit le sien, figé à l'allure pleine.
+  const allureAlpha = (corps.userData.allureAlpha as { value: number } | undefined) ?? { value: 1 };
+  mat.userData.allureAlpha = allureAlpha;
+  // Littéral GLSL de l'opacité propre : un flottant, jamais un entier nu (`a * 1` ne compile pas).
+  const k = SILHOUETTE_BODY_OPACITY.toFixed(4);
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uAllureAlpha = allureAlpha;
+    shader.fragmentShader = shader.fragmentShader
+      .replace('void main() {', 'uniform float uAllureAlpha;\nvoid main() {')
+      .replace('#include <map_fragment>', '#include <map_fragment>\n\tdiffuseColor.rgb = diffuse;')
+      .replace('#include <alphatest_fragment>', `#include <alphatest_fragment>\n\tdiffuseColor.a *= uAllureAlpha * ${k};`);
+  };
+  // Clé de programme EXPLICITE, par DÉFENSE : le défaut de three la dérive de la SOURCE de
+  // `onBeforeCompile` (`Material.customProgramCacheKey`), la même pour tous les jumeaux, mais qui ne
+  // verrait pas `k` devenir variable — deux opacités partageraient alors un programme compilé.
+  mat.customProgramCacheKey = () => `silhouette:${k}`;
+  return mat;
+}
+
+/**
+ * Accroche à un corps monté son JUMEAU DE SILHOUETTE, et le rend (#1297, LOT C).
+ *
+ * Le jumeau est un ENFANT du quad : géométrie EMPRUNTÉE (`userData.emprunte`, comme le jumeau
+ * d'anneau) et transformation héritée de son parent — la passe de pose ne le connaît donc pas, et une
+ * frame de marche n'écrit rien de plus pour lui. `renderOrder = -1` : il passe AVANT les billboards,
+ * qui trichent de 0,3 m vers la caméra et écrivent leur profondeur ensuite ; rendu après eux, il
+ * couvrirait des corps VISIBLES.
+ *
+ * FRONTIÈRE avec le DÉGAGEMENT D'ARCHITECTURE (#818/#907/#950) : les deux se complètent au lieu de se
+ * remplacer — le cutaway retire du MONDE ce qui masque la scène (murs et toits de la pièce regardée),
+ * la silhouette signale le JETON là où le monde reste debout (autre pièce, relief, étage tenu).
+ *
+ * ÉCARTS DÉCLARÉS (#1297) : rien derrière un AUTRE billboard — l'occlusion sprite contre sprite reste
+ * souveraine, à l'identique du picker (LOT B) ; et aucun signal de SURVOL sur la silhouette (elle porte
+ * la couleur d'ÉQUIPE, là où le corps prend la couleur de relation).
+ */
+export function attachBodySilhouette(board: Board, teamColor: string): THREE.Mesh {
+  const jumeau = new THREE.Mesh(board.mesh.geometry, silhouetteMaterial(board.material, teamColor));
+  jumeau.name = `silhouette:${board.sub.cid ?? board.sub.identity}`;
+  jumeau.renderOrder = -1;
+  jumeau.userData.emprunte = true;
+  // Le rayon de picking descend dans les enfants d'un quad (`spriteRaycast`) : le jumeau doublerait
+  // chaque cible sans changer aucun verdict. Il ne se lance pas, il se regarde.
+  jumeau.raycast = () => undefined;
+  board.mesh.add(jumeau);
+  return jumeau;
+}
+
 /** Ce que le CHROME d'un jeton change à l'ALLURE de son billboard (#1176, P3-0f) — la même donnée que
  *  la voie affine porte en style CSS sur son corps (`BodyToken`). */
 export interface BoardChrome {
@@ -91,6 +170,17 @@ export const DIM_OPACITY = 0.82;
 export const GHOST_OPACITY = 0.45;
 /** Part de couleur retirée à un corps hors Ligne de Vue (`grayscale(0.85)`, même site). */
 export const GHOST_DESAT = 0.85;
+/** Opacité PROPRE du JUMEAU DE SILHOUETTE du corps (#1297, LOT C) — le facteur que la silhouette
+ *  applique EN PLUS de l'allure de son corps. Elle vit ici, avec les deux opacités de corps ci-dessus :
+ *  l'alpha rendu d'une silhouette est `SILHOUETTE_BODY_OPACITY × boardChromeOpacity(chrome)`, donc un
+ *  jeton fantôme ou hors d'action garde son statut à travers le mur. Pleine : contrairement à l'anneau
+ *  (`SILHOUETTE_TWIN_OPACITY`, un trait de deux pixels au sol), le corps offre une grande surface —
+ *  c'est sa TEINTE PLATE d'équipe qui le distingue d'un corps visible.
+ *
+ *  FORME : l'APLAT PLEIN à la couleur d'équipe (trace de l'arbitrage : ticket #1297, commentaire du
+ *  2026-08-13 — le « contour teinté » d'origine y est révisé). Seul le DOSAGE reste une molette de
+ *  goût (LOT D). */
+export const SILHOUETTE_BODY_OPACITY = 1;
 
 /** LUMINANCE perçue d'une couleur (Rec. 709) — la même pondération que la désaturation du fragment. */
 export function luminance709(c: THREE.Color): number {

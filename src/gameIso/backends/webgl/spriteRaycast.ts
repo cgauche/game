@@ -9,14 +9,14 @@
  *
  * LA RÈGLE (#1297) : « ce qui se voit se clique ». Le plus PROCHE touché tranche, et un DÉCOR qui gagne
  * rend `null` — le clic retombe sur la tuile, comme un sprite qui cache un corps le rend inatteignable.
- * Seule l'occultation par la géométrie CUITE du monde tombe : la silhouette d'un jeton occulté par la
- * matière s'y peint à travers (`dynamicMarkMeshes.buildSilhouetteTwin`), donc le pixel où on la lit rend
- * son id.
+ * Seule l'occultation par la géométrie CUITE du monde tombe : le jeton s'y peint à travers — son
+ * ANNEAU (`dynamicMarkMeshes.buildSilhouetteTwin`) et son CORPS (`stage/boardPose.attachBodySilhouette`)
+ * — donc le pixel où on le lit rend son id.
  *
- * DEUX CHOIX ASSUMÉS (#1297) : AUCUNE BORNE DE DISTANCE — un jeton occulté par le monde reste cliquable
- * à toute profondeur, comme le jumeau de silhouette qui le révèle sans borne. ASYMÉTRIE TRANSITOIRE
- * vu/cliquable — ce qui se voit d'un jeton occulté est son ANNEAU, soit environ 10 % de la surface de
- * réponse que sa boîte offre au clic ; l'écart se résorbe au LOT C, quand le corps sera silhouetté.
+ * UN CHOIX ASSUMÉ (#1297) : AUCUNE BORNE DE DISTANCE — un jeton occulté par le monde reste cliquable
+ * à toute profondeur, comme les jumeaux de silhouette qui le révèlent sans borne. Ce qui SE VOIT d'un
+ * jeton occulté est désormais son corps entier, à la boîte près : sa surface de réponse au clic est
+ * celle qu'il donne à voir (l'alpha du sprite mis à part, cf. la seconde divergence ci-dessous).
  *
  * DIVERGENCE MESURÉE AVEC L'AFFINE (`stage/sprite-pick-parity.test.ts`) : le peintre affine n'a pas de
  * silhouette — un mur peint APRÈS le jeton reçoit l'`elementFromPoint`, ne porte aucun `data-cid`, et le

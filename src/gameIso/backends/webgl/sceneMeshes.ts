@@ -19,6 +19,7 @@ import { buildWalls } from '../../builders/walls';
 import { buildRoofs, ROOF_SLOPE_M } from '../../builders/roofs';
 import { buildProps } from '../../builders/props';
 import { buildTokens } from '../../builders/tokens';
+import { teamRingDecor } from '../../builders/dynamicMarks';
 import type { CellSide, Face, PropEl, RoofEl, SceneEl, TokenEl, WallEl } from '../../builders/types';
 import { roofCourseStepM, variantOf } from '../../detail/courses';
 import type { DetailRecipe } from '../../detail/types';
@@ -406,6 +407,10 @@ export interface BillboardSubject {
    *  sprite rend au pointeur (`stage/spritePicker.ts`). Absent pour un figurant ou un décor : ni l'un
    *  ni l'autre ne porte de `data-cid` en affine, ils n'y sont donc pas cliquables non plus. */
   cid?: string;
+  /** COULEUR D'ÉQUIPE du jeton (#1297) — celle de son anneau aux pieds (`teamRingDecor`), portée ici
+   *  pour que sa SILHOUETTE à travers les murs en soit teintée. Absente pour un figurant ou un décor,
+   *  qui n'appartiennent à aucune équipe et ne se silhouettent pas. */
+  teamColor?: string;
   kind: BillboardKind;
   /** Ancre PIEDS en repère three (mètres). */
   anchor: THREE.Vector3;
@@ -523,6 +528,10 @@ export interface ActorPose {
    *  devient alors UN billboard COMPOSITE (cavalier assis sur la monture, trié à l'os), à la case et
    *  à l'échelle de la monture — comme le `BodyToken` unique de la voie affine. */
   rider?: Combatant;
+  /** ORDINAL d'anneau de héros (`TokenSubjectEl.heroIndex`) — l'identité d'équipe du jeton, dont sa
+   *  couleur d'anneau ET la teinte de sa silhouette se dérivent (`teamRingDecor`). Pour un couple
+   *  MONTÉ, c'est l'ordinal du CAVALIER : il se lit avec `rider`, jamais avec la monture. */
+  heroIndex?: number;
 }
 
 /** Poses d'acteur des ÉLÉMENTS DU BUILDER — la SEULE dérivation acteurs du monde volumique (l'écran
@@ -534,7 +543,11 @@ export function actorPoses(tokenEls: readonly TokenEl[], facings: Record<string,
     const s = tk.subject;
     const unit = s.kind === 'combatant' ? s.c : s.kind === 'mounted' ? s.mount : null;
     if (!unit?.pos) continue;
-    out.push({ c: unit, x: unit.pos.x, y: unit.pos.y, z: tk.cell.z, facing: facings[unit.id], ...(s.kind === 'mounted' ? { rider: s.rider } : {}) });
+    // `heroIndex` : l'ordinal d'anneau du builder, la SEULE entrée de la couleur d'équipe d'un héros
+    // (`teamRingDecor`) — il voyage avec la pose, sinon la silhouette du corps et l'anneau aux pieds
+    // d'un même jeton se peindraient de deux couleurs. Un couple MONTÉ porte celui de son cavalier.
+    const heroIndex = s.kind === 'combatant' || s.kind === 'mounted' ? s.heroIndex : undefined;
+    out.push({ c: unit, x: unit.pos.x, y: unit.pos.y, z: tk.cell.z, facing: facings[unit.id], ...(heroIndex !== undefined ? { heroIndex } : {}), ...(s.kind === 'mounted' ? { rider: s.rider } : {}) });
   }
   return out;
 }
@@ -678,7 +691,7 @@ function mountedSvg(
 export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt: number, tintAt: TintAt): BillboardSubject[] {
   const defs = `<defs>${DEFS}</defs>`;
   const out: BillboardSubject[] = [];
-  for (const { c, x, y, z, facing, rider } of actors) {
+  for (const { c, x, y, z, facing, rider, heroIndex } of actors) {
     if (isStructure(c)) continue;
     const inputs = actorDrawInputs(c);
     const { render: r, ground } = inputs;
@@ -718,6 +731,11 @@ export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt:
       // corps y entrent) : ni la monture seule ni le cavalier à pied ne peuvent la resservir.
       identity: `acteur:${c.id}${composite ? `+${composite.id}` : ''}|${hash32(stableStr(composite ? [inputs, riderInputs] : inputs)).toString(16)}`,
       cid: c.id,
+      // TEINTE D'ÉQUIPE (#1297) : la MÊME dérivation que l'anneau aux pieds du jeton et que le jeton
+      // affine — une seule loi de couleur d'équipe, quelle que soit la voie qui la peint. Un couple
+      // MONTÉ se lit au CAVALIER (avec l'ordinal qu'il a réservé) : le record de la monture porte
+      // souvent un autre camp que celui qu'elle transporte (`builders/tokens`).
+      teamColor: teamRingDecor(rider ?? c, heroIndex).color,
       kind: 'personnage',
       anchor: new THREE.Vector3((x + off) * mpt, heightAt(scene, Math.round(x), Math.round(y), z), (y + off) * mpt),
       facing: facing ?? 'S',
