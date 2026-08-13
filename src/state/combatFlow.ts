@@ -6179,7 +6179,9 @@ registerCascadeApplier('bladeTrap', (get, set, step) => {
   // double-jet. `runCombatFlow` route le Test (héros manuel → cascade influençable ; ennemi/auto → inline).
   const bt: BladeTrapFreeze = { attackerId: attacker.id, weaponUid: pbt.weapon.uid!, defSL: pbt.defSL, attackerSL: 0 };
   const flow = testFlow(
-    { characteristic: 'force', label: 'Piège-lame', stake: combatStakeRef('bladeTrapForce'), opposed: { attacker: 'force', attackerLabel: 'Force', bonusSL: pbt.defSL } },
+    // `defenderMustWin` : ici « vous » (LDB 62 l.280 « Si vous l'emportez ») est le PIÉGEUR, qui est le
+    // jeteur de ce Test — la lame ne s'arrache qu'à SA victoire, jamais sur une égalité.
+    { characteristic: 'force', label: 'Piège-lame', stake: combatStakeRef('bladeTrapForce'), opposed: { attacker: 'force', attackerLabel: 'Force', bonusSL: pbt.defSL, defenderMustWin: true } },
     { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'breakBlade' }] } },
     EMPTY_FLOW,
   );

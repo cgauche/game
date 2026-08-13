@@ -454,10 +454,9 @@ export interface FlowTest {
   /** Test OPPOSÉ (Assommante, LDB 62 l.235 : « Test opposé Force/Résistance ») : le côté qui jette CE
    *  Test (`skill`/`characteristic` ci-dessus) est le DÉFENSEUR (la cible/victime) ; l'ATTAQUANT (le
    *  porteur de l'effet) oppose `attacker`[+`attackerSkill`], pré-jeté et FIGÉ. L'issue success/sl du
-   *  défenseur vient de `resolveOpposed(jetDéfenseur, jetAttaquantFigé)` (PAS `roll ≤ target`) — le
-   *  défenseur RÉSISTE (branche `success`) si l'attaquant ne l'emporte PAS (défenseur OU égalité) ;
-   *  l'attaquant l'emporte → défenseur PERD → branche `fail`. Calque la mécanique figée de `recover`/
-   *  `disengage` (l'opposant garde son jet, reroll-aware). */
+   *  défenseur vient de `resolveOpposed(jetDéfenseur, jetAttaquantFigé)` (PAS `roll ≤ target`) ; la
+   *  BRANCHE prise se lit au socle (`opposedBranchSuccess`, engine/tests) — jamais recomposée ici.
+   *  Calque la mécanique figée de `recover`/`disengage` (l'opposant garde son jet, reroll-aware). */
   opposed?: { attacker: CharKey; attackerSkill?: string; attackerLabel?: string;
     /** Bonus de DR ajouté au jet du DÉFENSEUR (celui qui passe CE Test) AVANT l'opposition — Piège-lame
      *  (LDB 62 l.280 : « en ajoutant votre DR obtenu au précédent Test de Corps à corps »). Modifie À LA
@@ -468,7 +467,12 @@ export interface FlowTest {
      *  Test de Discrétion de l'embusqueur : « Ajoutez son bonus d'Agilité au DR de tous ses Tests de
      *  Discrétion ». Baké dans `aT.sl` au pré-jet → suit la voie cascade (meta `aT`) ET inline à
      *  l'identique. Absent = 0. */
-    attackerBonusSL?: number };
+    attackerBonusSL?: number;
+    /** Le DÉFENSEUR (le jeteur) est-il le camp que le RAW nomme « vous », celui qui doit REMPORTER pour
+     *  que la conséquence tombe ? `true` : la conséquence est en branche `success` (Piège-lame, LDB 62
+     *  l.280). Absent : le jeteur RÉSISTE, la conséquence est en branche `fail` (Assommante, l.235).
+     *  Lu au SEUL cas d'égalité parfaite — cf. `opposedBranchSuccess` (LDB 12 l.160). */
+    defenderMustWin?: boolean };
 }
 
 /**

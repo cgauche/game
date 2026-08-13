@@ -120,7 +120,7 @@ describe('runCombatFlow — test enfoui + continuation after (combat)', () => {
     expect(useGame.getState().pendingCascade).toBeNull(); // ennemi → jamais d'étape influençable
     // pre(3) + branche(5) + after(7) = 15, appliqués inline d'un coup.
     expect(live(E.id).wounds.current).toBe(before - (3 + 5 + 7));
-    // La ligne de parité du Test (describeTestRoll) + les conséquences partent dans la file différée.
+    // La ligne de parité du Test (traceLineOf) + les conséquences partent dans la file différée.
     expect(useGame.getState().pendingLogQueue.length).toBeGreaterThan(0);
   });
 

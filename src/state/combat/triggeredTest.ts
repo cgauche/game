@@ -22,10 +22,11 @@
  * coop) ; l'applier `triggeredTest` les rejoue (branche PUIS `after`) — l'`ExecCtx` est RECONSTRUIT
  * depuis `get()`/`hero`, jamais capturé (zéro closure dans le pending).
  */
-import { rollTest, resolveOpposed, type TestResult } from '../../engine/tests';
+import { rollTest, resolveOpposed, opposedBranchSuccess, type TestResult } from '../../engine/tests';
 import { combatTestPenalty } from '../../engine/conditions';
 import { testValue, rawCombatTestBase, skillBaseValue } from '../../engine/skills';
-import { describeTestRoll, type OpsCtx } from '../../engine/ops';
+import { type OpsCtx } from '../../engine/ops';
+import { traceLineOf, testTraceLabel } from '../../engine/traceLine';
 import { CHAR_LABELS } from '../../engine/types';
 import type { CharKey, Combatant, Difficulty, EffectSource } from '../../engine/types';
 import { refLabel, derivedStake } from '../../data';
@@ -295,7 +296,7 @@ export function frozenOpposedBatchStep(
     ...(ft.menace ? { menace: ft.menace } : {}),
     meta: {
       onSuccess: branches.onSuccess, onFail: branches.onFail, after, casterId: attacker.id,
-      opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp.attackerLabel ?? CHAR_LABELS[opp.attacker], difficulty, ...(opp.bonusSL ? { bonusSL: opp.bonusSL } : {}) },
+      opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp.attackerLabel ?? CHAR_LABELS[opp.attacker], difficulty, ...(opp.bonusSL ? { bonusSL: opp.bonusSL } : {}), ...(opp.defenderMustWin ? { defenderMustWin: true } : {}) },
     },
   }, participants);
 }
@@ -550,7 +551,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
         id: triggeredTestStepId(c, ft.label, skillLabel), kind: 'triggeredTest', icon: 'nav/dice', rollLabel: skillLabel,
         actor: c, ligne: { test: testIds(ft) }, label, difficulty,
         stake: ft.stake,
-        meta: { onSuccess: node.success, onFail: node.fail, after, opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], difficulty, ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}) }, ...extraMeta },
+        meta: { onSuccess: node.success, onFail: node.fail, after, opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], difficulty, ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}), ...(opp!.defenderMustWin ? { defenderMustWin: true } : {}) }, ...extraMeta },
         ...(ft.menace ? { menace: ft.menace } : {}),
       })
       : simpleTriggeredTestStep(c, ft, { onSuccess: node.success, onFail: node.fail }, after, difficulty, extraMeta);
@@ -566,30 +567,33 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   // `skillLabel` = la Compétence/Caractéristique RÉELLE (cadre de jet), distincte du `label` de situation.
   const t = rollTest(base, difficulty, battleRng(), penalty);
   if (opp && aT && attacker) {
-    // Test OPPOSÉ inline : l'attaquant figé (1ʳᵉ position) vs le jet du défenseur → le défenseur RÉSISTE
-    // (success) si l'attaquant ne l'emporte PAS (défenseur vainqueur OU égalité). `t.success`/`t.sl` du
-    // jet simple sont REMPLACÉS par l'issue opposée (LDB 62 l.235). Le bonus de DR du défenseur (Piège-lame,
-    // LDB 62 l.280) s'AJOUTE à son `sl` AVANT l'opposition (modifie le vainqueur ET la marge nette).
+    // Test OPPOSÉ inline : l'attaquant figé (1ʳᵉ position) vs le jet du défenseur. `t.success`/`t.sl` du
+    // jet simple sont REMPLACÉS par l'issue opposée ; la BRANCHE se lit au socle (`opposedBranchSuccess`
+    // — statu quo à l'égalité parfaite, LDB 12 l.160), jamais recomposée ici. Le bonus de DR du défenseur
+    // (Piège-lame, LDB 62 l.280) s'AJOUTE à son `sl` AVANT l'opposition (vainqueur ET marge nette).
     const bonusSL = opp.bonusSL ?? 0;
     // Départage à DR égal (LDB 12 l.160) : les DEUX camps portent leur valeur NUE — l'attaquant depuis
     // son pré-jet (`rollFrozenOpposedAttacker`), le défenseur posée ICI (le `t` de `rollTest` n'en a pas).
     const o = resolveOpposed(aT, { ...t, sl: t.sl + bonusSL, base: skillBaseValue(c, ft.skill, ft.spec, ft.characteristic) });
-    const defenderResists = o.winner !== 'attacker';
+    const branchSuccess = opposedBranchSuccess(o, opp.defenderMustWin);
     // Chemin INLINE (défenseur non piloté par un humain — l.358) : ni l'attaquant ni le défenseur
     // n'ont de rangée `CascadeModal`/RollLine — le journal de combat est la SEULE surface des DEUX
-    // jets de ce Test opposé, il les PORTE (#295 Lot 5, gardé nominativement).
-    queueLines(ctx.get, ctx.set, [
-      `${attacker.label} (${opp.attackerLabel ?? CHAR_LABELS[opp.attacker]}) ${aT.roll}/${aT.target} (DR ${aT.sl}) vs ${c.label} (${skillLabel}) ${t.roll}/${t.target} (DR ${t.sl}${bonusSL ? `+${bonusSL}` : ''}) — ${defenderResists ? 'résiste' : 'l’emporte'}.`,
-    ], c.id);
-    const lines = applyTriggeredTestBranch(c, { success: defenderResists, sl: t.sl }, { onSuccess: node.success, onFail: node.fail }, exec);
-    // SEAM `onOwnTestFailed` (combat, jet inline ennemi/auto — Test OPPOSÉ perdu par le porteur).
-    if (!defenderResists) lines.push(...fireOwnTestFailed(ctx.get, c, { sl: t.sl }));
+    // jets de ce Test opposé, il les PORTE : la ligne se DÉRIVE (`traceLineOf`, forme OPPOSÉE).
+    queueLines(ctx.get, ctx.set, [traceLineOf({
+      attacker: { who: attacker.label, label: opp.attackerLabel ?? CHAR_LABELS[opp.attacker], roll: aT.roll, target: aT.target, sl: aT.sl },
+      defender: { who: c.label, label: skillLabel, roll: t.roll, target: t.target, sl: t.sl, ...(bonusSL ? { slBonus: bonusSL } : {}) },
+      winner: o.winner,
+    })], c.id);
+    const lines = applyTriggeredTestBranch(c, { success: branchSuccess, sl: t.sl }, { onSuccess: node.success, onFail: node.fail }, exec);
+    // SEAM `onOwnTestFailed` (combat, jet inline ennemi/auto — Test OPPOSÉ PERDU par le porteur). Une
+    // égalité parfaite n'est pas un échec (statu quo) : le trigger ne part que si l'attaquant l'emporte.
+    if (o.winner === 'attacker') lines.push(...fireOwnTestFailed(ctx.get, c, { sl: t.sl }));
     syncCombatant(ctx.get, ctx.set);
     queueLines(ctx.get, ctx.set, lines, c.id);
     playAfter(ctx.get, ctx.set, c, after, ctx.label, ctx.opsCtx?.source);
     return;
   }
-  queueLines(ctx.get, ctx.set, [describeTestRoll(c.label, skillLabel, difficulty, t)], c.id);
+  queueLines(ctx.get, ctx.set, [traceLineOf({ who: c.label, label: testTraceLabel(skillLabel, difficulty), ...t })], c.id);
   const lines = applyTriggeredTestBranch(c, t, { onSuccess: node.success, onFail: node.fail }, exec);
   // SEAM `onOwnTestFailed` (combat, jet inline ennemi/auto — Test SIMPLE raté par le porteur).
   if (!t.success) lines.push(...fireOwnTestFailed(ctx.get, c, { sl: t.sl }));

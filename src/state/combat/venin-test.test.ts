@@ -82,7 +82,7 @@ describe('Venin — nœud Flow test routé cadence-aware (gates argDifficulty/un
     expect(useGame.getState().pendingCascade).toBeNull(); // ennemi → jamais d'étape influençable
     const live = useGame.getState().battle!.combatants.find((c) => c.id === prey.id)!;
     expect(hasCondition(live, 'empoisonne')).toBe(true); // échec → Empoisonné posé inline
-    // La ligne de parité du Test (describeTestRoll) part dans la file différée (Résistance Difficile).
+    // La ligne de parité du Test (traceLineOf) part dans la file différée (Résistance Difficile).
     expect(useGame.getState().pendingLogQueue.some((q) => /Résistance/.test(q.line))).toBe(true);
   });
 

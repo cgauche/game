@@ -45,7 +45,7 @@ import { sceneCombatModifiers } from './sceneRules';
 import { sceneMetresPerTile } from './scene';
 import { REDERIVATIONS, resolveTrample, rederivePassiveAttack, resolveBackstabAttack, backstabWeapon, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, combatValue, frozenDifficulty, type AttackResult, type DefenseSub } from '../engine/combat';
 import { runMovementBonus } from '../engine/combatFeatures/dispatch';
-import { rollTest, resolveOpposed, bumpSL, type TestResult, evaluateTest, evaluateCombinedTest, bestForcedRoll, forcedTR, hydrateTR } from '../engine/tests';
+import { rollTest, resolveOpposed, opposedBranchSuccess, bumpSL, type TestResult, evaluateTest, evaluateCombinedTest, bestForcedRoll, forcedTR, hydrateTR } from '../engine/tests';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { d100, defaultRNG, type RNG } from '../engine/dice';
 import { resolveRun, resolveDeliberateFall, runFromTest, fallFromTest } from '../engine/movement';
@@ -984,7 +984,7 @@ export const FLOWS = {
         if (st.target == null) return null;
         const opp = stepOpposedFreeze(st);
         return opp
-          ? { result: opposedCascadeRoll(tr, opp.aT, st.target, opp.bonusSL ?? 0, st.base) }
+          ? { result: opposedCascadeRoll(tr, opp, st.target, st.base) }
           : { result: { roll: tr.roll, target: st.target, sl: tr.sl, success: tr.success } };
       },
       // Dé CHOISI au titre de la Résilience sur une étape OPPOSÉE : le DR est planché À EMPORTER
@@ -1016,7 +1016,7 @@ export const FLOWS = {
       // Test OPPOSÉ : l'issue success/sl du défenseur vient de `resolveOpposed(jetDéfenseur, aT figé)`
       // (l'attaquant garde son jet — calque `recover`/`disengage`), PAS de `roll ≤ target`. Le défenseur
       // RÉSISTE si l'attaquant ne l'emporte PAS (défenseur OU égalité). Simple sinon (réussite ≤ cible).
-      if (opp) return { result: opposedCascadeRoll(t, opp.aT, st.target, opp.bonusSL ?? 0, st.base) };
+      if (opp) return { result: opposedCascadeRoll(t, opp, st.target, st.base) };
       return { result: { roll: t.roll, target: st.target, sl: t.sl, success: t.success } };
     },
     outcome: (st) => testOutcome(st.result),
@@ -1038,7 +1038,15 @@ export const FLOWS = {
         if (opp) {
           const def2 = bumpSL(hydrateTR({ roll: st.result.roll, target: st.target!, base: st.base, success: st.result.success, sl: st.result.sl }));
           const o = resolveOpposed(opp.aT, bumpSL(def2, opp.bonusSL ?? 0));
-          return { result: { roll: def2.roll, target: st.target!, sl: def2.sl, success: o.winner !== 'attacker' } };
+          // La BRANCHE et le statu quo se lisent au socle (`opposedBranchSuccess`, LDB 12 l.160) : la Chance
+          // peut amener à l'ÉGALITÉ, qui n'est une victoire pour personne.
+          return {
+            result: {
+              roll: def2.roll, target: st.target!, sl: def2.sl,
+              success: opposedBranchSuccess(o, opp.defenderMustWin),
+              ...(o.winner === 'tie' ? { statuQuo: true as const } : {}),
+            },
+          };
         }
         return bumpResultSL(st);
       },
@@ -1434,7 +1442,7 @@ export const FLOWS = {
         const opp = currentStepFreeze(s);
         return {
           result: opp
-            ? opposedCascadeRoll(tr, opp.aT, r.target, opp.bonusSL ?? 0, r.base)
+            ? opposedCascadeRoll(tr, opp, r.target, r.base)
             : { roll: tr.roll, target: r.target, sl: tr.sl, success: tr.success },
         } as Partial<BatchParticipant>;
       },
@@ -1499,7 +1507,7 @@ export const FLOWS = {
         const opp = currentStepFreeze(s);
         if (!opp || !r.result) return bumpResultSL(r);
         const def2 = bumpSL(hydrateTR({ roll: r.result.roll, target: r.target, base: r.base, success: r.result.success, sl: r.result.sl }));
-        return { result: opposedCascadeRoll(def2, opp.aT, r.target, opp.bonusSL ?? 0, r.base) };
+        return { result: opposedCascadeRoll(def2, opp, r.target, r.base) };
       },
     },
   }),

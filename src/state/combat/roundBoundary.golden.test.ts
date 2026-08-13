@@ -41,7 +41,7 @@ describe('GOLDEN — séquence de franchissement de Round (advanceTurn)', () => 
         "lines": [
           "round:— Round 2 —",
           "condition:Mutant subit 1 Blessure(s) (ignorant BE et PA).",
-          "condition:Mutant — Test de Résistance Intermédiaire (+0) : 13 / 20 → réussite.",
+          "condition:Mutant — Test de Résistance Intermédiaire (+0) : 13/20 → réussi (DR +1).",
           "condition:Mutant retire 2 État Empoisonné.",
           "condition:Mutant reçoit 1 État Exténué.",
         ],

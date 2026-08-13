@@ -118,16 +118,17 @@ describe('cliquet composeur — canal journal: déprécié des CascadeApplier (#
  */
 const CONTENT_DIRS = ['src/state', 'src/engine'];
 
-/** Baseline par fichier — voir doc ci-dessus. Reste 9 occurrences dans 4 fichiers : les IRRÉDUCTIBLES
- *  au dériveur, chacun avec SA raison mesurée (#1262 V3 Lj). */
+/** Baseline par fichier — voir doc ci-dessus. Reste 7 occurrences dans 3 fichiers : les IRRÉDUCTIBLES
+ *  au dériveur, chacun avec SA raison mesurée (#1262 V3 Lj, #1294). */
 const CONTENT_BASELINE: Record<string, number> = {
   // #295 — sites GARDÉS nominativement (journal = SEULE surface du jet) que le dériveur ne peut PAS rendre :
   'src/state/seaVoyageFlow.ts': 1, // redémarrage vapeur (`runRestart`) : la ligne porte le DR CUMULÉ du Test étendu (`lastDR`), pas le DR du jet — le patron dirait un autre nombre.
   'src/state/travelFlow.ts': 2, // bêtes de l'attelage (×2) : porteur SANS identité, dé parenthétique en justification d'un effet déjà narré (l'ordre phrase/issue s'inverserait).
   'src/state/riverVoyageFlow.ts': 4, // éclats/calfatage/renflouage IA (×4) : jet INCISÉ dans une narration d'ÉVÉNEMENT — il faudrait scinder en deux lignes.
-  'src/state/combat/triggeredTest.ts': 2, // Test opposé INLINE : DEUX jets sur UNE ligne — exigerait un dériveur d'OPPOSÉ (inexistant).
   // RÉSORBÉS dans le dériveur (#1262 V3 Lj) : stock #410 (merchantFlow ×2, portFlow ×2, engine/magic ×2,
-  // engine/provisions ×2, engine/travel ×1) + 4 sites #295 (pursuitFlow, shipwreck, travelFlow ×2).
+  // engine/provisions ×2, engine/travel ×1) + 4 sites #295 (pursuitFlow, shipwreck, travelFlow ×2) ;
+  // puis (#1294) le Test opposé INLINE de `combat/triggeredTest.ts` (×2), rendu par la forme OPPOSÉE
+  // du dériveur (`traceLineOf`, `casc.opposedTrace`).
 };
 
 function jetEchoCount(src: string): number {

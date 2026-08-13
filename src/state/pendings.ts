@@ -1206,7 +1206,16 @@ export interface OpposedFreeze {
    *  appliqués aux deux groupes ») — celle du `FlowTest`, appliquée au pré-jet de l'attaquant comme au
    *  jet du défenseur, et LUE par les deux lignes. Absente pour un freeze réhydraté sans elle. */
   difficulty?: Difficulty;
+  /** Le DÉFENSEUR (le jeteur de CE Test) est le camp que le RAW nomme « vous », celui qui doit
+   *  REMPORTER pour que la conséquence tombe (Piège-lame, LDB 62 l.280) — `FlowTest.opposed.
+   *  defenderMustWin` figé. Absent : le jeteur RÉSISTE (Assommante, l.235). Lu au SEUL cas d'égalité
+   *  parfaite (`opposedBranchSuccess`, LDB 12 l.160). */
+  defenderMustWin?: boolean;
 }
+
+/** Ce qu'une RANGÉE lit du freeze pour trancher son issue (`stepOpposedFreeze` → `opposedCascadeRoll`) :
+ *  le jet figé et les deux paramètres de verdict. L'identité/affichage de l'attaquant n'y entre pas. */
+export type OpposedRowFreeze = Pick<OpposedFreeze, 'aT' | 'bonusSL' | 'defenderMustWin'>;
 /** Contexte SÉRIALISABLE d'une DÉFENSE de manœuvre de ZONE (Souffle/Vomi/Regard/Étreinte/Langue, LDB 85)
  *  porté par une étape de cascade `maneuverDefense` : le héros ciblé JETTE sa réaction (Esquive/Initiative/
  *  Parade) opposée au jet d'attaquant FIGÉ (dans `meta.opposed.aT`), influençable (Chance/Résilience). À la
@@ -1319,6 +1328,10 @@ export interface CascadeRoll {
   target: number;
   sl: number;
   success: boolean;
+  /** Test OPPOSÉ tranché sur une ÉGALITÉ PARFAITE (`LDB 12 l.160`) : arbitrage STATU QUO — la branche
+   *  porteuse de la conséquence n'est pas prise, et ce n'est PAS un Test raté (aucun `onOwnTestFailed`).
+   *  Posé par `opposedCascadeRoll` seul ; absent partout ailleurs. */
+  statuQuo?: true;
 }
 /**
  * Une ÉTAPE influençable d'une CASCADE séquentielle (bilan de nuit, journée de voyage…). Le `kind`

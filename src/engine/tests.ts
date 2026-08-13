@@ -264,6 +264,28 @@ export function resolveOpposed(attacker: TestResult, defender: TestResult): Oppo
   return { attacker, defender, winner, attackerWins: winner === 'attacker', netSL, decidedBy };
 }
 
+/**
+ * BRANCHE prise par le camp qui JETTE le Test opposé (le « défenseur » au sens de `resolveOpposed`) :
+ * `true` = branche `success`, `false` = branche `fail`.
+ *
+ * `defenderMustWin` dit quel camp le RAW nomme « vous » — celui qui doit REMPORTER pour que la
+ * conséquence tombe :
+ *  - ABSENT (défaut) : le jeteur RÉSISTE, la conséquence est portée par `fail` (Assommante, `LDB 62
+ *    l.235` : « Si vous remportez le Test, votre adversaire gagne un État Sonné » — « vous » = l'opposant) ;
+ *  - `true` : le jeteur doit L'EMPORTER, la conséquence est portée par `success` (Piège-lame,
+ *    `LDB 62 l.280` : « Si vous l'emportez, votre adversaire laisse tomber la lame »).
+ *
+ * Hors égalité les deux lectures coïncident ; le champ n'est lu qu'à l'ÉGALITÉ PARFAITE (même DR ET
+ * même valeur nue). ARBITRAGE maison (`LDB 12 l.160` — le RAW y laisse le MJ choisir entre deux
+ * solutions ; il n'y a pas de MJ, CLAUDE.md règle 7) : le jeu retient la PREMIÈRE, statu quo — refaire
+ * le Test rouvrirait la fenêtre en boucle, sans borne, sur un jet que le joueur croyait résolu. Statu
+ * quo = la branche PORTEUSE de la conséquence n'est pas prise, quel qu'en soit le camp.
+ */
+export function opposedBranchSuccess(o: OpposedResult, defenderMustWin?: boolean): boolean {
+  if (o.winner === 'tie') return !defenderMustWin;
+  return o.winner !== 'attacker';
+}
+
 /** RAISON du verdict d'un Test opposé, prête pour la LIGNE (Z5) du camp qui la porte — zone Z5c de
  *  `docs/charte-ui.md`. Donnée d'AFFICHAGE en ids STABLES : le texte FR est rendu par `ui/RollLine`,
  *  aucun verdict n'en dépend. `own`/`other` = les grandeurs comparées au départage (`own` = celle de

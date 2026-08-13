@@ -7,6 +7,7 @@ import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { seedBattleRng } from '../battleRng';
 import { resolveOpposed } from '../../engine/tests';
+import { skillBaseValue } from '../../engine/skills';
 
 import { testScene } from '../../scenes/test-fixture';
 import type { PendingBladeTrap } from '../pendings';
@@ -161,6 +162,46 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
     expect(a.weapons.find((w) => w.uid === 'atk-blade')).toBeUndefined(); // arrachée des mains
     expect(weapon.destroyed).toBeFalsy(); // Incassable → pas brisée (LDB 62 l.280)
     expect(outcome.some((l) => /résiste à la casse/.test(l.text))).toBe(true); // note empilée
+  });
+
+  /**
+   * ÉGALITÉ PARFAITE (même DR ET même valeur NUE) — `LDB 12 l.160` : « Dans le cas improbable où il y ait
+   * une égalité, le MJ choisit l'une de ces deux solutions : 1) statu quo, rien ne se passe ; 2) les deux
+   * groupes refont le Test ». Le jeu retient la première (arbitrage `opposedBranchSuccess`). Ici « vous »
+   * (LDB 62 l.280 « Si vous l'emportez ») est le PIÉGEUR, qui JETTE ce Test : une égalité n'est pas une
+   * victoire — la lame n'est PAS arrachée. Elle n'est pas « libérée » non plus (l.280 attache cela à
+   * l'ÉCHEC) : rien ne se passe, l'état courant persiste, et aucune conséquence n'est empilée.
+   */
+  it('ÉGALITÉ parfaite : STATU QUO — la lame n’est NI arrachée NI brisée, et le Test n’est pas un échec', () => {
+    const { H, A } = setup();
+    // Mêmes valeurs NUES des deux camps → le départage à DR égal (LDB 12 l.160) ne tranche pas non plus.
+    A.characteristics.force = 50;
+    const fNue = skillBaseValue(A, undefined, undefined, 'force');
+    H.characteristics.force += fNue - skillBaseValue(H, undefined, undefined, 'force');
+    expect(skillBaseValue(H, undefined, undefined, 'force')).toBe(fNue);
+    const weapon = bladedWeapon('atk-blade');
+    A.weapons = [weapon];
+
+    // seed POSÉ après le spawn : 1ʳᵉ consommation = pré-jet de l'ATTAQUANT, 2ᵉ = jet du piégeur. `defSL: 0`
+    // (un bonus de défense romprait l'égalité avant l'opposition).
+    seedBattleRng(7);
+    openTrapChoice(H, A, weapon, 0);
+    const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'triggeredTest')!;
+    const aT = step.meta!.opposed!.aT;
+    // Le camp que le RAW nomme « vous » est DÉCLARÉ sur l'opposition figée, il ne se devine pas au kind.
+    expect(step.meta?.opposed?.defenderMustWin, 'Piège-lame : le jeteur doit REMPORTER').toBe(true);
+
+    useGame.getState().cascadeRoll(step.id);
+    const rolled = useGame.getState().pendingCascade!.participants.find((s) => s.id === step.id)!.result!;
+    expect(resolveOpposed(aT, { roll: rolled.roll, target: rolled.target, success: rolled.success, sl: rolled.sl, isDouble: false, base: step.base }).winner).toBe('tie');
+    expect(rolled.success, 'égalité ≠ victoire du piégeur : la branche `breakBlade` n’est pas prise').toBe(false);
+    expect(rolled.statuQuo, 'statu quo étampé : ce n’est pas un Test raté (aucun `onOwnTestFailed`)').toBe(true);
+    useGame.getState().cascadeNext();
+
+    const a = useGame.getState().battle!.combatants.find((x) => x.id === A.id)!;
+    expect(a.weapons.find((w) => w.uid === 'atk-blade'), 'la lame reste en main').toBeTruthy();
+    expect(weapon.destroyed).toBeFalsy();
+    expect(useGame.getState().pendingCascade?.participants.some((s) => s.kind === 'bladeTrapResult'), 'rien ne se passe : aucune conséquence empilée').not.toBe(true);
   });
 
   it('héros perd (Force minime) : RIEN (l’adversaire garde sa lame)', () => {

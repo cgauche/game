@@ -1127,7 +1127,9 @@ export function runSeaDay(get: Get, set: Set): void {
   // la conduite reste manuelle. Un combat ouvert EN PLEIN VOL (rarissime : le build ne pouvait pas
   // prévoir un franchissement d'ancrage exact) suspend le fragment restant (`runCascadeImmediate` `ctx`).
   if (get().net.mode === 'local' && seaAutoResolves(plan.orders, 'progression') && seaDayAllRoutine(get)) {
-    const resolved = runCascadeImmediate(get, set, steps, { title: 'Journée en mer', purpose: 'travelDay' });
+    // `rowSurface: 'pv'` : les rangées des bandes du jour se montrent au PROCÈS-VERBAL (`pushDayEntries`
+    // ci-dessous) — le journal ne redit pas leurs dés (#1291). Les monos du tableau y gardent leur ligne.
+    const resolved = runCascadeImmediate(get, set, steps, { title: 'Journée en mer', purpose: 'travelDay', rowSurface: 'pv' });
     if (get().battle || get().pendingCascade) return; // combat en plein vol OU choix sans défaut : surfacé, jamais résolu en silence
     pushDayEntries(get, set, resolved);
     continueSeaDayAfterCascade(get, set);
@@ -2066,7 +2068,7 @@ function continueSeaDayFromPostProgression(get: Get, set: Set): void {
   const insert = buildPostProgressionSteps(get, set);
   if (!insert.length) { continueSeaDayAfterCascade(get, set); return; }
   if (get().net.mode === 'local' && seaAutoResolves(get().travelPlan?.orders, 'progression') && seaDayAllRoutine(get)) {
-    const resolved = runCascadeImmediate(get, set, insert, { title: 'Journée en mer', purpose: 'travelDay' });
+    const resolved = runCascadeImmediate(get, set, insert, { title: 'Journée en mer', purpose: 'travelDay', rowSurface: 'pv' });
     if (get().battle || get().pendingCascade) return; // combat en plein vol OU choix sans défaut : surfacé, jamais résolu en silence
     pushDayEntries(get, set, resolved);
     continueSeaDayAfterCascade(get, set);

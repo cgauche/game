@@ -54,8 +54,6 @@ import {
   CHAR_LABELS,
   CharKey,
   Combatant,
-  Difficulty,
-  DIFFICULTY_LABELS,
   HitLocation,
   HIT_LOCATION_LABELS,
   ItemInstance,
@@ -1176,18 +1174,6 @@ export function applyActiveEffect(target: Combatant, effect: ActiveEffect) {
   }
   // Les Blessures dérivent de F/E/FM (LDB 85) → un buff de ces caractéristiques recale les PB max + courants.
   if (effect.char === 'force' || effect.char === 'endurance' || effect.char === 'force-mentale') refreshWounds(target);
-}
-
-/** Ligne de journal d'un Test résolu inline — SOURCE UNIQUE du format « X — Test de Y Difficulté :
- *  roll / cible → réussite/échec. » Réutilisée par l'op `test` ET par la branche inline de
- *  `resolveFlowTest` (parité du journal des jets de trigger résolus en silence). */
-export function describeTestRoll(
-  name: string, what: string, difficulty: Difficulty, res: { roll: number; target: number; success: boolean },
-): string {
-  return t('op.testRoll', {
-    name, what, diff: DIFFICULTY_LABELS[difficulty],
-    roll: res.roll, target: res.target, outcome: res.success ? 'réussite' : 'échec',
-  });
 }
 
 /**

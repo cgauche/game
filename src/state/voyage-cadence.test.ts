@@ -115,6 +115,29 @@ describe('traversée COMMANDÉE (mer) — routine auto-résolue, PV du jour, auc
     const kinds = new Set(day.entries!.map((e) => (e.id ?? '').split('-')[1]));
     expect(drLines).toBeGreaterThanOrEqual(kinds.size); // au moins une trace par nature de Test joué
   });
+
+  /**
+   * #1291 — UNE surface par dé. Le PV structuré du jour montre déjà, rangée par rangée, le dé de chaque
+   * contributeur d'une BANDE : le journal ne le redit plus (le pilote déclare `rowSurface: 'pv'`). Les
+   * étapes MONO du MÊME tableau (Forcer le rythme) n'ont AUCUNE rangée au PV — leur ligne de dé reste au
+   * journal, sinon le jet deviendrait silencieux (aucun dé perdu : chaque jet sur EXACTEMENT une surface).
+   */
+  it('bande à surface PV : son dé est AU PV et PLUS au journal ; le MONO du même tableau garde SA ligne', () => {
+    // Rythme FORCÉ à +1 M (MDG 13 l.95-107 : à la voile, seul +1 est jouable) → un mono `sea-force-pace`
+    // rejoint le tableau du jour, aux côtés des bandes Progression/Orientation.
+    get().startTravel('r1', 'mer', { cadence: 'commande', seaPace: 1 });
+    const day = get().pendingRest!.travelDay!;
+    const journal = get().journal;
+    const rows = (day.entries ?? []).filter((e) => e.d);
+    expect(rows.length).toBeGreaterThan(0);
+    for (const e of rows) {
+      const de = `${e.d!.roll}/${e.d!.target}`;
+      expect(journal.filter((l) => l.includes(de)), `dé de bande RE-dit au journal (${e.id} — ${de}) :\n${journal.join('\n')}`).toEqual([]);
+    }
+    // Forcer le rythme (MDG 13 l.95-107) : étape MONO du tableau auto-résolu — le journal EST sa seule surface.
+    const monos = journal.filter((l) => /^.+ — (Voile|Ramer) : \d+\/\d+ → (réussi|échec) \(DR [+-]\d+\)\.$/.test(l));
+    expect(monos.length, `ligne de dé du MONO attendue au journal :\n${journal.join('\n')}`).toBe(1);
+  });
 });
 
 describe('traversée JOUR-PAR-JOUR (mer) — cadence manuelle inchangée', () => {

@@ -129,7 +129,7 @@ describe('Maladresse — Test imbriqué routé cadence-aware (Lot 4d)', () => {
     applyMiscast(useGame.getState, useGame.setState, E, 'colere');
 
     expect(useGame.getState().pendingCascade).toBeNull(); // ennemi → jamais d'étape influençable
-    // La ligne de parité du Test (describeTestRoll) part dans la file différée.
+    // La ligne de parité du Test (traceLineOf) part dans la file différée.
     expect(useGame.getState().pendingLogQueue.some((q) => /Résistance/.test(q.line))).toBe(true);
   });
 });

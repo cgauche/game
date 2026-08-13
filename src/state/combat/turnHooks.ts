@@ -22,7 +22,7 @@ import { ev, evLines } from '../combatLog';
 import { effectiveChar } from '../../engine/characteristics';
 import { isOutOfAction, addCondition, combatTestPenalty } from '../../engine/conditions';
 import { rawCombatTestBase } from '../../engine/skills';
-import { describeTestRoll } from '../../engine/ops';
+import { traceLineOf, testTraceLabel } from '../../engine/traceLine';
 import { CHAR_LABELS, CATEGORY_BY_SOURCE_KIND } from '../../engine/types';
 import { inBattleId } from '../combatants';
 import { reconcileAdvantageToPool, creditOpposingAdvantage, campSpend } from './advantagePool';
@@ -113,7 +113,7 @@ export function resolveActGates(get: Get, set: SetFn, c: Combatant): ActGateOutc
       continue;
     }
     const res = rollSansPilote(get, c, rawCombatTestBase(c, undefined, char), 'intermediaire', battleRng(), combatTestPenalty(c));
-    out.lines.push(describeTestRoll(c.label, `${CHAR_LABELS[char]} (${label})`, 'intermediaire', res));
+    out.lines.push(traceLineOf({ who: c.label, label: testTraceLabel(`${CHAR_LABELS[char]} (${label})`, 'intermediaire'), ...res }));
     if (!res.success) { out.loseMovement = true; out.lines.push(t('turn.actGateKeepAction', { name: c.label })); }
   }
   return out;

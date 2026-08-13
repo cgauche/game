@@ -8,7 +8,7 @@
 **État (mise à jour 2026-07-05)** : **Phase A ✅** (primitive `src/i18n/` livrée) + **Phase B ✅** pour les
 **7 maps de labels du moteur** (`CHAR_LABELS`/`DIFFICULTY_LABELS`/`HIT_LOCATION_LABELS`/`DEFENSE_LABEL`/
 `FREE_ATTACK_LABEL`/`BODY_SHAPE_LOC_LABELS`/`CIBLE_LABEL` → catalogue, parité verbatim, suite verte) +
-**Phase C ✅ substantiellement livrée** : `describeTestRoll` (`engine/ops.ts`) et ~9 fichiers de narration
+**Phase C ✅ substantiellement livrée** : la ligne de dé du journal (`traceLineOf`, `engine/traceLine.ts`) et ~9 fichiers de narration
 (`engine/ops.ts`, `engine/psychology.ts`, `engine/conditions.ts`, `state/combatFlow.ts`,
 `state/combatSlice.ts`, `state/flowOutcomes.ts`, `state/combatManeuvers.ts`,
 `state/combat/turnHooks.ts`, `state/outOfCombatUpkeep.ts`) sont passés au catalogue (`t(key, params)`),
@@ -33,7 +33,7 @@ locale-aware · **Phase D** (UI, libellés menus/boutons).
 - **Blocage = texte FR PRÉ-RENDU produit par le moteur / le state** :
   - **maps de labels** : `CHAR_LABELS` / `HIT_LOCATION_LABELS` / `DIFFICULTY_LABELS` (`engine/types.ts`),
     `DEFENSE_LABEL` / `FREE_ATTACK_LABEL` (`engine/combat.ts`), `CIBLE_LABEL` (`engine/psychology.ts`) ;
-  - **narration** : `describeTestRoll` (`engine/ops.ts`, code en dur « réussite »/« échec »), ~40 littéraux
+  - **narration** : la ligne d'un Test résolu inline (`engine/ops.ts`, code en dur « réussite »/« échec »), ~40 littéraux
     dans `applyOps` (`ops.ts`), `CombatEvent.text` (`state/combatLog.ts` stocke du FR **déjà composé**),
     `flowOutcomes.describe*` + labels de cascade (`combatFlow` / `combat/roundHooks` / `rollFlows`).
 
@@ -63,7 +63,7 @@ locale-aware · **Phase D** (UI, libellés menus/boutons).
 | Phase | Contenu | Timing |
 |---|---|---|
 | **A — primitive** | `src/i18n/` (t / catalogue / MsgKey / locale) + garde-fou + test | **SÛRE maintenant** (additif, zéro consommateur imposé) |
-| **B — maps de labels stables** | router `CHAR_LABELS`/`HIT_LOCATION_LABELS`/`DIFFICULTY_LABELS`/`DEFENSE_LABEL`/`FREE_ATTACK_LABEL`/`CIBLE_LABEL` sur le catalogue (définitions stables) + `refLabel` locale-aware | **SÛRE** — ⚠️ NE PAS toucher les BUILDERS qui les consomment (`describeTestRoll`/`applyOps` = lane //) |
+| **B — maps de labels stables** | router `CHAR_LABELS`/`HIT_LOCATION_LABELS`/`DIFFICULTY_LABELS`/`DEFENSE_LABEL`/`FREE_ATTACK_LABEL`/`CIBLE_LABEL` sur le catalogue (définitions stables) + `refLabel` locale-aware | **SÛRE** — ⚠️ NE PAS toucher les BUILDERS qui les consomment (`traceLineOf`/`applyOps` = lane //) |
 | **C — narration** | chaque ligne `flowOutcomes`/`result.log` → `t(key, params)` (ou `result.log: MsgRef`) | **✅ livrée** (9 fichiers migrés, cf. État en tête de doc) |
 | **D — UI** | libellés menus/boutons (`src/ui`) → `t()` | hors lane // — à tout moment |
 | **E — données desc** | fichiers de locale | quand 2ᵉ langue concrète |

@@ -102,11 +102,12 @@ describe('Assommante — nœud Flow test OPPOSÉ (Force figée vs Résistance, r
     expect(hasCondition(h, 'sonne')).toBe(!expectedResist);
   });
 
-  it('(a-bis) ÉGALITÉ (même DR + mêmes NUES) : la victime RÉSISTE, PAS de Sonné (fidélité resolveOpposed, pas un test simple)', () => {
+  it('(a-bis) ÉGALITÉ (même DR + mêmes NUES) : STATU QUO — la victime RÉSISTE, PAS de Sonné', () => {
     // Deux étages d'égalité, tous deux nécessaires : même CIBLE effective → même DR sur un dé identique ;
     // mêmes valeurs NUES (`skillBaseValue`) → le départage à DR égal (LDB 12 l.160) ne tranche pas non
-    // plus. `resolveOpposed` conclut 'tie' → l'attaquant ne REMPORTE pas → la victime RÉSISTE
-    // (LDB 62 l.235 : « Si vous remportez le Test, votre adversaire gagne un État *Sonné*. »).
+    // plus. `resolveOpposed` conclut 'tie' → STATU QUO (l.160, arbitrage `opposedBranchSuccess`) : ici
+    // « vous » (LDB 62 l.235 : « Si vous remportez le Test, votre adversaire gagne un État *Sonné*. »)
+    // est l'ATTAQUANT, pas le jeteur — rien ne se passe se lit donc « la victime RÉSISTE ».
     const { H, wielder } = setup();
     wielder.characteristics.force = 50;
     const fNue = skillBaseValue(wielder, undefined, undefined, 'force'); // Force NUE de l'attaquant
@@ -154,8 +155,11 @@ describe('Assommante — nœud Flow test OPPOSÉ (Force figée vs Résistance, r
     expect(useGame.getState().pendingCascade).toBeNull(); // ennemi → jamais d’étape influençable
     const live = useGame.getState().battle!.combatants.find((c) => c.id === prey.id)!;
     expect(hasCondition(live, 'sonne')).toBe(true); // l’attaquant l’emporte → Sonné posé inline
-    // La ligne d’opposition (Force vs Résistance) part dans la file différée.
-    expect(useGame.getState().pendingLogQueue.some((q) => /Force.*Résistance|Résistance.*Force/.test(q.line))).toBe(true);
+    // La ligne d’opposition (Force vs Résistance) part dans la file différée — DÉRIVÉE au patron unique
+    // (`traceLineOf`, forme OPPOSÉE #1294) : les deux porteurs, les deux dés, les deux DR SIGNÉS, l’issue.
+    const opposee = useGame.getState().pendingLogQueue.map((q) => q.line).find((l) => / vs /.test(l));
+    expect(opposee, `file différée :\n${useGame.getState().pendingLogQueue.map((q) => q.line).join('\n')}`)
+      .toMatch(/^.+ \(Force\) \d+\/\d+ \(DR [+-]\d+\) vs .+ \(Résistance\) \d+\/\d+ \(DR [+-]\d+\) — (résiste|l’emporte)\.$/);
   });
 
   it('(c) touche AILLEURS qu’à la Tête : aucun Test (la Condition `location:tete` ne passe pas)', () => {

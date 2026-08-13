@@ -20,14 +20,14 @@ import type { GameState } from './store';
 import type { Combatant } from '../engine/types';
 import { roll, type RNG } from '../engine/dice';
 import { findTableEntry } from '../engine/tables';
-import type { CascadeStep, PendingCascade, CascadeRoll, BatchParticipant, CascadeAggregate, CascadeTableDecl, CascadeTableResult } from './pendings';
+import type { CascadeStep, PendingCascade, CascadeRoll, BatchParticipant, CascadeAggregate, CascadeTableDecl, CascadeTableResult, OpposedRowFreeze } from './pendings';
 import type { StakeRef } from '../data';
 import type { Consequence } from './rollSeam';
 import type { BuiltCascadeStep } from './stepBrand';
 import { resultLines } from './rollSeam';
 import { toRecapLines } from './recapLine';
 import { actorIn } from './combatants';
-import { rollTest, evaluateTest, bestForcedRoll, resolveOpposed, type TestResult } from '../engine/tests';
+import { rollTest, evaluateTest, bestForcedRoll, resolveOpposed, opposedBranchSuccess, type TestResult } from '../engine/tests';
 import { battleRng } from './battleRng';
 import { traceLineOf } from '../engine/traceLine';
 
@@ -278,18 +278,23 @@ export function stepReady(step: CascadeStep): boolean {
 
 /**
  * ISSUE d'un jet de cascade OPPOSÉ à un jet d'adversaire FIGÉ — SOURCE UNIQUE (étape MONO du flux
- * `cascade`, rangée d'une étape BATCH) : `resolveOpposed` est le SEUL juge (LDB 12 l.160), le
- * défenseur RÉSISTE quand l'attaquant ne l'emporte PAS (défenseur OU égalité). `bonusSL` s'ajoute au
- * DR du défenseur AVANT l'opposition (Piège-lame, LDB 62 l.280) sans entrer dans le `sl` reporté.
+ * `cascade`, rangée d'une étape BATCH) : `resolveOpposed` est le SEUL juge (LDB 12 l.160) et
+ * `opposedBranchSuccess` la SEULE lecture de branche (statu quo à l'égalité parfaite). `bonusSL`
+ * s'ajoute au DR du défenseur AVANT l'opposition (Piège-lame, LDB 62 l.280) sans entrer dans le `sl`
+ * reporté ; `statuQuo` marque l'égalité parfaite — rien ne s'est passé, ce n'est pas un Test raté.
  *
  * `defBase` = le Niveau de Compétence NU du défenseur, quand l'émetteur l'a posé : il n'entre QUE
  * dans l'opposition. Absent ⇒ les deux camps retombent sur leurs cibles (tout-ou-rien d'`openValues`) :
  * le dé est jeté sur une cible DÉJÀ modifiée, l'opposer à un `base` d'attaquant comparerait deux
  * grandeurs distinctes. PURE.
  */
-export function opposedCascadeRoll(def: TestResult, aT: TestResult, target: number, bonusSL = 0, defBase?: number): CascadeRoll {
-  const o = resolveOpposed(aT, { ...def, sl: def.sl + bonusSL, base: defBase });
-  return { roll: def.roll, target, sl: def.sl, success: o.winner !== 'attacker' };
+export function opposedCascadeRoll(def: TestResult, opp: OpposedRowFreeze, target: number, defBase?: number): CascadeRoll {
+  const o = resolveOpposed(opp.aT, { ...def, sl: def.sl + (opp.bonusSL ?? 0), base: defBase });
+  return {
+    roll: def.roll, target, sl: def.sl,
+    success: opposedBranchSuccess(o, opp.defenderMustWin),
+    ...(o.winner === 'tie' ? { statuQuo: true as const } : {}),
+  };
 }
 
 /** Jet d'UN participant batch — GÉNÉRIQUE : d100 contre sa cible EFFECTIVE (`target`, difficulté déjà
@@ -299,9 +304,9 @@ export function opposedCascadeRoll(def: TestResult, aT: TestResult, target: numb
  *  `opposed` — jet d'adversaire FIGÉ de l'étape (`meta.opposed`) : la rangée est alors un Test OPPOSÉ
  *  et son issue vient d'`opposedCascadeRoll`, pas de `roll ≤ cible`. UNE opposition figée vaut pour
  *  TOUTES les rangées de l'étape (LDB 13 l.77) — c'est le producteur qui l'a jetée, une seule fois. */
-export function rollBatchParticipant(p: BatchParticipant, rng: RNG, opposed?: { aT: TestResult; bonusSL?: number }): CascadeRoll {
+export function rollBatchParticipant(p: BatchParticipant, rng: RNG, opposed?: OpposedRowFreeze): CascadeRoll {
   const t = rollTest(p.target, 'intermediaire', rng);
-  if (opposed) return opposedCascadeRoll(t, opposed.aT, p.target, opposed.bonusSL ?? 0, p.base);
+  if (opposed) return opposedCascadeRoll(t, opposed, p.target, p.base);
   return { roll: t.roll, target: t.target, sl: t.sl + (t.success ? (p.bonusSlOnSuccess ?? 0) : 0), success: t.success };
 }
 
@@ -368,11 +373,22 @@ function aggregateBatchStep(step: CascadeStep): CascadeRoll {
  * comparerait deux grandeurs distinctes. `CascadeStepBase` ne peut plus porter de Soutien FONDU : le
  * Soutien est une ligne NOMMÉE de `mods` (`soutienMod`) pour TOUT producteur d'étape.
  */
-export function stepOpposedFreeze(step: CascadeStep | undefined): { aT: TestResult; bonusSL?: number } | undefined {
+export function stepOpposedFreeze(step: CascadeStep | undefined): OpposedRowFreeze | undefined {
   const opp = step?.meta?.opposed;
   if (!opp) return undefined;
-  return { aT: opp.aT, ...(opp.bonusSL != null ? { bonusSL: opp.bonusSL } : {}) };
+  return {
+    aT: opp.aT,
+    ...(opp.bonusSL != null ? { bonusSL: opp.bonusSL } : {}),
+    ...(opp.defenderMustWin ? { defenderMustWin: true } : {}),
+  };
 }
+
+/** SURFACE des rangées d'une bande résolue par un pilote sans fenêtre, DÉCLARÉE par ce pilote : le
+ *  procès-verbal structuré d'une traversée (`dayEntriesFromStep`, `seaVoyageFlow.ts`) montre déjà
+ *  chaque dé, ligne par ligne — le journal ne les redit pas (#1291). Absente = le journal est la seule
+ *  surface, il porte les dés. Déclaration d'APPEL (rien n'entre dans la sauvegarde), patron du mono
+ *  `unwitnessed`. */
+export type RowSurface = 'pv';
 
 /**
  * Lance d'office les participants SANS influence (pilotes automatiques — `resolveRemainingCascade`/
@@ -394,22 +410,25 @@ function rollBatchParticipants(step: CascadeStep, autoResolved = false) {
 }
 
 /**
- * TRACES des jets d'une étape que NULLE FENÊTRE n'a montrés — une ligne par jet, DÉRIVÉE par le socle
+ * TRACES des jets d'une étape qu'AUCUNE SURFACE n'a montrés — une ligne par jet, DÉRIVÉE par le socle
  * (`traceLineOf`) : porteur — libellé : dé/cible → issue (DR). Deux formes, un seul dériveur :
  *  - BANDE : les rangées étampées `meta.autoResolved` (posée par `rollBatchParticipants(step, true)`) ;
  *  - MONO : l'étape à jet résolue par un pilote SANS fenêtre — le pilote le DÉCLARE (`unwitnessed`,
  *    `runCascadeImmediate`), il n'est pas déduit d'un champ d'étape (rien n'entre dans la sauvegarde).
  *
  * PARTITION : « Tout lancer » (`resolveRemainingCascade`) n'étampe rien et ne déclare rien — sa modale
- * reste ouverte sur le BILAN, où chaque rangée montre son dé.
+ * reste ouverte sur le BILAN, où chaque rangée montre son dé. Et le journal n'est pas la SEULE surface
+ * possible d'une rangée sans fenêtre : le pilote qui rend ses bandes sur un PROCÈS-VERBAL structuré
+ * (traversée de mer, `rowSurface: 'pv'`) le DÉCLARE au même titre — chaque dé sur EXACTEMENT une
+ * surface, jamais deux (#1291).
  *
- * Le journal est la SEULE surface de ces jets — le cas nominatif que la doctrine #295 réserve (cf.
- * `cascade-consequence-guard.test.ts`). `game-trigger-cadence-aware-no-silent` : moins d'interruptions,
- * jamais moins de traces.
+ * Là où il l'est, le journal est la SEULE surface de ces jets — le cas nominatif que la doctrine #295
+ * réserve (cf. `cascade-consequence-guard.test.ts`). `game-trigger-cadence-aware-no-silent` : moins
+ * d'interruptions, jamais moins de traces.
  */
-function unwitnessedTraceLines(get: Get, step: CascadeStep, unwitnessed: boolean): string[] {
+function unwitnessedTraceLines(get: Get, step: CascadeStep, unwitnessed: boolean, rowSurface?: RowSurface): string[] {
   const out: string[] = [];
-  for (const row of step.participants ?? []) {
+  for (const row of rowSurface ? [] : step.participants ?? []) {
     if (!row.meta?.autoResolved || !row.result) continue;
     out.push(traceLineOf({
       who: actorIn(get(), row.id)?.label ?? row.id,
@@ -650,7 +669,9 @@ function batchOwnTestFailedLines(get: Get, step: CascadeStep): string[] {
   if (step.meta?.noOwnTestFailed) return [];
   const lines: string[] = [];
   for (const part of step.participants ?? []) {
-    if (!part.result || part.result.success || part.meta?.noOwnTestFailed) continue;
+    // `statuQuo` : égalité parfaite d'un Test opposé (LDB 12 l.160) — rien ne s'est passé, ce n'est pas un
+    // Test raté : le trigger d'échec ne part pas.
+    if (!part.result || part.result.success || part.result.statuQuo || part.meta?.noOwnTestFailed) continue;
     const actor = actorIn(get(), part.id);
     if (!actor) continue;
     lines.push(...(ownTestFailedEmitter?.(get, actor, part.result.sl) ?? []));
@@ -664,8 +685,9 @@ function batchOwnTestFailedLines(get: Get, step: CascadeStep): string[] {
  *  pilotes (interactif, « tout résoudre », immédiat).
  *
  *  `unwitnessed` : le pilote DÉCLARE qu'aucune fenêtre n'a montré le jet de cette étape (pilote
- *  immédiat) — le goulot en dérive alors la ligne de dé (`unwitnessedTraceLines`). */
-function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMerge = false, unwitnessed = false): { steps: CascadeStep[]; journal: string[]; suspended: boolean } {
+ *  immédiat) — le goulot en dérive alors la ligne de dé (`unwitnessedTraceLines`). `rowSurface` : le
+ *  même pilote DÉCLARE où ses RANGÉES de bande se montrent, quand ce n'est pas le journal (#1291). */
+function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMerge = false, unwitnessed = false, rowSurface?: RowSurface): { steps: CascadeStep[]; journal: string[]; suspended: boolean } {
   const before = get().pendingCascade;
   // Étape « batch » (participants — seam de jet #275 Décision 4 cran 1) : AGRÈGE les contributeurs
   // (déjà tous résolus, `stepReady`) en UN `CascadeRoll` scalaire — l'applier lit `step.result` comme
@@ -674,9 +696,9 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   let step = steps[i];
   if (step.participants && !step.result && step.aggregate !== 'none') step = { ...step, result: aggregateBatchStep(step) };
   const hero = step.actorId ? actorIn(get(), step.actorId) : undefined;
-  // TRACE des jets qu'aucune fenêtre n'a montrés — AVANT la conséquence : le dé se lit d'abord, l'effet
+  // TRACE des jets qu'aucune SURFACE n'a montrés — AVANT la conséquence : le dé se lit d'abord, l'effet
   // ensuite, comme dans la fenêtre qui ne s'est pas ouverte.
-  const traces = unwitnessedTraceLines(get, step, unwitnessed);
+  const traces = unwitnessedTraceLines(get, step, unwitnessed, rowSurface);
   for (const l of traces) get().log(l);
   const out = cascadeAppliers[step.kind]?.apply(get, set, step, hero, { steps, index: i });
   // `consequences` (#295 Lot 0) : rendu en LIGNES STRUCTURÉES (#349, `resultLines`) — seule voie de
@@ -694,7 +716,7 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   const interaction = stepInteraction(step);
   const ownTestFailedLines = interaction === 'batch'
     ? batchOwnTestFailedLines(get, step)
-    : ((interaction === 'jet' && step.result && !step.result.success && hero && !step.meta?.noOwnTestFailed)
+    : ((interaction === 'jet' && step.result && !step.result.success && !step.result.statuQuo && hero && !step.meta?.noOwnTestFailed)
       ? (ownTestFailedEmitter?.(get, hero, step.result.sl) ?? []) : []);
   for (const l of ownTestFailedLines) get().log(l);
   // L'étape VALIDÉE garde sa conséquence (`outcome`) pour rester LISIBLE dans la pile à l'écran. Une
@@ -900,8 +922,12 @@ export function finalizeCascade(get: Get, set: Set): PendingCascade | null {
  *
  * CHOIX sans `defaultChoice` authoré : jamais tranché en silence (`options[0]`) — la cascade s'arrête
  * PENDANTE, surfacée via `pendingCascade` (patron `resolveRemainingCascade`, #351).
+ *
+ * `ctx.rowSurface` : l'appelant DÉCLARE que les rangées de ses BANDES se montrent ailleurs qu'au
+ * journal (procès-verbal structuré de traversée) — le socle n'en trace alors pas les dés (#1291). Les
+ * étapes MONO du même tableau gardent leur ligne : elles n'ont pas de rangée au PV.
  */
-export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ctx?: { title: string; purpose: PendingCascade['purpose']; log?: string[] }): CascadeStep[] {
+export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ctx?: { title: string; purpose: PendingCascade['purpose']; log?: string[]; rowSurface?: RowSurface }): CascadeStep[] {
   let cur = steps;
   for (let i = 0; i < cur.length; i++) {
     const st = cur[i];
@@ -932,7 +958,7 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ct
       }
       cur = cur.map((x, k) => (k === i ? { ...x, chosen: st.defaultChoice! } : x));
     } // affichage : rien à résoudre avant la conséquence
-    const r = commitStep(get, set, cur, i, false, unwitnessed);
+    const r = commitStep(get, set, cur, i, false, unwitnessed, ctx?.rowSurface);
     cur = r.steps;
     // Un combat s'est ouvert PENDANT cette résolution immédiate (l'applier a appelé `startCombat` —
     // no-op de suspension ici puisque CE tableau n'était PAS dans le slot actif) : le reste du tableau

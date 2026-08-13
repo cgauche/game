@@ -13,7 +13,7 @@ import { type Combatant, type Weapon, type HitLocation, type Difficulty, type Ef
 import type { Get, Set as SetFn } from './flowTypes';
 import { type EffectTrigger, type TriggeredEffect, type Flow, flowHasTest, spellEffectOps, EMPTY_FLOW } from './flow';
 import type { OpsCtx, GameOp } from '../engine/ops';
-import { describeTestRoll } from '../engine/ops';
+import { traceLineOf, testTraceLabel } from '../engine/traceLine';
 import { resolveQualities } from '../engine/qualities/dispatch';
 import { weaponIdentity } from '../engine/items';
 import { featureLevel } from '../engine/combatFeatures/dispatch';
@@ -271,7 +271,7 @@ function resolveInlineFlowTest(c: Combatant, flow: Flow, ctx: OpsCtx, get?: Get)
   const rng = ctx.rng ?? defaultRNG;
   const res = rollTest(base, difficulty, rng, combatTestPenalty(c));
   const branch = res.success ? flow.success : flow.fail;
-  const lines = [describeTestRoll(c.label, skillLabel, difficulty, res), ...runPureFlowLines(c, c, branch, { ...ctx, rng, caster: c, sl: res.sl })];
+  const lines = [traceLineOf({ who: c.label, label: testTraceLabel(skillLabel, difficulty), ...res }), ...runPureFlowLines(c, c, branch, { ...ctx, rng, caster: c, sl: res.sl })];
   // SEAM `onOwnTestFailed` (voie inline) : un Test déclenché RATÉ par le porteur émet le trigger (Crampes
   // abdominales, MSRC 16 l.152). La garde de RÉ-ENTRANCE de `fireOwnTestFailed` empêche un sous-Test résolu
   // ICI pendant le traitement (FM de palier 2) de ré-émettre. `get` absent (appelant sans store) ⇒ inerte.

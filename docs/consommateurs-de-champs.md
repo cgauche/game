@@ -134,14 +134,14 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `stake` | 5 | `src/state/combat/triggeredTest.ts:203` |
-| `skill` | 14 | `src/state/combat/triggeredTest.ts:190` |
-| `spec` | 13 | `src/state/combat/triggeredTest.ts:190` |
+| `stake` | 5 | `src/state/combat/triggeredTest.ts:204` |
+| `skill` | 14 | `src/state/combat/triggeredTest.ts:191` |
+| `spec` | 13 | `src/state/combat/triggeredTest.ts:191` |
 | `sense` | 2 | `src/state/combatEffects.ts:431` |
-| `characteristic` | 11 | `src/state/combat/triggeredTest.ts:190` |
+| `characteristic` | 11 | `src/state/combat/triggeredTest.ts:191` |
 | `difficulty` | 2 | `src/engine/flowCore.ts:370` |
 | `requireSL` | 1 | `src/state/combatEffects.ts:470` |
-| `label` | 6 | `src/state/combat/triggeredTest.ts:221` |
+| `label` | 6 | `src/state/combat/triggeredTest.ts:222` |
 | `tool` | 1 | `src/state/combatEffects.ts:433` |
 | `vsGroups` | 4 | `src/state/combatEffects.ts:338` |
 | `vsStatus` | 1 | `src/state/combatEffects.ts:337` |
@@ -154,9 +154,9 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `exceptGroups` | 1 | `src/state/combat/flowEval.ts:153` |
 | `gate` | 1 | `src/engine/flowCore.ts:375` |
 | `noSupport` | 1 | `src/state/combatEffects.ts:425` |
-| `menace` | 5 | `src/state/combat/triggeredTest.ts:231` |
+| `menace` | 5 | `src/state/combat/triggeredTest.ts:232` |
 | `difficultyBy` | 1 | `src/engine/flowCore.ts:369` |
-| `opposed` | 2 | `src/state/combat/triggeredTest.ts:276` |
+| `opposed` | 2 | `src/state/combat/triggeredTest.ts:277` |
 
 ### `TravelTableEntry` (src/engine/travelTables.ts)
 

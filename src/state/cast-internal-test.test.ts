@@ -103,7 +103,7 @@ describe('Lot 4b — Sort à Test interne (Chute) cadence-aware en contexte d’
 
     expect(useGame.getState().pendingCascade).toBeNull();     // ennemi → jamais d'étape influençable
     const log = useGame.getState().battle!.log.map((e) => e.text).join('\n');
-    expect(log).toMatch(/Dextérité/);                         // ligne de parité du Test (describeTestRoll) — plus de jet silencieux
+    expect(log).toMatch(/Dextérité/);                         // ligne de parité du Test (traceLineOf) — plus de jet silencieux
     expect(log).toMatch(/l’objet tenu tombe/);                // la branche ÉCHEC (narration) a bien été jouée inline
   });
 });

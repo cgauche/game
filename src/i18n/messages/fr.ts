@@ -269,8 +269,7 @@ export const fr = {
   'cond.aaBleedHold': '{name} lutte contre la perte de sang et reste conscient.',
   'upkeep.fateSaved': "{name} est sauvé in extremis (Point de Destin) — l'hémorragie est jugulée.",
   'upkeep.succumb': '{name} succombe à ses blessures.',
-  // ── Phase C : narration moteur (GameOp/applyOps & describeTestRoll). Patrons byte-identiques. ──
-  'op.testRoll': '{name} — Test de {what} {diff} : {roll} / {target} → {outcome}.',
+  // ── Phase C : narration moteur (GameOp/applyOps). Patrons byte-identiques. ──
   'op.charModLine': '{name} : {label} ({parts}, {dur}).',
   'op.wounds': '{name} subit {n} Blessure(s){mitig}.',
   'op.heal': '{name} regagne {n} Blessure(s).',
@@ -727,6 +726,14 @@ export const fr = {
   'casc.autoRowHit': 'réussi',
   'casc.autoRowMiss': 'échec',
   'casc.autoRowFallbackLabel': 'Test',
+  // Libellé de ligne d'un Test résolu sans fenêtre : la Compétence lancée AVEC sa Difficulté.
+  'casc.traceTestLabel': 'Test de {what} {diff}',
+  // Forme OPPOSÉE (#1294) : les DEUX jets d'une même opposition sur UNE ligne — `issue` vient des trois
+  // verdicts de `resolveOpposed` par défaut (vue du DÉFENSEUR), du domaine sinon.
+  'casc.opposedTrace': '{who} ({label}) {roll}/{target} (DR {dr}) vs {who2} ({label2}) {roll2}/{target2} (DR {dr2}) — {issue}.',
+  'casc.opposedResists': 'résiste',
+  'casc.opposedPrevails': 'l’emporte',
+  'casc.opposedTie': 'égalité, rien ne se passe',
   'cf.defeat': 'Défaite…',
   'cf.victory': 'Victoire !',
   'cf.bladeBroken': 'La lame de {name} ({weapon}) est BRISÉE par la manœuvre !',

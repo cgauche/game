@@ -99,7 +99,7 @@ Ces bandes automatiques s'appliquent à *tous* les tests, simples ou spectaculai
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.31-32, l.119-121) → `canReroll`, `ChanceButtons`, `forceCrewRole`, `OPTIONAL_RULES`, `NightEntry`, `double-critique-maladresse`, `evaluateTest`, `bestForcedRoll`, `SUCCES_MINIME_CAP`, `SL_IMPRESSIVE`, +7 — `src/data/regles.json`, `src/engine/crewMorale.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, +8 fichiers
+- `LDB 12` (l.31-32, l.119-121) → `canReroll`, `ChanceButtons`, `forceCrewRole`, `OPTIONAL_RULES`, `NightEntry`, `double-critique-maladresse`, `evaluateTest`, `bestForcedRoll`, `SUCCES_MINIME_CAP`, `resolveCrewTestByRoles`, +7 — `src/data/regles.json`, `src/engine/crewMorale.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, +8 fichiers
 - sans code : `LDB 12` (l.25-28)
 
 ---
@@ -199,7 +199,7 @@ Si aucune Difficulté n'est indiquée pour un test (notamment pour un test oppos
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test), [Tests opposés](#tests-opposés)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.133-139, l.141-150, l.166) → `useExtendedTestJetProps`, `RecoverResolution`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `BargainModalView`, `forceCrewRole`, `useTestJetProps`, `StateRecoveryModalView`, `opposedLines`, +78 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/engine/riverNavigation.ts`, +41 fichiers
+- `LDB 12` (l.133-139, l.141-150, l.166) → `useExtendedTestJetProps`, `RecoverResolution`, `TraceOpposed`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `BargainModalView`, `forceCrewRole`, `useTestJetProps`, `StateRecoveryModalView`, +83 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +43 fichiers
 
 ---
 
@@ -261,7 +261,7 @@ Autrement dit, on soustrait le **chiffre des dizaines du résultat obtenu** au *
 
 **Voir aussi** : [Table des Résultats](#table-des-résultats), [Tests opposés](#tests-opposés), [Succès et échec automatiques](#succès-et-échec-automatiques)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.90-94, l.96-99, l.101-102, l.119-121) → `bargainBuyFactor`, `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `evaluateTest`, `opposedForcedFloor`, `bestForcedRoll`, `SUCCES_MINIME_CAP`, `SL_IMPRESSIVE`, `resolveCrewTestByRoles`, +8 — `src/data/regles.json`, `src/engine/bargain.ts`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, +5 fichiers
+- `LDB 12` (l.90-94, l.96-99, l.101-102, l.119-121) → `bargainBuyFactor`, `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `evaluateTest`, `opposedForcedFloor`, `bestForcedRoll`, `SUCCES_MINIME_CAP`, `resolveCrewTestByRoles`, `SL_IMPRESSIVE`, +8 — `src/data/regles.json`, `src/engine/bargain.ts`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, +5 fichiers
 
 ---
 
@@ -288,7 +288,7 @@ Le niveau de succès ou d'échec est qualifié par la Table des Résultats, qui 
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr), [Doubles — Critique et Maladresse](#doubles--critique-et-maladresse)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.105-114, l.116-117) → `bargainBuyFactor`, `OPTIONAL_RULES`, `double-critique-maladresse`, `evaluateTest`, `SUCCES_MINIME_CAP`, `SL_IMPRESSIVE`, `resolveCrewTestByRoles`, `isImpressiveSuccess`, `isImpressiveFailure`, `isAstoundingSuccess`, +4 — `src/data/regles.json`, `src/engine/bargain.ts`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +2 fichiers
+- `LDB 12` (l.105-114, l.116-117) → `bargainBuyFactor`, `OPTIONAL_RULES`, `double-critique-maladresse`, `evaluateTest`, `SUCCES_MINIME_CAP`, `resolveCrewTestByRoles`, `SL_IMPRESSIVE`, `isImpressiveSuccess`, `isImpressiveFailure`, `isAstoundingSuccess`, +4 — `src/data/regles.json`, `src/engine/bargain.ts`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +2 fichiers
 
 ---
 
@@ -319,7 +319,7 @@ Un test opposé est utilisé lorsqu'un personnage doit confronter ses capacités
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 9` (l.17) → `RecoverResolution`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `HealRollFlow`, `TestResult`, `tavernGameBaseValue`, `SurgeryRollFlow`, +28 — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, +19 fichiers
-- `LDB 12` (l.152-169) → `useExtendedTestJetProps`, `RecoverResolution`, `soutien`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `BargainModalView`, `useTestJetProps`, `StateRecoveryModalView`, `opposedLines`, +77 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/engine/riverNavigation.ts`, +39 fichiers
+- `LDB 12` (l.152-169) → `useExtendedTestJetProps`, `RecoverResolution`, `soutien`, `TraceOpposed`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `BargainModalView`, `useTestJetProps`, `StateRecoveryModalView`, +82 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +41 fichiers
 
 ---
 

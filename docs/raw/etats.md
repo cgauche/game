@@ -281,7 +281,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Brisé, Sonné, Hémorragique, Empoisonné, Inconscient, Traumatisme (`traumatisme.md`), Psychologie (`psychologie.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.84-102) → `combat-fatigue`, `unstable`, `stopBleedOutcome`, `Formula`, `brise`, `hitModifiers`, `needsRecoveryRoll`, `sleepParty`, `restRecovery`, `BattleState`, +27 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, +14 fichiers
+- `LDB 16` (l.84-102) → `combat-fatigue`, `unstable`, `Formula`, `stopBleedOutcome`, `brise`, `hitModifiers`, `needsRecoveryRoll`, `sleepParty`, `restRecovery`, `BattleState`, +27 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, +14 fichiers
 - `LDB 21` (l.33) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `fearSourceFor`, `psychImmuneToFrom`, `aiMaybeFrenzy`, `availableFreeAttackOps`, `Condition`, `describeApproach`, `EffectFlags`, +39 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, +19 fichiers
 
 ---
@@ -420,7 +420,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 - `LDB 16 l.28-139` — descriptions individuelles
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.16-17, l.28-139) → `PRONE_POSE`, `combat-fatigue`, `unstable`, `STABLE_COND_KINDS`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `stopBleedOutcome`, `Formula`, `brise`, +74 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +25 fichiers
+- `LDB 16` (l.16-17, l.28-139) → `PRONE_POSE`, `combat-fatigue`, `unstable`, `STABLE_COND_KINDS`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `stopBleedOutcome`, `brise`, +74 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +25 fichiers
 
 ---
 
