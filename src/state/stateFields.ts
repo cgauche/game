@@ -65,7 +65,7 @@ const STATE_FIELDS = {
   // Tests d'entretien du franchissement de jour mis en file pendant un combat (#253) — consommés par
   // `openCombatEndCascade`. Réinitialisés à chaque nouveau combat/scène (per-combat, jamais reportés).
   deferredUpkeepQueue: { init: [], resetOn: ['scene', 'combatStart'] },
-  pursuit: { init: null, resetOn: ['scene', 'combatStart'] },
+  sequence: { init: null, resetOn: ['scene', 'combatStart'] },
   sessionEndOpen: { init: false, resetOn: ['scene'] },
   pendingCastOpposition: { init: null, resetOn: ['combatStart'] }, // MÊME portée que l'incantation qu'elle oppose (pendingCast/pendingCounterspell) : la fenêtre ne survit pas à son Sort
   pendingHeal: { init: null, resetOn: ['combatStart'] },

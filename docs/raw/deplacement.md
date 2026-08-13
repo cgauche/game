@@ -547,8 +547,18 @@ Comparer le **DR le plus bas** des poursuivis au **DR le plus haut** des poursui
 - Si les poursuivants l'emportent : Distance diminue de la différence.
 
 **Étape 4 — Déterminer l'issue**
-- Distance ≤ 0 : rattrapés. Option : les poursuivis peuvent **sacrifier le plus lent** d'entre eux ;
-  les poursuivants choisissent qui s'arrête pour l'affronter et qui continue.
+- Distance ≤ 0 : les poursuivants ont rejoint leur cible. **Trois décisions + un recalcul** (l.94, verbatim) :
+
+  > « Les poursuivis ont alors la possibilité, **pour ce Round**, de sacrifier le plus lent d'entre eux
+  > afin de ralentir les poursuivants et de poursuivre leur fuite, **ou ils peuvent s'arrêter et les
+  > affronter**. Si le plus lent des poursuivis est abandonné, les poursuivants décident de qui s'arrête
+  > pour l'affronter et qui continue la poursuite. Si le pauvre retardataire n'est pas une cible
+  > prioritaire, il se peut qu'il soit **purement et simplement ignoré** ! »
+
+  Après l'abandon du plus lent, la Distance se **recalcule** sans lui (l.100-102, exemple) : Distance 2,
+  cultistes DR 0/2/2, Sigrid DR 3 → −3 = rattrapés ; le DR 0 abandonné, l'étape 3 se rejoue sur le
+  **prochain poursuivi le plus lent** (DR 2) contre Sigrid (DR 3) → Distance 2 − 1 = **1**, et la
+  poursuite repart avec un poursuivant de moins (Sigrid s'est arrêtée).
 - Distance ≥ 10 : fuite réussie, poursuite terminée.
 - Distance 1–9 : retour à l'Étape 2.
 

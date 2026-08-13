@@ -135,6 +135,20 @@
     }
   },
   {
+    "id": "tavern-game",
+    "label": "Partie de jeu de taverne",
+    "kind": "tavernGame",
+    "template": "{jeu} contre {adversaire} : la manche se gagne au plus grand nombre de DR. Mise engagée : {mise}.",
+    "form": "descripteur",
+    "rule": "pari",
+    "ruleCategory": "skills",
+    "source": {
+      "book": "nuits-agitees-et-dures-journees",
+      "page": 91,
+      "note": "NADAJ 16 l.9-11"
+    }
+  },
+  {
     "id": "crit-severity",
     "label": "Sévérité d’une Blessure critique",
     "kind": "critSeverity",

@@ -1657,8 +1657,9 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
   /** Finalisation : 'night' (bilan de repos), 'travel' (halte → reprise), 'travelDay' (jets du JOUR de
    *  voyage — fluvial/… : à la clôture, le store recalcule la progression du jour puis enchaîne halte/
    *  arrivée via le handler du domaine), 'test' (autonome), 'combat' (conséquences d'un jet de combat —
-   *  fermeture simple, pas de reprise), 'pursuite' (manche de poursuite terrestre — à la clôture le store
-   *  résout la manche puis rouvre une manche ou dénoue, cf. state/pursuitFlow) ; 'seaScorbut'/
+   *  fermeture simple, pas de reprise), 'sequence' (manche d'une SÉQUENCE — poursuite terrestre, jeu de
+   *  taverne opposé… : à la clôture le store passe la manche au réducteur du socle, qui rouvre ou dénoue,
+   *  cf. state/sequenceCore) ; 'seaScorbut'/
    *  'seaExhaustion' (seam de jet #275/#272 résiduel — MJ V) : lot de Tests `subi` PAR HÉROS de
    *  l'entretien-survie maritime (Scorbut MDG 14 l.230, Épuisement MDG 13 l.109-111) surfacé au siège MJ
    *  quand `resolveSurface('subi')` rend V (au lieu de l'auto-résolution silencieuse, `seaVoyageFlow.ts`
@@ -1678,7 +1679,7 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
    *  séquence d'AFFICHAGE PUR — étapes sans jet ni choix, poussées hors combat par `pushReveal` quand
    *  aucune séquence n'est en vol ; clôture sans AUCUNE suite propre, `dispatchCascadeDone` n'a qu'à
    *  reprendre une éventuelle séquence parquée). */
-  purpose: 'night' | 'travel' | 'travelDay' | 'test' | 'combat' | 'pursuite' | 'seaScorbut' | 'seaExposure' | 'seaExhaustion' | 'seaActivities' | 'riverExposure' | 'upkeep' | 'interlude' | 'affichage';
+  purpose: 'night' | 'travel' | 'travelDay' | 'test' | 'combat' | 'sequence' | 'seaScorbut' | 'seaExposure' | 'seaExhaustion' | 'seaActivities' | 'riverExposure' | 'upkeep' | 'interlude' | 'affichage';
   /** HALTE de voyage : la finalisation REPREND la route (continueTravelAfterNight). */
   travelHalt?: boolean;
   /** Cascade de PEUR de FIN de Round (combat) : à sa fermeture, le store ré-appelle `resolveRoundBoundary`

@@ -1,13 +1,17 @@
 /**
  * Poursuite TERRESTRE jouable (#95, LDB 15 l.87-109) : l'Effet `startPursuit` ouvre la boucle de manches
- * (cascade influençable `purpose:'pursuite'`) ; chaque manche compare le DR le plus bas des poursuivis au
+ * (cascade influençable du socle de séquence) ; chaque manche compare le DR le plus bas des poursuivis au
  * DR le plus haut des poursuivants et fait varier la Distance ; issue par `pursuitOutcome` (semé/rattrapé).
  * Réutilise les primitives PARTAGÉES `engine/pursuit` et la CASCADE (state/cascade), pas un flux parallèle.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatFlow';
-import { startGroundPursuit, continuePursuitRound, pursuitAbandon, pursuitBands } from './pursuitFlow';
+import {
+  startGroundPursuit, pursuitAbandon, pursuitBands, pursuitOf, PURSUIT_POLICY_DEFAUT,
+  type PursuitPayload, type PursuitFoe,
+} from './pursuitFlow';
+import { closeSequenceRound, type SequenceState } from './sequenceCore';
 import { startCascade } from './cascade';
 import { monoStep, displayStep, type BuiltCascadeStep } from './rollSeam';
 import { combatStakeRef } from '../data';
@@ -28,7 +32,7 @@ function heroes() {
 }
 
 /** Cascade FIGÉE de manche : la BANDE de la manche, une rangée par coureur ayant roulé son Test de
- *  Mouvement (`sl` imposé) — sert à tester la résolution de manche (`continuePursuitRound`) sans UI. */
+ *  Mouvement (`sl` imposé) — sert à tester la clôture de manche (`closeSequenceRound`) sans UI. */
 function doneRound(party: { id: string }[], sl: number): PendingCascade {
   const participants: CascadeStep[] = [{
     id: 'pursuit-1', kind: 'pursuitMove', label: 'Manche 1 — Athlétisme', aggregate: 'none',
@@ -37,11 +41,26 @@ function doneRound(party: { id: string }[], sl: number): PendingCascade {
       result: { roll: 40, target: 40, sl, success: sl >= 0 },
     })),
   }];
-  return { title: 't', purpose: 'pursuite', participants, cursor: participants.length, log: [] };
+  return { title: 't', purpose: 'sequence', participants, cursor: participants.length, log: [] };
+}
+
+/** SÉQUENCE de poursuite EN COURS — l'état vit dans le socle (`sequence`), la poursuite en est la
+ *  charge utile ; les formules de score de camp (l.93) sont des PARAMÈTRES, comme à l'ouverture. */
+function pursuitSeq(p: Partial<PursuitPayload> & { foes: PursuitFoe[] }): SequenceState<PursuitPayload> {
+  return {
+    def: 'pursuit', round: p.manche ?? 1, cum: {},
+    params: { score: { fleeing: 'min', pursuers: 'max' } },
+    payload: {
+      partyRole: 'fleeing', distance: 4, escapeAt: 10, skill: 'athletisme',
+      policy: { ...PURSUIT_POLICY_DEFAUT }, manche: 1, phase: 'course', retires: [],
+      ...p,
+      foes: p.foes.map((f, i) => ({ ...f, id: f.id ?? `foe-${i + 1}` })),
+    },
+  };
 }
 
 describe('Poursuite terrestre (#95)', () => {
-  beforeEach(() => useGame.setState({ battle: null, party: [], journal: [], pendingCascade: null, pursuit: null }));
+  beforeEach(() => useGame.setState({ battle: null, party: [], journal: [], pendingCascade: null, sequence: null }));
 
   it('l’Effet startPursuit ouvre la manche en UNE bande — un rang par coureur, jamais une étape par héros (#1246)', () => {
     const [a, b] = heroes();
@@ -49,12 +68,12 @@ describe('Poursuite terrestre (#95)', () => {
       type: 'startPursuit', partyRole: 'fleeing', distance: 4, skill: 'athletisme',
       foes: [{ label: 'Bandit', movement: 4, skill: 40 }],
     }]);
-    const p = useGame.getState().pursuit;
+    const p = pursuitOf(useGame.getState());
     expect(p?.partyRole).toBe('fleeing');
     expect(p?.distance).toBe(4);
-    expect(p?.round).toBe(1);
+    expect(p?.manche).toBe(1);
     const casc = useGame.getState().pendingCascade;
-    expect(casc?.purpose).toBe('pursuite');
+    expect(casc?.purpose).toBe('sequence');
     expect(casc?.participants).toHaveLength(1); // UNE fenêtre pour la manche entière
     const bande = casc!.participants[0];
     expect(bande.aggregate).toBe('none'); // jets INDÉPENDANTS
@@ -119,37 +138,46 @@ describe('Poursuite terrestre (#95)', () => {
   it('manche gagnée par les poursuivis (poursuivants médiocres) → Distance grimpe jusqu’à l’évasion', () => {
     useGame.getState().seedRng(3);
     const party = heroes();
-    useGame.setState({ pursuit: { partyRole: 'fleeing', distance: 8, escapeAt: 10, skill: 'athletisme', foes: [{ label: 'Bandit', movement: 4, skill: 1 }], round: 1 } });
-    continuePursuitRound(useGame.getState, useGame.setState, doneRound(party, 6));
-    expect(useGame.getState().pursuit).toBeNull(); // dénoué
+    useGame.setState({ sequence: pursuitSeq({ partyRole: 'fleeing', distance: 8, foes: [{ label: 'Bandit', movement: 4, skill: 1 }] }) });
+    closeSequenceRound(useGame.getState, useGame.setState, doneRound(party, 6));
+    expect(pursuitOf(useGame.getState())).toBeNull(); // dénoué
     expect(useGame.getState().journal.some((l) => l.includes('semé'))).toBe(true);
   });
 
-  it('manche gagnée par les poursuivants (proie lente) → Distance ≤ 0 = rattrapés', () => {
+  it('manche gagnée par les poursuivants (proie lente) → Distance ≤ 0 : le camp poursuivi DÉCIDE (l.94)', () => {
     useGame.getState().seedRng(4);
     const party = heroes();
-    useGame.setState({ pursuit: { partyRole: 'fleeing', distance: 2, escapeAt: 10, skill: 'athletisme', foes: [{ label: 'Cavalier', movement: 4, skill: 95 }], round: 1 } });
-    continuePursuitRound(useGame.getState, useGame.setState, doneRound(party, -6));
-    expect(useGame.getState().pursuit).toBeNull();
+    useGame.setState({ sequence: pursuitSeq({ partyRole: 'fleeing', distance: 2, foes: [{ label: 'Cavalier', movement: 4, skill: 95 }] }) });
+    closeSequenceRound(useGame.getState, useGame.setState, doneRound(party, -6));
+    // La poursuite n'est PAS dénouée d'office : « Les poursuivis ont alors la possibilité, pour ce Round,
+    // de sacrifier le plus lent d'entre eux […], ou ils peuvent s'arrêter et les affronter » (l.94).
+    const p = pursuitOf(useGame.getState());
+    expect(p?.phase).toBe('choix-fuyards');
+    const choix = useGame.getState().pendingCascade!.participants[0];
+    expect(choix.options?.map((o) => o.key)).toEqual(['sacrifier', 'affronter']);
+    // Voie « s'arrêter et les affronter » → rattrapage, poursuite close.
+    useGame.getState().cascadeChoose(choix.id, 'affronter');
+    useGame.getState().cascadeNext();
+    expect(pursuitOf(useGame.getState())).toBeNull();
     expect(useGame.getState().journal.some((l) => l.includes('Rattrapés'))).toBe(true);
   });
 
   it('manche indécise → une nouvelle manche s’ouvre (la poursuite continue)', () => {
     useGame.getState().seedRng(5);
     const party = heroes();
-    useGame.setState({ pursuit: { partyRole: 'fleeing', distance: 5, escapeAt: 10, skill: 'athletisme', foes: [{ label: 'Bandit', movement: 4, skill: 40 }], round: 1 } });
-    continuePursuitRound(useGame.getState, useGame.setState, doneRound(party, 0));
+    useGame.setState({ sequence: pursuitSeq({ partyRole: 'fleeing', distance: 5, foes: [{ label: 'Bandit', movement: 4, skill: 40 }] }) });
+    closeSequenceRound(useGame.getState, useGame.setState, doneRound(party, 0));
     // Distance reste dans ]0, escapeAt[ → la poursuite n’est pas dénouée, une manche rouvre.
-    expect(useGame.getState().pursuit).not.toBeNull();
-    expect(useGame.getState().pendingCascade?.purpose).toBe('pursuite');
-    expect(useGame.getState().pursuit?.round).toBe(2);
+    expect(pursuitOf(useGame.getState())).not.toBeNull();
+    expect(useGame.getState().pendingCascade?.purpose).toBe('sequence');
+    expect(pursuitOf(useGame.getState())?.manche).toBe(2);
   });
 
   it('abandon : le groupe renonce et la poursuite se ferme', () => {
     heroes();
-    useGame.setState({ pursuit: { partyRole: 'pursuing', distance: 5, escapeAt: 10, skill: 'athletisme', foes: [{ label: 'Voleur', movement: 4, skill: 40 }], round: 1 } });
+    useGame.setState({ sequence: pursuitSeq({ partyRole: 'pursuing', distance: 5, foes: [{ label: 'Voleur', movement: 4, skill: 40 }] }) });
     pursuitAbandon(useGame.getState, useGame.setState);
-    expect(useGame.getState().pursuit).toBeNull();
+    expect(pursuitOf(useGame.getState())).toBeNull();
     expect(useGame.getState().journal.some((l) => l.includes('abandonne'))).toBe(true);
   });
 
@@ -167,19 +195,21 @@ describe('Poursuite terrestre (#95)', () => {
       manches.push(casc.participants.length);
       const cur = casc.participants[casc.cursor];
       for (const row of cur?.participants ?? []) if (!row.result) useGame.getState().cascadeBatchRoll(row.id);
+      // Fenêtre de DÉCISION (rattrapés, l.94) : le pilote tranche la 1ʳᵉ voie — la boucle ne s'arrête pas dessus.
+      if (cur?.options?.length && cur.chosen == null) useGame.getState().cascadeChoose(cur.id, cur.options[0].key);
       useGame.getState().cascadeNext();
     }
     // Chaque manche est UNE fenêtre (le « 1/8 » du signal utilisateur ne peut plus se produire).
     expect(manches.every((n) => n === 1)).toBe(true);
     expect(useGame.getState().pendingCascade).toBeNull();
-    expect(useGame.getState().pursuit).toBeNull(); // poursuite dénouée (semé ou rattrapé)
+    expect(pursuitOf(useGame.getState())).toBeNull(); // poursuite dénouée (semé ou rattrapé)
   });
 
   it('MANCHE SUIVANTE : une manche indécise rouvre UNE bande neuve, jamais la précédente rejouée', () => {
     useGame.getState().seedRng(5);
     const party = heroes();
-    useGame.setState({ pursuit: { partyRole: 'fleeing', distance: 5, escapeAt: 10, skill: 'athletisme', foes: [{ label: 'Bandit', movement: 4, skill: 40 }], round: 1 } });
-    continuePursuitRound(useGame.getState, useGame.setState, doneRound(party, 0));
+    useGame.setState({ sequence: pursuitSeq({ partyRole: 'fleeing', distance: 5, foes: [{ label: 'Bandit', movement: 4, skill: 40 }] }) });
+    closeSequenceRound(useGame.getState, useGame.setState, doneRound(party, 0));
     const casc = useGame.getState().pendingCascade!;
     expect(casc.participants).toHaveLength(1);
     expect(casc.participants[0].participants?.map((r) => r.id).sort()).toEqual(party.map((h) => h.id).sort());
@@ -207,7 +237,7 @@ describe('Poursuite — la manche restaurée d’une save se possède comme la m
     const deux = pursuitBands([mono(a, '1'), mono(b, '1')]);
     expect(deux).toHaveLength(1);
     expect(deux[0].groupOwner, 'deux coureurs : fenêtre de groupe').toBe(true);
-    startCascade(useGame.getState, useGame.setState, { title: 'Manche', purpose: 'pursuite', steps: deux });
+    startCascade(useGame.getState, useGame.setState, { title: 'Manche', purpose: 'sequence', steps: deux });
     expect(modalOwnerOf(useGame.getState()), 'jamais `undefined` : c’était la fenêtre hôte-seul').toBe('*');
 
     useGame.setState({ pendingCascade: null });

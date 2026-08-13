@@ -31,7 +31,7 @@ export function checkPartyWiped(get: Get, set: Set): boolean {
     pendingRest: null,
     pendingCascade: null,
     suspendedCascades: [],
-    pursuit: null,
+    sequence: null,
     travelPlan: null,
     travelRecap: null,
     pendingCrewTest: null,

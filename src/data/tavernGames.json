@@ -56,6 +56,7 @@
     "spec": "lancer",
     "mode": "opposed",
     "drCap": 6,
+    "tieBreak": "nul",
     "desc": "chaque joueur dispose de trois boules. À votre tour, effectuez un Test de Projectile (Lancer) Intermédiaire (+0), et notez, pour chacune de vos boules, le nombre de DR obtenus ; Le DR maximal est de 6 DR (votre boule est en contact avec la balle ou le bâton cible) ; un échec signifie que votre boule est hors-jeu. Si vous obtenez le même nombre de DR (ou supérieur) que la boule d'un adversaire, vous pouvez réduire le nombre de DR de cette boule de –1 par DR que vous dépensez pour l'écarter, jusqu'à un minimum de 0. Une fois que tous les joueurs ont lancé leurs trois boules, le joueur à qui appartient la boule qui a le plus de DR gagne ; en cas d'égalité, la partie se solde par un match nul.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
@@ -92,6 +93,7 @@
     "label": "Les dominos",
     "skill": "pari",
     "mode": "opposed",
+    "tieBreak": "units-lowest",
     "desc": "pour jouer, chaque joueur effectue un Test opposé de Pari Accessible (+20). En cas d'égalité, les joueurs comparent le résultat de leur dé d'unités pour ce Test. Celui qui a le nombre le plus bas gagne.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",

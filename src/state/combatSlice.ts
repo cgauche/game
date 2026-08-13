@@ -109,7 +109,8 @@ import { combatOrder } from './combatSetup';
 import { isMerScene, sceneMetresPerTile } from './scene';
 import { bus, EVT } from './bus';
 import { advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, rollCascadeTable, setCascadeTableForcedRoll, suspendActiveCascade, resumeSuspendedCascade, setOwnTestFailedEmitter } from './cascade';
-import { continuePursuitRound, pursuitAbandon } from './pursuitFlow';
+import { pursuitAbandon } from './pursuitFlow';
+import { closeSequenceRound } from './sequenceCore';
 import { checkPartyWiped } from './partyWipe';
 import { FLOWS } from './rollFlowSpecs';
 
@@ -398,7 +399,7 @@ export function createCombatSlice(get: Get, set: Set) {
     // jour (halte de nuit / arrivée), DIFFÉRÉE le temps du Test de Résistance — sinon le Repos et l'Exposition
     // se court-circuitent et la journée suivante ne se ré-arme jamais (patron du sibling `seaScorbut`).
     else if (done?.purpose === 'riverExposure') { continueRiverDayAfterExposure(get, set); handled = true; }
-    else if (done?.purpose === 'pursuite') { continuePursuitRound(get, set, done); handled = true; } // manche de poursuite terrestre close → résoudre puis rouvrir/dénouer (state/pursuitFlow)
+    else if (done?.purpose === 'sequence') { closeSequenceRound(get, set, done); handled = true; } // manche de SÉQUENCE close → le socle résout puis rouvre/dénoue (state/sequenceCore)
     // Entretien-survie maritime surfacé au MJ (#272 résiduel, seam #275) : la clôture enchaîne la phase suivante de la journée.
     else if (done?.purpose === 'seaScorbut') { continueSeaDayAfterScorbut(get, set, done.participants); handled = true; }
     else if (done?.purpose === 'seaExposure') { continueSeaDayAfterExposure(get, set, done.participants); handled = true; }

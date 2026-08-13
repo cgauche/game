@@ -59,13 +59,13 @@ seam (`ROLL_SEAM_CORE`) sont hors périmètre — leur pending EST le foyer.
 |---|---|---|---|---|
 | `src/state/combatEffects.ts` | 1 | canonique | 467 | canonique : le corps d'`openSkillTest` (combatEffects.ts:308) — LA fabrique du `pendingTest` de la famille Flow authorée, le pending y est monté UNE fois pour tous ses appelants. |
 | `src/state/combatFlow.ts` | 2 | mixte | 2980, 7232 | 1 gate de main (`pendingHandGate`, `openAttackCascade`) monté à la main -> #1064 ; 1 `PendingReload` d'ennemi construit APRÈS un `rollSansPilote` déjà scellé — canonique : objet de RENDU (journal/popin), aucun jet à ouvrir. |
-| `src/state/combatSlice.ts` | 5 | dette | 1869, 1915, 2020, 2447, 2845 | 2 `pendingReload` (pièce servie / poste de navire), 1 `pendingStateRecovery`, 1 `pendingHandGate` (2ᵉ main), 1 `pendingHeal` -> #1064 (le lot d'affichage les re-route ; 6 -> 5 : le `pendingTest` de `battleGainAdvantage` passe par `openSkillTest`). |
+| `src/state/combatSlice.ts` | 5 | dette | 1870, 1916, 2021, 2448, 2846 | 2 `pendingReload` (pièce servie / poste de navire), 1 `pendingStateRecovery`, 1 `pendingHandGate` (2ᵉ main), 1 `pendingHeal` -> #1064 (le lot d'affichage les re-route ; 6 -> 5 : le `pendingTest` de `battleGainAdvantage` passe par `openSkillTest`). |
 | `src/state/interludeFlow.ts` | 1 | dette | 745 | `pendingActivity` du catalogue d'Activités (`openCatalogActivity`) — fabrique UNIQUE de toutes les Activités à jet d'interlude -> #1064. |
 | `src/state/massBattleFlow.ts` | 1 | dette | 364 | `openBattleActivity` — fabrique PARTAGÉE, atteinte par 7 call-sites (inspire/prep ×3/round ×2/resistance) -> #1067 (surfaçage massBattle). |
 | `src/state/medicFlow.ts` | 2 | dette | 174, 200 | `pendingHeal` et `pendingSurgery` du soigneur PNJ hors combat -> #1064. |
 | `src/state/merchantFlow.ts` | 1 | dette | 872 | `pendingAppraise` (Évaluation / Intuition de détection) -> #1064. |
 | `src/state/seaVoyageFlow.ts` | 1 | dette | 2038 | `pendingSteamSave` (`openSteamSave`, Test d'Initiative de l'ingénieur) -> #1064. |
-| `src/state/store.ts` | 1 | canonique | 2443 | canonique : re-ciblage d'un `pendingTest` EXISTANT (`{ ...pt, … }`) sur un autre candidat — `target` recopié du candidat DÉJÀ calculé par la fabrique, aucun jet neuf décrit. |
+| `src/state/store.ts` | 1 | canonique | 2445 | canonique : re-ciblage d'un `pendingTest` EXISTANT (`{ ...pt, … }`) sur un autre candidat — `target` recopié du candidat DÉJÀ calculé par la fabrique, aucun jet neuf décrit. |
 
 _15 sites mesurés dans 9 fichiers — par nature : 11 dette, 2 canonique, 2 mixte._
 
@@ -96,11 +96,11 @@ La forme (S) « position de spec » garde son exclusion structurelle.
 | `src/state/riverVoyageFlow.ts` | 2 | canonique | `resolveRiverImpact` | canonique : les 2 `resolveRiverImpact` tirent les dégâts d'un péril sur d100 (MSRC 7 l.138-144), le pilote humain ayant DÉJÀ joué son `riverPerilDetect`. Le redressement d'un chavirage est passé en étapes Round par Round (#1104a) : plus aucun Test de HÉROS roulé en boucle ici. |
 | `src/state/seaVoyageFlow.ts` | 5 | mixte | `rollBoardEvent`, `rollDebrisEntangle`, `rollSteamBreakdown`, `rollStranding`, `rollWeeklyFouling` | canonique pour 4 sites : `rollBoardEvent` (événement de bord, MDG 15 l.89), `rollSteamBreakdown` (MDG 12 l.313, tiré APRÈS un Test surfacé), `rollDebrisEntangle` et `rollStranding` (périls de mer, MDG 13 l.485-499). L'Exposition du jour est passée en étapes influençables (#1104b). Dette restante : `rollWeeklyFouling` (40,22 % sans trace) -> #1105. |
 | `src/state/shipBattery.ts` | 1 | dette | `resolveCrewTestByRoles` | `resolveCrewTestByRoles` — Test d'équipage de la batterie -> #1067 (même famille navale qu'`openCrewTestPending`). |
-| `src/state/tavernFlow.ts` | 2 | canonique | `rollTavernTest` | canonique : `rollTavernTest` est la primitive `roll*` à UN SEUL jet extraite en #370 — appelée en POST-COMMIT par l'applier (patron `portFlow.ts`), le jet du joueur passant, lui, par le seam. |
+| `src/state/tavernFlow.ts` | 4 | canonique | `rollTavernTest` | canonique : `rollTavernTest` est la primitive `roll*` à UN SEUL jet extraite en #370 — elle ne roule QUE le côté ADVERSAIRE (le jet du joueur passe par le seam). Deux chemins, deux sites chacun (le jet figé + son repli si le gel manque) : le mode ÉTENDU (Bras de fer) le fige à l'ouverture de manche et le relit dans son applier ; le mode OPPOSÉ le fige dans la fabrique de manche du socle de séquence (#1279) et le relit dans son réducteur de clôture. |
 | `src/state/travelFlow.ts` | 3 | mixte | `forcedMarchTest`, `resolveMountedDay`, `rollStageWeather` | canonique : `rollStageWeather` (:610) est un d100 de MONDE sur la table de saison (EDOC 8 l.42) — aucun acteur ne le porte. Dettes : `forcedMarchTest` (:712, marche forcée) -> #1102 ; `resolveMountedDay` (:863, journée en selle EDOC 07 l.142-146 dont le Test de Chevaucher du CAVALIER l.165-174, rendu en lecture seule, 69,96 % d'échecs) -> #1106. |
 | `src/state/upkeep.ts` | 4 | canonique | `dailyDiseaseUpkeep`, `dailyFoodUpkeep`, `dailyWaterUpkeep`, `tickTraumaRecovery` | canonique : `dailyFoodUpkeep`/`dailyWaterUpkeep`/`dailyDiseaseUpkeep`/`tickTraumaRecovery` reçoivent `onDeferTest`, qui transforme chaque Test d'entretien en étape de cascade influençable sur les chemins principaux (store.ts:2564, :2570) ; le seul appelant sans defer est le chemin eager de `restFlow.ts` (:154), ticketé #1101 côté restFlow. |
 
-_84 call-sites mesurés dans 19 fichiers, pour 82 exports rouleurs dérivés de `src/engine` — par nature : 61 mixte, 13 dette, 10 canonique._
+_86 call-sites mesurés dans 19 fichiers, pour 81 exports rouleurs dérivés de `src/engine` — par nature : 61 mixte, 13 dette, 12 canonique._
 
 > **Nature** (`kind`) : `dette` = tous les sites doivent disparaître · `canonique` = aucun site ne bouge ·
 > `mixte` = l'entrée porte les deux natures. Sans ce discriminant, « cette liste décroît » ne veut rien dire.

@@ -1494,7 +1494,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
   startPursuit: {
     group: 'Combat & social', label: 'Poursuite terrestre (LDB 15)', icon: 'travel/foot',
     make: () => ({ type: 'startPursuit', partyRole: 'fleeing', distance: 4, skill: 'athletisme', foes: [{ label: 'Poursuivant', movement: 4, skill: 40 }], encounter: '' }),
-    apply: (e, env) => { startGroundPursuit(env.get, env.set, { partyRole: e.partyRole, distance: e.distance, escapeAt: e.escapeAt, skill: e.skill, foes: e.foes, encounter: e.encounter || undefined }); },
+    apply: (e, env) => { startGroundPursuit(env.get, env.set, { partyRole: e.partyRole, distance: e.distance, escapeAt: e.escapeAt, skill: e.skill, foes: e.foes, encounter: e.encounter || undefined, policy: e.policy }); },
     refs: (e, ctx) => {
       const issues: EffectRefIssue[] = [];
       if (!e.foes?.length) issues.push({ level: 'error', message: 'Poursuite : aucun adversaire' });

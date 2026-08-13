@@ -63,7 +63,7 @@ câblé côté `src/state`, ou n'être jamais posé dans aucun JSON de campagne 
 | `openCharacterCreator` | — | CRÉATION DE PERSONNAGE (#83) : ouvre l'assistant EXISTANT (`src/ui/creator/`) pour un NOUVEAU héros (comme le bouton « + » de l'écran Groupe) — un remplaçant scénarisé, un compagnon rejoignant le groupe. |
 | `interlude` | `weeks?` | « Entre deux aventures » (LDB 22-23, Jalon 5) : ouvre l'interlude — Événement d100 par héros, min(3, semaines) Activités chacun, puis Argent à gaspiller et le temps passe. |
 | `grantFavor` | `heroId?`, `level`, `owedTo`, `desc` | Faveur (LDB 23 l.139-153, #509) : contrepartie future acceptée en échange d'une aide immédiate — Faveur de départ de campagne, ou octroi narratif hors flux d'Activité. |
-| `startPursuit` | `partyRole?`, `distance`, `escapeAt?`, `skill`, `foes`, `encounter?` | Poursuite TERRESTRE jouable (LDB 15 l.87-109) — à poser sur un trigger/dialogue (« ils prennent la fuite », « rattrapez-les ! »). |
+| `startPursuit` | `partyRole?`, `distance`, `escapeAt?`, `skill`, `foes`, `encounter?`, `policy?` | Poursuite TERRESTRE jouable (LDB 15 l.87-109) — à poser sur un trigger/dialogue (« ils prennent la fuite », « rattrapez-les ! »). |
 | `openTavernGames` | — | Ouvre les JEUX DE TAVERNE (NADJ 16, option `tavern-games`) — à poser sur un choix de dialogue d'aubergiste (« Une partie ? ») ou une entité de taverne. |
 | `openWorldMap` | — | Ouvre la CARTE DU MONDE (#T2) — à poser sur la porte/route d'un lieu (« partir en voyage »). |
 | `setVessel` | `vehicleId`, `label?`, `morale?`, `hullCurrent?`, `hullMax?`, `saboteurDR?`, `waterLitres?`, `provisions?`, `crew?` | Dote le groupe d'un NAVIRE DE CAMPAGNE (`state.vessel`, MDG 13-15) — à poser quand le groupe reçoit/achète un bateau (don d'un patron, chantier). |

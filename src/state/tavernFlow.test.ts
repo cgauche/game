@@ -43,7 +43,7 @@ beforeEach(() => {
 });
 
 describe('playTavernGame', () => {
-  it('ouvre le jet du challenger par le seam de jet (openRoll) — jamais un résultat synchrone', () => {
+  it('mode OPPOSÉ : la manche s’ouvre par le SOCLE de séquence (étape mintée, jamais un résultat synchrone)', () => {
     const [a, b] = twoHeroes();
     useGame.setState({ party: [a, b] });
     get().openTavernGames();
@@ -52,7 +52,10 @@ describe('playTavernGame', () => {
     expect(get().pendingCascade).not.toBeNull();
     const step = get().pendingCascade!.participants[0];
     expect(step.actorId).toBe(a.id);
-    expect(step.kind).toBe('tavern-game');
+    expect(step.kind).toBe('tavern-round');
+    expect(get().pendingCascade!.purpose).toBe('sequence');
+    // L'état de séquence PORTE la partie (persisté avec la sauvegarde), le pot compris.
+    expect(get().sequence?.def).toBe('tavern-opposed');
   });
 
   it('partie entre compagnons : issue stockée après la cascade, gagnant cohérent, bourse inchangée', async () => {

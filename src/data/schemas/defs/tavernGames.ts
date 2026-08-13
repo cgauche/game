@@ -28,6 +28,9 @@ export const schema = z.array(
     mode: z.enum(['opposed', 'extended']),
     target: z.number().optional(),
     drCap: z.number().optional(),
+    /** Id du départage d'égalité résolu par le socle de séquence (`units-lowest` Dominos l.107,
+     *  `nul` Boules l.57) — consommé par `src/state/sequenceCore.ts` (`resolveSequenceTie`). */
+    tieBreak: z.enum(['units-lowest', 'nul']).optional(),
     read: z.enum(['sl', 'units-tens']).optional(),
     stake: z.string().optional(),
     source: sourceRefSchema,

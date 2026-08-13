@@ -504,9 +504,11 @@ export interface GameState extends RollFlowActionsMap {
    *  `openCombatEndCascade` (fin de combat) — jamais roulés en silence. La garde `lastUpkeepDay` reste la
    *  référence anti-double-résolution (l'entretien lui-même n'est appliqué qu'une fois). */
   deferredUpkeepQueue: import('./rollSeam').BuiltCascadeStep[];
-  /** POURSUITE TERRESTRE en cours (LDB 15) : Distance/adversaires persistés entre les manches (chaque
-   *  manche est une cascade `purpose:'pursuite'`, cf. state/pursuitFlow). `null` hors poursuite. */
-  pursuit: import('./pursuitFlow').PursuitState | null;
+  /** SÉQUENCE EN COURS (socle `state/sequenceCore`, #1279) : la situation qui se joue en MANCHES
+   *  jusqu'à une issue — poursuite terrestre (LDB 15), jeu de taverne opposé (NADAJ 16), demain les
+   *  crises de mer. État GÉNÉRIQUE (id de définition, rang de manche, cumuls par camp, paramètres
+   *  d'auteur) + la charge utile du domaine ; persisté entre les manches. `null` hors séquence. */
+  sequence: import('./sequenceCore').SequenceState | null;
   /** Abandon de la poursuite terrestre (le groupe renonce à fuir/traquer). */
   pursuitAbandon: () => void;
   /** Incantation OPPOSÉE (`spec.opposed`) : chaque CIBLE oppose son Test (FM/Int) à l'incantation

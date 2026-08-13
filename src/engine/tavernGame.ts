@@ -33,6 +33,11 @@ export interface TavernGame {
   target?: number;
   /** Plafond de DR d'une manche (Boules = 6 DR). */
   drCap?: number;
+  /** DÉPARTAGE d'égalité DÉCLARÉ (id résolu par le socle de séquence, `state/sequenceCore`) : Dominos
+   *  « En cas d'égalité, les joueurs comparent le résultat de leur dé d'unités pour ce Test. Celui qui
+   *  a le nombre le plus bas gagne » (l.107) → `units-lowest` ; Boules « en cas d'égalité, la partie se
+   *  solde par un match nul » (l.57) → `nul`. Absent : l'égalité reste. */
+  tieBreak?: string;
   /** Variante de lecture du score (Fléchettes = unités/dizaines/×10) — documentaire ; le moteur rapide lit
    *  le DR (l.11). */
   read?: 'sl' | 'units-tens';

@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { ladderClimbReach, resolveLadderClimb, resolveSurfaceClimb, resolveDeliberateFall } from './movement';
-import { pursuitOutcome, resolveGroundPursuitRound, pursuitMoveBonus, PURSUIT_ESCAPE_DISTANCE, type PursuitParticipant } from './pursuit';
+import {
+  pursuitOutcome, pursuitMoveBonus, pursuitLaggard, npcSacrificeChoice, npcPursuerChoice,
+  PURSUIT_ESCAPE_DISTANCE, type PursuitRunner,
+} from './pursuit';
 import type { RNG } from './dice';
 
 /** RNG d100 → `roll` (le reste des int() renvoie `roll` aussi ; escalade/chute n'utilisent qu'un d100). */
@@ -56,17 +59,46 @@ describe('Poursuite terrestre — Distance (LDB 15 l.86-108)', () => {
     expect(pursuitMoveBonus(7, 7)).toBe(0);
     expect(pursuitMoveBonus(9, 7)).toBe(2);
   });
-  it('Distance += (min DR fuyards − max DR poursuivants) ; issue jugée', () => {
-    const parts: PursuitParticipant[] = [
-      { id: 'fuyard', skill: 80, movement: 4, side: 'fleeing' },
-      { id: 'chasseur', skill: 20, movement: 4, side: 'pursuer' },
-    ];
-    // fuyard réussit fort (01), chasseur échoue (99) → delta positif, Distance augmente.
-    const seq = [1, 99]; let i = 0;
-    const rng: RNG = { int: (_min, max) => (max === 100 ? seq[i++] ?? 50 : max) };
-    const r = resolveGroundPursuitRound(2, parts, rng);
-    expect(r.delta).toBeGreaterThan(0);
-    expect(r.distance).toBeGreaterThan(2);
-    expect(r.rolls).toHaveLength(2);
+  /** Les trois décisions de l.94, du côté du camp PNJ (le camp joueur, lui, ouvre une fenêtre). */
+  const coureur = (id: string, movement: number, total = 0): PursuitRunner => ({ id, label: id, movement, total });
+
+  it('« le plus lent d’entre eux » (l.94) : le plus petit Mouvement, départagé par le DR de la manche', () => {
+    expect(pursuitLaggard([coureur('a', 5), coureur('b', 4), coureur('c', 6)])?.id).toBe('b');
+    expect(pursuitLaggard([coureur('a', 4, 2), coureur('b', 4, -1)])?.id).toBe('b');
+    expect(pursuitLaggard([coureur('seul', 4)]), 'sacrifier le dernier fuyard n’a personne à sauver').toBeUndefined();
+  });
+
+  /**
+   * L'EXEMPLE CANONIQUE tranche le défaut (l.98-100) : les trois cultistes n'ont AUCUN Mouvement
+   * distinct au Source — leur « plus lent » se départage au DR de la manche (0 contre 2 et 2) — et ils
+   * l'abandonnent quand même. Le sacrifice sert « à ralentir les poursuivants » (l.94) : il OCCUPE la
+   * chasse, il n'allège pas le camp. Une politique par défaut indexée sur l'écart de Mouvement
+   * rendrait donc `affronter` sur ce camp-là — et la voie (a) serait morte par défaut.
+   */
+  it('camp PNJ poursuivi, exemple canonique : trois coureurs de MÊME Mouvement (DR 0/2/2) SACRIFIENT', () => {
+    const camp = [coureur('cultiste-1', 4, 0), coureur('cultiste-2', 4, 2), coureur('cultiste-3', 4, 2)];
+    const laggard = pursuitLaggard(camp)!;
+    expect(laggard.id, 'à Mouvement égal, le plus lent est celui qui traine au DR').toBe('cultiste-1');
+    expect(npcSacrificeChoice({}, laggard, camp)).toBe('sacrifier');
+  });
+
+  it('camp PNJ poursuivi : la RETENUE reste disponible en donnée (jamais / à partir d’un écart de M)', () => {
+    const lent = coureur('lent', 3);
+    const camp = [lent, coureur('rapide', 5)];
+    expect(npcSacrificeChoice({ sacrifice: 'jamais' }, lent, camp)).toBe('affronter');
+    expect(npcSacrificeChoice({ sacrifice: 'si-ecart', ecartM: 1 }, lent, camp)).toBe('sacrifier');
+    const homogene = [coureur('a', 5), coureur('b', 5)];
+    expect(npcSacrificeChoice({ sacrifice: 'si-ecart', ecartM: 1 }, homogene[0], homogene)).toBe('affronter');
+  });
+
+  it('camp PNJ poursuivant : le plus lent s’arrête ; le retardataire NON prioritaire est ignoré (l.94)', () => {
+    const camp = [coureur('vif', 6), coureur('trainard', 4)];
+    const abandonne = coureur('abandonne', 3);
+    const arret = npcPursuerChoice({}, abandonne, camp);
+    expect(arret).toEqual({ go: 'arreter', who: camp[1] });
+    // Une scène qui NOMME ses cibles prioritaires rend l'abandon possible : le retardataire n'en est pas.
+    expect(npcPursuerChoice({ prioritaires: ['un-autre'] }, abandonne, camp)).toEqual({ go: 'ignorer' });
+    expect(npcPursuerChoice({ prioritaires: ['abandonne'] }, abandonne, camp).go).toBe('arreter');
+    expect(npcPursuerChoice({ arret: 'aucun' }, abandonne, camp)).toEqual({ go: 'ignorer' });
   });
 });

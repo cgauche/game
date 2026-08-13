@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
 import { TAVERN_GAMES, findTavernGameById } from '../engine/tavernGame';
-import { tavernGameValue, TAVERN_GAME_KIND, type TavernOpponent } from '../state/tavernFlow';
+import { tavernGameValue, isTavernStep, type TavernOpponent } from '../state/tavernFlow';
 import { bourseOf } from '../state/bourseFlow';
 import { refLabel } from '../data/index';
 import { PA_PER_SC, toBrass, fromBrass } from '../engine/money';
@@ -29,7 +29,7 @@ export function TavernGameModal() {
   const close = useGame((s) => s.closeTavernGames);
   // Manche EN COURS (jet du challenger surfacé par-dessus, cf. docstring) : masque le formulaire de
   // réglage — la cascade (RollShell) porte l'interaction tant qu'elle n'a pas committé.
-  const rolling = useGame((s) => !!s.pendingCascade?.participants.some((p) => p.kind === TAVERN_GAME_KIND));
+  const rolling = useGame((s) => !!s.pendingCascade?.participants.some((p) => isTavernStep(p.kind)));
 
   const heroes = party.filter((h) => !h.dead);
   const [gameId, setGameId] = useState(TAVERN_GAMES[0]?.id ?? '');

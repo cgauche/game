@@ -11,13 +11,14 @@
  *  4. Distance ≤ 0 → rattrapés ; Distance ≥ 10 → semés ; sinon la poursuite continue (l.94).
  *  5. Modificateur de Mouvement (l.104-108) : un participant plus rapide gagne autant de DR bonus que sa
  *     différence de Mouvement avec le plus lent de la course (M8/M7/M9 → +1 / 0 / +2 relatifs au plus lent).
+ *  6. Rattrapés (l.94) : trois décisions de camp + un recalcul de Distance — cf. `PursuitPolicy` et
+ *     `pursuitLaggard` ci-dessous, et la fiche `docs/raw/deplacement.md` (§ Poursuites, Étape 4).
  *
  * La résolution d'issue (`pursuitOutcome`) est la PRIMITIVE PARTAGÉE terrestre/navale (la poursuite navale
  * MDG 13 calcule son « gain » de Distance différemment — en mètres — mais franchit les MÊMES seuils).
- * PUR : RNG injecté ; ne mute rien.
+ * PUR : ne mute rien, ne roule rien — les jets se tiennent chez l'appelant (`state/pursuitFlow`), qui les
+ * surface. Ce module est LA source des jugements de poursuite.
  */
-import { RNG, defaultRNG } from './dice';
-import { rollTest } from './tests';
 
 /** Seuil d'évasion terrestre RAW : « Si la Distance atteint 10+, les poursuivants ont perdu leur proie » (l.94). */
 export const PURSUIT_ESCAPE_DISTANCE = 10;
@@ -29,51 +30,80 @@ export function pursuitOutcome(distance: number, escapeAt: number = PURSUIT_ESCA
   return 'ongoing';
 }
 
-/** Un participant à la poursuite : sa valeur de Test de Mouvement (Compétence en DONNÉE), son Mouvement,
- *  et son camp. `id` sert au journal. */
-export interface PursuitParticipant {
-  id: string;
-  skill: number; // valeur de la Compétence de Mouvement (Conduite d'attelage / Chevaucher / Athlétisme…)
-  movement: number; // caractéristique de Mouvement (pour le bonus de DR de vitesse, l.104-108)
-  side: 'fleeing' | 'pursuer';
-}
-
 /** Bonus de DR de vitesse (l.104-108) : différence de Mouvement avec le plus lent de la course. */
 export function pursuitMoveBonus(movement: number, slowestMovement: number): number {
   return Math.max(0, movement - slowestMovement);
 }
 
-export interface PursuitRoundResult {
-  distance: number; // nouvelle Distance
-  delta: number; // variation (min DR fuyards − max DR poursuivants)
-  outcome: 'caught' | 'escaped' | 'ongoing';
-  rolls: { id: string; side: 'fleeing' | 'pursuer'; roll: number; target: number; dr: number; moveBonus: number; total: number }[];
+/** UN coureur, réduit à ce dont les jugements ont besoin : qui il est, son Mouvement, son DR total de
+ *  manche (Test + bonus de vitesse). `label` est de l'AFFICHAGE — aucune logique ne s'y key. */
+export interface PursuitRunner {
+  id: string;
+  label: string;
+  movement: number;
+  total: number;
+}
+
+/** Variation de Distance d'une manche (l.93) : DR le plus BAS des poursuivis − DR le plus HAUT des
+ *  poursuivants. Un camp VIDE compte 0 (il ne fait ni gagner ni perdre de terrain à lui seul). */
+export function pursuitDelta(fleeing: readonly number[], pursuers: readonly number[]): number {
+  const minFleeing = fleeing.length ? Math.min(...fleeing) : 0;
+  const maxPursuer = pursuers.length ? Math.max(...pursuers) : 0;
+  return minFleeing - maxPursuer;
+}
+
+/** « le plus lent d'entre eux » (l.94) : le coureur au plus petit Mouvement du camp ; à Mouvement égal,
+ *  le plus petit DR de la manche (il traîne le plus). `undefined` sur un camp vide ou d'un seul coureur
+ *  — sacrifier le dernier fuyard ne laisserait personne à qui profiter de la manœuvre. */
+export function pursuitLaggard(runners: readonly PursuitRunner[]): PursuitRunner | undefined {
+  if (runners.length < 2) return undefined;
+  return [...runners].sort((a, b) => a.movement - b.movement || a.total - b.total)[0];
 }
 
 /**
- * Résout UN Round de poursuite terrestre (LDB 15). Chaque participant roule son Test de Mouvement (au
- * palier `difficulty`, défaut Intermédiaire), plus le bonus de DR de vitesse. On compare le plus petit DR
- * total des fuyards au plus grand DR total des poursuivants ; la Distance varie de la différence, puis
- * l'issue est jugée par `pursuitOutcome`. Pur ; renvoie la nouvelle Distance, la variation, l'issue et les jets.
+ * POLITIQUE DE CAMP PNJ (valeur MAISON, éditable à l'Effet `startPursuit`) — le RAW l.94 laisse ces
+ * trois décisions AUX CAMPS ; un camp tenu par le jeu doit donc trancher sans MJ (règle 7). Les valeurs
+ * par défaut sont dans `PURSUIT_POLICY_DEFAUT` (`state/pursuitFlow`), et chaque scène peut les changer.
  */
-export function resolveGroundPursuitRound(
-  distance: number,
-  participants: PursuitParticipant[],
-  rng: RNG = defaultRNG,
-  opts: { escapeAt?: number; difficulty?: import('./types').Difficulty } = {},
-): PursuitRoundResult {
-  const slowest = Math.min(...participants.map((p) => p.movement));
-  const rolls = participants.map((p) => {
-    const t = rollTest(p.skill, opts.difficulty ?? 'intermediaire', rng);
-    const moveBonus = pursuitMoveBonus(p.movement, slowest);
-    return { id: p.id, side: p.side, roll: t.roll, target: t.target, dr: t.sl, moveBonus, total: t.sl + moveBonus };
-  });
-  const fleeing = rolls.filter((r) => r.side === 'fleeing');
-  const pursuers = rolls.filter((r) => r.side === 'pursuer');
-  // Distance += (DR le plus PETIT des fuyards − DR le plus HAUT des poursuivants) (l.93).
-  const minFleeing = fleeing.length ? Math.min(...fleeing.map((r) => r.total)) : 0;
-  const maxPursuer = pursuers.length ? Math.max(...pursuers.map((r) => r.total)) : 0;
-  const delta = minFleeing - maxPursuer;
-  const next = distance + delta;
-  return { distance: next, delta, outcome: pursuitOutcome(next, opts.escapeAt), rolls };
+export interface PursuitPolicy {
+  /** Les poursuivis PNJ sacrifient leur plus lent : `toujours` (DÉFAUT — la voie de l'exemple
+   *  canonique, l.100), `jamais` (un camp qui ne lâche aucun des siens), ou `si-ecart` (retenue :
+   *  seulement quand le plus lent a `ecartM` points de Mouvement de retard sur le plus rapide de son
+   *  camp). Le sacrifice ne s'explique PAS par l'allègement du camp : il sert « à ralentir les
+   *  poursuivants » (l.94) — le retardataire OCCUPE la chasse pendant que les autres fuient, ce qui
+   *  vaut quelles que soient les vitesses. */
+  sacrifice?: 'jamais' | 'toujours' | 'si-ecart';
+  /** Écart de Mouvement qui déclenche le sacrifice en mode `si-ecart` (retenue opt-in). */
+  ecartM?: number;
+  /** Le poursuivant PNJ qui s'arrête pour affronter le sacrifié : le plus lent du camp (les plus
+   *  rapides restent en chasse), ou aucun (tous continuent). */
+  arret?: 'le-plus-lent' | 'aucun';
+  /** Ids des CIBLES PRIORITAIRES de la poursuite (l.94 : « Si le pauvre retardataire n'est pas une
+   *  cible prioritaire, il se peut qu'il soit purement et simplement ignoré ! »). Liste ABSENTE ou vide
+   *  = aucune priorité déclarée, donc personne n'est ignoré. */
+  prioritaires?: string[];
+}
+
+/** Décision (a) d'un camp de poursuivis PNJ, l.94 : sacrifier le plus lent, ou s'arrêter et affronter. */
+export function npcSacrificeChoice(policy: PursuitPolicy, laggard: PursuitRunner | undefined, camp: readonly PursuitRunner[]): 'sacrifier' | 'affronter' {
+  if (!laggard) return 'affronter';
+  const mode = policy.sacrifice ?? 'toujours';
+  if (mode === 'jamais') return 'affronter';
+  if (mode === 'toujours') return 'sacrifier';
+  const rapide = Math.max(...camp.map((r) => r.movement));
+  return rapide - laggard.movement >= (policy.ecartM ?? 1) ? 'sacrifier' : 'affronter';
+}
+
+/** Décisions (b)+(c) d'un camp de poursuivants PNJ, l.94 : qui s'arrête pour affronter le sacrifié —
+ *  ou le retardataire est IGNORÉ (il n'est pas une cible prioritaire) et tous continuent. */
+export function npcPursuerChoice(
+  policy: PursuitPolicy,
+  laggard: PursuitRunner,
+  camp: readonly PursuitRunner[],
+): { go: 'ignorer' } | { go: 'arreter'; who: PursuitRunner } {
+  const prioritaires = policy.prioritaires ?? [];
+  if (prioritaires.length && !prioritaires.includes(laggard.id)) return { go: 'ignorer' };
+  if ((policy.arret ?? 'le-plus-lent') === 'aucun' || !camp.length) return { go: 'ignorer' };
+  const who = [...camp].sort((a, b) => a.movement - b.movement)[0];
+  return { go: 'arreter', who };
 }

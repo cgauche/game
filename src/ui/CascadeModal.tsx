@@ -27,6 +27,7 @@ import type { ModLine } from '../engine/combat';
 import { Icon } from './Icon';
 import { stepInteraction, stepReady, tableStepDefs, tableStepDie, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
 import { useOwns } from './ownership';
+import { pursuitOf } from '../state/pursuitFlow';
 import { tableStepForcedDie } from './forcedDieRow';
 import { opposedResponded } from './opposedFrozen';
 import { frozenOpposedRow, tableRow, witnessRow, buildRollRow, type BuiltRollRow } from './rollRowBuild';
@@ -96,7 +97,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const battle = useGame((s) => s.battle);
   const party = useGame((s) => s.party);
   const p = useGame((s) => s.pendingCascade);
-  const pursuit = useGame((s) => s.pursuit); // manche de poursuite (purpose:'pursuite') — porte partyRole/encounter
+  const pursuit = useGame((s) => pursuitOf(s)); // manche de poursuite (séquence `pursuit`) — porte partyRole/encounter
   const pursuitAbandon = useGame((s) => s.pursuitAbandon);
   const pendingCast = useGame((s) => s.pendingCast); // étape-jet `cast` : hôte la situation d'incantation (réactif, pas de hook conditionnel)
   const batchRoll = useGame((s) => s.cascadeBatchRoll); // étape « batch » — un Test générique par participant (seam #275 Décision 4 cran 1)
@@ -387,11 +388,11 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // Action « Continuer » / « Terminer » (dernière étape) — bouton primaire d'enchaînement, partagé par
   // les étapes AFFICHAGE et CHOIX (conséquences pures, aucun jet à attendre) : `when:'always'`.
   const continueAction: RollAction = { key: 'next', label: isLast ? 'Terminer' : 'Continuer', onClick: () => next(), when: 'always' };
-  // Poursuite terrestre (purpose:'pursuite') : renoncer coûte la manche — le groupe qui FUIT se
+  // Poursuite terrestre (séquence `pursuit`) : renoncer coûte la manche — le groupe qui FUIT se
   // laisse rattraper (combat si une rencontre est fournie, LDB 15 l.94) ; côté poursuivant, la
   // proie s'échappe (state/pursuitFlow.pursuitAbandon porte la vraie conséquence). Une manche est
   // une BANDE : ces actions ne sont servies qu'à la branche BATCH.
-  const pursuitActions: RollAction[] = p.purpose === 'pursuite' ? [{
+  const pursuitActions: RollAction[] = pursuit ? [{
     key: 'break',
     label: pursuit?.partyRole === 'pursuing' ? 'Abandonner la poursuite' : 'Abandonner la fuite',
     onClick: () => pursuitAbandon(),

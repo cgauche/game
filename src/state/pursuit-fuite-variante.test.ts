@@ -2,12 +2,13 @@
  * Câblage de la variante « Fuite ! » d'Aux Armes (AA 13 l.68) dans la POURSUITE terrestre (LDB 15
  * l.104-108) : la Cible d'une Poursuite qui porte le Talent compte un Mouvement augmenté de 1, ce qui
  * lui donne un DR de vitesse supplémentaire sur le plus lent de la course — donc une Distance qui varie
- * d'autant à la clôture de la manche. La preuve se mesure sur le chemin RÉEL (`continuePursuitRound`,
- * le même que le jeu emprunte), à jets FIGÉS des deux côtés : seule la règle optionnelle change.
+ * d'autant à la clôture de la manche. La preuve se mesure sur le chemin RÉEL (la clôture de manche du
+ * socle de séquence, `closeSequenceRound`, le même que le jeu emprunte), à jets FIGÉS des deux côtés : seule la règle optionnelle change.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
-import { continuePursuitRound, pursuedMovement } from './pursuitFlow';
+import { pursuedMovement, pursuitOf, PURSUIT_POLICY_DEFAUT } from './pursuitFlow';
+import { closeSequenceRound } from './sequenceCore';
 import { setRule, resetRule } from '../engine/policy';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -36,21 +37,27 @@ function doneRound(h: Combatant, sl: number): PendingCascade {
       result: { roll: 40, target: 40, sl, success: sl >= 0 },
     }],
   }];
-  return { title: 't', purpose: 'pursuite', participants, cursor: 1, log: [] };
+  return { title: 't', purpose: 'sequence', participants, cursor: 1, log: [] };
 }
 
 /** Distance obtenue au bout d'une manche, groupe POURSUIVI, héros et adversaire à Mouvement 4. */
 function distanceAfterRound(h: Combatant, partyRole: 'fleeing' | 'pursuing'): number {
   useGame.getState().seedRng(7);
   useGame.setState({
-    pursuit: { partyRole, distance: 5, escapeAt: 10, skill: 'athletisme', foes: [{ label: 'Bandit', movement: 4, skill: 40 }], round: 1 },
+    sequence: {
+      def: 'pursuit', round: 1, cum: {}, params: { score: { fleeing: 'min', pursuers: 'max' } },
+      payload: {
+        partyRole, distance: 5, escapeAt: 10, skill: 'athletisme', policy: { ...PURSUIT_POLICY_DEFAUT },
+        foes: [{ id: 'foe-1', label: 'Bandit', movement: 4, skill: 40 }], manche: 1, phase: 'course', retires: [],
+      },
+    },
   });
-  continuePursuitRound(useGame.getState, useGame.setState, doneRound(h, 0));
-  return useGame.getState().pursuit?.distance ?? 0;
+  closeSequenceRound(useGame.getState, useGame.setState, doneRound(h, 0));
+  return pursuitOf(useGame.getState())?.distance ?? 0;
 }
 
 describe('Fuite ! — Cible d’une Poursuite (variante AA 13 l.68)', () => {
-  beforeEach(() => useGame.setState({ battle: null, party: [], journal: [], pendingCascade: null, pursuit: null }));
+  beforeEach(() => useGame.setState({ battle: null, party: [], journal: [], pendingCascade: null, sequence: null }));
   afterEach(() => resetRule(RULE));
 
   it('pursuedMovement : le porteur gagne +1 M comme POURSUIVI sous la règle, jamais comme poursuivant', () => {

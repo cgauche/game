@@ -454,7 +454,7 @@ export type Effect =
    *  testée (id : Athlétisme à pied / Chevaucher / Conduite d'attelages). `encounter` = rencontre ouverte au
    *  RATTRAPAGE (Distance ≤ 0 → combat). Jouée manche par manche par la cascade influençable (state/pursuitFlow),
    *  MÊME dramaturgie que la poursuite navale (MDG 13). */
-  | { type: 'startPursuit'; partyRole?: 'fleeing' | 'pursuing'; distance: number; escapeAt?: number; skill: string; foes: import('./pursuitFlow').PursuitFoe[]; encounter?: string }
+  | { type: 'startPursuit'; partyRole?: 'fleeing' | 'pursuing'; distance: number; escapeAt?: number; skill: string; foes: import('./pursuitFlow').PursuitFoe[]; encounter?: string; policy?: import('../engine/pursuit').PursuitPolicy }
   /** Ouvre les JEUX DE TAVERNE (NADJ 16, option `tavern-games`) — à poser sur un choix de dialogue
    *  d'aubergiste (« Une partie ? ») ou une entité de taverne. Sans effet si l'option est éteinte. */
   | { type: 'openTavernGames' }

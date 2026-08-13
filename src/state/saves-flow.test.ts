@@ -654,6 +654,44 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect(rangees.map((r) => r.interactive)).toEqual([true, false, true, true]);
   });
 
+  /**
+   * #1279 S0 — MIGRATIONS[21] : la poursuite est la CHARGE UTILE d'une SÉQUENCE (socle `sequenceCore`)
+   * et ses manches portent le `purpose` 'sequence', clé de routage de leur clôture. La migration porte
+   * les DEUX porteurs d'une save : la cascade ACTIVE et la pile SUSPENDUE (une poursuite parquée par un
+   * combat ouvert en plein vol). Sans elle, la Distance et les adversaires dorment dans un champ que
+   * personne ne lit, et la manche se joue sans clôture.
+   */
+  it('MIGRATIONS[21] : `pursuit` devient la charge utile d’une SÉQUENCE, et la manche change de purpose', () => {
+    const raw = JSON.parse(readFileSync(new URL('v21-poursuite-sequence.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const brut = (raw as { data: Record<string, unknown> }).data;
+    expect(brut.pursuit, 'la fixture v21 porte bien l’ancien slot').toBeTruthy();
+    expect((brut.pendingCascade as { purpose: string }).purpose).toBe('pursuite');
+    const suspenduesBrutes = brut.suspendedCascades as { purpose: string }[];
+    expect(suspenduesBrutes, 'la fixture porte AUSSI une poursuite parquée').toHaveLength(1);
+    expect(suspenduesBrutes[0].purpose).toBe('pursuite');
+
+    const migrated = migrateSave(raw)!;
+    expect(migrated.version).toBe(SAVE_VERSION);
+    const data = migrated.data as Record<string, unknown>;
+    expect('pursuit' in data, 'l’ancien slot ne survit pas au snapshot suivant').toBe(false);
+    const seq = data.sequence as { def: string; round: number; cum: unknown; params: { score: Record<string, string> }; payload: Record<string, unknown> };
+    expect(seq.def).toBe('pursuit');
+    expect(seq.round).toBe(2);
+    expect(seq.params.score).toEqual({ fleeing: 'min', pursuers: 'max' }); // les formules de camp (l.93)
+    expect(seq.payload.distance).toBe(4);
+    expect(seq.payload.escapeAt).toBe(10);
+    expect(seq.payload.manche).toBe(2);
+    expect(seq.payload.phase).toBe('course');
+    expect(seq.payload.encounter).toBe('enc-rattrapage');
+    expect((seq.payload.foes as { id: string; label: string }[])).toEqual([{ id: 'foe-1', label: 'Bandit', movement: 4, skill: 40 }]);
+    expect(seq.payload.policy).toBeTruthy(); // la politique de camp PNJ (l.94) est posée, jamais absente
+    expect((data.pendingCascade as { purpose: string }).purpose).toBe('sequence');
+    // La PILE SUSPENDUE est migrée comme la cascade active : une poursuite parquée par un combat
+    // reprendrait sinon avec un `purpose` que le store ne route plus, et sa manche se jouerait sans clôture.
+    const suspendues = data.suspendedCascades as { purpose: string }[];
+    expect(suspendues.map((c) => c.purpose)).toEqual(['sequence']);
+  });
+
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {
     for (let v = 1; v < SAVE_VERSION; v++) {
       expect(MIGRATIONS[v], `MIGRATIONS[${v}] manquante — un bump de SAVE_VERSION exige son migrateur`).toBeTypeOf('function');

@@ -41,11 +41,11 @@ import type { PendingCascade, RevealEntry } from './pendings';
 import type { BuiltCascadeStep } from './stepBrand';
 import { revealToStep } from './revealStep';
 import { nightBands } from './nightBands';
-import { pursuitBands } from './pursuitFlow';
+import { pursuitBands, PURSUIT_POLICY_DEFAUT } from './pursuitFlow';
 import { stepReady } from './cascade';
 import { combatEndBands } from './combatEndBands';
 
-export const SAVE_VERSION = 21;
+export const SAVE_VERSION = 22;
 
 export interface SaveMeta {
   version: number;
@@ -346,6 +346,15 @@ export const MIGRATIONS: MigrationMap = {
     dropStepInteractive(data);
     return { ...doc, version: 21, data };
   },
+  // v21→v22 (#1279 S0) : la poursuite est la CHARGE UTILE d'une SÉQUENCE (socle `state/sequenceCore`),
+  // et ses manches portent le `purpose` 'sequence' — la clé par laquelle le store route leur clôture
+  // vers le réducteur du socle. Sans cette migration, une save v21 prise en pleine poursuite porte sa
+  // Distance et ses adversaires dans un champ que personne ne lit, et sa manche se joue sans clôture.
+  21: (doc) => {
+    const data = { ...(doc.data as Record<string, unknown>) };
+    pursuitToSequence(data);
+    return { ...doc, version: 22, data };
+  },
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus
@@ -603,6 +612,44 @@ function dropStepInteractive(data: Record<string, unknown>): void {
     strip((cascade as { participants?: unknown } | null | undefined)?.participants);
   }
   strip(data.deferredUpkeepQueue);
+}
+
+/**
+ * PORTE la POURSUITE dans le slot de SÉQUENCE — MIGRATIONS[21]. L'ancien `pursuit` devient la charge
+ * utile (`payload`) d'un `SequenceState` de définition `pursuit` : le rang de manche de course y
+ * reprend l'ancien `round`, les adversaires reçoivent l'id que la fabrique leur pose désormais, et les
+ * formules de score de camp (LDB 15 l.93) entrent en paramètres, comme à l'ouverture. Le `purpose` des
+ * cascades de manche (ACTIVE + pile SUSPENDUE) passe de 'pursuite' à 'sequence' : c'est la clé de
+ * routage de la clôture. Mute `data` ; formes inattendues laissées telles quelles (patron `normalizeScene`).
+ */
+function pursuitToSequence(data: Record<string, unknown>): void {
+  const stack = Array.isArray(data.suspendedCascades) ? data.suspendedCascades : [];
+  for (const cascade of [data.pendingCascade, ...stack]) {
+    const c = cascade as { purpose?: unknown } | null | undefined;
+    if (c && c.purpose === 'pursuite') c.purpose = 'sequence';
+  }
+  const p = data.pursuit as Record<string, unknown> | null | undefined;
+  delete data.pursuit;
+  if (!p || typeof p !== 'object') return;
+  const foes = Array.isArray(p.foes) ? p.foes : [];
+  data.sequence = {
+    def: 'pursuit',
+    round: typeof p.round === 'number' ? p.round : 1,
+    cum: {},
+    params: { score: { fleeing: 'min', pursuers: 'max' } },
+    payload: {
+      partyRole: p.partyRole === 'pursuing' ? 'pursuing' : 'fleeing',
+      distance: typeof p.distance === 'number' ? p.distance : 1,
+      escapeAt: typeof p.escapeAt === 'number' ? p.escapeAt : 10,
+      skill: typeof p.skill === 'string' ? p.skill : 'athletisme',
+      foes: foes.map((f, i) => ({ ...(f as object), id: (f as { id?: string }).id ?? `foe-${i + 1}` })),
+      ...(typeof p.encounter === 'string' ? { encounter: p.encounter } : {}),
+      policy: { ...PURSUIT_POLICY_DEFAUT },
+      manche: typeof p.round === 'number' ? p.round : 1,
+      phase: 'course',
+      retires: [],
+    },
+  };
 }
 
 /** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE, via la

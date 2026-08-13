@@ -55,6 +55,7 @@ const MIGRATED = new Set([
   'src/state/flowOutcomes.ts',
   'src/state/combatSlice.ts',
   'src/state/combatFlow.ts',
+  'src/state/pursuitFlow.ts', // #1279 : toute la narration de poursuite est passee au catalogue
 ]);
 
 /** Stock GELÉ par fichier (recensement #410, 2026-07-13) — littéraux FR de narration hors catalogue,
@@ -94,7 +95,6 @@ const BASELINE: Record<string, number> = {
   'src/state/netFlow.ts': 4,
   'src/state/partyFlow.ts': 4,
   'src/state/portFlow.ts': 1,
-  'src/state/pursuitFlow.ts': 2,
   'src/state/restFlow.ts': 4,
   'src/state/riverVoyageFlow.ts': 10,
   'src/state/rollFlowFactory.ts': 1,
