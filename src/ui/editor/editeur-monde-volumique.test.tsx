@@ -7,7 +7,7 @@ import { EditorCanvas } from './EditorCanvas';
 import { DEFAULT_LAYERS } from './editorState';
 import { emptyScene, type Scene } from '../../state/scene';
 import { tileCenter } from '../../geometry/iso';
-import { setStageBackend } from '../../state/stage3d';
+import { getStageBackend, setStageBackend } from '../../state/stage3d';
 import { setStageRendererFactory, type StageRenderer } from '../../gameIso/stage/GameStage3D';
 import { hasSpritePicker } from '../../gameIso/stage/spritePicker';
 import { buildTokens } from '../../gameIso/builders/tokens';
@@ -518,5 +518,38 @@ describe('Éditeur — plaque de décalquage et marqueurs d’auteur (#1176, P3-
     setStageBackend('webgl');
     const h = await monter({ mode: 'select' });
     expect(h.svg.querySelector('[data-lampes-auteur]')).toBeNull();
+  });
+});
+
+/**
+ * L'AFFORDANCE de la voie volumique dans l'éditeur : sans elle, l'auteur n'a aucun moyen découvrable
+ * d'y basculer (le store `state/stage3d.ts` n'est piloté que par ce bouton). Même patron qu'en jeu
+ * (`ui/CampaignView.test.tsx`) : DEV seulement, et le geste jugé est le POINTER DOWN de `ViewControls`.
+ */
+describe('Éditeur — interrupteur DEV « Monde volumique » (#1176)', () => {
+  const VOLUMIQUE = 'Monde volumique (DEV)';
+
+  it('le bouton est à l’écran de l’éditeur, et son POINTER DOWN bascule la voie de rendu', async () => {
+    setStageBackend('affine');
+    const h = await monter({ mode: 'select' });
+    const bouton = h.el.querySelector(`[aria-label="${VOLUMIQUE}"]`);
+    expect(bouton).not.toBeNull();
+    expect(bouton!.getAttribute('aria-pressed')).toBe('false');
+    expect(h.canvas()).toBeNull();
+    await act(async () => { bouton!.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true })); });
+    expect(getStageBackend()).toBe('webgl');
+    // …et l'écran suit : le canevas monte, le bouton porte le libellé de RETOUR aux couches SVG.
+    expect(h.canvas()).not.toBeNull();
+    expect(h.el.querySelector('[aria-label="Monde en couches SVG (DEV)"]')).not.toBeNull();
+  });
+
+  it('…et le retour : un second POINTER DOWN ramène la voie affine', async () => {
+    setStageBackend('webgl');
+    const h = await monter({ mode: 'select' });
+    const bouton = h.el.querySelector('[aria-label="Monde en couches SVG (DEV)"]')!;
+    expect(bouton.getAttribute('aria-pressed')).toBe('true');
+    await act(async () => { bouton.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true })); });
+    expect(getStageBackend()).toBe('affine');
+    expect(h.canvas()).toBeNull();
   });
 });

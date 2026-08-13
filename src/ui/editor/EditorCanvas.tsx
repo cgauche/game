@@ -35,7 +35,7 @@ import {
   toggleEdgeWall, toggleDiagonalWall, paintHeight, paintCrenellated, paintEffectZone, nearestEdge, canonEdge, pickWallEdge, pickArchitectureEdge, addFacadeSection,
 } from './editorState';
 import { planFocusTiles, type PlanDefectAt } from '../../state/planDefects';
-import { getStageBackend, subscribeStageBackend } from '../../state/stage3d';
+import { getStageBackend, subscribeStageBackend, toggleStageBackend } from '../../state/stage3d';
 import { GameStage3D } from '../../gameIso/stage/GameStage3D';
 import { buildTokens } from '../../gameIso/builders/tokens';
 import type { ActorPose, KeepEl, TintAt } from '../../gameIso/backends/webgl/sceneMeshes';
@@ -1239,6 +1239,8 @@ export function EditorCanvas({
           onRotateRight={() => setRot((r) => (((r + 1) % 4) as 0 | 1 | 2 | 3))}
           view={viewMode}
           onToggleView={() => setViewMode((v) => (v === 'iso' ? 'top' : 'iso'))}
+          stage3d={stageBackend === 'webgl'}
+          onToggleStage3d={import.meta.env.DEV ? toggleStageBackend : undefined}
         />
       </div>
     </main>

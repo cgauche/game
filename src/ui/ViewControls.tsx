@@ -17,8 +17,7 @@ export interface ViewControlsProps {
   inspectEnabled?: boolean;
   onToggleInspect?: () => void;
   /** Voie de rendu du monde (#1176) : `true` = monde volumique. Interrupteur de CHANTIER — l'appelant
-   *  ne le fournit qu'en DEV (`import.meta.env.DEV`) et hors POV (la voie volumique ne gouverne que le
-   *  monde de la vue iso) ; le bouton n'existe pas sans lui. */
+   *  ne le fournit qu'en DEV (`import.meta.env.DEV`) ; le bouton n'existe pas sans lui. */
   stage3d?: boolean;
   onToggleStage3d?: () => void;
 }
@@ -92,8 +91,7 @@ export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateL
             aria-pressed={!!stage3d}
             onPointerDown={stop(onToggleStage3d)}
           >
-            {/* Icône de l'outil Hauteur de l'éditeur, empruntée faute de glyphe volumique — bouton DEV
-                (l'éditeur ne passe pas `onToggleStage3d` : aucune collision d'affordance à l'écran). */}
+            {/* Icône de l'outil Hauteur de l'éditeur, empruntée faute de glyphe volumique. */}
             <Icon id="map-tool/height" size="sm" />
           </button>
         )}
