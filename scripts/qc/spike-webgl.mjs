@@ -9,6 +9,11 @@
  * lancé par l'utilisateur est réutilisé tel quel et JAMAIS tué.
  *   node scripts/qc/spike-webgl.mjs
  * Sortie : public/qc/spike/<scene>-<vue>-<mode>.png + public/qc/spike-webgl.html
+ *
+ * CLASSEMENT #1176 C3 — script WEBGL à REQUALIFIER : il pilote l'écran DEV `webglSpike`, qui meurt à
+ * C5b. Ses captures devront venir de l'écran de JEU (`scripts/qc/capture-jeu.mjs` en tient le patron),
+ * une fois la voie volumique devenue la voie joueur par défaut à C4. Ses gardes de planche
+ * (`spike-checks.mjs`, les mesures des juges vision) suivent le même chemin.
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { writeFileSync, mkdirSync, existsSync } from 'node:fs';

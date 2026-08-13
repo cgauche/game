@@ -1,6 +1,10 @@
 /**
  * QC — rend une petite SALLE délimitée par des MURS sur arêtes (+ une porte) pour valider la géométrie
  * du rendu de cloisons. npx tsx scripts/qc/render-walls.mts → public/qc/walls.png
+ *
+ * CLASSEMENT #1176 C3 — INSTRUMENT DE DIAGNOSTIC de la géométrie de cloisons du backend AFFINE
+ * (`wallSvg`/`wallDepth` sur une salle synthétique de 7×7, jamais une scène jouable). MORT PLANIFIÉE
+ * à C5a, avec le backend qu'il diagnostique.
  */
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';

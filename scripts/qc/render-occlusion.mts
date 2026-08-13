@@ -8,6 +8,11 @@
  * Sortie : public/qc/occlusion-<sceneId>.png — 1 planche/scène (8 projections + légende).
  * NB : valide le renderer AFFINE (iso/edge), là où vit le tri per-tuile. Le POV est un renderer séparé
  * (geometry.ts) ; pour lui, `povPanel` de env-panels.ts rend une vue texturée à inspecter à l'œil.
+ *
+ * CLASSEMENT #1176 C3 — INSTRUMENT DE DIAGNOSTIC des règles d'occlusion du backend AFFINE. Ce qu'il
+ * mesure (le tri per-tuile `floorDepth`/`wallDepth`) n'existe que dans ce backend : le monde volumique
+ * résout la profondeur au tampon Z. MORT PLANIFIÉE à C5a, avec le backend qu'il diagnostique — le
+ * porter serait porter le contournement. Il rend sa planche jusque-là.
  */
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';

@@ -6,6 +6,13 @@
  * personne, œil au départ du groupe). Environnement STATIQUE uniquement : ni brouillard, ni tokens, ni FX.
  *   npx tsx scripts/qc/render-env.mts   (npm run qc:env)
  * Sortie : public/qc/env-<sceneId>.png — 1 planche par scène, 11 panneaux étiquetés.
+ *
+ * CLASSEMENT #1176 C3 — planche de GOÛT. Successeur sur l'écran de jeu réel (voie volumique) :
+ * `scripts/qc/capture-jeu.mjs` (mêmes scènes, crans de caméra du jeu ; les panneaux POV et edge-on
+ * n'y ont pas d'équivalent — la voie volumique cadre par les 4 crans diagonaux et la vue du dessus).
+ * Ce script passe par `env-panels.ts` (backend affine) et disparaît AVEC lui à C5a ; ses panneaux
+ * COMPARABLES (iso ×4, dessus, POV) sont figés dans `public/qc/baseline-affine/`, la rangée edge-on
+ * en étant écartée faute de vis-à-vis volumique — voir le README du dossier.
  */
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';

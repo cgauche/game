@@ -1,6 +1,12 @@
 /**
  * QC — Théâtre Staatsoper : rend le rez-de-chaussée (z=0) et le premier étage (z=1) séparément pour
  * vérifier la fidélité au plan. npx tsx scripts/qc/render-opera.mts → public/qc/opera-rez.png + opera-etage.png
+ *
+ * CLASSEMENT #1176 C3 — planche de GOÛT/AUTHORING (elle juge la carte, pas les règles d'occlusion),
+ * donc à porter sur l'écran de jeu (`scripts/qc/capture-jeu.mjs`). PORTE MANQUANTE : la scène
+ * `opera-staatsoper` (`src/scenes/opera/floorplan.ts`) est montée par l'écran DEV du spike et par
+ * `scripts/map/registry.ts` seulement — aucun scénario de test ne l'ouvre sur l'écran de jeu. Le
+ * portage attend cette route ; à défaut, ce script meurt avec le backend affine à C5a.
  */
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';

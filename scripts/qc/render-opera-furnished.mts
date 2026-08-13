@@ -4,6 +4,11 @@
  * les bonnes pièces. Réplique le placement de IsoStage (BodyToken + decorFootGeometry) pour les props.
  *   npx tsx scripts/qc/render-opera-furnished.mts
  * Sortie : public/qc/opera-furnished-{rez,etage,rez-scene}.png + crops de lecture d'orientation.
+ *
+ * CLASSEMENT #1176 C3 — planche de GOÛT/AUTHORING (orientation des props posés en donnée), donc à
+ * porter sur l'écran de jeu (`scripts/qc/capture-jeu.mjs`). MÊME PORTE MANQUANTE que `render-opera.mts` :
+ * `opera-staatsoper` n'a aucune route vers l'écran de jeu. À défaut, ce script meurt à C5a avec le
+ * backend affine qu'il compose.
  */
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';

@@ -6,6 +6,10 @@
  * panique sur une viewBox qui rogne des polygones à motifs — le raster, lui, se rogne sans risque).
  *   npx tsx scripts/qc/pilote-siege-avant-apres.mts <chemin/vers/planche-avant.png>
  * Sortie : public/qc/pilote-siege-avant-apres.png
+ *
+ * CLASSEMENT #1176 C3 — INSTRUMENT DE DIAGNOSTIC d'un lot de matériaux du backend AFFINE : il compare
+ * deux états d'un rendu affine (une planche de référence recadrée face à un rendu `env-panels.ts`),
+ * et n'a de sens qu'entre deux versions de ce backend. MORT PLANIFIÉE à C5a, avec lui.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';

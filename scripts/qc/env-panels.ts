@@ -5,6 +5,12 @@
  * personne. Consommé par `render-env.mts` (planches contact) et `pilote-siege-avant-apres.mts`
  * (planche comparative). Environnement STATIQUE uniquement : ni brouillard, ni tokens, ni FX.
  * Matériaux v2 : zoom 1 (plein détail) — fills + motifs de joints + accents seedés, defs par panneau.
+ *
+ * CLASSEMENT #1176 C3 — BIBLIOTHÈQUE d'assemblage du backend AFFINE (consommée par `render-env.mts`,
+ * `render-occlusion.mts`, `pilote-bourg-avant-apres.mts`, `pilote-siege-avant-apres.mts`). MORT
+ * PLANIFIÉE à C5a, avec les backends `affine*` qu'elle compose. Elle est aussi le SEUL appelant hors
+ * app de `src/gameIso/pov/geometry.ts` (`buildPovDrawList`) : sa suppression laisse la géométrie POV
+ * SVG sans consommateur de QC — angle mort à traiter dans le même geste.
  */
 import { buildFloors } from '../../src/gameIso/builders/floors';
 import { floorSvg, floorAccentsSvg, floorDepth } from '../../src/gameIso/backends/affineFloors';

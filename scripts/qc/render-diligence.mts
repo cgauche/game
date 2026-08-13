@@ -1,3 +1,14 @@
+/**
+ * QC — LA DILIGENCE : planche de GOÛT de l'auberge (2 étages × 4 rotations + plan source) et planche
+ * de DÉGAGEMENT de toiture, assemblées hors app par le backend AFFINE.
+ *   npx tsx scripts/qc/render-diligence.mts
+ * Sortie : public/qc/diligence.png + public/qc/diligence-degagement.png
+ *
+ * CLASSEMENT #1176 C3 — planche de GOÛT. Successeur sur l'écran de jeu réel (voie volumique) :
+ * `scripts/qc/capture-jeu.mjs --scenes diligence`. Ce script s'appuie sur les backends affine
+ * (`affineFloors`/`affineWalls`/`affineRoofs`) et disparaît AVEC eux à C5a ; sa dernière sortie est
+ * figée dans `public/qc/baseline-affine/` (référence de comparaison du juge vision de C4).
+ */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { floorDepth, floorSvg } from '../../src/gameIso/backends/affineFloors';

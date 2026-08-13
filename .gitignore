@@ -25,7 +25,12 @@ tsconfig.tsbuildinfo
 
 # Sorties de QC (planches/sprites de revue régénérables via les scripts _qc-*) — pas du source.
 # C'étaient ~1000 fichiers non-suivis qui ralentissaient chaque commande git.
-public/qc/
+# Le motif porte sur les ENTRÉES (`/*`) et non sur le dossier : git peut ainsi y descendre pour la
+# seule exception ci-dessous. `public/qc/baseline-affine/` est VERSIONNÉ (#1176 C3) : les vues du
+# backend affine qui auront un vis-à-vis volumique à C4, gelées pour épargner au juge un checkout du
+# code producteur (voir le README du dossier : ce qui est écarté, et comment tout se régénère).
+public/qc/*
+!public/qc/baseline-affine/
 
 # Rapports JSON régénérables des lentilles d'audit (#321 — obtainability-graph.mts, set-scan.mjs…)
 scripts/data/.out/
