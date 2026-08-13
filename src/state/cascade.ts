@@ -17,17 +17,17 @@
  */
 import type { Get, Set } from './flowTypes';
 import type { GameState } from './store';
-import type { Combatant } from '../engine/types';
+import type { Combatant, Difficulty } from '../engine/types';
 import { roll, type RNG } from '../engine/dice';
 import { findTableEntry } from '../engine/tables';
-import type { CascadeStep, PendingCascade, CascadeRoll, BatchParticipant, CascadeAggregate, CascadeTableDecl, CascadeTableResult, OpposedRowFreeze } from './pendings';
+import type { CascadeStep, PendingCascade, CascadeRoll, BatchParticipant, CascadeAggregate, CascadeSecondRead, CascadeTableDecl, CascadeTableResult, OpposedRowFreeze } from './pendings';
 import type { StakeRef } from '../data';
 import type { Consequence } from './rollSeam';
 import type { BuiltCascadeStep } from './stepBrand';
 import { resultLines } from './rollSeam';
 import { toRecapLines } from './recapLine';
 import { actorIn } from './combatants';
-import { rollTest, evaluateTest, bestForcedRoll, resolveOpposed, opposedBranchSuccess, type TestResult } from '../engine/tests';
+import { rollTest, evaluateTest, evaluateCombinedTest, bestForcedRoll, resolveOpposed, opposedBranchSuccess, type TestResult } from '../engine/tests';
 import { battleRng } from './battleRng';
 import { traceLineOf } from '../engine/traceLine';
 
@@ -158,7 +158,7 @@ export interface TableStepDef {
    *  `ctx` — CONTEXTE DU TIRAGE, transmis par le résolveur quand son pilote en a un (`{ get }`).
    *  Il existe parce qu'une ligne de table ne dit pas toujours la même chose selon l'ÉTAT au moment
    *  du dé : une même fourchette peut porter deux issues (atteindre un nombre cible, ou le passer au
-   *  joueur suivant — `NADAJ 16 l.17`), et un libellé figé à l'ENREGISTREMENT annoncerait la
+   *  joueur suivant — `NADJ 16 l.17`), et un libellé figé à l'ENREGISTREMENT annoncerait la
    *  fourchette au lieu de ce qui vient d'arriver. Le socle ne connaît toujours aucun domaine : il
    *  transmet l'accès, il ne lit rien. Absent (résolveur PUR, moteur hors store) : la table rend son
    *  libellé de fourchette — toute implémentation doit rester correcte sans `ctx`. */
@@ -261,19 +261,22 @@ export function tableStepResolved(step: CascadeStep, decl: CascadeTableDecl, res
 
 /** Type d'INTERACTION d'une étape, inféré de ses champs (zéro migration des étapes-jet existantes) :
  *  un Test (`target`), un TIRAGE SUR TABLE non résolu (`table` sans `result`, #942 L2), un batch
- *  multi (`participants` — seam de jet #275 Décision 4 cran 1, UNE rangée par contributeur), un choix
- *  du joueur (`options`), ou un pur affichage (aucun des quatre). */
-export function stepInteraction(step: CascadeStep): 'jet' | 'table' | 'batch' | 'choix' | 'affichage' {
+ *  multi (`participants` — seam de jet #275 Décision 4 cran 1, UNE rangée par contributeur), une
+ *  SAISIE NUMÉRIQUE bornée (`quantity`, #1279 Sf), un choix du joueur (`options`), ou un pur
+ *  affichage (aucun des cinq). */
+export function stepInteraction(step: CascadeStep): 'jet' | 'table' | 'batch' | 'quantite' | 'choix' | 'affichage' {
   if (step.target != null) return 'jet';
   if (step.table != null && step.table.result == null) return 'table';
   if (step.participants != null) return 'batch';
+  if (step.quantity != null) return 'quantite';
   if (step.options != null) return 'choix';
   return 'affichage';
 }
 
 /** L'étape est-elle prête à être validée ? jet → lancée (`result`) ; table → tirée (`table.result`) ;
- *  batch → TOUS les participants INTERACTIFS ont un `result` ; choix → tranchée (`chosen`) ;
- *  affichage → toujours.
+ *  batch → TOUS les participants INTERACTIFS ont un `result` ; quantité → un nombre est posé
+ *  (`amount` — le mint en pose un d'ouverture, cf. `rollSeam.quantityStep`) ; choix → tranchée
+ *  (`chosen`) ; affichage → toujours.
  *
  *  CONTRAT d'une rangée TÉMOIN (`interactive:false`) : elle NAÎT avec son `result` — c'est son
  *  PRODUCTEUR qui le roule à la construction (`pursuitFlow.pursuitRow`, `ui/opposedFrozen`). Rien ne
@@ -286,9 +289,48 @@ export function stepReady(step: CascadeStep): boolean {
     case 'jet': return !!step.result;
     case 'table': return !!step.table!.result;
     case 'batch': return step.participants!.every((p) => p.interactive === false || !!p.result);
+    case 'quantite': return step.amount != null;
     case 'choix': return step.chosen != null;
     case 'affichage': return true;
   }
+}
+
+/**
+ * BORNE d'une saisie de quantité — SITE UNIQUE : la valeur est ramenée dans `[min, max]` et calée sur
+ * le pas déclaré depuis `min` (une étape qui compte de 5 en 5 ne rend pas 7). Le poseur d'état
+ * (`setCascadeAmount`) et le mint (`rollSeam.quantityStep`) l'appellent tous deux : la valeur
+ * d'OUVERTURE et la valeur SAISIE obéissent à la même règle, sinon l'ouverture pourrait porter un
+ * nombre que le compteur ne sait plus atteindre. PURE.
+ */
+export function clampStepAmount(q: NonNullable<CascadeStep['quantity']>, n: number): number {
+  // TOTALE : un champ numérique vidé rend `NaN` (`Number('')`), qui traverserait toute comparaison
+  // (`NaN < min` est faux, `Math.min` le propage) et poserait un `amount` illisible. Seul `NaN` est
+  // hors domaine — un infini, lui, tombe naturellement sur la borne qu'il vise.
+  if (Number.isNaN(n)) return q.min;
+  const pas = Math.max(1, Math.floor(q.step ?? 1));
+  const cale = q.min + Math.round((Math.round(n) - q.min) / pas) * pas;
+  return Math.min(q.max, Math.max(q.min, cale));
+}
+
+/**
+ * ISSUE de la SECONDE LECTURE d'un jet (Test combiné, `LDB 12 l.202-208`) — le socle EXPOSE, l'UI
+ * affiche : `evaluateCombinedTest` est le SEUL juge (le MÊME dé confronté à la seconde valeur), et
+ * aucune surface ne recompare un `roll ≤ target` de son côté. Sans déclaration ni jet : `undefined`
+ * (la ligne n'a alors qu'une lecture, comme avant). PURE.
+ */
+export function secondReadOf(second: CascadeSecondRead | undefined, result: CascadeRoll | null | undefined):
+{ label: string; target: number; base?: number; difficulty?: Difficulty; roll: number; sl: number; success: boolean } | undefined {
+  if (!second || !result) return undefined;
+  const b = evaluateCombinedTest(result.roll, result.target, second.target).b;
+  return {
+    label: second.label,
+    target: second.target,
+    ...(second.base != null ? { base: second.base } : {}),
+    ...(second.difficulty ? { difficulty: second.difficulty } : {}),
+    roll: result.roll,
+    sl: b.sl,
+    success: b.success,
+  };
 }
 
 /**
@@ -470,6 +512,18 @@ export function setCascadeChoice(get: Get, set: Set, stepId: string, key: string
   if (!cur || cur.id !== stepId) return;
   if (!cur.options?.some((o) => o.key === key)) return;
   set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...x, chosen: key } : x)) } });
+}
+
+/** Pose le NOMBRE saisi sur l'étape « quantité » COURANTE — jumeau exact de `setCascadeChoice` : la
+ *  valeur est ramenée dans la plage DÉCLARÉE par l'étape (`clampStepAmount`, site unique de la borne),
+ *  jamais crue telle quelle ; la VALIDATION (conséquence) reste à `advanceCascade`. */
+export function setCascadeAmount(get: Get, set: Set, stepId: string, n: number): void {
+  const p = get().pendingCascade;
+  if (!p) return;
+  const cur = p.participants[p.cursor];
+  if (!cur || cur.id !== stepId || !cur.quantity) return;
+  const amount = clampStepAmount(cur.quantity, n);
+  set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...x, amount } : x)) } });
 }
 
 /** Tire la TABLE de l'étape COURANTE (interaction `'table'`) — SEAM d'état, analogue de
@@ -982,7 +1036,8 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ct
         return cur;
       }
       cur = cur.map((x, k) => (k === i ? { ...x, chosen: st.defaultChoice! } : x));
-    } // affichage : rien à résoudre avant la conséquence
+    } // affichage / quantité : rien à résoudre avant la conséquence — une étape de quantité naît avec
+      // son nombre d'ouverture (`quantityStep`), qu'aucun pilote n'a donc à trancher à l'aveugle.
     const r = commitStep(get, set, cur, i, false, unwitnessed, ctx?.rowSurface);
     cur = r.steps;
     // Un combat s'est ouvert PENDANT cette résolution immédiate (l'applier a appelé `startCombat` —

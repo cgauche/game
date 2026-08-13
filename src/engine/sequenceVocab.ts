@@ -9,7 +9,7 @@ import type { CharKey, Difficulty } from './types';
 import type { GameOp } from './ops';
 
 /** UNE LIGNE de table de score par PLAGE de DR — lue par `findTableEntry` (`engine/tables.ts`).
- *  Torchon trempé (NADAJ 16 l.111) : jambe 1 point, corps 2 points à partir de 3 DR, tête 3 points à
+ *  Torchon trempé (NADJ 16 l.111) : jambe 1 point, corps 2 points à partir de 3 DR, tête 3 points à
  *  partir de 6 DR. `label` est de l'AFFICHAGE (la logique lit `points`). */
 export interface SequenceTableRow {
   min: number;
@@ -20,7 +20,7 @@ export interface SequenceTableRow {
 
 /** EFFETS PAR MANCHE, en DONNÉE : `winner` va au vainqueur de la manche ; `attrition` va à TOUS les
  *  participants toutes les `attritionEvery` manches — nombre fixe, ou Bonus de Caractéristique DU
- *  PORTEUR (Bras de fer NADAJ 16 l.35 : « Pour chaque Bonus d'Endurance tours qui passent sans que
+ *  PORTEUR (Bras de fer NADJ 16 l.35 : « Pour chaque Bonus d'Endurance tours qui passent sans que
  *  personne n'ait gagné, vous gagnez + 1 État *Exténué* »). */
 export interface SequenceRoundOps {
   winner?: readonly GameOp[];
@@ -29,7 +29,7 @@ export interface SequenceRoundOps {
 }
 
 /** PHASES d'une séquence (mi-temps, sets) : `count` phases de `rounds` manches chacune. Middenball
- *  NADAJ 16 l.121 : « Une partie dure deux mi-temps de trois tours chacune ». */
+ *  NADJ 16 l.119 : « Une partie dure deux mi-temps de trois tours chacune ». */
 export interface SequencePhases {
   count: number;
   rounds: number;
@@ -38,7 +38,7 @@ export interface SequencePhases {
 /* ── FAMILLE (5) : MISE, POT, ABANDON, ÉLIMINATION ───────────────────────────────────────────────
  * Une séquence où l'on ne compte pas des DR mais de l'ARGENT : chaque joueur ALIMENTE un pot, un
  * tour de dés le fait grossir, se vider ou changer de mains, et un joueur peut en SORTIR (de son gré
- * ou contraint). Premier client : l'Al-zahr (`NADAJ 16 l.17`).
+ * ou contraint). Premier client : l'Al-zahr (`NADJ 16 l.17`).
  *
  * FORME — directive utilisateur du 2026-08-13 (verbatim au ticket #1279) : « Comme les games iOS
  * [GameOps], rendre le vocabulaire le plus générique et parametrable possible ». D'où : aucun champ
@@ -114,7 +114,7 @@ export interface SequencePotOutcome {
 
 /* ── FAMILLE (7) : VOLÉE — un PASSAGE de lancers en nombre fixe ──────────────────────────────────
  * Une séquence où l'on ne s'oppose pas manche par manche : chacun son PASSAGE de N lancers, chaque
- * lancer rapporte, et le total décide. Premiers clients : `NADAJ 16 l.42`, `l.65`, `l.83`, `l.57`.
+ * lancer rapporte, et le total décide. Premiers clients : `NADJ 16 l.42`, `l.65`, `l.83`, `l.57`.
  *
  * FORME — directive utilisateur du 2026-08-13 (verbatim au ticket #1279) : « Comme les games iOS
  * [GameOps], rendre le vocabulaire le plus générique et parametrable possible ». D'où : aucun champ
@@ -149,9 +149,9 @@ export interface SequenceVolleyRules {
   rows?: readonly SequenceVolleyRow[];
   /** Effet ENREGISTRÉ d'un lancer ORDINAIRE (`registerSequenceThrow`). */
   gain: string;
-  /** Effet ENREGISTRÉ d'une réussite EXCEPTIONNELLE — un double sur un Test réussi (`NADAJ 16 l.7`). */
+  /** Effet ENREGISTRÉ d'une réussite EXCEPTIONNELLE — un double sur un Test réussi (`NADJ 16 l.7`). */
   critique?: string;
-  /** Effet ENREGISTRÉ d'un échec EXCEPTIONNEL — un double sur un Test raté (`NADAJ 16 l.7`). */
+  /** Effet ENREGISTRÉ d'un échec EXCEPTIONNEL — un double sur un Test raté (`NADJ 16 l.7`). */
   maladresse?: string;
   /** PLAGE d'un gain que le lanceur fixe LIBREMENT (lue par l'effet qui l'offre). */
   libre?: { min: number; max: number };
@@ -162,7 +162,7 @@ export interface SequenceVolleyRules {
   depassement?: string;
   /** Passages complets PRÉVUS par la règle. */
   manches?: number;
-  /** ORDRE de passage : DÉCLARÉ (le challenger ouvre) ou TIRÉ AU SORT (`NADAJ 16 l.83` : « jetez une
+  /** ORDRE de passage : DÉCLARÉ (le challenger ouvre) ou TIRÉ AU SORT (`NADJ 16 l.83` : « jetez une
    *  pièce de monnaie pour déterminer qui joue en premier »). */
   ordre?: 'declare' | 'tirage';
   /** BORNE en passages, quand la règle n'en fixe aucun (séquence à cible EXACTE). Ce n'est PAS une
@@ -199,12 +199,17 @@ export interface SequenceThrowOutcome {
   ends?: boolean;
   /** Le LANCEUR tranche son gain parmi ces valeurs (le RAW lui en laisse la main). */
   choix?: readonly number[];
+  /** Le LANCEUR fixe LIBREMENT son gain dans cette PLAGE (« autant de points que vous le souhaitez,
+   *  entre 1 et 100 points », `NADJ 16 l.83`) — distinct de `choix` : une plage n'est pas une liste
+   *  de valeurs, et l'énumérer en ferait 100 boutons. Le domaine la sert en SAISIE numérique
+   *  (interaction `'quantite'` de la coquille de cascade). */
+  libre?: { min: number; max: number };
 }
 
 /* ── FAMILLE (8) : CAMPS ASYMÉTRIQUES — chacun sa CONVERSION et sa prise ─────────────────────────
  * Une séquence où les deux camps ne jouent pas le même jeu : le total d'une manche s'y CONVERTIT en
  * prises sur l'adversaire, selon un diviseur propre au camp, et la partie se gagne quand un camp a
- * pris plus de la moitié des pièces d'en face (`NADAJ 16 l.27-28`). */
+ * pris plus de la moitié des pièces d'en face (`NADJ 16 l.27-28`). */
 export interface SequenceSide {
   /** Id du camp (donnée : écrit dans les saves). */
   id: string;
@@ -219,13 +224,13 @@ export interface SequenceSide {
 
 /* ── FAMILLE (9) : TEST COMBINÉ À CONSÉQUENCES DISTINCTES ────────────────────────────────────────
  * UN seul dé, DEUX lectures, et chacune sa conséquence propre (`LDB 12 l.203-208` : « On lance un
- * seul d100, comparé successivement aux deux valeurs cibles » ; `NADAJ 16 l.97`). La première lecture
+ * seul d100, comparé successivement aux deux valeurs cibles » ; `NADJ 16 l.97`). La première lecture
  * est le Test que la séquence joue déjà (Compétence/Difficulté de l'entrée) ; la seconde est déclarée
  * ici, avec ce qu'elle coûte quand elle échoue et le RYTHME auquel ce coût se paie. */
 export interface SequenceCombinedRules {
   /** La SECONDE valeur confrontée au même dé (Compétence ou Caractéristique). */
   second: { skill?: string; spec?: string; char?: CharKey };
-  /** Tous les combien d'échecs de la SECONDE lecture les `ops` se paient (`NADAJ 16 l.97` : « Pour
+  /** Tous les combien d'échecs de la SECONDE lecture les `ops` se paient (`NADJ 16 l.97` : « Pour
    *  chaque 3 Tests d'Initiative auxquels vous échouez »). 0/absent : à chaque échec. */
   failEvery?: number;
   /** Tous les combien de MARQUES effacées les `ops` se paient (`l.97` : « pour chaque 2 chouettes que

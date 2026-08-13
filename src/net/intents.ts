@@ -60,9 +60,9 @@ export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   // s'unir / passer) — contribution de table routée par la possession de son porteur (patron #1050) ;
   // `counterspellDeclareAll` est le verbe NULLAIRE du drive d'auto-cadence, comme `counterspellRollAll`.
   'counterspellDeclare', 'counterspellDeclareAll',
-  // Cascade séquentielle (jets de nuit / voyage influençables) : choix / tirage sur table
-  // (avance et clôture = `resolution` du flux, dérivées).
-  'cascadeChoose', 'cascadeTableRoll',
+  // Cascade séquentielle (jets de nuit / voyage influençables) : choix / SAISIE d'une quantité
+  // (#1279 Sf, jumeau du choix) / tirage sur table (avance et clôture = `resolution` du flux, dérivées).
+  'cascadeChoose', 'cascadeAmount', 'cascadeTableRoll',
   // Mode table (#942 L3) : poser le dé d'une étape à table (champ ou clic sur une ligne) — autorisé par la
   // possession du siège ÉMETTEUR (`intentAllowedFor`) ; l'option « Dés fixés » est CLIENT-SIDE.
   'cascadeTableSetForcedRoll',

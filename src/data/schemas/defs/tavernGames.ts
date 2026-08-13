@@ -6,7 +6,7 @@
  * `characteristic` réutilise l'enum `CharKey` du moteur (`src/engine/types.ts:18`).
  *
  * `desc` = la règle RECOPIÉE (CLAUDE.md règle 5), Markdown de la source compris. UNE normalisation
- * est ASSUMÉE, et c'est la seule : l'extraction Marker de `NADAJ 16 l.65` porte « vous permet à la
+ * est ASSUMÉE, et c'est la seule : l'extraction Marker de `NADJ 16 l.65` porte « vous permet à la
  * place d' encercler » (espace parasite né de la coupure d'italique) ; le folio imprimé ne porte pas
  * cet espace, la donnée écrit donc « d'encercler ». Recopier l'artefact serait recopier l'outil, pas
  * la source.
@@ -36,6 +36,20 @@ export const schema = z.array(
     skill: z.string().nullable(),
     spec: z.string().optional(),
     characteristic: charKeySchema.optional(),
+    /** RÉGIME RAPIDE (règle optionnelle `tavern-games-rapides`) — le Test qu'il joue pour CETTE
+     *  entrée, quand la table veut autre chose que la lettre. DÉFAUT (absent) = `NADJ 16 l.11` mot à
+     *  mot : « la Compétence indiquée dans la section "Jeu" […] Si aucune Compétence n'est indiquée
+     *  […] Pari ». Une section « Jeu » qui n'indique qu'une CARACTÉRISTIQUE (Bras de fer l.34 : « un
+     *  Test opposé étendu de Force ») tombe donc sur Pari par défaut ; jouer la Force à sa place est
+     *  une lecture d'ESPRIT — elle s'écrit ICI, en donnée éditable et taguée maison, jamais en
+     *  arbitrage de code qui dévierait du verbatim. */
+    fastSkill: z.strictObject({
+      skill: z.string().optional(),
+      spec: z.string().optional(),
+      char: charKeySchema.optional(),
+      /** Tag MAISON obligatoire : cet override n'est pas dans la source. */
+      maison: z.string(),
+    }).optional(),
     /** Absent quand le jeu ne se résout pas au Test : l'Al-zahr est un jeu de MISE (`pot`). */
     mode: z.enum(['opposed', 'extended']).optional(),
     target: z.number().optional(),

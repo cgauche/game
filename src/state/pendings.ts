@@ -1356,6 +1356,28 @@ export const WORLD_STEP_OWNER = '__world-step__';
  *  se calcule quand même — un calcul MORT, jamais lu par l'applier ni affiché (aucun `step.outcome`). */
 export type CascadeAggregate = 'best' | 'opposed' | 'summed-dr' | 'none';
 
+/**
+ * SECONDE LECTURE d'un jet — Test COMBINÉ (`LDB 12 l.202-208`, verbatim l.206 : « Faire un seul Test,
+ * en comparant donc un unique jet de pourcentage avec la valeur de ces deux Compétences »). Le jet est
+ * celui de l'étape/de la rangée ; cette déclaration porte l'AUTRE valeur à laquelle le MÊME dé se
+ * compare, et son nom. Aucun second tirage n'existe et le type l'interdit : il n'y a ici ni `roll` ni
+ * `result` — l'issue est ÉVALUÉE (`secondReadOf`, `state/cascade.ts`, via `evaluateCombinedTest`).
+ *
+ * GÉNÉRIQUE : toute étape/rangée dont un dé unique tranche deux valeurs (le Cerevis en hérite,
+ * `NADJ 16 l.97`). La CIBLE est EFFECTIVE (Difficulté déjà appliquée, comme `target`) — la
+ * Difficulté déclarée n'est là que pour se LIRE sur la ligne.
+ */
+export interface CascadeSecondRead {
+  /** Libellé de la seconde lecture — la Compétence/Caractéristique comparée, jamais la situation. */
+  label: string;
+  /** Cible EFFECTIVE de la seconde lecture (Difficulté déjà appliquée). */
+  target: number;
+  /** Valeur NUE de la seconde lecture (`skillBaseValue`, `LDB 09 l.17`) — même contrat que `base`. */
+  base?: number;
+  /** Difficulté du Test combiné, telle qu'elle se lit sur la ligne (elle est déjà dans `target`). */
+  difficulty?: Difficulty;
+}
+
 /** Un CONTRIBUTEUR à une étape À PARTICIPANTS de cascade (batch multi). GÉNÉRIQUE, kind-agnostique : sa
  *  PRÉSENTATION (`label`/`base`/`mods`) et sa cible EFFECTIVE (`target`) sont RÉSOLUES à la CONSTRUCTION
  *  de l'étape par le flux propriétaire (le naval `buildVoyageCrewStep` dérive tout depuis `crewRoleValue`
@@ -1409,6 +1431,9 @@ export interface BatchParticipant extends RollParticipant {
   /** DÉTERMINATION (LDB 17 l.62) dépensée SUR CETTE RANGÉE : l'applier de bande lit le flag DE LA RANGÉE
    *  pour ne pas lui appliquer la conséquence, les autres rangées de la bande gardant la leur. */
   immune?: boolean;
+  /** SECONDE LECTURE du MÊME dé pour CETTE rangée (Test combiné, `LDB 12 l.203-208`) — cf.
+   *  `CascadeSecondRead` : la rangée dit ses deux cibles, un seul jet les tranche. */
+  second?: CascadeSecondRead;
 }
 
 /** TIRAGE SUR TABLE d'une étape de cascade — la DÉCLARATION, sérialisable (coop) : quelle table
@@ -1425,7 +1450,7 @@ export interface CascadeTableDecl {
   tableId: string;
   die?: number;
   /** NOMBRE de dés lancés et TOTALISÉS (défaut 1) — « lancez 2d10 et totalisez le résultat affiché
-   *  sur les deux dés » (`NADAJ 16 l.17`). Un tirage à N dés n'a ni la même plage (N…N×faces) ni la
+   *  sur les deux dés » (`NADJ 16 l.17`). Un tirage à N dés n'a ni la même plage (N…N×faces) ni la
    *  même distribution qu'un dé unique : le nombre est DÉCLARÉ, jamais déduit de la plage de la table. */
   dice?: number;
   mod?: number;
@@ -1616,6 +1641,19 @@ export interface CascadeStepBase extends Omit<RollParticipant, 'interactive'> {
    *  immédiate s'arrête PENDANTE sur ce choix (#351) ; « Tout résoudre » (`resolveRemainingCascade`)
    *  s'arrête TOUJOURS sur un choix depuis 249e931f, ignore ce champ. */
   defaultChoice?: string;
+  /** Étape « quantité » (6ᵉ interaction, #1279 Sf) : SAISIE NUMÉRIQUE BORNÉE — le joueur pose un
+   *  NOMBRE entre `min` et `max` (pas `step`, défaut 1). Elle existe parce qu'une décision à plage
+   *  large n'est pas une décision à options : « autant de points que vous le souhaitez, entre 1 et
+   *  100 » (`NADJ 16 l.83`) sort en 100 boutons, complet et illisible. GÉNÉRIQUE : la plage est
+   *  DÉCLARÉE par l'étape, aucun domaine n'est nommé ici. `unit` (pluriel, affichage) nomme ce qui se
+   *  compte quand ce n'est pas évident. */
+  quantity?: { min: number; max: number; step?: number; unit?: string };
+  /** Nombre posé — analogue de `chosen` pour une étape « quantité ». Le mint (`rollSeam.quantityStep`)
+   *  le pose À LA CONSTRUCTION à sa valeur d'ouverture : un compteur n'a pas d'état « vide », et une
+   *  étape prête d'emblée reste jouable en résolution immédiate sans second champ de défaut. */
+  amount?: number;
+  /** SECONDE LECTURE du MÊME dé (Test combiné, `LDB 12 l.202-208`) — cf. `CascadeSecondRead`. */
+  second?: CascadeSecondRead;
   /** Étape À PARTICIPANTS (batch multi, seam de jet #275 Décision 4 cran 1) : UNE rangée par
    *  contributeur GÉNÉRIQUE (`BatchParticipant`, résolu via le flux `cascadeBatch`), influençable
    *  INDÉPENDAMMENT. Prête quand tous les participants INTERACTIFS ont `result` (`stepReady`) ;

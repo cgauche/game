@@ -26,7 +26,7 @@ const UI_DIR = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = join(UI_DIR, '../..');
 
 /** Sigles des livres autorisés (§ Sources VF) suivis d'un numéro de chapitre/fiche. */
-const BOOK_REF = /\b(LDB|MDG|EDOC|EDO|ADE2?|ACE|T2C|NADAJ|ZI|AA)\s+\d+/;
+const BOOK_REF = /\b(LDB|MDG|EDOC|EDO|ADE2?|ACE|T2C|NADJ|ZI|AA)\s+\d+/;
 
 /**
  * Surfaces d'AUTORING, dispensées au MÊME titre que le Codex — tranché sous #601.

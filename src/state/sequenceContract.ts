@@ -66,7 +66,7 @@ export type {
 export interface SequenceParams {
   /** Cumul vers cible (Test opposé étendu, LDB 12 l.170-179) — ex. Bras de fer : 10 DR. */
   target?: number;
-  /** Plafond de DR d'une manche (Boules NADAJ 16 l.57 : 6 DR). */
+  /** Plafond de DR d'une manche (Boules NADJ 16 l.57 : 6 DR). */
   drCap?: number;
   /** Id du départage d'égalité ENREGISTRÉ. Absent = l'égalité reste une égalité. */
   tieBreak?: string;
@@ -78,7 +78,7 @@ export interface SequenceParams {
   score?: Record<string, string>;
   /** (2) Table de score par plage de DR. */
   table?: readonly SequenceTableRow[];
-  /** (3bis) Bonus de Caractéristique AJOUTÉ au DR de chaque manche (Bras de fer NADAJ 16 l.34,
+  /** (3bis) Bonus de Caractéristique AJOUTÉ au DR de chaque manche (Bras de fer NADJ 16 l.34,
    *  Alvatafl l.20, Bête l.42) — la Caractéristique est nommée, le Bonus est son chiffre des
    *  dizaines (`engine/characteristics.bonus`). */
   drBonus?: CharKey;
@@ -86,15 +86,15 @@ export interface SequenceParams {
   rounds?: SequenceRoundOps;
   /** (6) Phases (mi-temps). */
   phases?: SequencePhases;
-  /** Seuil de score d'un ACQUIS de manche (Middenball NADAJ 16 l.121 : but à 25 DR d'équipe). */
+  /** Seuil de score d'un ACQUIS de manche (Middenball NADJ 16 l.119 : but à 25 DR d'équipe). */
   scoreThreshold?: number;
-  /** (5) Mise, pot, abandon, élimination (Al-zahr NADAJ 16 l.17). */
+  /** (5) Mise, pot, abandon, élimination (Al-zahr NADJ 16 l.17). */
   pot?: SequencePotRules;
-  /** (7) Volée de lancers (Bête NADAJ 16 l.42, Arène l.65, Fléchettes l.83, Boules l.57). */
+  /** (7) Volée de lancers (Bête NADJ 16 l.42, Arène l.65, Fléchettes l.83, Boules l.57). */
   volley?: SequenceVolleyRules;
-  /** (8) Camps asymétriques (Alvatafl NADAJ 16 l.27-28). */
+  /** (8) Camps asymétriques (Alvatafl NADJ 16 l.27-28). */
   sides?: readonly SequenceSide[];
-  /** (9) Test combiné à conséquences distinctes (Cerevis NADAJ 16 l.97). */
+  /** (9) Test combiné à conséquences distinctes (Cerevis NADJ 16 l.97). */
   combined?: SequenceCombinedRules;
 }
 

@@ -44,7 +44,7 @@ describe('Famille (2) — table de score par plage de DR', () => {
 /* ── (6) PHASES ──────────────────────────────────────────────────────────────────────────────────*/
 
 describe('Famille (6) — phases (mi-temps)', () => {
-  /** Deux phases de trois manches (forme du Middenball, NADAJ 16 l.121). */
+  /** Deux phases de trois manches (forme du Middenball, NADJ 16 l.119). */
   const params: SequenceParams = { phases: { count: 2, rounds: 3 } };
 
   it('le rang de manche se traduit en phase et en rang INTERNE à la phase', () => {
@@ -151,7 +151,7 @@ describe('Famille (4)+(6) — le socle DÉCLENCHE les ops de manche, et s’arr�
   });
 
   /**
-   * INVARIANT DE LA FAMILLE (NADAJ 16 l.35, verbatim) : « Pour chaque Bonus d'Endurance **tours qui
+   * INVARIANT DE LA FAMILLE (NADJ 16 l.35, verbatim) : « Pour chaque Bonus d'Endurance **tours qui
    * passent sans que personne n'ait gagné**, vous gagnez + 1 État *Exténué* ». L'attrition est le prix
    * des manches qui PASSENT : la manche qui CONCLUT la séquence n'en est pas une, même si son rang
    * tombe pile sur l'intervalle. Tenu par le SOCLE — aucun client n'a à s'en souvenir.

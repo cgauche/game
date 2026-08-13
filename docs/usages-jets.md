@@ -13,7 +13,7 @@ d'affichage chaque consommateur remplit, et quelles particularités MÉCANIQUES 
 Le contrat lui-même (ce que chaque zone doit porter, et où) est DÉFINI par `docs/charte-ui.md` : ce
 document ne le redéfinit pas, il MESURE qui en consomme quoi.
 
-**Population mesurée : 36 consommateurs** — 46 sites JSX `<RollShell …>` (J) et 6 producteurs de
+**Population mesurée : 36 consommateurs** — 47 sites JSX `<RollShell …>` (J) et 6 producteurs de
 props `ComponentProps<typeof RollShell>` (H, les hooks qui paramètrent la coquille sans la rendre).
 
 ## Zones de COQUILLE (légende des colonnes)
@@ -53,7 +53,7 @@ sa définition vit à la charte. Une prop non encore taguée affiche « — » e
 | `src/ui/AuContactModal.tsx` | `AuContactModal` (J) ×2 | 2 | ✓ | · | · | · | · | ✓ | ✓ | · | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ |
 | `src/ui/BargainModal.tsx` | `BargainModalView` (J) | 2 | ✓ | ✓ | · | · | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ |
 | `src/ui/BattementModal.tsx` | `BattementModal` (J) | 1 | ✓ | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | ✓ | ✓ |
-| `src/ui/CascadeModal.tsx` | `attack` (J), `CascadeBody` (J) ×7, `defense` (J), `extended` (J), `fumble` (J), `test` (J), `trample` (J) | appel / — / variable / 0 / 2+ | ✓ | ✓ | · | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | · | · | · | · | ✓ | · | ✓ | · | · |
+| `src/ui/CascadeModal.tsx` | `attack` (J), `CascadeBody` (J) ×8, `defense` (J), `extended` (J), `fumble` (J), `test` (J), `trample` (J) | appel / — / variable / 0 / 2+ | ✓ | ✓ | · | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | · | · | · | · | ✓ | · | ✓ | · | · |
 | `src/ui/CastModal.tsx` | `CastModal` (J) | 1 | ✓ | · | · | · | · | · | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ |
 | `src/ui/CorruptionModal.tsx` | `CorruptionModal` (J) | 1 | ✓ | ✓ | · | · | · | ✓ | · | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | · | ✓ |
 | `src/ui/CrewTestModal.tsx` | `CrewTestModalView` (J) | variable | ✓ | ✓ | · | · | · | ✓ | ✓ | · | ✓ | ✓ | · | · | · | ✓ | · | · | ✓ | ✓ | ✓ |
@@ -161,7 +161,7 @@ Aucune n'est déclarée par un nom de fichier : chacune est la conjonction de zo
 | `src/ui/AuContactModal.tsx` | ✓ | · | · | · | · | · | · | `Icon`, `OptionChooser`, `VsHeader` |
 | `src/ui/BargainModal.tsx` | ✓ | · | · | · | · | · | · | — |
 | `src/ui/BattementModal.tsx` | · | · | · | · | · | · | · | `Icon`, `OptionChooser`, `VsHeader` |
-| `src/ui/CascadeModal.tsx` | · | · | ✓ | ✓ | · | ✓ | · | `CriticalBody`, `Icon`, `ModalSubject`, `OptionChooser`, `RecapLineList`, `RevealBody`, `SequencePanel`, `TableRollLine` |
+| `src/ui/CascadeModal.tsx` | · | · | ✓ | ✓ | · | ✓ | · | `CriticalBody`, `Icon`, `ModalSubject`, `OptionChooser`, `QtyStepper`, `RecapLineList`, `RevealBody`, `SequencePanel`, `TableRollLine` |
 | `src/ui/CastModal.tsx` | · | · | · | · | ✓ | ✓ | ✓ | `CharFrame`, `Icon`, `OptionChooser`, `RollRow`, `VsHeader` |
 | `src/ui/CorruptionModal.tsx` | · | · | · | · | · | · | · | `Icon`, `OptionChooser` |
 | `src/ui/CrewTestModal.tsx` | · | ✓ | · | · | · | · | · | `Icon` |

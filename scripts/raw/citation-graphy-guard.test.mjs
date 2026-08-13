@@ -267,6 +267,20 @@ test('non-régression : le VRAI src/ du repo est à ZÉRO graphie chapitre-relat
   )
 })
 
+// Le scan (g) — abréviation INCONNUE — était éprouvé sur FIXTURE seulement : sa « zéro tolérance »
+// ne s'exerçait sur aucun fichier réel, et une graphie morte (`NADAJ`, 101 occurrences, #1279 Sf)
+// a vécu des mois sans qu'aucune exécution ne la voie. Le VRAI `src/` entre donc au garde, comme
+// les autres familles ci-dessus : pas de baseline — une abréviation hors `books.json` est une
+// citation qui ne mène nulle part.
+test('non-régression : le VRAI src/ du repo est à ZÉRO abréviation INCONNUE (#585 lot A, câblé #1279 Sf)', () => {
+  const v = scanUnknownAbbrViolations()
+  assert.deepEqual(
+    v.map((x) => `${x.file}:${x.row} [${x.abbr}]`),
+    [],
+    `abréviation(s) hors books.json :\n${v.map((x) => `  ${x.file}:${x.row}  [${x.abbr}]  ${x.text}`).join('\n')}`,
+  )
+})
+
 
 // --- (#585 lot A) scan (e) : ch. cosmétique ---
 function withTempSrcAndRawDir(srcFiles, rawFiles, fn) {

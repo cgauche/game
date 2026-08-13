@@ -1,5 +1,5 @@
 /**
- * LE TORCHON TREMPÉ (NADAJ 16 l.109-113) — un tour = un lanceur, la cible tirée au sort parmi les 11
+ * LE TORCHON TREMPÉ (NADJ 16 l.109-113) — un tour = un lanceur, la cible tirée au sort parmi les 11
  * danseurs, le barème de points en TABLE de donnée, la pinte de bière sur un raté, et le balayage
  * final « trop sobre ». Règle verbatim : « lorsque vous balancez le torchon, faites un Test opposé
  * Projectiles (Lancer) / Esquive d'un joueur choisi aléatoirement parmi les 11 danseurs. En cas de
@@ -82,7 +82,7 @@ beforeEach(() => {
   useGame.setState({ battle: null, pendingCascade: null, sequence: null } as never);
 });
 
-describe('Le torchon trempé (NADAJ 16 l.109-113)', () => {
+describe('Le torchon trempé (NADJ 16 l.109-113)', () => {
   it('l’entrée porte la règle : 12 par équipe, 11 danseurs, le barème en table, somme par camp', () => {
     expect(TORCHON.team?.size, '« deux équipes de 12 personnes » (l.109)').toBe(12);
     expect(TORCHON.dancers, '« deux cercles de 11 joueurs » (l.109)').toBe(11);
@@ -166,7 +166,7 @@ describe('Le torchon trempé (NADAJ 16 l.109-113)', () => {
   });
 
   /**
-   * Le critère du balayage (`NADAJ 16 l.111`) porte sur le jet du Tableau d'Ivresse, sans borne de
+   * Le critère du balayage (`NADJ 16 l.111`) porte sur le jet du Tableau d'Ivresse, sans borne de
    * partie : c'est l'ÉTAT du personnage qui répond. Un lanceur arrivé DÉJÀ ivre à la taverne échappe
    * donc au malus, même s'il n'a rien bu ce soir-là.
    */

@@ -189,7 +189,7 @@ describe('playTavernGame', () => {
 });
 
 /**
- * LE BRAS DE FER, mécanique par mécanique (NADAJ 16 l.34-35, verbatim) : « faites un Test opposé
+ * LE BRAS DE FER, mécanique par mécanique (NADJ 16 l.34-35, verbatim) : « faites un Test opposé
  * étendu de Force Intermédiaire (+0) ; à chaque tour, ajoutez votre Bonus de Force au nombre de DR que
  * vous avez obtenus. Le gagnant de chaque tour gagne +1 Avantage […]. Le premier Personnage qui
  * atteint au moins 10 DR est le vainqueur. Pour chaque Bonus d'Endurance tours qui passent sans que
@@ -197,7 +197,7 @@ describe('playTavernGame', () => {
  *
  * Les manches sont POSÉES (aucun dé) : ce qui est mesuré est l'arithmétique de la partie, pas le RNG.
  */
-describe('Bras de fer (NADAJ 16 l.34-35)', () => {
+describe('Bras de fer (NADJ 16 l.34-35)', () => {
   /** Pose le DR de chaque rangée de la manche ouverte, puis la clôt. */
   function poseManche(sl: Record<string, number>): void {
     const pc = get().pendingCascade!;

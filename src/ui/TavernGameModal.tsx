@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
-import { TAVERN_GAMES, findTavernGameById } from '../engine/tavernGame';
+import { TAVERN_GAMES, findTavernGameById, tavernFastRegime, TAVERN_TEST_DIFFICULTY } from '../engine/tavernGame';
+import { CHAR_LABELS, DIFFICULTY_LABELS, type Difficulty } from '../engine/types';
 import { tavernGameValue, isTavernStep, type TavernOpponent } from '../state/tavernFlow';
 import { bourseOf } from '../state/bourseFlow';
 import { refLabel } from '../data/index';
@@ -18,9 +19,10 @@ import { SceneBackdrop } from './SceneBackdrop';
  * Jeux de taverne (Nuits agitées & dures journées, ch.16) — modale UNIQUE : choisir un jeu, un
  * challenger et un adversaire (compagnon OU valeur abstraite fixée par la table), puis résoudre EN
  * DEUX TEMPS (#370) : le jet du challenger s'ouvre par le seam de jet (`openRoll`, modale RollShell
- * influençable Chance/Pacte/Résilience, surfacée PAR-DESSUS) ; à son retour, le moteur générique
- * (`resolveTavernRound`, variante « jeu rapide » : Test opposé Intermédiaire (+0), le plus de DR
- * l'emporte) décide l'issue depuis les deux jets. Affiche l'issue et la mise éventuelle. Ouverte via
+ * influençable Chance/Pacte/Résilience, surfacée PAR-DESSUS) ; à son retour, le réducteur de la
+ * séquence décide de la manche. Le jeu présenté ici est celui du RÉGIME en vigueur
+ * (`findTavernGameById` : complet, ou rapide sous la règle `tavern-games-rapides` — le formulaire
+ * n'offre alors ni mise ni table, le jeu n'en portant plus). Affiche l'issue et la mise éventuelle. Ouverte via
  * `openTavernGames` (affordance montrée seulement si l'option `tavern-games` est active).
  */
 export function TavernGameModal() {
@@ -50,14 +52,26 @@ export function TavernGameModal() {
   const game = findTavernGameById(gameId);
   const challenger = heroes.find((h) => h.id === challengerId);
 
-  // Cadre du jet (variante rapide, l.9-11) : la Compétence indiquée, ou Pari si aucune.
-  const skillLine = game
-    ? game.skill
-      ? `${refLabel('skills', { id: game.skill, spec: game.spec })} Intermédiaire (+0)`
-      : game.characteristic
-        ? `${game.characteristic} Intermédiaire (+0)`
-        : 'Pari Intermédiaire (+0)'
-    : '';
+  // LE CADRE DU JET, DÉRIVÉ DU RÉGIME EN VIGUEUR — jamais une phrase figée :
+  //  · rapide (`NADJ 16 l.11`) : le Test que la projection a retenu, à Intermédiaire (+0) ;
+  //  · complet : le Test de la PREMIÈRE option quand l'entrée en déclare (Cerevis « Pari Accessible
+  //    (+20) », Middenball), sinon celui du jeu à sa Difficulté de manche.
+  // Le nom d'une Caractéristique passe par `CHAR_LABELS` : un id moteur (« force ») n'est pas un
+  // libellé d'écran (doctrine « on ne manipule que des ids, on n'AFFICHE que des labels »).
+  const rapide = tavernFastRegime();
+  const opt = !rapide ? game?.options?.[0] : undefined;
+  const testAffiche = {
+    skill: opt?.skill ?? game?.skill ?? undefined,
+    spec: opt?.spec ?? (opt?.skill ? undefined : game?.spec),
+    char: opt?.char ?? (opt?.skill ? undefined : game?.characteristic),
+  };
+  const difficulteAffichee: Difficulty = rapide ? TAVERN_TEST_DIFFICULTY : (opt?.difficulty ?? TAVERN_TEST_DIFFICULTY);
+  const nomDuTest = testAffiche.skill
+    ? refLabel('skills', { id: testAffiche.skill, ...(testAffiche.spec ? { spec: testAffiche.spec } : {}) })
+    : testAffiche.char
+      ? CHAR_LABELS[testAffiche.char]
+      : refLabel('skills', { id: 'pari' });
+  const skillLine = game ? `${nomDuTest} ${DIFFICULTY_LABELS[difficulteAffichee]}` : '';
   const challengerVal = game && challenger ? tavernGameValue(challenger, game) : 0;
   const oppValue = abstractValue ?? challengerVal; // défaut : match égal (valeur du challenger)
   const allyValue = allyVal ?? oppValue; // coéquipiers figurants : leur PROPRE valeur, réglable
@@ -146,6 +160,10 @@ export function TavernGameModal() {
           {game && (
             <>
               <div className="tavern-desc"><Prose md={game.desc} /></div>
+              {/* La règle affichée est le VERBATIM de la source (CLAUDE.md règle 5) : au régime
+                  rapide, elle décrit donc des mises, des manches et des seuils que la partie ne
+                  jouera PAS. On ne coupe pas le texte de la source — on DIT ce qui s'applique. */}
+              {rapide && <p className="tavern-detail muted">{t('tavern.regimeRapideNote')}</p>}
               {game.pot ? (
                 <p className="tavern-detail">
                   Lancer : <b>{game.pot.dice.count}d{game.pot.dice.faces}</b> à chaque tour

@@ -1,16 +1,22 @@
 /**
  * Jeux de taverne (Nuits agitées & dures journées, ch.16 « Jeux de Taverne ») — MOTEUR GÉNÉRIQUE
- * data-driven : un jeu = une entrée de `tavernGames.json` (Compétence/carac du jeu, mode de résolution,
- * plafond de DR, variante de lecture, mise), sa règle recopiée VERBATIM. La résolution suit l'« OPTION :
- * JEUX DE TAVERNE RAPIDES » (ch.16 l.9-11) : « effectuez un Test opposé de Compétence Intermédiaire (+0)
- * en utilisant la Compétence indiquée dans la section "Jeu" du jeu en question. Si aucune Compétence
- * n'est indiquée […] faites plutôt un Test opposé de Pari Intermédiaire (+0). Celui qui obtient le nombre
- * le plus élevé de DR remporte la partie. » Le Bras de fer (l.34) est un Test opposé ÉTENDU (premier à
- * 10 DR cumulés). Moteur PUR (RNG seedable) : les valeurs de Compétence sont calculées par l'appelant.
+ * data-driven : un jeu = une entrée de `tavernGames.json` (Compétence/carac du jeu, forme de tour,
+ * mise, plafond de DR, départage…), sa règle recopiée VERBATIM.
+ *
+ * DEUX RÉGIMES OFFICIELS, qui coexistent (le second est une règle optionnelle, `tavern-games-rapides`) :
+ *  - COMPLET : chaque jeu joue SES règles (manches, mises et pot, passages de lancers, camps, Test
+ *    combiné), portées par sa donnée et jouées par le socle de séquence (`state/sequenceCore`) ;
+ *  - RAPIDE (ch.16 l.9-11, verbatim l.11) : « effectuez un Test opposé de Compétence Intermédiaire (+0)
+ *    en utilisant la Compétence indiquée dans la section "Jeu" du jeu en question. Si aucune Compétence
+ *    n'est indiquée (comme pour Al-zahr), faites plutôt un Test opposé de Pari Intermédiaire (+0).
+ *    Celui qui obtient le nombre le plus élevé de DR remporte la partie. » — servi par la projection
+ *    `findTavernGameById`, seul accesseur du catalogue par id.
+ * Moteur PUR (RNG seedable) : les valeurs de Compétence sont calculées par l'appelant.
  */
 import { RNG, defaultRNG } from './dice';
 import { rollTest, resolveOpposed, TestResult } from './tests';
 import { Difficulty, CharKey } from './types';
+import { rule } from './policy';
 import type {
   SequencePhases, SequencePotRules, SequenceRoundOps, SequenceTableRow, SequenceSide, SequenceVolleyRules,
   SequenceCombinedRules,
@@ -30,6 +36,11 @@ export interface TavernGame {
   /** Caractéristique du jeu quand il ne repose pas (ou pas seulement) sur une Compétence (Bras de fer = F,
    *  Bête = CT, Alvatafl/Cerevis = Int/I). Sert à l'appelant pour calculer la valeur. */
   characteristic?: CharKey;
+  /** RÉGIME RAPIDE : le Test joué par CETTE entrée quand la table s'écarte de la lettre. Absent =
+   *  `NADJ 16 l.11` mot à mot (la Compétence indiquée ; Pari si aucune n'est indiquée) — une
+   *  Caractéristique n'est PAS une Compétence, donc le Bras de fer tombe sur Pari par défaut. Poser
+   *  ici `{ char: 'force', maison: '…' }` est la lecture d'esprit, éditable au Codex et taguée. */
+  fastSkill?: { skill?: string; spec?: string; char?: CharKey; maison: string };
   /** Mode : `opposed` (un Test opposé, +DR l'emporte — variante rapide) ou `extended` (Test opposé étendu
    *  jusqu'à `target` DR cumulés — Bras de fer, l.34). */
   mode?: 'opposed' | 'extended';
@@ -109,9 +120,58 @@ export interface TavernGame {
 export const TAVERN_GAMES = tavernGamesJson as TavernGame[];
 const BY_ID = new Map<string, TavernGame>(TAVERN_GAMES.map((g) => [g.id, g]));
 
-/** Un jeu de taverne par son `id`, ou undefined. */
+/** Id de la règle optionnelle du RÉGIME RAPIDE (`engine/policy.ts`) — DISTINCTE de `tavern-games`,
+ *  qui ouvre la fonctionnalité : le régime ne se déduit pas de l'ouverture. */
+export const TAVERN_FAST_RULE = 'tavern-games-rapides';
+
+/** La table joue-t-elle au régime RAPIDE (`NADJ 16 l.9-11`) ? Lecture UNIQUE de la règle. */
+export function tavernFastRegime(): boolean {
+  return rule(TAVERN_FAST_RULE) === true;
+}
+
+/**
+ * LE JEU TEL QU'IL SE JOUE au régime RAPIDE (`NADJ 16 l.11`) — projection par LISTE BLANCHE : ne
+ * survivent que l'identité, le Test indiqué et la source. Tout ce qui décrit les règles PROPRES du
+ * jeu (forme de tour, mise et pot, passages de lancers, camps, Test combiné, options, cible de
+ * cumul, plafond de DR, Bonus de Caractéristique, effets de manche, phases, tables, unité de score)
+ * disparaît : le régime rapide n'en joue AUCUNE — « effectuez un Test opposé de Compétence
+ * Intermédiaire (+0) […] Celui qui obtient le nombre le plus élevé de DR remporte la partie » (l.11).
+ * Une liste blanche parce qu'une famille de règles AJOUTÉE plus tard doit être admise EXPLICITEMENT :
+ * en liste noire, elle fuirait dans le régime rapide sans que personne ne le voie.
+ *
+ * LE TEST JOUÉ suit la LETTRE, et rien d'autre : « en utilisant la Compétence indiquée dans la
+ * section "Jeu" du jeu en question. Si aucune Compétence n'est indiquée (comme pour Al-zahr), faites
+ * plutôt un Test opposé de Pari » (l.11). Une CARACTÉRISTIQUE n'est pas une Compétence : le Bras de
+ * fer (l.34, « un Test opposé étendu de Force ») n'en indique donc aucune et tombe sur Pari — la
+ * `characteristic` de l'entrée ne franchit PAS la projection. Jouer la Force à sa place est une
+ * lecture d'ESPRIT, légitime mais hors texte : elle s'écrit en DONNÉE (`fastSkill`, taguée maison,
+ * éditable au Codex), jamais en défaut de code. La valeur, elle, se calcule là où elle se calcule
+ * toujours (`tavernTestSpec`/`tavernGameValue`, `state/tavernFlow.ts`).
+ */
+export function fastTavernGame(g: TavernGame): TavernGame {
+  const test: { skill?: string; spec?: string; char?: CharKey } = g.fastSkill
+    ?? { skill: g.skill ?? 'pari', ...(g.spec ? { spec: g.spec } : {}) };
+  return {
+    id: g.id,
+    label: g.label,
+    desc: g.desc,
+    skill: test.skill ?? null,
+    ...(test.spec ? { spec: test.spec } : {}),
+    ...(test.char ? { characteristic: test.char } : {}),
+    mode: 'opposed',
+    source: g.source,
+  };
+}
+
+/**
+ * Un jeu de taverne par son `id`, TEL QU'IL SE JOUE sous le régime en vigueur — SEUL accessseur
+ * exporté du catalogue par id : le catalogue brut (`BY_ID`) reste privé, de sorte qu'aucune surface
+ * (flux, modale) ne puisse lire un jeu « hors régime » et jouer les deux à la fois. Les deux régimes
+ * du RAW coexistent donc sans qu'aucun site ne les arbitre : ils sont servis à la source.
+ */
 export function findTavernGameById(id: string): TavernGame | undefined {
-  return BY_ID.get(id);
+  const g = BY_ID.get(id);
+  return g && tavernFastRegime() ? fastTavernGame(g) : g;
 }
 
 export interface TavernGameResult {
@@ -155,7 +215,7 @@ export interface TavernRoundOutcome {
 }
 
 /**
- * `drBonus` = Bonus de Caractéristique AJOUTÉ au DR de la manche, PAR CAMP (Bras de fer NADAJ 16
+ * `drBonus` = Bonus de Caractéristique AJOUTÉ au DR de la manche, PAR CAMP (Bras de fer NADJ 16
  * l.34 : « à chaque tour, ajoutez votre Bonus de Force au nombre de DR que vous avez obtenus »).
  * Son ORDRE vis-à-vis du plafond de manche (`drCap`) est une DÉCISION D'INGÉNIERIE, pas une règle :
  * aucune entrée du catalogue ne porte les deux à la fois, l'écart est donc inobservable en jeu. Le

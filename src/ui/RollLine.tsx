@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { ModLine, RollBreakdown, RollMask } from '../engine/combat';
+import type { ModLine, RollBreakdown, RollMask, SecondReadLine } from '../engine/combat';
 import type { VerdictReason } from '../engine/tests';
 import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { Dice } from './Dice';
@@ -220,6 +220,28 @@ function RollCalc({ base, modifier, target, mask }: { base?: number; modifier: n
   );
 }
 
+/** SECONDE LECTURE d'une ligne — Test COMBINÉ (`LDB 12 l.202-208`) : la MÊME géométrie que la ligne
+ *  qu'elle prolonge (libellé · calcul · dé · DR), à ceci près que la cellule du dé ne rejette rien —
+ *  elle DIT que c'est le même (« un unique jet de pourcentage », l.206). Avant le jet, la lecture
+ *  n'annonce que sa cible : le ✓/✗ reste au tiret d'attente, comme la ligne principale. Site de rendu
+ *  UNIQUE des deux zones (`RollBreakdown.second` résolue, `PendingRoll.second` pré-jet). */
+function SecondReadRow({ s }: { s: SecondReadLine }) {
+  const tranchee = s.success != null;
+  return (
+    <div className={`rm-roll ${tranchee ? (s.success ? 'ok' : 'fail') : 'pending'}`}>
+      <span className="rm-roll-label">
+        {t('roll.secondeLecture', { label: s.label })}
+        <DifficultyText difficulty={s.difficulty} />
+      </span>
+      <RollCalc base={s.base} modifier={s.base != null ? s.target - s.base : 0} target={s.target} />
+      <span className="rm-roll-dice"><span className="hint">{t('roll.memeDe')}</span></span>
+      <span className={`rm-roll-sl ${tranchee ? '' : 'rm-roll-sl-pending'}`} aria-hidden={tranchee ? undefined : true}>
+        {tranchee ? <>{s.success ? '✓' : '✗'} {(s.sl ?? 0) >= 0 ? '+' : '−'}{Math.abs(s.sl ?? 0)} DR</> : '—'}
+      </span>
+    </div>
+  );
+}
+
 /** Z5c — la RAISON du verdict, ANNOTÉE sous la ligne qu'elle explique (`docs/charte-ui.md`) : elle
  *  ne paraît que quand la comparaison des DR affichés ne dit pas le verdict à elle seule (départage
  *  d'un Test opposé, LDB 12 l.160). Le résolveur fournit le critère et les grandeurs comparées
@@ -266,6 +288,7 @@ export function RollLine({ d }: { d: RollBreakdown }) {
           {masked ? '?' : <>{d.success ? '✓' : '✗'} {d.sl >= 0 ? '+' : '−'}{Math.abs(d.sl)} DR</>}
         </span>
       </div>
+      {!masked && d.second && <SecondReadRow s={d.second} />}
       {mods.length > 0 && <ModChips mods={mods} />}
       {!d.mask && d.decided && <VerdictNote r={d.decided} />}
     </div>
@@ -308,6 +331,10 @@ export interface PendingRoll {
    *  Porté par l'ENTRÉE de jet pour les surfaces hors `RollShell` (pied d'`ActivityPane`) : la
    *  coquille de jet, elle, a sa propre prop de premier rang. Absent = la surface ne rend RIEN. */
   stake?: StakeRef;
+  /** SECONDE LECTURE annoncée AVANT le jet (Test COMBINÉ, `LDB 12 l.202-208`) : sa cible se lit dès
+   *  l'ouverture de la fenêtre — sans elle, le joueur ne saurait qu'un second Test est en jeu qu'en
+   *  le ratant. Même donnée que `RollBreakdown.second`, sans issue (le dé n'est pas tombé). */
+  second?: SecondReadLine;
 }
 
 export function PendingRollLine({ p }: { p: PendingRoll }) {
@@ -332,6 +359,7 @@ export function PendingRollLine({ p }: { p: PendingRoll }) {
         </span>
         <span className="rm-roll-sl rm-roll-sl-pending" aria-hidden="true">—</span>
       </div>
+      {p.second && <SecondReadRow s={p.second} />}
       {mods.length > 0 && <ModChips mods={mods} />}
     </div>
   );

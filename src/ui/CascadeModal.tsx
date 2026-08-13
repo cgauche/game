@@ -18,6 +18,7 @@ import { ForceDoorModal } from './ForceDoorModal';
 import { CastModal } from './CastModal';
 import { type PanelRowData as PanelRow } from './RollPanel';
 import { OptionChooser, type RollOption } from './OptionChooser';
+import { QtyStepper } from './QtyStepper';
 import { CriticalBody, RevealBody } from './RevealBody';
 import { ModalSubject } from './ModalSubject';
 import { RecapLineList } from './RecapLine';
@@ -25,7 +26,7 @@ import { TableRollLine } from './RollLine';
 import { testBreakdown, testPending, opposedLines } from './breakdown';
 import type { ModLine } from '../engine/combat';
 import { Icon } from './Icon';
-import { stepInteraction, stepReady, tableStepDefs, tableStepNaturalRange, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
+import { stepInteraction, stepReady, secondReadOf, tableStepDefs, tableStepNaturalRange, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
 import { useOwns } from './ownership';
 import { pursuitOf } from '../state/pursuitFlow';
 import { SequencePanel } from './SequencePanel';
@@ -116,6 +117,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const resistAct = useGame((s) => s.cascadeResist); // Résistance (Menace) : auto-succès du talent (LDB 10)
   const next = useGame((s) => s.cascadeNext);
   const choose = useGame((s) => s.cascadeChoose); // étape « choix » : pose l'option retenue
+  const setAmount = useGame((s) => s.cascadeAmount); // étape « quantité » : pose le nombre saisi
   const tableRoll = useGame((s) => s.cascadeTableRoll); // étape « table » : tire le dé sur le tableau déclaré
   const tableSetForcedRoll = useGame((s) => s.cascadeTableSetForcedRoll); // mode table : POSE le dé (champ ou ligne)
   const resolveAll = useGame((s) => s.cascadeResolveAll); // « Tout lancer » → bilan
@@ -172,11 +174,15 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     const l = stepLine(s);
     // L'ÉCRÊTAGE mesuré à la construction (`step.clamped`) voyage avec la ligne : le réconciliateur
     // le NOMME (« plafond 99 ») au lieu de l'avouer « autres » (#1117).
-    return testBreakdown(l.label, l.base, { roll: r.roll, target: s.target, sl: r.sl, success: r.success, ...(s.clamped ? { clamped: s.clamped } : {}) }, s.difficulty, l.mods, s.easedBy);
+    // La SECONDE LECTURE (Test combiné) est ÉVALUÉE par le socle (`secondReadOf`) : la modale la
+    // transmet, elle ne recompare pas le dé.
+    return testBreakdown(l.label, l.base, { roll: r.roll, target: s.target, sl: r.sl, success: r.success, ...(s.clamped ? { clamped: s.clamped } : {}) }, s.difficulty, l.mods, s.easedBy, secondReadOf(s.second, r));
   };
   const pendingOf = (s: CascadeRollStep) => {
     const l = stepLine(s);
-    return testPending(l.label, l.base, s.target, s.difficulty, l.mods, s.easedBy, s.clamped);
+    // Pré-jet : la seconde lecture n'a que sa CIBLE à annoncer (aucun dé n'est tombé) — c'est
+    // précisément ce qui manquait au joueur, qui ne découvrait le second Test qu'en le ratant.
+    return testPending(l.label, l.base, s.target, s.difficulty, l.mods, s.easedBy, s.clamped, s.second ? { ...s.second } : undefined);
   };
   /** Étape qui LANCE — la ligne de jet n'existe que là (les étapes d'affichage/choix/table/batch
    *  n'ont ni cible ni libellé de ligne : elles se rendent par leur note). */
@@ -229,7 +235,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         const a = pool.find((c) => c.id === part.id);
         if (!a) return [];
         const res = part.result;
-        const d = res ? { label: part.label ?? a.label, base: part.base, mods: part.mods, ...(part.difficulty ? { difficulty: part.difficulty } : {}), modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } : undefined;
+        // La rangée FIGÉE garde sa seconde lecture : ce que la bande a tranché reste lisible au bilan.
+        const d = res ? { label: part.label ?? a.label, base: part.base, mods: part.mods, ...(part.difficulty ? { difficulty: part.difficulty } : {}), modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl, ...(part.second ? { second: secondReadOf(part.second, res)! } : {}) } : undefined;
         const extendedDr = extendedDrData(part.extendedDrDone, part.extendedDrTarget, res);
         return [witnessRow({ key: witnessRowKey(s.id, part.id), row: { combatant: a, d, note: partNote(part) }, extendedDr })];
       });
@@ -541,6 +548,59 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     );
   }
 
+  // QUANTITÉ (#1279 Sf) : le joueur POSE un nombre dans la plage déclarée — pas de jet, pas
+  // d'influence. Le compteur est la primitive canonique (`QtyStepper`), doublée du champ de saisie
+  // qui la rend atteignable au clavier et d'un coup pour les grandes plages : d'un bout à l'autre
+  // d'un 1..100, cliquer 99 fois n'est pas une affordance. Les bornes se LISENT (une flèche éteinte
+  // sans raison est une affordance morte).
+  if (interaction === 'quantite') {
+    const q = cur.quantity!;
+    const pas = Math.max(1, Math.floor(q.step ?? 1));
+    const n = cur.amount ?? q.min;
+    const unite = q.unit ? ` ${q.unit}` : '';
+    return (
+      <RollShell
+        title={titleNode}
+        subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length })}
+        rolled
+        rows={[]}
+        extra={<SequencePanel />}
+        postRollExtra={
+          <>
+            {cur.outcome?.length ? <RecapLineList lines={cur.outcome} /> : null}
+            <div className="prow-act">
+              <label className="field" htmlFor={`${cur.id}-amount`}>
+                <span>{cur.label}</span>
+                <input
+                  id={`${cur.id}-amount`}
+                  type="number"
+                  min={q.min}
+                  max={q.max}
+                  step={pas}
+                  value={n}
+                  onChange={(e) => setAmount(cur.id, Number(e.target.value))}
+                />
+              </label>
+              <QtyStepper
+                center={<>{n}{unite}</>}
+                onDec={() => setAmount(cur.id, n - pas)}
+                onInc={() => setAmount(cur.id, n + pas)}
+                decDisabled={n <= q.min}
+                incDisabled={n >= q.max}
+                decLabel={`Retirer ${pas}`}
+                incLabel={`Ajouter ${pas}`}
+              />
+              <p className="hint">De {q.min} à {q.max}{unite}.</p>
+            </div>
+          </>
+        }
+        actions={[continueAction]}
+        disableEscClose
+        embedded={embedded}
+      />
+    );
+  }
+
   // CHOIX : le joueur tranche (l'option pilote la conséquence) — pas de jet, pas d'influence. Une
   // DÉVIATION (P3a) porte le Critique pré-tiré (panneau riche `CriticalBody`) ; « Dévier » exige du PA.
   if (interaction === 'choix') {
@@ -634,9 +694,12 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         // ÉCRÊTAGE mesuré. Sans `target` en pré-jet, la cible affichée se re-dérivait de `base +
         // Difficulté` et divergeait de celle qui sera roulée ; sans `clamped`, le plafond redevenait
         // une chip « autres ».
+        // SECONDE LECTURE (Test combiné) : la rangée dit SES deux cibles — évaluée par le socle
+        // après le jet, annoncée à sa seule cible avant.
+        const second = part.second;
         return res
-          ? { combatant: actor, d: { label, base: part.base, mods: part.mods, ...(part.difficulty ? { difficulty: part.difficulty } : {}), ...(part.clamped ? { clamped: part.clamped } : {}), modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } }
-          : { combatant: actor, pending: { label, base: part.base, mods: part.mods ?? [], target: part.target, ...(part.difficulty ? { difficulty: part.difficulty } : {}), ...(part.clamped ? { clamped: part.clamped } : {}) } };
+          ? { combatant: actor, d: { label, base: part.base, mods: part.mods, ...(part.difficulty ? { difficulty: part.difficulty } : {}), ...(part.clamped ? { clamped: part.clamped } : {}), modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl, ...(second ? { second: secondReadOf(second, res)! } : {}) } }
+          : { combatant: actor, pending: { label, base: part.base, mods: part.mods ?? [], target: part.target, ...(part.difficulty ? { difficulty: part.difficulty } : {}), ...(part.clamped ? { clamped: part.clamped } : {}), ...(second ? { second: { ...second } } : {}) } };
       },
       // ISSUES de la rangée (#1117) : la MÊME dérivation que l'étape MONO, mais PAR PARTICIPANT — le
       // VERDICT d'une rangée résolue et la promesse d'une rangée DIVERGENTE. Une rangée dont l'annonce est

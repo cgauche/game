@@ -4,7 +4,7 @@
  * rougit si l'on débranche la variante, la règle qui la gate, ou la ligne « Tests » qu'elle republie.
  *
  * Périmètre PROUVÉ ici : la variante `magic-vdm-incantation` de *Concocter* (`VDM 12 l.411-421`).
- * Des 8 `Empreint de (Vent)` (`VDM 13 l.461-486`, ancre `NADAJ 15 l.47-53` pour Ulgu), seule la ligne
+ * Des 8 `Empreint de (Vent)` (`VDM 13 l.461-486`, ancre `NADJ 15 l.47-53` pour Ulgu), seule la ligne
  * « Tests » est câblée — par la règle universelle de +DR de Talent (`LDB 10 l.19`), dont
  * `talentTestSLBonus` est la source unique. L'aura de +DR à 8 mètres portée par un TALENT et la
  * substitution de Compétence (Focalisation du Vent) n'ont aucun canal (#874) ; `Assistant magique`
@@ -77,7 +77,7 @@ describe('Empreint de (Vent) — 8 Talents, un par Vent (VDM 13 l.461-486)', () 
    * Les 8 Vents, avec la ligne « Tests » VERBATIM de leur livre d'ancre et les `TestMatch` que la
    * curation en tire. Ce que le livre imprime, mot pour mot :
    *  - VDM 13 l.465 (les 7 neufs) : « **Tests :** Voir ci-dessous. »
-   *  - NADAJ 15 l.51 (`empreint-d-ulgu`, ancre du MÊME Talent) : « **Tests :** tout Test faisant
+   *  - NADJ 15 l.51 (`empreint-d-ulgu`, ancre du MÊME Talent) : « **Tests :** tout Test faisant
    *    appel à Discrétion » — pour un corps de texte identique à celui de VDM 13 l.485.
    * L'ancrage de la lecture des 7 renvois « Voir ci-dessous » tient à ces deux faits imprimés, plus
    * le contraste de la MÊME page 186 : *Assistant magique* (VDM 13 l.487-489) n'imprime AUCUNE ligne
@@ -107,7 +107,7 @@ describe('Empreint de (Vent) — 8 Talents, un par Vent (VDM 13 l.461-486)', () 
     }
   });
 
-  it('Empreint d’Ulgu (NADAJ 88) porte la republication VDM en emplacement SECONDAIRE, pas un doublon', () => {
+  it('Empreint d’Ulgu (NADJ 88) porte la republication VDM en emplacement SECONDAIRE, pas un doublon', () => {
     const ulgu = findTalentById('empreint-d-ulgu')! as unknown as { alsoIn?: { book: string; page: number }[] };
     expect(findTalentById('empreint-d-ulgu')!.source).toEqual({ book: 'nuits-agitees-et-dures-journees', page: 88 });
     expect(ulgu.alsoIn).toEqual([expect.objectContaining({ book: 'vents-de-la-magie', page: 186 })]);

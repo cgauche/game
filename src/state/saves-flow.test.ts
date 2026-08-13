@@ -693,7 +693,7 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
   });
 
   /**
-   * #1279 S1 — MIGRATIONS[22] : le mode ÉTENDU des jeux de taverne (Bras de fer, NADAJ 16 l.34) quitte
+   * #1279 S1 — MIGRATIONS[22] : le mode ÉTENDU des jeux de taverne (Bras de fer, NADJ 16 l.34) quitte
    * son chemin d'applier (`tavern-game`, qui s'auto-enchaînait en portant ses cumuls dans le `meta` de
    * l'étape) pour le socle de séquence. Une save v22 prise EN PLEINE PARTIE porte donc une étape dont
    * plus aucun applier ne lit le résultat : son jet se lancerait, la cascade avancerait, et la partie ne

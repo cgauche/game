@@ -1,5 +1,5 @@
 /**
- * L'AL-ZAHR (NADAJ 16 l.17) — jeu de MISE : la famille (5) du socle de séquence (mise, pot, abandon,
+ * L'AL-ZAHR (NADJ 16 l.17) — jeu de MISE : la famille (5) du socle de séquence (mise, pot, abandon,
  * élimination) jouée de bout en bout par le store. Patron `tavern-middenball.test.ts` : la partie se
  * déroule via `drain()`, qui pose les dés des tours du héros (étape à TABLE, 2d10) et tranche ses
  * choix. Les tours des habitués se résolvent sans fenêtre, côté monde.

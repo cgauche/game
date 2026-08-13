@@ -81,6 +81,14 @@ function trancher(kind: string, cle: string): void {
   get().cascadeNext();
 }
 
+/** SAISIT le nombre de l'étape « quantité » ouverte (gain libre, l.83), et le commit. */
+function saisir(kind: string, n: number): void {
+  const cur = courant();
+  expect(cur?.kind, `la saisie « ${kind} » est ouverte`).toBe(kind);
+  get().cascadeAmount(cur!.id, n);
+  get().cascadeNext();
+}
+
 /** L'état de volée en cours. */
 function volley(): NonNullable<TavernPayload['volley']> {
   return (get().sequence!.payload as TavernPayload).volley!;
@@ -140,10 +148,13 @@ describe('Famille (7) — les effets de lancer ENREGISTRÉS', () => {
     expect(resolveSequenceThrow(v, tour({ roll: 73, success: false })).gain).toBe(3);
   });
 
-  it('`gain-au-choix` offre la plage DÉCLARÉE, `aucun-gain` ne rend rien (l.83)', () => {
+  it('`gain-au-choix` rend la PLAGE déclarée (jamais 100 valeurs), `aucun-gain` ne rend rien (l.83)', () => {
     const v: SequenceVolleyRules = { throws: 3, gain: 'chiffres-du-de', critique: 'gain-au-choix', libre: { min: 1, max: 100 }, maladresse: 'aucun-gain' };
-    const offre = resolveSequenceThrow(v, tour({ critique: true })).choix!;
-    expect([offre.length, offre[0], offre[offre.length - 1]]).toEqual([100, 1, 100]);
+    const offre = resolveSequenceThrow(v, tour({ critique: true }));
+    // « autant de points que vous le souhaitez, entre 1 et 100 » : une PLAGE, servie en saisie —
+    // l'énumérer en ferait 100 options, et le socle ne l'énumère plus.
+    expect(offre.libre).toEqual({ min: 1, max: 100 });
+    expect(offre.choix, 'une plage n’est pas une liste de valeurs').toBeUndefined();
     expect(resolveSequenceThrow(v, tour({ success: false, maladresse: true })).gain).toBe(0);
   });
 
@@ -291,10 +302,17 @@ describe('Les fléchettes — le total EXACT, et le dépassement qui TERMINE LE 
     expect(get().journal.some((l) => l.includes('son tour est terminé'))).toBe(true);
   });
 
-  it('marquer EXACTEMENT 501 remporte la partie', () => {
+  it('marquer EXACTEMENT 501 remporte la partie — le gain libre se SAISIT (l.83)', () => {
     aDeuxDoigts(500);
     poseLancer(11, 2); // Critique : le gain est libre (1..100)
-    trancher('tavern-throw-gain', '1');
+    // Le gain libre n'est plus 100 boutons : c'est la 6ᵉ interaction de la coquille (saisie bornée).
+    const gain = courant()!;
+    expect(gain.kind).toBe('tavern-throw-gain');
+    expect(gain.quantity, '« entre 1 et 100 points »').toEqual({ min: 1, max: 100, unit: 'points' });
+    expect(gain.options, 'aucune liste d’options : une plage se saisit').toBeUndefined();
+    // Valeur d'OUVERTURE = la politique du jeu : ce qu'il faut pile pour toucher 501.
+    expect(gain.amount).toBe(1);
+    saisir('tavern-throw-gain', 1);
     const res = get().tavernGames!.result!;
     expect([res.winner, res.playerSL]).toEqual(['player', 501]);
     expect(get().sequence).toBeNull();

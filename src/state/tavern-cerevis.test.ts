@@ -1,7 +1,7 @@
 /**
  * LE CEREVIS (#1279 S3) — la famille (9) du socle : UN SEUL DÉ, DEUX LECTURES, chacune sa conséquence.
  *
- * Verbatim `NADAJ 16 l.97` : « à chaque tour de Cerevis, chaque joueur effectue un Test combiné
+ * Verbatim `NADJ 16 l.97` : « à chaque tour de Cerevis, chaque joueur effectue un Test combiné
  * d'**Initiative** et de **Pari Accessible (+20)**. Le joueur qui a obtenu le moins de DR à son Test
  * de **Pari** perd le tour, et doit marquer une chouette. En cas d'échec du Test d'Initiative, le
  * joueur utilise accidentellement le nom correct d'une des cartes et doit prendre une grosse gorgée.
@@ -22,6 +22,7 @@ import { makePregens } from '../data/pregens';
 import { seedBattleRng } from './battleRng';
 import { findTavernGameById } from '../engine/tavernGame';
 import { effectiveTarget } from './rollSeam';
+import { testValue } from '../engine/skills';
 import { addCondition, COND } from '../engine/conditions';
 import { closeSequenceRound, type SequenceState } from './sequenceCore';
 import { TAVERN_SEQUENCE, TAVERN_ROUND_KIND, type TavernPayload, type TavernCombinedState } from './tavernFlow';
@@ -87,7 +88,7 @@ describe('Le Cerevis — la donnée porte la règle, et dit ce qui est maison', 
     expect(CEREVIS.combined?.eraseEvery, '« pour chaque 2 chouettes que vous effacez »').toBe(2);
     expect(CEREVIS.combined?.markLoser, '« Le joueur qui a obtenu le moins de DR […] doit marquer une chouette »').toBe(true);
     expect(CEREVIS.combined?.ops, 'le Tableau Ivre passe par l’op qui le porte (LDB 09 l.475)').toEqual([{ op: 'intoxicate' }]);
-    // `NADAJ 16 l.97` s'achève sur le Tableau Ivre : aucune fin de partie n'y est écrite. Le nombre
+    // `NADJ 16 l.97` s'achève sur le Tableau Ivre : aucune fin de partie n'y est écrite. Le nombre
     // de tours vit donc en DONNÉE éditable, et ce test mesure qu'il y vit.
     expect(CEREVIS.combined?.tours, 'nombre de tours = donnée maison, jamais du RAW').toBe(6);
   });
@@ -99,6 +100,43 @@ describe('Le Cerevis — la donnée porte la règle, et dit ce qui est maison', 
     expect(step.kind).toBe(TAVERN_ROUND_KIND);
     expect(step.difficulty, '« Pari Accessible (+20) », pas le repli Intermédiaire du jeu rapide').toBe('accessible');
     expect(step.rollLabel ?? '').toContain('Pari');
+  });
+
+  /**
+   * CE QUE LA FENÊTRE ANNONCE (#1279 Sf) : SES DEUX cibles. Le joueur ne doit pas découvrir le second
+   * Test en le ratant — la seconde lecture est déclarée SUR l'étape, avant tout dé, et tranchée
+   * ensuite sur le MÊME jet (`LDB 12 l.206` : « un unique jet de pourcentage »).
+   */
+  it('la fenêtre porte la SECONDE LECTURE (Initiative) dès l’ouverture, sur la MÊME cible que la clôture', () => {
+    const a = seul();
+    get().playTavernGame({ gameId: 'cerevis', challengerId: a.id, opponent: { kind: 'abstract', value: OPPONENT } });
+    const step = get().pendingCascade!.participants[0];
+    const attendue = effectiveTarget(get().party[0], { char: 'initiative' }, 'accessible');
+    expect(step.second, 'aucun second Test caché : la rangée le DIT').toEqual({
+      label: 'Initiative',
+      base: testValue(get().party[0], undefined, 'initiative'),
+      target: attendue,
+      difficulty: 'accessible',
+    });
+    // Avant le dé, la seconde lecture n'annonce que sa cible : aucune issue n'est posée sur l'étape.
+    expect(step.result).toBeNull();
+  });
+
+  it('héros CONTRE héros : CHAQUE rangée de la bande porte SA seconde lecture', () => {
+    const [a, b] = makePregens() as Combatant[];
+    useGame.setState({ battle: null, party: [a, b], journal: [], tavernGames: null, pendingCascade: null, sequence: null });
+    get().playTavernGame({ gameId: 'cerevis', challengerId: a.id, opponent: { kind: 'hero', id: b.id } });
+    const bande = get().pendingCascade!.participants[0];
+    expect(bande.participants).toHaveLength(2);
+    for (const r of bande.participants!) {
+      const porteur = get().party.find((h) => h.id === r.id)!;
+      expect(r.second, `la rangée de ${porteur.label} dit sa seconde cible`).toEqual({
+        label: 'Initiative',
+        base: testValue(porteur, undefined, 'initiative'),
+        target: effectiveTarget(porteur, { char: 'initiative' }, 'accessible'),
+        difficulty: 'accessible',
+      });
+    }
   });
 });
 

@@ -14,6 +14,13 @@
  *    FIGÉ (`meta.opposed.aT`, #579) : chaque influence du joueur RÉ-OPPOSE contre ce jet, jamais un
  *    second tirage caché.
  *
+ * LES DEUX RÉGIMES DU CHAPITRE (l.9-11) ne se jouent PAS ici : le catalogue les sert à la source
+ * (`engine/tavernGame.findTavernGameById`, règle optionnelle `tavern-games-rapides`). Sous le régime
+ * rapide, un jeu arrive sans forme de tour, sans mise, sans camps ni Test combiné — toutes les
+ * familles ci-dessous restent donc au repos d'elles-mêmes, et la manche opposée ordinaire (sans cible
+ * de cumul : elle dénoue à la première clôture) est ce qui se joue. Aucun `if` de régime dans ce
+ * fichier, aucun jeu nommé au code.
+ *
  * Réservé aux tables qui activent l'option `tavern-games`.
  */
 import { CHAR_LABELS, DIFFICULTY_LABELS, type CharKey, type Combatant, type Difficulty } from '../engine/types';
@@ -33,11 +40,11 @@ import { battleRng } from './battleRng';
 import { toBrass, fromBrass, formatMoney } from '../engine/money';
 import { bourseOf, creditBourse, payWithAllocation, soloPayer } from './bourseFlow';
 import {
-  freeCons, testSkillLabel, monoStep, bandStep, choiceStep, rollStep, composeRollLabel, surfaceOf, effectiveTarget,
+  freeCons, testSkillLabel, monoStep, bandStep, choiceStep, quantityStep, rollStep, composeRollLabel, surfaceOf, effectiveTarget,
   tableStep, displayStep,
   type BuiltCascadeStep, type Consequence,
 } from './rollSeam';
-import type { CascadeStep, CascadeTableDecl } from './pendings';
+import type { CascadeSecondRead, CascadeStep, CascadeTableDecl } from './pendings';
 import { advantageModLine, type ModLine } from '../engine/combat';
 import type { BatchParticipant } from './pendings';
 import { registerCascadeApplier, rollBatchParticipant, pushStep, registerTableStep, rollTableStep } from './cascade';
@@ -298,6 +305,25 @@ registerCascadeApplier(TAVERN_ROUND_KIND, (get, set, step) => {
   return { consequences: freeCons([`${step.rollLabel ?? 'Jeu'} : ${dr(step.result.sl)}.`]) };
 });
 
+/**
+ * DÉCLARATION de la SECONDE LECTURE d'un jeu à Test COMBINÉ (`NADJ 16 l.97` : « un Test combiné
+ * d'**Initiative** et de **Pari Accessible (+20)** ») — ce que la RANGÉE dit d'elle-même : la
+ * Compétence/Caractéristique que le MÊME dé tranche aussi, sa valeur et sa cible. C'est la SEULE
+ * source de la seconde ligne affichée ; le compte des échecs, lui, reste au réducteur de clôture
+ * (`combinedClose`), qui juge sur la même primitive (`evaluateCombinedTest`). Absente quand le jeu ne
+ * déclare aucun Test combiné.
+ */
+function combinedSecondRead(game: TavernGame, acteur: Combatant | undefined, difficulty: Difficulty, nue: number): CascadeSecondRead | undefined {
+  const regles = game.combined;
+  if (!regles) return undefined;
+  return {
+    label: testSkillLabel(regles.second) ?? game.label,
+    base: acteur ? testValue(acteur, regles.second.skill, regles.second.char, regles.second.spec) : nue,
+    target: combinedSecondTarget(regles, acteur, difficulty, nue),
+    difficulty,
+  };
+}
+
 /** RANGÉE d'un camp HÉROS dans une bande de manche — patron `pursuitFlow.pursuitRow` : ligne montée
  *  par le monteur canonique (`rollStep`), surfaçage SEAT-AGNOSTIQUE (`jetSurfaced`) pour que le héros
  *  d'un AUTRE siège garde son jet À JOUER. Le porteur qu'aucun siège ne tient (ou toute rangée en
@@ -308,6 +334,7 @@ function tavernRow(get: Get, h: Combatant, game: TavernGame, choix?: number): Ba
   const opt = optionOf(game, choix);
   const test = { ...(opt.skill ? { skill: opt.skill } : {}), ...(opt.spec ? { spec: opt.spec } : {}), ...(opt.char ? { char: opt.char } : {}) };
   const difficulty = difficulteOf(opt);
+  const second = combinedSecondRead(game, h, difficulty, 0);
   const row: BatchParticipant = {
     id: h.id,
     label: testSkillLabel(test) ?? game.label,
@@ -316,12 +343,13 @@ function tavernRow(get: Get, h: Combatant, game: TavernGame, choix?: number): Ba
     result: null,
     interactive: true,
     ...rollStep({ actor: h, test, difficulty }),
+    ...(second ? { second } : {}),
   };
   if (!cadenceAuto() && jetSurfaced(get(), h)) return row;
   return { ...row, interactive: false, result: rollBatchParticipant(row, battleRng()) };
 }
 
-/* ── JEUX D'ÉQUIPE (Middenball, NADAJ 16 l.119-121) ──────────────────────────────────────────────
+/* ── JEUX D'ÉQUIPE (Middenball, NADJ 16 l.117-119) ──────────────────────────────────────────────
  * « Deux équipes de 11 joueurs s'affrontent », « chaque tour, tous les joueurs effectuent un Test […]
  * On additionne le nombre de DR obtenus pour chaque équipe ».
  *
@@ -505,7 +533,7 @@ registerCascadeApplier(TAVERN_CHOICE_KIND, (get, set, step) => {
   return option ? { consequences: freeCons([option.label]) } : {};
 });
 
-/* ── LE TORCHON TREMPÉ (NADAJ 16 l.109-113) ──────────────────────────────────────────────────────
+/* ── LE TORCHON TREMPÉ (NADJ 16 l.109-113) ──────────────────────────────────────────────────────
  * « Il fait intervenir deux équipes de 12 personnes, placées en deux cercles de 11 joueurs qui dansent
  * main dans la main autour d'un membre de l'équipe adverse » (l.109) — d'où `team.size` 12 et
  * `dancers` 11, tous deux en donnée. « lorsque vous balancez le torchon, faites un Test opposé
@@ -771,6 +799,9 @@ function tavernRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Seq
   // L'adversaire de la SALLE joue à la MÊME Difficulté que le challenger — un Test opposé se joue au
   // même palier des deux côtés (l.11), et ce palier est celui de l'option retenue.
   const rolled = rollTavernTest(p.opponentValue, rng, difficulty);
+  // TEST COMBINÉ (Cerevis l.97) : la fenêtre annonce SES DEUX cibles — sans quoi le second Test ne se
+  // découvrait qu'en le ratant (friction mesurée en recette, #1279 S3).
+  const second = combinedSecondRead(game, challenger, difficulty, p.opponentValue);
   const step = monoStep({
     id: `${TAVERN_ROUND_KIND}-${seq.round}`,
     kind: TAVERN_ROUND_KIND,
@@ -779,6 +810,7 @@ function tavernRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Seq
     actor: challenger,
     difficulty,
     ligne: { test },
+    ...(second ? { second } : {}),
     stake,
     meta: {
       gameId: game.id, opponentValue: p.opponentValue, opponentName: p.opponentName,
@@ -826,7 +858,7 @@ function tavernSides(ctx: SequenceCloseCtx<TavernPayload>): {
 }
 
 /**
- * RÉDUCTEUR DE CLÔTURE d'un lancer de TORCHON (`NADAJ 16 l.111-113` — la règle vit à l'Atlas et dans
+ * RÉDUCTEUR DE CLÔTURE d'un lancer de TORCHON (`NADJ 16 l.111-113` — la règle vit à l'Atlas et dans
  * la `desc` de l'entrée, ici ce qu'en fait le code) :
  *  · Test OPPOSÉ lanceur / danseur, barème de points par la TABLE déclarée en donnée, lue par le socle
  *    (`sequenceTableRow`, famille 2) sur le DR NET de l'opposition ;
@@ -866,7 +898,7 @@ function torchonClose(ctx: SequenceCloseCtx<TavernPayload>): SequenceVerdict<Tav
   const payload: TavernPayload = { ...p, points, last: { playerSL: points.player, opponentSL: points.opponent } };
   if (!dernier) return { go: 'continue', payload, log };
 
-  // BALAYAGE FINAL (`NADAJ 16 l.111`) : le critère porte sur le jet du Tableau d'Ivresse, sans borne
+  // BALAYAGE FINAL (`NADJ 16 l.111`) : le critère porte sur le jet du Tableau d'Ivresse, sans borne
   // de partie — c'est donc l'ÉTAT du personnage qui répond (`isDrunk`, `engine/drunkenness` : un
   // résultat du Tableau a été tiré), y compris pour un lanceur arrivé ivre à la taverne. Un figurant
   // n'a pas de fiche : il n'a jamais bu, il compte — pour les DEUX camps (symétrie).
@@ -883,7 +915,7 @@ function torchonClose(ctx: SequenceCloseCtx<TavernPayload>): SequenceVerdict<Tav
 }
 
 /**
- * RÉDUCTEUR DE CLÔTURE d'un TOUR D'ÉQUIPE (Middenball NADAJ 16 l.121, verbatim) : « On additionne le
+ * RÉDUCTEUR DE CLÔTURE d'un TOUR D'ÉQUIPE (Middenball NADJ 16 l.119, verbatim) : « On additionne le
  * nombre de DR obtenus pour chaque équipe. L'équipe qui obtient le total le plus élevé gagne +1
  * Avantage pour le tour suivant […], et marquera un but si son total est de +25 ou plus. Une partie
  * dure deux mi-temps de trois tours chacune. »
@@ -931,7 +963,7 @@ function tavernTeamClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame)
   return { go: 'end', outcome: issue, payload, log, roundActors };
 }
 
-/* ── L'AL-ZAHR : MISE, POT, ABANDON, ÉLIMINATION (`NADAJ 16 l.15-17`) ────────────────────────────
+/* ── L'AL-ZAHR : MISE, POT, ABANDON, ÉLIMINATION (`NADJ 16 l.15-17`) ────────────────────────────
  * Un tour = UN joueur qui lance les dés DÉCLARÉS devant le pot ; la plage où tombe le total déclare
  * son effet (famille 5 du socle, `resolveSequencePotTurn`). Ici vivent les joueurs, l'ordre, les
  * manches et l'ARGENT : chaque mouvement est porté par la charge utile, et versé aux bourses au
@@ -952,10 +984,10 @@ function tavernTeamClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame)
  * encaisser de l'argent qui n'existait pas avant la partie, et en perdre qui ne va nulle part. La
  * symétrie serait une bourse de PNJ — elle n'existe pas, et l'inventer serait du contenu maison.
  *
- * `NADAJ 16 l.11` — le régime RAPIDE (Test opposé de Pari, dont la source nomme l'Al-zahr en
- * exemple) n'est pas jouable sur une entrée à pot : les deux régimes coexisteront en donnée avec le
- * lot Sf de #1279, qui le pose pour TOUS les jeux du chapitre.
- * `NADAJ 16 l.19` — le « Spécial » (Chance en relance du lancer, Maîtrise des dés) -> #1306.
+ * `NADJ 16 l.11` — le régime RAPIDE (Test opposé de Pari, dont la source nomme l'Al-zahr en
+ * exemple) est la règle optionnelle `tavern-games-rapides` : active, le catalogue ne rend plus de
+ * mise ni de pot (`findTavernGameById`), et la table entière ci-dessous reste au repos.
+ * `NADJ 16 l.19` — le « Spécial » (Chance en relance du lancer, Maîtrise des dés) -> #1306.
  */
 
 /** Étape du LANCER d'un tour (table à poser pour un héros tenu par un siège, affichage sinon). */
@@ -1245,7 +1277,7 @@ registerCascadeApplier(TAVERN_TARGET_KIND, () => ({}));
 registerCascadeApplier(TAVERN_FOLD_KIND, () => ({}));
 
 /**
- * RÉDUCTEUR DE CLÔTURE d'un jeu de MISE (`NADAJ 16 l.17`) : lit le tour clos, applique l'effet de
+ * RÉDUCTEUR DE CLÔTURE d'un jeu de MISE (`NADJ 16 l.17`) : lit le tour clos, applique l'effet de
  * pot DÉCLARÉ par sa plage, puis tient la manche — « La manche continue jusqu'à ce que le pot soit
  * vide, ou jusqu'à ce qu'il n'y ait plus qu'un seul joueur en jeu, qui empoche alors toutes les
  * mises restant dans le pot. » La partie s'achève au nombre de manches déclaré.
@@ -1617,7 +1649,7 @@ function tavernBoard(get: Get, seq: SequenceState<TavernPayload>): SequenceBoard
 }
 
 /* ── LA VOLÉE : un PASSAGE de lancers en nombre fixe (famille 7 du socle) ────────────────────────
- * `NADAJ 16 l.42` (trois coups, les quilles ÉCRÊTÉES à ce qu'il en reste), `l.65` (cinq lancers, la
+ * `NADJ 16 l.42` (trois coups, les quilles ÉCRÊTÉES à ce qu'il en reste), `l.65` (cinq lancers, la
  * cible CHOISIE avant chacun), `l.83` (trois fléchettes, un total EXACT), `l.57` (trois boules, la
  * meilleure compte). Un tour de séquence = UN lancer d'UN lanceur : c'est la seule granularité qui
  * tienne, parce que la Difficulté du lancer suivant dépend de ce que celui-ci a produit (l.42) et
@@ -1628,15 +1660,15 @@ function tavernBoard(get: Get, seq: SequenceState<TavernPayload>): SequenceBoard
  * DEVIENT face à une cible exacte (`sequenceThrowGain`), la ligne que désigne la réserve
  * (`sequenceThrowRow`), et la formule de score d'un camp (famille 3, `sequenceScoreOf`).
  *
- * `NADAJ 16 l.57` — l'ÉCARTAGE des boules adverses (« vous pouvez réduire le nombre de DR de cette
+ * `NADJ 16 l.57` — l'ÉCARTAGE des boules adverses (« vous pouvez réduire le nombre de DR de cette
  * boule de –1 par DR que vous dépensez ») et la variante en points sur trois manches ne sont pas
  * joués : ils demandent une dépense de DR ciblée sur la boule d'autrui, mécanisme qu'aucune famille
  * ne porte encore -> #1279 (lot Sf).
- * `NADAJ 16 l.67` / `l.85` — les « Spécial » (Tireur d'élite : d'un cran plus facile ; ±1 au dé des
+ * `NADJ 16 l.67` / `l.85` — les « Spécial » (Tireur d'élite : d'un cran plus facile ; ±1 au dé des
  * unités) -> #1306, avec les Points de Chance de l'Al-zahr.
  *
  * DEUX ARBITRAGES MAISON, portés par la DONNÉE et dits ici (jamais prêtés au RAW) :
- *  · `NADAJ 16 l.42` ne donne de Difficulté QUE de 15 à 2 quilles restantes (« 12-15 », …, « 2 ») :
+ *  · `NADJ 16 l.42` ne donne de Difficulté QUE de 15 à 2 quilles restantes (« 12-15 », …, « 2 ») :
  *    aucune ligne ne couvre les 16 quilles DEBOUT, alors que le premier coup s'y joue Très facile
  *    (+60) par la lettre du texte. La ligne haute est donc ÉTENDUE à 16 en donnée — la seule lecture
  *    qui garde le premier coup à son palier RAW. Toute autre valeur reste éditable au Codex.
@@ -1671,7 +1703,7 @@ export interface TavernVolleyState {
 }
 
 /** LES DEUX LANCEURS, dans l'ordre du passage : le challenger et son vis-à-vis. L'ordre est celui que
- *  la donnée déclare — TIRÉ AU SORT quand elle le dit (`NADAJ 16 l.83` : « jetez une pièce de monnaie
+ *  la donnée déclare — TIRÉ AU SORT quand elle le dit (`NADJ 16 l.83` : « jetez une pièce de monnaie
  *  pour déterminer qui joue en premier »). */
 function volleyThrowers(get: Get, p: TavernPayload, ordre: SequenceVolleyRules['ordre'], rng: RNG): NonNullable<TavernPayload['throwers']> {
   const mien = { id: p.challengerId, label: actorIn(get(), p.challengerId)?.label ?? p.challengerId, camp: 'player' as const };
@@ -1709,6 +1741,16 @@ function volleyPolitique(v: SequenceVolleyRules, turn: SequenceThrowTurn, choix:
   const cible = v.exact;
   if (cible == null) return ordre[0] ?? 0;
   return ordre.find((n) => turn.points + n <= cible) ?? ordre[ordre.length - 1] ?? 0;
+}
+
+/** MÊME POLITIQUE sur une PLAGE libre (`NADJ 16 l.83`) : le plus grand nombre de la plage qui ne
+ *  dépasse pas la cible exacte, son minimum à défaut. Sert au lanceur qu'aucun siège ne tient ET de
+ *  valeur d'OUVERTURE du compteur pour celui qui saisit — la fenêtre s'ouvre donc sur le coup que le
+ *  jeu jouerait, jamais sur une borne arbitraire. */
+function volleyPolitiqueLibre(v: SequenceVolleyRules, turn: SequenceThrowTurn, plage: { min: number; max: number }): number {
+  const cible = v.exact;
+  if (cible == null) return plage.max;
+  return Math.min(plage.max, Math.max(plage.min, cible - turn.points));
 }
 
 /** CE QUE PRODUIT le lancer clos — lu par l'APPLIER (qui propose le choix de gain) et par la CLÔTURE
@@ -1825,8 +1867,11 @@ function volleyRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Seq
 }
 
 /** APPLIER du lancer : la ligne de récit de ce qui est tombé, et — quand le RAW laisse le gain au
- *  lanceur — l'étape de CHOIX appendée à la MÊME fenêtre (patron du choix d'option d'équipe). La
- *  décision, elle, est appliquée par la clôture, seul juge du tour. */
+ *  lanceur — l'étape de décision appendée à la MÊME fenêtre (patron du choix d'option d'équipe). Deux
+ *  formes, parce que le RAW en donne deux : un CHOIX entre des valeurs nommées (« 2, 6, 20 ou 60 »,
+ *  l.83) et une SAISIE dans une plage (« autant de points que vous le souhaitez, entre 1 et 100 »,
+ *  l.83 — interaction `'quantite'` de la coquille). La décision, elle, est appliquée par la clôture,
+ *  seul juge du tour. */
 registerCascadeApplier(TAVERN_THROW_KIND, (get, set, step) => {
   const seq = activeSequence<TavernPayload>(get);
   if (!seq) return {};
@@ -1835,17 +1880,23 @@ registerCascadeApplier(TAVERN_THROW_KIND, (get, set, step) => {
   if (!lu || !jet) return {};
   const heros = actorIn(get(), jet.id);
   const qui = heros?.label ?? jet.label ?? jet.id;
-  // Le gain LIBRE d'un Critique (l.83 : « autant de points que vous le souhaitez, entre 1 et 100 »)
-  // sort ici en 100 boutons : COMPLET et fidèle, mais illisible. La saisie numérique attend
-  // l'extension de la COQUILLE de cascade (une 6ᵉ interaction : `stepInteraction`/`stepReady`
-  // `state/cascade.ts`, champ + mint `rollSeam`, rendu `CascadeModal`, poseur d'état — 5 sites
-  // partagés par tous les flux), faite en une passe avec l'affichage à deux cibles du Test combiné
-  // -> #1279 (lot Sf).
-  if (lu.outcome.choix?.length && heros && !cadenceAuto() && jetSurfaced(get(), heros)) {
-    const etape = choiceStep({
-      id: `${TAVERN_GAIN_KIND}-${seq.round}`, kind: TAVERN_GAIN_KIND, icon: 'nav/dice',
+  const tranche = heros && !cadenceAuto() && jetSurfaced(get(), heros);
+  const id = `${TAVERN_GAIN_KIND}-${seq.round}`;
+  const libre = lu.outcome.libre;
+  if (libre && tranche) {
+    const etape = quantityStep({
+      id, kind: TAVERN_GAIN_KIND, icon: 'nav/dice',
       label: t('tavern.volleyGainChoix', { who: qui }),
-      actorId: heros.id,
+      actorId: heros!.id,
+      min: libre.min, max: libre.max, unit: t('tavern.volleyUnitePoints'),
+      value: volleyPolitiqueLibre(seq.params.volley!, lu.turn, libre),
+    });
+    if (etape) pushStep(set, etape, SEQUENCE_PURPOSE);
+  } else if (lu.outcome.choix?.length && tranche) {
+    const etape = choiceStep({
+      id, kind: TAVERN_GAIN_KIND, icon: 'nav/dice',
+      label: t('tavern.volleyGainChoix', { who: qui }),
+      actorId: heros!.id,
       options: lu.outcome.choix.map((n) => ({ key: String(n), label: t('tavern.volleyPoints', { n }) })),
       defaultChoice: String(volleyPolitique(seq.params.volley!, lu.turn, lu.outcome.choix)),
     });
@@ -1901,12 +1952,16 @@ function volleyClose(ctx: SequenceCloseCtx<TavernPayload>): SequenceVerdict<Tave
   const lu = band ? volleyTurnOf(get, seq, band) : undefined;
   if (!lu) return { go: 'end', outcome: volleyIssue(seq.params, volleyScore(seq, CAMP_PLAYER), volleyScore(seq, CAMP_OPPONENT)) };
 
-  // 2) LE GAIN : celui que le lanceur a tranché quand le RAW le lui laisse, celui de sa politique
-  //    sinon ; puis ce que ce gain DEVIENT face à la cible exacte (socle, famille 7).
-  const choisi = done.participants.find((s) => s.kind === TAVERN_GAIN_KIND)?.chosen;
-  const brut = lu.outcome.choix?.length
-    ? (choisi != null ? Number(choisi) : volleyPolitique(v, lu.turn, lu.outcome.choix))
-    : (lu.outcome.gain ?? 0);
+  // 2) LE GAIN : celui que le lanceur a tranché quand le RAW le lui laisse — une valeur ÉLUE parmi
+  //    celles que le dé offre (`chosen`) ou un nombre SAISI dans la plage libre (`amount`) — celui de
+  //    sa politique sinon ; puis ce que ce gain DEVIENT face à la cible exacte (socle, famille 7).
+  const decision = done.participants.find((s) => s.kind === TAVERN_GAIN_KIND);
+  const libre = lu.outcome.libre;
+  const brut = libre
+    ? (decision?.amount != null ? decision.amount : volleyPolitiqueLibre(v, lu.turn, libre))
+    : lu.outcome.choix?.length
+      ? (decision?.chosen != null ? Number(decision.chosen) : volleyPolitique(v, lu.turn, lu.outcome.choix))
+      : (lu.outcome.gain ?? 0);
   const fin = sequenceThrowGain(v, lu.turn, brut);
   const gain = fin.gain ?? 0;
   const log = [t('tavern.volleyGain', { who: qui, gain })];
@@ -1947,7 +2002,7 @@ function volleyClose(ctx: SequenceCloseCtx<TavernPayload>): SequenceVerdict<Tave
   return { go: 'continue', payload, log };
 }
 
-/* ── LES CAMPS ASYMÉTRIQUES (Alvatafl, `NADAJ 16 l.27-28`) ───────────────────────────────────────
+/* ── LES CAMPS ASYMÉTRIQUES (Alvatafl, `NADJ 16 l.27-28`) ───────────────────────────────────────
  * « Le total obtenu par le joueur elfe indique combien de pièces naines sont prises ce tour. Le total
  * obtenu par le joueur nain est divisé par quatre (arrondi au supérieur) pour indiquer combien de
  * pièces elfes sont prises ce tour. […] Sinon, le premier camp à prendre plus de la moitié des pièces
@@ -1996,7 +2051,7 @@ function sidesOf(game: TavernGame, p: TavernPayload): { mien: SequenceSide; sien
   return { mien, sien };
 }
 
-/** RÉDUCTEUR DE CLÔTURE d'une manche à camps asymétriques (`NADAJ 16 l.27-28`). */
+/** RÉDUCTEUR DE CLÔTURE d'une manche à camps asymétriques (`NADJ 16 l.27-28`). */
 function sidesClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame): SequenceVerdict<TavernPayload> {
   const { seq, done } = ctx;
   const p = seq.payload;
@@ -2044,7 +2099,7 @@ function sidesClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame): Seq
   };
 }
 
-/* ── LE TEST COMBINÉ À CONSÉQUENCES DISTINCTES (Cerevis, `NADAJ 16 l.97`) ────────────────────────
+/* ── LE TEST COMBINÉ À CONSÉQUENCES DISTINCTES (Cerevis, `NADJ 16 l.97`) ────────────────────────
  * « à chaque tour de Cerevis, chaque joueur effectue un Test combiné d'**Initiative** et de **Pari
  * Accessible (+20)**. Le joueur qui a obtenu le moins de DR à son Test de **Pari** perd le tour, et
  * doit marquer une chouette. En cas d'échec du Test d'Initiative, le joueur utilise accidentellement
@@ -2056,13 +2111,10 @@ function sidesClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame): Seq
  * (le Test que la manche joue déjà) ; la seconde est ÉVALUÉE sur LE MÊME dé par la primitive du
  * moteur (`evaluateCombinedTest`) — aucun second tirage n'existe.
  *
- * CE QUE LA FENÊTRE MONTRE, et sa limite MESURÉE : la coquille de jet de la CASCADE
- * (`BatchParticipant`/`CascadeStep`) ne porte qu'UNE cible ; le régime à deux cibles affichées vit sur
- * l'autre couture (`PendingActivity.target2`, `rollFlowSpecs.activity`, client `massBattleFlow`). La
- * seconde lecture est donc DITE en conséquence (« son Initiative lâche »), pas montrée en seconde
- * ligne de cible. FRICTION MESURÉE en recette (#1279 S3) : tant qu'il ne la RATE pas, le joueur ne
- * voit jamais qu'un second Test est en jeu — la fenêtre n'annonce qu'une cible. Porter `target2`
- * jusqu'à `RollShell` touche le contrat d'affichage UNIQUE des jets -> #1279 (lot Sf).
+ * CE QUE LA FENÊTRE MONTRE : SES DEUX cibles. La rangée porte sa seconde lecture (`second`,
+ * `state/pendings.ts`) — annoncée AVANT le dé, tranchée après par le socle (`cascade.secondReadOf`,
+ * même `evaluateCombinedTest` que la clôture) et rendue sous la ligne du jet. C'est une zone du
+ * contrat d'affichage, pas un montage de taverne : tout jet à deux lectures en hérite.
  *
  * EFFACER UNE CHOUETTE est un GESTE DU JOUEUR : « chaque chouette est effacé lorsque le joueur boit
  * une demi-chope de bière » (l.88) — la source dit le prix, pas le moment. Le moment revient donc au
@@ -2138,7 +2190,7 @@ function combinedSecondTarget(regles: SequenceCombinedRules, acteur: Combatant |
 }
 
 /**
- * RÉDUCTEUR DE CLÔTURE d'un tour à Test COMBINÉ (`NADAJ 16 l.97`) : la première lecture désigne le
+ * RÉDUCTEUR DE CLÔTURE d'un tour à Test COMBINÉ (`NADJ 16 l.97`) : la première lecture désigne le
  * perdant du tour (une marque), la seconde — LE MÊME DÉ, `evaluateCombinedTest` — compte les échecs et
  * paie ce que la donnée déclare à chaque échéance.
  */

@@ -108,7 +108,7 @@ import { combatDistance } from './footprint';
 import { combatOrder } from './combatSetup';
 import { isMerScene, sceneMetresPerTile } from './scene';
 import { bus, EVT } from './bus';
-import { advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, rollCascadeTable, setCascadeTableForcedRoll, suspendActiveCascade, resumeSuspendedCascade, setOwnTestFailedEmitter } from './cascade';
+import { advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, setCascadeAmount, rollCascadeTable, setCascadeTableForcedRoll, suspendActiveCascade, resumeSuspendedCascade, setOwnTestFailedEmitter } from './cascade';
 import { pursuitAbandon } from './pursuitFlow';
 import { closeSequenceRound } from './sequenceCore';
 import { checkPartyWiped } from './partyWipe';
@@ -3293,6 +3293,7 @@ export function createCombatSlice(get: Get, set: Set) {
     // porteur de données (les Rounds y vivent) ; `extendedTestNext` ferme les deux à la réussite.
 
     cascadeChoose: (pid: string, key: string) => setCascadeChoice(get, set, pid, key),
+    cascadeAmount: (pid: string, n: number) => setCascadeAmount(get, set, pid, n),
     cascadeTableRoll: (pid: string) => rollCascadeTable(get, set, pid),
     // MODE TABLE (#942 L3) : POSER le dé d'une étape à table (champ « Fixer le dé » OU clic sur une
     // ligne — `pid` + dé NATUREL). Délégué NU, comme `cascadeTableRoll` : l'option « Dés fixés » est

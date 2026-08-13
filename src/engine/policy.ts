@@ -424,7 +424,23 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     group: 'Activités',
     kind: 'flag',
     default: false,
-    hint: 'Ajoute les jeux de taverne (Nuits agitées & dures journées, ch.16) : Al-Zahr, bras de fer, fléchettes, dominos, boules… résolus par la variante « jeu rapide » (Test opposé de la Compétence du jeu — ou Pari — Intermédiaire (+0), le plus de DR l’emporte). Désactivé par défaut.',
+    hint: 'Ajoute les jeux de taverne (Nuits agitées & dures journées, ch.16) : Al-zahr, bras de fer, fléchettes, dominos, boules, Middenball, Cerevis… chacun joué avec SES règles (manches, mises, passages de lancers, camps). Désactivé par défaut.',
+  },
+  {
+    // Le RAW donne DEUX régimes qui coexistent : le jeu complet (règles propres à chaque jeu) et
+    // celui-ci. NADJ 16 l.11 (verbatim) : « Si vous souhaitez que vos parties de taverne soient
+    // résolues rapidement, effectuez un Test opposé de Compétence Intermédiaire (+0) en utilisant la
+    // Compétence indiquée dans la section "Jeu" du jeu en question. Si aucune Compétence n'est
+    // indiquée (comme pour Al-zahr), faites plutôt un Test opposé de Pari Intermédiaire (+0). Celui
+    // qui obtient le nombre le plus élevé de DR remporte la partie. » Règle DISTINCTE de
+    // `tavern-games` (qui ouvre la fonctionnalité) : le régime ne se déduit pas de l'ouverture.
+    id: 'tavern-games-rapides',
+    label: 'Jeux de taverne rapides',
+    ref: 'NADJ 16 l.9-11',
+    group: 'Activités',
+    kind: 'flag',
+    default: false,
+    hint: 'Règle optionnelle « Jeux de taverne rapides » : toute partie se résout en UN Test opposé Intermédiaire (+0) — la Compétence indiquée par le jeu, ou Pari s’il n’en indique aucune (Al-zahr) — et le plus de DR l’emporte. Désactivée : chaque jeu se joue avec ses règles propres (manches, mises, passages de lancers, camps).',
   },
   {
     id: 'interlude-enabled',

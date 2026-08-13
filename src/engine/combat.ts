@@ -355,6 +355,22 @@ export type { ModFamille, ModLine } from './types';
  *  (`RollBreakdown`) et le pré-jet (`PendingRoll`). Rendu par le site unique `ui/RollLine.tsx`. */
 export type RollMask = 'value' | 'roll';
 
+/**
+ * SECONDE LECTURE d'une ligne de jet (Test COMBINÉ, `LDB 12 l.202-208`) — DÉFINITION UNIQUE, partagée
+ * par le jet RÉSOLU (`RollBreakdown.second` : le verdict de la seconde valeur) et le pré-jet
+ * (`PendingRoll.second` : sa seule cible, le dé n'étant pas tombé). Rendue par le site unique
+ * `ui/RollLine.tsx`, sous la ligne qu'elle prolonge — un seul dé, deux lectures.
+ */
+export interface SecondReadLine {
+  label: string;
+  base?: number;
+  target: number;
+  difficulty?: Difficulty;
+  /** Issue de CETTE lecture — absente avant le jet (la ligne n'annonce alors que sa cible). */
+  sl?: number;
+  success?: boolean;
+}
+
 export interface RollBreakdown {
   /** Intitulé du jet : 'Corps à corps' / 'Parade' / 'Esquive' / 'Projectiles'. */
   label: string;
@@ -406,6 +422,12 @@ export interface RollBreakdown {
    *  (départage d'un Test opposé, LDB 12 l.160). Posée par le résolveur du Test opposé sur la ligne
    *  concernée ; `ui/RollLine.tsx` en rend la phrase. Absente = rien à expliquer. */
   decided?: VerdictReason;
+  /** SECONDE LECTURE du MÊME dé — Test COMBINÉ (`LDB 12 l.202-208`, verbatim l.206 : « Faire un seul
+   *  Test, en comparant donc un unique jet de pourcentage avec la valeur de ces deux Compétences »).
+   *  ZONE d'affichage de la ligne, DÉRIVÉE par le socle qui a évalué (`state/cascade.secondReadOf`) :
+   *  aucune surface ne recompare le dé. Absente = la ligne n'a qu'une lecture (le cas de tous les
+   *  jets ordinaires). */
+  second?: SecondReadLine;
 }
 
 export interface AttackResult {
@@ -862,7 +884,7 @@ function defenseTestChar(mode: DefenseMode): CharKey | null {
 /** LA ligne d'AVANTAGE d'un porteur (`LDB 14 l.30` : +10 par point à un Test approprié), ou `null`
  *  sans Avantage — SOURCE UNIQUE de sa mise en ligne, partagée par les Tests de combat « bruts »
  *  (`baseTestModLines`, ci-dessous) et par tout Test HORS arène que la règle dit « approprié »
- *  (Middenball NADAJ 16 l.121 : « en utilisant les règles habituelles relatives à l'Avantage »).
+ *  (Middenball NADJ 16 l.119 : « en utilisant les règles habituelles relatives à l'Avantage »).
  *  Réutiliser ; ne jamais réécrire `c.advantage * 10`. */
 export function advantageModLine(c: Combatant): ModLine | null {
   const adv = (c.advantage ?? 0) * 10;

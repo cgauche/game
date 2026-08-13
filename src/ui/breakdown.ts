@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { combineMods, type ModLine, type RollBreakdown, type RollMask } from '../engine/combat';
+import { combineMods, type ModLine, type RollBreakdown, type RollMask, type SecondReadLine } from '../engine/combat';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import type { PendingRoll } from './RollLine';
 
@@ -22,6 +22,7 @@ export function testBreakdown(
   difficulty?: Difficulty,
   extraMods?: ModLine[],
   easedBy?: string,
+  second?: SecondReadLine,
 ): RollBreakdown {
   const target = r.target ?? base;
   return {
@@ -37,6 +38,9 @@ export function testBreakdown(
     roll: r.roll,
     success: r.success ?? r.roll <= target,
     sl: r.sl ?? 0,
+    // SECONDE LECTURE (Test combiné, LDB 12 l.202-208) : la zone est TRANSMISE telle que le socle l'a
+    // évaluée (`state/cascade.secondReadOf`) — ce module n'en juge rien.
+    ...(second ? { second } : {}),
   };
 }
 
@@ -44,7 +48,7 @@ export function testBreakdown(
  *  dé et DR vides : pour le panneau PRÉ-REMPLI des flux `RollShell` (parité Attaque/Défense).
  *  `target` omis → dérivé `base + modificateur de Difficulté` (comme le calcule le jet) ; la
  *  Difficulté voyage en donnée de LIGNE (#1072), pas en chip. */
-export function testPending(label: ReactNode, base: number, target?: number, difficulty?: Difficulty, extraMods?: ModLine[], easedBy?: string, clamped?: number): PendingRoll {
+export function testPending(label: ReactNode, base: number, target?: number, difficulty?: Difficulty, extraMods?: ModLine[], easedBy?: string, clamped?: number, second?: SecondReadLine): PendingRoll {
   const t = target ?? base + (difficulty ? DIFFICULTY_MODIFIERS[difficulty] : 0) + combineMods(extraMods ?? []);
   return {
     label,
@@ -54,6 +58,8 @@ export function testPending(label: ReactNode, base: number, target?: number, dif
     ...(easedBy ? { easedBy } : {}),
     mods: extraMods?.length ? extraMods : undefined,
     ...(clamped ? { clamped } : {}),
+    // Même zone qu'à la ligne résolue : la seconde cible s'annonce AVANT le dé (#1279 Sf).
+    ...(second ? { second } : {}),
   };
 }
 

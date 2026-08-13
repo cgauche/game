@@ -30,6 +30,10 @@ export const fr = {
   // cran de l'échelle (LDB 14 l.91-96 en nomme la combinaison, pas ce résultat) — terme validé par
   // l'utilisateur le 2026-08-10. Même typographie que les crans ci-dessus (moins Unicode U+2212).
   'difficulty.combinee': 'Combinée ({mod})',
+  // Test COMBINÉ (LDB 12 l.202-208) : la seconde valeur que le MÊME dé tranche, rendue sous la ligne
+  // du jet (`ui/RollLine.tsx`) — la cellule du dé y dit qu'aucun second tirage n'a lieu.
+  'roll.secondeLecture': '{label} · 2ᵉ lecture',
+  'roll.memeDe': 'même dé',
   // Localisations d'impact (LDB) — migré de engine/types.ts (HIT_LOCATION_LABELS).
   'hitloc.tete': 'Tête',
   'hitloc.brasG': 'Bras gauche',
@@ -827,7 +831,7 @@ export const fr = {
   'seqPot.issueReprend': 'une mise reprise dans le pot',
   'seqPot.issueRemise': 'une autre mise au pot, ou l’abandon',
   'seqPot.issueCible': 'raté : {cible} devient le nombre cible du suivant',
-  // Torchon trempé (NADAJ 16 l.111-113).
+  // Torchon trempé (NADJ 16 l.111-113).
   'tavern.torchonPot': '{who} n’a pas vidé le pot à temps : son équipe perd 1 point.',
   'tavern.torchonSobres': 'Trop sobres : {mien} de votre équipe, {sien} en face — autant de points perdus.',
   'tavern.torchonFinal': '{mien} points contre {sien} en {lancers} lancers.',
@@ -838,7 +842,7 @@ export const fr = {
   'tavern.equipier': 'Équipier {rang}',
   'tavern.campMien': 'Votre équipe',
   'tavern.sommeTour': '{n} DR au dernier tour',
-  // Al-zahr — jeu de mise (NADAJ 16 l.17).
+  // Al-zahr — jeu de mise (NADJ 16 l.17).
   'tavern.potTable': 'Autour de la table',
   'tavern.potHabitue': 'Un habitué {rang}',
   'tavern.potMancheTitre': '{jeu} — manche {n}',
@@ -877,6 +881,11 @@ export const fr = {
   'tavern.volleyGain': '{who} marque {gain}.',
   'tavern.volleyGainChoix': '{who} — combien marquez-vous ?',
   'tavern.volleyPoints': '{n}',
+  // Unité du compteur de la SAISIE de gain libre (NADJ 16 l.83) — ce qui se compte, au pluriel.
+  'tavern.volleyUnitePoints': 'points',
+  // RÉGIME RAPIDE actif (NADJ 16 l.9-11) : la règle affichée sous ce texte est le verbatim de la
+  // source, et elle décrit ce que le régime rapide ne joue pas. La fenêtre le DIT.
+  'tavern.regimeRapideNote': 'Règle optionnelle « Jeux de taverne rapides » : cette partie se résout en un seul Test opposé Intermédiaire (+0) — les règles ci-dessous ne sont pas jouées.',
   'tavern.volleyDepasse': '{who} dépasse {exact} : son tour est terminé, ce dernier lancer ne compte pas.',
   'tavern.volleyNote': 'lancer {n}/{total}',
   'tavern.volleyFinal': '{mien} {unite} contre {sien} en {manches} manche(s).',

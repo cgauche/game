@@ -1,5 +1,5 @@
 /**
- * MIDDENBALL (NADAJ 16 l.119-121) — le jeu d'ÉQUIPE par le socle de séquence (#1279 S1bis). Règle
+ * MIDDENBALL (NADJ 16 l.117-119) — le jeu d'ÉQUIPE par le socle de séquence (#1279 S1bis). Règle
  * verbatim : « chaque tour, tous les joueurs effectuent un Test de **Corps à corps (Bagarre)
  * Accessible (+20)** ou d'**Athlétisme Intermédiaire (+0)**. On additionne le nombre de DR obtenus
  * pour chaque équipe. L'équipe qui obtient le total le plus élevé gagne +1 Avantage pour le tour
@@ -64,7 +64,7 @@ beforeEach(() => {
   useGame.setState({ battle: null, pendingCascade: null, sequence: null } as never);
 });
 
-describe('Middenball — les camps, le tour, la somme (NADAJ 16 l.119-121)', () => {
+describe('Middenball — les camps, le tour, la somme (NADJ 16 l.117-119)', () => {
   it('l’entrée de données porte la règle : 11 par camp, deux options de Test, somme, but à 25, 2×3 tours', () => {
     expect(MIDDENBALL.team?.size, '« deux équipes de 11 joueurs » (l.119)').toBe(11);
     expect(MIDDENBALL.options?.map((o) => [o.skill, o.difficulty])).toEqual([

@@ -679,10 +679,10 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {/* DÉPENSES d'une ressource (`characteristics.options` — Résilience, #1117 geste 5) : tableau
             top-level d'objets homogènes → MÊME éditeur générique que la rubrique de Vent. */}
         {categoryKey === 'characteristics' && <GenericArrayField label="options (dépenses de la ressource — verbatim du Source)" value={entry.options as Record<string, unknown>[] | undefined} onChange={(v) => edit('options', v)} />}
-        {/* OPTIONS de Test d'un jeu de taverne (`tavernGames.options` — Middenball NADAJ 16 l.121 :
+        {/* OPTIONS de Test d'un jeu de taverne (`tavernGames.options` — Middenball NADJ 16 l.119 :
             Bagarre (+20) OU Athlétisme (+0)) : même forme, même éditeur générique. */}
         {categoryKey === 'tavernGames' && <GenericArrayField label="options de Test (la règle en offre plusieurs — le joueur choisit)" value={entry.options as Record<string, unknown>[] | undefined} onChange={(v) => edit('options', v)} />}
-        {/* Barème de points par plage de DR (`tavernGames.table` — Torchon trempé NADAJ 16 l.111). */}
+        {/* Barème de points par plage de DR (`tavernGames.table` — Torchon trempé NADJ 16 l.111). */}
         {categoryKey === 'tavernGames' && <GenericArrayField label="barème de points par plage de DR" value={entry.table as Record<string, unknown>[] | undefined} onChange={(v) => edit('table', v)} />}
         {isCreature && (
           <>

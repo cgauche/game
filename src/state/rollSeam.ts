@@ -38,7 +38,7 @@ import type { Combatant, CharKey, Difficulty, Weapon } from '../engine/types';
 import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import type { PairedSense, GameOp } from '../engine/ops';
 import type {
-  CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate, PendingCascade, CascadeTableDecl, CascadeTableResult, RevealEntry,
+  CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate, CascadeSecondRead, PendingCascade, CascadeTableDecl, CascadeTableResult, RevealEntry,
   PendingDeviation, PendingBladeTrap, PendingCritSeverity, PendingMiscastStep, PendingMutationStep,
 } from './pendings';
 import type { BuiltCascadeStep } from './stepBrand';
@@ -50,7 +50,7 @@ import { combatBaseValue, combatValueModParts, conditionModLines, combatCharKey,
 import { volatileCharLines } from '../engine/characteristics';
 import { TestOutcome } from '../engine/testOutcome';
 import { actorIn } from './combatants';
-import { startCascade, runCascadeImmediate, rollBatchParticipant, pushStep, tableStepResolved } from './cascade';
+import { startCascade, runCascadeImmediate, rollBatchParticipant, pushStep, tableStepResolved, clampStepAmount } from './cascade';
 import { testValue, partyBest, partyAssisted, testValueSplit, testValueParts, skillBaseValue, supportSplit, type SupportDetail } from '../engine/skills';
 import { testStatePenaltyParts, testStatePenalty } from '../engine/conditions';
 import { jetSurfaced, pilotedByHuman } from './netOwnership';
@@ -1172,6 +1172,71 @@ export function openChoice(get: Get, set: Set, spec: ChoiceSpec & { title: strin
   });
 }
 
+/** DÉCLARATION d'une étape de QUANTITÉ : une SAISIE NUMÉRIQUE bornée, zéro dé — le joueur pose un
+ *  nombre dans la plage que l'étape déclare. Même possession qu'un choix (le porteur, requis), pour
+ *  la même raison : le nombre se pose au niveau de l'ÉTAPE. */
+export interface QuantitySpec {
+  id: string;
+  kind: string;
+  label: string;
+  icon?: string;
+  /** PORTEUR de la saisie, REQUIS : l'arbitre (`modalArbiter`) route la fenêtre à son siège. */
+  actorId: string;
+  /** POSSESSION DE GROUPE REFUSÉE AU TYPE — calque de `ChoiceSpec.groupOwner` : sous owner `'*'`,
+   *  n'importe quel siège poserait le nombre d'autrui. */
+  groupOwner?: never;
+  min: number;
+  max: number;
+  /** Pas du compteur (défaut 1). */
+  step?: number;
+  /** Ce qui se compte, au pluriel (« points ») — AFFICHAGE. */
+  unit?: string;
+  /** Valeur d'OUVERTURE (ramenée à la plage) — celle que garde une résolution IMMÉDIATE, et celle
+   *  que le compteur montre d'emblée. Absente : `min`. */
+  value?: number;
+  /** Fiche de RÈGLE qui encadre la saisie (une étape sans jet n'a pas d'enjeu à dériver). */
+  stakeRule?: { category: string; id: string };
+  outcome?: RecapLine[];
+  meta?: CascadeStepMeta;
+}
+
+/**
+ * CONSTRUCTEUR d'étape de QUANTITÉ (#1279 Sf) — 6ᵉ interaction de la coquille : une plage, un
+ * compteur, un nombre posé. La valeur d'ouverture est CALÉE par le site unique de la borne
+ * (`clampStepAmount`, `cascade.ts`) : l'étape naît donc PRÊTE (`stepReady`), comme une étape
+ * d'affichage — un compteur n'a pas d'état vide, et la résolution immédiate n'a aucun défaut
+ * parallèle à consulter.
+ *
+ * `undefined` (DEV : throw) sur une plage VIDE (`max < min`) : la fenêtre n'aurait aucun nombre à
+ * offrir — l'impasse de `choiceStep` sans option.
+ */
+export function quantityStep(spec: QuantitySpec): BuiltCascadeStep | undefined {
+  if (!(spec.max >= spec.min)) {
+    refusePorte(`quantité « ${spec.id} » (${spec.kind}) : plage vide [${spec.min}, ${spec.max}] — aucun nombre à poser. Aucune saisie ouverte.`);
+    return undefined;
+  }
+  if (!spec.actorId) {
+    refusePorte(`quantité « ${spec.id} » (${spec.kind}) sans PORTEUR — la fenêtre échoit à l'hôte, qui saisit pour autrui.`);
+  }
+  const quantity = {
+    min: spec.min, max: spec.max,
+    ...(spec.step != null ? { step: spec.step } : {}),
+    ...(spec.unit ? { unit: spec.unit } : {}),
+  };
+  return {
+    id: spec.id,
+    kind: spec.kind,
+    label: spec.label,
+    ...(spec.icon ? { icon: spec.icon } : {}),
+    ...(spec.actorId ? { actorId: spec.actorId } : {}),
+    quantity,
+    amount: clampStepAmount(quantity, spec.value ?? spec.min),
+    ...(spec.stakeRule ? { stakeRule: spec.stakeRule } : {}),
+    ...(spec.outcome ? { outcome: spec.outcome } : {}),
+    ...(spec.meta ? { meta: spec.meta } : {}),
+  } as BuiltCascadeStep;
+}
+
 /** Ce qui est vrai de TOUTE étape mono : un porteur, un jet, sa situation. `actorId`/`base`/`mods`/
  *  `target` ne sont PAS des champs de déclaration — le mint les pose. */
 interface MonoBase {
@@ -1198,6 +1263,9 @@ interface MonoBase {
    *  fabriques génériques de ce module TRANSMETTENT donc un enjeu toujours calculé, jamais deviné. */
   stake: StakeRef | undefined;
   meta?: CascadeStepMeta;
+  /** SECONDE LECTURE du MÊME dé (Test combiné, `LDB 12 l.202-208`) : la seconde valeur que ce jet
+   *  tranche, et son nom. Aucun second tirage — l'issue est ÉVALUÉE (`cascade.secondReadOf`). */
+  second?: CascadeSecondRead;
   /** HYBRIDE jet + RÉVÉLATION (#1262 B5) : la charge riche qui met le jet en situation. */
   reveal?: RevealEntry;
   /** Lignes de conséquence DÉJÀ écrites qui exposent l'enjeu du jet. */
@@ -1264,6 +1332,7 @@ export function monoStep(spec: MonoSpec): BuiltCascadeStep | undefined {
     result: null,
     ...(spec.menace ? { menace: spec.menace } : {}),
     ...(spec.stake ? { stake: spec.stake } : {}),
+    ...(spec.second ? { second: spec.second } : {}),
     ...(spec.reveal ? { reveal: spec.reveal } : {}),
     ...(spec.outcome ? { outcome: spec.outcome } : {}),
     ...(spec.meta ? { meta: spec.meta } : {}),

@@ -505,7 +505,7 @@ export interface GameState extends RollFlowActionsMap {
    *  référence anti-double-résolution (l'entretien lui-même n'est appliqué qu'une fois). */
   deferredUpkeepQueue: import('./rollSeam').BuiltCascadeStep[];
   /** SÉQUENCE EN COURS (socle `state/sequenceCore`, #1279) : la situation qui se joue en MANCHES
-   *  jusqu'à une issue — poursuite terrestre (LDB 15), jeu de taverne opposé (NADAJ 16), demain les
+   *  jusqu'à une issue — poursuite terrestre (LDB 15), jeu de taverne opposé (NADJ 16), demain les
    *  crises de mer. État GÉNÉRIQUE (id de définition, rang de manche, cumuls par camp, paramètres
    *  d'auteur) + la charge utile du domaine ; persisté entre les manches. `null` hors séquence. */
   sequence: import('./sequenceCore').SequenceState | null;
@@ -1028,6 +1028,9 @@ export interface GameState extends RollFlowActionsMap {
    *  Délégués `cascade{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll,Resist}` : générés (RollFlowActionsMap, MULTI). */
   /** « Choix » d'une étape de séquence (analogue de cascadeRoll côté jet) : pose l'option retenue. */
   cascadeChoose: (pid: string, key: string) => void;
+  /** « Quantité » d'une étape de séquence (jumeau de `cascadeChoose`) : pose le nombre saisi, ramené
+   *  à la plage déclarée par l'étape. */
+  cascadeAmount: (pid: string, n: number) => void;
   /** TIRAGE SUR TABLE d'une étape (analogue de `cascadeRoll` côté Test) : pose `table.result` via le
    *  résolveur unique `rollTableStep`. */
   cascadeTableRoll: (pid: string) => void;

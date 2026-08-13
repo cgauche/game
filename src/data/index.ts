@@ -380,7 +380,7 @@ const STAKE_ENTRY_POOLS: Record<string, (id: string) => boolean> = {
   mutationTables: (id) => mutationTables.some((t) => t.id === id),
   interludeEvents: (id) => interludeEvents.some((e) => e.id === id),
   // Un jeu de taverne PORTE sa règle (sa fiche Codex la recopie verbatim) : c'est le foyer des effets
-  // qu'une partie inflige (l'ivresse d'un jeu à boire, NADAJ 16 l.97).
+  // qu'une partie inflige (l'ivresse d'un jeu à boire, NADJ 16 l.97).
   tavernGames: (id) => (tavernGamesJson as { id: string }[]).some((g) => g.id === id),
   // Catégories atteignables par l'ENTITÉ SOURCE d'un effet (`CATEGORY_BY_SOURCE_KIND`, engine/types) —
   // la table est TOTALE côté source, donc le pool l'est aussi : sans elles, un jet exigé par un objet
