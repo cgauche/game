@@ -168,7 +168,7 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 
 | Helper | Usage | Limites connues |
 |---|---|---|
-| `state()` | instantané `{screen, sceneId, partyPos, inDialogue, inCombat, party, money…}` | lecture seule ; `party` est une PROJECTION allégée (`{id, name}` seulement, `devtools.ts`) — ni `.skills` ni `.activeEffects` ; pour inspecter le détail d'un héros, lire `store.getState().party` |
+| `state()` | instantané `{screen, sceneId, partyPos, inDialogue, inCombat, party, money…}` | lecture seule ; PROJECTION CURATÉE, pas le store : **`state().battle` n'existe PAS** (`devtools.ts` n'expose que `inCombat: !!s.battle`) — pour le combat, lire `battle()` ou `store.getState().battle` ; `party` est une PROJECTION allégée (`{id, name}` seulement, `devtools.ts`) — ni `.skills` ni `.activeEffects` ; pour inspecter le détail d'un héros, lire `store.getState().party` |
 | `net()` | vue RÉSEAU du siège local `{mode, mySeat, roomCode, gmSeat, ownership, seatNames, presence}` (`state()` n'expose rien de `net`) | lecture seule (copies) ; `gmSeat` `undefined` = camp ennemi à l'IA ; `presence` n'est peuplée QUE côté hôte. Pour AGIR sur le réseau (héberger, rejoindre, attribuer), passer par `store.getState()` — `net()` n'a aucun effet de bord |
 | `entities()` | cartographie des entités de la scène `{id,label,kind,pos,access}` | exclut les entités `hiddenUntilCombat` |
 | `screenPos('id')` | bounding box ÉCRAN (`{x,y,width,height}`) du token `[data-cid="id"]` — COMBAT ET EXPLORATION (même canal `data-cid`, #226) | lecture seule ; `null` si le token n'est pas dans le DOM (hors vue) ; pour un clic, **viser `{x: x+width/2, y: y+height}` (le BAS de la bbox, pied du token) plutôt que le centre géométrique** — un token de grande taille (créature haute) a sa bbox étirée vers le haut, et le centre géométrique tombe hors silhouette (retour vécu en recette, résidu #199) |
@@ -791,6 +791,22 @@ suivant. Ce qui ressemble à « ça a marché puis c'est revenu en arrière » n
   `controlsActive` **ET** aucune modale ouverte (`src/state/keybindings.ts`) → pendant le tour d'un
   autre siège, ou tant qu'une fenêtre (dialogue, pause de Round, cascade) est ouverte, rien ne répond.
   Fermer la fenêtre, ou rendre la main au bon siège, AVANT de conclure à une régression clavier.
+- **Ready-check de début de Round — le combat n'est PAS bloqué** : dès `net.mode !== 'local'`, la barre
+  d'action de la pause d'initiative est remplacée par un ready-check PAR SIÈGE (`src/ui/ActionBar.tsx`) —
+  une puce `.ready-chip` par siège de `net.seatNames`, un bouton **« Prêt »** qui appelle
+  `roundStartReady(net.mySeat)` et devient « En attente des autres… ». L'hôte ne lance le Round que
+  quand `pendingRoundStart.readyBySeat` est complet. Cliquer « Prêt » **sur CHAQUE page** (le raccourci
+  d'état est `store.getState().roundStartReady(<siège>)` appelé sur la page du siège concerné) — sans
+  ce clic des deux côtés, rien n'avance, aucun tour ne s'ouvre, aucune modale ne surface : ce n'est pas
+  un gel, c'est le ready-check. En solo (`net.mode === 'local'`) c'est le bouton unique
+  « Commencer le combat » — la recette coop N'A PAS ce bouton.
+- **Sous-bandes successives INDISCERNABLES au DOM** : une bande peut en appeler une autre (chaque rangée
+  vaincue ré-appende SON Test à la cascade — Surprise → Vigilance, `src/state/combat/triggeredTest.ts`).
+  Deux étapes consécutives présentent alors le MÊME libellé et les MÊMES boutons : la présence de
+  `.modal-overlay` ne prouve donc RIEN sur la progression. Lire le CONTENU des rangées (noms des acteurs,
+  valeurs, rangées déjà roulées) entre deux clics, et **drainer jusqu'à disparition de la fenêtre** des
+  DEUX côtés — jamais un nombre de clôtures présumé. Chaque étape est possédée par le siège de son
+  acteur : une cascade qui « ne se ferme pas » chez l'hôte attend souvent une clôture chez l'invité.
 - **`__wfrp.gmSeat` ne sert QUE le solo/l'hôte** : il pose le siège **0** (`setGmSeat(0)`). En coop, le
   MJ se désigne par siège au `<select>` « Maître du Jeu » (`GmSeatSelect`) ou par
   `store.getState().setGmSeat(1)` côté hôte. Le siège MJ SURVIT à `scenario()` (piège mesuré #1028
@@ -803,8 +819,20 @@ suivant. Ce qui ressemble à « ça a marché puis c'est revenu en arrière » n
 
 ### Scénario « coop minimal » — un jet d'invité + un choix de groupe
 
-Le plus court chemin qui porte les DEUX : `embuscade` (`src/scenes/test-scenarios/embuscade.ts`) —
-exploration → dialogue (choix de GROUPE) → combat (jet d'invité). Tout depuis l'HÔTE sauf l'étape 7.
+Deux véhicules, un par famille d'invariants — les mélanger est ce qui fait trébucher la procédure :
+
+| Invariant visé | Scénario | Pourquoi |
+|---|---|---|
+| Choix de GROUPE (3) + bande partagée (4/5) | `embuscade` (`src/scenes/test-scenarios/embuscade.ts`) | exploration → dialogue → combat ; `enc-mutants` porte `surprise: 'party'` (5 embusqueurs) donc une CASCADE s'ouvre avant tout tour — c'est justement le matériau des invariants de bande |
+| Jet SOLO d'invité (1/2) | `entrainement` (`src/scenes/test-scenarios/entrainement.ts`) | `enc-entrainement` est SANS `surprise` : combat direct, ready-check, puis `battleRun()` dès le premier tour — mesuré en exécution comme le chemin court |
+
+⚠ **Ne pas chercher le jet solo dans `embuscade`** : `surprise: 'party'` fait ouvrir la bande de Surprise
+(`applySurprise`, `src/state/combatFlow.ts`) AVANT tout tour, et chaque défenseur vaincu porteur de
+Vigilance ré-appende SON Test — une file d'étapes successives à drainer des DEUX côtés (piège
+« sous-bandes indiscernables » ci-dessus) qui noie le jet qu'on venait mesurer.
+
+Déroulé : étapes 1-6 sur `embuscade` (choix de groupe), étape 7 sur `entrainement` (jet solo),
+étape 8 pour la bande partagée. Tout depuis l'HÔTE sauf ce qui est marqué INVITÉ.
 
 1. Relay au défaut (prod) ou local (§ ci-dessus), `npm run dev`, arbre gelé.
 2. Ouvrir les deux pages et lier les sièges (script du kit ci-dessus) — contrôler `net.mode`/
@@ -820,12 +848,20 @@ exploration → dialogue (choix de GROUPE) → combat (jet d'invité). Tout depu
    la puce `.spectator-chip` nomme le meneur — rien à cliquer, l'affordance dit qui décide. Cliquer
    la réponse « Fondre sur les charognards… » chez l'HÔTE : le combat `enc-mutants` s'ouvre des deux
    côtés.
-7. HÔTE : `__wfrp.turn('<id du héros de l'invité>')` (rend le tour ET le Mouvement plein).
+7. **Jet SOLO d'invité — basculer sur `entrainement`** (chemin court, mesuré en exécution). HÔTE :
+   `__wfrp.scenario('entrainement')` → scène `terrain-entrainement` ; le groupe est DIFFÉRENT (héros
+   dédiés du scénario) → **refaire l'étape 4** : relever les nouveaux ids et `netAssign` du 2ᵉ héros au
+   siège 1. Puis HÔTE : `__wfrp.goto({ x: 9, y: 8 })` — franchir la bande `entrer-en-lice` (x=7) lance
+   `enc-entrainement`, SANS Surprise. **Ready-check** : cliquer « Prêt » sur CHAQUE page (piège
+   ci-dessus) — sinon aucun tour ne s'ouvre et on croit le combat gelé ; l'ouverture s'observe par
+   `__wfrp.battle()`, jamais par `state().battle` (inexistant, cf. table des helpers).
+   HÔTE : `__wfrp.turn('<id du héros de l'invité>')` (rend le tour ET le Mouvement plein).
    INVITÉ : `__wfrp.store.getState().battleRun()` — action de l'allowlist, donc VRAI trajet
    intent → hôte → snapshot. **Jet d'invité** : la modale de Course est rendue chez l'invité,
-   l'hôte affiche « Invité joue <héros>… » (invariant 1). Rien ne s'ouvre ? le héros est SURPRIS
-   (`surprise: 'party'` de la rencontre, LDB 13) : passer au Round suivant (`fastForward`) puis
-   refaire `turn`.
+   l'hôte affiche « Invité joue <héros>… » (invariant 1).
+   Si on reste sur `embuscade` : rien ne s'ouvre tant que la cascade de Surprise n'est pas DRAINÉE des
+   deux côtés, et le héros est SURPRIS (`surprise: 'party'` de la rencontre, LDB 13) — passer au Round
+   suivant (`fastForward`) puis refaire `turn`.
 8. Bande partagée + Résilience (invariants 4/5) : HÔTE `__wfrp.combatEnd()` → la cascade de fin de
    combat s'ouvre CHEZ LES DEUX ; vérifier qu'une rangée n'est jouable que par son siège et que la
    Résilience n'est offerte à l'invité que sur SA rangée.
