@@ -12,6 +12,10 @@
  * LA LOI, du plus loin au plus près de l'œil :
  *  - `jumeau` passe AVANT tout : il ne peint que des pixels OCCLUS (test de profondeur retourné), et
  *    rendu après les corps il couvrirait des jetons VISIBLES (#1297) ;
+ *  - `decalque` (ÉDITEUR, #1176 P3-3) : la PLAQUE de décalquage posée SOUS le monde. Le rang ne
+ *    contourne PAS le tampon de profondeur (cf. PORTÉE, plus bas) : la plaque n'est donc visible que
+ *    là où aucun sol n'écrit — l'usage « carte neuve », celui pour lequel le mode SOUS existe. Le mode
+ *    AU-DESSUS de l'auteur, lui, prend le rang `chrome` ;
  *  - `monde` = la matière (géométrie cuite, accents de sol) et les marques de CASES posées dessus ;
  *  - `pions` = les billboards et leurs ombres de contact ;
  *  - `pluie` puis `nappe` : les intempéries se peignent sur le monde et sur les pions — c'est ce
@@ -35,14 +39,15 @@
  */
 
 /** Une famille d'objets montés, dans l'ordre de peinture. */
-export type RenderRank = 'jumeau' | 'monde' | 'pions' | 'pluie' | 'nappe' | 'chrome';
+export type RenderRank = 'decalque' | 'jumeau' | 'monde' | 'pions' | 'pluie' | 'nappe' | 'chrome';
 
 /** Les familles, du plus tôt peint au plus tard. */
-export const RENDER_RANKS: readonly RenderRank[] = ['jumeau', 'monde', 'pions', 'pluie', 'nappe', 'chrome'];
+export const RENDER_RANKS: readonly RenderRank[] = ['decalque', 'jumeau', 'monde', 'pions', 'pluie', 'nappe', 'chrome'];
 
 /** Le `renderOrder` de chaque famille. `monde` vaut 0 : c'est le défaut de three, donc tout objet
  *  monté sans rang tombe avec la matière — jamais au-dessus du chrome. */
 export const RENDER_ORDER: Record<RenderRank, number> = {
+  decalque: -2,
   jumeau: -1,
   monde: 0,
   pions: 1,

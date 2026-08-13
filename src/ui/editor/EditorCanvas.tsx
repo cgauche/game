@@ -27,7 +27,8 @@ import { ViewControls } from '../ViewControls';
 import { IconG } from '../Icon';
 import { transformToSvg, nearestNode, type CalibStep, type TraceTransform } from '../../state/traceCalibration';
 import type { useEditorView } from './useEditorView';
-import type { LowerLayerMode } from './lowerLayerGabarit';
+import { effectiveLowerLayerMode, gabaritTint, layerHidden, type LowerLayerMode } from './lowerLayerGabarit';
+import { projectedRangeAxes } from './lampMarker';
 import {
   Tool, Layers, Sel, Rect, Pt, Edge4, rectFrom, hitAt, selRect, selZ, moveSel, resizeSel, paintTiles, fillTerrainRect,
   placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, EFFECT_ZONE_SEEDS, addEnemyMember, eraseAt, entityAt, sameSel,
@@ -38,7 +39,7 @@ import { getStageBackend, subscribeStageBackend } from '../../state/stage3d';
 import { GameStage3D } from '../../gameIso/stage/GameStage3D';
 import { buildTokens } from '../../gameIso/builders/tokens';
 import type { ActorPose, KeepEl, TintAt } from '../../gameIso/backends/webgl/sceneMeshes';
-import type { LightSource } from '../../state/vision';
+import { mapLights, type LightSource } from '../../state/vision';
 
 /** Jaune d'ACCENT de SÉLECTION de l'éditeur (arêtes/zones/toits/entités sélectionnés) — même teinte que
  *  l'anneau d'unité active en combat, mais concept distinct (édition, pas tour de jeu). */
@@ -70,7 +71,6 @@ const ACTIVE_LAYER_ROOF_OPACITY = 0.25;
  */
 const MIDI_AUTHORING = 12 * 60;
 const PLEIN_JOUR = 1;
-const TEINTE_PLEINE: TintAt = () => 1;
 const AUCUN_ACTEUR: readonly ActorPose[] = [];
 const AUCUNE_LAMPE: readonly LightSource[] = [];
 
@@ -80,6 +80,9 @@ const AUCUNE_LAMPE: readonly LightSource[] = [];
 const BARRIER_INK = { fill: 'rgba(120,140,200,0.18)', fillSel: 'rgba(120,140,200,0.4)', line: 'rgba(120,140,200,0.95)' };
 const TRAP_INK = { fill: 'rgba(226,100,30,0.15)', fillSel: 'rgba(226,100,30,0.35)', line: 'rgba(226,100,30,0.9)' };
 const ROOM_LINE = 'rgba(150,150,220,0.55)';
+/** Encre des MARQUEURS DE LAMPE d'auteur (#1176, P3-3) : l'ambre d'une flamme, distinct des natures de
+ *  zone ci-dessus — une source lumineuse n'est ni un piège, ni une barrière, ni une pièce. */
+const LAMP_INK = 'rgba(255,196,92,0.95)';
 
 /** Les 4 voisines de grille d'une case, appariées à l'ARÊTE qui les sépare (`tileEdge`). */
 const ZONE_SIDES = [
@@ -259,9 +262,14 @@ export function EditorCanvas({
   // ISOLATION DE COUCHE : en mode `isolee`, la couche active est SEULE dessinée — le dessous n'est pas
   // atténué, il n'est pas émis. Sur une couche d'étage clairsemée, le rez fournit sinon l'essentiel des
   // traits à l'écran et son tracé se confond avec celui qu'on est en train de poser (blocage auteur
-  // 2026-07-26). Prédicat UNIQUE de visibilité de couche, lu par TOUTES les familles rendues ici : le
-  // dessus reste masqué dans les deux modes (on n'édite pas ce qui flotte au-dessus).
-  const zHidden = (z: number) => z > currentLayer || (lowerLayerMode === 'isolee' && z < currentLayer);
+  // 2026-07-26). Prédicat UNIQUE de visibilité de couche (`layerHidden`, `lowerLayerGabarit.ts`), lu
+  // par TOUTES les familles rendues ici — les 14 surcouches SVG comme les canaux du monde volumique.
+  const zHidden = (z: number) => layerHidden(z, currentLayer, lowerLayerMode);
+  // MODE EFFECTIF du CANEVAS : sous le seuil d'opacité, le gabarit bascule en isolation, parce que le
+  // volume n'a pas d'opacité à donner — il n'a qu'une teinte, et une teinte à zéro peint du NOIR
+  // (raison complète au site du seuil). Le SVG, lui, garde le voile d'auteur à son réglage exact.
+  const modeMonde = effectiveLowerLayerMode(lowerLayerMode, lowerLayerOpacity);
+  const zHiddenMonde = (z: number) => layerHidden(z, currentLayer, modeMonde);
 
   // ── VOIE DE RENDU DU MONDE (#1176, P3-3, DEV) : le MÊME interrupteur de chantier que le jeu
   // (`state/stage3d.ts`, patron `IsoStage.tsx` / `PovStage.tsx`). En volumique, ce SVG ne peint plus
@@ -652,11 +660,28 @@ export function EditorCanvas({
   const selWall = sel?.type === 'wall' && sel.z === currentLayer && (sel.side === 'N' || sel.side === 'E') ? sel : null;
   // Groupe SVG du calque (image seule) — calculé UNE fois, posé SOUS (avant le sol) ou AU-DESSUS
   // (dernier enfant du SVG) selon `traceLayer.position` ; jamais les deux à la fois.
-  const traceLayerImg = traceLayer?.visible ? (
+  // VOIE VOLUMIQUE (#1176, P3-3, vague B) : les DEUX modes passent au canevas, en quad posé au sol.
+  // L'ancrage reste celui d'ici — l'ÉCRAN : le calage fige un `transform` de projection, et le quad
+  // se rebâtit à chaque cadrage pour retomber aux mêmes pixels (cf. `backends/webgl/traceQuad.ts`).
+  // Une seule voie la peint à la fois, sans quoi deux plaques se superposeraient.
+  const traceLayerImg = traceLayer?.visible && !webgl ? (
     <g opacity={traceLayer.opacity} pointerEvents="none" transform={transformToSvg(traceLayer.transform)}>
       <image href={traceLayer.imageDataUrl} width={traceLayer.naturalWidth} height={traceLayer.naturalHeight} />
     </g>
   ) : null;
+  const decalque3d = useMemo(
+    () => (webgl && traceLayer?.visible
+      ? {
+        imageDataUrl: traceLayer.imageDataUrl,
+        naturalWidth: traceLayer.naturalWidth,
+        naturalHeight: traceLayer.naturalHeight,
+        opacity: traceLayer.opacity,
+        position: traceLayer.position,
+        transform: traceLayer.transform,
+      }
+      : null),
+    [webgl, traceLayer],
+  );
 
   // ── CE QUE L'ÉDITEUR DONNE AU MONDE VOLUMIQUE (#1176, P3-3) ─────────────────────────────────────
   // CADENCE : pendant un TRAIT d'outil GÉOMÉTRIQUE (terrain, cote, crénelure), le monde reste sur la
@@ -674,48 +699,67 @@ export function EditorCanvas({
   // volumique n'a AUCUNE météo — champ absent, donc le REGISTRE ne montre rien (`sceneWeatherFx`) :
   // ni semis, ni nappes de brume, ni teinte d'orage sur les lampes et le fond.
   const sceneMonde = useMemo(() => ({ ...sceneGelée, weather: undefined }), [sceneGelée]);
-  // DÉGAGEMENT : le canevas cuit TOUTE la scène (`worldFaces` prend toutes les couches). L'éditeur y
-  // applique sa propre loi de vue — la même que le SVG : on n'édite pas ce qui flotte au-dessus, la
-  // nappe de la couche active ne coiffe pas le plan qu'on est en train de tracer (le SVG la rend
-  // discrète ; sur le canevas, elle serait OPAQUE), et le calque « Toits » ÉTEINT retire les nappes
-  // — sans cette dernière ligne, la case du calque ne ferait plus rien sur la voie volumique.
-  // ÉCART DÉCLARÉ : le VOILE de gabarit des couches du dessous reste inopérant SUR LE CANVAS (canal
-  // voilé, vague B) ; l'ISOLATION, elle, est honorée — par ce keepEl pour les faces, par `viewZ` pour
-  // les jetons et les décors, sans quoi un corps de couche basse flotterait sur un canevas isolé.
+  // DÉGAGEMENT (canal GÉOMÉTRIE) : le canevas cuit TOUTE la scène (`worldFaces` prend toutes les
+  // couches). L'éditeur y applique sa propre loi de vue, celle du SVG — `zHiddenMonde` : on n'édite pas
+  // ce qui flotte au-dessus, et le dessous s'ÔTE quand la couche est isolée (ou quand le gabarit passe
+  // sous le seuil d'opacité, cf. `effectiveLowerLayerMode`).
+  // TOITS : le canevas n'en peint AUCUN. La surcouche SVG les redessine tous en mode PLAN étiqueté
+  // (nappe semi-transparente + libellé de pièce), pour TOUTES les couches non cachées : laisser en
+  // plus les masses volumiques, c'était peindre chaque toit DEUX fois. Le calque « Toits » éteint,
+  // il n'en reste rien nulle part — la case garde son sens sur les deux voies.
   const keepEl = useMemo<KeepEl>(
-    () => (el) => {
-      if (zHidden(el.cell.z)) return false;
-      return !(el.kind === 'roof' && (!layers.roofs || el.cell.z === currentLayer));
-    },
+    () => (el) => (el.kind === 'roof' ? false : !zHiddenMonde(el.cell.z)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentLayer, lowerLayerMode, layers.roofs],
+    [currentLayer, modeMonde],
+  );
+  // TEINTE (canal VISIBILITÉ) : le gabarit des couches du dessous, porté par le seul canal continu que
+  // le volume offre — un scalaire sur la couleur de sommet. Il ASSOMBRIT là où le SVG EFFACE (ce sont
+  // deux matières différentes, cf. le seuil de bascule) ; sous le seuil, on n'y arrive plus et c'est
+  // le dégagement qui prend la main, la couche disparaît au lieu de noircir.
+  // Il porte les DEUX matières du monde d'un seul geste : les FACES (`applyVisibilityTint`) et les
+  // CORPS — `collectBillboards` pose `tint: tintAt(cellKey)` sur chaque figurant et chaque décor. Un
+  // jeton de couche basse s'assombrit donc par le même canal que sa case, sans une ligne de plus.
+  const tintAt = useMemo<TintAt>(
+    () => (cellKey) => gabaritTint(cellKey, currentLayer, lowerLayerOpacity),
+    [currentLayer, lowerLayerOpacity],
   );
   // ÉLÉMENTS à billboarder : c'est l'ÉDITEUR qui les fabrique, avec SES options de couche — le monde
   // volumique n'a aucun second jeu de lois. Jetons d'entité BRUTS (leurs décorations d'auteur restent
-  // au SVG, vague B) et décor par le MÊME `buildProps` que la voie affine.
+  // au SVG) et décor par le MÊME `buildProps` que la voie affine.
   const propEls3d = useMemo(
-    () => (webgl ? buildProps(sceneMonde, undefined, { activeZ: currentLayer }).filter((el) => !zHidden(el.cell.z)) : []),
+    () => (webgl ? buildProps(sceneMonde, undefined, { activeZ: currentLayer }).filter((el) => !zHiddenMonde(el.cell.z)) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [webgl, sceneMonde, currentLayer, lowerLayerMode],
+    [webgl, sceneMonde, currentLayer, modeMonde],
   );
-  // MÊME cadrage de couche que les décors ci-dessus (`viewZ` en mode isolé, puis le prédicat unique
-  // `zHidden`) : sans lui, un corps de couche basse restait sur le canevas alors que TOUTES ses
-  // décorations d'auteur avaient disparu du SVG — un jeton fantôme, inéditable.
+  // MÊME cadrage de couche que les décors ci-dessus (`viewZ` en mode isolé, puis le prédicat unique) :
+  // sans lui, un corps de couche basse restait sur le canevas alors que TOUTES ses décorations
+  // d'auteur avaient disparu du SVG — un jeton fantôme, inéditable.
   // `ambush` : l'auteur voit le CORPS de ses embusqueurs (`hiddenUntilCombat`), que la loi de JEU
   // coupe avant le combat ; le SVG continue de poser leur empreinte pointillée par-dessus.
   const tokenEls3d = useMemo(
     () => (webgl
       ? buildTokens(sceneMonde, undefined, null, {
         activeZ: currentLayer,
-        viewZ: lowerLayerMode === 'isolee' ? currentLayer : null,
+        viewZ: modeMonde === 'isolee' ? currentLayer : null,
         top: viewMode === 'top',
         ambush: true,
-      }).filter((el) => !zHidden(el.cell.z))
+      }).filter((el) => !zHiddenMonde(el.cell.z))
       : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [webgl, sceneMonde, currentLayer, viewMode, lowerLayerMode],
+    [webgl, sceneMonde, currentLayer, viewMode, modeMonde],
   );
+  // Pas de `chromeAt` ici : l'ALLURE d'un board se lit par `cid`, et un `cid` n'est posé QUE sur les
+  // acteurs de combat (`actorBillboards`) — l'éditeur n'en monte aucun. C'est le canal TEINTE qui
+  // assombrit ses corps de couche basse, ci-dessus, et il suffit.
   const els3d = useMemo(() => ({ tokens: tokenEls3d, props: propEls3d }), [tokenEls3d, propEls3d]);
+  // SOURCES LUMINEUSES POSÉES de la scène — la MÊME liste que le champ mécanique de vision consomme
+  // (`mapLights`), filtrée par la loi de couche de l'éditeur. Leur marqueur est une surcouche d'auteur
+  // (cf. le site de rendu) : en plein jour, aucune flaque ne les trahirait.
+  const lampesAuthorees = useMemo(
+    () => mapLights(scene).filter((l) => !zHidden(l.z ?? 0)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [scene, currentLayer, lowerLayerMode],
+  );
   // APERÇU DU TRAIT (WYSIWYG) : le trait libre n'avait AUCUN aperçu — il se voyait par la scène SVG
   // repeinte, qui ne l'est plus. Les cases du geste se peignent donc par le MÊME backend affine que
   // la voie de gauche (`floorSvg` sur les `FloorEl` de la scène VIVE), pas par un losange symbolique.
@@ -747,13 +791,14 @@ export function EditorCanvas({
             scene={sceneMonde}
             mpt={mpt}
             frame={{ mode: 'viewbox', dims, viewBox: { x: vb.x, y: vb.y, w: stage.w / vb.zoom, h: stage.h / vb.zoom } }}
-            tintAt={TEINTE_PLEINE}
+            tintAt={tintAt}
             keepEl={keepEl}
             els={els3d}
             actors={AUCUN_ACTEUR}
             gameTime={MIDI_AUTHORING}
             lightLevel={PLEIN_JOUR}
             lights={AUCUNE_LAMPE}
+            decalque={decalque3d}
             spritePicking={false}
           />
         )}
@@ -839,9 +884,11 @@ export function EditorCanvas({
               // (`ACTIVE_LAYER_ROOF_OPACITY` sur son groupe), jamais retirée : le calque « Toits » garde son
               // sens au dernier étage, et le picking (`hitAt`, qui désigne la masse de `currentLayer`) porte
               // sur ce qui est affiché. Sous la couche active : gabarit voilé. Au-dessus : rien.
-              // En volumique, la couverture est CUITE dans le monde (et la nappe de la couche active
-              // en est retirée par `keepEl`) : ce calque de plan ne se monte plus.
-              if (layers.roofs && !webgl)
+              // LES DEUX VOIES le peignent ICI (#1176, P3-3, vague B) : le plan étiqueté est une vue
+              // d'AUTHORING (couverture translucide + nom de pièce), pas une matière — le canevas
+              // n'en cuit aucune (`keepEl` ôte tous les toits), sinon chaque nappe serait peinte
+              // deux fois.
+              if (layers.roofs)
                 for (const el of buildRoofs(scene)) {
                   if (zHidden(el.cell.z)) continue;
                   const active = el.cell.z === currentLayer;
@@ -981,6 +1028,32 @@ export function EditorCanvas({
               </g>
             );
           })()}
+          {/* MARQUEURS DE SOURCE LUMINEUSE (#1176, P3-3, vague B) : une AFFORDANCE d'auteur, jamais
+              de la photométrie. L'atelier travaille en PLEIN JOUR NEUTRE, et à midi l'extinction des
+              flaques vaut zéro PAR CONSTRUCTION (`stage/stagePointLights.ts`) : une lampe posée n'y
+              émet rien, donc rien ne dirait à l'auteur qu'elle est là. Ce marqueur le dit — la
+              position par un point, la PORTÉE authorée par son cercle (rayon en cases). Source
+              UNIQUE : `mapLights`, la liste que le champ mécanique de vision consomme. */}
+          {lampesAuthorees.length > 0 && (
+            <g pointerEvents="none" data-lampes-auteur={lampesAuthorees.length}>
+              {lampesAuthorees.map((l) => {
+                const z = l.z ?? 0;
+                const { cx, cy } = tileCenter(l.pos.x, l.pos.y, dims, z);
+                // Le cercle de portée est un cercle de GRILLE : sa projection est une ellipse dont
+                // les demi-axes se DÉRIVENT de la vue (`projectedRangeAxes`) — en vue du dessus, il
+                // redevient rond, comme la portée l'est sur la carte.
+                const { rx, ry } = projectedRangeAxes(l.pos.x, l.pos.y, z, l.radiusTiles, dims);
+                return (
+                  <g key={`lampe-${l.srcId ?? `${l.pos.x},${l.pos.y}`}`}>
+                    {rx > 0 && ry > 0 && (
+                      <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill="none" stroke={LAMP_INK} strokeWidth={1.2} strokeDasharray="5 4" opacity={0.8} />
+                    )}
+                    <circle cx={cx} cy={cy} r={3.5} fill={LAMP_INK} stroke={TEXT_INK} strokeWidth={0.6} />
+                  </g>
+                );
+              })}
+            </g>
+          )}
           {layers.triggers && (
             <g pointerEvents="none">
               {scene.triggers.map((t) => {

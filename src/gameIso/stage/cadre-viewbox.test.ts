@@ -138,4 +138,25 @@ describe('Cadre volumique de l’ÉDITEUR — viewBox MOBILE, échelle MESURÉE 
     for (const canvas of [{ w: 1600, h: 400 }, { w: 300, h: 1100 }, { w: 640, h: 640 }])
       expect(ecartMaxSurCadre(dims, viewBox, canvas)).toBeLessThanOrEqual(TOL);
   });
+
+  /**
+   * ANCRAGE DES DÉCORATIONS DE JETON (#1176, P3-3, vague B). Le CORPS d'un jeton est peint par le
+   * canevas (billboard ancré aux PIEDS, à `(x·mpt, hauteur, y·mpt)`), mais tout ce que l'auteur y lit
+   * reste au SVG : empreinte de rencontre, tirets d'embusqueur, liseré de sélection, tous tracés à
+   * `tileCenter`. Si les deux ancrages divergeaient d'un pixel, chaque empreinte flotterait à côté de
+   * son corps. C'est la MÊME égalité que le cadre, prise au point d'ancrage d'un jeton.
+   */
+  it('le pied d’un jeton du canevas tombe au centre de case de sa décoration SVG', () => {
+    for (const dims of [dimsFor(0, false), dimsFor(2, false), dimsFor(0, true)]) {
+      const { viewBox, canvas } = cadreEditeur(dims, 1.4, PAN, 0.7);
+      const f = stage3dFramingFor({ dims, mpt, screen: viewBoxScreen(viewBox, canvas), canvas });
+      const { camera } = affineCamera(f.kind, f.yawDeg, mpt, f.viewport, { target: new Vector3(f.centre.x, f.centre.y, f.centre.z) });
+      for (const { x, y, h } of [{ x: 2, y: 3, h: 0 }, { x: 7, y: 1, h: 1.7 }, { x: 4, y: 6, h: 4 }]) {
+        const svg = viewBoxScreenPixel(tileCenter(x, y, dims, metricToLift(h)), viewBox, canvas);
+        const pied = projectToScreen(camera, new Vector3(x * mpt, h, y * mpt), canvas);
+        expect(Math.abs(svg.sx - pied.sx)).toBeLessThanOrEqual(TOL);
+        expect(Math.abs(svg.sy - pied.sy)).toBeLessThanOrEqual(TOL);
+      }
+    }
+  });
 });

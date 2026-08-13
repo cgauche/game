@@ -151,6 +151,8 @@ import {
   type ShelteredAt,
 } from '../backends/webgl/weatherParticles';
 import { withRenderRank } from '../backends/webgl/renderRanks';
+import { buildTraceQuad, TRACE_LIFT_M } from '../backends/webgl/traceQuad';
+import type { TraceTransform } from '../../state/traceCalibration';
 
 /** Convention de taille monde des billboards retenue pour le JEU (cf. `billboardMath`). */
 export const CONVENTION = 'jeu' as const;
@@ -259,6 +261,17 @@ export interface GameStage3DProps {
   /** Cadençage de la MARCHE, quand le stage en offre un (lot P2-4) : sans lui, cet écran ne bouge
    *  qu'aux rendus du stage. */
   anim?: StageWalkAnim;
+  /** PLAQUE DE DÉCALQUAGE de l'ÉDITEUR (#1176, P3-3, vague B) — la planche calée sous la carte
+   *  (#830), montée en QUAD MONDE : `below` sous la matière (le sol la couvre là où il en écrit),
+   *  `above` par-dessus tout (rang chrome, sans test de profondeur). Absente en jeu. */
+  decalque?: {
+    imageDataUrl: string;
+    naturalWidth: number;
+    naturalHeight: number;
+    opacity: number;
+    position: 'above' | 'below';
+    transform: TraceTransform;
+  } | null;
   /** Cet écran inscrit-il son lanceur de rayon auprès de la couture de picking de sprite
    *  (`stage/spritePicker.ts`) ? Défaut OUI, la vue de plateau du jeu. L'ÉDITEUR (#1176, P3-3) dit
    *  NON : son picking est PUREMENT GÉOMÉTRIQUE (`screenToTileAtZ` sur le SVG d'authoring), et un
@@ -321,6 +334,13 @@ export function artRot(dims: Dims): Rot {
   return ((Math.floor((freeYaw(dims) ?? (dims.rot ?? 0) * 90) / 90) % 4 + 4) % 4) as Rot;
 }
 
+/** IDENTITÉ de cadrage d'une carte : tout ce dont une géométrie ancrée à l'ÉCRAN dépend (taille de
+ *  grille, cran, edge-on, lacet libre, projection). Ce qu'elle sert : ne re-bâtir la plaque de
+ *  décalquage qu'au changement de VUE, jamais à chaque rendu de l'éditeur. PUR. */
+function dimsKey(dims: Dims): string {
+  return `${dims.w}x${dims.h}|${dims.rot ?? 0}|${dims.edge ? 'e' : ''}|${dims.yawDeg ?? ''}|${dims.view ?? 'iso'}`;
+}
+
 /** LACET (degrés, convention de `freeYaw`/`artRot`) du regard PREMIÈRE PERSONNE de cap `facing`.
  *  La caméra affine du cran `r` regarde la diagonale `DIR8_ORDER[(7 + 2r) % 8]` : à ce cap, `povView`
  *  rend exactement ce que rend `project(·, r)` sur les huit orientations (parité mesurée,
@@ -337,7 +357,7 @@ export function povArtRot(facing: Dir8): Rot {
   return (Math.floor(povYawDeg(facing) / 90) % 4) as Rot;
 }
 
-export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim, spritePicking = true }: GameStage3DProps): JSX.Element {
+export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim, decalque, spritePicking = true }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
@@ -390,6 +410,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   const marques = useRef<THREE.Group>();
   const marquesDyn = useRef<THREE.Group>();
   const halosGroupe = useRef<THREE.Group>();
+  const decalques = useRef<THREE.Group>();
   if (!three.current) {
     three.current = new THREE.Scene();
     monde.current = new THREE.Group();
@@ -416,7 +437,10 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // réécrit à la frame. À part de lui parce qu'il vit hors du combat, et que ses pools PULSENT (leur
     // opacité de matériau change à chaque frame, cf. `stage/interactHaloPose`).
     halosGroupe.current = new THREE.Group();
-    three.current.add(monde.current, touffes.current, panneaux.current, lampes.current, flaques.current, intemperies.current, brumes.current, marques.current, marquesDyn.current, halosGroupe.current);
+    // Groupe de la PLAQUE DE DÉCALQUAGE (éditeur, P3-3) : à part de tout le reste — elle ne vit ni de
+    // la scène, ni de la lumière, ni du combat, mais du calage de l'auteur et du cran de vue.
+    decalques.current = new THREE.Group();
+    three.current.add(monde.current, touffes.current, panneaux.current, lampes.current, flaques.current, intemperies.current, brumes.current, marques.current, marquesDyn.current, halosGroupe.current, decalques.current);
   }
 
   // Le cache de textures est GLOBAL au module : changer de SCÈNE rend ses entrées mortes (les clés
@@ -706,6 +730,47 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [champ]);
+
+  // ── GROUPE DÉCALQUE (#1176, P3-3, vague B) : la plaque de l'auteur, en QUAD MONDE — elle TOURNE donc
+  // avec la carte, là où la surcouche SVG qu'elle remplace restait clouée au repère de contenu (le
+  // changement de sémantique est déclaré dans `backends/webgl/traceQuad.ts`). Deux régimes, une seule
+  // géométrie : SOUS le monde, la plaque garde le test de profondeur — le sol la couvre là où il en
+  // écrit un, et elle ne se voit que sur le vide (l'usage « carte neuve ») ; AU-DESSUS, elle passe au
+  // rang du chrome SANS test de profondeur, donc par-dessus tout ce que la carte porte déjà.
+  useEffect(() => {
+    const groupe = decalques.current;
+    if (!groupe || !decalque || frame.mode === 'pov') return;
+    const au_dessus = decalque.position === 'above';
+    const geo = buildTraceQuad(
+      decalque.transform,
+      { width: decalque.naturalWidth, height: decalque.naturalHeight },
+      frame.dims,
+      mpt,
+      au_dessus ? TRACE_LIFT_M : 0,
+    );
+    const texture = new THREE.TextureLoader().load(decalque.imageDataUrl);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    const mat = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      opacity: decalque.opacity,
+      depthWrite: false,
+      depthTest: !au_dessus,
+      side: THREE.DoubleSide,
+      toneMapped: false,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.name = 'decalque';
+    groupe.add(withRenderRank(mesh, au_dessus ? 'chrome' : 'decalque'));
+    dessiner();
+    return () => {
+      groupe.remove(mesh);
+      geo.dispose();
+      mat.dispose();
+      texture.dispose();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [decalque, mpt, frame.mode === 'pov' ? null : dimsKey(frame.dims)]);
 
   // ── GROUPE BRUME (#1247) : les nappes de la météo, montées au seul changement de PLAN — c'est-à-dire
   // à la scène, à la météo, au bâti et au regard, jamais au pas du groupe (le plan est retenu plus haut).

@@ -12,6 +12,9 @@ import { setStageRendererFactory, type StageRenderer } from '../../gameIso/stage
 import { hasSpritePicker } from '../../gameIso/stage/spritePicker';
 import { buildTokens } from '../../gameIso/builders/tokens';
 import { scenario as scenarioToits } from '../../scenes/test-scenarios/zones-pieces';
+import { RENDER_ORDER } from '../../gameIso/backends/webgl/renderRanks';
+import { effectiveLowerLayerMode, gabaritTint, layerHidden, LOWER_LAYER_ISOLATE_BELOW } from './lowerLayerGabarit';
+import { collectBillboards, wholeSceneBillboardEls } from '../../gameIso/backends/webgl/sceneMeshes';
 import type { PlanDefectAt } from '../../state/planDefects';
 
 /**
@@ -71,6 +74,35 @@ function sceneEmbuscade(): Scene {
   } as unknown as Scene['entities'][number];
   const rencontre = { id: 'guet-apens', members: [{ entityId: 'embusque-1' }] } as unknown as Scene['encounters'][number];
   return { ...s, entities: [embusque], encounters: [rencontre] };
+}
+
+/** Deux couches de plein sol : de quoi mesurer ce que le canevas fait de la couche du DESSOUS. */
+function sceneDeuxCouches(): Scene {
+  const s = emptyScene(6, 6);
+  const base = s.layers[0];
+  return { ...s, layers: [base, { ...base, z: 1, tiles: [...base.tiles] }] };
+}
+
+/** Une scène qui porte une LAMPE posée (`mapLights` la voit : un prop dont l'instance donne un rayon). */
+function sceneLampe(): Scene {
+  const s = emptyScene(6, 6);
+  const brasero = {
+    id: 'brasero-1', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'tonneau', light: { radiusTiles: 3 },
+  } as unknown as Scene['entities'][number];
+  return { ...s, entities: [brasero] };
+}
+
+/** Plaque de décalquage d'auteur : une image minuscule, calée comme le ferait le calage 2 points. */
+function plaque(position: 'above' | 'below') {
+  return {
+    imageDataUrl: 'data:image/png;base64,iVBORw0KGgo=',
+    naturalWidth: 400,
+    naturalHeight: 300,
+    opacity: 0.6,
+    visible: true,
+    position,
+    transform: { tx: 20, ty: -10, scale: 0.5, rotateDeg: 0 },
+  };
 }
 
 function baseProps() {
@@ -136,7 +168,14 @@ afterEach(() => {
  *  correctifs interrogent : scène de départ, couche éditée, mode de couche, calques d'authoring. */
 async function monter(
   tool: { mode: 'tile'; terrain: 'eau' } | { mode: 'erase' } | { mode: 'select' },
-  opts: { scene?: Scene; currentLayer?: number; lowerLayerMode?: 'gabarit' | 'isolee'; roofs?: boolean } = {},
+  opts: {
+    scene?: Scene;
+    currentLayer?: number;
+    lowerLayerMode?: 'gabarit' | 'isolee';
+    lowerLayerOpacity?: number;
+    roofs?: boolean;
+    traceLayer?: { position: 'above' | 'below' } | null;
+  } = {},
 ) {
   let scene = opts.scene ?? sceneAtelier();
   container = document.createElement('div');
@@ -151,6 +190,8 @@ async function monter(
         {...baseProps()}
         currentLayer={opts.currentLayer ?? 0}
         lowerLayerMode={opts.lowerLayerMode ?? 'gabarit'}
+        lowerLayerOpacity={opts.lowerLayerOpacity ?? 0.22}
+        traceLayer={opts.traceLayer ? plaque(opts.traceLayer.position) : null}
         layers={{ ...DEFAULT_LAYERS, roofs: opts.roofs ?? DEFAULT_LAYERS.roofs }}
         tool={tool as never}
         setScene={(s) => { scene = s; rendre(); }}
@@ -191,6 +232,37 @@ async function monter(
     /** SUJETS de billboard que l'hôte a donnés à peindre (décor + jetons d'entité). */
     sujets: () => Number((container!.querySelector('canvas.iso-stage') as HTMLCanvasElement).dataset.sujets),
     faces: () => facesDessinees(),
+    /**
+     * LUMINOSITÉ MOYENNE des couleurs de sommet réellement DESSINÉES (canal TEINTE). Une couleur de
+     * sommet porte l'albédo de la surface × sa variance de tuile × la teinte de visibilité : seule la
+     * dernière bouge d'un montage à l'autre à scène égale, donc la moyenne se compare — jamais un
+     * minimum absolu, qui ne mesurerait que le matériau le plus sombre de la carte.
+     */
+    lumiereMoyenne: () => {
+      let somme = 0;
+      let n = 0;
+      derniereScene?.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh || !m.userData.emprunte || !m.geometry) return;
+        const col = m.geometry.getAttribute('color')?.array as Float32Array | undefined;
+        const idx = m.geometry.getIndex();
+        if (!col || !idx) return;
+        for (const g of m.geometry.groups)
+          for (let i = g.start; i < g.start + g.count; i++) {
+            const v = idx.array[i] as number;
+            somme += (col[v * 3] + col[v * 3 + 1] + col[v * 3 + 2]) / 3;
+            n += 1;
+          }
+      });
+      return n ? somme / n : 0;
+    },
+    /** La plaque de décalquage montée dans le volume (`null` si aucune). */
+    decalque: () => {
+      let trouve: THREE.Mesh | null = null;
+      derniereScene?.traverse((o) => { if (o.name === 'decalque') trouve = o as THREE.Mesh; });
+      return trouve as THREE.Mesh | null;
+    },
+    marqueursLampe: () => svg.querySelectorAll('[data-lampes-auteur] circle').length,
   };
 }
 
@@ -285,20 +357,27 @@ describe('Éditeur — ce que le monde volumique donne à voir (#1176, P3-3)', (
     expect(isolee.sujets()).toBe(0); // couche isolée : rien du dessous, ni décoration ni corps
   });
 
-  it('le calque « Toits » agit sur le canevas : éteint, ses faces ne se dessinent plus', async () => {
+  /**
+   * TOITS — une seule voie les peint (#1176, P3-3, vague B). La surcouche SVG les redessine TOUS en
+   * mode plan étiqueté (nappe semi-transparente + nom de pièce), pour toutes les couches non cachées :
+   * si le canevas peignait en plus leurs masses, chaque toit serait peint DEUX fois — une fois teinté
+   * par la lumière, une fois en plan. Le canevas n'en garde donc aucun, et le calque « Toits » agit
+   * là où le dessin vit : sur le SVG.
+   */
+  it('les TOITS ne sont peints qu’une fois : aucune masse au canevas, le plan étiqueté au SVG', async () => {
     setStageBackend('webgl');
     const scene = scenarioToits.scene; // masure à 4 pièces sous UNE nappe à deux pans (masse z=0)
-    // Couche active = 1 : la nappe du z=0 n'est plus celle qui coifferait le plan qu'on trace, donc
-    // c'est bien le CALQUE, et lui seul, qui décide de la montrer.
     const avec = await monter({ mode: 'select' }, { scene, currentLayer: 1, roofs: true });
     const facesAvec = avec.faces();
-    await act(async () => root!.unmount());
-    root = null;
-    container!.remove();
-    container = null;
-    const sans = await monter({ mode: 'select' }, { scene, currentLayer: 1, roofs: false });
-    expect(facesAvec).toBeGreaterThan(0);
-    expect(sans.faces()).toBeLessThan(facesAvec);
+    // Les nappes en PLAN de l'éditeur ont leur signature : des losanges à `opacity=0,7` (`affineRoofs`).
+    const plansSvg = avec.svg.querySelectorAll('path[opacity="0.7"]').length;
+    expect(facesAvec).toBeGreaterThan(0); // le monde est bien cuit (murs, sols)
+    expect(plansSvg).toBeGreaterThan(0); // …et le SVG porte les nappes en plan
+    const sans = await remonter({ mode: 'select' }, { scene, currentLayer: 1, roofs: false });
+    // Le calque éteint ne change RIEN au canevas (il n'y avait aucune masse à retirer)…
+    expect(sans.faces()).toBe(facesAvec);
+    // …et retire bien les nappes du SVG : la case garde son sens, sur la voie qui les peint.
+    expect(sans.svg.querySelectorAll('path[opacity="0.7"]').length).toBeLessThan(plansSvg);
   });
 
   /**
@@ -318,5 +397,126 @@ describe('Éditeur — ce que le monde volumique donne à voir (#1176, P3-3)', (
     expect(h.faces()).toBe(facesAvant); // le terrain, lui, n'a pas bougé — la gomme n'y touche pas
     await h.up(3, 3);
     expect(h.cuissons()).toBe(1);
+  });
+});
+
+/** Remonte un éditeur neuf entre deux mesures (chaque montage a son monde cuit). */
+async function remonter(...args: Parameters<typeof monter>) {
+  await act(async () => root!.unmount());
+  root = null;
+  container!.remove();
+  container = null;
+  return monter(...args);
+}
+
+/**
+ * LES DEUX CANAUX DE COUCHE (#1176, P3-3, vague B) — le voile d'auteur et l'isolation, portés au
+ * volume par les canaux qui existent déjà : la TEINTE (`applyVisibilityTint`) et le DÉGAGEMENT
+ * (`applyCutawayMask`). La bascule de l'un à l'autre est arbitrée par un seuil, faute d'opacité dans
+ * le volume (raison au site de `LOWER_LAYER_ISOLATE_BELOW`).
+ */
+describe('Éditeur — canaux ISOLÉ et VOILÉ au canevas (#1176, P3-3, vague B)', () => {
+  it('mode ISOLÉ : les faces de la couche du dessous quittent le dessin (canal DÉGAGEMENT)', async () => {
+    setStageBackend('webgl');
+    const scene = sceneDeuxCouches();
+    const gabarit = await monter({ mode: 'select' }, { scene, currentLayer: 1, lowerLayerMode: 'gabarit' });
+    const avec = gabarit.faces();
+    const isolee = await remonter({ mode: 'select' }, { scene, currentLayer: 1, lowerLayerMode: 'isolee' });
+    expect(avec).toBeGreaterThan(0);
+    expect(isolee.faces()).toBeLessThan(avec);
+  });
+
+  it('mode GABARIT : la couche du dessous est VOILÉE par la teinte, et le curseur la dose', async () => {
+    setStageBackend('webgl');
+    const scene = sceneDeuxCouches();
+    const clair = await monter({ mode: 'select' }, { scene, currentLayer: 1, lowerLayerMode: 'gabarit', lowerLayerOpacity: 0.9 });
+    const lumClair = clair.lumiereMoyenne();
+    const sombre = await remonter({ mode: 'select' }, { scene, currentLayer: 1, lowerLayerMode: 'gabarit', lowerLayerOpacity: 0.3 });
+    // À scène et faces IDENTIQUES, la seule chose qui change est la teinte du gabarit : le curseur dose.
+    expect(sombre.faces()).toBe(clair.faces());
+    expect(sombre.lumiereMoyenne()).toBeLessThan(lumClair);
+  });
+
+  it('BASCULE SOUS SEUIL : un gabarit quasi éteint ISOLE au lieu de noircir', async () => {
+    setStageBackend('webgl');
+    const scene = sceneDeuxCouches();
+    const visible = await monter({ mode: 'select' }, { scene, currentLayer: 1, lowerLayerOpacity: 0.4 });
+    const facesVoilees = visible.faces();
+    const eteint = await remonter({ mode: 'select' }, { scene, currentLayer: 1, lowerLayerOpacity: 0.05 });
+    // Sous le seuil, la couche du dessous n'est plus DESSINÉE (dégagement) — elle n'est pas peinte en noir.
+    expect(eteint.faces()).toBeLessThan(facesVoilees);
+    // …et ce qui reste dessiné est à PLEINE teinte : la couche active, pas une couche noircie.
+    const actifSeul = await remonter({ mode: 'select' }, { scene, currentLayer: 1, lowerLayerMode: 'isolee' });
+    expect(eteint.lumiereMoyenne()).toBeCloseTo(actifSeul.lumiereMoyenne(), 9);
+  });
+
+  it('la loi de couche du canevas EST celle du SVG : le prédicat est partagé', () => {
+    // `layerHidden` : le dessus toujours masqué, le dessous seulement en isolé.
+    expect(layerHidden(2, 1, 'gabarit')).toBe(true);
+    expect(layerHidden(0, 1, 'gabarit')).toBe(false);
+    expect(layerHidden(0, 1, 'isolee')).toBe(true);
+    expect(layerHidden(1, 1, 'isolee')).toBe(false);
+    // …et le mode EFFECTIF du monde bascule sous le seuil, jamais au-dessus.
+    expect(effectiveLowerLayerMode('gabarit', LOWER_LAYER_ISOLATE_BELOW)).toBe('gabarit');
+    expect(effectiveLowerLayerMode('gabarit', LOWER_LAYER_ISOLATE_BELOW - 0.01)).toBe('isolee');
+    expect(effectiveLowerLayerMode('isolee', 1)).toBe('isolee');
+  });
+
+  /**
+   * LES CORPS passent par le MÊME canal que leur case — et par LUI SEUL. L'allure d'un board
+   * (`BoardChrome`) se lit par `cid`, et un `cid` n'est posé que sur un acteur de COMBAT
+   * (`actorBillboards`) : l'éditeur n'en monte aucun, donc rien ne l'atteindrait par là. C'est
+   * `collectBillboards` qui pose `tint: tintAt(cellKey)` sur chaque figurant et chaque décor.
+   */
+  it('les CORPS d’une couche basse s’assombrissent par le canal TEINTE, dosé par le curseur', () => {
+    // Un décor par couche : celui du DESSOUS doit se voiler, celui de la couche active non.
+    const base = sceneDeuxCouches();
+    const decor = (id: string, z: number) => ({ id, kind: 'prop', pos: { x: 1 + z, y: 1 }, z, ref: 'tonneau' } as unknown as Scene['entities'][number]);
+    const scene: Scene = { ...base, entities: [decor('bas', 0), decor('haut', 1)] };
+    const els = wholeSceneBillboardEls(scene);
+    const sujets = (opacite: number) =>
+      collectBillboards(scene, 2, (k) => gabaritTint(k, 1, opacite), els).map((b) => b.tint);
+    const clair = sujets(0.9);
+    const sombre = sujets(0.3);
+    expect(clair.length).toBeGreaterThan(0); // la scène a bien des corps à voiler
+    expect(sombre).toEqual(clair.map((t) => (t === 1 ? 1 : 0.3)));
+    expect(sombre.some((t) => t < 1)).toBe(true); // …et le gabarit les touche vraiment
+    // La couche ACTIVE, elle, reste pleine quel que soit le curseur.
+    expect(collectBillboards(scene, 2, (k) => gabaritTint(k, 0, 0.3), els).every((b) => b.tint === 1)).toBe(true);
+  });
+});
+
+/** Les familles restantes de la vague B : plaque de décalquage au monde, marqueurs de lampe. */
+describe('Éditeur — plaque de décalquage et marqueurs d’auteur (#1176, P3-3, vague B)', () => {
+  for (const position of ['below', 'above'] as const)
+    it(`la plaque « ${position} » est montée en QUAD MONDE (et quitte le SVG)`, async () => {
+      setStageBackend('webgl');
+      const h = await monter({ mode: 'select' }, { traceLayer: { position } });
+      const mesh = h.decalque();
+      expect(mesh).not.toBeNull();
+      expect(mesh!.geometry.getAttribute('position').count).toBe(4);
+      expect(mesh!.renderOrder).toBe(RENDER_ORDER[position === 'above' ? 'chrome' : 'decalque']);
+      // Une seule plaque : le SVG ne porte plus la sienne (elle serait doublée, et à un autre ancrage).
+      expect(h.svg.querySelector('image')).toBeNull();
+    });
+
+  it('voie AFFINE : la plaque reste au SVG — une seule voie la peint à la fois', async () => {
+    setStageBackend('affine');
+    const h = await monter({ mode: 'select' }, { traceLayer: { position: 'below' } });
+    expect(h.svg.querySelector('image')).not.toBeNull();
+  });
+
+  it('les SOURCES LUMINEUSES posées portent un marqueur d’auteur (en plein jour, rien ne les trahirait)', async () => {
+    setStageBackend('webgl');
+    const h = await monter({ mode: 'select' }, { scene: sceneLampe() });
+    expect(h.marqueursLampe()).toBe(1);
+    // …et la portée authorée s'y lit : le cercle est là, à côté du point.
+    expect(h.svg.querySelectorAll('[data-lampes-auteur] ellipse').length).toBe(1);
+  });
+
+  it('…et une scène SANS source n’en montre aucun', async () => {
+    setStageBackend('webgl');
+    const h = await monter({ mode: 'select' });
+    expect(h.svg.querySelector('[data-lampes-auteur]')).toBeNull();
   });
 });
