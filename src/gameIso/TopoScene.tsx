@@ -1,18 +1,28 @@
 /**
- * TopoScene — vue TOP-DOWN symbolique d'une scène (plan de niveau / minimap), PURE et sans store
- * (discipline de PortraitTile). N'est PAS un 2ᵉ moteur d'affichage : réutilise le MÊME pipeline que le
- * stage de jeu — builders camera-free (`buildFloors`/`buildWalls`) → couches `floorLayerObjs`/
- * `wallLayerObjs` (celles d'IsoStage) → `sortByDepth`. En `view:'top'` le mur se rend en trait
- * symbolique et le sol en tuile carrée ; LOD 0 = silhouette plate. La minimap sélectionne
- * DÉLIBÉRÉMENT la sous-couche STRUCTURELLE (sols + murs) — pas de toits/props/tokens/fx/highlights
- * (game-only). Un nouveau type d'élément (terrain/mur/structure) apparaît ici automatiquement (rendu
- * partagé) ; une nouvelle COUCHE structurelle à montrer sur le plan s'ajoute à `structuralObjs` (1 ligne).
- * Par-dessus : une couche de MARQUEURS de station + des pastilles de combattants optionnelles.
+ * TopoScene — vue TOP-DOWN symbolique d'une scène (plan de niveau / minimap). N'est PAS un 2ᵉ moteur
+ * d'affichage : le monde lui vient du MÊME pipeline que le stage de jeu, sur la voie de rendu en
+ * vigueur (`state/stage3d.ts`, interrupteur de chantier #1176) —
+ *  - voie AFFINE : builders camera-free (`buildFloors`/`buildWalls`) → couches `floorLayerObjs`/
+ *    `wallLayerObjs` (celles d'IsoStage) → `sortByDepth`, en SVG ;
+ *  - voie VOLUMIQUE : la MATIÈRE (les sols de l'étage) en instantané volumique posé SOUS le SVG
+ *    (`stage/PlanWorldCanvas`), la STRUCTURE (les murs) restant au trait symbolique SVG — la coiffe
+ *    d'un mur volumique tombe sous le pixel à l'échelle d'un plan (mesure au JSDoc de
+ *    `stage/planSnapshot.ts`), là où le trait affine est invariant d'échelle.
+ * En `view:'top'` le mur se rend en trait symbolique et le sol en tuile carrée ; LOD 0 = silhouette
+ * plate. La minimap sélectionne DÉLIBÉRÉMENT la sous-couche STRUCTURELLE (sols + murs) — pas de
+ * toits/props/tokens/fx/highlights (game-only). Un nouveau type d'élément (terrain/mur/structure)
+ * apparaît ici automatiquement (rendu partagé) ; une nouvelle COUCHE structurelle à montrer sur le
+ * plan s'ajoute à `structuralObjs` (1 ligne).
+ * Par-dessus, dans les DEUX voies : une couche de MARQUEURS de station + des pastilles de combattants
+ * optionnelles — affordances cliquables et symboles d'état restent en SVG.
  */
+import { useState, useSyncExternalStore } from 'react';
 import { buildFloors } from './builders/floors';
 import { buildWalls } from './builders/walls';
 import { floorLayerObjs, wallLayerObjs } from './stage/layers';
 import { sortByDepth } from './stage/objs';
+import { PlanWorldCanvas } from './stage/PlanWorldCanvas';
+import { getStageBackend, subscribeStageBackend } from '../state/stage3d';
 import { stageSize, tileCenter, type Dims } from '../geometry/iso';
 import { IconG } from '../ui/Icon';
 import { MARKER_R, stationMarker, colocationOffsets } from './topoMarkers';
@@ -39,8 +49,6 @@ export interface TopoSceneProps {
   /** Pastilles de repérage (localiser un héros / un servant) — optionnel. */
   combatants?: Combatant[];
   selectedStationId?: string;
-  /** Ensemble VISIBLE « x,y,z » (brouillard) ; transmis tel quel comme `visible` aux builders. */
-  fog?: ReadonlySet<string>;
   /** Étage à PLANIFIER (défaut : le rez). Le plan n'en montre qu'UN — cf. `structuralObjs`. */
   z?: number;
   viewport?: { w: number; h: number };
@@ -48,23 +56,40 @@ export interface TopoSceneProps {
   onSelectEntity?: (combatantId: string) => void;
 }
 
-/** Couche STRUCTURELLE (sols + murs) via les MÊMES fonctions de couche que le stage de jeu
- *  (`floorLayerObjs`/`wallLayerObjs` + `sortByDepth`) : aucune ré-implémentation d'assemblage. Un `fog`
- *  fourni restreint les tuiles construites (RAW : plan de ce qui est vu). Émet les nœuds pré-triés.
+/** Couche STRUCTURELLE SVG via les MÊMES fonctions de couche que le stage de jeu (`floorLayerObjs`/
+ *  `wallLayerObjs` + `sortByDepth`) : aucune ré-implémentation d'assemblage. Émet les nœuds pré-triés.
+ *  `sols` = les sols entrent dans le SVG (voie affine) ; sur la voie volumique ils viennent du canevas
+ *  posé dessous, et seuls les murs restent ici.
  *  `z` = l'étage PLANIFIÉ, passé aux builders comme leur `viewZ` (isolement d'un étage) : un plan se lit
  *  à la VERTICALE, un seul plancher à la fois — sans lui, les murs de TOUS les étages se superposent. */
-function structuralObjs(scene: Scene, dims: Dims, z: number, fog?: ReadonlySet<string>) {
+function structuralObjs(scene: Scene, dims: Dims, z: number, sols: boolean) {
   const view = { activeZ: z, viewZ: z };
   return sortByDepth(
-    floorLayerObjs(buildFloors(scene, fog, view), scene, dims, NEUTRAL_CTX, 0, LOD0),
-    wallLayerObjs(buildWalls(scene, fog, view), dims, NO_OCCLUDE, 0, LOD0),
+    sols ? floorLayerObjs(buildFloors(scene, undefined, view), scene, dims, NEUTRAL_CTX, 0, LOD0) : [],
+    wallLayerObjs(buildWalls(scene, undefined, view), dims, NO_OCCLUDE, 0, LOD0),
   );
 }
 
-export function TopoScene({ scene, stations, combatants, selectedStationId, z = 0, fog, viewport, onSelectStation, onSelectEntity }: TopoSceneProps) {
+export function TopoScene({ scene, stations, combatants, selectedStationId, z = 0, viewport, onSelectStation, onSelectEntity }: TopoSceneProps) {
+  const stageBackend = useSyncExternalStore(subscribeStageBackend, getStageBackend, getStageBackend);
+  const webgl = import.meta.env.DEV && stageBackend === 'webgl';
+  // MATIÈRE PEINTE par le canevas volumique ? Un contexte GL refusé (machine sans accélération, budget
+  // de contextes épuisé) laisserait sinon des murs flottant sur un fond transparent : les sols
+  // REVIENNENT alors au SVG. Vrai tant que rien n'a échoué — la voie affine ne pose jamais la question.
+  const [matièreVolumique, setMatièreVolumique] = useState(true);
+  const solsSvg = !webgl || !matièreVolumique;
   const dims: Dims = { w: scene.dimensions.w, h: scene.dimensions.h, view: 'top' };
   const { w, h } = stageSize(dims);
   return (
+    // Le canevas de matière et le SVG partagent EXACTEMENT la même boîte (100 %×100 % de ce conteneur) :
+    // c'est la condition du `meet` commun — deux boîtes différentes se letterboxeraient différemment, et
+    // les marqueurs quitteraient leurs cases.
+    <div
+      style={viewport
+        ? { position: 'relative', width: viewport.w, height: viewport.h }
+        : { position: 'relative', width: '100%', height: '100%' }}
+    >
+    {webgl && <PlanWorldCanvas scene={scene} z={z} onMatière={setMatièreVolumique} />}
     <svg
       className="topo-scene"
       viewBox={`0 0 ${w} ${h}`}
@@ -74,9 +99,11 @@ export function TopoScene({ scene, stations, combatants, selectedStationId, z = 
       // Sans viewport imposé : REMPLIT son conteneur (100 %×100 %) et se letterbox via `meet` → tout le
       // plan tient dans la boîte bornée du consommateur, sans scroll ni effondrement à 0. Le conteneur
       // porte la hauteur définie (cf. `.topo-panel`).
-      style={viewport ? { display: 'block' } : { width: '100%', height: '100%', display: 'block' }}
+      style={viewport
+        ? { display: 'block', position: 'relative' }
+        : { width: '100%', height: '100%', display: 'block', position: 'relative' }}
     >
-      <g>{structuralObjs(scene, dims, z, fog).map((o) => o.el)}</g>
+      <g>{structuralObjs(scene, dims, z, solsSvg).map((o) => o.el)}</g>
       {(() => {
         // Les marqueurs suivent l'étage PLANIFIÉ comme la structure : pointer une station d'un autre
         // niveau sur ce plan la placerait dans des murs qui n'y sont pas.
@@ -130,5 +157,6 @@ export function TopoScene({ scene, stations, combatants, selectedStationId, z = 
         );
       })}
     </svg>
+    </div>
   );
 }

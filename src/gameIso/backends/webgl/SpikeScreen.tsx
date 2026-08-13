@@ -37,8 +37,9 @@ import {
   type BillboardConvention,
 } from './billboardMath';
 import { clearBillboardTextures, getBillboardTexture, svgToTexture } from './svgTexture';
-import { clearPeriodTextures, getPeriodTexture } from './periodTexture';
-import { clearFaceBakes, getFaceBake } from './faceBake';
+import { clearPeriodTextures } from './periodTexture';
+import { clearFaceBakes } from './faceBake';
+import { worldSurfaceMaterials } from './worldMaterials';
 import {
   billboardDepthOffsetUnits,
   billboardPose,
@@ -245,45 +246,12 @@ export function SpikeScreen(): JSX.Element {
       // posé en bord de carte regarderait sinon le vide. Les boutons de pivot posent un cap explicite.
       const facing = opts.facing === 'auto' ? facingToward(start, { x: (scene.dimensions.w - 1) / 2, y: (scene.dimensions.h - 1) / 2 }) : opts.facing;
 
-      // UN MATÉRIAU PAR GROUPE DE SURFACE (`geometry.userData.surfaceGroups`, index = `materialIndex`) :
-      // la géométrie reste FUSIONNÉE, seul le dessin se scinde. Le groupe NU garde la couleur cuite au
-      // sommet ; les autres reçoivent le masque de période de leur surface. Les UV du monde sont en
-      // MÈTRES : la répétition vaut donc l'inverse de la période métrique DU GROUPE (le `v` d'un pan de
-      // toit suit sa pente). La teinte reste portée par la couleur de sommet — la `map` la MULTIPLIE ;
-      // le masque plafonnant à 1, l'éclaircissement des blocs clairs revient à la couleur du matériau.
-      // Un groupe CUIT PAR FACE (colombage) ne répète rien : son image est échantillonnée sur l'UV de
-      // face (`uv1`, `texture.channel = 1`) et porte DÉJÀ le fond de période de sa surface.
+      // UN MATÉRIAU PAR GROUPE DE SURFACE (`backends/webgl/worldMaterials.ts`, source unique partagée
+      // avec l'écran de jeu). La planche du spike se juge en DEUX régimes : `lit` porte le lambertien
+      // de production, son absence le régime plat — le seul axe où cet écran diverge du jeu.
       const anisotropy = renderer.capabilities.getMaxAnisotropy();
-      const materials = geometry.userData.surfaceGroups.map((g) => {
-        const mat = opts.lit
-          ? new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide, flatShading: true })
-          : new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
-        disposables.push(mat);
-        if (g.bake && g.recipe) {
-          const cuisson = getFaceBake(
-            g.key,
-            { color: g.color ?? '', recipe: g.recipe, part: g.part },
-            g.bake.wM,
-            g.bake.hM,
-            g.variant ?? 0,
-            anisotropy,
-          );
-          if (cuisson) {
-            mat.map = cuisson.texture;
-            mat.color.setScalar(cuisson.gain);
-          }
-          return mat;
-        }
-        const période = g.kind && g.recipe && g.periodM
-          ? getPeriodTexture(g.key, g.recipe, g.variant ?? 0, { kind: g.kind, baseColor: g.color ?? '', anisotropy })
-          : null;
-        if (période && g.periodM) {
-          période.texture.repeat.set(1 / g.periodM.u, 1 / g.periodM.v);
-          mat.map = période.texture;
-          mat.color.setScalar(période.gain);
-        }
-        return mat;
-      });
+      const materials = worldSurfaceMaterials(geometry, anisotropy, { lit: opts.lit });
+      disposables.push(...materials);
       const worldMesh = new THREE.Mesh(geometry, materials);
       worldMesh.castShadow = opts.lit;
       worldMesh.receiveShadow = opts.lit;

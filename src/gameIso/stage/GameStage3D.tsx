@@ -89,8 +89,9 @@ import {
   type BillboardCamera,
 } from '../backends/webgl/billboardMath';
 import { clearBillboardTextures, getBillboardTexture, svgToTexture } from '../backends/webgl/svgTexture';
-import { clearPeriodTextures, getPeriodTexture } from '../backends/webgl/periodTexture';
-import { clearFaceBakes, getFaceBake } from '../backends/webgl/faceBake';
+import { clearPeriodTextures } from '../backends/webgl/periodTexture';
+import { clearFaceBakes } from '../backends/webgl/faceBake';
+import { worldSurfaceMaterials } from '../backends/webgl/worldMaterials';
 import {
   actorBillboards,
   applyCutawayMask,
@@ -961,29 +962,11 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     const renderer = rendererRef.current;
     if (!groupe || !renderer) return;
     const anisotropy = renderer.capabilities.getMaxAnisotropy();
-    // UN MATÉRIAU PAR GROUPE DE SURFACE : la géométrie reste fusionnée, seul le dessin se scinde. Le
-    // régime NE BASCULE PLUS avec la lumière : toujours lambertien, même sans soleil — l'ambiante porte
-    // alors la scène à elle seule (`stageLights`), et le crépuscule n'a plus de marche d'escalier.
-    const materials = geometry.userData.surfaceGroups.map((g) => {
-      const mat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide, flatShading: true });
-      if (g.bake && g.recipe) {
-        const cuisson = getFaceBake(g.key, { color: g.color ?? '', recipe: g.recipe, part: g.part }, g.bake.wM, g.bake.hM, g.variant ?? 0, anisotropy);
-        if (cuisson) {
-          mat.map = cuisson.texture;
-          mat.color.setScalar(cuisson.gain);
-        }
-        return mat;
-      }
-      const période = g.kind && g.recipe && g.periodM
-        ? getPeriodTexture(g.key, g.recipe, g.variant ?? 0, { kind: g.kind, baseColor: g.color ?? '', anisotropy })
-        : null;
-      if (période && g.periodM) {
-        période.texture.repeat.set(1 / g.periodM.u, 1 / g.periodM.v);
-        mat.map = période.texture;
-        mat.color.setScalar(période.gain);
-      }
-      return mat;
-    });
+    // UN MATÉRIAU PAR GROUPE DE SURFACE (`backends/webgl/worldMaterials.ts`, source unique) : la
+    // géométrie reste fusionnée, seul le dessin se scinde. Le régime NE BASCULE PLUS avec la lumière :
+    // toujours lambertien, même sans soleil — l'ambiante porte alors la scène à elle seule
+    // (`stageLights`), et le crépuscule n'a plus de marche d'escalier.
+    const materials = worldSurfaceMaterials(geometry, anisotropy);
     const mesh = new THREE.Mesh(geometry, materials);
     mesh.userData.emprunte = true;
     // Le monde caste et reçoit TOUJOURS : sans lampe à ombre, three ne compile aucun chemin d'ombre —

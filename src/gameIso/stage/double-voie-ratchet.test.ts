@@ -26,8 +26,11 @@ import { join, relative } from 'node:path';
  */
 const RACINE = fileURLToPath(new URL('..', import.meta.url)); // src/gameIso/
 
-/** Import d'un module de la voie AFFINE : la couche monde SVG, ou l'un de ses backends. */
-const VOIE_AFFINE = /from\s+'[^']*(?:\/|^)(CulledScene|backends\/affine[A-Za-z]*)'/;
+/** Import d'un module de la voie AFFINE : la couche monde SVG, l'ASSEMBLAGE de ses couches
+ *  (`stage/layers` — les sols/murs/toits projetés par les backends affines), ou l'un de ces backends.
+ *  Sans `layers`, un consommateur qui n'entre dans la voie affine QUE par l'assemblage de couches
+ *  restait invisible au filet — le plan de station (`TopoScene`) en était un. */
+const VOIE_AFFINE = /from\s+'[^']*(?:\/|^)(CulledScene|layers|backends\/affine[A-Za-z]*)'/;
 
 function fichiersDeProduction(dir: string, out: string[] = []): string[] {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
@@ -46,9 +49,11 @@ const consommateurs = fichiersDeProduction(RACINE)
   .sort();
 
 /**
- * ÉTAT MESURÉ le 2026-08-10 (fin du lot P2-2). La liste est NOMMÉE : un plafond seul laisserait un
+ * ÉTAT MESURÉ le 2026-08-13 (lot P3-4, commit C2). La liste est NOMMÉE : un plafond seul laisserait un
  * consommateur en remplacer un autre sans que rien ne bouge.
  *   - `IsoStage.tsx` monte `CulledScene` et les motifs de détail affines ;
+ *   - `TopoScene.tsx` (plan de station) assemble la STRUCTURE de son plan par `stage/layers` — sa
+ *     matière, elle, passe par l'instantané volumique (`stage/planSnapshot`) ;
  *   - `stage/layers.tsx` projette sols/murs/toits par les backends affines ;
  *   - `stage/highlightLayer.tsx` et `stage/tokens.tsx` en font autant pour les surbrillances et la
  *     profondeur des décors.
@@ -56,6 +61,7 @@ const consommateurs = fichiersDeProduction(RACINE)
  */
 const CONSOMMATEURS = [
   'IsoStage.tsx',
+  'TopoScene.tsx',
   'stage/highlightLayer.tsx',
   'stage/layers.tsx',
   'stage/tokens.tsx',
