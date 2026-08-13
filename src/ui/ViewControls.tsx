@@ -16,13 +16,21 @@ export interface ViewControlsProps {
   onTogglePov?: () => void;
   inspectEnabled?: boolean;
   onToggleInspect?: () => void;
+  /**
+   * ÉCHELLE RÉELLEMENT RENDUE (1 = taille naturelle), quand l'hôte sait la mesurer. Le `zoom` ci-dessus
+   * est celui du viewBox ; l'élément, lui, peut être rétréci par la mise en page (`.editor-iso` est à
+   * TAILLE DE CONTENU sous `max-width: 100%`), et ce que l'auteur voit vaut alors `zoom × ce
+   * rétrécissement`. Afficher le zoom seul ment d'autant (mesuré #1176 : pas de case 40,3 px pour un
+   * HUD à « 100 % »). Absente = l'hôte n'a pas de rétrécissement à déclarer, le zoom EST l'échelle.
+   */
+  renderedScale?: number;
   /** Voie de rendu du monde (#1176) : `true` = monde volumique. Interrupteur de CHANTIER — l'appelant
    *  ne le fournit qu'en DEV (`import.meta.env.DEV`) ; le bouton n'existe pas sans lui. */
   stage3d?: boolean;
   onToggleStage3d?: () => void;
 }
 
-export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateLeft, onRotateRight, view, onToggleView, pov, onTogglePov, inspectEnabled, onToggleInspect, stage3d, onToggleStage3d }: ViewControlsProps) {
+export function ViewControls({ zoom, renderedScale, onZoomIn, onZoomOut, onZoomReset, onRotateLeft, onRotateRight, view, onToggleView, pov, onTogglePov, inspectEnabled, onToggleInspect, stage3d, onToggleStage3d }: ViewControlsProps) {
   const stop = (fn: () => void) => (e: React.PointerEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -100,7 +108,9 @@ export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateL
         <button type="button" className="btn vc-btn" title="Zoom arrière" aria-label="Zoom arrière" onPointerDown={stop(onZoomOut)}>
           <Icon id="ui/zoom-out" size="sm" />
         </button>
-        <output className="vc-zoom-value">{Math.round(zoom * 100)}%</output>
+        <output className="vc-zoom-value" title={renderedScale !== undefined ? `Zoom ${Math.round(zoom * 100)} %, à l’écran ${Math.round(renderedScale * 100)} %` : undefined}>
+          {Math.round((renderedScale ?? zoom) * 100)}%
+        </output>
         <button type="button" className="btn vc-btn" title="Zoom avant" aria-label="Zoom avant" onPointerDown={stop(onZoomIn)}>
           <Icon id="ui/zoom-in" size="sm" />
         </button>

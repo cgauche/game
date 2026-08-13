@@ -263,6 +263,10 @@ async function monter(
       return trouve as THREE.Mesh | null;
     },
     marqueursLampe: () => svg.querySelectorAll('[data-lampes-auteur] circle').length,
+    /** Traits de la GRILLE d'authoring montés dans le SVG. */
+    grille: () => svg.querySelectorAll('[data-grille] line').length,
+    /** Les losanges d'empreinte d'une entité (marque de sol) et leur remplissage. */
+    empreintes: () => [...svg.querySelectorAll('path[stroke-dasharray="4 3"]')] as SVGPathElement[],
   };
 }
 
@@ -397,6 +401,49 @@ describe('Éditeur — ce que le monde volumique donne à voir (#1176, P3-3)', (
     expect(h.faces()).toBe(facesAvant); // le terrain, lui, n'a pas bougé — la gomme n'y touche pas
     await h.up(3, 3);
     expect(h.cuissons()).toBe(1);
+  });
+});
+
+/**
+ * CE QUE L'AUTEUR VOIT DE SA CARTE — les deux manques de la recette 2026-08-13 : plus aucune limite de
+ * case (le volume fusionne les faces coplanaires, là où le contour de chaque losange affine donnait la
+ * grille), et un embusqué indiscernable d'un figurant (sa marque ne vivait que sur la branche enrôlée).
+ */
+describe('Éditeur — grille de cases et marques d’entité (#1176, P3-3)', () => {
+  it('voie VOLUMIQUE : la GRILLE est montée, un trait par rangée et par colonne', async () => {
+    setStageBackend('webgl');
+    const h = await monter({ mode: 'select' });
+    expect(h.grille()).toBe(8 + 8 + 2); // scène d'atelier 8×8
+  });
+
+  it('voie AFFINE : aucune grille montée — le contour des losanges de sol la donne déjà', async () => {
+    setStageBackend('affine');
+    const h = await monter({ mode: 'select' });
+    expect(h.svg.querySelector('[data-grille]')).toBeNull();
+    expect(h.solsSvg()).toBeGreaterThan(0);
+  });
+
+  it('un EMBUSQUÉ non enrôlé porte quand même ses tirets — sinon rien ne le distingue d’un figurant', async () => {
+    setStageBackend('webgl');
+    const seul = { ...sceneEmbuscade(), encounters: [] };
+    const h = await monter({ mode: 'select' }, { scene: seul });
+    const marques = h.empreintes();
+    expect(marques.length).toBeGreaterThan(0);
+    // La marque est AU-DESSUS du canevas (le SVG l'est tout entier) et n'est pas transparente.
+    const groupe = marques[0].parentElement!;
+    expect(Number(groupe.getAttribute('opacity') ?? 1)).toBeGreaterThan(0.5);
+  });
+
+  it('…et sa marque est un CONTOUR au sol, jamais un aplat qui barre le corps', async () => {
+    setStageBackend('webgl');
+    const webgl = await monter({ mode: 'select' }, { scene: sceneEmbuscade() });
+    expect(webgl.empreintes().every((p) => p.getAttribute('fill') === 'none')).toBe(true);
+    const affine = await remonter({ mode: 'select' }, { scene: sceneEmbuscade() });
+    setStageBackend('affine');
+    const plein = await remonter({ mode: 'select' }, { scene: sceneEmbuscade() });
+    void affine;
+    // La voie AFFINE garde son médaillon plein : le corps y tient DANS la case, rien ne le barre.
+    expect(plein.empreintes().every((p) => p.getAttribute('fill') === 'none')).toBe(false);
   });
 });
 

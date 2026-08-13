@@ -5,7 +5,7 @@
  * Les overlays sont en `pointer-events: none` : tout le picking passe par `hitAt` (les calques
  * masqués laissent cliquer à travers). La logique de mutation vit dans `editorState` (pur).
  */
-import { useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Scene, sceneMetresPerTile, heightAt, isDescriptiveZone, type SceneEffectZone } from '../../state/scene';
 import { sceneZoneTiles } from '../../state/zones';
 import { Dims, diamondPath, tileCenter, tileEdge, type EdgeSide, screenToTileAtZ, screenToTileF, stageSize, depth, TH } from '../../geometry/iso';
@@ -29,6 +29,7 @@ import { transformToSvg, nearestNode, type CalibStep, type TraceTransform } from
 import type { useEditorView } from './useEditorView';
 import { effectiveLowerLayerMode, gabaritTint, layerHidden, type LowerLayerMode } from './lowerLayerGabarit';
 import { projectedRangeAxes } from './lampMarker';
+import { gridLines } from './authorGrid';
 import {
   Tool, Layers, Sel, Rect, Pt, Edge4, rectFrom, hitAt, selRect, selZ, moveSel, resizeSel, paintTiles, fillTerrainRect,
   placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, EFFECT_ZONE_SEEDS, addEnemyMember, eraseAt, entityAt, sameSel,
@@ -83,6 +84,9 @@ const ROOM_LINE = 'rgba(150,150,220,0.55)';
 /** Encre des MARQUEURS DE LAMPE d'auteur (#1176, P3-3) : l'ambre d'une flamme, distinct des natures de
  *  zone ci-dessus — une source lumineuse n'est ni un piège, ni une barrière, ni une pièce. */
 const LAMP_INK = 'rgba(255,196,92,0.95)';
+/** Encre de la GRILLE d'authoring : un gris froid DISCRET — elle borne la case sans concurrencer ni le
+ *  terrain qu'on peint, ni les traits d'auteur (zones, murs, sélection) qui, eux, portent du sens. */
+const GRID_INK = 'rgba(190,205,225,0.22)';
 
 /** Les 4 voisines de grille d'une case, appariées à l'ARÊTE qui les sépare (`tileEdge`). */
 const ZONE_SIDES = [
@@ -752,6 +756,33 @@ export function EditorCanvas({
   // acteurs de combat (`actorBillboards`) — l'éditeur n'en monte aucun. C'est le canal TEINTE qui
   // assombrit ses corps de couche basse, ci-dessus, et il suffit.
   const els3d = useMemo(() => ({ tokens: tokenEls3d, props: propEls3d }), [tokenEls3d, propEls3d]);
+  // ÉCHELLE RÉELLEMENT RENDUE : le SVG est à TAILLE DE CONTENU et la mise en page le rétrécit
+  // (`.editor-iso { max-width: 100% }`), donc ce que l'auteur voit vaut `zoom × ce rétrécissement` —
+  // c'est cette valeur, et pas le zoom du viewBox, que l'HUD doit annoncer (mesuré #1176 : 40,3 px de
+  // pas de case pour un HUD à « 100 % »). Les deux VOIES rendent le même pas au centième (leur cadre
+  // est commun, prouvé au pixel) : il n'y avait pas de divergence à corriger, seulement un affichage.
+  const [echelleRendue, setEchelleRendue] = useState(1);
+  useLayoutEffect(() => {
+    const svg = canvasRef.current;
+    if (!svg) return;
+    const mesurer = () => {
+      const large = svg.getBoundingClientRect().width;
+      if (large > 0 && stage.w > 0) setEchelleRendue((k) => (Math.abs(k - (large / stage.w) * vb.zoom) < 1e-3 ? k : (large / stage.w) * vb.zoom));
+    };
+    mesurer();
+    // `ResizeObserver` n'est pas universel (jsdom des bancs, navigateurs anciens) : sans lui la mesure
+    // vaut celle du rendu courant, et l'HUD reste juste tant que la colonne ne change pas de largeur.
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(mesurer);
+    ro.observe(svg);
+    return () => ro.disconnect();
+  }, [stage.w, vb.zoom, canvasRef]);
+  // GRILLE D'AUTHORING : bâtie 1× par (carte, caméra, couche) — `w+h+2` segments, jamais un par case.
+  const grilleAuteur = useMemo(
+    () => (webgl ? gridLines(dims, currentLayer) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [webgl, scene.dimensions, rot, viewMode, currentLayer],
+  );
   // SOURCES LUMINEUSES POSÉES de la scène — la MÊME liste que le champ mécanique de vision consomme
   // (`mapLights`), filtrée par la loi de couche de l'éditeur. Leur marqueur est une surcouche d'auteur
   // (cf. le site de rendu) : en plein jour, aucune flaque ne les trahirait.
@@ -847,9 +878,23 @@ export function EditorCanvas({
               ),
             )}
           </g>
+          {/* GRILLE DE CASES (#1176, P3-3) : la voie VOLUMIQUE fusionne les faces coplanaires de même
+              matériau — deux cases voisines de même terrain n'y ont plus aucune limite visible, là où
+              le contour de chaque losange affine la donnait gratuitement. La grille redevient donc une
+              surcouche d'AUTEUR, explicite, posée sur la couche qu'on édite. Elle ne se monte qu'en
+              volumique : en affine, la doubler épaissirait un trait déjà là. */}
+          {webgl && (
+            <g pointerEvents="none" data-grille={grilleAuteur.length}>
+              {grilleAuteur.map((l, i) => (
+                <line key={`gr-${i}`} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke={GRID_INK} strokeWidth={1} shapeRendering="crispEdges" />
+              ))}
+            </g>
+          )}
           {/* APERÇU DU TRAIT en cours (voie volumique) : les cases déjà peintes, par le backend
-              AFFINE — l'auteur voit le TERRAIN qu'il pose, pas un losange symbolique, alors que le
-              monde volumique reste sur la cuisson d'avant le geste. */}
+              AFFINE. SÉMANTIQUE juste — la bonne case, le bon terrain, la bonne couche — mais MATIÈRE
+              affine : deux moteurs, deux façons d'ombrer, l'aperçu sort ~20 % plus sombre que la
+              cuisson qui lui succède au relâché (mesuré : 39,79,123 contre 49,94,144). C'est un
+              repère de GESTE — la bonne case tout de suite — pas un rendu final. */}
           {apercuTrait.length > 0 && (
             <g pointerEvents="none" data-apercu-trait={apercuTrait.length}>
               {apercuTrait.map((r) => (
@@ -931,7 +976,17 @@ export function EditorCanvas({
                 if (hidden && !layers.spawns) continue; // calque « Ennemis » masqué → cacher les embusqueurs
                 const isCombat = memberIds.has(en.id);
                 const isSel = sameSel(sel, { type: 'entity', id: en.id });
-                if (isCombat) {
+                // MARQUE DE SOL d'une entité : une entité ENRÔLÉE porte l'empreinte de sa rencontre, un
+                // EMBUSQUÉ porte ses tirets — enrôlé ou NON. C'était le trou (#1176, P3-3) : la marque
+                // d'embuscade ne vivait que dans la branche enrôlée, donc un embusqueur posé seul
+                // n'avait AUCUN signe distinctif (mesuré : zéro pixel d'écart avec un figurant).
+                const marque = isCombat || hidden;
+                // APLAT : la voie AFFINE seule. Le corps volumique est un billboard DEBOUT et ce SVG se
+                // peint AU-DESSUS du canevas : un losange plein y barrait le personnage en travers des
+                // jambes (mesuré à y=646). En volumique la marque reste au SOL — un CONTOUR, la même
+                // convention que les anneaux du jeu au pied des billboards (`builders/dynamicMarks`).
+                const aplat = webgl ? 'none' : 'rgba(192,57,43,0.32)';
+                if (marque) {
                   objs.push({
                     d: depth(en.pos.x, en.pos.y, dims, ez) + 0.45,
                     el: (
@@ -940,16 +995,16 @@ export function EditorCanvas({
                           <path
                             key={`fp-${t.x}-${t.y}`}
                             d={diamondPath(t.x, t.y, dims, ez)}
-                            fill="rgba(192,57,43,0.32)"
+                            fill={aplat}
                             stroke={isSel ? SELECT : '#c0392b'}
                             strokeWidth={isSel ? 2.5 : 1.5}
                             strokeDasharray={hidden ? '4 3' : undefined}
                           />
                         ))}
                         {/* CORPS du jeton : la voie volumique le peint (billboard), la voie affine
-                            ici. Les décorations d'auteur (empreinte enrôlée, liseré de sélection)
-                            restent au SVG dans les DEUX voies. */}
-                        {!webgl && <EntityToken ent={en} dims={dims} enrolled />}
+                            ici. Les décorations d'auteur (empreinte, tirets d'embuscade, liseré de
+                            sélection) restent au SVG dans les DEUX voies. */}
+                        {!webgl && <EntityToken ent={en} dims={dims} enrolled={isCombat} />}
                       </g>
                     ),
                   });
@@ -1232,6 +1287,7 @@ export function EditorCanvas({
         </svg>
         <ViewControls
           zoom={vb.zoom}
+          renderedScale={echelleRendue}
           onZoomIn={() => zoomAt(1.2)}
           onZoomOut={() => zoomAt(1 / 1.2)}
           onZoomReset={() => setView({ zoom: 1, x: 0, y: 0 })}
