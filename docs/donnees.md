@@ -118,7 +118,7 @@ garantie, pas la justesse de sa glose.
 | `vehicles.json` | Véhicules (diligence, barge, **navires** — porte des réfs de `naval-traits` par id) (31 entrée(s)) |
 | `problemes-vehicule.json` · `driving-mishap.json` | Pannes de véhicule · maladresse de conduite (objet à sous-catalogues · objet à sous-catalogues) |
 | `land-cargo.json` | Cargaison terrestre (commerce) (objet à sous-catalogues) |
-| `tavernGames.json` | Jeux de taverne (11 entrée(s)) |
+| `tavernGames.json` | Jeux de taverne (13 entrée(s)) |
 | `merchants.json` | Archétypes de marchand (#2) — catalogue par familles `category.types`/`subTypes`, Disponibilité/Statut/`unitKinds` (bêtes/véhicules vendus, dérivés de `creatures`/`vehicles` à facette `purchase`) ; aucun archétype en dur dans le code, `MERCHANTS`/`MERCHANT_ARCHETYPES` (`state/merchants/index.ts`) réexportent ce registre (6 entrée(s)) |
 | `merchantFamilies.json` | Familles de PRÉSENTATION du stock marchand (onglets `ui/MerchantPanel.tsx`) — ordre d'affichage, règle de classement `match` (unit/shield/trappingType/fallback) et `columns` de stats à afficher, résolues contre le registre fixe `MERCHANT_COL_RENDERERS` (7 entrée(s)) |
 

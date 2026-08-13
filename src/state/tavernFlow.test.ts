@@ -12,6 +12,9 @@ import { toBrass } from '../engine/money';
 import { creditBourse, partyMoneyTotal } from './bourseFlow';
 import { seedBattleRng } from './battleRng';
 import { resolveOpposed } from '../engine/tests';
+import { activeSequence } from './sequenceCore';
+import { tavernPartieEnCours } from './tavernFlow';
+import { TAVERN_GAMES } from '../engine/tavernGame';
 import { addCondition, COND, hasCondition } from '../engine/conditions';
 import { findTavernGameById } from '../engine/tavernGame';
 import { bonus } from '../engine/characteristics';
@@ -297,5 +300,79 @@ describe('Bras de fer (NADJ 16 l.34-35)', () => {
     expect(res.winner).toBe('player');
     expect(res.playerSL).toBeGreaterThanOrEqual(10);
     expect(res.rounds).toBe(2);
+  });
+});
+
+/**
+ * RÉ-ENTRÉE (#1279 S4, audit « architecture à rebours ») — le slot de séquence est UNIQUE
+ * (`state.sequence`) et `startSequence` l'ÉCRASE. Ouvrir une seconde partie pendant qu'une première
+ * courait la faisait donc DISPARAÎTRE sans verdict : mise engagée perdue, étape orpheline restée
+ * dans la fenêtre à côté de celle de la nouvelle (sonde : une partie de fléchettes évaporée par un
+ * bras-de-fer). Ce n'est pas une friction d'écran — c'est une partie détruite en silence.
+ */
+describe('#1279 S4 — une partie de taverne ne peut pas en écraser une autre', () => {
+  beforeEach(() => {
+    useGame.setState(useGame.getInitialState(), true);
+    useGame.setState({ party: makePregens().slice(0, 2) as Combatant[], battle: null, sequence: null, pendingCascade: null });
+  });
+
+  it('une seconde partie ouverte en pleine partie est REFUSÉE — la première survit intacte', () => {
+    const g = useGame.getState.bind(useGame);
+    const [a, b] = g().party;
+    g().playTavernGame({ gameId: 'flechettes', challengerId: a.id, opponent: { kind: 'hero', id: b.id } });
+    expect(activeSequence<{ gameId: string }>(g)?.payload.gameId, 'la première partie doit être ouverte').toBe('flechettes');
+
+    g().playTavernGame({ gameId: 'bras-de-fer', challengerId: a.id, opponent: { kind: 'hero', id: b.id } });
+
+    expect(activeSequence<{ gameId: string }>(g)?.payload.gameId, 'la partie en cours ne doit PAS être écrasée').toBe('flechettes');
+  });
+
+  it('une partie DÉNOUÉE rouvre la porte — le refus tient à la partie en cours, pas à un verrou', () => {
+    const g = useGame.getState.bind(useGame);
+    const [a, b] = g().party;
+    g().playTavernGame({ gameId: 'flechettes', challengerId: a.id, opponent: { kind: 'hero', id: b.id } });
+    useGame.setState({ sequence: null, pendingCascade: null }); // dénouement : le socle vide le slot
+
+    g().playTavernGame({ gameId: 'dominos', challengerId: a.id, opponent: { kind: 'hero', id: b.id } });
+    expect(activeSequence<{ gameId: string }>(g)?.payload.gameId).toBe('dominos');
+  });
+});
+
+/**
+ * LE MASQUE DU FORMULAIRE, sur TOUT le catalogue — pas sur le seul jeu dont on avait écrit le
+ * prédicat. `tavernPartieEnCours` lit la SÉQUENCE, jamais le `kind` de l'étape surfacée : c'est ce
+ * qui le rend vrai pour les familles de manche qui ne surfacent PAS `tavern-round` (choix d'option,
+ * annonce de camp, effacement de marques, lancer de volée, tour de pot, Résistance à l'alcool). Le
+ * prédicat par `kind` n'en couvrait qu'une sur onze — bouton « Jouer » vivant en pleine partie.
+ */
+describe('#1279 S4 — le formulaire est masqué pendant TOUTE partie, quel que soit le jeu', () => {
+  beforeEach(() => {
+    useGame.setState(useGame.getInitialState(), true);
+    useGame.setState({ party: makePregens().slice(0, 2) as Combatant[], battle: null, sequence: null, pendingCascade: null });
+  });
+
+  it('hors partie, le formulaire est offert', () => {
+    expect(tavernPartieEnCours(useGame.getState())).toBe(false);
+  });
+
+  // Une partie dont TOUTES les rangées naissent témoins se dénoue dans le même tick (il ne reste
+  // rien à masquer) : on n'affirme donc le masque que sur les parties qui SURVIVENT à leur
+  // ouverture, et on mesure à part que le lot n'est pas vide — sans quoi la boucle passerait par
+  // vacuité, ce qui est précisément la façon dont ce défaut avait survécu.
+  const survivantes: string[] = [];
+  for (const jeu of TAVERN_GAMES.map((x) => x.id)) {
+    it(`${jeu} : tant que la partie court, le formulaire est masqué`, () => {
+      const g = useGame.getState.bind(useGame);
+      const [a, b] = g().party;
+      creditBourse(g, useGame.setState.bind(useGame), a.id, { gold: 0, silver: 5, brass: 0 });
+      g().playTavernGame({ gameId: jeu, challengerId: a.id, opponent: { kind: 'hero', id: b.id }, stakeBrass: 24, tablePlayers: 2 });
+      if (!activeSequence(g)) return; // partie dénouée dans le tick : plus rien à masquer
+      survivantes.push(jeu);
+      expect(tavernPartieEnCours(g()), `${jeu} : le bouton « Jouer » doit disparaître`).toBe(true);
+    });
+  }
+
+  it('la boucle ci-dessus n’est PAS vide : plusieurs jeux laissent une partie en cours', () => {
+    expect(survivantes.length).toBeGreaterThanOrEqual(6);
   });
 });

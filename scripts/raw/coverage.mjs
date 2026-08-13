@@ -41,6 +41,15 @@ const HORS_REGLE = new Set([
   'MSRC 2', 'MSRC 3', 'MSRC 5', 'MSRC 6', 'MSRC 8', 'MSRC 10', 'MSRC 11', 'MSRC 17', 'MSRC 18', 'MSRC 19',
   'MDG 1', 'MDG 3', 'MDG 4', 'MDG 5', 'MDG 6', 'MDG 8', // gazetteer côtier (cadre, pas de règles) ; 2/7/9-16 = règles
   'VDM 1', // histoire de la magie (cadre, prose pure) ; ch.15 némésis = PNJ nommés STATBLOCKÉS → catalogue-creatures (comme PDT) ; 2-14 = règles/data
+  // #1279 S4-a — chapitres RENDUS VISIBLES par la réparation de la garde d'artefact (ils étaient
+  // écartés sur leur nom de fichier, jamais lus). Chacun RELU avant d'être tagué, motif par motif :
+  'LDB 1',  // « VERSION ORIGINALE » / « TRADUCTION FRANÇAISE » — crédits d'édition, aucune règle
+  'LDB 45', // ouverture « • MAGIE • » : exergue + prose d'intro ; les règles vivent aux ch. suivants
+  'LDB 58', // ouverture « • GUIDE DE L'ÉQUIPEMENT • » : intro + index des listes (renvois de pages)
+  'EDOC 4', // « ORGANISATIONS ET LIEUX » / « L'INTRIGUE » — prose de campagne
+  'EDOC 9', // encarts de conseil au MJ (« OÙ EST MON TABLEAU DE RENCONTRES ALÉATOIRES ? »)
+  // `LDB 81` (fragment de bestiaire « Vouivre ») reste ⬜ À DESSEIN : c'est un vrai manque de
+  // crédit catalogue, pas un non-règle. Le taguer ici le ferait disparaître au lieu de le montrer.
 ])
 const isFrontMatter = (t) => /^index$|^introduction|avant-?propos|préface|^preface|^sommaire|^\*+$/i.test(t.trim())
 
@@ -66,6 +75,40 @@ export const sectionLevelOf = (ab) => SECTION_LEVEL.get(ab) || 2
 // (section de chapitre / heading de bloc catalogue), jamais une resaisie divergente.
 export function cleanTitle(t) {
   return t.replace(/<span[^>]*>/g, '').replace(/<\/span>/g, '').replace(/\*\*/g, '').trim()
+}
+
+// --- ARTEFACT d'extraction : jugé sur le CONTENU, jamais sur le titre de fichier (#1279 S4-a) ---
+
+// Marker nomme un fichier de découpe d'après la PREMIÈRE ancre HTML qu'il y rencontre : un chapitre
+// entier peut donc s'appeler `_GoBack` ou `_Hlk18182212`. Juger « artefact » sur ce nom est un
+// non-sequitur, et il a coûté cher : `NADJ 17 - _GoBack.md` porte la SUITE du chapitre 16 — quatre
+// jeux de taverne complets, chacun avec son bloc « Jeu : » (LES MOULINS, QUESTIONS-RÉPONSES,
+// L'IMPÉRATRICE ÉCARLATE, LES PIERRES) — et n'a jamais été listé en trou parce qu'il était écarté
+// AVANT toute analyse. Douze autres chapitres subissaient le même sort, dont `LDB 45` (ouverture
+// « • MAGIE • ») et `LDB 58` (« • GUIDE DE L'ÉQUIPEMENT • »).
+//
+// Le VRAI artefact a une signature de CONTENU, posée par l'extraction elle-même : le fichier ne
+// contient que la note de page partagée, sans une ligne de source. PURE (testée).
+const SPLIT_NOTE = /page \d+ partagée avec un chapitre voisin/i
+export function markerSplitStub(text) {
+  const reste = text.split('\n')
+    .filter((l) => l.trim())
+    .filter((l) => !/^\*Pages PDF /.test(l.trim()))   // en-tête de découpe
+    .filter((l) => !/^#{1,6}\s/.test(l))              // titre (l'ancre Marker elle-même)
+    .filter((l) => !SPLIT_NOTE.test(l))               // la note de page partagée
+  return reste.length === 0
+}
+
+// TITRE affiché d'un chapitre : le nom de fichier, sauf quand ce nom est une ancre Marker (`_…`) —
+// auquel cas le premier heading du fichier dit la vérité (« • MAGIE • »). Un stub de découpe n'a rien
+// à dire (« artefact OCR ») ; un chapitre réel SANS aucun heading non plus, mais il n'est pas un
+// artefact pour autant — il le DIT, plutôt que d'emprunter l'étiquette qui l'a fait disparaître.
+// PURE (testée).
+export function chapterTitleOf(title, text) {
+  if (!/^_/.test(title)) return title
+  if (markerSplitStub(text)) return '*(artefact OCR)*'
+  const h = text.split('\n').find((l) => /^#{1,6}\s/.test(l) && !/^#{1,6}\s*_/.test(l))
+  return h ? cleanTitle(h.replace(/^#{1,6}\s*/, '').replace(/<\/?[a-z]+>/gi, '')) : '*(section sans titre)*'
 }
 
 // Chapitres crédités par un CATALOGUE (catalogue-*.md = données mécaniques verbatim ré-extraites, sans
@@ -290,6 +333,9 @@ function main() {
   let gSecCatalogue = 0, gSecHorsRegle = 0, gSecHolesScenario = 0, gSecHolesRegle = 0
   let gIgnoredFolios = 0 // #606 : folios cites en docs sans ancre data-folio resoluble dans le bon chapitre
   const perBook = []
+  // ANOMALIE (#1279 S4-a) : stubs de découpe CITÉS par l'Atlas — des réfs qui pointent dans le vide.
+  const stubsCites = []
+  const info0 = (ab, nn) => chapterFile(ab, nn)?.path ?? `${ab} ${nn}`
   for (const [ab, dir] of BOOKS) {
     let files
     try { files = readdirSync(dir).filter((f) => /^\d+ - /.test(f) && f.endsWith('.md')) }
@@ -301,13 +347,23 @@ function main() {
     for (const f of files.sort()) {
       const nn = f.match(/^(\d+) - /)[1]
       const title = f.replace(/^\d+ - /, '').replace(/\.md$/, '')
-      const artefact = /^_/.test(title)
+      // Le CONTENU tranche (cf. `markerSplitStub`/`chapterTitleOf`) : un nom de fichier `_GoBack` est
+      // une ancre Marker, pas un verdict. Seul un stub de découpe sort du registre.
+      const chText = (() => { const i = chapterFile(ab, nn); return i ? readText(i.path) : '' })()
+      const shown = chapterTitleOf(title, chText)
       const horsRegle = HORS_REGLE.has(`${ab} ${Number(nn)}`) || isFrontMatter(title)
       const narrative = horsRegle || SCENARIO_BOOKS.has(ab)
       const c = classify(ab, nn, horsRegle, isPur, docs, catalogCh)
-      if (artefact && c.total === 0) { lines2.push(`| ${nn} | *(artefact OCR)* | ➖ | |`); continue }
+      // Un stub de découpe sort du registre — MAIS seulement s'il n'est cité par personne. Un stub
+      // CITÉ par l'Atlas est une anomalie qui doit HURLER : ses réfs `ABBR NN l.X` pointent dans un
+      // fichier sans une ligne de source (mesuré : `LDB 06` « Classes », 6 réfs, fichier vide). Le
+      // taire serait remplacer un masquage par un autre.
+      if (chText && markerSplitStub(chText)) {
+        if (c.total === 0) { lines2.push(`| ${nn} | *(artefact OCR)* | ➖ | |`); continue }
+        stubsCites.push(`- **${ab} ${nn}** (${info0(ab, nn)}) — stub de découpe SANS source, pourtant cité ${c.total} fois par l'Atlas (${c.owner} ×${c.ownerN}) : ces réfs pointent dans le vide.`)
+      }
       if (c.mark !== '✅' && c.mark !== '📖' && narrative) {
-        lines2.push(`| ${nn} | ${title} | ➖ hors-règle | |`)
+        lines2.push(`| ${nn} | ${shown} | ➖ hors-règle | |`)
         // #604 : ZÉRO masquage — le chapitre reste hors du dénominateur chapitre (contrat inchangé), mais
         // ses sections ne disparaissent plus de la ventilation section-granulaire (juste comptées, sans
         // le détail exhaustif — le point d'entrée « ➖ hors-règle » de la ligne ci-dessus reste la preuve).
@@ -322,7 +378,7 @@ function main() {
       if (c.mark === '✅') bOk++; else if (c.mark === '📖') bCat++; else if (c.mark === '🟡') bMid++; else bHole++
       gIgnoredFolios += c.ignoredFolios
       const detail = c.total ? `${c.total} (${c.owner} ×${c.ownerN})` : (c.owner ? `catalogue (${c.owner})` : '')
-      lines2.push(`| ${nn} | ${artefact ? '*(artefact OCR)*' : title} | ${c.mark} | ${detail} |`)
+      lines2.push(`| ${nn} | ${shown} | ${c.mark} | ${detail} |`)
       const enfouiRows = c.enfoui.map((s) => `  - 🔻 enfoui l.${s.lo}-${s.hi - 1} « ${s.title.replace(/\s*•\s*/g, ' ').trim()} » — titre orné rétrogradé par l'extraction, ${s.refs} réf`)
       const holeRows = c.holes.map((s) => `  - ${HOLE_MARK[s.hole]} l.${s.lo}-${s.hi - 1} « ${s.title} » — ${HOLE_LABEL[s.hole]}, 0 réf`)
       // Ordre de branchement EXHAUSTIF (miroir de `classifyHole`) : un chapitre `✅`/`📖` peut
@@ -350,6 +406,13 @@ function main() {
     }
   }
 
+  if (stubsCites.length) {
+    out.push('## ⚠ Stubs de découpe CITÉS par l’Atlas', '',
+      '> Le fichier-chapitre ne contient que la note de page partagée : il ne porte AUCUNE ligne de',
+      '> source. Les réfs ci-dessous sont donc mortes par construction — à ré-ancrer sur le chapitre',
+      '> voisin qui porte réellement le texte.', '',
+      ...stubsCites, '')
+  }
   const denom = gOk + gCat + gMid + gHole
   const gSecHoles = gSecHolesScenario + gSecHolesRegle
   const summaryLine = `**Couverture (profondeur) : ✅ ${gOk} traités par une fiche · 📖 ${gCat} transcrits par un catalogue seul (jamais traités) · 🟡 ${gMid} effleurés · ⬜ ${gHole} trous** sur ${denom} chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur ${gSecCatalogue + gSecHorsRegle + gSecHoles} section(s) non couvertes par une fiche : **${gSecCatalogue} transcrite(s) en catalogue** (recopiées, pas traitées) · **${gSecHorsRegle} hors-règle** (chapitre explicitement exclu) · **${gSecHolesScenario} bruit de scénario** (livres \`SCENARIO_PUR\` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **${gSecHolesRegle} candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et ${gSecEnfoui} titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (\`ABBR NN p.X\`, #606) : ${gIgnoredFolios} ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : ${perBook.join(' · ')}.`

@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useGame } from '../state/store';
 import { TAVERN_GAMES, findTavernGameById, tavernFastRegime, TAVERN_TEST_DIFFICULTY } from '../engine/tavernGame';
 import { CHAR_LABELS, DIFFICULTY_LABELS, type Difficulty } from '../engine/types';
-import { tavernGameValue, isTavernStep, type TavernOpponent } from '../state/tavernFlow';
+import { tavernGameValue, tavernPartieEnCours, tavernNpcOffers, tavernNpc, type TavernOpponent } from '../state/tavernFlow';
 import { bourseOf } from '../state/bourseFlow';
 import { refLabel } from '../data/index';
 import { PA_PER_SC, toBrass, fromBrass } from '../engine/money';
@@ -33,12 +33,13 @@ export function TavernGameModal() {
   const close = useGame((s) => s.closeTavernGames);
   // Manche EN COURS (jet du challenger surfacé par-dessus, cf. docstring) : masque le formulaire de
   // réglage — la cascade (RollShell) porte l'interaction tant qu'elle n'a pas committé.
-  const rolling = useGame((s) => !!s.pendingCascade?.participants.some((p) => isTavernStep(p.kind)));
+  const rolling = useGame(tavernPartieEnCours);
 
   const heroes = party.filter((h) => !h.dead);
   const [gameId, setGameId] = useState(TAVERN_GAMES[0]?.id ?? '');
   const [challengerId, setChallengerId] = useState(heroes[0]?.id ?? '');
-  const [oppMode, setOppMode] = useState<'hero' | 'abstract'>(heroes.length > 1 ? 'hero' : 'abstract');
+  const [oppMode, setOppMode] = useState<'hero' | 'npc' | 'abstract'>(heroes.length > 1 ? 'hero' : 'abstract');
+  const [oppNpcId, setOppNpcId] = useState('');
   const [oppHeroId, setOppHeroId] = useState('');
   const [abstractValue, setAbstractValue] = useState<number | undefined>(undefined);
   const [allyVal, setAllyVal] = useState<number | undefined>(undefined);
@@ -46,6 +47,21 @@ export function TavernGameModal() {
   // JEU DE MISE : l'effectif de la table est une grandeur de TABLE (la source décrit un cercle sans
   // en fixer le nombre) — éditable ici, jamais figée au code.
   const [tablePlayers, setTablePlayers] = useState(3);
+
+  // CE QUE LA SCÈNE PROPOSE (`SceneEntity.tavernGame`) : les PNJ à FICHE qui offrent une partie.
+  // Lu par SÉLECTEUR — la scène change (transition, PNJ retiré) et l'offre doit se re-rendre ; une
+  // lecture directe de `getState` la figeait au premier rendu.
+  const scene = useGame((s) => s.scene);
+  const npcs = tavernNpcOffers(scene);
+  const npc = npcs.find((n) => n.id === oppNpcId) ?? npcs[0];
+  const npcActor = npc ? tavernNpc(scene, npc.id) : undefined;
+  // CE QUE L'AUTEUR PRESCRIT (`NADJ 04 l.72` : un jeu ET une mise de départ) : la modale s'y POSE
+  // quand on choisit ce PNJ — le joueur reste libre d'en dévier, l'auteur ne fait qu'ouvrir la table.
+  useEffect(() => {
+    if (oppMode !== 'npc' || !npc) return;
+    setGameId(npc.gameId);
+    if (npc.stakeBrass != null) setStakePa(Math.floor(npc.stakeBrass / PA_PER_SC));
+  }, [oppMode, npc?.id, npc?.gameId, npc?.stakeBrass]);
 
   if (!state) return null;
   const result = state.result;
@@ -78,7 +94,7 @@ export function TavernGameModal() {
   // JEU D'ÉQUIPE (Middenball) : le groupe joue ENSEMBLE — tous ses héros sont dans le MÊME camp. Un
   // compagnon ne peut donc pas y tenir le camp d'en face, qui est celui de la salle.
   const equipe = !!game?.team;
-  const oppKind: 'hero' | 'abstract' = equipe ? 'abstract' : oppMode;
+  const oppKind: 'hero' | 'npc' | 'abstract' = equipe ? 'abstract' : oppMode;
 
   const oppCandidates = heroes.filter((h) => h.id !== challengerId);
   // La mise sort de la bourse du CHALLENGER (débit/crédit personnel) : le plafond affiché est SA bourse.
@@ -100,6 +116,8 @@ export function TavernGameModal() {
         ? t('tavern.potSansMise', { who: challenger.label })
         : oppKind === 'hero' && !oppCandidates.length
           ? 'Aucun compagnon disponible : jouez contre un habitué de la salle.'
+          : oppKind === 'npc' && !npc
+            ? 'Personne dans cette scène ne propose de partie.'
           : oppKind === 'abstract' && oppValue <= 0
             ? 'Fixez la valeur de l’adversaire (au moins 1).'
             : '';
@@ -109,7 +127,9 @@ export function TavernGameModal() {
     if (!game || !challenger) return;
     const opponent: TavernOpponent = oppKind === 'hero'
       ? { kind: 'hero', id: oppHeroId || oppCandidates[0]?.id || '' }
-      : { kind: 'abstract', value: oppValue };
+      : oppKind === 'npc' && npc
+        ? { kind: 'npc', id: npc.id }
+        : { kind: 'abstract', value: oppValue };
     play({
       gameId: game.id, challengerId: challenger.id, opponent, stakeBrass: stake * PA_PER_SC,
       ...(equipe ? { allyValue } : {}),
@@ -189,6 +209,7 @@ export function TavernGameModal() {
               layout="seg"
               options={[
                 { key: 'hero', label: 'Un compagnon', selected: oppKind === 'hero', disabled: equipe || oppCandidates.length === 0, onSelect: () => setOppMode('hero') },
+                { key: 'npc', label: 'Un joueur de la salle', selected: oppKind === 'npc', disabled: equipe || npcs.length === 0, onSelect: () => setOppMode('npc') },
                 { key: 'abstract', label: equipe ? 'L’équipe adverse' : 'Un habitué (MJ)', selected: oppKind === 'abstract', onSelect: () => setOppMode('abstract') },
               ]}
             />
@@ -197,7 +218,19 @@ export function TavernGameModal() {
                 Sport d'équipe : tout le groupe joue dans le MÊME camp — le camp d'en face est tenu par la salle.
               </p>
             )}
-            {oppKind === 'hero' ? (
+            {oppKind === 'npc' ? (
+              <div className="tavern-block">
+                {/* Le PNJ joue de SA fiche : on annonce SON nom et SA valeur de jeu, dérivée par le
+                    même collecteur que celle du challenger — jamais une valeur saisie. */}
+                <OptionChooser
+                  layout="grid"
+                  options={npcs.map((n) => ({ key: n.id, label: n.label, primary: n.id === npc?.id, onSelect: () => setOppNpcId(n.id) }))}
+                />
+                {npc && game && npcActor && (
+                  <p className="tavern-detail">{npc.label} : valeur de jeu <b>{tavernGameValue(npcActor, game)}</b> (de sa fiche).</p>
+                )}
+              </div>
+            ) : oppKind === 'hero' ? (
               <div className="frame-row">
                 {oppCandidates.map((h) => (
                   <CharFrame key={h.id} c={h} variant="identity" size="xs" selected={h.id === (oppHeroId || oppCandidates[0]?.id)} onClick={() => setOppHeroId(h.id)} />

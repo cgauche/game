@@ -69,13 +69,13 @@ describe('Régime RAPIDE — la règle optionnelle, DISTINCTE de l’ouverture d
   });
 
   /**
-   * LA LISTE BLANCHE, TENUE PAR UN ROUGE — sur les ONZE entrées, jamais sur trois échantillons : un
+   * LA LISTE BLANCHE, TENUE PAR UN ROUGE — sur les TREIZE entrées, jamais sur trois échantillons : un
    * champ de famille qui fuirait (plafond de DR, départage, formule de camp, mi-temps, seuil de but,
    * table de score…) RÉVEILLE la famille correspondante côté socle, sans qu'aucune assertion
    * nominative ne le voie. Ce qui est mesuré est donc l'ENSEMBLE des clés, pas une liste de champs
    * qu'on aurait pensé à citer.
    */
-  it('active : AUCUN champ hors liste blanche, sur les ONZE jeux du chapitre', () => {
+  it('active : AUCUN champ hors liste blanche, sur les TREIZE jeux du chapitre', () => {
     setRule(TAVERN_FAST_RULE, true);
     const BLANCHE = new Set(['id', 'label', 'desc', 'skill', 'spec', 'characteristic', 'mode', 'source']);
     const fuites: string[] = [];
@@ -87,7 +87,7 @@ describe('Régime RAPIDE — la règle optionnelle, DISTINCTE de l’ouverture d
       expect(tavernParams(jeu, 3), `${entree.id} : aucun paramètre de famille`).toEqual({});
     }
     expect(fuites, 'un champ de règle propre a franchi la projection').toEqual([]);
-    expect(TAVERN_GAMES.length, 'les 11 jeux du chapitre sont couverts').toBe(11);
+    expect(TAVERN_GAMES.length, 'les 13 jeux du chapitre sont couverts').toBe(13);
   });
 
   it('active : les 11 jeux se jouent en UNE manche, Intermédiaire (+0), sans mouvement de bourse', () => {

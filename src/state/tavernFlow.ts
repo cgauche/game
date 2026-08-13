@@ -61,13 +61,26 @@ import {
 } from './sequenceCore';
 import type { RNG } from '../engine/dice';
 import { actorIn } from './combatants';
+import { spawnEnemy } from './spawn';
+import { resolvePresetCreature } from './campaignData';
+import type { Scene } from './scene';
 import { jetSurfaced } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { t } from '../i18n';
 
-/** Adversaire d'une partie : un compagnon du groupe (ses vraies valeurs) ou une valeur ABSTRAITE fixée
- *  par la table (le MJ — le jeu sans MJ n'invente pas de stats de PNJ). */
-export type TavernOpponent = { kind: 'hero'; id: string } | { kind: 'abstract'; value: number };
+/**
+ * Adversaire d'une partie — TROIS formes, jamais deux chemins pour la même :
+ *  · `hero` : un compagnon du groupe, ses vraies valeurs ;
+ *  · `npc` : un PNJ de la SCÈNE (`SceneEntity` `personnage`), ses valeurs dérivées de SA fiche par
+ *    les collecteurs canoniques (`tavernGameValue` → `testValue`/`effectiveChar`) — jamais une
+ *    valeur recopiée à la main. C'est la forme des adversaires AUTHORÉS (`NADJ 04 l.72`, `EDO 01 l.200`) ;
+ *  · `abstract` : une valeur de Test fixée par la table, pour l'habitué que personne n'a fiché.
+ * Les trois coexistent : un PNJ à fiche ne remplace pas l'habitué abstrait, il s'y ajoute.
+ */
+export type TavernOpponent =
+  | { kind: 'hero'; id: string }
+  | { kind: 'npc'; id: string }
+  | { kind: 'abstract'; value: number };
 
 /** Résultat de la dernière partie (affiché dans la modale). Étend l'issue moteur des libellés/mise. */
 export interface TavernGamesResult extends TavernGameResult {
@@ -99,6 +112,54 @@ export function tavernGameValue(hero: Combatant, game: TavernGame): number {
   return testValue(hero, 'pari'); // aucune Compétence indiquée → Pari (l.11)
 }
 
+/**
+ * LE PNJ DE SCÈNE derrière un id, dérivé en Combatant — MÊME chemin de résolution que le spawn de
+ * rencontre (`combatSlice.ts:2623`) : un PNJ nommé de campagne porte son profil par `presetId`
+ * (`resolvePresetCreature` → CreatureData mergée + apparence embarquée), et n'a NI `ref` NI
+ * `statblock`. L'ignorer faisait tomber `spawnEnemy` en branche « ref absente » — fiche vide, nom
+ * générique : l'adversaire à fiche redevenait l'adversaire nu qu'on venait de supprimer.
+ *
+ * DETTE DITE (#1279 S4-c, décision d'architecture commissionnée à part) : cette dérivation est
+ * ÉPHÉMÈRE. Il n'existe aucun registre de Combatants persistants hors combat (`actorIn` =
+ * `battle.combatants ?? party`, `state/combatants.ts`), donc ce que la partie ÉCRIRAIT sur cette
+ * fiche — un État d'attrition (`SequenceRoundOps.attrition`, appliqué par `sequenceRoundOps` sur des
+ * porteurs résolus par `actorIn`), un mouvement de bourse (`creditBourse`/`debitBourse` écrivent
+ * dans `party`) — ne s'y déposerait pas. Le lot S4-b est donc en LECTURE SEULE : le PNJ joue de sa
+ * fiche, il n'en subit rien. Aucune simulation ne comble ce trou.
+ */
+export function tavernNpc(scene: Scene | null | undefined, id: string): Combatant | undefined {
+  const ent = scene?.entities.find((e) => e.id === id && e.kind === 'personnage');
+  if (!ent) return undefined;
+  const preset = ent.presetId ? resolvePresetCreature(ent.presetId) : undefined;
+  return spawnEnemy(ent.ref, ent.statblock, ent.id, ent.pos, {
+    presetCreature: preset?.creature,
+    appearance: preset?.apparence ?? ent.appearance,
+  });
+}
+
+/** L'ACTEUR d'un id de partie, quel que soit son banc : héros (combat ou groupe) ou PNJ de la scène.
+ *  SOURCE UNIQUE — sans elle, un site lirait `party` seul et le PNJ à fiche redeviendrait anonyme. */
+function tavernActor(get: Get, id: string | undefined): Combatant | undefined {
+  if (!id) return undefined;
+  return actorIn(get(), id) ?? tavernNpc(get().scene, id);
+}
+
+/**
+ * LES PNJ DE LA SCÈNE QUI PROPOSENT UNE PARTIE (`SceneEntity.tavernGame`) — ce que la CARTE décide,
+ * lu par la modale pour offrir le troisième mode d'adversaire. Rend l'entité ET sa fiche dérivée :
+ * le libellé affiché est celui de la FICHE (un nom), jamais un id brut.
+ */
+export function tavernNpcOffers(scene: Scene | null | undefined): { id: string; label: string; gameId: string; stakeBrass?: number }[] {
+  return (scene?.entities ?? [])
+    .filter((e) => e.kind === 'personnage' && e.tavernGame)
+    .map((e) => ({
+      id: e.id,
+      label: tavernNpc(scene, e.id)?.label ?? e.label ?? e.id,
+      gameId: e.tavernGame!.gameId,
+      ...(e.tavernGame!.stakeBrass != null ? { stakeBrass: e.tavernGame!.stakeBrass } : {}),
+    }));
+}
+
 /** Déclaration du Test (skill/char/spec) d'un jeu — MÊME repli que `tavernGameValue` (Pari si rien
  *  d'indiqué), réutilisée par les mints (`req.test`, qui calculent eux-mêmes la valeur par acteur). */
 function tavernTestSpec(game: TavernGame): { skill?: string; char?: CharKey; spec?: string } {
@@ -121,10 +182,19 @@ export const TAVERN_SEQUENCE = 'tavern';
 /** Kind de l'étape-jet d'une manche (bande OU mono) — UNIQUE depuis #1279 S1. */
 export const TAVERN_ROUND_KIND = 'tavern-round';
 
-/** Une étape appartient-elle à une partie de taverne en cours ? — lecture de l'UI, qui masque le
- *  formulaire de réglage pendant qu'une manche est surfacée (#370 point 4). */
-export function isTavernStep(kind: string): boolean {
-  return kind === TAVERN_ROUND_KIND;
+/**
+ * UNE PARTIE EST-ELLE EN COURS ? — lecture de l'UI, qui masque le formulaire de réglage tant que la
+ * partie n'est pas dénouée (#370 point 4).
+ *
+ * Le signal est la SÉQUENCE elle-même, jamais le `kind` d'une étape : les onze jeux du chapitre
+ * surfacent onze familles d'étapes (choix d'option, annonce de camp, effacement de marques, lancer de
+ * volée, tour de pot, Résistance à l'alcool…), et un prédicat qui n'en connaissait qu'UNE laissait le
+ * bouton « Jouer » vivant sur les cinq sixièmes du catalogue (mesuré : 4 jeux sondés sur 6).
+ * `state.sequence` est vrai de la première manche au dénouement, quelle que soit l'étape surfacée —
+ * c'est le seul signal qui ne se périme pas quand une famille de manche s'ajoute.
+ */
+export function tavernPartieEnCours(s: { sequence: { def: string } | null }): boolean {
+  return s.sequence?.def === TAVERN_SEQUENCE;
 }
 
 /** CHARGE UTILE d'une partie jouée par le socle — la table, l'adversaire, la mise. */
@@ -250,17 +320,29 @@ export function playTavernGame(
   get: Get, set: Set,
   opts: { gameId: string; challengerId: string; opponent: TavernOpponent; stakeBrass?: number; allyValue?: number; tablePlayers?: number },
 ): void {
+  // RÉ-ENTRÉE REFUSÉE : `startSequence` ÉCRASE `state.sequence`. Une seconde partie ouverte pendant
+  // qu'une première court la faisait donc disparaître SANS verdict — sa mise engagée perdue, son
+  // étape orpheline restant dans la fenêtre à côté de celle de la nouvelle. Le slot de séquence est
+  // unique : on le dit ici plutôt que de laisser l'écrasement le découvrir.
+  if (activeSequence(get)) {
+    get().log(t('tavern.dejaEnCours'));
+    return;
+  }
   const game = findTavernGameById(opts.gameId);
   const party = get().party;
   const challenger = party.find((h) => h.id === opts.challengerId);
   if (!game || !challenger) return;
   const opp = opts.opponent;
-  const opponentHero = opp.kind === 'hero' ? party.find((h) => h.id === opp.id) : undefined;
-  if (opp.kind === 'hero' && !opponentHero) return;
+  // Les deux formes INCARNÉES (compagnon, PNJ de scène) se résolvent par la MÊME couture — c'est
+  // elle qui fait qu'un adversaire à fiche joue de SA fiche, jamais d'une valeur recopiée.
+  const opponentActor = opp.kind === 'hero' ? party.find((h) => h.id === opp.id)
+    : opp.kind === 'npc' ? tavernNpc(get().scene, opp.id)
+      : undefined;
+  if (opp.kind !== 'abstract' && !opponentActor) return;
 
-  const opponentValue = opp.kind === 'hero' ? tavernGameValue(opponentHero!, game) : Math.max(1, opp.value);
-  const opponentName = opp.kind === 'hero' ? opponentHero!.label : 'un adversaire de la salle';
-  const opponentId = opp.kind === 'hero' ? opponentHero!.id : undefined;
+  const opponentValue = opponentActor ? tavernGameValue(opponentActor, game) : Math.max(1, (opp as { value: number }).value);
+  const opponentName = opponentActor?.label ?? 'un adversaire de la salle';
+  const opponentId = opponentActor?.id;
 
   // MISE : elle est celle d'un jeu de POT (« chaque joueur ajoute une mise égale au pot », l.17), et
   // elle joue quel que soit le vis-à-vis — l'argent change vraiment de bourse, compagnons compris.
@@ -273,7 +355,7 @@ export function playTavernGame(
     get().log(t('tavern.potSansMise', { who: challenger.label }));
     return;
   }
-  const seats = game.pot ? potSeats(challenger, opponentHero, opponentName, opts.tablePlayers ?? 2) : [];
+  const seats = game.pot ? potSeats(challenger, opponentActor, opponentName, opts.tablePlayers ?? 2) : [];
 
   startSequence<TavernPayload>(get, set, {
     def: TAVERN_SEQUENCE,
@@ -764,7 +846,9 @@ function tavernRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Seq
     const choix = tavernOptionRound(get, seq, game);
     if (choix) return choix;
   }
-  const opponentHero = p.opponentId ? get().party.find((h) => h.id === p.opponentId) : undefined;
+  // L’adversaire INCARNÉ de la manche — compagnon OU PNJ de scène : la même couture, sinon un
+  // adversaire à fiche perdrait sa rangée et retomberait sur le montage à jet adverse figé.
+  const opponentHero = tavernActor(get, p.opponentId);
   const title = `${game.label} — ${challenger.label} contre ${p.opponentName}`;
   const stake = combatStakeRef('tavernGame', {
     values: {
@@ -846,7 +930,7 @@ function tavernSides(ctx: SequenceCloseCtx<TavernPayload>): {
     if (!mien?.result || !sien?.result) return undefined;
     return {
       player: asTest(mien.result, mien.base), opponent: asTest(sien.result, sien.base),
-      playerActor: actorIn(get(), p.challengerId), opponentActor: p.opponentId ? actorIn(get(), p.opponentId) : undefined,
+      playerActor: tavernActor(get, p.challengerId), opponentActor: tavernActor(get, p.opponentId),
     };
   }
   if (!step.result) return undefined;
@@ -2148,7 +2232,7 @@ function combinedInit(): TavernCombinedState {
 
 /** Le porteur d'un camp : le challenger, ou son vis-à-vis quand c'est un compagnon. */
 function combinedActor(get: Get, p: TavernPayload, camp: string): Combatant | undefined {
-  return actorIn(get(), camp === CAMP_PLAYER ? p.challengerId : (p.opponentId ?? ''));
+  return tavernActor(get, camp === CAMP_PLAYER ? p.challengerId : p.opponentId);
 }
 
 /** ÉCHÉANCE d'un compteur : l'intervalle DÉCLARÉ est-il atteint à ce compte ? (l.97 : « pour chaque 3

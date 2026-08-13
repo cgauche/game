@@ -71,7 +71,8 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 1. **Aucune invention de règles.** Toute règle/valeur vient des livres autorisés (§ Sources VF).
    Ne pas utiliser tes connaissances WFRP. **Point d'entrée = l'Atlas RAW [`docs/raw/`](docs/raw/00-index.md)** :
    22 fiches de règles par domaine + 6 catalogues de données mécaniques, consolidant les 15 livres
-   (couverture **⬜0** ; gardes rejouables `node scripts/raw/coverage.mjs` & `node scripts/raw/reconcile.mjs`).
+   (couverture **⬜1** — `LDB 81` « Vouivre », fragment de bestiaire sans crédit catalogue (#1279 S4-a) ;
+   gardes rejouables `node scripts/raw/coverage.mjs` & `node scripts/raw/reconcile.mjs`).
    **Y chercher d'abord** « est-ce RAW / que dit le RAW ». `Source/` reste la vérité
    **citable** (`LDB <chap> l.<ligne>`) et le recours ultime — **devoir rouvrir `Source/` = un défaut
    de l'Atlas à corriger** (amender la fiche/le catalogue, puis re-vérifier avec les deux gardes).

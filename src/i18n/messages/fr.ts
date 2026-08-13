@@ -861,6 +861,7 @@ export const fr = {
   'tavern.potInsolvable': '{who} n’a pas de quoi miser : il quitte la table.',
   'tavern.potPlusDeJoueurs': 'Il ne reste personne pour miser : la partie s’arrête.',
   'tavern.potRendu': 'Partie interrompue : {montant} de mises reprises sur la table.',
+  'tavern.dejaEnCours': 'Une partie est déjà en cours : terminez-la avant d’en ouvrir une autre.',
   'tavern.potSansMise': '{who} ne pose aucune mise : aucune partie ne s’ouvre.',
   'tavern.potChoix': '{who} — remettre une mise, ou abandonner ?',
   'tavern.potChoixRemise': 'Remettre {montant}',

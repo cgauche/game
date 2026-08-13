@@ -95,6 +95,20 @@ export interface SceneEntity {
    *  (state/merchantFlow, couture UNIQUE). */
   merchant?: { archetype: string; settlement?: import('../engine/disponibilite').Settlement; resaleRate?: number; buyMarkup?: number; restockDays?: number;
       guild?: boolean; marketMode?: 'complet' | 'sans-disponibilite' | 'sans-marchandage' | 'simplifie'; tenirComptes?: boolean };
+  /** JOUEUR de taverne (#1279 S4) : présent = ce personnage PROPOSE une partie, et il la joue de SA
+   *  fiche (`TavernOpponent` `kind:'npc'` — ses Caractéristiques et ses Compétences avec avances,
+   *  jamais une valeur recopiée). RÔLE optionnel, au même titre que `dialogue`/`merchant`.
+   *
+   *  Le patron est AUTHORÉ dans la source, pas inventé : `NADJ 04 l.72` — « Elle jouera une partie de
+   *  L'Impératrice écarlate avec quiconque lui propose, la mise de départ étant d'1 pistole par
+   *  partie. » Un jeu, une mise de départ : c'est exactement ce que ces deux champs portent.
+   *  `EDO 01 l.202` en donne le second exemple (Phillipe Descartes, « quelle que soit la mise, mais
+   *  considère comme une perte de temps de jouer pour moins de 2/- »).
+   *
+   *  `gameId` = id d'une entrée de `tavernGames.json`. `stakeBrass` = mise de DÉPART en sous de
+   *  cuivre (la modale reste libre de la changer — l'auteur pose le défaut, pas une contrainte) ;
+   *  absente, la table s'accorde sans mise. */
+  tavernGame?: { gameId: string; stakeBrass?: number };
   /** RÔLE combat optionnel (au même titre que dialogue/marchand) : présent = ce personnage peut être
    *  enrôlé dans une rencontre (cf. EncounterMember). Porte les choix d'auteur qui DÉCRIVENT la
    *  personne au combat — son profil (ref/statblock) et son apparence vivent déjà sur l'entité. */

@@ -7,6 +7,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   sectionsOf, refSpansFor, annotateSections, classifyHole, SCENARIO_PUR, SECTION_LEVEL, sectionLevelOf,
+  markerSplitStub, chapterTitleOf,
 } from './coverage.mjs'
 import { chapterFile, readText } from './_lib.mjs'
 
@@ -385,4 +386,52 @@ test('#604 intégration : le total ventilé (catalogue + hors-règle + scénario
   assert.ok(totalM && catM && horsM && scenM && trouM)
   const sum = Number(catM[1]) + Number(horsM[1]) + Number(scenM[1]) + Number(trouM[1])
   assert.equal(sum, Number(totalM[1]), 'la somme des 4 buckets doit reconstituer EXACTEMENT le total annoncé')
+})
+
+// --- ARTEFACT jugé sur le CONTENU, pas sur le titre de fichier (#1279 S4-a) ---
+// Cas FONDATEUR, à faire rougir s'il se réintroduit : `NADJ 17 - _GoBack.md` porte la SUITE du
+// chapitre 16 (quatre jeux de taverne, chacun avec son bloc « Jeu : ») et sortait du registre sur le
+// seul motif que Marker l'avait nommé d'après une ancre HTML. Un `_` en tête de nom de fichier n'est
+// PAS un verdict ; seul un stub de découpe (note de page partagée, aucune ligne de source) en est un.
+test('markerSplitStub : un chapitre RÉEL nommé d\'après une ancre Marker n\'est PAS un artefact', () => {
+  const reel = [
+    '*Pages PDF 97-98*', '', '### **LES MOULINS**', '',
+    'Ce jeu pour deux joueurs se joue sur un plateau quadrillé.', '',
+    '**Jeu :** faites un Test opposé étendu d\'**Intelligence Facile (+40)**.',
+  ].join('\n')
+  assert.equal(markerSplitStub(reel), false)
+  assert.equal(chapterTitleOf('_GoBack', reel), 'LES MOULINS')
+})
+
+test('markerSplitStub : un VRAI stub de découpe (note de page partagée seule) reste un artefact', () => {
+  const stub = [
+    '*Pages PDF 70*', '', '# _GoBack', '',
+    '*(Page 70 partagée avec un chapitre voisin — le contenu de cette section figure dans le chapitre adjacent de l\'extraction Marker.)*',
+  ].join('\n')
+  assert.equal(markerSplitStub(stub), true)
+  assert.equal(chapterTitleOf('_GoBack', stub), '*(artefact OCR)*')
+})
+
+test('chapterTitleOf : un nom de fichier ORDINAIRE n\'est jamais réécrit', () => {
+  assert.equal(chapterTitleOf('JEUX DE TAVERNE', '# autre chose'), 'JEUX DE TAVERNE')
+})
+
+// INVARIANT, sur le disque RÉEL : tout chapitre que le registre écarte en « artefact OCR » DOIT être
+// un stub de découpe vérifiable dans `Source/`. C'est la garde du PROCHAIN fichier coupé — le cas
+// fondateur (NADJ 17, quatre jeux de taverne écartés sur leur seul nom de fichier) a été réparé À LA
+// SOURCE par fusion dans son chapitre (#1279 S4-a), il n'existe donc plus comme ligne à surveiller ;
+// ce qui reste à surveiller, c'est la RÈGLE qui l'avait laissé passer.
+test('#1279 intégration (disque RÉEL) : aucun chapitre écarté en « artefact OCR » ne porte de contenu de source', () => {
+  const md = readText('docs/raw/coverage.md')
+  const menteurs = []
+  let livre = null
+  for (const l of md.split('\n')) {
+    const h = /^## ([A-Z][A-Z0-9 ]*?) — /.exec(l)
+    if (h) { livre = h[1].trim(); continue }
+    const row = /^\| (\d+) \| \*\(artefact OCR\)\* \|/.exec(l)
+    if (!row || !livre) continue
+    const info = chapterFile(livre, row[1])
+    if (info && !markerSplitStub(readText(info.path))) menteurs.push(`${livre} ${row[1]} (${info.path})`)
+  }
+  assert.deepEqual(menteurs, [], `« artefact OCR » ne se juge QUE sur le contenu — ces chapitres portent de la source :\n${menteurs.join('\n')}`)
 })

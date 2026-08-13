@@ -11,27 +11,27 @@
 > jamais traitée — plus jamais masquée) · `🔻 enfoui` = titre orné (`•`) rétrogradé par l'extraction
 > — un défaut d'extraction, pas une section ordinaire (#454).
 
-**Couverture (profondeur) : ✅ 94 traités par une fiche · 📖 76 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 0 trous** sur 171 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3361 section(s) non couvertes par une fiche : **633 transcrite(s) en catalogue** (recopiées, pas traitées) · **2335 hors-règle** (chapitre explicitement exclu) · **131 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **262 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅41·📖32·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅4·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 96 traités par une fiche · 📖 77 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 1 trous** sur 175 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3441 section(s) non couvertes par une fiche : **633 transcrite(s) en catalogue** (recopiées, pas traitées) · **2374 hors-règle** (chapitre explicitement exclu) · **159 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **275 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅41·📖33·🟡0·⬜1 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅4·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅4·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅7·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
 
-## LDB — ✅ 41 · 📖 32 · 🟡 0 · ⬜ 0
+## LDB — ✅ 41 · 📖 33 · 🟡 0 · ⬜ 1
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | *(artefact OCR)* | ➖ | |
+| 01 | VERSION ORIGINALE | ➖ hors-règle | |
 | 02 | Introduction | ➖ hors-règle | |
 | 03 | *(artefact OCR)* | ➖ | |
-| 04 | *(artefact OCR)* | ✅ | 7 (creation.md ×7) |
-| 05 | *(artefact OCR)* | ✅ | 92 (creation.md ×52) |
+| 04 | Cités et villes | ✅ | 7 (creation.md ×7) |
+| 05 | Points de vue | ✅ | 92 (creation.md ×52) |
 | 06 | Classes | ✅ | 6 (carrieres.md ×3) |
 | 07 | Carrières | ✅ | 69 (avancement.md ×45) |
 | 08 | Statut | ✅ | 44 (carrieres.md ×22) |
 | 09 | Compétences | ✅ | 146 (competences.md ×137) |
 | 10 | Talents | ✅ | 200 (talents.md ×138) |
-| 11 | *(artefact OCR)* | ✅ | 31 (talents.md ×30) |
+| 11 | Sixième sens | ✅ | 31 (talents.md ×30) |
 | 12 | Tests | ✅ | 48 (tests.md ×43) |
 | 13 | Combat | ✅ | 133 (combat.md ×122) |
-| 14 | *(artefact OCR)* | ✅ | 129 (combat.md ×121) |
+| 14 | OPTION : FRAPPE MORTELLE | ✅ | 129 (combat.md ×121) |
 | 15 | Déplacement | ✅ | 87 (combat.md ×76) |
 | 16 | États | ✅ | 54 (etats.md ×30) |
 | 17 | Destin et Résistance | ✅ | 51 (destin.md ×27) |
@@ -62,7 +62,7 @@
 | 42 | Miracles | 📖 | 4 (magie.md ×2) |
 | 43 | Miracles de Rhya | 📖 | catalogue (catalogue-*.md) |
 | 44 | L’Aethyr | ✅ | 10 (magie.md ×10) |
-| 45 | *(artefact OCR)* | ➖ | |
+| 45 | • MAGIE • | ➖ hors-règle | |
 | 46 | Les règles magiques | ✅ | 93 (magie.md ×51) |
 | 47 | Listes des sorts | ✅ | 7 (magie.md ×7) |
 | 48 | Magie des Couleurs | ✅ | 18 (magie.md ×18) |
@@ -70,12 +70,12 @@
 | 50 | Magie noire | 📖 | catalogue (catalogue-*.md) |
 | 51 | Magie du Chaos | ✅ | 14 (deplacement.md ×14) |
 | 52 | configuration du terrain | ➖ hors-règle | |
-| 53 | *(artefact OCR)* | ➖ | |
+| 53 | Le canal Grünberg | ➖ hors-règle | |
 | 54 | La politique | ➖ hors-règle | |
 | 55 | Colonies | ➖ hors-règle | |
 | 56 | Sites anciens et ruines terrifiantes | ➖ hors-règle | |
 | 57 | La monnaie | 📖 | 1 (economie.md ×1) |
-| 58 | *(artefact OCR)* | ➖ | |
+| 58 | •GUIDE DE L'ÉQUIPEMENT • | ➖ hors-règle | |
 | 59 | Faire son marché | ✅ | 19 (economie.md ×19) |
 | 60 | Fabrication | ✅ | 16 (economie.md ×13) |
 | 61 | Encombrement | ✅ | 40 (equipement.md ×18) |
@@ -98,10 +98,10 @@
 | 78 | Les Bêtes du Reikland | 📖 | catalogue (catalogue-*.md) |
 | 79 | Les bêtes monstrueuses du Reikland | 📖 | catalogue (catalogue-*.md) |
 | 80 | Les hordes de peaux-vertes | 📖 | catalogue (catalogue-*.md) |
-| 81 | *(artefact OCR)* | ➖ | |
+| 81 | Vouivre | ⬜ |  |
 | 82 | Les morts sans repos | 📖 | catalogue (catalogue-*.md) |
 | 83 | Esclaves des Ténèbres | 📖 | catalogue (catalogue-*.md) |
-| 84 | *(artefact OCR)* | ➖ | |
+| 84 | Guerrier du Chaos | 📖 | catalogue (catalogue-*.md) |
 | 85 | Traits de créature | ✅ | 302 (combat.md ×205) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
@@ -661,12 +661,12 @@
   - 📖 l.113-116 « 2519 CI » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.117-376 « Le rôle de la Couronne Rouge » — transcrit en catalogue, jamais traité, 0 réf
 
-## EDO — ✅ 3 · 📖 0 · 🟡 0 · ⬜ 0
+## EDO — ✅ 4 · 📖 0 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
-| 01 | Chapitre 1 - On recherche - aventuriers courageux | ➖ hors-règle | |
+| 01 | Chapitre 1 - On recherche - aventuriers courageux | ✅ | 5 (reconciliation.md ×3) |
 | 02 | Chapitre 2 - Erreur sur la personne | ➖ hors-règle | |
 | 03 | Chapitre 3 - Le cœur de l’Empire | ➖ hors-règle | |
 | 04 | Chapitre 4 - Sur la route de Bögenhafen… | ➖ hors-règle | |
@@ -681,6 +681,35 @@
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H2) :
 
+- **EDO 01** (Chapitre 1 - On recherche - aventuriers courageux) :
+  - ⬜ l.9-14 « DÉBUT DE L'AVENTURE » — bruit de scénario, 0 réf
+  - ⬜ l.15-41 « L'AUBERGE LA DILIGENCE » — bruit de scénario, 0 réf
+  - ⬜ l.42-53 « 5. Écuries et remise » — bruit de scénario, 0 réf
+  - ⬜ l.54-57 « 8. Brasserie » — bruit de scénario, 0 réf
+  - ⬜ l.58-65 « 9. Salle commune » — bruit de scénario, 0 réf
+  - ⬜ l.66-74 « 11. Quartiers des serviteurs » — bruit de scénario, 0 réf
+  - ⬜ l.75-82 « L'APPROCHE DE L'AUBERGE » — bruit de scénario, 0 réf
+  - ⬜ l.83-90 « La diligence » — bruit de scénario, 0 réf
+  - ⬜ l.91-109 « Dans l'auberge » — bruit de scénario, 0 réf
+  - ⬜ l.110-115 « Les PNJ » — bruit de scénario, 0 réf
+  - ⬜ l.116-191 « Le propriétaire » — bruit de scénario, 0 réf
+  - ⬜ l.192-197 « Gérer l'inattendu » — bruit de scénario, 0 réf
+  - ⬜ l.224-244 « Une volée de plomb » — bruit de scénario, 0 réf
+  - ⬜ l.245-248 « LE VOYAGE » — bruit de scénario, 0 réf
+  - ⬜ l.249-259 « Debout là-dedans ! » — bruit de scénario, 0 réf
+  - ⬜ l.301-306 « Un léger contretemps » — bruit de scénario, 0 réf
+  - ⬜ l.307-316 « Le voyage commence » — bruit de scénario, 0 réf
+  - ⬜ l.317-324 « Chantons sous la pluie ! » — bruit de scénario, 0 réf
+  - ⬜ l.325-337 « OPTIONS : COMPAGNONS DE VOYAGE » — bruit de scénario, 0 réf
+  - ⬜ l.338-343 « À la croisée des chemins » — bruit de scénario, 0 réf
+  - ⬜ l.344-345 « CONCLUSION » — bruit de scénario, 0 réf
+  - ⬜ l.346-355 « Récompenses » — bruit de scénario, 0 réf
+  - ⬜ l.356-357 « PNJ » — bruit de scénario, 0 réf
+  - ⬜ l.358-398 « Le personnel de l'auberge » — bruit de scénario, 0 réf
+  - ⬜ l.399-416 « Les cochers » — bruit de scénario, 0 réf
+  - ⬜ l.417-453 « Dame Isolde et sa suite » — bruit de scénario, 0 réf
+  - ⬜ l.454-475 « Le garde du corps » — bruit de scénario, 0 réf
+  - ⬜ l.476-528 « Les autres voyageurs » — bruit de scénario, 0 réf
 - **EDO 07** (Chapitre 7 - Dans les ténèbres) :
   - ⬜ l.9-14 « ENTRER DANS LES ÉGOUTS » — bruit de scénario, 0 réf
   - ⬜ l.15-20 « PENDANT CE TEMPS-LÀ, AILLEURS… » — bruit de scénario, 0 réf
@@ -756,12 +785,12 @@
 | 01 | INTRODUCTION | ➖ hors-règle | |
 | 02 | Commentaires des invités | ➖ hors-règle | |
 | 03 | CHAPITRE 1 - « Easter eggs » | ➖ hors-règle | |
-| 04 | *(artefact OCR)* | ➖ | |
+| 04 | ORGANISATIONS ET LIEUX | ➖ hors-règle | |
 | 05 | CHAPITRE 2 - L’Empire | ➖ hors-règle | |
 | 06 | Chapitre 3 - Les routes et grandes routes | 🟡 | 1 (deplacement.md ×1) |
 | 07 | Chapitre 4 - Montures et véhicules | ✅ | 19 (deplacement.md ×19) |
 | 08 | CHAPITRE 5 - Voyager | ✅ | 10 (deplacement.md ×7) |
-| 09 | *(artefact OCR)* | ➖ | |
+| 09 | OÙ EST MON TABLEAU DE RENCONTRES ALÉATOIRES ? | ➖ hors-règle | |
 | 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | |
 | 11 | CHAPITRE 7 - Toutes les routes mènent à Bögenhafen | ➖ hors-règle | |
 | 12 | CHAPITRE 8 - Les mutants dans l’Empire | ✅ | 3 (corruption.md ×3) |
@@ -1325,28 +1354,28 @@
 | 04 | Ça fait beaucoup de Traits ! | ✅ | 7 (combat.md ×7) |
 | 05 | *(artefact OCR)* | ➖ | |
 | 06 | LES FOUS DE GOTHEIM | ➖ hors-règle | |
-| 07 | *(artefact OCR)* | ➖ | |
-| 08 | Pour étoffer un peu | ➖ hors-règle | |
+| 07 | Wilhelm Kreigrisch, le bourgmestre | ➖ hors-règle | |
+| 08 | *(artefact OCR)* | ➖ | |
 | 09 | Démarrer l’aventure | ➖ hors-règle | |
 | 10 | CŒUR DE VERRE | ➖ hors-règle | |
-| 11 | Pour étoffer un peu | ➖ hors-règle | |
+| 11 | *(artefact OCR)* | ➖ | |
 | 12 | Démarrer l’Aventure | ➖ hors-règle | |
-| 13 | *(artefact OCR)* | ➖ | |
+| 13 | LA TOUR DES VENTS | ➖ hors-règle | |
 | 14 | MASSACRE À SPITTLEFELD | ➖ hors-règle | |
-| 15 | Pour étoffer un peu | ➖ hors-règle | |
+| 15 | *(artefact OCR)* | ➖ | |
 | 16 | Comment commencer l’aventure | ➖ hors-règle | |
-| 17 | *(artefact OCR)* | ➖ | |
+| 17 | *(section sans titre)* | ➖ hors-règle | |
 | 18 | D’Appâts et de Sorciers | ➖ hors-règle | |
-| 19 | Pour étoffer un peu | ➖ hors-règle | |
+| 19 | *(artefact OCR)* | ➖ | |
 | 20 | Débuter l’Aventure | ➖ hors-règle | |
-| 21 | *(artefact OCR)* | ➖ | |
+| 21 | *(section sans titre)* | ➖ hors-règle | |
 | 22 | Les coupables | ➖ hors-règle | |
-| 23 | Pour étoffer un peu | ➖ hors-règle | |
+| 23 | *(artefact OCR)* | ➖ | |
 | 24 | Comment commencer l’Aventure | ➖ hors-règle | |
 | 25 | Index des PNJ | ➖ hors-règle | |
-| 26 | *(artefact OCR)* | ➖ | |
+| 26 | *(section sans titre)* | ➖ hors-règle | |
 
-## NADJ — ✅ 6 · 📖 0 · 🟡 0 · ⬜ 0
+## NADJ — ✅ 7 · 📖 0 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -1354,23 +1383,33 @@
 | 01 | Avant-propos | ➖ hors-règle | |
 | 02 | Introduction | ➖ hors-règle | |
 | 03 | Une nuit agitée aux Trois Plumes | ➖ hors-règle | |
-| 04 | *(artefact OCR)* | ➖ | |
-| 05 | *(artefact OCR)* | ✅ | 7 (combat.md ×4) |
+| 04 | Les autres invités | ✅ | 4 (reconciliation.md ×4) |
+| 05 | 22h00 | ✅ | 7 (combat.md ×4) |
 | 06 | Une journée au tribunal | ✅ | 13 (combat.md ×13) |
-| 07 | *(artefact OCR)* | ➖ | |
+| 07 | Les dignitaires du tribunal | ➖ hors-règle | |
 | 08 | Une nuit à l’Opéra | ✅ | 3 (combat.md ×3) |
-| 09 | *(artefact OCR)* | ➖ | |
+| 09 | Le répurgateur | ➖ hors-règle | |
 | 10 | le mariage de nastassia | ➖ hors-règle | |
-| 11 | *(artefact OCR)* | ✅ | 6 (combat.md ×6) |
+| 11 | Le joyau volé | ✅ | 6 (combat.md ×6) |
 | 12 | *(artefact OCR)* | ➖ | |
 | 13 | SEIGNEUR D’UBERSREIK - | ➖ hors-règle | |
 | 14 | appendice I - Gnomes | ➖ hors-règle | |
-| 15 | *(artefact OCR)* | ✅ | 4 (talents.md ×3) |
-| 16 | JEUX DE TAVERNE | ✅ | 17 (tests.md ×14) |
-| 17 | *(artefact OCR)* | ➖ | |
+| 15 | LE PEUPLE DES LANDES | ✅ | 4 (talents.md ×3) |
+| 16 | JEUX DE TAVERNE | ✅ | 18 (tests.md ×14) |
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
+- **NADJ 04** (_Hlk18182212) :
+  - ⬜ l.5-12 « Les autres invités » — candidat trou de règle, 0 réf
+  - ⬜ l.13-14 « Résumé des intrigues » — candidat trou de règle, 0 réf
+  - ⬜ l.15-18 « Intrigue n° 1 – Une question d'importance » — candidat trou de règle, 0 réf
+  - ⬜ l.19-22 « Intrigue n° 2 – Dispositions compromettantes » — candidat trou de règle, 0 réf
+  - ⬜ l.23-29 « Intrigue n° 3 – Un visage surgissant du passé » — candidat trou de règle, 0 réf
+  - ⬜ l.30-53 « Intrigue n° 4 – Faire un scandale » — candidat trou de règle, 0 réf
+  - ⬜ l.74-77 « 21h10 » — candidat trou de règle, 0 réf
+  - ⬜ l.78-81 « 21h15 » — candidat trou de règle, 0 réf
+  - ⬜ l.82-85 « 21h20 » — candidat trou de règle, 0 réf
+  - ⬜ l.86-101 « 21h25 » — candidat trou de règle, 0 réf
 - **NADJ 05** (_GoBack) :
   - ⬜ l.5-10 « 22h00 » — candidat trou de règle, 0 réf
   - ⬜ l.11-22 « 22h10 » — candidat trou de règle, 0 réf
@@ -1532,7 +1571,10 @@
   - ⬜ l.84-92 « LE CEREVIS » — candidat trou de règle, 0 réf
   - ⬜ l.101-106 « LES DOMINOS » — candidat trou de règle, 0 réf
   - ⬜ l.107-112 « LE TORCHON TREMPÉ » — candidat trou de règle, 0 réf
-  - ⬜ l.113-120 « MIDDENBALL » — candidat trou de règle, 0 réf
+  - ⬜ l.121-126 « LES MOULINS » — candidat trou de règle, 0 réf
+  - ⬜ l.127-132 « QUESTIONS - RÉPONSES » — candidat trou de règle, 0 réf
+  - ⬜ l.133-140 « L'IMPÉRATRICE ÉCARLATE » — candidat trou de règle, 0 réf
+  - ⬜ l.141-146 « LES PIERRES » — candidat trou de règle, 0 réf
 
 ## MDG — ✅ 9 · 📖 2 · 🟡 0 · ⬜ 0
 
@@ -1623,3 +1665,11 @@
 
 - **VDM 09** (Shyish — Domaine de la Mort) :
   - 📖 l.375-536 « Le Labyrinthe de Cristal » — transcrit en catalogue, jamais traité, 0 réf
+
+## ⚠ Stubs de découpe CITÉS par l’Atlas
+
+> Le fichier-chapitre ne contient que la note de page partagée : il ne porte AUCUNE ligne de
+> source. Les réfs ci-dessous sont donc mortes par construction — à ré-ancrer sur le chapitre
+> voisin qui porte réellement le texte.
+
+- **LDB 06** (Source\Warhammer v4 - Livre de base version corrigée\06 - Classes.md) — stub de découpe SANS source, pourtant cité 6 fois par l'Atlas (carrieres.md ×3) : ces réfs pointent dans le vide.

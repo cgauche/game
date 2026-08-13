@@ -23,6 +23,7 @@ import { PROPS } from '../../gameIso/catalog/decor';
 import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { FACADE_APPEARANCE_IDS } from '../../gameIso/catalog/facades';
 import { MERCHANTS } from '../../state/merchants/index';
+import { TAVERN_GAMES } from '../../engine/tavernGame';
 import { allMusicDefs } from '../../audio/music';
 import { findCreatureById, creatureLabel, lightLevels, lightTones, findVehicleById, roofMaterials } from '../../data';
 import { DEFAULT_ROOF_DEFAULTS, rederiveRoofMasses } from '../../state/sceneEdit';
@@ -1295,6 +1296,34 @@ function EntityPanel({
                 ))}
               </select>
             </label>
+            {/* JOUEUR de taverne (#1279 S4) : ce PNJ propose une partie, jouée de SA fiche. Même
+                forme que le rôle « Marchand » juste dessous — un rôle optionnel, un select qui
+                l'ouvre ou le retire, et son réglage d'auteur (la mise de départ, `NADJ 04 l.72`). */}
+            <label className="ed-field">
+              Joueur de taverne (jeu proposé)
+              <select
+                value={ent.tavernGame?.gameId ?? ''}
+                onChange={(e) => updateSel({ tavernGame: e.target.value ? { ...ent.tavernGame, gameId: e.target.value } : undefined })}
+              >
+                <option value="">— aucun —</option>
+                {TAVERN_GAMES.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {ent.tavernGame && (
+              <label className="ed-field">
+                Mise de départ (sous de cuivre)
+                <input
+                  type="number"
+                  min={0}
+                  value={ent.tavernGame.stakeBrass ?? ''}
+                  onChange={(e) => updateSel({ tavernGame: { ...ent.tavernGame!, stakeBrass: e.target.value === '' ? undefined : Math.max(0, Number(e.target.value)) } })}
+                />
+              </label>
+            )}
             <label className="ed-field">
               Marchand (archétype)
               <select value={ent.merchant?.archetype ?? ''} onChange={(e) => updateSel({ merchant: e.target.value ? { ...ent.merchant, archetype: e.target.value } : undefined })}>

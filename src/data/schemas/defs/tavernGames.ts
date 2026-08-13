@@ -1,15 +1,13 @@
 /**
  * Schéma de `tavernGames.json` — Jeux de taverne (Nuits agitées & dures journées, ch.16), consommé
- * par `src/engine/tavernGame.ts:44` (type `TavernGame`, 11 entrées réelles). `skill` = `id` de
+ * par `src/engine/tavernGame.ts:44` (type `TavernGame`, 13 entrées réelles). `skill` = `id` de
  * `skills.json` ou `null` (aucune Compétence indiquée → Pari, variante rapide l.11) — string libre
  * car free-form FK non validée ici (grep du JSON : "savoir"/"projectiles"/"pari"/"corps-a-corps").
  * `characteristic` réutilise l'enum `CharKey` du moteur (`src/engine/types.ts:18`).
  *
- * `desc` = la règle RECOPIÉE (CLAUDE.md règle 5), Markdown de la source compris. UNE normalisation
- * est ASSUMÉE, et c'est la seule : l'extraction Marker de `NADJ 16 l.65` porte « vous permet à la
- * place d' encercler » (espace parasite né de la coupure d'italique) ; le folio imprimé ne porte pas
- * cet espace, la donnée écrit donc « d'encercler ». Recopier l'artefact serait recopier l'outil, pas
- * la source.
+ * `desc` = la règle RECOPIÉE (CLAUDE.md règle 5), Markdown de la source compris. Un paragraphe que
+ * l'extraction coupe sur une frontière de page est RECOLLÉ par-dessus son ancre de folio — aucun
+ * caractère n'est réécrit (garde : `src/data/tavern-desc-verbatim.test.ts`).
  */
 import { z } from 'zod';
 import { difficultySchema, gameOpSchema, sourceRefSchema } from '../common';

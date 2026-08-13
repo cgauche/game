@@ -143,6 +143,16 @@ const dialogues: Dialogue[] = [
             ]),
           },
           {
+            // CHEMIN JOUEUR de « il leur propose une partie » (`EDO 01 l.200`) : sans lui, le rôle
+            // `tavernGame` de l'entité est une affordance morte — authorée, jamais atteignable au clic.
+            text: 'Accepter la partie de cartes qu’il propose.',
+            icon: 'nav/dice',
+            flow: flowFromEffects([
+              { type: 'endDialogue' },
+              { type: 'openTavernGames' },
+            ]),
+          },
+          {
             text: 'Le remercier et poursuivre sans se presser.',
             flow: flowFromEffects([{ type: 'endDialogue' }]),
           },
@@ -183,7 +193,14 @@ const scene = buildScene({
   // le bloc `narratif` de ce scénario porte les 3 presets. La cross-ref `validateScenePresetRefs` gate
   // l'import JSON/éditeur (`parseProject`), pas ce chemin TS-authored — repli spawn silencieux si absent.
   entities: [
-    { id: 'npc-phillipe', kind: 'personnage', pos: { x: 5, y: 4 }, presetId: 'edo-phillipe-descartes', dialogueId: 'dlg-phillipe', label: 'Phillipe Descartes' },
+    // JOUEUR de taverne AUTHORÉ (#1279 S4) : « il leur propose une partie d'Impératrice Écarlate »
+    // (`EDO 01 l.200`), et la mise plancher qu'il accepte est de 2 pistoles d'argent — « considère
+    // comme une perte de temps de jouer pour moins de 2/- » (`EDO 01 l.202`), soit 24 sous.
+    // Le jeu que le RAW prescrit ici est l'Impératrice écarlate, qui n'est PAS au catalogue (#1279
+    // S4-a) : `dominos` tient la place en attendant, et ce n'est PAS le même Test. Substitution de
+    // scène, assumée et provisoire — à remplacer dès l'entrée ingérée.
+    { id: 'npc-phillipe', kind: 'personnage', pos: { x: 5, y: 4 }, presetId: 'edo-phillipe-descartes', dialogueId: 'dlg-phillipe', label: 'Phillipe Descartes',
+      tavernGame: { gameId: 'dominos', stakeBrass: 24 } },
     { id: 'npc-josef', kind: 'personnage', pos: { x: 3, y: 2 }, presetId: 'edo-josef-quartjin', label: 'Josef Quartjin' },
   ],
   dialogues,

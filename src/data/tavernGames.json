@@ -124,7 +124,7 @@
         "charBonus": "endurance"
       }
     },
-    "desc": "faites un Test opposé étendu de Force Intermédiaire (+0) ; à chaque tour, ajoutez votre Bonus de Force au nombre de DR que vous avez obtenus. Le gagnant de chaque tour gagne +1 Avantage, pouvant être utilisé dans le cadre de cette partie de bras de fer, en suivant les règles normales. Le premier Personnage qui atteint au moins 10 DR est le vainqueur. Pour chaque Bonus d'Endurance tours qui passent sans que personne n'ait gagné, vous gagnez + 1 État Exténué (que vous pourrez récupérer après 5 minutes de repos).",
+    "desc": "faites un Test opposé étendu de **Force Intermédiaire (+0)** ; à chaque tour, ajoutez votre Bonus de Force au nombre de DR que vous avez obtenus. Le gagnant de chaque tour gagne +1 Avantage, pouvant être utilisé dans le cadre de cette partie de bras de fer, en suivant les règles normales. Le premier Personnage qui atteint au moins 10 DR est le vainqueur. Pour chaque Bonus d'Endurance tours qui passent sans que personne n'ait gagné, vous gagnez + 1 État *Exténué* (que vous pourrez récupérer après 5 minutes de repos).",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
       "page": 93
@@ -277,7 +277,7 @@
     "desc": "jetez une pièce de monnaie pour déterminer qui joue en premier. À votre tour, lancez 3 fléchettes. Pour chaque fléchette, faites un Test de **Projectile (Lancer) Intermédiaire (+0)**. Si vous réussissez, vous marquez un nombre de points égal à votre dé d'unités ou de dizaines, ou à dix fois la valeur obtenue sur votre dé d'unités ou de dizaines, selon votre choix : ainsi, un jet réussi de 26 peut vous donner 2, 6, 20 ou 60 points. En cas d'échec, vous marquez un nombre de points égal à votre dé des unités : ainsi, un jet raté de 73 vous donne 3 points. En cas de Critique, marquez autant de points que vous le souhaitez, entre 1 et 100 points. En cas d'Échec critique, vous ratez complètement la cible. Le but est de marquer un total d'exactement 501 points. Si vous marquez plus, votre tour est terminé, et les points marqués par votre dernière fléchette sont ignorés.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
-      "page": 95
+      "page": 94
     }
   },
   {
@@ -286,10 +286,10 @@
     "skill": "pari",
     "mode": "opposed",
     "tieBreak": "units-lowest",
-    "desc": "pour jouer, chaque joueur effectue un Test opposé de Pari Accessible (+20). En cas d'égalité, les joueurs comparent le résultat de leur dé d'unités pour ce Test. Celui qui a le nombre le plus bas gagne.",
+    "desc": "pour jouer, chaque joueur effectue un Test opposé de **Pari Accessible (+20)**. En cas d'égalité, les joueurs comparent le résultat de leur dé d'unités pour ce Test. Celui qui a le nombre le plus bas gagne.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
-      "page": 95
+      "page": 94
     }
   },
   {
@@ -326,7 +326,7 @@
     "desc": "lorsque vous balancez le torchon, faites un Test opposé **Projectiles (Lancer) / Esquive** d'un joueur choisi aléatoirement parmi les 11 danseurs. En cas de succès, vous le touchez à la jambe pour 1 point. Avec au moins 3 DR, vous marquez à la place un coup au corps, qui vous rapporte 2 points. Si vous faites au moins 6 DR, vous marquez à la place un coup à la tête, qui vous rapporte 3 points. Si vous ratez, vous devez descendre une pinte de bière et faire un Test de **Résistance à l'alcool Intermédiaire (+0)**. En cas d'échec, vous ne parvenez pas à vider le pot avant que la serviette n'ait été passée tout au long de la ligne de vos adversaires, et votre équipe perd 1 point. Le jeu se termine lorsque tous les joueurs ont lancé la serviette. À ce stade, chaque joueur qui n'a pas encore fait de jet sur le Tableau Ivre (voir **WFJDR**, page 129) est considéré comme trop sobre et fait perdre 1 point à son équipe. C'est l'équipe qui a le plus de points qui gagne.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
-      "page": 95
+      "page": 94
     },
     "roundShape": "thrower"
   },
@@ -368,7 +368,7 @@
     "desc": "les règles complètes du Middenball sont décrites dans **Middenheim : la cité du Loup blanc**. En voici une variante pour le jeu rapide : chaque tour, tous les joueurs effectuent un Test de **Corps à corps (Bagarre) Accessible (+20)** ou d'**Athlétisme Intermédiaire (+0)**. On additionne le nombre de DR obtenus pour chaque équipe. L'équipe qui obtient le total le plus élevé gagne +1 Avantage pour le tour suivant (en utilisant les règles habituelles relatives à l'Avantage), et marquera un but si son total est de +25 ou plus. Une partie dure deux mi-temps de trois tours chacune (chaque tour ayant une durée de 10 minutes).",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
-      "page": 95
+      "page": 94
     },
     "roundShape": "team"
   },
@@ -428,6 +428,49 @@
     "source": {
       "book": "nuits-agitees-et-dures-journees",
       "page": 93
+    }
+  },
+  {
+    "id": "moulins",
+    "label": "Les moulins",
+    "skill": null,
+    "characteristic": "intelligence",
+    "mode": "extended",
+    "target": 9,
+    "drBonus": "intelligence",
+    "options": [
+      {
+        "char": "intelligence",
+        "difficulty": "facile"
+      }
+    ],
+    "desc": "faites un Test opposé étendu d'**Intelligence Facile (+40)** ; à chaque tour, ajoutez votre Bonus d'Intelligence à votre nombre de DR. Le premier Personnage qui atteint au moins 9 DR est le vainqueur. Si les deux équipes obtiennent 9 DR lors du même tour, la partie se solde par un match nul.",
+    "source": {
+      "book": "nuits-agitees-et-dures-journees",
+      "page": 95
+    }
+  },
+  {
+    "id": "pierres",
+    "label": "Les pierres",
+    "skill": null,
+    "characteristic": "intelligence",
+    "mode": "extended",
+    "target": 10,
+    "options": [
+      {
+        "char": "intelligence",
+        "difficulty": "accessible"
+      }
+    ],
+    "phases": {
+      "count": 1,
+      "rounds": 10
+    },
+    "desc": "ce jeu nécessite un Test opposé étendu d'**Intelligence Accessible (+20)**. Le premier Personnage qui atteint au moins 10 DR est le vainqueur. Si, après 10 tours, personne n'a gagné, la partie se solde par une égalité.",
+    "source": {
+      "book": "nuits-agitees-et-dures-journees",
+      "page": 95
     }
   }
 ]
