@@ -25,11 +25,19 @@ import type { PendingCascade } from './pendings';
 import type { BuiltCascadeStep } from './rollSeam';
 import type { RNG } from '../engine/dice';
 import type { CharKey } from '../engine/types';
-import type { SequencePhases, SequenceRoundOps, SequenceTableRow } from '../engine/sequenceVocab';
+import type { SequencePhases, SequencePotRules, SequenceRoundOps, SequenceTableRow } from '../engine/sequenceVocab';
 
-/** Borne DURE de manches — invariant DU CONTRAT : une séquence dont aucun camp ne conclut S'ARRÊTE
- *  (le `round >= 50` que chaque jeu bricolait chez lui). Aucune implémentation ne peut la dépasser. */
+/** Borne PAR DÉFAUT de manches — une séquence dont aucun camp ne conclut S'ARRÊTE (le `round >= 50`
+ *  que chaque jeu bricolait chez lui). C'est le plafond de qui ne déclare rien. */
 export const SEQUENCE_MAX_ROUNDS = 50;
+
+/** PLAFOND ABSOLU — invariant DU CONTRAT : aucune séquence, quoi qu'elle déclare, ne dépasse ce
+ *  nombre de manches. Il existe parce que la MANCHE n'a pas le même prix partout : là où une manche
+ *  est un Test opposé (50 suffit à dire « ça ne conclut pas »), une manche peut n'être qu'un lancer
+ *  de dés d'un joueur autour d'une table — six joueurs y consomment leurs manches par dizaines, et
+ *  50 couperait une partie NORMALE. Une séquence qui connaît le prix de sa manche déclare donc sa
+ *  propre borne (`SequenceParams.maxRounds`) ; celle-ci reste bornée ici, une fois pour toutes. */
+export const SEQUENCE_HARD_MAX_ROUNDS = 500;
 
 /** Issue RÉSERVÉE rendue quand la borne est atteinte — le système la reçoit dans son `settle` et
  *  décide ce qu'elle vaut chez lui (nul, abandon…). */
@@ -38,10 +46,13 @@ export const SEQUENCE_BORNE = 'borne';
 /** `purpose` des fenêtres ouvertes pour une manche : la clôture se route dessus (store). */
 export const SEQUENCE_PURPOSE = 'sequence' as const;
 
-/** Le VOCABULAIRE DE DONNÉE des familles (2) table par plage, (4) effets de manche et (6) phases vit
- *  dans le MOTEUR (`engine/sequenceVocab`) : ce sont des formes de RÈGLE, déclarées par les catalogues
- *  et republiées ici en paramètres — un catalogue du moteur ne dépend jamais du store. */
-export type { SequenceTableRow, SequenceRoundOps, SequencePhases } from '../engine/sequenceVocab';
+/** Le VOCABULAIRE DE DONNÉE des familles (2) table par plage, (4) effets de manche, (5) mise/pot et
+ *  (6) phases vit dans le MOTEUR (`engine/sequenceVocab`) : ce sont des formes de RÈGLE, déclarées par
+ *  les catalogues et republiées ici en paramètres — un catalogue du moteur ne dépend jamais du store. */
+export type {
+  SequenceTableRow, SequenceRoundOps, SequencePhases,
+  SequenceDice, SequencePotRow, SequencePotRules, SequencePotTurn, SequencePotOutcome,
+} from '../engine/sequenceVocab';
 
 /** PARAMÈTRES D'AUTEUR d'une séquence — de la DONNÉE, sérialisée avec l'état : ce qui règle la
  *  machinerie sans la recompiler (cible de cumul, plafond, départage, borne, formules de score).
@@ -53,7 +64,9 @@ export interface SequenceParams {
   drCap?: number;
   /** Id du départage d'égalité ENREGISTRÉ. Absent = l'égalité reste une égalité. */
   tieBreak?: string;
-  /** Borne de manches propre à la séquence — jamais au-dessus de `SEQUENCE_MAX_ROUNDS`. */
+  /** Borne de manches propre à la séquence — jamais au-dessus de `SEQUENCE_HARD_MAX_ROUNDS`. Absente :
+   *  `SEQUENCE_MAX_ROUNDS`. C'est ici qu'une famille dont la manche est BON MARCHÉ (un lancer, pas un
+   *  Test opposé) dit ce que « ça ne conclut pas » veut dire chez elle. */
   maxRounds?: number;
   /** Formule de score PAR CAMP (id enregistré : `min`/`max`/`sum`/`first`), keyée par camp. */
   score?: Record<string, string>;
@@ -69,6 +82,8 @@ export interface SequenceParams {
   phases?: SequencePhases;
   /** Seuil de score d'un ACQUIS de manche (Middenball NADAJ 16 l.121 : but à 25 DR d'équipe). */
   scoreThreshold?: number;
+  /** (5) Mise, pot, abandon, élimination (Al-zahr NADAJ 16 l.17). */
+  pot?: SequencePotRules;
 }
 
 /** ÉTAT d'une séquence EN COURS — GÉNÉRIQUE sur sa charge utile : l'orchestrateur ne lit JAMAIS
@@ -132,7 +147,7 @@ export interface SequenceBoardCamp {
   score: number;
   /** Score à atteindre (cumul vers cible) — absent : le camp n'a pas de jauge, juste un score. */
   target?: number;
-  /** Complément d'une ligne (buts marqués, acquis de manche) — AFFICHAGE. */
+  /** Complément d'une ligne (buts marqués, acquis de manche, joueur sorti de la manche) — AFFICHAGE. */
   note?: string;
 }
 
@@ -142,6 +157,9 @@ export interface SequenceBoard {
   title: string;
   camps: readonly SequenceBoardCamp[];
   round: number;
+  /** (5) POT en jeu, DÉJÀ LIBELLÉ par le système (l'argent se formate chez lui, `engine/money`) —
+   *  AFFICHAGE : l'UI ne convertit ni ne totalise rien. Absent : la séquence ne joue pas d'argent. */
+  pot?: string;
   /** Nombre de manches PRÉVUES (phases × manches, ou borne déclarée) — absent : partie ouverte. */
   rounds?: number;
   /** Phase courante, déjà libellée par le système (« 1ʳᵉ mi-temps »). */

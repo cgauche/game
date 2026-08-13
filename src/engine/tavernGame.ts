@@ -11,7 +11,7 @@
 import { RNG, defaultRNG } from './dice';
 import { rollTest, resolveOpposed, TestResult } from './tests';
 import { Difficulty, CharKey } from './types';
-import type { SequencePhases, SequenceRoundOps, SequenceTableRow } from './sequenceVocab';
+import type { SequencePhases, SequencePotRules, SequenceRoundOps, SequenceTableRow } from './sequenceVocab';
 import tavernGamesJson from '../data/tavernGames.json';
 
 export interface TavernGame {
@@ -29,7 +29,7 @@ export interface TavernGame {
   characteristic?: CharKey;
   /** Mode : `opposed` (un Test opposé, +DR l'emporte — variante rapide) ou `extended` (Test opposé étendu
    *  jusqu'à `target` DR cumulés — Bras de fer, l.34). */
-  mode: 'opposed' | 'extended';
+  mode?: 'opposed' | 'extended';
   /** Test étendu : DR cumulés à atteindre (Bras de fer = 10). */
   target?: number;
   /** Plafond de DR d'une manche (Boules = 6 DR). */
@@ -53,9 +53,10 @@ export interface TavernGame {
   team?: { size: number };
   /** FORME d'un tour — la CAPACITÉ que le jeu déclare, jamais déduite d'un effectif :
    *  · `team` : tous les joueurs testent le même tour, on somme par équipe (Middenball l.121) ;
-   *  · `thrower` : un tour = UN lanceur, chacun le sien jusqu'au dernier (Torchon l.111).
+   *  · `thrower` : un tour = UN lanceur, chacun le sien jusqu'au dernier (Torchon l.111) ;
+   *  · `pot` : un tour = UN joueur qui lance les dés devant un pot (Al-zahr l.17).
    *  Absente : une manche opposée ordinaire (variante rapide, l.9-11). */
-  roundShape?: 'team' | 'thrower';
+  roundShape?: 'team' | 'thrower' | 'pot';
   /** OPTIONS de Test d'une manche quand la règle en offre plusieurs (Middenball l.121 : « un Test de
    *  Corps à corps (Bagarre) Accessible (+20) **ou** d'Athlétisme Intermédiaire (+0) »). Le RAW ne dit
    *  pas QUI choisit : le choix va au JOUEUR (credo « pas de MJ », jamais un défaut silencieux). La
@@ -83,8 +84,10 @@ export interface TavernGame {
   /** Variante de lecture du score (Fléchettes = unités/dizaines/×10) — documentaire ; le moteur rapide lit
    *  le DR (l.11). */
   read?: 'sl' | 'units-tens';
-  /** Mise (Al-Zahr). */
-  stake?: string;
+  /** MISE, POT, ABANDON, ÉLIMINATION (Al-zahr, l.17) — famille (5) du socle de séquence : les dés du
+   *  tour, la plage du nombre cible, les plages de résultat et leur effet de pot. Consommé par
+   *  `SequenceParams.pot` (`state/sequenceCore`). */
+  pot?: SequencePotRules;
   source: { book: string; page: number };
 }
 

@@ -94,30 +94,6 @@ describe('playTavernGame', () => {
     expect(Math.max(res.playerSL, res.opponentSL)).toBeGreaterThanOrEqual(10); // cible atteinte
   });
 
-  it('mise contre un habitué (Al-zahr) : la bourse suit le résultat (±mise / 0)', async () => {
-    const [a] = twoHeroes();
-    useGame.setState({ party: [a] });
-    creditBourse(get, useGame.setState, a.id, { gold: 5, silver: 0, brass: 0 }); // bourse du challenger = 5 CO
-    const before = toBrass(partyMoneyTotal(get));
-    // Al-zahr porte une mise ; adversaire ABSTRAIT → la mise joue. 10 pistoles = 120 sc.
-    get().playTavernGame({ gameId: 'al-zahr', challengerId: a.id, opponent: { kind: 'abstract', value: 30 }, stakeBrass: 120 });
-    await drain();
-    const res = get().tavernGames!.result!;
-    expect(res.stakeBrass).toBe(120);
-    const expectedNet = res.winner === 'player' ? 120 : res.winner === 'opponent' ? -120 : 0;
-    expect(res.netBrass).toBe(expectedNet);
-    expect(toBrass(partyMoneyTotal(get))).toBe(before + expectedNet);
-  });
-
-  it('mise plafonnée à la bourse', async () => {
-    const [a] = twoHeroes();
-    useGame.setState({ party: [a] });
-    creditBourse(get, useGame.setState, a.id, { gold: 0, silver: 0, brass: 50 }); // bourse du challenger = 50 sc
-    get().playTavernGame({ gameId: 'al-zahr', challengerId: a.id, opponent: { kind: 'abstract', value: 30 }, stakeBrass: 100000 });
-    await drain();
-    expect(get().tavernGames!.result!.stakeBrass).toBe(50); // borné à la bourse du challenger
-  });
-
   it('Test opposé RÉEL (#579) : contre la SALLE, le jet adverse est roulé et FIGÉ AVANT que le joueur ne lance', () => {
     const [a] = twoHeroes();
     useGame.setState({ party: [a] });
@@ -132,7 +108,7 @@ describe('playTavernGame', () => {
   it('adversaire ABSTRAIT (table) : jet figé sans attackerId (aucun Combatant réel)', () => {
     const [a] = twoHeroes();
     useGame.setState({ party: [a] });
-    get().playTavernGame({ gameId: 'al-zahr', challengerId: a.id, opponent: { kind: 'abstract', value: 30 } });
+    get().playTavernGame({ gameId: 'flechettes', challengerId: a.id, opponent: { kind: 'abstract', value: 30 } });
     const step = get().pendingCascade!.participants[0];
     expect(step.meta?.opposed?.aT).toBeTruthy();
     expect(step.meta?.opposed?.attackerId).toBeUndefined();

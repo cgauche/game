@@ -141,14 +141,28 @@ export interface TableStepRow {
   label?: string;
 }
 
+/** CONTEXTE d'un tirage sur table — ce que le résolveur transmet au formateur de lignes quand son
+ *  pilote en dispose. Un seul membre : l'accès à l'état, en LECTURE. */
+export interface TableStepCtx {
+  get: Get;
+}
+
 export interface TableStepDef {
   /** Libellé de la table (rangée `TableRollLine`). */
   label: string;
   /** Faces du dé (défaut 100) — une déclaration d'étape peut le surcharger. */
   die?: number;
   rows: TableStepRow[];
-  /** Lignes d'affichage de la ligne atteinte par le dé EFFECTIF (formatage du moteur de domaine). */
-  lines: (effectiveRoll: number) => string[];
+  /** Lignes d'affichage de la ligne atteinte par le dé EFFECTIF (formatage du moteur de domaine).
+   *
+   *  `ctx` — CONTEXTE DU TIRAGE, transmis par le résolveur quand son pilote en a un (`{ get }`).
+   *  Il existe parce qu'une ligne de table ne dit pas toujours la même chose selon l'ÉTAT au moment
+   *  du dé : une même fourchette peut porter deux issues (atteindre un nombre cible, ou le passer au
+   *  joueur suivant — `NADAJ 16 l.17`), et un libellé figé à l'ENREGISTREMENT annoncerait la
+   *  fourchette au lieu de ce qui vient d'arriver. Le socle ne connaît toujours aucun domaine : il
+   *  transmet l'accès, il ne lit rien. Absent (résolveur PUR, moteur hors store) : la table rend son
+   *  libellé de fourchette — toute implémentation doit rester correcte sans `ctx`. */
+  lines: (effectiveRoll: number, ctx?: TableStepCtx) => string[];
   /** Catégorie Codex où vivent les LIGNES de cette table (`criticalsTete`, `mutations`,
    *  `interludeEvents`…). Déclarée ICI parce que la table est le seul endroit qui la connaisse : un
    *  même `kind` d'étape tire sur N tables (une Blessure critique se joue sur celle de SA
@@ -198,12 +212,13 @@ export function liveTableDecl(s: GameState, step: CascadeStep): CascadeTableDecl
  *    extrême — ici la borne est vérifiée et l'appelant est nommé (tableId/dé/mod). Seul le PLANCHER
  *    se déclare (`clamp`, table dont le RAW borne par le bas) ; le plafond reste un fail-fast.
  */
-export function rollTableStep(decl: CascadeTableDecl, rng: RNG): CascadeTableResult {
+export function rollTableStep(decl: CascadeTableDecl, rng: RNG, ctx?: TableStepCtx): CascadeTableResult {
   const def = tableStepDefs[decl.tableId];
   if (!def) throw new Error(`rollTableStep : table d'étape « ${decl.tableId} » non enregistrée (registerTableStep)`);
   const faces = decl.die ?? def.die ?? 100;
-  let natural = decl.forcedRoll ?? roll(1, faces, rng);
-  if (decl.forcedRoll == null) for (let i = 1; i < (decl.keepHighest ?? 1); i++) natural = Math.max(natural, roll(1, faces, rng));
+  const des = Math.max(1, decl.dice ?? 1);
+  let natural = decl.forcedRoll ?? roll(des, faces, rng);
+  if (decl.forcedRoll == null) for (let i = 1; i < (decl.keepHighest ?? 1); i++) natural = Math.max(natural, roll(des, faces, rng));
   const raw = natural + (decl.mod ?? 0);
   const lo = def.rows[0].min;
   const hi = def.rows[def.rows.length - 1].max;
@@ -214,7 +229,7 @@ export function rollTableStep(decl: CascadeTableDecl, rng: RNG): CascadeTableRes
     );
   }
   const row = findTableEntry(def.rows, die);
-  return { roll: natural, die, id: row.id, lines: def.lines(die) };
+  return { roll: natural, die, id: row.id, lines: def.lines(die, ctx) };
 }
 
 /**
@@ -469,7 +484,7 @@ export function rollCascadeTable(get: Get, set: Set, stepId: string): void {
   // La déclaration RÉSOLUE (modificateur vivant versé) est celle qui tire ET celle qu'on POSE sur
   // l'étape : le `mod` qui a servi reste lisible (rangée + conséquence) au lieu d'être recalculé.
   const table = liveTableDecl(get(), cur);
-  const result = rollTableStep(table, battleRng());
+  const result = rollTableStep(table, battleRng(), { get });
   set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? tableStepResolved(x, table, result) : x)) } });
 }
 
@@ -480,6 +495,14 @@ export function tableStepDie(decl: CascadeTableDecl): number {
   return decl.die ?? tableStepDefs[decl.tableId]?.die ?? 100;
 }
 
+/** PLAGE des dés NATURELS que ce tirage peut sortir : `dice` dés (défaut 1) de `tableStepDie` faces,
+ *  totalisés — de `dice` à `dice × faces`. C'est elle qui borne toute SAISIE de dé posé : les faces
+ *  seules mentiraient dès qu'un tirage en compte plusieurs (un 2d10 sort 17, aucun d10 ne le fait). */
+export function tableStepNaturalRange(decl: CascadeTableDecl): { min: number; max: number } {
+  const des = Math.max(1, decl.dice ?? 1);
+  return { min: des, max: des * tableStepDie(decl) };
+}
+
 /**
  * MODE TABLE (#942 L3) — dé NATUREL à poser pour atteindre la ligne `row` : le lookup se fait sur le
  * dé EFFECTIF (`naturel + mod`, cf. `rollTableStep`), donc le naturel est `min − mod`, ramené dans les
@@ -488,8 +511,9 @@ export function tableStepDie(decl: CascadeTableDecl): number {
  */
 export function naturalRollForTableRow(decl: CascadeTableDecl, row: TableStepRow): number | null {
   const mod = decl.mod ?? 0;
-  const lo = Math.max(1, row.min - mod);
-  const hi = Math.min(tableStepDie(decl), row.max - mod);
+  const plage = tableStepNaturalRange(decl);
+  const lo = Math.max(plage.min, row.min - mod);
+  const hi = Math.min(plage.max, row.max - mod);
   return lo <= hi ? lo : null;
 }
 
@@ -499,8 +523,9 @@ export function naturalRollForTableRow(decl: CascadeTableDecl, row: TableStepRow
 function clampTableNatural(decl: CascadeTableDecl, roll: number): number {
   const def = tableStepDefs[decl.tableId];
   const mod = decl.mod ?? 0;
-  const lo = def ? Math.max(1, def.rows[0].min - mod) : 1;
-  const hi = def ? Math.min(tableStepDie(decl), def.rows[def.rows.length - 1].max - mod) : tableStepDie(decl);
+  const plage = tableStepNaturalRange(decl);
+  const lo = def ? Math.max(plage.min, def.rows[0].min - mod) : plage.min;
+  const hi = def ? Math.min(plage.max, def.rows[def.rows.length - 1].max - mod) : plage.max;
   return Math.min(Math.max(Math.floor(roll), lo), hi);
 }
 
@@ -529,7 +554,7 @@ export function setCascadeTableForcedRoll(get: Get, set: Set, stepId: string, ro
   if (!cur || cur.id !== stepId || !cur.table || cur.committed) return;
   const live = liveTableDecl(get(), cur);
   const table: CascadeTableDecl = { ...live, forcedRoll: clampTableNatural(live, roll) };
-  const result = rollTableStep(table, battleRng());
+  const result = rollTableStep(table, battleRng(), { get });
   set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...tableStepResolved(x, table, result), fixed: true } : x)) } });
 }
 
@@ -873,7 +898,7 @@ export function resolveRemainingCascade(get: Get, set: Set): PendingCascade | nu
       // TIRAGE SUR TABLE sans influence (« Tout lancer ») : mêmes résolveur ET composition de
       // déclaration que la modale (`liveTableDecl` — modificateur vivant au moment du jet).
       const table = liveTableDecl(get(), st);
-      const rolled = rollTableStep(table, battleRng());
+      const rolled = rollTableStep(table, battleRng(), { get });
       steps = steps.map((x, k) => (k === i ? tableStepResolved(x, table, rolled) : x));
     } else if (stepInteraction(st) === 'batch') {
       steps = steps.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(st) } : x));
@@ -941,7 +966,7 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ct
       unwitnessed = true;
     } else if (stepInteraction(st) === 'table') {
       const table = liveTableDecl(get(), st); // même composition de déclaration que la modale
-      const rolled = rollTableStep(table, battleRng());
+      const rolled = rollTableStep(table, battleRng(), { get });
       cur = cur.map((x, k) => (k === i ? tableStepResolved(x, table, rolled) : x));
     } else if (stepInteraction(st) === 'batch') {
       cur = cur.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(st, true) } : x)); // résolue d'office → étampe de trace (#1281)

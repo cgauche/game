@@ -25,7 +25,7 @@ import { TableRollLine } from './RollLine';
 import { testBreakdown, testPending, opposedLines } from './breakdown';
 import type { ModLine } from '../engine/combat';
 import { Icon } from './Icon';
-import { stepInteraction, stepReady, tableStepDefs, tableStepDie, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
+import { stepInteraction, stepReady, tableStepDefs, tableStepNaturalRange, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
 import { useOwns } from './ownership';
 import { pursuitOf } from '../state/pursuitFlow';
 import { SequencePanel } from './SequencePanel';
@@ -419,7 +419,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     const die = tableStepForcedDie(useGame.getState(), s, (r) => tableSetForcedRoll(s.id, r));
     if (!die.forcedRoll) return { rows: [], lines: null };
     const mod = decl.mod ?? 0;
-    const dieMax = tableStepDie(decl);
+    const dieMax = tableStepNaturalRange(decl).max;
     const options: RollOption[] = (tableStepDefs[decl.tableId]?.rows ?? []).map((r) => {
       const nat = naturalRollForTableRow(decl, r);
       return {

@@ -28,7 +28,7 @@ import type { Get, Set } from './flowTypes';
 import type { PendingCascade } from './pendings';
 import { openSequence } from './rollSeam';
 import {
-  SEQUENCE_MAX_ROUNDS, SEQUENCE_PURPOSE, SEQUENCE_BORNE,
+  SEQUENCE_MAX_ROUNDS, SEQUENCE_HARD_MAX_ROUNDS, SEQUENCE_PURPOSE, SEQUENCE_BORNE,
   type SequenceDef, type SequenceParams, type SequenceState,
 } from './sequenceContract';
 import { runCascadeImmediate } from './cascade';
@@ -37,7 +37,10 @@ import { findTableEntry } from '../engine/tables';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { applyOps } from '../engine/ops';
 import type { Combatant } from '../engine/types';
-import type { SequenceBoard, SequenceRoundActors, SequenceTableRow } from './sequenceContract';
+import type {
+  SequenceBoard, SequenceRoundActors, SequenceTableRow,
+  SequencePotRow, SequencePotTurn, SequencePotOutcome,
+} from './sequenceContract';
 import { actorIn } from './combatants';
 import { battleRng } from './battleRng';
 import { t } from '../i18n';
@@ -45,11 +48,12 @@ import { t } from '../i18n';
 /** LE CONTRAT, ré-exporté par son implémentation : un système n'a qu'une porte d'entrée à importer.
  *  Sa définition, elle, vit dans `sequenceContract.ts` — qui n'importe RIEN d'ici. */
 export {
-  SEQUENCE_MAX_ROUNDS, SEQUENCE_PURPOSE, SEQUENCE_BORNE,
+  SEQUENCE_MAX_ROUNDS, SEQUENCE_HARD_MAX_ROUNDS, SEQUENCE_PURPOSE, SEQUENCE_BORNE,
 } from './sequenceContract';
 export type {
   SequenceDef, SequenceParams, SequenceState, SequenceRound, SequenceVerdict, SequenceCloseCtx,
   SequenceTableRow, SequenceRoundOps, SequencePhases, SequenceBoard, SequenceBoardCamp, SequenceRoundActors,
+  SequenceDice, SequencePotRow, SequencePotRules, SequencePotTurn, SequencePotOutcome,
 } from './sequenceContract';
 
 /** Registre des définitions, peuplé par les modules de DOMAINE à leur chargement. */
@@ -125,6 +129,68 @@ registerSequenceTieBreak('units-lowest', (a, b) => {
 export function resolveSequenceTie(departage: string | undefined, a: SequenceTieSide, b: SequenceTieSide): 'a' | 'b' | 'tie' {
   const fn = departage ? sequenceTieBreaks[departage] : undefined;
   return fn ? fn(a, b) : 'tie';
+}
+
+/* ── FAMILLE (5) : MISE, POT, ABANDON, ÉLIMINATION ───────────────────────────────────────────
+ * Un tour rend un TOTAL de dés ; la plage où il tombe déclare l'EFFET DE POT qui s'ensuit (`Al-zahr,
+ * NADAJ 16 l.17`). MÊME registre ouvert que les formules de score et les départages : ce qui indexe
+ * est le nom d'un EFFET (un rôle), jamais l'identité d'une entrée de catalogue (garde
+ * `registry-id-branch`, doctrine #842). Les effets sont PURS : ils lisent le tour, ils rendent des
+ * conséquences — le réducteur du domaine tient les bourses, les joueurs et l'ordre du tour. */
+export type SequencePotEffectFn = (turn: SequencePotTurn) => SequencePotOutcome;
+
+const sequencePotEffects: Record<string, SequencePotEffectFn> = {};
+
+/** Enregistre (ou remplace) un effet de pot, sous le nom que la donnée emploiera. */
+export function registerSequencePotEffect(effet: string, fn: SequencePotEffectFn): void {
+  sequencePotEffects[effet] = fn;
+}
+
+/** Le joueur RAFLE le pot et remporte la manche (`NADAJ 16 l.17`). */
+registerSequencePotEffect('rafle-le-pot', () => ({ wins: true }));
+/** Le joueur REPREND `mises` mises dans le pot (`NADAJ 16 l.17`) — le pot ne rend jamais plus qu'il
+ *  ne contient. */
+registerSequencePotEffect('reprend-mise', (t) => ({ takes: Math.min(t.ante * t.mises, t.pot) }));
+/** Le total ATTEINT la cible (manche remportée) ou la PASSE au joueur suivant (`NADAJ 16 l.17`). */
+registerSequencePotEffect('cible-ou-passe', (t) => (t.roll === t.target ? { wins: true } : { target: t.roll }));
+/** Le joueur REMET `mises` mises au pot, ou ABANDONNE la manche (`NADAJ 16 l.17`). */
+registerSequencePotEffect('remise-ou-abandon', (t) => ({ choose: true, owes: t.ante * t.mises }));
+/** Le joueur QUITTE la manche (`NADAJ 16 l.17`). */
+registerSequencePotEffect('quitte-la-manche', () => ({ out: true }));
+
+/** La PLAGE du total qui couvre ce tour, ou `undefined` si la séquence ne déclare aucun pot. Lue par
+ *  la primitive PARTAGÉE du dépôt (`findTableEntry`) — aucun `find` par fourchette n'est réécrit. */
+export function sequencePotRow(params: SequenceParams, total: number): SequencePotRow | undefined {
+  const rows = params.pot?.rows;
+  return rows?.length ? findTableEntry([...rows], total) : undefined;
+}
+
+/** CONSÉQUENCES d'un tour : la plage trouvée, puis son effet ENREGISTRÉ, appelé avec le PARAMÈTRE de
+ *  cette plage (`mises`, défaut 1) — l'appelant ne le lit pas, la donnée le porte. Plage ou effet
+ *  inconnus : aucune conséquence (jamais un repli qui invente une sortie ou un gain). */
+export function resolveSequencePotTurn(
+  params: SequenceParams,
+  turn: Omit<SequencePotTurn, 'mises'>,
+): { row?: SequencePotRow; outcome: SequencePotOutcome } {
+  const row = sequencePotRow(params, turn.roll);
+  const fn = row ? sequencePotEffects[row.effect] : undefined;
+  return { ...(row ? { row } : {}), outcome: fn ? fn({ ...turn, mises: row?.mises ?? 1 }) : {} };
+}
+
+/**
+ * L'ISSUE d'un tour, en une phrase — ce que le lancer vient de PRODUIRE, pas la plage où il tombe.
+ * La distinction est nécessaire : une même plage peut porter deux issues (atteindre la cible, ou la
+ * passer au suivant), et une fenêtre qui n'annonce que la plage laisse le joueur découvrir sa
+ * victoire à l'écran d'après. Rendue par le SOCLE (l'issue appartient à la famille), affichée par
+ * qui veut ; `undefined` = aucune conséquence nommable, l'appelant garde le libellé de sa plage.
+ */
+export function sequencePotIssue(outcome: SequencePotOutcome): string | undefined {
+  if (outcome.wins) return t('seqPot.issueRafle');
+  if (outcome.out) return t('seqPot.issueSort');
+  if (outcome.takes) return t('seqPot.issueReprend');
+  if (outcome.choose) return t('seqPot.issueRemise');
+  if (outcome.target != null) return t('seqPot.issueCible', { cible: outcome.target });
+  return undefined;
 }
 
 /* ── FAMILLE (1) : ACCUMULATEUR PAR CAMP ─────────────────────────────────────────────────────────*/
@@ -262,11 +328,16 @@ export function sequenceBoardOf(get: Get): SequenceBoard | null {
 
 /* ── LE CYCLE : ouvrir → clore → rouvrir/dénouer ─────────────────────────────────────────────────*/
 
-/** Borne EFFECTIVE de manches (jamais au-dessus de l'invariant du socle). Une séquence à PHASES
- *  (famille 6) borne AUSSI au total qu'elle déclare : ses mi-temps ne se jouent pas indéfiniment. */
+/** Borne EFFECTIVE de manches : celle que la séquence DÉCLARE (`maxRounds`) ou, à défaut, celle du
+ *  socle — toujours ramenée sous le plafond absolu du contrat. Une séquence à PHASES (famille 6)
+ *  borne AUSSI au total qu'elle déclare : ses mi-temps ne se jouent pas indéfiniment. */
 function borneOf(params: SequenceParams): number {
   const total = sequencePhaseOf(params, 1).total;
-  return Math.min(params.maxRounds ?? SEQUENCE_MAX_ROUNDS, total > 0 ? total : SEQUENCE_MAX_ROUNDS, SEQUENCE_MAX_ROUNDS);
+  return Math.min(
+    params.maxRounds ?? SEQUENCE_MAX_ROUNDS,
+    total > 0 ? total : SEQUENCE_HARD_MAX_ROUNDS,
+    SEQUENCE_HARD_MAX_ROUNDS,
+  );
 }
 
 /**

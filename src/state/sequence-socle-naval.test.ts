@@ -193,6 +193,8 @@ describe('Structure d’orchestrateur — instanciable par une crise NAVALE (2 m
     startSequence(useGame.getState, useGame.setState, { def: 'test-boucle-infinie', payload: { n: 0 } });
     expect(activeSequence(useGame.getState), 'la séquence s’est arrêtée').toBeNull();
     expect(manches).toBe(SEQUENCE_MAX_ROUNDS);
-    expect(useGame.getState().journal.some((l) => l.includes('borne de 50 manches'))).toBe(true);
+    // La borne se COMPTE en manches ouvertes par le socle ; elle se DIT en tours, parce que la
+    // manche n'a pas le même prix partout (un lancer de dés autour d'une table en est une aussi).
+    expect(useGame.getState().journal.some((l) => l.includes('borne de 50 tours'))).toBe(true);
   });
 });

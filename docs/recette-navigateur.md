@@ -277,6 +277,13 @@ Playwright), jamais l'action du joueur ni un jet du flux qu'on est en train de v
 Round/tour se fait TOUJOURS par `turn()`/`fastForward()`, jamais à la main** (pas de bidouille de
 `battle.round`/`order` par `store.setState` — ce sont des recettes, pas le flux testé).
 
+⚠ **`seed()`/`previewRoll()` ne couvrent QUE le RNG de COMBAT** (`battleRng`) : les SÉQUENCES hors
+combat (jeux de taverne, poursuite, crises de mer) tirent leurs dés par le même module, mais AUCUNE
+n'est ré-ensemencée par `seed()` tant qu'aucun combat n'est ouvert — une recette qui veut rejouer une
+partie de taverne à l'identique n'a aujourd'hui aucune prise dessus (mesuré par échec répété,
+recette #1279 S2). Corollaire : une branche rare d'une séquence (une plage de dés peu probable) se
+recette en la POSANT (option « Dés fixés » → étape à table), jamais en cherchant la bonne graine.
+
 Les tokens portent `data-cid="<id de l'entité/combattant>"` dans le SVG — COMBAT ET EXPLORATION
 (#226, `src/gameIso/stage/tokens.tsx`) → survol/clic ciblé par sélecteur DOM (vrais clics
 Playwright, cf. piège ci-dessous), ou lecture de position via `screenPos('id')`.
@@ -395,6 +402,9 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
   Un clic « qui ne fait rien » juste après un `scenario()`/une transition N'EST PAS un bug de câblage.
   RÈGLE : FERMER le briefing (« Terminer ») AVANT toute mesure de clic, et le vérifier au DOM
   (`document.querySelector('.modal-overlay')` nul) plutôt que de conclure à un bouton mort.
+- **Les modales du jeu sont des `<div role="dialog">`, jamais la balise `<dialog>`** (mesuré recette
+  #1279 S2) : un sélecteur `dialog` ne trouve RIEN et fait conclure à tort qu'aucune fenêtre n'est
+  ouverte. Cibler `[role="dialog"]` (ou `.modal-overlay` pour le voile).
 - **Occlusion de la carte du monde sur le panneau latéral** (vécu 2026-08-05, recette 3) : sous 901px
   de large, la mise en page EMPILE carte et panneau ; `.map-canvas-frame` porte un `aspect-ratio` et
   débordait de sa cellule, son SVG recouvrant les commandes du panneau (« Rythme normal / Forcer +1 M »

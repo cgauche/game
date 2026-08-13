@@ -25,7 +25,8 @@ export const schema = z.array(
     skill: z.string().nullable(),
     spec: z.string().optional(),
     characteristic: charKeySchema.optional(),
-    mode: z.enum(['opposed', 'extended']),
+    /** Absent quand le jeu ne se résout pas au Test : l'Al-zahr est un jeu de MISE (`pot`). */
+    mode: z.enum(['opposed', 'extended']).optional(),
     target: z.number().optional(),
     drCap: z.number().optional(),
     /** Id du départage d'égalité résolu par le socle de séquence (`units-lowest` Dominos l.107,
@@ -46,7 +47,7 @@ export const schema = z.array(
     team: z.strictObject({ size: z.number() }).optional(),
     /** FORME d'un tour (capacité DÉCLARÉE, jamais déduite d'un effectif) : `team` = tous testent et on
      *  somme par équipe (Middenball l.121) ; `thrower` = un tour, un lanceur (Torchon l.111). */
-    roundShape: z.enum(['team', 'thrower']).optional(),
+    roundShape: z.enum(['team', 'thrower', 'pot']).optional(),
     /** Options de Test d'une manche (Middenball l.121 : Bagarre (+20) OU Athlétisme (+0)) — le choix
      *  va au joueur ; la 1ʳᵉ option est celle que suivent les porteurs sans siège et les figurants. */
     options: z.array(z.strictObject({
@@ -71,7 +72,24 @@ export const schema = z.array(
       min: z.number(), max: z.number(), points: z.number(), label: z.string(),
     })).optional(),
     read: z.enum(['sl', 'units-tens']).optional(),
-    stake: z.string().optional(),
+    /** MISE / POT / ABANDON / ÉLIMINATION (Al-zahr l.17) — famille (5) du socle de séquence,
+     *  consommée par `SequenceParams.pot` (`src/state/sequenceCore.ts`). `effect` est le nom d'un
+     *  effet de pot ENREGISTRÉ (`registerSequencePotEffect`), jamais un id de jeu. */
+    pot: z.strictObject({
+      dice: z.strictObject({ count: z.number(), faces: z.number() }),
+      targetRange: z.strictObject({ min: z.number(), max: z.number() }).optional(),
+      manchesPerPlayer: z.number().optional(),
+      /** Unité de borne de la famille : tours qu'une manche peut prendre (anti-boucle, pas une règle). */
+      roundsPerManche: z.number().optional(),
+      rows: z.array(z.strictObject({
+        min: z.number(),
+        max: z.number(),
+        effect: z.enum(['rafle-le-pot', 'reprend-mise', 'cible-ou-passe', 'remise-ou-abandon', 'quitte-la-manche']),
+        /** Paramètre de l'effet : combien de mises il déplace (défaut 1). */
+        mises: z.number().optional(),
+        label: z.string(),
+      })),
+    }).optional(),
     source: sourceRefSchema,
   }),
 );

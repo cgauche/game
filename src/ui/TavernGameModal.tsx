@@ -10,6 +10,8 @@ import { OptionChooser } from './OptionChooser';
 import { CharFrame } from './CharFrame';
 import { Coins } from './Coins';
 import { Prose } from './Prose';
+import { GatedAction } from './GatedAction';
+import { t } from '../i18n';
 import { SceneBackdrop } from './SceneBackdrop';
 
 /**
@@ -39,6 +41,9 @@ export function TavernGameModal() {
   const [abstractValue, setAbstractValue] = useState<number | undefined>(undefined);
   const [allyVal, setAllyVal] = useState<number | undefined>(undefined);
   const [stakePa, setStakePa] = useState(0);
+  // JEU DE MISE : l'effectif de la table est une grandeur de TABLE (la source décrit un cercle sans
+  // en fixer le nombre) — éditable ici, jamais figée au code.
+  const [tablePlayers, setTablePlayers] = useState(3);
 
   if (!state) return null;
   const result = state.result;
@@ -65,17 +70,37 @@ export function TavernGameModal() {
   // La mise sort de la bourse du CHALLENGER (débit/crédit personnel) : le plafond affiché est SA bourse.
   const challengerPurse = challenger ? bourseOf(challenger) : { gold: 0, silver: 0, brass: 0 };
   const purseInPa = Math.floor(toBrass(challengerPurse) / PA_PER_SC);
-  const stakeActive = !!game?.stake && oppKind === 'abstract';
+  // MISE : un jeu de POT en exige une de chacun (Al-zahr l.17) — l'argent change vraiment de bourse,
+  // y compris entre compagnons. Les autres jeux du chapitre n'en portent aucune.
+  const stakeActive = !!game?.pot;
   const stake = stakeActive ? Math.min(Math.max(0, stakePa), purseInPa) : 0;
+  const joueurs = Math.max(2, Math.min(8, tablePlayers));
 
-  const canPlay = !!game && !!challenger && (oppKind === 'abstract' ? oppValue > 0 : oppCandidates.some((h) => h.id === (oppHeroId || oppCandidates[0]?.id)));
+  // POURQUOI on ne peut pas jouer — en TEXTE, jamais un bouton muet (`GatedAction`). La raison d'une
+  // mise absente est celle de la garde du moteur, à la lettre : une seule vérité pour les deux.
+  const raison = !game
+    ? 'Choisissez un jeu.'
+    : !challenger
+      ? 'Choisissez qui joue.'
+      : stakeActive && stake <= 0
+        ? t('tavern.potSansMise', { who: challenger.label })
+        : oppKind === 'hero' && !oppCandidates.length
+          ? 'Aucun compagnon disponible : jouez contre un habitué de la salle.'
+          : oppKind === 'abstract' && oppValue <= 0
+            ? 'Fixez la valeur de l’adversaire (au moins 1).'
+            : '';
+  const canPlay = !raison;
 
   const onPlay = () => {
     if (!game || !challenger) return;
     const opponent: TavernOpponent = oppKind === 'hero'
       ? { kind: 'hero', id: oppHeroId || oppCandidates[0]?.id || '' }
       : { kind: 'abstract', value: oppValue };
-    play({ gameId: game.id, challengerId: challenger.id, opponent, stakeBrass: stake * PA_PER_SC, ...(equipe ? { allyValue } : {}) });
+    play({
+      gameId: game.id, challengerId: challenger.id, opponent, stakeBrass: stake * PA_PER_SC,
+      ...(equipe ? { allyValue } : {}),
+      ...(game.pot ? { tablePlayers: joueurs } : {}),
+    });
   };
 
   return (
@@ -94,7 +119,8 @@ export function TavernGameModal() {
             {result.winner === 'player' ? `✓ ${result.challengerName} l'emporte !` : result.winner === 'opponent' ? `✗ ${result.opponentName} l'emporte.` : 'Égalité.'}
           </p>
           <p className="tavern-detail">
-            DR {result.playerSL} contre {result.opponentSL}
+            {/* Un jeu qui ne compte pas en DR (jeu de MISE) porte SA ligne, composée par le jeu. */}
+            {result.detail ?? `DR ${result.playerSL} contre ${result.opponentSL}`}
             {result.rounds > 1 ? ` · ${result.rounds} manches` : ''}
           </p>
           {result.netBrass !== 0 && (
@@ -120,7 +146,14 @@ export function TavernGameModal() {
           {game && (
             <>
               <div className="tavern-desc"><Prose md={game.desc} /></div>
-              <p className="tavern-detail">Test opposé : <b>{skillLine}</b>{game.mode === 'extended' ? ` · premier à ${game.target ?? 10} DR cumulés` : ''}.</p>
+              {game.pot ? (
+                <p className="tavern-detail">
+                  Lancer : <b>{game.pot.dice.count}d{game.pot.dice.faces}</b> à chaque tour
+                  {game.pot.targetRange ? ` · nombre cible de ${game.pot.targetRange.min} à ${game.pot.targetRange.max}` : ''}.
+                </p>
+              ) : (
+                <p className="tavern-detail">Test opposé : <b>{skillLine}</b>{game.mode === 'extended' ? ` · premier à ${game.target ?? 10} DR cumulés` : ''}.</p>
+              )}
             </>
           )}
           <div className="tavern-block">
@@ -167,19 +200,23 @@ export function TavernGameModal() {
           </div>
           {stakeActive && (
             <div className="tavern-block">
-              <span className="mini-title">Mise ({game?.stake})</span>
+              <span className="mini-title">Mise de chaque joueur</span>
               <label className="tavern-amount">
                 Pistoles d'argent (bourse : {purseInPa})
                 <input type="number" min={0} max={purseInPa} value={stakePa} onChange={(e) => setStakePa(Math.max(0, Math.min(purseInPa, Number(e.target.value) || 0)))} />
               </label>
+              <label className="tavern-amount">
+                Joueurs autour de la table (fixé par la table)
+                <input type="number" min={2} max={8} value={joueurs} onChange={(e) => setTablePlayers(Math.max(2, Math.min(8, Number(e.target.value) || 2)))} />
+              </label>
+              <p className="tavern-detail muted">
+                Chacun mise la même somme ; le pot se gagne à la manche. Sans mise, personne ne s'assoit.
+              </p>
             </div>
-          )}
-          {oppMode === 'hero' && !!game?.stake && (
-            <p className="tavern-detail muted">Une mise entre compagnons ne change pas la bourse du groupe — jouez contre un habitué pour parier.</p>
           )}
           <div className="modal-actions">
             <button className="btn" onClick={close}>Fermer</button>
-            <button className="btn btn-primary" disabled={!canPlay} onClick={onPlay}>Jouer</button>
+            <GatedAction id="tavern-play" label="Jouer" enabled={canPlay} reason={raison} onClick={onPlay} />
           </div>
         </div>
       )}

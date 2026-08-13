@@ -28,6 +28,8 @@ export function SequencePanel() {
   return (
     <Band title={board.title} right={compteur}>
       <div data-seq-board>
+        {/* POT en jeu (famille 5) : déjà libellé par le système — l'UI ne convertit ni ne totalise. */}
+        {board.pot && <p data-seq-pot><b>{board.pot}</b></p>}
         {board.camps.map((camp) => (
           <div key={camp.id}>
             {camp.target != null ? (

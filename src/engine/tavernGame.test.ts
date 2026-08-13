@@ -9,7 +9,9 @@ describe('Jeux de taverne — moteur générique (NADJ 16)', () => {
     for (const g of TAVERN_GAMES) {
       expect(g.desc.length).toBeGreaterThan(30); // règle recopiée
       expect(g.source.book).toBe('nuits-agitees-et-dures-journees');
-      expect(['opposed', 'extended']).toContain(g.mode);
+      // Un jeu de MISE ne se résout pas au Test : il ne déclare aucun mode, mais ses règles de pot.
+      if (g.pot) expect(g.mode).toBeUndefined();
+      else expect(['opposed', 'extended']).toContain(g.mode);
     }
   });
 

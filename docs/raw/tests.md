@@ -199,7 +199,7 @@ Si aucune Difficulté n'est indiquée pour un test (notamment pour un test oppos
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test), [Tests opposés](#tests-opposés)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.133-139, l.141-150, l.166) → `useExtendedTestJetProps`, `RecoverResolution`, `TraceOpposed`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `SequenceParams`, `BargainModalView`, `forceCrewRole`, `useTestJetProps`, +83 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +45 fichiers
+- `LDB 12` (l.133-139, l.141-150, l.166) → `useExtendedTestJetProps`, `RecoverResolution`, `TraceOpposed`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `BargainModalView`, `forceCrewRole`, `useTestJetProps`, `SequenceParams`, +83 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +45 fichiers
 
 ---
 
@@ -227,7 +227,7 @@ Quand **plusieurs facteurs** affectent un même test, on **somme** leurs modific
 
 **Voir aussi** : [Difficulté — table complète](#difficulté--table-complète), [Modificateurs de test](#modificateurs-de-test), [Extensions de Difficulté (EDO)](#extensions-de-difficulté--presque-impossible-et-impossible-edo)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.189) → `useExtendedTestJetProps`, `soutien`, `SequenceParams`, `BargainModalView`, `runSceneConsumableFlow`, `RollRequest`, `TestFields`, `buildStageSteps`, `PendingTest`, `hasSkillAdvance`, +35 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +22 fichiers
+- `LDB 12` (l.189) → `useExtendedTestJetProps`, `soutien`, `BargainModalView`, `SequenceParams`, `runSceneConsumableFlow`, `RollRequest`, `TestFields`, `buildStageSteps`, `PendingTest`, `hasSkillAdvance`, +35 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +22 fichiers
 - `LDB 14` (l.48, l.91-96) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `OupsMisfireEntry`, `SceneCombatMods`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `isFumble`, `schema`, `fr`, `10-a-votre-action-au-prochain-round`, `sceneCombatModifiers`, `vous-trebuchez-vous-perdez-votre-prochain-mouvement`, +55 — `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/schemas/defs/oups.ts`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, +16 fichiers
 - `LDB 16` (l.11) → `addCondition`, `addClockCondition`, `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `meleeAttackerBonusLines`, `FREE_ATTACK_LABEL`, `ModFamille`, +4 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, `src/state/combat/roundHooks.ts`
 
@@ -319,7 +319,7 @@ Un test opposé est utilisé lorsqu'un personnage doit confronter ses capacités
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 9` (l.17) → `RecoverResolution`, `possesses`, `DispelModal`, `useTestJetProps`, `AppraiseModalView`, `BargainModalView`, `HealRollFlow`, `TestResult`, `SurgeryRollFlow`, `rollTest`, +26 — `src/engine/axes.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, +18 fichiers
-- `LDB 12` (l.152-169) → `useExtendedTestJetProps`, `RecoverResolution`, `soutien`, `TraceOpposed`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `SequenceParams`, `BargainModalView`, `useTestJetProps`, +82 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +43 fichiers
+- `LDB 12` (l.152-169) → `useExtendedTestJetProps`, `RecoverResolution`, `soutien`, `TraceOpposed`, `AuContactModal`, `GrappleModal`, `amazingTestLabel`, `BargainModalView`, `useTestJetProps`, `SequenceParams`, +82 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +43 fichiers
 
 ---
 
@@ -347,7 +347,7 @@ Les tests étendus servent à résoudre des tâches particulièrement longues ou
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.171-180, l.182-185) → `useExtendedTestJetProps`, `soutien`, `AuContactModal`, `GrappleModal`, `SequenceParams`, `BargainModalView`, `StateRecoveryModalView`, `opposedLines`, `ReloadModal`, `useDefenseJetProps`, +45 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +31 fichiers
+- `LDB 12` (l.171-180, l.182-185) → `useExtendedTestJetProps`, `soutien`, `AuContactModal`, `GrappleModal`, `BargainModalView`, `SequenceParams`, `StateRecoveryModalView`, `opposedLines`, `ReloadModal`, `useDefenseJetProps`, +45 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/magic.ts`, `src/engine/policy.ts`, +31 fichiers
 
 ---
 
@@ -373,7 +373,7 @@ Lorsque plusieurs personnages travaillent ensemble à la même tâche, ceux qui 
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.188-200) → `useExtendedTestJetProps`, `soutien`, `MedicState`, `SequenceParams`, `BargainModalView`, `runSceneConsumableFlow`, `ActivityModal`, `RollRequest`, `TestFields`, `OPTIONAL_RULES`, +45 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +26 fichiers
+- `LDB 12` (l.188-200) → `useExtendedTestJetProps`, `soutien`, `MedicState`, `BargainModalView`, `SequenceParams`, `runSceneConsumableFlow`, `ActivityModal`, `RollRequest`, `TestFields`, `OPTIONAL_RULES`, +45 — `src/data/flow-stakes.json`, `src/data/regles.json`, `src/data/schemas/common.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +26 fichiers
 
 ---
 

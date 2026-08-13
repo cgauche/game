@@ -3,9 +3,54 @@
     "id": "al-zahr",
     "label": "L'Al-zahr",
     "skill": null,
-    "mode": "opposed",
-    "stake": "chaque joueur ajoute une mise égale au pot",
-    "desc": "chaque joueur ajoute une mise égale au pot. Le premier joueur choisit alors un nombre cible compris entre 7 et 15. Le jeu se déroule dans le sens des aiguilles d'une montre, en commençant par le premier joueur. Les joueurs effectuent chacun un jet à tour de rôle. À votre tour, lancez 2d10 et totalisez le résultat affiché sur les deux dés pour obtenir un nombre entre 2 et 20. Si ce total correspond au nombre cible, ou est égal à 20, vous remportez la manche, en empochant la totalité du pot. Un résultat compris entre 16 et 19 vous permet de récupérer une mise dans le pot. Si un résultat entre 7 et 15 est obtenu, et que ce n'est pas le nombre cible, alors le nombre obtenu devient le nouveau nombre cible pour le joueur suivant. Un résultat compris entre 3 et 6 vous oblige à ajouter une autre mise au pot, ou à abandonner la manche. Enfin, un résultat de 2 vous contraint à quitter la manche.",
+    "roundShape": "pot",
+    "pot": {
+      "dice": {
+        "count": 2,
+        "faces": 10
+      },
+      "targetRange": {
+        "min": 7,
+        "max": 15
+      },
+      "manchesPerPlayer": 1,
+      "roundsPerManche": 40,
+      "rows": [
+        {
+          "min": 2,
+          "max": 2,
+          "effect": "quitte-la-manche",
+          "label": "sortie de la manche"
+        },
+        {
+          "min": 3,
+          "max": 6,
+          "effect": "remise-ou-abandon",
+          "mises": 1,
+          "label": "une autre mise au pot, ou abandon"
+        },
+        {
+          "min": 7,
+          "max": 15,
+          "effect": "cible-ou-passe",
+          "label": "le nombre cible, ou la cible du suivant"
+        },
+        {
+          "min": 16,
+          "max": 19,
+          "effect": "reprend-mise",
+          "mises": 1,
+          "label": "une mise reprise dans le pot"
+        },
+        {
+          "min": 20,
+          "max": 20,
+          "effect": "rafle-le-pot",
+          "label": "la manche est remportée"
+        }
+      ]
+    },
+    "desc": "chaque joueur ajoute une mise égale au pot. Le premier joueur choisit alors un nombre cible compris entre 7 et 15. Le jeu se déroule dans le sens des aiguilles d'une montre, en commençant par le premier joueur. Les joueurs effectuent chacun un jet à tour de rôle. À votre tour, lancez 2d10 et totalisez le résultat affiché sur les deux dés pour obtenir un nombre entre 2 et 20. Si ce total correspond au nombre cible, ou est égal à 20, vous remportez la manche, en empochant la totalité du pot. Un résultat compris entre 16 et 19 vous permet de récupérer une mise dans le pot. Si un résultat entre 7 et 15 est obtenu, et que ce n'est pas le nombre cible, alors le nombre obtenu devient le nouveau nombre cible pour le joueur suivant. Un résultat compris entre 3 et 6 vous oblige à ajouter une autre mise au pot, ou à abandonner la manche. Enfin, un résultat de 2 vous contraint à quitter la manche. La manche continue jusqu'à ce que le pot soit vide, ou jusqu'à ce qu'il n'y ait plus qu'un seul joueur en jeu, qui empoche alors toutes les mises restant dans le pot. Une partie complète dure généralement autant de manches qu'il y a de joueurs, ce qui donne à chaque joueur la possibilité de lancer les dés en premier.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
       "page": 93
@@ -18,7 +63,7 @@
     "spec": "Art de la Guerre",
     "characteristic": "intelligence",
     "mode": "opposed",
-    "desc": "à chaque tour, faites un Test d'Intelligence ou de Savoir (Art de la Guerre) Intermédiaire (+0) ; ajoutez ensuite votre Bonus d'Intelligence au nombre de DR. Le total obtenu par le joueur elfe indique combien de pièces naines sont prises ce tour. Le total obtenu par le joueur nain est divisé par quatre (arrondi au supérieur) pour indiquer combien de pièces elfes sont prises ce tour. Sinon, le premier camp à prendre plus de la moitié des pièces de son adversaire l'emporte.",
+    "desc": "à chaque tour, faites un Test d'**Intelligence** ou de **Savoir (Art de la Guerre) Intermédiaire (+0)** ; ajoutez ensuite votre Bonus d'Intelligence au nombre de DR. Le total obtenu par le joueur elfe indique combien de pièces naines sont prises ce tour. Le total obtenu par le joueur nain est divisé par quatre (arrondi au supérieur) pour indiquer combien de pièces elfes sont prises ce tour. Si vous obtenez un Critique, vous remportez automatiquement la partie, pour peu qu'une des conditions suivantes soit remplie : vous êtes le joueur nain et le nombre obtenu sur le dé des unités est égal ou inférieur au nombre de pièces elfes que vous avez prises ; vous êtes le joueur elfe et le nombre obtenu sur le dé des unités, multiplié par quatre (c'est-à-dire qu'un jet réussi de 33 compterait pour 12, puisque 4 × 3 = 12) est égal ou inférieur au nombre de pièces naines que vous avez prises. Sinon, le premier camp à prendre plus de la moitié des pièces de son adversaire l'emporte. Si les deux équipes atteignent la condition gagnante dans le même tour, la partie se solde par un match nul.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
       "page": 91

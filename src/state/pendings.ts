@@ -1424,6 +1424,10 @@ export type CascadeActorCounter = 'sinPoints';
 export interface CascadeTableDecl {
   tableId: string;
   die?: number;
+  /** NOMBRE de dés lancés et TOTALISÉS (défaut 1) — « lancez 2d10 et totalisez le résultat affiché
+   *  sur les deux dés » (`NADAJ 16 l.17`). Un tirage à N dés n'a ni la même plage (N…N×faces) ni la
+   *  même distribution qu'un dé unique : le nombre est DÉCLARÉ, jamais déduit de la plage de la table. */
+  dice?: number;
   mod?: number;
   forcedRoll?: number;
   /** Modificateur VIVANT : `factor` × le COMPTEUR `counter` de l'ACTEUR de l'étape, lu à l'instant du

@@ -2336,8 +2336,9 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       meta: facts(
         fact('Compétence', g.skill ? refLabel('skills', { id: g.skill, spec: g.spec }) : 'Pari (aucune Compétence)'),
         fact('Caractéristique', g.characteristic ? CHAR_LABELS[g.characteristic] : null),
-        fact('Mode', g.mode === 'extended' ? `Étendu (${g.target ?? '?'} DR)` : 'Opposé simple'),
-        fact('Plafond de DR', g.drCap ?? null), fact('Mise', g.stake ?? null),
+        fact('Mode', g.pot ? `Mise et pot (${g.pot.dice.count}d${g.pot.dice.faces})` : g.mode === 'extended' ? `Étendu (${g.target ?? '?'} DR)` : 'Opposé simple'),
+        fact('Plafond de DR', g.drCap ?? null),
+        fact('Nombre cible', g.pot?.targetRange ? `de ${g.pot.targetRange.min} à ${g.pot.targetRange.max}` : null),
       ),
     })),
   },

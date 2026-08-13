@@ -29,7 +29,7 @@ import { canFixDie } from '../state/netOwnership';
 import { withPreRollFixedDie } from '../state/combatFlow';
 import { useGame } from '../state/store';
 import { FIXED_ROLL_MAX } from '../engine/fixedDie';
-import { tableStepDie, liveTableDecl } from '../state/cascade';
+import { tableStepNaturalRange, liveTableDecl } from '../state/cascade';
 import type { CascadeStep } from '../state/pendings';
 import type { GameState } from '../state/store';
 import type { RollRowProps } from './RollRow';
@@ -160,8 +160,8 @@ export function rowForcedDie(
  * Sélecteur de dé d'une ÉTAPE À TABLE de cascade (#942 L3) — MÊME couture, MÊME contrôle
  * (`ForcedRollPicker`), MÊME gate (`canFixDie`) que les slots de flux ci-dessus ; seul le PORTEUR du dé
  * change (`step.table`, aucun flux de jet). Deux différences de domaine, portées ici et pas au site :
- *  - la borne du champ est celle des FACES de CE tirage (`tableStepDie`) — une table à d10 refuse 47,
- *    elle ne l'applique pas en silence ;
+ *  - la borne du champ est celle des DÉS de CE tirage (`tableStepNaturalRange` : `dice` dés de N
+ *    faces) — une table à d10 refuse 47, elle ne l'applique pas en silence ;
  *  - un dé posé reste RÉ-ÉDITABLE tant que l'étape est courante (parité exacte avec la branche
  *    post-jet d'un slot : `roll` est pré-rempli, la saisie suivante re-pose).
  * `onSet` reçoit le dé NATUREL (le `mod` de la déclaration s'applique au résolveur).
@@ -177,7 +177,7 @@ export function tableStepForcedDie(
   if (!decl) return {};
   const mark = !!step.fixed;
   if (!canFixDie(s, step.actorId)) return { fixedMark: mark };
-  const max = tableStepDie(decl);
+  const max = tableStepNaturalRange(decl).max;
   // `roll: null` (dé non posé) = le champ est une OFFRE, vide ; sinon il porte le dé NATUREL courant,
   // éditable en place — poser un dé n'est pas un aller sans retour.
   // `mod` ET le dé EFFECTIF du résolveur (`result.die`) voyagent avec le sélecteur : le champ AFFICHE
