@@ -143,7 +143,10 @@ describe('POV volumique — l’hôte (#1176 P3-1a)', () => {
     const vol = monter(<PovStage />);
     expect(vol.querySelector('canvas.iso-stage'), 'le monde volumique doit être monté').toBeTruthy();
     expect(vol.querySelector('canvas')!.getAttribute('data-vue')).toBe('pov');
-    expect(vol.querySelector('svg'), 'le SVG première personne ne se peint plus par-dessus').toBeNull();
+    // Le SVG première personne (géométrie + billboards) ne se peint plus : il ne reste que les VOILES
+    // d'écran (voile chaud, vignette — #1176 P3-1c), qui n'ont ni polygone ni tracé.
+    expect(vol.querySelector('svg')!.hasAttribute('data-pov-veils'), 'seul le SVG des voiles subsiste').toBe(true);
+    expect(vol.querySelectorAll('polygon, path').length, 'aucune géométrie SVG au-dessus du monde volumique').toBe(0);
     démonter();
 
     setStageBackend('affine');

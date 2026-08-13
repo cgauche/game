@@ -74,7 +74,7 @@ import { freeYaw, type Dims, type Rot } from '../../geometry/iso';
 import { heightAt, type Scene } from '../../state/scene';
 import { DIR8_ORDER, type Dir8 } from '../../state/dir8';
 import { affineCamera, povCamera } from '../backends/webgl/cameras';
-import { dir8Basis, farTilesOf } from '../pov/camera';
+import { dir8Basis, farTilesOf, fogCurveOf } from '../pov/camera';
 import { pxPerM } from '../backends/webgl/worldTris';
 import {
   billboardTextureKey,
@@ -89,10 +89,13 @@ import { clearFaceBakes, getFaceBake } from '../backends/webgl/faceBake';
 import {
   actorBillboards,
   applyCutawayMask,
+  applyFogGamma,
   applyVisibilityTint,
   bakeWorldGeometry,
   collectBillboards,
   contactShadow,
+  povBackground,
+  povFog,
   wantsContactShadow,
   type ActorPose,
   type KeepEl,
@@ -304,6 +307,11 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
   const { povFacing, camRot } = frame.mode === 'pov'
     ? { povFacing: frame.facing, camRot: povArtRot(frame.facing) }
     : { povFacing: null, camRot: artRot(frame.dims) };
+  // MILIEU de la première personne (`null` = vue de plateau) : la SEULE entrée de la brume et du fond.
+  // La portée de rendu s'en dérive déjà (`farTilesOf`) — même donnée, même verdict d'intérieur.
+  const povIndoor = frame.mode === 'pov' ? frame.indoor : null;
+  // GAMMA de la courbe de brume du milieu (`AMBIANCE.pov.depth`), posé au shader dans la frame.
+  const gammaBrume = povIndoor === null ? null : fogCurveOf(povIndoor).gamma;
 
   const three = useRef<THREE.Scene>();
   const monde = useRef<THREE.Group>();
@@ -462,9 +470,8 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
       // PORTÉE : la distance de rendu du milieu (`farTilesOf`, donnée d'ambiance), jamais un far
       // généreux. Le ratio near/far d'un far de 4 km quantifie la profondeur au point que la
       // séparation coplanaire ne survit plus (`backends/webgl/cameras.ts`, `orthoDepthRange`).
-      // ÉCART RÉSIDUEL : cet écran ne pose NI brume NI ciel (`outdoorFog`/`skyTexture`,
-      // `backends/webgl/sceneMeshes.ts`, consommés par le seul `SpikeScreen`) — l'horizon est donc
-      // tranché net sur le fond `BG` à cette distance. Câblage prévu au lot P3-1c.
+      // La brume du milieu s'éteint EXACTEMENT à cette portée (`povFog`, montée plus bas) : rien n'y
+      // arrive à la coupure autrement qu'entièrement délavé, et l'horizon n'est plus tranché.
       camera = povCamera(scene, pos, frame.facing, { w, h }, farTilesOf(frame.indoor) * mpt);
     } else {
       f = stage3dFraming({ dims: frame.dims, mpt, cam: anim ? anim.cam() : frame.cam, zoom: frame.zoom, canvas: { w, h } });
@@ -539,6 +546,11 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
       semis.instanceMatrix.needsUpdate = true;
     }
     dernierRendu.current = maintenant;
+    // GAMMA de la courbe de brume (P3-1c) : `THREE.Fog` s'arrête au smoothstep, la courbe du POV est
+    // smoothstep^gamma (`fogAt`, `pov/camera.ts`). Le `#define` se pose ici, et pas à un montage : les
+    // quads de billboard naissent APRÈS coup (rasterisation asynchrone) et un matériau neuf arriverait
+    // sans gamma. La passe ne réécrit que ce qui a changé — hors POV elle ne court pas du tout.
+    if (gammaBrume !== null) applyFogGamma(three.current, gammaBrume);
     cameraRef.current = camera; // la caméra de la DERNIÈRE frame : celle que le rayon de picking doit emprunter
     renderer.render(three.current, camera);
   };
@@ -686,6 +698,31 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
       rendererRef.current = null;
     };
   }, []);
+
+  // ── BRUME & CIEL (P3-1c) : la première personne a un HORIZON, la vue de plateau n'en a pas — hors
+  // POV, `scene.fog` reste NUL (une brume de distance y délaverait le bord de carte, et les planches
+  // QC de l'iso avec). DEUX couleurs, et c'est structurel : les SURFACES se fondent dans la brume de
+  // surface du milieu (`povFog`), le FOND porte celle du ciel (`povBackground`) — sans quoi les sols
+  // lointains se relèvent vers le bleu froid (cf. le JSDoc d'`AMBIANCE.pov.fogOutdoorSurface`).
+  // ÉCART ASSUMÉ (réf juge de design P3-1) : les sprites d'entité s'embrument AVEC le monde (three
+  // embrume tout matériau `fog`), là où le POV SVG les laissait nets.
+  useEffect(() => {
+    const scène3d = three.current!;
+    const fond = povIndoor === null ? null : povBackground(povIndoor);
+    scène3d.fog = povIndoor === null ? null : povFog(mpt, povIndoor);
+    scène3d.background = fond;
+    dessiner();
+    return () => {
+      if (fond instanceof THREE.DataTexture) fond.dispose();
+      scène3d.background = null;
+      scène3d.fog = null;
+      // Le gamma part AVEC la brume : les matériaux du monde survivent à cet effet (leur montage a sa
+      // propre clé) et garderaient un `#define` sans brume au retour en vue de plateau — une clé de
+      // programme de plus, pour un exposant que plus personne n'applique.
+      applyFogGamma(scène3d, null);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [povIndoor, mpt]);
 
   // ── GROUPE MONDE : la géométrie fusionnée, un matériau par groupe de surface.
   useEffect(() => {

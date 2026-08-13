@@ -165,7 +165,9 @@ export function unitStarGeometry(branches = SPARK_BRANCHES, innerRatio = SPARK_I
 
 /** Pool d'un slot : disque plein pour un remplissage, étoile pour l'étincelle (face caméra, orientée
  *  par la pose), quad pour une corde d'anneau. Matériau NON éclairé — une affordance de jeu ne
- *  s'assombrit pas la nuit. */
+ *  s'assombrit pas la nuit — et NON EMBRUMÉ (`fog: false`) : ce halo est du chrome d'interface, pas de
+ *  la matière du monde ; la brume du POV (`applyFogGamma`, `sceneMeshes.ts`) délaverait une affordance
+ *  lointaine de 71 % à 26 cases (#1176 P3-1c). */
 export function buildHaloMesh(slot: HaloSlot, capacity = HALO_SLOT_CAPACITY[slot]): THREE.InstancedMesh {
   const disque = slot === 'fouilleDisque' || slot === 'fouilleDisqueSurvol' || slot === 'pnjDisque';
   const geo = disque ? unitDiscGeometry() : slot === 'fouilleEtincelle' ? unitStarGeometry() : tileQuadGeometry();
@@ -175,6 +177,7 @@ export function buildHaloMesh(slot: HaloSlot, capacity = HALO_SLOT_CAPACITY[slot
     transparent: true,
     opacity: HALO_SLOT_OPACITY[slot],
     depthWrite: false,
+    fog: false,
   });
   const mesh = new THREE.InstancedMesh(geo, mat, capacity);
   mesh.name = `halos:${slot}`;

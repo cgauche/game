@@ -20,10 +20,10 @@ import { useGame } from '../../../state/store';
 import { buildScene } from '../../../state/mapSpec';
 import { startOf } from '../../../state/mapQC';
 import { computeStateVisible } from '../../../state/visionState';
-import { sceneMetresPerTile, type Scene } from '../../../state/scene';
+import { isIndoor, sceneMetresPerTile, type Scene } from '../../../state/scene';
 import { DIR8_ORDER, facingToward, type Dir8 } from '../../../state/dir8';
 import type { Rot } from '../../../geometry/iso';
-import { makeCamera } from '../../pov/camera';
+import { fogCurveOf, makeCamera } from '../../pov/camera';
 import { povArtRot } from '../../stage/GameStage3D';
 import { affineCamera, fitAffineView, povCamera, rotYaw, type AffineKind } from './cameras';
 import { pxPerM } from './worldTris';
@@ -49,8 +49,9 @@ import {
   wholeSceneBillboardEls,
   contactShadow,
   contentBox,
-  outdoorFog,
-  skyTexture,
+  applyFogGamma,
+  povBackground,
+  povFog,
   sunRig,
   wantsContactShadow,
   worldShadowBox,
@@ -304,11 +305,14 @@ export function SpikeScreen(): JSX.Element {
       // ── CIEL & BRUME : seule la caméra PERSPECTIVE a un horizon (une ortho n'en a pas). Le POV prend
       // le dégradé et la courbe de brume du POV SVG (`sceneMeshes` → `AMBIANCE.pov`) : le sol s'y éteint
       // au lieu de finir sur une arête franche posée sur le fond de planche. Les ortho gardent `BG`.
+      // PLANCHE CHANGÉE, et c'est voulu (réf juge de design P3-1c) : la vignette POV d'une scène
+      // `interieur` — l'Opéra — passe du ciel au FOND SOMBRE et à la brume COURTE d'intérieur
+      // (`isIndoor`). Comparer une planche d'Opéra d'avant P3-1c à celle d'après n'a donc pas de sens.
       if (opts.view === 'pov') {
-        const ciel = skyTexture();
-        disposables.push(ciel);
-        three.background = ciel;
-        three.fog = outdoorFog(mpt);
+        const fond = povBackground(isIndoor(scene));
+        if (fond instanceof THREE.DataTexture) disposables.push(fond);
+        three.background = fond;
+        three.fog = povFog(mpt, isIndoor(scene));
       }
 
       // ── Billboards : vue déléguée à `billboardView` (lacet RÉEL), taille à la convention testée.
@@ -436,6 +440,9 @@ export function SpikeScreen(): JSX.Element {
         three.add(sun.target);
       }
 
+      // GAMMA de la courbe de brume : posé sur la scène ASSEMBLÉE (billboards compris), une fois tout
+      // monté — c'est ce qui manque à `THREE.Fog` pour rendre la courbe du POV (`fogAt`).
+      if (opts.view === 'pov') applyFogGamma(three, fogCurveOf(isIndoor(scene)).gamma);
       renderer.render(three, camera);
       setCap(facing);
       setInfo(

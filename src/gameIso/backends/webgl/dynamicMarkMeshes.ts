@@ -83,7 +83,10 @@ export const PARTY_FRAME_K = RING_FRAME_K / 2;
 export const DYN_SLOT_CAPACITY: Record<DynMarkSlot, number> = { tether: 256, actif: 32, groupe: 4, anneau: 768 };
 
 /** Pool d'un slot : géométrie du slot (quad plein pour un tiret de lien ou d'anneau, cadre pour un
- *  contour), matériau NON éclairé — un repère de jeu ne s'assombrit pas la nuit. Un slot dont la teinte
+ *  contour), matériau NON éclairé — un repère de jeu ne s'assombrit pas la nuit — et NON EMBRUMÉ
+ *  (`fog: false`) : cette marque est du chrome d'interface, pas de la matière du monde. La brume du POV
+ *  (`applyFogGamma`, `sceneMeshes.ts`) mangerait sinon l'opacité que le slot porte au titre de la
+ *  lisibilité — à 26 cases, la courbe extérieure en retire 71 % (#1176 P3-1c). Un slot dont la teinte
  *  est `null` la porte PAR INSTANCE (`instanceColor` alloué dès la construction, comme
  *  `buildHighlightMesh`) : l'anneau d'équipe change de couleur d'un combattant à l'autre. */
 export function buildDynamicMarkMesh(slot: DynMarkSlot, capacity = DYN_SLOT_CAPACITY[slot]): THREE.InstancedMesh {
@@ -95,6 +98,7 @@ export function buildDynamicMarkMesh(slot: DynMarkSlot, capacity = DYN_SLOT_CAPA
     transparent: true,
     opacity: DYN_SLOT_OPACITY[slot],
     depthWrite: false,
+    fog: false,
   });
   const mesh = new THREE.InstancedMesh(geo, mat, capacity);
   if (!teinte) {

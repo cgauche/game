@@ -19,7 +19,11 @@ const radialVeilSchema = z.strictObject({
 const povFogSchema = z.strictObject({
   farTiles: z.number(),
   fogStartT: z.number(),
-  fogGamma: z.number(),
+  /** Exposant de la courbe de brume (`fogAt`, `pov/camera.ts`), porté au shader comme LITTÉRAL GLSL à
+   *  quatre décimales (`applyFogGamma`, `backends/webgl/sceneMeshes.ts`). Le plancher est celui de ce
+   *  littéral : sous 0,00005 il s'écrirait « 0.0000 », donc `pow(x, 0) = 1` — une brume PLEINE partout,
+   *  sans un mot. 0,1 le tient à distance (données actuelles : 2 dehors, 1,2 dedans). #1176 P3-1c */
+  fogGamma: z.number().positive().min(0.1),
 });
 
 /** Couleur écrite en HEXA `#rrggbb` — la forme que lisent `THREE.Color` comme le SVG. */

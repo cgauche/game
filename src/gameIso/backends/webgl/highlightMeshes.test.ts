@@ -8,6 +8,9 @@ import { gpToWorld } from './worldTris';
 import { SPECKLE_LIFT_M } from './groundAccents';
 import { tileTint } from '../../teamColors';
 import { RING_TARGET_TINT, WALK_TINT, ZONE_SMOKE_TINT } from '../../highlightTints';
+import { DYN_MARK_SLOTS, buildDynamicMarkMesh } from './dynamicMarkMeshes';
+import { HALO_SLOTS, buildHaloMesh } from './interactHaloMeshes';
+import { FOG_GAMMA_DEFINE, applyFogGamma } from './sceneMeshes';
 import {
   HIGHLIGHT_SLOTS,
   SLOT_OPACITY,
@@ -231,5 +234,40 @@ describe('Marques volumiques — teintes du catalogue partagé, jamais un litté
     const c = new THREE.Color();
     mesh.getColorAt(0, c);
     expect(`#${c.getHexString()}`).toBe(highlightTint(els[0]));
+  });
+});
+
+/**
+ * CHROME D'INTERFACE ≠ MATIÈRE DU MONDE (#1176 P3-1c, réf juge de design) — les trois familles de
+ * pools au sol (surbrillances de combat, marques dynamiques, halos d'interaction) sont des affordances :
+ * leur opacité est CHOISIE pour la lisibilité. La brume du POV (`povFog` + `applyFogGamma`) mangerait
+ * cette opacité à distance — 71 % de facteur à 26 cases sur la courbe extérieure — et personne ne
+ * l'aurait déclaré. Le banc parcourt TOUS les slots des trois builders, pas seulement ceux qu'une scène
+ * donnée monte.
+ */
+describe('AFFORDANCES au sol — aucune ne prend la brume du monde', () => {
+  const pools = [
+    ...HIGHLIGHT_SLOTS.map((s) => buildHighlightMesh(s, 4)),
+    ...DYN_MARK_SLOTS.map((s) => buildDynamicMarkMesh(s, 4)),
+    ...HALO_SLOTS.map((s) => buildHaloMesh(s, 4)),
+  ];
+
+  it('les trois familles sont bien nommées `marques:` / `marquesDyn:` / `halos:`', () => {
+    expect(pools.length).toBe(HIGHLIGHT_SLOTS.length + DYN_MARK_SLOTS.length + HALO_SLOTS.length);
+    for (const mesh of pools) expect(mesh.name).toMatch(/^(marques|marquesDyn|halos):/);
+  });
+
+  it('AUCUN matériau d’affordance n’a `fog` — la brume ne délave pas le chrome', () => {
+    const embrumés = pools.filter((m) => (m.material as THREE.Material & { fog?: boolean }).fog).map((m) => m.name);
+    expect(embrumés, 'un pool d’affordance embrumé perdrait son opacité au loin').toEqual([]);
+  });
+
+  it('un matériau non embrumé ne reçoit AUCUN gamma de brume, même sous `applyFogGamma`', () => {
+    const groupe = new THREE.Group();
+    for (const mesh of pools) groupe.add(mesh);
+    expect(applyFogGamma(groupe, 2), 'rien à changer : aucun de ces matériaux ne s’embrume').toBe(false);
+    for (const mesh of pools) {
+      expect((mesh.material as THREE.Material).defines?.[FOG_GAMMA_DEFINE], mesh.name).toBeUndefined();
+    }
   });
 });

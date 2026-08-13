@@ -8,8 +8,12 @@ import {
   wholeSceneBillboardEls,
   contactShadow,
   contentBox,
-  outdoorFog,
+  applyFogGamma,
+  installFogGamma,
+  povBackground,
+  povFog,
   skyTexture,
+  FOG_GAMMA_DEFINE,
   sunContrast,
   sunRig,
   faceGroup,
@@ -52,10 +56,30 @@ import { buildVitrineScene } from '../../../scenes/vitrine-batiments';
 import { emptyScene, sceneMetresPerTile, type Scene, type Terrain } from '../../../state/scene';
 import { PROPS, propSvg } from '../../catalog/decor';
 import { AMBIANCE } from '../../catalog/ambiance';
+import { schema as ambianceSchema } from '../../../data/schemas/defs/ambiance';
+import { fogAt, fogCurveOf } from '../../pov/camera';
 
 const scene = buildScene(siegeSpec);
 const mpt = sceneMetresPerTile(scene);
 const plein = () => 1;
+
+/** Le PRÉPROCESSEUR GLSL, pour le seul cas qui nous occupe : `POV_FOG_GAMMA` non défini — tout bloc
+ *  `#ifdef POV_FOG_GAMMA … #endif` disparaît, lignes comprises. Idempotent sur un chunk qui n'en porte
+ *  pas (aucune ligne à retirer), ce qui le rend sûr à appliquer AVANT comme APRÈS la surcharge. */
+function sansDéfine(glsl: string): string {
+  const gardées: string[] = [];
+  let dansLeBloc = false;
+  for (const ligne of glsl.split('\n')) {
+    if (!dansLeBloc && ligne.includes(`#ifdef ${FOG_GAMMA_DEFINE}`)) { dansLeBloc = true; continue; }
+    if (dansLeBloc) { if (ligne.includes('#endif')) dansLeBloc = false; continue; }
+    gardées.push(ligne);
+  }
+  return gardées.join('\n');
+}
+
+/** Le chunk de brume TEL QUE three le compile sans le define — capturé à l'import, donc avant toute pose
+ *  de ce banc (et débarrassé du bloc si un autre banc du même worker a déjà installé la surcharge). */
+const CHUNK_SANS_DEFINE = sansDéfine(THREE.ShaderChunk.fog_fragment);
 
 /** Les SIX scènes-témoins de l'écran de spike (`SpikeScreen.tsx`) — la population que l'utilisateur juge. */
 const TEMOINS: [string, () => Scene][] = [
@@ -371,11 +395,140 @@ describe('CIEL & BRUME — les couleurs du POV, jamais des teintes propres au sp
   });
 
   it('la brume reprend la courbe de profondeur du POV, en CASES converties en mètres', () => {
-    const fog = outdoorFog(mpt);
+    const fog = povFog(mpt, false);
     const d = AMBIANCE.pov.depth.outdoor;
     expect(fog.near).toBeCloseTo(d.fogStartT * mpt, 9);
     expect(fog.far).toBeCloseTo(d.farTiles * mpt, 9);
     expect(`#${fog.color.getHexString(THREE.SRGBColorSpace)}`).toBe(AMBIANCE.pov.fogOutdoorSurface.toLowerCase());
+  });
+
+  it('DEUX couleurs : la brume des SURFACES n’est pas celle du CIEL (les sols ne se relèvent pas)', () => {
+    const surface = `#${povFog(mpt, false).color.getHexString(THREE.SRGBColorSpace)}`;
+    expect(surface).toBe(AMBIANCE.pov.fogOutdoorSurface.toLowerCase());
+    expect(surface).not.toBe(AMBIANCE.pov.fogOutdoor.toLowerCase());
+    const ciel = povBackground(false) as THREE.DataTexture;
+    const d = ciel.image.data as Uint8Array;
+    // Bas de la texture = l'horizon : c'est la brume de CIEL qui s'y trouve, pas celle des surfaces.
+    expect(`#${[0, 1, 2].map((k) => d[k].toString(16).padStart(2, '0')).join('')}`).toBe(AMBIANCE.pov.fogOutdoor.toLowerCase());
+  });
+
+  it('INTÉRIEUR : brume sombre COURTE, et un fond sombre au lieu du ciel', () => {
+    const fog = povFog(mpt, true);
+    const d = AMBIANCE.pov.depth.indoor;
+    expect(fog.near).toBeCloseTo(d.fogStartT * mpt, 9);
+    expect(fog.far).toBeCloseTo(d.farTiles * mpt, 9);
+    expect(`#${fog.color.getHexString(THREE.SRGBColorSpace)}`).toBe(AMBIANCE.pov.fogIndoor.toLowerCase());
+    expect(fog.far, 'la brume d’intérieur est plus COURTE que celle du dehors').toBeLessThan(povFog(mpt, false).far);
+    const fond = povBackground(true);
+    expect((fond as THREE.Color).isColor).toBe(true);
+    expect(`#${(fond as THREE.Color).getHexString(THREE.SRGBColorSpace)}`).toBe(AMBIANCE.pov.fogIndoor.toLowerCase());
+  });
+});
+
+/**
+ * LA COURBE — ce que le fragment de brume calcule RÉELLEMENT, comparé à la courbe DONNÉE du POV
+ * (`fogAt`, `pov/camera.ts`). Le fog natif de three s'arrête au `smoothstep( fogNear, fogFar, depth )` :
+ * la moitié de la courbe. La surcharge de chunk (`installFogGamma`) y ajoute le `pow(·, gamma)` sous
+ * `#define`, et `applyFogGamma` pose ce define sur les matériaux embrumés.
+ */
+describe('GAMMA de la brume — la courbe du POV, pas la moitié de la courbe (#1176 P3-1c)', () => {
+  /** `smoothstep` de GLSL (spec ES 3.0 §8.3) — le seul morceau de shader que ce banc réécrit. */
+  function smoothstep(bord0: number, bord1: number, x: number): number {
+    const t = Math.min(1, Math.max(0, (x - bord0) / (bord1 - bord0)));
+    return t * t * (3 - 2 * t);
+  }
+  /** Le `fogFactor` du fragment de three, gamma installé : les trois paramètres viennent des objets
+   *  RÉELS (near/far de `povFog`, gamma du `#define` posé par `applyFogGamma`). */
+  const facteurShader = (profondeurM: number, fog: THREE.Fog, gamma: number): number =>
+    Math.pow(smoothstep(fog.near, fog.far, profondeurM), gamma);
+
+  /** Gamma tel que le shader le lira : la valeur du define posée sur un matériau embrumé. */
+  function gammaPosé(gamma: number | null): number | undefined {
+    const mat = new THREE.MeshLambertMaterial();
+    const mesh = new THREE.Mesh(new THREE.BufferGeometry(), mat);
+    applyFogGamma(mesh, gamma);
+    const v = mat.defines?.[FOG_GAMMA_DEFINE] as string | undefined;
+    return v === undefined ? undefined : Number(v);
+  }
+
+  /** 400 profondeurs entre 0 et la portée du milieu. */
+  const ÉCHANTILLONS = 400;
+  function écartMax(indoor: boolean, gamma: number): number {
+    const fog = povFog(mpt, indoor);
+    const courbe = fogCurveOf(indoor);
+    let max = 0;
+    for (let i = 0; i <= ÉCHANTILLONS; i++) {
+      const profondeurM = (i / ÉCHANTILLONS) * courbe.end * mpt;
+      max = Math.max(max, Math.abs(facteurShader(profondeurM, fog, gamma) - fogAt(profondeurM / mpt, courbe)));
+    }
+    return max;
+  }
+
+  it('la surcharge de chunk ajoute le `pow` manquant, et une seule fois (idempotente)', () => {
+    installFogGamma();
+    const chunk = THREE.ShaderChunk.fog_fragment;
+    expect(chunk, 'le `pow` doit être injecté (ancre de three r185 introuvable ?)').toContain(`fogFactor = pow( fogFactor, ${FOG_GAMMA_DEFINE} );`);
+    expect(chunk).toContain(`#ifdef ${FOG_GAMMA_DEFINE}`);
+    installFogGamma();
+    expect(THREE.ShaderChunk.fog_fragment, 'une seconde pose n’empile pas un second `pow`').toBe(chunk);
+    expect(chunk.split('pow( fogFactor').length - 1).toBe(1);
+  });
+
+  it('`applyFogGamma` pose le gamma du milieu sur les matériaux EMBRUMÉS, et le retire', () => {
+    const monde = new THREE.Group();
+    const embrumé = new THREE.MeshLambertMaterial();
+    const sans = new THREE.MeshBasicMaterial({ fog: false });
+    monde.add(new THREE.Mesh(new THREE.BufferGeometry(), embrumé), new THREE.Mesh(new THREE.BufferGeometry(), sans));
+    expect(applyFogGamma(monde, AMBIANCE.pov.depth.outdoor.fogGamma)).toBe(true);
+    expect(embrumé.defines?.[FOG_GAMMA_DEFINE]).toBe(AMBIANCE.pov.depth.outdoor.fogGamma.toFixed(4));
+    expect(sans.defines?.[FOG_GAMMA_DEFINE], 'un matériau non embrumé n’a aucun gamma à porter').toBeUndefined();
+    // Deuxième passe identique : rien ne change, donc aucune recompilation demandée.
+    embrumé.needsUpdate = false;
+    expect(applyFogGamma(monde, AMBIANCE.pov.depth.outdoor.fogGamma)).toBe(false);
+    expect(applyFogGamma(monde, null)).toBe(true);
+    expect(embrumé.defines?.[FOG_GAMMA_DEFINE]).toBeUndefined();
+  });
+
+  it('gamma POSÉ : le fragment rend EXACTEMENT la courbe donnée du POV, dedans comme dehors', () => {
+    for (const indoor of [false, true]) {
+      const gamma = gammaPosé(fogCurveOf(indoor).gamma)!;
+      expect(gamma).toBe(fogCurveOf(indoor).gamma);
+      expect(écartMax(indoor, gamma), `milieu ${indoor ? 'intérieur' : 'extérieur'}`).toBeLessThan(1e-9);
+    }
+  });
+
+  it('gamma DÉBRANCHÉ (le smoothstep nu de three) : l’écart à la courbe du POV réapparaît', () => {
+    // Les deux écarts mesurés au juge de design (#1176 P3-1) — c'est ce que la surcharge supprime.
+    expect(écartMax(false, 1)).toBeCloseTo(0.25, 2);
+    expect(écartMax(true, 1)).toBeCloseTo(0.067, 2);
+  });
+
+  it('SANS le define, le chunk surchargé rend le chunk d’origine — octet pour octet', () => {
+    installFogGamma();
+    const surchargé = THREE.ShaderChunk.fog_fragment;
+    expect(surchargé, 'la surcharge doit bien avoir modifié le chunk').not.toBe(CHUNK_SANS_DEFINE);
+    // La surcharge est GLOBALE au module three : tout écran qui ne pose pas le define (la vue de plateau,
+    // les autres bancs) doit compiler EXACTEMENT le fragment d'avant — pas « à peu près ».
+    expect(sansDéfine(surchargé)).toBe(CHUNK_SANS_DEFINE);
+  });
+
+  it('un gamma irreprésentable au littéral GLSL ÉCHOUE au lieu de rendre une brume pleine', () => {
+    const mesh = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshLambertMaterial());
+    // `toFixed(4)` rendrait « 0.0000 », donc `pow(x, 0) = 1` : la brume à fond partout, sans un mot.
+    expect(() => applyFogGamma(mesh, 0.00004)).toThrow(/irreprésentable/);
+    expect(() => applyFogGamma(mesh, 0)).toThrow(/irreprésentable/);
+    expect(() => applyFogGamma(mesh, -2)).toThrow(/irreprésentable/);
+  });
+
+  it('le SCHÉMA de la donnée refuse un gamma sous le plancher du littéral', () => {
+    expect(ambianceSchema.safeParse(AMBIANCE).success, 'la donnée en place reste valide').toBe(true);
+    for (const gamma of [0.00004, 0, -2]) {
+      const mauvais = structuredClone(AMBIANCE) as { pov: { depth: { outdoor: { fogGamma: number } } } };
+      mauvais.pov.depth.outdoor.fogGamma = gamma;
+      expect(ambianceSchema.safeParse(mauvais).success, `fogGamma = ${gamma} ne doit pas être authorable`).toBe(false);
+    }
+    expect(AMBIANCE.pov.depth.outdoor.fogGamma).toBeGreaterThanOrEqual(0.1);
+    expect(AMBIANCE.pov.depth.indoor.fogGamma).toBeGreaterThanOrEqual(0.1);
   });
 });
 

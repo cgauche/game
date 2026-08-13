@@ -28,6 +28,7 @@ import { facePoly, faceUvFrame, facesGeometry, polyNormal } from './worldTris';
 import { faceSurface, tintVarFactor } from './faceColors';
 import { faceDepthOf } from './faceRelief';
 import { BB_W, BB_H } from '../../pov/billboardCore';
+import { fogCurveOf } from '../../pov/camera';
 import { type BillboardKind } from './billboardMath';
 import { DEFS } from '../../sprites';
 import { propSvg } from '../../catalog/decor';
@@ -853,11 +854,101 @@ export function skyTexture(): THREE.DataTexture {
   return tex;
 }
 
-/** Brume atmosphérique d'extérieur : la courbe du POV (`AMBIANCE.pov.depth.outdoor`, en CASES → mètres)
- *  et la brume des SURFACES — le sol s'y éteint au lieu de finir sur une arête franche. */
-export function outdoorFog(mpt: number): THREE.Fog {
-  const d = AMBIANCE.pov.depth.outdoor;
-  return new THREE.Fog(AMBIANCE.pov.fogOutdoorSurface, d.fogStartT * mpt, d.farTiles * mpt);
+/** FOND de la première personne : le dégradé de ciel dehors, la brume d'intérieur dedans (le POV n'y
+ *  dessine aucun plafond — ce qui n'est pas peint est cette nappe sombre). DEUX couleurs, et c'est
+ *  structurel : le fond porte la brume du CIEL (`fogOutdoor`), les surfaces la leur (`povFog`
+ *  ci-dessous) — cf. le JSDoc de `AMBIANCE.pov.fogOutdoorSurface`. */
+export function povBackground(indoor: boolean): THREE.DataTexture | THREE.Color {
+  return indoor ? new THREE.Color(AMBIANCE.pov.fogIndoor) : skyTexture();
+}
+
+/** Brume atmosphérique des SURFACES du POV : la courbe du milieu (`fogCurveOf`, en CASES → mètres) et
+ *  la brume qui lui répond — extérieur clair et chaud (`fogOutdoorSurface`, jamais le bleu du ciel :
+ *  les sols lointains s'y relèveraient, « délavé »), intérieur sombre (`fogIndoor`). Le sol s'y éteint
+ *  au lieu de finir sur une arête franche. Le GAMMA de la courbe, lui, vit au shader (`installFogGamma`
+ *  + `applyFogGamma`) : `THREE.Fog` ne sait qu'interpoler en smoothstep.
+ *
+ *  ESPACE DE MÉLANGE — écart déclaré (réf juge de design P3-1c) : three mélange la brume en LINÉAIRE
+ *  (le fragment travaille après conversion), la voie affine la mélange en sRGB (`mixHex`). Pour un même
+ *  facteur, les deux voies ne rendent donc pas le même octet : 13,3/255 par canal à mi-course sur un
+ *  couple gris sombre → brume claire (8,1/255 à trois quarts). Le facteur, lui, est identique aux deux
+ *  voies (la courbe est vérifiée à 1e-9 par `sceneMeshes.test.ts`). Rien n'est corrigé ici : c'est un
+ *  écart PERCEPTUEL, à juger à l'écran au goût final, pas une erreur de courbe. */
+export function povFog(mpt: number, indoor: boolean): THREE.Fog {
+  const c = fogCurveOf(indoor);
+  return new THREE.Fog(indoor ? AMBIANCE.pov.fogIndoor : AMBIANCE.pov.fogOutdoorSurface, c.start * mpt, c.end * mpt);
+}
+
+/** Nom du `#define` par lequel un matériau réclame le gamma de la courbe POV. Un matériau qui ne le
+ *  porte pas garde la brume de three au trait près : la surcharge de chunk ci-dessous est GLOBALE au
+ *  module three (elle touche donc tous les écrans), le gamma ne l'est pas. */
+export const FOG_GAMMA_DEFINE = 'POV_FOG_GAMMA';
+
+/** Vrai une fois la surcharge posée — elle ne se pose qu'UNE fois par module three chargé. */
+let gammaInstallé = false;
+
+/** La ligne de `ShaderChunk.fog_fragment` (three r185) devant laquelle le gamma s'insère. Son absence
+ *  (montée de version) laisse la brume de three intacte, et le banc de `sceneMeshes.test.ts` rouge. */
+const ANCRE_FOG = 'gl_FragColor.rgb = mix( gl_FragColor.rgb, fogColor, fogFactor );';
+
+/**
+ * SURCHARGE (idempotente, module-level) du fragment de brume de three. Le fog natif est
+ * `smoothstep( fogNear, fogFar, vFogDepth )` — la MOITIÉ de la courbe du POV, qui est
+ * `smoothstep^gamma` (`fogAt`, `pov/camera.ts`). Le `pow` manquant s'ajoute ici, pour TOUS les
+ * matériaux embrumés d'un coup : un `onBeforeCompile` par matériau referait ce même travail quatre-
+ * vingt-dix fois. Sous `#ifdef` : sans le define, le chunk surchargé rend exactement le chunk d'origine.
+ */
+export function installFogGamma(): void {
+  if (gammaInstallé) return;
+  gammaInstallé = true;
+  const chunk = THREE.ShaderChunk.fog_fragment;
+  THREE.ShaderChunk.fog_fragment = chunk.replace(
+    ANCRE_FOG,
+    `#ifdef ${FOG_GAMMA_DEFINE}\n\t\tfogFactor = pow( fogFactor, ${FOG_GAMMA_DEFINE} );\n\t#endif\n\t${ANCRE_FOG}`,
+  );
+}
+
+/** Le `#define` est une constante de COMPILATION : un littéral flottant GLSL, jamais un entier nu
+ *  (`pow( x, 2 )` ne compile pas). Quatre décimales : un gamma sous 0,00005 s'écrirait « 0.0000 », donc
+ *  `pow(x, 0) = 1` — une brume PLEINE partout, sans un mot. Le schéma de la donnée le borne déjà
+ *  (`fogGamma` ≥ 0,1, `src/data/schemas/defs/ambiance.ts`) ; ce garde-fou tient le site du littéral,
+ *  qu'un gamma vienne de la donnée ou d'un appelant. #1176 P3-1c */
+const littéralGlsl = (v: number): string => {
+  const s = v.toFixed(4);
+  if (!(Number(s) > 0)) throw new Error(`gamma de brume irreprésentable au shader : ${v} → « ${s} »`);
+  return s;
+};
+
+/** Un matériau qui SAIT s'embrumer : `fog` n'est pas déclaré sur la classe de base de three, seulement
+ *  sur les matériaux de surface (`MeshBasicMaterial`, `MeshLambertMaterial`…). */
+export type MatériauEmbrumable = THREE.Material & { fog?: boolean };
+
+/**
+ * Pose (ou retire, avec `null`) le gamma de brume sur tous les matériaux EMBRUMÉS d'un sous-arbre, et
+ * renvoie `true` si au moins un a changé (donc recompilé). C'est un `#define` et non un uniform : les
+ * uniformes d'un matériau intégré (`MeshLambertMaterial`) sont clonés par three à la compilation et
+ * inatteignables depuis le JS, là où `defines` est une propriété du matériau. Une scène entière partage
+ * la même valeur → une seule clé de programme, donc UN programme comme avant.
+ */
+export function applyFogGamma(root: THREE.Object3D, gamma: number | null): boolean {
+  if (gamma !== null) installFogGamma();
+  const voulu = gamma === null ? undefined : littéralGlsl(gamma);
+  let changé = false;
+  root.traverse((o) => {
+    const porteur = o as THREE.Mesh;
+    if (!porteur.material) return;
+    const mats = (Array.isArray(porteur.material) ? porteur.material : [porteur.material]) as MatériauEmbrumable[];
+    for (const m of mats) {
+      if (!m.fog) continue;
+      const actuel = m.defines?.[FOG_GAMMA_DEFINE] as string | undefined;
+      if (actuel === voulu) continue;
+      if (voulu === undefined) delete m.defines![FOG_GAMMA_DEFINE];
+      else (m.defines ??= {})[FOG_GAMMA_DEFINE] = voulu;
+      m.needsUpdate = true;
+      changé = true;
+    }
+  });
+  return changé;
 }
 
 // ————————————————————————————————————————————————————————————————

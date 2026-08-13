@@ -229,10 +229,11 @@ export function tileFrameGeometry(k = RING_FRAME_K): THREE.BufferGeometry {
 }
 
 /** Pool d'un slot : géométrie du slot, matériau NON éclairé (une surbrillance est un repère de jeu, pas
- *  une surface du monde — elle ne doit ni s'assombrir la nuit ni recevoir d'ombre), à la CAPACITÉ
- *  demandée. `instanceColor` est alloué dès la construction : l'écriture qui suit ne fait que le
- *  remplir. Toute marque PLEINE se retire du liseré de grille (`TILE_INSET_K`) ; le contour, lui, EST
- *  déjà un liseré. */
+ *  une surface du monde — elle ne doit ni s'assombrir la nuit ni recevoir d'ombre) et NON EMBRUMÉ
+ *  (`fog: false` : la brume du POV mangerait l'opacité du slot — 71 % à 26 cases dehors, #1176 P3-1c),
+ *  à la CAPACITÉ demandée. `instanceColor` est alloué dès la construction : l'écriture qui suit ne fait
+ *  que le remplir. Toute marque PLEINE se retire du liseré de grille (`TILE_INSET_K`) ; le contour, lui,
+ *  EST déjà un liseré. */
 export function buildHighlightMesh(slot: HighlightSlot, capacity: number): THREE.InstancedMesh {
   const geo = slot === 'ringContour' ? tileFrameGeometry() : tileQuadGeometry(TILE_INSET_K);
   const mat = new THREE.MeshBasicMaterial({
@@ -240,6 +241,7 @@ export function buildHighlightMesh(slot: HighlightSlot, capacity: number): THREE
     transparent: true,
     opacity: SLOT_OPACITY[slot],
     depthWrite: false,
+    fog: false,
   });
   const mesh = new THREE.InstancedMesh(geo, mat, capacity);
   mesh.name = `marques:${slot}`;
