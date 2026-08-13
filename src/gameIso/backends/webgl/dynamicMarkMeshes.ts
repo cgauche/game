@@ -110,3 +110,64 @@ export function buildDynamicMarkMesh(slot: DynMarkSlot, capacity = DYN_SLOT_CAPA
   mesh.count = 0;
   return mesh;
 }
+
+/** Opacité du JUMEAU DE SILHOUETTE (#1297, LOT A). Le jumeau ne peint QUE des pixels occlus, sur une
+ *  géométrie de monde dont la clarté n'est pas connue à l'avance ; la valeur se calibre donc contre le
+ *  sol volumique, le fond le plus clair qu'elle rencontre (luminance mesurée 73 en moyenne de canaux,
+ *  l'échelle de `DYN_SLOT_OPACITY`). L'anneau le plus SOMBRE du catalogue est celui d'ennemi
+ *  (`teamColors.ENEMY_RING` #c0392b, moyenne 97,3) : à cette valeur il détache 15,8 de ce sol, contre
+ *  6,1 au quart d'opacité que le juge a mesuré illisible. Un anneau de héros (#4f8fe0, moyenne 148,7)
+ *  en détache 49,2. */
+export const SILHOUETTE_TWIN_OPACITY = 0.65;
+
+/**
+ * JUMEAU DE SILHOUETTE d'un pool (#1297, LOT A) : le MÊME pool, rendu une seconde fois avec le test de
+ * profondeur RETOURNÉ (`GreaterDepth`) — il ne peint donc que là où la géométrie du monde a déjà écrit
+ * DEVANT lui, c'est-à-dire exactement les pixels où l'original est occlus. Un seul draw call pour tous
+ * les acteurs : géométrie, matrices d'instance et couleurs d'instance sont les objets de l'original
+ * (pas des copies), donc la pose par frame (`stage/dynamicMarkPose`) les alimente tous les deux d'une
+ * seule écriture — seul le `count` se propage (`silhouetteTwinOf`).
+ *
+ * `renderOrder = -1` : le jumeau passe AVANT les billboards. Ceux-ci trichent de 0,3 m vers la caméra
+ * et écrivent leur profondeur APRÈS le passage du jumeau ; rendu après eux, il couvrirait des corps
+ * VISIBLES (marge mesurée : 36 472 pas ortho, 503 329 pas POV).
+ *
+ * ÉCART DÉCLARÉ : le jumeau ne révèle l'anneau qu'à travers la géométrie OPAQUE du monde. Un anneau
+ * caché derrière un autre BILLBOARD reste invisible — ce sprite n'a pas écrit sa profondeur au moment
+ * où le jumeau passe. Déterministe, et hors du périmètre de ce lot.
+ *
+ * `fog: false` comme tout le chrome (#1176 P3-1c) — l'original l'est déjà. Aucun `onBeforeCompile` ici :
+ * le matériau est nu, donc aucune `customProgramCacheKey` n'est requise (`depthFunc`/`depthWrite`/
+ * `opacity` ne sont PAS des paramètres de programme — cf. `WebGLPrograms.getProgramCacheKeyParameters` ;
+ * partager le programme de l'original est correct, l'état de profondeur s'applique au draw).
+ */
+export function buildSilhouetteTwin(source: THREE.InstancedMesh): THREE.InstancedMesh {
+  const mat = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(0xffffff), // la teinte vient de `instanceColor`, partagé avec l'original
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: SILHOUETTE_TWIN_OPACITY,
+    depthWrite: false,
+    depthFunc: THREE.GreaterDepth,
+    fog: false,
+  });
+  // Capacité 0 au constructeur : `InstancedMesh` allouerait sinon un `instanceMatrix` de
+  // `capacité × 16` flottants (768 × 16 pour l'anneau) que la ligne suivante remplace par celui de
+  // l'original. La capacité RÉELLE du jumeau est donc celle du buffer emprunté.
+  const jumeau = new THREE.InstancedMesh(source.geometry, mat, 0);
+  jumeau.instanceMatrix = source.instanceMatrix;
+  jumeau.instanceColor = source.instanceColor;
+  jumeau.name = `${source.name}:silhouette`;
+  jumeau.frustumCulled = false;
+  jumeau.renderOrder = -1;
+  jumeau.count = source.count;
+  jumeau.userData.emprunte = true; // géométrie et buffers appartiennent à l'original (`viderGroupe`)
+  (source.userData as { silhouette?: THREE.InstancedMesh }).silhouette = jumeau;
+  return jumeau;
+}
+
+/** Le jumeau de silhouette d'un pool, s'il en porte un — la couture par laquelle la pose propage son
+ *  `count` sans rien réécrire. */
+export function silhouetteTwinOf(mesh: THREE.InstancedMesh): THREE.InstancedMesh | null {
+  return (mesh.userData as { silhouette?: THREE.InstancedMesh }).silhouette ?? null;
+}

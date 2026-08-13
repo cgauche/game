@@ -16,7 +16,7 @@
 import * as THREE from 'three';
 import { TEAM_RING_WIDTH_K, TETHER_DASH_K, TETHER_GAP_K, TETHER_WIDTH_K, dashPattern, ringAxesPx, ringPhaseRad, type DynamicMarks, type MarkCell } from '../builders/dynamicMarks';
 import type { ProjKind } from '../../geometry/iso';
-import { dynSlotLiftM, type DynMarkSlot } from '../backends/webgl/dynamicMarkMeshes';
+import { dynSlotLiftM, silhouetteTwinOf, type DynMarkSlot } from '../backends/webgl/dynamicMarkMeshes';
 import { diagOnce } from '../rig/devDiag';
 import { boardChromeOpacity, AUCUN_CHROME, type ChromeAt, type GlideAt } from './boardPose';
 
@@ -310,6 +310,11 @@ export function poseDynamicMarks(pools: DynMarkPools, marks: DynamicMarks, f: Dy
     if (!mesh) return;
     mesh.count = n;
     mesh.instanceMatrix.needsUpdate = true;
+    // JUMEAU DE SILHOUETTE (#1297, LOT A) : il LIT les buffers de son original, rien ne s'y réécrit —
+    // seul le compte dessiné se propage, sans quoi le jumeau peindrait la population de la frame
+    // précédente.
+    const jumeau = silhouetteTwinOf(mesh);
+    if (jumeau) jumeau.count = n;
     counts[slot] = n;
   };
   const liens = pools.tether;

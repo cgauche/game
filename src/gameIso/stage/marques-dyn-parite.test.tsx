@@ -238,7 +238,7 @@ describe('Marques dynamiques — les deux voies peignent les mêmes repères (#1
     expect(comptesVolumiques()).toEqual({ tether: 0, actif: 0, groupe: 1 });
   });
 
-  it('en volumique, les quatre pools sont montés d’emblée et portent la teinte du catalogue', () => {
+  it('en volumique, les quatre pools sont montés d’emblée (plus le jumeau de silhouette) et portent la teinte du catalogue', () => {
     monter('webgl', 'battle');
     const scene = scènes[scènes.length - 1];
     const teintes = new Map<string, string>();
@@ -248,13 +248,23 @@ describe('Marques dynamiques — les deux voies peignent les mêmes repères (#1
       teintes.set(m.name, `#${(m.material as THREE.MeshBasicMaterial).color.getHexString()}`);
       expect(m.count, 'un compte dessiné borné par la capacité du pool').toBeLessThanOrEqual(m.instanceMatrix.count);
     });
-    expect([...teintes.keys()].sort()).toEqual(['marquesDyn:actif', 'marquesDyn:anneau', 'marquesDyn:groupe', 'marquesDyn:tether']);
+    // Cinq objets pour quatre pools : l'anneau d'équipe est rendu DEUX fois, la seconde à travers la
+    // géométrie du monde (jumeau de silhouette, #1297 LOT A).
+    expect([...teintes.keys()].sort()).toEqual([
+      'marquesDyn:actif',
+      'marquesDyn:anneau',
+      'marquesDyn:anneau:silhouette',
+      'marquesDyn:groupe',
+      'marquesDyn:tether',
+    ]);
     expect(teintes.get('marquesDyn:tether')).toBe(ENGAGE_TINT.toLowerCase());
     expect(teintes.get('marquesDyn:actif')).toBe(ACTIVE_HALO_TINT.toLowerCase());
     expect(teintes.get('marquesDyn:groupe')).toBe(ACTIVE_HALO_TINT.toLowerCase());
     // L'anneau d'équipe change de couleur d'un combattant à l'autre : son matériau reste NEUTRE et la
-    // teinte voyage PAR INSTANCE (`instanceColor`), comme les marques de case.
+    // teinte voyage PAR INSTANCE (`instanceColor`), comme les marques de case. Le jumeau partage ce
+    // buffer, donc son matériau est neutre pour la même raison.
     expect(teintes.get('marquesDyn:anneau')).toBe('#ffffff');
+    expect(teintes.get('marquesDyn:anneau:silhouette')).toBe('#ffffff');
     expect(poolsVolumiques().anneau.instanceColor, 'l’anneau porte sa teinte par instance').toBeTruthy();
   });
 });

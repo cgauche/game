@@ -1,4 +1,4 @@
-import { Mesh, MeshBasicMaterial, PlaneGeometry, Vector3, type OrthographicCamera, type PerspectiveCamera } from 'three';
+import { Mesh, MeshBasicMaterial, PlaneGeometry, Raycaster, Vector2, Vector3, type OrthographicCamera, type PerspectiveCamera } from 'three';
 import { describe, expect, it } from 'vitest';
 import { depth, projectOccluder, occludesActor, type Dims } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
@@ -15,12 +15,14 @@ import { wallLayerObjs } from './layers';
 import { stage3dFraming } from './stage3dCamera';
 
 /**
- * HIT-TEST DE SPRITE — CE QUE CHAQUE VOIE RÉPOND (#1176, lot P2-3).
+ * HIT-TEST DE SPRITE — CE QUE CHAQUE VOIE RÉPOND (#1176 lot P2-3, #1297 lot B).
  *
  * Les deux voies tranchent l'empilement AUTREMENT : la voie affine par son TRI DE PROFONDEUR (le
  * dernier peint reçoit l'`elementFromPoint` ; s'il ne porte pas de `data-cid`, il n'y a pas de jeton
- * sous le pixel), la voie volumique par la DISTANCE CAMÉRA d'un lancer de rayon. Cette garde épingle
- * les DEUX verdicts sur les mêmes situations — jamais l'intuition de l'un pour l'autre.
+ * sous le pixel), la voie volumique par la DISTANCE CAMÉRA d'un lancer de rayon, dont les cibles sont
+ * les seuls QUADS : un jeton gagne la matière CUITE du monde (qui laisse passer sa silhouette), jamais
+ * un sprite de DÉCOR touché avant lui. Cette garde épingle les DEUX verdicts sur les mêmes situations —
+ * leurs accords comme leur divergence, jamais l'intuition de l'un pour l'autre.
  *
  * Les deux mesures sont prises des fonctions de PRODUCTION : côté affine `occludesActor` sur les
  * panneaux projetés (l'occultation écran-espace dont le stage se sert déjà) et les profondeurs `d`
@@ -67,7 +69,25 @@ function verdictVolumique(camera: Camera, cibles: readonly PickTarget[], pointMo
   return pickNearestCid(camera, cibles, ndcAt({ x: p.sx, y: p.sy }, { w: CANVAS.w, h: CANVAS.h }));
 }
 
-describe('Un jeton DERRIÈRE un mur qui le couvre — les deux voies le refusent au clic (#1176 P2-3)', () => {
+/** L'obstacle (masse CUITE du monde ou quad de décor) intercepte-t-il le rayon AVANT le quad, au pixel
+ *  visé ? (l'occultation VOLUMIQUE telle que la géométrie la produit — la mesure, indépendante du
+ *  verdict de picking.) */
+function intercepteAvantLeQuad(camera: Camera, obstacle: Mesh, quad: Mesh, pointMonde: Vector3): boolean {
+  const p = projectToScreen(camera, pointMonde, CANVAS);
+  const ndc = ndcAt({ x: p.sx, y: p.sy }, { w: CANVAS.w, h: CANVAS.h });
+  const r = new Raycaster();
+  r.setFromCamera(new Vector2(ndc.x, ndc.y), camera);
+  const dQuad = r.intersectObject(quad, true)[0]?.distance ?? Infinity;
+  return r.intersectObject(obstacle, true).some((i) => i.distance <= dQuad);
+}
+
+/**
+ * DIVERGENCE VOULUE (#1297, arbitrage produit du 2026-08-13 : silhouette à travers les murs). Le
+ * peintre affine n'a pas de silhouette : le mur qu'il pose PAR-DESSUS le jeton reçoit
+ * l'`elementFromPoint`, ne porte aucun `data-cid`, et le clic retombe sur la tuile de sol. La voie
+ * volumique peint le jeton occulté en silhouette — le pixel où on le voit rend son id.
+ */
+describe('Un jeton derrière un mur qui le COUVRE — l’affine le refuse, le volumique le rend (#1297 lot B)', () => {
   const scene = emptyScene(3, 3);
   scene.walls = [{ x: 1, y: 1, side: 'N' }];
   const dims = dimsDe(scene);
@@ -87,18 +107,62 @@ describe('Un jeton DERRIÈRE un mur qui le couvre — les deux voies le refusent
     expect(objs[0].d).toBeGreaterThan(depth(0, 0, dims, 0) + 0.5);
   });
 
-  it('VOLUMIQUE : la masse du monde gagne le rayon — le hit-test rend `null`, même verdict', () => {
+  it('VOLUMIQUE : la masse intercepte le rayon AVANT le jeton, et le jeton rend quand même son id', () => {
     const camera = cameraVolumique(dims, mpt);
     const baked = bakeWorldGeometry(scene, mpt);
     const monde = new Mesh(baked.geometry, new MeshBasicMaterial());
     monde.updateMatrixWorld(true);
     const sub = sujet(scene, mpt, hero, 0, 0);
     const quad = quadDe(sub, camera);
-    const cibles: PickTarget[] = [{ cid: null, object: monde }, { cid: hero.id, object: quad }];
-    // Sans le mur, le jeton EST cliquable au même pixel : la garde mord des deux côtés.
+    // Prémisse : la géométrie occulte RÉELLEMENT le jeton à ce pixel (sinon la garde ne mesure rien).
+    expect(intercepteAvantLeQuad(camera, monde, quad, quad.position)).toBe(true);
+    // Le monde n'est pas inscrit comme cible (`GameStage3D`) : le verdict ne connaît que les quads.
     expect(verdictVolumique(camera, [{ cid: hero.id, object: quad }], quad.position)).toBe(hero.id);
-    expect(verdictVolumique(camera, cibles, quad.position)).toBeNull();
   });
+});
+
+/**
+ * LES QUATRE ARÊTES DE LA CASE DU JETON — la table complète, mesurée (#1176 P2-3, #1297 lot B).
+ *
+ * L'invariant affine « jeton > mur » (`stage/tokens.tsx` : offset de jeton +0,5 contre +0,45 au mur) ne
+ * joue que pour les murs dont `wallDepth` prend pour base la case DU JETON — les arêtes N et O. Aux
+ * arêtes S et E le mur se peint APRÈS le jeton, et ce sont exactement celles que la géométrie volumique
+ * met devant lui : les deux voies s'accordent au N et à l'O, et divergent au S et à l'E, où la voie
+ * volumique rend l'id par la silhouette (#1297) quand l'affine retombe sur la tuile.
+ */
+describe('Les QUATRE arêtes de la case du jeton (#1176 P2-3, #1297 lot B)', () => {
+  const [hero] = makeShowcaseParty();
+  const ARETES = [
+    { nom: 'N', seg: { x: 1, y: 1, side: 'N' as const }, murParDessus: false },
+    { nom: 'O', seg: { x: 0, y: 1, side: 'E' as const }, murParDessus: false },
+    { nom: 'S', seg: { x: 1, y: 2, side: 'N' as const }, murParDessus: true },
+    { nom: 'E', seg: { x: 1, y: 1, side: 'E' as const }, murParDessus: true },
+  ];
+
+  for (const arete of ARETES) {
+    const scene = emptyScene(3, 3);
+    scene.walls = [arete.seg];
+    const dims = dimsDe(scene);
+    const mpt = sceneMetresPerTile(scene);
+    const dJeton = depth(1, 1, dims, 0) + 0.5; // profondeur du jeton posté sur la case (`combatantObjs`)
+
+    it(`arête ${arete.nom} — AFFINE : le mur se peint ${arete.murParDessus ? 'APRÈS' : 'AVANT'} le jeton`, () => {
+      const objs = wallLayerObjs(buildWalls(scene), dims, NO_OCCLUDE, 0, { zoom: 1, mpt });
+      expect(objs.length).toBe(1);
+      if (arete.murParDessus) expect(objs[0].d).toBeGreaterThan(dJeton);
+      else expect(objs[0].d).toBeLessThan(dJeton);
+    });
+
+    it(`arête ${arete.nom} — VOLUMIQUE : la masse ${arete.murParDessus ? 'intercepte' : 'n’intercepte pas'} le rayon, et l’id est rendu`, () => {
+      const camera = cameraVolumique(dims, mpt);
+      const monde = new Mesh(bakeWorldGeometry(scene, mpt).geometry, new MeshBasicMaterial());
+      monde.updateMatrixWorld(true);
+      const quad = quadDe(sujet(scene, mpt, hero, 1, 1), camera);
+      expect(intercepteAvantLeQuad(camera, monde, quad, quad.position)).toBe(arete.murParDessus);
+      // Le monde n'est PAS une cible du picking : occulté ou non, le jeton rend son id.
+      expect(verdictVolumique(camera, [{ cid: hero.id, object: quad }], quad.position)).toBe(hero.id);
+    });
+  }
 });
 
 describe('Deux jetons qui se CHEVAUCHENT — même vainqueur des deux côtés (#1176 P2-3)', () => {
@@ -163,7 +227,7 @@ describe('Coin de la boîte d’un billboard — la voie volumique y répond ENC
  * sur la MÊME case y ont des quads COPLANAIRES (même ancre aux pieds, même orientation écran), donc
  * touchés au même millimètre par le rayon. Le verdict doit alors rester le même quel que soit l'ordre
  * du tableau de cibles — c'est ce que promet le JSDoc de `pickNearestCid`, et ce que son départage
- * (monde d'abord, puis id lexicographique) rend vrai.
+ * (l'id lexicographique entre jetons) rend vrai.
  */
 describe('Cibles à distance ÉGALE — le verdict ne dépend pas de l’ordre du tableau (#1176 P2-3)', () => {
   const scene = emptyScene(6, 6);
@@ -195,12 +259,55 @@ describe('Cibles à distance ÉGALE — le verdict ne dépend pas de l’ordre d
     expect(pickNearestCid(camera, [ca, cb], ndc)).toBe([a.id, b.id].sort()[0]);
   });
 
-  it('un JETON et un OCCULTEUR : le monde gagne son égalité, le clic retombe sur la tuile', () => {
-    // Occulteur SYNTHÉTIQUE : une masse posée exactement dans le plan du quad — la seule façon de
-    // fabriquer l'égalité EXACTE que la cuisson du monde ne produit qu'au hasard d'une coïncidence.
+  it('un JETON et un DÉCOR coplanaires : le jeton rend son id dans les deux ordres (#1297 lot B)', () => {
+    // Décor SYNTHÉTIQUE : un quad posé exactement dans le plan du jeton — la seule façon de fabriquer
+    // l'égalité EXACTE de distance qu'une scène ne produit qu'au hasard d'une coïncidence.
     const masse: PickTarget = { cid: null, object: quadDe(suba, camera) };
     const jeton: PickTarget = { cid: a.id, object: qa };
-    expect(pickNearestCid(camera, [jeton, masse], ndc)).toBeNull();
-    expect(pickNearestCid(camera, [masse, jeton], ndc)).toBeNull();
+    expect(pickNearestCid(camera, [jeton, masse], ndc)).toBe(a.id);
+    expect(pickNearestCid(camera, [masse, jeton], ndc)).toBe(a.id);
+  });
+});
+
+/**
+ * OCCULTATION SPRITE-CONTRE-SPRITE (#1297, correctif du juge du cumul) : un billboard de DÉCOR est une
+ * cible du rayon SANS id. Il ne rend jamais d'id, mais touché le premier il rend le verdict `null` —
+ * ce qui cache un corps le rend inatteignable, et le clic retombe sur la tuile. Seule la matière CUITE
+ * du monde laisse passer le clic, parce qu'elle laisse passer la SILHOUETTE.
+ */
+describe('Un jeton derrière un billboard de DÉCOR — le clic retombe sur la tuile (#1297)', () => {
+  const scene = emptyScene(6, 6);
+  const dims = dimsDe(scene);
+  const mpt = sceneMetresPerTile(scene);
+  const [hero] = makeShowcaseParty();
+  const camera = cameraVolumique(dims, mpt);
+  const quad = quadDe(sujet(scene, mpt, hero, 2, 2), camera);
+  const jeton: PickTarget = { cid: hero.id, object: quad };
+
+  /** Un quad de décor sur le même rayon, décalé de `m` mètres le long de l'axe de vue (positif = vers
+   *  la caméra). Le décor porte `cid: null`, comme les props que `GameStage3D` inscrit. */
+  function decor(m: number): PickTarget {
+    const d = quadDe(sujet(scene, mpt, hero, 2, 2), camera);
+    d.position.add(new Vector3(0, 0, 1).applyQuaternion(camera.quaternion).multiplyScalar(m));
+    d.updateMatrixWorld(true);
+    return { cid: null, object: d };
+  }
+
+  it('prémisse : sans décor, le pixel rend l’id du jeton', () => {
+    expect(verdictVolumique(camera, [jeton], quad.position)).toBe(hero.id);
+  });
+
+  it('décor DEVANT : il intercepte le rayon avant le jeton, et le verdict est `null` dans les deux ordres', () => {
+    const d = decor(1);
+    expect(intercepteAvantLeQuad(camera, d.object as Mesh, quad, quad.position)).toBe(true);
+    expect(verdictVolumique(camera, [d, jeton], quad.position)).toBeNull();
+    expect(verdictVolumique(camera, [jeton, d], quad.position)).toBeNull();
+  });
+
+  it('décor DERRIÈRE : il ne dispute rien — l’id du jeton est rendu', () => {
+    const d = decor(-1);
+    expect(intercepteAvantLeQuad(camera, d.object as Mesh, quad, quad.position)).toBe(false);
+    expect(verdictVolumique(camera, [d, jeton], quad.position)).toBe(hero.id);
+    expect(verdictVolumique(camera, [jeton, d], quad.position)).toBe(hero.id);
   });
 });

@@ -115,7 +115,7 @@ import {
 } from '../backends/webgl/highlightMeshes';
 import type { HighlightEl } from '../builders/highlights';
 import { NO_DYNAMIC_MARKS, type DynamicMarks } from '../builders/dynamicMarks';
-import { DYN_MARK_SLOTS, buildDynamicMarkMesh } from '../backends/webgl/dynamicMarkMeshes';
+import { DYN_MARK_SLOTS, buildDynamicMarkMesh, buildSilhouetteTwin } from '../backends/webgl/dynamicMarkMeshes';
 import { poseDynamicMarks, type DynMarkPools } from './dynamicMarkPose';
 import { NO_INTERACTION_HALOS, type InteractionHalos } from '../builders/interactHalos';
 import { HALO_SLOTS, buildHaloMesh } from '../backends/webgl/interactHaloMeshes';
@@ -642,10 +642,11 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
     };
   }, [pulseHalos]);
 
-  // HIT-TEST DE SPRITE (lot P2-3) : la voie volumique répond au pointeur par un RAYON — cibles = les
-  // quads montés (ceux d'un combattant portent son id) plus les masses du monde, inscrites sans id
-  // (une masse qui gagne le rayon = rien de cliquable ici, comme un mur peint par-dessus un jeton en
-  // affine). L'inscription vit et meurt avec ce composant, qui n'est monté qu'en volumique.
+  // HIT-TEST DE SPRITE (lot P2-3, règle #1297 « ce qui se voit se clique ») : la voie volumique répond
+  // au pointeur par un RAYON — cibles = les quads montés, ceux d'un combattant portant son id, ceux du
+  // décor aucun (un décor touché le premier rend le clic à la tuile). La masse du monde n'est PAS
+  // inscrite : un jeton qu'elle occulte se lit en silhouette, donc se clique
+  // (`backends/webgl/spriteRaycast`). L'inscription vit et meurt avec ce composant, monté en volumique.
   // En PREMIÈRE PERSONNE, aucun picker n'est inscrit : cette vue n'a jamais eu d'affordance de clic
   // (le SVG du POV n'en portait aucune) — l'inscrire en ouvrirait une par le seul changement de voie.
   useEffect(() => {
@@ -656,8 +657,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
       if (!canvas || !camera) return null;
       const rect = canvas.getBoundingClientRect();
       if (!rect.width || !rect.height) return null;
-      const cibles: PickTarget[] = [{ cid: null, object: monde.current! }];
-      for (const b of boardsRef.current) cibles.push({ cid: b.sub.cid ?? null, object: b.mesh });
+      const cibles: PickTarget[] = boardsRef.current.map((b) => ({ cid: b.sub.cid ?? null, object: b.mesh }));
       return pickNearestCid(
         camera,
         cibles,
@@ -848,17 +848,14 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, els, actors, ga
       const mesh = buildDynamicMarkMesh(slot);
       pools[slot] = mesh;
       groupe.add(mesh);
+      // SILHOUETTE À TRAVERS LES MURS (#1297, LOT A) : l'anneau d'équipe seul reçoit son jumeau à test
+      // de profondeur retourné — un pool de plus, pas un objet par acteur.
+      if (slot === 'anneau') groupe.add(buildSilhouetteTwin(mesh));
     }
     dessiner();
     return () => {
-      for (const slot of DYN_MARK_SLOTS) {
-        const mesh = pools[slot];
-        if (!mesh) continue;
-        groupe.remove(mesh);
-        mesh.geometry.dispose();
-        (mesh.material as THREE.Material).dispose();
-        delete pools[slot];
-      }
+      viderGroupe(groupe); // le jumeau y est marqué `emprunte` : sa géométrie est celle de l'original
+      for (const slot of DYN_MARK_SLOTS) delete pools[slot];
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

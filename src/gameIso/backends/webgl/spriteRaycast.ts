@@ -4,19 +4,33 @@
  * redevient un RAYON, et c'est la DISTANCE CAMÉRA qui tranche l'empilement — là où le peintre affine
  * tranchait par son tri de profondeur (`stage/objs.ts`).
  *
- * CIBLES : les quads de billboard (chacun portant l'id du combattant qu'il dessine) ET les masses du
- * monde, inscrites SANS id. Une masse qui gagne le rayon vaut « rien de cliquable ici » — c'est la
- * parité avec l'affine, où un mur peint APRÈS le jeton reçoit le `elementFromPoint` et ne porte aucun
- * `data-cid` (le clic retombe alors sur la tuile de sol).
+ * CIBLES : les QUADS de billboard, et eux seuls — ceux d'un combattant portent son id, ceux du DÉCOR
+ * n'en portent aucun (`cid: null`). La masse triangulée du monde n'est PAS une cible.
  *
- * ÉCART MESURÉ AVEC L'AFFINE (`stage/sprite-pick-parity.test.ts`) : un quad est plein pour le rayon alors que
- * l'`alphaTest` du matériau le rend transparent à l'affichage. Le hit-test natif du SVG suit le TRACÉ
- * (on clique à travers le vide d'un sprite) ; le rayon suit la BOÎTE, coins compris. Lever cet écart
- * demande de lire l'alpha de la texture à l'UV touché (rasterisation en cache, hors de ce lot).
+ * LA RÈGLE (#1297) : « ce qui se voit se clique ». Le plus PROCHE touché tranche, et un DÉCOR qui gagne
+ * rend `null` — le clic retombe sur la tuile, comme un sprite qui cache un corps le rend inatteignable.
+ * Seule l'occultation par la géométrie CUITE du monde tombe : la silhouette d'un jeton occulté par la
+ * matière s'y peint à travers (`dynamicMarkMeshes.buildSilhouetteTwin`), donc le pixel où on la lit rend
+ * son id.
+ *
+ * DEUX CHOIX ASSUMÉS (#1297) : AUCUNE BORNE DE DISTANCE — un jeton occulté par le monde reste cliquable
+ * à toute profondeur, comme le jumeau de silhouette qui le révèle sans borne. ASYMÉTRIE TRANSITOIRE
+ * vu/cliquable — ce qui se voit d'un jeton occulté est son ANNEAU, soit environ 10 % de la surface de
+ * réponse que sa boîte offre au clic ; l'écart se résorbe au LOT C, quand le corps sera silhouetté.
+ *
+ * DIVERGENCE MESURÉE AVEC L'AFFINE (`stage/sprite-pick-parity.test.ts`) : le peintre affine n'a pas de
+ * silhouette — un mur peint APRÈS le jeton reçoit l'`elementFromPoint`, ne porte aucun `data-cid`, et le
+ * clic y retombe sur la tuile de sol. Sur les mêmes situations la voie volumique rend l'id du jeton.
+ *
+ * SECONDE DIVERGENCE : un quad est plein pour le rayon alors que l'`alphaTest` du matériau le rend
+ * transparent à l'affichage. Le hit-test natif du SVG suit le TRACÉ (on clique à travers le vide d'un
+ * sprite) ; le rayon suit la BOÎTE, coins compris. Lever cet écart demande de lire l'alpha de la
+ * texture à l'UV touché (rasterisation en cache, hors de ce lot).
  */
 import * as THREE from 'three';
 
-/** Une cible du rayon : l'objet à toucher, et l'id du combattant qu'il dessine (`null` = occulteur). */
+/** Une cible du rayon : l'objet à toucher, et l'id du combattant qu'il dessine — `cid: null` = sprite
+ *  de DÉCOR, qui ne rend jamais d'id mais OCCULTE le clic quand il gagne le rayon (§ en-tête). */
 export interface PickTarget {
   cid: string | null;
   object: THREE.Object3D;
@@ -37,45 +51,34 @@ function emporteAEgalite(candidat: string, tenant: string): boolean {
 }
 
 /**
- * Id du combattant sous le rayon : la cible la PLUS PROCHE de la caméra gagne, et à distance égale
- * `emporteAEgalite` tranche. `null` si un OCCULTEUR (masse du monde, décor sans id) est au moins aussi
- * proche que le jeton gagnant, ou si aucun jeton n'est touché — dans les deux cas, il n'y a pas de
- * jeton sous ce pixel. L'ordre du tableau de cibles n'entre JAMAIS dans le verdict.
+ * Id du combattant sous le rayon : la cible la plus PROCHE de la caméra tranche — son id si c'est un
+ * JETON, `null` si c'est un DÉCOR (§ en-tête : ce qui se voit se clique). À distance ÉGALE, deux jetons
+ * se départagent par `emporteAEgalite`, et un jeton l'emporte sur un décor coplanaire. L'ordre du
+ * tableau de cibles n'entre JAMAIS dans le verdict.
  *
- * DEUX PASSES, et c'est ce qui tient le coût du survol : les JETONS d'abord (quelques quads de deux
- * triangles), et la question ne descend dans le MONDE — la masse triangulée de la carte — que si un
- * jeton a gagné, une seule fois, bornée à la distance de ce gagnant (`raycaster.far`). Le cas
- * majoritaire du `pointermove` (aucun jeton sous le pixel) ne balaie donc plus la carte du tout.
+ * UNE PASSE sur les seuls QUADS (deux triangles chacun) : la masse triangulée de la carte n'est pas
+ * une cible, donc jamais balayée au `pointermove`.
  */
 export function pickNearestCid(
   camera: THREE.Camera,
   targets: readonly PickTarget[],
   ndc: { x: number; y: number },
 ): string | null {
-  rayon.far = Infinity;
   rayon.setFromCamera(new THREE.Vector2(ndc.x, ndc.y), camera);
   let gagnant: string | null = null;
   let plusProche = Infinity;
   for (const cible of targets) {
-    if (cible.cid === null) continue;
     for (const touche of rayon.intersectObject(cible.object, true)) {
       if (touche.distance > plusProche) continue;
-      if (touche.distance === plusProche && !(gagnant && emporteAEgalite(cible.cid, gagnant))) continue;
+      if (touche.distance === plusProche) {
+        // Égalité EXACTE : un décor ne prend jamais la place du tenant (un jeton coplanaire d'un
+        // décor reste cliquable), et entre deux jetons c'est l'id lexicographique qui tranche.
+        if (cible.cid === null) continue;
+        if (gagnant !== null && !emporteAEgalite(cible.cid, gagnant)) continue;
+      }
       plusProche = touche.distance;
       gagnant = cible.cid;
     }
   }
-  if (!gagnant) return null;
-  // Un occulteur AU MOINS aussi proche gagne son égalité — même issue qu'en affine, où le mur peint
-  // par-dessus le jeton ne porte pas de `data-cid` et laisse le clic retomber sur la tuile.
-  rayon.far = plusProche;
-  for (const cible of targets) {
-    if (cible.cid !== null) continue;
-    if (rayon.intersectObject(cible.object, true).length) {
-      rayon.far = Infinity;
-      return null;
-    }
-  }
-  rayon.far = Infinity;
   return gagnant;
 }
