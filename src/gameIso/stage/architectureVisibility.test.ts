@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cutawayForSection, cutawayOverhead, exteriorWallViewZ, frontFacadeCutaway, lidCutaway, type ClearedSpace, type Lid } from './architectureVisibility';
 import { depth, occludesActor, tileCenter, type Dims } from '../../geometry/iso';
-import { elOccluder } from './layers';
+import { elOccluder } from './occluders';
 import { buildRoofs, clearedSpace, massFootprintCells, massRoomZoneIds } from '../builders/roofs';
 import { effectiveArchitecture } from '../../state/sceneEdit';
 import { emptyScene, type BuildingMass, type Scene, type WallSeg } from '../../state/scene';

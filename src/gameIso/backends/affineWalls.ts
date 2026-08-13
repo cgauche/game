@@ -35,7 +35,10 @@ const TINTED: ReadonlySet<WallPart> = new Set([
 ]);
 
 /** Parties MAÇONNÉES recevant le motif d'appareillage quand la def porte une recette — SOURCE UNIQUE
- *  des deux backends (motif affine LOD ≥ 1, joints/trapèzes du LOD de distance POV). */
+ *  des deux backends SVG (motif affine LOD ≥ 1 ci-dessous, joints/trapèzes du LOD de distance POV,
+ *  `pov/geometry.ts:753`). La voie volumique n'interroge PAS ce jeu : elle décide l'appareillage par
+ *  SURFACE (`backends/webgl/sceneMeshes.faceGroup` : `recipe.courses` + `uvScaleM`, tracé métrique de
+ *  `detail/courses` rasterisé par `backends/webgl/periodTexture.ts`). */
 export const COURSED: ReadonlySet<WallPart> = new Set(['face', 'parapet', 'linteau']);
 
 /** Profondeur de tri : MAX sur les deux cases bordant l'arête → le mur reste devant son sol proche aux

@@ -87,8 +87,13 @@ describe('garde-fou — aucune couleur en dur dans un renderer d’environnement
 
   it('la surface couverte est complète (racine + balayage)', () => {
     expect(COVERED).toContain('sprites.ts');
-    expect(COVERED).toContain('pov/geometry.ts');
-    expect(COVERED).toContain('backends/affineWalls.ts');
+    // Ancres nommées sur des renderers qui SURVIVENT au retrait des backends SVG (#1176, Phase 3 :
+    // « Retrait des backends SVG (affine*, pov/) ») : le peintre volumique et les recettes de matière.
+    expect(COVERED).toContain('backends/webgl/faceColors.ts');
+    expect(COVERED).toContain('detail/expand.ts');
+    // …et chaque arborescence déclarée est réellement ATTEINTE : une ancre nommée ne prouve que son
+    // propre dossier ; ceci empêche n'importe lequel des autres de se vider en silence.
+    for (const dir of SWEEP_DIRS) expect(COVERED.filter((rel) => rel.startsWith(`${dir}/`))).not.toEqual([]);
     expect(COVERED.length).toBeGreaterThan(40);
   });
 

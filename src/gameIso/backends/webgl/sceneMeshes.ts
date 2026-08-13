@@ -164,6 +164,11 @@ export function faceGroup(wf: WorldFace, mpt: number): SurfaceGroup {
       part,
     };
   }
+  // ASSISES : décidées par la SURFACE (recette + échelle d'UV), sans aucun filtre de `WallPart`. Les
+  // deux voies SVG, elles, les restreignent à trois parts (`COURSED`, `backends/affineWalls.ts:39` ;
+  // `pov/geometry.ts:753`) — une part maçonnée hors de ce jeu (plinthe…) portant `courses` reçoit donc
+  // ici des assises que l'affine ne peint pas. Bascule VISIBLE PAR LE JOUEUR au passage au volumique
+  // (#1176) : à trancher en recette, pas au hasard d'un backend.
   const c = surface.recipe?.courses;
   if (!surface.uvScaleM || !c) return NU;
   const periodM =
@@ -239,6 +244,48 @@ export interface FaceSpan {
 export interface BakedWorld {
   geometry: WorldGeometry;
   spans: FaceSpan[];
+  /** MODELÉ DE FORME (#1300) : le facteur de famille d'orientation de CHAQUE SOMMET, cuit avec la
+   *  géométrie (il n'est fonction que d'elle). PAR SOMMET et non par `FaceSpan`, parce qu'un span est
+   *  une FACE et qu'une face de structure est une BOÎTE : mesuré sur l'arène, 1 598 spans sur 4 395
+   *  (71,1 % des triangles) portent au moins deux familles, jusqu'à 5 dans un seul span — un facteur
+   *  par span aurait donné aux deux joues d'un mur la même valeur. */
+  shades: Float32Array;
+}
+
+/** FAMILLES D'ORIENTATION du modelé de forme (#1300) : les deux horizontales (`haut` = sol, toit,
+ *  chant supérieur ; `bas` = soffite), et les quatre verticales NOMMÉES PAR LA DIRECTION QU'ELLES
+ *  REGARDENT, dans l'ordre CYCLIQUE de la grille. */
+export type ShadeFamily = 'haut' | 'bas' | '-z' | '+x' | '+z' | '-x';
+
+/** L'ordre CYCLIQUE de la grille — l'index d'une verticale ici EST l'index de son facteur dans la
+ *  donnée (`AMBIANCE.faceShade.verticales`), dont le schéma tient la décroissance stricte. Deux
+ *  familles voisines dans ce cycle forment un ANGLE de la scène : c'est la paire qui doit se séparer. */
+export const SHADE_CYCLE: readonly ShadeFamily[] = ['-z', '+x', '+z', '-x'];
+
+/** Famille d'une normale — l'axe DOMINANT décide, son signe nomme la famille. `null` pour une normale
+ *  indéterminée (triangle dégénéré). Une pente à 45° compte pour horizontale : elle se marche. */
+export function shadeFamily(n: { x: number; y: number; z: number } | null): ShadeFamily | null {
+  if (!n) return null;
+  if (Math.abs(n.y) >= Math.max(Math.abs(n.x), Math.abs(n.z))) return n.y > 0 ? 'haut' : 'bas';
+  return Math.abs(n.x) >= Math.abs(n.z) ? (n.x > 0 ? '+x' : '-x') : n.z > 0 ? '+z' : '-z';
+}
+
+/** Facteur d'irradiance ambiante de cette famille (donnée `AMBIANCE.faceShade`). Une famille
+ *  indéterminée ne modèle rien : facteur NEUTRE, jamais un assombrissement par défaut. */
+export function shadeFactorOf(f: ShadeFamily | null): number {
+  const d = AMBIANCE.faceShade;
+  if (f === null) return 1;
+  if (f === 'haut') return d.haut;
+  if (f === 'bas') return d.bas;
+  return d.verticales[SHADE_CYCLE.indexOf(f)];
+}
+
+/** PORTE du modelé : ce que le facteur de famille devient sous un soleil allumé à la part `fade`
+ *  (`sunFade`, `stage/stageLights.ts`). `fade = 0` — intérieur, nuit, soleil rasant — laisse le
+ *  facteur PLEIN ; `fade = 1` le ramène à 1, la directionnelle faisant seule le modelé. CONTINUE et
+ *  affine en `fade` : le lever ne peut pas y faire de marche. */
+export function shadeSousSoleil(shade: number, fade: number): number {
+  return 1 - (1 - shade) * (1 - fade);
 }
 
 /**
@@ -318,6 +365,7 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   const uvs: number[] = [];
   const uv1s: number[] = [];
   const spans: FaceSpan[] = [];
+  const shades: number[] = [];
   // ORIENTATION des triangles : le pivot n'a aucune convention de sens de parcours (une face peut être
   // authorée dans un sens ou dans l'autre). Un rendu en `DoubleSide` s'en moque, mais la CARTE D'OMBRE
   // non : le décalage de biais suit la normale, et une normale à l'envers pousse le receveur DANS son
@@ -337,6 +385,13 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
       const centre = { x: (tri[0].x + tri[1].x + tri[2].x) / 3, z: (tri[0].z + tri[1].z + tri[2].z) / 3 };
       const dehors = n ? n.x * (centre.x - cx) + n.z * (centre.z - cz) : 0;
       const versLExterieur = g.oriented || !n ? true : Math.abs(n.y) > 1e-6 ? n.y > 0 : dehors >= 0;
+      // MODELÉ DE FORME (#1300) : la famille se lit sur la normale TELLE QUE LA LOI CI-DESSUS LA
+      // PRÉSENTE — la normale géométrique d'origine ne porte de sens QUE si `g.oriented`. Mesuré sur
+      // trois cartes (arène, opéra, siège) : 100 % des triangles de sol sortent du pivot avec une
+      // normale géométrique vers le BAS (5 112 / 1 178 / 3 328), que cette loi retourne vers le haut ;
+      // les lire avant elle aurait peint tous les sols de toutes les scènes en famille de soffite.
+      const vue = n && !versLExterieur ? { x: -n.x, y: -n.y, z: -n.z } : n;
+      const s = shadeFactorOf(shadeFamily(vue));
       // Le retournement d'un triangle PERMUTE ses UV comme ses sommets (elles sont par SOMMET).
       const ordre = versLExterieur ? [0, 1, 2] : [0, 2, 1];
       for (const k of ordre) {
@@ -344,6 +399,7 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
         positions.push(p.x, p.y, p.z);
         uvs.push(g.uv[t][k].u, g.uv[t][k].v);
         uv1s.push(g.uv1[t][k].u, g.uv1[t][k].v);
+        shades.push(s);
       }
     });
     // La couleur de sommet porte l'albédo du matériau × la variance de teinte de la surface (un aplat
@@ -389,7 +445,7 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   const identité = new Uint32Array(nbSommets);
   for (let i = 0; i < nbSommets; i++) identité[i] = i;
   geometry.setIndex(new THREE.BufferAttribute(identité, 1));
-  return { geometry, spans };
+  return { geometry, spans, shades: new Float32Array(shades) };
 }
 
 /** Applique le DÉGAGEMENT d'architecture à un monde cuit : l'index de dessin est ré-écrit EN PLACE en
@@ -434,18 +490,26 @@ export function applyCutawayMask(baked: BakedWorld, keepEl: KeepEl): WorldGeomet
  *  pas), la géométrie n'est pas touchée. C'est la passe qui suit le PAS du groupe (mesuré #1176, arène :
  *  1,3 ms pour 19 734 triangles, contre 492 ms de re-bake). Rend la géométrie, pour l'appelant qui
  *  compose les deux — LA géométrie du bake, pas une copie : le dernier appel fait la couleur affichée.
- *  D'où le contrat de propriété de `BakedWorld` (un bake = un consommateur de teinte). */
-export function applyVisibilityTint(baked: BakedWorld, tintAt: TintAt): WorldGeometry {
+ *  D'où le contrat de propriété de `BakedWorld` (un bake = un consommateur de teinte).
+ *
+ *  C'est aussi la passe qui porte le MODELÉ DE FORME (#1300) : le facteur de famille d'orientation du
+ *  sommet (`baked.shades`), passé par la PORTE du soleil `fade` — la part de soleil réellement allumée
+ *  (`sunFade`, `stage/stageLights.ts`). `fade = 1` (plein soleil) est le NEUTRE de cette porte : le
+ *  modelé s'efface entièrement, la directionnelle le faisant seule. C'est pourquoi un appelant qui
+ *  n'a pas de soleil à déclarer (gardes de géométrie, cadrage) obtient exactement les couleurs
+ *  d'avant le lot. */
+export function applyVisibilityTint(baked: BakedWorld, tintAt: TintAt, fade = 1): WorldGeometry {
   const attr = baked.geometry.getAttribute('color') as THREE.BufferAttribute;
   const arr = attr.array as Float32Array;
   const c = new THREE.Color();
   for (const span of baked.spans) {
     c.set(span.color).multiplyScalar(tintAt(span.cellKey) * span.varFactor);
     const fin = (span.start + span.count) * 3;
-    for (let i = span.start * 3; i < fin; i += 3) {
-      arr[i] = c.r;
-      arr[i + 1] = c.g;
-      arr[i + 2] = c.b;
+    for (let i = span.start * 3, v = span.start; i < fin; i += 3, v++) {
+      const k = shadeSousSoleil(baked.shades[v], fade);
+      arr[i] = c.r * k;
+      arr[i + 1] = c.g * k;
+      arr[i + 2] = c.b * k;
     }
   }
   attr.needsUpdate = true;
@@ -454,8 +518,8 @@ export function applyVisibilityTint(baked: BakedWorld, tintAt: TintAt): WorldGeo
 
 /** Monde cuit ET teinté en un geste — pour un appelant qui n'a pas de teinte à faire varier (gardes,
  *  cadrage). Un écran qui suit la visibilité garde le bake et ne rejoue que `applyVisibilityTint`. */
-export function buildWorldGeometry(scene: Scene, mpt: number, tintAt: TintAt): WorldGeometry {
-  return applyVisibilityTint(bakeWorldGeometry(scene, mpt), tintAt);
+export function buildWorldGeometry(scene: Scene, mpt: number, tintAt: TintAt, fade = 1): WorldGeometry {
+  return applyVisibilityTint(bakeWorldGeometry(scene, mpt), tintAt, fade);
 }
 
 /** Un sujet de billboard prêt à texturer : où il se pose, à quelle échelle, et comment il se dessine. */

@@ -10,7 +10,7 @@ import { affineCamera, projectToScreen } from '../backends/webgl/cameras';
 import { BILLBOARD_BOX_ASPECT, anchorAndSize, billboardHeightM } from '../backends/webgl/billboardMath';
 import { actorBillboards, bakeWorldGeometry, billboardPose, type BillboardSubject } from '../backends/webgl/sceneMeshes';
 import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/spriteRaycast';
-import { actorCapsuleOf } from './CulledScene';
+import { actorCapsuleOf } from './actorCapsule';
 import { wallLayerObjs } from './layers';
 import { stage3dFraming } from './stage3dCamera';
 

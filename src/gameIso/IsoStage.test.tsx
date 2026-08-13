@@ -12,7 +12,7 @@ import * as wallsBuilder from './builders/walls';
 import { IsoStage } from './IsoStage';
 import { capsuleCenter, tileCenter, LEVEL_H, type Dims } from '../geometry/iso';
 import { metricToLift } from '../state/relief';
-import { actorCapsuleOf } from './stage/CulledScene';
+import { actorCapsuleOf } from './stage/actorCapsule';
 import { VW, VH } from './stage/useStageCamera';
 
 /**

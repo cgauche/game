@@ -9,8 +9,8 @@
 import { Scene, heightAt } from '../../state/scene';
 import { memoByRefDeps } from '../../state/sceneMemo';
 import type { BattleState } from '../../state/store';
-import { projectOccluder, type Dims, type OccluderPanel } from '../../geometry/iso';
-import { metricToLift } from '../../state/relief';
+import { projectOccluder, type Dims } from '../../geometry/iso';
+import { panelOf } from './occluders';
 import { floorSvg, floorAccentsSvg, floorDepth } from '../backends/affineFloors';
 import { wallSvg, wallAccentsSvg, wallDepth } from '../backends/affineWalls';
 import { roofSvg, roofDepth } from '../backends/affineRoofs';
@@ -26,22 +26,6 @@ export interface LayerCtx {
   mode: string;
   battle: BattleState | null;
   partyPos: { x: number; y: number; z?: number };
-}
-
-function panelOf(faces: readonly { poly: readonly { x: number; y: number; h: number }[] }[]): OccluderPanel {
-  return {
-    polygons: faces.map((face) => face.poly.map((point) => ({
-      x: point.x,
-      y: point.y,
-      lift: metricToLift(point.h),
-    }))),
-  };
-}
-
-/** Projection ÉCRAN des faces d'un élément de builder — emprise de culling, et géométrie d'occlusion
- *  quand il s'agit d'un couvercle (`lidCutaway`, architectureVisibility.ts). */
-export function elOccluder(el: { faces: readonly { poly: readonly { x: number; y: number; h: number }[] }[] }, d: Dims) {
-  return projectOccluder(panelOf(el.faces), d);
 }
 
 /**

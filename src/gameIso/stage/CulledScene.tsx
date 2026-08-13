@@ -14,8 +14,7 @@
  * RETIRÉ en amont, par masse entière, par la loi de dégagement (`stage/architectureVisibility.ts`).
  */
 import { cloneElement, useRef } from 'react';
-import { Dims, tileCenter, depth, TW, type ActorCapsule } from '../../geometry/iso';
-import { metricToLift } from '../../state/relief';
+import { Dims, tileCenter, depth } from '../../geometry/iso';
 import { AMBIANCE } from '../catalog/ambiance';
 import type { LightField } from '../../state/vision';
 import { fogFilterFor, type FogParams } from '../FogLayer';
@@ -25,13 +24,6 @@ import { VW, VH } from './useStageCamera';
 import type { RoomFocus } from './roomFocus';
 
 const LOWER_FLOOR_CSS = lowerFloorDimCss();
-/** Demi-largeur ÉCRAN du jeton — rayon de la capsule de l'acteur (`actorCapsuleOf`, visée caméra et
- *  géométrie d'occlusion). Calée sur le CORPS DESSINÉ : elle couvre la carrure la PLUS LARGE qu'un
- *  héros de Taille Moyenne ou moindre puisse présenter (gabarit `courtaud` du Nain, `build` au
- *  maximum), à l'échelle de token d'un combattant (`combatantObjs`). Sous-couvrir manquerait les
- *  occulteurs posés sur les épaules — le défaut d'origine. Le contrat (couvrir le corps MESURÉ sans
- *  le doubler) est tenu par `CulledScene.test.tsx`, qui remesure le rig au lieu de figer un nombre. */
-const TOKEN_HALF_WIDTH = TW * 0.37;
 /** Pas de QUANTIFICATION de la luminosité par tuile (≈15 paliers) : les tuiles voisines partagent la
  *  MÊME chaîne `brightness()` → coalescence sous un seul `<g filter>`, pas un filtre GPU par case. */
 const LIGHT_STEP = 0.06;
@@ -46,22 +38,6 @@ type CachedVeil = { filt: string; items: JSX.Element[]; el: JSX.Element };
 /** Deux listes d'éléments sont-elles la MÊME suite, référence à référence ? */
 function sameItems(a: readonly JSX.Element[], b: readonly JSX.Element[]): boolean {
   return a.length === b.length && a.every((item, i) => item === b[i]);
-}
-
-export function actorCapsuleOf(
-  actor: { x: number; y: number; h: number },
-  dims: Dims,
-): ActorCapsule {
-  const base = metricToLift(actor.h);
-  const top = base + 1;
-  const foot = tileCenter(actor.x, actor.y, dims, base);
-  const head = tileCenter(actor.x, actor.y, dims, top);
-  return {
-    segment: [{ x: foot.cx, y: foot.cy }, { x: head.cx, y: head.cy }],
-    radius: TOKEN_HALF_WIDTH,
-    depth: depth(actor.x, actor.y, dims, base),
-    vertical: [base, top],
-  };
 }
 
 /** Opacité d'un objet À L'ÉCRAN : celle que sa couche a bakée (`layers.tsx` — silhouette de surplomb,
