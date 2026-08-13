@@ -438,3 +438,58 @@ export async function realKey(session, key) {
   if (key.length === 1) await session.rpc('Input.dispatchKeyEvent', { type: 'char', text: key, ...common });
   await session.rpc('Input.dispatchKeyEvent', { type: 'keyUp', ...common });
 }
+
+/**
+ * SAISIE RÉELLE dans un champ (`session, selecteur, texte`) — le pendant clavier de
+ * `clickButtonByText`, pour les formulaires que la recette doit remplir AUX GESTES (nom de joueur et
+ * code de room du salon coop, `src/ui/CoopLobby.tsx`).
+ *
+ * Deux étages, tous deux CDP :
+ *  1. FOCUS par un VRAI clic (`Input.dispatchMouseEvent` au centre du champ, après `scrollIntoView`) —
+ *     la frappe va au champ FOCALISÉ, pas au sélecteur : sans ce clic, `Input.insertText` atterrit
+ *     dans l'élément actif du moment (souvent `<body>`), sans erreur ni effet.
+ *  2. `Input.insertText` — l'insertion passe par le pipeline d'ÉDITION du navigateur, donc l'`input`
+ *     event porte la valeur native et le `onChange` React s'exécute. C'est ce qui la sépare d'un
+ *     `evaluate()` + `.value = …`, qui écrit dans le DOM sans réveiller React (piège documenté dans
+ *     `docs/recette-navigateur.md`, « Champ CONTRÔLÉ React »).
+ *
+ * MESURÉ sur le salon coop (Chrome headless du kit, 2026-08-13) : `.coop-code-input` frappé
+ * `ab12cd` se lit `AB12CD` — la valeur est donc passée par le `onChange` React
+ * (`e.target.value.toUpperCase()`, `CoopLobby.tsx`), pas seulement par le DOM ; et le bouton
+ * « Héberger », `disabled` tant que le nom est vide, s'arme après la frappe du champ de nom.
+ *
+ * `clear` (défaut) sélectionne le contenu existant (`select()` — une SÉLECTION, pas une écriture
+ * d'état) pour que l'insertion le remplace ; un champ pré-rempli (code d'invitation `?join=`) se
+ * réécrit ainsi sans `Backspace` répétés. Rend la valeur LUE dans le champ après la frappe.
+ *
+ * AUTO-CONTRÔLE : la valeur relue est comparée au texte demandé. Un `onChange` a le DROIT de la
+ * transformer (le code de room passe en majuscules) — un écart n'est donc pas une erreur en soi, et
+ * la comparaison par défaut AVERTIT sur `stderr` au lieu de jeter (`console.warn`). Ce qu'elle
+ * attrape : la frappe ADDITIVE — un re-render entre `select()` et l'insertion perd la sélection, le
+ * texte s'ajoute au lieu de remplacer (`AB12CDab12cd`), et sans ce contrôle seul l'appelant qui relit
+ * s'en apercevrait. `attendu` (chaîne ou prédicat) durcit le contrôle en ERREUR quand le site connaît
+ * la valeur exacte à obtenir.
+ */
+export async function typeInField(session, selecteur, texte, { clear = true, attendu } = {}) {
+  const rect = await evaluate(session, `(() => {
+    const el = document.querySelector(${JSON.stringify(selecteur)});
+    if (!el) return null;
+    el.scrollIntoView({ block: 'center', inline: 'center' });
+    const r = el.getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  })()`);
+  if (!rect) throw new Error(`typeInField : aucun élément ne matche « ${selecteur} »`);
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseMoved', x: rect.x, y: rect.y });
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mousePressed', x: rect.x, y: rect.y, button: 'left', clickCount: 1 });
+  await session.rpc('Input.dispatchMouseEvent', { type: 'mouseReleased', x: rect.x, y: rect.y, button: 'left', clickCount: 1 });
+  if (clear) await evaluate(session, `(() => { const el = document.querySelector(${JSON.stringify(selecteur)}); el.select ? el.select() : el.setSelectionRange(0, el.value.length); return true; })()`);
+  await session.rpc('Input.insertText', { text: texte });
+  const lu = await evaluate(session, `document.querySelector(${JSON.stringify(selecteur)}).value`);
+  if (attendu !== undefined) {
+    const ok = typeof attendu === 'function' ? attendu(lu) : lu === attendu;
+    if (!ok) throw new Error(`typeInField « ${selecteur} » : champ à « ${lu} », attendu « ${attendu} » (frappé « ${texte} »)`);
+  } else if (lu !== texte) {
+    console.warn(`typeInField « ${selecteur} » : champ à « ${lu} » après avoir frappé « ${texte} » — transformation du onChange (casse, filtre) OU frappe additive : contrôler avant de continuer.`);
+  }
+  return lu;
+}

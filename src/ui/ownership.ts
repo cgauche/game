@@ -18,7 +18,7 @@
  */
 import { useGame } from '../state/store';
 import type { GameState } from '../state/store';
-import { ownsLocally } from '../state/netOwnership';
+import { ownsLocally, WORLD_STEP_OWNER } from '../state/netOwnership';
 
 /**
  * Le siège LOCAL possède-t-il ce combattant ? SOLO : toujours vrai (un seul siège tient tout).
@@ -38,6 +38,37 @@ export function ownsLocal(s: GameState, combatantId: string | undefined): boolea
 export function useOwns(): (combatantId: string | undefined) => boolean {
   useGame((s) => s.net);
   return (id) => ownsLocal(useGame.getState(), id);
+}
+
+/**
+ * DÉCISION DE GROUPE — le geste qui n'appartient à AUCUN combattant : le jeton unique d'exploration
+ * (dialogue, interaction d'entité). Son routage d'intent est `seat === (net.gmSeat ?? 0)`
+ * (`ROUTES`, `state/netOwnership` : `chooseDialogue`/`closeDialogue`/`interactEntity`) — c'est
+ * exactement ce que `seatOwns` rend sur le sentinel MONDE (`WORLD_STEP_OWNER` : le siège MJ quand il
+ * existe, l'hôte sinon). La porte DÉLÈGUE donc au même routage plutôt que de recopier la formule :
+ * afficher le choix et l'exécuter répondent par la même table de vérité. SOLO : toujours vrai.
+ *
+ * COUPLAGE ASSUMÉ : l'égalité route-du-dialogue ⇄ sentinel MONDE est une COÏNCIDENCE de formule, pas
+ * une dépendance déclarée — si la route du dialogue divergeait, l'affordance suivrait le sentinel, pas
+ * la route. `ownership.test.tsx` (« la porte rend le MÊME verdict qu'`intentAllowedFor` ») verrouille
+ * cette égalité sur les 3 intents du jeton, siège par siège.
+ */
+export function ownsGroupDecision(s: GameState): boolean {
+  return ownsLocal(s, WORLD_STEP_OWNER);
+}
+
+/** Vue LIVE de la décision de groupe pour une fenêtre (même abonnement que `useOwns`). */
+export function useOwnsGroupDecision(): boolean {
+  useGame((s) => s.net);
+  return ownsGroupDecision(useGame.getState());
+}
+
+/**
+ * Le siège qui tient la décision de groupe (0 = l'hôte) — pour NOMMER celui qu'on attend dans
+ * l'affordance de spectateur ; le verdict, lui, se demande à `ownsGroupDecision`.
+ */
+export function groupDecisionSeat(s: GameState): number {
+  return s.net.gmSeat ?? 0;
 }
 
 /** Vue RÉSEAU minimale : ce que le prédicat consulte quand aucun combat n'est ouvert. */

@@ -57,12 +57,9 @@ function hasTopLevelKey(lit: string, name: string): boolean {
 /** Étapes qui LANCENT (cible posée), sans `stake` — renvoie leurs numéros de ligne (1-based). */
 export function stepsWithoutStake(src: string): number[] {
   const s = stripLiterals(src);
-  // VOLET MORT, RETIRÉ (#1262 V2 L6b) : l'abandon de fichier sur POSE DIFFÉRÉE (`st.stake = …`).
-  // Il masquait les 8 étapes de la nuit de repos, dotées APRÈS construction par une fabrique — elles
-  // le sont désormais À LA DÉCLARATION (`monoStep({ …, stake })`, `restFlow`), et plus AUCUN site de
-  // `src/state`/`src/scenes` n'affecte `stake` après coup (mesuré : 0 occurrence). Un volet qui ne
-  // peut plus rien abandonner rendait le scan aveugle sur un fichier entier au premier `.stake =`
-  // réintroduit — c'est ce trou-là qui meurt avec lui.
+  // Le scan lit des DÉCLARATIONS : un enjeu se pose au montage (`monoStep({ …, stake })`), jamais
+  // après coup — aucun site de `src/state`/`src/scenes` n'affecte `stake` sur une étape construite
+  // (mesuré : 0 occurrence de `.stake =`). La pose différée n'est donc pas un angle mort du scan.
   const lines: number[] = [];
   const seen = new Set<number>();
   // Les formes qui LANCENT, telles que `stepInteraction` les reconnaît (`state/cascade.ts`) :
@@ -72,22 +69,18 @@ export function stepsWithoutStake(src: string): number[] {
   //  - `...rollStep({…})` = la MÊME cible, posée par le MONTEUR CANONIQUE (#1153) : depuis que les
   //    flux DÉCLARENT leur ligne au lieu de la calculer, la cible n'est plus un littéral de l'étape.
   //    Sans cette forme, le cliquet devient AVEUGLE sur tout site migré (couverture, pas exemption) ;
-  // VOLET MORT, RETIRÉ (#1262 V2 L6d) : la DÉCLARATION d'un mint MONO (`actor:` + `kind`). Elle est
-  // désormais tenue par le COMPILATEUR — `MonoSpec.stake` est REQUIS (`rollSeam.ts`) : une étape mono
-  // déclarée sans parler de son enjeu ne compile plus, et une valeur muette est refusée bruyamment par
-  // `monoStep` (`refusePorte`). Ce que ce volet attrapait est exactement ce que le type interdit ; un
-  // scan qui double le compilateur n'ajoute que du bruit et une fausse baseline à entretenir. La preuve
-  // du murage est la sonde TUEUSE `built-brand-lint.test.ts` (« l'ENJEU des étapes MONO »), qui rejoue
-  // les deux signatures sur un programme TypeScript réel.
-  // VOLET MORT, RETIRÉ (#1262 V2 L6) : le TIRAGE SUR TABLEAU (`table:`). DEUX fabriques seulement
-  // peuvent produire une étape à table qui LANCE (marque `BuiltCascadeStep`, lint de forge mesuré par
-  // `built-brand-lint`) — `tableStep`/`tableStepDone`, dont `TableSpec.stake` est REQUIS
-  // (`rollSeam.ts`) : un tirage muet ne compile plus. La 3ᵉ fabrique exemptée du lint, `revealToStep`,
-  // ne peut plus en produire du tout : son `opts.table` est une déclaration RÉSOLUE au type
-  // (`CascadeTableDone`, `revealStep.ts`) — c'était le trou que ce volet masquait en le comptant en
-  // baseline. Un scan qui ne peut plus rien attraper double le compilateur ; la preuve du murage est
-  // la paire de sondes TUEUSES : `built-brand-lint.test.ts` (enjeu requis) et `reveal.test.ts`
-  // (« `revealToStep` ne produit jamais un tirage À FAIRE »).
+  // HORS SCAN, parce que le TYPE tient déjà l'invariant (un scan qui double le compilateur n'ajoute
+  // que du bruit et une baseline à entretenir) :
+  //  - la DÉCLARATION d'un mint MONO (`actor:` + `kind`) : `MonoSpec.stake` est REQUIS
+  //    (`rollSeam.ts`) — une étape mono qui ne parle pas de son enjeu ne compile pas, et une valeur
+  //    muette est refusée bruyamment par `monoStep` (`refusePorte`). Sonde TUEUSE :
+  //    `built-brand-lint.test.ts` (« l'ENJEU des étapes MONO »), sur un programme TypeScript réel ;
+  //  - le TIRAGE SUR TABLEAU (`table:`) : DEUX fabriques seulement produisent une étape à table qui
+  //    LANCE (marque `BuiltCascadeStep`, lint de forge mesuré par `built-brand-lint`) —
+  //    `tableStep`/`tableStepDone`, dont `TableSpec.stake` est REQUIS (`rollSeam.ts`). La 3ᵉ fabrique
+  //    exemptée du lint, `revealToStep`, n'en produit aucune : son `opts.table` est une déclaration
+  //    RÉSOLUE au type (`CascadeTableDone`, `revealStep.ts`), mesuré par `reveal.test.ts`
+  //    (« `revealToStep` ne produit jamais un tirage À FAIRE »).
   for (const m of s.matchAll(/(?<=[{,]\s*)target\s*(?::\s*[^\s,}]|[,}])|\.\.\.rollStep\(/g)) {
     const i = m.index!;
     let depth = 0;

@@ -32,6 +32,15 @@
   z-index: 40;
   pointer-events: none;
 }
+/* Puce posée DANS un panneau (zone de choix d'un dialogue) : elle suit le flux, sans surimpression.
+   Pose déclarée en ATTRIBUT (convention de ce module : `data-hud`, `data-tone`) — aucune classe de
+   variante n'entre au stock. */
+.spectator-chip[data-pose='inline'] {
+  position: static;
+  transform: none;
+  align-self: center;
+  margin-top: 4px;
+}
 .coop-ready {
   flex-direction: column;
   gap: 8px;

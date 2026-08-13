@@ -3,7 +3,7 @@ import { ownsLocal } from './ownership';
 import { modalOwnerOf } from '../state/modalArbiter';
 import { willAutoResolve } from '../state/combatAuto';
 import type { JSX } from 'react';
-import { Icon } from './Icon';
+import { SpectatorChip } from './SpectatorChip';
 import { ReloadModal } from './ReloadModal';
 import { HandGateModal } from './HandGateModal';
 import { StateRecoveryModal } from './StateRecoveryModal';
@@ -49,11 +49,6 @@ const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
   medic: MedicModal, rest: RestModal, council: CouncilModal, heal: HealModal, cascade: CascadeModal, reload: ReloadModal, handGate: HandGateModal, stateRecovery: StateRecoveryModal, steamSave: SteamSaveModal,
   corruption: CorruptionModal, activity: ActivityModal,
 };
-
-/** Indicateur discret pour les NON-concernés : qui joue la modale en cours. */
-function SpectatorChip({ label }: { label: string }) {
-  return <div className="spectator-chip"><Icon id="ui/wait" size="sm" /> {label} joue…</div>;
-}
 
 /**
  * Arbitre de modales (R2) : ne monte QUE la modale de combat la plus prioritaire active — au lieu de ~20

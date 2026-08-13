@@ -366,6 +366,23 @@ export function buildApi() {
       };
     },
 
+    /** RECETTE COOP : la vue RÉSEAU du siège local — `state()` n'expose RIEN de `net`, alors qu'une
+     *  recette à deux navigateurs se juge siège par siège (qui est qui, qui possède quoi). Copie en
+     *  LECTURE : muter le retour ne touche pas le store. `gmSeat` absent = camp ennemi conduit par
+     *  l'IA ; `presence` est la vue HÔTE des sièges en reconnexion (`netFlow.NetState`). */
+    net: () => {
+      const n = g().net;
+      return {
+        mode: n.mode,
+        mySeat: n.mySeat,
+        roomCode: n.roomCode,
+        gmSeat: n.gmSeat,
+        ownership: { ...n.ownership },
+        seatNames: { ...n.seatNames },
+        presence: { ...n.presence },
+      };
+    },
+
     /** CARTOGRAPHIE : toutes les entités de la scène + comment y accéder. */
     entities: () =>
       (g().scene?.entities ?? []).filter((e) => !e.combat?.hiddenUntilCombat).map((e) => ({

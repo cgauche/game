@@ -88,6 +88,7 @@ CSS (`src/ui/ui-ratchets.test.ts`) lisent des déclarations ; ce script mesure l
 | `setViewport` / `setMobileViewport` | viewport explicite / mobile canon 360×740 (charte-ui.md — testable dès 360px) |
 | `clickButtonByText` | trouve un `<button>`/`[role="button"]` par son TEXTE (`session, texte, {exact?}`), `scrollIntoView`, PUIS lit son rect et clique via un VRAI clic CDP (`Input.dispatchMouseEvent` pressed+released) — SCROLL-AWARE : lire le rect AVANT le scroll fait rater le clic SILENCIEUSEMENT (aucune erreur, aucun effet) |
 | `realKey` | frappe RÉELLE (`session, key`, `Input.dispatchKeyEvent` : `rawKeyDown`/`char`/`keyUp`) — traverse les MÊMES handlers que le clavier physique (`keybindings.ts`), contrairement à un `KeyboardEvent` JS synthétique souvent ignoré |
+| `typeInField` | SAISIE réelle dans un champ (`session, selecteur, texte, {clear?}`) : focus par VRAI clic CDP, puis `Input.insertText` — l'insertion passe par le pipeline d'édition, donc le `onChange` React s'exécute (mesuré : `ab12cd` frappé dans `.coop-code-input` se lit `AB12CD`, la casse venant du handler React). Rend la valeur relue APRÈS la frappe. C'est la sortie du piège « Champ CONTRÔLÉ React » ci-dessous |
 | `evaluate` / `waitFor` | eval JS dans la page (attend les promesses) / poll jusqu'à condition vraie |
 | `checkServer` / `launchSession` | briques bas niveau d'`openApp` (séparément utilisables) — `launchSession` porte le défaut **1600×900** (§ « L'étalon se juge à 1600 » ci-dessus) |
 
@@ -168,6 +169,7 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 | Helper | Usage | Limites connues |
 |---|---|---|
 | `state()` | instantané `{screen, sceneId, partyPos, inDialogue, inCombat, party, money…}` | lecture seule ; `party` est une PROJECTION allégée (`{id, name}` seulement, `devtools.ts`) — ni `.skills` ni `.activeEffects` ; pour inspecter le détail d'un héros, lire `store.getState().party` |
+| `net()` | vue RÉSEAU du siège local `{mode, mySeat, roomCode, gmSeat, ownership, seatNames, presence}` (`state()` n'expose rien de `net`) | lecture seule (copies) ; `gmSeat` `undefined` = camp ennemi à l'IA ; `presence` n'est peuplée QUE côté hôte. Pour AGIR sur le réseau (héberger, rejoindre, attribuer), passer par `store.getState()` — `net()` n'a aucun effet de bord |
 | `entities()` | cartographie des entités de la scène `{id,label,kind,pos,access}` | exclut les entités `hiddenUntilCombat` |
 | `screenPos('id')` | bounding box ÉCRAN (`{x,y,width,height}`) du token `[data-cid="id"]` — COMBAT ET EXPLORATION (même canal `data-cid`, #226) | lecture seule ; `null` si le token n'est pas dans le DOM (hors vue) ; pour un clic, **viser `{x: x+width/2, y: y+height}` (le BAS de la bbox, pied du token) plutôt que le centre géométrique** — un token de grande taille (créature haute) a sa bbox étirée vers le haut, et le centre géométrique tombe hors silhouette (retour vécu en recette, résidu #199) |
 | `tileScreenPos({x,y,z?})` | même bounding box ÉCRAN pour une CASE, vide comprise — projetée par `diamondCorners` (`src/geometry/iso.ts`, la géométrie du rendu) puis passée par la CTM du groupe caméra, donc zoom/panoramique/rotation viennent du DOM | lecture seule ; `null` hors scène ou tant que le stage n'est pas monté. Pour un clic, viser le CENTRE (`{x: x+width/2, y: y+height/2}`) : contrairement à un token, une case n'a pas de pied. Vérifié aux 8 crans de caméra contre `screenPos` du jeton du groupe (écart ≤ 6px sur une tuile de 93px = l'ancrage propre du sprite) |
@@ -500,9 +502,10 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
   perdus) : poser la valeur d'un `<input>` contrôlé depuis `browser_evaluate` écrit dans le DOM sans
   déclencher le handler React — l'état ne bouge pas, le champ se ré-affiche à sa valeur d'avant, et
   le jet part avec un VRAI d100 alors qu'on croyait l'avoir fixé (« Fixer le dé » `ForcedRollPicker`,
-  et tout formulaire de l'éditeur/du créateur). Utiliser la SAISIE RÉELLE (`browser_type` / `.fill()`
-  Playwright), qui émet les événements que React écoute. Contrôle : relire le champ APRÈS la frappe
-  (re-snapshot) — s'il est revenu à l'ancienne valeur, rien n'a été posé.
+  et tout formulaire de l'éditeur/du créateur). Utiliser la SAISIE RÉELLE : `typeInField` du socle
+  (`scripts/recette/lib.mjs`), `browser_type` / `.fill()` Playwright — toutes émettent les événements
+  que React écoute. Contrôle : relire le champ APRÈS la frappe (`typeInField` rend cette valeur) —
+  s'il est revenu à l'ancienne valeur, rien n'a été posé.
 - **Calibrer une issue déterministe d'opposition (« Dissipé ! », « Résiste ! »)** : fixer le dé du
   RÉPONDANT ne suffit pas — une opposition compare deux DR, donc il faut AUSSI fixer le jet du
   LANCEUR à un DR faible (dé haut, sous sa cible). Sinon l'incantation peut être hors de portée du
@@ -753,10 +756,10 @@ try {
 
 | Étape | Où | Geste RÉEL (joueur) | Raccourci de SETUP mesuré |
 |---|---|---|---|
-| Héberger | hôte | menu principal → **« Jouer en ligne »** (`MainMenu`, écran `coop`) → champ « Votre nom » → bouton **« Héberger »** (`src/ui/CoopLobby.tsx`) | `__wfrp.store.getState().netHostStart('Hôte')` — le champ de nom est un input React CONTRÔLÉ (le remplir par `evaluate` est sans effet, cf. « Pièges vécus ») |
-| Lire le code | hôte | code à 6 caractères + « Lien d'invitation » (`CoopRoomPanel`, `src/ui/CoopPanels.tsx`) | `__wfrp.store.getState().net.roomCode` — `__wfrp.state()` n'expose PAS `net` |
-| Rejoindre | invité | même écran → code + nom → **« Rejoindre »** | ouvrir l'app sur `?join=<CODE>` (bascule sur l'écran `coop`, code pré-rempli, `src/ui/App.tsx`) puis `netJoin` |
-| Contrôler la liaison | les deux | liste « Joueurs connectés » (`CoopSeatList`) | `net.mode` = `host`/`guest`, `net.mySeat` = 0/1, `net.seatNames` = les deux noms des DEUX côtés |
+| Héberger | hôte | menu principal → **« Jouer en ligne »** (`MainMenu`, écran `coop`) → champ « Votre nom » → bouton **« Héberger »** (`src/ui/CoopLobby.tsx`) | AUX CLICS : `typeInField` sur `.coop-name input`, puis `clickButtonByText` sur « Héberger » (le champ est un input React CONTRÔLÉ : `evaluate` + `.value` reste sans effet). Raccourci d'état : `__wfrp.store.getState().netHostStart('Hôte')` |
+| Lire le code | hôte | code à 6 caractères + « Lien d'invitation » (`CoopRoomPanel`, `src/ui/CoopPanels.tsx`) | `__wfrp.net().roomCode` (`state()` n'expose pas `net`) |
+| Rejoindre | invité | même écran → code + nom → **« Rejoindre »** | AUX CLICS : `typeInField` sur `.coop-name input` puis `.coop-code-input`, et `clickButtonByText` sur « Rejoindre ». Raccourci : ouvrir l'app sur `?join=<CODE>` (bascule sur l'écran `coop`, code pré-rempli, `src/ui/App.tsx`) puis `netJoin` |
+| Contrôler la liaison | les deux | liste « Joueurs connectés » (`CoopSeatList`) | `__wfrp.net()` des deux côtés : `mode` = `host`/`guest`, `mySeat` = 0/1, `seatNames` = les deux noms |
 | Composer le groupe | hôte | **« Composer le groupe → »** → écran d'équipe : l'hôte attribue les EMPLACEMENTS (`netAssignSlot`), chaque joueur remplit les siens | poser le groupe d'un coup par un scénario (ci-dessous) |
 | Attribuer les héros | hôte | rubrique « Attribution des héros » (`CoopAssignList`, un `<select>` par héros ; `GmSeatSelect` y pose le rôle MJ) — lobby ET menu ☰ en partie (`CoopMenuSection`) | `__wfrp.store.getState().netAssign(heroId, 1)` (hôte-autoritaire : refusé en mode invité) |
 | Jouer | hôte | tout le pilotage de MISE EN PLACE | `scenario`, `goto`, `fight`, `turn`, `combatEnd`… **depuis l'HÔTE uniquement** |
@@ -772,7 +775,7 @@ suivant. Ce qui ressemble à « ça a marché puis c'est revenu en arrière » n
 |---|---|---|---|
 | 1 | **Un jet possédé par l'invité surface CHEZ LUI** | `ActiveModal` (`src/ui/ActiveModal.tsx`) ne monte la modale que si le siège local possède le concerné (`modalOwnerOf` + `ownsLocal`) ; `'*'` = tous | **invité** : la modale est rendue (`.modal-overlay`) — **hôte** : rien. Pendant le TOUR du héros distant l'hôte n'a MÊME PAS de puce (anti-doublon) : c'est la barre d'action qui porte « <siège> joue <héros>… » (`.establishing-bar` > `.ready-chip`, `src/ui/ActionBar.tsx`). Hors tour du concerné (défense réactive), l'hôte a la puce `.spectator-chip` |
 | 2 | **Le `pending*` NE prouve rien** | l'état voyage entier (`netSnapshot`) | `__wfrp.modal()` répond PAREIL des deux côtés — la possession se lit au DOM, jamais au pending. C'est le piège n°1 d'une recette coop |
-| 3 | **Le choix de GROUPE va au meneur** | dialogue = décision de groupe : `chooseDialogue`/`closeDialogue`/`interactEntity` sont routés `seat === (net.gmSeat ?? 0)` (`ROUTES`, `src/state/netOwnership.ts`) ET absents de `GUEST_INTENTS` | l'invité VOIT le dialogue (miroir) ; seul le choix de l'HÔTE fait avancer le nœud/le flag/le combat des deux côtés. Chez l'invité, `state().inDialogue` et le nœud affiché suivent l'hôte |
+| 3 | **Le choix de GROUPE va au meneur** | dialogue = décision de groupe : `chooseDialogue`/`closeDialogue`/`interactEntity` sont routés `seat === (net.gmSeat ?? 0)` (`ROUTES`, `src/state/netOwnership.ts`) ET absents de `GUEST_INTENTS` ; `DialogueBox` lit le MÊME routage par `ownsGroupDecision` (`src/ui/ownership.ts`) | l'invité VOIT le dialogue (miroir) mais ses réponses sont **désactivées**, avec une puce `.spectator-chip` qui NOMME le meneur ; seul le choix du meneur fait avancer le nœud/le flag/le combat des deux côtés. Chez l'invité, `state().inDialogue` et le nœud affiché suivent l'hôte |
 | 4 | **Une bande partagée : chaque siège ses rangées** | `bandStep` (`src/state/rollSeam.ts`) pose `groupOwner` dès >1 porteur → `modalOwnerOf` rend `'*'` → fenêtre chez TOUS ; chaque rangée n'est actionnable que par le siège qui possède son acteur (`useOwns`, `src/ui/ownership.ts` — `rollAllUnrolledRows` filtré par `owns`) | la MÊME fenêtre est ouverte des deux côtés ; le bouton de jet d'une rangée n'est servi qu'au siège propriétaire ; « Tout lancer » ne roule QUE les rangées du siège qui clique |
 | 5 | **La Résilience de l'invité sur SA rangée** | `seatInfluences` : un héros non piloté par l'IA n'est influençable que par SON siège (`src/state/netOwnership.ts`) ; `canFixDie` (option « Dés fixés ») en dérive | chez l'invité, Chance/Résilience/Pacte ne sont offerts QUE sur sa rangée ; la rangée d'un héros de l'hôte les porte chez l'hôte et pas chez lui |
 | 6 | **Console 0 des DEUX côtés** | — | `guard.errors()` vide pour chacune des deux sessions (un `consoleGuard` par page) |
@@ -813,9 +816,10 @@ exploration → dialogue (choix de GROUPE) → combat (jet d'invité). Tout depu
    `net.ownership['<id>'] === 1`.
 5. HÔTE : `__wfrp.goto({ x: 9, y: 6 })` — la zone `approche` déclenche le dialogue `dlg-ambush`.
    **Choix de GROUPE** : `state().inDialogue` doit passer à `true` des DEUX côtés (invariant 3).
-6. Cliquer chez l'INVITÉ la réponse « Fondre sur les charognards… » : rien ne doit avancer
-   durablement (le nœud/le combat ne bougent pas). Puis cliquer la MÊME réponse chez l'HÔTE : le
-   combat `enc-mutants` s'ouvre des deux côtés.
+6. Chez l'INVITÉ : les réponses du dialogue sont **désactivées** (`button.dlg-choice[disabled]`) et
+   la puce `.spectator-chip` nomme le meneur — rien à cliquer, l'affordance dit qui décide. Cliquer
+   la réponse « Fondre sur les charognards… » chez l'HÔTE : le combat `enc-mutants` s'ouvre des deux
+   côtés.
 7. HÔTE : `__wfrp.turn('<id du héros de l'invité>')` (rend le tour ET le Mouvement plein).
    INVITÉ : `__wfrp.store.getState().battleRun()` — action de l'allowlist, donc VRAI trajet
    intent → hôte → snapshot. **Jet d'invité** : la modale de Course est rendue chez l'invité,

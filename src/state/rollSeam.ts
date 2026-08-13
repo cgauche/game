@@ -413,8 +413,12 @@ export function bandStep(spec: BandSpec, rows: readonly BatchParticipant[]): Bui
  *
  * PORTÉE : la clé de REGROUPEMENT, pas l'`id` de l'étape produite. Ce qu'une fabrique fait du rang de
  * dédoublement lui appartient — et si elle le remplace par un autre discriminant (`nightBands` pose le
- * JOUR quand il existe), deux bandes distinctes peuvent ressortir sous le MÊME id. La garantie d'ids
- * uniques dans une séquence n'est PAS ici ; elle attend le murage.
+ * JOUR quand il existe), deux bandes distinctes peuvent ressortir sous le MÊME id.
+ *
+ * DETTE OUVERTE, mesurable : l'unicité des ids dans une séquence n'est tenue par AUCUN type ni aucune
+ * garde générale — la classe #1277 n'est fermée que pour la clé de regroupement des bandes de NUIT
+ * (`nightBands.ts`, deux espaces de noms séparés, mesuré par `night-bands.test.ts`). Toute autre
+ * fabrique qui dérive un id de cette clé reste libre de produire une collision.
  */
 export function bandStepId<T extends { readonly rows: readonly BatchParticipant[] }>(
   bandes: ReadonlyMap<string, T>,
