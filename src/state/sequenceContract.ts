@@ -67,6 +67,8 @@ export interface SequenceParams {
   rounds?: SequenceRoundOps;
   /** (6) Phases (mi-temps). */
   phases?: SequencePhases;
+  /** Seuil de score d'un ACQUIS de manche (Middenball NADAJ 16 l.121 : but à 25 DR d'équipe). */
+  scoreThreshold?: number;
 }
 
 /** ÉTAT d'une séquence EN COURS — GÉNÉRIQUE sur sa charge utile : l'orchestrateur ne lit JAMAIS

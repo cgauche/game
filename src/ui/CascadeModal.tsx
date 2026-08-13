@@ -560,6 +560,9 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         subtitle={stepSubtitle({ cursor: p.cursor, total: p.participants.length })}
         rolled
         rows={[]}
+        // Un CHOIX d'une séquence se prend DEVANT le score (Middenball : l'option de Test se choisit en
+        // sachant où en est la partie) — même tableau de marque que les fenêtres de jet.
+        extra={<SequencePanel />}
         postRollExtra={
           <>
             {rev?.kind === 'critical' && <CriticalBody entry={rev} actor={revActor} subject={revSubject} />}

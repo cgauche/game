@@ -11,7 +11,7 @@
 import { RNG, defaultRNG } from './dice';
 import { rollTest, resolveOpposed, TestResult } from './tests';
 import { Difficulty, CharKey } from './types';
-import type { SequenceRoundOps } from './sequenceVocab';
+import type { SequencePhases, SequenceRoundOps } from './sequenceVocab';
 import tavernGamesJson from '../data/tavernGames.json';
 
 export interface TavernGame {
@@ -45,6 +45,30 @@ export interface TavernGame {
   /** EFFETS PAR MANCHE en donnée (`GameOp[]`) — Bras de fer l.34-35 : +1 Avantage au vainqueur de
    *  chaque tour, +1 État Exténué tous les (Bonus d'Endurance) tours sans vainqueur. */
   roundOps?: SequenceRoundOps;
+  /** JEU D'ÉQUIPE (Middenball l.119-121) : « Deux équipes de 11 joueurs s'affrontent », « tous les
+   *  joueurs effectuent un Test », « On additionne le nombre de DR obtenus pour chaque équipe ».
+   *  `size` = l'effectif RAW d'un camp ; le groupe le complète de FIGURANTS (arbitrage utilisateur
+   *  2026-08-13 : « chaque camp complète à 11 avec des figurants PNJ (patrons de taverne, valeur
+   *  simple éditable) — les héros portent leurs jets, les figurants roulent en témoins auto »). */
+  team?: { size: number };
+  /** OPTIONS de Test d'une manche quand la règle en offre plusieurs (Middenball l.121 : « un Test de
+   *  Corps à corps (Bagarre) Accessible (+20) **ou** d'Athlétisme Intermédiaire (+0) »). Le RAW ne dit
+   *  pas QUI choisit : le choix va au JOUEUR (credo « pas de MJ », jamais un défaut silencieux). La
+   *  PREMIÈRE option est celle que jouent les porteurs qu'aucun siège ne tient, et les figurants. */
+  options?: {
+    skill?: string; spec?: string; char?: CharKey; difficulty: Difficulty;
+    /** Ce Test est-il un Test de COMBAT ? — c'est lui qui décide si l'Avantage s'y applique : « +10 à
+     *  un Test de Combat ou de Psychologie approprié » (`LDB 14 l.30`). Middenball l.121 renvoie aux
+     *  « règles habituelles relatives à l'Avantage » : Corps à corps (Bagarre) en est un, Athlétisme
+     *  non. DÉCLARÉ par l'entrée (jamais déduit d'un id de Compétence au code). */
+    combatTest?: boolean;
+  }[];
+  /** Formule de score d'un CAMP (id de `registerSequenceScore` : `sum` pour une équipe, l.121). */
+  campScore?: string;
+  /** Seuil d'un ACQUIS de manche (Middenball l.121 : « marquera un but si son total est de +25 ou plus »). */
+  scoreThreshold?: number;
+  /** PHASES de la partie (Middenball l.121 : « deux mi-temps de trois tours chacune »). */
+  phases?: SequencePhases;
   /** Variante de lecture du score (Fléchettes = unités/dizaines/×10) — documentaire ; le moteur rapide lit
    *  le DR (l.11). */
   read?: 'sl' | 'units-tens';

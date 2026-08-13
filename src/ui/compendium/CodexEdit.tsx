@@ -329,6 +329,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   // Rubrique de VENT (`windModifiers`, #729) : tableau top-level d'objets → éditeur GÉNÉRIQUE commun.
   if (categoryKey === 'domains') add('windModifiers');
   if (categoryKey === 'characteristics') add('options'); // dépenses d'une ressource → éditeur GÉNÉRIQUE commun
+  if (categoryKey === 'tavernGames') add('options'); // options de Test d'une manche (NADAJ 16 l.121) → MÊME éditeur générique
   if (categoryKey === 'creatures') add('traits', 'optionals', 'harvest');
   if (categoryKey === 'details') add('texts');
   if (SHIP_CRIT_CATEGORIES.includes(categoryKey)) add('crewTest'); // {skillId?,difficulty?,crewTarget?,onFail}
@@ -677,6 +678,9 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {/* DÉPENSES d'une ressource (`characteristics.options` — Résilience, #1117 geste 5) : tableau
             top-level d'objets homogènes → MÊME éditeur générique que la rubrique de Vent. */}
         {categoryKey === 'characteristics' && <GenericArrayField label="options (dépenses de la ressource — verbatim du Source)" value={entry.options as Record<string, unknown>[] | undefined} onChange={(v) => edit('options', v)} />}
+        {/* OPTIONS de Test d'un jeu de taverne (`tavernGames.options` — Middenball NADAJ 16 l.121 :
+            Bagarre (+20) OU Athlétisme (+0)) : même forme, même éditeur générique. */}
+        {categoryKey === 'tavernGames' && <GenericArrayField label="options de Test (la règle en offre plusieurs — le joueur choisit)" value={entry.options as Record<string, unknown>[] | undefined} onChange={(v) => edit('options', v)} />}
         {isCreature && (
           <>
             <TraitListField label="Traits" hint="(LDB 85 — armement « Arme (Épée) +7 », Psychologie « Peur 3 »…)" value={entry.traits as TraitInstance[] | undefined} onChange={(v) => edit('traits', v)} />

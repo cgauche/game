@@ -859,11 +859,21 @@ function defenseTestChar(mode: DefenseMode): CharKey | null {
  *  (Empoignade, Au Contact, Désengagement) affiche ainsi ses modificateurs au lieu d'un +N anonyme.
  *  `ck` = la Caractéristique RÉELLE du Test brut (Empoignade → Force, Désengagement/coup dans le dos →
  *  CC) : la météo n'arrive que si elle est physique (LISTE maison `physicalTestChars`). */
+/** LA ligne d'AVANTAGE d'un porteur (`LDB 14 l.30` : +10 par point à un Test approprié), ou `null`
+ *  sans Avantage — SOURCE UNIQUE de sa mise en ligne, partagée par les Tests de combat « bruts »
+ *  (`baseTestModLines`, ci-dessous) et par tout Test HORS arène que la règle dit « approprié »
+ *  (Middenball NADAJ 16 l.121 : « en utilisant les règles habituelles relatives à l'Avantage »).
+ *  Réutiliser ; ne jamais réécrire `c.advantage * 10`. */
+export function advantageModLine(c: Combatant): ModLine | null {
+  const adv = (c.advantage ?? 0) * 10;
+  // Avantage HORS table de Difficulté (comme `attackModifiers`/`defenseModifiers`) → `famille: 'jet'`.
+  return adv ? { label: 'Avantage', value: adv, famille: 'jet', ref: RULE_REF.avantage } : null;
+}
+
 export function baseTestModLines(c: Combatant, ck?: CharKey): ModLine[] {
   const out: ModLine[] = [];
-  const adv = c.advantage * 10;
-  // Avantage HORS table de Difficulté (comme `attackModifiers`/`defenseModifiers`) → `famille: 'jet'`.
-  if (adv) out.push({ label: 'Avantage', value: adv, famille: 'jet', ref: RULE_REF.avantage });
+  const adv = advantageModLine(c);
+  if (adv) out.push(adv);
   out.push(...conditionModLines(c));
   out.push(...weatherTestMods(c.envWeather, ck ?? null));
   return out;

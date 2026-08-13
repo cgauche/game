@@ -8,7 +8,7 @@
  * (`TavernGame.read`, `src/engine/tavernGame.ts:38`).
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema } from '../common';
+import { difficultySchema, gameOpSchema, sourceRefSchema } from '../common';
 
 export const file = 'tavernGames.json';
 
@@ -41,6 +41,26 @@ export const schema = z.array(
       attrition: z.array(gameOpSchema).optional(),
       attritionEvery: z.union([z.number(), z.strictObject({ charBonus: charKeySchema })]).optional(),
     }).optional(),
+    /** Effectif RAW d'un camp d'un jeu d'ÉQUIPE (Middenball l.119 : 11 par équipe) — le groupe le
+     *  complète de figurants (`src/state/tavernFlow.ts`). */
+    team: z.strictObject({ size: z.number() }).optional(),
+    /** Options de Test d'une manche (Middenball l.121 : Bagarre (+20) OU Athlétisme (+0)) — le choix
+     *  va au joueur ; la 1ʳᵉ option est celle que suivent les porteurs sans siège et les figurants. */
+    options: z.array(z.strictObject({
+      skill: z.string().optional(),
+      spec: z.string().optional(),
+      char: charKeySchema.optional(),
+      difficulty: difficultySchema,
+      /** Test de COMBAT : l'Avantage s'y applique (« +10 à un Test de Combat ou de Psychologie
+       *  approprié », LDB 14 l.30) — consommé par `src/state/tavernFlow.ts`. */
+      combatTest: z.boolean().optional(),
+    })).optional(),
+    /** Formule de score d'un CAMP (`registerSequenceScore` : `sum` pour une équipe, l.121). */
+    campScore: z.enum(['min', 'max', 'sum', 'first']).optional(),
+    /** Seuil d'un acquis de manche (Middenball l.121 : but à 25 DR d'équipe). */
+    scoreThreshold: z.number().optional(),
+    /** Mi-temps (Middenball l.121 : deux mi-temps de trois tours). */
+    phases: z.strictObject({ count: z.number(), rounds: z.number() }).optional(),
     read: z.enum(['sl', 'units-tens']).optional(),
     stake: z.string().optional(),
     source: sourceRefSchema,

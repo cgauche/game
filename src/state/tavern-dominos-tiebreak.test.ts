@@ -69,6 +69,11 @@ describe('Les dominos — départage d’égalité au dé d’unités (NADAJ 16 
    * déclaration est son entrée de `tavernGames.json`. Ce test le mesure sur TOUTES les entrées
    * `opposed` du catalogue : chacune ouvre la MÊME séquence, avec pour seuls paramètres ceux que sa
    * donnée porte. Un jeu N+1 à mécanismes connus n'ajoute donc pas une ligne de TypeScript.
+   *
+   * Les FAMILLES s'ajoutent ici à mesure qu'un jeu les exerce. Le jeu d'ÉQUIPE (Middenball, l.121)
+   * déclare quatre paramètres de plus (formule de camp, seuil d'acquis, mi-temps, effets de manche) et
+   * ouvre la MÊME séquence. Il a, lui, du code : la fabrique de tour d'équipe et son réducteur
+   * (`tavernFlow.ts`), branchés sur la CAPACITÉ déclarée (`game.team`) — jamais sur son id.
    */
   it('ZÉRO CÉRÉMONIE : toute entrée `opposed` du catalogue ouvre la séquence, paramétrée par sa SEULE donnée', () => {
     const [a] = heroes();
@@ -78,9 +83,13 @@ describe('Les dominos — départage d’égalité au dé d’unités (NADAJ 16 
       const seq = get().sequence;
       expect(seq?.def, `${jeu.id} : même orchestrateur pour tous`).toBe(TAVERN_SEQUENCE);
       // Les paramètres ne viennent QUE de l'entrée — rien n'est câblé par id de jeu dans le moteur.
-      expect(seq?.params).toEqual({
+      expect(seq?.params, jeu.id).toEqual({
         ...(jeu.tieBreak ? { tieBreak: jeu.tieBreak } : {}),
         ...(jeu.drCap != null ? { drCap: jeu.drCap } : {}),
+        ...(jeu.roundOps ? { rounds: jeu.roundOps } : {}),
+        ...(jeu.phases ? { phases: jeu.phases } : {}),
+        ...(jeu.scoreThreshold != null ? { scoreThreshold: jeu.scoreThreshold } : {}),
+        ...(jeu.campScore ? { score: { player: jeu.campScore, opponent: jeu.campScore } } : {}),
       });
     }
   });

@@ -137,7 +137,36 @@
     "skill": "corps-a-corps",
     "spec": "bagarre",
     "mode": "opposed",
-    "desc": "les règles complètes du Middenball sont décrites dans Middenheim : la cité du Loup blanc. En voici une variante pour le jeu rapide : chaque tour, tous les joueurs effectuent un Test de Corps à corps (Bagarre) Accessible (+20) ou d'Athlétisme Intermédiaire (+0). On additionne le nombre de DR obtenus pour chaque équipe. L'équipe qui obtient le total le plus élevé gagne +1 Avantage pour le tour suivant, et marquera un but si son total est de +25 ou plus. Une partie dure deux mi-temps de trois tours chacune.",
+    "team": {
+      "size": 11
+    },
+    "options": [
+      {
+        "skill": "corps-a-corps",
+        "spec": "bagarre",
+        "difficulty": "accessible",
+        "combatTest": true
+      },
+      {
+        "skill": "athletisme",
+        "difficulty": "intermediaire"
+      }
+    ],
+    "campScore": "sum",
+    "scoreThreshold": 25,
+    "phases": {
+      "count": 2,
+      "rounds": 3
+    },
+    "roundOps": {
+      "winner": [
+        {
+          "op": "gainAdvantage",
+          "amount": 1
+        }
+      ]
+    },
+    "desc": "les règles complètes du Middenball sont décrites dans **Middenheim : la cité du Loup blanc**. En voici une variante pour le jeu rapide : chaque tour, tous les joueurs effectuent un Test de **Corps à corps (Bagarre) Accessible (+20)** ou d'**Athlétisme Intermédiaire (+0)**. On additionne le nombre de DR obtenus pour chaque équipe. L'équipe qui obtient le total le plus élevé gagne +1 Avantage pour le tour suivant (en utilisant les règles habituelles relatives à l'Avantage), et marquera un but si son total est de +25 ou plus. Une partie dure deux mi-temps de trois tours chacune (chaque tour ayant une durée de 10 minutes).",
     "source": {
       "book": "nuits-agitees-et-dures-journees",
       "page": 95

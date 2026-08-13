@@ -94,4 +94,42 @@ describe('SequencePanel — une partie de Bras de fer n’est plus aveugle', () 
     expect(get().pendingCascade, 'la fenêtre de manche est bien ouverte').not.toBeNull();
     expect(board()).toBeNull();
   });
+
+  /** JEU D'ÉQUIPE (Middenball l.121) : le tableau de marque dit les BUTS de chaque camp et, en note,
+   *  la SOMME de DR du dernier tour — celle qui décide le but. Le panneau ne dérive rien : ces deux
+   *  grandeurs viennent du `board` du système. */
+  it('Middenball : le tableau de marque porte le score PAR ÉQUIPE (buts) et la somme du tour', () => {
+    const party = makePregens().slice(0, 2) as Combatant[];
+    useGame.setState({ party });
+    get().playTavernGame({ gameId: 'middenball', challengerId: party[0].id, opponent: { kind: 'abstract', value: 35 } });
+    // Un tour joué : options tranchées, puis 11 rangées à 3 DR contre 11 à 1 DR.
+    for (let i = 0; i < 4; i++) {
+      const cur = get().pendingCascade?.participants[get().pendingCascade!.cursor];
+      if (!cur || cur.kind !== 'tavern-option') break;
+      act(() => { get().cascadeChoose(cur.id, '0'); get().cascadeNext(); });
+    }
+    const pc = get().pendingCascade!;
+    const idx = pc.participants.findIndex((s) => s.kind === 'tavern-round');
+    const band = pc.participants[idx];
+    const rows = band.participants!.map((r) => ({
+      ...r, result: { roll: 11, target: r.target!, sl: r.id.startsWith('figurant-o-') ? 1 : 3, success: true },
+    }));
+    const participants = [...pc.participants];
+    participants[idx] = { ...band, participants: rows };
+    act(() => {
+      useGame.setState({ pendingCascade: { ...pc, participants, cursor: idx } });
+      get().cascadeNext();
+    });
+    render();
+
+    expect(board(), 'le tableau de marque est monté').not.toBeNull();
+    expect(bandeTitre()).toContain('Middenball');
+    expect(compteur(), 'six tours, deux mi-temps').toContain('Manche 2/6');
+    expect(compteur()).toContain('phase 1/2');
+    expect(texte()).toContain('Votre équipe');
+    expect(texte(), 'la SOMME du tour est dite en note').toContain('33 DR au dernier tour');
+    expect(texte()).toContain('11 DR au dernier tour');
+    const buts = [...host.querySelectorAll('[data-seq-score] b')].map((n) => n.textContent);
+    expect(buts, 'un but pour le camp qui a dépassé 25, aucun pour l’autre').toEqual(['1', '0']);
+  });
 });

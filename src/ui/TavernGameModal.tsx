@@ -37,6 +37,7 @@ export function TavernGameModal() {
   const [oppMode, setOppMode] = useState<'hero' | 'abstract'>(heroes.length > 1 ? 'hero' : 'abstract');
   const [oppHeroId, setOppHeroId] = useState('');
   const [abstractValue, setAbstractValue] = useState<number | undefined>(undefined);
+  const [allyVal, setAllyVal] = useState<number | undefined>(undefined);
   const [stakePa, setStakePa] = useState(0);
 
   if (!state) return null;
@@ -54,22 +55,27 @@ export function TavernGameModal() {
     : '';
   const challengerVal = game && challenger ? tavernGameValue(challenger, game) : 0;
   const oppValue = abstractValue ?? challengerVal; // défaut : match égal (valeur du challenger)
+  const allyValue = allyVal ?? oppValue; // coéquipiers figurants : leur PROPRE valeur, réglable
+  // JEU D'ÉQUIPE (Middenball) : le groupe joue ENSEMBLE — tous ses héros sont dans le MÊME camp. Un
+  // compagnon ne peut donc pas y tenir le camp d'en face, qui est celui de la salle.
+  const equipe = !!game?.team;
+  const oppKind: 'hero' | 'abstract' = equipe ? 'abstract' : oppMode;
 
   const oppCandidates = heroes.filter((h) => h.id !== challengerId);
   // La mise sort de la bourse du CHALLENGER (débit/crédit personnel) : le plafond affiché est SA bourse.
   const challengerPurse = challenger ? bourseOf(challenger) : { gold: 0, silver: 0, brass: 0 };
   const purseInPa = Math.floor(toBrass(challengerPurse) / PA_PER_SC);
-  const stakeActive = !!game?.stake && oppMode === 'abstract';
+  const stakeActive = !!game?.stake && oppKind === 'abstract';
   const stake = stakeActive ? Math.min(Math.max(0, stakePa), purseInPa) : 0;
 
-  const canPlay = !!game && !!challenger && (oppMode === 'abstract' ? oppValue > 0 : oppCandidates.some((h) => h.id === (oppHeroId || oppCandidates[0]?.id)));
+  const canPlay = !!game && !!challenger && (oppKind === 'abstract' ? oppValue > 0 : oppCandidates.some((h) => h.id === (oppHeroId || oppCandidates[0]?.id)));
 
   const onPlay = () => {
     if (!game || !challenger) return;
-    const opponent: TavernOpponent = oppMode === 'hero'
+    const opponent: TavernOpponent = oppKind === 'hero'
       ? { kind: 'hero', id: oppHeroId || oppCandidates[0]?.id || '' }
       : { kind: 'abstract', value: oppValue };
-    play({ gameId: game.id, challengerId: challenger.id, opponent, stakeBrass: stake * PA_PER_SC });
+    play({ gameId: game.id, challengerId: challenger.id, opponent, stakeBrass: stake * PA_PER_SC, ...(equipe ? { allyValue } : {}) });
   };
 
   return (
@@ -131,11 +137,16 @@ export function TavernGameModal() {
             <OptionChooser
               layout="seg"
               options={[
-                { key: 'hero', label: 'Un compagnon', selected: oppMode === 'hero', disabled: oppCandidates.length === 0, onSelect: () => setOppMode('hero') },
-                { key: 'abstract', label: 'Un habitué (MJ)', selected: oppMode === 'abstract', onSelect: () => setOppMode('abstract') },
+                { key: 'hero', label: 'Un compagnon', selected: oppKind === 'hero', disabled: equipe || oppCandidates.length === 0, onSelect: () => setOppMode('hero') },
+                { key: 'abstract', label: equipe ? 'L’équipe adverse' : 'Un habitué (MJ)', selected: oppKind === 'abstract', onSelect: () => setOppMode('abstract') },
               ]}
             />
-            {oppMode === 'hero' ? (
+            {equipe && (
+              <p className="tavern-detail muted">
+                Sport d'équipe : tout le groupe joue dans le MÊME camp — le camp d'en face est tenu par la salle.
+              </p>
+            )}
+            {oppKind === 'hero' ? (
               <div className="frame-row">
                 {oppCandidates.map((h) => (
                   <CharFrame key={h.id} c={h} variant="identity" size="xs" selected={h.id === (oppHeroId || oppCandidates[0]?.id)} onClick={() => setOppHeroId(h.id)} />
@@ -143,8 +154,14 @@ export function TavernGameModal() {
               </div>
             ) : (
               <label className="tavern-amount">
-                Valeur de l'adversaire (fixée par la table)
+                {equipe ? "Valeur des joueurs de l'équipe adverse (fixée par la table)" : "Valeur de l'adversaire (fixée par la table)"}
                 <input type="number" min={1} max={100} value={oppValue} onChange={(e) => setAbstractValue(Math.max(1, Math.min(100, Number(e.target.value) || 1)))} />
+              </label>
+            )}
+            {equipe && (
+              <label className="tavern-amount">
+                Valeur de vos coéquipiers (les {(game?.team?.size ?? 1) - heroes.length} figurants qui complètent VOTRE camp)
+                <input type="number" min={1} max={100} value={allyValue} onChange={(e) => setAllyVal(Math.max(1, Math.min(100, Number(e.target.value) || 1)))} />
               </label>
             )}
           </div>
