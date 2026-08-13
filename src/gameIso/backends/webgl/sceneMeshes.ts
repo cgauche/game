@@ -55,7 +55,7 @@ import type { View } from '../../rig/facing';
 import type { Rot } from '../../../geometry/iso';
 import type { Dir8 } from '../../../state/dir8';
 import { heightAt, type Scene, type SceneEntity, type WallSide } from '../../../state/scene';
-import { memoByRefDeps } from '../../../state/sceneMemo';
+import { memoByRef, memoByRefDeps } from '../../../state/sceneMemo';
 
 /** Teinte de visibilité d'une case `"x,y,z"` (1 = pleine) — fournie par l'appelant (`visibilityTint`). */
 export type TintAt = (cellKey: string) => number;
@@ -241,6 +241,65 @@ export interface BakedWorld {
   spans: FaceSpan[];
 }
 
+/**
+ * READ-SET de la CUISSON du monde (`worldFaces` → `buildFloors`/`buildWalls`/`buildRoofs`, plus
+ * l'orientation des triangles qui lit `scene.dimensions`) et des accents de sol qui la partagent
+ * (`groundAccents.sceneGroundAccents`, bâti sur les MÊMES faces). Un hôte qui reforge la référence de
+ * scène à chaque geste (l'éditeur : `paintTiles` en produit une par `pointermove`) retient sa cuisson
+ * SUR CETTE LISTE — sinon 634 ms de re-cuisson par tick, mesurés sur La Diligence.
+ *
+ * DÉRIVÉE DU READ-SET, pas devinée — et gardée champ par champ (`bake-retention.test.ts`), parce
+ * qu'un champ manquant = un monde périmé à l'écran, invisible autrement.
+ * `scene.effectZones` en est ABSENT sciemment : `buildRoofs` le lit (`massRoomZoneIds`), mais il
+ * n'entre dans AUCUNE face, aucun sommet, aucun groupe de surface — seulement dans le champ
+ * `roomZoneIds` des éléments de toit ET de façade. Ce champ ne SURVIT PLUS à la cuisson (`elCuit`
+ * ci-dessous le retire) : un monde cuit ne peut donc pas rendre une zone de pièce périmée à la loi de
+ * dégagement qui l'interroge. L'hôte qui en a besoin la résout sur SA scène vive, par la clé stable
+ * de l'élément (`roomZonesByElKey`).
+ */
+export function worldBakeDeps(scene: Scene, mpt: number): readonly unknown[] {
+  return [scene.layers, scene.dimensions, scene.walls, scene.architecture, scene.metresPerTile, mpt];
+}
+
+/** READ-SET de `heightAt` (`state/scene.ts`) — la SEULE lecture de scène des passes de billboards
+ *  (`collectBillboards`, `actorBillboards` : elles prennent tout le reste de leurs éléments). */
+export function sceneHeightDeps(scene: Scene): readonly unknown[] {
+  return [scene.layers, scene.dimensions];
+}
+
+/**
+ * Ce que le monde CUIT retient d'un élément : son identité de dégagement, PRIVÉE de tout champ dérivé
+ * d'une donnée HORS read-set de la cuisson. Un seul aujourd'hui, et il est piégeux — `roomZoneIds`
+ * (nappes de toit `buildRoofs`, façades `buildWalls`) descend de `scene.effectZones` : retenu dans le
+ * bake, il aurait rendu une vérité PÉRIMÉE à `applyCutawayMask`, qui interroge `KeepEl` sur l'élément
+ * cuit. Le retirer rend la péremption IMPOSSIBLE au lieu de la rendre improbable.
+ */
+function elCuit(el: SceneEl): SceneEl {
+  if ((el.kind === 'roof' || el.kind === 'wall') && el.roomZoneIds !== undefined) {
+    const { roomZoneIds: _zones, ...reste } = el;
+    return reste as SceneEl;
+  }
+  return el;
+}
+
+/**
+ * ZONES DE PIÈCE par clé d'élément, résolues sur une scène VIVE — le pendant d'`elCuit` : ce que le
+ * monde cuit ne retient pas, l'hôte le redemande ici, et sa loi de dégagement (`KeepEl`) le lit à
+ * jour. La clé est celle du builder (`SceneEl.key`), stable d'une frame à l'autre.
+ * MÉMOÏSÉE par référence de scène : en JEU la référence est stable (ce calcul ne se rejoue pas d'un
+ * pas à l'autre) ; un hôte qui la reforge au tick ne la consomme pas (l'éditeur n'a pas de cutaway).
+ */
+const zonesVivesMemo = memoByRef((scene: Scene) => {
+  const table = new Map<string, readonly string[]>();
+  for (const el of buildRoofs(scene)) if (el.roomZoneIds?.length) table.set(el.key, el.roomZoneIds);
+  for (const el of buildWalls(scene)) if (el.roomZoneIds?.length) table.set(el.key, el.roomZoneIds);
+  return table;
+});
+
+export function roomZonesByElKey(scene: Scene): ReadonlyMap<string, readonly string[]> {
+  return zonesVivesMemo(scene);
+}
+
 /** Géométrie MONDE fusionnée de la scène, SANS teinte de visibilité ni dégagement : une
  *  `BufferGeometry` dont chaque triangle a ses propres sommets (→ `computeVertexNormals` donne la
  *  normale de FACE, l'ombrage plat du mode éclairé), indexée d'un index IDENTITÉ que
@@ -293,7 +352,7 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
     const surface = faceSurface(faces[i]);
     spans.push({
       cellKey: listées[i].cellKey,
-      el: listées[i].el,
+      el: elCuit(listées[i].el),
       group: groupe,
       start: début,
       count: positions.length / 3 - début,
@@ -500,7 +559,14 @@ export function collectBillboards(scene: Scene, mpt: number, tintAt: TintAt, els
     const gy = el.cell.y + el.foot.offY;
     const h = heightAt(scene, el.cell.x, el.cell.y, el.cell.z) + (el.liftM ?? 0);
     out.push({
-      identity: `prop:${el.key}`,
+      // IDENTITÉ = la clé de l'élément ET sa SIGNATURE DE DESSIN (#1176, P3-3) — même doctrine que
+      // l'acteur (`ActorDrawInputs`/`combatantRenderSignature`). La clé seule ne suffit PAS : elle
+      // porte l'id de l'ENTITÉ (`prop:decor-1`) ou la CASE d'un overlay de terrain (`ov:x,y,z`), donc
+      // deux modèles de décor différents — ou deux terrains à décor différents sur la même case —
+      // partageaient une entrée de cache et le premier dessin restait à l'écran. Le cache de textures
+      // ne se vide plus à chaque référence de scène (rétention par contenu) : il n'y a plus de purge
+      // pour masquer cette collision, un modèle changé à l'inspecteur la rendrait éternelle.
+      identity: `prop:${el.key}|${el.ref}`,
       kind: 'prop',
       anchor: new THREE.Vector3(gx * mpt, h, gy * mpt),
       facing: el.facing ?? 'S',

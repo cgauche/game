@@ -5,7 +5,7 @@
  * Les overlays sont en `pointer-events: none` : tout le picking passe par `hitAt` (les calques
  * masqués laissent cliquer à travers). La logique de mutation vit dans `editorState` (pur).
  */
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Scene, sceneMetresPerTile, heightAt, isDescriptiveZone, type SceneEffectZone } from '../../state/scene';
 import { sceneZoneTiles } from '../../state/zones';
 import { Dims, diamondPath, tileCenter, tileEdge, type EdgeSide, screenToTileAtZ, screenToTileF, stageSize, depth, TH } from '../../geometry/iso';
@@ -34,6 +34,11 @@ import {
   toggleEdgeWall, toggleDiagonalWall, paintHeight, paintCrenellated, paintEffectZone, nearestEdge, canonEdge, pickWallEdge, pickArchitectureEdge, addFacadeSection,
 } from './editorState';
 import { planFocusTiles, type PlanDefectAt } from '../../state/planDefects';
+import { getStageBackend, subscribeStageBackend } from '../../state/stage3d';
+import { GameStage3D } from '../../gameIso/stage/GameStage3D';
+import { buildTokens } from '../../gameIso/builders/tokens';
+import type { ActorPose, KeepEl, TintAt } from '../../gameIso/backends/webgl/sceneMeshes';
+import type { LightSource } from '../../state/vision';
 
 /** Jaune d'ACCENT de SÉLECTION de l'éditeur (arêtes/zones/toits/entités sélectionnés) — même teinte que
  *  l'anneau d'unité active en combat, mais concept distinct (édition, pas tour de jeu). */
@@ -51,6 +56,23 @@ const TEXT_INK = 'var(--shadow-ink)';
  *  (l'aplat de plan de `affineRoofs.ts` est déjà semi-transparent, deux couches suffisent à noyer le
  *  trait). Portée par le groupe ENGLOBANT, une seule fois. */
 const ACTIVE_LAYER_ROOF_OPACITY = 0.25;
+
+/**
+ * ÉCLAIRAGE D'AUTHORING (#1176, P3-3) : le monde volumique de l'éditeur se monte en PLEIN JOUR
+ * NEUTRE — midi d'horloge, palier de lumière au maximum, aucune teinte de visibilité. L'auteur juge
+ * un plan, pas une heure : une nuit authorée noircirait l'écran d'édition.
+ * Les SOURCES DE LUMIÈRE de la scène ne sont PAS montées, et ce n'est pas un oubli : à midi, la
+ * photométrie les éteint TOUTES par construction (`extinctionDe(1) = 0`,
+ * `gameIso/stage/stagePointLights.ts`) — un marqueur de lampe d'auteur est une SURCOUCHE, à faire en
+ * surcouche SVG (vague B du lot), jamais une lumière qui ne s'allumerait pas.
+ * Références de MODULE : elles doivent être stables d'un rendu à l'autre (rétention par contenu du
+ * monde volumique).
+ */
+const MIDI_AUTHORING = 12 * 60;
+const PLEIN_JOUR = 1;
+const TEINTE_PLEINE: TintAt = () => 1;
+const AUCUN_ACTEUR: readonly ActorPose[] = [];
+const AUCUNE_LAMPE: readonly LightSource[] = [];
 
 /** Teintes des zones sur la carte, par NATURE : barrière (bleu de muraille), piège (orange de
  *  hasard), pièce nommée (liseré violacé). Une seule définition par nature — remplissage et contour
@@ -241,6 +263,14 @@ export function EditorCanvas({
   // dessus reste masqué dans les deux modes (on n'édite pas ce qui flotte au-dessus).
   const zHidden = (z: number) => z > currentLayer || (lowerLayerMode === 'isolee' && z < currentLayer);
 
+  // ── VOIE DE RENDU DU MONDE (#1176, P3-3, DEV) : le MÊME interrupteur de chantier que le jeu
+  // (`state/stage3d.ts`, patron `IsoStage.tsx` / `PovStage.tsx`). En volumique, ce SVG ne peint plus
+  // la scène (sols, murs, toits, décor, corps des jetons) — le canevas la peint DESSOUS — mais il
+  // reste monté, et reçoit tout : les 14 familles de surcouches d'authoring et TOUS les événements
+  // pointeur. Le picking ne change pas d'un iota : il est purement GÉOMÉTRIQUE (`localXY` →
+  // `screenToTileAtZ`), et cet écran n'inscrit AUCUN picker de sprite (`spritePicking={false}`).
+  const stageBackend = useSyncExternalStore(subscribeStageBackend, getStageBackend, getStageBackend);
+  const webgl = import.meta.env.DEV && stageBackend === 'webgl';
   // ZONES : chemins bâtis 1× par (emprise, caméra) — le tableau `effectZones` est remplacé à chaque
   // coup de pinceau, donc la dépendance suffit à rendre le retour IMMÉDIAT sans recalculer les 739
   // cases de zone de La Diligence au moindre mouvement de pointeur.
@@ -262,8 +292,9 @@ export function EditorCanvas({
   // le DESSUS masqué (`buildFloors` n'émet, au-delà de `activeZ`, que les surplombs fantômes — écartés
   // ICI : l'éditeur ne montre PAS un tablier flottant qu'on ne peut pas éditer).
   const floorEls = useMemo(
-    () => buildFloors(scene, undefined, { activeZ: currentLayer }).filter((el) => !zHidden(el.cell.z)),
-    [scene, currentLayer, lowerLayerMode],
+    () => (webgl ? [] : buildFloors(scene, undefined, { activeZ: currentLayer }).filter((el) => !zHidden(el.cell.z))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [scene, currentLayer, lowerLayerMode, webgl],
   );
   const floorRows = useMemo(
     () =>
@@ -281,7 +312,7 @@ export function EditorCanvas({
   // les sols (`activeZ`) — `buildWalls` n'émet alors QUE z ≤ currentLayer (pas de ghost à filtrer ici).
   const wallRows = useMemo(
     () =>
-      buildWalls(scene, undefined, { activeZ: currentLayer })
+      (webgl ? [] : buildWalls(scene, undefined, { activeZ: currentLayer }))
         .filter((el) => !zHidden(el.cell.z))
         .map((el) => {
           let accCache: string | null = null;
@@ -289,7 +320,7 @@ export function EditorCanvas({
           return { key: el.key, d: wallDepth(el, dims), z: el.cell.z, html: wallSvg(el, dims, detailOpts), acc };
         }),
     // `dims` dérive de (scene.dimensions, rot, viewMode) — deps couvertes.
-    [scene, currentLayer, lowerLayerMode, rot, viewMode, lod, detailOpts],
+    [scene, currentLayer, lowerLayerMode, rot, viewMode, lod, detailOpts, webgl],
   );
   // CULLING au viewport : ne rend que les tuiles dont le centre écran tombe dans le viewBox courant
   // (+ marge pour les parois de relief hautes/basses) — fini de rastériser TOUTE la carte à chaque frame.
@@ -307,6 +338,27 @@ export function EditorCanvas({
   // Dernière case basculée par le tracé de volée EN COURS (cadence du pinceau, cf. `paintAt`).
   const stairLastRef = useRef<Pt | null>(null);
   const resizeRef = useRef<{ moved: boolean } | null>(null);
+  // ── TRAIT DE PINCEAU DE TERRAIN EN COURS (#1176, P3-3) : les cases que le geste courant a déjà
+  // peintes. Elles portent l'APERÇU du trait sur la voie volumique, où le monde reste sur la cuisson
+  // d'avant le geste (cf. `gelDuMonde`). Vidées au relâché, comme le reste de l'état de geste.
+  const [traitCases, setTraitCases] = useState<readonly Pt[]>([]);
+  const marquerTrait = (p: Pt, taille: number) => {
+    if (!webgl) return; // aucun aperçu à tenir : la voie affine repeint la scène elle-même
+    const r = Math.floor((taille - 1) / 2); // MÊME emprise que `paintTiles` (`state/sceneEdit.ts`)
+    const { w, h } = scene.dimensions;
+    setTraitCases((prev) => {
+      const vues = new Set(prev.map((c) => `${c.x},${c.y}`));
+      const out = [...prev];
+      for (let dy = -r; dy <= r; dy++)
+        for (let dx = -r; dx <= r; dx++) {
+          const x = p.x + dx, y = p.y + dy;
+          if (x < 0 || y < 0 || x >= w || y >= h || vues.has(`${x},${y}`)) continue;
+          vues.add(`${x},${y}`);
+          out.push({ x, y });
+        }
+      return out.length === prev.length ? prev : out;
+    });
+  };
 
   /** Coordonnées écran locales (viewBox) d'un événement pointeur. */
   function localXY(ev: React.PointerEvent): { x: number; y: number } {
@@ -341,17 +393,23 @@ export function EditorCanvas({
     switch (tool.mode) {
       case 'tile':
         setSceneNoHistory(paintTiles(scene, p, tool.terrain, brush, currentLayer));
+        marquerTrait(p, brush);
         return;
       case 'height':
         setSceneNoHistory(paintHeight(scene, p, tool.metres, brush, currentLayer));
         return;
       case 'crenellated':
+        // COTE et CRÉNELURE mutent la GÉOMÉTRIE : aucun aperçu volumique n'est possible ce lot (un
+        // SVG plaqué ne saurait pas relever une paroi) — la cote se voit au RELÂCHÉ. ÉCART DÉCLARÉ
+        // (#1176, P3-3) : l'incrémental par case est un chantier ultérieur.
         setSceneNoHistory(paintCrenellated(scene, p, tool.structure, brush, currentLayer));
         return;
       case 'zoneTiles':
         setSceneNoHistory(paintEffectZone(scene, tool.zoneId, p, tool.paint));
         return;
       case 'erase':
+        // La GOMME retire une ENTITÉ (`state/sceneEdit.ts` `eraseAt`), jamais du terrain : son billboard
+        // disparaît au tick suivant, sans gel ni recuisson — rien à prévisualiser, donc rien à marquer.
         setScene(eraseAt(scene, p, currentLayer));
         return;
       case 'stair':
@@ -582,6 +640,7 @@ export function EditorCanvas({
     setDragRect(null);
     setPainting(false);
     stairLastRef.current = null; // le tracé est fini : un nouveau clic sur la même case la rebascule
+    setTraitCases([]); // le monde volumique reprend la scène VIVE : la cuisson se paie ICI, une fois
     moveRef.current = null;
     resizeRef.current = null;
   }
@@ -599,12 +658,108 @@ export function EditorCanvas({
     </g>
   ) : null;
 
+  // ── CE QUE L'ÉDITEUR DONNE AU MONDE VOLUMIQUE (#1176, P3-3) ─────────────────────────────────────
+  // CADENCE : pendant un TRAIT d'outil GÉOMÉTRIQUE (terrain, cote, crénelure), le monde reste sur la
+  // scène d'AVANT le geste. Ces trois-là mutent `layers` à chaque tick, et la cuisson coûte 100 à
+  // 634 ms selon la carte : la payer par tick gelait l'écran. Elle se paie une fois, au RELÂCHÉ — un
+  // à-coup ponctuel ASSUMÉ, l'incrémental par case étant un chantier ultérieur.
+  // Les AUTRES gestes ne gèlent RIEN, et n'ont aucune raison de le faire : peindre une emprise de
+  // zone, déplacer une entité ou GOMMER (`eraseAt` retire une ENTITÉ, jamais du terrain) ne touche
+  // aucune dépendance de la cuisson — le monde suit au tick, sans une recuisson.
+  const gelDuMonde = painting && (tool.mode === 'tile' || tool.mode === 'height' || tool.mode === 'crenellated');
+  const gelDuTrait = useRef(scene);
+  if (!gelDuMonde) gelDuTrait.current = scene;
+  const sceneGelée = gelDuTrait.current;
+  // PLEIN JOUR NEUTRE : l'auteur juge un plan, pas une heure ni un temps. La scène remise au monde
+  // volumique n'a AUCUNE météo — champ absent, donc le REGISTRE ne montre rien (`sceneWeatherFx`) :
+  // ni semis, ni nappes de brume, ni teinte d'orage sur les lampes et le fond.
+  const sceneMonde = useMemo(() => ({ ...sceneGelée, weather: undefined }), [sceneGelée]);
+  // DÉGAGEMENT : le canevas cuit TOUTE la scène (`worldFaces` prend toutes les couches). L'éditeur y
+  // applique sa propre loi de vue — la même que le SVG : on n'édite pas ce qui flotte au-dessus, la
+  // nappe de la couche active ne coiffe pas le plan qu'on est en train de tracer (le SVG la rend
+  // discrète ; sur le canevas, elle serait OPAQUE), et le calque « Toits » ÉTEINT retire les nappes
+  // — sans cette dernière ligne, la case du calque ne ferait plus rien sur la voie volumique.
+  // ÉCART DÉCLARÉ : le VOILE de gabarit des couches du dessous reste inopérant SUR LE CANVAS (canal
+  // voilé, vague B) ; l'ISOLATION, elle, est honorée — par ce keepEl pour les faces, par `viewZ` pour
+  // les jetons et les décors, sans quoi un corps de couche basse flotterait sur un canevas isolé.
+  const keepEl = useMemo<KeepEl>(
+    () => (el) => {
+      if (zHidden(el.cell.z)) return false;
+      return !(el.kind === 'roof' && (!layers.roofs || el.cell.z === currentLayer));
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [currentLayer, lowerLayerMode, layers.roofs],
+  );
+  // ÉLÉMENTS à billboarder : c'est l'ÉDITEUR qui les fabrique, avec SES options de couche — le monde
+  // volumique n'a aucun second jeu de lois. Jetons d'entité BRUTS (leurs décorations d'auteur restent
+  // au SVG, vague B) et décor par le MÊME `buildProps` que la voie affine.
+  const propEls3d = useMemo(
+    () => (webgl ? buildProps(sceneMonde, undefined, { activeZ: currentLayer }).filter((el) => !zHidden(el.cell.z)) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [webgl, sceneMonde, currentLayer, lowerLayerMode],
+  );
+  // MÊME cadrage de couche que les décors ci-dessus (`viewZ` en mode isolé, puis le prédicat unique
+  // `zHidden`) : sans lui, un corps de couche basse restait sur le canevas alors que TOUTES ses
+  // décorations d'auteur avaient disparu du SVG — un jeton fantôme, inéditable.
+  // `ambush` : l'auteur voit le CORPS de ses embusqueurs (`hiddenUntilCombat`), que la loi de JEU
+  // coupe avant le combat ; le SVG continue de poser leur empreinte pointillée par-dessus.
+  const tokenEls3d = useMemo(
+    () => (webgl
+      ? buildTokens(sceneMonde, undefined, null, {
+        activeZ: currentLayer,
+        viewZ: lowerLayerMode === 'isolee' ? currentLayer : null,
+        top: viewMode === 'top',
+        ambush: true,
+      }).filter((el) => !zHidden(el.cell.z))
+      : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [webgl, sceneMonde, currentLayer, viewMode, lowerLayerMode],
+  );
+  const els3d = useMemo(() => ({ tokens: tokenEls3d, props: propEls3d }), [tokenEls3d, propEls3d]);
+  // APERÇU DU TRAIT (WYSIWYG) : le trait libre n'avait AUCUN aperçu — il se voyait par la scène SVG
+  // repeinte, qui ne l'est plus. Les cases du geste se peignent donc par le MÊME backend affine que
+  // la voie de gauche (`floorSvg` sur les `FloorEl` de la scène VIVE), pas par un losange symbolique.
+  const apercuTrait = useMemo(
+    () => {
+      if (!webgl || tool.mode !== 'tile' || !traitCases.length) return [];
+      const vues = new Set(traitCases.map((c) => `${c.x},${c.y}`));
+      return buildFloors(scene, undefined, { activeZ: currentLayer })
+        .filter((el) => el.cell.z === currentLayer && vues.has(`${el.cell.x},${el.cell.y}`))
+        .map((el) => ({ key: el.key, html: floorSvg(el, dims, detailOpts) }));
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [webgl, tool.mode, traitCases, scene, currentLayer, rot, viewMode, detailOpts],
+  );
+
   return (
     <main className="editor-canvas-wrap" ref={wrapRef}>
       <div className="editor-iso-wrap">
+        {/* MONDE VOLUMIQUE (#1176, P3-3, DEV) : le MÊME composant que le jeu, cadré par le viewBox
+            MOBILE de l'éditeur (`mode: 'viewbox'` — l'échelle se mesure sur le rendu, la CSS rétrécit
+            l'élément). Il est ÉMIS AVANT le SVG et couvre la boîte de contenu (`.iso-stage`, absolu
+            inset:0 dans `.editor-iso-wrap`) : le SVG d'authoring prend son contexte d'empilement
+            au-dessus (`.editor-iso-3d`). BUDGET PIXELS déclaré : le canevas couvre TOUTE la carte
+            (2304×1312 px mesurés sur La Diligence en iso), pas la seule fenêtre — le défilement reste
+            NATIF, sans un écouteur de plus, et `setPixelRatio` n'est posé qu'au montage. Un cadrage
+            à la fenêtre est une piste tickée, pas une promesse de ce lot. */}
+        {webgl && (
+          <GameStage3D
+            scene={sceneMonde}
+            mpt={mpt}
+            frame={{ mode: 'viewbox', dims, viewBox: { x: vb.x, y: vb.y, w: stage.w / vb.zoom, h: stage.h / vb.zoom } }}
+            tintAt={TEINTE_PLEINE}
+            keepEl={keepEl}
+            els={els3d}
+            actors={AUCUN_ACTEUR}
+            gameTime={MIDI_AUTHORING}
+            lightLevel={PLEIN_JOUR}
+            lights={AUCUNE_LAMPE}
+            spritePicking={false}
+          />
+        )}
         <svg
           ref={canvasRef}
-          className="editor-iso"
+          className={webgl ? 'editor-iso editor-iso-3d' : 'editor-iso'}
           viewBox={`${vb.x} ${vb.y} ${stage.w / vb.zoom} ${stage.h / vb.zoom}`}
           width={stage.w}
           height={stage.h}
@@ -617,6 +772,7 @@ export function EditorCanvas({
             setDragRect(null);
             setPainting(false);
             stairLastRef.current = null;
+            setTraitCases([]);
             setHoverEdge(null);
             moveRef.current = null;
             resizeRef.current = null;
@@ -646,6 +802,16 @@ export function EditorCanvas({
               ),
             )}
           </g>
+          {/* APERÇU DU TRAIT en cours (voie volumique) : les cases déjà peintes, par le backend
+              AFFINE — l'auteur voit le TERRAIN qu'il pose, pas un losange symbolique, alors que le
+              monde volumique reste sur la cuisson d'avant le geste. */}
+          {apercuTrait.length > 0 && (
+            <g pointerEvents="none" data-apercu-trait={apercuTrait.length}>
+              {apercuTrait.map((r) => (
+                <g key={r.key} dangerouslySetInnerHTML={{ __html: r.html }} />
+              ))}
+            </g>
+          )}
           <g pointerEvents="none">
             {(() => {
               const objs: { d: number; el: JSX.Element }[] = [];
@@ -655,7 +821,7 @@ export function EditorCanvas({
               // collisionne sur un id de décor homonyme d'un véhicule/créature (ex. `chaise` meuble vs
               // chaise à porteurs de `vehicles.json`). Un décor s'authore comme un décor.
               const propTokenCtx: TokenCtx = { dims, view: viewMode, liftAt };
-              const propEls = buildProps(scene, undefined, { activeZ: currentLayer }).filter((el) => !zHidden(el.cell.z));
+              const propEls = webgl ? [] : buildProps(scene, undefined, { activeZ: currentLayer }).filter((el) => !zHidden(el.cell.z));
               propLayerObjs(propEls, propTokenCtx).forEach((po, i) => {
                 const el = propEls[i];
                 const dimmed = el.cell.z < currentLayer;
@@ -673,7 +839,9 @@ export function EditorCanvas({
               // (`ACTIVE_LAYER_ROOF_OPACITY` sur son groupe), jamais retirée : le calque « Toits » garde son
               // sens au dernier étage, et le picking (`hitAt`, qui désigne la masse de `currentLayer`) porte
               // sur ce qui est affiché. Sous la couche active : gabarit voilé. Au-dessus : rien.
-              if (layers.roofs)
+              // En volumique, la couverture est CUITE dans le monde (et la nappe de la couche active
+              // en est retirée par `keepEl`) : ce calque de plan ne se monte plus.
+              if (layers.roofs && !webgl)
                 for (const el of buildRoofs(scene)) {
                   if (zHidden(el.cell.z)) continue;
                   const active = el.cell.z === currentLayer;
@@ -731,7 +899,10 @@ export function EditorCanvas({
                             strokeDasharray={hidden ? '4 3' : undefined}
                           />
                         ))}
-                        <EntityToken ent={en} dims={dims} enrolled />
+                        {/* CORPS du jeton : la voie volumique le peint (billboard), la voie affine
+                            ici. Les décorations d'auteur (empreinte enrôlée, liseré de sélection)
+                            restent au SVG dans les DEUX voies. */}
+                        {!webgl && <EntityToken ent={en} dims={dims} enrolled />}
                       </g>
                     ),
                   });
@@ -740,10 +911,10 @@ export function EditorCanvas({
                     d: depth(en.pos.x, en.pos.y, dims, ez) + 0.5,
                     el: dimStyle ? (
                       <g key={en.id} style={dimStyle}>
-                        <EntityToken ent={en} dims={dims} />
+                        {!webgl && <EntityToken ent={en} dims={dims} />}
                       </g>
                     ) : (
-                      <EntityToken key={en.id} ent={en} dims={dims} />
+                      <g key={en.id}>{!webgl && <EntityToken ent={en} dims={dims} />}</g>
                     ),
                   });
                 }

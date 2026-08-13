@@ -22,6 +22,10 @@ export interface TokenView {
   activeZ: number;
   viewZ: number | null;
   top: boolean;
+  /** AUTHORING (#1176, P3-3) : l'ÉDITEUR voit les EMBUSQUEURS. Une entité `hiddenUntilCombat` est
+   *  invisible EN JEU avant le combat — l'auteur, lui, doit voir le corps de ce qu'il pose, sinon il
+   *  édite un cadre vide. Absent = la loi de jeu, la seule qu'un écran de partie puisse demander. */
+  ambush?: boolean;
 }
 
 /** Filtres de CASE d'un combattant — étage isolé/actif, surplomb de muraille, brouillard. Les mêmes
@@ -61,7 +65,7 @@ export function buildTokens(scene: Scene, visible: ReadonlySet<string> | undefin
   const covered = (x: number, y: number) => inBattle && !!combatantAtTile(battle!.combatants, x, y, 0);
   for (const ent of scene.entities) {
     if (ent.kind === 'heroStart' || ent.kind === 'prop') continue;
-    if (ent.combat?.hiddenUntilCombat) continue; // ennemi d'embuscade : invisible avant le combat
+    if (ent.combat?.hiddenUntilCombat && !view.ambush) continue; // ennemi d'embuscade : invisible avant le combat (sauf à l'authoring)
     if (inBattle && battle!.combatants.some((c) => c.id === ent.id)) continue; // enrôlé : le combattant le rend
     const ez = ent.z ?? 0;
     if (viewZ != null ? ez !== viewZ : ez > activeZ) continue; // isole ; sinon couche active + dessous

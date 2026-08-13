@@ -248,6 +248,17 @@ button.insp-row {
   height: auto;
   touch-action: none;
 }
+/* Voie VOLUMIQUE de l'éditeur (#1176, P3-3, DEV) : le canevas du monde est monté dans
+   `.editor-iso-wrap` avec la classe du stage (`.iso-stage` — position absolue, inset 0, donc
+   exactement la boîte de ce SVG). Un positionné se peint AU-DESSUS du flux : sans ce contexte
+   d'empilement, il masquerait les 14 familles de surcouches d'authoring. Le SVG passe donc
+   au-dessus, et son fond s'efface — le monde est peint par le canevas, dessous. Le conteneur
+   défilant reste natif : le canevas couvre la boîte de CONTENU, il ne suit pas la fenêtre. */
+.editor-iso-3d {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
 
 /* Panneau flottant du calque de référence (décalquage, #830) — bas-gauche du canevas (top-gauche =
    barre d'étages, top-droite = ViewControls). */

@@ -189,7 +189,9 @@ describe('POV — la VUE d’une entité suit le cap du meneur (#1176 P3-1b)', (
       monter(cap, { x: 4, y: 6 });
       const prop = clésDe('prop:');
       expect(prop, `cap ${cap} : le décor doit être texturé`).toHaveLength(1);
-      expect(prop[0].identity, `cap ${cap}`).toBe(`prop:prop:tonneau|r${povArtRot(cap)}`);
+      // L'identité d'un décor porte sa SIGNATURE DE DESSIN depuis #1176 P3-3 (`prop:<clé>|<modèle>`,
+      // puis le cran d'art) : c'est le CRAN, seul, que cette garde épingle.
+      expect(prop[0].identity, `cap ${cap}`).toBe(`prop:prop:tonneau|tonneau|r${povArtRot(cap)}`);
       crans.add(prop[0].identity);
       démonter();
     }
@@ -226,7 +228,7 @@ describe('PLATEAU — la vue affine garde son regard ORTHO (l’autre branche de
       // Branche ORTHO de `billboardView` : la MÊME planche que la vue de plateau a toujours servie.
       expect({ view: acteur[0].view, mirror: acteur[0].mirror }, `cran ${rot}`).toEqual(project('S', rot));
       const prop = clésDe('prop:');
-      expect(prop[0].identity, `cran ${rot}`).toBe(`prop:prop:tonneau|r${artRot({ ...SCENE.dimensions, rot, view: 'iso' })}`);
+      expect(prop[0].identity, `cran ${rot}`).toBe(`prop:prop:tonneau|tonneau|r${artRot({ ...SCENE.dimensions, rot, view: 'iso' })}`);
       démonter();
     }
   });

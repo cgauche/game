@@ -17,7 +17,7 @@
 import type { Dims } from '../../geometry/iso';
 import { poseFromDims, screenToWorldAtLift, type StageKind } from './projection';
 import { VH, VW } from './useStageCamera';
-import { viewBoxScale, type StageCanvas } from './stageCam';
+import { viewBoxMeetScale, viewBoxScale, type StageCanvas } from './stageCam';
 
 export type { StageCanvas };
 
@@ -35,8 +35,59 @@ export interface Stage3dFraming {
   scale: number;
 }
 
-/** Traduction de l'intention du stage en cadrage de caméra volumique. `cam` est la translation caméra
- *  d'`IsoStage` (unités de viewBox), `zoom` son facteur d'échelle APPLIQUÉ (transition de cran comprise). */
+/**
+ * CADRE D'ÉCRAN d'un hôte de stage — tout ce que la caméra volumique a besoin de savoir de la
+ * transformation d'écran, et rien de plus : le point de PROJECTION (repère de `worldToScreen`) que
+ * l'élément pose en son CENTRE, et l'échelle EFFECTIVE (pixels CSS par unité de projection).
+ *
+ * DEUX conventions dans le dépôt, toutes deux réduites à ce couple — c'est la généralisation du lot
+ * P3-3 (#1176), et le jeu en devient le cas particulier :
+ *  - JEU (`IsoStage`) : viewBox FIXE `0 0 VW VH` + `slice`, cadré par une caméra de GROUPE (`cam`,
+ *    `zoom`) → `stageScreen` ;
+ *  - ÉDITEUR (`ui/editor/EditorCanvas.tsx`) : viewBox MOBILE de taille variable, `meet`, élément à
+ *    TAILLE DE CONTENU rétréci par la CSS (`.editor-iso { max-width: 100% }`) → `viewBoxScreen`,
+ *    dont l'échelle se prend sur le RENDU (le cadre en pixels mesuré), jamais sur le zoom seul.
+ */
+export interface StageScreen {
+  /** Point de PROJECTION au centre de l'élément. */
+  centre: { x: number; y: number };
+  /** Pixels CSS par unité de projection. */
+  scale: number;
+}
+
+/** Convention du JEU : caméra de groupe sur viewBox FIXE recouvrant l'élément (`slice`). `cam` est la
+ *  translation caméra d'`IsoStage` (unités de viewBox), `zoom` son facteur d'échelle APPLIQUÉ
+ *  (transition de cran comprise). */
+export function stageScreen(cam: { x: number; y: number }, zoom: number, canvas: StageCanvas): StageScreen {
+  return { centre: { x: VW / 2 - cam.x, y: VH / 2 - cam.y }, scale: zoom * viewBoxScale(canvas) };
+}
+
+/** Convention du VIEWBOX MOBILE : le rectangle rendu EST le viewBox, centré (`xMidYMid`), à l'échelle
+ *  `meet`. `canvas` est le cadre MESURÉ du rendu (`clientWidth`/`clientHeight`) — c'est lui, et non le
+ *  zoom, qui porte le rétrécissement CSS de l'élément. */
+export function viewBoxScreen(viewBox: { x: number; y: number; w: number; h: number }, canvas: StageCanvas): StageScreen {
+  return {
+    centre: { x: viewBox.x + viewBox.w / 2, y: viewBox.y + viewBox.h / 2 },
+    scale: viewBoxMeetScale(viewBox, canvas),
+  };
+}
+
+/** Traduction d'un cadre d'écran (l'une ou l'autre convention) en cadrage de caméra volumique. */
+export function stage3dFramingFor(args: { dims: Dims; mpt: number; screen: StageScreen; canvas: StageCanvas }): Stage3dFraming {
+  const pose = poseFromDims(args.dims);
+  const { scale } = args.screen;
+  const tuile = screenToWorldAtLift(pose, args.screen.centre, 0);
+  return {
+    kind: pose.kind,
+    yawDeg: pose.yawDeg,
+    centre: { x: tuile.x * args.mpt, y: 0, z: tuile.y * args.mpt },
+    viewport: { w: args.canvas.w / scale, h: args.canvas.h / scale },
+    scale,
+  };
+}
+
+/** Traduction de l'intention du stage DE JEU en cadrage de caméra volumique — le cas particulier
+ *  `stageScreen` du cadre généralisé ci-dessus. */
 export function stage3dFraming(args: {
   dims: Dims;
   /** Mètres par tuile de la scène (`sceneMetresPerTile`). */
@@ -45,14 +96,10 @@ export function stage3dFraming(args: {
   zoom: number;
   canvas: StageCanvas;
 }): Stage3dFraming {
-  const pose = poseFromDims(args.dims);
-  const scale = args.zoom * viewBoxScale(args.canvas);
-  const tuile = screenToWorldAtLift(pose, { x: VW / 2 - args.cam.x, y: VH / 2 - args.cam.y }, 0);
-  return {
-    kind: pose.kind,
-    yawDeg: pose.yawDeg,
-    centre: { x: tuile.x * args.mpt, y: 0, z: tuile.y * args.mpt },
-    viewport: { w: args.canvas.w / scale, h: args.canvas.h / scale },
-    scale,
-  };
+  return stage3dFramingFor({
+    dims: args.dims,
+    mpt: args.mpt,
+    screen: stageScreen(args.cam, args.zoom, args.canvas),
+    canvas: args.canvas,
+  });
 }

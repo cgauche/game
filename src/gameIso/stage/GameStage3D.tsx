@@ -107,10 +107,15 @@ import {
   type KeepEl,
   type SceneBillboardEls,
   type TintAt,
+  sceneHeightDeps,
+  worldBakeDeps,
   worldShadowBox,
+  type BakedWorld,
+  type BillboardSubject,
 } from '../backends/webgl/sceneMeshes';
+import { memoByRefDeps } from '../../state/sceneMemo';
 import { AUCUN_CHROME, attachBodySilhouette, billboardMaterial, poseBoards, type Board, type ChromeAt, type FrameCamera, type GlideAt } from './boardPose';
-import { buildGroundAccentMeshes, maskGroundAccents, sceneGroundAccents } from '../backends/webgl/groundAccents';
+import { buildGroundAccentMeshes, maskGroundAccents, sceneGroundAccents, type SceneGroundAccent } from '../backends/webgl/groundAccents';
 import {
   HIGHLIGHT_SLOTS,
   buildHighlightMesh,
@@ -128,7 +133,7 @@ import { HALO_SLOTS, buildHaloMesh } from '../backends/webgl/interactHaloMeshes'
 import { poseInteractHalos, type HaloPools } from './interactHaloPose';
 import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/spriteRaycast';
 import { setSpritePicker } from './spritePicker';
-import { stage3dFraming, type Stage3dFraming } from './stage3dCamera';
+import { stage3dFramingFor, stageScreen, viewBoxScreen, type Stage3dFraming } from './stage3dCamera';
 import { stageLightScalars, stageLights } from './stageLights';
 import { applyFlicker, applyPointLights, createPointLightPool, hasFlicker, pointLightWrites, POINT_LIGHT_BUDGET, type PointLightSlots } from './stagePointLights';
 import type { LightSource } from '../../state/vision';
@@ -186,6 +191,13 @@ export function setStageRendererFactory(fabrique: ((canvas: HTMLCanvasElement) =
 export type StageFrame =
   /** Regard AFFINE : le cran/lacet, la translation caméra et le zoom du stage SVG. */
   | { mode: 'affine'; dims: Dims; cam: { x: number; y: number }; zoom: number }
+  /**
+   * Regard AFFINE cadré par un VIEWBOX MOBILE (#1176, P3-3) — la convention de l'ÉDITEUR de scènes
+   * (`ui/editor/EditorCanvas.tsx`) : aucune caméra de groupe, le viewBox rendu EST le cadrage, et
+   * l'échelle se prend sur le RENDU (`viewBoxScreen`, cadre en pixels mesuré) parce que la CSS
+   * rétrécit l'élément. Tout le reste de cet écran l'ignore : c'est le même regard de plateau.
+   */
+  | { mode: 'viewbox'; dims: Dims; viewBox: { x: number; y: number; w: number; h: number } }
   /**
    * Regard PREMIÈRE PERSONNE : la case du groupe, son cap, et le milieu (dont dépend la portée).
    * `cid` = le sujet dont le GLISSEMENT de marche déplace l'œil (`anim.glide`) : la caméra suit la
@@ -247,6 +259,11 @@ export interface GameStage3DProps {
   /** Cadençage de la MARCHE, quand le stage en offre un (lot P2-4) : sans lui, cet écran ne bouge
    *  qu'aux rendus du stage. */
   anim?: StageWalkAnim;
+  /** Cet écran inscrit-il son lanceur de rayon auprès de la couture de picking de sprite
+   *  (`stage/spritePicker.ts`) ? Défaut OUI, la vue de plateau du jeu. L'ÉDITEUR (#1176, P3-3) dit
+   *  NON : son picking est PUREMENT GÉOMÉTRIQUE (`screenToTileAtZ` sur le SVG d'authoring), et un
+   *  picker inscrit ici écraserait celui du jeu — le registre est un singleton. */
+  spritePicking?: boolean;
 }
 
 /**
@@ -265,6 +282,16 @@ export interface StageWalkAnim {
 
 /** Rien ne glisse : la pose d'une frame hors marche (la boucle ne demande alors que l'orientation). */
 const AUCUN_GLISSEMENT: GlideAt = () => null;
+
+/** RÉTENTIONS PAR CONTENU des passes lourdes de cet écran (#1176, P3-3) — le patron canonique du
+ *  dépôt (`state/sceneMemo.ts`), un slot par INSTANCE de stage (la clé est un jeton de composant) et
+ *  par passe. Les deps sont les READ-SETS exportés par le module qui fait le travail, jamais une liste
+ *  devinée ici : `worldBakeDeps` pour la cuisson et les accents, `sceneHeightDeps` pour les
+ *  billboards. */
+const bakeRetenu = memoByRefDeps<object, BakedWorld>();
+const accentsRetenus = memoByRefDeps<object, SceneGroundAccent[]>();
+const decorRetenu = memoByRefDeps<object, BillboardSubject[]>();
+const acteursRetenus = memoByRefDeps<object, BillboardSubject[]>();
 
 /** Vide un groupe et libère ce qu'il portait — un groupe se reconstruit ENTIER, jamais par différence.
  *  La géométrie marquée `emprunte` appartient à un autre (le bake de `bakeWorldGeometry`, le corps
@@ -310,7 +337,7 @@ export function povArtRot(facing: Dir8): Rot {
   return (Math.floor(povYawDeg(facing) / 90) % 4) as Rot;
 }
 
-export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim }: GameStage3DProps): JSX.Element {
+export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim, spritePicking = true }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
@@ -331,7 +358,8 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // authorée, jamais en intérieur). Elle a DEUX expressions selon le regard, jamais les deux à la
   // fois : des NAPPES dans le volume sur la vue de plateau, le resserrement de la brume de distance
   // en première personne.
-  const brume = useMemo(() => sceneBrume(scene), [scene]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const brume = useMemo(() => sceneBrume(scene), [scene.weather, scene.ambiance]);
   // La brume ne MODULE le POV que DEHORS : entré dans un bâtiment (verdict par FRAME, `povIndoor`), on
   // bascule sur la courbe intérieure et la tempête cesse de déteindre dans la taverne.
   const brumePov = povIndoor === false ? brume : null;
@@ -342,7 +370,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // mesuré 25,2° en losange et de face contre 90,0° au-dessus), les nappes se projettent l'une sur
   // l'autre : l'empilement dégénère en voile plein écran, à rebours de la lisibilité de plateau que
   // demande cette vue. La première personne n'en monte aucune non plus — elle a la brume de distance.
-  const nappesAuMonde = frame.mode === 'affine' && frame.dims.view !== 'top' ? brume : null;
+  const nappesAuMonde = frame.mode !== 'pov' && frame.dims.view !== 'top' ? brume : null;
   // Le PLAN de nappes SURVIT aux mutations de scène, exactement comme le semis : il est retenu sur ce
   // qui le DÉTERMINE (`retainBrumeSheets`), jamais sur la référence de l'objet scène — un pas de
   // combattant en produit une par frame, et re-bâtir là-dessus recalculait tout le couvert (6,9 ms
@@ -391,24 +419,45 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     three.current.add(monde.current, touffes.current, panneaux.current, lampes.current, flaques.current, intemperies.current, brumes.current, marques.current, marquesDyn.current, halosGroupe.current);
   }
 
-  // Le cache de textures est GLOBAL au module : changer de scène rend ses entrées mortes (les clés
-  // portent l'identité des sujets de l'ancienne carte). Même vidange que l'écran de spike.
-  useEffect(() => () => { clearBillboardTextures(); clearPeriodTextures(); clearFaceBakes(); }, [scene]);
+  // Le cache de textures est GLOBAL au module : changer de SCÈNE rend ses entrées mortes (les clés
+  // portent l'identité des sujets de l'ancienne carte). Même vidange que l'écran de spike — sur
+  // l'IDENTITÉ de la scène, pas sa référence : un hôte qui la reforge à chaque geste (l'éditeur, une
+  // par `pointermove`) vidait sinon toutes les textures du décor à chaque coup de pinceau.
+  useEffect(() => () => { clearBillboardTextures(); clearPeriodTextures(); clearFaceBakes(); }, [scene.id]);
 
-  // ── CUISSON : la passe LOURDE, invalidée par la SEULE scène et la SEULE échelle. Ni le pas du groupe
-  // ni le cran de caméra ne la rejouent — c'est ce que les deux passes en place ci-dessous garantissent.
-  const baked = useMemo(() => bakeWorldGeometry(scene, mpt), [scene, mpt]);
+  // ── CUISSON : la passe LOURDE (100 à 634 ms selon la carte), RETENUE PAR CONTENU — sur le read-set
+  // réel de `worldFaces` (`worldBakeDeps`, `backends/webgl/sceneMeshes.ts`), jamais sur la référence
+  // de l'objet scène. En jeu la référence est stable ; à l'ÉDITION elle se reforge au tick, et une
+  // cuisson par tick gelait l'écran. Le patron est celui du dépôt (`memoByRefDeps`, semis P2-6,
+  // nappes P3-2), keyé sur un jeton d'INSTANCE : deux stages montés côte à côte gardent leur bake
+  // (contrat de propriété de `BakedWorld` — une teinte écrase l'autre sur un bake partagé).
+  const jeton = useRef({}).current;
+  const bakeDeps = worldBakeDeps(scene, mpt);
+  const baked = bakeRetenu(jeton, bakeDeps, () => bakeWorldGeometry(scene, mpt));
   const geometry = baked.geometry;
   useEffect(() => () => baked.geometry.dispose(), [baked]);
-  const accents = useMemo(() => sceneGroundAccents(scene, mpt), [scene, mpt]);
+  // CUISSONS RÉELLEMENT PAYÉES depuis le montage — la trace `data-bake` du canevas (un canevas n'a pas
+  // d'arbre à interroger) : c'est par elle que la rétention se mesure à l'écran comme au banc.
+  const cuissons = useRef(0);
+  const dernierBake = useRef<BakedWorld | null>(null);
+  if (dernierBake.current !== baked) {
+    dernierBake.current = baked;
+    cuissons.current += 1;
+  }
+  // Les accents de sol sont semés sur les MÊMES faces : même read-set, donc mêmes deps.
+  const accents = accentsRetenus(jeton, bakeDeps, () => sceneGroundAccents(scene, mpt));
   // ── DÉGAGEMENT : compactage de l'index du monde cuit (aucun sommet touché, aucun matériau refait).
   useEffect(() => { applyCutawayMask(baked, keepEl); }, [baked, keepEl]);
   // ── TEINTE : réécriture en place des couleurs de sommet (elle ne retriangule rien).
   useEffect(() => { applyVisibilityTint(baked, tintAt); }, [baked, tintAt]);
   // Les touffes d'une nappe dégagée partent avec elle — MÊME loi, appliquée sur le MÊME semis cuit.
   const accentsVus = useMemo(() => maskGroundAccents(accents, keepEl), [accents, keepEl]);
-  const decor = useMemo(() => collectBillboards(scene, mpt, tintAt, els), [scene, mpt, tintAt, els]);
-  const acteurs = useMemo(() => actorBillboards(actors, scene, mpt, tintAt), [actors, scene, mpt, tintAt]);
+  // BILLBOARDS : leur seule lecture de scène est `heightAt` (`sceneHeightDeps`) — tout le reste leur
+  // vient de leurs éléments. Retenus dessus, un pas de combattant (jeu) comme un déplacement d'entité
+  // ou de zone (édition) ne re-rasterise plus la planche entière.
+  const hauteurDeps = sceneHeightDeps(scene);
+  const decor = decorRetenu(jeton, [...hauteurDeps, mpt, tintAt, els], () => collectBillboards(scene, mpt, tintAt, els));
+  const acteurs = acteursRetenus(jeton, [...hauteurDeps, actors, mpt, tintAt], () => actorBillboards(actors, scene, mpt, tintAt));
   const subjects = useMemo(() => [...decor, ...acteurs], [decor, acteurs]);
   // ── MARQUES DE CASES (P3-0c) : les éléments du builder, rangés par SLOT de montage. La CAPACITÉ des
   // pools ne suit que les paliers (`slotCapacity`) — un anneau de cible qui apparaît ne redimensionne
@@ -433,9 +482,13 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // ── LUMIÈRE (P2-5) : la DÉCISION est prise en scalaires purs (`stageLights.ts`), l'écran n'en monte
   // que les conséquences. `lit` = un soleil éclaire RÉELLEMENT (il est levé ET au-dessus du fondu) :
   // ombres portées branchées, disque de contact rendu inutile. La même passe rejoue au montage des lampes.
+  // Dépendances = le read-set de `stageLightScalars` (`Pick<Scene, 'ambiance'|'northDeg'|
+  // 'ambientLight'|'weather'>`), jamais la référence de scène : c'est l'IDENTITÉ de ce résultat qui
+  // remonte les lampes plus bas, et une référence par tick d'édition les redémontait toutes.
   const lumière = useMemo(
     () => stageLightScalars({ scene, gameTime, lightLevel }),
-    [scene, gameTime, lightLevel],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [scene.ambiance, scene.northDeg, scene.ambientLight, scene.weather, gameTime, lightLevel],
   );
   const { course, lit } = lumière;
   // FOND du canevas sous cette météo — un NOMBRE, donc une dépendance d'effet stable (deux frames de
@@ -470,7 +523,8 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // (`scenePrecip` → `sceneWeatherFx` : une météo authorée, et jamais en intérieur) ; densité, vitesse
   // de chute, vent, taille et teinte viennent tous de la donnée — aucun type de météo n'est nommé ici.
   // `null` = rien ne tombe, et pas une frame ne s'en occupe.
-  const precip = useMemo(() => scenePrecip(scene), [scene]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const precip = useMemo(() => scenePrecip(scene), [scene.weather, scene.ambiance]);
   // Le semis SURVIT aux mutations de scène : il est retenu sur ce qui le DÉTERMINE (scène, type de
   // météo, emprise du volume — `retainWeatherField`), pas sur la référence de l'objet scène. Un pas de
   // combattant produit une référence de scène par frame ; re-semer là-dessus téléporterait l'averse
@@ -481,7 +535,11 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // SOUS COUVERT : le MÊME champ que le dégagement d'architecture interroge (`builders/roofs.ts`) —
   // une seule vérité de « suis-je sous un toit ? ». Il ignore la vue : une nappe levée par le cutaway
   // abrite toujours ; le couvert suit le PLAN, et se recalcule avec la scène qui le porte.
-  const abris = useMemo(() => shelterField(scene), [scene]);
+  // Retenu sur le read-set de la CUISSON (`worldBakeDeps`) : le couvert se déduit des masses bâties,
+  // donc d'un sous-ensemble de ce que lit `worldFaces` — 6,9 ms sur 60×60 à 81 masses, qu'une
+  // référence de scène par tick repayait pour un couvert identique.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const abris = useMemo(() => shelterField(scene), bakeDeps);
   const sousCouvert = useMemo<ShelteredAt>(
     () => (xM, zM, yM) => isSheltered(abris, xM / mpt, zM / mpt, yM),
     [abris, mpt],
@@ -538,7 +596,12 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       const portee = povDepth(frame.indoor, brumePov?.povTightenK).farTiles;
       camera = povCamera(scene, pos, frame.facing, { w, h }, portee * mpt);
     } else {
-      f = stage3dFraming({ dims: frame.dims, mpt, cam: anim ? anim.cam() : frame.cam, zoom: frame.zoom, canvas: { w, h } });
+      // CADRE D'ÉCRAN de l'hôte : les deux conventions du dépôt (`stage3dCamera.ts`) — caméra de
+      // groupe sur viewBox FIXE (le jeu), ou viewBox MOBILE mesuré sur le rendu (l'éditeur).
+      const écran = frame.mode === 'viewbox'
+        ? viewBoxScreen(frame.viewBox, { w, h })
+        : stageScreen(anim ? anim.cam() : frame.cam, frame.zoom, { w, h });
+      f = stage3dFramingFor({ dims: frame.dims, mpt, screen: écran, canvas: { w, h } });
       const cible = new THREE.Vector3(f.centre.x, f.centre.y, f.centre.z);
       const boite = geometry.boundingBox;
       const rayon = boite ? boite.getSize(new THREE.Vector3()).length() / 2 : 100;
@@ -733,7 +796,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // En PREMIÈRE PERSONNE, aucun picker n'est inscrit : cette vue n'a jamais eu d'affordance de clic
   // (le SVG du POV n'en portait aucune) — l'inscrire en ouvrirait une par le seul changement de voie.
   useEffect(() => {
-    if (pov) return;
+    if (pov || !spritePicking) return;
     setSpritePicker((clientX, clientY) => {
       const canvas = canvasRef.current;
       const camera = cameraRef.current;
@@ -748,7 +811,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       );
     });
     return () => setSpritePicker(null);
-  }, [pov]);
+  }, [pov, spritePicking]);
 
   // Renderer UNIQUE (le canevas ne se remonte jamais).
   useEffect(() => {
@@ -1080,7 +1143,10 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       sun?.dispose();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scene, gameTime, lightLevel, shadowBox]);
+    // Même read-set que les scalaires ci-dessus (`stageLightScalars`) : une référence de scène par
+    // tick remontait ambiante et soleil — et redemandait la carte d'ombre — sans qu'aucune entrée de
+    // lumière ait bougé.
+  }, [scene.ambiance, scene.northDeg, scene.ambientLight, scene.weather, gameTime, lightLevel, shadowBox]);
 
   // ── POOL DE FLAQUES (#1245, L1) : monté UNE fois, jamais reconstruit (la réf `pool` est déclarée avec
   // la décision, plus haut). Le compte de lampes ponctuelles entre dans la clé de cache de programme de
@@ -1133,7 +1199,12 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // `data-precip` : le COMPTE de particules du semis d'intempéries — même raison que les deux autres
   // (le canevas n'a pas d'arbre), et la seule trace par laquelle la recette et les tests de montage
   // voient qu'il tombe quelque chose. Absent = rien ne tombe (météo claire, ou scène d'intérieur).
-  // `data-vue` : le REGARD de la frame (`affine` | `pov`) — même raison que les autres traces.
+  // `data-vue` : le REGARD de la frame (`affine` | `viewbox` | `pov`) — même raison que les autres traces.
+  // `data-sujets` : le nombre de SUJETS que la frame a à peindre en billboard (décor + acteurs), avant
+  // toute rasterisation — la seule trace de ce que l'hôte a donné à voir (un banc headless ne rasterise
+  // rien, et le canevas n'a pas d'arbre).
+  // `data-bake` : le nombre de CUISSONS payées depuis le montage. La rétention par contenu (P3-3) ne se
+  // lit nulle part ailleurs : c'est cette trace qui dit qu'un geste d'édition n'a PAS recuit le monde.
   // `data-bg` : la COULEUR D'EFFACEMENT réellement posée sur le renderer. Un banc headless stubbe
   // `setClearColor` en no-op — sans cette trace, la teinte du fond ne serait mesurable nulle part.
   // `data-brume` : le nombre de NAPPES de brume montées dans le volume. Absent = aucune (météo sans
@@ -1149,6 +1220,8 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       data-lampes={`${flaquesÉcrites.filter((f) => f && f.intensity > 0).length}/${POINT_LIGHT_BUDGET}`}
       data-precip={champ ? champ.n : undefined}
       data-vue={frame.mode}
+      data-bake={cuissons.current}
+      data-sujets={subjects.length}
       data-bg={`#${fondCanevas.toString(16).padStart(6, '0')}`}
       data-brume={nappesMontées || undefined}
     />

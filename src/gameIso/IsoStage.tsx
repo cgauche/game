@@ -50,7 +50,7 @@ import { VolumetricWorld } from './stage/VolumetricWorld';
 import { getStageBackend, subscribeStageBackend } from '../state/stage3d';
 import { getStageYaw, subscribeStageYaw, viewRot, viewYawDeg } from '../state/stageYaw';
 import { tintFor } from './backends/webgl/visibilityTint';
-import { type KeepEl } from './backends/webgl/sceneMeshes';
+import { roomZonesByElKey, type KeepEl } from './backends/webgl/sceneMeshes';
 import { stageCamTransform } from './stage/stageCam';
 import { occupiedInteriorZoneIds, roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
 import { NO_CLEARED_SPACE, exteriorWallViewZ, frontFacadeCutaway, cutawayForSection, cutawayOverhead, lidCutaway, spaceCellKey } from './stage/architectureVisibility';
@@ -299,17 +299,22 @@ export function IsoStage() {
   }, [scene, visualAllies, exploredSet, roofGeom, dims]);
   // Les MÊMES vérités, dans la forme que consomme la voie VOLUMIQUE (#1176) : le dégagement en canal
   // GÉOMÉTRIE (une masse dégagée ne se rend pas), la visibilité en canal TEINTE. Un seul jeu de lois.
+  // ZONES DE PIÈCE résolues sur la scène VIVE (#1176, P3-3) : le monde cuit ne les retient PLUS
+  // (`elCuit`, `backends/webgl/sceneMeshes.ts`) parce qu'elles descendent de `scene.effectZones`, qui
+  // n'est pas dans le read-set de la cuisson — un `roomZoneIds` cuit aurait périmé en silence. La loi
+  // ci-dessous les redemande par la CLÉ de l'élément, pour les deux voies à la fois.
+  const zonesVives = useMemo(() => (scene ? roomZonesByElKey(scene) : new Map<string, readonly string[]>()), [scene]);
   const keepEl = useMemo<KeepEl>(() => (el) => {
     if (el.kind === 'roof')
       return cutawayForSection({
         sectionId: el.sectionId ?? el.key,
-        roomZoneIds: el.roomZoneIds,
+        roomZoneIds: zonesVives.get(el.key),
         cells: el.cells.map((c) => spaceCellKey(c.x, c.y, el.cell.z)),
       }, cleared) === 'visible';
     if (cutawayOverhead(el.cell, cleared)) return false;
-    if (el.kind === 'wall') return !frontFacadeCutaway({ ...el, x: el.cell.x, y: el.cell.y, z: el.cell.z }, cleared, dims);
+    if (el.kind === 'wall') return !frontFacadeCutaway({ ...el, roomZoneIds: zonesVives.get(el.key), x: el.cell.x, y: el.cell.y, z: el.cell.z }, cleared, dims);
     return true;
-  }, [cleared, dims]);
+  }, [cleared, dims, zonesVives]);
   const tintAt = useMemo(() => (key: string) => tintFor(key, visible, exploredSet), [visible, exploredSet]);
   const floorEls = useMemo(
     () => (scene ? buildFloors(scene, visible, { activeZ, viewZ: layerZ }).filter((el) => !cutawayOverhead(el.cell, cleared)) : []),

@@ -53,6 +53,28 @@ export function viewBoxScale(canvas: StageCanvas): number {
   return Math.max(canvas.w / VW, canvas.h / VH);
 }
 
+/** VIEWBOX MOBILE — la seconde convention du dépôt (`ui/editor/EditorCanvas.tsx` : viewBox de taille
+ *  variable `${vb.x} ${vb.y} ${w/zoom} ${h/zoom}`, `preserveAspectRatio` par DÉFAUT donc
+ *  `xMidYMid meet`). Le rectangle rendu est le viewBox lui-même, à l'échelle MIN des deux rapports
+ *  (le `meet` tient le viewBox ENTIER dans l'élément ; le `slice` du jeu, lui, le recouvre). */
+export function viewBoxMeetScale(viewBox: { w: number; h: number }, canvas: StageCanvas): number {
+  return Math.min(canvas.w / viewBox.w, canvas.h / viewBox.h);
+}
+
+/** Pixel de l'ÉLÉMENT où tombe un point de PROJECTION `p` sous un VIEWBOX MOBILE (`meet` centré,
+ *  `xMidYMid`) : aucune caméra de groupe à défaire — le viewBox EST le cadrage. */
+export function viewBoxScreenPixel(
+  p: { cx: number; cy: number },
+  viewBox: { x: number; y: number; w: number; h: number },
+  canvas: StageCanvas,
+): { sx: number; sy: number } {
+  const s = viewBoxMeetScale(viewBox, canvas);
+  return {
+    sx: (p.cx - (viewBox.x + viewBox.w / 2)) * s + canvas.w / 2,
+    sy: (p.cy - (viewBox.y + viewBox.h / 2)) * s + canvas.h / 2,
+  };
+}
+
 /** Pixel de l'ÉLÉMENT où tombe un point de viewBox `p` (typiquement la sortie de `tileCenter`) :
  *  caméra du groupe, puis recouvrement du viewBox centré (`xMidYMid`). */
 export function stageScreenPixel(
