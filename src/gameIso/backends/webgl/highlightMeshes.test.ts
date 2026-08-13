@@ -11,6 +11,7 @@ import { RING_TARGET_TINT, WALK_TINT, ZONE_SMOKE_TINT } from '../../highlightTin
 import {
   HIGHLIGHT_SLOTS,
   SLOT_OPACITY,
+  TILE_INSET_K,
   buildHighlightMesh,
   groupHighlights,
   highlightMatrix,
@@ -192,7 +193,8 @@ describe('Marques volumiques — l’anneau-contour est un CADRE, pas un quad pl
     const plein = buildHighlightMesh('ringCrowd', 32).geometry;
     expect(plein.getAttribute('position').count).toBe(6); // 2 triangles
     expect(cadre.getAttribute('position').count).toBe(24); // 4 bandes × 2 triangles
-    expect(aire(plein)).toBeCloseTo(1, 9); // la case UNITÉ entière
+    // la case entière MOINS son liseré de grille, sur les quatre bords (`TILE_INSET_K`)
+    expect(aire(plein)).toBeCloseTo((1 - 2 * TILE_INSET_K) ** 2, 6); // 6 décimales : la géométrie est en float32
     expect(aire(cadre)).toBeLessThan(0.5); // un liseré : l'intérieur reste vide
     expect(aire(cadre)).toBeGreaterThan(0);
   });

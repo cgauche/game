@@ -7,6 +7,8 @@
  * PV fuit sur le GPU ; et la moindre clé de décoration dans l'identité des sujets remonterait tous
  * les billboards à chaque point de vie perdu. Le chrome est de l'INTERFACE : il vit à l'écran, à
  * taille constante, avec ses icônes du registre et ses `<title>` d'accessibilité.
+ * Conséquence ENTÉRINÉE (juge vision 2026-08-13) : peint à l'écran, ce chrome garde sa LUMINANCE PLEINE
+ * là où l'affine, dessiné dans la scène, s'assombrit avec elle — barre de PV mesurée ×2,75 plus claire.
  *
  * CADENCE : le rendu React donne son CONTENU (PV, États, état de fin), la BOUCLE DE MARCHE donne sa
  * POSITION. Les deux ne battent pas au même rythme, et c'est structurel : en volumique aucun rendu

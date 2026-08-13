@@ -31,23 +31,36 @@ import { SPECKLE_LIFT_M } from './groundAccents';
 export type DynMarkSlot = 'tether' | 'actif' | 'groupe' | 'anneau';
 
 /** Les quatre pools, dans l'ordre de RANG croissant. */
-export const DYN_MARK_SLOTS: readonly DynMarkSlot[] = ['tether', 'actif', 'groupe', 'anneau'];
+export const DYN_MARK_SLOTS: readonly DynMarkSlot[] = ['actif', 'groupe', 'anneau', 'tether'];
 
 /** RANG de superposition, dans la MÊME échelle que les marques statiques (`highlightMeshes.SLOT_RANK`,
  *  qui s'arrête à 8) : ces quatre-là passent AU-DESSUS de toutes les marques de case, comme en affine où
- *  elles sont émises après le builder. L'ANNEAU d'équipe passe au-dessus des trois autres : la voie
- *  affine le peint DANS le jeton (profondeur `+0.5`, `stage/tokens.combatantObjs`) quand elle pose ces
- *  trois-là sous les jetons (`+0.25`, `dynamicHighlightObjs`). */
-export const DYN_SLOT_RANK: Record<DynMarkSlot, number> = { tether: 9, actif: 10, groupe: 11, anneau: 12 };
+ *  elles sont émises après le builder. L'ANNEAU d'équipe passe au-dessus du contour d'actif et du repère
+ *  de groupe : la voie affine le peint DANS le jeton (profondeur `+0.5`, `stage/tokens.combatantObjs`)
+ *  quand elle pose ces deux-là sous les jetons (`+0.25`, `dynamicHighlightObjs`).
+ *
+ *  LE LIEN D'ENGAGEMENT EST AU SOMMET (correctif du juge vision, 2026-08-13) : sous le contour d'actif,
+ *  son dernier tiers disparaissait dans la bande or de la case active — un cadre d'opacité 1, large de
+ *  `RING_FRAME_K` de case, que le lien traverse pour rejoindre le centre de cette case. Un lien amputé
+ *  se lit comme un lien PLUS COURT, donc comme une autre situation de mêlée. Le rang 13 appartient déjà
+ *  aux halos d'interaction (`interactHaloMeshes.HALO_SLOT_RANK`) : le bloc dynamique reste borné à 12. */
+export const DYN_SLOT_RANK: Record<DynMarkSlot, number> = { actif: 9, groupe: 10, anneau: 11, tether: 12 };
 
 /** Décollement (m) d'un pool au-dessus de la surface qui le porte. */
 export function dynSlotLiftM(slot: DynMarkSlot): number {
   return (DYN_SLOT_RANK[slot] + 1) * SPECKLE_LIFT_M;
 }
 
-/** Opacités de la voie affine, à l'identique (ni le contour de l'actif ni l'anneau d'équipe n'y
- *  portent d'`opacity`). */
-export const DYN_SLOT_OPACITY: Record<DynMarkSlot, number> = { tether: 0.6, actif: 1, groupe: 0.5, anneau: 1 };
+/** Opacités de la voie affine, à l'identique (ni le contour de l'actif ni l'anneau d'équipe n'y portent
+ *  d'`opacity`) — SAUF le lien d'engagement.
+ *
+ *  LIEN : la parité d'EFFET PERÇU prime sur la parité de valeur (correctif du juge vision, 2026-08-13).
+ *  La scène volumique est trois fois plus claire que l'affine (luminance de sol mesurée 73 contre 24) ;
+ *  `ENGAGE_TINT` valant 137,7 de luminance, le lien détache 68,3 de son sol en affine à 0,6, mais 38,8
+ *  seulement en volumique à la même valeur — il s'y lisait plus sombre que l'anneau d'équipe ennemi qu'il
+ *  rejoint. À pleine
+ *  opacité il en détache 64,7, l'écart de l'affine à 5 % près. */
+export const DYN_SLOT_OPACITY: Record<DynMarkSlot, number> = { tether: 1, actif: 1, groupe: 0.5, anneau: 1 };
 
 /** Teintes — le MÊME catalogue que la voie affine (`highlightTints`). `null` = teinte PAR INSTANCE :
  *  l'anneau d'équipe porte celle de son combattant (`builders/dynamicMarks.teamRingDecor`). */

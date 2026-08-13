@@ -24,6 +24,7 @@
  * (`worldTris.ts`), et une marque n'y est pas.
  */
 import * as THREE from 'three';
+import { strokeWidthK } from '../../builders/dynamicMarks';
 import type { HighlightEl } from '../../builders/highlights';
 import { tileTint } from '../../teamColors';
 import {
@@ -138,6 +139,29 @@ export function highlightTint(el: HighlightEl): string {
 /** Épaisseur du cadre d'un anneau-contour, en fraction de case. */
 export const RING_FRAME_K = 0.09;
 
+/** LISERÉ de retrait d'une marque de case PLEINE, en fraction de case et PAR BORD : une plaque ne
+ *  couvre pas la frontière de sa case, si bien que deux cases voisines d'une même zone laissent voir
+ *  `2 · TILE_INSET_K` de sol entre elles. Le joueur compte donc ses cases DANS sa portée (arbitrage
+ *  de la vue tactique, 2026-08-12).
+ *
+ *  POURQUOI LA VOIE VOLUMIQUE EN A BESOIN ET PAS L'AFFINE — mesuré, pas supposé : l'affine peint UN
+ *  `<path>` par case (`backends/affineHighlights`) et les composite SÉPARÉMENT ; au pixel de
+ *  frontière la couverture se scinde entre deux chemins et l'alpha résultant tombe à
+ *  `1 − (1 − 0,32·c)(1 − 0,32·(1 − c))` = 0,294 au lieu de 0,32 — la teinte étant plus claire que le
+ *  sol, ce déficit se lit comme un CREUX, et l'affine hérite d'une grille par accident de
+ *  composition. Un `InstancedMesh` de quads JOINTIFS rend au contraire un aplat exact : aucun pixel
+ *  de frontière ne se creuse. Mesuré au détecteur de coutures du juge (vallée de luminance ≥ 1,5
+ *  entre flancs égaux) sur du sol d'HERBE (quasi-aplat, `siege-enceinte-top-lit.png`), pas de case
+ *  48 px, 14,6 frontières par scanline : 13,52 coutures/scanline sous plaque affine, 0,19 sous
+ *  plaque volumique JOINTIVE, 13,16 sous plaque INSETÉE. Et le liseré ne creuse pas de la même
+ *  profondeur : `α · (L_teinte − L_sol)`, mesuré 39,8 de médiane sur cette herbe, 24,2 sur un sol de
+ *  luminance 73 — contre 1,94 pour la couture accidentelle de l'affine.
+ *
+ *  VALEUR : UN pixel du gabarit affine par bord (`strokeWidthK`, la conversion px → fraction de
+ *  case), soit ~2 px de sol entre deux plaques au pas de case de 35,8 px ; la plaque garde 89 % de
+ *  son aire. */
+export const TILE_INSET_K = strokeWidthK(1);
+
 /** Matrice d'INSTANCE : le carré UNITÉ posé au centre de sa case, à la hauteur métrique de sa surface
  *  plus le décollement de son slot. `(x, y, h) → (x·mpt, h, y·mpt)`, la conversion du monde
  *  (`worldTris.gpToWorld`). */
@@ -168,9 +192,13 @@ export function slotCapacity(n: number): number {
   return Math.max(32, 2 ** Math.ceil(Math.log2(n)));
 }
 
-/** Gabarit UNITÉ d'une case PLEINE : un carré horizontal de côté 1 centré sur l'origine (plan XZ). */
-export function tileQuadGeometry(): THREE.BufferGeometry {
-  const h = 0.5;
+/** Gabarit UNITÉ d'une case PLEINE : un carré horizontal centré sur l'origine (plan XZ), de côté
+ *  `1 − 2·inset`. `inset` = retrait par bord, en fraction de case — 0 (le défaut) rend la case
+ *  entière, ce qu'exige un gabarit qui n'est PAS une case (le tiret d'un lien de mêlée, la corde d'un
+ *  anneau, le quad d'un halo : ils portent leur taille dans leur matrice d'instance). Une MARQUE DE
+ *  CASE, elle, se retire de `TILE_INSET_K` pour laisser voir la grille (`buildHighlightMesh`). */
+export function tileQuadGeometry(inset = 0): THREE.BufferGeometry {
+  const h = 0.5 - inset;
   const geo = new THREE.BufferGeometry();
   geo.setAttribute(
     'position',
@@ -203,9 +231,10 @@ export function tileFrameGeometry(k = RING_FRAME_K): THREE.BufferGeometry {
 /** Pool d'un slot : géométrie du slot, matériau NON éclairé (une surbrillance est un repère de jeu, pas
  *  une surface du monde — elle ne doit ni s'assombrir la nuit ni recevoir d'ombre), à la CAPACITÉ
  *  demandée. `instanceColor` est alloué dès la construction : l'écriture qui suit ne fait que le
- *  remplir. */
+ *  remplir. Toute marque PLEINE se retire du liseré de grille (`TILE_INSET_K`) ; le contour, lui, EST
+ *  déjà un liseré. */
 export function buildHighlightMesh(slot: HighlightSlot, capacity: number): THREE.InstancedMesh {
-  const geo = slot === 'ringContour' ? tileFrameGeometry() : tileQuadGeometry();
+  const geo = slot === 'ringContour' ? tileFrameGeometry() : tileQuadGeometry(TILE_INSET_K);
   const mat = new THREE.MeshBasicMaterial({
     side: THREE.DoubleSide,
     transparent: true,

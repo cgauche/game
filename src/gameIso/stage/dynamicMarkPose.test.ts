@@ -147,13 +147,17 @@ describe('poseDynamicMarks — le lien d’engagement suit la glisse (#1176 P3-0
     expect(instance(p.actif!, 0).pos.y).toBeCloseTo(5 + 3 + dynSlotLiftM('actif'), 5);
   });
 
-  it('BIAIS : les trois marques dynamiques se posent AU-DESSUS de toutes les marques statiques', () => {
+  it('BIAIS : les marques dynamiques se posent AU-DESSUS de toutes les marques statiques, le LIEN au sommet', () => {
     // `rangeBand` est le rang le plus haut des marques de case (`highlightMeshes.SLOT_RANK`).
-    expect(dynSlotLiftM('tether')).toBeGreaterThan(slotLiftM('rangeBand'));
-    expect(dynSlotLiftM('actif')).toBeGreaterThan(dynSlotLiftM('tether'));
+    expect(dynSlotLiftM('actif')).toBeGreaterThan(slotLiftM('rangeBand'));
     expect(dynSlotLiftM('groupe')).toBeGreaterThan(dynSlotLiftM('actif'));
+    expect(dynSlotLiftM('anneau')).toBeGreaterThan(dynSlotLiftM('groupe'));
+    // Le lien d'engagement passe au-dessus de TOUTES les autres marques dynamiques : sous le contour
+    // d'actif, la bande or de la case active lui mangeait son dernier tiers (juge vision 2026-08-13).
+    expect(dynSlotLiftM('tether')).toBeGreaterThan(dynSlotLiftM('anneau'));
     // et chaque rang est un CRAN entier de décollement — jamais un demi (le z-fighting reviendrait)
-    expect(dynSlotLiftM('actif') - dynSlotLiftM('tether')).toBeCloseTo(SPECKLE_LIFT_M, 12);
+    expect(dynSlotLiftM('groupe') - dynSlotLiftM('actif')).toBeCloseTo(SPECKLE_LIFT_M, 12);
+    expect(dynSlotLiftM('tether') - dynSlotLiftM('anneau')).toBeCloseTo(SPECKLE_LIFT_M, 12);
   });
 
   it('rien à peindre : les pools tombent à zéro instance, sans se démonter', () => {

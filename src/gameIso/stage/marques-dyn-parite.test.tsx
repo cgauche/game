@@ -334,7 +334,9 @@ describe('Marques dynamiques — ALLURE et EXCLUSIVITÉ des deux voies (#1176 P3
       ENGAGE_TINT.toLowerCase(), ACTIVE_HALO_TINT.toLowerCase(), ACTIVE_HALO_TINT.toLowerCase(),
     ]);
     const opacité = (m: THREE.InstancedMesh) => (m.material as THREE.MeshBasicMaterial).opacity;
-    expect([opacité(p.tether), opacité(p.actif), opacité(p.groupe)]).toEqual([0.6, 1, 0.5]);
+    // Le LIEN est à PLEINE opacité côté volumique, là où l'affine le peint à 0,6 : la scène y est trois
+    // fois plus claire, et c'est l'effet PERÇU qui se met en parité (`DYN_SLOT_OPACITY`).
+    expect([opacité(p.tether), opacité(p.actif), opacité(p.groupe)]).toEqual([1, 1, 0.5]);
   });
 
   it('ANNEAUX D’ÉQUIPE : un par combattant posté des deux côtés, au MÊME rayon et au MÊME pointillé', () => {
