@@ -84,17 +84,17 @@ describe('CampaignView — les boutons d’orientation SONT le geste de Q/E', ()
    *  dérouler l'approche à la frame. */
   const sansFrames = () => vi.stubGlobal('requestAnimationFrame', undefined);
 
-  it('voie VOLUMIQUE : le bouton pousse le LACET, et ne touche pas au cran du store', () => {
+  it('voie VOLUMIQUE : le bouton pousse le LACET d’un cran DIAGONAL, et ne touche pas au cran du store', () => {
     const el = monter(false);
     setStageBackend('webgl');
     sansFrames();
     const cran = useGame.getState().camRot;
     act(() => { el.querySelector('[aria-label="Tourner horaire (E)"]')!.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true })); });
-    expect(getStageYaw()).toBe(45);
+    expect(getStageYaw()).toBe(90); // #1289 : le geste du joueur vise un quart de tour, jamais un demi-cran de face
     expect(useGame.getState().camRot).toBe(cran);
   });
 
-  it('voie AFFINE : le même bouton avance d’un cran (des HUIT : coin ↔ face), et le lacet reste nul', () => {
+  it('voie AFFINE : le même bouton avance d’un cran (des QUATRE diagonales), et le lacet reste nul', () => {
     const el = monter(false);
     sansFrames();
     const cran = () => `${useGame.getState().camRot}${useGame.getState().camEdge ? 'e' : ''}`;

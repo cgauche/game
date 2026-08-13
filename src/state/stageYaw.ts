@@ -85,6 +85,28 @@ export function yawTarget(courantDeg: number, cibleDeg: number, deltaDeg: number
   return courantDeg + Math.max(-AVANCE_MAX_DEG, Math.min(AVANCE_MAX_DEG, avance));
 }
 
+/** Cran de la caméra de JEU (degrés) : les QUATRE vues diagonales (#1289). La géométrie de face
+ *  (`camEdge`, +45°) reste entière — seule la caméra du joueur ne la vise plus. */
+const CRAN_JEU_DEG = 90;
+
+/** Avance maximale tolérée, EN CRANS, quand la poussée AIMANTE (cf. `snapYawTarget`). Le plafond ne
+ *  peut pas s'exprimer en degrés relatifs au lacet courant : borner à ±90° d'un angle EN VOL pose la
+ *  cible entre deux crans. En crans, un double-appui rapide vaut un demi-tour et relâcher arrête au
+ *  cran suivant, sans jamais empiler un tour d'avance. */
+const AVANCE_MAX_CRANS = 2;
+
+/** Nouvelle CIBLE d'une poussée AIMANTÉE : le premier cran SITUÉ DANS LE SENS poussé — jamais la
+ *  cible plus un delta. L'aimant est là pour l'angle QUELCONQUE : d'une vue de face (45°, restaurée
+ *  d'une sauvegarde ou posée par la caméra libre DEV), une poussée horaire rend 90° et une poussée
+ *  antihoraire 0° — le premier tour recale, il ne fait pas 135°. Angle mort DEV-seulement : une cible
+ *  FINE posée par la caméra libre (`nudgeStageYaw`) à `k×90 − ε` a pour plancher `k` et rend `k×90`,
+ *  soit une poussée sans déplacement visible ; la route du joueur n'a aucun appel fin. PUR. */
+export function snapYawTarget(courantDeg: number, cibleDeg: number, dir: 1 | -1): number {
+  const cranCourant = Math.round(courantDeg / CRAN_JEU_DEG);
+  const vise = dir === 1 ? Math.floor(cibleDeg / CRAN_JEU_DEG) + 1 : Math.ceil(cibleDeg / CRAN_JEU_DEG) - 1;
+  return Math.max(cranCourant - AVANCE_MAX_CRANS, Math.min(cranCourant + AVANCE_MAX_CRANS, vise)) * CRAN_JEU_DEG;
+}
+
 function notifier(): void {
   subs.forEach((f) => f());
 }
@@ -104,9 +126,9 @@ function frame(now: number): void {
   requestAnimationFrame(frame);
 }
 
-/** Pousse le lacet de `deltaDeg` et lance (ou relance) l'approche. */
-export function nudgeStageYaw(deltaDeg: number): void {
-  cible = yawTarget(courant, cible, deltaDeg);
+/** Pose la CIBLE et lance (ou relance) l'approche — le geste commun aux deux façons de viser. */
+function courirVers(nouvelleCible: number): void {
+  cible = nouvelleCible;
   if (typeof requestAnimationFrame !== 'function') { // hors navigateur : le lacet arrive tout de suite
     courant = cible;
     notifier();
@@ -116,6 +138,18 @@ export function nudgeStageYaw(deltaDeg: number): void {
   anime = true;
   dernier = 0;
   requestAnimationFrame(frame);
+}
+
+/** Pousse le lacet de `deltaDeg` et lance (ou relance) l'approche. Vise un angle LIBRE : la caméra
+ *  d'inspection (DEV), qui atteint les vues de face comme n'importe quel angle intermédiaire. */
+export function nudgeStageYaw(deltaDeg: number): void {
+  courirVers(yawTarget(courant, cible, deltaDeg));
+}
+
+/** AIMANTE le lacet au cran voisin (`snapYawTarget`) et lance l'approche : le geste de rotation du
+ *  JOUEUR (Q/E, boutons d'orientation), qui ne connaît que les quatre vues diagonales (#1289). */
+export function snapStageYawToCran(dir: 1 | -1): void {
+  courirVers(snapYawTarget(courant, cible, dir));
 }
 
 /** Remet le lacet au cran. Deux coutures l'appellent : l'ENTRÉE DE SCÈNE (`startScene`/`transitionTo`,

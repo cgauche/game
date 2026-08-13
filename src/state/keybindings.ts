@@ -15,7 +15,7 @@ import { hotbar } from './hotbarBridge';
 import { validTargets, preemptShooterIds } from './targeting';
 import type { ScreenDir } from './combatCursor';
 import { getStageBackend } from './stage3d';
-import { nudgeStageYaw } from './stageYaw';
+import { snapStageYawToCran } from './stageYaw';
 
 /** Section d'affichage de l'écran Options (remap) — REGROUPE les raccourcis par contexte de jeu.
  *  Purement présentationnel (le `when` de chaque binding reste l'unique arbitre d'exécution). */
@@ -56,17 +56,16 @@ const noModal = (s: GameState) => pickActiveModalKey(s as Parameters<typeof pick
  *  arbitre) : une modale PILOTÉE PAR LA CARTE (désignation de cibles d'un sort) laisse la scène
  *  vivante — la souris y cible, le curseur clavier/manette doit pouvoir en faire autant. */
 const mapLive = (s: GameState) => !modalBlocksMapHover(s as Parameters<typeof modalBlocksMapHover>[0]);
-/** Un cran de la rotation à HUIT crans (coin ↔ face), en degrés — le pas d'une poussée de Q/E. */
-const CRAN_DEG = 45;
 /** UNE poussée de rotation caméra — SOURCE UNIQUE du geste, partagée par le clavier (Q/E) et par les
  *  boutons d'orientation de l'écran de jeu (`ui/ViewControls`, dont les libellés annoncent Q et E).
- *  En voie VOLUMIQUE (#1176, P2-7) le lacet est CONTINU : le monde y est une caméra réelle, qui prend
- *  n'importe quel angle, et les overlays SVG s'y re-projettent (`Dims.yawDeg`) — une poussée vise un
- *  cran de plus et la caméra y COURT (`state/stageYaw.ts`), maintenir la touche fait tourner sans
- *  à-coup. En affine, le cran (`rotateCam`) : c'est le seul régime que l'atlas de sprites pré-tournés
- *  sait peindre. */
+ *  La caméra de JEU ne connaît que les QUATRE vues DIAGONALES (#1289) : de face, la grille s'aligne
+ *  sur l'écran et le plateau perd sa lecture en volume. En voie VOLUMIQUE (#1176, P2-7) le lacet reste
+ *  CONTINU — la caméra COURT vers le cran visé (`state/stageYaw.ts`) et maintenir la touche fait tourner
+ *  sans à-coup —, mais la cible est AIMANTÉE au cran (`snapStageYawToCran`) : une addition depuis un
+ *  lacet en vol poserait la vue entre deux crans. En affine, le cran (`rotateCam`) : c'est le seul
+ *  régime que l'atlas de sprites pré-tournés sait peindre. */
 export const tournerCamera = (g: () => GameState, dir: 1 | -1): void => {
-  if (getStageBackend() === 'webgl') nudgeStageYaw(dir * CRAN_DEG);
+  if (getStageBackend() === 'webgl') snapStageYawToCran(dir);
   else g().rotateCam(dir);
 };
 /** Contexte de PILOTAGE du combat (fin de tour, barre d'action) : en combat, c'est bien ton tour

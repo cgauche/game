@@ -66,7 +66,12 @@ function applyLoadedSave(set: (s: Partial<GameState>) => void, save: SaveGame): 
   // officielle (v1→v2, `saves.ts` MIGRATIONS[1]) — `save.data` en sort déjà nettoyé.
   // `net` : la SESSION coop courante prime sur celle figée dans la save (ne pas ressusciter un
   // salon mort, ne pas dissoudre un salon vivant — l'hôte peut charger une save en ligne).
-  set({ ...base, ...data, screen: 'campaign', net: useGame.getState().net });
+  // `camEdge` : une save d'avant la restriction aux quatre vues diagonales (#1289) peut porter une vue
+  // de FACE ; la partie chargée repart du cran diagonal, comme à l'entrée de scène. Chemin d'état NON
+  // rattrapé : `applyNetSnapshot` (`netFlow.ts`), où l'invité adopte l'état de l'hôte en bloc — aucun
+  // écrivain de `camEdge: true` ne subsiste dans l'arbre, seul un hôte tournant un build ANTÉRIEUR au
+  // lot pourrait en émettre un.
+  set({ ...base, ...data, screen: 'campaign', camEdge: false, net: useGame.getState().net });
   // Paquet de campagne snapshotté (#766) : RÉ-ENREGISTRE toutes ses scènes (le `sceneRegistry` en mémoire
   // module ne connaît sinon que l'Arène + la scène courante → transitions/portes vers les AUTRES scènes du
   // paquet échoueraient en silence) et RE-DÉRIVE la couche narrative runtime (non persistée, `saves.ts`).
@@ -1577,18 +1582,12 @@ export const useGame = create<GameState>((set, get) => ({
   mode: 'exploration',
   partyWiped: false,
   camRot: 0,
-  camEdge: false, // défaut = vue de COIN (losange, la plus lisible) ; la rotation 8 crans alterne coin ↔ face par 45°
-  // 8 crans (45°) : +1 fait coin→face (même rot) puis face→coin (rot+1) ; -1 l'inverse.
+  camEdge: false, // vue de COIN (losange) : le SEUL régime du chemin joueur ; la vue de face (+45°) reste une géométrie servie à la caméra libre DEV
+  // QUATRE crans (90°, les vues diagonales — #1289) : le chemin joueur saute les états de face, donc
+  // `camEdge` en ressort toujours faux — y compris depuis une vue de face restaurée d'une sauvegarde.
   rotateCam: (dir) =>
     set((s) => {
-      const next =
-        dir === 1
-          ? s.camEdge
-            ? { camEdge: false, camRot: (((s.camRot + 1) % 4) as 0 | 1 | 2 | 3) }
-            : { camEdge: true }
-          : s.camEdge
-            ? { camEdge: false }
-            : { camEdge: true, camRot: (((s.camRot + 3) % 4) as 0 | 1 | 2 | 3) };
+      const next = { camEdge: false, camRot: (((s.camRot + (dir === 1 ? 1 : 3)) % 4) as 0 | 1 | 2 | 3) };
       // Re-centre sur le point focal à chaque cran : sinon le décalage manuel (camPan) persiste à
       // travers le changement de projection (coin↔face, origines très différentes) → vue « téléportée ».
       return { ...next, camPan: { x: 0, y: 0 } };
@@ -1988,6 +1987,7 @@ export const useGame = create<GameState>((set, get) => ({
       dialogue: null,
       battle: null,
       campaignSceneId: target.id,
+      camEdge: false, // idem `resetStageYaw` ci-dessous : la scène d'arrivée se regarde depuis un cran DIAGONAL (#1289)
     }));
     resetStageYaw(); // idem `startScene` : la scène d'arrivée se regarde depuis son cran, pas depuis le lacet de la précédente
     if (target.startMessage) get().log(target.startMessage);

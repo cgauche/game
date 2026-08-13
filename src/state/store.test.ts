@@ -2632,27 +2632,22 @@ describe('camRot (rotation caméra — état de vue)', () => {
     expect(init.camRot).toBe(0);
   });
 
-  it('tourne par crans de 45° (coin↔face), boucle sur un tour complet (8 crans)', () => {
+  it('tourne par crans de 90° (les quatre vues DIAGONALES) et boucle sur un tour complet', () => {
     useGame.setState({ camRot: 0, camEdge: false }); // état par DÉFAUT : vue de coin
-    // +1 depuis la vue de coin : passe en vue de face SANS changer camRot.
-    useGame.getState().rotateCam(1);
-    expect(useGame.getState().camRot).toBe(0);
-    expect(useGame.getState().camEdge).toBe(true);
-    // demi-cran suivant : revient en vue de coin au cran +1.
+    // +1 : le cran suivant, toujours en vue de coin (la vue de face n'est plus sur le chemin du joueur).
     useGame.getState().rotateCam(1);
     expect(useGame.getState().camRot).toBe(1);
     expect(useGame.getState().camEdge).toBe(false);
-    // 8 crans (45°) = tour complet → retour à l'état initial (coin, camRot 0).
-    for (let i = 0; i < 6; i++) useGame.getState().rotateCam(1);
+    // 4 crans (90°) = tour complet → retour à l'état initial (coin, camRot 0).
+    for (let i = 0; i < 3; i++) useGame.getState().rotateCam(1);
     expect(useGame.getState().camRot).toBe(0);
     expect(useGame.getState().camEdge).toBe(false);
-    // Anti-horaire : un cran depuis (0, coin) passe en vue de face en décrémentant camRot (0→3)…
+    // Anti-horaire : un cran depuis (0, coin) décrémente camRot (0→3), toujours en coin.
     useGame.getState().rotateCam(-1);
     expect(useGame.getState().camRot).toBe(3);
-    expect(useGame.getState().camEdge).toBe(true);
-    // …puis le cran suivant revient en coin sans changer camRot.
+    expect(useGame.getState().camEdge).toBe(false);
     useGame.getState().rotateCam(-1);
-    expect(useGame.getState().camRot).toBe(3);
+    expect(useGame.getState().camRot).toBe(2);
     expect(useGame.getState().camEdge).toBe(false);
   });
 });
