@@ -19,7 +19,7 @@
  * `public/qc/baseline-affine/` — la référence de non-régression d'avant la bascule.
  */
 import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
-import { openApp, evaluate, waitFor, consoleGuard, withReloadRetry, sleep, DEFAULT_URL } from '../recette/lib.mjs';
+import { openApp, evaluate, waitFor, consoleGuard, withReloadRetry, sleep, clickButtonByText, DEFAULT_URL } from '../recette/lib.mjs';
 
 const OUT_DIR = 'public/qc/jeu';
 const SHEET = 'public/qc/jeu.html';
@@ -95,6 +95,37 @@ function parseArgs(argv) {
   return { options: opts };
 }
 
+/** Boutons d'avancement d'une fenêtre de révélation (`CascadeModal`, dernière étape = « Terminer »). */
+const LABELS_AVANCEMENT = ['Terminer', 'Continuer', 'Fermer'];
+
+/**
+ * Ferme la carte-briefing d'entrée de scène AVANT toute capture (`docs/recette-navigateur.md`,
+ * § Pièges vécus) : `__wfrp.modal()` ne la voit pas, elle n'est détectable qu'au DOM
+ * (`.modal-overlay`) et ne se ferme que par un CLIC réel sur son bouton.
+ * Son apparition est asynchrone et de latence variable — on la POLL (jamais un délai fixe), on
+ * avance jusqu'à ce que le voile tombe, et on RE-VÉRIFIE l'absence APRÈS la boucle : sans cette
+ * re-vérification, une fenêtre encore ouverte partait en planche (centre de l'écran masqué).
+ */
+async function fermerBriefing(session, { attendreApparition = true, timeoutMs = 3000 } = {}) {
+  const voile = `!!document.querySelector('.modal-overlay')`;
+  if (attendreApparition) {
+    try {
+      await waitFor(session, voile, { timeoutMs, intervalMs: 150 });
+    } catch {
+      // Scène sans `startMessage` : aucune fenêtre ne monte. L'absence est confirmée en fin de fonction.
+    }
+  }
+  for (let i = 0; i < 12; i++) {
+    if (!(await evaluate(session, voile))) break;
+    const textes = await evaluate(session, `[...document.querySelectorAll('.modal-overlay button:not(:disabled)')].map((b) => b.textContent.trim()).filter(Boolean)`);
+    const label = LABELS_AVANCEMENT.find((l) => textes.some((t) => t.includes(l)));
+    if (!label) throw new Error(`fenêtre bloquante sans bouton d'avancement connu — boutons : ${textes.join(' | ')}`);
+    await clickButtonByText(session, label);
+    await sleep(500);
+  }
+  if (await evaluate(session, voile)) throw new Error('une fenêtre modale occupe encore le centre de l\'écran — capture refusée');
+}
+
 /** Charge le scénario, arme la voie VOLUMIQUE, ouvre la carte : l'état de départ de toute capture. */
 async function armerScene(session, id, seed) {
   console.log(await evaluate(session, `__wfrp.scenario(${JSON.stringify(id)}, ${seed})`));
@@ -106,6 +137,7 @@ async function armerScene(session, id, seed) {
   // Le monde volumique est un CANEVAS ; la voie affine n'en monte aucun (couches SVG). Cette attente
   // est donc la PREUVE que la capture qui suit vient bien de la voie volumique.
   await waitFor(session, `!!document.querySelector('canvas.iso-stage[data-vue]')`, { timeoutMs: 20000 });
+  await fermerBriefing(session);
 }
 
 /** Cadre la caméra par les actions du JEU (crans, zoom, vue) — jamais une écriture d'état parallèle. */
@@ -119,6 +151,8 @@ async function cadrer(session, vue, zoom) {
     return { camRot: g().camRot, viewMode: g().viewMode, zoom: g().zoom };
   })()`);
   await sleep(700); // la caméra s'anime d'un cran à l'autre ; on capture une fois posée
+  // Un changement de vue peut remonter une fenêtre (révélation, bilan) : on re-vérifie l'écran nu.
+  await fermerBriefing(session, { attendreApparition: false });
 }
 
 /** Capture le canevas du monde (rect du canevas, HUD exclu sauf `--hud`). */
