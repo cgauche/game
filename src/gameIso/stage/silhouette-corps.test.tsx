@@ -37,7 +37,7 @@ import type { BattleState } from '../../state/store';
 const TAILLE = { w: 800, h: 600 };
 const SCENE: Scene = emptyScene(10, 10);
 const DIMS: Dims = { w: SCENE.dimensions.w, h: SCENE.dimensions.h, rot: 0, view: 'iso' };
-const AFFINE: StageFrame = { mode: 'affine', dims: DIMS, cam: { x: 0, y: 0 }, zoom: 1 };
+const AFFINE: StageFrame = { mode: 'plateau', dims: DIMS, cam: { x: 0, y: 0 }, zoom: 1 };
 const POV: StageFrame = { mode: 'pov', partyPos: { x: 2, y: 2, z: 0 }, facing: 'S', indoor: false, cid: 'h1' };
 
 function combattant(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, extra: Partial<Combatant> = {}): Combatant {

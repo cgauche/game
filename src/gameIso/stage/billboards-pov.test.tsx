@@ -121,7 +121,7 @@ const cadrePov = (facing: Dir8, partyPos: { x: number; y: number }): StageFrame 
 /** Le cadre de PLATEAU au cran `rot` — l'autre branche de l'union, celle que le lot ne doit PAS avoir
  *  fait basculer dans le regard perspective. */
 const cadreAffine = (rot: Rot): StageFrame =>
-  ({ mode: 'affine', dims: { ...SCENE.dimensions, rot, view: 'iso' }, cam: { x: 6, y: 6 }, zoom: 1 });
+  ({ mode: 'plateau', dims: { ...SCENE.dimensions, rot, view: 'iso' }, cam: { x: 6, y: 6 }, zoom: 1 });
 
 function écran(frame: StageFrame): JSX.Element {
   return (

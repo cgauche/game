@@ -46,7 +46,7 @@ function cutByView(scene: Scene, visible: ReadonlySet<string> | undefined, view:
 
 /** Éléments `token` de la scène — figurants (toujours), puis combattants (si `battle`). Les hors-vue
  *  sont COUPÉS (une créature non vue n'est pas dessinée) → tout token émis est VISIBLE (au-dessus du
- *  voile de brouillard). `visible` ABSENT = aucune loi de vue (planches QC, spike : elles jugent
+ *  voile de brouillard). `visible` ABSENT = aucune loi de vue (planches QC : elles jugent
  *  l'environnement, pas le brouillard) — même convention que `buildFloors`/`buildProps`.
  *
  *  SOURCE UNIQUE des deux voies de rendu du monde (#1176) : le stage affine en fait des corps React

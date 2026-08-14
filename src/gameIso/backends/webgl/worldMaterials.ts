@@ -7,7 +7,7 @@
  *
  * Régime LAMBERTIEN par défaut — celui du jeu : l'ambiante porte la scène quand aucun soleil ne
  * l'éclaire, et rien ne bascule au crépuscule. `lit: false` rend le régime PLAT (`MeshBasicMaterial`,
- * aucune lampe consultée) : le seul axe sur lequel les planches du spike divergent du jeu.
+ * aucune lampe consultée) : le seul axe sur lequel les planches QC divergent du jeu.
  */
 import * as THREE from 'three';
 import { getFaceBake } from './faceBake';

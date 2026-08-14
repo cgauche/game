@@ -70,7 +70,8 @@ export interface Dims {
 }
 
 /** Famille de projection : losange 2.5D, « de face » (edge-on, 3D conservée), dessus plat. Mêmes trois
- *  familles qu'`AffineKind` (`backends/webgl/cameras.ts`) et que `StageKind` (`stage/projection.ts`). */
+ *  familles pour les trois voies qui la consomment : la géométrie, les caméras du monde volumique
+ *  (`backends/webgl/cameras.ts`) et la pose de stage (`stage/projection.ts`) — UN type, aucun alias. */
 export type ProjKind = 'iso' | 'edge' | 'top';
 
 /** Pas écran (sx, sy) d'une tuile en projection AXIS-ALIGNÉE — carré 'top' (CELL) ou « de face » edge-on

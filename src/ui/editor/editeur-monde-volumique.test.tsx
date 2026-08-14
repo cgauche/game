@@ -476,7 +476,7 @@ describe('Éditeur — canaux ISOLÉ et VOILÉ au canevas (#1176, P3-3, vague B)
    * LES CORPS passent par le MÊME canal que leur case — et par LUI SEUL. L'allure d'un board
    * (`BoardChrome`) se lit par `cid`, et un `cid` n'est posé que sur un acteur de COMBAT
    * (`actorBillboards`) : l'éditeur n'en monte aucun, donc rien ne l'atteindrait par là. C'est
-   * `collectBillboards` qui pose `tint: tintAt(cellKey)` sur chaque figurant et chaque décor.
+   * `collectBillboards` qui pose `tint: tintAt(x, y, z)` sur chaque figurant et chaque décor.
    */
   it('les CORPS d’une couche basse s’assombrissent par le canal TEINTE, dosé par le curseur', () => {
     // Un décor par couche : celui du DESSOUS doit se voiler, celui de la couche active non.
@@ -485,14 +485,14 @@ describe('Éditeur — canaux ISOLÉ et VOILÉ au canevas (#1176, P3-3, vague B)
     const scene: Scene = { ...base, entities: [decor('bas', 0), decor('haut', 1)] };
     const els = wholeSceneBillboardEls(scene);
     const sujets = (opacite: number) =>
-      collectBillboards(scene, 2, (k) => gabaritTint(k, 1, opacite), els).map((b) => b.tint);
+      collectBillboards(scene, 2, (_x, _y, z) => gabaritTint(z, 1, opacite), els).map((b) => b.tint);
     const clair = sujets(0.9);
     const sombre = sujets(0.3);
     expect(clair.length).toBeGreaterThan(0); // la scène a bien des corps à voiler
     expect(sombre).toEqual(clair.map((t) => (t === 1 ? 1 : 0.3)));
     expect(sombre.some((t) => t < 1)).toBe(true); // …et le gabarit les touche vraiment
     // La couche ACTIVE, elle, reste pleine quel que soit le curseur.
-    expect(collectBillboards(scene, 2, (k) => gabaritTint(k, 0, 0.3), els).every((b) => b.tint === 1)).toBe(true);
+    expect(collectBillboards(scene, 2, (_x, _y, z) => gabaritTint(z, 0, 0.3), els).every((b) => b.tint === 1)).toBe(true);
   });
 });
 

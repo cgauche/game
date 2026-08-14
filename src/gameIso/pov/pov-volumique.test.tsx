@@ -199,7 +199,7 @@ describe('POV volumique — ce que la première personne ne porte PAS (#1176 P3-
       <GameStage3D
         scene={scene}
         mpt={sceneMetresPerTile(scene)}
-        frame={{ mode: 'affine', dims, cam: { x: 0, y: 0 }, zoom: 1 }}
+        frame={{ mode: 'plateau', dims, cam: { x: 0, y: 0 }, zoom: 1 }}
         tintAt={() => 1}
         keepEl={(el) => el.kind !== 'roof'}
         els={{ tokens: [], props: [] }}
@@ -225,7 +225,7 @@ describe('POV volumique — ce que la première personne ne porte PAS (#1176 P3-
       <GameStage3D
         scene={scene}
         mpt={sceneMetresPerTile(scene)}
-        frame={{ mode: 'affine', dims, cam: { x: 0, y: 0 }, zoom: 1 }}
+        frame={{ mode: 'plateau', dims, cam: { x: 0, y: 0 }, zoom: 1 }}
         tintAt={() => 1}
         keepEl={() => true}
         els={{ tokens: [], props: [] }}

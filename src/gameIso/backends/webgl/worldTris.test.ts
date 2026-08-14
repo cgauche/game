@@ -20,17 +20,22 @@ import {
   polyBounds,
   polyNormal,
   pxPerM,
-  uprightCrossWidthM,
-  uprightOverhangM,
-  uprightWidthM,
   wallBoxPolys,
-  wallThicknessM,
   type Bounds,
   type Vec3,
   type WorldPoly,
 } from './worldTris';
 import { faceDepthM, faceDepthOf } from './faceRelief';
-import { wallPartRelief, type WallPart } from '../../catalog/structures';
+import {
+  uprightCrossM,
+  UPRIGHT_OVERHANG_M,
+  UPRIGHT_WIDTH_M,
+  WALL_MATTER_M,
+  wallMatterM,
+  wallPartRelief,
+  type StructureAppearanceDef,
+  type WallPart,
+} from '../../catalog/structures';
 import { buildFloors } from '../../builders/floors';
 import { buildWalls } from '../../builders/walls';
 import { buildRoofs } from '../../builders/roofs';
@@ -55,7 +60,7 @@ function facesOf(scene: Scene): Face[] {
  *  la liste EXACTE que `bakeWorldGeometry` fusionne, jamais une géométrie de laboratoire. */
 function quadsOf(scene: Scene): WorldPoly[] {
   const mpt = sceneMetresPerTile(scene);
-  const depthOf = faceDepthOf(mpt);
+  const depthOf = faceDepthOf();
   return facesOf(scene).flatMap((f) => faceQuads(f, mpt, depthOf(f)));
 }
 
@@ -113,11 +118,18 @@ describe('Triangulation en ÉVENTAIL — le pivot n’émet que des faces planes
   });
 });
 
-describe('MONTANTS à 2 points — deux quads verticaux croisés, largeur écran ramenée au monde', () => {
-  it('la largeur MONDE est la largeur ÉCRAN divisée par pxPerM', () => {
-    expect(uprightWidthM('poteau', 2)).toBeCloseTo(3.8 / pxPerM(2), 12);
-    expect(uprightWidthM('jambage', 2)).toBeCloseTo(3.6 / pxPerM(2), 12);
-    expect(uprightWidthM('pilier', 2)).toBeCloseTo(5 / pxPerM(2), 12);
+describe('MONTANTS à 2 points — deux quads verticaux croisés, largeur AUTHORÉE EN MÈTRES', () => {
+  it('les largeurs sont des MÈTRES de donnée, indépendants de l’échelle de la carte', () => {
+    // Le fossile qu'elles remplacent dérivait ces trois nombres de largeurs de TRAIT SVG (3,8 / 3,6 /
+    // 5 px) divisées par l'échelle d'écran : un poteau était deux fois plus ÉPAIS sur une carte à
+    // 4 m/tuile. La donnée ne connaît plus l'écran.
+    expect(UPRIGHT_WIDTH_M.poteau).toBe(WALL_MATTER_M);
+    expect(UPRIGHT_WIDTH_M.jambage).toBeLessThan(UPRIGHT_WIDTH_M.poteau);
+    expect(UPRIGHT_WIDTH_M.pilier).toBeGreaterThan(UPRIGHT_WIDTH_M.poteau);
+    for (const w of Object.values(UPRIGHT_WIDTH_M)) {
+      expect(w).toBeGreaterThan(0.1);
+      expect(w).toBeLessThan(0.3);
+    }
   });
 
   it('un montant produit 4 triangles (2 quads croisés) centrés sur le segment', () => {
@@ -131,22 +143,30 @@ describe('MONTANTS à 2 points — deux quads verticaux croisés, largeur écran
     expect(Math.max(...zs)).toBeCloseTo(6.2, 12);
   });
 
-  it('la croix DÉPASSE les joues du mur : largeur = max(largeur écran, épaisseur de mur) + 2 saillies', () => {
-    expect(uprightOverhangM(2)).toBeCloseTo(1 / pxPerM(2), 12);
-    expect(uprightOverhangM(2)).toBeGreaterThan(0.03);
-    expect(uprightOverhangM(2)).toBeLessThan(0.05);
+  it('la croix DÉPASSE les joues du mur : largeur = max(largeur propre, matière du mur) + 2 saillies', () => {
+    expect(UPRIGHT_OVERHANG_M).toBeGreaterThan(0.03);
+    expect(UPRIGHT_OVERHANG_M).toBeLessThan(0.05);
     for (const part of ['poteau', 'jambage', 'pilier'])
-      expect(uprightCrossWidthM(part, 2)).toBeCloseTo(
-        Math.max(uprightWidthM(part, 2), wallThicknessM(2)) + 2 * uprightOverhangM(2),
+      expect(uprightCrossM(part, WALL_MATTER_M)).toBeCloseTo(
+        Math.max(UPRIGHT_WIDTH_M[part], WALL_MATTER_M) + 2 * UPRIGHT_OVERHANG_M,
         12,
       );
-    expect(uprightCrossWidthM('poteau', 2)).toBeGreaterThan(wallThicknessM(2));
+    expect(uprightCrossM('poteau', WALL_MATTER_M)).toBeGreaterThan(WALL_MATTER_M);
+    // …et c'est bien CETTE largeur que la géométrie du monde reçoit, par le canal des profondeurs.
+    const montant: Face = {
+      poly: [{ x: 1, y: 1, h: 4 }, { x: 1, y: 1, h: 0 }],
+      material: { domain: 'structure', id: 'mur-pierre', part: 'poteau' },
+    };
+    expect(faceDepthM(montant)).toBeCloseTo(uprightCrossM('poteau', WALL_MATTER_M), 12);
+    const [bras] = faceQuads(montant, 2, faceDepthM(montant));
+    const xs = bras.map((p) => p.x);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(uprightCrossM('poteau', WALL_MATTER_M), 12);
   });
 
   it('arène : AUCUN montant n’est entièrement noyé dans la matière des murs', () => {
     const mpt = sceneMetresPerTile(arene.scene);
     const faces = facesOf(arene.scene);
-    const depthOf = faceDepthOf(mpt);
+    const depthOf = faceDepthOf();
     // Matière = les boîtes des faces qui SONT la matière pleine du mur (`wallPartRelief`) — depuis le
     // relief mince (#1176 P1-E), une partie en SAILLIE produit une boîte elle aussi, mais plus épaisse
     // que le montant : la mesure porterait à faux si on la comptait comme de la matière.
@@ -171,7 +191,7 @@ describe('MONTANTS à 2 points — deux quads verticaux croisés, largeur écran
     for (const f of faces) {
       if (f.poly.length !== 2) continue;
       montants++;
-      const pts = faceQuads(f, mpt).flat();
+      const pts = faceQuads(f, mpt, depthOf(f)).flat();
       if (pts.every((p) => dedans(p))) noyesEntiers++;
     }
     expect(montants).toBeGreaterThan(300);
@@ -183,7 +203,7 @@ describe('MONTANTS à 2 points — deux quads verticaux croisés, largeur écran
       poly: [{ x: 1, y: 1, h: 4 }, { x: 1, y: 1, h: 0 }],
       material: { domain: 'structure', id: 'mur-en-bois', part: 'poteau' },
     };
-    const [geom] = facesGeometry([face], 2);
+    const [geom] = facesGeometry([face], 2, faceDepthOf());
     expect(geom.tris).toHaveLength(4);
     expect(geom.normal).toBeNull();
   });
@@ -243,7 +263,7 @@ describe('BIAIS COPLANAIRE — l’ordre de peinture affine devient une séparat
   it('arène : les quads de MONTANT entrent dans le rang (poteaux/jambages/piliers)', () => {
     const mpt = sceneMetresPerTile(arene.scene);
     const faces = facesOf(arene.scene);
-    const depthOf = faceDepthOf(mpt);
+    const depthOf = faceDepthOf();
     const quads: WorldPoly[] = [];
     const montant: boolean[] = [];
     for (const f of faces)
@@ -263,11 +283,11 @@ describe('BIAIS COPLANAIRE — l’ordre de peinture affine devient une séparat
   it('facesGeometry biaise AUSSI les quads d’un montant (même liste de rangs que faceQuads)', () => {
     const mpt = sceneMetresPerTile(arene.scene);
     const faces = facesOf(arene.scene);
-    const geoms = facesGeometry(faces, mpt, faceDepthOf(mpt));
+    const geoms = facesGeometry(faces, mpt, faceDepthOf());
     const iMontant = faces.findIndex((f, i) => f.poly.length === 2 && geoms[i].rank > 0);
     expect(iMontant).toBeGreaterThanOrEqual(0);
     // les sommets rendus ne sont plus ceux des quads NUS : le biais les a déplacés.
-    const nus = faceQuads(faces[iMontant], mpt).flatMap(fanTriangles);
+    const nus = faceQuads(faces[iMontant], mpt, faceDepthM(faces[iMontant])).flatMap(fanTriangles);
     const rendus = geoms[iMontant].tris;
     expect(rendus).toHaveLength(nus.length);
     expect(rendus).not.toEqual(nus);
@@ -294,10 +314,13 @@ describe('ÉPAISSEUR de mur — un plan d’épaisseur nulle n’a AUCUNE surfac
     { x: 0, y: 0, z: 6 },
   ];
 
-  it('l’épaisseur MONDE est celle du poteau qui encadre le mur (3.8 px d’écran affine)', () => {
-    expect(wallThicknessM(2)).toBeCloseTo(uprightWidthM('poteau', 2), 12);
-    expect(wallThicknessM(2)).toBeGreaterThan(0.15);
-    expect(wallThicknessM(2)).toBeLessThan(0.2);
+  it('l’épaisseur MONDE de la matière pleine est une DONNÉE en mètres, la même que le poteau', () => {
+    expect(WALL_MATTER_M).toBe(UPRIGHT_WIDTH_M.poteau);
+    expect(WALL_MATTER_M).toBeGreaterThan(0.15);
+    expect(WALL_MATTER_M).toBeLessThan(0.2);
+    // Elle est SURCHARGEABLE par apparence, comme toute autre épaisseur du catalogue.
+    expect(wallMatterM({ relief: { wallM: 0.4 } } as StructureAppearanceDef)).toBe(0.4);
+    expect(wallMatterM(undefined)).toBe(WALL_MATTER_M);
   });
 
   it('un quad de mur devient une boîte : 2 joues + coiffe + 2 chants, AUCUN dessous', () => {
@@ -329,24 +352,24 @@ describe('ÉPAISSEUR de mur — un plan d’épaisseur nulle n’a AUCUNE surfac
     const relief = wallPartRelief('panneau');
     expect(relief.famille).toBe('saillie');
     const jut = relief.famille === 'saillie' ? relief.jutM : 0;
-    const attendue = wallThicknessM(2) + 2 * jut;
+    const attendue = WALL_MATTER_M + 2 * jut;
     const face = partFace('panneau');
-    expect(faceDepthM(face, 2)).toBeCloseTo(attendue, 12);
-    const quads = faceQuads(face, 2, faceDepthM(face, 2));
+    expect(faceDepthM(face)).toBeCloseTo(attendue, 12);
+    const quads = faceQuads(face, 2, faceDepthM(face));
     const zs = quads.flat().map((p) => p.z);
     // CENTRÉE : les deux joues encadrent le plan médian (z = 0) à égale distance, et l'épaisseur totale
     // est bien celle que le catalogue a résolue.
     expect(Math.min(...zs)).toBeCloseTo(-attendue / 2, 12);
     expect(Math.max(...zs)).toBeCloseTo(attendue / 2, 12);
     expect(Math.max(...zs) + Math.min(...zs)).toBeCloseTo(0, 12);
-    expect(attendue).toBeGreaterThan(wallThicknessM(2)); // la saillie DÉPASSE la matière du mur
+    expect(attendue).toBeGreaterThan(WALL_MATTER_M); // la saillie DÉPASSE la matière du mur
   });
 
   it('TRAVERSANT : le DOS est là — une partie qui bouche une ouverture la bouche des DEUX côtés', () => {
     for (const part of ['vantail', 'herse-barreau', 'gravats'] as WallPart[]) {
       expect(wallPartRelief(part).famille).toBe('traversant');
       const face = partFace(part);
-      const { quads, oriented } = faceQuadsOriented(face, 2, faceDepthM(face, 2));
+      const { quads, oriented } = faceQuadsOriented(face, 2, faceDepthM(face));
       expect(oriented).toBe(true);
       // 2 joues + coiffe + 2 chants latéraux (le dessous d'une part de mur ne se voit jamais).
       expect(quads).toHaveLength(5);
@@ -356,14 +379,14 @@ describe('ÉPAISSEUR de mur — un plan d’épaisseur nulle n’a AUCUNE surfac
       const [devant, derrière] = [centreZ(quads[0]), centreZ(quads[1])];
       expect(Math.sign(devant)).toBe(-Math.sign(derrière));
       expect(devant).toBeCloseTo(-derrière, 12);
-      expect(Math.abs(devant) * 2).toBeCloseTo(faceDepthM(face, 2)!, 12);
+      expect(Math.abs(devant) * 2).toBeCloseTo(faceDepthM(face)!, 12);
     }
   });
 
   it('PROFONDEUR NULLE (le carreau d’une croisée) : UN plan, au médian, sans orientation propre', () => {
     const vitre = partFace('vitre');
-    expect(faceDepthM(vitre, 2)).toBe(0);
-    const { quads, oriented } = faceQuadsOriented(vitre, 2, faceDepthM(vitre, 2));
+    expect(faceDepthM(vitre)).toBe(0);
+    const { quads, oriented } = faceQuadsOriented(vitre, 2, faceDepthM(vitre));
     expect(quads).toHaveLength(1); // plus AUCUNE copie par joue
     expect(quads[0]).toEqual(facePoly(vitre, 2)); // au plan médian, inchangé
     expect(oriented).toBe(false); // un sens de parcours arbitraire orienterait la carte d'ombre
@@ -377,7 +400,7 @@ describe('ÉPAISSEUR de mur — un plan d’épaisseur nulle n’a AUCUNE surfac
     it(`${name} : les murs offrent une surface NON NULLE vue du dessus (coiffes)`, () => {
       const mpt = sceneMetresPerTile(scene);
       const faces = buildWalls(scene).flatMap((el) => el.faces);
-      const tris = facesGeometry(faces, mpt, faceDepthOf(mpt)).flatMap((g) => g.tris);
+      const tris = facesGeometry(faces, mpt, faceDepthOf()).flatMap((g) => g.tris);
       const vueDuDessus = tris.reduce((s, t) => s + aireVueDuDessus(t), 0);
       const coiffes = tris.filter((t) => Math.abs(polyNormal(t)?.y ?? 0) > 0.99).length;
       expect(coiffes).toBeGreaterThan(0);
@@ -395,7 +418,7 @@ describe('CONVERSION des murs — la géométrie rendue est celle que `buildWall
     const mpt = sceneMetresPerTile(opera);
     const faces = buildWalls(opera).flatMap((el) => el.faces);
     expect(faces.length).toBeGreaterThan(1000);
-    const geoms = facesGeometry(faces, mpt);
+    const geoms = facesGeometry(faces, mpt, faceDepthOf());
     expect(geoms.filter((g) => g.tris.length === 0)).toEqual([]);
     // Emprise MÉTRIQUE de la grille authorée (case 0 → case n−1), à 1 cm près : une tolérance d'une CASE
     // laissait 2 m de jeu, de quoi loger un mur entier hors de la carte sans que la garde bronche.
@@ -481,7 +504,7 @@ describe('UV — la maille MONDE en mètres (attribut `uv`)', () => {
 
   it('scène réelle (siege-enceinte) : chaque triangle porte 3 UV monde, à l’échelle métrique de SON quad', () => {
     const mpt = sceneMetresPerTile(siege);
-    const geoms = facesGeometry(facesOf(siege), mpt, faceDepthOf(mpt));
+    const geoms = facesGeometry(facesOf(siege), mpt, faceDepthOf());
     expect(geoms.length).toBeGreaterThan(100);
     let pires = 0;
     for (const g of geoms) {
@@ -517,14 +540,14 @@ describe('UV1 — la FACE d’origine en [0,1]² (attribut `uv1`)', () => {
       ['siege', siege],
       ['arene', arene.scene],
     ] as [string, Scene][]) {
-      const geoms = facesGeometry(facesOf(scène), sceneMetresPerTile(scène), faceDepthOf(sceneMetresPerTile(scène)));
+      const geoms = facesGeometry(facesOf(scène), sceneMetresPerTile(scène), faceDepthOf());
       const hors = geoms.flatMap((g) => g.uv1.flat()).filter((c) => c.u < 0 || c.u > 1 || c.v < 0 || c.v > 1);
       expect(hors).toEqual([]);
     }
   });
 
   it('scène réelle : uv1 EXPLOITE la face (elle n’est pas un aplat de zéros)', () => {
-    const geoms = facesGeometry(facesOf(siege), sceneMetresPerTile(siege), faceDepthOf(sceneMetresPerTile(siege)));
+    const geoms = facesGeometry(facesOf(siege), sceneMetresPerTile(siege), faceDepthOf());
     const toutes = geoms.flatMap((g) => g.uv1.flat());
     expect(toutes.length).toBeGreaterThan(100);
     expect(toutes.filter((c) => c.u > 0.99).length).toBeGreaterThan(50);
@@ -533,7 +556,7 @@ describe('UV1 — la FACE d’origine en [0,1]² (attribut `uv1`)', () => {
 
   it('les DEUX joues d’une boîte de mur partagent leurs uv1 : le même ornement des deux côtés', () => {
     const mpt = sceneMetresPerTile(siege);
-    const depthOf = faceDepthOf(mpt);
+    const depthOf = faceDepthOf();
     // Toute face verticale de mur devient une boîte : ses deux premiers quads sont ses JOUES.
     const face = facesOf(siege).find((f) => faceQuadsOriented(f, mpt, depthOf(f)).oriented);
     expect(face).toBeDefined();
@@ -570,7 +593,7 @@ describe('RELIEF MINCE — le prix mesuré du volume (#1176 P1-E)', () => {
       const nn = polyNormal(poly);
       if (f.material.domain !== 'structure' || !nn || Math.abs(nn.y) > 1e-6) { n += poly.length - 2; continue; }
       n += PLEINES.has(f.material.part ?? '')
-        ? wallBoxPolys(poly, nn, wallThicknessM(mpt)).reduce((s, q) => s + (q.length - 2), 0)
+        ? wallBoxPolys(poly, nn, WALL_MATTER_M).reduce((s, q) => s + (q.length - 2), 0)
         : 2 * (poly.length - 2);
     }
     return n;
@@ -601,7 +624,7 @@ describe('RELIEF MINCE — le prix mesuré du volume (#1176 P1-E)', () => {
       const mpt = sceneMetresPerTile(scene);
       const faces = facesOf(scene);
       const avant = trisAvantRelief(faces, mpt);
-      const tris = facesGeometry(faces, mpt, faceDepthOf(mpt)).reduce((s, g) => s + g.tris.length, 0);
+      const tris = facesGeometry(faces, mpt, faceDepthOf()).reduce((s, g) => s + g.tris.length, 0);
       expect(tris / avant).toBeLessThanOrEqual(HAUSSE_MAX);
       expect({ avant, tris }).toEqual({ avant: m.trisAvant, tris: m.trisApres });
     });

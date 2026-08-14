@@ -661,10 +661,10 @@ export function EditorCanvas({
   // deux matières différentes, cf. le seuil de bascule) ; sous le seuil, on n'y arrive plus et c'est
   // le dégagement qui prend la main, la couche disparaît au lieu de noircir.
   // Il porte les DEUX matières du monde d'un seul geste : les FACES (`applyVisibilityTint`) et les
-  // CORPS — `collectBillboards` pose `tint: tintAt(cellKey)` sur chaque figurant et chaque décor. Un
+  // CORPS — `collectBillboards` pose `tint: tintAt(...)` sur chaque figurant et chaque décor. Un
   // jeton de couche basse s'assombrit donc par le même canal que sa case, sans une ligne de plus.
   const tintAt = useMemo<TintAt>(
-    () => (cellKey) => gabaritTint(cellKey, currentLayer, lowerLayerOpacity),
+    () => (_x, _y, z) => gabaritTint(z, currentLayer, lowerLayerOpacity),
     [currentLayer, lowerLayerOpacity],
   );
   // ÉLÉMENTS à billboarder : c'est l'ÉDITEUR qui les fabrique, avec SES options de couche — le monde

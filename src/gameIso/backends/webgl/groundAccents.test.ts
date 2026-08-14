@@ -165,7 +165,7 @@ describe('groundAccents — semis de SCÈNE et montage instancié', () => {
   it('la teinte de visibilité de la case voyage sur la couleur des instances, JAMAIS sur le semis', () => {
     const accents = sceneGroundAccents(scene, mpt);
     expect(accents.length).toBeGreaterThan(0);
-    for (const a of accents) expect(a.cellKey).toMatch(/^-?\d+,-?\d+,-?\d+$/);
+    for (const a of accents) expect([a.cell.x, a.cell.y, a.cell.z].every(Number.isInteger)).toBe(true);
     const meshes = buildGroundAccentMeshes(accents.slice(0, 200), { lit: false, tintAt: () => 0.25 });
     const mesh = meshes[0];
     const attendue = new THREE.Color().set(accents.find((a) => `${a.kind}|${a.color}` === mesh.name)!.color).multiplyScalar(0.25);
@@ -179,8 +179,8 @@ describe('groundAccents — semis de SCÈNE et montage instancié', () => {
   it('le semis est INVARIANT à la visibilité : deux teintes, un seul et même tirage', () => {
     const a = sceneGroundAccents(scene, mpt);
     const b = sceneGroundAccents(scene, mpt);
-    expect(b.map((x) => `${x.cellKey}|${x.kind}|${x.pos.x}|${x.pos.z}|${x.sizeM}`))
-      .toEqual(a.map((x) => `${x.cellKey}|${x.kind}|${x.pos.x}|${x.pos.z}|${x.sizeM}`));
+    const trace = (x: (typeof a)[number]) => `${x.cell.x},${x.cell.y},${x.cell.z}|${x.kind}|${x.pos.x}|${x.pos.z}|${x.sizeM}`;
+    expect(b.map(trace)).toEqual(a.map(trace));
     // La teinte n'entre PAS dans le lot (elle varie par case, `instanceColor` la porte).
     const lots = groupAccents(a);
     const eteints = buildGroundAccentMeshes(a, { lit: false, tintAt: () => 0.1 });

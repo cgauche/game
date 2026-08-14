@@ -3,7 +3,7 @@
  *
  * DEUX soleils NOMMÉS, qui ne se croisent jamais :
  *  - le soleil de PLANCHE (`SUN_ELEVATION_DEG`/`SUN_AZIMUTH`/`sunRig`, `sceneMeshes.ts`) : élévation et
- *    azimut FIXES. C'est lui, et lui seul, que consomme l'écran de spike — les gardes de planche QC
+ *    azimut FIXES. C'est lui, et lui seul, que consomment les planches QC — leurs gardes
  *    l'épinglent, donc une planche ne change pas parce que l'heure de
  *    jeu a tourné ;
  *  - le soleil de JEU (ce module) : l'heure de l'horloge (`state.gameTime`, minutes) et le NORD de la

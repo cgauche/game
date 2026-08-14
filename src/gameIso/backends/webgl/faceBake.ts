@@ -1,5 +1,5 @@
 /**
- * SPIKE WebGL — CUISSON PAR FACE du COLOMBAGE (`timber`) : l'ornement qui ne se RÉPÈTE pas et ne tire
+ * CUISSON PAR FACE du COLOMBAGE (`timber`) : l'ornement qui ne se RÉPÈTE pas et ne tire
  * AUCUN aléa. Là où la texture de PÉRIODE (`periodTexture.ts`) porte ce qui boucle en `RepeatWrapping`
  * sur l'UV MONDE, ce module cuit l'image d'UNE face entière, échantillonnée sur son `uv1` [0,1]² — un
  * assemblage calé sur la face (un poteau à chaque bord), qui n'a pas de période.

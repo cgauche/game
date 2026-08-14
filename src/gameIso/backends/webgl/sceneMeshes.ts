@@ -1,5 +1,5 @@
 /**
- * SPIKE WebGL — ASSEMBLAGE d'une scène : les builders du pivot (`builders/floors|walls|roofs|props`)
+ * ASSEMBLEUR DU MONDE VOLUMIQUE : les builders du pivot (`builders/floors|walls|roofs|props`)
  * deviennent (a) UNE géométrie de monde fusionnée (positions + couleurs de sommet), (b) une liste de
  * SUJETS de billboard (personnages riggés + décor), chacun capable de rendre SA chaîne SVG pour une vue.
  *
@@ -8,10 +8,14 @@
  *    cuite au sommet, le mode de rendu n'est qu'un choix de MATÉRIAU) — jamais un mesh par face. Elle
  *    est INDEXÉE, d'un index IDENTITÉ (un sommet par usage : `computeVertexNormals` donne toujours la
  *    normale de FACE) que le masque de dégagement compacte sans toucher aux sommets ;
- *  - DÉLÉGATION : aucune couleur, aucune vue, aucun seuil n'est décidé ici — `faceSurface`, `tintFor`,
- *    `facesGeometry` (biais coplanaire compris), `propSvg`, `resolveRender`/`resolveRig` font foi.
+ *  - DÉLÉGATION : aucune couleur, aucune vue, aucun seuil n'est décidé ici — `faceSurface`, le champ
+ *    de teinte (`visibilityTint`), `facesGeometry` (biais coplanaire compris), `propSvg`,
+ *    `resolveRender`/`resolveRig` font foi.
  *
- * Node-safe (three est du JS pur) : aucun DOM, aucun renderer. La rasterisation vit dans `svgTexture.ts`.
+ * Sans DOM et sans renderer (la rasterisation vit dans `svgTexture.ts`) : ce module tourne donc sous
+ * VITEST, où les gardes le montent tel quel. Il n'est en revanche PAS chargeable en Node CLI nu
+ * (`npx tsx`) : sa chaîne d'imports traverse `src/audio/engine.ts:96`, qui lit `import.meta.env.DEV`
+ * — mesuré C6, l'import échoue à `Cannot read properties of undefined (reading 'DEV')`.
  */
 import * as THREE from 'three';
 import { buildFloors } from '../../builders/floors';
@@ -57,13 +61,17 @@ import type { Dir8 } from '../../../state/dir8';
 import { heightAt, type Scene, type SceneEntity, type WallSide } from '../../../state/scene';
 import { memoByRef, memoByRefDeps } from '../../../state/sceneMemo';
 
-/** Teinte de visibilité d'une case `"x,y,z"` (1 = pleine) — fournie par l'appelant (`visibilityTint`). */
-export type TintAt = (cellKey: string) => number;
+/** ÉCHANTILLONNEUR du champ de teinte de visibilité (1 = pleine), fourni par l'appelant
+ *  (`visibilityTint.visibilityField`). `x`/`y` sont des coordonnées de GRILLE CONTINUES — un sommet de
+ *  face tombe entre deux centres de case, et c'est ce que le champ sait rendre ; `z` est l'ÉTAGE,
+ *  entier. Un appelant qui n'a qu'une case (un corps posé sur la sienne) passe ses coordonnées
+ *  entières : le champ y rend exactement la valeur discrète de la case. */
+export type TintAt = (x: number, y: number, z: number) => number;
 
 /** Verdict de GÉOMÉTRIE sur un élément de scène : le canal du DÉGAGEMENT (`cleared`), distinct de la
  *  teinte de visibilité — une masse dégagée ne se rend PAS, elle ne s'estompe pas. Il ne filtre RIEN au
  *  bake (`applyCutawayMask` le porte, sur le monde déjà cuit) : un appelant sans loi de dégagement
- *  (planches QC, spike) ne pose simplement aucun masque et rend la scène entière. */
+ *  (planches QC) ne pose simplement aucun masque et rend la scène entière. */
 export type KeepEl = (el: SceneEl) => boolean;
 
 /** Éléments à FACES de la scène, dans l'ordre de peinture des builders (toutes couches pleines, comme
@@ -214,11 +222,13 @@ export interface WorldGeometry extends THREE.BufferGeometry {
 }
 
 /** PLAGE d'une face dans la géométrie fusionnée : les sommets qu'elle occupe, le groupe de surface qui
- *  la dessine, l'élément dont elle vient, la case dont elle prend sa visibilité, et sa couleur NUE
+ *  la dessine, l'élément dont elle vient, la case d'ANCRAGE de cet élément, et sa couleur NUE
  *  (albédo de surface + variance de teinte de tuile). C'est le seul index dont les DEUX passes en place
  *  ont besoin : `applyVisibilityTint` (couleurs) et `applyCutawayMask` (index de dessin). */
 export interface FaceSpan {
-  cellKey: string;
+  /** Case d'ANCRAGE de l'élément. Sa teinte de visibilité ne s'y prend PAS : le champ s'échantillonne à
+   *  la position de chaque SOMMET (`applyVisibilityTint`) — seul l'ÉTAGE `z` vient d'ici. */
+  cell: { x: number; y: number; z: number };
   /** Élément de PROVENANCE — ce que la loi de dégagement (`KeepEl`) interroge. */
   el: SceneEl;
   /** Groupe de surface qui dessine la face (= `materialIndex` de `geometry.groups`). */
@@ -244,6 +254,9 @@ export interface FaceSpan {
 export interface BakedWorld {
   geometry: WorldGeometry;
   spans: FaceSpan[];
+  /** Échelle MÉTRIQUE de la cuisson (mètres par tuile) : de quoi ramener la position d'un sommet en
+   *  coordonnées de GRILLE, la maille du champ de visibilité. */
+  mpt: number;
   /** MODELÉ DE FORME (#1300) : le facteur de famille d'orientation de CHAQUE SOMMET, cuit avec la
    *  géométrie (il n'est fonction que d'elle). PAR SOMMET et non par `FaceSpan`, parce qu'un span est
    *  une FACE et qu'une face de structure est une BOÎTE : mesuré sur l'arène, 1 598 spans sur 4 395
@@ -360,7 +373,7 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   const listées = worldFaces(scene);
   const faces = listées.map((f) => f.face);
   // Le RANG coplanaire se calcule sur la liste ENTIÈRE de la scène (contrat de `coplanarRanks`).
-  const geoms = facesGeometry(faces, mpt, faceDepthOf(mpt));
+  const geoms = facesGeometry(faces, mpt, faceDepthOf());
   const positions: number[] = [];
   const uvs: number[] = [];
   const uv1s: number[] = [];
@@ -403,11 +416,11 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
       }
     });
     // La couleur de sommet porte l'albédo du matériau × la variance de teinte de la surface (un aplat
-    // répété tuile après tuile se lit sinon comme une nappe de peinture) × la visibilité de la case —
-    // ce dernier facteur SEUL est réversible, et c'est `applyVisibilityTint` qui le pose.
+    // répété tuile après tuile se lit sinon comme une nappe de peinture) × la visibilité ÉCHANTILLONNÉE
+    // au sommet — ce dernier facteur SEUL est réversible, et c'est `applyVisibilityTint` qui le pose.
     const surface = faceSurface(faces[i]);
     spans.push({
-      cellKey: listées[i].cellKey,
+      cell: listées[i].cell,
       el: elCuit(listées[i].el),
       group: groupe,
       start: début,
@@ -445,7 +458,7 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   const identité = new Uint32Array(nbSommets);
   for (let i = 0; i < nbSommets; i++) identité[i] = i;
   geometry.setIndex(new THREE.BufferAttribute(identité, 1));
-  return { geometry, spans, shades: new Float32Array(shades) };
+  return { geometry, spans, mpt, shades: new Float32Array(shades) };
 }
 
 /** Applique le DÉGAGEMENT d'architecture à un monde cuit : l'index de dessin est ré-écrit EN PLACE en
@@ -487,11 +500,16 @@ export function applyCutawayMask(baked: BakedWorld, keepEl: KeepEl): WorldGeomet
 
 /** Repeint la VISIBILITÉ d'un monde cuit : l'attribut `color` est ré-écrit EN PLACE depuis la couleur
  *  NUE de chaque face (jamais depuis la couleur affichée — une teinte se re-multiplie, elle ne se cumule
- *  pas), la géométrie n'est pas touchée. C'est la passe qui suit le PAS du groupe (re-mesurée #1300 sur
- *  l'arène, MODELÉ COMPRIS — une lecture et trois multiplications de plus par sommet : 1,34 ms médian
- *  pour 19 358 triangles / 58 074 sommets, contre 492 ms de re-bake). Rend la géométrie, pour l'appelant qui
- *  compose les deux — LA géométrie du bake, pas une copie : le dernier appel fait la couleur affichée.
- *  D'où le contrat de propriété de `BakedWorld` (un bake = un consommateur de teinte).
+ *  pas), la géométrie n'est pas touchée. C'est la passe qui suit le PAS du groupe. Rend la géométrie,
+ *  pour l'appelant qui compose les deux — LA géométrie du bake, pas une copie : le dernier appel fait
+ *  la couleur affichée. D'où le contrat de propriété de `BakedWorld` (un bake = un consommateur de teinte).
+ *
+ *  CHAMP CONTINU PAR SOMMET (#1176, C6) : la teinte s'échantillonne à la POSITION MONDE de CHAQUE
+ *  sommet, ramenée en coordonnées de grille (`baked.mpt`), à l'étage de l'élément. La grille est du
+ *  système de jeu ; la lumière et la vue n'en dépendent pas. Une masse qui couvre 17 cases n'est donc
+ *  plus teintée d'un bloc par sa case d'ancrage, et un mur d'arête — à cheval sur deux cases — reçoit
+ *  aux deux bouts la teinte du monde où il se tient : la frontière du brouillard se FOND, elle ne se
+ *  décalque plus sur le quadrillage.
  *
  *  C'est aussi la passe qui porte le MODELÉ DE FORME (#1300) : le facteur de famille d'orientation du
  *  sommet (`baked.shades`), passé par la PORTE du soleil `fade` — la part de soleil réellement allumée
@@ -502,12 +520,15 @@ export function applyCutawayMask(baked: BakedWorld, keepEl: KeepEl): WorldGeomet
 export function applyVisibilityTint(baked: BakedWorld, tintAt: TintAt, fade = 1): WorldGeometry {
   const attr = baked.geometry.getAttribute('color') as THREE.BufferAttribute;
   const arr = attr.array as Float32Array;
+  const pos = (baked.geometry.getAttribute('position') as THREE.BufferAttribute).array as Float32Array;
   const c = new THREE.Color();
+  const parTuile = 1 / baked.mpt;
   for (const span of baked.spans) {
-    c.set(span.color).multiplyScalar(tintAt(span.cellKey) * span.varFactor);
+    c.set(span.color).multiplyScalar(span.varFactor);
     const fin = (span.start + span.count) * 3;
     for (let i = span.start * 3, v = span.start; i < fin; i += 3, v++) {
-      const k = shadeSousSoleil(baked.shades[v], fade);
+      // `position` et `color` partagent l'indexation par sommet : i pointe le MÊME sommet dans les deux.
+      const k = shadeSousSoleil(baked.shades[v], fade) * tintAt(pos[i] * parTuile, pos[i + 2] * parTuile, span.cell.z);
       arr[i] = c.r * k;
       arr[i + 1] = c.g * k;
       arr[i + 2] = c.b * k;
@@ -581,7 +602,7 @@ export interface SceneBillboardEls {
 }
 
 /** Éléments de la scène ENTIÈRE — pour un appelant SANS loi de vue ni combat en cours (planches QC,
- *  écran de spike : ils jugent l'ENVIRONNEMENT, pas le brouillard), au même titre que `keepEl` absent.
+ *  planches QC : elles jugent l'ENVIRONNEMENT, pas le brouillard), au même titre que `keepEl` absent.
  *  Un écran de JEU ne passe JAMAIS ceci : c'est là que se perdraient l'embuscade et le combat. */
 export function wholeSceneBillboardEls(scene: Scene): SceneBillboardEls {
   const maxZ = Math.max(...scene.layers.map((l) => l.z));
@@ -614,7 +635,7 @@ export function collectBillboards(scene: Scene, mpt: number, tintAt: TintAt, els
       anchor: new THREE.Vector3(gx * mpt, heightAt(scene, ent.pos.x, ent.pos.y, z), gy * mpt),
       facing: ent.facing ?? 'S',
       scaleK: entityTokenScale(ent),
-      tint: tintAt(`${ent.pos.x},${ent.pos.y},${z}`),
+      tint: tintAt(ent.pos.x, ent.pos.y, z),
       box: { w: BB_W, h: BB_H },
       svg: (view, mirror) => defs + draw(view, mirror),
     });
@@ -636,7 +657,7 @@ export function collectBillboards(scene: Scene, mpt: number, tintAt: TintAt, els
       anchor: new THREE.Vector3(gx * mpt, h, gy * mpt),
       facing: el.facing ?? 'S',
       scaleK: el.foot.scale,
-      tint: tintAt(`${el.cell.x},${el.cell.y},${el.cell.z}`),
+      tint: tintAt(el.cell.x, el.cell.y, el.cell.z),
       box: { w: BB_W, h: BB_H },
       // Le décor délègue sa vue à `propSvg` (dir + cran caméra), exactement comme les deux backends.
       svg: (_view, _mirror, camRot) => defs + propSvg(el.ref, el.facing, camRot),
@@ -871,7 +892,10 @@ export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt:
       anchor: new THREE.Vector3((x + off) * mpt, heightAt(scene, Math.round(x), Math.round(y), z), (y + off) * mpt),
       facing: facing ?? 'S',
       scaleK: inputs.scaleK,
-      tint: tintAt(`${Math.round(x)},${Math.round(y)},${z}`),
+      // Un CORPS prend la teinte de SA case (position logique arrondie), pas celle du point où il
+      // glisse : un acteur est un objet du système de jeu, posé sur une case, et son quad porte UNE
+      // couleur. Le champ continu est la matière du MONDE, qui, lui, a des sommets à échantillonner.
+      tint: tintAt(Math.round(x), Math.round(y), z),
       box: monté?.box ?? { w: BB_W, h: BB_H },
       svg: (view, mirror) => defs + trace(view, mirror),
     });
@@ -993,7 +1017,7 @@ export function weatherTinted(base: THREE.Color, meteo: WeatherLight = METEO_SAN
 }
 
 /** FOND du canevas volumique — celui des planches QC (`render-env.mts`), donc les captures et le jeu
- *  se comparent sans biais de contraste. SOURCE UNIQUE : l'écran de jeu et celui du spike le lisent
+ *  se comparent sans biais de contraste. SOURCE UNIQUE : l'écran de jeu et les planches QC le lisent
  *  ici. La météo le teinte (`stageClearColor`). */
 export const STAGE_BG = 0x14161f;
 
@@ -1018,7 +1042,7 @@ function ambientDimmed(base: THREE.Color, lum: number): THREE.Color {
 }
 
 /** Fond de CIEL : dégradé vertical `skyTop` (haut) → `fogOutdoor` (horizon à mi-hauteur, et dessous),
- *  soit EXACTEMENT le dégradé `pov-sky` du POV SVG (`povAmbianceDefs`) — aucune teinte propre au spike.
+ *  soit EXACTEMENT le dégradé `pov-sky` du POV SVG (`povAmbianceDefs`) — aucune teinte propre au volumique.
  *  La météo déplace les DEUX bouts du dégradé (#1247) : sous l'orage, l'horizon ne tranche pas avec
  *  des sols assombris. Le PALIER d'ambiance (`ambianceLum`) atténue ensuite les deux bouts ET la
  *  teinte météo : le ciel de nuit s'éteint avec le monde, il n'a pas de luminosité propre. */
@@ -1249,7 +1273,7 @@ function builtFacesBox(scene: Scene, mpt: number): THREE.Box3 | null {
 
 function computeBuiltFacesBox(scene: Scene, mpt: number): THREE.Box3 | null {
   const faces = worldFaces(scene).map((f) => f.face);
-  const geoms = facesGeometry(faces, mpt, faceDepthOf(mpt));
+  const geoms = facesGeometry(faces, mpt, faceDepthOf());
   const box = new THREE.Box3();
   const p = new THREE.Vector3();
   for (let i = 0; i < faces.length; i++) {

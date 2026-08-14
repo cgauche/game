@@ -8,7 +8,7 @@ import { pxPerM } from '../backends/webgl/worldTris';
 import { billboardHeightM } from '../backends/webgl/billboardMath';
 import { resetDiagOnce } from '../rig/devDiag';
 import { projectStep, rotOffset, stepOf, type ProjKind } from '../../geometry/iso';
-import { affineCamera, projectToScreen, type AffineKind } from '../backends/webgl/cameras';
+import { affineCamera, projectToScreen } from '../backends/webgl/cameras';
 import { ENEMY_RING, HERO_RING } from '../teamColors';
 import {
   COMBAT_TOKEN_BASE,
@@ -329,7 +329,7 @@ const VUE = { w: 800, h: 600 };
  *  longueur est la corde — puis on projette les deux BOUTS DE CET ARC. Ce qui est jugé est donc la
  *  place que les tirets laissent sur le tracé, jamais le bombement sous-pixel du polygone de cordes.
  *  `centre` = position MONDE du centre de l'anneau. */
-function cordesÉcran(mesh: THREE.InstancedMesh, kind: AffineKind, yawDeg: number, centre: THREE.Vector3) {
+function cordesÉcran(mesh: THREE.InstancedMesh, kind: ProjKind, yawDeg: number, centre: THREE.Vector3) {
   const { camera } = affineCamera(kind, yawDeg, MPT, VUE);
   const bouts: { a: { sx: number; sy: number }; b: { sx: number; sy: number }; centre: { sx: number; sy: number } }[] = [];
   for (let i = 0; i < mesh.count; i++) {
@@ -451,7 +451,7 @@ describe('poseDynamicMarks — les ANNEAUX d’équipe (#1176 P3-0e)', () => {
  * appliquée à une projection 1:1 y saute aux yeux, et une formule d'ellipse ne peut pas s'auto-absoudre.
  */
 describe('poseDynamicMarks — l’anneau MESURÉ à travers la caméra de production (#1176 P3-0e)', () => {
-  const posé = (kind: AffineKind, yawDeg: number, ring: TeamRing) => {
+  const posé = (kind: ProjKind, yawDeg: number, ring: TeamRing) => {
     const p = pools();
     poseDynamicMarks(p, { tethers: [], active: null, party: null, rings: [ring] }, { mpt: MPT, glide: () => null, groundM: PLAT, kind, yawDeg });
     return p.anneau!;

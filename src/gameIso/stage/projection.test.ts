@@ -7,7 +7,6 @@ import {
   screenToWorldAtLift,
   stageKindOf,
   worldToScreen,
-  type StageKind,
   type StagePose,
   type StageWorld,
 } from './projection';
@@ -16,6 +15,7 @@ import {
   screenToTileF,
   tileCenter,
   type Dims,
+  type ProjKind,
   type Rot,
 } from '../../geometry/iso';
 import { METRES_PER_LEVEL } from '../../state/relief';
@@ -30,7 +30,7 @@ const TOL = 1e-6;
 const TOL_INV = 1e-9;
 const MAP = { w: 29, h: 41 };
 const ROTS: Rot[] = [0, 1, 2, 3];
-const KINDS: StageKind[] = ['iso', 'edge', 'top'];
+const KINDS: ProjKind[] = ['iso', 'edge', 'top'];
 
 /** Grille d'échantillons : cases entières ET fractionnaires (coins de grille, sous-case), lifts nuls
  *  et non nuls (étages entiers, hauteurs de relief fractionnaires). */
@@ -44,7 +44,7 @@ for (const x of [0, 3.5, 12, 20.25, 28])
 const TILES: StageWorld[] = [];
 for (const x of [0, 4, 12, 28]) for (const y of [0, 7, 19, 40]) for (const lift of [0, 1, 2.3125]) TILES.push({ x, y, lift });
 
-function dimsFor(kind: StageKind, rot: Rot): Dims {
+function dimsFor(kind: ProjKind, rot: Rot): Dims {
   const base: Dims = { ...MAP, rot };
   if (kind === 'edge') return { ...base, edge: true };
   if (kind === 'top') return { ...base, view: 'top' };
@@ -110,7 +110,7 @@ const PIVOT = { x: (MAP.w - 1) / 2, y: (MAP.h - 1) / 2 };
 
 /** Pose ANCRÉE SUR LA CAMÉRA : le pont que ce module apporte en production — l'ancrage écran
  *  (`origin`) se lit en projetant le pivot avec la caméra, le reste doit suivre tout seul. */
-function poseOnCamera(kind: StageKind, yawDeg: number, mpt: number): { pose: StagePose; project: (s: StageWorld) => { sx: number; sy: number } } {
+function poseOnCamera(kind: ProjKind, yawDeg: number, mpt: number): { pose: StagePose; project: (s: StageWorld) => { sx: number; sy: number } } {
   const { camera } = affineCamera(kind, yawDeg, mpt, VIEWPORT);
   const project = (s: StageWorld) => projectToScreen(camera, worldOf(s, mpt), VIEWPORT);
   const ancre = project({ ...PIVOT, lift: 0 });
@@ -211,7 +211,7 @@ describe('Balayage écran — les deux arrondis ne se séparent QUE sur la front
   const PAS = 3;
   const MARGE = 48; // le balayage déborde la carte : hors-grille aussi, les deux chaînes doivent s'accorder
 
-  function dimsSweep(kind: StageKind, rot: Rot): Dims {
+  function dimsSweep(kind: ProjKind, rot: Rot): Dims {
     const base: Dims = { ...CARTE, rot };
     if (kind === 'edge') return { ...base, edge: true };
     if (kind === 'top') return { ...base, view: 'top' };

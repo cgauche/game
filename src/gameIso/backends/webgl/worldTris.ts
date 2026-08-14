@@ -1,7 +1,7 @@
 /**
- * SPIKE WebGL — CONVERSION MONDE : les `Face` du pivot (`builders/types.ts`, GP = tuiles continues +
- * hauteur en MÈTRES) deviennent des triangles en repère three (Y = haut) : `(x, y, h) → (x·mpt, h, y·mpt)`.
- * Module PUR et Node-safe : ni DOM, ni renderer, ni `three` (des points nus suffisent au maillage).
+ * CONVERSION MONDE : les `Face` du pivot (`builders/types.ts`, GP = tuiles continues + hauteur en
+ * MÈTRES) deviennent des triangles en repère three (Y = haut) : `(x, y, h) → (x·mpt, h, y·mpt)`.
+ * Module PUR : ni DOM, ni renderer, ni `three`, ni catalogue (des points nus suffisent au maillage).
  *
  * Quatre politiques y vivent, chacune une fonction :
  *  - TRIANGULATION en ÉVENTAIL (les faces du pivot sont planes, convexes, ≤ 4 points) ;
@@ -9,10 +9,10 @@
  *    quads d'écran) — sans surface à 90° de plongée, sans chant à éclairer. Toute face verticale à qui
  *    l'appelant résout une profondeur (`FaceDepth`, catalogues d'apparence : `faceRelief.ts`) devient
  *    une BOÎTE MINCE centrée sur son plan (`wallBoxPolys`) ;
- *  - MONTANTS à 2 points (`walls.ts:119`, `floors.ts:163`) : deux quads verticaux CROISÉS, largeur MONDE
- *    dérivée de la largeur écran du backend affine, portée au-delà des joues du mur par la SAILLIE
- *    (`uprightCrossWidthM`) ; ces quads entrent dans le calcul coplanaire au même
- *    titre que les faces pleines (un bras de la croix est DANS le plan du panneau qu'il décore) ;
+ *  - MONTANTS à 2 points (`walls.ts:119`, `floors.ts:163`) : deux quads verticaux CROISÉS, dont la
+ *    largeur arrive PAR LE MÊME CANAL que les épaisseurs (`FaceDepth` → `uprightCrossM`, authorée en
+ *    mètres au catalogue) ; ces quads entrent dans le calcul coplanaire au même titre que les faces
+ *    pleines (un bras de la croix est DANS le plan du panneau qu'il décore) ;
  *  - BIAIS COPLANAIRE : l'affine départage les faces empilées d'un même plan par l'ORDRE d'émission ;
  *    au GPU il faut une séparation métrique — rang d'émission × `COPLANAR_BIAS_M` le long de la normale.
  */
@@ -36,12 +36,10 @@ export function pxPerM(mpt: number): number {
   return (TW * Math.SQRT1_2) / mpt;
 }
 
-/** Largeurs ÉCRAN (px) des montants — les mêmes que celles des peintres d'authoring
- *  (`authoring/wallsSvg.ts` : poteau, jambage ; `authoring/floorsSvg.ts` : pilier de surplomb), qui ne
- *  les exportent pas. Ces trois nombres existent donc DEUX fois dans le dépôt ; les importer ferait
- *  dépendre le monde du jeu d'un peintre d'AUTHORING (frontière : `authoring/project.ts`). Inscrit au
- *  registre des fossiles de transition (#1176). */
-const UPRIGHT_PX: Record<string, number> = { poteau: 3.8, jambage: 3.6, pilier: 5 };
+/** Épaisseur (m) d'un volume dont l'appelant n'a rien résolu : AUCUNE. Ce module ne connaît pas les
+ *  matériaux — les épaisseurs sont authorées en mètres au catalogue et arrivent par `FaceDepth`
+ *  (`faceRelief.ts`). Un appelant sans résolveur obtient donc des PLANS, jamais une épaisseur devinée. */
+const SANS_VOLUME = 0;
 
 /** Séparation métrique d'un cran de rang coplanaire. */
 export const COPLANAR_BIAS_M = 0.0015;
@@ -115,30 +113,6 @@ export function fanTriangles(poly: WorldPoly): Tri[] {
   return out;
 }
 
-/** Largeur MONDE (m) d'un montant : sa largeur écran affine ramenée à l'échelle métrique de la scène. */
-export function uprightWidthM(part: string | undefined, mpt: number): number {
-  const px = (part ? UPRIGHT_PX[part] : undefined) ?? UPRIGHT_PX.poteau;
-  return px / pxPerM(mpt);
-}
-
-/** Saillie (m) d'un montant hors des joues du mur qu'il encadre — 1 px d'écran affine ramené au monde
- *  (`pxPerM`), soit ≈ 0,044 m à 2 m/tuile : le plus petit dépassement que la planche distingue.
- *  Sans elle, la croix d'un montant a EXACTEMENT l'épaisseur de la boîte de mur (`wallThicknessM` est la
- *  largeur du même poteau) et s'y inscrit à ras — mesuré sur `arene` : 340 montants sur 364 entièrement
- *  dans la matière, part noyée moyenne 99,2 %. */
-export const UPRIGHT_OVERHANG_PX = 1;
-
-/** Saillie MONDE d'un montant (m). */
-export function uprightOverhangM(mpt: number): number {
-  return UPRIGHT_OVERHANG_PX / pxPerM(mpt);
-}
-
-/** Largeur MONDE de la croix d'un montant : sa largeur d'écran affine, jamais moins que l'épaisseur du
- *  mur qu'il encadre, plus une saillie de chaque côté. */
-export function uprightCrossWidthM(part: string | undefined, mpt: number): number {
-  return Math.max(uprightWidthM(part, mpt), wallThicknessM(mpt)) + 2 * uprightOverhangM(mpt);
-}
-
 /** Les DEUX quads verticaux CROISÉS (X) centrés sur le segment [a,b], de largeur `wM` — la
  *  représentation volumique d'un montant que l'affine dessine en rectangle d'écran. */
 export function crossQuadPolys(a: Vec3, b: Vec3, wM: number): WorldPoly[] {
@@ -153,18 +127,10 @@ export function crossQuadPolys(a: Vec3, b: Vec3, wM: number): WorldPoly[] {
 }
 
 /** PROFONDEUR MONDE (m) du volume d'une face, résolue par l'appelant depuis les catalogues d'apparence
- *  (`faceRelief.ts`) — ce module ne connaît aucun matériau. `undefined` = pas de profondeur résolue :
- *  la face garde la matière pleine du mur si elle est de `structure`, et reste un PLAN sinon.
- *  Une profondeur NULLE laisse elle aussi un plan unique, au plan médian. */
+ *  (`faceRelief.ts`) — ce module ne connaît aucun matériau. Pour un MONTANT (face à 2 points), c'est la
+ *  LARGEUR de sa croix. `undefined` = rien de résolu : la face reste un PLAN (et un montant, un trait
+ *  sans épaisseur). Une profondeur NULLE laisse elle aussi un plan unique, au plan médian. */
 export type FaceDepth = (face: Face) => number | undefined;
-
-/** ÉPAISSEUR MONDE (m) d'un mur d'arête. Les faces du pivot sont des plans d'épaisseur NULLE (l'affine
- *  peint des quads d'écran) : à 90° de plongée un mur y a une surface nulle. Épaisseur = la largeur du
- *  POTEAU qui encadre le mur, ramenée au monde comme toute largeur de montant (`uprightWidthM`) :
- *  3.8 px / pxPerM(2) ≈ 0.168 m à 2 m/tuile. */
-export function wallThicknessM(mpt: number): number {
-  return uprightWidthM('poteau', mpt);
-}
 
 /** Polygone DÉPLACÉ de `d` le long de `n`. */
 function offsetPoly(poly: WorldPoly, n: Vec3, d: number): WorldPoly {
@@ -334,10 +300,10 @@ export function faceQuads(face: Face, mpt: number, depthM?: number): WorldPoly[]
 export function faceQuadsOriented(face: Face, mpt: number, depthM?: number): { quads: WorldPoly[]; oriented: boolean } {
   const poly = facePoly(face, mpt);
   if (poly.length === 2)
-    return { quads: crossQuadPolys(poly[0], poly[1], uprightCrossWidthM(face.material.part, mpt)), oriented: false };
+    return { quads: crossQuadPolys(poly[0], poly[1], depthM ?? SANS_VOLUME), oriented: false };
   const n = polyNormal(poly);
   if (!n || Math.abs(n.y) > 1e-6) return { quads: [poly], oriented: false }; // seul un plan VERTICAL a une épaisseur d'arête
-  const t = depthM ?? (face.material.domain === 'structure' ? wallThicknessM(mpt) : 0);
+  const t = depthM ?? SANS_VOLUME;
   if (t <= 0) return { quads: [poly], oriented: false };
   return { quads: wallBoxPolys(poly, n, t), oriented: true };
 }

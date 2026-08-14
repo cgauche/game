@@ -254,7 +254,7 @@ describe('Halos d’interaction — la pulsation se prend à la FRAME (#1176 P3-
       <GameStage3D
         scene={SCENE_NUE}
         mpt={sceneMetresPerTile(SCENE_NUE)}
-        frame={{ mode: 'affine', dims: DIMS, cam: { x: 0, y: 0 }, zoom: 1 }}
+        frame={{ mode: 'plateau', dims: DIMS, cam: { x: 0, y: 0 }, zoom: 1 }}
         tintAt={() => 1}
         keepEl={() => true}
         els={{ tokens: [], props: [] }}
@@ -317,7 +317,7 @@ describe('Halos d’interaction — la pulsation se prend à la FRAME (#1176 P3-
       <GameStage3D
         scene={SCENE_NUE}
         mpt={sceneMetresPerTile(SCENE_NUE)}
-        frame={{ mode: 'affine', dims: DIMS, cam: { x: 0, y: 0 }, zoom: 1 }}
+        frame={{ mode: 'plateau', dims: DIMS, cam: { x: 0, y: 0 }, zoom: 1 }}
         tintAt={() => 1}
         keepEl={() => true}
         els={{ tokens: [], props: [] }}

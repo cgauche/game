@@ -43,8 +43,8 @@ import { actorCapsuleOf } from './stage/actorCapsule';
 import { VolumetricWorld } from './stage/VolumetricWorld';
 import { SansWebgl, useWebglRefusé } from './stage/SansWebgl';
 import { getStageYaw, subscribeStageYaw, viewRot, viewYawDeg } from '../state/stageYaw';
-import { tintFor } from './backends/webgl/visibilityTint';
-import { roomZonesByElKey, type KeepEl } from './backends/webgl/sceneMeshes';
+import { visibilityField } from './backends/webgl/visibilityTint';
+import { roomZonesByElKey, type KeepEl, type TintAt } from './backends/webgl/sceneMeshes';
 import { stageCamTransform } from './stage/stageCam';
 import { occupiedInteriorZoneIds, roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
 import { NO_CLEARED_SPACE, frontFacadeCutaway, cutawayForSection, cutawayOverhead, lidCutaway, spaceCellKey } from './stage/architectureVisibility';
@@ -185,7 +185,7 @@ export function IsoStage() {
   const wnow = performance.now();
   // Position VISUELLE des jetons à un instant donné : le rendu la demande au sien, les boucles hors
   // React (caméra volumique, chrome des jetons) la redemandent à chaque frame de marche.
-  const walkPosAt = (now: number): WalkPos => (id, x, y, z = 0) => walkPoseAt(walksRef.current[id], x, y, z, dims, now);
+  const walkPosAt = (now: number): WalkPos => (id, x, y) => walkPoseAt(walksRef.current[id], x, y, now);
   const walkPosOf: WalkPos = walkPosAt(wnow);
 
   // ── CAMÉRA À UN INSTANT (la seule définition) : point focal (paire de visée / actif / leader) puis
@@ -216,7 +216,7 @@ export function IsoStage() {
   // `propEls`, #817) tant que le groupe reste dans la même case ; le jeton continue de glisser sans
   // à-coup ailleurs (`walkPosOf` direct dans la caméra, non affecté par ce memo).
   const visualTilesAt = (now: number) => allyBases.map((a) => {
-    const p = walkPoseAt(walksRef.current[a.id], a.x, a.y, a.z, dims, now);
+    const p = walkPoseAt(walksRef.current[a.id], a.x, a.y, now);
     return { id: a.id, x: Math.round(p.x), y: Math.round(p.y), z: a.z };
   });
   const tilesKey = (tiles: readonly { id: string; x: number; y: number; z: number }[]) => tiles.map((t) => `${t.id}:${t.x},${t.y},${t.z}`).join('|');
@@ -298,7 +298,13 @@ export function IsoStage() {
     if (el.kind === 'wall') return !frontFacadeCutaway({ ...el, roomZoneIds: zonesVives.get(el.key), x: el.cell.x, y: el.cell.y, z: el.cell.z }, cleared, dims);
     return true;
   }, [cleared, dims, zonesVives, planVue, activeZ]);
-  const tintAt = useMemo(() => (key: string) => tintFor(key, visible, exploredSet), [visible, exploredSet]);
+  // CHAMP de visibilité (#1176, C6) : le monde volumique l'échantillonne PAR SOMMET, les corps posés
+  // sur leur case y lisent la valeur discrète de la leur. Les dimensions bornent le champ : hors carte,
+  // il se rabat sur le bord au lieu d'assombrir le pourtour d'un dehors inconnu.
+  const tintAt = useMemo<TintAt>(
+    () => visibilityField(visible, exploredSet, scene?.dimensions ?? { w: 0, h: 0 }),
+    [visible, exploredSet, scene],
+  );
   // `roofEls` garde l'identité de ses sections d'un pas à l'autre (aucune section réallouée) — ce dont
   // dépendent les memos en aval : la GÉOMÉTRIE des nappes est mémoïsée par la scène, et seul le
   // dégagement s'y rejoue, par la loi commune, sur la SECTION entière (tous les pans d'une masse).
@@ -413,7 +419,7 @@ export function IsoStage() {
       <VolumetricWorld
         scene={scene}
         mpt={mpt}
-        frame={{ mode: 'affine', dims: dimsVue, cam, camAt, zoom: zoom * (turning ? 0.97 : 1) }}
+        frame={{ mode: 'plateau', dims: dimsVue, cam, camAt, zoom: zoom * (turning ? 0.97 : 1) }}
         tintAt={tintAt}
         keepEl={keepEl}
         nappeVue={nappeVue}

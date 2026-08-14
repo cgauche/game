@@ -28,7 +28,7 @@
  * structurelle — il n'y a plus de régime à basculer au crépuscule, seulement des intensités qui
  * tendent vers zéro.
  *
- * Le soleil de PLANCHE (fixe) reste au spike (`backends/webgl/sceneMeshes.ts`) : les gardes QC
+ * Le soleil de PLANCHE (fixe) vit dans `backends/webgl/sceneMeshes.ts` : les gardes QC
  * l'épinglent, et c'est pourquoi il ne se règle pas ici.
  *
  * FRUSTUM D'OMBRE : `sunRigFrom` serre son frustum sur la SPHÈRE englobante des casteurs, donc un cube
@@ -99,7 +99,7 @@ export interface StageLightScalars {
 /**
  * Intensités en unités PHYSIQUES (three ≥ r155) : sous le lambertien de three, une ambiante d'intensité
  * `I` rend `albédo · I / π` (`BRDF_Lambert` porte le `RECIPROCAL_PI`) — le facteur `Math.PI` ramène donc
- * l'intensité à sa part d'albédo à l'écran. Même conversion qu'au spike.
+ * l'intensité à sa part d'albédo à l'écran. Même conversion que pour les planches.
  */
 export function stageLightScalars(args: {
   scene: Pick<Scene, 'ambiance' | 'northDeg' | 'ambientLight' | 'weather'>;

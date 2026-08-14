@@ -135,7 +135,7 @@ describe('ORIENTATION — les triangles regardent DEHORS (la carte d’ombre en 
     const m = sceneMetresPerTile(scn);
     const listées = worldFaces(scn);
     const pos = buildWorldGeometry(scn, m, plein).getAttribute('position').array as Float32Array;
-    const geoms = facesGeometry(listées.map((f) => f.face), m, faceDepthOf(m));
+    const geoms = facesGeometry(listées.map((f) => f.face), m, faceDepthOf());
     // La fusion émet les faces GROUPÉES par surface (un groupe = un dessin) : le bilan les parcourt
     // dans CET ordre, sinon il compare le triangle d'une face à la normale d'une autre.
     const ordre = surfaceGrouping(listées, m).faceIndices.flat();
@@ -227,7 +227,7 @@ describe('CONTENU — ce qu’un cadrage doit tenir', () => {
       // Toute face NON-TERRAIN (relief, structure, toiture) tient dans la boîte de contenu. Les rangs
       // coplanaires se mesurent sur la liste ENTIÈRE (contrat de `coplanarRanks`) : on filtre APRÈS.
       const toutes = worldFaces(scn).map((f) => f.face);
-      const geoms = facesGeometry(toutes, m, faceDepthOf(m));
+      const geoms = facesGeometry(toutes, m, faceDepthOf());
       let bati = 0;
       let dehors = 0;
       for (let i = 0; i < toutes.length; i++) {

@@ -42,8 +42,10 @@ export interface GroundAccent {
   kind: 'tuft' | 'speckle';
   /** Couleur tirée dans la palette de la recette, PAR TUILE (`authoring/detailSvg.ts`). */
   color: string;
-  /** Case porteuse (`"x,y,z"`) : le MONTAGE y prend la teinte de visibilité, la dérivation l'ignore. */
-  cellKey: string;
+  /** Case porteuse : le MONTAGE y prend sa teinte de visibilité, AU CENTRE de la case — un accent est
+   *  un objet POSÉ, dont l'instance porte UNE couleur ; le champ continu est la matière du monde cuit,
+   *  qui, lui, a des sommets à échantillonner. La dérivation, elle, l'ignore. */
+  cell: { x: number; y: number; z: number };
   /** Repère three (m) : pied de la touffe / centre au sol du mouchetis. */
   pos: Vec3;
   /** Hauteur (m) d'une touffe, rayon (m) d'un mouchetis. */
@@ -61,7 +63,6 @@ export function tileGroundAccents(
   mpt: number,
 ): GroundAccent[] {
   const seed = hash32('floor', cell.x, cell.y, cell.z);
-  const cellKey = `${cell.x},${cell.y},${cell.z}`;
   // Recette RESTREINTE aux deux sections d'accent : chaque section
   // tire son SOUS-flux (`expandRecipe`), retirer les autres ne décale aucun tirage.
   const e = expandRecipe({ tufts: recipe.tufts, speckle: recipe.speckle, seedScope: recipe.seedScope }, mpt, mpt, seed);
@@ -76,12 +77,12 @@ export function tileGroundAccents(
       // puis angle monde.
       const hM = t.hM * (0.8 + r() * 0.5);
       const yaw = r() * Math.PI * 2;
-      out.push({ kind: 'tuft', color, cellKey, pos: at(t.u, t.v), sizeM: hM, yaw });
+      out.push({ kind: 'tuft', color, cell, pos: at(t.u, t.v), sizeM: hM, yaw });
     }
   }
   if (e.speckles.length && recipe.speckle) {
     const color = tileColor(recipe.speckle.colors, 'dotcol');
-    for (const s of e.speckles) out.push({ kind: 'speckle', color, cellKey, pos: at(s.u, s.v), sizeM: s.rM, yaw: 0 });
+    for (const s of e.speckles) out.push({ kind: 'speckle', color, cell, pos: at(s.u, s.v), sizeM: s.rM, yaw: 0 });
   }
   return out;
 }
@@ -181,8 +182,9 @@ export function accentMatrix(a: GroundAccent, m = new THREE.Matrix4()): THREE.Ma
 }
 
 /** Les `InstancedMesh` d'une scène : un par lot (type × couleur). Chaque instance porte sa pose et sa
- *  couleur (donnée × teinte de visibilité — la MÊME multiplication que la couleur de sommet du monde,
- *  `applyVisibilityTint`), la teinte voyageant par `instanceColor` : un changement de visibilité ne
+ *  couleur (donnée × teinte de visibilité, prise au MÊME champ que les faces du monde
+ *  `applyVisibilityTint`, échantillonné au centre de sa case — un accent n'a qu'une couleur pour toute
+ *  son instance), la teinte voyageant par `instanceColor` : un changement de visibilité ne
  *  refait ni le semis ni les matrices. `lit` choisit le matériau, exactement comme les faces du monde. */
 export function buildGroundAccentMeshes(
   accents: readonly GroundAccent[],
@@ -192,7 +194,7 @@ export function buildGroundAccentMeshes(
   for (const [key, lot] of groupAccents(accents)) {
     const kind = lot[0].kind;
     const geo = kind === 'tuft' ? tuftGeometry() : speckleGeometry();
-    // Une lame croisée se voit des deux côtés (`DoubleSide`), comme toute face du monde du spike.
+    // Une lame croisée se voit des deux côtés (`DoubleSide`), comme toute face du monde volumique.
     const mat = opts.lit
       ? new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, flatShading: true })
       : new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
@@ -202,7 +204,7 @@ export function buildGroundAccentMeshes(
     const c = new THREE.Color();
     lot.forEach((a, i) => {
       mesh.setMatrixAt(i, accentMatrix(a, m));
-      mesh.setColorAt(i, c.set(a.color).multiplyScalar(opts.tintAt(a.cellKey)));
+      mesh.setColorAt(i, c.set(a.color).multiplyScalar(opts.tintAt(a.cell.x, a.cell.y, a.cell.z)));
     });
     mesh.instanceMatrix.needsUpdate = true;
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;

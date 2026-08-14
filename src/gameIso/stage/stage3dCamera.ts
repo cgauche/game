@@ -14,8 +14,8 @@
  *  - le VIEWPORT MÉTRIQUE : le cadre en pixels DIVISÉ par `k·s`, seul levier d'échelle d'une ortho dont
  *    la cadence px/m (`pxPerM`) est celle de la production.
  */
-import type { Dims } from '../../geometry/iso';
-import { poseFromDims, screenToWorldAtLift, type StageKind } from './projection';
+import type { Dims, ProjKind } from '../../geometry/iso';
+import { poseFromDims, screenToWorldAtLift } from './projection';
 import { VH, VW } from './useStageCamera';
 import { viewBoxMeetScale, viewBoxScale, type StageCanvas } from './stageCam';
 
@@ -23,7 +23,7 @@ export type { StageCanvas };
 
 /** Ce qu'`affineCamera` attend, dérivé de l'intention du stage. */
 export interface Stage3dFraming {
-  kind: StageKind;
+  kind: ProjKind;
   /** Lacet en degrés : le cran (`camRot·90`) ou, en lacet CONTINU (#1176, P2-7), l'angle réel de `Dims.yawDeg`. */
   yawDeg: number;
   /** Point MONDE (mètres, repère three : X est, Y haut, Z sud) au centre du cadre — la CIBLE que

@@ -41,7 +41,7 @@ function empreinte(b: BakedWorld) {
     uv: attr('uv'),
     groupes: b.geometry.userData.surfaceGroups.map((g) => `${g.key}|${g.kind ?? ''}|${g.variant ?? ''}|${g.color ?? ''}`),
     dessins: b.geometry.groups.map((g) => `${g.start},${g.count},${g.materialIndex}`),
-    spans: b.spans.map((s) => `${s.cellKey}|${s.group}|${s.start}|${s.count}|${s.color}|${s.varFactor}`),
+    spans: b.spans.map((s) => `${s.cell.x},${s.cell.y},${s.cell.z}|${s.group}|${s.start}|${s.count}|${s.color}|${s.varFactor}`),
   };
 }
 

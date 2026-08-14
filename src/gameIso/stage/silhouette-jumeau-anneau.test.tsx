@@ -74,7 +74,7 @@ function monter(): void {
     <GameStage3D
       scene={SCENE}
       mpt={sceneMetresPerTile(SCENE)}
-      frame={{ mode: 'affine', dims: DIMS, cam: { x: 0, y: 0 }, zoom: 1 }}
+      frame={{ mode: 'plateau', dims: DIMS, cam: { x: 0, y: 0 }, zoom: 1 }}
       tintAt={() => 1}
       keepEl={() => true}
       els={{ tokens: [], props: [] }}
@@ -155,7 +155,7 @@ describe('Anneau d’équipe à travers les murs — jumeau de POOL (#1297 LOT A
       <GameStage3D
         scene={SCENE}
         mpt={sceneMetresPerTile(SCENE)}
-        frame={{ mode: 'affine', dims: DIMS, cam: { x: 0, y: 0 }, zoom: 1 }}
+        frame={{ mode: 'plateau', dims: DIMS, cam: { x: 0, y: 0 }, zoom: 1 }}
         tintAt={() => 1}
         keepEl={() => true}
         els={{ tokens: [], props: [] }}

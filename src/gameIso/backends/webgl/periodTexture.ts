@@ -1,5 +1,5 @@
 /**
- * SPIKE WebGL — TEXTURE DE PÉRIODE : le tracé métrique de `detail/courses` rasterisé en LOGICIEL, sans
+ * TEXTURE DE PÉRIODE : le tracé métrique de `detail/courses` rasterisé en LOGICIEL, sans
  * DOM ni canevas (Node-safe : la planche QC et les tests le cuisent comme le navigateur). Le pivot ne
  * rasterise jamais de SVG ici — `coursesPeriod`/`groundCoursesPeriod` rendent des polylignes et des
  * rectangles en mètres, ce module les échantillonne en pixels.

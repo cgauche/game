@@ -1,5 +1,5 @@
 /**
- * SPIKE WebGL — mathématique PURE des BILLBOARDS (personnages + props en quads texturés).
+ * Mathématique PURE des BILLBOARDS (personnages + props en quads texturés).
  * Node-safe : aucune dépendance DOM/three ici, tout le décisionnel (taille monde, sélection de vue,
  * ancrage, palier de rasterisation) vit dans ce module ; `svgTexture.ts` n'est qu'une couture navigateur.
  *
@@ -49,7 +49,7 @@ export function billboardHeightM(convention: BillboardConvention, kind: Billboar
 // 2. SÉLECTION DE VUE — délégation aux DEUX résolveurs de prod, aucun seuil recopié (#1161)
 // ————————————————————————————————————————————————————————————————
 
-/** Caméra du spike : `ortho` = familles top/iso/edge (lacet RÉEL en degrés, les crans de production en
+/** Caméra du monde volumique : `ortho` = familles top/iso/edge (lacet RÉEL en degrés, les crans de production en
  *  sont les multiples de 90°), `perspective` = famille POV. */
 export type BillboardCamera =
   | { kind: 'ortho'; yawDeg: number }
@@ -67,7 +67,7 @@ export function billboardView(cam: BillboardCamera, entFacing: Dir8): { view: Vi
 
 /** Vue ortho à un lacet RÉEL. Multiple de 90° : délégation ENTIÈRE à `project` (le résolveur de cran de
  *  la prod). Entre deux crans : le delta d'orientation est tourné du même lacet, puis remis au MÊME juge
- *  d'écran `facingView` — aucun seuil recopié, aucune table de vue propre au spike. */
+ *  d'écran `facingView` — aucun seuil recopié, aucune table de vue propre au volumique. */
 function orthoView(yawDeg: number, entFacing: Dir8): { view: View; mirror: boolean } {
   const quarts = yawDeg / 90;
   if (Number.isInteger(quarts)) return project(entFacing, ((((quarts % 4) + 4) % 4) as Rot));
@@ -142,7 +142,7 @@ export function subjectQuad(convention: BillboardConvention, sub: QuadSubject): 
 /** Zoom maximal du jeu — borne haute de `setZoom` (`src/state/store.ts:1674`, littéral non exporté). */
 export const ZOOM_MAX = 2.6;
 /** Garde-fous de texture : sous 16 px un billboard n'est plus lisible, au-delà de 2048 px on sort des
- *  tailles de texture sûres pour un spike. */
+ *  tailles de texture sûres. */
 export const RASTER_PX_MIN = 16;
 export const RASTER_PX_MAX = 2048;
 

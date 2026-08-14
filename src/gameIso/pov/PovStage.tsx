@@ -7,7 +7,7 @@ import { VW, VH } from './camera';
 import { AMBIANCE, povAmbianceDefs } from '../catalog/ambiance';
 import { buildTokens } from '../builders/tokens';
 import { buildProps } from '../builders/props';
-import { tintFor } from '../backends/webgl/visibilityTint';
+import { visibilityField } from '../backends/webgl/visibilityTint';
 import type { KeepEl, TintAt } from '../backends/webgl/sceneMeshes';
 import { useWalkAnim } from '../fx/useWalkAnim';
 import { VolumetricWorld } from '../stage/VolumetricWorld';
@@ -64,7 +64,10 @@ export function PovStage() {
   const visible = vues ?? AUCUNE_CASE;
   const activeZ = partyPos.z ?? 0;
   const walksRef = useWalkAnim(false); // la voie volumique lit la marche dans SA boucle de rendu (P2-4)
-  const tintAt = useMemo<TintAt>(() => (key: string) => tintFor(key, visible, exploredSet), [visible, exploredSet]);
+  const tintAt = useMemo<TintAt>(
+    () => visibilityField(visible, exploredSet, scene?.dimensions ?? { w: 0, h: 0 }),
+    [visible, exploredSet, scene],
+  );
   const tokenEls = useMemo(
     () => (scene ? buildTokens(scene, visible, null, { activeZ, viewZ: null, top: false }) : []),
     [scene, visible, activeZ],

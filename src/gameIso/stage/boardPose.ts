@@ -24,7 +24,7 @@ export interface Board {
   quad: { widthM: number; heightM: number; centerLiftM: number };
   mesh: THREE.Mesh;
   /** Matériau du quad — jamais lambertien (P2-5) : la normale d'un quad aligné écran est l'axe caméra.
-   *  Le type reste ouvert pour l'écran de SPIKE, qui monte les siens. */
+   *  Le type reste ouvert : un hôte peut monter les siens. */
   material: THREE.MeshBasicMaterial | THREE.MeshLambertMaterial;
   /** Disque d'ombre de contact du sujet, quand il en porte un (`wantsContactShadow`). */
   shadow?: THREE.Object3D;
@@ -268,7 +268,7 @@ export type GlideAt = (cid: string) => { dx: number; dy: number; dz: number } | 
 /** ALLURE du sujet `cid` à l'instant de la frame, `null` s'il n'a rien de particulier à montrer. */
 export type ChromeAt = (cid: string) => BoardChrome | null;
 
-/** Aucune allure particulière — la valeur d'une voie qui n'en fournit pas (planches QC, spike). */
+/** Aucune allure particulière — la valeur d'une voie qui n'en fournit pas (planches QC). */
 export const AUCUN_CHROME: ChromeAt = () => null;
 
 /** Les FLAQUES de la frame (#1245, L2/L3) : le POOL de lampes ponctuelles monté et la table qui vient

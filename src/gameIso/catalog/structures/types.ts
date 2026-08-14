@@ -41,7 +41,12 @@ export interface StructureAppearanceDef {
    *  épaisseur du mur + 2×`jut`) ; `thick` = épaisseur TOTALE d'une partie qui BOUCHE une ouverture
    *  (rien derrière elle ; 0 = plan unique au médian). Absent = les défauts par partie de
    *  `catalog/structures/index.ts`. */
-  relief?: { jut?: Partial<Record<WallPart, number>>; thick?: Partial<Record<WallPart, number>> };
+  relief?: {
+    jut?: Partial<Record<WallPart, number>>;
+    thick?: Partial<Record<WallPart, number>>;
+    /** Épaisseur (m) de la MATIÈRE PLEINE de cette apparence — défaut `WALL_MATTER_M`. */
+    wallM?: number;
+  };
 }
 
 /** Parties NOMMÉES d'un mur assemblé par le builder du pivot (`builders/walls`) — LISTE RUNTIME dont

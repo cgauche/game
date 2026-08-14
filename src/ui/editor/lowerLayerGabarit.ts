@@ -56,14 +56,14 @@ export function effectiveLowerLayerMode(mode: LowerLayerMode, opacity: number): 
 }
 
 /**
- * TEINTE de visibilité d'une case pour le monde volumique de l'éditeur (`TintAt`) : le gabarit des
- * couches du DESSOUS, en un scalaire. `cellKey` est la clé `"x,y,z"` du monde cuit.
+ * TEINTE de visibilité pour le monde volumique de l'éditeur (le champ que `TintAt` échantillonne) : le
+ * gabarit des couches du DESSOUS, en un scalaire. Elle ne dépend QUE de l'étage `z` — le gabarit est
+ * un réglage de couche, pas une carte.
  * UN SEUL canal pour deux matières : `applyVisibilityTint` la porte aux FACES, et `collectBillboards`
  * la pose sur chaque sujet (`tint`) — donc les CORPS des figurants et des décors d'une couche basse
  * s'assombrissent du même geste que leur case. PURE.
  */
-export function gabaritTint(cellKey: string, currentLayer: number, opacity: number): number {
-  const z = Number(cellKey.split(',')[2] ?? 0);
+export function gabaritTint(z: number, currentLayer: number, opacity: number): number {
   return z < currentLayer ? opacity : 1;
 }
 

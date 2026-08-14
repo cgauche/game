@@ -1,5 +1,5 @@
 /**
- * SPIKE WebGL — CAMÉRAS : les vues de PRODUCTION (iso losange, edge-on, vue du dessus, POV première
+ * CAMÉRAS DU MONDE VOLUMIQUE : les vues de PRODUCTION (iso losange, edge-on, vue du dessus, POV première
  * personne) reproduites en caméras three, la géométrie restant MÉTRIQUE (aucun étirement des sommets :
  * les normales du mode éclairé doivent rester justes). Le lacet des vues ortho est un RÉEL en degrés :
  * les crans de production (0/90/180/270°, cf. `rotYaw`) en sont les cas particuliers EXACTS.
@@ -14,10 +14,10 @@
  * avec sx = `pxPerM(mpt)`. Le pitch iso « uniforme » asin(TH/TW) = 30° n'est le bon que si sy = sx, ce
  * qui n'arrive qu'à une échelle métrique précise — cf. `cameras.test.ts` (mesure à 1e-6 px près).
  *
- * Node-safe : `three` est du JS pur (aucun DOM à l'import), aucun renderer n'est créé ici.
+ * Aucun DOM à l'import, aucun renderer créé ici : ces caméras se montent et se mesurent sous vitest.
  */
 import { Box3, Matrix4, OrthographicCamera, PerspectiveCamera, Vector3 } from 'three';
-import { CELL, TH, TW, type Rot } from '../../../geometry/iso';
+import { CELL, TH, TW, type ProjKind, type Rot } from '../../../geometry/iso';
 import type { Scene } from '../../../state/scene';
 import type { Dir8 } from '../../../state/dir8';
 import { FOV_X, NEAR, makeCamera } from '../../pov/camera';
@@ -29,9 +29,6 @@ export interface Viewport {
   w: number;
   h: number;
 }
-
-/** Vues affines de production : losange, « de face » (edge-on), dessus. */
-export type AffineKind = 'iso' | 'edge' | 'top';
 
 /** Ortho de l'affine : l'ANISOTROPIE fait partie de la CAMÉRA, pas d'un post-traitement. three
  *  reconstruit `projectionMatrix` à chaque `updateProjectionMatrix()` (redimensionnement, zoom,
@@ -67,7 +64,7 @@ export interface AffineCam {
 
 /** Échelles ÉCRAN d'une vue affine, dérivées de `TW`/`TH`/`ISO_PX_PER_M` et de l'échelle métrique de la
  *  scène. La vue du DESSUS regarde à la verticale : cadence unique `CELL` px/tuile. */
-export function affineScales(kind: AffineKind, mpt: number): { sx: number; sy: number; pitch: number; stretch: number } {
+export function affineScales(kind: ProjKind, mpt: number): { sx: number; sy: number; pitch: number; stretch: number } {
   if (kind === 'top') {
     const s = CELL / mpt;
     return { sx: s, sy: s, pitch: Math.PI / 2, stretch: 1 };
@@ -86,7 +83,7 @@ export function rotYaw(rot: Rot): number {
 /** Direction ÉCRAN-DROITE, en tuiles, de la vue `kind` au lacet `yawDeg`. L'iso pointe la diagonale
  *  (x−y), l'edge-on l'axe x (le losange tourné de 45°). Un multiple de 90° emprunte la rotation ENTIÈRE
  *  (quart de tour exact, aucun résidu de trigonométrie) : les crans restent au pixel de l'affine. */
-function rightTiles(kind: AffineKind, yawDeg: number): { x: number; y: number } {
+function rightTiles(kind: ProjKind, yawDeg: number): { x: number; y: number } {
   const base = kind === 'iso' ? { x: Math.SQRT1_2, y: -Math.SQRT1_2 } : { x: 1, y: 0 };
   const quarts = yawDeg / 90;
   if (Number.isInteger(quarts)) {
@@ -119,7 +116,7 @@ export function orthoDepthRange(distance: number, radius: number): { near: numbe
  *  `originX`/`originY` — les deux se comparent à ancrage commun) ; `radius` = rayon englobant de la
  *  scène, qui resserre near/far (défaut : `distance`, soit la portée large d'une scène inconnue). */
 export function affineCamera(
-  kind: AffineKind,
+  kind: ProjKind,
   yawDeg: number,
   mpt: number,
   viewport: Viewport,
@@ -163,7 +160,7 @@ export const FIT_FILL = 0.86;
  *  (px/m horizontal `sx`, vertical `sy`) — le centre de la boîte PROJETÉE n'est pas la projection du
  *  centre de la boîte dès que la vue n'est pas alignée sur ses arêtes. */
 export function fitAffineView(
-  kind: AffineKind,
+  kind: ProjKind,
   yawDeg: number,
   mpt: number,
   box: Box3,

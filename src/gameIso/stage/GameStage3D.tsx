@@ -193,10 +193,11 @@ export function setStageRendererFactory(fabrique: ((canvas: HTMLCanvasElement) =
  * à couvrir un cas qu'aucun d'eux ne sait exprimer.
  */
 export type StageFrame =
-  /** Regard AFFINE : le cran/lacet, la translation caméra et le zoom du stage SVG. */
-  | { mode: 'affine'; dims: Dims; cam: { x: number; y: number }; zoom: number }
+  /** Regard de PLATEAU (iso losange, edge-on, dessus) : le cran/lacet, la translation caméra et le
+   *  zoom du stage. Le mode discrimine une VUE, pas un backend. */
+  | { mode: 'plateau'; dims: Dims; cam: { x: number; y: number }; zoom: number }
   /**
-   * Regard AFFINE cadré par un VIEWBOX MOBILE (#1176, P3-3) — la convention de l'ÉDITEUR de scènes
+   * Regard de PLATEAU cadré par un VIEWBOX MOBILE (#1176, P3-3) — la convention de l'ÉDITEUR de scènes
    * (`ui/editor/EditorCanvas.tsx`) : aucune caméra de groupe, le viewBox rendu EST le cadrage, et
    * l'échelle se prend sur le RENDU (`viewBoxScreen`, cadre en pixels mesuré) parce que la CSS
    * rétrécit l'élément. Tout le reste de cet écran l'ignore : c'est le même regard de plateau.
@@ -227,7 +228,7 @@ export interface GameStage3DProps {
   /** La nappe de cette SECTION de toiture est-elle DESSINÉE dans la frame ? Le même verdict de vue
    *  que `keepEl` rend sur les éléments de toit (`cutawayForSection`, `seenSections` compris), rendu
    *  ici par la clé de section — c'est ce que la pluie doit savoir pour ne pas s'arrêter en l'air
-   *  au-dessus d'un toit qu'on ne peint plus (#1247). Absent = tout se dessine (POV, spike, QC). */
+   *  au-dessus d'un toit qu'on ne peint plus (#1247). Absent = tout se dessine (POV, QC). */
   nappeVue?: (sectionId: string) => boolean;
   /** Éléments de scène à billboarder — la sortie des BUILDERS du stage, donc les mêmes filtres que la
    *  voie affine (embuscade, enrôlé, couverture, étage, hors-vue). Cet écran ne les recalcule PAS. */
@@ -446,7 +447,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   }
 
   // Le cache de textures est GLOBAL au module : changer de SCÈNE rend ses entrées mortes (les clés
-  // portent l'identité des sujets de l'ancienne carte). Même vidange que l'écran de spike — sur
+  // portent l'identité des sujets de l'ancienne carte). Même vidange que les planches QC — sur
   // l'IDENTITÉ de la scène, pas sa référence : un hôte qui la reforge à chaque geste (l'éditeur, une
   // par `pointermove`) vidait sinon toutes les textures du décor à chaque coup de pinceau.
   useEffect(() => () => { clearBillboardTextures(); clearPeriodTextures(); clearFaceBakes(); }, [scene.id]);

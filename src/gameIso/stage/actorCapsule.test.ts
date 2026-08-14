@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import type { Dims } from '../../geometry/iso';
-import { actorCapsuleOf } from './actorCapsule';
+import { TW, type Dims } from '../../geometry/iso';
+import { actorCapsuleOf, ACTOR_CAPSULE_R_M } from './actorCapsule';
+import { ISO_PX_PER_M } from '../iso';
+import { billboardHeightM } from '../backends/webgl/billboardMath';
 import { baseSkeleton, applyBuild, groundSkeleton } from '../rig/skeletons';
 import { gabaritById, type GabaritDef } from '../rig/gabarits';
 import { raceById } from '../rig/races';
@@ -77,5 +79,35 @@ describe('actorCapsuleOf — la boîte du jeton est calée sur le CORPS DESSINÉ
 
   it('sans doubler ce corps : la capsule n’est pas une colonne de verre', () => {
     expect(radiusOf()).toBeLessThan(widestHeroBody() * 1.3);
+  });
+
+  /**
+   * LE RAYON EST MÉTRIQUE (#1176, C6). La capsule est de la géométrie de SCÈNE : son rayon se pose en
+   * MÈTRES, comme une carrure, et ne se convertit en pixels qu'à la frontière où la géométrie
+   * d'occlusion 2D le consomme (son remplacement par un raycast est le ticket #1324). Il valait
+   * jusqu'ici une fraction de la largeur d'un LOSANGE de grille — une longueur d'écran pour une
+   * dimension de corps.
+   */
+  it('le rayon se pose en MÈTRES et ne se convertit qu’au consommateur 2D', () => {
+    // La toise de référence est celle du corps DESSINÉ sur cette scène, pas un nombre posé.
+    const toise = billboardHeightM('heroique', 'personnage');
+    expect(ACTOR_CAPSULE_R_M).toBeGreaterThan(0);
+    expect(ACTOR_CAPSULE_R_M / toise).toBeLessThan(0.5); // une carrure, pas un cercle circonscrit
+    // La capsule RENDUE est exactement ce rayon métrique passé par la cadence px↔m de la projection.
+    expect(radiusOf()).toBeCloseTo(ACTOR_CAPSULE_R_M * ISO_PX_PER_M, 12);
+    // …et le corps qu'elle doit couvrir, RAMENÉ EN MÈTRES, y tient.
+    expect(ACTOR_CAPSULE_R_M).toBeGreaterThanOrEqual(widestHeroBody() / ISO_PX_PER_M);
+  });
+
+  /**
+   * PROVENANCE ÉPINGLÉE. Le rapport carrure/toise n'est pas une remesure du rig : il conserve le rayon
+   * CALIBRÉ de la voie SVG (`TW × 0,37 = 23,68 px`, #907), seulement exprimé en mètres. Cette clause
+   * tient ce fait — si quelqu'un remesure vraiment la carrure au rig (le geste de #1324), elle rougit
+   * et l'oblige à DIRE que le réglage a changé, au lieu de le laisser glisser sous couvert d'unités.
+   */
+  it('le rayon conserve le calibrage de la voie SVG — l’unité change, pas le réglage (#907 → #1324)', () => {
+    const CALIBRE_SVG_PX = TW * 0.37; // ce que la capsule mesurait avant C6
+    expect(radiusOf()).toBeCloseTo(CALIBRE_SVG_PX, 1); // 23,664 contre 23,68 : l'arrondi au millième
+    expect(Math.abs(radiusOf() - CALIBRE_SVG_PX)).toBeLessThan(0.02);
   });
 });

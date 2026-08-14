@@ -296,7 +296,7 @@ describe('POV volumique — la météo module la brume du milieu (#1247)', () =>
       <GameStage3D
         scene={s}
         mpt={sceneMetresPerTile(s)}
-        frame={{ mode: 'affine', dims: { w: s.dimensions.w, h: s.dimensions.h, rot: 0, view }, cam: { x: 0, y: 0 }, zoom: 1 }}
+        frame={{ mode: 'plateau', dims: { w: s.dimensions.w, h: s.dimensions.h, rot: 0, view }, cam: { x: 0, y: 0 }, zoom: 1 }}
         tintAt={() => 1}
         keepEl={() => true}
         els={{ tokens: [], props: [] }}
@@ -325,7 +325,7 @@ describe('Vue de PLATEAU — pas d’horizon, donc pas de brume (#1176 P3-1c)', 
       <GameStage3D
         scene={scene}
         mpt={sceneMetresPerTile(scene)}
-        frame={{ mode: 'affine', dims, cam: { x: 0, y: 0 }, zoom: 1 }}
+        frame={{ mode: 'plateau', dims, cam: { x: 0, y: 0 }, zoom: 1 }}
         tintAt={() => 1}
         keepEl={() => true}
         els={{ tokens: [], props: [] }}

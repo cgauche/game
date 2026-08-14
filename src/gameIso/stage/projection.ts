@@ -36,15 +36,11 @@ import {
   type ProjKind,
 } from '../../geometry/iso';
 
-/** Vue projetée : losange 2.5D, « de face » (edge-on, 3D conservée), ou dessus plat. Mêmes trois
- *  familles que `AffineKind` (`backends/webgl/cameras.ts`), exprimées ici sans `three`. */
-export type StageKind = ProjKind;
-
 /** Pose de la caméra de stage : la vue, son lacet RÉEL en degrés, le PIVOT de grille autour duquel ce
  *  lacet tourne, et le point ÉCRAN où ce pivot atterrit (l'ANCRAGE — ce que l'affine tient par
  *  `originX`/`originY` et la caméra volumique par `target`). */
 export interface StagePose {
-  kind: StageKind;
+  kind: ProjKind;
   /** Lacet en degrés ; `rot·90` reproduit exactement le cran `rot` de `Dims`. */
   yawDeg: number;
   /** Case-pivot de la rotation, en grille CONTINUE. */
@@ -69,7 +65,7 @@ export interface StageScreen {
 /** Vue de la pose correspondant à des dimensions de carte. Sous lacet LIBRE (`Dims.yawDeg`), la vue est
  *  le LOSANGE : l'edge-on n'est pas une seconde famille mais le même losange à `+45` — `edge(d) =
  *  iso(R(45°)·d)`, EDGE_W/EDGE_H valant TW/TH·√½ (mesuré : `lacet-continu.test.ts`). */
-export function stageKindOf(dims: Dims): StageKind {
+export function stageKindOf(dims: Dims): ProjKind {
   if (isSquareView(dims.view)) return 'top';
   if (freeYaw(dims) != null) return 'iso';
   return dims.edge ? 'edge' : 'iso';

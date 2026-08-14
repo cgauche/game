@@ -39,12 +39,12 @@ import { GameStage3D, type StageFrame, type StageWalkAnim } from './GameStage3D'
 
 /**
  * REGARD porté sur le monde, à l'échelle de l'hôte. Même union que celle de la caméra (`StageFrame`),
- * la voie affine portant en plus le cadrage À UN INSTANT (`camAt`) que la boucle de rendu redemande
- * par frame, et la voie POV le sujet dont la marche déplace l'œil (`cid`).
+ * le regard de PLATEAU portant en plus le cadrage À UN INSTANT (`camAt`) que la boucle de rendu redemande
+ * par frame, et le regard POV le sujet dont la marche déplace l'œil (`cid`).
  */
 export type WorldFrame =
   | {
-      mode: 'affine';
+      mode: 'plateau';
       dims: Dims;
       cam: { x: number; y: number };
       /** Caméra à un instant DONNÉ : la boucle de rendu la redemande par frame pendant une marche. */
@@ -119,24 +119,21 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
   // En POV le meneur ne porte AUCUN billboard (on regarde par ses yeux) : sa base entre quand même
   // dans la table, car c'est son glissement que la caméra suit.
   if (frame.mode === 'pov' && frame.cid) bases.set(frame.cid, { x: frame.partyPos.x, y: frame.partyPos.y, z: frame.partyPos.z ?? 0 });
-  // `dims` ne sert à `walkGlideM` que pour le point de TRI (`WalkPose.sortPt`), qu'aucune des deux
-  // voies volumiques ne consomme — le POV emprunte donc la grille nue.
-  const dimsGlisse: Dims = frame.mode === 'affine' ? frame.dims : { ...scene.dimensions, rot: 0, view: 'iso' };
   const solM = (x: number, y: number, z: number) => heightAt(scene, Math.round(x), Math.round(y), z);
   const anim: StageWalkAnim = {
     subscribe: subscribeWalkFrames,
     glide: (cid) => {
       const base = bases.get(cid);
-      return base ? walkGlideM(walksRef.current[cid], base, dimsGlisse, mpt, performance.now(), solM) : null;
+      return base ? walkGlideM(walksRef.current[cid], base, mpt, performance.now(), solM) : null;
     },
-    cam: () => (frame.mode === 'affine' ? frame.camAt(performance.now()) : { x: 0, y: 0 }),
+    cam: () => (frame.mode === 'plateau' ? frame.camAt(performance.now()) : { x: 0, y: 0 }),
   };
   // ALLURE des quads : la table du rendu courant, interrogée PAR FRAME dans la passe de pose. Elle se
   // reforge à chaque rendu, comme `anim` — un survol change trois nombres de matériau, rien de monté.
   const allures = new Map((chromes ?? []).map((m) => [m.id, { ghost: m.ghost, dim: m.dim, highlight: m.highlight }]));
   const chromeAt: ChromeAt = (cid) => allures.get(cid) ?? null;
-  const frameCam: StageFrame = frame.mode === 'affine'
-    ? { mode: 'affine', dims: frame.dims, cam: frame.cam, zoom: frame.zoom }
+  const frameCam: StageFrame = frame.mode === 'plateau'
+    ? { mode: 'plateau', dims: frame.dims, cam: frame.cam, zoom: frame.zoom }
     : { mode: 'pov', partyPos: frame.partyPos, facing: frame.facing, indoor: frame.indoor, cid: frame.cid };
   return <GameStage3D scene={scene} mpt={mpt} frame={frameCam} tintAt={tintAt} keepEl={keepEl} nappeVue={nappeVue} els={els} actors={actors} gameTime={gameTime} lightLevel={lightLevel} lights={lights} highlights={highlights} dynMarks={dynMarks ?? NO_DYNAMIC_MARKS} halos={halos ?? NO_INTERACTION_HALOS} chromeAt={chromeAt} anim={anim} />;
 }

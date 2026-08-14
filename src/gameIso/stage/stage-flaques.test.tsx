@@ -360,7 +360,7 @@ const dimsDe = (scene: Scene): Dims => ({ w: scene.dimensions.w, h: scene.dimens
 const props = (scene: Scene, gameTime: number) => ({
   scene,
   mpt: sceneMetresPerTile(scene),
-  frame: { mode: 'affine', dims: dimsDe(scene), cam: { x: 0, y: 0 }, zoom: 1 } as const,
+  frame: { mode: 'plateau', dims: dimsDe(scene), cam: { x: 0, y: 0 }, zoom: 1 } as const,
   tintAt: () => 1,
   keepEl: () => true,
   els: { tokens: [], props: [] },

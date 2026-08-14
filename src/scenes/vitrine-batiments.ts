@@ -58,7 +58,7 @@ const VITRINE_BODIES = [
 ];
 
 /** RUINE de vitrine — la rangée d'arêtes qui porte les parties de BRÈCHE qu'aucune scène-témoin du
- *  spike ne montrait (mesuré : `gravats`, `gravats-tas` et `seuil` à 0 face sur les six scènes) : une
+ *  aucune scène-témoin ne montrait (mesuré : `gravats`, `gravats-tas` et `seuil` à 0 face sur les six scènes) : une
  *  courtine ABATTUE (tas de gravats dentelé + moignons de poteau) et un corps de garde ABATTU (seuil
  *  d'éboulis sous son linteau). S'y ajoutent, en comparaison à vue, le même corps de garde INTACT
  *  (herse — déjà présente au siège) et une porte de bois FERMÉE (vantail + joints de planches +
@@ -87,7 +87,7 @@ const ruineFlags = Object.fromEntries([
   [doorKey(VITRINE_RUINE.porteFermee, VITRINE_RUINE.y, 'N'), false],
 ]);
 
-/** Spec de la vitrine — SOURCE UNIQUE (consommée par la planche QC headless ET par le spike WebGL). */
+/** Spec de la vitrine — SOURCE UNIQUE (consommée par la planche QC headless ET par les gardes de rendu). */
 export const vitrineSpec: MapSpec = {
   size: [30, 24],
   id: 'vitrine-batiments',

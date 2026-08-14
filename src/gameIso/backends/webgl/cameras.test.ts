@@ -10,9 +10,8 @@ import {
   povCamera,
   projectToScreen,
   rotYaw,
-  type AffineKind,
 } from './cameras';
-import { LEVEL_H, TH, TW, tileCenter, type Dims, type Rot } from '../../../geometry/iso';
+import { LEVEL_H, TH, TW, tileCenter, type Dims, type ProjKind, type Rot } from '../../../geometry/iso';
 import { METRES_PER_LEVEL, metricToLift } from '../../../state/relief';
 import { buildScene } from '../../../state/mapSpec';
 import { spec as siegeSpec } from '../../../scenes/test-scenarios/siege-enceinte';
@@ -47,7 +46,7 @@ function svgScreen(s: { x: number; y: number; h: number }, dims: Dims): { sx: nu
   return { sx: cx, sy: cy };
 }
 
-function dimsFor(kind: AffineKind, rot: Rot): Dims {
+function dimsFor(kind: ProjKind, rot: Rot): Dims {
   const base = { w: scene.dimensions.w, h: scene.dimensions.h, rot };
   if (kind === 'edge') return { ...base, edge: true };
   if (kind === 'top') return { ...base, view: 'top' as const };
@@ -72,7 +71,7 @@ function deltaOf(camera: Parameters<typeof projectToScreen>[0], dims: Dims): num
   return worst;
 }
 
-function maxDelta(kind: AffineKind, rot: Rot): number {
+function maxDelta(kind: ProjKind, rot: Rot): number {
   return deltaOf(affineCamera(kind, rotYaw(rot), mpt, VIEWPORT).camera, dimsFor(kind, rot));
 }
 
@@ -242,11 +241,11 @@ describe('Échelles affines — dérivées des constantes, jamais posées', () =
 
 describe('CADRAGE — la vue affine tient le CONTENU, sans toucher à la définition de la caméra', () => {
   const CADRE = { w: 1280, h: 720 };
-  const kinds: AffineKind[] = ['top', 'iso', 'edge'];
+  const kinds: ProjKind[] = ['top', 'iso', 'edge'];
 
   /** Boîte-écran (px du CADRE) du contenu, vue par la caméra cadrée : `zoom` n'agit que par le viewport
    *  passé à `affineCamera`, la projection reste en NDC → le cadre reste `CADRE`. */
-  function boiteEcran(kind: AffineKind, rot: Rot, box: Box3) {
+  function boiteEcran(kind: ProjKind, rot: Rot, box: Box3) {
     const fit = fitAffineView(kind, rotYaw(rot), mpt, box, CADRE);
     const { camera } = affineCamera(kind, rotYaw(rot), mpt, { w: CADRE.w / fit.zoom, h: CADRE.h / fit.zoom }, { target: fit.target });
     let loX = Infinity, hiX = -Infinity, loY = Infinity, hiY = -Infinity;

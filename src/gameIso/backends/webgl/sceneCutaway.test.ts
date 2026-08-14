@@ -35,9 +35,8 @@ const LOIS: Record<string, KeepEl> = {
   z0: (el) => el.cell.z === 0,
 };
 
-const tint = (key: string): number => {
-  const [x, y] = key.split(',').map(Number);
-  const k = (x + y) % 3;
+const tint = (x: number, y: number): number => {
+  const k = (Math.round(x) + Math.round(y)) % 3;
   return k === 0 ? 1 : k === 1 ? 0.42 : 0.15;
 };
 
@@ -68,7 +67,7 @@ function facesRendues(baked: BakedWorld): Map<string, string[]> {
       const s = parDébut.get(idx[p]);
       expect(s, `index ${p} : aucun début de face`).toBeDefined();
       for (let k = 0; k < s!.count; k++) expect(idx[p + k]).toBe(s!.start + k);
-      liste.push(`${s!.cellKey}#${s!.count}`);
+      liste.push(`${s!.cell.x},${s!.cell.y},${s!.cell.z}#${s!.count}`);
       p += s!.count;
     }
     if (liste.length) out.set(groupes[g.materialIndex!].key, liste);
@@ -99,7 +98,7 @@ const empreinte = (baked: BakedWorld) => empreinteDe(facesRendues(baked));
 function empreinteBakeFiltré(scn: Scene, keepEl: KeepEl): { groupes: number; faces: number; digest: string } {
   const m = sceneMetresPerTile(scn);
   const listées = worldFaces(scn).filter((wf) => keepEl(wf.el));
-  const geoms = facesGeometry(listées.map((f) => f.face), m, faceDepthOf(m));
+  const geoms = facesGeometry(listées.map((f) => f.face), m, faceDepthOf());
   const { groups, faceIndices } = surfaceGrouping(listées, m);
   const parGroupe = new Map<string, string[]>();
   faceIndices.forEach((idx, k) => {

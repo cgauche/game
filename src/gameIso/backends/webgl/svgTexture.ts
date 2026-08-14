@@ -1,9 +1,9 @@
 /**
- * SPIKE WebGL — couture NAVIGATEUR de rasterisation : une chaîne SVG (l'art, source de vérité :
+ * Couture NAVIGATEUR de rasterisation : une chaîne SVG (l'art, source de vérité :
  * `propSvg(...)` pour le décor, `bonesToSvg(resolveRig(...))` pour les rigs — le chemin des galeries)
  * devient une texture de billboard. ZÉRO logique : les décisions (taille monde, vue, palier de
  * rasterisation) vivent dans `billboardMath.ts` (pur, testé). Ce module dépend du DOM (`Blob`,
- * `Image`, `<canvas>`) et de three : la RASTERISATION se juge à l'écran du spike ; seule la politique
+ * `Image`, `<canvas>`) et de three : la RASTERISATION se juge à l'écran ; seule la politique
  * de CACHE (pure, injectable) est testée unitairement (`svgTexture.test.ts`).
  *
  * Les chaînes attendues sont des FRAGMENTS SVG en boîte locale (120×150 pour les props, boîte du rig
@@ -87,7 +87,7 @@ export function getBillboardTexture(key: string, make: () => Promise<THREE.Canva
   return p;
 }
 
-/** Vide le cache et libère les textures GPU (changement de scène / rechargement du spike). */
+/** Vide le cache et libère les textures GPU (changement de scène / rechargement). */
 export function clearBillboardTextures(): void {
   for (const p of CACHE.values()) void p.then((t) => t.dispose()).catch(() => undefined);
   CACHE.clear();
