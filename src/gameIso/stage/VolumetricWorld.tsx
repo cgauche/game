@@ -1,21 +1,21 @@
 /**
- * MONDE VOLUMIQUE (#1176, DEV) monté sous une vue — la couche PARTAGÉE des deux hôtes : le stage
- * isométrique (`IsoStage`, regard affine) et la vue première personne (`pov/PovStage`, regard POV,
+ * MONDE VOLUMIQUE (#1176) monté sous une vue — la couche PARTAGÉE des deux hôtes : le stage
+ * isométrique (`IsoStage`, regard de plateau) et la vue première personne (`pov/PovStage`, regard POV,
  * lot P3-1a). Un seul montage volumique, donc une seule dérivation d'acteurs, une seule marche lue à
  * la frame, une seule liste de marques — les deux vues ne peuvent pas diverger sur ce que le monde
  * contient, seulement sur le REGARD porté dessus (`frame`, cf. `StageFrame`).
  *
- * Composant à part, et c'est STRUCTUREL : les abonnements au store qui n'ont de sens qu'en volumique
- * vivent ICI, donc ne s'abonnent pas du tout quand la voie affine est active. `facing` en est le cas
- * d'école — `setFacing` reforge la référence de la table à chaque orientation (`store.ts`, à chaque pas
- * et à chaque attaque) : lu par `IsoStage`, il re-rendait le stage ENTIER même l'interrupteur au repos.
+ * Composant à part, et c'est STRUCTUREL : les abonnements au store qui n'ont de sens qu'ici y vivent,
+ * donc ne s'abonnent pas quand l'hôte ne monte pas le monde (le POV SVG, jusqu'à C5b). `facing` en est
+ * le cas d'école — `setFacing` reforge la référence de la table à chaque orientation (`store.ts`, à
+ * chaque pas et à chaque attaque) : lu par `IsoStage`, il re-rendait le stage ENTIER.
  * Un hook conditionnel est interdit ; un composant conditionnel, non.
  *
- * Les ACTEURS se dérivent des ÉLÉMENTS DU BUILDER (`tokenEls`), pas de `battle.combatants` : mêmes
- * filtres que la voie affine (passager de navire abstrait, structure de siège rendue sur son arête,
- * étage isolé, surplomb, brouillard). Un couple MONTÉ y entre comme UN acteur : la monture porte la
- * case et l'échelle, le cavalier voyage avec elle (`ActorPose.rider`) et les deux sortent en UN seul
- * billboard composite — le pendant du `MountedToken` affine.
+ * Les ACTEURS se dérivent des ÉLÉMENTS DU BUILDER (`tokenEls`), pas de `battle.combatants` : les
+ * filtres du builder valent pour eux (passager de navire abstrait, structure de siège rendue sur son
+ * arête, étage isolé, surplomb, brouillard). Un couple MONTÉ y entre comme UN acteur : la monture porte
+ * la case et l'échelle, le cavalier voyage avec elle (`ActorPose.rider`) et les deux sortent en UN seul
+ * billboard composite (loi de selle `seatRiderOnMount`, `backends/webgl/sceneMeshes`).
  */
 import { useMemo, type MutableRefObject } from 'react';
 import { useGame, type BattleState } from '../../state/store';

@@ -123,7 +123,7 @@ afterAll(() => {
 beforeEach(() => { setStageBackend('webgl'); });
 afterEach(() => {
   démonter();
-  setStageBackend('affine');
+  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
 describe('POV volumique — la BRUME du milieu (#1176 P3-1c)', () => {

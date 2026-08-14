@@ -1,6 +1,5 @@
-import { useState, useSyncExternalStore } from 'react';
+import { useState } from 'react';
 import { useGame } from '../state/store';
-import { getStageBackend, subscribeStageBackend, toggleStageBackend } from '../state/stage3d';
 import { tournerCamera } from '../state/keybindings';
 import { canActFirst, freeActFirst } from '../state/turnEconomy';
 import { preemptShooterIds } from '../state/targeting';
@@ -70,7 +69,6 @@ export function CampaignView() {
   const sessionEndOpen = useGame((s) => s.sessionEndOpen); // Effet `sessionEnd` (#83) : ouvre la même modale
   const closeSessionEnd = useGame((s) => s.closeSessionEnd);
   const inspectEnabled = useGame((s) => s.inspectEnabled); // option de jeu : inspection des combattants
-  const stageBackend = useSyncExternalStore(subscribeStageBackend, getStageBackend, getStageBackend); // voie de rendu du monde (#1176) — seul l'INTERRUPTEUR (plus bas) reste DEV
   const toggleInspect = useGame((s) => s.toggleInspectEnabled);
   const pendingRoundStart = useGame((s) => s.pendingRoundStart);
   const roundStartPromote = useGame((s) => s.roundStartPromote);
@@ -350,8 +348,6 @@ export function CampaignView() {
           onTogglePov={mode === 'exploration' ? togglePov : undefined}
           inspectEnabled={inspectEnabled}
           onToggleInspect={mode === 'battle' ? toggleInspect : undefined}
-          stage3d={stageBackend === 'webgl'}
-          onToggleStage3d={import.meta.env.DEV ? toggleStageBackend : undefined}
         />
         {mode === 'exploration' && povActive && <PovControls />}
         {dialogue && <DialogueBox />}

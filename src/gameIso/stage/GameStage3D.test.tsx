@@ -12,12 +12,14 @@ import { cidUnderPointer, hasSpritePicker } from './spritePicker';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 
 /**
- * La voie de rendu est EXCLUSIVE : le monde se peint une fois, jamais deux. En volumique, la couche
- * monde du SVG (`CulledScene`) ne se monte PAS — et avec elle disparaissent les jetons porteurs de
- * `data-cid`, ce que le hit-test natif interroge. Le picking de TUILE reste intact (il passe par le
- * SVG, resté monté et seul receveur des événements) ; le picking de SPRITE, lui, passe par
- * la couture `stage/spritePicker.ts`, où cet écran INSCRIT son lancer de rayon (P2-3) — c'est
- * l'inscription, et non un drapeau de voie, qui bascule le pointeur.
+ * LE MONDE EST VOLUMIQUE, ET LUI SEUL (#1176 P3-4, commit C5a) : l'écran de jeu ne peint plus aucun
+ * décor dans son SVG — celui-ci ne porte que les overlays d'interaction et reçoit le picking de TUILE.
+ * Plus aucun jeton n'y porte de `data-cid` : le picking de SPRITE passe par la couture
+ * `stage/spritePicker.ts`, où cet écran INSCRIT son lancer de rayon (P2-3) — c'est l'inscription, et
+ * non un drapeau de voie, qui bascule le pointeur.
+ *
+ * L'interrupteur de chantier (`state/stage3d.ts`) survit à C5a pour la voie POV SVG (morte à C5b) :
+ * ce banc vérifie qu'il n'a PLUS AUCUNE prise sur l'écran de jeu.
  */
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -85,19 +87,18 @@ function monterStrict(): HTMLDivElement {
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (container) { container.remove(); container = null; }
-  setStageBackend('affine');
+  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
-describe('Voie de rendu du monde — un seul monde monté à la fois (#1176)', () => {
-  it('voie AFFINE : aucun canevas volumique, et les jetons SVG (data-cid) sont là', () => {
+describe('Le monde de l’écran de jeu est VOLUMIQUE, et lui seul (#1176 C5a)', () => {
+  it('l’interrupteur de chantier sur `affine` ne ramène AUCUN monde SVG : le canevas peint quand même', () => {
     setStageBackend('affine');
     const { el } = monter();
-    expect(el.querySelector('canvas.iso-stage')).toBeNull();
-    expect(el.querySelector('svg.iso-stage')).not.toBeNull();
-    expect(el.querySelectorAll('[data-cid]').length).toBeGreaterThan(0);
+    expect(el.querySelector('canvas.iso-stage'), 'le monde volumique doit être monté quoi que dise l’interrupteur').not.toBeNull();
+    expect(el.querySelectorAll('[data-cid]').length, 'plus aucun corps SVG dans l’écran de jeu').toBe(0);
   });
 
-  it('voie VOLUMIQUE : le canevas est monté SOUS le SVG, la couche monde du SVG ne l’est plus', () => {
+  it('le canevas est monté SOUS le SVG, qui ne porte plus la couche monde', () => {
     setStageBackend('webgl');
     const { el } = monter();
     const canvas = el.querySelector('canvas.iso-stage');
@@ -118,15 +119,17 @@ describe('Voie de rendu du monde — un seul monde monté à la fois (#1176)', (
  * chemin de la voie affine, inchangé.
  */
 describe('Hit-test de sprite — la voie qui peint est celle qui répond (#1176 P2-3)', () => {
-  it('voie AFFINE : personne n’a inscrit de rayon, la question va au DOM (`data-cid`)', () => {
-    setStageBackend('affine');
-    const { el } = monter();
+  it('SANS écran volumique monté, la question va au DOM (`data-cid`) — le chemin des hôtes SVG restants', () => {
     expect(hasSpritePicker()).toBe(false);
-    const jeton = el.querySelector('[data-cid]') as HTMLElement;
-    const cid = jeton.getAttribute('data-cid')!;
+    // Un porteur de `data-cid` quelconque : c'est ce que les hôtes SVG encore vivants (POV, éditeur —
+    // morts à C5b) posent sous le pointeur, et ce que le hit-test natif rend.
+    const jeton = document.createElement('div');
+    jeton.setAttribute('data-cid', 'h1');
+    document.body.appendChild(jeton);
     document.elementFromPoint = () => jeton; // jsdom n'a pas de mise en page : le hit-test natif se stubbe
-    expect(cidUnderPointer(10, 10)).toBe(cid);
+    expect(cidUnderPointer(10, 10)).toBe('h1');
     delete (document as Partial<Document>).elementFromPoint;
+    jeton.remove();
   });
 
   it('voie VOLUMIQUE : le rayon est inscrit au montage et la question ne va plus au DOM', () => {
@@ -162,30 +165,18 @@ describe('Hit-test de sprite — la voie qui peint est celle qui répond (#1176 
 });
 
 /**
- * L'interrupteur AU REPOS doit être un NO-OP : rien de ce que la voie volumique consomme ne doit coûter
- * un rendu au stage affine. `facing` est le cas d'école — `setFacing` reforge la table à chaque
- * orientation (donc à chaque pas et à chaque attaque) ; lu par `IsoStage`, il re-rendait le stage
- * ENTIER, interrupteur éteint. La correction est structurelle : l'abonnement vit dans `VolumetricWorld`,
- * monté seulement en volumique. La sonde MORD des deux côtés — 0 commit en affine, au moins 1 en
- * volumique (le monde y suit bien l'orientation).
+ * L'ORIENTATION MONDE est lue par le monde volumique, qui la suit : `setFacing` reforge la table à
+ * chaque orientation (donc à chaque pas et à chaque attaque), et l'abonnement vit dans
+ * `VolumetricWorld` — le sous-arbre du stage doit donc bien commiter quand elle change.
  *
  * L'orientation est posée sur un id qu'AUCUN jeton de la scène ne porte : un corps abonné à SA propre
- * orientation (`useRigAnim` : `s.facing?.[id]`) reste alors indifférent, et seul un abonnement à la
- * TABLE ENTIÈRE — celui du régressé — peut produire un commit.
+ * orientation (`useRigAnim` : `s.facing?.[id]`) reste alors indifférent, et seul l'abonnement à la
+ * TABLE ENTIÈRE peut produire un commit — c'est bien celui du monde que la sonde mesure.
  */
 const SONDE = '__sonde-orientation'; // aucun jeton ne porte cet id
 
-describe('Voie AFFINE — l’interrupteur au repos ne coûte aucun rendu (#1176)', () => {
-  it('un `setFacing` ne re-rend PAS le stage en affine', () => {
-    setStageBackend('affine');
-    const { commits } = monter();
-    const avant = commits();
-    act(() => { useGame.getState().setFacing(SONDE, 'N'); });
-    expect(commits()).toBe(avant);
-  });
-
-  it('…et il le re-rend bien en VOLUMIQUE (la table y est lue) — la sonde n’est pas inerte', () => {
-    setStageBackend('webgl');
+describe('Orientation monde — le monde volumique la suit (#1176)', () => {
+  it('un `setFacing` re-rend le stage (la table y est lue) — la sonde n’est pas inerte', () => {
     const { commits } = monter();
     const avant = commits();
     act(() => { useGame.getState().setFacing(SONDE, 'O'); });

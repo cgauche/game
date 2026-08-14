@@ -1,36 +1,15 @@
 /**
- * #226 — les tokens d'EXPLORATION (figurants) exposent `data-cid` au MÊME canal que le combat
- * (`extras.cid` de `BodyToken`) : cibler un PNJ hors combat en recette navigateur ne coûte plus la
- * lecture ad hoc du DOM, `__wfrp.screenPos(id)` fonctionne dans les deux modes.
+ * Couche DÉCOR en SVG — ce qu'il en reste après la mort de la voie de jeu affine (#1176 P3-4, commit
+ * C5a) : l'aperçu WYSIWYG de l'éditeur. Les corps de JEU (combattants, figurants, jeton de groupe)
+ * sont posés par le monde volumique ; leur `data-cid` de recette est un ANGLE MORT connu de cette voie
+ * (aucun nœud DOM par jeton, cf. `stage/GameStage3D.test.tsx`).
  */
 import { describe, it, expect } from 'vitest';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { figurantLayerObjs, propLayerObjs } from './tokens';
+import { propLayerObjs } from './tokens';
 import type { TokenCtx } from './tokens';
-import type { PropEl, TokenEl } from '../builders/types';
-import type { SceneEntity } from '../../state/scene';
+import type { PropEl } from '../builders/types';
 
 const ctx: TokenCtx = { dims: { w: 5, h: 5 }, view: 'iso', liftAt: () => 0 };
-
-const ent: SceneEntity = { kind: 'personnage', id: 'servant-1', label: 'Servant du bélier', pos: { x: 1, y: 1 }, ref: 'garde-du-village' };
-
-const tokenEl: TokenEl = {
-  kind: 'token',
-  id: ent.id,
-  key: `token:${ent.id}`,
-  cell: { x: 1, y: 1, z: 0 },
-  states: { visible: true },
-  subject: { kind: 'figurant', ent, enrolled: false, inBattle: false },
-};
-
-describe('figurantLayerObjs — data-cid (#226)', () => {
-  it('un figurant rend son token avec data-cid = id de la SceneEntity', () => {
-    const objs = figurantLayerObjs([tokenEl], ctx);
-    expect(objs.length).toBeGreaterThan(0);
-    const html = objs.map((o) => renderToStaticMarkup(<svg>{o.el}</svg>)).join('');
-    expect(html).toContain(`data-cid="${ent.id}"`);
-  });
-});
 
 describe('propLayerObjs — ancre logique', () => {
   it('porte les coordonnées entières de la cellule sur le StageObj', () => {

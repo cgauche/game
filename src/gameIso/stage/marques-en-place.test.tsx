@@ -104,7 +104,7 @@ afterAll(() => setStageRendererFactory(null));
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (conteneur) { conteneur.remove(); conteneur = null; }
-  setStageBackend('affine');
+  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
 describe('Marques de cases — le pas ne remonte AUCUN pool (#1176 P3-0c)', () => {

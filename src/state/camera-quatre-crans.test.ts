@@ -43,14 +43,14 @@ function harnaisDeFrames() {
 const g = useGame.getState;
 
 beforeEach(() => {
-  setStageBackend('affine');
+  setStageBackend('webgl'); // la voie du produit — le geste de caméra ne dépend plus de l'interrupteur
   resetStageYaw();
   useGame.setState({ camRot: 0, camEdge: false, camPan: { x: 0, y: 0 } });
 });
 
 afterEach(() => {
   vi.unstubAllGlobals();
-  setStageBackend('affine');
+  setStageBackend('webgl');
   resetStageYaw();
 });
 
@@ -104,9 +104,12 @@ describe('AIMANT — la poussée du joueur vise un cran, elle ne s’ajoute pas 
 });
 
 describe('rotateCam — le chemin joueur saute les vues de face', () => {
-  it('voie AFFINE : le geste avance d’un cran de 90°, camEdge jamais vrai, et la vue se RE-CENTRE (camPan)', () => {
+  it('l’action de store avance d’un cran de 90°, camEdge jamais vrai, et la vue se RE-CENTRE (camPan)', () => {
+    // `rotateCam` n'est plus le geste de l'écran de JEU (mort de la voie affine, #1176 P3-4 commit
+    // C5a : le geste joueur pousse le lacet) — il reste l'action de rotation par cran des bancs et de
+    // l'éditeur, et sa loi doit tenir : jamais de vue de face, re-centrage compris.
     useGame.setState({ camEdge: true, camPan: { x: 37, y: -12 } }); // vue de face héritée + décalage manuel
-    tournerCamera(g, 1);
+    g().rotateCam(1);
     expect(g().camRot).toBe(1);
     expect(g().camEdge).toBe(false);
     expect(g().camPan).toEqual({ x: 0, y: 0 }); // re-centrage conservé : sans lui, la vue reste « téléportée »

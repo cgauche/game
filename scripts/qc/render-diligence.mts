@@ -184,7 +184,7 @@ function cutawayPanel(rot: Rot, ally: { x: number; y: number; z: number } | null
     if (!floor.states.ghost) objects.push({ d: floorDepth(floor, dims), svg: floorSvg(floor, dims) });
   for (const wall of buildWalls(scene, undefined, { activeZ }))
     objects.push({ d: wallDepth(wall, dims), svg: wallSvg(wall, dims) });
-  // Un toit dégagé DISPARAÎT en iso (`visibilityOf(cutaway)` = opacity 0, `stage/CulledScene`) — quel
+  // Un toit dégagé DISPARAÎT en iso (`visibilityOf(cutaway)` = opacity 0, loi de `stage/architectureVisibility`) — quel
   // que soit l'étage de sa masse : le toit qui coiffe le rez est porté par la masse de l'étage.
   for (const roof of buildRoofs(scene, ally ? { allies: [ally] } : undefined))
     if (!roof.states.roofOccupied) objects.push({ d: roofDepth(roof, dims), svg: roofSvg(roof, dims, { zoom: 1 }) });

@@ -133,7 +133,7 @@ afterAll(() => {
 beforeEach(() => { poser(); });
 afterEach(() => {
   démonter();
-  setStageBackend('affine');
+  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
   vi.restoreAllMocks();
 });
 

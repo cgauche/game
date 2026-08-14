@@ -33,7 +33,8 @@ import { hoverTargeting } from './targeting';
 import { maneuverShip } from './shipManeuver';
 import { getViewZ, setViewZ } from './viewLevel';
 import { setRevealAll } from './visionState';
-import { rule, setRule, resetRule, ruleDef, OPTIONAL_RULES, type RuleValue } from '../engine/policy';
+import { rule, setRule, ruleDef, OPTIONAL_RULES, type RuleValue } from '../engine/policy';
+import { houseRulesMutability, resetHouseRule } from './houseRules';
 import { cadence } from '../engine/cadence';
 import { PREFERENCES, preferenceDef, setPreference, resetPreference, type PrefValue } from './preferences';
 import { pickActiveModalKey, autoPolicyOf } from './modalArbiter';
@@ -574,9 +575,10 @@ export function buildApi() {
       return v ? 'labels ON' : 'labels OFF';
     },
 
-    /** VOIE DE RENDU du monde (#1176, recette) : `affine` (couches SVG) ou `webgl` (monde volumique).
-     *  Sans argument : BASCULE. Hors du store — la voie décrit le chantier, pas le monde (elle ne part
-     *  donc dans aucune sauvegarde, cf. `state/stage3d.ts`). */
+    /** VOIE DE RENDU SVG EN SURSIS (#1176, recette) : `affine` (couches SVG) ou `webgl` (monde
+     *  volumique). Sans argument : BASCULE. L'écran de JEU ne l'écoute plus (son monde est volumique,
+     *  commit C5a) — elle ne gouverne que le POV SVG et l'aperçu d'authoring, jusqu'au lot C5b. Hors du
+     *  store : la voie décrit le chantier, pas le monde (aucune sauvegarde, cf. `state/stage3d.ts`). */
     stage3d: (on?: boolean) => {
       const v = on ?? getStageBackend() === 'affine';
       setStageBackend(v ? 'webgl' : 'affine');
@@ -1247,14 +1249,23 @@ export function buildApi() {
 
     /** RECETTE : RÈGLES OPTIONNELLES (policy.ts / « règles maison »). `rules()` liste toutes les règles
      *  (id = valeur · forme) ; `rules(id)` détaille une règle ; `rules(id, value)` la règle (surcharge
-     *  runtime, NON persistée) ; `rules(id, null)` réinitialise au défaut. Valide la valeur selon le
-     *  `kind` (flag/param/mode). Le rythme de résolution n'est PAS une règle : voir `prefs()`. */
+     *  RUNTIME, non persistée — elle meurt au rechargement) ; `rules(id, null)` réinitialise au défaut
+     *  ET PURGE la surcharge PERSISTÉE (couture joueur `resetHouseRule` → `localStorage`), sinon la
+     *  règle ressuscitait cochee au run suivant — piège mesuré en recette (#1279). La remise à zéro est
+     *  refusée en combat, comme au panneau : le helper rend alors la raison au lieu de mentir.
+     *  Valide la valeur selon le `kind` (flag/param/mode). Le rythme de résolution n'est PAS une règle :
+     *  voir `prefs()`. */
     rules: (id?: string, value?: RuleValue | null) => {
       if (id == null) return OPTIONAL_RULES.map((r) => `${r.group} · ${r.id} = ${JSON.stringify(rule(r.id))}  ${settingShape(r)}`);
       const def = ruleDef(id);
       if (!def) return settingUnknown(id, 'rules');
       if (value === undefined) return `${settingDetail(def, rule(id))} — ${def.ref}`;
-      if (value === null) { resetRule(id); return settingReset(def); }
+      if (value === null) {
+        const verrou = houseRulesMutability();
+        if (!verrou.mutable) return verrou.reason;
+        resetHouseRule(id);
+        return settingReset(def);
+      }
       const c = coerceSetting(def, value);
       if ('err' in c) return c.err;
       setRule(id, c.v);

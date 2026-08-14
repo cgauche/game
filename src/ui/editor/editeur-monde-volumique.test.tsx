@@ -7,7 +7,7 @@ import { EditorCanvas } from './EditorCanvas';
 import { DEFAULT_LAYERS } from './editorState';
 import { emptyScene, type Scene } from '../../state/scene';
 import { tileCenter } from '../../geometry/iso';
-import { getStageBackend, setStageBackend } from '../../state/stage3d';
+import { setStageBackend } from '../../state/stage3d';
 import { setStageRendererFactory, type StageRenderer } from '../../gameIso/stage/GameStage3D';
 import { hasSpritePicker } from '../../gameIso/stage/spritePicker';
 import { buildTokens } from '../../gameIso/builders/tokens';
@@ -161,7 +161,7 @@ let container: HTMLDivElement | null = null;
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (container) { container.remove(); container = null; }
-  setStageBackend('affine');
+  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
 /** Monte l'éditeur, la scène suivie comme le ferait l'historique. Les options portent ce que les
@@ -569,34 +569,23 @@ describe('Éditeur — plaque de décalquage et marqueurs d’auteur (#1176, P3-
 });
 
 /**
- * L'AFFORDANCE de la voie volumique dans l'éditeur : sans elle, l'auteur n'a aucun moyen découvrable
- * d'y basculer (le store `state/stage3d.ts` n'est piloté que par ce bouton). Même patron qu'en jeu
- * (`ui/CampaignView.test.tsx`) : DEV seulement, et le geste jugé est le POINTER DOWN de `ViewControls`.
+ * L'AFFORDANCE de bascule de voie a quitté l'écran (#1176 P3-4, commit C5a) : le monde volumique est
+ * LE monde du jeu, et le bouton de `ViewControls` proposait une voie que l'écran de jeu n'a plus. La
+ * voie SVG de l'éditeur (et celle du POV) survit jusqu'à C5b, pilotée par le devtool `__wfrp.stage3d`
+ * (`state/devtools.ts`) — le SEUL écrivain de `state/stage3d.ts` côté produit.
  */
-describe('Éditeur — interrupteur DEV « Monde volumique » (#1176)', () => {
-  const VOLUMIQUE = 'Monde volumique (DEV)';
-
-  it('le bouton est à l’écran de l’éditeur, et son POINTER DOWN bascule la voie de rendu', async () => {
-    setStageBackend('affine');
+describe('Éditeur — la voie de rendu se pilote au devtool, plus par un bouton d’écran', () => {
+  it('aucun interrupteur de voie dans la barre de vue', async () => {
     const h = await monter({ mode: 'select' });
-    const bouton = h.el.querySelector(`[aria-label="${VOLUMIQUE}"]`);
-    expect(bouton).not.toBeNull();
-    expect(bouton!.getAttribute('aria-pressed')).toBe('false');
-    expect(h.canvas()).toBeNull();
-    await act(async () => { bouton!.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true })); });
-    expect(getStageBackend()).toBe('webgl');
-    // …et l'écran suit : le canevas monte, le bouton porte le libellé de RETOUR aux couches SVG.
-    expect(h.canvas()).not.toBeNull();
-    expect(h.el.querySelector('[aria-label="Monde en couches SVG (DEV)"]')).not.toBeNull();
+    expect(h.el.querySelector('[aria-label="Monde volumique (DEV)"]')).toBeNull();
+    expect(h.el.querySelector('[aria-label="Monde en couches SVG (DEV)"]')).toBeNull();
   });
 
-  it('…et le retour : un second POINTER DOWN ramène la voie affine', async () => {
+  it('…et l’écran suit quand même la voie posée hors UI (le canevas monte, puis se retire)', async () => {
     setStageBackend('webgl');
     const h = await monter({ mode: 'select' });
-    const bouton = h.el.querySelector('[aria-label="Monde en couches SVG (DEV)"]')!;
-    expect(bouton.getAttribute('aria-pressed')).toBe('true');
-    await act(async () => { bouton.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true })); });
-    expect(getStageBackend()).toBe('affine');
+    expect(h.canvas()).not.toBeNull();
+    await act(async () => { setStageBackend('affine'); });
     expect(h.canvas()).toBeNull();
   });
 });

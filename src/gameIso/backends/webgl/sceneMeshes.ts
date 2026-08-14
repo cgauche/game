@@ -752,9 +752,9 @@ const VUES: readonly View[] = ['front', 'profile', 'back'];
 
 /** Couple MONTÉ (LDB 14 l.175-187) rendu comme UN SEUL corps : le cavalier est ASSIS sur les os réels
  *  de la monture (`seatRiderOnMount` : ancre de selle dérivée de l'os `tronc`, z du cavalier remappé
- *  dans l'échelle du quadrupède), et le composite trié à l'os sort en UN fragment SVG — la MÊME
- *  composition que le corps affine (`MountedToken`), sans ses hooks d'animation. La monture donne la
- *  vue et le miroir du couple ; le cavalier prend la pose montée (`mountedRest`, selon l'arme tenue).
+ *  dans l'échelle du quadrupède), et le composite trié à l'os sort en UN fragment SVG. La monture donne
+ *  la vue et le miroir du couple ; le cavalier prend la pose montée (`mountedRest`, selon l'arme
+ *  tenue). Aucune animation ici : la loi de selle, et elle seule.
  *
  *  Le couple est le premier sujet à DÉBORDER la boîte canonique : assis, le cavalier monte au-dessus
  *  du garrot, et son crâne sortait par le haut d'une boîte de rasterisation 120×150 (mesuré #1176 :
@@ -788,7 +788,7 @@ function mountedSvg(
   };
   const arme = equip.weapons?.find((w) => !isShield(w)) ?? equip.weapons?.[0];
   // k : échelle du cavalier DANS la boîte de la monture — chaîne d'échelles monde (art × Taille),
-  // la même dérivation que `MountedToken`, jamais une constante.
+  // jamais une constante (un cheval recalibré ou une autre monture garde un couple proportionné).
   const k = combatantRender(rider).scale / (mr.scale * sizeTokenScale(mount.size));
   const osMonture = (view: View) => plan.resolve(mr.species, view, couché ?? plan.restPose(), opts);
   const assise = (view: View) => ({ view, mountScale: 1, riderScale: k });

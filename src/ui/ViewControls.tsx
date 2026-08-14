@@ -24,13 +24,9 @@ export interface ViewControlsProps {
    * HUD à « 100 % »). Absente = l'hôte n'a pas de rétrécissement à déclarer, le zoom EST l'échelle.
    */
   renderedScale?: number;
-  /** Voie de rendu du monde (#1176) : `true` = monde volumique. Interrupteur de CHANTIER — l'appelant
-   *  ne le fournit qu'en DEV (`import.meta.env.DEV`) ; le bouton n'existe pas sans lui. */
-  stage3d?: boolean;
-  onToggleStage3d?: () => void;
 }
 
-export function ViewControls({ zoom, renderedScale, onZoomIn, onZoomOut, onZoomReset, onRotateLeft, onRotateRight, view, onToggleView, pov, onTogglePov, inspectEnabled, onToggleInspect, stage3d, onToggleStage3d }: ViewControlsProps) {
+export function ViewControls({ zoom, renderedScale, onZoomIn, onZoomOut, onZoomReset, onRotateLeft, onRotateRight, view, onToggleView, pov, onTogglePov, inspectEnabled, onToggleInspect }: ViewControlsProps) {
   const stop = (fn: () => void) => (e: React.PointerEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -41,7 +37,6 @@ export function ViewControls({ zoom, renderedScale, onZoomIn, onZoomOut, onZoomR
     : 'Activer l’inspection des combattants';
   const projectionLabel = view === 'top' ? 'Vue isométrique' : 'Vue du dessus';
   const povLabel = pov ? 'Vue normale (au-dessus)' : 'Vue subjective (première personne)';
-  const stage3dLabel = stage3d ? 'Monde en couches SVG (DEV)' : 'Monde volumique (DEV)';
   return (
     <div
       className="view-controls"
@@ -88,19 +83,6 @@ export function ViewControls({ zoom, renderedScale, onZoomIn, onZoomOut, onZoomR
             onPointerDown={stop(onToggleInspect)}
           >
             <Icon id="nav/identify" size="sm" />
-          </button>
-        )}
-        {onToggleStage3d && (
-          <button
-            type="button"
-            className="btn vc-btn"
-            title={stage3dLabel}
-            aria-label={stage3dLabel}
-            aria-pressed={!!stage3d}
-            onPointerDown={stop(onToggleStage3d)}
-          >
-            {/* Icône de l'outil Hauteur de l'éditeur, empruntée faute de glyphe volumique. */}
-            <Icon id="map-tool/height" size="sm" />
           </button>
         )}
       </div>

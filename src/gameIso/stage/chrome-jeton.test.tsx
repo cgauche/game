@@ -165,12 +165,12 @@ beforeAll(() => {
 afterAll(() => setStageRendererFactory(null));
 afterEach(() => {
   démonter();
-  setStageBackend('affine');
+  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
 describe('Chrome des jetons — UNE dérivation, UN peintre, deux voies (#1176 P3-0f)', () => {
-  it('la voie AFFINE peint le chrome dans son jeton : barre au seuil, trois icônes, « +1 », pastille de mort', () => {
-    const el = monter('affine');
+  it('le chrome est peint à l’écran : une barre par combattant posté, « +1 », pastille de mort', () => {
+    const el = monter('webgl');
     const barres = barresPV(el);
     expect(barres, 'une barre par combattant posté').toHaveLength(2);
     expect(barres.map((b) => b.getAttribute('fill'))).toContain(hpColor(PV.current / PV.max));
@@ -181,7 +181,7 @@ describe('Chrome des jetons — UNE dérivation, UN peintre, deux voies (#1176 P
     expect(marques[0].getAttribute('class')).toContain('es-mort');
   });
 
-  it('la voie VOLUMIQUE peint le MÊME chrome dans son overlay projeté, combattant par combattant', () => {
+  it('le chrome vit dans l’overlay projeté, combattant par combattant', () => {
     const el = monter('webgl');
     const h1 = chromeVolumique(el, 'h1');
     const e1 = chromeVolumique(el, 'e1');
@@ -201,12 +201,7 @@ describe('Chrome des jetons — UNE dérivation, UN peintre, deux voies (#1176 P
     expect(marque?.getAttribute('class')).toContain('es-mort');
   });
 
-  it('AUCUNE DOUBLE PEINTURE : l’overlay n’existe qu’en volumique, et le chrome affine qu’en affine', () => {
-    const affine = monter('affine');
-    expect(chromeVolumique(affine, 'h1'), 'pas d’overlay de chrome en voie affine').toBeNull();
-    expect(barresPV(affine).length).toBeGreaterThan(0);
-    démonter();
-
+  it('AUCUNE DOUBLE PEINTURE : tout le chrome peint vit dans l’overlay, et rien dans un corps SVG', () => {
     const webgl = monter('webgl');
     const barres = barresPV(webgl);
     expect(barres.length).toBeGreaterThan(0);
@@ -527,28 +522,22 @@ describe('Ancre du chrome — la TOISE du gabarit, jamais une constante par fami
     }
   });
 
-  it('PARITÉ des deux voies : le rapport nain/humain des ancres peintes est celui des toises', () => {
+  it('à l’ÉCRAN, le rapport nain/humain des ancres peintes est celui des toises', () => {
     const nain = perso('nain');
     const humain = perso('humain');
-    const monterAvec = (backend: 'affine' | 'webgl', c: Combatant) => {
+    const monterAvec = (c: Combatant) => {
       const b = combatChromé();
-      return monter(backend, { battle: { ...b, combatants: [{ ...b.combatants[0], appearance: c.appearance }, b.combatants[1]] }, party: [c] });
+      return monter('webgl', { battle: { ...b, combatants: [{ ...b.combatants[0], appearance: c.appearance }, b.combatants[1]] }, party: [c] });
     };
-    const corpsAffine = (el: HTMLElement) => el.querySelector<SVGGElement>('svg.iso-stage g[data-cid="h1"]')!;
 
-    const affineNain = ancreDe(corpsAffine(monterAvec('affine', nain)));
+    const volNain = ancreDe(chromeVolumique(monterAvec(nain), 'h1')!);
     démonter();
-    const affineHumain = ancreDe(corpsAffine(monterAvec('affine', humain)));
-    démonter();
-    const volNain = ancreDe(chromeVolumique(monterAvec('webgl', nain), 'h1')!);
-    démonter();
-    const volHumain = ancreDe(chromeVolumique(monterAvec('webgl', humain), 'h1')!);
+    const volHumain = ancreDe(chromeVolumique(monterAvec(humain), 'h1')!);
 
-    // Chaque voie a SA toise (boîte de 150 unités contre quad en mètres) : les pixels diffèrent, la
-    // FRACTION non — c'est elle, et elle seule, que les deux tirent de la même dérivation.
+    // La toise du gabarit, et elle seule, décide de la hauteur d'ancre : les pixels dépendent du quad,
+    // la FRACTION non — c'est elle que la dérivation partagée (`combatantBodyTopFrac`) fournit.
     const attendu = combatantBodyTopFrac(nain) / combatantBodyTopFrac(humain);
-    expect(affineNain / affineHumain, 'voie affine').toBeCloseTo(attendu, 9);
-    expect(volNain / volHumain, 'voie volumique').toBeCloseTo(attendu, 9);
+    expect(volNain / volHumain, 'ancre peinte à l’écran').toBeCloseTo(attendu, 9);
     expect(attendu, 'un nain n’arrive pas à la tête d’un humain').toBeLessThan(0.7);
   });
 });

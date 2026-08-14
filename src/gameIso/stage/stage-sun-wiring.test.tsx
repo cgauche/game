@@ -300,7 +300,7 @@ function démonter(): void {
 
 afterEach(() => {
   démonter();
-  setStageBackend('affine');
+  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
 describe('GameStage3D — le soleil MONTÉ suit la scène et l’heure', () => {
@@ -343,18 +343,13 @@ describe('GameStage3D — le soleil MONTÉ suit la scène et l’heure', () => {
   });
 });
 
-describe('Un seul propriétaire de luminosité — le voile ne s’empile plus sur le canevas', () => {
-  /** Le rect de lueur chaude d'`AmbianceVeils` : présent = les voiles d'ambiance sont peints. */
+describe('Un seul propriétaire de luminosité — aucun voile ne s’empile sur le canevas', () => {
+  /** Le rect de lueur chaude des anciens voiles d'ambiance : sa présence dirait qu'un SECOND
+   *  propriétaire de luminosité s'est réinstallé par-dessus le monde (`stage/Ambiance` ne peint plus
+   *  que la faune depuis la mort de la voie affine, #1176 P3-4 commit C5a). */
   const voiles = (hôte: HTMLElement) => hôte.querySelector('rect[fill="url(#g_warm)"]');
 
-  it('voie AFFINE : les voiles d’ambiance sont peints (et il n’y a pas de canevas)', () => {
-    setStageBackend('affine');
-    const hôte = monter(dehors(), NUIT);
-    expect(voiles(hôte)).not.toBeNull();
-    expect(hôte.querySelector('canvas.iso-stage')).toBeNull();
-  });
-
-  it('voie VOLUMIQUE : un canevas, et AUCUN voile par-dessus lui', () => {
+  it('un canevas, et AUCUN voile par-dessus lui — même de NUIT', () => {
     setStageBackend('webgl');
     const hôte = monter(dehors(), NUIT);
     expect(hôte.querySelector('canvas.iso-stage')).not.toBeNull();

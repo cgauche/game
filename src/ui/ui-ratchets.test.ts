@@ -119,7 +119,10 @@ const FILL_LITERAL_BASELINE: Record<string, number> = {
   // Restent les teintes de CARTE sans token dédié (vert d'entité de zone, cyan d'entrée et d'aperçu de
   // rectangle, rouge d'exclusion de toiture) ; le jaune de sélection et l'encre de texte composent
   // `--iso-active-halo` / `--shadow-ink`.
-  'editor/EditorCanvas.tsx': 8,
+  // -1 (8 → 7) : baseline PÉRIMÉE constatée le 2026-08-14 (mesure `git show HEAD:…` = 7 avant comme
+  // après le lot C5a du #1176, qui ne touche aucun `fill`/`stroke` de ce fichier) — le cliquet exige
+  // l'abaissement d'une baseline devenue plus haute que le réel.
+  'editor/EditorCanvas.tsx': 7,
   'editor/Inspector.tsx': 1,
 };
 

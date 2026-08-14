@@ -152,16 +152,12 @@ afterAll(() => setStageRendererFactory(null));
 
 afterEach(() => {
   démonter();
-  setStageBackend('affine');
+  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
   vi.restoreAllMocks();
 });
 
-describe('Halos d’interaction — les deux voies peignent la même affordance (#1176 P3-0g)', () => {
-  it('un décor fouillable appelle le joueur des DEUX côtés', () => {
-    const affine = comptesAffines(monter('affine'));
-    expect(affine, 'le témoin doit VRAIMENT porter halo, onde et étincelle').toEqual({ halo: 1, ping: 1, spark: 1 });
-    démonter();
-
+describe('Halos d’interaction — le monde volumique peint l’affordance (#1176 P3-0g)', () => {
+  it('un décor fouillable appelle le joueur', () => {
     monter('webgl');
     const p = poolsVolumiques();
     expect(Object.keys(p).sort(), 'les huit pools sont montés d’emblée').toEqual(HALO_SLOTS.slice().sort().map((s) => s));
@@ -172,39 +168,24 @@ describe('Halos d’interaction — les deux voies peignent la même affordance 
     expect(p.pnjDisque.count + p.pnjContour.count, 'aucun PNJ interlocuteur ici').toBe(0);
   });
 
-  it('ÉPUISEMENT : le flag `__fouille_<id>` éteint le halo des DEUX côtés', () => {
-    expect(comptesAffines(monter('affine', { __fouille_coffre: true })), 'un coffre vidé n’appelle plus').toEqual({ halo: 0, ping: 0, spark: 0 });
-    démonter();
-
+  it('ÉPUISEMENT : le flag `__fouille_<id>` éteint le halo', () => {
     monter('webgl', { __fouille_coffre: true });
-    expect(totalVolumique()).toBe(0);
+    expect(totalVolumique(), 'un coffre vidé n’appelle plus').toBe(0);
     démonter();
 
-    // TÉMOIN : sans le flag, les deux voies peignent bien quelque chose (le test ci-dessus ne mesure
-    // pas seulement une scène vide).
-    expect(comptesAffines(monter('affine')).halo).toBe(1);
-    démonter();
+    // TÉMOIN : sans le flag, quelque chose est bien peint (le test ci-dessus ne mesure pas seulement
+    // une scène vide).
     monter('webgl');
     expect(totalVolumique()).toBeGreaterThan(0);
   });
 
-  it('AUCUNE DOUBLE PEINTURE : en webgl le SVG ne peint plus les halos, en affine rien n’est posé en volumique', () => {
+  it('AUCUNE DOUBLE PEINTURE : le SVG posé par-dessus le monde ne peint plus aucun halo', () => {
     monter('webgl');
     expect(comptesAffines(conteneur!)).toEqual({ halo: 0, ping: 0, spark: 0 });
     expect(totalVolumique()).toBeGreaterThan(0);
-    démonter();
-
-    monter('affine');
-    expect(scènes, 'aucune frame volumique en voie affine').toHaveLength(0);
   });
 
-  it('le halo volumique est au PIED du décor, au rayon que l’ellipse affine projette', () => {
-    const el = monter('affine');
-    const ellipse = el.querySelector('svg.iso-stage g.interact-halo ellipse')!;
-    const rxAffine = Number(ellipse.getAttribute('rx'));
-    expect(rxAffine).toBe(HALO_RX_PX); // décor 1×1, échelle 1
-    démonter();
-
+  it('le halo volumique est au PIED du décor, au rayon que la loi de halo demande', () => {
     monter('webgl');
     const mpt = sceneMetresPerTile(emptyScene(10, 10));
     const m = new THREE.Matrix4();
@@ -213,9 +194,10 @@ describe('Halos d’interaction — les deux voies peignent la même affordance 
     pos.setFromMatrixPosition(m);
     expect(pos.x).toBeCloseTo(3 * mpt, 5);
     expect(pos.z).toBeCloseTo(4 * mpt, 5);
-    // et les cordes du contour sont sur le cercle dont l'ellipse affine EST la projection
+    // Les cordes du contour sont sur le cercle dont l'ellipse d'un décor 1×1 (rayon écran `HALO_RX_PX`,
+    // la constante partagée de `builders/interactHalos`) EST la projection.
     const contour = poolsVolumiques().fouilleContour;
-    const rAttendu = haloRadiusK(rxAffine) * mpt;
+    const rAttendu = haloRadiusK(HALO_RX_PX) * mpt;
     for (let i = 0; i < contour.count; i++) {
       contour.getMatrixAt(i, m);
       pos.setFromMatrixPosition(m);
@@ -223,17 +205,9 @@ describe('Halos d’interaction — les deux voies peignent la même affordance 
     }
   });
 
-  it('un PNJ INTERLOCUTEUR n’appelle qu’au SURVOL — et il appelle des DEUX côtés', () => {
-    const el = monter('affine');
-    expect(comptesAffines(el).halo, 'sans survol : le seul halo est celui du coffre').toBe(1);
-    survoler({ x: marchand.pos!.x, y: marchand.pos!.y, z: 0 });
-    expect(comptesAffines(el).halo, 'le PNJ survolé ajoute SON halo').toBe(2);
-    survoler(null);
-    expect(comptesAffines(el).halo, 'le survol retiré, le halo du PNJ tombe').toBe(1);
-    démonter();
-
+  it('un PNJ INTERLOCUTEUR n’appelle qu’au SURVOL', () => {
     monter('webgl');
-    expect(poolsVolumiques().pnjDisque.count, 'sans survol : aucun halo de PNJ en volumique').toBe(0);
+    expect(poolsVolumiques().pnjDisque.count, 'sans survol : aucun halo de PNJ').toBe(0);
     survoler({ x: marchand.pos!.x, y: marchand.pos!.y, z: 0 });
     const p = poolsVolumiques();
     expect(p.pnjDisque.count, 'le disque du halo de PNJ').toBe(1);
@@ -251,27 +225,6 @@ describe('Halos d’interaction — les deux voies peignent la même affordance 
     act(() => useGame.setState({ flags: { __fouille_coffre: true } } as never));
     expect(scènes.length, 'le rendu a bien rejoué la scène volumique').toBeGreaterThan(frames);
     expect(totalVolumique(), 'et rien ne reste des instances de la frame précédente').toBe(0);
-  });
-
-  it('PARITÉ BYTE-IDENTIQUE : le markup affine du halo n’a pas bougé d’un octet', () => {
-    // La voie affine est la BASE de comparaison de tout ce lot : elle ne doit rien perdre à ce que la
-    // voie volumique lui emprunte (le glyphe de l'étincelle est désormais RENDU par
-    // `interactHalos.sparkPathD`, partagé avec le gabarit volumique — l'octet le prouve).
-    const el = monter('affine');
-    const halo = el.querySelector('svg.iso-stage g.interact-halo')!.parentElement!;
-    const spark = el.querySelector('svg.iso-stage g.halo-spark')!;
-    expect(halo.innerHTML).toBe(
-      '<g class="interact-halo">'
-        + '<ellipse cx="288" cy="276" rx="17" ry="8.5" fill="#ffe27a" opacity="0.26"></ellipse>'
-        + '<ellipse cx="288" cy="276" rx="17" ry="8.5" fill="none" stroke="#ffd75e" stroke-width="2" opacity="0.9"></ellipse>'
-        + '</g>'
-        + '<ellipse class="halo-ping" cx="288" cy="276" rx="17" ry="8.5" fill="none" stroke="#ffd75e" stroke-width="1.6"></ellipse>',
-    );
-    expect(spark.outerHTML).toBe(
-      '<g class="halo-spark" pointer-events="none" transform="translate(297, 246)">'
-        + '<path d="M0,-6 L1.7,-1.7 L6,0 L1.7,1.7 L0,6 L-1.7,1.7 L-6,0 L-1.7,-1.7 Z" fill="#ffd75e" stroke="#7a5b16" stroke-width="0.7"></path>'
-        + '</g>',
-    );
   });
 });
 

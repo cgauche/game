@@ -142,7 +142,7 @@ afterAll(() => {
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (conteneur) { conteneur.remove(); conteneur = null; }
-  setStageBackend('affine');
+  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
 describe('Météo volumique — écrêtage au cutaway (#1247)', () => {

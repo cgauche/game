@@ -59,6 +59,7 @@ import { clearTrackedTimers } from './state/combatTimers';
 import { resetOwnTestFailedGuard } from './state/triggeredEffects';
 import { resetDesFixes } from './engine/fixedDie';
 import { seedBattleRng } from './state/battleRng';
+import { reinitWebglRefusé } from './gameIso/stage/webglSupport';
 
 // État initial figé UNE fois (le `stringify` est la moitié coûteuse, et le geler à l'init le rend
 // immunisé à toute mutation du gabarit) ; chaque test n'en `parse` qu'une copie fraîche.
@@ -143,6 +144,11 @@ beforeEach(() => {
   // d'horloge, que tout test déterministe écrase par son propre `seedBattleRng`.
   seedBattleRng(Date.now() & 0xffff);
   resetOwnTestFailedGuard(); // drapeau de re-entrance onOwnTestFailed (auto-reset par try/finally ; filet doctrinal)
+  // VERDICT « pas de contexte volumique » (`gameIso/stage/webglSupport`) : singleton de module, et
+  // LATCHÉ par construction (le jeu ne revient jamais d'un contexte refusé). jsdom n'a aucun contexte
+  // WebGL : tout montage d'écran de monde SANS renderer de banc le pose — les fichiers suivants du
+  // worker monteraient alors le message d'erreur au lieu du monde (`isolate:false`).
+  reinitWebglRefusé();
   cascadeSnapshot = { ...cascadeAppliers };
 });
 

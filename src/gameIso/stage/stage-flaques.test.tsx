@@ -303,7 +303,7 @@ function démonter(): void {
 
 afterEach(() => {
   démonter();
-  setStageBackend('affine');
+  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
 /** Monte l'écran de JEU (store → `IsoStage` → voie volumique) sur `scene` à l'heure `gameTime`. */

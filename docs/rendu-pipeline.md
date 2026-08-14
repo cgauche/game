@@ -47,9 +47,14 @@ Les builders dérivent la scène en **éléments sémantiques en espace monde**.
 Piloté par `Dims` (`view`/`rot`/`edge`). Pont monde→écran UNIQUE : `project.ts::projGP(gp, dims)` =
 `tileCenter(x, y, dims, metricToLift(h))` — **la rotation caméra et l'élévation-écran vivent ici**,
 jamais dans un builder. Un backend par classe d'élément : `affineFloors`, `affineWalls`,
-`affineRoofs`, `affineProps`, `affineHighlights`, chacun résolvant ses couleurs par `part` depuis la
-def d'apparence + `shade.ts`. Chaque backend expose aussi sa profondeur de tri (`floorDepth`,
-`roofDepth`, `propDepth`… — ordre du peintre) ; `stage/objs.ts` fusionne et trie.
+`affineRoofs`, `affineProps`, chacun résolvant ses couleurs par `part` depuis la def d'apparence +
+`shade.ts`. Chaque backend expose aussi sa profondeur de tri (`floorDepth`, `roofDepth`, `propDepth`…
+— ordre du peintre) ; `stage/objs.ts` fusionne et trie.
+**Périmètre depuis #1176 P3-4 (commit C5a)** : l'écran de JEU ne passe plus par ces backends — son
+monde est volumique (`stage/GameStage3D`). Ils servent le PLAN de station (murs au trait,
+`stage/layers`), l'APERÇU d'authoring (`ui/editor/EditorCanvas`, `stage/tokens`) et les planches QC ;
+leur requalification est le lot C5b (cliquets `stage/double-voie-ratchet.test.ts` et
+`ui/editor/double-voie-editeur-ratchet.test.ts`).
 
 ### Perspective — `pov/*` (première personne)
 `camera.ts` (caméra + brume/fog calculés, `rgb(...)` à canaux **calculés**), `geometry.ts` (liste de
@@ -88,7 +93,7 @@ Aucun renderer d'environnement ne porte de **littéral** de couleur : toute coul
 `warm`). Couverture = **balayage récursif** de `builders/ backends/ detail/ pov/ catalog/ stage/` + les
 renderers racine (`IsoStage.tsx`, `sprites.ts`) + un bloc dédié aux 97 defs de props (`catalog/decor/defs/`,
 qui consomment la palette `P.<ton>` de `decorPalette.json`). Hors périmètre (couleur légitime) : le rig
-(`rig/**`), les FX de combat (`fx/**`), tokens & brouillard (`BodyToken`/`FogLayer` = chrome d'état),
+(`rig/**`), les FX de combat (`fx/**`), les tokens (`BodyToken` = chrome d'état),
 `shade.ts`, et les defs de terrain (`state/terrain/defs/**` = donnée d'identité matériau, comme un JSON).
 
 ## 7. QC visuel — `npm run qc:env` (`scripts/qc/render-env.mts`)

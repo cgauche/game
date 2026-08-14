@@ -78,7 +78,10 @@ const BASELINES: Record<string, number> = {
   'src/gameIso/IsoStage.tsx': 1,
   'src/gameIso/stage/AimOverlay.tsx': 1,
   'src/gameIso/stage/CrewTooltip.tsx': 3,
-  'src/gameIso/stage/highlightLayer.tsx': 4,
+  // -1 (4 → 3) : la mort de la voie de jeu affine (#1176 P3-4, commit C5a) emporte l'aperçu tap-1 de
+  // cette couche — son find-par-id de cible part avec lui (le nouvel hôte, `stage/MoveOverlays`,
+  // passe par `inBattleId`).
+  'src/gameIso/stage/highlightLayer.tsx': 3,
   'src/gameIso/stage/SiegeHitAreas.tsx': 1,
   'src/gameIso/stage/useHoverTargeting.ts': 5,
   'src/gameIso/stage/useStageCamera.ts': 8,

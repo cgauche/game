@@ -60,12 +60,12 @@ function rendererDeBanc(): PlanRenderer {
 }
 
 beforeAll(() => setPlanRendererFactory(rendererDeBanc));
-afterAll(() => { setPlanRendererFactory(null); setStageBackend('affine'); });
+afterAll(() => { setPlanRendererFactory(null); setStageBackend('webgl'); });
 
 const racines: Root[] = [];
 afterEach(() => {
   act(() => { for (const r of racines.splice(0)) r.unmount(); });
-  setStageBackend('affine');
+  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
   setPlanRendererFactory(rendererDeBanc);
   mesure = { w: 420, h: 180 };
   créations = 0;
@@ -115,29 +115,22 @@ function marqueurs(hôte: HTMLElement): string[] {
   });
 }
 
-describe('Plan de station — parité des marqueurs entre les deux voies', () => {
-  it('les mêmes stations, aux mêmes positions, que le monde soit peint en SVG ou en volumique', () => {
+describe('Plan de station — marqueurs et structure', () => {
+  it('chaque station porte son marqueur, à sa place', () => {
     const scene = scèneDePlan();
-    const affine = marqueurs(monte(<TopoScene scene={scene} stations={STATIONS} onSelectStation={() => {}} />));
     act(() => setStageBackend('webgl'));
-    const volumique = marqueurs(monte(<TopoScene scene={scene} stations={STATIONS} onSelectStation={() => {}} />));
-    expect(affine).toHaveLength(2);
-    expect(volumique).toEqual(affine);
+    expect(marqueurs(monte(<TopoScene scene={scene} stations={STATIONS} onSelectStation={() => {}} />))).toHaveLength(2);
   });
 
-  it('la STRUCTURE reste au trait SVG sur les deux voies, la MATIÈRE quitte le SVG en volumique', () => {
+  it('la STRUCTURE reste au trait SVG, la MATIÈRE vit dans le canevas posé dessous', () => {
     const scene = scèneDePlan();
-    const affine = monte(<TopoScene scene={scene} stations={[]} />);
-    const solsAffine = affine.querySelectorAll('.topo-scene > g > *').length;
-    // Le mur (trait symbolique de la vue du dessus) est là des deux côtés ; le canevas de matière, non.
-    expect(affine.querySelector('.topo-scene')!.innerHTML).toContain('stroke-width="8"');
-    expect(affine.querySelector('canvas.topo-monde')).toBeNull();
     act(() => setStageBackend('webgl'));
-    const volumique = monte(<TopoScene scene={scene} stations={[]} />);
-    expect(volumique.querySelector('.topo-scene')!.innerHTML).toContain('stroke-width="8"');
-    // … et les 36 tuiles de sol ne sont plus dans le SVG : elles sont dans le canevas posé dessous.
-    expect(volumique.querySelectorAll('.topo-scene > g > *').length).toBeLessThan(solsAffine);
-    expect(volumique.querySelector('canvas.topo-monde')).not.toBeNull();
+    const plan = monte(<TopoScene scene={scene} stations={[]} />);
+    // Le mur (trait symbolique de la vue du dessus) est dans le SVG…
+    expect(plan.querySelector('.topo-scene')!.innerHTML).toContain('stroke-width="8"');
+    // … et les 36 tuiles de sol n'y sont pas : elles sont dans le canevas.
+    expect(plan.querySelectorAll('.topo-scene > g > *').length).toBe(1);
+    expect(plan.querySelector('canvas.topo-monde')).not.toBeNull();
   });
 });
 
@@ -170,15 +163,17 @@ describe('Plan de station — le monde volumique ne laisse aucun contexte vivant
   });
 });
 
-describe('Plan de station — la voie volumique DÉGRADÉE rend la matière au SVG', () => {
-  it('un contexte refusé ⇒ les sols reviennent dans le SVG (jamais des murs sur du vide)', () => {
+describe('Plan de station — sans contexte volumique, le plan le DIT', () => {
+  it('un contexte refusé ⇒ le message remplace la matière (jamais des murs flottant sur du vide)', () => {
+    // La reprise des sols en SVG est morte avec la voie affine (#1176 P3-4, commit C5a) : sans matière,
+    // le plan n'a plus rien à montrer sous ses traits — il l'annonce au lieu de rendre un plan trompeur.
     const scene = scèneDePlan();
-    const affine = monte(<TopoScene scene={scene} stations={[]} />);
-    const solsAffine = affine.querySelectorAll('.topo-scene > g > *').length;
     setPlanRendererFactory(() => { throw new Error('aucun contexte WebGL'); });
     act(() => setStageBackend('webgl'));
     const dégradé = monte(<TopoScene scene={scene} stations={[]} />);
-    expect(dégradé.querySelectorAll('.topo-scene > g > *').length).toBe(solsAffine);
+    const dit = dégradé.querySelector('.sans-webgl');
+    expect(dit, 'aucun message : le plan laisserait croire à une carte vide').not.toBeNull();
+    expect(dit!.textContent).toContain('WebGL');
     expect(dégradé.querySelector('canvas.topo-monde')).not.toBeNull(); // le canevas reste, vierge
   });
 });

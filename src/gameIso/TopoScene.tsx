@@ -1,43 +1,35 @@
 /**
  * TopoScene — vue TOP-DOWN symbolique d'une scène (plan de niveau / minimap). N'est PAS un 2ᵉ moteur
- * d'affichage : le monde lui vient du MÊME pipeline que le stage de jeu, sur la voie de rendu en
- * vigueur (`state/stage3d.ts`, interrupteur de chantier #1176) —
- *  - voie AFFINE : builders camera-free (`buildFloors`/`buildWalls`) → couches `floorLayerObjs`/
- *    `wallLayerObjs` (celles d'IsoStage) → `sortByDepth`, en SVG ;
- *  - voie VOLUMIQUE : la MATIÈRE (les sols de l'étage) en instantané volumique posé SOUS le SVG
- *    (`stage/PlanWorldCanvas`), la STRUCTURE (les murs) restant au trait symbolique SVG — la coiffe
- *    d'un mur volumique tombe sous le pixel à l'échelle d'un plan (mesure au JSDoc de
- *    `stage/planSnapshot.ts`), là où le trait affine est invariant d'échelle.
- * En `view:'top'` le mur se rend en trait symbolique et le sol en tuile carrée ; LOD 0 = silhouette
- * plate. La minimap sélectionne DÉLIBÉRÉMENT la sous-couche STRUCTURELLE (sols + murs) — pas de
- * toits/props/tokens/fx/highlights (game-only). Un nouveau type d'élément (terrain/mur/structure)
- * apparaît ici automatiquement (rendu partagé) ; une nouvelle COUCHE structurelle à montrer sur le
- * plan s'ajoute à `structuralObjs` (1 ligne).
- * Par-dessus, dans les DEUX voies : une couche de MARQUEURS de station + des pastilles de combattants
- * optionnelles — affordances cliquables et symboles d'état restent en SVG.
+ * d'affichage : le monde lui vient du MÊME pipeline que le stage de jeu — la MATIÈRE (les sols de
+ * l'étage) en instantané volumique posé SOUS le SVG (`stage/PlanWorldCanvas`), la STRUCTURE (les murs)
+ * au trait symbolique SVG (`stage/layers.wallLayerObjs`, les mêmes couches que l'éditeur) : la coiffe
+ * d'un mur volumique tombe sous le pixel à l'échelle d'un plan (mesure au JSDoc de
+ * `stage/planSnapshot.ts`), là où le trait est invariant d'échelle.
+ * En `view:'top'` le mur se rend en trait symbolique ; LOD 0 = silhouette plate. La minimap sélectionne
+ * DÉLIBÉRÉMENT la sous-couche STRUCTURELLE — pas de toits/props/tokens/fx/highlights (game-only). Une
+ * nouvelle COUCHE structurelle à montrer sur le plan s'ajoute à `structuralObjs` (1 ligne).
+ * Par-dessus : une couche de MARQUEURS de station + des pastilles de combattants optionnelles —
+ * affordances cliquables et symboles d'état restent en SVG.
+ * SANS CONTEXTE VOLUMIQUE, le plan n'a plus de matière : il le DIT (`stage/SansWebgl`) au lieu de
+ * laisser flotter des murs sur un fond transparent (#1176 P3-4, commit C5a — la reprise des sols en
+ * SVG est morte avec la voie affine).
  */
-import { useState, useSyncExternalStore } from 'react';
-import { buildFloors } from './builders/floors';
+import { useState } from 'react';
 import { buildWalls } from './builders/walls';
-import { floorLayerObjs, wallLayerObjs } from './stage/layers';
+import { wallLayerObjs } from './stage/layers';
 import { sortByDepth } from './stage/objs';
 import { PlanWorldCanvas } from './stage/PlanWorldCanvas';
-import { getStageBackend, subscribeStageBackend } from '../state/stage3d';
+import { SansWebgl } from './stage/SansWebgl';
 import { stageSize, tileCenter, type Dims } from '../geometry/iso';
 import { IconG } from '../ui/Icon';
 import { MARKER_R, stationMarker, colocationOffsets } from './topoMarkers';
 import { relationColor } from './teamColors';
-import type { BattleState } from '../state/store';
 import type { Scene } from '../state/scene';
 import type { Station } from '../state/stations';
 import type { Combatant } from '../engine/types';
 
 /** LOD 0 (fills plats, aucun motif) — une minimap veut la silhouette symbolique, pas le détail. */
 const LOD0 = { zoom: 0.4 };
-/** Contexte de couche NEUTRE : bataille vide → aucun acteur → pas de reveal ; pas d'occlusion (mur plein).
- *  La minimap est un index plat : les vérités de VUE (reveal d'étage, estompe d'occlusion) n'y jouent pas. */
-const NEUTRAL_CTX = { mode: 'battle', battle: { combatants: [] } as unknown as BattleState, partyPos: { x: 0, y: 0 } };
-const NO_OCCLUDE = () => false;
 /** Rayon écran (px) d'une pastille de combattant. */
 const DOT_R = 7;
 /** Anneau de sélection (px au-delà du disque). */
@@ -56,28 +48,19 @@ export interface TopoSceneProps {
   onSelectEntity?: (combatantId: string) => void;
 }
 
-/** Couche STRUCTURELLE SVG via les MÊMES fonctions de couche que le stage de jeu (`floorLayerObjs`/
- *  `wallLayerObjs` + `sortByDepth`) : aucune ré-implémentation d'assemblage. Émet les nœuds pré-triés.
- *  `sols` = les sols entrent dans le SVG (voie affine) ; sur la voie volumique ils viennent du canevas
- *  posé dessous, et seuls les murs restent ici.
- *  `z` = l'étage PLANIFIÉ, passé aux builders comme leur `viewZ` (isolement d'un étage) : un plan se lit
+/** Couche STRUCTURELLE SVG via la MÊME fonction de couche que l'éditeur (`wallLayerObjs` +
+ *  `sortByDepth`) : aucune ré-implémentation d'assemblage. Émet les nœuds pré-triés.
+ *  `z` = l'étage PLANIFIÉ, passé au builder comme son `viewZ` (isolement d'un étage) : un plan se lit
  *  à la VERTICALE, un seul plancher à la fois — sans lui, les murs de TOUS les étages se superposent. */
-function structuralObjs(scene: Scene, dims: Dims, z: number, sols: boolean) {
-  const view = { activeZ: z, viewZ: z };
-  return sortByDepth(
-    sols ? floorLayerObjs(buildFloors(scene, undefined, view), scene, dims, NEUTRAL_CTX, 0, LOD0) : [],
-    wallLayerObjs(buildWalls(scene, undefined, view), dims, NO_OCCLUDE, 0, LOD0),
-  );
+function structuralObjs(scene: Scene, dims: Dims, z: number) {
+  return sortByDepth(wallLayerObjs(buildWalls(scene, undefined, { activeZ: z, viewZ: z }), dims, 0, LOD0));
 }
 
 export function TopoScene({ scene, stations, combatants, selectedStationId, z = 0, viewport, onSelectStation, onSelectEntity }: TopoSceneProps) {
-  const stageBackend = useSyncExternalStore(subscribeStageBackend, getStageBackend, getStageBackend);
-  const webgl = stageBackend === 'webgl';
   // MATIÈRE PEINTE par le canevas volumique ? Un contexte GL refusé (machine sans accélération, budget
-  // de contextes épuisé) laisserait sinon des murs flottant sur un fond transparent : les sols
-  // REVIENNENT alors au SVG. Vrai tant que rien n'a échoué — la voie affine ne pose jamais la question.
+  // de contextes épuisé) laisserait des murs flottant sur un fond transparent : le plan DIT alors qu'il
+  // ne peut pas être dessiné. Vrai tant que rien n'a échoué.
   const [matièreVolumique, setMatièreVolumique] = useState(true);
-  const solsSvg = !webgl || !matièreVolumique;
   const dims: Dims = { w: scene.dimensions.w, h: scene.dimensions.h, view: 'top' };
   const { w, h } = stageSize(dims);
   return (
@@ -89,7 +72,9 @@ export function TopoScene({ scene, stations, combatants, selectedStationId, z = 
         ? { position: 'relative', width: viewport.w, height: viewport.h }
         : { position: 'relative', width: '100%', height: '100%' }}
     >
-    {webgl && <PlanWorldCanvas scene={scene} z={z} onMatière={setMatièreVolumique} />}
+    <PlanWorldCanvas scene={scene} z={z} onMatière={setMatièreVolumique} />
+    {!matièreVolumique && <SansWebgl compact />}
+
     <svg
       className="topo-scene"
       viewBox={`0 0 ${w} ${h}`}
@@ -103,7 +88,7 @@ export function TopoScene({ scene, stations, combatants, selectedStationId, z = 
         ? { display: 'block', position: 'relative' }
         : { width: '100%', height: '100%', display: 'block', position: 'relative' }}
     >
-      <g>{structuralObjs(scene, dims, z, solsSvg).map((o) => o.el)}</g>
+      <g>{structuralObjs(scene, dims, z).map((o) => o.el)}</g>
       {(() => {
         // Les marqueurs suivent l'étage PLANIFIÉ comme la structure : pointer une station d'un autre
         // niveau sur ce plan la placerait dans des murs qui n'y sont pas.

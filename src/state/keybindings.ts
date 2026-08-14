@@ -14,7 +14,6 @@ import { pickActiveModalKey, modalBlocksMapHover } from './modalArbiter';
 import { hotbar } from './hotbarBridge';
 import { validTargets, preemptShooterIds } from './targeting';
 import type { ScreenDir } from './combatCursor';
-import { getStageBackend } from './stage3d';
 import { snapStageYawToCran } from './stageYaw';
 
 /** Section d'affichage de l'écran Options (remap) — REGROUPE les raccourcis par contexte de jeu.
@@ -59,14 +58,14 @@ const mapLive = (s: GameState) => !modalBlocksMapHover(s as Parameters<typeof mo
 /** UNE poussée de rotation caméra — SOURCE UNIQUE du geste, partagée par le clavier (Q/E) et par les
  *  boutons d'orientation de l'écran de jeu (`ui/ViewControls`, dont les libellés annoncent Q et E).
  *  La caméra de JEU ne connaît que les QUATRE vues DIAGONALES (#1289) : de face, la grille s'aligne
- *  sur l'écran et le plateau perd sa lecture en volume. En voie VOLUMIQUE (#1176, P2-7) le lacet reste
- *  CONTINU — la caméra COURT vers le cran visé (`state/stageYaw.ts`) et maintenir la touche fait tourner
- *  sans à-coup —, mais la cible est AIMANTÉE au cran (`snapStageYawToCran`) : une addition depuis un
- *  lacet en vol poserait la vue entre deux crans. En affine, le cran (`rotateCam`) : c'est le seul
- *  régime que l'atlas de sprites pré-tournés sait peindre. */
-export const tournerCamera = (g: () => GameState, dir: 1 | -1): void => {
-  if (getStageBackend() === 'webgl') snapStageYawToCran(dir);
-  else g().rotateCam(dir);
+ *  sur l'écran et le plateau perd sa lecture en volume. Le lacet est CONTINU (#1176, P2-7) — la caméra
+ *  COURT vers le cran visé (`state/stageYaw.ts`) et maintenir la touche fait tourner sans à-coup —,
+ *  mais la cible est AIMANTÉE au cran (`snapStageYawToCran`) : une addition depuis un lacet en vol
+ *  poserait la vue entre deux crans.
+ *  Le régime par CRAN du store (`rotateCam`) ne sert plus l'écran de jeu depuis la mort de la voie
+ *  affine (#1176, P3-4 commit C5a) : il reste la rotation de l'ÉDITEUR et des bancs. */
+export const tournerCamera = (_g: () => GameState, dir: 1 | -1): void => {
+  snapStageYawToCran(dir);
 };
 /** Contexte de PILOTAGE du combat (fin de tour, barre d'action) : en combat, c'est bien ton tour
  *  (coop), aucune modale ouverte. */

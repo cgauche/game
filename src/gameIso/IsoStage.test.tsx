@@ -1,14 +1,17 @@
 // @vitest-environment jsdom
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import * as THREE from 'three';
+import { setStageRendererFactory, type StageRenderer } from './stage/GameStage3D';
+import * as sceneMeshes from './backends/webgl/sceneMeshes';
+import type { KeepEl } from './backends/webgl/sceneMeshes';
 import { useGame } from '../state/store';
 import { emptyScene, heightAt } from '../state/scene';
 import type { Combatant } from '../engine/types';
 import * as propsBuilder from './builders/props';
 import * as roomPortalsModule from '../state/roomPortals';
 import * as roofsBuilder from './builders/roofs';
-import * as wallsBuilder from './builders/walls';
 import { IsoStage } from './IsoStage';
 import { capsuleCenter, tileCenter, LEVEL_H, type Dims } from '../geometry/iso';
 import { metricToLift } from '../state/relief';
@@ -22,6 +25,22 @@ import { VW, VH } from './stage/useStageCamera';
  * (`visualAllies`/`cutawayAllies` recréés à chaque rendu → `propEls` invalidé en boucle).
  */
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+/** Renderer de BANC : jsdom n'a aucun contexte WebGL, et le monde volumique est le SEUL peintre du
+ *  jeu (#1176 P3-4, commit C5a) — sans banc, l'écran monte le message « le monde ne peut pas être
+ *  affiché » (`stage/SansWebgl`) et ce fichier mesurerait la panne au lieu du stage. */
+class BancRenderer implements StageRenderer {
+  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
+  capabilities = { getMaxAnisotropy: () => 1 };
+  setPixelRatio(): void {}
+  setClearColor(): void {}
+  setSize(): void {}
+  dispose(): void {}
+  render(): void {}
+}
+
+beforeAll(() => setStageRendererFactory(() => new BancRenderer()));
+afterAll(() => setStageRendererFactory(null));
 
 function hero(id: string, pos: { x: number; y: number }): Combatant {
   return {
@@ -195,10 +214,15 @@ describe('IsoStage — les positions alliées atteignent la loi de dégagement (
 });
 
 /**
- * #892 — la VUE DU DESSUS est le mode TACTIQUE du jeu (et la source de la minimap) : on y regarde UN
- * plancher À LA VERTICALE. Superposer les murs du rez à ceux de l'étage rendait le plan illisible. La
- * distinction ne passe par AUCUN réglage d'affichage : l'appelant fournit le `viewZ` du pivot
+ * #892 — la VUE DU DESSUS est le mode TACTIQUE du jeu : on y regarde UN plancher À LA VERTICALE.
+ * La distinction ne passe par AUCUN réglage d'affichage : l'appelant fournit le `viewZ` du pivot
  * (isolement d'un étage), et les builders continuent d'ignorer le mode de vue.
+ *
+ * DEUX porteurs depuis que le monde est volumique (#1176 P3-4, commit C5a) : les DÉCORS et les JETONS
+ * reçoivent le pivot par leur `viewZ` de builder ; la MASSE du monde, elle, est cuite en bloc
+ * (`bakeWorldGeometry` prend la scène entière) et le reçoit par la loi de dégagement que le stage
+ * remet à `applyCutawayMask`. Les deux se mesurent ici — l'étage isolé ne doit dépendre d'aucun des
+ * deux chemins pris isolément.
  */
 describe('IsoStage — la vue du dessus isole l’étage actif (#892)', () => {
   let root: Root | null = null;
@@ -210,17 +234,20 @@ describe('IsoStage — la vue du dessus isole l’étage actif (#892)', () => {
     vi.restoreAllMocks();
   });
 
-  /** Auberge à deux planchers : un mur au REZ, un mur à l'ÉTAGE. */
+  /** Auberge à deux planchers, avec un décor au REZ et un autre à l'ÉTAGE. */
   function twoStoreyScene() {
     const scene = emptyScene(6, 6);
     scene.layers.push({ z: 1, tiles: new Array(36).fill('herbe') });
-    scene.walls = [{ x: 2, y: 2, side: 'N' }, { x: 3, y: 2, side: 'N', z: 1 }];
+    // Un décor de TERRAIN par étage (`bois` → overlay `arbre`) : la population que `buildProps` filtre
+    // par l'étage demandé.
+    scene.layers[0].tiles[3 * 6 + 2] = 'bois'; // (2,3) au rez
+    scene.layers[1].tiles[3 * 6 + 3] = 'bois'; // (3,3) à l'étage
     return scene;
   }
   const storeysBuilt = (spy: { mock: { results: { value: unknown }[] } }) =>
     [...new Set((spy.mock.results[spy.mock.results.length - 1].value as { cell: { z: number } }[]).map((el) => el.cell.z))].sort();
 
-  it('groupe à l’étage : l’iso dresse l’étage ET le rez ; la vue du dessus, le seul étage', () => {
+  it('groupe à l’étage : l’iso pose les décors de l’étage ET du rez ; la vue du dessus, ceux du seul étage', () => {
     useGame.setState({
       scene: twoStoreyScene(),
       mode: 'exploration',
@@ -231,7 +258,7 @@ describe('IsoStage — la vue du dessus isole l’étage actif (#892)', () => {
       flags: {},
       viewMode: 'iso',
     });
-    const spy = vi.spyOn(wallsBuilder, 'buildWalls');
+    const spy = vi.spyOn(propsBuilder, 'buildProps');
 
     container = document.createElement('div');
     root = createRoot(container);
@@ -243,6 +270,36 @@ describe('IsoStage — la vue du dessus isole l’étage actif (#892)', () => {
 
     act(() => { useGame.setState({ viewMode: 'iso' }); });
     expect(storeysBuilt(spy)).toEqual([0, 1]); // retour en iso : rien n'a changé
+  });
+
+  /** Élément de MASSE posé à l'étage `z` — ce que la loi de dégagement reçoit du monde cuit. */
+  const solAu = (z: number) => ({ kind: 'floor', key: `f:2,2,${z}`, cell: { x: 2, y: 2, z }, states: {} } as unknown as Parameters<KeepEl>[0]);
+
+  it('…et la MASSE du monde suit le MÊME pivot : en vue du dessus, le rez ne se superpose plus à l’étage', () => {
+    useGame.setState({
+      scene: twoStoreyScene(),
+      mode: 'exploration',
+      partyPos: { x: 2, y: 2, z: 1 },
+      party: [hero('h1', { x: 2, y: 2 })],
+      battle: null,
+      dialogue: null,
+      flags: {},
+      viewMode: 'iso',
+    });
+    // La loi RÉELLEMENT remise au monde cuit : celle que le stage passe à `applyCutawayMask`.
+    const spy = vi.spyOn(sceneMeshes, 'applyCutawayMask');
+
+    container = document.createElement('div');
+    root = createRoot(container);
+    act(() => root!.render(<IsoStage />));
+    const loiIso = spy.mock.calls[spy.mock.calls.length - 1][1];
+    expect(loiIso(solAu(1)), 'iso : l’étage actif est dessiné').toBe(true);
+    expect(loiIso(solAu(0)), 'iso : le contrebas reste du contexte utile').toBe(true);
+
+    act(() => { useGame.setState({ viewMode: 'top' }); });
+    const loiPlan = spy.mock.calls[spy.mock.calls.length - 1][1];
+    expect(loiPlan(solAu(1)), 'plan : l’étage actif est dessiné').toBe(true);
+    expect(loiPlan(solAu(0)), 'plan : le rez ne se superpose PLUS à l’étage').toBe(false);
   });
 });
 

@@ -1,14 +1,19 @@
 // @vitest-environment jsdom
 /**
- * #1176 — l'interrupteur DEV « Monde volumique » gouverne la voie de rendu des DEUX vues du jeu : la vue
- * iso comme le POV, qui monte lui aussi `GameStage3D` en webgl (`gameIso/pov/PovStage.tsx:64`). Monté pour
- * de VRAI (patron `createRoot`/`act` du repo) : c'est l'ÉCRAN qui est jugé, pas le prédicat.
+ * #1176, P2-7 / #1289 — les boutons d'ORIENTATION annoncent Q et E dans leur libellé : ils doivent donc
+ * faire EXACTEMENT ce que font ces touches. Le monde est volumique (commit C5a) : la poussée pousse le
+ * lacet CONTINU vers le cran DIAGONAL visé, et ne touche pas au cran du store.
+ * Monté pour de VRAI (patron `createRoot`/`act` du repo) : c'est l'ÉCRAN qui est jugé, pas le prédicat.
+ *
+ * L'interrupteur DEV « Monde volumique » a quitté cet écran avec la voie affine (commit C5a) : le jeu
+ * n'a plus qu'un monde, et `state/stage3d.ts` n'est plus piloté que par le devtool `__wfrp.stage3d`
+ * (voie POV SVG, morte à C5b).
  */
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useGame } from '../state/store';
-import { getStageBackend, setStageBackend } from '../state/stage3d';
+import { setStageBackend } from '../state/stage3d';
 import { testScene } from '../scenes/test-fixture';
 import { CampaignView } from './CampaignView';
 import { getStageYaw, resetStageYaw } from '../state/stageYaw';
@@ -16,8 +21,6 @@ import { getStageYaw, resetStageYaw } from '../state/stageYaw';
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 });
-
-const VOLUMIQUE = 'Monde volumique (DEV)';
 
 let host: HTMLDivElement;
 let root: Root;
@@ -34,59 +37,37 @@ function monter(povActive: boolean) {
 afterEach(() => {
   act(() => { root.unmount(); });
   host.remove();
-  setStageBackend('affine');
+  setStageBackend('webgl');
   resetStageYaw();
   vi.unstubAllGlobals();
 });
 
 beforeEach(() => {
   useGame.setState({ povActive: false });
-  setStageBackend('affine');
 });
 
-describe('CampaignView — interrupteur DEV « Monde volumique »', () => {
-  it('rend le bouton volumique hors POV', () => {
-    const el = monter(false);
-    expect(el.querySelector(`[aria-label="${VOLUMIQUE}"]`)).not.toBeNull();
-  });
-
-  it('rend le bouton volumique ACTIF quand le POV est actif, et le clic y bascule la voie de rendu', () => {
-    const el = monter(true);
-    // Le POV est bien monté : c'est SA voie de rendu que l'interrupteur gouverne ici.
-    expect(el.querySelector('[aria-label="Vue normale (au-dessus)"]')).not.toBeNull();
-    const bouton = el.querySelector(`[aria-label="${VOLUMIQUE}"]`);
-    expect(bouton).not.toBeNull();
-    expect(getStageBackend()).toBe('affine');
-    act(() => { bouton!.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true })); });
-    expect(getStageBackend()).toBe('webgl');
-    expect(el.querySelector('[aria-label="Monde en couches SVG (DEV)"]')).not.toBeNull();
-  });
-
-  it('le CLIC sur le bouton bascule la voie de rendu (le câblage part du bouton, pas du store)', () => {
-    const el = monter(false);
-    expect(getStageBackend()).toBe('affine');
-    const bouton = el.querySelector(`[aria-label="${VOLUMIQUE}"]`)!;
-    // Le contrôle agit au POINTER DOWN (`ViewControls`), pas au clic : c'est CE geste qu'on rejoue.
-    act(() => { bouton.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true })); });
-    expect(getStageBackend()).toBe('webgl');
-    // Et l'écran suit : le bouton porte désormais le libellé de RETOUR aux couches SVG.
-    expect(el.querySelector('[aria-label="Monde en couches SVG (DEV)"]')).not.toBeNull();
+describe('CampaignView — plus aucun interrupteur de voie de rendu à l’écran (#1176 C5a)', () => {
+  it('ni hors POV, ni en POV : le jeu n’a qu’un monde', () => {
+    for (const pov of [false, true]) {
+      const el = monter(pov);
+      expect(el.querySelector('[aria-label="Monde volumique (DEV)"]')).toBeNull();
+      expect(el.querySelector('[aria-label="Monde en couches SVG (DEV)"]')).toBeNull();
+      act(() => { root.unmount(); });
+      host.remove();
+      host = document.createElement('div'); // l'`afterEach` démonte le dernier montage
+      document.body.appendChild(host);
+      root = createRoot(host);
+    }
   });
 });
 
-/**
- * #1176, P2-7 — les boutons d'ORIENTATION annoncent Q et E dans leur libellé : ils doivent donc faire
- * EXACTEMENT ce que font ces touches. En voie volumique, la touche pousse le lacet CONTINU ; un bouton
- * resté sur `rotateCam` y sauterait d'un cran entier, voile de transition et recentrage compris.
- */
 describe('CampaignView — les boutons d’orientation SONT le geste de Q/E', () => {
   /** Hors navigateur, le lacet arrive tout de suite (`state/stageYaw.ts`) : la poussée se mesure sans
    *  dérouler l'approche à la frame. */
   const sansFrames = () => vi.stubGlobal('requestAnimationFrame', undefined);
 
-  it('voie VOLUMIQUE : le bouton pousse le LACET d’un cran DIAGONAL, et ne touche pas au cran du store', () => {
+  it('le bouton pousse le LACET d’un cran DIAGONAL, et ne touche pas au cran du store', () => {
     const el = monter(false);
-    setStageBackend('webgl');
     sansFrames();
     const cran = useGame.getState().camRot;
     act(() => { el.querySelector('[aria-label="Tourner horaire (E)"]')!.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true })); });
@@ -94,13 +75,13 @@ describe('CampaignView — les boutons d’orientation SONT le geste de Q/E', ()
     expect(useGame.getState().camRot).toBe(cran);
   });
 
-  it('voie AFFINE : le même bouton avance d’un cran (des QUATRE diagonales), et le lacet reste nul', () => {
+  it('…et le geste est le MÊME quoi que dise l’interrupteur de chantier (il ne gouverne plus le jeu)', () => {
     const el = monter(false);
+    setStageBackend('affine');
     sansFrames();
-    const cran = () => `${useGame.getState().camRot}${useGame.getState().camEdge ? 'e' : ''}`;
-    const avant = cran();
-    act(() => { el.querySelector('[aria-label="Tourner horaire (E)"]')!.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true })); });
-    expect(cran()).not.toBe(avant);
-    expect(getStageYaw()).toBe(0);
+    const cran = useGame.getState().camRot;
+    act(() => { el.querySelector('[aria-label="Tourner anti-horaire (Q)"]')!.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true })); });
+    expect(getStageYaw()).toBe(-90);
+    expect(useGame.getState().camRot).toBe(cran);
   });
 });

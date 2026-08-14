@@ -24,7 +24,6 @@ import type { Dims, Rot } from '../../geometry/iso';
 import { IsoStage } from '../IsoStage';
 import { artRot, setStageRendererFactory, type StageRenderer } from './GameStage3D';
 import * as archVis from './architectureVisibility';
-import * as wallsBuilder from '../builders/walls';
 import { frontFacadeCutaway, type ClearedSpace } from './architectureVisibility';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -124,7 +123,7 @@ describe('IsoStage — le cran effectif ALIMENTE le dégagement, et ne rejoue qu
     if (container) { container.remove(); container = null; }
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
-    setStageBackend('affine');
+    setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
     resetStageYaw();
   });
 
@@ -165,7 +164,11 @@ describe('IsoStage — le cran effectif ALIMENTE le dégagement, et ne rejoue qu
   });
 
   it('44° ne rebâtit RIEN, 46° rebâtit UNE fois (le memo lourd suit le franchissement, pas la frame)', () => {
-    const spy = vi.spyOn(wallsBuilder, 'buildWalls');
+    // Le memo LOURD qui dépend du cran est désormais celui du DÉGAGEMENT (`cleared` : occluders de
+    // nappes + capsules d'acteurs projetées, `lidCutaway` en sortie) — le stage ne bâtit plus lui-même
+    // sols et murs depuis la mort de la voie affine (#1176 P3-4, commit C5a), et la cuisson du monde
+    // volumique, elle, ne dépend pas du regard.
+    const spy = vi.spyOn(archVis, 'lidCutaway');
     monterVolumique();
     const monte = spy.mock.calls.length;
     expect(monte).toBeGreaterThan(0);

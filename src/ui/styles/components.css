@@ -975,3 +975,25 @@ button.chip:hover {
 .rm-stake p + p {
   margin-top: 4px;
 }
+
+/* ── MONDE INAFFICHABLE (#1176 C5a) — le message qui remplace le canevas quand la machine refuse le
+   contexte volumique (primitive `gameIso/stage/SansWebgl.tsx`). `.compact` = posé DANS un panneau
+   (plan de station) ; sinon il occupe toute la boîte de son hôte. */
+.sans-webgl {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  text-align: center;
+}
+.sans-webgl p {
+  max-width: 38ch;
+  margin: 0;
+}
+.sans-webgl.compact {
+  position: absolute;
+  inset: 0;
+  height: auto;
+}

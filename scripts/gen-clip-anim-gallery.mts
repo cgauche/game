@@ -68,7 +68,7 @@ function mountedTile(label: string, weapon: Weapon | undefined, clip: Clip) {
     const mountBones = quad.resolve(horse, 'profile', quad.restPose(), mountedPlanOpts(undefined));
     const riderPose = addPose(mountedRest('profile', weapon), sampleClip(clip, t).pose);
     const riderBones = resolveRig(soldat, equip, riderPose, 'Soldat', 'profile', [], false);
-    // Ratio cavalier DÉRIVÉ comme en jeu (MountedToken) : cavalier ÷ (art monture × Taille).
+    // Ratio cavalier DÉRIVÉ comme en jeu (`backends/webgl/sceneMeshes`, couple monté) : cavalier ÷ (art monture × Taille).
     const rideK = 1 / (resolveSpecies(horse).scale * sizeTokenScale('grande'));
     return seatRiderOnMount(mountBones, riderBones, { view: 'profile', mountScale: 1, riderScale: rideK }).map((b, i) => ({ ...b, id: `${b.id}_${i}` }));
   });

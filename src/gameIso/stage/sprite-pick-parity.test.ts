@@ -11,7 +11,6 @@ import { BILLBOARD_BOX_ASPECT, anchorAndSize, billboardHeightM } from '../backen
 import { actorBillboards, bakeWorldGeometry, billboardPose, type BillboardSubject } from '../backends/webgl/sceneMeshes';
 import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/spriteRaycast';
 import { actorCapsuleOf } from './actorCapsule';
-import { wallLayerObjs } from './layers';
 import { stage3dFraming } from './stage3dCamera';
 
 /**
@@ -32,7 +31,6 @@ import { stage3dFraming } from './stage3dCamera';
 const CANVAS = { w: 1280, h: 720 };
 const CAM = { x: 0, y: 0 };
 const ZOOM = 1;
-const NO_OCCLUDE = () => false;
 
 type Camera = OrthographicCamera | PerspectiveCamera;
 
@@ -82,29 +80,26 @@ function intercepteAvantLeQuad(camera: Camera, obstacle: Mesh, quad: Mesh, point
 }
 
 /**
- * DIVERGENCE VOULUE (#1297, arbitrage produit du 2026-08-13 : silhouette à travers les murs). Le
- * peintre affine n'a pas de silhouette : le mur qu'il pose PAR-DESSUS le jeton reçoit
- * l'`elementFromPoint`, ne porte aucun `data-cid`, et le clic retombe sur la tuile de sol. La voie
- * volumique peint le jeton occulté en silhouette — le pixel où on le voit rend son id.
+ * SILHOUETTE À TRAVERS LES MURS (#1297, arbitrage produit du 2026-08-13). Le peintre affine n'en avait
+ * pas : le mur qu'il posait PAR-DESSUS le jeton recevait l'`elementFromPoint`, ne portait aucun
+ * `data-cid`, et le clic retombait sur la tuile de sol. Il est mort à C5a ; ce que la voie volumique
+ * promet, elle, reste mesuré ici : le pixel où l'on VOIT le jeton rend son id, mur ou pas.
  */
-describe('Un jeton derrière un mur qui le COUVRE — l’affine le refuse, le volumique le rend (#1297 lot B)', () => {
+describe('Un jeton derrière un mur qui le COUVRE — le volumique le rend quand même (#1297 lot B)', () => {
   const scene = emptyScene(3, 3);
   scene.walls = [{ x: 1, y: 1, side: 'N' }];
   const dims = dimsDe(scene);
   const mpt = sceneMetresPerTile(scene);
   const [hero] = makeShowcaseParty();
 
-  it('AFFINE : le panneau couvre la capsule du jeton ET se peint après lui — aucun `data-cid` sous le pixel', () => {
+  it('PRÉMISSE écran-espace : le panneau couvre bien la capsule du jeton (sinon la garde ne mesure rien)', () => {
     const murs = buildWalls(scene);
-    const objs = wallLayerObjs(murs, dims, NO_OCCLUDE, 0, { zoom: 1, mpt });
     const capsule = actorCapsuleOf({ x: 0, y: 0, h: 0 }, dims);
     const panneau = projectOccluder(
       { polygons: murs[0].faces.map((face) => face.poly.map((p) => ({ x: p.x, y: p.y, lift: metricToLift(p.h) }))) },
       dims,
     );
     expect(occludesActor(panneau, capsule)).toBe(true);
-    // Peint APRÈS le jeton : le jeton porte l'offset de couche +0.5 sur sa profondeur (`combatantObjs`).
-    expect(objs[0].d).toBeGreaterThan(depth(0, 0, dims, 0) + 0.5);
   });
 
   it('VOLUMIQUE : la masse intercepte le rayon AVANT le jeton, et le jeton rend quand même son id', () => {
@@ -124,11 +119,12 @@ describe('Un jeton derrière un mur qui le COUVRE — l’affine le refuse, le v
 /**
  * LES QUATRE ARÊTES DE LA CASE DU JETON — la table complète, mesurée (#1176 P2-3, #1297 lot B).
  *
- * L'invariant affine « jeton > mur » (`stage/tokens.tsx` : offset de jeton +0,5 contre +0,45 au mur) ne
- * joue que pour les murs dont `wallDepth` prend pour base la case DU JETON — les arêtes N et O. Aux
- * arêtes S et E le mur se peint APRÈS le jeton, et ce sont exactement celles que la géométrie volumique
- * met devant lui : les deux voies s'accordent au N et à l'O, et divergent au S et à l'E, où la voie
- * volumique rend l'id par la silhouette (#1297) quand l'affine retombe sur la tuile.
+ * `murParDessus` est un ORACLE FIGÉ : il valait, à l'origine, le verdict du peintre AFFINE — l'invariant
+ * « jeton > mur » (offset de jeton +0,5 contre +0,45 au mur) ne jouait que pour les murs dont
+ * `wallDepth` prend pour base la case DU JETON, les arêtes N et O ; aux arêtes S et E le mur se peignait
+ * APRÈS le jeton et le clic retombait sur la tuile. Ce peintre est mort à C5a, la table reste : ce sont
+ * EXACTEMENT les arêtes que la géométrie volumique met devant le jeton, et sur lesquelles la silhouette
+ * (#1297) répond là où l'affine se taisait.
  */
 describe('Les QUATRE arêtes de la case du jeton (#1176 P2-3, #1297 lot B)', () => {
   const [hero] = makeShowcaseParty();
@@ -144,14 +140,6 @@ describe('Les QUATRE arêtes de la case du jeton (#1176 P2-3, #1297 lot B)', () 
     scene.walls = [arete.seg];
     const dims = dimsDe(scene);
     const mpt = sceneMetresPerTile(scene);
-    const dJeton = depth(1, 1, dims, 0) + 0.5; // profondeur du jeton posté sur la case (`combatantObjs`)
-
-    it(`arête ${arete.nom} — AFFINE : le mur se peint ${arete.murParDessus ? 'APRÈS' : 'AVANT'} le jeton`, () => {
-      const objs = wallLayerObjs(buildWalls(scene), dims, NO_OCCLUDE, 0, { zoom: 1, mpt });
-      expect(objs.length).toBe(1);
-      if (arete.murParDessus) expect(objs[0].d).toBeGreaterThan(dJeton);
-      else expect(objs[0].d).toBeLessThan(dJeton);
-    });
 
     it(`arête ${arete.nom} — VOLUMIQUE : la masse ${arete.murParDessus ? 'intercepte' : 'n’intercepte pas'} le rayon, et l’id est rendu`, () => {
       const camera = cameraVolumique(dims, mpt);
@@ -173,9 +161,7 @@ describe('Deux jetons qui se CHEVAUCHENT — même vainqueur des deux côtés (#
   const POSE_A = { x: 2, y: 2 };
   const POSE_B = { x: 3, y: 3 }; // juste DEVANT A à l'écran (même colonne, une rangée de profondeur en plus)
 
-  it('AFFINE : le plus PROFOND se peint en dernier — c’est lui que reçoit le hit-test natif', () => {
-    // Deux jetons portent le MÊME offset de couche (`combatantObjs` : +0,5) : leur ordre EST celui de
-    // `depth`, la clé de tri du stage.
+  it('PRÉMISSE : B est bien le plus PROFOND des deux à l’écran (le témoin de la situation mesurée)', () => {
     expect(depth(POSE_B.x, POSE_B.y, dims, 0)).toBeGreaterThan(depth(POSE_A.x, POSE_A.y, dims, 0));
   });
 

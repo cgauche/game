@@ -83,7 +83,8 @@ export function highlightSlot(el: HighlightEl): HighlightSlot {
   }
 }
 
-/** Opacités de la voie affine (`backends/affineHighlights.tsx`), à l'identique. */
+/** Opacité de chaque nature de marque de case — la table, tenue au banc de population
+ *  (`stage/marques-parite.test.tsx`). */
 export const SLOT_OPACITY: Record<HighlightSlot, number> = {
   walk: 0.32,
   run: 0.24,
@@ -145,18 +146,18 @@ export const RING_FRAME_K = 0.09;
  *  `2 · TILE_INSET_K` de sol entre elles. Le joueur compte donc ses cases DANS sa portée (arbitrage
  *  de la vue tactique, 2026-08-12).
  *
- *  POURQUOI LA VOIE VOLUMIQUE EN A BESOIN ET PAS L'AFFINE — mesuré, pas supposé : l'affine peint UN
- *  `<path>` par case (`backends/affineHighlights`) et les composite SÉPARÉMENT ; au pixel de
- *  frontière la couverture se scinde entre deux chemins et l'alpha résultant tombe à
+ *  POURQUOI CE LISERÉ EST NÉCESSAIRE ICI — mesuré, pas supposé. Un peintre qui pose UN chemin par
+ *  case et les composite SÉPARÉMENT ne le demande pas : au pixel de frontière sa couverture se scinde
+ *  entre deux chemins et l'alpha résultant tombe à
  *  `1 − (1 − 0,32·c)(1 − 0,32·(1 − c))` = 0,294 au lieu de 0,32 — la teinte étant plus claire que le
- *  sol, ce déficit se lit comme un CREUX, et l'affine hérite d'une grille par accident de
- *  composition. Un `InstancedMesh` de quads JOINTIFS rend au contraire un aplat exact : aucun pixel
- *  de frontière ne se creuse. Mesuré au détecteur de coutures du juge (vallée de luminance ≥ 1,5
- *  entre flancs égaux) sur du sol d'HERBE (quasi-aplat, `siege-enceinte-top-lit.png`), pas de case
- *  48 px, 14,6 frontières par scanline : 13,52 coutures/scanline sous plaque affine, 0,19 sous
- *  plaque volumique JOINTIVE, 13,16 sous plaque INSETÉE. Et le liseré ne creuse pas de la même
- *  profondeur : `α · (L_teinte − L_sol)`, mesuré 39,8 de médiane sur cette herbe, 24,2 sur un sol de
- *  luminance 73 — contre 1,94 pour la couture accidentelle de l'affine.
+ *  sol, ce déficit se lit comme un CREUX, et une grille apparaît par accident de composition. Un
+ *  `InstancedMesh` de quads JOINTIFS rend au contraire un aplat exact : aucun pixel de frontière ne se
+ *  creuse. Mesuré au détecteur de coutures du juge (vallée de luminance ≥ 1,5 entre flancs égaux) sur
+ *  du sol d'HERBE (quasi-aplat, `siege-enceinte-top-lit.png`), pas de case 48 px, 14,6 frontières par
+ *  scanline : 13,52 coutures/scanline sous plaque composée case par case, 0,19 sous plaque volumique
+ *  JOINTIVE, 13,16 sous plaque INSETÉE. Et le liseré ne creuse pas de la même profondeur :
+ *  `α · (L_teinte − L_sol)`, mesuré 39,8 de médiane sur cette herbe, 24,2 sur un sol de luminance 73 —
+ *  contre 1,94 pour la couture accidentelle de la composition case par case.
  *
  *  VALEUR : UN pixel du gabarit affine par bord (`strokeWidthK`, la conversion px → fraction de
  *  case), soit ~2 px de sol entre deux plaques au pas de case de 35,8 px ; la plaque garde 89 % de

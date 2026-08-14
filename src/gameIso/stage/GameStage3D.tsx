@@ -154,7 +154,7 @@ import {
 import { withRenderRank } from '../backends/webgl/renderRanks';
 import { buildTraceQuad, TRACE_LIFT_M } from '../backends/webgl/traceQuad';
 import type { TraceTransform } from '../../state/traceCalibration';
-import { setStageBackend } from '../../state/stage3d';
+import { signalerWebglRefusé } from './webglSupport';
 
 /** Convention de taille monde des billboards retenue pour le JEU (cf. `billboardMath`). */
 export const CONVENTION = 'jeu' as const;
@@ -893,19 +893,16 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     const canvas = canvasRef.current;
     if (!canvas) return;
     // Aucun contexte WebGL (GPU sur liste noire, machine virtuelle, budget de contextes épuisé, jsdom
-    // des tests de montage) : la voie volumique n'a plus de surface où peindre. Depuis qu'elle est le
-    // DÉFAUT (#1176, P3-4), s'arrêter là rendrait un écran nu — les hôtes ne montent leur scène SVG
-    // que sous `!webgl` (`IsoStage`, `PovStage`, `EditorCanvas`) — donc la voie AFFINE reprend la main.
-    // Le repli ne boucle pas : `setStageBackend` notifie les hôtes, qui démontent ce composant ; il ne
-    // se remonte qu'à un geste de bascule DEV explicite.
-    // À C5a la voie affine meurt (inventaire du cliquet `stage/double-voie-ratchet.test.ts`) : ce repli
-    // n'aura plus de destination, et l'échec de contexte devra se DIRE au joueur par un message.
+    // des tests de montage) : la voie volumique n'a plus de surface où peindre, et depuis C5a il n'y a
+    // plus de second peintre du monde. Le verdict se DIT donc au joueur — les hôtes de monde montent
+    // `stage/SansWebgl` à la place de leur canevas. Le signal est LATCHÉ (cf. `stage/webglSupport`) :
+    // il ne se retente pas, un échec par rendu bouclerait.
     let renderer: StageRenderer;
     try {
       renderer = fabriqueRenderer ? fabriqueRenderer(canvas) : new THREE.WebGLRenderer({ canvas, antialias: true });
     } catch (e) {
-      console.warn('GameStage3D: aucun contexte WebGL — retour à la voie affine.', e);
-      setStageBackend('affine');
+      console.warn('GameStage3D: aucun contexte WebGL — le monde ne peut pas être peint.', e);
+      signalerWebglRefusé();
       return;
     }
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));

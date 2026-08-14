@@ -109,7 +109,7 @@ beforeEach(() => {
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (container) { container.remove(); container = null; }
-  setStageBackend('affine');
+  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
   useGame.setState({ combatCursor: null });
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -123,16 +123,7 @@ const CHEMIN = [{ x: 1, y: 2 }, { x: 2, y: 2 }];
 const COURSE = [{ x: 4, y: 2 }, { x: 3, y: 2 }, { x: 2, y: 2 }];
 
 describe('Marche — qui peint décide de ce qu’une image coûte (#1176 P2-4)', () => {
-  it('voie AFFINE : chaque image de marche re-rend le stage (le contrat existant)', () => {
-    setStageBackend('affine');
-    const { commits } = monter();
-    const avant = commits();
-    let tick: FrameRequestCallback | null = marcher('h1', CHEMIN);
-    for (let i = 0; i < 3; i++) tick = image(tick!, STEP_MS / 8);
-    expect(commits()).toBe(avant + 3);
-  });
-
-  it('voie VOLUMIQUE : aucune IMAGE ne re-rend le stage — seul un FRANCHISSEMENT de case le fait', () => {
+  it('aucune IMAGE ne re-rend le stage — seul un FRANCHISSEMENT de case le fait', () => {
     setStageBackend('webgl');
     const { commits } = monter();
     const avant = commits();

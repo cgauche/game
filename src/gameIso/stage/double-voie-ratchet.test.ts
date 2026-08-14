@@ -4,13 +4,17 @@ import { fileURLToPath } from 'node:url';
 import { join, relative } from 'node:path';
 
 /**
- * DOUBLE VOIE DE RENDU DU MONDE (#1176) — cliquet de fin de chantier.
+ * VOIE SVG DU MONDE (#1176) — cliquet de fin de chantier.
  *
- * Tant que la migration volumique dure, l'écran de jeu porte DEUX peintres du monde : la voie AFFINE
- * (couches SVG pré-triées de `stage/CulledScene` + les backends `backends/affine*`) et la voie
- * VOLUMIQUE (`stage/GameStage3D`). Ce cliquet compte les fichiers du CHEMIN DE JEU qui consomment
- * encore la voie affine. Il ne peut que DÉCROÎTRE ; à zéro, la double voie est morte et `CulledScene`
- * + `backends/affine*` se suppriment avec elle (Phase 3).
+ * L'ÉCRAN DE JEU N'A PLUS QU'UN PEINTRE (commit C5a) : le monde volumique (`stage/GameStage3D`).
+ * `stage/CulledScene`, `FogLayer`, `MountedToken`, `backends/affineHighlights`, les voiles d'ambiance
+ * et le voile de météo sont SUPPRIMÉS ; `stage/layers`, `stage/tokens` et `backends/affine*` ont été
+ * SCINDÉS — il n'en reste que ce que le PLAN DE STATION (`TopoScene`, murs au trait) et l'APERÇU
+ * d'authoring (`ui/editor/EditorCanvas`) consomment encore.
+ *
+ * Ce cliquet compte donc, désormais, les fichiers hors `backends/`/`pov/` qui consomment encore un
+ * module SVG du monde — la population dont la REQUALIFICATION est le lot C5b (« l'éditeur et le plan
+ * sans voie affine »). Il ne peut que DÉCROÎTRE ; à zéro, `backends/affine*` se supprime.
  *
  * PÉRIMÈTRE MESURÉ : les modules de PRODUCTION sous `src/gameIso`, hors `backends/` et hors `pov/` —
  * ces deux arborescences sont les IMPLÉMENTATIONS SVG en sursis, pas des consommateurs, et toutes
@@ -49,36 +53,35 @@ const consommateurs = fichiersDeProduction(RACINE)
   .sort();
 
 /**
- * ÉTAT MESURÉ le 2026-08-13 (lot P3-4, commit C2). La liste est NOMMÉE : un plafond seul laisserait un
- * consommateur en remplacer un autre sans que rien ne bouge.
- *   - `IsoStage.tsx` monte `CulledScene` et les motifs de détail affines ;
+ * ÉTAT MESURÉ le 2026-08-14 (lot P3-4, commit C5a : 5 → 3). La liste est NOMMÉE : un plafond seul
+ * laisserait un consommateur en remplacer un autre sans que rien ne bouge.
  *   - `TopoScene.tsx` (plan de station) assemble la STRUCTURE de son plan par `stage/layers` — sa
  *     matière, elle, passe par l'instantané volumique (`stage/planSnapshot`) ;
- *   - `stage/layers.tsx` projette sols/murs/toits par les backends affines ;
- *   - `stage/highlightLayer.tsx` et `stage/tokens.tsx` en font autant pour les surbrillances et la
- *     profondeur des décors.
+ *   - `stage/layers.tsx` ne projette plus QUE les murs, par `backends/affineWalls` ;
+ *   - `stage/tokens.tsx` ne projette plus QUE les décors (aperçu d'éditeur), par `backends/affineProps`.
  * DÉCROISSANCE SEULE : jamais relevée, jamais échangée.
  *
- * INVENTAIRE C5a (ce qui doit être traité le jour où cette liste atteint ZÉRO) :
- *   - REPLI SANS WEBGL — `stage/GameStage3D.tsx`, création de renderer : un contexte refusé rebascule
- *     aujourd'hui sur la voie affine (#1176, P3-4, commit C4). Sans voie affine, ce repli n'a plus de
- *     destination : l'échec de contexte devra se DIRE au joueur par un message explicite, sous peine de
- *     rendre un écran nu en silence.
+ * INVENTAIRE C5b (ce qui doit être traité le jour où cette liste atteint ZÉRO) :
+ *   - le PLAN DE STATION doit tirer ses murs de l'instantané volumique (ou assumer son trait, et alors
+ *     `affineWalls` devient un module d'AUTHORING, plus un « backend de voie ») ;
+ *   - l'ÉDITEUR doit rendre son aperçu WYSIWYG et son aperçu de trait par le monde volumique
+ *     (cliquet frère : `src/ui/editor/double-voie-editeur-ratchet.test.ts`) ;
+ *   - la voie POV SVG meurt (second cliquet, plus bas), et avec elle `pov/geometry`/`pov/billboards` ;
+ *   - le QC (`scripts/qc/*`) consomme encore `affineFloors`/`affineWalls`/`affineRoofs`/`affineDetail` :
+ *     zéro ici ne veut pas dire supprimable tant que ces scripts n'ont pas migré.
  */
 const CONSOMMATEURS = [
-  'IsoStage.tsx',
   'TopoScene.tsx',
-  'stage/highlightLayer.tsx',
   'stage/layers.tsx',
   'stage/tokens.tsx',
 ];
 
-describe('Double voie de rendu du monde — cliquet de mort de la voie affine (#1176)', () => {
-  it('les consommateurs de la voie AFFINE dans le chemin de jeu sont ceux, et rien de neuf', () => {
+describe('Voie SVG du monde — cliquet de mort des backends affines (#1176)', () => {
+  it('les consommateurs restants sont ceux-là, et rien de neuf', () => {
     expect(consommateurs).toEqual(CONSOMMATEURS);
   });
 
-  it('leur nombre ne remonte pas — zéro = la double voie est morte, `CulledScene` se supprime', () => {
+  it('leur nombre ne remonte pas — zéro = `backends/affine*` se supprime', () => {
     expect(consommateurs.length).toBeLessThanOrEqual(CONSOMMATEURS.length);
   });
 

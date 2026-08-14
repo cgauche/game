@@ -1,32 +1,21 @@
 /**
- * Couche de SURBRILLANCES statiques du combat (grilles W×H LOURDES, memoïsées par IsoStage — figées
- * hors changement d'état de combat) : assemble les vérités du STORE (portées, cibles éligibles,
- * candidats du mode de ciblage) en `HighlightsView`, appelle le builder pur (`buildHighlights`),
- * projette par le backend affine, et INTERCALE l'aperçu tap-1 (battle.preview) entre les grilles de
- * portée et le reste — l'ordre d'empilement historique des ex æquo de profondeur.
- * Les éléments qui SUIVENT le token qui glisse (tether, halo de l'actif) restent à la frame
- * (cf. stage/tokens.dynamicHighlightObjs).
+ * Les vérités du STORE qu'une surbrillance de combat demande (portées, cibles éligibles, candidats du
+ * mode de ciblage, bandes de portée du tireur survolé), assemblées UNE fois en `HighlightsView` — ce
+ * que le builder pur (`builders/highlights`) consomme, et par lui le monde volumique
+ * (`stage/VolumetricWorld` → `backends/webgl/highlightMeshes`).
+ * Aucune projection ici : cette couche ne connaît ni caméra ni couleur.
  */
 import type { GameState, BattleState, PendingAttack, PendingCleave, PendingDualStrike, PendingCast } from '../../state/store';
-import { Scene } from '../../state/scene';
 import { Combatant } from '../../engine/types';
 import { crowdEligible, eligibleAttackTargetIds, displayedReach, computeRunReach, hasFreeWeaponAttack } from '../../state/combatFlow';
 import { currentTargetingMode } from '../../state/targetingModes';
 import { controlsCombatant } from '../../state/netOwnership';
 import { inBattleId } from '../../state/combatants';
-import { footprintN, footprintTiles } from '../../state/footprint';
-import { mountOf } from '../../state/mount';
 import { attackWeapon } from '../../engine/combat';
 import { effectiveWeaponRange } from '../../engine/weaponDamage';
 import { selectedAmmo } from '../../engine/items';
 import { bonus, effectiveChar } from '../../engine/characteristics';
-import { Dims, depth, diamondPath } from '../../geometry/iso';
-import { buildHighlights, type HighlightsView } from '../builders/highlights';
-import { highlightDepth, highlightJsx } from '../backends/affineHighlights';
-import { movePreviewEls } from './movePreview';
-import { GOLD_TINT } from '../highlightTints';
-import type { Pt } from '../../state/path';
-import type { StageObj } from './objs';
+import type { HighlightsView } from '../builders/highlights';
 
 export interface HighlightOpts {
   myTurn: boolean;
@@ -36,26 +25,7 @@ export interface HighlightOpts {
   pendingCast: PendingCast | null;
 }
 
-/**
- * Les vérités du STORE qu'un élément de surbrillance demande, assemblées UNE fois : la voie affine
- * (ci-dessous) et la voie volumique (`IsoStage.VolumetricWorld`) consomment le MÊME
- * `buildHighlights(scene, battle, view)`. Aucune projection ici — cette fonction ne connaît ni caméra
- * ni couleur.
- */
 export function combatHighlightsView(get: () => GameState, battle: BattleState, opts: HighlightOpts): HighlightsView {
-  return highlightsViewAndActive(get, battle, opts).view;
-}
-
-/**
- * La vue ET l'unité active RÉSOLUE. L'assemblage cherche déjà le combattant dont c'est le tour (la vue
- * n'en garde que l'`activeId`, le builder restant pur) ; l'aperçu tap-1 de la voie affine a besoin de
- * l'entité elle-même (empreinte de sa monture) — une seule résolution sert les deux.
- */
-export function highlightsViewAndActive(
-  get: () => GameState,
-  battle: BattleState,
-  opts: HighlightOpts,
-): { view: HighlightsView; activeC: Combatant | undefined } {
   const { myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast } = opts;
   const activeC = inBattleId(battle, battle.order[battle.turn]);
   // COOP : le tour du héros d'un AUTRE joueur s'affiche comme un tour ennemi — aucune affordance
@@ -101,48 +71,5 @@ export function highlightsViewAndActive(
       return rangeM != null ? { pos: c.pos, rangeM } : null;
     })(),
   };
-  return { view, activeC };
-}
-
-export function combatHighlightObjs(
-  get: () => GameState,
-  scene: Scene,
-  battle: BattleState,
-  dims: Dims,
-  liftAt: (x: number, y: number, z?: number) => number,
-  opts: HighlightOpts,
-): StageObj[] {
-  const { view, activeC } = highlightsViewAndActive(get, battle, opts);
-  const els = buildHighlights(scene, battle, view);
-  const objs: StageObj[] = els.map((el) => ({ d: highlightDepth(el, dims), el: highlightJsx(el, dims) }));
-  // Aperçu tap-1 (tactile) INTERCALÉ entre les grilles (walk/run) et le reste (teintes/zones/anneaux)
-  // — l'ordre d'émission historique, qui départage les ex æquo de profondeur au tri stable.
-  const pv = tapPreviewObjs(battle, activeC, dims, liftAt, opts.myTurn);
-  if (!pv.length) return objs;
-  const cut = els.findIndex((e) => e.kind !== 'walk' && e.kind !== 'run');
-  const at = cut < 0 ? objs.length : cut;
-  return [...objs.slice(0, at), ...pv, ...objs.slice(at)];
-}
-
-/** Aperçu tap-1 (tactile) : chemin + case d'arrivée + badge — MÊME rendu que le survol desktop
- *  (movePreviewEls, source unique du tracé de déplacement) + empreinte de la cible. Une seule
- *  profondeur pragmatique à la case d'ARRIVÉE (l'exactitude par-segment du tracé est secondaire). */
-function tapPreviewObjs(battle: BattleState, activeC: Combatant | undefined, dims: Dims, liftAt: (x: number, y: number, z?: number) => number, myTurn: boolean): StageObj[] {
-  const pv = myTurn ? battle.preview : null;
-  if (!pv) return [];
-  const liftOf = (p: Pt) => (p.z ? liftAt(p.x, p.y, p.z) : 0);
-  const out: StageObj[] = [];
-  const pvTgt = 'targetId' in pv ? battle.combatants.find((c) => c.id === pv.targetId) : undefined;
-  const pvDest = pv.kind === 'move' || pv.kind === 'run' ? pv.tile : pv.kind === 'attack' ? pvTgt?.pos : pv.dest;
-  const pvLbl = pv.kind === 'move' ? `Aller (${pv.cost})` : pv.kind === 'run' ? 'Courir' : pv.kind === 'charge' ? (pv.adv ? 'Charger (+1 Av)' : 'Charger') : pv.kind === 'moveAttack' ? 'Rejoindre + attaquer' : 'Attaquer';
-  const pvZ = pvDest?.z ?? 0;
-  const pvD = pvDest ? depth(pvDest.x, pvDest.y, dims, pvZ) + 0.25 : 0;
-  for (const el of movePreviewEls(pv.kind === 'attack' ? [] : pv.path, pvDest ?? null, pvLbl, dims, 'pv', GOLD_TINT, pv.kind === 'attack' ? 1 : activeC ? footprintN(mountOf(battle, activeC) ?? activeC) : 1, liftOf))
-    out.push({ d: pvD, el });
-  if (pvTgt?.pos) {
-    const tz = pvTgt.pos.z ?? 0;
-    for (const t of footprintTiles(pvTgt.pos, footprintN(pvTgt)))
-      out.push({ d: depth(t.x, t.y, dims, tz) + 0.25, el: <path key={`pv-tgt-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims, tz ? liftAt(t.x, t.y, tz) : 0)} fill={GOLD_TINT} opacity={0.18} pointerEvents="none" /> }); // tout le bloc N×N d'un grand
-  }
-  return out;
+  return view;
 }

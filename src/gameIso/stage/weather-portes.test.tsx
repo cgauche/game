@@ -90,18 +90,11 @@ const fond = (el: HTMLElement) => canevas(el)?.getAttribute('data-bg') ?? null;
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (container) { container.remove(); container = null; }
-  setStageBackend('affine');
+  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
-describe('Météo — une expression par voie, jamais deux (#1176 P2-6)', () => {
-  it('voie AFFINE, extérieur pluvieux : le VOILE est là, aucun semis (pas de canevas du tout)', () => {
-    setStageBackend('affine');
-    const el = monter('pluie');
-    expect(voile(el, 'pluie')).not.toBeNull();
-    expect(semis(el)).toBeNull();
-  });
-
-  it('voie VOLUMIQUE, extérieur pluvieux : le SEMIS tombe, et le voile d’écran ne se monte plus', () => {
+describe('Météo — UNE expression, celle du monde volumique (#1176 P2-6)', () => {
+  it('extérieur pluvieux : le SEMIS tombe, et aucun voile d’écran ne se monte', () => {
     setStageBackend('webgl');
     const el = monter('pluie');
     expect(Number(semis(el))).toBeGreaterThan(0);
@@ -137,17 +130,11 @@ describe('Météo — une expression par voie, jamais deux (#1176 P2-6)', () => 
     }
   });
 
-  it('le BROUILLARD ne fait tomber aucune particule en volumique (il n’a pas de `precip` en donnée)', () => {
+  it('le BROUILLARD ne fait tomber aucune particule (il n’a pas de `precip` en donnée)', () => {
     setStageBackend('webgl');
     const el = monter('brouillard');
     expect(semis(el)).toBeNull();
-    // …alors qu'en affine, ce même brouillard TEINTE bien l'écran : la donnée est le seul écart.
-    act(() => root!.unmount());
-    root = null;
-    el.remove();
-    container = null;
-    setStageBackend('affine');
-    expect(voile(monter('brouillard'), 'brouillard')).not.toBeNull();
+    expect(AMBIANCE.iso.weather.brouillard?.precip, 'témoin : la donnée n’en porte pas').toBeUndefined();
   });
 });
 
@@ -205,7 +192,7 @@ describe('Météo volumique — brume, lumière et fond (#1247)', () => {
     expect(fond(orage), 'le ciel ne peut pas rester clair sur un monde éteint').not.toBe(fondClair);
   });
 
-  it('PARITÉ : le voile affine et la lumière volumique sortent de la MÊME donnée, et vont dans le MÊME sens', () => {
+  it('CÂBLAGE : l’exposition de la frame est le facteur météo de la donnée partagée, dans le bon sens', () => {
     // Référence de beau temps, une fois pour toutes les météos.
     setStageBackend('webgl');
     const clair = monter('clair');
@@ -217,22 +204,14 @@ describe('Météo volumique — brume, lumière et fond (#1247)', () => {
 
     for (const meteo of AUTHORÉES) {
       const { dim } = weatherLightScalars({ weather: meteo, ambiance: 'exterieur' });
-      setStageBackend('affine');
-      const aff = monter(meteo);
-      expect(voile(aff, meteo), `voie affine : ${meteo} porte son voile`).not.toBeNull();
-      act(() => root!.unmount());
-      root = null;
-      aff.remove();
-      container = null;
-
       setStageBackend('webgl');
       const vol = monter(meteo);
       // Le facteur APPARIÉ EN LUMINANCE de la dérivation partagée arrive tel quel sur l'exposition de
       // la frame — c'est le câblage. Comparaison ABSOLUE au millième : la trace `data-lum` est
       // arrondie à quatre décimales, et un rapport de deux valeurs arrondies porte l'erreur des deux.
       expect(exposition(vol), `${meteo} : l’exposition suit le facteur météo dérivé`).toBeCloseTo(lumClair * dim, 3);
-      // …et le SENS suit celui du voile d'écran (le contrat, mesuré à part sur les 4 météos réelles).
-      expect(Math.sign(exposition(vol) - lumClair), `${meteo} : même sens que le voile affine`).toBe(Math.sign(dim - 1));
+      // …et le SENS est celui que la donnée demande : une météo qui assombrit ne peut pas éclaircir.
+      expect(Math.sign(exposition(vol) - lumClair), `${meteo} : le sens de la donnée`).toBe(Math.sign(dim - 1));
       act(() => root!.unmount());
       root = null;
       vol.remove();

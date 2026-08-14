@@ -5,21 +5,31 @@
  * du builder (`buildTokens`) → les poses d'acteur (`actorPoses`, ce qu'`IsoStage` appelle) → les
  * sujets (`actorBillboards`).
  *
- * La PARITÉ se juge sur les OS RENDUS : le corps affine (`MountedToken`) et le fragment volumique
- * composent le même couple ; un fragment qui perdrait la monture ou le cavalier le dirait ici.
+ * ORACLE RE-DÉRIVÉ (C5a) : la parité géométrique se jugeait contre le corps AFFINE (`MountedToken`),
+ * mort avec sa voie. Son rôle — un second appelant INDÉPENDANT de la loi de selle — est repris ici :
+ * le banc re-dérive le couple attendu à partir des fonctions PURES du rig (`resolveRender`/`planById`
+ * → os de la monture, `actorDrawInputs` + `mountedRest` → os du cavalier, `seatRiderOnMount` → le
+ * composite), exactement comme le composant le faisait sans ses hooks. Ce qu'il mesure reste la
+ * CHAÎNE : que le pipeline volumique porte au couple la bonne monture, le bon cavalier, la bonne vue,
+ * la bonne échelle et les bonnes options de gabarit.
  */
 import { describe, expect, it, vi } from 'vitest';
 import { resetDiagOnce } from '../../rig/devDiag';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { actorBillboards, actorPoses, actorPoseKey } from './sceneMeshes';
-import { MountedToken } from '../../MountedToken';
+import { actorBillboards, actorPoses, actorPoseKey, actorDrawInputs } from './sceneMeshes';
 import { buildTokens } from '../../builders/tokens';
-import { combatantTokenScale } from '../../sizeScale';
+import { combatantTokenScale, sizeTokenScale } from '../../sizeScale';
+import { planById, resolveRender } from '../../rig/bodyPlan';
+import { mountedPlanOpts, mountedRest, seatRiderOnMount } from '../../rig/mountedRig';
+import { resolveRig } from '../../rig/composeRig';
+import { bonesToSvg } from '../../rig/renderBones';
+import { isShield } from '../../rig/parts/equipment';
+import type { View } from '../../rig/facing';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../../state/scene';
 import type { BattleState } from '../../../state/store';
 import type { Combatant, Weapon } from '../../../engine/types';
 import { BB_W, BB_H } from '../../pov/billboardCore';
 import { subjectQuad } from './billboardMath';
+import { MISSING_TONE } from '../../rig/viewArt';
 
 const scene = emptyScene(6, 6);
 const mpt = sceneMetresPerTile(scene);
@@ -56,6 +66,21 @@ function sujets(mount: Combatant, rider: Combatant) {
 const osDe = (svg: string) => new Set([...svg.matchAll(/data-bone="([^"]+)"/g)].map((m) => m[1]));
 /** Os RENDUS avec leur matrice d'écran : la géométrie, pas seulement la présence. */
 const posesDe = (svg: string) => new Map([...svg.matchAll(/data-bone="([^"]+)" transform="([^"]*)"/g)].map((m) => [m[1], m[2]] as const));
+
+/** LE COUPLE ATTENDU, re-dérivé des fonctions PURES du rig — le second appelant indépendant de la loi
+ *  de selle, à la place du corps affine mort (cf. l'en-tête). Aucune animation : la pose de repos du
+ *  gabarit et la pose montée, ce que le fragment volumique compose lui aussi. */
+function coupleAttendu(mount: Combatant, rider: Combatant, view: View): string {
+  const mr = resolveRender(mount.species, mount.traits, mount.creatureId ?? mount.label);
+  const plan = planById(mr.plan);
+  const { appearance, equip, tenue, overlays } = actorDrawInputs(rider).rig!;
+  const osMonture = plan.resolve(mr.species, view, plan.restPose(), mountedPlanOpts(mount.creatureId, mount.appearanceOverride));
+  const arme = equip.weapons?.find((w) => !isShield(w)) ?? equip.weapons?.[0];
+  const osCavalier = resolveRig(appearance, equip, mountedRest(view, arme), tenue, view, overlays, false);
+  // k : échelle du cavalier DANS la boîte de la monture — chaîne d'échelles monde (art × Taille).
+  const k = resolveRender(rider.species, rider.traits, rider.creatureId ?? rider.label).scale / (mr.scale * sizeTokenScale(mount.size));
+  return bonesToSvg(seatRiderOnMount(osMonture, osCavalier, { view, mountScale: 1, riderScale: k }));
+}
 
 // ── bbox d'un fragment SVG dans SA boîte ────────────────────────────────────────────────────────
 // Pile de `<g transform>` appliquée aux nombres des attributs géométriques (`d`, cercle, rect).
@@ -141,16 +166,16 @@ describe('Couple monté — UN billboard composite (monture + cavalier)', () => 
     expect(osDe(seule[0].svg('profile', false, 0)).has('torse')).toBe(false);
   });
 
-  it('parité GÉOMÉTRIQUE affine ↔ volumique : chaque os du couple porte la MÊME matrice d’écran', () => {
+  it('le couple est ASSIS PAR LA LOI : chaque os porte la matrice de l’oracle re-dérivé', () => {
     const mount = monture(), rider = cavalier();
-    // Le corps affine au repos, sans orientation au store, se rend de FACE : c'est la vue comparée.
-    const affine = posesDe(renderToStaticMarkup(<svg><MountedToken mount={mount} rider={rider} /></svg>));
+    // Sans orientation au store, le sujet se rend de FACE : c'est la vue comparée.
+    const attendu = posesDe(coupleAttendu(mount, rider, 'front'));
     const volumique = posesDe(sujets(mount, rider).subjects[0].svg('front', false, 0));
-    expect(affine.size).toBeGreaterThan(20); // la sonde mord : le couple affine porte bien ses deux corps
-    expect([...affine.keys()].filter((b) => !volumique.has(b)), 'os manquants au fragment volumique').toEqual([]);
-    expect([...volumique.keys()].filter((b) => !affine.has(b)), 'os en trop dans le fragment volumique').toEqual([]);
+    expect(attendu.size).toBeGreaterThan(20); // la sonde mord : l'oracle porte bien les deux corps
+    expect([...attendu.keys()].filter((b) => !volumique.has(b)), 'os manquants au fragment volumique').toEqual([]);
+    expect([...volumique.keys()].filter((b) => !attendu.has(b)), 'os en trop dans le fragment volumique').toEqual([]);
     // Une selle déplacée, une jambe inversée, une échelle de cavalier fausse tombent ICI.
-    const différents = [...affine].filter(([b, t]) => volumique.get(b) !== t).map(([b, t]) => `${b} aff=${t} vol=${volumique.get(b)}`);
+    const différents = [...attendu].filter(([b, t]) => volumique.get(b) !== t).map(([b, t]) => `${b} att=${t} vol=${volumique.get(b)}`);
     expect(différents).toEqual([]);
   });
 
@@ -213,5 +238,46 @@ describe('Couple monté — UN billboard composite (monture + cavalier)', () => 
     sujets(monture(), bête); // le même défaut ne se redit pas
     expect(cri).toHaveBeenCalledTimes(1);
     cri.mockRestore();
+  });
+});
+
+/**
+ * CÂBLAGE DU CANAL DONNÉE (#1128 L4) : la monture est rendue PORTÉE — ses opts de gabarit passent par
+ * `mountedPlanOpts`, donc son harnachement vient de la DONNÉE. Mesuré sur le fragment RENDU du couple,
+ * pas sur la fonction seule : un call-site retombé sur `planOptsForRecord` rendrait la bête à cru sans
+ * qu'aucun test de la couture ne bronche. (Ce banc vivait sur le corps affine `MountedToken`, mort à
+ * C5a — il mesure désormais le MÊME canal sur le sujet volumique, seul rendu du couple.)
+ *
+ * Le témoin est le REFUS VISIBLE (#223) d'un set non cuit pour l'espèce portée (blaireau, ADE I 07
+ * l.48) : sa caisse d'alarme est posée sur le `tronc` en clé NUE, donc lisible dans les 3 vues.
+ */
+const blaireau = (over: Partial<Combatant> = {}): Combatant => ({
+  id: 'm1', label: 'Blaireau', kind: 'enemy', creatureId: 'blaireau', species: 'blaireau',
+  size: 'moyenne', conditions: [], wounds: { current: 10, max: 10 }, pos: { x: 1, y: 1 }, riderId: 'h1', ...over,
+} as unknown as Combatant);
+
+/** Le CORPS du fragment, rendu de face — sans les `<defs>` que `actorBillboards` préfixe : la palette
+ *  partagée y porte le dégradé d'alarme du repli visible, présent sur TOUT fragment (il ne dit donc
+ *  rien du corps rendu, cf. `sprites.DEFS`). */
+const corps = (mount: Combatant, avecCavalier = true): string =>
+  actorBillboards([{ c: mount, ...(avecCavalier ? { rider: cavalier() } : {}), x: 1, y: 1, z: 0 }], scene, mpt, plein)[0]
+    .svg('front', false, 0)
+    .replace(/<defs>[\s\S]*?<\/defs>/, '');
+
+describe('Couple monté — la monture portée reçoit son set par la DONNÉE', () => {
+  it('le set par défaut atteint le gabarit de la monture ; le nu explicite d’instance le retire', () => {
+    const bruit = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(corps(blaireau()), 'le set n’atteint pas le rendu monté : la bête porterait le cavalier À CRU').toContain(MISSING_TONE);
+    expect(corps(blaireau({ appearanceOverride: { harnais: '' } })), 'nu explicite d’instance').not.toContain(MISSING_TONE);
+    // Témoin du CANAL : la même bête SANS cavalier passe par `planOptsForRecord` — aucun set, aucune alarme.
+    expect(corps(blaireau({ riderId: undefined }), false), 'une monture non portée ne reçoit pas le set').not.toContain(MISSING_TONE);
+    bruit.mockRestore();
+  });
+
+  it('le gabarit de la monture vient du `creatureId`, jamais du label libre', () => {
+    // Une monture nommée librement doit rester un QUADRUPÈDE. Empreinte mesurée : l'os `tronc`
+    // (barillet quad) — le gabarit bipède du repli rend `torse` et n'a aucun `tronc`.
+    const roussine = blaireau({ label: 'Roussine du sergent', creatureId: 'cheval', species: undefined });
+    expect(corps(roussine), 'label libre suivi : la monture est rendue avec le gabarit de repli').toContain('data-bone="tronc"');
   });
 });

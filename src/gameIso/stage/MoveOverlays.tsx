@@ -5,9 +5,13 @@
  * lift métrique) que les autres surbrillances.
  */
 import { Dims, diamondPath } from '../../geometry/iso';
-import { footprintTiles } from '../../state/footprint';
+import { footprintN, footprintTiles } from '../../state/footprint';
+import { mountOf } from '../../state/mount';
+import { inBattleId } from '../../state/combatants';
 import { movePreviewEls } from './movePreview';
 import { GOLD_TINT } from '../highlightTints';
+import type { Combatant } from '../../engine/types';
+import type { BattleState } from '../../state/store';
 import type { Pt } from '../../state/path';
 
 /** Losange du CURSEUR clavier/manette : repère de case TOUJOURS visible tant qu'aucune modale de jet à
@@ -43,4 +47,41 @@ export function ExplorePathPreview({ path, dims, lift, walking = false }: { path
   if (walking) return null;
   const destination = path[path.length - 1] ?? null;
   return <g pointerEvents="none">{movePreviewEls(path, destination, null, dims, 'exp', GOLD_TINT, 1, lift)}</g>;
+}
+
+/** APERÇU TAP-1 (tactile) : le geste en deux temps — une première touche montre où l'on ira et ce que
+ *  cela coûte (`battle.preview`), la seconde commet. MÊME tracé que le survol desktop
+ *  (`movePreviewEls`, source unique) plus l'EMPREINTE de la cible quand l'aperçu vise un combattant.
+ *  Il vivait dans la couche de surbrillances affine (`stage/highlightLayer.tapPreviewObjs`) et a suivi
+ *  les overlays d'interaction quand la voie affine est morte (#1176 P3-4, commit C5a). */
+export function TapPreview({ battle, activeC, dims, liftAt, myTurn }: {
+  battle: BattleState;
+  activeC: Combatant | undefined;
+  dims: Dims;
+  liftAt: (x: number, y: number, z?: number) => number;
+  myTurn: boolean;
+}) {
+  const pv = myTurn ? battle.preview : null;
+  if (!pv) return null;
+  const liftOf = (p: Pt) => (p.z ? liftAt(p.x, p.y, p.z) : 0);
+  const cible = 'targetId' in pv ? inBattleId(battle, pv.targetId) : undefined;
+  const dest = pv.kind === 'move' || pv.kind === 'run' ? pv.tile : pv.kind === 'attack' ? cible?.pos : pv.dest;
+  const label = pv.kind === 'move' ? `Aller (${pv.cost})`
+    : pv.kind === 'run' ? 'Courir'
+      : pv.kind === 'charge' ? (pv.adv ? 'Charger (+1 Av)' : 'Charger')
+        : pv.kind === 'moveAttack' ? 'Rejoindre + attaquer' : 'Attaquer';
+  const footN = pv.kind === 'attack' ? 1 : activeC ? footprintN(mountOf(battle, activeC) ?? activeC) : 1;
+  return (
+    <g pointerEvents="none">
+      {movePreviewEls(pv.kind === 'attack' ? [] : pv.path, dest ?? null, label, dims, 'pv', GOLD_TINT, footN, liftOf)}
+      {cible?.pos && footprintTiles(cible.pos, footprintN(cible)).map((t) => (
+        <path
+          key={`pv-tgt-${t.x}-${t.y}`}
+          d={diamondPath(t.x, t.y, dims, cible.pos!.z ? liftAt(t.x, t.y, cible.pos!.z) : 0)}
+          fill={GOLD_TINT}
+          opacity={0.18}
+        />
+      ))}
+    </g>
+  );
 }

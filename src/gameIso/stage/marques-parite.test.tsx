@@ -10,29 +10,18 @@ import type { Combatant } from '../../engine/types';
 import { IsoStage } from '../IsoStage';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 import { HIGHLIGHT_SLOTS, SLOT_OPACITY, type HighlightSlot } from '../backends/webgl/highlightMeshes';
-import { tileTint } from '../teamColors';
-import {
-  RANGE_BAND_TINT,
-  RING_ALLY_TINT,
-  RING_CROWD_TINT,
-  RING_TARGET_TINT,
-  RUN_TINT,
-  WALK_TINT,
-  ZONE_FIRE_TINT,
-  ZONE_SMOKE_TINT,
-} from '../highlightTints';
 
 /**
- * PARITÉ DES MARQUES DE CASES (#1176, P3-0c) : la MÊME scène et le MÊME combat, montés une fois par
- * voie. Ce que le SVG affine peint en losanges, le monde volumique doit le poser en quads au sol —
- * même population, nature par nature. Les deux voies partent du même builder pur
- * (`builders/highlights`) sur la même vue assemblée (`stage/highlightLayer.combatHighlightsView`) : ce
- * que cette sonde mesure, c'est que la voie volumique le CONSOMME bien, et jusqu'au bout (pools montés,
- * instances écrites, comptes dessinés).
+ * MARQUES DE CASES posées par le monde volumique (#1176, P3-0c) — la population, nature par nature.
+ * Le monde part du builder pur (`builders/highlights`) sur la vue assemblée
+ * (`stage/highlightLayer.combatHighlightsView`) : ce que cette sonde mesure, c'est qu'il la CONSOMME
+ * bien, et jusqu'au bout (pools montés, instances écrites, comptes dessinés).
  *
- * La mesure affine se lit dans le DOM (un `<path>` par élément, sa nature déduite de son couple
- * teinte × opacité — `backends/affineHighlights.tsx`) ; la mesure volumique se lit dans la scène three
- * réellement rendue, sur le `count` des pools d'instances.
+ * ORACLE FIGÉ (C5a). Le second terme était la voie AFFINE, montée sur le même état et comptée dans le
+ * DOM (un `<path>` par élément, nature déduite de son couple teinte × opacité) ; elle est morte avec
+ * la voie de jeu SVG. Les comptes ci-dessous sont ceux que l'égalité `volumique == affine` tenait
+ * VERTE sur l'arbre d'avant le retrait (mesurés au même banc, mêmes témoins, 2026-08-14) : ils gardent
+ * la population exacte, y compris ce qui ne doit PAS être peint.
  *
  * DEUX combats témoins, parce que les NEUF natures ne coexistent pas : les anneaux de cible demandent
  * un tour disponible SANS attaque en cours, tandis que l'anneau « tirer dans le tas » demande un
@@ -131,33 +120,6 @@ function démonter(): void {
   if (conteneur) { conteneur.remove(); conteneur = null; }
 }
 
-/** Nature d'un `<path>` du SVG, par le couple (teinte, opacité) que le backend affine lui donne. */
-function slotDuPath(p: Element): HighlightSlot | null {
-  const op = p.getAttribute('opacity');
-  const fill = p.getAttribute('fill');
-  const stroke = p.getAttribute('stroke');
-  if (op === String(SLOT_OPACITY.walk) && fill === WALK_TINT) return 'walk';
-  if (op === String(SLOT_OPACITY.run) && fill === RUN_TINT) return 'run';
-  if (op === String(SLOT_OPACITY.rangeBand) && Object.values(RANGE_BAND_TINT).includes(fill ?? '')) return 'rangeBand';
-  if (op === String(SLOT_OPACITY.teamActive) && (fill === tileTint(true, true) || fill === tileTint(false, true))) return 'teamActive';
-  if (op === String(SLOT_OPACITY.team) && (fill === tileTint(true, false) || fill === tileTint(false, false))) return 'team';
-  if (op === String(SLOT_OPACITY.zoneSmoke) && fill === ZONE_SMOKE_TINT) return 'zoneSmoke';
-  if (op === String(SLOT_OPACITY.zoneFire) && fill === ZONE_FIRE_TINT) return 'zoneFire';
-  if (op === String(SLOT_OPACITY.ringCrowd) && fill === RING_CROWD_TINT) return 'ringCrowd';
-  if (op === String(SLOT_OPACITY.ringContour) && fill === 'none' && (stroke === RING_ALLY_TINT || stroke === RING_TARGET_TINT)) return 'ringContour';
-  return null;
-}
-
-/** Comptes AFFINES par nature — mesurés dans le SVG réellement monté. */
-function comptesAffines(el: HTMLElement): Record<string, number> {
-  const out: Record<string, number> = {};
-  for (const p of el.querySelectorAll('svg.iso-stage path')) {
-    const slot = slotDuPath(p);
-    if (slot) out[slot] = (out[slot] ?? 0) + 1;
-  }
-  return out;
-}
-
 /** Comptes VOLUMIQUES par nature — mesurés sur les pools de la dernière scène three rendue. */
 function comptesVolumiques(): Record<string, number> {
   const scene = scènes[scènes.length - 1];
@@ -171,13 +133,18 @@ function comptesVolumiques(): Record<string, number> {
   return out;
 }
 
-/** Le MÊME état monté sur les deux voies, l'une après l'autre. */
-function lesDeuxVoies(extra: Record<string, unknown> = {}): { affine: Record<string, number>; volumique: Record<string, number> } {
-  const affine = comptesAffines(monter('affine', extra));
-  démonter();
-  monter('webgl', extra);
-  return { affine, volumique: comptesVolumiques() };
-}
+/**
+ * L'ORACLE, nature par nature — ce que la voie affine peignait sur ces deux témoins, et que le monde
+ * volumique posait à l'identique (mesuré à l'arbre d'avant le retrait de l'affine, 2026-08-14).
+ * Une case de marche gagnée ou perdue, une bande de portée qui change de largeur, un anneau qui
+ * disparaît : tout se voit ici.
+ */
+const ORACLE_NEUTRE: Record<string, number> = {
+  walk: 62, run: 36, rangeBand: 100, team: 2, teamActive: 1, zoneSmoke: 2, zoneFire: 1, ringContour: 2,
+};
+const ORACLE_FOULE: Record<string, number> = {
+  walk: 62, run: 36, rangeBand: 100, team: 2, teamActive: 1, zoneSmoke: 2, zoneFire: 1, ringCrowd: 2,
+};
 
 beforeAll(() => {
   Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => TAILLE.w });
@@ -188,33 +155,25 @@ afterAll(() => setStageRendererFactory(null));
 
 afterEach(() => {
   démonter();
-  setStageBackend('affine');
+  setStageBackend('webgl');
 });
 
-describe('Marques de cases — les deux voies peignent la même population (#1176 P3-0c)', () => {
+describe('Marques de cases — le monde volumique pose la population entière (#1176 P3-0c)', () => {
   it('les deux combats témoins portent bien les NEUF natures (sinon la sonde ne pèse rien)', () => {
-    const neutre = comptesAffines(monter('affine'));
-    for (const slot of ['walk', 'run', 'rangeBand', 'team', 'teamActive', 'zoneSmoke', 'zoneFire', 'ringContour'] as const)
-      expect(neutre[slot], `nature ${slot} jamais peinte par le témoin neutre`).toBeGreaterThan(0);
-    expect(neutre.ringCrowd, 'un tour neutre n’arme PAS le tir dans le tas').toBeUndefined();
-    démonter();
-    const foule = comptesAffines(monter('affine', TIR_DANS_LE_TAS));
-    expect(foule.ringCrowd, 'nature ringCrowd jamais peinte par le témoin « tirer dans le tas »').toBeGreaterThan(0);
-    expect(foule.ringContour, 'un tir dans le tas éteint les anneaux de cible').toBeUndefined();
-    // Réunion des deux témoins = les neuf natures du montage volumique.
-    expect(new Set([...Object.keys(neutre), ...Object.keys(foule)])).toEqual(new Set(HIGHLIGHT_SLOTS));
+    // La RÉUNION des deux témoins couvre les neuf slots : c'est ce qui rend la mesure non vide.
+    expect(new Set([...Object.keys(ORACLE_NEUTRE), ...Object.keys(ORACLE_FOULE)])).toEqual(new Set(HIGHLIGHT_SLOTS));
+    expect(ORACLE_NEUTRE.ringCrowd, 'un tour neutre n’arme PAS le tir dans le tas').toBeUndefined();
+    expect(ORACLE_FOULE.ringContour, 'un tir dans le tas éteint les anneaux de cible').toBeUndefined();
   });
 
-  it('nature par nature, le volumique compte exactement ce que l’affine peint (tour neutre)', () => {
-    const { affine, volumique } = lesDeuxVoies();
-    expect(volumique).toEqual(affine);
-    expect(Object.keys(volumique).length).toBe(HIGHLIGHT_SLOTS.length - 1); // tout sauf `ringCrowd`
+  it('nature par nature, le volumique pose exactement l’oracle (tour neutre)', () => {
+    monter('webgl');
+    expect(comptesVolumiques()).toEqual(ORACLE_NEUTRE);
   });
 
-  it('nature par nature, le volumique compte exactement ce que l’affine peint (tirer dans le tas)', () => {
-    const { affine, volumique } = lesDeuxVoies(TIR_DANS_LE_TAS);
-    expect(volumique).toEqual(affine);
-    expect(volumique.ringCrowd).toBeGreaterThan(0);
+  it('nature par nature, le volumique pose exactement l’oracle (tirer dans le tas)', () => {
+    monter('webgl', TIR_DANS_LE_TAS);
+    expect(comptesVolumiques()).toEqual(ORACLE_FOULE);
   });
 
   it('en volumique, chaque pool monté porte l’opacité de sa nature et un `count` borné par sa capacité', () => {

@@ -1,33 +1,40 @@
 import { describe, expect, it } from 'vitest';
 import { tintFor, tintOf } from './visibilityTint';
-import { fogFilterFor } from '../../FogLayer';
-import type { StageObj } from '../../stage/objs';
+import { AMBIANCE } from '../../catalog/ambiance';
 
-describe('les teintes sont ANCRÉES sur le voile de production (`FogLayer`)', () => {
-  const decor = (x: number, y: number): StageObj => ({ x, y, z: 0 }) as unknown as StageObj;
-  const brightness = (filtre: string): number => Number(/brightness\(([^)]+)\)/.exec(filtre)![1]);
-  const memorise = fogFilterFor(decor(1, 2), new Set(['1,2,0']))!;
-  const inconnu = fogFilterFor(decor(9, 9), new Set())!;
+/**
+ * ORACLE FIGÉ (#1176 P3-4, commit C5a). Ce banc confrontait la teinte volumique au VOILE SVG de
+ * production (`gameIso/FogLayer.fogFilterFor`), mort avec la voie affine. La donnée qui les liait, elle,
+ * survit : `AMBIANCE.fogTint` (`src/data/ambiance.json`), la seule table de la politique de visibilité.
+ * Le second terme est donc devenu le TEXTE du voile disparu, mesuré sur l'arbre d'avant la suppression :
+ *   - mémorisé : `brightness(0.42) saturate(.45) opacity(.82)` — le `brightness` valait exactement
+ *     `AMBIANCE.fogTint.explored`, ce que la première assertion garde vrai ;
+ *   - inconnu : `brightness(0) opacity(.38)` — la voie SVG ÉTEIGNAIT la case sur le fond de carte, là
+ *     où le monde volumique en garde un facteur bas NON NUL (aucune carte dessous : à zéro, la case
+ *     disparaîtrait au lieu de s'assombrir) ;
+ *   - en vue : aucun filtre, facteur plein.
+ */
+/** Le `brightness` que le voile SVG appliquait à une case MÉMORISÉE (mesuré avant retrait, C5a). */
+const BRIGHTNESS_MEMORISE_SVG = 0.42;
 
-  it('exploré = le terme `brightness` du voile mémorisé de la prod (une seule donnée pour les deux)', () => {
-    expect(tintOf('explored')).toBe(brightness(memorise));
+describe('les teintes sont ANCRÉES sur la donnée de visibilité (`AMBIANCE.fogTint`)', () => {
+  it('exploré = le terme `brightness` que le voile de production appliquait (une seule donnée)', () => {
+    expect(tintOf('explored')).toBe(AMBIANCE.fogTint.explored);
+    expect(tintOf('explored')).toBe(BRIGHTNESS_MEMORISE_SVG);
   });
 
-  it('inconnu : la prod éteint (`brightness(0)`) + opacité — le scalaire du spike en est une approximation basse, non nulle', () => {
-    expect(brightness(inconnu)).toBe(0);
-    expect(inconnu).toContain('opacity(.38)');
+  it('inconnu : facteur bas mais NON NUL — le volumique assombrit là où le SVG éteignait', () => {
     expect(tintOf('unknown')).toBeGreaterThan(0);
     expect(tintOf('unknown')).toBeLessThan(tintOf('explored'));
   });
 
-  it('vue : aucun voile en prod, facteur plein ici', () => {
-    expect(fogFilterFor({ ...decor(1, 2), vis: true } as StageObj, new Set())).toBeUndefined();
+  it('vue : facteur plein', () => {
     expect(tintOf('visible')).toBe(1);
   });
 });
 
 /** La TABLE DE VÉRITÉ de `visibilityOf` vit dans sa couche (`src/state/visibility.test.ts`) : ici on ne
- *  teste que l'APPLICATION — le mappage état → teinte, et son ancrage sur le voile de production. */
+ *  teste que l'APPLICATION — le mappage état → teinte. */
 describe('tintFor — l’APPLICATION : la politique, puis le mappage état → teinte', () => {
   const visible = new Set(['1,2,0']);
   const explored = new Set(['1,2,0', '3,4,0']);

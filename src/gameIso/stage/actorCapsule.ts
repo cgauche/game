@@ -1,8 +1,7 @@
 /**
- * CAPSULE ÉCRAN d'un acteur — le volume pieds→tête qu'il occupe une fois projeté, PARTAGÉ par les
- * deux voies : la caméra (visée du sujet, `IsoStage`), la géométrie d'occlusion de la voie affine et
- * la loi de dégagement du monde volumique (`cleared`, `VolumetricWorld`). Rien ici ne connaît le
- * peintre : c'est de la géométrie de scène, pas un backend.
+ * CAPSULE ÉCRAN d'un acteur — le volume pieds→tête qu'il occupe une fois projeté : la caméra en tire
+ * sa visée du sujet (`IsoStage`) et la loi de DÉGAGEMENT du monde son verdict d'occultation
+ * (`cleared` → `lidCutaway`). Rien ici ne connaît le peintre : c'est de la géométrie de scène.
  */
 import { Dims, tileCenter, depth, TW, type ActorCapsule } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
@@ -10,9 +9,10 @@ import { metricToLift } from '../../state/relief';
 /** Demi-largeur ÉCRAN du jeton — rayon de la capsule de l'acteur (`actorCapsuleOf`, visée caméra et
  *  géométrie d'occlusion). Calée sur le CORPS DESSINÉ : elle couvre la carrure la PLUS LARGE qu'un
  *  héros de Taille Moyenne ou moindre puisse présenter (gabarit `courtaud` du Nain, `build` au
- *  maximum), à l'échelle de token d'un combattant (`combatantObjs`). Sous-couvrir manquerait les
- *  occulteurs posés sur les épaules — le défaut d'origine. Le contrat (couvrir le corps MESURÉ sans
- *  le doubler) est tenu par `CulledScene.test.tsx`, qui remesure le rig au lieu de figer un nombre. */
+ *  maximum), à l'échelle de token d'un combattant (`COMBAT_TOKEN_BASE` × Taille). Sous-couvrir
+ *  manquerait les occulteurs posés sur les épaules — le défaut d'origine. Le contrat (couvrir le corps
+ *  MESURÉ sans le doubler) est tenu par `actorCapsule.test.ts`, qui remesure le rig au lieu de figer
+ *  un nombre. */
 const TOKEN_HALF_WIDTH = TW * 0.37;
 
 export function actorCapsuleOf(
