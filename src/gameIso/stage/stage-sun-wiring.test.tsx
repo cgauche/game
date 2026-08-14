@@ -20,7 +20,6 @@ import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene, type Scene } from '../../state/scene';
 import { setNorthDeg } from '../../state/sceneEdit';
-import { setStageBackend } from '../../state/stage3d';
 import { sunJeu } from '../backends/webgl/sunJeu';
 import { AMBIENT_INTENSITY, SUN_INTENSITY } from '../backends/webgl/sceneMeshes';
 import { ambianceLuminance, nightVeilAlpha } from '../catalog/ambiance';
@@ -300,19 +299,16 @@ function démonter(): void {
 
 afterEach(() => {
   démonter();
-  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
 describe('GameStage3D — le soleil MONTÉ suit la scène et l’heure', () => {
   it('scène d’EXTÉRIEUR : le canevas porte la signature du soleil de l’heure', () => {
-    setStageBackend('webgl');
     const canvas = canevas(dehors(), MIDI);
     const midi = sunJeu(MIDI)!;
     expect(canvas.dataset.sun).toBe(`${midi.azimuthDeg.toFixed(1)},${midi.elevationDeg.toFixed(1)}`);
   });
 
   it('…et elle CHANGE avec l’heure, puis avec le nord de la carte', () => {
-    setStageBackend('webgl');
     const matin = canevas(dehors(), 8 * 60).dataset.sun;
     démonter();
     const soir = canevas(dehors(), 17 * 60).dataset.sun;
@@ -322,19 +318,16 @@ describe('GameStage3D — le soleil MONTÉ suit la scène et l’heure', () => {
   });
 
   it('scène d’INTÉRIEUR : aucun soleil monté (aucune signature)', () => {
-    setStageBackend('webgl');
     expect(canevas(dedans(), MIDI).dataset.sun).toBeUndefined();
   });
 
   it('scène d’extérieur de NUIT — et de soleil RASANT : aucun soleil monté non plus', () => {
-    setStageBackend('webgl');
     expect(canevas(dehors(), NUIT).dataset.sun).toBeUndefined();
     démonter();
     expect(canevas(dehors(), 5 * 60 + 30).dataset.sun).toBeUndefined();
   });
 
   it('le canevas porte l’EXPOSITION de sa frame, celle de la passe de lumière', () => {
-    setStageBackend('webgl');
     for (const [scene, t] of [[dehors(), MIDI], [dedans(), MIDI], [dehors(), NUIT]] as const) {
       const lum = canevas(scene, t).dataset.lum;
       expect(lum).toBe(scalaires(scene, t).surfaceLuminance.toFixed(4));
@@ -350,7 +343,6 @@ describe('Un seul propriétaire de luminosité — aucun voile ne s’empile sur
   const voiles = (hôte: HTMLElement) => hôte.querySelector('rect[fill="url(#g_warm)"]');
 
   it('un canevas, et AUCUN voile par-dessus lui — même de NUIT', () => {
-    setStageBackend('webgl');
     const hôte = monter(dehors(), NUIT);
     expect(hôte.querySelector('canvas.iso-stage')).not.toBeNull();
     expect(voiles(hôte)).toBeNull();

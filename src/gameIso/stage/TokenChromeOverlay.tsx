@@ -35,7 +35,7 @@ import { TokenChromeMarks } from '../TokenChromeMarks';
 import { discR } from '../builders/dynamicMarks';
 import { subscribeWalkFrames } from '../fx/useWalkAnim';
 import type { TokenChromeMark } from '../builders/tokenChrome';
-import type { WalkPos } from './tokens';
+import type { WalkPos } from '../fx/walkPose';
 
 /** Lift d'étage d'une case (mêmes unités que le `z` de `tileCenter`). */
 export type LiftAt = (x: number, y: number, z?: number) => number;

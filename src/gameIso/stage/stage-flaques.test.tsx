@@ -24,7 +24,6 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene, heightAt, sceneMetresPerTile, type Scene } from '../../state/scene';
-import { setStageBackend } from '../../state/stage3d';
 import { sceneLightSources } from '../../state/visionState';
 import { ambientScalar, buildOpaque, computeLightField, mapLights, type LightSource } from '../../state/vision';
 import { poseBoards, type Board } from './boardPose';
@@ -303,7 +302,6 @@ function démonter(): void {
 
 afterEach(() => {
   démonter();
-  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
 /** Monte l'écran de JEU (store → `IsoStage` → voie volumique) sur `scene` à l'heure `gameTime`. */
@@ -315,7 +313,6 @@ function canevas(scene: Scene, gameTime: number): HTMLCanvasElement {
   hôte = document.createElement('div');
   document.body.appendChild(hôte);
   root = createRoot(hôte);
-  setStageBackend('webgl');
   act(() => root!.render(<IsoStage />));
   return hôte.querySelector('canvas.iso-stage') as HTMLCanvasElement;
 }

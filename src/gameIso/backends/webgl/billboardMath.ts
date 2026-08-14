@@ -20,7 +20,7 @@ export type BillboardConvention = 'jeu' | 'heroique' | 'metrique';
 export type BillboardKind = 'personnage' | 'prop';
 
 /** Échelle de token iso par famille, MESURÉE aux sites de rendu (non exportées là-bas, littéraux en
- *  place) : `stage/tokens.tsx:172` rig = 0.58 ; `stage/tokens.tsx:85` prop (et `:165` sprite) = 0.55.
+ *  place) : rig = 0.58 ; prop (et sprite) = 0.55 — les échelles du repère SVG de référence.
  *  (`speciesScale`/`sizeTokenScale`/`foot.scale` sont des facteurs PAR ENTITÉ, hors de cette base.) */
 const ISO_TOKEN_SCALE: Record<BillboardKind, number> = { personnage: 0.58, prop: 0.55 };
 

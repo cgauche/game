@@ -9,11 +9,11 @@ import {
   tileGroundAccents,
   SPECKLE_LIFT_M,
 } from './groundAccents';
-import { groundAccentsSvg, TUFT_LEAN_AMPLITUDE } from '../affineDetail';
+import { groundAccentsSvg, TUFT_LEAN_AMPLITUDE } from '../../authoring/detailSvg';
 import { terrainDetail } from '../../../state/terrain';
 import { ISO_PX_PER_M } from '../../iso';
 import { TUFT_FAN } from '../../detail/expand';
-import { projGP } from '../project';
+import { projGP } from '../../authoring/project';
 import { worldFaces } from './sceneMeshes';
 import { facePoly, coplanarRanks, COPLANAR_BIAS_M } from './worldTris';
 import { buildScene } from '../../../state/mapSpec';
@@ -22,11 +22,10 @@ import { testScenarios } from '../../../scenes/test-scenarios';
 import { sceneMetresPerTile } from '../../../state/scene';
 import type { Dims } from '../../../geometry/iso';
 import type { DetailRecipe } from '../../detail/types';
-import { touffesSurNappe } from '../../../../scripts/qc/spike-checks.mjs';
 
 /**
  * ACCENTS DE SOL en instances : la PARITÉ STRUCTURELLE avec le semis de l'affine
- * (`groundAccentsSvg`, `affineDetail.ts`) — même seed monde ⇒ mêmes emplacements. La preuve ne
+ * (`groundAccentsSvg`, `authoring/detailSvg.ts`) — même seed monde ⇒ mêmes emplacements. La preuve ne
  * compare pas des pixels : elle REPROJETTE les positions monde des instances par la projection affine
  * (`projGP`) et exige qu'elles tombent EXACTEMENT sur les ancres du chemin SVG.
  */
@@ -39,14 +38,14 @@ const TERRE = terrainDetail('terre')!;
 const n2 = (v: number) => Math.round(v * 100) / 100;
 
 /** Ancres des TOUFFES du SVG : `groundAccentsSvg` émet 3 sous-chemins `M x,y` par touffe, tous au PIED
- *  (`affineDetail.ts:409-411`) — on garde une ancre sur trois. */
+ *  (`authoring/detailSvg.ts`) — on garde une ancre sur trois. */
 function tuftAnchorsOfSvg(svg: string): [number, number][] {
   const path = /stroke-linecap="round"/.test(svg) ? svg.match(/<path d="([^"]*)" fill="none"/)?.[1] ?? '' : '';
   const anchors = [...path.matchAll(/M(-?[\d.]+),(-?[\d.]+)/g)].map((m) => [Number(m[1]), Number(m[2])] as [number, number]);
   return anchors.filter((_, i) => i % 3 === 0);
 }
 
-/** BRINS du SVG : le 2ᵉ sous-chemin de chaque touffe est `l ${lean·0,4},${−hp·1,15}` (`affineDetail.ts`,
+/** BRINS du SVG : le 2ᵉ sous-chemin de chaque touffe est `l ${lean·0,4},${−hp·1,15}` (`authoring/detailSvg.ts`,
  *  `groundAccentsSvg`) — la SEULE commande `l` du tracé, d'où se redécodent les deux grandeurs que
  *  l'émetteur a tirées du flux `blades` : la hauteur de brin (px) et le penché d'écran. */
 function svgBrins(svg: string): { lean: number; hp: number }[] {
@@ -63,7 +62,7 @@ function svgBrins(svg: string): { lean: number; hp: number }[] {
 const ECART_HAUTEUR_MAX = 2e-4;
 const ECART_LACET_MAX = 3.3e-2;
 
-/** Centres des MOUCHETIS du SVG : `dotSub` (`affineDetail.ts:274`) trace `M cx,cy−r L cx+1.2r,cy …` —
+/** Centres des MOUCHETIS du SVG : `dotSub` (`authoring/detailSvg.ts`) trace `M cx,cy−r L cx+1.2r,cy …` —
  *  le centre se relit donc en (x du 1er point, y du 2ᵉ). */
 function speckleCentersOfSvg(svg: string): [number, number][] {
   const path = svg.match(/<path d="([^"]*)" fill="#/)?.[1] ?? '';
@@ -328,47 +327,5 @@ describe('groundAccents — contrat des NAPPES SEMÉES, sur TOUT le registre de 
       .filter(([, e]) => e.n / e.m2 > DENSITE_MAX_M2)
       .map(([cle, e]) => `${cle} à ${(e.n / e.m2).toFixed(4)}/m²`);
     expect(debordent).toEqual([]);
-  });
-});
-
-describe('spike-checks — attribution des touffes sur la nappe (garde de planche h)', () => {
-  // La garde (h) de `scripts/qc/spike-checks.mjs` juge la présence des accents à la TEINTE EXACTE.
-  // Un instrument qui ne trouve jamais rien passerait pour un instrument sévère : on le confronte à
-  // une planche synthétique dont on connaît la réponse. Vitest héberge ce test faute de runner de
-  // tests unitaires dans `scripts/qc/` ; l'import src → scripts suit le patron déjà en place
-  // (`src/audio/no-phantom-sound.test.ts`, `src/comment-poison-guard.test.ts`).
-  const NAPPE = '#3D6630'; // `swatch` de `src/state/terrain/defs/herbe.ts`
-  const ACCENT = '#5C8A40'; // 1re couleur de `detail.tufts.colors` du même terrain
-
-  /** Planche synthétique : un aplat de nappe de `cote`×`cote`, `pixels` peints à la teinte d'accent. */
-  function planche(cote: number, hexNappe: string, hexAccent: string, pixels: [number, number][]) {
-    const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
-    const [nr, ng, nb] = rgb(hexNappe);
-    const [ar, ag, ab] = rgb(hexAccent);
-    const data = new Uint8Array(cote * cote * 4);
-    for (let i = 0; i < cote * cote; i++) data.set([nr, ng, nb, 255], i * 4);
-    for (const [x, y] of pixels) data.set([ar, ag, ab, 255], (y * cote + x) * 4);
-    return { w: cote, h: cote, data };
-  }
-
-  const PIXELS: [number, number][] = [[4, 4], [5, 4], [6, 5], [4, 7], [7, 7], [8, 6]];
-
-  it("attribue les pixels d'accent quand la palette est celle de la DONNÉE", () => {
-    const r = touffesSurNappe(planche(48, NAPPE, ACCENT, PIXELS), NAPPE, [ACCENT]);
-    expect(r.fenetres).toBeGreaterThan(0);
-    expect(r.partAvecTouffe).toBeGreaterThan(0);
-    expect(r.partPixels).toBeGreaterThan(0);
-  });
-
-  it("n'attribue RIEN à une palette absente de la planche — la mesure n'est pas un tampon", () => {
-    const r = touffesSurNappe(planche(48, NAPPE, ACCENT, PIXELS), NAPPE, ['#FF00FF']);
-    expect(r.fenetres).toBeGreaterThan(0); // la nappe reste trouvée : c'est bien l'accent qui manque
-    expect(r.partAvecTouffe).toBe(0);
-    expect(r.partPixels).toBe(0);
-  });
-
-  it("ne trouve AUCUNE fenêtre de nappe quand l'albédo n'est pas celui de la planche", () => {
-    const r = touffesSurNappe(planche(48, NAPPE, ACCENT, PIXELS), '#FF00FF', [ACCENT]);
-    expect(r.fenetres).toBe(0);
   });
 });

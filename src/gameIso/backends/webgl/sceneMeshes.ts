@@ -67,7 +67,7 @@ export type TintAt = (cellKey: string) => number;
 export type KeepEl = (el: SceneEl) => boolean;
 
 /** Éléments à FACES de la scène, dans l'ordre de peinture des builders (toutes couches pleines, comme
- *  la planche QC `env-panels.ts` : le spike juge l'ENVIRONNEMENT, pas le brouillard de l'étage actif). */
+ *  les planches QC jugent l'ENVIRONNEMENT, pas le brouillard de l'étage actif). */
 function faceEls(scene: Scene): SceneEl[] {
   const maxZ = Math.max(...scene.layers.map((l) => l.z));
   return [...buildFloors(scene, undefined, { activeZ: maxZ }), ...buildWalls(scene), ...buildRoofs(scene)];
@@ -87,8 +87,8 @@ export interface WorldFace {
    *  l'échelle verticale de sa texture, en dépend (`roofCourseStepM`). */
   pitchM?: number;
   /** CÔTÉ D'ARÊTE de l'élément qui porte la face (mur, falaise, wedge) — l'identité MONDE sur laquelle
-   *  se cale la variante d'anti-périodicité, EXACTEMENT comme le backend affine (`affineWalls` passe
-   *  `el.side`, `affineFloors` passe `f.side`). Absent d'un pan de toit ou d'une nappe de sol. */
+   *  se cale la variante d'anti-périodicité, EXACTEMENT comme le backend affine (`authoring/wallsSvg` passe
+   *  `el.side`, `authoring/floorsSvg` passe `f.side`). Absent d'un pan de toit ou d'une nappe de sol. */
   side?: WallSide | CellSide;
 }
 
@@ -144,7 +144,7 @@ export function faceGroup(wf: WorldFace, mpt: number): SurfaceGroup {
   const { domain, part } = wf.face.material;
   const kind: PeriodKind = domain === 'terrain' ? 'ground' : 'wall';
   // La variante se cale sur le CÔTÉ D'ARÊTE de l'élément — la même clé que `variantOf(cell, side)` de
-  // l'affine (`affineDetail.ts`) et que le seed du POV (`pov/geometry.ts`). Sans côté (pan de toit),
+  // le peintre SVG (`authoring/detailSvg.ts`). Sans côté (pan de toit),
   // la `part` du matériau tient lieu d'identité.
   const variant = kind === 'ground' ? 0 : variantOf(wf.cell, wf.side ?? part ?? domain);
   if (needsFaceBake(surface.recipe, kind, part)) {
@@ -164,10 +164,10 @@ export function faceGroup(wf: WorldFace, mpt: number): SurfaceGroup {
       part,
     };
   }
-  // ASSISES : décidées par la SURFACE (recette + échelle d'UV), sans aucun filtre de `WallPart`. Les
-  // deux voies SVG, elles, les restreignent à trois parts (`COURSED`, `backends/affineWalls.ts:39` ;
-  // `pov/geometry.ts:753`) — une part maçonnée hors de ce jeu (plinthe…) portant `courses` reçoit donc
-  // ici des assises que l'affine ne peint pas. Bascule VISIBLE PAR LE JOUEUR au passage au volumique
+  // ASSISES : décidées par la SURFACE (recette + échelle d'UV), sans aucun filtre de `WallPart`. Le
+  // peintre SVG, lui, les restreint à trois parts (`COURSED`, `authoring/wallsSvg.ts`) — une part
+  // maçonnée hors de ce jeu (plinthe…) portant `courses` reçoit donc ici des assises que le SVG ne
+  // peint pas. Bascule VISIBLE PAR LE JOUEUR au passage au volumique
   // (#1176) : à trancher en recette, pas au hasard d'un backend.
   const c = surface.recipe?.courses;
   if (!surface.uvScaleM || !c) return NU;
@@ -354,7 +354,7 @@ export function roomZonesByElKey(scene: Scene): ReadonlyMap<string, readonly str
  *  groupes de surface (mesuré #1176 : 437 ms sur l'arène, 1 601 ms sur l'opéra) — et rien de ce
  *  qu'elle calcule ne dépend de ce que le groupe voit ni de ce qui le coiffe : elle ne se rejoue qu'à
  *  la scène ou à l'échelle.
- *  Un appelant = un bake (cf. `BakedWorld`) : `SpikeScreen` en cuit un pour lui, `stage/GameStage3D`
+ *  Un appelant = un bake (cf. `BakedWorld`) : `stage/GameStage3D`
  *  (l'écran de jeu) le sien — aucun des deux ne partage le bake de l'autre. */
 export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   const listées = worldFaces(scene);
@@ -603,7 +603,7 @@ export function collectBillboards(scene: Scene, mpt: number, tintAt: TintAt, els
     if (ent.kind !== 'personnage') continue;
     const draw = personnageSvg(ent, enrolled);
     if (!draw) continue;
-    // Empreinte multi-cases : le corps se centre sur l'empreinte (même décalage que `stage/tokens.tsx`).
+    // Empreinte multi-cases : le corps se centre sur l'empreinte.
     const off = (sizeFootprint(entitySize(ent)) - 1) / 2;
     const gx = ent.pos.x + off;
     const gy = ent.pos.y + off;
@@ -827,7 +827,7 @@ export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt:
     const inputs = actorDrawInputs(c);
     const { render: r, ground } = inputs;
     // Couple MONTÉ : UN sujet composite (jamais deux quads superposés), à la case et à l'échelle de
-    // la monture — le pendant du `BodyToken` unique de la voie affine (`stage/tokens.tsx`). Une monture
+    // la monture — un seul corps composite. Une monture
     // sans gabarit ou un cavalier sans rig retombe sur le corps SEUL de la monture, ci-dessous.
     // Les entrées du cavalier sont résolues UNE fois : le tracé du composite et sa signature les
     // partagent (`actorDrawInputs` traverse tout l'équipement et la garde-robe).
@@ -884,7 +884,7 @@ export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt:
 // ————————————————————————————————————————————————————————————————
 //
 // Ce soleil-ci ne bouge JAMAIS : ni l'heure de jeu ni le nord de la carte n'y entrent. C'est le
-// contrat des planches QC (`scripts/qc/spike-webgl.mjs` + ses gardes `spike-checks.mjs`), qui
+// contrat des planches QC de jeu (`scripts/qc/capture-jeu.mjs`), qui
 // comparent des captures d'une session à l'autre — une planche ne peut pas changer parce que
 // l'horloge a tourné. Le soleil du JEU, lui, suit l'heure et le nord de la scène : `sunJeu.ts`
 // (course) → `stage/stageLights.ts` (montage), et il pose sa direction par `sunRigFrom`.

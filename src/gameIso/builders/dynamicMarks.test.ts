@@ -30,7 +30,7 @@ import type { BattleState } from '../../state/store';
 
 /**
  * DÉRIVATION des marques dynamiques (#1176, P3-0d) — la source UNIQUE que les deux voies consomment
- * (`stage/tokens.dynamicHighlightObjs` en affine, `stage/dynamicMarkPose` en volumique). Mesurée ici
+ * (`stage/dynamicMarkPose`). Mesurée ici
  * hors de tout écran : ce qui est dérivé, ce sont des cases LOGIQUES et des identités.
  */
 function combattant(id: string, over: Partial<Combatant> = {}): Combatant {

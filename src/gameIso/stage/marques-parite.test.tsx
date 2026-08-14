@@ -5,7 +5,6 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { useGame, type BattleState } from '../../state/store';
 import { emptyScene } from '../../state/scene';
-import { setStageBackend } from '../../state/stage3d';
 import type { Combatant } from '../../engine/types';
 import { IsoStage } from '../IsoStage';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
@@ -93,8 +92,7 @@ class BancRenderer implements StageRenderer {
   render(scene: THREE.Scene): void { scènes.push(scene); }
 }
 
-function monter(backend: 'affine' | 'webgl', extra: Record<string, unknown> = {}): HTMLDivElement {
-  setStageBackend(backend);
+function monter(extra: Record<string, unknown> = {}): HTMLDivElement {
   useGame.setState({
     scene: emptyScene(10, 10),
     mode: 'battle',
@@ -155,7 +153,6 @@ afterAll(() => setStageRendererFactory(null));
 
 afterEach(() => {
   démonter();
-  setStageBackend('webgl');
 });
 
 describe('Marques de cases — le monde volumique pose la population entière (#1176 P3-0c)', () => {
@@ -167,17 +164,17 @@ describe('Marques de cases — le monde volumique pose la population entière (#
   });
 
   it('nature par nature, le volumique pose exactement l’oracle (tour neutre)', () => {
-    monter('webgl');
+    monter();
     expect(comptesVolumiques()).toEqual(ORACLE_NEUTRE);
   });
 
   it('nature par nature, le volumique pose exactement l’oracle (tirer dans le tas)', () => {
-    monter('webgl', TIR_DANS_LE_TAS);
+    monter(TIR_DANS_LE_TAS);
     expect(comptesVolumiques()).toEqual(ORACLE_FOULE);
   });
 
   it('en volumique, chaque pool monté porte l’opacité de sa nature et un `count` borné par sa capacité', () => {
-    monter('webgl');
+    monter();
     const scene = scènes[scènes.length - 1];
     let pools = 0;
     scene.traverse((o) => {

@@ -5,8 +5,7 @@
  * même frontière : PUR et camera-free.
  *
  * Ce que cette dérivation rend, ce sont des IDENTITÉS, des cases et des gabarits en fraction de case —
- * jamais une position à l'écran ni une classe CSS. Les DEUX voies la consomment : l'affine y peint ses
- * ellipses (`stage/tokens`), la volumique ses anneaux plats et son étincelle
+ * jamais une position à l'écran ni une classe CSS. Le rendu en tire ses anneaux plats et son étincelle
  * (`stage/interactHaloPose`). Le CONTEXTE qui autorise ces halos (mode d'exploration, combat ouvert)
  * se tranche UNE fois chez l'appelant, comme le repère de groupe des marques dynamiques.
  */
@@ -15,9 +14,9 @@ import type { Scene } from '../../state/scene';
 import { RING_A_PX, type MarkCell } from './dynamicMarks';
 import type { PropEl } from './types';
 
-/** GABARIT des halos tel que la voie AFFINE les trace, en PIXELS de la projection SVG
- *  (`stage/tokens.interactHaloObjs` / `npcHoverHaloObjs` : `<ellipse rx ry strokeWidth>`). Le demi-axe
- *  ry vaut la moitié de rx dans les deux cas — c'est la projection LOSANGE d'un cercle monde
+/** GABARIT des halos en PIXELS de la projection SVG (`<ellipse rx ry strokeWidth>`) — l'échelle de
+ *  référence que le monde volumique reproduit. Le demi-axe ry vaut la moitié de rx : c'est la
+ *  projection LOSANGE d'un cercle monde
  *  (`RING_A_PX / RING_B_PX`, cf. `builders/dynamicMarks`). */
 export const HALO_RX_PX = 17;
 export const HALO_STROKE_PX = 2;
@@ -25,8 +24,8 @@ export const HALO_STROKE_PX = 2;
 export const PING_STROKE_PX = 1.6;
 export const NPC_HALO_RX_PX = 15;
 /** Trait du halo de PNJ tel qu'il est ÉCRIT dans le SVG — la feuille l'écrase à `HALO_HOVER_STROKE_PX`
- *  (`anim.css:186`), ce halo portant toujours la classe `hovered` : c'est cette dernière valeur que la
- *  voie volumique reproduit. */
+ *  (`anim.css:186`), ce halo portant toujours la classe `hovered` : c'est cette dernière valeur que le
+ *  monde volumique reproduit. */
 export const NPC_HALO_STROKE_PX = 1.8;
 /** Descente du halo sous le centre de la case, en pixels d'écran (`cy + 4`). */
 export const HALO_CY_PX = 4;
@@ -42,8 +41,7 @@ export const SPARK_DY_PX = 26;
 export const SPARK_R_PX = 6;
 /** GLYPHE de l'étincelle : une étoile à QUATRE branches — pointes sur les axes de l'écran (rayon
  *  `SPARK_R_PX`), creux sur les diagonales. Le rayon des creux est la demi-diagonale du carré `1,7`
- *  qu'inscrit le tracé. Les DEUX voies dessinent ce polygone : l'affine par `sparkPathD`
- *  (`stage/tokens`), la volumique par le gabarit `unitStarGeometry`
+ *  qu'inscrit le tracé. Le rendu le dessine par le gabarit `unitStarGeometry`
  *  (`backends/webgl/interactHaloMeshes`) — un glyphe décrit deux fois divergerait au premier retouchage. */
 export const SPARK_BRANCHES = 4;
 export const SPARK_INNER_R_PX = 1.7 * Math.SQRT2;

@@ -24,7 +24,7 @@ import { RING_FRAME_K } from '../backends/webgl/highlightMeshes';
  * instances écrites, comptes dessinés).
  *
  * ORACLE RE-DÉRIVÉ (C5a). Le second terme était la voie AFFINE, qui traçait ces repères en SVG
- * (`stage/tokens.dynamicHighlightObjs` + l'anneau du corps `BodyToken`) ; elle est morte. Ce qu'elle
+ * (les jetons SVG du monde) ; elle est morte. Ce qu'elle
  * fournissait — l'ALLURE attendue — se re-dérive des mêmes constantes partagées, qui, elles, vivent :
  *   - le pointillé du lien : `TETHER_DASH_PX`/`TETHER_GAP_PX` sur la longueur écran d'un pas de case,
  *     à la sémantique du `stroke-dasharray` (un tiret est peint dès que son début tombe avant la fin) ;

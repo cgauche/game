@@ -1,20 +1,18 @@
 /**
  * LACET CONTINU de la caméra du stage (#1176, P2-7) — l'écart, en degrés, entre le lacet RÉELLEMENT
- * regardé et le cran de la vue (`camRot`/`camEdge`). La voie VOLUMIQUE seule le lit : le monde y est
- * une caméra réelle, qui accepte n'importe quel angle (`affineCamera(kind, yawDeg, …)`) et dont les
- * overlays SVG se re-projettent élément par élément (`Dims.yawDeg` → `tileCenter`). La voie affine
- * garde ses crans et son « dim-and-turn » — son atlas de sprites n'existe qu'aux crans.
+ * regardé et le cran de la vue (`camRot`/`camEdge`). Le monde est une caméra réelle, qui accepte
+ * n'importe quel angle (`affineCamera(kind, yawDeg, …)`) et dont les overlays SVG se re-projettent
+ * élément par élément (`Dims.yawDeg` → `tileCenter`).
  *
- * Hors du store Zustand, comme `state/stage3d.ts` dont il est le compagnon : `snapshotSave` sérialise
- * TOUTE clé de données de l'état initial, et un angle de vue vivant n'a rien à faire dans une
- * sauvegarde. Même patron que `state/viewLevel.ts` — le clavier le PILOTE, le rendu le LIT.
+ * Hors du store Zustand : `snapshotSave` sérialise TOUTE clé de données de l'état initial, et un angle
+ * de vue vivant n'a rien à faire dans une sauvegarde. Même patron que `state/viewLevel.ts` — le clavier
+ * le PILOTE, le rendu le LIT.
  *
  * DEUX angles, et c'est le cœur de la sensation : `cible` est là où le joueur veut regarder (une
  * touche = un quart de cran), `courant` est là où la caméra EST, et il y court à chaque frame. Un
  * seul angle donnerait un saut ; une file de crans donnerait une file d'attente.
  */
 import type { Rot } from '../geometry/iso';
-import { getStageBackend, subscribeStageBackend } from './stage3d';
 
 /** Constante de temps de l'approche (ms) : le lacet courant couvre ~63 % de son retard à chaque `TAU`. */
 const TAU_MS = 90;
@@ -39,14 +37,14 @@ const subs = new Set<() => void>();
 export const getStageYaw = (): number => courant;
 
 /** LACET DE VUE à poser sur un `Dims` cranté (`Dims.yawDeg`) : le cran de la caméra plus l'écart
- *  continu. `undefined` en voie AFFINE — ses crans font foi, et un `Dims` sans lacet ne change rien.
+ *  continu.
  *
  *  SOURCE UNIQUE de cette composition, et ce n'est pas un confort : TOUT ce qui traduit un geste
  *  ÉCRAN en case (le pas clavier d'exploration, le curseur de combat, la sonde de recette) doit voir
  *  le MÊME lacet que le peintre. Un seul de ces chemins resté au cran, et la direction qu'on pousse
  *  cesse d'être celle qu'on regarde. */
-export function viewYawDeg(camRot: number, camEdge: boolean): number | undefined {
-  return getStageBackend() === 'webgl' ? camRot * 90 + (camEdge ? 45 : 0) + courant : undefined;
+export function viewYawDeg(camRot: number, camEdge: boolean): number {
+  return camRot * 90 + (camEdge ? 45 : 0) + courant;
 }
 
 /** CRAN de vue atteint par un lacet : le cran de départ plus les quarts de tour PARCOURUS (arrondi au
@@ -55,16 +53,15 @@ export function rotAtYaw(camRot: number, yawOffsetDeg: number): Rot {
   return ((((camRot + Math.round(yawOffsetDeg / 90)) % 4) + 4) % 4) as Rot;
 }
 
-/** CRAN EFFECTIF de la vue : celui que le lacet RÉEL regarde, `undefined` en voie affine (le cran du
- *  store y fait foi).
+/** CRAN EFFECTIF de la vue : celui que le lacet RÉEL regarde.
  *
  *  Ce que le cran décide reste DISCRET — la géométrie de dégagement (quelle façade est frontale,
- *  quelle nappe coiffe le groupe) et les couches affines pré-triées, dont les memos ne doivent pas se
- *  rejouer soixante fois par seconde. Sous lacet libre, ce cran ne peut plus être celui du store :
+ *  quelle nappe coiffe le groupe) et les couches pré-triées, dont les memos ne doivent pas se rejouer
+ *  soixante fois par seconde. Sous lacet libre, ce cran ne peut plus être celui du store :
  *  après un demi-tour, `camRot` vaut toujours 0 et la façade tombée serait celle du départ. Il change
  *  au FRANCHISSEMENT d'un quart, et lui seul y fait rejouer ces memos. */
-export function viewRot(camRot: number): Rot | undefined {
-  return getStageBackend() === 'webgl' ? rotAtYaw(camRot, courant) : undefined;
+export function viewRot(camRot: number): Rot {
+  return rotAtYaw(camRot, courant);
 }
 
 export function subscribeStageYaw(f: () => void): () => void {
@@ -152,16 +149,11 @@ export function snapStageYawToCran(dir: 1 | -1): void {
   courirVers(snapYawTarget(courant, cible, dir));
 }
 
-/** Remet le lacet au cran. Deux coutures l'appellent : l'ENTRÉE DE SCÈNE (`startScene`/`transitionTo`,
- *  `state/store.ts` — une nouvelle carte se regarde depuis son cran) et la BASCULE DE VOIE, câblée
- *  juste dessous. Les tests s'en servent pour repartir du cran. */
+/** Remet le lacet au cran. Une couture l'appelle : l'ENTRÉE DE SCÈNE (`startScene`/`transitionTo`,
+ *  `state/store.ts` — une nouvelle carte se regarde depuis son cran). Les tests s'en servent pour
+ *  repartir du cran. */
 export function resetStageYaw(): void {
   cible = 0;
   courant = 0;
   notifier();
 }
-
-// BASCULE DE VOIE : quitter le volumique rend la main aux crans, y revenir repart du cran du store. Un
-// lacet survivant à l'aller-retour ferait sauter le monde d'un demi-tour au remontage. Le câblage vit
-// ICI et pas dans `stage3d.ts`, qui ne doit rien connaître du lacet (il en est la dépendance).
-subscribeStageBackend(resetStageYaw);

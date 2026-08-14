@@ -5,7 +5,6 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene, sceneMetresPerTile, type Scene, type SceneEntity } from '../../state/scene';
-import { setStageBackend } from '../../state/stage3d';
 import type { Combatant } from '../../engine/types';
 import type { Dims } from '../../geometry/iso';
 import { IsoStage } from '../IsoStage';
@@ -92,8 +91,7 @@ function survoler(t: { x: number; y: number; z?: number } | null): void {
   act(() => w.__wfrpSetHover!(t));
 }
 
-function monter(backend: 'affine' | 'webgl', flags: Record<string, boolean> = {}): HTMLDivElement {
-  setStageBackend(backend);
+function monter(flags: Record<string, boolean> = {}): HTMLDivElement {
   useGame.setState({
     scene: scèneAvecCoffre(),
     mode: 'exploration',
@@ -152,13 +150,12 @@ afterAll(() => setStageRendererFactory(null));
 
 afterEach(() => {
   démonter();
-  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
   vi.restoreAllMocks();
 });
 
 describe('Halos d’interaction — le monde volumique peint l’affordance (#1176 P3-0g)', () => {
   it('un décor fouillable appelle le joueur', () => {
-    monter('webgl');
+    monter();
     const p = poolsVolumiques();
     expect(Object.keys(p).sort(), 'les huit pools sont montés d’emblée').toEqual(HALO_SLOTS.slice().sort().map((s) => s));
     expect(p.fouilleDisque.count, 'le disque du halo').toBe(1);
@@ -169,24 +166,24 @@ describe('Halos d’interaction — le monde volumique peint l’affordance (#11
   });
 
   it('ÉPUISEMENT : le flag `__fouille_<id>` éteint le halo', () => {
-    monter('webgl', { __fouille_coffre: true });
+    monter({ __fouille_coffre: true });
     expect(totalVolumique(), 'un coffre vidé n’appelle plus').toBe(0);
     démonter();
 
     // TÉMOIN : sans le flag, quelque chose est bien peint (le test ci-dessus ne mesure pas seulement
     // une scène vide).
-    monter('webgl');
+    monter();
     expect(totalVolumique()).toBeGreaterThan(0);
   });
 
   it('AUCUNE DOUBLE PEINTURE : le SVG posé par-dessus le monde ne peint plus aucun halo', () => {
-    monter('webgl');
+    monter();
     expect(comptesAffines(conteneur!)).toEqual({ halo: 0, ping: 0, spark: 0 });
     expect(totalVolumique()).toBeGreaterThan(0);
   });
 
   it('le halo volumique est au PIED du décor, au rayon que la loi de halo demande', () => {
-    monter('webgl');
+    monter();
     const mpt = sceneMetresPerTile(emptyScene(10, 10));
     const m = new THREE.Matrix4();
     const pos = new THREE.Vector3();
@@ -206,7 +203,7 @@ describe('Halos d’interaction — le monde volumique peint l’affordance (#11
   });
 
   it('un PNJ INTERLOCUTEUR n’appelle qu’au SURVOL', () => {
-    monter('webgl');
+    monter();
     expect(poolsVolumiques().pnjDisque.count, 'sans survol : aucun halo de PNJ').toBe(0);
     survoler({ x: marchand.pos!.x, y: marchand.pos!.y, z: 0 });
     const p = poolsVolumiques();
@@ -217,7 +214,7 @@ describe('Halos d’interaction — le monde volumique peint l’affordance (#11
   });
 
   it('SUPPRESSION : le halo retiré vide ses pools AU RENDU, sans attendre un battement', () => {
-    monter('webgl');
+    monter();
     expect(totalVolumique(), 'témoin : le coffre appelle').toBeGreaterThan(0);
     const frames = scènes.length;
     // Le décor est fouillé : c'est le RENDU qui doit vider les pools — la boucle de pulsation ne bat

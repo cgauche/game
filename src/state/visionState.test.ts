@@ -143,7 +143,7 @@ describe('computeStateVisibleAndLight — vue + lumière en un seul calcul (mutu
 describe('REVEAL_ALL (brouillard OFF) — le `visible` de la carte entière garde son IDENTITÉ par scène', () => {
   // L'identité du Set compte autant que son contenu : c'est ELLE que les memos du rendu observent
   // (`buildFloors`/`buildWalls` la reçoivent via `visible`). Un Set réalloué à chaque pas leur fait
-  // reprojeter toute la carte et vide le cache d'éléments de `CulledScene` — mesuré sur « La Diligence ».
+  // reprojeter toute la carte et vide le cache d'éléments du monde — mesuré sur « La Diligence ».
   const withRevealAll = <T>(run: () => T): T => {
     setRevealAll(true);
     try { return run(); } finally { setRevealAll(false); }

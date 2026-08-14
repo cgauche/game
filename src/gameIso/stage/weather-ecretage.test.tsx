@@ -5,7 +5,6 @@ import * as THREE from 'three';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { useGame } from '../../state/store';
 import { emptyScene, sceneMetresPerTile, type BuildingMass, type Scene } from '../../state/scene';
-import { setStageBackend } from '../../state/stage3d';
 import { setRevealAll } from '../../state/visionState';
 import type { Combatant } from '../../engine/types';
 import { IsoStage } from '../IsoStage';
@@ -142,7 +141,6 @@ afterAll(() => {
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (conteneur) { conteneur.remove(); conteneur = null; }
-  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
 describe('Météo volumique — écrêtage au cutaway (#1247)', () => {
@@ -160,7 +158,6 @@ describe('Météo volumique — écrêtage au cutaway (#1247)', () => {
   });
 
   it('TOIT VU (groupe dehors) : la pluie tombe au-dessus du toit — rien n’est écrêté', () => {
-    setStageBackend('webgl');
     const scene = scèneCouverte();
     poser(scene, DEHORS);
     monter();
@@ -172,7 +169,6 @@ describe('Météo volumique — écrêtage au cutaway (#1247)', () => {
   });
 
   it('TOIT LEVÉ (groupe dessous) : AUCUNE particule rendue sur ses colonnes, la pluie continue ailleurs', () => {
-    setStageBackend('webgl');
     const scene = scèneCouverte();
     poser(scene, SOUS_TOIT);
     monter();
@@ -185,7 +181,6 @@ describe('Météo volumique — écrêtage au cutaway (#1247)', () => {
   });
 
   it('le CHAMP ne se re-sème pas au cutaway : même semis, même compte, d’un cas à l’autre', () => {
-    setStageBackend('webgl');
     const scene = scèneCouverte();
     poser(scene, DEHORS);
     monter();
@@ -203,7 +198,6 @@ describe('Météo volumique — écrêtage au cutaway (#1247)', () => {
   });
 
   it('la NAPPE de brume ne se rebâtit pas au pas du groupe : le MÊME mesh d’un pas à l’autre', () => {
-    setStageBackend('webgl');
     const scene = scèneCouverte();
     scene.weather = 'brouillard'; // le type qui porte des nappes en donnée
     poser(scene, DEHORS);

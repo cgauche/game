@@ -1,6 +1,6 @@
 /**
  * Couche STATIQUE des MURS pour le PLAN DE STATION (`gameIso/TopoScene`) : les éléments du builder
- * (`builders/walls`, camera-free) projetés en trait symbolique par le backend `backends/affineWalls`,
+ * (`builders/walls`, camera-free) projetés en trait symbolique par le peintre `authoring/wallsSvg`,
  * puis triés par `stage/objs`.
  *
  * C'est tout ce qui reste de l'assemblage de couches SVG : la voie de JEU affine est morte
@@ -14,8 +14,8 @@
 import { projectOccluder, type Dims } from '../../geometry/iso';
 import { memoByRefDeps } from '../../state/sceneMemo';
 import { panelOf } from './occluders';
-import { wallSvg, wallAccentsSvg, wallDepth } from '../backends/affineWalls';
-import type { DetailOpts } from '../backends/affineDetail';
+import { wallSvg, wallAccentsSvg, wallDepth } from '../authoring/wallsSvg';
+import type { DetailOpts } from '../authoring/detailSvg';
 import type { WallEl } from '../builders/types';
 import type { StageObj } from './objs';
 

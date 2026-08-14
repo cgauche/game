@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { EditorCanvas } from './EditorCanvas';
@@ -9,7 +9,6 @@ import { tileCenter } from '../../geometry/iso';
 import { DEFAULT_LAYERS } from './editorState';
 import type { LowerLayerMode } from './lowerLayerGabarit';
 import type { PlanDefectAt } from '../../state/planDefects';
-import { setStageBackend } from '../../state/stage3d';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -134,12 +133,10 @@ describe('EditorCanvas — panoramique (clic-milieu / Espace + glisser)', () => 
 });
 
 describe('EditorCanvas — pelure d’oignon des TOITS (#835 FU-2)', () => {
-  // Les sondes de ce bloc lisent la SCÈNE PEINTE DANS LE SVG (groupe des sols, nappes de toit) : c'est
-  // la voie AFFINE qui l'émet. Sur la voie volumique — le défaut du jeu (#1176 P3-4) — le canevas la
-  // peint dessous et le SVG ne garde que les surcouches d'authoring ; la pelure d'oignon y est mesurée
-  // par `editeur-monde-volumique.test.tsx`. D'où l'armement EXPLICITE, et le retour au défaut ensuite.
-  beforeAll(() => setStageBackend('affine'));
-  afterAll(() => setStageBackend('webgl'));
+  // Les sondes de ce bloc lisent ce que le SVG d'authoring émet ENCORE : les nappes de toit en PLAN
+  // étiqueté (`roofSvg({ plan: true })`), une vue d'auteur que le canevas ne cuit pas. La matière du
+  // monde (sols, murs, corps) est peinte par le canevas volumique, et sa pelure d'oignon est mesurée
+  // par `editeur-monde-volumique.test.tsx`.
 
   /** Emprise BÂTIE de l'étage — le beffroi et rien d'autre : un étage se pose sur du plancher, le
    *  reste de la couche est du vide au-dessus du rez. */
@@ -207,8 +204,6 @@ describe('EditorCanvas — pelure d’oignon des TOITS (#835 FU-2)', () => {
       );
     });
     const html = container.innerHTML;
-    // Premier `<g>` du SVG = groupe des SOLS : un enfant par case émise, toutes couches confondues.
-    const floors = container.querySelector('svg.editor-iso > g')?.children.length ?? 0;
     // Groupes portant une opacité PROPRE = les nappes atténuées de la couche active (le gabarit du
     // dessous passe, lui, par un filtre CSS). Une masse rend plusieurs éléments de nappe : on relève
     // les libellés DISTINCTS, plus la liste des opacités appliquées.
@@ -217,7 +212,7 @@ describe('EditorCanvas — pelure d’oignon des TOITS (#835 FU-2)', () => {
     const attenuation = groupes.map((g) => Number(g.getAttribute('opacity')));
     await act(async () => root.unmount());
     container.remove();
-    return { html, floors, attenues, attenuation };
+    return { html, attenues, attenuation };
   }
 
   it('à la couche ACTIVE : la nappe est ÉMISE mais ATTÉNUÉE — le calque « Toits » garde son sens au dernier étage', async () => {
@@ -251,7 +246,7 @@ describe('EditorCanvas — pelure d’oignon des TOITS (#835 FU-2)', () => {
   });
 
   describe('mode ISOLÉE : seule la couche active est dessinée', () => {
-    it('à l’étage, rien du rez n’est émis — ni sa nappe de toit, ni ses cases de sol', async () => {
+    it('à l’étage, la nappe de toit du rez n’est plus émise du tout', async () => {
       const gabarit = await renderAt(1, 'gabarit');
       const isolee = await renderAt(1, 'isolee');
 
@@ -259,8 +254,6 @@ describe('EditorCanvas — pelure d’oignon des TOITS (#835 FU-2)', () => {
       expect(isolee.html.includes('Appentis')).toBe(false); // le toit du rez a disparu, pas seulement pâli
       expect(isolee.html.includes('Beffroi')).toBe(true); // la couche active, elle, reste dessinée
       expect(/filter[^;"]*(saturate|opacity|grayscale)/i.test(isolee.html)).toBe(false); // aucun groupe voilé
-      expect(isolee.floors).toBe(BEFFROI.w * BEFFROI.h); // le plancher de l'étage, et lui seul
-      expect(gabarit.floors).toBeGreaterThan(isolee.floors); // le mode gabarit, lui, empile les deux
       expect(gabarit.html).toContain('Appentis');
     });
   });

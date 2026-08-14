@@ -36,10 +36,11 @@ export function pxPerM(mpt: number): number {
   return (TW * Math.SQRT1_2) / mpt;
 }
 
-/** Largeurs ÉCRAN (px) des montants chez le backend affine — `affineWalls.ts:25` (poteau),
- *  `affineWalls.ts:26` (jambage), `affineFloors.ts:33` (pilier de surplomb). L'affine ne les exporte
- *  pas : ces trois nombres existent DEUX fois dans le dépôt, et une largeur de montant se mesure ici en
- *  pixels d'écran. Inscrit au registre des fossiles de transition (#1176). */
+/** Largeurs ÉCRAN (px) des montants — les mêmes que celles des peintres d'authoring
+ *  (`authoring/wallsSvg.ts` : poteau, jambage ; `authoring/floorsSvg.ts` : pilier de surplomb), qui ne
+ *  les exportent pas. Ces trois nombres existent donc DEUX fois dans le dépôt ; les importer ferait
+ *  dépendre le monde du jeu d'un peintre d'AUTHORING (frontière : `authoring/project.ts`). Inscrit au
+ *  registre des fossiles de transition (#1176). */
 const UPRIGHT_PX: Record<string, number> = { poteau: 3.8, jambage: 3.6, pilier: 5 };
 
 /** Séparation métrique d'un cran de rang coplanaire. */

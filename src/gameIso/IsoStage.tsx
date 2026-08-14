@@ -38,7 +38,7 @@ import { dynamicMarks } from './builders/dynamicMarks';
 import { interactionHalos } from './builders/interactHalos';
 import { tokenChromes, type TokenChromeMark } from './builders/tokenChrome';
 import { TokenChromeOverlay } from './stage/TokenChromeOverlay';
-import { type WalkPos } from './stage/tokens';
+import { type WalkPos } from './fx/walkPose';
 import { actorCapsuleOf } from './stage/actorCapsule';
 import { VolumetricWorld } from './stage/VolumetricWorld';
 import { SansWebgl, useWebglRefusé } from './stage/SansWebgl';

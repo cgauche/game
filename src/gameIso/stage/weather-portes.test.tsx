@@ -5,7 +5,6 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene, type Scene } from '../../state/scene';
-import { setStageBackend } from '../../state/stage3d';
 import type { Combatant } from '../../engine/types';
 import { IsoStage } from '../IsoStage';
 import { AMBIANCE, weatherLightScalars } from '../catalog/ambiance';
@@ -14,7 +13,7 @@ import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 /**
  * PORTES DE LA MÉTÉO (#1176, P2-6) — une météo authorée a UNE expression par voie, jamais deux, et
  * jamais dedans :
- *  - voie AFFINE : le voile d'écran (`stage/WeatherVeil.tsx`), gaté sur l'ambiance comme les voiles
+ *  - EN SVG : un voile d'écran, gaté sur l'ambiance comme les voiles
  *    d'ambiance le sont depuis toujours ;
  *  - voie VOLUMIQUE : le semis qui TOMBE dans le monde (`data-precip` sur le canevas), et plus de
  *    voile — la précipitation le remplace ;
@@ -90,22 +89,18 @@ const fond = (el: HTMLElement) => canevas(el)?.getAttribute('data-bg') ?? null;
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (container) { container.remove(); container = null; }
-  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
 describe('Météo — UNE expression, celle du monde volumique (#1176 P2-6)', () => {
   it('extérieur pluvieux : le SEMIS tombe, et aucun voile d’écran ne se monte', () => {
-    setStageBackend('webgl');
     const el = monter('pluie');
     expect(Number(semis(el))).toBeGreaterThan(0);
     expect(voile(el, 'pluie')).toBeNull();
     expect(el.querySelectorAll('.wx-p').length).toBe(0); // ni teinte, ni stries d'écran
   });
 
-  it('INTÉRIEUR : ni voile ni semis, quelle que soit la voie et quelle que soit la météo authorée', () => {
-    for (const voie of ['affine', 'webgl'] as const)
-      for (const meteo of ['pluie', 'neige', 'tempete'] as const) {
-        setStageBackend(voie);
+  it('INTÉRIEUR : ni voile ni semis, quelle que soit la météo authorée', () => {
+    for (const meteo of ['pluie', 'neige', 'tempete'] as const) {
         const el = monter(meteo, 'interieur');
         expect(voile(el, meteo)).toBeNull();
         expect(el.querySelectorAll('.wx-p').length).toBe(0);
@@ -117,9 +112,8 @@ describe('Météo — UNE expression, celle du monde volumique (#1176 P2-6)', ()
       }
   });
 
-  it('météo CLAIRE : rien ne tombe et aucune strie ne traverse l’écran, des deux côtés', () => {
-    for (const voie of ['affine', 'webgl'] as const) {
-      setStageBackend(voie);
+  it('météo CLAIRE : rien ne tombe et aucune strie ne traverse l’écran', () => {
+    {
       const el = monter('clair');
       expect(semis(el)).toBeNull();
       expect(el.querySelectorAll('.wx-p').length).toBe(0);
@@ -131,7 +125,6 @@ describe('Météo — UNE expression, celle du monde volumique (#1176 P2-6)', ()
   });
 
   it('le BROUILLARD ne fait tomber aucune particule (il n’a pas de `precip` en donnée)', () => {
-    setStageBackend('webgl');
     const el = monter('brouillard');
     expect(semis(el)).toBeNull();
     expect(AMBIANCE.iso.weather.brouillard?.precip, 'témoin : la donnée n’en porte pas').toBeUndefined();
@@ -151,7 +144,6 @@ const AUTHORÉES = (['pluie', 'brouillard', 'neige', 'tempete'] as const);
 
 describe('Météo volumique — brume, lumière et fond (#1247)', () => {
   it('BROUILLARD en volumique : des nappes de brume, et toujours aucune particule', () => {
-    setStageBackend('webgl');
     const el = monter('brouillard');
     expect(semis(el)).toBeNull();
     expect(Number(nappes(el)), 'le brouillard doit avoir une expression volumique').toBe(
@@ -161,7 +153,6 @@ describe('Météo volumique — brume, lumière et fond (#1247)', () => {
 
   it('les types SANS brume authorée n’en montent aucune (la pluie, la neige)', () => {
     for (const meteo of ['pluie', 'neige'] as const) {
-      setStageBackend('webgl');
       const el = monter(meteo);
       expect(AMBIANCE.iso.weather[meteo]?.brume, 'témoin : la donnée n’en porte pas').toBeUndefined();
       expect(nappes(el)).toBeNull();
@@ -173,12 +164,10 @@ describe('Météo volumique — brume, lumière et fond (#1247)', () => {
   });
 
   it('INTÉRIEUR : aucune nappe, même sous un brouillard authoré (la porte est celle des deux voies)', () => {
-    setStageBackend('webgl');
     expect(nappes(monter('brouillard', 'interieur'))).toBeNull();
   });
 
   it('la TEMPÊTE éteint la lumière et teinte le fond ; le beau temps ne touche ni l’un ni l’autre', () => {
-    setStageBackend('webgl');
     const clair = monter('clair');
     const lumClair = exposition(clair);
     const fondClair = fond(clair);
@@ -194,7 +183,6 @@ describe('Météo volumique — brume, lumière et fond (#1247)', () => {
 
   it('CÂBLAGE : l’exposition de la frame est le facteur météo de la donnée partagée, dans le bon sens', () => {
     // Référence de beau temps, une fois pour toutes les météos.
-    setStageBackend('webgl');
     const clair = monter('clair');
     const lumClair = exposition(clair);
     act(() => root!.unmount());
@@ -204,7 +192,6 @@ describe('Météo volumique — brume, lumière et fond (#1247)', () => {
 
     for (const meteo of AUTHORÉES) {
       const { dim } = weatherLightScalars({ weather: meteo, ambiance: 'exterieur' });
-      setStageBackend('webgl');
       const vol = monter(meteo);
       // Le facteur APPARIÉ EN LUMINANCE de la dérivation partagée arrive tel quel sur l'exposition de
       // la frame — c'est le câblage. Comparaison ABSOLUE au millième : la trace `data-lum` est
@@ -222,7 +209,6 @@ describe('Météo volumique — brume, lumière et fond (#1247)', () => {
   it('les types à brume sont ceux que la DONNÉE désigne — aucun nom de météo au code', () => {
     expect(AVEC_BRUME.length).toBeGreaterThan(0);
     for (const meteo of AVEC_BRUME) {
-      setStageBackend('webgl');
       const el = monter(meteo);
       expect(Number(nappes(el))).toBe(AMBIANCE.iso.weather[meteo]!.brume!.layers.length);
       act(() => root!.unmount());

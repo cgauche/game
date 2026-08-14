@@ -81,7 +81,7 @@ function sansDéfine(glsl: string): string {
  *  de ce banc (et débarrassé du bloc si un autre banc du même worker a déjà installé la surcharge). */
 const CHUNK_SANS_DEFINE = sansDéfine(THREE.ShaderChunk.fog_fragment);
 
-/** Les SIX scènes-témoins de l'écran de spike (`SpikeScreen.tsx`) — la population que l'utilisateur juge. */
+/** Les SIX scènes-témoins du chantier de rendu — la population que l'utilisateur juge. */
 const TEMOINS: [string, () => Scene][] = [
   ['siege-enceinte', () => scene],
   ['pont-vitrine', () => pontVitrine.scene],
@@ -275,7 +275,7 @@ describe('LUMIÈRE — un soleil neutre et calibré', () => {
     expect(c.r).toBeGreaterThan(0.9); // et à pleine luminance : la lumière n'assombrit pas non plus
   });
 
-  // Le RENDU réel se juge sur planche (`scripts/qc/spike-webgl.mjs`) — ici, seul le réglage est tenu :
+  // Le RENDU réel se juge sur planche (`scripts/qc/capture-jeu.mjs`) — ici, seul le réglage est tenu :
   // sous le lambertien de three, une nappe au sol reçoit `AMBIENT + SUN·sin(élévation)` et une face dos au
   // soleil `AMBIENT`, soit un contraste `1 + sin(élévation)·SUN/AMBIENT`.
   it('le contraste nappe ÷ dos au soleil vaut 2,16 à 10 % près, l’ambiante ne descend pas au noir', () => {
@@ -350,7 +350,7 @@ describe('LUMIÈRE — un soleil neutre et calibré', () => {
   // ── Le biais de normale grandit avec la scène (il vaut 3 texels de carte d'ombre, et un texel
   // couvre `2 × rayon / 2048` mètres) : un relief plus mince que lui se noie dans sa propre ombre.
   // La garde se joue donc scène par scène, sur la boîte des CASTEURS (géométrie + quads de billboard,
-  // `worldShadowBox` — le chemin de l'écran, `SpikeScreen.tsx`), au PIRE des trois conventions de
+  // `worldShadowBox` — le chemin de l'écran), au PIRE des trois conventions de
   // taille offertes. Une scène plus large que l'opéra rougit ICI, au lieu de noyer le relief en silence.
   const MIN_RELIEF_M = Math.min(
     FASCIA_THICK_M,
@@ -829,7 +829,7 @@ describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde',
     let vérifiées = 0;
     const parts = new Set<string>();
     for (const el of murs) {
-      // Ce que le backend affine passe à `variantOf` pour CE mur (`affineWalls.ts`, `coursesOverlaySvg`).
+      // Ce que le backend affine passe à `variantOf` pour CE mur (`authoring/wallsSvg.ts`, `coursesOverlaySvg`).
       const attendu = variantOf(el.cell, el.side);
       for (const f of el.faces) {
         const w = parFace.get(f);
@@ -878,7 +878,7 @@ describe('GROUPES DE SURFACE — la géométrie reste UNE, le dessin se scinde',
   });
 
   it('AUCUNE face hors part `face` ne se colombe — parité avec ce que le backend affine habille', () => {
-    // `affineWalls.ts:160` cherche la face `part === 'face'` d'un mur, `affineWalls.ts:227` écarte tout
+    // `authoring/wallsSvg.ts` cherche la face `part === 'face'` d'un mur, `authoring/wallsSvg.ts` écarte tout
     // le reste avant le colombage de la l.251, et `structureFaceSvg` (l.209) ne reçoit que des
     // fermetures de comble authorées `part: 'face'`. Une cuisson posée ailleurs (poteau, plinthe,
     // vitre…) peint des poutres là où le SVG n'en met aucune.

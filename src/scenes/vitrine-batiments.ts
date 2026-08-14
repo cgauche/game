@@ -4,8 +4,7 @@
  * de chapelle, étal d'échoppe). Aucune LOGIQUE de jeu : c'est une scène de VITRINE de rendu.
  *
  * Elle vit sous `src/scenes/` (et non dans `scripts/qc/`) parce qu'elle a DEUX consommateurs de camps
- * opposés : la planche headless `scripts/qc/render-env.mts` (resvg, Node) et l'écran de spike WebGL
- * `src/gameIso/backends/webgl/SpikeScreen.tsx` (Vite, navigateur) — une spec importée par l'app ne peut
+ * opposés : les bancs de rendu (Node) et l'app (Vite, navigateur) — une spec importée par l'app ne peut
  * pas vivre dans `scripts/`. Elle reste HORS de `test-scenarios/` : ce n'est pas un scénario jouable
  * (pas de groupe, pas de registre `_registry.generated.ts`, aucune entrée au menu des scénarios).
  */

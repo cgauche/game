@@ -4,7 +4,7 @@ import { roofMaterials } from '../../../data';
 import { MISSING_ID, MISSING_TONE } from '../missing';
 
 // Le couplage donnée → rendu (teintes par pan, liseré, rangs) est testé côté backend
-// (`backends/affineRoofs.test.ts`) ; ici, la DONNÉE seule.
+// (`authoring/roofsSvg.test.ts`) ; ici, la DONNÉE seule.
 describe('apparence de toit (JSON pur iso/plan)', () => {
   it('les 4 matériaux sont présents', () => {
     const ids = roofMaterials.map((m) => m.id).sort();

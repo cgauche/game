@@ -17,7 +17,7 @@
  *    rendues par une sinusoïde et une quadratique de MÊMES bornes et MÊME cadence ; la forme diffère de
  *    quelques centièmes en milieu de course.
  *  — DESCENTE ÉCRAN du halo : la voie affine pose ses ellipses `HALO_CY_PX` px SOUS le centre de case
- *    (`stage/tokens`), la voie volumique pose son cercle AU centre — un cercle couché au sol n'a pas
+ *    le monde volumique pose son cercle AU centre — un cercle couché au sol n'a pas
  *    d'axe d'écran où descendre sans quitter ce sol.
  *  — LUEUR de survol : le double `drop-shadow` de `.interact-halo.hovered` (`anim.css:184`) n'a pas
  *    d'équivalent ici — un filtre d'écran ne se pose pas sur une instance.
@@ -220,7 +220,7 @@ function poserAnneauDeHalo(
  *  que la voie affine décale le sien (droite `SPARK_DX_PX`, haut `SPARK_DY_PX`, flottement compris).
  *
  *  CE QUI SUIT L'ÉCHELLE DU DÉCOR, ET CE QUI NE LA SUIT PAS : la voie affine met à l'échelle la seule
- *  POSITION du glyphe (`translate(cx + SPARK_DX_PX·scale, cy − SPARK_DY_PX·scale)`, `stage/tokens`) ;
+ *  POSITION du glyphe (`translate(cx + SPARK_DX_PX·scale, cy − SPARK_DY_PX·scale)`) ;
  *  son tracé garde ses 6 px et son flottement ses 4 px (`anim.css:199`), quel que soit le décor. La
  *  taille et la montée sont donc INVARIANTES de `h.scale` ici aussi.
  *
@@ -301,7 +301,7 @@ export function poseInteractHalos(pools: HaloPools, halos: InteractionHalos, f: 
     if (étincelles) n.fouilleEtincelle = poserEtincelle(étincelles, n.fouilleEtincelle, h, spark.risePx, f);
   }
   for (const p of halos.pnjs)
-    // Le halo de PNJ porte TOUJOURS la classe `hovered` (`stage/tokens.npcHoverHaloObjs`) : même
+    // Le halo de PNJ porte TOUJOURS la classe `hovered` (`anim.css`) : même
     // agrandissement, même trait épaissi, même cadence rapide que la variante de survol d'une fouille.
     poserAnneauDeHalo(
       pools,

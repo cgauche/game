@@ -5,27 +5,22 @@
  * Les overlays sont en `pointer-events: none` : tout le picking passe par `hitAt` (les calques
  * masqués laissent cliquer à travers). La logique de mutation vit dans `editorState` (pur).
  */
-import { useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { Scene, sceneMetresPerTile, heightAt, isDescriptiveZone, type SceneEffectZone } from '../../state/scene';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Scene, sceneMetresPerTile, isDescriptiveZone, type SceneEffectZone } from '../../state/scene';
 import { sceneZoneTiles } from '../../state/zones';
 import { Dims, diamondPath, tileCenter, tileEdge, type EdgeSide, screenToTileAtZ, screenToTileF, stageSize, depth, TH } from '../../geometry/iso';
 import { buildProps } from '../../gameIso/builders/props';
-import { propLayerObjs, type TokenCtx } from '../../gameIso/stage/tokens';
-import { metricToLift } from '../../state/relief';
-import { EntityToken } from '../../gameIso/EntityToken';
 import { footprintTiles, sizeFootprint } from '../../state/footprint';
 import { entitySize } from '../../state/spawn';
 import { buildFloors } from '../../gameIso/builders/floors';
-import { floorSvg, floorAccentsSvg } from '../../gameIso/backends/affineFloors';
-import { buildWalls } from '../../gameIso/builders/walls';
-import { wallDepth, wallSvg, wallAccentsSvg } from '../../gameIso/backends/affineWalls';
+import { floorSvg } from '../../gameIso/authoring/floorsSvg';
 import { buildRoofs } from '../../gameIso/builders/roofs';
-import { roofDepth, roofSvg } from '../../gameIso/backends/affineRoofs';
-import { detailPatternDefs, lodOf, LOD_ZOOM } from '../../gameIso/backends/affineDetail';
+import { roofDepth, roofSvg } from '../../gameIso/authoring/roofsSvg';
+import { detailPatternDefs, lodOf, LOD_ZOOM } from '../../gameIso/authoring/detailSvg';
 import { editorLowerLayerFilterCss } from '../../gameIso/catalog/ambiance';
 import { ViewControls } from '../ViewControls';
 import { IconG } from '../Icon';
-import { transformToSvg, nearestNode, type CalibStep, type TraceTransform } from '../../state/traceCalibration';
+import { nearestNode, type CalibStep, type TraceTransform } from '../../state/traceCalibration';
 import type { useEditorView } from './useEditorView';
 import { effectiveLowerLayerMode, gabaritTint, layerHidden, type LowerLayerMode } from './lowerLayerGabarit';
 import { projectedRangeAxes } from './lampMarker';
@@ -36,7 +31,6 @@ import {
   toggleEdgeWall, toggleDiagonalWall, paintHeight, paintCrenellated, paintEffectZone, nearestEdge, canonEdge, pickWallEdge, pickArchitectureEdge, addFacadeSection,
 } from './editorState';
 import { planFocusTiles, type PlanDefectAt } from '../../state/planDefects';
-import { getStageBackend, subscribeStageBackend } from '../../state/stage3d';
 import { GameStage3D } from '../../gameIso/stage/GameStage3D';
 import { buildTokens } from '../../gameIso/builders/tokens';
 import type { ActorPose, KeepEl, TintAt } from '../../gameIso/backends/webgl/sceneMeshes';
@@ -55,7 +49,7 @@ const TEXT_INK = 'var(--shadow-ink)';
 
 /** Opacité de la nappe de toit posée SUR la couche active : la couverture reste repérable et cliquable,
  *  mais le plancher, les murs et le libellé de pièce qu'on est en train de tracer se lisent au travers
- *  (l'aplat de plan de `affineRoofs.ts` est déjà semi-transparent, deux couches suffisent à noyer le
+ *  (l'aplat de plan de `authoring/roofsSvg.ts` est déjà semi-transparent, deux couches suffisent à noyer le
  *  trait). Portée par le groupe ENGLOBANT, une seule fois. */
 const ACTIVE_LAYER_ROOF_OPACITY = 0.25;
 
@@ -258,8 +252,6 @@ export function EditorCanvas({
 }) {
   const { rot, setRot, viewMode, setViewMode, view: vb, setView, zoomAt, spaceRef, panRef, canvasRef, wrapRef, stageRef } = view;
   const dims: Dims = { ...scene.dimensions, rot, view: viewMode };
-  // MÊME `liftAt` que le jeu (IsoStage) — un décor levé (ornement de toit) lit le relief IDENTIQUEMENT.
-  const liftAt = (x: number, y: number, z = 0) => metricToLift(heightAt(scene, Math.round(x), Math.round(y), z));
   const stage = stageSize(dims);
   stageRef.current = stage; // le zoom centré (molette/boutons) lit la taille à jour
   const LOWER_LAYER_FILTER = useMemo(() => editorLowerLayerFilterCss(lowerLayerOpacity), [lowerLayerOpacity]);
@@ -275,71 +267,25 @@ export function EditorCanvas({
   const modeMonde = effectiveLowerLayerMode(lowerLayerMode, lowerLayerOpacity);
   const zHiddenMonde = (z: number) => layerHidden(z, currentLayer, modeMonde);
 
-  // ── VOIE DE RENDU DU MONDE (#1176, P3-3) : le MÊME interrupteur de chantier que le jeu
-  // (`state/stage3d.ts`, patron `IsoStage.tsx` / `PovStage.tsx`). En volumique, ce SVG ne peint plus
-  // la scène (sols, murs, toits, décor, corps des jetons) — le canevas la peint DESSOUS — mais il
-  // reste monté, et reçoit tout : les 14 familles de surcouches d'authoring et TOUS les événements
-  // pointeur. Le picking ne change pas d'un iota : il est purement GÉOMÉTRIQUE (`localXY` →
-  // `screenToTileAtZ`), et cet écran n'inscrit AUCUN picker de sprite (`spritePicking={false}`).
-  const stageBackend = useSyncExternalStore(subscribeStageBackend, getStageBackend, getStageBackend);
-  const webgl = stageBackend === 'webgl';
+  // CE SVG NE PEINT PLUS LA SCÈNE (#1176, P3-4) : le canevas volumique la peint DESSOUS (sols, murs,
+  // toits de matière, décor, corps des jetons). Il reste monté, et reçoit tout : les 14 familles de
+  // surcouches d'authoring et TOUS les événements pointeur. Le picking est purement GÉOMÉTRIQUE
+  // (`localXY` → `screenToTileAtZ`), et cet écran n'inscrit AUCUN picker de sprite (`spritePicking={false}`).
+
   // ZONES : chemins bâtis 1× par (emprise, caméra) — le tableau `effectZones` est remplacé à chaque
   // coup de pinceau, donc la dépendance suffit à rendre le retour IMMÉDIAT sans recalculer les 739
   // cases de zone de La Diligence au moindre mouvement de pointeur.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const zoneDraws = useMemo(() => buildZoneDraws(scene.effectZones, dims), [scene.effectZones, scene.dimensions, rot, viewMode]);
 
   // MATÉRIAUX v2 : palier de LOD dérivé du zoom de l'éditeur (WYSIWYG avec le jeu) — les memos
-  // dépendent du PALIER (pas du zoom continu), l'expansion des ACCENTS reste un thunk paresseux
-  // exécuté au rendu (sols : après le culling `inView`) puis mis en cache.
+  // dépendent du PALIER (pas du zoom continu), l'aperçu de trait le passe au peintre d'authoring.
   const lod = lodOf(vb.zoom);
   const mpt = sceneMetresPerTile(scene);
   const detailOpts = useMemo(() => ({ zoom: LOD_ZOOM[lod], mpt }), [lod, mpt]);
   // `dims` dérive de (scene.dimensions, rot, viewMode) — deps couvertes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const patternDefs = useMemo(() => (lod >= 1 ? detailPatternDefs(dims, mpt) : ''), [scene, lod, rot, viewMode, mpt]);
-
-  // SOLS par le pipeline pivot : bâtis 1× par SCÈNE (builder camera-free), dessinés 1× par CAMÉRA
-  // (backend affine) — un déplacement de pointeur (re-rendus fréquents de l'éditeur) ne rebâtit plus
-  // aucune chaîne SVG. COUCHE ACTIVE (`currentLayer`) = seule couche pleinement peinte ; le DESSOUS
-  // (z < currentLayer) est émis en gabarit d'alignement (voile `LOWER_LAYER_FILTER` posé au rendu) et
-  // le DESSUS masqué (`buildFloors` n'émet, au-delà de `activeZ`, que les surplombs fantômes — écartés
-  // ICI : l'éditeur ne montre PAS un tablier flottant qu'on ne peut pas éditer).
-  const floorEls = useMemo(
-    () => (webgl ? [] : buildFloors(scene, undefined, { activeZ: currentLayer }).filter((el) => !zHidden(el.cell.z))),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [scene, currentLayer, lowerLayerMode, webgl],
-  );
-  const floorRows = useMemo(
-    () =>
-      floorEls.map((el) => {
-        const { cx, cy } = tileCenter(el.cell.x, el.cell.y, dims);
-        let accCache: string | null = null;
-        const acc = lod === 2 ? () => (accCache ??= floorAccentsSvg(el, dims, detailOpts)) : undefined;
-        return { key: el.key, cx, cy, z: el.cell.z, html: floorSvg(el, dims, detailOpts), acc };
-      }),
-    // `dims` dérive de (scene.dimensions, rot, viewMode) : dimensions couvertes par floorEls (⊂ scene).
-    [floorEls, rot, viewMode, lod, detailOpts],
-  );
-  // MURS par le pipeline pivot, memoïsés eux aussi (le IIFE de rendu les ré-insère dans le tri global) :
-  // un déplacement de pointeur ne rebâtit plus les chaînes SVG des cloisons. MÊME cadrage de couche que
-  // les sols (`activeZ`) — `buildWalls` n'émet alors QUE z ≤ currentLayer (pas de ghost à filtrer ici).
-  const wallRows = useMemo(
-    () =>
-      (webgl ? [] : buildWalls(scene, undefined, { activeZ: currentLayer }))
-        .filter((el) => !zHidden(el.cell.z))
-        .map((el) => {
-          let accCache: string | null = null;
-          const acc = lod === 2 ? () => (accCache ??= wallAccentsSvg(el, dims, detailOpts)) : undefined;
-          return { key: el.key, d: wallDepth(el, dims), z: el.cell.z, html: wallSvg(el, dims, detailOpts), acc };
-        }),
-    // `dims` dérive de (scene.dimensions, rot, viewMode) — deps couvertes.
-    [scene, currentLayer, lowerLayerMode, rot, viewMode, lod, detailOpts, webgl],
-  );
-  // CULLING au viewport : ne rend que les tuiles dont le centre écran tombe dans le viewBox courant
-  // (+ marge pour les parois de relief hautes/basses) — fini de rastériser TOUTE la carte à chaque frame.
-  const CULL_M = 220;
-  const cullW = stage.w / vb.zoom, cullH = stage.h / vb.zoom;
-  const inView = (r: { cx: number; cy: number }) =>
-    r.cx >= vb.x - CULL_M && r.cx <= vb.x + cullW + CULL_M && r.cy >= vb.y - CULL_M && r.cy <= vb.y + cullH + CULL_M;
 
   const dragStartRef = useRef<Pt | null>(null);
   const [dragRect, setDragRect] = useState<Rect | null>(null);
@@ -355,7 +301,6 @@ export function EditorCanvas({
   // d'avant le geste (cf. `gelDuMonde`). Vidées au relâché, comme le reste de l'état de geste.
   const [traitCases, setTraitCases] = useState<readonly Pt[]>([]);
   const marquerTrait = (p: Pt, taille: number) => {
-    if (!webgl) return; // aucun aperçu à tenir : la voie affine repeint la scène elle-même
     const r = Math.floor((taille - 1) / 2); // MÊME emprise que `paintTiles` (`state/sceneEdit.ts`)
     const { w, h } = scene.dimensions;
     setTraitCases((prev) => {
@@ -668,13 +613,8 @@ export function EditorCanvas({
   // L'ancrage reste celui d'ici — l'ÉCRAN : le calage fige un `transform` de projection, et le quad
   // se rebâtit à chaque cadrage pour retomber aux mêmes pixels (cf. `backends/webgl/traceQuad.ts`).
   // Une seule voie la peint à la fois, sans quoi deux plaques se superposeraient.
-  const traceLayerImg = traceLayer?.visible && !webgl ? (
-    <g opacity={traceLayer.opacity} pointerEvents="none" transform={transformToSvg(traceLayer.transform)}>
-      <image href={traceLayer.imageDataUrl} width={traceLayer.naturalWidth} height={traceLayer.naturalHeight} />
-    </g>
-  ) : null;
   const decalque3d = useMemo(
-    () => (webgl && traceLayer?.visible
+    () => (traceLayer?.visible
       ? {
         imageDataUrl: traceLayer.imageDataUrl,
         naturalWidth: traceLayer.naturalWidth,
@@ -684,7 +624,7 @@ export function EditorCanvas({
         transform: traceLayer.transform,
       }
       : null),
-    [webgl, traceLayer],
+    [traceLayer],
   );
 
   // ── CE QUE L'ÉDITEUR DONNE AU MONDE VOLUMIQUE (#1176, P3-3) ─────────────────────────────────────
@@ -729,11 +669,11 @@ export function EditorCanvas({
   );
   // ÉLÉMENTS à billboarder : c'est l'ÉDITEUR qui les fabrique, avec SES options de couche — le monde
   // volumique n'a aucun second jeu de lois. Jetons d'entité BRUTS (leurs décorations d'auteur restent
-  // au SVG) et décor par le MÊME `buildProps` que la voie affine.
+  // au SVG) et décor par le MÊME `buildProps` que le jeu.
   const propEls3d = useMemo(
-    () => (webgl ? buildProps(sceneMonde, undefined, { activeZ: currentLayer }).filter((el) => !zHiddenMonde(el.cell.z)) : []),
+    () => buildProps(sceneMonde, undefined, { activeZ: currentLayer }).filter((el) => !zHiddenMonde(el.cell.z)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [webgl, sceneMonde, currentLayer, modeMonde],
+    [sceneMonde, currentLayer, modeMonde],
   );
   // MÊME cadrage de couche que les décors ci-dessus (`viewZ` en mode isolé, puis le prédicat unique) :
   // sans lui, un corps de couche basse restait sur le canevas alors que TOUTES ses décorations
@@ -741,16 +681,14 @@ export function EditorCanvas({
   // `ambush` : l'auteur voit le CORPS de ses embusqueurs (`hiddenUntilCombat`), que la loi de JEU
   // coupe avant le combat ; le SVG continue de poser leur empreinte pointillée par-dessus.
   const tokenEls3d = useMemo(
-    () => (webgl
-      ? buildTokens(sceneMonde, undefined, null, {
-        activeZ: currentLayer,
-        viewZ: modeMonde === 'isolee' ? currentLayer : null,
-        top: viewMode === 'top',
-        ambush: true,
-      }).filter((el) => !zHiddenMonde(el.cell.z))
-      : []),
+    () => buildTokens(sceneMonde, undefined, null, {
+      activeZ: currentLayer,
+      viewZ: modeMonde === 'isolee' ? currentLayer : null,
+      top: viewMode === 'top',
+      ambush: true,
+    }).filter((el) => !zHiddenMonde(el.cell.z)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [webgl, sceneMonde, currentLayer, viewMode, modeMonde],
+    [sceneMonde, currentLayer, viewMode, modeMonde],
   );
   // Pas de `chromeAt` ici : l'ALLURE d'un board se lit par `cid`, et un `cid` n'est posé QUE sur les
   // acteurs de combat (`actorBillboards`) — l'éditeur n'en monte aucun. C'est le canal TEINTE qui
@@ -779,9 +717,9 @@ export function EditorCanvas({
   }, [stage.w, vb.zoom, canvasRef]);
   // GRILLE D'AUTHORING : bâtie 1× par (carte, caméra, couche) — `w+h+2` segments, jamais un par case.
   const grilleAuteur = useMemo(
-    () => (webgl ? gridLines(dims, currentLayer) : []),
+    () => gridLines(dims, currentLayer),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [webgl, scene.dimensions, rot, viewMode, currentLayer],
+    [scene.dimensions, rot, viewMode, currentLayer],
   );
   // SOURCES LUMINEUSES POSÉES de la scène — la MÊME liste que le champ mécanique de vision consomme
   // (`mapLights`), filtrée par la loi de couche de l'éditeur. Leur marqueur est une surcouche d'auteur
@@ -792,18 +730,18 @@ export function EditorCanvas({
     [scene, currentLayer, lowerLayerMode],
   );
   // APERÇU DU TRAIT (WYSIWYG) : le trait libre n'avait AUCUN aperçu — il se voyait par la scène SVG
-  // repeinte, qui ne l'est plus. Les cases du geste se peignent donc par le MÊME backend affine que
-  // la voie de gauche (`floorSvg` sur les `FloorEl` de la scène VIVE), pas par un losange symbolique.
+  // repeinte, qui ne l'est plus. Les cases du geste se peignent donc par le peintre SVG d'authoring
+  // (`floorSvg` sur les `FloorEl` de la scène VIVE), pas par un losange symbolique.
   const apercuTrait = useMemo(
     () => {
-      if (!webgl || tool.mode !== 'tile' || !traitCases.length) return [];
+      if (tool.mode !== 'tile' || !traitCases.length) return [];
       const vues = new Set(traitCases.map((c) => `${c.x},${c.y}`));
       return buildFloors(scene, undefined, { activeZ: currentLayer })
         .filter((el) => el.cell.z === currentLayer && vues.has(`${el.cell.x},${el.cell.y}`))
         .map((el) => ({ key: el.key, html: floorSvg(el, dims, detailOpts) }));
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [webgl, tool.mode, traitCases, scene, currentLayer, rot, viewMode, detailOpts],
+    [tool.mode, traitCases, scene, currentLayer, rot, viewMode, detailOpts],
   );
 
   return (
@@ -817,25 +755,23 @@ export function EditorCanvas({
             (2304×1312 px mesurés sur La Diligence en iso), pas la seule fenêtre — le défilement reste
             NATIF, sans un écouteur de plus, et `setPixelRatio` n'est posé qu'au montage. Un cadrage
             à la fenêtre est une piste tickée, pas une promesse de ce lot. */}
-        {webgl && (
-          <GameStage3D
-            scene={sceneMonde}
-            mpt={mpt}
-            frame={{ mode: 'viewbox', dims, viewBox: { x: vb.x, y: vb.y, w: stage.w / vb.zoom, h: stage.h / vb.zoom } }}
-            tintAt={tintAt}
-            keepEl={keepEl}
-            els={els3d}
-            actors={AUCUN_ACTEUR}
-            gameTime={MIDI_AUTHORING}
-            lightLevel={PLEIN_JOUR}
-            lights={AUCUNE_LAMPE}
-            decalque={decalque3d}
-            spritePicking={false}
-          />
-        )}
+        <GameStage3D
+          scene={sceneMonde}
+          mpt={mpt}
+          frame={{ mode: 'viewbox', dims, viewBox: { x: vb.x, y: vb.y, w: stage.w / vb.zoom, h: stage.h / vb.zoom } }}
+          tintAt={tintAt}
+          keepEl={keepEl}
+          els={els3d}
+          actors={AUCUN_ACTEUR}
+          gameTime={MIDI_AUTHORING}
+          lightLevel={PLEIN_JOUR}
+          lights={AUCUNE_LAMPE}
+          decalque={decalque3d}
+          spritePicking={false}
+        />
         <svg
           ref={canvasRef}
-          className={webgl ? 'editor-iso editor-iso-3d' : 'editor-iso'}
+          className="editor-iso editor-iso-3d"
           viewBox={`${vb.x} ${vb.y} ${stage.w / vb.zoom} ${stage.h / vb.zoom}`}
           width={stage.w}
           height={stage.h}
@@ -860,39 +796,19 @@ export function EditorCanvas({
               dessous » y est invisible partout où il y a du sol) — jamais dans la Scène/l'export.
               `pointerEvents="none"` TOUJOURS : le calage capte le clic EN AMONT (`pointerDown`), la
               sélection/les outils doivent traverser le calque quand il est au-dessus. */}
-          {traceLayer?.visible && traceLayer.position === 'below' && traceLayerImg}
-          <g>
-            {floorRows.filter(inView).map((r) =>
-              r.acc ? (
-                // Accents matériaux v2 (LOD 2) : étendus APRÈS le culling `inView`, puis servis du cache.
-                <g key={r.key} style={r.z < currentLayer ? { filter: LOWER_LAYER_FILTER } : undefined}>
-                  <g dangerouslySetInnerHTML={{ __html: r.html }} />
-                  <g dangerouslySetInnerHTML={{ __html: r.acc() }} />
-                </g>
-              ) : (
-                <g
-                  key={r.key}
-                  style={r.z < currentLayer ? { filter: LOWER_LAYER_FILTER } : undefined}
-                  dangerouslySetInnerHTML={{ __html: r.html }}
-                />
-              ),
-            )}
-          </g>
           {/* GRILLE DE CASES (#1176, P3-3) : la voie VOLUMIQUE fusionne les faces coplanaires de même
               matériau — deux cases voisines de même terrain n'y ont plus aucune limite visible, là où
               le contour de chaque losange affine la donnait gratuitement. La grille redevient donc une
               surcouche d'AUTEUR, explicite, posée sur la couche qu'on édite. Elle ne se monte qu'en
               volumique : en affine, la doubler épaissirait un trait déjà là. */}
-          {webgl && (
-            <g pointerEvents="none" data-grille={grilleAuteur.length}>
-              {grilleAuteur.map((l, i) => (
-                <line key={`gr-${i}`} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke={GRID_INK} strokeWidth={1} shapeRendering="crispEdges" />
-              ))}
-            </g>
-          )}
-          {/* APERÇU DU TRAIT en cours (voie volumique) : les cases déjà peintes, par le backend
-              AFFINE. SÉMANTIQUE juste — la bonne case, le bon terrain, la bonne couche — mais MATIÈRE
-              affine : deux moteurs, deux façons d'ombrer, l'aperçu sort ~20 % plus sombre que la
+          <g pointerEvents="none" data-grille={grilleAuteur.length}>
+            {grilleAuteur.map((l, i) => (
+              <line key={`gr-${i}`} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke={GRID_INK} strokeWidth={1} shapeRendering="crispEdges" />
+            ))}
+          </g>
+          {/* APERÇU DU TRAIT en cours : les cases déjà peintes, par le peintre SVG d'authoring.
+              SÉMANTIQUE juste — la bonne case, le bon terrain, la bonne couche — mais MATIÈRE de
+              peintre : deux moteurs, deux façons d'ombrer, l'aperçu sort ~20 % plus sombre que la
               cuisson qui lui succède au relâché (mesuré : 39,79,123 contre 49,94,144). C'est un
               repère de GESTE — la bonne case tout de suite — pas un rendu final. */}
           {apercuTrait.length > 0 && (
@@ -905,34 +821,18 @@ export function EditorCanvas({
           <g pointerEvents="none">
             {(() => {
               const objs: { d: number; el: JSX.Element }[] = [];
-              // Décor (props de scène `kind:'prop'`, overlays de terrain bois→arbre, ornements de toit,
-              // features de façade) — rendu par le MÊME pipeline que le jeu (`buildProps` → `propLayerObjs`,
-              // cf. IsoStage) : jamais par `tokenBodyKind`/`resolveRender` (registre créature/véhicule), qui
-              // collisionne sur un id de décor homonyme d'un véhicule/créature (ex. `chaise` meuble vs
-              // chaise à porteurs de `vehicles.json`). Un décor s'authore comme un décor.
-              const propTokenCtx: TokenCtx = { dims, view: viewMode, liftAt };
-              const propEls = webgl ? [] : buildProps(scene, undefined, { activeZ: currentLayer }).filter((el) => !zHidden(el.cell.z));
-              propLayerObjs(propEls, propTokenCtx).forEach((po, i) => {
-                const el = propEls[i];
-                const dimmed = el.cell.z < currentLayer;
-                objs.push({
-                  d: po.d,
-                  el: dimmed ? <g key={el.key} style={{ filter: LOWER_LAYER_FILTER }}>{po.el}</g> : po.el,
-                });
-              });
-              // Toits des bâtiments COMPOSÉS : le pipeline pivot (`buildRoofs` + backend affine) en mode
+              // Toits des bâtiments COMPOSÉS : le pipeline pivot (`buildRoofs` + peintre d'authoring) en mode
               // PLAN étiqueté — couverture semi-transparente teintée par le matériau + libellé, posée
-              // dans le tri global. Les MURS sont rendus par `buildWalls` ci-dessous — un toit n'est que
+              // dans le tri global. Les MURS sont peints par le canevas volumique — un toit n'est que
               // la couverture, on voit/édite les murs au travers.
               // Pelure d'oignon : `el.cell.z` = plancher SOMMET couvert par la masse. La nappe de la couche
               // ACTIVE est physiquement au-dessus de la tête de l'auteur — elle est DISCRÈTE
               // (`ACTIVE_LAYER_ROOF_OPACITY` sur son groupe), jamais retirée : le calque « Toits » garde son
               // sens au dernier étage, et le picking (`hitAt`, qui désigne la masse de `currentLayer`) porte
               // sur ce qui est affiché. Sous la couche active : gabarit voilé. Au-dessus : rien.
-              // LES DEUX VOIES le peignent ICI (#1176, P3-3, vague B) : le plan étiqueté est une vue
-              // d'AUTHORING (couverture translucide + nom de pièce), pas une matière — le canevas
-              // n'en cuit aucune (`keepEl` ôte tous les toits), sinon chaque nappe serait peinte
-              // deux fois.
+              // Le SVG le peint ICI (#1176, P3-3, vague B) : le plan étiqueté est une vue d'AUTHORING
+              // (couverture translucide + nom de pièce), pas une matière — le canevas n'en cuit aucune
+              // (`keepEl` ôte tous les toits), sinon chaque nappe serait peinte deux fois.
               if (layers.roofs)
                 for (const el of buildRoofs(scene)) {
                   if (zHidden(el.cell.z)) continue;
@@ -953,7 +853,7 @@ export function EditorCanvas({
               // Entités de COMBAT : celles enrôlées dans une rencontre (teinte rouge + empreinte).
               const memberIds = new Set(scene.encounters.flatMap((e) => (e.members ?? []).map((m) => m.entityId)));
               for (const en of scene.entities) {
-                if (en.kind === 'prop') continue; // rendu par le pipeline décor unifié ci-dessus (buildProps → propLayerObjs)
+                if (en.kind === 'prop') continue; // décor : billboard du canevas volumique (buildProps → els3d)
                 const ez = en.z ?? 0;
                 if (zHidden(ez)) continue; // dessus jamais éditable, dessous selon le mode (pelure d'oignon)
                 const dimStyle = ez < currentLayer ? { filter: LOWER_LAYER_FILTER } : undefined;
@@ -981,11 +881,10 @@ export function EditorCanvas({
                 // d'embuscade ne vivait que dans la branche enrôlée, donc un embusqueur posé seul
                 // n'avait AUCUN signe distinctif (mesuré : zéro pixel d'écart avec un figurant).
                 const marque = isCombat || hidden;
-                // APLAT : la voie AFFINE seule. Le corps volumique est un billboard DEBOUT et ce SVG se
-                // peint AU-DESSUS du canevas : un losange plein y barrait le personnage en travers des
-                // jambes (mesuré à y=646). En volumique la marque reste au SOL — un CONTOUR, la même
-                // convention que les anneaux du jeu au pied des billboards (`builders/dynamicMarks`).
-                const aplat = webgl ? 'none' : 'rgba(192,57,43,0.32)';
+                // AUCUN APLAT : le corps est un billboard DEBOUT et ce SVG se peint AU-DESSUS du
+                // canevas — un losange plein y barrait le personnage en travers des jambes (mesuré à
+                // y=646). La marque reste au SOL — un CONTOUR, la même convention que les anneaux du
+                // jeu au pied des billboards (`builders/dynamicMarks`).
                 if (marque) {
                   objs.push({
                     d: depth(en.pos.x, en.pos.y, dims, ez) + 0.45,
@@ -995,49 +894,25 @@ export function EditorCanvas({
                           <path
                             key={`fp-${t.x}-${t.y}`}
                             d={diamondPath(t.x, t.y, dims, ez)}
-                            fill={aplat}
+                            fill="none"
                             stroke={isSel ? SELECT : '#c0392b'}
                             strokeWidth={isSel ? 2.5 : 1.5}
                             strokeDasharray={hidden ? '4 3' : undefined}
                           />
                         ))}
-                        {/* CORPS du jeton : la voie volumique le peint (billboard), la voie affine
-                            ici. Les décorations d'auteur (empreinte, tirets d'embuscade, liseré de
-                            sélection) restent au SVG dans les DEUX voies. */}
-                        {!webgl && <EntityToken ent={en} dims={dims} enrolled={isCombat} />}
+                        {/* CORPS du jeton : peint par le canevas volumique (billboard). Les
+                            décorations d'auteur (empreinte, tirets d'embuscade, liseré de sélection)
+                            restent au SVG. */}
                       </g>
                     ),
                   });
                 } else {
                   objs.push({
                     d: depth(en.pos.x, en.pos.y, dims, ez) + 0.5,
-                    el: dimStyle ? (
-                      <g key={en.id} style={dimStyle}>
-                        {!webgl && <EntityToken ent={en} dims={dims} />}
-                      </g>
-                    ) : (
-                      <g key={en.id}>{!webgl && <EntityToken ent={en} dims={dims} />}</g>
-                    ),
+                    el: <g key={en.id} style={dimStyle} />,
                   });
                 }
               }
-              // Cloisons (murs/portes/diagonales) — mêmes faces pivot que le jeu, memoïsées (wallRows) sur la
-              // couche active + gabarit du dessous (`currentLayer`, cf. `buildWalls`) ; accents matériaux v2
-              // (thunk en cache) par-dessus leur mur ; voile `LOWER_LAYER_FILTER` sous la couche active.
-              wallRows.forEach((r) => {
-                const dimStyle = r.z < currentLayer ? { filter: LOWER_LAYER_FILTER } : undefined;
-                objs.push({
-                  d: r.d,
-                  el: r.acc ? (
-                    <g key={r.key} style={dimStyle}>
-                      <g dangerouslySetInnerHTML={{ __html: r.html }} />
-                      <g dangerouslySetInnerHTML={{ __html: r.acc() }} />
-                    </g>
-                  ) : (
-                    <g key={r.key} style={dimStyle} dangerouslySetInnerHTML={{ __html: r.html }} />
-                  ),
-                });
-              });
               objs.sort((a, b) => a.d - b.d);
               return objs.map((o) => o.el);
             })()}
@@ -1272,7 +1147,6 @@ export function EditorCanvas({
               })}
             </g>
           )}
-          {traceLayer?.visible && traceLayer.position === 'above' && traceLayerImg}
           {calibNode && (() => {
             const { cx, cy } = tileCenter(calibNode.x, calibNode.y, dims, currentLayer);
             const s = 9;

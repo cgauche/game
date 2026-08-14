@@ -46,7 +46,7 @@ export const BLOCK_SHADE_K = 1.5;
 /** Éventail d'une touffe : décalage horizontal MONDE d'un brin latéral, en fraction de sa hauteur —
  *  dosage PARTAGÉ par les backends qui posent la touffe EN MONDE (POV `groundAccentItems`, WebGL
  *  `tuftGeometry`/`accentMatrix`). L'affine, lui, penche ses brins à l'ÉCRAN et n'a pas d'éventail
- *  monde (`TUFT_LEAN_AMPLITUDE`, `backends/affineDetail.ts`). */
+ *  monde (`TUFT_LEAN_AMPLITUDE`, `authoring/detailSvg.ts`). */
 export const TUFT_FAN = 0.3;
 /** Bornes VERTICALES du colombage (fractions de la hauteur de face, depuis le HAUT) : les pans de bois
  *  courent entre le couronnement (bande haute [0.86,1]·WALL_H du builder) et la plinthe (0.11 bas) —

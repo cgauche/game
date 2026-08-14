@@ -7,7 +7,6 @@ import { EditorCanvas } from './EditorCanvas';
 import { DEFAULT_LAYERS } from './editorState';
 import { emptyScene, type Scene } from '../../state/scene';
 import { tileCenter } from '../../geometry/iso';
-import { setStageBackend } from '../../state/stage3d';
 import { setStageRendererFactory, type StageRenderer } from '../../gameIso/stage/GameStage3D';
 import { hasSpritePicker } from '../../gameIso/stage/spritePicker';
 import { buildTokens } from '../../gameIso/builders/tokens';
@@ -161,7 +160,6 @@ let container: HTMLDivElement | null = null;
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (container) { container.remove(); container = null; }
-  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
 /** Monte l'éditeur, la scène suivie comme le ferait l'historique. Les options portent ce que les
@@ -271,15 +269,7 @@ async function monter(
 }
 
 describe('Éditeur — la voie volumique monte le MÊME monde que le jeu (#1176, P3-3)', () => {
-  it('voie AFFINE : aucun canevas, c’est le SVG qui peint le sol', async () => {
-    setStageBackend('affine');
-    const h = await monter({ mode: 'select' });
-    expect(h.canvas()).toBeNull();
-    expect(h.solsSvg()).toBeGreaterThan(0);
-  });
-
-  it('voie VOLUMIQUE : canevas AVANT le SVG (donc dessous), SVG au-dessus par son contexte d’empilement, et le SVG ne peint plus le sol', async () => {
-    setStageBackend('webgl');
+  it('canevas AVANT le SVG (donc dessous), SVG au-dessus par son contexte d’empilement, et le SVG ne peint plus le sol', async () => {
     const h = await monter({ mode: 'select' });
     const canvas = h.canvas();
     expect(canvas).not.toBeNull();
@@ -288,8 +278,7 @@ describe('Éditeur — la voie volumique monte le MÊME monde que le jeu (#1176,
     expect(h.solsSvg()).toBe(0);
   });
 
-  it('voie VOLUMIQUE : AUCUN picker de sprite inscrit — le picking de l’éditeur reste géométrique', async () => {
-    setStageBackend('webgl');
+  it('AUCUN picker de sprite inscrit — le picking de l’éditeur reste géométrique', async () => {
     await monter({ mode: 'select' });
     expect(hasSpritePicker()).toBe(false);
   });
@@ -297,7 +286,6 @@ describe('Éditeur — la voie volumique monte le MÊME monde que le jeu (#1176,
 
 describe('Éditeur — cadence de la cuisson (#1176, P3-3)', () => {
   it('un geste qui ne touche PAS le read-set du monde (déplacement d’entité) ne recuit rien', async () => {
-    setStageBackend('webgl');
     const h = await monter({ mode: 'select' });
     const avant = h.cuissons();
     await h.bougerUneEntite();
@@ -306,7 +294,6 @@ describe('Éditeur — cadence de la cuisson (#1176, P3-3)', () => {
   });
 
   it('un TRAIT de pinceau reste sur la cuisson d’AVANT le geste ; le relâché en paie exactement UNE', async () => {
-    setStageBackend('webgl');
     const h = await monter({ mode: 'tile', terrain: 'eau' });
     const avant = h.cuissons();
     await h.down(2, 2);
@@ -319,7 +306,6 @@ describe('Éditeur — cadence de la cuisson (#1176, P3-3)', () => {
   });
 
   it('…et pendant le trait, les cases peintes se voient — aperçu WYSIWYG par le backend affine', async () => {
-    setStageBackend('webgl');
     const h = await monter({ mode: 'tile', terrain: 'eau' });
     expect(h.svg.querySelector('[data-apercu-trait]')).toBeNull();
     await h.down(2, 2);
@@ -340,7 +326,6 @@ describe('Éditeur — cadence de la cuisson (#1176, P3-3)', () => {
  */
 describe('Éditeur — ce que le monde volumique donne à voir (#1176, P3-3)', () => {
   it('les EMBUSQUEURS ont un corps : la loi de JEU les coupe, l’authoring les montre', async () => {
-    setStageBackend('webgl');
     // La loi de JEU (aucune option d'authoring) coupe bien l'entité — sans quoi ce test ne dirait rien.
     expect(buildTokens(sceneEmbuscade(), undefined, null, { activeZ: 0, viewZ: null, top: true })).toEqual([]);
     const h = await monter({ mode: 'select' }, { scene: sceneEmbuscade() });
@@ -350,7 +335,6 @@ describe('Éditeur — ce que le monde volumique donne à voir (#1176, P3-3)', (
   });
 
   it('mode ISOLÉ : un jeton d’une couche masquée ne reste pas au canevas (aucun corps fantôme)', async () => {
-    setStageBackend('webgl');
     const gabarit = await monter({ mode: 'select' }, { scene: sceneEmbuscade(), currentLayer: 1, lowerLayerMode: 'gabarit' });
     expect(gabarit.sujets()).toBe(1); // couche du dessous : gabarit d'alignement, le corps est là
     await act(async () => root!.unmount());
@@ -369,11 +353,10 @@ describe('Éditeur — ce que le monde volumique donne à voir (#1176, P3-3)', (
    * là où le dessin vit : sur le SVG.
    */
   it('les TOITS ne sont peints qu’une fois : aucune masse au canevas, le plan étiqueté au SVG', async () => {
-    setStageBackend('webgl');
     const scene = scenarioToits.scene; // masure à 4 pièces sous UNE nappe à deux pans (masse z=0)
     const avec = await monter({ mode: 'select' }, { scene, currentLayer: 1, roofs: true });
     const facesAvec = avec.faces();
-    // Les nappes en PLAN de l'éditeur ont leur signature : des losanges à `opacity=0,7` (`affineRoofs`).
+    // Les nappes en PLAN de l'éditeur ont leur signature : des losanges à `opacity=0,7` (`authoring/roofsSvg`).
     const plansSvg = avec.svg.querySelectorAll('path[opacity="0.7"]').length;
     expect(facesAvec).toBeGreaterThan(0); // le monde est bien cuit (murs, sols)
     expect(plansSvg).toBeGreaterThan(0); // …et le SVG porte les nappes en plan
@@ -391,7 +374,6 @@ describe('Éditeur — ce que le monde volumique donne à voir (#1176, P3-3)', (
    * (les entités ne sont pas dans le read-set de la cuisson).
    */
   it('la GOMME retire le sujet à l’instant du clic — sans geler la cadence, sans recuire le monde', async () => {
-    setStageBackend('webgl');
     const h = await monter({ mode: 'erase' }, { scene: sceneEmbuscade() });
     const facesAvant = h.faces();
     expect(h.sujets()).toBe(1);
@@ -410,21 +392,12 @@ describe('Éditeur — ce que le monde volumique donne à voir (#1176, P3-3)', (
  * grille), et un embusqué indiscernable d'un figurant (sa marque ne vivait que sur la branche enrôlée).
  */
 describe('Éditeur — grille de cases et marques d’entité (#1176, P3-3)', () => {
-  it('voie VOLUMIQUE : la GRILLE est montée, un trait par rangée et par colonne', async () => {
-    setStageBackend('webgl');
+  it('la GRILLE est montée, un trait par rangée et par colonne', async () => {
     const h = await monter({ mode: 'select' });
     expect(h.grille()).toBe(8 + 8 + 2); // scène d'atelier 8×8
   });
 
-  it('voie AFFINE : aucune grille montée — le contour des losanges de sol la donne déjà', async () => {
-    setStageBackend('affine');
-    const h = await monter({ mode: 'select' });
-    expect(h.svg.querySelector('[data-grille]')).toBeNull();
-    expect(h.solsSvg()).toBeGreaterThan(0);
-  });
-
   it('un EMBUSQUÉ non enrôlé porte quand même ses tirets — sinon rien ne le distingue d’un figurant', async () => {
-    setStageBackend('webgl');
     const seul = { ...sceneEmbuscade(), encounters: [] };
     const h = await monter({ mode: 'select' }, { scene: seul });
     const marques = h.empreintes();
@@ -435,15 +408,8 @@ describe('Éditeur — grille de cases et marques d’entité (#1176, P3-3)', ()
   });
 
   it('…et sa marque est un CONTOUR au sol, jamais un aplat qui barre le corps', async () => {
-    setStageBackend('webgl');
-    const webgl = await monter({ mode: 'select' }, { scene: sceneEmbuscade() });
-    expect(webgl.empreintes().every((p) => p.getAttribute('fill') === 'none')).toBe(true);
-    const affine = await remonter({ mode: 'select' }, { scene: sceneEmbuscade() });
-    setStageBackend('affine');
-    const plein = await remonter({ mode: 'select' }, { scene: sceneEmbuscade() });
-    void affine;
-    // La voie AFFINE garde son médaillon plein : le corps y tient DANS la case, rien ne le barre.
-    expect(plein.empreintes().every((p) => p.getAttribute('fill') === 'none')).toBe(false);
+    const h = await monter({ mode: 'select' }, { scene: sceneEmbuscade() });
+    expect(h.empreintes().every((p) => p.getAttribute('fill') === 'none')).toBe(true);
   });
 });
 
@@ -464,7 +430,6 @@ async function remonter(...args: Parameters<typeof monter>) {
  */
 describe('Éditeur — canaux ISOLÉ et VOILÉ au canevas (#1176, P3-3, vague B)', () => {
   it('mode ISOLÉ : les faces de la couche du dessous quittent le dessin (canal DÉGAGEMENT)', async () => {
-    setStageBackend('webgl');
     const scene = sceneDeuxCouches();
     const gabarit = await monter({ mode: 'select' }, { scene, currentLayer: 1, lowerLayerMode: 'gabarit' });
     const avec = gabarit.faces();
@@ -474,7 +439,6 @@ describe('Éditeur — canaux ISOLÉ et VOILÉ au canevas (#1176, P3-3, vague B)
   });
 
   it('mode GABARIT : la couche du dessous est VOILÉE par la teinte, et le curseur la dose', async () => {
-    setStageBackend('webgl');
     const scene = sceneDeuxCouches();
     const clair = await monter({ mode: 'select' }, { scene, currentLayer: 1, lowerLayerMode: 'gabarit', lowerLayerOpacity: 0.9 });
     const lumClair = clair.lumiereMoyenne();
@@ -485,7 +449,6 @@ describe('Éditeur — canaux ISOLÉ et VOILÉ au canevas (#1176, P3-3, vague B)
   });
 
   it('BASCULE SOUS SEUIL : un gabarit quasi éteint ISOLE au lieu de noircir', async () => {
-    setStageBackend('webgl');
     const scene = sceneDeuxCouches();
     const visible = await monter({ mode: 'select' }, { scene, currentLayer: 1, lowerLayerOpacity: 0.4 });
     const facesVoilees = visible.faces();
@@ -537,7 +500,6 @@ describe('Éditeur — canaux ISOLÉ et VOILÉ au canevas (#1176, P3-3, vague B)
 describe('Éditeur — plaque de décalquage et marqueurs d’auteur (#1176, P3-3, vague B)', () => {
   for (const position of ['below', 'above'] as const)
     it(`la plaque « ${position} » est montée en QUAD MONDE (et quitte le SVG)`, async () => {
-      setStageBackend('webgl');
       const h = await monter({ mode: 'select' }, { traceLayer: { position } });
       const mesh = h.decalque();
       expect(mesh).not.toBeNull();
@@ -547,14 +509,7 @@ describe('Éditeur — plaque de décalquage et marqueurs d’auteur (#1176, P3-
       expect(h.svg.querySelector('image')).toBeNull();
     });
 
-  it('voie AFFINE : la plaque reste au SVG — une seule voie la peint à la fois', async () => {
-    setStageBackend('affine');
-    const h = await monter({ mode: 'select' }, { traceLayer: { position: 'below' } });
-    expect(h.svg.querySelector('image')).not.toBeNull();
-  });
-
   it('les SOURCES LUMINEUSES posées portent un marqueur d’auteur (en plein jour, rien ne les trahirait)', async () => {
-    setStageBackend('webgl');
     const h = await monter({ mode: 'select' }, { scene: sceneLampe() });
     expect(h.marqueursLampe()).toBe(1);
     // …et la portée authorée s'y lit : le cercle est là, à côté du point.
@@ -562,30 +517,24 @@ describe('Éditeur — plaque de décalquage et marqueurs d’auteur (#1176, P3-
   });
 
   it('…et une scène SANS source n’en montre aucun', async () => {
-    setStageBackend('webgl');
     const h = await monter({ mode: 'select' });
     expect(h.svg.querySelector('[data-lampes-auteur]')).toBeNull();
   });
 });
 
 /**
- * L'AFFORDANCE de bascule de voie a quitté l'écran (#1176 P3-4, commit C5a) : le monde volumique est
- * LE monde du jeu, et le bouton de `ViewControls` proposait une voie que l'écran de jeu n'a plus. La
- * voie SVG de l'éditeur (et celle du POV) survit jusqu'à C5b, pilotée par le devtool `__wfrp.stage3d`
- * (`state/devtools.ts`) — le SEUL écrivain de `state/stage3d.ts` côté produit.
+ * L'AFFORDANCE de bascule de voie a quitté l'écran (#1176 P3-4, commit C5a), puis l'interrupteur
+ * lui-même (commit C5b) : le monde volumique est LE monde, ici comme au jeu.
  */
-describe('Éditeur — la voie de rendu se pilote au devtool, plus par un bouton d’écran', () => {
+describe('Éditeur — aucun interrupteur de voie ne subsiste', () => {
   it('aucun interrupteur de voie dans la barre de vue', async () => {
     const h = await monter({ mode: 'select' });
     expect(h.el.querySelector('[aria-label="Monde volumique (DEV)"]')).toBeNull();
     expect(h.el.querySelector('[aria-label="Monde en couches SVG (DEV)"]')).toBeNull();
   });
 
-  it('…et l’écran suit quand même la voie posée hors UI (le canevas monte, puis se retire)', async () => {
-    setStageBackend('webgl');
+  it('le canevas est monté d’office, sans rien à armer', async () => {
     const h = await monter({ mode: 'select' });
     expect(h.canvas()).not.toBeNull();
-    await act(async () => { setStageBackend('affine'); });
-    expect(h.canvas()).toBeNull();
   });
 });

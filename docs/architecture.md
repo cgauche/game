@@ -139,9 +139,6 @@ src/state/
                               n'est pas du rendu, `gameIso` la ré-importe pour l'orientation écran)
   viewLevel.ts                override DEBUG de l'étage AFFICHÉ (`__wfrp.viewLevel(z)`, #161 : ex-
                               `gameIso/viewLevel.ts`) — SOURCE dans `state`, lu par `gameIso/IsoStage`
-  stage3d.ts                  VOIE DE RENDU SVG en sursis (#1176) : l'écran de JEU est volumique quoi
-                              qu'il dise (C5a) ; il ne pilote plus que le POV SVG et l'aperçu d'éditeur,
-                              par `__wfrp.stage3d` — store externe, jamais sérialisé en save (mort C5b)
   stageYaw.ts                 LACET CONTINU de la caméra du stage (#1176, P2-7) : cible + courant qui y
                               court, `viewYawDeg` (projection) et `viewRot` (cran EFFECTIF du dégagement)
   combatLog.ts                CombatEvent/CombatEventKind + CombatTone/toneOf/isImportantEvent/

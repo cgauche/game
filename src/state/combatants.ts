@@ -34,7 +34,7 @@ export function inBattleId(battle: GameState['battle'], id: string | undefined):
 
 /**
  * MENEUR du groupe hors combat : le premier héros encore debout, à défaut le premier du roster. C'est
- * lui que le jeton de groupe DESSINE et fait marcher (`gameIso/stage/tokens.tsx` `partyLeaderObj`), et
+ * lui que le jeton de groupe DESSINE et fait marcher, et
  * donc lui que suivent la caméra et les lampes portées par le groupe (`state/visionState.ts`
  * `sceneLightSources`). Définition UNIQUE : deux règles feraient marcher un jeton et éclairer l'autre.
  */

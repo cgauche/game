@@ -153,7 +153,7 @@ export const schema = z.strictObject({
   // les trois rendus (`gameIso/catalog/ambiance.ts`). Trois invariants la tiennent : un facteur reste
   // dans [0,1] ; l'ordre des états ne s'inverse pas (une case jamais vue ne peut pas être plus lumineuse
   // qu'un souvenir, ni un souvenir plus lumineux que le vu) ; `explored` est le DÉNOMINATEUR du cran
-  // d'ambiance POV (`pov/geometry.ts` : `POV_AMBIENT.unknown`), donc strictement positif.
+  // d'ambiance de la première personne, donc strictement positif.
   fogTint: z
     .strictObject({ visible: tintFactor, explored: tintFactor, unknown: tintFactor })
     .refine((t) => t.explored > 0, {
@@ -203,7 +203,6 @@ export const schema = z.strictObject({
         meshShade: z.number(),
         meshJointWM: z.number(),
       }),
-      billboards: z.strictObject({ maxPersons: z.number(), maxProps: z.number() }),
     }),
     vignette: radialVeilSchema,
   }),

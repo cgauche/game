@@ -29,7 +29,7 @@
  * lecteur réel existe, mais accède via un chemin syntaxique que `fieldConsumers.mjs` ne suit pas :
  *   - `const x = a?.b` (variable sans annotation EXPLICITE, type INFÉRÉ) — `TraitInstance.hidden`
  *     (`engine/groups.ts` `hiddenGroupsOf`, param structurel dupliqué), `DetailRecipe.tintVar`
- *     (`gameIso/backends/affineDetail.ts:238`), `EntityAppearance.armurePortee` (`gameIso/rig/
+ *     (`gameIso/authoring/detailSvg.ts`), `EntityAppearance.armurePortee` (`gameIso/rig/
  *     enemyProfile.ts:185/254`, `cd = findCreatureById(...)?.appearance`), `CritEscalation.onRepeat`
  *     (`engine/{critical,aaCritical}.ts`, `entry.escalation?.onRepeat`), `Amputation.timing`
  *     (mêmes fichiers, `entry.amputation.timing`), `FlowTest.opposed` (`state/combat/

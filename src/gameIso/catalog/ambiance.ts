@@ -64,12 +64,12 @@ export type WeatherFxId = 'pluie' | 'brouillard' | 'neige' | 'tempete';
 export interface AmbianceDef {
   /** Luminosité PLANCHER partagée : une surface éclairée à 0 n'est jamais totalement noire. Source UNIQUE
    *  du clamp de lumière des DEUX vues — POV (`tint`, `pov/camera.ts`) et voile d'occlusion des sols iso
-   *  (`backends/affineFloors.ts`) → les deux répondent d'un cran égal. */
+   *  (`authoring/floorsSvg.ts`) → les deux répondent d'un cran égal. */
   ambientFloor: number;
   /** APPLICATION de la politique de visibilité (`state/visibility.ts`) en facteur multiplicatif, par
    *  état de case. Source UNIQUE des trois rendus : couleur de sommet du monde three (`visibilityTint`),
    *  terme `brightness` du voile CSS de l'iso (`FogLayer`), lumière d'ambiance d'une surface non vue au
-   *  POV (`pov/geometry.ts`). Un filtre CSS composé n'est pas un scalaire : l'iso n'y prend que son
+   *  POV. Un filtre CSS composé n'est pas un scalaire : l'iso n'y prend que son
    *  `brightness` d'`explored`, et sa case inconnue s'éteint (`brightness(0)`) là où un rendu 3D garde
    *  un facteur bas mais non nul — une silhouette noire y serait illisible. */
   fogTint: Record<Visibility, number>;
@@ -156,8 +156,6 @@ export interface PovDepthDef {
     /** Épaisseur métrique des lignes du maillage (m) quand le terrain n'a pas de joint propre. */
     meshJointWM: number;
   };
-  /** Budgets de billboards par famille (les plus proches priment). */
-  billboards: { maxPersons: number; maxProps: number };
 }
 
 export const AMBIANCE: AmbianceDef = ambiance;
@@ -165,8 +163,7 @@ export const AMBIANCE: AmbianceDef = ambiance;
 /** PORTE UNIQUE de la météo à l'écran (#1176 P2-6) : la scène a-t-elle une météo à MONTRER, et
  *  laquelle ? Une scène d'INTÉRIEUR n'en montre aucune — il n'y pleut pas plus sur l'écran que dans le
  *  volume (c'est la même porte que celle des voiles d'ambiance, `stage/Ambiance.tsx`). Les DEUX voies
- *  la lisent : le voile écran de la voie affine (`stage/WeatherVeil.tsx`) et le semis de particules de
- *  la voie volumique (`backends/webgl/weatherParticles.ts`) — deux expressions, une seule décision. Le
+ *  la lit : le semis de particules du monde volumique (`backends/webgl/weatherParticles.ts`). Le
  *  verdict d'intérieur lui-même vient de `isIndoor` (`state/scene.ts`), la porte de toutes les vues.
  *  C'est le REGISTRE qui décide de ce qui se montre : un id sans entrée au catalogue — `clair`
  *  compris — ne montre rien. */

@@ -1,6 +1,6 @@
 /**
- * MONDE VOLUMIQUE de l'écran de jeu (#1176, lots P2-2/P2-2b) — la couche MONDE de l'iso (`CulledScene`)
- * rendue par les pièces du spike, sous l'interrupteur de chantier `state/stage3d.ts` (DEV). CONSOMMATEUR
+ * MONDE VOLUMIQUE de l'écran de jeu (#1176, lots P2-2/P2-2b) — la couche MONDE, rendue en three.
+ * CONSOMMATEUR
  * pur du stage : il ne lit AUCUN store, ne décide ni cadrage ni visibilité ni dégagement — `IsoStage`
  * reste la seule source d'intention, exactement comme pour le backend affine.
  *
@@ -43,7 +43,7 @@
  *
  * INTEMPÉRIES (P2-6, #1247) : la météo authorée de la scène a TROIS expressions dans le volume, toutes
  * dérivées de la MÊME donnée (`iso.weather`, `src/data/ambiance.json`) — la voie affine garde son voile
- * d'écran (`stage/WeatherVeil.tsx`), qui ne se monte plus ici :
+ * d'écran, qui ne se monte plus ici :
  *  - ce qui TOMBE (`precip`) : un semis de quads instanciés qui descend à la cadence de la frame, borné
  *    par le MÊME couvert bâti que le dégagement (`shelterField`, `builders/roofs.ts`) — rien ne tombe
  *    sous un toit, y compris sous une nappe que le cutaway a levée, et rien ne se REND au-dessus d'une
@@ -54,11 +54,11 @@
  *    du ciel du POV (`weatherLightScalars`), jamais un voile posé par-dessus la scène.
  * Un type de météo qui n'a que `tint`/`alpha` (la neige) est donc servi sans une ligne de code.
  *
- * CANAUX D'AMBIANCE ENCORE ABSENTS (mesuré #1176, P2-2) — la voie affine (`stage/CulledScene`) les
+ * CANAUX D'AMBIANCE ENCORE ABSENTS (mesuré #1176, P2-2) — la voie SVG les
  * applique OBJET PAR OBJET, cet écran porte la teinte de visibilité (`tintAt`) et la lumière globale
  * ci-dessus. Ils font partie de ce qui reste à porter AVANT que la double voie meure (cliquet
  * `stage/double-voie-ratchet.test.ts`, qui compte les consommateurs restants de la voie affine) :
- *  - champ de LUMIÈRE par case (`tileBrightness`, `CulledScene`) ;
+ *  - champ de LUMIÈRE par case (`tileBrightness`) ;
  *  - opacité de PIÈCE / focus de salle (`roomOpacityOf`) ;
  *  - filtres de BROUILLARD, exploré vs inconnu (`fogFilterFor`, `FogLayer`).
  * Toute mesure de performance comparant les deux voies est donc à charge INÉGALE, et ne vaut pas

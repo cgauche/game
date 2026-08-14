@@ -4,7 +4,7 @@
  * destination de repli : il se DIT au joueur (`stage/SansWebgl.tsx`), monté par les hôtes de monde à
  * la place de leur canevas.
  *
- * Hors store Zustand, même patron que `state/stage3d.ts` et `state/viewLevel.ts` : ce n'est pas une
+ * Hors store Zustand, même patron que `state/viewLevel.ts` : ce n'est pas une
  * donnée du monde et `snapshotSave` ne doit jamais l'emporter dans une sauvegarde. Le verdict est
  * LATCHÉ (une fois refusé, il le reste pour la session) : le contexte ne revient pas de lui-même, et
  * un hôte qui re-tenterait à chaque rendu boucherait la boucle de rendu d'échecs.

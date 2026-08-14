@@ -5,9 +5,8 @@
  * `builders/highlights`, et même frontière : PUR et camera-free.
  *
  * Ce que cette dérivation rend, ce sont des cases LOGIQUES et des IDENTITÉS — jamais une position à
- * l'écran ni dans le monde. La position de l'INSTANT appartient à chaque voie de rendu, et les deux la
- * prennent au même canal de glissement : la voie affine à son rendu React (`stage/tokens`,
- * `WalkPos`), la voie volumique à sa boucle de frame (`stage/dynamicMarkPose`, `walkGlideM`).
+ * l'écran ni dans le monde. La position de l'INSTANT appartient au rendu, qui la prend au canal de glissement
+ * partagé (`stage/dynamicMarkPose`, `walkGlideM`, sur `fx/walkPose`).
  *
  * Pourquoi ces trois-là ne sont PAS dans `builders/highlights` : une marque de case s'y mesure à
  * l'ÉTAT (une portée, une zone, un anneau ne bougent pas entre deux états) ; celles-ci se posent à la
@@ -197,10 +196,10 @@ export function ringPhaseRad(kind: ProjKind): number {
 }
 
 /** Épaisseur du trait, en fraction de case — même convention que le lien de mêlée (`TETHER_WIDTH_K`),
- *  et même écart assumé : l'affine mesure son trait à l'écran, le volumique le sien dans le monde. */
+ *  le trait se mesure dans le MONDE, jamais en pixels d'écran. */
 export const TEAM_RING_WIDTH_K = strokeWidthK(TEAM_RING_STROKE_PX);
 
-/** BASES d'échelle des jetons dans le repère SVG (`stage/tokens`) : le combattant, et le meneur du
+/** BASES d'échelle des jetons dans le repère de billboard : le combattant, et le meneur du
  *  groupe hors combat. L'anneau se mesure sur la MÊME échelle que le corps qu'il entoure — la base
  *  voyage donc avec lui au lieu d'être recopiée d'un site de rendu à l'autre. */
 export const COMBAT_TOKEN_BASE = 0.62;
@@ -227,8 +226,8 @@ export function dashPattern(dash: string | undefined): { dashPx: number; gapPx: 
 
 /** Les anneaux d'équipe de la frame : UN par jeton de COMBATTANT posté, plus celui du meneur du groupe
  *  hors combat. La population est celle des ÉLÉMENTS DU BUILDER (`builders/tokens`) — donc exactement
- *  celle que les deux voies dessinent, filtres compris ; un couple MONTÉ n'en porte pas, la voie affine
- *  n'en traçant aucun sur son corps composite (`stage/tokens.combatantObjs`). */
+ *  celle que le rendu dessine, filtres compris ; un couple MONTÉ n'en porte pas — le composite cavalier
+ *  + monture est UN corps. */
 export function teamRings(tokens: readonly TokenEl[], partyToken: { leader: Combatant; pos: Pt } | null): TeamRing[] {
   const out: TeamRing[] = [];
   for (const tk of tokens) {
@@ -245,7 +244,7 @@ export function teamRings(tokens: readonly TokenEl[], partyToken: { leader: Comb
     });
   }
   // Le jeton de GROUPE n'est pas un combattant posté : il porte l'anneau du MENEUR, plein et à la
-  // première couleur d'identité, quelle que soit la nature de ce meneur (`stage/tokens.partyLeaderObj`).
+  // première couleur d'identité, quelle que soit la nature de ce meneur.
   if (partyToken)
     out.push({
       id: partyToken.leader.id,

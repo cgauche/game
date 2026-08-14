@@ -10,7 +10,6 @@ import { routeDistanceLabel } from '../engine/travel';
 import { actorIn, inBattleId } from './combatants';
 import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn, applyEffects } from './combatFlow';
 import { setAiTrace } from './ai';
-import { getStageBackend, setStageBackend } from './stage3d';
 import { viewYawDeg } from './stageYaw';
 import { gearFromEffects } from './combatEffects';
 import { pushChoice } from './rollSeam';
@@ -573,16 +572,6 @@ export function buildApi() {
       const v = on ?? !g().debugLabels;
       useGame.setState({ debugLabels: v });
       return v ? 'labels ON' : 'labels OFF';
-    },
-
-    /** VOIE DE RENDU SVG EN SURSIS (#1176, recette) : `affine` (couches SVG) ou `webgl` (monde
-     *  volumique). Sans argument : BASCULE. L'écran de JEU ne l'écoute plus (son monde est volumique,
-     *  commit C5a) — elle ne gouverne que le POV SVG et l'aperçu d'authoring, jusqu'au lot C5b. Hors du
-     *  store : la voie décrit le chantier, pas le monde (aucune sauvegarde, cf. `state/stage3d.ts`). */
-    stage3d: (on?: boolean) => {
-      const v = on ?? getStageBackend() === 'affine';
-      setStageBackend(v ? 'webgl' : 'affine');
-      return v ? 'monde VOLUMIQUE (webgl)' : 'monde AFFINE (couches SVG)';
     },
 
     /** Survol PROGRAMMATIQUE (combat) : pose la tuile survolée d'IsoStage comme si la souris y

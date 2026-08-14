@@ -12,7 +12,7 @@
  *
  * Le PRODUIT des deux (art × catégorie) est le multiplicateur de jeton — `entityTokenScale` /
  * `combatantTokenScale` ci-dessous, source UNIQUE des DEUX voies de rendu du monde (#1176) : le stage
- * AFFINE (`stage/tokens.tsx` : base du repère SVG × ce facteur) et le monde VOLUMIQUE
+ * le monde VOLUMIQUE
  * (`backends/webgl/sceneMeshes.ts` : taille monde du billboard × ce facteur). Seule la BASE du site
  * appelant (0,55 / 0,58 / 0,62 du repère 120×150) reste chez lui : elle n'a de sens qu'en SVG.
  */

@@ -1,8 +1,8 @@
 /**
- * POSE d'une marche en cours — la courbe de glissement, PURE et PARTAGÉE par les deux voies de rendu
- * (#1176, P2-4). La voie affine la lit au rendu React (`IsoStage.walkPosOf`, qui repeint ses jetons SVG
- * image par image) ; la voie volumique la lit depuis SA boucle de rendu, sans re-rendre React. Une
- * seule fonction, donc une seule courbe et une seule durée : les deux voies ne peuvent pas diverger.
+ * POSE d'une marche en cours — la courbe de glissement, PURE (#1176, P2-4). Le monde volumique la lit
+ * depuis SA boucle de rendu, sans re-rendre React ; les overlays SVG posés par-dessus (chrome de jeton,
+ * caméra de stage) la lisent au rendu React par `WalkPos`. Une seule fonction, donc une seule courbe et
+ * une seule durée : le canevas et ses surcouches ne peuvent pas diverger.
  */
 import { depth, type Dims } from '../../geometry/iso';
 import { walkXY, STEP_MS, type Pt } from '../../geometry/walk';
@@ -13,13 +13,17 @@ export interface WalkTrack {
   start: number;
 }
 
-/** Position VISUELLE d'un sujet et son point de TRI — la forme que consomme `stage/tokens.WalkPos`. */
+/** Position VISUELLE d'un sujet et son point de TRI. */
 export interface WalkPose {
   x: number;
   y: number;
   walking: boolean;
   sortPt: Pt;
 }
+
+/** Lecture de la pose d'un sujet par son id, à l'instant du rendu : la forme que les surcouches SVG
+ *  du stage consomment (chrome de jeton, caméra) pour suivre un corps qui glisse. */
+export type WalkPos = (id: string, x: number, y: number, z?: number) => WalkPose;
 
 /**
  * Pose à l'instant `now`. Sans marche vivante, le sujet est à sa case et ne glisse pas. Sinon la

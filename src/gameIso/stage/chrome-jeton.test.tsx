@@ -5,7 +5,6 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import * as THREE from 'three';
 import { useGame, type BattleState } from '../../state/store';
 import { emptyScene } from '../../state/scene';
-import { setStageBackend } from '../../state/stage3d';
 import { bus, EVT } from '../../state/bus';
 import { STEP_MS } from '../../geometry/walk';
 import type { Combatant } from '../../engine/types';
@@ -101,8 +100,7 @@ class BancRenderer implements StageRenderer {
 let commits = 0;
 const rendus = () => commits;
 
-function monter(backend: 'affine' | 'webgl', retouche: Record<string, unknown> = {}): HTMLDivElement {
-  setStageBackend(backend);
+function monter(retouche: Record<string, unknown> = {}): HTMLDivElement {
   useGame.setState({
     scene: emptyScene(10, 10),
     mode: 'battle',
@@ -165,12 +163,11 @@ beforeAll(() => {
 afterAll(() => setStageRendererFactory(null));
 afterEach(() => {
   démonter();
-  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
 describe('Chrome des jetons — UNE dérivation, UN peintre, deux voies (#1176 P3-0f)', () => {
   it('le chrome est peint à l’écran : une barre par combattant posté, « +1 », pastille de mort', () => {
-    const el = monter('webgl');
+    const el = monter();
     const barres = barresPV(el);
     expect(barres, 'une barre par combattant posté').toHaveLength(2);
     expect(barres.map((b) => b.getAttribute('fill'))).toContain(hpColor(PV.current / PV.max));
@@ -182,7 +179,7 @@ describe('Chrome des jetons — UNE dérivation, UN peintre, deux voies (#1176 P
   });
 
   it('le chrome vit dans l’overlay projeté, combattant par combattant', () => {
-    const el = monter('webgl');
+    const el = monter();
     const h1 = chromeVolumique(el, 'h1');
     const e1 = chromeVolumique(el, 'e1');
     expect(h1, 'le héros porte son chrome au-dessus de sa tête').toBeTruthy();
@@ -202,7 +199,7 @@ describe('Chrome des jetons — UNE dérivation, UN peintre, deux voies (#1176 P
   });
 
   it('AUCUNE DOUBLE PEINTURE : tout le chrome peint vit dans l’overlay, et rien dans un corps SVG', () => {
-    const webgl = monter('webgl');
+    const webgl = monter();
     const barres = barresPV(webgl);
     expect(barres.length).toBeGreaterThan(0);
     // En volumique il n'y a plus de corps de jeton SVG : toute barre peinte appartient à l'overlay.
@@ -215,7 +212,7 @@ describe('Chrome des jetons — UNE dérivation, UN peintre, deux voies (#1176 P
     const scaleK = combatantTokenScale(h);
     const frac = combatantBodyTopFrac(h);
     const marque = { scaleK, n: 1, bodyTopFrac: frac }; // le héros de la sonde : taille moyenne, empreinte d'une case
-    const el = monter('webgl');
+    const el = monter();
     const h1 = chromeVolumique(el, 'h1')!;
     const dims: Dims = { ...emptyScene(10, 10).dimensions, rot: 0, view: 'iso', edge: false } as Dims;
     const { cx, cy } = tileCenter(3, 3, dims, 0);
@@ -230,7 +227,7 @@ describe('Chrome des jetons — UNE dérivation, UN peintre, deux voies (#1176 P
 
     // DESSUS : plus de tête à surmonter — le corps y est un disque-portrait, et le chrome se pose à son
     // BORD, exactement comme la voie affine (`BodyToken`, branche `flat` : `badgeY = −discR`).
-    const top = monter('webgl', { viewMode: 'top' });
+    const top = monter({ viewMode: 'top' });
     const dimsTop: Dims = { ...dims, view: 'top' } as Dims;
     expect(chromeHeadPx(dimsTop, marque)).toBe(discR(1));
     expect(badgesDe(chromeVolumique(top, 'h1')!)).toContain(`translate(0,${-discR(1) - 8})`);
@@ -469,7 +466,7 @@ describe('Chrome des jetons — la POSITION suit la marche à la FRAME (#1176 P3
   const posé = (el: HTMLElement, cid: string) => chromeVolumique(el, cid)!.getAttribute('transform');
 
   it('le chrome GLISSE image par image, sans un seul rendu React', () => {
-    const el = monter('webgl');
+    const el = monter();
     const e1Avant = posé(el, 'e1');
     // DEUX pas (deux segments, donc `2 × STEP_MS` de marche). Le store a déjà commis l'arrivée (x:3) :
     // la marche rejoue le trajet depuis la case quittée.
@@ -527,7 +524,7 @@ describe('Ancre du chrome — la TOISE du gabarit, jamais une constante par fami
     const humain = perso('humain');
     const monterAvec = (c: Combatant) => {
       const b = combatChromé();
-      return monter('webgl', { battle: { ...b, combatants: [{ ...b.combatants[0], appearance: c.appearance }, b.combatants[1]] }, party: [c] });
+      return monter({ battle: { ...b, combatants: [{ ...b.combatants[0], appearance: c.appearance }, b.combatants[1]] }, party: [c] });
     };
 
     const volNain = ancreDe(chromeVolumique(monterAvec(nain), 'h1')!);

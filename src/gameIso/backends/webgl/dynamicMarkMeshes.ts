@@ -1,6 +1,6 @@
 /**
  * BACKEND VOLUMIQUE des marques DYNAMIQUES (#1176, P3-0d) — le pendant three des trois repères que la
- * voie affine trace à la frame (`stage/tokens.dynamicHighlightObjs`) : lien d'ENGAGEMENT, contour de
+ * rendu trace à la frame : lien d'ENGAGEMENT, contour de
  * l'unité ACTIVE, repère de position du GROUPE — plus l'ANNEAU D'ÉQUIPE aux pieds de chaque jeton
  * (P3-0e), que l'affine peint DANS son jeton (`BodyToken`). Même partage que `highlightMeshes.ts` : le
  * MONTAGE est ici, la POSE par frame vit dans `stage/dynamicMarkPose.ts`.
@@ -37,7 +37,7 @@ export const DYN_MARK_SLOTS: readonly DynMarkSlot[] = ['actif', 'groupe', 'annea
 /** RANG de superposition, dans la MÊME échelle que les marques statiques (`highlightMeshes.SLOT_RANK`,
  *  qui s'arrête à 8) : ces quatre-là passent AU-DESSUS de toutes les marques de case, comme en affine où
  *  elles sont émises après le builder. L'ANNEAU d'équipe passe au-dessus du contour d'actif et du repère
- *  de groupe : la voie affine le peint DANS le jeton (profondeur `+0.5`, `stage/tokens.combatantObjs`)
+ *  de groupe : le monde le pose au SOL, sous le billboard
  *  quand elle pose ces deux-là sous les jetons (`+0.25`, `dynamicHighlightObjs`).
  *
  *  LE LIEN D'ENGAGEMENT EST AU SOMMET (correctif du juge vision, 2026-08-13) : sous le contour d'actif,

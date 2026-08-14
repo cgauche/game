@@ -60,7 +60,7 @@ import { BOTTE_CUIR } from '../botte-gabarit';
 //               (elle doit trancher sur l'armure à 40px) — PAS sur la plage de valeurs INTERNE :
 //               une masse qui a du volume tranche MIEUX qu'une tache plate. Médiane ~80 % = crème.
 //               Ombre et plis se taillent par CLIP de la silhouette (`<clipPath id="wwfur-*">`,
-//               patron `affineRoofs.ts`) → débord impossible, et l'enveloppe reste libre d'évoluer
+//               patron `authoring/roofsSvg.ts`) → débord impossible, et l'enveloppe reste libre d'évoluer
 //               sans retoucher chaque couche. Les couches qui SUIVENT le bord sont tracées sur
 //               l'enveloppe LISSE, jamais sur les mèches : une pointe noyée dans @fourrureO relit
 //               comme un éclat de glace DÉTACHÉ de la masse — la pointe doit rester en couleur de

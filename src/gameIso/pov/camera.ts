@@ -55,7 +55,7 @@ export function farTilesOf(indoor: boolean): number {
  * `tightenK` absent ou 1 : la courbe du milieu, à l'identique. PUR.
  *
  * PÉRIMÈTRE MESURÉ : la voie POV SVG lit la portée SANS passer par ici — `farTilesOf`/`fogCurveOf`
- * directement (`pov/billboardCore.ts` `footAnchor`, `pov/geometry.ts` `buildPovDrawList`). Sans effet
+ * directement (`backends/webgl/billboardMath.ts`, `backends/webgl/cameras.ts`). Sans effet
  * aujourd'hui : la météo n'a d'expression qu'à la voie VOLUMIQUE (le voile d'écran de l'affine ne
  * touche pas la profondeur). Qui brancherait la météo sur le SVG passerait par ici, ou aurait deux
  * portées.

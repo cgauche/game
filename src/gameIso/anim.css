@@ -208,7 +208,7 @@
 .zde-ants { animation: zdeMarch 0.9s linear infinite; }
 
 /* #239 — météo authorée de scène : champ de particules de précipitation. Animation CSS PURE
-   (compositor GPU), positions seedées côté WeatherVeil (idempotentes), aucun re-calcul par frame.
+   (compositor GPU), positions seedées à la source (idempotentes), aucun re-calcul par frame.
    Chaque particule boucle hors-écran (haut → bas) → boucle sans couture ; la couleur vient de la
    donnée (`pcolor`, style inline), pas d'ici. */
 .wx-p { transform-box: view-box; animation-timing-function: linear; animation-iteration-count: infinite; }

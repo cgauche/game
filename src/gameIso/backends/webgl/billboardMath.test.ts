@@ -22,9 +22,9 @@ import { TW, type Rot } from '../../../geometry/iso';
 describe('taille monde — convention `jeu` du moteur + presets de comparaison de planche (#1160)', () => {
   it('héroïque = boîte iso 150 px × échelle de token ÷ 24 px/m', () => {
     expect(ISO_PX_PER_M).toBe(24); // LEVEL_H 96 px ⇔ METRES_PER_LEVEL 4 m
-    // personnage : échelle rig 0.58 (stage/tokens.tsx:172) → 150×0.58 = 87 px → 3.625 m
+    // personnage : échelle rig 0.58 → 150×0.58 = 87 px → 3.625 m
     expect(billboardHeightM('heroique', 'personnage')).toBeCloseTo(3.625, 6);
-    // prop : échelle 0.55 (stage/tokens.tsx:85) → 150×0.55 = 82.5 px → 3.4375 m
+    // prop : échelle 0.55 → 150×0.55 = 82.5 px → 3.4375 m
     expect(billboardHeightM('heroique', 'prop')).toBeCloseTo(3.4375, 6);
     // dérivation vérifiée depuis les constantes importées, pas depuis un nombre écrit à la main
     expect(billboardHeightM('heroique', 'prop')).toBeCloseTo((BB_H * 0.55) / ISO_PX_PER_M, 10);

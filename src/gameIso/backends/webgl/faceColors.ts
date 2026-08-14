@@ -20,7 +20,7 @@
  * 2026-08-10 sur `vitrine-batiments-top-unlit` AVANT ce choix : les deux versants d'un même toit
  * rendaient 87,1 contre 45,7 de luminance (×1,91) et 9,79 contre 1,24 d'écart-type — le pan sombre
  * perdait jusqu'à son appareillage, le joint de la recette y étant PLUS CLAIR que le pan. Garde de
- * planche « MATIÈRE UNIQUE par toit » (`scripts/qc/spike-checks.mjs`).
+ * planche « MATIÈRE UNIQUE par toit ».
  */
 import { reliefMaterial } from '../../catalog/relief';
 import { roofMaterial } from '../../catalog/roofs';
@@ -37,7 +37,7 @@ import type { Face } from '../../builders/types';
 export type ColorMode = 'unlit' | 'lit';
 
 const TERRAIN_BY_ID = new Map(TERRAIN_DEFS.map((t) => [t.id, t]));
-/** Sol sans terrain connu — même repli que le POV (`pov/geometry.ts:95`). */
+/** Sol sans terrain connu — repli neutre. */
 const FLOOR_FALLBACK = reliefMaterial('sol-inconnu').face;
 
 function reliefColor(id: string, part: string | undefined): string {
@@ -127,7 +127,7 @@ export function faceSurface(face: Face): FaceSurface {
 }
 
 /** Facteur de variance de TEINTE d'une surface à l'identité MONDE de sa case ∈ [1−tintVar, 1+tintVar] :
- *  MÊME tirage que l'affine (`affineDetail.ts` `terrainFillGradient`) — variante
+ *  MÊME tirage que l'affine (`authoring/detailSvg.ts` `terrainFillGradient`) — variante
  *  `hash32('tint', x, y, z) % TINT_SPREAD.length`, facteur `1 + tintVar × TINT_SPREAD[k]`. Les deux
  *  backends tombent donc sur la même nuance pour la même tuile. 1 sans `tintVar` (surface uniforme). */
 export function tintVarFactor(recipe: DetailRecipe | undefined, cell: { x: number; y: number; z: number }): number {

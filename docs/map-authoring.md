@@ -106,7 +106,7 @@ assertions MÉCANIQUES générales, réutilisables par le test de N'IMPORTE QUEL
     par zone descriptive du calque `zoneMap`. C'est la raison structurelle des zones nommées ;
   - **connexité verticale** : `reachedFloors(scene, start)` contient tous les étages habités (le pas passe
     par une volée `stair`).
-- **Jugement visuel** : script QC (resvg, patron [`scripts/qc/render-walls.mts`](../scripts/qc/render-walls.mts))
+- **Jugement visuel** : capture de jeu (patron [`scripts/qc/capture-jeu.mjs`](../scripts/qc/capture-jeu.mjs))
   → planche par étage, 4 rotations, plan source en regard ; juges VISION en RÉFUTATION (pièces manquantes
   ou déformées, ouvertures déplacées, proportions) — jamais une auto-certification du codeur.
 - **Exemple vivant** : [`src/scenes/test-scenarios/zones-pieces.ts`](../src/scenes/test-scenarios/zones-pieces.ts).

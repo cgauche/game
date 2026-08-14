@@ -3,7 +3,7 @@
  * lisibles, et la fonction de base d'un éditeur de plan.
  *
  * POURQUOI ELLE EXISTE MAINTENANT : sur la voie AFFINE, chaque losange de sol est tracé avec son
- * contour (`backends/affineFloors.ts` : `stroke` sur le `path` de base), et cette couture DONNE la
+ * contour (`authoring/floorsSvg.ts` : `stroke` sur le `path` de base), et cette couture DONNE la
  * grille — mesuré à l'écran, une périodicité franche au pas de la case. Le monde VOLUMIQUE, lui,
  * fusionne les faces coplanaires de même matériau en une géométrie continue : deux cases voisines de
  * même terrain n'ont plus aucune limite visible. La grille cesse donc d'être un effet de bord du

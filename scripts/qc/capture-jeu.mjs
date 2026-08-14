@@ -1,10 +1,10 @@
 /**
  * QC — PLANCHES DE GOÛT CAPTURÉES SUR L'ÉCRAN DE JEU RÉEL (#1176, voie VOLUMIQUE).
  *
- * Successeur des planches headless rendues hors app (`render-env.mts`, `render-diligence.mts`) : ici
+ * Planches de jeu capturées DANS l'app (et non rendues hors d'elle) : ici
  * rien n'est ré-assemblé à côté du jeu — on OUVRE l'app (kit CDP `scripts/recette/lib.mjs`), on charge
- * un scénario par son id (`__wfrp.scenario`), on arme la voie volumique (`__wfrp.stage3d(true)`), on
- * cadre par les MÊMES actions que le joueur (`rotateCam` cran par cran, `setZoom`, `viewMode`), et on
+ * un scénario par son id (`__wfrp.scenario`), on cadre par les MÊMES actions que le joueur
+ * (`rotateCam` cran par cran, `setZoom`, `viewMode`), et on
  * capture le CANEVAS. Ce que la planche montre est donc ce que le joueur voit, HUD compris ou non
  * (la capture est rognée sur le canevas du monde).
  *
@@ -126,11 +126,10 @@ async function fermerBriefing(session, { attendreApparition = true, timeoutMs = 
   if (await evaluate(session, voile)) throw new Error('une fenêtre modale occupe encore le centre de l\'écran — capture refusée');
 }
 
-/** Charge le scénario, arme la voie VOLUMIQUE, ouvre la carte : l'état de départ de toute capture. */
+/** Charge le scénario et ouvre la carte : l'état de départ de toute capture. */
 async function armerScene(session, id, seed) {
   console.log(await evaluate(session, `__wfrp.scenario(${JSON.stringify(id)}, ${seed})`));
   await waitFor(session, '!!__wfrp.state()');
-  await evaluate(session, '__wfrp.stage3d(true)');
   // Brouillard OFF : une planche de goût juge le MONDE, pas la vision du groupe (le voile est un
   // calque SVG posé par-dessus le canevas — il masquerait l'essentiel de la scène).
   await evaluate(session, '__wfrp.fog(false)');

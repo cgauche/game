@@ -1,11 +1,10 @@
 // @vitest-environment jsdom
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
-import { setStageBackend } from '../../state/stage3d';
 import { setRevealAll } from '../../state/visionState';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
@@ -120,10 +119,8 @@ afterAll(() => {
   setStageRendererFactory(null);
   setRevealAll(false);
 });
-beforeEach(() => { setStageBackend('webgl'); });
 afterEach(() => {
   démonter();
-  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
 describe('POV volumique — la BRUME du milieu (#1176 P3-1c)', () => {

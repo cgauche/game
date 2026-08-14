@@ -1,5 +1,5 @@
 /**
- * BACKEND VOLUMIQUE des SURBRILLANCES de combat (#1176, P3-0c) — le pendant three d'`affineHighlights`
+ * BACKEND VOLUMIQUE des SURBRILLANCES de combat (#1176, P3-0c) — le peintre three
  * sur le MÊME builder pur (`builders/highlights`) : un élément sémantique devient un quad PLAT posé au
  * sol du monde. En volume, une case est un CARRÉ — le losange de la voie affine n'était que sa
  * projection.

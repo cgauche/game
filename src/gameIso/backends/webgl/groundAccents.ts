@@ -1,6 +1,6 @@
 /**
- * SPIKE WebGL — ACCENTS DE SOL (touffes d'herbe, mouchetis) en INSTANCES. Le pendant three de
- * `groundAccentsSvg` (`backends/affineDetail.ts:389`) et de `groundAccentItems` (`pov/geometry.ts:408`) :
+ * ACCENTS DE SOL (touffes d'herbe, mouchetis) en INSTANCES. Le pendant three de `groundAccentsSvg`
+ * (`authoring/detailSvg.ts`) :
  * un semis SANS période, ancré au MONDE, qui ne peut donc passer ni par la texture de période
  * (`periodTexture`) ni par la cuisson par face (`faceBake`) — ses emplacements sont uniques au monde.
  *
@@ -14,10 +14,9 @@
  *    reste actif : `InstancedMesh` surcharge `computeBoundingSphere` pour couvrir SES instances, et
  *    `Frustum.intersectsObject` la calcule à la première frame (three 185, `three.core.js:25611`).
  *
- * LECTURE DU 2ᵉ RANG DU FLUX `blades` : ce backend fait EXACTEMENT ce que fait déjà le POV
- * (`pov/geometry.ts`, `groundAccentItems`) — le tirage que l'affine étale en penché d'ÉCRAN
- * (`TUFT_LEAN_AMPLITUDE`, sans équivalent dans un monde 3D) se lit ici en ANGLE MONDE `r() * 2π`,
- * la même formule que le POV. Les hauteurs de brin, elles, restent identiques aux trois backends.
+ * LECTURE DU 2ᵉ RANG DU FLUX `blades` : le tirage que le SVG étale en penché d'ÉCRAN
+ * (`TUFT_LEAN_AMPLITUDE`, sans équivalent dans un monde 3D) se lit ici en ANGLE MONDE `r() * 2π`.
+ * Les hauteurs de brin, elles, restent identiques chez les deux peintres.
  */
 import * as THREE from 'three';
 import { expandRecipe, TUFT_FAN } from '../../detail/expand';
@@ -41,7 +40,7 @@ export const SPECKLE_LIFT_M = 0.005;
 /** Un accent posé : type, couleur de DONNÉE, case dont il prend sa visibilité, pose monde. */
 export interface GroundAccent {
   kind: 'tuft' | 'speckle';
-  /** Couleur tirée dans la palette de la recette, PAR TUILE (`affineDetail.ts:399`). */
+  /** Couleur tirée dans la palette de la recette, PAR TUILE (`authoring/detailSvg.ts`). */
   color: string;
   /** Case porteuse (`"x,y,z"`) : le MONTAGE y prend la teinte de visibilité, la dérivation l'ignore. */
   cellKey: string;
@@ -63,7 +62,7 @@ export function tileGroundAccents(
 ): GroundAccent[] {
   const seed = hash32('floor', cell.x, cell.y, cell.z);
   const cellKey = `${cell.x},${cell.y},${cell.z}`;
-  // Recette RESTREINTE aux deux sections d'accent, comme le POV (`pov/geometry.ts:424`) : chaque section
+  // Recette RESTREINTE aux deux sections d'accent : chaque section
   // tire son SOUS-flux (`expandRecipe`), retirer les autres ne décale aucun tirage.
   const e = expandRecipe({ tufts: recipe.tufts, speckle: recipe.speckle, seedScope: recipe.seedScope }, mpt, mpt, seed);
   const at = (u: number, v: number): Vec3 => ({ x: (cell.x - 0.5 + u) * mpt, y: h, z: (cell.y - 0.5 + v) * mpt });
@@ -74,7 +73,7 @@ export function tileGroundAccents(
     const color = tileColor(recipe.tufts.colors, 'tuftcol');
     for (const t of e.tufts) {
       // Deux tirages par touffe, dans l'ORDRE du flux (cf. contrat sur `groundAccentsSvg`) : hauteur,
-      // puis angle monde — la formule du POV (`pov/geometry.ts`, `groundAccentItems`).
+      // puis angle monde.
       const hM = t.hM * (0.8 + r() * 0.5);
       const yaw = r() * Math.PI * 2;
       out.push({ kind: 'tuft', color, cellKey, pos: at(t.u, t.v), sizeM: hM, yaw });
@@ -94,7 +93,7 @@ export interface SceneGroundAccent extends GroundAccent {
 }
 
 /** Accents de toute la scène : les faces de TERRAIN NU (`domain === 'terrain'` sans `part` — la même
- *  porte que `floorAccentsSvg`, `affineFloors.ts:164`) portant une recette d'accent, chacune semée à
+ *  porte) portant une recette d'accent, chacune semée à
  *  l'identité de SA case. INVARIANT à la visibilité ET au dégagement, comme le bake du monde
  *  (`bakeWorldGeometry`) : le semis coûte 12,1 ms sur l'arène (mesuré #1176) et ne se rejoue qu'à la
  *  scène ou à l'échelle — c'est `maskGroundAccents` qui en retire ce que le dégagement emporte. */

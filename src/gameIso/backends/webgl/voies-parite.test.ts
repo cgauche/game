@@ -104,7 +104,7 @@ describe('ÉCHELLE — la même pour les deux voies, sur TOUT le bestiaire', () 
   const scene = SCENES.get('arene-hub')!;
   const mpt = sceneMetresPerTile(scene);
 
-  /** Facteur d'échelle du jeton AFFINE, tel que `stage/tokens.tsx` le compose : le `speciesScale` du
+  /** Facteur d'échelle du jeton dans le repère SVG de référence : le `speciesScale` du
    *  classifieur de corps × la catégorie de Taille (ou l'empreinte propre). La base 0,62 est du SVG. */
   const echelleAffine = (c: Combatant): number =>
     tokenBodyKind({ kind: 'combatant', combatant: c }).speciesScale

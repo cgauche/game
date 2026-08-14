@@ -4,16 +4,12 @@
  * faire EXACTEMENT ce que font ces touches. Le monde est volumique (commit C5a) : la poussée pousse le
  * lacet CONTINU vers le cran DIAGONAL visé, et ne touche pas au cran du store.
  * Monté pour de VRAI (patron `createRoot`/`act` du repo) : c'est l'ÉCRAN qui est jugé, pas le prédicat.
- *
- * L'interrupteur DEV « Monde volumique » a quitté cet écran avec la voie affine (commit C5a) : le jeu
- * n'a plus qu'un monde, et `state/stage3d.ts` n'est plus piloté que par le devtool `__wfrp.stage3d`
- * (voie POV SVG, morte à C5b).
+
  */
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useGame } from '../state/store';
-import { setStageBackend } from '../state/stage3d';
 import { testScene } from '../scenes/test-fixture';
 import { CampaignView } from './CampaignView';
 import { getStageYaw, resetStageYaw } from '../state/stageYaw';
@@ -37,7 +33,6 @@ function monter(povActive: boolean) {
 afterEach(() => {
   act(() => { root.unmount(); });
   host.remove();
-  setStageBackend('webgl');
   resetStageYaw();
   vi.unstubAllGlobals();
 });
@@ -75,9 +70,8 @@ describe('CampaignView — les boutons d’orientation SONT le geste de Q/E', ()
     expect(useGame.getState().camRot).toBe(cran);
   });
 
-  it('…et le geste est le MÊME quoi que dise l’interrupteur de chantier (il ne gouverne plus le jeu)', () => {
+  it('…et le geste est le MÊME dans l’autre sens (aucune asymétrie de poussée)', () => {
     const el = monter(false);
-    setStageBackend('affine');
     sansFrames();
     const cran = useGame.getState().camRot;
     act(() => { el.querySelector('[aria-label="Tourner anti-horaire (Q)"]')!.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true })); });

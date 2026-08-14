@@ -3,7 +3,7 @@
  * Toute couleur vient de la DONNÉE (`src/data/*.json`, defs de terrain) ou de `shade.ts` (la LUMIÈRE :
  * ombre d'orientation, occlusion, spéculaire). `#hex` / `rgb()` littéraux capturent aussi les anciennes
  * tables hex-valuées. Deux niveaux de couverture :
- *   1) balayage RÉCURSIF des arborescences pivot/backend/pov/catalog/stage — auto-couvre tout NOUVEAU
+ *   1) balayage RÉCURSIF des arborescences pivot/backend/authoring/pov/catalog/stage — auto-couvre tout NOUVEAU
  *      fichier (plus de liste à tenir à la main) ;
  *   2) les renderers à la RACINE de `gameIso/`, nommés explicitement (`IsoStage`, `sprites`).
  * `catalog/decor/defs/` (les 97 defs de props) a son propre bloc plus bas (dessin par def, MAIS couleurs
@@ -29,10 +29,11 @@ const ROOT_RENDERERS = [
   'sprites.ts', // overlays de terrain (mur/arbre) + villageois d'ambiance — tons de decorPalette + ao()
 ];
 
-// Arborescences pivot / backend / moteur de recettes / catalogue / stage / POV : chaque .ts/.tsx
+// Arborescences pivot / backend volumique / peintres d'authoring / recettes / catalogue / stage / POV :
+// chaque .ts/.tsx
 // (hors test) est un renderer d'environnement (ou l'alimente en données) → hex-free.
 // `catalog/decor/defs` a son bloc dédié (palette) → exclu du balayage.
-const SWEEP_DIRS = ['builders', 'backends', 'detail', 'pov', 'catalog', 'stage'];
+const SWEEP_DIRS = ['builders', 'backends', 'authoring', 'detail', 'pov', 'catalog', 'stage'];
 
 /** Fichiers .ts/.tsx (hors tests) d'un sous-arbre, chemins relatifs à `gameIso/`. */
 function walk(abs: string, rel: string): string[] {
@@ -87,10 +88,11 @@ describe('garde-fou — aucune couleur en dur dans un renderer d’environnement
 
   it('la surface couverte est complète (racine + balayage)', () => {
     expect(COVERED).toContain('sprites.ts');
-    // Ancres nommées sur des renderers qui SURVIVENT au retrait des backends SVG (#1176, Phase 3 :
-    // « Retrait des backends SVG (affine*, pov/) ») : le peintre volumique et les recettes de matière.
+    // Ancres nommées : le peintre volumique, les recettes de matière, et les peintres d'authoring
+    // survivants (#1176, P3-4 C5b).
     expect(COVERED).toContain('backends/webgl/faceColors.ts');
     expect(COVERED).toContain('detail/expand.ts');
+    expect(COVERED).toContain('authoring/wallsSvg.ts');
     // …et chaque arborescence déclarée est réellement ATTEINTE : une ancre nommée ne prouve que son
     // propre dossier ; ceci empêche n'importe lequel des autres de se vider en silence.
     for (const dir of SWEEP_DIRS) expect(COVERED.filter((rel) => rel.startsWith(`${dir}/`))).not.toEqual([]);

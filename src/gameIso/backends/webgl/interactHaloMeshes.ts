@@ -1,6 +1,6 @@
 /**
  * BACKEND VOLUMIQUE des HALOS D'INTERACTION (#1176, P3-0g) — le pendant three des deux affordances que
- * la voie affine trace en ellipses animées par CSS (`stage/tokens.interactHaloObjs` /
+ * le SVG traçait en ellipses animées par CSS (`
  * `npcHoverHaloObjs`) : le halo permanent d'un décor FOUILLABLE et le halo de survol d'un PNJ
  * interlocuteur. Même partage que `dynamicMarkMeshes.ts` : le MONTAGE est ici, la POSE par frame vit
  * dans `stage/interactHaloPose.ts`.

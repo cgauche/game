@@ -4,10 +4,10 @@
  * `RoofMaterialDef`, `ReliefMaterialDef`, `TerrainDef`) via leur champ optionnel `detail`.
  *
  * `expandRecipe` (expand.ts) déplie la recette en primitives UV en ESPACE DE FACE [0,1]² (+ mètres pour
- * les épaisseurs), consommées par les TROIS backends : `backends/affineDetail.ts` (iso écran),
- * `pov/geometry.ts` (perspective) et `backends/webgl/faceBake.ts` (cuisson par face du rendu
+ * les épaisseurs), consommées par DEUX peintres : `authoring/detailSvg.ts` (SVG d'authoring)
+ * et `backends/webgl/faceBake.ts` (cuisson par face du rendu
  * volumique) ; le tracé de PÉRIODE (`detail/courses.ts`) a les mêmes trois consommateurs
- * (`affineDetail`, `pov/geometry`, `backends/webgl/periodTexture.ts`). Chaque backend rasterise à sa
+ * (`authoring/detailSvg`, `backends/webgl/periodTexture.ts`). Chaque peintre rasterise à sa
  * résolution, les vues retombent sur le MÊME détail parce que le seed est dérivé de l'identité MONDE
  * (`hash32`, jamais stocké).
  *

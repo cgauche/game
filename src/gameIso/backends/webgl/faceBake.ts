@@ -98,8 +98,8 @@ export function bakeResolution(
 }
 
 /** Parts de mur que le COLOMBAGE habille — le jeu EXACT des faces que le backend affine colombe :
- *  `affineWalls.ts:160` (la face `part === 'face'` d'un `WallEl`), `affineWalls.ts:251` (couche
- *  d'accents, même filtre `f.material.part !== 'face'`) et `structureFaceSvg` (`affineWalls.ts:209`),
+ *  `authoring/wallsSvg.ts` (la face `part === 'face'` d'un `WallEl`, puis la couche
+ *  d'accents, même filtre `f.material.part !== 'face'`) et `structureFaceSvg` (`authoring/wallsSvg.ts`),
  *  qui ne reçoit que des fermetures de comble et des raccords de nappe — tous authorés `part: 'face'`
  *  (`builders/roofs.ts:1308`, `builders/walls.ts:525`). Toute autre part (poteau, plinthe, panneau,
  *  moulure, vitre, meneau…) est un DÉCOR posé sur la joue : elle garde son chemin de période ou son
@@ -141,7 +141,7 @@ function poser(m: Mask, x: number, y: number, ratio: readonly number[], cov: num
  *  poutre est ANTI-CRÉNELÉ (un trait oblique cessait d'être une suite d'escaliers pleins), et une poutre
  *  plus fine qu'un pixel dépose sa fraction d'encre au lieu d'être arrondie à un pixel plein ou à rien.
  *  Bouts CARRÉS : l'axe est allongé d'une demi-largeur à chaque extrémité, comme le `stroke-linecap
- *  ="square"` de la source affine (`timberOverlaySvg`, `affineDetail.ts:374`). */
+ *  ="square"` de la source affine (`timberOverlaySvg`, `authoring/detailSvg.ts`). */
 function stampSegment(m: Mask, u0: number, v0: number, u1: number, v1: number, wPx: number, ratio: readonly number[]): void {
   const r = Math.max(0.5, wPx / 2);
   let x0 = u0 * m.sx, y0 = v0 * m.sy, x1 = u1 * m.sx, y1 = v1 * m.sy;

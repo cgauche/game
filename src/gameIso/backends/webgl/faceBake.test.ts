@@ -11,7 +11,7 @@ import {
   FACE_PX_PER_M,
 } from './faceBake';
 import { teinteRatio } from './periodTexture';
-import { timberOverlaySvg } from '../affineDetail';
+import { timberOverlaySvg } from '../../authoring/detailSvg';
 import { TIMBER_V0, TIMBER_V1, expandRecipe } from '../../detail/expand';
 import { ISO_PX_PER_M } from '../../iso';
 import { structureAppearances } from '../../../data';
@@ -124,8 +124,8 @@ describe('faceBake — cuisson par face (canal DÉTERMINISTE seul)', () => {
   });
 
   it('SEULE la part `face` se colombe — le jeu EXACT que le backend affine habille', () => {
-    // Les parts décoratives d'un mur à pans de bois : le SVG n'y pose aucune poutre (`affineWalls.ts:160`
-    // cherche `part === 'face'`, `affineWalls.ts:227` écarte tout le reste avant le colombage de la l.251).
+    // Les parts décoratives d'un mur à pans de bois : le SVG n'y pose aucune poutre (`authoring/wallsSvg.ts`
+    // cherche `part === 'face'`, `authoring/wallsSvg.ts` écarte tout le reste avant le colombage de la l.251).
     for (const part of ['poteau', 'panneau', 'moulure', 'plinthe', 'couronnement', 'vitre', 'meneau', 'vantail', 'jambage', 'embrasure', 'chambranle', 'parapet', 'merlon', 'arase', 'bande'])
       expect([part, needsFaceBake(RECETTE, 'wall', part)]).toEqual([part, false]);
     expect(needsFaceBake(RECETTE, 'wall', undefined)).toBe(false);

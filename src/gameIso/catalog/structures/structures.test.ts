@@ -3,7 +3,7 @@ import { structureAppearance, wallApp, wallPartColor } from './index';
 import { structureAppearances } from '../../../data';
 import { MISSING_ID, MISSING_TONE } from '../missing';
 import { buildWalls } from '../../builders/walls';
-import { wallSvg } from '../../backends/affineWalls';
+import { wallSvg } from '../../authoring/wallsSvg';
 import { emptyScene, type Scene, type WallSeg } from '../../../state/scene';
 import type { Dims } from '../../../geometry/iso';
 

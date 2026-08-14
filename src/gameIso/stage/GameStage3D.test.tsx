@@ -5,7 +5,6 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene } from '../../state/scene';
-import { setStageBackend } from '../../state/stage3d';
 import type { Combatant } from '../../engine/types';
 import { IsoStage } from '../IsoStage';
 import { cidUnderPointer, hasSpritePicker } from './spritePicker';
@@ -17,15 +16,12 @@ import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
  * Plus aucun jeton n'y porte de `data-cid` : le picking de SPRITE passe par la couture
  * `stage/spritePicker.ts`, où cet écran INSCRIT son lancer de rayon (P2-3) — c'est l'inscription, et
  * non un drapeau de voie, qui bascule le pointeur.
- *
- * L'interrupteur de chantier (`state/stage3d.ts`) survit à C5a pour la voie POV SVG (morte à C5b) :
- * ce banc vérifie qu'il n'a PLUS AUCUNE prise sur l'écran de jeu.
+
  */
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-/** Renderer de BANC : jsdom n'a aucun contexte WebGL, et depuis que la voie volumique est le défaut
- *  (#1176, P3-4) un contexte refusé REBASCULE l'écran en affine (`GameStage3D`, création de renderer).
- *  Sans banc, ce fichier mesurerait le repli au lieu de la voie volumique. */
+/** Renderer de BANC : jsdom n'a aucun contexte WebGL, et un contexte refusé fait DIRE le refus au
+ *  joueur (`stage/SansWebgl`) au lieu de peindre. Sans banc, ce fichier mesurerait ce message. */
 class BancRenderer implements StageRenderer {
   shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
   capabilities = { getMaxAnisotropy: () => 1 };
@@ -87,19 +83,10 @@ function monterStrict(): HTMLDivElement {
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (container) { container.remove(); container = null; }
-  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
 describe('Le monde de l’écran de jeu est VOLUMIQUE, et lui seul (#1176 C5a)', () => {
-  it('l’interrupteur de chantier sur `affine` ne ramène AUCUN monde SVG : le canevas peint quand même', () => {
-    setStageBackend('affine');
-    const { el } = monter();
-    expect(el.querySelector('canvas.iso-stage'), 'le monde volumique doit être monté quoi que dise l’interrupteur').not.toBeNull();
-    expect(el.querySelectorAll('[data-cid]').length, 'plus aucun corps SVG dans l’écran de jeu').toBe(0);
-  });
-
   it('le canevas est monté SOUS le SVG, qui ne porte plus la couche monde', () => {
-    setStageBackend('webgl');
     const { el } = monter();
     const canvas = el.querySelector('canvas.iso-stage');
     const svg = el.querySelector('svg.iso-stage');
@@ -133,7 +120,6 @@ describe('Hit-test de sprite — la voie qui peint est celle qui répond (#1176 
   });
 
   it('voie VOLUMIQUE : le rayon est inscrit au montage et la question ne va plus au DOM', () => {
-    setStageBackend('webgl');
     monter();
     expect(hasSpritePicker()).toBe(true);
     document.elementFromPoint = () => {
@@ -144,7 +130,6 @@ describe('Hit-test de sprite — la voie qui peint est celle qui répond (#1176 
   });
 
   it('…et l’inscription MEURT avec l’écran volumique (retour à l’affine sans rien de collant)', () => {
-    setStageBackend('webgl');
     monter();
     expect(hasSpritePicker()).toBe(true);
     act(() => root!.unmount());
@@ -153,7 +138,6 @@ describe('Hit-test de sprite — la voie qui peint est celle qui répond (#1176 
   });
 
   it('sous StrictMode (le montage RÉEL) : le double-montage laisse UNE inscription vivante, et rien après', () => {
-    setStageBackend('webgl');
     monterStrict();
     // React monte, démonte puis remonte les effets : la désinscription du premier passage ne doit pas
     // survivre au second, ni le second laisser un répondeur mort derrière lui.

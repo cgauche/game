@@ -237,7 +237,7 @@ describe('Pose des halos — géométrie (#1176 P3-0g)', () => {
 
   it('l’ÉTINCELLE ne grandit ni ne monte avec le décor — seule sa POSITION suit l’échelle', () => {
     // La voie affine met à l'échelle le seul `translate` du glyphe : son tracé garde ses 6 px
-    // (`stage/tokens`) et son flottement ses 4 px (`anim.css:199`).
+    // et son flottement ses 4 px (`anim.css:199`).
     const mesure = (scale: number) => {
       const p = pools();
       poseInteractHalos(p, halos({ fouilles: [fouille('e', { scale })] }), frame(0));

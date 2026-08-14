@@ -32,10 +32,6 @@ const ErrorCollectorBanner = import.meta.env.DEV
 const DesignGallery = import.meta.env.DEV
   ? lazy(() => import('./gallery/DesignGallery').then((m) => ({ default: m.DesignGallery })))
   : null;
-// Spike WebGL (#1160) : écran DEV-only de jugement du rendu three — même garde statique que la galerie.
-const WebglSpikeScreen = import.meta.env.DEV
-  ? lazy(() => import('../gameIso/backends/webgl/SpikeScreen').then((m) => ({ default: m.SpikeScreen })))
-  : null;
 
 /** Bannière coop non bloquante : reconnexions en cours (invité comme hôte). */
 function CoopBanner() {
@@ -91,7 +87,6 @@ export function App() {
           {screen === 'coop' && <CoopLobby />}
           {screen === 'compendium' && <CompendiumScreen />}
           {screen === 'gallery' && DesignGallery && <DesignGallery />}
-          {screen === 'webglSpike' && WebglSpikeScreen && <WebglSpikeScreen />}
           {/* Drill-in d'une réf Codex EN JEU : modale par-dessus l'écran courant (n'importe lequel),
               sans démonter le jeu/la fiche → musique et contexte préservés (cf. openCodex). */}
           {codexOverlay && <CodexOverlay />}

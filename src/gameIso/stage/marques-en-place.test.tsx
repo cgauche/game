@@ -5,7 +5,6 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { useGame, type BattleState } from '../../state/store';
 import { emptyScene } from '../../state/scene';
-import { setStageBackend } from '../../state/stage3d';
 import type { Combatant } from '../../engine/types';
 import { IsoStage } from '../IsoStage';
 import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
@@ -104,14 +103,12 @@ afterAll(() => setStageRendererFactory(null));
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (conteneur) { conteneur.remove(); conteneur = null; }
-  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
 });
 
 describe('Marques de cases — le pas ne remonte AUCUN pool (#1176 P3-0c)', () => {
   it('un PAS réécrit les instances en place : mêmes pools, même tampon, comptes à jour', () => {
     const espion = espionnerÉcritures();
     try {
-      setStageBackend('webgl');
       useGame.setState({
         scene: emptyScene(10, 10), mode: 'battle', partyPos: { x: 3, y: 3 },
         party: [hero('h1', { x: 3, y: 3 })], battle: combatTémoin(PAS_AVANT),

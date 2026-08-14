@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { faceSurface, surfaceKeyOf, tintVarFactor } from './faceColors';
 import { coursesPeriodM, groundPeriodM } from '../../detail/courses';
-import { terrainFillGradient } from '../affineDetail';
+import { terrainFillGradient } from '../../authoring/detailSvg';
 import { TINT_SPREAD } from '../../detail/expand';
 import { reliefMaterial } from '../../catalog/relief';
 import { roofMaterial } from '../../catalog/roofs';

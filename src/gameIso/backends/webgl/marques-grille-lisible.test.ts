@@ -12,7 +12,7 @@ import { WALK_TINT } from '../../highlightTints';
  * géométrie RÉELLEMENT MONTÉE la produit, jugée au détecteur de coutures du juge (une vallée de
  * luminance de flancs égaux, creusée d'au moins `SEUIL_CREUX`). Les deux voies y sont composées
  * selon leur nature :
- *  - AFFINE : un `<path>` par case (`backends/affineHighlights`), donc N composites SUCCESSIFS — au
+ *  - EN SVG : un `<path>` par case, donc N composites SUCCESSIFS — au
  *    pixel de frontière, deux couvertures partielles se suivent et l'alpha résultant tombe sous
  *    l'alpha du plein ;
  *  - VOLUMIQUE : un `InstancedMesh` de quads DISJOINTS, donc UN composite par pixel à la couverture

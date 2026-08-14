@@ -11,7 +11,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { tournerCamera } from './keybindings';
 import { getStageYaw, resetStageYaw, snapYawTarget, yawTarget } from './stageYaw';
-import { setStageBackend } from './stage3d';
 import { readSlot, deleteSlot } from './saves';
 import { testScene } from '../scenes/test-fixture';
 
@@ -43,20 +42,17 @@ function harnaisDeFrames() {
 const g = useGame.getState;
 
 beforeEach(() => {
-  setStageBackend('webgl'); // la voie du produit — le geste de caméra ne dépend plus de l'interrupteur
   resetStageYaw();
   useGame.setState({ camRot: 0, camEdge: false, camPan: { x: 0, y: 0 } });
 });
 
 afterEach(() => {
   vi.unstubAllGlobals();
-  setStageBackend('webgl');
   resetStageYaw();
 });
 
 describe('AIMANT — la poussée du joueur vise un cran, elle ne s’ajoute pas au lacet', () => {
   it('DOUBLE-APPUI EN VOL : la 2e poussée pendant l’approche laisse la cible sur un multiple de 90°', () => {
-    setStageBackend('webgl');
     const jouerFrame = harnaisDeFrames();
     tournerCamera(g, 1); // 1re poussée : cible = 90°, l'approche démarre
     jouerFrame(16); // ~14,7°
@@ -91,7 +87,6 @@ describe('AIMANT — la poussée du joueur vise un cran, elle ne s’ajoute pas 
   });
 
   it('voie VOLUMIQUE, au repos : chaque poussée avance d’un quart de tour', () => {
-    setStageBackend('webgl');
     vi.stubGlobal('requestAnimationFrame', undefined); // hors navigateur : le lacet arrive tout de suite
     tournerCamera(g, 1);
     expect(getStageYaw()).toBe(90);

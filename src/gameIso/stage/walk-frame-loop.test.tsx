@@ -5,7 +5,6 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene } from '../../state/scene';
-import { setStageBackend } from '../../state/stage3d';
 import { bus, EVT } from '../../state/bus';
 import { STEP_MS } from '../../geometry/walk';
 import type { Combatant } from '../../engine/types';
@@ -109,7 +108,6 @@ beforeEach(() => {
 afterEach(() => {
   if (root) { act(() => root!.unmount()); root = null; }
   if (container) { container.remove(); container = null; }
-  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
   useGame.setState({ combatCursor: null });
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -124,7 +122,6 @@ const COURSE = [{ x: 4, y: 2 }, { x: 3, y: 2 }, { x: 2, y: 2 }];
 
 describe('Marche — qui peint décide de ce qu’une image coûte (#1176 P2-4)', () => {
   it('aucune IMAGE ne re-rend le stage — seul un FRANCHISSEMENT de case le fait', () => {
-    setStageBackend('webgl');
     const { commits } = monter();
     const avant = commits();
     let tick: FrameRequestCallback | null = marcher('h1', CHEMIN);
@@ -137,7 +134,6 @@ describe('Marche — qui peint décide de ce qu’une image coûte (#1176 P2-4)'
   });
 
   it('…et la boucle a bien LU la marche : la caméra du groupe d’overlays glisse image par image', () => {
-    setStageBackend('webgl');
     const { el, commits } = monter();
     const avant = commits();
     const vues: string[] = [transform(el)];
@@ -148,7 +144,6 @@ describe('Marche — qui peint décide de ce qu’une image coûte (#1176 P2-4)'
   });
 
   it('ARRIVÉE en volumique : UN rendu re-synchronise React, et la caméra CONVERGE sur la pose committée', () => {
-    setStageBackend('webgl');
     const { el, commits } = monter();
     const repos = transform(el); // la caméra de la case LOGIQUE, sans aucun glissement
     let tick: FrameRequestCallback | null = marcher('h1', CHEMIN);
@@ -189,7 +184,6 @@ describe('Marche volumique — le pointeur suit la caméra image par image (#117
   const curseurVivant = () => useGame.getState().combatCursor !== null;
 
   it('la case sous un pixel FIXE change SANS aucun rendu — sinon le clic viserait à côté', () => {
-    setStageBackend('webgl');
     const { el, commits } = monter();
     bouger(el, PIXEL);
     // Prémisse 1 — la sonde MORD : deux pixels distincts donnent deux tuiles distinctes, donc l'effacement.
@@ -225,7 +219,6 @@ describe('Marche volumique — ni géométrie ni billboards reconstruits entre d
   it('la cuisson du monde et le tracé des billboards ne rejouent AUCUNE fois', () => {
     const cuisson = vi.spyOn(sceneMeshes, 'bakeWorldGeometry');
     const billboards = vi.spyOn(sceneMeshes, 'actorBillboards');
-    setStageBackend('webgl');
     monter();
     const cAvant = cuisson.mock.calls.length;
     const bAvant = billboards.mock.calls.length;

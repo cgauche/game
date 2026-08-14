@@ -2,7 +2,7 @@
  * BUILDER de SURBRILLANCES de combat (jeu seul) — les grilles LOURDES memoïsées du stage en éléments
  * SÉMANTIQUES camera-free : portées de Marche/Course, teintes d'équipe des cases occupées, zones
  * persistantes (fumée/feu), anneaux de cibles (attaque/soin/flux différés/« tirer dans le tas »).
- * Le backend affine (`backends/affineHighlights`) les projette et leur donne leurs couleurs.
+ * Le monde volumique (`backends/webgl/highlightMeshes`) les pose et leur donne leurs couleurs.
  * Les APERÇUS par-frame (tap-1, survol, tether d'engagement, halo de l'actif) restent au stage.
  * PUR : les portées/cibles (dérivées du store) arrivent EN DONNÉES (`HighlightsView`), le builder ne
  * fait que les mapper en cases + hauteur MÉTRIQUE (le lift d'étage est projeté par le backend).

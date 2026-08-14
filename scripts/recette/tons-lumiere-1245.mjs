@@ -48,11 +48,10 @@ function moyenne(img, idx) {
   return { r: R / n, b: B / n, lum: (0.2126 * R + 0.7152 * G + 0.0722 * B) / n };
 }
 
-// Terrain d'entraînement, voie VOLUMIQUE, palier NUIT — le seul régime où une flaque se voit (de jour
+// Terrain d'entraînement, palier NUIT — le seul régime où une flaque se voit (de jour
 // l'intensité tombe à 0 par construction, cf. `pointLightWrites`).
 await evaluate(session, "__wfrp.scenario('entrainement', 42)");
 await waitFor(session, "!!__wfrp.state()");
-await evaluate(session, '__wfrp.stage3d(true)');
 await evaluate(session, '__wfrp.store.setState({ lightLevel: 0.18 })');
 // Brouillard OFF : le voile de guerre est un calque SVG POSÉ SUR le canevas — il masque l'essentiel
 // des flaques et on ne mesurerait alors que les quelques pixels qu'il laisse voir (217 au premier jet).

@@ -7,7 +7,6 @@ import { TopoScene } from '../TopoScene';
 import { planLights, setPlanRendererFactory, SANS_SOLEIL, type PlanRenderer } from './planSnapshot';
 import { stageLights } from './stageLights';
 import { emptyScene, type Scene } from '../../state/scene';
-import { setStageBackend } from '../../state/stage3d';
 import type { Station } from '../../state/stations';
 
 /**
@@ -60,12 +59,11 @@ function rendererDeBanc(): PlanRenderer {
 }
 
 beforeAll(() => setPlanRendererFactory(rendererDeBanc));
-afterAll(() => { setPlanRendererFactory(null); setStageBackend('webgl'); });
+afterAll(() => { setPlanRendererFactory(null); });
 
 const racines: Root[] = [];
 afterEach(() => {
   act(() => { for (const r of racines.splice(0)) r.unmount(); });
-  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
   setPlanRendererFactory(rendererDeBanc);
   mesure = { w: 420, h: 180 };
   créations = 0;
@@ -118,13 +116,11 @@ function marqueurs(hôte: HTMLElement): string[] {
 describe('Plan de station — marqueurs et structure', () => {
   it('chaque station porte son marqueur, à sa place', () => {
     const scene = scèneDePlan();
-    act(() => setStageBackend('webgl'));
     expect(marqueurs(monte(<TopoScene scene={scene} stations={STATIONS} onSelectStation={() => {}} />))).toHaveLength(2);
   });
 
   it('la STRUCTURE reste au trait SVG, la MATIÈRE vit dans le canevas posé dessous', () => {
     const scene = scèneDePlan();
-    act(() => setStageBackend('webgl'));
     const plan = monte(<TopoScene scene={scene} stations={[]} />);
     // Le mur (trait symbolique de la vue du dessus) est dans le SVG…
     expect(plan.querySelector('.topo-scene')!.innerHTML).toContain('stroke-width="8"');
@@ -136,7 +132,6 @@ describe('Plan de station — marqueurs et structure', () => {
 
 describe('Plan de station — le monde volumique ne laisse aucun contexte vivant', () => {
   it('l’instantané crée UN renderer, rend UNE frame, et le libère avant de rendre la main', () => {
-    act(() => setStageBackend('webgl'));
     monte(<TopoScene scene={scèneDePlan()} stations={STATIONS} />);
     expect(créations).toBe(1);
     expect(rendus).toBe(1);
@@ -145,7 +140,6 @@ describe('Plan de station — le monde volumique ne laisse aucun contexte vivant
   });
 
   it('CINQ ouvertures de fiche : cinq contextes créés, cinq rendus, cinq perdus — rien ne s’empile', () => {
-    act(() => setStageBackend('webgl'));
     const scene = scèneDePlan();
     for (let i = 0; i < 5; i++) {
       const hôte = document.createElement('div');
@@ -169,7 +163,6 @@ describe('Plan de station — sans contexte volumique, le plan le DIT', () => {
     // le plan n'a plus rien à montrer sous ses traits — il l'annonce au lieu de rendre un plan trompeur.
     const scene = scèneDePlan();
     setPlanRendererFactory(() => { throw new Error('aucun contexte WebGL'); });
-    act(() => setStageBackend('webgl'));
     const dégradé = monte(<TopoScene scene={scene} stations={[]} />);
     const dit = dégradé.querySelector('.sans-webgl');
     expect(dit, 'aucun message : le plan laisserait croire à une carte vide').not.toBeNull();
@@ -180,7 +173,6 @@ describe('Plan de station — sans contexte volumique, le plan le DIT', () => {
 
 describe('Plan de station — rétention de l’instantané par CONTENU', () => {
   it('une scène REFORGÉE à contenu égal ne repaie aucun instantané ; changer d’étage en repaie un', () => {
-    act(() => setStageBackend('webgl'));
     const scene = scèneDePlan();
     const hôte = document.createElement('div');
     document.body.appendChild(hôte);
@@ -196,7 +188,6 @@ describe('Plan de station — rétention de l’instantané par CONTENU', () => 
   });
 
   it('la BOÎTE DE PIXELS entre dans la clé : redimensionner recuit, la même boîte ne recuit pas', () => {
-    act(() => setStageBackend('webgl'));
     const scene = scèneDePlan();
     const hôte = document.createElement('div');
     document.body.appendChild(hôte);
@@ -212,7 +203,6 @@ describe('Plan de station — rétention de l’instantané par CONTENU', () => 
   });
 
   it('un instantané pris HORS MESURE n’est jamais retenu : la première mesure le refait', () => {
-    act(() => setStageBackend('webgl'));
     mesure = { w: 0, h: 0 }; // avant toute mise en page — le plan cuit à sa résolution par défaut
     const scene = scèneDePlan();
     const hôte = document.createElement('div');
@@ -240,7 +230,6 @@ describe('Plan de station — traitement de PLAN (aucune ombre portée)', () => 
   });
 
   it('la scène three réellement rendue ne porte que l’ambiante et le monde', () => {
-    act(() => setStageBackend('webgl'));
     monte(<TopoScene scene={scèneDePlan()} stations={STATIONS} />);
     expect(contenu!.lampes).toEqual(['AmbientLight']);
     expect(contenu!.casteurs).toBe(0);

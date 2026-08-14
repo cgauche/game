@@ -481,7 +481,7 @@ describe('crestEls — crénelure de PÉRIMÈTRE (RENDU PUR, générale, jamais 
  * d'un mur EST la cote du plancher du dessus : la lèvre décorative du couronnement (`CAP_LIP_PX`,
  * 0,167 m au-dessus du sommet) n'a plus aucun dégagement et PERCE ce plancher. Elle se voit en POV et
  * en iso, où les FACES sont peintes ; pas en vue du dessus, qui ne trace que les arêtes (`topSvg`,
- * `backends/affineWalls.ts`). Un mur COIFFÉ par un étage tient donc dans [base, base+WALL_H_M] ; un mur
+ * `authoring/wallsSvg.ts`). Un mur COIFFÉ par un étage tient donc dans [base, base+WALL_H_M] ; un mur
  * libre (dernier niveau, clôture), ou seulement TRAVERSÉ par un plancher, garde sa lèvre.
  */
 describe('buildWalls — un mur COIFFÉ par un étage tient dans son enveloppe', () => {

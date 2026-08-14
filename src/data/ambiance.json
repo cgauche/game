@@ -176,10 +176,6 @@
         "meshFadeT": 3,
         "meshShade": 0.95,
         "meshJointWM": 0.025
-      },
-      "billboards": {
-        "maxPersons": 12,
-        "maxProps": 40
       }
     },
     "vignette": {

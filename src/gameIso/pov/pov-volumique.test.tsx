@@ -5,7 +5,6 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene, isIndoor, sceneMetresPerTile, type BuildingMass, type Scene } from '../../state/scene';
-import { setStageBackend } from '../../state/stage3d';
 import { setRevealAll } from '../../state/visionState';
 import { bus, EVT } from '../../state/bus';
 import { partyLeaderOf } from '../../state/combatants';
@@ -133,13 +132,11 @@ afterAll(() => {
 beforeEach(() => { poser(); });
 afterEach(() => {
   démonter();
-  setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
   vi.restoreAllMocks();
 });
 
 describe('POV volumique — l’hôte (#1176 P3-1a)', () => {
-  it('en VOLUMIQUE le monde prend la place du SVG première personne ; en AFFINE rien ne change', () => {
-    setStageBackend('webgl');
+  it('le monde volumique prend toute la place : plus une seule géométrie SVG en première personne', () => {
     const vol = monter(<PovStage />);
     expect(vol.querySelector('canvas.iso-stage'), 'le monde volumique doit être monté').toBeTruthy();
     expect(vol.querySelector('canvas')!.getAttribute('data-vue')).toBe('pov');
@@ -147,16 +144,9 @@ describe('POV volumique — l’hôte (#1176 P3-1a)', () => {
     // d'écran (voile chaud, vignette — #1176 P3-1c), qui n'ont ni polygone ni tracé.
     expect(vol.querySelector('svg')!.hasAttribute('data-pov-veils'), 'seul le SVG des voiles subsiste').toBe(true);
     expect(vol.querySelectorAll('polygon, path').length, 'aucune géométrie SVG au-dessus du monde volumique').toBe(0);
-    démonter();
-
-    setStageBackend('affine');
-    const aff = monter(<PovStage />);
-    expect(aff.querySelector('svg'), 'la voie affine garde son SVG').toBeTruthy();
-    expect(aff.querySelector('canvas')).toBeNull();
   });
 
-  it('l’exploré s’accumule aussi par la voie volumique (même couture de store)', () => {
-    setStageBackend('webgl');
+  it('l’exploré s’accumule (même couture de store que l’iso)', () => {
     const scene = useGame.getState().scene!;
     expect(useGame.getState().explored[scene.id] ?? []).toEqual([]);
     monter(<PovStage />);
@@ -166,7 +156,6 @@ describe('POV volumique — l’hôte (#1176 P3-1a)', () => {
 
 describe('POV volumique — la caméra (#1176 P3-1a)', () => {
   it('PERSPECTIVE à hauteur d’œil, bornée à la portée du milieu (jamais un far généreux)', () => {
-    setStageBackend('webgl');
     const scene = useGame.getState().scene!;
     monter(<PovStage />);
     const cam = dernièreCaméra();
@@ -180,7 +169,6 @@ describe('POV volumique — la caméra (#1176 P3-1a)', () => {
   });
 
   it('elle GLISSE avec la marche du meneur : à mi-pas, l’œil est à mi-chemin', () => {
-    setStageBackend('webgl');
     const { heroId } = poser();
     const scene = useGame.getState().scene!;
     const mpt = sceneMetresPerTile(scene);
@@ -199,7 +187,6 @@ describe('POV volumique — la caméra (#1176 P3-1a)', () => {
 
 describe('POV volumique — ce que la première personne ne porte PAS (#1176 P3-1a)', () => {
   it('à hauteur d’œil TOUTES les masses se dessinent — le toit du dessus reste en place', () => {
-    setStageBackend('webgl');
     const scene = useGame.getState().scene!;
     monter(<PovStage />);
     const dessinéEnPov = trianglesDuMonde(dernièreScène());
@@ -228,7 +215,6 @@ describe('POV volumique — ce que la première personne ne porte PAS (#1176 P3-
   });
 
   it('aucun lanceur de rayon inscrit en POV — la vue affine, elle, en inscrit un', () => {
-    setStageBackend('webgl');
     const scene = useGame.getState().scene!;
     monter(<PovStage />);
     expect(hasSpritePicker(), 'la première personne n’ouvre aucune affordance de clic').toBe(false);
@@ -264,7 +250,6 @@ describe('POV volumique — le marcheur suivi et la cote sous l’œil (#1176 P3
   const FRAME_MS = STEP_MS / 10;
 
   it('l’œil suit le MENEUR VALIDE, pas la première case du roster', () => {
-    setStageBackend('webgl');
     const mort = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Mort', rng: makeRNG(2) });
     mort.dead = true;
     const debout = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Debout', rng: makeRNG(3) });
@@ -291,7 +276,6 @@ describe('POV volumique — le marcheur suivi et la cote sous l’œil (#1176 P3
   });
 
   it('le SOL porte l’œil : sur un plateau à 2 m, l’œil est à 2 m + EYE_H, à la case comme à mi-pas', () => {
-    setStageBackend('webgl');
     const { heroId } = poserRelief(() => 2);
     let horlogeMs = 0;
     vi.spyOn(performance, 'now').mockImplementation(() => horlogeMs);
@@ -305,7 +289,6 @@ describe('POV volumique — le marcheur suivi et la cote sous l’œil (#1176 P3
   });
 
   it('sur un ressaut FRANCHISSABLE (1 m), la cote de l’œil monte par petits crans, jamais d’un bond', () => {
-    setStageBackend('webgl');
     // Ressaut d'1 m (= `STEP_MAX_M`, franchissable) entre la case du groupe (y=4, 0 m) et sa voisine
     // nord (y=3, 1 m) : le pas le plus raide qu'un marcheur puisse franchir.
     const { heroId } = poserRelief((_x, y) => (y <= 3 ? STEP_MAX_M : 0));

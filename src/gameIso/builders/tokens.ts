@@ -50,7 +50,7 @@ function cutByView(scene: Scene, visible: ReadonlySet<string> | undefined, view:
  *  l'environnement, pas le brouillard) — même convention que `buildFloors`/`buildProps`.
  *
  *  SOURCE UNIQUE des deux voies de rendu du monde (#1176) : le stage affine en fait des corps React
- *  (`stage/tokens.tsx`), le monde volumique en fait des billboards (`sceneBillboards`) — les filtres
+ *  le monde volumique en fait des billboards (`sceneBillboards`) — les filtres
  *  (embuscade, enrôlé, couverture, étage, hors-vue) ne se recopient pas, ils se CONSOMMENT. */
 export function buildTokens(scene: Scene, visible: ReadonlySet<string> | undefined, battle: BattleState | null, view: TokenView): TokenEl[] {
   const { activeZ, viewZ, top } = view;

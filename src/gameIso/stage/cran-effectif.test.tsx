@@ -17,7 +17,6 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { useGame } from '../../state/store';
 import { emptyScene } from '../../state/scene';
-import { setStageBackend } from '../../state/stage3d';
 import { nudgeStageYaw, resetStageYaw, rotAtYaw } from '../../state/stageYaw';
 import type { Combatant } from '../../engine/types';
 import type { Dims, Rot } from '../../geometry/iso';
@@ -123,7 +122,6 @@ describe('IsoStage — le cran effectif ALIMENTE le dégagement, et ne rejoue qu
     if (container) { container.remove(); container = null; }
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
-    setStageBackend('webgl'); // la voie du produit : un banc ne lègue pas la voie SVG au fichier suivant
     resetStageYaw();
   });
 
@@ -140,7 +138,6 @@ describe('IsoStage — le cran effectif ALIMENTE le dégagement, et ne rejoue qu
       dialogue: null,
       flags: {},
     });
-    setStageBackend('webgl');
     // Hors navigateur, le lacet arrive tout de suite (`nudgeStageYaw`) : la poussée se mesure sans
     // dérouler une approche à la frame.
     vi.stubGlobal('requestAnimationFrame', undefined);
