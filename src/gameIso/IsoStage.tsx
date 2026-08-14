@@ -117,9 +117,9 @@ export function IsoStage() {
   // L'orientation MONDE vivante (store `facing`) n'est lue QUE par la voie volumique : son abonnement
   // vit dans `VolumetricWorld` (`setFacing` reforge la référence à chaque pas — en affine, le stage ne
   // doit pas s'en re-rendre).
-  // VOIE DE RENDU du monde (#1176, DEV) — hors store : elle décrit le chantier, pas le monde.
+  // VOIE DE RENDU du monde (#1176) — hors store : elle décrit le chantier, pas le monde.
   const stageBackend = useSyncExternalStore(subscribeStageBackend, getStageBackend, getStageBackend);
-  const webgl = import.meta.env.DEV && stageBackend === 'webgl';
+  const webgl = stageBackend === 'webgl';
   const combatCursor = useGame((s) => s.combatCursor);
   const hoverCombatantId = useGame((s) => s.hoverCombatantId); // survol de la frise → peek caméra + réticule
   const svgRef = useRef<SVGSVGElement>(null);

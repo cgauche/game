@@ -70,7 +70,7 @@ export function CampaignView() {
   const sessionEndOpen = useGame((s) => s.sessionEndOpen); // Effet `sessionEnd` (#83) : ouvre la même modale
   const closeSessionEnd = useGame((s) => s.closeSessionEnd);
   const inspectEnabled = useGame((s) => s.inspectEnabled); // option de jeu : inspection des combattants
-  const stageBackend = useSyncExternalStore(subscribeStageBackend, getStageBackend, getStageBackend); // voie de rendu du monde (#1176, DEV)
+  const stageBackend = useSyncExternalStore(subscribeStageBackend, getStageBackend, getStageBackend); // voie de rendu du monde (#1176) — seul l'INTERRUPTEUR (plus bas) reste DEV
   const toggleInspect = useGame((s) => s.toggleInspectEnabled);
   const pendingRoundStart = useGame((s) => s.pendingRoundStart);
   const roundStartPromote = useGame((s) => s.roundStartPromote);

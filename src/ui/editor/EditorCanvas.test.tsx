@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { EditorCanvas } from './EditorCanvas';
@@ -9,6 +9,7 @@ import { tileCenter } from '../../geometry/iso';
 import { DEFAULT_LAYERS } from './editorState';
 import type { LowerLayerMode } from './lowerLayerGabarit';
 import type { PlanDefectAt } from '../../state/planDefects';
+import { setStageBackend } from '../../state/stage3d';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -133,6 +134,13 @@ describe('EditorCanvas — panoramique (clic-milieu / Espace + glisser)', () => 
 });
 
 describe('EditorCanvas — pelure d’oignon des TOITS (#835 FU-2)', () => {
+  // Les sondes de ce bloc lisent la SCÈNE PEINTE DANS LE SVG (groupe des sols, nappes de toit) : c'est
+  // la voie AFFINE qui l'émet. Sur la voie volumique — le défaut du jeu (#1176 P3-4) — le canevas la
+  // peint dessous et le SVG ne garde que les surcouches d'authoring ; la pelure d'oignon y est mesurée
+  // par `editeur-monde-volumique.test.tsx`. D'où l'armement EXPLICITE, et le retour au défaut ensuite.
+  beforeAll(() => setStageBackend('affine'));
+  afterAll(() => setStageBackend('webgl'));
+
   /** Emprise BÂTIE de l'étage — le beffroi et rien d'autre : un étage se pose sur du plancher, le
    *  reste de la couche est du vide au-dessus du rez. */
   const BEFFROI = { x: 6, y: 6, w: 3, h: 3 };

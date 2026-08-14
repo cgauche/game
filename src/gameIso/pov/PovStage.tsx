@@ -51,7 +51,7 @@ const AUCUNE_CASE: ReadonlySet<string> = new Set<string>();
  *    (`paintOrder`, loin→près) → un mur cache une créature qui est derrière lui, et une créature devant
  *    lui le recouvre. La géométrie n'est recalculée qu'au PAS ou au PIVOT (memo sur partyPos/cap/lumière) ;
  *    l'idle des billboards s'anime dans son propre rAF isolé (`usePovIdle`), clés stables.
- *  - VOLUMIQUE (#1176, P3-1a, DEV) : le MÊME monde que le stage isométrique (`stage/VolumetricWorld`),
+ *  - VOLUMIQUE (#1176, P3-1a) : le MÊME monde que le stage isométrique (`stage/VolumetricWorld`),
  *    regardé par une caméra PERSPECTIVE à hauteur d'homme (`StageFrame` en mode `pov`). Cet écran n'en
  *    fournit que les vérités de scène — les mêmes builders que l'iso, jamais une seconde dérivation.
  * Monté par `CampaignView` en exploration quand `povActive` (le combat reste sur `IsoStage`). Le cap =
@@ -70,10 +70,10 @@ export function PovStage() {
   const lightLevel = useGame((s) => s.lightLevel);
   const explored = useGame((s) => s.explored);
   const markExplored = useGame((s) => s.markExplored);
-  // VOIE DE RENDU du monde (#1176, DEV) — hors store : elle décrit le chantier, pas le monde. Même
+  // VOIE DE RENDU du monde (#1176) — hors store : elle décrit le chantier, pas le monde. Même
   // couture que `IsoStage`, donc UN interrupteur pour les deux hôtes.
   const stageBackend = useSyncExternalStore(subscribeStageBackend, getStageBackend, getStageBackend);
-  const webgl = import.meta.env.DEV && stageBackend === 'webgl';
+  const webgl = stageBackend === 'webgl';
 
   const dir = (party[0] && facing[party[0].id]) || 'S';
   const exploredSet = useMemo(() => new Set(explored[scene?.id ?? ''] ?? []), [explored, scene?.id]);

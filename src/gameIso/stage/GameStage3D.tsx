@@ -154,6 +154,7 @@ import {
 import { withRenderRank } from '../backends/webgl/renderRanks';
 import { buildTraceQuad, TRACE_LIFT_M } from '../backends/webgl/traceQuad';
 import type { TraceTransform } from '../../state/traceCalibration';
+import { setStageBackend } from '../../state/stage3d';
 
 /** Convention de taille monde des billboards retenue pour le JEU (cf. `billboardMath`). */
 export const CONVENTION = 'jeu' as const;
@@ -891,13 +892,20 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    // Aucun contexte WebGL (machine sans accélération, jsdom des tests de montage) : le canevas reste
-    // vierge et le stage continue de tourner — il ne se plante pas.
+    // Aucun contexte WebGL (GPU sur liste noire, machine virtuelle, budget de contextes épuisé, jsdom
+    // des tests de montage) : la voie volumique n'a plus de surface où peindre. Depuis qu'elle est le
+    // DÉFAUT (#1176, P3-4), s'arrêter là rendrait un écran nu — les hôtes ne montent leur scène SVG
+    // que sous `!webgl` (`IsoStage`, `PovStage`, `EditorCanvas`) — donc la voie AFFINE reprend la main.
+    // Le repli ne boucle pas : `setStageBackend` notifie les hôtes, qui démontent ce composant ; il ne
+    // se remonte qu'à un geste de bascule DEV explicite.
+    // À C5a la voie affine meurt (inventaire du cliquet `stage/double-voie-ratchet.test.ts`) : ce repli
+    // n'aura plus de destination, et l'échec de contexte devra se DIRE au joueur par un message.
     let renderer: StageRenderer;
     try {
       renderer = fabriqueRenderer ? fabriqueRenderer(canvas) : new THREE.WebGLRenderer({ canvas, antialias: true });
     } catch (e) {
-      console.warn('GameStage3D: aucun contexte WebGL — le monde volumique reste vierge.', e);
+      console.warn('GameStage3D: aucun contexte WebGL — retour à la voie affine.', e);
+      setStageBackend('affine');
       return;
     }
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));

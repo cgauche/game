@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { Profiler, act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import * as THREE from 'three';
 import { useGame } from '../../state/store';
 import { emptyScene } from '../../state/scene';
 import { setStageBackend } from '../../state/stage3d';
@@ -10,6 +11,7 @@ import { STEP_MS } from '../../geometry/walk';
 import type { Combatant } from '../../engine/types';
 import { IsoStage } from '../IsoStage';
 import * as sceneMeshes from '../backends/webgl/sceneMeshes';
+import { setStageRendererFactory, type StageRenderer } from './GameStage3D';
 
 /**
  * LA MARCHE PILOTÉE PAR LA BOUCLE DE RENDU (#1176, P2-4). La cadence LOGIQUE d'un pas est le store
@@ -27,6 +29,22 @@ import * as sceneMeshes from '../backends/webgl/sceneMeshes';
  * mesuré ici est donc imputable à la marche, et à rien d'autre.
  */
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+/** Renderer de BANC : jsdom n'a aucun contexte WebGL, et depuis que la voie volumique est le défaut
+ *  (#1176, P3-4) un contexte refusé REBASCULE l'écran en affine (`GameStage3D`, création de renderer).
+ *  Sans banc, ce fichier mesurerait le repli au lieu de la voie volumique. */
+class BancRenderer implements StageRenderer {
+  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
+  capabilities = { getMaxAnisotropy: () => 1 };
+  setPixelRatio(): void {}
+  setClearColor(): void {}
+  setSize(): void {}
+  dispose(): void {}
+  render(): void {}
+}
+
+beforeAll(() => setStageRendererFactory(() => new BancRenderer()));
+afterAll(() => setStageRendererFactory(null));
 
 function hero(id: string, pos: { x: number; y: number }): Combatant {
   return {

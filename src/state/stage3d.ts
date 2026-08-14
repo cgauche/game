@@ -1,6 +1,7 @@
 /**
- * VOIE DE RENDU du monde dans l'écran de jeu (#1176, Phase 2) : `affine` (couches SVG pré-triées de
- * `CulledScene`) ou `webgl` (`gameIso/stage/GameStage3D`). Interrupteur de CHANTIER, DEV seulement.
+ * VOIE DE RENDU du monde dans l'écran de jeu (#1176) : `webgl` (`gameIso/stage/GameStage3D`) est LE
+ * moteur du jeu, en développement comme en production ; `affine` (couches SVG pré-triées de
+ * `CulledScene`) est la voie de SECOURS, encore joignable par l'interrupteur de chantier DEV.
  *
  * Il ne vit PAS dans le store Zustand : `snapshotSave` (`state/saves.ts`) copie TOUTE clé de données de
  * l'état initial dans la sauvegarde — un champ de store est donc, par construction, sérialisé (mesuré
@@ -10,7 +11,7 @@
  */
 export type StageBackend = 'affine' | 'webgl';
 
-let _backend: StageBackend = 'affine';
+let _backend: StageBackend = 'webgl';
 const subs = new Set<() => void>();
 
 export const getStageBackend = (): StageBackend => _backend;

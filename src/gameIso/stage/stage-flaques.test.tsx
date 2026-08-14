@@ -321,6 +321,10 @@ function canevas(scene: Scene, gameTime: number): HTMLCanvasElement {
 }
 
 describe('L’écran de jeu — les flaques de la scène, allumées par la nuit seule', () => {
+  // jsdom n'a aucun contexte WebGL, et depuis que la voie volumique est le défaut (#1176, P3-4) un
+  // contexte refusé REBASCULE l'écran en affine : sans banc, ce bloc mesurerait le repli.
+  beforeAll(() => setStageRendererFactory(() => new BancRenderer()));
+  afterAll(() => setStageRendererFactory(null));
   it('DEUX braséros de nuit : deux flaques allumées sur le budget monté', () => {
     expect(canevas(avecBraseros(2), NUIT).dataset.lampes).toBe(`2/${POINT_LIGHT_BUDGET}`);
   });

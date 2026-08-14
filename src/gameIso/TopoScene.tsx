@@ -72,7 +72,7 @@ function structuralObjs(scene: Scene, dims: Dims, z: number, sols: boolean) {
 
 export function TopoScene({ scene, stations, combatants, selectedStationId, z = 0, viewport, onSelectStation, onSelectEntity }: TopoSceneProps) {
   const stageBackend = useSyncExternalStore(subscribeStageBackend, getStageBackend, getStageBackend);
-  const webgl = import.meta.env.DEV && stageBackend === 'webgl';
+  const webgl = stageBackend === 'webgl';
   // MATIÈRE PEINTE par le canevas volumique ? Un contexte GL refusé (machine sans accélération, budget
   // de contextes épuisé) laisserait sinon des murs flottant sur un fond transparent : les sols
   // REVIENNENT alors au SVG. Vrai tant que rien n'a échoué — la voie affine ne pose jamais la question.

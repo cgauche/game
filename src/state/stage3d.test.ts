@@ -9,17 +9,17 @@ import { useGame } from './store';
  * TOUTE clé de données de l'état initial, sans liste : on sonde donc le document PRODUIT, avec
  * l'interrupteur volontairement basculé.
  */
-afterEach(() => setStageBackend('affine'));
+afterEach(() => setStageBackend('webgl'));
 
 describe('Voie de rendu du monde — interrupteur de chantier', () => {
-  it('la voie AFFINE est le défaut (rien n’est volumique sans geste explicite)', () => {
-    expect(getStageBackend()).toBe('affine');
+  it('la voie VOLUMIQUE est le défaut (le jeu se joue dans le monde volumique, prod comprise)', () => {
+    expect(getStageBackend()).toBe('webgl');
   });
 
-  it('la bascule fait l’aller-retour', () => {
-    expect(toggleStageBackend()).toBe('webgl');
-    expect(getStageBackend()).toBe('webgl');
+  it('la bascule fait l’aller-retour (la voie affine reste joignable, en secours)', () => {
     expect(toggleStageBackend()).toBe('affine');
+    expect(getStageBackend()).toBe('affine');
+    expect(toggleStageBackend()).toBe('webgl');
   });
 
   it('la voie choisie n’entre PAS dans la sauvegarde (ni clé, ni valeur)', () => {
@@ -36,8 +36,8 @@ describe('Voie de rendu du monde — interrupteur de chantier', () => {
   });
 
   it('charger une partie ne touche pas la voie de rendu (elle vit hors de l’état de jeu)', () => {
-    setStageBackend('webgl');
+    setStageBackend('affine'); // écartée du défaut : un retour au défaut au chargement se verrait
     useGame.setState(JSON.parse(JSON.stringify(useGame.getInitialState())) as Record<string, never>);
-    expect(getStageBackend()).toBe('webgl');
+    expect(getStageBackend()).toBe('affine');
   });
 });

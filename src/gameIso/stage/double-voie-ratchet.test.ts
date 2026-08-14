@@ -58,6 +58,12 @@ const consommateurs = fichiersDeProduction(RACINE)
  *   - `stage/highlightLayer.tsx` et `stage/tokens.tsx` en font autant pour les surbrillances et la
  *     profondeur des décors.
  * DÉCROISSANCE SEULE : jamais relevée, jamais échangée.
+ *
+ * INVENTAIRE C5a (ce qui doit être traité le jour où cette liste atteint ZÉRO) :
+ *   - REPLI SANS WEBGL — `stage/GameStage3D.tsx`, création de renderer : un contexte refusé rebascule
+ *     aujourd'hui sur la voie affine (#1176, P3-4, commit C4). Sans voie affine, ce repli n'a plus de
+ *     destination : l'échec de contexte devra se DIRE au joueur par un message explicite, sous peine de
+ *     rendre un écran nu en silence.
  */
 const CONSOMMATEURS = [
   'IsoStage.tsx',

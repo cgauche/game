@@ -275,14 +275,14 @@ export function EditorCanvas({
   const modeMonde = effectiveLowerLayerMode(lowerLayerMode, lowerLayerOpacity);
   const zHiddenMonde = (z: number) => layerHidden(z, currentLayer, modeMonde);
 
-  // ── VOIE DE RENDU DU MONDE (#1176, P3-3, DEV) : le MÊME interrupteur de chantier que le jeu
+  // ── VOIE DE RENDU DU MONDE (#1176, P3-3) : le MÊME interrupteur de chantier que le jeu
   // (`state/stage3d.ts`, patron `IsoStage.tsx` / `PovStage.tsx`). En volumique, ce SVG ne peint plus
   // la scène (sols, murs, toits, décor, corps des jetons) — le canevas la peint DESSOUS — mais il
   // reste monté, et reçoit tout : les 14 familles de surcouches d'authoring et TOUS les événements
   // pointeur. Le picking ne change pas d'un iota : il est purement GÉOMÉTRIQUE (`localXY` →
   // `screenToTileAtZ`), et cet écran n'inscrit AUCUN picker de sprite (`spritePicking={false}`).
   const stageBackend = useSyncExternalStore(subscribeStageBackend, getStageBackend, getStageBackend);
-  const webgl = import.meta.env.DEV && stageBackend === 'webgl';
+  const webgl = stageBackend === 'webgl';
   // ZONES : chemins bâtis 1× par (emprise, caméra) — le tableau `effectZones` est remplacé à chaque
   // coup de pinceau, donc la dépendance suffit à rendre le retour IMMÉDIAT sans recalculer les 739
   // cases de zone de La Diligence au moindre mouvement de pointeur.

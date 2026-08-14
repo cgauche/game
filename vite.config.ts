@@ -34,6 +34,10 @@ export default defineConfig({
         // Dépendances stables (React/Zustand…) → chunk vendor bien caché.
         // L'éditeur et le rendu de jeu sortent déjà en chunks async (React.lazy, ui/App.tsx).
         manualChunks(id) {
+          // `three` a son PROPRE chunk : `vendor` est préchargé par index.html (modulepreload), donc
+          // tout ce qui y entre est payé au MENU. Le moteur volumique n'est atteint que par les écrans
+          // async (CampaignView, Editor) — mesuré : sorti de `vendor`, il quitte le préchargement.
+          if (id.includes('node_modules/three/')) return 'three';
           if (id.includes('node_modules')) return 'vendor';
           // Tables de règles générées (~1 Mo) : chunk séparé, cacheable indépendamment du
           // code applicatif (changer le code ne réinvalide pas les données). Encore chargées
