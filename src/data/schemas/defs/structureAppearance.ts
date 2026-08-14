@@ -47,6 +47,7 @@ export const schema = z.array(
     detail: detailRecipeSchema.optional(),
     face: z.string(),
     post: z.string(),
+    bayPanel: z.boolean().optional(),
     band: z.string().optional(),
     cap: z.string().optional(),
     rubble: z.string().optional(),

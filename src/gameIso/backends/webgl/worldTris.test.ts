@@ -607,9 +607,9 @@ describe('RELIEF MINCE — le prix mesuré du volume (#1176 P1-E)', () => {
    *  vantail), d'où un `avant` qui n'est plus celui d'avant l'extension. */
   const MESURES: [string, () => Scene, { trisAvant: number; trisApres: number; paires: number }][] = [
     ['siege-enceinte', () => siege, { trisAvant: 6912, trisApres: 7404, paires: 1238 }],
-    ['arene (hub)', () => arene.scene, { trisAvant: 16230, trisApres: 19358, paires: 7070 }],
-    ['vitrine-batiments', buildVitrineScene, { trisAvant: 10454, trisApres: 13116, paires: 5279 }],
-    ['diligence', () => diligence.scene, { trisAvant: 39166, trisApres: 51170, paires: 27306 }],
+    ['arene (hub)', () => arene.scene, { trisAvant: 15262, trisApres: 16938, paires: 7070 }],
+    ['vitrine-batiments', buildVitrineScene, { trisAvant: 9678, trisApres: 11176, paires: 5279 }],
+    ['diligence', () => diligence.scene, { trisAvant: 34838, trisApres: 40350, paires: 27306 }],
   ];
 
   /** Plafond de hausse ASSUMÉ du lot : au-delà, le relief coûte plus qu'il ne rend et la mesure remonte

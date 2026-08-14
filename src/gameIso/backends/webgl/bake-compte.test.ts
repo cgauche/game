@@ -49,8 +49,8 @@ function compteursDe(scene: Scene): { sommets: number; triangles: number; spans:
  *  donnée). `spans` = une face du pivot ; `triangles` = ce que le GPU dessine ; `sommets` = l'index
  *  IDENTITÉ (aucun sommet partagé, donc exactement 3 par triangle). */
 const ETALONS: [string, () => Scene, { sommets: number; triangles: number; spans: number }][] = [
-  ['arene-hub', () => sceneDuProjet('arene-hub'), { sommets: 58074, triangles: 19358, spans: 4395 }],
-  ['la-diligence', () => diligence.scene, { sommets: 147516, triangles: 49172, spans: 7621 }],
+  ['arene-hub', () => sceneDuProjet('arene-hub'), { sommets: 50814, triangles: 16938, spans: 4153 }],
+  ['la-diligence', () => diligence.scene, { sommets: 121050, triangles: 40350, spans: 6836 }],
   ['arene-zone13', () => sceneDuProjet('arene-zone13'), { sommets: 8640, triangles: 2880, spans: 1440 }],
 ];
 

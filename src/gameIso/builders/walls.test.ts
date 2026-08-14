@@ -34,8 +34,20 @@ describe('wallEnds — aiguillage d’arête UNIQUE (cardinales + diagonales)', 
 describe('buildWalls — mur BOIS nu (def sans parapet)', () => {
   const el = one(sceneWith([{ x: 2, y: 2, side: 'N' }]));
 
-  it('faces dans l’ordre de peinture : poteau, face, panneau encadré, moulure, plinthe, couronnement ×2, poteau', () => {
-    expect(parts(el)).toEqual(['poteau', 'face', 'panneau', 'moulure', 'plinthe', 'couronnement', 'couronnement', 'poteau']);
+  it('sans opt-in, aucun panneau ni moulure ne couvre la face ordinaire', () => {
+    expect(parts(el)).toEqual(['poteau', 'face', 'plinthe', 'couronnement', 'couronnement', 'poteau']);
+  });
+
+  it('avec bayPanel, le panneau et sa moulure sont émis sur la face ordinaire', () => {
+    const def = structureAppearance('plain');
+    def.bayPanel = true;
+    try {
+      expect(parts(one(sceneWith([{ x: 2, y: 2, side: 'N' }])))).toEqual([
+        'poteau', 'face', 'panneau', 'moulure', 'plinthe', 'couronnement', 'couronnement', 'poteau',
+      ]);
+    } finally {
+      delete def.bayPanel;
+    }
   });
 
   it('la face est un quad [A@haut, B@haut, B@bas, A@bas] de WALL_H_M mètres sur l’arête wallEnds', () => {

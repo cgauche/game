@@ -213,8 +213,10 @@ function wallFaces(seg: WallSeg, app: StructureAppearanceDef, b: number, down: b
   return [
     upright('poteau', 0, b, H1),
     slab('face', b, H1),
-    span('panneau', PANEL_T0, PANEL_T1, b + wallHeightM * PANEL_LO, frameH),
-    span('moulure', PANEL_T0, PANEL_T1, frameH - isoPxToM(FRAME_PX / 2), frameH + isoPxToM(FRAME_PX / 2)),
+    ...(app.bayPanel ? [
+      span('panneau', PANEL_T0, PANEL_T1, b + wallHeightM * PANEL_LO, frameH),
+      span('moulure', PANEL_T0, PANEL_T1, frameH - isoPxToM(FRAME_PX / 2), frameH + isoPxToM(FRAME_PX / 2)),
+    ] : []),
     slab('plinthe', b, b + wallHeightM * SKIRT_FRAC),
     slab('couronnement', b + wallHeightM * CAP_FRAC, H1),
     ...(capped ? [] : [slab('couronnement', H1, H1 + isoPxToM(CAP_LIP_PX))]),

@@ -14,6 +14,8 @@ export interface StructureAppearanceDef {
   face: string;
   /** Montant d'extrémité — chapiteau/socle dérivés par ombrage. */
   post: string;
+  /** Panneau et moulure de travée sur un mur ordinaire. */
+  bayPanel?: boolean;
   /** PIERRE : ferrure / arase+merlons / gravats / renfoncement de passage. */
   band?: string; cap?: string; rubble?: string; rubbleHi?: string; recess?: string;
   /** BOIS : couleurs de base des autres parties (la face vient de `face`). */
