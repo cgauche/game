@@ -75,17 +75,22 @@ describe('sceneToAscii — round-trip doré (buildScene → export → réimport
     const rebuilt = buildScene(reimport('la-diligence-rt', [original.dimensions.w, original.dimensions.h], exp));
     expectSurfacesEqual(original, rebuilt);
 
-    // Le grillage `walled` n'a qu'UN glyphe de porte, donc un seul matériau de porte : l'export le
-    // DÉCLARE au lieu de le taire, et la perte se borne au champ `structure` des portes concernées.
-    expect(exp.warnings).toHaveLength(1);
-    expect(exp.warnings[0]).toMatch(/porte\(s\) avec un matériau distinct/);
+    // Le grillage `walled` n'a qu'UN glyphe par ouverture : l'export déclare les matériaux de porte
+    // et de fenêtre qu'il ne peut pas représenter.
+    expect(exp.warnings).toHaveLength(2);
+    expect(exp.warnings).toEqual(expect.arrayContaining([
+      expect.stringMatching(/porte\(s\) avec un matériau distinct de « solide-porte-en-bois »/),
+      expect.stringMatching(/fenêtre\(s\) avec un matériau distinct de « mur-a-ossature-en-bois »/),
+    ]));
     const before = normWalls(original);
     const after = normWalls(rebuilt);
-    const sansMateriauDePorte = (w: ReturnType<typeof normWalls>[number]) => (w.door ? { ...w, structure: null } : w);
-    expect(after.map(sansMateriauDePorte)).toEqual(before.map(sansMateriauDePorte));
+    const sansMateriauPerdu = (w: ReturnType<typeof normWalls>[number]) => (w.door || w.window ? { ...w, structure: null } : w);
+    expect(after.map(sansMateriauPerdu)).toEqual(before.map(sansMateriauPerdu));
     const divergents = before.filter((w, i) => w.structure !== after[i].structure);
-    expect(divergents.every((w) => w.door)).toBe(true);
-    expect(divergents).toHaveLength(5);
+    expect(divergents.every((w) => w.door || w.window)).toBe(true);
+    expect(divergents.filter((w) => w.door)).toHaveLength(5);
+    expect(divergents.filter((w) => w.window)).toHaveLength(1);
+    expect(divergents).toHaveLength(6);
   });
 
   it('un plan simple (1 étage, portes/fenêtres/matériau/diagonale/rampe/zones) : géométrie identique', () => {

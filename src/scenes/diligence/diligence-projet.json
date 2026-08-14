@@ -9476,16 +9476,6 @@
        ],
        "features": [
         {
-         "id": "entree-principale",
-         "kind": "stone-entry",
-         "edge": {
-          "x": 14,
-          "y": 8,
-          "side": "E"
-         },
-         "width": 0.9
-        },
-        {
          "id": "enseigne-principale",
          "kind": "sign",
          "edge": {
