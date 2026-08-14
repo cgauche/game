@@ -55,7 +55,7 @@ import { rollLine } from './rollSeam';
 import { activityModLines } from '../engine/activities';
 import { testValue, effectiveSkillCharKey, skillBaseValue } from '../engine/skills';
 import { skillDRBonus, charDRBonusOf, offTerrainTestDR } from '../engine/ops';
-import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestDRMods, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, withCastTestDRMods, castTestOf, castingValue, castInfoIsPrayer, malepierreDR, malepierreReserveOf } from '../engine/magic';
+import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestDRMods, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, withCastTestDRMods, castTestOf, castTestTarget, castingValue, castInfoIsPrayer, malepierreDR, malepierreReserveOf } from '../engine/magic';
 import { discreetPrayerDifficulty } from '../engine/prayer';
 import { rule } from '../engine/policy';
 import { effectiveChar, bonus } from '../engine/characteristics';
@@ -735,18 +735,28 @@ export const FLOWS = {
       const spell = effectiveSpellOf(p); // NI ×2 si lecture au grimoire (LDB 47 l.34)
       if (!actor || !target || !spell) return null;
       if (forced) {
-        // — Résilience « vous choisissez le résultat » (LDB 17 l.68), seulement APRÈS le jet —
-        const cur = p.result;
-        if (!cur) return null; // rien à forcer sans jet
+        // — Résilience « Je ne faillirai pas ! » (LDB 17 l.68) —
         const ni = p.focused ? 0 : spell.cn ?? 0;
+        // FENÊTRE PRÉ-JET : sans jet posé, la cible du dé choisi est celle que le jet naturel aurait
+        // employée — `castTestTarget` (miroir de `resolveCasting`) avec le MÊME ward et la MÊME
+        // Difficulté que la branche de jet normal ci-dessous. Jet posé : sa cible fait foi.
+        const discreet = !!p.discreet && castInfoIsPrayer(spell) && !!rule('prayer-conviction');
+        const tgt = p.result?.target ?? castTestTarget(
+          actor, spell,
+          p.missile ? 'intermediaire' : discreetPrayerDifficulty('intermediaire', discreet),
+          castContextMods(s, actor, target, spell).total + windsMagicModOf(s.battle),
+        );
+        if (tgt <= 0) return null; // Compétence d'incantation non maîtrisée : rien à forcer
         // Dé PAR DÉFAUT = LE MEILLEUR (LDB 17 l.68 « vous choisissez le résultat »), jamais le dé raté
         // courant — plancher conservé : le sort PART (DR ≥ NI).
-        const cDie = bestForcedRoll(cur.target);
-        const cTR = evaluateTest(cDie, cur.target);
+        const cDie = bestForcedRoll(tgt);
+        const cTR = evaluateTest(cDie, tgt);
         const cSL = cTR.sl + castTestDRMods(actor, 'incantation', { success: cTR.success, spell, sea: seaMagicContext(s) });
+        // Le jet posé (s'il existe) reste la base du re-dérivé — malepierre déjà consommée comprise.
+        const cur = p.result ?? { cast: false, roll: cDie, target: tgt, sl: cSL, isCritical: false, isFumble: false, log: '' };
         // `Math.max(0, …)` : le DR du MEILLEUR dé suffit — un +1 fantôme au-dessus du maximum
         // nourrirait la Surincantation (LDB 47) sans rien dans la source pour le justifier.
-        return { result: rederiveCastSL(actor, target, spell, { ...cur, roll: cDie, sl: cSL }, p.missile, p.focused, Math.max(0, ni - cSL)) };
+        return { result: rederiveCastSL(actor, target, spell, { ...cur, roll: cDie, target: tgt, sl: cSL }, p.missile, p.focused, Math.max(0, ni - cSL)) };
       }
       // — Jet NORMAL (relance Chance/Pacte) : re-jet complet — wards recalculés (Sorcière LDB 42 + Aqshy LDB 48). —
       // Ward = pénalité « Sorcière » (LDB 42) + bonus conditionnel de Domaine (Aqshy près des flammes,

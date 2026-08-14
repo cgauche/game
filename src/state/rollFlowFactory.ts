@@ -22,7 +22,7 @@
 import type { GameState } from './store';
 import type { Combatant, Difficulty } from '../engine/types';
 import { canReroll } from '../engine/fortune';
-import { availableResistance, markResistanceUsed, resistanceForcedSL } from '../engine/menace';
+import { availableResistance, markResistanceUsed, resistanceForcedSL, resistanceImproves } from '../engine/menace';
 import { hasActiveFlag, consumeActiveFlag } from '../engine/activeFlags';
 import { touchActors } from './combatOrParty';
 import { surfaceOf } from './rollSeam';
@@ -306,8 +306,8 @@ export interface RollFlowHandlers {
    */
   apply(get: Get, opts?: { p?: PendingBase; ctx?: unknown }): string[];
   cancel: (get: Get, set: Set) => void;
-  /** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER un Test raté —
-   *  autorisé même après la relance de Chance, répétable (chaque usage corrompt). Héros only. */
+  /** Sombre Pacte (LDB 19 l.17) : +1 Point de Corruption pour RELANCER un Test déjà jeté, répétable
+   *  (chaque usage corrompt). Héros only. */
   darkPact: (get: Get, set: Set, pid?: string) => void;
   /** Inversion de Test (LDB 23/LDB 10, `spec.reverse`) : CHOIX du joueur. Talent = jet raté qu'elle
    *  transformerait en réussite ; jeton = libre (réussi ou raté). No-op sans `spec.reverse`, jet non
@@ -382,15 +382,16 @@ function opForceSuccess<P extends PendingBase>(
   commit(patch, { forced: true, touch: true });
 }
 
-/** Résistance (Menace), LDB 10 l.1015-1021 : auto-succès du premier Test qui résiste à la menace du
+/** Résistance (Menace), LDB 10 l.1019-1020 : auto-succès du premier Test qui résiste à la menace du
  *  slot — MÊME mécanisme que `forceSuccess` (le résolveur reçoit `{ sl: BE }`), autre RESSOURCE : la
  *  spec du talent, consommée 1× par séance (compteur `resistanceUsed`, remis par `restoreFortune`).
- *  Comme la Résilience, utilisable AVANT le jet ou APRÈS un échec — jamais sur un Test déjà réussi. */
+ *  Fenêtre : avant le jet comme après (`resistanceImproves` — l'auto-succès REMPLACE l'issue posée). */
 function opResist<P extends PendingBase>(
-  slot: P, actor: Combatant | undefined, rolled: boolean, failed: boolean,
+  slot: P, actor: Combatant | undefined, rolled: boolean, outcome: RollOutcome,
   resolveResist: (sl: number) => Partial<P> | null, commit: Commit<P>,
 ): void {
-  if (!actor || !slot.menace || (rolled && !failed)) return;
+  if (!actor || !slot.menace) return;
+  if (!resistanceImproves(actor, rolled ? { won: outcome.won, sl: outcome.sl } : null)) return;
   const spec = availableResistance(actor, slot.menace);
   if (spec == null) return;
   const patch = resolveResist(resistanceForcedSL(actor));
@@ -427,12 +428,12 @@ function opSetForcedRoll<P extends PendingBase>(
   return true;
 }
 
-/** Sombre Pacte : +1 Corruption pour relancer un Test RATÉ, répétable (LDB 19 l.16/41). Héros only. */
+/** Sombre Pacte : +1 Corruption pour relancer un Test déjà jeté, répétable (LDB 19 l.17). Héros only. */
 function opDarkPact<P extends PendingBase>(
-  actor: Combatant | undefined, rolled: boolean, failed: boolean,
+  actor: Combatant | undefined, rolled: boolean,
   reresolve: () => Partial<P> | null, get: Get, set: Set, commit: Commit<P>,
 ): void {
-  if (!rolled || !failed || !actor || actor.kind !== 'hero') return;
+  if (!rolled || !actor || actor.kind !== 'hero') return;
   const patch = reresolve();
   if (!patch) return;
   const lines = gainCorruption(get, set, actor, 1);
@@ -646,11 +647,13 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       // ses rangées à la construction (`frozenOpposedBatchStep`) — une rangée nue n'y résiste donc pas.
       const slot = loc.slot.menace != null ? loc.slot : { ...loc.slot, menace: (p as PendingBase).menace } as Slot;
       const actor = spec.actor(s, loc.slot, p);
-      // Résistance (Menace) : réussite forcée à DR = Bonus d'Endurance (LDB 10). Repli = `resolve(…,{sl})`.
+      // Résistance (Menace) : réussite forcée à DR = Bonus d'Endurance (LDB 10 l.1020). Repli = `resolve(…,{sl})`.
+      // CIBLE : `lensDieTarget` (le jet POSÉ fait foi) — `dieTarget` seul s'éteint sur un Test déjà réussi,
+      // et l'auto-succès du talent, désormais offert APRÈS une réussite, se serait forcé contre une cible 0.
       const resolveResist = L
-        ? (sl: number) => { const cur = L.actorTR(loc.slot); const tgt = L.dieTarget?.(loc.slot, actor!) ?? 0; return L.applyRoll(s, loc.slot, actor!, get, forcedTR(1, tgt, sl, cur?.base), p); }
+        ? (sl: number) => { const cur = L.actorTR(loc.slot); const tgt = lensDieTarget(loc.slot, actor) ?? 0; return L.applyRoll(s, loc.slot, actor!, get, forcedTR(1, tgt, sl, cur?.base), p); }
         : (sl: number) => spec.resolve(s, loc.slot, actor, get, { sl }, p);
-      opResist(slot, actor, spec.rolled(loc.slot), isFailed(loc.slot), resolveResist, loc.commit);
+      opResist(slot, actor, spec.rolled(loc.slot), spec.outcome(loc.slot), resolveResist, loc.commit);
     },
     determine(get, set, pid) {
       const s = get(); const p = pendingOf(s); if (!p) return;
@@ -674,7 +677,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       const s = get(); const p = pendingOf(s); if (!p) return;
       const loc = locate(set, get, p, pid); if (!loc) return;
       const actor = spec.actor(s, loc.slot, p);
-      opDarkPact(actor, spec.rolled(loc.slot), isFailed(loc.slot), () => reresolveOf(s, loc.slot, actor!, get, p), get, set, loc.commit);
+      opDarkPact(actor, spec.rolled(loc.slot), () => reresolveOf(s, loc.slot, actor!, get, p), get, set, loc.commit);
     },
     reverse(get, set, pid) {
       if (!spec.reverse) return;

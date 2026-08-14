@@ -76,7 +76,7 @@ describe('Résistance (Corruption) — exposition (modale pendingCorruption, LDB
     expect(useGame.getState().pendingCorruption!.success).toBe(true);
   });
 
-  it('utilisable APRÈS un échec (même fenêtre que la Résilience) — jamais sur un Test déjà réussi', () => {
+  it('utilisable APRÈS un échec (même fenêtre que la Résilience)', () => {
     seedBattleRng(4); // 1er d100 = 93 → échec garanti (cible ≤ 63)
     const a = hero();
     useGame.setState({ party: [a] });
@@ -86,6 +86,38 @@ describe('Résistance (Corruption) — exposition (modale pendingCorruption, LDB
     useGame.getState().corruptionResist(); // rattrapage post-échec
     expect(useGame.getState().pendingCorruption!.success).toBe(true);
     expect(useGame.getState().party[0].resistanceUsed).toContain('corruption');
+  });
+
+  // « Si le DR requis est important, utilisez votre Bonus d'Endurance comme DR pour le Test »
+  // (LDB 10 l.1020) : le talent porte le DR à BE, y compris sur un Test RÉUSSI dont le DR ne suffit
+  // pas — c'est le DR qui pilote le coût en Points d'une exposition (LDB 19 l.56).
+  it('APRÈS un Test RÉUSSI à DR insuffisant (exposition MAJEURE, 40/43 → DR 0 = 2 Points) : le DR passe à BE = 4 → 0 Point, usage consommé', () => {
+    seedBattleRng(18); // 1er d100 = 40 contre cible 43 → réussite à DR 0 (Succès Minime)
+    const a = hero({ fortune: 0 });
+    useGame.setState({ party: [a] });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'corruptionExposure', level: 'majeure', skill: 'resistance', heroId: a.id }]);
+    useGame.getState().corruptionRoll();
+    const jet = useGame.getState().pendingCorruption!;
+    expect({ roll: jet.roll, target: jet.target, success: jet.success, sl: jet.sl }).toEqual({ roll: 40, target: 43, success: true, sl: 0 });
+    useGame.getState().corruptionResist();
+    expect(useGame.getState().pendingCorruption!.sl).toBe(bonus(43)); // DR = Bonus d'Endurance = 4
+    expect(useGame.getState().party[0].resistanceUsed).toContain('corruption');
+    useGame.getState().resolveCorruption();
+    // Majeure : « Sur un Succès Minime (0-1 DR), gagnez 2 Points […] Sur un Succès Impressionnant
+    // (4+ DR), vous ne gagnez aucun Point » (LDB 19 l.58).
+    expect(useGame.getState().party[0].corruption ?? 0).toBe(0);
+  });
+
+  it('jet RÉUSSI dont le DR atteint déjà BE → resist NO-OP : l’auto-succès n’a rien à y porter, l’usage de séance reste ARMÉ', () => {
+    seedBattleRng(7); // 1er d100 = 2 contre cible 43 → réussite à DR 4 (= BE)
+    const a = hero({ fortune: 0 });
+    useGame.setState({ party: [a] });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'corruptionExposure', level: 'majeure', skill: 'resistance', heroId: a.id }]);
+    useGame.getState().corruptionRoll();
+    expect(useGame.getState().pendingCorruption!.sl).toBe(bonus(43));
+    useGame.getState().corruptionResist();
+    expect(useGame.getState().pendingCorruption!.roll).toBe(2); // le jet naturel tient
+    expect(useGame.getState().party[0].resistanceUsed ?? []).toEqual([]);
   });
 
   it('spec non couverte → resist NO-OP (pas de dépense)', () => {

@@ -67,7 +67,7 @@ export function AuContactModal() {
     rerollable,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: mover.kind === 'hero' && !!pd.def && !pd.def.success,
+    darkPactable: mover.kind === 'hero' && !!pd.def, // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
     forceShow: pd.result !== 'success',

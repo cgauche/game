@@ -37,7 +37,7 @@ export function SteamSaveModal() {
     rerollable: rolled && canReroll(p.roll! > p.target, !!p.rerolled),
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: rolled && p.roll! > p.target,
+    darkPactable: rolled, // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: forceSuccess,
     forceShow: rolled && !p.success,

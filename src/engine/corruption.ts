@@ -7,8 +7,8 @@
  * fin de combat, comme les Traumatismes).
  *
  *  - Gains (l.30-75) : expositions mineure/modérée/majeure — Test de Résistance ou
- *    de Calme, Points selon le DR ; Sombre Pacte (l.16/41) : +1 Point volontaire
- *    pour relancer un Test, même après une relance de Chance.
+ *    de Calme, Points selon le DR ; Sombre Pacte (l.17) : +1 Point volontaire pour
+ *    relancer un Test.
  *  - Seuil (l.80) : corruption > BFM + BE → Test de Résistance Intermédiaire (+0)
  *    à CHAQUE nouveau gain ; échec → mutation.
  *  - Mutation (l.85-91) : −BFM Points, d100 corps/esprit PAR ESPÈCE, tirage sur le

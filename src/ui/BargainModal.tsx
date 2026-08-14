@@ -80,7 +80,7 @@ export function BargainModalView({
     onRoll,
     onReroll,
     onBonusSL,
-    darkPactable: rolled && pb.roll!.roll > pb.roll!.target,
+    darkPactable: rolled, // LDB 19 l.17
     onDarkPact,
   }, {
     interactive: owned,

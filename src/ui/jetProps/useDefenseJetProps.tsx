@@ -124,7 +124,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
     rerollable,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: defender.kind === 'hero' && !pd.def?.success,
+    darkPactable: defender.kind === 'hero' && !!pd.def, // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: forceSuccess,
     forceShow: !!res && res.hit,

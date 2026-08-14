@@ -50,7 +50,7 @@ export function DispelModal() {
     rerollable: !!r && canReroll(!r.success, !!pd.rerolled),
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: !!r && !r.success && caster.kind === 'hero',
+    darkPactable: !!r && caster.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !r?.success,

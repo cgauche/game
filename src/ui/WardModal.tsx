@@ -44,7 +44,7 @@ export function WardModal() {
     onRoll: roll,
     rerollable: !!r && !r.success && canReroll(true, !!pw.rerolled),
     onReroll: reroll,
-    darkPactable: !!r && !r.success && attacker.kind === 'hero',
+    darkPactable: !!r && attacker.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !r?.success,

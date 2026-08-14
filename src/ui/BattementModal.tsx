@@ -51,7 +51,7 @@ export function BattementModal() {
     rerollable: !!r && canReroll(!r.success, !!pb.rerolled),
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: !!r && !r.success && attacker.kind === 'hero',
+    darkPactable: !!r && attacker.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !r?.success,

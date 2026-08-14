@@ -72,7 +72,7 @@ export function ActivityModal() {
     onRoll: roll,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: rolled && failed,
+    darkPactable: rolled, // LDB 19 l.17
     onDarkPact: darkPact,
   }, {
     key: 'actor',

@@ -59,7 +59,7 @@ export function useExtendedTestJetProps(): ComponentProps<typeof RollShell> | nu
         rerollable: rolled && canReroll(!res!.success, !!cur.rerolled),
         onReroll: () => reroll(cur.id),
         onBonusSL: () => bonusSL(cur.id),
-        darkPactable: actor.kind === 'hero' && rolled && !res!.success,
+        darkPactable: actor.kind === 'hero' && rolled, // LDB 19 l.17
         onDarkPact: () => darkPact(cur.id),
         onForce: () => force(cur.id),
         forceShow: rolled,

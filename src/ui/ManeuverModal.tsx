@@ -60,7 +60,7 @@ export function ManeuverModal() {
     rerollable: !!r && !r.success && canReroll(true, !!pm.rerolled),
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: !!r && !r.success && attacker.kind === 'hero',
+    darkPactable: !!r && attacker.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !!r && !r.success,

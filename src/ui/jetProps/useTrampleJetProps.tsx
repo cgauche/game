@@ -52,7 +52,7 @@ export function useTrampleJetProps(): ComponentProps<typeof RollShell> | null {
     rerollable: !!r && canReroll(!r.attackerDetail?.success, !!pt.rerolled),
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: !!r && !r.attackerDetail?.success && attacker.kind === 'hero',
+    darkPactable: !!r && attacker.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !r?.hit,

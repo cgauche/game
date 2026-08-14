@@ -73,7 +73,7 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
     onRoll: roll,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: rolled && ph.roll! > ph.target && healer?.kind === 'hero',
+    darkPactable: rolled && healer?.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !ph.success,

@@ -52,7 +52,7 @@ export function FocusModal() {
     rerollable: !!r && canReroll(r.dr === 0, !!pf.rerolled),
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: !!r && r.dr === 0 && caster.kind === 'hero',
+    darkPactable: !!r && caster.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
     forceShow: r?.dr === 0,

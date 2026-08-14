@@ -148,7 +148,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
     rerollable,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: attacker.kind === 'hero' && !pa.dualSecond && !!res && !res.attackerDetail?.success,
+    darkPactable: attacker.kind === 'hero' && !pa.dualSecond && !!res, // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: forceSuccess,
     forceShow: !!res && !res.hit,

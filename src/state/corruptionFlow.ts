@@ -12,8 +12,8 @@
  *  - « Je te renie ! » (LDB 17 l.71) : un HÉROS avec de la Résilience peut REFUSER la mutation
  *    (1 Point de Résilience ; « comme vous ne mutez pas, vous ne perdez aucun Point de
  *    Corruption ») → choix par modale (`pendingRenounce`), la mutation est suspendue.
- *  - Sombre Pacte (l.16/41) : +1 Point volontaire pour RELANCER un Test raté, même
- *    après une relance de Chance — branché dans les modales de jet (ChanceButtons).
+ *  - Sombre Pacte (l.17) : +1 Point volontaire pour RELANCER un Test — branché dans les
+ *    modales de jet (ChanceButtons).
  *  - Effets d'éditeur : `corruptionExposure` (Test différé par modale) ; gain direct
  *    via l'Effet générique `ops` (op `corruption` + champ `align` optionnel).
  */

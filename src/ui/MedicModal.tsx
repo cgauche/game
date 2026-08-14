@@ -96,7 +96,7 @@ function SurgeryRollFlow() {
     onRoll: roll,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: rolled && ps.roll! > ps.target && surgeon?.kind === 'hero',
+    darkPactable: rolled && surgeon?.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !ps.success,

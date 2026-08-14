@@ -60,7 +60,7 @@ export function StateRecoveryModalView({
     onRoll,
     onReroll,
     onBonusSL,
-    darkPactable: rolled && !sr.success,
+    darkPactable: rolled, // LDB 19 l.17
     onDarkPact,
   }, { fortune });
   // Test opposé : rangée TÉMOIN de la source (Force), figée post-jet.

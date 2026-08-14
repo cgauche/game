@@ -115,7 +115,7 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
         rerollable: rolled && pt.roll != null && canReroll(pt.roll > pt.target, !!pt.rerolled),
         onReroll: reroll,
         onBonusSL: bonusSL,
-        darkPactable: rolled && pt.roll! > pt.target,
+        darkPactable: rolled, // LDB 19 l.17
         onDarkPact: darkPact,
         onForce: forceSuccess,
         forceShow: rolled && !pt.success,

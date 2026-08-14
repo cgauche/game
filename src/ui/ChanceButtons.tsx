@@ -10,9 +10,9 @@ import { RULE_REF } from '../engine/ruleRefs';
  * Bénédiction de Chance (LDB 41 — `freeReroll`) : une relance GRATUITE est disponible — le bouton
  * Relancer s'affiche même à 0 Chance et ne consomme pas de point.
  *
- * Sombre Pacte (LDB 19 l.16/41) : si `onDarkPact` est fourni et que le jet est relançable par
- * le Pacte (`darkPactable` : Test raté, MÊME déjà relancé), un héros peut recevoir
- * volontairement 1 Point de Corruption pour relancer — y compris à 0 Chance, c'est son intérêt.
+ * Sombre Pacte (LDB 19 l.17) : si `onDarkPact` est fourni et que le jet est relançable par le Pacte
+ * (`darkPactable`), un héros peut recevoir volontairement 1 Point de Corruption pour relancer —
+ * y compris à 0 Chance, c'est son intérêt.
  *
  * Chaque bouton EST l'affordance de sa règle : son `CodexRef` (`wrap`) l'ENGLOBE et rend le texte
  * de la règle au survol/focus, SANS intercepter le clic de dépense — aucun ⓘ voisin (#1078).

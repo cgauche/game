@@ -70,7 +70,7 @@ export function FallModal() {
     rerollable: !!r && !r.success && canReroll(true, !!p.rerolled),
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: !!r && !r.success && c.kind === 'hero',
+    darkPactable: !!r && c.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !r?.success,

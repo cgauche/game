@@ -108,7 +108,7 @@ export function buildParticipantRows<P extends ParticipantRow>(
       rerollable: !!res && canReroll(failed, !!part.rerolled),
       onReroll: () => bundle.onReroll(part.id),
       onBonusSL: () => bundle.onBonusSL(part.id),
-      darkPactable: actor.kind === 'hero' && failed,
+      darkPactable: actor.kind === 'hero' && !!res, // LDB 19 l.17
       onDarkPact: () => bundle.onDarkPact(part.id),
       onForce: () => bundle.onForce(part.id),
       forceShow: !!res,

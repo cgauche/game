@@ -59,7 +59,7 @@ export function DistraireModal() {
     rerollable,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: mover.kind === 'hero' && !!pd.atk && !pd.atk.success,
+    darkPactable: mover.kind === 'hero' && !!pd.atk, // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
     forceShow: pd.result !== 'success',

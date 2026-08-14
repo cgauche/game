@@ -40,3 +40,14 @@ export function markResistanceUsed(c: Combatant, spec: string): void {
 export function resistanceForcedSL(c: Combatant): number {
   return bonus(effectiveChar(c, 'endurance'));
 }
+
+/**
+ * L'auto-succès à DR = Bonus d'Endurance CHANGE-T-IL l'issue d'un jet déjà posé ? (LDB 10 l.1020.)
+ * `posed = null` = jet PAS ENCORE lancé → toujours oui. SOURCE UNIQUE de la fenêtre d'offre du
+ * talent, lue par le verbe `resist` de la fabrique rollFlow ET par les modales qui affichent le
+ * bouton — l'auto-succès REMPLACE l'issue posée (il ne s'y ajoute pas), donc un jet déjà réussi
+ * avec au moins autant de DR n'a rien à y gagner : le verbe n'y consomme pas l'usage de séance.
+ */
+export function resistanceImproves(c: Combatant, posed: { won: boolean; sl: number } | null): boolean {
+  return !posed || !posed.won || posed.sl < resistanceForcedSL(c);
+}

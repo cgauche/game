@@ -10,7 +10,7 @@ import { testValue } from '../engine/skills';
 import { castingValue, spellTargetCount, overcastSL, castAfterCrit, castInfoIsPrayer } from '../engine/magic';
 import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, missileOvercastDamageBonus, spellHasOvercastTableRoll, overcastBudget, overcastStepCost } from '../engine/overcast';
 import { canReroll } from '../engine/fortune';
-import { availableResistance } from '../engine/menace';
+import { availableResistance, resistanceImproves } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
 import { rule } from '../engine/policy';
 import { CharFrame } from './CharFrame';
@@ -169,7 +169,7 @@ export function CastModal() {
     rerollable,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: caster.kind === 'hero' && res != null && res.roll > 0 && res.roll > res.target,
+    darkPactable: caster.kind === 'hero' && res != null && res.roll > 0, // LDB 19 l.17
     onDarkPact: darkPact,
     freeReroll: freeRerollOf(caster),
     onForce: forceSuccess,
@@ -440,12 +440,16 @@ export function CastModal() {
                     rerollable={!!r && canReroll(!r.resisted, !!part.rerolled)}
                     onReroll={() => oppReroll(part.id)}
                     onBonusSL={() => oppBonusSL(part.id)}
-                    darkPactable={actor.kind === 'hero' && !!r && !r.resisted}
+                    darkPactable={actor.kind === 'hero' && !!r}
                     onDarkPact={() => oppDarkPact(part.id)}
                     onForce={() => oppForce(part.id)}
                     forceShow={!!r && !r.resisted}
-                    /* Résistance (Menace : Magie), LDB 10 : auto-succès du Test qui résiste au Sort. */
-                    resist={pcs.menace != null && availableResistance(actor, pcs.menace) != null && (!r || !r.resisted)
+                    /* Résistance (Menace : Magie), LDB 10 l.1019-1020 : auto-succès du Test qui résiste au
+                       Sort, à DR = Bonus d'Endurance. MÊME fenêtre que le verbe `resist` de la fabrique
+                       (`resistanceImproves`) : une opposition GAGNÉE à DR inférieur laisse une marge que
+                       le talent réduit encore — c'est le « DR requis important » du texte. */
+                    resist={pcs.menace != null && availableResistance(actor, pcs.menace) != null
+                      && resistanceImproves(actor, r ? { won: r.resisted, sl: r.oppose.sl } : null)
                       ? { menace: pcs.menace, onResist: () => oppResist(part.id) } : undefined}
                   />
                 );
@@ -549,7 +553,7 @@ export function CastModal() {
                     rerollable={!!r && canReroll(!r.counter.success, !!part.rerolled)}
                     onReroll={() => cspReroll(part.id)}
                     onBonusSL={() => cspBonusSL(part.id)}
-                    darkPactable={actor.kind === 'hero' && !!r && !r.counter.success}
+                    darkPactable={actor.kind === 'hero' && !!r}
                     onDarkPact={() => cspDarkPact(part.id)}
                     onForce={lance ? () => cspForce(part.id) : undefined}
                     forceShow={!!r && !r.dispelled}

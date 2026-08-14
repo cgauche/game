@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
-import { availableResistance } from '../engine/menace';
+import { availableResistance, resistanceImproves } from '../engine/menace';
 import { RollShell, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
 import { StakeRule, OutcomeNote, sameCertainOps, sameEntityRef } from './StakeNote';
@@ -705,7 +705,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       const part = cur.participants!.find((x) => x.id === String(r.key));
       const a = r.actor;
       const done = part?.result;
-      const resistOk = !!part?.menace && !!a && availableResistance(a, part.menace) != null && (!done || !done.success);
+      const resistOk = !!part?.menace && !!a && availableResistance(a, part.menace) != null
+        && resistanceImproves(a, done ? { won: !!done.success, sl: done.sl ?? 0 } : null);
       const determineOk = !!a && !!part && !done && !!(cur.combatPsych || cur.encounterPsych);
       return {
         ...r,
@@ -754,9 +755,10 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // `outcome` (résumé de conséquence) n'existe que sur une étape COMMITTÉE ; l'étape COURANTE
   // s'appuie sur la rangée ✓/✗ ±DR (breakdown) comme SEUL verdict (#295 Décision 1b) : aucun
   // prologue « X réussit »/« X échoue » ici.
-  // Résistance (Menace) (LDB 10) : étape taguée `menace` + spec du talent disponible (non consommée
-  // cette séance) + issue encore défavorable → auto-succès offert (avant le jet ou après un échec).
-  const resistAvail = !!actor && cur.menace != null && availableResistance(actor, cur.menace) != null && (!res || !res.success);
+  // Résistance (Menace), LDB 10 l.1019-1020 : étape taguée `menace` + spec du talent disponible (non
+  // consommée cette séance) + `resistanceImproves` (MÊME fenêtre que le verbe `resist` de la fabrique).
+  const resistAvail = !!actor && cur.menace != null && availableResistance(actor, cur.menace) != null
+    && resistanceImproves(actor, res ? { won: !!res.success, sl: res.sl ?? 0 } : null);
 
   // En-tête A→B du Test opposé : il n'existe QUE pour un défenseur unique (une bande n'a pas de « B »
   // — chaque rangée porte son portrait, la rangée témoin porte l'attaquant).
@@ -780,7 +782,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       rerollable: !!res && canReroll(failed, !!cur.rerolled),
       onReroll: () => reroll(cur.id),
       onBonusSL: () => bonusSL(cur.id),
-      darkPactable: !!res && failed && actor?.kind === 'hero',
+      darkPactable: !!res && actor?.kind === 'hero', // LDB 19 l.17
       onDarkPact: () => darkPact(cur.id),
       onForce: () => force(cur.id),
       forceShow: rolled && !res?.success,

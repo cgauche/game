@@ -42,7 +42,7 @@ export function FrenzyModal() {
     rerollable: !!r && !r.success && canReroll(true, !!pf.rerolled),
     onRoll: roll,
     onReroll: reroll,
-    darkPactable: !!r && !r.success && c.kind === 'hero',
+    darkPactable: !!r && c.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !r?.success,

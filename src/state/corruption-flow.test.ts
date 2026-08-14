@@ -215,7 +215,9 @@ describe('gainCorruption : seuil → mutation → limites (l.80-95)', () => {
   });
 });
 
-describe('Sombre Pacte (l.16/41)', () => {
+// « Vous pouvez décider de recevoir volontairement un Point de Corruption pour pouvoir relancer un
+// Test, même si un deuxième jet a déjà été effectué » (LDB 19 l.17).
+describe('Sombre Pacte (LDB 19 l.17)', () => {
   it('Test de compétence raté : testDarkPact relance SANS Chance, +1 Corruption, même déjà relancé', () => {
     const { a, party } = party2();
     a.fortune = 0; // aucune Chance — le Pacte marche quand même
@@ -234,8 +236,9 @@ describe('Sombre Pacte (l.16/41)', () => {
     expect(useGame.getState().party.find((h) => h.id === a.id)!.corruption).toBe(1);
   });
 
-  it('Test réussi : le Pacte est refusé (on ne relance qu\'un Test RATÉ)', () => {
+  it('Test RÉUSSI : le Pacte relance quand même (le texte ne qualifie aucun échec) et coûte 1 Point', () => {
     const { a, party } = party2();
+    a.fortune = 0;
     useGame.setState({
       party,
       pendingTest: {
@@ -244,9 +247,30 @@ describe('Sombre Pacte (l.16/41)', () => {
         roll: 12, sl: 2, success: true, isDouble: false, onSuccess: [], onFailure: [],
       } as never,
     });
+    useGame.getState().seedRng(1); // reseed JUSTE avant la relance → d100 déterministe
     useGame.getState().testDarkPact();
-    expect((useGame.getState().pendingTest as { roll?: number }).roll).toBe(12);
-    expect(useGame.getState().party.find((h) => h.id === a.id)!.corruption ?? 0).toBe(0);
+    expect((useGame.getState().pendingTest as { roll?: number }).roll, 'le Test réussi a été relancé').not.toBe(12);
+    expect(useGame.getState().party.find((h) => h.id === a.id)!.corruption).toBe(1);
+  });
+
+  it('RÉPÉTABLE après une relance de Chance déjà faite (« même si un deuxième jet a déjà été effectué ») : 2 Pactes = 2 Points', () => {
+    const { a, party } = party2();
+    a.fortune = 0;
+    useGame.setState({
+      party,
+      pendingTest: {
+        actorId: a.id, actorName: a.label, label: 'Test', skillValue: 40,
+        difficulty: 'intermediaire', requireSL: 0, target: 40,
+        roll: 95, sl: -6, success: false, isDouble: false, rerolled: true, onSuccess: [], onFailure: [],
+      } as never,
+    });
+    useGame.getState().seedRng(1);
+    useGame.getState().testDarkPact();
+    const apres1 = (useGame.getState().pendingTest as { roll?: number }).roll;
+    useGame.getState().testDarkPact();
+    const apres2 = (useGame.getState().pendingTest as { roll?: number }).roll;
+    expect(apres2, 'le 2ᵉ Pacte a re-jeté').not.toBe(apres1);
+    expect(useGame.getState().party.find((h) => h.id === a.id)!.corruption, 'chaque usage corrompt').toBe(2);
   });
 });
 

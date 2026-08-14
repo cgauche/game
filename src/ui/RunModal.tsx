@@ -48,7 +48,7 @@ export function RunModal() {
     rerollable: !!r && !r.success && canReroll(true, !!pr.rerolled),
     onReroll: reroll,
     onBonusSL: bonusSL, // Chance « +1 DR » = +distance de Course (LDB 17 l.26) — offert dès le jet réussi OU raté
-    darkPactable: !!r && !r.success && c.kind === 'hero',
+    darkPactable: !!r && c.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !r?.success,

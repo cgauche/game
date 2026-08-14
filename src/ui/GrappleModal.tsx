@@ -66,7 +66,7 @@ export function GrappleModal() {
     rerollable,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: actor.kind === 'hero' && !!pd.def && !pd.def.success,
+    darkPactable: actor.kind === 'hero' && !!pd.def, // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
     forceShow: pd.result !== 'success',

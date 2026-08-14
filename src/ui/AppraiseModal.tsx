@@ -61,7 +61,7 @@ export function AppraiseModalView({
     onRoll,
     onReroll,
     onBonusSL,
-    darkPactable: rolled && pa.roll! > pa.target,
+    darkPactable: rolled, // LDB 19 l.17
     onDarkPact,
   }, {
     interactive: owned,

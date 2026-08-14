@@ -61,7 +61,7 @@ export function ReloadModalView({
     onRoll,
     onReroll,
     onBonusSL,
-    darkPactable: rolled && pr.roll! > pr.target,
+    darkPactable: rolled, // LDB 19 l.17
     onDarkPact,
   }, {
     fortune,

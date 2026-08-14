@@ -17,7 +17,7 @@
  * normalement par le Bonus d'Endurance et les PA (p.238).
  */
 import { RNG, defaultRNG } from './dice';
-import { rollTest, resolveOpposed, isDoubleRoll, evaluateTest, TestResult } from './tests';
+import { rollTest, resolveOpposed, isDoubleRoll, evaluateTest, clampTarget, TestResult } from './tests';
 import { getTestPolicy } from './testPolicy';
 import { rule } from './policy';
 import { traitCapability } from './traits/dispatch';
@@ -39,7 +39,7 @@ import { effectiveCastingNumber } from './castingNumber';
 import type { CastingNumberMod, CastingNumberSubject } from './castingNumber';
 import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
-import { Combatant, HitLocation, Difficulty, CharKey, CastPenalty, type ItemInstance } from './types';
+import { Combatant, HitLocation, Difficulty, CharKey, CastPenalty, DIFFICULTY_MODIFIERS, type ItemInstance } from './types';
 import { traitById, talentIdByLabel, findTalentById, findDomainById, findGodById, findTrappingById, type TestMatch } from '../data';
 import { effectiveTalents, talentPassiveMods } from './talentEffects';
 import { effectiveEntry } from './variants';
@@ -676,6 +676,24 @@ export function resolveCasting(
   const malepierreConsumed = t.success ? malepierreDR(Math.max(0, t.sl + delta), malepierreReserveOf(caster)) : 0;
   const res = evaluateCasting(caster, spell, delta + malepierreConsumed ? { ...t, sl: t.sl + delta + malepierreConsumed } : t, focusedNI0, !!sea.atSea, env, niMods);
   return malepierreConsumed ? { ...res, malepierreConsumed } : res;
+}
+
+/**
+ * CIBLE d'un Test d'Incantation / de Prière SANS jeter de dé — MIROIR de `resolveCasting` : même
+ * `castingValue`, même modificateur ponctuel (`extraMod` : ward + Vents), même Difficulté, même
+ * plafonnement de policy, et même issue quand la Compétence n'est pas maîtrisée (cible 0).
+ * Sert la fenêtre PRÉ-JET du dé choisi (`LDB 17 l.68`), qui doit s'évaluer contre la cible que le
+ * jet naturel aurait employée — jamais contre une cible re-dérivée à la main.
+ */
+export function castTestTarget(
+  caster: Combatant,
+  spell: SpellLike,
+  difficulty: Difficulty = 'intermediaire',
+  extraMod = 0,
+): number {
+  const info = castInfo(spell);
+  if (!knowsCastingSkill(caster, info.skill, info.spec)) return 0;
+  return clampTarget(castingValue(caster, info.skill, info.spec) + extraMod + DIFFICULTY_MODIFIERS[difficulty]).target;
 }
 
 /**

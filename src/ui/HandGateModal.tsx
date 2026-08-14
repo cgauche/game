@@ -42,7 +42,7 @@ export function HandGateModal() {
     onRoll: roll,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: rolled && pg.roll! > pg.target && actor?.kind === 'hero',
+    darkPactable: rolled && actor?.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !pg.success,

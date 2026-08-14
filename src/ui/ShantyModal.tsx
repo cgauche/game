@@ -48,7 +48,7 @@ export function ShantyModal() {
     rerollable: !!r && !r.success && canReroll(true, !!p.rerolled),
     onReroll: reroll,
     onBonusSL: r?.success ? bonus : undefined,
-    darkPactable: !!r && !r.success && singer.kind === 'hero',
+    darkPactable: !!r && singer.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !r?.success,
