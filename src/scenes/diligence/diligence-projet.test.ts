@@ -73,6 +73,15 @@ describe('La Diligence — paquet de campagne authoré dans l’éditeur', () =>
     expect(planSanctuarise(scene)).toMatchSnapshot();
   });
 
+  it('authorise la peau de relais sans toucher au plan', () => {
+    const body = scene.architecture?.find((candidate) => candidate.id === 'diligence');
+    expect(body?.facades.length).toBeGreaterThan(0);
+    expect(body?.facades.every((facade) => facade.appearance === 'auberge-relais-imperiale')).toBe(true);
+    const windows = (scene.walls ?? []).filter((wall) => wall.window);
+    expect(windows.length).toBeGreaterThan(9);
+    expect(windows.every((wall) => !wall.door)).toBe(true);
+  });
+
   it('une seule scène, 32×38, deux niveaux', () => {
     expect(diligenceCampaign.scenes).toHaveLength(1);
     expect(scene.id).toBe('la-diligence');

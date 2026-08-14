@@ -4934,8 +4934,7 @@
      "x": 20,
      "y": 6,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois",
-     "window": true
+     "structure": "mur-a-ossature-en-bois"
     },
     {
      "x": 4,
@@ -4990,14 +4989,14 @@
      "x": 11,
      "y": 7,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 12,
      "y": 7,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois",
-     "window": true
+     "structure": "mur-a-ossature-en-bois"
     },
     {
      "x": 14,
@@ -5015,8 +5014,7 @@
      "x": 4,
      "y": 8,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois",
-     "window": true
+     "structure": "mur-a-ossature-en-bois"
     },
     {
      "x": 9,
@@ -5028,7 +5026,8 @@
      "x": 4,
      "y": 9,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 18,
@@ -5052,8 +5051,7 @@
      "x": 4,
      "y": 11,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois",
-     "window": true
+     "structure": "mur-a-ossature-en-bois"
     },
     {
      "x": 14,
@@ -5065,7 +5063,8 @@
      "x": 18,
      "y": 11,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 4,
@@ -5083,7 +5082,8 @@
      "x": 14,
      "y": 12,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 18,
@@ -5095,7 +5095,8 @@
      "x": 4,
      "y": 13,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 9,
@@ -5119,8 +5120,7 @@
      "x": 4,
      "y": 14,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois",
-     "window": true
+     "structure": "mur-a-ossature-en-bois"
     },
     {
      "x": 9,
@@ -5186,7 +5186,8 @@
      "x": 18,
      "y": 15,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 4,
@@ -5198,7 +5199,8 @@
      "x": 14,
      "y": 16,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 18,
@@ -5295,7 +5297,8 @@
      "x": 18,
      "y": 19,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 4,
@@ -5308,7 +5311,8 @@
      "x": 14,
      "y": 20,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 18,
@@ -5387,7 +5391,8 @@
      "x": 10,
      "y": 26,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 11,
@@ -5405,7 +5410,8 @@
      "x": 13,
      "y": 26,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 27,
@@ -5512,7 +5518,8 @@
      "x": 7,
      "y": 26,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 5,
@@ -5560,7 +5567,8 @@
      "x": 14,
      "y": 24,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 8,
@@ -5585,7 +5593,8 @@
      "x": 23,
      "y": 7,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 25,
@@ -5609,7 +5618,8 @@
      "x": 27,
      "y": 7,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 28,
@@ -5621,7 +5631,8 @@
      "x": 29,
      "y": 7,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 30,
@@ -5645,7 +5656,8 @@
      "x": 30,
      "y": 9,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 30,
@@ -5663,7 +5675,8 @@
      "x": 30,
      "y": 12,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 20,
@@ -5783,7 +5796,8 @@
      "x": 30,
      "y": 15,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 30,
@@ -5898,7 +5912,8 @@
      "x": 25,
      "y": 21,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 26,
@@ -5910,7 +5925,8 @@
      "x": 28,
      "y": 21,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 30,
@@ -5928,7 +5944,8 @@
      "x": 30,
      "y": 19,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 30,
@@ -6089,7 +6106,8 @@
      "x": 30,
      "y": 27,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 30,
@@ -6113,7 +6131,8 @@
      "x": 30,
      "y": 31,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 30,
@@ -6131,7 +6150,8 @@
      "x": 30,
      "y": 34,
      "side": "E",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 30,
@@ -6155,7 +6175,8 @@
      "x": 28,
      "y": 36,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 27,
@@ -6179,7 +6200,8 @@
      "x": 24,
      "y": 36,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 23,
@@ -6203,7 +6225,8 @@
      "x": 20,
      "y": 36,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 19,
@@ -6245,7 +6268,8 @@
      "x": 14,
      "y": 36,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 13,
@@ -6287,7 +6311,8 @@
      "x": 7,
      "y": 36,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 6,
@@ -6429,7 +6454,8 @@
      "x": 6,
      "y": 29,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 7,
@@ -6511,7 +6537,8 @@
      "x": 16,
      "y": 29,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 17,
@@ -6661,7 +6688,8 @@
      "x": 22,
      "y": 29,
      "side": "N",
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 23,
@@ -7159,7 +7187,8 @@
      "x": 6,
      "y": 0,
      "side": "N",
-     "structure": "mur-en-pierres-seches"
+     "structure": "mur-en-pierres-seches",
+     "window": true
     },
     {
      "x": 7,
@@ -7447,7 +7476,8 @@
      "y": 6,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 19,
@@ -7482,7 +7512,8 @@
      "y": 7,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 23,
@@ -7496,7 +7527,8 @@
      "y": 7,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 25,
@@ -7517,7 +7549,8 @@
      "y": 7,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 28,
@@ -7531,7 +7564,8 @@
      "y": 7,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 30,
@@ -7552,7 +7586,8 @@
      "y": 8,
      "side": "E",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 30,
@@ -7601,7 +7636,8 @@
      "y": 15,
      "side": "E",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 30,
@@ -7622,7 +7658,8 @@
      "y": 19,
      "side": "E",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 30,
@@ -7643,7 +7680,8 @@
      "y": 21,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 28,
@@ -7664,7 +7702,8 @@
      "y": 21,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 25,
@@ -7678,7 +7717,8 @@
      "y": 21,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 23,
@@ -7713,14 +7753,16 @@
      "y": 23,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 20,
      "y": 23,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 19,
@@ -7762,7 +7804,8 @@
      "y": 21,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 15,
@@ -7783,7 +7826,8 @@
      "y": 22,
      "side": "E",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 14,
@@ -7797,7 +7841,8 @@
      "y": 24,
      "side": "E",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 14,
@@ -7818,7 +7863,8 @@
      "y": 26,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 12,
@@ -7839,7 +7885,8 @@
      "y": 26,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 9,
@@ -7860,7 +7907,8 @@
      "y": 26,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 6,
@@ -7888,7 +7936,8 @@
      "y": 24,
      "side": "E",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 4,
@@ -7916,7 +7965,8 @@
      "y": 20,
      "side": "E",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 4,
@@ -7944,7 +7994,8 @@
      "y": 16,
      "side": "E",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 4,
@@ -7972,7 +8023,8 @@
      "y": 12,
      "side": "E",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 4,
@@ -8000,7 +8052,8 @@
      "y": 8,
      "side": "E",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 4,
@@ -8035,7 +8088,8 @@
      "y": 6,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 16,
@@ -8063,7 +8117,8 @@
      "y": 7,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 10,
@@ -8077,7 +8132,8 @@
      "y": 7,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 8,
@@ -8098,7 +8154,8 @@
      "y": 7,
      "side": "N",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 5,
@@ -8430,7 +8487,8 @@
      "y": 13,
      "side": "E",
      "z": 1,
-     "structure": "mur-a-ossature-en-bois"
+     "structure": "mur-a-ossature-en-bois",
+     "window": true
     },
     {
      "x": 23,
@@ -9276,7 +9334,2657 @@
        "roomZoneIds": []
       }
      ],
-     "facades": [],
+     "facades": [
+      {
+       "id": "facade-est-z0-1",
+       "z": 0,
+       "edges": [
+        {
+         "x": 7,
+         "y": 0,
+         "side": "E"
+        },
+        {
+         "x": 7,
+         "y": 1,
+         "side": "E"
+        },
+        {
+         "x": 7,
+         "y": 2,
+         "side": "E"
+        },
+        {
+         "x": 7,
+         "y": 3,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-A-z0"
+       ]
+      },
+      {
+       "id": "facade-est-z0-2",
+       "z": 0,
+       "edges": [
+        {
+         "x": 14,
+         "y": 6,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 7,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 8,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 9,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 10,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 11,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 12,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 13,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 14,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 15,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 16,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 17,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 18,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 19,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 20,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 21,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 22,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 23,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 24,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 25,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-S-z0"
+       ],
+       "features": [
+        {
+         "id": "entree-principale",
+         "kind": "stone-entry",
+         "edge": {
+          "x": 14,
+          "y": 8,
+          "side": "E"
+         },
+         "width": 0.9
+        },
+        {
+         "id": "enseigne-principale",
+         "kind": "sign",
+         "edge": {
+          "x": 14,
+          "y": 10,
+          "side": "E"
+         },
+         "offset": 0.5,
+         "width": 0.45
+        },
+        {
+         "id": "fenetre-14-12-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 14,
+          "y": 12,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-14-16-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 14,
+          "y": 16,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-14-20-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 14,
+          "y": 20,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-14-24-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 14,
+          "y": 24,
+          "side": "E"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-est-z0-3",
+       "z": 0,
+       "edges": [
+        {
+         "x": 20,
+         "y": 6,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-17-0"
+       ],
+       "features": [
+        {
+         "id": "pignon-principal",
+         "kind": "gable",
+         "edge": {
+          "x": 20,
+          "y": 6,
+          "side": "E"
+         },
+         "width": 0.85
+        }
+       ]
+      },
+      {
+       "id": "facade-est-z0-4",
+       "z": 0,
+       "edges": [
+        {
+         "x": 22,
+         "y": 21,
+         "side": "E"
+        },
+        {
+         "x": 22,
+         "y": 22,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-17-0"
+       ]
+      },
+      {
+       "id": "facade-est-z0-5",
+       "z": 0,
+       "edges": [
+        {
+         "x": 30,
+         "y": 7,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 8,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 9,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 10,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 11,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 12,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 13,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 14,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 15,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 16,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 17,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 18,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 19,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 20,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-17-0",
+        "zone-U-z0",
+        "zone-j-z0"
+       ],
+       "features": [
+        {
+         "id": "fenetre-30-9-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 30,
+          "y": 9,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-30-12-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 30,
+          "y": 12,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-30-15-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 30,
+          "y": 15,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-30-19-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 30,
+          "y": 19,
+          "side": "E"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-est-z0-6",
+       "z": 0,
+       "edges": [
+        {
+         "x": 30,
+         "y": 24,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 25,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 26,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 27,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 28,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 29,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 30,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 31,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 32,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 33,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 34,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 35,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-3-0",
+        "zone-B-z0"
+       ],
+       "features": [
+        {
+         "id": "fenetre-30-27-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 30,
+          "y": 27,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-30-31-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 30,
+          "y": 31,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-30-34-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 30,
+          "y": 34,
+          "side": "E"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-nord-z0-1",
+       "z": 0,
+       "edges": [
+        {
+         "x": 5,
+         "y": 0,
+         "side": "N"
+        },
+        {
+         "x": 6,
+         "y": 0,
+         "side": "N"
+        },
+        {
+         "x": 7,
+         "y": 0,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-A-z0"
+       ],
+       "features": [
+        {
+         "id": "fenetre-6-0-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 6,
+          "y": 0,
+          "side": "N"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-nord-z0-2",
+       "z": 0,
+       "edges": [
+        {
+         "x": 13,
+         "y": 6,
+         "side": "N"
+        },
+        {
+         "x": 14,
+         "y": 6,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-S-z0"
+       ]
+      },
+      {
+       "id": "facade-nord-z0-3",
+       "z": 0,
+       "edges": [
+        {
+         "x": 19,
+         "y": 6,
+         "side": "N"
+        },
+        {
+         "x": 20,
+         "y": 6,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-17-0"
+       ]
+      },
+      {
+       "id": "facade-nord-z0-4",
+       "z": 0,
+       "edges": [
+        {
+         "x": 5,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 6,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 7,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 8,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 9,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 10,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 11,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 12,
+         "y": 7,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-K-z0",
+        "zone-S-z0"
+       ],
+       "features": [
+        {
+         "id": "fenetre-7-7-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 7,
+          "y": 7,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-11-7-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 11,
+          "y": 7,
+          "side": "N"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-nord-z0-5",
+       "z": 0,
+       "edges": [
+        {
+         "x": 21,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 22,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 23,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 24,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 25,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 26,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 27,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 28,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 29,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 30,
+         "y": 7,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-R-z0",
+        "zone-U-z0"
+       ],
+       "features": [
+        {
+         "id": "fenetre-23-7-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 23,
+          "y": 7,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-27-7-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 27,
+          "y": 7,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-29-7-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 29,
+          "y": 7,
+          "side": "N"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-nord-z0-6",
+       "z": 0,
+       "edges": [
+        {
+         "x": 26,
+         "y": 24,
+         "side": "N"
+        },
+        {
+         "x": 27,
+         "y": 24,
+         "side": "N"
+        },
+        {
+         "x": 28,
+         "y": 24,
+         "side": "N"
+        },
+        {
+         "x": 29,
+         "y": 24,
+         "side": "N"
+        },
+        {
+         "x": 30,
+         "y": 24,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-B-z0"
+       ]
+      },
+      {
+       "id": "facade-nord-z0-7",
+       "z": 0,
+       "edges": [
+        {
+         "x": 4,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 5,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 6,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 7,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 8,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 9,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 10,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 11,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 12,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 13,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 14,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 15,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 16,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 17,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 18,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 19,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 20,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 21,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 22,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 23,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 24,
+         "y": 29,
+         "side": "N"
+        },
+        {
+         "x": 25,
+         "y": 29,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-E-z0",
+        "zone-F-z0",
+        "zone-e-z0"
+       ],
+       "features": [
+        {
+         "id": "fenetre-6-29-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 6,
+          "y": 29,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-16-29-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 16,
+          "y": 29,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-22-29-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 22,
+          "y": 29,
+          "side": "N"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-ouest-z0-1",
+       "z": 0,
+       "edges": [
+        {
+         "x": 3,
+         "y": 29,
+         "side": "E"
+        },
+        {
+         "x": 3,
+         "y": 30,
+         "side": "E"
+        },
+        {
+         "x": 3,
+         "y": 31,
+         "side": "E"
+        },
+        {
+         "x": 3,
+         "y": 32,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-F-z0"
+       ],
+       "features": [
+        {
+         "id": "cheminee-forge",
+         "kind": "chimney",
+         "edge": {
+          "x": 3,
+          "y": 29,
+          "side": "E"
+         },
+         "offset": 0.5
+        }
+       ]
+      },
+      {
+       "id": "facade-ouest-z0-2",
+       "z": 0,
+       "edges": [
+        {
+         "x": 4,
+         "y": 0,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 1,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 2,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 3,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-A-z0"
+       ]
+      },
+      {
+       "id": "facade-ouest-z0-3",
+       "z": 0,
+       "edges": [
+        {
+         "x": 4,
+         "y": 7,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 8,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 9,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 10,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 11,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 12,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 13,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 14,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 15,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 16,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 17,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 18,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 19,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 20,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 21,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 22,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 23,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 24,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 25,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-K-z0",
+        "zone-L-z0",
+        "zone-P-z0"
+       ],
+       "features": [
+        {
+         "id": "cheminee-cuisine",
+         "kind": "chimney",
+         "edge": {
+          "x": 4,
+          "y": 10,
+          "side": "E"
+         },
+         "offset": 0.55
+        },
+        {
+         "id": "fenetre-4-9-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 4,
+          "y": 9,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-4-13-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 4,
+          "y": 13,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-4-17-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 4,
+          "y": 17,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-4-20-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 4,
+          "y": 20,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-4-23-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 4,
+          "y": 23,
+          "side": "E"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-ouest-z0-4",
+       "z": 0,
+       "edges": [
+        {
+         "x": 4,
+         "y": 33,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 34,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 35,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-r-z0"
+       ]
+      },
+      {
+       "id": "facade-ouest-z0-5",
+       "z": 0,
+       "edges": [
+        {
+         "x": 12,
+         "y": 6,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-S-z0"
+       ]
+      },
+      {
+       "id": "facade-ouest-z0-6",
+       "z": 0,
+       "edges": [
+        {
+         "x": 18,
+         "y": 6,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 7,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 8,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 9,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 10,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 11,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 12,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 13,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 14,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 15,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 16,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 17,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 18,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 19,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 20,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 21,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 22,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-17-0"
+       ],
+       "features": [
+        {
+         "id": "fenetre-18-11-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 18,
+          "y": 11,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-18-15-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 18,
+          "y": 15,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-18-19-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 18,
+          "y": 19,
+          "side": "E"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-ouest-z0-7",
+       "z": 0,
+       "edges": [
+        {
+         "x": 25,
+         "y": 24,
+         "side": "E"
+        },
+        {
+         "x": 25,
+         "y": 25,
+         "side": "E"
+        },
+        {
+         "x": 25,
+         "y": 26,
+         "side": "E"
+        },
+        {
+         "x": 25,
+         "y": 27,
+         "side": "E"
+        },
+        {
+         "x": 25,
+         "y": 28,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-B-z0"
+       ]
+      },
+      {
+       "id": "facade-sud-z0-1",
+       "z": 0,
+       "edges": [
+        {
+         "x": 5,
+         "y": 4,
+         "side": "N"
+        },
+        {
+         "x": 6,
+         "y": 4,
+         "side": "N"
+        },
+        {
+         "x": 7,
+         "y": 4,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-A-z0"
+       ]
+      },
+      {
+       "id": "facade-sud-z0-2",
+       "z": 0,
+       "edges": [
+        {
+         "x": 23,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 24,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 25,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 26,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 27,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 28,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 29,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 30,
+         "y": 21,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-H-z0",
+        "zone-I-z0",
+        "zone-j-z0"
+       ],
+       "features": [
+        {
+         "id": "fenetre-25-21-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 25,
+          "y": 21,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-28-21-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 28,
+          "y": 21,
+          "side": "N"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-sud-z0-3",
+       "z": 0,
+       "edges": [
+        {
+         "x": 19,
+         "y": 23,
+         "side": "N"
+        },
+        {
+         "x": 20,
+         "y": 23,
+         "side": "N"
+        },
+        {
+         "x": 21,
+         "y": 23,
+         "side": "N"
+        },
+        {
+         "x": 22,
+         "y": 23,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-17-0"
+       ]
+      },
+      {
+       "id": "facade-sud-z0-4",
+       "z": 0,
+       "edges": [
+        {
+         "x": 5,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 6,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 7,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 8,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 9,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 10,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 11,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 12,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 13,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 14,
+         "y": 26,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-P-z0",
+        "zone-S-z0"
+       ],
+       "features": [
+        {
+         "id": "fenetre-7-26-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 7,
+          "y": 26,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-10-26-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 10,
+          "y": 26,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-13-26-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 13,
+          "y": 26,
+          "side": "N"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-sud-z0-5",
+       "z": 0,
+       "edges": [
+        {
+         "x": 4,
+         "y": 33,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-F-z0"
+       ]
+      },
+      {
+       "id": "facade-sud-z0-6",
+       "z": 0,
+       "edges": [
+        {
+         "x": 5,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 6,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 7,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 8,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 9,
+         "y": 36,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-r-z0"
+       ],
+       "features": [
+        {
+         "id": "fenetre-7-36-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 7,
+          "y": 36,
+          "side": "N"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-sud-z0-7",
+       "z": 0,
+       "edges": [
+        {
+         "x": 11,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 12,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 13,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 14,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 15,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 16,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 17,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 18,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 19,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 20,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 21,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 22,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 23,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 24,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 25,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 26,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 27,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 28,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 29,
+         "y": 36,
+         "side": "N"
+        },
+        {
+         "x": 30,
+         "y": 36,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-3-0",
+        "zone-E-z0"
+       ],
+       "features": [
+        {
+         "id": "fenetre-14-36-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 14,
+          "y": 36,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-20-36-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 20,
+          "y": 36,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-24-36-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 24,
+          "y": 36,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-28-36-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 28,
+          "y": 36,
+          "side": "N"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-est-z1-1",
+       "z": 1,
+       "edges": [
+        {
+         "x": 14,
+         "y": 21,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 22,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 23,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 24,
+         "side": "E"
+        },
+        {
+         "x": 14,
+         "y": 25,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-X-z1"
+       ],
+       "features": [
+        {
+         "id": "fenetre-14-22-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 14,
+          "y": 22,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-14-24-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 14,
+          "y": 24,
+          "side": "E"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-est-z1-2",
+       "z": 1,
+       "edges": [
+        {
+         "x": 20,
+         "y": 6,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale"
+      },
+      {
+       "id": "facade-est-z1-3",
+       "z": 1,
+       "edges": [
+        {
+         "x": 22,
+         "y": 21,
+         "side": "E"
+        },
+        {
+         "x": 22,
+         "y": 22,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-O-z1"
+       ]
+      },
+      {
+       "id": "facade-est-z1-4",
+       "z": 1,
+       "edges": [
+        {
+         "x": 30,
+         "y": 7,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 8,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 9,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 10,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 11,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 12,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 13,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 14,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 15,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 16,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 17,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 18,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 19,
+         "side": "E"
+        },
+        {
+         "x": 30,
+         "y": 20,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-O-z1",
+        "zone-c-z1",
+        "zone-d-z1",
+        "zone-t-z1"
+       ],
+       "features": [
+        {
+         "id": "fenetre-30-8-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 30,
+          "y": 8,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-30-13-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 30,
+          "y": 13,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-30-15-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 30,
+          "y": 15,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-30-19-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 30,
+          "y": 19,
+          "side": "E"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-nord-z1-1",
+       "z": 1,
+       "edges": [
+        {
+         "x": 13,
+         "y": 6,
+         "side": "N"
+        },
+        {
+         "x": 14,
+         "y": 6,
+         "side": "N"
+        },
+        {
+         "x": 15,
+         "y": 6,
+         "side": "N"
+        },
+        {
+         "x": 16,
+         "y": 6,
+         "side": "N"
+        },
+        {
+         "x": 17,
+         "y": 6,
+         "side": "N"
+        },
+        {
+         "x": 18,
+         "y": 6,
+         "side": "N"
+        },
+        {
+         "x": 19,
+         "y": 6,
+         "side": "N"
+        },
+        {
+         "x": 20,
+         "y": 6,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "features": [
+        {
+         "id": "fenetre-15-6-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 15,
+          "y": 6,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-18-6-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 18,
+          "y": 6,
+          "side": "N"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-nord-z1-2",
+       "z": 1,
+       "edges": [
+        {
+         "x": 5,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 6,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 7,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 8,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 9,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 10,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 11,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 12,
+         "y": 7,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-O-z1",
+        "zone-Y-z1"
+       ],
+       "features": [
+        {
+         "id": "fenetre-6-7-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 6,
+          "y": 7,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-9-7-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 9,
+          "y": 7,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-11-7-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 11,
+          "y": 7,
+          "side": "N"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-nord-z1-3",
+       "z": 1,
+       "edges": [
+        {
+         "x": 21,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 22,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 23,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 24,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 25,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 26,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 27,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 28,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 29,
+         "y": 7,
+         "side": "N"
+        },
+        {
+         "x": 30,
+         "y": 7,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-T-z1",
+        "zone-t-z1"
+       ],
+       "features": [
+        {
+         "id": "fenetre-22-7-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 22,
+          "y": 7,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-24-7-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 24,
+          "y": 7,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-27-7-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 27,
+          "y": 7,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-29-7-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 29,
+          "y": 7,
+          "side": "N"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-ouest-z1-1",
+       "z": 1,
+       "edges": [
+        {
+         "x": 4,
+         "y": 7,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 8,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 9,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 10,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 11,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 12,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 13,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 14,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 15,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 16,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 17,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 18,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 19,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 20,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 21,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 22,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 23,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 24,
+         "side": "E"
+        },
+        {
+         "x": 4,
+         "y": 25,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-Q-z1",
+        "zone-Y-z1",
+        "zone-q-z1"
+       ],
+       "features": [
+        {
+         "id": "fenetre-4-8-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 4,
+          "y": 8,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-4-12-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 4,
+          "y": 12,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-4-16-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 4,
+          "y": 16,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-4-20-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 4,
+          "y": 20,
+          "side": "E"
+         }
+        },
+        {
+         "id": "fenetre-4-24-e",
+         "kind": "window-band",
+         "edge": {
+          "x": 4,
+          "y": 24,
+          "side": "E"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-ouest-z1-2",
+       "z": 1,
+       "edges": [
+        {
+         "x": 12,
+         "y": 6,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale"
+      },
+      {
+       "id": "facade-ouest-z1-3",
+       "z": 1,
+       "edges": [
+        {
+         "x": 18,
+         "y": 21,
+         "side": "E"
+        },
+        {
+         "x": 18,
+         "y": 22,
+         "side": "E"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale"
+      },
+      {
+       "id": "facade-sud-z1-1",
+       "z": 1,
+       "edges": [
+        {
+         "x": 15,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 16,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 17,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 18,
+         "y": 21,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-g-z1"
+       ],
+       "features": [
+        {
+         "id": "fenetre-16-21-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 16,
+          "y": 21,
+          "side": "N"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-sud-z1-2",
+       "z": 1,
+       "edges": [
+        {
+         "x": 23,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 24,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 25,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 26,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 27,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 28,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 29,
+         "y": 21,
+         "side": "N"
+        },
+        {
+         "x": 30,
+         "y": 21,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-a-z1",
+        "zone-b-z1",
+        "zone-c-z1"
+       ],
+       "features": [
+        {
+         "id": "fenetre-24-21-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 24,
+          "y": 21,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-26-21-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 26,
+          "y": 21,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-29-21-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 29,
+          "y": 21,
+          "side": "N"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-sud-z1-3",
+       "z": 1,
+       "edges": [
+        {
+         "x": 19,
+         "y": 23,
+         "side": "N"
+        },
+        {
+         "x": 20,
+         "y": 23,
+         "side": "N"
+        },
+        {
+         "x": 21,
+         "y": 23,
+         "side": "N"
+        },
+        {
+         "x": 22,
+         "y": 23,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-O-z1"
+       ],
+       "features": [
+        {
+         "id": "fenetre-20-23-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 20,
+          "y": 23,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-21-23-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 21,
+          "y": 23,
+          "side": "N"
+         }
+        }
+       ]
+      },
+      {
+       "id": "facade-sud-z1-4",
+       "z": 1,
+       "edges": [
+        {
+         "x": 5,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 6,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 7,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 8,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 9,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 10,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 11,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 12,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 13,
+         "y": 26,
+         "side": "N"
+        },
+        {
+         "x": 14,
+         "y": 26,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "zone-X-z1"
+       ],
+       "features": [
+        {
+         "id": "fenetre-7-26-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 7,
+          "y": 26,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-10-26-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 10,
+          "y": 26,
+          "side": "N"
+         }
+        },
+        {
+         "id": "fenetre-13-26-n",
+         "kind": "window-band",
+         "edge": {
+          "x": 13,
+          "y": 26,
+          "side": "N"
+         }
+        }
+       ]
+      }
+     ],
      "masses": []
     }
    ],
