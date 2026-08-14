@@ -14,6 +14,7 @@ import { Prose } from './Prose';
 import { GatedAction } from './GatedAction';
 import { t } from '../i18n';
 import { SceneBackdrop } from './SceneBackdrop';
+import { NumberField } from './NumberField';
 
 /**
  * Jeux de taverne (Nuits agitées & dures journées, ch.16) — modale UNIQUE : choisir un jeu, un
@@ -237,29 +238,45 @@ export function TavernGameModal() {
                 ))}
               </div>
             ) : (
-              <label className="tavern-amount">
-                {equipe ? "Valeur des joueurs de l'équipe adverse (fixée par la table)" : "Valeur de l'adversaire (fixée par la table)"}
-                <input type="number" min={1} max={100} value={oppValue} onChange={(e) => setAbstractValue(Math.max(1, Math.min(100, Number(e.target.value) || 1)))} />
-              </label>
+              <NumberField
+                id="tavern-opp-value"
+                label={equipe ? "Valeur des joueurs de l'équipe adverse (fixée par la table)" : "Valeur de l'adversaire (fixée par la table)"}
+                min={1}
+                max={100}
+                value={oppValue}
+                onChange={setAbstractValue}
+              />
             )}
             {equipe && (
-              <label className="tavern-amount">
-                Valeur de vos coéquipiers (les {(game?.team?.size ?? 1) - heroes.length} figurants qui complètent VOTRE camp)
-                <input type="number" min={1} max={100} value={allyValue} onChange={(e) => setAllyVal(Math.max(1, Math.min(100, Number(e.target.value) || 1)))} />
-              </label>
+              <NumberField
+                id="tavern-ally-value"
+                label={`Valeur de vos coéquipiers (les ${(game?.team?.size ?? 1) - heroes.length} figurants qui complètent VOTRE camp)`}
+                min={1}
+                max={100}
+                value={allyValue}
+                onChange={setAllyVal}
+              />
             )}
           </div>
           {stakeActive && (
             <div className="tavern-block">
               <span className="mini-title">Mise de chaque joueur</span>
-              <label className="tavern-amount">
-                Pistoles d'argent (bourse : {purseInPa})
-                <input type="number" min={0} max={purseInPa} value={stakePa} onChange={(e) => setStakePa(Math.max(0, Math.min(purseInPa, Number(e.target.value) || 0)))} />
-              </label>
-              <label className="tavern-amount">
-                Joueurs autour de la table (fixé par la table)
-                <input type="number" min={2} max={8} value={joueurs} onChange={(e) => setTablePlayers(Math.max(2, Math.min(8, Number(e.target.value) || 2)))} />
-              </label>
+              <NumberField
+                id="tavern-stake"
+                label={`Pistoles d'argent (bourse : ${purseInPa})`}
+                min={0}
+                max={purseInPa}
+                value={stakePa}
+                onChange={setStakePa}
+              />
+              <NumberField
+                id="tavern-table-players"
+                label="Joueurs autour de la table (fixé par la table)"
+                min={2}
+                max={8}
+                value={joueurs}
+                onChange={setTablePlayers}
+              />
               <p className="tavern-detail muted">
                 Chacun mise la même somme ; le pot se gagne à la manche. Sans mise, personne ne s'assoit.
               </p>

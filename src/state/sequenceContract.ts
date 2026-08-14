@@ -27,7 +27,7 @@ import type { RNG } from '../engine/dice';
 import type { CharKey } from '../engine/types';
 import type {
   SequencePhases, SequencePotRules, SequenceRoundOps, SequenceTableRow, SequenceSide, SequenceVolleyRules,
-  SequenceCombinedRules,
+  SequenceCombinedRules, SequenceThrowerPenalty,
 } from '../engine/sequenceVocab';
 
 /** Borne PAR DÉFAUT de manches — une séquence dont aucun camp ne conclut S'ARRÊTE (le `round >= 50`
@@ -57,7 +57,7 @@ export type {
   SequenceTableRow, SequenceRoundOps, SequencePhases,
   SequenceDice, SequencePotRow, SequencePotRules, SequencePotTurn, SequencePotOutcome,
   SequenceVolleyRow, SequenceVolleyRules, SequenceThrowTurn, SequenceThrowOutcome, SequenceSide,
-  SequenceCombinedRules,
+  SequenceCombinedRules, SequenceThrowerPenalty,
 } from '../engine/sequenceVocab';
 
 /** PARAMÈTRES D'AUTEUR d'une séquence — de la DONNÉE, sérialisée avec l'état : ce qui règle la
@@ -96,6 +96,8 @@ export interface SequenceParams {
   sides?: readonly SequenceSide[];
   /** (9) Test combiné à conséquences distinctes (Cerevis NADJ 16 l.97). */
   combined?: SequenceCombinedRules;
+  /** (10) Sanction du lanceur qui MANQUE (Torchon NADJ 16 l.111). */
+  throwerPenalty?: SequenceThrowerPenalty;
 }
 
 /** ÉTAT d'une séquence EN COURS — GÉNÉRIQUE sur sa charge utile : l'orchestrateur ne lit JAMAIS

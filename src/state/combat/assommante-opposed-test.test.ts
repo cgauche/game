@@ -77,7 +77,10 @@ describe('Assommante — nœud Flow test OPPOSÉ (Force figée vs Résistance, r
     // L'attaquant est PRÉ-JETÉ et FIGÉ dans le meta (sérialisable, coop) → la cascade re-oppose à chaque influence.
     expect(step.meta?.opposed).toBeTruthy();
     expect(typeof step.meta?.opposed?.aT.roll).toBe('number');
-    expect(step.meta?.opposed?.attackerLabel).toBe('Force');
+    // Le côté attaquant voyage en STRUCTURE (le rendu en écrit le libellé) : la donnée de l'Atout ne
+    // porte plus de libellé pré-composé, elle nomme la Caractéristique jetée.
+    expect(step.meta?.opposed?.test).toEqual({ char: 'force' });
+    expect(step.meta?.opposed?.attackerLabel, 'aucun libellé authoré : « Force » se dérive').toBeUndefined();
   });
 
   it('(a) HÉROS : cascadeRoll+cascadeNext → l’issue (Sonné ou non) SUIT resolveOpposed(jetDéfenseur, Force figée)', () => {

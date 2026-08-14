@@ -323,6 +323,26 @@
       }
     ],
     "campScore": "sum",
+    "throwerPenalty": {
+      "test": {
+        "skill": "resistance-a-l-alcool"
+      },
+      "difficulty": "intermediaire",
+      "label": "Descendre une pinte",
+      "points": 1,
+      "ops": [
+        {
+          "op": "intoxicate"
+        }
+      ],
+      "sobrietyPoints": 1,
+      "lines": {
+        "manque": "{who} manque son coup et doit descendre une pinte.",
+        "reussite": "{who} vide son pot sans broncher.",
+        "echec": "{who} n’a pas vidé le pot à temps : son équipe perd {points} point{s}.",
+        "balayage": "Trop sobres : {mien} de votre équipe, {sien} en face — {perteMien} et {perteSien} points perdus."
+      }
+    },
     "desc": "lorsque vous balancez le torchon, faites un Test opposé **Projectiles (Lancer) / Esquive** d'un joueur choisi aléatoirement parmi les 11 danseurs. En cas de succès, vous le touchez à la jambe pour 1 point. Avec au moins 3 DR, vous marquez à la place un coup au corps, qui vous rapporte 2 points. Si vous faites au moins 6 DR, vous marquez à la place un coup à la tête, qui vous rapporte 3 points. Si vous ratez, vous devez descendre une pinte de bière et faire un Test de **Résistance à l'alcool Intermédiaire (+0)**. En cas d'échec, vous ne parvenez pas à vider le pot avant que la serviette n'ait été passée tout au long de la ligne de vos adversaires, et votre équipe perd 1 point. Le jeu se termine lorsque tous les joueurs ont lancé la serviette. À ce stade, chaque joueur qui n'a pas encore fait de jet sur le Tableau Ivre (voir **WFJDR**, page 129) est considéré comme trop sobre et fait perdre 1 point à son équipe. C'est l'équipe qui a le plus de points qui gagne.",
     "source": {
       "book": "nuits-agitees-et-dures-journees",

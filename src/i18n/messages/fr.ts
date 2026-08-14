@@ -831,13 +831,11 @@ export const fr = {
   'seqPot.issueReprend': 'une mise reprise dans le pot',
   'seqPot.issueRemise': 'une autre mise au pot, ou l’abandon',
   'seqPot.issueCible': 'raté : {cible} devient le nombre cible du suivant',
-  // Torchon trempé (NADJ 16 l.111-113).
-  'tavern.torchonPot': '{who} n’a pas vidé le pot à temps : son équipe perd 1 point.',
-  'tavern.torchonSobres': 'Trop sobres : {mien} de votre équipe, {sien} en face — autant de points perdus.',
+  // Torchon trempé (NADJ 16 l.109-111). Le RÉCIT DE LA SANCTION (coup manqué, pinte vidée ou non,
+  // balayage des trop sobres) vit dans la DÉCLARATION du jeu (`throwerPenalty.lines`) : il est propre
+  // à CE jeu, et un second jeu à lanceurs en déclare un autre.
   'tavern.torchonFinal': '{mien} points contre {sien} en {lancers} lancers.',
   'tavern.torchonTouche': '{who} touche {ou} : {points} point{s} ({dr} DR).',
-  'tavern.torchonManque': '{who} manque son coup et doit descendre une pinte.',
-  'tavern.torchonVide': '{who} vide son pot sans broncher.',
   'tavern.danseur': 'Danseur {rang} ({camp})',
   'tavern.equipier': 'Équipier {rang}',
   'tavern.campMien': 'Votre équipe',

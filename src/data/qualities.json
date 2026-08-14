@@ -66,8 +66,7 @@
             "test": {
               "skill": "resistance",
               "opposed": {
-                "attacker": "force",
-                "attackerLabel": "Force"
+                "attacker": "force"
               }
             },
             "success": {

@@ -166,12 +166,16 @@
    matière propre — la bande porte la sienne ; ici, seulement la mise en colonne.
    Les nœuds se nomment par DATA-ATTRIBUT sous `.creator-band`, jamais par une classe : le stock de
    classes du module est GELÉ (cliquet xii, `ui-ratchets.test.ts`) et la convention du module emploie
-   déjà l'attribut pour ses variantes (`[data-fixed]` ci-dessus). Trois nœuds de mise en page ne valent
-   pas trois noms de classe de plus. */
+   déjà l'attribut pour ses variantes (`[data-fixed]` ci-dessus). Quatre nœuds de mise en page ne valent
+   pas quatre noms de classe de plus. */
 .creator-band [data-seq-board] {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+.creator-band [data-seq-pot] {
+  margin: 0;
+  text-align: center;
 }
 .creator-band [data-seq-score] {
   display: flex;

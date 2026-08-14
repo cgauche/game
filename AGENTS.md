@@ -237,6 +237,7 @@ fait DANS la primitive, pas dans une nième copie.
 | **Carte-parchemin narrative** (récit ponctuel adossé à un tirage : événement d'interlude, événement de bord en mer, révélation de scène) — *réflexe avant tout `.tx-parchment` + sceau recodé à la main* | `ParchmentCard` (`seal?` médaillon d100, `title?`, `tone?`, `children` — moissonnée de l'étalon `InterludeScreen`, #371 LOT 4) | `src/ui/ParchmentCard.tsx` |
 | **Panneau d'Activité/Service** (en-tête icône+titre, corps DÉFILABLE, pied FIXE : pré-jet + coût `<Coins>` + action jamais cachés par le scroll) — *réflexe avant tout markup en-tête/corps/pied de volet recodé* | `ActivityPane` (slots génériques `desc`/`blocked`/`prejet`/`cost`/`note`/`actions`/`children` — moissonnée de l'étalon `InterludeScreen`, composée aussi par `CityHubScreen`, #371 LOT 5) | `src/ui/ActivityPane.tsx` |
 | **Stepper de quantité** `[−][centre][+]` (panier, quantité en stock, baisse de prix par cran) | `QtyStepper` | `src/ui/QtyStepper.tsx` |
+| **Champ NOMBRE borné** (saisie clavier + `QtyStepper` + plage dite) — étape « quantité » d'une cascade, réglages de table (valeur d'adversaire, mise, effectif) — *réflexe avant tout `<input type="number">` brut* | `NumberField` (compose `QtyStepper`) | `src/ui/NumberField.tsx` |
 | Lookup d'une table d100 par fourchette `[min,max]` | `findTableEntry` | `src/engine/tables.ts` |
 | Modificateurs de combat « brut » (Avantage×10 + État) | `baseTestMods` | `src/engine/combat.ts` |
 | Libellé d'attaque gratuite de créature (`freeKind`) | `FREE_ATTACK_LABEL` | `src/engine/combat.ts` |

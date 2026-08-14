@@ -248,3 +248,36 @@ export interface SequenceCombinedRules {
    *  (`l.97` s'achève sur le Tableau Ivre) — ce nombre est de la donnée, jamais du RAW. */
   tours?: number;
 }
+
+/* ── FAMILLE (10) : SANCTION DU LANCEUR QUI MANQUE ───────────────────────────────────────────────
+ * Une manche à UN lanceur (`roundShape: 'thrower'`) dont le coup manqué se paie : un Test de plus,
+ * ce que son échec applique au lanceur, et ce qu'il coûte à son camp (`NADJ 16 l.111`). Rien ici ne
+ * nomme son premier client — un second jeu à lanceurs dont la sanction diffère est une entrée JSON.
+ */
+export interface SequenceThrowerPenalty {
+  /** Le Test que doit passer le lanceur qui a manqué (« un Test de **Résistance à l'alcool
+   *  Intermédiaire (+0)** », `NADJ 16 l.111`). */
+  test: { skill?: string; spec?: string; char?: CharKey };
+  difficulty: Difficulty;
+  /** Intitulé du geste qui accompagne ce Test — AFFICHAGE (« Descendre une pinte »). */
+  label?: string;
+  /** Points RETIRÉS au camp du lanceur quand ce Test échoue (l.111 : « votre équipe perd 1 point »).
+   *  Absent/0 : l'échec ne coûte aucun point. */
+  points?: number;
+  /** Ce que l'échec applique au LANCEUR (`GameOp[]`). */
+  ops?: readonly GameOp[];
+  /** BALAYAGE FINAL (l.111) — points RETIRÉS à son camp par chaque lanceur qui n'a pas roulé sur le
+   *  Tableau d'Ivresse à la fin de la partie. Le PRÉDICAT reste au moteur (`engine/drunkenness`) :
+   *  ce nombre en est le prix, et son absence éteint le balayage. */
+  sobrietyPoints?: number;
+  /** LE RÉCIT de la sanction, en DONNÉE — gabarits interpolés par le socle i18n (`interpolate`), au
+   *  même titre que les `label` des autres familles (`SequencePotRow`, `SequenceVolleyRow`). Sans
+   *  eux, un second jeu à lanceurs raconterait la pinte de bière du premier. Chaque gabarit reçoit
+   *  les paramètres de SA situation :
+   *   · `manque`   — le coup manqué : `{who}` ;
+   *   · `reussite` — le Test de sanction RÉUSSI : `{who}` ;
+   *   · `echec`    — le Test ÉCHOUÉ : `{who}`, `{points}`, `{s}` (marque du pluriel) ;
+   *   · `balayage` — le balayage final : `{mien}`, `{sien}`, `{perteMien}`, `{perteSien}`.
+   *  Un gabarit absent : la situation ne se raconte pas (aucune ligne inventée). */
+  lines?: { manque?: string; reussite?: string; echec?: string; balayage?: string };
+}

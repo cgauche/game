@@ -18,7 +18,7 @@ import { ForceDoorModal } from './ForceDoorModal';
 import { CastModal } from './CastModal';
 import { type PanelRowData as PanelRow } from './RollPanel';
 import { OptionChooser, type RollOption } from './OptionChooser';
-import { QtyStepper } from './QtyStepper';
+import { NumberField } from './NumberField';
 import { CriticalBody, RevealBody } from './RevealBody';
 import { ModalSubject } from './ModalSubject';
 import { RecapLineList } from './RecapLine';
@@ -27,6 +27,7 @@ import { testBreakdown, testPending, opposedLines } from './breakdown';
 import type { ModLine } from '../engine/combat';
 import { Icon } from './Icon';
 import { stepInteraction, stepReady, secondReadOf, tableStepDefs, tableStepNaturalRange, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
+import { testSkillLabel } from '../state/rollSeam';
 import { useOwns } from './ownership';
 import { pursuitOf } from '../state/pursuitFlow';
 import { SequencePanel } from './SequencePanel';
@@ -336,6 +337,12 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // s'oppose à un SEUL jet (LDB 13 l.77), donc la rangée est la MÊME et se pose EN TÊTE, une fois.
   const opp = cur.meta?.opposed;
   const oppActor = opp?.attackerId ? pool.find((c) => c.id === opp.attackerId) : undefined;
+  // CE QUE TESTE l'adversaire s'ÉCRIT ICI, jamais au flux. Le libellé AUTHORÉ passe EN PREMIER : il
+  // n'existe QUE là où aucune structure ne peut le porter (« Force/Athlétisme », une alternative de
+  // donnée ; le nom d'une manœuvre). Un `FlowTest.opposed` nomme TOUJOURS sa Caractéristique
+  // (`attacker`, requis) : dériver d'abord écraserait donc l'authoré à chaque fois. Sans authoré, la
+  // STRUCTURE figée (`opposed.test`) passe au catalogue (`testSkillLabel`).
+  const oppTestLabel = opp?.attackerLabel ?? (opp?.test ? testSkillLabel(opp.test) : undefined);
   const oppResponders = cur.participants
     ? cur.participants.map((p) => ({ id: p.id, interactive: p.interactive !== false, result: p.result }))
     : [{ id: cur.actorId, interactive: true, result: cur.result }];
@@ -351,7 +358,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         // l'affichait « Intermédiaire » par défaut tant qu'elle ne voyageait pas). Base NUE de
         // l'attaquant (`aT.base`) pour que le modificateur de Difficulté se lise sur la ligne.
         ...opposedLines([{
-          label: opp.attackerName ? (opp.attackerLabel ? `${opp.attackerName} — ${opp.attackerLabel}` : opp.attackerName) : (opp.attackerLabel ?? 'Adversaire'),
+          label: opp.attackerName ? (oppTestLabel ? `${opp.attackerName} — ${oppTestLabel}` : opp.attackerName) : (oppTestLabel ?? 'Adversaire'),
           base: opp.aT.base ?? opp.aT.target,
           r: { roll: opp.aT.roll, target: opp.aT.target, sl: opp.aT.sl, success: opp.aT.success },
         }], opp.difficulty)[0],
@@ -555,9 +562,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // sans raison est une affordance morte).
   if (interaction === 'quantite') {
     const q = cur.quantity!;
-    const pas = Math.max(1, Math.floor(q.step ?? 1));
     const n = cur.amount ?? q.min;
-    const unite = q.unit ? ` ${q.unit}` : '';
     return (
       <RollShell
         title={titleNode}
@@ -568,30 +573,16 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         postRollExtra={
           <>
             {cur.outcome?.length ? <RecapLineList lines={cur.outcome} /> : null}
-            <div className="prow-act">
-              <label className="field" htmlFor={`${cur.id}-amount`}>
-                <span>{cur.label}</span>
-                <input
-                  id={`${cur.id}-amount`}
-                  type="number"
-                  min={q.min}
-                  max={q.max}
-                  step={pas}
-                  value={n}
-                  onChange={(e) => setAmount(cur.id, Number(e.target.value))}
-                />
-              </label>
-              <QtyStepper
-                center={<>{n}{unite}</>}
-                onDec={() => setAmount(cur.id, n - pas)}
-                onInc={() => setAmount(cur.id, n + pas)}
-                decDisabled={n <= q.min}
-                incDisabled={n >= q.max}
-                decLabel={`Retirer ${pas}`}
-                incLabel={`Ajouter ${pas}`}
-              />
-              <p className="hint">De {q.min} à {q.max}{unite}.</p>
-            </div>
+            <NumberField
+              id={`${cur.id}-amount`}
+              label={cur.label ?? ''}
+              min={q.min}
+              max={q.max}
+              value={n}
+              {...(q.step != null ? { step: q.step } : {})}
+              {...(q.unit ? { unit: q.unit } : {})}
+              onChange={(v) => setAmount(cur.id, v)}
+            />
           </>
         }
         actions={[continueAction]}
@@ -771,7 +762,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
 
   // En-tête A→B du Test opposé : il n'existe QUE pour un défenseur unique (une bande n'a pas de « B »
   // — chaque rangée porte son portrait, la rangée témoin porte l'attaquant).
-  const oppHeader = opp && oppActor && actor ? <VsHeader actor={oppActor} target={actor} label={opp.attackerLabel} /> : null;
+  const oppHeader = opp && oppActor && actor ? <VsHeader actor={oppActor} target={actor} label={oppTestLabel} /> : null;
 
   // Rangée INTERACTIVE de l'étape COURANTE : pré-jet en attente puis résultat, porteuse du cycle
   // d'influence (Chance/+1 DR/Pacte/Résilience/forcedRoll/resist) — étape MONDIALE (`worldOwner`,

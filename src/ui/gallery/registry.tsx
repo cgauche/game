@@ -16,6 +16,7 @@ import { Tabs, type TabItem } from '../Tabs';
 import { OptionChooser } from '../OptionChooser';
 import { ParchmentCard } from '../ParchmentCard';
 import { QtyStepper } from '../QtyStepper';
+import { NumberField } from '../NumberField';
 import { GatedAction } from '../GatedAction';
 import { PortraitTile } from '../PortraitTile';
 import { LifeBar } from '../LifeBar';
@@ -192,6 +193,21 @@ function QtyStepperDemo() {
       onInc={() => setN((v) => v + 1)}
       decLabel="Diminuer"
       incLabel="Augmenter"
+    />
+  );
+}
+
+function NumberFieldDemo() {
+  const [n, setN] = useState(3);
+  return (
+    <NumberField
+      id="gallery-number-field"
+      label="Joueurs autour de la table"
+      min={2}
+      max={8}
+      value={n}
+      unit="joueurs"
+      onChange={setN}
     />
   );
 }
@@ -693,6 +709,7 @@ export const GALLERY_SPECIMENS: GallerySpecimen[] = [
   { label: 'TradeTable', file: 'src/ui/TradeTable.tsx', category: 'Négoce & activités', render: TradeTableDemo },
   { label: 'ActivityPane', file: 'src/ui/ActivityPane.tsx', category: 'Négoce & activités', render: ActivityPaneDemo },
   { label: 'QtyStepper', file: 'src/ui/QtyStepper.tsx', category: 'Négoce & activités', render: QtyStepperDemo },
+  { label: 'NumberField', file: 'src/ui/NumberField.tsx', category: 'Négoce & activités', render: NumberFieldDemo },
   { label: 'GatedAction', file: 'src/ui/GatedAction.tsx', category: 'Négoce & activités', render: GatedActionDemo },
   { label: 'ParchmentCard', file: 'src/ui/ParchmentCard.tsx', category: 'Négoce & activités', render: ParchmentCardDemo },
   { label: 'Prose', file: 'src/ui/Prose.tsx', category: 'Texte', render: ProseDemo },

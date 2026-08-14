@@ -521,7 +521,7 @@ export function applySurprise(get: Get, set: SetFn, surprisedSide: 'party' | 'en
   const difficulty: Difficulty = 'intermediaire';
   const test: FlowTest = {
     skill: 'perception', difficulty, label: 'Surprise', stake: combatStakeRef('ambushSurprise'),
-    opposed: { attacker: 'agilite', attackerSkill: 'discretion', attackerLabel: 'Discrétion', attackerBonusSL: sneakDR },
+    opposed: { attacker: 'agilite', attackerSkill: 'discretion', attackerBonusSL: sneakDR },
   };
   const branches = { onSuccess: EMPTY_FLOW, onFail: onLose }; // le guetteur résiste → pas de Surprise
   // UN SEUL jet d'embusqueur pour toute l'embuscade (l.77) : tiré ici, partagé par la bande et les inlines.
@@ -6181,7 +6181,7 @@ registerCascadeApplier('bladeTrap', (get, set, step) => {
   const flow = testFlow(
     // `defenderMustWin` : ici « vous » (LDB 62 l.280 « Si vous l'emportez ») est le PIÉGEUR, qui est le
     // jeteur de ce Test — la lame ne s'arrache qu'à SA victoire, jamais sur une égalité.
-    { characteristic: 'force', label: 'Piège-lame', stake: combatStakeRef('bladeTrapForce'), opposed: { attacker: 'force', attackerLabel: 'Force', bonusSL: pbt.defSL, defenderMustWin: true } },
+    { characteristic: 'force', label: 'Piège-lame', stake: combatStakeRef('bladeTrapForce'), opposed: { attacker: 'force', bonusSL: pbt.defSL, defenderMustWin: true } },
     { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'breakBlade' }] } },
     EMPTY_FLOW,
   );

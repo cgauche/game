@@ -135,6 +135,30 @@ export const schema = z.array(
       stopCondition: z.string().optional(),
       tours: z.number().optional(),
     }).optional(),
+    /** SANCTION DU LANCEUR QUI MANQUE (famille 10 du socle) — Torchon l.111 : le Test que le raté
+     *  impose, ce que son échec coûte au camp (`points`) et applique au lanceur (`ops`), et le prix
+     *  du balayage final des trop sobres (`sobrietyPoints`). Consommée par
+     *  `SequenceParams.throwerPenalty` (`src/state/sequenceCore.ts`). */
+    throwerPenalty: z.strictObject({
+      test: z.strictObject({
+        skill: z.string().optional(),
+        spec: z.string().optional(),
+        char: charKeySchema.optional(),
+      }),
+      difficulty: difficultySchema,
+      label: z.string().optional(),
+      points: z.number().optional(),
+      ops: z.array(gameOpSchema).optional(),
+      sobrietyPoints: z.number().optional(),
+      /** RÉCIT de la sanction (gabarits `{who}`/`{points}`/`{s}`/`{mien}`… interpolés par le socle) —
+       *  sans eux, un second jeu à lanceurs raconterait la pinte du premier. */
+      lines: z.strictObject({
+        manque: z.string().optional(),
+        reussite: z.string().optional(),
+        echec: z.string().optional(),
+        balayage: z.string().optional(),
+      }).optional(),
+    }).optional(),
     /** Unité de ce que le jeu compte, au pluriel (affichage : « quilles », « points »…). */
     scoreUnit: z.string().optional(),
     /** CAMPS ASYMÉTRIQUES (famille 8 du socle) — Alvatafl l.27-28 : chaque camp convertit son total en

@@ -253,8 +253,9 @@ describe('Les fléchettes — le total EXACT, et le dépassement qui TERMINE LE 
     useGame.setState({
       sequence: {
         ...seq,
+        cum: { player: points, opponent: 0 },
         payload: {
-          ...seq.payload, throwers, points: { player: points, opponent: 0 },
+          ...seq.payload, throwers,
           volley: { seat: 0, jet: 1, manche: 1, gains: {} },
         },
       },

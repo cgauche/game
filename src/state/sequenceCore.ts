@@ -56,7 +56,7 @@ export type {
   SequenceTableRow, SequenceRoundOps, SequencePhases, SequenceBoard, SequenceBoardCamp, SequenceRoundActors,
   SequenceDice, SequencePotRow, SequencePotRules, SequencePotTurn, SequencePotOutcome,
   SequenceVolleyRow, SequenceVolleyRules, SequenceThrowTurn, SequenceThrowOutcome, SequenceSide,
-  SequenceCombinedRules,
+  SequenceCombinedRules, SequenceThrowerPenalty,
 } from './sequenceContract';
 
 /** Registre des définitions, peuplé par les modules de DOMAINE à leur chargement. */
@@ -456,6 +456,19 @@ export function setSequencePayload<P>(get: Get, set: Set, payload: P): void {
   const seq = activeSequence<P>(get);
   if (!seq) return;
   set({ sequence: { ...seq, payload } as SequenceState });
+}
+
+/**
+ * Met à jour l'ACCUMULATEUR PAR CAMP de la séquence en cours EN COURS DE MANCHE — la porte du socle
+ * pour ce que le réducteur de clôture ne peut pas rendre : une étape APPENDÉE à la fenêtre (la
+ * sanction d'un lanceur, `SequenceParams.throwerPenalty`) compte AVANT que la manche ne se close, et
+ * son applier n'a pas de verdict à rendre. Jumelle de `setSequencePayload`, sur le champ que possède
+ * le SOCLE : c'est ce qui évite qu'un système ne se remette à tenir son compteur dans sa charge utile.
+ */
+export function setSequenceCum(get: Get, set: Set, cum: Record<string, number>): void {
+  const seq = activeSequence(get);
+  if (!seq) return;
+  set({ sequence: { ...seq, cum } as SequenceState });
 }
 
 /** Retire la séquence en cours (dénouement, abandon) — sans dénouer : l'appelant joue sa suite. */

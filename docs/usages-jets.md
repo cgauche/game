@@ -161,7 +161,7 @@ Aucune n'est déclarée par un nom de fichier : chacune est la conjonction de zo
 | `src/ui/AuContactModal.tsx` | ✓ | · | · | · | · | · | · | `Icon`, `OptionChooser`, `VsHeader` |
 | `src/ui/BargainModal.tsx` | ✓ | · | · | · | · | · | · | — |
 | `src/ui/BattementModal.tsx` | · | · | · | · | · | · | · | `Icon`, `OptionChooser`, `VsHeader` |
-| `src/ui/CascadeModal.tsx` | · | · | ✓ | ✓ | · | ✓ | · | `CriticalBody`, `Icon`, `ModalSubject`, `OptionChooser`, `QtyStepper`, `RecapLineList`, `RevealBody`, `SequencePanel`, `TableRollLine` |
+| `src/ui/CascadeModal.tsx` | · | · | ✓ | ✓ | · | ✓ | · | `CriticalBody`, `Icon`, `ModalSubject`, `NumberField`, `OptionChooser`, `RecapLineList`, `RevealBody`, `SequencePanel`, `TableRollLine` |
 | `src/ui/CastModal.tsx` | · | · | · | · | ✓ | ✓ | ✓ | `CharFrame`, `Icon`, `OptionChooser`, `RollRow`, `VsHeader` |
 | `src/ui/CorruptionModal.tsx` | · | · | · | · | · | · | · | `Icon`, `OptionChooser` |
 | `src/ui/CrewTestModal.tsx` | · | ✓ | · | · | · | · | · | `Icon` |

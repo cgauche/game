@@ -19,7 +19,7 @@ import { Difficulty, CharKey } from './types';
 import { rule } from './policy';
 import type {
   SequencePhases, SequencePotRules, SequenceRoundOps, SequenceTableRow, SequenceSide, SequenceVolleyRules,
-  SequenceCombinedRules,
+  SequenceCombinedRules, SequenceThrowerPenalty,
 } from './sequenceVocab';
 import tavernGamesJson from '../data/tavernGames.json';
 
@@ -106,6 +106,10 @@ export interface TavernGame {
   /** TEST COMBINÉ à conséquences distinctes (famille 9 du socle) — Cerevis l.97. Consommé par
    *  `SequenceParams.combined`. */
   combined?: SequenceCombinedRules;
+  /** SANCTION DU LANCEUR QUI MANQUE (famille 10 du socle) — Torchon l.111 : le Test à passer, ce que
+   *  son échec coûte au camp et applique au lanceur, et le balayage final des trop sobres. Consommé
+   *  par `SequenceParams.throwerPenalty`. */
+  throwerPenalty?: SequenceThrowerPenalty;
   /** UNITÉ de ce que le jeu COMPTE, au pluriel (« quilles » l.42, « points » l.65/l.83, « pièces
    *  prises » l.27, « chouettes » l.97). AFFICHAGE : tableau de marque et dénouement l'écrivent telle
    *  quelle. Absente : des DR — l'unité du jeu rapide (l.11). */

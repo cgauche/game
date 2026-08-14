@@ -138,9 +138,9 @@ describe('Middenball — les camps, le tour, la somme (NADJ 16 l.117-119)', () =
     // 11 rangées à 3 DR = 33 (≥ 25) contre 11 rangées à 1 DR = 11.
     poseTour(3, 3, 1);
 
-    const p = get().sequence!.payload as { goals: { player: number; opponent: number }; last: { playerSL: number; opponentSL: number } };
+    const p = get().sequence!.payload as { last: { playerSL: number; opponentSL: number } };
     expect(p.last).toEqual({ playerSL: 33, opponentSL: 11 });
-    expect(p.goals, 'total ≥ 25 pour le camp le plus haut : un but').toEqual({ player: 1, opponent: 0 });
+    expect(get().sequence!.cum, 'total ≥ 25 pour le camp le plus haut : un but').toEqual({ player: 1, opponent: 0 });
     for (const h of party) expect(get().party.find((x) => x.id === h.id)!.advantage, '+1 Avantage pour le tour suivant').toBe(1);
     expect(get().journal.some((l) => l.includes('BUT'))).toBe(true);
   });
@@ -221,9 +221,9 @@ describe('Middenball — les camps, le tour, la somme (NADJ 16 l.117-119)', () =
     choisir(0);
     poseTour(4, 4, 3); // 11×4 = 44 contre 11×3 = 33 : les deux ≥ 25
 
-    const p = get().sequence!.payload as { goals: { player: number; opponent: number }; last: { playerSL: number; opponentSL: number } };
+    const p = get().sequence!.payload as { last: { playerSL: number; opponentSL: number } };
     expect(p.last).toEqual({ playerSL: 44, opponentSL: 33 });
-    expect(p.goals, 'un seul but, pour le camp le plus haut').toEqual({ player: 1, opponent: 0 });
+    expect(get().sequence!.cum, 'un seul but, pour le camp le plus haut').toEqual({ player: 1, opponent: 0 });
   });
 
   it('total sous le seuil : l’équipe la plus haute gagne l’Avantage, mais AUCUN but', () => {
@@ -232,8 +232,7 @@ describe('Middenball — les camps, le tour, la somme (NADJ 16 l.117-119)', () =
     choisir(0);
     poseTour(2, 2, 1); // 22 contre 11 : le plus haut, mais < 25
 
-    const p = get().sequence!.payload as { goals: { player: number; opponent: number } };
-    expect(p.goals).toEqual({ player: 0, opponent: 0 });
+    expect(get().sequence!.cum).toEqual({ player: 0, opponent: 0 });
     expect(get().party.find((x) => x.id === party[0].id)!.advantage).toBe(1);
   });
 

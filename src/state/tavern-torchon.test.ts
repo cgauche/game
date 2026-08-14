@@ -1,5 +1,5 @@
 /**
- * LE TORCHON TREMPÉ (NADJ 16 l.109-113) — un tour = un lanceur, la cible tirée au sort parmi les 11
+ * LE TORCHON TREMPÉ (NADJ 16 l.109-111) — un tour = un lanceur, la cible tirée au sort parmi les 11
  * danseurs, le barème de points en TABLE de donnée, la pinte de bière sur un raté, et le balayage
  * final « trop sobre ». Règle verbatim : « lorsque vous balancez le torchon, faites un Test opposé
  * Projectiles (Lancer) / Esquive d'un joueur choisi aléatoirement parmi les 11 danseurs. En cas de
@@ -16,6 +16,8 @@ import { makePregens } from '../data/pregens';
 import { seedBattleRng } from './battleRng';
 import { findTavernGameById } from '../engine/tavernGame';
 import { sequenceTableRow } from './sequenceCore';
+import { tavernParams } from './tavernFlow';
+import { schema } from '../data/schemas/defs/tavernGames';
 import type { Combatant } from '../engine/types';
 
 const get = useGame.getState.bind(useGame);
@@ -47,7 +49,6 @@ function partie(n: number): Combatant[] {
 
 const bande = () => get().pendingCascade?.participants.find((s) => s.kind === 'tavern-round');
 const payload = () => get().sequence?.payload as {
-  points?: { player: number; opponent: number };
   throwers?: { id: string; camp: string }[];
 } | undefined;
 
@@ -82,12 +83,32 @@ beforeEach(() => {
   useGame.setState({ battle: null, pendingCascade: null, sequence: null } as never);
 });
 
-describe('Le torchon trempé (NADJ 16 l.109-113)', () => {
+describe('Le torchon trempé (NADJ 16 l.109-111)', () => {
   it('l’entrée porte la règle : 12 par équipe, 11 danseurs, le barème en table, somme par camp', () => {
     expect(TORCHON.team?.size, '« deux équipes de 12 personnes » (l.109)').toBe(12);
     expect(TORCHON.dancers, '« deux cercles de 11 joueurs » (l.109)').toBe(11);
     expect(TORCHON.table?.map((t) => [t.min, t.max, t.points])).toEqual([[-99, 2, 1], [3, 5, 2], [6, 99, 3]]);
     expect(TORCHON.campScore).toBe('sum');
+  });
+
+  /** LA SANCTION DU RATÉ est en DONNÉE (famille 10, `NADJ 16 l.111` — la règle vit à l'Atlas et dans
+   *  la `desc` de l'entrée) : aucun Test, aucune op, aucun barème de points n'est écrit dans le flux,
+   *  et un second jeu à lanceurs dont le raté se paie autrement est une entrée JSON. */
+  it('l’entrée DÉCLARE la sanction du raté : le Test, sa Difficulté, ses ops, ses points, le balayage, SON récit', () => {
+    expect(TORCHON.throwerPenalty).toEqual({
+      test: { skill: 'resistance-a-l-alcool' },
+      difficulty: 'intermediaire',
+      label: 'Descendre une pinte',
+      points: 1,
+      ops: [{ op: 'intoxicate' }],
+      sobrietyPoints: 1,
+      lines: {
+        manque: '{who} manque son coup et doit descendre une pinte.',
+        reussite: '{who} vide son pot sans broncher.',
+        echec: '{who} n’a pas vidé le pot à temps : son équipe perd {points} point{s}.',
+        balayage: 'Trop sobres : {mien} de votre équipe, {sien} en face — {perteMien} et {perteSien} points perdus.',
+      },
+    });
   });
 
   it('le barème est lu par le SOCLE sur le DR net (jambe 1 / corps ≥3 / tête ≥6, l.111)', () => {
@@ -215,5 +236,65 @@ describe('Le torchon trempé (NADJ 16 l.109-113)', () => {
     const res = get().tavernGames!.result!;
     expect(res.rounds).toBe(24);
     expect(['player', 'opponent', 'tie']).toContain(res.winner);
+  });
+});
+
+/**
+ * LE JEU N+1 (famille 10) — un SECOND jeu à lanceurs dont le raté se paie AUTREMENT ne coûte pas une
+ * ligne de TS : sa sanction, son barème et SON RÉCIT sont une entrée de donnée. Mesuré en deux temps,
+ * sans rien inventer au catalogue livré (une 2ᵉ entrée réelle demanderait une source, ch.16 n'en
+ * donne qu'un jeu à lanceurs) :
+ *  (a) la FIXTURE passe le schéma du fichier — c'est bien une entrée JSON valide, pas un objet forgé ;
+ *  (b) ses PARAMÈTRES pilotent une partie RÉELLE (le flux ne lit QUE `seq.params` pour la sanction) :
+ *      le récit sort en toutes lettres de la fixture, et la pinte du Torchon n'y apparaît nulle part.
+ * CE QUE LA SONDE NE COUVRE PAS, dit plutôt que supposé : l'effectif et les danseurs restent ceux du
+ * Torchon (ils viennent de l'ENTRÉE, pas des paramètres) — la conversion entrée→paramètres, elle, est
+ * mesurée exhaustivement par `tavern-dominos-tiebreak.test.ts`.
+ */
+describe('famille (10) — un 2ᵉ jeu à lanceurs est une ENTRÉE JSON, récit compris', () => {
+  const FIXTURE = {
+    id: 'sonde-lanceurs',
+    label: 'Sonde à lanceurs',
+    desc: 'Entrée de SONDE (jamais livrée au catalogue) : elle mesure qu’un 2ᵉ jeu à lanceurs se déclare.',
+    skill: 'projectiles',
+    spec: 'lancer',
+    mode: 'opposed' as const,
+    team: { size: 2 },
+    dancers: 3,
+    roundShape: 'thrower' as const,
+    campScore: 'sum',
+    table: [{ min: -99, max: 99, points: 2, label: 'de plein fouet' }],
+    throwerPenalty: {
+      test: { skill: 'calme' },
+      difficulty: 'difficile' as const,
+      label: 'Garder contenance',
+      points: 2,
+      lines: {
+        manque: '{who} rate son jet et perd la face.',
+        reussite: '{who} garde contenance.',
+        echec: '{who} se trouble : son camp perd {points} point{s}.',
+      },
+    },
+    source: { book: 'nuits-agitees-et-dures-journees', page: 94 },
+  };
+
+  it('(a) la fixture est une entrée JSON VALIDE au schéma du fichier', () => {
+    const parse = schema.safeParse([FIXTURE]);
+    expect(parse.success, parse.success ? '' : JSON.stringify(parse.error.issues.slice(0, 3))).toBe(true);
+  });
+
+  it('(b) ses paramètres pilotent la partie : SON récit sort, et aucune pinte n’est descendue', () => {
+    const party = makePregens().slice(0, 1) as Combatant[];
+    useGame.setState({ battle: null, party, journal: [], tavernGames: null, pendingCascade: null, sequence: null });
+    capterLeRecit();
+    get().playTavernGame({ gameId: 'torchon', challengerId: party[0].id, opponent: { kind: 'abstract', value: 40 } });
+    // La SANCTION jouée est celle des paramètres — ceux de la fixture, convertis par la même porte.
+    const seq = get().sequence!;
+    useGame.setState({ sequence: { ...seq, params: tavernParams(FIXTURE as never) } });
+    poseLancer(0, 5, -2); // lancer manqué, puis Test de sanction ÉCHOUÉ
+
+    expect(recit.some((l) => l.includes('perd la face')), 'le coup manqué se raconte comme la fixture le dit').toBe(true);
+    expect(recit.some((l) => l.includes('se trouble') && l.includes('2 points')), 'l’échec coûte ce qu’elle déclare').toBe(true);
+    expect(recit.some((l) => /pinte|pot/i.test(l)), 'aucune phrase du Torchon ne survit à un autre jeu').toBe(false);
   });
 });

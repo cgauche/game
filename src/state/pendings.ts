@@ -1197,7 +1197,13 @@ export interface OpposedFreeze {
   attackerId?: string;
   /** Nom de l'attaquant (affichage de la ligne d'opposition). */
   attackerName?: string;
-  /** Libellé du côté attaquant (« Force ») — affichage. */
+  /** CE QUE TESTE l'attaquant, en STRUCTURE (ids de Compétence/Caractéristique) : le libellé de sa
+   *  ligne en est DÉRIVÉ par le rendu (`testSkillLabel`), jamais composé par le flux qui fige le jet —
+   *  un flux déclare, le renderer écrit. */
+  test?: { skill?: string; spec?: string; char?: CharKey };
+  /** Libellé AUTHORÉ du côté attaquant, quand aucune structure ne peut le porter : une alternative
+   *  écrite en donnée (`FlowTest.opposed.attackerLabel`, « Force/Athlétisme ») ou le nom de la
+   *  manœuvre affrontée. Lu en second, quand `test` ne rend rien. */
   attackerLabel?: string;
   /** Bonus de DR ajouté au jet du DÉFENSEUR avant l'opposition (Piège-lame, LDB 62 l.280) — `FlowTest.
    *  opposed.bonusSL` figé : chaque (re)résolution oppose `def.sl + bonusSL` à `aT`. Absent/0 = Assommante. */

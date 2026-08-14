@@ -34,11 +34,11 @@ import { type Flow, type FlowTest, type ConditionCtx, evalCondition, flowHasImpu
 import { condCtx } from '../bourseFlow';
 import { buildActorView, combatConditionCtx, flowTestGated } from './flowEval';
 import type { Get, Set as SetFn } from '../flowTypes';
-import type { FreeAttackFreeze, BladeTrapFreeze, BatchParticipant } from '../pendings';
+import type { FreeAttackFreeze, BladeTrapFreeze, BatchParticipant, OpposedFreeze } from '../pendings';
 import { battleRng } from '../battleRng';
 import { runPureFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps, drainPendingLog } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
-import { freeCons, rollLine, rollStep, surfaceOf, bandStep, monoStep, choiceStep, pushChoice, pousseSi, type BuiltCascadeStep } from '../rollSeam';
+import { freeCons, rollLine, rollStep, surfaceOf, bandStep, monoStep, choiceStep, pushChoice, pousseSi, testSkillLabel, type BuiltCascadeStep } from '../rollSeam';
 import { recoveryGeometry, effectSourcesOf, fireOwnTestFailed } from '../triggeredEffects';
 import { emitCombatEvent } from '../combatEvents';
 import { inBattleId, actorIn } from '../combatants';
@@ -251,6 +251,20 @@ export function rollFrozenOpposedAttacker(attacker: Combatant, opp: NonNullable<
 }
 
 /**
+ * LE CÔTÉ ATTAQUANT tel qu'il voyage dans le GEL d'un Test opposé : la STRUCTURE de son Test — CELLE
+ * QU'IL A JETÉE (`rollFrozenOpposedAttacker` ci-dessus) — dont le rendu DÉRIVE le libellé de la
+ * ligne ; et, seulement quand la donnée en AUTHORE un, le libellé qu'aucune structure ne peut porter
+ * (`FlowTest.opposed.attackerLabel` : « Force/Athlétisme », une alternative). Aucun libellé n'est
+ * composé ici : un flux déclare, le renderer écrit.
+ */
+function opposedAttackerFreeze(opp: NonNullable<FlowTest['opposed']>): Pick<OpposedFreeze, 'test' | 'attackerLabel'> {
+  return {
+    test: { char: opp.attacker, ...(opp.attackerSkill ? { skill: opp.attackerSkill } : {}) },
+    ...(opp.attackerLabel ? { attackerLabel: opp.attackerLabel } : {}),
+  };
+}
+
+/**
  * Étape BATCH d'un Test OPPOSÉ à opposition UNIQUE — UN seul jet d'attaquant FIGÉ (`aT`) contre N
  * défenseurs, une RANGÉE par défenseur dans la MÊME fenêtre (LDB 13 l.77 : « un Test opposé de
  * Discrétion/Perception […] entre le Personnage ayant la Discrétion la plus faible et tous les
@@ -296,7 +310,7 @@ export function frozenOpposedBatchStep(
     ...(ft.menace ? { menace: ft.menace } : {}),
     meta: {
       onSuccess: branches.onSuccess, onFail: branches.onFail, after, casterId: attacker.id,
-      opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp.attackerLabel ?? CHAR_LABELS[opp.attacker], difficulty, ...(opp.bonusSL ? { bonusSL: opp.bonusSL } : {}), ...(opp.defenderMustWin ? { defenderMustWin: true } : {}) },
+      opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, ...opposedAttackerFreeze(opp), difficulty, ...(opp.bonusSL ? { bonusSL: opp.bonusSL } : {}), ...(opp.defenderMustWin ? { defenderMustWin: true } : {}) },
     },
   }, participants);
 }
@@ -551,7 +565,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
         id: triggeredTestStepId(c, ft.label, skillLabel), kind: 'triggeredTest', icon: 'nav/dice', rollLabel: skillLabel,
         actor: c, ligne: { test: testIds(ft) }, label, difficulty,
         stake: ft.stake,
-        meta: { onSuccess: node.success, onFail: node.fail, after, opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], difficulty, ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}), ...(opp!.defenderMustWin ? { defenderMustWin: true } : {}) }, ...extraMeta },
+        meta: { onSuccess: node.success, onFail: node.fail, after, opposed: { aT, attackerId: attacker.id, attackerName: attacker.label, ...opposedAttackerFreeze(opp!), difficulty, ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}), ...(opp!.defenderMustWin ? { defenderMustWin: true } : {}) }, ...extraMeta },
         ...(ft.menace ? { menace: ft.menace } : {}),
       })
       : simpleTriggeredTestStep(c, ft, { onSuccess: node.success, onFail: node.fail }, after, difficulty, extraMeta);
@@ -578,9 +592,12 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     const branchSuccess = opposedBranchSuccess(o, opp.defenderMustWin);
     // Chemin INLINE (défenseur non piloté par un humain — l.358) : ni l'attaquant ni le défenseur
     // n'ont de rangée `CascadeModal`/RollLine — le journal de combat est la SEULE surface des DEUX
-    // jets de ce Test opposé, il les PORTE : la ligne se DÉRIVE (`traceLineOf`, forme OPPOSÉE).
+    // jets de ce Test opposé, il les PORTE : la ligne se DÉRIVE (`traceLineOf`, forme OPPOSÉE). Le
+    // côté attaquant y est nommé par la MÊME source que la fenêtre (`opposedAttackerFreeze`) et dans
+    // le MÊME ordre : le libellé AUTHORÉ d'abord, la STRUCTURE au catalogue ensuite.
+    const gel = opposedAttackerFreeze(opp);
     queueLines(ctx.get, ctx.set, [traceLineOf({
-      attacker: { who: attacker.label, label: opp.attackerLabel ?? CHAR_LABELS[opp.attacker], roll: aT.roll, target: aT.target, sl: aT.sl },
+      attacker: { who: attacker.label, label: gel.attackerLabel ?? testSkillLabel(gel.test!) ?? '', roll: aT.roll, target: aT.target, sl: aT.sl },
       defender: { who: c.label, label: skillLabel, roll: t.roll, target: t.target, sl: t.sl, ...(bonusSL ? { slBonus: bonusSL } : {}) },
       winner: o.winner,
     })], c.id);

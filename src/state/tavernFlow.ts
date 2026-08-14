@@ -53,7 +53,7 @@ import {
   registerSequence, startSequence, resolveSequenceTie, sequenceCumRound, sequenceDrBonus,
   sequencePhaseOf, sequenceScoreOf, sequenceTableRow, resolveSequencePotTurn, sequencePotIssue,
   resolveSequenceThrow, sequenceThrowGain, sequenceThrowRow, sequenceVolleyRounds,
-  activeSequence, setSequencePayload, SEQUENCE_PURPOSE,
+  activeSequence, setSequencePayload, setSequenceCum, SEQUENCE_PURPOSE,
   type SequenceBoard, type SequenceCloseCtx, type SequenceParams, type SequenceRound,
   type SequencePotTurn, type SequenceState, type SequenceVerdict,
   type SequenceThrowTurn, type SequenceThrowOutcome, type SequenceVolleyRules, type SequenceVolleyRow,
@@ -66,7 +66,7 @@ import { resolvePresetCreature } from './campaignData';
 import type { Scene } from './scene';
 import { jetSurfaced } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
-import { t } from '../i18n';
+import { t, interpolate } from '../i18n';
 
 /**
  * Adversaire d'une partie — TROIS formes, jamais deux chemins pour la même :
@@ -209,8 +209,6 @@ export interface TavernPayload {
   last?: { playerSL: number; opponentSL: number };
   /** JEU D'ÉQUIPE : les rangées de chaque camp (héros ET figurants), par id de rangée. */
   teams?: { player: string[]; opponent: string[] };
-  /** JEU D'ÉQUIPE : les BUTS marqués (Middenball l.121, total de camp ≥ seuil). */
-  goals?: { player: number; opponent: number };
   /** JEU D'ÉQUIPE : option de Test retenue par chaque héros pour la manche EN COURS (clé d'option). */
   choices?: Record<string, number>;
   /** JEU D'ÉQUIPE : valeur de Test des COÉQUIPIERS figurants du groupe — distincte de celle du camp
@@ -222,8 +220,6 @@ export interface TavernPayload {
   advantage?: { player: number; opponent: number };
   /** TORCHON : l'ORDRE de passage des lanceurs (un tour = un lanceur, l.111), figé à l'ouverture. */
   throwers?: { id: string; label: string; camp: 'player' | 'opponent'; value?: number }[];
-  /** TORCHON : les POINTS de chaque équipe (l.111-113). */
-  points?: { player: number; opponent: number };
   /** MISE : les joueurs assis à la table, dans l'ORDRE du tour (Al-zahr l.17). */
   seats?: TavernSeat[];
   /** MISE : joueurs SORTIS de la manche en cours (éliminés ou ayant abandonné) — ils ne roulent plus. */
@@ -292,6 +288,7 @@ export function tavernParams(game: TavernGame, joueurs = 0): SequenceParams {
     ...(game.volley ? { volley: game.volley } : {}),
     ...(game.sides ? { sides: game.sides } : {}),
     ...(game.combined ? { combined: game.combined } : {}),
+    ...(game.throwerPenalty ? { throwerPenalty: game.throwerPenalty } : {}),
   };
 }
 
@@ -615,7 +612,7 @@ registerCascadeApplier(TAVERN_CHOICE_KIND, (get, set, step) => {
   return option ? { consequences: freeCons([option.label]) } : {};
 });
 
-/* ── LE TORCHON TREMPÉ (NADJ 16 l.109-113) ──────────────────────────────────────────────────────
+/* ── LE TORCHON TREMPÉ (NADJ 16 l.109-111) ──────────────────────────────────────────────────────
  * « Il fait intervenir deux équipes de 12 personnes, placées en deux cercles de 11 joueurs qui dansent
  * main dans la main autour d'un membre de l'équipe adverse » (l.109) — d'où `team.size` 12 et
  * `dancers` 11, tous deux en donnée. « lorsque vous balancez le torchon, faites un Test opposé
@@ -699,21 +696,21 @@ function torchonRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Se
   };
 }
 
-/** APPLIER du Test de Résistance à l'alcool (l.111) : l'échec fait perdre 1 point à l'équipe — c'est la
- *  CLÔTURE qui le compte (elle lit la rangée) ; ici, la seule ligne de récit. L'op `intoxicate` (LDB 09
- *  l.475) est appliquée sur l'échec : c'est ELLE qui tire le Tableau d'Ivresse au seuil du Bonus
- *  d'Endurance, et le franchissement est noté dans la charge utile (balayage final, l.113). */
 /**
- * LE RATÉ d'un lancer de torchon (l.111) : « vous devez descendre une pinte de bière et faire un Test
- * de Résistance à l'alcool Intermédiaire (+0) ». Un HÉROS tenu par un siège reçoit son étape, APPENDÉE
- * à la fenêtre du lancer (patron du choix d'option) ; tout autre lanceur (figurant, héros sans siège)
- * boit d'office, sans fenêtre. Rendu : les lignes de récit du chemin d'office (vide sinon).
+ * LE RATÉ d'un lancer — la SANCTION est DÉCLARÉE (famille 10, `SequenceParams.throwerPenalty`) :
+ * le Test imposé, sa Difficulté, ce que l'échec applique au lanceur et ce qu'il coûte à son camp
+ * viennent tous de l'entrée du jeu. Torchon l.111 : « vous devez descendre une pinte de bière et
+ * faire un Test de **Résistance à l'alcool Intermédiaire (+0)** ». Un HÉROS tenu par un siège reçoit
+ * son étape, APPENDÉE à la fenêtre du lancer (patron du choix d'option) ; tout autre lanceur
+ * (figurant, héros sans siège) le passe d'office, sans fenêtre. Aucune sanction déclarée : le raté ne
+ * coûte rien. Rendu : les lignes de récit du chemin d'office (vide sinon).
  */
 function torchonRate(get: Get, set: Set, rows: readonly BatchParticipant[]): string[] {
   const seq = activeSequence<TavernPayload>(get);
   const p = seq?.payload;
   const game = p ? findTavernGameById(p.gameId) : undefined;
-  if (!seq || !p || game?.roundShape !== 'thrower') return [];
+  const regles = seq?.params.throwerPenalty;
+  if (!seq || !p || !game || !regles || game.roundShape !== 'thrower') return [];
   const lanceur = p.throwers?.[seq.round - 1];
   const jet = rows.find((r) => r.id === lanceur?.id);
   const danseur = rows.find((r) => r.id.startsWith('danseur-'));
@@ -724,15 +721,16 @@ function torchonRate(get: Get, set: Set, rows: readonly BatchParticipant[]): str
   });
   if (resolveOpposed(asTest(jet), asTest(danseur)).attackerWins) return [];
   const heros = actorIn(get(), lanceur.id);
+  const id = `${TAVERN_DRINK_KIND}-${seq.round}`;
   const etape = heros && !cadenceAuto() && jetSurfaced(get(), heros)
     ? monoStep({
-      id: `${TAVERN_DRINK_KIND}-${seq.round}`,
+      id,
       kind: TAVERN_DRINK_KIND,
       icon: 'nav/dice',
-      label: composeRollLabel(heros, 'Descendre une pinte', { skill: 'resistance-a-l-alcool' }),
+      label: composeRollLabel(heros, regles.label ?? game.label, regles.test),
       actor: heros,
-      difficulty: TAVERN_TEST_DIFFICULTY, // « Résistance à l'alcool Intermédiaire (+0) » (l.111)
-      ligne: { test: { skill: 'resistance-a-l-alcool' } },
+      difficulty: regles.difficulty,
+      ligne: { test: regles.test },
       stake: combatStakeRef('tavernGame', { values: { jeu: game.label, adversaire: p.opponentName, mise: 'aucune' } }),
       meta: { camp: lanceur.camp, who: lanceur.label },
     })
@@ -744,35 +742,36 @@ function torchonRate(get: Get, set: Set, rows: readonly BatchParticipant[]): str
   // Aucun siège : le Test se joue d'office, monté par le MÊME monteur que partout — sur la FICHE du
   // héros quand il y en a une (chemin acteur, patron `equipierRow`), en valeur de table pour un
   // figurant, qui n'a pas de fiche. Jamais un jet forgé à la main.
-  const id = `${TAVERN_DRINK_KIND}-${seq.round}`;
-  const test = { skill: 'resistance-a-l-alcool' };
   const pinte: BatchParticipant = heros
     ? {
-      id, label: testSkillLabel(test) ?? lanceur.label, skillId: test.skill,
-      difficulty: TAVERN_TEST_DIFFICULTY, result: null, interactive: false,
-      ...rollStep({ actor: heros, test, difficulty: TAVERN_TEST_DIFFICULTY }),
+      id, label: testSkillLabel(regles.test) ?? lanceur.label, ...(regles.test.skill ? { skillId: regles.test.skill } : {}),
+      difficulty: regles.difficulty, result: null, interactive: false,
+      ...rollStep({ actor: heros, test: regles.test, difficulty: regles.difficulty }),
     }
-    : figurantRow(id, lanceur.label, lanceur.value ?? p.opponentValue, test, 0);
+    : figurantRow(id, lanceur.label, lanceur.value ?? p.opponentValue, { ...regles.test, difficulty: regles.difficulty }, 0);
   const jete = pinte.result ?? rollBatchParticipant(pinte, battleRng());
   return torchonBoit(get, set, lanceur.id, lanceur.camp, lanceur.label, jete.success);
 }
 
+/** CE QUE COÛTE le Test raté de la sanction : ses `ops` au lanceur, ses `points` à son camp — retirés
+ *  de l'ACCUMULATEUR du socle EN COURS DE MANCHE (`setSequenceCum`), la clôture les relit là. Le RÉCIT
+ *  est celui que la sanction DÉCLARE (`lines`) : aucune phrase n'est écrite ici. */
 function torchonBoit(get: Get, set: Set, lanceurId: string, camp: 'player' | 'opponent', label: string, success: boolean): string[] {
   const seq = activeSequence<TavernPayload>(get);
-  if (!seq) return [];
-  if (success) return [t('tavern.torchonVide', { who: label })];
-  const p = seq.payload;
-  const points = { player: p.points?.player ?? 0, opponent: p.points?.opponent ?? 0 };
-  points[camp] -= 1; // « votre équipe perd 1 point » (l.111)
+  const regles = seq?.params.throwerPenalty;
+  if (!seq || !regles) return [];
+  if (success) return regles.lines?.reussite ? [interpolate(regles.lines.reussite, { who: label })] : [];
+  const perte = regles.points ?? 0;
   const acteur = actorIn(get(), lanceurId);
-  const lignes: string[] = [t('tavern.torchonPot', { who: label })];
-  if (acteur) {
-    // L'op `intoxicate` (LDB 09 l.475) porte TOUT : l'échec de Résistance, la pénalité, et le tirage
-    // du Tableau d'Ivresse au seuil du Bonus d'Endurance — qui laisse sa marque sur la FICHE, où le
-    // balayage final la lira.
-    lignes.push(...applyOps(acteur, [{ op: 'intoxicate' }], { rng: battleRng() }));
+  const lignes: string[] = regles.lines?.echec
+    ? [interpolate(regles.lines.echec, { who: label, points: perte, s: perte > 1 ? 's' : '' })]
+    : [];
+  if (acteur && regles.ops?.length) {
+    // ANCRAGE DE RÈGLE : ce que la sanction applique se relie à la FICHE DU JEU, qui porte sa règle
+    // verbatim — un effet actif sans ancrage s'affiche NU (`effect-rule-anchor`).
+    lignes.push(...applyOps(acteur, [...regles.ops], { rng: battleRng(), source: { kind: 'tavernGame', id: seq.payload.gameId } }));
   }
-  setSequencePayload(get, set, { ...p, points });
+  if (perte) setSequenceCum(get, set, { ...seq.cum, [camp]: (seq.cum[camp] ?? 0) - perte });
   return lignes;
 }
 
@@ -899,7 +898,9 @@ function tavernRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Seq
     meta: {
       gameId: game.id, opponentValue: p.opponentValue, opponentName: p.opponentName,
       stakeBrass: p.stakeBrass, round: seq.round,
-      opposed: { aT: rolled, attackerName: p.opponentName, attackerLabel: testSkillLabel(test) },
+      // L'adversaire de la salle joue le MÊME Test que le challenger : la STRUCTURE voyage, le
+      // libellé de sa ligne s'écrit au rendu.
+      opposed: { aT: rolled, attackerName: p.opponentName, test },
     },
   });
   if (!step) return undefined;
@@ -942,14 +943,15 @@ function tavernSides(ctx: SequenceCloseCtx<TavernPayload>): {
 }
 
 /**
- * RÉDUCTEUR DE CLÔTURE d'un lancer de TORCHON (`NADJ 16 l.111-113` — la règle vit à l'Atlas et dans
+ * RÉDUCTEUR DE CLÔTURE d'un lancer de TORCHON (`NADJ 16 l.111` — la règle vit à l'Atlas et dans
  * la `desc` de l'entrée, ici ce qu'en fait le code) :
  *  · Test OPPOSÉ lanceur / danseur, barème de points par la TABLE déclarée en donnée, lue par le socle
  *    (`sequenceTableRow`, famille 2) sur le DR NET de l'opposition ;
- *  · lancer manqué : étape de Résistance à l'alcool APPENDÉE à la même fenêtre pour un héros, résolue
- *    d'office sinon ; son échec coûte 1 point à l'équipe (compté par l'applier de cette étape) ;
- *  · dernier lanceur : BALAYAGE final sur les lanceurs de CHAQUE camp, −1 point par lanceur qui n'a
- *    pas roulé sur le Tableau Ivre de la partie.
+ *  · lancer manqué : la SANCTION DÉCLARÉE (famille 10, `throwerPenalty`) — étape APPENDÉE à la même
+ *    fenêtre pour un héros, résolue d'office sinon ; ce qu'elle coûte est compté par son applier ;
+ *  · dernier lanceur : BALAYAGE final sur les lanceurs de CHAQUE camp, au prix DÉCLARÉ
+ *    (`throwerPenalty.sobrietyPoints`) par lanceur qui n'a pas roulé sur le Tableau Ivre.
+ * Les points d'un camp sont l'ACCUMULATEUR du socle (`seq.cum`) — aucun compteur jumeau.
  */
 function torchonClose(ctx: SequenceCloseCtx<TavernPayload>): SequenceVerdict<TavernPayload> {
   const { get, seq, done } = ctx;
@@ -959,7 +961,7 @@ function torchonClose(ctx: SequenceCloseCtx<TavernPayload>): SequenceVerdict<Tav
   if (!band?.participants || !lanceur) return { go: 'end', outcome: 'tie' };
   const jet = band.participants.find((r) => r.id === lanceur.id);
   const danseur = band.participants.find((r) => r.id.startsWith('danseur-'));
-  const points = { player: p.points?.player ?? 0, opponent: p.points?.opponent ?? 0 };
+  const cum = { ...seq.cum };
   const log: string[] = [];
   const asTest = (r: BatchParticipant): TestResult => ({
     roll: r.result!.roll, target: r.result!.target, base: r.base,
@@ -970,32 +972,44 @@ function torchonClose(ctx: SequenceCloseCtx<TavernPayload>): SequenceVerdict<Tav
     if (opp.attackerWins) {
       const ligne = sequenceTableRow(seq.params, opp.netSL);
       const gain = ligne?.points ?? 0;
-      points[lanceur.camp] += gain;
+      cum[lanceur.camp] = (cum[lanceur.camp] ?? 0) + gain;
       log.push(t('tavern.torchonTouche', { who: lanceur.label, ou: ligne?.label ?? '', points: gain, s: gain > 1 ? 's' : '', dr: opp.netSL }));
-    } else {
-      log.push(t('tavern.torchonManque', { who: lanceur.label }));
+    } else if (seq.params.throwerPenalty?.lines?.manque) {
+      log.push(interpolate(seq.params.throwerPenalty.lines.manque, { who: lanceur.label }));
     }
   }
-  // La perte de point du pot non vidé (l.111) est comptée par l'applier du Test d'alcool, qui la
-  // pose dans la charge utile : elle est donc DÉJÀ dans `p.points` quand la clôture les relit.
+  // La perte du pot non vidé (l.111) est comptée par l'applier de la sanction, qui la pose dans
+  // l'accumulateur : elle est donc DÉJÀ dans `seq.cum` quand la clôture le relit.
   const dernier = seq.round >= (p.throwers?.length ?? 0);
-  const payload: TavernPayload = { ...p, points, last: { playerSL: points.player, opponentSL: points.opponent } };
-  if (!dernier) return { go: 'continue', payload, log };
+  const marque = (): TavernPayload => ({ ...p, last: { playerSL: cum[CAMP_PLAYER] ?? 0, opponentSL: cum[CAMP_OPPONENT] ?? 0 } });
+  if (!dernier) return { go: 'continue', cum, payload: marque(), log };
 
   // BALAYAGE FINAL (`NADJ 16 l.111`) : le critère porte sur le jet du Tableau d'Ivresse, sans borne
   // de partie — c'est donc l'ÉTAT du personnage qui répond (`isDrunk`, `engine/drunkenness` : un
   // résultat du Tableau a été tiré), y compris pour un lanceur arrivé ivre à la taverne. Un figurant
-  // n'a pas de fiche : il n'a jamais bu, il compte — pour les DEUX camps (symétrie).
-  const sobres = { player: 0, opponent: 0 };
-  for (const lanceurDuBalayage of p.throwers ?? []) {
-    const fiche = actorIn(get(), lanceurDuBalayage.id);
-    if (!fiche || !isDrunk(fiche)) sobres[lanceurDuBalayage.camp] += 1;
+  // n'a pas de fiche : il n'a jamais bu, il compte — pour les DEUX camps (symétrie). Le PRIX du
+  // lanceur trop sobre est DÉCLARÉ ; sans déclaration, aucun balayage.
+  const prix = seq.params.throwerPenalty?.sobrietyPoints ?? 0;
+  if (prix) {
+    const sobres = { [CAMP_PLAYER]: 0, [CAMP_OPPONENT]: 0 };
+    for (const lanceurDuBalayage of p.throwers ?? []) {
+      const fiche = actorIn(get(), lanceurDuBalayage.id);
+      if (!fiche || !isDrunk(fiche)) sobres[lanceurDuBalayage.camp] += 1;
+    }
+    cum[CAMP_PLAYER] = (cum[CAMP_PLAYER] ?? 0) - sobres[CAMP_PLAYER] * prix;
+    cum[CAMP_OPPONENT] = (cum[CAMP_OPPONENT] ?? 0) - sobres[CAMP_OPPONENT] * prix;
+    const dit = seq.params.throwerPenalty?.lines?.balayage;
+    if (dit) {
+      log.push(interpolate(dit, {
+        mien: sobres[CAMP_PLAYER], sien: sobres[CAMP_OPPONENT],
+        perteMien: sobres[CAMP_PLAYER] * prix, perteSien: sobres[CAMP_OPPONENT] * prix,
+      }));
+    }
   }
-  points.player -= sobres.player;
-  points.opponent -= sobres.opponent;
-  log.push(t('tavern.torchonSobres', { mien: sobres.player, sien: sobres.opponent }));
-  const issue: TavernGameResult['winner'] = points.player > points.opponent ? 'player' : points.opponent > points.player ? 'opponent' : 'tie';
-  return { go: 'end', outcome: issue, payload: { ...payload, points, last: { playerSL: points.player, opponentSL: points.opponent } }, log };
+  const mien = cum[CAMP_PLAYER] ?? 0;
+  const sien = cum[CAMP_OPPONENT] ?? 0;
+  const issue: TavernGameResult['winner'] = mien > sien ? 'player' : sien > mien ? 'opponent' : 'tie';
+  return { go: 'end', outcome: issue, cum, payload: marque(), log };
 }
 
 /**
@@ -1028,9 +1042,11 @@ function tavernTeamClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame)
   const gagnant: TavernGameResult['winner'] = tp > to ? 'player' : to > tp ? 'opponent' : 'tie';
   const seuil = seq.params.scoreThreshold;
   const but = seuil != null && gagnant !== 'tie' && Math.max(tp, to) >= seuil;
-  const goals = {
-    player: (p.goals?.player ?? 0) + (but && gagnant === 'player' ? 1 : 0),
-    opponent: (p.goals?.opponent ?? 0) + (but && gagnant === 'opponent' ? 1 : 0),
+  // LES BUTS sont l'ACCUMULATEUR du socle (`seq.cum`) : un but marqué par le camp qui l'emporte.
+  const buts = {
+    ...seq.cum,
+    [CAMP_PLAYER]: (seq.cum[CAMP_PLAYER] ?? 0) + (but && gagnant === 'player' ? 1 : 0),
+    [CAMP_OPPONENT]: (seq.cum[CAMP_OPPONENT] ?? 0) + (but && gagnant === 'opponent' ? 1 : 0),
   };
   const ph = sequencePhaseOf(seq.params, seq.round);
   const heros = new Set(equipiers(ctx.get).map((h) => h.id));
@@ -1041,10 +1057,12 @@ function tavernTeamClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame)
   // (le socle), les camps le portent ici pour leurs figurants. Il ne s'accumule pas — c'est +1 pour
   // LE tour suivant, et le camp qui ne gagne pas ce tour retombe à 0.
   const advantage = { player: gagnant === 'player' ? 1 : 0, opponent: gagnant === 'opponent' ? 1 : 0 };
-  const payload: TavernPayload = { ...p, goals, advantage, last: { playerSL: tp, opponentSL: to } };
-  if (!ph.last) return { go: 'continue', payload, log, roundActors };
-  const issue: TavernGameResult['winner'] = goals.player > goals.opponent ? 'player' : goals.opponent > goals.player ? 'opponent' : 'tie';
-  return { go: 'end', outcome: issue, payload, log, roundActors };
+  const payload: TavernPayload = { ...p, advantage, last: { playerSL: tp, opponentSL: to } };
+  if (!ph.last) return { go: 'continue', cum: buts, payload, log, roundActors };
+  const bp = buts[CAMP_PLAYER] ?? 0;
+  const bo = buts[CAMP_OPPONENT] ?? 0;
+  const issue: TavernGameResult['winner'] = bp > bo ? 'player' : bo > bp ? 'opponent' : 'tie';
+  return { go: 'end', outcome: issue, cum: buts, payload, log, roundActors };
 }
 
 /* ── L'AL-ZAHR : MISE, POT, ABANDON, ÉLIMINATION (`NADJ 16 l.15-17`) ────────────────────────────
@@ -1588,19 +1606,21 @@ function tavernSettle(get: Get, set: Set, seq: SequenceState<TavernPayload>, out
     potSettle(get, set, game, challenger, p, outcome);
     return;
   }
-  // TORCHON (l.111-113) : ce qui se compte, ce sont les POINTS d'équipe — jamais des DR ni des buts.
+  // TORCHON (l.111) : ce qui se compte, ce sont les POINTS d'équipe — jamais des DR ni des buts.
   if (game.roundShape === 'thrower') {
-    const pts = p.points ?? { player: 0, opponent: 0 };
-    finalizeTavernGame(get, set, game, challenger, p.opponentName, winner, pts.player, pts.opponent, rounds, 0,
-      t('tavern.torchonFinal', { mien: pts.player, sien: pts.opponent, lancers: rounds }), { netBrass: 0, verse: false });
+    const mien = seq.cum[CAMP_PLAYER] ?? 0;
+    const sien = seq.cum[CAMP_OPPONENT] ?? 0;
+    finalizeTavernGame(get, set, game, challenger, p.opponentName, winner, mien, sien, rounds, 0,
+      t('tavern.torchonFinal', { mien, sien, lancers: rounds }), { netBrass: 0, verse: false });
     return;
   }
   // JEU D'ÉQUIPE : ce qui se dit à la fin, ce sont les BUTS (l.121) — la somme de DR n'était que le
   // moyen de les marquer. Le score affiché est donc le compte de buts de chaque camp.
   if (game.roundShape === 'team') {
-    const buts = p.goals ?? { player: 0, opponent: 0 };
-    finalizeTavernGame(get, set, game, challenger, p.opponentName, winner, buts.player, buts.opponent, rounds, 0,
-      `${game.label} : ${buts.player} but${buts.player > 1 ? 's' : ''} contre ${buts.opponent} en ${rounds} tour${rounds > 1 ? 's' : ''}.`,
+    const mien = seq.cum[CAMP_PLAYER] ?? 0;
+    const sien = seq.cum[CAMP_OPPONENT] ?? 0;
+    finalizeTavernGame(get, set, game, challenger, p.opponentName, winner, mien, sien, rounds, 0,
+      `${game.label} : ${mien} but${mien > 1 ? 's' : ''} contre ${sien} en ${rounds} tour${rounds > 1 ? 's' : ''}.`,
       { netBrass: 0, verse: false });
     return;
   }
@@ -1609,10 +1629,11 @@ function tavernSettle(get: Get, set: Set, seq: SequenceState<TavernPayload>, out
   const playerSL = p.last?.playerSL ?? 0;
   const opponentSL = p.last?.opponentSL ?? 0;
   if (game.combined) {
-    const marques = p.combined?.marks ?? {};
+    const mien = seq.cum[CAMP_PLAYER] ?? 0;
+    const sien = seq.cum[CAMP_OPPONENT] ?? 0;
     const tours = Math.max(1, (p.combined?.tour ?? 1) - 1);
-    const ligne = t('tavern.cerevisFinal', { mien: marques.player ?? 0, sien: marques.opponent ?? 0, tours });
-    finalizeTavernGame(get, set, game, challenger, p.opponentName, winner, marques.player ?? 0, marques.opponent ?? 0, tours, 0,
+    const ligne = t('tavern.cerevisFinal', { mien, sien, tours });
+    finalizeTavernGame(get, set, game, challenger, p.opponentName, winner, mien, sien, tours, 0,
       ligne, { netBrass: 0, verse: false, detail: ligne });
     return;
   }
@@ -1670,12 +1691,11 @@ function tavernBoard(get: Get, seq: SequenceState<TavernPayload>): SequenceBoard
   // TEST COMBINÉ : le score d'un camp est son compte de MARQUES (l.97) — le PLUS BAS l'emporte, la
   // jauge n'a donc pas de cible.
   if (game.combined) {
-    const marques = p.combined?.marks ?? {};
     return {
       title: game.label,
       camps: [
-        { id: CAMP_PLAYER, label: challenger.label, score: marques.player ?? 0, note: t('tavern.cerevisNote') },
-        { id: CAMP_OPPONENT, label: p.opponentName, score: marques.opponent ?? 0 },
+        { id: CAMP_PLAYER, label: challenger.label, score: seq.cum[CAMP_PLAYER] ?? 0, note: t('tavern.cerevisNote') },
+        { id: CAMP_OPPONENT, label: p.opponentName, score: seq.cum[CAMP_OPPONENT] ?? 0 },
       ],
       round: p.combined?.tour ?? 1,
       ...(game.combined.tours != null ? { rounds: game.combined.tours } : {}),
@@ -1701,8 +1721,8 @@ function tavernBoard(get: Get, seq: SequenceState<TavernPayload>): SequenceBoard
     return {
       title: game.label,
       camps: [
-        { id: CAMP_PLAYER, label: t('tavern.campMien'), score: p.points?.player ?? 0 },
-        { id: CAMP_OPPONENT, label: p.opponentName, score: p.points?.opponent ?? 0 },
+        { id: CAMP_PLAYER, label: t('tavern.campMien'), score: seq.cum[CAMP_PLAYER] ?? 0 },
+        { id: CAMP_OPPONENT, label: p.opponentName, score: seq.cum[CAMP_OPPONENT] ?? 0 },
       ],
       round: seq.round,
       ...(p.throwers?.length ? { rounds: p.throwers.length } : {}),
@@ -1713,8 +1733,8 @@ function tavernBoard(get: Get, seq: SequenceState<TavernPayload>): SequenceBoard
     return {
       title: game.label,
       camps: [
-        { id: CAMP_PLAYER, label: t('tavern.campMien'), score: p.goals?.player ?? 0, note: somme(p.last?.playerSL) },
-        { id: CAMP_OPPONENT, label: p.opponentName, score: p.goals?.opponent ?? 0, note: somme(p.last?.opponentSL) },
+        { id: CAMP_PLAYER, label: t('tavern.campMien'), score: seq.cum[CAMP_PLAYER] ?? 0, note: somme(p.last?.playerSL) },
+        { id: CAMP_OPPONENT, label: p.opponentName, score: seq.cum[CAMP_OPPONENT] ?? 0, note: somme(p.last?.opponentSL) },
       ],
       round: seq.round,
       ...phase,
@@ -1808,13 +1828,12 @@ function volleyRow(v: SequenceVolleyRules, st: TavernVolleyState): { row?: Seque
   return v.pick === 'reserve' ? sequenceThrowRow(v, st.reserve ?? 0) : {};
 }
 
-/** SCORE VIVANT d'un camp : ce que ses passages CLOS lui ont acquis, plus la formule DÉCLARÉE
- *  (famille 3) appliquée aux gains du passage EN COURS. La MÊME grandeur décide le dépassement de la
- *  cible exacte, le tableau de marque et le vainqueur — il n'y a pas deux comptes. */
+/** SCORE VIVANT d'un camp : ce que ses passages CLOS lui ont acquis (l'ACCUMULATEUR du socle), plus
+ *  la formule DÉCLARÉE (famille 3) appliquée aux gains du passage EN COURS. La MÊME grandeur décide le
+ *  dépassement de la cible exacte, le tableau de marque et le vainqueur — il n'y a pas deux comptes. */
 function volleyScore(seq: SequenceState<TavernPayload>, camp: string): number {
   const p = seq.payload;
-  const acquis = camp === CAMP_PLAYER ? (p.points?.player ?? 0) : (p.points?.opponent ?? 0);
-  return acquis + sequenceScoreOf(seq.params.score?.[camp], p.volley?.gains?.[camp] ?? []);
+  return (seq.cum[camp] ?? 0) + sequenceScoreOf(seq.params.score?.[camp], p.volley?.gains?.[camp] ?? []);
 }
 
 /** POLITIQUE du gain pour un lanceur qu'aucun siège ne tient (habitué de la salle, cadence auto) : le
@@ -2060,30 +2079,31 @@ function volleyClose(ctx: SequenceCloseCtx<TavernPayload>): SequenceVerdict<Tave
     ? { seat: st.seat + 1, jet: 1, manche: st.manche, gains, ...(v.reserve != null ? { reserve: v.reserve } : {}) }
     : { seat: st.seat, jet: st.jet + 1, manche: st.manche, gains, ...(reserve != null ? { reserve } : {}) };
 
-  let points = { player: p.points?.player ?? 0, opponent: p.points?.opponent ?? 0 };
+  let cum = { ...seq.cum };
   if (apres.seat >= (p.throwers?.length ?? 2)) {
     // MANCHE CLOSE : la formule de camp DÉCLARÉE (famille 3) réduit les gains du passage en score
     // acquis — somme pour qui compte ses points, meilleur lancer pour qui ne garde que sa boule.
-    points = {
-      player: points.player + sequenceScoreOf(seq.params.score?.[CAMP_PLAYER], apres.gains[CAMP_PLAYER] ?? []),
-      opponent: points.opponent + sequenceScoreOf(seq.params.score?.[CAMP_OPPONENT], apres.gains[CAMP_OPPONENT] ?? []),
+    cum = {
+      ...cum,
+      [CAMP_PLAYER]: (cum[CAMP_PLAYER] ?? 0) + sequenceScoreOf(seq.params.score?.[CAMP_PLAYER], apres.gains[CAMP_PLAYER] ?? []),
+      [CAMP_OPPONENT]: (cum[CAMP_OPPONENT] ?? 0) + sequenceScoreOf(seq.params.score?.[CAMP_OPPONENT], apres.gains[CAMP_OPPONENT] ?? []),
     };
     apres = { seat: 0, jet: 1, manche: st.manche + 1, gains: {}, ...(v.reserve != null ? { reserve: v.reserve } : {}) };
   }
 
-  const suite: TavernPayload = { ...p, volley: apres, points };
-  const etat = { ...seq, payload: suite } as SequenceState<TavernPayload>;
+  const suite: TavernPayload = { ...p, volley: apres };
+  const etat = { ...seq, cum, payload: suite } as SequenceState<TavernPayload>;
   const mien = volleyScore(etat, CAMP_PLAYER);
   const sien = volleyScore(etat, CAMP_OPPONENT);
   const payload: TavernPayload = { ...suite, last: { playerSL: mien, opponentSL: sien } };
   // CIBLE EXACTE (l.83) : le camp qui la touche conclut — un seul lancer tombe à la fois.
   if (v.exact != null && (mien === v.exact || sien === v.exact)) {
-    return { go: 'end', outcome: mien === v.exact ? 'player' : 'opponent', payload, log };
+    return { go: 'end', outcome: mien === v.exact ? 'player' : 'opponent', cum, payload, log };
   }
   if (v.manches != null && apres.manche > v.manches) {
-    return { go: 'end', outcome: volleyIssue(seq.params, mien, sien), payload, log };
+    return { go: 'end', outcome: volleyIssue(seq.params, mien, sien), cum, payload, log };
   }
-  return { go: 'continue', payload, log };
+  return { go: 'continue', cum, payload, log };
 }
 
 /* ── LES CAMPS ASYMÉTRIQUES (Alvatafl, `NADJ 16 l.27-28`) ───────────────────────────────────────
@@ -2214,10 +2234,9 @@ function sidesClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame): Seq
 /** Kind de l'étape de CHOIX « effacer une marque » (l.88). */
 const TAVERN_ERASE_KIND = 'tavern-erase';
 
-/** LE COMPTE d'un camp dans un jeu à Test combiné : ses marques, ses échecs de seconde lecture, ses
- *  effacements. */
+/** LE COMPTE d'un camp dans un jeu à Test combiné : ses échecs de seconde lecture et ses effacements.
+ *  Les MARQUES, elles, sont l'ACCUMULATEUR PAR CAMP du socle (`SequenceState.cum`). */
 export interface TavernCombinedState {
-  marks: Record<string, number>;
   fails: Record<string, number>;
   erased: Record<string, number>;
   tour: number;
@@ -2227,7 +2246,7 @@ export interface TavernCombinedState {
 
 /** Compte NEUF (aucun camp n'a rien marqué). */
 function combinedInit(): TavernCombinedState {
-  return { marks: {}, fails: {}, erased: {}, tour: 1 };
+  return { fails: {}, erased: {}, tour: 1 };
 }
 
 /** Le porteur d'un camp : le challenger, ou son vis-à-vis quand c'est un compagnon. */
@@ -2248,7 +2267,7 @@ function combinedEraseRound(get: Get, seq: SequenceState<TavernPayload>, game: T
   const p = seq.payload;
   const etat = p.combined ?? combinedInit();
   const heros = combinedActor(get, p, CAMP_PLAYER);
-  const marques = etat.marks[CAMP_PLAYER] ?? 0;
+  const marques = seq.cum[CAMP_PLAYER] ?? 0;
   if (!heros || marques <= 0 || cadenceAuto() || !jetSurfaced(get(), heros)) return undefined;
   const etape = choiceStep({
     id: `${TAVERN_ERASE_KIND}-${seq.round}`,
@@ -2292,21 +2311,22 @@ function combinedClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame): 
     if (efface.chosen !== 'efface') return { go: 'continue', payload: { ...p, combined: { ...etat, efface: true } } };
     // La demi-chope se boit, la marque part, et l'échéance déclarée se paie — le journal DIT tout
     // cela (un mouvement d'ivresse muet serait invérifiable pour le joueur).
-    const marks = { ...etat.marks, [CAMP_PLAYER]: Math.max(0, (etat.marks[CAMP_PLAYER] ?? 0) - 1) };
+    const marques = { ...seq.cum, [CAMP_PLAYER]: Math.max(0, (seq.cum[CAMP_PLAYER] ?? 0) - 1) };
     const erased = { ...etat.erased, [CAMP_PLAYER]: (etat.erased[CAMP_PLAYER] ?? 0) + 1 };
     const heros = combinedActor(get, p, CAMP_PLAYER);
     log.push(t('tavern.cerevisEffacee', { who: heros?.label ?? '' }));
     if (heros && combinedEcheance(erased[CAMP_PLAYER] ?? 0, regles.eraseEvery) && regles.ops?.length) {
       log.push(...applyOps(heros, [...regles.ops], { rng: battleRng(), source: { kind: 'tavernGame', id: game.id } }));
     }
-    return { go: 'continue', payload: { ...p, combined: { ...etat, marks, erased, efface: true } }, log };
+    return { go: 'continue', cum: marques, payload: { ...p, combined: { ...etat, erased, efface: true } }, log };
   }
 
   const sides = tavernSides(ctx);
   if (!sides) return { go: 'end', outcome: 'tie' };
   const opt = optionOf(game, p.choices?.[p.challengerId]);
   const difficulty = difficulteOf(opt);
-  const marks = { ...etat.marks };
+  // LES MARQUES sont l'ACCUMULATEUR du socle (`seq.cum`) ; le compte des échecs reste à la charge utile.
+  const marques = { ...seq.cum };
   const fails = { ...etat.fails };
 
   // 2) LA PREMIÈRE LECTURE : le plus BAS DR prend la marque (l.97). À égalité, personne ne perd le
@@ -2317,7 +2337,7 @@ function combinedClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame): 
     ? (drMien < drSien ? CAMP_PLAYER : drSien < drMien ? CAMP_OPPONENT : undefined)
     : undefined;
   if (perdant) {
-    marks[perdant] = (marks[perdant] ?? 0) + 1;
+    marques[perdant] = (marques[perdant] ?? 0) + 1;
     const qui = perdant === CAMP_PLAYER ? (sides.playerActor?.label ?? '') : p.opponentName;
     log.push(t('tavern.cerevisChouette', { who: qui, dr: perdant === CAMP_PLAYER ? drMien : drSien }));
   }
@@ -2342,10 +2362,12 @@ function combinedClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame): 
     }
   }
 
-  const suite: TavernCombinedState = { marks, fails, erased: etat.erased, tour: etat.tour + 1 };
+  const suite: TavernCombinedState = { fails, erased: etat.erased, tour: etat.tour + 1 };
+  const mien = marques[CAMP_PLAYER] ?? 0;
+  const sien = marques[CAMP_OPPONENT] ?? 0;
   const payload: TavernPayload = {
     ...sansChoix(p), combined: suite,
-    last: { playerSL: marks[CAMP_PLAYER] ?? 0, opponentSL: marks[CAMP_OPPONENT] ?? 0 },
+    last: { playerSL: mien, opponentSL: sien },
   };
   // FIN : sous la table (l.88), ou au bout des tours DÉCLARÉS (arbitrage maison éditable).
   const arret = regles.stopCondition;
@@ -2353,12 +2375,10 @@ function combinedClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame): 
     const porteur = combinedActor(get, p, c);
     return !!porteur && hasCondition(porteur, arret);
   });
-  if (!sousLaTable && etat.tour < (regles.tours ?? 0)) return { go: 'continue', payload, log };
-  const mien = marks[CAMP_PLAYER] ?? 0;
-  const sien = marks[CAMP_OPPONENT] ?? 0;
+  if (!sousLaTable && etat.tour < (regles.tours ?? 0)) return { go: 'continue', cum: marques, payload, log };
   if (sousLaTable) log.push(t('tavern.cerevisSousLaTable'));
   // Le MOINS de chouettes l'emporte (arbitrage maison : le RAW ne nomme aucun vainqueur).
-  return { go: 'end', outcome: mien < sien ? 'player' : sien < mien ? 'opponent' : 'tie', payload, log };
+  return { go: 'end', outcome: mien < sien ? 'player' : sien < mien ? 'opponent' : 'tie', cum: marques, payload, log };
 }
 
 /** APPLIER de l'effacement : la clôture seule en tire les conséquences (patron du réducteur unique). */

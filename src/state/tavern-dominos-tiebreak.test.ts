@@ -95,6 +95,7 @@ describe('Les dominos — départage d’égalité au dé d’unités (NADJ 16 l
         ...(jeu.volley ? { volley: jeu.volley, maxRounds: sequenceVolleyRounds(jeu.volley, 2) } : {}),
         ...(jeu.sides ? { sides: jeu.sides } : {}),
         ...(jeu.combined ? { combined: jeu.combined } : {}),
+        ...(jeu.throwerPenalty ? { throwerPenalty: jeu.throwerPenalty } : {}),
       });
     }
   });

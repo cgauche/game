@@ -156,7 +156,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `noSupport` | 1 | `src/state/combatEffects.ts:425` |
 | `menace` | 5 | `src/state/combat/triggeredTest.ts:232` |
 | `difficultyBy` | 1 | `src/engine/flowCore.ts:369` |
-| `opposed` | 2 | `src/state/combat/triggeredTest.ts:277` |
+| `opposed` | 2 | `src/state/combat/triggeredTest.ts:291` |
 
 ### `TravelTableEntry` (src/engine/travelTables.ts)
 
