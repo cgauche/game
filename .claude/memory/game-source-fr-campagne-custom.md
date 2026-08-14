@@ -7,7 +7,7 @@ metadata:
   originSessionId: 5b5e1576-6e66-4371-b038-61f34984d882
 ---
 
-`Game/Source/` ne contient pas que le Livre de base + Archives de l'Empire : aussi les **livres de campagne en français** (`Warhammer v4 - 1.0 L'ennemi dans l'Ombre` + Compagnon, `2.0 Mort sur le Reik` + Compagnon extrait 19 chapitres, Boîte d'Initiation, etc.). **La liste des livres à périmètre documenté vit au `CLAUDE.md` § Sources VF + `docs/sources-vf.md` — c'est là qu'on la lit, jamais ici : elle grandit** (à ce jour LDB, ADE I/II, EDO/EDOC, Middenheim, AA, ZI, MDG, ACE, T2C, NADAJ, VDM).
+`Game/Source/` ne contient pas que le Livre de base + Archives de l'Empire : aussi les **livres de campagne en français** (`Warhammer v4 - 1.0 L'ennemi dans l'Ombre` + Compagnon, `2.0 Mort sur le Reik` + Compagnon extrait 19 chapitres, Boîte d'Initiation, etc.). **La liste des livres à périmètre documenté vit au `CLAUDE.md` § Sources VF + `docs/sources-vf.md` — c'est là qu'on la lit, jamais ici : elle grandit** (à ce jour LDB, ADE I/II, EDO/EDOC, Middenheim, AA, ZI, MDG, ACE, T2C, NADJ, VDM).
 
 **ARBITRAGE USER 2026-07-10 (verbatim) : « Tous les livres contiennent des règles. Parfois c'est plus 90% scénario, mais souvent il y a quelques règles. »** — la dichotomie livre-de-règles/livre-de-contenu tombe au niveau LIVRE : le périmètre s'établit par PASSAGE, documenté dans `docs/sources-vf.md`, au MÊME standard que partout (verbatim citable, réf chap/ligne, extraction FR dans `Source/` requise — un livre sans extraction ne peut pas fournir de mécanique vérifiable). Premier cas : 8 traits navals de personnalisation sourcés `mort-sur-le-reik-compagnon` (#277, vérification verbatim lancée).
 

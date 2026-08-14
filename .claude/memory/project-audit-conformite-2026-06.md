@@ -9,7 +9,7 @@ metadata:
 
 Audit multi-agents du 2026-06-27 (3 livrables : violations de grands principes / contenu RAW manquant des 14 livres hors-scénario / code non branché), vérifié adversarialement **contre le code réel**. Résultat = **62 issues GitHub** sur **cgauche/game (#8 à #69)** — c'est le backlog de référence.
 
-**Labels** : `audit:principe` (17) · `audit:contenu-manquant` (41) · `audit:non-branché` (4) ; croisés avec `livre:*` (LDB/MDG/AA/ADE/EDO-EDOC/T2C/Middenheim/NADAJ/ZI/Altdorf/T3), `type:système|règle-optionnelle|donnée`, `sev:majeur|mineur|smell`, `domaine:*`, et `policy-à-trancher` (2 issues hors règle 1 : Activités d'Altdorf = scénario, panthéon de dieux de saveur).
+**Labels** : `audit:principe` (17) · `audit:contenu-manquant` (41) · `audit:non-branché` (4) ; croisés avec `livre:*` (LDB/MDG/AA/ADE/EDO-EDOC/T2C/Middenheim/NADJ/ZI/Altdorf/T3), `type:système|règle-optionnelle|donnée`, `sev:majeur|mineur|smell`, `domaine:*`, et `policy-à-trancher` (2 issues hors règle 1 : Activités d'Altdorf = scénario, panthéon de dieux de saveur).
 
 **Pépites prioritaires** : 2 majeurs A — trait **Taille** résolu par libellé dans `spawn.ts:59` (cf. [[game-ids-internes-libelles-display-multilangue]]) et trait **Dressé** mal sourcé (LDB→AA) + desc paraphrasée (R5) ; 1 **bug RAW** — `reduceToZero` (ops.ts:983) ajoute toujours `Inconscient` → « Tonnerre et foudre » non-RAW. Le **naval MDG** (~13 issues `domaine:naval`) = chantier en cours connu, à traiter en lot ([[game-naval-tactical-chantier]]).
 

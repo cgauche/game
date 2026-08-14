@@ -14,7 +14,7 @@ metadata:
 
 **ZÉRO variance** : `EXTRA_ABBR_VARIANTS` supprimé, `bookOf` en identité stricte — une seule graphie par livre, toute autre = abréviation INCONNUE (échec nominatif de `citation-graphy-guard`). Les graphies gelées : `ABBR N l.X` (pas de `ch.`, pas de zéro de tête), folio `ABBR N p.X` (chapitre obligatoire).
 
-**Acronymes = acronymes de TITRE** (arbitrage user 2026-07-18) : `MSRC`/`MSR`/`PDT` (ex-T2C/T2/T3 — le commit fondateur 09b30a7b avait recopié le préfixe de DOSSIER `2.0 Mort sur le Reik`→`T2` au lieu du titre), `NADJ` (ex-NADAJ, le A ne correspond à aucun mot), `MCLB` (ex-Middenheim), `AU1` (ex-Ubersreik), `ADE I`/`ADE II` en romain. Les `dir` gardent le nom PHYSIQUE réel du dossier (typos `Aldorf`, `Mer de Griffe`) ; seuls les `label` sont propres.
+**Acronymes = acronymes de TITRE** (arbitrage user 2026-07-18) : `MSRC`/`MSR`/`PDT` (ex-T2C/T2/T3 — le commit fondateur 09b30a7b avait recopié le préfixe de DOSSIER `2.0 Mort sur le Reik`→`T2` au lieu du titre), `NADJ` (ex-NADJ, le A ne correspond à aucun mot), `MCLB` (ex-Middenheim), `AU1` (ex-Ubersreik), `ADE I`/`ADE II` en romain. Les `dir` gardent le nom PHYSIQUE réel du dossier (typos `Aldorf`, `Mer de Griffe`) ; seuls les `label` sont propres.
 
 ⚠ **Pièges de sweep d'acronymes** : `Savoir (Middenheim NN)` = valeur de COMPÉTENCE dans les statblocs (jamais renommer) ; `#T2`/`#T3` = jalons de PROJET ; « Ubersreik 8 » en ligne de survey = un COMPTE. Et une réf au mauvais chapitre peut tomber DANS LES BORNES (statbloc au lieu de la règle) — invisible des gardes : **seul un fan-out de juges au Source le voit** (2 ancres fausses sur 37 attrapées ainsi, #585 Lot C). ⚠ Workflow : `args` avec gros objet imbriqué arrive `undefined` → inliner les données dans le script.
 

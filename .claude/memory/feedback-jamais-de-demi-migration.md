@@ -1,8 +1,11 @@
 ---
 name: feedback-jamais-de-demi-migration
 description: "Arbitrage user 2026-08-09 : pas de travail à moitié ni de demi-migration — une migration s'achève DANS son chantier, sinon chaque site non migré devient un bug à redécouvrir un mois plus tard"
-metadata:
+metadata: 
+  node_type: memory
   type: feedback
+  originSessionId: 032f0876-8eb3-421a-bddc-50a550c9bc09
+  modified: 2026-08-13T23:04:41.968Z
 ---
 
 Verbatim utilisateur (2026-08-09) : « En tout cas je n'aime pas le travail fait a moitié et les
@@ -28,6 +31,8 @@ déléguer les 4 monteurs locaux au monteur canonique du seam. La règle « 2 pa
 remonter d'un niveau » s'applique au DÉCOUPAGE DES LOTS de l'orchestrateur, pas seulement au code :
 quand N sites exigent la même retouche, le lot juste est le SOCLE (monteur/porte partagé) qui rend
 les N sites déclaratifs — jamais N retouches.
+
+Troisième verbatim (2026-08-14, #1313, adressé à l'orchestrateur qui proposait « murer le neuf + migrer le stock au fil de l'eau ») : « Nan, j'ai deja dit que je ne voulais pas de demi-migration et tu devrais le savoir, **murer le neuf c'est valider du legacy qui vivra eternellement** » — la voie médiane cliquet-pour-le-neuf/stock-lazy N'EST JAMAIS une option à proposer : c'est LA définition de la demi-migration.
 
 **How to apply:**
 1. Un chantier de migration liste ses sites EXHAUSTIVEMENT au démarrage (grounding mesuré, pas
