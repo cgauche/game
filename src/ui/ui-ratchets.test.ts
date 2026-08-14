@@ -476,7 +476,9 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // au lieu de ses deux classes propres `.eff-add-group`/`.eff-add-item`, mortes.
   // -1 (116 → 115) : `.eff-type` meurt — le CHANGEMENT de type d'un effet/d'une op se sert du même
   // menu que l'ajout (`TypeMenu` sur `AddMenu`), plus aucun `<select>` de type dans l'atelier.
-  'styles/editor.css': 115,
+  // +1 (115 → 116) : `.editor-iso-3d` (a7f8ac0a, #1176 P3-3) — contexte d'empilement du canevas
+  // volumique sous les surcouches SVG d'authoring.
+  'styles/editor.css': 116,
   'styles/house-rules.css': 9,
   // LifeBar (#492, arbitrage 2026-07-17) : -2 (145 → 143) — `.ptile-gauge`/`.ptile-pv` MEURENT (le
   // marqueur `ptile-gauge` reste un className de compatibilité, sans style propre), le rendu vit
