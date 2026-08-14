@@ -133,6 +133,20 @@ export function testSkillLabel(test: RollRequest['test']): string | undefined {
   return test.skill ? (findSkillById(test.skill)?.label ?? test.skill) : test.char ? CHAR_LABELS[test.char] : undefined;
 }
 
+/**
+ * LE LIBELLÉ DU CÔTÉ ATTAQUANT d'un Test opposé à jet FIGÉ (`meta.opposed`) — SOURCE UNIQUE des trois
+ * surfaces qui le nomment : la rangée témoin et l'en-tête A→B de la fenêtre (`CascadeModal`), et la
+ * ligne de JOURNAL (jet inline de combat, manche de séquence). Un ordre, une vérité :
+ *  1. le libellé AUTHORÉ, quand la donnée en porte un qu'aucune structure n'exprime (« Force/
+ *     Athlétisme », une alternative — `FlowTest.opposed.attackerLabel` ; le nom d'une manœuvre) ;
+ *  2. sinon la STRUCTURE figée du Test (`opposed.test`), passée au catalogue (`testSkillLabel`).
+ * Dériver d'abord écraserait l'authoré à chaque fois : un `FlowTest.opposed` nomme TOUJOURS sa
+ * Caractéristique (`attacker` est requis).
+ */
+export function opposedAttackerLabel(opp: { test?: RollRequest['test']; attackerLabel?: string } | undefined): string | undefined {
+  return opp?.attackerLabel ?? (opp?.test ? testSkillLabel(opp.test) : undefined);
+}
+
 /** COMPOSE l'affichage détaillé d'une étape mono depuis les ids déclarés — SOURCE UNIQUE (mandat
  *  coordinateur) : plus un call-site n'assemble `${actor.name} — ${action} (${skill})` à la main.
  *  `action` = `req.actionLabel` (nom seul) ; le détail (compétence/carac) est omis si le Test ne porte

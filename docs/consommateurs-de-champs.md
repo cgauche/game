@@ -35,13 +35,13 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `courses` | 6 | `src/gameIso/backends/affineRoofs.ts:136` |
+| `courses` | 5 | `src/gameIso/authoring/roofsSvg.ts:137` |
 | `bands` | 1 | `src/gameIso/detail/expand.ts:101` |
 | `timber` | 4 | `src/gameIso/backends/webgl/faceBake.ts:84` |
-| `speckle` | 9 | `src/gameIso/backends/affineDetail.ts:413` |
-| `tufts` | 12 | `src/gameIso/backends/affineDetail.ts:408` |
+| `speckle` | 6 | `src/gameIso/authoring/detailSvg.ts:414` |
+| `tufts` | 9 | `src/gameIso/authoring/detailSvg.ts:409` |
 | `tintVar` | 1 | `src/gameIso/backends/webgl/faceColors.ts:134` |
-| `seedScope` | 3 | `src/gameIso/backends/webgl/groundAccents.ts:68` |
+| `seedScope` | 1 | `src/gameIso/backends/webgl/groundAccents.ts:67` |
 
 ### `DiceSpec` (src/engine/dice.ts)
 
@@ -123,7 +123,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `parts` | 2 | `src/gameIso/rig/enemyProfile.ts:130` |
 | `sex` | 3 | `src/gameIso/rig/enemyProfile.ts:124` |
 | `build` | 3 | `src/gameIso/rig/enemyProfile.ts:125` |
-| `species` | 6 | `src/gameIso/AnimatedPlanToken.tsx:14` |
+| `species` | 5 | `src/gameIso/AnimatedPlanToken.tsx:14` |
 | `tenue` | 3 | `src/gameIso/rig/enemyProfile.ts:107` |
 | `harnais` | 1 | `src/gameIso/rig/bodyPlan.ts:123` |
 | `armurePortee` | **0 — JAMAIS LU** | — |
@@ -137,23 +137,23 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `stake` | 5 | `src/state/combat/triggeredTest.ts:204` |
 | `skill` | 14 | `src/state/combat/triggeredTest.ts:191` |
 | `spec` | 13 | `src/state/combat/triggeredTest.ts:191` |
-| `sense` | 2 | `src/state/combatEffects.ts:431` |
+| `sense` | 2 | `src/state/combatEffects.ts:432` |
 | `characteristic` | 11 | `src/state/combat/triggeredTest.ts:191` |
 | `difficulty` | 2 | `src/engine/flowCore.ts:370` |
-| `requireSL` | 1 | `src/state/combatEffects.ts:470` |
+| `requireSL` | 1 | `src/state/combatEffects.ts:471` |
 | `label` | 6 | `src/state/combat/triggeredTest.ts:222` |
-| `tool` | 1 | `src/state/combatEffects.ts:433` |
-| `vsGroups` | 4 | `src/state/combatEffects.ts:338` |
-| `vsStatus` | 1 | `src/state/combatEffects.ts:337` |
-| `begging` | 3 | `src/state/combatEffects.ts:342` |
-| `vsCapricieux` | 1 | `src/state/combatEffects.ts:346` |
-| `easierIf` | 7 | `src/state/combatEffects.ts:387` |
+| `tool` | 1 | `src/state/combatEffects.ts:434` |
+| `vsGroups` | 4 | `src/state/combatEffects.ts:339` |
+| `vsStatus` | 1 | `src/state/combatEffects.ts:338` |
+| `begging` | 3 | `src/state/combatEffects.ts:343` |
+| `vsCapricieux` | 1 | `src/state/combatEffects.ts:347` |
+| `easierIf` | 7 | `src/state/combatEffects.ts:388` |
 | `argDifficulty` | **0 — JAMAIS LU** | — |
 | `unlessImmune` | 1 | `src/state/combat/flowEval.ts:151` |
 | `onlyGroups` | 1 | `src/state/combat/flowEval.ts:152` |
 | `exceptGroups` | 1 | `src/state/combat/flowEval.ts:153` |
 | `gate` | 1 | `src/engine/flowCore.ts:375` |
-| `noSupport` | 1 | `src/state/combatEffects.ts:425` |
+| `noSupport` | 1 | `src/state/combatEffects.ts:426` |
 | `menace` | 5 | `src/state/combat/triggeredTest.ts:232` |
 | `difficultyBy` | 1 | `src/engine/flowCore.ts:369` |
 | `opposed` | 2 | `src/state/combat/triggeredTest.ts:291` |

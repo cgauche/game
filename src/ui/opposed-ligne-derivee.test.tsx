@@ -57,6 +57,27 @@ describe('Test opposé à jet figé — le flux DÉCLARE, le rendu ÉCRIT', () =
   });
 
   /**
+   * LE JOURNAL de la manche MONO/ÉTENDUE nomme les DEUX camps, par la MÊME dérivation que la rangée
+   * (`opposedAttackerLabel`, source unique). Mesuré AVANT : la manche se racontait par un libellé nu
+   * (« Force : -4 DR. ») — ni le joueur, ni son vis-à-vis, ni ce que chacun avait obtenu ne s'y
+   * lisaient, et une partie gagnée était indistinguable d'une partie perdue.
+   */
+  it('JOURNAL de la manche mono : les DEUX camps sont NOMMÉS, avec leur Test', () => {
+    seedBattleRng(4);
+    const [a] = makePregens().slice(0, 1) as [Combatant];
+    useGame.setState({ party: [a], journal: [] });
+    get().playTavernGame({ gameId: 'dominos', challengerId: a.id, opponent: { kind: 'abstract', value: 40 } });
+    const step = get().pendingCascade!.participants[0];
+    const opp = step.meta!.opposed!;
+    act(() => { get().cascadeRoll(step.id); });
+    act(() => { get().cascadeNext(); });
+
+    const journal = get().journal.join('\n');
+    expect(journal, 'le challenger est nommé, avec son Test').toContain(`${a.label} — Pari :`);
+    expect(journal, 'et l’adversaire aussi, dérivé de la MÊME structure').toContain(`${opp.attackerName} — Pari :`);
+  });
+
+  /**
    * L'ALTERNATIVE AUTHORÉE passe AVANT la dérivation, et c'est mesuré sur le gel RÉELLEMENT produit
    * par le flux (`frozenOpposedBatchStep`) à partir de la donnée réelle : la Déstabilisante
    * (`qualities.json`) déclare « Force/Athlétisme » — deux Compétences au choix, qu'aucune structure

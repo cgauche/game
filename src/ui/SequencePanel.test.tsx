@@ -11,6 +11,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { useGame } from '../state/store';
 import { makePregens } from '../data/pregens';
 import { seedBattleRng } from '../state/battleRng';
+import { emptyScene } from '../state/scene';
 import { CascadeBody } from './CascadeModal';
 import type { Combatant } from '../engine/types';
 
@@ -35,6 +36,31 @@ function poseManche(sl: Record<string, number>): void {
   }));
   act(() => {
     useGame.setState({ pendingCascade: { ...pc, participants: [{ ...band, participants: rows }] } });
+    get().cascadeNext();
+  });
+}
+
+/**
+ * Pose la manche MONO à jet adverse FIGÉ — le chemin RÉEL d'une partie contre un adversaire de la
+ * salle (celui du bug rapporté) : le dé du challenger ET le jet figé de l'adversaire sont posés, puis
+ * la manche se clôt. `sl` négatif = Test raté (l'issue du jet suit `roll ≤ target`, comme en jeu).
+ */
+function poseMancheMono(mien: number, sien: number): void {
+  const pc = get().pendingCascade!;
+  const step = pc.participants[0];
+  const opp = step.meta!.opposed!;
+  const res = (sl: number) => ({ roll: sl >= 0 ? 11 : 99, target: step.target ?? 50, sl, success: sl >= 0 });
+  act(() => {
+    useGame.setState({
+      pendingCascade: {
+        ...pc,
+        participants: [{
+          ...step,
+          result: res(mien),
+          meta: { ...step.meta, opposed: { ...opp, aT: { ...opp.aT, ...res(sien), base: opp.aT.base ?? 40 } } },
+        }],
+      },
+    });
     get().cascadeNext();
   });
 }
@@ -83,6 +109,107 @@ describe('SequencePanel — une partie de Bras de fer n’est plus aveugle', () 
     expect(cum.player).toBeGreaterThan(0);
     expect(texte()).toContain(`${cum.player}/10 DR`);
     expect(texte()).toContain(`${cum.opponent}/10 DR`);
+  });
+
+  /**
+   * LE TABLEAU PROGRESSE ENTRE DEUX MANCHES — déroulé de recette REJOUÉ : Bras de fer contre un
+   * adversaire de la salle, manche 1 GAGNÉE (l'op de manche du vainqueur tire : « porte son Avantage
+   * à 1 », `NADJ 16 l.34`), puis lecture de la fenêtre de la manche 2. Le dé est LANCÉ par la porte du
+   * jeu (`cascadeRoll`), pas posé : l'issue d'une manche mono passe par l'opposition figée
+   * (`opposedCascadeRoll`), et un résultat posé à la main court-circuiterait justement ce chemin.
+   * Ce qu'un cumul vers cible doit montrer, c'est le TOTAL de chaque camp APRÈS la manche close
+   * (`LDB 12 l.170-179`) — le socle écrit `seq.cum`, le système le rend, la fenêtre suivante le lit.
+   */
+  it('MANCHE GAGNÉE (dé LANCÉ) : le cumul du vainqueur MONTE, et la fenêtre de la manche 2 le montre', () => {
+    seedBattleRng(1);
+    const [a] = makePregens().slice(0, 1) as [Combatant];
+    a.characteristics.force = 45; // Bonus de Force 4 (l.34) — la partie tient plusieurs manches
+    useGame.setState({ party: [a] });
+    get().playTavernGame({ gameId: 'bras-de-fer', challengerId: a.id, opponent: { kind: 'abstract', value: 20 } });
+    render();
+    expect(texte(), 'au départ, les deux camps sont à zéro').toContain('0/10 DR');
+
+    const step = get().pendingCascade!.participants[0];
+    act(() => { get().cascadeRoll(step.id); });
+    act(() => { get().cascadeNext(); });
+    render();
+
+    const cum = get().sequence!.cum as Record<string, number>;
+    expect(get().journal.some((l) => l.includes('Avantage')), 'l’op de manche du VAINQUEUR a tiré : la manche est gagnée').toBe(true);
+    expect(cum.player, 'le DR de la manche s’AJOUTE au cumul du challenger').toBeGreaterThan(0);
+    expect(compteur(), 'la manche a avancé').toContain('Manche 2');
+    expect(texte(), 'la fenêtre de la manche 2 montre le cumul, pas un zéro figé').toContain(`${cum.player}/10 DR`);
+    expect(texte(), 'et le camp battu reste planché à 0 (l.174) — le 0/10 lisible à l’écran est le SIEN').toContain(`${cum.opponent}/10 DR`);
+  });
+
+  /**
+   * MANCHE PERDUE : le cumul du challenger reste à 0 — c'est le RAW, pas un bug (`LDB 12 l.174` : « Si
+   * le DR total passe en dessous de 0, recommencez depuis le début », plancher tenu par
+   * `extendedTestStep`). Ce que l'écran doit alors rendre LISIBLE, c'est que l'AUTRE camp, lui, a
+   * avancé : un tableau où rien ne bouge des deux côtés serait indistinguable d'un moteur en panne.
+   */
+  it('MANCHE PERDUE : le challenger reste à 0/10 (plancher RAW) — et le camp adverse, lui, PROGRESSE', () => {
+    const [a] = makePregens().slice(0, 1) as [Combatant];
+    useGame.setState({ party: [a] });
+    get().playTavernGame({ gameId: 'bras-de-fer', challengerId: a.id, opponent: { kind: 'abstract', value: 40 } });
+    poseMancheMono(-4, 2); // Test raté : −4 DR ; l'adversaire prend sa manche
+    render();
+    const cum = get().sequence!.cum as Record<string, number>;
+    expect(cum.player, 'le total ne descend jamais sous 0 (l.174)').toBe(0);
+    expect(cum.opponent, 'le camp d’en face cumule le sien').toBeGreaterThan(0);
+    expect(texte()).toContain('0/10 DR');
+    expect(texte(), 'l’écran DIT que la partie avance : le camp adverse monte').toContain(`${cum.opponent}/10 DR`);
+  });
+
+  /**
+   * L'ATTRIBUTION SE LIT — contre un adversaire À FICHE (entité de SCÈNE, chemin BANDE), l'écran et le
+   * journal doivent nommer le MÊME camp. Mesuré AVANT : le tableau disait « Négociant (test) 0/10 DR »
+   * pendant que le journal disait « Force : −4 DR. » (le porteur d'une rangée était résolu par
+   * l'accesseur du COMBAT, aveugle aux PNJ de scène, et retombait sur le libellé de son TEST) — deux
+   * noms pour un camp, et un cumul de vainqueur attribué au perdant à la lecture.
+   */
+  it('ATTRIBUTION : adversaire à FICHE — l’écran et le journal nomment le MÊME camp', () => {
+    seedBattleRng(3);
+    const [a] = makePregens().slice(0, 1) as [Combatant];
+    const negociant = {
+      id: 'negociant', kind: 'personnage' as const, pos: { x: 2, y: 2 }, label: 'Négociant (test)',
+      statblock: {
+        label: 'Négociant (test)',
+        char: {
+          'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 40, endurance: 30, initiative: 30,
+          agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30,
+        },
+        skills: [{ id: 'pari', value: 40 }],
+      },
+      tavernGame: { gameId: 'bras-de-fer' },
+    };
+    useGame.setState({
+      party: [a], journal: [],
+      scene: { ...emptyScene(), entities: [negociant] } as never,
+      battle: null, sequence: null, pendingCascade: null,
+    });
+    get().playTavernGame({ gameId: 'bras-de-fer', challengerId: a.id, opponent: { kind: 'npc', id: 'negociant' } });
+
+    const pc = get().pendingCascade!;
+    const band = pc.participants[0];
+    const rows = band.participants!.map((r) => ({
+      ...r, result: { roll: 11, target: r.target!, sl: r.id === a.id ? 6 : -4, success: r.id === a.id },
+    }));
+    act(() => {
+      useGame.setState({ pendingCascade: { ...pc, participants: [{ ...band, participants: rows }] } });
+      get().cascadeNext();
+    });
+    render();
+
+    const cum = get().sequence!.cum as Record<string, number>;
+    const journal = get().journal.join('\n');
+    expect(cum.player, 'le vainqueur cumule (DR de manche + Bonus de Force, l.34)').toBeGreaterThan(0);
+    expect(cum.opponent, 'le battu reste planché à 0 (l.174)').toBe(0);
+    expect(texte(), 'la jauge du challenger porte SON cumul').toContain(`${a.label}`);
+    expect(texte()).toContain(`${cum.player}/10 DR`);
+    expect(texte(), 'et celle de l’adversaire, le sien').toContain('Négociant (test)');
+    expect(journal, 'le journal nomme l’adversaire comme l’écran — jamais son Test à sa place').toContain('Négociant (test) : -4 DR.');
+    expect(journal).toContain(`${a.label} : +6 DR.`);
   });
 
   it('aucune séquence en cours : aucun tableau de marque (la fenêtre n’invente pas de score)', () => {

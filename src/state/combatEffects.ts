@@ -35,6 +35,7 @@ import { seaWeatherTestMod, openPortAt, vesselManann, setVesselHull } from './se
 import { applyManannFactor, addManann, findManannFactor } from '../engine/seaVoyage';
 import { placeById } from './worldMap';
 import { openScriptedPsych } from './encounterPsychFlow';
+import { tavernNpcOffers } from './tavernFlow';
 import { openRest, placesOfKind } from './restFlow';
 import { permanentAmputations } from '../engine/critical';
 import { traumaById, dechirureFractureFicheId } from '../engine/trauma';
@@ -1530,7 +1531,16 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
   openTavernGames: {
     group: 'Combat & social', label: 'Jeux de taverne (NADJ 16)', icon: 'nav/dice',
     make: () => ({ type: 'openTavernGames' }),
-    apply: (_e, env) => { if (rule('tavern-games')) env.get().openTavernGames(); }, // option facultative : sans effet si éteinte (comme interlude)
+    // Option facultative : sans effet si éteinte (comme interlude). Le PROPOSEUR est celui qui PARLE
+    // (`state.dialogue.speakerId`, posé par l'interaction ou `startDialogue`) quand son entité offre
+    // une partie (`SceneEntity.tavernGame`) : la table s'ouvre alors sur SON offre. Aucun PNJ n'est
+    // nommé ici — tout proposeur en hérite, et une ouverture hors dialogue reste générique.
+    apply: (_e, env) => {
+      if (!rule('tavern-games')) return;
+      const parle = env.get().dialogue?.speakerId;
+      const propose = parle && tavernNpcOffers(env.get().scene).some((o) => o.id === parle);
+      env.get().openTavernGames(propose ? parle : undefined);
+    },
   },
   medicalAid: {
     group: 'Combat & social', label: 'Acte de soin payant (PNJ médecin/guérisseur)', icon: 'medical/aid',

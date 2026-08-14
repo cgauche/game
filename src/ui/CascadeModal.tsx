@@ -27,7 +27,7 @@ import { testBreakdown, testPending, opposedLines } from './breakdown';
 import type { ModLine } from '../engine/combat';
 import { Icon } from './Icon';
 import { stepInteraction, stepReady, secondReadOf, tableStepDefs, tableStepNaturalRange, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
-import { testSkillLabel } from '../state/rollSeam';
+import { opposedAttackerLabel } from '../state/rollSeam';
 import { useOwns } from './ownership';
 import { pursuitOf } from '../state/pursuitFlow';
 import { SequencePanel } from './SequencePanel';
@@ -337,12 +337,10 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // s'oppose à un SEUL jet (LDB 13 l.77), donc la rangée est la MÊME et se pose EN TÊTE, une fois.
   const opp = cur.meta?.opposed;
   const oppActor = opp?.attackerId ? pool.find((c) => c.id === opp.attackerId) : undefined;
-  // CE QUE TESTE l'adversaire s'ÉCRIT ICI, jamais au flux. Le libellé AUTHORÉ passe EN PREMIER : il
-  // n'existe QUE là où aucune structure ne peut le porter (« Force/Athlétisme », une alternative de
-  // donnée ; le nom d'une manœuvre). Un `FlowTest.opposed` nomme TOUJOURS sa Caractéristique
-  // (`attacker`, requis) : dériver d'abord écraserait donc l'authoré à chaque fois. Sans authoré, la
-  // STRUCTURE figée (`opposed.test`) passe au catalogue (`testSkillLabel`).
-  const oppTestLabel = opp?.attackerLabel ?? (opp?.test ? testSkillLabel(opp.test) : undefined);
+  // CE QUE TESTE l'adversaire s'ÉCRIT ICI, jamais au flux — et par la SOURCE UNIQUE partagée avec la
+  // ligne de JOURNAL (`opposedAttackerLabel`, `rollSeam`) : le libellé AUTHORÉ d'abord (l'alternative
+  // qu'aucune structure ne porte), la STRUCTURE figée au catalogue ensuite.
+  const oppTestLabel = opposedAttackerLabel(opp);
   const oppResponders = cur.participants
     ? cur.participants.map((p) => ({ id: p.id, interactive: p.interactive !== false, result: p.result }))
     : [{ id: cur.actorId, interactive: true, result: cur.result }];

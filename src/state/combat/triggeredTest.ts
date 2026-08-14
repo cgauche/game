@@ -38,7 +38,7 @@ import type { FreeAttackFreeze, BladeTrapFreeze, BatchParticipant, OpposedFreeze
 import { battleRng } from '../battleRng';
 import { runPureFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps, drainPendingLog } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
-import { freeCons, rollLine, rollStep, surfaceOf, bandStep, monoStep, choiceStep, pushChoice, pousseSi, testSkillLabel, type BuiltCascadeStep } from '../rollSeam';
+import { freeCons, rollLine, rollStep, surfaceOf, bandStep, monoStep, choiceStep, pushChoice, pousseSi, opposedAttackerLabel, type BuiltCascadeStep } from '../rollSeam';
 import { recoveryGeometry, effectSourcesOf, fireOwnTestFailed } from '../triggeredEffects';
 import { emitCombatEvent } from '../combatEvents';
 import { inBattleId, actorIn } from '../combatants';
@@ -597,7 +597,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     // le MÊME ordre : le libellé AUTHORÉ d'abord, la STRUCTURE au catalogue ensuite.
     const gel = opposedAttackerFreeze(opp);
     queueLines(ctx.get, ctx.set, [traceLineOf({
-      attacker: { who: attacker.label, label: gel.attackerLabel ?? testSkillLabel(gel.test!) ?? '', roll: aT.roll, target: aT.target, sl: aT.sl },
+      attacker: { who: attacker.label, label: opposedAttackerLabel(gel) ?? '', roll: aT.roll, target: aT.target, sl: aT.sl },
       defender: { who: c.label, label: skillLabel, roll: t.roll, target: t.target, sl: t.sl, ...(bonusSL ? { slBonus: bonusSL } : {}) },
       winner: o.winner,
     })], c.id);

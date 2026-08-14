@@ -16,12 +16,14 @@
  * bourse) ne s'y dépose pas — la dérivation est éphémère, faute de registre de Combatants persistants
  * hors combat. Aucun test ici ne le simule.
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { findTavernGameById } from '../engine/tavernGame';
 import { playTavernGame, tavernGameValue, tavernNpc, tavernNpcOffers } from './tavernFlow';
 import { activeSequence } from './sequenceCore';
+import { applyEffects } from './combatEffects';
+import { setRule, resetRule } from '../engine/policy';
 import { emptyScene } from './scene';
 import type { Combatant } from '../engine/types';
 import { scenario as scenarioEdo } from '../scenes/test-scenarios/96-presets-edo';
@@ -166,5 +168,46 @@ describe('#1279 S4-b — l’adversaire de scène GARDE sa rangée dans la manch
 
     const rows = get().pendingCascade?.participants.flatMap((s) => s.participants ?? []) ?? [];
     expect(rows.map((r) => r.id).sort()).toEqual([challenger.id, 'pnj-plantule'].sort());
+  });
+});
+
+/**
+ * LE PROPOSEUR OUVRE SA TABLE (#1279, dernier delta) — quand c'est le DIALOGUE d'un PNJ qui ouvre les
+ * jeux (« Volontiers, une partie ? »), la modale s'ouvre sur SON offre : le joueur qui vient
+ * d'accepter n'a pas à re-désigner celui qui la lui proposait. Le déclencheur est GÉNÉRIQUE — le
+ * speaker du dialogue en cours (`state.dialogue.speakerId`) s'il porte une offre (`tavernGame`) —
+ * jamais un id de PNJ nommé au code.
+ */
+describe('#1279 — la table s’ouvre sur l’offre du PROPOSEUR', () => {
+  beforeEach(() => { useGame.setState(useGame.getInitialState(), true); setRule('tavern-games', true); });
+  afterAll(() => { resetRule('tavern-games'); });
+
+  it('l’Effet de dialogue du proposeur PASSE son id : la modale s’ouvre pré-sélectionnée sur lui', () => {
+    poseScene([pnjDeScene('pnj-plantule', 'Plantule', 55, { gameId: 'dominos', stakeBrass: 12 })]);
+    set({ dialogue: { dialogue: { id: 'd', start: 'n1', nodes: [] }, nodeId: 'n1', speakerId: 'pnj-plantule' } as never });
+
+    applyEffects(get, set, [{ type: 'openTavernGames' }]);
+
+    expect(get().tavernGames, 'la table est ouverte').toBeTruthy();
+    expect(get().tavernGames!.npcId, 'sur l’offre de CELUI QUI PARLE').toBe('pnj-plantule');
+  });
+
+  it('hors dialogue (affordance du lieu), l’ouverture reste GÉNÉRIQUE : aucun PNJ imposé', () => {
+    poseScene([pnjDeScene('pnj-plantule', 'Plantule', 55, { gameId: 'dominos' })]);
+    set({ dialogue: null });
+
+    applyEffects(get, set, [{ type: 'openTavernGames' }]);
+
+    expect(get().tavernGames).toBeTruthy();
+    expect(get().tavernGames!.npcId, 'le joueur choisit tout').toBeUndefined();
+  });
+
+  it('un speaker SANS offre n’impose rien (le prédicat lit la donnée de la scène, pas l’identité)', () => {
+    poseScene([pnjDeScene('pnj-muet', 'Un quidam', 30)]); // aucune `tavernGame`
+    set({ dialogue: { dialogue: { id: 'd', start: 'n1', nodes: [] }, nodeId: 'n1', speakerId: 'pnj-muet' } as never });
+
+    applyEffects(get, set, [{ type: 'openTavernGames' }]);
+
+    expect(get().tavernGames!.npcId).toBeUndefined();
   });
 });

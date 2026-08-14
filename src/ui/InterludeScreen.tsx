@@ -320,7 +320,7 @@ function TavernGamesEntry() {
     <section className="interlude-hero panel">
       <h3><Icon id="nav/dice" size="sm" /> Jeux de taverne</h3>
       <p className="interlude-detail">Un moment de détente : dés, boules, bras de fer… (Nuits agitées, ch.16).</p>
-      <button className="btn small btn-primary" onClick={open}>Proposer une partie</button>
+      <button className="btn small btn-primary" onClick={() => open()}>Proposer une partie</button>
     </section>
   );
 }

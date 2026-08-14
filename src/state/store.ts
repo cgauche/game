@@ -831,7 +831,7 @@ export interface GameState extends RollFlowActionsMap {
   searchAvailability: () => void;
   /** Jeux de taverne (option `tavern-games`, NADJ 16) : ouvrir la modale / jouer une partie
    *  (choisir un jeu + un adversaire, résolution par le moteur générique) / fermer. */
-  openTavernGames: () => void;
+  openTavernGames: (npcId?: string) => void;
   playTavernGame: (opts: { gameId: string; challengerId: string; opponent: tavernFlow.TavernOpponent; stakeBrass?: number; allyValue?: number; tablePlayers?: number }) => void;
   closeTavernGames: () => void;
   /** Troc (LDB 59 l.64-76) : céder N exemplaires d'un objet contre M exemplaires du stock, sans argent. */
@@ -2241,7 +2241,7 @@ export const useGame = create<GameState>((set, get) => ({
   resolveAppraise: () => merchantFlow.resolveAppraise(get, set),
   appraiseCancel: () => set({ pendingAppraise: null }),
 
-  openTavernGames: () => tavernFlow.openTavernGames(get, set),
+  openTavernGames: (npcId?: string) => tavernFlow.openTavernGames(get, set, npcId),
   playTavernGame: (opts) => tavernFlow.playTavernGame(get, set, opts),
   closeTavernGames: () => tavernFlow.closeTavernGames(get, set),
   barterExchange: (opts) => merchantFlow.barterExchange(get, set, opts),

@@ -63,6 +63,15 @@ export function TavernGameModal() {
     setGameId(npc.gameId);
     if (npc.stakeBrass != null) setStakePa(Math.floor(npc.stakeBrass / PA_PER_SC));
   }, [oppMode, npc?.id, npc?.gameId, npc?.stakeBrass]);
+  // OUVERTURE PAR LE PROPOSEUR (`tavernGames.npcId`, posé par l'Effet de son dialogue) : la table
+  // s'ouvre SUR SON OFFRE. Le joueur qui accepte une partie ne devrait pas avoir à re-désigner celui
+  // qui vient de la lui proposer — et l'effet ci-dessus enchaîne alors son jeu et sa mise.
+  const proposeur = state?.npcId;
+  useEffect(() => {
+    if (!proposeur) return;
+    setOppMode('npc');
+    setOppNpcId(proposeur);
+  }, [proposeur]);
 
   if (!state) return null;
   const result = state.result;
@@ -165,7 +174,7 @@ export function TavernGameModal() {
             </p>
           )}
           <div className="modal-actions">
-            <button className="btn" onClick={replay}>Rejouer</button>
+            <button className="btn" onClick={() => replay()}>Rejouer</button>
             <button className="btn btn-primary" onClick={close}>Fermer</button>
           </div>
         </div>

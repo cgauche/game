@@ -40,7 +40,7 @@ import { battleRng } from './battleRng';
 import { toBrass, fromBrass, formatMoney } from '../engine/money';
 import { bourseOf, creditBourse, payWithAllocation, soloPayer } from './bourseFlow';
 import {
-  freeCons, testSkillLabel, monoStep, bandStep, choiceStep, quantityStep, rollStep, composeRollLabel, surfaceOf, effectiveTarget,
+  freeCons, testSkillLabel, opposedAttackerLabel, monoStep, bandStep, choiceStep, quantityStep, rollStep, composeRollLabel, surfaceOf, effectiveTarget,
   tableStep, displayStep,
   type BuiltCascadeStep, type Consequence,
 } from './rollSeam';
@@ -99,6 +99,10 @@ export interface TavernGamesResult extends TavernGameResult {
 /** État de la modale de jeux de taverne (ouverte quand non-null ; `result` = dernière partie). */
 export interface TavernGamesState {
   result: TavernGamesResult | null;
+  /** PNJ PROPOSEUR (`SceneEntity.tavernGame`) quand c'est LUI qui ouvre la table : la modale s'ouvre
+   *  alors sur SON offre, pré-sélectionnée. Absent : ouverture GÉNÉRIQUE (l'affordance du lieu), où
+   *  le joueur choisit tout. */
+  npcId?: string;
 }
 
 /**
@@ -168,8 +172,10 @@ function tavernTestSpec(game: TavernGame): { skill?: string; char?: CharKey; spe
   return { skill: 'pari' };
 }
 
-export function openTavernGames(_get: Get, set: Set): void {
-  set({ tavernGames: { result: null } });
+/** OUVRE la table. `npcId` = le PNJ qui PROPOSE la partie (son dialogue vient de l'ouvrir) : la
+ *  modale s'ouvre sur SON offre. GÉNÉRIQUE — tout PNJ à `tavernGame` en hérite, aucun n'est nommé. */
+export function openTavernGames(_get: Get, set: Set, npcId?: string): void {
+  set({ tavernGames: { result: null, ...(npcId ? { npcId } : {}) } });
 }
 
 export function closeTavernGames(_get: Get, set: Set): void {
@@ -374,14 +380,30 @@ registerCascadeApplier(TAVERN_ROUND_KIND, (get, set, step) => {
   const dr = (n: number) => `${n >= 0 ? '+' : ''}${n} DR`;
   if (step.participants) {
     const lines = step.participants.map((row) => {
-      const who = actorIn(get(), row.id)?.label ?? row.label ?? row.id;
+      // Le porteur se résout par l'accesseur de la TABLE (`tavernActor`), pas par celui du combat :
+      // un adversaire à FICHE est une entité de SCÈNE, qu'`actorIn` ne trouve pas — sa rangée
+      // retombait alors sur `row.label`, qui est le libellé de son TEST. Le journal disait « Force :
+      // −4 DR. » là où l'écran disait « Négociant : 0/10 » : deux surfaces, deux noms, un joueur qui
+      // attribue le score au mauvais camp.
+      const who = tavernActor(get, row.id)?.label ?? row.label ?? row.id;
       return `${who} : ${dr(row.result?.sl ?? 0)}.`;
     });
     lines.push(...torchonRate(get, set, step.participants));
     return { consequences: freeCons(lines) };
   }
   if (!step.result) return {};
-  return { consequences: freeCons([`${step.rollLabel ?? 'Jeu'} : ${dr(step.result.sl)}.`]) };
+  // MANCHE MONO à jet adverse FIGÉ : le journal nomme les DEUX camps, comme la BANDE ci-dessus et
+  // comme la rangée de la fenêtre — même dérivation du côté adverse (`opposedAttackerLabel`, source
+  // unique). Sans elle, la manche se racontait par un libellé nu (« Force : +4 DR. ») où ni le
+  // joueur, ni son vis-à-vis, ni ce que chacun a obtenu n'étaient lisibles.
+  const opp = step.meta?.opposed;
+  const mien = step.actorId ? actorIn(get(), step.actorId)?.label : undefined;
+  const lignes = [`${mien ? `${mien} — ` : ''}${step.rollLabel ?? 'Jeu'} : ${dr(step.result.sl)}.`];
+  if (opp?.aT) {
+    const sien = opposedAttackerLabel(opp);
+    lignes.push(`${opp.attackerName ? `${opp.attackerName} — ` : ''}${sien ?? 'Adversaire'} : ${dr(opp.aT.sl)}.`);
+  }
+  return { consequences: freeCons(lignes) };
 });
 
 /**
