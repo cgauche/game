@@ -33,7 +33,7 @@
 - [FR uniquement](game-francais-jamais-anglais.md) · [sources FR élargies](game-source-fr-campagne-custom.md) · [PowerShell](env-use-powershell-not-bash.md) · [débloquer l'autre session](game-cross-session-console-unblock.md) · [pièges background](env-session-background-pieges-outils.md) · **[CHARGE](env-charge-machine-un-seul-agent-lourd.md)** — `--minWorkers=1` obligatoire.
 
 ## Chantiers récents / état
-- **[Vue TOP = tabletop/VTT](game-arbitrage-vue-top-tactique-tabletop.md)** (2026-08-12, verbatim ; P3-5 de #1176).
+- **[Vue TOP = tabletop/VTT](game-arbitrage-vue-top-tactique-tabletop.md)** (2026-08-12, verbatim ; P3-5 de #1176) · **[GRILLE = SYSTÈME, rendu LIBRE](game-arbitrage-grille-systeme-rendu-libre.md)** (2026-08-14, verbatim — l'immersion ne se quantifie pas par case).
 - **[NOUVEAU MOTEUR = LIBÉRER LE PRODUIT](user-doctrine-nouveau-moteur-liberer-le-produit.md)** (verbatim) — refaire MIEUX, jamais porter le contournement.
 - **[VERROU PAR CONSTRUCTION](user-doctrine-verrou-par-construction.md)** (verbatim, #1262) — seul le MURAGE supprime la divergence ; découpage par FAMILLE.
 - **[Reprise : `.superpowers/sdd/` D'ABORD](game-reprise-chantier-lire-superpowers-sdd.md)** — plan et commits mentent.
