@@ -1,10 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { diligenceCampaign } from '../campaign';
-import { doorAt, edgeOf, isWalkable, type Scene } from '../../state/scene';
+import { doorAt, edgeOf, heightAt, isWalkable, type Scene } from '../../state/scene';
 import { pathTo, walkNeighbors, type Pt } from '../../state/path';
 import { sceneZoneTiles } from '../../state/zones';
 import { gradeBetween } from '../../state/relief';
-import { heightAt } from '../../state/scene';
 
 /**
  * « La Diligence » — relais routier authoré dans l'éditeur, embarqué en paquet de campagne
@@ -16,6 +15,33 @@ import { heightAt } from '../../state/scene';
 const scene: Scene = diligenceCampaign.scenes[0];
 const heroStart = scene.entities.find((e) => e.kind === 'heroStart')!;
 const start: Pt = { x: heroStart.pos.x, y: heroStart.pos.y, z: heroStart.z ?? 0 };
+
+function planSanctuarise(on: Scene) {
+  const cells = on.layers.flatMap((layer) => {
+    const z = layer.z;
+    const out: { x: number; y: number; z: number; walkable: boolean; height: number }[] = [];
+    for (let y = 0; y < on.dimensions.h; y++)
+      for (let x = 0; x < on.dimensions.w; x++)
+        out.push({ x, y, z, walkable: isWalkable(on, x, y, z), height: heightAt(on, x, y, z) });
+    return out;
+  });
+  const walls = (on.walls ?? []).map(({ window: _window, ...wall }) => wall)
+    .sort((a, b) => `${a.z ?? 0}:${a.y}:${a.x}:${a.side}`.localeCompare(`${b.z ?? 0}:${b.y}:${b.x}:${b.side}`));
+  const zones = (on.effectZones ?? []).map((zone) => ({
+    id: zone.id,
+    z: zone.z ?? 0,
+    presentation: zone.presentation ?? null,
+    area: zone.area,
+    tiles: sceneZoneTiles(zone).map((p) => [p.x, p.y, p.z ?? zone.z ?? 0]).sort(),
+  })).sort((a, b) => a.id.localeCompare(b.id));
+  const entities = on.entities.map((entity) => ({
+    id: entity.id,
+    kind: entity.kind,
+    pos: entity.pos,
+    z: entity.z ?? 0,
+  })).sort((a, b) => a.id.localeCompare(b.id));
+  return { dimensions: on.dimensions, cells, walls, zones, entities };
+}
 
 /** Toutes les surfaces marchables d'un niveau. */
 function walkableTiles(z: number): Pt[] {
@@ -43,6 +69,10 @@ const cellier = scene.effectZones!.find((z) => z.id === 'zone-l-z1')!;
 const casesCellier = sceneZoneTiles(cellier).map((p) => `${p.x},${p.y},${p.z ?? 0}`).sort();
 
 describe('La Diligence — paquet de campagne authoré dans l’éditeur', () => {
+  it('sanctuarise le plan hors apparence et fenêtres', () => {
+    expect(planSanctuarise(scene)).toMatchSnapshot();
+  });
+
   it('une seule scène, 32×38, deux niveaux', () => {
     expect(diligenceCampaign.scenes).toHaveLength(1);
     expect(scene.id).toBe('la-diligence');
