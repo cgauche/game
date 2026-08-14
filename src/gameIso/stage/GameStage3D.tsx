@@ -936,10 +936,13 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // MÉTÉO (#1247) : dehors, la brume authorée REMPLACE la couleur du milieu et resserre la portée ; le
   // FOND suit la même dérivation de teinte que les lampes (`weatherLightScalars`), sans quoi le ciel
   // reste clair au-dessus d'un monde éteint par l'orage. Dedans, rien : `brumePov` y est nul.
+  // AMBIANCE (#1176) : ciel ET brume prennent le PALIER de la scène (`lumière.ambianceLum`, le scalaire
+  // même qui dose les lampes) — sans lui, une scène de nuit gardait un horizon de plein jour au-dessus
+  // d'un sol obéissant, et les sols lointains se relevaient vers une brume diurne.
   useEffect(() => {
     const scène3d = three.current!;
-    const fond = povIndoor === null ? null : povBackground(povIndoor, lumière.meteo);
-    scène3d.fog = povIndoor === null ? null : povFog(mpt, povIndoor, brumePov);
+    const fond = povIndoor === null ? null : povBackground(povIndoor, lumière.meteo, lumière.ambianceLum);
+    scène3d.fog = povIndoor === null ? null : povFog(mpt, povIndoor, brumePov, lumière.ambianceLum);
     scène3d.background = fond;
     dessiner();
     return () => {
@@ -952,7 +955,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       applyFogGamma(scène3d, null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [povIndoor, mpt, brumePov, lumière.meteo]);
+  }, [povIndoor, mpt, brumePov, lumière.meteo, lumière.ambianceLum]);
 
   // ── FOND DU CANEVAS (#1247) : effet À PART de la création du renderer, qui n'a AUCUNE dépendance —
   // une couleur d'effacement posée là-bas ne serait plus jamais réappliquée, et le fond resterait au

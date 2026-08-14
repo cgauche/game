@@ -1003,13 +1003,28 @@ export function stageClearColor(meteo: WeatherLight = METEO_SANS_EFFET): number 
   return weatherTinted(new THREE.Color(STAGE_BG), meteo).getHex();
 }
 
+/** ATTÉNUATION D'AMBIANCE du ciel et des brumes (#1176) : le palier de luminosité de la scène —
+ *  `ambianceLum` de `stageLightScalars` (`stage/stageLights.ts`), soit `ambianceLuminance(palier)`,
+ *  LE MÊME scalaire que celui qui dose les lampes du monde. 1 = plein jour (neutre, la donnée telle
+ *  quelle).
+ *
+ *  ESPACE : la multiplication se fait en LINÉAIRE, l'espace où les lampes multiplient l'albédo des
+ *  faces (three éclaire en linéaire, et `applyVisibilityTint` pose ses couleurs de sommet décodées).
+ *  Un ciel atténué sur l'octet sRGB tomberait ~3,6× sous le sol qu'il surplombe au même palier.
+ *  `base` est en composantes OCTET (cf. `srgb`) et le résultat aussi ; couleur NEUVE, `base` intacte. */
+function ambientDimmed(base: THREE.Color, lum: number): THREE.Color {
+  const c = base.clone();
+  return lum >= 1 ? c : c.convertSRGBToLinear().multiplyScalar(lum).convertLinearToSRGB();
+}
+
 /** Fond de CIEL : dégradé vertical `skyTop` (haut) → `fogOutdoor` (horizon à mi-hauteur, et dessous),
  *  soit EXACTEMENT le dégradé `pov-sky` du POV SVG (`povAmbianceDefs`) — aucune teinte propre au spike.
  *  La météo déplace les DEUX bouts du dégradé (#1247) : sous l'orage, l'horizon ne tranche pas avec
- *  des sols assombris. */
-export function skyTexture(meteo: WeatherLight = METEO_SANS_EFFET): THREE.DataTexture {
-  const haut = weatherTinted(srgb(AMBIANCE.pov.skyTop), meteo);
-  const horizon = weatherTinted(srgb(AMBIANCE.pov.fogOutdoor), meteo);
+ *  des sols assombris. Le PALIER d'ambiance (`ambianceLum`) atténue ensuite les deux bouts ET la
+ *  teinte météo : le ciel de nuit s'éteint avec le monde, il n'a pas de luminosité propre. */
+export function skyTexture(meteo: WeatherLight = METEO_SANS_EFFET, ambianceLum = 1): THREE.DataTexture {
+  const haut = ambientDimmed(weatherTinted(srgb(AMBIANCE.pov.skyTop), meteo), ambianceLum);
+  const horizon = ambientDimmed(weatherTinted(srgb(AMBIANCE.pov.fogOutdoor), meteo), ambianceLum);
   const data = new Uint8Array(SKY_STEPS * 4);
   for (let i = 0; i < SKY_STEPS; i++) {
     const v = i / (SKY_STEPS - 1); // 0 = bas de l'image
@@ -1028,9 +1043,19 @@ export function skyTexture(meteo: WeatherLight = METEO_SANS_EFFET): THREE.DataTe
  *  dessine aucun plafond — ce qui n'est pas peint est cette nappe sombre). DEUX couleurs, et c'est
  *  structurel : le fond porte la brume du CIEL (`fogOutdoor`), les surfaces la leur (`povFog`
  *  ci-dessous) — cf. le JSDoc de `AMBIANCE.pov.fogOutdoorSurface`.
- *  La météo ne touche QUE le dehors : entré sous un toit, on est sorti d'elle. */
-export function povBackground(indoor: boolean, meteo: WeatherLight = METEO_SANS_EFFET): THREE.DataTexture | THREE.Color {
-  return indoor ? new THREE.Color(AMBIANCE.pov.fogIndoor) : skyTexture(meteo);
+ *  La météo ne touche QUE le dehors : entré sous un toit, on est sorti d'elle. Le palier d'ambiance,
+ *  lui, touche les deux : la nappe d'intérieur est une nappe du monde et en suit la lumière (elle part
+ *  de si bas — `fogIndoor` #0a0a10 — que le geste ne s'y voit qu'au bord du noir). */
+export function povBackground(
+  indoor: boolean,
+  meteo: WeatherLight = METEO_SANS_EFFET,
+  ambianceLum = 1,
+): THREE.DataTexture | THREE.Color {
+  // La couleur d'intérieur est DÉCODÉE (composantes de travail linéaires) : le facteur d'ambiance s'y
+  // multiplie donc dans le même espace que celui du ciel ci-dessus.
+  return indoor
+    ? new THREE.Color(AMBIANCE.pov.fogIndoor).multiplyScalar(ambianceLum)
+    : skyTexture(meteo, ambianceLum);
 }
 
 /** Brume atmosphérique des SURFACES du POV : la courbe du milieu (`povDepth`, en CASES → mètres) et
@@ -1043,15 +1068,26 @@ export function povBackground(indoor: boolean, meteo: WeatherLight = METEO_SANS_
  *  `povTightenK` resserre la courbe — le resserrement vient de `povDepth`, qui sert AUSSI le plan
  *  lointain de la caméra : la brume atteint 1 exactement à la coupure de rendu, jamais avant ni après.
  *
+ *  AMBIANCE (#1176) : la teinte du milieu est un ALBÉDO comme celui d'une face — le palier
+ *  (`ambianceLum`) la multiplie, faute de quoi un sol lointain se relèverait vers une brume de plein
+ *  jour à minuit. La multiplication est ici directement en composantes de travail (linéaires), le
+ *  même espace que celui d'`ambientDimmed`.
+ *
  *  ESPACE DE MÉLANGE (réf juge de design P3-1c) : three mélange la brume en LINÉAIRE (le fragment
  *  travaille après conversion), la voie affine la mélange en sRGB (`mixHex`). À facteur égal, les deux
  *  voies rendent donc des octets différents : 13,3/255 par canal à mi-course sur un couple gris sombre
  *  → brume claire, 8,1/255 à trois quarts. Le FACTEUR, lui, est le même des deux côtés (courbe vérifiée
  *  à 1e-9, `sceneMeshes.test.ts`) : l'écart est perceptuel, il se juge à l'écran. */
-export function povFog(mpt: number, indoor: boolean, brume?: { color: string; povTightenK?: number } | null): THREE.Fog {
+export function povFog(
+  mpt: number,
+  indoor: boolean,
+  brume?: { color: string; povTightenK?: number } | null,
+  ambianceLum = 1,
+): THREE.Fog {
   const c = povDepth(indoor, brume?.povTightenK).curve;
   const teinte = !indoor && brume ? brume.color : indoor ? AMBIANCE.pov.fogIndoor : AMBIANCE.pov.fogOutdoorSurface;
-  return new THREE.Fog(teinte, c.start * mpt, c.end * mpt);
+  const couleur = new THREE.Color(teinte).multiplyScalar(ambianceLum);
+  return new THREE.Fog(couleur, c.start * mpt, c.end * mpt);
 }
 
 /** Nom du `#define` par lequel un matériau réclame le gamma de la courbe POV. Un matériau qui ne le

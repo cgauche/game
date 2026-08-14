@@ -144,8 +144,10 @@ export function PovStage() {
         {/* VOILES D'ÉCRAN (#1176, P3-1c) : voile chaud d'extérieur et vignette, les MÊMES defs
             d'ambiance que la voie affine — ils se peignent PAR-DESSUS le canevas, jamais dans le
             volume (une vignette est une décoration de vue, pas une propriété du monde). Le voile de
-            NUIT n'y est pas : la voie volumique porte sa luminosité par ses LAMPES (`stageLights`),
-            et un second propriétaire en peindrait deux paliers l'un sur l'autre. */}
+            NUIT n'y est pas : la voie volumique porte son palier dans le VOLUME — ses lampes
+            (`stageLights`) pour les surfaces, `ambianceLum` pour le ciel et les brumes
+            (`povBackground`/`povFog`) — et un second propriétaire en peindrait deux l'un sur
+            l'autre. */}
         <svg data-pov-veils width="100%" height="100%" viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} aria-hidden="true">
           <defs dangerouslySetInnerHTML={{ __html: povAmbianceDefs() }} />
           {!indoor && <rect x={0} y={0} width={VW} height={VH} fill="url(#pov-warm)" />}

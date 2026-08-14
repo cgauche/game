@@ -10,7 +10,7 @@ import { setRevealAll } from '../../state/visionState';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import type { Dims } from '../../geometry/iso';
-import { AMBIANCE } from '../catalog/ambiance';
+import { AMBIANCE, ambianceLuminance } from '../catalog/ambiance';
 import { fogCurveOf, povDepth } from '../pov/camera';
 import { PovStage } from '../pov/PovStage';
 import { FOG_GAMMA_DEFINE, type MatériauEmbrumable } from '../backends/webgl/sceneMeshes';
@@ -161,6 +161,27 @@ describe('POV volumique — la BRUME du milieu (#1176 P3-1c)', () => {
     const fond = dernièreScène().background as THREE.Color;
     expect(fond?.isColor, 'pas de dégradé de ciel en intérieur').toBe(true);
     expect(hex(fond)).toBe(AMBIANCE.pov.fogIndoor.toLowerCase());
+  });
+
+  /** #1176 (correctif de la bascule C4) : à la nuit, l'ÉCRAN rendait un sol au palier sous un horizon
+   *  resté à la brume de ciel de PLEIN JOUR (sonde du juge : #7f9ab4 mesuré). Le ciel et les brumes
+   *  prennent désormais le MÊME scalaire que les lampes (`ambianceLum`) — c'est le CÂBLAGE de bout en
+   *  bout que ce cas mesure : store `lightLevel` → `stageLightScalars` → `povBackground`/`povFog`. */
+  it('NUIT : le CIEL et la brume suivent le palier de la scène — plus d’horizon de plein jour à minuit', () => {
+    poser('exterieur');
+    useGame.setState({ lightLevel: 0.18 } as never); // le palier `nuit` de `lightLevels.json`
+    monter(<PovStage />);
+    const s = dernièreScène();
+    const lum = ambianceLuminance(0.18);
+    /** La loi du MONDE : l'albédo décodé × le palier, en linéaire (l'espace où les lampes multiplient). */
+    const commeUneFace = (h: string) => hex(new THREE.Color(h).multiplyScalar(lum));
+    const d = (s.background as THREE.DataTexture).image.data as Uint8Array;
+    const horizon = `#${[0, 1, 2].map((k) => d[k].toString(16).padStart(2, '0')).join('')}`;
+    expect(horizon, 'l’horizon ne reste pas à la brume de ciel de plein jour').toBe(commeUneFace(AMBIANCE.pov.fogOutdoor));
+    expect(horizon).not.toBe(AMBIANCE.pov.fogOutdoor.toLowerCase());
+    expect(hex((s.fog as THREE.Fog).color), 'la brume des surfaces suit le même palier').toBe(
+      commeUneFace(AMBIANCE.pov.fogOutdoorSurface),
+    );
   });
 
   it('le GAMMA de la courbe est posé sur TOUS les matériaux embrumés, et c’est celui du milieu', () => {

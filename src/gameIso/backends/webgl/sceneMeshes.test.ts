@@ -55,7 +55,7 @@ import { buildOperaFloorplan } from '../../../scenes/opera/floorplan';
 import { buildVitrineScene } from '../../../scenes/vitrine-batiments';
 import { emptyScene, sceneMetresPerTile, type Scene, type Terrain } from '../../../state/scene';
 import { PROPS, propSvg } from '../../catalog/decor';
-import { AMBIANCE } from '../../catalog/ambiance';
+import { AMBIANCE, ambianceLuminance } from '../../catalog/ambiance';
 import { schema as ambianceSchema } from '../../../data/schemas/defs/ambiance';
 import { fogAt, fogCurveOf } from '../../pov/camera';
 
@@ -384,7 +384,7 @@ describe('LUMIÈRE — un soleil neutre et calibré', () => {
 });
 
 describe('CIEL & BRUME — les couleurs du POV, jamais des teintes propres au spike', () => {
-  it('le dégradé va de la brume d’horizon (bas) au haut de ciel — les teintes du catalogue', () => {
+  it('À PLEINE LUMIÈRE (le neutre) : le dégradé va de la brume d’horizon (bas) au haut de ciel — les teintes du catalogue', () => {
     const tex = skyTexture();
     const d = tex.image.data as Uint8Array;
     const hex = (i: number) => `#${[0, 1, 2].map((k) => d[i * 4 + k].toString(16).padStart(2, '0')).join('')}`;
@@ -392,6 +392,8 @@ describe('CIEL & BRUME — les couleurs du POV, jamais des teintes propres au sp
     expect(hex(tex.image.height / 2 - 1)).toBe(AMBIANCE.pov.fogOutdoor.toLowerCase()); // horizon à mi-hauteur
     expect(hex(tex.image.height - 1)).toBe(AMBIANCE.pov.skyTop.toLowerCase());
     expect(tex.colorSpace).toBe(THREE.SRGBColorSpace);
+    // `ambianceLum` omis ≡ 1 : le palier de plein jour ne déplace aucun octet.
+    expect(Array.from(skyTexture(undefined, 1).image.data as Uint8Array)).toEqual(Array.from(d));
   });
 
   it('la brume reprend la courbe de profondeur du POV, en CASES converties en mètres', () => {
@@ -422,6 +424,88 @@ describe('CIEL & BRUME — les couleurs du POV, jamais des teintes propres au sp
     const fond = povBackground(true);
     expect((fond as THREE.Color).isColor).toBe(true);
     expect(`#${(fond as THREE.Color).getHexString(THREE.SRGBColorSpace)}`).toBe(AMBIANCE.pov.fogIndoor.toLowerCase());
+  });
+});
+
+/**
+ * PALIER D'AMBIANCE du ciel et des brumes (#1176) — le défaut mesuré à la bascule C4 : une scène
+ * `ambientLight: 'nuit'` rendait un sol au palier (#473929) sous un horizon resté à `fogOutdoor`
+ * NON ATTÉNUÉ (sonde du juge : #7f9ab4 à l'écran), soit un ciel de plein jour en pleine nuit.
+ *
+ * LA RÈGLE : le ciel et les brumes n'ont pas de luminosité propre — ils prennent le MÊME scalaire que
+ * le monde, `ambianceLuminance(palier)` (`catalog/ambiance.ts`), celui que `stageLightScalars` sert
+ * aux lampes sous le nom `ambianceLum`.
+ *
+ * ESPACE DE MÉLANGE : LINÉAIRE, celui où les lampes de three multiplient l'albédo des faces (les
+ * couleurs de sommet sont DÉCODÉES, `applyVisibilityTint` : `c.set(hex)` convertit sRGB → espace de
+ * travail). L'étalon du banc est donc `commeUneFace` ci-dessous : la couleur du ciel traitée
+ * exactement comme l'albédo d'une face au même palier. Une atténuation faite sur l'OCTET sRGB
+ * tomberait bien sous ce que le monde rend au même palier — écart déclaré au correctif.
+ */
+describe('PALIER D’AMBIANCE (#1176) — le ciel et les brumes n’ont pas de luminosité propre', () => {
+  /** Le palier `nuit` de `src/data/lightLevels.json` (0,18), passé par la porte des lampes. */
+  const LUM_NUIT = ambianceLuminance(0.18);
+  /** La loi du MONDE : l'albédo décodé × le palier, en LINÉAIRE — puis relu en octets sRGB. */
+  const commeUneFace = (hex: string, lum: number) =>
+    `#${new THREE.Color(hex).multiplyScalar(lum).getHexString(THREE.SRGBColorSpace)}`;
+  const horizonDe = (lum: number) => {
+    const d = skyTexture(undefined, lum).image.data as Uint8Array;
+    return [d[0], d[1], d[2]] as const;
+  };
+  const enHex = (o: readonly number[]) => `#${o.map((k) => k.toString(16).padStart(2, '0')).join('')}`;
+  /** Décodage sRGB → linéaire d'un octet (la conversion même de three, `SRGBToLinear`). */
+  const linéaire = (octet: number) => {
+    const c = octet / 255;
+    return c < 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+
+  it('le palier `nuit` vaut bien 0,3276 — la donnée, pas un nombre recopié', () => {
+    expect(LUM_NUIT).toBeCloseTo(0.3276, 4);
+  });
+
+  it('HORIZON de nuit : atténué par le palier, exactement comme l’albédo d’une face (sonde du juge)', () => {
+    const nuit = horizonDe(LUM_NUIT);
+    expect(enHex(nuit)).toBe(commeUneFace(AMBIANCE.pov.fogOutdoor, LUM_NUIT));
+    // NON-RÉGRESSION de la sonde : plus jamais l'octet plein du catalogue (ni le #7f9ab4 mesuré à
+    // l'écran, qui en est l'interpolation) là où la nuit est tombée.
+    expect(enHex(nuit)).not.toBe(AMBIANCE.pov.fogOutdoor.toLowerCase());
+    const jour = horizonDe(1);
+    for (const k of [0, 1, 2]) expect(nuit[k]).toBeLessThan(jour[k]);
+    // …et l'atténuation est CELLE du monde : le rapport de luminance vaut le palier, par canal.
+    for (const k of [0, 1, 2]) expect(linéaire(nuit[k]) / linéaire(jour[k])).toBeCloseTo(LUM_NUIT, 2);
+  });
+
+  it('HAUT DE CIEL de nuit : même palier — le dégradé s’éteint entier, pas seulement son bas', () => {
+    const tex = skyTexture(undefined, LUM_NUIT);
+    const d = tex.image.data as Uint8Array;
+    const i = (tex.image.height - 1) * 4;
+    expect(enHex([d[i], d[i + 1], d[i + 2]])).toBe(commeUneFace(AMBIANCE.pov.skyTop, LUM_NUIT));
+  });
+
+  it('BRUME DES SURFACES de nuit : même palier — un sol lointain ne se relève pas vers une brume diurne', () => {
+    const fog = povFog(mpt, false, null, LUM_NUIT);
+    expect(`#${fog.color.getHexString(THREE.SRGBColorSpace)}`).toBe(commeUneFace(AMBIANCE.pov.fogOutdoorSurface, LUM_NUIT));
+    // La couleur de brume est consommée par three en LINÉAIRE : c'est là que le facteur s'applique.
+    expect(fog.color.r).toBeCloseTo(new THREE.Color(AMBIANCE.pov.fogOutdoorSurface).r * LUM_NUIT, 9);
+    // La brume AUTHORÉE de météo (#1247) n'y échappe pas : elle remplace la teinte, pas le palier.
+    const orage = povFog(mpt, false, { color: '#8fa6bb' }, LUM_NUIT);
+    expect(`#${orage.color.getHexString(THREE.SRGBColorSpace)}`).toBe(commeUneFace('#8fa6bb', LUM_NUIT));
+  });
+
+  it('INTÉRIEUR : le fond suit le palier lui aussi (nappe du monde, pas décor autonome)', () => {
+    const fond = povBackground(true, undefined, LUM_NUIT) as THREE.Color;
+    expect(`#${fond.getHexString(THREE.SRGBColorSpace)}`).toBe(commeUneFace(AMBIANCE.pov.fogIndoor, LUM_NUIT));
+  });
+
+  it('TABLE des paliers de `lightLevels.json` — l’horizon mesuré à chaque cran', () => {
+    const table = ([1, 0.75, 0.45, 0.18, 0] as const).map((s) => [s, enHex(horizonDe(ambianceLuminance(s)))]);
+    expect(table).toEqual([
+      [1, '#9fb2c6'],
+      [0.75, '#8fa0b3'],
+      [0.45, '#798897'],
+      [0.18, '#5f6b77'],
+      [0, '#47505a'],
+    ]);
   });
 });
 
