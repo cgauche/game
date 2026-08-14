@@ -15,6 +15,8 @@ Les décisions suivantes fixent le périmètre et priment sur toute optimisation
 
 > « Je voudrais deja une premiere version qui s'occupe des points les plus importants et on affinera apres piece par piece »
 
+> « ce qui est le plus prioritaire pour moi ce n'est pas du nouveau code applicatif mais l'édition de la carte en personnalisant les éléments en place, si tu pense avoir assez de quota tu peux aussi ajouter des nouveaux types de murs/portes/fenetre/etc ... dans notre bibliotheque d'élément et les utiliser. Et vraiment, en dernier lieu, modifier le code de l'application »
+
 ## Objectif
 
 Donner à La Diligence l’identité visuelle de l’illustration de référence et rendre ses grandes familles de pièces immédiatement lisibles, sans déplacer ni reconstruire son plan. La V1 pose un vocabulaire architectural réutilisable et éditable ; les passes ultérieures pourront affiner chaque pièce sans ajouter de cas particulier dans le renderer.
@@ -40,7 +42,7 @@ La V1 doit produire cinq gains visibles :
 Un golden de topologie de La Diligence est commité avant la transformation. Il sérialise et compare après transformation :
 
 - les dimensions et les couches complètes ;
-- les tuiles et le relief ;
+- la grille, la marchabilité et le relief ; les ids de terrain peuvent changer uniquement vers un terrain de même comportement pour personnaliser visuellement les sols ;
 - chaque arête par `x`, `y`, `z` et `side` ;
 - pour chaque arête, `door`, `closed`, `structure` et `climb` ;
 - les aires et cases exactes de chaque zone ;
@@ -206,7 +208,33 @@ Les captures passent une revue visuelle adversariale : fidélité à la référe
 
 ## 8. Découpage de livraison
 
-La réalisation reste une seule V1 visible, mais s’implémente dans cet ordre pour que chaque couche soit vérifiable :
+La réalisation suit strictement l’ordre de priorité utilisateur. Chaque palier produit une amélioration visible autonome et constitue un point d’arrêt propre si le quota restant ne justifie pas le suivant.
+
+### Palier A — édition de la carte avec l’existant
+
+1. golden de topologie et captures de référence ;
+2. personnalisation des sols par zone avec les terrains existants de même comportement ;
+3. application des apparences de murs et de la façade `auberge-relais-imperiale` existantes ;
+4. redistribution des fenêtres et sélection des portes existantes sans déplacer leurs arêtes ;
+5. première recette complète.
+
+Ce palier ne crée aucun code applicatif et doit être livré avant d’envisager la suite.
+
+### Palier B — enrichissement de la bibliothèque
+
+Seulement si le palier A laisse des défauts visibles importants et si le quota le permet :
+
+1. nouvelles définitions réutilisables de colombage, fenêtre étroite, porte double, portail cintré, haie et clôture ;
+2. utilisation immédiate de chaque nouvelle définition dans La Diligence ;
+3. galerie/QC de bibliothèque et nouvelle recette de la scène.
+
+Ce palier privilégie les registres de données et les définitions d’art partagées ; aucune branche spéciale au nom de La Diligence n’est admise.
+
+### Palier C — code applicatif minimal
+
+Seulement pour un défaut démontré impossible à résoudre aux paliers A et B. Les candidats déjà identifiés sont la hauteur réelle d’une arête basse, son exclusion de l’enveloppe/toiture, les parements distincts par face et les finitions de zone sans changement de terrain.
+
+L’ordre interne reste test-first :
 
 1. contrat de données et golden de topologie ;
 2. rôles et hauteurs d’arêtes ;
@@ -216,4 +244,4 @@ La réalisation reste une seule V1 visible, mais s’implémente dans cet ordre 
 6. affectation des quatre familles et des séparations basses ;
 7. recette complète et corrections visuelles.
 
-Une passe ultérieure « pièce par pièce » étendra les définitions et les affectations, sans changer les contrats posés par cette V1.
+Le palier C n’est pas un prérequis artificiel au palier A. Une passe ultérieure « pièce par pièce » étendra les définitions et les affectations, sans changer les contrats effectivement livrés par cette V1.
