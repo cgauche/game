@@ -63,8 +63,15 @@ export function ChanceButtons({
       {rerollBtn}
       {fortune > 0 && onBonusSL && (
         <CodexRef category={RULE_REF.chance.category} id={RULE_REF.chance.id} label="Chance" wrap>
-          <button className="btn btn-resource" onClick={onBonusSL}>
-            <Icon id="ui/add" size="sm" /> +1 DR ×{fortune}
+          {/* Le bouton NOMME la ressource qu'il dépense : « +1 DR ×N » nu ne disait pas d'où venait le
+              cran (recette : lu comme un Avantage, une Résilience partielle…). Même forme de pool que
+              son voisin « Relancer ×N » — le compteur est la réserve de Points de Chance. */}
+          <button
+            className="btn btn-resource"
+            onClick={onBonusSL}
+            title={`Dépenser un Point de Chance pour +1 DR (${fortune} restant${fortune > 1 ? 's' : ''})`}
+          >
+            <Icon id="ui/add" size="sm" /> Chance : +1 DR ×{fortune}
           </button>
         </CodexRef>
       )}

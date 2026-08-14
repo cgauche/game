@@ -15,8 +15,11 @@ describe('ChanceButtons — compteur de pool sur « Relancer » (#945)', () => {
       <ChanceButtons fortune={3} rerollable onReroll={noop} onBonusSL={noop} />,
     );
     expect(html).toContain('Relancer ×3');
-    // Le répétable +1 DR porte la même réserve, sous la même forme.
-    expect(html).toContain('+1 DR ×3');
+    // Le répétable +1 DR porte la même réserve, sous la même forme — et il NOMME la ressource qu'il
+    // dépense : « +1 DR ×N » nu se lisait comme un Avantage ou une Résilience partielle (recette
+    // #1279). Le compteur est la réserve de Points de Chance, le title le redit en clair.
+    expect(html).toContain('Chance : +1 DR ×3');
+    expect(html).toContain('Dépenser un Point de Chance pour +1 DR');
     // Forme n/m RÉSERVÉE à la progression (DrBar) — jamais sur un pool.
     expect(html).not.toContain('3/3');
   });
