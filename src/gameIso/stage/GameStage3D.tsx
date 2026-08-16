@@ -136,6 +136,7 @@ import { ndcAt, pickNearestCid, type PickTarget } from '../backends/webgl/sprite
 import { setSpritePicker } from './spritePicker';
 import { stage3dFramingFor, stageScreen, viewBoxScreen, type Stage3dFraming } from './stage3dCamera';
 import { stageLightScalars, stageLights } from './stageLights';
+import { viewPolicy } from './viewPolicy';
 import { applyFlicker, applyPointLights, createPointLightPool, hasFlicker, pointLightWrites, POINT_LIGHT_BUDGET, type PointLightSlots } from './stagePointLights';
 import type { LightSource } from '../../state/vision';
 import { sceneBrume, scenePrecip } from '../catalog/ambiance';
@@ -366,6 +367,10 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   const boardsRef = useRef<Board[]>([]);
   const cameraRef = useRef<THREE.Camera | null>(null);
   const pov = frame.mode === 'pov';
+  // STYLE DE CE REGARD (#1176, P3-5, `viewPolicy`) : ce que la vue choisit de MONTRER — les nappes de
+  // brume et le soleil ci-dessous en descendent. La GÉOMÉTRIE de la frame (cadrage, cran d'art,
+  // projection) ne passe pas par là : elle se dérive de `frame` comme avant.
+  const politique = viewPolicy(frame.mode === 'pov' ? { pov: true } : { view: frame.dims.view });
   // CAP du regard première personne — 8 états DISCRETS, et la SEULE entrée d'art de cette vue : la vue
   // d'entité s'y branche (`billboardView` perspective), et le cran de l'atlas de décor s'en dérive.
   // Les deux sortent du MÊME examen du cadre : le cap est la source du cran, pas un second calcul.
@@ -389,11 +394,13 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // NAPPES réellement montées — la trace du canevas les compte (`data-brume`) : une carte entièrement
   // coiffée n'en reçoit aucune, quelle que soit la donnée.
   const [nappesMontées, setNappesMontées] = useState(0);
-  // NAPPES AU MONDE : la vue de plateau, sauf le DESSUS. À 90° de tangage (`affineScales`, pitch
-  // mesuré 25,2° en losange et de face contre 90,0° au-dessus), les nappes se projettent l'une sur
-  // l'autre : l'empilement dégénère en voile plein écran, à rebours de la lisibilité de plateau que
-  // demande cette vue. La première personne n'en monte aucune non plus — elle a la brume de distance.
-  const nappesAuMonde = frame.mode !== 'pov' && frame.dims.view !== 'top' ? brume : null;
+  // NAPPES AU MONDE (verdict `nappesMonde` de la politique de vue) : la vue de plateau, sauf le
+  // DESSUS. À 90° de tangage (`affineScales`, pitch mesuré 25,2° en losange et de face contre 90,0°
+  // au-dessus), les nappes se projettent l'une sur l'autre : l'empilement dégénère en voile plein
+  // écran, à rebours de la lisibilité de plateau que demande cette vue. La première personne n'en
+  // monte aucune non plus — elle a la brume de distance. C'est l'ÉCRÊTAGE météo de #1247, une raison
+  // à lui : il coïncide avec le découvert des toits sur cette vue, il n'en descend pas.
+  const nappesAuMonde = politique.nappesMonde ? brume : null;
   // Le PLAN de nappes SURVIT aux mutations de scène, exactement comme le semis : il est retenu sur ce
   // qui le DÉTERMINE (`retainBrumeSheets`), jamais sur la référence de l'objet scène — un pas de
   // combattant en produit une par frame, et re-bâtir là-dessus recalculait tout le couvert (6,9 ms
@@ -506,15 +513,17 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   const solM = (x: number, y: number, z: number) => (z ? heightAt(scene, Math.round(x), Math.round(y), z) : 0);
 
   // ── LUMIÈRE (P2-5) : la DÉCISION est prise en scalaires purs (`stageLights.ts`), l'écran n'en monte
-  // que les conséquences. `lit` = un soleil éclaire RÉELLEMENT (il est levé ET au-dessus du fondu) :
-  // ombres portées branchées, disque de contact rendu inutile. La même passe rejoue au montage des lampes.
+  // que les conséquences. `lit` = un soleil éclaire RÉELLEMENT (il est levé, au-dessus du fondu, et le
+  // REGARD en veut un) : ombres portées branchées, disque de contact rendu inutile. La même passe
+  // rejoue au montage des lampes.
   // Dépendances = le read-set de `stageLightScalars` (`Pick<Scene, 'ambiance'|'northDeg'|
-  // 'ambientLight'|'weather'>`), jamais la référence de scène : c'est l'IDENTITÉ de ce résultat qui
-  // remonte les lampes plus bas, et une référence par tick d'édition les redémontait toutes.
+  // 'ambientLight'|'weather'>`) plus le verdict de vue, jamais la référence de scène : c'est l'IDENTITÉ
+  // de ce résultat qui remonte les lampes plus bas, et une référence par tick d'édition les redémontait
+  // toutes.
   const lumière = useMemo(
-    () => stageLightScalars({ scene, gameTime, lightLevel }),
+    () => stageLightScalars({ scene, gameTime, lightLevel, ombreSoleil: politique.ombreSoleil }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [scene.ambiance, scene.northDeg, scene.ambientLight, scene.weather, gameTime, lightLevel],
+    [scene.ambiance, scene.northDeg, scene.ambientLight, scene.weather, gameTime, lightLevel, politique.ombreSoleil],
   );
   const { course, lit, fade } = lumière;
   // ── TEINTE : réécriture en place des couleurs de sommet (elle ne retriangule rien). Son read-set
@@ -557,9 +566,13 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // ── INTEMPÉRIES (P2-6) : ce qui TOMBE dans le monde. La PORTE est celle des DEUX voies
   // (`scenePrecip` → `sceneWeatherFx` : une météo authorée, et jamais en intérieur) ; densité, vitesse
   // de chute, vent, taille et teinte viennent tous de la donnée — aucun type de météo n'est nommé ici.
-  // `null` = rien ne tombe, et pas une frame ne s'en occupe.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const precip = useMemo(() => scenePrecip(scene), [scene.weather, scene.ambiance]);
+  // `null` = rien ne tombe, et pas une frame ne s'en occupe. Le REGARD ferme cette porte à son tour
+  // (`viewPolicy.precipitations`) : au-dessus, une particule vue dans son axe de chute est un point.
+  const precip = useMemo(
+    () => (politique.precipitations ? scenePrecip(scene) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [scene.weather, scene.ambiance, politique.precipitations],
+  );
   // Le semis SURVIT aux mutations de scène : il est retenu sur ce qui le DÉTERMINE (scène, type de
   // météo, emprise du volume — `retainWeatherField`), pas sur la référence de l'objet scène. Un pas de
   // combattant produit une référence de scène par frame ; re-semer là-dessus téléporterait l'averse
@@ -1197,7 +1210,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   useEffect(() => {
     const groupe = lampes.current;
     if (!groupe) return;
-    const { ambient, sun } = stageLights({ scene, gameTime, lightLevel, shadowBox });
+    const { ambient, sun } = stageLights({ scene, gameTime, lightLevel, shadowBox, ombreSoleil: politique.ombreSoleil });
     groupe.add(ambient);
     if (sun) groupe.add(sun, sun.target);
     ombresARefaire.current = true;
@@ -1210,8 +1223,8 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     // Même read-set que les scalaires ci-dessus (`stageLightScalars`) : une référence de scène par
     // tick remontait ambiante et soleil — et redemandait la carte d'ombre — sans qu'aucune entrée de
-    // lumière ait bougé.
-  }, [scene.ambiance, scene.northDeg, scene.ambientLight, scene.weather, gameTime, lightLevel, shadowBox]);
+    // lumière ait bougé. Plus le verdict de STYLE du regard, seule entrée de vue de cette passe.
+  }, [scene.ambiance, scene.northDeg, scene.ambientLight, scene.weather, gameTime, lightLevel, shadowBox, politique.ombreSoleil]);
 
   // ── POOL DE FLAQUES (#1245, L1) : monté UNE fois, jamais reconstruit (la réf `pool` est déclarée avec
   // la décision, plus haut). Le compte de lampes ponctuelles entre dans la clé de cache de programme de
@@ -1256,7 +1269,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // `data-sun` : la SEULE trace lisible du soleil réellement MONTÉ (azimut/élévation, degrés) — un
   // canevas WebGL n'a pas d'arbre à interroger, et la recette navigateur comme les tests de montage ont
   // besoin de savoir SI une directionnelle est là et OÙ elle est. Absent = aucune directionnelle
-  // (intérieur, nuit, ou soleil encore sous son fondu de lever/coucher).
+  // (intérieur, nuit, soleil encore sous son fondu de lever/coucher, ou regard qui n'en monte aucun).
   // `data-lum` : l'EXPOSITION de la frame (luminance d'une surface horizontale, en part d'albédo). C'est
   // par elle que la parité avec la voie affine et la continuité du crépuscule se mesurent à l'écran.
   // `data-lampes` : les flaques ALLUMÉES sur le budget MONTÉ (`allumées/budget`) — le compte de droite

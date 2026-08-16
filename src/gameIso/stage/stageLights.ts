@@ -22,7 +22,10 @@
  *  - la DIRECTIONNELLE (le soleil, avec ses ombres) n'est montée QUE si la scène en a un : `sceneSun`
  *    — aucun soleil en intérieur (porte `isIndoor`, celle du reste du rendu), aucun hors de l'arche
  *    diurne, et aucun sous l'élévation d'ACNÉ (`sunFade` ci-dessous). Sa direction vient de l'heure
- *    d'horloge et du nord de la scène.
+ *    d'horloge et du nord de la scène. Le REGARD est la QUATRIÈME de ces portes (`ombreSoleil`,
+ *    `viewPolicy`) et se pose au MÊME endroit que les trois autres, sur le FONDU : une vue sans
+ *    soleil rend le régime SANS SOLEIL complet — `fade = 0`, `lit` faux, ambiante pleine, modelé de
+ *    forme plein — et non « la même scène amputée de sa lampe ».
  *
  * Les matériaux du monde sont TOUJOURS lambertiens (`GameStage3D`) : c'est ce qui rend la continuité
  * structurelle — il n'y a plus de régime à basculer au crépuscule, seulement des intensités qui
@@ -105,6 +108,10 @@ export function stageLightScalars(args: {
   scene: Pick<Scene, 'ambiance' | 'northDeg' | 'ambientLight' | 'weather'>;
   gameTime: number;
   lightLevel: number | null | undefined;
+  /** Le REGARD porté sur la scène veut-il un soleil (`viewPolicy`, verdict `ombreSoleil`) ? Défaut :
+   *  oui. C'est la SEULE porte de vue de cette décision, et elle s'applique ICI, sur le fondu — pas
+   *  chez les consommateurs, qui divergeraient un à un. */
+  ombreSoleil?: boolean;
 }): StageLightScalars {
   const course = sceneSun(args.scene as Scene, args.gameTime);
   const palier = ambientScalar(args.scene as Scene, args.gameTime, args.lightLevel ?? null);
@@ -114,7 +121,12 @@ export function stageLightScalars(args: {
   // (neige, brouillard). L'orage se joue par les LAMPES, jamais par un rect posé par-dessus.
   const meteo = weatherLightScalars(args.scene);
   const expo = ambianceLuminance(palier) * meteo.dim;
-  const fade = course ? sunFade(course.elevationDeg) : 0;
+  // RÉGIME SANS SOLEIL, dit UNE fois : le regard qui n'en veut pas (`viewPolicy.ombreSoleil`) éteint
+  // le FONDU, et tout ce qui en descend suit ensemble — `lit` tombe à faux (donc aucune lampe montée,
+  // et le disque de contact des pions revient), `sunIntensity` à zéro, l'ambiante remonte à sa part
+  // pleine, et `surfaceLuminance` perd la part solaire. Les consommateurs (modelé de forme du monde,
+  // exposition des billboards, ombres) n'ont AUCUNE porte à poser de leur côté.
+  const fade = course && args.ombreSoleil !== false ? sunFade(course.elevationDeg) : 0;
   // L'ambiante cède au soleil À MESURE qu'il s'allume : pleine sans lui, `AMBIENT_INTENSITY` sous lui.
   const partAmbiante = 1 - (1 - AMBIENT_INTENSITY) * fade;
   const partSolaire = course ? SUN_INTENSITY * fade * Math.sin((course.elevationDeg * Math.PI) / 180) : 0;
@@ -158,6 +170,9 @@ export function stageLights(args: {
   gameTime: number;
   lightLevel: number | null | undefined;
   shadowBox: THREE.Box3;
+  /** Le REGARD porté sur la scène veut-il un soleil (`viewPolicy`, verdict `ombreSoleil`) — passé tel
+   *  quel à la décision ci-dessus, qui l'applique sur le FONDU. Aucune porte ici : `lit` suffit. */
+  ombreSoleil?: boolean;
 }): StageLights {
   const scalars = stageLightScalars(args);
   const teinte = meteoLightColor(scalars.meteo);

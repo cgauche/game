@@ -22,7 +22,7 @@ import { placingZoneOf } from '../state/combatFlow';
 import { controlsActive } from '../state/netOwnership';
 import { modalBlocksMapHover } from '../state/modalArbiter';
 import { mapTargetingActive } from '../state/targetingHolder';
-import { Dims, tileCenter, isSquareView, capsuleCenter } from '../geometry/iso';
+import { Dims, tileCenter, capsuleCenter } from '../geometry/iso';
 import { getViewZ, subscribeViewZ } from '../state/viewLevel';
 import { setVisibleTileBounds } from './viewport';
 import { useCombatFx } from './fx/useCombatFx';
@@ -41,6 +41,7 @@ import { TokenChromeOverlay } from './stage/TokenChromeOverlay';
 import { type WalkPos } from './fx/walkPose';
 import { actorCapsuleOf } from './stage/actorCapsule';
 import { VolumetricWorld } from './stage/VolumetricWorld';
+import { viewPolicy } from './stage/viewPolicy';
 import { SansWebgl, useWebglRefusé } from './stage/SansWebgl';
 import { getStageYaw, subscribeStageYaw, viewRot, viewYawDeg } from '../state/stageYaw';
 import { visibilityField } from './backends/webgl/visibilityTint';
@@ -125,13 +126,15 @@ export function IsoStage() {
   const viewZ = useSyncExternalStore(subscribeViewZ, getViewZ, getViewZ);
   const activeC = mode === 'battle' && battle ? battle.combatants.find((c) => c.id === battle.order[battle.turn]) : undefined;
   const activeZ = viewZ ?? ((activeC?.pos as { z?: number } | undefined)?.z ?? partyPos.z ?? 0);
+  // STYLE DE LA VUE (#1176, P3-5) : ce que ce regard choisit de MONTRER (`stage/viewPolicy`). Les
+  // verdicts en descendent tous — l'étage isolé ci-dessous comme le découvert des toits de `keepEl`.
+  const politique = useMemo(() => viewPolicy({ view: viewMode }), [viewMode]);
   // VUE DU DESSUS (`view: 'top'`, mode tactique et source de la minimap) : on regarde UN plancher à la
-  // VERTICALE — l'étage ACTIF, et lui seul ; superposer le rez à l'étage rend le plan illisible. Ce
-  // n'est pas un réglage d'affichage de plus : c'est le `viewZ` du pivot (isolement d'un étage) que
-  // l'APPELANT fournit, là où l'iso fournit `null` (l'actif + le contrebas, contexte utile en 3D). Les
-  // builders ne connaissent PAS le mode de vue — ils ne lisent que le `viewZ` reçu ; la MASSE du monde,
-  // cuite en bloc, le reçoit par la loi de `keepEl`.
-  const planVue = isSquareView(viewMode);
+  // VERTICALE — l'étage ACTIF, et lui seul. Ce n'est pas un réglage d'affichage de plus : c'est le
+  // `viewZ` du pivot (isolement d'un étage) que l'APPELANT fournit, là où l'iso fournit `null`
+  // (l'actif + le contrebas, contexte utile en 3D). Les builders ne connaissent PAS le mode de vue —
+  // ils ne lisent que le `viewZ` reçu ; la MASSE du monde, cuite en bloc, le reçoit par `keepEl`.
+  const planVue = politique.etageIsole;
   const layerZ = planVue ? activeZ : viewZ;
   // LIFT vertical d'une case = sa HAUTEUR MÉTRIQUE en unités de niveau, DÉCOUPLÉ de l'index de couche
   // `z` (qui ne sert qu'au TRI). Sert au JETON (qui monte avec son sol) ET aux SURLIGNAGES de case.
@@ -288,16 +291,21 @@ export function IsoStage() {
     // c'est donc ici qu'elle s'applique. Les NAPPES en sont exemptes, comme elles l'étaient : leur
     // retrait se décide par MASSE (loi de dégagement), jamais par étage rendu.
     if (planVue && el.kind !== 'roof' && el.cell.z !== activeZ) return false;
-    if (el.kind === 'roof')
+    if (el.kind === 'roof') {
+      // DÉCOUVERT PERMANENT (#1176, P3-5) : sous un regard qui ne montre pas les toits, aucune nappe
+      // ne se dessine — la loi de dégagement (`clearedSpace`/`lidCutaway`) reste entière pour le
+      // plateau iso, où elle continue de lever au pas du groupe.
+      if (!politique.toitsVisibles) return false;
       return cutawayForSection({
         sectionId: el.sectionId ?? el.key,
         roomZoneIds: zonesVives.get(el.key),
         cells: el.cells.map((c) => spaceCellKey(c.x, c.y, el.cell.z)),
       }, cleared) === 'visible';
+    }
     if (cutawayOverhead(el.cell, cleared)) return false;
     if (el.kind === 'wall') return !frontFacadeCutaway({ ...el, roomZoneIds: zonesVives.get(el.key), x: el.cell.x, y: el.cell.y, z: el.cell.z }, cleared, dims);
     return true;
-  }, [cleared, dims, zonesVives, planVue, activeZ]);
+  }, [cleared, dims, zonesVives, planVue, politique, activeZ]);
   // CHAMP de visibilité (#1176, C6) : le monde volumique l'échantillonne PAR SOMMET, les corps posés
   // sur leur case y lisent la valeur discrète de la leur. Les dimensions bornent le champ : hors carte,
   // il se rabat sur le bord au lieu d'assombrir le pourtour d'un dehors inconnu.
@@ -326,8 +334,8 @@ export function IsoStage() {
     [scene, visible, activeZ, layerZ, cutawayAllies, cleared],
   );
   const tokenEls = useMemo(
-    () => (scene ? buildTokens(scene, visible, mode === 'battle' && battle ? battle : null, { activeZ, viewZ: layerZ, top: isSquareView(viewMode) }) : []),
-    [scene, visible, mode, battle, activeZ, layerZ, viewMode],
+    () => (scene ? buildTokens(scene, visible, mode === 'battle' && battle ? battle : null, { activeZ, viewZ: layerZ, top: politique.montesDissocies }) : []),
+    [scene, visible, mode, battle, activeZ, layerZ, politique],
   );
 
   // Les vérités de surbrillance sont assemblées par le monde volumique lui-même
