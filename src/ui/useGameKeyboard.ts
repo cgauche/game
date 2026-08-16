@@ -9,21 +9,56 @@ import { KEYBINDINGS, effectiveCodes } from '../state/keybindings';
  */
 export function useGameKeyboard() {
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const ae = document.activeElement as HTMLElement | null;
-      const tag = ae?.tagName ?? '';
-      if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag) || ae?.isContentEditable) return; // saisie en cours
-      const s = useGame.getState();
-      if (s.dialogue) return; // pas de raccourci pendant un dialogue
-      const controlFocused = /^(BUTTON|A)$/.test(tag); // Espace/Entrée doivent activer ce contrôle, pas le raccourci
-      const b = KEYBINDINGS.find(
+    /** Raccourci qui répond à cette touche dans l'état courant, ou `undefined`. */
+    const trouver = (e: KeyboardEvent, controlFocused: boolean, s = useGame.getState()) =>
+      KEYBINDINGS.find(
         (k) => effectiveCodes(k, s.keyOverrides).includes(e.code) && (!k.notWhenControlFocused || !controlFocused) && k.when(s),
       );
+    const saisieEnCours = (): { saisie: boolean; controlFocused: boolean } => {
+      const ae = document.activeElement as HTMLElement | null;
+      const tag = ae?.tagName ?? '';
+      return {
+        saisie: /^(INPUT|TEXTAREA|SELECT)$/.test(tag) || !!ae?.isContentEditable,
+        controlFocused: /^(BUTTON|A)$/.test(tag), // Espace/Entrée doivent activer ce contrôle, pas le raccourci
+      };
+    };
+    const onKey = (e: KeyboardEvent) => {
+      const { saisie, controlFocused } = saisieEnCours();
+      if (saisie) return;
+      if (useGame.getState().dialogue) return; // pas de raccourci pendant un dialogue
+      const b = trouver(e, controlFocused);
       if (!b) return;
       e.preventDefault();
+      // Geste MAINTENU (`runUp`) : la répétition automatique du clavier ne le rejoue pas — sa durée est
+      // celle de l'appui, mesurée par le geste lui-même.
+      if (e.repeat && b.runUp) return;
       b.run(useGame.getState);
     };
+    const onKeyUp = (e: KeyboardEvent) => {
+      const { saisie, controlFocused } = saisieEnCours();
+      if (saisie) return;
+      const b = trouver(e, controlFocused);
+      if (!b?.runUp) return;
+      e.preventDefault();
+      b.runUp(useGame.getState);
+    };
+    // PERTE DE FOCUS (Alt-Tab, onglet caché) : le `keyup` de la touche tenue part à la fenêtre qui
+    // reçoit le focus, jamais à nous — un geste MAINTENU y resterait en cours indéfiniment. On relâche
+    // donc TOUT geste maintenu du registre : `runUp` est idempotent, et un relâchement de trop ne
+    // coûte rien face à une caméra qui tourne toute seule pendant qu'on est ailleurs.
+    const relacherTout = () => {
+      for (const b of KEYBINDINGS) b.runUp?.(useGame.getState);
+    };
+    const onVisibilite = () => { if (document.hidden) relacherTout(); };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', relacherTout);
+    document.addEventListener('visibilitychange', onVisibilite);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', relacherTout);
+      document.removeEventListener('visibilitychange', onVisibilite);
+    };
   }, []);
 }

@@ -14,7 +14,8 @@ import { pickActiveModalKey, modalBlocksMapHover } from './modalArbiter';
 import { hotbar } from './hotbarBridge';
 import { validTargets, preemptShooterIds } from './targeting';
 import type { ScreenDir } from './combatCursor';
-import { snapStageYawToCran } from './stageYaw';
+import { SEUIL_MAINTIEN_MS, arreterLacet, demarrerLacet, pasYaw } from './stageYaw';
+import { clearTrackedTimer, scheduleFlowTimer } from './combatTimers';
 
 /** Section d'affichage de l'écran Options (remap) — REGROUPE les raccourcis par contexte de jeu.
  *  Purement présentationnel (le `when` de chaque binding reste l'unique arbitre d'exécution). */
@@ -45,6 +46,10 @@ export interface KeyBinding {
    *  (Espace/Entrée) comme navigation propre au contrôle (flèches d'un menu, d'un popover, d'une
    *  liste à roving tabindex). */
   notWhenControlFocused?: boolean;
+  /** RELÂCHEMENT de la touche. Un raccourci qui en porte un est un geste MAINTENU : il agit à
+   *  l'enfoncement, dure tant que la touche est tenue, et se termine ici. La répétition automatique du
+   *  clavier ne le rejoue pas (`useGameKeyboard`) — la durée est mesurée par le geste, pas par l'OS. */
+  runUp?: (get: () => GameState) => void;
 }
 
 const inBattle = (s: GameState) => s.mode === 'battle' && !!s.battle && !s.battle.over;
@@ -55,17 +60,35 @@ const noModal = (s: GameState) => pickActiveModalKey(s as Parameters<typeof pick
  *  arbitre) : une modale PILOTÉE PAR LA CARTE (désignation de cibles d'un sort) laisse la scène
  *  vivante — la souris y cible, le curseur clavier/manette doit pouvoir en faire autant. */
 const mapLive = (s: GameState) => !modalBlocksMapHover(s as Parameters<typeof modalBlocksMapHover>[0]);
-/** UNE poussée de rotation caméra — SOURCE UNIQUE du geste, partagée par le clavier (Q/E) et par les
+/** Minuterie qui transforme l'appui en MAINTIEN — une seule, le geste de rotation est unique. */
+let minuterieMaintien: ReturnType<typeof setTimeout> | null = null;
+/** APPUI de rotation caméra — SOURCE UNIQUE du geste, partagée par le clavier (Q/E) et par les
  *  boutons d'orientation de l'écran de jeu (`ui/ViewControls`, dont les libellés annoncent Q et E).
- *  La caméra de JEU ne connaît que les QUATRE vues DIAGONALES (#1289) : de face, la grille s'aligne
- *  sur l'écran et le plateau perd sa lecture en volume. Le lacet est CONTINU (#1176, P2-7) — la caméra
- *  COURT vers le cran visé (`state/stageYaw.ts`) et maintenir la touche fait tourner sans à-coup —,
- *  mais la cible est AIMANTÉE au cran (`snapStageYawToCran`) : une addition depuis un lacet en vol
- *  poserait la vue entre deux crans.
+ *  Le lacet est LIBRE (#1176) : la caméra accepte n'importe quel angle, et le geste a DEUX régimes,
+ *  distingués par la seule durée de l'appui — un appui bref pousse d'un PAS FIN (`pasYaw`), et
+ *  au-delà de `SEUIL_MAINTIEN_MS` la caméra part en rotation continue jusqu'au relâchement
+ *  (`relacherCamera`). Le pas agit dès l'enfoncement : le geste bref ne se paie aucune attente.
  *  Le régime par CRAN du store (`rotateCam`) ne sert plus l'écran de jeu depuis la mort de la voie
  *  affine (#1176, P3-4 commit C5a) : il reste la rotation de l'ÉDITEUR et des bancs. */
 export const tournerCamera = (_g: () => GameState, dir: 1 | -1): void => {
-  snapStageYawToCran(dir);
+  pasYaw(dir);
+  if (minuterieMaintien) clearTrackedTimer(minuterieMaintien);
+  // Timer TRACÉ (`state/combatTimers.ts`) : un `setTimeout` nu sous `src/state` est inexprimable
+  // (garde structurelle #415, `naked-timer-guard.test.ts`), et le registre annule les timers en vol
+  // au teardown de test. Ce geste d'ENTRÉE n'est ni un beat de combat ni une cascade de flux : les
+  // deux exports du registre sont le MÊME `track`, et le renommer relève d'un lot transverse.
+  minuterieMaintien = scheduleFlowTimer(() => {
+    minuterieMaintien = null;
+    demarrerLacet(dir);
+  }, SEUIL_MAINTIEN_MS);
+};
+/** RELÂCHEMENT du geste de rotation : désarme le maintien à venir, et arrête celui qui court. */
+export const relacherCamera = (): void => {
+  if (minuterieMaintien) {
+    clearTrackedTimer(minuterieMaintien);
+    minuterieMaintien = null;
+  }
+  arreterLacet();
 };
 /** Contexte de PILOTAGE du combat (fin de tour, barre d'action) : en combat, c'est bien ton tour
  *  (coop), aucune modale ouverte. */
@@ -103,8 +126,8 @@ export const KEYBINDINGS: KeyBinding[] = [
   { id: 'pov-turn-l', codes: ['KeyQ'], label: 'POV : pivoter le regard à gauche', section: 'pov', when: exploringPov, run: (g) => g().pivotParty(-1) },
   { id: 'pov-turn-r', codes: ['KeyE'], label: 'POV : pivoter le regard à droite', section: 'pov', when: exploringPov, run: (g) => g().pivotParty(1) },
   { id: 'toggle-pov', codes: ['KeyF'], label: 'Basculer la vue subjective (POV)', section: 'pov', when: exploring, run: (g) => g().togglePov() },
-  { id: 'cam-left', codes: ['KeyQ'], label: 'Caméra : tourner à gauche', section: 'camera', when: () => true, run: (g) => tournerCamera(g, -1) },
-  { id: 'cam-right', codes: ['KeyE'], label: 'Caméra : tourner à droite', section: 'camera', when: () => true, run: (g) => tournerCamera(g, 1) },
+  { id: 'cam-left', codes: ['KeyQ'], label: 'Caméra : tourner à gauche', section: 'camera', when: () => true, run: (g) => tournerCamera(g, -1), runUp: () => relacherCamera() },
+  { id: 'cam-right', codes: ['KeyE'], label: 'Caméra : tourner à droite', section: 'camera', when: () => true, run: (g) => tournerCamera(g, 1), runUp: () => relacherCamera() },
   { id: 'cam-recenter', codes: ['KeyC'], label: 'Caméra : recentrer sur l’actif', section: 'camera', when: inBattle, run: (g) => g().resetCamPan() },
   // Pause d'initiative de début de Round (LDB 17 l.27) : Espace/Entrée = « Commencer le round » (le SEUL
   // geste possible) → passage de Round jouable SANS souris. AVANT les bindings curseur/fin-de-tour (mêmes

@@ -15,6 +15,7 @@ import type { Combatant } from '../../engine/types';
 import type { RoomPortal } from '../../state/roomPortals';
 import { VH, VW } from './useStageCamera';
 import { useStagePointer, type StagePointer } from './useStagePointer';
+import { SENSIBILITE_DRAG_DEG_PX, getStageYaw, poserYaw, resetStageYaw } from '../../state/stageYaw';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 Object.defineProperty(window, 'matchMedia', {
@@ -687,5 +688,66 @@ describe('useStagePointer — relief et franchissement d’étage à la souris',
     clickAt(mountProbe(scene), surplomb.cx, surplomb.cy);
 
     expect(moveParty).toHaveBeenLastCalledWith({ x: 3, y: 3 });
+  });
+});
+
+/**
+ * GLISSER-TOURNER au bouton MILIEU (#1176) — la 4e entrée du lacet libre. Le bouton principal marche
+ * et panoramique, le droit ouvre l'attaque pertinente : la rotation à la souris n'avait plus que le
+ * milieu, et elle doit suivre le pointeur AU DEGRÉ dit par `SENSIBILITE_DRAG_DEG_PX`.
+ */
+describe('useStagePointer — glisser-tourner au bouton MILIEU', () => {
+  const monter = (scene: ReturnType<typeof emptyScene>) => {
+    let pointer: StagePointer | undefined;
+    const Probe = () => {
+      const svgRef = useRef(stageEl());
+      const camRef = useRef({ x: 0, y: 0 });
+      pointer = useStagePointer({ svgRef, scene, dims, zoom: 1, camRef, hoverTracking: false, partyLeader: undefined, activeZ: 0 });
+      return null;
+    };
+    renderToStaticMarkup(<Probe />);
+    return pointer!;
+  };
+
+  /** Événement de pointeur au bouton `button` (le gabarit partagé du fichier est au principal). */
+  const evBouton = (x: number, y: number, button: number) =>
+    ({ ...pointerEvent(x, y), button, clientX: x, clientY: y, preventDefault: () => undefined }) as unknown as React.PointerEvent;
+
+  afterEach(() => {
+    resetStageYaw();
+  });
+
+  it('un glisser de N px au MILIEU pose le lacet à yaw0 + N × SENSIBILITE_DRAG_DEG_PX', () => {
+    vi.stubGlobal('requestAnimationFrame', undefined);
+    const scene = emptyScene(8, 8);
+    useGame.setState({ scene, mode: 'exploration', partyPos: { x: 2, y: 1 }, party: [], dialogue: null });
+    resetStageYaw();
+    poserYaw(30); // on part d'un angle QUELCONQUE : le glisser est relatif à l'angle du début de geste
+    const pointer = monter(scene);
+
+    pointer.handlers.onPointerDown(evBouton(100, 100, 1));
+    act(() => pointer.handlers.onPointerMove(evBouton(220, 100, 1)));
+
+    expect(getStageYaw()).toBeCloseTo(30 + 120 * SENSIBILITE_DRAG_DEG_PX, 9);
+
+    // Le geste reste ABSOLU : un retour en arrière ramène l'angle, il ne s'additionne pas.
+    act(() => pointer.handlers.onPointerMove(evBouton(40, 100, 1)));
+    expect(getStageYaw()).toBeCloseTo(30 - 60 * SENSIBILITE_DRAG_DEG_PX, 9);
+    vi.unstubAllGlobals();
+  });
+
+  it('le bouton PRINCIPAL panoramique et ne touche PAS au lacet', () => {
+    vi.stubGlobal('requestAnimationFrame', undefined);
+    const scene = emptyScene(8, 8);
+    useGame.setState({ scene, mode: 'exploration', partyPos: { x: 2, y: 1 }, party: [], dialogue: null, camPan: { x: 0, y: 0 } });
+    resetStageYaw();
+    const pointer = monter(scene);
+
+    pointer.handlers.onPointerDown(evBouton(100, 100, 0));
+    act(() => pointer.handlers.onPointerMove(evBouton(220, 100, 0)));
+
+    expect(getStageYaw()).toBe(0);
+    expect(useGame.getState().camPan.x).not.toBe(0); // c'est bien un PANORAMIQUE qui a eu lieu
+    vi.unstubAllGlobals();
   });
 });

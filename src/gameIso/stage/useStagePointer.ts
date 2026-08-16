@@ -5,7 +5,8 @@
  *    `resolveCursorZ`). Les trois chemins inversent la projection du STAGE (`stage/projection.ts`,
  *    `stage/stageCam.ts`) — la même que le peintre, affine ou volumique ;
  *  - `pickTile` : picking SPRITE-aware en combat, hit-test délégué à la voie de rendu (`cidUnderPointer`) ;
- *  - glisser-caméra (seuil PAN_THRESHOLD, l'action de clic est DIFFÉRÉE au relâchement) ;
+ *  - glisser-caméra (seuil PAN_THRESHOLD, l'action de clic est DIFFÉRÉE au relâchement) — bouton
+ *    principal : panoramique ; bouton MILIEU : lacet libre de la vue ;
  *  - `performClick` : sélection / cible / déplacement (combat et exploration) ;
  *  - `moveAlong` : marche pas-à-pas du groupe (sauts par-dessus les gouffres compris) ;
  *  - clic droit : attaque la plus PERTINENTE sur l'ennemi survolé (scoreur partagé avec l'IA) ;
@@ -27,6 +28,7 @@ import { bus, EVT } from '../../state/bus';
 import { combatantAtTile } from '../../state/combatGeometry';
 import { resolveCursorZ } from '../../state/combatCursor';
 import { controlsActive } from '../../state/netOwnership';
+import { SENSIBILITE_DRAG_DEG_PX, getStageYaw, poserYaw } from '../../state/stageYaw';
 import { combatantClickActs } from '../../state/combatOrParty';
 import { hoverClickCommits } from '../../ui/pointerCaps';
 import { bestAttack } from '../../state/attackRelevance';
@@ -91,7 +93,7 @@ export function useStagePointer({
   const [hoveredPortal, setHoveredPortal] = useState<RoomPortal | null>(null);
   const movingRef = useRef(false);
   // Glisser-caméra : on diffère l'action de clic au relâchement ; un glissement > seuil = panoramique.
-  const dragRef = useRef<{ sx: number; sy: number; lastX: number; lastY: number; panned: boolean; button: number; tile: Pt | null } | null>(null);
+  const dragRef = useRef<{ sx: number; sy: number; lastX: number; lastY: number; panned: boolean; button: number; tile: Pt | null; yaw0: number } | null>(null);
 
   // Recette (DEV) : pilotage PROGRAMMATIQUE du survol — __wfrp.hover('id') passe par ce hook,
   // le tooltip/réticule se rendent sans souris réelle (pas de chasse aux pixels).
@@ -355,8 +357,11 @@ export function useStagePointer({
   // au-delà du seuil, et le clic ne se déclenche au relâchement QUE si on n'a pas glissé.
   const onPointerDown = (ev: React.PointerEvent) => {
     if (useGame.getState().dialogue) return;
+    // Bouton MILIEU : le navigateur y arme son défilement automatique (curseur en rose des vents,
+    // la page défile au moindre mouvement) — il prendrait le glisser-tourner à chaque geste.
+    if (ev.button === 1) ev.preventDefault();
     const p = clientToSvg(ev);
-    dragRef.current = { sx: ev.clientX, sy: ev.clientY, lastX: p?.x ?? 0, lastY: p?.y ?? 0, panned: false, button: ev.button, tile: pickTile(ev) };
+    dragRef.current = { sx: ev.clientX, sy: ev.clientY, lastX: p?.x ?? 0, lastY: p?.y ?? 0, panned: false, button: ev.button, tile: pickTile(ev), yaw0: getStageYaw() };
     svgRef.current?.setPointerCapture?.(ev.pointerId);
   };
 
@@ -365,6 +370,14 @@ export function useStagePointer({
     if (d) {
       if (!d.panned && Math.hypot(ev.clientX - d.sx, ev.clientY - d.sy) > PAN_THRESHOLD) d.panned = true;
       if (d.panned) {
+        // Bouton MILIEU = TOURNER (le principal déplace le groupe, le droit ouvre l'attaque la plus
+        // pertinente) : le lacet se pose ABSOLUMENT depuis l'angle du début de geste, la vue suit donc
+        // le doigt sans dériver au fil des images.
+        if (d.button === 1) {
+          poserYaw(d.yaw0 + (ev.clientX - d.sx) * SENSIBILITE_DRAG_DEG_PX);
+          (ev.currentTarget as SVGElement).style.cursor = 'grabbing';
+          return;
+        }
         const p = clientToSvg(ev);
         if (p) {
           panCamBy((p.x - d.lastX) / zoom, (p.y - d.lastY) / zoom); // delta écran (viewBox) → unités caméra

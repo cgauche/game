@@ -8,6 +8,10 @@ export interface ViewControlsProps {
   onZoomReset: () => void;
   onRotateLeft: () => void;
   onRotateRight: () => void;
+  /** RELÂCHEMENT du bouton d'orientation. L'hôte qui en fournit un a un geste à DEUX régimes (appui
+   *  bref = pas fin, appui tenu = rotation continue) : le bouton se comporte alors comme la touche,
+   *  appui et relâchement compris. Absent = l'appui suffit (rotation par cran de l'éditeur). */
+  onRotateRelease?: () => void;
   /** Projection courante (iso losange / top grille carrée) + bascule. */
   view: 'iso' | 'top';
   onToggleView: () => void;
@@ -26,7 +30,7 @@ export interface ViewControlsProps {
   renderedScale?: number;
 }
 
-export function ViewControls({ zoom, renderedScale, onZoomIn, onZoomOut, onZoomReset, onRotateLeft, onRotateRight, view, onToggleView, pov, onTogglePov, inspectEnabled, onToggleInspect }: ViewControlsProps) {
+export function ViewControls({ zoom, renderedScale, onZoomIn, onZoomOut, onZoomReset, onRotateLeft, onRotateRight, onRotateRelease, view, onToggleView, pov, onTogglePov, inspectEnabled, onToggleInspect }: ViewControlsProps) {
   const stop = (fn: () => void) => (e: React.PointerEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -37,16 +41,22 @@ export function ViewControls({ zoom, renderedScale, onZoomIn, onZoomOut, onZoomR
     : 'Activer l’inspection des combattants';
   const projectionLabel = view === 'top' ? 'Vue isométrique' : 'Vue du dessus';
   const povLabel = pov ? 'Vue normale (au-dessus)' : 'Vue subjective (première personne)';
+  // Fin d'appui d'un bouton d'orientation : relâchement, sortie du bouton et annulation du pointeur
+  // ferment le geste de la même façon — un doigt qui glisse hors du bouton ne doit pas laisser la
+  // caméra tourner toute seule.
+  const relache = onRotateRelease
+    ? { onPointerUp: stop(onRotateRelease), onPointerCancel: stop(onRotateRelease), onPointerLeave: stop(onRotateRelease) }
+    : {};
   return (
     <div
       className="view-controls"
       onPointerDown={(e) => e.stopPropagation()}
     >
       <div className="vc-group" role="group" aria-label="Orientation">
-        <button type="button" className="btn vc-btn" title="Tourner anti-horaire (Q)" aria-label="Tourner anti-horaire (Q)" onPointerDown={stop(onRotateLeft)}>
+        <button type="button" className="btn vc-btn" title="Tourner anti-horaire (Q)" aria-label="Tourner anti-horaire (Q)" onPointerDown={stop(onRotateLeft)} {...relache}>
           <Icon id="ui/rotate-left" size="sm" />
         </button>
-        <button type="button" className="btn vc-btn" title="Tourner horaire (E)" aria-label="Tourner horaire (E)" onPointerDown={stop(onRotateRight)}>
+        <button type="button" className="btn vc-btn" title="Tourner horaire (E)" aria-label="Tourner horaire (E)" onPointerDown={stop(onRotateRight)} {...relache}>
           <Icon id="ui/rotate-right" size="sm" />
         </button>
       </div>

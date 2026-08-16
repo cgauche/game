@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
-import { tournerCamera } from '../state/keybindings';
+import { relacherCamera, tournerCamera } from '../state/keybindings';
 import { canActFirst, freeActFirst } from '../state/turnEconomy';
 import { preemptShooterIds } from '../state/targeting';
 import { IsoStage } from '../gameIso/IsoStage';
@@ -334,8 +334,8 @@ export function CampaignView() {
           journal={journal}
           onOpenHistory={mode === 'exploration' && dialogueHistory.length > 0 ? () => setHistoryOpen(true) : undefined}
         />
-        {/* Orientation : le MÊME geste que Q/E (`tournerCamera`) — au cran en affine, un pas de lacet
-            continu en volumique, sans quoi ces boutons sauteraient là où la touche fait glisser. */}
+        {/* Orientation : le MÊME geste que Q/E (`tournerCamera`/`relacherCamera`), appui ET
+            relâchement — un appui bref pousse d'un pas fin, un appui tenu fait tourner en continu. */}
         <ViewControls
           zoom={zoom}
           onZoomIn={() => setZoom(zoom + 0.3)}
@@ -343,6 +343,7 @@ export function CampaignView() {
           onZoomReset={() => setZoom(1)}
           onRotateLeft={() => tournerCamera(useGame.getState, -1)}
           onRotateRight={() => tournerCamera(useGame.getState, 1)}
+          onRotateRelease={relacherCamera}
           view={viewMode}
           onToggleView={toggleViewMode}
           pov={povActive}

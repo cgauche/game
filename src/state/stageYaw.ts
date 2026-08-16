@@ -8,28 +8,52 @@
  * de vue vivant n'a rien à faire dans une sauvegarde. Même patron que `state/viewLevel.ts` — le clavier
  * le PILOTE, le rendu le LIT.
  *
- * DEUX angles, et c'est le cœur de la sensation : `cible` est là où le joueur veut regarder (une
- * touche = un quart de cran), `courant` est là où la caméra EST, et il y court à chaque frame. Un
- * seul angle donnerait un saut ; une file de crans donnerait une file d'attente.
+ * TROIS RÉGIMES, une seule boucle de frames (`mode`) :
+ *  - `repos` : rien ne tourne, la boucle est arrêtée. Le lacet reste OÙ IL EST — aucun angle n'est
+ *    privilégié, il n'y a pas de ré-aimantage.
+ *  - `approche` : le PAS FIN. `cible` est là où le joueur veut regarder, `courant` est là où la caméra
+ *    EST, et il y court (exponentielle `TAU_MS`) — le pas glisse au lieu de sauter.
+ *  - `libre` : le MAINTIEN. `courant` s'intègre à `VITESSE_LACET_DEG_S`, sans cible et sans plafond :
+ *    la caméra tourne tant que le geste dure, et s'arrête net à sa fin.
  */
 import type { Rot } from '../geometry/iso';
 
 /** Constante de temps de l'approche (ms) : le lacet courant couvre ~63 % de son retard à chaque `TAU`. */
 const TAU_MS = 90;
 
-/** Retard MAXIMAL toléré entre la cible et le lacet courant (degrés). Sans cette borne, la répétition
- *  clavier d'une touche maintenue empilerait un demi-tour d'avance, que la caméra continuerait de
- *  parcourir bien après le relâchement. Avec elle, maintenir Q/E fait tourner en CONTINU et relâcher
- *  arrête en moins d'un cran. */
+/** Retard MAXIMAL toléré entre la cible et le lacet courant (degrés), cf. `yawTarget`. */
 const AVANCE_MAX_DEG = 90;
 
 /** Écart en deçà duquel la caméra est ARRIVÉE (degrés) : sous le dixième de degré, plus aucun pixel
  *  d'overlay ne bouge — continuer à animer ne ferait que rendre pour rien. */
 const ARRIVE_DEG = 0.05;
 
+/** PAS FIN d'un appui bref (degrés) : le geste de visée précise. Le besoin « tourner vite » est servi
+ *  par le MAINTIEN (`demarrerLacet`), jamais par un pas plus gros ni par une accélération du pas. */
+export const PAS_TAP_DEG = 2;
+
+/** Vitesse du lacet MAINTENU (degrés par seconde) : un tour complet en ~3,6 s. */
+export const VITESSE_LACET_DEG_S = 100;
+
+/** Durée d'appui (ms) au-delà de laquelle l'appui devient un MAINTIEN (les entrées arment ce délai
+ *  après le pas fin de l'enfoncement). */
+export const SEUIL_MAINTIEN_MS = 250;
+
+/** Degrés de lacet par pixel de glissement du pointeur (bouton milieu). */
+export const SENSIBILITE_DRAG_DEG_PX = 0.35;
+
+/** Durée maximale intégrée en une frame de MAINTIEN (ms). Un onglet caché suspend
+ *  `requestAnimationFrame` : au retour, `dt` vaut la durée entière de l'absence, et l'intégrer
+ *  entièrement ferait faire à la caméra les tours qu'on n'a pas vus. */
+const DT_MAX_MS = 100;
+
+/** Régime courant du lacet — cf. l'en-tête de fichier. */
+type ModeLacet = 'repos' | 'libre' | 'approche';
+
 let cible = 0;
 let courant = 0;
-let anime = false;
+let mode: ModeLacet = 'repos';
+let sens: 1 | -1 = 1;
 let dernier = 0;
 const subs = new Set<() => void>();
 
@@ -76,65 +100,54 @@ export function yawStep(courantDeg: number, cibleDeg: number, dtMs: number): num
   return courantDeg + (cibleDeg - courantDeg) * (1 - Math.exp(-Math.max(0, dtMs) / TAU_MS));
 }
 
-/** Nouvelle CIBLE après une poussée de `deltaDeg`, avance bornée (cf. `AVANCE_MAX_DEG`). PUR. */
+/** Nouvelle CIBLE après une poussée de `deltaDeg`, avance bornée à `AVANCE_MAX_DEG`. Ce plafond ne
+ *  concerne QUE la poussée fine (`pasYaw`, `nudgeStageYaw`), qui vise un angle et l'atteint : il borne
+ *  le retard que des poussées répétées peuvent empiler devant la caméra. Le lacet MAINTENU
+ *  (`demarrerLacet`) ne passe pas par ici et n'a aucun plafond — il tourne autant que le geste dure.
+ *  PUR. */
 export function yawTarget(courantDeg: number, cibleDeg: number, deltaDeg: number): number {
   const avance = cibleDeg + deltaDeg - courantDeg;
   return courantDeg + Math.max(-AVANCE_MAX_DEG, Math.min(AVANCE_MAX_DEG, avance));
-}
-
-/** Cran de la caméra de JEU (degrés) : les QUATRE vues diagonales (#1289). La géométrie de face
- *  (`camEdge`, +45°) reste entière — seule la caméra du joueur ne la vise plus. */
-const CRAN_JEU_DEG = 90;
-
-/** Avance maximale tolérée, EN CRANS, quand la poussée AIMANTE (cf. `snapYawTarget`). Le plafond ne
- *  peut pas s'exprimer en degrés relatifs au lacet courant : borner à ±90° d'un angle EN VOL pose la
- *  cible entre deux crans. En crans, un double-appui rapide vaut un demi-tour et relâcher arrête au
- *  cran suivant, sans jamais empiler un tour d'avance. */
-const AVANCE_MAX_CRANS = 2;
-
-/** Nouvelle CIBLE d'une poussée AIMANTÉE : le premier cran SITUÉ DANS LE SENS poussé — jamais la
- *  cible plus un delta. L'aimant est là pour l'angle QUELCONQUE : d'une vue de face (45°, restaurée
- *  d'une sauvegarde ou posée par la caméra libre DEV), une poussée horaire rend 90° et une poussée
- *  antihoraire 0° — le premier tour recale, il ne fait pas 135°. Angle mort DEV-seulement : une cible
- *  FINE posée par la caméra libre (`nudgeStageYaw`) à `k×90 − ε` a pour plancher `k` et rend `k×90`,
- *  soit une poussée sans déplacement visible ; la route du joueur n'a aucun appel fin. PUR. */
-export function snapYawTarget(courantDeg: number, cibleDeg: number, dir: 1 | -1): number {
-  const cranCourant = Math.round(courantDeg / CRAN_JEU_DEG);
-  const vise = dir === 1 ? Math.floor(cibleDeg / CRAN_JEU_DEG) + 1 : Math.ceil(cibleDeg / CRAN_JEU_DEG) - 1;
-  return Math.max(cranCourant - AVANCE_MAX_CRANS, Math.min(cranCourant + AVANCE_MAX_CRANS, vise)) * CRAN_JEU_DEG;
 }
 
 function notifier(): void {
   subs.forEach((f) => f());
 }
 
-/** UNE frame d'approche. L'ONGLET CACHÉ suspend `requestAnimationFrame` : au retour, `dt` vaut la
- *  durée entière de l'absence et le pas suivant pose `courant` sur `cible` — un SAUT, borné au retard
- *  maximal toléré (cf. `AVANCE_MAX_DEG`), donc d'un quart de tour au plus. */
+/** UNE frame, quel que soit le régime. Le mode décide ce qui avance ; `repos` arrête la boucle. */
 function frame(now: number): void {
   const dt = dernier ? now - dernier : 16;
   dernier = now;
-  courant = yawStep(courant, cible, dt);
-  notifier();
-  if (courant === cible) {
-    anime = false;
-    return;
+  if (mode === 'libre') {
+    courant += sens * VITESSE_LACET_DEG_S * (Math.min(Math.max(0, dt), DT_MAX_MS) / 1000);
+  } else if (mode === 'approche') {
+    courant = yawStep(courant, cible, dt);
+    if (courant === cible) mode = 'repos';
   }
+  notifier();
+  if (mode === 'repos') return;
   requestAnimationFrame(frame);
 }
 
-/** Pose la CIBLE et lance (ou relance) l'approche — le geste commun aux deux façons de viser. */
+/** Passe au régime `m` et s'assure qu'UNE boucle tourne (jamais deux). */
+function relancer(m: 'libre' | 'approche'): void {
+  const enVol = mode !== 'repos';
+  mode = m;
+  if (enVol) return;
+  dernier = 0;
+  requestAnimationFrame(frame);
+}
+
+/** Pose la CIBLE et lance (ou relance) l'approche — le geste commun aux deux poussées fines. */
 function courirVers(nouvelleCible: number): void {
   cible = nouvelleCible;
   if (typeof requestAnimationFrame !== 'function') { // hors navigateur : le lacet arrive tout de suite
     courant = cible;
+    mode = 'repos';
     notifier();
     return;
   }
-  if (anime) return;
-  anime = true;
-  dernier = 0;
-  requestAnimationFrame(frame);
+  relancer('approche');
 }
 
 /** Pousse le lacet de `deltaDeg` et lance (ou relance) l'approche. Vise un angle LIBRE : la caméra
@@ -143,17 +156,43 @@ export function nudgeStageYaw(deltaDeg: number): void {
   courirVers(yawTarget(courant, cible, deltaDeg));
 }
 
-/** AIMANTE le lacet au cran voisin (`snapYawTarget`) et lance l'approche : le geste de rotation du
- *  JOUEUR (Q/E, boutons d'orientation), qui ne connaît que les quatre vues diagonales (#1289). */
-export function snapStageYawToCran(dir: 1 | -1): void {
-  courirVers(snapYawTarget(courant, cible, dir));
+/** PAS FIN du joueur (appui bref sur Q/E, sur un bouton d'orientation) : `PAS_TAP_DEG` dans le sens
+ *  poussé, en glissant. Aucun aimant : deux pas font exactement deux pas. */
+export function pasYaw(dir: 1 | -1): void {
+  courirVers(yawTarget(courant, cible, dir * PAS_TAP_DEG));
 }
 
-/** Remet le lacet au cran. Une couture l'appelle : l'ENTRÉE DE SCÈNE (`startScene`/`transitionTo`,
- *  `state/store.ts` — une nouvelle carte se regarde depuis son cran). Les tests s'en servent pour
- *  repartir du cran. */
+/** Démarre le lacet MAINTENU dans le sens `dir` — il tourne jusqu'à `arreterLacet`.
+ *  Hors navigateur, aucune horloge de frames n'existe : le maintien ne peut pas s'intégrer (les
+ *  mesures du maintien fournissent leur harnais de frames). */
+export function demarrerLacet(dir: 1 | -1): void {
+  sens = dir;
+  if (typeof requestAnimationFrame !== 'function') return;
+  relancer('libre');
+}
+
+/** Arrête le lacet maintenu. L'angle reste TEL QUEL — aucun cran ne le rattrape. */
+export function arreterLacet(): void {
+  if (mode !== 'libre') return;
+  cible = courant;
+  mode = 'repos';
+}
+
+/** Pose le lacet à `deg` SANS animation : le glisser-tourner du pointeur, qui suit le doigt image par
+ *  image et n'a donc rien à rattraper. */
+export function poserYaw(deg: number): void {
+  cible = deg;
+  courant = deg;
+  mode = 'repos';
+  notifier();
+}
+
+/** Remet le lacet à son ANGLE INITIAL (0 = le cran diagonal d'ouverture). Une couture l'appelle :
+ *  l'ENTRÉE DE SCÈNE (`startScene`/`transitionTo`, `state/store.ts` — une nouvelle carte se regarde
+ *  depuis son cran). Les tests s'en servent pour repartir de cet angle. */
 export function resetStageYaw(): void {
   cible = 0;
   courant = 0;
+  mode = 'repos';
   notifier();
 }

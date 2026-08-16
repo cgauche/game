@@ -1,0 +1,156 @@
+/**
+ * #1176 — LE LACET DE LA CAMÉRA EST LIBRE. Ce qui se mesure ici est le geste RÉEL du joueur
+ * (`tournerCamera`/`relacherCamera`, source unique de Q/E et des boutons d'orientation) : un appui
+ * bref pousse d'un PAS FIN, un appui tenu fait tourner en CONTINU, et la caméra s'arrête là où le
+ * geste la laisse — aucun cran ne la rattrape.
+ *
+ * Le CRAN, lui, ne disparaît pas : il n'est plus une position de repos, c'est la QUANTIFICATION que
+ * lisent les memos lourds du rendu (`viewRot`/`rotAtYaw`). Et l'angle INITIAL d'une scène reste
+ * diagonal — une partie qui arriverait d'une vue de face repart du coin.
+ */
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { useGame } from './store';
+import { relacherCamera, tournerCamera } from './keybindings';
+import { PAS_TAP_DEG, SEUIL_MAINTIEN_MS, getStageYaw, resetStageYaw, rotAtYaw } from './stageYaw';
+import { readSlot, deleteSlot } from './saves';
+import { testScene } from '../scenes/test-fixture';
+
+/** Fake Storage minimal — l'environnement de test est `node` (pas de localStorage). */
+function fakeStorage(): Storage {
+  const m = new Map<string, string>();
+  return {
+    getItem: (k: string) => m.get(k) ?? null,
+    setItem: (k: string, v: string) => void m.set(k, String(v)),
+    removeItem: (k: string) => void m.delete(k),
+    clear: () => m.clear(),
+    key: (i: number) => [...m.keys()][i] ?? null,
+    get length() { return m.size; },
+  } as Storage;
+}
+
+/** Pilote la boucle de frames à la main : `requestAnimationFrame` met la frame EN ATTENTE, et le test
+ *  décide quand elle se joue et avec quel horodatage. */
+function harnaisDeFrames() {
+  let enAttente: FrameRequestCallback[] = [];
+  vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => enAttente.push(cb));
+  let horloge = 0;
+  return (n: number, dt = 16): void => {
+    for (let i = 0; i < n; i++) {
+      horloge += dt;
+      const cb = enAttente[enAttente.length - 1];
+      enAttente = [];
+      cb?.(horloge);
+    }
+  };
+}
+
+const g = useGame.getState;
+
+beforeEach(() => {
+  resetStageYaw();
+  useGame.setState({ camRot: 0, camEdge: false, camPan: { x: 0, y: 0 } });
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+  resetStageYaw();
+});
+
+describe('LE GESTE DU JOUEUR — appui bref = pas fin, appui tenu = rotation continue', () => {
+  it('un appui bref pousse de PAS_TAP_DEG, et le relâchement laisse la vue là', () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('requestAnimationFrame', undefined); // hors navigateur : la poussée arrive tout de suite
+    tournerCamera(g, 1);
+    expect(getStageYaw()).toBe(PAS_TAP_DEG);
+    relacherCamera();
+    vi.advanceTimersByTime(10 * SEUIL_MAINTIEN_MS); // le maintien a été désarmé : rien ne démarre
+    expect(getStageYaw()).toBe(PAS_TAP_DEG);
+    expect(g().camRot).toBe(0); // le cran du store ne bouge pas : c'est le LACET qui tourne
+  });
+
+  it('N appuis brefs valent N pas fins — la vue ne se recale sur aucun cran', () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('requestAnimationFrame', undefined);
+    for (let i = 0; i < 5; i++) { tournerCamera(g, 1); relacherCamera(); }
+    expect(getStageYaw()).toBe(5 * PAS_TAP_DEG);
+    expect(getStageYaw() % 90).not.toBe(0);
+    tournerCamera(g, -1);
+    relacherCamera();
+    expect(getStageYaw()).toBe(4 * PAS_TAP_DEG);
+  });
+
+  it('APPUI TENU : passé le seuil, la caméra tourne en continu, et s’arrête AU RELÂCHEMENT', () => {
+    vi.useFakeTimers();
+    const jouer = harnaisDeFrames();
+    tournerCamera(g, 1);
+    jouer(4); // le pas fin glisse
+    const apresLePas = getStageYaw();
+    expect(apresLePas).toBeGreaterThan(0);
+    expect(apresLePas).toBeLessThanOrEqual(PAS_TAP_DEG);
+
+    vi.advanceTimersByTime(SEUIL_MAINTIEN_MS); // la touche est TENUE : le maintien prend le relais
+    jouer(60);
+    const enRotation = getStageYaw();
+    expect(enRotation).toBeGreaterThan(50); // bien au-delà de ce qu'un pas fin atteindrait
+    expect(enRotation % 90).not.toBe(0);
+
+    relacherCamera();
+    jouer(60);
+    expect(getStageYaw()).toBe(enRotation); // le relâchement fige l'angle, rien ne le ramène
+  });
+});
+
+describe('LE CRAN — une QUANTIFICATION pour les memos du rendu, pas une position de repos', () => {
+  it('rotAtYaw rend le quart le plus proche du lacet parcouru', () => {
+    expect(rotAtYaw(0, 0)).toBe(0);
+    expect(rotAtYaw(0, 44)).toBe(0);
+    expect(rotAtYaw(0, 46)).toBe(1);
+    expect(rotAtYaw(0, 180)).toBe(2);
+    expect(rotAtYaw(1, 90)).toBe(2);
+    expect(rotAtYaw(0, -90)).toBe(3); // le cran reste dans [0,3] quel que soit le sens parcouru
+    expect(rotAtYaw(0, 720)).toBe(0);
+  });
+});
+
+describe('rotateCam — la rotation par CRAN de l’éditeur et des bancs', () => {
+  it('l’action de store avance d’un cran de 90°, camEdge jamais vrai, et la vue se RE-CENTRE (camPan)', () => {
+    useGame.setState({ camEdge: true, camPan: { x: 37, y: -12 } }); // vue de face héritée + décalage manuel
+    g().rotateCam(1);
+    expect(g().camRot).toBe(1);
+    expect(g().camEdge).toBe(false);
+    expect(g().camPan).toEqual({ x: 0, y: 0 }); // re-centrage conservé : sans lui, la vue reste « téléportée »
+    expect(getStageYaw()).toBe(0);
+  });
+
+  it('un tour entier dans les deux sens ne pose JAMAIS la vue de face', () => {
+    const crans: number[] = [];
+    for (let i = 0; i < 4; i++) { g().rotateCam(1); expect(g().camEdge).toBe(false); crans.push(g().camRot); }
+    expect(crans).toEqual([1, 2, 3, 0]);
+    for (let i = 0; i < 4; i++) { g().rotateCam(-1); expect(g().camEdge).toBe(false); }
+    expect(g().camRot).toBe(0);
+  });
+});
+
+describe('ANGLE INITIAL — une partie arrivée en vue de face repart d’un cran diagonal', () => {
+  it('une sauvegarde qui PORTE la vue de face (camEdge sérialisé) se recharge en vue de coin', () => {
+    (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
+    deleteSlot(1);
+    g().startScene(testScene);
+    useGame.setState({ camEdge: true, battle: null });
+    expect(g().saveGame(1)).toBe(true);
+    expect((readSlot(1)!.data as { camEdge?: boolean }).camEdge).toBe(true); // la save porte bien la vue de face
+
+    useGame.setState({ camEdge: true });
+    expect(g().loadGame(1)).toBe(true);
+    expect(g().camEdge).toBe(false);
+    deleteSlot(1);
+  });
+
+  it("l'entrée de scène (transitionTo) ramène la vue au cran diagonal", () => {
+    g().startScene(testScene);
+    useGame.setState({ camEdge: true });
+    g().transitionTo(testScene.id);
+    expect(g().camEdge).toBe(false);
+  });
+});
