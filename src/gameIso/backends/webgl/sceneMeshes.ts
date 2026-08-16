@@ -50,12 +50,12 @@ import { mountedPlanOpts, mountedRest, seatPlacement, seatRiderOnMount } from '.
 import { diagOnce } from '../../rig/devDiag';
 import { addPose } from '../../rig/poses';
 import { weaponRest } from '../../rig/anim/weaponClips';
-import { clipTotalMs, frameSampleMs, planPoseAt, rigPoseAtFrame, type ClipDef } from '../../rig/anim/actorAnimSelect';
+import { COLLAPSE_MS, clipTotalMs, easeOutCubic, frameSampleMs, planPoseAt, rigPoseAtFrame, type ClipDef } from '../../rig/anim/actorAnimSelect';
 import { isStructure } from '../../../engine/structures';
 import type { Combatant, Weapon } from '../../../engine/types';
 import { hasLeap } from '../../../engine/traits/dispatch';
 import { combatantRender, combatantTokenScale, entityRender, entityTokenScale, sceneEntityForRender, sizeTokenScale } from '../../sizeScale';
-import { groundStateOf, planGroundPose, rigGroundPose, type GroundState, type Pose } from '../../groundPose';
+import { RIG_GROUND_PIVOT, groundStateOf, planGroundPose, rigGroundPose, rigGroundTiltDeg, type GroundState, type Pose } from '../../groundPose';
 import { hash32 } from '../../detail/hash';
 import { entitySize } from '../../../state/spawn';
 import { sizeFootprint } from '../../../state/footprint';
@@ -928,6 +928,96 @@ function mountedSvg(
   };
 }
 
+/**
+ * BASCULE AU SOL d'un rig en BILLBOARD (#1334) — la rotation de tout le corps autour de ses pieds
+ * (`rigGroundTiltDeg` : 82° cadavre, 72° À Terre ; pivot `RIG_GROUND_PIVOT`), portée dans la boîte de
+ * rasterisation du sujet.
+ *
+ * SANS elle, un corps au sol ne reçoit que sa POSE d'os (`CORPSE_POSE`/`PRONE_POSE`) : membres
+ * écartés, mais corps DEBOUT. C'est ce qui se voyait à l'écran — un mis hors de combat planté sur ses
+ * jambes. La pose dit comment le corps s'affaisse ; la bascule dit qu'il est À TERRE.
+ *
+ * DEUX grandeurs se dérivent ici, et rien d'autre n'en décide :
+ *  - la BOÎTE : la rotation sort le corps d'une boîte de `BB_W`×`BB_H` (tête à x≈208 à 82°, et une
+ *    boîte tournée de 20° est HAUTE de 182), donc la boîte du sujet prend le BALAYAGE ENTIER de la
+ *    chute — la boîte est UNE pour toutes les cellules d'une planche, et des bornes prises au seul
+ *    angle final trancheraient les frames du milieu. Agrandir la boîte n'agrandit PAS le corps :
+ *    l'échelle art→monde du quad se prend sur la boîte (`subjectQuad`), donc un pixel de boîte garde
+ *    sa taille monde et la boîte ne gagne que du ciel et des marges ;
+ *  - le PLACEMENT : le corps basculé se recentre sur la case et se POSE sur le bas de la boîte —
+ *    c'est-à-dire sur l'ancre du quad, c'est-à-dire au sol. À bascule nulle, la transformation n'est
+ *    que ce placement : la première cellule d'une chute reste EXACTEMENT le corps debout.
+ *
+ * Le SENS suit le corps : une vue miroitée bascule de l'autre côté (`resolveRig` a déjà retourné les
+ * os), sans quoi un profil et son miroir tomberaient du même côté de l'écran.
+ */
+export interface RigGroundTilt {
+  /** Boîte (px) qui contient le corps sur TOUTE la bascule. */
+  boxW: number;
+  boxH: number;
+  /** Transformation SVG du corps à la fraction `frac` de la bascule (0 = debout, 1 = posé). */
+  at: (frac: number, mirror: boolean) => string;
+}
+
+/** Échantillons du balayage — les bornes d'une rotation ne tombent pas forcément à l'angle final (le
+ *  coin le plus lointain passe par son maximum d'abscisse en route, et la boîte tournée est plus
+ *  HAUTE à mi-chemin qu'à ses deux bouts). */
+const TILT_ECHANTILLONS = 32;
+
+/** Boîte rasterisée du rig, tournée de `deg` autour du pivot des pieds. */
+function tiltBounds(deg: number): { xmin: number; xmax: number; ymin: number; ymax: number } {
+  const a = (deg * Math.PI) / 180;
+  const cos = Math.cos(a);
+  const sin = Math.sin(a);
+  let xmin = Infinity;
+  let xmax = -Infinity;
+  let ymin = Infinity;
+  let ymax = -Infinity;
+  for (const [x, y] of [[0, 0], [BB_W, 0], [0, BB_H], [BB_W, BB_H]] as const) {
+    const dx = x - RIG_GROUND_PIVOT.x;
+    const dy = y - RIG_GROUND_PIVOT.y;
+    const px = RIG_GROUND_PIVOT.x + dx * cos - dy * sin;
+    const py = RIG_GROUND_PIVOT.y + dx * sin + dy * cos;
+    xmin = Math.min(xmin, px);
+    xmax = Math.max(xmax, px);
+    ymin = Math.min(ymin, py);
+    ymax = Math.max(ymax, py);
+  }
+  return { xmin, xmax, ymin, ymax };
+}
+
+/** Arrondi d'affichage des transformations (le fragment est une clé de cache : il doit être STABLE). */
+const r3 = (n: number): number => Math.round(n * 1000) / 1000;
+
+export function rigGroundTilt(ground: Exclude<GroundState, null>): RigGroundTilt {
+  const total = rigGroundTiltDeg(ground);
+  let boxW = BB_W;
+  let boxH = BB_H;
+  for (let i = 0; i <= TILT_ECHANTILLONS; i++) {
+    const b = tiltBounds((total * i) / TILT_ECHANTILLONS);
+    boxW = Math.max(boxW, Math.ceil(b.xmax - b.xmin));
+    boxH = Math.max(boxH, Math.ceil(b.ymax - b.ymin));
+  }
+  return {
+    boxW,
+    boxH,
+    at: (frac, mirror) => {
+      const deg = total * Math.max(0, Math.min(1, frac)) * (mirror ? -1 : 1);
+      const b = tiltBounds(deg);
+      const dx = boxW / 2 - (b.xmin + b.xmax) / 2;
+      const dy = boxH - b.ymax;
+      return `translate(${r3(dx)},${r3(dy)}) rotate(${r3(deg)},${RIG_GROUND_PIVOT.x},${RIG_GROUND_PIVOT.y})`;
+    },
+  };
+}
+
+/** Fraction de bascule à la frame `k` d'une planche d'effondrement de `n` cellules — la MÊME courbe
+ *  et le MÊME instant que la pose d'os de cette cellule (`rigPoseAtFrame` → `rigCollapsePoseAt`),
+ *  sinon le corps s'affaisse à une cadence et se couche à une autre. */
+function tiltFracAtFrame(k: number, n: number): number {
+  return easeOutCubic(frameSampleMs(k, n, COLLAPSE_MS) / COLLAPSE_MS);
+}
+
 /** Billboards des ACTEURS (héros, ennemis, alliés) — le pendant volumique de ce que le stage affine
  *  monte en corps React. Les entrées de dessin sont celles d'`actorDrawInputs` (classifieur de corps,
  *  profil d'ennemi, équipement, garde-robe, calques d'état, échelle de jeton), l'ÉTAT AU SOL passe par
@@ -935,11 +1025,9 @@ function mountedSvg(
  *  `personnageSvg` ci-dessus. Une structure de siège est sautée : elle se rend sur son arête, pas en
  *  jeton (cf. `tokenBodyKind`).
  *
- *  ÉCART RÉSIDUEL MESURÉ (#1176) : le corps au sol prend bien sa POSE couchée, mais pas la BASCULE du
- *  stage (`rigGroundTiltDeg` : 82° cadavre / 72° À Terre). Cette rotation autour des pieds (60,150)
- *  envoie la tête d'un rig à x≈208 dans une boîte de rasterisation large de 120 : le corps y serait
- *  tranché. La porter demande une boîte de sujet et un quad ancrés autrement (largeur ET décalage
- *  d'ancre) — un chantier de billboard, pas un réglage. */
+ *  La BASCULE d'un corps au sol y est portée par `rigGroundTilt` (#1334) : un hors de combat est À
+ *  TERRE, et la pose d'os seule ne le couche pas — un rig sous `CORPSE_POSE` sans rotation reste
+ *  DEBOUT, membres écartés (mesuré à l'écran : un Gobelin mis hors de combat restait planté). */
 export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt: number, tintAt: TintAt): BillboardSubject[] {
   const defs = `<defs>${DEFS}</defs>`;
   const out: BillboardSubject[] = [];
@@ -961,20 +1049,33 @@ export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt:
     // l'autre ne sort d'ici : l'écran ne connaît que des gestes et des rangs de frame.
     let frameAt: BillboardSubject['frameSvg'] = undefined;
     let voie: SubjectAnim['voie'] | null = null;
+    // BOÎTE de rasterisation du sujet : la canonique, agrandie quand un rig au sol BASCULE (#1334).
+    let boxW = BB_W;
+    let boxH = BB_H;
     if (!draw && inputs.rig) {
       const { appearance, equip, tenue, overlays } = inputs.rig;
       const couché = rigGroundPose(ground);
       const hold = weaponRest(mainWeaponOf(equip));
-      const drawAt = (view: View, mirror: boolean, pose: Pose) =>
-        bonesToSvg(resolveRig(appearance, equip, pose, tenue, view, overlays, mirror));
-      draw = (view, mirror) => drawAt(view, mirror, couché ?? {});
+      // BASCULE (#1334) : un corps au sol se couche pour de bon. Elle appartient au SUJET (sa boîte
+      // en dépend), et chaque fragment la porte — y compris à fraction nulle, où elle n'est que le
+      // recentrage dans la boîte élargie.
+      const bascule = ground ? rigGroundTilt(ground) : null;
+      if (bascule) {
+        boxW = bascule.boxW;
+        boxH = bascule.boxH;
+      }
+      const drawAt = (view: View, mirror: boolean, pose: Pose, frac = 0) => {
+        const body = bonesToSvg(resolveRig(appearance, equip, pose, tenue, view, overlays, mirror));
+        return bascule ? `<g transform="${bascule.at(frac, mirror)}">${body}</g>` : body;
+      };
+      draw = (view, mirror) => drawAt(view, mirror, couché ?? {}, 1);
       voie = 'rig';
       // PRISE D'ARME composée à CHAQUE frame, comme le jeton affine (`RigToken`) : la pose de geste
       // seule dessine un corps qui a lâché sa garde.
       frameAt = (view, mirror, def, k, n, o) =>
         def.voie === 'rig'
-          ? drawAt(view, mirror, addPose(hold, rigPoseAtFrame(def, k, n, o?.ground)))
-          : drawAt(view, mirror, couché ?? {});
+          ? drawAt(view, mirror, addPose(hold, rigPoseAtFrame(def, k, n, o?.ground)), o?.ground ? tiltFracAtFrame(k, n) : 0)
+          : drawAt(view, mirror, couché ?? {}, 1);
     } else if (!draw) {
       const plan = planById(r.plan);
       if (plan) {
@@ -1017,7 +1118,7 @@ export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt:
       // glisse : un acteur est un objet du système de jeu, posé sur une case, et son quad porte UNE
       // couleur. Le champ continu est la matière du MONDE, qui, lui, a des sommets à échantillonner.
       tint: tintAt(Math.round(x), Math.round(y), z),
-      box: monté?.box ?? { w: BB_W, h: BB_H },
+      box: monté?.box ?? { w: boxW, h: boxH },
       svg: (view, mirror) => defs + trace(view, mirror),
       ...(traceAt ? { frameSvg: (view, mirror, def, k, n, o) => defs + traceAt(view, mirror, def, k, n, o) } : {}),
       // CE QUE LE FLIPBOOK DOIT SAVOIR DU CORPS : sa voie, son état au sol, et — pour un gabarit — son
@@ -1437,17 +1538,33 @@ export function wantsContactShadow(kind: BillboardKind, lit: boolean): boolean {
 
 /** Décollement (m) du disque d'ombre au-dessus du sol qui le porte. */
 export const CONTACT_SHADOW_LIFT_M = 0.02;
-/** Rayon de l'ombre de contact, en part de la LARGEUR du quad du sujet. */
+/** Rayon de l'ombre de contact, en part de la largeur CANONIQUE du sujet (`contactShadowWidthM`). */
 export const CONTACT_SHADOW_RADIUS_K = 0.35;
 export const CONTACT_SHADOW_OPACITY = 0.28;
 
+/** Largeur (m) sur laquelle se taille le socle d'un sujet : celle qu'aurait sa boîte DEBOUT — `BB_W`
+ *  ramené au monde par la MÊME chaîne d'échelle que le quad (`subjectQuad` : un pixel de boîte vaut
+ *  `heightM / box.h` mètres). La boîte d'ART courante ne convient pas : la chute la BALAIE (193×193
+ *  pour un corps au sol contre 120×150 debout), et le disque du mort sortirait ×1,61 plus large que
+ *  celui du même sujet vivant à côté — alors qu'il est centré sur les pieds. Un couple MONTÉ n'y perd
+ *  rien : `mountedSvg` ne hausse que la HAUTEUR de sa boîte (`box.w === BB_W`), sa largeur de socle
+ *  était déjà canonique. */
+export function contactShadowWidthM(
+  sub: Pick<BillboardSubject, 'box'>,
+  quad: { heightM: number },
+): number {
+  return (quad.heightM / sub.box.h) * BB_W;
+}
+
 /** Ombre de CONTACT d'un billboard : un disque sombre plaqué au sol, à l'aplomb EXACT de l'ancre pieds
- *  (mêmes x/z que le sujet — un décalage y laisse une ellipse orpheline à côté du personnage). */
+ *  (mêmes x/z que le sujet — un décalage y laisse une ellipse orpheline à côté du personnage). Il ne
+ *  prend PAS la largeur du quad : le sujet et son quad entrent entiers, la largeur du socle se dérive
+ *  ici (`contactShadowWidthM`) — aucun appelant n'a de largeur à choisir. */
 export function contactShadow(
-  anchor: THREE.Vector3,
-  widthM: number,
+  sub: Pick<BillboardSubject, 'anchor' | 'box'>,
+  quad: { heightM: number },
 ): THREE.Mesh<THREE.CircleGeometry, THREE.MeshBasicMaterial> {
-  const geo = new THREE.CircleGeometry(widthM * CONTACT_SHADOW_RADIUS_K, 24);
+  const geo = new THREE.CircleGeometry(contactShadowWidthM(sub, quad) * CONTACT_SHADOW_RADIUS_K, 24);
   const mat = new THREE.MeshBasicMaterial({
     color: 0x000000,
     transparent: true,
@@ -1456,7 +1573,7 @@ export function contactShadow(
   });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.rotation.x = -Math.PI / 2;
-  poseContactShadow(mesh, anchor);
+  poseContactShadow(mesh, sub.anchor);
   return mesh;
 }
 
