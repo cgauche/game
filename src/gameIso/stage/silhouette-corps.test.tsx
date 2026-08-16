@@ -276,7 +276,9 @@ describe('Corps à travers les murs — ce que le FRAGMENT porte (#1297 LOT C)',
   it('APLAT : la teinte d’équipe REMPLACE le texel, dont seul l’alpha survit', () => {
     const b = board('h1');
     const { src } = fragment(silhouetteMaterial(b.material, ENEMY_RING));
-    const map = src.indexOf('#include <map_fragment>');
+    // Le corps de `map_fragment` est EXPANSÉ à l'injection (#1176, L3 : la cellule de flipbook s'y
+    // échantillonne) — l'ancre est donc le texel lui-même, plus la directive d'inclusion.
+    const map = src.indexOf('diffuseColor *= sampledDiffuseColor;');
     const aplat = src.indexOf('diffuseColor.rgb = diffuse;');
     expect(map).toBeGreaterThanOrEqual(0);
     // Après le texel : `map_fragment` MULTIPLIE, donc l'écraser avant ne servirait à rien.

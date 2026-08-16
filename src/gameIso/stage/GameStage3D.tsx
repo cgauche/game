@@ -77,14 +77,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { freeYaw, type Dims, type Rot } from '../../geometry/iso';
 import { heightAt, type Scene } from '../../state/scene';
-import { DIR8_ORDER, type Dir8 } from '../../state/dir8';
+import { DIR8_DELTA, DIR8_ORDER, type Dir8 } from '../../state/dir8';
 import { affineCamera, povCamera } from '../backends/webgl/cameras';
 import { dir8Basis, fogCurveOf, povDepth } from '../pov/camera';
 import { pxPerM } from '../backends/webgl/worldTris';
 import {
   billboardTextureKey,
   billboardView,
-  rasterPxHeight,
   subjectQuad,
   type BillboardCamera,
 } from '../backends/webgl/billboardMath';
@@ -115,7 +114,57 @@ import {
   type BillboardSubject,
 } from '../backends/webgl/sceneMeshes';
 import { memoByRefDeps } from '../../state/sceneMemo';
-import { AUCUN_CHROME, attachBodySilhouette, billboardMaterial, poseBoards, type Board, type ChromeAt, type FrameCamera, type GlideAt } from './boardPose';
+import {
+  AUCUN_CHROME,
+  DPR_PLAFOND,
+  atlasFrames,
+  atlasPxHeight,
+  attachBodySilhouette,
+  billboardMaterial,
+  boardProjectedPx,
+  boardTrackId,
+  frameIndexAt,
+  palierAtlas,
+  poseBoards,
+  writeBoardFrames,
+  type BakeAsk,
+  type Board,
+  type ChromeAt,
+  type FrameCamera,
+  type FramePick,
+  type GlideAt,
+} from './boardPose';
+import {
+  PRIORITE_RECHAUFFAGE,
+  PRIORITE_VUE_COURANTE,
+  atlasKey,
+  bakeAtlas,
+  enqueueBake,
+  getCachedAtlas,
+  setAtlasPins,
+  type BakedAtlas,
+} from '../backends/webgl/atlasBake';
+import { animCtxOf, animNow, installAnimTracks, tracksRef } from '../fx/animTracks';
+import {
+  COLLAPSE_MS,
+  clipTotalMs,
+  planAmbientDef,
+  planAttackDef,
+  planDyingDef,
+  planFlinchDef,
+  planRestDef,
+  planWalkDef,
+  rigAmbientDef,
+  rigAttackDef,
+  rigDefenseDef,
+  rigHitDef,
+  rigIdleDef,
+  rigWalkDef,
+  type ClipDef,
+  type RigClipDef,
+  type RigSelectCtx,
+} from '../rig/anim/actorAnimSelect';
+import type { View } from '../rig/facing';
 import { buildGroundAccentMeshes, maskGroundAccents, sceneGroundAccents, type SceneGroundAccent } from '../backends/webgl/groundAccents';
 import {
   HIGHLIGHT_SLOTS,
@@ -361,10 +410,152 @@ export function povArtRot(facing: Dir8): Rot {
   return (Math.floor(povYawDeg(facing) / 90) % 4) as Rot;
 }
 
+// ————————————————————————————————————————————————————————————————
+// FLIPBOOK des sujets à UN corps (#1176, L3/L4) — ce que l'écran CUIT, et ce qu'il CHOISIT par image
+// ————————————————————————————————————————————————————————————————
+//
+// L'écran ne lit AUCUN store et ne connaît AUCUN `BodyPlan` : la voie de corps, l'état au sol, le bond
+// et l'ambiance authorée voyagent avec le sujet (`BillboardSubject.anim`), l'arme tenue lui vient du
+// registre de pistes (`fx/animTracks.animCtxOf`), et le DESSIN d'une frame reste derrière
+// `BillboardSubject.frameSvg`. Le reste (planche, cellule, palier) se dérive des boards et de la caméra.
+//
+// DEUX populations jouent : les COMBATTANTS (`cid` — marche, gestes de combat, effondrement) et les
+// FIGURANTS à ambiance authorée (`eid`, `SceneEntity.anim` — une boucle, sur l'horloge du registre).
+// Le DÉCOR n'entre pas : son sujet n'a ni identité de piste ni couture de frame.
+
+/** Un sujet à flipbook : de quoi CUIRE ses planches et CHOISIR sa cellule. */
+interface FlipbookSujet {
+  sub: BillboardSubject;
+  /** Vue/miroir du MONTAGE — le repli quand la vue du segment de marche n'est pas cuite. */
+  view: View;
+  mirror: boolean;
+  /** Palier de cuisson du montage (px, rapport de pixels du rendu compris). */
+  pxHeight: number;
+  /** Voie de corps : elle décide du VOCABULAIRE de gestes (clips bipèdes / modes de gabarit). */
+  voie: 'rig' | 'plan';
+  rig: RigSelectCtx;
+  /** Marche par BOND d'un gabarit (`SubjectAnim.leap`). */
+  leap?: boolean;
+  /** Geste d'AMBIANCE authoré du figurant, quand il en joue un — il n'a alors ni marche ni piste. */
+  ambient?: ClipDef;
+  /** L'acteur est-il connu du résolveur du registre (donc ENRÔLÉ dans un combat) ? */
+  enrolé: boolean;
+  /** ORIGINE DE L'EFFONDREMENT sur l'horloge du registre : l'instant où l'état au sol est APPARU pour
+   *  cet acteur (`chutesRef`, par id, survit aux rebuilds). Le board se reconstruit à chaque pas commité
+   *  et à chaque quart de tour : pris au montage du board, un quart de tour rejouerait la chute. */
+  chute: number;
+}
+
+/** Une planche à cuire : sa clé et la recette de ses frames. */
+interface Recette {
+  key: string;
+  s: FlipbookSujet;
+  def: ClipDef;
+  view: View;
+  mirror: boolean;
+  pxHeight: number;
+  frames: number;
+  /** Effondrement d'un BIPÈDE : l'état au sol visé (le geste n'est pas un clip, c'est une
+   *  interpolation). Un gabarit porte le sien dans son def (`planDyingDef`). */
+  ground?: 'corpse' | 'prone';
+}
+
+/** Nombre de frames de l'effondrement — même cadence que les clips, sur `COLLAPSE_MS`. */
+const FRAMES_EFFONDREMENT = atlasFrames({ voie: 'plan', key: 'rig:collapse', kind: 'dying', durationMs: COLLAPSE_MS });
+
+/** CLÉ de la planche d'un geste — la LECTURE d'une image : elle répond « cette planche est-elle
+ *  servie ? » sans rien inscrire ni construire de recette. La clé s'y compose une seule fois, et de la
+ *  MÊME façon pour les trois usages (lecture, cuisson, choix d'image) — deux compositions divergentes
+ *  ne se rateraient qu'au cache. */
+function clePlanche(s: FlipbookSujet, def: ClipDef, view: View, mirror: boolean, pxHeight: number, ground?: 'corpse' | 'prone'): { key: string; frames: number } {
+  const frames = ground ? FRAMES_EFFONDREMENT : atlasFrames(def);
+  const parts = { signature: s.sub.identity, clip: def.key, view, mirror, pxHeight, frames };
+  return { key: ground ? atlasKey({ ...parts, ground }) : atlasKey(parts), frames };
+}
+
+/** Recette d'une planche : ce qu'il faut pour la CUIRE. Une image n'en construit que pour la vue
+ *  qu'elle retient — la vue candidate, elle, ne passe que par la clé. */
+function recette(s: FlipbookSujet, def: ClipDef, view: View, mirror: boolean, pxHeight: number, ground?: 'corpse' | 'prone'): Recette {
+  const { key, frames } = clePlanche(s, def, view, mirror, pxHeight, ground);
+  return { key, s, def, view, mirror, pxHeight, frames, ground };
+}
+
+/** Durée JOUÉE d'une recette : celle de l'effondrement quand elle en est un, sinon celle du geste. */
+function dureeDeRecette(r: Recette): number {
+  return r.ground ? COLLAPSE_MS : clipTotalMs(r.def);
+}
+
+/** Cuisson d'une planche par la file cadencée du cuiseur — mémoïsée sur sa clé. Le DESSIN d'une frame
+ *  appartient au SUJET (`frameSvg`) : ni la pose, ni la prise d'arme, ni le gabarit n'entrent ici. */
+function cuire(r: Recette, priorité: number): Promise<BakedAtlas> {
+  return enqueueBake(
+    r.key,
+    (p) => bakeAtlas(
+      (k) => r.s.sub.frameSvg!(r.view, r.mirror, r.def, k, r.frames, r.ground ? { ground: r.ground } : undefined),
+      r.s.sub.box,
+      r.frames,
+      r.pxHeight,
+      { priority: p },
+    ),
+    priorité,
+  );
+}
+
+/** Les trois vues d'un corps, et le profil MIROIR — le réchauffage d'un quart de tour. */
+const VUES_REGARD: readonly { view: View; mirror: boolean }[] = [
+  { view: 'front', mirror: false },
+  { view: 'back', mirror: false },
+  { view: 'profile', mirror: false },
+  { view: 'profile', mirror: true },
+];
+
+/** Le geste d'ambiance d'un acteur au repos — un par VOIE de corps (respiration du bipède, idle du
+ *  gabarit : battement d'ailes, ondulation, dodelinement). */
+const REPOS = rigIdleDef();
+const REPOS_PLAN = planRestDef();
+
+/** Caméra de billboard du regard courant — la MÊME dérivation qu'au montage des quads : en première
+ *  personne le CAP du meneur, sur la vue de plateau le cran d'art. */
+function bbCameraDe(povFacing: Dir8 | null, camRot: Rot): BillboardCamera {
+  return povFacing ? { kind: 'perspective', ...dir8Basis(povFacing) } : { kind: 'ortho', yawDeg: camRot * 90 };
+}
+
+/** Orientation MONDE la plus proche d'un déplacement (dx = est, dz = sud, repère de `walkGlideM`) —
+ *  `null` si le pas est nul. C'est le SEGMENT que le marcheur suit à cette image, jamais son cap
+ *  d'authoring : un chemin qui tourne changerait sinon de vue seulement à l'arrivée. */
+function dir8DuSegment(dx: number, dz: number): Dir8 | null {
+  const n = Math.hypot(dx, dz);
+  if (n < 1e-6) return null;
+  let best: Dir8 | null = null;
+  let score = -Infinity;
+  for (const d of DIR8_ORDER) {
+    const delta = DIR8_DELTA[d];
+    const s = (delta.gx * dx + delta.gy * dz) / n;
+    if (s > score) { score = s; best = d; }
+  }
+  return best;
+}
+
 export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim, decalque, spritePicking = true }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
+  // FLIPBOOK (#1176, L3) — l'état que la boucle d'image lit et écrit, hors de tout rendu React.
+  /** Les acteurs à flipbook montés, par `cid` — écrit au montage des quads. */
+  const flipRef = useRef(new Map<string, FlipbookSujet>());
+  /** Palier de cuisson COURANT par `cid` : il monte quand le quad grossit, redescend sous hystérésis. */
+  const paliersRef = useRef(new Map<string, number>());
+  /** ENTRÉE AU SOL par acteur : l'instant où son état au sol est apparu. Cette réf SURVIT au rebuild des
+   *  boards (c'est tout son office) et se purge des acteurs qui se relèvent ou quittent la scène. */
+  const chutesRef = useRef(new Map<string, number>());
+  /** Glissement de l'image PRÉCÉDENTE : sa dérivée est la direction du segment de marche en cours. */
+  const glissePrecRef = useRef(new Map<string, { dx: number; dy: number; dz: number }>());
+  /** Recettes des planches réclamées par une image — ce que la demande différée retrouve. */
+  const recettesRef = useRef(new Map<string, Recette>());
+  /** Demandes de cuisson déjà postées : une image n'en repose jamais une seconde. */
+  const demandéesRef = useRef(new Set<string>());
+  /** Clés à ÉPINGLER (planches des boards montés) — jamais évincées tant qu'elles sont à l'écran. */
+  const épinglesRef = useRef(new Map<string, string[]>());
   const cameraRef = useRef<THREE.Camera | null>(null);
   const pov = frame.mode === 'pov';
   // STYLE DE CE REGARD (#1176, P3-5, `viewPolicy`) : ce que la vue choisit de MONTRER — les nappes de
@@ -613,6 +804,113 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   const dernierPas = useRef(0); // horodatage du dernier pas de chute
   const dernierRendu = useRef(0); // horodatage de la dernière frame dessinée
 
+  /**
+   * LA FRAME QU'UN BOARD DOIT MONTRER, à l'instant de l'image (#1176, L3/L4).
+   *
+   * QUATRE sources, dans cet ordre : l'AMBIANCE authorée d'un figurant (il ne fait que ça), sinon
+   * l'EFFONDREMENT quand le corps est au sol, sinon la MARCHE (le sujet glisse), sinon la PISTE DE
+   * GESTE du registre (attaque/parade/touché), sinon le repos. Rien n'est piloté par transition —
+   * l'état courant se recalcule à chaque image et l'écrivain ne touche au matériau qu'à l'écart.
+   *
+   * Les GESTES se prennent dans le vocabulaire de la VOIE du corps : clips bipèdes (`rigWalkDef`…) ou
+   * modes de gabarit (`planWalkDef`…). Un def de l'autre voie ne se joue pas — il ne se dessinerait
+   * pas non plus (`frameSvg`).
+   *
+   * PHASE DE MARCHE : elle se compte sur le SOL, pas sur une horloge — la distance qu'il reste à
+   * parcourir (`glide`, mètres) donne la fraction de cycle. Deux marcheurs à la même vitesse battent
+   * donc du même pas, et une image sautée ne décale pas les appuis.
+   *
+   * ORIENTATION PAR SEGMENT : la vue du marcheur se reprend sur la DIRECTION du pas en cours (dérivée
+   * du glissement entre deux images), et le swap n'a lieu QUE si cette planche-là est déjà cuite.
+   * NON-DÉTERMINISME ASSUMÉ : à cache froid, le marcheur garde la vue de son montage jusqu'à ce que la
+   * cuisson rattrape — le rendu d'une image dépend donc de ce que le cuiseur a eu le temps de servir.
+   */
+  const choisirFrame = (b: Board, camera: FrameCamera, hCanevas: number): FramePick | null => {
+    const id = boardTrackId(b.sub);
+    const s = id ? flipRef.current.get(id) : undefined;
+    if (!id || !s) return null;
+    // PALIER : la hauteur PROJETÉE décide, sous hystérésis — un quad qui grossit réclame la planche du
+    // dessus, et ne redescend qu'une fois nettement plus petit (sinon il oscille sur la frontière).
+    const courant = paliersRef.current.get(id) ?? s.pxHeight;
+    const px = palierAtlas(courant, boardProjectedPx(b, camera, hCanevas, window.devicePixelRatio || 1));
+    if (px !== courant) paliersRef.current.set(id, px);
+    // LECTURE et ÉCRITURE séparées : `servie` répond « cette planche est-elle au cache ? » sans rien
+    // inscrire — la vue candidate d'un segment de marche est examinée à CHAQUE image, et une seule des
+    // deux est retenue. `poser` n'entre en jeu que pour la planche réellement choisie.
+    const servie = (def: ClipDef, v: View, m: boolean): boolean => !!getCachedAtlas(clePlanche(s, def, v, m, px).key);
+    const poser = (def: ClipDef, v: View, m: boolean, ground?: 'corpse' | 'prone'): Recette => {
+      const r = recette(s, def, v, m, px, ground);
+      recettesRef.current.set(r.key, r);
+      return r;
+    };
+
+    // AMBIANCE AUTHORÉE : le figurant BOUCLE sur l'horloge du registre. Aucune piste, aucun glissement
+    // (une entité de scène ne marche pas), aucune orientation par segment.
+    if (s.ambient) {
+      const r = poser(s.ambient, s.view, s.mirror);
+      return { key: r.key, frame: frameIndexAt(animNow(), dureeDeRecette(r), r.frames, true) };
+    }
+
+    const g = anim ? anim.glide(id) : null;
+    const précédent = glissePrecRef.current.get(id);
+    if (g) glissePrecRef.current.set(id, g);
+    else glissePrecRef.current.delete(id);
+
+    let def: ClipDef | null = null;
+    let elapsed = 0;
+    let loop = true;
+    // EFFONDREMENT : il se compte depuis l'ENTRÉE AU SOL de l'acteur (`chutesRef`), pas depuis le
+    // montage de son board — celui-ci se reconstruit à chaque quart de tour. Geste joué une fois : la
+    // dernière cellule est la pose au sol, et elle y reste.
+    const ground = s.sub.anim?.ground;
+    if (ground) {
+      def = s.voie === 'plan' ? planDyingDef(ground) : REPOS;
+      elapsed = animNow() - s.chute;
+      loop = false;
+    } else if (g) {
+      def = s.voie === 'plan' ? planWalkDef(s.leap) : rigWalkDef(s.rig);
+      const cycles = Math.hypot(g.dx, g.dz) / mpt / 2; // un cycle de marche = deux cases
+      const phase = ((-cycles % 1) + 1) % 1;
+      elapsed = def ? phase * clipTotalMs(def) : 0;
+    } else {
+      const piste = tracksRef().get(id);
+      if (piste) {
+        def = piste.def;
+        elapsed = animNow() - piste.start;
+        loop = piste.def.voie === 'rig' ? !!piste.def.clip.loop : !!piste.def.loop;
+      } else {
+        def = s.voie === 'plan' ? REPOS_PLAN : REPOS;
+        elapsed = animNow();
+      }
+    }
+    if (!def || def.voie !== s.voie) return null;
+
+    let { view, mirror } = s;
+    if (g && précédent) {
+      const d8 = dir8DuSegment(g.dx - précédent.dx, g.dz - précédent.dz);
+      if (d8) {
+        const vm = billboardView(bbCameraDe(povFacing, camRot), d8);
+        if (servie(def, vm.view, vm.mirror)) ({ view, mirror } = vm);
+      }
+    }
+    const r = poser(def, view, mirror, ground);
+    return { key: r.key, frame: frameIndexAt(elapsed, dureeDeRecette(r), r.frames, loop) };
+  };
+
+  /** Cuisson d'une planche qu'une image a réclamée sans la trouver — DIFFÉRÉE hors de l'image (la
+   *  file du cuiseur est déjà cadencée, mais poster depuis la boucle y allouerait par board). */
+  const demanderCuisson: BakeAsk = (pick) => {
+    if (demandéesRef.current.has(pick.key)) return;
+    const r = recettesRef.current.get(pick.key);
+    if (!r) return;
+    demandéesRef.current.add(pick.key);
+    queueMicrotask(() => {
+      void cuire(r, PRIORITE_VUE_COURANTE)
+        .then(() => dessinerRef.current())
+        .catch(() => undefined)
+        .finally(() => demandéesRef.current.delete(pick.key));
+    });
+  };
   /** UNE frame : cadre le canevas sur son élément, dérive la caméra de l'intention du stage, re-pose les
    *  quads face à elle (glissement de marche compris), dessine. Rien n'y est construit : cette passe est
    *  celle que la MARCHE rejoue soixante fois par seconde, hors de tout rendu React (P2-4). */
@@ -672,6 +970,10 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       slots: flaquesÉcrites,
       surfaceLuminance: lumière.surfaceLuminance,
     }, chromeAt ?? AUCUN_CHROME);
+    // FLIPBOOK (#1176, L3) : la CELLULE que chaque quad montre à cette image. Passe sœur de la pose,
+    // au même endroit et sur les mêmes boards — deux écritures de matériau, aucune rasterisation. La
+    // planche absente du cache est DEMANDÉE, jamais attendue : le quad garde la sienne d'ici là.
+    writeBoardFrames(boardsRef.current, (b) => choisirFrame(b, camera, h), getCachedAtlas, demanderCuisson);
     // MARQUES DYNAMIQUES (P3-0d) et HALOS D'INTERACTION (P3-0g) : ils suivent la MÊME glisse que les
     // quads, à la même frame et sur le même canal — un lien d'engagement posé à un rendu React
     // attendrait le marcheur à l'arrivée. Marques de sol et halos se mesurent à l'ÉCRAN d'une vue
@@ -902,6 +1204,13 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     return () => setSpritePicker(null);
   }, [pov, spritePicking]);
 
+  // REGISTRE DE PISTES D'ANIMATION (#1176, L3) : l'écran monté INSTALLE le registre — c'est lui qui
+  // porte le geste de chaque acteur et qui émet `ANIM_IMPACT` sur son horloge propre. Installé ici, et
+  // non chez un hôte de vue, parce que TOUS les hôtes du monde volumique passent par cet écran.
+  // Le registre lui-même dédoublonne abonnements et horloge : deux écrans montés côte à côte
+  // n'émettent pas deux fois (`fx/animTracks.installAnimTracks`).
+  useEffect(() => installAnimTracks(), []);
+
   // Renderer UNIQUE (le canevas ne se remonte jamais).
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -919,7 +1228,9 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       signalerWebglRefusé();
       return;
     }
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    // Le PLAFOND vit avec le palier de cuisson des flipbooks (`boardPose.DPR_PLAFOND`) : le canevas se
+    // peint en pixels de DISPOSITIF, et une planche cuite en pixels CSS y serait sous-résolue d'autant.
+    renderer.setPixelRatio(Math.min(DPR_PLAFOND, window.devicePixelRatio || 1));
     renderer.shadowMap.enabled = true;
     // La carte d'ombre ne se recuit PAS à chaque frame : rien ne la périme tant que ni le soleil ni un
     // casteur n'ont bougé, et la boucle de marche (P2-4) rend soixante fois par seconde. C'est
@@ -1133,10 +1444,144 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // discrets, repère `dir8Basis`), sur la vue de plateau le cran d'art. Le repère se prend au cap et
     // NON à la caméra de la frame : fwd/right recalculés par frame recuiraient toute la planche de
     // textures à chaque frame (le piège que documente `artRot`).
-    const bbCam: BillboardCamera = povFacing
-      ? { kind: 'perspective', ...dir8Basis(povFacing) }
-      : { kind: 'ortho', yawDeg: camRot * 90 };
-    const quads = subjects.map((sub) => {
+    const bbCam: BillboardCamera = bbCameraDe(povFacing, camRot);
+    const dpr = window.devicePixelRatio || 1;
+    flipRef.current.clear();
+    épinglesRef.current.clear();
+    // PURGE des états PAR ACTEUR qui survivent au rebuild : un acteur absent des sujets de ce montage
+    // (sorti de la scène, hors du cadre) laisse son palier et son heure de chute derrière lui. Les deux
+    // cartes refaites à neuf ci-dessus (sujets montés, épingles) n'ont, elles, rien à purger.
+    const joués = new Set<string>();
+    for (const sub of subjects) {
+      const id = boardTrackId(sub);
+      if (id) joués.add(id);
+    }
+    for (const id of [...paliersRef.current.keys()]) if (!joués.has(id)) paliersRef.current.delete(id);
+    for (const id of [...chutesRef.current.keys()]) if (!joués.has(id)) chutesRef.current.delete(id);
+    for (const id of [...glissePrecRef.current.keys()]) if (!joués.has(id)) glissePrecRef.current.delete(id);
+    const boards: Board[] = [];
+    boardsRef.current = boards;
+
+    /**
+     * PRÉ-CUISSON d'un sujet (#1176, L3/L4). Politique du design, chiffrée par la sonde (~10 ms de
+     * rasterisation par frame) : ce que la caméra regarde MAINTENANT passe devant tout le reste.
+     *  - HAUTE : repos + marche, à la vue COURANTE ;
+     *  - BASSE : les autres vues, et l'EFFONDREMENT (`corpse` ET `prone` — la pose au sol est un état
+     *    du RENDU, une seule planche rendrait le cadavre là où le rendu veut l'affaissé) ;
+     *  - COMBAT : le set de gestes des ENRÔLÉS (attaque, touché, défense) — un acteur connu du
+     *    résolveur du registre EST en combat, c'est la même lecture qui sert aux pistes.
+     * Le set de gestes est celui de la VOIE du corps ; un FIGURANT à ambiance authorée n'en a qu'UN
+     * (sa boucle, à sa vue de montage : une entité de scène ne tourne pas, ne marche pas, ne se bat pas).
+     * Les planches ainsi posées sont ÉPINGLÉES : le cache LRU ne les évince pas tant que le quad est
+     * à l'écran.
+     */
+    const précuire = (s: FlipbookSujet, id: string): void => {
+      const clés: string[] = [];
+      const poser = (def: ClipDef, view: View, mirror: boolean, prio: number, ground?: 'corpse' | 'prone') => {
+        const r = recette(s, def, view, mirror, s.pxHeight, ground);
+        recettesRef.current.set(r.key, r);
+        clés.push(r.key);
+        void cuire(r, prio).catch(() => undefined);
+      };
+      if (s.ambient) {
+        poser(s.ambient, s.view, s.mirror, PRIORITE_VUE_COURANTE);
+      } else if (s.voie === 'plan') {
+        const marche = planWalkDef(s.leap);
+        // `planAttackDef()` sans arme naturelle nommée : les attaques d'un record qui en porte une
+        // (`creatureAttack` de l'évènement) se cuisent à la demande, comme une arme inhabituelle.
+        const gestes = s.enrolé ? [planAttackDef(), planFlinchDef()] : [];
+        for (const def of [REPOS_PLAN, marche, ...gestes]) poser(def, s.view, s.mirror, PRIORITE_VUE_COURANTE);
+        for (const v of VUES_REGARD) {
+          if (v.view === s.view && v.mirror === s.mirror) continue;
+          for (const def of [REPOS_PLAN, marche]) poser(def, v.view, v.mirror, PRIORITE_RECHAUFFAGE);
+        }
+        for (const ground of ['corpse', 'prone'] as const) poser(planDyingDef(ground), s.view, s.mirror, PRIORITE_RECHAUFFAGE, ground);
+      } else {
+        const marche = rigWalkDef(s.rig);
+        const parade = s.enrolé ? rigDefenseDef({ defense: 'parade' }, s.rig) : null;
+        const gestes: RigClipDef[] = s.enrolé
+          ? [rigAttackDef({ weapon: s.rig.mainWeapon }, s.rig), rigHitDef(s.rig), ...(parade ? [parade] : [])]
+          : [];
+        for (const def of [REPOS, ...(marche ? [marche] : []), ...gestes]) poser(def, s.view, s.mirror, PRIORITE_VUE_COURANTE);
+        for (const v of VUES_REGARD) {
+          if (v.view === s.view && v.mirror === s.mirror) continue;
+          for (const def of [REPOS, ...(marche ? [marche] : [])]) poser(def, v.view, v.mirror, PRIORITE_RECHAUFFAGE);
+        }
+        for (const ground of ['corpse', 'prone'] as const) poser(REPOS, s.view, s.mirror, PRIORITE_RECHAUFFAGE, ground);
+      }
+      épinglesRef.current.set(id, clés);
+      setAtlasPins([...épinglesRef.current.values()].flat());
+    };
+
+    /** Le quad d'un sujet, monté DÈS QUE SA texture est là — jamais au dernier des sujets. */
+    const monter = (q: { sub: BillboardSubject; quad: ReturnType<typeof subjectQuad>; view: View; mirror: boolean; pxHeight: number }, texture: THREE.Texture): void => {
+      const geo = new THREE.PlaneGeometry(q.quad.widthM, q.quad.heightM);
+      // Matériau NON lambertien (`billboardMaterial`, cf. l'en-tête), monté à la couleur NEUTRE : son
+      // exposition appartient à la passe de pose, qui la lui donne dans le `dessiner()` de cette même
+      // passe de montage, avant toute peinture — une seconde loi ici en ferait deux à tenir d'accord.
+      const mat = billboardMaterial(texture, 1);
+      const mesh = new THREE.Mesh(geo, mat);
+      // Un quad PROJETTE son ombre même en Basic (le casteur ne connaît que sa géométrie et son alpha) ;
+      // `receiveShadow` n'aurait, lui, aucun effet sous ce matériau.
+      mesh.castShadow = true;
+      groupe.add(withRenderRank(mesh, 'pions'));
+      const board: Board = { sub: q.sub, quad: q.quad, mesh, material: mat };
+      boards.push(board);
+      // SILHOUETTE À TRAVERS LES MURS (#1297, LOT C) : le corps d'un jeton occulté par la matière
+      // du monde garde un JUMEAU à test de profondeur retourné, teinté de sa couleur d'équipe —
+      // enfant du quad, donc porté par la MÊME pose (aucune écriture de plus par frame). Les deux
+      // regards du cadre en héritent : c'est le montage des quads, pas une passe de vue.
+      // Un sujet sans équipe (décor, figurant) n'en reçoit aucun : il n'y a rien à y signaler.
+      if (q.sub.teamColor) attachBodySilhouette(board, q.sub.teamColor);
+      // Ombre de CONTACT : le rig ne porte aucune ellipse au pied (le décor, si). Elle entre dans le
+      // board — donc dans la passe de pose, donc elle suit le sujet qui glisse. Sous le soleil, c'est
+      // l'ombre PROJETÉE qui fait foi (`wantsContactShadow`) — sinon le personnage en porte deux.
+      if (wantsContactShadow(q.sub.kind, lit)) {
+        const disque = contactShadow(q.sub.anchor, q.quad.widthM);
+        disque.material.opacity *= q.sub.tint;
+        board.shadow = disque;
+        groupe.add(withRenderRank(disque, 'pions'));
+      }
+      // FLIPBOOK : les sujets à UN corps en portent la couture (`frameSvg`) et leur identité de piste
+      // (`boardTrackId`) — combattant ou figurant à ambiance authorée (cf. l'en-tête de section).
+      const piste = boardTrackId(q.sub);
+      const ctx = q.sub.cid ? animCtxOf(q.sub.cid) : undefined;
+      if (piste && q.sub.frameSvg) {
+        const rig = ctx?.rig ?? {};
+        const voie = q.sub.anim?.voie ?? ctx?.voie ?? 'rig';
+        const authoré = q.sub.anim?.ambient;
+        // AMBIANCE : le MÊME clip que le jeton affine joue en repos (`RigToken`, `ambientClip`) pour
+        // un bipède, l'idle du gabarit pour une bête. Une clé sans clip rig laisse le corps statique.
+        const ambient = authoré ? (voie === 'plan' ? planAmbientDef(authoré) : rigAmbientDef(authoré)) : null;
+        if (!authoré || ambient) {
+          // ENTRÉE AU SOL : l'heure retenue est celle du PREMIER montage où cet acteur est au sol. Un
+          // acteur debout n'en a pas — et la relève d'un À Terre efface la sienne, sinon sa chute
+          // suivante partirait déjà finie.
+          const auSol = q.sub.anim?.ground;
+          const chute = auSol ? (chutesRef.current.get(piste) ?? animNow()) : animNow();
+          if (auSol) chutesRef.current.set(piste, chute);
+          else chutesRef.current.delete(piste);
+          const s: FlipbookSujet = {
+            sub: q.sub,
+            view: q.view,
+            mirror: q.mirror,
+            pxHeight: q.pxHeight,
+            voie,
+            rig,
+            ...(q.sub.anim?.leap ? { leap: true } : {}),
+            ...(ambient ? { ambient } : {}),
+            enrolé: !!ctx,
+            chute,
+          };
+          flipRef.current.set(piste, s);
+          précuire(s, piste);
+        }
+      }
+      ombresARefaire.current = true;
+      dessiner();
+    };
+
+    for (const sub of subjects) {
       // Le quad se taille sur la BOÎTE du sujet : un composite plus haut que la boîte canonique
       // (couple monté) gagne du quad au lieu d'être tranché à la rasterisation.
       const quad = subjectQuad(CONVENTION, sub);
@@ -1144,56 +1589,32 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       // l'ignore — l'y mettre rasteriserait quatre fois la MÊME image.
       const identity = sub.kind === 'prop' ? `${sub.identity}|r${camRot}` : sub.identity;
       const { view, mirror } = billboardView(bbCam, sub.facing);
-      const pxHeight = rasterPxHeight(quad.heightM, pxm);
+      // PALIER de la texture de MONTAGE : le palier CSS du billboard PORTÉ AU RAPPORT DE PIXELS du rendu
+      // (`atlasPxHeight`, #1328) — le renderer peint en pixels de dispositif (`setPixelRatio`), et une
+      // texture cuite en pixels CSS y est sous-résolue d'autant. C'est le MÊME palier que celui des
+      // planches de flipbook du sujet (`FlipbookSujet.pxHeight` le reprend) : un acteur ne change pas de
+      // netteté en passant de sa texture de montage à sa première planche.
+      const pxHeight = atlasPxHeight(quad.heightM, pxm, dpr);
       const key = billboardTextureKey(identity, view, mirror, pxHeight);
-      return { sub, quad, texture: getBillboardTexture(key, () => svgToTexture(sub.svg(view, mirror, camRot), sub.box, pxHeight)) };
-    });
-    // `allSettled` : une texture rejetée ne doit pas emporter la frame entière — le sujet fautif est
-    // sauté et signalé en `warn` (la console reste sans ERREUR).
-    void Promise.allSettled(quads.map((q) => q.texture)).then((rendus) => {
-      if (annule) return;
-      const boards: Board[] = [];
-      quads.forEach((q, i) => {
-        const issue = rendus[i];
-        if (issue.status !== 'fulfilled') {
-          console.warn(`GameStage3D: billboard « ${q.sub.identity} » sauté — texture non rasterisée :`, issue.reason);
-          return;
-        }
-        const geo = new THREE.PlaneGeometry(q.quad.widthM, q.quad.heightM);
-        // Matériau NON lambertien (`billboardMaterial`, cf. l'en-tête), monté à la couleur NEUTRE : son
-        // exposition appartient à la passe de pose, qui la lui donne dans le `dessiner()` de cette même
-        // passe de montage, avant toute peinture — une seconde loi ici en ferait deux à tenir d'accord.
-        const mat = billboardMaterial(issue.value, 1);
-        const mesh = new THREE.Mesh(geo, mat);
-        // Un quad PROJETTE son ombre même en Basic (le casteur ne connaît que sa géométrie et son alpha) ;
-        // `receiveShadow` n'aurait, lui, aucun effet sous ce matériau.
-        mesh.castShadow = true;
-        groupe.add(withRenderRank(mesh, 'pions'));
-        const board: Board = { sub: q.sub, quad: q.quad, mesh, material: mat };
-        boards.push(board);
-        // SILHOUETTE À TRAVERS LES MURS (#1297, LOT C) : le corps d'un jeton occulté par la matière
-        // du monde garde un JUMEAU à test de profondeur retourné, teinté de sa couleur d'équipe —
-        // enfant du quad, donc porté par la MÊME pose (aucune écriture de plus par frame). Les deux
-        // regards du cadre en héritent : c'est le montage des quads, pas une passe de vue.
-        // Un sujet sans équipe (décor, figurant) n'en reçoit aucun : il n'y a rien à y signaler.
-        if (q.sub.teamColor) attachBodySilhouette(board, q.sub.teamColor);
-        // Ombre de CONTACT : le rig ne porte aucune ellipse au pied (le décor, si). Elle entre dans le
-        // board — donc dans la passe de pose, donc elle suit le sujet qui glisse. Sous le soleil, c'est
-        // l'ombre PROJETÉE qui fait foi (`wantsContactShadow`) — sinon le personnage en porte deux.
-        if (wantsContactShadow(q.sub.kind, lit)) {
-          const disque = contactShadow(q.sub.anchor, q.quad.widthM);
-          disque.material.opacity *= q.sub.tint;
-          board.shadow = disque;
-          groupe.add(withRenderRank(disque, 'pions'));
-        }
-      });
-      boardsRef.current = boards;
-      ombresARefaire.current = true;
-      dessiner();
-    });
+      const q = { sub, quad, view, mirror, pxHeight };
+      // RÉSOLUTION INDIVIDUELLE : chaque board entre en scène dès SA texture rasterisée. Sous un
+      // `allSettled`, le groupe entier attendait le dernier sujet — et un sujet rejeté n'y laissait
+      // rien du tout. Ici, une texture rejetée ne coûte que SON quad, et le reste est déjà à l'écran.
+      void getBillboardTexture(key, () => svgToTexture(sub.svg(view, mirror, camRot), sub.box, pxHeight)).then(
+        (texture) => { if (!annule) monter(q, texture); },
+        (raison: unknown) => { if (!annule) console.warn(`GameStage3D: billboard « ${sub.identity} » sauté — texture non rasterisée :`, raison); },
+      );
+    }
     return () => {
       annule = true;
       boardsRef.current = [];
+      // Les deux cartes du MONTAGE se vident (elles se refont avec les boards). Les états PAR ACTEUR
+      // qui doivent traverser un rebuild — palier, entrée au sol, glissement précédent — restent : ce
+      // teardown court à CHAQUE changement de sujets, pas seulement au démontage. Leur borne est la
+      // purge d'entrée d'effet (les acteurs absents des sujets en sortent).
+      flipRef.current.clear();
+      épinglesRef.current.clear();
+      setAtlasPins([]);
       viderGroupe(groupe);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

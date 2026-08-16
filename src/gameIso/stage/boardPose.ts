@@ -17,6 +17,8 @@ import { billboardDepthOffsetUnits, billboardPose, billboardViewDepth, poseConta
 import { billboardExposure, type PointLightSlots } from './stagePointLights';
 import { withRenderRank } from '../backends/webgl/renderRanks';
 import { LUMA_709 } from '../shade';
+import { RASTER_PX_MAX, RASTER_PX_MIN, frameUvRect, rasterPxHeight, type AtlasLayout } from '../backends/webgl/billboardMath';
+import { clipTotalMs, type ClipDef } from '../rig/anim/actorAnimSelect';
 
 /** Un billboard monté : ce qu'il faut pour le RE-POSER quand la caméra bouge, sans le reconstruire. */
 export interface Board {
@@ -28,6 +30,10 @@ export interface Board {
   material: THREE.MeshBasicMaterial | THREE.MeshLambertMaterial;
   /** Disque d'ombre de contact du sujet, quand il en porte un (`wantsContactShadow`). */
   shadow?: THREE.Object3D;
+  /** JUMEAU DE SILHOUETTE du corps, quand il en porte un (`attachBodySilhouette`). Il CAPTE la texture
+   *  du corps à l'attache : l'écrivain de frames doit donc lui réécrire `map` en même temps qu'au
+   *  corps, et `poseBoards` ne descend jamais dans les enfants d'un quad. */
+  jumeau?: THREE.Mesh;
 }
 
 /** Caméra de la frame — l'offset de profondeur des quads se dérive de son plan (`near`/`far`), et de la
@@ -39,6 +45,37 @@ export type FrameCamera = THREE.Camera & { near: number; far: number; isPerspect
  *  silhouette au lieu d'un rectangle voilé). Exporté : l'allure d'un jeton se pose sous ce seuil et
  *  doit pouvoir se mesurer contre lui. */
 export const ALPHA_TEST = 0.5;
+
+/**
+ * CADRE UV d'un billboard (#1176, L3) : `offset.xy` + `scale.zw` appliqués à la coordonnée de texture
+ * du corps. Un quad ne montre alors qu'une CELLULE de sa planche de flipbook — c'est ce qui fait jouer
+ * les frames sans toucher ni la texture (partagée entre tous les sujets de même signature) ni la
+ * géométrie. Défaut = la texture entière.
+ */
+export const FRAME_RECT_PLEIN: readonly [number, number, number, number] = [0, 0, 1, 1];
+
+/**
+ * Corps de `map_fragment` RÉÉCRIT pour échantillonner la cellule (#1176, L3). Le chunk est EXPANSÉ ici
+ * puis substitué à son `#include` : à `onBeforeCompile`, three n'a pas encore résolu les includes, et
+ * une ligne AJOUTÉE après l'include laisserait `sampledDiffuseColor` échantillonné à la planche
+ * ENTIÈRE — l'uniforme serait branché, sans le moindre effet, et rien ne le dirait.
+ *
+ * L'ancre manquante (chunk amont modifié) est une ERREUR à la charge du module, jamais un silence.
+ */
+const MAP_FRAGMENT_CADRE = ((): string => {
+  const chunk = THREE.ShaderChunk.map_fragment;
+  const cadre = chunk.replace('texture2D( map, vMapUv )', 'texture2D( map, vMapUv * uFrameRect.zw + uFrameRect.xy )');
+  if (cadre === chunk) throw new Error('boardPose: `map_fragment` n’expose plus `texture2D( map, vMapUv )` — cadre de frame sans effet');
+  return cadre;
+})();
+
+/** L'uniforme de cadre d'un matériau de corps, tel que l'écrivain de frames le pilote. */
+export type FrameRectUniform = { value: THREE.Vector4 };
+
+/** Uniforme de cadre porté par un matériau, s'il en a un (corps de billboard ou son jumeau). */
+export function frameRectOf(material: THREE.Material): FrameRectUniform | undefined {
+  return material.userData.frameRect as FrameRectUniform | undefined;
+}
 
 /**
  * MATÉRIAU d'un billboard du stage (#1176, P2-5) — TOUJOURS `MeshBasicMaterial`, et c'est structurel :
@@ -64,19 +101,26 @@ export function billboardMaterial(map: THREE.Texture, luminance: number): THREE.
   // ENTIER, texels opaques compris. Elle se multiplie donc APRÈS l'alphatest, qui garde son unique
   // office — découper les texels transparents du sprite.
   const allureAlpha = { value: 1 };
+  // CADRE DE FRAME (#1176, L3) : la cellule de flipbook que ce quad montre, ou la texture entière.
+  const frameRect: FrameRectUniform = { value: new THREE.Vector4(...FRAME_RECT_PLEIN) };
   mat.userData.desat = desat;
   mat.userData.allureAlpha = allureAlpha;
+  mat.userData.frameRect = frameRect;
   mat.onBeforeCompile = (shader) => {
     shader.uniforms.uDesat = desat;
     shader.uniforms.uAllureAlpha = allureAlpha;
+    shader.uniforms.uFrameRect = frameRect;
     shader.fragmentShader = shader.fragmentShader
-      .replace('void main() {', 'uniform float uDesat;\nuniform float uAllureAlpha;\nvoid main() {')
+      .replace('void main() {', 'uniform float uDesat;\nuniform float uAllureAlpha;\nuniform vec4 uFrameRect;\nvoid main() {')
       .replace(
         '#include <map_fragment>',
-        '#include <map_fragment>\n\tdiffuseColor.rgb = mix( diffuseColor.rgb, vec3( dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) ) ), uDesat );',
+        `${MAP_FRAGMENT_CADRE}\n\tdiffuseColor.rgb = mix( diffuseColor.rgb, vec3( dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) ) ), uDesat );`,
       )
       .replace('#include <alphatest_fragment>', '#include <alphatest_fragment>\n\tdiffuseColor.a *= uAllureAlpha;');
   };
+  // Clé de programme EXPLICITE (même défense qu'au jumeau) : le défaut de three la dérive de la SOURCE
+  // de `onBeforeCompile`, qui ne dit rien du fragment réellement injecté.
+  mat.customProgramCacheKey = () => 'billboard:cadre';
   return mat;
 }
 
@@ -114,13 +158,18 @@ export function silhouetteMaterial(corps: Board['material'], teamColor: string):
   // appelant qui monte les siens) reçoit le sien, figé à l'allure pleine.
   const allureAlpha = (corps.userData.allureAlpha as { value: number } | undefined) ?? { value: 1 };
   mat.userData.allureAlpha = allureAlpha;
+  // Le CADRE DE FRAME du corps, partagé sur le MÊME patron : la silhouette montre la même cellule de
+  // flipbook que le corps qu'elle double, et l'écrivain de frames n'écrit qu'un objet pour les deux.
+  const frameRect = (corps.userData.frameRect as FrameRectUniform | undefined) ?? { value: new THREE.Vector4(...FRAME_RECT_PLEIN) };
+  mat.userData.frameRect = frameRect;
   // Littéral GLSL de l'opacité propre : un flottant, jamais un entier nu (`a * 1` ne compile pas).
   const k = SILHOUETTE_BODY_OPACITY.toFixed(4);
   mat.onBeforeCompile = (shader) => {
     shader.uniforms.uAllureAlpha = allureAlpha;
+    shader.uniforms.uFrameRect = frameRect;
     shader.fragmentShader = shader.fragmentShader
-      .replace('void main() {', 'uniform float uAllureAlpha;\nvoid main() {')
-      .replace('#include <map_fragment>', '#include <map_fragment>\n\tdiffuseColor.rgb = diffuse;')
+      .replace('void main() {', 'uniform float uAllureAlpha;\nuniform vec4 uFrameRect;\nvoid main() {')
+      .replace('#include <map_fragment>', `${MAP_FRAGMENT_CADRE}\n\tdiffuseColor.rgb = diffuse;`)
       .replace('#include <alphatest_fragment>', `#include <alphatest_fragment>\n\tdiffuseColor.a *= uAllureAlpha * ${k};`);
   };
   // Clé de programme EXPLICITE, par DÉFENSE : le défaut de three la dérive de la SOURCE de
@@ -156,6 +205,9 @@ export function attachBodySilhouette(board: Board, teamColor: string): THREE.Mes
   // chaque cible sans changer aucun verdict. Il ne se lance pas, il se regarde.
   jumeau.raycast = () => undefined;
   board.mesh.add(jumeau);
+  // Le jumeau entre dans le board : sa texture se réécrit AVEC celle du corps à chaque changement de
+  // planche (il l'a captée à l'attache, et rien ne descend dans les enfants d'un quad à la frame).
+  board.jumeau = jumeau;
   return jumeau;
 }
 
@@ -363,4 +415,162 @@ export function poseBoards(boards: readonly Board[], camera: FrameCamera, glide:
     );
   }
   return aGlissé;
+}
+
+// ————————————————————————————————————————————————————————————————
+// FLIPBOOK — l'ÉCRIVAIN DE FRAMES (#1176, L3)
+// ————————————————————————————————————————————————————————————————
+//
+// La boucle volumique ne rasterise RIEN : elle choisit, par board et par image, une planche déjà cuite
+// (`backends/webgl/atlasBake.ts`) et la CELLULE qu'il faut y montrer. Deux écritures de matériau, pas
+// une géométrie, pas un `needsUpdate`.
+//
+// IDEMPOTENCE PAR IMAGE, et c'est structurel : l'écrivain compare l'état COURANT du matériau à celui
+// qu'il veut, et n'écrit qu'à l'écart. Piloté par TRANSITION (« au changement de clip »), il perdrait
+// la planche à chaque rebuild de board — `actorPoseKey` porte x,y,facing, donc les sujets se
+// reconstruisent à CHAQUE pas commité et à chaque quart de tour, et le quad neuf repartirait sur sa
+// texture statique sans que rien ne le réécrive.
+
+/** Cadence de cuisson d'un flipbook : une frame tous les `ATLAS_FRAME_MS`. */
+export const ATLAS_FRAME_MS = 1000 / 24;
+/** Bornes du nombre de frames d'une planche — sous 2 il n'y a pas d'animation, au-delà de 12 la
+ *  planche coûte plus qu'elle ne rend (sonde #1176 : ~10 ms de rasterisation par frame). */
+export const ATLAS_FRAMES_MIN = 2;
+export const ATLAS_FRAMES_MAX = 12;
+
+/** Nombre de frames de la planche d'un geste : sa durée TOTALE à la cadence de cuisson, bornée. */
+export function atlasFrames(def: ClipDef): number {
+  return Math.max(ATLAS_FRAMES_MIN, Math.min(ATLAS_FRAMES_MAX, Math.round(clipTotalMs(def) / ATLAS_FRAME_MS)));
+}
+
+/** Frame à montrer à `elapsedMs` : modulo pour un geste EN BOUCLE (marche, repos), clampée à la
+ *  dernière pour un geste qui se joue une fois (attaque, parade, touché, effondrement). */
+export function frameIndexAt(elapsedMs: number, durationMs: number, n: number, loop: boolean): number {
+  if (n <= 1 || !(durationMs > 0)) return 0;
+  const t = elapsedMs / durationMs;
+  if (loop) return Math.min(n - 1, Math.max(0, Math.floor((((t % 1) + 1) % 1) * n)));
+  return Math.min(n - 1, Math.max(0, Math.floor(t * n)));
+}
+
+/**
+ * PLAFOND de rapport de pixels du rendu — la valeur que le renderer reçoit (`setPixelRatio`). Elle vit
+ * ICI parce que le PALIER de cuisson en dépend : le renderer peint le canevas en pixels de DISPOSITIF,
+ * là où `rasterPxHeight` se mesure en pixels CSS. Mesuré (#1328) : à zoom maximal et DPR 2, un quad
+ * couvre exactement deux fois plus de pixels que sa texture n'en porte — la texture est sous-résolue
+ * du facteur DPR, et le POV proche pixelise.
+ */
+export const DPR_PLAFOND = 2;
+
+/** Rapport de pixels EFFECTIF du rendu (celui que le renderer reçoit). */
+export function dprEffectif(dpr: number): number {
+  return Math.min(DPR_PLAFOND, dpr > 0 ? dpr : 1);
+}
+
+/** Palier de cuisson d'une planche : le palier CSS du billboard, porté au rapport de pixels réel du
+ *  rendu, sous le même plafond de texture. */
+export function atlasPxHeight(heightM: number, pxPerM: number, dpr: number): number {
+  return Math.min(RASTER_PX_MAX, Math.round(rasterPxHeight(heightM, pxPerM) * dprEffectif(dpr)));
+}
+
+/** Grossissement au-delà duquel un quad réclame le palier SUPÉRIEUR, et en deçà duquel il redescend.
+ *  Deux seuils, jamais un : à seuil unique, un quad posé sur la frontière basculerait à chaque image. */
+export const GROSSISSEMENT_HAUT = 1.5;
+export const GROSSISSEMENT_BAS = 0.6;
+
+/** Palier voulu pour un quad dont la hauteur PROJETÉE vaut `projetéPx` alors que sa planche est cuite à
+ *  `courant`. Hystérésis : entre les deux seuils, le palier ne bouge pas. */
+export function palierAtlas(courant: number, projetéPx: number): number {
+  if (projetéPx > courant * GROSSISSEMENT_HAUT) return Math.min(RASTER_PX_MAX, courant * 2);
+  if (projetéPx < courant * GROSSISSEMENT_BAS) return Math.max(RASTER_PX_MIN, Math.round(courant / 2));
+  return courant;
+}
+
+const HAUT = new THREE.Vector3();
+const BAS = new THREE.Vector3();
+const AXE = new THREE.Vector3();
+
+/**
+ * Hauteur PROJETÉE d'un quad, en pixels de DISPOSITIF : les deux bouts de son arête verticale passés
+ * par la caméra de la frame. C'est la grandeur que le palier de cuisson doit suivre — ni le zoom seul
+ * (le POV n'en a pas), ni la distance seule (l'ortho n'en dépend pas).
+ */
+export function boardProjectedPx(b: Board, camera: FrameCamera, viewportH: number, dpr: number): number {
+  camera.updateMatrixWorld();
+  AXE.set(0, 1, 0).applyQuaternion(camera.quaternion).multiplyScalar(b.quad.heightM / 2);
+  HAUT.copy(b.mesh.position).add(AXE).project(camera);
+  BAS.copy(b.mesh.position).sub(AXE).project(camera);
+  return (Math.abs(HAUT.y - BAS.y) / 2) * viewportH * dprEffectif(dpr);
+}
+
+/**
+ * IDENTITÉ DE PISTE d'un sujet — ce sous quoi l'écran tient son état de flipbook, et le seul critère
+ * qui décide qu'un board JOUE (#1176, L4). DEUX populations la portent, et une seule des deux est
+ * cliquable : les COMBATTANTS (`cid`, hit-test de sprite) et les FIGURANTS à clip d'ambiance authoré
+ * (`eid`, `SceneEntity.anim` — une entité de scène n'a jamais de `data-cid` en affine non plus).
+ * `undefined` = décor, ou figurant sans ambiance : il ne joue rien et ne coûte rien de plus.
+ */
+export function boardTrackId(sub: BillboardSubject): string | undefined {
+  return sub.cid ?? sub.eid;
+}
+
+/** Ce qu'une image veut voir sur un board : la planche de flipbook, et la cellule à y montrer. */
+export interface FramePick {
+  /** Clé de planche (`atlasKey`, `backends/webgl/atlasBake.ts`). */
+  key: string;
+  /** Index de frame dans cette planche. */
+  frame: number;
+}
+
+/** Le choix de l'image pour un board — `null` = ce sujet ne joue rien (décor, corps sans flipbook). */
+export type FramePickAt = (b: Board) => FramePick | null;
+
+/** Planche DÉJÀ CUITE d'une clé. Jamais une cuisson : aucune rasterisation n'entre dans une image. */
+export type AtlasAt = (key: string) => { texture: THREE.Texture; layout: AtlasLayout } | undefined;
+
+/** Demande de cuisson d'une planche absente du cache — l'hôte la DIFFÈRE hors de l'image. */
+export type BakeAsk = (pick: FramePick, b: Board) => void;
+
+/** Planche montée sur un board, telle que l'écrivain l'y a laissée. */
+function layoutOf(b: Board): AtlasLayout | undefined {
+  return b.material.userData.atlasLayout as AtlasLayout | undefined;
+}
+
+/** Pose la texture (corps ET jumeau) et la cellule sur un board — chaque écriture sous sa comparaison. */
+function poserFrame(b: Board, texture: THREE.Texture | undefined, layout: AtlasLayout | undefined, k: number): void {
+  if (texture && b.material.map !== texture) {
+    b.material.map = texture;
+    b.material.userData.atlasLayout = layout;
+    const jumeau = b.jumeau?.material as THREE.MeshBasicMaterial | undefined;
+    if (jumeau) jumeau.map = texture;
+  }
+  const u = frameRectOf(b.material);
+  if (!u) return;
+  const r = layout ? frameUvRect(layout, k) : { x: FRAME_RECT_PLEIN[0], y: FRAME_RECT_PLEIN[1], w: FRAME_RECT_PLEIN[2], h: FRAME_RECT_PLEIN[3] };
+  if (u.value.x !== r.x || u.value.y !== r.y || u.value.z !== r.w || u.value.w !== r.h) u.value.set(r.x, r.y, r.w, r.h);
+}
+
+/**
+ * Écrit la frame de l'image sur chaque board (#1176, L3).
+ *
+ * REPLI quand la planche voulue manque au cache : on garde la planche COURANTE et on y CLAMPE
+ * l'index. Après un rebuild froid, la planche courante est la texture statique — une frame ≥ 1 y
+ * pointerait hors cellule, et le quad montrerait du vide. La cuisson, elle, est DEMANDÉE à l'hôte, qui
+ * la sort de l'image.
+ */
+export function writeBoardFrames(boards: readonly Board[], pickAt: FramePickAt, atlasAt: AtlasAt, ask?: BakeAsk): void {
+  for (const b of boards) {
+    const pick = boardTrackId(b.sub) ? pickAt(b) : null;
+    if (!pick) {
+      poserFrame(b, undefined, layoutOf(b), 0);
+      continue;
+    }
+    const cuite = atlasAt(pick.key);
+    if (cuite) {
+      poserFrame(b, cuite.texture, cuite.layout, Math.min(pick.frame, cuite.layout.n - 1));
+      continue;
+    }
+    ask?.(pick, b);
+    const courant = layoutOf(b);
+    poserFrame(b, undefined, courant, courant ? Math.min(pick.frame, courant.n - 1) : 0);
+  }
 }

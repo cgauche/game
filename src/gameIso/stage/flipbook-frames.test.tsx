@@ -1,0 +1,696 @@
+// @vitest-environment jsdom
+import { act } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import * as THREE from 'three';
+import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
+import type { Combatant } from '../../engine/types';
+import type { Dims } from '../../geometry/iso';
+import { GameStage3D, setStageRendererFactory, type StageFrame, type StageRenderer, type StageWalkAnim } from './GameStage3D';
+import {
+  ATLAS_FRAMES_MAX,
+  DPR_PLAFOND,
+  FRAME_RECT_PLEIN,
+  GROSSISSEMENT_BAS,
+  GROSSISSEMENT_HAUT,
+  atlasFrames,
+  atlasPxHeight,
+  attachBodySilhouette,
+  billboardMaterial,
+  frameIndexAt,
+  frameRectOf,
+  palierAtlas,
+  silhouetteMaterial,
+  writeBoardFrames,
+  type AtlasAt,
+  type Board,
+  type FramePick,
+} from './boardPose';
+import { ZOOM_MAX, atlasLayout, frameUvRect, rasterPxHeight, type AtlasLayout } from '../backends/webgl/billboardMath';
+import { pxPerM } from '../backends/webgl/worldTris';
+import * as atlasBake from '../backends/webgl/atlasBake';
+import { clearAtlasCache, resetBakeQueue } from '../backends/webgl/atlasBake';
+import * as svgTexture from '../backends/webgl/svgTexture';
+import { COLLAPSE_MS, planDyingDef, rigIdleDef } from '../rig/anim/actorAnimSelect';
+import { HERO_RING } from '../teamColors';
+import type { ActorPose, BillboardSubject, SceneBillboardEls } from '../backends/webgl/sceneMeshes';
+import type { TokenEl } from '../builders/types';
+
+/**
+ * LE BRANCHEMENT DU FLIPBOOK (#1176, L3) — la boucle volumique JOUE les frames.
+ *
+ * Quatre faits s'y mesurent, et chacun a une panne SILENCIEUSE en face :
+ *  - le FRAGMENT échantillonne vraiment la cellule (une ligne ajoutée après l'include laisserait
+ *    l'uniforme branché et sans effet) ;
+ *  - le JUMEAU de silhouette reçoit la MÊME planche que son corps (il l'a captée à l'attache, et la
+ *    passe de pose ne descend jamais dans les enfants d'un quad) ;
+ *  - l'écrivain est IDEMPOTENT PAR IMAGE : il compare l'état courant, il ne suit pas des transitions
+ *    (les boards se reconstruisent à chaque pas commité) ;
+ *  - une image ne RASTERISE RIEN, et ne périme ni texture ni programme.
+ */
+(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+// ————————————————————————————————————————————————————————————————
+// Bancs partagés
+// ————————————————————————————————————————————————————————————————
+
+/** Le fragment tel que three le compilerait, avec les uniformes que le matériau y branche. */
+function fragment(mat: THREE.MeshBasicMaterial): { uniforms: Record<string, unknown>; src: string } {
+  const shader = {
+    uniforms: {} as Record<string, unknown>,
+    fragmentShader: 'uniform vec3 diffuse;\nvoid main() {\n#include <map_fragment>\n#include <alphatest_fragment>\n}',
+  };
+  mat.onBeforeCompile!(shader as never, null as never);
+  return { uniforms: shader.uniforms, src: shader.fragmentShader };
+}
+
+/** Un board de sonde, monté comme l'écran le monte : matériau réel, jumeau de silhouette attaché. */
+function board(cid: string): Board {
+  const material = billboardMaterial(new THREE.Texture(), 1);
+  const sub: BillboardSubject = {
+    identity: `sonde:${cid}`, cid, teamColor: HERO_RING[0], kind: 'personnage',
+    anchor: new THREE.Vector3(), facing: 'S', scaleK: 1, tint: 1, box: { w: 120, h: 150 }, svg: () => '',
+  };
+  const b: Board = {
+    sub,
+    quad: { widthM: 2, heightM: 3, centerLiftM: 1.5 },
+    mesh: new THREE.Mesh(new THREE.PlaneGeometry(2, 3), material),
+    material,
+  };
+  attachBodySilhouette(b, HERO_RING[0]);
+  return b;
+}
+
+/** Une planche cuite de sonde : `n` cellules de 24×30 px. */
+function planche(n: number): { texture: THREE.Texture; layout: AtlasLayout } {
+  return { texture: new THREE.Texture(), layout: atlasLayout(24, 30, n) };
+}
+
+const jumeauMat = (b: Board) => b.jumeau!.material as THREE.MeshBasicMaterial;
+
+// ————————————————————————————————————————————————————————————————
+// 1. LE FRAGMENT — l'uniforme a-t-il un EFFET ?
+// ————————————————————————————————————————————————————————————————
+
+/** Méthode : jsdom n'a aucun contexte WebGL, donc aucun programme ne se compile ici. La garde mesure
+ *  le SOURCE INJECTÉ — `onBeforeCompile` appelé sur un shader-témoin qui porte les mêmes directives
+ *  que celui de three. C'est exactement ce qu'un `#include` non résolu masquerait. */
+describe('Cadre de frame — le fragment échantillonne la CELLULE (#1176 L3)', () => {
+  const ECHANTILLON_CADRE = 'texture2D( map, vMapUv * uFrameRect.zw + uFrameRect.xy )';
+  const ECHANTILLON_NU = 'texture2D( map, vMapUv )';
+
+  it('le CORPS : le texel se prend au rectangle de cellule, et plus jamais à la planche entière', () => {
+    const mat = billboardMaterial(new THREE.Texture(), 1);
+    const { src, uniforms } = fragment(mat);
+    expect(src, 'sans cette expression, la cellule n’est jamais échantillonnée').toContain(ECHANTILLON_CADRE);
+    // LA mesure qui tue l'ajout-après-include : le texel NU ne doit plus subsister nulle part, et
+    // l'`#include` doit avoir été REMPLACÉ (three le résoudrait ensuite en version non cadrée).
+    expect(src.replace(ECHANTILLON_CADRE, ''), 'un texel nu subsiste : l’uniforme serait sans effet').not.toContain(ECHANTILLON_NU);
+    expect(src, 'l’include survivant = le chunk d’origine réinjecté par three').not.toContain('#include <map_fragment>');
+    expect(src).toContain('uniform vec4 uFrameRect;');
+    expect(uniforms.uFrameRect, 'l’uniforme branché EST celui que l’écrivain pilote').toBe(frameRectOf(mat));
+  });
+
+  it('le JUMEAU de silhouette porte la MÊME réécriture, sur le MÊME objet uniforme', () => {
+    const corps = billboardMaterial(new THREE.Texture(), 1);
+    const jumeau = silhouetteMaterial(corps, HERO_RING[0]);
+    const { src, uniforms } = fragment(jumeau);
+    expect(src).toContain(ECHANTILLON_CADRE);
+    expect(src.replace(ECHANTILLON_CADRE, '')).not.toContain(ECHANTILLON_NU);
+    expect(uniforms.uFrameRect, 'l’uniforme du CORPS, jamais une copie').toBe(frameRectOf(corps));
+    expect(frameRectOf(jumeau)).toBe(frameRectOf(corps));
+  });
+
+  it('un corps monté HORS de l’écran garde un cadre PLEIN — jamais un jumeau sans uniforme', () => {
+    const nu = new THREE.MeshBasicMaterial();
+    const mat = silhouetteMaterial(nu, HERO_RING[0]);
+    expect(frameRectOf(mat)!.value.toArray()).toEqual([...FRAME_RECT_PLEIN]);
+  });
+
+  it('le cadre par DÉFAUT est la texture entière : un sujet sans flipbook rend comme avant', () => {
+    expect(frameRectOf(billboardMaterial(new THREE.Texture(), 1))!.value.toArray()).toEqual([...FRAME_RECT_PLEIN]);
+  });
+
+  it('la clé de PROGRAMME est explicite et CONSTANTE — un programme pour tous les corps', () => {
+    const a = billboardMaterial(new THREE.Texture(), 1);
+    const b = billboardMaterial(new THREE.Texture(), 1);
+    expect(a.customProgramCacheKey()).toBe(b.customProgramCacheKey());
+    expect(a.customProgramCacheKey()).not.toBe(silhouetteMaterial(a, HERO_RING[0]).customProgramCacheKey());
+  });
+});
+
+// ————————————————————————————————————————————————————————————————
+// 2. L'ÉCRIVAIN — planche, cellule, idempotence, repli
+// ————————————————————————————————————————————————————————————————
+
+describe('Écrivain de frames — deux écritures, aucune péremption (#1176 L3)', () => {
+  const CLE = 'planche:sonde';
+  const rect = (b: Board) => frameRectOf(b.material)!.value.toArray();
+
+  it('pose la planche sur le CORPS **et** sur le JUMEAU, et la cellule demandée', () => {
+    const b = board('h1');
+    const p = planche(8);
+    const atlasAt: AtlasAt = (k) => (k === CLE ? p : undefined);
+    writeBoardFrames([b], () => ({ key: CLE, frame: 3 }), atlasAt);
+    expect(b.material.map, 'le corps montre la planche').toBe(p.texture);
+    // MUTATION : retirer l'écriture du jumeau laisse la silhouette sur l'atlas périmé — c'est ici
+    // que ça se voit, et nulle part ailleurs (la passe de pose ne descend pas dans les enfants).
+    expect(jumeauMat(b).map, 'la silhouette doit suivre le corps, jamais rester sur sa texture d’attache').toBe(p.texture);
+    const r = frameUvRect(p.layout, 3);
+    expect(rect(b)).toEqual([r.x, r.y, r.w, r.h]);
+  });
+
+  it('IDEMPOTENCE : quatre images sans changement ne périment ni texture ni matériau', () => {
+    const b = board('h1');
+    const p = planche(8);
+    const atlasAt: AtlasAt = () => p;
+    writeBoardFrames([b], () => ({ key: CLE, frame: 2 }), atlasAt);
+    const vTex = p.texture.version;
+    const vMat = b.material.version;
+    const vJum = jumeauMat(b).version;
+    const clé = b.material.customProgramCacheKey!();
+    for (let i = 0; i < 4; i++) writeBoardFrames([b], () => ({ key: CLE, frame: 2 }), atlasAt);
+    expect(p.texture.version, 'un `needsUpdate` par image re-téléverserait la planche au GPU').toBe(vTex);
+    expect(b.material.version, 'un `needsUpdate` par image recompilerait le programme').toBe(vMat);
+    expect(jumeauMat(b).version).toBe(vJum);
+    expect(b.material.customProgramCacheKey!()).toBe(clé);
+  });
+
+  it('REBUILD : un board NEUF (pas commité, quart de tour) reprend sa planche à la première image', () => {
+    const p = planche(8);
+    const atlasAt: AtlasAt = () => p;
+    const pick = () => ({ key: CLE, frame: 5 });
+    writeBoardFrames([board('h1')], pick, atlasAt);
+    // `actorPoseKey` porte x,y,facing : les sujets se reconstruisent à CHAQUE pas. Un écrivain piloté
+    // par TRANSITION ne verrait aucun changement de clip ici, et laisserait le quad neuf sur sa
+    // texture statique.
+    const neuf = board('h1');
+    writeBoardFrames([neuf], pick, atlasAt);
+    expect(neuf.material.map, 'le board neuf doit RECEVOIR la planche, sans aucune transition').toBe(p.texture);
+    const r = frameUvRect(p.layout, 5);
+    expect(rect(neuf)).toEqual([r.x, r.y, r.w, r.h]);
+  });
+
+  it('REPLI à cache froid : la planche COURANTE reste, l’index se CLAMPE, la cuisson est DEMANDÉE', () => {
+    const b = board('h1');
+    const p = planche(4);
+    writeBoardFrames([b], () => ({ key: CLE, frame: 1 }), () => p);
+    const demandes: FramePick[] = [];
+    // La planche du palier supérieur manque au cache : l'écrivain garde celle-ci.
+    writeBoardFrames([b], () => ({ key: 'planche:absente', frame: 9 }), () => undefined, (pick) => demandes.push(pick));
+    expect(b.material.map, 'le quad garde sa planche : rien ne clignote').toBe(p.texture);
+    const r = frameUvRect(p.layout, 3); // clampé à n-1 = 3, jamais 9
+    expect(rect(b), 'un index hors planche pointerait à côté de toute cellule').toEqual([r.x, r.y, r.w, r.h]);
+    expect(demandes.map((d) => d.key)).toEqual(['planche:absente']);
+  });
+
+  it('REPLI sur texture STATIQUE (rebuild froid) : cadre PLEIN, jamais une cellule inexistante', () => {
+    const b = board('h1'); // aucun `atlasLayout` : la texture de montage est une image d'UNE frame
+    writeBoardFrames([b], () => ({ key: 'planche:absente', frame: 6 }), () => undefined);
+    expect(rect(b), 'une cellule ≥ 1 sur une texture 1-frame montrerait du vide').toEqual([...FRAME_RECT_PLEIN]);
+  });
+
+  it('un sujet SANS flipbook ne demande RIEN : cadre plein s’il n’a pas de planche, cellule 0 sinon', () => {
+    // Décor, gabarit de créature, figurant : leur texture est une image d'UNE frame.
+    const nu = board('d1');
+    const demandes: FramePick[] = [];
+    writeBoardFrames([nu], () => null, () => undefined, (p) => demandes.push(p));
+    expect(rect(nu)).toEqual([...FRAME_RECT_PLEIN]);
+    // Un sujet qui CESSE de jouer (le résolveur ne le connaît plus) garde sa planche et revient à sa
+    // première cellule : le cadre plein y montrerait la planche ENTIÈRE, soit huit corps miniatures.
+    const b = board('h1');
+    const p = planche(8);
+    writeBoardFrames([b], () => ({ key: CLE, frame: 2 }), () => p);
+    writeBoardFrames([b], () => null, () => undefined, (q) => demandes.push(q));
+    const r = frameUvRect(p.layout, 0);
+    expect(rect(b)).toEqual([r.x, r.y, r.w, r.h]);
+    expect(demandes, 'aucune cuisson ne se demande pour un sujet qui ne joue rien').toEqual([]);
+  });
+});
+
+// ————————————————————————————————————————————————————————————————
+// 3. LE PALIER — la mesure du facteur DPR, et l'hystérésis
+// ————————————————————————————————————————————————————————————————
+
+describe('Palier de cuisson — la sous-résolution mesurée du rapport de pixels (#1328)', () => {
+  const MPT = sceneMetresPerTile(emptyScene(8, 8));
+  const HAUTEUR_M = 2.3; // un personnage debout, convention `jeu`
+
+  it('MESURE : à zoom MAX, un quad couvre `min(2, dpr)` fois plus de pixels que sa texture n’en porte', () => {
+    const pxm = pxPerM(MPT);
+    // La texture est cuite en pixels CSS (`rasterPxHeight` : hauteur écran au zoom maximal)…
+    const texturePx = rasterPxHeight(HAUTEUR_M, pxm);
+    // …alors que le renderer peint en pixels de DISPOSITIF (`setPixelRatio(min(2, dpr))`).
+    for (const dpr of [1, 1.5, 2, 3]) {
+      const attendu = Math.min(DPR_PLAFOND, dpr);
+      const écranPx = HAUTEUR_M * pxm * ZOOM_MAX * attendu;
+      // Écart admis : l'arrondi au pixel ENTIER du palier (`rasterPxHeight` plafonne au supérieur).
+      expect(Math.abs(écranPx / texturePx - attendu), `dpr ${dpr}`).toBeLessThan(2 / texturePx);
+    }
+    // …et c'est exactement ce que le palier de cuisson comble.
+    expect(atlasPxHeight(HAUTEUR_M, pxm, 2)).toBe(texturePx * 2);
+    expect(atlasPxHeight(HAUTEUR_M, pxm, 1)).toBe(texturePx);
+    expect(atlasPxHeight(HAUTEUR_M, pxm, 3), 'le plafond du rendu borne aussi la cuisson').toBe(texturePx * 2);
+  });
+
+  it('le palier reste sous le plafond de TEXTURE, quel que soit le rapport de pixels', () => {
+    expect(atlasPxHeight(400, pxPerM(MPT), 2)).toBeLessThanOrEqual(2048);
+  });
+
+  it('HYSTÉRÉSIS : deux seuils, donc aucune oscillation sur la frontière', () => {
+    const px = 128;
+    expect(palierAtlas(px, px * (GROSSISSEMENT_HAUT + 0.1)), 'grossi : le palier du dessus').toBe(256);
+    expect(palierAtlas(px, px * (GROSSISSEMENT_HAUT - 0.1)), 'sous le seuil haut : rien ne bouge').toBe(px);
+    expect(palierAtlas(px, px * (GROSSISSEMENT_BAS + 0.05)), 'entre les deux seuils : rien ne bouge').toBe(px);
+    expect(palierAtlas(px, px * (GROSSISSEMENT_BAS - 0.05)), 'nettement plus petit : on redescend').toBe(64);
+    // Un seuil UNIQUE ferait basculer un quad posé dessus à chaque image : ici, le palier atteint après
+    // une montée ne redescend pas à la mesure qui vient de le faire monter.
+    const monté = palierAtlas(px, px * 1.6);
+    expect(palierAtlas(monté, px * 1.6)).toBe(monté);
+  });
+
+  it('le nombre de frames d’une planche est BORNÉ — une planche ne coûte pas la seconde entière', () => {
+    expect(atlasFrames(rigIdleDef())).toBeLessThanOrEqual(ATLAS_FRAMES_MAX);
+    expect(atlasFrames(rigIdleDef())).toBeGreaterThanOrEqual(2);
+  });
+
+  it('la cellule d’un geste EN BOUCLE tourne, celle d’un geste UNIQUE se clampe à la dernière', () => {
+    expect([0, 0.5, 1, 1.5].map((t) => frameIndexAt(t * 400, 400, 8, true))).toEqual([0, 4, 0, 4]);
+    expect([0, 0.5, 1, 3].map((t) => frameIndexAt(t * 400, 400, 8, false))).toEqual([0, 4, 7, 7]);
+  });
+});
+
+// ————————————————————————————————————————————————————————————————
+// 4. LA BOUCLE MONTÉE — une image ne rasterise RIEN
+// ————————————————————————————————————————————————————————————————
+
+const TAILLE = { w: 800, h: 600 };
+const SCENE: Scene = emptyScene(10, 10);
+const DIMS: Dims = { w: SCENE.dimensions.w, h: SCENE.dimensions.h, rot: 0, view: 'iso' };
+const AFFINE: StageFrame = { mode: 'plateau', dims: DIMS, cam: { x: 0, y: 0 }, zoom: 1 };
+/** Le MÊME cadre au zoom maximal — celui sur lequel le palier de cuisson est taillé (`rasterPxHeight`). */
+const AFFINE_ZOOM_MAX: StageFrame = { mode: 'plateau', dims: DIMS, cam: { x: 0, y: 0 }, zoom: ZOOM_MAX };
+
+function combattant(id: string, pos: { x: number; y: number }): Combatant {
+  return {
+    id, label: id, kind: 'hero', pos, size: 'moyenne',
+    wounds: { current: 12, max: 12 }, weapons: [],
+    characteristics: { 'capacite-de-combat': 40, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
+    advantage: 0, conditions: [], armour: {}, skills: [], talents: [], movement: 4,
+  } as unknown as Combatant;
+}
+
+const ACTEURS: ActorPose[] = [{ c: combattant('h1', { x: 2, y: 2 }), x: 2, y: 2, z: 0, heroIndex: 0 }];
+
+class BancRenderer implements StageRenderer {
+  shadowMap = { enabled: false, autoUpdate: true, needsUpdate: false, type: THREE.PCFShadowMap };
+  capabilities = { getMaxAnisotropy: () => 1 };
+  setPixelRatio(): void {}
+  setClearColor(): void {}
+  setSize(): void {}
+  dispose(): void {}
+  render(scene: THREE.Scene): void { scènes.push(scene); }
+}
+
+let scènes: THREE.Scene[] = [];
+let root: Root | null = null;
+let hôte: HTMLDivElement | null = null;
+let glissement: { dx: number; dy: number; dz: number } | null = null;
+let battre: (() => void) | null = null;
+let urlAvant: { create: typeof URL.createObjectURL; revoke: typeof URL.revokeObjectURL } | null = null;
+
+const anim: StageWalkAnim = {
+  subscribe: (onFrame) => { battre = onFrame; return () => { battre = null; }; },
+  glide: (cid) => (cid === 'h1' ? glissement : null),
+  cam: () => ({ x: 0, y: 0 }),
+};
+
+/** Rasterisation SIMULÉE au niveau du DOM (jamais par mock de module) — sans elle, jsdom ne résout
+ *  aucune texture de billboard et AUCUN board n'est monté : toute mesure porterait sur le vide. */
+function simulerRasterisation(): void {
+  vi.stubGlobal('Image', class {
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    set src(_v: string) { queueMicrotask(() => this.onload?.()); }
+  });
+  urlAvant = { create: URL.createObjectURL, revoke: URL.revokeObjectURL };
+  URL.createObjectURL = () => 'blob:banc';
+  URL.revokeObjectURL = () => undefined;
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: () => undefined } as unknown as CanvasRenderingContext2D);
+}
+
+interface OptsVue { actors?: ActorPose[]; els?: SceneBillboardEls; frame?: StageFrame }
+
+function vue(opts: OptsVue): JSX.Element {
+  return (
+    <GameStage3D
+      scene={SCENE}
+      mpt={sceneMetresPerTile(SCENE)}
+      frame={opts.frame ?? AFFINE}
+      tintAt={() => 1}
+      keepEl={() => true}
+      els={opts.els ?? { tokens: [], props: [] }}
+      actors={opts.actors ?? ACTEURS}
+      gameTime={720}
+      lightLevel={null}
+      lights={[]}
+      anim={anim}
+    />
+  );
+}
+
+async function monter(opts: OptsVue = {}): Promise<void> {
+  scènes = [];
+  hôte = document.createElement('div');
+  document.body.appendChild(hôte);
+  root = createRoot(hôte);
+  await act(async () => {
+    root!.render(vue(opts));
+  });
+}
+
+/** REBUILD des boards de l'écran déjà monté : une nouvelle identité de tableau d'acteurs suffit — c'est
+ *  ce que produit chaque pas commité et chaque quart de tour (`actorPoseKey` porte x, y, facing). */
+async function remonter(opts: OptsVue = {}): Promise<void> {
+  await act(async () => {
+    root!.render(vue({ ...opts, actors: [...(opts.actors ?? ACTEURS)] }));
+  });
+  await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
+}
+
+/** Les corps de jeton de la dernière frame dessinée (les quads, pas leurs jumeaux). */
+function corps(): THREE.Mesh[] {
+  const out: THREE.Mesh[] = [];
+  scènes[scènes.length - 1]?.traverse((o) => {
+    if ((o as THREE.Mesh).isMesh && o.name.startsWith('silhouette:')) out.push(o.parent as THREE.Mesh);
+  });
+  return out;
+}
+
+beforeAll(() => {
+  Object.defineProperty(HTMLCanvasElement.prototype, 'clientWidth', { configurable: true, get: () => TAILLE.w });
+  Object.defineProperty(HTMLCanvasElement.prototype, 'clientHeight', { configurable: true, get: () => TAILLE.h });
+  setStageRendererFactory(() => new BancRenderer());
+});
+afterAll(() => setStageRendererFactory(null));
+
+beforeEach(() => simulerRasterisation());
+afterEach(() => {
+  if (root) { act(() => root!.unmount()); root = null; }
+  if (hôte) { hôte.remove(); hôte = null; }
+  glissement = null;
+  battre = null;
+  resetBakeQueue();
+  clearAtlasCache();
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+  if (urlAvant) { URL.createObjectURL = urlAvant.create; URL.revokeObjectURL = urlAvant.revoke; urlAvant = null; }
+});
+
+describe('Boucle volumique — une image joue une frame, elle n’en cuit aucune (#1176 L3)', () => {
+  it('quatre images de MARCHE et de GESTE : zéro rasterisation, zéro péremption', async () => {
+    const raster = vi.spyOn(svgTexture, 'rasterizeSvg');
+    await monter();
+    const quads = corps();
+    // PRÉMISSE — sans elle, la mesure porterait sur une scène vide (jsdom saute tout board dont la
+    // texture ne se résout pas).
+    expect(quads.length, 'aucun board monté : rien à mesurer').toBeGreaterThan(0);
+    const mats = quads.map((q) => q.material as THREE.MeshBasicMaterial);
+    const états = mats.map((m) => ({
+      mat: m.version,
+      tex: (m.map as THREE.Texture).version,
+      clé: m.customProgramCacheKey!(),
+      map: m.map,
+    }));
+    // PRÉMISSE — la sonde MORD : la pré-cuisson du montage, elle, rasterise bien par ce point-là.
+    // Sans cette mesure, « zéro appel » ne dirait rien d'autre que « la sonde est branchée ailleurs ».
+    await act(async () => { await new Promise((r) => setTimeout(r, 40)); });
+    expect(raster.mock.calls.length, 'la pré-cuisson doit passer par `rasterizeSvg`').toBeGreaterThan(0);
+    raster.mockClear();
+    // MARCHE : le sujet glisse, la boucle rejoue des images sans aucun rendu React.
+    glissement = { dx: 1.2, dy: 0, dz: 0 };
+    for (let i = 0; i < 4; i++) { glissement = { dx: 1.2 - i * 0.3, dy: 0, dz: 0 }; act(() => battre!()); }
+    // GESTE : plus de glissement, le registre de pistes décide (ou le repos).
+    glissement = null;
+    for (let i = 0; i < 4; i++) act(() => battre!());
+    expect(raster, 'une image qui rasterise, c’est ~10 ms de mur par frame (sonde #1176)').not.toHaveBeenCalled();
+    mats.forEach((m, i) => {
+      expect(m.version, 'un matériau périmé = un programme recompilé en pleine marche').toBe(états[i].mat);
+      expect((m.map as THREE.Texture).version, 'une texture périmée = un téléversement GPU par image').toBe(états[i].tex);
+      expect(m.customProgramCacheKey!()).toBe(états[i].clé);
+      // À cache d'atlas FROID, le quad garde sa planche de montage : rien ne clignote.
+      expect(m.map).toBe(états[i].map);
+    });
+  });
+
+  it('le CADRE reste PLEIN tant qu’aucune planche n’est cuite — le sujet ne montre pas du vide', async () => {
+    await monter();
+    const quads = corps();
+    expect(quads.length).toBeGreaterThan(0);
+    act(() => battre!());
+    for (const q of quads) {
+      expect(frameRectOf(q.material as THREE.Material)!.value.toArray()).toEqual([...FRAME_RECT_PLEIN]);
+    }
+  });
+
+  it('MONTAGE PAR SUJET : un board entre en scène dès SA texture — il n’attend pas les autres', async () => {
+    // Une SEULE rasterisation aboutit ; toutes les suivantes restent en suspens (une chaîne de
+    // rasterisation qui ne rend jamais la main : le cas que le tout-ou-tien masquait).
+    let servies = 0;
+    vi.stubGlobal('Image', class {
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      set src(_v: string) { if (servies++ === 0) queueMicrotask(() => this.onload?.()); }
+    });
+    scènes = [];
+    hôte = document.createElement('div');
+    document.body.appendChild(hôte);
+    root = createRoot(hôte);
+    await act(async () => {
+      root!.render(
+        <GameStage3D
+          scene={SCENE}
+          mpt={sceneMetresPerTile(SCENE)}
+          frame={AFFINE}
+          tintAt={() => 1}
+          keepEl={() => true}
+          els={{ tokens: [], props: [] }}
+          actors={[ACTEURS[0], { c: combattant('e1', { x: 5, y: 2 }), x: 5, y: 2, z: 0 }]}
+          gameTime={720}
+          lightLevel={null}
+          lights={[]}
+          anim={anim}
+        />,
+      );
+    });
+    // Sous un `allSettled`, AUCUN board n'existerait : le groupe entier attendait le dernier sujet.
+    expect(corps(), 'le sujet résolu doit être à l’écran, seul').toHaveLength(1);
+  });
+});
+
+// ————————————————————————————————————————————————————————————————
+// 5. LES DEUX POPULATIONS QUI NE JOUAIENT PAS (#1176, L4)
+// ————————————————————————————————————————————————————————————————
+//
+// Un GABARIT de créature (`BodyPlan` — la moitié du bestiaire) restait une statue qui glisse, et les
+// clips d'AMBIANCE authorés d'une entité de scène (`SceneEntity.anim`, donnée éditable) étaient morts
+// en volumique. Les deux se mesurent ICI, sur l'écran monté : ce que le cuiseur reçoit à cuire, et ce
+// que le quad montre au fil du temps.
+
+/** Un combattant à corps de GABARIT (quadrupède) — `glide` du banc suit l'id `h1`. */
+function bête(id: string): Combatant {
+  return { ...combattant(id, { x: 3, y: 3 }), kind: 'enemy', creatureId: 'loup', species: undefined } as unknown as Combatant;
+}
+
+/** Une entité de scène FIGURANTE, avec (ou sans) ambiance authorée. */
+function figurantEl(id: string, anim?: string): TokenEl {
+  const ent = { id, kind: 'personnage', pos: { x: 4, y: 4 }, facing: 'S', appearance: { species: 'humain' }, ...(anim ? { anim } : {}) };
+  return {
+    kind: 'token', key: `fig:${id}`, id, cell: { x: 4, y: 4, z: 0 },
+    subject: { kind: 'figurant', ent, enrolled: false, inBattle: false },
+  } as unknown as TokenEl;
+}
+
+/** Tous les quads de billboard de la dernière frame (un jeton de figurant n'a pas de silhouette). */
+function quads(): THREE.Mesh[] {
+  const out: THREE.Mesh[] = [];
+  scènes[scènes.length - 1]?.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (m.isMesh && !m.userData.emprunte && frameRectOf(m.material as THREE.Material)) out.push(m);
+  });
+  return out;
+}
+
+const cadre = (m: THREE.Mesh) => frameRectOf(m.material as THREE.Material)!.value.toArray().join(',');
+
+/** Laisse la file de cuisson tourner : `ms` de mur, par tranches, en battant la boucle d'image. */
+async function laisserCuire(ms: number): Promise<void> {
+  const fin = Date.now() + ms;
+  while (Date.now() < fin) {
+    await act(async () => { await new Promise((r) => setTimeout(r, 30)); });
+    if (battre) act(() => battre!());
+  }
+}
+
+describe('Gabarits de créature — le flipbook n’est plus réservé aux bipèdes (#1176 L4)', () => {
+  it('un gabarit est PRÉ-CUIT comme un rig — il n’est plus laissé à sa texture statique', async () => {
+    const raster = vi.spyOn(svgTexture, 'rasterizeSvg');
+    await monter({ actors: [{ c: bête('b1'), x: 3, y: 3, z: 0 }] });
+    await laisserCuire(300);
+    // Toutes ces rasterisations sont des CELLULES de planche : la texture statique d'un billboard
+    // passe, elle, par `getBillboardTexture` (appel interne au module, hors de cette sonde). Avant ce
+    // lot, un corps de gabarit n'en produisait AUCUNE — l'écran le sautait faute de couture de frame.
+    // Que ces cellules DIFFÈRENT entre elles se mesure sur la couture (`billboard-frameSvg.test.ts`),
+    // seule à pouvoir isoler les frames d'UNE planche.
+    expect(raster.mock.calls.length, 'aucune cuisson : le gabarit n’a pas de couture de frame').toBeGreaterThan(1);
+  });
+
+  it('un gabarit qui MARCHE ne rasterise rien par image, et ne périme ni texture ni programme', async () => {
+    await monter({ actors: [{ c: bête('h1'), x: 3, y: 3, z: 0 }] });
+    await laisserCuire(300);
+    const quad = quads();
+    expect(quad.length, 'aucun board monté : rien à mesurer').toBeGreaterThan(0);
+    const mats = quad.map((q) => q.material as THREE.MeshBasicMaterial);
+    const états = mats.map((m) => ({ mat: m.version, tex: (m.map as THREE.Texture).version, clé: m.customProgramCacheKey!() }));
+    const raster = vi.spyOn(svgTexture, 'rasterizeSvg');
+    for (let i = 0; i < 4; i++) { glissement = { dx: 1.2 - i * 0.3, dy: 0, dz: 0 }; act(() => battre!()); }
+    expect(raster, 'une image qui rasterise, c’est ~10 ms de mur par frame (sonde #1176)').not.toHaveBeenCalled();
+    mats.forEach((m, i) => {
+      expect(m.version).toBe(états[i].mat);
+      expect((m.map as THREE.Texture).version).toBe(états[i].tex);
+      expect(m.customProgramCacheKey!()).toBe(états[i].clé);
+    });
+  });
+});
+
+describe('Ambiance authorée d’une entité — la donnée éditable joue en volumique (#1176 L4)', () => {
+  it('avec `anim` : la CELLULE change au fil du temps — la boucle est vivante', async () => {
+    await monter({ actors: [], els: { tokens: [figurantEl('f1', 'feed')], props: [] } });
+    const vus = new Set<string>();
+    // La planche se cuit une cellule par tranche : on bat la boucle jusqu'à voir DEUX cellules
+    // différentes, sous un budget borné (une planche de 12 frames ≈ 100 ms par cellule jouée).
+    for (let i = 0; i < 24 && vus.size < 2; i++) {
+      await act(async () => { await new Promise((r) => setTimeout(r, 60)); });
+      act(() => battre!());
+      for (const q of quads()) vus.add(cadre(q));
+    }
+    expect(vus.size, 'le figurant reste figé : son ambiance authorée est morte').toBeGreaterThan(1);
+  });
+
+  it('sans `anim` : STATIQUE — cadre PLEIN, AUCUNE planche cuite, aucun coût nouveau', async () => {
+    const raster = vi.spyOn(svgTexture, 'rasterizeSvg');
+    await monter({ actors: [], els: { tokens: [figurantEl('f2')], props: [] } });
+    await laisserCuire(240);
+    const quad = quads();
+    expect(quad.length).toBeGreaterThan(0);
+    for (const q of quad) expect(cadre(q), 'un figurant sans ambiance ne montre pas de cellule').toBe(FRAME_RECT_PLEIN.join(','));
+    expect(raster, 'une entité sans ambiance ne cuit aucune planche (sa texture statique ne passe pas par ici)').not.toHaveBeenCalled();
+  });
+});
+
+// ————————————————————————————————————————————————————————————————
+// 6. LE PALIER DU CHEMIN STATIQUE, ET L'EFFONDREMENT QUI SE REJOUAIT
+// ————————————————————————————————————————————————————————————————
+
+describe('Palier du chemin STATIQUE — texture de montage et planches au MÊME palier (#1328)', () => {
+  /** Les paliers RÉELLEMENT demandés à la rasterisation sous ce rapport de pixels : la texture de
+   *  MONTAGE d'un billboard (`svgToTexture`) et les CELLULES de ses planches (`rasterizeSvg`).
+   *
+   *  Mesure prise au ZOOM MAXIMAL, celui sur lequel le palier de cuisson est taillé (`rasterPxHeight`) :
+   *  la taille projetée du quad y tombe sur son palier, donc l'hystérésis (`palierAtlas`) ne réclame
+   *  aucune autre planche et tout ce qui se cuit dérive de la même hauteur. Sous un zoom plus lâche, un
+   *  palier plus bas apparaîtrait — le système qui travaille, pas l'incohérence cherchée ici. */
+  async function paliers(dpr: number): Promise<{ statiques: number[]; planches: number[] }> {
+    Object.defineProperty(window, 'devicePixelRatio', { configurable: true, value: dpr });
+    svgTexture.clearBillboardTextures();
+    const statique = vi.spyOn(svgTexture, 'svgToTexture');
+    const cellule = vi.spyOn(svgTexture, 'rasterizeSvg');
+    await monter({ frame: AFFINE_ZOOM_MAX });
+    for (let i = 0; i < 10; i++) await act(async () => { await new Promise((r) => setTimeout(r, 30)); });
+    const mesure = {
+      statiques: statique.mock.calls.map((c) => c[2]),
+      planches: cellule.mock.calls.map((c) => c[2]),
+    };
+    statique.mockRestore();
+    cellule.mockRestore();
+    if (root) { act(() => root!.unmount()); root = null; }
+    if (hôte) { hôte.remove(); hôte = null; }
+    resetBakeQueue();
+    clearAtlasCache();
+    return mesure;
+  }
+
+  it('un même sujet au même zoom : UN seul palier, et il porte le facteur DPR du renderer', async () => {
+    const deux = await paliers(2);
+    const un = await paliers(1);
+    Object.defineProperty(window, 'devicePixelRatio', { configurable: true, value: 1 });
+    // PRÉMISSES — sans elles, « un seul palier » serait vrai d'un ensemble vide.
+    expect(deux.statiques.length, 'aucune texture de montage : rien à mesurer').toBeGreaterThan(0);
+    expect(deux.planches.length, 'aucune planche cuite : rien à comparer').toBeGreaterThan(0);
+    expect(un.statiques.length).toBeGreaterThan(0);
+    // Le saut de netteté que le DPR absent du chemin statique fabriquait : le quad passe de sa texture
+    // de montage à sa première planche, et change de résolution en route.
+    expect(
+      new Set([...deux.statiques, ...deux.planches]).size,
+      `paliers statiques ${[...new Set(deux.statiques)]} contre planches ${[...new Set(deux.planches)]}`,
+    ).toBe(1);
+    // …et ce palier unique SUIT le rapport de pixels : à DPR 1, le même sujet se cuit deux fois plus bas.
+    expect(deux.statiques[0], 'le palier de montage ignore le rapport de pixels du rendu').toBe(un.statiques[0] * DPR_PLAFOND);
+  });
+});
+
+describe('Effondrement — la chute se compte depuis l’ENTRÉE AU SOL (#1176 L4)', () => {
+  /** Un combattant À TERRE (`groundStateOf` : État `a-terre`) — son sujet porte `anim.ground`. */
+  function àTerre(id: string): Combatant {
+    return { ...combattant(id, { x: 2, y: 2 }), conditions: [{ id: 'a-terre', value: 1 }] } as unknown as Combatant;
+  }
+
+  /** Planches SERVIES SANS RASTERISATION : une cellule coûte ~10 ms de mur (sonde #1176), et une chute
+   *  de 420 ms n'a pas le temps de se cuire dans un banc. La GRILLE reste réelle (`atlasLayout`). */
+  function servirLesPlanches(): void {
+    vi.spyOn(atlasBake, 'bakeAtlas').mockImplementation(async (_draw, _box, n) => {
+      const layout = atlasLayout(24, 30, n);
+      return { texture: new THREE.CanvasTexture(document.createElement('canvas')), layout, bytes: layout.texW * layout.texH * 4 };
+    });
+  }
+
+  /** Rang de la cellule montrée par le quad dans une planche de `n` cellules — `null` = aucune (le quad
+   *  est resté sur sa texture statique, cadre plein). */
+  function celluleMontrée(n: number): number | null {
+    const l = atlasLayout(24, 30, n);
+    for (const q of quads()) {
+      for (let k = 0; k < l.n; k++) {
+        const r = frameUvRect(l, k);
+        if (cadre(q) === [r.x, r.y, r.w, r.h].join(',')) return k;
+      }
+    }
+    return null;
+  }
+
+  it('REBUILD à mi-chute : la chute REPREND où elle en est ; après la fin, la dernière cellule TIENT', async () => {
+    servirLesPlanches();
+    const N = atlasFrames(planDyingDef('prone'));
+    const acteurs: ActorPose[] = [{ c: àTerre('h1'), x: 2, y: 2, z: 0, heroIndex: 0 }];
+    await monter({ actors: acteurs });
+    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
+    const départ = Date.now();
+    act(() => battre!());
+    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
+    act(() => battre!());
+    expect(celluleMontrée(N), 'PRÉMISSE : la planche d’effondrement doit être servie').not.toBeNull();
+    // MI-CHUTE : les boards se rebâtissent (un quart de tour, un pas commité) — la chute ne redémarre pas.
+    await act(async () => { await new Promise((r) => setTimeout(r, 150)); });
+    await remonter({ actors: acteurs });
+    act(() => battre!());
+    const écoulé = Date.now() - départ;
+    const attendu = frameIndexAt(écoulé, COLLAPSE_MS, N, false);
+    const vu = celluleMontrée(N);
+    expect(attendu, 'PRÉMISSE : la chute doit être ENGAGÉE au moment du rebuild').toBeGreaterThan(1);
+    expect(Math.abs((vu ?? -99) - attendu), `cellule ${vu} pour ${écoulé} ms écoulés (attendu ${attendu})`).toBeLessThanOrEqual(1);
+    // APRÈS LA FIN : le cadavre reste au sol — un rebuild qui rejoue la chute le relèverait.
+    await act(async () => { await new Promise((r) => setTimeout(r, COLLAPSE_MS)); });
+    await remonter({ actors: acteurs });
+    act(() => battre!());
+    expect(celluleMontrée(N), 'la chute se rejoue à chaque rebuild de board').toBe(N - 1);
+  });
+});

@@ -51,9 +51,11 @@ function elsDuStage(scene: Scene, battle: BattleState | null) {
 const embusques = (scene: Scene): string[] => scene.entities.filter((e) => e.combat?.hiddenUntilCombat).map((e) => e.id);
 /** Ids des personnages que la voie FAUTIVE dessinait : la scène brute, sans filtre. */
 const persosBruts = (scene: Scene): string[] => scene.entities.filter((e) => e.kind === 'personnage').map((e) => e.id);
-/** Ids des personnages billboardés par la voie volumique. */
+/** Ids des personnages billboardés par la voie volumique. L'identité d'un figurant porte SA
+ *  signature de dessin après le `|` (son ambiance authorée, comme celle d'un décor porte sa réf) :
+ *  l'id d'entité est ce qui la précède. */
 const persosBillboardés = (subs: { kind: string; identity: string }[]): string[] =>
-  subs.filter((s) => s.kind === 'personnage').map((s) => s.identity.replace(/^perso:/, ''));
+  subs.filter((s) => s.kind === 'personnage').map((s) => s.identity.replace(/^perso:/, '').split('|')[0]);
 
 describe('POPULATION — le monde volumique dessine les corps du builder, pas la scène brute', () => {
   it('les trois scènes témoins posent bien une embuscade (sinon la mesure ne pèserait rien)', () => {
