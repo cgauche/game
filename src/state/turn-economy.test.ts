@@ -39,6 +39,16 @@ describe('hasMeaningfulOption — garde-fou « tour gâché » (R6)', () => {
     expect(hasMeaningfulOption(h, battle(h, { acted: true, movementUsed: 99, movedPreAction: true }))).toBe(true);
   });
 
+  it('tout dépensé, Détermination SANS aucun État → true (immunité Psychologie / ignorer les modificateurs de critique, LDB 17 l.59-61)', () => {
+    const h = hero({ resolve: 1, conditions: [] });
+    expect(hasMeaningfulOption(h, battle(h, { acted: true, movementUsed: 99, movedPreAction: true }))).toBe(true);
+  });
+
+  it('tout dépensé, Détermination à 0 et un État → false (rien à dépenser)', () => {
+    const h = hero({ resolve: 0, conditions: [{ id: 'sonne', value: 1 }] });
+    expect(hasMeaningfulOption(h, battle(h, { acted: true, movementUsed: 99, movedPreAction: true }))).toBe(false);
+  });
+
   it('tout dépensé mais attaque libre de Frénésie disponible → true', () => {
     const h = hero({ psychState: [{ type: 'frenesie' }], talents: [{ talentId: 'frenesie', times: 1 }] });
     expect(hasMeaningfulOption(h, battle(h, { acted: true, movementUsed: 99, movedPreAction: true }))).toBe(true);

@@ -328,7 +328,8 @@ export function ActionBar() {
     }, {}),
   );
 
-  // Détermination (Resolve) : États retirables de l'actif (LDB 17 l.59-61).
+  // Détermination (Resolve) : la porte de la barre s'ouvre sur les TROIS dépenses (LDB 17 l.59-61) ;
+  // `removableConditions` ne sert qu'à la LISTE des États du panneau.
   const resolve = isHero ? active.resolve ?? 0 : 0;
   const removableConditions = isHero && resolve > 0 ? active.conditions : [];
   // Économie du tour (R6) : reste-t-il une option utile ? sinon « Fin du tour » pulse (nudge). Finir avec
@@ -441,7 +442,7 @@ export function ActionBar() {
       slots.push({ id: `item-${g.label}`, disabled: battle.acted || stunned || broken, icon: it ? <ItemIcon item={it} size={22} /> : <Icon id="action/consume" />, label: `${g.label}${g.uids.length > 1 ? ` ×${g.uids.length}` : ''}`, title: (g.desc ? mdToText(g.desc) : '') || `Utiliser ${g.label}`, run: () => useItem(g.uids[0]) });
     }
     if (!frenzied) for (const g of groundItems) slots.push({ id: `pickup-${g.entityId}:${g.key}`, disabled: battle.acted || stunned || broken, icon: <Icon id="action/pick-up" />, label: g.label, title: "Ramasser cet objet au sol (coûte l'Action)", run: () => pickup(g.entityId, g.key) });
-    if (removableConditions.length > 0) slots.push({ id: 'resolve', cls: `ab-alert ${battle.action === 'resolve' ? 'on' : ''}`, icon: <Icon id="resource/resolve" />, label: `Détermination (${resolve})`, title: "Détermination : retirer un État (ne coûte pas l'Action)", run: () => selectAction(battle.action === 'resolve' ? null : 'resolve') });
+    if (resolve > 0) slots.push({ id: 'resolve', cls: `ab-alert ${battle.action === 'resolve' ? 'on' : ''}`, icon: <Icon id="resource/resolve" />, label: `Détermination (${resolve})`, title: "Détermination : immunité Psychologie, ignorer les modificateurs de critique, ou retirer un État (ne coûte pas l'Action)", run: () => selectAction(battle.action === 'resolve' ? null : 'resolve') });
     if (net.mode !== 'local') slots.push({ id: 'raise-hand', cls: battle.handRaised ? 'on' : '', disabled: !!battle.handRaised, icon: <Icon id="ui/wait" />, label: battle.handRaised ? 'Pause demandée' : 'Pause Round', title: 'Demander la pause au prochain début de Round (fenêtre Chance « agir en premier »)', run: () => useGame.getState().raiseHand() });
     slots.push({ id: 'end-turn', cls: `ab-end ${!meaningfulLeft ? 'pulse' : ''} ${confirmEnd ? 'warn' : ''}`, icon: confirmEnd ? <Icon id="ui/warning" /> : <Icon id="ui/turn-end" />, label: confirmEnd ? 'Finir quand même ?' : 'Fin du tour', title: confirmEnd ? 'Tu n’as pas encore agi ce tour — clique encore pour finir quand même' : !meaningfulLeft ? 'Plus rien à faire ce tour' : 'Finir le tour', run: onEndTurn });
   }
