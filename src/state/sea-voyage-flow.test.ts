@@ -5,16 +5,18 @@ import { makePregens } from '../data/pregens';
 import {
   buildSeaPlan, portRepairVessel, portInstallUpgrade, runSeaDay, continueSeaDayAfterCascade,
   resolvePortArrival, resolveManannPriest, resolveShoreLeave, damageVesselHull, healVesselHull,
-  buildOverspeedSteps,
+  buildOverspeedSteps, engineerOf,
 } from './seaVoyageFlow';
 import { seedBattleRng } from './battleRng';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
-import { partyAssisted, skillBaseValue, testValue } from '../engine/skills';
+import { partyAssisted, partyBest, skillBaseValue, testValue } from '../engine/skills';
 import { subtract, toBrass } from '../engine/money';
 import { partyMoneyTotal, bourseOf, creditBourse } from './bourseFlow';
 import { itemFromTrappingById } from '../engine/items';
 import { bankWithdraw } from './interludeFlow';
 import { traumaById } from '../engine/trauma';
+import { findSkillById } from '../data';
+import type { Combatant } from '../engine/types';
 import { buildEncounter } from './encounterAuthoring';
 import { emptyScene, type Scene } from './scene';
 import type { WorldMap } from './worldMap';
@@ -1992,5 +1994,54 @@ describe('Test d’équipage — la chanson de marin est NOMMÉE sur la rangée 
       const st = { base: part.base, target: part.target, mods: part.mods, difficulty: part.difficulty, clamped: part.clamped } as never;
       expect(inexplique(st), 'aucune chip « autres » sur une rangée d’équipage').toBe(0);
     }
+  });
+});
+
+/**
+ * #1341 (2ᵉ site, trouvé par la passe V8c₃) — la SPÉCIALISATION d'un Test se demande par son ID.
+ *
+ * `engineerOf` (`seaVoyageFlow.ts`, PANNE DE VAPEUR, MDG 12 l.326) demandait `partyBest(apt, 'metier',
+ * …, 'Ingénieur')` : le LIBELLÉ, là où `skills.json` stocke la spec `ingenieur` et où `testValue`
+ * compare STRICTEMENT (`s.spec === spec`). Conséquence MESURÉE avant le correctif : la valeur retombait
+ * sur la valeur SANS compétence (33 au lieu de 58 sur la fixture de ce fichier), et `partyBest`
+ * élisait le PREMIER venu —
+ * le mécano de la chaudière n'était donc jamais celui qui sait réparer.
+ */
+describe('#1341 (site maritime) — `engineerOf` demande la spec Métier par ID, jamais par LABEL', () => {
+  /** Un ingénieur : Intelligence figée à 30, +25 avances en Métier (Ingénieur). */
+  function ingenieur(): Combatant {
+    const h = makePregens()[0];
+    h.characteristics.intelligence = 30;
+    h.skills = [{ skillId: 'metier', characteristic: 'intelligence', advances: 25, spec: 'ingenieur' }];
+    return h;
+  }
+  /** Un badaud : même Intelligence, aucune compétence de Métier. */
+  function badaud(): Combatant {
+    const h = makePregens()[1];
+    h.characteristics.intelligence = 30;
+    h.skills = [];
+    return h;
+  }
+
+  it('la spec « ingenieur » EXISTE dans skills.json (id, pas libellé)', () => {
+    expect((findSkillById('metier')?.specs ?? []).some((s) => s.id === 'ingenieur')).toBe(true);
+  });
+
+  it('testValue trouve la spécialisation par son ID — le LIBELLÉ perd les avances (contre-preuve)', () => {
+    const h = ingenieur();
+    const parId = testValue(h, 'metier', undefined, 'ingenieur');
+    const parLabel = testValue(h, 'metier', undefined, 'Ingénieur');
+    expect(parId, 'par id : les avances comptent').toBeGreaterThan(parLabel);
+    // …et le libellé rend EXACTEMENT ce que rend une demande SANS compétence : la compétence est
+    // réputée absente, les 25 avances tombent en silence (33 sur cette fixture, passifs compris).
+    expect(parLabel, 'par libellé : la compétence est réputée absente').toBe(testValue(h, 'metier', undefined, 'inconnue-xyz'));
+  });
+
+  it('LE SITE — `engineerOf` élit bien l’INGÉNIEUR, là où la demande par libellé élisait le premier venu', () => {
+    const b = badaud(), i = ingenieur();
+    // Le SITE de production, pas son mécanisme : débrancher l'id au call-site rougit ICI.
+    expect(engineerOf([b, i])?.id, 'le mécano de la chaudière est celui qui sait réparer').toBe(i.id);
+    // Contre-preuve du mécanisme sous-jacent : la MÊME élection demandée par LIBELLÉ prend le badaud.
+    expect(partyBest([b, i], 'metier', undefined, undefined, 'Ingénieur')?.actor.id, 'par libellé : le premier venu').toBe(b.id);
   });
 });

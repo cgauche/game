@@ -8,14 +8,13 @@
  */
 import { RNG, defaultRNG } from './dice';
 import { t } from '../i18n';
-import type { PlayerText } from '../i18n/playerText';
 import { rollTest, resolveOpposed, evaluateTest, opposedReasons, exactDifficultyFromModifier, TestResult, type VerdictReason } from './tests';
 import { bonus, effectiveChar, baseWithTraits } from './characteristics';
 import { woundsFromHit } from './woundsCalc';
 import { isInanimate } from './structures';
 import { agilityTestPenalty } from './encumbrance';
 import { skillBaseValue } from './skills';
-import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS, CHAR_LABELS, DIFFICULTY_MODIFIERS, type CharKey, type Difficulty, type ModLine } from './types';
+import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, CHAR_LABELS, DIFFICULTY_MODIFIERS, locationLabel, type CharKey, type Difficulty, type ModLine } from './types';
 import { weatherTestMods } from './weatherTestMod';
 import { findTableEntry } from './tables';
 import { maxBy } from './pick';
@@ -90,12 +89,7 @@ export function shipHitLocation(rig: ShipRig, roll: number, tableId: string = 'n
   return findTableEntry(table, roll)[rig];
 }
 
-/** Étiquette FR d'une localisation pour une forme de corps (LDB 76 p.312). Forme inconnue/absente de
- *  la table → libellés humanoïdes (`HIT_LOCATION_LABELS`), comme `hitLocationByShape` retombe sur
- *  `humanoide` — les deux jumeaux tolèrent une forme hors table. */
-export function locationLabel(loc: HitLocation, shape: BodyShape = 'humanoide'): PlayerText {
-  return BODY_SHAPE_LOC_LABELS[shape]?.[loc] ?? HIT_LOCATION_LABELS[loc];
-}
+export { locationLabel } from './types';
 
 /** Main ensanglantée (AA 07 l.117) : la main tenant `weaponUid` est-elle « ensanglantée » (marqueur
  *  `handGates`, op `handGate`) ? Renvoie la main gatée (`'main'`/`'off'`) — qui impose un Test de

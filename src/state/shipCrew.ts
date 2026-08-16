@@ -21,6 +21,7 @@ import { maxBy } from '../engine/pick';
 import { applyOps } from '../engine/ops';
 import { removeActiveEffects, isOutOfAction } from '../engine/conditions';
 import { battleRng } from './battleRng';
+import { t } from '../i18n';
 import type { Get, Set as SetFn } from './flowTypes';
 
 /**
@@ -173,7 +174,7 @@ export const QUART_MINUTES = 240;
 export const quartIndex = (gameTime: number): number => Math.floor(gameTime / QUART_MINUTES);
 
 /** Préfixe d'identité des effets de chanson (retrait ciblé à l'interruption — MDG 09 l.38). */
-const SHANTY_LABEL = (label: string): string => `Chanson de marin — ${label}`;
+const SHANTY_LABEL = (label: string): string => t('crew.shantyLabel', { label });
 
 /**
  * APPLIQUE une chanson de marin RÉUSSIE (MDG 09 l.36-40 + l.218-248) : ses `crewOps` sur CHAQUE membre
@@ -189,13 +190,13 @@ export function applyShantyToCrew(get: Get, ship: Combatant, singer: Combatant, 
   const until = get().gameTime + 3 + Math.max(0, sl); // 3 min + DR (l.38)
   const combatants = get().battle?.combatants ?? get().party;
   const crew = exposedCrew((ship.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c));
-  const lines: string[] = [`${singer.label} entonne « ${shanty.label} » (${3 + Math.max(0, sl)} min).`];
+  const lines: string[] = [t('crew.shantyStart', { name: singer.label, shanty: shanty.label, min: 3 + Math.max(0, sl) })];
   for (const c of crew) if (shanty.crewOps?.length) lines.push(...applyOps(c, shanty.crewOps, { label, effectId: shantyId, rng: battleRng(), defaultUntilTime: until }));
   if (shanty.captainOps?.length) {
     const roles = shipDefaultRoles(crew, 'manoeuvre');
     const captain = crew.find((c) => roles.get(c.id) === 'capitaine');
     if (captain) lines.push(...applyOps(captain, shanty.captainOps, { label, effectId: shantyId, rng: battleRng(), defaultUntilTime: until }));
-    else lines.push('Aucun Capitaine à bord : la chanson ne trouve pas son héros.');
+    else lines.push(t('crew.noCaptain'));
   }
   singer.singingShanty = { shantyId, label };
   ship.lastShantyQuart = quartIndex(get().gameTime);
@@ -212,7 +213,7 @@ export function endShanty(get: Get, singer: Combatant): string[] {
   delete singer.singingShanty;
   const combatants = get().battle?.combatants ?? get().party;
   for (const c of combatants) removeActiveEffects(c, (e) => e.effectId === song.shantyId);
-  return [`La chanson de ${singer.label} s'interrompt.`];
+  return [t('crew.shantyEnd', { name: singer.label })];
 }
 
 /**
@@ -245,13 +246,13 @@ export function resolveShipUnits(combatants: Combatant[]): string[] {
       const aboard = exposedCrew(crew).filter((c) => !isOutOfAction(c));
       if (aboard.length) {
         for (const c of aboard) { c.outOfRencontre = true; c.exitReason = 'naufrage'; } // #237 : éjecté vivant, lu « hors-combat »
-        lines.push(`${hull.label} sombre — son équipage (${aboard.map((c) => c.label).join(', ')}) passe par-dessus bord.`);
+        lines.push(t('crew.sinks', { ship: hull.label, crew: aboard.map((c) => c.label).join(', ') }));
       }
     } else if (crew.length && crew.every((c) => isOutOfAction(c))) {
       // Plus personne à bord : la coque, sans équipage pour la défendre ni la manœuvrer, quitte le combat.
       hull.outOfRencontre = true;
       hull.exitReason = 'prise'; // #237 : coque amenée, lue « rendu » (pavillon baissé) au token de coque
-      lines.push(`${hull.label} n'a plus d'équipage en état de le défendre : le navire est pris et sort du combat.`);
+      lines.push(t('crew.taken', { ship: hull.label }));
     }
   }
   return lines;
@@ -269,9 +270,9 @@ export function applyShipMoraleDelta(get: Get, set: SetFn, ship: Combatant, delt
   const before = vessel.morale.score;
   const after = before + delta;
   set({ vessel: { ...vessel, morale: { ...vessel.morale, score: after } } });
-  const lines = [`Moral de l'équipage : ${delta > 0 ? '+' : ''}${delta} (${before} → ${after}).`];
+  const lines = [t('crew.moraleDelta', { delta: `${delta > 0 ? '+' : ''}${delta}`, before, after })];
   const bandAfter = moraleBand(after);
-  if (bandAfter.id !== moraleBand(before).id) lines.push(`« ${bandAfter.desc.split('.')[0]}. »`);
+  if (bandAfter.id !== moraleBand(before).id) lines.push(t('crew.moraleBand', { desc: bandAfter.desc.split('.')[0] }));
   return lines;
 }
 
@@ -334,20 +335,20 @@ export function resolveVesselWeek(vessel: CampaignVessel, purse: Money, decision
     if (decision === 'pas-de-paie') {
       paidFactor = 'pas-de-paie';
       wagesOwed += wageBrass;
-      paidLine = `L'équipage n'est pas payé — solde due cumulée (${formatMoney(fromBrass(wageBrass))}).`;
+      paidLine = t('crew.unpaid', { money: formatMoney(fromBrass(wageBrass)) });
     } else {
       costBrass = payChoiceCostBrass(wageBrass, decision);
       const cost = fromBrass(costBrass);
       if (canAfford(purse, cost)) {
         paidFactor = decision;
-        paidLine = `Solde hebdomadaire de l'équipage versée : ${formatMoney(cost)}.`;
+        paidLine = t('crew.paid', { money: formatMoney(cost) });
       } else {
         // Bourse insuffisante → repli `pas-de-paie` + dette (défaut de la cadence auto ; en Conseil de
         // bord manuel l'option non payable est désactivée, ce repli ne s'y produit pas).
         paidFactor = 'pas-de-paie';
         costBrass = 0;
         wagesOwed += wageBrass;
-        paidLine = `Bourse insuffisante pour la solde de l'équipage (${formatMoney(cost)}) — l'équipage n'est pas payé.`;
+        paidLine = t('crew.cannotPay', { money: formatMoney(cost) });
       }
     }
     lines.push(paidLine);
@@ -362,7 +363,7 @@ export function resolveVesselWeek(vessel: CampaignVessel, purse: Money, decision
     morale: { ...vessel.morale, score: r.score, lastMoraleWeek: week },
     ...(wagesOwed ? { wagesOwed } : {}),
   };
-  lines.push(`Moral de l'équipage recalculé : ${r.score} (${moraleBand(r.score).desc.split('.')[0]}).`, ...r.lines);
+  lines.push(t('crew.moraleRecalc', { score: r.score, band: moraleBand(r.score).desc.split('.')[0] }), ...r.lines);
   return { vessel: newVessel, paidLine, costBrass, factorRolls: r.rolls, delta: r.delta, before, after: r.score, lines };
 }
 
@@ -406,7 +407,7 @@ function factorLedger(rolls: MoraleRoll[]): NightEntry[] {
     id: `council-factor-${i}`,
     icon: 'scenario/naval',
     label: f.label,
-    text: `${f.rolled >= 0 ? '+' : ''}${f.rolled} Moral`,
+    text: t('crew.factorMorale', { delta: `${f.rolled >= 0 ? '+' : ''}${f.rolled}` }),
     tone: f.rolled > 0 ? 'ok' : f.rolled < 0 ? 'bad' : 'info',
   }));
 }
@@ -453,7 +454,7 @@ export function applyVesselCrewLoss(get: Get, set: SetFn, delta: number): string
   const after = Math.max(0, Math.min(nominal, before + delta));
   if (after === before) return [];
   set({ vessel: { ...vessel, crewLost: after } });
-  return [`Équipage : ${after > before ? '−' : '+'}${Math.abs(after - before)} membre(s) (reste ${Math.max(0, nominal - after)}/${nominal}).`];
+  return [t('crew.crewDelta', { delta: `${after > before ? '−' : '+'}${Math.abs(after - before)}`, left: Math.max(0, nominal - after), nominal })];
 }
 
 /**
@@ -475,5 +476,5 @@ export function resolveShoreLeaveDesertion(get: Get, set: SetFn, rng: RNG): stri
   let deserters = 0;
   for (let i = 0; i < present; i++) if (d100(rng) <= threshold) deserters++;
   if (!deserters) return [];
-  return [`Relâche à terre : ${deserters} marin(s) ne sont pas revenus à bord.`, ...applyVesselCrewLoss(get, set, deserters)];
+  return [t('crew.desertion', { n: deserters }), ...applyVesselCrewLoss(get, set, deserters)];
 }

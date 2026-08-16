@@ -123,8 +123,9 @@ const CONTENT_DIRS = ['src/state', 'src/engine'];
  *  comptés à part (`CATALOG_BASELINE` ci-dessous) — une migration i18n ne fait plus DISPARAÎTRE un site
  *  du compteur. */
 const CONTENT_BASELINE: Record<string, number> = {
-  // #295 — site GARDÉ nominativement (journal = SEULE surface du jet) que le dériveur ne peut PAS rendre :
-  'src/state/seaVoyageFlow.ts': 1, // redémarrage vapeur (`runRestart`) : la ligne porte le DR CUMULÉ du Test étendu (`lastDR`), pas le DR du jet — le patron dirait un autre nombre.
+  // #295 — le site GARDÉ nominativement du redémarrage vapeur (`seaVoyageFlow`, `runRestart`) a QUITTÉ
+  // ce compte au lot V8c₃ : il est passé au catalogue (`sv.engineRestart`), où `CATALOG_BASELINE` le
+  // compte à SON titre — déplacé, jamais effacé.
   // RÉSORBÉS dans le dériveur (#1262 V3 Lj) : stock #410 (merchantFlow ×2, portFlow ×2, engine/magic ×2,
   // engine/provisions ×2, engine/travel ×1) + 4 sites #295 (pursuitFlow, shipwreck, travelFlow ×2) ;
   // puis (#1294) le Test opposé INLINE de `combat/triggeredTest.ts` (×2), rendu par la forme OPPOSÉE
@@ -160,6 +161,9 @@ const CATALOG_BASELINE = [
   'tf.beastExhausted', // bêtes de l'attelage : porteur SANS identité, dé parenthétique en justification
   'rv.splinterDodgedRoll', 'rv.fragDodgeFailed', // éclats : jet INCISÉ dans une narration d'ÉVÉNEMENT
   'rv.holeInline', 'rv.fragRefloat', // calfatage / renflouage IA : idem
+  // #1318 V8c₃ — le site #295 de `seaVoyageFlow.runRestart`, venu du compteur de CODE au même titre :
+  // la ligne porte le DR CUMULÉ du Test étendu (`lastDR`), que le patron du dériveur ne saurait dire.
+  'sv.engineRestart',
 ].sort();
 
 /** Clés du catalogue dont la VALEUR re-printe un jet (`{roll}/{target}`), dériveur exclu. */

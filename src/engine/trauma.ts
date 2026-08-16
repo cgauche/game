@@ -10,7 +10,7 @@
  * defenseModifiers — et ne s'applique qu'aux jets d'arme qui IMPLIQUENT la main blessée (jamais un charMod
  * CC/CT global). Le trauma est enregistré (label+note) même sans effet modélisé.
  */
-import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest, Weapon, effectRef, type ModFamille } from './types';
+import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest, Weapon, effectRef, locationLabel, type BodyShape, type ModFamille } from './types';
 import { rollTest } from './tests';
 import { RNG, defaultRNG, d10 } from './dice';
 import type { CritEscalation } from '../data/criticals';
@@ -25,6 +25,7 @@ import { hasActiveFlag } from './activeFlags';
 import { wornSocialMods, qualityWearMods } from './wearPenalty';
 import type { GameOp, PairedSense, PassiveKind, PassiveMod } from './ops';
 import traumasJson from '../data/traumas.json';
+import { t as tr } from '../i18n'; // alias : `t` est un identifiant local très fréquent ici (la séquelle courante)
 
 export type TraumaKind = 'dechirure' | 'fracture';
 export type TraumaSeverity = 'mineur' | 'majeur';
@@ -140,12 +141,12 @@ export function traumaById(id: string, opts?: { be?: number; d10?: number }, loc
 
 /** Une déchirure musculaire MAJEURE de jambe guérit en DEUX temps (LDB 18 l.231) : après la 1ʳᵉ moitié
  *  (recoveryTotal/2), la pénalité de mobilité passe de −20 à −10 ; la 2ᵉ moitié achève la guérison. */
-function downgradeTornMuscle(t: Trauma, leftDays: number): string | null {
+function downgradeTornMuscle(t: Trauma, leftDays: number, shape?: BodyShape): string | null {
   const esq = opsOfType(t.ops ?? [], 'skillMod').find((o) => o.skill === 'esquive');
   if (t.kind !== 'dechirure' || t.severity !== 'majeur' || esq?.mod !== -20 || t.recoveryTotal == null) return null;
   if (leftDays > t.recoveryTotal / 2) return null; // pas encore à la mi-durée
   esq.mod = -10; // rémission partielle (LDB 18 l.231)
-  return `la déchirure (${t.location}) entre en rémission partielle (−10).`;
+  return tr('tra.tornRemission', { loc: locationLabel(t.location ?? 'corps', shape) });
 }
 
 /**
@@ -153,10 +154,10 @@ function downgradeTornMuscle(t: Trauma, leftDays: number): string | null {
  * Test de Résistance raté laisse −5 (mineure) / −10 (majeure) en Agilité (Bras/Jambe/Torse) — la Tête
  * (−5/−10 Langue, compétence) est journalisée sans pénalité chiffrée (hors modèle charPenalty).
  */
-function fractureSequela(t: Trauma): Trauma | null {
+function fractureSequela(t: Trauma, shape?: BodyShape): Trauma | null {
   const pen = t.severity === 'majeur' ? -10 : -5;
-  if (t.location === 'tete') return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, ops: [{ op: 'skillMod', skill: 'langue', mod: pen }], desc: traumaFicheById('fracture-mal-ressoudee-tete').desc };
-  return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, ops: [{ op: 'charMod', char: 'agilite', mod: pen }], desc: traumaFicheById('fracture-mal-ressoudee-membre').desc };
+  if (t.location === 'tete') return { label: tr('tra.fractureSequelaLabel', { loc: locationLabel(t.location ?? 'corps', shape) }), location: t.location, ops: [{ op: 'skillMod', skill: 'langue', mod: pen }], desc: traumaFicheById('fracture-mal-ressoudee-tete').desc };
+  return { label: tr('tra.fractureSequelaLabel', { loc: locationLabel(t.location ?? 'corps', shape) }), location: t.location, ops: [{ op: 'charMod', char: 'agilite', mod: pen }], desc: traumaFicheById('fracture-mal-ressoudee-membre').desc };
 }
 
 /** Difficulté du Test de fin de fracture (LDB 18 l.202/213) selon la sévérité. */
@@ -171,11 +172,11 @@ export function fractureEndDifficulty(severity: string): Difficulty {
  * (et `criticalWounds` décrémenté) par `tickTraumaRecovery`. Partagé eager ⊥ cascade — zéro duplication.
  */
 export function applyFractureEnd(c: Combatant, success: boolean, severity: string, location: string, label: string): string[] {
-  if (success) return [`${c.label} : ${label} ressoudée proprement.`];
-  const seq = fractureSequela({ kind: 'fracture', severity, location, label } as Trauma);
+  if (success) return [tr('tra.fractureHealed', { name: c.label, label })];
+  const seq = fractureSequela({ kind: 'fracture', severity, location, label } as Trauma, c.bodyShape);
   if (!seq) return [];
   c.traumas = [...(c.traumas ?? []), seq];
-  return [`${c.label} : ${label} mal ressoudée — séquelle permanente.`];
+  return [tr('tra.fractureSequela', { name: c.label, label })];
 }
 
 /**
@@ -203,22 +204,22 @@ export function tickTraumaRecovery(c: Combatant, days: number, rng: RNG = defaul
       // reste chirurgicale (le moignon exige toujours une opération), débarrassée de son décompte d'escalade.
       remaining.push({ ...t, amputateAfterDays: undefined, amputateSequel: undefined });
       if (t.amputateSequel) remaining.push(traumaById(t.amputateSequel, undefined, t.location));
-      log.push(`${c.label} : faute de Chirurgie à temps, le membre est perdu (${t.label}, ${t.location}).`);
+      log.push(tr('tra.limbLostNoSurgery', { name: c.label, label: t.label, loc: locationLabel(t.location ?? 'corps', c.bodyShape) }));
       continue;
     }
     if (t.recoveryDays == null) { remaining.push(t); continue; }
     const left = t.recoveryDays - days;
     if (left > 0) {
       const next = { ...t, recoveryDays: left };
-      const msg = downgradeTornMuscle(next, left);
-      if (msg) log.push(`${c.label} : ${msg}`);
+      const msg = downgradeTornMuscle(next, left, c.bodyShape);
+      if (msg) log.push(tr('tra.tornRemissionLine', { name: c.label, msg }));
       remaining.push(next);
       continue;
     }
     // Résolu : la fracture/déchirure est retirée, la Blessure critique décomptée (l.317).
     if (c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1);
     if (t.kind === 'fracture' && !t.fractureSet) fractureTests.push({ severity: t.severity ?? 'mineur', location: t.location ?? '', label: t.label });
-    else log.push(`${c.label} guérit de : ${t.label} (${t.location}).`);
+    else log.push(tr('tra.recovered', { name: c.label, label: t.label, loc: locationLabel(t.location ?? 'corps', c.bodyShape) }));
   }
   c.traumas = remaining;
   // Test de fin de fracture (l.300/309) : DIFFÉRÉ en étape de cascade si `defer`, sinon roulé ici.
@@ -250,7 +251,7 @@ export function cureCriticalWounds(c: Combatant, n: number): string[] {
     if (left > 0 && t.kind != null) {
       left -= 1;
       if (c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1);
-      log.push(`${c.label} : ${t.label} (${t.location}) guérit miraculeusement.`);
+      log.push(tr('tra.curedMiraculously', { name: c.label, label: t.label, loc: locationLabel(t.location ?? 'corps', c.bodyShape) }));
     } else kept.push(t);
   }
   c.traumas = kept;
@@ -334,12 +335,12 @@ export function consolidateAmputations(c: Combatant): string[] {
     // La pénalité de combat (−5/doigt, −20/main) est CONTEXTUELLE À L'ARME (`amputationCombatPenalty`) — lue par
     // attack/defenseModifiers depuis `traumaId`+`location`+`count` ci-dessous ; on ne pose PLUS de charMod CC/CT ici.
     if (total >= 4) {
-      if (grp.length > 1) log.push(`${c.label} : 4+ doigts perdus (${loc}) → règle de la main tranchée.`);
+      if (grp.length > 1) log.push(tr('tra.handSevered', { name: c.label, loc: locationLabel(loc, c.bodyShape) }));
       if (!kept.some((t) => t.traumaId === 'main-bras-ampute' && t.location === loc)) {
-        kept.push({ label: `${handFiche.label} (${loc})`, traumaId: handFiche.id, location: loc, ops: [{ op: 'maxWeaponHands', hands: 1 }], prosthesis: handFiche.prosthesis!.map((p) => ({ ...p })), desc: handFiche.desc });
+        kept.push({ label: tr('tra.locSuffix', { label: handFiche.label, loc: locationLabel(loc, c.bodyShape) }), traumaId: handFiche.id, location: loc, ops: [{ op: 'maxWeaponHands', hands: 1 }], prosthesis: handFiche.prosthesis!.map((p) => ({ ...p })), desc: handFiche.desc });
       }
     } else {
-      kept.push({ label: `${fingerFiche.label} (${loc})`, traumaId: fingerFiche.id, location: loc, count: total, prosthesis: fingerFiche.prosthesis!.map((p) => ({ ...p })), desc: fingerFiche.desc });
+      kept.push({ label: tr('tra.locSuffix', { label: fingerFiche.label, loc: locationLabel(loc, c.bodyShape) }), traumaId: fingerFiche.id, location: loc, count: total, prosthesis: fingerFiche.prosthesis!.map((p) => ({ ...p })), desc: fingerFiche.desc });
     }
   }
   const teeth = traumas.filter(isTeeth);
@@ -363,7 +364,7 @@ export function receiveMedicalAid(c: Combatant): string[] {
   const awaiting = (c.traumas ?? []).filter((t) => t.awaitingMedicalAid);
   if (!awaiting.length) return [];
   for (const t of awaiting) t.awaitingMedicalAid = false;
-  return [`${c.label} reçoit de l'Aide Médicale — l'aggravation de la blessure est stoppée.`];
+  return [tr('tra.medicalAid', { name: c.label })];
 }
 
 /**
@@ -380,7 +381,7 @@ export function tickFingerLossEscalation(c: Combatant, _rng: RNG = defaultRNG): 
     const finger = traumaById('doigt-ampute', undefined, t.location);
     finger.count = 1; // 1 doigt de plus (cumulé par consolidateAmputations, comme permanentAmputations)
     c.traumas = [...(c.traumas ?? []), finger];
-    log.push(`${c.label} : sans Aide Médicale, la main perd un doigt de plus (${t.location}).`);
+    log.push(tr('tra.fingerLost', { name: c.label, loc: locationLabel(t.location ?? 'corps', c.bodyShape) }));
   }
   const cons = consolidateAmputations(c);
   // Main tranchée (4+ doigts) : la règle « perdez tous vos doigts → vous perdez votre main » est atteinte —
@@ -422,7 +423,7 @@ export function stampCriticalEscalation(
     // « Pied écrasé » (LDB 18 l.180) : le pied est une plaie chirurgicale À PART ENTIÈRE (« Si vous n'êtes pas
     // soigné par Chirurgie… vous perdez votre pied »), indépendante de la perte d'orteil (`amputation.loss`
     // peut n'avoir posé aucune plaie sur un Test réussi) → on en CRÉE une si aucune n'existe.
-    if (!plaie) { plaie = { label: 'Amputation', location, needsSurgery: true, desc: AMPUTATION_WOUND_DESC }; traumas.push(plaie); }
+    if (!plaie) { plaie = { label: traumaFicheById('amputation-plaie').label, location, needsSurgery: true, desc: AMPUTATION_WOUND_DESC }; traumas.push(plaie); }
     plaie.amputateAfterDays = d10(rng); plaie.amputateSequel = esc.amputateSequel;
   }
   if (esc.medicalAidGate) {
@@ -446,7 +447,7 @@ export function stampCriticalEscalation(
     // « Une fois que la blessure est guérie… » (LDB 18 l.61/72) : marqueur de la Blessure critique EN COURS de
     // guérison, porteur de la cicatrice à octroyer. La guérison (retrait des États `whenClear`) est détectée par
     // `settleHealedCriticals` au point unique de retrait d'État (`removeCondition`).
-    traumas.push({ label: `${traumaFicheById(esc.onHealGrant.scar).label} (en cours de guérison)`, location, onHealGrant: { scar: esc.onHealGrant.scar, whenClear: [...esc.onHealGrant.whenClear] } });
+    traumas.push({ label: tr('tra.healingScar', { label: traumaFicheById(esc.onHealGrant.scar).label }), location, onHealGrant: { scar: esc.onHealGrant.scar, whenClear: [...esc.onHealGrant.whenClear] } });
   }
   if (esc.onNextCritWhileCondition) {
     // « Commotion cérébrale » (LDB 18 l.74) : séquelle porteuse d'un `critTrigger` — tant que le personnage
@@ -484,7 +485,7 @@ export function settleHealedCriticals(c: Combatant): string[] {
     if (c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1); // la Blessure critique est guérie (l.304)
     const scar = traumaById(g.scar, undefined, t.location);
     c.traumas.push(scar);
-    log.push(`${c.label} : la blessure est guérie — il reste une cicatrice (${scar.label}).`);
+    log.push(tr('tra.scarLeft', { name: c.label, label: scar.label }));
   }
   return log;
 }
@@ -550,11 +551,11 @@ function armLocationHand(loc: HitLocation): 'main' | 'off' | undefined {
 export function recoverDisabledLimb(c: Combatant, idx = 0): { penalty: import('./ops').GameOp[]; log: string[] } {
   const pool = recoverableTraumas(c);
   const t = pool[idx] ?? pool[0];
-  if (!t) return { penalty: [], log: [`${c.label} : aucun membre à rééduquer.`] };
+  if (!t) return { penalty: [], log: [tr('tra.noLimbToRehab', { name: c.label })] };
   c.traumas = (c.traumas ?? []).filter((x) => x !== t);
   const hand = armLocationHand(t.location);
   const penalty = (t.recoveryPenalty ?? []).map((o) => (hand && o.op === 'testMod' && o.char === 'capacite-de-combat' ? { ...o, weaponHand: hand } : { ...o }));
-  return { penalty, log: [`${c.label} : usage du membre récupéré (${t.label}, ${t.location}).`] };
+  return { penalty, log: [tr('tra.limbRestored', { name: c.label, label: t.label, loc: locationLabel(t.location ?? 'corps', c.bodyShape) })] };
 }
 
 /**
@@ -572,11 +573,11 @@ export function escalateSensoryLoss(c: Combatant): string[] {
   const ears = (c.traumas ?? []).filter((t) => hasSense(t, 'ouie')).length;
   if (eyes >= 2 && !(c.traumas ?? []).some((t) => t.traumaId === 'cecite')) {
     c.traumas = [...(c.traumas ?? []), traumaById('cecite', undefined, 'tete')];
-    log.push(`${c.label} perd la vue (cécité) — −30 aux Tests liés à la vue.`);
+    log.push(tr('tra.blindness', { name: c.label }));
   }
   if (ears >= 2 && !(c.traumas ?? []).some((t) => t.traumaId === 'surdite')) {
     c.traumas = [...(c.traumas ?? []), traumaById('surdite', undefined, 'tete')];
-    log.push(`${c.label} perd l'ouïe (surdité) — −20 aux Tests de Perception basés sur l'ouïe.`);
+    log.push(tr('tra.deafness', { name: c.label }));
   }
   return log;
 }
@@ -613,10 +614,10 @@ export function surgeryTraumas(c: Combatant): Trauma[] {
 export function removeSurgicalTrauma(c: Combatant, idx = 0): string[] {
   const surg = surgeryTraumas(c);
   const t = surg[idx] ?? surg[0];
-  if (!t) return [`${c.label} : aucune blessure ne relève de la chirurgie.`];
+  if (!t) return [tr('tra.noSurgicalWound', { name: c.label })];
   c.traumas = (c.traumas ?? []).filter((x) => x !== t);
   if (!t.cosmetic && c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1); // une cicatrice n'est pas une Blessure critique comptée (déjà décomptée à la guérison)
-  return [`${c.label} : ${t.label} (${t.location}) réparée par chirurgie.`];
+  return [tr('tra.surgeryDone', { name: c.label, label: t.label, loc: locationLabel(t.location ?? 'corps', c.bodyShape) })];
 }
 
 /** Le personnage a-t-il un trauma que la Compétence Guérison peut encore traiter ?
@@ -645,19 +646,19 @@ function eligibleForHeal(t: Trauma): boolean {
  */
 export function treatTrauma(c: Combatant, dr: number, success = true): string[] {
   const t = (c.traumas ?? []).find(eligibleForHeal);
-  if (!t) return [`${c.label} : aucun trauma que la Guérison puisse traiter pour l'instant.`];
+  if (!t) return [tr('tra.nothingTreatable', { name: c.label })];
   t.healAccelerated = true; // ce trauma a eu son jet de Guérison (l.317)
-  if (!success) return [`${c.label} : le traitement de ${t.label} échoue — le mal suivra son cours.`];
+  if (!success) return [tr('tra.treatFailed', { name: c.label, label: t.label })];
   if (t.kind === 'fracture') {
     t.fractureSet = true;
-    return [`${c.label} : la fracture (${t.location}) est réduite et bandée — elle ressoudera proprement.`];
+    return [tr('tra.fractureSet', { name: c.label, loc: locationLabel(t.location ?? 'corps', c.bodyShape) })];
   }
   if (t.severity === 'majeur') { // déchirure majeure : la Guérison n'accélère rien, elle DIAGNOSTIQUE (l.326)
-    return [`${c.label} : la Guérison diagnostique la déchirure (${t.location}) — ${t.recoveryDays ?? 0} jour(s) avant de pouvoir réutiliser ce membre.`];
+    return [tr('tra.tornDiagnosed', { name: c.label, loc: locationLabel(t.location ?? 'corps', c.bodyShape), days: t.recoveryDays ?? 0 })];
   }
   const cut = 1 + Math.max(0, dr);
   t.recoveryDays = Math.max(0, (t.recoveryDays ?? 0) - cut);
-  return [`${c.label} : la Guérison raccourcit la convalescence de ${t.label} de ${cut} jour(s) (reste ${t.recoveryDays}).`];
+  return [tr('tra.recoveryShortened', { name: c.label, label: t.label, cut, left: t.recoveryDays })];
 }
 
 /** Une prothèse ÉQUIPÉE (portée — `items` avec `equipped`, LDB 73 « Enc 0 quand portées ») annule-t-elle
@@ -959,7 +960,7 @@ export function passivePartLine(m: PassiveMod, amount: number): { label: string;
  *  l'Ivresse sont des états du CORPS, aucune fiche ne les octroie (≠ séquelle, maladie, État, qui ont
  *  toutes leur entité et donc leur nom propre, `passivePartLine`). */
 const CHAR_PENALTY_KIND_LABEL: Partial<Record<PassiveKind, string>> = {
-  faim: 'Faim/Soif', ivresse: 'Ivresse',
+  faim: tr('tra.kindFaim'), ivresse: tr('tra.kindIvresse'),
 };
 
 /** Variante ÉTIQUETÉE de `traumaCharPenalties` : mêmes valeurs, NOMMÉES par leur octroyeur via le

@@ -158,3 +158,58 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
     expect(hasTreatableTrauma(c)).toBe(false);
   });
 });
+
+/**
+ * #1318 V8c₃ — FUITE D'ID à l'écran : la LOCALISATION d'impact est rendue par son LIBELLÉ.
+ *
+ * Treize lignes de ce module interpolaient `${t.location}` — l'ID de `HitLocation` (`jambeG`, `tete`) —
+ * là où le joueur lit du français. Le journal disait « la déchirure (jambeG) », « Fracture mal
+ * ressoudée (tete) ». Ces tests portent sur les SITES RÉELS (le journal rendu par les fonctions de
+ * production) : débrancher `locationLabel` au site les rougit, ce qu'un oracle de catalogue ne ferait
+ * pas — il refait l'appel lui-même.
+ */
+describe('#1318 V8c₃ — aucune ligne de séquelle ne rend un ID de Localisation', () => {
+  /** Tous les ids de `HitLocation`, tels qu'ils fuiraient dans une phrase. */
+  const IDS = /\b(tete|brasG|brasD|jambeG|jambeD)\b/;
+
+  it('tickTraumaRecovery : la rémission d’une déchirure majeure de jambe nomme « Jambe gauche »', () => {
+    const t = tk('dechirure', 'majeur', 'jambeG', { be: 4 });
+    const c = C({ traumas: [{ ...t, recoveryDays: (t.recoveryTotal ?? 52) / 2 + 1 }] });
+    const log = tickTraumaRecovery(c, 2).join(' ');
+    expect(log, 'la ligne de rémission est bien émise').toMatch(/rémission partielle/);
+    expect(log).toContain('Jambe gauche');
+    expect(IDS.test(log), `id de Localisation à l'écran : « ${log} »`).toBe(false);
+  });
+
+  it('tickTraumaRecovery : la guérison d’une déchirure nomme la Localisation en français', () => {
+    const t = tk('dechirure', 'mineur', 'brasD', { be: 4 });
+    const c = C({ traumas: [{ ...t, recoveryDays: 1 }], criticalWounds: 1 });
+    const log = tickTraumaRecovery(c, 5).join(' ');
+    expect(log).toContain('Bras droit');
+    expect(IDS.test(log), `id de Localisation à l'écran : « ${log} »`).toBe(false);
+  });
+
+  it('treatTrauma : le diagnostic d’une déchirure MAJEURE nomme la Localisation', () => {
+    const t = tk('dechirure', 'majeur', 'jambeD', { be: 4 });
+    const c = C({ traumas: [{ ...t }] });
+    const log = treatTrauma(c, 2, true).join(' ');
+    expect(log).toContain('Jambe droite');
+    expect(IDS.test(log), `id de Localisation à l'écran : « ${log} »`).toBe(false);
+  });
+
+  it('removeSurgicalTrauma : la chirurgie nomme la Localisation', () => {
+    const t = tk('fracture', 'majeur', 'tete', { be: 4, d10: 5 });
+    const c = C({ traumas: [{ ...t }], criticalWounds: 1 });
+    const log = removeSurgicalTrauma(c).join(' ');
+    expect(log).toContain('Tête');
+    expect(IDS.test(log), `id de Localisation à l'écran : « ${log} »`).toBe(false);
+  });
+
+  it('applyFractureEnd : la séquelle permanente porte un LIBELLÉ de Localisation, pas son id', () => {
+    const c = C({ traumas: [] });
+    applyFractureEnd(c, false, 'majeur', 'brasG', 'Fracture (Majeure)');
+    const label = c.traumas![0].label;
+    expect(label).toBe('Fracture mal ressoudée (Bras gauche)');
+    expect(IDS.test(label), `id de Localisation en libellé de séquelle : « ${label} »`).toBe(false);
+  });
+});

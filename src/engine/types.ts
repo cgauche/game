@@ -109,6 +109,14 @@ export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation
   army: {}, // armée abstraite (Combat de masse, ADE II 8) : porte-Puissance inerte (wounds), jamais rendue ni localisée
 };
 
+/** Étiquette FR d'une localisation pour une forme de corps (LDB 76 p.312). Forme inconnue/absente de
+ *  la table → libellés humanoïdes (`HIT_LOCATION_LABELS`), comme `hitLocationByShape` retombe sur
+ *  `humanoide` — les deux jumeaux tolèrent une forme hors table. Posée ICI (module FEUILLE) et
+ *  ré-exportée par `combat.ts` : `trauma.ts` en a besoin, et `combat.ts` importe déjà `trauma.ts`. */
+export function locationLabel(loc: HitLocation, shape: BodyShape = 'humanoide'): PlayerText {
+  return BODY_SHAPE_LOC_LABELS[shape]?.[loc] ?? HIT_LOCATION_LABELS[loc];
+}
+
 /** Disponibilité d'un objet/équipement (LDB 59 « Disponibilité ») — FOYER UNIQUE du concept :
  *  Test de Disponibilité au marché (`disponibilite`), Difficulté d'Artisanat (`activities`),
  *  décalage par qualité (`craftEconomy`). `HarvestRarity` l'étend de `'Unique'` (récolte/trophées). */

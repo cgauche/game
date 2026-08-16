@@ -10,6 +10,7 @@ import { hasTreatableTrauma, hasSurgeryTrauma, hasRecoverableTrauma, hasLimbAwai
 import { contractDisease } from './disease';
 import { isAstoundingFailure } from './tests';
 import { rule } from './policy';
+import { t } from '../i18n';
 import type { RNG } from './dice';
 
 /** Pions d'un État (local — `stacks` n'est pas exporté par conditions.ts). */
@@ -143,9 +144,9 @@ export function applyHealWounds(target: Combatant, delta: number, opts: HealWoun
   const { skillCheck = true, wake = true, log: customLog } = opts;
   if (delta < 0) {
     const lost = loseWounds(target, -delta); // perte centralisée (−Avantage + À Terre à 0)
-    return [`${target.label} : le soin tourne mal — ${lost} Blessure(s) en plus.`];
+    return [t('heal.backfire', { name: target.label, lost })];
   }
-  if (delta === 0) return customLog ? customLog(0) : [`${target.label} : le soin n'apporte rien.`];
+  if (delta === 0) return customLog ? customLog(0) : [t('heal.nothing', { name: target.label })];
   const before = target.wounds.current;
   target.wounds.current = before + cappedHealAmount(target, delta);
   if (skillCheck) {
@@ -154,11 +155,11 @@ export function applyHealWounds(target: Combatant, delta: number, opts: HealWoun
   }
   const healed = target.wounds.current - before;
   const log = customLog ? customLog(healed) : (healed > 0
-    ? [`${target.label} : +${healed} PB (${target.wounds.current}/${target.wounds.max}).`]
-    : [`${target.label} : une munition logée bloque le soin (LDB 62 l.250).`]);
+    ? [t('heal.gain', { name: target.label, n: healed, cur: target.wounds.current, max: target.wounds.max })]
+    : [t('heal.lodgedBlocks', { name: target.label })]);
   if (wake && target.wounds.current > 0 && hasCondition(target, 'inconscient')) {
     removeCondition(target, 'inconscient', condStacks(target, 'inconscient')); // reprend connaissance (LDB 18 l.15)
-    log.push(`${target.label} reprend connaissance.`);
+    log.push(t('heal.awake', { name: target.label }));
   }
   if (wake && target.wounds.current > 0) target.roundsAtZero = 0;
   return log;
@@ -167,12 +168,12 @@ export function applyHealWounds(target: Combatant, delta: number, opts: HealWoun
 /** Applique l'arrêt d'Hémorragie (mutation). `dr` = DR du Test réussi. */
 export function applyStopBleed(target: Combatant, dr: number): string[] {
   const { removed, gainExtenue } = stopBleedOutcome(dr, condStacks(target, 'hemorragique'), true);
-  if (removed <= 0) return [`${target.label} : l'hémorragie ne cède pas.`];
+  if (removed <= 0) return [t('heal.bleedResists', { name: target.label })];
   removeCondition(target, 'hemorragique', removed);
-  const log = [`${target.label} : ${removed} État(s) Hémorragique stoppé(s).`];
+  const log = [t('heal.bleedStopped', { name: target.label, n: removed })];
   if (gainExtenue) {
     addCondition(target, 'extenue');
-    log.push(`${target.label} est Exténué (après l'arrêt de l'hémorragie).`);
+    log.push(t('heal.bleedExtenue', { name: target.label }));
   }
   return log;
 }
@@ -190,7 +191,7 @@ export function resolveWoundsHeal(target: Combatant, intBonus: number, sl: numbe
     const dz = contractDisease('infection-mineure', rng);
     if (dz && !(target.diseases ?? []).some((d) => d.id === dz.id)) {
       target.diseases = [...(target.diseases ?? []), dz];
-      log.push(`${target.label} : soin catastrophique — contracte une Infection Mineure (Échec Stupéfiant).`);
+      log.push(t('heal.astoundingFail', { name: target.label }));
     }
   }
   return { log, healed };
@@ -198,7 +199,7 @@ export function resolveWoundsHeal(target: Combatant, intBonus: number, sl: numbe
 
 /** SOURCE UNIQUE de l'arrêt d'Hémorragie (Guérison) : applique si réussi, message d'échec sinon. */
 export function resolveBleedHeal(target: Combatant, sl: number, success: boolean): string[] {
-  return success ? applyStopBleed(target, sl) : [`${target.label} : l'hémorragie ne cède pas.`];
+  return success ? applyStopBleed(target, sl) : [t('heal.bleedResists', { name: target.label })];
 }
 
 /** Retrait d'une munition Empaleuse logée (LDB 62 l.250 : « Les flèches et les carreaux nécessitent
@@ -206,8 +207,8 @@ export function resolveBleedHeal(target: Combatant, sl: number, success: boolean
  *  la plus ancienne pion) ; un échec ne retire rien. */
 export function resolveExtractLodgedAmmo(target: Combatant, success: boolean): string[] {
   const before = lodgedAmmoCount(target);
-  if (before <= 0) return [`${target.label} : aucune munition logée à retirer.`];
-  if (!success) return [`${target.label} : la munition logée résiste au retrait.`];
+  if (before <= 0) return [t('heal.noLodged', { name: target.label })];
+  if (!success) return [t('heal.lodgedResists', { name: target.label })];
   removeCondition(target, 'munition-logee', 1);
-  return [`${target.label} : 1 munition logée retirée (${before - 1} restante(s)).`];
+  return [t('heal.lodgedRemoved', { name: target.label, left: before - 1 })];
 }

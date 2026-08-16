@@ -28,8 +28,10 @@ export const getLocale = (): Locale => locale;
  *
  * GEL AU CHARGEMENT (dette nommée, #1318 V8a₁) : plusieurs cartes de libellés appellent `t()` à
  * l'ÉVALUATION DU MODULE et gardent la chaîne obtenue — `CHAR_LABELS`/`DIFFICULTY_LABELS`/
- * `HIT_LOCATION_LABELS`/`BODY_SHAPE_LOC_LABELS` (`engine/types.ts`) et `WEATHER_LABEL`
- * (`engine/travelStages.ts`, que V8a₁ a fait passer de littéraux au catalogue, ÉTENDANT ce motif).
+ * `HIT_LOCATION_LABELS`/`BODY_SHAPE_LOC_LABELS` (`engine/types.ts`), `WEATHER_LABEL`
+ * (`engine/travelStages.ts`, que V8a₁ a fait passer de littéraux au catalogue, ÉTENDANT ce motif) et
+ * `CHAR_PENALTY_KIND_LABEL` (`engine/trauma.ts`, familles Faim/Soif et Ivresse — V8c₃ l'a fait passer
+ * de littéraux au catalogue, MÊME motif : la carte est figée à l'évaluation du module).
  * Appeler `setLocale` après le chargement les laisse donc en FR, SANS erreur ni avertissement.
  *
  * Ce n'est pas un bug tant que la v1 fige la locale au lancement (`docs/i18n-seam.md`, Non-objectifs :

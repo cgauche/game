@@ -20,6 +20,8 @@ import { t } from '../i18n';
 import { stepDetail, stepFraction, stepPrecision } from './rollSeam';
 import { dataLabel, conditionLabel } from '../data';
 import { riverForceLabel } from '../engine/riverNavigation';
+import { locationLabel } from '../engine/types';
+import { diseaseLabel, refLabel } from '../data';
 import type { PlayerText } from '../i18n/playerText';
 
 /** Un site migré : ce que le flux écrivait AVANT, ce que le catalogue rend APRÈS. */
@@ -426,7 +428,120 @@ const V8C2: Site[] = [
   },
 ];
 
-const TOUS: Site[] = [...SEQUENCE, ...MARQUAGE, ...SIGNES, ...COMBAT, ...V8C1, ...V8C2];
+/* ── V8c₃ : les cinq fichiers de la tranche 3 rendus au catalogue (invariant ZÉRO) ────────────────
+ * `seaVoyageFlow` (`sv.*`), `engine/healing` (`heal.*`), `engine/rest` (`rest.*`), `state/restFlow`
+ * (`rf.*`), `state/shipCrew` (`crew.*`), plus `engine/trauma` (`tra.*`, ramené à son seul id de type).
+ * Trois oracles portent le TEXTE CORRIGÉ, pas le texte d'avant : la LOCALISATION d'impact, la MALADIE
+ * citée et l'ASPECT du vent étaient rendus en ID brut (« la déchirure (jambeG) », « la durée de
+ * « peste-noire » », « vent arriere ») — la parité avec un bug n'est pas un abri (précédent V8c₂). */
+
+const MALADIE3 = 'Peste Noire', CHANSON = 'Le Roi des mers';
+
+const V8C3: Site[] = [
+  {
+    // CORRIGÉ : `${t.location}` rendait l'id d'impact. La localisation vient de `locationLabel`.
+    site: 'trauma.ts:148 — déchirure en rémission partielle (LOCALISATION lue au catalogue, U+2212)',
+    avant: 'la déchirure (Jambe gauche) entre en rémission partielle (−10).',
+    apres: t('tra.tornRemission', { loc: locationLabel('jambeG') }),
+  },
+  {
+    site: 'trauma.ts:158 — LIBELLÉ de la séquelle de fracture (porté par le Combattant, vu en fiche)',
+    avant: 'Fracture mal ressoudée (Tête)',
+    apres: t('tra.fractureSequelaLabel', { loc: locationLabel('tete') }),
+  },
+  {
+    // La FORME DU CORPS traverse jusqu'ici : une jument opérée ne parle pas de « bras droit ».
+    site: 'trauma.ts:619 — chirurgie réussie (localisation par FORME DE CORPS)',
+    avant: `${HEROS3} : ${'Fracture (Majeure)'} (Membre antérieur droit) réparée par chirurgie.`,
+    apres: t('tra.surgeryDone', { name: HEROS3, label: 'Fracture (Majeure)', loc: locationLabel('brasD', 'quadrupede') }),
+  },
+  {
+    site: 'trauma.ts:656 — diagnostic de déchirure (localisation + jours restants)',
+    avant: `${HEROS3} : la Guérison diagnostique la déchirure (Jambe droite) — ${12} jour(s) avant de pouvoir réutiliser ce membre.`,
+    apres: t('tra.tornDiagnosed', { name: HEROS3, loc: locationLabel('jambeD'), days: 12 }),
+  },
+  {
+    site: 'healing.ts:157 — PB rendus (fraction courante/max)',
+    avant: `${HEROS3} : +${3} PB (${7}/${10}).`,
+    apres: t('heal.gain', { name: HEROS3, n: 3, cur: 7, max: 10 }),
+  },
+  {
+    // L'apostrophe est DROITE au site (U+0027) : le catalogue la reprend telle quelle.
+    site: "healing.ts:170 — hémorragie qui ne cède pas (apostrophe droite)",
+    avant: `${HEROS3} : l'hémorragie ne cède pas.`,
+    apres: t('heal.bleedResists', { name: HEROS3 }),
+  },
+  {
+    // CORRIGÉ : `${dz.id}` citait l'id de maladie entre guillemets français.
+    site: 'rest.ts:112 — durée de maladie raccourcie (MALADIE lue à la donnée, « », pluriel)',
+    avant: `${HEROS3} : la durée de « ${MALADIE3} » est réduite de ${2} jour${2 > 1 ? 's' : ''} (reste ${5} j).`,
+    apres: t('rest.diseaseShortened', { name: HEROS3, disease: diseaseLabel('peste-noire'), days: 2, s: 2 > 1 ? 's' : '', left: 5 }),
+  },
+  {
+    site: 'rest.ts:108 — aucune maladie à soulager (DEUX fragments optionnels enchaînés)',
+    avant: `${HEROS3} : aucune maladie active à soulager${' (ciblée)'}${' (ou déjà bénie)'}.`,
+    apres: t('rest.noDiseaseToBless', { name: HEROS3, ciblee: t('rest.fragTargeted'), benie: t('rest.fragAlreadyBlessed') }),
+  },
+  {
+    site: 'rest.ts:215 — privation (ternaire à TROIS branches, esperluette)',
+    avant: `${HEROS3} est ${'affamé et assoiffé'} — pas de récupération naturelle (Faim & Soif).`,
+    apres: t('rest.deprived', { name: HEROS3, etat: t('rest.deprivedBoth') }),
+  },
+  {
+    site: 'restFlow.ts:198 — titre de nuit (apostrophes TYPOGRAPHIQUES U+2019, tirets cadratins)',
+    avant: '— Le groupe dort jusqu’à l’aube —',
+    apres: t('rf.titleNight'),
+  },
+  {
+    site: 'restFlow.ts:547 — Compétence de l’abri lue à la DONNÉE (jamais un littéral au call-site)',
+    avant: 'Survie en extérieur',
+    apres: refLabel('skills', { id: 'survie-en-exterieur' }),
+  },
+  {
+    site: 'shipCrew.ts:192 — chanson de marin entonnée (guillemets français + minutes calculées)',
+    avant: `${HEROS3} entonne « ${CHANSON} » (${3 + Math.max(0, 2)} min).`,
+    apres: t('crew.shantyStart', { name: HEROS3, shanty: CHANSON, min: 3 + Math.max(0, 2) }),
+  },
+  {
+    site: 'shipCrew.ts:456 — delta d’effectif (le SIGNE − U+2212 est porté par l’appelant)',
+    avant: `Équipage : ${'−'}${3} membre(s) (reste ${17}/${20}).`,
+    apres: t('crew.crewDelta', { delta: `${'−'}${3}`, left: 17, nominal: 20 }),
+  },
+  {
+    // CORRIGÉ : `windAspect` rend un id — le flux écrivait « vent arriere », sans accent.
+    site: 'seaVoyageFlow.ts:439 — ASPECT du vent (id de `windAspect` rendu à l’écran)',
+    avant: 'vent arrière',
+    apres: t('sv.windArriere'),
+  },
+  {
+    // CORRIGÉ (micro-passe) : la clé rendait « babord » ; MDG 13 l.263 écrit « bâbord ».
+    site: 'seaVoyageFlow.ts:1739 — changement de cap (CÔTÉ de dérive lu au catalogue, MDG 13 l.263)',
+    avant: `Changement de cap (d10 ${3}, dérive ${'bâbord'}) : ${'Le navire pique vers la côte.'}`,
+    apres: t('sv.courseChange', { roll: 3, side: t('sv.sideBabord'), desc: 'Le navire pique vers la côte.' }),
+  },
+  {
+    site: 'seaVoyageFlow.ts:789 — Encalminé (suite optionnelle : dérive chiffrée)',
+    avant: `Encalminé — le bateau ne peut pas se déplacer grâce à ses voiles (MDG 13 l.296).${` Le courant l'entraîne (${3} milles).`}`,
+    apres: t('sv.becalmedLine', { suite: t('sv.fragDrift', { drift: 3 }) }),
+  },
+  {
+    site: 'seaVoyageFlow.ts:313 — vivres d’équipage (U+2212 + pluriel porté par la variable)',
+    avant: `Vivres d'équipage : −${4} (reste ${12} jour${12 > 1 ? 's' : ''}-homme).`,
+    apres: t('sv.crewFoodLeft', { need: 4, left: 12, s: 12 > 1 ? 's' : '' }),
+  },
+  {
+    site: 'seaVoyageFlow.ts:2539 — carénage (fragment de coût optionnel, deux valeurs)',
+    avant: `Coque raclée en cale sèche${` (${12} CO — ${25} % du coût de base, ch.13 l.152)`}.`,
+    apres: t('sv.careened', { cost: t('sv.fragCareenCost', { cost: 12, pct: 25 }) }),
+  },
+  {
+    site: 'seaVoyageFlow.ts:866 — résumé DR d’un Test d’équipage (signe + issue en 2ᵉ clé)',
+    avant: `${'Rude épreuve'} : DR ${`+${2}`} → ${'succès'} (MDG 14 l.13).`,
+    apres: t('sv.crewTestSummary', { label: 'Rude épreuve', dr: `+${2}`, issue: t('sv.success') }),
+  },
+];
+
+const TOUS: Site[] = [...SEQUENCE, ...MARQUAGE, ...SIGNES, ...COMBAT, ...V8C1, ...V8C2, ...V8C3];
 
 describe('#1318 V8b/V8b₂/V8c₀/V8c₁/V8c₂ — la migration au catalogue est à PARITÉ D’OCTET', () => {
   it.each(TOUS)('$site', ({ avant, apres }) => {
@@ -440,7 +555,8 @@ describe('#1318 V8b/V8b₂/V8c₀/V8c₁/V8c₂ — la migration au catalogue es
     expect(COMBAT.length, 'les littéraux de combatFlow rendus au catalogue (V8c₀)').toBe(6 + 1);
     expect(V8C1.length, 'échantillons des trois flux passés MIGRÉS par V8c₁ (interlude / bataille de masse / marchand)').toBe(17);
     expect(V8C2.length, 'échantillons des cinq fichiers passés MIGRÉS par V8c₂ (effets / store / voyage terrestre / fluvial / maladies)').toBe(23);
-    expect(TOUS.length).toBe(67);
+    expect(V8C3.length, 'échantillons des fichiers passés MIGRÉS par V8c₃ (mer / guérison / repos / nuit / équipage / séquelles)').toBe(19);
+    expect(TOUS.length).toBe(86);
   });
 
   it('MUTATION : l’oracle est SENSIBLE — un tiret cadratin changé en tiret court diverge', () => {
@@ -459,17 +575,22 @@ describe('#1318 V8b/V8b₂/V8c₀/V8c₁/V8c₂ — la migration au catalogue es
    * ici, pas à la recette. Elle ne mesure QUE les ids déjà vus fuir : elle ne certifie pas le zéro.
    */
   it('FUITE D’ID : aucun oracle ne rend un id de donnée à l’écran (empetre / greement…)', () => {
-    const IDS_INTERDITS = /\b(empetre|greement|coque_|tres-fort|modere|construction-de-bateaux|charpentier)\b/;
+    const IDS_INTERDITS = /\b(empetre|greement|coque_|tres-fort|modere|construction-de-bateaux|charpentier|brasG|brasD|jambeG|jambeD|tete|arriere|lateral|peste-noire|ingenieur)\b/;
     const fuites = TOUS.filter((s) => IDS_INTERDITS.test(s.avant) || IDS_INTERDITS.test(s.apres))
       .map((s) => `${s.site} → « ${s.apres} »`);
     expect(fuites, 'un id de donnée s’affiche : passer par son libellé (conditionLabel/specLabel/rv.loc*)').toEqual([]);
   });
 
   it('CONTRE-PREUVE : la sonde de fuite d’id MORD (elle n’est pas vide-et-verte)', () => {
-    const IDS_INTERDITS = /\b(empetre|greement|coque_|tres-fort|modere|construction-de-bateaux|charpentier)\b/;
+    const IDS_INTERDITS = /\b(empetre|greement|coque_|tres-fort|modere|construction-de-bateaux|charpentier|brasG|brasD|jambeG|jambeD|tete|arriere|lateral|peste-noire|ingenieur)\b/;
     // Le texte EXACT que la production rendait avant le fix — il doit être refusé.
     expect(IDS_INTERDITS.test("Critique au greement — Sigrid subit 5 Dégâts d'éclats et gagne l'État empetre.")).toBe(true);
     // …et le texte corrigé passe.
     expect(IDS_INTERDITS.test("Critique au gréement — Sigrid subit 5 Dégâts d'éclats et gagne l'État Empêtré.")).toBe(false);
+    // #1318 V8c₃ — les trois ids que CE lot a vus fuir, avant / après.
+    expect(IDS_INTERDITS.test('la déchirure (jambeG) entre en rémission partielle (−10).')).toBe(true);
+    expect(IDS_INTERDITS.test('vent arriere')).toBe(true);
+    expect(IDS_INTERDITS.test('Sigrid : la durée de « peste-noire » est réduite de 2 jours (reste 5 j).')).toBe(true);
+    expect(IDS_INTERDITS.test('la déchirure (Jambe gauche) entre en rémission partielle (−10).')).toBe(false);
   });
 });

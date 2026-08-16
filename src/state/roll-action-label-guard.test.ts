@@ -4,6 +4,7 @@ import { join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { skills } from '../data';
 import { CHAR_LABELS } from '../engine/types';
+import { fr } from '../i18n/messages/fr';
 
 /**
  * CLIQUET LEXICAL du LIBELLÉ D'ACTION d'un jet (#1078 LOT C1) — « un signe, un sens »
@@ -129,6 +130,16 @@ export function isCompetenceLabel(text: string): boolean {
 
 const ROLL_LABEL_RX = /rollLabel:\s*(['"])((?:\\.|(?!\1)[\s\S])*?)\1/g;
 
+/** `rollLabel: t('cle')` — le MÊME slot, une fois la migration i18n passée par là (#1318 V8c₃). Sans
+ *  cette forme, passer un libellé-situation au catalogue le faisait DISPARAÎTRE de ce cliquet sans
+ *  qu'aucune situation ne soit assainie : une fausse décroissance. La clé est RÉSOLUE au catalogue FR,
+ *  puis jugée par le MÊME `isCompetenceLabel` — c'est le texte rendu qui compte, pas sa provenance.
+ *
+ *  DEUX trous de la première écriture, refermés à la micro-passe (chacun laissait ré-ouvrir la fuite) :
+ *  la clé PARAMÉTRÉE (`t('cle', { … })` — la parenthèse ne fermait pas juste après la clé) et l'ALIAS
+ *  `tr(` (les fichiers où `t` est un identifiant local — `combatFlow`, `trauma`, `seaVoyageFlow`). */
+const ROLL_LABEL_KEY_RX = /rollLabel:\s*t\s*r?\(\s*'([^']+)'\s*[,)]/g;
+
 /** Rend les `rollLabel` littéraux qui nomment autre chose qu'une Compétence (exporté pour la preuve
  *  fail-closed : le scanner se mesure aussi sur du code SYNTHÉTIQUE). */
 export function scanRollLabels(src: string): ActionLabelHit[] {
@@ -137,11 +148,18 @@ export function scanRollLabels(src: string): ActionLabelHit[] {
     if (isCompetenceLabel(m[2])) continue;
     hits.push({ line: src.slice(0, m.index).split('\n').length, text: m[2] });
   }
+  for (const m of src.matchAll(ROLL_LABEL_KEY_RX)) {
+    const text = (fr as Record<string, string>)[m[1]];
+    if (text == null || isCompetenceLabel(text)) continue;
+    hits.push({ line: src.slice(0, m.index).split('\n').length, text });
+  }
   return hits;
 }
 
 /** STOCK NOMINATIF (#1109) — les six sites mesurés le 2026-08-05, chacun nommé par son fichier et son
- *  TEXTE exact. Plafond COLLÉ (longueur exacte) : un site assaini l'abaisse, un site neuf rougit nominativement. */
+ *  TEXTE exact. Plafond COLLÉ (longueur exacte) : un site assaini l'abaisse, un site neuf rougit nominativement.
+ *  #1318 V8c₃ : les six ont été passés au catalogue (`sv.*`) SANS changer un octet de leur texte — ils
+ *  sont donc TOUJOURS LÀ, et le scan les suit désormais jusqu'à leur clé. La dette #1109 n'a pas bougé. */
 const ROLL_LABEL_SITUATION_STOCK: { file: string; text: string }[] = [
   { file: 'src/state/seaVoyageFlow.ts', text: 'Tonneau contaminé' },
   { file: 'src/state/seaVoyageFlow.ts', text: "Tonneau d'eau" },
@@ -181,6 +199,13 @@ describe('CLIQUET — un `rollLabel` nomme la COMPÉTENCE, pas la situation (#11
     expect(scanRollLabels(`rollLabel: 'Force Mentale', base: 40,`), 'une caractéristique aussi').toEqual([]);
     expect(scanRollLabels(`rollLabel: 'Métier (Cartographe)', base: 40,`), 'compétence + spécialisation').toEqual([]);
     expect(scanRollLabels(`rollLabel: 'Conduite d’attelage', base: 40,`), 'apostrophe typographique').toEqual([]);
+    // …et la forme CATALOGUE du même slot : la clé est résolue, puis jugée sur son TEXTE.
+    expect(scanRollLabels("rollLabel: t('sv.scurvy'),"), 'clé-situation au catalogue').toHaveLength(1);
+    expect(scanRollLabels("rollLabel: t('char.force'),"), 'clé de caractéristique').toEqual([]);
+    // Les DEUX trous du premier RX, chacun ROUGE avant son correctif :
+    expect(scanRollLabels("rollLabel: t('sv.scurvy', { n: 2 }),"), 'clé PARAMÉTRÉE').toHaveLength(1);
+    expect(scanRollLabels("rollLabel: tr('sv.scurvy'),"), "alias `tr(` (portées où `t` est local)").toHaveLength(1);
+    expect(scanRollLabels("rollLabel: tr('char.force', { x: 1 }),"), 'alias + params, mais une carac').toEqual([]);
   });
 });
 

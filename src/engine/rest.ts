@@ -34,6 +34,8 @@ import { tickDisease, activeMalaiseCount, diseaseBlesseCount, DISEASE_DEFS } fro
 import { MINUTES_PER_DAY } from './clock';
 import { isStarving, isThirsty, isDeprived } from './provisions';
 import { applyHealWounds } from './healing';
+import { diseaseLabel } from '../data';
+import { t } from '../i18n';
 
 /** États à dégâts périodiques qui empêchent un repos réparateur (LDB 16 l.105 : on ne « reprend pas ses
  *  esprits » tant qu'un Hémorragique subsiste — on étend à En flammes/Empoisonné, qu'on ne traverse pas
@@ -86,7 +88,7 @@ export function cureDiseases(c: Combatant, n: number): string[] {
   const removed = new Set(order.slice(0, n));
   c.diseases = c.diseases.filter((d) => !removed.has(d));
   for (const d of removed) {
-    log.push(`${c.label} est purgé de : ${d.id}.`);
+    log.push(t('rest.cured', { name: c.label, disease: diseaseLabel(d.id) }));
     if (DISEASE_DEFS[d.id]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), d.id];
   }
   const delta = activeMalaiseCount(c) - malaiseStart;
@@ -105,11 +107,11 @@ export function blessDiseaseDuration(c: Combatant, days = 1, opts: { disease?: s
   const dz = (c.diseases ?? []).find((d) => d.phase === 'active'
     && (!opts.disease || d.id === opts.disease)
     && (!opts.once || !d.convalescenceBlessed));
-  if (!dz) return [`${c.label} : aucune maladie active à soulager${opts.disease ? ' (ciblée)' : ''}${opts.once ? ' (ou déjà bénie)' : ''}.`];
+  if (!dz) return [t('rest.noDiseaseToBless', { name: c.label, ciblee: opts.disease ? t('rest.fragTargeted') : '', benie: opts.once ? t('rest.fragAlreadyBlessed') : '' })];
   if (opts.once) dz.convalescenceBlessed = true;
   dz.minutesLeft = Math.max(MINUTES_PER_DAY, dz.minutesLeft - days * MINUTES_PER_DAY); // −`days` jour(s), min 1 jour restant
   const resteJ = Math.round(dz.minutesLeft / MINUTES_PER_DAY);
-  return [`${c.label} : la durée de « ${dz.id} » est réduite de ${days} jour${days > 1 ? 's' : ''} (reste ${resteJ} j).`];
+  return [t('rest.diseaseShortened', { name: c.label, disease: diseaseLabel(dz.id), days, s: days > 1 ? 's' : '', left: resteJ })];
 }
 
 /** Jet d'une nuit (bilan structuré de la modale de Repos) : récupération ou cauchemars. */
@@ -180,7 +182,7 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1, coll
   if (c.dead || c.outOfRencontre) return []; // un mort / éjecté ne se repose pas
   // LDB 16 l.105 : un héros qui saigne, brûle ou est empoisonné ne trouve pas le repos — à stabiliser
   // d'abord (Test de Guérison, Sort). Pas de récupération réparatrice tant que ces États subsistent.
-  if (unstable(c)) return [`${c.label} ne trouve pas le repos (blessures à stabiliser d'abord — Guérison).`];
+  if (unstable(c)) return [t('rest.noRest', { name: c.label })];
 
   const startPB = c.wounds.current;
   const hadFatigue = stacks(c, 'extenue') > 0;
@@ -208,12 +210,12 @@ export function restRecovery(c: Combatant, rng: RNG = defaultRNG, days = 1, coll
   }
 
   const log: string[] = [];
-  if (wokeUp) log.push(`${c.label} reprend connaissance.`);
+  if (wokeUp) log.push(t('heal.awake', { name: c.label }));
   const healed = c.wounds.current - startPB;
-  const span = days > 1 ? `${days} jours de repos` : 'une nuit de repos';
-  if (healed > 0) log.unshift(`${c.label} récupère ${healed} PB (${span}).`);
-  if (isDeprived(c)) log.push(`${c.label} est ${isStarving(c) && isThirsty(c) ? 'affamé et assoiffé' : isThirsty(c) ? 'assoiffé' : 'affamé'} — pas de récupération naturelle (Faim & Soif).`);
-  if (hadFatigue && stacks(c, 'extenue') === 0) log.push(`${c.label} se réveille reposé (Exténué dissipé).`);
-  if (nightmareNights > 0) log.push(`${c.label} a fait des cauchemars (${nightmareNights}/${days} nuit${days > 1 ? 's' : ''}) → Exténué.`);
+  const span = days > 1 ? t('rest.spanDays', { n: days }) : t('rest.spanNight');
+  if (healed > 0) log.unshift(t('rest.healed', { name: c.label, n: healed, span }));
+  if (isDeprived(c)) log.push(t('rest.deprived', { name: c.label, etat: isStarving(c) && isThirsty(c) ? t('rest.deprivedBoth') : isThirsty(c) ? t('rest.deprivedThirst') : t('rest.deprivedHunger') }));
+  if (hadFatigue && stacks(c, 'extenue') === 0) log.push(t('rest.fatigueGone', { name: c.label }));
+  if (nightmareNights > 0) log.push(t('rest.nightmares', { name: c.label, n: nightmareNights, total: days, s: days > 1 ? 's' : '' }));
   return log;
 }

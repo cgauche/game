@@ -64,36 +64,49 @@ const MIGRATED = new Set([
   'src/state/store.ts', // #1318 V8c₂ : `store.*`
   'src/state/travelFlow.ts', // #1318 V8c₂ : `tf.*`
   'src/state/riverVoyageFlow.ts', // #1318 V8c₂ : `rv.*`
+  'src/engine/healing.ts', // #1318 V8c₃ : `heal.*` (le moteur pur résout par `t()`, comme `ops.ts`)
+  'src/engine/rest.ts', // #1318 V8c₃ : `rest.*`
+  'src/state/restFlow.ts', // #1318 V8c₃ : `rf.*`
+  'src/state/shipCrew.ts', // #1318 V8c₃ : `crew.*`
+  'src/state/seaVoyageFlow.ts', // #1318 V8c₃ : `sv.*`
 ]);
 
 /** Stock GELÉ par fichier (recensement #410, 2026-07-13) — littéraux FR de narration hors catalogue,
  *  Phase C à résorber. Toute HAUSSE échoue (régression) ; toute BAISSE doit ABAISSER la baseline. Les
  *  fichiers MIGRÉS (ci-dessus) n'y figurent PAS : leur invariant est ZÉRO.
  *
- *  GEL COURANT #1333 (V8c₂, 2026-08-16) — 177 littéraux, tels que les voit le prédicat de francité
- *  ci-dessous (`isFrench`, qui compte aussi le FR SANS accent), le lecteur de littéraux (`readString`
- *  honore l'ÉCHAPPEMENT) et les SEPT formes d'émission. Ces entrées ne sont pas des dettes nouvelles :
- *  ce sont des littéraux de toujours, qu'une mesure plus fine rend visibles. Deux mouvements dans ce lot :
- *  −67, les CINQ fichiers de la tranche 2 passés MIGRÉS (`combatEffects` 15, `store` 16, `travelFlow` 14,
- *  `riverVoyageFlow` 11, `engine/disease` 11) ; +46 révélés par la 7ᵉ FORME (`return [ … ]`, le journal
- *  RENDU en tableau) — `seaVoyageFlow` 9 → 27, `trauma` 10 → 20, `healing` 2 → 7, `rest` 4 → 7,
- *  `shipCrew` 6 → 9, `suffocation` 2 → 4, `portFlow` 2 → 4, `corruptionFlow` 4 → 5, et deux fichiers
- *  qui n'avaient AUCUNE entrée (`engine/travel.ts`, `state/summonFlow.ts`, 1 chacun).
+ *  GEL COURANT #1318 V8c₃ (2026-08-17) — `GEL_TOTAL` littéraux sur `GEL_FICHIERS` fichiers, tels que
+ *  les voit le prédicat de francité ci-dessous (`isFrench`, qui compte aussi le FR SANS accent), le
+ *  lecteur de littéraux (`readString` honore l'ÉCHAPPEMENT) et les SEPT formes d'émission. Ces entrées
+ *  ne sont pas des dettes nouvelles : ce sont des littéraux de toujours, qu'une mesure plus fine rend
+ *  visibles. UN mouvement dans ce lot, −74 sur 37 → 32 fichiers : les CINQ de la tranche 3 passés
+ *  MIGRÉS (`seaVoyageFlow` 27, `healing` 7, `engine/rest` 7, `restFlow` 5, `shipCrew` 9 = −55) et
+ *  `engine/trauma` ramené de 20 à 1 (−19 ; son unique reliquat est un ID de type, cf. la note sur son
+ *  entrée). Aucune forme nouvelle : la 7ᵉ (V8c₂) suffisait à ce périmètre — ce que le lot a trouvé en
+ *  plus (166 sites INVISIBLES au prédicat) l'a été à la PASSE HUMAINE, et ces sites-là n'entraient dans
+ *  aucun compte, ni avant ni après.
+ *  Les DEUX chiffres ci-dessus sont des CONSTANTES assertées contre la table (`GEL_TOTAL`/`GEL_FICHIERS`,
+ *  dernier test du fichier) : ce commentaire a menti une fois (92 annoncés pour 103 tenus), il ne le
+ *  peut plus sans rougir.
  *  `state/combatFlow.ts` reste MIGRÉ (invariant ZÉRO) : les littéraux que ce prédicat y a révélés sont
  *  au catalogue (`cf.gangwayCollapse`/`cf.spellNotFound`/`cf.cannotCast`/`cf.cannotPray`/`cf.oups`,
  *  plus `cf.outOfAction`/`cf.noLineOfSight`, et les DEUX que la 7ᵉ forme y a trouvés —
  *  `cf.componentAbsorbs`/`cf.sourceRebuilds` : un fichier « MIGRÉ » ne l'est que pour ce que le
  *  détecteur sait voir, et cette tranche l'a mesuré plutôt que supposé). */
+/** Le GEL ANNONCÉ au commentaire ci-dessus, en CONSTANTES — assertées contre la table réelle par le
+ *  dernier test du fichier. Un commentaire de gel n'est pas une mesure : celui-ci a annoncé 92 pour
+ *  103 tenus (V8c₃, rattrapé par le juge). Désormais, un chiffre faux rougit. */
+const GEL_TOTAL = 103;
+const GEL_FICHIERS = 32;
+
 const BASELINE: Record<string, number> = {
   'src/engine/drunkenness.ts': 2,
   'src/engine/exposure.ts': 4,
-  'src/engine/healing.ts': 7,
   'src/engine/items.ts': 3,
   'src/engine/money.ts': 3,
   'src/engine/mountTravel.ts': 5,
   'src/engine/provisions.ts': 10,
   'src/engine/qualities/craftEconomy.ts': 3,
-  'src/engine/rest.ts': 7,
   'src/engine/shipCritical.ts': 5,
   'src/engine/social.ts': 1,
   'src/engine/spellRangeFormat.ts': 5,
@@ -101,7 +114,11 @@ const BASELINE: Record<string, number> = {
   'src/engine/suffocation.ts': 4,
   'src/engine/tavernGame.ts': 2,
   'src/engine/traits/dispatch.ts': 1,
-  'src/engine/trauma.ts': 20,
+  // NON-MIGRABLE DÉLIBÉRÉ (V8c₃) : le SEUL littéral restant est `return 'mobilité';` (`traumaOpKind`) —
+  // une valeur du type `PassiveKind`, donc un ID accentué, pas une phrase de journal. Le prédicat le
+  // compte par son accent ; le passer au catalogue serait faux (c'est du typage), et le maquiller en
+  // table pour le soustraire au détecteur serait pire (fausse décroissance). Il reste DIT, à 1.
+  'src/engine/trauma.ts': 1,
   'src/engine/travel.ts': 1,
   'src/state/combat/roundHooks.ts': 1,
   'src/state/corruptionFlow.ts': 5,
@@ -112,14 +129,11 @@ const BASELINE: Record<string, number> = {
   'src/state/netFlow.ts': 4,
   'src/state/partyFlow.ts': 7,
   'src/state/portFlow.ts': 4,
-  'src/state/restFlow.ts': 5,
   'src/state/rollFlowFactory.ts': 3,
   // Légendes de l'export ASCII, semées à la déclaration : ce ne sont pas des lignes de JOURNAL, mais
   // elles se gèlent au même titre — à passer au catalogue avec leur surface.
   'src/state/sceneToAscii.ts': 3,
   'src/state/seaActivities.ts': 5,
-  'src/state/seaVoyageFlow.ts': 27,
-  'src/state/shipCrew.ts': 9,
   'src/state/shipManeuver.ts': 1,
   'src/state/shipwreck.ts': 3,
   'src/state/summonFlow.ts': 1,
@@ -400,6 +414,13 @@ describe('garde-fou i18n — narration moteur (Phase C, #410 inversé)', () => {
     expect(narrationCount("return [t('dz.develop', { name: c.label, disease: 'Peste noire' })];")).toBe(0);
     // …et un retour de tableau TECHNIQUE (ids) ne déclenche rien.
     expect(narrationCount("return ['infection-du-sang', 'blessure-purulente'];")).toBe(0);
+  });
+
+  it('le GEL ANNONCÉ au commentaire est le gel TENU par la table (le chiffre ne peut plus mentir)', () => {
+    const entrees = Object.entries(BASELINE);
+    const total = entrees.reduce((n, [, b]) => n + b, 0);
+    expect(entrees.length, `GEL_FICHIERS annonce ${GEL_FICHIERS} fichiers, la table en porte ${entrees.length}`).toBe(GEL_FICHIERS);
+    expect(total, `GEL_TOTAL annonce ${GEL_TOTAL} littéraux, la table en somme ${total}`).toBe(GEL_TOTAL);
   });
 
   it('CLIQUET : toute baseline devenue trop haute (fichier assaini) doit être ABAISSÉE', () => {

@@ -642,7 +642,7 @@ Les **Traits** sont intégrés à la construction initiale et, contrairement aux
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (Traits dans la colonne *Traits et Améliorations* des exemples) · § Navires — profil et Caractéristiques (MDG) · § Construction navale (MDG).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.167-193) → `peu-maniable`, `minuscule`, `renforce`, `robuste`, `tres-petite`, `solide`, `petite`, `navalSkillTestDR`, `ancre`, `moyenne`, +24 — `src/data/naval-traits.json`, `src/data/schemas/defs/ship-construction.ts`, `src/data/ship-construction.json`, `src/engine/navalTraits.ts`, `src/engine/shipBuild.ts`, `src/state/seaVoyageFlow.ts`, +1 fichiers
+- `MDG 12` (l.167-193) → `peu-maniable`, `minuscule`, `renforce`, `robuste`, `tres-petite`, `solide`, `petite`, `navalSkillTestDR`, `ancre`, `moyenne`, +25 — `src/data/naval-traits.json`, `src/data/schemas/defs/ship-construction.ts`, `src/data/ship-construction.json`, `src/engine/navalTraits.ts`, `src/engine/shipBuild.ts`, `src/i18n/messages/fr.ts`, +2 fichiers
 
 ---
 
@@ -692,7 +692,7 @@ Modifications ajoutables après coup à un vaisseau ; d'autres figurent dans le 
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (Coûts/Poids des Améliorations, table *Panne de Vapeur*) · § Navires — profil et Caractéristiques (MDG) · § Pièces d'artillerie navale (MDG) (Sabords & tir).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.195-364) → `SteamSaveModal`, `moteur-broute`, `peu-maniable`, `fuite-de-vapeur`, `CollisionShip`, `renforce`, `schema`, `perte-de-pression`, `robuste`, `hullArmourBonus`, +43 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/schemas/defs/ship-construction.ts`, `src/data/schemas/defs/steam-breakdown.ts`, +16 fichiers
+- `MDG 12` (l.195-364) → `SteamSaveModal`, `moteur-broute`, `peu-maniable`, `fuite-de-vapeur`, `CollisionShip`, `renforce`, `schema`, `perte-de-pression`, `robuste`, `hullArmourBonus`, +44 — `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/schemas/defs/ship-construction.ts`, `src/data/schemas/defs/steam-breakdown.ts`, +17 fichiers
 
 ---
 
