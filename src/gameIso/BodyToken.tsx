@@ -7,7 +7,7 @@ import { TokenChromeMarks } from './TokenChromeMarks';
 
 /**
  * Coquille de positionnement PARTAGÉE de tout token de scène (combat + exploration + éditeur).
- * Source UNIQUE remplaçant les wrappers dupliqués token()/tokenNode() (IsoStage) et EntityToken :
+ * Elle porte :
  *  - ancrage des pieds au CENTRE de la tuile (lisibilité iso),
  *  - ombre portée + anneau de sélection optionnel,
  *  - `dim` (hors de combat) → opacité réduite,

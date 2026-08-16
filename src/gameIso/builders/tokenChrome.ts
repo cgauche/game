@@ -66,7 +66,8 @@ export function tokenChrome(c: Combatant, ctx: ChromeCtx): TokenChrome {
 }
 
 /** Le chrome d'un couple MONTÉ, porté par sa MONTURE : le corps composite ne montre ni PV ni états —
- *  ceux du cavalier et ceux de la monture se peindraient au même endroit (`MountedToken`). */
+ *  ceux du cavalier et ceux de la monture se peindraient au même endroit — `tokenChromes` ne poste
+ *  donc qu'UNE marque par couple, celle de la monture. */
 export function mountChrome(mount: Combatant): TokenChrome {
   return { hp: null, icons: [], iconsMore: 0, endState: endState(mount), ghost: false, dim: isOutOfAction(mount), highlight: null };
 }

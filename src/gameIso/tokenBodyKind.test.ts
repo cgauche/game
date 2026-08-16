@@ -66,8 +66,8 @@ describe('tokenBodyKind — coque de véhicule en COMBAT (#224 : routage par cre
   });
 
   for (const id of ['cogue', 'loup-imperial']) {
-    it(`sceneEntity « ${id} » (EXPLORATION/ÉDITEUR — figurant/EntityToken/Inspector partagent ce même
-        classifieur) route vers le gabarit navire, jamais bipède`, () => {
+    it(`sceneEntity « ${id} » (figurant d'EXPLORATION/ÉDITEUR : même classifieur que les combattants)
+        route vers le gabarit navire, jamais bipède`, () => {
       const r = tokenBodyKind({ kind: 'sceneEntity', ent: ent({ id: `fig-${id}`, kind: 'personnage', ref: id }) });
       expect(r.bodyKind).toBe('plan');
     });

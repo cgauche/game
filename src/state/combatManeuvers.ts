@@ -15,7 +15,8 @@
  * `checkBattleOver` (l'appelant — store ou wrapper IA — le fait).
  */
 import type { Get, Set as SetFn } from './flowTypes';
-import type { BattleState } from './store';
+import type { BattleState, GameState } from './store';
+import { facingToward } from './dir8';
 import { Combatant, type Difficulty, CHAR_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { evLines } from './combatLog';
@@ -376,6 +377,17 @@ export function resolveManeuver(
   // Libellé de feed = celui de la manœuvre (« Souffle (Feu) ») s'il enrichit le geste, sinon le libellé
   // canonique du geste (`ATTACK_LABEL[def.kind]`). Aucune LOGIQUE sur le label — pur affichage.
   const lines: string[] = [t('manv.trigger', { name: attacker.label, label: def.label || ATTACK_LABEL[def.kind] })];
+  // Orientation du geste : l'attaquant vise le centre RÉELLEMENT résolu plus bas (la cible cliquée peut
+  // être écartée — morte, hors portée — et le souffle recentré sur le plus proche). UNE écriture par
+  // manœuvre ; cible = SOI (transformation) ou case identique ⇒ delta nul, facing inchangé ; population
+  // centrée sur l'attaquant (`allAround`/`allFoes`) ⇒ rien à viser. Seul l'ATTAQUANT tourne, à la
+  // différence de la passe d'armes d'`applyAttackResult` (combatFlow.ts:2409) qui tourne AUSSI le
+  // défenseur : une manœuvre touche N cibles ou une zone, et son défenseur n'y répond par aucun jet orienté.
+  const faceTarget = (tgt?: Combatant | null): void => {
+    const from = attacker.pos!, to = tgt?.pos;
+    if (!to || tgt!.id === attacker.id || (to.x === from.x && to.y === from.y)) return;
+    set((s: GameState) => ({ facing: { ...s.facing, [attacker.id]: facingToward(from, to) } }));
+  };
   emitCreatureAttackAnim(attacker, def.kind);
   const alive = (c: Combatant) => c.kind !== attacker.kind && !isOutOfAction(c) && !!c.pos;
   const inPlay = (c: Combatant) => c.id !== attacker.id && !isOutOfAction(c) && !!c.pos; // population SANS camp (`allAround`)
@@ -415,6 +427,7 @@ export function resolveManeuver(
     const center = chosenTarget && alive(chosenTarget) && chebyshev(attacker.pos!, chosenTarget.pos!) <= rangeTiles
       ? chosenTarget : foes[0] ?? null; // `foes` est trié par distance (combatantsWithinRadius) → le plus proche d'abord
     if (!center) { flushLog(); return false; }
+    faceTarget(center); // le centre de la zone = ce que l'attaquant vise (cliqué, ou recentré sur le plus proche)
     // Rayon de Souffle : `blast` résolu contre la CIBLE au centre (« Bonus de Force » → BF de la cible, RAW l.251 ;
     // Vomi « 2 mètres » → littéral, 1 case). Plus de regex `/force/i` — la mesure structurée porte le référent.
     const blast = tilesOf(measureMeters(def.blast, center)) ?? 1;
@@ -450,6 +463,7 @@ export function resolveManeuver(
     const foes = battle.combatants.filter(alive);
     const tgt = chosenTarget && alive(chosenTarget) ? chosenTarget : foes.length ? nearest(foes) : null;
     affected = tgt ? [tgt] : [];
+    faceTarget(tgt);
   }
   // Trace orientée du Round (LDB 85 l.383, `agressifEnvers`) — MÊME garde qu'aux deux sites de `applyAttackResult` :
   // jamais contre un objet INANIMÉ (il n'a ni psychologie ni Engagement).

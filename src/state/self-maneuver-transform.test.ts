@@ -79,4 +79,11 @@ describe('battleSelfManeuver — Métamorphose (activation joueur)', () => {
     expect(effectiveChar(live(H.id), 'capacite-de-combat')).toBe(cc0);
     expect(useGame.getState().battle!.acted).toBe(false); // aucune Action gaspillée
   });
+
+  it('orientation : une transformation (cible = SOI) laisse le cap intact', () => {
+    const { H } = setup();
+    useGame.setState({ facing: { [H.id]: 'NO' } });
+    useGame.getState().battleSelfManeuver('forme-hybride-ulric');
+    expect(useGame.getState().facing[H.id]).toBe('NO');
+  });
 });

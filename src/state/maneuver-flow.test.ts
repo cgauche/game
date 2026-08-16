@@ -156,4 +156,37 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     useGame.getState().maneuverConfirm();
     expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.wounds.current).toBeLessThan(before);
   });
+
+  it('orientation : une manœuvre CIBLÉE tourne l’attaquant vers sa cible avant l’animation', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    H.traits = [{ id: 'souffle', value: 15, arg: 'Feu' }];
+    H.characteristics['capacite-de-tir'] = 90;
+    H.advantage = 3;
+    E.pos = { x: 10, y: 9 }; // adjacente PLEIN NORD de l’attaquant (10,10)
+    useGame.setState({ facing: { [H.id]: 'S' } }); // dos tourné à la cible avant la manœuvre
+    activate('souffle-feu', E.id);
+    useGame.getState().maneuverRoll();
+    useGame.getState().maneuverConfirm();
+    expect(useGame.getState().facing[H.id]).toBe('N');
+  });
+
+  it('orientation : cible choisie MORTE avant la résolution → l’attaquant vise le centre RECENTRÉ, pas le clic périmé', () => {
+    useGame.getState().seedRng(2);
+    const { H, E } = setup();
+    H.traits = [{ id: 'souffle', value: 15, arg: 'Feu' }];
+    H.characteristics['capacite-de-tir'] = 90;
+    H.advantage = 3;
+    const D = useGame.getState().battle!.combatants.find((c) => c.kind === 'enemy' && c.id !== E.id)!;
+    D.dead = false;
+    D.wounds = { current: 30, max: 30, base: 30 } as Combatant['wounds'];
+    D.pos = { x: 10, y: 11 }; // plein SUD : la cible CLIQUÉE
+    E.pos = { x: 10, y: 9 }; // plein NORD : le seul ennemi encore debout à la résolution
+    useGame.setState({ facing: { [H.id]: 'O' } });
+    activate('souffle-feu', D.id);
+    useGame.getState().maneuverRoll();
+    D.dead = true; // elle tombe avant que le souffle ne parte → la zone se recentre sur le plus proche vivant
+    useGame.getState().maneuverConfirm();
+    expect(useGame.getState().facing[H.id]).toBe('N');
+  });
 });

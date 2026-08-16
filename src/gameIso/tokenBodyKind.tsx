@@ -93,9 +93,8 @@ function faceFrame(appearance: Appearance, equip: EquipCtx, tenue: string | unde
 
 /**
  * CLASSIFIEUR UNIQUE : décide quel backend monter (rig humanoïde / plan non-bipède / sprite)
- * et produit le corps prêt à insérer. Source unique remplaçant l'échelle
- * `isHero / enemyRigProfile / entityRigProfile / bodyPlanById` dupliquée aux 4 sites de dispatch
- * (IsoStage combat + exploration + leader, éditeur via EntityToken).
+ * et produit le corps prêt à insérer : la résolution de gabarit/profil
+ * (`isHero / enemyRigProfile / entityRigProfile / bodyPlanById`) vit ICI, jamais au site appelant.
  *
  * `view: 'top'` (vue du dessus) → les ACTEURS deviennent un disque-portrait (vue de face cadrée,
  * `flat: true`) ; le décor reste un billboard de face (`flat: false`). En iso, comportement inchangé.
