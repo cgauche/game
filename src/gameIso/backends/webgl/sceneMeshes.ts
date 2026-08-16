@@ -64,6 +64,7 @@ import type { Rot } from '../../../geometry/iso';
 import type { Dir8 } from '../../../state/dir8';
 import { heightAt, type Scene, type SceneEntity, type WallSide } from '../../../state/scene';
 import { memoByRef, memoByRefDeps } from '../../../state/sceneMemo';
+import { PERCABLE_ATTRIBUT } from './percageLocal';
 
 /** ÉCHANTILLONNEUR du champ de teinte de visibilité (1 = pleine), fourni par l'appelant
  *  (`visibilityTint.visibilityField`). `x`/`y` sont des coordonnées de GRILLE CONTINUES — un sommet de
@@ -267,6 +268,13 @@ export interface BakedWorld {
    *  (71,1 % des triangles) portent au moins deux familles, jusqu'à 5 dans un seul span — un facteur
    *  par span aurait donné aux deux joues d'un mur la même valeur. */
   shades: Float32Array;
+  /** PERÇABILITÉ (#1176) : ce que la découpe locale a le droit de trouer, PAR SOMMET — `0` pour une
+   *  nappe de SOL, `1` pour tout ce qui se dresse ou coiffe (murs, toits). L'exclusion du sol est
+   *  STRUCTURELLE : elle se lit sur le `kind` de l'élément de provenance à la cuisson, jamais sur une
+   *  liste tenue à la main ailleurs — un trou dans le sol ouvrirait un puits sur le fond de la scène.
+   *  PAR SOMMET pour la même raison que `shades` : c'est l'attribut que le shader lit (`aPercable`,
+   *  `percageLocal.ts`), et un attribut est par sommet. */
+  percables: Float32Array;
 }
 
 /** FAMILLES D'ORIENTATION du modelé de forme (#1300) : les deux horizontales (`haut` = sol, toit,
@@ -383,6 +391,7 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   const uv1s: number[] = [];
   const spans: FaceSpan[] = [];
   const shades: number[] = [];
+  const percables: number[] = [];
   // ORIENTATION des triangles : le pivot n'a aucune convention de sens de parcours (une face peut être
   // authorée dans un sens ou dans l'autre). Un rendu en `DoubleSide` s'en moque, mais la CARTE D'OMBRE
   // non : le décalage de biais suit la normale, et une normale à l'envers pousse le receveur DANS son
@@ -397,6 +406,8 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   const pousser = (i: number, groupe: number) => {
     const g = geoms[i];
     const début = positions.length / 3;
+    // PERÇABILITÉ (#1176) : le `kind` de l'élément de provenance, et lui seul — le SOL ne se troue pas.
+    const perçable = listées[i].el.kind === 'floor' ? 0 : 1;
     g.tris.forEach((tri, t) => {
       const n = polyNormal(tri);
       const centre = { x: (tri[0].x + tri[1].x + tri[2].x) / 3, z: (tri[0].z + tri[1].z + tri[2].z) / 3 };
@@ -417,6 +428,7 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
         uvs.push(g.uv[t][k].u, g.uv[t][k].v);
         uv1s.push(g.uv1[t][k].u, g.uv1[t][k].v);
         shades.push(s);
+        percables.push(perçable);
       }
     });
     // La couleur de sommet porte l'albédo du matériau × la variance de teinte de la surface (un aplat
@@ -451,6 +463,9 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   // cuits par face). Les deux jeux voyagent dans LA géométrie fusionnée — jamais un mesh par surface.
   geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
   geometry.setAttribute('uv1', new THREE.Float32BufferAttribute(uv1s, 2));
+  // PERÇABILITÉ : l'attribut que le fragment de découpe locale lit (`percageLocal.ts`). Il voyage dans
+  // LA géométrie fusionnée comme les uv — un matériau qui ne porte pas le défine ne le déclare même pas.
+  geometry.setAttribute(PERCABLE_ATTRIBUT, new THREE.Float32BufferAttribute(percables, 1));
   groupSpans.forEach(([début, count], k) => geometry.addGroup(début, count, k));
   geometry.userData = { surfaceGroups: groups };
   geometry.computeVertexNormals();
@@ -462,7 +477,7 @@ export function bakeWorldGeometry(scene: Scene, mpt: number): BakedWorld {
   const identité = new Uint32Array(nbSommets);
   for (let i = 0; i < nbSommets; i++) identité[i] = i;
   geometry.setIndex(new THREE.BufferAttribute(identité, 1));
-  return { geometry, spans, mpt, shades: new Float32Array(shades) };
+  return { geometry, spans, mpt, shades: new Float32Array(shades), percables: new Float32Array(percables) };
 }
 
 /** Applique le DÉGAGEMENT d'architecture à un monde cuit : l'index de dessin est ré-écrit EN PLACE en
