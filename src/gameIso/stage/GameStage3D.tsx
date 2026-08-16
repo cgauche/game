@@ -222,6 +222,14 @@ const PERCAGE_PAS_MAX_MS = 100;
  *  verdict ne s'y rejoue jamais, et la liste vide y ramène toutes les cibles à zéro. */
 const PERCAGE_HORS_PLATEAU = 'percage:hors-plateau';
 
+/** DESSINS DE GRÂCE d'un héros dont le quad manque à l'appel. Les billboards se démontent et se
+ *  remontent à chaque commit React qui touche les boards, et des dessins tombent DANS cette fenêtre :
+ *  mesuré sur La Diligence, un re-rendu produit 5 dessins dont 4 où `boardsRef` est vide. Sans grâce,
+ *  ces 4 dessins sortent le héros de la clé, le verdict se rejoue à vide, la cible retombe à 0 et le
+ *  fondu redescend aussitôt — le trou ne s'ouvre jamais. Le héros absent garde donc sa dernière
+ *  position connue tant que l'hôte le DIT toujours perçable et que la fenêtre tient. */
+const PERCAGE_GRACE_DESSINS = 8;
+
 /** Aucune nappe — la liste vide de ces mêmes frames, allouée UNE fois. */
 const AUCUNE_NAPPE: readonly Lid[] = [];
 
@@ -598,11 +606,21 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   const cameraRef = useRef<THREE.Camera | null>(null);
   /** PILOTE de la découpe locale (#1176, M3) — un par écran monté, comme sa scène three. Il tient la
    *  clé du dernier verdict et le fondu des rayons ; les quatre trous qu'il écrit sont, eux, partagés
-   *  par tous les matériaux percés du module. */
+   *  par tous les matériaux percés du module. La fonction qu'il reçoit est SA demande de frame (le
+   *  fondu n'a pas d'horloge à lui) : elle CÈDE le pas comme les boucles d'averse et de flamme — une
+   *  image déjà rendue par l'une d'elles ne se redessine pas. */
   const percageRef = useRef<Percage | null>(null);
-  if (!percageRef.current) percageRef.current = creerPercage();
+  if (!percageRef.current) {
+    percageRef.current = creerPercage(() => {
+      if (performance.now() - dernierRendu.current > 4) dessinerRef.current();
+    });
+  }
+  useEffect(() => () => percageRef.current?.arreter(), []);
   /** Acteurs du verdict, RÉUTILISÉS d'une frame à l'autre : la passe n'alloue ni tableau ni vecteur. */
   const acteursPercésRef = useRef<ActeurPerce[]>([]);
+  /** DERNIÈRE POSITION MONDE connue d'un héros perçable, et le nombre de dessins consécutifs où son
+   *  quad a manqué à l'appel. Cf. `PERCAGE_GRACE_DESSINS`. */
+  const memoirePercéeRef = useRef(new Map<string, { monde: THREE.Vector3; absences: number }>());
   const pov = frame.mode === 'pov';
   // STYLE DE CE REGARD (#1176, P3-5, `viewPolicy`) : ce que la vue choisit de MONTRER — les nappes de
   // brume et le soleil ci-dessous en descendent. La GÉOMÉTRIE de la frame (cadrage, cran d'art,
@@ -1081,17 +1099,35 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     // Les héros RÉELLEMENT perçables de cette frame entrent dans la clé : leurs quads naissent APRÈS
     // le montage (rasterisation asynchrone), et une clé qui ne dirait que la case laisserait le
     // verdict du premier instant — celui où aucun quad n'existait — valoir jusqu'au pas suivant.
+    // Un quad DÉJÀ VU qui manque momentanément ne les en sort PAS (`PERCAGE_GRACE_DESSINS`).
     let cidsPercés = '';
+    const memoirePercée = memoirePercéeRef.current;
     if (percage && f) {
       for (const hp of percage.heros) {
         if (acteursPercés.length >= PERCAGE_MAX_HEROS) break;
         // Le centre du trou se prend sur le QUAD POSÉ de cette frame : un héros sans billboard monté
         // (rasterisation en cours, jeton écarté par le builder) n'a aucun point où percer.
         const board = boardsRef.current.find((b) => b.sub.cid === hp.cid);
-        if (!board) continue;
-        acteursPercés.push({ capsule: hp.capsule, z: hp.z, monde: board.mesh.position });
+        let mémoire = memoirePercée.get(hp.cid) ?? null;
+        if (board) {
+          if (!mémoire) { mémoire = { monde: new THREE.Vector3(), absences: 0 }; memoirePercée.set(hp.cid, mémoire); }
+          mémoire.monde.copy(board.mesh.position);
+          mémoire.absences = 0;
+        } else if (mémoire && mémoire.absences < PERCAGE_GRACE_DESSINS) {
+          mémoire.absences++;
+        } else {
+          if (mémoire) memoirePercée.delete(hp.cid);
+          continue;
+        }
+        acteursPercés.push({ capsule: hp.capsule, z: hp.z, monde: mémoire.monde });
         cidsPercés += `${hp.cid}|`;
       }
+    }
+    // Un héros que l'hôte ne dit plus perçable (sorti du groupe, écran quitté) n'a plus de mémoire à
+    // garder : la fenêtre de grâce ne couvre QUE l'absence de quad, jamais l'absence d'entrée.
+    if (memoirePercée.size > 0) {
+      const dits = percage && f ? new Set(percage.heros.map((hp) => hp.cid)) : null;
+      for (const cid of memoirePercée.keys()) if (!dits || !dits.has(cid)) memoirePercée.delete(cid);
     }
     // La passe d'OMBRE partage le discard et n'a aucun autre moyen de savoir où le trou tombe à
     // l'écran du joueur : son propre raster est celui du soleil (cf. `percageLocal`).

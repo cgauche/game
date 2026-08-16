@@ -19,7 +19,7 @@ import {
   type StageRenderer,
   type StageWalkAnim,
 } from './GameStage3D';
-import { PERCAGE_DEFINE, percerMateriau, trousPercage } from '../backends/webgl/percageLocal';
+import { PERCAGE_DEFINE, PERCAGE_FONDU_MS, PERCAGE_RAYON_PX, percerMateriau, trousPercage } from '../backends/webgl/percageLocal';
 import { centrePercage, clePercage } from './percage';
 import { frameRectOf } from './boardPose';
 import { IsoStage } from '../IsoStage';
@@ -117,7 +117,7 @@ function simulerRasterisation(): void {
 }
 
 /** Rend (ou re-rend) l'écran volumique sous le cadre donné, sur la racine courante. */
-async function rendre(pos: { x: number; y: number }, percage: PercageEntrees | null, cadre: StageFrame): Promise<void> {
+async function rendre(pos: { x: number; y: number }, percage: PercageEntrees | null, cadre: StageFrame, heure = 720): Promise<void> {
   await act(async () => {
     root!.render(
       <GameStage3D
@@ -128,7 +128,7 @@ async function rendre(pos: { x: number; y: number }, percage: PercageEntrees | n
         keepEl={() => true}
         els={{ tokens: [], props: [] }}
         actors={poseDe(pos)}
-        gameTime={720}
+        gameTime={heure}
         lightLevel={null}
         lights={[]}
         anim={anim}
@@ -312,6 +312,85 @@ describe('Le centre du trou se reprojette À LA FRAME, hors de tout rendu React 
     expect(apres.x, 'le centre du trou est celui de la caméra COURANTE').toBeCloseTo(attenduApres.x, 6);
     expect(apres.y).toBeCloseTo(attenduApres.y, 6);
     expect(apres.w).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * LE FONDU DEMANDE SES FRAMES (#1176, M3, correctif). Deux mesures faites sur l'aperçu, scène
+ * IMMOBILE, groupe posé sous la Diligence :
+ *  - le rendu de l'hôte est ÉVÉNEMENTIEL — 39 dessins à la mise en place, puis plus AUCUN. Le rayon
+ *    restait figé à 0,672 px (un pas de 2,1 ms), pour toujours ;
+ *  - pendant une rafale de re-rendus, un dessin sur cinq seulement retrouvait le quad du héros (les
+ *    quatre autres tombent DANS le commit React qui remonte les boards) : la clé du verdict battait,
+ *    la cible retombait à 0, et le rayon oscillait sous 1 px sans jamais monter.
+ *
+ * Ce banc tient l'horloge et le canal de frames à la main : il sert les rappels d'animation un par un
+ * et voit donc exactement combien le fondu en demande, et quand il cesse d'en demander.
+ */
+describe('Le fondu obtient ses frames en scène IMMOBILE (#1176, M3)', () => {
+  let horloge = 0;
+  let file: FrameRequestCallback[] = [];
+  let nowAvant: (() => number) | null = null;
+
+  /** UNE image d'horloge : 16 ms plus tard, on sert les rappels d'animation en attente. Rend leur
+   *  nombre — zéro veut dire que plus personne ne demande de frame. */
+  const image = (): number => {
+    horloge += 16;
+    const dus = file;
+    file = [];
+    for (const cb of dus) cb(horloge);
+    return dus.length;
+  };
+
+  beforeEach(() => {
+    horloge = 0;
+    file = [];
+    nowAvant = performance.now.bind(performance);
+    performance.now = () => horloge;
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => { file.push(cb); return file.length; });
+    vi.stubGlobal('cancelAnimationFrame', () => undefined);
+  });
+
+  afterEach(() => {
+    if (nowAvant) performance.now = nowAvant;
+    vi.unstubAllGlobals();
+    simulerRasterisation(); // `unstubAllGlobals` emporte aussi le stub d'`Image` du banc
+  });
+
+  it('héros COIFFÉ, personne ne bouge : le rayon ATTEINT sa cible, et en ~PERCAGE_FONDU_MS', async () => {
+    await monter(COIFFÉ, entreesDe(COIFFÉ));
+    expect(trousPercage()[0].w, 'le fondu n’est pas fini au montage').toBeLessThan(PERCAGE_RAYON_PX);
+    const t0 = horloge;
+    let images = 0;
+    while (trousPercage()[0].w < PERCAGE_RAYON_PX && images < 200) { image(); images++; }
+    expect(trousPercage()[0].w, 'rayon atteint sans qu’aucun rendu React ni aucune marche ne survienne').toBe(PERCAGE_RAYON_PX);
+    // Le fondu est une DURÉE, pas un compte d'images : la pompe n'a fait que les fournir.
+    expect(horloge - t0, 'durée du fondu').toBeGreaterThanOrEqual(PERCAGE_FONDU_MS);
+    expect(horloge - t0).toBeLessThanOrEqual(PERCAGE_FONDU_MS + 32);
+  });
+
+  it('une fois convergé, la pompe s’ÉTEINT : plus une seule frame n’est demandée', async () => {
+    await monter(COIFFÉ, entreesDe(COIFFÉ));
+    let images = 0;
+    while (trousPercage()[0].w < PERCAGE_RAYON_PX && images < 200) { image(); images++; }
+    expect(trousPercage()[0].w).toBe(PERCAGE_RAYON_PX);
+    // La dernière image servie est celle qui a convergé : elle n'en a pas redemandé.
+    expect(image(), 'rappels d’animation en attente après convergence').toBe(0);
+    expect(image(), 'et toujours aucun à l’image suivante').toBe(0);
+    expect(trousPercage()[0].w, 'le trou reste ouvert').toBe(PERCAGE_RAYON_PX);
+  });
+
+  it('RAFALE de re-rendus : le rayon monte quand même, malgré les dessins sans quad', async () => {
+    const entrees = entreesDe(COIFFÉ);
+    await monter(COIFFÉ, entrees);
+    const rafale: number[] = [];
+    for (let i = 0; i < 12; i++) {
+      horloge += 110; // la cadence mesurée sur l'aperçu : 12 re-rendus espacés de 110 ms
+      await rendre(COIFFÉ, entrees, CADRE, 720 + i * 0.001); // ce qui remonte les boards, comme l'aperçu
+      rafale.push(trousPercage()[0].w);
+    }
+    expect(rafale.some((w) => w > 1), `le rayon n’a jamais dépassé 1 px : ${JSON.stringify(rafale)}`).toBe(true);
+    expect(rafale[rafale.length - 1], 'rayon au bout de la rafale').toBe(PERCAGE_RAYON_PX);
   });
 });
 
