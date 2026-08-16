@@ -1211,3 +1211,143 @@ describe('HUD — matrice responsive canonique (design 2026-07-31 §12)', () => 
     expect(at560).toMatch(/\.modal:has\(>\s*\.rs-scroll\)\s*\{[^}]*border-radius:\s*0/);
   });
 });
+
+// ── (xvii) `<input type="number">` codé à la main (#1318 V5) — volet JUMEAU du cliquet (x) `<button>`
+//    nu : la primitive canonique du champ nombre borné est `NumberField` (table « Primitives partagées »
+//    du CLAUDE.md — saisie clavier + `QtyStepper` + plage dite). Un `<input type="number">` posé
+//    directement rejoue à la main la borne, les pas et l'affordance. BASELINE PAR FICHIER gelée à la
+//    mesure du 2026-08-16 (194 sites / 28 fichiers), DÉCROISSANTE : aucun site n'est supprimé dans ce
+//    lot, seule la hausse est interdite. EXEMPTÉ : `NumberField.tsx`, la primitive elle-même (c'est
+//    elle qui a le droit — et le devoir — de poser l'`<input type="number">` canonique).
+//    COUVERTURE du détecteur (à énoncer, pas à supposer) : il lit la balise OUVRANTE `<input …>` et
+//    n'accepte que `type` en littéral (`"number"`, `'number'`, `{'number'}`) — un `type` calculé
+//    (`type={kind}`) lui échappe, comme lui échappe un `<input>` produit par un helper. Le trou a des
+//    ADRESSES : `creator/CharacterCreator.tsx:2237` (Âge) et `:2238` (Taille) passent `type="number"`
+//    au wrapper local `IdentityField` (`:2150`), qui pose `<input type={type}>` (`:2160`) — 2 champs
+//    nombre RÉELS invisibles au compte, stock effectif 196 pour 194 gelés. Les commentaires sont
+//    neutralisés avant le scan ; les `.test.tsx` sont hors périmètre (un harnais qui pilote un champ
+//    n'est pas une réinvention de primitive).
+const NUMBER_INPUT_EXEMPT_FILES = new Set(['NumberField.tsx']);
+const NUMBER_INPUT_BASELINE: Record<string, number> = {
+  'CargoTransferPanel.tsx': 1,
+  'ForcedRollPicker.tsx': 1,
+  'HouseRulesModal.tsx': 1,
+  'InterludeScreen.tsx': 1,
+  'LandMarketView.tsx': 1,
+  'MerchantPanel.tsx': 1,
+  'PortView.tsx': 1,
+  'PreferencesPanel.tsx': 1,
+  'SeaActivitiesModal.tsx': 2,
+  'compendium/CodexEdit.tsx': 22,
+  'compendium/RefField.tsx': 1,
+  'compendium/StructFields.tsx': 8,
+  'editor/ConditionEditor.tsx': 11,
+  'editor/DialogueDetail.tsx': 1,
+  'editor/EffectList.tsx': 48,
+  'editor/FlowEditor.tsx': 2,
+  'editor/GameOpEditor.tsx': 25,
+  'editor/Inspector.tsx': 25,
+  'editor/LogicDock.tsx': 10,
+  'editor/NarratifEditor.tsx': 3,
+  'editor/Palette.tsx': 1,
+  'editor/PsychTraitsField.tsx': 1,
+  'editor/ScheduleSpecFields.tsx': 9,
+  'editor/StatblockEditor.tsx': 4,
+  'editor/WeaponField.tsx': 1,
+  'editor/WorldMapEditor.tsx': 3,
+  'editor/WorldMapPlacePanel.tsx': 3,
+  'editor/WorldMapRoutePanel.tsx': 6,
+};
+
+/** Balise ouvrante `<input …>` complète (les `{…}` d'attribut peuvent contenir des `>`). */
+function openTags(src: string, tag: string): string[] {
+  const out: string[] = [];
+  const re = new RegExp(`<${tag}\\b`, 'g');
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(src))) {
+    let depth = 0;
+    let end = -1;
+    for (let i = m.index; i < src.length; i++) {
+      const c = src[i];
+      if (c === '{') depth++;
+      else if (c === '}') depth--;
+      else if (c === '>' && depth === 0) { end = i; break; }
+    }
+    if (end !== -1) out.push(src.slice(m.index, end + 1));
+  }
+  return out;
+}
+
+function scanNumberInputs(files: string[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const f of files) {
+    const r = rel(f);
+    if (NUMBER_INPUT_EXEMPT_FILES.has(r)) continue;
+    const src = readFileSync(f, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '))
+      .replace(/(^|[^:])\/\/.*$/gm, (_m, p) => p);
+    for (const tag of openTags(src, 'input')) {
+      if (!/type\s*=\s*(["']number["']|\{\s*["']number["']\s*\})/.test(tag)) continue;
+      counts[r] = (counts[r] ?? 0) + 1;
+    }
+  }
+  return counts;
+}
+
+// ── (xviii) Breakpoints de LARGEUR hors canon, sur TOUS les modules CSS (#1318 V5) — le volet
+//    responsive du HUD ne regardait que `hud.css`/`combat-ui.css`/`combat-modals.css` ; la règle
+//    stricte 4 du CLAUDE.md vaut pour tout `src/ui`. Canon VERS LE BAS : `max-width` ∈ {900,700,560}.
+//    Canon VERS LE HAUT : `min-width` ∈ {561,701,901} (complément exact d'une tranche basse) et 1440
+//    (docs/charte-ui.md § « Politique grand écran (≥1440px) »).
+//    EXEMPTIONS NOMINATIVES (2026-08-16) — chacune porte sa raison, aucune n'est un blanc-seing :
+//      - `creator-presentation.css` @media (max-width: 1100px) : ramener ce seuil à 900 changerait la
+//        GÉOMÉTRIE de l'écran de présentation entre 900 et 1100px (grille ⇄ colonne, `order` de la
+//        scène, hauteur de figurine) — une décision d'écran, hors lot d'outillage.
+const WIDTH_CANON_MAX = ['900', '700', '560'];
+const WIDTH_CANON_MIN = ['561', '701', '901', '1440'];
+const BREAKPOINT_EXEMPT = new Map<string, string[]>([['styles/creator-presentation.css', ['max:1100']]]);
+
+/** TOUTES les conditions de largeur de CHAQUE prélude `@media` — une règle peut en porter
+ *  plusieurs (`@media (min-width: 561px) and (max-width: 900px)`) : ne lire que la première
+ *  laisserait la seconde hors du canon sans que rien ne le dise. */
+function widthBreakpoints(css: string): string[] {
+  return [...css.matchAll(/@media[^{]*/g)].flatMap((p) =>
+    [...p[0].matchAll(/(max|min)-width:\s*(\d+)px/g)].map((m) => `${m[1]}:${m[2]}`),
+  );
+}
+
+describe('#1318 V5 — cliquets d’hygiène UI (champ nombre, breakpoints)', () => {
+  it('(xvii) <input type="number"> à la main : aucune hausse par fichier (composer NumberField)', () => {
+    const files = walk(UI, (f) => f.endsWith('.tsx') && !f.endsWith('.test.tsx'));
+    assertRatchet(scanNumberInputs(files), NUMBER_INPUT_BASELINE, '`<input type="number">` (primitive `NumberField`)');
+  });
+
+  it('(xviii) aucun breakpoint hors canon dans TOUT src/ui (900/700/560 bas, 561/701/901/1440 haut)', () => {
+    const hors: string[] = [];
+    for (const f of walk(UI, (n) => n.endsWith('.css'))) {
+      const r = rel(f);
+      const exempt = BREAKPOINT_EXEMPT.get(r) ?? [];
+      for (const bp of new Set(widthBreakpoints(readFileSync(f, 'utf8')))) {
+        if (exempt.includes(bp)) continue;
+        const [sens, px] = bp.split(':');
+        const canon = sens === 'max' ? WIDTH_CANON_MAX : WIDTH_CANON_MIN;
+        if (!canon.includes(px)) hors.push(`${r} : @media (${sens}-width: ${px}px)`);
+      }
+    }
+    expect(hors, `Breakpoint(s) hors canon (règle stricte 4 ; grand écran : docs/charte-ui.md) :\n${hors.join('\n')}`).toEqual([]);
+  });
+
+  it('(xviii) le parseur lit TOUTES les conditions d’un même @media, pas seulement la première', () => {
+    expect(widthBreakpoints('@media (min-width: 561px) and (max-width: 1234px) { .a { color: red } }')).toEqual([
+      'min:561',
+      'max:1234',
+    ]);
+  });
+
+  it('(xviii) chaque exemption nominative de breakpoint est encore RÉELLE', () => {
+    for (const [r, bps] of BREAKPOINT_EXEMPT) {
+      const réels = new Set(widthBreakpoints(readFileSync(join(UI, r), 'utf8')));
+      for (const bp of bps) expect([...réels], `${r} : exemption ${bp} périmée — la retirer`).toContain(bp);
+    }
+  });
+});

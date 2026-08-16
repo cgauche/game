@@ -3,7 +3,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write",
+        "matcher": "Write|mcp__lean-ctx__ctx_patch",
         "hooks": [
           {
             "type": "command",
