@@ -10,7 +10,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { ItemIcon } from '../src/ui/ItemIcon';
 import { WEAPON_DEFS } from '../src/gameIso/rig/parts/weapons/_registry.generated';
-import type { ItemInstance, Weapon } from '../src/engine/types';
+import type { HitLocation, ItemInstance, Weapon } from '../src/engine/types';
 
 const cell = (label: string, node: React.ReactElement) =>
   `<figure style="margin:0;text-align:center">${renderToStaticMarkup(node)}
@@ -31,11 +31,11 @@ const shieldCells = SHIELDS.map((name) =>
 
 // Armures : matériau × emplacement (ItemIcon choisit le slot réellement couvert par la pièce).
 const MATS = ['Rembourré', 'Cuir', 'Maille', 'Plaque'];
-const SLOTS: [label: string, loc: string][] = [['tête', 'tete'], ['torse', 'corps'], ['bras', 'brasG'], ['jambes', 'jambeG']];
+const SLOTS: [label: string, loc: HitLocation][] = [['tête', 'tete'], ['torse', 'corps'], ['bras', 'brasG'], ['jambes', 'jambeG']];
 const armourCells: string[] = [];
 for (const mat of MATS) {
   for (const [slotLabel, loc] of SLOTS) {
-    const item = { uid: `${mat}-${loc}`, name: `${mat} ${slotLabel}`, kind: 'armor', qualities: [], enc: 0, equipped: false, pa: 1, locs: [loc] } as unknown as ItemInstance;
+    const item: ItemInstance = { uid: `${mat}-${loc}`, label: `${mat} ${slotLabel}`, kind: 'armor', qualities: [], enc: 0, equipped: false, pa: 1, locs: [loc] };
     armourCells.push(cell(`${mat} · ${slotLabel}`, React.createElement(ItemIcon, { item, size: 56 })));
   }
 }

@@ -42,8 +42,6 @@ export const CLASS_OVERLAYS_BY_ID: Record<string, RigOverlay[]> = Object.fromEnt
 );
 /** Tenue « nue » (corps de chair) — référencée à part par tenueFor pour le cas 'Nu'. */
 export const TENUE_NUE: TenueSet = TENUE_BY_ID.nu;
-/** Libellés des tenues SPÉCIFIQUES (sélecteur d'éditeur) — les archétypes de classe ne s'assignent pas à la main. */
-export const SPECIFIC_TENUE_NAMES: string[] = TENUE_DEFS.filter((d) => !isClassDef(d.id)).map((d) => d.label);
 /** Tenues SPÉCIFIQUES `{ id, label }` — `id` explicite et stable porté par le def (clé de `TENUE_BY_ID`).
  *  Consommé par les pickers éditeur (id stocké, label affiché). */
 export const SPECIFIC_TENUES: { id: string; label: string }[] = TENUE_DEFS.filter((d) => !isClassDef(d.id)).map((d) => ({ id: d.id, label: d.label }));

@@ -93,7 +93,8 @@ const selectionKey = (sel: MusicSelection): string | null =>
   sel === null ? null : 'def' in sel ? `def:${sel.def}` : `ctx:${sel.ctx}`;
 
 // DEV uniquement : expose le canal musique aux recettes navigateur (comme `__game` dans main.tsx).
-if (import.meta.env.DEV) (globalThis as unknown as { __music?: typeof music }).__music = music;
+// `?.` : import.meta.env n'existe pas sous tsx (scripts de galerie SSR).
+if (import.meta.env?.DEV) (globalThis as unknown as { __music?: typeof music }).__music = music;
 
 const musicTargetVolume = (def: SoundDef) => Math.min(1, prefs.musicVolume * (def.volume ?? 1));
 

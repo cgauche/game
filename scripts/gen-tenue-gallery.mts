@@ -5,23 +5,31 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
-import { SPECIFIC_TENUE_NAMES } from '../src/gameIso/rig/parts/tenues';
+import { SPECIFIC_TENUES } from '../src/gameIso/rig/parts/tenues';
+import { resolveWardrobeId } from '../src/gameIso/rig/parts/career';
 import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 
-const careers = SPECIFIC_TENUE_NAMES.slice().sort((a, b) => a.localeCompare(b, 'fr'));
+// Le rig s'habille par ID de garde-robe (`RigSprite.career` = id de carrière/tenue) : la galerie
+// itère les IDS du catalogue et n'affiche le `label` qu'en légende. Le résolveur VALIDE (fail-fast) :
+// un id qui ne résout pas à lui-même est une faute d'authoring, jamais un repli Nu silencieux.
+const tenues = SPECIFIC_TENUES.slice().sort((a, b) => a.label.localeCompare(b.label, 'fr'));
+for (const t of tenues) {
+  if (resolveWardrobeId(t.id) !== t.id)
+    throw new Error(`[tenue-gallery] id de tenue « ${t.id} » non résolu par resolveWardrobeId — catalogue incohérent.`);
+}
 const SC = 1.85; // sprite natif ~120×150 → ~222×278
 const CW = Math.round(120 * SC + 24);
 const CH = Math.round(150 * SC + 16);
 const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 };
 
-const cells = careers
-  .map((career) => {
-    const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: app, equip: { weapons: [], armour: [] }, career }));
+const cells = tenues
+  .map(({ id, label }) => {
+    const inner = renderToStaticMarkup(React.createElement(RigSprite, { appearance: app, equip: { weapons: [], armour: [] }, career: id }));
     return (
       `<figure class="cell"><svg viewBox="0 0 ${CW} ${CH}" width="${CW}" height="${CH}"><defs>${DEFS}</defs>` +
       `<ellipse cx="${CW / 2}" cy="${CH - 14}" rx="${Math.round(30 * SC)}" ry="${Math.round(8 * SC)}" fill="#000" opacity="0.35"/>` +
       `<g transform="translate(${CW / 2 - 60 * SC},6) scale(${SC})">${inner}</g>` +
-      `</svg><figcaption>${career}</figcaption></figure>`
+      `</svg><figcaption>${label}</figcaption></figure>`
     );
   })
   .join('');
@@ -35,9 +43,9 @@ const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"/><title
   .cell svg{display:block}
   figcaption{color:#d8cce0;font-size:13px;text-align:center;padding:5px 2px 7px;max-width:${CW}px}
 </style></head>
-<body><h1>Tenues de carrière — ${careers.length} carrières</h1>
+<body><h1>Tenues de carrière — ${tenues.length} tenues</h1>
 <p class="note">Rig humanoïde, couleurs en tokens de palette (recoloriables par l'éditeur). Rendu au défaut par carrière.</p>
 <div class="grid">${cells}</div></body></html>`;
 
 writeFileSync('public/tenue-gallery.html', html, 'utf8');
-console.log(`public/tenue-gallery.html : ${careers.length} tenues`);
+console.log(`public/tenue-gallery.html : ${tenues.length} tenues`);
