@@ -7,6 +7,8 @@ import {
   collectBillboards,
   wholeSceneBillboardEls,
   contactShadow,
+  contactShadowWidthM,
+  actorBillboards,
   contentBox,
   applyFogGamma,
   installFogGamma,
@@ -34,7 +36,9 @@ import {
 } from './sceneMeshes';
 import { facesGeometry, polyBounds, type Vec3 } from './worldTris';
 import { faceDepthOf } from './faceRelief';
-import { anchorAndSize, billboardHeightM, BILLBOARD_BOX_ASPECT, type BillboardConvention } from './billboardMath';
+import { anchorAndSize, billboardHeightM, subjectQuad, BILLBOARD_BOX_ASPECT, type BillboardConvention } from './billboardMath';
+import { BB_W, BB_H } from '../../pov/billboardCore';
+import type { Combatant } from '../../../engine/types';
 import { tintOf } from './visibilityTint';
 import { faceSurface, tintVarFactor } from './faceColors';
 import { faceBakeData, FACE_PX_PER_M } from './faceBake';
@@ -657,12 +661,68 @@ describe('OMBRE DE CONTACT — ancrée sous les pieds', () => {
 
   it('le disque est à l’aplomb EXACT de l’ancre, posé à plat sur le sol', () => {
     const ancre = new THREE.Vector3(12.5, 3.25, -7.75);
-    const disque = contactShadow(ancre, 2);
+    const disque = contactShadow({ anchor: ancre, box: { w: BB_W, h: BB_H } }, { heightM: 2 });
     expect(disque.position.x).toBe(ancre.x);
     expect(disque.position.z).toBe(ancre.z);
     expect(disque.position.y).toBeCloseTo(ancre.y + CONTACT_SHADOW_LIFT_M, 9);
     expect(disque.rotation.x).toBeCloseTo(-Math.PI / 2, 9);
     expect(disque.geometry.parameters.radius).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * LE SOCLE DE FIGURINE (#1176 P3-5a) : sans soleil, le disque de contact EST le socle du pion — sa
+ * taille dit le sujet, pas l'état de son art. La boîte d'un corps AU SOL est BALAYÉE par la chute
+ * (`rigGroundTilt` : 193×193 contre 120×150 debout) : prise pour largeur de socle, elle donnait au
+ * cadavre un socle ×1,6 plus large que celui du vivant identique à côté, et centré sur ses pieds.
+ */
+describe('OMBRE DE CONTACT — le socle se dimensionne sur le SUJET, jamais sur sa boîte d’art', () => {
+  const scèneNue = emptyScene(6, 6);
+  const mptNu = sceneMetresPerTile(scèneNue);
+
+  const acteur = (patch: Partial<Combatant> = {}): Combatant =>
+    ({
+      id: 'a1', label: 'Acteur', kind: 'hero', pos: { x: 1, y: 1 }, size: 'moyenne',
+      wounds: { current: 12, max: 12 }, weapons: [], characteristics: {}, advantage: 0,
+      conditions: [], armour: {}, skills: [], talents: [], movement: 4, career: 'soldat', species: 'Humain',
+      ...patch,
+    }) as unknown as Combatant;
+
+  const sujetDe = (c: Combatant, rider?: Combatant) =>
+    actorBillboards([{ c, ...(rider ? { rider } : {}), x: 1, y: 1, z: 0, facing: 'S' }], scèneNue, mptNu, plein)[0];
+
+  /** Le rayon MONDE du socle tel que la prod le monte : le sujet et son quad, rien d'autre. */
+  const rayon = (s: ReturnType<typeof sujetDe>): number =>
+    contactShadow(s, subjectQuad('jeu', s)).geometry.parameters.radius;
+
+  it('un MORT porte le socle de ce même sujet VIVANT — la chute balaie l’art, pas le pion', () => {
+    const vivant = sujetDe(acteur());
+    const mort = sujetDe(acteur({ id: 'e1', kind: 'enemy', dead: true, wounds: { current: 0, max: 12 } } as Partial<Combatant>));
+    expect(mort.anim?.ground, 'PRÉMISSE : ce sujet doit être au sol').toBe('corpse');
+    expect(vivant.box.w, 'PRÉMISSE : le vivant garde la boîte canonique').toBe(BB_W);
+    // PRÉMISSE de l'écart mesuré : la boîte du mort est BALAYÉE, en largeur comme en hauteur.
+    expect(mort.box.w / vivant.box.w).toBeGreaterThan(1.5);
+    expect(subjectQuad('jeu', mort).widthM / subjectQuad('jeu', vivant).widthM).toBeGreaterThan(1.5);
+    expect(rayon(mort)).toBeCloseTo(rayon(vivant), 6);
+    // et cette largeur commune est bien la CANONIQUE : `BB_W` à l'échelle art→monde du quad.
+    expect(contactShadowWidthM(mort, subjectQuad('jeu', mort)))
+      .toBeCloseTo((subjectQuad('jeu', vivant).heightM / BB_H) * BB_W, 6);
+  });
+
+  it('un À TERRE conscient aussi : la bascule est plus faible, le socle reste le même', () => {
+    const debout = sujetDe(acteur());
+    const àTerre = sujetDe(acteur({ conditions: [{ id: 'a-terre' }] } as unknown as Partial<Combatant>));
+    expect(àTerre.anim?.ground, 'PRÉMISSE : ce sujet doit être au sol').toBe('prone');
+    expect(rayon(àTerre)).toBeCloseTo(rayon(debout), 6);
+  });
+
+  it('un couple MONTÉ garde son socle : sa boîte est haussée en HAUTEUR seulement', () => {
+    const monture = { id: 'm1', label: 'Cheval', kind: 'enemy', creatureId: 'cheval', pos: { x: 1, y: 1 }, size: 'grande', conditions: [], wounds: { current: 10, max: 10 }, riderId: 'a1' } as unknown as Combatant;
+    const couple = sujetDe(monture, acteur());
+    expect(couple.box.w).toBe(BB_W);
+    expect(couple.box.h).toBeGreaterThan(BB_H);
+    // largeur canonique === largeur du quad : le comportement du couple est INCHANGÉ par la dérivation.
+    expect(contactShadowWidthM(couple, subjectQuad('jeu', couple))).toBeCloseTo(subjectQuad('jeu', couple).widthM, 9);
   });
 });
 

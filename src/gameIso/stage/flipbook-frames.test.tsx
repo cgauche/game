@@ -8,6 +8,7 @@ import type { Combatant } from '../../engine/types';
 import type { Dims } from '../../geometry/iso';
 import { GameStage3D, setStageRendererFactory, type StageFrame, type StageRenderer, type StageWalkAnim } from './GameStage3D';
 import {
+  ALPHA_TEST,
   ATLAS_FRAMES_MAX,
   DPR_PLAFOND,
   FRAME_RECT_PLEIN,
@@ -16,7 +17,9 @@ import {
   atlasFrames,
   atlasPxHeight,
   attachBodySilhouette,
+  billboardDepthMaterial,
   billboardMaterial,
+  boardDepthMaterial,
   frameIndexAt,
   frameRectOf,
   palierAtlas,
@@ -64,7 +67,8 @@ function fragment(mat: THREE.MeshBasicMaterial): { uniforms: Record<string, unkn
   return { uniforms: shader.uniforms, src: shader.fragmentShader };
 }
 
-/** Un board de sonde, monté comme l'écran le monte : matériau réel, jumeau de silhouette attaché. */
+/** Un board de sonde, monté comme l'écran le monte : matériau réel, matériau de PROFONDEUR de la
+ *  passe d'ombres, jumeau de silhouette attaché. */
 function board(cid: string): Board {
   const material = billboardMaterial(new THREE.Texture(), 1);
   const sub: BillboardSubject = {
@@ -77,6 +81,8 @@ function board(cid: string): Board {
     mesh: new THREE.Mesh(new THREE.PlaneGeometry(2, 3), material),
     material,
   };
+  b.mesh.castShadow = true;
+  b.mesh.customDepthMaterial = billboardDepthMaterial(material);
   attachBodySilhouette(b, HERO_RING[0]);
   return b;
 }
@@ -131,6 +137,26 @@ describe('Cadre de frame — le fragment échantillonne la CELLULE (#1176 L3)', 
     expect(frameRectOf(billboardMaterial(new THREE.Texture(), 1))!.value.toArray()).toEqual([...FRAME_RECT_PLEIN]);
   });
 
+  /** Méthode : même shader-témoin que ci-dessus, monté sur le matériau que la passe d'OMBRES rend.
+   *  C'est le seul endroit où l'omission se voit — le matériau de profondeur par défaut de three
+   *  recopie `map` et `alphaTest`, donc rien ne manque à l'œil du code : l'ombre découpe simplement
+   *  la PLANCHE ENTIÈRE (#1334). */
+  it('la PASSE DE PROFONDEUR échantillonne la cellule, sur le MÊME objet uniforme que le corps', () => {
+    const corps = billboardMaterial(new THREE.Texture(), 1);
+    const { src, uniforms } = fragment(billboardDepthMaterial(corps) as unknown as THREE.MeshBasicMaterial);
+    expect(src, 'l’ombre se découperait sur la planche entière : une grille de corps au sol').toContain(ECHANTILLON_CADRE);
+    expect(src.replace(ECHANTILLON_CADRE, '')).not.toContain(ECHANTILLON_NU);
+    expect(src, 'l’include survivant = le chunk d’origine réinjecté par three').not.toContain('#include <map_fragment>');
+    expect(uniforms.uFrameRect, 'l’uniforme du CORPS, jamais une copie — sinon l’ombre joue une autre frame').toBe(frameRectOf(corps));
+  });
+
+  it('le matériau de profondeur est EMPAQUETÉ pour la carte d’ombre, et découpe au même seuil', () => {
+    const mat = billboardDepthMaterial(billboardMaterial(new THREE.Texture(), 1));
+    expect(mat.depthPacking).toBe(THREE.RGBADepthPacking);
+    expect(mat.alphaTest).toBe(ALPHA_TEST);
+    expect(mat.customProgramCacheKey!()).toBe(billboardDepthMaterial(billboardMaterial(new THREE.Texture(), 1)).customProgramCacheKey!());
+  });
+
   it('la clé de PROGRAMME est explicite et CONSTANTE — un programme pour tous les corps', () => {
     const a = billboardMaterial(new THREE.Texture(), 1);
     const b = billboardMaterial(new THREE.Texture(), 1);
@@ -156,6 +182,9 @@ describe('Écrivain de frames — deux écritures, aucune péremption (#1176 L3)
     // MUTATION : retirer l'écriture du jumeau laisse la silhouette sur l'atlas périmé — c'est ici
     // que ça se voit, et nulle part ailleurs (la passe de pose ne descend pas dans les enfants).
     expect(jumeauMat(b).map, 'la silhouette doit suivre le corps, jamais rester sur sa texture d’attache').toBe(p.texture);
+    // MÊME loi pour la passe d'OMBRES (#1334) : sa planche laissée derrière découperait l'ombre d'un
+    // geste révolu — et le cadre, lui, avance (l'uniforme est partagé).
+    expect(boardDepthMaterial(b)!.map, 'l’ombre doit se découper sur la planche COURANTE').toBe(p.texture);
     const r = frameUvRect(p.layout, 3);
     expect(rect(b)).toEqual([r.x, r.y, r.w, r.h]);
   });
@@ -168,11 +197,13 @@ describe('Écrivain de frames — deux écritures, aucune péremption (#1176 L3)
     const vTex = p.texture.version;
     const vMat = b.material.version;
     const vJum = jumeauMat(b).version;
+    const vProf = boardDepthMaterial(b)!.version;
     const clé = b.material.customProgramCacheKey!();
     for (let i = 0; i < 4; i++) writeBoardFrames([b], () => ({ key: CLE, frame: 2 }), atlasAt);
     expect(p.texture.version, 'un `needsUpdate` par image re-téléverserait la planche au GPU').toBe(vTex);
     expect(b.material.version, 'un `needsUpdate` par image recompilerait le programme').toBe(vMat);
     expect(jumeauMat(b).version).toBe(vJum);
+    expect(boardDepthMaterial(b)!.version, 'le swap de planche d’ombre ne périme pas le matériau').toBe(vProf);
     expect(b.material.customProgramCacheKey!()).toBe(clé);
   });
 
@@ -453,6 +484,24 @@ describe('Boucle volumique — une image joue une frame, elle n’en cuit aucune
     }
   });
 
+  /** CÂBLAGE de la passe d'ombres (#1334) : sans `customDepthMaterial`, three rend la passe de
+   *  profondeur avec le SIEN — `map` et `alphaTest` recopiés, cadre de frame ABSENT — et l'ombre
+   *  portée d'un corps animé devient sa PLANCHE entière (grille de silhouettes grises au sol,
+   *  signalement utilisateur avec capture). Ça ne se voit sur AUCUNE autre mesure : le corps, lui,
+   *  reste juste. */
+  it('CASTEUR : tout quad qui projette porte le matériau de profondeur À CADRE, uniforme partagé', async () => {
+    await monter();
+    const quads = corps();
+    expect(quads.length, 'aucun board monté : rien à mesurer').toBeGreaterThan(0);
+    for (const q of quads) {
+      expect(q.castShadow, 'PRÉMISSE : ce quad doit projeter').toBe(true);
+      const profondeur = q.customDepthMaterial as THREE.MeshDepthMaterial | undefined;
+      expect(profondeur, 'la passe d’ombre découperait la planche ENTIÈRE').toBeDefined();
+      expect(profondeur!.map, 'l’ombre doit se découper sur la planche du corps').toBe((q.material as THREE.MeshBasicMaterial).map);
+      expect(frameRectOf(profondeur!), 'l’ombre jouerait une autre cellule que le corps').toBe(frameRectOf(q.material as THREE.Material));
+    }
+  });
+
   it('MONTAGE PAR SUJET : un board entre en scène dès SA texture — il n’attend pas les autres', async () => {
     // Une SEULE rasterisation aboutit ; toutes les suivantes restent en suspens (une chaîne de
     // rasterisation qui ne rend jamais la main : le cas que le tout-ou-tien masquait).
@@ -692,5 +741,75 @@ describe('Effondrement — la chute se compte depuis l’ENTRÉE AU SOL (#1176 L
     await remonter({ actors: acteurs });
     act(() => battre!());
     expect(celluleMontrée(N), 'la chute se rejoue à chaque rebuild de board').toBe(N - 1);
+  });
+});
+
+/**
+ * UN MIS HORS DE COMBAT EST À TERRE (#1334) — mesuré sur l'ÉCRAN monté, du vivant à sa mort.
+ *
+ * Deux faits, et deux pannes silencieuses en face : la planche que l'écrivain choisit à chaque image
+ * (une planche de repos, et le mort reste debout à respirer), et l'INSTANT qu'il y joue (un geste
+ * bouclé, et le cadavre se relève toutes les 420 ms).
+ */
+describe('Hors de combat — l’écrivain joue l’EFFONDREMENT et le TIENT (#1334)', () => {
+  function servirLesPlanches(): void {
+    vi.spyOn(atlasBake, 'bakeAtlas').mockImplementation(async (_draw, _box, n) => {
+      const layout = atlasLayout(24, 30, n);
+      return { texture: new THREE.CanvasTexture(document.createElement('canvas')), layout, bytes: layout.texW * layout.texH * 4 };
+    });
+  }
+
+  /** Les planches que les images ont RÉCLAMÉES au cache — la clé porte l'état au sol visé
+   *  (`atlasKey`), donc elle dit quelle planche le corps joue. */
+  function espionnerLesClés(): string[] {
+    const clés: string[] = [];
+    const orig = atlasBake.getCachedAtlas;
+    vi.spyOn(atlasBake, 'getCachedAtlas').mockImplementation((k: string) => { clés.push(k); return orig(k); });
+    return clés;
+  }
+
+  const dernière = (clés: string[]) => clés[clés.length - 1] ?? '';
+
+  it('du VIVANT au MORT : la planche passe du repos à l’EFFONDREMENT, et n’en revient pas', async () => {
+    servirLesPlanches();
+    const clés = espionnerLesClés();
+    // Le store MUTE le combattant en place : c'est cet objet-là que le builder repasse à l'écran.
+    const c = { ...combattant('e1', { x: 2, y: 2 }), kind: 'enemy' } as unknown as Combatant;
+    await monter({ actors: [{ c, x: 2, y: 2, z: 0 }] });
+    await act(async () => { await new Promise((r) => setTimeout(r, 80)); });
+    act(() => battre!());
+    // PRÉMISSE : vivant, il joue un geste DEBOUT — aucun état au sol dans sa clé.
+    expect(dernière(clés), 'PRÉMISSE : le vivant ne doit pas déjà jouer sa chute').toContain('|-|');
+    // MIS HORS DE COMBAT (`isOutOfAction` : figurant à 0 PB, achevé) — ce que `groundStateOf` lit.
+    (c as { dead?: boolean }).dead = true;
+    c.wounds.current = 0;
+    await remonter({ actors: [{ c, x: 2, y: 2, z: 0 }] });
+    act(() => battre!());
+    expect(dernière(clés), 'un hors de combat qui joue encore son repos reste DEBOUT à l’écran').toContain('|corpse|');
+    // …et il y RESTE : deux secondes plus tard, toujours l'effondrement, jamais un retour au repos.
+    await act(async () => { await new Promise((r) => setTimeout(r, 500)); });
+    act(() => battre!());
+    expect(dernière(clés)).toContain('|corpse|');
+  });
+
+  it('la chute JOUÉE se TIENT à sa dernière cellule — le cadavre ne se relève pas en boucle', async () => {
+    servirLesPlanches();
+    const c = { ...combattant('e1', { x: 2, y: 2 }), kind: 'enemy', dead: true, wounds: { current: 0, max: 12 } } as unknown as Combatant;
+    const acteurs: ActorPose[] = [{ c, x: 2, y: 2, z: 0 }];
+    await monter({ actors: acteurs });
+    // La chute (COLLAPSE_MS) est passée depuis longtemps : la cellule montrée est la DERNIÈRE.
+    await act(async () => { await new Promise((r) => setTimeout(r, COLLAPSE_MS + 200)); });
+    act(() => battre!());
+    const n = atlasFrames(planDyingDef('corpse'));
+    const l = atlasLayout(24, 30, n);
+    const vues = quads().map((q) => {
+      for (let k = 0; k < l.n; k++) {
+        const r = frameUvRect(l, k);
+        if (cadre(q) === [r.x, r.y, r.w, r.h].join(',')) return k;
+      }
+      return null;
+    });
+    expect(vues.filter((k) => k !== null).length, 'PRÉMISSE : la planche d’effondrement doit être servie et jouée').toBeGreaterThan(0);
+    expect(vues.every((k) => k === n - 1), `cellules montrées ${vues} (attendu ${n - 1})`).toBe(true);
   });
 });

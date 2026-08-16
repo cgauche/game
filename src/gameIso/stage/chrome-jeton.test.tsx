@@ -278,7 +278,7 @@ describe('Chrome des jetons — l’ALLURE passe au MATÉRIAU du billboard (#117
       quad: { widthM: 2, heightM: 3, centerLiftM: 1.5 },
       mesh: new THREE.Mesh(new THREE.PlaneGeometry(2, 3), material),
       material,
-      shadow: ombre ? contactShadow(sub.anchor, 2) : undefined,
+      shadow: ombre ? contactShadow(sub, { heightM: 3 }) : undefined,
     };
   }
 

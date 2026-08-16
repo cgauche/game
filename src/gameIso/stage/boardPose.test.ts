@@ -36,7 +36,7 @@ function board(cid: string | undefined, anchor: Vector3, avecOmbre: boolean): Bo
     mesh: new Mesh(new PlaneGeometry(2, 3), material),
     material,
   };
-  if (avecOmbre) b.shadow = contactShadow(anchor, b.quad.widthM);
+  if (avecOmbre) b.shadow = contactShadow(sub, b.quad);
   return b;
 }
 

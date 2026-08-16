@@ -120,6 +120,7 @@ import {
   atlasFrames,
   atlasPxHeight,
   attachBodySilhouette,
+  billboardDepthMaterial,
   billboardMaterial,
   boardProjectedPx,
   boardTrackId,
@@ -1522,8 +1523,11 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       const mat = billboardMaterial(texture, 1);
       const mesh = new THREE.Mesh(geo, mat);
       // Un quad PROJETTE son ombre même en Basic (le casteur ne connaît que sa géométrie et son alpha) ;
-      // `receiveShadow` n'aurait, lui, aucun effet sous ce matériau.
+      // `receiveShadow` n'aurait, lui, aucun effet sous ce matériau. La passe d'ombres rend un matériau
+      // de PROFONDEUR, jamais celui-ci : le cadre de frame ne l'atteint que par `customDepthMaterial`
+      // (#1334) — à défaut, l'ombre se découpe sur la planche ENTIÈRE (une grille de corps au sol).
       mesh.castShadow = true;
+      mesh.customDepthMaterial = billboardDepthMaterial(mat);
       groupe.add(withRenderRank(mesh, 'pions'));
       const board: Board = { sub: q.sub, quad: q.quad, mesh, material: mat };
       boards.push(board);
@@ -1537,7 +1541,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       // board — donc dans la passe de pose, donc elle suit le sujet qui glisse. Sous le soleil, c'est
       // l'ombre PROJETÉE qui fait foi (`wantsContactShadow`) — sinon le personnage en porte deux.
       if (wantsContactShadow(q.sub.kind, lit)) {
-        const disque = contactShadow(q.sub.anchor, q.quad.widthM);
+        const disque = contactShadow(q.sub, q.quad);
         disque.material.opacity *= q.sub.tint;
         board.shadow = disque;
         groupe.add(withRenderRank(disque, 'pions'));

@@ -125,6 +125,47 @@ export function billboardMaterial(map: THREE.Texture, luminance: number): THREE.
 }
 
 /**
+ * MATÉRIAU DE PROFONDEUR d'un billboard (#1334) — celui que la passe d'OMBRES rend, et lui seul.
+ *
+ * Sans lui, three fabrique son propre matériau de profondeur : il y recopie `map` et `alphaTest`, mais
+ * ne connaît RIEN de l'injection de cadre (elle ne vit que dans l'`onBeforeCompile` du matériau
+ * COULEUR). La passe d'ombre découpe alors la silhouette sur la PLANCHE ENTIÈRE — mesuré à l'écran :
+ * une grille de mini-corps gris au sol, qui suit le personnage.
+ *
+ * Le cadre s'y réécrit donc par le MÊME remplacement de `map_fragment` et sur le MÊME OBJET uniforme
+ * que le corps (patron du jumeau de silhouette) : la cellule que l'ombre découpe ne peut pas dériver
+ * de celle que le corps montre. L'ÉCRIVAIN de frames (`writeBoardFrames`) y réécrit `map` en même
+ * temps qu'au corps — comme au jumeau, et sous la même comparaison.
+ *
+ * `RGBADepthPacking` : c'est l'encodage que la carte d'ombre de three attend d'un matériau de
+ * profondeur fourni par l'hôte.
+ */
+export function billboardDepthMaterial(corps: Board['material']): THREE.MeshDepthMaterial {
+  const mat = new THREE.MeshDepthMaterial({
+    depthPacking: THREE.RGBADepthPacking,
+    map: corps.map,
+    alphaTest: ALPHA_TEST,
+    side: THREE.DoubleSide,
+  });
+  const frameRect = (corps.userData.frameRect as FrameRectUniform | undefined) ?? { value: new THREE.Vector4(...FRAME_RECT_PLEIN) };
+  mat.userData.frameRect = frameRect;
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uFrameRect = frameRect;
+    shader.fragmentShader = shader.fragmentShader
+      .replace('void main() {', 'uniform vec4 uFrameRect;\nvoid main() {')
+      .replace('#include <map_fragment>', MAP_FRAGMENT_CADRE);
+  };
+  // Clé de programme EXPLICITE, même défense qu'au corps et au jumeau.
+  mat.customProgramCacheKey = () => 'billboard:profondeur:cadre';
+  return mat;
+}
+
+/** Matériau de profondeur d'un board, quand son quad en porte un (`billboardDepthMaterial`). */
+export function boardDepthMaterial(b: Board): THREE.MeshDepthMaterial | undefined {
+  return b.mesh.customDepthMaterial as THREE.MeshDepthMaterial | undefined;
+}
+
+/**
  * MATÉRIAU du JUMEAU DE SILHOUETTE d'un corps (#1297, LOT C) : la MÊME texture de rig que le corps,
  * mais peinte en APLAT de la couleur d'équipe du jeton, et sous un test de profondeur RETOURNÉ
  * (`GreaterDepth`) — il ne reste donc que les pixels où la géométrie du monde a déjà écrit devant le
@@ -535,13 +576,18 @@ function layoutOf(b: Board): AtlasLayout | undefined {
   return b.material.userData.atlasLayout as AtlasLayout | undefined;
 }
 
-/** Pose la texture (corps ET jumeau) et la cellule sur un board — chaque écriture sous sa comparaison. */
+/** Pose la texture (corps, jumeau ET matériau de profondeur) et la cellule sur un board — chaque
+ *  écriture sous sa comparaison. Les trois matériaux échantillonnent la MÊME planche : la passe
+ *  d'ombres rend le sien (#1334), et une planche laissée derrière y découperait l'ombre d'un geste
+ *  révolu. */
 function poserFrame(b: Board, texture: THREE.Texture | undefined, layout: AtlasLayout | undefined, k: number): void {
   if (texture && b.material.map !== texture) {
     b.material.map = texture;
     b.material.userData.atlasLayout = layout;
     const jumeau = b.jumeau?.material as THREE.MeshBasicMaterial | undefined;
     if (jumeau) jumeau.map = texture;
+    const profondeur = boardDepthMaterial(b);
+    if (profondeur) profondeur.map = texture;
   }
   const u = frameRectOf(b.material);
   if (!u) return;
