@@ -126,7 +126,7 @@ describe('faceBake — cuisson par face (canal DÉTERMINISTE seul)', () => {
   it('SEULE la part `face` se colombe — le jeu EXACT que le backend affine habille', () => {
     // Les parts décoratives d'un mur à pans de bois : le SVG n'y pose aucune poutre (`authoring/wallsSvg.ts`
     // cherche `part === 'face'`, `authoring/wallsSvg.ts` écarte tout le reste avant le colombage de la l.251).
-    for (const part of ['poteau', 'panneau', 'moulure', 'plinthe', 'couronnement', 'vitre', 'meneau', 'vantail', 'jambage', 'embrasure', 'chambranle', 'parapet', 'merlon', 'arase', 'bande'])
+    for (const part of ['poteau', 'panneau', 'moulure', 'plinthe', 'couronnement', 'vitre', 'meneau', 'vantail', 'jambage', 'chambranle', 'parapet', 'merlon', 'arase', 'bande'])
       expect([part, needsFaceBake(RECETTE, 'wall', part)]).toEqual([part, false]);
     expect(needsFaceBake(RECETTE, 'wall', undefined)).toBe(false);
     expect(needsFaceBake(RECETTE, 'wall', FACE)).toBe(true);

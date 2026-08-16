@@ -86,6 +86,10 @@ export interface AmbianceDef {
     vignette: RadialVeilDef;
     /** Filtre de l'ÉTAGE INFÉRIEUR (multi-niveaux) : désaturation + assombrissement, SANS opacité. */
     lowerFloorDim: { saturate: number; slope: number };
+    /** FOND du canevas volumique : ce qu'on voit LÀ OÙ IL N'Y A PAS DE CARTE (`stageBg`, teinté par la
+     *  météo dans `stageClearColor`) — sourd, jamais noir : un noir enclavé entre deux bâtis se lit
+     *  comme un trou dans le monde. */
+    stageBg: string;
     /** Voile de NUIT (rect plein écran, alpha piloté par la lumière ambiante). */
     nightVeil: string;
     /** Alpha MAX du voile de nuit (à luminosité 0). L'alpha effectif = `(1 − ambientScalar) × nightVeilMax`,

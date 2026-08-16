@@ -23,7 +23,6 @@ const CALIBRAGE: Record<WallPart, WallPartRelief> = {
   bande: { famille: 'saillie', jutM: 0.26 },
   moulure: { famille: 'saillie', jutM: 0.28 },
   chambranle: { famille: 'saillie', jutM: 0.28 },
-  embrasure: { famille: 'traversant', thickM: 0.17 },
   vantail: { famille: 'traversant', thickM: 0.17 },
   linteau: { famille: 'traversant', thickM: 0.17 },
   seuil: { famille: 'traversant', thickM: 0.17 },
@@ -45,8 +44,8 @@ function thickDe(part: WallPart): number {
 }
 
 describe('RELIEF MINCE — le CALIBRAGE des profondeurs, épinglé valeur par valeur', () => {
-  it('les 24 parties de mur portent EXACTEMENT les profondeurs du catalogue', () => {
-    expect(WALL_PARTS.length).toBe(24);
+  it('les 23 parties de mur portent EXACTEMENT les profondeurs du catalogue', () => {
+    expect(WALL_PARTS.length).toBe(23);
     expect(Object.fromEntries(WALL_PARTS.map((p) => [p, wallPartRelief(p)]))).toEqual(CALIBRAGE);
   });
 
@@ -60,8 +59,8 @@ describe('RELIEF MINCE — le CALIBRAGE des profondeurs, épinglé valeur par va
   it('porte FERMÉE : vantail < joints de planches < bouton (le bouton traverse et saille des deux côtés)', () => {
     expect(thickDe('vantail')).toBeLessThan(thickDe('vantail-planche'));
     expect(thickDe('vantail-planche')).toBeLessThan(thickDe('poignee'));
-    // Le vantail bouche l'embrasure : même épaisseur, il l'affleure.
-    expect(thickDe('vantail')).toBe(thickDe('embrasure'));
+    // Le vantail bouche l'ouverture : même épaisseur que le linteau qui la coiffe, il l'affleure.
+    expect(thickDe('vantail')).toBe(thickDe('linteau'));
   });
 
   it('une partie de mur INCONNUE lève en se NOMMANT (jamais un TypeError au milieu de la géométrie)', () => {
@@ -115,7 +114,7 @@ describe('SCHÉMA de `structureAppearance.json` — les clés de relief sont CON
   it('les clés de `relief` sont EXACTEMENT les parties non-`matiere` — le schéma ne promet rien d’inerte', () => {
     const surchargeables = WALL_PARTS.filter((p) => wallPartRelief(p).famille !== 'matiere');
     expect([...RELIEF_PART_KEYS]).toEqual([...surchargeables]);
-    expect(RELIEF_PART_KEYS.length).toBe(17);
+    expect(RELIEF_PART_KEYS.length).toBe(16);
     // Une partie de la famille `matiere` authorée en surcharge échoue au CHARGEMENT : `wallPartDepthM`
     // rend l'épaisseur du MUR pour ces parties-là, la surcharge n'agirait sur rien.
     for (const inerte of WALL_PARTS.filter((p) => wallPartRelief(p).famille === 'matiere')) {

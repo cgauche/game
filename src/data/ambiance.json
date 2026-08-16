@@ -35,6 +35,7 @@
       "saturate": 0.72,
       "slope": 0.84
     },
+    "stageBg": "#2c333d",
     "nightVeil": "#05040a",
     "nightVeilMax": 0.82,
     "dayVignetteFloor": 0.3,

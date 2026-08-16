@@ -22,7 +22,6 @@ import { projGP, type Pt2 } from './project';
 // Facteurs d'ombrage et épaisseurs ÉCRAN (px) des ornements — des formes, jamais des identités de couleur.
 const OUTLINE = 0.4; // liseré d'arête sombre dérivé de la face
 const JAMBCAP = 1.25; // chapiteau de jambage clair (repli sans couleur de def)
-const EMBRASURE_OPACITY = 0.42;
 const POST_W = 3.8, POST_CAP_H = 2.4, POST_BASE_H = 3; // montant d'extrémité
 const JAMB_W = 3.6, JAMB_CAP_H = 1.8; // jambage de porte
 const FRAME_W = 1.3, BAR_W = 1.7; // moulure bois / barreau de herse (lignes médianes)
@@ -105,7 +104,6 @@ function faceSvg(f: Face, el: WallEl, app: StructureAppearanceDef, tintK: number
   else if (part === 'parapet' || part === 'linteau') extra = strokeAttr(app.band ?? app.face, 0.8);
   else if (part === 'chambranle') extra = strokeAttr(shade(app.face, OUTLINE), 0.5);
   else if (part === 'gravats-tas') extra = strokeAttr(app.band ?? shade(app.face, OUTLINE), 0.6);
-  else if (part === 'embrasure') extra = ` opacity="${EMBRASURE_OPACITY}"`;
   let overlay = '';
   const { lod, mpt } = detailOf(opts);
   if (lod >= 1 && f.poly.length === 4 && app.detail?.courses && COURSED.has(part))

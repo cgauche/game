@@ -57,7 +57,7 @@ export interface StructureAppearanceDef {
  *  couleur de BASE d'une partie via `wallPartColor` puis applique SA lumière (orientation iso / tint POV). */
 export const WALL_PARTS = [
   'face', 'poteau', 'couronnement', 'panneau', 'moulure', 'plinthe', // panneau bois encadré
-  'embrasure', 'chambranle', 'jambage', // porte bois ajourée (ouverte)
+  'chambranle', 'jambage', // encadrement d'une porte bois (l'ouverture elle-même est un TROU)
   'vantail', 'vantail-planche', 'poignee', // vantail de porte FERMÉE
   'vitre', 'meneau', // fenêtre AJOURÉE (vitre transparente + meneau/croisillon ; encadrée par la `face`)
   'parapet', 'bande', 'arase', 'merlon', // fortification crénelée

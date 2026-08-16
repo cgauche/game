@@ -37,10 +37,9 @@ describe('wallSvg — parité de géométrie avec tileEdge (arête historique)',
 
 describe('wallSvg — bois : couleurs de la def, ombrage par ORIENTATION MONDE', () => {
   const app = structureAppearance('plain');
-  it('arête E (éclairée) : la face garde sa couleur de def, panneau/plinthe aussi', () => {
+  it('arête E (éclairée) : la face garde sa couleur de def, la plinthe aussi', () => {
     const svg = wallSvg(el({ x: 2, y: 2, side: 'E' }), dims);
     expect(svg).toContain(`fill="${app.face}"`);
-    expect(svg).toContain(`fill="${app.wood!.inset}"`);
     expect(svg).toContain(`fill="${app.wood!.skirt}"`);
     expect(svg).toContain(`stroke="${shade(app.face, 0.4)}"`); // liseré dérivé de la face
   });
@@ -53,15 +52,25 @@ describe('wallSvg — bois : couleurs de la def, ombrage par ORIENTATION MONDE',
     const svg = wallSvg(el({ x: 2, y: 2, side: 'E' }), dims);
     expect((svg.match(new RegExp(`fill="${app.post}"`, 'g')) ?? []).length).toBe(2);
   });
-  it('moulure : la ligne médiane du trait historique (1.3 px)', () => {
-    expect(wallSvg(el({ x: 2, y: 2, side: 'E' }), dims)).toContain('stroke-width="1.3"');
+  it('bayPanel : le panneau prend `wood.inset`, la moulure est sa ligne médiane 1.3 px en `wood.frame`', () => {
+    const nu = wallSvg(el({ x: 2, y: 2, side: 'E' }), dims);
+    const def = structureAppearance('plain');
+    def.bayPanel = true;
+    try {
+      const svg = wallSvg(el({ x: 2, y: 2, side: 'E' }), dims);
+      expect(svg).toContain(`fill="${app.wood!.inset}"`);
+      expect(svg).toContain(`stroke="${app.wood!.frame}" stroke-width="1.3"`);
+      expect(svg.length).toBeGreaterThan(nu.length);
+    } finally {
+      delete def.bayPanel;
+    }
   });
 });
 
-describe('wallSvg — porte bois : embrasure ajourée + jambages', () => {
-  it('embrasure semi-transparente (0.42) + 2 jambages', () => {
+describe('wallSvg — porte bois OUVERTE : un TROU bordé de jambages', () => {
+  it('aucune face ne remplit l’ouverture ; les 2 jambages la bordent', () => {
     const svg = wallSvg(el({ x: 2, y: 2, side: 'N', door: true }), dims);
-    expect(svg).toContain('opacity="0.42"');
+    expect(svg).not.toContain('opacity=');
     const app = structureAppearance('plain');
     expect((svg.match(new RegExp(`fill="${shade(app.face, 1.25)}"`, 'g')) ?? []).length).toBe(2); // chapiteaux de jambage (repli)
   });

@@ -14,7 +14,7 @@ export const file = 'structureAppearance.json';
  *  `src/gameIso/catalog/structures/relief.test.ts`. */
 export const WALL_PART_KEYS = [
   'face', 'poteau', 'couronnement', 'panneau', 'moulure', 'plinthe',
-  'embrasure', 'chambranle', 'jambage',
+  'chambranle', 'jambage',
   'vantail', 'vantail-planche', 'poignee',
   'vitre', 'meneau',
   'parapet', 'bande', 'arase', 'merlon',
@@ -22,7 +22,7 @@ export const WALL_PART_KEYS = [
   'gravats', 'gravats-tas',
 ] as const;
 
-/** Parties SURCHARGEABLES par `relief.jut`/`relief.thick` : les 17 parties des familles `saillie` et
+/** Parties SURCHARGEABLES par `relief.jut`/`relief.thick` : les 16 parties des familles `saillie` et
  *  `traversant`. Les 7 parties de la famille `matiere` (`face, poteau, couronnement, jambage, parapet,
  *  arase, merlon`) en sont ABSENTES : leur volume EST celui du mur (`wallPartDepthM` rend `wallM` sans
  *  lire la surcharge) — c'est `relief.wallM` qui règle celui-là, pour toutes à la fois. Les y admettre

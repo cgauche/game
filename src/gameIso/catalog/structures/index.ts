@@ -31,9 +31,6 @@ export function wallApp(seg: WallSeg, baseH: number): StructureAppearanceDef {
   return seg.structure ? structureAppearance(seg.structure) : structureAppearance(baseH > 1 ? 'mur-en-pierre' : 'plain');
 }
 
-// Facteur d'OMBRAGE dérivé de la face (jamais une couleur en dur) : fond d'embrasure de porte.
-const EMBRASURE = 0.19;
-
 /** Croisée de repli (def SANS bloc `window`) = celle de `plain` (DONNÉE JSON : verre froid + ambre allumé) —
  *  jamais un littéral de couleur (garde-fou renderer), au même titre que `FLOOR_FALLBACK`/`CEIL_BASE`. */
 const defaultWindow = () => structureAppearance('plain').window;
@@ -54,7 +51,6 @@ export function wallPartColor(app: StructureAppearanceDef, part: WallPart): stri
     case 'couronnement': return app.wood?.cap ?? app.cap ?? app.face;
     case 'arase': case 'merlon': return app.cap ?? app.face;
     case 'bande': case 'herse-barreau': return app.band ?? app.face;
-    case 'embrasure': return shade(app.face, EMBRASURE);
     case 'jambage': return app.door?.jamb ?? app.face;
     case 'vantail': return app.door?.leaf ?? app.wood?.inset ?? shade(app.face, 0.78);
     case 'vantail-planche': return app.door?.plank ?? app.wood?.skirt ?? app.post;
@@ -98,9 +94,9 @@ export function wallPartRelief(part: WallPart): WallPartRelief {
       return { famille: 'saillie', jutM: 0.26 };
     case 'moulure': case 'chambranle':
       return { famille: 'saillie', jutM: 0.28 };
-    case 'embrasure': case 'vantail': case 'linteau': case 'seuil':
+    case 'vantail': case 'linteau': case 'seuil':
       return { famille: 'traversant', thickM: 0.17 };
-    // Porte FERMÉE, trois épaisseurs CROISSANTES : le vantail affleure l'embrasure qu'il bouche, ses
+    // Porte FERMÉE, trois épaisseurs CROISSANTES : le vantail affleure l'ouverture qu'il bouche, ses
     // joints de planches sont cloués DESSUS (il en dépasse de part et d'autre), et le bouton traverse
     // le tout pour saillir des DEUX côtés — c'est ce geste que verrouille `relief.test.ts`.
     case 'vantail-planche': return { famille: 'traversant', thickM: 0.21 };

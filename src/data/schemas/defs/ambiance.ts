@@ -167,6 +167,7 @@ export const schema = z.strictObject({
     warm: radialVeilSchema,
     vignette: radialVeilSchema,
     lowerFloorDim: z.strictObject({ saturate: z.number(), slope: z.number() }),
+    stageBg: z.string(),
     nightVeil: z.string(),
     nightVeilMax: z.number(),
     dayVignetteFloor: z.number(),

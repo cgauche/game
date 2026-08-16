@@ -226,10 +226,9 @@ describe('buildWalls — façades architecturales authorées', () => {
 describe('buildWalls — porte BOIS (routée par le seg.door)', () => {
   const el = one(sceneWith([{ x: 2, y: 2, side: 'N', door: true }]));
 
-  it('embrasure + face au-dessus de l’ouverture + chambranle + jambages, ouverture 0.52 × WALL_H_M', () => {
-    expect(parts(el)).toEqual(['poteau', 'embrasure', 'face', 'chambranle', 'couronnement', 'jambage', 'jambage', 'poteau']);
+  it('ouverture BÉANTE + face au-dessus + chambranle + jambages, ouverture 0.52 × WALL_H_M', () => {
+    expect(parts(el)).toEqual(['poteau', 'face', 'chambranle', 'couronnement', 'jambage', 'jambage', 'poteau']);
     const op = WALL_H_M * 0.52;
-    expect(facesOf(el, 'embrasure')[0].poly.map((p) => p.h)).toEqual([op, op, 0, 0]);
     expect(facesOf(el, 'face')[0].poly[2].h).toBe(op); // la face ne descend que jusqu'à l'ouverture
     for (const j of facesOf(el, 'jambage')) expect(j.poly.map((p) => p.h)).toEqual([op, 0]);
   });
@@ -241,22 +240,25 @@ describe('buildWalls — porte BOIS (routée par le seg.door)', () => {
 });
 
 describe('buildWalls — porte FERMÉE = VANTAIL (se lit comme une porte, pas un trou)', () => {
-  it('closed → vantail + 3 planches + poignée à la place de l’embrasure béante', () => {
+  it('closed → vantail + 3 planches + poignée à la place de l’ouverture béante', () => {
     const el = one(sceneWith([{ x: 2, y: 2, side: 'N', door: true, closed: true }]));
     const p = parts(el);
     expect(p).toContain('vantail');
     expect(p.filter((x) => x === 'vantail-planche')).toHaveLength(3);
     expect(p).toContain('poignee');
-    expect(p).not.toContain('embrasure'); // le trou est bouché par le vantail
     expect(el.states.open).toBe(false);
     // le vantail remplit l’ouverture (0 → 0.52 × WALL_H_M) entre les jambages.
     const leaf = facesOf(el, 'vantail')[0];
     expect(leaf.poly.map((pt) => pt.h)).toEqual([WALL_H_M * 0.52, WALL_H_M * 0.52, 0, 0]);
   });
-  it('OUVERTE → embrasure béante (le passage se voit), aucun vantail', () => {
-    const p = parts(one(sceneWith([{ x: 2, y: 2, side: 'N', door: true }])));
-    expect(p).toContain('embrasure');
-    expect(p).not.toContain('vantail');
+  /** #1176 — le monde est VOLUMIQUE : une porte ouverte est un TROU, pas un panneau sombre. AUCUNE face
+   *  n'occupe la hauteur d'ouverture ; les joues du mur (DoubleSide) montrent la pièce derrière. */
+  it('OUVERTE → aucune face dans l’ouverture : ni vantail, ni panneau de remplissage', () => {
+    const el = one(sceneWith([{ x: 2, y: 2, side: 'N', door: true }]));
+    const op = WALL_H_M * 0.52;
+    expect(parts(el)).not.toContain('vantail');
+    // Un quad qui remplirait l'ouverture aurait son bas à 0 et son haut à `op` : il n'y en a aucun.
+    expect(el.faces.filter((f) => f.poly.length === 4 && Math.min(...f.poly.map((pt) => pt.h)) === 0 && Math.max(...f.poly.map((pt) => pt.h)) === op)).toEqual([]);
   });
 });
 

@@ -42,16 +42,20 @@ import { bonesToSvg } from '../../rig/renderBones';
 import { resolveRig } from '../../rig/composeRig';
 import type { RigOverlay } from '../../rig/bones';
 import { entityRigProfileFor, enemyRigProfile, rendersFromOwnInventory } from '../../rig/enemyProfile';
-import { planById, planOptsForRecord, type RenderResolution, type ResolveOpts } from '../../rig/bodyPlan';
+import { planById, planOptsForRecord, type RenderResolution, type ResolveOpts, type WingState } from '../../rig/bodyPlan';
 import { defaultAppearance, type Appearance } from '../../rig/appearance';
 import { equipFromCombatant, isShield, type EquipCtx } from '../../rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from '../../rig/parts/combatantVisuals';
 import { mountedPlanOpts, mountedRest, seatPlacement, seatRiderOnMount } from '../../rig/mountedRig';
 import { diagOnce } from '../../rig/devDiag';
+import { addPose } from '../../rig/poses';
+import { weaponRest } from '../../rig/anim/weaponClips';
+import { clipTotalMs, frameSampleMs, planPoseAt, rigPoseAtFrame, type ClipDef } from '../../rig/anim/actorAnimSelect';
 import { isStructure } from '../../../engine/structures';
-import type { Combatant } from '../../../engine/types';
+import type { Combatant, Weapon } from '../../../engine/types';
+import { hasLeap } from '../../../engine/traits/dispatch';
 import { combatantRender, combatantTokenScale, entityRender, entityTokenScale, sceneEntityForRender, sizeTokenScale } from '../../sizeScale';
-import { groundStateOf, planGroundPose, rigGroundPose, type GroundState } from '../../groundPose';
+import { groundStateOf, planGroundPose, rigGroundPose, type GroundState, type Pose } from '../../groundPose';
 import { hash32 } from '../../detail/hash';
 import { entitySize } from '../../../state/spawn';
 import { sizeFootprint } from '../../../state/footprint';
@@ -552,6 +556,10 @@ export interface BillboardSubject {
    *  sprite rend au pointeur (`stage/spritePicker.ts`). Absent pour un figurant ou un décor : ni l'un
    *  ni l'autre ne porte de `data-cid` en affine, ils n'y sont donc pas cliquables non plus. */
   cid?: string;
+  /** Id de l'ENTITÉ DE SCÈNE dessinée, quand ce figurant JOUE une ambiance authorée
+   *  (`SceneEntity.anim`) — l'identité de sa piste de flipbook (`stage/boardPose.boardTrackId`), et
+   *  rien d'autre : il ne devient ni cliquable ni glissable pour autant. */
+  eid?: string;
   /** COULEUR D'ÉQUIPE du jeton (#1297) — celle de son anneau aux pieds (`teamRingDecor`), portée ici
    *  pour que sa SILHOUETTE à travers les murs en soit teintée. Absente pour un figurant ou un décor,
    *  qui n'appartiennent à aucune équipe et ne se silhouettent pas. */
@@ -569,26 +577,95 @@ export interface BillboardSubject {
   box: { w: number; h: number };
   /** Fragment SVG pour une vue (défs globaux inclus : le blob de rasterisation est un document isolé). */
   svg: (view: View, mirror: boolean, camRot: Rot) => string;
+  /**
+   * MÊME chaîne de dessin que `svg`, à la FRAME `k` d'une planche de `n` frames du geste `def` — ce
+   * qu'un flipbook cuit frame par frame (`backends/webgl/atlasBake.ts`), là où `svg` fige la pose du
+   * sujet à l'instant du build.
+   *
+   * C'est ICI que vit tout ce que l'écran n'a pas : le `BodyPlan` d'un gabarit (`planPoseAt`), la
+   * PRISE D'ARME d'un bipède (`addPose(holdPose, pose)`, parité `RigToken`), les opts d'apparence et
+   * l'équipement. L'appelant ne fournit qu'un geste et un rang de frame — jamais une pose d'os.
+   *
+   * CONTRAT : porté par les sujets à UN corps (rig bipède, gabarit de créature). Le couple MONTÉ ne le
+   * porte pas — son fragment est un composite (cavalier assis sur les os de la monture), dont
+   * l'animation demande DEUX poses. Un `def` d'une AUTRE voie que celle du corps rend son REPOS.
+   *
+   * `opts.ground` : l'effondrement d'un bipède n'est pas un clip mais une interpolation vers la pose
+   * au sol visée (`rigPoseAtFrame`) — un gabarit, lui, la porte dans son def (`planDyingDef`).
+   */
+  frameSvg?: (view: View, mirror: boolean, def: ClipDef, k: number, n: number, opts?: { ground?: Exclude<GroundState, null> }) => string;
+  /** Ce que le FLIPBOOK doit savoir du CORPS de ce sujet — le contrat qui évite à l'écran de
+   *  connaître `BodyPlan`, le store, ou la garde-robe (#1176, L4). */
+  anim?: SubjectAnim;
 }
 
-/** SVG d'un personnage de scène : rig humanoïde (`resolveRig`) ou gabarit de créature (`planById`),
+/** Ce qu'un sujet dit de son corps au flipbook : de quoi CHOISIR ses gestes, jamais de quoi les
+ *  dessiner (le dessin reste derrière `frameSvg`). */
+export interface SubjectAnim {
+  /** Voie de corps : bipède rigué, ou gabarit de créature. */
+  voie: 'rig' | 'plan';
+  /** Clip d'AMBIANCE authoré (`SceneEntity.anim`) — figurant de scène seulement, et seulement quand
+   *  ce corps sait le jouer. */
+  ambient?: string;
+  /** État AU SOL du corps au montage (mort / À Terre) : le geste joué est l'EFFONDREMENT. */
+  ground?: Exclude<GroundState, null>;
+  /** Déplacement par BOND (trait LDB 85) plutôt que pas de marche — gabarits. */
+  leap?: boolean;
+}
+
+/** Arme PRINCIPALE d'un équipement — la MÊME lecture que le stage affine (`useRigAnim`), d'où se
+ *  dérive la PRISE D'ARME du corps (`weaponRest`). */
+function mainWeaponOf(equip: EquipCtx): Weapon | undefined {
+  return equip.weapons?.find((w) => !isShield(w)) ?? equip.weapons?.[0];
+}
+
+/** DESSIN d'un personnage de scène : rig humanoïde (`resolveRig`) ou gabarit de créature (`planById`),
  *  même résolution par la DONNÉE que le jeu (`entityRender`, preset de PNJ compris) et même
  *  équipement que l'iso (`entityRigProfileFor`, dont l'appartenance à une rencontre : `enrolled`).
+ *  Rend le corps AU REPOS (`draw`) et la couture de flipbook du MÊME corps (`frame`).
  *  `null` = aucune apparence résoluble. */
-function personnageSvg(ent: SceneEntity, enrolled: boolean): ((view: View, mirror: boolean) => string) | null {
+function personnageDraw(ent: SceneEntity, enrolled: boolean): {
+  voie: 'rig' | 'plan';
+  /** Ce corps sait-il jouer une boucle d'ambiance ? Un gabarit sans `idlePose` cuirait N frames
+   *  identiques — il reste statique. */
+  animable: boolean;
+  draw: (view: View, mirror: boolean) => string;
+  frame: (view: View, mirror: boolean, def: ClipDef, k: number, n: number) => string;
+} | null {
   const e = sceneEntityForRender(ent);
   const r = entityRender(e);
   if (r.kind === 'rig') {
     const prof = entityRigProfileFor(e, enrolled);
     if (!prof) return null;
-    return (view, mirror) => bonesToSvg(resolveRig(prof.appearance, prof.equip, {}, prof.tenue, view, [], mirror));
+    // PRISE D'ARME du figurant, composée à chaque frame comme le jeton affine (`RigToken`) : sans
+    // elle, un garde animé lâche sa hallebarde dès la première cellule de sa planche.
+    const hold = weaponRest(mainWeaponOf(prof.equip));
+    const at = (view: View, mirror: boolean, pose: Pose) =>
+      bonesToSvg(resolveRig(prof.appearance, prof.equip, pose, prof.tenue, view, [], mirror));
+    return {
+      voie: 'rig',
+      animable: true,
+      draw: (view, mirror) => at(view, mirror, {}),
+      frame: (view, mirror, def, k, n) =>
+        def.voie === 'rig' ? at(view, mirror, addPose(hold, rigPoseAtFrame(def, k, n))) : at(view, mirror, {}),
+    };
   }
   const plan = planById(r.plan);
   if (!plan) return null;
-  return (view, mirror) => {
-    const body = bonesToSvg(plan.resolve(r.species, view, plan.restPose(), {}));
+  const at = (view: View, mirror: boolean, pose: Pose, wings?: WingState) => {
+    const body = bonesToSvg(plan.resolve(r.species, view, pose, wings === 'spread' ? { wings } : {}));
     // Miroir de la boîte 120×150 (centre en x=60), MÊME convention que `propSvg` pour un profil gauche.
     return mirror ? `<g transform="translate(${BB_W},0) scale(-1,1)">${body}</g>` : body;
+  };
+  return {
+    voie: 'plan',
+    animable: !!plan.idlePose,
+    draw: (view, mirror) => at(view, mirror, plan.restPose()),
+    frame: (view, mirror, def, k, n) => {
+      if (def.voie !== 'plan') return at(view, mirror, plan.restPose());
+      const { pose, wings } = planPoseAt(plan, def, frameSampleMs(k, n, clipTotalMs(def)));
+      return at(view, mirror, pose, wings);
+    },
   };
 }
 
@@ -622,22 +699,30 @@ export function collectBillboards(scene: Scene, mpt: number, tintAt: TintAt, els
     if (tk.subject.kind !== 'figurant') continue;
     const { ent, enrolled } = tk.subject;
     if (ent.kind !== 'personnage') continue;
-    const draw = personnageSvg(ent, enrolled);
-    if (!draw) continue;
+    const corps = personnageDraw(ent, enrolled);
+    if (!corps) continue;
     // Empreinte multi-cases : le corps se centre sur l'empreinte.
     const off = (sizeFootprint(entitySize(ent)) - 1) / 2;
     const gx = ent.pos.x + off;
     const gy = ent.pos.y + off;
     const z = tk.cell.z;
+    // AMBIANCE AUTHORÉE (`SceneEntity.anim`, catalogue `gameIso/sceneAnims`) : ce figurant JOUE sa
+    // boucle en volumique comme le jeton affine la joue (`RigToken`, prop `ambientAnim`). Sans
+    // ambiance — ou sur un corps qui ne sait pas la jouer — il reste une texture d'UNE frame.
+    const ambient = ent.anim && corps.animable ? ent.anim : undefined;
     out.push({
-      identity: `perso:${ent.id}`,
+      // L'ambiance entre dans l'IDENTITÉ : c'est ce qui périme la texture d'un figurant dont l'auteur
+      // change l'anim à l'inspecteur, et ce qui interdit à deux ambiances de partager une planche.
+      identity: `perso:${ent.id}${ambient ? `|${ambient}` : ''}`,
+      ...(ambient ? { eid: ent.id, anim: { voie: corps.voie, ambient } } : {}),
       kind: 'personnage',
       anchor: new THREE.Vector3(gx * mpt, heightAt(scene, ent.pos.x, ent.pos.y, z), gy * mpt),
       facing: ent.facing ?? 'S',
       scaleK: entityTokenScale(ent),
       tint: tintAt(ent.pos.x, ent.pos.y, z),
       box: { w: BB_W, h: BB_H },
-      svg: (view, mirror) => defs + draw(view, mirror),
+      svg: (view, mirror) => defs + corps.draw(view, mirror),
+      ...(ambient ? { frameSvg: (view, mirror, def, k, n) => defs + corps.frame(view, mirror, def, k, n) } : {}),
     });
   }
   for (const el of els.props) {
@@ -855,28 +940,49 @@ export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt:
     const riderInputs = rider ? actorDrawInputs(rider) : undefined;
     const monté = rider && riderInputs ? mountedSvg(c, rider, riderInputs) : null;
     let draw: ((view: View, mirror: boolean) => string) | null = monté?.draw ?? null;
+    // MÊME chaîne de dessin, FRAME de geste (`BillboardSubject.frameSvg`) : le corps figé ci-dessous
+    // en est l'échantillon à la pose du build. La voie de corps décide de ce qu'une frame échantillonne
+    // — un clip pour un bipède, les fonctions de pose du `BodyPlan` pour un gabarit — et ni l'une ni
+    // l'autre ne sort d'ici : l'écran ne connaît que des gestes et des rangs de frame.
+    let frameAt: BillboardSubject['frameSvg'] = undefined;
+    let voie: SubjectAnim['voie'] | null = null;
     if (!draw && inputs.rig) {
       const { appearance, equip, tenue, overlays } = inputs.rig;
       const couché = rigGroundPose(ground);
-      draw = (view, mirror) => bonesToSvg(resolveRig(appearance, equip, couché ?? {}, tenue, view, overlays, mirror));
+      const hold = weaponRest(mainWeaponOf(equip));
+      const drawAt = (view: View, mirror: boolean, pose: Pose) =>
+        bonesToSvg(resolveRig(appearance, equip, pose, tenue, view, overlays, mirror));
+      draw = (view, mirror) => drawAt(view, mirror, couché ?? {});
+      voie = 'rig';
+      // PRISE D'ARME composée à CHAQUE frame, comme le jeton affine (`RigToken`) : la pose de geste
+      // seule dessine un corps qui a lâché sa garde.
+      frameAt = (view, mirror, def, k, n, o) =>
+        def.voie === 'rig'
+          ? drawAt(view, mirror, addPose(hold, rigPoseAtFrame(def, k, n, o?.ground)))
+          : drawAt(view, mirror, couché ?? {});
     } else if (!draw) {
       const plan = planById(r.plan);
       if (plan) {
         // Gabarit AU SOL : pose de mort (ou affaissement À Terre) et ailes ÉTALÉES, comme `usePlanAnim`.
         const couché = planGroundPose(plan, ground);
         const opts = inputs.plan ?? {};
-        draw = (view, mirror) => {
-          const body = bonesToSvg(plan.resolve(r.species, view, couché ?? plan.restPose(), {
-            ...opts,
-            ...(ground ? { wings: 'spread' as const } : {}),
-          }));
+        const drawAt = (view: View, mirror: boolean, pose: Pose, wings?: WingState) => {
+          const body = bonesToSvg(plan.resolve(r.species, view, pose, { ...opts, ...(wings === 'spread' ? { wings } : {}) }));
           return mirror ? `<g transform="translate(${BB_W},0) scale(-1,1)">${body}</g>` : body;
+        };
+        draw = (view, mirror) => drawAt(view, mirror, couché ?? plan.restPose(), ground ? 'spread' : undefined);
+        voie = 'plan';
+        frameAt = (view, mirror, def, k, n) => {
+          if (def.voie !== 'plan') return drawAt(view, mirror, couché ?? plan.restPose(), ground ? 'spread' : undefined);
+          const p = planPoseAt(plan, def, frameSampleMs(k, n, clipTotalMs(def)));
+          return drawAt(view, mirror, p.pose, p.wings);
         };
       }
     }
     if (!draw) continue;
     const composite = monté ? rider : undefined; // cavalier RÉELLEMENT entré dans le fragment
     const trace = draw;
+    const traceAt = frameAt;
     const off = (sizeFootprint(c.size) - 1) / 2;
     out.push({
       // la signature du DESSIN, cf. `combatantRenderSignature` — le couple monté a SA clé (les deux
@@ -898,6 +1004,13 @@ export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt:
       tint: tintAt(Math.round(x), Math.round(y), z),
       box: monté?.box ?? { w: BB_W, h: BB_H },
       svg: (view, mirror) => defs + trace(view, mirror),
+      ...(traceAt ? { frameSvg: (view, mirror, def, k, n, o) => defs + traceAt(view, mirror, def, k, n, o) } : {}),
+      // CE QUE LE FLIPBOOK DOIT SAVOIR DU CORPS : sa voie, son état au sol, et — pour un gabarit — son
+      // BOND (trait LDB 85, `hasLeap`). L'écran n'a aucune de ces trois lectures : ni `BodyPlan`, ni
+      // état de combattant, ni traits.
+      ...(voie
+        ? { anim: { voie, ...(ground ? { ground } : {}), ...(voie === 'plan' && hasLeap(c.traits) ? { leap: true } : {}) } }
+        : {}),
     });
   }
   return out;
@@ -1016,15 +1129,18 @@ export function weatherTinted(base: THREE.Color, meteo: WeatherLight = METEO_SAN
   return meteo.tint ? base.clone().lerp(new THREE.Color(meteo.tint), meteo.k) : base.clone();
 }
 
-/** FOND du canevas volumique — celui des planches QC (`render-env.mts`), donc les captures et le jeu
- *  se comparent sans biais de contraste. SOURCE UNIQUE : l'écran de jeu et les planches QC le lisent
- *  ici. La météo le teinte (`stageClearColor`). */
-export const STAGE_BG = 0x14161f;
+/** FOND du canevas volumique — ce que la caméra voit LÀ OÙ IL N'Y A PAS DE CARTE (#1176). Il est en
+ *  DONNÉE (`ambiance.json`, `iso.stageBg`) comme le ciel du POV : le hors-carte doit se lire comme un
+ *  fond sourd, jamais comme un trou noir enclavé entre deux corps de bâtiment. SOURCE UNIQUE : l'écran
+ *  de jeu et les planches QC le lisent ici. La météo le teinte (`stageClearColor`). */
+export function stageBg(): number {
+  return new THREE.Color(AMBIANCE.iso.stageBg).getHex();
+}
 
 /** Couleur d'effacement du canevas sous cette météo — le fond suit le même déplacement que la lumière
  *  et que le ciel du POV. PURE. */
 export function stageClearColor(meteo: WeatherLight = METEO_SANS_EFFET): number {
-  return weatherTinted(new THREE.Color(STAGE_BG), meteo).getHex();
+  return weatherTinted(new THREE.Color(stageBg()), meteo).getHex();
 }
 
 /** ATTÉNUATION D'AMBIANCE du ciel et des brumes (#1176) : le palier de luminosité de la scène —

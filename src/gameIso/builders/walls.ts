@@ -1,7 +1,7 @@
 /**
  * BUILDER de MURS — produit les éléments `wall` du pivot (cf. ./types) : pour chaque `WallSeg` de la
  * scène, les FACES MONDE (GP : grille + MÈTRES) de son assemblage — courtine/panneau de face, plinthe/
- * bandes/arase, parapet + merlons, montants d'extrémité, embrasure/linteau de porte, barreaux +
+ * bandes/arase, parapet + merlons, montants d'extrémité, ouverture/linteau de porte, barreaux +
  * traverses de herse, tas de gravats d'une structure ABATTUE — et les VÉRITÉS DE SCÈNE (visible/down/
  * open). TOUT vient des CHAMPS de l'apparence partagée (`wallApp`, def JSON iso+POV) : parapet/porte/
  * bois routés par la PRÉSENCE des champs, jamais par un id/type en dur. PUR et projection-agnostique :
@@ -165,10 +165,11 @@ function wallFaces(seg: WallSeg, app: StructureAppearanceDef, b: number, down: b
   if (down) return breach();
   if (seg.door) {
     const op = wallHeightM * (app.door?.openingFrac ?? DOOR_FRAC);
-    // OUVERTE → embrasure béante (le passage se voit) ; FERMÉE → VANTAIL (panneau + planches + poignée)
-    // pour que la porte se LISE comme une porte, pas comme un trou.
+    // OUVERTE → l'ouverture est un TROU : AUCUNE face ne la remplit (jambages et chambranle la bordent
+    // déjà, et les joues du mur se voient de part et d'autre) — on voit la pièce derrière, comme par une
+    // porte ouverte. FERMÉE → VANTAIL (panneau + planches + poignée) : la porte se LIT comme une porte.
     const leaf: Face[] = open
-      ? [slab('embrasure', b, b + op)]
+      ? []
       : [
           span('vantail', LEAF_T0, LEAF_T1, b, b + op),
           ...PLANK_TS.map((t) => span('vantail-planche', t - PLANK_HALF_T, t + PLANK_HALF_T, b, b + op)),
