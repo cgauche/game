@@ -173,6 +173,8 @@ son propre cue (Compendium, pickers marchands…) sans reposer le mécanisme de 
 | Classe | Rôle | Quand l'utiliser / anti-patron |
 |---|---|---|
 | `.cart-step` (+ `.btn-step`, `.cart-n`) | Stepper de quantité `[−][centre][+]` | Composé par la primitive `QtyStepper` (`src/ui/QtyStepper.tsx`, CLAUDE.md) — jamais une paire de `<button>` +/- recodée à la main. |
+| `.btn-step` | Peau de bouton CARRÉ 24px (fond `--panel2`, coin 6px) | Le pas d'un `QtyStepper`, mais aussi tout bouton d'icône serré d'une rangée (✕ « Retirer » d'un panier) — réutiliser cette peau plutôt qu'en dériver une variante. |
+| `.market-carrier` | Chip de PORTEUR (destinataire des achats) ancré à droite d'une `.screen-toolbar` | Marché terrestre (`LandMarketView`) : même graisse discrète que `.port-purse`, sémantique DISTINCTE (un porteur n'est pas la bourse) — ne jamais emprunter `.port-purse`, propriété de la primitive `ScreenMeta`. |
 | `.trade-table` (+ `.trade-row`, états `.unaffordable`/`.open`) | Table de négoce (colonnes de stats + prix `<Coins>` + action par rangée, groupes de rubrique) | Composé par la primitive `TradeTable` (`src/ui/TradeTable.tsx`, CLAUDE.md) — tout écran de négoce (marchand, port, marché terrestre) la COMPOSE au lieu d'un tableau maison ; `.unaffordable` grise une rangée inabordable, `.open` marque sa fiche de détail dépliée. |
 
 ### Layouts responsive (règle stricte 4)

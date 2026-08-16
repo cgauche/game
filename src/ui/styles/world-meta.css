@@ -247,7 +247,7 @@
    (titre + actions), jamais 3 — comportement UNIQUE, quel que soit l'écran plein-champ. */
 @media (max-width: 560px) {
   .worldmap-head-actions { gap: 6px; }
-  .port-purse { margin-left: 0; font-size: 12px; }
+  .port-purse, .market-carrier { margin-left: 0; font-size: 12px; }
   .hud-clock { height: 32px; padding: 0 8px; font-size: 11px; }
 }
 
@@ -259,7 +259,9 @@
   width: min(900px, 96vw);
   margin: 0 auto;
 }
-.port-purse { margin-left: auto; font-size: 13px; color: var(--muted); }
+/* `.port-purse` = bourse de la méta d'en-tête (primitive `ScreenMeta`) ; `.market-carrier` = chip de
+   PORTEUR de la barre d'outils du marché terrestre — même graisse discrète, sémantique distincte. */
+.port-purse, .market-carrier { margin-left: auto; font-size: 13px; color: var(--muted); }
 .port-yard, .port-trade, .port-escale { align-items: start; }
 /* En-tête d'escale-hub (#228) : région + 5 indices de l'Index des ports + desc du catalogue. */
 .port-head { width: min(900px, 96vw); margin: 0 auto 6px; }

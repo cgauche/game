@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { Modal } from './Modal';
+import { EmbeddedShell } from './RollShell';
 import { ChoiceButtons } from './OptionChooser';
 import { Icon } from './Icon';
 
@@ -34,7 +35,7 @@ export function ShoreLeaveBody({ embedded = false }: { embedded?: boolean } = {}
       />
     </>
   );
-  if (embedded) return <div className="rs-embedded"><div className="mini-title">{title}</div>{body}</div>;
+  if (embedded) return <EmbeddedShell title={title}>{body}</EmbeddedShell>;
   // Fenêtre HORS jet (décision d'accostage) : pas de géométrie de jet (voile allégé + ancrage haut).
   return <Modal title={title} variant="plain">{body}</Modal>;
 }

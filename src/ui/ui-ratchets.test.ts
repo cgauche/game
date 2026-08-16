@@ -608,7 +608,11 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // ici : l'allègement est descendu dans son domaine (combat-modals.css), le voile plein redevient
   // le défaut partagé.
   // #1072 : -1 (134 → 133) — `.interlude-hint` mort, la Difficulté est rendue par `RollLine`.
-  'styles/world-meta.css': 133,
+  // #1318 V10 (2026-08-16) : +1 (133 → 134) — `.market-carrier`, chip de PORTEUR de la barre d'outils
+  // du marché terrestre. Le site EMPRUNTAIT `.port-purse`, propriété de la primitive `ScreenMeta`
+  // (garde `primitive-owners-guard`) : un porteur n'est pas une bourse, la classe est sa sémantique
+  // propre et vit dans SON domaine (world-meta), documentée au catalogue de `docs/charte-ui.md`.
+  'styles/world-meta.css': 134,
   'styles/city-hub.css': 18,
   'styles/voyage.css': 30,
   // Galerie design system DEV (#412) — layout d'écran seul (les spécimens composent le canon).
@@ -725,7 +729,10 @@ const SHARED_LEAK_BASELINE: Record<string, number> = {
   // #839 : INCHANGÉ à 11 — le partage de l'écran Options déplace deux fuites sans en retirer :
   // `.game-menu-overlay` devient transversal (GameMenu + OptionsScreen, −1) mais `.menu-sub-body`
   // redevient mono-consommateur (le corps à onglets n'a qu'un porteur, `OptionsScreen`, +1).
-  'styles/components.css': 11,
+  // #1318 V10 (2026-08-16) : 11 → 10 — DÉCROISSANCE mesurée après la migration des recopies de markup
+  // vers leurs primitives (garde `primitive-owners-guard`). Stock restant, mesuré : `alert`, `col-name`,
+  // `col-stat`, `col-emph`, `col-enc`, `col-price`, `col-buy`, `detail-row`, `group-row`, `rm-roll`.
+  'styles/components.css': 10,
   'styles/tabs.css': 1,
   'styles.css': 6,
 };

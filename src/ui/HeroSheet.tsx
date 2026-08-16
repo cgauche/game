@@ -11,6 +11,7 @@ import { Coins } from './Coins';
 import { Icon } from './Icon';
 import { CharacterPreview } from './CharacterPreview';
 import { CharStatsGrid } from './CharStatsGrid';
+import { DetailIdentity } from './DetailFrame';
 import { MetalStatus } from './MetalStatus';
 import { RoseAxes } from './RoseAxes';
 import { SkillChip, TalentChip, TraitChips, EntityRef } from './EntityChip';
@@ -102,12 +103,15 @@ export function HeroSheet({
         <div className="hero-sheet-head row-flex">
           <CharacterPreview hero={hero} size="md" ambiance="panel" className="hero-sheet-fig" />
           <div className="hero-sheet-id">
-            <h3 className="detail-frame-name">{hero.label}</h3>
-            <span className="detail-frame-sub">{heroSubtitle(hero)}</span>
-            <div className="detail-frame-meta row-flex">
-              <MetalStatus status={heroStatusLabel(hero)} size="chip" />
-              {wealth != null && <span className="chip">{t('picker.hero.purse')} <Coins money={wealth} /></span>}
-            </div>
+            <DetailIdentity
+              band={false}
+              label={hero.label}
+              sub={heroSubtitle(hero)}
+              meta={<>
+                <MetalStatus status={heroStatusLabel(hero)} size="chip" />
+                {wealth != null && <span className="chip">{t('picker.hero.purse')} <Coins money={wealth} /></span>}
+              </>}
+            />
           </div>
           <RoseAxes axes={heroRoseAxes(hero, axisIds)} size="medal" title={t('party.rose.title', { name: hero.label })} />
         </div>

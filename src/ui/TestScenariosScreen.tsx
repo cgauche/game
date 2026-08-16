@@ -4,6 +4,7 @@ import { setRule } from '../engine/policy';
 import { testScenarios, type TestScenario, type ScenarioCategory } from '../scenes/test-scenarios';
 import { SCENARIO_SECTIONS } from '../scenes/test-scenarios/_shared';
 import { Icon } from './Icon';
+import { MenuCard, MenuCardHead } from './MenuCard';
 
 type Section = (typeof SCENARIO_SECTIONS)[number];
 
@@ -44,12 +45,16 @@ export function TestScenariosScreen() {
 
   return (
     <div className="menu">
-      <div className="menu-card test-scenarios">
-        <button className="btn small" onClick={() => setScreen('menu')}>
-          ← Retour
-        </button>
-        <h1 className="title">Scénarios de test</h1>
-        <p className="subtitle">Chaque scénario fixe un groupe et une scène adaptée à ce qu'on vérifie.</p>
+      <MenuCard
+        className="test-scenarios"
+        header={<MenuCardHead
+          lead={<button type="button" className="btn small btn-ghost menu-back" onClick={() => setScreen('menu')}>
+            <Icon id="ui/undo" size="sm" /> Retour
+          </button>}
+          title="Scénarios de test"
+          sub="Chaque scénario fixe un groupe et une scène adaptée à ce qu'on vérifie."
+        />}
+      >
         {groupBySection(testScenarios).map((sec) => (
           <section className="ts-section" key={sec.section.key}>
             <h2 className="mini-title"><Icon id={sec.section.icon} size="sm" /> {sec.section.label}</h2>
@@ -70,7 +75,7 @@ export function TestScenariosScreen() {
             </div>
           </section>
         ))}
-      </div>
+      </MenuCard>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { Modal } from './Modal';
+import { EmbeddedShell } from './RollShell';
 import { CharFrame } from './CharFrame';
 import { StateChips } from './StateChips';
 import { Coins } from './Coins';
@@ -205,7 +206,7 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
     </>
   );
   if (embedded) {
-    return <div className="rs-embedded rest-modal"><div className="mini-title">{reglagesTitle}</div>{reglagesBody}</div>;
+    return <EmbeddedShell className="rest-modal" title={reglagesTitle}>{reglagesBody}</EmbeddedShell>;
   }
   return (
     <Modal title={reglagesTitle} variant="plain" className="rest-modal" onClose={p.travelHalt ? undefined : () => restCancel()}>

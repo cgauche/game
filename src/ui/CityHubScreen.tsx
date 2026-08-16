@@ -12,7 +12,6 @@ import { Tabs, type TabItem } from './Tabs';
 import { MapCanvas, type MapMarker } from './MapCanvas';
 import { planChrome } from './PlanChrome';
 import { VB_H } from './worldMapViewport';
-import { Prose } from './Prose';
 import { Coins } from './Coins';
 import { Icon, IconG } from './Icon';
 import { SpeakerBanner } from './SpeakerBanner';
@@ -131,6 +130,8 @@ export function CityHubScreen({
         <ActivityPane
           icon={serviceIcon(svc)}
           title={svc.label}
+          lead={<SpeakerBanner label="L’aubergiste" variant="boniment">{svc.hostLine}</SpeakerBanner>}
+          desc={svc.desc}
           actions={
             <>
               {svc.rest && <button type="button" className="btn btn-primary" onClick={() => openRest({ places: svc.rest, quality: rest?.quality })}>Dormir</button>}
@@ -140,8 +141,6 @@ export function CityHubScreen({
             </>
           }
         >
-          <SpeakerBanner label="L’aubergiste" variant="boniment">{svc.hostLine}</SpeakerBanner>
-          {svc.desc && <div className="activity-pane-desc"><Prose md={svc.desc} /></div>}
           {/* Jamais une promesse d'action impossible (cf. `cityHubCanEnterPort`) : sans offre de
               couchage effective (`svc.rest`), les prix de chambre/repas ne s'affichent pas — ils ne
               mènent nulle part ici (recette 2026-07-12). */}

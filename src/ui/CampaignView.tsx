@@ -35,7 +35,7 @@ import { ObjectiveBannerMount } from './ObjectiveBanner';
 import { SaveLoadModal } from './SaveLoadModal';
 import { SessionEndModal } from './SessionEndModal';
 import { WorldMapView } from './WorldMapView';
-import { GameDate } from './GameDate';
+import { ScreenMeta } from './ScreenMeta';
 import { PortView } from './PortView';
 import { ShipDossier } from './ShipDossier';
 import { LandMarketView } from './LandMarketView';
@@ -230,9 +230,10 @@ export function CampaignView() {
         {mode === 'exploration' && scene?.nom && (
           <strong data-hud="place" title={scene.nom}>{scene.nom}</strong>
         )}
-        {/* Horloge de campagne : chip de la barre (date/heure), source unique `GameDate`. */}
+        {/* Horloge de campagne : la MÊME méta d'en-tête que les écrans plein-champ (`ScreenMeta`,
+            date seule — la bourse ne remonte pas dans la barre de jeu). */}
         {mode === 'exploration' && (
-          <span className="hud-clock" title="Date et heure de la campagne"><GameDate time={gameTime} /></span>
+          <ScreenMeta meta={{ time: gameTime }} />
         )}
         {/* Possessions du groupe (#762) : gestion (bêtes/véhicules/navires/serviteurs) atteignable
             EN JEU — hors combat, même gate que « Camper »/la carte du monde (l'écran tactique se

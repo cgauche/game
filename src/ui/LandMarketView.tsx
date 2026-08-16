@@ -63,7 +63,7 @@ export function LandMarketView() {
       meta={{ money }}
       backdrop={market.backdrop}
       body="centered"
-      tabs={<span className="port-purse">Porteur : <b>{target ? `${target.label} — libre ${carrierFreeEnc(target)} / ${target.capacity} Enc` : 'aucun'}</b></span>}
+      tabs={<span className="market-carrier">Porteur : <b>{target ? `${target.label} — libre ${carrierFreeEnc(target)} / ${target.capacity} Enc` : 'aucun'}</b></span>}
     >
         <SpeakerBanner label="Le crieur de la halle" variant="boniment">{market.hostLine}</SpeakerBanner>
         {rumours.length > 0 && (

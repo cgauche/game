@@ -29,13 +29,7 @@ export function DetailFrame({ topper, label, sub, meta, sections, prose, proseSe
   return (
     <div className="detail-frame">
       {topper}
-      {label != null && (
-        <div className="detail-frame-head row-flex">
-          <h3 className="detail-frame-name">{label}</h3>
-          {sub && <span className="detail-frame-sub">{sub}</span>}
-        </div>
-      )}
-      {meta && <div className="detail-frame-meta row-flex">{meta}</div>}
+      <DetailIdentity label={label} sub={sub} meta={meta} />
       {sections}
       {prose != null && (
         <div className="detail-frame-prose">
@@ -43,5 +37,32 @@ export function DetailFrame({ topper, label, sub, meta, sections, prose, proseSe
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * BANDE D'IDENTITÉ du cadre de détail : nom + tagline sourcée + rangée de chips méta. Sous-composant
+ * de la MÊME primitive, pour que les vues qui portent leur propre alcôve (`HeroSheet` : figurine à
+ * gauche, rose à droite) composent l'identité au lieu d'en recopier le markup — `band={false}` rend
+ * nom et tagline SANS la rangée `.detail-frame-head` (l'alcôve de l'appelant fait déjà la colonne).
+ */
+export function DetailIdentity({ label, sub, meta, band = true }: {
+  label?: ReactNode;
+  sub?: ReactNode;
+  meta?: ReactNode;
+  /** `false` = pas de rangée d'en-tête autour du nom (l'appelant l'empile dans sa propre colonne). */
+  band?: boolean;
+}) {
+  const identity = (
+    <>
+      <h3 className="detail-frame-name">{label}</h3>
+      {sub && <span className="detail-frame-sub">{sub}</span>}
+    </>
+  );
+  return (
+    <>
+      {label != null && (band ? <div className="detail-frame-head row-flex">{identity}</div> : identity)}
+      {meta && <div className="detail-frame-meta row-flex">{meta}</div>}
+    </>
   );
 }

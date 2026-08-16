@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { useGame } from '../state/store';
 import { useModalA11y } from './Modal';
 import { ScreenMeta } from './ScreenMeta';
-import { MenuCard, MenuSection, MenuButton, MenuSubScreen } from './MenuCard';
+import { MenuCard, MenuCardHead, MenuSection, MenuButton, MenuSubScreen } from './MenuCard';
 import { OptionsPanel } from './OptionsScreen';
 import { CoopMenuSection, GmSoloToggle } from './CoopPanels';
 import { t } from '../i18n';
@@ -62,13 +62,11 @@ export function GameMenu({ sceneName, time, onQuit, onSaveLoad, onEndSession, in
           {view === 'root' && (
             <MenuCard
               className="game-menu-card"
-              header={<div className="menu-card-head">
-                <h2 className="menu-card-title">{t('gameMenu.menu')}</h2>
-                <div className="menu-card-meta">
-                  {sceneName && <span className="menu-card-sub">{t('gameMenu.scene')} — {sceneName}</span>}
-                  <ScreenMeta meta={{ time }} />
-                </div>
-              </div>}
+              header={<MenuCardHead
+                title={t('gameMenu.menu')}
+                sub={sceneName ? <>{t('gameMenu.scene')} — {sceneName}</> : undefined}
+                meta={<ScreenMeta meta={{ time }} />}
+              />}
             >
               <MenuSection rule={false}>
                 <MenuButton icon="ui/round-start" onClick={close}>{t('gameMenu.resume')}</MenuButton>

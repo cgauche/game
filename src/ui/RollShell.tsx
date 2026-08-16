@@ -316,16 +316,31 @@ export function RollShell({
     </>
   );
   if (embedded) {
-    return (
-      <div className="rs-embedded roll-modal">
-        <div className="mini-title">{titleNode}</div>
-        {body}
-      </div>
-    );
+    return <EmbeddedShell className="roll-modal" title={titleNode}>{body}</EmbeddedShell>;
   }
   return (
     <Modal title={titleNode} onClose={escClose}>
       {body}
     </Modal>
+  );
+}
+
+/**
+ * ZONE EMBARQUÉE de la coquille de jet (#333) : titre + contenu, SANS `Modal` — le rendu qu'une
+ * étape prend quand elle s'incruste dans un écran-hub au lieu de flotter. Exporté par la coquille
+ * parce que les étapes HORS jet de la même cascade (décision d'escale, réglages de repos) portent la
+ * MÊME zone : elles la COMPOSENT au lieu de recopier `.rs-embedded` + son titre.
+ */
+export function EmbeddedShell({ title, className, children }: {
+  title: ReactNode;
+  /** Modificateur d'appelant sur l'enceinte (ex. `rest-modal`) — jamais un second cadre. */
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className={`rs-embedded${className ? ` ${className}` : ''}`}>
+      <div className="mini-title">{title}</div>
+      {children}
+    </div>
   );
 }

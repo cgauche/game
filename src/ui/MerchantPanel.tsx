@@ -320,7 +320,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
                 return (
                   <tr key={c.id}>
                     <td className="cart-name">{labelOf(c.id)}</td>
-                    <td className="cart-step">
+                    <td>
                       <QtyStepper
                         center={c.qty}
                         onDec={() => onDecCart(c.id)}

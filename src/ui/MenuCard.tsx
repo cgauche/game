@@ -30,6 +30,36 @@ export function MenuCard({ header, footer, className, children }: {
 }
 
 /**
+ * EN-TÊTE de `MenuCard` : titre + `lead` (bouton Retour du sous-écran) + méta optionnelle
+ * (sous-titre de scène, `ScreenMeta`). Sous-composant de la MÊME primitive — le markup de l'en-tête
+ * (`.menu-card-head`/`-title`/`-meta`/`-sub`) ne se réécrit à aucun appelant : `MenuSubScreen` et le
+ * menu système (`GameMenu`) le COMPOSENT.
+ */
+export function MenuCardHead({ title, lead, sub, meta, className }: {
+  title: ReactNode;
+  /** Élément AVANT le titre (bouton « Retour » d'un sous-écran). */
+  lead?: ReactNode;
+  /** Sous-titre discret de la méta (ex. nom de scène). */
+  sub?: ReactNode;
+  /** Méta de droite (`ScreenMeta` : date, jamais la bourse en menu système). */
+  meta?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={`menu-card-head${className ? ` ${className}` : ''}`}>
+      {lead}
+      <h2 className="menu-card-title">{title}</h2>
+      {(sub != null || meta != null) && (
+        <div className="menu-card-meta">
+          {sub != null && <span className="menu-card-sub">{sub}</span>}
+          {meta}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
  * SOUS-ÉCRAN de menu (Coopération, Options) : la MÊME carte plein écran, en-tête « Retour » + titre.
  * Vit ICI (à côté de `MenuCard`, dont c'est une composition) et non dans un foyer, parce que les DEUX
  * menus s'en servent : le menu SYSTÈME en jeu (`GameMenu`) et le menu PRINCIPAL hors partie
@@ -45,12 +75,13 @@ export function MenuSubScreen({ title, onBack, wide, children }: {
   return (
     <MenuCard
       className={`game-menu-card game-menu-sub${wide ? ' game-menu-sub-wide' : ''}`}
-      header={<div className="menu-card-head menu-sub-head">
-        <button type="button" className="btn small btn-ghost menu-back" onClick={onBack}>
+      header={<MenuCardHead
+        className="menu-sub-head"
+        lead={<button type="button" className="btn small btn-ghost menu-back" onClick={onBack}>
           <Icon id="ui/undo" size="sm" /> {t('gameMenu.back')}
-        </button>
-        <h2 className="menu-card-title">{title}</h2>
-      </div>}
+        </button>}
+        title={title}
+      />}
     >
       {children}
     </MenuCard>

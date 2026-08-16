@@ -11,9 +11,11 @@ import { StakeNote } from './StakeNote';
  * Slots GÉNÉRIQUES `ReactNode` : composé par `InterludeScreen` (volets d'Activité) et
  * `CityHubScreen` (détail de service) — aucun métier de l'un ou l'autre ne vit ici.
  */
-export function ActivityPane({ icon, title, desc, blocked, prejet, cost, note, actions, children }: {
+export function ActivityPane({ icon, title, lead, desc, blocked, prejet, cost, note, actions, children }: {
   icon: string;
   title: ReactNode;
+  /** Bandeau d'ouverture du corps, AVANT la description (ex. `SpeakerBanner` de l'hôte du service). */
+  lead?: ReactNode;
   /** Description VERBATIM (Markdown) de la source — rendue par `<Prose>` (règle 5). */
   desc?: string;
   /** Raison d'indisponibilité (gate d'affordance) — l'action du pied est alors désactivée. */
@@ -33,6 +35,7 @@ export function ActivityPane({ icon, title, desc, blocked, prejet, cost, note, a
     <div className="activity-pane">
       <header className="activity-pane-head"><Icon id={icon} /> <b>{title}</b></header>
       <div className="activity-pane-body">
+        {lead}
         {desc && <div className="activity-pane-desc"><Prose md={desc} /></div>}
         {blocked && <p className="activity-pane-blocked">{blocked}</p>}
         {children}

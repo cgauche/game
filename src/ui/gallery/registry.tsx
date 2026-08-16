@@ -38,7 +38,6 @@ import { MasterDetail } from '../MasterDetail';
 import { SearchFilterField, useFilteredList } from '../SearchFilterField';
 import { TradeTable, type TradeColumn, type TradeGroup } from '../TradeTable';
 import { ActivityPane } from '../ActivityPane';
-import { Prose } from '../Prose';
 import { MenuCard, MenuSection, MenuButton, MenuToggle } from '../MenuCard';
 import { CreatorDice } from '../creator/CreatorDice';
 import { GameOpEditor } from '../editor/GameOpEditor';
@@ -554,10 +553,12 @@ function ActivityPaneDemo() {
 }
 
 function ProseDemo() {
+  // La prose sourcée se montre dans son hôte canonique (`DetailFrame`, qui possède `.detail-frame-prose`)
+  // plutôt qu'en recopiant sa peau : le spécimen reste celui de `Prose`, monté vivant. Le cadre du
+  // `DetailFrame` autour de la démo est ASSUMÉ (galerie DEV, aucun écran joueur) : c'est le contexte
+  // réel de lecture de cette prose.
   return (
-    <div className="detail-frame-prose">
-      <Prose md={SAMPLE_CAREER.desc} selfLabel={SAMPLE_CAREER.label} selfCategory="career" />
-    </div>
+    <DetailFrame prose={SAMPLE_CAREER.desc} proseSelfLabel={SAMPLE_CAREER.label} proseSelfCategory="career" />
   );
 }
 
