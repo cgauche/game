@@ -1859,7 +1859,7 @@ export function collapseStructure(get: Get, set: SetFn, target: Combatant): void
           // Hauteur de chute = vraie hauteur métrique (relief) de la passerelle (z=tl.z) au-dessus du sol (z=0).
           applyFall(fallen, Math.abs(heightAt(sc, tl.x, tl.y, tl.z) - heightAt(sc, tl.x, tl.y, 0)), battleRng());
           placeCombatant(fallen, sc, { x: tl.x, y: tl.y }); // chute au sol (z=0, omis) + hauteur rafraîchie
-          log.push(ev('damage', `${c.label} chute de la passerelle qui s'effondre.`, c.id));
+          log.push(ev('damage', tr('cf.gangwayCollapse', { name: c.label }), c.id));
           return fallen;
         });
         scene = setTileCollapsed(scene, tl.x, tl.y, tl.z);
@@ -2458,7 +2458,7 @@ export function applyAttackResult(
   // Interruption de Focalisation (LDB 46 l.144) : Dégâts subis pendant qu'on focalise
   // → Test de Calme Difficile (−20) ou perte des DR accumulés + Imparfaite Mineure.
   if (res.hit && res.woundsLost) log.push(...evLines(checkFocusInterruption(get, set, target), 'detail', target.id));
-  if (isOutOfAction(target) && !isStructure(target)) log.push(ev('death', `${target.label} est mis hors de combat !`, target.id)); // structure → ligne d'Effondrement (collapseStructure), pas « hors de combat »
+  if (isOutOfAction(target) && !isStructure(target)) log.push(ev('death', tr('cf.outOfAction', { name: target.label }), target.id)); // structure → ligne d'Effondrement (collapseStructure), pas « hors de combat »
   // Salve (Aux Armes p.126) : un héros qui tire une arme à Salve gardant des tirs (chambered > 0) ne
   // consomme PAS son Action — il peut tirer encore ce tour (chaque tir suivant à −10 cumulatif).
   const salvoContinues = attacker.kind === 'hero' && weapon.type === 'ranged' && hasQuality(weapon, 'salve') && (attacker.chambered ?? 0) > 0;
@@ -2653,7 +2653,7 @@ function wearActiveWeapon(c: Combatant, weapon: Weapon, destroy: boolean): void 
  */
 export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r: OupsResolved): void {
   const battle = get().battle!;
-  const log: string[] = [`${c.label} — Maladresse ! ${r.label}`];
+  const log: string[] = [tr('cf.oups', { name: c.label, effet: r.label })];
   // Bâclé : l'arme casse sur toute Maladresse (Test raté + double, LDB 60 l.50) — sauvegarde Solide possible.
   if (hasQuality(weapon, 'bacle')) wearActiveWeapon(c, weapon, true);
   const sb = bonus(effectiveChar(c, 'force'));
@@ -4011,13 +4011,13 @@ export function castSpell(
 ) {
   const spell = resolveSpell(label);
   if (!spell) {
-    castRefused(get, set, caster, `Sort « ${label} » introuvable.`);
+    castRefused(get, set, caster, tr('cf.spellNotFound', { spell: label }));
     return;
   }
   // Contrecoups bloquants (LDB 46/40) : « Propos ésotériques », « Vous abusez de ma patience »…
   const blocked = castBlockedBy(caster, castInfoIsPrayer(spell) ? 'priere' : 'langue');
   if (blocked) {
-    castRefused(get, set, caster, `${caster.label} ne peut pas ${castInfoIsPrayer(spell) ? 'prier' : 'incanter'} : ${blocked}.`);
+    castRefused(get, set, caster, tr(castInfoIsPrayer(spell) ? 'cf.cannotPray' : 'cf.cannotCast', { name: caster.label, reason: blocked }));
     return;
   }
   // Verrou de Péché du culte (MDG 11 l.142 — Stromfels : Invocation retirée à 2 Péchés, Béni à 5) —
@@ -4048,7 +4048,7 @@ export function castSpell(
     // Ligne de Vue (LDB 46 l.121 : « vous devez toujours être capable de voir […] votre cible ») —
     // buff sur allié compris ; binaire, pas de malus de couvert pour un Sort. Couvre héros ET IA.
     if (castSightBlocked(get, caster.pos, target.pos)) {
-      castRefused(get, set, caster, `${spell.label} : pas de ligne de vue.`);
+      castRefused(get, set, caster, tr('cf.noLineOfSight', { spell: spell.label }));
       return;
     }
   }
@@ -4396,7 +4396,7 @@ export function castZoneSpell(get: Get, set: SetFn, caster: Combatant, label: st
   if (r0m == null) return false;
   const blocked = castBlockedBy(caster, castInfoIsPrayer(spell) ? 'priere' : 'langue');
   if (blocked) {
-    castRefused(get, set, caster, `${caster.label} ne peut pas ${castInfoIsPrayer(spell) ? 'prier' : 'incanter'} : ${blocked}.`);
+    castRefused(get, set, caster, tr(castInfoIsPrayer(spell) ? 'cf.cannotPray' : 'cf.cannotCast', { name: caster.label, reason: blocked }));
     return true; // c'était bien une zone — l'entrée est consommée (refus signalé)
   }
   // Verrou de Péché du culte (MDG 11 l.142) — même gate que `castSpell` (les miracles à ZdE passent ici).

@@ -8,13 +8,13 @@ import { fileURLToPath } from 'node:url';
  *
  * Règle : toute ligne de JOURNAL de combat/effet doit passer par le catalogue (`t(...)` / `tr(...)`),
  * jamais par un littéral FR brut. Le scan échoue si un SITE D'ÉMISSION de journal contient un littéral
- * de chaîne accentué (= français) au lieu d'un appel `t`.
+ * de chaîne FRANÇAIS (cf. `isFrench`) au lieu d'un appel `t`.
  *
  * PÉRIMÈTRE INVERSÉ #410 (2026-07-13) : ancien jumeau exact du garde emoji FAINÉANT — l'ancienne
- * version n'auditait qu'une allowlist de 9 fichiers MIGRÉS, laissant passer TOUT nouveau littéral FR
+ * version n'auditait qu'une allowlist de fichiers MIGRÉS, laissant passer TOUT nouveau littéral FR
  * d'un fichier non listé. Le scan balaie désormais TOUT `src/engine` + `src/state` (walk récursif) ;
  * chaque fichier porte une BASELINE gelée de son stock de littéraux FR (la dette ne CROÎT plus), et
- * les 9 fichiers MIGRÉS restent à ZÉRO (invariant enforced). Tout nouveau fichier naît couvert
+ * les fichiers MIGRÉS restent à ZÉRO (invariant enforced). Tout nouveau fichier naît couvert
  * (baseline 0). Le stock gelé (Phase C, à résorber au catalogue) DÉCROÎT au fil des migrations.
  *
  * Couvre les FORMES d'émission de journal (PAS les libellés de MODALE/UI `{label:…}`/`prompt:` —
@@ -60,60 +60,103 @@ const MIGRATED = new Set([
 
 /** Stock GELÉ par fichier (recensement #410, 2026-07-13) — littéraux FR de narration hors catalogue,
  *  Phase C à résorber. Toute HAUSSE échoue (régression) ; toute BAISSE doit ABAISSER la baseline. Les
- *  fichiers MIGRÉS (ci-dessus) n'y figurent PAS : leur invariant est ZÉRO. */
+ *  fichiers MIGRÉS (ci-dessus) n'y figurent PAS : leur invariant est ZÉRO.
+ *
+ *  GEL COURANT #1333 (V8c₀, 2026-08-16) — 275 littéraux, tels que les voit le prédicat de francité
+ *  ci-dessous (`isFrench`, qui compte aussi le FR SANS accent). Ces entrées ne sont pas des dettes
+ *  nouvelles : ce sont des littéraux de toujours, qu'une mesure plus fine rend enfin visibles.
+ *  `state/combatFlow.ts` reste MIGRÉ (invariant ZÉRO) : les littéraux que ce prédicat y a révélés sont
+ *  au catalogue (`cf.gangwayCollapse`/`cf.spellNotFound`/`cf.cannotCast`/`cf.cannotPray`/`cf.oups`,
+ *  plus `cf.outOfAction`/`cf.noLineOfSight`). */
 const BASELINE: Record<string, number> = {
   'src/engine/disease.ts': 11,
-  'src/engine/drunkenness.ts': 1,
-  'src/engine/exposure.ts': 2,
+  'src/engine/drunkenness.ts': 2,
+  'src/engine/exposure.ts': 4,
   'src/engine/healing.ts': 2,
-  'src/engine/items.ts': 1,
-  'src/engine/mountTravel.ts': 4,
+  'src/engine/items.ts': 3,
+  'src/engine/money.ts': 3,
+  'src/engine/mountTravel.ts': 5,
   'src/engine/provisions.ts': 10,
   'src/engine/qualities/craftEconomy.ts': 3,
   'src/engine/rest.ts': 4,
   'src/engine/shipCritical.ts': 5,
   'src/engine/social.ts': 1,
-  'src/engine/spellRangeFormat.ts': 3,
+  'src/engine/spellRangeFormat.ts': 4,
   'src/engine/structureCritical.ts': 1,
-  'src/engine/suffocation.ts': 1,
+  'src/engine/suffocation.ts': 2,
   'src/engine/tavernGame.ts': 2,
   'src/engine/traits/dispatch.ts': 1,
   'src/engine/trauma.ts': 10,
   'src/state/combat/roundHooks.ts': 1,
-  'src/state/combatEffects.ts': 7,
-  'src/state/corruptionFlow.ts': 3, // 4 → 3 (#1262 V2 L4 : la branche « Je te renie ! » du repli auto-résolu était du code MORT — supprimée)
-  // #839 : -3 (44 → 41) — messages de réglage MUTUALISÉS entre `rules()` et `prefs()` (forme, détail,
-  // remise au défaut, valeur invalide) : une seule copie de chaque libellé pour les deux registres.
-  // `src/state/devtools.ts` : plus de baseline — DISPENSÉ par nature (`DEV_ONLY`, #1117).
-  'src/state/interludeFlow.ts': 31,
+  'src/state/combatEffects.ts': 15,
+  'src/state/corruptionFlow.ts': 4,
+  // `src/state/devtools.ts` : aucune baseline — DISPENSÉ par nature (`DEV_ONLY`, #1117).
+  'src/state/interludeFlow.ts': 36,
   'src/state/keybindings.ts': 1,
-  'src/state/massBattleFlow.ts': 21, // +1 mesuré : littéral SEMÉ à la déclaration du tableau de lignes (forme initialiseur, désormais comptée)
-  'src/state/medicFlow.ts': 3,
-  'src/state/merchantFlow.ts': 15,
+  'src/state/massBattleFlow.ts': 25,
+  'src/state/medicFlow.ts': 4,
+  'src/state/merchantFlow.ts': 20,
   'src/state/mount.ts': 1,
   'src/state/netFlow.ts': 4,
-  'src/state/partyFlow.ts': 4,
-  'src/state/portFlow.ts': 1,
-  'src/state/restFlow.ts': 4,
-  'src/state/riverVoyageFlow.ts': 10,
+  'src/state/partyFlow.ts': 7,
+  'src/state/portFlow.ts': 2,
+  'src/state/restFlow.ts': 5,
+  'src/state/riverVoyageFlow.ts': 11,
   'src/state/rollFlowFactory.ts': 1,
-  // +3 mesurés : légendes de l'export ASCII semées à la déclaration (forme initialiseur, désormais
-  // comptée). Ce ne sont pas des lignes de JOURNAL — stock gelé au même titre que le reste, à passer
-  // au catalogue avec sa surface.
+  // Légendes de l'export ASCII, semées à la déclaration : ce ne sont pas des lignes de JOURNAL, mais
+  // elles se gèlent au même titre — à passer au catalogue avec leur surface.
   'src/state/sceneToAscii.ts': 3,
-  'src/state/seaActivities.ts': 4,
-  'src/state/seaVoyageFlow.ts': 5,
-  'src/state/shipCrew.ts': 4,
+  'src/state/seaActivities.ts': 5,
+  'src/state/seaVoyageFlow.ts': 9,
+  'src/state/shipCrew.ts': 6,
   'src/state/shipManeuver.ts': 1,
-  'src/state/shipwreck.ts': 2,
-  'src/state/store.ts': 9,
-  'src/state/travelFlow.ts': 13,
-  'src/state/travelPostes.ts': 3,
-  'src/state/upkeep.ts': 1,
+  'src/state/shipwreck.ts': 3,
+  'src/state/store.ts': 15,
+  'src/state/travelFlow.ts': 14,
+  'src/state/travelPostes.ts': 4,
+  'src/state/upkeep.ts': 5,
 };
 
-/** Une lettre accentuée FR = preuve de littéral de narration (les ids/clés du catalogue sont ASCII). */
+/**
+ * PRÉDICAT DE FRANCITÉ — HEURISTIQUE, et c'est dit ici (#1333, V8c₀).
+ *
+ * Trois marques, dans cet ordre : (1) une lettre ACCENTUÉE ; (2) des GUILLEMETS français `« »`
+ * (ponctuation de locale) ; (3) un MOT-OUTIL français ou une ÉLISION (`d'`, `l'`, `n'`…) dans un
+ * littéral qui contient au moins une espace. La marque (1) seule laissait passer ~67 littéraux FR
+ * mesurés sur `src/engine`+`src/state` (« pas de ligne de vue », « Impossible de sauvegarder en plein
+ * combat. », « Bourse insuffisante pour … ») — un texte français sans accent restait invisible.
+ *
+ * Les marques (2) et (3) se lisent sur la PROSE du littéral, ses interpolations `${…}` ôtées : le code
+ * interpolé n'est pas du texte, et le lire déclenchait sur `${n > 1 ? 's' : ''}` (élision apparente).
+ *
+ * LIMITES RÉSIDUELLES, nommées (le garde MESURE ce qu'il sait voir, il ne certifie pas le zéro) :
+ *   - phrase FR sans accent, sans guillemets ET sans mot-outil : `reprend connaissance.`,
+ *     `Vente : …`, la forme `{sujet} — {quoi} !` (`{label} — MALADRESSE ({roll}) !`, `interludeFlow`)
+ *     restent hors du compte. MESURÉ sur trois d'entre eux (`isFrench` rendu `false` pour les trois) :
+ *     `combatEffects.ts:1568` « incante … (rituel garanti). », `consumableFlow.ts:128` « utilise : … »,
+ *     `partyFlow.ts:615` « +{xp} PX (Ambition accomplie). ». Conséquence à dire : le compte de
+ *     `consumableFlow.ts` est 0 — le fichier n'a donc PAS d'entrée de baseline, et cette absence ne
+ *     veut pas dire « aucun texte FR », seulement « aucun que ce prédicat sache voir » ;
+ *   - littéral d'UN SEUL mot FR (`Carreaux`, `Aucun`, `Standard`) : indiscernable d'un id/clé ASCII —
+ *     écarté volontairement (l'espace est la condition de la marque 3) ;
+ *   - un mot-outil FR dans une chaîne TECHNIQUE la ferait compter (aucun cas mesuré sur le stock
+ *     courant : 0 faux positif sur les 67 littéraux nouvellement captés) ;
+ *   - le périmètre reste celui des FORMES d'émission ci-dessus — un littéral posé ailleurs (champ
+ *     `reason:`, retour d'objet) n'est vu par aucune marque, faute d'être scanné.
+ */
 const ACCENT = /[éèêëàâäçôöûùîïœÉÈÊÀÂÇÔÛ]/;
+const FR_QUOTES = /[«»]/;
+const FR_WORDS =
+  /(^|[^A-Za-zÀ-ÿ])(le|la|les|un|une|des|du|de|au|aux|et|est|ne|pas|sur|par|pour|dans|avec|sans|que|qui|ce|cette|ces|son|ses|leur|vers|chez|entre|sous|contre|se|en|vous|votre)([^A-Za-zÀ-ÿ]|$)/i;
+const FR_ELISION = /(^|[^A-Za-zÀ-ÿ])[dlnjcmst]['’]/i;
+
+/** `lit` = littéral AVEC ses délimiteurs, tel que rendu par `readString`. */
+export function isFrench(lit: string): boolean {
+  if (ACCENT.test(lit)) return true;
+  const prose = lit.slice(1, -1).replace(/\$\{[^}]*\}/g, ' ');
+  if (FR_QUOTES.test(prose)) return true;
+  return /\s/.test(prose) && (FR_WORDS.test(prose) || FR_ELISION.test(prose));
+}
 
 /** Retire commentaires de ligne et de bloc (sans toucher aux chaînes — heuristique suffisante ici). */
 function stripComments(src: string): string {
@@ -151,7 +194,7 @@ function readString(body: string, from: number, quote: string): string | null {
 }
 
 /** Compte les littéraux FR de narration d'un fichier (hors catalogue). */
-function narrationCount(raw: string): number {
+export function narrationCount(raw: string): number {
   const body = stripComments(raw);
   let n = 0;
   ARRAY_SEED.lastIndex = 0;
@@ -164,7 +207,7 @@ function narrationCount(raw: string): number {
       if (q !== '"' && q !== "'" && q !== '`') break;
       const lit = readString(body, i, q);
       if (!lit) break;
-      if (ACCENT.test(lit)) n++;
+      if (isFrench(lit)) n++;
       i += lit.length;
       while (i < body.length && /\s/.test(body[i])) i++;
       if (body[i] !== ',') break;
@@ -178,7 +221,7 @@ function narrationCount(raw: string): number {
       const quote = m[1];
       const litStart = m.index + m[0].length - 1;
       const lit = readString(body, litStart, quote);
-      if (lit && ACCENT.test(lit)) n++;
+      if (lit && isFrench(lit)) n++;
     }
   }
   return n;
@@ -216,7 +259,7 @@ describe('garde-fou i18n — narration moteur (Phase C, #410 inversé)', () => {
     ).toEqual([]);
   });
 
-  it('les 9 fichiers MIGRÉS restent à ZÉRO littéral FR (invariant Phase C)', () => {
+  it('les fichiers MIGRÉS restent à ZÉRO littéral FR (invariant Phase C)', () => {
     const counts = countsByFile();
     const regressed: string[] = [];
     for (const rel of MIGRATED) {

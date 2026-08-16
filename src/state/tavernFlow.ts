@@ -68,7 +68,7 @@ import { jetSurfaced } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { t, interpolate } from '../i18n';
 import { dataLabel } from '../data';
-import { stepDetail } from './rollSeam';
+import { stepDetail, stepPrecision } from './rollSeam';
 
 /**
  * Adversaire d'une partie — TROIS formes, jamais deux chemins pour la même :
@@ -538,7 +538,7 @@ function tavernOptionRound(get: Get, seq: SequenceState<TavernPayload>, game: Ta
     defaultChoice: '0',
   })).filter((s): s is BuiltCascadeStep => !!s);
   if (!steps.length) return undefined;
-  return { title: `${game.label} — ${t('tavern.optionTitre')}`, icon: 'nav/dice', steps };
+  return { title: stepDetail(dataLabel(game.label), t('tavern.optionTitre')), icon: 'nav/dice', steps };
 }
 
 /** La charge SANS le choix d'option retenu : le tour suivant le REDEMANDE (« à chaque tour, faites
@@ -712,7 +712,7 @@ function torchonRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Se
   }, rows);
   if (!band) return undefined;
   return {
-    title: `${game.label} — lancer ${seq.round}/${throwers!.length}`,
+    title: t('tavern.volleyLancer', { jeu: game.label, n: seq.round, total: throwers!.length }),
     icon: 'nav/dice',
     steps: [band],
     immediate: !jouable,
@@ -814,7 +814,7 @@ function tavernTeamRound(get: Get, seq: SequenceState<TavernPayload>): SequenceR
   const game = findTavernGameById(p.gameId);
   if (!game?.team) return undefined;
   const ph = sequencePhaseOf(seq.params, seq.round);
-  const titre = `${game.label} — ${ph.phase}ᵉ mi-temps, tour ${ph.roundInPhase}/${ph.rounds}`;
+  const titre = t('tavern.miTempsTitre', { jeu: game.label, phase: ph.phase, n: ph.roundInPhase, total: ph.rounds });
   const aChoisir = (game.options?.length ?? 0) > 1
     ? equipiers(get).filter((h) => !cadenceAuto() && jetSurfaced(get(), h))
     : [];
@@ -1733,8 +1733,8 @@ function tavernBoard(get: Get, seq: SequenceState<TavernPayload>): SequenceBoard
     return {
       title: game.label,
       camps: [
-        { id: CAMP_PLAYER, label: `${challenger.label} (${camps.mien.label})`, score: seq.cum[CAMP_PLAYER] ?? 0, target: Math.floor(camps.sien.pieces / 2) + 1 },
-        { id: CAMP_OPPONENT, label: `${p.opponentName} (${camps.sien.label})`, score: seq.cum[CAMP_OPPONENT] ?? 0, target: Math.floor(camps.mien.pieces / 2) + 1 },
+        { id: CAMP_PLAYER, label: stepPrecision(dataLabel(challenger.label), dataLabel(camps.mien.label)), score: seq.cum[CAMP_PLAYER] ?? 0, target: Math.floor(camps.sien.pieces / 2) + 1 },
+        { id: CAMP_OPPONENT, label: stepPrecision(dataLabel(p.opponentName), dataLabel(camps.sien.label)), score: seq.cum[CAMP_OPPONENT] ?? 0, target: Math.floor(camps.mien.pieces / 2) + 1 },
       ],
       round: seq.round,
       ...(game.scoreUnit ? { unit: game.scoreUnit } : {}),

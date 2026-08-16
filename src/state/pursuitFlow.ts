@@ -51,7 +51,8 @@ import type { GameState } from './store';
 import { traceLineOf } from '../engine/traceLine';
 import { t } from '../i18n';
 import { dataLabel } from '../data';
-import { stepDetail, stepManche } from './rollSeam';
+import { stepDetail, stepManche, stepPrecision } from './rollSeam';
+import type { PlayerText } from '../i18n/playerText';
 
 /** Un adversaire de la poursuite (côté opposé au groupe) — Mouvement (bonus de DR de vitesse, l.105-108)
  *  et valeur de Test de Mouvement. `label` = affichage (aucune logique keyée dessus) ; `id` est posé à
@@ -140,6 +141,15 @@ const PURSUIT_CHOICE_KIND = 'pursuitChoice';
 /** Difficulté du Test de Mouvement d'une manche : LDB 15 l.92 n'en pose aucune — le Test est nu. */
 const PURSUIT_DIFFICULTY: Difficulty = 'intermediaire';
 
+/** DR SIGNÉ — la forme sous laquelle la poursuite chiffre un Degré de Réussite (rangée, issue de jet). */
+const drSigne = (sl: number): string => `${sl >= 0 ? '+' : ''}${sl}`;
+
+/** L'issue en clair d'un jet d'adversaire : son DR (`TraceRow.issue`). */
+const drDit = (sl: number): PlayerText => t('pursuit.dr', { dr: drSigne(sl) });
+
+/** La DISTANCE en cours, telle que les TITRES DE MANCHE la précisent (`SequenceRound.title`). */
+const distanceDite = (p: PursuitPayload): PlayerText => t('pursuit.titreDistance', { distance: p.distance, evasion: p.escapeAt });
+
 /** La poursuite EN COURS (charge utile de la séquence), ou `null` — lecture partagée avec l'UI. */
 export function pursuitOf(s: GameState): PursuitPayload | null {
   const seq = s.sequence as PursuitSequence | null;
@@ -155,7 +165,7 @@ registerCascadeApplier(PURSUIT_MOVE_KIND, (get, _set, step) => {
   for (const row of step.participants) {
     const dr = row.result?.sl ?? 0;
     const who = actorIn(get(), row.id)?.label ?? row.id;
-    lines.push(t('pursuit.row', { who, label: row.label ?? 'Mouvement', dr: `${dr >= 0 ? '+' : ''}${dr}` }));
+    lines.push(t('pursuit.row', { who, label: row.label ?? t('step.pursuitMouvement'), dr: drSigne(dr) }));
   }
   return { consequences: freeCons(lines) };
 });
@@ -255,7 +265,7 @@ function pursuitRoundFactory(get: Get, seq: PursuitSequence): SequenceRound<Purs
     const band = pursuitRoundBand(get, { ...p, manche }, label);
     if (!band) return undefined;
     return {
-      title: `Poursuite — manche ${manche} (Distance ${p.distance}/${p.escapeAt})`,
+      title: stepPrecision(t('pursuit.titreManche', { n: manche }), distanceDite(p)),
       icon: 'travel/foot',
       steps: [band],
       payload: { ...p, manche },
@@ -265,7 +275,7 @@ function pursuitRoundFactory(get: Get, seq: PursuitSequence): SequenceRound<Purs
   if (!pris) return undefined;
   const step = p.phase === 'choix-fuyards' ? choixFuyards(get, p, pris) : choixPoursuivants(get, p, pris);
   if (!step) return undefined;
-  return { title: `Poursuite — rattrapés ! (Distance ${p.distance}/${p.escapeAt})`, icon: 'travel/foot', steps: [step] };
+  return { title: stepPrecision(t('pursuit.titreRattrapes'), distanceDite(p)), icon: 'travel/foot', steps: [step] };
 }
 
 /** DÉCISION (a) des poursuivis, l.94 — portée par un coureur du camp AUTRE que le retardataire (on ne
@@ -356,7 +366,7 @@ function campsOf(get: Get, p: PursuitPayload, done: PendingCascade, rng: RNG, lo
     // surface, et sa ligne se DÉRIVE (`traceLineOf`) comme toute ligne de dé. Le libellé NOMME la
     // Compétence de la manche — la MÊME que celle des rangées des coureurs. L'issue de CE jet est son DR.
     const t = rollTest(f.skill, PURSUIT_DIFFICULTY, rng);
-    log.push(traceLineOf({ who: f.label, label: skillLabel, roll: t.roll, target: t.target, success: t.success, issue: `${t.sl >= 0 ? '+' : ''}${t.sl} DR` }));
+    log.push(traceLineOf({ who: f.label, label: skillLabel, roll: t.roll, target: t.target, success: t.success, issue: drDit(t.sl) }));
     return { id: f.id ?? f.label, label: f.label, movement: f.movement, total: t.sl + pursuitMoveBonus(f.movement, slowest) };
   });
   return p.partyRole === 'fleeing' ? { fleeing: party, pursuers: foes } : { fleeing: foes, pursuers: party };

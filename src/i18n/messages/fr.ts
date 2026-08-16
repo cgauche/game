@@ -637,6 +637,7 @@ export const fr = {
   'cf.prayerLabel': 'Prière',
   'cf.pushThrough': '{name} écarte les plus petits et se déplace librement.',
   'cf.collapse': "{name} s'effondre, hors de combat.",
+  'cf.gangwayCollapse': "{name} chute de la passerelle qui s'effondre.",
   'cf.deflect': '{name} dévie le Critique sur son armure (−1 PA, Critique ignoré).',
   'cf.shoddyBreaks': "L'armure Bâclée de {name} ({loc}) se brise sous le Coup Critique.",
   'cf.critDeflectedTitle': 'Coup Critique dévié',
@@ -661,6 +662,9 @@ export const fr = {
   'cf.scatterFloat': '⤬ dévie',
   'cf.componentDowngrade': "{name} : le composant dégrade l'Incantation Imparfaite (Majeure → Mineure).",
   'cf.grimoireRefused': '{name} ne peut pas lancer {spell} depuis un grimoire (mémorisé, hors Domaine ou pas de grimoire porté).',
+  'cf.spellNotFound': 'Sort « {spell} » introuvable.',
+  'cf.cannotCast': '{name} ne peut pas incanter : {reason}.',
+  'cf.cannotPray': '{name} ne peut pas prier : {reason}.',
   'cf.castOutOfRange': '{spell} : cible hors de portée ({range} cases).',
   'cf.breathNoType': 'Souffle : Domaine sans Type évident — Dégâts purs (« Le MJ détermine quel type… »).',
   'cf.enemyFreed': '{name} se libère ({removed} État Empêtré retiré).',
@@ -747,6 +751,8 @@ export const fr = {
   'cf.weaponDropped': '{name} laisse tomber {weapon}, arrachée de ses mains !',
   'cf.lockedGauntletHold': 'Le gantelet verrouillé de {name} retient {weapon} (−20 à tous ses Tests avec cette arme pendant 1 Round).',
   'cf.roundHeader': '— Round {round} —',
+  // En-tête de la ligne du Tableau des Oups ! — `{effet}` est le libellé de la ligne tirée (`oups.json`).
+  'cf.oups': '{name} — Maladresse ! {effet}',
   'cf.actLast': '{name} agira en dernier ce Round (Maladresse).',
   'cf.roundEndTitle': 'Fin du Round {n}',
   'cf.loseMovement': '{name} perd son Mouvement.',
@@ -825,6 +831,12 @@ export const fr = {
   'pursuit.giveUpFlight': 'Le groupe cesse de fuir et fait face.',
   'pursuit.caught': 'Rattrapés ! Les poursuivants fondent sur le groupe (LDB 15 l.94).',
   'pursuit.caughtPrey': 'Le groupe rejoint sa proie (LDB 15 l.94).',
+  // TITRES DE MANCHE de la poursuite (positions `SequenceRound.title` du contrat) et DR d'une rangée
+  // porté au journal — le système NOMME depuis le catalogue, aucun gabarit FR ne reste au flux.
+  'pursuit.titreManche': 'Poursuite — manche {n}',
+  'pursuit.titreRattrapes': 'Poursuite — rattrapés !',
+  'pursuit.titreDistance': 'Distance {distance}/{evasion}',
+  'pursuit.dr': '{dr} DR',
   'seq.borne': 'La partie s’arrête sur sa borne de {max} tours.',
   // Issues d'un tour de jeu à MISE (famille 5 du socle) — ce que le lancer PRODUIT, pas sa plage.
   'seqPot.issueRafle': 'la manche est remportée, le pot est raflé',
@@ -898,6 +910,8 @@ export const fr = {
   'tavern.sideFinal': '{mien} {unite} contre {sien} en {tours} tour(s).',
   'tavern.optionTitre': 'que tentez-vous ?',
   'tavern.optionChoix': '{who} — quel Test tentez-vous ?',
+  // Titre de manche d'un jeu à MI-TEMPS (famille 6 du socle) — position `SequenceRound.title`.
+  'tavern.miTempsTitre': '{jeu} — {phase}ᵉ mi-temps, tour {n}/{total}',
   'tavern.cerevisTour': '{jeu} — tour {n}',
   'tavern.cerevisEffaceChoix': '{who} — {marques} chouette(s) à la craie : en effacer une ?',
   'tavern.cerevisEfface': 'Effacer une chouette (boire une demi-chope)',

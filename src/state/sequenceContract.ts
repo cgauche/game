@@ -114,9 +114,30 @@ export interface SequenceState<P = unknown> {
   payload: P;
 }
 
-/** UNE MANCHE déclarée par le système : sa fenêtre et ses étapes MINTÉES. `immediate` = aucune
- *  surface à montrer (cadence auto, aucun siège humain sur le porteur) — l'orchestrateur résout
- *  d'office au lieu d'ouvrir une fenêtre que personne ne joue. */
+/**
+ * UNE MANCHE déclarée par le système : sa fenêtre et ses étapes MINTÉES. `immediate` = aucune surface
+ * à montrer (cadence auto, aucun siège humain sur le porteur) — l'orchestrateur résout d'office au
+ * lieu d'ouvrir une fenêtre que personne ne joue.
+ *
+ * LE TEXTE DES POSITIONS NOMMÉES par un système (#1318 V8b) — `title`/`log` ici,
+ * `SequenceBoard.title`/`phase`/`unit`/`pot` et `SequenceBoardCamp.label`/`note` plus bas : le système
+ * NOMME VIA LE CATALOGUE (fabriques t()-backed de `rollSeam` — `stepDetail`, `stepPrecision`,
+ * `stepManche`… — ou `t()` direct) ; le littéral FR inline au flux est proscrit. Les types restent
+ * `string` : ce sont des positions d'AFFICHAGE que l'UI écrit telles quelles, et c'est la PROVENANCE
+ * du texte, pas sa marque de type, qui est tenue ici. Garde de migration : la parité octet de ces
+ * positions est verrouillée par `state/sequence-parite-catalogue.test.ts`.
+ *
+ * ANGLE MORT ASSUMÉ : ces champs n'étant pas `PlayerText`, les cliquets de la vague
+ * (`state/player-text-ratchet.test.ts` — fossile `rawText`, casts de conteneur, littéraux de
+ * `dataLabel`) ne mordent PAS dessus ; un littéral FR posé ici passerait encore au vert.
+ *
+ * LIMITE v1 — un titre minté est du FR GELÉ dans les saves : un état de séquence se snapshote en JSON
+ * (cf. en-tête de ce fichier), donc ce que ce lot libère est la PRODUCTION du texte, pas sa
+ * PERSISTANCE. Le critère « persisté → référence » n'est donc PAS satisfait : une save reprise après
+ * un changement de locale rendrait ses titres dans la langue de la partie qui les a mintés. La vraie
+ * 2ᵉ langue demande de persister une RÉFÉRENCE (clé + paramètres) rejouée À L'AFFICHAGE — chantier
+ * NOMMÉ, hors de ce lot.
+ */
 export interface SequenceRound<P = unknown> {
   title: string;
   icon?: string;
@@ -199,6 +220,8 @@ export interface SequenceDef<P = unknown> {
   close: (ctx: SequenceCloseCtx<P>) => SequenceVerdict<P>;
   /** DÉNOUEMENT terminal (bourse, combat, modale de résultat) — appelé APRÈS le retrait de l'état. */
   settle?: (get: Get, set: Set, seq: SequenceState<P>, outcome: string) => void;
-  /** TABLEAU DE MARQUE (affichage seul, PUR) — le système NOMME ses camps ; l'UI ne dérive rien. */
+  /** TABLEAU DE MARQUE (affichage seul, PUR) — le système NOMME ses camps ; l'UI ne dérive rien. Il les
+   *  nomme VIA LE CATALOGUE (fabriques t()-backed) : le littéral FR inline au flux est proscrit, avec
+   *  l'angle mort et la limite v1 dits plus haut (#1318 V8b). */
   board?: (get: Get, seq: SequenceState<P>) => SequenceBoard | undefined;
 }
