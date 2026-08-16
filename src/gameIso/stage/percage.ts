@@ -5,11 +5,11 @@
  * qu'il lit.
  *
  * LE VERDICT NE SE RÉINVENTE PAS. « Cette masse cache-t-elle ce héros à l'écran ? » a déjà SA loi dans
- * ce dépôt : `occludesActor` (`geometry/iso.ts`), consommée par `lidCutaway`
- * (`stage/architectureVisibility.ts`) sur la géométrie projetée des nappes et les capsules d'acteurs.
- * La découpe locale pose EXACTEMENT la même question et prend la MÊME réponse — seule la RIPOSTE
- * change : `lidCutaway` lève la masse entière, `percage` n'ôte qu'un disque. Deux occlusions qui
- * divergeraient donneraient un trou là où rien n'est caché, ou une masse levée sans trou.
+ * ce dépôt : `occludesActor` (`geometry/iso.ts`), posée sur la géométrie projetée des nappes (`Lid`,
+ * `stage/architectureVisibility.ts`) et les capsules d'acteurs (`stage/actorCapsule.ts`). La découpe
+ * locale est la SEULE riposte à cette occlusion-là : elle ôte un disque autour du héros, l'architecture
+ * n'est pas retirée (#1176, M3, 2026-08-16). Ce qui se retire se retire pour ABRI RÉEL, et par la loi
+ * de dégagement seule.
  *
  * CADENCE ÉVÉNEMENTIELLE, jamais un Hz : le verdict ne se rejoue qu'à la CLÉ (`clePercage`) — pas
  * franchi, cran/lacet de caméra, étage. Ce qui vit à la frame, c'est le seul rayon (`avancer`) : un
@@ -34,8 +34,8 @@ export interface ActeurPerce {
   monde: THREE.Vector3;
 }
 
-/** Qui est CACHÉ, un booléen par acteur. La garde de niveau est celle de `lidCutaway` : une nappe
- *  SOUS les pieds du héros ne le cache pas, elle le porte. */
+/** Qui est CACHÉ, un booléen par acteur. GARDE DE NIVEAU : une nappe SOUS les pieds du héros ne le
+ *  cache pas, elle le porte. */
 export function verdictPercage(lids: readonly Lid[], acteurs: readonly ActeurPerce[]): boolean[] {
   return acteurs.map((a) => lids.some((lid) => lid.z >= a.z && occludesActor(lid.occluder, a.capsule)));
 }
@@ -73,7 +73,7 @@ export function avancerRayon(actuel: number, cible: number, dtMs: number): numbe
   return Math.max(cible, actuel - pas);
 }
 
-/** LE PILOTE de la découpe : il tient la clé du dernier verdict, les cibles de rayon et les centres, et
+/** LE PILOTE de la découpe : il tient la clé du dernier verdict, les cibles de rayon et les sujets, et
  *  écrit les quatre trous partagés. Un pilote par écran ; l'appelant le crée avec sa scène. */
 export interface Percage {
   /** Repose le verdict SI la clé a bougé. Rend `true` quand il a réellement été rejoué. */
@@ -81,12 +81,14 @@ export interface Percage {
     cle: string;
     lids: readonly Lid[];
     acteurs: readonly ActeurPerce[];
-    camera: THREE.Camera;
-    largeurPx: number;
-    hauteurPx: number;
   }): boolean;
-  /** Fait vivre le fondu, et pousse l'état aux uniformes. À appeler à la frame. */
-  avancer(dtMs: number): void;
+  /** Fait vivre le fondu, REPROJETTE les centres avec la caméra de CETTE frame, et pousse l'état aux
+   *  uniformes. À appeler à la frame.
+   *
+   *  Le centre d'un trou est une grandeur de FRAME, pas de verdict : sous lacet libre et sous la
+   *  boucle de marche, le cadrage et le sujet vivent hors des rendus React, sans qu'aucune clé bouge.
+   *  Le pilote reprojette donc SES sujets ; l'hôte ne tient aucun centre. */
+  avancer(dtMs: number, camera: THREE.Camera, largeurPx: number, hauteurPx: number): void;
   /** Rayons courants (px) — ce que le shader lit, en lecture pour les bancs. */
   rayons(): number[];
   /** Nombre de verdicts RÉELLEMENT rejoués depuis la création : la mesure de la cadence. */
@@ -115,6 +117,7 @@ export function creerPercage(dessiner?: () => void): Percage {
   const cibles = new Array<number>(PERCAGE_MAX_HEROS).fill(0);
   const rayons = new Array<number>(PERCAGE_MAX_HEROS).fill(0);
   const centres = Array.from({ length: PERCAGE_MAX_HEROS }, () => new THREE.Vector3());
+  const mondes = new Array<THREE.Vector3 | null>(PERCAGE_MAX_HEROS).fill(null);
   const converge = (): boolean => rayons.every((r, i) => r === cibles[i]);
   const battre = (): void => {
     if (!enVol) return;
@@ -128,24 +131,32 @@ export function creerPercage(dessiner?: () => void): Percage {
     requestAnimationFrame(battre);
   };
   return {
-    majVerdict({ cle: nouvelle, lids, acteurs, camera, largeurPx, hauteurPx }) {
+    majVerdict({ cle: nouvelle, lids, acteurs }) {
       if (nouvelle === cle) return false;
       cle = nouvelle;
       verdicts++;
-      cadrePercage(camera, largeurPx, hauteurPx);
       const occlus = verdictPercage(lids, acteurs);
       for (let i = 0; i < PERCAGE_MAX_HEROS; i++) {
         const acteur = i < acteurs.length ? acteurs[i] : null;
         cibles[i] = acteur && occlus[i] ? PERCAGE_RAYON_PX : 0;
-        if (acteur) centres[i].copy(centrePercage(camera, acteur.monde, largeurPx, hauteurPx));
+        // La position MONDE est prise par RÉFÉRENCE : l'hôte la fait glisser à la frame (marche,
+        // rotation), et c'est `avancer` qui la reprojette. Un héros qui n'est plus dit garde la
+        // sienne — son trou se referme là où il était, il ne saute pas à l'origine.
+        if (acteur) mondes[i] = acteur.monde;
       }
       if (!converge()) armer();
       return true;
     },
-    avancer(dtMs) {
+    avancer(dtMs, camera, largeurPx, hauteurPx) {
+      // Le CADRE d'écran est une grandeur de FRAME, comme les centres : la passe d'OMBRE partage le
+      // discard et n'a aucun autre moyen de savoir où le trou tombe à l'écran du joueur (son propre
+      // raster est celui du soleil, cf. `percageLocal`).
+      cadrePercage(camera, largeurPx, hauteurPx);
       const trous = trousPercage();
       for (let i = 0; i < PERCAGE_MAX_HEROS; i++) {
         rayons[i] = avancerRayon(rayons[i], cibles[i], dtMs);
+        const monde = mondes[i];
+        if (monde) centres[i].copy(centrePercage(camera, monde, largeurPx, hauteurPx));
         trous[i].set(centres[i].x, centres[i].y, centres[i].z, rayons[i]);
       }
       if (converge()) enVol = false;

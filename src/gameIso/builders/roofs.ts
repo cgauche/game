@@ -968,7 +968,7 @@ export function massCovers(mass: Pick<BuildingMass, 'z'>, cells: ReadonlySet<str
  *  dans le creux. C'est l'égout qui ARRÊTE la pluie (`isSheltered`), donc c'est SA masse que la météo
  *  doit interroger — sinon la vue répond pour une autre nappe et la pluie s'arrête encore en l'air
  *  (#1247). `sectionId` est la MASSE (`mass.id`), la clé même que lit la loi de dégagement
- *  (`cutawayForSection`, `liftedSections`/`seenSections`) : aucun second verdict n'est reposé. */
+ *  (`cutawayForSection`, `seenSections`) : aucun second verdict n'est reposé. */
 export interface ShelterColumn { topZ: number; ceilingM: number; sectionId: string }
 
 const shelterOfScene = memoByRef((scene: Scene): ReadonlyMap<string, ShelterColumn> => {
@@ -1046,10 +1046,7 @@ export function clearedSpace(
   const zoneCells = new Map<string, ReadonlySet<string>>();
   const roomlessCells = new Set<string>();
   const overheadCells = new Set<string>();
-  // Levées à l'ÉCRAN : `lidCutaway`, résolu au stage (dims) — la scène seule n'en connaît aucune.
-  const liftedSections = new Set<string>();
-  const liftedCells = new Set<string>();
-  if (!allies.length) return { zoneIds, zoneCells, roomlessCells, overheadCells, liftedSections, liftedCells, seenSections: null };
+  if (!allies.length) return { zoneIds, zoneCells, roomlessCells, overheadCells, seenSections: null };
   const masses = effectiveArchitecture(scene).flatMap((body) =>
     body.masses.map((mass) => ({ mass, cells: massFootprintCells(mass.footprint) })));
   let openSky = false; // au moins un allié qui n'est enfermé dans aucun volume bâti
@@ -1075,7 +1072,7 @@ export function clearedSpace(
   const seenSections = sight
     ? new Set(openSky ? masses.filter(({ mass, cells }) => footInSight(mass.z, cells, sight)).map(({ mass }) => mass.id) : [])
     : null;
-  return { zoneIds, zoneCells, roomlessCells, overheadCells, liftedSections, liftedCells, seenSections };
+  return { zoneIds, zoneCells, roomlessCells, overheadCells, seenSections };
 }
 
 /** Le PIED d'une masse est-il en vue ? Son emprise ÉLARGIE d'1 (on voit un bâtiment quand on voit le

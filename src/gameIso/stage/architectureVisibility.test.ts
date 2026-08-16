@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { cutawayForSection, cutawayLifted, cutawayOverhead, exteriorWallViewZ, frontFacadeCutaway, lidCutaway, type ClearedSpace, type Lid } from './architectureVisibility';
-import { depth, occludesActor, tileCenter, type Dims } from '../../geometry/iso';
+import { cutawayForSection, cutawayOverhead, exteriorWallViewZ, frontFacadeCutaway, spaceCellKey, type ClearedSpace, type Lid } from './architectureVisibility';
+import { occludesActor, type Dims } from '../../geometry/iso';
 import { elOccluder } from './occluders';
 import { buildRoofs, clearedSpace, massFootprintCells, massRoomZoneIds } from '../builders/roofs';
 import { effectiveArchitecture } from '../../state/sceneEdit';
@@ -14,10 +14,10 @@ import { computeStateVisible } from '../../state/visionState';
 
 /** Un allié dans une PIÈCE : la pièce dégagée, et les cases qu'elle couvre. */
 const piece = (id: string, cells: string[]): ClearedSpace =>
-  ({ zoneIds: new Set([id]), zoneCells: new Map([[id, new Set(cells)]]), roomlessCells: new Set(), overheadCells: new Set(), liftedSections: new Set(), liftedCells: new Set(), seenSections: null });
+  ({ zoneIds: new Set([id]), zoneCells: new Map([[id, new Set(cells)]]), roomlessCells: new Set(), overheadCells: new Set(), seenSections: null });
 /** Un allié sous un bâti SANS pièce déclarée : l'emprise du bâtiment qui l'abrite. */
 const emprise = (cells: string[]): ClearedSpace =>
-  ({ zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(cells), overheadCells: new Set(), liftedSections: new Set(), liftedCells: new Set(), seenSections: null });
+  ({ zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(cells), overheadCells: new Set(), seenSections: null });
 
 describe('cutawayForSection', () => {
   it('masque une section dont la PIÈCE est occupée', () => {
@@ -28,69 +28,6 @@ describe('cutawayForSection', () => {
   it('masque une section SANS pièce dont l’EMPRISE est dégagée — le bâti pas encore zoné suit la même loi', () => {
     expect(cutawayForSection({ cells: ['3,3,0'] }, emprise(['3,3,0']))).toBe('hidden');
     expect(cutawayForSection({ cells: ['9,9,0'] }, emprise(['3,3,0']))).toBe('visible');
-  });
-});
-
-describe('lidCutaway — le couvercle qui cache un allié À L’ÉCRAN se lève par MASSE', () => {
-  const dims: Dims = { w: 12, h: 12, rot: 0, view: 'iso' };
-  /** Une masse RÉELLE (géométrie du builder), projetée comme au stage : ses pans en couvercles. */
-  const nappes = (sectionId: string, z: number, footprint: { x: number; y: number; w: number; h: number }): Lid[] => {
-    const scene = emptyScene(12, 12);
-    // Couches supérieures VIDES : seule la masse authorée porte de la toiture (aucune masse dérivée
-    // du plan ne vient s'ajouter et fausser la mesure).
-    while (scene.layers.length <= z) scene.layers.push({ z: scene.layers.length, tiles: new Array(144).fill('vide') });
-    scene.architecture = [{
-      id: sectionId, style: 'maison', storeys: [], facades: [],
-      masses: [{ id: sectionId, z, footprint: [footprint], levels: z + 1, profile: 'gable', ridge: 'x', pitchDeg: 40, material: 'tuile' }],
-    }];
-    return buildRoofs(scene).map((el) => ({ sectionId, z: el.cell.z, cells: el.cells, occluder: elOccluder(el, dims) }));
-  };
-  const acteur = (x: number, y: number, z: number) => ({
-    capsule: {
-      segment: [tileCenter(x, y, dims, z), tileCenter(x, y, dims, z + 1)].map((c) => ({ x: c.cx, y: c.cy })) as [{ x: number; y: number }, { x: number; y: number }],
-      radius: 18,
-      depth: depth(x, y, dims, z),
-      vertical: [z, z + 1] as [number, number],
-    },
-    z,
-  });
-  const vide = (): ClearedSpace => ({ zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(), overheadCells: new Set(), liftedSections: new Set(), liftedCells: new Set(), seenSections: null });
-
-  it('une nappe qui recouvre le héros lève sa masse ENTIÈRE, et retire l’étage qu’elle coiffe', () => {
-    const couvrante = nappes('voisin', 1, { x: 2, y: 2, w: 4, h: 2 });
-    const loin = nappes('ailleurs', 1, { x: 0, y: 0, w: 2, h: 2 }); // DERRIÈRE le héros : peinte avant lui
-    const heros = acteur(3, 2, 0); // sous l'emprise de la masse « voisin »
-    // Prémisse MESURÉE : au moins un pan recouvre la capsule et se peint après elle ; aucun de l'autre masse.
-    expect(couvrante.some((lid) => occludesActor(lid.occluder, heros.capsule))).toBe(true);
-    expect(loin.some((lid) => occludesActor(lid.occluder, heros.capsule))).toBe(false);
-    const cleared = lidCutaway(vide(), [...couvrante, ...loin], [heros]);
-    expect(cutawayForSection({ sectionId: 'voisin', cells: [] }, cleared)).toBe('hidden');
-    expect(cutawayForSection({ sectionId: 'ailleurs', cells: [] }, cleared)).toBe('visible');
-    // TOUS les pans de la masse tombent, y compris ceux qui ne couvraient personne — mais la levée est
-    // d'ÉCRAN : elle emporte ce qui se dresse sur le niveau, jamais son SOL.
-    for (const lid of couvrante)
-      for (const cell of lid.cells) {
-        expect(cutawayLifted({ ...cell, z: 1 }, cleared)).toBe(true);
-        expect(cutawayOverhead({ ...cell, z: 1 }, cleared)).toBe(false);
-      }
-  });
-
-  it('la nappe de SON PROPRE étage se lève aussi — sans jamais retirer le sol sous ses pieds', () => {
-    const couvrante = nappes('sien', 1, { x: 2, y: 2, w: 4, h: 2 });
-    const heros = acteur(3, 2, 1);
-    expect(couvrante.some((lid) => occludesActor(lid.occluder, heros.capsule))).toBe(true);
-    const cleared = lidCutaway(vide(), couvrante, [heros]);
-    expect(cutawayForSection({ sectionId: 'sien', cells: [] }, cleared)).toBe('hidden');
-    for (const lid of couvrante)
-      for (const cell of lid.cells) {
-        expect(cutawayOverhead({ ...cell, z: 1 }, cleared)).toBe(false);
-        expect(cutawayLifted({ ...cell, z: 1 }, cleared)).toBe(false);
-      }
-  });
-
-  it('aucune nappe ne recouvrant le héros, l’espace dégagé n’est pas touché', () => {
-    const avant = vide();
-    expect(lidCutaway(avant, nappes('loin', 1, { x: 0, y: 0, w: 2, h: 2 }), [acteur(5, 5, 0)])).toBe(avant);
   });
 });
 
@@ -251,7 +188,7 @@ describe('dégagement — le couvercle au-dessus du groupe (La Diligence)', () =
     const murs = buildWalls(scene, undefined, { activeZ: surplomb.masse.z, viewZ: null })
       .filter((el) => surplomb.cells.has(`${el.cell.x},${el.cell.y}`) && el.cell.z === surplomb.masse.z);
     expect(murs.length).toBeGreaterThan(0);
-    for (const el of murs) expect(cutawayLifted(el.cell, cleared)).toBe(true);
+    for (const el of murs) expect(cutawayOverhead(el.cell, cleared)).toBe(true);
   });
 
   it('le sol où le groupe POSE LE PIED n’est jamais retiré — seul ce qui est au-dessus de lui tombe', () => {
@@ -375,44 +312,100 @@ describe('vue — une nappe se peint quand le groupe la VOIT (#950)', () => {
   });
 });
 
-/** #1176 — UNE MASSE LEVÉE À L'ÉCRAN N'EMPORTE JAMAIS LE PLANCHER. Le groupe se tient DEHORS (cour de
- *  La Diligence : aucune pièce, aucune emprise, aucun surplomb au-dessus de sa tête) et la nappe d'un
- *  corps le recouvre à l'écran : cette masse se lève — toit, murs et décors du niveau partent — mais
- *  le SOL de ce niveau reste peint. L'ôter creusait un puits vers le fond de la scène là où l'on
- *  voulait montrer une pièce (mesuré : 174 puis 422 dalles d'étage effacées sur 422).
+/** #1176, M3 — L'OCCLUSION D'ÉCRAN NE RETIRE RIEN. Le groupe se tient DEHORS (cour de La Diligence :
+ *  aucune pièce, aucune emprise, aucun surplomb au-dessus de sa tête) et la nappe d'un corps le
+ *  recouvre à l'écran : cette masse reste PEINTE, toit et murs compris — la riposte à cette
+ *  occlusion-là est le TROU local (`stage/percage.ts`, `verdictPercage` sur la MÊME géométrie).
+ *  L'ABRI RÉEL, lui, retire toujours.
  *
- *  Le montage est celui du stage (`IsoStage`), pas une reconstruction : vision réelle, `clearedSpace`
- *  puis `lidCutaway` sur la géométrie projetée des nappes. */
-describe('dégagement — la masse levée à l’écran garde son plancher (La Diligence)', () => {
+ *  Le montage est celui du stage (`IsoStage`), pas une reconstruction : vision réelle, `clearedSpace`,
+ *  nappes projetées et capsule d'acteur. */
+describe('occlusion d’écran — une masse qui CACHE sans abriter reste peinte (La Diligence)', () => {
   const scene = diligenceCampaign.scenes[0];
   const dims: Dims = { ...scene.dimensions, rot: 0, view: 'iso' };
-  const cutawayAu = (x: number, y: number, z: number) => {
-    const allies = [{ x, y, z }];
+  const lids: Lid[] = buildRoofs(scene).map((el) => ({
+    sectionId: el.sectionId ?? el.key, z: el.cell.z, cells: el.cells, occluder: elOccluder(el, dims),
+  }));
+  const roofs = buildRoofs(scene);
+  /** Les nappes qui recouvrent RÉELLEMENT la capsule du héros posé là — la géométrie d'écran seule. */
+  const cacheursAu = (x: number, y: number, z: number) => {
+    const capsule = actorCapsuleOf({ x, y, h: heightAt(scene, x, y, z) }, dims);
+    return lids.filter((lid) => lid.z >= z && occludesActor(lid.occluder, capsule));
+  };
+  /** Le dégagement du stage à ce poste, et ses cacheurs. */
+  const posteAu = (x: number, y: number, z: number) => {
     const sight = computeStateVisible({ scene, battle: null, party: [], partyPos: { x, y, z }, gameTime: 12 * 60, lightLevel: null });
-    const base = clearedSpace(scene, allies, sight);
-    const lids: Lid[] = buildRoofs(scene).map((el) => ({
-      sectionId: el.sectionId ?? el.key, z: el.cell.z, cells: el.cells, occluder: elOccluder(el, dims),
-    }));
-    const actors = allies.map((a) => ({ capsule: actorCapsuleOf({ x: a.x, y: a.y, h: heightAt(scene, a.x, a.y, a.z) }, dims), z: a.z }));
-    return { base, cleared: lidCutaway(base, lids, actors) };
+    return { cleared: clearedSpace(scene, [{ x, y, z }], sight), cacheurs: cacheursAu(x, y, z) };
   };
 
-  it.each([[17, 2], [12, 3]])('depuis la cour (%i,%i), aucune dalle d’étage n’est effacée', (x, y) => {
-    const { base, cleared } = cutawayAu(x, y, 0);
-    // PRÉMISSES mesurées : le groupe est dehors (rien de dégagé par le monde), et une masse est bien
-    // levée à l'écran — sans quoi le cas ne serait pas celui qu'on verrouille.
-    expect(base.zoneIds.size + base.roomlessCells.size + base.overheadCells.size).toBe(0);
-    expect(cleared.liftedSections.size).toBeGreaterThan(0);
+  /** LA POPULATION DE LA LOI, dérivée de la carte et jamais énumérée à la main : toute case du rez
+   *  où des nappes recouvrent le héros à l'écran, où RIEN ne l'abrite, et où ces nappes sont VUES —
+   *  une section hors de vue se retire par une AUTRE loi (#950), elle ne dit rien de celle-ci. */
+  const postesDeCour = (() => {
+    const trouves: { x: number; y: number; cleared: ClearedSpace; cacheurs: Lid[] }[] = [];
+    for (let y = 0; y < scene.dimensions.h; y++)
+      for (let x = 0; x < scene.dimensions.w; x++) {
+        if (!cacheursAu(x, y, 0).length) continue;
+        const { cleared, cacheurs } = posteAu(x, y, 0);
+        if (cleared.zoneIds.size + cleared.roomlessCells.size + cleared.overheadCells.size !== 0) continue;
+        if (!cacheurs.every((lid) => cleared.seenSections?.has(lid.sectionId))) continue;
+        trouves.push({ x, y, cleared, cacheurs });
+      }
+    return trouves;
+  })();
+  /** Les deux postes de la cour d'où le cas a été mesuré pour la première fois : ils ancrent la
+   *  population, et leurs prémisses se re-mesurent une à une ci-dessous. */
+  const ancres = [[17, 2], [12, 3]] as const;
+
+  it('la cour porte la population que la loi balaye : caché à l’écran, abrité par rien, nappes vues', () => {
+    expect(postesDeCour.length, 'postes de cour cachés sans abri').toBeGreaterThan(50);
+    for (const [x, y] of ancres) {
+      const { cleared, cacheurs } = posteAu(x, y, 0);
+      expect(cacheurs.length, `(${x},${y}) est bien recouvert à l’écran`).toBeGreaterThan(0);
+      expect(cleared.zoneIds.size + cleared.roomlessCells.size + cleared.overheadCells.size, `(${x},${y}) n’est abrité par rien`).toBe(0);
+      for (const lid of cacheurs) expect(cleared.seenSections?.has(lid.sectionId), `${lid.sectionId} est vue depuis (${x},${y})`).toBe(true);
+      expect(postesDeCour.some((p) => p.x === x && p.y === y), `(${x},${y}) est dans la population balayée`).toBe(true);
+    }
+  });
+
+  it('LOI — sur TOUS ces postes, la masse qui cache garde ses nappes entières et ses cases couvertes', () => {
+    const fautes: string[] = [];
+    for (const { x, y, cleared, cacheurs } of postesDeCour) {
+      const cachees = new Set(cacheurs.map((lid) => lid.sectionId));
+      for (const el of roofs) {
+        const sectionId = el.sectionId ?? el.key;
+        if (!cachees.has(sectionId)) continue;
+        const verdict = cutawayForSection({
+          sectionId, roomZoneIds: el.roomZoneIds, cells: el.cells.map((c) => spaceCellKey(c.x, c.y, el.cell.z)),
+        }, cleared);
+        if (verdict !== 'visible') fautes.push(`(${x},${y}) nappe ${el.key} de ${sectionId} : ${verdict}`);
+      }
+      // Ce qui se dresse ou se pose sur ses cases reste là lui aussi — murs d'étage, dalles, décors.
+      for (const lid of cacheurs)
+        for (const cell of lid.cells)
+          if (cutawayOverhead({ ...cell, z: lid.z }, cleared)) fautes.push(`(${x},${y}) case ${cell.x},${cell.y} de ${lid.sectionId} dégagée`);
+    }
+    expect(fautes).toEqual([]);
+  });
+
+  it.each(ancres)('depuis la cour (%i,%i), les dalles de l’étage porté restent posées', (x, y) => {
+    const { cleared } = posteAu(x, y, 0);
     const dalles = buildFloors(scene, undefined, { activeZ: 0, viewZ: null }).filter((el) => el.cell.z === 1);
     expect(dalles.length).toBeGreaterThan(0);
     expect(dalles.filter((el) => cutawayOverhead(el.cell, cleared)).length).toBe(0);
-    // TÉMOIN : le dégagement fonctionne toujours — les nappes levées sont retirées, et ce qui se dresse
-    // sur leurs cases (murs d'étage, décors) tombe avec elles.
-    const levees = buildRoofs(scene).filter((el) => cleared.liftedSections.has(el.sectionId ?? el.key));
-    expect(levees.length).toBeGreaterThan(0);
-    for (const el of levees) {
-      expect(cutawayForSection({ sectionId: el.sectionId ?? el.key, cells: [] }, cleared)).toBe('hidden');
-      for (const cell of el.cells) expect(cutawayLifted({ ...cell, z: el.cell.z }, cleared)).toBe(true);
-    }
+  });
+
+  it('ABRI RÉEL (20,12) : le couvercle au-dessus de la tête part, nappe comprise', () => {
+    const { cleared, cacheurs } = posteAu(20, 12, 0);
+    expect(cleared.overheadCells.size, 'une masse coiffe bien ce poste').toBeGreaterThan(0);
+    expect(cacheurs.length, 'et elle le cache aussi à l’écran').toBeGreaterThan(0);
+    const couvrantes = buildRoofs(scene).filter((el) => el.cells.some((c) => c.x === 20 && c.y === 12));
+    expect(couvrantes.length, 'la carte porte bien une nappe sur cette case').toBeGreaterThan(0);
+    for (const el of couvrantes)
+      expect(cutawayForSection({
+        sectionId: el.sectionId ?? el.key,
+        roomZoneIds: el.roomZoneIds,
+        cells: el.cells.map((c) => spaceCellKey(c.x, c.y, el.cell.z)),
+      }, cleared)).toBe('hidden');
   });
 });

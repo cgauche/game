@@ -206,8 +206,8 @@ import { withRenderRank } from '../backends/webgl/renderRanks';
 import { buildTraceQuad, TRACE_LIFT_M } from '../backends/webgl/traceQuad';
 import type { TraceTransform } from '../../state/traceCalibration';
 import { signalerWebglRefusé } from './webglSupport';
-import { cadrePercage, materiauProfondeurPerce, percerMateriau, trousPercage, PERCAGE_MAX_HEROS } from '../backends/webgl/percageLocal';
-import { centrePercage, creerPercage, type ActeurPerce, type Percage } from './percage';
+import { materiauProfondeurPerce, percerMateriau, PERCAGE_MAX_HEROS } from '../backends/webgl/percageLocal';
+import { creerPercage, type ActeurPerce, type Percage } from './percage';
 import type { Lid } from './architectureVisibility';
 
 /** Convention de taille monde des billboards retenue pour le JEU (cf. `billboardMath`). */
@@ -301,7 +301,7 @@ export type StageFrame =
 export interface PercageEntrees {
   /** Clé ÉVÉNEMENTIELLE du verdict (`clePercage`) : pas franchi, cran/vue, étage. */
   cle: string;
-  /** Nappes projetées de la carte — les MÊMES que consomme `lidCutaway`. */
+  /** Nappes projetées de la carte — la géométrie d'occlusion (`Lid`, `elOccluder`). */
   lids: readonly Lid[];
   /** Alliés candidats au trou, à leur case VISUELLE (arrondie), dans un ordre stable. */
   heros: readonly { cid: string; capsule: ActorCapsule; z: number }[];
@@ -373,8 +373,8 @@ export interface GameStage3DProps {
    *  picker inscrit ici écraserait celui du jeu — le registre est un singleton. */
   spritePicking?: boolean;
   /** DÉCOUPE LOCALE PAR OCCLUSION (#1176, M3) — les entrées du verdict, telles que l'hôte de plateau
-   *  les tient déjà pour le dégagement (`IsoStage` : nappes projetées + capsules d'alliés). Cet écran
-   *  n'en dérive AUCUNE : deux jeux de nappes/capsules divergeraient de la loi de `lidCutaway`, et le
+   *  les dérive une seule fois (`IsoStage` : nappes projetées + capsules d'alliés). Cet écran n'en
+   *  dérive AUCUNE : deux jeux de nappes/capsules divergeraient de la géométrie d'occlusion, et le
    *  trou s'ouvrirait là où rien n'est caché. Absent (POV, éditeur) = aucun trou. */
   percage?: PercageEntrees | null;
 }
@@ -1086,12 +1086,11 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       precipBase.current = base;
       semis.instanceMatrix.needsUpdate = true;
     }
-    // DÉCOUPE LOCALE PAR OCCLUSION (#1176, M3) — TROIS cadences, et c'est tout le dessin de cette
+    // DÉCOUPE LOCALE PAR OCCLUSION (#1176, M3) — DEUX cadences, et c'est tout le dessin de cette
     // passe : le VERDICT à la CLÉ (pas franchi, quart de tour, étage — `Percage.majVerdict` le refuse
-    // de lui-même tant qu'elle ne bouge pas), le RAYON en fondu à la frame, et le CADRE D'ÉCRAN à la
-    // frame lui aussi. Ce dernier n'est pas un luxe : sous lacet LIBRE (#1176), un demi-tour de caméra
-    // ne franchit aucun cran, donc ne change aucune clé — la matrice et le centre du trou doivent
-    // suivre le regard sans attendre un verdict.
+    // de lui-même tant qu'elle ne bouge pas), puis le RAYON et le CENTRE à la frame, tenus par le
+    // pilote. Le centre n'est pas un luxe : sous lacet LIBRE (#1176), un demi-tour de caméra ne
+    // franchit aucun cran, donc ne change aucune clé.
     const pasPercage = Math.min(PERCAGE_PAS_MAX_MS, Math.max(0, maintenant - dernierRendu.current));
     const pilote = percageRef.current!;
     const acteursPercés = acteursPercésRef.current;
@@ -1129,28 +1128,16 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
       const dits = percage && f ? new Set(percage.heros.map((hp) => hp.cid)) : null;
       for (const cid of memoirePercée.keys()) if (!dits || !dits.has(cid)) memoirePercée.delete(cid);
     }
-    // La passe d'OMBRE partage le discard et n'a aucun autre moyen de savoir où le trou tombe à
-    // l'écran du joueur : son propre raster est celui du soleil (cf. `percageLocal`).
-    cadrePercage(camera, w, h);
     // Hors vue de plateau (première personne, éditeur), la clé est CONSTANTE et la liste vide : les
     // trous ouverts se REFERMENT au même fondu, ils ne s'éteignent pas d'un coup.
     pilote.majVerdict({
       cle: percage && f ? `${percage.cle}@${cidsPercés}` : PERCAGE_HORS_PLATEAU,
       lids: percage && f ? percage.lids : AUCUNE_NAPPE,
       acteurs: acteursPercés,
-      camera,
-      largeurPx: w,
-      hauteurPx: h,
     });
-    pilote.avancer(pasPercage);
-    // CENTRE À LA FRAME : le rayon appartient au pilote, mais le point où le trou tombe se reprend ici
-    // — le quad du héros a glissé et la caméra a pu tourner depuis le dernier verdict.
-    const trous = trousPercage();
-    for (let i = 0; i < acteursPercés.length; i++) {
-      if (trous[i].w <= 0) continue;
-      const centre = centrePercage(camera, acteursPercés[i].monde, w, h);
-      trous[i].set(centre.x, centre.y, centre.z, trous[i].w);
-    }
+    // Le rayon comme le CENTRE appartiennent au pilote : il tient les positions monde par référence et
+    // les reprojette avec la caméra de CETTE frame (`Percage.avancer`).
+    pilote.avancer(pasPercage, camera, w, h);
     dernierRendu.current = maintenant;
     // GAMMA de la courbe de brume (P3-1c) : `THREE.Fog` s'arrête au smoothstep, la courbe du POV est
     // smoothstep^gamma (`fogAt`, `pov/camera.ts`). Le `#define` se pose ici, et pas à un montage : les

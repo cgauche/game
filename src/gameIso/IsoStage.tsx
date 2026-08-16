@@ -50,7 +50,7 @@ import { visibilityField } from './backends/webgl/visibilityTint';
 import { roomZonesByElKey, type KeepEl, type TintAt } from './backends/webgl/sceneMeshes';
 import { stageCamTransform } from './stage/stageCam';
 import { occupiedInteriorZoneIds, roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
-import { NO_CLEARED_SPACE, frontFacadeCutaway, cutawayForSection, cutawayLifted, cutawayOverhead, lidCutaway, spaceCellKey } from './stage/architectureVisibility';
+import { NO_CLEARED_SPACE, frontFacadeCutaway, cutawayForSection, cutawayOverhead, spaceCellKey } from './stage/architectureVisibility';
 import { clePercage } from './stage/percage';
 import { DoorOverlays } from './stage/DoorOverlays';
 import { ClimbOverlays } from './stage/ClimbOverlays';
@@ -266,11 +266,11 @@ export function IsoStage() {
   }));
   // ESPACE DÉGAGÉ (#818, #907, #950) — UNE loi pour toute l'architecture. Une nappe n'est peinte que
   // si le groupe la VOIT (`seenSections`, nourri des cases explorées de `state/vision.ts`), et ce
-  // qui le COIFFE est RETIRÉ, à l'échelle de la MASSE, jamais voilé ni découpé panneau par panneau.
-  // Deux façons de savoir qu'une masse le coiffe, un seul verdict : elle le SURPLOMBE dans le monde
-  // (`clearedSpace` — sa pièce, l'emprise qui l'abrite, les niveaux au-dessus de lui) ou sa nappe le
-  // CACHE à l'écran (`lidCutaway`, la géométrie d'occlusion de #907). Les façades frontales de cet
-  // espace tombent du même geste (`frontFacadeCutaway`), et rien au niveau du groupe n'est retiré.
+  // qui l'ABRITE est RETIRÉ, à l'échelle de la MASSE, jamais voilé ni découpé panneau par panneau :
+  // sa pièce, l'emprise qui l'abrite, les niveaux au-dessus de lui (`clearedSpace`). Les façades
+  // frontales de cet espace tombent du même geste (`frontFacadeCutaway`), et rien au niveau du groupe
+  // n'est retiré. Une masse qui le CACHE à l'écran sans l'abriter n'est PAS retirée — elle reçoit un
+  // trou local (#1176, M3, `stage/percage.ts`).
   const roofGeom = useMemo(() => (scene ? buildRoofs(scene) : []), [scene]);
   const lids = useMemo(
     () => roofGeom.map((el) => ({
@@ -281,9 +281,9 @@ export function IsoStage() {
     })),
     [roofGeom, dims],
   );
-  // ALLIÉS COIFFABLES : leur case VISUELLE, leur `cid` et leur capsule d'écran. UNE dérivation pour les
-  // DEUX ripostes à la même occlusion — la masse LEVÉE (`lidCutaway`) et le TROU local (#1176, M3) ;
-  // deux jeux de capsules divergeraient, et le trou s'ouvrirait où rien n'est caché.
+  // ALLIÉS COIFFABLES : leur case VISUELLE, leur `cid` et leur capsule d'écran — les entrées du trou
+  // local (#1176, M3), résolues ICI parce qu'elles exigent la projection (donc le stage, jamais le
+  // builder).
   const alliesCoiffables = useMemo(
     () => (scene
       ? visualTilesAt(wnow).map((t) => ({
@@ -296,12 +296,12 @@ export function IsoStage() {
     [scene, visualAlliesKey, dims],
   );
   const cleared = useMemo(
-    () => (scene ? lidCutaway(clearedSpace(scene, visualAllies, exploredSet), lids, alliesCoiffables) : NO_CLEARED_SPACE),
-    [scene, visualAllies, exploredSet, lids, alliesCoiffables],
+    () => (scene ? clearedSpace(scene, visualAllies, exploredSet) : NO_CLEARED_SPACE),
+    [scene, visualAllies, exploredSet],
   );
   // DÉCOUPE LOCALE PAR OCCLUSION (#1176, M3) : ce que la boucle de rendu volumique reprend à la CLÉ
-  // (pas franchi, quart de tour, étage) pour percer un trou dans la masse qui coiffe un héros, là où
-  // `lidCutaway` la lève entière. Les entrées sont celles ci-dessus, sans un seul second calcul.
+  // (pas franchi, quart de tour, étage) pour percer un trou dans la masse qui cache un héros à
+  // l'écran. Les entrées sont celles ci-dessus, sans un seul second calcul.
   const percage = useMemo(
     () => (scene
       ? { cle: clePercage({ tuiles: visualTilesAt(wnow), rot: dims.rot ?? 0, view: dims.view ?? 'iso', activeZ }), lids, heros: alliesCoiffables }
@@ -325,8 +325,8 @@ export function IsoStage() {
     if (planVue && el.kind !== 'roof' && el.cell.z !== activeZ) return false;
     if (el.kind === 'roof') {
       // DÉCOUVERT PERMANENT (#1176, P3-5) : sous un regard qui ne montre pas les toits, aucune nappe
-      // ne se dessine — la loi de dégagement (`clearedSpace`/`lidCutaway`) reste entière pour le
-      // plateau iso, où elle continue de lever au pas du groupe.
+      // ne se dessine — la loi de dégagement (`clearedSpace`) reste entière pour le plateau iso, où
+      // elle continue de retirer ce qui abrite le groupe.
       if (!politique.toitsVisibles) return false;
       return cutawayForSection({
         sectionId: el.sectionId ?? el.key,
@@ -334,9 +334,9 @@ export function IsoStage() {
         cells: el.cells.map((c) => spaceCellKey(c.x, c.y, el.cell.z)),
       }, cleared) === 'visible';
     }
-    // Le SOL n'obéit qu'au couvercle au-dessus des têtes (`cutawayOverhead`) ; ce qui se dresse ou se
-    // pose dessus tombe AUSSI avec une masse levée à l'écran (`cutawayLifted`).
-    if (el.kind === 'floor' ? cutawayOverhead(el.cell, cleared) : cutawayLifted(el.cell, cleared)) return false;
+    // Sol, mur d'étage, décor : tout ce qui se pose ou se dresse sur un niveau n'obéit qu'au couvercle
+    // au-dessus des têtes (`cutawayOverhead`).
+    if (cutawayOverhead(el.cell, cleared)) return false;
     if (el.kind === 'wall') {
       // MURS AU TRAIT (#1176, P3-5b) : sous un regard qui les rend au trait symbolique SVG
       // (`stage/layers.wallTraitObjs`), le monde volumique n'en peint AUCUN — verdict exclusif, jamais
@@ -370,7 +370,7 @@ export function IsoStage() {
   const nappesVues = useMemo(() => new Set(roofEls.map((el) => el.sectionId ?? el.key)), [roofEls]);
   const nappeVue = useMemo(() => (sectionId: string) => nappesVues.has(sectionId), [nappesVues]);
   const propEls = useMemo(
-    () => (scene ? buildProps(scene, visible, { activeZ, viewZ: layerZ, allies: cutawayAllies }).filter((el) => !cutawayLifted(el.cell, cleared)) : []),
+    () => (scene ? buildProps(scene, visible, { activeZ, viewZ: layerZ, allies: cutawayAllies }).filter((el) => !cutawayOverhead(el.cell, cleared)) : []),
     [scene, visible, activeZ, layerZ, cutawayAllies, cleared],
   );
   const tokenEls = useMemo(

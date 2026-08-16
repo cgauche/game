@@ -39,10 +39,9 @@ const TOIT: BuildingMass = {
   material: 'tuile',
 };
 const SOUS_TOIT = { x: 4, y: 4 };
-/** Dehors, et DEVANT le bâtiment à l'écran : une masse qui recouvre le groupe en projection est levée
- *  par le cutaway d'écran (`lidCutaway`, #907) — mesuré ici même : à (0,0), derrière la maison, la
- *  nappe est levée et la pluie s'écrête. Ce cas-ci mesure le toit DESSINÉ, donc le groupe se tient
- *  devant lui. */
+/** Dehors, à l'écart du bâtiment. Une masse qui recouvre le groupe en PROJECTION n'est plus retirée
+ *  (#1176, M3) — ce cas-ci mesure le toit DESSINÉ, et rien ne le retire tant que le groupe n'est pas
+ *  dessous. */
 const DEHORS = { x: 10, y: 10 };
 
 let root: Root | null = null;
@@ -144,10 +143,9 @@ afterEach(() => {
 });
 
 describe('Météo volumique — écrêtage au cutaway (#1247)', () => {
-  it('la SONDE du cas : allié sous une masse NON ZONÉE ⇒ la section est CACHÉE, sans aucune levée d’écran', () => {
+  it('la SONDE du cas : allié sous une masse NON ZONÉE ⇒ la section est CACHÉE', () => {
     const scene = scèneCouverte();
     const cleared = clearedSpace(scene, [{ ...SOUS_TOIT, z: 0 }], new Set(['4,4,0']));
-    expect(cleared.liftedSections.size, 'aucune masse levée à l’ÉCRAN : ce n’est PAS la bonne clé').toBe(0);
     expect(cutawayForSection({
       sectionId: TOIT.id,
       roomZoneIds: [],
@@ -168,7 +166,7 @@ describe('Météo volumique — écrêtage au cutaway (#1247)', () => {
     expect(dessus.every((p) => p.rendue), 'toit dessiné : ce qui s’arrête dessus se voit').toBe(true);
   });
 
-  it('TOIT LEVÉ (groupe dessous) : AUCUNE particule rendue sur ses colonnes, la pluie continue ailleurs', () => {
+  it('TOIT RETIRÉ (groupe dessous) : AUCUNE particule rendue sur ses colonnes, la pluie continue ailleurs', () => {
     const scene = scèneCouverte();
     poser(scene, SOUS_TOIT);
     monter();

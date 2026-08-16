@@ -24,6 +24,7 @@ import { IsoStage } from '../IsoStage';
 import { artRot, setStageRendererFactory, type StageRenderer } from './GameStage3D';
 import * as archVis from './architectureVisibility';
 import { frontFacadeCutaway, type ClearedSpace } from './architectureVisibility';
+import * as percage from './percage';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -45,7 +46,7 @@ afterAll(() => setStageRendererFactory(null));
 
 /** Un allié dans une PIÈCE dégagée, et les cases qu'elle couvre (même fixture qu'`architectureVisibility.test`). */
 const piece = (id: string, cells: string[]): ClearedSpace =>
-  ({ zoneIds: new Set([id]), zoneCells: new Map([[id, new Set(cells)]]), roomlessCells: new Set(), overheadCells: new Set(), liftedSections: new Set(), liftedCells: new Set(), seenSections: null });
+  ({ zoneIds: new Set([id]), zoneCells: new Map([[id, new Set(cells)]]), roomlessCells: new Set(), overheadCells: new Set(), seenSections: null });
 
 const cranDims = (rot: Rot): Dims => ({ w: 8, h: 8, rot });
 
@@ -161,16 +162,16 @@ describe('IsoStage — le cran effectif ALIMENTE le dégagement, et ne rejoue qu
   });
 
   it('44° ne rebâtit RIEN, 46° rebâtit UNE fois (le memo lourd suit le franchissement, pas la frame)', () => {
-    // Le memo LOURD qui dépend du cran est désormais celui du DÉGAGEMENT (`cleared` : occluders de
-    // nappes + capsules d'acteurs projetées, `lidCutaway` en sortie) — le stage ne bâtit plus lui-même
-    // sols et murs depuis la mort de la voie affine (#1176 P3-4, commit C5a), et la cuisson du monde
-    // volumique, elle, ne dépend pas du regard.
-    const spy = vi.spyOn(archVis, 'lidCutaway');
+    // Le memo qui dépend du cran est celui des ENTRÉES DE LA DÉCOUPE LOCALE (nappes projetées et
+    // capsules d'alliés, clé `clePercage` — tout y exige la projection) : le stage ne bâtit plus
+    // lui-même sols et murs depuis la mort de la voie affine (#1176 P3-4, commit C5a), et la cuisson
+    // du monde volumique, elle, ne dépend pas du regard.
+    const spy = vi.spyOn(percage, 'clePercage');
     monterVolumique();
     const monte = spy.mock.calls.length;
     expect(monte).toBeGreaterThan(0);
     act(() => { nudgeStageYaw(44); });
-    expect(spy.mock.calls.length).toBe(monte); // même cran : aucun mur rebâti
+    expect(spy.mock.calls.length).toBe(monte); // même cran : aucune entrée reprojetée
     act(() => { nudgeStageYaw(2); }); // 46° : le quart est franchi
     expect(spy.mock.calls.length).toBe(monte + 1);
     act(() => { nudgeStageYaw(2); }); // 48° : toujours le même cran

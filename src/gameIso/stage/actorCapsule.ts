@@ -1,7 +1,7 @@
 /**
  * CAPSULE ÉCRAN d'un acteur — le volume pieds→tête qu'il occupe une fois projeté : la caméra en tire
- * sa visée du sujet (`IsoStage`) et la loi de DÉGAGEMENT du monde son verdict d'occultation
- * (`cleared` → `lidCutaway`). Rien ici ne connaît le peintre : c'est de la géométrie de scène.
+ * sa visée du sujet (`IsoStage`) et la découpe locale son verdict d'occultation (`verdictPercage`,
+ * `stage/percage.ts`). Rien ici ne connaît le peintre : c'est de la géométrie de scène.
  */
 import { Dims, tileCenter, depth, type ActorCapsule } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';

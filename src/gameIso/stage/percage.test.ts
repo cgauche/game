@@ -56,7 +56,7 @@ describe('verdict — qui est CACHÉ par une masse, sur La Diligence', () => {
     expect(libres).toBeLessThan(scene.dimensions.w * scene.dimensions.h);
   });
 
-  it('une nappe SOUS les pieds ne cache pas : la garde de niveau est celle de `lidCutaway`', () => {
+  it('une nappe SOUS les pieds ne cache pas : la garde de niveau du verdict', () => {
     const enHauteur = acteur(17, 2, 2);
     const dessous = lids.filter((l) => l.z < 2);
     expect(dessous.length, 'la carte porte bien des nappes sous le niveau 2').toBeGreaterThan(0);
@@ -65,7 +65,7 @@ describe('verdict — qui est CACHÉ par une masse, sur La Diligence', () => {
 });
 
 describe('cadence — le verdict ne se rejoue qu’à la CLÉ', () => {
-  const entree = (cle: string) => ({ cle, lids, acteurs: [acteur(17, 2)], camera, largeurPx: 1280, hauteurPx: 720 });
+  const entree = (cle: string) => ({ cle, lids, acteurs: [acteur(17, 2)] });
 
   it('la clé porte le PAS, le cran de caméra et l’étage — pas la frame', () => {
     const tuiles = [{ id: 'h1', x: 17, y: 2, z: 0 }];
@@ -82,7 +82,7 @@ describe('cadence — le verdict ne se rejoue qu’à la CLÉ', () => {
     expect(percage.majVerdict(entree('a'))).toBe(true);
     for (let i = 0; i < 100; i++) {
       expect(percage.majVerdict(entree('a'))).toBe(false);
-      percage.avancer(16);
+      percage.avancer(16, camera, 1280, 720);
     }
     expect(percage.verdictsJoues()).toBe(1);
     expect(percage.majVerdict(entree('b'))).toBe(true);
@@ -102,8 +102,8 @@ describe('fondu et écriture des trous', () => {
   it('le pilote écrit les quatre trous : centre projeté + rayon, et ZÉRO pour qui n’est pas caché', () => {
     const percage = creerPercage();
     const acteurs = [acteur(17, 2), acteur(31, 0)];
-    percage.majVerdict({ cle: 'x', lids, acteurs, camera, largeurPx: 1280, hauteurPx: 720 });
-    percage.avancer(PERCAGE_FONDU_MS);
+    percage.majVerdict({ cle: 'x', lids, acteurs });
+    percage.avancer(PERCAGE_FONDU_MS, camera, 1280, 720);
     const trous = trousPercage();
     expect(trous).toHaveLength(PERCAGE_MAX_HEROS);
     const attendu = centrePercage(camera, acteurs[0].monde, 1280, 720);
@@ -113,6 +113,29 @@ describe('fondu et écriture des trous', () => {
     expect(trous[0].w, 'le héros couvert a son trou en grand').toBe(PERCAGE_RAYON_PX);
     expect(trous[1].w, 'le héros à découvert n’a pas de trou').toBe(0);
     expect(trous[3].w, 'un emplacement sans héros reste éteint').toBe(0);
+  });
+
+  /** LE CENTRE SUIT LA CAMÉRA DE LA FRAME, pas celle du verdict (#1176, M3) : le sujet est tenu par
+   *  RÉFÉRENCE et reprojeté à chaque `avancer`. Deux caméras, un seul verdict. */
+  it('sans REJOUER le verdict, une autre caméra déplace le centre du trou', () => {
+    const percage = creerPercage();
+    const acteurs = [acteur(17, 2)];
+    percage.majVerdict({ cle: 'y', lids, acteurs });
+    percage.avancer(PERCAGE_FONDU_MS, camera, 1280, 720);
+    const avant = trousPercage()[0].clone();
+    const autre = new THREE.OrthographicCamera(-16, 16, 12, -12, 0.1, 200);
+    autre.position.set(-20, 30, 40);
+    autre.lookAt(16, 0, 19);
+    autre.updateMatrixWorld();
+    autre.updateProjectionMatrix();
+    expect(percage.majVerdict({ cle: 'y', lids, acteurs }), 'la clé n’a pas bougé').toBe(false);
+    percage.avancer(16, autre, 1280, 720);
+    const apres = trousPercage()[0];
+    const attendu = centrePercage(autre, acteurs[0].monde, 1280, 720);
+    expect(apres.x, 'la nouvelle caméra déplace réellement le sujet').not.toBeCloseTo(avant.x, 1);
+    expect(apres.x).toBeCloseTo(attendu.x, 6);
+    expect(apres.y).toBeCloseTo(attendu.y, 6);
+    expect(apres.w, 'le rayon ne se referme pas pour un simple battement').toBe(PERCAGE_RAYON_PX);
   });
 
   it('ORTHO — la profondeur écran est AFFINE en profondeur monde : la comparaison du shader est exacte', () => {

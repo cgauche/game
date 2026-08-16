@@ -147,10 +147,8 @@ describe('IsoStage — accès de pièce recalculés à la case, pas à l’image
 /**
  * #818/#907 — le DÉGAGEMENT est UNE loi (`cutawayForSection`) sur UNE résolution (`clearedSpace` :
  * pièce occupée, et à DÉFAUT de pièce, emprise qui abrite ou coiffe l'allié). Le stage ne la
- * réimplémente pas : il lui passe les positions alliées, puis l'étend aux couvercles qui cachent le
- * groupe À L'ÉCRAN (`lidCutaway`, qui exige la projection — donc le stage, jamais le builder). Ce
- * test verrouille le CÂBLAGE : sans les positions alliées, un bâti NON ZONÉ (carte en cours
- * d'édition) ne se dégagerait jamais.
+ * réimplémente pas : il lui passe les positions alliées. Ce test verrouille le CÂBLAGE : sans les
+ * positions alliées, un bâti NON ZONÉ (carte en cours d'édition) ne se dégagerait jamais.
  */
 describe('IsoStage — les positions alliées atteignent la loi de dégagement (#818, #907)', () => {
   let root: Root | null = null;

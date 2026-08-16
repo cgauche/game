@@ -5,11 +5,13 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import * as THREE from 'three';
 import { heightAt, sceneMetresPerTile } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
-import type { Dims } from '../../geometry/iso';
+import { occludesActor, type Dims } from '../../geometry/iso';
 import { diligenceCampaign } from '../../scenes/campaign';
 import { buildRoofs } from '../builders/roofs';
+import type { RoofEl, SceneEl } from '../builders/types';
 import { elOccluder } from './occluders';
 import { actorCapsuleOf } from './actorCapsule';
+import * as sceneMeshes from '../backends/webgl/sceneMeshes';
 import type { ActorPose } from '../backends/webgl/sceneMeshes';
 import {
   GameStage3D,
@@ -270,7 +272,8 @@ describe('Le TROU s’ouvre sur le héros coiffé, et sur lui seul (#1176, M3)',
  * et le quad glisse à `anim.glide()`, à chaque battement. La clé du verdict (`clePercage` : pas franchi,
  * cran, étage), elle, ne bouge pas d'un iota. Le trou doit donc se REPROJETER à la frame, sans attendre
  * un verdict — sinon il reste cloué à sa position d'ouverture pendant toute la rotation et toute la
- * marche.
+ * marche. La reprojection appartient au PILOTE (`Percage.avancer`, `stage/percage.ts`), qui tient les
+ * positions monde par référence ; l'hôte ne fait que lui donner la caméra de la frame.
  *
  * Ce banc bat la boucle HORS React (aucun re-rendu, donc aucun quad remonté, aucune clé neuve) : c'est
  * la seule mesure qui distingue « reprojeté à la frame » de « recalculé parce que tout a été refait ».
@@ -416,5 +419,66 @@ describe('L’hôte de plateau alimente la découpe (#1176, M3)', () => {
     root = createRoot(hôte);
     await act(async () => { root!.render(<IsoStage />); });
     expect(trousPercage()[0].w, 'rayon du trou du groupe coiffé, chaîne IsoStage entière').toBeGreaterThan(0);
+  });
+});
+
+/**
+ * L'OCCLUSION D'ÉCRAN NE RETIRE RIEN — AU MONTAGE (#1176, M3). La loi elle-même se mesure sur ses
+ * fonctions pures (`stage/architectureVisibility.test.ts`, balayage de la cour) ; ici c'est le
+ * CÂBLAGE de l'hôte qui est en jeu : ce que `IsoStage` remet réellement au renderer par son `keepEl`.
+ * Une levée d'écran rebranchée dans l'hôte seul laisserait la loi verte et l'écran troué.
+ *
+ * Le poste est celui de la cour (17,2) : des nappes y recouvrent la capsule du héros, et rien ne
+ * l'abrite — la prémisse se re-mesure DANS le contrat.
+ */
+describe('L’hôte de plateau garde les nappes qui CACHENT sans abriter (#1176, M3)', () => {
+  const COUR = { x: 17, y: 2 } as const;
+
+  /** Les nappes qui recouvrent RÉELLEMENT la capsule du héros posté là — la géométrie du stage. */
+  const cacheursDe = (pos: { x: number; y: number }) => {
+    const capsule = actorCapsuleOf({ x: pos.x, y: pos.y, h: heightAt(SCENE, pos.x, pos.y, 0) }, DIMS);
+    return LIDS.filter((lid) => lid.z >= 0 && occludesActor(lid.occluder, capsule));
+  };
+
+  it('groupe dans la cour (17,2) : les nappes qui le cachent sont REMISES au renderer, toutes', async () => {
+    const cachées = new Set(cacheursDe(COUR).map((lid) => lid.sectionId));
+    expect(cachées.size, 'des nappes recouvrent bien la capsule du héros à ce poste').toBeGreaterThan(0);
+
+    // Ce que l'hôte remet au monde cuit : le masque de dégagement est LE point de passage
+    // (`applyCutawayMask`) — on l'observe passe par passe et on le laisse s'appliquer pour de bon.
+    // La passe qui compte est la DERNIÈRE : l'exploration s'accumule au premier rendu (#950 — une
+    // section jamais vue n'est pas peinte), et c'est l'image POSÉE que l'écran garde.
+    const passes: { remis: SceneEl[]; écartés: SceneEl[] }[] = [];
+    const vrai = sceneMeshes.applyCutawayMask;
+    const espion = vi.spyOn(sceneMeshes, 'applyCutawayMask').mockImplementation((baked, keepEl) => {
+      const passe = { remis: [] as SceneEl[], écartés: [] as SceneEl[] };
+      for (const span of baked.spans) (keepEl(span.el) ? passe.remis : passe.écartés).push(span.el);
+      passes.push(passe);
+      return vrai(baked, keepEl);
+    });
+    try {
+      useGame.setState({
+        scene: SCENE,
+        mode: 'exploration',
+        partyPos: { x: COUR.x, y: COUR.y },
+        party: [combattant('h1', COUR)],
+        battle: null,
+        dialogue: null,
+        flags: {},
+      });
+      hôte = document.createElement('div');
+      document.body.appendChild(hôte);
+      root = createRoot(hôte);
+      await act(async () => { root!.render(<IsoStage />); });
+
+      expect(passes.length, 'le masque de dégagement a bien tourné').toBeGreaterThan(0);
+      const posée = passes[passes.length - 1];
+      const nappeDeCacheur = (el: SceneEl): el is RoofEl => el.kind === 'roof' && cachées.has(el.sectionId ?? el.key);
+      const sections = new Set(posée.remis.filter(nappeDeCacheur).map((el) => el.sectionId ?? el.key));
+      expect(sections, 'chaque section qui cache le héros est remise au renderer').toEqual(cachées);
+      expect(posée.écartés.filter(nappeDeCacheur).map((el) => el.key), 'aucune nappe cacheuse écartée').toEqual([]);
+    } finally {
+      espion.mockRestore();
+    }
   });
 });

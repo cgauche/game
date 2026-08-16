@@ -35,7 +35,7 @@ export interface RegardVue {
 export interface StyleVue {
   /** Les toitures se dessinent-elles ? En vue du DESSUS, le découvert est PERMANENT : on regarde un
    *  plancher à la verticale, une nappe posée dessus ne montrerait que sa propre tuile. La loi de
-   *  dégagement (`clearedSpace`/`lidCutaway`) continue de vivre entière sur le plateau iso. */
+   *  dégagement (`clearedSpace`) continue de vivre entière sur le plateau iso. */
   toitsVisibles: boolean;
   /** Un seul ÉTAGE rendu (l'actif), au lieu de l'actif plus le contrebas : superposer le rez à
    *  l'étage rend le plan illisible. Verdict des ÉLÉMENTS de scène comme de la masse cuite — les deux
