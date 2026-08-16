@@ -14,10 +14,13 @@
  * `roofLayerObjs`), qui n'avaient plus de consommateur.
  * Fonctions PURES.
  */
-import { projectOccluder, type Dims } from '../../geometry/iso';
+import { depth, projectOccluder, tileEdge, type Dims, type EdgeSide } from '../../geometry/iso';
+import { heightAt, tileAt } from '../../state/scene';
+import { metricToLift } from '../../state/relief';
+import { terrainSolidHeightM } from '../../state/terrain';
 import { memoByRefDeps } from '../../state/sceneMemo';
 import { panelOf } from './occluders';
-import { wallSvg, wallAccentsSvg, wallDepth } from '../authoring/wallsSvg';
+import { wallSvg, wallAccentsSvg, wallDepth, solidEdgeTopSvg } from '../authoring/wallsSvg';
 import type { DetailOpts } from '../authoring/detailSvg';
 import { buildWalls } from '../builders/walls';
 import type { WallEl } from '../builders/types';
@@ -69,12 +72,59 @@ export function wallLayerObjs(wallEls: WallEl[], d: Dims, lod: number, detailOpt
 /** LOD 0 (aplats, aucun motif) — une structure au trait veut la silhouette symbolique, pas le détail. */
 const TRAIT_LOD: DetailOpts = { zoom: 0.4 };
 
+/** Les quatre arêtes cardinales d'une case, avec le pas vers la case qu'elles bordent. */
+const ARETES: readonly [EdgeSide, number, number][] = [['N', 0, -1], ['E', 1, 0], ['S', 0, 1], ['O', -1, 0]];
+
+/** Surélévation de TRI du trait de tuile : la même que celle d'un mur sur arête en vue du dessus
+ *  (`wallDepth` — 0,45 de mur, +0,6 de vue du dessus), pour que les deux formes d'obstacle s'entremêlent
+ *  dans un seul tri au lieu de se recouvrir par famille. */
+const TRAIT_D = 0.45 + 0.6;
+
+/**
+ * Traits de FRONTIÈRE des TUILES À BLOC PLEIN de l'étage `z` (terrain à `solidHeightM > 0` — le
+ * prédicat vient du registre de terrain, jamais d'une liste d'ids recopiée).
+ *
+ * CONTOUR DU GROUPE, pas un carré par tuile : une arête n'est tracée que si la case d'en face n'est PAS
+ * pleine — les arêtes INTERNES d'un muret contigu ne se dessinent pas, sans quoi un muret de quatre
+ * cases se lirait comme quatre pièces. Hors carte, `tileAt` rend un « mur » implicite (bord de scène) :
+ * une tuile pleine collée au bord ne trace donc pas son arête extérieure, ce qui est la même
+ * convention que le reste du rendu. PURE.
+ */
+function solidTileTraitObjs(scene: Scene, dims: Dims, z: number, visible?: ReadonlySet<string>): StageObj[] {
+  const { w, h } = scene.dimensions;
+  const plein = (x: number, y: number) => terrainSolidHeightM(tileAt(scene, x, y, z)) > 0;
+  const out: StageObj[] = [];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (!plein(x, y)) continue;
+    if (visible && !visible.has(`${x},${y},${z}`)) continue;
+    const lift = metricToLift(heightAt(scene, x, y, z));
+    for (const [side, dx, dy] of ARETES) {
+      if (plein(x + dx, y + dy)) continue;
+      const [a, b] = tileEdge(x, y, side, dims, lift);
+      const svg = solidEdgeTopSvg([a.cx, a.cy], [b.cx, b.cy]);
+      out.push({
+        d: depth(x, y, dims, z) + TRAIT_D,
+        x, y, z,
+        kind: 'wall',
+        el: <g key={`bloc-${x},${y},${z},${side}`} dangerouslySetInnerHTML={{ __html: svg }} />,
+      });
+    }
+  }
+  return out;
+}
+
 /**
  * La STRUCTURE d'un étage, au trait, prête à monter dans un SVG : les murs de l'étage `z` (isolement
  * d'un étage, `viewZ` du builder — sans lui les murs de tous les niveaux se superposent), projetés et
  * PRÉ-TRIÉS. `visible` = le brouillard de guerre du jeu ; absent (plan de station, éditeur) ⇒ tout est
  * vu. Un mur que le brouillard cache n'est PAS émis : le trait porterait la structure d'un intérieur
  * jamais exploré, exactement ce que le voile cache. PURE.
+ *
+ * DEUX FORMES D'OBSTACLE, UN SEUL TRAIT : les éléments `wall` (segments sur arête) ET le contour des
+ * TUILES à bloc plein (`solidTileTraitObjs`). Une scène à grille n'auteure ses murets qu'en tuiles :
+ * sans elles, son plan est vide de structure alors que TOUTE sa tactique (couvert, ligne de vue) en
+ * dépend. La tuile elle-même reste peinte par le monde cuit — sa face du dessus est une surface
+ * légitime du plateau ; c'est le TRAIT qui porte la sémantique d'obstacle.
  *
  * POURQUOI TOUT OU RIEN (`vis !== false`), et non le champ continu de visibilité (#1176, C6) : le champ
  * s'applique à la MATIÈRE — les couleurs de sommet du monde cuit, où un dégradé a un sens. Un TRAIT
@@ -83,5 +133,5 @@ const TRAIT_LOD: DetailOpts = { zoom: 0.4 };
  */
 export function wallTraitObjs(scene: Scene, dims: Dims, z: number, visible?: ReadonlySet<string>): StageObj[] {
   const objs = wallLayerObjs(buildWalls(scene, visible, { activeZ: z, viewZ: z }), dims, 0, TRAIT_LOD);
-  return sortByDepth(objs.filter((o) => o.vis !== false));
+  return sortByDepth(objs.filter((o) => o.vis !== false), solidTileTraitObjs(scene, dims, z, visible));
 }

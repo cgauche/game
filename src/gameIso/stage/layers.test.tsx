@@ -1,9 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene } from '../../state/scene';
+import { emptyScene, tileAt, type Scene } from '../../state/scene';
+import { terrainSolidHeightM } from '../../state/terrain';
 import { buildWalls } from '../builders/walls';
 import { buildRoofs } from '../builders/roofs';
 import type { Dims } from '../../geometry/iso';
-import { wallLayerObjs } from './layers';
+import { wallLayerObjs, wallTraitObjs } from './layers';
+import { scenario as entrainement } from '../../scenes/test-scenarios/entrainement';
+import { diligenceCampaign } from '../../scenes/campaign';
 
 /**
  * Couche des MURS au trait (plan de station, aperçu d'éditeur). Les couches de SOLS et de TOITS
@@ -41,5 +44,59 @@ describe('couche des murs — la projection porte les vérités du builder', () 
     // La nappe porte la MÊME relation, lue directement au builder : c'est de là que la voie volumique
     // la prend (`IsoStage.keepEl` → `cutawayForSection`), aucune projection SVG entre les deux.
     expect(buildRoofs(s)[0].roomZoneIds).toEqual(['salle']);
+  });
+});
+
+/**
+ * CONTRAT DU TRAIT D'OBSTACLE (#1176, P3-5b, sonde du juge vision promue) : un obstacle s'auteure de
+ * DEUX façons — un segment `WallSeg` sur une arête (scènes bâties) ou une TUILE de terrain à bloc plein
+ * (scènes à grille). En vue du dessus, les deux portent la même sémantique et doivent donc produire du
+ * TRAIT. Le trou mesuré avant correctif : terrain d'entraînement = 0 trait pour 4 tuiles mur — tout le
+ * scénario (couvert, ligne de vue) reposait sur un muret qui se lisait « dalle de sol pâle ».
+ */
+const TOP = (s: Scene): Dims => ({ w: s.dimensions.w, h: s.dimensions.h, view: 'top' });
+
+/** Combien de tuiles à BLOC PLEIN la couche `z` porte-t-elle (le fait que le trait doit couvrir) ? */
+function tuilesPleines(s: Scene, z = 0): number {
+  let n = 0;
+  for (let y = 0; y < s.dimensions.h; y++)
+    for (let x = 0; x < s.dimensions.w; x++) if (terrainSolidHeightM(tileAt(s, x, y, z)) > 0) n += 1;
+  return n;
+}
+
+describe('trait d’obstacle — éléments de mur ET tuiles à bloc plein', () => {
+  it('SCÈNE À GRILLE RÉELLE (terrain d’entraînement) : des tuiles mur ⇒ des traits', () => {
+    const s = entrainement.scene;
+    expect(tuilesPleines(s), 'témoin : le muret de couvert est bien authoré en tuiles').toBe(4);
+    expect(buildWalls(s, undefined, { activeZ: 0, viewZ: 0 }), 'témoin : et en AUCUN segment de mur').toHaveLength(0);
+    // Muret contigu de 4 cases en colonne : le CONTOUR fait 10 arêtes (4 + 4 + 1 + 1), jamais 16.
+    expect(wallTraitObjs(s, TOP(s), 0)).toHaveLength(10);
+  });
+
+  it('SCÈNE BÂTIE RÉELLE (La Diligence) : les segments continuent de porter le trait, sans doublon', () => {
+    const s = diligenceCampaign.scenes[0];
+    const segments = buildWalls(s, undefined, { activeZ: 0, viewZ: 0 }).length;
+    expect(segments).toBeGreaterThan(0);
+    // Aucune tuile pleine sur cette scène : le compte de traits est EXACTEMENT celui des segments.
+    expect(tuilesPleines(s)).toBe(0);
+    expect(wallTraitObjs(s, TOP(s), 0)).toHaveLength(segments);
+  });
+
+  it('CONTRAT : toute couche portant au moins une tuile mur produit du trait ; sans obstacle, aucun', () => {
+    const grille = emptyScene(5, 5);
+    grille.layers[0].tiles[2 * 5 + 2] = 'mur';
+    expect(tuilesPleines(grille)).toBe(1);
+    expect(wallTraitObjs(grille, TOP(grille), 0).length).toBeGreaterThan(0);
+    // Contrat INVERSE : ni mur d'arête ni tuile pleine ⇒ pas un seul trait (rien à inventer).
+    const nue = emptyScene(5, 5);
+    expect(tuilesPleines(nue)).toBe(0);
+    expect(wallTraitObjs(nue, TOP(nue), 0)).toHaveLength(0);
+  });
+
+  it('le BROUILLARD s’applique au trait de tuile comme au reste : tout ou rien', () => {
+    const s = emptyScene(5, 5);
+    s.layers[0].tiles[2 * 5 + 2] = 'mur';
+    expect(wallTraitObjs(s, TOP(s), 0, new Set(['2,2,0'])).length).toBeGreaterThan(0);
+    expect(wallTraitObjs(s, TOP(s), 0, new Set(['0,0,0']))).toHaveLength(0);
   });
 });

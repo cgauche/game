@@ -140,6 +140,23 @@ function topSvg(el: WallEl, app: StructureAppearanceDef, dims: Dims): string {
   return `<g>${seg(a, b, 8, shade(app.face, OUTLINE)) + seg(a, b, 5, app.face)}</g>`;
 }
 
+/**
+ * TRAIT de FRONTIÈRE d'une TUILE À BLOC PLEIN en vue du dessus (#1176, P3-5b) : le MÊME trait
+ * symbolique que le mur sur arête (liseré sombre + face), posé sur une arête de case.
+ *
+ * Un obstacle s'auteure de DEUX façons — un segment `WallSeg` sur une arête, ou une tuile de terrain à
+ * `solidHeightM > 0` (le muret de couvert d'une scène à grille). En volume ce sont deux formes
+ * distinctes et c'est juste ; en PLAN, ce sont le même fait — « on ne passe pas, on ne voit pas » — et
+ * ils doivent donc se lire pareil. Sans ce trait, un bloc plein vu du dessus rend sa face du dessus :
+ * une dalle pâle, lue comme du SOL.
+ */
+export function solidEdgeTopSvg(a: Pt2, b: Pt2, appearanceId?: string): string {
+  const app = facadeStructureAppearance(appearanceId);
+  const seg = (w: number, col: string) =>
+    `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+  return `<g>${seg(8, shade(app.face, OUTLINE)) + seg(5, app.face)}</g>`;
+}
+
 /** SVG d'un élément de mur : iso/edge-on = faces dans l'ORDRE DE PEINTURE du builder, ombrées par
  *  l'orientation MONDE de l'arête ; vue du dessus = représentation symbolique. COLOMBAGE (recette
  *  `timber`, LOD ≥ 1) : pans de bois PAR-DESSUS la façade assemblée (poteaux + écharpes devant le
