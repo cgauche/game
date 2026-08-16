@@ -1,4 +1,3 @@
-import { rawText } from '../i18n/rawText';
 import { useGame, SCREENS } from './store';
 import { portRepairVessel, portCareenVessel, portInstallUpgrade, damageVesselHull, setVesselHull } from './seaVoyageFlow';
 import { seaBoardEventById } from '../engine/seaVoyage';
@@ -1150,8 +1149,8 @@ export function buildApi() {
       const pbt: PendingBladeTrap = { defenderId, attackerId, weapon, parryWeaponUid: defender.weapons?.[0]?.uid ?? 'parry', defSL, roll: 33 };
       pushChoice(useGame.setState, {
         id: `cons-bladetrap-${defenderId}`, kind: 'bladeTrap', actorId: defenderId, icon: 'item/weapon',
-        label: rawText('Parade — piéger la lame ?'),
-        options: [{ key: 'trap', label: 'Piéger la lame' }, { key: 'crit', label: 'Coup Critique' }],
+        label: t('step.paradePiegerLame'),
+        options: [{ key: 'trap', label: t('opt.piegerLame') }, { key: 'crit', label: t('opt.coupCritique') }],
         defaultChoice: 'crit', bladeTrap: pbt,
       });
       useGame.setState((s) => ({ battle: s.battle ? { ...s.battle, combatants: [...s.battle.combatants] } : s.battle }));

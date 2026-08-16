@@ -1,4 +1,3 @@
-import { rawText } from '../i18n/rawText';
 import type { GameState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear, CascadeTableDone, PendingCascade } from './pendings';
@@ -66,6 +65,7 @@ import { addPossession, type PossessionInput } from './possessionsFlow';
 import { possessionLabel, type Possession, type LivingRef } from '../engine/possession';
 import { ev } from './combatLog';
 import { t } from '../i18n';
+import { stepPrecision } from './rollSeam';
 
 /**
  * Effets de scène/campagne (`Effect[]`) appliqués par le store : le grand `applyEffects`
@@ -1157,7 +1157,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         // et ressort en chip nommée) — une autre arithmétique que celle du monteur, à ne pas refaire.
         const st = monoStep({
           id: `expo-${c.id}`, kind: 'exposure', actor: c, icon: 'rest/cold',
-          rollLabel: 'Résistance', label: rawText(kind === 'froid' ? 'Exposition (froid)' : 'Exposition (chaleur)'),
+          rollLabel: 'Résistance', label: stepPrecision(t('step.exposition'), t(kind === 'froid' ? 'step.froid' : 'step.chaleur')),
           difficulty: 'intermediaire',
           montee: { base: resVal, ...(kind === 'froid' ? exposureCoatMods(c) : {}), target },
           meta: { kind }, stake: nightStakeRef('exposure'),

@@ -4,7 +4,6 @@
  * Refacto pure -- comportement preserve.
  */
 import type { PlayerText } from '../i18n/playerText';
-import { rawText } from '../i18n/rawText';
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
 import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, CascadeTableDone, PendingMiscastStep, CascadeStep, CascadeRoll, BatchParticipant, PendingCounterspell, CounterParticipant, CounterDeclaration } from './pendings';
@@ -278,6 +277,8 @@ import {
 } from './rollSeam';
 import { revealToStep } from './revealStep';
 import type { BuiltCascadeStep } from './stepBrand';
+import { dataLabel } from '../data';
+import { stepPrecision, stepPsych } from './rollSeam';
 
 /** L'État du défenseur accorde-t-il un Avantage à l'assaillant en mêlée ? Lu en DONNÉES
  *  (`incomingMeleeAdvantage` → `passive` `incomingAdvantage`, kind `etat`). Sonné : « +1 Avantage avant
@@ -1827,7 +1828,7 @@ export function applyStructureCriticalToTarget(
     // lit la catégorie déclarée par la table), et porte la charge riche dans son slot `reveal`.
     pushTableDone(set, {
       id: `cons-critical-structure-${target.id}-${target.criticalWounds}`,
-      kind: 'critical', actorId: target.id, icon: 'journal/critical', label: rawText(entry.title),
+      kind: 'critical', actorId: target.id, icon: 'journal/critical', label: dataLabel(entry.title),
       table, result: rolled, reveal: entry, outcome: toRecapLines(rolled.lines),
       stake: combatStakeRef('structureCritical'),
     });
@@ -1939,8 +1940,8 @@ function enemyAutoDeviate(
 function pushDeviationStep(set: SetFn, dev: PendingDeviation): void {
   pushChoice(set, {
     id: `cons-deviation-${dev.targetId}`, kind: 'deviation', actorId: dev.targetId, icon: 'fire/blast',
-    label: rawText('Coup Critique — dévier ?'),
-    options: [{ key: 'devier', label: 'Dévier (−1 PA)' }, { key: 'subir', label: 'Subir' }],
+    label: tr('step.critDevier'),
+    options: [{ key: 'devier', label: tr('opt.devier') }, { key: 'subir', label: tr('opt.subir') }],
     defaultChoice: 'devier', deviation: dev, reveal: dev.reveal,
   });
 }
@@ -2127,7 +2128,7 @@ export function applyAttackResult(
       id: `cons-crit-severity-${target.id}-${(target.criticalWounds ?? 0) + 1}`,
       // Le titre d'étape porte la LOCALISATION : c'est elle qui dit sur QUELLE table le dé se pose.
       kind: 'critSeverity', actorId: target.id, icon: 'journal/critical',
-      label: rawText(`Blessure critique (${locationLabel(cloc, target.bodyShape)})`),
+      label: stepPrecision(tr('step.blessureCritique'), locationLabel(cloc, target.bodyShape)),
       table: critSeverityDecl(target, cloc, overkill0, twice),
       critSeverity: { attackerId: attacker.id, targetId: target.id, weapon, res, location: cloc, overkill: overkill0, twice },
       // Avant le dé, l'enjeu est celui du TABLEAU (fiche `blessures-critiques`) ; après, la re-pose
@@ -2279,8 +2280,8 @@ export function applyAttackResult(
         const pbt: PendingBladeTrap = { defenderId: target.id, attackerId: attacker.id, weapon, parryWeaponUid: res.parryWeapon.uid!, defSL: dd.sl, roll: dd.roll };
         pushChoice(set, {
           id: `cons-bladetrap-${target.id}`, kind: 'bladeTrap', actorId: target.id, icon: 'item/weapon',
-          label: rawText('Parade — piéger la lame ?'),
-          options: [{ key: 'trap', label: 'Piéger la lame' }, { key: 'crit', label: 'Coup Critique' }],
+          label: tr('step.paradePiegerLame'),
+          options: [{ key: 'trap', label: tr('opt.piegerLame') }, { key: 'crit', label: tr('opt.coupCritique') }],
           defaultChoice: 'crit', bladeTrap: pbt,
           outcome: toRecapLines([
             `${target.label} place un Critique en parant avec ${res.parryWeapon.label} — la lame de ${attacker.label} (${weapon.label}) est à portée.`,
@@ -3772,7 +3773,7 @@ function miscastTableSpec(caster: Combatant, ctx: PendingMiscastStep, id: string
     id,
     kind: 'miscastTable', actorId: caster.id,
     icon: colere ? 'magic/power' : 'fire/blast',
-    label: rawText(colere ? 'Colère des dieux' : `Incantation Imparfaite ${ctx.severity === 'majeure' ? 'Majeure' : 'Mineure'}`),
+    label: colere ? tr('step.colereDesDieux') : tr(ctx.severity === 'majeure' ? 'step.miscastMajeure' : 'step.miscastMineure'),
     table: miscastTableDecl(ctx),
     // Deux tirages de nature DIFFÉRENTE partagent ce `kind` d'étape : le contrecoup magique (LDB 46)
     // et la sanction divine (LDB 40, +10 par Point de Péché) ne mettent pas la même chose en jeu.
@@ -5692,7 +5693,7 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
         id: `combatEndDisease-${c.id}-${d.entry}-${d.disease}`, kind: 'combatEndDisease', actor: c, icon: 'medical/infection',
         rollLabel: 'Résistance', difficulty: d.difficulty,
         ligne: { valeur: resVal, surLaCible: conditionModLines(c) },
-        label: rawText(d.label), meta: { entry: d.entry, disease: d.disease, ...(d.instant ? { instant: true } : {}) },
+        label: dataLabel(d.label), meta: { entry: d.entry, disease: d.disease, ...(d.instant ? { instant: true } : {}) },
         stake: combatStakeRef('combatEndDisease', { entryId: d.disease }),
         menace: 'maladie', // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
       });
@@ -5704,7 +5705,7 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
         id: `combatEndCorruption-${c.id}`, kind: 'combatEndCorruption', actor: c, icon: 'nav/mutation',
         rollLabel: 'Résistance', difficulty: 'intermediaire',
         ligne: { test: { skill: 'resistance' }, valeur: res, surLaCible: conditionModLines(c) },
-        label: rawText(`Exposition à la Corruption (${corr.label})`), meta: { level: corr.level, exposureLabel: corr.label },
+        label: stepPrecision(tr('step.expoCorruption'), dataLabel(corr.label)), meta: { level: corr.level, exposureLabel: corr.label },
         // L'enjeu DIT le coût de l'échec, lu à l'applier : `corruptionGain(niveau, false, …)` est constant
         // par niveau (1/2/3) — la valeur interpolée vient donc du MÊME calcul que la conséquence.
         stake: combatStakeRef('combatEndCorruption', { values: { niveau: corr.label, gainEchec: corruptionGain(corr.level, false, 0) } }),
@@ -5798,7 +5799,7 @@ registerCombatEndBandApplier('combatEndCorruption', (get, set, _band, row, hero,
 export function openContractionCascade(get: Get, set: SetFn, patient: Combatant, disease: string, difficulty: Difficulty, title: string): void {
   openBand(get, set, {
     id: `infection-${patient.id}-${disease}`, kind: 'combatEndDisease', icon: 'medical/infection',
-    label: rawText(title), menace: 'maladie', meta: { entry: 'chirurgie', disease },
+    label: dataLabel(title), menace: 'maladie', meta: { entry: 'chirurgie', disease },
     stake: combatStakeRef('combatEndDisease', { entryId: disease }),
     difficulty,
     porteurs: [{ actor: patient, ligne: { valeur: combatEndResistVal(patient) }, label: 'Résistance', menace: 'maladie' }],
@@ -6645,7 +6646,7 @@ function psychDueFor(get: Get, c: Combatant, collect: (get: Get, c: Combatant) =
       meta: { prevDR: t.prevDR, ...(sansPeur ? { sansPeur: true } : {}) },
     },
     icon: cl?.icon ?? (t.kind === 'terreur' ? 'creature/scream' : 'flag/fear'),
-    label: rawText(cl ? `${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? 'Terreur' : 'Peur'} ${t.indice}`),
+    label: cl ? (t.cible ? stepPrecision(dataLabel(cl.label), dataLabel(t.cible)) : dataLabel(cl.label)) : stepPsych(t.kind, t.indice),
   };
 }
 

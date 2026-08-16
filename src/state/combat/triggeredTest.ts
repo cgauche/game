@@ -22,7 +22,6 @@
  * coop) ; l'applier `triggeredTest` les rejoue (branche PUIS `after`) — l'`ExecCtx` est RECONSTRUIT
  * depuis `get()`/`hero`, jamais capturé (zéro closure dans le pending).
  */
-import { rawText } from '../../i18n/rawText';
 import { rollTest, resolveOpposed, opposedBranchSuccess, type TestResult } from '../../engine/tests';
 import { combatTestPenalty } from '../../engine/conditions';
 import { testValue, rawCombatTestBase, skillBaseValue } from '../../engine/skills';
@@ -44,6 +43,8 @@ import { recoveryGeometry, effectSourcesOf, fireOwnTestFailed } from '../trigger
 import { emitCombatEvent } from '../combatEvents';
 import { inBattleId, actorIn } from '../combatants';
 import { campSpend } from './advantagePool';
+import { dataLabel } from '../../data';
+import { t } from '../../i18n';
 
 /** Reflète la mutation EN PLACE d'un combattant (États retirés) dans les références party/battle pour
  *  un re-rendu React (clone des tableaux) — mirroir de `syncCombatant` des appliers d'upkeep. */
@@ -223,7 +224,7 @@ export function simpleTriggeredTestStep(
     id: triggeredTestStepId(c, ft.label, skillLabel),
     kind: 'triggeredTest', icon: 'nav/dice', rollLabel: skillLabel,
     actor: c, ligne: { test: testIds(ft), combat: { kind: 'test' } },
-    difficulty, label: rawText(ft.label ?? skillLabel),
+    difficulty, label: dataLabel(ft.label, skillLabel),
     // ENJEU du Flow (#1117/#1262 V2 L6d) : déjà résolu par `withDerivedStake` chez l'appelant (déclaré,
     // sinon dérivé du porteur) — cette fabrique le TRANSMET, elle ne devine rien.
     stake: ft.stake,
@@ -306,7 +307,7 @@ export function frozenOpposedBatchStep(
   }
   return bandStep({
     id: `triggeredBatchTest-${attacker.id}-${ft.label ?? skillLabel}`,
-    kind: 'triggeredBatchTest', icon: 'nav/dice', label: rawText(ft.label ?? skillLabel),
+    kind: 'triggeredBatchTest', icon: 'nav/dice', label: dataLabel(ft.label, skillLabel),
     ...(ft.stake ? { stake: ft.stake } : {}),
     ...(ft.menace ? { menace: ft.menace } : {}),
     meta: {
@@ -347,7 +348,7 @@ export function simpleBatchTestStep(
     });
   }
   return bandStep({
-    id, kind: 'triggeredBatchTest', icon: 'nav/dice', label: rawText(ft.label ?? skillLabel),
+    id, kind: 'triggeredBatchTest', icon: 'nav/dice', label: dataLabel(ft.label, skillLabel),
     ...(ft.stake ? { stake: ft.stake } : {}),
     ...(ft.menace ? { menace: ft.menace } : {}),
     meta: { onSuccess: branches.onSuccess, onFail: branches.onFail, after },
@@ -405,8 +406,8 @@ export function collectRoundEndTestSteps(get: Get, c: Combatant): BuiltCascadeSt
         const prompt = ft.label ?? src.label;
         const choix = choiceStep({
           id: `triggeredChoice-${c.id}-${prompt}`, kind: 'triggeredChoice', actorId: c.id,
-          icon: 'ui/think', label: rawText(prompt),
-          options: [{ key: 'yes', label: prompt }, { key: 'no', label: 'Renoncer' }],
+          icon: 'ui/think', label: dataLabel(prompt),
+          options: [{ key: 'yes', label: dataLabel(prompt) }, { key: 'no', label: t('opt.renoncer') }],
           defaultChoice: 'no',
           // ENTITÉ PORTEUSE (ids) : le OUI ouvre LE Test — il en dérive son enjeu (#1262 V2 L6d).
           meta: { choiceYes: eff.flow, choiceNo: EMPTY_FLOW, after: EMPTY_FLOW, ...(eff.source ? { sourceKind: eff.source.kind, sourceEntityId: eff.source.id } : {}) },
@@ -530,7 +531,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   const base = opp ? testValue(c, ft.skill, ft.characteristic, ft.spec) : rawCombatTestBase(c, ft.skill, ft.characteristic, ft.spec);
   const difficulty: Difficulty = resolveTestDifficulty(ft, cc); // dynamique (Brisé : caché/proche/loin), sinon ft.difficulty
   const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
-  const label = rawText(ft.label ?? skillLabel);
+  const label = dataLabel(ft.label, skillLabel);
   // Test SIMPLE : `combatTestPenalty` (sur le `base` BRUT → −10 d'État compté une fois). Test OPPOSÉ : 0
   // (l'op `opposedTest` jetait `testValue` brut des deux côtés ; `testValue` porte déjà la pénalité d'État).
   const penalty = opp ? 0 : combatTestPenalty(c);
@@ -694,8 +695,8 @@ export function resolveFlowChoice(ctx: ExecCtx, node: Extract<Flow, { kind: 'cho
     const branchTargetId = ctx.target && ctx.target.id !== decider.id ? ctx.target.id : undefined;
     pushChoice(ctx.set, {
       id: `triggeredChoice-${decider.id}-${node.prompt}`,
-      kind: 'triggeredChoice', actorId: decider.id, icon: node.icon ?? 'ui/think', label: rawText(node.prompt),
-      options: [{ key: 'yes', label: yesLabel }, { key: 'no', label: 'Renoncer' }],
+      kind: 'triggeredChoice', actorId: decider.id, icon: node.icon ?? 'ui/think', label: dataLabel(node.prompt),
+      options: [{ key: 'yes', label: dataLabel(yesLabel) }, { key: 'no', label: t('opt.renoncer') }],
       defaultChoice: 'no',
       meta: {
         choiceYes: node.yes, choiceNo: node.no ?? EMPTY_FLOW, after,

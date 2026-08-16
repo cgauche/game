@@ -111,7 +111,7 @@ describe('Cascade séquentielle influençable', () => {
 
   it('stepInteraction / stepReady : type d’interaction inféré des champs', () => {
     const jet: CascadeStep = { id: 'j', kind: 'tally', actorId: 'x', rollLabel: 'R', base: 30, target: 30, result: null};
-    const choix: CascadeStep = { id: 'c', kind: 'pick', actorId: 'x', options: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }]};
+    const choix: CascadeStep = { id: 'c', kind: 'pick', actorId: 'x', options: [{ key: 'a', label: rawText('A') }, { key: 'b', label: rawText('B') }]};
     const aff: CascadeStep = { id: 'd', kind: 'note', actorId: 'x'};
     expect(stepInteraction(jet)).toBe('jet');
     expect(stepInteraction(choix)).toBe('choix');
@@ -128,7 +128,7 @@ describe('Cascade séquentielle influençable', () => {
     spyApplier('pick', applied, (step) => ({ kind: step.kind, success: step.chosen === 'devier' }),
       (step) => (step.chosen === 'devier' ? { insert: [displayStep({ id: 'suite', kind: 'note', actorId: h.id, label: rawText('Suite')})] } : {}));
     spyApplier('note', applied, (step) => ({ kind: step.kind, success: true }), (step) => ({ consequences: freeCons([`${step.id}`]) }));
-    const choix: CascadeStep = { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'devier', label: 'Dévier' }, { key: 'subir', label: 'Subir' }]};
+    const choix: CascadeStep = { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'devier', label: rawText('Dévier') }, { key: 'subir', label: rawText('Subir') }]};
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [choix] });
     useGame.getState().cascadeNext(); // pas de choix → no-op
     expect(applied).toHaveLength(0);
@@ -158,7 +158,7 @@ describe('Cascade séquentielle influençable', () => {
     spyApplier('note', applied, () => ({ kind: 'note', success: true }));
     const steps: CascadeStep[] = [
       step('s1', h.id), // jet (tally) — auto-résolu
-      { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }]}, // CHOIX → STOP
+      { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'a', label: rawText('A') }, { key: 'b', label: rawText('B') }]}, // CHOIX → STOP
       { id: 'd', kind: 'note', actorId: h.id}, // affichage (pas atteint tant que le choix n'est pas tranché)
     ];
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps });
@@ -180,7 +180,7 @@ describe('Cascade séquentielle influençable', () => {
     spyApplier('note', applied, () => ({ kind: 'note', success: true }));
     const steps: CascadeStep[] = [
       step('s1', h.id), // jet (tally) — auto-résolu
-      { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }]}, // CHOIX sans défaut → STOP
+      { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'a', label: rawText('A') }, { key: 'b', label: rawText('B') }]}, // CHOIX sans défaut → STOP
       { id: 'd', kind: 'note', actorId: h.id}, // jamais atteint
     ];
     const resolved = runCascadeImmediate(useGame.getState, useGame.setState, steps);
@@ -198,7 +198,7 @@ describe('Cascade séquentielle influençable', () => {
     const h = hero();
     spyApplier('pick', applied, (step) => ({ kind: 'pick', success: step.chosen === 'a' }));
     const steps: CascadeStep[] = [
-      { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }], defaultChoice: 'a'},
+      { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'a', label: rawText('A') }, { key: 'b', label: rawText('B') }], defaultChoice: 'a'},
     ];
     const resolved = runCascadeImmediate(useGame.getState, useGame.setState, steps);
     expect(applied).toEqual([{ kind: 'pick', success: true }]); // défaut authoré appliqué

@@ -17,6 +17,7 @@ import type { Mutation } from '../engine/corruption';
 import mutationsJson from './mutations.json';
 import mutationTablesJson from './mutationTables.json';
 import { stripBookMarker } from './bookMarker';
+import type { PlayerText } from '../i18n/playerText';
 
 /** Une MUTATION (entité, `mutations.json`) : identité + effets, INDÉPENDANTE de toute table de tirage. */
 export type MutationData = Omit<Mutation, 'roll'>;
@@ -71,9 +72,11 @@ export function mutationTableLabel(table: string): string {
  *  SANS sa marque de provenance (projection PARTAGÉE `stripBookMarker` — même définition que la garde
  *  de charte), capitalisé (« physique » → « Physique »). `docs/charte-ui.md` : « JAMAIS de référence au
  *  livre dans un texte joueur ». La DONNÉE reste intacte (l'authoring garde sa provenance). */
-export function mutationTablePlayerLabel(table: string): string {
+export function mutationTablePlayerLabel(table: string): PlayerText {
   const l = stripBookMarker(mutationTableLabel(table));
-  return l.charAt(0).toUpperCase() + l.slice(1);
+  // MINTEUR (b) : texte AUTHORÉ en donnée (cf. `dataLabel`, `data/index.ts`) — cast local pour ne pas
+  // créer de cycle `index.ts` ⇄ `mutations.ts`.
+  return (l.charAt(0).toUpperCase() + l.slice(1)) as PlayerText;
 }
 
 /** Lignes d'étape d'une table — mémoïsées : une seule projection par table, rendue PAR RÉFÉRENCE. */

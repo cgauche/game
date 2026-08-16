@@ -22,6 +22,21 @@ export type Locale = keyof typeof CATALOGS;
 
 let locale: Locale = 'fr';
 export const getLocale = (): Locale => locale;
+
+/**
+ * Change la locale COURANTE — et ne rétro-agit PAS sur ce qui est déjà résolu.
+ *
+ * GEL AU CHARGEMENT (dette nommée, #1318 V8a₁) : plusieurs cartes de libellés appellent `t()` à
+ * l'ÉVALUATION DU MODULE et gardent la chaîne obtenue — `CHAR_LABELS`/`DIFFICULTY_LABELS`/
+ * `HIT_LOCATION_LABELS`/`BODY_SHAPE_LOC_LABELS` (`engine/types.ts`) et `WEATHER_LABEL`
+ * (`engine/travelStages.ts`, que V8a₁ a fait passer de littéraux au catalogue, ÉTENDANT ce motif).
+ * Appeler `setLocale` après le chargement les laisse donc en FR, SANS erreur ni avertissement.
+ *
+ * Ce n'est pas un bug tant que la v1 fige la locale au lancement (`docs/i18n-seam.md`, Non-objectifs :
+ * « re-rendu live au changement de locale »), mais c'est la CONDITION de cette fonction : la 2ᵉ langue
+ * devra transformer ces cartes en accesseurs (`charLabel(k)`) ou re-résoudre au rendu — pas se
+ * contenter d'appeler `setLocale`.
+ */
 export const setLocale = (l: Locale): void => { locale = l; };
 
 /** Interpole `{param}` dans un patron ; laisse `{x}` intact si `x` est absent. Pur (testable seul). */

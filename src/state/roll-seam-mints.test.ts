@@ -295,7 +295,7 @@ describe('#1262 — les portes d’APPEND', () => {
   });
 
   it('`pushChoice` ne peut pas produire un choix de GROUPE (le mint ne pose que le porteur)', () => {
-    pushChoice(useGame.setState, { id: 'c', kind: 'pick', label: rawText('Choix'), actorId: 'H1', options: [{ key: 'a', label: 'A' }] });
+    pushChoice(useGame.setState, { id: 'c', kind: 'pick', label: rawText('Choix'), actorId: 'H1', options: [{ key: 'a', label: rawText('A') }] });
     expect(etapes()[0].groupOwner).toBeUndefined();
     expect(etapes()[0].actorId).toBe('H1');
   });

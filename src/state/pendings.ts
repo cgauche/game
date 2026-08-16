@@ -1656,8 +1656,9 @@ export interface CascadeStepBase extends Omit<RollParticipant, 'interactive'> {
    *  Distinct d'`encounterPsych` (simple) car la Peur de combat est ÉTENDUE. Détermination = immunité
    *  (LDB 17 l.59), jouée par rangée (`BatchParticipant.immune`). */
   combatPsych?: { kind: PsychType; sourceId: string; sourceName: string; indice: number; cible?: string };
-  /** Étape « choix » : options présentées au joueur (l'option retenue pilote la conséquence). */
-  options?: { key: string; label: string; detail?: string }[];
+  /** Étape « choix » : options présentées au joueur (l'option retenue pilote la conséquence). Leur
+   *  `label` est du TEXTE JOUEUR marqué (#1318 V8a₁), comme celui de l'étape qui les porte. */
+  options?: { key: string; label: PlayerText; detail?: string }[];
   /** Option retenue (clé) — analogue de `result` pour une étape « choix ». */
   chosen?: string;
   /** Clé consommée par `runCascadeImmediate` (résolution immédiate) SEUL — SANS elle, une cascade

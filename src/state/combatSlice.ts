@@ -8,7 +8,6 @@
  * ACTIONS. Surface IDENTIQUE : aucune clé ajoutée/retirée/renommée. Pas de value-import de `store.ts`
  * (les actions ne référencent jamais `useGame`) → import de TYPE seulement, aucun cycle d'exécution.
  */
-import { rawText } from '../i18n/rawText';
 import type { Get, Set } from './flowTypes';
 import { tickCombatAuto } from './combatAuto';
 import type { GameState, BattleState } from './store';
@@ -709,7 +708,7 @@ export function createCombatSlice(get: Get, set: Set) {
         // Déviation Critique du fuyard : `applyAttackResult` a EMPILÉ son étape de choix — le coup gratuit
         // n'est PAS résolu. La fuite (Brisé + Course) attend SA résolution, dans la même fenêtre, via
         // l'étape de reprise `fleeMove` (LDB 15 l.68 : « une fois que ce coup gratuit est résolu… »).
-        pushDisplay(set, { id: `flee-move-${mover.id}`, kind: 'fleeMove', actorId: mover.id, icon: 'melee/flee', label: rawText('Fuite'), fleeMove: { moverId: mover.id, foeId: foe.id, broken } });
+        pushDisplay(set, { id: `flee-move-${mover.id}`, kind: 'fleeMove', actorId: mover.id, icon: 'melee/flee', label: t('step.fuite'), fleeMove: { moverId: mover.id, foeId: foe.id, broken } });
         const casc = get().pendingCascade;
         if (casc?.participants[casc.cursor]?.jet === 'disengage') get().cascadeNext(); // avancer sur l'étape de Déviation
         return;

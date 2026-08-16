@@ -1,5 +1,6 @@
 /** Types partagés du moteur de règles WFRP v4. */
 import { t } from '../i18n';
+import type { PlayerText } from '../i18n/playerText';
 import type { Duration } from './duration';
 import type { ReachId } from './items';
 import type { CodexTarget, ModProvenance } from './ruleRefs';
@@ -71,7 +72,7 @@ export type Characteristics = Record<CharKey, number>;
 /** Localisations d'impact (Tableau de Localisation, Livre de base p. 159). */
 export type HitLocation = 'tete' | 'brasG' | 'brasD' | 'corps' | 'jambeG' | 'jambeD';
 
-export const HIT_LOCATION_LABELS: Record<HitLocation, string> = {
+export const HIT_LOCATION_LABELS: Record<HitLocation, PlayerText> = {
   tete: t('hitloc.tete'),
   brasG: t('hitloc.brasG'),
   brasD: t('hitloc.brasD'),
@@ -96,7 +97,7 @@ export type WallEdgeSide = 'N' | 'E' | '\\' | '/';
  *  `vehicule` (véhicule/embarcation à coque — EDOC 7, MoR ch.5, MDG 13) : ses localisations
  *  (coque/gréement/roues/avirons…) sont PILOTÉES PAR DONNÉES (table par véhicule, branchée plus tard),
  *  donc aucune étiquette en dur ici. */
-export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation, string>>> = {
+export const BODY_SHAPE_LOC_LABELS: Record<BodyShape, Partial<Record<HitLocation, PlayerText>>> = {
   humanoide: {},
   quadrupede: { brasG: t('hitloc.quadrupede.brasG'), brasD: t('hitloc.quadrupede.brasD'), jambeG: t('hitloc.quadrupede.jambeG'), jambeD: t('hitloc.quadrupede.jambeD') },
   oiseau: { brasG: t('hitloc.oiseau.brasG'), brasD: t('hitloc.oiseau.brasD'), jambeG: t('hitloc.oiseau.jambeG'), jambeD: t('hitloc.oiseau.jambeD') },

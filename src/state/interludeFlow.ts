@@ -11,7 +11,6 @@
  * ponctionné glouton par `payFromGroup`) ; le « +1 Chance max » est crédité directement ; la clôture
  * passe par le flux de repos standard (récupération, convalescence, horloge — weeks × 7 jours).
  */
-import { rawText } from '../i18n/rawText';
 import type { GameState } from './store';
 import { battleRng } from './battleRng';
 import { d100, roll as rollDice } from '../engine/dice';
@@ -63,6 +62,8 @@ import { t, t as msg } from '../i18n'; // `msg` : alias local — `t` est aussi 
 
 import type { Get, Set } from './flowTypes';
 import type { EffectSource } from '../engine/types';
+import { dataLabel } from '../data';
+import { stepDetail } from './rollSeam';
 
 export interface InterludeHeroState {
   /** Jet d100 sur le Tableau des Événements (LDB 22). ABSENT tant que le dé n'est pas tombé (phase
@@ -153,7 +154,7 @@ function eventStep(hero: Combatant): CascadeStep {
   return {
     id: `interlude-event-${hero.id}`,
     kind: 'interludeEvent', actorId: hero.id, icon: 'nav/dice',
-    label: rawText(`Événement — ${hero.label}`),
+    label: stepDetail(t('step.evenement'), dataLabel(hero.label)),
     table: INTERLUDE_EVENT_DECL,
     stake: combatStakeRef('interludeEvent'),
   };
@@ -165,7 +166,7 @@ function purseStep(): CascadeStep {
   return {
     id: 'interlude-purse',
     kind: 'interludePurse', icon: 'resource/gold-purse',
-    label: rawText('Les bourses du groupe'),
+    label: t('step.interludePurse'),
   };
 }
 

@@ -2736,7 +2736,7 @@ export interface TalentRef extends Ref {
 /** Libellé d'affichage d'une `TalentRef` : « Magie des Arcanes (Ghur) », « Maîtrise du combat 2 »
  *  (base+spec via `refLabel`, + niveau si ≥2). La spec RESTE dans le libellé (clé du registre combatFeatures). */
 export function talentRefLabel(ref: TalentRef): string {
-  return refLabel('talents', ref) + (ref.times && ref.times > 1 ? ` ${ref.times}` : '');
+  return refConcrete('talents', ref) + (ref.times && ref.times > 1 ? ` ${ref.times}` : '');
 }
 /** Sous-type d'une QUALITÉ (classification RAW : qualités d'Arme LDB 62, d'Armure LDB 63, d'Objet). */
 export interface QualitySubtypeData { id: string; label: string; }
@@ -3023,27 +3023,43 @@ export function specLabel(category: string, refId: string, specId: string): stri
   const entry = def?.specs?.find((s) => specEntryId(s) === specId);
   return entry ? specEntryLabel(entry) : specId;
 }
-/** Libellé CONCRET d'une `Ref` : « Magie des Arcanes (Ghur) » — base (repli sur l'id) + spec. SOURCE
- *  UNIQUE du nom affiché ET de la clé runtime (combatFeatures/grimoire).
+/**
+ * MINTEUR (b) de `PlayerText` (#1318 V8a₁) — le PASSAGE des textes AUTHORÉS (le `label` d'une entité
+ * de catalogue, le `title` d'une entrée de table, le `prompt` d'un nœud de Flow, l'intitulé d'un péril
+ * de scène) vers l'affichage. Ces textes ne sont PAS traduisibles par clé : ils vivent dans la donnée,
+ * et une 2ᵉ langue les surcharge par fichier `id → label` (cf. `docs/i18n-seam.md`, Phase E).
  *
- *  MINTEUR (b) de `PlayerText` (#1318 V8a₀) — la couture label↔id du CHARGEMENT, la seule que le
- *  CLAUDE.md tolère. C'est un ACCESSEUR qui mint, et non les `.label` des entités : marquer le champ
- *  lui-même remonterait dans les schémas JSON et dans l'éditeur de données (qui ÉCRIT des libellés,
- *  `src/ui/editor/**`), pour un verrou identique — ici le point de passage existe déjà et il est
- *  documenté SOURCE UNIQUE. RÉSIDU MESURÉ : les résolveurs par famille qui lisent `.label` sans passer
- *  par ici (`conditionLabel`, `damageTypeLabel`, les `label:` de `SPEC_SOURCES`) rendent encore
- *  `string` — ils convergent en V8a₁, pas ici. À NOTER : `src/data/**` est hors du périmètre ESLint du
- *  dépôt, donc ce cast n'est pas muré par le lint mais par la relecture (dit au JSDoc de `playerText`).
+ * CE QUI LE DISTINGUE DU FOSSILE `rawText` : le fossile gèle un LITTÉRAL FR écrit au call-site ; ici
+ * l'argument est TOUJOURS une valeur lue dans la donnée. Le cliquet nominatif
+ * `state/player-text-ratchet.test.ts` tient cette différence à ZÉRO, sans gel : un littéral FR passé à
+ * `dataLabel(` rougit la CI. C'est pour ça que ce n'est pas le fossile sous un autre nom.
  *
- *  CO-LOCATAIRE À SCINDER EN V8a₁ (#1318, grief T3) : cette fonction est AUSSI la CLÉ RUNTIME de
- *  plusieurs registres (`engine/character.ts` l.374 : `refLabel('skills', add)` sert d'index dans
- *  `opts.skillAdvances` ; même usage côté `combatFeatures`/grimoire). Un texte qui sert de clé n'est
- *  pas du texte JOUEUR : les deux usages doivent se séparer (accesseur de CLÉ non-minteur d'un côté,
- *  libellé d'affichage de l'autre), sinon traduire la donnée casserait des lookups. La scission est le
- *  travail de V8a₁ — la NOMMER ici en est la condition ; ce lot ne la fait PAS. */
-export function refLabel(category: string, ref: Ref): PlayerText {
+ * `repli` : la dégradation quand la donnée ne porte pas de texte — un ID, ou un libellé DÉJÀ dérivé du
+ * catalogue (`refLabel`, `CHAR_LABELS`). Jamais un littéral FR : même cliquet.
+ */
+export function dataLabel(texte: string | undefined | null, repli?: string): PlayerText {
+  return (texte ?? repli ?? '') as PlayerText;
+}
+
+/**
+ * CLÉ RUNTIME concrète d'une `Ref` : « Magie des Arcanes (Ghur) » — base (repli sur l'id) + spec.
+ * SOURCE UNIQUE de l'index utilisé par les registres (`opts.skillAdvances` dans `engine/character.ts`,
+ * `combatFeatures`, grimoire).
+ *
+ * NON-MINTEUR, et c'est tout le point (#1318 V8a₁, grief T3) : un texte qui sert de CLÉ n'est pas du
+ * texte joueur. Tant que les deux usages partageaient une seule fonction, traduire la donnée aurait
+ * cassé des lookups silencieusement. `refLabel` ci-dessous en est la face AFFICHAGE, et la seule à
+ * minter.
+ */
+export function refConcrete(category: string, ref: Ref): string {
   const base = findById(category, ref.id)?.label ?? ref.id;
-  return (ref.spec ? `${base} (${specLabel(category, ref.id, ref.spec)})` : base) as PlayerText;
+  return ref.spec ? `${base} (${specLabel(category, ref.id, ref.spec)})` : base;
+}
+
+/** Libellé CONCRET d'une `Ref` pour l'AFFICHAGE : « Magie des Arcanes (Ghur) ». Face minteuse de
+ *  `refConcrete` (cf. son JSDoc pour la scission). Un site qui INDEXE avec ce texte appelle `refConcrete`. */
+export function refLabel(category: string, ref: Ref): PlayerText {
+  return dataLabel(refConcrete(category, ref));
 }
 /** Copie une `QualityRef` de catalogue en `QualityInstance` RUNTIME FRAÎCHE (`{id, value?}`) — objet neuf
  *  (le runtime mute `qualities` : enchantements, munitions). Plus d'aplatissement en chaîne « id value ». */
@@ -3054,22 +3070,24 @@ export function qualityInstance(q: QualityRef): import('../engine/types').Qualit
 export function qualityRefLabel(q: QualityRef): string {
   return q.value != null ? `${refLabel('qualities', q)} ${q.value}` : refLabel('qualities', q);
 }
-/** Libellé d'affichage d'une `SkillInstance` (id+spec → « Langue (Magick) »). Repli sur l'id. */
+/** Libellé d'affichage / CLÉ d'une `SkillInstance` (id+spec → « Langue (Magick) »). Repli sur l'id.
+ *  Passe par `refConcrete` : ce texte indexe aussi (avancements, fiche). */
 export function skillInstanceLabel(s: { skillId: string; spec?: string }): string {
-  return refLabel('skills', { id: s.skillId, spec: s.spec });
+  return refConcrete('skills', { id: s.skillId, spec: s.spec });
 }
 /** Libellé CONCRET d'une `TalentInstance` (id+spec → « Magie des Arcanes (Bête) ») — clé du registre
- *  combatFeatures + affichage. Repli sur l'id. */
+ *  combatFeatures + affichage. Repli sur l'id. CLÉ d'abord, donc `refConcrete`. */
 export function talentConcrete(t: { talentId: string; spec?: string }): string {
-  return refLabel('talents', { id: t.talentId, spec: t.spec });
+  return refConcrete('talents', { id: t.talentId, spec: t.spec });
 }
 /** Libellé d'affichage/clé concrète d'un `AdvancementRef` : « Savoir (Au choix) », « A ou B »,
- *  « 3 Talent aléatoire », « Magie des Arcanes (Bête) ». SOURCE UNIQUE (Codex + résolution création). */
+ *  « 3 Talent aléatoire », « Magie des Arcanes (Bête) ». SOURCE UNIQUE (Codex + résolution création).
+ *  Passe par `refConcrete` : ce texte INDEXE `opts.skillAdvances` (`engine/character.ts`). */
 export function advancementLabel(category: string, a: AdvancementRef): string {
-  if ('ref' in a) return refLabel(category, a.ref);
+  if ('ref' in a) return refConcrete(category, a.ref);
   if ('wildcard' in a) return a.specOptions?.length
-    ? `${refLabel(category, a.wildcard)} (${a.specOptions.join(' ou ')})`
-    : `${refLabel(category, a.wildcard)} (Au choix)`;
+    ? `${refConcrete(category, a.wildcard)} (${a.specOptions.join(' ou ')})`
+    : `${refConcrete(category, a.wildcard)} (Au choix)`;
   if ('choice' in a) return a.choice.map((x) => advancementLabel(category, x)).join(' ou ');
   return a.random === 1 ? 'Talent aléatoire' : `${a.random} Talent aléatoire`;
 }

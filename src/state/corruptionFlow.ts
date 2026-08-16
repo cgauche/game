@@ -17,7 +17,6 @@
  *  - Effets d'éditeur : `corruptionExposure` (Test différé par modale) ; gain direct
  *    via l'Effet générique `ops` (op `corruption` + champ `align` optionnel).
  */
-import { rawText } from '../i18n/rawText';
 import type { GameState } from './store';
 import type { Get, Set } from './flowTypes';
 import type { Combatant } from '../engine/types';
@@ -52,6 +51,8 @@ import { evLines } from './combatLog';
 import { pilotedByHuman, canFixDie } from './netOwnership';
 import { followsCharacterRules } from '../engine/relations';
 import { resultLine, freeCons, tableStep, type BuiltCascadeStep } from './rollSeam';
+import { t } from '../i18n';
+import { stepDetail } from './rollSeam';
 
 /**
  * LA PORTE du slot `pendingCorruption` (#1282) — SOURCE UNIQUE de sa pose, quel que soit le
@@ -178,7 +179,7 @@ function natureStep(hero: Combatant, align: ChaosAlign | undefined, index: numbe
   return tableStep({
     id: `mutation-nature-${hero.id}-${index}`,
     kind: 'mutationNature', actorId: hero.id, icon: 'nav/mutation',
-    label: rawText('Dissolution — corps ou esprit'),
+    label: t('step.dissolution'),
     table: { tableId: mutationNatureTableId(hero.species), die: 100 },
     mutation: { heroId: hero.id, align },
     stake: combatStakeRef('mutationNature'),
@@ -189,7 +190,7 @@ function mutationTableStep(hero: Combatant, tableId: string, ctx: PendingMutatio
   return tableStep({
     id: `mutation-table-${tableId}-${hero.id}`,
     kind: 'mutationTable', actorId: hero.id, icon: 'nav/mutation',
-    label: rawText(`Mutation — ${mutationTablePlayerLabel(tableId)}`),
+    label: stepDetail(t('step.mutation'), mutationTablePlayerLabel(tableId)),
     table: { tableId, die: 100 },
     mutation: { ...ctx, tableId },
     stake: combatStakeRef('mutationTable'),

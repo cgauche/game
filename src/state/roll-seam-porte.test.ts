@@ -163,7 +163,7 @@ describe('#1262 — openChoice : une décision PORTÉE, jamais partagée', () =>
     openChoice(useGame.getState, useGame.setState, {
       id: 'deviation', kind: 'deviation', label: rawText('Dévier ?'), title: 'Coup Critique', purpose: 'combat',
       actorId: 'H1',
-      options: [{ key: 'devier', label: 'Dévier (−1 PA)' }, { key: 'subir', label: 'Subir' }],
+      options: [{ key: 'devier', label: rawText('Dévier (−1 PA)') }, { key: 'subir', label: rawText('Subir') }],
       defaultChoice: 'subir',
     });
     const step = etapeCourante();
@@ -179,7 +179,7 @@ describe('#1262 — openChoice : une décision PORTÉE, jamais partagée', () =>
     deuxSieges([hero('H1')]);
     expect(() => openChoice(useGame.getState, useGame.setState, {
       id: 'orphelin', kind: 'pick', label: rawText('Choix'), title: 'T', purpose: 'test',
-      actorId: '', options: [{ key: 'a', label: 'A' }],
+      actorId: '', options: [{ key: 'a', label: rawText('A') }],
     })).toThrow(/sans PORTEUR/);
     expect(useGame.getState().pendingCascade).toBeNull();
   });
@@ -187,7 +187,7 @@ describe('#1262 — openChoice : une décision PORTÉE, jamais partagée', () =>
   it('`defaultChoice` hors des options → signalé (DEV : throw) — la clé fautive n’est jamais posée', () => {
     expect(() => choiceStep({
       id: 'c', kind: 'pick', label: rawText('Choix'), actorId: 'H1',
-      options: [{ key: 'a', label: 'A' }], defaultChoice: 'z',
+      options: [{ key: 'a', label: rawText('A') }], defaultChoice: 'z',
     })).toThrow(/defaultChoice/);
   });
 
@@ -198,7 +198,7 @@ describe('#1262 — openChoice : une décision PORTÉE, jamais partagée', () =>
   /** La branche DE PROD (porteur manquant → fenêtre dégradée) est masquée par le throw de DEV : la
    *  forme qu'elle produit se monte donc directement, comme l'arbitre la recevra. */
   it('forme DÉGRADÉE (choix sans porteur) : la fenêtre EXISTE et échoit à l’hôte — l’invité voit celle d’autrui, jamais une fenêtre morte', () => {
-    const sansPorteur: CascadeStep = { id: 'degrade', kind: 'pick', label: rawText('Choix'), options: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }] };
+    const sansPorteur: CascadeStep = { id: 'degrade', kind: 'pick', label: rawText('Choix'), options: [{ key: 'a', label: rawText('A') }, { key: 'b', label: rawText('B') }] };
     deuxSieges([hero('H1'), hero('H2')]);
     expect(() => startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [sansPorteur] })).not.toThrow();
     expect(useGame.getState().pendingCascade, 'une décision supprimée serait pire qu’une fenêtre à l’hôte').not.toBeNull();
@@ -246,7 +246,7 @@ describe('#1262 — marque `BuiltCascadeStep` : les constructeurs de la porte la
   });
 
   it('la marque n’existe PAS à l’exécution : une étape sérialisée traverse le JSON sans rien perdre', () => {
-    const step = choiceStep({ id: 'c', kind: 'pick', label: rawText('Choix'), actorId: 'H1', options: [{ key: 'a', label: 'A' }] })!;
+    const step = choiceStep({ id: 'c', kind: 'pick', label: rawText('Choix'), actorId: 'H1', options: [{ key: 'a', label: rawText('A') }] })!;
     expect(JSON.parse(JSON.stringify(step))).toEqual(step);
     expect(Object.getOwnPropertySymbols(step)).toEqual([]);
   });

@@ -18,6 +18,8 @@ import type { CharKey, Difficulty } from './types';
 import { rule } from './policy';
 import type { CodexTarget } from './ruleRefs';
 import { weather, weatherConditions, weatherPhysicalTestChars } from '../data';
+import { t } from '../i18n';
+import type { PlayerText } from '../i18n/playerText';
 
 /** Les quatre saisons du tableau de Météo (EDOC 8 l.44). */
 export type Season = 'printemps' | 'ete' | 'automne' | 'hiver';
@@ -46,13 +48,24 @@ export function seasonOfMonth(monthIndex: number | null): Season {
  *  de temps éloigné de Beau temps » de l'activité Plein Air (l.106). */
 export type Weather = 'sec' | 'beau' | 'pluie' | 'pluie-diluvienne' | 'neige' | 'blizzard';
 
-export const WEATHER_LABEL: Record<Weather, string> = {
-  sec: 'Temps sec',
-  beau: 'Beau temps',
-  pluie: 'Pluie',
-  'pluie-diluvienne': 'Pluie diluvienne',
-  neige: 'Neige',
-  blizzard: 'Blizzard',
+/**
+ * Libellés FR de la météo d'ÉTAPE, dérivés du catalogue i18n (source unique des textes — cf.
+ * `docs/i18n-seam.md`, Phase B ; migrés de littéraux en dur par #1318 V8a₁).
+ *
+ * SECONDE CARTE MÉTÉO, dette nommée (#1318 V8a₁) : `src/ui/CityHubScreen.tsx` (`SCENE_WEATHER_LABEL`)
+ * porte encore six libellés FR en dur, HORS catalogue. Ce n'est PAS un doublon de celle-ci — c'est un
+ * AUTRE axe (`Scene['weather']` : clair/pluie/brouillard/neige/tempête, la météo d'une scène jouée ;
+ * ici la table d'Étape d'EDOC 8 l.44-51 : sec/beau/pluie/pluie-diluvienne/neige/blizzard). Les deux
+ * axes ne fusionnent pas, mais l'autre relève de la MÊME classe que ce lot et reste à migrer :
+ * il était hors périmètre le jour du murage (`src/ui/**` n'était pas ouvert).
+ */
+export const WEATHER_LABEL: Record<Weather, PlayerText> = {
+  sec: t('weather.sec'),
+  beau: t('weather.beau'),
+  pluie: t('weather.pluie'),
+  'pluie-diluvienne': t('weather.pluie-diluvienne'),
+  neige: t('weather.neige'),
+  blizzard: t('weather.blizzard'),
 };
 
 /** Fiche Codex de la condition météo (catalogue `weatherConditions`, `weather.json`) — SOURCE UNIQUE

@@ -12,7 +12,6 @@
  * vit dans l'applier `'encounterPsych'`, appliquée RANGÉE PAR RANGÉE. La Détermination (immunité,
  * LDB 17 l.59) est offerte par la coquille via `cascadeBatchDetermine` sur la rangée.
  */
-import { rawText } from '../i18n/rawText';
 import type { PlayerText } from '../i18n/playerText';
 import type { Get, Set } from './flowTypes';
 import { Combatant } from '../engine/types';
@@ -30,6 +29,8 @@ import { registerCascadeApplier, startCascade } from './cascade';
 import { describeEncounterPsych } from './flowOutcomes';
 import { freeCons, resultLines, makeBandFactory, type Consequence } from './rollSeam';
 import { actorIn } from './combatants';
+import { dataLabel } from '../data';
+import { stepDetail, stepPrecision, stepPsych } from './rollSeam';
 
 /** Forme d'un Test de Psychologie de rencontre résolu — conservée pour `describeEncounterPsych`
  *  (l'applier en construit une à partir de l'étape de cascade). */
@@ -130,7 +131,9 @@ export function openEncounterPsych(get: Get, set: Set): void {
       hero,
       decl: { kind: trig.kind, sourceId: trig.sourceId, sourceName: src?.label ?? '?', indice: trig.indice, cible: trig.cible },
       icon: cl?.icon ?? (trig.kind === 'terreur' ? 'creature/scream' : 'flag/fear'),
-      label: rawText(cl ? `${cl.label}${trig.cible ? ` (${trig.cible})` : ''}` : `${trig.kind === 'terreur' ? 'Terreur' : 'Peur'} ${trig.indice} — ${src?.label ?? '?'}`),
+      label: cl
+        ? (trig.cible ? stepPrecision(dataLabel(cl.label), dataLabel(trig.cible)) : dataLabel(cl.label))
+        : stepDetail(stepPsych(trig.kind, trig.indice), dataLabel(src?.label, '?')),
     });
   }
   const steps = psychBands(dues);
@@ -155,7 +158,7 @@ export function openScriptedPsych(get: Get, set: Set, kind: 'peur' | 'terreur', 
     dues.push({
       hero, decl,
       icon: kind === 'terreur' ? 'creature/scream' : 'flag/fear',
-      label: rawText(`${kind === 'terreur' ? 'Terreur' : 'Peur'} ${indice} — ${label}`),
+      label: stepDetail(stepPsych(kind, indice), dataLabel(label)),
     });
   }
   const steps = psychBands(dues);

@@ -33,7 +33,6 @@
  *     DÉJÀ CHIFFRÉS par le flux propriétaire via `meta` NEUTRE (`aggregateFlatDR`/`aggregateCapTo`/
  *     `aggregateOpposeSl`, `CascadeStepMeta`) ; par défaut 0/absent.
  */
-import { rawText } from '../i18n/rawText';
 import type { Get, Set } from './flowTypes';
 import type { Combatant, CharKey, Difficulty, Weapon } from '../engine/types';
 import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
@@ -58,7 +57,7 @@ import { testStatePenaltyParts, testStatePenalty } from '../engine/conditions';
 import { jetSurfaced, pilotedByHuman } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
-import { findSkillById, conditionLabel, type StakeRef } from '../data';
+import { findSkillById, conditionLabel, dataLabel, type StakeRef } from '../data';
 import { t, type OutKey, type OutVars } from '../i18n';
 import { rollTest, clampTarget } from '../engine/tests';
 import { defaultRNG, type RNG } from '../engine/dice';
@@ -163,6 +162,39 @@ export function opposedAttackerLabel(opp: { test?: RollRequest['test']; attacker
 export function composeRollLabel(actor: Combatant | undefined, action: string, test: RollRequest['test']): PlayerText {
   const detail = testSkillLabel(test);
   return `${actor ? `${actor.label} — ` : ''}${action}${detail ? ` (${detail})` : ''}` as PlayerText;
+}
+
+/*
+ * FABRIQUES DE FORME du libellé d'étape (#1318 V8a₁) — minteur (c), la famille de `composeRollLabel`.
+ * Chacune rend un GABARIT du catalogue (`step.*`, `i18n/messages/fr.ts`) : une étape N+1 d'une forme
+ * déjà connue est UN appel, ZÉRO clé neuve. Les parties variables sont elles-mêmes des `PlayerText` —
+ * un littéral FR ne s'y glisse pas, et une 2ᵉ langue réordonne le gabarit sans toucher aux call-sites.
+ */
+
+/** « {sujet} — {detail} » : le sujet d'une étape et la précision qui le qualifie. */
+export function stepDetail(sujet: PlayerText, detail: PlayerText): PlayerText {
+  return t('step.sujetDetail', { sujet, detail });
+}
+
+/** « {sujet} ({precision}) » : le sujet d'une étape et sa parenthèse (localisation, source, variante). */
+export function stepPrecision(sujet: PlayerText, precision: PlayerText): PlayerText {
+  return t('step.sujetPrecision', { sujet, precision });
+}
+
+/** « Manche {n} — {quoi} » : une étape d'un sous-système à manches numérotées (poursuite, jeu). */
+export function stepManche(n: number | string, quoi: PlayerText): PlayerText {
+  return t('step.manche', { n, quoi });
+}
+
+/** « Prolonger {quoi} [?] » : reconduire un effet en cours — la variante interrogative est la DÉCISION,
+ *  l'affirmative le Test qui la suit. */
+export function stepProlonger(quoi: PlayerText, question = false): PlayerText {
+  return t(question ? 'step.prolongerQ' : 'step.prolonger', { quoi });
+}
+
+/** « Terreur/Peur {indice} » : l'entrée de psychologie affrontée, nommée par son type et son Indice. */
+export function stepPsych(kind: 'terreur' | 'peur' | string, indice: number | string): PlayerText {
+  return t('step.psychIndice', { kind: t(kind === 'terreur' ? 'step.terreur' : 'step.peur'), indice });
 }
 
 /**
@@ -875,7 +907,7 @@ function buildBatchStep(get: Get, req: RollRequest, kind: string, meta?: Cascade
   return {
     id: kind,
     kind,
-    label: rawText(req.actionLabel),
+    label: dataLabel(req.actionLabel),
     ...(porteurs.size > 1 ? { groupOwner: true } : participants.length ? { actorId: participants[0].id } : {}),
     participants,
     aggregate: req.aggregate ?? 'summed-dr',
@@ -1119,7 +1151,9 @@ export interface ChoiceSpec {
    *  `HostOwner` : un littéral frais était déjà refusé (propriété excédentaire), ce `never` ferme en
    *  plus la voie d'un objet ÉLARGI passé par variable ou épandage. */
   groupOwner?: never;
-  options: readonly { key: string; label: string; detail?: string }[];
+  /** Les VOIES offertes. `label` est du TEXTE JOUEUR marqué (#1318 V8a₁) : un bouton de choix est lu
+   *  par le joueur au même titre que le titre de l'étape — le murage vaut donc aussi pour lui. */
+  options: readonly { key: string; label: PlayerText; detail?: string }[];
   /** Clé retenue d'office par une résolution IMMÉDIATE (`runCascadeImmediate`) — l'une des `options`. */
   defaultChoice?: string;
   /** Fiche de RÈGLE qui encadre le choix (une étape sans jet n'a pas d'enjeu à dériver). */
@@ -1446,7 +1480,7 @@ export function tableStepDone(spec: TableDoneSpec): BuiltCascadeStep | undefined
   const base: CascadeStep = {
     id: spec.id,
     kind: spec.kind,
-    label: rawText(spec.label),
+    label: spec.label,
     ...(spec.icon ? { icon: spec.icon } : {}),
     actorId: spec.actorId,
     stake: spec.stake,

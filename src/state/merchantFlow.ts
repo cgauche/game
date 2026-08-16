@@ -3,7 +3,6 @@
  * `(get, set)` que combatFlow : ouverture/réassort, panier, achat/vente/réparation, Marchandage
  * (Test opposé), Évaluation. Refacto pure — comportement préservé.
  */
-import { rawText } from '../i18n/rawText';
 import type { GameState } from './store';
 import { toRecapLines } from './recapLine';
 import { Combatant, ItemInstance, type CharKey } from '../engine/types';
@@ -37,6 +36,8 @@ import { addPossession } from './possessionsFlow';
 import { traceLineOf } from '../engine/traceLine';
 
 import type { Get, Set } from './flowTypes';
+import { dataLabel } from '../data';
+import { stepDetail } from './rollSeam';
 
 /** Issue d'un Marchandage conclu (achat OU vente) — module les prix de la visite. */
 export interface BargainOutcome {
@@ -296,7 +297,7 @@ function openStockRevealCascade(
   const step: CascadeStep = {
     id: `${MERCHANT_STOCK_KIND}:${entityId}:${now}`,
     kind: MERCHANT_STOCK_KIND,
-    label: rawText(`Réassort — ${arch?.label ?? archetype}`),
+    label: stepDetail(t('step.reassort'), dataLabel(arch?.label, archetype)),
     ...(outcome?.length ? { outcome: toRecapLines(outcome) } : {}),
     meta: { entityId, archetype, settlement, now, restockPeriod, gossipDay, resaleRate, buyMarkup, ...(backdrop != null ? { backdrop } : {}) },
   };

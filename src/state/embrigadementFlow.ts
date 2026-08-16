@@ -16,7 +16,6 @@
  * événement n'a pas lieu. » — la relâche à terre n'est pas modélisée (#164) : l'événement se déclenche
  * donc toujours (aucune décision de relâche n'existe pour le désactiver).
  */
-import { rawText } from '../i18n/rawText';
 import type { Get, Set } from './flowTypes';
 import type { BuiltCascadeStep } from './stepBrand';
 import { registerCascadeApplier } from './cascade';
@@ -27,6 +26,8 @@ import { partyAssisted } from '../engine/skills';
 import { toMoney } from '../engine/money';
 import { DIFFICULTY_LABELS, type Combatant, type Difficulty } from '../engine/types';
 import { refLabel, voyageStakeRef } from '../data';
+import { t } from '../i18n';
+import { stepDetail } from './rollSeam';
 
 const num = (v: unknown, d = 0): number => (typeof v === 'number' ? v : d);
 const diff = (v: unknown, d: Difficulty): Difficulty => (typeof v === 'string' ? (v as Difficulty) : d);
@@ -54,10 +55,10 @@ export function openEmbrigadementRecovery(
   openChoice(get, set, {
     title: 'Embrigadement', icon: 'nav/dice', purpose: 'test',
     id: 'embrig-decision', kind: 'embrigadementDecision', actorId: lead.actor.id,
-    label: rawText(`${recover} membre(s) d'équipage embrigadé(s) — tenter de les récupérer ?`),
+    label: t('step.embrigDecision', { n: recover }),
     options: [
-      { key: 'tenter', label: 'Tenter la récupération', detail: 'Retrouver leur trace (Ragot) puis les libérer — un Test raté coûte 1d10 membres d\'équipage de plus.' },
-      { key: 'renoncer', label: 'Renoncer', detail: 'Accepter la perte sans risquer d\'autres membres d\'équipage.' },
+      { key: 'tenter', label: t('opt.tenterRecuperation'), detail: 'Retrouver leur trace (Ragot) puis les libérer — un Test raté coûte 1d10 membres d\'équipage de plus.' },
+      { key: 'renoncer', label: t('opt.renoncer'), detail: 'Accepter la perte sans risquer d\'autres membres d\'équipage.' },
     ],
     meta: { recover, ransomCO: r.ransomCO, extraLoss: r.extraLoss, gossipDiff: r.gossipDiff, stealthDiff: r.stealthDiff },
   });
@@ -78,7 +79,7 @@ function ragotStep(
     difficulty: gossipDiff,
     stake: voyageStakeRef('embrigadementRagot'),
     ligne: lead.ligne,
-    label: rawText(`Retrouver l'équipage — Ragot ${DIFFICULTY_LABELS[gossipDiff]}`),
+    label: stepDetail(t('step.retrouverEquipage'), t('step.ragotDiff', { diff: DIFFICULTY_LABELS[gossipDiff] })),
     meta: { recover, ransomCO, extraLoss, stealthDiff },
   });
 }
@@ -107,10 +108,10 @@ registerCascadeApplier(
 function liberationChoice(leadId: string, recover: number, ransomCO: number, extraLoss: number, stealthDiff: Difficulty): BuiltCascadeStep | undefined {
   return choiceStep({
     id: 'embrig-choix', kind: 'embrigadementChoix', icon: 'nav/dice', actorId: leadId,
-    label: rawText('Comment libérer vos compagnons ?'),
+    label: t('step.embrigChoix'),
     options: [
-      { key: 'payer', label: `Payer ${ransomCO} CO`, detail: 'Racheter les marins embrigadés à l\'autre équipage.' },
-      { key: 'discretion', label: `Discrétion (${DIFFICULTY_LABELS[stealthDiff]})`, detail: 'Les libérer en douce (un échec coûte 1d10 marins de plus).' },
+      { key: 'payer', label: t('opt.payerCO', { n: ransomCO }), detail: 'Racheter les marins embrigadés à l\'autre équipage.' },
+      { key: 'discretion', label: t('opt.discretionDiff', { diff: DIFFICULTY_LABELS[stealthDiff] }), detail: 'Les libérer en douce (un échec coûte 1d10 marins de plus).' },
     ],
     meta: { recover, ransomCO, extraLoss, stealthDiff },
   });
@@ -157,7 +158,7 @@ registerCascadeApplier(
       difficulty: stealthDiff,
       stake: voyageStakeRef('embrigadementDiscretion'),
       ligne: { test: { skill: 'discretion' }, valeur: lead.value, soutien: lead.support },
-      label: rawText(`Libérer en douce — Discrétion ${DIFFICULTY_LABELS[stealthDiff]}`),
+      label: stepDetail(t('step.libererEnDouce'), t('step.discretionDiff', { diff: DIFFICULTY_LABELS[stealthDiff] })),
       meta: { recover, extraLoss },
     });
     return st ? { insert: [st] } : undefined;

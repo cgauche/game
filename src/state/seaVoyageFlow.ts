@@ -28,7 +28,6 @@
  * l'effectif minimal → Manque de bras (MDG 14 l.55). En combat, l'équipage est réel
  * (`battle.combatants`) et le Manque de bras s'applique aussi (`shipCrew.ts`).
  */
-import { rawText } from '../i18n/rawText';
 import { battleRng } from './battleRng';
 import { bus, EVT } from './bus';
 import { openRest, placesOfKind } from './restFlow';
@@ -96,6 +95,9 @@ import type { CampaignVessel } from './store';
 import { openPartyTest, openWorldTest, composeRollLabel, resolveSurface, freeCons, rollLine, rollStep, monoStep, bandStep, choiceStep, openChoice, pousseSi, type RollRequest, type Consequence, type BuiltCascadeStep } from './rollSeam';
 import { registerCascadeApplier, registerCascadeSuccessRule, startCascade, runCascadeImmediate } from './cascade';
 import { exposureWaveBand } from './nightBands';
+import { dataLabel } from '../data';
+import { t } from '../i18n';
+import { stepPrecision } from './rollSeam';
 
 /** Id du prédicat de succès des Tests d'équipage résolus PAR CASCADE (MDG 14 l.13) — le flux naval
  *  injecte `crewTestSuccess` (socle unique, règle optionnelle `crew-test-zero-success` comprise) dans
@@ -513,7 +515,7 @@ function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: {
   // La POSSESSION de la bande est posée par le socle (`bandStep`) : N contributeurs ⇒ `groupOwner`, un
   // seul ⇒ son porteur. Déclarée nulle part ici — c'est ce qui laissait la fenêtre à l'hôte seul (#1268).
   return bandStep({
-    id: kind, kind, label: rawText(testType?.label ?? testTypeId), icon: opts.icon ?? 'travel/anchor',
+    id: kind, kind, label: dataLabel(testType?.label, testTypeId), icon: opts.icon ?? 'travel/anchor',
     aggregate: 'summed-dr',
     ...(stake ? { stake } : {}),
     meta: {
@@ -587,10 +589,10 @@ function buildProgressionChoiceStep(get: Get): BuiltCascadeStep | undefined {
   return choiceStep({
     id: 'sea-progression-choice', kind: 'sea-progression-choice', icon: 'travel/anchor',
     actorId: nav.actorId ?? '',
-    label: rawText('Progression du jour'),
+    label: t('step.seaProgression'),
     options: [
-      { key: 'crew', label: 'Test d’équipage', detail: 'Tout l’équipage contribue ; le rôle essentiel compte double.' },
-      { key: 'nav', label: 'Test de Navigation', detail: 'Un seul barreur soutenu par le groupe.' },
+      { key: 'crew', label: t('opt.testEquipage'), detail: 'Tout l’équipage contribue ; le rôle essentiel compte double.' },
+      { key: 'nav', label: t('opt.testNavigation'), detail: 'Un seul barreur soutenu par le groupe.' },
     ],
     defaultChoice: 'crew',
     stakeRule: { category: 'regles', id: 'test-equipage-progression' },
@@ -1501,7 +1503,7 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
       // formule, rien à décomposer) — la faire remonter par le mint la décomposerait.
       const st = monoStep({
         id: `sea-exposition-${h.id}`, kind: 'exposure', actor: h, icon: 'rest/cold',
-        label: rawText(`Exposition (${tdef.label})`), rollLabel: 'Résistance',
+        label: stepPrecision(t('step.exposition'), dataLabel(tdef.label)), rollLabel: 'Résistance',
         difficulty: expDiff,
         montee: rollStep(valeur === brut
           ? {
@@ -2196,12 +2198,12 @@ function openPirateHail(get: Get, set: Set, event: SeaEventDef): void {
   patchSea(get, set, { boarding: seaBoardingFromEvent(event) });
   openChoice(get, set, {
     title: 'Cogue pirate', icon: 'nautical/wind', purpose: 'test',
-    id: 'sea-pirate-hail', kind: 'sea-pirate-hail', actorId: seaDecider(get), label: rawText(event.label),
+    id: 'sea-pirate-hail', kind: 'sea-pirate-hail', actorId: seaDecider(get), label: dataLabel(event.label),
     defaultChoice: 'fuir', meta: { crisisLabel: event.label, crisisDesc: event.desc },
     options: [
-      { key: 'fuir', label: 'Prendre la fuite', detail: 'Course-poursuite : distancer la cogue (MDG 13 l.362-370).' },
-      { key: 'combattre', label: 'Combattre', detail: 'Refuser l’abordage et se défendre — abordage immédiat.' },
-      { key: 'soumettre', label: 'Se soumettre', detail: `Laisser fouiller la cale (${pillage} % de la cargaison pillée) puis livrer un tribut à Stromfels.` },
+      { key: 'fuir', label: t('opt.fuir'), detail: 'Course-poursuite : distancer la cogue (MDG 13 l.362-370).' },
+      { key: 'combattre', label: t('opt.combattre'), detail: 'Refuser l’abordage et se défendre — abordage immédiat.' },
+      { key: 'soumettre', label: t('opt.soumettre'), detail: `Laisser fouiller la cale (${pillage} % de la cargaison pillée) puis livrer un tribut à Stromfels.` },
     ],
   });
 }
@@ -2222,10 +2224,10 @@ registerCascadeApplier('sea-pirate-hail', (get, set, step) => {
     } else j.push('Les forbans fouillent une cale vide — rien à prendre.');
     const tribut = choiceStep({
       id: 'sea-pirate-tribute', kind: 'sea-pirate-tribute', icon: 'nautical/wind', actorId: seaDecider(get),
-      label: rawText('Un prisonnier à sacrifier à Stromfels'), defaultChoice: 'livrer',
+      label: t('step.seaTribut'), defaultChoice: 'livrer',
       options: [
-        { key: 'livrer', label: 'Livrer un membre d’équipage', detail: 'Un marin est emmené — perte réelle d’équipage, l’équipage est ébranlé.' },
-        { key: 'refuser', label: 'Refuser', detail: 'Les forbans passent à l’abordage.' },
+        { key: 'livrer', label: t('opt.livrerEquipage'), detail: 'Un marin est emmené — perte réelle d’équipage, l’équipage est ébranlé.' },
+        { key: 'refuser', label: t('opt.refuser'), detail: 'Les forbans passent à l’abordage.' },
       ],
     });
     return { consequences: freeCons(j), ...(tribut ? { insert: [tribut] } : {}) };

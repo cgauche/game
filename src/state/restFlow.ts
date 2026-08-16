@@ -21,7 +21,6 @@
  *  - Dehors : Exposition (LDB 18 l.327-334 — engine/exposure) selon la MÉTÉO de la scène ;
  *  - Faim (LDB 18 l.337-343) : un héros sans pitance ne récupère pas (engine/provisions).
  */
-import { rawText } from '../i18n/rawText';
 import type { Combatant } from '../engine/types';
 import type { RNG } from '../engine/dice';
 import type { RollBreakdown } from '../engine/combat';
@@ -128,6 +127,9 @@ export interface PendingRest extends PendingBase {
 
 import type { Get, Set } from './flowTypes';
 import type { PendingBase } from './rollFlowFactory';
+import { dataLabel } from '../data';
+import { t } from '../i18n';
+import { stepPrecision } from './rollSeam';
 
 /**
  * LE moteur de nuit (sans modale) : avance l'horloge à l'aube (× days), entretien #T3, récupération
@@ -267,7 +269,7 @@ function buildExposureBand(party: Combatant[], camperIds: string[], count: numbe
     // manteau » pèse SUR LA CIBLE, en ligne nommée (`exposureCoatMods`), plus fondue par un helper.
     const resVal = restResistVal(h);
     const coat = exposureCoatMods(h).mods ?? [];
-    const st = monoStep({ id: `expo-${id}`, kind: 'exposure', actor: h, label: rawText('Exposition'), icon: 'rest/cold',
+    const st = monoStep({ id: `expo-${id}`, kind: 'exposure', actor: h, label: t('step.exposition'), icon: 'rest/cold',
       rollLabel: 'Résistance', difficulty: 'intermediaire',
       stake: nightStakeRef('exposure'),
       ligne: { valeur: resVal, valeurEtrangere: true, surLaCible: coat } });
@@ -325,8 +327,8 @@ registerNightBandApplier('exposure', (_get, _set, band, row, hero) => {
   const heavy = kind === 'chaleur' ? heaviestPossession(hero) : undefined;
   const drop = heavy ? choiceStep({
     id: `${band.id}-${row.id}-drop`, kind: 'exposure-heat-drop', actorId: hero.id, icon: 'item/misc',
-    label: rawText('Possession lourde'),
-    options: [{ key: 'jeter', label: `Jeter ${heavy.label}` }, { key: 'garder', label: 'Garder son paquetage' }],
+    label: t('step.possessionLourde'),
+    options: [{ key: 'jeter', label: t('opt.jeter', { quoi: heavy.label }) }, { key: 'garder', label: t('opt.garderPaquetage') }],
     defaultChoice: 'garder', // consommé par `runCascadeImmediate` (repos multi-jours) — `resolveRemainingCascade`
     // (« Tout résoudre ») s'arrête TOUJOURS sur ce choix depuis 249e931f, n'applique plus JAMAIS de défaut
     meta: { failNumber: priorFails + 1, cancelsRowId: nightRowId(band, row) },
@@ -383,7 +385,7 @@ registerNightBandApplier('dessoulage', (_get, _set, band, row, hero) => {
   const alcool = { skill: 'resistance-a-l-alcool', char: 'endurance' } as const;
   const hangover = monoStep({
     id: `dessoulageHangover-${hero.id}`, kind: 'dessoulageHangover', actor: hero, icon: 'time/night',
-    rollLabel: testSkillLabel(alcool) ?? 'Résistance', label: rawText('Gueule de bois'), difficulty: 'intermediaire',
+    rollLabel: testSkillLabel(alcool) ?? 'Résistance', label: t('step.gueuleDeBois'), difficulty: 'intermediaire',
     stake: nightStakeRef('dessoulageHangover'),
     ligne: { test: alcool },
     ...(band.meta?.day !== undefined ? { meta: { day: band.meta.day } } : {}),
@@ -450,7 +452,7 @@ export function deferredUpkeepSteps(party: Combatant[], deferred: DeferredUpkeep
   for (const t of deferred) {
     const h = party.find((x) => x.id === t.heroId);
     if (!h || h.dead) continue;
-    const st = monoStep({ id: `${t.kind}-${t.heroId}-${startIndex + steps.length}`, kind: t.kind, actor: h, label: rawText(t.label),
+    const st = monoStep({ id: `${t.kind}-${t.heroId}-${startIndex + steps.length}`, kind: t.kind, actor: h, label: dataLabel(t.label),
       // La compétence se DÉRIVE des ids quand le producteur les porte (Dessoûlage = Résistance à
       // l'alcool, LDB 09 l.485) ; sans ids, le repli reste la Résistance de l'entretien (LDB 18 l.338).
       icon: UPKEEP_STEP_ICON[t.kind] ?? 'nav/dice', rollLabel: testSkillLabel(t.test ?? {}) ?? 'Résistance',
@@ -507,7 +509,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   for (const id of p.travelMarch ?? []) {
     const h = party.find((x) => x.id === id);
     if (!h || h.dead) continue;
-    const st = monoStep({ id: `march-${id}`, kind: 'forcedMarch', actor: h, label: rawText('Marche forcée'), icon: 'travel/foot',
+    const st = monoStep({ id: `march-${id}`, kind: 'forcedMarch', actor: h, label: t('step.marcheForcee'), icon: 'travel/foot',
       rollLabel: 'Résistance', difficulty: 'intermediaire',
       stake: nightStakeRef('forcedMarch'),
       ligne: { test: { skill: 'resistance', char: 'endurance' } } });
@@ -519,7 +521,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   for (const c of [...collectContagion(party), ...(opts.extraContagion ?? [])]) {
     const h = party.find((x) => x.id === c.heroId);
     if (!h || h.dead) continue;
-    const st = monoStep({ id: `contagion-${c.heroId}-${steps.length}`, kind: 'contagion', actor: h, label: rawText(`Contagion (${c.diseaseName})`), icon: 'medical/infection',
+    const st = monoStep({ id: `contagion-${c.heroId}-${steps.length}`, kind: 'contagion', actor: h, label: stepPrecision(t('step.contagion'), dataLabel(c.diseaseName)), icon: 'medical/infection',
       rollLabel: 'Résistance', difficulty: c.difficulty,
       stake: nightStakeRef('contagion'),
       // `resVal` = `restResistVal` (E effective + avances de Résistance, `engine/rest.ts`) : une AUTRE
@@ -541,7 +543,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     } else {
       const best = partyAssisted(party.filter((h) => !h.dead), 'survie-en-exterieur'); // Soutien (LDB 12)
       if (best) {
-        const st = monoStep({ id: 'abri', kind: 'shelter', actor: best.actor, label: rawText('Abri de fortune'), icon: 'rest/camp',
+        const st = monoStep({ id: 'abri', kind: 'shelter', actor: best.actor, label: t('step.abriDeFortune'), icon: 'rest/camp',
           rollLabel: 'Survie en extérieur', difficulty: 'intermediaire',
           stake: nightStakeRef('shelter'),
           // `best.value` porte le Soutien FONDU : le monteur le ressort en ligne NOMMÉE (LDB 12 l.187-200),
@@ -564,7 +566,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
       // `restResistVal` VAUT le Niveau de Compétence nu (≡ `skillBaseValue('resistance')`) ; seule la
       // composition des ÉTATS diverge de `testValue` (Test passif). `valeurEtrangere` est donc
       // APPROXIMATIF ici — rien à décomposer, mais la base EST nue (3ᵉ régime à venir, ticket).
-      const st = monoStep({ id: `recov-${h.id}`, kind: 'recovery', actor: h, label: rawText('Récupération'), icon: 'rest/bed',
+      const st = monoStep({ id: `recov-${h.id}`, kind: 'recovery', actor: h, label: t('step.recuperation'), icon: 'rest/bed',
         rollLabel: 'Résistance', difficulty: 'accessible',
         stake: nightStakeRef('recovery'),
         ligne: { valeur: restResistVal(h), valeurEtrangere: true } });
@@ -576,7 +578,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
       if (wokeUp) log.push(`${h.label} reprend connaissance.`);
     }
     if (h.nightmares) {
-      const st = monoStep({ id: `nm-${h.id}`, kind: 'nightmare', actor: h, label: rawText('Cauchemars'), icon: 'creature/scream',
+      const st = monoStep({ id: `nm-${h.id}`, kind: 'nightmare', actor: h, label: t('step.cauchemars'), icon: 'creature/scream',
         rollLabel: 'Calme', difficulty: 'facile',
         stake: nightStakeRef('nightmare'),
         // `calmeVal` : FM effective + avances de Calme (formule locale, hors `testValue`).

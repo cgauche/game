@@ -8,6 +8,7 @@
  */
 import { RNG, defaultRNG } from './dice';
 import { t } from '../i18n';
+import type { PlayerText } from '../i18n/playerText';
 import { rollTest, resolveOpposed, evaluateTest, opposedReasons, exactDifficultyFromModifier, TestResult, type VerdictReason } from './tests';
 import { bonus, effectiveChar, baseWithTraits } from './characteristics';
 import { woundsFromHit } from './woundsCalc';
@@ -92,7 +93,7 @@ export function shipHitLocation(rig: ShipRig, roll: number, tableId: string = 'n
 /** Étiquette FR d'une localisation pour une forme de corps (LDB 76 p.312). Forme inconnue/absente de
  *  la table → libellés humanoïdes (`HIT_LOCATION_LABELS`), comme `hitLocationByShape` retombe sur
  *  `humanoide` — les deux jumeaux tolèrent une forme hors table. */
-export function locationLabel(loc: HitLocation, shape: BodyShape = 'humanoide'): string {
+export function locationLabel(loc: HitLocation, shape: BodyShape = 'humanoide'): PlayerText {
   return BODY_SHAPE_LOC_LABELS[shape]?.[loc] ?? HIT_LOCATION_LABELS[loc];
 }
 

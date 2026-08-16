@@ -57,7 +57,7 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
     const pbt: PendingBladeTrap = { defenderId: H.id, attackerId: A.id, weapon, parryWeaponUid: 'parry-uid', defSL, roll: 33 };
     pushChoice(useGame.setState, {
       id: 'cons-bladetrap', kind: 'bladeTrap', actorId: H.id, icon: 'item/weapon', label: rawText('Parade — piéger la lame ?'),
-      options: [{ key: 'trap', label: 'Piéger la lame' }, { key: 'crit', label: 'Coup Critique' }],
+      options: [{ key: 'trap', label: rawText('Piéger la lame') }, { key: 'crit', label: rawText('Coup Critique') }],
       defaultChoice: 'crit', bladeTrap: pbt,
     });
     useGame.getState().cascadeChoose('cons-bladetrap', 'trap');

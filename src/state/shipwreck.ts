@@ -17,7 +17,6 @@
  * carte le sait) ; le navire et sa cargaison sont perdus ; si personne ne survit, `checkPartyWiped` présente
  * la défaite.
  */
-import { rawText } from '../i18n/rawText';
 import { battleRng } from './battleRng';
 import { checkPartyWiped } from './partyWipe';
 import { placeById, placeOfScene, type WorldMap, type MapPlace } from './worldMap';
@@ -33,6 +32,9 @@ import type { CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import { voyageStakeRef } from '../data';
 import { traceLineOf } from '../engine/traceLine';
+import { dataLabel } from '../data';
+import { t } from '../i18n';
+import { stepDetail } from './rollSeam';
 
 /** Lieu le plus proche d'un point de la carte (distance euclidienne sur `pos`). */
 function nearestPlaceTo(map: WorldMap, pos: { x: number; y: number }): MapPlace | undefined {
@@ -157,7 +159,7 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
     const result = human ? null : (() => { const t = rollSansPilote(get, h, value, diff, rng); return { roll: t.roll, target: t.target, sl: t.sl, success: t.success }; })();
     return {
       id: `shipwreck-${h.id}`, kind: 'shipwreckSwim', actorId: h.id, icon: 'nautical/swim',
-      label: rawText(`${h.label} — Natation`), rollLabel: 'Natation', difficulty: diff,
+      label: stepDetail(dataLabel(h.label), t('step.natation')), rollLabel: 'Natation', difficulty: diff,
       ...rollStep({ actor: h, test: { skill: 'natation', char: 'force' }, difficulty: diff }),
       stake: voyageStakeRef('shipwreckSwim'),
       result,

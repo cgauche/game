@@ -15,7 +15,6 @@
  *  - IMMÉDIAT (`runCascadeImmediate`) — repos de plusieurs jours, reprise auto, triche de recette :
  *    on lance chaque étape (RNG, sans influence) et on applique sa conséquence, sans modale.
  */
-import { rawText } from '../i18n/rawText';
 import type { Get, Set } from './flowTypes';
 import type { GameState } from './store';
 import type { Combatant, Difficulty } from '../engine/types';
@@ -31,6 +30,7 @@ import { actorIn } from './combatants';
 import { rollTest, evaluateTest, evaluateCombinedTest, bestForcedRoll, resolveOpposed, opposedBranchSuccess, type TestResult } from '../engine/tests';
 import { battleRng } from './battleRng';
 import { traceLineOf } from '../engine/traceLine';
+import { dataLabel } from '../data';
 
 /**
  * Conséquence d'une étape, appliquée à la VALIDATION. Mute le héros (via get/set), renvoie les
@@ -1074,7 +1074,7 @@ export function buildConsequenceSteps(groups: ConsequenceGroup[]): CascadeStep[]
       kind: g.kind,
       actorId: g.actorId,
       icon: g.icon,
-      label: rawText(g.label),
+      label: dataLabel(g.label),
       outcome: toRecapLines(g.lines),
     }));
 }

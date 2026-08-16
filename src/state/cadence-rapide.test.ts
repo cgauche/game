@@ -69,7 +69,7 @@ describe('Auto-combat — choix de cascade tranché par le défaut authoré', ()
 
   const choix = (id: string, actorId: string, withDefault: boolean): CascadeStep => ({
     id, kind: 'tally-choix', actorId, label: rawText(id),
-    options: [{ key: 'devier', label: 'Dévier' }, { key: 'subir', label: 'Subir' }],
+    options: [{ key: 'devier', label: rawText('Dévier') }, { key: 'subir', label: rawText('Subir') }],
     ...(withDefault ? { defaultChoice: 'devier' } : {}),
   });
 

@@ -23,7 +23,6 @@
  *
  * Réservé aux tables qui activent l'option `tavern-games`.
  */
-import { rawText } from '../i18n/rawText';
 import { CHAR_LABELS, DIFFICULTY_LABELS, type CharKey, type Combatant, type Difficulty } from '../engine/types';
 import type { Get, Set } from './flowTypes';
 import {
@@ -68,6 +67,8 @@ import type { Scene } from './scene';
 import { jetSurfaced } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { t, interpolate } from '../i18n';
+import { dataLabel } from '../data';
+import { stepDetail } from './rollSeam';
 
 /**
  * Adversaire d'une partie — TROIS formes, jamais deux chemins pour la même :
@@ -531,7 +532,7 @@ function tavernOptionRound(get: Get, seq: SequenceState<TavernPayload>, game: Ta
     actorId: h.id,
     options: (game.options ?? []).map((o, i) => ({
       key: String(i),
-      label: o.skill ? refLabel('skills', { id: o.skill, ...(o.spec ? { spec: o.spec } : {}) }) : CHAR_LABELS[o.char ?? 'intelligence'],
+      label: o.skill ? refLabel('skills', { id: o.skill, ...(o.spec ? { spec: o.spec } : {}) }) : dataLabel(CHAR_LABELS[o.char ?? 'intelligence']),
       detail: DIFFICULTY_LABELS[o.difficulty],
     })),
     defaultChoice: '0',
@@ -603,7 +604,7 @@ function equipeBande(get: Get, seq: SequenceState<TavernPayload>): { band: Built
     id: `${TAVERN_ROUND_KIND}-${seq.round}`,
     kind: TAVERN_ROUND_KIND,
     icon: 'nav/dice',
-    label: rawText(`${game.label} — tour ${ph.roundInPhase} de la ${ph.phase}ᵉ mi-temps`),
+    label: stepDetail(dataLabel(game.label), t('step.tavernMiTemps', { n: ph.roundInPhase, phase: ph.phase })),
     stake: combatStakeRef('tavernGame', {
       values: { jeu: game.label, adversaire: p.opponentName, mise: 'aucune' },
     }),
@@ -705,7 +706,7 @@ function torchonRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Se
     id: `${TAVERN_ROUND_KIND}-${seq.round}`,
     kind: TAVERN_ROUND_KIND,
     icon: 'nav/dice',
-    label: rawText(`${game.label} — ${lanceur.label} balance le torchon`),
+    label: stepDetail(dataLabel(game.label), t('step.tavernTorchon', { lanceur: lanceur.label })),
     stake: combatStakeRef('tavernGame', { values: { jeu: game.label, adversaire: p.opponentName, mise: 'aucune' } }),
     meta: { gameId: game.id, opponentName: p.opponentName, stakeBrass: 0, round: seq.round },
   }, rows);
@@ -825,7 +826,7 @@ function tavernTeamRound(get: Get, seq: SequenceState<TavernPayload>): SequenceR
   const steps = aChoisir.map((h) => choiceStep({
     id: `${TAVERN_CHOICE_KIND}-${seq.round}-${h.id}`,
     kind: TAVERN_CHOICE_KIND,
-    label: rawText(`${h.label} — comment jouer ce tour ?`),
+    label: stepDetail(dataLabel(h.label), t('step.tavernCommentJouer')),
     icon: 'nav/dice',
     actorId: h.id,
     options: (game.options ?? []).map((o, i) => ({
@@ -888,7 +889,7 @@ function tavernRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Seq
       id: `${TAVERN_ROUND_KIND}-${seq.round}`,
       kind: TAVERN_ROUND_KIND,
       icon: 'nav/dice',
-      label: rawText(`${game.label} — manche ${seq.round}`),
+      label: stepDetail(dataLabel(game.label), t('step.tavernManche', { n: seq.round })),
       stake,
       meta: { gameId: game.id, opponentName: p.opponentName, stakeBrass: p.stakeBrass, round: seq.round },
     }, rows);
@@ -1295,7 +1296,7 @@ function potOuvreManche(get: Get, seq: SequenceState<TavernPayload>, game: Taver
       label: t('tavern.potCibleChoix', { who: joueur.label }),
       icon: 'nav/dice',
       actorId: hero.id,
-      options: cibles.map((n) => ({ key: String(n), label: String(n) })),
+      options: cibles.map((n) => ({ key: String(n), label: dataLabel(String(n)) })),
       defaultChoice: String(plage.min),
     });
     if (etape) return { title, icon: 'nav/dice', steps: [etape], payload: base };
@@ -2154,7 +2155,7 @@ function sideRound(get: Get, seq: SequenceState<TavernPayload>, game: TavernGame
       id, kind: TAVERN_SIDE_KIND, icon: 'nav/dice',
       label: t('tavern.sideChoix', { who: challenger.label }),
       actorId: challenger.id,
-      options: sides.map((s) => ({ key: s.id, label: s.label, detail: t('tavern.sidePieces', { pieces: s.pieces }) })),
+      options: sides.map((s) => ({ key: s.id, label: dataLabel(s.label), detail: t('tavern.sidePieces', { pieces: s.pieces }) })),
       defaultChoice: sides[0].id,
     });
     if (etape) return { title: titre, icon: 'nav/dice', steps: [etape] };

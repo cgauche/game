@@ -132,7 +132,7 @@ describe('Cogue pirate — se soumettre : pillage + tribut (#327 A5.3)', () => {
     id: 'sea-pirate-hail', kind: 'sea-pirate-hail', label: rawText('Cogue pirate'), defaultChoice: 'fuir',
     meta: { crisisLabel: 'Cogue pirate', crisisDesc: 'desc' },
     options: [
-      { key: 'fuir', label: 'Fuir' }, { key: 'combattre', label: 'Combattre' }, { key: 'soumettre', label: 'Se soumettre' },
+      { key: 'fuir', label: rawText('Fuir') }, { key: 'combattre', label: rawText('Combattre') }, { key: 'soumettre', label: rawText('Se soumettre') },
     ],
   });
 
