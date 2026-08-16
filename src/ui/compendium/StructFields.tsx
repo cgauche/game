@@ -21,6 +21,8 @@ import { isOptionalNote, type TraitInstance, type OptionalEntry } from '../../en
 import { parseTraitInstance, formatTrait, optionalLabel } from '../../engine/traits/dispatch';
 import { GameOpEditor } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
+import { NumberField } from '../NumberField';
+import type { OptionalRule, RuleValue } from '../../engine/policy';
 
 const DIFFICULTIES = Object.keys(DIFFICULTY_LABELS) as Difficulty[];
 
@@ -632,6 +634,103 @@ export function HarvestField({ value, onChange }: { value: Harvest | undefined; 
           </label>
         </>
       )}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * 11) reglesOptionnelles.default / .action.when — RuleValue TYPÉE PAR LE `kind` de la règle.
+ *
+ *    Le formulaire générique infère le type d'un champ sur le PREMIER échantillon non-null du
+ *    dataset (`inferFields`, `editFields.ts`) : `default` y est échantillonné sur une règle `mode`
+ *    (chaîne) et deviendrait un champ TEXTE pour les 81 règles — dont 46 `flag` (booléen) et 23
+ *    `param` (nombre). `ruleValueSchema` étant l'union booléen|nombre|chaîne, écrire `"false"` au
+ *    lieu de `false` passe le schéma, passe l'écriture disque, et éteint la règle SANS UN MOT
+ *    (`rule(id)` rend une chaîne, qu'aucun `=== true` ne reconnaît). D'où un contrôle PAR `kind` :
+ *    interrupteur, nombre borné (`NumberField`, primitive partagée), ou choix parmi `options`.
+ *    Le refus au save vit dans `validateEntry` (`CodexEdit.tsx`) : ici on empêche de se tromper,
+ *    là-bas on empêche d'enregistrer une donnée déjà fausse (JSON édité à la main).
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+/** Le sous-ensemble de la règle qui pilote le contrôle rendu (jamais l'entrée entière : cet éditeur
+ *  ne lit ni ne modifie autre chose que la valeur). */
+export type RuleShape = Pick<OptionalRule, 'kind' | 'options' | 'min' | 'max' | 'step'>;
+
+export function RuleValueField({ id, label, rule, value, onChange }: {
+  id: string; label: string; rule: RuleShape; value: RuleValue | undefined; onChange: (v: RuleValue) => void;
+}) {
+  if (rule.kind === 'flag') {
+    return (
+      <div className="ed-field">
+        <span>{label} — interrupteur</span>
+        <label className="dr" htmlFor={id}>
+          <input id={id} type="checkbox" checked={value === true} onChange={(e) => onChange(e.target.checked)} />
+          {value === true ? ' activée' : ' désactivée'}
+        </label>
+      </div>
+    );
+  }
+  if (rule.kind === 'param') {
+    const min = rule.min ?? 0;
+    const max = rule.max ?? 100;
+    return (
+      <div className="ed-field">
+        <NumberField
+          id={id}
+          label={`${label} — nombre borné`}
+          min={min}
+          max={max}
+          step={rule.step ?? 1}
+          value={typeof value === 'number' ? value : min}
+          onChange={onChange}
+        />
+      </div>
+    );
+  }
+  const options = rule.options ?? [];
+  return (
+    <div className="ed-field">
+      <span>{label} — choix</span>
+      <select id={id} value={typeof value === 'string' ? value : (options[0] ?? '')} onChange={(e) => onChange(e.target.value)}>
+        {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </div>
+  );
+}
+
+/** Action de jeu attachée à une règle (`OptionalRule.action`) : sa valeur déclenchante `when` passe
+ *  par le MÊME contrôle typé que `default` (même piège, même remède) ; `label`/`icon`/`run` restent
+ *  des chaînes, liées au registre d'icônes et au store par `src/ui/rule-action-wiring.test.ts`. */
+export function RuleActionField({ rule, value, onChange }: {
+  rule: RuleShape; value: OptionalRule['action']; onChange: (v: OptionalRule['action']) => void;
+}) {
+  const vide: NonNullable<OptionalRule['action']> = {
+    when: rule.kind === 'flag' ? true : rule.kind === 'param' ? (rule.min ?? 0) : (rule.options?.[0] ?? ''),
+    label: '', icon: '', run: '',
+  };
+  if (!value) {
+    return (
+      <div className="ed-field">
+        <span>action de jeu attachée — aucune</span>
+        <button className="btn small" onClick={() => onChange(vide)}>Attacher une action</button>
+      </div>
+    );
+  }
+  const set = (patch: Partial<NonNullable<OptionalRule['action']>>) => onChange({ ...value, ...patch });
+  return (
+    <div className="ed-field">
+      <span>action de jeu attachée — rendue sous la rangée quand la règle vaut la valeur ci-dessous</span>
+      <RuleValueField id="rule-action-when" label="valeur déclenchante" rule={rule} value={value.when} onChange={(when) => set({ when })} />
+      <label className="ed-subfield">Libellé du bouton
+        <input value={value.label} onChange={(e) => set({ label: e.target.value })} />
+      </label>
+      <label className="ed-subfield">Icône (id du registre src/ui/icons/)
+        <input value={value.icon} onChange={(e) => set({ icon: e.target.value })} />
+      </label>
+      <label className="ed-subfield">Action du store à déclencher
+        <input value={value.run} onChange={(e) => set({ run: e.target.value })} />
+      </label>
+      <button className="btn small" onClick={() => onChange(undefined)}>Retirer l'action</button>
     </div>
   );
 }

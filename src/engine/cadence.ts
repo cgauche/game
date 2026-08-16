@@ -1,7 +1,8 @@
 /**
  * « Cadence de combat » — PRÉFÉRENCE de confort (rythme de résolution des jets), pas une règle de
- * WFRP : elle ne vit PAS dans le registre `policy.OPTIONAL_RULES` (dont chaque entrée cite un folio
- * d'un livre autorisé) mais ici, en valeur pure. Le partage est le MÊME que `policy` ⇄ `houseRules` :
+ * WFRP : elle ne vit PAS au registre des règles optionnelles (`src/data/reglesOptionnelles.json`, lu
+ * par `policy.ts` — chaque entrée y porte sa réf chapitre + ligne) mais ici, en valeur pure. Le
+ * partage est le MÊME que `policy` ⇄ `houseRules` :
  * ce module FEUILLE porte la valeur (moteur pur, zéro dépendance), `state/preferences.ts` porte le
  * registre joueur, la persistance et l'effet déclaré à l'application.
  *

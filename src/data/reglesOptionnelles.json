@@ -1,0 +1,888 @@
+[
+  {
+    "id": "test-auto-bands",
+    "label": "Réussite / échec automatiques",
+    "ref": "LDB 12 l.46/48",
+    "group": "Tests",
+    "kind": "mode",
+    "default": "normal",
+    "options": [
+      "normal",
+      "inverted",
+      "off"
+    ],
+    "hint": "normal = 01-05 réussite auto / 96-00 échec auto (RAW) ; inverted = l’inverse ; off = aucune bande."
+  },
+  {
+    "id": "test-critiques-doubles",
+    "label": "Succès / échec stupéfiants",
+    "ref": "LDB 12 l.151",
+    "group": "Tests",
+    "kind": "flag",
+    "default": false,
+    "hint": "Hors combat, un Test réussi sur un DOUBLE est un Succès Stupéfiant (✦) ; raté sur un double, un Échec Stupéfiant. Purement narratif (libellé) : aucun effet mécanique nouveau."
+  },
+  {
+    "id": "test-fast-sl",
+    "label": "Calculer rapidement un DR",
+    "ref": "LDB 12 l.128",
+    "group": "Tests",
+    "kind": "flag",
+    "default": false,
+    "hint": "Sur une réussite, le DR = le chiffre des dizaines du jet."
+  },
+  {
+    "id": "test-over-100",
+    "label": "Tests supérieurs à 100 %",
+    "ref": "LDB 12 l.101",
+    "group": "Tests",
+    "kind": "flag",
+    "default": false,
+    "hint": "Une valeur de Compétence/Caractéristique au-delà de 100 % n’est plus plafonnée : +1 DR par tranche de 10 % au-dessus de 100 sur une réussite."
+  },
+  {
+    "id": "test-auto-band-width",
+    "label": "Largeur des bandes automatiques",
+    "ref": "LDB 12 l.48",
+    "group": "Tests",
+    "kind": "param",
+    "default": 5,
+    "min": 0,
+    "max": 10,
+    "hint": "Largeur des bandes de réussite/échec automatiques : 01-N réussite, (101−N)-00 échec. Défaut 5 (01-05 / 96-00) ; 0 = aucune bande."
+  },
+  {
+    "id": "test-extended-min-sl",
+    "label": "Tests étendus : DR 0 = ±1 minimum",
+    "ref": "LDB 12 l.208",
+    "group": "Tests",
+    "kind": "flag",
+    "default": false,
+    "hint": "Dans un Test étendu, un Round réussi ajoute au moins +1 au total cumulé (même à DR 0) et un Round raté en retire au moins 1."
+  },
+  {
+    "id": "test-metier-int",
+    "label": "Métier (Savoir) : Int au lieu de Dex",
+    "ref": "LDB 09 l.352",
+    "group": "Tests",
+    "kind": "flag",
+    "default": false,
+    "hint": "Quand un Test de Métier sert de Savoir (déterminer une information), il utilise l’Intelligence au lieu de la Dextérité."
+  },
+  {
+    "id": "test-intimidation-char",
+    "label": "Intimidation : caractéristique",
+    "ref": "LDB 09 l.266",
+    "group": "Tests",
+    "kind": "mode",
+    "default": "F",
+    "options": [
+      "F",
+      "max",
+      "FM",
+      "Int"
+    ],
+    "hint": "Caractéristique de base d’Intimidation. F = Force (RAW) ; max = la meilleure de F/FM/Int ; FM = Force Mentale ; Int = Intelligence."
+  },
+  {
+    "id": "fortune-mid-session",
+    "label": "Chance regagnée en cours de session",
+    "ref": "LDB 17 l.52",
+    "group": "Destin & Résistance",
+    "kind": "mode",
+    "default": "off",
+    "options": [
+      "off",
+      "manual",
+      "auto"
+    ],
+    "hint": "Longues Séances de Jeu : regagner des Points de Chance en cours de session (≈ 1×/h). off = seulement en début de session (RAW, via l’Effet de scène) ; manual = un bouton « Regagner la Chance maintenant » ici, à la demande ; auto = informationnel (le temps réel n’est pas traçable par le moteur — déclenchez-le à la main).",
+    "action": {
+      "when": "manual",
+      "label": "Regagner la Chance maintenant",
+      "icon": "resource/fortune",
+      "run": "restoreFortuneNow"
+    }
+  },
+  {
+    "id": "combat-advantage-cap",
+    "label": "Plafond d’Avantage",
+    "ref": "LDB 14 l.198",
+    "group": "Combat",
+    "kind": "param",
+    "default": 10,
+    "min": 1,
+    "max": 20,
+    "hint": "Limiter les Avantages : valeur maximale d’Avantage qu’un combattant peut accumuler."
+  },
+  {
+    "id": "combat-advantage-cap-bi",
+    "label": "Plafond d’Avantage = Bonus d’Initiative",
+    "ref": "LDB 14 l.197",
+    "group": "Combat",
+    "kind": "flag",
+    "default": false,
+    "hint": "L’Avantage d’un combattant ne peut dépasser son Bonus d’Initiative (plafond par combattant). Prime sur le plafond fixe ci-dessus."
+  },
+  {
+    "id": "combat-diff-cap-bonus",
+    "label": "Plafond des bonus de Difficulté",
+    "ref": "LDB 14 l.95",
+    "group": "Combat",
+    "kind": "param",
+    "default": 60,
+    "min": 0,
+    "max": 100,
+    "step": 10,
+    "hint": "Plafond de la SOMME des bonus de CIRCONSTANCE d’un Test de combat (RAW +60 = Très Facile). Les modificateurs du jeteur (Avantage, Soutien, États) restent hors plafond."
+  },
+  {
+    "id": "combat-diff-cap-malus",
+    "label": "Plafond des malus de Difficulté",
+    "ref": "LDB 14 l.95",
+    "group": "Combat",
+    "kind": "param",
+    "default": 30,
+    "min": 0,
+    "max": 100,
+    "step": 10,
+    "hint": "Plafond de la SOMME des malus de CIRCONSTANCE d’un Test de combat (RAW −30 = Très Difficile), exprimé en valeur positive ; les modificateurs du jeteur (États, Maladresse…) n’y entrent pas. Règle optionnelle EDO (Difficultés extrêmes, réf EDO App.2) : porter ce plafond à 50."
+  },
+  {
+    "id": "combat-frappe-mortelle",
+    "label": "Frappe Mortelle",
+    "ref": "LDB 14 l.9",
+    "group": "Combat",
+    "kind": "flag",
+    "default": false,
+    "hint": "Tuer un adversaire en un seul coup permet d’enchaîner sur un autre (jusqu’au Bonus de CC). La règle de Taille enchaîne déjà sur une simple touche, indépendamment de cette option."
+  },
+  {
+    "id": "combat-defensive-stance",
+    "label": "Sur la Défensive",
+    "ref": "LDB 13 l.118",
+    "group": "Combat",
+    "kind": "flag",
+    "default": true,
+    "hint": "Action « Sur la Défensive » : +20 aux Tests de défense jusqu’au prochain tour. Désactiver retire cette Action."
+  },
+  {
+    "id": "combat-critical-deflect",
+    "label": "Déviation Critique",
+    "ref": "LDB 63 l.63",
+    "group": "Combat",
+    "kind": "flag",
+    "default": true,
+    "hint": "Sacrifier 1 PA pour annuler un Coup Critique sur une localisation blindée. Désactiver : le Critique est toujours subi (plus d’offre de déviation)."
+  },
+  {
+    "id": "combat-aa-blessures",
+    "label": "Blessures & Critiques (Aux Armes)",
+    "ref": "AA 07 l.1-185",
+    "group": "Combat",
+    "kind": "mode",
+    "default": "ldb",
+    "options": [
+      "ldb",
+      "aa"
+    ],
+    "hint": "Système ALTERNATIF de Blessures/Blessures Critiques/mort d’Aux Armes (remplace WFJDR p.172-178). ldb = Livre de base (RAW, défaut). aa = tables de Critiques PAR LOCALISATION d’Aux Armes + Critique sur un double (même s’il reste des Blessures) + décalage +10/Blessure au-delà de 0 + mort si (Inconscient & 0 PB & Blessures critiques > Bonus d’Endurance). Le corps mécanique (Blessures + États immédiats + Mort) est appliqué ; les sous-effets récurrents à durée Rounds (membre inutilisable, pénalité de Test) le sont AUSSI (#125, `aaCritical.ts`) — restent en texte : durées en jours (ctx sans horloge au site de résolution) et amputations permanentes non converties en séquelles."
+  },
+  {
+    "id": "combat-aa-avantage-groupe",
+    "label": "Avantage de groupe (Aux Armes)",
+    "ref": "AA 11 l.3-100",
+    "group": "Combat",
+    "kind": "flag",
+    "default": false,
+    "hint": "Système ALTERNATIF d’Avantage d’Aux Armes (Annexe I) : l’Avantage n’est plus accumulé par combattant mais dans DEUX réserves de camp (alliés / adversaires). La génération est routée vers la réserve du camp (héros/alliés → alliés ; PNJ hostile ou neutre → adversaires). En fin de Round, le camp DOMINANT (le plus de combattants ; Coude-à-coude compte pour deux) prend 1 Avantage à l’autre (ou +1 si l’autre est vide) — remplace la décroissance et le Surnombre du Livre de base. Tout Talent ou Trait porteur d’une variante Aux Armes bascule alors sur elle : sa fiche au Compendium affiche la version qui s’applique. Désactivé (défaut) = modèle par combattant du Livre de base, inchangé."
+  },
+  {
+    "id": "combat-ranged-melee-penalty",
+    "label": "Tir dans un corps à corps",
+    "ref": "LDB 14 l.133",
+    "group": "Combat",
+    "kind": "flag",
+    "default": true,
+    "hint": "Tirer sur une cible Engagée : −20 au toucher ; si ce malus transforme une réussite en échec, le tir touche un allié au hasard. Désactiver retire le malus et le tir égaré."
+  },
+  {
+    "id": "combat-helpless-mode",
+    "label": "Cible Inconsciente",
+    "ref": "LDB 16 l.112",
+    "group": "Combat",
+    "kind": "mode",
+    "default": "critique",
+    "options": [
+      "critique",
+      "mort-auto"
+    ],
+    "hint": "critique = l’attaque réussit en Coup Critique (RAW, défaut). mort-auto = en CORPS À CORPS la cible est tuée automatiquement ; le tir reste un succès à bout portant (critique)."
+  },
+  {
+    "id": "combat-sudden-death",
+    "label": "Mort Subite",
+    "ref": "LDB 18 l.51",
+    "group": "Combat",
+    "kind": "mode",
+    "default": "figurants",
+    "options": [
+      "figurants",
+      "tous",
+      "off"
+    ],
+    "hint": "Sur un coup fatal (Dégâts > PB), la cible meurt ou tombe Inconsciente sans passer par les Blessures critiques. figurants = figurants seuls (défaut) ; tous = aussi les PNJ importants ; off = personne (tout passe par les critiques). Jamais les PJ."
+  },
+  {
+    "id": "combat-weapon-reach",
+    "label": "Longueur d’arme",
+    "ref": "LDB 62 l.172",
+    "group": "Combat",
+    "kind": "flag",
+    "default": false,
+    "hint": "En mêlée, une arme plus longue impose −10 à l’adversaire pour vous toucher (selon l’Allonge des armes). Désactivé par défaut."
+  },
+  {
+    "id": "combat-init-method",
+    "label": "Méthode d’Initiative",
+    "ref": "LDB 13 l.29",
+    "group": "Combat",
+    "kind": "mode",
+    "default": "fixed-i",
+    "options": [
+      "fixed-i",
+      "roll-i",
+      "roll-bi"
+    ],
+    "hint": "fixed-i = tri par Initiative, sans dé (défaut RAW, ordre stable d’un Round à l’autre) ; roll-i = 1d10 + Initiative ; roll-bi = 1d10 + Bonus d’Initiative + Bonus d’Agilité."
+  },
+  {
+    "id": "combat-init-reroll",
+    "label": "Relancer l’Initiative chaque Round",
+    "ref": "LDB 13 l.43",
+    "group": "Combat",
+    "kind": "flag",
+    "default": false,
+    "hint": "Option « effectuer un lancer pour chaque Round » : au début de chaque Round, l’Initiative de tous les combattants est re-tirée (selon la Méthode d’Initiative ci-dessus) et l’ordre recalculé — les plus lents ne sont plus toujours derniers. Désactivé (défaut) = l’ordre d’ouverture est conservé pour tout le combat."
+  },
+  {
+    "id": "combat-se-fatiguer",
+    "label": "Se fatiguer au combat",
+    "ref": "LDB 16 l.99",
+    "group": "Combat",
+    "kind": "flag",
+    "default": false,
+    "hint": "Un effort soutenu épuise : après Bonus d’Endurance Rounds de combat, Test de Résistance — échec = État Exténué. Désactivé par défaut."
+  },
+  {
+    "id": "combat-round-seconds",
+    "label": "Durée d’un Round (secondes)",
+    "ref": "LDB 13 l.13",
+    "maison": "LDB 13 l.13 laisse la durée d’un Round au MJ (« c’est le MJ qui décide, si nécessaire, du temps qu’il représente ») : valeur maison, lue pour convertir en Rounds les durées chiffrées en secondes (rétention de souffle, LDB 18 l.345).",
+    "group": "Combat",
+    "kind": "param",
+    "default": 10,
+    "min": 1,
+    "max": 60,
+    "hint": "« Un Round correspond en général à quelques secondes, mais c’est le MJ qui décide, si nécessaire, du temps qu’il représente » (LDB 13 l.13) : sert à décompter la rétention de souffle (BE×10 s, LDB 18 l.345) en Rounds."
+  },
+  {
+    "id": "combat-voice-range-m",
+    "label": "Portée de voix (commandement)",
+    "ref": "AA 13 l.35 / LDB 09 l.128",
+    "maison": "« à portée de voix » (AA 13 l.35) n’est chiffrée nulle part dans le canon : distance maison, défaut 50 m (≈ 25 cases à 2 m).",
+    "group": "Combat",
+    "kind": "param",
+    "default": 50,
+    "min": 2,
+    "max": 200,
+    "step": 2,
+    "hint": "Distance en MÈTRES à laquelle un ordre crié porte : « aider une équipe qui utilise une arme possédant le Défaut Arme d’équipe à portée de voix » (AA 13 l.35) — le canon ne chiffre jamais cette portée. Défaut 50 m (≈ 25 cases à 2 m/case)."
+  },
+  {
+    "id": "social-status-reaction-roll",
+    "label": "Réaction au Statut (1d10)",
+    "ref": "LDB 08 l.54",
+    "group": "Social",
+    "kind": "flag",
+    "default": false,
+    "hint": "Au-delà de la norme sociale : avant un Test social ciblant un PNJ, 1d10 → 1-2 « Braver le Statut » (annule les mods de Statut) ; 3-8 réactions classiques (mods normaux) ; 9-10 « Opinions extrêmes » (mods inversés)."
+  },
+  {
+    "id": "social-begging-bonus",
+    "label": "Mendicité et Statut",
+    "ref": "LDB 08 l.92",
+    "group": "Social",
+    "kind": "flag",
+    "default": false,
+    "hint": "La mendicité est plus efficace juste au-dessus de soi : un personnage Bronze qui mendie auprès d’un Échelon Argent obtient +10 au lieu de −10 (Bronze → Argent uniquement)."
+  },
+  {
+    "id": "social-charm-intra-tier",
+    "label": "Statut au sein d’un même Échelon",
+    "ref": "LDB 08 l.88",
+    "group": "Social",
+    "kind": "flag",
+    "default": false,
+    "hint": "Le MJ applique aussi le ±10 de Statut entre deux personnes du MÊME Échelon mais de Standing différent (Standing supérieur +10 / inférieur −10)."
+  },
+  {
+    "id": "creation-gnome-jouable",
+    "label": "Gnome jouable (NADJ)",
+    "ref": "NADJ appendice I l.10",
+    "group": "Création",
+    "kind": "flag",
+    "default": false,
+    "hint": "Ajoute le Gnome (Nuits agitées) comme race jouable : il devient une option du Tableau des Races aléatoires (borne 98, partagée avec l’Ogre) et apparaît dans la grille de sélection. Désactivé par défaut."
+  },
+  {
+    "id": "creation-signes-astraux",
+    "label": "Signes astraux à la création",
+    "ref": "ADE II 3",
+    "group": "Création",
+    "kind": "flag",
+    "default": true,
+    "hint": "Étape optionnelle ADE II : un signe astral (1d100, +25 PX si le tirage est gardé) qui modifie les attributs de départ ou octroie un Talent, plus l’ascendant et les demeures célestes (flavor). Désactiver retire l’étape du créateur."
+  },
+  {
+    "id": "market-mode",
+    "label": "Système d’achat / vente",
+    "ref": "LDB 59 l.15",
+    "group": "Marché",
+    "kind": "mode",
+    "default": "complet",
+    "options": [
+      "complet",
+      "sans-disponibilite",
+      "sans-marchandage",
+      "simplifie"
+    ],
+    "hint": "complet = Disponibilité + Marchandage (RAW) ; sans-disponibilite = tout en stock (pas de Test) ; sans-marchandage = prix fixes (pas de jet opposé) ; simplifie = les deux désactivés."
+  },
+  {
+    "id": "market-tenir-comptes",
+    "label": "Tenir les comptes (Statut)",
+    "ref": "LDB 59 l.9",
+    "group": "Marché",
+    "kind": "flag",
+    "default": false,
+    "hint": "Simplification LDB 59 l.9-11 : un objet coûtant au plus votre niveau de Statut (Bronze N = N sous, Argent N = N pistoles, Or N = N couronnes) s’achète sans compter les pièces ; au-delà, un seul achat par jour via un Test de Marchandage. Désactivé par défaut (chaque pièce est comptée, RAW)."
+  },
+  {
+    "id": "market-guild",
+    "label": "Guildes d’Artisans",
+    "ref": "LDB 60 l.38",
+    "group": "Marché",
+    "kind": "flag",
+    "default": false,
+    "hint": "Marché dans une ville à Guilde : les Défauts d’un objet réduisent sa Disponibilité (plus rare) et le premier Atout ne l’augmente pas."
+  },
+  {
+    "id": "market-cite-stock",
+    "label": "Cité : quantité d’un objet en stock",
+    "ref": "LDB 59 l.34",
+    "maison": "LDB 59 l.34 chiffre le stock du village (1) et de la ville (1d10) mais pas celui de la CITÉ (« autant que le MJ le juge approprié ») : valeur maison.",
+    "group": "Marché",
+    "kind": "param",
+    "default": 99,
+    "min": 1,
+    "max": 999,
+    "step": 1,
+    "hint": "Quantité disponible d’un objet en stock dans une CITÉ : « les cités en possèdent autant que le MJ le juge approprié » (LDB 59 l.34) — le canon ne chiffre rien (village 1, ville 1d10). Défaut 99 = stock pratiquement illimité ; baisser pour une cité rationnée."
+  },
+  {
+    "id": "tavern-games",
+    "label": "Jeux de taverne",
+    "ref": "NADJ 16 l.9",
+    "group": "Activités",
+    "kind": "flag",
+    "default": false,
+    "hint": "Ajoute les jeux de taverne (Nuits agitées & dures journées, ch.16) : Al-zahr, bras de fer, fléchettes, dominos, boules, Middenball, Cerevis… chacun joué avec SES règles (manches, mises, passages de lancers, camps). Désactivé par défaut."
+  },
+  {
+    "id": "tavern-games-rapides",
+    "label": "Jeux de taverne rapides",
+    "ref": "NADJ 16 l.9-11",
+    "group": "Activités",
+    "kind": "flag",
+    "default": false,
+    "hint": "Pour certains groupes, les jets de dés peuvent gêner le plaisir du jeu de rôle. Si vous souhaitez que vos parties de taverne soient résolues rapidement, effectuez un Test opposé de **Compétence Intermédiaire (+0)** en utilisant la Compétence indiquée dans la section « Jeu » du jeu en question. Si aucune Compétence n'est indiquée (comme pour *Al-zahr*), faites plutôt un Test opposé de **Pari Intermédiaire (+0)**. Celui qui obtient le nombre le plus élevé de DR remporte la partie."
+  },
+  {
+    "id": "interlude-enabled",
+    "label": "Entre deux aventures",
+    "ref": "LDB 22 l.14",
+    "group": "Activités",
+    "kind": "flag",
+    "default": true,
+    "hint": "Système « Entre deux aventures » (événements, Activités, dépenses). Désactiver court-circuite l’interlude (ignoré silencieusement)."
+  },
+  {
+    "id": "interlude-elf-duty",
+    "label": "Devoir elfique (Prestige Elfique)",
+    "ref": "LDB 23 l.48",
+    "group": "Activités",
+    "kind": "flag",
+    "default": true,
+    "hint": "Un personnage elfe perd 1 Activité (interlude ≥ 3 semaines) pour son devoir envers les siens. Désactiver lève cette restriction."
+  },
+  {
+    "id": "interlude-assist-costs-activity",
+    "label": "Assister une Entreprise coûte un créneau (maison)",
+    "ref": "LDB 12 l.188 / ADE II 8 l.81",
+    "maison": "#257 — LDB 23 l.5 / ADE II 8 l.65 bornent le budget par « participer à une Activité » ; le Soutien (LDB 12 l.188-200) et Planification (ADE II 8 l.81) ne chiffrent aucun coût d’Activité pour l’assistant. Défaut `false` : `confirmActivity` ne décompte que le meneur.",
+    "group": "Activités",
+    "kind": "flag",
+    "default": false,
+    "hint": "RAW muet : aucune règle ne dit si prêter son Soutien à l’Entreprise d’un autre (ex. Planification de bataille) consomme l’une des trois Activités de l’assistant. Désactivé (défaut) : seul le meneur dépense un créneau, les assistants aident gratuitement. Activé : chaque assistant qui a encore un créneau en dépense un."
+  },
+  {
+    "id": "inn-gather-info-minutes",
+    "label": "Recueillir des informations à l’auberge — durée",
+    "ref": "EDOC 8 l.151-153",
+    "maison": "#352 — EDOC 8 l.151-153 chiffre le Test (Ragot Intermédiaire) mais aucune durée pour l’Activité jouée HORS voyage : le canon la borne implicitement à « une Étape » en voyage, muet ailleurs.",
+    "group": "Activités",
+    "kind": "param",
+    "default": 120,
+    "min": 30,
+    "max": 480,
+    "step": 30,
+    "hint": "Temps passé à papoter et poser des questions dans une auberge (Ragot Intermédiaire, EDOC 8 l.151), en MINUTES — avance l’horloge de campagne quelle que soit l’issue."
+  },
+  {
+    "id": "favor-rumor-spreads",
+    "label": "Faveur rompue : la rumeur se répand (perte de Niveau)",
+    "ref": "LDB 23 l.141",
+    "maison": "#509 — LDB 23 l.141 conditionne la perte de Niveau à « si la rumeur de la perfidie se répand » sans modéliser aucune propagation (ni probabilité, ni déclencheur) : défaut = la rumeur se répand systématiquement.",
+    "group": "Activités",
+    "kind": "flag",
+    "default": true,
+    "hint": "Rompre une Faveur réduit le Niveau de Carrière de 1 (minimum 0) « si la rumeur de la perfidie se répand » (LDB 23 l.141) — le RAW ne précise aucune condition : par défaut, la rumeur se répand systématiquement. Désactiver retire la pénalité de Niveau (rupture sans conséquence sociale)."
+  },
+  {
+    "id": "advancement-career-jump",
+    "label": "Sauts de Niveau de Carrière (accord du MJ)",
+    "ref": "LDB 07 l.140/148",
+    "group": "Avancement",
+    "kind": "flag",
+    "default": false,
+    "hint": "Avec l’accord du MJ (LDB 07 l.140/148) : autorise un SAUT vers un Niveau de Carrière supérieur non-adjacent (même Carrière), et l’accès au MÊME Niveau d’une autre Carrière de la même Classe (Niveau courant complété requis). Désactivé (défaut) = RAW strict (Niveau suivant complété ou inférieur, ou 1er Niveau d’une autre Carrière)."
+  },
+  {
+    "id": "advancement-mentor",
+    "label": "Mentor requis hors carrière",
+    "ref": "LDB 07 l.89",
+    "group": "Avancement",
+    "kind": "flag",
+    "default": false,
+    "hint": "LDB 07 l.89 : une Augmentation de Caractéristique/Compétence HORS carrière (déjà au coût doublé) exige de trouver un mentor. Activé, ces Augmentations sont bloquées tant que le flag de groupe/scène « mentor » n’est pas posé (Effet d’éditeur setFlag « mentor »). Désactivé par défaut."
+  },
+  {
+    "id": "magic-composant",
+    "label": "Composants d'incantation",
+    "ref": "LDB 46 l.159",
+    "group": "Magie",
+    "kind": "flag",
+    "default": false,
+    "hint": "Un lanceur peut focaliser sa magie via un composant adapté à un Sort d'Arcane/Domaine (acheté pour ce Sort, coût = NI pistoles d'argent). Sur une Incantation Imparfaite, le composant l'absorbe : Majeure → Mineure, Mineure → annulée. Consumé à l'incantation, même sans Imparfaite. Composants gérés sur la fiche du personnage. Désactivé par défaut."
+  },
+  {
+    "id": "vents-tourbillonnants",
+    "label": "Vents Tourbillonnants",
+    "ref": "LDB 46 l.179-190",
+    "group": "Magie",
+    "kind": "mode",
+    "default": "off",
+    "options": [
+      "off",
+      "scene",
+      "round"
+    ],
+    "hint": "Avant chaque scène — ou à chaque Round dans une zone de turbulences — tirage 1d10 de la force des Vents (−30 à +30), appliqué aux Tests d'Incantation ET de Focalisation. Un porteur du Talent Seconde vue peut le repérer (Test de Perception Facile +40). off = désactivé (défaut) ; scene = tirage à l'ouverture du combat ; round = re-tirage à chaque Round (« zones de turbulences magiques »)."
+  },
+  {
+    "id": "prayer-conviction",
+    "label": "Prêchez ma sœur !",
+    "ref": "LDB 40 l.42",
+    "group": "Prières",
+    "kind": "flag",
+    "default": false,
+    "hint": "LDB 40 l.42 : les Tests de Prière entonnés discrètement ou sans conviction (murmurés) subissent une Difficulté plus élevée (un cran plus difficile). Le priant choisit alors, à l’incantation, entre prier à voix haute (normal) ou discrètement (plus dur). Désactivé par défaut."
+  },
+  {
+    "id": "prayer-petites",
+    "label": "Petites Prières",
+    "ref": "LDB 25 l.22",
+    "group": "Prières",
+    "kind": "flag",
+    "default": false,
+    "hint": "LDB 25 l.22-24 : un personnage NON Béni qui prie dans un site sacré peut malgré tout être entendu — un 1d100 secret, exaucé sur 01 (pourcentage relevé s’il possède la Compétence Prière). Se déclenche depuis un Effet d’éditeur posé sur un site sacré. Désactivé par défaut."
+  },
+  {
+    "id": "prayer-petites-bonus-per-advance",
+    "label": "Petites Prières : bonus par avance de Prière",
+    "ref": "LDB 25 l.22-24",
+    "maison": "LDB 25 l.24 autorise le MJ à relever le pourcentage d’exaucement sans donner de barème : barème maison (+N % par avance de Prière).",
+    "group": "Prières",
+    "kind": "param",
+    "default": 1,
+    "min": 0,
+    "max": 10,
+    "hint": "« Si vous avez la Compétence Prière, le MJ peut augmenter ce pourcentage » (l.24) — sans barème chiffré. Valeur maison : +N % de seuil d’exaucement par avance de Prière."
+  },
+  {
+    "id": "magic-sorcellerie",
+    "label": "Sorcellerie",
+    "ref": "LDB 49 l.5",
+    "group": "Magie",
+    "kind": "flag",
+    "default": false,
+    "hint": "Domaine sombre de la Sorcellerie (LDB 49) : les Sorts dont le Domaine porte le marqueur Sorcellerie appliquent ses règles — +1 Point de Corruption à chaque jet d’Incantation Imparfaite, État Hémorragique possible sur la cible, et composant OBLIGATOIRE (sinon une Incantation Imparfaite Mineure est systématiquement lancée ; les ingrédients coûtent le NI en sous de cuivre). Désactivé par défaut."
+  },
+  {
+    "id": "magic-vdm-incantation",
+    "label": "Règles d'incantation révisées (VDM)",
+    "ref": "VDM 02 l.5-7",
+    "group": "Magie",
+    "kind": "flag",
+    "default": false,
+    "hint": "Les Vents de Magie révisent les règles d’incantation du Livre de base : « Elles remplacent celles du Livre de Règles de WFJDR » (VDM 02 l.5), « Bien entendu, vous êtes libre d’utiliser celles que vous souhaitez » (l.7). Activé : les Dégâts d’un Projectile magique valent Dégâts du Sort + Bonus de Force Mentale du lanceur, sans le DR du Test d’Incantation (l.68) ; « Puissance totale », sur une Incantation Critique, ajoute le chiffre des dizaines du lancer d’Incantation au DR pour obtenir une Surincantation (l.55) ; les Incantations Imparfaites se tirent sur les tableaux des Vents de Magie (l.218-263) — dont la rangée « Marqué par la Magie », qui tire sur les Marques arcaniques du Vent du lanceur, ou relance sur le tableau Majeur si sa tradition n’en a pas ; la Surincantation suit le Tableau de Surincantation par palier de DR (l.194-215), les DR au-delà du NI étant dépensables un par un ; près d’une Influence corruptrice, tout lancer d’Incantation ou de Focalisation raté impose une Imparfaite Mineure — Majeure si une Mineure était déjà due (l.157-159) ; et le Sorcier du Chaos (Talent Magie du Chaos) ignore les armures du Chaos pour « Repousser les Vents » (VDM 02 l.169). Désactivé par défaut (règles du Livre de base)."
+  },
+  {
+    "id": "magic-vdm-environnementale",
+    "label": "Magie environnementale (VDM)",
+    "ref": "VDM 14 l.26 / l.94 / l.136-179 / l.212-278",
+    "group": "Magie",
+    "kind": "flag",
+    "default": false,
+    "hint": "Magie environnementale des Vents de Magie (chapitre « Les Vents à l’œuvre ») : l’état magique du LIEU modifie les Tests d’Incantation et de Focalisation — palier de Saturation environnementale (−1 DR en Basse, +1 DR pour le ou les Vents prépondérants en Élevée, +2/+1 DR en Extrême), lignes de force, pierres gardiennes (Réfraction, Atténuation, Amplification), cercles d’oghams, nexus de puissance, appuis arcaniques, Tempêtes de Magie et lieux nommés du chapitre (forge d’Henoth, taverne d’Uli, Pierres de Barbaneagra). Données éditables dans `arcane-phenomena.json`. Désactivé par défaut (règles du Livre de base)."
+  },
+  {
+    "id": "corruption-tables-edoc",
+    "label": "Tables de Corruption étendues (EDOC)",
+    "ref": "EDOC 12",
+    "group": "Corruption",
+    "kind": "mode",
+    "default": "ldb",
+    "options": [
+      "ldb",
+      "toute",
+      "khorne",
+      "nurgle",
+      "slaanesh",
+      "tzeentch"
+    ],
+    "hint": "Tables de mutations du Compagnon T1 (physiques + mentales), alignées par Puissance du Chaos. ldb = Tableaux du Livre de base (RAW, défaut). toute = tables EDOC « Toute Puissance » (élargies). khorne/nurgle/slaanesh/tzeentch = tables alignées sur un dieu (pour une campagne dédiée). Une mutation peut différer du Livre de base (ex. Écailles épineuses)."
+  },
+  {
+    "id": "psych-acquisition-optional",
+    "label": "Acquisition de Traits psychologiques",
+    "ref": "ADE II Annexe I",
+    "group": "Psychologie",
+    "kind": "flag",
+    "default": false,
+    "hint": "Règles facultatives ADE II (Annexe I) pour gagner de nouveaux Traits psychologiques en cours de partie : Phobie du noir (États Brisé de Terreur cumulés ≥ Bonus de FM → Phobie), Animosité & Haine (dépenser le Destin pour survivre → Test de Calme ; échec → Animosité, doublon → Haine), Trauma (Ambition rendue impossible → Test de Calme ; échec → Trauma). Désactivé par défaut."
+  },
+  {
+    "id": "disease-mode",
+    "label": "Utilisation des maladies",
+    "ref": "LDB 20 l.36",
+    "group": "Maladies",
+    "kind": "mode",
+    "default": "full",
+    "options": [
+      "full",
+      "situational",
+      "off"
+    ],
+    "hint": "full = toutes les expositions (RAW) ; situational = pas d’Infection Mineure post-critique, mais Infecté/Maladie conservés (Skavens/Nurgle) ; off = aucune maladie (ni contraction, ni progression, ni contagion)."
+  },
+  {
+    "id": "travel-etapes",
+    "label": "Voyage par Étapes",
+    "ref": "EDOC 8 l.29",
+    "group": "Voyage",
+    "kind": "flag",
+    "default": false,
+    "hint": "Sous-système optionnel du Compagnon T1 : un trajet est découpé en Étapes, chacune avec un jet de Météo (et ses activités). Désactivé = voyage jour-par-jour du Livre de base, inchangé. Toggle PARENT : les options de Voyage ci-dessous sont inertes tant qu’il est éteint."
+  },
+  {
+    "id": "travel-etapes-count-bonus",
+    "label": "Étapes supplémentaires",
+    "ref": "EDOC 8 l.34",
+    "group": "Voyage",
+    "kind": "param",
+    "default": 0,
+    "min": 0,
+    "max": 4,
+    "step": 1,
+    "hint": "« Si votre groupe apprécie une expérience de voyage plus complexe, augmentez le nombre d’Étapes de 2 ou plus. » +N Étapes par trajet. Sans effet si « Voyage par Étapes » est éteint."
+  },
+  {
+    "id": "travel-etapes-low-move-bonus",
+    "label": "Étapes supplémentaires (groupe lent)",
+    "ref": "EDOC 8 l.25",
+    "maison": "EDOC 8 l.25 impose « 1 ou 2 Étapes » supplémentaires pour un groupe lent sans trancher entre les deux : valeur maison.",
+    "group": "Voyage",
+    "kind": "param",
+    "default": 1,
+    "min": 1,
+    "max": 2,
+    "hint": "« Si [le Mouvement le plus faible des Personnages] est inférieur ou égal à 3, le voyage doit être augmenté de 1 ou 2 Étapes » — le canon ne tranche pas entre 1 et 2. Sans effet si « Voyage par Étapes » est éteint."
+  },
+  {
+    "id": "travel-allures",
+    "label": "Montures et attelages (allures)",
+    "ref": "EDOC 07 l.138-146",
+    "group": "Voyage",
+    "kind": "flag",
+    "default": false,
+    "hint": "Règles de voyage du Compagnon T1 (ch.4) : voyage en selle sur les bêtes possédées (vitesse = Mouvement × 1,5/2,5/3 km/h au pas/trot/galop), endurance des allures (12 h au pas, Bonus d’Endurance en heures au trot, moitié au galop) avec Incidents de monte au-delà, et allure forcée d’un attelage (Test de Conduite d’attelage par km ; Échec Stupéfiant → Problème de véhicule). Indépendant du « Voyage par Étapes »."
+  },
+  {
+    "id": "travel-departure-gate",
+    "label": "Porte d’heure de départ (terre & fleuve)",
+    "ref": "LDB 51 l.195",
+    "maison": "#340 — LDB 51 l.195 borne un budget de 6 h par JOUR sans dire quand la journée commence : porte d’heure de départ maison (défaut ON). Le voyage MARITIME en est exempt (MDG 15 l.76, cf. `sea-night-sailing`).",
+    "group": "Voyage",
+    "kind": "flag",
+    "default": true,
+    "hint": "Un voyage à pied, en selle ou sur le fleuve ne peut s’ébranler que de l’aube au crépuscule. Tenter de partir de nuit propose d’attendre l’aube (nuit jouée) ou d’annuler. La mer est exemptée (voguer de nuit = équipage + installations, MDG 15 l.76). Désactiver autorise un départ à toute heure."
+  },
+  {
+    "id": "travel-sleep-forced",
+    "label": "Privation de sommeil (nuit forcée)",
+    "ref": "LDB 18",
+    "maison": "#340 — le canon ne modélise pas la privation de sommeil sur le budget de voyage. Défaut ON [arbitrage utilisateur 2026-07-11, verbatim : « On a aucune règle sur la privation de sommeil ? » → activée].",
+    "group": "Voyage",
+    "kind": "flag",
+    "default": true,
+    "hint": "Chaque jour calendaire franchi SANS nuit de sommeil jouée inflige 1 État Exténué (« privation de sommeil ») à chaque héros vivant. Il se dissipe au prochain vrai repos. Débrayable ici."
+  },
+  {
+    "id": "sea-night-sailing",
+    "label": "Voguer de nuit (équipage & installations)",
+    "ref": "MDG 15 l.76",
+    "maison": "#340 — MDG 15 l.76 exige « un équipage suffisant et des installations adéquates » pour voguer de nuit ; l’équipage du navire de campagne étant ABSTRAIT (MDG 14 l.39), la condition n’est pas vérifiable : réglage maison (défaut ON = navire équipé).",
+    "group": "Voyage",
+    "kind": "flag",
+    "default": true,
+    "hint": "Le navire de campagne peut naviguer de nuit (équipage suffisant, installations adéquates) : distance de jour pleine. Désactiver = pas de navigation nocturne → distance quotidienne divisée par deux (MDG 15 l.76)."
+  },
+  {
+    "id": "travel-attraper-froid",
+    "label": "Attraper froid",
+    "ref": "EDOC 8 l.73",
+    "group": "Voyage",
+    "kind": "flag",
+    "default": false,
+    "hint": "Option « Attraper Froid » : Test d’Exposition en fin d’Étape sous intempéries (pluie/neige sans manteau ni tente ; toujours sous averse/blizzard). En saison froide, l’exposition donne un rhume. Sauté si un héros réussit le poste « Plein air ». Sans effet si « Voyage par Étapes » est éteint."
+  },
+  {
+    "id": "water-scarcity",
+    "label": "Pénurie d’eau",
+    "ref": "LDB 18 l.340",
+    "group": "Voyage",
+    "kind": "flag",
+    "default": false,
+    "hint": "L’eau est réputée abondante au Reikland (rivières, puits, auberges) → aucune Soif par défaut. Activer pour un contexte À SEC (siège, désert, souterrain prolongé) : chaque jour sans eau impose un Test de Résistance (de plus en plus dur) — 1ᵉʳ échec −10 Int/FM/Soc, puis −10 le reste + 1d10 Blessures (LDB 18 l.340). En mer, la Soif suit automatiquement les tonneaux du navire, sans cette règle."
+  },
+  {
+    "id": "crew-test-zero-success",
+    "label": "Test d’équipage : 0 DR compte comme un succès",
+    "ref": "MDG 14 l.13",
+    "group": "Voyage",
+    "kind": "flag",
+    "default": false,
+    "hint": "« Si le total est de 1 DR ou plus, le résultat global est un succès. Le MJ peut aussi considérer un résultat de 0 comme un succès en fonction des circonstances. » Défaut : seuil à 1 DR. Activer : un total de 0 DR vaut un Succès Minime (manœuvre, bordée, entretien, rude épreuve…)."
+  },
+  {
+    "id": "sea-water-litres-mediane",
+    "label": "Eau bue par jour (température Médiane, en mer)",
+    "ref": "MDG 14 l.242",
+    "maison": "MDG 14 l.242 donne une FOURCHETTE (2 à 3 litres par jour, hors bandes Caniculaire/Chaude déjà chiffrées) et non une valeur : défaut maison = borne haute.",
+    "group": "Voyage",
+    "kind": "param",
+    "default": 3,
+    "min": 2,
+    "max": 3,
+    "hint": "« Un membre d’équipage boit 2 à 3 litres d’eau par jour » (hors bandes Caniculaire/Chaude, déjà chiffrées à 4 L/3 L) : le canon donne une fourchette, pas une valeur unique. Défaut : borne haute (3 L)."
+  },
+  {
+    "id": "exposure-night-difficile-count",
+    "label": "Exposition : Tests par nuit (difficile)",
+    "ref": "LDB 18",
+    "maison": "LDB 18 ne chiffre que la CADENCE des Tests d’Exposition en environnement difficile ; convertir une nuit passée dehors en un NOMBRE de Tests est maison.",
+    "group": "Voyage",
+    "kind": "param",
+    "default": 2,
+    "min": 0,
+    "max": 8,
+    "hint": "LDB 18 l.328 ne chiffre que la CADENCE (Test toutes les 4h en environnement difficile) ; l’application « une nuit ~8h dehors = N Tests » est maison. Une nuit abritée en environnement extrême retombe sur ce même nombre."
+  },
+  {
+    "id": "exposure-night-extreme-count",
+    "label": "Exposition : Tests par nuit (extrême)",
+    "ref": "LDB 18",
+    "maison": "LDB 18 ne chiffre que la CADENCE des Tests d’Exposition en environnement extrême ; convertir une nuit passée dehors en un NOMBRE de Tests est maison.",
+    "group": "Voyage",
+    "kind": "param",
+    "default": 4,
+    "min": 0,
+    "max": 12,
+    "hint": "LDB 18 l.328 ne chiffre que la CADENCE (Test toutes les 2h en environnement extrême, ex. tempête) ; l’application « une nuit ~8h dehors = N Tests » est maison."
+  },
+  {
+    "id": "exposure-tent-cancels",
+    "label": "La Tente annule l’Exposition du camp",
+    "ref": "LDB 74",
+    "maison": "LDB 74 ne prête à la Tente AUCUN effet sur l’Exposition (seul le Sac de couchage porte un bonus chiffré) : l’annulation de l’Exposition du camp est une convenance maison.",
+    "group": "Voyage",
+    "kind": "flag",
+    "default": true,
+    "hint": "LDB 74 l.62 ne prête à la Tente AUCUN effet sur l’Exposition (seul le Sac de couchage a un bonus chiffré, +20 au Test de Froid, LDB 74 l.60) : cette annulation est une convenance maison. Désactiver : une Tente ne compte plus comme abri automatique (retombe sur l’abri de fortune, Survie en extérieur)."
+  },
+  {
+    "id": "exposure-expire-hours",
+    "label": "Exposition : dissipation des pénalités (heures)",
+    "ref": "LDB 18",
+    "maison": "LDB 18 ne fixe aucune durée aux pénalités d’Exposition : convention maison de dissipation après N heures au chaud ou au frais.",
+    "group": "Voyage",
+    "kind": "param",
+    "default": 24,
+    "min": 1,
+    "max": 168,
+    "step": 1,
+    "hint": "Le canon ne fixe aucune durée à ces pénalités (−10 aux caractéristiques) : convention maison de dissipation après N heures au chaud/au frais."
+  },
+  {
+    "id": "exposure-no-coat-penalty",
+    "label": "Exposition (Froid) : pénalité sans Manteau",
+    "ref": "LDB 65",
+    "maison": "LDB 65 mentionne « des pénalités » sans les chiffrer : malus maison au Test de Résistance contre le froid sans Manteau ni Cape porté.",
+    "group": "Voyage",
+    "kind": "param",
+    "default": 10,
+    "min": 0,
+    "max": 30,
+    "step": 5,
+    "hint": "LDB 65 l.44 dit seulement « des pénalités » sans les chiffrer : valeur maison retirée au Test de Résistance contre le froid sans Manteau/Cape porté(e)."
+  },
+  {
+    "id": "siege-engine-push-speed",
+    "label": "Vitesse de poussée d’un engin de siège",
+    "ref": "ADE II 8 l.258",
+    "maison": "ADE II 8 l.256/258 dote bélier et baliste de roues « pour se déplacer sur le champ de bataille » sans chiffrer de vitesse : plafond maison d’une poussée d’équipage.",
+    "group": "Combat",
+    "kind": "param",
+    "default": 2,
+    "min": 1,
+    "max": 6,
+    "hint": "« [le bélier/la baliste sont] dotés de roues pour se déplacer sur le champ de bataille » (ADE II 8 l.256/258) sans chiffrer de vitesse : plafond MAISON (en cases) d’une poussée d’équipage — mouvement SIMPLE, aucun Test."
+  },
+  {
+    "id": "sea-shipwreck-swim",
+    "label": "Naufrage en mer : Difficulté du Test de Natation",
+    "ref": "MDG 13 l.522",
+    "maison": "MDG 13 l.522 chiffre la noyade du Tourbillon (Natation Complexe) mais pas le naufrage en pleine mer : Difficulté maison, ancrée sur le cas chiffré le plus proche.",
+    "group": "Voyage",
+    "kind": "mode",
+    "default": "complexe",
+    "options": [
+      "facile",
+      "accessible",
+      "intermediaire",
+      "complexe",
+      "difficile",
+      "tresDifficile"
+    ],
+    "hint": "Quand le navire de campagne coule (Blessures à 0, MDG 13 l.674), chaque héros à bord tente un Test de Natation (LDB 09 l.372) pour rejoindre la côte ; échec = noyade (LDB 18 l.344). La Difficulté d’un naufrage en pleine mer n’est pas chiffrée : ancrage le plus proche = la noyade du Tourbillon (Natation Complexe –10, MDG 13 l.522). Défaut Complexe."
+  },
+  {
+    "id": "landRobberyFleePct",
+    "label": "Vol terrestre — perte de cargaison en cas de FUITE (%)",
+    "ref": "LDB 51",
+    "maison": "LDB 51 décrit la péripétie « Voleurs ! » en narratif, sans mécanique de vol : pourcentage maison (arbitrage #327, 2026-07-11) — la perte est graduée par l’issue du combat.",
+    "group": "Voyage",
+    "kind": "param",
+    "default": 25,
+    "min": 0,
+    "max": 100,
+    "step": 5,
+    "hint": "Arbitrage #327 (2026-07-11) : quand une péripétie dangereuse terrestre (embuscade) se solde par un combat, la cargaison des porteurs du convoi subit une perte GRADUÉE par l’issue. Combat FUI : le convoi laisse ce % d’Enc de cargaison aux assaillants (défaut 25). RAW muet en mécanique de vol terrestre → paramètre maison."
+  },
+  {
+    "id": "landRobberyLossPct",
+    "label": "Vol terrestre — perte de cargaison en cas de DÉFAITE (%)",
+    "ref": "LDB 51",
+    "maison": "LDB 51 décrit la péripétie « Voleurs ! » en narratif, sans mécanique de vol : pourcentage maison (arbitrage #327, 2026-07-11) — combat gagné = 0 %.",
+    "group": "Voyage",
+    "kind": "param",
+    "default": 75,
+    "min": 0,
+    "max": 100,
+    "step": 5,
+    "hint": "Arbitrage #327 (2026-07-11) : combat de vol terrestre PERDU → les assaillants pillent ce % d’Enc de cargaison du convoi (défaut 75). Combat gagné = 0 %. RAW muet → paramètre maison."
+  },
+  {
+    "id": "piratePillagePct",
+    "label": "Cogue pirate — pillage de la cale en cas de soumission (%)",
+    "ref": "MDG 15 p.131",
+    "maison": "MDG 15 p.131 décrit l’extorsion de la Cogue pirate (« prendre ce qu’ils veulent ») sans la chiffrer : pourcentage maison (arbitrage #327, 2026-07-11).",
+    "group": "Voyage",
+    "kind": "param",
+    "default": 100,
+    "min": 0,
+    "max": 100,
+    "step": 5,
+    "hint": "Arbitrage #327 (2026-07-11) : se SOUMETTRE à la Cogue pirate (MDG 15) laisse les forbans « fouiller la cale et prendre ce qu’ils veulent » — ce % d’Enc de cargaison du navire est pillé (défaut 100). Le RAW décrit l’extorsion sans la chiffrer → paramètre maison."
+  },
+  {
+    "id": "boardingWaveSize",
+    "label": "Abordage — nombre d’assaillants qui montent à bord",
+    "ref": "MDG 15 p.131",
+    "maison": "MDG 15 p.131 décrit l’assaut sans chiffrer la VAGUE qui monte à bord (la coque ennemie entière est l’effectif du navire, jamais l’effectif du pont) : nombre maison.",
+    "group": "Voyage",
+    "kind": "param",
+    "default": 5,
+    "min": 1,
+    "max": 12,
+    "step": 1,
+    "hint": "Un abordage (MDG 14/15) dérivé d’un événement de navire hostile engendre une vague d’assaillants de CE nombre (individus de l’équipage type de la coque), plus le chef éventuel — la coque ennemie entière (25/45 marins) est l’effectif du navire, jamais autant de figurants sur le pont. Le RAW décrit l’assaut sans chiffrer la vague → paramètre maison, éditable."
+  },
+  {
+    "id": "sea-overspeed-tests-per-day",
+    "label": "Survitesse : Tests d’Endurance par jour",
+    "ref": "MDG 13 l.121-142",
+    "maison": "#443 — MDG 13 l.121-142 chiffre une cadence infra-journalière (1 Test par heure/minute/Round) que la boucle de voyage, jour par jour, ne modélise pas : ce paramètre borne le nombre de Tests joués par jour de survitesse.",
+    "group": "Voyage",
+    "kind": "param",
+    "default": 1,
+    "min": 1,
+    "max": 6,
+    "hint": "« Ça va lâcher, capitaine ! » chiffre 1 Test par heure/minute/Round selon la bande de survitesse — la boucle de voyage résout un JOUR à la fois. Défaut : 1 Test (le pire des dégâts de la bande) par jour de survitesse ; augmenter pour accentuer le risque des bandes les plus sévères (M+7 et plus)."
+  },
+  {
+    "id": "possession-random-chars-on-acquire",
+    "label": "Caractéristiques aléatoires à l’acquisition (bêtes/serviteurs)",
+    "ref": "LDB 77 l.108",
+    "maison": "#614 — LDB 77 l.108 chiffre le TIRAGE (−10 + 2d10 ; 1d10 si la Caractéristique vaut 5) mais jamais le « quand » : tirage figé à l’ACQUISITION, seedé sur l’uid d’instance (`Possession.charsRolled`), jamais relancé (arbitrage utilisateur 2026-07-19).",
+    "group": "Possessions",
+    "kind": "flag",
+    "default": true,
+    "hint": "À l’acquisition d’une bête ou d’un serviteur (achat, dotation, don), tire une fois ses caractéristiques (−10 + 2d10, ou 1d10 si la Caractéristique vaut 5) — le tirage se FIGE dans `Possession.charsRolled`, seedé sur son uid : jamais relancé (« Elles seront relancées à chaque combat ? Pas fou. »). Désactivé : la possession garde le profil imprimé du catalogue."
+  },
+  {
+    "id": "sea-chart-orientation-dr",
+    "label": "Carte marine : bonus d’Orientation",
+    "ref": "MDG 15 l.290",
+    "maison": "MDG 15 l.290 réserve le bonus de la Carte marine aux DEUX ports désignés à sa création ; faute de graphe de ports navigables, elle aide ici sur toute route maritime — simplification maison.",
+    "group": "Voyage",
+    "kind": "param",
+    "default": 2,
+    "min": 0,
+    "max": 5,
+    "step": 1,
+    "hint": "Une Carte marine donne +2 DR au Test d’Orientation quotidien (MDG 15 l.290), en principe UNIQUEMENT entre les deux ports désignés à sa création. Faute d’un graphe de ports navigables (chantier de la carte du monde), la carte aide ici sur TOUTE route maritime — simplification maison, éditable (0 = la carte n’aide plus)."
+  }
+]

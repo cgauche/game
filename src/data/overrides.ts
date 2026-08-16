@@ -72,6 +72,11 @@ import sizesRawJson from './sizes.json';
 // édition Compendium reste visible en direct, sans rechargement de page.
 import arcanePhenomenaRawJson from './arcane-phenomena.json';
 import type { SaturationLevel, WindSaturationEffects, ArcanePhenomenon, ArcaneTable } from './arcanePhenomena';
+// V9 #1318 : registre des règles optionnelles (`engine/policy.ts`, tableau RACINE) et Tableau de
+// Surincantation (VDM 02, tableau NICHÉ dans `{source,ref,table}`) — importés comme les autres
+// datasets migrés du CODE en donnée, MÊME module JSON singleton que leur lecteur moteur.
+import { OPTIONAL_RULES } from '../engine/policy';
+import surincantationRawJson from './surincantation.json';
 
 /** Entrée d'une table de miscast (`minor`/`major`/`wrath`, `miscast.json`) — DIALECTE compilé (PAS
  *  des `GameOp` standard, cf. `engine/miscast.ts::JsonRow`) : `ops`/`test` restent au format JSON brut
@@ -191,6 +196,12 @@ const ARRAYS = {
   voyageStakes: VOYAGE_STAKES,
   flowStakes: FLOW_STAKES,
   combatStakes: COMBAT_STAKES,
+  // V9 #1318 : registre des RÈGLES OPTIONNELLES (tableau RACINE de `reglesOptionnelles.json`) —
+  // MÊME référence que `engine/policy.ts::OPTIONAL_RULES` (singleton JSON) ; Tableau de
+  // Surincantation (VDM 02) NICHÉ dans `surincantation.json` (`{source,ref,table}`, même patron que
+  // `drivingMishap`/`drunkenness`), MÊME référence que celle lue par `engine/overcast.ts`.
+  reglesOptionnelles: OPTIONAL_RULES,
+  surincantation: surincantationRawJson.table,
 } as const;
 
 export type DatasetKey = keyof typeof ARRAYS;
@@ -334,6 +345,9 @@ const NESTED_ARRAY_FILE: Partial<Record<DatasetKey, { file: string; root: () => 
   voyageStakes: { file: 'voyage-stakes.json', root: () => VOYAGE_STAKES },
   flowStakes: { file: 'flow-stakes.json', root: () => FLOW_STAKES },
   combatStakes: { file: 'combat-stakes.json', root: () => COMBAT_STAKES },
+  // V9 #1318 : Tableau de Surincantation NICHÉ dans `{source,ref,table}` — réécrire le PARENT entier
+  // au save (le `source`/`ref` du tableau doit survivre à l'édition des rangées).
+  surincantation: { file: 'surincantation.json', root: () => surincantationRawJson },
 };
 /** Fichier disque d'un dataset-tableau (`<clé>.json` par défaut ; le fichier PARENT pour un tableau niché). */
 export function datasetFile(key: DatasetKey): string {

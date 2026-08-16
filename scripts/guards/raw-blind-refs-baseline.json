@@ -17,6 +17,13 @@
   "src/data/obtainability-guard.test.ts": {
     "VDM 4 l.153": 1
   },
+  "src/data/reglesOptionnelles.json": {
+    "EDOC 8 l.73": 1,
+    "LDB 12 l.101": 1,
+    "LDB 23 l.48": 1,
+    "LDB 63 l.63": 1,
+    "LDB 9 l.266": 1
+  },
   "src/data/schemas/defs/gods.ts": {
     "MDG 11 l.142": 1
   },
@@ -63,14 +70,6 @@
   },
   "src/engine/ops.ts": {
     "LDB 16 l.77": 1
-  },
-  "src/engine/policy.ts": {
-    "EDOC 8 l.73": 1,
-    "LDB 12 l.101": 1,
-    "LDB 12 l.188": 1,
-    "LDB 23 l.48": 1,
-    "LDB 63 l.63": 1,
-    "LDB 9 l.266": 1
   },
   "src/engine/prayer-sin-lock.test.ts": {
     "MDG 11 l.142": 1

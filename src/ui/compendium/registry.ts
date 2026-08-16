@@ -42,6 +42,8 @@ import { traumaFicheById } from '../../engine/trauma';
 import type { ShipCritEntry } from '../../data/shipCriticals';
 import { datasetArray, datasetObject } from '../../data/overrides';
 import type { CritTableEntry, MiscastRowEntry } from '../../data/overrides';
+import type { RuleValue } from '../../engine/policy';
+import SURINCANTATION from '../../data/surincantation.json';
 import type { SaturationLevel, WindSaturationEffects, ArcanePhenomenon, ArcaneTable, PhenomenonTestMod, PhenomenonScope } from '../../data/arcanePhenomena';
 import type { CastingNumberMod, CastingNumberScope } from '../../engine/castingNumber';
 import { effectiveEntry } from '../../engine/variants';
@@ -835,6 +837,18 @@ const DRUNKENNESS_EFFECT_LABEL: Record<string, string> = {
   bravoure: 'Bravoure du Marienburgher', ami: 'Meilleur ami', staggering: 'La pièce tourne',
   belligerent: 'Tous, un par un', blackout: 'Trou noir (gueule de bois)',
 };
+
+/** Libellés FR des 3 formes de contrôle d'une règle optionnelle (`OptionalRule.kind`,
+ *  `src/engine/policy.ts`) — le panneau in-game rend un interrupteur / un nombre / un choix. */
+const RULE_KIND_LABEL: Record<string, string> = {
+  flag: 'Interrupteur', param: 'Nombre', mode: 'Choix',
+};
+
+/** Valeur d'une règle optionnelle rendue LISIBLE (un booléen se lit « Activée »/« Désactivée », pas
+ *  « true ») — `RuleValue` est une union fermée booléen | nombre | chaîne. */
+function ruleValueLabel(v: RuleValue): string {
+  return typeof v === 'boolean' ? (v ? 'Activée' : 'Désactivée') : String(v);
+}
 
 /** Section « % de Disponibilité » (LDB 59 l.25-30, `disponibilite.json::dispoPct`) — une sous-tête par
  *  classe (Limitée/Rare), % de réussite du Test (d100 ≤ %) par taille de colonie. */
@@ -2351,6 +2365,38 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'obsessions', label: 'Obsessions (table)', group: 'Tables',
     build: () => OBSESSIONS.map((o) => ({ id: o.id, label: o.label, sub: `2d10 ${o.min}–${o.max}` })),
+  },
+  {
+    // V9 #1318 : le catalogue des règles optionnelles est une DONNÉE (`reglesOptionnelles.json`) —
+    // exposé/éditable ici comme tout catalogue. Le panneau in-game reste la porte de la VALEUR jouée
+    // (surcharge runtime persistée) ; cette fiche montre le catalogue lui-même.
+    key: 'reglesOptionnelles', label: 'Règles optionnelles', group: 'Tables',
+    build: () => datasetArray('reglesOptionnelles').map((r) => ({
+      id: r.id, label: r.label, sub: r.group, desc: r.hint,
+      meta: facts(
+        fact('Réf', r.ref),
+        fact('Contrôle', RULE_KIND_LABEL[r.kind] ?? r.kind),
+        fact('Défaut', ruleValueLabel(r.default)),
+        fact('Valeurs', r.options?.join(' · ') ?? null),
+        fact('Bornes', r.kind === 'param' && r.min != null && r.max != null ? `de ${r.min} à ${r.max}${r.step ? ` (pas de ${r.step})` : ''}` : null),
+        fact('Action attachée', r.action ? `${r.action.label} (si ${ruleValueLabel(r.action.when)})` : null),
+        fact('Valeur maison', r.maison ?? null),
+      ),
+    })),
+  },
+  {
+    key: 'surincantation', label: 'Tableau de Surincantation (VDM)', group: 'Tables', sourceRef: 'VDM 02',
+    build: () => datasetArray('surincantation').map((r) => ({
+      id: r.id, label: r.label, sub: 'DR dépensés sur UNE colonne',
+      meta: facts(
+        fact('Cible additionnelle', `+${r.targets}`),
+        fact('Dégât en plus', `+${r.damage}`),
+        fact('Portée étendue', `${r.range} × Portée`),
+        fact('ZdE étendue', r.zone === 1 ? 'ZdE listée' : `${r.zone} × ZdE`),
+        fact('Durée prolongée', r.duration === 1 ? 'Durée listée' : `${r.duration} × Durée`),
+      ),
+      source: src(SURINCANTATION.source),
+    })),
   },
   {
     key: 'structureCriticals', label: 'Critiques de structure', group: 'Effets',

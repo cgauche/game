@@ -1,7 +1,8 @@
 /**
  * « Dés fixés » — PRÉFÉRENCE de confort (saisir soi-même la valeur du d100 d'un jet qu'on contrôle),
- * pas une règle de WFRP : elle ne vit PAS dans le registre `policy.OPTIONAL_RULES` (dont chaque entrée
- * cite un folio d'un livre autorisé) mais ici, en valeur pure. MÊME partage que `cadence.ts` : ce module
+ * pas une règle de WFRP : elle ne vit PAS au registre des règles optionnelles
+ * (`src/data/reglesOptionnelles.json`, lu par `policy.ts` — chaque entrée y porte sa réf chapitre +
+ * ligne) mais ici, en valeur pure. MÊME partage que `cadence.ts` : ce module
  * FEUILLE porte la valeur (moteur pur, zéro dépendance), `state/preferences.ts` porte le registre joueur
  * et la persistance, `state/netOwnership.canFixDie` porte le prédicat de CONTRÔLE (qui peut fixer quoi).
  *

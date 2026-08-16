@@ -6,10 +6,14 @@
  * Les exemples du livre sont encodés tels quels comme cas de test.
  */
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { setRule, resetRule } from './policy';
+import { VDM_OVERCAST } from './overcast';
 import {
   overcastSourceOf, overcastAxes, extraTargetCapacity,
   effectiveDurationRounds, effectiveRangeMetres, overcastDurationParts, overcastStepCost,
+  zoneDiameterMultiplier, missileOvercastDamageBonus,
 } from './overcast';
 
 describe('overcastSourceOf — dérivé de la famille du sort (aucun champ ajouté)', () => {
@@ -104,5 +108,72 @@ describe('effectiveRangeMetres — ×initial (arcane/miracle) vs +6 m FIXE (bén
     // LDB 41 l.27 : Guérison (Contact, 0 m) → « 1 cible jusqu’à 12 mètres » avec 2 pas de Portée.
     expect(effectiveRangeMetres('blessing', 0, 2)).toBe(12);
     expect(effectiveRangeMetres('blessing', 6, 1)).toBe(12);
+  });
+});
+
+/**
+ * TABLEAU DE SURINCANTATION (`VDM 02 l.207-215`), désormais en DONNÉE (`src/data/surincantation.json`,
+ * V9 #1318). Les 7 paliers imprimés sont rejoués par les points de lecture PUBLICS : la chaîne
+ * donnée → moteur est mesurée, pas la constante.
+ */
+describe('Tableau de Surincantation (VDM) — les 7 paliers imprimés, lus de la donnée', () => {
+  /** `[DR dépensés sur la colonne, +Cibles, +Dégât, ×Portée, ×ZdE, ×Durée]` — VDM 02 l.209-215. */
+  const PALIERS: [number, number, number, number, number, number][] = [
+    [1, 1, 1, 2, 1, 1],
+    [2, 1, 2, 2, 1, 2],
+    [3, 1, 3, 2, 2, 2],
+    [5, 2, 4, 3, 2, 2],
+    [8, 2, 5, 3, 2, 3],
+    [13, 2, 6, 3, 2, 3],
+    [21, 3, 7, 4, 3, 3],
+  ];
+
+  it('PARITÉ : la table LUE PAR LE MOTEUR est exactement celle du fichier de donnée', () => {
+    // Sans ce volet, ré-inscrire la table en dur dans `overcast.ts` laisserait les paliers ci-dessous
+    // verts : ils passent par les fonctions publiques, pas par le fichier. Ici on lit le DISQUE.
+    const disque = JSON.parse(
+      readFileSync(fileURLToPath(new URL('../data/surincantation.json', import.meta.url)), 'utf8'),
+    ) as { source: { book: string; page: number; note?: string }; ref: string; table: Record<string, number>[] };
+    // (a) le fichier porte bien la table IMPRIMÉE, et sa citation ;
+    expect(disque.table.map((r) => [r.dr, r.targets, r.damage, r.range, r.zone, r.duration])).toEqual(PALIERS);
+    expect(disque.source.book).toBe('vents-de-la-magie');
+    expect(disque.source.page).toBe(23);
+    expect(disque.ref).toMatch(/^VDM 02 /);
+    // (b) la table du MOTEUR est celle-là, valeur pour valeur — une ré-inscription en dur (ou une
+    //     divergence d'une seule rangée) fait rouge ici.
+    expect(VDM_OVERCAST.map((r) => [r.dr, r.targets, r.damage, r.range, r.zone, r.duration])).toEqual(
+      disque.table.map((r) => [r.dr, r.targets, r.damage, r.range, r.zone, r.duration]),
+    );
+  });
+
+  it('chaque palier rend l’effet imprimé sur les 5 colonnes', () => {
+    setRule('magic-vdm-incantation', true);
+    try {
+      for (const [dr, cibles, degat, portee, zde, duree] of PALIERS) {
+        expect(extraTargetCapacity('arcane', dr, 1), `${dr} DR → Cible additionnelle`).toBe(cibles);
+        expect(missileOvercastDamageBonus('arcane', dr), `${dr} DR → Dégât en plus`).toBe(degat);
+        expect(effectiveRangeMetres('arcane', 10, dr), `${dr} DR → Portée étendue`).toBe(10 * portee);
+        expect(zoneDiameterMultiplier('arcane', dr), `${dr} DR → ZdE étendue`).toBe(zde);
+        expect(effectiveDurationRounds('arcane', 4, dr), `${dr} DR → Durée prolongée`).toBe(4 * duree);
+      }
+    } finally {
+      resetRule('magic-vdm-incantation');
+    }
+  });
+
+  it('0 DR n’ouvre aucun palier ; entre deux paliers c’est le plus haut ATTEINT, et 21 est « ou plus »', () => {
+    setRule('magic-vdm-incantation', true);
+    try {
+      expect(extraTargetCapacity('arcane', 0, 1)).toBe(0);
+      expect(missileOvercastDamageBonus('arcane', 0)).toBe(0);
+      expect(effectiveRangeMetres('arcane', 10, 0)).toBe(10);
+      expect(zoneDiameterMultiplier('arcane', 0)).toBe(1);
+      expect(missileOvercastDamageBonus('arcane', 4)).toBe(3); // 4 DR reste au palier 3
+      expect(extraTargetCapacity('arcane', 20, 1)).toBe(2); // 20 DR reste au palier 13
+      expect(extraTargetCapacity('arcane', 99, 1)).toBe(3); // « 21 ou plus »
+      expect(zoneDiameterMultiplier('arcane', 99)).toBe(3);
+    } finally {
+      resetRule('magic-vdm-incantation');
+    }
   });
 });

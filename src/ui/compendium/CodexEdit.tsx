@@ -36,7 +36,8 @@ import { WeaponField } from '../editor/WeaponField';
 import { PsychTraitsField } from '../editor/PsychTraitsField';
 import type { Weapon } from '../../engine/types';
 import type { PsychTrait } from '../../engine/psychology';
-import { SymptomsField, SymptomTickField, TalentTestField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, StarSubField, DomainEffectsField, TraitListField, OptionalsListField, HarvestField, SpecsField } from './StructFields';
+import { SymptomsField, SymptomTickField, TalentTestField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, StarSubField, DomainEffectsField, TraitListField, OptionalsListField, HarvestField, SpecsField, RuleValueField, RuleActionField, type RuleShape } from './StructFields';
+import type { OptionalRule } from '../../engine/policy';
 import type { TraitInstance, OptionalEntry } from '../../engine/statEntry';
 import type { DomainData } from '../../data';
 import type { CharKey, Difficulty } from '../../engine/types';
@@ -66,6 +67,9 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   mutations: 'mutations', mutationTables: 'mutationTables', gods: 'gods', domains: 'domains',
   // #409 : catalogue des axes de forces/faiblesses (mécanique MAISON) — clé catégorie = clé dataset.
   axes: 'axes',
+  // V9 #1318 : registre des RÈGLES OPTIONNELLES et Tableau de Surincantation (VDM 02), migrés du
+  // CODE en donnée — clé catégorie = clé dataset.
+  reglesOptionnelles: 'reglesOptionnelles', surincantation: 'surincantation',
   // E3a : tables & gabarits éditables (catégorie Codex = clé identique au dataset).
   careerLevels: 'careerLevels', eyes: 'eyes', hairs: 'hairs', raceAppearance: 'raceAppearance',
   pregens: 'pregens', oups: 'oups', interludeEvents: 'interludeEvents', peripeties: 'peripeties',
@@ -285,7 +289,40 @@ export function validateEntry(categoryKey: string, entry: Entry, entries: Entry[
   // Ops MÉCANIQUES portées par l'entrée (`passive`, `effects`, `ops`, rangées de table…) : une réf de
   // registre REQUISE non élue rend l'op inapplicable — source unique `OP_REF_FIELDS`.
   errors.push(...opsMissingRefs(entry));
+  if (categoryKey === 'reglesOptionnelles') errors.push(...ruleValueErrors(entry));
   return errors;
+}
+
+/**
+ * Règle optionnelle (V9 #1318) : sa VALEUR doit être du type que son `kind` promet. `ruleValueSchema`
+ * est l'union booléen|nombre|chaîne — elle laisse donc passer `"false"` sur un `flag`, et le moteur
+ * (`rule(id) === true`) ne reconnaîtrait plus rien : la règle s'éteindrait SANS UN MOT. Refus
+ * BRUYANT ici, en plus du contrôle typé du formulaire (`RuleValueField`) : une donnée éditée à la
+ * main hors du Codex passe par cette porte au premier enregistrement.
+ */
+function ruleValueErrors(entry: Entry): string[] {
+  const out: string[] = [];
+  const kind = entry.kind;
+  const options = Array.isArray(entry.options) ? (entry.options as unknown[]).filter((o) => typeof o === 'string') as string[] : [];
+  const check = (champ: string, v: unknown): void => {
+    if (v === undefined) return;
+    if (kind === 'flag' && typeof v !== 'boolean') out.push(`${champ} : un interrupteur (kind « flag ») vaut un booléen, pas ${typeof v === 'string' ? `la chaîne « ${v} »` : String(v)}`);
+    if (kind === 'param' && typeof v !== 'number') out.push(`${champ} : un nombre (kind « param ») vaut un nombre, pas ${typeof v === 'string' ? `la chaîne « ${v} »` : String(v)}`);
+    if (kind === 'mode') {
+      if (typeof v !== 'string') out.push(`${champ} : un choix (kind « mode ») vaut une des valeurs de \`options\``);
+      else if (options.length > 0 && !options.includes(v)) out.push(`${champ} : « ${v} » n'est pas une des \`options\` (${options.join(', ')})`);
+    }
+  };
+  check('default', entry.default);
+  const action = entry.action as { when?: unknown } | undefined;
+  if (action && typeof action === 'object') check('action.when', action.when);
+  if (kind === 'mode' && options.length < 2) out.push('options : un choix (kind « mode ») propose au moins deux valeurs');
+  if (kind === 'param' && (typeof entry.min !== 'number' || typeof entry.max !== 'number')) out.push('min/max : un nombre (kind « param ») déclare ses bornes');
+  if (kind === 'param' && typeof entry.default === 'number' && typeof entry.min === 'number' && typeof entry.max === 'number'
+      && (entry.default < entry.min || entry.default > entry.max)) {
+    out.push(`default : ${entry.default} sort des bornes [${entry.min}, ${entry.max}]`);
+  }
+  return out;
 }
 
 /** Axes du PROFIL de manœuvre rendus par `ManeuverDefField` (selects/checkbox). */
@@ -322,6 +359,10 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (['trappings', 'qualities', 'spells', 'traits', 'navalTraits', 'talents', 'domains', 'creatures'].includes(categoryKey)) add('alsoIn'); // alsoIn → AlsoInField (#563 Lot 5)
   if (categoryKey === 'skills' || categoryKey === 'talents') add('specs');
   if (categoryKey === 'traits') add('specsSource', 'indice', 'range', 'specsOpen', 'specsMulti'); // schéma d'argument → éditeur dédié
+  // V9 #1318 : la VALEUR d'une règle optionnelle est typée par son `kind` (`RuleValueField`/
+  // `RuleActionField`) — le champ inféré serait un TEXTE pour les 81 règles (échantillon `mode`),
+  // et `"false"` y éteindrait une règle sans un mot. `validateEntry` refuse en plus au save.
+  if (categoryKey === 'reglesOptionnelles') add('default', 'action');
 
   if (categoryKey === 'races' || categoryKey === 'careerLevels') add('skills', 'talents');
   if (categoryKey === 'classes' || categoryKey === 'careerLevels') add('trappings');
@@ -471,6 +512,8 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   // Signe astral : son EFFET de création (charMod / grantTalent) en `GameOp[]` — même éditeur que les
   // passifs, mais champ `effect` (appliqué une fois aux attributs de départ, cf. applyStarEffect).
   const isStarEffect = categoryKey === 'stars';
+  // Règle optionnelle : sa valeur par défaut (et le `when` de son action) sont typées par son `kind`.
+  const isOptionalRule = categoryKey === 'reglesOptionnelles';
   // Table de Corruption : ses `ranges` (plages d100 → réf mutation) ont leur éditeur dédié.
   const isMutationTable = categoryKey === 'mutationTables';
   // Météo : ses `ranges` (plages d100 → type de météo) ont leur éditeur dédié.
@@ -614,6 +657,22 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
             <span>effet du signe — appliqué aux attributs de départ à la création (±carac / Talent octroyé)</span>
             <GameOpEditor ops={(entry.effect as GameOp[] | undefined) ?? []} onChange={(ops) => edit('effect', ops)} />
           </div>
+        )}
+        {isOptionalRule && (
+          <>
+            <RuleValueField
+              id="rule-default"
+              label="valeur par défaut"
+              rule={entry as unknown as RuleShape}
+              value={entry.default as RuleValue | undefined}
+              onChange={(v) => edit('default', v)}
+            />
+            <RuleActionField
+              rule={entry as unknown as RuleShape}
+              value={entry.action as OptionalRule['action']}
+              onChange={(v) => edit('action', v)}
+            />
+          </>
         )}
         {isSymptom && (
           <div className="ed-field">

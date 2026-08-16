@@ -15,6 +15,8 @@
 
 import type { GameOp } from './ops';
 import { rule } from './policy';
+import surincantationJson from '../data/surincantation.json';
+import type { SurincantationData } from '../data/schemas/defs/surincantation';
 
 export type OvercastSource = 'arcane' | 'blessing' | 'miracle';
 export type OvercastAxis = 'range' | 'zone' | 'duration' | 'targets' | 'damage';
@@ -51,29 +53,22 @@ function overcastModel(source: OvercastSource): 'ldb' | 'vdm' {
   return source === 'arcane' && rule('magic-vdm-incantation') === true ? 'vdm' : 'ldb';
 }
 
-/** TABLEAU DE SURINCANTATION (`VDM 02 l.207-215`) : DR dépensés sur UNE colonne → effet obtenu.
- *  `targets` = Cibles ADDITIONNELLES ; `range`/`zone`/`duration` = multiplicateurs de la valeur
- *  listée ; `damage` = Dégât en plus (Projectiles magiques uniquement, `VDM 02 l.198`). */
-const VDM_OVERCAST: {
-  dr: number;
-  targets: number;
-  range: number;
-  zone: number;
-  duration: number;
-  damage: number;
-}[] = [
-  { dr: 21, targets: 3, range: 4, zone: 3, duration: 3, damage: 7 },
-  { dr: 13, targets: 2, range: 3, zone: 2, duration: 3, damage: 6 },
-  { dr: 8, targets: 2, range: 3, zone: 2, duration: 3, damage: 5 },
-  { dr: 5, targets: 2, range: 3, zone: 2, duration: 2, damage: 4 },
-  { dr: 3, targets: 1, range: 2, zone: 2, duration: 2, damage: 3 },
-  { dr: 2, targets: 1, range: 2, zone: 1, duration: 2, damage: 2 },
-  { dr: 1, targets: 1, range: 2, zone: 1, duration: 1, damage: 1 },
-];
+/** TABLEAU DE SURINCANTATION (`VDM 02 l.207-215`), LU de la donnée `src/data/surincantation.json` :
+ *  DR dépensés sur UNE colonne → effet obtenu. `targets` = Cibles ADDITIONNELLES ;
+ *  `range`/`zone`/`duration` = multiplicateurs de la valeur listée ; `damage` = Dégât en plus
+ *  (Projectiles magiques uniquement, `VDM 02 l.198`). */
+type OvercastRow = SurincantationData['table'][number];
+/** La table EFFECTIVEMENT lue par le moteur — MÊME référence que le module JSON (singleton ESM) :
+ *  une édition au Compendium est vue en direct, et la garde de parité (`overcast.test.ts`) refuse
+ *  toute ré-inscription en dur (une copie littérale ne serait plus la même référence). */
+export const VDM_OVERCAST: OvercastRow[] = (surincantationJson as unknown as SurincantationData).table;
 
-/** Rangée atteinte par `dr` DR dépensés sur une colonne (la plus haute ≤ `dr`) ; `null` en dessous de 1. */
-function vdmRow(dr: number): (typeof VDM_OVERCAST)[number] | null {
-  return VDM_OVERCAST.find((r) => dr >= r.dr) ?? null;
+/** Rangée atteinte par `dr` DR dépensés sur une colonne (le PALIER le plus haut ≤ `dr`) ; `null` en
+ *  dessous du plus petit palier. Indépendant de l'ordre d'authoring des rangées. */
+function vdmRow(dr: number): OvercastRow | null {
+  let best: OvercastRow | null = null;
+  for (const r of VDM_OVERCAST) if (dr >= r.dr && (!best || r.dr > best.dr)) best = r;
+  return best;
 }
 
 /**

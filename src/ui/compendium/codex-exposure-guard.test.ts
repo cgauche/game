@@ -102,6 +102,8 @@ const FILE_TO_CATEGORY_KEYS: Record<string, string[]> = {
   'qualities.json': ['qualities'],
   'raceAppearance.json': ['raceAppearance'],
   'regles.json': ['regles'],
+  'reglesOptionnelles.json': ['reglesOptionnelles'],
+  'surincantation.json': ['surincantation'],
   'rencontres-edoc.json': ['rencontresPositives', 'rencontresFortuites', 'rencontresDangereuses'],
   'river-criticals.json': ['riverCriticalsGreement', 'riverCriticalsAvirons', 'riverCriticalsGouvernail', 'riverCriticalsCoque', 'riverCriticalsSuperstructure'],
   'river-navigation.json': ['riverNavigation'],
