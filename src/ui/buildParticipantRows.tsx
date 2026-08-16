@@ -1,18 +1,18 @@
 import { createElement, Fragment, type ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
-import { canReroll } from '../engine/fortune';
 import { refLabel } from '../data';
 import type { PanelRowData } from './RollPanel';
 import { participantRow, type BuiltRollRow } from './rollRowBuild';
 
 /**
- * SOURCE UNIQUE des rangées-participants d'une modale MULTI (#328) — les DÉRIVATIONS d'éligibilité
- * d'influence (`rerollable`/`darkPactable`/`forceShow`) sont des INVARIANTS (credo : mutualiser
- * l'invariant) : une évolution de la règle du Pacte/Chance ne se retouche QU'ICI, jamais dans les 6
- * modales (`CascadeModal` batch, `CrewTestModal`, `ShipBatteryModal`, `ShipManeuverModal`,
- * `ForceDoorModal`, `DisengageModal`). Chaque modale ne fournit QUE la PRÉSENTATION de sa rangée
- * (`row`, propre à son vocabulaire de données) + son bundle d'actions de flux. `failed` se dérive de
- * `result.success` s'il existe (`CascadeRoll`), sinon de `roll > target` (`CrewRoleRoll` nu).
+ * SOURCE UNIQUE des rangées-participants d'une modale MULTI (#328) : `CascadeModal` batch,
+ * `CrewTestModal`, `ShipBatteryModal`, `ShipManeuverModal`, `ForceDoorModal`, `DisengageModal`.
+ * Chaque modale ne fournit QUE la PRÉSENTATION de sa rangée (`row`, propre à son vocabulaire de
+ * données) + son bundle d'actions de flux.
+ *
+ * Aucune éligibilité d'influence n'est montée ici : les fenêtres de la Chance, du Sombre Pacte et de
+ * la Résilience sont des prédicats purs du seam (`state/rollFlowFactory.ts`), appliqués au rendu à
+ * partir de la ligne posée et de `rerolled`.
  */
 export interface ParticipantRow {
   id: string;
@@ -49,13 +49,6 @@ export interface ParticipantRowBundle<P extends ParticipantRow> {
   rollLabel?: ReactNode;
 }
 
-/** Un participant est-il en ÉCHEC ? `success` fait foi quand il existe (bandes auto LDB 12), sinon
- *  `roll > target` (résultat de rôle nu). Absent de résultat → pas d'échec (rien à influencer). */
-function participantFailed(res: ParticipantRow['result']): boolean {
-  if (!res) return false;
-  return res.success != null ? !res.success : res.roll > res.target;
-}
-
 /** Action « Tout lancer » PAR RANGÉES (mutualisée #328) : lance d'un coup toutes les rangées
  *  INTERACTIVES non encore lancées — renvoyée seulement s'il en reste ≥ 2 (en deçà, le bouton « Lancer »
  *  par rangée suffit). `null` sinon. Consommée par les modales MULTI (batch cascade + naval). */
@@ -77,7 +70,6 @@ export function buildParticipantRows<P extends ParticipantRow>(
     const actor = pool.find((c) => c.id === part.id);
     if (!actor) return [];
     const res = part.result;
-    const failed = participantFailed(res);
     const extendedDr = bundle.extendedDrOf?.(part, actor);
     // Z5 (docs/charte-ui.md) — SOURCE UNIQUE du libellé de LIGNE d'une rangée-participant : la
     // Compétence lancée, DÉRIVÉE de la paire `{skillId, spec}` par le résolveur canonique (« Voile
@@ -105,13 +97,11 @@ export function buildParticipantRows<P extends ParticipantRow>(
       interactive: bundle.interactiveOf ? bundle.interactiveOf(part, actor) : part.interactive !== false,
       ...(bundle.rollLabel != null ? { rollLabel: bundle.rollLabel } : {}),
       onRoll: () => bundle.onRoll(part.id),
-      rerollable: !!res && canReroll(failed, !!part.rerolled),
+      rerolled: !!part.rerolled,
       onReroll: () => bundle.onReroll(part.id),
       onBonusSL: () => bundle.onBonusSL(part.id),
-      darkPactable: actor.kind === 'hero' && !!res, // LDB 19 l.17
       onDarkPact: () => bundle.onDarkPact(part.id),
       onForce: () => bundle.onForce(part.id),
-      forceShow: !!res,
       ...(extendedDr ? { extendedDr } : {}),
     })];
   });

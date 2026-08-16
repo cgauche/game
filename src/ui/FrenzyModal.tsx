@@ -1,7 +1,5 @@
 import { useGame } from '../state/store';
 import { flowStakeRef } from '../data';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { effectiveChar } from '../engine/characteristics';
 import { RollShell, type RollAction } from './RollShell';
 import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
@@ -38,14 +36,11 @@ export function FrenzyModal() {
       d: r ? testBreakdown('Force Mentale', effectiveChar(c, 'force-mentale'), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }) : undefined,
       pending: testPending('Force Mentale', effectiveChar(c, 'force-mentale')),
     },
-    freeReroll: freeRerollOf(c),
-    rerollable: !!r && !r.success && canReroll(true, !!pf.rerolled),
+    rerolled: !!pf.rerolled,
     onRoll: roll,
     onReroll: reroll,
-    darkPactable: !!r && c.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: !r?.success,
   }, {
     fortune: c.fortune ?? 0,
     resilience: c.resilience ?? 0,

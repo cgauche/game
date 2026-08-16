@@ -1,6 +1,4 @@
 import { useGame } from '../state/store';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import type { ModLine } from '../engine/combat';
 import { evaluateTest } from '../engine/tests';
 import { RollShell, type RollAction } from './RollShell';
@@ -67,12 +65,13 @@ export function ActivityModal() {
       d: rolled ? testBreakdown(pa.skillLabel, base, { roll: pa.roll!, target: pa.target, sl: pa.sl, success: pa.success }, pa.difficulty, extraMods.length ? extraMods : undefined) : undefined,
       pending: testPending(pa.skillLabel, base, target1, pa.difficulty, extraMods.length ? extraMods : undefined),
     },
-    freeReroll: freeRerollOf(actor),
-    rerollable: rolled && pa.roll != null && canReroll(failed, !!pa.rerolled),
+    // Test COMBINÉ : un volet qui tombe reste un échec global (LDB 12 l.202-208) même quand la ligne
+    // affiche la réussite de skill-1 — c'est ce `lost` qui garde la Résilience offerte.
+    lost: failed,
+    rerolled: !!pa.rerolled,
     onRoll: roll,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: rolled, // LDB 19 l.17
     onDarkPact: darkPact,
   }, {
     key: 'actor',

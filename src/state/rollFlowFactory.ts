@@ -23,7 +23,7 @@ import type { GameState } from './store';
 import type { Combatant, Difficulty } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { availableResistance, markResistanceUsed, resistanceForcedSL, resistanceImproves } from '../engine/menace';
-import { hasActiveFlag, consumeActiveFlag } from '../engine/activeFlags';
+import { hasActiveFlag, consumeActiveFlag, freeRerollOf } from '../engine/activeFlags';
 import { touchActors } from './combatOrParty';
 import { surfaceOf } from './rollSeam';
 import { gainCorruption } from './corruptionFlow';
@@ -33,6 +33,74 @@ import { bumpSL, evaluateTest, maxForcedRoll, forcedTR, bestForcedRoll, type Tes
 import { applyReverse, reverseAvailable as engineReverseAvailable, reversePreview as engineReversePreview } from '../engine/reverseToken';
 import { clampFixedRoll } from '../engine/fixedDie';
 import { TestOutcome } from '../engine/testOutcome';
+
+/**
+ * FENÊTRES D'INFLUENCE — prédicats PURS, écrits UNE fois, à côté des ops qui les exécutent
+ * (`opReroll`, `opDarkPact`, `opForceSuccess`). Ce sont EUX que la coquille d'affichage consomme
+ * (`ui/RollRow` → `ui/InfluenceRow` → `ui/ChanceButtons`) : une modale ne déclare que les FAITS de
+ * son jet, jamais une éligibilité.
+ *
+ * Ce qu'ils NE disent PAS : si le flux OFFRE le verbe. Cela se lit à la PRÉSENCE du handler
+ * (`onReroll`/`onDarkPact`/`onForce`) — un flux qui n'offre pas la Résilience ne passe pas `onForce`,
+ * et aucun booléen ne peut le rallumer.
+ */
+
+/** Ressources d'influence du jeteur — dérivées du `Combatant`, ou fournies en primitives par une
+ *  vue pure (rangée sans objet `Combatant`). Construite par `actorInfluenceView`, jamais à la main. */
+export interface RollActorView {
+  kind?: Combatant['kind'];
+  fortune: number;
+  resilience: number;
+  /** Relance GRATUITE armée (Bénédiction de Chance, `LDB 41`). */
+  freeReroll: boolean;
+}
+
+/** État du jet de la rangée. `failed` se juge sur le jet PROPRE (`LDB 12 l.13`, cf. `canReroll`),
+ *  jamais sur l'issue d'une opposition — celle-ci a son propre champ, `lost`. */
+export interface RollInfluenceView {
+  rolled: boolean;
+  failed: boolean;
+  rerolled?: boolean;
+  /** Test OPPOSÉ : cette rangée PERD l'opposition, jet propre réussi compris. La Résilience s'y joue
+   *  (`LDB 17 l.68` : « S'il s'agit d'un Test opposé, vous l'emportez avec au moins DR +1 ») ; la
+   *  Chance, non (`canReroll` : le jet propre seul). */
+  lost?: boolean;
+}
+
+/** Relance GRATUITE armée sur l'acteur (`LDB 41`). */
+export function freeRerollAvailable(actor?: Combatant | null): boolean {
+  return freeRerollOf(actor);
+}
+
+/** Construit la vue de ressources — CONSTRUCTEUR UNIQUE : l'acteur fait foi, les primitives ne
+ *  servent qu'aux vues sans `Combatant` et priment quand elles sont fournies. */
+export function actorInfluenceView(
+  actor?: Combatant | null,
+  over?: { fortune?: number; resilience?: number },
+): RollActorView {
+  return {
+    ...(actor?.kind !== undefined ? { kind: actor.kind } : {}),
+    fortune: over?.fortune ?? actor?.fortune ?? 0,
+    resilience: over?.resilience ?? actor?.resilience ?? 0,
+    freeReroll: freeRerollAvailable(actor),
+  };
+}
+
+/** Chance — `LDB 17 l.23` + `LDB 12 l.40` ; ou relance gratuite `LDB 41`. Fenêtre de `opReroll`. */
+export function rerollAvailable(a: RollActorView, v: RollInfluenceView): boolean {
+  if (!v.rolled || !canReroll(v.failed, !!v.rerolled)) return false;
+  return a.freeReroll || a.fortune > 0;
+}
+
+/** Sombre Pacte — `LDB 19 l.17`. Fenêtre de `opDarkPact`. */
+export function darkPactAvailable(a: RollActorView, v: RollInfluenceView): boolean {
+  return v.rolled && a.kind === 'hero';
+}
+
+/** Résilience « Je ne faillirai pas ! » — `LDB 17 l.68`. Fenêtre de `opForceSuccess`. */
+export function forceAvailable(a: RollActorView, v: RollInfluenceView): boolean {
+  return (!v.rolled || v.failed || !!v.lost) && a.resilience > 0;
+}
 
 /** Champs communs à tous les objets `pending*` gérés par la fabrique. */
 export interface PendingBase {
@@ -294,6 +362,13 @@ export interface RollFlowHandlers {
    *  de possession (`FLOW_VERBS.jetOwner`) au site qui dépense. `undefined` si le pending est fermé,
    *  le `pid` inconnu, ou l'acteur absent de l'état. */
   actorOf: (get: Get, pid?: string) => Combatant | undefined;
+  /** ISSUE CANONIQUE du slot visé (`spec.outcome`) — accesseur PUR en LECTURE SEULE, même patron que
+   *  `slotOf`/`actorOf`. Elle porte le VERDICT (`won`) **et les chiffres qui le fondent**
+   *  (`roll`/`target`) : c'est ce qui rend CONFRONTABLE le ✓/✗ que la rangée imprime et la fenêtre
+   *  que le seam ouvre (`isFailed = !won`). Un flux dont le `won` contredit ses propres chiffres ne
+   *  peut avoir de ligne à la fois VRAIE et alignée sur le seam — d'où la garde
+   *  `rollflow-outcome-invariant`. `null` si le pending est fermé ou le `pid` inconnu. */
+  outcomeOf: (get: Get, pid?: string) => RollOutcome | null;
   /**
    * VERBE TERMINAL — acquittement : DÉRIVE l'issue du flux (`spec.issue`) et la rend, UNE fois, sur
    * son canal (`spec.issueChannel`). C'est LE point de journalisation des flux à fenêtre : un site
@@ -545,6 +620,10 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       const s = get(); const p = pendingOf(s); if (!p) return undefined;
       const slot = handlers.slotOf(get, pid); if (!slot) return undefined;
       return spec.actor(s, slot as unknown as Slot, p);
+    },
+    outcomeOf(get, pid) {
+      const slot = handlers.slotOf(get, pid);
+      return slot ? spec.outcome(slot as unknown as Slot) : null;
     },
     // OÙ vit le dé de ce slot (LDB 17 l.68 : « vous choisissez le résultat ») : l'ACCESSEUR, point.
     picker: ((slot: Slot, actor: Combatant | undefined, st?: GameState) =>

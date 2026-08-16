@@ -1,7 +1,5 @@
 import { useGame } from '../state/store';
 import { flowStakeRef } from '../data';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { testValue } from '../engine/skills';
 import { RollShell, type RollAction } from './RollShell';
 import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
@@ -65,15 +63,12 @@ export function FallModal() {
       d: r ? testBreakdown('Athlétisme', testValue(c, 'athletisme'), { roll: r.roll, target: r.target, sl: r.dr, success: r.success }, 'accessible') : undefined,
       pending: testPending('Athlétisme', testValue(c, 'athletisme'), undefined, 'accessible'),
     },
-    freeReroll: freeRerollOf(c),
     onRoll: roll,
-    rerollable: !!r && !r.success && canReroll(true, !!p.rerolled),
+    rerolled: !!p.rerolled,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: !!r && c.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: !r?.success,
   });
 
   const actions: RollAction[] = [

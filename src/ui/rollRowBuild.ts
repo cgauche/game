@@ -52,23 +52,33 @@ function mark<T extends RollRowData>(row: T): T & { readonly [ROLL_ROW_BRAND]: t
   return { [ROLL_ROW_BRAND]: true, ...row };
 }
 
-/** NOYAU d'une rangée MONO — les 11 champs que tout monteur de rangée remplit. Chance, relance
- *  gratuite et Résilience n'y sont PAS : elles se DÉRIVENT de `actor` une seule fois, au rendu
- *  (`RollRow`/`InfluenceRow`), au lieu d'être recopiées (et divergées) par chaque site. */
+/**
+ * NOYAU d'une rangée MONO — la ligne, le jeteur, les FAITS de son jet, et l'OFFRE de chaque verbe.
+ *
+ * Aucune ÉLIGIBILITÉ d'influence n'y figure : les fenêtres de la Chance, du Sombre Pacte et de la
+ * Résilience sont des prédicats purs du seam (`state/rollFlowFactory.ts`), appliqués au rendu par
+ * `RollRow`/`InfluenceRow`. Ce qu'un site déclare, c'est ce qu'il SAIT : l'acteur, la ligne (`row.d`
+ * porte le jet et son succès), `rerolled`, et les handlers des verbes qu'il OFFRE — un flux sans
+ * Résilience ne passe pas `onForce`, et aucun booléen ne peut la rallumer.
+ */
 export interface RollRowCore {
   row: PanelRowData;
   /** Le jeteur — porte Chance/Résilience. Absent = rangée sans `Combatant` (vue pure, adversaire
    *  abstrait) : alors le site fournit lui-même les primitives via `extras`. */
   actor?: Combatant;
+  /** Une relance a DÉJÀ été consommée sur ce Test (`slot.rerolled`, LDB 12 l.40). */
+  rerolled?: boolean;
+  /** L'ISSUE du flux est DÉFAVORABLE alors que le jet propre a réussi — Test COMBINÉ dont un volet
+   *  tombe (`combinedLevel !== 'full'`, LDB 12 l.202-208), incantation dont le NI n'est pas atteint.
+   *  FAIT d'issue, pas une affordance : seule la Résilience s'y ouvre (`LDB 17 l.68`), la Chance
+   *  reste jugée sur le jet propre (`LDB 12 l.13`). Absent → l'issue est celle de la ligne, et un
+   *  Test opposé la tient déjà de son accent (`winner`). */
+  lost?: boolean;
   onRoll?: () => void;
-  rerollable?: boolean;
   onReroll?: () => void;
-  darkPactable?: boolean;
   onDarkPact?: () => void;
   onBonusSL?: () => void;
   onForce?: () => void;
-  forceShow?: boolean;
-  freeReroll?: boolean;
 }
 
 /** Extras TYPÉS d'un site : tout `RollRowData` hors noyau et hors `rolled` (dérivé). */

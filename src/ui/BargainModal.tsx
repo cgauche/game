@@ -2,8 +2,6 @@ import { useGame, type PendingBargain } from '../state/store';
 import type { Combatant } from '../engine/types';
 import { spawnEnemy } from '../state/spawn';
 import { influencesLocally } from '../state/netOwnership';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction } from './RollShell';
 import { soutienMod, opposedLines } from './breakdown';
 import { testValueParts } from '../engine/skills';
@@ -19,7 +17,6 @@ export function BargainModalView({
   actor,
   merchant,
   fortune,
-  freeReroll,
   onRoll,
   onReroll,
   onBonusSL,
@@ -34,7 +31,6 @@ export function BargainModalView({
   /** Le marchand, dérivé de l'entité de scène → portrait de la ligne adverse. */
   merchant?: Combatant;
   fortune: number;
-  freeReroll?: boolean;
   onRoll: () => void;
   onReroll: () => void;
   onBonusSL: () => void;
@@ -75,12 +71,10 @@ export function BargainModalView({
       d: playerD,
       pending: playerLine.pending,
     },
-    freeReroll,
-    rerollable: rolled && pb.roll != null && canReroll(pb.roll.roll > pb.roll.target, !!pb.rerolled),
+    rerolled: !!pb.rerolled,
     onRoll,
     onReroll,
     onBonusSL,
-    darkPactable: rolled, // LDB 19 l.17
     onDarkPact,
   }, {
     interactive: owned,
@@ -149,5 +143,5 @@ export function BargainModal() {
   // Le Marchandage se joue ENTIER par le siège du négociateur — MÊME prédicat que la validation
   // d'intent côté hôte (`intentAllowedFor` → `seatInfluences`) : afficher et agir répondent pareil.
   const owned = influencesLocally(useGame.getState(), pb.playerId);
-  return <BargainModalView pb={pb} actor={actor} merchant={merchant} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} owned={owned} />;
+  return <BargainModalView pb={pb} actor={actor} merchant={merchant} fortune={actor?.fortune ?? 0} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} owned={owned} />;
 }

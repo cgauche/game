@@ -12,8 +12,6 @@ import { HealRollFlow } from './HealModal';
 import { RollShell, type RollAction } from './RollShell';
 import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { testValueSplit, testBreakdown, testPending } from './breakdown';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { isHealable, lodgedAmmoCount, type HealMode } from '../engine/healing';
 import { hasTreatableTrauma, hasSurgeryTrauma, surgeryTraumas, recoverableTraumas, hasLimbAwaitingAid } from '../engine/trauma';
 import { bestHealerFor } from '../state/medicFlow';
@@ -79,7 +77,6 @@ function SurgeryRollFlow() {
   const surgeon = party.find((c) => c.id === ps.healerId); // absent (PNJ médecin) → Chance/Résilience à 0
   const fortune = surgeon?.fortune ?? 0;
   const rolled = ps.roll != null;
-  const freeReroll = freeRerollOf(surgeon);
   // Soutien des assistants de chirurgie (LDB 12) et composantes de la valeur de Test (États, séquelles,
   // passifs, effets — #1178) : lignes de mod NOMMÉES, base rebasée sur le Niveau de Compétence nu
   // (LDB 09 l.17). Chirurgien PNJ tarifé (aucune fiche) : affichage inchangé (garde de reconstruction).
@@ -91,15 +88,12 @@ function SurgeryRollFlow() {
       d: rolled ? testBreakdown('Guérison', base, { roll: ps.roll!, target: ps.target, sl: ps.sl, success: ps.success }, ps.difficulty, supMods) : undefined,
       pending: testPending('Guérison', base, ps.target, ps.difficulty, supMods),
     },
-    freeReroll,
-    rerollable: rolled && canReroll(ps.roll! > ps.target, !!ps.rerolled) && (fortune > 0 || freeReroll),
+    rerolled: !!ps.rerolled,
     onRoll: roll,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: rolled && surgeon?.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: !ps.success,
   }, {
     fortune,
     resilience: surgeon?.resilience ?? 0,

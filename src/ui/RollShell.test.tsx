@@ -23,7 +23,7 @@ const rolledRow = (over: Partial<RollRowData> = {}): BuiltRollRow => ({
   ...buildRollRow(
     {
       row: { d: testBreakdown('Athlétisme', 45, { roll: 22, target: 45, sl: 2, success: true }) },
-      rerollable: true, onRoll: noop, onReroll: noop, onBonusSL: noop,
+      onRoll: noop, onReroll: noop, onBonusSL: noop,
     },
     { fortune: 1, resilience: 1 },
   ),

@@ -1,6 +1,4 @@
 import { useGame } from '../state/store';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { combatValue } from '../engine/combat';
 import { creatureAttacks } from '../engine/creatureAttacks';
 import { MANEUVER_ICON } from '../state/combatFlow';
@@ -55,15 +53,12 @@ export function ManeuverModal() {
       d: r ? testBreakdown(label, base, { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, difficulty) : undefined,
       pending: testPending(label, base, undefined, difficulty),
     },
-    freeReroll: freeRerollOf(attacker),
     onRoll: roll,
-    rerollable: !!r && !r.success && canReroll(true, !!pm.rerolled),
+    rerolled: !!pm.rerolled,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: !!r && attacker.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: !!r && !r.success,
     // LDB 17 l.68 : réussite forcée = dé PAR DÉFAUT (DR max), et le joueur peut CHOISIR ce dé — le
     // sélecteur est dérivé par la coquille (`RollShell` → `rowForcedDie`), sans code ici. Le dé ne
     // nourrit que le DR de l'opposition (`resolveManeuver`) : aucun Coup Critique n'en dépend.

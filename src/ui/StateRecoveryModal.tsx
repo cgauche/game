@@ -1,8 +1,6 @@
 import { useGame, type PendingStateRecovery } from '../state/store';
 import { flowStakeRef } from '../data';
 import type { Combatant } from '../engine/types';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction } from './RollShell';
 import { buildRollRow, witnessRow, type BuiltRollRow } from './rollRowBuild';
 import { opposedLines } from './breakdown';
@@ -15,7 +13,6 @@ export function StateRecoveryModalView({
   sr,
   actor,
   fortune,
-  freeReroll,
   onRoll,
   onReroll,
   onBonusSL,
@@ -27,7 +24,6 @@ export function StateRecoveryModalView({
   /** Acteur qui se libère (jet mono-acteur côté joueur) → portrait dans la ligne de jet. */
   actor?: Combatant;
   fortune: number;
-  freeReroll?: boolean;
   onRoll: () => void;
   onReroll: () => void;
   onBonusSL: () => void;
@@ -55,12 +51,10 @@ export function StateRecoveryModalView({
       d: actorLine.d,
       pending: actorLine.pending,
     },
-    freeReroll,
-    rerollable: rolled && canReroll(!sr.success, !!sr.rerolled),
+    rerolled: !!sr.rerolled,
     onRoll,
     onReroll,
     onBonusSL,
-    darkPactable: rolled, // LDB 19 l.17
     onDarkPact,
   }, { fortune });
   // Test opposé : rangée TÉMOIN de la source (Force), figée post-jet.
@@ -108,6 +102,6 @@ export function StateRecoveryModal() {
   if (!sr || !battle) return null;
   const actor = battle.combatants.find((c) => c.id === sr.actorId);
   return (
-    <StateRecoveryModalView sr={sr} actor={actor} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />
+    <StateRecoveryModalView sr={sr} actor={actor} fortune={actor?.fortune ?? 0} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />
   );
 }

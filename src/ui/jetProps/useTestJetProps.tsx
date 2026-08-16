@@ -1,8 +1,6 @@
 import type { ComponentProps } from 'react';
 import { useGame } from '../../state/store';
 import { FLOWS } from '../../state/rollFlowSpecs';
-import { canReroll } from '../../engine/fortune';
-import { freeRerollOf } from '../../engine/activeFlags';
 import { RollShell, type RollAction } from '../RollShell';
 import { buildRollRow } from '../rollRowBuild';
 import { PortraitPicker } from '../PortraitPicker';
@@ -107,18 +105,19 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
       buildRollRow({
         /* Pré-jet : ligne en attente (portrait sauf en mode picker — le picker montre déjà qui) ;
            post-jet : la ligne PORTE le portrait de l'acteur (comme la cascade). */
+        /* Le ✓/✗ de la LIGNE est le verdict du TEST (d100 propre, `LDB 12 l.56`) — pas l'issue
+           composée `pt.success`, qui porte en plus le seuil de DR exigé (`requireSL`). Le seuil manqué
+           se dit par le verdict du flux ; la ligne, elle, dit le Test. C'est aussi l'issue canonique
+           du seam (`rollOutcome`), dont dérivent Chance et Résilience. */
         row: rolled
-          ? { combatant: actor, d: testBreakdown(skillLabel, base, { roll: pt.roll!, target: pt.target, sl: pt.sl, success: pt.success, clamped: pt.clamped }, pt.difficulty, extraMods, pt.easedBy) }
+          ? { combatant: actor, d: testBreakdown(skillLabel, base, { roll: pt.roll!, target: pt.target, sl: pt.sl, success: pt.roll! <= pt.target, clamped: pt.clamped }, pt.difficulty, extraMods, pt.easedBy) }
           : (multi ? { pending: pendingLine } : { combatant: actor, pending: pendingLine }),
         onRoll: roll,
-        freeReroll: freeRerollOf(actor),
-        rerollable: rolled && pt.roll != null && canReroll(pt.roll > pt.target, !!pt.rerolled),
+        rerolled: !!pt.rerolled,
         onReroll: reroll,
         onBonusSL: bonusSL,
-        darkPactable: rolled, // LDB 19 l.17
         onDarkPact: darkPact,
         onForce: forceSuccess,
-        forceShow: rolled && !pt.success,
       }, {
         fortune: actor?.fortune ?? 0,
         resilience: actor?.resilience ?? 0,

@@ -1,9 +1,7 @@
 import { useGame, type PendingAppraise } from '../state/store';
 import { flowStakeRef } from '../data';
 import type { Combatant } from '../engine/types';
-import { canReroll } from '../engine/fortune';
 import { influencesLocally } from '../state/netOwnership';
-import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction } from './RollShell';
 import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { testValueSplit, testBreakdown, testPending } from './breakdown';
@@ -17,7 +15,6 @@ export function AppraiseModalView({
   pa,
   actor,
   fortune,
-  freeReroll,
   onRoll,
   onReroll,
   onBonusSL,
@@ -30,7 +27,6 @@ export function AppraiseModalView({
   /** Évaluateur (jet mono-acteur) → portrait dans la ligne de jet. */
   actor?: Combatant;
   fortune: number;
-  freeReroll?: boolean;
   onRoll: () => void;
   onReroll: () => void;
   onBonusSL: () => void;
@@ -56,12 +52,10 @@ export function AppraiseModalView({
       d: rolled ? testBreakdown(skill, base, { roll: pa.roll!, target: pa.target, sl: pa.sl, success: pa.success }, pa.difficulty, supMods) : undefined,
       pending: testPending(skill, base, pa.target, pa.difficulty, supMods),
     },
-    freeReroll,
-    rerollable: rolled && pa.roll != null && canReroll(pa.roll > pa.target, !!pa.rerolled),
+    rerolled: !!pa.rerolled,
     onRoll,
     onReroll,
     onBonusSL,
-    darkPactable: rolled, // LDB 19 l.17
     onDarkPact,
   }, {
     interactive: owned,
@@ -113,5 +107,5 @@ export function AppraiseModal() {
   // COOP (#1017) : même prédicat que la validation d'intent côté hôte (`seatInfluences`) — l'Évaluation
   // se joue entière par le siège de l'évaluateur (jet, influence, « Appliquer »).
   const owned = influencesLocally(useGame.getState(), pa.actorId);
-  return <AppraiseModalView pa={pa} actor={actor} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} owned={owned} />;
+  return <AppraiseModalView pa={pa} actor={actor} fortune={actor?.fortune ?? 0} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} owned={owned} />;
 }

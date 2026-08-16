@@ -198,7 +198,15 @@ describe('#990 site 2 — incantation opposée : la rangée du lanceur ET son ve
     });
     act(() => { root.render(<CastModal />); });
     expect(dice()[0]).toBe(fmtD100(45));
-    expect(host.querySelectorAll('.prow')[0]?.textContent, 'le lanceur voit son propre jet : son cycle d’influence reste servi').toContain('Résilience');
+    // Le lanceur voit son propre jet : son cycle d'influence reste SERVI (aucun masque).
+    // Les verbes attendus sont ceux que la RÈGLE ouvre ici : 45 ≤ 50, le Test est RÉUSSI et seul le NI
+    // manque (`LDB 46 l.23-25` : « Succès mais DR < NI → tentative échoue »). Chance (LDB 17 l.23,
+    // « conclu par un échec ») et Résilience (LDB 17 l.68) n'ont donc rien à rattraper ; le Sombre
+    // Pacte (LDB 19 l.17, sans « raté ») et le « +1 DR » (LDB 17 l.26, après le jet) restent offerts.
+    const prow = host.querySelectorAll('.prow')[0]?.textContent ?? '';
+    expect(prow, 'le Sombre Pacte du lanceur n’est pas masqué').toContain('Pacte');
+    expect(prow, 'le « +1 DR » de Chance n’est pas masqué').toContain('+1 DR');
+    expect(prow, 'Test RÉUSSI : la Résilience n’a rien à forcer').not.toContain('Résilience');
   });
 
   /** Fermeture de FORME : la fuite F1 (« Résilience » sur rangée masquée) n'était pas un oubli isolé
@@ -217,8 +225,8 @@ describe('#990 site 2 — incantation opposée : la rangée du lanceur ET son ve
         // La sous-ligne (issue en clair) vit DANS la ligne : c'est le canal unique `PanelRowData.note`.
         row: { combatant: E, pending: { label: 'Incantation', base: 45 }, note: 'DR net +2' },
         onRoll, actor: E,
-        // Les dérivés de rangée, tous renseignés : un champ non neutralisé se voit.
-        forceShow: true, rerollable: true, darkPactable: true,
+        // FAIT d'issue renseigné : un champ non neutralisé se voit.
+        lost: true,
       },
       {
         interactive: true, fortune: 3, resilience: 2,
@@ -228,12 +236,12 @@ describe('#990 site 2 — incantation opposée : la rangée du lanceur ET son ve
         winner: 'win',
       },
     );
-    const DERIVES = ['forceShow', 'rerollable', 'darkPactable', 'reverse', 'resist', 'extendedDr', 'winner'] as const;
+    const DERIVES = ['reverse', 'resist', 'extendedDr', 'winner'] as const;
 
     const masked = maskOpposedRow(s, { ownerId: 'E', responded: false }, base);
     expect(masked.row.pending?.mask).toBe('roll');
     expect(
-      DERIVES.filter((k) => masked[k] !== false && masked[k] !== undefined),
+      DERIVES.filter((k) => masked[k] !== undefined),
       'champ dérivé du résultat encore ARMÉ sur une rangée masquée — il annonce le verdict que le dé cache',
     ).toEqual([]);
     expect(masked.reverse, 'son `preview` porte {roll, sl, success} : le dé fuirait par là').toBeUndefined();

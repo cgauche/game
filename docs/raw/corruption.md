@@ -65,7 +65,7 @@ Deux mécanismes distincts permettent d'accumuler des Points de Corruption : les
 > « Vous pouvez décider de recevoir volontairement un Point de Corruption pour pouvoir relancer un Test, même si un deuxième jet a déjà été effectué. C'est toujours un choix qui vous appartient – jamais le MJ ne peut prendre cette décision à votre place. »
 > — LDB 19 l.17
 
-Un Sombre Pacte coûte **+1 Point de Corruption** et permet de **relancer n'importe quel Test raté**, même si la Chance a déjà été dépensée pour une première relance. Il s'agit d'un 3e jet possible sur le même Test (Chance → Sombre Pacte → résultat).
+Un Sombre Pacte coûte **+1 Point de Corruption** et permet de **relancer un Test** — le verbatim ci-dessus ne restreint PAS au Test raté (contrairement à la Chance, LDB 17 l.23) et couvre explicitement le cas où « un deuxième jet a déjà été effectué » (Chance → Sombre Pacte → résultat possible sur le même Test).
 
 Le MJ peut suggérer l'option, mais **la décision appartient toujours au joueur**.
 

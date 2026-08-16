@@ -9,9 +9,7 @@ import { conjureFormOptions } from '../engine/conjuredWeapons';
 import { testValue } from '../engine/skills';
 import { castingValue, spellTargetCount, overcastSL, castAfterCrit, castInfoIsPrayer } from '../engine/magic';
 import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, missileOvercastDamageBonus, spellHasOvercastTableRoll, overcastBudget, overcastStepCost } from '../engine/overcast';
-import { canReroll } from '../engine/fortune';
 import { availableResistance, resistanceImproves } from '../engine/menace';
-import { freeRerollOf } from '../engine/activeFlags';
 import { rule } from '../engine/policy';
 import { CharFrame } from './CharFrame';
 import { OptionChooser } from './OptionChooser';
@@ -86,7 +84,6 @@ export function CastModal() {
   const spell = findSpellById(pc.spellId);
   if (!caster || !target || !spell) return null;
   const res = pc.result;
-  const rerollable = !!res && canReroll(res.roll > res.target, !!pc.rerolled);
   const isPrayer = castInfoIsPrayer(spell); // la branche de résolution, pas un proxy sur `cn`
   const ni = spell.cn ?? 0;
   const selfTarget = caster.id === target.id;
@@ -157,23 +154,25 @@ export function CastModal() {
   // Rangée du lanceur : son cycle d'influence (Lancer/Chance/+1 DR/Pacte/Résilience, sélecteur de dé)
   // appartient au siège qui PILOTE le lanceur — `influencesLocally` (#1005) ; un lanceur ENNEMI (IA, ou
   // MJ d'un AUTRE siège) rend donc une rangée TÉMOIN : portrait, jet et verdict restent lisibles, aucune
-  // affordance n'est offerte. Elle passe ENSUITE par le calendrier #990 — `maskOpposedRow` ENVELOPPE la
-  // rangée, donc aucun champ posé ici ne peut ré-armer une affordance masquée, quel que soit l'ordre
-  // d'écriture.
+  // affordance n'est offerte. Elle passe ENSUITE par le calendrier #990 — `maskOpposedRow` MASQUE sa
+  // ligne, et le cycle d'influence, DÉRIVÉ de cette ligne, s'éteint avec elle.
   const castRow: BuiltRollRow = maskOpposedRow(useGame.getState(), { ownerId: pc.casterId, responded }, buildRollRow({
     actor: caster,
+    // Le ✓/✗ de la LIGNE est le verdict du TEST (`LDB 46 l.23-25` : « Succès mais DR < NI → tentative
+    // échoue » — la tentative échoue, le Test est RÉUSSI). Le « sort non lancé » se dit par le verdict
+    // du flux (issue/journal), jamais par le succès de la ligne : c'est aussi l'issue canonique du
+    // seam (`cleanRollOutcome`, roll ≤ cible), dont dérivent Chance et Résilience.
     row: res
-      ? { combatant: caster, d: testBreakdown(castLabel, previewRolled.base, { roll: res.roll, target: res.target, sl: res.sl, success: res.cast }, undefined, previewRolled.mods) }
+      ? { combatant: caster, d: testBreakdown(castLabel, previewRolled.base, { roll: res.roll, target: res.target, sl: res.sl, success: res.roll <= res.target }, undefined, previewRolled.mods) }
       : { combatant: caster, pending: testPending(castLabel, preview.base, preview.target, undefined, preview.mods) },
     onRoll: roll,
-    rerollable,
+    rerolled: !!pc.rerolled,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: caster.kind === 'hero' && res != null && res.roll > 0, // LDB 19 l.17
-    onDarkPact: darkPact,
-    freeReroll: freeRerollOf(caster),
+    // Un sort résolu SANS jet (`roll` nul : incantation automatique) n'offre pas le Pacte — il n'y a
+    // pas de Test à relancer. L'OFFRE se dit par l'absence du handler.
+    ...(res != null && res.roll > 0 ? { onDarkPact: darkPact } : {}),
     onForce: forceSuccess,
-    forceShow: !!res && !res.cast,
   }, {
     interactive: influencesLocally(useGame.getState(), pc.casterId),
     fortune: caster.fortune ?? 0,
@@ -437,13 +436,14 @@ export function CastModal() {
                     interactive={owned}
                     rollLabel={<><Icon id="action/defend" size="sm" /> Résister</>}
                     onRoll={() => oppRoll(part.id)}
-                    rerollable={!!r && canReroll(!r.resisted, !!part.rerolled)}
+                    rerolled={!!part.rerolled}
+                    /* La cible ne RÉSISTE pas : issue défavorable même sur un Test propre réussi
+                       (opposition perdue) — la Résilience y reste offerte (LDB 17 l.68). */
+                    lost={!!r && !r.resisted}
                     onReroll={() => oppReroll(part.id)}
                     onBonusSL={() => oppBonusSL(part.id)}
-                    darkPactable={actor.kind === 'hero' && !!r}
                     onDarkPact={() => oppDarkPact(part.id)}
                     onForce={() => oppForce(part.id)}
-                    forceShow={!!r && !r.resisted}
                     /* Résistance (Menace : Magie), LDB 10 l.1019-1020 : auto-succès du Test qui résiste au
                        Sort, à DR = Bonus d'Endurance. MÊME fenêtre que le verbe `resist` de la fabrique
                        (`resistanceImproves`) : une opposition GAGNÉE à DR inférieur laisse une marge que
@@ -550,13 +550,14 @@ export function CastModal() {
                         hint: situation,
                       }
                       : undefined}
-                    rerollable={!!r && canReroll(!r.counter.success, !!part.rerolled)}
+                    rerolled={!!part.rerolled}
+                    /* Le sort n'est PAS dissipé : issue défavorable même quand le Test de Langue
+                       magique passe — la Résilience y reste offerte (LDB 17 l.68). */
+                    lost={!!r && !r.dispelled}
                     onReroll={() => cspReroll(part.id)}
                     onBonusSL={() => cspBonusSL(part.id)}
-                    darkPactable={actor.kind === 'hero' && !!r}
                     onDarkPact={() => cspDarkPact(part.id)}
                     onForce={lance ? () => cspForce(part.id) : undefined}
-                    forceShow={!!r && !r.dispelled}
                   />
                 );
               })}

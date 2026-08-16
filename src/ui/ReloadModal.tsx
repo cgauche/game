@@ -1,8 +1,6 @@
 import { useGame, type PendingReload } from '../state/store';
 import { flowStakeRef } from '../data';
 import type { Combatant } from '../engine/types';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction } from './RollShell';
 import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { testBreakdown, testPending, supportSplit } from './breakdown';
@@ -16,7 +14,6 @@ export function ReloadModalView({
   pr,
   actor,
   fortune,
-  freeReroll,
   onRoll,
   onReroll,
   onBonusSL,
@@ -28,7 +25,6 @@ export function ReloadModalView({
   /** Tireur (jet mono-acteur) → portrait dans la ligne de jet. */
   actor?: Combatant;
   fortune: number;
-  freeReroll?: boolean;
   onRoll: () => void;
   onReroll: () => void;
   onBonusSL: () => void;
@@ -56,12 +52,10 @@ export function ReloadModalView({
       d: rolled ? testBreakdown('Projectiles', base, { roll: pr.roll!, target: pr.target, sl: pr.sl, success: pr.success }, pr.difficulty, mods) : undefined,
       pending: testPending('Projectiles', base, pr.target, pr.difficulty, mods),
     },
-    freeReroll,
-    rerollable: rolled && pr.roll != null && canReroll(pr.roll > pr.target, !!pr.rerolled),
+    rerolled: !!pr.rerolled,
     onRoll,
     onReroll,
     onBonusSL,
-    darkPactable: rolled, // LDB 19 l.17
     onDarkPact,
   }, {
     fortune,
@@ -108,6 +102,6 @@ export function ReloadModal() {
   if (!pr || !battle) return null;
   const actor = battle.combatants.find((c) => c.id === pr.actorId);
   return (
-    <ReloadModalView pr={pr} actor={actor} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />
+    <ReloadModalView pr={pr} actor={actor} fortune={actor?.fortune ?? 0} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />
   );
 }

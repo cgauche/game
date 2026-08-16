@@ -6,8 +6,6 @@ import type { RollLabelRef } from '../RollLine';
 import { crowdMod, bestRangedDefense, locationLabel, weaponInflictsFlames, attackTestLabel, isHelplessTarget } from '../../engine/combat';
 import { isUnarmed } from '../../engine/items';
 import { isInanimate } from '../../engine/structures';
-import { canReroll } from '../../engine/fortune';
-import { freeRerollOf } from '../../engine/activeFlags';
 import { combatDistance } from '../../state/footprint';
 import { attackWeaponOf, crowdEligible, previewAttack, previewDefense, defenseDodgeMod, surfacedDefensePending } from '../../state/combatFlow';
 import { t } from '../../i18n';
@@ -96,7 +94,6 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   const canWithhold = !res && weapon?.type === 'melee' && attacker.kind === 'hero' && !weaponInflictsFlames(weapon);
   // LDB 14 l.159
   const canGrapple = !res && weapon?.type === 'melee' && isUnarmed(weapon) && attacker.kind === 'hero';
-  const rerollable = !!res && canReroll(!res.attackerDetail?.success, !!pa.rerolled);
   // Panneau pré-rempli (l'avant-jet = le résultat, pré-rempli) : MA ligne (score + mods) recalculée à
   // chaque changement d'option ; la ligne adverse via `previewDefense` (compétence + mods, sans valeur).
   const preview = !res ? previewAttack(useGame.getState, attacker, target, pa.location ?? undefined, { intoCrowd: pa.intoCrowd, heldGround: pa.heldGround, weaponUid: pa.weaponUid, harpoonRopeCut: pa.harpoonRopeCut }) : null;
@@ -144,14 +141,13 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               ...(preview!.clamped ? { clamped: preview!.clamped } : {}),
             },
           },
-    freeReroll: freeRerollOf(attacker),
-    rerollable,
+    rerolled: !!pa.rerolled,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: attacker.kind === 'hero' && !pa.dualSecond && !!res, // LDB 19 l.17
-    onDarkPact: darkPact,
+    // Le second coup d'une attaque à DEUX ARMES n'offre pas le Sombre Pacte : l'OFFRE se dit par
+    // l'absence du handler, jamais par un booléen que la coquille pourrait rallumer.
+    ...(pa.dualSecond ? {} : { onDarkPact: darkPact }),
     onForce: forceSuccess,
-    forceShow: !!res && !res.hit,
     onRoll: roll,
   }, {
     rollFrisson: true,

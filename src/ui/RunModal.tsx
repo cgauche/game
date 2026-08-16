@@ -1,6 +1,4 @@
 import { useGame } from '../state/store';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { testValue } from '../engine/skills';
 import { flowStakeRef, refLabel } from '../data';
 import { RollShell, type RollAction } from './RollShell';
@@ -43,15 +41,12 @@ export function RunModal() {
       d: r ? testBreakdown(skillLabel, testValue(c, skillId), { roll: r.roll, target: r.target, sl: r.dr, success: r.success }, 'accessible') : undefined,
       pending: testPending(skillLabel, testValue(c, skillId), undefined, 'accessible'),
     },
-    freeReroll: freeRerollOf(c),
     onRoll: roll,
-    rerollable: !!r && !r.success && canReroll(true, !!pr.rerolled),
+    rerolled: !!pr.rerolled,
     onReroll: reroll,
     onBonusSL: bonusSL, // Chance « +1 DR » = +distance de Course (LDB 17 l.26) — offert dès le jet réussi OU raté
-    darkPactable: !!r && c.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: !r?.success,
   });
 
   const actions: RollAction[] = [

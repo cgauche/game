@@ -1,7 +1,5 @@
 import { useGame } from '../state/store';
 import { flowStakeRef } from '../data';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { combatValue } from '../engine/combat';
 import { battementFoes } from '../state/combatFlow';
 import { RollShell, type RollAction } from './RollShell';
@@ -46,15 +44,12 @@ export function BattementModal() {
       d: r ? testBreakdown('Corps à corps', combatValue(attacker, 'melee'), r) : undefined,
       pending: testPending('Corps à corps', combatValue(attacker, 'melee')),
     },
-    freeReroll: freeRerollOf(attacker),
     onRoll: roll,
-    rerollable: !!r && canReroll(!r.success, !!pb.rerolled),
+    rerolled: !!pb.rerolled,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: !!r && attacker.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: !r?.success,
   }, {
     // Résilience AVANT le jet (LDB 17 l.68) : on lance puis on force la réussite (dé PAR DÉFAUT = DR max
     // → plus d'Avantage retiré). PAS de choix du dé : l'Avantage retiré ne dépend que du DR.

@@ -1,6 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
 import { useGame } from '../state/store';
-import { canReroll } from '../engine/fortune';
 import { availableResistance, resistanceImproves } from '../engine/menace';
 import { RollShell, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
@@ -668,7 +667,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     const bandNote = mutualise ? <OutcomeNote {...mutualise.ops} /> : null;
     // Rangées-participants via le builder mutualisé (#328) : la modale ne fournit QUE la PRÉSENTATION
     // (label/base/mods déjà résolus à la construction, GÉNÉRIQUES) + son bundle d'actions de flux ; les
-    // dérivations d'éligibilité (rerollable/darkPactable/forceShow) vivent dans `buildParticipantRows`.
+    // fenêtres d'influence sont dérivées au rendu par les prédicats du seam.
     // Clés SCOPÉES PAR ÉTAPE (`witnessRowKey`) : la rangée batch COURANTE côtoie les rangées FIGÉES d'un
     // pas batch précédent aux MÊMES participants (Orientation puis Entretien) — sans scope, collision de
     // clé + duplication visuelle. `buildParticipantRows` keye par id nu (correct pour ses 6 autres
@@ -750,7 +749,6 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   if (!jetStepPresentable(cur, actor)) return null;
   const res = cur.result;
   const rolled = cur.target == null ? true : !!res;
-  const failed = !!res && !res.success;
   const curPending: PanelRow = { combatant: actor, ...(isRollStep(cur) ? { pending: pendingOf(cur) } : {}) };
   // `outcome` (résumé de conséquence) n'existe que sur une étape COMMITTÉE ; l'étape COURANTE
   // s'appuie sur la rangée ✓/✗ ±DR (breakdown) comme SEUL verdict (#295 Décision 1b) : aucun
@@ -779,13 +777,11 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       actor,
       row: res && isRollStep(cur) ? { combatant: actor, d: breakdown(cur, res) } : curPending,
       onRoll: () => roll(cur.id),
-      rerollable: !!res && canReroll(failed, !!cur.rerolled),
+      rerolled: !!cur.rerolled,
       onReroll: () => reroll(cur.id),
       onBonusSL: () => bonusSL(cur.id),
-      darkPactable: !!res && actor?.kind === 'hero', // LDB 19 l.17
       onDarkPact: () => darkPact(cur.id),
       onForce: () => force(cur.id),
-      forceShow: rolled && !res?.success,
     },
     {
       // Étape COURANTE du flux `cascade` : `key` = son id de slot → `RollShell` dérive le sélecteur

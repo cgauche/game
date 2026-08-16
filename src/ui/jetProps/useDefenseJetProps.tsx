@@ -7,8 +7,6 @@ import { combatSubstitute } from '../../engine/skillCombatApps';
 import { findSkillById } from '../../data/index';
 import { composeRollLabel } from '../../state/rollSeam';
 import { isUnarmed } from '../../engine/items';
-import { canReroll } from '../../engine/fortune';
-import { freeRerollOf } from '../../engine/activeFlags';
 import { RollShell, type RollAction } from '../RollShell';
 import { opposedResponded } from '../opposedFrozen';
 import { buildRollRow, frozenOpposedRow } from '../rollRowBuild';
@@ -50,7 +48,6 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   if (!attacker || !defender) return null;
   const res = pd.result;
   const rolled = !!res;
-  const rerollable = !!res && canReroll(!pd.def?.success, !!pd.rerolled);
   // Armes pouvant parer (hors Mains nues) ; arme de parade choisie (défaut = main principale).
   const parryPickable = defender.weapons.filter((w) => !isUnarmed(w) && !!w.uid);
   const chosenParry = pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : defender.weapons[0];
@@ -120,14 +117,11 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
       ? { combatant: defender, d: res.defenderDetail }
       : { combatant: defender, pending: defenseLine.pending },
     onRoll: roll,
-    freeReroll: freeRerollOf(defender),
-    rerollable,
+    rerolled: !!pd.rerolled,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: defender.kind === 'hero' && !!pd.def, // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: forceSuccess,
-    forceShow: !!res && res.hit,
   }, {
     rollFrisson: true,
     fortune: defender.fortune ?? 0,

@@ -1,7 +1,5 @@
 import type { ComponentProps } from 'react';
 import { useGame } from '../../state/store';
-import { canReroll } from '../../engine/fortune';
-import { freeRerollOf } from '../../engine/activeFlags';
 import { combatValue } from '../../engine/combat';
 import { RollShell, type RollAction } from '../RollShell';
 import { buildRollRow, type BuiltRollRow } from '../rollRowBuild';
@@ -47,15 +45,12 @@ export function useTrampleJetProps(): ComponentProps<typeof RollShell> | null {
       d: r?.attackerDetail,
       pending: testPending('Bagarre', combatValue(attacker, 'melee')),
     },
-    freeReroll: freeRerollOf(attacker),
     onRoll: roll,
-    rerollable: !!r && canReroll(!r.attackerDetail?.success, !!pt.rerolled),
+    rerolled: !!pt.rerolled,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: !!r && attacker.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: !r?.hit,
   }, {
     // Résilience AVANT le jet (LDB 17 l.68) : on lance puis on force la réussite.
     preRollForce: () => { roll(); force(); },

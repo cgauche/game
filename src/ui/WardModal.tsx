@@ -1,7 +1,5 @@
 import { useGame } from '../state/store';
 import { flowStakeRef } from '../data';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { effectiveChar } from '../engine/characteristics';
 import { RollShell, type RollAction } from './RollShell';
 import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
@@ -40,14 +38,11 @@ export function WardModal() {
       d: r ? testBreakdown('Force Mentale', effectiveChar(attacker, 'force-mentale'), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, 'accessible') : undefined,
       pending: testPending('Force Mentale', effectiveChar(attacker, 'force-mentale'), undefined, 'accessible'),
     },
-    freeReroll: freeRerollOf(attacker),
     onRoll: roll,
-    rerollable: !!r && !r.success && canReroll(true, !!pw.rerolled),
+    rerolled: !!pw.rerolled,
     onReroll: reroll,
-    darkPactable: !!r && attacker.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: !r?.success,
   });
 
   const actions: RollAction[] = [

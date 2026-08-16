@@ -67,7 +67,7 @@ const dRow = (label: string) => (a: Combatant, res: Res) => (res
   ? { combatant: a, d: { label, base: 40, modifier: 5, target: res.target, roll: res.roll, success: res.success, sl: res.sl } }
   : { combatant: a, pending: { label, base: 40, target: 45 } });
 
-const CHAMPS = ['actor', 'darkPactable', 'forceShow', 'interactive', 'key', 'onBonusSL', 'onDarkPact', 'onForce', 'onReroll', 'onRoll', 'rerollable', 'rolled', 'row'];
+const CHAMPS = ['actor', 'interactive', 'key', 'onBonusSL', 'onDarkPact', 'onForce', 'onReroll', 'onRoll', 'rerolled', 'rolled', 'row'];
 
 /** Les 6 consommateurs, par ce qui les DISTINGUE au monteur (le reste est identique par construction). */
 const profils: { nom: string; bundle: Record<string, unknown>; champs: string[] }[] = [
@@ -122,7 +122,7 @@ describe('#1262 L0 — la rangée-participant vient du NOYAU (contrat mesuré su
       onRoll: () => {}, onReroll: () => {}, onBonusSL: () => {}, onDarkPact: () => {}, onForce: () => {},
       row: (_p: ParticipantRow, a: Combatant, res: Res) => dRow('Ténacité')(a, res),
     } as never);
-    expect(rows[0].freeReroll, 'aucun champ recopié sur la rangée').toBeUndefined();
+    expect(rows[0].rerolled, 'seuls les FAITS du slot voyagent sur la rangée').toBe(false);
     const html = renderToStaticMarkup(<RollShell title="T" rows={rows} rolled actions={[]} />);
     expect(html, 'sans Point de Chance, la relance offerte est celle de la Bénédiction').toContain('Bénédiction de Chance');
   });

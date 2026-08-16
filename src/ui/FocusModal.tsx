@@ -1,7 +1,5 @@
 import { useGame } from '../state/store';
 import { findSpellById } from '../data/index';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { castingValue } from '../engine/magic';
 import { windsMagicLineOf } from '../state/combatOrParty';
 import { RollShell, type RollAction } from './RollShell';
@@ -47,15 +45,12 @@ export function FocusModal() {
       d: r ? testBreakdown('Focalisation', castingValue(caster, 'focalisation'), { roll: r.roll, target: r.target, sl: r.sl ?? r.dr, success: r.dr > 0 }, undefined, windsMods) : undefined,
       pending: testPending('Focalisation', castingValue(caster, 'focalisation'), undefined, undefined, battle?.windsOfMagic?.revealed ? windsMods : undefined),
     },
-    freeReroll: freeRerollOf(caster),
     onRoll: roll,
-    rerollable: !!r && canReroll(r.dr === 0, !!pf.rerolled),
+    rerolled: !!pf.rerolled,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: !!r && caster.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: r?.dr === 0,
   }, {
     /* Test ÉTENDU (Focalisation) : barre de DR de RANGÉE — site unique `RollRow` (arbitrage user 2026-07-11). */
     extendedDr: { cum: Math.min(ni, prev + (r?.dr ?? 0)), target: ni },

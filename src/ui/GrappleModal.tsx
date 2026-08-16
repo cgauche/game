@@ -1,6 +1,5 @@
 import { useGame } from '../state/store';
 import { effectiveChar } from '../engine/characteristics';
-import { canReroll } from '../engine/fortune';
 import { OptionChooser } from './OptionChooser';
 import { RollShell, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
@@ -37,7 +36,6 @@ export function GrappleModal() {
   const foe = battle.combatants.find((c) => c.id === pd.foeId);
   if (!actor || !foe) return null;
   const rolled = !!pd.def;
-  const rerollable = !!pd.def && !pd.def.success && canReroll(!pd.def.success, !!pd.rerolled);
   const winnerIndex = pd.result === 'success' ? 1 : pd.result === 'failure' ? 0 : null;
   const outcome =
     pd.result === 'success' ? `${actor.label} l'emporte — à toi de choisir.`
@@ -63,13 +61,13 @@ export function GrappleModal() {
     actor,
     row: { combatant: actor, d: actorLine.d },
     onRoll: roll,
-    rerollable,
+    rerolled: !!pd.rerolled,
+    // Égalité comprise : l'opposition n'est pas emportée (LDB 17 l.68).
+    lost: pd.result !== 'success',
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: actor.kind === 'hero' && !!pd.def, // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: pd.result !== 'success',
   }, {
     rollLabel: 'Lancer (Force)',
     // Résilience AVANT le jet (LDB 17 l.68) : Force forcée à l'emporter.

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
-import { FLOW_VERBS } from './rollFlowSpecs';
+import { FLOW_VERBS, FLOW_HANDLERS } from './rollFlowSpecs';
 import { testScene } from '../scenes/test-fixture';
 import type { Combatant } from '../engine/types';
 
@@ -51,7 +51,14 @@ const fortuneOfA = (): number | undefined => {
   return (s.battle?.combatants ?? s.party).find((c) => c.id === 'A')?.fortune;
 };
 
-type Fix = { pid?: string; make: (win: boolean) => Record<string, unknown> };
+/**
+ * `make(win)` : les deux issues nominales (perdante / gagnante), consommées par les DEUX volets.
+ * `composite` (optionnel) : l'état où le d100 est PROPREMENT RÉUSSI mais où l'issue MÉTIER est
+ * défavorable — DR sous le NI d'un sort (`LDB 46 l.23-25`), seuil `requireSL` manqué. C'est là, et
+ * seulement là, que « issue composée » et « d100 propre » peuvent DIVERGER : sans cet état, le volet
+ * structurel ne mesure rien (mutation mesurée verte sur les seules fixtures nominales).
+ */
+type Fix = { pid?: string; make: (win: boolean) => Record<string, unknown>; composite?: () => Record<string, unknown> };
 
 /**
  * Fixtures par flux (préfixe de `FLOW_VERBS`). `make(win)` pose une arène fraîche (A = 1 Chance) + le
@@ -78,10 +85,18 @@ const FIXTURES: Record<string, Fix> = {
     pendingTrample: { attackerId: 'A', targetId: 'B', result: { hit: win, attackerRoll: win ? 20 : 90, netSL: win ? 2 : -5, critical: false, advantageTo: win ? 'attacker' : 'defender', defenderDefeated: false, log: '', attackerDetail: atkDetail(win) } },
   }) },
   // ── Incantation / Focalisation / dissipation (jet propre / DR) ──
-  cast: { make: (win) => ({
-    battle: arena(),
-    pendingCast: { casterId: 'A', targetId: 'A', spellId: 'drain', missile: false, focused: false, result: { cast: win, roll: win ? 8 : 88, target: 45, sl: win ? 3 : -4, isCritical: false, isFumble: false, log: '' } },
-  }) },
+  cast: {
+    make: (win) => ({
+      battle: arena(),
+      pendingCast: { casterId: 'A', targetId: 'A', spellId: 'drain', missile: false, focused: false, result: { cast: win, roll: win ? 8 : 88, target: 45, sl: win ? 3 : -4, isCritical: false, isFumble: false, log: '' } },
+    }),
+    // « Succès mais DR < NI → tentative échoue » (`LDB 46 l.23-25`) : le TEST est réussi (8 ≤ 45), le
+    // sort n'est pas lancé (`cast: false`). L'issue canonique doit rester celle du TEST.
+    composite: () => ({
+      battle: arena(),
+      pendingCast: { casterId: 'A', targetId: 'A', spellId: 'drain', missile: false, focused: false, result: { cast: false, roll: 8, target: 45, sl: 1, isCritical: false, isFumble: false, log: '' } },
+    }),
+  },
   focus: { make: (win) => ({
     battle: arena(),
     pendingFocus: { casterId: 'A', spellId: 'drain', result: { dr: win ? 2 : 0, isCritical: false, isFumble: false, roll: win ? 8 : 95, target: 40, sl: win ? 2 : -5, log: '' } },
@@ -117,7 +132,12 @@ const FIXTURES: Record<string, Fix> = {
   surgery: { make: (win) => ({ battle: arena(), pendingSurgery: { healerId: 'A', skillValue: 40, difficulty: 'intermediaire', roll: win ? 8 : 95, target: 40, sl: win ? 3 : -5, success: win } }) },
   appraise: { make: (win) => ({ battle: arena(), pendingAppraise: { actorId: 'A', skillValue: 40, difficulty: 'intermediaire', roll: win ? 8 : 95, target: 40, sl: win ? 3 : -5, success: win } }) },
   corruption: { make: (win) => ({ battle: arena(), pendingCorruption: { heroId: 'A', skill: 'calme', roll: win ? 8 : 95, target: 40, sl: win ? 3 : -5, success: win } }) },
-  test: { make: (win) => ({ battle: arena(), pendingTest: { actorId: 'A', skillValue: 40, difficulty: 'intermediaire', target: 40, requireSL: 0, roll: win ? 8 : 95, sl: win ? 3 : -5, success: win } }) },
+  test: {
+    make: (win) => ({ battle: arena(), pendingTest: { actorId: 'A', skillValue: 40, difficulty: 'intermediaire', target: 40, requireSL: 0, roll: win ? 8 : 95, sl: win ? 3 : -5, success: win } }),
+    // Seuil de DR EXIGÉ manqué (`requireSL`, `meetsRequiredSL`) : le d100 est réussi (8 ≤ 40), l'issue
+    // métier ne l'est pas. L'issue canonique doit rester celle du d100 (`LDB 12 l.56`).
+    composite: () => ({ battle: arena(), pendingTest: { actorId: 'A', skillValue: 40, difficulty: 'intermediaire', target: 40, requireSL: 3, roll: 8, sl: 1, success: false } }),
+  },
   steamSave: { make: (win) => ({ battle: arena(), pendingSteamSave: { actorId: 'A', actorName: 'A', skillValue: 40, difficulty: 'intermediaire', target: 40, scaldOps: [{ op: 'wounds', amount: 1, ignoreAP: true }], roll: win ? 8 : 95, sl: win ? 3 : -5, success: win } }) },
   activity: { make: (win) => ({ battle: arena(), pendingActivity: { heroId: 'A', kind: 'catalog', label: 'x', skillLabel: 'x', skillValue: 40, difficulty: 'intermediaire', mod: 0, roll: win ? 8 : 95, target: 40, sl: win ? 3 : -5, success: win } }) },
   shanty: { make: (win) => ({ battle: arena(), pendingShanty: { singerId: 'A', shantyId: 'x', result: win ? WIN : LOSE } }) },
@@ -141,7 +161,7 @@ const FIXTURES: Record<string, Fix> = {
   }) },
   extendedTest: { pid: 'r1', make: (win) => ({
     battle: arena(),
-    pendingExtendedTest: { actorId: 'A', label: 'x', skillLabel: 'x', target: 40, targetDR: 5, total: 0, rounds: [{ id: 'r1', result: { roll: win ? 8 : 95, sl: win ? 3 : -5, success: win } }] },
+    pendingExtendedTest: { actorId: 'A', label: 'x', skillLabel: 'x', target: 40, targetDR: 5, total: 0, rounds: [{ id: 'r1', result: { roll: win ? 8 : 95, target: 40, sl: win ? 3 : -5, success: win } }] },
   }) },
   forceDoor: { pid: 'A', make: (win) => ({
     battle: arena(),
@@ -206,6 +226,73 @@ describe('Issue canonique (outcome) — la Chance est gatée par l’issue RÉEL
       useGame.setState(fx.make(true) as never);
       (useGame.getState() as unknown as Record<string, (pid?: string) => void>)[rerollFn](fx.pid);
       expect(fortuneOfA(), `${prefix} gagnant : la relance de Chance doit être un NO-OP (Point conservé)`).toBe(1);
+    });
+  }
+});
+
+/**
+ * VOLET STRUCTUREL (#1318 V4) — « le ✓/✗ POSÉ SUR LA LIGNE ⇔ `spec.outcome(slot).won` ».
+ *
+ * Pourquoi il fallait un second volet : le volet comportemental ci-dessus prouve que le SEAM gate la
+ * Chance sur son issue canonique. Il ne dit rien de ce que la MODALE imprime. Or la coquille dérive
+ * désormais sa fenêtre du succès de la LIGNE (`row.d.success`) : si une modale y pose une issue
+ * COMPOSÉE là où le seam lit le d100 propre, le bouton s'affiche et le verbe est INERTE — la classe
+ * exacte qu'on vient de tuer (mesurée sur `cast`, qui posait `res.cast`, et sur `test`, qui posait
+ * `success && meetsRequiredSL`).
+ *
+ * La mesure est possible parce que `TestOutcome` porte le VERDICT **et les chiffres qui le fondent** :
+ * `outcomeOf()` rend `{won, roll, target}`. Une ligne ne peut être à la fois VRAIE (elle imprime
+ * `roll` et `target`) et alignée sur le seam si `won` contredit `roll ≤ target`. On mesure donc
+ * l'issue de CHAQUE flux sur ses deux fixtures, sans aucune valeur attendue écrite à la main.
+ *
+ * Les flux dont l'issue est légitimement COMPOSÉE (Test OPPOSÉ : le verdict n'est pas le d100 propre)
+ * sont DÉCLARÉS ci-dessous. Pour ceux-là le contrat s'inverse : la ligne DOIT poster le verdict
+ * composé, faute de quoi la coquille rouvrirait la Chance là où le seam la refuse.
+ */
+const ISSUE_COMPOSEE: Record<string, string> = {
+  cascadeBatch: 'Étape de BANDE opposée (`meta.opposed`) : le verdict vient de `resolveOpposed` — un d100 '
+    + 'SOUS la cible peut perdre au DR (LDB 12 l.160). `CascadeModal` poste bien `result.success` (le '
+    + 'verdict composé) sur la ligne, donc coquille et seam restent alignés.',
+};
+
+describe('#1318 V4 — l’issue canonique est COHÉRENTE avec les chiffres qu’elle porte', () => {
+  it('aucun flux ne déclare une issue COMPOSÉE sans justification', () => {
+    const inconnus = Object.keys(ISSUE_COMPOSEE).filter((p) => !(p in FIXTURES));
+    expect(inconnus, 'exception d’issue composée sans fixture — périmée ?').toEqual([]);
+  });
+
+  for (const prefix of Object.keys(FLOW_VERBS)) {
+    const fx = FIXTURES[prefix];
+    if (!fx) continue;
+    it(`${prefix} : outcome.won == (roll ≤ cible), issues nominales${fx.composite ? ' + composée' : ''}`, () => {
+      const divergences: string[] = [];
+      // Les deux issues nominales, PLUS — quand le flux en a une — l'issue COMPOSÉE (d100 réussi,
+      // métier défavorable) : c'est le seul état où le verdict peut s'écarter du dé, donc le seul qui
+      // MESURE quelque chose ici.
+      const etats: { nom: string; state: Record<string, unknown> }[] = [
+        { nom: 'perdant', state: fx.make(false) },
+        { nom: 'gagnant', state: fx.make(true) },
+        ...(fx.composite ? [{ nom: 'composée (d100 réussi, métier raté)', state: fx.composite() }] : []),
+      ];
+      for (const { nom, state } of etats) {
+        seedBattleRng(9);
+        useGame.setState({ battle: null } as never);
+        useGame.setState(state as never);
+        const o = FLOW_HANDLERS[prefix as keyof typeof FLOW_HANDLERS].outcomeOf(useGame.getState, fx.pid);
+        expect(o, `${prefix} : l’issue canonique doit être lisible sur un pending ouvert`).not.toBeNull();
+        const propre = o!.roll <= o!.target;
+        if (o!.won !== propre) divergences.push(`${nom} : won=${o!.won} roll=${o!.roll} cible=${o!.target}`);
+      }
+      if (ISSUE_COMPOSEE[prefix]) {
+        expect(divergences.length, `${prefix} est déclaré à issue COMPOSÉE mais son verdict suit le d100 `
+          + 'propre sur les DEUX fixtures — l’exception est périmée, la retirer').toBeGreaterThan(0);
+        return;
+      }
+      expect(divergences,
+        `${prefix} : le verdict du seam contredit ses propres chiffres. La ligne de la modale ne peut `
+        + 'alors être à la fois vraie et alignée sur la fenêtre d’influence (bouton rendu, verbe inerte). '
+        + 'Corriger l’issue, OU déclarer le flux dans ISSUE_COMPOSEE avec sa justification.',
+      ).toEqual([]);
     });
   }
 });

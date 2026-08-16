@@ -6,13 +6,17 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ChanceButtons } from './ChanceButtons';
+import type { RollActorView, RollInfluenceView } from '../state/rollFlowFactory';
 
 const noop = () => {};
+/** Jet POSÉ et RATÉ, jamais relancé — la fenêtre de la Chance (LDB 17 l.23 + LDB 12 l.40). */
+const RATE: RollInfluenceView = { rolled: true, failed: true };
+const av = (fortune: number, freeReroll = false): RollActorView => ({ kind: 'hero', fortune, resilience: 0, freeReroll });
 
 describe('ChanceButtons — compteur de pool sur « Relancer » (#945)', () => {
   it('Relancer payant : « Relancer ×N », N = Points de Chance restants', () => {
     const html = renderToStaticMarkup(
-      <ChanceButtons fortune={3} rerollable onReroll={noop} onBonusSL={noop} />,
+      <ChanceButtons actorView={av(3)} roll={RATE} onReroll={noop} onBonusSL={noop} />,
     );
     expect(html).toContain('Relancer ×3');
     // Le répétable +1 DR porte la même réserve, sous la même forme — et il NOMME la ressource qu'il
@@ -26,19 +30,16 @@ describe('ChanceButtons — compteur de pool sur « Relancer » (#945)', () => {
 
   it('Relance GRATUITE (Bénédiction) : « Relancer » nu — rien n’est débité', () => {
     const html = renderToStaticMarkup(
-      <ChanceButtons fortune={0} rerollable freeReroll onReroll={noop} />,
+      <ChanceButtons actorView={av(0, true)} roll={RATE} onReroll={noop} />,
     );
     expect(html).toContain('Relancer');
     expect(html).not.toContain('Relancer ×');
   });
 
   it('le title de « Relancer » porte l’unicité de la relance (LDB 12 l.40), payante comme gratuite', () => {
-    for (const props of [
-      { fortune: 3, freeReroll: false },
-      { fortune: 0, freeReroll: true },
-    ]) {
+    for (const view of [av(3), av(0, true)]) {
       const html = renderToStaticMarkup(
-        <ChanceButtons fortune={props.fortune} rerollable freeReroll={props.freeReroll} onReroll={noop} />,
+        <ChanceButtons actorView={view} roll={RATE} onReroll={noop} />,
       );
       expect(html).toContain('une seule relance par Test');
     }

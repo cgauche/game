@@ -1,7 +1,6 @@
 import { useGame } from '../state/store';
 import { flowStakeRef } from '../data';
 import { baseTestModLines, combatValue } from '../engine/combat';
-import { canReroll } from '../engine/fortune';
 import { OptionChooser } from './OptionChooser';
 import { RollShell, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
@@ -37,7 +36,6 @@ export function AuContactModal() {
   const foe = battle.combatants.find((c) => c.id === pd.foeId);
   if (!mover || !foe) return null;
   const rolled = !!pd.def;
-  const rerollable = !!pd.def && !pd.def.success && canReroll(!pd.def.success, !!pd.rerolled);
   const winnerIndex = pd.result === 'success' ? 1 : pd.result === 'failure' ? 0 : null;
   const outcome =
     pd.result === 'success' ? `${mover.label} l'emporte — à toi de choisir.`
@@ -64,13 +62,14 @@ export function AuContactModal() {
     actor: mover,
     row: { combatant: mover, d: moverLine.d },
     onRoll: roll,
-    rerollable,
+    rerolled: !!pd.rerolled,
+    // Égalité comprise : l'opposition n'est pas emportée (LDB 17 l.68) — l'accent `winner` ne la dit
+    // pas (il n'existe qu'une fois l'opposition tranchée).
+    lost: pd.result !== 'success',
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: mover.kind === 'hero' && !!pd.def, // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: pd.result !== 'success',
   }, {
     rollLabel: 'Lancer',
     // Résilience AVANT le jet (LDB 17 l.68) : Corps à corps forcé à l'emporter.

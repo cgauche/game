@@ -1,28 +1,27 @@
 import type { ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
-import { freeRerollOf } from '../engine/activeFlags';
+import { actorInfluenceView, forceAvailable, type RollInfluenceView } from '../state/rollFlowFactory';
 import { ChanceButtons } from './ChanceButtons';
 import { ResilienceButton } from './ResilienceButton';
 
 /**
- * Rangée « influencer le jet » PARTAGÉE (Chance · Relance gratuite · +1 DR · Pacte · Résilience) —
- * le bloc était copié/collé dans chaque modale à jet (Attaque, Défense, Incantation,
- * Désengagement…). L'acteur est passé UNE fois : sa Chance, sa relance gratuite (Bénédiction de
- * Chance, LDB 41) et sa Résilience en découlent — plus d'oubli de `freeReroll` par modale.
+ * Rangée « influencer le jet » PARTAGÉE (Chance · Relance gratuite · +1 DR · Pacte · Résilience).
+ *
+ * L'acteur est passé UNE fois : ses ressources en sont dérivées (`actorInfluenceView`), et les
+ * FENÊTRES de chaque verbe viennent des prédicats du seam (`state/rollFlowFactory.ts`). Ce qu'un
+ * appelant fournit, ce sont des FAITS (l'acteur, l'état du jet `roll`) et l'OFFRE de chaque verbe
+ * (la présence de `onReroll`/`onDarkPact`/`onForce`) — jamais une éligibilité recomposée.
  * `children` : boutons contextuels supplémentaires (Détermination, actions de chirurgie…).
  */
 export function InfluenceRow({
   actor,
   fortune,
-  freeReroll,
   resilience,
-  rerollable,
+  roll,
   onReroll,
   onBonusSL,
-  darkPactable,
   onDarkPact,
   onForce,
-  forceShow = false,
   children,
 }: {
   /** Le héros qui jette : Chance/relance gratuite/Résilience en sont DÉRIVÉES (passé une fois, plus
@@ -31,35 +30,29 @@ export function InfluenceRow({
   actor?: Combatant | null;
   /** Primitives — PRIORITAIRES sur `actor` quand fournies (vues sans `Combatant`). */
   fortune?: number;
-  freeReroll?: boolean;
   resilience?: number;
-  rerollable: boolean;
+  /** État du jet de la rangée (lancé ? propre échec ? déjà relancé ?). */
+  roll: RollInfluenceView;
   onReroll: () => void;
   /** Absent → Test binaire : pas de « +1 DR ». */
   onBonusSL?: () => void;
-  darkPactable?: boolean;
+  /** Absent → ce flux n'offre pas le Sombre Pacte. */
   onDarkPact?: () => void;
   /** Absent → pas de Résilience sur ce flux. */
   onForce?: () => void;
-  /** Montre la Résilience (condition d'échec propre au flux). */
-  forceShow?: boolean;
   children?: ReactNode;
 }) {
-  const fort = fortune ?? actor?.fortune ?? 0;
-  const free = freeReroll ?? freeRerollOf(actor);
-  const resil = resilience ?? actor?.resilience ?? 0;
+  const av = actorInfluenceView(actor, { fortune, resilience });
   return (
     <div className="rm-influence">
       <ChanceButtons
-        fortune={fort}
-        rerollable={rerollable}
+        actorView={av}
+        roll={roll}
         onReroll={onReroll}
-        freeReroll={free}
         onBonusSL={onBonusSL}
-        darkPactable={darkPactable}
         onDarkPact={onDarkPact}
       />
-      {onForce && <ResilienceButton resilience={resil} show={forceShow} onForce={onForce} />}
+      {onForce && <ResilienceButton resilience={av.resilience} show={forceAvailable(av, roll)} onForce={onForce} />}
       {children}
     </div>
   );

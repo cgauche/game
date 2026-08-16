@@ -17,6 +17,7 @@ import { Icon } from './Icon';
 import { CodexRef } from './compendium/CodexRef';
 import { RULE_REF } from '../engine/ruleRefs';
 import type { FLOW_VERBS } from '../state/rollFlowSpecs';
+import { actorInfluenceView, forceAvailable, type RollInfluenceView } from '../state/rollFlowFactory';
 
 /** Libellé par défaut du bouton « Lancer » (rangée seule ET coquille `RollShell` hissée). */
 export const DEFAULT_ROLL_LABEL = <><Icon id="nav/dice" size="sm" /> Lancer</>;
@@ -27,27 +28,30 @@ export const DEFAULT_ROLL_LABEL = <><Icon id="nav/dice" size="sm" /> Lancer</>;
  * d'influence (`InfluenceRow` : Chance/relance gratuite/+1 DR/Pacte/Résilience) une fois lancé,
  * sinon un bouton « Lancer ». `interactive=false` → rangée TÉMOIN (lecture seule, subsume
  * `MultiRollList`). L'acteur, quand fourni, est passé à `InfluenceRow` qui en dérive
- * Chance/relance gratuite/Résilience ; sinon les primitives `fortune`/`freeReroll`/`resilience`
- * (prioritaires) permettent une rangée sans objet `Combatant` (vues pures testables).
+ * Chance/relance gratuite/Résilience ; sinon les primitives `fortune`/`resilience` (prioritaires)
+ * permettent une rangée sans objet `Combatant` (vues pures testables).
+ *
+ * Les FENÊTRES des verbes d'influence ne sont pas des props : elles se dérivent ICI, une fois, des
+ * prédicats du seam (`state/rollFlowFactory.ts`) appliqués aux FAITS de la rangée — l'acteur, le jet
+ * posé (`row.d`), la relance déjà consommée (`rerolled`). Un flux n'OFFRE un verbe qu'en passant son
+ * handler.
  */
 export function RollRow({
   actor,
   fortune,
-  freeReroll,
   resilience,
   row,
   rolled,
+  rerolled,
+  lost,
   interactive = true,
   rollLabel = DEFAULT_ROLL_LABEL,
   onRoll,
-  rerollable = false,
   onReroll,
   onBonusSL,
-  darkPactable,
   onDarkPact,
   onForce,
   preRollForce,
-  forceShow = false,
   forcedRoll,
   fixedMark = false,
   determination,
@@ -81,7 +85,18 @@ export function RollRow({
   // verbes appellent `reresolveOf` (nouveau jet RNG) dans `rollFlowFactory`, à la différence de
   // « +1 DR »/Résilience/Résistance/Détermination qui AJUSTENT le jet existant sans le relancer.
   const { rolling: rerolling, landed: rerollLanded, trigger: doReroll, skip: skipReroll } = useRollFrisson(undefined, { frisson: rollFrisson });
-  const resil = resilience ?? actor?.resilience ?? 0;
+  // Ressources du jeteur, montées UNE fois (l'acteur fait foi ; les primitives ne servent qu'aux
+  // vues sans `Combatant`). `InfluenceRow` remonte la même vue depuis les mêmes entrées.
+  const av = actorInfluenceView(actor, { fortune, resilience });
+  // FAITS du jet de CETTE rangée — l'entrée UNIQUE des prédicats d'influence du seam. `rolled` et
+  // `failed` se lisent sur la ligne posée (`row.d.success` = le jet PROPRE, LDB 12 l.13) ; `rerolled`
+  // vient du slot ; l'issue DÉFAVORABLE malgré un jet propre réussi vient du site (`lost`) ou, en
+  // Test opposé, de l'accent déjà porté par la rangée (`winner`).
+  const influence: RollInfluenceView = { rolled: !!row.d, failed: !!row.d && !row.d.success, rerolled, lost: lost ?? winner === 'lose' };
+  // Un jet MASQUÉ (#990) n'offre AUCUNE influence : chaque affordance dérive de l'issue et la
+  // révélerait. Le masque vit sur la LIGNE (`opposedFrozen.maskOpposedRow`) — c'est LUI qui ferme le
+  // cycle, plus un drapeau par verbe recopié sur la rangée.
+  const rollMasked = row.d?.mask === 'roll';
   // Vraies faces (#396 v3) : `row.d.roll` n'est FRAIS qu'une fois le résolveur commis (React 18 batch
   // la transition `landed` et le re-rendu du store dans le MÊME rendu) — jamais pendant le tumble.
   const rowFaces = (landed || rerollLanded) && row.d ? d100Faces(row.d.roll) : null;
@@ -139,7 +154,7 @@ export function RollRow({
           {declare?.hint && <span className="hint">{declare.hint}</span>}
           {/* Résilience PRÉ-jet (LDB 17 l.68 « au lieu de lancer les dés ») — disponible AVANT de lancer, pas
               seulement après un échec, comme la coquille `RollShell`. */}
-          {onForce && <ResilienceButton resilience={resil} show onForce={preRollForce ?? onForce} />}
+          {onForce && <ResilienceButton resilience={av.resilience} show={forceAvailable(av, influence)} onForce={preRollForce ?? onForce} />}
           {/* Résistance (Menace) PRÉ-jet (LDB 10 : « réussir automatiquement le premier Test »). */}
           {resist && <ResistButton menace={resist.menace} show onResist={resist.onResist} />}
           {determineBtn}
@@ -158,25 +173,25 @@ export function RollRow({
       {interactive && (rerolling || rerollLanded) && (
         <DiceRoll onSkip={skipReroll} landed={rerollLanded} faces={rowFaces} scene={false} />
       )}
-      {interactive && rolled && !rolling && !landed && !rerolling && !rerollLanded && (
+      {interactive && rolled && !rollMasked && !rolling && !landed && !rerolling && !rerollLanded && (
         <>
           {forcedRoll && <ForcedRollPicker {...forcedRoll} marked={fixedMark} rowName={rowName} commitRef={dieCommit} />}
           <InfluenceRow
             actor={actor}
             fortune={fortune}
-            freeReroll={freeReroll}
             resilience={resilience}
-            rerollable={rerollable}
+            roll={influence}
             onReroll={rerollWithPickedDie}
             onBonusSL={onBonusSL}
-            darkPactable={darkPactable}
             onDarkPact={onDarkPact && withPickedDie(dieCommit, () => doReroll(onDarkPact))}
             onForce={onForce}
-            forceShow={forceShow}
           >
             {resist && <ResistButton menace={resist.menace} show onResist={resist.onResist} />}
             {reverse && <ReverseButton show onReverse={reverse.onReverse} preview={reverse.preview} />}
-            {forceShow && determineBtn}
+            {/* Détermination (LDB 17 l.62) : POOL DISTINCT de la Résilience — sa fenêtre est la
+                PRÉSENCE de la donnée `determination` posée par le site, et sa réserve son propre
+                compteur (`resolve > 0`, porté par le bouton). Jamais gatée par la Résilience. */}
+            {determineBtn}
           </InfluenceRow>
         </>
       )}
@@ -186,27 +201,32 @@ export function RollRow({
 
 export interface RollRowProps {
   /** L'acteur du jet : Chance/relance gratuite/Résilience en sont DÉRIVÉES (passé une fois). Optionnel :
-   *  une vue pure fournit plutôt les primitives `fortune`/`freeReroll`/`resilience`. */
+   *  une vue pure fournit plutôt les primitives `fortune`/`resilience`. */
   actor?: Combatant;
   /** Primitives — PRIORITAIRES sur `actor` quand fournies (rangée sans `Combatant`, testable). */
   fortune?: number;
-  freeReroll?: boolean;
   resilience?: number;
   row: PanelRowData;
   rolled: boolean;
+  /** Une relance a DÉJÀ été consommée sur ce Test (`slot.rerolled`, LDB 12 l.40) — FAIT du slot, la
+   *  fenêtre de la Chance s'en dérive (`rerollAvailable`). */
+  rerolled?: boolean;
+  /** L'ISSUE du flux est DÉFAVORABLE malgré un jet propre réussi (Test combiné partiel, incantation
+   *  sous le NI) : seule la Résilience s'y ouvre (`LDB 17 l.68`). Absent → l'accent de Test opposé
+   *  (`winner`) fait foi. */
+  lost?: boolean;
   interactive?: boolean;
   rollLabel?: ReactNode;
   onRoll?: () => void;
-  rerollable?: boolean;
+  /** Absent → ce flux n'offre pas la relance de Chance. */
   onReroll?: () => void;
   onBonusSL?: () => void;
-  darkPactable?: boolean;
+  /** Absent → ce flux n'offre pas le Sombre Pacte. */
   onDarkPact?: () => void;
   /** Absent → pas de Résilience sur ce flux. */
   onForce?: () => void;
   /** Action Résilience PRÉ-jet spécifique (défaut : `onForce`). */
   preRollForce?: () => void;
-  forceShow?: boolean;
   /** « vous choisissez le résultat » (LDB 17 l.68) : sélecteur du dé. DEUX provenances, un seul contrôle —
    *  `fixed` absent = dé CHOISI de la Résilience (post-jet, doit rester une réussite) ; `fixed` = dé FIXÉ
    *  par l'option de confort (avant OU après le jet, tout le d100). Absent → pas de sélecteur.

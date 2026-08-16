@@ -1,7 +1,5 @@
 import { useGame } from '../state/store';
 import { flowStakeRef } from '../data';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction } from './RollShell';
 import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { OptionChooser } from './OptionChooser';
@@ -55,7 +53,6 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
   const bleed = target?.conditions.find((x) => x.id === 'hemorragique')?.value ?? 0;
   const lodged = target?.conditions.find((x) => x.id === 'munition-logee')?.value ?? 0;
 
-  const freeReroll = freeRerollOf(healer);
   // Soutien des assistants de soin (LDB 12) et composantes de la valeur de Test (États, séquelles,
   // passifs, effets — #1178) : lignes de mod NOMMÉES, base rebasée sur le Niveau de Compétence nu
   // (LDB 09 l.17). Soigneur PNJ tarifé (aucune fiche dans le pool) : la garde de reconstruction de la
@@ -68,15 +65,12 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
       d: rolled ? testBreakdown('Guérison', base, { roll: ph.roll!, target: ph.target, sl: ph.sl, success: ph.success }, ph.difficulty, supMods) : undefined,
       pending: testPending('Guérison', base, ph.target, ph.difficulty, supMods),
     },
-    freeReroll,
-    rerollable: rolled && canReroll(ph.roll! > ph.target, !!ph.rerolled) && (fortune > 0 || freeReroll),
+    rerolled: !!ph.rerolled,
     onRoll: roll,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: rolled && healer?.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: !ph.success,
   }, {
     fortune,
     resilience: healer?.resilience ?? 0,

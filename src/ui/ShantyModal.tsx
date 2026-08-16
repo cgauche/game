@@ -1,6 +1,4 @@
 import { useGame } from '../state/store';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { testValue } from '../engine/skills';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
 import { findSeaShantyById, flowStakeRef } from '../data';
@@ -43,15 +41,12 @@ export function ShantyModal() {
       d: r ? testBreakdown('Divertissement (Chant)', value, { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, 'intermediaire') : undefined,
       pending: testPending('Divertissement (Chant)', value, undefined, 'intermediaire'),
     },
-    freeReroll: freeRerollOf(singer),
     onRoll: roll,
-    rerollable: !!r && !r.success && canReroll(true, !!p.rerolled),
+    rerolled: !!p.rerolled,
     onReroll: reroll,
-    onBonusSL: r?.success ? bonus : undefined,
-    darkPactable: !!r && singer.kind === 'hero', // LDB 19 l.17
+    onBonusSL: bonus,
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: !r?.success,
   });
 
   const actions: RollAction[] = [

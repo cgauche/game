@@ -1,7 +1,5 @@
 import { useGame } from '../state/store';
 import { flowStakeRef } from '../data';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction } from './RollShell';
 import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { testBreakdown, testPending, testValueSplit } from './breakdown';
@@ -45,15 +43,12 @@ export function DispelModal() {
       d: r ? testBreakdown('Langue (Magick)', base, { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, undefined, supMods) : undefined,
       pending: testPending('Langue (Magick)', base, undefined, undefined, supMods),
     },
-    freeReroll: freeRerollOf(caster),
     onRoll: roll,
-    rerollable: !!r && canReroll(!r.success, !!pd.rerolled),
+    rerolled: !!pd.rerolled,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: !!r && caster.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: !r?.success,
   }, {
     /* Test ÉTENDU (Dissipation) : barre de DR de RANGÉE — site unique `RollRow` (arbitrage user 2026-07-11). */
     extendedDr: { cum, target: pd.ni },

@@ -490,7 +490,9 @@ function ParchmentCardDemo() {
 
 function InfluenceRowDemo() {
   if (!SAMPLE_HERO) return <p className="hint">Aucun pregen disponible.</p>;
-  return <InfluenceRow actor={SAMPLE_HERO} rerollable onReroll={() => {}} onBonusSL={() => {}} onForce={() => {}} forceShow />;
+  // Jet POSÉ et RATÉ, jamais relancé : la vitrine montre le cycle d'influence AU COMPLET (les
+  // fenêtres sont dérivées des prédicats du seam, aucune n'est forcée ici).
+  return <InfluenceRow actor={SAMPLE_HERO} roll={{ rolled: true, failed: true }} onReroll={() => {}} onBonusSL={() => {}} onDarkPact={() => {}} onForce={() => {}} />;
 }
 
 function VsHeaderDemo() {

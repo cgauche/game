@@ -1,6 +1,4 @@
 import { useGame } from '../state/store';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { calmeValue } from '../engine/psychology';
 import { RollShell, type RollAction } from './RollShell';
 import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
@@ -38,14 +36,11 @@ export function ApproachModal() {
       d: r ? testBreakdown('Calme', calmeValue(c), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, 'intermediaire') : undefined,
       pending: testPending('Calme', calmeValue(c), undefined, 'intermediaire'),
     },
-    freeReroll: freeRerollOf(c),
-    rerollable: !!r && !r.success && canReroll(true, !!pa.rerolled),
+    rerolled: !!pa.rerolled,
     onRoll: roll,
     onReroll: reroll,
-    darkPactable: !!r && c.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: !r?.success,
   }, {
     fortune: c.fortune ?? 0,
     resilience: c.resilience ?? 0,

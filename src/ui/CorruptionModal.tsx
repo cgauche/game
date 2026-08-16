@@ -1,7 +1,5 @@
 import { useGame } from '../state/store';
-import { canReroll } from '../engine/fortune';
 import { availableResistance, resistanceImproves } from '../engine/menace';
-import { freeRerollOf } from '../engine/activeFlags';
 import { EXPOSURE_LABELS } from '../engine/corruption';
 import { testValue } from '../engine/skills';
 import { flowStakeRef, refLabel } from '../data';
@@ -56,15 +54,12 @@ export function CorruptionModal() {
       d: rolled ? testBreakdown(`Test de ${skillLabel}`, base, { roll: pc.roll!, target: pc.target, sl: pc.sl, success: pc.success }, 'intermediaire') : undefined,
       pending: testPending(`Test de ${skillLabel}`, base, undefined, 'intermediaire'),
     },
-    freeReroll: freeRerollOf(hero),
     onRoll: roll,
-    rerollable: rolled && canReroll(pc.roll! > (pc.target ?? 0), !!pc.rerolled),
+    rerolled: !!pc.rerolled,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: rolled, // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: forceSuccess,
-    forceShow: rolled && pc.success === false,
   }, {
     resist: resistAvail ? { menace: pc.menace!, onResist: resistAct } : undefined,
     resilience: hero?.resilience ?? 0,

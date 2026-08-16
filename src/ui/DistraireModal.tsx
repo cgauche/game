@@ -1,6 +1,5 @@
 import { useGame } from '../state/store';
 import { flowStakeRef } from '../data';
-import { canReroll } from '../engine/fortune';
 import { distraireAttackValue, distraireDefenseValue, distraireFoes } from '../state/combatFlow';
 import { losClear } from '../state/lineOfSight';
 import { smokeOf } from '../state/combatGeometry';
@@ -41,7 +40,6 @@ export function DistraireModal() {
   const rolled = !!pd.atk;
   // Adversaires éligibles au Distraire EN LIGNE DE VUE — MÊME source que l'ouverture (`distraireFoes`).
   const foes = mover.pos && scene ? distraireFoes(mover, battle, (c) => losClear(scene, mover.pos!, c.pos!, smokeOf(battle))) : [foe];
-  const rerollable = !!pd.atk && !pd.atk.success && canReroll(!pd.atk.success, !!pd.rerolled);
   const winnerIndex = pd.result === 'success' ? 1 : pd.result === 'failure' ? 0 : null;
 
   // Rangée TÉMOIN : Calme du foe, figé à l'ouverture (jamais relancé) — MASQUÉ tant que le mover n'a
@@ -56,13 +54,13 @@ export function DistraireModal() {
     actor: mover,
     row: { combatant: mover, d: pd.atk ? testBreakdown('Athlétisme', distraireAttackValue(mover), pd.atk, 'intermediaire') : undefined },
     onRoll: roll,
-    rerollable,
+    rerolled: !!pd.rerolled,
+    // Égalité comprise : l'opposition n'est pas emportée (LDB 17 l.68).
+    lost: pd.result !== 'success',
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: mover.kind === 'hero' && !!pd.atk, // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: pd.result !== 'success',
   }, {
     rollLabel: 'Lancer',
     // Résilience AVANT le jet (LDB 17 l.68) : Athlétisme forcé à l'emporter.

@@ -1,7 +1,5 @@
 import type { ComponentProps } from 'react';
 import { useGame } from '../../state/store';
-import { canReroll } from '../../engine/fortune';
-import { freeRerollOf } from '../../engine/activeFlags';
 import { RollShell } from '../RollShell';
 import { buildRollRow } from '../rollRowBuild';
 import { testBreakdown, testPending } from '../breakdown';
@@ -55,14 +53,11 @@ export function useExtendedTestJetProps(): ComponentProps<typeof RollShell> | nu
           ? { combatant: actor, d: testBreakdown(p.skillLabel, p.target, { roll: res.roll, target: p.target, sl: res.sl, success: res.success }) }
           : { combatant: actor, pending: testPending(p.skillLabel, p.target) },
         onRoll: () => roll(cur.id),
-        freeReroll: freeRerollOf(actor),
-        rerollable: rolled && canReroll(!res!.success, !!cur.rerolled),
+        rerolled: !!cur.rerolled,
         onReroll: () => reroll(cur.id),
         onBonusSL: () => bonusSL(cur.id),
-        darkPactable: actor.kind === 'hero' && rolled, // LDB 19 l.17
         onDarkPact: () => darkPact(cur.id),
         onForce: () => force(cur.id),
-        forceShow: rolled,
       }, {
         fortune: actor.fortune ?? 0,
         resilience: actor.resilience ?? 0,

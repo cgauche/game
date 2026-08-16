@@ -5,7 +5,6 @@ import { defenseValue, combatValue, defenseModifiers, baseTestModLines } from '.
 import { calmeValue } from '../engine/psychology';
 import { groupAdvantage } from '../engine/advantagePool';
 import { retreatAdvantageCost } from '../engine/combatFeatures/dispatch';
-import { canReroll } from '../engine/fortune';
 import { ResilienceButton } from './ResilienceButton';
 import { OptionChooser } from './OptionChooser';
 import { RollShell, type RollAction } from './RollShell';
@@ -159,7 +158,6 @@ export function DisengageModal() {
   }
 
   // ── Phase 'esquive' : Test OPPOSÉ (2 rangées) — le jet est déjà lancé en entrant ici. ──
-  const rerollable = canReroll(!pd.def?.success, !!pd.rerolled);
   const outcome = describeDisengage(pd);
   const winnerIndex = pd.result === 'success' ? 1 : pd.result === 'failure' ? 0 : null;
 
@@ -186,13 +184,13 @@ export function DisengageModal() {
   const moverRow: BuiltRollRow = buildRollRow({
     actor: mover,
     row: { combatant: mover, d: moverLine.d },
-    rerollable,
+    rerolled: !!pd.rerolled,
+    // Égalité comprise : l'opposition n'est pas emportée (LDB 17 l.68).
+    lost: pd.result !== 'success',
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: mover.kind === 'hero' && !!pd.def, // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: forceSuccess,
-    forceShow: pd.result !== 'success',
   }, { key: 'mover' });
 
   const actions: RollAction[] = [

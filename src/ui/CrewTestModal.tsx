@@ -71,7 +71,7 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
   const sign = (n: number) => (n >= 0 ? `+${n}` : `${n}`);
 
   // Rangées via le builder mutualisé (#328) : la modale ne fournit QUE la PRÉSENTATION (crew-roles) + ses
-  // actions ; les dérivations d'éligibilité (rerollable/darkPactable/forceShow) vivent dans le builder.
+  // actions ; les fenêtres d'influence sont dérivées au rendu par les prédicats du seam.
   const rows: BuiltRollRow[] = buildParticipantRows(p.participants, pool, {
     onRoll: roll, onReroll: reroll, onBonusSL: bonus, onDarkPact: darkPact, onForce: force,
     interactiveOf: (part) => !!part.interactive && owns(part.id),

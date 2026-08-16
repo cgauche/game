@@ -1,7 +1,5 @@
 import { useGame } from '../state/store';
 import { flowStakeRef } from '../data';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction } from './RollShell';
 import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { testBreakdown, testPending } from './breakdown';
@@ -33,14 +31,11 @@ export function SteamSaveModal() {
       ? { combatant: actor, d: testBreakdown('Initiative', p.skillValue, { roll: p.roll!, target: p.target, sl: p.sl, success: p.success }, p.difficulty) }
       : { combatant: actor, pending: testPending('Initiative', p.skillValue, p.target, p.difficulty) },
     onRoll: roll,
-    freeReroll: freeRerollOf(actor),
-    rerollable: rolled && canReroll(p.roll! > p.target, !!p.rerolled),
+    rerolled: !!p.rerolled,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: rolled, // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: forceSuccess,
-    forceShow: rolled && !p.success,
   }, {
     fortune: actor?.fortune ?? 0,
     resilience: actor?.resilience ?? 0,

@@ -1,41 +1,40 @@
 import { Icon } from './Icon';
 import { CodexRef } from './compendium/CodexRef';
 import { RULE_REF } from '../engine/ruleRefs';
+import { rerollAvailable, darkPactAvailable, type RollActorView, type RollInfluenceView } from '../state/rollFlowFactory';
 
 /**
  * Boutons de dépense de Chance partagés par les modales de jet (LDB « Destin et Résistance »
- * ch.17 l.22-28) : « Relancer » (uniquement si le jet propre est raté et pas déjà relancé) et
- * « +1 DR » (cumulable). Rien ne s'affiche s'il ne reste aucun Point de Chance.
+ * ch.17 l.22-28) : « Relancer » et « +1 DR » (cumulable), plus le Sombre Pacte (LDB 19 l.17).
  *
- * Bénédiction de Chance (LDB 41 — `freeReroll`) : une relance GRATUITE est disponible — le bouton
- * Relancer s'affiche même à 0 Chance et ne consomme pas de point.
- *
- * Sombre Pacte (LDB 19 l.17) : si `onDarkPact` est fourni et que le jet est relançable par le Pacte
- * (`darkPactable`), un héros peut recevoir volontairement 1 Point de Corruption pour relancer —
- * y compris à 0 Chance, c'est son intérêt.
+ * Aucune FENÊTRE n'est calculée ici : elles vivent au seam, en prédicats purs
+ * (`rerollAvailable`/`darkPactAvailable`, `state/rollFlowFactory.ts`), aux côtés des ops qui les
+ * exécutent. Ce composant reçoit les FAITS — ressources du jeteur (`actorView`), état du jet
+ * (`roll`) — et rend l'affordance quand le prédicat l'ouvre ET que le verbe est OFFERT : l'offre se
+ * lit à la PRÉSENCE du handler, jamais à un booléen fourni par l'appelant.
  *
  * Chaque bouton EST l'affordance de sa règle : son `CodexRef` (`wrap`) l'ENGLOBE et rend le texte
  * de la règle au survol/focus, SANS intercepter le clic de dépense — aucun ⓘ voisin (#1078).
  * Libellés courts normés (rangée « influencer le jet »).
  */
 export function ChanceButtons({
-  fortune,
-  rerollable,
+  actorView,
+  roll,
   onReroll,
-  freeReroll = false,
   onBonusSL,
-  darkPactable = false,
   onDarkPact,
 }: {
-  fortune: number;
-  rerollable: boolean;
+  /** Ressources du jeteur — montées par `actorInfluenceView`. */
+  actorView: RollActorView;
+  /** État du jet de CETTE rangée (lancé ? propre échec ? déjà relancé ?). */
+  roll: RollInfluenceView;
   onReroll: () => void;
-  freeReroll?: boolean;
   onBonusSL?: () => void;
-  darkPactable?: boolean;
+  /** Absent → ce flux n'offre pas le Sombre Pacte. */
   onDarkPact?: () => void;
 }) {
-  const pactBtn = onDarkPact && darkPactable && (
+  const { fortune, freeReroll } = actorView;
+  const pactBtn = onDarkPact && darkPactAvailable(actorView, roll) && (
     <CodexRef category={RULE_REF['sombre-pacte'].category} id={RULE_REF['sombre-pacte'].id} label="Sombre Pacte" wrap>
       <button className="btn btn-resource" onClick={onDarkPact}>
         <Icon id="condition/bleeding" size="sm" /> Pacte
@@ -45,7 +44,7 @@ export function ChanceButtons({
   // La relance GRATUITE relève de la Bénédiction de Chance (LDB 41), la payante de la Chance
   // (LDB 12 l.40) : le bouton porte la règle qui l'autorise RÉELLEMENT.
   const rerollRef = freeReroll ? RULE_REF['benediction-de-chance'] : RULE_REF.chance;
-  const rerollBtn = rerollable && (freeReroll || fortune > 0) && (
+  const rerollBtn = rerollAvailable(actorView, roll) && (
     <CodexRef category={rerollRef.category} id={rerollRef.id} label={freeReroll ? 'Bénédiction de Chance' : 'Chance'} wrap>
       <button
         className="btn btn-resource"

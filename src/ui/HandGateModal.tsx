@@ -1,6 +1,4 @@
 import { useGame } from '../state/store';
-import { canReroll } from '../engine/fortune';
-import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction } from './RollShell';
 import { buildRollRow, type BuiltRollRow } from './rollRowBuild';
 import { testBreakdown, testPending } from './breakdown';
@@ -28,7 +26,6 @@ export function HandGateModal() {
   const actor = battle.combatants.find((c) => c.id === pg.attackerId);
   const rolled = pg.roll != null;
   const fortune = actor?.fortune ?? 0;
-  const freeReroll = freeRerollOf(actor);
 
   const actorRow: BuiltRollRow = buildRollRow({
     actor,
@@ -37,15 +34,12 @@ export function HandGateModal() {
       d: rolled ? testBreakdown('Dextérité', pg.skillValue, { roll: pg.roll!, target: pg.target, sl: pg.sl, success: pg.success }, pg.difficulty) : undefined,
       pending: testPending('Dextérité', pg.skillValue, pg.target, pg.difficulty),
     },
-    freeReroll,
-    rerollable: rolled && canReroll(pg.roll! > pg.target, !!pg.rerolled) && (fortune > 0 || freeReroll),
+    rerolled: !!pg.rerolled,
     onRoll: roll,
     onReroll: reroll,
     onBonusSL: bonusSL,
-    darkPactable: rolled && actor?.kind === 'hero', // LDB 19 l.17
     onDarkPact: darkPact,
     onForce: force,
-    forceShow: !pg.success,
   }, {
     fortune,
     resilience: actor?.resilience ?? 0,

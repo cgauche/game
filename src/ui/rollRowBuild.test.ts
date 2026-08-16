@@ -34,16 +34,14 @@ describe('#1262 — buildRollRow', () => {
     expect(r.rollBlocked).toBe('hors de portée');
   });
 
-  it('le noyau passe intégralement (les 11 champs, aucun perdu en route)', () => {
+  it('le noyau passe intégralement (faits + handlers, aucun perdu en route)', () => {
     const noop = () => {};
     const r = buildRollRow({
-      row: {}, actor: hero(), onRoll: noop, rerollable: true, onReroll: noop,
-      darkPactable: true, onDarkPact: noop, onBonusSL: noop, onForce: noop, forceShow: true, freeReroll: true,
+      row: {}, actor: hero(), onRoll: noop, rerolled: true, lost: true,
+      onReroll: noop, onDarkPact: noop, onBonusSL: noop, onForce: noop,
     });
-    expect(r.rerollable).toBe(true);
-    expect(r.darkPactable).toBe(true);
-    expect(r.forceShow).toBe(true);
-    expect(r.freeReroll).toBe(true);
+    expect(r.rerolled).toBe(true);
+    expect(r.lost).toBe(true);
     expect(r.onReroll).toBe(noop);
     expect(r.onDarkPact).toBe(noop);
     expect(r.onBonusSL).toBe(noop);

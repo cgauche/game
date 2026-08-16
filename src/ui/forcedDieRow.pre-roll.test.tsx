@@ -489,7 +489,7 @@ describe('« Dé fixé » POST-jet et refus hors domaine (#1117)', () => {
         <RollRow actor={{ ...VIEW, fortune: 2 }} row={{ combatant: VIEW, d: testBreakdown('Voile', 45, { roll: 88, target: 45, sl: -4, success: false }) }}
           rolled interactive rollFrisson={false} fortune={2}
           forcedRoll={{ roll: null, target: 45, fixed: true, commitOnBlur: false, onSet }}
-          rerollable onReroll={() => { calls.push('reroll'); }} />,
+          onReroll={() => { calls.push('reroll'); }} />,
       );
     });
     const reroll = [...host.querySelectorAll('button')].find((b) => /Relancer|Chance/i.test(b.textContent ?? '')) as HTMLButtonElement;
@@ -517,7 +517,7 @@ describe('« Dé fixé » POST-jet et refus hors domaine (#1117)', () => {
         <RollRow actor={{ ...VIEW, fortune: 0 }} row={{ combatant: VIEW, d: testBreakdown('Voile', 45, { roll: 88, target: 45, sl: -4, success: false }) }}
           rolled interactive rollFrisson={false}
           forcedRoll={{ roll: null, target: 45, fixed: true, commitOnBlur: false, onSet: (r) => { calls.push(`set:${r}`); } }}
-          darkPactable onDarkPact={() => { calls.push('pacte'); }} />,
+          onDarkPact={() => { calls.push('pacte'); }} />,
       );
     });
     const pacte = [...host.querySelectorAll('button')].find((b) => /pacte/i.test(b.textContent ?? '')) as HTMLButtonElement;
