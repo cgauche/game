@@ -42,6 +42,8 @@ import { type WalkPos } from './fx/walkPose';
 import { actorCapsuleOf } from './stage/actorCapsule';
 import { VolumetricWorld } from './stage/VolumetricWorld';
 import { viewPolicy } from './stage/viewPolicy';
+import { wallTraitObjs } from './stage/layers';
+import { gridLines } from '../geometry/grid';
 import { SansWebgl, useWebglRefusé } from './stage/SansWebgl';
 import { getStageYaw, subscribeStageYaw, viewRot, viewYawDeg } from '../state/stageYaw';
 import { visibilityField } from './backends/webgl/visibilityTint';
@@ -65,6 +67,12 @@ import { useStagePointer } from './stage/useStagePointer';
 import { useHoverTargeting } from './stage/useHoverTargeting';
 import type { Pt } from '../state/path';
 import { portalsForParty } from '../state/roomPortals';
+
+/** OPACITÉ de la grille TACTIQUE (encre `--iso-grid`, partagée avec l'éditeur), plus basse que celle de
+ *  l'auteur (`ui/editor/EditorCanvas`, 0,22) : en jeu la grille est un FOND qui donne l'échelle des
+ *  cases, jamais l'outil qui sert à poser un mur — elle ne concurrence ni les traits de structure ni
+ *  les pions posés dessus. */
+const GRILLE_OPACITE = 0.11;
 
 export function IsoStage() {
   // ── État (store) ────────────────────────────────────────────────────────────────────────────────
@@ -303,7 +311,13 @@ export function IsoStage() {
       }, cleared) === 'visible';
     }
     if (cutawayOverhead(el.cell, cleared)) return false;
-    if (el.kind === 'wall') return !frontFacadeCutaway({ ...el, roomZoneIds: zonesVives.get(el.key), x: el.cell.x, y: el.cell.y, z: el.cell.z }, cleared, dims);
+    if (el.kind === 'wall') {
+      // MURS AU TRAIT (#1176, P3-5b) : sous un regard qui les rend au trait symbolique SVG
+      // (`stage/layers.wallTraitObjs`), le monde volumique n'en peint AUCUN — verdict exclusif, jamais
+      // une coiffe gardée sous le trait.
+      if (politique.mursAuTrait) return false;
+      return !frontFacadeCutaway({ ...el, roomZoneIds: zonesVives.get(el.key), x: el.cell.x, y: el.cell.y, z: el.cell.z }, cleared, dims);
+    }
     return true;
   }, [cleared, dims, zonesVives, planVue, politique, activeZ]);
   // CHAMP de visibilité (#1176, C6) : le monde volumique l'échantillonne PAR SOMMET, les corps posés
@@ -336,6 +350,20 @@ export function IsoStage() {
   const tokenEls = useMemo(
     () => (scene ? buildTokens(scene, visible, mode === 'battle' && battle ? battle : null, { activeZ, viewZ: layerZ, top: politique.montesDissocies }) : []),
     [scene, visible, mode, battle, activeZ, layerZ, politique],
+  );
+  // STRUCTURE AU TRAIT (#1176, P3-5b) : la MÊME couche que le plan de station (`stage/layers`), montrée
+  // ici quand le regard retire les murs du monde volumique. Le brouillard lui est passé : un mur non vu
+  // n'est pas tracé. Projection par `dimsVue` (le lacet RÉEL) — la même que celle du canevas et des
+  // autres overlays, sans quoi les traits décrocheraient du monde pendant une rotation.
+  const mursTrait = useMemo(
+    () => (scene && politique.mursAuTrait ? wallTraitObjs(scene, dimsVue, activeZ, visible) : []),
+    [scene, politique, dimsVue, activeZ, visible],
+  );
+  // GRILLE TACTIQUE (#1176, P3-5b) : la même fonction pure que l'éditeur (`geometry/grid`), à l'encre du
+  // JEU — un FOND de plateau, pas un outil d'auteur. `w+h+2` segments, jamais un par case.
+  const grille = useMemo(
+    () => (scene && politique.grilleTactique ? gridLines(dimsVue, activeZ) : []),
+    [scene, politique, dimsVue, activeZ],
   );
 
   // Les vérités de surbrillance sont assemblées par le monde volumique lui-même
@@ -447,6 +475,23 @@ export function IsoStage() {
     {/* Le fond du SVG est transparent : le canevas peint dessous. */}
     <svg ref={svgRef} className="iso-stage" style={{ background: 'transparent' }} viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" {...handlers}>
       <g ref={camGRef} style={{ transform: camTransform, transition: camTransition, opacity: camOpacity }}>
+        {/* COMPOSITION DE LA VUE DU DESSUS (#1176, P3-5b) : le canevas volumique dessous ne peint que
+            les SOLS de l'étage actif ; ce qui suit est la surcouche de PLATEAU, du plus bas au plus
+            haut — la grille (fond), puis la structure au trait. Les affordances (portes, escaliers,
+            télégraphes) et le chrome des jetons s'empilent APRÈS, dans l'ordre d'émission du groupe :
+            l'état d'une porte se lit SUR son mur, jamais sous lui.
+            ÉCART STRUCTUREL 2026-08-16 (registre des fossiles) : grille et murs se peignent AU-DESSUS
+            des pions, qui sont des billboards du canevas volumique — le SVG couvre le canevas entier,
+            aucun ordre n'est négociable entre les deux arbres. Mort planifiée au lot 5c (#1176 P3-5c) :
+            les pions deviennent des disques SVG, et l'ordre redevient contrôlable dans un seul arbre. */}
+        {grille.length > 0 && (
+          <g pointerEvents="none" data-grille-jeu={grille.length}>
+            {grille.map((l, i) => (
+              <line key={`gj-${i}`} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke="var(--iso-grid)" strokeOpacity={GRILLE_OPACITE} strokeWidth={1} shapeRendering="crispEdges" />
+            ))}
+          </g>
+        )}
+        {mursTrait.length > 0 && <g pointerEvents="none" data-murs-trait={mursTrait.length}>{mursTrait.map((o) => o.el)}</g>}
         <DoorOverlays
           portals={portals}
           dims={dimsVue}

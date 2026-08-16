@@ -2,12 +2,13 @@
  * TopoScene — vue TOP-DOWN symbolique d'une scène (plan de niveau / minimap). N'est PAS un 2ᵉ moteur
  * d'affichage : le monde lui vient du MÊME pipeline que le stage de jeu — la MATIÈRE (les sols de
  * l'étage) en instantané volumique posé SOUS le SVG (`stage/PlanWorldCanvas`), la STRUCTURE (les murs)
- * au trait symbolique SVG (`stage/layers.wallLayerObjs`, les mêmes couches que l'éditeur) : la coiffe
+ * au trait symbolique SVG (`stage/layers.wallTraitObjs`, la couche de la vue du dessus de JEU) : la coiffe
  * d'un mur volumique tombe sous le pixel à l'échelle d'un plan (mesure au JSDoc de
  * `stage/planSnapshot.ts`), là où le trait est invariant d'échelle.
  * En `view:'top'` le mur se rend en trait symbolique ; LOD 0 = silhouette plate. La minimap sélectionne
- * DÉLIBÉRÉMENT la sous-couche STRUCTURELLE — pas de toits/props/tokens/fx/highlights (game-only). Une
- * nouvelle COUCHE structurelle à montrer sur le plan s'ajoute à `structuralObjs` (1 ligne).
+ * DÉLIBÉRÉMENT la sous-couche STRUCTURELLE — pas de toits/props/tokens/fx/highlights (game-only).
+ * La COUCHE DE TRAIT est celle de la vue du dessus de JEU (`stage/layers.wallTraitObjs`) : une seule
+ * loi de composition pour les deux plans du dessus (`stage/viewPolicy`).
  * Par-dessus : une couche de MARQUEURS de station + des pastilles de combattants optionnelles —
  * affordances cliquables et symboles d'état restent en SVG.
  * SANS CONTEXTE VOLUMIQUE, le plan n'a plus de matière : il le DIT (`stage/SansWebgl`) au lieu de
@@ -15,9 +16,7 @@
  * SVG est morte avec la voie affine).
  */
 import { useState } from 'react';
-import { buildWalls } from './builders/walls';
-import { wallLayerObjs } from './stage/layers';
-import { sortByDepth } from './stage/objs';
+import { wallTraitObjs } from './stage/layers';
 import { PlanWorldCanvas } from './stage/PlanWorldCanvas';
 import { SansWebgl } from './stage/SansWebgl';
 import { stageSize, tileCenter, type Dims } from '../geometry/iso';
@@ -28,8 +27,6 @@ import type { Scene } from '../state/scene';
 import type { Station } from '../state/stations';
 import type { Combatant } from '../engine/types';
 
-/** LOD 0 (fills plats, aucun motif) — une minimap veut la silhouette symbolique, pas le détail. */
-const LOD0 = { zoom: 0.4 };
 /** Rayon écran (px) d'une pastille de combattant. */
 const DOT_R = 7;
 /** Anneau de sélection (px au-delà du disque). */
@@ -41,19 +38,11 @@ export interface TopoSceneProps {
   /** Pastilles de repérage (localiser un héros / un servant) — optionnel. */
   combatants?: Combatant[];
   selectedStationId?: string;
-  /** Étage à PLANIFIER (défaut : le rez). Le plan n'en montre qu'UN — cf. `structuralObjs`. */
+  /** Étage à PLANIFIER (défaut : le rez). Le plan n'en montre qu'UN — cf. `wallTraitObjs`. */
   z?: number;
   viewport?: { w: number; h: number };
   onSelectStation?: (s: Station) => void;
   onSelectEntity?: (combatantId: string) => void;
-}
-
-/** Couche STRUCTURELLE SVG via la MÊME fonction de couche que l'éditeur (`wallLayerObjs` +
- *  `sortByDepth`) : aucune ré-implémentation d'assemblage. Émet les nœuds pré-triés.
- *  `z` = l'étage PLANIFIÉ, passé au builder comme son `viewZ` (isolement d'un étage) : un plan se lit
- *  à la VERTICALE, un seul plancher à la fois — sans lui, les murs de TOUS les étages se superposent. */
-function structuralObjs(scene: Scene, dims: Dims, z: number) {
-  return sortByDepth(wallLayerObjs(buildWalls(scene, undefined, { activeZ: z, viewZ: z }), dims, 0, LOD0));
 }
 
 export function TopoScene({ scene, stations, combatants, selectedStationId, z = 0, viewport, onSelectStation, onSelectEntity }: TopoSceneProps) {
@@ -88,7 +77,7 @@ export function TopoScene({ scene, stations, combatants, selectedStationId, z = 
         ? { display: 'block', position: 'relative' }
         : { width: '100%', height: '100%', display: 'block', position: 'relative' }}
     >
-      <g>{structuralObjs(scene, dims, z).map((o) => o.el)}</g>
+      <g>{wallTraitObjs(scene, dims, z).map((o) => o.el)}</g>
       {(() => {
         // Les marqueurs suivent l'étage PLANIFIÉ comme la structure : pointer une station d'un autre
         // niveau sur ce plan la placerait dans des murs qui n'y sont pas.

@@ -4,8 +4,9 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import * as THREE from 'three';
 import { TopoScene } from '../TopoScene';
-import { planLights, setPlanRendererFactory, SANS_SOLEIL, type PlanRenderer } from './planSnapshot';
-import { stageLights } from './stageLights';
+import { planLights, setPlanRendererFactory, HEURE_INERTE, PLAN_PLAT, type PlanRenderer } from './planSnapshot';
+import { viewPolicy } from './viewPolicy';
+import { stageLightScalars, stageLights } from './stageLights';
 import { emptyScene, type Scene } from '../../state/scene';
 import type { Station } from '../../state/stations';
 
@@ -224,9 +225,26 @@ describe('Plan de station — traitement de PLAN (aucune ombre portée)', () => 
     expect(lumière.sun).toBeNull();
     expect(lumière.lit).toBe(false);
     expect(lumière.fade).toBe(0);
-    // Ce qui le rend vrai : l'heure du plan est hors de l'arche diurne — à MIDI, la même scène en a un.
-    expect(stageLights({ scene, gameTime: 12 * 60, lightLevel: 1, shadowBox: new THREE.Box3() }).sun).not.toBeNull();
-    expect(SANS_SOLEIL).toBe(0);
+    // CE QUI LE REND VRAI (#1176, P3-5b) : le REGARD, pas l'heure. La même scène à la MÊME heure, sans
+    // le verdict du dessus, monte bien un soleil — le plan ne l'éteint plus en prétendant qu'il est
+    // minuit, il demande le régime du dessus à `viewPolicy`.
+    expect(stageLights({ scene, gameTime: HEURE_INERTE, lightLevel: PLAN_PLAT, shadowBox: new THREE.Box3() }).sun).not.toBeNull();
+    expect(viewPolicy({ view: 'top' }).ombreSoleil).toBe(false);
+  });
+
+  it('l’HEURE est INERTE pour un plan : minuit ou midi rendent le même régime', () => {
+    // La preuve que le détour d'horloge n'avait rien à porter : sous le régime de plan (regard du
+    // dessus + palier forcé à `PLAN_PLAT`), `gameTime` n'entre plus dans aucune des deux décisions.
+    const scene = scèneDePlan();
+    const régime = (gameTime: number) => {
+      const { fade, lit, ambientIntensity, sunIntensity, surfaceLuminance } = stageLightScalars({
+        scene, gameTime, lightLevel: PLAN_PLAT, ombreSoleil: viewPolicy({ view: 'top' }).ombreSoleil,
+      });
+      return { fade, lit, ambientIntensity, sunIntensity, surfaceLuminance };
+    };
+    expect(régime(HEURE_INERTE)).toEqual(régime(0));
+    expect(régime(HEURE_INERTE)).toEqual(régime(23 * 60));
+    expect(régime(HEURE_INERTE).lit).toBe(false);
   });
 
   it('la scène three réellement rendue ne porte que l’ambiante et le monde', () => {

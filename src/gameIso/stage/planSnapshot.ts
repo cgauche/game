@@ -8,7 +8,9 @@
  * FIXE : on crée le renderer, on rend une frame, on la copie dans le canevas 2D affiché, on libère
  * tout. Le plan ne bouge pas — c'est une carte, pas une vue de jeu.
  *
- * TRAITEMENT DE PLAN, jamais le neutre d'authoring : heure `SANS_SOLEIL` (aucune directionnelle, donc
+ * TRAITEMENT DE PLAN, jamais le neutre d'authoring : le régime SANS SOLEIL de la POLITIQUE DE VUE
+ * (`viewPolicy({ view: 'top' }).ombreSoleil`, #1176 P3-5b — le plan ne ment plus sur l'heure pour
+ * éteindre le soleil : il demande le régime du dessus à la loi commune, aucune directionnelle, donc
  * AUCUNE ombre portée — un plan à ombres serait une photo zénithale) et `PLAN_PLAT` (la mise en scène
  * de lumière prime sur le palier de la scène : monde plat, pleinement éclairé). La météo authorée ne
  * teinte ni n'assombrit un plan : la lumière se décide sur la scène SANS elle.
@@ -30,12 +32,18 @@ import {
 } from '../backends/webgl/sceneMeshes';
 import { worldSurfaceMaterials } from '../backends/webgl/worldMaterials';
 import { stageLights, type StageLights } from './stageLights';
+import { viewPolicy } from './viewPolicy';
 import { stage3dFramingFor, viewBoxScreen } from './stage3dCamera';
 import { stageSize, type Dims } from '../../geometry/iso';
 import type { Scene } from '../../state/scene';
 
-/** HEURE d'horloge du plan : minuit, hors de l'arche diurne — `sceneSun` n'y rend aucun soleil. */
-export const SANS_SOLEIL = 0;
+/** HEURE d'horloge passée à la décision de lumière — INERTE sous le régime de plan, et c'est le point
+ *  (#1176, P3-5b) : le plan ne demande plus l'extinction du soleil à MINUIT, il la demande à la
+ *  POLITIQUE DE VUE (`viewPolicy({ view: 'top' }).ombreSoleil`), qui l'applique sur le FONDU. La valeur
+ *  ci-dessous est donc MIDI — l'heure la plus solaire qui soit : si un soleil pouvait encore se lever
+ *  sur un plan, il se lèverait ici. Le palier d'ambiance ne la lit pas non plus (`PLAN_PLAT` est un
+ *  override, `state/vision.ambientScalar`). Invariance mesurée au banc `plan-volumique.test`. */
+export const HEURE_INERTE = 12 * 60;
 
 /** MISE EN SCÈNE de lumière du plan : pleine (`ambientScalar` prend l'override tel quel). */
 export const PLAN_PLAT = 1;
@@ -84,9 +92,16 @@ function scenePourLumière(scene: Scene): Scene {
   return { ...scene, weather: undefined };
 }
 
-/** Les lampes du plan : l'ambiante seule, au traitement PLAN. `sun` y est toujours `null`. */
+/** Les lampes du plan : l'ambiante seule, au traitement PLAN. `sun` y est toujours `null` — parce que
+ *  le REGARD d'un plan est celui du dessus, et que ce regard n'allume pas de soleil (`viewPolicy`). */
 export function planLights(scene: Scene, shadowBox = new THREE.Box3()): StageLights {
-  return stageLights({ scene: scenePourLumière(scene), gameTime: SANS_SOLEIL, lightLevel: PLAN_PLAT, shadowBox });
+  return stageLights({
+    scene: scenePourLumière(scene),
+    gameTime: HEURE_INERTE,
+    lightLevel: PLAN_PLAT,
+    shadowBox,
+    ombreSoleil: viewPolicy({ view: 'top' }).ombreSoleil,
+  });
 }
 
 /** Cadre en pixels d'un instantané pour un conteneur mesuré (0 = aucune mise en page mesurable : le

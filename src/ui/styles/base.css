@@ -57,6 +57,7 @@
   --iso-invalid: #777777; /* visée : gabarit hors portée / hors Ligne de Vue */
   --iso-threat: #d11a1a; /* combat : télégraphe de zone ennemi */
   --iso-fauna: #0d0d0d; /* carte : faune d'ambiance (mouches, corbeau) */
+  --iso-grid: #becde1; /* carte : grille de cases (surcouche tactique de la vue du dessus, éditeur) */
   --dbg-z1: #13c4d6; /* debug carte : teinte couche z1 */
   --dbg-z2: #9a5cff; /* debug carte : teinte couche z2 */
   --dbg-wall: #e03a3a; /* debug carte : courtine */

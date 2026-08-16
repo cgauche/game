@@ -9,8 +9,16 @@
  * ce module n'a rien à leur dire. Ici ne vivent que des choix — un toit qu'on retire pour voir le
  * plancher, un soleil qu'on n'allume pas, une nappe qu'on ne monte pas.
  *
- * UN VERDICT DE PLUS = UNE LIGNE : c'est le point de ce module. Les verdicts de PION (D2) et de
- * GRILLE (D3) du même chantier s'y poseront de la même façon, sans nouveau site de décision.
+ * UN VERDICT DE PLUS = UNE LIGNE : c'est le point de ce module. Les verdicts de PION (D2) s'y
+ * poseront de la même façon, sans nouveau site de décision.
+ *
+ * LOI DE COMPOSITION DU DESSUS (#1176, P3-5b) — la vue du dessus de JEU et le PLAN DE STATION
+ * (`gameIso/TopoScene`) n'ont qu'une seule loi : le monde volumique ne peint que les SOLS de l'étage
+ * actif ; murs, grille, portes, escaliers, pions et marqueurs sont des surcouches SVG. C'est
+ * exactement ce que dit `planKeepEl` (`stage/planSnapshot.ts`) depuis P3-4, et ce que les verdicts
+ * `mursAuTrait`/`etageIsole`/`toitsVisibles` disent pour l'écran de jeu — les deux vues CONVERGENT,
+ * elles ne se doublent pas. Le trait de mur est la MÊME couche des deux côtés
+ * (`stage/layers.wallTraitObjs`), la matière le MÊME monde cuit.
  */
 import { isSquareView, type ViewMode } from '../../geometry/iso';
 
@@ -55,6 +63,19 @@ export interface StyleVue {
    *  idiome de plateau, qui reprend l'ancrage au sol que l'ombre portée donnait en iso. L'ambiante,
    *  donc le palier jour/nuit, ne dépend d'aucun regard : la nuit reste la nuit. */
   ombreSoleil: boolean;
+  /** Les MURS se rendent-ils au TRAIT symbolique SVG (`stage/layers.wallTraitObjs`) au lieu d'être
+   *  peints par le monde volumique ? Vu à la verticale, un mur ne montre que sa COIFFE — quelques
+   *  dixièmes de pixel de large à l'échelle d'un plateau (mesure au JSDoc de `stage/planSnapshot.ts`),
+   *  là où le trait est invariant d'échelle. Verdict EXCLUSIF : le monde cuit RETIRE ses murs quand il
+   *  est vrai (`keepEl`), aucune double peinture — garder une coiffe sous-pixel sous un trait, c'est
+   *  payer du triangle pour du bruit. */
+  mursAuTrait: boolean;
+  /** La GRILLE de cases se montre-t-elle en permanence ? Le monde volumique fusionne les faces
+   *  coplanaires de même matériau : deux cases voisines de même terrain n'ont plus aucune limite
+   *  visible, et une vue tactique se joue sur des cases. La grille est donc une surcouche explicite
+   *  (`geometry/grid.gridLines`), la même que celle de l'éditeur — plus discrète en jeu, où elle est
+   *  un fond et non un outil. */
+  grilleTactique: boolean;
   /** Un couple MONTÉ se rend-il en deux pions distincts (`buildTokens`, paramètre `top`) ? Valeur
    *  d'aujourd'hui, relocalisée ici : la loi des pions se décide au lot D2. */
   montesDissocies: boolean;
@@ -70,6 +91,8 @@ export function viewPolicy(regard: RegardVue): StyleVue {
     nappesMonde: !pov && !dessus,
     precipitations: !dessus,
     ombreSoleil: !dessus,
+    mursAuTrait: dessus,
+    grilleTactique: dessus,
     montesDissocies: dessus,
   };
 }

@@ -24,7 +24,7 @@ import { nearestNode, type CalibStep, type TraceTransform } from '../../state/tr
 import type { useEditorView } from './useEditorView';
 import { effectiveLowerLayerMode, gabaritTint, layerHidden, type LowerLayerMode } from './lowerLayerGabarit';
 import { projectedRangeAxes } from './lampMarker';
-import { gridLines } from './authorGrid';
+import { gridLines } from '../../geometry/grid';
 import {
   Tool, Layers, Sel, Rect, Pt, Edge4, rectFrom, hitAt, selRect, selZ, moveSel, resizeSel, paintTiles, fillTerrainRect,
   placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, EFFECT_ZONE_SEEDS, addEnemyMember, eraseAt, entityAt, sameSel,
@@ -80,7 +80,9 @@ const ROOM_LINE = 'rgba(150,150,220,0.55)';
 const LAMP_INK = 'rgba(255,196,92,0.95)';
 /** Encre de la GRILLE d'authoring : un gris froid DISCRET — elle borne la case sans concurrencer ni le
  *  terrain qu'on peint, ni les traits d'auteur (zones, murs, sélection) qui, eux, portent du sens. */
-const GRID_INK = 'rgba(190,205,225,0.22)';
+/** OPACITÉ de la grille d'AUTEUR (encre `--iso-grid`, la même qu'en jeu) : plus haute que celle du jeu
+ *  (`gameIso/IsoStage`, 0,11) — ici la grille est l'outil qui sert à poser une case, pas un fond. */
+const GRILLE_OPACITE = 0.22;
 
 /** Les 4 voisines de grille d'une case, appariées à l'ARÊTE qui les sépare (`tileEdge`). */
 const ZONE_SIDES = [
@@ -803,7 +805,7 @@ export function EditorCanvas({
               volumique : en affine, la doubler épaissirait un trait déjà là. */}
           <g pointerEvents="none" data-grille={grilleAuteur.length}>
             {grilleAuteur.map((l, i) => (
-              <line key={`gr-${i}`} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke={GRID_INK} strokeWidth={1} shapeRendering="crispEdges" />
+              <line key={`gr-${i}`} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke="var(--iso-grid)" strokeOpacity={GRILLE_OPACITE} strokeWidth={1} shapeRendering="crispEdges" />
             ))}
           </g>
           {/* APERÇU DU TRAIT en cours : les cases déjà peintes, par le peintre SVG d'authoring.

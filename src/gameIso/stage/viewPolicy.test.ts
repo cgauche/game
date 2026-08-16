@@ -24,26 +24,30 @@ const BOITE = new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(20, 4
 const dehors = (): Scene => setNorthDeg({ ...emptyScene(6, 6), ambiance: 'exterieur' }, 0);
 
 describe('viewPolicy — un regard, ses verdicts de style', () => {
-  it('PLATEAU ISO : tout se montre — toits, soleil, nappes, précipitations', () => {
+  it('PLATEAU ISO : tout se montre — toits, soleil, nappes, précipitations, murs PEINTS, sans grille', () => {
     expect(viewPolicy({ view: 'iso' })).toEqual({
       toitsVisibles: true,
       etageIsole: false,
       nappesMonde: true,
       precipitations: true,
       ombreSoleil: true,
+      mursAuTrait: false,
+      grilleTactique: false,
       montesDissocies: false,
     });
     // `view` absent = le losange : le défaut de `Dims.view`, pas un cas particulier.
     expect(viewPolicy({})).toEqual(viewPolicy({ view: 'iso' }));
   });
 
-  it('PLATEAU DU DESSUS : découvert permanent, régime sans soleil, ni nappe ni semis, un seul étage', () => {
+  it('PLATEAU DU DESSUS : découvert permanent, régime sans soleil, murs au TRAIT et grille de cases', () => {
     expect(viewPolicy({ view: 'top' })).toEqual({
       toitsVisibles: false,
       etageIsole: true,
       nappesMonde: false,
       precipitations: false,
       ombreSoleil: false,
+      mursAuTrait: true,
+      grilleTactique: true,
       montesDissocies: true,
     });
   });
@@ -53,6 +57,8 @@ describe('viewPolicy — un regard, ses verdicts de style', () => {
     expect([pov.toitsVisibles, pov.ombreSoleil, pov.precipitations, pov.etageIsole, pov.montesDissocies])
       .toEqual([true, true, true, false, false]);
     expect(pov.nappesMonde).toBe(false); // le POV a sa brume de DISTANCE, pas des nappes empilées
+    // La première personne n'est pas un plan : ni trait de mur, ni grille de cases.
+    expect([pov.mursAuTrait, pov.grilleTactique]).toEqual([false, false]);
     // La projection de plateau ne décide plus rien sous ce regard : le POV n'en a pas.
     expect(viewPolicy({ pov: true, view: 'top' })).toEqual(pov);
   });

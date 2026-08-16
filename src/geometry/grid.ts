@@ -1,22 +1,22 @@
 /**
- * GRILLE DE CASES de l'éditeur (#1176, P3-3) — la surcouche d'authoring qui rend les LIMITES de cases
- * lisibles, et la fonction de base d'un éditeur de plan.
+ * GRILLE DE CASES projetée (#1176, P3-3 puis P3-5b) — les LIMITES de cases, en traits, dans le repère
+ * de projection du plateau. Fonction PURE, sans DOM ni React : elle vit ici, sous l'éditeur ET sous le
+ * rendu de jeu, parce que ses DEUX consommateurs en dépendent (`ui/editor/EditorCanvas` en surcouche
+ * d'AUTEUR, `gameIso/IsoStage` en surcouche TACTIQUE de la vue du dessus) et qu'aucun des deux n'a à
+ * dépendre de l'autre.
  *
- * POURQUOI ELLE EXISTE MAINTENANT : sur la voie AFFINE, chaque losange de sol est tracé avec son
- * contour (`authoring/floorsSvg.ts` : `stroke` sur le `path` de base), et cette couture DONNE la
- * grille — mesuré à l'écran, une périodicité franche au pas de la case. Le monde VOLUMIQUE, lui,
- * fusionne les faces coplanaires de même matériau en une géométrie continue : deux cases voisines de
- * même terrain n'ont plus aucune limite visible. La grille cesse donc d'être un effet de bord du
- * dessin, et devient ce qu'elle aurait toujours dû être : une SURCOUCHE d'auteur, explicite.
- * Elle rejoint la lisibilité de plateau que demande l'arbitrage utilisateur du 2026-08-12 (vue TOP =
- * tactique tabletop : pions, découvert, grille).
+ * POURQUOI ELLE EXISTE : sur la voie AFFINE, chaque losange de sol était tracé avec son contour
+ * (`gameIso/authoring/floorsSvg.ts`), et cette couture DONNAIT la grille. Le monde VOLUMIQUE fusionne
+ * les faces coplanaires de même matériau : deux cases voisines de même terrain n'ont plus aucune
+ * limite visible. La grille cesse donc d'être un effet de bord du dessin et devient ce qu'elle aurait
+ * toujours dû être : une surcouche explicite.
  *
  * COÛT : un segment par RANGÉE et par COLONNE (`w + h + 2` chemins), jamais un par case — une carte
  * 32×38 en pose 72, contre 1 216 losanges.
  */
-import { tileCenter, type Dims } from '../../geometry/iso';
+import { tileCenter, type Dims } from './iso';
 
-/** Un trait de grille, en coordonnées de PROJECTION (le repère du viewBox de l'éditeur). */
+/** Un trait de grille, en coordonnées de PROJECTION (le repère du viewBox qui l'affiche). */
 export interface GridLine {
   x1: number;
   y1: number;

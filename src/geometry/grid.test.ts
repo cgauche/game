@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { gridLines } from './authorGrid';
-import { diamondCorners, tileCenter, type Dims, type Rot } from '../../geometry/iso';
+import { gridLines } from './grid';
+import { diamondCorners, tileCenter, type Dims, type Rot } from './iso';
 
 /**
- * GRILLE D'AUTHORING (#1176, P3-3) — ce qui se garde, c'est qu'elle tombe sur les BORDS DE CASE du
+ * GRILLE DE CASES (#1176, P3-3) — ce qui se garde, c'est qu'elle tombe sur les BORDS DE CASE du
  * monde, pas qu'elle existe : un quadrillage d'écran au bon pas mais décalé d'un demi-losange serait
- * pire que rien pour un éditeur (on poserait ses murs à côté).
+ * pire que rien (on poserait ses murs à côté en édition, on lirait la portée à côté en jeu).
  */
 const dims = (rot: Rot, view: 'iso' | 'top'): Dims => ({ w: 8, h: 5, rot, edge: false, view });
 
-describe('Grille de l’éditeur — un trait par rangée et par colonne, sur les bords de case', () => {
+describe('Grille de cases — un trait par rangée et par colonne, sur les bords de case', () => {
   it('le COMPTE est celui des lignes de grille, jamais un chemin par case', () => {
     const d = dims(0, 'top');
     expect(gridLines(d).length).toBe(d.w + d.h + 2); // 15 traits pour 40 cases
