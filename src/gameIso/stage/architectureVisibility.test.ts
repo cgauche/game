@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { cutawayForSection, cutawayOverhead, exteriorWallViewZ, frontFacadeCutaway, lidCutaway, type ClearedSpace, type Lid } from './architectureVisibility';
+import { cutawayForSection, cutawayLifted, cutawayOverhead, exteriorWallViewZ, frontFacadeCutaway, lidCutaway, type ClearedSpace, type Lid } from './architectureVisibility';
 import { depth, occludesActor, tileCenter, type Dims } from '../../geometry/iso';
 import { elOccluder } from './occluders';
 import { buildRoofs, clearedSpace, massFootprintCells, massRoomZoneIds } from '../builders/roofs';
 import { effectiveArchitecture } from '../../state/sceneEdit';
-import { emptyScene, type BuildingMass, type Scene, type WallSeg } from '../../state/scene';
+import { emptyScene, heightAt, type BuildingMass, type Scene, type WallSeg } from '../../state/scene';
+import { actorCapsuleOf } from './actorCapsule';
 import { buildWalls } from '../builders/walls';
 import { buildFloors } from '../builders/floors';
 import { diligenceCampaign } from '../../scenes/campaign';
@@ -13,10 +14,10 @@ import { computeStateVisible } from '../../state/visionState';
 
 /** Un allié dans une PIÈCE : la pièce dégagée, et les cases qu'elle couvre. */
 const piece = (id: string, cells: string[]): ClearedSpace =>
-  ({ zoneIds: new Set([id]), zoneCells: new Map([[id, new Set(cells)]]), roomlessCells: new Set(), overheadCells: new Set(), liftedSections: new Set(), seenSections: null });
+  ({ zoneIds: new Set([id]), zoneCells: new Map([[id, new Set(cells)]]), roomlessCells: new Set(), overheadCells: new Set(), liftedSections: new Set(), liftedCells: new Set(), seenSections: null });
 /** Un allié sous un bâti SANS pièce déclarée : l'emprise du bâtiment qui l'abrite. */
 const emprise = (cells: string[]): ClearedSpace =>
-  ({ zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(cells), overheadCells: new Set(), liftedSections: new Set(), seenSections: null });
+  ({ zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(cells), overheadCells: new Set(), liftedSections: new Set(), liftedCells: new Set(), seenSections: null });
 
 describe('cutawayForSection', () => {
   it('masque une section dont la PIÈCE est occupée', () => {
@@ -53,7 +54,7 @@ describe('lidCutaway — le couvercle qui cache un allié À L’ÉCRAN se lève
     },
     z,
   });
-  const vide = (): ClearedSpace => ({ zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(), overheadCells: new Set(), liftedSections: new Set(), seenSections: null });
+  const vide = (): ClearedSpace => ({ zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(), overheadCells: new Set(), liftedSections: new Set(), liftedCells: new Set(), seenSections: null });
 
   it('une nappe qui recouvre le héros lève sa masse ENTIÈRE, et retire l’étage qu’elle coiffe', () => {
     const couvrante = nappes('voisin', 1, { x: 2, y: 2, w: 4, h: 2 });
@@ -65,9 +66,13 @@ describe('lidCutaway — le couvercle qui cache un allié À L’ÉCRAN se lève
     const cleared = lidCutaway(vide(), [...couvrante, ...loin], [heros]);
     expect(cutawayForSection({ sectionId: 'voisin', cells: [] }, cleared)).toBe('hidden');
     expect(cutawayForSection({ sectionId: 'ailleurs', cells: [] }, cleared)).toBe('visible');
-    // TOUS les pans de la masse tombent, y compris ceux qui ne couvraient personne.
+    // TOUS les pans de la masse tombent, y compris ceux qui ne couvraient personne — mais la levée est
+    // d'ÉCRAN : elle emporte ce qui se dresse sur le niveau, jamais son SOL.
     for (const lid of couvrante)
-      for (const cell of lid.cells) expect(cutawayOverhead({ ...cell, z: 1 }, cleared)).toBe(true);
+      for (const cell of lid.cells) {
+        expect(cutawayLifted({ ...cell, z: 1 }, cleared)).toBe(true);
+        expect(cutawayOverhead({ ...cell, z: 1 }, cleared)).toBe(false);
+      }
   });
 
   it('la nappe de SON PROPRE étage se lève aussi — sans jamais retirer le sol sous ses pieds', () => {
@@ -77,7 +82,10 @@ describe('lidCutaway — le couvercle qui cache un allié À L’ÉCRAN se lève
     const cleared = lidCutaway(vide(), couvrante, [heros]);
     expect(cutawayForSection({ sectionId: 'sien', cells: [] }, cleared)).toBe('hidden');
     for (const lid of couvrante)
-      for (const cell of lid.cells) expect(cutawayOverhead({ ...cell, z: 1 }, cleared)).toBe(false);
+      for (const cell of lid.cells) {
+        expect(cutawayOverhead({ ...cell, z: 1 }, cleared)).toBe(false);
+        expect(cutawayLifted({ ...cell, z: 1 }, cleared)).toBe(false);
+      }
   });
 
   it('aucune nappe ne recouvrant le héros, l’espace dégagé n’est pas touché', () => {
@@ -243,7 +251,7 @@ describe('dégagement — le couvercle au-dessus du groupe (La Diligence)', () =
     const murs = buildWalls(scene, undefined, { activeZ: surplomb.masse.z, viewZ: null })
       .filter((el) => surplomb.cells.has(`${el.cell.x},${el.cell.y}`) && el.cell.z === surplomb.masse.z);
     expect(murs.length).toBeGreaterThan(0);
-    for (const el of murs) expect(cutawayOverhead(el.cell, cleared)).toBe(true);
+    for (const el of murs) expect(cutawayLifted(el.cell, cleared)).toBe(true);
   });
 
   it('le sol où le groupe POSE LE PIED n’est jamais retiré — seul ce qui est au-dessus de lui tombe', () => {
@@ -364,5 +372,47 @@ describe('vue — une nappe se peint quand le groupe la VOIT (#950)', () => {
     };
     expect(dessinees({ x: dx, y: dy, z: 0 }).size).toBe(0);
     expect(dessinees(dehors).size).toBeGreaterThan(0);
+  });
+});
+
+/** #1176 — UNE MASSE LEVÉE À L'ÉCRAN N'EMPORTE JAMAIS LE PLANCHER. Le groupe se tient DEHORS (cour de
+ *  La Diligence : aucune pièce, aucune emprise, aucun surplomb au-dessus de sa tête) et la nappe d'un
+ *  corps le recouvre à l'écran : cette masse se lève — toit, murs et décors du niveau partent — mais
+ *  le SOL de ce niveau reste peint. L'ôter creusait un puits vers le fond de la scène là où l'on
+ *  voulait montrer une pièce (mesuré : 174 puis 422 dalles d'étage effacées sur 422).
+ *
+ *  Le montage est celui du stage (`IsoStage`), pas une reconstruction : vision réelle, `clearedSpace`
+ *  puis `lidCutaway` sur la géométrie projetée des nappes. */
+describe('dégagement — la masse levée à l’écran garde son plancher (La Diligence)', () => {
+  const scene = diligenceCampaign.scenes[0];
+  const dims: Dims = { ...scene.dimensions, rot: 0, view: 'iso' };
+  const cutawayAu = (x: number, y: number, z: number) => {
+    const allies = [{ x, y, z }];
+    const sight = computeStateVisible({ scene, battle: null, party: [], partyPos: { x, y, z }, gameTime: 12 * 60, lightLevel: null });
+    const base = clearedSpace(scene, allies, sight);
+    const lids: Lid[] = buildRoofs(scene).map((el) => ({
+      sectionId: el.sectionId ?? el.key, z: el.cell.z, cells: el.cells, occluder: elOccluder(el, dims),
+    }));
+    const actors = allies.map((a) => ({ capsule: actorCapsuleOf({ x: a.x, y: a.y, h: heightAt(scene, a.x, a.y, a.z) }, dims), z: a.z }));
+    return { base, cleared: lidCutaway(base, lids, actors) };
+  };
+
+  it.each([[17, 2], [12, 3]])('depuis la cour (%i,%i), aucune dalle d’étage n’est effacée', (x, y) => {
+    const { base, cleared } = cutawayAu(x, y, 0);
+    // PRÉMISSES mesurées : le groupe est dehors (rien de dégagé par le monde), et une masse est bien
+    // levée à l'écran — sans quoi le cas ne serait pas celui qu'on verrouille.
+    expect(base.zoneIds.size + base.roomlessCells.size + base.overheadCells.size).toBe(0);
+    expect(cleared.liftedSections.size).toBeGreaterThan(0);
+    const dalles = buildFloors(scene, undefined, { activeZ: 0, viewZ: null }).filter((el) => el.cell.z === 1);
+    expect(dalles.length).toBeGreaterThan(0);
+    expect(dalles.filter((el) => cutawayOverhead(el.cell, cleared)).length).toBe(0);
+    // TÉMOIN : le dégagement fonctionne toujours — les nappes levées sont retirées, et ce qui se dresse
+    // sur leurs cases (murs d'étage, décors) tombe avec elles.
+    const levees = buildRoofs(scene).filter((el) => cleared.liftedSections.has(el.sectionId ?? el.key));
+    expect(levees.length).toBeGreaterThan(0);
+    for (const el of levees) {
+      expect(cutawayForSection({ sectionId: el.sectionId ?? el.key, cells: [] }, cleared)).toBe('hidden');
+      for (const cell of el.cells) expect(cutawayLifted({ ...cell, z: el.cell.z }, cleared)).toBe(true);
+    }
   });
 });

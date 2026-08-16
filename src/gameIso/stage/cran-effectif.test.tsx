@@ -45,7 +45,7 @@ afterAll(() => setStageRendererFactory(null));
 
 /** Un allié dans une PIÈCE dégagée, et les cases qu'elle couvre (même fixture qu'`architectureVisibility.test`). */
 const piece = (id: string, cells: string[]): ClearedSpace =>
-  ({ zoneIds: new Set([id]), zoneCells: new Map([[id, new Set(cells)]]), roomlessCells: new Set(), overheadCells: new Set(), liftedSections: new Set(), seenSections: null });
+  ({ zoneIds: new Set([id]), zoneCells: new Map([[id, new Set(cells)]]), roomlessCells: new Set(), overheadCells: new Set(), liftedSections: new Set(), liftedCells: new Set(), seenSections: null });
 
 const cranDims = (rot: Rot): Dims => ({ w: 8, h: 8, rot });
 

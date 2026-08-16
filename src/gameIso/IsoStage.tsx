@@ -50,7 +50,7 @@ import { visibilityField } from './backends/webgl/visibilityTint';
 import { roomZonesByElKey, type KeepEl, type TintAt } from './backends/webgl/sceneMeshes';
 import { stageCamTransform } from './stage/stageCam';
 import { occupiedInteriorZoneIds, roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
-import { NO_CLEARED_SPACE, frontFacadeCutaway, cutawayForSection, cutawayOverhead, lidCutaway, spaceCellKey } from './stage/architectureVisibility';
+import { NO_CLEARED_SPACE, frontFacadeCutaway, cutawayForSection, cutawayLifted, cutawayOverhead, lidCutaway, spaceCellKey } from './stage/architectureVisibility';
 import { DoorOverlays } from './stage/DoorOverlays';
 import { ClimbOverlays } from './stage/ClimbOverlays';
 import { FallOverlays } from './stage/FallOverlays';
@@ -310,7 +310,9 @@ export function IsoStage() {
         cells: el.cells.map((c) => spaceCellKey(c.x, c.y, el.cell.z)),
       }, cleared) === 'visible';
     }
-    if (cutawayOverhead(el.cell, cleared)) return false;
+    // Le SOL n'obéit qu'au couvercle au-dessus des têtes (`cutawayOverhead`) ; ce qui se dresse ou se
+    // pose dessus tombe AUSSI avec une masse levée à l'écran (`cutawayLifted`).
+    if (el.kind === 'floor' ? cutawayOverhead(el.cell, cleared) : cutawayLifted(el.cell, cleared)) return false;
     if (el.kind === 'wall') {
       // MURS AU TRAIT (#1176, P3-5b) : sous un regard qui les rend au trait symbolique SVG
       // (`stage/layers.wallTraitObjs`), le monde volumique n'en peint AUCUN — verdict exclusif, jamais
@@ -344,7 +346,7 @@ export function IsoStage() {
   const nappesVues = useMemo(() => new Set(roofEls.map((el) => el.sectionId ?? el.key)), [roofEls]);
   const nappeVue = useMemo(() => (sectionId: string) => nappesVues.has(sectionId), [nappesVues]);
   const propEls = useMemo(
-    () => (scene ? buildProps(scene, visible, { activeZ, viewZ: layerZ, allies: cutawayAllies }).filter((el) => !cutawayOverhead(el.cell, cleared)) : []),
+    () => (scene ? buildProps(scene, visible, { activeZ, viewZ: layerZ, allies: cutawayAllies }).filter((el) => !cutawayLifted(el.cell, cleared)) : []),
     [scene, visible, activeZ, layerZ, cutawayAllies, cleared],
   );
   const tokenEls = useMemo(

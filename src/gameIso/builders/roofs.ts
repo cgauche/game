@@ -1046,8 +1046,10 @@ export function clearedSpace(
   const zoneCells = new Map<string, ReadonlySet<string>>();
   const roomlessCells = new Set<string>();
   const overheadCells = new Set<string>();
-  const liftedSections = new Set<string>(); // levées à l'ÉCRAN : `lidCutaway`, résolu au stage (dims)
-  if (!allies.length) return { zoneIds, zoneCells, roomlessCells, overheadCells, liftedSections, seenSections: null };
+  // Levées à l'ÉCRAN : `lidCutaway`, résolu au stage (dims) — la scène seule n'en connaît aucune.
+  const liftedSections = new Set<string>();
+  const liftedCells = new Set<string>();
+  if (!allies.length) return { zoneIds, zoneCells, roomlessCells, overheadCells, liftedSections, liftedCells, seenSections: null };
   const masses = effectiveArchitecture(scene).flatMap((body) =>
     body.masses.map((mass) => ({ mass, cells: massFootprintCells(mass.footprint) })));
   let openSky = false; // au moins un allié qui n'est enfermé dans aucun volume bâti
@@ -1073,7 +1075,7 @@ export function clearedSpace(
   const seenSections = sight
     ? new Set(openSky ? masses.filter(({ mass, cells }) => footInSight(mass.z, cells, sight)).map(({ mass }) => mass.id) : [])
     : null;
-  return { zoneIds, zoneCells, roomlessCells, overheadCells, liftedSections, seenSections };
+  return { zoneIds, zoneCells, roomlessCells, overheadCells, liftedSections, liftedCells, seenSections };
 }
 
 /** Le PIED d'une masse est-il en vue ? Son emprise ÉLARGIE d'1 (on voit un bâtiment quand on voit le

@@ -9,13 +9,16 @@ export type Cutaway = 'hidden' | 'visible';
  *  (`zoneIds`, et `zoneCells` = les cases de ces pièces), et par l'EMPRISE du bâtiment qui abrite
  *  l'allié quand aucune pièce n'est déclarée (`roomlessCells`).
  *
- *  `overheadCells` = le COUVERCLE : les cases des masses qui coiffent un allié, aux niveaux
- *  STRICTEMENT au-dessus du sien. C'est ce qui sépare « le bâti où je me tiens » de « ce qui est
- *  posé par-dessus ma tête » — un passage couvert est abrité par une masse dont l'allié n'occupe
- *  AUCUN niveau, et l'étage au-dessus d'une salle n'appartient à aucune de ses pièces.
+ *  `overheadCells` = le COUVERCLE au-dessus de la TÊTE : les cases des masses qui surplombent un allié
+ *  dans le MONDE, aux niveaux strictement au-dessus du sien. C'est ce qui sépare « le bâti où je me
+ *  tiens » de « ce qui est posé par-dessus ma tête » — un passage couvert est abrité par une masse dont
+ *  l'allié n'occupe AUCUN niveau, et l'étage au-dessus d'une salle n'appartient à aucune de ses pièces.
+ *  Tout y tombe, la DALLE comprise : cette dalle est le plafond de l'allié.
  *
- *  `liftedSections` = les masses levées EN TANT QUE MASSES : une nappe coiffe l'étage où l'on se
- *  tient sans qu'aucune case ne soit « au-dessus » de lui au sens des index de couche.
+ *  `liftedSections`/`liftedCells` = les masses levées EN TANT QUE MASSES parce que leur nappe cache un
+ *  allié À L'ÉCRAN (`lidCutaway`) : l'allié n'est pas dessous, il est DEVANT ou À CÔTÉ. Toit, murs et
+ *  décors du niveau levé s'ôtent ; le SOL de ce niveau reste peint — l'ôter ouvrirait un puits vers le
+ *  fond de la scène là où l'on voulait montrer une pièce.
  *
  *  `seenSections` = les masses dont la nappe est VUE depuis où le groupe se tient (#950) — la
  *  condition d'EXISTENCE d'une nappe à l'écran, quand `liftedSections`/`overheadCells` disent son
@@ -27,13 +30,14 @@ export interface ClearedSpace {
   roomlessCells: ReadonlySet<string>;
   overheadCells: ReadonlySet<string>;
   liftedSections: ReadonlySet<string>;
+  liftedCells: ReadonlySet<string>;
   seenSections: ReadonlySet<string> | null;
 }
 
 /** Aucun allié posé (scène absente) : rien n'est dégagé, et personne ne regarde. */
 export const NO_CLEARED_SPACE: ClearedSpace = {
   zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(), overheadCells: new Set(),
-  liftedSections: new Set(), seenSections: null,
+  liftedSections: new Set(), liftedCells: new Set(), seenSections: null,
 };
 
 export const spaceCellKey = (x: number, y: number, z: number) => `${x},${y},${z}`;
@@ -70,12 +74,20 @@ export function cutawayForSection(section: EnclosedSpace, cleared: ClearedSpace)
   return 'visible';
 }
 
-/** La MÊME loi, lue case par case, pour les éléments qui n'enferment aucun espace : un plancher, un
- *  panneau d'étage, un décor posé DANS le couvercle levé au-dessus des alliés s'ôte avec lui. Même
- *  résolution (`clearedSpace`), même verdict binaire — un niveau dégagé part en entier ou reste
- *  entier. */
+/** La MÊME loi, lue case par case, pour la DALLE : un plancher s'ôte quand il est le PLAFOND d'un
+ *  allié — sa case appartient au couvercle au-dessus de sa tête (`overheadCells`). Une masse levée
+ *  parce qu'elle le cache À L'ÉCRAN ne l'emporte pas : sans son sol, la pièce dégagée est un puits.
+ *  Même résolution (`clearedSpace`), même verdict binaire — un niveau part en entier ou reste entier. */
 export function cutawayOverhead(cell: { x: number; y: number; z?: number }, cleared: ClearedSpace): boolean {
   return cleared.overheadCells.has(spaceCellKey(cell.x, cell.y, cell.z ?? 0));
+}
+
+/** La MÊME loi pour ce qui se DRESSE ou se POSE sur un niveau dégagé — mur d'étage, panneau, décor :
+ *  il s'ôte avec le couvercle au-dessus de la tête du groupe (`overheadCells`) COMME avec la masse
+ *  levée qui le cachait à l'écran (`liftedCells`). Ce qui reste alors du niveau levé, c'est son SOL. */
+export function cutawayLifted(cell: { x: number; y: number; z?: number }, cleared: ClearedSpace): boolean {
+  const key = spaceCellKey(cell.x, cell.y, cell.z ?? 0);
+  return cleared.overheadCells.has(key) || cleared.liftedCells.has(key);
 }
 
 /** Un COUVERCLE candidat : la nappe d'une masse, son niveau, l'emprise qu'elle coiffe et sa
@@ -93,10 +105,13 @@ export interface Lid {
  *  VOISIN se peint par-dessus lui (mesuré sur La Diligence, passage couvert (17,12,z0) : 3 pans de
  *  deux masses voisines recouvrent encore la capsule une fois le surplomb propre retiré) ; et la
  *  nappe de SON PROPRE étage le coiffe sans qu'aucune case ne soit à un index de couche supérieur.
- *  Le geste est le MÊME que pour le surplomb : la masse est levée ENTIÈRE (`liftedSections`) et son
- *  emprise aux niveaux au-dessus de l'allié rejoint `overheadCells` — jamais pan par pan, jamais en
- *  translucide. Ce qui se tient au niveau de l'allié n'est pas touché : un mur reste un mur, et le
- *  sol sous ses pieds reste sous ses pieds. */
+ *  La masse est levée ENTIÈRE (`liftedSections`) et son emprise aux niveaux au-dessus de l'allié
+ *  rejoint `liftedCells` — jamais pan par pan, jamais en translucide. Ce qui se tient au niveau de
+ *  l'allié n'est pas touché : un mur reste un mur, et le sol sous ses pieds reste sous ses pieds.
+ *
+ *  La levée d'ÉCRAN n'est pas un surplomb : l'allié est devant la masse, pas dessous. Elle ne verse
+ *  donc RIEN dans `overheadCells` — le SOL du niveau levé reste peint (`cutawayOverhead`), seuls le
+ *  toit, les murs et les décors s'en vont (`cutawayLifted`). */
 export function lidCutaway(
   cleared: ClearedSpace,
   lids: readonly Lid[],
@@ -109,15 +124,15 @@ export function lidCutaway(
       sections.set(lid.sectionId, Math.min(sections.get(lid.sectionId) ?? actor.z, actor.z));
     }
   if (!sections.size) return cleared;
-  const overheadCells = new Set(cleared.overheadCells);
+  const liftedCells = new Set(cleared.liftedCells);
   const liftedSections = new Set([...cleared.liftedSections, ...sections.keys()]);
   for (const lid of lids) {
     const from = sections.get(lid.sectionId);
     if (from === undefined) continue;
     for (const cell of lid.cells)
-      for (let z = from + 1; z <= lid.z; z++) overheadCells.add(spaceCellKey(cell.x, cell.y, z));
+      for (let z = from + 1; z <= lid.z; z++) liftedCells.add(spaceCellKey(cell.x, cell.y, z));
   }
-  return { ...cleared, overheadCells, liftedSections };
+  return { ...cleared, liftedCells, liftedSections };
 }
 
 export function exteriorWallViewZ(activeZ: number, interiorFocused: boolean, layerZs: readonly number[]): number {
