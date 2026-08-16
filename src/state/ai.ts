@@ -31,7 +31,8 @@ import { verticalTiles } from './relief';
 import { losClear, tileSeenByFoe, lineOfSightCover } from './lineOfSight';
 import { rangeBandModifier, outnumberMod, type ModLine } from '../engine/combat';
 import { effectiveWeaponRange } from '../engine/weaponDamage';
-import { selectedAmmo } from '../engine/items';
+import { loadedAmmo } from '../engine/items';
+import { weaponLoaded } from '../engine/weaponLoad';
 import { structureImmune, structureAimCell } from '../engine/structures';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { finite, expectedDamage, isNeutralized, spellActionValue, spellIsOffensive, spellTargetHarm, opValue } from './aiSpellValue';
@@ -548,7 +549,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Rechargement (LDB 62 l.333) : une arme à Recharge DÉCHARGÉE ne peut pas tirer → il faut recharger d'abord
   // (Test étendu de Projectiles). Cycle `loaded` unifié héros/ennemi (spawn chargé, tir → déchargé).
   const rangedW = enemy.weapons.find((w) => w.type === 'ranged');
-  const reloadNeeded = hasRanged && !!rangedW && (rangedW.reload ?? 0) > 0 && !enemy.loaded;
+  const reloadNeeded = hasRanged && !!rangedW && (rangedW.reload ?? 0) > 0 && !weaponLoaded(enemy, rangedW);
 
   // Un ennemi sans AUCUN moyen d'agir (aucun sort jouable NI arme) passe la main : un sort (offensif OU
   // soutien) compte comme une capacité d'action → un lanceur de pur soutien DOIT pouvoir agir. Servir une
@@ -570,7 +571,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Sans portée chiffrée (arme sans `range`, sort spécial) : pas de gate (stubs/exotiques).
   const fpDist = (h: Combatant) => footprintChebyshev(pos, footprintN(enemy), h.pos!, footprintN(h));
   const ebf = () => bonus(effectiveChar(enemy, 'force')); // BF du tireur → résout les Portées de jet `{bf}` (paresseux : ignoré pour une portée fixe)
-  const maxWeaponRange = enemy.weapons.reduce((m, w) => { const r = w.type === 'ranged' ? effectiveWeaponRange(w, selectedAmmo(enemy, w)?.ammoRangeMod, ebf) : null; return r != null ? Math.max(m, r) : m; }, 0);
+  const maxWeaponRange = enemy.weapons.reduce((m, w) => { const r = w.type === 'ranged' ? effectiveWeaponRange(w, loadedAmmo(enemy, w)?.ammoRangeMod, ebf) : null; return r != null ? Math.max(m, r) : m; }, 0);
   const shootPool = maxWeaponRange > 0 ? shootableHeroes.filter((h) => rangeBandModifier(fpDist(h), maxWeaponRange, mpt) != null) : shootableHeroes;
   // Frénésie (LDB 21 l.34) : la seule Action est un Test de Capacité de Combat / Athlétisme — ni tir ni sort.
   const frenzied = isFrenzied(enemy);

@@ -18,6 +18,11 @@ import { seedBattleRng } from './battleRng';
 import type { AttackResult } from '../engine/combat';
 import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
 import { setRule, resetRule } from '../engine/policy';
+import { loadWeapon, unloadWeapon, setReloadProgress, recomputeLoadout } from '../engine/items';
+import { loadRegister, weaponLoaded, reloadProgressOf } from '../engine/weaponLoad';
+// L'état de charge vit sur l'ARME (chaque arme à distance gère son
+// rechargement et sa munition) — raccourci de FIXTURE vers l'arme à distance du combattant.
+const rangedOf = (c: Combatant): Weapon => c.weapons.find((w) => w.type === 'ranged')!;
 import { FLOWS } from './rollFlowSpecs';
 import { TIME_COST } from '../engine/timeCost';
 import { toBrass, type Money } from '../engine/money';
@@ -2153,7 +2158,7 @@ describe('Chance — 3e usage : pré-emption d’initiative en début de Round (
     const { H, E } = endOfRoundBattle(0);
     H.talents = [{ talentId: 'tir-rapide', times: 1 }];
     H.weapons = [{ label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 30, qualities: [] }] as never;
-    H.loaded = true; H.movement = 4; H.pos = { x: 0, y: 0 };
+    rangedOf(H).loaded = true; H.movement = 4; H.pos = { x: 0, y: 0 };
     E.pos = { x: 2, y: 0 }; // à portée, ligne de vue dégagée (scène vide)
     useGame.getState().battleEndTurn(); // → Round 2, pendingRoundStart
     const orderBefore = [...useGame.getState().battle!.order];
@@ -2183,7 +2188,7 @@ describe('Chance — 3e usage : pré-emption d’initiative en début de Round (
     const { H, E } = endOfRoundBattle(0);
     E.talents = [{ talentId: 'tir-rapide', times: 1 }];
     E.weapons = [{ label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 30, qualities: [] }] as never;
-    E.loaded = true; E.pos = { x: 2, y: 0 };
+    rangedOf(E).loaded = true; E.pos = { x: 2, y: 0 };
     H.pos = { x: 0, y: 0 };
     useGame.getState().battleEndTurn(); // → Round 2, pendingRoundStart
     // H en tête de l'ordre : le tour NORMAL de l'ennemi n'ouvre pas immédiatement → sa dette de tour
@@ -2204,7 +2209,7 @@ describe('Chance — 3e usage : pré-emption d’initiative en début de Round (
     const { H, E } = endOfRoundBattle(0);
     H.talents = [{ talentId: 'tir-rapide', times: 1 }];
     H.weapons = [{ label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 30, qualities: [] }] as never;
-    H.loaded = true; H.pos = { x: 0, y: 0 };
+    rangedOf(H).loaded = true; H.pos = { x: 0, y: 0 };
     E.pos = { x: 2, y: 0 }; // à portée + LdV (scène vide)
     useGame.getState().battleEndTurn(); // → Round 2, pendingRoundStart
     seedBattleRng(1);
@@ -2407,7 +2412,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     const H = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(3) });
     H.weapons = [{ uid: 'w-arb', label: 'Arbalète', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [{ id: 'recharge', value: 1 }], subType: 'Arbalète', reload: 1 }];
     H.items = [{ uid: 'am1', label: 'Carreau', kind: 'ammo', qualities: [{ id: 'empaleuse' }], enc: 0, equipped: false, subType: 'Arbalète', qty: 2 } as ItemInstance];
-    H.loaded = true;
+    rangedOf(H).loaded = true;
     H.pos = { x: 0, y: 0 };
     const E: Combatant = JSON.parse(JSON.stringify(H));
     E.id = 'enemy-0';
@@ -2433,20 +2438,20 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     useGame.getState().attackConfirm();
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect((h.items ?? []).find((i) => i.uid === 'am1')!.qty).toBe(1); // 2 → 1
-    expect(h.loaded).toBe(false); // Recharge 1 → déchargé
+    expect(rangedOf(h).loaded).toBe(false); // Recharge 1 → déchargé
   });
 
   it('arme déchargée : tir refusé (modale non ouverte)', () => {
     const { H, E } = archer();
-    H.loaded = false;
+    rangedOf(H).loaded = false;
     useGame.getState().battleClickEntity(E.id, { confirm: true });
     expect(useGame.getState().pendingAttack).toBeNull();
   });
 
   it('battleReload OUVRE la modale (Test de Projectiles, Action pas encore consommée)', () => {
     const { H } = archer();
-    H.loaded = false;
-    H.reloadProgress = 0;
+    rangedOf(H).loaded = false;
+    rangedOf(H).reloadProgress = 0;
     useGame.getState().battleReload();
     const pr = useGame.getState().pendingReload;
     expect(pr).not.toBeNull();
@@ -2457,8 +2462,8 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
 
   it('reloadRoll + reloadConfirm : cumule le DR (Test étendu), recharge à ≥ Indice, consomme l’Action', () => {
     const { H } = archer();
-    H.loaded = false;
-    H.reloadProgress = 0;
+    rangedOf(H).loaded = false;
+    rangedOf(H).reloadProgress = 0;
     useGame.getState().seedRng(2);
     useGame.getState().battleReload();
     useGame.getState().reloadRoll();
@@ -2468,11 +2473,11 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     useGame.getState().reloadConfirm();
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     if (expected >= 1) {
-      expect(h.loaded).toBe(true);
-      expect(h.reloadProgress).toBe(0);
+      expect(rangedOf(h).loaded).toBe(true);
+      expect(rangedOf(h).reloadProgress).toBe(0);
     } else {
-      expect(h.loaded).toBe(false);
-      expect(h.reloadProgress).toBe(expected);
+      expect(rangedOf(h).loaded).toBe(false);
+      expect(rangedOf(h).reloadProgress).toBe(expected);
     }
     expect(useGame.getState().battle!.acted).toBe(true);
     expect(useGame.getState().pendingReload).toBeNull();
@@ -2486,8 +2491,8 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
    */
   it('l’issue du rechargement vient du GOULOT (canal combat), et la voie IA rend la MÊME ligne', () => {
     const { H } = archer();
-    H.loaded = false;
-    H.reloadProgress = 0;
+    rangedOf(H).loaded = false;
+    rangedOf(H).reloadProgress = 0;
     useGame.getState().seedRng(2);
     useGame.getState().battleReload();
     useGame.getState().reloadRoll();
@@ -2506,8 +2511,8 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
   it('reloadConfirm : un DR insuffisant (Recharge 2) laisse l’arme déchargée et garde le progrès', () => {
     const { H } = archer();
     H.weapons = [{ label: 'Arbalète lourde', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 100, qualities: [{ id: 'recharge', value: 2 }], subType: 'Arbalète', reload: 2 }];
-    H.loaded = false;
-    H.reloadProgress = 0;
+    rangedOf(H).loaded = false;
+    rangedOf(H).reloadProgress = 0;
     useGame.getState().seedRng(2);
     useGame.getState().battleReload();
     useGame.getState().reloadRoll();
@@ -2515,13 +2520,13 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     const expected = Math.max(0, 0 + pr.sl);
     useGame.getState().reloadConfirm();
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
-    expect(h.loaded).toBe(expected >= 2);
-    expect(h.reloadProgress).toBe(expected >= 2 ? 0 : expected);
+    expect(rangedOf(h).loaded).toBe(expected >= 2);
+    expect(rangedOf(h).reloadProgress).toBe(expected >= 2 ? 0 : expected);
   });
 
   it('battleReload refusé si l’Action est déjà consommée', () => {
     const { H } = archer();
-    H.loaded = false;
+    rangedOf(H).loaded = false;
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: true } });
     useGame.getState().battleReload();
     expect(useGame.getState().pendingReload).toBeNull();
@@ -2534,11 +2539,203 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     expect(useGame.getState().pendingAttack).toBeNull();
   });
 
-  it('battleSelectAmmo change la munition utilisée', () => {
+  // La munition se fixe au CHARGEMENT et l'état de charge vit sur CHAQUE ARME : charger sélectionne une
+  // munition, et deux armes à distance gèrent chacune leur rechargement et leur munition. Test étendu de
+  // rechargement : LDB 62 l.335.
+  const am2 = () => ({ uid: 'am2', label: 'Carreau perçant', kind: 'ammo', qualities: [{ id: 'perforante' }], enc: 0, equipped: false, subType: 'Arbalète', qty: 3 } as ItemInstance);
+
+  // CONTRAT CENTRAL du modèle par-arme : deux armes à distance dans deux SETS, chacune son cycle. Changer
+  // de set ne téléporte ni n'efface un coup chargé — l'arme retrouvée est dans l'état où on l'a laissée.
+  it('changement de set : chaque arme garde SON état de charge (arbalète en cours de recharge ⇄ pistolet chargé)', () => {
+    const { H, E } = archer();
+    H.items = [
+      { uid: 'w-arb', label: 'Arbalète', kind: 'ranged', subType: 'Arbalète', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [{ id: 'recharge', value: 1 }], enc: 1, equipped: true },
+      { uid: 'w-pist', label: 'Pistolet', kind: 'ranged', subType: 'Poudre noire', damage: { plusBF: false, flat: 8 }, range: 20, qualities: [{ id: 'recharge', value: 1 }], enc: 1, equipped: true },
+      { uid: 'am1', label: 'Carreau', kind: 'ammo', subType: 'Arbalète', qty: 5, qualities: [], enc: 0, equipped: false },
+      { uid: 'am-balles', label: 'Balles et poudre', kind: 'ammo', subType: 'Poudre noire', qty: 5, qualities: [], enc: 0, equipped: false },
+    ] as ItemInstance[];
+    H.loadouts = [{ id: 'arb', main: 'w-arb' }, { id: 'pist', main: 'w-pist' }] as never;
+    H.activeLoadoutId = 'arb';
+    const swap = (id: string) => {
+      useGame.setState({ battle: { ...useGame.getState().battle!, loadoutSwapped: false } }); // le plafond 1×/tour n'est pas l'objet du test
+      useGame.getState().battleSwitchLoadout(id);
+      return useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    };
+
+    // (1) Set PISTOLET : on le charge (Test étendu abouti) — il porte SA munition.
+    let h = swap('pist');
+    loadWeapon(h, h.weapons.find((w) => w.uid === 'w-pist')!);
+    expect(loadRegister(h, h.weapons.find((w) => w.uid === 'w-pist')!).loadedAmmoUid).toBe('am-balles');
+    // (2) Set ARBALÈTE : elle a tiré, son Test étendu est à 1 DR.
+    h = swap('arb');
+    const arb = h.weapons.find((w) => w.uid === 'w-arb')!;
+    unloadWeapon(h, arb); // elle a tiré : couture UNIQUE (l'état va sur SON registre)
+    loadRegister(h, arb).reloadProgress = 1; // 1 DR déjà cumulé au Test étendu
+    // (3) Retour au PISTOLET : toujours chargé → le tir part (le gate ne réclame pas de rechargement).
+    h = swap('pist');
+    expect(weaponLoaded(h, h.weapons.find((w) => w.uid === 'w-pist')!)).toBe(true);
+    useGame.getState().seedRng(2);
+    useGame.getState().battleClickEntity(E.id, { confirm: true });
+    expect(useGame.getState().pendingAttack, 'le pistolet chargé TIRE').not.toBeNull();
+    useGame.getState().attackCancel();
+    // (4) Retour à l'ARBALÈTE : elle est restée déchargée, avec SA progression intacte.
+    h = swap('arb');
+    const arb2 = h.weapons.find((w) => w.uid === 'w-arb')!;
+    expect(weaponLoaded(h, arb2)).toBe(false);
+    expect(reloadProgressOf(h, arb2)).toBe(1);
+  });
+
+  // CAS NOMMÉ « deux pistolets » : deux armes à distance TENUES en même temps (main + main gauche). Le
+  // chemin JOUEUR les distingue — `battleReload(uid)` recharge celle qu'on désigne, `battleSelectAmmo(uid,
+  // armeUid)` choisit la munition de celle-là, et l'autre ne bouge pas.
+  it('deux armes à distance tenues : recharger/choisir vise l’arme DÉSIGNÉE, l’autre garde son état', () => {
     const { H } = archer();
-    H.items!.push({ uid: 'am2', label: 'Carreau perçant', kind: 'ammo', qualities: [{ id: 'perforante' }], enc: 0, equipped: false, subType: 'Arbalète', qty: 3 } as ItemInstance);
+    H.items = [
+      { uid: 'p1', label: 'Pistolet droit', kind: 'ranged', subType: 'Poudre noire', damage: { plusBF: false, flat: 8 }, range: 20, qualities: [{ id: 'recharge', value: 1 }], enc: 1, equipped: true },
+      { uid: 'p2', label: 'Pistolet gauche', kind: 'ranged', subType: 'Poudre noire', damage: { plusBF: false, flat: 8 }, range: 20, qualities: [{ id: 'recharge', value: 1 }], enc: 1, equipped: true },
+      { uid: 'balles', label: 'Balles et poudre', kind: 'ammo', subType: 'Poudre noire', qty: 9, qualities: [], enc: 0, equipped: false },
+      { uid: 'balles-fines', label: 'Balles fines', kind: 'ammo', subType: 'Poudre noire', qty: 4, qualities: [], enc: 0, equipped: false },
+    ] as ItemInstance[];
+    H.loadouts = [{ id: 'duo', main: 'p1', off: 'p2' }] as never;
+    H.activeLoadoutId = 'duo';
+    recomputeLoadout(H);
+    const of = (uid: string) => useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.weapons.find((w) => w.uid === uid)!;
+    const hero = () => useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    loadWeapon(H, H.weapons.find((w) => w.uid === 'p1')!);
+    loadWeapon(H, H.weapons.find((w) => w.uid === 'p2')!);
+
+    // (1) La munition se choisit ARME PAR ARME : le gauche passe aux balles fines, le droit n'y touche pas.
+    useGame.getState().battleSelectAmmo('balles-fines', 'p2');
+    expect(loadRegister(hero(), of('p2')).ammoUid).toBe('balles-fines');
+    expect(loadRegister(hero(), of('p1')).ammoUid).not.toBe('balles-fines');
+    expect(weaponLoaded(hero(), of('p2'))).toBe(false); // il était chargé : la bascule l'a déchargé
+    expect(weaponLoaded(hero(), of('p1'))).toBe(true);  // le droit reste prêt
+
+    // (2) Le rechargement vise l'arme DÉSIGNÉE : la modale s'ouvre sur le gauche, pas sur le droit.
+    useGame.getState().battleReload('p2');
+    expect(useGame.getState().pendingReload?.weaponUid).toBe('p2');
+    useGame.getState().reloadCancel();
+    // (3) Sans uid : la 1re arme DÉCHARGÉE (ici le gauche) — jamais une arme déjà prête.
+    useGame.getState().battleReload();
+    expect(useGame.getState().pendingReload?.weaponUid).toBe('p2');
+  });
+
+  it('battleSelectAmmo sur arme NON chargée : libre, et le Test étendu en cours garde son progrès', () => {
+    const { H } = archer();
+    H.items!.push(am2());
+    rangedOf(H).loaded = false;
+    rangedOf(H).reloadProgress = 1;
     useGame.getState().battleSelectAmmo('am2');
-    expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.ammoUid).toBe('am2');
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(rangedOf(h).ammoUid).toBe('am2');
+    expect(rangedOf(h).loaded).toBe(false);
+    expect(rangedOf(h).reloadProgress).toBe(1);
+  });
+
+  it('battleSelectAmmo sur arme CHARGÉE : décharge (rechargement complet exigé), aucune munition détruite', () => {
+    const { H } = archer();
+    H.items!.push(am2());
+    rangedOf(H).loaded = true;
+    rangedOf(H).loadedAmmoUid = 'am1';
+    useGame.getState().battleSelectAmmo('am2');
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(rangedOf(h).ammoUid).toBe('am2');
+    expect(rangedOf(h).loaded).toBe(false);
+    expect(rangedOf(h).reloadProgress).toBe(0);
+    expect(rangedOf(h).loadedAmmoUid).toBeUndefined();
+    expect(h.items!.find((i) => i.uid === 'am1')!.qty).toBe(2); // stock intact : le décompte n'a lieu qu'au TIR
+    expect(h.items!.find((i) => i.uid === 'am2')!.qty).toBe(3);
+  });
+
+  it('battleSelectAmmo sur la munition DÉJÀ chargée : sans effet (aucun rechargement imposé)', () => {
+    const { H } = archer();
+    rangedOf(H).loaded = true;
+    rangedOf(H).ammoUid = 'am1';
+    rangedOf(H).loadedAmmoUid = 'am1';
+    useGame.getState().battleSelectAmmo('am1');
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(rangedOf(h).loaded).toBe(true);
+    expect(rangedOf(h).loadedAmmoUid).toBe('am1');
+  });
+
+  it('reloadConfirm CAPTURE la munition choisie sur le coup chargé', () => {
+    const { H } = archer();
+    H.items!.push(am2());
+    rangedOf(H).loaded = false;
+    rangedOf(H).reloadProgress = 0;
+    rangedOf(H).ammoUid = 'am2';
+    useGame.setState({
+      pendingReload: {
+        actorId: H.id, actorName: H.label, weaponUid: 'w-arb', reload: 1, progressBefore: 0,
+        skillValue: 40, difficulty: 'intermediaire', roll: 10, target: 40, sl: 3, success: true,
+      },
+    });
+    useGame.getState().reloadConfirm();
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(rangedOf(h).loaded).toBe(true);
+    expect(rangedOf(h).loadedAmmoUid).toBe('am2');
+  });
+
+  // Chaîne COMPLÈTE mesurée au COMPORTEMENT (le stock, pas le câblage) : on recharge en ayant choisi la 2ᵉ
+  // munition, on tire, et c'est CETTE pile qui baisse.
+  it('recharger avec la 2ᵉ munition puis tirer : c’est SA pile qui baisse (qty)', () => {
+    const { H, E } = archer();
+    H.items!.push(am2());
+    rangedOf(H).loaded = false;
+    rangedOf(H).reloadProgress = 0;
+    rangedOf(H).ammoUid = 'am2';
+    useGame.setState({
+      pendingReload: {
+        actorId: H.id, actorName: H.label, weaponUid: 'w-arb', reload: 1, progressBefore: 0,
+        skillValue: 40, difficulty: 'intermediaire', roll: 10, target: 40, sl: 3, success: true,
+      },
+    });
+    useGame.getState().reloadConfirm();
+    useGame.setState({ battle: { ...useGame.getState().battle!, acted: false } });
+    // La sélection change APRÈS le chargement : le coup déjà chargé, lui, ne change pas.
+    rangedOf(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!).ammoUid = 'am1';
+    useGame.getState().seedRng(2);
+    useGame.getState().battleClickEntity(E.id, { confirm: true });
+    useGame.getState().attackRoll();
+    useGame.getState().attackConfirm();
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h.items!.find((i) => i.uid === 'am2')!.qty).toBe(2); // 3 → 2 : le coup chargé est parti
+    expect(h.items!.find((i) => i.uid === 'am1')!.qty).toBe(2); // l'autre pile n'a pas bougé
+  });
+
+  it('le tir consomme la munition CAPTURÉE, jamais la sélection courante', () => {
+    const { H, E } = archer();
+    H.items!.push(am2());
+    rangedOf(H).loaded = true;
+    rangedOf(H).loadedAmmoUid = 'am1';
+    rangedOf(H).ammoUid = 'am2';
+    useGame.getState().seedRng(2);
+    useGame.getState().battleClickEntity(E.id, { confirm: true });
+    useGame.getState().attackRoll();
+    useGame.getState().attackConfirm();
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h.items!.find((i) => i.uid === 'am1')!.qty).toBe(1); // capturée : 2 → 1
+    expect(h.items!.find((i) => i.uid === 'am2')!.qty).toBe(3); // sélection courante : intacte
+    expect(rangedOf(h).loadedAmmoUid).toBeUndefined(); // le coup est parti
+  });
+
+  it('arme SANS cycle de chargement (Arc, Recharge 0) : la bascule reste libre et le tir suit la sélection', () => {
+    const { H, E } = archer();
+    H.weapons = [{ uid: 'w-arc', label: 'Arc', type: 'ranged', damage: { plusBF: true, flat: 3 }, range: 60, qualities: [], subType: 'Arc', reload: 0 }];
+    H.items = [
+      { uid: 'fl1', label: 'Flèche', kind: 'ammo', qualities: [{ id: 'empaleuse' }], enc: 0, equipped: false, subType: 'Arc', qty: 5 } as ItemInstance,
+      { uid: 'fl2', label: 'Flèche barbelée', kind: 'ammo', qualities: [], enc: 0, equipped: false, subType: 'Arc', qty: 5 } as ItemInstance,
+    ];
+    rangedOf(H).loaded = true;
+    useGame.getState().battleSelectAmmo('fl2');
+    expect(rangedOf(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!).loaded).toBe(true);
+    useGame.getState().seedRng(2);
+    useGame.getState().battleClickEntity(E.id, { confirm: true });
+    useGame.getState().attackRoll();
+    useGame.getState().attackConfirm();
+    const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
+    expect(h.items!.find((i) => i.uid === 'fl2')!.qty).toBe(4);
+    expect(h.items!.find((i) => i.uid === 'fl1')!.qty).toBe(5);
   });
 
   it('héros mixte (mêlée en weapons[0] + arc) peut tirer une cible éloignée (gate via attackWeapon)', () => {
@@ -2548,16 +2745,16 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
       { label: 'Arc', type: 'ranged', damage: { plusBF: true, flat: 3 }, range: 60, qualities: [], subType: 'Arc', reload: 0 },
     ];
     H.items = [{ uid: 'fl1', label: 'Flèche', kind: 'ammo', qualities: [{ id: 'empaleuse' }], enc: 0, equipped: false, subType: 'Arc', qty: 5 } as ItemInstance];
-    H.loaded = true;
-    H.ammoUid = 'fl1';
+    rangedOf(H).loaded = true;
+    rangedOf(H).ammoUid = 'fl1';
     useGame.getState().battleClickEntity(E.id, { confirm: true }); // E à (4,0) → l'Arc (weapons[1]) doit s'employer, pas « hors de portée de mêlée »
     expect(useGame.getState().pendingAttack).not.toBeNull();
   });
 
   it('reloadConfirm : cumul sous 0 → reloadProgress revient à 0 (Test étendu « recommence », LDB 12 l.174)', () => {
     const { H } = archer();
-    H.loaded = false;
-    H.reloadProgress = 1;
+    rangedOf(H).loaded = false;
+    rangedOf(H).reloadProgress = 1;
     useGame.setState({
       pendingReload: {
         actorId: H.id, actorName: H.label, weaponUid: 'w-arb', reload: 2, progressBefore: 1,
@@ -2566,8 +2763,8 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     });
     useGame.getState().reloadConfirm();
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
-    expect(h.reloadProgress).toBe(0); // 1 + (-2) = -1 → plancher 0
-    expect(h.loaded).toBe(false);
+    expect(rangedOf(h).reloadProgress).toBe(0); // 1 + (-2) = -1 → plancher 0
+    expect(rangedOf(h).loaded).toBe(false);
   });
 
   it('action Viser : pose aiming SANS jet, +20 au tir, puis consommée', () => {
@@ -2603,10 +2800,22 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.aiming).toBeFalsy();
   });
 
-  it('interruption : un héros touché en plein rechargement repart de zéro (LDB 62 l.335)', () => {
+  // L'arme DÉRIVE d'un objet possédé : son registre de charge est l'ITEM, pas l'instance re-fabriquée à
+  // chaque re-dérivage du set. Le contrat se mesure donc par `reloadProgressOf` — une remise à zéro écrite
+  // sur la copie laisserait ce test rouge.
+  it('interruption : un héros touché en plein rechargement repart de zéro, DANS le registre de son arme (LDB 62 l.335)', () => {
     const { H, E } = archer();
-    H.reloadProgress = 1;
-    H.loaded = false;
+    H.items = [
+      { uid: 'w-arb', label: 'Arbalète', kind: 'ranged', subType: 'Arbalète', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [{ id: 'recharge', value: 1 }], enc: 1, equipped: true },
+      { uid: 'am1', label: 'Carreau', kind: 'ammo', subType: 'Arbalète', qty: 5, qualities: [], enc: 0, equipped: false },
+    ] as ItemInstance[];
+    H.loadouts = [{ id: 'arb', main: 'w-arb' }] as never;
+    H.activeLoadoutId = 'arb';
+    recomputeLoadout(H);
+    const arb = rangedOf(H);
+    unloadWeapon(H, arb);
+    setReloadProgress(H, arb, 1);
+    expect(H.items!.find((i) => i.uid === 'w-arb')!.reloadProgress, 'le registre EST l’objet possédé').toBe(1);
     H.pos = { x: 1, y: 0 };
     // PB larges : la touche BLESSE sans DÉPASSER les PB courants → pas d'offre de Déviation Critique
     // (un dépassement EST une Blessure Critique déviable, LDB 63 l.30) qui suspendrait l'application.
@@ -2621,7 +2830,8 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     applyAttackResult(useGame.getState, useGame.setState, E, H, weapon, res);
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.wounds.current).toBeLessThan(h.wounds.max); // a bien encaissé une touche
-    expect(h.reloadProgress).toBe(0); // rechargement interrompu
+    expect(reloadProgressOf(h, rangedOf(h))).toBe(0); // rechargement interrompu, DANS le registre
+    expect(h.items!.find((i) => i.uid === 'w-arb')!.reloadProgress).toBe(0);
   });
 });
 

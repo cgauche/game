@@ -32,26 +32,26 @@ const setup = (chef: Combatant, aide?: Combatant) => {
 
 describe('Incident de Tir d’Artillerie par Salve (AA 10 l.270-277) — branchement `applyOups`', () => {
   it("arme à Atout Salve : le tireur encaisse ET journalise l'Incident par Salve en plus du misfire générique", () => {
-    const chef = mkHero('chef', { chambered: 5 });
+    const chef = mkHero('chef');
     const { get, set } = setup(chef);
-    applyOups(get, set, chef, salveGun, { roll: 44, kind: 'misfire', label: 'Incident de Tir !' });
+    applyOups(get, set, chef, { ...salveGun, chambered: 5 }, { roll: 44, kind: 'misfire', label: 'Incident de Tir !' });
     expect(chef.wounds.current).toBeLessThan(20);
     const log = get().battle!.log.map((l) => l.text ?? l).join(' | ');
     expect(log).toContain('Salve');
   });
 
   it('arme à Salve ET Arme d’équipe : le second servant (aide) encaisse aussi la Table par Salve', () => {
-    const chef = mkHero('chef', { chambered: 0, mannedPoste: { crewIds: ['chef', 'aide'] } as never });
+    const chef = mkHero('chef', { mannedPoste: { crewIds: ['chef', 'aide'] } as never });
     const aide = mkHero('aide');
     const { get, set } = setup(chef, aide);
-    applyOups(get, set, chef, salveGun, { roll: 44, kind: 'misfire', label: 'Incident de Tir !' });
+    applyOups(get, set, chef, { ...salveGun, chambered: 0 }, { roll: 44, kind: 'misfire', label: 'Incident de Tir !' });
     // Générique d'équipe (MDG 12 l.464) ET Table par Salve (AA) frappent tous deux l'aide au moins une fois.
     expect(aide.wounds.current).toBeLessThan(20);
   });
 
   it('arme SANS Atout Salve : aucun jet/branchement sur la Table par Salve (misfire générique inchangé)', () => {
     const gun: Weapon = { name: 'Arbalète', type: 'ranged', damage: { flat: 8, plusBF: false }, qualities: [] } as unknown as Weapon;
-    const chef = mkHero('chef', { chambered: 5 });
+    const chef = mkHero('chef');
     const { get, set } = setup(chef);
     applyOups(get, set, chef, gun, { roll: 44, kind: 'misfire', label: 'Incident de Tir !' });
     const log = get().battle!.log.map((l) => l.text ?? l).join(' | ');

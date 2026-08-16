@@ -80,6 +80,13 @@ de `saves-flow.test.ts` (`MIGRATIONS[v]` + fixture `v<v>-*.json` exigées pour c
   abandonnée — ses cumuls ont été calculés en planchant CHAQUE manche, là où le Test étendu additionne
   les DR avec leur signe (LDB 12 l.174), donc ils ne se reportent pas. Générée par le VRAI chemin
   (`_generate.test.ts`) AVANT la bascule du code.
+- `v23-charge-sur-combattant.json` — héros dont l'ÉTAT DE CHARGE (`loaded`/`reloadProgress`/`ammoUid`/
+  `loadedAmmoUid`/`chambered`) vit au niveau du COMBATTANT, forme v23. Motive `MIGRATIONS[23]` (v23→v24) :
+  l'état passe sur l'INSTANCE D'ARME (arbitrage utilisateur 2026-08-16 — deux armes à distance gèrent
+  chacune leur rechargement et leur munition), sinon une arbalète rechargée avant la sauvegarde se
+  rechargerait au vide et les champs orphelins seraient re-sérialisés indéfiniment. Dérivée de la fixture
+  v22 (capture d'une version PASSÉE, non générable depuis le code courant — patron `v13`/`v14`) : état
+  legacy du bras de fer neutralisé, arme à distance + état de charge v23 posés à la main.
 
 ## Ajouter/régénérer une fixture
 

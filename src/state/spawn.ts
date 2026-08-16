@@ -13,7 +13,7 @@ import { requiredTerrains } from '../engine/ops';
 import { CustomStatblock, type Scene, heightAt, tileAt } from './scene';
 import { randomizeChars } from '../engine/statblock';
 import type { EntityAppearance } from '../engine/authoringAppearance';
-import { emptyArmour, buildWeapon, hydratePoste } from '../engine/items';
+import { emptyArmour, buildWeapon, hydratePoste, loadWeapon } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
 import { parseSizeLabel, resizeBySteps, SIZE_ORDER, SizeCategory } from '../engine/size';
 import { parsePsychTraits } from '../engine/psychology';
@@ -428,8 +428,10 @@ export function spawnEnemy(
       c.weapons = [idWeapon, ...c.weapons];
     }
   }
-  // Arme à distance CHARGÉE au spawn (miroir du héros dans startCombat) — LDB 62 l.333 : le `loaded` ne gate
+  // Arme à distance CHARGÉE au spawn (miroir du héros dans startCombat) — LDB 62 l.335 : le `loaded` ne gate
   // que les armes à Recharge, un tireur fraîchement engagé peut donc tirer au 1er Round (pas de recharge à vide).
-  if (c.weapons.some((w) => w.type === 'ranged')) c.loaded = true;
+  // Couture UNIQUE : le coup porte SA munition dès le spawn (aucune capture posée ailleurs).
+  const spawnRanged = c.weapons.find((w) => w.type === 'ranged');
+  if (spawnRanged) loadWeapon(c, spawnRanged);
   return c;
 }

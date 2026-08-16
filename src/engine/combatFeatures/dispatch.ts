@@ -9,6 +9,7 @@ import { isShieldItem } from '../equipCompare';
 import { findTalentById, traitById } from '../../data';
 import { canStrikeFirst } from '../qualities/dispatch';
 import { effectiveEntry } from '../variants';
+import { weaponLoaded } from '../weaponLoad';
 import type { CombatFeature, CombatFeatureCtx, CastingKind } from './types';
 
 /** Famille d'incantation d'un Talent par son `id` STABLE (« magie-mineure », « beni ») via sa DONNÉE
@@ -162,7 +163,7 @@ export function talentInitiativeBonus(c: Combatant): number {
 /** Tir rapide (LDB 10) : pré-emption d'initiative gratuite avec une arme à distance CHARGÉE. */
 export function canPreemptRanged(c: Combatant): boolean {
   if (!featuresOf(c).some(({ def }) => def.strikeFirstRanged)) return false;
-  return c.weapons.some((w) => w.type === 'ranged') && c.loaded !== false;
+  return c.weapons.some((w) => w.type === 'ranged' && weaponLoaded(c, w));
 }
 
 /** Vigilance (LDB 10) : peut tester Perception (+0) pour ignorer la Surprise. */

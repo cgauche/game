@@ -233,7 +233,7 @@ export function dangerousNine(w: QualityCarrier | undefined, roll: number, succe
   return digits.has(roll % 10) || digits.has(Math.floor(roll / 10) % 10);
 }
 
-/** Chargeur (Indice) avant rechargement complet : À Répétition (LDB 62 l.264) ou Salve (Aux Armes
+/** Chargeur (Indice) avant rechargement complet : À répétition (LDB 62 l.229/231) ou Salve (Aux Armes
  *  p.126) — l'arme tire Indice fois avant d'exiger un rechargement. undefined si l'arme n'en a pas. */
 export function magazineSize(w: QualityCarrier | undefined): number | undefined {
   const r = resolveQualities(w).find((x) => x.caps?.magazine || x.caps?.salvo);

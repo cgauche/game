@@ -51,9 +51,10 @@ import { resolveOpposed, extendedTestStep } from '../engine/tests';
 import { dispellableSpellsOn, dissipateSpell } from '../engine/dispel';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity, animositeOrHaine } from '../engine/psychology';
-import { recomputeLoadout, itemFromGive, compatibleAmmo, consumeAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon, autoStowNewItem } from '../engine/items';
+import { weaponLoaded, reloadProgressOf } from '../engine/weaponLoad';
+import { recomputeLoadout, itemFromGive, loadedAmmo, loadWeapon, unloadWeapon, setReloadProgress, setAmmoChoice, consumeAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon, autoStowNewItem } from '../engine/items';
 import { trappingById, resolvePresetCreature } from './campaignData';
-import { magazineSize, canPushback, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
+import { canPushback, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
 import { talentFearIndice, canPreemptRanged, reloadDRBonus, reloadGrantsAssessAdvantage, hasCommandTeam, retreatAdvantageCost, keptAdvantageOnDisengage, hasFocusHarmony } from '../engine/combatFeatures/dispatch';
 import { teamCommandTargets } from './commandTeam';
 import { isConsumable } from '../engine/consumables';
@@ -223,7 +224,7 @@ function applyBatteryVolley(get: Get, set: Set, ship: Combatant, target: Combata
   }
   for (const s of volley.shots) { // HORS du garde `success` : une bordée MANQUÉE a quand même fait feu (l.128)
     const poste = ship.postes?.find((pp) => pp.item.uid === s.posteUid);
-    if (poste) { poste.loaded = false; poste.reloadProgress = 0; }
+    if (poste) unloadWeapon(undefined, undefined, poste); // couture UNIQUE : la PIÈCE a fait feu (le chef, lui, n'a pas tiré SON arme)
     const chef = poste?.crewIds?.[0] ? inBattleId(battle, poste.crewIds![0]) : undefined;
     if (chef && s.ammo) consumeAmmo(chef, s.ammo);
   }
@@ -1853,14 +1854,17 @@ export function createCombatSlice(get: Get, set: Set) {
     },
 
     // ── Rechargement = Test étendu de Projectiles (LDB 62 l.335 + LDB 12 l.170-174) — par modale ──
-    battleReload: () => {
+    // `weaponUid` DÉSIGNE l'arme rechargée : chaque arme à distance a son cycle (arbitrage utilisateur
+    // 2026-08-16, cas nommé « deux pistolets »). Absent → la 1re arme à distance DÉCHARGÉE du set.
+    battleReload: (weaponUid?: string) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle } = get();
       if (!battle || battle.over || battle.acted) return;
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return;
-      const w0 = active.weapons.find((x) => x.type === 'ranged');
-      if (!w0 || (w0.reload ?? 0) <= 0 || active.loaded) return; // rien à recharger (Arc = pas de défaut, ou déjà chargé)
+      const reloadable = (x: Weapon) => x.type === 'ranged' && (x.reload ?? 0) > 0 && !weaponLoaded(active, x);
+      const w0 = weaponUid ? active.weapons.find((x) => x.uid === weaponUid) : active.weapons.find(reloadable);
+      if (!w0 || !reloadable(w0)) return; // rien à recharger (Arc = pas de défaut, ou déjà chargée)
       // Pièce SERVIE en sous-effectif : recharge ×2 (MDG 12 l.462). Le bake reflète les servants APTES présents
       // (effectif complet → recharge normale) ; pour un chef sans poste → arme inchangée (cas héros qui sert seul).
       const present = servingCrewPresent(active, battle.combatants);
@@ -1872,7 +1876,7 @@ export function createCombatSlice(get: Get, set: Set) {
           actorName: active.label,
           weaponUid: w.uid!,
           reload: reloadDRTarget(w), // sous-effectif baké (recharge ×2) ; arme NON-équipe ou effectif complet → ×1
-          progressBefore: active.reloadProgress ?? 0,
+          progressBefore: reloadProgressOf(active, w0),
           skillValue,
           difficulty: 'intermediaire',
           roll: null,
@@ -1939,7 +1943,8 @@ export function createCombatSlice(get: Get, set: Set) {
         const w = chef.weapons.find((x) => x.uid === pr.weaponUid);
         const reloadTalent = pr.success ? reloadDRBonus(chef, w) : 0; // Rechargement rapide / Artilleur (LDB 10)
         const step = crewedReloadStep(w ?? ({ reload: pr.reload, qualities: [] } as never), pr.progressBefore, pr.sl + reloadTalent);
-        if (step.done) { poste.loaded = true; poste.reloadProgress = 0; } else poste.reloadProgress = step.progress;
+        if (step.done) loadWeapon(chef, w, poste); // couture UNIQUE : la PIÈCE porte son état de charge et sa munition capturée
+        else setReloadProgress(chef, w, step.progress, poste);
         if (pr.success && reloadGrantsAssessAdvantage(chef)) campGain(get, chef, 1); // AA 13 l.9/90 : recharger = Action Évaluer → +1 Avantage (mode groupe)
         // ISSUE dérivée par le goulot (`FLOWS.reload.apply`, canal COMBAT) : le pending est FOURNI (il
         // vient d'être fermé), le `ctx` porte le DR réalisé et le nom résolu de la pièce.
@@ -1954,17 +1959,18 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingReload: null });
       if (!a) return;
       a.aiming = false; // recharger est une autre action → la visée est perdue
+      // ARME rechargée = celle du pending (chaque arme à distance a SON cycle — arbitrage utilisateur
+      // 2026-08-16) ; repli sur la 1re arme à distance pour un pending sans uid (état antérieur).
+      const rw = a.weapons.find((x) => x.uid === pr.weaponUid) ?? a.weapons.find((x) => x.type === 'ranged');
       // Rechargement rapide / Artilleur (LDB 10) : +niveau DR au Test de rechargement (sur un jet réussi).
-      const reloadTalent = pr.success ? reloadDRBonus(a, a.weapons.find((x) => x.type === 'ranged')) : 0;
+      const reloadTalent = pr.success ? reloadDRBonus(a, rw) : 0;
       // Cumul LDB 12 mutualisé (`extendedTestStep`, #273 Étape 1) : même arithmétique que le Test étendu
-      // générique (plancher 0) — la cadence reste un-jet-par-Action (progressBefore persiste sur l'acteur).
+      // générique (plancher 0) — la cadence reste un-jet-par-Action (progressBefore persiste sur l'arme).
       const { total: progress, done } = extendedTestStep(pr.progressBefore, { success: pr.success, sl: pr.sl + reloadTalent }, pr.reload);
       if (done) {
-        a.loaded = true;
-        a.reloadProgress = 0;
-        a.chambered = magazineSize(a.weapons.find((x) => x.type === 'ranged')); // À Répétition : chargeur rempli (LDB 62 l.264-265)
-      } else {
-        a.reloadProgress = progress;
+        loadWeapon(a, rw); // couture UNIQUE : état de charge + munition capturée, sur CETTE arme
+      } else if (rw) {
+        setReloadProgress(a, rw, progress);
       }
       if (pr.success && reloadGrantsAssessAdvantage(a)) campGain(get, a, 1); // AA 13 l.9/90 : recharger = Action Évaluer → +1 Avantage (mode groupe)
       // ISSUE dérivée par le goulot (`FLOWS.reload.apply`, canal COMBAT) : `progress` inclut le bonus de
@@ -2053,13 +2059,27 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingSteamSave: null });
       resolveSteamSave(get, set, p); // échec → ébouillanté (scaldOps), puis la boucle maritime reprend
     },
-    battleSelectAmmo: (uid: string) => {
+    // La munition se fixe au CHARGEMENT (arbitrage utilisateur 2026-08-16 « La munition se fixe au CHARGEMENT »,
+    // `docs/plans/2026-08-16-hud-combat.md` §1) : sur une arme à Recharge DÉJÀ chargée, changer de munition la
+    // DÉCHARGE — le Test étendu de rechargement est à refaire (LDB 62 l.335), et le chargeur d'une arme À
+    // Répétition se vide avec (conséquence assumée de l'arbitrage). Re-choisir la munition déjà chargée est
+    // sans effet. Rien n'est détruit : le stock n'est décompté qu'au tir (`consumeAmmo`).
+    // `weaponUid` DÉSIGNE l'arme concernée (deux armes à distance = deux munitions) ; absent → la 1re.
+    battleSelectAmmo: (uid: string, weaponUid?: string) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle } = get();
       if (!battle) return;
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active)) return;
-      active.ammoUid = uid;
+      const rw = weaponUid
+        ? active.weapons.find((w) => w.uid === weaponUid && w.type === 'ranged')
+        : active.weapons.find((w) => w.type === 'ranged');
+      if (!rw) return; // aucune arme à distance : rien à choisir
+      // Chef qui SERT cette pièce : le cycle de charge vit sur la PIÈCE — la bascule doit la décharger ELLE.
+      const poste = active.mannedPoste?.item.uid === rw.uid ? active.mannedPoste : undefined;
+      const swapsLoadedShot = (rw.reload ?? 0) > 0 && weaponLoaded(active, rw) && loadedAmmo(active, rw)?.uid !== uid;
+      setAmmoChoice(active, rw, uid, poste); // écrivain UNIQUE : la sélection vit sur CETTE arme (ou sur la pièce servie)
+      if (swapsLoadedShot) unloadWeapon(active, rw, poste); // couture UNIQUE : l'arme (et la pièce servie)
       set({ battle: { ...battle } });
       bus.emit(EVT.SCENE_DIRTY);
     },
@@ -2600,12 +2620,12 @@ export function createCombatSlice(get: Get, set: Set) {
         // Re-dérive les armes ACTIVES depuis les items persistés : une arme usée/détruite au combat
         // précédent (damageTaken/destroyed sur l'ItemInstance) reste usée/détruite (LDB 62 l.177-180).
         if (c.items?.length) recomputeLoadout(c);
-        // Munition par défaut + arme à distance chargée au début du combat (le `loaded` ne sert qu'aux armes à Recharge).
-        const rw = c.weapons.find((w) => w.type === 'ranged');
-        c.loaded = true;
-        c.reloadProgress = 0;
-        c.chambered = magazineSize(rw); // À Répétition : chargeur plein au début du combat (LDB 62 l.264)
-        if (rw) c.ammoUid = compatibleAmmo(c, rw)[0]?.uid;
+        // Armes à distance CHARGÉES au début du combat (le cycle de charge ne joue que pour les armes à
+        // Recharge) — CHACUNE la sienne. Le CHOIX de munition n'est PAS réinitialisé : la munition est un
+        // état de l'ARME et se fixe au chargement (arbitrage utilisateur 2026-08-16), donc celui posé au
+        // combat précédent (ou à l'équipement) tient ; `loadWeapon` capture le choix courant, et
+        // `selectedAmmo` retombe sur la 1re compatible quand il n'y en a aucun.
+        for (const rw of c.weapons.filter((w) => w.type === 'ranged')) loadWeapon(c, rw);
         return c;
       });
       // Chaque membre RÉFÉRENCE une entité de la scène. L'entité PORTE le profil/apparence/arme/traits

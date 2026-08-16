@@ -19,8 +19,9 @@ import { findTrappingById, findTraitById, qualityInstance, refLabel, type Trappi
 export type TrappingResolver = (id: string) => TrappingData | undefined;
 import { slugId } from '../data/slug';
 import { craftEncDelta } from './qualities/craftEconomy';
-import { hasQuality, qualityIndice, resolveQualities } from './qualities/dispatch';
+import { hasQuality, qualityIndice, resolveQualities, magazineSize } from './qualities/dispatch';
 import { itemCapability } from './capabilities';
+import { loadRegister, type WeaponLoadState } from './weaponLoad';
 
 let uidCounter = 0;
 export function newUid(): string {
@@ -656,6 +657,10 @@ export function recomputeLoadout(c: Combatant): void {
   // Écailles épineuses +1 partout, Cornes asymétriques +1 Tête) — par-dessus l'armure portée.
   for (const l of Object.keys(armour) as (keyof typeof armour)[]) armour[l] += mutationArmourBonus(c, l);
 
+  // (L'ÉTAT DE CHARGE n'est pas reporté ici : il vit sur l'OBJET possédé, qui SURVIT à ce re-dérivage —
+  //  `loadRegister`. LIMITE CONNUE : une arme SANS objet re-fabriquée à chaque recompte (arme dérivée
+  //  d'une prothèse/d'un trait, arme octroyée par un effet) repart donc à neuf ; inerte tant que ces
+  //  armes-là n'ont pas de Recharge — le jour où l'une en aura, son état devra vivre sur sa source.)
   c.weapons = weapons;
   c.armour = armour;
   c.encumbrance = totalEncumbrance(c);
@@ -703,6 +708,8 @@ export function hydratePoste(a: AuthoredShipPoste): ShipPoste {
   if (a.reloadProgress != null) poste.reloadProgress = a.reloadProgress;
   if (a.ammo) poste.ammo = a.ammo;
   if (a.ammoUid) poste.ammoUid = a.ammoUid;
+  if (a.loadedAmmoUid) poste.loadedAmmoUid = a.loadedAmmoUid;
+  if (a.chambered != null) poste.chambered = a.chambered;
   if (a.enchants?.length) poste.enchants = a.enchants;
   if (a.anchor) poste.anchor = a.anchor;
   return poste;
@@ -971,15 +978,96 @@ export function compatibleAmmo(c: Combatant, weapon: Weapon): ItemInstance[] {
   return [...posteStock, ...(c.items ?? []).filter(match)];
 }
 
-/** Munition que le porteur tirera : son choix ponctuel (`c.ammoUid`, hotbar) s'il est compatible, sinon la
- *  sélection PERSISTANTE du poste servi (`poste.ammoUid`, fiche du navire — MDG 12 : boulet/mitraille),
- *  sinon la 1re compatible. PUR (inventaire/famille) — vit ici (≠ état) pour servir AUSSI les sites combat
- *  MOTEUR (bandes de portée modifiées par la munition, `effectiveWeaponRange`). `undefined` = pas de munition. */
+// Les LECTEURS du cycle de charge (`loadRegister`/`weaponLoaded`/`reloadProgressOf`) vivent dans le module
+// FEUILLE `engine/weaponLoad` (aucune dépendance) ; ce fichier porte les ÉCRIVAINS ci-dessous.
+
+/** Munition CHOISIE pour le PROCHAIN chargement de CETTE arme : le choix porté par l'arme (`weapon.ammoUid`,
+ *  hotbar) s'il est compatible, sinon la sélection PERSISTANTE du poste servi (`poste.ammoUid`, fiche du
+ *  navire — MDG 12 : boulet/mitraille), sinon la 1re compatible. PUR (inventaire/famille). Ce qui part au
+ *  coup suivant, ce n'est PAS ce choix mais la munition CAPTURÉE (`loadedAmmo`). `undefined` = pas de munition. */
 export function selectedAmmo(c: Combatant, weapon: Weapon): ItemInstance | undefined {
   const compat = compatibleAmmo(c, weapon);
+  const reg = loadRegister(c, weapon);
   const poste = c.mannedPoste;
   const posteUid = poste && poste.item.uid === weapon.uid ? poste.ammoUid : undefined;
-  return compat.find((a) => a.uid === c.ammoUid) ?? compat.find((a) => a.uid === posteUid) ?? compat[0];
+  return compat.find((a) => a.uid === reg.ammoUid) ?? compat.find((a) => a.uid === posteUid) ?? compat[0];
+}
+
+/** Munition RÉELLEMENT dans l'arme — celle que le tir consomme et qui augmente le coup (`weaponWithAmmo`,
+ *  bandes de portée). Capturée au chargement par `loadWeapon` (PROPRIÉTAIRE UNIQUE de `loadedAmmoUid`).
+ *  Arbitrage utilisateur 2026-08-16 « La munition se fixe au CHARGEMENT » (`docs/plans/2026-08-16-hud-combat.md` §1).
+ *  Lue dans le REGISTRE de l'arme (pièce servie → la pièce). Sans cycle de chargement (`reload` 0 : Arc,
+ *  fronde) il n'y a rien à capturer → le choix courant vaut coup. Repli sur le choix courant quand rien
+ *  n'est capturé (arme authorée « prête » sans capture posée). PUR. */
+export function loadedAmmo(c: Combatant, weapon: Weapon): ItemInstance | undefined {
+  if ((weapon.reload ?? 0) <= 0) return selectedAmmo(c, weapon);
+  const compat = compatibleAmmo(c, weapon);
+  const uid = loadRegister(c, weapon).loadedAmmoUid;
+  return compat.find((a) => a.uid === uid) ?? selectedAmmo(c, weapon);
+}
+
+/** CHARGE une arme : pose ENSEMBLE, DANS SON REGISTRE, l'état de charge (`loaded`, `reloadProgress`,
+ *  `chambered`) et la munition CAPTURÉE (`loadedAmmoUid`) — arbitrage utilisateur 2026-08-16 « quand on
+ *  charge une arme on sélectionne une munition ». PROPRIÉTAIRE UNIQUE de la pose : fin de rechargement
+ *  (joueur ET IA), début de combat, spawn, prise d'une pièce. Mute en place. */
+export function loadWeapon(c: Combatant, weapon?: Weapon, poste?: ShipPoste): void {
+  if (!weapon && !poste) return;
+  // Munition capturée : celle choisie pour CETTE arme ; pour une pièce dont l'arme n'est pas résolue
+  // (équipage sans arme dérivée), la sélection persistante de la pièce fait foi (MDG 12).
+  const captured = weapon ? selectedAmmo(c, weapon)?.uid : poste?.ammoUid;
+  const reg: WeaponLoadState = poste ?? loadRegister(c, weapon!);
+  reg.loaded = true;
+  reg.reloadProgress = 0;
+  reg.loadedAmmoUid = captured;
+  if (weapon) reg.chambered = magazineSize(weapon); // À répétition (Indice) : chargeur rempli (LDB 62 l.229/231)
+}
+
+/** DÉCHARGE une arme : efface ENSEMBLE, DANS SON REGISTRE, l'état de charge et la munition capturée.
+ *  PROPRIÉTAIRE UNIQUE de l'effacement : coup parti, bordée, bascule de munition sur une arme chargée
+ *  (arbitrage utilisateur 2026-08-16). `poste` fourni SANS arme = décharge de la seule pièce (bordée).
+ *  Aucune munition n'est détruite : le décompte du stock n'a lieu qu'au tir (`consumeAmmo`). Mute en place. */
+export function unloadWeapon(c?: Combatant, weapon?: Weapon, poste?: ShipPoste): void {
+  const regs: WeaponLoadState[] = [];
+  if (poste) regs.push(poste);
+  if (c && weapon) {
+    const reg = loadRegister(c, weapon);
+    if (reg !== poste) regs.push(reg);
+  }
+  for (const reg of regs) {
+    reg.loaded = false;
+    reg.reloadProgress = 0;
+    reg.loadedAmmoUid = undefined;
+    reg.chambered = undefined; // À répétition (Indice) : le chargeur se vide AUSSI (LDB 62 l.229/231)
+  }
+}
+
+/** DR cumulés du Test étendu de rechargement de CETTE arme (LDB 62 l.335) — écrivain UNIQUE de la
+ *  progression : la remise à zéro d'une interruption comme le cumul d'un jet passent par ici, toujours
+ *  DANS le registre (pièce servie, objet possédé ou instance d'arme). `poste` = pièce visée explicitement
+ *  (recharge d'équipage) ; sans arme résolue, seule la pièce est écrite. Mute en place. */
+export function setReloadProgress(c: Combatant | undefined, weapon: Weapon | undefined, dr: number, poste?: ShipPoste): void {
+  const reg: WeaponLoadState | undefined = poste ?? (c && weapon ? loadRegister(c, weapon) : undefined);
+  if (reg) reg.reloadProgress = Math.max(0, dr);
+}
+
+/** CHOIX de munition « à charger au prochain rechargement » (`ammoUid`) — écrivain UNIQUE : hotbar du
+ *  joueur, sélecteur de pièce du navire (MDG 12). Ne touche NI l'état de charge NI le coup capturé :
+ *  changer d'avis ne décharge rien par lui-même (c'est l'appelant qui décide de décharger, arbitrage
+ *  utilisateur 2026-08-16). Mute en place. */
+export function setAmmoChoice(c: Combatant | undefined, weapon: Weapon | undefined, uid: string | undefined, poste?: ShipPoste): void {
+  const reg: WeaponLoadState | undefined = poste ?? (c && weapon ? loadRegister(c, weapon) : undefined);
+  if (reg) reg.ammoUid = uid;
+}
+
+/** Consomme UN coup du chargeur d'une arme À répétition (Indice) (LDB 62 l.229/231) — écrivain UNIQUE de
+ *  `chambered`. Renvoie `true` s'il reste des munitions chargées (l'arme reste prête), `false` quand le
+ *  chargeur est vide (ou que l'arme n'en a pas) : l'appelant décharge alors par `unloadWeapon`. */
+export function spendChamberedRound(c: Combatant, weapon: Weapon): boolean {
+  const mag = magazineSize(weapon);
+  if (mag == null) return false; // pas de chargeur : un coup = l'arme est vide
+  const reg = loadRegister(c, weapon);
+  reg.chambered = (reg.chambered ?? mag) - 1;
+  return (reg.chambered ?? 0) > 0;
 }
 
 /** CONSOMME une munition tirée (décrément `qty`, retrait à 0) LÀ OÙ ELLE VIT : stock du poste servi

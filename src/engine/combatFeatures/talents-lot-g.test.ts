@@ -80,9 +80,10 @@ describe('modificateurs de Test (LDB 10)', () => {
 describe('initiative / économie d’action (LDB 10)', () => {
   it('Combat instinctif +10×niveau ; Tir rapide pré-empte avec une arme chargée', () => {
     expect(talentInitiativeBonus(mk([{ name: 'Combat instinctif', times: 2 }]))).toBe(20);
-    const tireur = mk([{ name: 'Tir rapide', times: 1 }], { weapons: [w({ type: 'ranged' })], loaded: true });
-    expect(canPreemptRanged(tireur)).toBe(true);
-    expect(canPreemptRanged({ ...tireur, loaded: false } as Combatant)).toBe(false);
+    // L'état de charge vit sur l'ARME : c'est ELLE qui est chargée ou non (LDB 62 l.335).
+    const tir = (loaded: boolean) => mk([{ name: 'Tir rapide', times: 1 }], { weapons: [w({ type: 'ranged', reload: 1, loaded })] });
+    expect(canPreemptRanged(tir(true))).toBe(true);
+    expect(canPreemptRanged(tir(false))).toBe(false);
   });
   it('Rechargement rapide (toutes) / Artilleur (Poudre noire seulement)', () => {
     const c = mk([{ name: 'Rechargement rapide', times: 1 }, { name: 'Artilleur', times: 2 }]);

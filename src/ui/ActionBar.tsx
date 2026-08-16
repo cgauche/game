@@ -13,6 +13,7 @@ import { isEngaged } from '../engine/engagement';
 import { isFrenzyCapable, isFrenzied } from '../engine/psychology';
 import { isConsumable } from '../engine/consumables';
 import { compatibleAmmo, loadoutLabel } from '../engine/items';
+import { loadRegister, weaponLoaded, reloadProgressOf } from '../engine/weaponLoad';
 import { mdToText } from './Prose';
 import { canPushback } from '../engine/qualities/dispatch';
 import { hasHealSkill, healableTargets } from '../engine/healing';
@@ -123,7 +124,9 @@ export function ActionBar() {
   const [confirmEnd, setConfirmEnd] = useState(false);
   // Repli du menu « Manœuvre ▾ » (état UI local, comme l'ouverture d'un sous-menu) ; refermé au tour/round.
   const [showManeuvers, setShowManeuvers] = useState(false);
-  useEffect(() => { setConfirmEnd(false); setShowManeuvers(false); }, [battle?.turn, battle?.round]);
+  // ARME visée par le tiroir munitions (chacune a la sienne) — état UI local, refermé au tour/round.
+  const [ammoWeaponUid, setAmmoWeaponUid] = useState<string | undefined>(undefined);
+  useEffect(() => { setConfirmEnd(false); setShowManeuvers(false); setAmmoWeaponUid(undefined); }, [battle?.turn, battle?.round]);
   if (!battle || battle.over) return null;
   // Début de Round (LDB 17 l.27) : pause d'initiative à CHAQUE Round — la barre d'action est remplacée par
   // un seul bouton. On voit l'ordre (frise) et le champ, et on peut dépenser sa Chance pour agir en premier
@@ -355,10 +358,14 @@ export function ActionBar() {
           .flatMap((e) => entityPickables(e).map((p) => ({ entityId: e.id, ...p })))
       : [];
 
-  // Tir : arme à distance active, son rechargement (défaut Recharge uniquement) et ses munitions compatibles.
-  const rangedW = isHero ? active.weapons.find((w) => w.type === 'ranged') : undefined;
-  const needsReload = !!rangedW && (rangedW.reload ?? 0) > 0 && !active.loaded; // l'Arc (reload 0) ne recharge jamais
-  const ammoChoices = isHero && rangedW ? compatibleAmmo(active, rangedW) : [];
+  // Tir : chaque arme à distance a SON cycle de charge et SA munition (arbitrage utilisateur 2026-08-16,
+  // cas nommé « deux pistolets ») — la barre pousse donc un slot Recharger PAR arme déchargée, et le
+  // tiroir munitions vise l'arme de SON slot (`ammoWeaponUid`).
+  const rangedWeapons = isHero ? active.weapons.filter((w) => w.type === 'ranged') : [];
+  const rangedW = rangedWeapons[0];
+  const ammoWeapon = rangedWeapons.find((w) => w.uid === ammoWeaponUid) ?? rangedW;
+  const needsReload = !!ammoWeapon && !weaponLoaded(active, ammoWeapon); // l'Arc (reload 0) ne recharge jamais
+  const ammoChoices = isHero && ammoWeapon ? compatibleAmmo(active, ammoWeapon) : [];
   // Perturbante (LDB 62 l.275-276) : mode « Repousser » disponible avec une arme de mêlée Perturbante.
   const canPush = isHero && active.weapons.some((w) => w.type === 'melee' && canPushback(w));
 
@@ -429,8 +436,26 @@ export function ActionBar() {
     if (canAid) slots.push({ id: 'aid-team', disabled: battle.acted || stunned || broken, icon: <Icon id="action/lead" />, label: "Diriger l'équipe", done: battle.acted, title: "Aider une équipe d'artillerie à portée de voix (Test de Commandement) : elle tire ensuite à votre score de Projectiles — coûte l'Action", run: aidTeam });
     if (rangedW && !frenzied) slots.push({ id: 'aim', disabled: battle.acted || stunned || active.aiming, icon: <Icon id="action/aim" />, label: active.aiming ? 'En joue' : 'Viser', done: active.aiming, title: "Viser : +20 (Accessible) au prochain tir — coûte l'Action", run: aim });
     if (canPush) slots.push({ id: 'pushback', icon: <Icon id="ui/undo" />, label: 'Repousser', done: active.pushbackMode, title: "Perturbante : la prochaine attaque réussie repousse d'1 m par DR au lieu de causer des Dégâts", run: togglePushback });
-    if (needsReload && !frenzied) slots.push({ id: 'reload', cls: `ab-alert${!battle.acted && !stunned && !broken ? ' pulse' : ''}`, disabled: battle.acted || stunned || broken, icon: <Icon id="journal/reload" />, label: `Recharger${active.reloadProgress ? ` (${active.reloadProgress}/${rangedW.reload})` : ''}`, title: "Arme déchargée : recharger (Test étendu de Projectiles — coûte l'Action)", run: reload });
-    if (ammoChoices.length > 1 && !frenzied) slots.push({ id: 'ammo', cls: battle.action === 'ammo' ? 'on' : '', icon: <Icon id="action/shoot" />, label: 'Munition ▾', title: 'Choisir la munition à tirer', run: () => selectAction(battle.action === 'ammo' ? null : 'ammo') });
+    // UN slot Recharger PAR arme à distance déchargée (deux pistolets = deux rechargements distincts) ;
+    // le nom de l'arme n'apparaît que s'il y en a plusieurs, pour ne pas alourdir le cas courant.
+    if (!frenzied) for (const w of rangedWeapons) {
+      if (weaponLoaded(active, w)) continue;
+      const prog = reloadProgressOf(active, w);
+      slots.push({ id: `reload:${w.uid ?? w.label}`, cls: `ab-alert${!battle.acted && !stunned && !broken ? ' pulse' : ''}`,
+        disabled: battle.acted || stunned || broken, icon: <Icon id="journal/reload" />,
+        label: `Recharger${rangedWeapons.length > 1 ? ` ${w.label}` : ''}${prog ? ` (${prog}/${w.reload})` : ''}`,
+        title: `${w.label} déchargée : recharger (Test étendu de Projectiles — coûte l'Action)`,
+        run: () => reload(w.uid) });
+    }
+    // UN slot Munition PAR arme à distance qui a le choix : il ouvre le tiroir SUR CETTE arme.
+    if (!frenzied) for (const w of rangedWeapons) {
+      if (compatibleAmmo(active, w).length <= 1) continue;
+      const on = battle.action === 'ammo' && ammoWeapon?.uid === w.uid;
+      slots.push({ id: `ammo:${w.uid ?? w.label}`, cls: on ? 'on' : '', icon: <Icon id="action/shoot" />,
+        label: `Munition${rangedWeapons.length > 1 ? ` ${w.label}` : ''} ▾`,
+        title: `Choisir la munition à charger dans ${w.label}`,
+        run: () => { setAmmoWeaponUid(w.uid); selectAction(on ? null : 'ammo'); } });
+    }
     if (canFrenzy) slots.push({ id: 'frenzy', icon: <Icon id="flag/frenzy" />, label: 'Frénésie', title: "Entrer en Frénésie : Test de Force Mentale — coûte l'Action", run: frenzy });
     // Capacités SUR SOI octroyées par un trait (Métamorphose humain↔hybride de l'Enfant d'Ulric) : la
     // manœuvre APPLICABLE (prendre/reprendre la forme) — coûte deux Actions (celle-ci + le loseTurn suivant).
@@ -563,9 +588,12 @@ export function ActionBar() {
       )}
       {battle.action === 'ammo' && (
         <div className="ab-spells">
+          {!!ammoWeapon && (ammoWeapon.reload ?? 0) > 0 && !needsReload && (
+            <div className="ab-hint">{ammoWeapon.label} : arme chargée — choisir une autre munition décharge l’arme et exige un rechargement complet ; re-choisir la munition chargée est sans effet.</div>
+          )}
           {ammoChoices.map((a) => (
             <div key={a.uid} className="ab-spell-row">
-              <button className={`btn btn-sm ${active.ammoUid === a.uid ? 'btn-primary' : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => selectAmmo(a.uid)}><ItemIcon item={a} size={18} /> {a.label} ×{a.qty}</button>
+              <button className={`btn btn-sm ${ammoWeapon && loadRegister(active, ammoWeapon).ammoUid === a.uid ? 'btn-primary' : ''}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} onClick={() => selectAmmo(a.uid, ammoWeapon?.uid)}><ItemIcon item={a} size={18} /> {a.label} ×{a.qty}</button>
               <CodexRef category="trappings" id={a.trappingId} label={a.label} className="ab-codex-info" hideIfUnknown><Icon id="journal/info" size="sm" /></CodexRef>
             </div>
           ))}

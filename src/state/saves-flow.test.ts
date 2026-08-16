@@ -729,6 +729,40 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect((migrated.data as { sequence: { def: string } }).sequence.def).toBe('tavern');
   });
 
+  /**
+   * MIGRATIONS[23] — l'état de charge quitte le COMBATTANT pour le registre de l'ARME (chaque arme à
+   * distance gère son rechargement et sa munition). La fixture v23 porte les DEUX formes à couvrir :
+   * un héros dont l'arme est un objet du set ACTIF, et un héros dont la seule arme à distance est RANGÉE
+   * dans un set INACTIF (elle n'existe dans aucun `weapons` : sans balayage des loadouts, son état
+   * disparaîtrait en silence). Contrat mesuré sur la DONNÉE migrée, pas sur un rendu.
+   */
+  it('MIGRATIONS[23] : l’état de charge passe sur l’OBJET-arme, set ACTIF comme set RANGÉ, et quitte le combattant', () => {
+    const raw = JSON.parse(readFileSync(new URL('v23-charge-sur-combattant.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const migrated = migrateSave(raw)!;
+    expect(migrated.version).toBe(SAVE_VERSION);
+    type Obj = Record<string, unknown>;
+    const party = (migrated.data as { party: Obj[] }).party;
+    const itemOf = (h: Obj, uid: string) => (h.items as Obj[]).find((i) => i.uid === uid)!;
+
+    // (1) Arme du set ACTIF : l'OBJET possédé porte l'état (il survit au re-dérivage du set).
+    const arb = itemOf(party[0], 'it-arb-v23');
+    expect(arb.loaded).toBe(true);
+    expect(arb.reloadProgress).toBe(2);
+    expect(arb.loadedAmmoUid).toBe('am-v23');
+    expect(arb.chambered).toBe(3);
+    // (2) Arme d'un set INACTIF (aucune instance dans `weapons`) : son objet reçoit l'état AUSSI.
+    const pist = itemOf(party[1], 'it-pist-v23');
+    expect(pist.loaded).toBe(true);
+    expect(pist.reloadProgress).toBe(1);
+    expect(pist.loadedAmmoUid).toBe('am-balles-v23');
+    // (3) Le COMBATTANT ne porte plus rien (sinon le champ orphelin serait re-sérialisé indéfiniment).
+    for (const h of party) {
+      for (const f of ['loaded', 'reloadProgress', 'ammoUid', 'loadedAmmoUid', 'chambered']) {
+        expect(f in h, `${f} doit avoir quitté le combattant`).toBe(false);
+      }
+    }
+  });
+
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {
     for (let v = 1; v < SAVE_VERSION; v++) {
       expect(MIGRATIONS[v], `MIGRATIONS[${v}] manquante — un bump de SAVE_VERSION exige son migrateur`).toBeTypeOf('function');

@@ -148,11 +148,15 @@ describe('doAttack — l\'IA gatée joue le MÊME Test inline (résolution forc�
   });
 });
 
+// Le tireur porte un ARC (Recharge 0) : depuis que l'état de charge vit sur l'ARME, `canPreemptRanged`
+// (« arme à distance CHARGÉE », LDB 10) répond OUI pour une arme SANS cycle de charge — elle est prête par
+// nature (rien à recharger, LDB 62 l.335). Avant, un `Combatant.loaded` absent la disait déchargée : c'est
+// ce faux négatif qui disparaît, et la fixture n'a donc plus rien à poser.
 describe('runPreemptShots — le Tir rapide de l\'IA joue le MÊME Test de Main ensanglantée (AA 07 l.117)', () => {
   const BOW = (uid: string): Weapon => ({ uid, label: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 30, qualities: [] } as unknown as Weapon);
   const BOW_ITEM = (uid: string): ItemInstance => ({ uid, label: 'Arc', kind: 'ranged', qualities: [] } as unknown as ItemInstance);
   const shooter = (over: Partial<Combatant> = {}): Combatant => mkFoe('f', {
-    pos: { x: 2, y: 0 }, loaded: true, talents: [{ talentId: 'tir-rapide', times: 1 }] as never,
+    pos: { x: 2, y: 0 }, talents: [{ talentId: 'tir-rapide', times: 1 }] as never,
     weapons: [BOW('bow')], items: [BOW_ITEM('bow')], loadouts: [{ id: 'lob', main: 'bow' }] as never, activeLoadoutId: 'lob',
     handGates: ['main'], conditions: [{ id: 'hemorragique', value: 2 }], ...over,
   });

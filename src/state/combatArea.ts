@@ -31,7 +31,7 @@ import { woundsFromHit, rangeBandName } from '../engine/combat';
 import { sceneMetresPerTile } from './scene';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { effectiveWeaponRange } from '../engine/weaponDamage';
-import { selectedAmmo } from '../engine/items';
+import { loadedAmmo } from '../engine/items';
 import { resolveQualities } from '../engine/qualities/dispatch';
 import { loseWounds, isOutOfAction } from '../engine/conditions';
 import { exposedCrew } from '../engine/shipCritical';
@@ -149,7 +149,7 @@ export function resolveWeaponArea(
   const tz = quals.find((r) => r.caps?.areaFire);
   if (tz) {
     const indice = tz.indice ?? 1;
-    const rangeM = effectiveWeaponRange(weapon, selectedAmmo(hit.attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(hit.attacker, 'force'))); // Portée résolue (BF) + modificateur de munition
+    const rangeM = effectiveWeaponRange(weapon, loadedAmmo(hit.attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(hit.attacker, 'force'))); // Portée résolue (BF) + modificateur de munition
     const band = rangeM != null ? rangeBandName(hit.distanceTiles, rangeM, sceneMetresPerTile(get().scene)) : 'Bout portant';
     if (band === 'Bout portant' && target) {
       // +Indice aux DÉGÂTS sur la cible seule (≠ +Indice Blessures brut). La cible a déjà encaissé `damage` ;

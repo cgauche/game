@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { compatibleAmmo, selectedAmmo, consumeAmmo } from '../engine/items';
+import { weaponLoaded, loadRegister } from '../engine/weaponLoad';
 import { resolveVolley } from '../engine/volley';
 import { serveChef } from './shipPostes';
 import { applyOups } from './combatFlow';
@@ -49,7 +50,8 @@ describe('Stock de munitions du poste (MDG 12 l.410-424)', () => {
     const gun = chef.weapons.find((w) => w.uid === 'canon')!;
     expect(compatibleAmmo(chef, gun).map((a) => a.uid)).toEqual(['boulet', 'mitraille', 'perso']);
     expect(selectedAmmo(chef, gun)!.uid).toBe('mitraille'); // sélection PERSISTANTE du poste
-    chef.ammoUid = 'boulet'; // choix ponctuel du héros (hotbar) : PRIME sur le poste
+    // Registre UNIQUE d'une pièce SERVIE : la sélection vit sur LA PIÈCE (plus de choix parallèle porté par le chef).
+    loadRegister(chef, gun).ammoUid = 'boulet';
     expect(selectedAmmo(chef, gun)!.uid).toBe('boulet');
   });
 
@@ -127,6 +129,120 @@ describe('Stock de munitions du poste (MDG 12 l.410-424)', () => {
     expect(poste.reloadProgress).toBe(0);
     expect(poste.ammo![0].qty).toBe(1); // … et son boulet est parti (2 → 1)
     expect(useGame.getState().journal.join('\n')).toMatch(/MANQUE/i); // aucun jet silencieux : le journal le DIT
+  });
+});
+
+/**
+ * La munition se fixe au CHARGEMENT — VERSANT PIÈCE : le coup d'une pièce porte SA
+ * munition (`ShipPoste.loadedAmmoUid`, posée par `loadWeapon` au Test étendu de recharge, MDG 12 l.462 /
+ * LDB 62 l.335) ; en changer sur une pièce chargée la DÉCHARGE. Aucune munition n'est détruite hors tir.
+ */
+describe('Munition FIXÉE AU CHARGEMENT — pièces d’artillerie', () => {
+  const mkBattle = (hull: Combatant, crew: Combatant[], order: string[]) =>
+    useGame.setState({
+      battle: { combatants: [hull, ...crew, foeHull()], order, turn: 0, round: 1, acted: false, log: [], crewActed: {} } as never,
+      party: crew, facing: { ship: 'N' }, pendingShipBattery: null, pendingReload: null, scene: null as never,
+    });
+
+  it('setPosteAmmo sur une pièce CHARGÉE la décharge (le chef perd son gate de tir), sans rien détruire', () => {
+    const boulet = ammoItem('boulet', 'Boulet et poudre', 5);
+    const mitraille = ammoItem('mitraille', 'Mitraille et poudre', 3);
+    const poste = mkPoste([boulet, mitraille], 'boulet');
+    const chef = mkCrew('chef');
+    const hull = mkHull(poste);
+    serveChef(chef, poste); // pièce PRISE = amorcée → munition capturée
+    expect(poste.loadedAmmoUid).toBe('boulet');
+    mkBattle(hull, [chef, mkCrew('aide')], ['ship']);
+
+    useGame.getState().setPosteAmmo('ship', 'canon', 'mitraille');
+
+    expect(poste.loaded).toBe(false);            // le coup au boulet n'est plus là
+    expect(poste.loadedAmmoUid).toBeUndefined();
+    expect(poste.reloadProgress).toBe(0);        // Test étendu à refaire depuis zéro
+    expect(weaponLoaded(chef, chef.weapons.find((w) => w.uid === 'canon')!)).toBe(false); // le chef ne peut plus tirer la pièce
+    expect(poste.ammo!.find((a) => a.uid === 'boulet')!.qty).toBe(5); // stock intact : rien n'est détruit
+    expect(poste.ammoUid).toBe('mitraille');     // la sélection dit « à charger »
+  });
+
+  it('setPosteAmmo sur la munition DÉJÀ chargée : sans effet (aucun rechargement imposé)', () => {
+    const boulet = ammoItem('boulet', 'Boulet et poudre', 5);
+    const poste = mkPoste([boulet], 'boulet');
+    const chef = mkCrew('chef');
+    serveChef(chef, poste);
+    mkBattle(mkHull(poste), [chef], ['ship']);
+
+    useGame.getState().setPosteAmmo('ship', 'canon', 'boulet');
+
+    expect(poste.loaded).toBe(true);
+    expect(poste.loadedAmmoUid).toBe('boulet');
+  });
+
+  it('recharge d’équipage en MITRAILLE → la bordée suivante tire de la MITRAILLE', () => {
+    seedBattleRng(1); // jet bas → réussite franche : le Test étendu aboutit
+    const boulet = ammoItem('boulet', 'Boulet et poudre', 5);
+    const mitraille = ammoItem('mitraille', 'Mitraille et poudre', 3);
+    const poste = mkPoste([boulet, mitraille], 'boulet');
+    const chef = mkCrew('chef');
+    const aide = mkCrew('aide');
+    const hull = mkHull(poste);
+    serveChef(chef, poste);
+    poste.loaded = false; // la pièce a tiré : à recharger
+    poste.reloadProgress = 5; // Recharge 6 → un DR suffit
+    poste.loadedAmmoUid = undefined;
+    poste.ammoUid = 'mitraille'; // l'équipage charge de la mitraille
+    mkBattle(hull, [chef, aide], ['ship']);
+
+    useGame.getState().battleShipReload('ship', 'canon');
+    // Jet FORCÉ à la réussite franche (le dé n'est pas l'objet du test, la CAPTURE l'est) : le Test étendu aboutit.
+    const pr = useGame.getState().pendingReload!;
+    useGame.setState({ pendingReload: { ...pr, roll: 5, sl: 20, success: true } });
+    useGame.getState().reloadConfirm();
+    expect(poste.loaded).toBe(true);
+    expect(poste.loadedAmmoUid).toBe('mitraille');
+
+    // La SÉLECTION revient au boulet APRÈS le chargement : le coup déjà chargé ne change pas pour autant.
+    poste.ammoUid = 'boulet';
+    const volley = resolveVolley(hull, [poste], foeHull(), 'voile', 2, true, [chef, aide], makeRNG(5));
+    expect(volley.shots[0].ammo!.uid).toBe('mitraille'); // ce qui part = ce qui a été CHARGÉ
+  });
+
+  it('bascule de munition du CHEF (hotbar) : la bordée suivante ne part plus au boulet abandonné', () => {
+    const boulet = ammoItem('boulet', 'Boulet et poudre', 5);
+    const mitraille = ammoItem('mitraille', 'Mitraille et poudre', 3);
+    const poste = mkPoste([boulet, mitraille], 'boulet');
+    const chef = mkCrew('chef');
+    const aide = mkCrew('aide');
+    const hull = mkHull(poste);
+    serveChef(chef, poste);
+    expect(poste.loadedAmmoUid).toBe('boulet');
+    mkBattle(hull, [chef, aide], ['chef']); // le CHEF est l'actif : sa hotbar pilote `battleSelectAmmo`
+
+    useGame.getState().battleSelectAmmo('mitraille');
+
+    expect(poste.loaded).toBe(false); // la pièce est muette tant qu'elle n'est pas rechargée
+    expect(poste.loadedAmmoUid).toBeUndefined();
+    const volley = resolveVolley(hull, [poste], foeHull(), 'voile', 2, true, [chef, aide], makeRNG(5));
+    expect(volley.shots[0].ammo!.uid).not.toBe('boulet');
+  });
+
+  // Le Test étendu de rechargement d'une pièce (LDB 62 l.335) est une DÉPENSE d'équipage : reprendre la
+  // pièce (nouveau chef, relève) ne le remplace pas. Seule une pièce dont le cycle n'a JAMAIS commencé est
+  // amorcée à la mise en batterie. Sans ce gate, changer de servant rechargerait gratis.
+  it('reprendre une pièce qui a TIRÉ ne la recharge pas (le Test étendu en cours survit à la relève)', () => {
+    const boulet = ammoItem('boulet', 'Boulet et poudre', 5);
+    const poste = mkPoste([boulet], 'boulet');
+    const chef = mkCrew('chef');
+    serveChef(chef, poste); // 1re mise en batterie : la pièce est amorcée
+    expect(poste.loaded).toBe(true);
+
+    poste.loaded = false; // elle a fait feu…
+    poste.reloadProgress = 3; // … et son équipage a déjà cumulé 3 DR
+    const releve = mkCrew('releve');
+    serveChef(releve, poste);
+
+    expect(poste.loaded).toBe(false); // toujours déchargée : la relève ne remplace pas le Test étendu
+    expect(poste.reloadProgress).toBe(3); // et le cumul déjà obtenu n'est pas perdu non plus
+    expect(weaponLoaded(releve, releve.weapons.find((w) => w.uid === 'canon')!)).toBe(false);
   });
 });
 

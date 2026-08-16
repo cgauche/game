@@ -478,6 +478,22 @@ export interface Weapon {
    *  la pastille s'affiche alors nue (cf. `chipCodex`), régime RÉSIDUEL gardé par
    *  `src/engine/effect-rule-anchor.test.ts`. */
   source?: EffectSource;
+  // ── ÉTAT DE CHARGE (par ARME) ─────────────────────────────────────────────────────────────────────
+  // Arbitrage utilisateur 2026-08-16 : « quand on charge une arme on sélectionne une munition » et « si
+  // j'ai 2 armes à distance elles gèrent chacune leur propre rechargement et munition ». L'état vit donc
+  // sur l'INSTANCE d'arme (`Combatant.weapons[i]`), jamais sur le combattant ; une pièce d'artillerie
+  // SERVIE porte le sien sur `ShipPoste`. Source unique de lecture/écriture : `loadRegister`/`loadWeapon`/
+  // `unloadWeapon` (engine/items.ts). Préservé au re-dérivage du set (`recomputeLoadout`, par uid).
+  /** Munition CHOISIE pour le prochain chargement de CETTE arme (uid d'un ItemInstance `kind 'ammo'`). */
+  ammoUid?: string;
+  /** Munition CAPTURÉE dans le coup chargé de CETTE arme : posée au chargement, consommée au tir. */
+  loadedAmmoUid?: string;
+  /** CETTE arme est-elle chargée ? (Recharge 0 : toujours ; Recharge N : faux après un tir.) */
+  loaded?: boolean;
+  /** DR cumulés du Test étendu de Projectiles de CETTE arme vers son Indice `reload` (pas des Actions). */
+  reloadProgress?: number;
+  /** À répétition (Indice) (LDB 62 l.229/231) : munitions restantes dans le chargeur de CETTE arme. */
+  chambered?: number;
 }
 
 /** Enchantement d'ARME (op `augmentWeapon` — B. de Droiture, Marteau ardent, Épée de justice ;
@@ -995,6 +1011,21 @@ export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';
 /** Instance d'objet portée par un personnage (dérivée d'un trapping à stats). */
 export interface ItemInstance {
   uid: string;
+  // ── ÉTAT DE CHARGE de CET objet-arme (arbitrage utilisateur 2026-08-16 : « si j'ai 2 armes à distance
+  // elles gèrent chacune leur propre rechargement et munition ») : l'OBJET possédé est le porteur qui
+  // SURVIT au re-dérivage du set actif (`recomputeLoadout` reconstruit les `Weapon`, jamais les items) —
+  // changer de set ne téléporte donc aucun coup chargé. Registre résolu par `loadRegister`
+  // (engine/weaponLoad) ; seuls `loadWeapon`/`unloadWeapon` (engine/items) posent et effacent.
+  /** Munition CHOISIE pour le prochain chargement de CETTE arme (uid d'un ItemInstance `kind 'ammo'`). */
+  ammoUid?: string;
+  /** Munition CAPTURÉE dans le coup chargé de CETTE arme : posée au chargement, consommée au tir. */
+  loadedAmmoUid?: string;
+  /** CETTE arme est-elle chargée ? (Recharge 0 : toujours ; Recharge N : faux après un tir.) */
+  loaded?: boolean;
+  /** DR cumulés du Test étendu de Projectiles de CETTE arme vers son Indice `reload` (LDB 62 l.335). */
+  reloadProgress?: number;
+  /** À répétition (Indice) (LDB 62 l.229/231) : munitions restantes dans le chargeur de CETTE arme. */
+  chambered?: number;
   /** `id` du trapping de catalogue dont l'objet dérive (`TrappingData.id`) — réf STABLE posée par
    *  `itemFromTrappingById`. ABSENT = objet CUSTOM (hors-base : `customTrapping`, pièces de monstre…).
    *  Source de re-dérivation (arme dérivée de prothèse, prix de revente, réparation) — ≠ name-match. */
@@ -1169,6 +1200,10 @@ export interface AuthoredShipPoste {
   cover?: DeckCoverClass;
   /** Équipage servant la pièce ; `crewIds[0]` = chef de pièce (nominé pour le Test, Arme d'équipe). */
   crewIds?: string[];
+  /** À répétition (Indice) (LDB 62 l.229/231) / Salve : munitions restantes dans le chargeur de LA PIÈCE
+   *  — même cycle que toute arme (elle remplit et vide son chargeur), écrit par `loadWeapon`/
+   *  `spendChamberedRound`/`unloadWeapon`. Absent = pas de chargeur, ou chargeur vide. */
+  chambered?: number;
   /** Recharge (MDG 12 / LDB 62 l.333) — Test ÉTENDU de Projectiles, PAS d'auto-rechargement passif.
    *  `loaded === false` = la pièce a tiré et reste muette tant que l'équipage n'a pas complété le Test
    *  (absent / `true` = prête à tirer). */
@@ -1185,6 +1220,10 @@ export interface AuthoredShipPoste {
   /** Munition SÉLECTIONNÉE du poste (uid dans `ammo` — « boulet ou mitraille ? ») : le choix PERSISTANT de
    *  la pièce (fiche du navire), sous le choix ponctuel du héros-chef (`Combatant.ammoUid`, hotbar). */
   ammoUid?: string;
+  /** Munition CAPTURÉE dans le coup chargé de la pièce (uid dans `ammo`) : posée à l'achèvement du Test
+   *  étendu de recharge, consommée au tir. Changer la sélection d'une pièce chargée la DÉCHARGE
+   *  (arbitrage utilisateur 2026-08-16 « La munition se fixe au CHARGEMENT »). */
+  loadedAmmoUid?: string;
   /** Ancre spatiale optionnelle de la pièce dans l'espace de la scène (authorable). Absente → dérivée
    *  (emplacement au sol = pos de l'entité ; coque = empreinte décalée par l'arc). Index-only, aucun effet combat. */
   anchor?: { x: number; y: number; z?: number };
@@ -1593,18 +1632,9 @@ export interface Combatant {
    *  franchissement de Round une fois ce numéro dépassé ; `despawnIfSummonerDown` = elle s'effondre
    *  si le lanceur est hors de combat (minions de Nécromancie liés au sorcier). Géré par state/summonFlow. */
   summon?: { byId: string; expiresAtRound?: number; despawnIfSummonerDown?: boolean; label?: string; spellId?: string };
-  // NB : `ammoUid`/`loaded`/`reloadProgress` sont au niveau du combattant, pas de l'arme. Le modèle
-  // suppose UNE arme à distance équipée à la fois (le tir et le rechargement ciblent la 1re `ranged`
-  // via `attackWeapon`/`battleReload`). À porter sur l'arme si on autorise un jour 2 armes à distance.
-  /** Munition sélectionnée pour l'arme à distance (uid d'un ItemInstance `kind 'ammo'`). */
-  ammoUid?: string;
-  /** Arme à distance chargée ? (Arc : toujours ; Recharge N : faux après un tir). */
-  loaded?: boolean;
-  /** DR cumulés du Test étendu de Projectiles vers `Weapon.reload` (Indice DR), pas un compteur d'Actions. */
-  reloadProgress?: number;
-  /** À Répétition (Indice) (LDB 62 l.264-265) : munitions restantes dans le chargeur de l'arme à
-   *  distance équipée (auto-rechargées entre les coups) ; undefined = pas de chargeur / vide. */
-  chambered?: number;
+  // L'ÉTAT DE CHARGE (munition choisie/capturée, `loaded`, progression, chargeur) vit sur l'INSTANCE
+  // D'ARME (`Weapon`) — arbitrage utilisateur 2026-08-16 : deux armes à distance gèrent chacune leur
+  // propre rechargement et leur propre munition. Aucun de ces champs n'existe plus ici.
   /** Salve (Aux Armes p.126) : nombre de tirs DÉJÀ effectués ce tour (réinit. au changement de tour) ;
    *  chaque tir suivant d'une arme à Salve subit −10 cumulatif (lu par `attackModifiers`). */
   shotsThisTurn?: number;

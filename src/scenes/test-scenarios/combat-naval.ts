@@ -1,5 +1,5 @@
 import { makeShowcaseParty, PREGEN } from '../../data/pregens';
-import { itemFromTrappingById } from '../../engine/items';
+import { itemFromTrappingById, loadWeapon } from '../../engine/items';
 import type { Combatant, ShipPoste } from '../../engine/types';
 import { buildScene } from '../../state/mapSpec';
 import type { TestScenario } from './_shared';
@@ -31,7 +31,8 @@ function makeNavalParty(): Combatant[] {
   const party = makeShowcaseParty();
   for (const id of GUNNERS) {
     const g = party.find((h) => h.id === id);
-    if (g) g.loaded = true; // chargé d'emblée → tir dès le 1er Round
+    // Chargé d'emblée → tir dès le 1er Round. L'état de charge vit sur CHAQUE arme (arbitrage 2026-08-16).
+    if (g) for (const w of g.weapons.filter((x) => x.type === 'ranged')) loadWeapon(g, w);
   }
   return party;
 }

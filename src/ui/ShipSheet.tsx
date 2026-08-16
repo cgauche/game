@@ -48,20 +48,25 @@ export function PosteDetail({ hull, poste, combatants, readOnly }: { hull: Comba
   const setPosteAmmo = useGame((s) => s.setPosteAmmo);
   const gun = (poste.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
   const stock = (poste.ammo ?? []).filter((a) => (a.qty ?? 0) > 0);
-  const loaded = stock.find((a) => a.uid === (poste.ammoUid ?? stock[0]?.uid));
+  // Ce qui est CHARGÉ = la munition capturée par le chargement (`loadedAmmoUid`), jamais la sélection du
+  // sélecteur (qui, elle, dit « à charger au prochain rechargement »).
+  const loadedAmmoItem = poste.loaded !== false ? stock.find((a) => a.uid === poste.loadedAmmoUid) : undefined;
   return (
     <div className="ship-poste selected">
       <span className="ship-poste-name"><Icon id="action/aim" size="sm" /> {poste.side ? SIDE_LABEL[poste.side] ?? poste.side : 'Omni'} · {poste.item.label}</span>
       {stock.length > 0 && (readOnly ? (
         // Inspection (#240) : munition chargée VISIBLE mais non modifiable (pas de sélecteur sur la pièce d'autrui).
-        <span className="ship-poste-ammo"><span aria-hidden><Icon id="fire/blast" size="sm" /></span> {loaded?.label ?? stock[0].label}</span>
+        <span className="ship-poste-ammo"><span aria-hidden><Icon id="fire/blast" size="sm" /></span> {loadedAmmoItem ? loadedAmmoItem.label : 'pièce déchargée'}</span>
       ) : (
         <label className="ship-poste-ammo">
           <span aria-hidden><Icon id="fire/blast" size="sm" /></span>
+          {/* La légende est LUE À L'ÉCRAN (pas seulement en infobulle) : le sélecteur dit ce qui sera chargé
+              au prochain rechargement, jamais ce qui est dans la pièce (`loadedAmmoUid`, ci-dessus). */}
+          <span className="muted">Munition à charger</span>
           <select
             value={poste.ammoUid ?? stock[0].uid}
             onChange={(e) => setPosteAmmo(hull.id, poste.item.uid, e.target.value)}
-            title="Munition chargée par la pièce — stock du poste"
+            title="Munition à charger — stock du poste (en changer décharge une pièce chargée)"
           >
             {stock.map((a) => <option key={a.uid} value={a.uid}>{a.label} × {a.qty ?? 0}</option>)}
           </select>

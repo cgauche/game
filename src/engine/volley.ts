@@ -18,7 +18,7 @@ import { isDoubleRoll } from './tests';
 import { effectiveWeaponDamage } from './weaponDamage';
 import { woundsFromHit, shipHitLocation, type ShipRig, type ShipLocation } from './combat';
 import { attackDRAdjust } from './qualities/dispatch';
-import { mannedPosteWeapon, selectedAmmo, weaponWithAmmo } from './items';
+import { mannedPosteWeapon, loadedAmmo, weaponWithAmmo } from './items';
 import { crewedFireWeapon } from './crewedWeapon';
 import { crewedTeamIndice } from './qualities/dispatch';
 import { exposedCrew } from './shipCritical';
@@ -54,10 +54,9 @@ export interface VolleyResult {
   totalWounds: number;
 }
 
-// (La sélection de munition passe par `selectedAmmo` — SOURCE UNIQUE partagée avec le tir individuel :
-//  choix ponctuel du chef `c.ammoUid` > sélection persistante du poste `poste.ammoUid` > 1re compatible,
-//  pool = stock du poste (MDG 12 l.410-424) ∪ inventaire du chef. Pas de gate `kind:'hero'` : un
-//  équipage PNJ charge aussi sa munition.)
+// (La munition tirée passe par `loadedAmmo` — SOURCE UNIQUE partagée avec le tir individuel : munition
+//  CAPTURÉE au chargement (registre de l'arme ou de la PIÈCE, loadRegister), pool = stock du poste
+//  (MDG 12 l.410-424) ∪ inventaire du chef. Pas de gate `kind:'hero'` : un équipage PNJ charge aussi.)
 
 /**
  * Résout la volée d'une bordée. `firingShip` = navire tireur ; `postes` = pièces du bord qui porte ; `target` = coque
@@ -88,7 +87,7 @@ export function resolveVolley(
     let weapon = mannedPosteWeapon(firingShip, poste);
     if (!weapon) continue; // pièce détruite
     const chef = byId.get((poste.crewIds ?? [])[0]) ?? (abstract ? shipCrew[0] : undefined);
-    const ammo = chef ? selectedAmmo(chef, weapon) : undefined;
+    const ammo = chef ? loadedAmmo(chef, weapon) : undefined;
     if (ammo) weapon = weaponWithAmmo(weapon, ammo);
     // À la Mer : effectif = Indice PLEIN (équipage abstrait au complet) → aucun sous-effectif par pièce ; au Pont : réel.
     weapon = crewedFireWeapon(weapon, abstract ? crewedTeamIndice(weapon) : servants.length); // Recharge×2 / Imprécise / Dangereuse selon l'effectif

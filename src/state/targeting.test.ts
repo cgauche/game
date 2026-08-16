@@ -85,12 +85,12 @@ describe('hoverTargeting — tir à Recharge / munition (affordance ≠ log sile
   });
 
   it('même arme CHARGÉE + munition → ok pointillé (le tir part)', () => {
-    const a = combatant({ id: 'A', weapons: [xbow] as never, items: [bolts] as never, loaded: true });
+    const a = combatant({ id: 'A', weapons: [{ ...xbow, loaded: true }] as never, items: [bolts] as never });
     expect(hoverTargeting(mkGet([a, enemy()]), a, enemy())).toMatchObject({ kind: 'ok', line: 'dashed', title: 'Arbalète' });
   });
 
   it('arme à munition suivie, carquois VIDE → invalid noammo', () => {
-    const a = combatant({ id: 'A', weapons: [xbow] as never, items: [] as never, loaded: true });
+    const a = combatant({ id: 'A', weapons: [{ ...xbow, loaded: true }] as never, items: [] as never });
     expect(hoverTargeting(mkGet([a, enemy()]), a, enemy())).toMatchObject({ kind: 'invalid', reason: 'noammo' });
   });
 });

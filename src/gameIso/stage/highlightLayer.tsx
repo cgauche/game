@@ -13,7 +13,7 @@ import { controlsCombatant } from '../../state/netOwnership';
 import { inBattleId } from '../../state/combatants';
 import { attackWeapon } from '../../engine/combat';
 import { effectiveWeaponRange } from '../../engine/weaponDamage';
-import { selectedAmmo } from '../../engine/items';
+import { loadedAmmo } from '../../engine/items';
 import { bonus, effectiveChar } from '../../engine/characteristics';
 import type { HighlightsView } from '../builders/highlights';
 
@@ -67,7 +67,7 @@ export function combatHighlightsView(get: () => GameState, battle: BattleState, 
       if (!c?.pos) return null;
       const weapon = attackWeapon(c.weapons, false);
       if (!weapon || weapon.type !== 'ranged') return null; // structure/décor sans arme (porte…) — pas de bande (#203 régression)
-      const rangeM = effectiveWeaponRange(weapon, selectedAmmo(c, weapon)?.ammoRangeMod, () => bonus(effectiveChar(c, 'force')));
+      const rangeM = effectiveWeaponRange(weapon, loadedAmmo(c, weapon)?.ammoRangeMod, () => bonus(effectiveChar(c, 'force')));
       return rangeM != null ? { pos: c.pos, rangeM } : null;
     })(),
   };

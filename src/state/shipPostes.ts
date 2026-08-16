@@ -6,7 +6,7 @@
  * donne un couvert TOTAL au servant qui tire à travers (sinon tir depuis le pont, aucun couvert).
  */
 import { inFireArc } from './fireArc';
-import { mannedPosteWeapon } from '../engine/items';
+import { mannedPosteWeapon, loadWeapon } from '../engine/items';
 import { hasWeaponGroupSkill } from '../engine/combat';
 import { exposedCrew } from '../engine/shipCritical';
 import { isOutOfAction } from '../engine/conditions';
@@ -275,7 +275,12 @@ export function serveChef(chef: Combatant, poste: ShipPoste): void {
   chef.mannedPoste = poste;
   const w = mannedPosteWeapon(chef, poste);
   if (w && !(chef.weapons ?? []).some((x) => x.uid === w.uid)) (chef.weapons ??= []).push(w);
-  chef.loaded = true; // une pièce que l'on PREND est AMORCÉE (chargée à la mise en batterie) : le 1er coup part, la Recharge ne joue qu'ENTRE les tirs
+  // Une pièce que l'on PREND est AMORCÉE (chargée à la mise en batterie) : le 1er coup part, la Recharge ne
+  // joue qu'ENTRE les tirs. UNIQUEMENT si son cycle n'a jamais commencé (`loaded` absent) : une pièce qui a
+  // TIRÉ (`loaded === false`, Test étendu en cours) garde son état — la reprendre ne remplace pas le Test
+  // étendu de rechargement (LDB 62 l.335), sinon changer de servant rechargerait gratis. Couture UNIQUE, sur
+  // le registre de la PIÈCE — c'est LUI que lisent le gate de tir (`weaponLoaded`) et la munition tirée.
+  if (poste.loaded === undefined) loadWeapon(chef, w, poste);
 }
 
 /** Un servant QUITTE la pièce (release, runtime « Quitter la pièce ») : retire le lien `mannedPoste`, se retire

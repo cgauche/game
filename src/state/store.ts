@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import { Combatant, CharKey, HitLocation } from '../engine/types';
 import { extendedTestStep } from '../engine/tests';
+import { unloadWeapon, setAmmoChoice } from '../engine/items';
 import type { SupportDetail } from '../engine/skills';
 import type { StakeRef } from '../data';
 import { fixedJetOpen, markFixedDie } from './fixedDieMark';
@@ -934,7 +935,7 @@ export interface GameState extends RollFlowActionsMap {
   healConfirm: () => void;
   healCancel: () => void;
   /** Recharger l'arme à distance (LDB 62 l.335) : OUVRE la modale de Test étendu de Projectiles. */
-  battleReload: () => void;
+  battleReload: (weaponUid?: string) => void;
   // reload{Roll,Reroll,BonusSL,DarkPact} (Lancer/Chance/+1 DR/Pacte) : générés (RollFlowActionsMap).
   /** « Appliquer » : cumule le DR (Test étendu), recharge si ≥ Indice, consomme l'Action. */
   reloadConfirm: () => void;
@@ -958,7 +959,7 @@ export interface GameState extends RollFlowActionsMap {
    *  ébouillanté (`scaldOps`) ; puis la boucle maritime reprend (`resolveSteamSave`). */
   steamSaveConfirm: () => void;
   /** Sélectionne la munition à tirer (uid d'un item `kind 'ammo'`). */
-  battleSelectAmmo: (uid: string) => void;
+  battleSelectAmmo: (uid: string, weaponUid?: string) => void;
   /** Détermination (Resolve, LDB 17 l.61) : retire un État de l'actif (+1 PB si À Terre).
    *  Ne consomme PAS l'Action. */
   battleSpendResolve: (conditionName: string) => void;
@@ -2640,7 +2641,16 @@ export const useGame = create<GameState>((set, get) => ({
     if (!b || !poste) return;
     // Le poste est PARTAGÉ par référence avec `mannedPoste` du chef (serveChef) → muter la même instance
     // suffit ; le `set` re-render (pattern combat : mutation + refresh).
-    poste.ammoUid = ammoUid ?? undefined;
+    // La munition se fixe au CHARGEMENT (arbitrage utilisateur 2026-08-16 « La munition se fixe au CHARGEMENT »,
+    // `docs/plans/2026-08-16-hud-combat.md` §1) : changer celle d'une pièce CHARGÉE la DÉCHARGE — Test étendu de
+    // recharge à refaire (LDB 62 l.335) ; re-sélectionner la même est sans effet ; rien n'est détruit (décompte
+    // au tir). Le CHEF qui la sert perd aussi son gate de tir : la pièce n'a plus de coup.
+    if (poste.loaded !== false && (poste.loadedAmmoUid ?? poste.ammoUid) !== (ammoUid ?? undefined)) {
+      const chef = poste.crewIds?.[0] ? inBattleId(b, poste.crewIds[0]) : undefined;
+      const gun = chef?.mannedPoste === poste ? chef.weapons.find((w) => w.uid === poste.item.uid) : undefined;
+      unloadWeapon(gun ? chef : undefined, gun, poste); // couture UNIQUE : la pièce, et l'arme dérivée du chef
+    }
+    setAmmoChoice(undefined, undefined, ammoUid ?? undefined, poste); // écrivain UNIQUE de la sélection
     set({ battle: { ...b } });
   },
   /** Acquitte le récit de voyage. Une EMBUSCADE différée (`recap.then`) se déclenche ICI :

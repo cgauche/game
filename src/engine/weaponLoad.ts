@@ -1,0 +1,47 @@
+import type { Combatant, ShipPoste, Weapon } from './types';
+
+/**
+ * ÉTAT DE CHARGE — module FEUILLE (aucun import runtime) : les LECTEURS purs du cycle de charge.
+ * Arbitrage utilisateur 2026-08-16 : « quand on charge une arme on sélectionne une munition » et « si j'ai
+ * 2 armes à distance elles gèrent chacune leur propre rechargement et munition ». L'état vit donc sur
+ * l'INSTANCE d'arme (`Combatant.weapons[i]`), ou sur la PIÈCE servie (`ShipPoste`) pour son canon.
+ * Les ÉCRIVAINS (`loadWeapon`/`unloadWeapon`, engine/items.ts) sont les seuls à poser/effacer.
+ */
+export interface WeaponLoadState {
+  ammoUid?: string;
+  loadedAmmoUid?: string;
+  loaded?: boolean;
+  reloadProgress?: number;
+  chambered?: number;
+}
+
+/** REGISTRE de charge de CETTE arme — SOURCE UNIQUE de lecture/écriture, dans cet ordre :
+ *  1. la PIÈCE servie quand l'arme est la sienne (son cycle vit sur elle, MDG 12) ;
+ *  2. l'OBJET possédé de même `uid` (`c.items`) — porteur PERSISTANT : il survit au re-dérivage du set
+ *     actif (`recomputeLoadout`), donc changer de set ne téléporte ni n'efface un coup chargé ;
+ *  3. l'instance d'arme du porteur (`c.weapons`) pour une arme SANS objet (statbloc de créature/ennemi) ;
+ *  4. l'arme reçue elle-même (fixtures nues).
+ *  L'arme reçue peut être une COPIE bakée (munition fusionnée, sous-effectif) : on ne l'écrit jamais
+ *  quand un registre persistant existe. */
+export function loadRegister(c: Combatant, weapon: Weapon): WeaponLoadState {
+  const poste: ShipPoste | undefined = c.mannedPoste;
+  if (poste && weapon.uid != null && poste.item?.uid === weapon.uid) return poste;
+  if (weapon.uid == null) return weapon;
+  return (c.items ?? []).find((i) => i.uid === weapon.uid)
+    ?? (c.weapons ?? []).find((w) => w.uid === weapon.uid)
+    ?? weapon;
+}
+
+/** CETTE arme est-elle prête à tirer ? Sans Indice de Recharge il n'y a pas de cycle de charge (Arc, fronde :
+ *  toujours prête). Une PIÈCE non renseignée est réputée AMORCÉE (`loaded !== false`, MDG 12) ; une arme
+ *  personnelle doit avoir été chargée (`loaded === true`). */
+export function weaponLoaded(c: Combatant, weapon: Weapon): boolean {
+  if ((weapon.reload ?? 0) <= 0) return true;
+  const reg = loadRegister(c, weapon);
+  return reg === c.mannedPoste ? reg.loaded !== false : reg.loaded === true;
+}
+
+/** DR déjà cumulés au Test étendu de rechargement de CETTE arme (LDB 62 l.335). */
+export function reloadProgressOf(c: Combatant, weapon: Weapon): number {
+  return loadRegister(c, weapon).reloadProgress ?? 0;
+}

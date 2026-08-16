@@ -68,7 +68,7 @@ import { groupAdvantage } from '../engine/advantagePool';
 import { campGain, campSpend, spendableAdvantage, reversalStealOne, roundEndAdvantageTransfer } from './combat/advantagePool';
 import { sizeGap } from '../engine/size';
 import { combatDistance, sizeFootprint, footprintN, footprintChebyshev } from './footprint';
-import { isUnbreakable, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality, reloadDRTarget } from '../engine/qualities/dispatch';
+import { isUnbreakable, hasQuality, dangerousNine, hasBladeTrap, strikesLast, isFirearmQuality, reloadDRTarget } from '../engine/qualities/dispatch';
 import { applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf, triggerEffectOps, fireOwnTestFailed } from './triggeredEffects';
 import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, shieldReactionCost, canCounterOnDefenseWin, talentCritExtraWounds, reloadDRBonus, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged, hasInstinctiveDiction, hasCritRollTwiceTalent, fleeMovementBonus } from '../engine/combatFeatures/dispatch';
 import {
@@ -147,7 +147,8 @@ import { actorIn, inBattleId } from './combatants';
 import { followsCharacterRules, effectivelyHostile } from '../engine/relations';
 import type { ShipRig } from '../engine/combat';
 import { norm } from '../lib/normalize';
-import { recomputeLoadout, weaponWithAmmo, selectedAmmo, consumeAmmo, ammoFamily, ammoFamilyLabel, damageArmour, deviatableArmourAt, buildWeapon, isUnarmed } from '../engine/items';
+import { loadRegister, weaponLoaded, reloadProgressOf } from '../engine/weaponLoad';
+import { recomputeLoadout, weaponWithAmmo, loadedAmmo, loadWeapon, unloadWeapon, setReloadProgress, spendChamberedRound, consumeAmmo, ammoFamily, ammoFamilyLabel, damageArmour, deviatableArmourAt, buildWeapon, isUnarmed } from '../engine/items';
 import { hasCapability, itemCapability } from '../engine/capabilities';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, incomingMeleeAdvantage, removeActiveEffects, effectRef, COND } from '../engine/conditions';
@@ -323,7 +324,7 @@ export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: 
   // monture choisit la mêlée (LDB 14), un chef de bélier via l'empreinte de LA PIÈCE, mais une arme
   // personnelle (épée du chef) ne bénéficie JAMAIS de l'allonge de la coque servie.
   const base = pickAttackWeaponList(combatants, attacker, target, weaponUid);
-  const ammo = base.type === 'ranged' && attacker.kind === 'hero' ? selectedAmmo(attacker, base) : undefined;
+  const ammo = base.type === 'ranged' && attacker.kind === 'hero' ? loadedAmmo(attacker, base) : undefined;
   let w = ammo ? weaponWithAmmo(base, ammo) : base;
   // Pièce SERVIE en sous-effectif (poste) : bake les Défauts d'Arme d'équipe selon les servants APTES présents
   // (MDG 12 l.448-460) — recharge ×2 / Imprécise / Dangereuse, effectif COMPLET → tir net. `combatants` n'est
@@ -407,10 +408,10 @@ export function firedAttackBlock(get: Get, active: Combatant, target: Combatant,
   // Restriction d'armes à distance de la rencontre (#471, NADJ 06 l.181) — même refus AVANT tout autre
   // gate de ressource (Recharge/munition), pour ne pas dire « recharger » à une arme de toute façon bannie.
   if (banRangedActive(b)) return { reason: 'armeBannie', detail: `${w.label} : les armes à distance sont interdites (duel judiciaire).` };
-  if ((w.reload ?? 0) > 0 && !active.loaded) return { reason: 'unloaded', detail: `${active.label} doit recharger ${w.label}.` };
+  if (!weaponLoaded(active, w)) return { reason: 'unloaded', detail: `${active.label} doit recharger ${w.label}.` };
   // Munition requise UNIQUEMENT si l'arme en consomme (famille de munition) ; un tir sans munition suivie
   // (ex. arme sans Groupe) reste possible. `ammoFamily` falsy ⇒ pas de suivi de munition (cf. compatibleAmmo).
-  if (ammoFamily(w.subType) && !selectedAmmo(active, w)) {
+  if (ammoFamily(w.subType) && !loadedAmmo(active, w)) {
     const need = ammoFamilyLabel(w.subType, w.defaultAmmo);
     return { reason: 'noammo', detail: `Pas de munitions (${need}) pour ${w.label}.`, need };
   }
@@ -418,7 +419,7 @@ export function firedAttackBlock(get: Get, active: Combatant, target: Combatant,
   // plus PROCHE que la bande minimale de l'arme — machines à distance : pas de Bout Portant (l.253) ;
   // trébuchet/mortier : rien sous la Portée Courte (l.251). DONNÉE générique `w.minRangeBand` (pas un flag par-machine).
   if (w.minRangeBand) {
-    const rangeM = effectiveWeaponRange(w, selectedAmmo(active, w)?.ammoRangeMod, () => bonus(effectiveChar(active, 'force')));
+    const rangeM = effectiveWeaponRange(w, loadedAmmo(active, w)?.ammoRangeMod, () => bonus(effectiveChar(active, 'force')));
     if (rangeM != null && belowMinRangeBand(distanceTiles, rangeM, w.minRangeBand))
       return { reason: 'portee-min', detail: `${w.label} ne peut pas tirer d'aussi près (${rangeBandName(distanceTiles, rangeM) ?? 'trop proche'}).` };
   }
@@ -905,7 +906,7 @@ export function previewAttack(
   if (blocked) return { weapon, kind, inRange: true, blocked: true, target: 0, base, mods: [], dmg, soak, difficulty: 'intermediaire' };
   const distanceTiles = kind === 'ranged' ? dist : undefined;
   const mods = attackModifiers(attacker, target, weapon, { kind, location, distanceTiles, env, metresPerTile: mpt });
-  const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'force'))); // Portée résolue (jet `{bf}` → BF×N) + modificateur de la munition sélectionnée ; null = hors bande
+  const rangeM = effectiveWeaponRange(weapon, loadedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'force'))); // Portée résolue (jet `{bf}` → BF×N) + modificateur de la munition sélectionnée ; null = hors bande
   const inRange = kind === 'ranged' ? (rangeM != null && rangeBandModifier(dist, rangeM, mpt) != null) : dist <= reachTiles(weapon);
   // Ligne montée par le MONTEUR CANONIQUE (#1153) : base de combat NUE, composantes fondues dans la
   // valeur (lignes volatiles de Caractéristique — issue #202 — et mods de Test char-qualifiés) en
@@ -2022,7 +2023,7 @@ export function battleAreaTargets(get: Get): (indice: number) => AreaTargets {
 /** Rayon (cases) de l'aire d'une pièce indirecte servie par `gunner` (munition CHARGÉE prise en compte —
  *  l'Explosion vient de la bombe), à l'échelle de la scène. Sert à dimensionner le placeur de case. */
 export function siegeBlastRadiusTiles(gunner: Combatant, weapon: Weapon, scene: Scene | null): number {
-  const ammo = gunner.kind === 'hero' ? selectedAmmo(gunner, weapon) : undefined;
+  const ammo = gunner.kind === 'hero' ? loadedAmmo(gunner, weapon) : undefined;
   const eff = ammo ? weaponWithAmmo(weapon, ammo) : weapon;
   return blastRadiusTiles(eff, sceneMetresPerTile(scene));
 }
@@ -2348,29 +2349,32 @@ export function applyAttackResult(
   for (const c of [target, attacker]) critLog.push(...notifySlain(get, set, c));
   // Taille (arme) : sur une touche réussie, endommage de 1 PA l'armure frappée (LDB 63 l.8).
   if (res.hit && hasQuality(weapon, 'taille')) damageArmour(target, res.location ?? 'corps');
-  // Tir avec une arme à Recharge → DÉCHARGÉE après le coup (LDB 62 l.333) : un Test étendu de Projectiles est
+  // Munition du coup : CELLE QUI ÉTAIT DANS L'ARME (`loadedAmmo`), lue AVANT que le tir ne décharge.
+  const firedAmmo = weapon.type === 'ranged' && attacker.kind === 'hero' ? loadedAmmo(attacker, weapon) : undefined;
+  // Tir avec une arme à Recharge → DÉCHARGÉE après le coup (LDB 62 l.335) : un Test étendu de Projectiles est
   // requis avant de retirer. Vaut pour TOUT tireur (héros ET ennemi) — parité du cycle de Rechargement (#126) ;
   // aucun état ni chemin parallèle pour l'IA.
   if (weapon.type === 'ranged' && (weapon.reload ?? 0) > 0) {
-    // À Répétition (Indice) (LDB 62 l.264-265) : Indice munitions auto-rechargées entre les coups ;
-    // le rechargement complet (Test étendu) n'est exigé qu'une fois le chargeur vide.
-    const mag = magazineSize(weapon);
-    if (mag != null) attacker.chambered = (attacker.chambered ?? mag) - 1;
-    if (mag == null || (attacker.chambered ?? 0) <= 0) {
-      attacker.chambered = undefined;
-      attacker.loaded = false; // déchargé après le tir
-      attacker.reloadProgress = 0;
+    // À répétition (Indice) (LDB 62 l.229/231) : Indice munitions auto-rechargées entre les coups ; le
+    // rechargement complet (Test étendu) n'est exigé qu'une fois le chargeur vide. Écrivains UNIQUES.
+    if (!spendChamberedRound(attacker, weapon)) {
+      // Couture UNIQUE : le registre de CE coup — l'arme tirée, ou la PIÈCE si c'est elle qu'il a servie.
+      unloadWeapon(attacker, weapon, attacker.mannedPoste?.item.uid === weapon.uid ? attacker.mannedPoste : undefined);
     }
   }
   // Munition + Salve : suivi HÉROS-only (les ennemis ne comptabilisent pas de munitions, #126). `consumeAmmo` =
   // source unique du décrément (stock du poste servi OU inventaire).
   if (weapon.type === 'ranged' && attacker.kind === 'hero') {
     attacker.shotsThisTurn = (attacker.shotsThisTurn ?? 0) + 1; // Salve : compteur de tirs du tour (−10 cumulatif)
-    const used = selectedAmmo(attacker, weapon);
-    if (used) consumeAmmo(attacker, used);
+    if (firedAmmo) consumeAmmo(attacker, firedAmmo);
   }
-  // Interruption du rechargement (LDB 62 l.335) : tout tireur touché en plein rechargement recommence à zéro.
-  if (res.hit && res.woundsLost && (target.reloadProgress ?? 0) > 0) target.reloadProgress = 0;
+  // Interruption du rechargement (LDB 62 l.335) : tout tireur touché en plein rechargement recommence à
+  // zéro — sur le REGISTRE de chacune de ses armes (l'objet possédé porte la progression), pièce servie
+  // comprise, sinon la remise à zéro s'écrit sur une copie que personne ne relit.
+  if (res.hit && res.woundsLost) {
+    for (const w of target.weapons ?? []) if (reloadProgressOf(target, w) > 0) setReloadProgress(target, w, 0);
+    if ((target.mannedPoste?.reloadProgress ?? 0) > 0) setReloadProgress(target, undefined, 0, target.mannedPoste);
+  }
   // Avantage (LDB Déplacement l.30-40) : +1 au vainqueur du Test opposé / sur une
   // Blessure infligée sans Test opposé (tir) ; perte de TOUT l'Avantage en échouant
   // un Test opposé ou en perdant une Blessure.
@@ -2461,7 +2465,7 @@ export function applyAttackResult(
   if (isOutOfAction(target) && !isStructure(target)) log.push(ev('death', tr('cf.outOfAction', { name: target.label }), target.id)); // structure → ligne d'Effondrement (collapseStructure), pas « hors de combat »
   // Salve (Aux Armes p.126) : un héros qui tire une arme à Salve gardant des tirs (chambered > 0) ne
   // consomme PAS son Action — il peut tirer encore ce tour (chaque tir suivant à −10 cumulatif).
-  const salvoContinues = attacker.kind === 'hero' && weapon.type === 'ranged' && hasQuality(weapon, 'salve') && (attacker.chambered ?? 0) > 0;
+  const salvoContinues = attacker.kind === 'hero' && weapon.type === 'ranged' && hasQuality(weapon, 'salve') && (loadRegister(attacker, weapon).chambered ?? 0) > 0;
   // Lignes de journal différées par un hook profond (ex. `onGainCondition` ennemi/auto déclenché plus
   // haut dans cette résolution) → foldées dans le MÊME `log` réécrit, avant que ce `set` ne le clobbere.
   // Effet déclenché « après résolution de l'attaque » (touche OU raté) — dispatcher générique via le bus.
@@ -2560,7 +2564,7 @@ export function inFiringBand(shooter: Combatant, target: Combatant, weapon: Weap
   if (!shooter.pos || !target.pos) return true;
   const d = combatDistance(shooter, target);
   if (weapon.type === 'ranged') {
-    const rm = effectiveWeaponRange(weapon, selectedAmmo(shooter, weapon)?.ammoRangeMod, () => bonus(effectiveChar(shooter, 'force')));
+    const rm = effectiveWeaponRange(weapon, loadedAmmo(shooter, weapon)?.ammoRangeMod, () => bonus(effectiveChar(shooter, 'force')));
     return rm != null && rangeBandModifier(d, rm, metresPerTile) != null;
   }
   return d <= reachTiles(weapon);
@@ -2725,7 +2729,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
       // puis faites un jet dans le tableau suivant. ») — DISTINCT de l'Incident de tir GÉNÉRIQUE d'Arme
       // d'équipe (MDG 12 l.464) déjà résolu ci-dessus.
       if (hasQuality(weapon, 'salve')) {
-        const salve = rollArtillerySalveMisfire(c.chambered ?? 0, battleRng());
+        const salve = rollArtillerySalveMisfire(loadRegister(c, weapon).chambered ?? 0, battleRng());
         log.push(tr('cf.artillerySalveIncident', { entry: salve.label }));
         if (salve.destroyed) wearActiveWeapon(c, weapon, true); // pièce détruite (idempotent si déjà cassée)
         const salveCrew = [c, ...(hasQuality(weapon, 'arme-d-equipe') && c.mannedPoste
@@ -7216,20 +7220,20 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       return;
     }
     case 'reload': {
-      // Recharge (Test étendu de Projectiles, LDB 62 l.333) : résolution INLINE (pas de modale ni de Chance —
+      // Recharge (Test étendu de Projectiles, LDB 62 l.335) : résolution INLINE (pas de modale ni de Chance —
       // l'IA n'en a pas), MÊME cumul de DR vers l'Indice que le flux joueur (reloadConfirm). Interrompu →
       // recommence à zéro (géré à la prise de Blessure, applyAttackResult). Coûte l'Action ; calque de `recover`.
       if (!canAct) return advanceTurn(get, set);
       const rw = enemy.weapons.find((w) => w.type === 'ranged');
-      if (!rw || (rw.reload ?? 0) <= 0 || enemy.loaded) return advanceTurn(get, set); // rien à recharger
+      if (!rw || (rw.reload ?? 0) <= 0 || weaponLoaded(enemy, rw)) return advanceTurn(get, set); // rien à recharger
       const reloadTarget = reloadDRTarget(rw);
-      const progressBefore = enemy.reloadProgress ?? 0;
+      const progressBefore = reloadProgressOf(enemy, rw);
       const skillValue = combatValue(enemy, 'ranged', rw); // CT + avances Projectiles
       const test = rollSansPilote(get, enemy, skillValue, 'intermediaire', battleRng());
       const drBonus = test.success ? reloadDRBonus(enemy, rw) : 0; // Rechargement rapide / Artilleur (LDB 10)
       const progress = Math.max(0, progressBefore + test.sl + drBonus); // Test étendu : cumul, plancher 0
-      if (progress >= reloadTarget) { enemy.loaded = true; enemy.reloadProgress = 0; enemy.chambered = magazineSize(rw); }
-      else enemy.reloadProgress = progress;
+      if (progress >= reloadTarget) loadWeapon(enemy, rw); // MÊME couture que le flux joueur : état de charge + munition capturée
+      else setReloadProgress(enemy, rw, progress);
       // ISSUE dérivée par le MÊME goulot que le flux joueur (`FLOWS.reload.apply`, canal COMBAT) : la voie
       // IA n'ouvre aucune fenêtre, elle FOURNIT son pending — même déclaration, même ligne.
       const pr: PendingReload = { actorId: enemy.id, actorName: enemy.label, weaponUid: rw.uid ?? '', reload: reloadTarget, progressBefore, skillValue, difficulty: 'intermediaire', roll: test.roll, target: test.target, sl: test.sl, success: test.success };

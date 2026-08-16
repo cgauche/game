@@ -65,7 +65,7 @@ describe('#223/#258 — arme d’authoring (trappingId) au spawn de combat', () 
     const cible = spawnEnemy('humain', undefined, 'cible', { x: 10, y: 0 });
     const arc = shooter.weapons.find((w) => w.type === 'ranged'); // l'arme portée, quelle que soit sa provenance
     expect(arc).toBeDefined();
-    expect(shooter.loaded).toBe(true);
+    expect(arc!.loaded).toBe(true);
     expect(inFiringBand(shooter, cible, arc!)).toBe(true); // 10 cases = 20 m, Portée 50 m
     expect(arc!.trappingId).toBe('arc');
   });

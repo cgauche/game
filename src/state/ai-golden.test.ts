@@ -171,7 +171,7 @@ describe('GOLDEN parité Lot 2 — cœur discrétionnaire (enumerate → score �
   });
 
   it('arme à Recharge déchargée + cible en portée → reload', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [CROSSBOW], loaded: false });
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [{ ...CROSSBOW, loaded: false }] });
     const h = mk('h', 'hero', { x: 1, y: 1 });
     expect(chooseEnemyAction(input(e, [h])).kind).toBe('reload');
   });

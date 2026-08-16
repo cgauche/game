@@ -45,7 +45,7 @@ import { pursuitBands, PURSUIT_POLICY_DEFAUT } from './pursuitFlow';
 import { stepReady } from './cascade';
 import { combatEndBands } from './combatEndBands';
 
-export const SAVE_VERSION = 23;
+export const SAVE_VERSION = 24;
 
 export interface SaveMeta {
   version: number;
@@ -363,6 +363,14 @@ export const MIGRATIONS: MigrationMap = {
     const data = { ...(doc.data as Record<string, unknown>) };
     retireLegacyTavernGame(data);
     return { ...doc, version: 23, data };
+  },
+  // v23→v24 : l'état de charge (munition choisie/capturée, `loaded`, progression, chargeur) passe du
+  // COMBATTANT à l'INSTANCE D'ARME — arbitrage utilisateur 2026-08-16 : deux armes à distance gèrent
+  // chacune leur propre rechargement et leur propre munition (cf. `loadStateOntoWeapon`).
+  23: (doc) => {
+    const data = { ...(doc.data as Record<string, unknown>) };
+    loadStateOntoWeapon(data);
+    return { ...doc, version: 24, data };
   },
 };
 
@@ -698,6 +706,47 @@ function retireLegacyTavernGame(data: Record<string, unknown>): void {
       (c) => ((c as { participants?: unknown[] })?.participants?.length ?? 0) > 0,
     );
   }
+}
+
+/**
+ * v23→v24 : l'ÉTAT DE CHARGE quitte le COMBATTANT pour l'INSTANCE D'ARME (arbitrage utilisateur
+ * 2026-08-16 : « si j'ai 2 armes à distance elles gèrent chacune leur propre rechargement et munition »).
+ * Une save v23 porte `ammoUid`/`loaded`/`reloadProgress`/`chambered`/`loadedAmmoUid` sur le combattant :
+ * on les RECOPIE sur le REGISTRE de son arme à distance (celle que l'ancien modèle désignait —
+ * `attackWeapon`/`battleReload` ciblaient « la 1re `ranged` ») puis on les SUPPRIME. Le registre visé est
+ * l'OBJET POSSÉDÉ (porteur persistant, cf. `loadRegister`), cherché d'abord parmi les armes du set ACTIF,
+ * puis parmi les objets référencés par les AUTRES loadouts : le set inactif ne se re-dérive pas au
+ * chargement, son arme n'existe donc dans aucun `weapons` — sans ce balayage, l'état d'un second pistolet
+ * rangé serait perdu en silence. Repli : l'instance d'arme (statbloc sans objet). Sans cette migration, une
+ * arbalète rechargée avant la sauvegarde se rechargerait au vide et le champ orphelin serait re-sérialisé
+ * indéfiniment. Mute `data` ; formes inattendues laissées telles quelles.
+ */
+function loadStateOntoWeapon(data: Record<string, unknown>): void {
+  const FIELDS = ['ammoUid', 'loadedAmmoUid', 'loaded', 'reloadProgress', 'chambered'] as const;
+  const uidOf = (x: unknown) => (x as { uid?: unknown } | null | undefined)?.uid;
+  const move = (c: unknown): void => {
+    const combatant = c as Record<string, unknown> | null | undefined;
+    if (!combatant || typeof combatant !== 'object') return;
+    const weapons = Array.isArray(combatant.weapons) ? combatant.weapons : [];
+    const items = Array.isArray(combatant.items) ? combatant.items : [];
+    const item = (uid: unknown) => (uid == null ? undefined : items.find((i) => uidOf(i) === uid) as Record<string, unknown> | undefined);
+    // 1. Arme à distance du set ACTIF (celle que l'ancien modèle décrivait) → son OBJET s'il existe.
+    const ranged = weapons.find((w) => (w as { type?: unknown })?.type === 'ranged') as Record<string, unknown> | undefined;
+    // 2. Sinon, l'arme d'un AUTRE loadout : ses slots référencent des objets qui, eux, sont persistés.
+    const slots = (Array.isArray(combatant.loadouts) ? combatant.loadouts : [])
+      .flatMap((lo) => [(lo as { main?: unknown })?.main, (lo as { off?: unknown })?.off]);
+    const stowed = slots.map(item).find((i) => i && (i.kind === 'ranged' || i.type === 'ranged'));
+    const target = item(ranged?.uid) ?? ranged ?? stowed;
+    for (const f of FIELDS) {
+      if (!(f in combatant)) continue;
+      if (target && target[f] === undefined) target[f] = combatant[f];
+      delete combatant[f];
+    }
+  };
+  for (const c of Array.isArray(data.party) ? data.party : []) move(c);
+  const battle = data.battle as { combatants?: unknown } | null | undefined;
+  for (const c of Array.isArray(battle?.combatants) ? battle!.combatants as unknown[] : []) move(c);
+  for (const c of Array.isArray(data.roster) ? data.roster : []) move(c);
 }
 
 /** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE, via la

@@ -118,7 +118,7 @@ describe('Épuisante — Percutante/Dévastatrice seulement en Charge (LDB 62 l.
   });
 });
 
-describe('À Répétition — chargeur (LDB 62 l.264-265)', () => {
+describe('À répétition — chargeur (LDB 62 l.229/231)', () => {
   it('magazineSize lit l’Indice', () => {
     expect(magazineSize(w(['À Répétition 4', 'Recharge 5'], { type: 'ranged' }))).toBe(4);
     expect(magazineSize(w(['Recharge 2'], { type: 'ranged' }))).toBeUndefined();

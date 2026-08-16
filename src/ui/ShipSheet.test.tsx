@@ -65,14 +65,30 @@ describe('ShipSheet — fiche du navire (état · postes · rôles)', () => {
     expect(p2).not.toContain('Pierrier');
   });
 
-  it('PosteDetail readOnly (#240) : munition chargée montrée SANS sélecteur (pas d’édition de la pièce d’autrui)', () => {
+  // Ce qui est « chargé » = la munition CAPTURÉE au chargement (`loadedAmmoUid`), jamais la sélection du
+  // sélecteur — celle-ci dit « à charger au prochain rechargement ».
+  it('PosteDetail readOnly (#240) : la munition CHARGÉE est montrée SANS sélecteur (pas d’édition de la pièce d’autrui)', () => {
     const ship = { id: 'ship', label: 'Le Serpent', conditions: [] } as unknown as Combatant;
-    const p: Poste = { item: { label: 'Baliste', uid: 'p1' }, side: 'tribord', ammo: [{ uid: 'a1', label: 'Boulet', qty: 8 }] } as unknown as Poste;
+    const p: Poste = { item: { label: 'Baliste', uid: 'p1' }, side: 'tribord', loaded: true, loadedAmmoUid: 'a1',
+      ammoUid: 'a2', ammo: [{ uid: 'a1', label: 'Boulet', qty: 8 }, { uid: 'a2', label: 'Mitraille', qty: 4 }] } as unknown as Poste;
     const rw = renderToStaticMarkup(<PosteDetail hull={ship} poste={p} combatants={[ship]} />);
     const ro = renderToStaticMarkup(<PosteDetail hull={ship} poste={p} combatants={[ship]} readOnly />);
     expect(rw).toContain('<select'); // éditable côté allié
+    // La LÉGENDE du sélecteur est à l'écran, pas seulement en infobulle : sans elle, rien ne distingue
+    // « ce qui sera chargé » de « ce qui est dans la pièce ».
+    expect(rw).toContain('Munition à charger');
+    expect(rw.replace(/title="[^"]*"/g, '')).toContain('Munition à charger'); // hors attribut `title`
     expect(ro).not.toContain('<select'); // lecture seule : pas de contrôle
-    expect(ro).toContain('Boulet'); // munition chargée visible
+    expect(ro).toContain('Boulet'); // le coup CHARGÉ, pas la sélection à venir (Mitraille)
+  });
+
+  it('PosteDetail : une pièce DÉCHARGÉE le dit (aucune munition n’est présentée comme chargée)', () => {
+    const ship = { id: 'ship', label: 'Le Serpent', conditions: [] } as unknown as Combatant;
+    const p: Poste = { item: { label: 'Baliste', uid: 'p1' }, side: 'tribord', loaded: false, ammoUid: 'a1',
+      ammo: [{ uid: 'a1', label: 'Boulet', qty: 8 }] } as unknown as Poste;
+    const ro = renderToStaticMarkup(<PosteDetail hull={ship} poste={p} combatants={[ship]} readOnly />);
+    expect(ro).toContain('déchargée');
+    expect(ro).not.toContain('Boulet');
   });
 });
 

@@ -50,7 +50,7 @@ describe('battleShipReload — Test étendu de recharge d’un poste (MDG 12 / L
     const poste = st.battle!.combatants.find((c) => c.id === 'ship')!.postes![0];
     expect(poste.loaded).toBe(true); // la PIÈCE est rechargée
     expect(poste.reloadProgress).toBe(0); // Test étendu terminé → remis à 0
-    expect(st.battle!.combatants.find((c) => c.id === 'gunner')!.loaded).toBeUndefined(); // découplé du marin
+    expect(st.battle!.combatants.find((c) => c.id === 'gunner')!.weapons.some((w) => w.loaded)).toBe(false); // découplé du marin : ses armes à lui n'ont pas bougé
     expect(st.battle!.crewActed?.['ship']).toContain('gunner'); // équipage OCCUPÉ ce Round (ressource)
     expect(st.battle!.acted).toBe(false); // tâche PARALLÈLE : ne consomme pas le tour du navire
   });
