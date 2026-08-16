@@ -261,6 +261,7 @@ pas la cible d'UX.
 | `chantier('reparer'\|'carener'\|upgradeId, units?)` | services du chantier naval au port | hors combat, navire de campagne requis |
 | `massBattle(ally?, enemy?, rounds?)` | lance une bataille de masse de démo | la scène courante doit porter les rencontres attendues |
 | `scenario(id?, seed?)` | lance un scénario de test PRÊT À JOUER ; sans argument : liste les ids | Round 1 déjà acquitté, initiative déterministe SI `seed` |
+| `resumeLastScenario()` | relance le DERNIER `scenario(id, seed)` de CET onglet — id ET seed mémorisés en `sessionStorage` (clé `wfrp.dev.lastScenario`, posée à chaque lancement d'un id connu) : un reload HMR ramène au menu en perdant tout, ce geste rejoue le même scénario à l'identique (#1335) | AUCUNE relance automatique au boot (un rechargement humain doit rendre le menu) ; mémoire PAR ONGLET (un nouvel onglet ne sait rien), et un lancement par le MENU « Scénarios de test » (bouton Lancer, `src/ui/TestScenariosScreen.tsx`) n'écrit RIEN — seul le helper mémorise ; `✗ aucun scénario mémorisé…` sinon. Relance = un vrai `scenario()` : l'état de jeu repart de zéro (progression, siège MJ hérité, cf. `gmSeat`), ce n'est pas une restauration de sauvegarde |
 | `campaign(id?, seed?, sceneId?)` | charge une CAMPAGNE BUILT-IN (`builtinCampaigns`, `scenes/campaign.ts`) SANS dérouler le character creator ×4 à la main — groupe canonique (`makeShowcaseParty`), MÊME chemin que le picker `PartyScreen` (`setPendingCampaign` + `loadProject`) ; sans argument : liste les ids | les campagnes built-in ne portent PAS de pré-tirés propres (seul `pregens.json`, libre-service au picker) → groupe canonique (les 4 piliers de l'Arène), pas le casting narratif de la campagne ; `sceneId` (optionnel) démarre ailleurs que l'entrée par défaut ; `pendingCampaign` redevient `null` juste après (comme le flux réel : `loadProject`→`startScene` réinitialise l'état à l'INITIAL hors le sous-ensemble préservé, `store.ts`) — pas une régression |
 | `interlude(weeks=3)` | arme un INTERLUDE de démo jouable (`startInterlude` — MÊME flux réel : `state.interlude` peuplé, Événement d100/héros, budget `min(3, weeks)`, écran 'interlude') SANS voyager jusqu'à Altdorf | catalogue d'Activités dérivé de la DONNÉE (`interludeCatalog`/`activities.json`), rien d'inventé ; sans groupe chargé, pose le groupe canonique (`makeShowcaseParty`, comme `campaign()`) ; `✗` si combat en cours ; interlude déjà ouvert → message sans réarmer ; à conduire ensuite à la main (Activités, clôture) — pas `screen('interlude')` seul (écran vide) |
 | `rules(id?, value?)` | lit/force une règle optionnelle (`policy.ts`) | **ASYMÉTRIE À CONNAÎTRE** : `rules(id, value)` est une surcharge **RUNTIME NON PERSISTÉE** (elle meurt au rechargement), tandis que `rules(id, null)` réinitialise **ET purge la surcharge PERSISTÉE** (`resetHouseRule` → `localStorage['wfrp4.house-rules.v1']`). Une règle cochée un jour au **panneau Options** (seule couture qui persiste, `setHouseRule`) revient donc COCHÉE à chaque ouverture tant qu'elle n'est pas réinitialisée — piège vécu (#1279 : « Jeux de taverne rapides » retrouvée active 3 runs de suite malgré deux `rules(id, false)`). **Vérifier l'état PERSISTÉ en fin de run** : `localStorage.getItem('wfrp4.house-rules.v1')`. La CADENCE n'est plus ici (préférence de confort, cf. `prefs()`) — les règles sont VERROUILLÉES tant qu'un combat est en cours (`houseRulesMutability`) : l'écriture est refusée en silence, et `rules(id, null)` rend alors la raison |
@@ -283,6 +284,16 @@ n'est ré-ensemencée par `seed()` tant qu'aucun combat n'est ouvert — une rec
 partie de taverne à l'identique n'a aujourd'hui aucune prise dessus (mesuré par échec répété,
 recette #1279 S2). Corollaire : une branche rare d'une séquence (une plage de dés peu probable) se
 recette en la POSANT (option « Dés fixés » → étape à table), jamais en cherchant la bonne graine.
+
+**Recetter un IMPACT garanti (touche, dégâts, FX) : `seed()` + `previewRoll()` AVANT le clic « Lancer »**
+(mesuré en recette 2026-08-16, #1335 — ~15 appels perdus à chercher l'impact par des détours de jeu :
+« Viser » qui consomme l'Action sans tirer, arbalète à recharger entre deux essais). Méthode : depuis un
+`scenario(id, seed)` (ou un `seed(n)`) FRAIS, lire `previewRoll(seed, n)` — les `n` premiers d100 du
+même générateur, sans consommer l'état — et ne cliquer « Lancer » que sur un seed dont le PROCHAIN d100
+passe sous la Compétence effective lue par `aim('cible')`. On choisit ainsi la graine, jamais l'issue :
+le jet réel reste celui du flux joueur. Contrainte à respecter sinon la prédiction ment : `battleRng`
+est PARTAGÉ (initiative, IA, dégâts s'intercalent) — re-`seed()` juste avant le jet visé, et vérifier
+après coup par `lastRoll()`/`log()`, jamais par une capture.
 
 Les tokens portent `data-cid="<id de l'entité/combattant>"` dans le SVG — COMBAT ET EXPLORATION
 (#226) → survol/clic ciblé par sélecteur DOM (vrais clics
@@ -473,9 +484,13 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
 - **Refs Playwright PÉRIMÉES après un `await`** : après tout `await __wfrp.xxx()` (ou tout clic qui
   déclenche de l'async), RE-SNAPSHOTER avant de cliquer — jamais réutiliser une ref d'un snapshot
   antérieur (échec « ref not found » sinon).
-- **Une ref de snapshot se cible en `aria-ref=eNNNN`, jamais `ref=eNNNN`** : `browser_click` (et les
-  autres outils MCP Playwright génériques) prend un sélecteur — `ref=e123` est rejeté (« Unknown
-  engine "ref" »), la forme acceptée est `aria-ref=e123`.
+- **Une ref de snapshot ne se passe JAMAIS sous la forme `ref=xxx`** — deux formes selon l'outil qu'on
+  tient, à vérifier au premier appel plutôt qu'à l'aveugle :
+  - outil MCP qui prend un **paramètre `ref` dédié** (mesuré en recette 2026-08-16, #1335) : la valeur
+    est la ref NUE telle que rendue par le snapshot (`"f2e2626"`) — écrire `"ref=f2e2626"` fait échouer
+    le clic ;
+  - outil MCP générique qui prend un **sélecteur** : `ref=e123` est rejeté (« Unknown engine "ref" »),
+    la forme acceptée est `aria-ref=e123`.
 - **Faux `TimeoutError` APRÈS un `browser_click` réussi** (mesuré #1135, ~15 clics sur 15) : sur les
   boutons de modales de combat (« Tout lancer », « Lancer », « Appliquer », tokens de la carte),
   `browser_click` lève systématiquement `TimeoutError: 5000ms exceeded` — sa vérification de
@@ -589,6 +604,20 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
   manuel ultime (si `clickRoute` échoue, ex. carte hors écran) : calculer soi-même un point ON-PATH
   via `getPointAtLength` du `path` + `getScreenCTM()` (coordonnées écran réelles du trait) — requiert
   alors `browser_run_code_unsafe` (chargé via ToolSearch, ABSENT du set d'outils de démarrage).
+- **Cliquer une CASE du monde volumique : aucun outil MCP ne clique des COORDONNÉES** (mesuré en
+  recette 2026-08-16, #1335). Les corps et le sol sont peints dans le canevas WebGL — ni ref de
+  snapshot, ni `data-cid` (cf. `screenPos` ci-dessus). Chemin canonique : lire le point ÉCRAN par
+  `__wfrp.tileScreenPos({x,y})` (centre : `x + width/2`, `y + height/2`), puis cliquer via
+  `browser_run_code_unsafe` → `await page.mouse.click(x, y)` — le SEUL canal qui accepte des
+  coordonnées (outil chargé par ToolSearch, ABSENT du set de démarrage : le charger AVANT d'ouvrir la
+  recette, pas au milieu d'un tour de combat).
+- **Un FX flottant sub-seconde ne se prouve PAS par une capture** (mesuré en recette 2026-08-16,
+  #1335) : les nombres/mentions flottants vivent 900 ms (1300 ms pour la mort) et sont retirés par un
+  `setTimeout` (`src/gameIso/fx/useCombatFx.ts`) — entre le clic, le rendu et l'écriture du PNG, la
+  fenêtre est déjà fermée, et une capture vide ne prouve RIEN (ni présence ni absence). Se valider
+  par la SOURCE de l'effet : l'événement de bus qui le pousse (`ANIM_FLOAT`/impact, `src/state/bus.ts`,
+  souscrit par `useCombatFx.ts`) ou la ligne de journal correspondante (`__wfrp.log()`). Une capture
+  ne sert qu'aux états PERSISTANTS (modale ouverte, HUD, écran).
 
 - **Occlusion par footer fixe (`.bar`)** : un élément visuellement cliquable peut être RECOUVERT au
   point de clic — toujours `scrollIntoView({block:'center'})` AVANT de lire le `getBoundingClientRect`

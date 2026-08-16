@@ -477,3 +477,60 @@ describe('__wfrp.gmSeat — flip du siège MJ solo (#332)', () => {
     expect(useGame.getState().net.gmSeat).toBeUndefined();
   });
 });
+
+describe('__wfrp.resumeLastScenario — reprise du dernier scénario après un reload (#1335)', () => {
+  // Env de test = node : pas de sessionStorage. On en pose un faux (même contrat Storage) pour
+  // observer la MÉMOIRE d'onglet, puis on le retire.
+  const store = new Map<string, string>();
+  const fake = {
+    getItem: (k: string) => store.get(k) ?? null,
+    setItem: (k: string, v: string) => { store.set(k, v); },
+    removeItem: (k: string) => { store.delete(k); },
+    clear: () => { store.clear(); },
+    key: (i: number) => [...store.keys()][i] ?? null,
+    get length() { return store.size; },
+  } as Storage;
+
+  beforeEach(() => {
+    store.clear();
+    (globalThis as { sessionStorage?: Storage }).sessionStorage = fake;
+    useGame.setState({ battle: null, party: [], scene: null });
+  });
+  afterEach(() => {
+    delete (globalThis as { sessionStorage?: Storage }).sessionStorage;
+  });
+
+  it('sans scénario mémorisé : refus explicite, aucun lancement', () => {
+    const out = buildApi().resumeLastScenario();
+    expect(out).toContain('✗');
+    expect(useGame.getState().scene).toBeNull();
+  });
+
+  it('scenario(id, seed) MÉMORISE {id, seed} dans le stockage d’onglet', () => {
+    buildApi().scenario('entrainement', 7);
+    expect(JSON.parse(store.get('wfrp.dev.lastScenario')!)).toEqual({ id: 'entrainement', seed: 7 });
+  });
+
+  it('après un reload (état perdu, stockage conservé) : relance le MÊME scénario avec le MÊME seed', () => {
+    buildApi().scenario('entrainement', 7);
+    const sceneId = useGame.getState().scene?.id;
+    expect(sceneId).toBeTruthy();
+
+    // Reload : le store repart vierge (menu), seul le stockage d'onglet survit.
+    useGame.setState({ battle: null, party: [], scene: null });
+    useGame.getState().setScreen('menu');
+
+    const out = buildApi().resumeLastScenario();
+
+    expect(out).toContain('✓');
+    expect(useGame.getState().scene?.id).toBe(sceneId);
+    expect(useGame.getState().party.length).toBeGreaterThan(0);
+    expect(JSON.parse(store.get('wfrp.dev.lastScenario')!)).toEqual({ id: 'entrainement', seed: 7 });
+  });
+
+  it('id inconnu : rien n’est mémorisé (le refus ne pollue pas la reprise)', () => {
+    buildApi().scenario('entrainement', 3);
+    expect(buildApi().scenario('scenario-inexistant')).toContain('✗');
+    expect(JSON.parse(store.get('wfrp.dev.lastScenario')!)).toEqual({ id: 'entrainement', seed: 3 });
+  });
+});

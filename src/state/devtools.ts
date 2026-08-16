@@ -342,9 +342,77 @@ function coerceSetting(d: SettingDef, value: RuleValue): { v: RuleValue } | { er
   return { v: value };
 }
 
+/** Dernier scénario lancé par `__wfrp.scenario(id, seed)`, mémorisé PAR ONGLET (sessionStorage) :
+ *  un reload (HMR d'une autre session) ramène au menu en perdant tout l'état, `resumeLastScenario()`
+ *  le rejoue à l'identique. Rien n'est relu au boot — la reprise est un geste de recette explicite. */
+const LAST_SCENARIO_KEY = 'wfrp.dev.lastScenario';
+type LastScenario = { id: string; seed?: number };
+
+/** sessionStorage quand il existe et répond (module chargé aussi hors navigateur : tests en env node). */
+function scenarioMemory(): Storage | null {
+  try {
+    return typeof sessionStorage === 'undefined' ? null : sessionStorage;
+  } catch {
+    return null;
+  }
+}
+
+function rememberScenario(entry: LastScenario): void {
+  try {
+    scenarioMemory()?.setItem(LAST_SCENARIO_KEY, JSON.stringify(entry));
+  } catch {
+    // stockage refusé (quota / navigation privée) : la reprise n'est qu'un confort de recette
+  }
+}
+
+function recallScenario(): LastScenario | null {
+  let raw: string | null = null;
+  try {
+    raw = scenarioMemory()?.getItem(LAST_SCENARIO_KEY) ?? null;
+  } catch {
+    return null;
+  }
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as LastScenario;
+    return typeof parsed?.id === 'string' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 export function buildApi() {
   const g = () => useGame.getState();
   const find = (id: string) => g().scene?.entities.find((e) => e.id === id);
+
+  const runScenario = (id?: string, seed?: number) => {
+    if (!id) return testScenarios.map((sc) => `${sc.id} — ${sc.title}`);
+    const sc = testScenarios.find((t) => t.id === id);
+    if (!sc) return `✗ « ${id} » introuvable — ids : ${testScenarios.map((t) => t.id).join(', ')}`;
+    rememberScenario(seed != null ? { id: sc.id, seed } : { id: sc.id });
+    clearAiTurnLog(); // trace IA vierge pour ce scénario
+    const s = g();
+    if (seed != null) s.seedRng(seed);
+    if (sc.rules) for (const [rid, v] of Object.entries(sc.rules)) setRule(rid, v);
+    s.setParty(sc.makeParty());
+    if (sc.extraScenes?.length || sc.worldMap || sc.narratif) s.loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null, sc.narratif);
+    else s.startScene(sc.scene);
+    const scLead = g().party[0];
+    if (sc.money && scLead) creditBourse(g, useGame.setState, scLead.id, sc.money); // seed de bourse du scénario (après le reset du lancement)
+    if (sc.vessel) useGame.setState({ vessel: sc.vessel }); // navire de campagne (voyage/combat maritime)
+    if (sc.autoCombat) g().startCombat(sc.autoCombat);
+    if (g().pendingRoundStart) g().confirmRoundStart();
+    if (sc.massBattle) {
+      // Interlude AVANT la bataille (ADE II 8 l.65) : son budget d'Activités (max 3) est celui dans
+      // lequel puise la préparation. La préparation se joue DANS le menu d'interlude (« Interlude c'est
+      // interlude ») — `startMassBattle` reste donc sur l'écran d'interlude tant qu'un interlude est ouvert.
+      if (sc.interludeWeeks) g().startInterlude(sc.interludeWeeks);
+      g().startMassBattle(sc.massBattle);
+      return `✓ bataille de masse « ${sc.title} » lancée${sc.interludeWeeks ? ' (préparation dans le menu d\'interlude)' : ''}`;
+    }
+    s.setScreen('campaign');
+    return `✓ scénario « ${sc.title} » lancé${sc.autoCombat ? ' (combat direct, prêt à jouer)' : ''}`;
+  };
   return {
     /** Le store brut (sélecteurs, getState, setState) — pour les cas non couverts par les helpers. */
     store: useGame,
@@ -614,33 +682,18 @@ export function buildApi() {
 
     /** Lance un SCÉNARIO DE TEST sans passer par le menu : __wfrp.scenario('entrainement', 42).
      *  Sans argument : liste les ids. `seed` (optionnel) rend l'initiative DÉTERMINISTE. Le combat
-     *  démarre PRÊT (la pause d'ouverture du Round 1 est acquittée). */
-    scenario: (id?: string, seed?: number) => {
-      if (!id) return testScenarios.map((sc) => `${sc.id} — ${sc.title}`);
-      const sc = testScenarios.find((t) => t.id === id);
-      if (!sc) return `✗ « ${id} » introuvable — ids : ${testScenarios.map((t) => t.id).join(', ')}`;
-      clearAiTurnLog(); // trace IA vierge pour ce scénario
-      const s = g();
-      if (seed != null) s.seedRng(seed);
-      if (sc.rules) for (const [rid, v] of Object.entries(sc.rules)) setRule(rid, v);
-      s.setParty(sc.makeParty());
-      if (sc.extraScenes?.length || sc.worldMap || sc.narratif) s.loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null, sc.narratif);
-      else s.startScene(sc.scene);
-      const scLead = g().party[0];
-      if (sc.money && scLead) creditBourse(g, useGame.setState, scLead.id, sc.money); // seed de bourse du scénario (après le reset du lancement)
-      if (sc.vessel) useGame.setState({ vessel: sc.vessel }); // navire de campagne (voyage/combat maritime)
-      if (sc.autoCombat) g().startCombat(sc.autoCombat);
-      if (g().pendingRoundStart) g().confirmRoundStart();
-      if (sc.massBattle) {
-        // Interlude AVANT la bataille (ADE II 8 l.65) : son budget d'Activités (max 3) est celui dans
-        // lequel puise la préparation. La préparation se joue DANS le menu d'interlude (« Interlude c'est
-        // interlude ») — `startMassBattle` reste donc sur l'écran d'interlude tant qu'un interlude est ouvert.
-        if (sc.interludeWeeks) g().startInterlude(sc.interludeWeeks);
-        g().startMassBattle(sc.massBattle);
-        return `✓ bataille de masse « ${sc.title} » lancée${sc.interludeWeeks ? ' (préparation dans le menu d\'interlude)' : ''}`;
-      }
-      s.setScreen('campaign');
-      return `✓ scénario « ${sc.title} » lancé${sc.autoCombat ? ' (combat direct, prêt à jouer)' : ''}`;
+     *  démarre PRÊT (la pause d'ouverture du Round 1 est acquittée). Tout lancement d'un id connu est
+     *  mémorisé par onglet pour `resumeLastScenario()`. */
+    scenario: runScenario,
+
+    /** Relance le DERNIER `scenario(id, seed)` lancé DANS CET ONGLET (mémorisé en sessionStorage,
+     *  même seed) : un reload (HMR d'une autre session) ramène au menu en perdant tout l'état, ce
+     *  geste de recette le rejoue à l'identique. Aucune relance AUTOMATIQUE au boot — un rechargement
+     *  humain doit rendre le menu. */
+    resumeLastScenario: () => {
+      const last = recallScenario();
+      if (!last) return '✗ aucun scénario mémorisé dans cet onglet — lancer __wfrp.scenario(id, seed) d\'abord';
+      return runScenario(last.id, last.seed);
     },
 
     /** Charge une CAMPAGNE BUILT-IN sans dérouler le character creator ×4 à la main :

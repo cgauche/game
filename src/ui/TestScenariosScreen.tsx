@@ -67,7 +67,9 @@ export function TestScenariosScreen() {
                   </div>
                   <p className="ts-tests" title={sc.tests}>{sc.tests}</p>
                   <p className="ts-party">{sc.partyNote}</p>
-                  <button className="btn btn-primary" onClick={() => launch(sc)}>
+                  {/* Ancrage de RECETTE (#1335) : l'id du scénario, stable au reload — le libellé et
+                      l'ordre des cartes ne le sont pas. Aucun effet de style. */}
+                  <button className="btn btn-primary" data-testid={`scenario-launch-${sc.id}`} onClick={() => launch(sc)}>
                     Lancer
                   </button>
                 </div>

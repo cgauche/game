@@ -22,6 +22,10 @@ describe('TestScenariosScreen (rendu)', () => {
     expect(launches).toBe(testScenarios.length);
   });
 
+  it('chaque bouton Lancer porte son ancrage de recette data-testid="scenario-launch-{id}" (#1335)', () => {
+    for (const sc of testScenarios) expect(html).toContain(`data-testid="scenario-launch-${sc.id}"`);
+  });
+
   it('expose le bouton Retour', () => {
     expect(html).toContain('Retour');
   });
