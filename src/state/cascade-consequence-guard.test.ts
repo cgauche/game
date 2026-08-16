@@ -118,18 +118,61 @@ describe('cliquet composeur — canal journal: déprécié des CascadeApplier (#
  */
 const CONTENT_DIRS = ['src/state', 'src/engine'];
 
-/** Baseline par fichier — voir doc ci-dessus. Reste 7 occurrences dans 3 fichiers : les IRRÉDUCTIBLES
- *  au dériveur, chacun avec SA raison mesurée (#1262 V3 Lj, #1294). */
+/** Baseline par fichier — voir doc ci-dessus. Reste 1 occurrence dans 1 fichier de CODE : l'IRRÉDUCTIBLE
+ *  au dériveur, avec SA raison mesurée (#1262 V3 Lj, #1294). Les re-prints passés au CATALOGUE sont
+ *  comptés à part (`CATALOG_BASELINE` ci-dessous) — une migration i18n ne fait plus DISPARAÎTRE un site
+ *  du compteur. */
 const CONTENT_BASELINE: Record<string, number> = {
-  // #295 — sites GARDÉS nominativement (journal = SEULE surface du jet) que le dériveur ne peut PAS rendre :
+  // #295 — site GARDÉ nominativement (journal = SEULE surface du jet) que le dériveur ne peut PAS rendre :
   'src/state/seaVoyageFlow.ts': 1, // redémarrage vapeur (`runRestart`) : la ligne porte le DR CUMULÉ du Test étendu (`lastDR`), pas le DR du jet — le patron dirait un autre nombre.
-  'src/state/travelFlow.ts': 2, // bêtes de l'attelage (×2) : porteur SANS identité, dé parenthétique en justification d'un effet déjà narré (l'ordre phrase/issue s'inverserait).
-  'src/state/riverVoyageFlow.ts': 4, // éclats/calfatage/renflouage IA (×4) : jet INCISÉ dans une narration d'ÉVÉNEMENT — il faudrait scinder en deux lignes.
   // RÉSORBÉS dans le dériveur (#1262 V3 Lj) : stock #410 (merchantFlow ×2, portFlow ×2, engine/magic ×2,
   // engine/provisions ×2, engine/travel ×1) + 4 sites #295 (pursuitFlow, shipwreck, travelFlow ×2) ;
   // puis (#1294) le Test opposé INLINE de `combat/triggeredTest.ts` (×2), rendu par la forme OPPOSÉE
   // du dériveur (`traceLineOf`, `casc.opposedTrace`).
+  // #1318 V8c₂ : les 6 irréductibles de travelFlow/riverVoyageFlow ont QUITTÉ ce compte pour le
+  // catalogue — ils sont comptés là-bas, pas effacés.
 };
+
+/**
+ * VOLET CATALOGUE (#1318 V8c₂) — le compteur ci-dessus lit du CODE ; depuis que la narration passe par
+ * `t()`, un re-print de jet vit dans une VALEUR du catalogue (`{roll}/{target}`), hors de sa portée. Une
+ * baseline qui décroît pour cette seule raison est une FAUSSE résorption : le texte joueur n'a pas
+ * changé, seul l'endroit où il est écrit. Ce volet rend les sites visibles à nouveau.
+ *
+ * ALLOWLIST NOMINATIVE : les patrons du DÉRIVEUR (`traceLineOf`/`casc.*`) SONT la forme canonique du
+ * jet rendu — c'est par eux qu'on résorbe les autres. Ils sont donc exemptés NOMMÉMENT, jamais par
+ * préfixe fourre-tout : une clé neuve n'entre pas dans l'exemption sans qu'on l'écrive ici.
+ *
+ * CIBLE : `CATALOG_BASELINE` décroît par RÉSORPTION (le site repasse au dériveur), jamais par
+ * déplacement. Ce que ce volet ne voit pas : un re-print recomposé au call-site à partir de deux clés,
+ * ou une paraphrase du dé (« {roll} sur {target} ») — même angle mort que le compteur de code.
+ */
+const CATALOG_FILE = 'src/i18n/messages/fr.ts';
+/** Patrons du DÉRIVEUR (forme canonique du jet rendu) — exemptés NOMMÉMENT. */
+const DERIVEUR_KEYS = new Set([
+  'casc.autoRowTrace', 'casc.rowTraceAnon', 'casc.rowTraceNoDr', 'casc.rowTraceAnonNoDr', 'casc.opposedTrace',
+]);
+/** Clés de catalogue qui RE-PRINTENT un jet hors dériveur, avec leur raison — cible de résorption. */
+const CATALOG_BASELINE = [
+  'cf.wardTestFail', 'cf.handGateFail', 'cf.handGatePass', // #410 : Tests de gate, journal = seule surface
+  'cs.shameOvercome', 'cs.dispelRoll', // #410 : jet incisé dans la narration
+  // #1318 V8c₂ — les 5 venus de travelFlow/riverVoyageFlow (les mêmes qu'avant migration, au même titre) :
+  'tf.beastExhausted', // bêtes de l'attelage : porteur SANS identité, dé parenthétique en justification
+  'rv.splinterDodgedRoll', 'rv.fragDodgeFailed', // éclats : jet INCISÉ dans une narration d'ÉVÉNEMENT
+  'rv.holeInline', 'rv.fragRefloat', // calfatage / renflouage IA : idem
+].sort();
+
+/** Clés du catalogue dont la VALEUR re-printe un jet (`{roll}/{target}`), dériveur exclu. */
+function catalogJetEchoKeys(): string[] {
+  const src = readFileSync(join(ROOT, CATALOG_FILE), 'utf8');
+  const out: string[] = [];
+  for (const m of src.matchAll(/^\s*'([\w.]+)':\s*(['"])((?:\\.|(?!\2)[\s\S])*)\2/gm)) {
+    const [, key, , value] = m;
+    if (DERIVEUR_KEYS.has(key)) continue;
+    if (/\{roll\}\/\{target\}/.test(value)) out.push(key);
+  }
+  return out.sort();
+}
 
 function jetEchoCount(src: string): number {
   return (src.match(/\$\{[^}]*\.roll\}\/\$\{[^}]*\.target\}/g) ?? []).length;
@@ -171,6 +214,22 @@ describe('cliquet composeur — CONTENU des conséquences : re-print roll/target
       if (n < b) stale.push(`${rel} : baseline gelée ${b}, réel ${n} — ABAISSER`);
     }
     expect(stale, `Baseline(s) PÉRIMÉE(s) — abaisser (site purgé depuis) :\n${stale.join('\n')}`).toEqual([]);
+  });
+
+  it('CATALOGUE : les clés qui re-printent un jet sont EXACTEMENT celles déclarées (dériveur exempté)', () => {
+    const mesure = catalogJetEchoKeys();
+    const nouvelles = mesure.filter((k) => !CATALOG_BASELINE.includes(k));
+    const disparues = CATALOG_BASELINE.filter((k) => !mesure.includes(k));
+    expect(nouvelles, 'NOUVEAU re-print de jet au catalogue — passer par le dériveur (`traceLineOf`)').toEqual([]);
+    expect(disparues, 'clé RÉSORBÉE : retire-la de CATALOG_BASELINE (le cliquet ne fait que décroître)').toEqual([]);
+  });
+
+  it('fail-closed : le volet catalogue MESURE (une clé synthétique à `{roll}/{target}` est vue, le dériveur non)', () => {
+    // Contre-preuve du scan : la forme qu'il cherche, et l'exemption qu'il applique.
+    expect(/\{roll\}\/\{target\}/.test("'x.y': 'Test : {roll}/{target} → {issue}'")).toBe(true);
+    expect(DERIVEUR_KEYS.has('casc.rowTraceAnon')).toBe(true);
+    // …et le compte réel n'est pas vide (un scan cassé rendrait la garde verte pour rien).
+    expect(catalogJetEchoKeys().length).toBeGreaterThanOrEqual(10);
   });
 
   it('fail-closed : le compteur détecte un re-print roll/target SYNTHÉTIQUE hors littéral journal:', () => {

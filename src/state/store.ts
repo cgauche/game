@@ -1634,7 +1634,7 @@ export const useGame = create<GameState>((set, get) => ({
     set({ facing: { ...facing, [shipId]: next } });
     // Re-mappe TOUS les arcs de bordée d'un coup : firedAttackBlock / targeting relisent facing[shipId].
     const ship = inBattleId(battle, shipId);
-    get().log(`${ship?.label ?? shipId} vire de bord — nouveau cap : ${next}.`);
+    get().log(t('store.shipTack', { ship: ship?.label ?? shipId, dir: next }));
     bus.emit(EVT.SCENE_DIRTY);
   },
   shipAdvance: (shipId, cases) => {
@@ -1670,7 +1670,7 @@ export const useGame = create<GameState>((set, get) => ({
         placeCombatant(m, scene, { x: from.x + delta.x, y: from.y + delta.y });
         bus.emit(EVT.ANIM_MOVE, { id: m.id, path: [from, { ...m.pos }] });
       }
-      get().log(`${hull.label} avance de ${moved} case${moved > 1 ? 's' : ''} (cap ${dir}).`);
+      get().log(t('store.shipAdvance', { ship: hull.label, n: moved, s: moved > 1 ? 's' : '', dir }));
     }
     // Éperonnage (MDG 13) : on percute de la PROUE (avance vers l'avant) ; FRONTAL si la victime tient un cap
     // ~opposé (octant opposé ±1). Dégâts sur les DEUX coques par la langue unique (`applyShipCollision`→`applyOps`).
@@ -1815,12 +1815,12 @@ export const useGame = create<GameState>((set, get) => ({
   saveGame: (slot) => {
     const s = get();
     if (s.battle) {
-      get().log('Impossible de sauvegarder en plein combat.');
+      get().log(t('store.saveInBattle'));
       return false;
     }
     const save = snapshotSave(s as unknown as Record<string, unknown>, useGame.getInitialState() as unknown as Record<string, unknown>, new Date().toISOString(), ruleOverrides());
     const ok = saveToSlot(slot, save);
-    get().log(ok ? `Partie sauvegardée (emplacement ${slot}).` : 'Sauvegarde impossible (stockage indisponible ou plein).');
+    get().log(ok ? t('store.saveOk', { slot }) : t('store.saveKo'));
     return ok;
   },
   autoSave: () => {
@@ -1943,7 +1943,7 @@ export const useGame = create<GameState>((set, get) => ({
   transitionTo: (sceneId, entry, pos) => {
     const target = sceneRegistry[sceneId];
     if (!target) {
-      get().log(`(Scène « ${sceneId} » introuvable — transition ignorée.)`);
+      get().log(t('store.sceneMissing', { scene: sceneId }));
       return;
     }
     const heroStart = target.entities.find((e) => e.kind === 'heroStart');
@@ -2039,7 +2039,7 @@ export const useGame = create<GameState>((set, get) => ({
     const plan = planClimb(scene, from, to, hasGrimpeur, mode === 'battle' ? mover?.id : undefined, autoClimb);
     if (!plan) return; // arête non grimpable → refus silencieux (aucun marqueur ne s'y affiche)
     if (plan.kind === 'impossible') {
-      get().log(t('climb.tooHard', { name: mover?.label ?? 'Le grimpeur' }));
+      get().log(t('climb.tooHard', { name: mover?.label ?? t('store.climberFallback') }));
       return;
     }
     if (mode === 'exploration') {
@@ -2155,12 +2155,12 @@ export const useGame = create<GameState>((set, get) => ({
     if (ent.interact) {
       // Décor INTERACTIF (fouille/ramassage) — canal unique d'Effets (cf. SceneEntity.interact).
       if (get().flags[`__fouille_${entityId}`]) {
-        get().log(`${ent.label ?? 'Déjà fouillé'} : rien de plus à trouver.`);
+        get().log(t('store.searchedAlready', { what: ent.label ?? t('store.searchedFallback') }));
         return;
       }
-      get().log(`Vous fouillez ${ent.label ?? 'les lieux'}…`);
+      get().log(t('store.searching', { what: ent.label ?? t('store.searchPlaceFallback') }));
       // Logique de fouille (Flow) : butin → fenêtre d'attribution, test → fouille à risque (modale).
-      runFlow(get, set, ent.interact.flow, ent.label ?? 'Fouille');
+      runFlow(get, set, ent.interact.flow, ent.label ?? t('store.searchTitle'));
       get().advanceTime(TIME_COST.search); // « tout est horodaté » : fouiller ≈ search min
       if (ent.interact.consume) removeEntity(get, set, entityId); // butin → le décor disparaît
       else set((s) => ({ flags: { ...s.flags, [`__fouille_${entityId}`]: true } })); // reste, marqué fouillé
@@ -2181,7 +2181,7 @@ export const useGame = create<GameState>((set, get) => ({
     // unique) débitée AVANT les effets ; refus si le total du groupe ne couvre pas.
     if (choice.cost) {
       const cost = toMoney(choice.cost);
-      if (!payFromGroup(get, set, cost, { purpose: 'Dialogue' })) { get().log('Pas assez d’argent pour cette option.'); return; }
+      if (!payFromGroup(get, set, cost, { purpose: 'Dialogue' })) { get().log(t('store.dialogueNoMoney')); return; }
     }
     const transition: DialogueTransition = choice.next
       ? { dialogue: st.dialogue.dialogue, nodeId: choice.next, speakerId: st.dialogue.speakerId }
@@ -2262,9 +2262,9 @@ export const useGame = create<GameState>((set, get) => ({
     set({ ...patch, cargoRaid: false });
     if (total > 0) {
       // Consequence structurée (#295) — issue en donnée + total, jamais un jet silencieux.
-      get().log(`Vol terrestre — ${outcome === 'fled' ? 'le convoi fuit' : 'le convoi est enfoncé'} : ${total} Enc de cargaison pillée (${pct} %${losses.length > 1 ? `, ${losses.length} porteurs` : ''}).`);
+      get().log(t('store.cargoRaid', { issue: t(outcome === 'fled' ? 'store.cargoRaidFled' : 'store.cargoRaidBroken'), enc: total, pct, porteurs: losses.length > 1 ? t('store.fragCargoPorters', { n: losses.length }) : '' }));
     } else if (outcome !== 'victory' && pct > 0) {
-      get().log('Vol terrestre : les assaillants ne trouvent aucune cargaison à piller sur le convoi.');
+      get().log(t('store.cargoRaidNothing'));
     }
   },
   dismissVictory: () => {
@@ -2321,7 +2321,7 @@ export const useGame = create<GameState>((set, get) => ({
   raiseHand: () => {
     const b = get().battle;
     if (!b || b.handRaised) return;
-    set({ battle: { ...b, handRaised: true, log: [...b.log, ev('info', 'Un joueur demande la pause au prochain Round.')] } });
+    set({ battle: { ...b, handRaised: true, log: [...b.log, ev('info', t('store.handRaised'))] } });
   },
   victoryReady: (seat) => {
     const pv = get().pendingVictory;
@@ -2382,13 +2382,13 @@ export const useGame = create<GameState>((set, get) => ({
     const exhausted = !done && p.maxAttempts != null && p.rounds.length >= p.maxAttempts;
     if (done || exhausted) {
       set({ pendingExtendedTest: null, pendingCascade: null }); // ferme la cascade-hôte aussi
-      get().log(`${p.label} : ${done ? 'réussi' : 'échoué'} (DR cumulé ${total} / ${p.targetDR}).`);
+      get().log(t('store.extendedDone', { label: p.label, issue: t(done ? 'store.extendedOk' : 'store.extendedKo'), total, target: p.targetDR }));
       if (done && p.dispel) {
         // DISSIPATION réussie (LDB 46 l.160) : retire tous les effets du Sort de tous ses porteurs.
         const b = get().battle;
         const n = b ? dissipateSpell(b.combatants, p.dispel.spellId, p.dispel.casterId) : 0;
         if (b) set({ battle: { ...b, combatants: [...b.combatants] } });
-        get().log(`${p.dispel.label} est dissipé${n > 1 ? ` (${n} cibles libérées)` : ''}.`);
+        get().log(t('cs.dispelDone', { spell: p.dispel.label, extra: n > 1 ? t('cs.fragDispelFreed', { n }) : '' }));
       }
       if (done && p.flag) set({ flags: { ...get().flags, [p.flag]: true } }); // gate la suite (porte/serrure d'éditeur)
       // Issue de DOMAINE en donnée (kind-agnostique) : appliée qu'elle ait réussi ou buté sur `maxAttempts`.
@@ -2416,7 +2416,7 @@ export const useGame = create<GameState>((set, get) => ({
     // mint vérifie que `pendingForceDoor` est posé (il vient de l'être).
     const steps: BuiltCascadeStep[] = [];
     pousseSi(steps, hostStep(get, { id: 'forceDoor', kind: 'forceDoorStep', jet: 'forceDoor', groupOwner: true }));
-    if (steps.length) openSequence(get, set, { title: 'Enfoncer la porte', icon: 'action/force', purpose: 'combat', steps });
+    if (steps.length) openSequence(get, set, { title: t('store.forceDoorTitle'), icon: 'action/force', purpose: 'combat', steps });
   },
   forceDoorConfirm: () => {
     const p = get().pendingForceDoor;
@@ -2426,12 +2426,12 @@ export const useGame = create<GameState>((set, get) => ({
     const doorB = p.doorB - dmg;
     if (doorB <= 0) {
       set({ pendingForceDoor: null, pendingCascade: null }); // la porte cède → ferme la situation (data + cascade hôte)
-      get().log(`${p.label} cède ! (${dmg} dégât${dmg > 1 ? 's' : ''})`);
+      get().log(t('store.doorYields', { label: p.label, n: dmg, s: dmg > 1 ? 's' : '' }));
       if (p.flag) set({ flags: { ...get().flags, [p.flag]: true } }); // ouverture en jeu (porte d'éditeur)
     } else {
       // La porte tient : un nouveau Round s'ouvre (chacun re-frappe — jets remis à zéro).
       set({ pendingForceDoor: { ...p, doorB, participants: p.participants.map((x) => ({ ...x, result: null, rerolled: false, forced: false })) } });
-      get().log(`${p.label} : ${dmg} dégât${dmg > 1 ? 's' : ''}, reste ${doorB} Blessure${doorB > 1 ? 's' : ''}.`);
+      get().log(t('store.doorHolds', { label: p.label, n: dmg, s: dmg > 1 ? 's' : '', left: doorB, sB: doorB > 1 ? 's' : '' }));
     }
   },
   forceDoorCancel: () => { set({ pendingForceDoor: null, pendingCascade: null }); }, // renonce : ferme data + cascade hôte
@@ -2498,7 +2498,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (tool && pt.isDouble && !pt.success && hasQuality(tool, 'bacle') && !isUnbreakable(tool)) {
       tool.destroyed = true;
       set({ party: [...get().party] }); // persiste la casse + re-render
-      get().log(`${tool.label} (Bâclé) se brise sur la Maladresse de ${actor?.label ?? pt.actorName}.`);
+      get().log(t('store.toolBroken', { tool: tool.label, name: actor?.label ?? pt.actorName }));
     }
     // Action de combat « cumuler l'Avantage » (LDB 09 l.305-308) : sur réussite, +1 Avantage plafonné au
     // `cap` de la Compétence (via `gainAdvantage`, qui respecte aussi le plafond général) ; l'Action est
@@ -2652,7 +2652,7 @@ export const useGame = create<GameState>((set, get) => ({
     const then = recap?.then;
     if (!then || get().battle) return;
     if (then.kind === 'effects') {
-      applyEffectsLoot(get, set, then.effects, 'Découverte'); // trouvaille d'étape de voyage → fenêtre aussi
+      applyEffectsLoot(get, set, then.effects, t('eff.flowTitleDiscovery')); // trouvaille d'étape de voyage → fenêtre aussi
     } else {
       get().transitionTo(then.scene, then.entry);
       get().startCombat(then.encounter, undefined, { noSurprise: then.noSurprise });

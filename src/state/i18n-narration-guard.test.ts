@@ -59,67 +59,70 @@ const MIGRATED = new Set([
   'src/state/interludeFlow.ts', // #1318 V8c₁ : `if.*`
   'src/state/massBattleFlow.ts', // #1318 V8c₁ : `mbf.*`
   'src/state/merchantFlow.ts', // #1318 V8c₁ : `mf.*`
+  'src/engine/disease.ts', // #1318 V8c₂ : `dz.*` (le moteur pur résout par `t()`, comme `ops.ts`)
+  'src/state/combatEffects.ts', // #1318 V8c₂ : `eff.*`
+  'src/state/store.ts', // #1318 V8c₂ : `store.*`
+  'src/state/travelFlow.ts', // #1318 V8c₂ : `tf.*`
+  'src/state/riverVoyageFlow.ts', // #1318 V8c₂ : `rv.*`
 ]);
 
 /** Stock GELÉ par fichier (recensement #410, 2026-07-13) — littéraux FR de narration hors catalogue,
  *  Phase C à résorber. Toute HAUSSE échoue (régression) ; toute BAISSE doit ABAISSER la baseline. Les
  *  fichiers MIGRÉS (ci-dessus) n'y figurent PAS : leur invariant est ZÉRO.
  *
- *  GEL COURANT #1333 (V8c₁, 2026-08-16) — 198 littéraux, tels que les voit le prédicat de francité
- *  ci-dessous (`isFrench`, qui compte aussi le FR SANS accent) ET le lecteur de littéraux corrigé
- *  (`readString` honore l'ÉCHAPPEMENT). Ces entrées ne sont pas des dettes nouvelles : ce sont des
- *  littéraux de toujours, qu'une mesure plus fine rend enfin visibles. Trois mouvements dans ce lot :
- *  −81 (les trois flux passés MIGRÉS : interlude 36, bataille de masse 25, marchand 20) ;
- *  +1 révélé par la lecture des échappements (`engine/spellRangeFormat.ts` 4 → 5 : « Jusqu'au lever du
- *  soleil », seul littéral de tout le périmètre que l'ancien lecteur tronquait au point de le rendre
- *  muet) ; +3 révélés par la 6ᵉ forme (`.log(` à argument non collé — `rollFlowFactory.ts` 1 → 3,
- *  `store.ts` 15 → 16 ; le 4ᵉ de cette forme, l'achat de `merchantFlow.ts`, est parti au catalogue
- *  dans le même geste plutôt que d'entrer en gel).
+ *  GEL COURANT #1333 (V8c₂, 2026-08-16) — 177 littéraux, tels que les voit le prédicat de francité
+ *  ci-dessous (`isFrench`, qui compte aussi le FR SANS accent), le lecteur de littéraux (`readString`
+ *  honore l'ÉCHAPPEMENT) et les SEPT formes d'émission. Ces entrées ne sont pas des dettes nouvelles :
+ *  ce sont des littéraux de toujours, qu'une mesure plus fine rend visibles. Deux mouvements dans ce lot :
+ *  −67, les CINQ fichiers de la tranche 2 passés MIGRÉS (`combatEffects` 15, `store` 16, `travelFlow` 14,
+ *  `riverVoyageFlow` 11, `engine/disease` 11) ; +46 révélés par la 7ᵉ FORME (`return [ … ]`, le journal
+ *  RENDU en tableau) — `seaVoyageFlow` 9 → 27, `trauma` 10 → 20, `healing` 2 → 7, `rest` 4 → 7,
+ *  `shipCrew` 6 → 9, `suffocation` 2 → 4, `portFlow` 2 → 4, `corruptionFlow` 4 → 5, et deux fichiers
+ *  qui n'avaient AUCUNE entrée (`engine/travel.ts`, `state/summonFlow.ts`, 1 chacun).
  *  `state/combatFlow.ts` reste MIGRÉ (invariant ZÉRO) : les littéraux que ce prédicat y a révélés sont
  *  au catalogue (`cf.gangwayCollapse`/`cf.spellNotFound`/`cf.cannotCast`/`cf.cannotPray`/`cf.oups`,
- *  plus `cf.outOfAction`/`cf.noLineOfSight`). */
+ *  plus `cf.outOfAction`/`cf.noLineOfSight`, et les DEUX que la 7ᵉ forme y a trouvés —
+ *  `cf.componentAbsorbs`/`cf.sourceRebuilds` : un fichier « MIGRÉ » ne l'est que pour ce que le
+ *  détecteur sait voir, et cette tranche l'a mesuré plutôt que supposé). */
 const BASELINE: Record<string, number> = {
-  'src/engine/disease.ts': 11,
   'src/engine/drunkenness.ts': 2,
   'src/engine/exposure.ts': 4,
-  'src/engine/healing.ts': 2,
+  'src/engine/healing.ts': 7,
   'src/engine/items.ts': 3,
   'src/engine/money.ts': 3,
   'src/engine/mountTravel.ts': 5,
   'src/engine/provisions.ts': 10,
   'src/engine/qualities/craftEconomy.ts': 3,
-  'src/engine/rest.ts': 4,
+  'src/engine/rest.ts': 7,
   'src/engine/shipCritical.ts': 5,
   'src/engine/social.ts': 1,
   'src/engine/spellRangeFormat.ts': 5,
   'src/engine/structureCritical.ts': 1,
-  'src/engine/suffocation.ts': 2,
+  'src/engine/suffocation.ts': 4,
   'src/engine/tavernGame.ts': 2,
   'src/engine/traits/dispatch.ts': 1,
-  'src/engine/trauma.ts': 10,
+  'src/engine/trauma.ts': 20,
+  'src/engine/travel.ts': 1,
   'src/state/combat/roundHooks.ts': 1,
-  'src/state/combatEffects.ts': 15,
-  'src/state/corruptionFlow.ts': 4,
+  'src/state/corruptionFlow.ts': 5,
   // `src/state/devtools.ts` : aucune baseline — DISPENSÉ par nature (`DEV_ONLY`, #1117).
   'src/state/keybindings.ts': 1,
   'src/state/medicFlow.ts': 4,
   'src/state/mount.ts': 1,
   'src/state/netFlow.ts': 4,
   'src/state/partyFlow.ts': 7,
-  'src/state/portFlow.ts': 2,
+  'src/state/portFlow.ts': 4,
   'src/state/restFlow.ts': 5,
-  'src/state/riverVoyageFlow.ts': 11,
   'src/state/rollFlowFactory.ts': 3,
   // Légendes de l'export ASCII, semées à la déclaration : ce ne sont pas des lignes de JOURNAL, mais
   // elles se gèlent au même titre — à passer au catalogue avec leur surface.
   'src/state/sceneToAscii.ts': 3,
   'src/state/seaActivities.ts': 5,
-  'src/state/seaVoyageFlow.ts': 9,
-  'src/state/shipCrew.ts': 6,
+  'src/state/seaVoyageFlow.ts': 27,
+  'src/state/shipCrew.ts': 9,
   'src/state/shipManeuver.ts': 1,
   'src/state/shipwreck.ts': 3,
-  'src/state/store.ts': 16,
-  'src/state/travelFlow.ts': 14,
+  'src/state/summonFlow.ts': 1,
   'src/state/travelPostes.ts': 4,
   'src/state/upkeep.ts': 5,
 };
@@ -249,6 +252,42 @@ function logDepth0Literals(body: string): string[] {
   return out;
 }
 
+/**
+ * 7ᵉ FORME (#1318 V8c₂) : `return [ … ]` — un describer qui RENVOIE SON JOURNAL en tableau. La forme 5
+ * (`return` + délimiteur) exige le littéral immédiatement après `return`, et `ARRAY_SEED` ne connaît que
+ * la déclaration annotée (`: string[] = [`) : entre les deux, le retour direct d'un tableau de lignes
+ * n'était vu par PERSONNE. Le trou est mesuré, pas supposé — `engine/disease.ts` en portait QUATRE
+ * (contraction, développement, les deux issues de Gangrène), et la mutation qui remettait l'un d'eux en
+ * littéral laissait l'invariant ZÉRO du fichier VERT.
+ *
+ * Même lecture que la 6ᵉ forme : littéraux de PROFONDEUR 0 du tableau (ceux qui SONT des lignes), pas
+ * ceux d'un appel imbriqué (`return [t('dz.develop', { … })]` est à profondeur 1 — c'est du catalogue).
+ */
+function returnArrayLiterals(body: string): string[] {
+  const out: string[] = [];
+  const rx = /\breturn\s*\[/g;
+  let m: RegExpExecArray | null;
+  while ((m = rx.exec(body))) {
+    let i = m.index + m[0].length;
+    let prof = 0;
+    while (i < body.length) {
+      const c = body[i];
+      if (c === '(' || c === '[' || c === '{') { prof++; i++; continue; }
+      if (c === ')' || c === '}') { prof--; i++; continue; }
+      if (c === ']') { if (prof === 0) break; prof--; i++; continue; }
+      if (c === '"' || c === "'" || c === '`') {
+        const lit = readString(body, i, c);
+        if (!lit) break;
+        if (prof === 0) out.push(lit);
+        i += lit.length;
+        continue;
+      }
+      i++;
+    }
+  }
+  return out;
+}
+
 /** Compte les littéraux FR de narration d'un fichier (hors catalogue). */
 export function narrationCount(raw: string): number {
   const body = stripComments(raw);
@@ -281,6 +320,7 @@ export function narrationCount(raw: string): number {
     }
   }
   for (const lit of logDepth0Literals(body)) if (isFrench(lit)) n++;
+  for (const lit of returnArrayLiterals(body)) if (isFrench(lit)) n++;
   return n;
 }
 
@@ -348,6 +388,18 @@ describe('garde-fou i18n — narration moteur (Phase C, #410 inversé)', () => {
     expect(narrationCount("get().log(t('mf.buy', { label: 'Épée' }));")).toBe(0);
     // La forme 1 garde ses appels : un littéral collé ne compte pas DEUX fois.
     expect(narrationCount("get().log(`Bourse insuffisante pour ${x}.`);")).toBe(1);
+  });
+
+  it('7ᵉ FORME : un `return [ … ]` compte SES lignes (le journal RENDU en tableau)', () => {
+    // Le site réel (`engine/disease.ts`, contraction/développement/Gangrène) : quatre phrases joueur
+    // dans un fichier déclaré MIGRÉ — l'invariant ZÉRO restait VERT quand on les y remettait.
+    expect(narrationCount("  return [`${c.label} développe : ${diseaseLabel(name)}.`];")).toBe(1);
+    // Deux lignes dans le même retour comptent DEUX fois.
+    expect(narrationCount('return [`Le groupe arrive à ${to}.`, `La nuit tombe sur le camp.`];')).toBe(2);
+    // Un littéral sous appel IMBRIQUÉ reste du catalogue : profondeur 1, jamais compté.
+    expect(narrationCount("return [t('dz.develop', { name: c.label, disease: 'Peste noire' })];")).toBe(0);
+    // …et un retour de tableau TECHNIQUE (ids) ne déclenche rien.
+    expect(narrationCount("return ['infection-du-sang', 'blessure-purulente'];")).toBe(0);
   });
 
   it('CLIQUET : toute baseline devenue trop haute (fichier assaini) doit être ABAISSÉE', () => {

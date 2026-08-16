@@ -117,7 +117,7 @@
     "skills": [
       {
         "skillId": "metier",
-        "spec": "Cartographe"
+        "spec": "cartographe"
       },
       {
         "skillId": "art",
@@ -272,7 +272,7 @@
     "skills": [
       {
         "skillId": "savoir",
-        "spec": "Magie"
+        "spec": "magie"
       }
     ],
     "difficulty": "intermediaire",
@@ -601,7 +601,7 @@
     "skills": [
       {
         "skillId": "metier",
-        "spec": "Cartographe"
+        "spec": "cartographe"
       }
     ],
     "difficulty": "complexe",
@@ -679,7 +679,7 @@
     "skills": [
       {
         "skillId": "savoir",
-        "spec": "Guerre"
+        "spec": "guerre"
       }
     ],
     "difficulty": "intermediaire",

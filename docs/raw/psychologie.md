@@ -573,7 +573,7 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 
 **Voir aussi** : `destin.md` (Détermination)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.59) → `ResilienceButton`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `forceCrewRole`, `BattementModal`, `useTrampleJetProps`, +72 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/magic.ts`, +39 fichiers
+- `LDB 17` (l.59) → `ResilienceButton`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `forceCrewRole`, `BattementModal`, `useTrampleJetProps`, +71 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, +39 fichiers
 
 ---
 
@@ -610,8 +610,8 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.1053) → `fearImmuneVs`, `CombatFeature`, `robuste`, `vampires`, `saut-carpe`, `voies-fluviales`, `soldats`, `seconde-vue`, `seigneur-de-guerre`, `vue` — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
-- `LDB 17` (l.59) → `ResilienceButton`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `forceCrewRole`, `BattementModal`, `useTrampleJetProps`, +72 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/magic.ts`, +39 fichiers
-- `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `encounterPsych`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `combat-psych`, `fearSourceFor`, `encounter-psych`, `openEncounterPsych`, +75 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, +34 fichiers
+- `LDB 17` (l.59) → `ResilienceButton`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `forceCrewRole`, `BattementModal`, `useTrampleJetProps`, +71 — `src/data/characteristics.json`, `src/data/flow-stakes.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, +39 fichiers
+- `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `encounterPsych`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `combat-psych`, `fearSourceFor`, `encounter-psych`, `terreur`, +75 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, +34 fichiers
 - `LDB 85` (l.178-179, l.382-383) → `morsure`, `cannotStopOn`, `agressifEnvers`, `markAttacked`, `Formula`, `EnemyTurnInput`, `displaceSmaller`, `Condition`, `MoveEnv`, `empetre`, +62 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/engagement.ts`, +11 fichiers
 
 ---

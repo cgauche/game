@@ -164,7 +164,7 @@ describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
     seedBattleRng(3);
     const heroes = get().party;
     // Un cartographe hors pair : Métier (Cartographe) à 90.
-    (heroes[0] as Combatant).skills = [{ skillId: 'metier', spec: 'Cartographe', advances: 60 } as never];
+    (heroes[0] as Combatant).skills = [{ skillId: 'metier', spec: 'cartographe', advances: 60 } as never];
     (heroes[0] as Combatant).characteristics = { ...heroes[0].characteristics, dexterite: 40 };
     set({ party: [...heroes], pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } } });
     // Seam de jet (#273 Étape 2) : Cartographie est désormais une étape de CASCADE influençable —
@@ -189,7 +189,7 @@ describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
     seedBattleRng(3);
     const heroes = get().party;
     // Même cartographe hors pair que le test précédent, jet déterministe (roll 73 ≤ cible 99).
-    (heroes[0] as Combatant).skills = [{ skillId: 'metier', spec: 'Cartographe', advances: 80 } as never];
+    (heroes[0] as Combatant).skills = [{ skillId: 'metier', spec: 'cartographe', advances: 80 } as never];
     (heroes[0] as Combatant).characteristics = { ...heroes[0].characteristics, dexterite: 60 };
     set({ party: [...heroes], pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } } });
     // Planque = DÉBIT solo du cartographe (soloPayer, seaActivities.ts) → SA bourse (freshState : 5000 CO).
@@ -207,7 +207,7 @@ describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
   it('Cartographie sans mise de Planque (stashGold absent) → aucun dépôt créé', async () => {
     seedBattleRng(3);
     const heroes = get().party;
-    (heroes[0] as Combatant).skills = [{ skillId: 'metier', spec: 'Cartographe', advances: 80 } as never];
+    (heroes[0] as Combatant).skills = [{ skillId: 'metier', spec: 'cartographe', advances: 80 } as never];
     (heroes[0] as Combatant).characteristics = { ...heroes[0].characteristics, dexterite: 60 };
     set({ party: [...heroes], pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } } });
     get().seaActivitiesConfirm({ [heroes[0].id]: { activityId: 'cartographie' } });

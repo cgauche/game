@@ -43,7 +43,7 @@ describe('Activités de préparation de bataille (ADE II 08 l.79-110) — donné
 
   it('Planification (l.79-89) : Savoir (Guerre), assistée ; Succès +10 / Stupéfiant +20 aux Tests alliés', () => {
     const plan = activityById('planification')!;
-    expect(plan.skills).toEqual([{ skillId: 'savoir', spec: 'Guerre' }]);
+    expect(plan.skills).toEqual([{ skillId: 'savoir', spec: 'guerre' }]);
     expect(plan.assisted).toBe(true);
     expect(plan.grantsFlag).toBe('planned');
     // Succès (DR < 6) : +10 permanent (l.81).

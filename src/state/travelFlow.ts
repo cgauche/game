@@ -66,7 +66,7 @@ import type { Combatant } from '../engine/types';
 
 import type { Get, Set } from './flowTypes';
 import { traceLineOf } from '../engine/traceLine';
-import { dataLabel } from '../data';
+import { dataLabel, refLabel } from '../data';
 import { stepDetail } from './rollSeam';
 
 /** Une journée du récapitulatif de voyage (audit M4) : progression + ce qui s'y est passé. */
@@ -311,17 +311,17 @@ export function startTravel(
     // Traversée RAPIDE (MDG 15 l.21-37) : un seul Test de Rude épreuve résout tout le trajet.
     if (opts.fast) {
       if (!startFastVoyage(get, set, routeId, from.id, to.id, route, { pace: opts.seaPace, cadence: opts.cadence })) {
-        log(get, set, ['Aucun navire de campagne en état de prendre la mer — pas de traversée.']);
+        log(get, set, [t('tf.noVessel')]);
       }
       return;
     }
     const seaPlan = buildSeaPlan(get, routeId, from.id, to.id, route, { pace: opts.seaPace, cadence: opts.cadence });
     if (!seaPlan) {
-      log(get, set, ['Aucun navire de campagne en état de prendre la mer — pas de traversée.']);
+      log(get, set, [t('tf.noVessel')]);
       return;
     }
     set({ travelPlan: seaPlan, worldMapOpen: false, travelRecap: null });
-    log(get, set, [`— ${seaPlan.vehicle!.label} appareille vers ${to.label} (${route.km} milles) —`]);
+    log(get, set, [t('tf.seaDepart', { ship: seaPlan.vehicle!.label, to: to.label, km: route.km })]);
     runSeaDay(get, set);
     return;
   }
@@ -334,7 +334,7 @@ export function startTravel(
     const riverPlan = buildRiverPlan(get, routeId, from.id, to.id, route, { cadence: opts.cadence });
     if (riverPlan) {
       set({ travelPlan: riverPlan, worldMapOpen: false, travelRecap: null });
-      log(get, set, [`— ${riverPlan.vehicle!.label} descend le fleuve vers ${to.label} (${route.km} km, navigation fluviale) —`]);
+      log(get, set, [t('tf.riverDepart', { ship: riverPlan.vehicle!.label, to: to.label, km: route.km })]);
       runRiverDays(get, set);
       return;
     }
@@ -348,10 +348,10 @@ export function startTravel(
     if (!cost) return; // mode sans facette `travel` (id de véhicule invalide) — rien à débiter, rien à jouer
     // Dépense de GROUPE (LDB 51 l.178) : passage sans bénéficiaire unique → cotisation gloutonne des bourses.
     if (!payFromGroup(get, set, cost, { purpose: 'passage' })) {
-      log(get, set, [`Le passage (${TRAVEL_MODE_LABEL[mode].toLowerCase()}, ${formatMoney(cost)}) dépasse les moyens du groupe.`]);
+      log(get, set, [t('tf.passageTooDear', { mode: TRAVEL_MODE_LABEL[mode].toLowerCase(), cost: formatMoney(cost) })]);
       return;
     }
-    log(get, set, [`Le groupe paie son passage : ${formatMoney(cost)} (${TRAVEL_MODE_LABEL[mode].toLowerCase()}).`]);
+    log(get, set, [t('tf.passagePaid', { cost: formatMoney(cost), mode: TRAVEL_MODE_LABEL[mode].toLowerCase() })]);
   }
 
   // Allure EDOC (règle `travel-allures`) : en selle, pas/trot/galop (EDOC 07 l.140) ; sur un attelage,
@@ -381,8 +381,8 @@ export function startTravel(
     ...(vehicle ? { vehicle } : {}),
   };
   set({ travelPlan: plan, worldMapOpen: false, travelRecap: null });
-  const allureLabel = allure ? `, ${ALLURE_LABEL[allure].toLowerCase()}` : '';
-  log(get, set, [`— En route vers ${to.label} (${route.km} km, ${TRAVEL_MODE_LABEL[mode].toLowerCase()}${allureLabel}) —`]);
+  const allureLabel = allure ? t('tf.fragAllure', { allure: ALLURE_LABEL[allure].toLowerCase() }) : '';
+  log(get, set, [t('tf.depart', { to: to.label, km: route.km, mode: TRAVEL_MODE_LABEL[mode].toLowerCase(), allure: allureLabel })]);
   runTravelDays(get, set);
 }
 
@@ -402,7 +402,7 @@ export function resumeTravel(get: Get, set: Set): void {
     syncHullWoundsFromVessel(vehicle, vessel);
   }
   set({ travelPlan: { ...plan, interrupted: false, ...(vehicle ? { vehicle } : {}) }, worldMapOpen: false, travelRecap: null });
-  log(get, set, ['— Le voyage reprend —']);
+  log(get, set, [t('tf.resume')]);
   // Mer (#275 Ronde 2 cran 3, Décision c) : `runSeaDay` ne ré-entre PLUS de FSM — si une cascade de
   // voyage vit ENCORE (suspendue derrière le combat qui vient de finir), son garde de tête est un no-op
   // (l'arbitre la remontre) ; sinon elle enchaîne le jour suivant (`buildSeaDayCascade`).
@@ -445,7 +445,7 @@ function runTravelDays(get: Get, set: Set): void {
     const kmh = travelSpeed(party, get().possessions, plan.mode, route.speed?.[plan.mode], plan.vehicleLame ? undefined : plan.allure);
     if (kmh <= 0) {
       set({ travelPlan: { ...plan, interrupted: true } });
-      log(get, set, ['Le groupe est trop chargé pour avancer — le voyage s’arrête là (alléger les sacs, puis reprendre).']);
+      log(get, set, [t('tf.overloaded')]);
       finishRecap('stalled');
       return;
     }
@@ -455,7 +455,7 @@ function runTravelDays(get: Get, set: Set): void {
     if (plan.km - plan.kmDone < 1e-9) {
       const daysTotal = (plan.log?.length ?? 0) + 1; // AVANT le null (#333 vague 2 — durée affichée à l'arrivée)
       set({ travelPlan: null });
-      log(get, set, [`— Arrivée à ${to.label} —`, ...travelArrivalCare(get, set)]);
+      log(get, set, [t('tf.arrival', { to: to.label }), ...travelArrivalCare(get, set)]);
       finishRecap('arrived', undefined, daysTotal);
       get().transitionTo(to.scene, to.entry);
       return;
@@ -480,7 +480,7 @@ function runTravelDays(get: Get, set: Set): void {
       recap?.days.push(recapDay);
       if (recap) set({ travelPlan: { ...get().travelPlan!, recap } });
       const daySteps = buildTravelDayCascade(get, set, route, recapDay, [], { toScene: to.scene, toEntry: to.entry, toLabel: to.label, destLabel: to.label });
-      startCascade(get, set, { title: 'Journée de route — allure forcée', icon: 'travel/cart', purpose: 'travelDay', steps: [premierKm, ...daySteps] });
+      startCascade(get, set, { title: t('tf.dayTitleForced'), icon: 'travel/cart', purpose: 'travelDay', steps: [premierKm, ...daySteps] });
       return; // la clôture de la cascade (continueTravelDayAfterCascade) finalise le jour
     }
     const forced = forcedEligible ? forcedPaceDay(get, set, kmLeft) : null;
@@ -516,8 +516,8 @@ function runTravelDays(get: Get, set: Set): void {
       if (forced.vehicleLame) set({ travelPlan: { ...get().travelPlan!, vehicleLame: true } });
       if (forced.vehicleOut) {
         set({ travelPlan: { ...get().travelPlan!, mode: 'pied', allure: undefined } });
-        log(get, set, ['Le véhicule est hors d’usage — la route continue à pied.']);
-        recapDay.lines.push({ text: 'Le véhicule est hors d’usage — la route continue à pied.', tone: 'bad' });
+        log(get, set, [t('tf.vehicleOut')]);
+        recapDay.lines.push({ text: t('tf.vehicleOut'), tone: 'bad' });
       }
     }
 
@@ -565,7 +565,7 @@ function runTravelDays(get: Get, set: Set): void {
     // locaux ne survivent pas — `continueTravelDayAfterCascade` les relit depuis `plan.recap`.
     if (recap) set({ travelPlan: { ...get().travelPlan!, recap } });
     if (daySteps.length) {
-      startCascade(get, set, { title: 'Journée de route', icon: 'travel/compass', purpose: 'travelDay', steps: daySteps });
+      startCascade(get, set, { title: t('tf.dayTitle'), icon: 'travel/compass', purpose: 'travelDay', steps: daySteps });
       return; // la clôture de la cascade (continueTravelDayAfterCascade) finalise le jour
     }
     // Aucun jet influençable : finalisation immédiate (arrivée / halte de nuit) — comme la cascade le
@@ -695,8 +695,8 @@ export function continueTravelDayAfterCascade(get: Get, set: Set, done?: Pending
     if (fp.vehicleLame) set({ travelPlan: { ...get().travelPlan!, vehicleLame: true } });
     if (fp.vehicleOut) {
       set({ travelPlan: { ...get().travelPlan!, mode: 'pied', allure: undefined } });
-      log(get, set, ['Le véhicule est hors d’usage — la route continue à pied.']);
-      recapDay?.lines.push({ text: 'Le véhicule est hors d’usage — la route continue à pied.', tone: 'bad' });
+      log(get, set, [t('tf.vehicleOut')]);
+      recapDay?.lines.push({ text: t('tf.vehicleOut'), tone: 'bad' });
     }
     if (recapDay) { recapDay.kmTo = get().travelPlan?.kmDone ?? recapDay.kmTo; recapDay.hours = fp.hours; }
   }
@@ -719,7 +719,7 @@ export function continueTravelDayAfterCascade(get: Get, set: Set, done?: Pending
       const h = get().party.find((x) => x.id === id);
       if (!h) continue;
       const r = forcedMarchTest(h, battleRng());
-      if (r) { log(get, set, [r.line]); recapDay?.entries?.push({ actorId: id, icon: 'travel/foot', label: 'Marche forcée', d: r.d, text: r.gained ? `+${r.gained} Exténué` : 'tient l’allure', tone: r.gained ? 'bad' : 'ok' }); }
+      if (r) { log(get, set, [r.line]); recapDay?.entries?.push({ actorId: id, icon: 'travel/foot', label: t('step.marcheForcee'), d: r.d, text: r.gained ? t('tf.fragExtenue', { n: r.gained }) : t('tf.holdsPace'), tone: r.gained ? 'bad' : 'ok' }); }
     }
     set({ party: [...get().party] });
   };
@@ -741,7 +741,7 @@ export function continueTravelDayAfterCascade(get: Get, set: Set, done?: Pending
     set({ travelPlan: null });
     const care = travelArrivalCare(get, set);
     if (recapDay) recapDay.lines.push(...toRecapLines(care));
-    log(get, set, [`— Arrivée à ${ctx.toLabel} —`, ...care]);
+    log(get, set, [t('tf.arrival', { to: ctx.toLabel }), ...care]);
     finishRecap('arrived', undefined, daysTotal);
     get().transitionTo(ctx.toScene, ctx.toEntry);
     return true;
@@ -763,7 +763,7 @@ export function continueTravelDayAfterCascade(get: Get, set: Set, done?: Pending
 function markLandInterrupt(get: Get, set: Set, then: TravelThen, destLabel: string): string[] {
   const plan = get().travelPlan;
   if (plan?.land) set({ travelPlan: { ...plan, land: { ...plan.land, interrupt: then } } });
-  return [`(Voyage vers ${destLabel} interrompu — il pourra reprendre depuis la carte.)`];
+  return [t('tf.travelInterrupted', { to: destLabel })];
 }
 
 registerCascadeApplier('landPeril', (get, set, step) => {
@@ -778,7 +778,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
   // 1. Péripéties d'AUTEUR (probabilité par jour, effets d'éditeur). startCombat/transition → DIFFÉRÉ.
   for (const peril of route.perils ?? []) {
     if (d100(battleRng()) > Math.max(0, Math.min(100, peril.chancePct))) continue;
-    j.push(`Péripétie : ${peril.label}`);
+    j.push(t('tf.perilAuthor', { label: peril.label }));
     if ((peril.effects ?? []).some((e) => e.type === 'startCombat' || e.type === 'transition')) {
       j.push(...markLandInterrupt(get, set, { kind: 'effects', effects: peril.effects }, destLabel));
       return { consequences: freeCons(j) };
@@ -792,7 +792,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
   const die = route.perilDie ?? get().worldMap?.params?.perilDie ?? TRAVEL_DEFAULTS.perilDie;
   if (die >= 1 && d10(battleRng()) === die) {
     const entry = PERIPETIES[d10(battleRng()) - 1];
-    j.push(`Péripétie de voyage (${entry.roll}) — ${entry.label} : ${entry.text}`);
+    j.push(t('tf.perilTable', { roll: entry.roll, label: entry.label, text: entry.text }));
     const party = get().party;
     if (entry.kind === 'reposant') {
       for (const h of party) {
@@ -801,11 +801,11 @@ registerCascadeApplier('landPeril', (get, set, step) => {
           // SOURCE UNIQUE `applyHealWounds` — plafond munition logée (LDB 62 l.250) même chemin que Guérison/repos.
           j.push(...applyHealWounds(h, h.wounds.max - h.wounds.current, {
             skillCheck: false, wake: false,
-            log: () => [h.wounds.current >= h.wounds.max ? `${h.label} récupère toutes ses Blessures.` : `${h.label} récupère des Blessures (munition logée bloque le reste).`],
+            log: () => [h.wounds.current >= h.wounds.max ? t('tf.healAll', { name: h.label }) : t('tf.healPartial', { name: h.label })],
           }));
         }
         const n = stacks(h, 'extenue');
-        if (n > 0) { removeCondition(h, 'extenue', n); j.push(`${h.label} n’est plus Exténué.`); }
+        if (n > 0) { removeCondition(h, 'extenue', n); j.push(t('tf.noMoreExtenue', { name: h.label })); }
       }
       set({ party: [...party] });
     } else if (entry.kind === 'ereintant') {
@@ -813,7 +813,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
       const best = partyAssisted(party, 'survie-en-exterieur'); // Soutien (LDB 12)
       const st = best && monoStep({
         id: 'peril-survie', kind: 'landPerilSurvie', actor: best.actor, icon: 'travel/compass', label: t('step.landPerilSurvie'),
-        rollLabel: 'Survie en extérieur', difficulty: 'accessible',
+        rollLabel: refLabel('skills', { id: 'survie-en-exterieur' }), difficulty: 'accessible',
         stake: voyageStakeRef('landPerilSurvie'),
         ligne: { test: { skill: 'survie-en-exterieur' }, valeur: best.value, soutien: best.support },
       });
@@ -826,14 +826,14 @@ registerCascadeApplier('landPeril', (get, set, step) => {
       const best = partyAssisted(party, 'perception'); // Soutien (LDB 12)
       const st = best && monoStep({
         id: 'peril-perception', kind: 'landPerilPerception', actor: best.actor, icon: 'ui/eye', label: t('step.landPerilPerception'),
-        rollLabel: 'Perception', difficulty: 'accessible',
+        rollLabel: refLabel('skills', { id: 'perception' }), difficulty: 'accessible',
         stake: voyageStakeRef('landPerilPerception'),
         ligne: { test: { skill: 'perception' }, valeur: best.value, soutien: best.support },
         meta: { destLabel, configured, ambushScene: route.ambush?.scene ?? '', ambushEntry: route.ambush?.entry ?? '', ambushEnc: route.ambush?.encounter ?? '' },
       });
       if (st) return { consequences: freeCons(j), insert: [st] };
       if (configured) { j.push(...markLandInterrupt(get, set, { kind: 'ambush', scene: route.ambush!.scene, entry: route.ambush!.entry, encounter: route.ambush!.encounter, noSurprise: false }, destLabel)); return { consequences: freeCons(j) }; }
-      j.push('(Aucune rencontre d’embuscade n’est configurée sur cette route — l’alerte reste sans suite.)');
+      j.push(t('tf.noAmbushConfigured'));
     }
     // narratif (default) : le texte au journal suffit.
   }
@@ -846,7 +846,7 @@ registerCascadeApplier('landPerilSurvie', (get, set, step, hero) => {
   if (!step.result) return;
   // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5) ;
   // succès sans effet (rien à ajouter) → aucune conséquence, l'échec parle par son effet (`applyEreintant`).
-  if (step.result.success) return { consequences: freeCons([`${hero?.label ?? 'Le groupe'} — Survie en extérieur (+20) : un itinéraire de substitution est trouvé.`]) };
+  if (step.result.success) return { consequences: freeCons([t('tf.survieOk', { who: hero?.label ?? t('tf.partyFallback') })]) };
   return { consequences: freeCons(applyEreintant(get, set)) };
 });
 
@@ -858,9 +858,9 @@ registerCascadeApplier('landPerilPerception', (get, set, step, hero) => {
   const destLabel = String(step.meta?.destLabel ?? '');
   // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5) ;
   // échec sans embuscade configurée (rien à ajouter) → aucune conséquence.
-  const j = step.result.success
-    ? [`${hero?.label ?? 'Le groupe'} — Perception (+20) : le groupe les voit venir !`]
-    : configured ? [`${hero?.label ?? 'Le groupe'} — Perception (+20) : embuscade !`] : [];
+  const j: string[] = step.result.success
+    ? [t('tf.perceptionOk', { who: hero?.label ?? t('tf.partyFallback') })]
+    : configured ? [t('tf.perceptionAmbush', { who: hero?.label ?? t('tf.partyFallback') })] : [];
   if (configured) j.push(...markLandInterrupt(get, set, {
     kind: 'ambush', scene: String(step.meta?.ambushScene ?? ''), entry: String(step.meta?.ambushEntry ?? '') || undefined,
     encounter: String(step.meta?.ambushEnc ?? ''), noSurprise: step.result.success,
@@ -883,14 +883,14 @@ function resolveMountedTravelDay(get: Get, set: Set, hoursToday: number, allure:
   let fell = false;
   for (const o of outcomes) {
     lines.push(...o.lines);
-    for (const t of o.tests) {
-      day.entries!.push({ actorId: o.mount.hero.id, icon: 'travel/mount', label: t.label, d: t, text: t.success ? 'tient l’allure' : 'flanche', tone: t.success ? 'ok' : 'bad' });
+    for (const mt of o.tests) {
+      day.entries!.push({ actorId: o.mount.hero.id, icon: 'travel/mount', label: mt.label, d: mt, text: mt.success ? t('tf.holdsPace') : t('tf.flanche'), tone: mt.success ? 'ok' : 'bad' });
     }
     for (const inc of o.incidents) {
       if (inc.riderTest) {
         day.entries!.push({
-          actorId: o.mount.hero.id, icon: 'travel/mount', label: `${inc.entry.label} — Chevaucher`, d: inc.riderTest,
-          text: inc.riderTest.success ? 'se maintient en selle' : 'chute (2 m)', tone: inc.riderTest.success ? 'ok' : 'bad',
+          actorId: o.mount.hero.id, icon: 'travel/mount', label: t('tf.mountIncident', { incident: inc.entry.label }), d: inc.riderTest,
+          text: inc.riderTest.success ? t('tf.staysInSaddle') : t('tf.fallsOff'), tone: inc.riderTest.success ? 'ok' : 'bad',
         });
       }
       // Chute de selle (2 mètres, EDOC 07 l.166/l.171) — Dégâts de Chute (LDB 15) via la brique partagée.
@@ -902,7 +902,7 @@ function resolveMountedTravelDay(get: Get, set: Set, hoursToday: number, allure:
     const injury = injuries.get(o.mount.possession.uid) ?? o.mount.possession.mountInjury;
     if (o.dead || injury === 'patte-brisee') {
       abandoned.add(o.mount.possession.uid);
-      lines.push(`${o.mount.hero.label} abandonne ${possessionLabel(o.mount.possession)} sur la route.`);
+      lines.push(t('tf.mountAbandoned', { name: o.mount.hero.label, mount: possessionLabel(o.mount.possession) }));
     }
   }
   if (injuries.size || abandoned.size || fell) {
@@ -921,7 +921,7 @@ function resolveMountedTravelDay(get: Get, set: Set, hoursToday: number, allure:
   day.lines.push(...toRecapLines(lines));
   if (!partyFullyMounted(get().party, get().possessions)) {
     set({ travelPlan: { ...get().travelPlan!, mode: 'pied', allure: undefined } });
-    const l = 'Le groupe n’est plus monté au complet — la route continue à pied.';
+    const l: string = t('tf.notAllMounted');
     log(get, set, [l]);
     day.lines.push({ text: l });
   }
@@ -974,17 +974,17 @@ function forcedPaceDay(get: Get, set: Set, kmLeft: number): ForcedPaceDayResult 
       // La rangée du récap NOMME ce qui compose la valeur : le Soutien des passagers (LDB 12, fondu
       // dans `driver.value`) et les crans déjà avalés au pas de course.
       d: testDetail('Conduite d’attelage', driverLine.base, roll,
-        [...driverLine.mods, ...(gallopMod ? [{ label: 'pas de course', value: gallopMod, famille: 'jet' as const }] : [])]),
-      text: stupefiant ? 'Échec Stupéfiant — Problème de véhicule !' : 'les bêtes repassent au pas', tone: 'bad',
+        [...driverLine.mods, ...(gallopMod ? [{ label: t('tf.modGallop'), value: gallopMod, famille: 'jet' as const }] : [])]),
+      text: stupefiant ? t('tf.forcedStupefiant') : t('tf.forcedBackToWalk'), tone: 'bad',
     });
     // Le jet est DÉJÀ affiché par la rangée `day.entries` (MultiRollList) du même recap — pas de
     // re-print du roll/target (#295 Lot 5) ; le verdict reste pour le journal général (surface SANS rangée).
-    out.lines.push(`${driver?.actor.label ?? 'Le conducteur'} — Conduite d'attelage (allure forcée) : ÉCHEC${stupefiant ? ' STUPÉFIANT' : ''}, l'attelage repasse au pas.`);
+    out.lines.push(t('tf.forcedFail', { name: driver?.actor.label ?? t('tf.driverFallback'), stupefiant: stupefiant ? t('tf.fragStupefiant') : '' }));
     // « chacun doit réussir un Test de Résistance Intermédiaire (+0) ou acquérir un État Exténué » (l.229)
     // — les bêtes de l'attelage (transport, sans rangée dédiée) : le journal PORTE seul leur jet.
     for (let i = 0; i < veh.draft!.count; i++) {
       const rt = rollTest(draft.e, 'intermediaire', battleRng());
-      if (!rt.success) out.lines.push(`Une bête de l'attelage est Exténuée (Résistance ${rt.roll}/${rt.target}).`);
+      if (!rt.success) out.lines.push(t('tf.beastExhausted', { roll: rt.roll, target: rt.target }));
     }
     if (stupefiant) {
       const pb = applyVehicleProblemToTravel(get, set, out);
@@ -1023,16 +1023,16 @@ function applyVehicleProblemToTravel(get: Get, set: Set, out: Pick<ForcedPaceDay
     // Repli IA/synchrone (`forcedPaceDay`) : aucune rangée nulle part pour ce jet — le journal est
     // la SEULE surface, et sa ligne se DÉRIVE (`traceLineOf`), porteur fondu dans le libellé (la phrase
     // NOMME déjà le conducteur).
-    out.lines.push(`Problème de véhicule — ${entry.label}.`, traceLineOf({
-      label: `${driver?.actor.label ?? 'Le conducteur'} tente de reprendre le contrôle`,
+    out.lines.push(t('tf.vehicleProblem', { label: entry.label }), traceLineOf({
+      label: t('tf.retakeControl', { name: driver?.actor.label ?? t('tf.driverFallback') }),
       roll: rt.roll, target: rt.target, success: rt.success,
-      issue: rt.success ? 'l’attelage est maîtrisé' : 'ACCIDENT',
+      issue: rt.success ? t('tf.controlHeld') : t('tf.controlLost'),
     }));
     if (rt.success) return { vehicleOut: false, vehicleLame: false };
     entry = rollVehicleProblem(96); // 96-00 = Accident (table verbatim)
   } else if (entry.id === 'casse') {
     // « Si le véhicule se déplaçait plus vite que la marche, traitez ce résultat comme un Accident » (l.276).
-    out.lines.push(`Problème de véhicule — ${entry.label}, à pleine allure : ACCIDENT !`);
+    out.lines.push(t('tf.vehicleProblemAccident', { label: entry.label }));
     entry = rollVehicleProblem(96);
   }
   return applyVehicleProblemEffects(get, set, entry, out.lines);
@@ -1084,7 +1084,7 @@ function buildForcedPaceStep(driver: { actor: Combatant; value: number; support?
     stake: voyageStakeRef('landForcedPace'),
     ligne: {
       test: { skill: 'conduite-d-attelage' }, valeur: driver.value + penalty, soutien: driver.support,
-      ...(penalty ? { dansLaValeur: [{ label: `Km déjà au pas de course (${galloped})`, value: penalty, famille: 'jet' as const }] } : {}),
+      ...(penalty ? { dansLaValeur: [{ label: t('tf.modGalloped', { n: galloped }), value: penalty, famille: 'jet' as const }] } : {}),
     },
     meta: { kmLeft, galloped, km, hours },
   });
@@ -1111,7 +1111,7 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
   // testent la MÊME chose que le km courant, ils ne rejouent pas une valeur figée (LDB 12 l.189).
   const driver = forcedPaceDriver(get);
   let km = Number(m.km), hours = Number(m.hours);
-  const name = hero?.label ?? 'Le conducteur';
+  const name = hero?.label ?? t('tf.driverFallback');
   const plan = get().travelPlan!;
   const veh = vehicleTravel(plan.mode)!;
   const draft = mountProfileById(veh.draft!.montureId)!;
@@ -1120,7 +1120,7 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
   if (step.result.success) {
     km += 1; hours += 1 / gallopKmh;
     // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
-    const j = [`${name} — Conduite d'attelage (allure forcée) : l'attelage tient l'allure de course.`];
+    const j = [t('tf.forcedOk', { name })];
     if (hours < plan.hoursPerDay - 1e-9 && km < kmLeft - 1e-9 && step.actorId && hero && driver) {
       const suivant = buildForcedPaceStep(driver, kmLeft, galloped + 1, km, hours);
       if (suivant) return { consequences: freeCons(j), insert: [suivant] };
@@ -1131,10 +1131,10 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
   const stupefiant = step.result.sl <= -6; // Échec Stupéfiant (EDOC 07 l.253)
   // Le jet du conducteur est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print
   // (#295 Lot 5) ; les bêtes de l'attelage n'ont AUCUNE rangée dédiée — le journal les porte seul.
-  const j = [`${name} — Conduite d'attelage (allure forcée) : ÉCHEC${stupefiant ? ' STUPÉFIANT' : ''}, l'attelage repasse au pas.`];
+  const j: string[] = [t('tf.forcedFail', { name, stupefiant: stupefiant ? t('tf.fragStupefiant') : '' })];
   for (let i = 0; i < veh.draft!.count; i++) {
     const rt = rollTest(draft.e, 'intermediaire', battleRng());
-    if (!rt.success) j.push(`Une bête de l'attelage est Exténuée (Résistance ${rt.roll}/${rt.target}).`);
+    if (!rt.success) j.push(t('tf.beastExhausted', { roll: rt.roll, target: rt.target }));
   }
   // Reste de la JOURNÉE (pas de l'ensemble du trajet) à la cadence de base — plafonné par le budget
   // d'heures RESTANT du jour (`plan.hoursPerDay - hours`), EXACTEMENT `forcedPaceDay` (l.795).
@@ -1148,7 +1148,7 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
   const roll = d100(battleRng());
   let entry = rollVehicleProblem(roll);
   if (entry.id === 'incontrolable') {
-    j.push(`Problème de véhicule — ${entry.label}.`);
+    j.push(t('tf.vehicleProblem', { label: entry.label }));
     if (step.actorId && hero && driver) {
       const st = monoStep({
         id: `${step.id}-control`, kind: 'landForcedPaceControl', actor: driver.actor, icon: 'travel/cart',
@@ -1169,14 +1169,14 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
     // Sans conducteur du tout, il ne reste que la valeur nue de l'acteur de l'étape.
     const rt = rollSansPilote(get, driver?.actor ?? hero, driver?.value ?? testValue(hero!, 'conduite-d-attelage'), 'intermediaire', battleRng());
     j.push(traceLineOf({
-      label: `${name} tente de reprendre le contrôle`,
+      label: t('tf.retakeControl', { name }),
       roll: rt.roll, target: rt.target, success: rt.success,
-      issue: rt.success ? 'l’attelage est maîtrisé' : 'ACCIDENT',
+      issue: rt.success ? t('tf.controlHeld') : t('tf.controlLost'),
     }));
     if (rt.success) { finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, vehicleOut: false, vehicleLame: false }); return { consequences: freeCons(j) }; }
     entry = rollVehicleProblem(96);
   } else if (entry.id === 'casse') {
-    j.push(`Problème de véhicule — ${entry.label}, à pleine allure : ACCIDENT !`);
+    j.push(t('tf.vehicleProblemAccident', { label: entry.label }));
     entry = rollVehicleProblem(96);
   }
   const outcome = applyVehicleProblemEffects(get, set, entry, j);
@@ -1190,9 +1190,9 @@ registerCascadeApplier('landForcedPaceControl', (get, set, step, hero) => {
   if (!step.result) return;
   const m = step.meta!;
   const finalKm = Number(m.finalKm), finalHours = Number(m.finalHours);
-  const name = hero?.label ?? 'Le conducteur';
+  const name = hero?.label ?? t('tf.driverFallback');
   // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
-  const j = [`${name} tente de reprendre le contrôle : ${step.result.success ? 'l’attelage est maîtrisé.' : 'ACCIDENT !'}`];
+  const j = [t('tf.retakeControlDone', { name, issue: t(step.result.success ? 'tf.controlHeldDot' : 'tf.controlLostBang') })];
   if (step.result.success) { finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, vehicleOut: false, vehicleLame: false }); return { consequences: freeCons(j) }; }
   const entry = rollVehicleProblem(96); // 96-00 = Accident (table verbatim)
   const outcome = applyVehicleProblemEffects(get, set, entry, j);
@@ -1213,7 +1213,7 @@ function travelArrivalCare(get: Get, set: Set): string[] {
   const possessions = get().possessions.map((p) => {
     if (p.nature !== 'bete' || !p.mountInjury || p.mountInjury === 'patte-brisee') return p;
     const h = heroById.get(p.ownerId);
-    lines.push(`${possessionLabel(p)}${h ? ` (${h.label})` : ''} est ${p.mountInjury === 'boiteux' ? 'soignée' : 'remise en état'} à l'étape.`);
+    lines.push(t('tf.mountCared', { mount: possessionLabel(p), owner: h ? t('tf.fragMountOwner', { name: h.label }) : '', soin: t(p.mountInjury === 'boiteux' ? 'tf.mountHealed' : 'tf.mountRepaired') }));
     touched = true;
     return { ...p, mountInjury: undefined };
   });
@@ -1229,14 +1229,14 @@ function applyEreintant(get: Get, set: Set): string[] {
   for (const h of party) {
     if (h.dead) continue;
     addCondition(h, 'extenue', 1);
-    lines.push(`${h.label} : +1 Exténué (détour épuisant).`);
+    lines.push(t('tf.detourExhausted', { name: h.label }));
   }
   set({ party: [...party], gameTime: get().gameTime + 24 * 60 }); // un jour de plus sur la route
   bus.emit(EVT.TIME_ADVANCED, { minutes: 24 * 60 });
   // Le jour de retard NE roule PAS l'entretien en eager (sinon Faim avant le repas de la halte) :
   // ce franchissement supplémentaire est décompté dans la cascade de nuit (`buildNightCascade`), qui
   // couvre tous les jours écoulés depuis `lastUpkeepDay` — donc ce détour aussi (non nourri : pas de repas ce jour-là).
-  lines.push('Le détour coûte une journée entière au groupe.');
+  lines.push(t('tf.detourDay'));
   log(get, set, lines);
   return lines;
 }

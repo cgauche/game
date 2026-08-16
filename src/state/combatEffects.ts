@@ -65,7 +65,8 @@ import { addPossession, type PossessionInput } from './possessionsFlow';
 import { possessionLabel, type Possession, type LivingRef } from '../engine/possession';
 import { ev } from './combatLog';
 import { t } from '../i18n';
-import { stepPrecision } from './rollSeam';
+import { stepPrecision, stepDetail } from './rollSeam';
+import { dataLabel } from '../data';
 
 /**
  * Effets de scène/campagne (`Effect[]`) appliqués par le store : le grand `applyEffects`
@@ -152,14 +153,14 @@ export function entityPickables(ent: { interact?: { flow: Flow } }): { key: stri
 export function checkTriggers(get: Get, set: SetFn) {
   const { scene, partyPos, flags } = get();
   if (!scene) return;
-  for (const t of scene.triggers) {
-    if (flags[`__trigger_${t.id}`]) continue;
-    if (!inRect(partyPos, t.rect)) continue;
-    if ((t.rect.z ?? 0) !== (partyPos.z ?? 0)) continue;
-    if (t.when && !evalCondition(t.when, condCtx(get))) continue;
-    if (t.once) flags[`__trigger_${t.id}`] = true;
+  for (const trig of scene.triggers) {
+    if (flags[`__trigger_${trig.id}`]) continue;
+    if (!inRect(partyPos, trig.rect)) continue;
+    if ((trig.rect.z ?? 0) !== (partyPos.z ?? 0)) continue;
+    if (trig.when && !evalCondition(trig.when, condCtx(get))) continue;
+    if (trig.once) flags[`__trigger_${trig.id}`] = true;
     set({ flags: { ...flags } });
-    runFlow(get, set, t.flow, 'Découverte');
+    runFlow(get, set, trig.flow, t('eff.flowTitleDiscovery'));
   }
 }
 
@@ -230,13 +231,14 @@ export function harvestVictoryCreature(get: Get, set: SetFn, creatureId: string)
   const size = harvestSizeOf(c);
   const full = harvestYield(p, size, 0, 'Frais');
   const lo = harvestYield(p, size, -1, 'Frais');
-  const part = (enc: number) => `Pièces de ${name} (${enc} Enc)`; // objet CUSTOM (hors catalogue)
+  const part = (enc: number) => t('eff.harvestPart', { creature: name, enc }); // objet CUSTOM (hors catalogue)
+  const titre = stepDetail(t('eff.harvest'), dataLabel(name));
   if (pv) set({ pendingVictory: { ...pv, harvested: [...(pv.harvested ?? []), creatureId] } }); // grise le bouton
   runFlow(get, set, testFlow(
-    { skill: 'Savoir (Bêtes)', difficulty: 'intermediaire', label: `Récolter — ${name}`, stake: combatStakeRef('harvestCreature', { values: { encPlein: full.enc, encEchec: lo.enc } }) },
+    { skill: 'Savoir (Bêtes)', difficulty: 'intermediaire', label: titre, stake: combatStakeRef('harvestCreature', { values: { encPlein: full.enc, encEchec: lo.enc } }) },
     flowFromEffects([{ type: 'giveTrapping', custom: part(full.enc), price: full.total }]),
     flowFromEffects([{ type: 'giveTrapping', custom: part(lo.enc), price: lo.total }]),
-  ), `Récolter — ${name}`);
+  ), titre);
 }
 
 /** Lot 0 — déclenche les effets PROGRAMMÉS (file `scheduledEffects`) dont l'échéance est atteinte.
@@ -257,7 +259,7 @@ export function fireScheduledEffects(get: Get, set: SetFn) {
     // position de chute et dans son camp (`applySummon`, MÊME résolveur que les invocations de sort). Le
     // `caster` est un instantané minimal du défunt — applySummon n'en lit que id/name/kind/pos.
     if (s.respawn) { for (const line of applySummon(get, set, s.respawn.caster as unknown as Combatant, s.respawn.summon, { rng: battleRng() })) get().log(line); continue; }
-    if (s.flow) runFlow(get, set, s.flow, 'Événement');
+    if (s.flow) runFlow(get, set, s.flow, t('eff.flowTitleEvent'));
   }
 }
 
@@ -501,7 +503,7 @@ export function openSkillTest(
  * vide le lot, ouvre la modale et SUSPEND — la branche choisie + la continuation (reste de la pile)
  * sont reprises par `resolveTest`. Pas de boucle → terminaison garantie.
  */
-export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet', sl?: number): void {
+export function runFlow(get: Get, set: SetFn, flow: Flow, label: string = t('eff.flowTitle'), sl?: number): void {
   const stack: Flow[] = [flow];
   const batch: Effect[] = [];
   const flush = () => { if (batch.length) applyEffectsLoot(get, set, batch.splice(0), label, sl); };
@@ -938,7 +940,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       // Un Bienheureux prie NORMALEMENT (Miracle/Bénédiction) — les Petites Prières sont la voie des
       // non-Bénis (LDB 25 l.24).
       if (isBeni(target)) {
-        env.log(`${target.label} est Béni — il prie directement (les Petites Prières sont la voie des non-Bénis).`);
+        env.log(t('eff.petitePriereBeni', { name: target.label }));
         return;
       }
       // Seuil : « exaucé sur 01 » ; LDB 25 l.22-24 — silence, valeur maison (règle
@@ -947,10 +949,10 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const threshold = 1 + Math.max(0, priereAdv) * Number(rule('prayer-petites-bonus-per-advance'));
       const roll = d100(battleRng());
       if (petitePriereAnswered(roll, threshold)) {
-        env.log(`${target.label} prie sur le site sacré (${roll} ≤ ${threshold}) — et les dieux l'entendent !`);
-        runFlow(env.get, env.set, e.reward, 'Petite Prière exaucée'); // récompense authorée (bonus/don/flag)
+        env.log(t('eff.petitePriereOk', { name: target.label, roll, threshold }));
+        runFlow(env.get, env.set, e.reward, t('eff.petitePriereReward')); // récompense authorée (bonus/don/flag)
       } else {
-        env.log(`${target.label} prie sur le site sacré (${roll}) — sans réponse divine.`);
+        env.log(t('eff.petitePriereKo', { name: target.label, roll }));
       }
     },
   },
@@ -1150,7 +1152,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const steps: BuiltCascadeStep[] = [];
       const lines: string[] = [];
       for (const c of heroes) {
-        if (isWeatherWarded(c)) { lines.push(`${c.label} ignore ${kind === 'froid' ? 'le froid et les intempéries' : 'la chaleur'} (protection magique).`); continue; }
+        if (isWeatherWarded(c)) { lines.push(t('eff.weatherWarded', { name: c.label, what: t(kind === 'froid' ? 'eff.wardFroid' : 'eff.wardChaleur') })); continue; }
         const resVal = testValue(c, 'resistance', 'endurance');
         const target = kind === 'froid' ? exposureTarget(c, resVal) : Math.max(0, resVal);
         // Ligne montée ICI : au FROID la cible vient d'`exposureTarget` (le manteau manquant y est fondu,
@@ -1168,7 +1170,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       // BANDE d'Exposition (#1117 L3) : une fenêtre par VAGUE, les héros exposés en rangées — les
       // vagues suivantes se déroulent APRÈS les délestages de la précédente (`nextExposureWave`).
       const band = exposureWaveBand(steps, kind, count);
-      if (band.length) openSequence(env.get, env.set, { title: kind === 'froid' ? 'Exposition au froid' : 'Exposition à la chaleur', icon: 'rest/cold', purpose: 'test', steps: band });
+      if (band.length) openSequence(env.get, env.set, { title: t(kind === 'froid' ? 'eff.expoFroidTitre' : 'eff.expoChaleurTitre'), icon: 'rest/cold', purpose: 'test', steps: band });
     },
   },
   inflictTrauma: {
@@ -1241,7 +1243,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       // Psychologie de rencontre (`openScriptedPsych`, applier 'encounterPsych' partagé) — jamais un jet
       // silencieux. Frénésie s'octroie déjà via `ops`/`grantPsychTrait` (capacité, pas une affliction testée).
       const heroes = env.targets(e.target ?? 'party', e.heroId);
-      openScriptedPsych(env.get, env.set, e.kind, Math.max(1, e.indice ?? 1), e.label || 'Scène', heroes);
+      openScriptedPsych(env.get, env.set, e.kind, Math.max(1, e.indice ?? 1), e.label || t('eff.psychScene'), heroes);
     },
   },
   corruptionExposure: {
@@ -1440,20 +1442,20 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     make: () => ({ type: 'adjustManann', delta: { flat: 5, d10: 0, sign: 1 } }),
     apply: (e, env) => {
       const vessel = env.get().vessel;
-      if (!vessel) { env.log('Humeur de Manann : pas de navire de campagne — sans effet.'); return; }
+      if (!vessel) { env.log(t('eff.manannNoVessel')); return; }
       const mood = vesselManann(vessel);
       if (e.factorId) {
         const already = mood.applied.includes(e.factorId);
         const { mood: next, delta, label } = applyManannFactor(mood, e.factorId, battleRng());
-        if (already) { env.log(`Humeur de Manann : facteur « ${label ?? e.factorId} » déjà appliqué à ce navire — sans effet.`); return; }
+        if (already) { env.log(t('eff.manannAlready', { factor: label ?? e.factorId })); return; }
         env.set({ vessel: { ...vessel, manann: next } });
-        env.log(`Humeur de Manann : ${delta >= 0 ? '+' : ''}${delta} (${label ?? e.factorId}).`);
+        env.log(t('eff.manannFactor', { delta: `${delta >= 0 ? '+' : ''}${delta}`, factor: label ?? e.factorId }));
         return;
       }
       if (e.delta) {
         const rolled = e.delta.sign * (e.delta.flat + (e.delta.d10 > 0 ? rollDice(e.delta.d10, 10, battleRng()) : 0));
         env.set({ vessel: { ...vessel, manann: addManann(mood, rolled) } });
-        env.log(`Humeur de Manann : ${rolled >= 0 ? '+' : ''}${rolled}.`);
+        env.log(t('eff.manannRolled', { delta: `${rolled >= 0 ? '+' : ''}${rolled}` }));
       }
     },
     refs: (e) => (e.factorId && !findManannFactor(e.factorId)) ? [{ level: 'error', message: `Effet → facteur Manann inexistant « ${e.factorId} »` }] : [],
@@ -1463,25 +1465,25 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     make: () => ({ type: 'adjustVessel' }),
     apply: (e, env) => {
       const vessel = env.get().vessel;
-      if (!vessel) { env.log('Ajustement du navire : pas de navire de campagne — sans effet.'); return; }
+      if (!vessel) { env.log(t('eff.vesselNoVessel')); return; }
       const parts: string[] = [];
       const next: typeof vessel = { ...vessel };
-      if (e.label?.trim()) { next.label = e.label.trim(); parts.push(`nom « ${e.label.trim()} »`); }
-      if (e.morale != null) { next.morale = { ...vessel.morale, score: e.morale }; parts.push(`moral ${e.morale}`); }
-      if (e.saboteurDR != null) { next.saboteurDR = clampSaboteurDR(e.saboteurDR); parts.push(`sabotage ${next.saboteurDR} DR`); }
-      if (e.waterLitres != null) { next.waterLitres = Math.max(0, e.waterLitres); parts.push(`eau ${next.waterLitres} L`); }
-      if (e.provisions != null) { next.provisions = Math.max(0, e.provisions); parts.push(`vivres ${next.provisions} j`); }
-      if (e.crew && e.crew.length) { next.crew = e.crew.filter((h) => h.roleId && h.count > 0); parts.push(`équipage ${next.crew.reduce((s, h) => s + h.count, 0)}`); }
+      if (e.label?.trim()) { next.label = e.label.trim(); parts.push(t('eff.vesselName', { label: e.label.trim() })); }
+      if (e.morale != null) { next.morale = { ...vessel.morale, score: e.morale }; parts.push(t('eff.vesselMorale', { n: e.morale })); }
+      if (e.saboteurDR != null) { next.saboteurDR = clampSaboteurDR(e.saboteurDR); parts.push(t('eff.vesselSabotage', { n: next.saboteurDR })); }
+      if (e.waterLitres != null) { next.waterLitres = Math.max(0, e.waterLitres); parts.push(t('eff.vesselWater', { n: next.waterLitres })); }
+      if (e.provisions != null) { next.provisions = Math.max(0, e.provisions); parts.push(t('eff.vesselProvisions', { n: next.provisions })); }
+      if (e.crew && e.crew.length) { next.crew = e.crew.filter((h) => h.roleId && h.count > 0); parts.push(t('eff.vesselCrew', { n: next.crew.reduce((s, h) => s + h.count, 0) })); }
       // Blessures de coque : valeur ABSOLUE d'auteur → seam `setVesselHull` (#308, pas d'écriture directe
       // de `vessel.wounds` — resynchronise aussi la copie de travail `travelPlan.vehicle` si active).
       const hullMax = e.hullMax ?? vessel.wounds?.max ?? env.get().travelPlan?.vehicle?.wounds.max;
       const hasHullWrite = hullMax != null && (e.hullMax != null || e.hullCurrent != null);
       const hullCurrent = hasHullWrite ? (e.hullCurrent ?? hullMax) : undefined;
-      if (hasHullWrite) parts.push(`coque ${Math.max(0, Math.min(hullCurrent!, hullMax!))}/${hullMax}`);
-      if (!parts.length) { env.log('Ajustement du navire : aucun champ fourni — sans effet.'); return; }
+      if (hasHullWrite) parts.push(t('eff.vesselHull', { cur: Math.max(0, Math.min(hullCurrent!, hullMax!)), max: hullMax! }));
+      if (!parts.length) { env.log(t('eff.vesselNoField')); return; }
       env.set({ vessel: next });
       if (hasHullWrite) setVesselHull(env.get, env.set, hullCurrent!, hullMax!);
-      env.log(`Ajustement du navire : ${parts.join(', ')}.`);
+      env.log(t('eff.vesselDone', { parts: parts.join(', ') }));
     },
     refs: () => [],
   },
@@ -1555,9 +1557,9 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     apply: (e, env) => {
       const { get, set } = env;
       const caster = actorIn(get(), e.casterId);
-      if (!caster) { env.log(`Effet Incanter : lanceur « ${e.casterId} » introuvable (en combat, ou héros du groupe hors combat).`); return; }
+      if (!caster) { env.log(t('eff.castCasterMissing', { id: e.casterId })); return; }
       const spell = findSpellById(e.spellId);
-      if (!spell) { env.log(`Effet Incanter : sort « ${e.spellId} » introuvable.`); return; }
+      if (!spell) { env.log(t('eff.castSpellMissing', { id: e.spellId })); return; }
       const target = (e.targetId ? actorIn(get(), e.targetId) : undefined) ?? caster;
       if (e.mode === 'forceSuccess') {
         // Arbitrage D'AUTEUR explicite (rituel garanti) : le RAW ne prévoit aucun lancer scripté SANS jet —

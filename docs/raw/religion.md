@@ -173,7 +173,7 @@ Règles précises :
 - Se cumule avec la Maladresse : une Maladresse déclenche la Colère des dieux **indépendamment** du Péché.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 40` (l.35-36) → `discreetPrayerDifficulty`, `wrath-table`, `peche`, `CastModal`, `Effect`, `prayerWrathTriggered`, `GameOp`, `OPTIONAL_RULES`, `FLOWS`, `GameState`, +33 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/miscast.json`, `src/engine/magic.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +10 fichiers
+- `LDB 40` (l.35-36) → `discreetPrayerDifficulty`, `wrath-table`, `peche`, `CastModal`, `Effect`, `prayerWrathTriggered`, `GameOp`, `FLOWS`, `GameState`, `PendingCast`, +32 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/miscast.json`, `src/data/reglesOptionnelles.json`, `src/engine/magic.ts`, `src/engine/ops.ts`, +10 fichiers
 
 ---
 
@@ -192,7 +192,7 @@ Le MJ peut aussi utiliser la table ou y piocher des résultats chaque fois qu'un
 **Après le jet** : réduire les Points de Péché de 1 (minimum 0). `LDB 40 l.46-50`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 40` (l.12-13, l.45-50) → `discreetPrayerDifficulty`, `castInfoIsPrayer`, `castInfo`, `liveTableDecl`, `wrath-table`, `peche`, `CastModal`, `Effect`, `prayerWrathTriggered`, `GameOp`, +43 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/miscast.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +12 fichiers
+- `LDB 40` (l.12-13, l.45-50) → `discreetPrayerDifficulty`, `castInfoIsPrayer`, `castInfo`, `liveTableDecl`, `wrath-table`, `peche`, `CastModal`, `Effect`, `prayerWrathTriggered`, `GameOp`, +42 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/miscast.json`, `src/data/reglesOptionnelles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, +12 fichiers
 
 ---
 

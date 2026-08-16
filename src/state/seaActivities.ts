@@ -41,7 +41,7 @@ import { itemFromTrappingById, recomputeLoadout, autoStowNewItem } from '../engi
 import { toBrass, fromBrass, formatMoney, PA_PER_CO } from '../engine/money';
 import { partyMoneyTotal, payFromGroup, payWithAllocation, soloPayer, distributeCredit, bourseOf } from './bourseFlow';
 import { cargoTotalEnc, OPPORTUNITE, opportunityTradePct } from '../engine/seaVoyage';
-import { findVehicleById, activityStakeRef } from '../data';
+import { findVehicleById, activityStakeRef, refLabel } from '../data';
 import type { Combatant } from '../engine/types';
 import type { TravelRecapDay } from './travelFlow';
 import { toRecapLines } from './recapLine';
@@ -114,11 +114,13 @@ function eligibleSeaActivityPicks(get: Get, picks: Record<string, SeaActivityPic
 
 /** Étape MONO « Cartographie » (l.288-290, `sea-activity-chart`) : Métier (Cartographe), Complexe (−10). */
 function buildSeaChartStep(hero: Combatant, def: ActivityDef, pick: SeaActivityPick): BuiltCascadeStep | undefined {
-  const test: RollRequest['test'] = { skill: 'metier', spec: 'Cartographe' };
+  // Spec par ID (#1341) : `testValue` compare `s.spec === spec` à l'ID porté par l'instance — un
+  // libellé ne matcherait aucun personnage et jaugerait le cartographe à sa carac nue.
+  const test: RollRequest['test'] = { skill: 'metier', spec: 'cartographe' };
   const difficulty = def.difficulty ?? 'complexe';
   return monoStep({
     id: `sea-activity-chart-${hero.id}`, kind: 'sea-activity-chart', actor: hero,
-    label: composeRollLabel(hero, 'Cartographie', test), difficulty, rollLabel: 'Métier (Cartographe)',
+    label: composeRollLabel(hero, 'Cartographie', test), difficulty, rollLabel: refLabel('skills', { id: 'metier', spec: 'cartographe' }),
     // L'enjeu d'une Activité EST l'Activité choisie : il vit sur SA fiche (`ActivityDef.stake`).
     stake: activityStakeRef(def.id),
     ligne: { test },

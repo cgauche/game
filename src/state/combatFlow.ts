@@ -3843,7 +3843,7 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
     const downgraded = componentDowngrade(severity);
     if (downgraded === null) {
       // Mineure → aucun effet : le composant a tout absorbé, on n'ouvre PAS d'Imparfaite.
-      return [`${caster.label} : le composant absorbe l'Incantation Imparfaite Mineure (aucun effet).`];
+      return [tr('cf.componentAbsorbs', { name: caster.label })];
     }
     return [
       tr('cf.componentDowngrade', { name: caster.label }),
@@ -5460,7 +5460,7 @@ function scheduleRespawnFromOp(
     summon: { ref, count, allyOfCaster: op.allyOfCaster },
   };
   set((s: GameState) => ({ scheduledEffects: [...s.scheduledEffects, { executeAt: s.gameTime + days * MINUTES_PER_DAY, cancelFlag: op.cancelFlag, respawn }] }));
-  return [`${actor.label} est terrassé… mais sa Source le reconstituera dans ${days} jour${days > 1 ? 's' : ''}.`];
+  return [tr('cf.sourceRebuilds', { name: actor.label, days, s: days > 1 ? 's' : '' })];
 }
 
 /** Type de Souffle « correspondant le mieux » au Domaine du lanceur (sort Souffle, LDB 47 p.244 :

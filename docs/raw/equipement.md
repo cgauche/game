@@ -447,7 +447,7 @@ Le Talent **Vision nocturne** étend le rayon effectif de toute source de lumiè
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 11` (l.176) → `ambush-vigilance`, `TraitCapabilities`, `trappeur`, `vigneron`, `tres-fort`, `tres-resistant`, `tricheur`, `tueur`, `veloce`, `vigilance`, +5 — `src/data/combat-stakes.json`, `src/data/index.ts`, `src/data/talents.json`, `src/state/vision.ts`
-- `LDB 74` (l.5-62) → `possessions-diverses`, `OPTIONAL_RULES` — `src/data/weaponGroups.json`, `src/engine/policy.ts`, `src/state/vision.ts`
+- `LDB 74` (l.5-62) → `possessions-diverses` — `src/data/reglesOptionnelles.json`, `src/data/weaponGroups.json`, `src/state/vision.ts`
 
 #### Grappin (1 CO, Limitée ; Enc 1)
 > LDB 74 l.45 : « couplé à une corde, il permet de gravir des surfaces inaccessibles. »

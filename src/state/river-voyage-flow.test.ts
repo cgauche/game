@@ -42,7 +42,7 @@ function crew(withSavoir = false): Combatant[] {
   const gunnar = createHero({ speciesId: 'humains-reiklander', careerId: 'batelier', label: 'Gunnar', motivation: 'x', rng: makeRNG(11), id: 'r-gunnar' });
   skill(gunnar, 'ramer', 50);
   skill(gunnar, 'voile', 45);
-  skill(gunnar, 'metier', 40, 'Construction de bateaux');
+  skill(gunnar, 'metier', 40, 'construction-de-bateaux'); // spec par ID (#1341) — la donnée en stocke un
   const otto = createHero({ speciesId: 'humains-reiklander', careerId: 'garde', label: 'Otto', motivation: 'x', rng: makeRNG(12), id: 'r-otto' });
   const lise = createHero({ speciesId: 'humains-reiklander', careerId: 'erudit', label: 'Lise', motivation: 'x', rng: makeRNG(13), id: 'r-lise' });
   const trio = [gunnar, otto, lise];
@@ -460,7 +460,10 @@ describe('#270 — Critique au gréement : esquive d’éclats gâtée par contr
     set({ pendingCascade: riggingFailStep(h.id) as never });
     get().cascadeNext();
     expect(get().pendingCascade).toBeNull(); // 1 seule étape, résolue inline → cascade close
-    expect(get().journal.join('\n')).toMatch(/Critique au greement/);
+    // La Localisation se LIT (« gréement »), elle ne s'affiche plus par son id de table (#1318 V8c₂) :
+    // cette attente verrouillait la fuite de moteur-speak.
+    expect(get().journal.join('\n')).toMatch(/Critique au gréement/);
+    expect(get().journal.join('\n'), 'aucun id de table à l’écran').not.toMatch(/greement|empetre/);
   });
 });
 
@@ -885,5 +888,69 @@ describe('#1262 V3 Lj — journée fluviale COMMANDÉE : chaque jet mono laisse 
     expect(get().pendingCascade?.purpose).toBe('travelDay');
     drainCascade(); // le joueur roule chaque étape DANS la fenêtre
     expect(traceLines(), 'la fenêtre a montré les dés : le journal ne les redit pas').toEqual([]);
+  });
+});
+
+/**
+ * #1341 — la SPÉCIALISATION d'un Test se demande par son ID, jamais par son LIBELLÉ.
+ *
+ * `skills.json` stocke les spécialisations en `{ id, label }` (`construction-de-bateaux` / « Construction
+ * de bateaux ») et un `SkillInstance` porte l'ID (`creatures.json` : `"spec": "armes-d-hast"`).
+ * `testValue` compare STRICTEMENT (`s.spec === spec`, `engine/skills.ts:78`) : une demande par libellé ne
+ * matche AUCUNE instance, la compétence est réputée absente et la valeur retombe sur la caractéristique
+ * NUE — le personnage est jaugé sans ses avances, en silence.
+ *
+ * Le site RÉEL : `bestShipwright` (`riverVoyageFlow.ts`) demandait `'Construction de bateaux'` puis
+ * `'Charpentier'` — le charpentier du bord était donc jaugé à sa Dextérité nue au lieu de sa compétence.
+ * La FIXTURE de ce fichier portait le même libellé (l.45) : les deux côtés se trompaient de la même
+ * façon, et le test restait VERT. Elle passe à l'id avec le code.
+ */
+describe('#1341 — la spec d’un Test se demande par ID (la donnée en stocke un), jamais par LABEL', () => {
+  /** Un charpentier : Dextérité figée à 30, +30 avances en Métier (Charpentier) → 60 s'il est TROUVÉ. */
+  function charpentier(): Combatant {
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'batelier', label: 'Bran', motivation: 'x', rng: makeRNG(21), id: 'r-bran' });
+    h.characteristics.dexterite = 30;
+    skill(h, 'metier', 30, 'charpentier');
+    return h;
+  }
+
+  it('testValue trouve la spécialisation par son ID — le LIBELLÉ ne matche rien et perd les avances', () => {
+    const h = charpentier();
+    expect(testValue(h, 'metier', undefined, 'charpentier'), 'par id : Dextérité 30 + 30 avances').toBe(60);
+    // Le cas FAUTIF, gardé comme contre-preuve : la demande par libellé rend la carac NUE (silencieusement).
+    expect(testValue(h, 'metier', undefined, 'Charpentier'), 'par libellé : la compétence est réputée absente').toBe(30);
+  });
+
+  it('le site réel (`bestShipwright` → étape de calfatage) jauge le charpentier AVEC ses avances', () => {
+    const h = charpentier();
+    // MÊME chemin que `bestShipwright` : `partyAssisted(party, 'metier', undefined, undefined, <spec>)`.
+    const parId = partyAssisted([h], 'metier', undefined, undefined, 'charpentier');
+    expect(parId?.value, 'la porte du seam voit la compétence du charpentier').toBe(60);
+  });
+
+  it('la spec demandée par le flux fluvial EXISTE dans `skills.json` (id, pas libellé)', () => {
+    const specs = findSkillById('metier')?.specs ?? [];
+    for (const id of ['construction-de-bateaux', 'charpentier']) {
+      expect(specs.some((s) => s.id === id), `spec « ${id} » absente de skills.json`).toBe(true);
+    }
+  });
+
+  it('BOUT-EN-BOUT : l’étape de réparation du gréement porte la valeur RÉELLE du charpentier du bord', () => {
+    // Le charpentier EMBARQUE (spec par id, comme la donnée) ; le gréement est brisé → `bestShipwright`
+    // monte l'étape `riverControlRepair`. Sa cible DOIT venir de Métier (Charpentier), pas de la carac nue.
+    launch(false, 45);
+    const bran = charpentier();
+    get().setParty([...get().party, bran]);
+    const plan = buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])!;
+    set({ travelPlan: { ...plan, river: { ...plan.river!, broken: true } } });
+    const { steps } = buildRiverDayCascade(get, set, get().worldMap!.routes[0], { scene: 'quai-b', label: 'Altdorf' });
+    const repair = steps.find((s) => s.kind === 'riverControlRepair');
+    expect(repair, 'gréement brisé → une étape de réparation est montée').toBeTruthy();
+    // Gunnar a Métier (Construction de bateaux) 40 avances : c'est LUI le meilleur réparateur, et sa
+    // valeur ne se lit que si la spec est demandée par ID.
+    const attendu = partyAssisted(get().party, 'metier', undefined, undefined, 'construction-de-bateaux')!;
+    expect(attendu.value, 'la fixture a bien un réparateur compétent').toBeGreaterThan(45);
+    expect(repair!.base, 'Niveau de Compétence NU du réparateur (jamais la carac nue)')
+      .toBe(skillBaseValue(attendu.actor, 'metier', 'construction-de-bateaux'));
   });
 });

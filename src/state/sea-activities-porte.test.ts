@@ -45,7 +45,7 @@ describe('#1262 V2 L5 — les Activités en mer passent par la PORTE', () => {
 
   it('Cartographie — l’étape MINTÉE est équivalente CHAMP À CHAMP à son ancien littéral, et le porteur est le cartographe', () => {
     const [cartographe, autre] = get().party;
-    (cartographe as Combatant).skills = [{ skillId: 'metier', spec: 'Cartographe', advances: 20 } as never];
+    (cartographe as Combatant).skills = [{ skillId: 'metier', spec: 'cartographe', advances: 20 } as never];
     (cartographe as Combatant).characteristics = { ...cartographe.characteristics, dexterite: 40 };
     set({ party: [...get().party], pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } } } as never);
 
@@ -59,13 +59,13 @@ describe('#1262 V2 L5 — les Activités en mer passent par la PORTE', () => {
 
     // LITTÉRAL D'AVANT MIGRATION, recopié tel quel (seaActivities.ts:120-125 à `b29cbe51`).
     const hero = get().party.find((h) => h.id === cartographe.id)!;
-    const test: RollRequest['test'] = { skill: 'metier', spec: 'Cartographe' };
+    const test: RollRequest['test'] = { skill: 'metier', spec: 'cartographe' };
     const def = activityById('cartographie')!;
     const difficulty = def.difficulty ?? 'complexe';
     const ancien = {
       id: `sea-activity-chart-${hero.id}`, kind: 'sea-activity-chart', actorId: hero.id,
       label: composeRollLabel(hero, 'Cartographie', test), difficulty, rollLabel: 'Métier (Cartographe)',
-      base: testValue(hero, 'metier', undefined, 'Cartographe'), target: effectiveTarget(hero, test, difficulty),
+      base: testValue(hero, 'metier', undefined, 'cartographe'), target: effectiveTarget(hero, test, difficulty),
       result: null, meta: { stashGold: 7 },
     };
 
@@ -122,7 +122,7 @@ describe('#1262 V2 L5 — les Activités en mer passent par la PORTE', () => {
    */
   it('« Tests >100 % » — le mint suit la policy, le clamp EN DUR de `travelActivitySpec` ne bouge pas', () => {
     const hero = get().party[0];
-    (hero as Combatant).skills = [{ skillId: 'metier', spec: 'Cartographe', advances: 200 } as never];
+    (hero as Combatant).skills = [{ skillId: 'metier', spec: 'cartographe', advances: 200 } as never];
     (hero as Combatant).characteristics = { ...hero.characteristics, dexterite: 80 };
     set({ party: [...get().party] } as never);
     const cible = get().party[0];

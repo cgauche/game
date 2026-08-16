@@ -18,7 +18,8 @@
 import { describe, it, expect } from 'vitest';
 import { t } from '../i18n';
 import { stepDetail, stepFraction, stepPrecision } from './rollSeam';
-import { dataLabel } from '../data';
+import { dataLabel, conditionLabel } from '../data';
+import { riverForceLabel } from '../engine/riverNavigation';
 import type { PlayerText } from '../i18n/playerText';
 
 /** Un site migré : ce que le flux écrivait AVANT, ce que le catalogue rend APRÈS. */
@@ -290,9 +291,144 @@ const V8C1: Site[] = [
   },
 ];
 
-const TOUS: Site[] = [...SEQUENCE, ...MARQUAGE, ...SIGNES, ...COMBAT, ...V8C1];
+/* ── V8c₂ : les cinq fichiers de la tranche 2 rendus au catalogue (invariant ZÉRO) ────────────────
+ * `combatEffects` (`eff.*`), `store` (`store.*`), `travelFlow` (`tf.*`), `riverVoyageFlow` (`rv.*`),
+ * `engine/disease` (`dz.*`). Échantillons pris sur les formes qui se cassent le plus vite : signe
+ * porté par l'appelant, pluriels multiples dans UNE phrase, fragments optionnels concaténés, unités
+ * accolées, ponctuation typographique (≤, −, ÷, —, …), et les compositions à DEUX clés. */
 
-describe('#1318 V8b/V8b₂/V8c₀/V8c₁ — la migration au catalogue est à PARITÉ D’OCTET', () => {
+const MALADIE = 'Peste noire', BETE = 'Cheval de trait', NAVIRE = 'La Sirène';
+
+const V8C2: Site[] = [
+  {
+    site: 'disease.ts:473 — déclaration des symptômes (guillemets français)',
+    avant: `${HEROS3} : les symptômes de « ${MALADIE} » se déclarent.`,
+    apres: t('dz.symptomsOnset', { name: HEROS3, disease: MALADIE }),
+  },
+  {
+    site: 'disease.ts:550 — maladie prolongée (+1d10 jours)',
+    avant: `${HEROS3} : ${MALADIE} persiste (+${7} jours).`,
+    apres: t('dz.persists', { name: HEROS3, disease: MALADIE, days: 7 }),
+  },
+  {
+    site: 'disease.ts:513 — Gangrène qui progresse (« échec(s) » invariable)',
+    avant: `${HEROS3} : la Gangrène progresse (${2} échec(s)).`,
+    apres: t('dz.gangreneProgress', { name: HEROS3, fails: 2 }),
+  },
+  {
+    site: 'disease.ts:63 — restant d’une instance à l’échelle du jour (unité accolée)',
+    avant: `${3} j`,
+    apres: t('dz.remainDays', { n: 3 }),
+  },
+  {
+    site: 'disease.ts:501 — libellé d’étape du Test de cycle (symptôme + maladie, clé `step.*` partagée)',
+    avant: `${'Fièvre'} (${MALADIE})`,
+    apres: t('step.sujetPrecision', { sujet: 'Fièvre', precision: MALADIE }),
+  },
+  {
+    site: 'combatEffects.ts:950 — Petite Prière exaucée (≤ typographique + apostrophe)',
+    avant: `${HEROS3} prie sur le site sacré (${1} ≤ ${3}) — et les dieux l'entendent !`,
+    apres: t('eff.petitePriereOk', { name: HEROS3, roll: 1, threshold: 3 }),
+  },
+  {
+    site: 'combatEffects.ts:1450 — Humeur de Manann (le SIGNE est porté par l’appelant)',
+    avant: `Humeur de Manann : ${-3 >= 0 ? '+' : ''}${-3} (${'Tempête essuyée'}).`,
+    apres: t('eff.manannFactor', { delta: `${-3 >= 0 ? '+' : ''}${-3}`, factor: 'Tempête essuyée' }),
+  },
+  {
+    site: 'combatEffects.ts:1484 — ajustement du navire (fragments joints par l’appelant)',
+    avant: `Ajustement du navire : ${['nom « La Sirène »', 'moral 5'].join(', ')}.`,
+    apres: t('eff.vesselDone', { parts: [t('eff.vesselName', { label: NAVIRE }), t('eff.vesselMorale', { n: 5 })].join(', ') }),
+  },
+  {
+    site: 'combatEffects.ts:1153 — protection magique contre l’exposition (fragment de 2ᵉ clé)',
+    avant: `${HEROS3} ignore ${'le froid et les intempéries'} (protection magique).`,
+    apres: t('eff.weatherWarded', { name: HEROS3, what: t('eff.wardFroid') }),
+  },
+  {
+    site: 'combatEffects.ts:239 — titre du Flow de récolte (fabrique `stepDetail`)',
+    avant: `Récolter — ${BETE}`,
+    apres: stepDetail(t('eff.harvest'), dataLabel(BETE)),
+  },
+  {
+    site: 'store.ts:1673 — avance de coque (pluriel porté par la variable)',
+    avant: `${NAVIRE} avance de ${2} case${2 > 1 ? 's' : ''} (cap ${'NE'}).`,
+    apres: t('store.shipAdvance', { ship: NAVIRE, n: 2, s: 2 > 1 ? 's' : '', dir: 'NE' }),
+  },
+  {
+    site: 'store.ts:2265 — vol terrestre (issue + fragment « porteurs » optionnels)',
+    avant: `Vol terrestre — ${'le convoi fuit'} : ${12} Enc de cargaison pillée (${30} %${2 > 1 ? `, ${2} porteurs` : ''}).`,
+    apres: t('store.cargoRaid', { issue: t('store.cargoRaidFled'), enc: 12, pct: 30, porteurs: t('store.fragCargoPorters', { n: 2 }) }),
+  },
+  {
+    site: 'store.ts:2434 — la porte tient (DEUX pluriels dans la même phrase)',
+    avant: `${'Porte de chêne'} : ${3} dégât${3 > 1 ? 's' : ''}, reste ${1} Blessure${1 > 1 ? 's' : ''}.`,
+    apres: t('store.doorHolds', { label: 'Porte de chêne', n: 3, s: 3 > 1 ? 's' : '', left: 1, sB: 1 > 1 ? 's' : '' }),
+  },
+  {
+    site: 'store.ts:2391 — dissipation (clé `cs.*` REPRISE, fragment optionnel)',
+    avant: `${'Dard de feu'} est dissipé${3 > 1 ? ` (${3} cibles libérées)` : ''}.`,
+    apres: t('cs.dispelDone', { spell: 'Dard de feu', extra: t('cs.fragDispelFreed', { n: 3 }) }),
+  },
+  {
+    site: 'travelFlow.ts:385 — départ (fragment d’allure optionnel, minuscules du LABEL de donnée)',
+    avant: `— En route vers ${'Altdorf'} (${42} km, ${'à pied'}${`, ${'galop'}`}) —`,
+    apres: t('tf.depart', { to: 'Altdorf', km: 42, mode: 'à pied', allure: t('tf.fragAllure', { allure: 'galop' }) }),
+  },
+  {
+    site: 'travelFlow.ts:982 — attelage forcé en échec (fragment « STUPÉFIANT » soudé au mot ÉCHEC)',
+    avant: `${HEROS3} — Conduite d'attelage (allure forcée) : ÉCHEC${true ? ' STUPÉFIANT' : ''}, l'attelage repasse au pas.`,
+    apres: t('tf.forcedFail', { name: HEROS3, stupefiant: t('tf.fragStupefiant') }),
+  },
+  {
+    // L'apostrophe de « à l'étape » est DROITE au site (U+0027) : le catalogue la reprend telle quelle.
+    site: 'travelFlow.ts:1216 — soin de monture à l’étape (propriétaire optionnel + issue en 2ᵉ clé)',
+    avant: `${BETE}${` (${HEROS3})`} est ${'soignée'} à l'étape.`,
+    apres: t('tf.mountCared', { mount: BETE, owner: t('tf.fragMountOwner', { name: HEROS3 }), soin: t('tf.mountHealed') }),
+  },
+  {
+    site: 'travelFlow.ts:795 — péripétie de la table d10 (trois champs de donnée)',
+    avant: `Péripétie de voyage (${4}) — ${'Averse'} : ${'La pluie détrempe la route.'}`,
+    apres: t('tf.perilTable', { roll: 4, label: 'Averse', text: 'La pluie détrempe la route.' }),
+  },
+  {
+    site: 'riverVoyageFlow.ts:424 — progression du jour (branche DÉRIVE, tiret cadratin + %)',
+    avant: `Progression du jour : ${18} km${' (dérive — 25 % de la vitesse).'}`,
+    apres: t('rv.progress', { km: 18, note: t('rv.fragDrift') }),
+  },
+  {
+    site: 'riverVoyageFlow.ts:816 — éclats du Critique (DEUX fragments optionnels enchaînés)',
+    // CORRIGÉ (#1318 V8c₂, micro-passe) : la branche IA rendait l'ID d'État (« gagne l'État empetre »)
+    // là où sa jumelle influençable rendait `conditionLabel`, et la Localisation était l'id de table
+    // (« Critique au greement »). L'oracle est le texte CORRECT : la parité avec un bug n'est pas un abri.
+    avant: `Critique au ${'gréement'} — ${HEROS3} subit ${5} Dégâts d'éclats${` et gagne l'État ${'Empêtré'}.`}${` (Initiative ${62}/${41} ratée)`}`,
+    apres: t('rv.splinterHit', { loc: t('rv.locGreement'), name: HEROS3, dmg: 5, cond: t('rv.fragSplinterCond', { cond: conditionLabel('empetre') }), dodge: t('rv.fragDodgeFailed', { roll: 62, target: 41 }) }),
+  },
+  {
+    site: 'riverVoyageFlow.ts:962 — échouage + renflouage (suite optionnelle à trois clés imbriquées)',
+    avant: `Le bateau s'échoue (coque −${12} Dégâts, l.99)${` — renflouage (Force ${'Difficile (−20)'}${' (malus −24 Enc : 20 bateau + 4 cargaison, l.99)'}) : ${55}/${40} → ${"il faudra s'y reprendre."}`}`,
+    apres: t('rv.grounded', { dmg: 12, suite: t('rv.fragRefloat', {
+      diff: 'Difficile (−20)', enc: t('rv.encMalus', { total: 24, boat: 20, cargo: 4 }),
+      roll: 55, target: 40, issue: t('rv.refloatKo'),
+    }) }),
+  },
+  {
+    // CORRIGÉ (#1318 V8c₂, micro-passe) : la FORCE était l'id capitalisé à la main (« Modere », sans
+    // accent) — elle vient désormais de la donnée (`riverForceLabel`), qui dit « Modéré ».
+    site: 'riverVoyageFlow.ts:293 — vent du jour (force lue à la DONNÉE + direction en 2ᵉ clé)',
+    avant: `Vent du jour : ${'Modéré'}, ${'vent contraire'} (MSRC 7 l.21).`,
+    apres: t('rv.windOfDay', { force: riverForceLabel('modere'), dir: t('rv.windContraire') }),
+  },
+  {
+    site: 'riverVoyageFlow.ts:935 — détection sans jet (le tiret cadratin TIENT LIEU de valeur)',
+    avant: `${'Rochers'} — détection (Agilité +0) : ${'—'} → ${'impact !'}`,
+    apres: t('rv.detectLine', { peril: 'Rochers', roll: t('rv.fragNoRoll'), issue: t('rv.detectKo') }),
+  },
+];
+
+const TOUS: Site[] = [...SEQUENCE, ...MARQUAGE, ...SIGNES, ...COMBAT, ...V8C1, ...V8C2];
+
+describe('#1318 V8b/V8b₂/V8c₀/V8c₁/V8c₂ — la migration au catalogue est à PARITÉ D’OCTET', () => {
   it.each(TOUS)('$site', ({ avant, apres }) => {
     expect(apres).toBe(avant);
   });
@@ -303,12 +439,37 @@ describe('#1318 V8b/V8b₂/V8c₀/V8c₁ — la migration au catalogue est à PA
     expect(SIGNES.length, 'DR positif, nul, négatif — le signe ne vit pas dans le gabarit').toBe(3);
     expect(COMBAT.length, 'les littéraux de combatFlow rendus au catalogue (V8c₀)').toBe(6 + 1);
     expect(V8C1.length, 'échantillons des trois flux passés MIGRÉS par V8c₁ (interlude / bataille de masse / marchand)').toBe(17);
-    expect(TOUS.length).toBe(44);
+    expect(V8C2.length, 'échantillons des cinq fichiers passés MIGRÉS par V8c₂ (effets / store / voyage terrestre / fluvial / maladies)').toBe(23);
+    expect(TOUS.length).toBe(67);
   });
 
   it('MUTATION : l’oracle est SENSIBLE — un tiret cadratin changé en tiret court diverge', () => {
     // Ce que le test attraperait si une édition du catalogue rabotait la ponctuation.
     expect(stepPrecision(t('pursuit.titreManche', { n: 3 }), distanceDite(DIST)))
       .not.toBe('Poursuite - manche 3 (Distance 4/10)');
+  });
+
+  /**
+   * FUITE D'ID — sonde promue en garde (#1318 V8c₂, micro-passe du juge). Deux lignes de la navigation
+   * fluviale rendaient du MOTEUR-SPEAK à l'œil du joueur : l'id d'État (« gagne l'État empetre », là où
+   * la branche jumelle passait par `conditionLabel`) et l'id de table de Critique (« Critique au
+   * greement »). Ce ne sont pas des fautes de frappe : c'est un id qui traverse la couche d'affichage.
+   *
+   * La garde balaie TOUS les oracles du fichier — un futur cas qui recopierait un id se ferait prendre
+   * ici, pas à la recette. Elle ne mesure QUE les ids déjà vus fuir : elle ne certifie pas le zéro.
+   */
+  it('FUITE D’ID : aucun oracle ne rend un id de donnée à l’écran (empetre / greement…)', () => {
+    const IDS_INTERDITS = /\b(empetre|greement|coque_|tres-fort|modere|construction-de-bateaux|charpentier)\b/;
+    const fuites = TOUS.filter((s) => IDS_INTERDITS.test(s.avant) || IDS_INTERDITS.test(s.apres))
+      .map((s) => `${s.site} → « ${s.apres} »`);
+    expect(fuites, 'un id de donnée s’affiche : passer par son libellé (conditionLabel/specLabel/rv.loc*)').toEqual([]);
+  });
+
+  it('CONTRE-PREUVE : la sonde de fuite d’id MORD (elle n’est pas vide-et-verte)', () => {
+    const IDS_INTERDITS = /\b(empetre|greement|coque_|tres-fort|modere|construction-de-bateaux|charpentier)\b/;
+    // Le texte EXACT que la production rendait avant le fix — il doit être refusé.
+    expect(IDS_INTERDITS.test("Critique au greement — Sigrid subit 5 Dégâts d'éclats et gagne l'État empetre.")).toBe(true);
+    // …et le texte corrigé passe.
+    expect(IDS_INTERDITS.test("Critique au gréement — Sigrid subit 5 Dégâts d'éclats et gagne l'État Empêtré.")).toBe(false);
   });
 });
