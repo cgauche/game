@@ -16,6 +16,7 @@ import {
   DIM_OPACITY,
   GHOST_DESAT,
   GHOST_OPACITY,
+  HIGHLIGHT_MIX,
   billboardMaterial,
   luminance709,
   poseBoards,
@@ -331,28 +332,76 @@ describe('Chrome des jetons — l’ALLURE passe au MATÉRIAU du billboard (#117
       expect(allure(chrome).opacity, `allure ${JSON.stringify(chrome)}`).toBeGreaterThanOrEqual(ALPHA_TEST);
   });
 
-  it('CIBLE SURVOLÉE : la silhouette prend la couleur de relation À LUMINANCE CONSTANTE', () => {
-    // La mise en évidence ÉCLAIRE : ça se MESURE, en luminance perçue (Rec. 709) et non sur le canal le
-    // plus fort — un rouge saturé y a un canal plein pour un huitième de la lumière d'un gris.
-    const SOMBRE = 0.25; // exposition à laquelle les trois teintes de relation tiennent sans borner
-    const flaques: FrameLights = { pool: [], slots: [], surfaceLuminance: SOMBRE };
+  /** Écart des canaux d'une couleur (max/min) : 1 = un gris, et pour une couleur de MATÉRIAU, ce que
+   *  la multiplication du fragment impose à TOUT texel du corps. */
+  const écart = (c: THREE.Color) => Math.max(c.r, c.g, c.b) / Math.min(c.r, c.g, c.b);
+  /** Ce que l'écran rend d'un texel d'art sous une couleur de matériau : `map_fragment` MULTIPLIE. */
+  const rendu = (texel: string, m: THREE.Color) => new THREE.Color(texel).multiply(m);
+  /** Deux texels d'ART d'un même corps : le gris pâle d'une robe de cheval, le brun d'un harnais. */
+  const ROBE = '#CFD2D0';
+  const HARNAIS = '#6b4a2f';
+  /** Exposition à laquelle les trois teintes de relation tiennent sans borner un canal. */
+  const SOMBRE = 0.25;
+
+  /** Couleur de matériau d'un corps posé sous cette relation, à cette exposition. */
+  function teinté(highlight: string | null, exposition = LUM): THREE.Color {
+    const b = board('h1');
+    const flaques: FrameLights = { pool: [], slots: [], surfaceLuminance: exposition };
+    poseBoards([b], CAMERA, () => null, flaques, () => ({ ghost: false, dim: false, highlight }));
+    return b.material.color.clone();
+  }
+
+  it('CIBLE SURVOLÉE : le corps GARDE son art — la teinte s’y mêle, elle ne le repeint pas', () => {
+    // La couleur de matériau MULTIPLIE le texel : son propre écart de canaux est celui qu'elle impose à
+    // tout le corps. Un aplat de la teinte y ferait entrer 13,8 (allié) à 21,8 (adversaire) — le gris
+    // pâle d'une robe en sortait vert plat, yeux et harnais noyés (#1337, capture utilisateur).
     for (const teinte of [ENEMY_TINT, ALLY_TINT, NEUTRAL_TINT]) {
-      const b = board('h1');
-      poseBoards([b], CAMERA, () => null, flaques, () => ({ ghost: false, dim: false, highlight: teinte }));
-      expect(luminance709(b.material.color), teinte).toBeCloseTo(SOMBRE, 6);
-      // …et c'est bien la COULEUR de relation, pas un gris : les canaux gardent leur rapport.
+      const m = teinté(teinte, SOMBRE);
       const brut = new THREE.Color(teinte);
-      expect(b.material.color.g / b.material.color.r).toBeCloseTo(brut.g / brut.r, 6);
+      expect(écart(m), `${teinte} : la teinte ne s’impose pas telle quelle`).toBeLessThan(écart(brut) / 3);
+      // ORDRE des canaux d'un texel : le brun du harnais reste plus rouge que vert, même sous le vert
+      // d'allié — c'est ce qui fait qu'on lit encore un harnais, et pas une silhouette.
+      const h = rendu(HARNAIS, m);
+      expect(h.r, `harnais sous ${teinte}`).toBeGreaterThan(h.g);
+      // …et la robe pâle (écart 1,03 de son cru) reste un gris TEINTÉ, pas l'aplat de la relation.
+      expect(écart(rendu(ROBE, m)), `robe sous ${teinte}`).toBeLessThan(3);
     }
   });
 
-  it('…ÉCART RÉSIDUEL : une teinte saturée sombre à pleine exposition BORNE ses canaux', () => {
-    const a = allure({ ghost: false, dim: false, highlight: ENEMY_TINT });
-    expect(Math.max(a.color.r, a.color.g, a.color.b), 'aucun canal au-delà de 1').toBeCloseTo(1, 6);
-    // Le rouge d'adversaire demanderait 1,84 de canal rouge pour tenir 0,5 de luminance : borné à 1, il
-    // en rend 0,321 (déclaré au site, `boardChromeTint`) — plus du double de ce que rendait la
-    // normalisation par canal max, et sans le virage de teinte qu'un re-gris aurait introduit.
-    expect(luminance709(a.color)).toBeCloseTo(0.321, 3);
+  it('…et la RELATION est bien présente : la couleur tire vers la teinte d’une part mesurable', () => {
+    for (const teinte of [ENEMY_TINT, ALLY_TINT, NEUTRAL_TINT]) {
+      const m = teinté(teinte, SOMBRE);
+      // Le bout TEINTE du mélange : la couleur de relation portée à la même exposition que le neutre.
+      const bout = new THREE.Color(teinte);
+      bout.multiplyScalar(SOMBRE / luminance709(bout));
+      for (const canal of ['r', 'g', 'b'] as const)
+        expect((m[canal] - SOMBRE) / (bout[canal] - SOMBRE), `${teinte}.${canal}`).toBeCloseTo(HIGHLIGHT_MIX, 9);
+      // Le canal DOMINANT de la relation domine la couleur du corps : le survol se lit d'un coup d'œil.
+      const dominant = (c: THREE.Color) => (c.r >= c.g && c.r >= c.b ? 'r' : c.g >= c.b ? 'g' : 'b');
+      expect(dominant(m), teinte).toBe(dominant(bout));
+      // Exposition TENUE à l'exact : deux bouts de même luminance, mélange linéaire.
+      expect(luminance709(m), teinte).toBeCloseTo(SOMBRE, 9);
+    }
+  });
+
+  it('SANS survol : exposition neutre, et le rapport de canaux d’un texel passe INTACT', () => {
+    const m = teinté(null, SOMBRE);
+    expect([m.r, m.g, m.b]).toEqual([SOMBRE, SOMBRE, SOMBRE]);
+    const h = rendu(HARNAIS, m);
+    const brut = new THREE.Color(HARNAIS);
+    expect(h.r / h.g).toBeCloseTo(brut.r / brut.g, 12);
+    expect(h.g / h.b).toBeCloseTo(brut.g / brut.b, 12);
+  });
+
+  it('…et à PLEINE lumière la teinte la plus saturée tient encore l’exposition', () => {
+    const a = allure({ ghost: false, dim: false, highlight: ENEMY_TINT }); // exposition LUM
+    expect(Math.max(a.color.r, a.color.g, a.color.b), 'aucun canal au-delà de 1').toBeLessThanOrEqual(1);
+    expect(luminance709(a.color), 'exposition tenue à l’exact').toBeCloseTo(LUM, 9);
+    // Plus haut, la borne mord : les canaux restent sous 1 et la luminance rendue passe sous la cible,
+    // sans virage de teinte (le rouge d'adversaire demanderait 1,75 de canal rouge à 0,9 d'exposition).
+    const haut = teinté(ENEMY_TINT, 0.9);
+    expect(Math.max(haut.r, haut.g, haut.b)).toBeCloseTo(1, 9);
+    expect(luminance709(haut)).toBeLessThan(0.9);
   });
 
   it('l’allure est keyée par ID : deux jetons, deux allures, chacune sur SON matériau', () => {

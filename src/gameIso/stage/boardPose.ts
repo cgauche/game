@@ -284,22 +284,36 @@ export function luminance709(c: THREE.Color): number {
   return LUMA_709.r * c.r + LUMA_709.g * c.g + LUMA_709.b * c.b;
 }
 
-/** TEINTE du quad : son exposition, portée sur la couleur de relation quand ce jeton est la cible
+/** PART de la teinte de relation dans la couleur d'un corps SURVOLÉ, le reste étant l'exposition
+ *  neutre de la frame (#1337). La couleur de matériau MULTIPLIE le texel : à part pleine, elle écrase
+ *  le rapport de canaux de l'ART — mesuré sur le gris pâle d'un cheval (#CFD2D0, rapport max/min 1,03
+ *  de son cru) : 14,25 sous la teinte d'allié pleine, c'est-à-dire un aplat vert, contre 1,68 à cette
+ *  part. Et l'ORDRE des canaux du corps ne survit qu'aux corps dont le rapport dépasse celui de la
+ *  teinte mélangée (1,63 pour l'allié, 2,74 pour l'adversaire ici, contre 13,8 et 21,8 à part pleine).
+ *
+ *  0,35 plutôt que plus haut, et ça se mesure : c'est le seul palier où les TROIS teintes tiennent
+ *  l'exposition sans borner un canal à pleine lumière (le rouge d'adversaire y demande 0,970 de canal
+ *  rouge pour 0,5 de luminance ; à 0,40 il demande 1,04, borne, et rend 0,492 — soit −1,6 %). */
+export const HIGHLIGHT_MIX = 0.35;
+
+/** TEINTE du quad : son exposition, MÉLANGÉE vers la couleur de relation quand ce jeton est la cible
  *  survolée. Trois canaux en tout (teinte, opacité, désaturation), tous portés par le matériau DÉJÀ
  *  monté — aucun n'en ajoute un quatrième, et la passe de pose reste leur unique écrivain. */
 export function boardChromeTint(chrome: BoardChrome | null, luminance: number, out: THREE.Color): THREE.Color {
   if (!chrome?.highlight) return out.setScalar(luminance);
-  // MISE EN ÉVIDENCE de la cible survolée : la silhouette prend la couleur de relation À EXPOSITION
-  // CONSTANTE. La normalisation se mesure donc en LUMINANCE (Rec. 709), jamais sur le canal le plus
-  // fort : le rouge d'adversaire n'a que 0,143 de luminance pour 0,527 de canal rouge, et le ramener
-  // par son canal max lui retirait 73 % de sa lumière (mesuré) — le survol ASSOMBRISSAIT sa cible.
+  // MISE EN ÉVIDENCE de la cible survolée : la couleur de relation portée À EXPOSITION CONSTANTE, puis
+  // mélangée au neutre de la frame. La normalisation se mesure en LUMINANCE (Rec. 709), jamais sur le
+  // canal le plus fort : le rouge d'adversaire n'a que 0,143 de luminance pour 0,527 de canal rouge, et
+  // le ramener par son canal max lui retirait 73 % de sa lumière (mesuré) — le survol ASSOMBRISSAIT sa
+  // cible. Les deux bouts du mélange portent la MÊME luminance, et le mélange est linéaire : l'exposition
+  // du corps est donc tenue à l'exact, quelle que soit la part.
   out.set(chrome.highlight);
   const L = luminance709(out);
   out.multiplyScalar(L > 0 ? luminance / L : luminance);
-  // ÉCART RÉSIDUEL : une teinte saturée SOMBRE ne peut pas tenir l'exposition d'une frame claire — le
-  // rouge d'adversaire y demanderait 1,84 sur son canal rouge. Les canaux se bornent alors à 1, et la
-  // luminance rendue reste sous la cible (mesuré : 0,321 pour 0,5 demandé, soit −36 % — contre 0,136
-  // sous la normalisation par canal max). En deçà du dépassement, l'exposition est tenue à l'exact.
+  const k = HIGHLIGHT_MIX;
+  out.setRGB(luminance + (out.r - luminance) * k, luminance + (out.g - luminance) * k, luminance + (out.b - luminance) * k);
+  // La borne à 1 ne mord qu'au-delà de 0,515 d'exposition sous la teinte d'adversaire (mesuré) : en deçà,
+  // aucun canal ne dépasse et la luminance rendue est celle demandée.
   const max = Math.max(out.r, out.g, out.b);
   return max > 1 ? out.setRGB(Math.min(1, out.r), Math.min(1, out.g), Math.min(1, out.b)) : out;
 }
