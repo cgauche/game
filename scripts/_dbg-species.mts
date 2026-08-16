@@ -5,6 +5,12 @@ import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { Weapon } from '../src/engine/types';
+import { assertWardrobeId } from './_lib-wardrobe';
+
+// Mannequin de la planche : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast —
+// un id qui retombe sur « nu » fausserait l'ancrage mesuré ici (#1338).
+const MANNEQUIN = 'soldat';
+assertWardrobeId(MANNEQUIN, 'dbg-species');
 
 const wep = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon => ({ label: name, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
 
@@ -15,7 +21,7 @@ function cell(label: string, app: Appearance, w?: Weapon) {
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: '#1b1f2b' }),
       React.createElement('line', { x1: 0, y1: 150, x2: 120, y2: 150, stroke: '#2ecc71', strokeWidth: 1, strokeDasharray: '3 3' }),
       React.createElement('line', { x1: 0, y1: 0, x2: 120, y2: 0, stroke: '#e74c3c', strokeWidth: 1 }),
-      React.createElement(RigSprite, { appearance: app, equip: { weapons: w ? [w] : [], armour: [] }, career: 'Soldat' }),
+      React.createElement(RigSprite, { appearance: app, equip: { weapons: w ? [w] : [], armour: [] }, career: MANNEQUIN }),
     ),
   );
   return `<figure style="margin:0;text-align:center"><div>${svg}</div><figcaption style="color:#cdd;font:11px sans-serif">${label}</figcaption></figure>`;

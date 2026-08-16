@@ -13,6 +13,12 @@ import { WEAPON_FORMS, SHIELD_FORMS } from '../src/gameIso/rig/parts/weaponForms
 import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
 import type { Weapon } from '../src/engine/types';
 import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { assertWardrobeId } from './_lib-wardrobe';
+
+// Mannequin : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast — un id qui retombe
+// sur « nu » déshabillerait la planche en silence (#1338).
+const MANNEQUIN = 'soldat';
+assertWardrobeId(MANNEQUIN, 'qc-weapons-held');
 
 mkdirSync('public/qc', { recursive: true });
 const APP = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 } as const;
@@ -20,7 +26,7 @@ type Cell = { slug: string; label: string; svg: string };
 
 // Applique la PRISE/orientation réelle du jeu (weaponRest) pour un rendu fidèle.
 const rig = (equip: { weapons: Weapon[]; armour: never[]; shield?: Weapon }) =>
-  renderToStaticMarkup(React.createElement(RigSprite, { appearance: APP, equip, career: 'Soldat', pose: weaponRest(equip.weapons[0]) }));
+  renderToStaticMarkup(React.createElement(RigSprite, { appearance: APP, equip, career: MANNEQUIN, pose: weaponRest(equip.weapons[0]) }));
 
 const cells: Cell[] = [
   ...WEAPON_FORMS.map((f) => ({ slug: f.slug, label: f.label, svg: rig({ weapons: [{ label: f.label, type: f.type, damage: { plusBF: false, flat: 4 }, qualities: [], shape: f.slug } as Weapon], armour: [] }) })),

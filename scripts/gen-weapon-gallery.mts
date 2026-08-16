@@ -11,16 +11,26 @@ import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import { weaponFamily } from '../src/gameIso/rig/parts/equipment';
 import trappings from '../src/data/trappings.json';
+import { weaponGroups } from '../src/data';
+import { assertWardrobeId } from './_lib-wardrobe';
 import type { Weapon } from '../src/engine/types';
 import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
 
-const GROUPS = [
-  'Base', 'Escrime', 'Cavalerie', 'Deux-mains', "Armes d'hast", 'Fléau', 'Parade', 'Bagarre',
-  'Arc', 'Arbalète', 'Poudre noire', 'Poudre noire et ingénierie', 'Fronde', 'Lancer', 'Entraves', 'Explosifs', 'Ingénierie',
-];
-const RANGED = new Set(['Arc', 'Arbalète', 'Poudre noire', 'Poudre noire et ingénierie', 'Fronde', 'Lancer', 'Explosifs', 'Ingénierie']);
+// Groupes de COMBAT du registre canonique (`weaponGroups.json` — `combat` renseigné) : le
+// générateur lit les IDS, `label` ne sert qu'au titre de rubrique. `trappings.json` porte lui aussi
+// l'id en `subType` — l'ancienne liste de LIBELLÉS ne croisait plus rien (planche vide, #1338).
+const GROUPS = weaponGroups.filter((g) => g.combat === 'melee' || g.combat === 'ranged');
 type Trapping = { label: string; type?: string; subType?: string };
-const all = (trappings as Trapping[]).filter((t) => t.subType && GROUPS.includes(t.subType));
+const GROUP_IDS = new Set(GROUPS.map((g) => g.id));
+const all = (trappings as Trapping[]).filter(
+  (t) => (t.type === 'melee' || t.type === 'ranged') && t.subType != null && GROUP_IDS.has(t.subType),
+);
+if (!all.length)
+  throw new Error('[weapon-gallery] aucune arme sélectionnée — planche vide (registre de Groupes ou trappings.json désaccordés).');
+
+// Mannequin de la planche : id de garde-robe, validé fail-fast (jamais un corps nu silencieux).
+const MANNEQUIN = 'soldat';
+assertWardrobeId(MANNEQUIN, 'weapon-gallery');
 
 function fig(w: Weapon, shield = false) {
   const equip = shield
@@ -30,7 +40,7 @@ function fig(w: Weapon, shield = false) {
     React.createElement('svg', { viewBox: '0 0 120 150', width: 92, height: 115 },
       React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: '#1d2230' }),
-      React.createElement(RigSprite, { appearance: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 }, equip, career: 'Soldat' }),
+      React.createElement(RigSprite, { appearance: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 }, equip, career: MANNEQUIN }),
     ),
   );
   const fam = shield ? 'bouclier' : weaponFamily(w) || '(mains nues)';
@@ -40,23 +50,23 @@ function fig(w: Weapon, shield = false) {
 
 let body = '';
 for (const g of GROUPS) {
-  const ws = all.filter((t) => t.subType === g);
+  const ws = all.filter((t) => t.subType === g.id);
   if (!ws.length) continue;
   const cells = ws
     .map((t) => {
       const isShield = /bouclier/i.test(t.label);
-      const type = (RANGED.has(g) ? 'ranged' : 'melee') as 'melee' | 'ranged';
+      const type = t.type as 'melee' | 'ranged';
       return fig({ label: t.label, type, damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon, isShield);
     })
     .join('');
-  body += `<h2 style="color:#d8a93b;font:14px sans-serif;margin:18px 0 6px">${g} <span style="color:#6a7384;font-size:11px">(${ws.length})</span></h2>
+  body += `<h2 style="color:#d8a93b;font:14px sans-serif;margin:18px 0 6px">${g.label} <span style="color:#6a7384;font-size:11px">(${ws.length})</span></h2>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,100px);gap:10px">${cells}</div>`;
 }
 
 const html = `<!doctype html><html><head><meta charset="utf-8"><title>Armes QC</title></head>
 <body style="background:#11141c;padding:16px">
 <h1 style="color:#eee;font:18px sans-serif">Galerie QC des armes — ${all.length} armes (LDB + ADE), par Groupe canonique</h1>
-<p style="color:#8a93a6;font:12px sans-serif">Chaque arme tenue par un soldat humain. <b>[forme]</b> = visuel d'art résolu (familles partagées par Groupe). Les munitions/projectiles (Flèche, Carreau, Balle…) n'ont pas d'arme dessinée → repli.</p>
+<p style="color:#8a93a6;font:12px sans-serif">Chaque arme tenue par un soldat humain. <b>[forme]</b> = visuel d'art résolu (familles partagées par Groupe). Population : les possessions de type arme (corps à corps / à distance) dont le Groupe est un Groupe de combat du registre — munitions et engins de siège ont leurs propres planches.</p>
 ${body}
 </body></html>`;
 writeFileSync('public/weapon-gallery.html', html);

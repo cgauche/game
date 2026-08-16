@@ -6,11 +6,14 @@ import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { tenueLabel } from '../src/gameIso/rig/parts/career';
+import { assertWardrobeId } from './_lib-wardrobe';
 
-const CASES = [
-  { label: 'Soldat', career: 'Soldat' },
-  { label: 'Mendiant', career: 'Mendiant' },
-];
+// Tenues sondées par ID de garde-robe (carrière ∪ classe ∪ tenue) ; le libellé vient du catalogue.
+// Garde fail-fast : un id qui retombe sur « nu » rendrait des pieds nus au lieu des bottes (#1338).
+const CASES = ['soldat', 'mendiant'].map((career) => ({ career, label: tenueLabel(career) }));
+for (const c of CASES)
+  assertWardrobeId(c.career, 'qc-feet');
 const VIEWS = ['front', 'back', 'profile'] as const;
 const cells: string[] = [];
 CASES.forEach((cse, r) => {

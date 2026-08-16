@@ -6,7 +6,7 @@ import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import { SPECIFIC_TENUES } from '../src/gameIso/rig/parts/tenues';
-import { resolveWardrobeId } from '../src/gameIso/rig/parts/career';
+import { assertTenueCatalogId } from './_lib-wardrobe';
 import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 
 // Le rig s'habille par ID de garde-robe (`RigSprite.career` = id de carrière/tenue) : la galerie
@@ -14,8 +14,7 @@ import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 // un id qui ne résout pas à lui-même est une faute d'authoring, jamais un repli Nu silencieux.
 const tenues = SPECIFIC_TENUES.slice().sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 for (const t of tenues) {
-  if (resolveWardrobeId(t.id) !== t.id)
-    throw new Error(`[tenue-gallery] id de tenue « ${t.id} » non résolu par resolveWardrobeId — catalogue incohérent.`);
+  assertTenueCatalogId(t.id, 'tenue-gallery');
 }
 const SC = 1.85; // sprite natif ~120×150 → ~222×278
 const CW = Math.round(120 * SC + 24);

@@ -21,6 +21,14 @@ import type { EquipCtx } from '../src/gameIso/rig/parts/equipment';
 import type { RigOverlay } from '../src/gameIso/rig/bones';
 import type { View } from '../src/gameIso/rig/facing';
 import type { ItemInstance, Weapon } from '../src/engine/types';
+import { assertWardrobeId } from './_lib-wardrobe';
+
+// `RigSprite.career` se résout par ID de garde-robe (carrière ∪ classe ∪ tenue) — ids seulement,
+// validés fail-fast : un id qui retombe sur « nu » masquerait la mutation sous un corps nu (#1338).
+const TENUE_DEFAUT = 'mendiant';
+const TENUE_SOLDAT = 'soldat';
+for (const id of [TENUE_DEFAUT, TENUE_SOLDAT])
+  assertWardrobeId(id, 'mutations-gallery');
 
 const APP: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 };
 const NU: EquipCtx = { weapons: [], armour: [] };
@@ -31,7 +39,7 @@ function cell(label: string, app: Appearance, overlays: RigOverlay[], opts: { vi
     React.createElement('svg', { viewBox: '0 0 120 150', width: 110, height: 138 },
       React.createElement('defs', { dangerouslySetInnerHTML: { __html: DEFS } }),
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 150, fill: opts.bg ?? '#1d2230' }),
-      React.createElement(RigSprite, { appearance: app, equip: opts.equip ?? NU, career: opts.career ?? 'Mendiant', view: opts.view ?? 'front', overlays }),
+      React.createElement(RigSprite, { appearance: app, equip: opts.equip ?? NU, career: opts.career ?? TENUE_DEFAUT, view: opts.view ?? 'front', overlays }),
     ),
   );
   return `<figure style="margin:0;text-align:center"><div>${svg}</div><figcaption style="color:${opts.tint ?? '#cdd'};font:11px sans-serif">${label}</figcaption></figure>`;
@@ -61,7 +69,7 @@ const piece = (uid: string, pa: number, locs: ItemInstance['locs']): ItemInstanc
   ({ uid, label: `Protection (${locs![0]})`, kind: 'armor', qualities: [], pa, locs, enc: 0, equipped: true });
 const ARMOUR: ItemInstance[] = [piece('a1', 3, ['corps']), piece('a2', 2, ['tete']), piece('a3', 1, ['brasG', 'brasD']), piece('a4', 1, ['jambeG', 'jambeD'])];
 const EPEE: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] };
-const SOLDAT: Parameters<typeof cell>[3] = { equip: { weapons: [EPEE], armour: ARMOUR }, career: 'Soldat', bg: '#222a24', tint: '#be9' };
+const SOLDAT: Parameters<typeof cell>[3] = { equip: { weapons: [EPEE], armour: ARMOUR }, career: TENUE_SOLDAT, bg: '#222a24', tint: '#be9' };
 section('Sur armure équipée (épée en main)', [
   'suintement-de-pus', 'bouche-supplementaire', 'ecailles-epineuses', 'plumes-eparses', 'peau-d-acier',
   'tentacule-epais', 'doigts-distendus', 'pattes-d-animaux', 'cornes-asymetriques',
@@ -95,7 +103,7 @@ const INJ: { label: string; c: Combatant }[] = [
   { label: 'Nez doré', c: wounded([trauma({ label: 'Nez amputé' })], 'Nez doré') },
 ];
 section('Amputations &amp; prothèses (LDB 18 / 73)', INJ.map(({ label, c }) =>
-  cell(label, combatantAppearance(APP, c), combatantOverlays(c), { career: 'Soldat', bg: '#241f2a', tint: '#caf' })));
+  cell(label, combatantAppearance(APP, c), combatantOverlays(c), { career: TENUE_SOLDAT, bg: '#241f2a', tint: '#caf' })));
 
 // 6) Catalogue d'yeux personnalisés (parts/eyes.ts) — mutations custom, créatures, éditeur.
 section('Yeux personnalisés (catalogue)', Object.values(EYE_OPTIONS).map(({ label, art }) =>
@@ -112,7 +120,7 @@ const TRAITS: { label: string; traits: string[] }[] = [
 const traitC = (traits: string[]): Combatant => ({ id: 't', name: 'T', kind: 'hero', species: 'Humain' as RigSpeciesId, traits }) as unknown as Combatant;
 section('Traits de créature → visuels (statbloc / sorts) — 3 vues', TRAITS.flatMap(({ label, traits }) =>
   (['front', 'profile', 'back'] as View[]).map((view) =>
-    cell(`${label} — ${view}`, APP, combatantOverlays(traitC(traits)), { view, career: 'Soldat', bg: '#23202c', tint: '#fc9' }))));
+    cell(`${label} — ${view}`, APP, combatantOverlays(traitC(traits)), { view, career: TENUE_SOLDAT, bg: '#23202c', tint: '#fc9' }))));
 
 const html = `<!doctype html><html><head><meta charset="utf-8"><title>Mutations QC</title></head>
 <body style="background:#11141c;padding:16px">

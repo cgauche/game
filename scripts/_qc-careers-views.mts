@@ -7,13 +7,19 @@ import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
 import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { View } from '../src/gameIso/rig/facing';
+import { tenueLabel } from '../src/gameIso/rig/parts/career';
+import { assertWardrobeId } from './_lib-wardrobe';
 
 const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 1 };
 const equip = { weapons: [], armour: [] };
-// carrières à inspecter (priorité 3) — passées en argv sinon défaut.
+// Garde-robes à inspecter, par ID (carrière ∪ classe ∪ tenue) — passées en argv sinon défaut ;
+// le libellé du catalogue sert d'étiquette. Garde fail-fast : un id qui retombe sur « nu »
+// n'aurait aucune cohérence inter-vues à juger (#1338).
 const CAREERS = process.argv.slice(2).length
   ? process.argv.slice(2)
-  : ['Mendiant', 'Voleur', 'Sorcier', 'Noble', 'Nonne', 'Batelier', 'Répurgateur', 'Flagellant', 'Artisan', 'Bourgeois', 'Agitateur'];
+  : ['mendiant', 'voleur', 'sorcier', 'noble', 'nonne', 'batelier', 'repurgateur', 'flagellant', 'artisan', 'bourgeois', 'agitateur'];
+for (const id of CAREERS)
+  assertWardrobeId(id, 'qc-careers-views');
 const VIEWS: View[] = ['front', 'profile', 'back'];
 
 const SUB = 120, GAP = 6, SC = 1.95, FEET = 150, ROWH = 305;
@@ -25,7 +31,7 @@ const rows = CAREERS.map((career, r) => {
     const x = LBLW + c * (SUB + GAP);
     return `<g transform="translate(${x},0)"><rect width="${SUB}" height="${ROWH - GAP}" fill="#2b3142"/><line x1="0" y1="${FEET * SC}" x2="${SUB}" y2="${FEET * SC}" stroke="#e06a4a" stroke-width="0.4" opacity="0.5"/><g transform="translate(${SUB / 2 - 60 * SC},0) scale(${SC})">${inner}</g></g>`;
   }).join('');
-  return `<g transform="translate(6,${30 + r * ROWH})"><text x="0" y="${ROWH / 2}" font-size="10" fill="#d8a93b" font-family="sans-serif">${career}</text>${cells}</g>`;
+  return `<g transform="translate(6,${30 + r * ROWH})"><text x="0" y="${ROWH / 2}" font-size="10" fill="#d8a93b" font-family="sans-serif">${tenueLabel(career)}</text>${cells}</g>`;
 });
 const W = 6 + LBLW + VIEWS.length * (SUB + GAP), H = 30 + CAREERS.length * ROWH;
 const full = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs>${DEFS}</defs><rect width="${W}" height="${H}" fill="#11141c"/><text x="6" y="18" font-size="11" fill="#cdd" font-family="sans-serif">Carrières — face / profil / dos (cohérence inter-vues)</text>${rows.join('')}</svg>`;

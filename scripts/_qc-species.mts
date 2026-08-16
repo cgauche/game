@@ -8,6 +8,12 @@ import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import type { Weapon } from '../src/engine/types';
 import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { assertWardrobeId } from './_lib-wardrobe';
+
+// Mannequin : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast — un id qui retombe
+// sur « nu » déshabillerait la planche en silence (#1338).
+const MANNEQUIN = 'soldat';
+assertWardrobeId(MANNEQUIN, 'qc-species');
 
 const SPECIES = ['Humain', 'Halfling', 'Nain', 'Gnome', 'Ogre', 'Haut-Elfe', 'Elfe sylvain'];
 const wep = (name: string): Weapon => ({ label: name, type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] } as Weapon);
@@ -19,7 +25,7 @@ const cells = SPECIES.map((sp, i) => {
       React.createElement('rect', { x: 0, y: 0, width: 120, height: 158, fill: '#1d2230' }),
       // ligne de sol y=150
       React.createElement('line', { x1: 0, y1: 150, x2: 120, y2: 150, stroke: '#e05a5a', strokeWidth: 1, strokeDasharray: '4 3' }),
-      React.createElement(RigSprite, { appearance: { species: sp as RigSpeciesId, sex: 'M', build: 0.5, seed: 7 }, equip: { weapons: [wep('Épée')], armour: [] }, career: 'Soldat' }),
+      React.createElement(RigSprite, { appearance: { species: sp as RigSpeciesId, sex: 'M', build: 0.5, seed: 7 }, equip: { weapons: [wep('Épée')], armour: [] }, career: MANNEQUIN }),
     ),
   );
   return `<g transform="translate(${i * 130},0)">${svg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '')}<text x="60" y="156" text-anchor="middle" font-size="9" fill="#9fb3c8">${sp}</text></g>`;

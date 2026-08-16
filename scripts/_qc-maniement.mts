@@ -17,6 +17,12 @@ import { weaponRest, weaponAttackClip } from '../src/gameIso/rig/anim/weaponClip
 import { clipDuration, sampleClip } from '../src/gameIso/rig/anim/clips';
 import type { Weapon } from '../src/engine/types';
 import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { assertWardrobeId } from './_lib-wardrobe';
+
+// Mannequin : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast — un id qui retombe
+// sur « nu » déshabillerait la planche en silence (#1338).
+const MANNEQUIN = 'soldat';
+assertWardrobeId(MANNEQUIN, 'qc-maniement');
 
 mkdirSync('public/qc', { recursive: true });
 const APP = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 } as const;
@@ -50,7 +56,7 @@ function attackApex(w: Weapon): Pose {
 
 const draw = (w: Weapon, pose: Pose, view: 'front' | 'profile') =>
   `<rect width="120" height="150" fill="#1d2230"/>${renderToStaticMarkup(
-    React.createElement(RigSprite, { appearance: APP, equip: { weapons: [w], armour: [] }, career: 'Soldat', pose, view }),
+    React.createElement(RigSprite, { appearance: APP, equip: { weapons: [w], armour: [] }, career: MANNEQUIN, pose, view }),
   )}`;
 
 const png = (svgInner: string, w: number, h: number, scale = 2) =>

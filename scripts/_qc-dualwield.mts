@@ -10,6 +10,12 @@ import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
 import type { Weapon } from '../src/engine/types';
 import type { View } from '../src/gameIso/rig/facing';
 import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { assertWardrobeId } from './_lib-wardrobe';
+
+// Mannequin : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast — un id qui retombe
+// sur « nu » déshabillerait la planche en silence (#1338).
+const MANNEQUIN = 'soldat';
+assertWardrobeId(MANNEQUIN, 'qc-dualwield');
 
 const W_ = (name: string, hand: 'main' | 'off', q: { id: string; value?: number }[] = []): Weapon =>
   ({ label: name, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: q, hand, hands: 1 } as Weapon);
@@ -36,7 +42,7 @@ CFGS.forEach((cfg, r) => {
       React.createElement(RigSprite, {
         appearance: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 },
         equip: { weapons: cfg.weapons, armour: [], shield: cfg.shield },
-        career: 'Soldat', view: vw.v, pose: weaponRest(cfg.weapons[0]), mirror: vw.m,
+        career: MANNEQUIN, view: vw.v, pose: weaponRest(cfg.weapons[0]), mirror: vw.m,
       }),
     );
     const scaled = `<g transform="translate(${BW / 2 - 60 * 1.6},20) scale(1.6)">${inner}</g>`;

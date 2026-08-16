@@ -7,12 +7,18 @@ import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { Pose } from '../src/gameIso/rig/poses';
+import { assertWardrobeId } from './_lib-wardrobe';
+
+// Mannequin : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast — un id qui retombe
+// sur « nu » rendrait la pose de mort sur un corps nu (#1338).
+const MANNEQUIN = 'soldat';
+assertWardrobeId(MANNEQUIN, 'qc-death');
 
 const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 };
 // Sprawl DOUX (membres relâchés/écartés) — le basculement fait la mise au sol.
 const CORPSE: Pose = { tete: 18, torse: 6, epauleG: -30, epauleD: 24, avantBrasG: -14, avantBrasD: 10, cuisseG: 14, cuisseD: -10, tibiaG: 18, tibiaD: 6 };
 const sprite = (pose?: Pose) =>
-  renderToStaticMarkup(React.createElement(RigSprite, { appearance: app, equip: { weapons: [], armour: [] }, career: 'Soldat', pose: pose ?? {} }));
+  renderToStaticMarkup(React.createElement(RigSprite, { appearance: app, equip: { weapons: [], armour: [] }, career: MANNEQUIN, pose: pose ?? {} }));
 
 const cells = [
   { label: 'Debout', inner: sprite() },

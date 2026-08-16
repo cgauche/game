@@ -15,6 +15,12 @@ import { animatedRig, sampleTimes } from './_lib-anim-rig';
 import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { Weapon } from '../src/engine/types';
 import type { EquipCtx } from '../src/gameIso/rig/parts/equipment';
+import { assertWardrobeId } from './_lib-wardrobe';
+
+// Mannequin de la planche : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast —
+// un id qui retombe sur « nu » déshabillerait toutes les tuiles en silence (#1338).
+const MANNEQUIN = 'soldat';
+assertWardrobeId(MANNEQUIN, 'anim-gallery');
 
 const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.55, seed: 4 };
 const N = 16;
@@ -31,12 +37,12 @@ function svgTile(inner: string, label: string, css = '', bg = '#1d2230') {
 }
 /** Tuile STATIQUE (pose figée). */
 function still(_w: Weapon, equip: EquipCtx, pose: Record<string, number>, label: string, bg?: string) {
-  return svgTile(bonesToSvg(resolveRig(app, equip, pose, 'Soldat')), label, '', bg);
+  return svgTile(bonesToSvg(resolveRig(app, equip, pose, MANNEQUIN)), label, '', bg);
 }
 /** Tuile ANIMÉE (clip joué en boucle). */
 function anim(_w: Weapon, equip: EquipCtx, hold: Record<string, number>, clip: Clip, label: string, bg?: string) {
   const dur = Math.max(clipDuration(clip), 1);
-  const samples = sampleTimes(dur, N).map((t) => resolveRig(app, equip, addPose(hold, sampleClip(clip, t).pose), 'Soldat'));
+  const samples = sampleTimes(dur, N).map((t) => resolveRig(app, equip, addPose(hold, sampleClip(clip, t).pose), MANNEQUIN));
   const uid = `w${uidN++}`;
   const { css, svg } = animatedRig(samples, dur, uid);
   return svgTile(svg, label, css, bg);

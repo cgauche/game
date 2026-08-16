@@ -18,6 +18,13 @@ import { animatedRig, sampleTimes } from './_lib-anim-rig';
 import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 import type { Weapon } from '../src/engine/types';
 import type { EquipCtx } from '../src/gameIso/rig/parts/equipment';
+import { assertWardrobeId } from './_lib-wardrobe';
+
+// Tenues des mannequins : IDS de garde-robe (carrière ∪ classe ∪ tenue), validés fail-fast —
+// un id qui retombe sur « nu » déshabillerait les tuiles en silence (#1338).
+const TENUE_SOLDAT = 'soldat', TENUE_SORCIER = 'sorcier', TENUE_NONNE = 'nonne';
+for (const id of [TENUE_SOLDAT, TENUE_SORCIER, TENUE_NONNE])
+  assertWardrobeId(id, 'clip-anim-gallery');
 
 const N = 16; // échantillons par cycle
 const styles: string[] = [];
@@ -48,11 +55,11 @@ const meleeClips: [string, Clip][] = [
   ['idle', CLIPS.idle], ['walk', CLIPS.walk], ['melee', CLIPS.melee],
   ['dodge', CLIPS.dodge], ['parry', CLIPS.parry], ['hit', CLIPS.hit],
 ];
-const rowSoldat = meleeClips.map(([l, c]) => tile(l, c, soldat, l === 'idle' || l === 'walk' ? eqEpee : eqEpee, 'Soldat', weaponRest(epee))).join('');
-const rowArc = tile('ranged (arc)', CLIPS.ranged, soldat, eqArc, 'Soldat', weaponRest(arc)).concat(
-  tile('cast', CLIPS.cast, sorcier, eqBaton, 'Sorcier', weaponRest(baton)),
-  tile('bolt (arcane)', spellCastClip('bolt'), sorcier, eqNu, 'Sorcier', {}, '#231a30'),
-  tile('blessing (divin)', spellCastClip('blessing'), sorcier, eqNu, 'Nonne', {}, '#2a2618'),
+const rowSoldat = meleeClips.map(([l, c]) => tile(l, c, soldat, l === 'idle' || l === 'walk' ? eqEpee : eqEpee, TENUE_SOLDAT, weaponRest(epee))).join('');
+const rowArc = tile('ranged (arc)', CLIPS.ranged, soldat, eqArc, TENUE_SOLDAT, weaponRest(arc)).concat(
+  tile('cast', CLIPS.cast, sorcier, eqBaton, TENUE_SORCIER, weaponRest(baton)),
+  tile('bolt (arcane)', spellCastClip('bolt'), sorcier, eqNu, TENUE_SORCIER, {}, '#231a30'),
+  tile('blessing (divin)', spellCastClip('blessing'), sorcier, eqNu, TENUE_NONNE, {}, '#2a2618'),
 );
 
 // ── EN SELLE — clips MONTÉS (mountedAttackClip/mountedParryClip sur la tenue mountedRest),
@@ -67,7 +74,7 @@ function mountedTile(label: string, weapon: Weapon | undefined, clip: Clip) {
     // Monture PORTÉE : le harnachement vient de la couture montée (canal DONNÉE), jamais réexprimé ici.
     const mountBones = quad.resolve(horse, 'profile', quad.restPose(), mountedPlanOpts(undefined));
     const riderPose = addPose(mountedRest('profile', weapon), sampleClip(clip, t).pose);
-    const riderBones = resolveRig(soldat, equip, riderPose, 'Soldat', 'profile', [], false);
+    const riderBones = resolveRig(soldat, equip, riderPose, TENUE_SOLDAT, 'profile', [], false);
     // Ratio cavalier DÉRIVÉ comme en jeu (`backends/webgl/sceneMeshes`, couple monté) : cavalier ÷ (art monture × Taille).
     const rideK = 1 / (resolveSpecies(horse).scale * sizeTokenScale('grande'));
     return seatRiderOnMount(mountBones, riderBones, { view: 'profile', mountScale: 1, riderScale: rideK }).map((b, i) => ({ ...b, id: `${b.id}_${i}` }));

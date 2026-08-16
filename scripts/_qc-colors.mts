@@ -6,6 +6,12 @@ import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { assertWardrobeId } from './_lib-wardrobe';
+
+// Mannequin : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast — un id qui retombe
+// sur « nu » changerait la sonde de peau en sonde de nu (#1338).
+const MANNEQUIN = 'mendiant';
+assertWardrobeId(MANNEQUIN, 'qc-colors');
 
 const CASES: { label: string; app: Appearance }[] = [
   { label: 'Lézard défaut (vert)', app: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4, monster: { tete: 'lezard' } } },
@@ -16,7 +22,7 @@ const CASES: { label: string; app: Appearance }[] = [
   { label: 'Mendiant + peau verte', app: { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4, colors: { peau: '#5d7a42' } } },
 ];
 const cells = CASES.map((c, i) => {
-  const svg = renderToStaticMarkup(React.createElement(RigSprite, { appearance: c.app, equip: { weapons: [], armour: [] }, career: 'Mendiant' }));
+  const svg = renderToStaticMarkup(React.createElement(RigSprite, { appearance: c.app, equip: { weapons: [], armour: [] }, career: MANNEQUIN }));
   const col = i % 3, row = Math.floor(i / 3);
   return `<g transform="translate(${col * 128},${row * 168})"><rect width="120" height="150" fill="#1d2230"/>${svg}<text x="60" y="164" text-anchor="middle" font-size="10" fill="#cdd">${c.label}</text></g>`;
 });

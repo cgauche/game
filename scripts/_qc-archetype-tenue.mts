@@ -1,7 +1,7 @@
 /**
- * QC normalisation des archétypes : des persos à carrière-FALLBACK (sans tenue dédiée → archétype
- * de classe) rendus en DÉFAUT (doit être lisible/correct) + RECOLORÉ (preuve qu'ils héritent/se
- * thèment EXACTEMENT comme les tenues de carrière). + 1 carrière normale (non-régression).
+ * QC des tenues hors-humain (Ogre) et d'une carrière humaine : rendu en DÉFAUT (doit être
+ * lisible/correct) + RECOLORÉ (preuve que la palette se thème EXACTEMENT de la même manière pour
+ * toutes). Soldat sert de non-régression humaine.
  * → public/qc/archetype-tenue.png. Usage : npx tsx scripts/_qc-archetype-tenue.mts
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -12,16 +12,20 @@ import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
 import type { Palette } from '../src/gameIso/rig/palette';
 import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { assertWardrobeId } from './_lib-wardrobe';
 
-// (libellé affiché, espèce, carrière, recolor?) — carrières fallback + 1 normale (Soldat).
+// (libellé affiché, espèce, ID de garde-robe, recolor?) — le libellé n'est QUE de l'affichage.
 const ROWS: Array<{ label: string; species: string; career: string; colors?: Palette }> = [
-  { label: 'Mangeur d’hommes\n(→Guerriers)', species: 'Ogre', career: "Mangeur d'hommes" },
-  { label: 'recolor vet2/metal', species: 'Ogre', career: "Mangeur d'hommes", colors: { metal: '#b8863a', vet2: '#5a1818' } },
-  { label: 'Boucher Ogre\n(→Lettrés)', species: 'Ogre', career: 'Boucher Ogre' },
-  { label: 'recolor vet1', species: 'Ogre', career: 'Boucher Ogre', colors: { vet1: '#6a2a2a' } },
-  { label: 'Gardechamps\n(→Itinérants)', species: 'Humain', career: 'Gardechamps' },
-  { label: 'Soldat (dédiée)\nnon-régression', species: 'Humain', career: 'Soldat' },
+  { label: 'Mangeur d’hommes', species: 'Ogre', career: 'mangeur-d-hommes' },
+  { label: 'recolor vet2/metal', species: 'Ogre', career: 'mangeur-d-hommes', colors: { metal: '#b8863a', vet2: '#5a1818' } },
+  { label: 'Boucher Ogre', species: 'Ogre', career: 'boucher-ogre' },
+  { label: 'recolor vet1', species: 'Ogre', career: 'boucher-ogre', colors: { vet1: '#6a2a2a' } },
+  { label: 'Gardechamps', species: 'Humain', career: 'gardechamps' },
+  { label: 'Soldat\nnon-régression', species: 'Humain', career: 'soldat' },
 ];
+// Garde fail-fast : un id qui retombe sur « nu » viderait la sonde de son objet (#1338).
+for (const r of ROWS)
+  assertWardrobeId(r.career, 'qc-archetype-tenue');
 
 mkdirSync('public/qc', { recursive: true });
 const CW = 124, CH = 168;

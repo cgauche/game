@@ -13,6 +13,12 @@ import { weaponRest } from '../src/gameIso/rig/anim/weaponClips';
 import { recomputeLoadout } from '../src/engine/items';
 import type { Combatant, ItemInstance } from '../src/engine/types';
 import type { RigSpeciesId } from '../src/gameIso/rig/appearance';
+import { assertWardrobeId } from './_lib-wardrobe';
+
+// Mannequin : ID de garde-robe (carrière ∪ classe ∪ tenue), validé fail-fast — un id qui retombe
+// sur « nu » déshabillerait la planche en silence (#1338).
+const MANNEQUIN = 'soldat';
+assertWardrobeId(MANNEQUIN, 'qc-legendary-demo');
 
 const APP = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 4 } as const;
 
@@ -27,7 +33,7 @@ function heroWeapon(skin?: Record<string, string>) {
 const cell = (label: string, skin?: Record<string, string>) => {
   const w = heroWeapon(skin);
   const body = renderToStaticMarkup(React.createElement(RigSprite, {
-    appearance: APP, equip: { weapons: [w], armour: [] }, career: 'Soldat', pose: weaponRest(w), view: 'profile',
+    appearance: APP, equip: { weapons: [w], armour: [] }, career: MANNEQUIN, pose: weaponRest(w), view: 'profile',
   }));
   return `<rect width="120" height="150" fill="#1d2230"/>${body}<text x="60" y="164" text-anchor="middle" font-size="10" fill="#cdd">${label}</text>`;
 };
