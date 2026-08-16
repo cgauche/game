@@ -188,7 +188,7 @@ export function RollRow({
           >
             {resist && <ResistButton menace={resist.menace} show onResist={resist.onResist} />}
             {reverse && <ReverseButton show onReverse={reverse.onReverse} preview={reverse.preview} />}
-            {/* Détermination (LDB 17 l.62) : POOL DISTINCT de la Résilience — sa fenêtre est la
+            {/* Détermination (LDB 17 l.59) : POOL DISTINCT de la Résilience — sa fenêtre est la
                 PRÉSENCE de la donnée `determination` posée par le site, et sa réserve son propre
                 compteur (`resolve > 0`, porté par le bouton). Jamais gatée par la Résilience. */}
             {determineBtn}
@@ -243,7 +243,7 @@ export interface RollRowProps {
   /** OPT-OUT du sélecteur de dé dérivé par `RollShell` : le SITE interdit tout choix (cible
    *  Inconsciente — le moteur a déjà choisi le meilleur dé, seule la Localisation reste un choix). */
   noForcedDie?: boolean;
-  /** Détermination (LDB 17 l.62) : immunité Psychologie. */
+  /** Détermination (LDB 17 l.59) : immunité Psychologie. */
   determination?: { resolve: number; onResolve: () => void };
   /** Résistance (Menace) (LDB 10) : auto-succès du talent — fourni quand disponible ET issue encore
    *  défavorable (le parent décide). Affiché AVANT le jet et après un échec. */

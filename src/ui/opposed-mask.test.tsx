@@ -202,7 +202,7 @@ describe('#990 site 2 — incantation opposée : la rangée du lanceur ET son ve
     // Les verbes attendus sont ceux que la RÈGLE ouvre ici : 45 ≤ 50, le Test est RÉUSSI et seul le NI
     // manque (`LDB 46 l.23-25` : « Succès mais DR < NI → tentative échoue »). Chance (LDB 17 l.23,
     // « conclu par un échec ») et Résilience (LDB 17 l.68) n'ont donc rien à rattraper ; le Sombre
-    // Pacte (LDB 19 l.17, sans « raté ») et le « +1 DR » (LDB 17 l.26, après le jet) restent offerts.
+    // Pacte (LDB 19 l.17, sans « raté ») et le « +1 DR » (LDB 17 l.24, après le jet) restent offerts.
     const prow = host.querySelectorAll('.prow')[0]?.textContent ?? '';
     expect(prow, 'le Sombre Pacte du lanceur n’est pas masqué').toContain('Pacte');
     expect(prow, 'le « +1 DR » de Chance n’est pas masqué').toContain('+1 DR');

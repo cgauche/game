@@ -129,9 +129,9 @@ describe('#1318 V4 — toute affordance d’influence RENDUE est exécutable', (
     expect(b).toEqual([]);
   });
 
-  /** POOLS DISTINCTS (LDB 17 l.62 vs l.68) : la Détermination ne se gate JAMAIS sur la Résilience —
+  /** POOLS DISTINCTS (LDB 17 l.59 vs l.68) : la Détermination ne se gate JAMAIS sur la Résilience —
    *  ni sur sa réserve, ni sur sa fenêtre. Mesuré aux deux bornes qui les faisaient diverger. */
-  it('Détermination : offerte à 0 Résilience — pool DISTINCT (LDB 17 l.62), jamais gatée par la Résilience', () => {
+  it('Détermination : offerte à 0 Résilience — pool DISTINCT (LDB 17 l.59), jamais gatée par la Résilience', () => {
     const b = boutons(posJet(mk('hero', { resilience: 0 } as Partial<Combatant>), RATE,
       { determination: { resolve: 2, onResolve: noop } }));
     expect(b.some((t) => /Détermination/.test(t))).toBe(true);

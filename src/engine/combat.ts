@@ -663,7 +663,7 @@ export function weaponReachPenalty(attackerWeapon: Weapon, targetMelee: Weapon |
  * Modificateur de DEGRÉ DE RÉUSSITE psychologique de l'attaquant CONTRE `target` (LDB 21) — RAW en DR,
  * jamais en valeur cible : Peur −1 DR (l.29, vs la source, sauf immunité Haine/Amour) ; Haine/Animosité
  * +1 DR contre le groupe haï (l.22/41) ; Amour/Camaraderie +1 DR (défense des aimés/du groupe, l.77/82).
- * Immunité psychologique (trait/Frénésie/Détermination, LDB 17 l.62) → 0. Sans Peur (LDB 10) ne donne pas
+ * Immunité psychologique (trait/Frénésie/Détermination, LDB 17 l.59) → 0. Sans Peur (LDB 10) ne donne pas
  * d'immunité d'office : le malus suit l'ÉTAT réel (une Peur active non vaincue, `calmeDR < indice`).
  * Appliqué à `atkSL` à chaque résolution d'attaque (cœur opposé + passes non opposées), une seule fois.
  */
@@ -861,7 +861,7 @@ export function defenseModifiers(defender: Combatant, mode: DefenseMode, dodgeMo
   }
   // Substitution sociale (Intimidation/Dressage) : ni arme ni esquive → pas de main secondaire, de
   // neige, ni de malus « maniement deux armes » ; seuls Avantage/État/Sur la défensive s'appliquent.
-  if (mode !== 'social' && defender.dualStrikeDefensePenalty) out.push({ label: 'Maniement deux armes', value: -10, famille: 'jet', ref: RULE_REF['combat-deux-armes'] }); // LDB 10 l.638
+  if (mode !== 'social' && defender.dualStrikeDefensePenalty) out.push({ label: 'Maniement deux armes', value: -10, famille: 'jet', ref: RULE_REF['combat-deux-armes'] }); // LDB 10 l.767-773
   // Météo « Tests physiques » (EDOC 8 l.82, #341) : le CANAL UNIQUE `weatherTestMods` lit `defender.envWeather`
   // (posé à l'ouverture du combat), scopé par la carac RÉELLE du mode (Parade = CC, Esquive = Agilité) — jamais
   // recâblé par surface (la garde d'import interdit tout autre lecteur de `weatherPhysicalTestMod`).

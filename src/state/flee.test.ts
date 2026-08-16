@@ -86,7 +86,7 @@ describe('Fuite intégrée à la modale (store)', () => {
     expect(after.battle!.reachable.size).toBeGreaterThan(0); // budget de Course posé
   });
 
-  it("Fuir — Chance « +1 DR » réduit le nombre d'États Brisés sans basculer l'échec en réussite (LDB 17 l.26)", () => {
+  it("Fuir — Chance « +1 DR » réduit le nombre d'États Brisés sans réécrire `success` (LDB 17 l.24 ; LDB 12 l.11)", () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);

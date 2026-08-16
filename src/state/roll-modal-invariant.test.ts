@@ -114,7 +114,7 @@ const DEFENDER_ROLL_SITES = new Set([
   'resolveAttack',        // repli non surfacé seulement (`defenseSurfaced` → undefined / defense:'none')
   'maybeOpenDefense',     // OUVRE la fenêtre (chemin instantané : IA, gratuites, balayage)
   'openSurfacedDefense',  // OUVRE la fenêtre (chemin piloté : attackConfirm)
-  'resolveDualSecond',    // 2ᵉ frappe du Maniement de deux armes (LDB 10 l.638) — jet de défense NEUF, non surfacé
+  'resolveDualSecond',    // 2ᵉ frappe du Maniement de deux armes (LDB 10 l.767-773) — jet de défense NEUF, non surfacé
 ]);
 /** Ouvertures de fenêtre attendues sur les chemins d'attaque INSTANTANÉS (le brief #989 : le balayage
  *  et les attaques gratuites ne roulent plus de défense en silence). */

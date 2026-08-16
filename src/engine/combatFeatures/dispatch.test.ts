@@ -22,7 +22,7 @@ describe('offHandPenalty (registre de capacités)', () => {
 });
 
 describe('attackModesFor (registre de capacités)', () => {
-  it('héros avec Maniement de deux armes → contient "dual-wield" (LDB 10 l.638)', () => {
+  it('héros avec Maniement de deux armes → contient "dual-wield" (LDB 10 l.767-773)', () => {
     expect(attackModesFor(mk([{ name: 'Maniement de deux armes', times: 1 }]))).toContain('dual-wield');
   });
   it('sans le talent → vide', () => {

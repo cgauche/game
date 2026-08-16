@@ -135,7 +135,7 @@ const FIXTURES: Record<string, Fix> = {
   test: {
     make: (win) => ({ battle: arena(), pendingTest: { actorId: 'A', skillValue: 40, difficulty: 'intermediaire', target: 40, requireSL: 0, roll: win ? 8 : 95, sl: win ? 3 : -5, success: win } }),
     // Seuil de DR EXIGÉ manqué (`requireSL`, `meetsRequiredSL`) : le d100 est réussi (8 ≤ 40), l'issue
-    // métier ne l'est pas. L'issue canonique doit rester celle du d100 (`LDB 12 l.56`).
+    // métier ne l'est pas. L'issue canonique doit rester celle du d100 (`LDB 12 l.11`).
     composite: () => ({ battle: arena(), pendingTest: { actorId: 'A', skillValue: 40, difficulty: 'intermediaire', target: 40, requireSL: 3, roll: 8, sl: 1, success: false } }),
   },
   steamSave: { make: (win) => ({ battle: arena(), pendingSteamSave: { actorId: 'A', actorName: 'A', skillValue: 40, difficulty: 'intermediaire', target: 40, scaldOps: [{ op: 'wounds', amount: 1, ignoreAP: true }], roll: win ? 8 : 95, sl: win ? 3 : -5, success: win } }) },

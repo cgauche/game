@@ -278,7 +278,7 @@ export function ActionBar() {
   const mountCandidate = isHero && !active.mountId && !moveStarted ? mountableNear(battle, active) : undefined; // enfourcher = plein Mouvement (pas de jet → pas une Action)
   const prone = isHero && hasCondition(active, 'a-terre'); // À Terre (LDB 16 l.37) : ni Charge ni Course
   const broken = isHero && hasCondition(active, 'brise'); // Brisé (LDB 16 l.55) : fuir/se cacher uniquement, aucune action offensive
-  const entangled = isHero && hasCondition(active, 'empetre'); // Empêtré (LDB 16 l.61) : se libérer (Action, Test opposé de Force)
+  const entangled = isHero && hasCondition(active, 'empetre'); // Empêtré (LDB 16 l.66) : se libérer (Action, Test opposé de Force)
   const onFire = isHero && hasCondition(active, 'en-flammes'); // En flammes (LDB 16 l.77) : se rouler (Action, Test d'Athlétisme)
   // Déplacement, Attaque, Charge et Course sont implicites au clic (sol/ennemi), sans bouton dédié.
   // La Charge se déclenche d'elle-même (mêlée + non Engagé + Mouvement intact — LDB 15 l.74-77) ;
@@ -328,7 +328,7 @@ export function ActionBar() {
     }, {}),
   );
 
-  // Détermination (Resolve) : États retirables de l'actif (LDB 17 l.62-66).
+  // Détermination (Resolve) : États retirables de l'actif (LDB 17 l.59-61).
   const resolve = isHero ? active.resolve ?? 0 : 0;
   const removableConditions = isHero && resolve > 0 ? active.conditions : [];
   // Économie du tour (R6) : reste-t-il une option utile ? sinon « Fin du tour » pulse (nudge). Finir avec

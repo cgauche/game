@@ -14,7 +14,7 @@ describe('pénalités de Test d’État lues en DONNÉES (etats.json passive tes
   describe('combat (combatTestPenalty)', () => {
     it('Sonné → −10', () => { const c = mk(); addCondition(c, COND.sonne); expect(combatTestPenalty(c)).toBe(-10); });
     it('Exténué ×2 → −20 (perStack)', () => { const c = mk(); addCondition(c, COND.extenue); addCondition(c, COND.extenue); expect(combatTestPenalty(c)).toBe(-20); });
-    it('non-cumul (LDB 16 l.20) : Sonné + Exténué×3 → le PIRE seul (−30)', () => {
+    it('non-cumul (LDB 16 l.13) : Sonné + Exténué×3 → le PIRE seul (−30)', () => {
       const c = mk(); addCondition(c, COND.sonne); addCondition(c, COND.extenue); addCondition(c, COND.extenue); addCondition(c, COND.extenue);
       expect(combatTestPenalty(c)).toBe(-30);
     });

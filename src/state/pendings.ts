@@ -162,7 +162,7 @@ export interface PendingTest {
   /** Dé FIXÉ par le joueur (option « Dés fixés », `PendingBase.fixed`) — jamais posé sur ce flux :
    *  sans cible dérivable, la saisie y est refusée (garde `fixed-die-inventaire.test.ts`). */
   fixed?: boolean;
-  /** Relance par Chance déjà effectuée (LDB 12 l.56 : 1 relance max par Test). */
+  /** Relance par Chance déjà effectuée (LDB 12 l.40 : 1 relance max par Test). */
   rerolled?: boolean;
   /** Ce Test EST le sous-Test d'un `onOwnTestFailed` (FM de palier 2 des Crampes routé en modale hors
    *  combat, MSRC 16) : sa résolution NE ré-émet PAS le trigger (garde de ré-entrance, `resolveTest`). */
@@ -220,7 +220,7 @@ export interface PendingReload {
   target: number; // cible effective après difficulté
   sl: number; // DR du jet
   success: boolean;
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.40). */
   rerolled?: boolean;
   /** Recharge d'un POSTE de navire (MDG 12) : la pièce visée (`ShipPoste.item.uid`) + sa coque (`shipId`).
    *  Présents → l'application écrit le DR cumulé sur le POSTE (pas le champ `loaded` du marin) et occupe son équipage. */
@@ -288,7 +288,7 @@ export interface PendingBargain {
   merchantRoll: TestResult | null;
   /** Résultat opposé (joueur = attaquant). */
   result: OpposedResult | null;
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.40). */
   rerolled?: boolean;
 }
 /** Évaluation en attente (LDB 59 l.41 : « estimer les prix … à ±10 % ») — Test d'Évaluation (Int) ;
@@ -319,7 +319,7 @@ export interface PendingAppraise {
   roll: number | null;
   success: boolean;
   sl: number;
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.40). */
   rerolled?: boolean;
 }
 /** Attaque en attente : la modale affiche « Lancer », puis le résultat + Chance. */
@@ -342,7 +342,7 @@ export interface PendingAttack {
   distanceTiles?: number;
   dodgeMod?: number;
   result: AttackResult | null; // null = pas encore lancé
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.40). */
   rerolled?: boolean;
   fromCharge?: boolean; // issue d'une Charge → l'attaque est engagée dès le 1ᵉʳ jet (LDB 15 l.35)
   /** Undo PRÉ-JET d'une Charge (jeu vidéo : annuler un misclic comme on annule un déplacement/une attaque) :
@@ -387,7 +387,7 @@ export interface PendingAttack {
   /** La défense SURFACÉE du défenseur a déjà été jouée (fenêtre `pendingDefense` refermée, `defenseConfirm`
    *  rend la main à `attackConfirm` avec le résultat OPPOSÉ) : l'interposition ne se repose pas. */
   defended?: boolean;
-  /** Attaque-Action en mode « des deux armes » (main directrice) : chaîne une 2ᵉ frappe si elle touche (LDB 10 l.638). */
+  /** Attaque-Action en mode « des deux armes » (main directrice) : chaîne une 2ᵉ frappe si elle touche (LDB 10 l.767-773). */
   dualMode?: boolean;
   /** Cette attaque EST la 2ᵉ frappe (off-hand) d'un Maniement de deux armes : jet imposé, pas de relance. */
   dualSecond?: boolean;
@@ -455,7 +455,7 @@ export interface PendingCleave {
    *  l.9). Absent/false = balayage de Taille (enchaîne sur une simple touche, LDB 85 l.299). */
   fm?: boolean;
 }
-/** Sélection de la 2ᵉ cible du Maniement de deux armes (LDB 10 l.638), après une 1ʳᵉ frappe RÉUSSIE.
+/** Sélection de la 2ᵉ cible du Maniement de deux armes (LDB 10 l.767-773), après une 1ʳᵉ frappe RÉUSSIE.
  *  Calqué sur PendingCleave : le joueur clique une cible (ou renonce via `dualStrikeSkip`). `mainRoll` = jet
  *  conservé de la 1ʳᵉ frappe ; `critValue` = valeur du tableau des Critiques si la 1ʳᵉ était un Critique.
  *  Avantage : +1 UNIQUE accordé si les DEUX frappes touchent (l.638) — son existence prouve que la 1ʳᵉ a touché. */
@@ -498,7 +498,7 @@ export interface PendingDistraire {
   atk: TestResult | null; // jet d'Athlétisme du mover (mover = « attaquant » du Test opposé) — null = pas lancé
   defRoll: TestResult; // jet de Calme du foe, figé à l'ouverture (jamais relancé)
   result: 'success' | 'failure' | 'tie' | null; // 'success' = le mover l'emporte ; 'tie' = statu quo
-  /** Relance par Chance de l'Athlétisme déjà effectuée (1 max/Test, LDB 12 l.56). */
+  /** Relance par Chance de l'Athlétisme déjà effectuée (1 max/Test, LDB 12 l.40). */
   rerolled?: boolean;
   /** Réussite forcée par Résilience (LDB 17 l.68) → l'emporte simplement (issue binaire). */
   forced?: boolean;
@@ -895,7 +895,7 @@ export interface PendingDefense {
   atkCompo?: DifficultyComposition;
   def: TestResult | null; // null = pas encore défendu ; écrasé par Chance
   result: AttackResult | null; // calculé par finishMelee après « Défendre »
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.40). */
   rerolled?: boolean;
   /** Défense forcée par Résilience (LDB 17 l.68) → le joueur peut CHOISIR la valeur du dé. */
   forced?: boolean;
@@ -936,7 +936,7 @@ export interface PendingDisengage {
    *  slot porte son propre cycle d'influence et son `interactive` (le contrôleur de SON acteur).
    *  `fleeConfirm` applique le tout (attaque canonique + Brisé + libération/Course). */
   fuir?: { participants: FleeSlot[] };
-  /** Relance par Chance de l'Esquive déjà effectuée (1 max/Test, LDB 12 l.56). */
+  /** Relance par Chance de l'Esquive déjà effectuée (1 max/Test, LDB 12 l.40). */
   rerolled?: boolean;
 }
 
@@ -981,7 +981,7 @@ export interface PendingAuContact {
   atk: TestResult | null; // jet de Corps à corps du foe, figé (jamais relancé)
   def: TestResult | null; // jet de Corps à corps du mover (influençable)
   result: 'success' | 'failure' | 'tie' | null; // 'success' = le mover (héros) l'emporte ; 'tie' = statu quo
-  /** Relance par Chance du jet du mover déjà effectuée (1 max/Test, LDB 12 l.56). */
+  /** Relance par Chance du jet du mover déjà effectuée (1 max/Test, LDB 12 l.40). */
   rerolled?: boolean;
 }
 
@@ -998,7 +998,7 @@ export interface PendingGrapple {
   atk: TestResult | null; // jet de Force du foe, figé (jamais relancé)
   def: TestResult | null; // jet de Force de l'acteur (influençable)
   result: 'success' | 'failure' | 'tie' | null; // 'success' = l'acteur l'emporte ; 'tie' = statu quo
-  /** Relance par Chance du jet de l'acteur déjà effectuée (1 max/Test, LDB 12 l.56). */
+  /** Relance par Chance du jet de l'acteur déjà effectuée (1 max/Test, LDB 12 l.40). */
   rerolled?: boolean;
 }
 
@@ -1014,7 +1014,7 @@ export interface PendingCast {
   focused: boolean;
   /** Résultat figé du jet d'incantation (null = pas encore lancé). */
   result: (CastResult & Partial<MissileResult>) | null;
-  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.40). */
   rerolled?: boolean;
   /** Incantation forcée par Résilience (LDB 17 l.68) → le joueur peut CHOISIR la valeur du dé. */
   forced?: boolean;
@@ -1434,7 +1434,7 @@ export interface BatchParticipant extends RollParticipant {
    *  Aucun `stake` non plus : la CLÉ d'une bande EST l'entrée de règle mise en jeu (une fenêtre par
    *  règle), donc l'enjeu — et la fiche ⓘ — restent ceux de l'ÉTAPE (#1117). */
   meta?: CascadeStepMeta;
-  /** DÉTERMINATION (LDB 17 l.62) dépensée SUR CETTE RANGÉE : l'applier de bande lit le flag DE LA RANGÉE
+  /** DÉTERMINATION (LDB 17 l.59) dépensée SUR CETTE RANGÉE : l'applier de bande lit le flag DE LA RANGÉE
    *  pour ne pas lui appliquer la conséquence, les autres rangées de la bande gardant la leur. */
   immune?: boolean;
   /** SECONDE LECTURE du MÊME dé pour CETTE rangée (Test combiné, `LDB 12 l.203-208`) — cf.
@@ -1629,7 +1629,7 @@ export interface CascadeStepBase extends Omit<RollParticipant, 'interactive'> {
   /** DÉCLARATION d'une BANDE de Psychologie À LA RENCONTRE (LDB 21) : l'entrée de règle mise en jeu
    *  — type psy + source + cible + Indice — face à laquelle les héros appelés à l'entrée de scène sont
    *  les RANGÉES (`participants`, `aggregate:'none'`). L'applier 'encounterPsych' pose le `psychState`
-   *  RANGÉE PAR RANGÉE ; Détermination (LDB 17 l.62) jouée par rangée (`BatchParticipant.immune`). */
+   *  RANGÉE PAR RANGÉE ; Détermination (LDB 17 l.59) jouée par rangée (`BatchParticipant.immune`). */
   encounterPsych?: { kind: PsychType; sourceId: string; sourceName: string; indice: number; cible?: string };
   /** DÉCLARATION d'une BANDE de Psychologie EN COMBAT (LDB 21) : l'entrée de règle mise en jeu — type
    *  psy + source + cible + Indice — face à laquelle les héros appelés sont les RANGÉES
@@ -1637,7 +1637,7 @@ export interface CascadeStepBase extends Omit<RollParticipant, 'interactive'> {
    *  DÉBUT du Round (l.14) ; la Peur est un Test ÉTENDU testé à la FIN de chaque Round (l.25), dont le
    *  DR déjà cumulé (`meta.prevDR`) et l'allègement Sans Peur (`meta.sansPeur`) vivent PAR RANGÉE.
    *  Distinct d'`encounterPsych` (simple) car la Peur de combat est ÉTENDUE. Détermination = immunité
-   *  (LDB 17 l.62), jouée par rangée (`BatchParticipant.immune`). */
+   *  (LDB 17 l.59), jouée par rangée (`BatchParticipant.immune`). */
   combatPsych?: { kind: PsychType; sourceId: string; sourceName: string; indice: number; cible?: string };
   /** Étape « choix » : options présentées au joueur (l'option retenue pilote la conséquence). */
   options?: { key: string; label: string; detail?: string }[];

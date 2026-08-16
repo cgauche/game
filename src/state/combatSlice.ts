@@ -2064,7 +2064,7 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.SCENE_DIRTY);
     },
 
-    // ── Détermination (Resolve) : retirer un État de l'actif, +1 PB si À Terre (LDB 17 l.62-66) ──
+    // ── Détermination (Resolve) : retirer un État de l'actif, +1 PB si À Terre (LDB 17 l.59-61) ──
     battleSpendResolve: (conditionName: string) => {
       const { battle } = get();
       if (!battle || battle.over) return;
@@ -2072,16 +2072,16 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!active || !controlsCombatant(get(), active) || (active.resolve ?? 0) <= 0) return;
       if (!active.conditions.some((c) => c.id === conditionName)) return;
       active.resolve = (active.resolve ?? 0) - 1;
-      removeCondition(active, conditionName, 1); // « Retirez un État » (un pion), LDB 17 l.66
+      removeCondition(active, conditionName, 1); // « Retirez un État » (un pion), LDB 17 l.61
       let extra = '';
       if (conditionName === COND.aTerre) {
-        applyHealWounds(active, 1, { skillCheck: false, wake: false, log: () => [] }); // +1 PB en se relevant (LDB 17 l.66), plafond munition-logée
+        applyHealWounds(active, 1, { skillCheck: false, wake: false, log: () => [] }); // +1 PB en se relevant (LDB 17 l.61), plafond munition-logée
         extra = t('cs.fragGettingUp');
       }
       set({ battle: { ...battle, action: null, log: [...battle.log, ev('info', t('cs.determinationRemove', { name: active.label, cond: conditionName, extra }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
-    /** Détermination (LDB 17 l.62-66) : même règle que `battleSpendResolve`, mais pour N'IMPORTE QUEL
+    /** Détermination (LDB 17 l.59-61) : même règle que `battleSpendResolve`, mais pour N'IMPORTE QUEL
      *  COMBATTANT porteur de Détermination, par id, sans toucher au mode d'action — un héros en défense
      *  (il n'est pas l'actif) comme un acteur AUTO-PILOTÉ Brisé (l'IA s'en sert pour se ressaisir : retirer
      *  un pion d'un État verrouillant sans coûter l'Action, hôte-autoritaire). Un ennemi sans Détermination
@@ -2092,10 +2092,10 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!hero || (hero.resolve ?? 0) <= 0) return;
       if (!hero.conditions.some((c) => c.id === conditionName)) return;
       hero.resolve = (hero.resolve ?? 0) - 1;
-      removeCondition(hero, conditionName, 1); // « Retirez un État » (un pion), LDB 17 l.66
+      removeCondition(hero, conditionName, 1); // « Retirez un État » (un pion), LDB 17 l.61
       let extra = '';
       if (conditionName === COND.aTerre) {
-        applyHealWounds(hero, 1, { skillCheck: false, wake: false, log: () => [] }); // +1 PB en se relevant (LDB 17 l.66), plafond munition-logée
+        applyHealWounds(hero, 1, { skillCheck: false, wake: false, log: () => [] }); // +1 PB en se relevant (LDB 17 l.61), plafond munition-logée
         extra = t('cs.fragGettingUp');
       }
       if (s.battle) {
@@ -2105,7 +2105,7 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       bus.emit(EVT.SCENE_DIRTY);
     },
-    /** Détermination (LDB 17 l.62) : immunisé à la Psychologie jusqu'à la fin du PROCHAIN Round. */
+    /** Détermination (LDB 17 l.59) : immunisé à la Psychologie jusqu'à la fin du PROCHAIN Round. */
     battleResolvePsychImmune: () => {
       const { battle } = get();
       if (!battle || battle.over) return;
@@ -2116,14 +2116,14 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ battle: { ...battle, action: null, log: [...battle.log, ev('info', msg, active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
-    /** Détermination (LDB 17 l.64) : ignore les modificateurs de Blessure critique jusqu'au début du prochain Round. */
+    /** Détermination (LDB 17 l.60) : ignore les modificateurs de Blessure critique jusqu'au début du prochain Round. */
     battleResolveIgnoreCrit: () => {
       const { battle } = get();
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active) || (active.resolve ?? 0) <= 0) return;
       active.resolve = (active.resolve ?? 0) - 1;
-      // Détermination (LDB 17 l.64) : `ActiveEffect` à durée 1 Round (système de Durée unifié) — ignore les
+      // Détermination (LDB 17 l.60) : `ActiveEffect` à durée 1 Round (système de Durée unifié) — ignore les
       // modifs de Critique ce Round, expiré au passage de Round. Plus de flag round-scopé + hook dédié.
       active.activeEffects = [
         ...(active.activeEffects ?? []).filter((e) => e.effectId !== 'determination-crit'),
@@ -2325,7 +2325,7 @@ export function createCombatSlice(get: Get, set: Set) {
         const prevActed = battle.acted; // pour la Frénésie : la 1re attaque du Round est GRATUITE
         const isDualMain = !!pa.dualMode && !pa.dualSecond && attacker.kind === 'hero'; // main directrice d'un dual
         const isDualSecond = !!pa.dualSecond; // 2ᵉ frappe (off-hand)
-        // Maniement de deux armes (LDB 10 l.638) : l'Avantage des deux frappes est différé — accordé seulement
+        // Maniement de deux armes (LDB 10 l.767-773) : l'Avantage des deux frappes est différé — accordé seulement
         // si LES DEUX touchent (cf. blocs isDualSecond ci-dessous).
         applyAttackResult(get, set, attacker, victim, weapon, pa.result, undefined, undefined, isDualMain || isDualSecond, pa.grapple); // pa.grapple = Empoignade (LDB 14 l.159) : pose l'Empoignade au lieu des Dégâts
         // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53) ; elle interrompt le balayage.
@@ -2339,7 +2339,7 @@ export function createCombatSlice(get: Get, set: Set) {
           // (jamais en mode dual ni sur une Attaque gratuite de manœuvre).
           maybeHeroCleave(get, set, attacker, victim, pa.result, wasChain);
         }
-        // Action « des deux armes » (LDB 10 l.638) : attaquer des deux armes impose −10 à toutes ses défenses
+        // Action « des deux armes » (LDB 10 l.767-773) : attaquer des deux armes impose −10 à toutes ses défenses
         // jusqu'à son prochain Tour ; si la main directrice TOUCHE, on ouvre la sélection de la 2ᵉ cible.
         if (isDualMain) {
           attacker.dualStrikeDefensePenalty = true;
@@ -2355,7 +2355,7 @@ export function createCombatSlice(get: Get, set: Set) {
           }
           set({ battle: { ...get().battle! } });
         }
-        // 2ᵉ frappe résolue (LDB 10 l.638) : +1 Avantage UNIQUE si LES DEUX frappes touchent (pas +1 par frappe).
+        // 2ᵉ frappe résolue (LDB 10 l.767-773) : +1 Avantage UNIQUE si LES DEUX frappes touchent (pas +1 par frappe).
         // `dualBefore` n'existe que si la 1ʳᵉ a touché ; `pa.result.hit` = la 2ᵉ touche → les deux touchent.
         if (isDualSecond) {
           if (dualBefore && pa.result.hit) { campGain(get, attacker); attacker.gainedAdvThisRound = true; }
@@ -2454,11 +2454,11 @@ export function createCombatSlice(get: Get, set: Set) {
         } });
         return;
       }
-      // 2ᵉ frappe : jet IMPOSÉ (inversé / valeur du Critique) + pénalité main 2nde + nouveau jet de défense (LDB 10 l.638).
+      // 2ᵉ frappe : jet IMPOSÉ (inversé / valeur du Critique) + pénalité main 2nde + nouveau jet de défense (LDB 10 l.767-773).
       const res = resolveDualSecond(get, attacker, target, off, ds.mainRoll, { critValue: ds.critValue });
       set({ pendingAttack: { attackerId: attacker.id, targetId, location: res.location ?? null, result: res, dualSecond: true, weaponUid: off.uid } });
     },
-    dualStrikeSkip: () => { set({ pendingDualStrike: null }); advanceCombatJet(get); }, // « peut viser » = optionnel : pas de 2ᵉ → pas d'Avantage (LDB 10 l.638)
+    dualStrikeSkip: () => { set({ pendingDualStrike: null }); advanceCombatJet(get); }, // « peut viser » = optionnel : pas de 2ᵉ → pas d'Avantage (LDB 10 l.767-773)
     // Maladresse : la donnée vit SUR l'étape COURANTE de la cascade (`step.fumble`) — source unique.
     fumbleRoll: () => {
       const pc = get().pendingCascade;
@@ -3533,7 +3533,7 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     // Psychologie de COMBAT (Peur/Terreur/Traits ciblés, LDB 21) : CASCADE de Round (Traits/Terreur au
     // DÉBUT via openRoundStartPsych ; Peur — Test étendu — à la FIN via openRoundEndCascade), applier
-    // 'combatPsych', résolue par les handlers `cascade*`. La Détermination (LDB 17 l.62) est offerte
+    // 'combatPsych', résolue par les handlers `cascade*`. La Détermination (LDB 17 l.59) est offerte
     // sur la RANGÉE par `cascadeBatchDetermine`.
     // Psychologie À LA RENCONTRE (couture C, LDB 21) : cascade équivalente, applier 'encounterPsych',
     // ouverte par `openEncounterPsych` à l'entrée de scène.

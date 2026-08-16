@@ -214,7 +214,7 @@ export function describeRun(pr: PendingRun): string {
   return t('out.run', { label: r.success ? t('out.runYes') : t('out.runNo'), cases: r.bonusCases });
 }
 
-/** « Se libérer » (Empêtré) / « se rouler » (En flammes) — LDB 16 l.61/77 : issue du Test (source unique
+/** « Se libérer » (Empêtré) / « se rouler » (En flammes) — LDB 16 l.66/77 : issue du Test (source unique
  *  popin ↔ journal). `name` = l'acteur. */
 export function describeStateRecovery(sr: PendingStateRecovery, name: string): string {
   if (sr.roll == null) return '';

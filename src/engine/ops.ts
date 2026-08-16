@@ -1288,7 +1288,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         if (o.onlyIfCondition && !hasCondition(target, o.onlyIfCondition)) break;
         if (o.unlessCondition && hasCondition(target, o.unlessCondition)) break;
         const v = Math.max(1, resolveFormula(o.value ?? 1, ref, rng, ctx.rolled, ctx.indice, ctx.stacks) + slBonus(ctx.sl, o.valuePerSL));
-        // Force d'évasion (Empêtré « se libérer » — LDB 16 l.61) : résolue MAINTENANT contre le
+        // Force d'évasion (Empêtré « se libérer » — LDB 16 l.66) : résolue MAINTENANT contre le
         // référent (le lanceur pour un sort) et FIGÉE sur l'entrée d'État → le flux de récupération
         // l'opposera, même si le lanceur n'est plus en jeu.
         const escape = o.escapeStrength != null ? Math.max(0, resolveFormula(o.escapeStrength, ref, rng)) : undefined;

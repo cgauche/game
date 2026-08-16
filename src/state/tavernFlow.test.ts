@@ -129,7 +129,7 @@ describe('playTavernGame', () => {
     const aT = before.meta!.opposed!.aT;
     get().cascadeBonusSL(stepId);
     const after = get().pendingCascade!.participants[0].result!;
-    // Le DR propre du défenseur monte de +1 (Chance, LDB 17 l.26) — jamais un nouveau jet de l'adversaire.
+    // Le DR propre du défenseur monte de +1 (Chance, LDB 17 l.24) — jamais un nouveau jet de l'adversaire.
     expect(after.sl).toBe(before.result!.sl + 1);
     expect(after.roll).toBe(before.result!.roll); // même dé, la Chance n'en tire pas un autre
     // L'issue exposée (`success`) recalcule l'opposition contre le MÊME `aT` figé (calque `disengage`).

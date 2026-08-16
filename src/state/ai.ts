@@ -93,7 +93,7 @@ export type EnemyAction =
   | { kind: 'reload' } // recharge une arme à Recharge déchargée (Test étendu de Projectiles, LDB 62 l.333)
   | { kind: 'melee'; targetId: string } // attaque de mêlée (cible adjacente)
   | { kind: 'move'; to: Pt; thenTargetId: string } // approche ; attaque après si adjacent
-  | { kind: 'recover'; state: 'empetre' | 'en-flammes' } // se libérer / se rouler au sol (LDB 16 l.61/77)
+  | { kind: 'recover'; state: 'empetre' | 'en-flammes' } // se libérer / se rouler au sol (LDB 16 l.66/77)
   | { kind: 'spendResource'; resource: 'resolve'; via: 'removeCondition'; id: string } // dépense PROACTIVE de Détermination pour retirer un État verrouillant (Brisé) et se ressaisir (LDB 17 l.57-63)
   | { kind: 'grapple'; targetId: string; resolution: 'break' | 'test' } // Empoigné à son tour (LDB 14 l.161) : son Action EST le Test opposé de Force, OU « Briser » (Avantage supérieur) pour regagner sa liberté d'action puis re-décider
   | { kind: 'manPoste'; hullId: string; posteUid: string } // « Servir cette pièce » (MDG 12) : devenir chef d'un poste de siège NON servi adjacent (l'arme de siège est octroyée) — coûte l'Action
@@ -407,7 +407,7 @@ function targetThreat(enemy: Combatant, hero: Combatant, mpt = 2): number {
  * Meilleur CENTRE d'un sort de ZONE (ZdE, LDB 47 l.44) couvrant le plus de héros : on essaie chaque
  * case occupée par un héros comme centre candidat (déterministe, suffisant pour « un paquet ») et on
  * compte les héros dans le rayon (Chebyshev, comme `castCommitZone`). Un centre VALIDE doit respecter
- * la portée du sort (Chebyshev depuis le lanceur) et la Ligne de Vue (LDB 46 l.170). Renvoie le centre
+ * la portée du sort (Chebyshev depuis le lanceur) et la Ligne de Vue (LDB 46 l.121). Renvoie le centre
  * couvrant le plus de héros (≥2) ou null. Tie-break déterministe : couverture ↓, puis coordonnées ↑.
  */
 function bestAreaCenter(
@@ -674,7 +674,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const doctrine = pickDoctrine(enemy, squad, input.heroes);
   const Weff = doctrineWeights(doctrine);
   const macro = DOCTRINES[doctrine].macro;
-  // GARDE Empêtré (LDB 16 l.61/85) : un Empêtré a un Mouvement NUL → `fleeMove` ne trouverait aucune
+  // GARDE Empêtré (LDB 16 l.66/85) : un Empêtré a un Mouvement NUL → `fleeMove` ne trouverait aucune
   // case d'évasion et renverrait `end` (tour gâché). On NE déclenche donc PAS le repli « doctrine » pour
   // un Empêtré : le cœur discrétionnaire ne produira aucun candidat (Mouvement 0) et le fallback final
   // l'enverra sur `recover empetre` (se libérer) — le bon comportement, plutôt que passer son tour.

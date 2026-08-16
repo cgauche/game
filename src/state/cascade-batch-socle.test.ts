@@ -18,7 +18,7 @@ import './travelPostes'; // enregistre l'applier de BANDE de voyage `weatherResi
  *  1. CHARGE UTILE par rangée (`BatchParticipant.meta`) : l'applier d'une bande lit, PAR RANGÉE, ce qui
  *     diverge d'un héros à l'autre. L'enjeu, lui, reste celui de l'ÉTAPE (la clé d'une bande EST
  *     l'entrée de règle mise en jeu) ;
- *  2. DÉTERMINATION par rangée (LDB 17 l.62) : `BatchParticipant.immune` marque LE porteur, les autres
+ *  2. DÉTERMINATION par rangée (LDB 17 l.59) : `BatchParticipant.immune` marque LE porteur, les autres
  *     rangées gardant leur conséquence ;
  *  3. RÉSISTANCE (Menace) par rangée (LDB 10 l.1015-1021) : une bande dont le Test est tagué `menace`
  *     se construit (plus de fail-fast) et chaque rangée peut jouer SON auto-succès.
@@ -56,7 +56,7 @@ describe('parité des VERBES : une bande offre ce qu’offre l’étape mono', (
     const bande = FLOW_VERBS.cascadeBatch.verbs as readonly string[];
     const manquants = mono.filter((v) => !bande.includes(v));
     expect(manquants, 'verbe de l’étape mono absent de la bande — la rangée ne peut pas jouer sa règle').toEqual([]);
-    // La Psychologie ne se testant qu'en bandes, `determine` (LDB 17 l.62) n'est plus exposé QUE là :
+    // La Psychologie ne se testant qu'en bandes, `determine` (LDB 17 l.59) n'est plus exposé QUE là :
     // le filet de parité ci-dessus ne le couvre plus, il s'exige donc nommément.
     expect(bande, 'la Détermination n’est plus jouable nulle part').toContain('determine');
   });
@@ -91,7 +91,7 @@ describe('CHARGE UTILE par rangée (`meta`) — l’applier lit la donnée DE LA
   });
 });
 
-describe('DÉTERMINATION par rangée (LDB 17 l.62)', () => {
+describe('DÉTERMINATION par rangée (LDB 17 l.59)', () => {
   const psychBand = () =>
     band('bande-psy', [row('h1'), row('h2')], {
       combatPsych: { kind: 'peur', sourceId: 'e1', sourceName: 'Bête', indice: 2 },

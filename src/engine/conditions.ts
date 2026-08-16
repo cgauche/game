@@ -72,11 +72,11 @@ export function recoveredStacks(dr: number, stacks: number, success: boolean): n
 }
 
 export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number, lockedUntil?: import('./flowCore').Condition, unlockBy?: import('./types').ConditionUnlock, escapeThreshold?: number, entangleOnFail?: boolean, struggleDamage?: number): void {
-  if (!groupAdvantage()) c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez tout Avantage » (LDB 16 l.15) — pas de perte per-combattant en mode « Avantage de groupe » (la réserve du camp ne change pas)
+  if (!groupAdvantage()) c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez immédiatement tout Avantage » (LDB 16 l.7) — pas de perte per-combattant en mode « Avantage de groupe » (la réserve du camp ne change pas)
   const existing = c.conditions.find((x) => x.id === name);
   if (existing) {
     existing.value += value;
-    // Force d'évasion (Empêtré « se libérer » — LDB 16 l.61) : sur ré-application, on garde la PLUS
+    // Force d'évasion (Empêtré « se libérer » — LDB 16 l.66) : sur ré-application, on garde la PLUS
     // CONTRAIGNANTE (max), pour qu'un Enchevêtrement ne soit pas affaibli par un État Empêtré « banal »
     // qui s'empile par-dessus (et inversement, un sort plus fort durcit l'évasion).
     if (escapeStrength != null) existing.escapeStrength = Math.max(existing.escapeStrength ?? 0, escapeStrength);
@@ -124,7 +124,7 @@ export function addTimedCondition(c: Combatant, name: string, value: number, rou
 export function addClockCondition(c: Combatant, name: string, value: number, until: number, escapeStrength?: number, escapeThreshold?: number, entangleOnFail?: boolean, struggleDamage?: number): void {
   const existing = c.conditions.find((x) => x.id === name);
   if (existing) {
-    if (!groupAdvantage()) c.advantage = 0; // « Si vous subissez un État, vous perdez tout Avantage » (LDB 16 l.15) — inerte en mode « Avantage de groupe »
+    if (!groupAdvantage()) c.advantage = 0; // Perte d'Avantage sur État (LDB 16 l.7) — inerte en mode « Avantage de groupe »
     existing.value += value;
     if (escapeStrength != null) existing.escapeStrength = Math.max(existing.escapeStrength ?? 0, escapeStrength);
     if (escapeThreshold != null) existing.escapeThreshold = Math.max(existing.escapeThreshold ?? 0, escapeThreshold);
@@ -234,7 +234,7 @@ function effectGlobalTestMod(e: ActiveEffect): number {
 
 /** Les `testMod` portés par les États du combattant (kind `etat`), déjà ×pions (perStack) par le
  *  collecteur, AVEC l'identité Codex de l'État/état psy qui les porte (`PassiveMod.src`). Lus en
- *  « PIRE seul » par combatTestPenaltyParts/testStatePenalty (non-cumul, LDB 16 l.20). */
+ *  « PIRE seul » par combatTestPenaltyParts/testStatePenalty (non-cumul, LDB 16 l.13). */
 function etatTestMods(c: Combatant): { op: Extract<GameOp, { op: 'testMod' }>; src?: CodexTarget }[] {
   const out: { op: Extract<GameOp, { op: 'testMod' }>; src?: CodexTarget }[] = [];
   for (const m of passiveMods(c)) if (m.kind === 'etat' && m.op.op === 'testMod') out.push({ op: m.op, src: m.src });
@@ -247,13 +247,13 @@ function ignoredStatesCount(c: Combatant): number {
   return (c.activeEffects ?? []).reduce((s, e) => s + (e.ignoreStatesCount ?? 0), 0);
 }
 
-/** Un candidat du POOL non-cumul (LDB 16 l.20), avec l'identité de ce qui l'octroie. `nature` = la
+/** Un candidat du POOL non-cumul (LDB 16 l.13), avec l'identité de ce qui l'octroie. `nature` = la
  *  FAMILLE du candidat (État, aura de trait…), servie à l'affichage quand `src` manque : un candidat
  *  non identifié ne doit pas emprunter le nom d'une AUTRE famille (une aura n'est pas un État). */
 interface PoolCandidate { amount: number; nature: string; src?: CodexTarget }
 
 /** Retire les N PIRES candidats (les plus négatifs) du pool de pénalités d'État — « ignorer UN État » :
- *  le pool non-cumul (le pire seul s'applique, LDB 16 l.20) rend rationnel d'ignorer le pire d'abord.
+ *  le pool non-cumul (le pire seul s'applique, LDB 16 l.13) rend rationnel d'ignorer le pire d'abord.
  *  L'ORDRE DE COLLECTE des survivants est préservé (il départage les ex æquo, cf. `poolWinner`). */
 function dropWorst(cand: PoolCandidate[], n: number): PoolCandidate[] {
   if (n <= 0) return cand;
@@ -319,7 +319,7 @@ export function combatTestPenaltyParts(c: Combatant): ModLine[] {
   const best = poolWinner(cand);
   if (best?.amount) out.push({ label: srcLabel(best.src, best.nature), value: best.amount, famille: 'jet', ref: best.src });
   // Modificateur de Sort (Malédiction de malchance) + pénalité GLOBALE de maladie (Crampes abdominales −20,
-  // MSRC 16 l.152) : STACKENT tous deux avec l'État (hors pool non-cumul des États, LDB 16 l.20).
+  // MSRC 16 l.152) : STACKENT tous deux avec l'État (hors pool non-cumul des États, LDB 16 l.13).
   for (const e of c.activeEffects ?? []) {
     const amount = effectGlobalTestMod(e);
     if (amount) out.push({ label: e.label, value: amount, famille: 'jet', ref: effectRef(e) });

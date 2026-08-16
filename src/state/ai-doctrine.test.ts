@@ -204,7 +204,7 @@ describe('Doctrines — comportements distincts vs standard', () => {
   it('RACAILLE Empêtrée sous 1/3 PB ne FUIT PAS (M=0) : elle se LIBÈRE (recover empetre), pas son tour gâché', () => {
     // Une racaille très entamée déclencherait le repli « doctrine » (retreatBelow 1/3) — MAIS Empêtrée
     // (Mouvement 0) `fleeMove` renverrait `end` (tour perdu). La garde `!empetre` la laisse atteindre le
-    // fallback `recover empetre` (se libérer, LDB 16 l.61). (Fix L6 — point B.)
+    // fallback `recover empetre` (se libérer, LDB 16 l.66). (Fix L6 — point B.)
     const rab = mk('rab', 'enemy', { x: 5, y: 5 }, {
       groups: ['criminel'], weapons: [MELEE], movement: 0,
       wounds: { current: 2, max: 12 }, // < 1/3

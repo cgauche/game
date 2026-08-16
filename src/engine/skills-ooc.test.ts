@@ -21,7 +21,7 @@ describe('testValue HORS COMBAT — mêmes modulations qu’en combat (audit, LD
     expect(testValue(mk({ conditions: [{ id: 'extenue', value: 2 }] }), undefined, 'intelligence')).toBe(10); // 30 − 20
   });
 
-  it('Non-cumul (LDB 16 l.20) : Brisé(−10) + Exténué×2(−20) → −20 seulement', () => {
+  it('Non-cumul (LDB 16 l.13) : Brisé(−10) + Exténué×2(−20) → −20 seulement', () => {
     const c = mk({ conditions: [{ id: 'brise', value: 1 }, { id: 'extenue', value: 2 }] });
     expect(testValue(c, undefined, 'intelligence')).toBe(10); // 30 − 20 (la pire), pas −30
   });

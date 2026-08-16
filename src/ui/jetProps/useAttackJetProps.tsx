@@ -77,7 +77,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   const offPen = offHandPenalty(attacker);
   const res = pa.result;
   const rolled = !!res;
-  // LDB 10 l.638
+  // LDB 10 l.767-773
   const dualEligible = !res && attacker.kind === 'hero' && attackModesFor(attacker).includes('dual-wield')
     && attacker.weapons.some((w) => w.hand === 'main' && w.type === 'melee' && (w.hands ?? 1) === 1)
     && attacker.weapons.some((w) => w.hand === 'off' && w.type === 'melee' && (w.hands ?? 1) === 1)
@@ -183,7 +183,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
     setup: (
       <>
         <div className="rm-options">
-          {/* LDB 10 l.638 */}
+          {/* LDB 10 l.767-773 */}
           {dualEligible && (
             <div className="rm-loc-inline rm-dual-toggle">
               <label>

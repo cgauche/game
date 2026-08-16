@@ -251,7 +251,7 @@ function crewRoleFlowSpec<P extends import('./rollFlowFactory').PendingBase & { 
       return rr ? { result: rr } : null;
     },
     outcome: (r) => cleanRollOutcome(r.result), // d100 propre réussi (roll ≤ cible)
-    // Chance « +1 DR » sur CE contributeur (LDB 17 l.26).
+    // Chance « +1 DR » sur CE contributeur (LDB 17 l.24).
     bonus: { derive: (_s, r) => bumpResultSL(r) },
   };
 }
@@ -330,7 +330,7 @@ const prunedFleeSlots = (slots: FleeSlot[]): FleeSlot[] => {
 };
 
 /** Chance « +1 DR » d'un slot dont le jet vit sous `result` (`{ …, sl }`, jamais opposé) : `bumpSL` du seul
- *  DR, `success`/`roll` INTACTS (LDB 17 l.84 : un Degré de plus ne transforme pas un échec en réussite).
+ *  DR, `success`/`roll` INTACTS (LDB 17 l.24 ; succès du Test : LDB 12 l.11).
  *  `null` = pas encore lancé (rien à améliorer). Partagé par les flux `result` NON opposés (Test d'équipage /
  *  Test Étendu / cascade simple) dont le `bonus.derive` répétait `{ result: { ...r.result, sl: r.result.sl + 1 } }`. */
 const bumpResultSL = <R extends { sl: number }>(slot: { result?: R | null }): { result: R } | null =>
@@ -850,7 +850,7 @@ export const FLOWS = {
       },
     },
     bonus: {
-      // Chance « +1 DR » : améliore le DR du Contre-sort, peut basculer l'opposition (LDB 17 l.26).
+      // Chance « +1 DR » : améliore le DR du Contre-sort, peut basculer l'opposition (LDB 17 l.24).
       derive: (s, part, actor) => {
         const pcCast = s.pendingCast?.result;
         const cur = part.result;
@@ -1041,7 +1041,7 @@ export const FLOWS = {
       derive: (_s, st) => {
         if (!st.result) return null;
         const opp = stepOpposedFreeze(st);
-        // Chance « +1 DR » (LDB 17 l.26) sur un Test OPPOSÉ : on RE-OPPOSE le jet défenseur amélioré (+1 DR)
+        // Chance « +1 DR » (LDB 17 l.24) sur un Test OPPOSÉ : on RE-OPPOSE le jet défenseur amélioré (+1 DR)
         // à l'attaquant FIGÉ (1ʳᵉ position) — le +1 peut FAIRE BASCULER l'issue (calque `disengage.bonus.derive`).
         // `bonusSL` (Piège-lame, LDB 62 l.280) s'AJOUTE en plus au DR du défenseur dans l'opposition (pas au
         // `sl` reporté, qui reste le DR propre +1).
@@ -1204,9 +1204,9 @@ export const FLOWS = {
     },
     outcome: (slot) => (slot.kind === 'backstab' ? testOutcome(slot.result?.attackerDetail) : testOutcome(slot.calme)),
     bonus: {
-      // Chance « +1 DR » (LDB 17 l.26) : sur le coup dans le dos, le DR nourrit les Dégâts (re-dérivation
+      // Chance « +1 DR » (LDB 17 l.24) : sur le coup dans le dos, le DR nourrit les Dégâts (re-dérivation
       // complète) ; sur le Calme, il réduit le nombre d'États Brisés (`broken = 1 + max(0,-sl)`) sans
-      // basculer l'échec en réussite (LDB 17 l.84).
+      // toucher à `success`, qui reste dérivé du d100 (LDB 12 l.11).
       guard: (slot) => (slot.kind === 'backstab' ? !!slot.result?.attackerDetail : !!slot.calme),
       derive: (s, slot, actor, p) => {
         if (slot.kind === 'calme') return { calme: { ...slot.calme!, sl: slot.calme!.sl + 1 } };
@@ -1277,8 +1277,8 @@ export const FLOWS = {
       return { result: rollManeuverAttacker(actor, 'capacite-de-combat', battleRng()) };
     },
     outcome: (p) => testOutcome(p.result),
-    // Test de CC NON opposé. Résilience (dé PAR DÉFAUT = DR max, l.103) + Chance « +1 DR » par `bumpSL`
-    // (success intact — le vieux `bonus` forçait `success:true` : bug, LDB 17 l.84) via la lentille.
+    // Test de CC NON opposé. Résilience (dé PAR DÉFAUT = DR max, LDB 17 l.68) + Chance « +1 DR » par `bumpSL`
+    // (success intact — le vieux `bonus` forçait `success:true` : bug, LDB 17 l.24 ; LDB 12 l.11) via la lentille.
     lens: {
       actorTR: (p) => p.result ?? null,
       applyRoll: (_s, _slot, _actor, _get, tr) => ({ result: tr }),
@@ -1321,7 +1321,7 @@ export const FLOWS = {
     },
     outcome: (p) => testOutcome(p.result),
     // Test de CC/CT NON opposé (le dé ne nourrit que le DR d'OPPOSITION, aucun Critique). Résilience (dé
-    // PAR DÉFAUT = DR max, LDB 17 l.68) + Chance « +1 DR » par `bumpSL` (success intact — LDB 17 l.84) via
+    // PAR DÉFAUT = DR max, LDB 17 l.68) + Chance « +1 DR » par `bumpSL` (success intact — LDB 17 l.24) via
     // la lentille — CALQUE `battement`. Cette lentille FOURNIT l'ACCESSEUR DE DÉ : le joueur CHOISIT son dé
     // (LDB 17 l.68, inconditionnel) et peut le FIXER (option de confort) ; la cible = combatValue(stat) +
     // Difficulté de la manœuvre, correcte avant le jet comme après.
@@ -1360,11 +1360,11 @@ export const FLOWS = {
       return { result: resolveRun(testValue(actor, actor.mountId ? 'chevaucher' : 'athletisme'), mountMovement(s.battle, actor) + runMovementBonus(actor), battleRng()) };
     },
     outcome: (p) => sealOutcome(!!p.result?.success, p.result?.dr ?? 0, p.result?.roll ?? 0, p.result?.target ?? 0),
-    // Chance « +1 DR » (LDB 17 l.26) s'applique à TOUT Test : sur une Course, +1 DR ALLONGE la distance.
+    // Chance « +1 DR » (LDB 17 l.24) s'applique à TOUT Test : sur une Course, +1 DR ALLONGE la distance.
     // Le porteur du DR est `dr`/`bonusCases` (PAS `sl`) → dérive BESPOKE (pas lentillée). Le DR de Course est
     // en MÈTRES (LDB 15 l.82), converti en cases comme `resolveRun` (÷2 arrondi, la CONSTANTE réelle — pas +2) :
-    // +1 DR = +[round((dr+1)/2) − round(dr/2)] case(s). NE force PAS `success` (un +1 DR ne change pas un échec
-    // en réussite, LDB 17 l.84).
+    // +1 DR = +[round((dr+1)/2) − round(dr/2)] case(s). N'écrit PAS `success`, qui reste dérivé du d100
+    // (LDB 12 l.11).
     bonus: {
       guard: (p) => !!p.result, // pas de +DR avant le jet
       derive: (_s, p) => {
@@ -1400,7 +1400,7 @@ export const FLOWS = {
       return { result: resolveDeliberateFall(testValue(actor, 'athletisme'), p.metres, battleRng()) };
     },
     outcome: (p) => sealOutcome(!!p.result?.success, p.result?.dr ?? 0, p.result?.roll ?? 0, p.result?.target ?? 0),
-    // Chance « +1 DR » (LDB 17 l.26) réduit la chute d'1 m de plus (LDB 15 l.82 : « pour chaque DR, 1 m
+    // Chance « +1 DR » (LDB 17 l.24) réduit la chute d'1 m de plus (LDB 15 l.82 : « pour chaque DR, 1 m
     // de moins ») — porteur BESPOKE `dr`/`effectiveMetres` (comme `run`/`bonusCases`), pas `sl`.
     bonus: {
       guard: (p) => !!p.result,
@@ -1475,7 +1475,7 @@ export const FLOWS = {
     actor: (s, r) => actorIn(s, r.id),
     // Une bande met en jeu les mêmes règles qu'une étape seule, et chaque rangée les joue POUR ELLE :
     // Résilience (`forced`), Résistance (Menace) (`resist`, LDB 10 l.1015-1021) et Détermination
-    // (`determine`, LDB 17 l.62 — la Psychologie ne se teste qu'en bandes).
+    // (`determine`, LDB 17 l.59 — la Psychologie ne se teste qu'en bandes).
     caps: {
       forced: true,
       // Le tag `menace` de la rangée (`PendingBase.menace`, posé à la construction par le producteur de
@@ -1510,7 +1510,7 @@ export const FLOWS = {
     // La rangée PORTE son verdict (`CascadeRoll.success` — opposition comprise) : l'issue le LIT au
     // lieu de recomparer dé et cible, qui ne décrit qu'un Test simple.
     outcome: (r) => testOutcome(r.result),
-    // Chance « +1 DR » (LDB 17 l.26) : sur une rangée OPPOSÉE, on RE-OPPOSE le jet amélioré au jet figé
+    // Chance « +1 DR » (LDB 17 l.24) : sur une rangée OPPOSÉE, on RE-OPPOSE le jet amélioré au jet figé
     // (le +1 peut faire BASCULER l'issue) — sinon simple report du DR.
     bonus: {
       derive: (s, r) => {
@@ -1744,7 +1744,7 @@ export const FLOWS = {
     // Chance/Pacte/Résilience en DÉRIVE — plus de prédicat `failed` séparé qui lisait skill-1 (bug corrigé).
     outcome: (p) => sealOutcome(activityWon(p), p.sl ?? 0, p.roll ?? 0, p.target ?? 0),
     bonus: {
-      // Chance « +1 DR » (LDB 17 l.26/84 : un Degré de plus ne transforme JAMAIS un échec en réussite).
+      // Chance « +1 DR » (LDB 17 l.24) : `success` n'est jamais réécrit ici (il reste dérivé du d100, LDB 12 l.11).
       derive: (_s, p) => {
         // Combiné : +1 DR sur la 1ʳᵉ cible ; les réussites (donc le NIVEAU) restent INTACTES — on ré-affiche
         // le niveau depuis les réussites figées (`p.success`/`p.success2`), jamais depuis un re-jet numérique.
@@ -1759,7 +1759,7 @@ export const FLOWS = {
           const v = holdVerdict(p, { roll: p.roll ?? 0, sl, success: p.success });
           return { sl, success: v.held, enemySL: v.enemySL };
         }
-        // Simple : +1 DR, `success` INTACT (bumpSL ; LDB 17 l.84).
+        // Simple : +1 DR, `success` INTACT (bumpSL ; LDB 17 l.24).
         return { sl: p.sl + 1 };
       },
     },
@@ -1911,7 +1911,7 @@ export const FLOWS = {
       const sl = res.sl + (res.success ? tDR : 0) + capDR;
       return { roll: res.roll, sl, isDouble: res.isDouble, success: res.success && meetsRequiredSL(p.requireSL, sl) };
     },
-    outcome: (p) => rollOutcome(p.roll, p.target, p.sl), // d100 propre réussi (LDB 12 l.56 + l.29-31)
+    outcome: (p) => rollOutcome(p.roll, p.target, p.sl), // d100 propre réussi (LDB 12 l.11)
     bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target && meetsRequiredSL(p.requireSL, p.sl + 1) }) },
     // Inversion de Test (LDB 23 l.209/218 « vous POUVEZ inverser » ; LDB 10 — Talents Sociable/
     // Studieux/Lecture rapide/Pharmacologie/Chat de gouttière/Noctambule/Pansement de fortune, MÊME

@@ -6,7 +6,7 @@
  * vie, jusqu'ici copié-collé par flux dans le store (~6 actions × ~10 lignes chacune) :
  *
  *   ouvrir (pending posé) → Lancer (`roll`) → Chance : relancer (`reroll`, LDB 12 : jet propre
- *   raté, 1× max) ou +1 DR (`bonusSL`, LDB 17 l.26) → Résilience : réussite garantie
+ *   raté, 1× max) ou +1 DR (`bonusSL`, LDB 17 l.24) → Résilience : réussite garantie
  *   (`forceSuccess`, LDB 17 l.68 : AVANT le jet ou après un échec) → Appliquer / Annuler.
  *
  * La fabrique centralise la plomberie commune (gardes, dépense de Chance/Résilience, drapeau
@@ -159,11 +159,11 @@ export interface ForcedPick {
 
 /**
  * Lentille de DÉRIVATION des verbes d'influence (Chance +1 DR / Résilience « Je ne faillirai pas ! » /
- * Résistance Menace). Ces règles sont GLOBALES (LDB 17 l.68/83-84) : quand un flux fournit sa lentille,
+ * Résistance Menace). Ces règles sont GLOBALES (LDB 17 l.24/68) : quand un flux fournit sa lentille,
  * la fabrique compose `bonusSL`/`forceSuccess`/`setForcedRoll`/`resist` DEPUIS elle — la mécanique ne vit
  * plus qu'ICI, le flux ne déclare que SA FORME. Un flux sans lentille retombe sur le chemin `resolve(forced)`
- * / `bonus.derive` (repli). Le `+1 DR` passe TOUJOURS par `bumpSL` (ne touche pas `success` — LDB 17 l.84 :
- * un Degré de plus ne transforme pas un échec en réussite).
+ * / `bonus.derive` (repli). Le `+1 DR` passe TOUJOURS par `bumpSL`, qui n'écrit jamais `success` (LDB 17
+ * l.24 ; succès du Test : LDB 12 l.11).
  */
 export interface RollFlowLens<P extends PendingBase, Slot extends PendingBase = P> {
   /** TestResult ACTEUR courant du slot (post-jet), ou `null` (pas encore lancé / rien à re-dériver). */
@@ -306,7 +306,7 @@ export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = 
     /** Ce flux accepte l'auto-succès du talent Résistance (Menace) (LDB 10) : son `resolve` porte la
      *  branche `forced.sl` (DR = Bonus d'Endurance). Offert seulement sur un slot tagué `menace`. */
     resist?: boolean;
-    /** Détermination (immunité PSY temporaire, LDB 17 l.62) : MÊME catégorie que `resist` (dépenser une
+    /** Détermination (immunité PSY temporaire, LDB 17 l.59) : MÊME catégorie que `resist` (dépenser une
      *  ressource pour infléchir un Test psy), PAS une réussite forcée. Le flux DÉCLARE l'effet SPÉCIFIQUE
      *  (dépense de Détermination + marqueur `immune` sur le slot psy), la fabrique fournit le CÂBLAGE
      *  (interface store/intent/modale via le verbe `determine` → action `<prefix>Determine`, le handler
@@ -336,7 +336,7 @@ export interface RollFlowHandlers {
    *  taguée sur le slot (`menace`), DR = Bonus d'Endurance, 1× par spec et par séance. No-op sans
    *  `caps.resist`, sans tag, sans talent disponible, ou si le Test est déjà réussi. */
   resist: (get: Get, set: Set, pid?: string) => void;
-  /** Détermination (immunité PSY temporaire, LDB 17 l.62) : dépense 1 Détermination pour rendre l'acteur
+  /** Détermination (immunité PSY temporaire, LDB 17 l.59) : dépense 1 Détermination pour rendre l'acteur
    *  IMMUNISÉ ce Round sur le slot psy ciblé (marqueur `immune`) — PAS une réussite forcée (≠ `resist`).
    *  No-op sans `caps.determine`, sans acteur. La fabrique GATE `actor` + dispatche ; la garde d'éligibilité
    *  fine (slot psy, non résolu) + la dépense vivent dans le handler du spec (`caps.determine`). */
@@ -434,7 +434,7 @@ function opReroll<P extends PendingBase>(
   commit(patch, { rerolled: true, touch: true });
 }
 
-/** Chance « +1 DR » (LDB 17 l.26). */
+/** Chance « +1 DR » (LDB 17 l.24). */
 function opBonusSL<P extends PendingBase>(
   actor: Combatant | undefined, rolled: boolean, allowed: boolean,
   derive: () => Partial<P> | null, commit: Commit<P>,
@@ -647,8 +647,8 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       const loc = locate(set, get, p, pid); if (!loc) return;
       const actor = spec.actor(s, loc.slot, p);
       const allowed = L ? true : (!spec.bonus!.guard || spec.bonus!.guard(loc.slot));
-      // +1 DR de Chance (LDB 17 l.84) : lentille = `applyRoll(bumpSL)` — `bumpSL` ne touche PAS `success`
-      // (un Degré de plus ne transforme pas un échec en réussite). Repli = le `bonus.derive` du flux.
+      // +1 DR de Chance (LDB 17 l.24) : lentille = `applyRoll(bumpSL)` — `bumpSL` n'écrit jamais `success`
+      // (celui-ci reste dérivé du d100, LDB 12 l.11). Repli = le `bonus.derive` du flux.
       const derive = L
         ? () => { const cur = L.actorTR(loc.slot); return cur ? L.applyRoll(s, loc.slot, actor!, get, bumpSL(cur), p) : null; }
         : () => spec.bonus!.derive(s, loc.slot, actor!, p);

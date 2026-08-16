@@ -105,7 +105,7 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
       buildRollRow({
         /* Pré-jet : ligne en attente (portrait sauf en mode picker — le picker montre déjà qui) ;
            post-jet : la ligne PORTE le portrait de l'acteur (comme la cascade). */
-        /* Le ✓/✗ de la LIGNE est le verdict du TEST (d100 propre, `LDB 12 l.56`) — pas l'issue
+        /* Le ✓/✗ de la LIGNE est le verdict du TEST (d100 propre, `LDB 12 l.11`) — pas l'issue
            composée `pt.success`, qui porte en plus le seuil de DR exigé (`requireSL`). Le seuil manqué
            se dit par le verdict du flux ; la ligne, elle, dit le Test. C'est aussi l'issue canonique
            du seam (`rollOutcome`), dont dérivent Chance et Résilience. */
@@ -122,7 +122,7 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
         fortune: actor?.fortune ?? 0,
         resilience: actor?.resilience ?? 0,
         reverse: reverseAvail ? { onReverse: reverseVerb, preview: reversePreview } : undefined,
-        /* Détermination (LDB 17 l.62) : AVANT le jet, si un malus psy social pèse, la dépense l'ignore. */
+        /* Détermination (LDB 17 l.59) : AVANT le jet, si un malus psy social pèse, la dépense l'ignore. */
         determination: !rolled && pt.psychMod ? { resolve: actor?.resolve ?? 0, onResolve: determination } : undefined,
       }),
     ],

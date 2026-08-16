@@ -86,7 +86,7 @@ export function StateRecoveryModalView({
 }
 
 /**
- * « Se libérer » d'un Empêtré (Test opposé de Force contre la source, LDB 16 l.61) ou « se rouler »
+ * « Se libérer » d'un Empêtré (Test opposé de Force contre la source, LDB 16 l.66) ou « se rouler »
  * pour éteindre un En flammes (Test d'Athlétisme, l.77). Une Action ; succès ⇒ 1 + DR pions retirés.
  * « Lancer » fait le jet, une Chance est possible avant d'acquitter.
  */

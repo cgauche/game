@@ -1,0 +1,245 @@
+{
+  "src/data/combat-stakes.json": {
+    "LDB 21 l.14": 2
+  },
+  "src/data/flow-stakes.json": {
+    "LDB 16 l.77": 1,
+    "LDB 18 l.317": 1,
+    "LDB 19 l.65": 1,
+    "LDB 41 l.105": 1
+  },
+  "src/data/night-stake-form.test.ts": {
+    "LDB 18 l.343": 1
+  },
+  "src/data/night-stakes.json": {
+    "LDB 18 l.343": 1
+  },
+  "src/data/obtainability-guard.test.ts": {
+    "VDM 4 l.153": 1
+  },
+  "src/data/schemas/defs/gods.ts": {
+    "MDG 11 l.142": 1
+  },
+  "src/data/schemas/defs/maladies.ts": {
+    "LDB 20 l.97": 1
+  },
+  "src/data/vdm-marques-arcaniques.test.ts": {
+    "VDM 4 l.153": 1
+  },
+  "src/data/vdm-spells-variantes.test.ts": {
+    "VDM 8 l.361": 1
+  },
+  "src/engine/advantage.ts": {
+    "LDB 15 l.40": 1
+  },
+  "src/engine/character.ts": {
+    "LDB 5 l.491": 1
+  },
+  "src/engine/combat-breakdown.test.ts": {
+    "LDB 85 l.299": 1
+  },
+  "src/engine/combat.ts": {
+    "LDB 62 l.306": 1,
+    "LDB 85 l.200": 1,
+    "LDB 85 l.297": 1,
+    "LDB 85 l.299": 2
+  },
+  "src/engine/conditions.ts": {
+    "LDB 85 l.208": 1
+  },
+  "src/engine/creation.test.ts": {
+    "LDB 5 l.385": 1
+  },
+  "src/engine/creation.ts": {
+    "LDB 5 l.381": 1,
+    "LDB 5 l.383": 1,
+    "LDB 5 l.385": 1
+  },
+  "src/engine/items.test.ts": {
+    "LDB 62 l.150": 1
+  },
+  "src/engine/lose-wounds.test.ts": {
+    "LDB 15 l.40": 1
+  },
+  "src/engine/ops.ts": {
+    "LDB 16 l.77": 1
+  },
+  "src/engine/policy.ts": {
+    "EDOC 8 l.73": 1,
+    "LDB 12 l.101": 1,
+    "LDB 12 l.188": 1,
+    "LDB 23 l.48": 1,
+    "LDB 63 l.63": 1,
+    "LDB 9 l.266": 1
+  },
+  "src/engine/prayer-sin-lock.test.ts": {
+    "MDG 11 l.142": 1
+  },
+  "src/engine/qualities/dispatch.ts": {
+    "LDB 62 l.306": 1
+  },
+  "src/engine/rest.ts": {
+    "LDB 18 l.317": 1
+  },
+  "src/engine/sequenceVocab.ts": {
+    "NADJ 16 l.83": 1
+  },
+  "src/engine/size.ts": {
+    "LDB 85 l.295": 1,
+    "LDB 85 l.297": 1
+  },
+  "src/engine/skills-psych.test.ts": {
+    "LDB 21 l.24": 1
+  },
+  "src/engine/social.ts": {
+    "LDB 8 l.88": 1
+  },
+  "src/engine/testPolicy.ts": {
+    "LDB 12 l.48": 1
+  },
+  "src/engine/tests.test.ts": {
+    "LDB 12 l.128": 1,
+    "LDB 12 l.48": 1
+  },
+  "src/engine/trauma.ts": {
+    "LDB 16 l.89": 1
+  },
+  "src/engine/types.ts": {
+    "LDB 10 l.312": 1
+  },
+  "src/gameIso/rig/creatures/defs/Manticore.ts": {
+    "LDB 79 l.108": 1
+  },
+  "src/gameIso/stage/useHoverTargeting.ts": {
+    "LDB 46 l.170": 1
+  },
+  "src/state/ai.ts": {
+    "LDB 16 l.85": 1
+  },
+  "src/state/banish.test.ts": {
+    "LDB 85 l.220": 1
+  },
+  "src/state/cauchemars.test.ts": {
+    "LDB 21 l.92": 1
+  },
+  "src/state/combat-optional-rules.test.ts": {
+    "LDB 63 l.63": 2
+  },
+  "src/state/combat-tables-choix-porte.test.ts": {
+    "LDB 62 l.293": 1
+  },
+  "src/state/combatFlow-los.test.ts": {
+    "LDB 14 l.101": 2
+  },
+  "src/state/combatFlow.ts": {
+    "LDB 10 l.365": 1,
+    "LDB 14 l.12": 1,
+    "LDB 20 l.32": 1,
+    "LDB 85 l.299": 3,
+    "MDG 11 l.142": 2
+  },
+  "src/state/combatSlice.ts": {
+    "LDB 14 l.101": 1,
+    "LDB 14 l.12": 2
+  },
+  "src/state/dresse-nerveux.test.ts": {
+    "LDB 85 l.89": 2
+  },
+  "src/state/granted-traits.test.ts": {
+    "LDB 10 l.859": 1
+  },
+  "src/state/interlude-flow.test.ts": {
+    "LDB 23 l.30": 1
+  },
+  "src/state/jumpMove.test.ts": {
+    "LDB 15 l.114": 1
+  },
+  "src/state/jumpMove.ts": {
+    "LDB 15 l.114": 1
+  },
+  "src/state/lineOfSight.test.ts": {
+    "LDB 14 l.103": 1
+  },
+  "src/state/massBattleFlow.test.ts": {
+    "LDB 12 l.188": 1
+  },
+  "src/state/medicFlow.ts": {
+    "LDB 10 l.365": 1
+  },
+  "src/state/merchantFlow.ts": {
+    "LDB 10 l.312": 1
+  },
+  "src/state/modalArbiter.ts": {
+    "LDB 10 l.365": 1
+  },
+  "src/state/pendings.ts": {
+    "LDB 14 l.101": 1,
+    "LDB 47 l.44": 1,
+    "LDB 85 l.299": 1
+  },
+  "src/state/preview-attack.test.ts": {
+    "LDB 14 l.92": 1
+  },
+  "src/state/restore-fortune.test.ts": {
+    "LDB 17 l.52": 1
+  },
+  "src/state/rollflow-no-drift.test.ts": {
+    "LDB 12 l.128": 1
+  },
+  "src/state/sequenceCore.ts": {
+    "NADJ 16 l.83": 2
+  },
+  "src/state/social-psych-flow.test.ts": {
+    "LDB 21 l.24": 1
+  },
+  "src/state/stationary-fire.test.ts": {
+    "LDB 14 l.101": 1
+  },
+  "src/state/store.test.ts": {
+    "LDB 14 l.92": 1
+  },
+  "src/state/store.ts": {
+    "LDB 14 l.12": 1,
+    "LDB 41 l.105": 2
+  },
+  "src/state/tavernFlow.ts": {
+    "NADJ 16 l.67": 1
+  },
+  "src/state/travel.test.ts": {
+    "EDOC 7 l.166": 1
+  },
+  "src/state/turnEconomy.ts": {
+    "LDB 15 l.87": 1
+  },
+  "src/state/upkeep-cascade.test.ts": {
+    "LDB 18 l.317": 1
+  },
+  "src/state/zde-cast.test.ts": {
+    "LDB 47 l.347": 1
+  },
+  "src/ui/ActionBar.tsx": {
+    "LDB 15 l.87": 1,
+    "LDB 16 l.77": 1
+  },
+  "src/ui/CorruptionModal.tsx": {
+    "LDB 19 l.26": 1
+  },
+  "src/ui/Dice.tsx": {
+    "LDB 5 l.381": 1
+  },
+  "src/ui/creator/CharacterCreator.tsx": {
+    "LDB 4 l.84": 1
+  },
+  "src/ui/creator/draft.ts": {
+    "LDB 5 l.379": 1
+  },
+  "src/ui/editor/EffectList.tsx": {
+    "LDB 19 l.26": 1
+  },
+  "src/ui/editor/GameOpEditor.tsx": {
+    "LDB 16 l.61": 1
+  },
+  "src/ui/jetProps/useAttackJetProps.tsx": {
+    "LDB 14 l.101": 1
+  }
+}

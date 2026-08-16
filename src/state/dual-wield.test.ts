@@ -49,7 +49,7 @@ function setupBattle(heroOver: Partial<Combatant> = {}) {
 // chaque test ; ce hook de TÊTE DE FICHIER s'exécute avant les `beforeEach` de describe (setupBattle / timers).
 beforeEach(() => useGame.setState({ ...initialFields(), battle: null, scene: null, gameTime: 0, party: [] }));
 
-describe('resolveDualSecond : 2ᵉ attaque du Maniement de deux armes (LDB 10 l.638)', () => {
+describe('resolveDualSecond : 2ᵉ attaque du Maniement de deux armes (LDB 10 l.767-773)', () => {
   beforeEach(() => setupBattle());
 
   it('utilise le jet INVERSÉ de la main directrice comme jet de la 2ᵉ attaque (34 → 43)', () => {
@@ -105,7 +105,7 @@ describe('applyAttackResult : defer de l’Avantage de l’attaquant', () => {
   });
 });
 
-describe('−10 à toutes les défenses du dual-wield (LDB 10 l.638)', () => {
+describe('−10 à toutes les défenses du dual-wield (LDB 10 l.767-773)', () => {
   it('un défenseur avec le flag pare 10 plus bas (cible) qu’un défenseur sans', () => {
     const { f1 } = setupBattle();
     const withPen = { ...f1, dualStrikeDefensePenalty: true } as Combatant;
@@ -155,7 +155,7 @@ describe('chaînage de l’Action « des deux armes »', () => {
   });
 });
 
-describe('Avantage : +1 UNIQUE et seulement si les DEUX frappes touchent (LDB 10 l.638)', () => {
+describe('Avantage : +1 UNIQUE et seulement si les DEUX frappes touchent (LDB 10 l.767-773)', () => {
   it('les deux touchent → +1 Avantage (pas +1 par frappe)', () => {
     const { h } = setupBattle();
     h.advantage = 0;
@@ -181,7 +181,7 @@ describe('Avantage : +1 UNIQUE et seulement si les DEUX frappes touchent (LDB 10
   });
 });
 
-describe('bornage : jamais sur une attaque gratuite / enchaînée (LDB 10 l.638 « pour votre Action »)', () => {
+describe('bornage : jamais sur une attaque gratuite / enchaînée (LDB 10 l.767-773 « pour votre Action »)', () => {
   it('attaque d’enchaînement (cleave) avec le talent : pas de pendingDualStrike', () => {
     setupBattle({ talents: [{ talentId: 'maniement-de-deux-armes', times: 1 }] as any });
     // Une attaque de balayage (cleave) n'a JAMAIS dualMode (le toggle est masqué si pa.cleave).

@@ -694,7 +694,7 @@ describe('Boucle de jeu (store)', () => {
     // « Lancer » : le jet se fait.
     useGame.getState().testRoll();
     expect(useGame.getState().pendingTest!.roll).not.toBeNull();
-    // Forcer un jet propre RATÉ (cible 95) pour exercer la relance (gate « jet raté », LDB 12 l.29-31).
+    // Forcer un jet propre RATÉ (cible 95) pour exercer la relance (gate « jet raté », LDB 12 l.13).
     useGame.setState({ pendingTest: { ...useGame.getState().pendingTest!, roll: 99, success: false } });
     // Chance : relance et consomme un point.
     useGame.getState().testReroll();
@@ -754,7 +754,7 @@ describe('Boucle de jeu (store)', () => {
     let pd = useGame.getState().pendingDefense!;
     expect(pd.result).not.toBeNull();
     expect(pd.def).not.toBeNull();
-    // Forcer une défense propre RATÉE pour exercer la relance (gate « jet raté », LDB 12 l.29-31).
+    // Forcer une défense propre RATÉE pour exercer la relance (gate « jet raté », LDB 12 l.13).
     useGame.setState({ pendingDefense: { ...pd, def: { ...pd.def!, success: false } } });
     const atkRoll = pd.atk.roll;
     useGame.getState().defenseReroll(); // Chance : relance la DÉFENSE
@@ -1867,7 +1867,7 @@ describe('Utiliser un consommable en combat (store)', () => {
   });
 });
 
-describe('Chance : relance 1×/Test et seulement sur jet propre raté (LDB 12 l.56 + l.29-31)', () => {
+describe('Chance : relance 1×/Test et seulement sur jet propre raté (LDB 12 l.40 ; jet propre raté : LDB 12 l.13)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
@@ -1938,7 +1938,7 @@ describe('Chance : relance 1×/Test et seulement sur jet propre raté (LDB 12 l.
   });
 });
 
-describe('Détermination (Resolve) — retirer un État (LDB 17 l.62-66)', () => {
+describe('Détermination (Resolve) — retirer un État (LDB 17 l.59-61)', () => {
   beforeEach(() => reset());
 
   const mkBattle = (h: Combatant, over = {}): BattleState => ({

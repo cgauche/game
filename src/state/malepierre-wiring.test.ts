@@ -88,7 +88,7 @@ describe('Malepierre — câblage PROD (Incantation, `oocCastSpell`/`castRoll`/`
     useGame.getState().castRoll();
     const consumedBefore = useGame.getState().pendingCast!.result!.malepierreConsumed;
     expect(consumedBefore).toBeGreaterThan(0);
-    FLOWS.cast.bonusSL(useGame.getState, useGame.setState); // Chance « +1 DR » (LDB 17 l.26)
+    FLOWS.cast.bonusSL(useGame.getState, useGame.setState); // Chance « +1 DR » (LDB 17 l.24)
     const consumedAfterBonus = useGame.getState().pendingCast!.result!.malepierreConsumed;
     expect(consumedAfterBonus).toBe(consumedBefore); // REPORTÉ (`rederiveCastSL`), jamais perdu ni redoublé
     useGame.getState().castConfirm();

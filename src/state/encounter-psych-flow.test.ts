@@ -112,7 +112,7 @@ describe('encounterPsychFlow — Psychologie à la rencontre HORS COMBAT (bandes
     expect(hero.resilience).toBe(0);
   });
 
-  it('Détermination = immunité temporaire (LDB 17 l.62) : psychImmuneRoundsLeft posé, animosité inerte (≈ succès one-shot), -1 Détermination', () => {
+  it('Détermination = immunité temporaire (LDB 17 l.59) : psychImmuneRoundsLeft posé, animosité inerte (≈ succès one-shot), -1 Détermination', () => {
     const h = animosite('H');
     h.resolve = 1;
     useGame.setState({ party: [h] });

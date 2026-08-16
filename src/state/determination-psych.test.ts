@@ -13,7 +13,7 @@ describe('isPsychImmune — prédicat central (trait / Frénésie / Déterminati
     expect(isPsychImmune(C({ psychState: [{ type: 'frenesie' }] }))).toBe(true);
     expect(isPsychImmune(C({}))).toBe(false);
   });
-  it('Détermination temporaire : immunisé tant qu\'un ActiveEffect `psychImmune` est porté (LDB 17 l.62)', () => {
+  it('Détermination temporaire : immunisé tant qu\'un ActiveEffect `psychImmune` est porté (LDB 17 l.59)', () => {
     const det = (left: number) => C({ activeEffects: [{ label: 'D', bonus: 0, duration: { scale: 'rounds', left }, psychImmune: true } as never] });
     expect(isPsychImmune(det(2))).toBe(true);
     expect(isPsychImmune(det(1))).toBe(true);
@@ -31,17 +31,17 @@ describe('clearPsychOf — les effets psy d\'une créature finissent à sa mort'
   });
 });
 
-describe('Immunité psy → AUCUN modificateur de combat psy (psychDRAdjust, LDB 17 l.62)', () => {
+describe('Immunité psy → AUCUN modificateur de combat psy (psychDRAdjust, LDB 17 l.59)', () => {
   it('une Peur active donne −1 DR (psychDRAdjust), mais sous immunité Détermination ce malus disparaît', () => {
     const target = C({ id: 't', groups: [], conditions: [], size: 'moyenne' });
     const afraid = C({ advantage: 0, conditions: [], psychState: [{ type: 'peur', sourceId: 't', indice: 2, calmeDR: 0 } as never] });
     expect(psychDRAdjust(afraid, target)).toBe(-1); // RAW : −1 DR au jet, pas un −10 sur la cible
     afraid.activeEffects = [{ label: 'D', bonus: 0, duration: { scale: 'rounds', left: 2 }, psychImmune: true } as never]; // Détermination active
-    expect(psychDRAdjust(afraid, target)).toBe(0); // immunisé (LDB 17 l.62) → plus de malus
+    expect(psychDRAdjust(afraid, target)).toBe(0); // immunisé (LDB 17 l.59) → plus de malus
   });
 });
 
-describe('Détermination « ignorer modifs de critique » (LDB 17 l.64) annule les pénalités de trauma', () => {
+describe('Détermination « ignorer modifs de critique » (LDB 17 l.60) annule les pénalités de trauma', () => {
   const trauma = () => C({ traumas: [{ ops: [{ op: 'charMod', char: 'force', mod: -30 }, { op: 'skillMod', skill: 'esquive', mod: -20 }, { op: 'moveScale', num: 1, den: 2 }] } as never] });
   it('actif : pénalités normales', () => {
     const c = trauma();

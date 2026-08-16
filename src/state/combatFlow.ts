@@ -797,7 +797,7 @@ export function resolveAttack(
   return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: surfaced ? 'none' : bestDefenseMode(target), location, env, dodgeMod: defenseDodgeMod(get, target), dmgProxy, withhold, flankRear }), weapon };
 }
 
-/** 2ᵉ attaque du Maniement de deux armes (LDB 10 l.638). Jet d'attaquant IMPOSÉ : `reverseRoll(mainRoll)`,
+/** 2ᵉ attaque du Maniement de deux armes (LDB 10 l.767-773). Jet d'attaquant IMPOSÉ : `reverseRoll(mainRoll)`,
  *  ou `critValue` (valeur du tableau des Critiques) si la 1ʳᵉ frappe était un Critique. Le `target` (valeur à
  *  toucher) inclut déjà la pénalité de main secondaire (l'arme `off` porte `hand:'off'`, cf. plan #1). Le
  *  défenseur fait un NOUVEAU jet de défense (l.638 « opposée à un nouveau lancer de défense »). */
@@ -829,11 +829,11 @@ export function resolveDualSecond(
   const compo = composeAttack(mods);
   const mode = (cannotDefend(target) || isInanimate(target)) ? 'none' : bestDefenseMode(target); // OBJET INANIMÉ (structure/véhicule/affût) : jamais de défense
   if (mode === 'none') return resolveMeleePassive(attacker, target, offWeapon, atk, opts?.location, env, undefined, false, compo);
-  const def = rollMeleeDefender(target, mode, battleRng(), 0, target.weapons[0], offWeapon); // NOUVEAU jet de défense (LDB 10 l.638)
+  const def = rollMeleeDefender(target, mode, battleRng(), 0, target.weapons[0], offWeapon); // NOUVEAU jet de défense (LDB 10 l.767-773)
   return finishMelee(attacker, target, offWeapon, atk, def, mode, opts?.location, env, 0, undefined, target.weapons[0], false, undefined, compo);
 }
 
-/** Cibles VALIDES de la 2ᵉ frappe du Maniement de deux armes (LDB 10 l.638 : « un adversaire disponible de
+/** Cibles VALIDES de la 2ᵉ frappe du Maniement de deux armes (LDB 10 l.767-773 : « un adversaire disponible de
  *  votre choix ») : adversaires encore actifs, à portée de l'arme secondaire (Allonge). Sans position connue
  *  (tests purs) → non filtré sur la distance. */
 export function dualStrikeTargets(battle: BattleState, attacker: Combatant, offWeapon: Weapon): Combatant[] {
@@ -1066,7 +1066,7 @@ export function outOfSightTargetIds(get: Get): Set<string> {
   return ids;
 }
 
-/** Ligne de Vue d'un SORT (LDB 46 l.170 : « sauf indication contraire, vous devez toujours être
+/** Ligne de Vue d'un SORT (LDB 46 l.121 : « sauf indication contraire, vous devez toujours être
  *  capable de voir – par exemple, avoir en Ligne de vue – votre cible ») : BINAIRE — un Sort n'est
  *  pas un tir, aucune règle ne lui applique de malus de couvert → seul `.blocked` compte.
  *  Occupants ignorés (une créature ne bloque pas la vue, elle ne donne que du couvert — hors sorts). */
@@ -1131,7 +1131,7 @@ export function movePreviewAt(get: Get, pt: Pt): { kind: 'move' | 'run'; path: P
     : null;
 }
 
-/** Ennemis SANS Ligne de Vue depuis le héros actif pour un SORT (LDB 46 l.170) — même grisage
+/** Ennemis SANS Ligne de Vue depuis le héros actif pour un SORT (LDB 46 l.121) — même grisage
  *  que le tir, mais indépendant de l'arme portée (mode incantation). */
 export function castOutOfSightTargetIds(get: Get): Set<string> {
   const battle = get().battle;
@@ -2033,7 +2033,7 @@ export function applyAttackResult(
   res: AttackResult,
   deviated?: boolean,
   prerolledCrit?: CriticalResolved, // « Subir » après déviation : applique CE Critique (déjà montré) sans re-tirer
-  deferAttackerAdvantage?: boolean, // Maniement de deux armes (LDB 10 l.638) : l'Avantage de l'attaquant est accordé à part (si les deux touchent)
+  deferAttackerAdvantage?: boolean, // Maniement de deux armes (LDB 10 l.767-773) : l'Avantage de l'attaquant est accordé à part (si les deux touchent)
   grapple?: boolean, // Empoignade (LDB 14 l.159) : « Au lieu d'infliger des Dégâts » — sur une touche, pose l'Empoignade + Empêtré au lieu de blesser
 ): boolean {
   // SEAM du télégraphe (#1143) : cette fonction est l'entonnoir UNIQUE de résolution d'une attaque —
@@ -4042,7 +4042,7 @@ export function castSpell(
       castRefused(get, set, caster, tr('cf.castOutOfRange', { spell: spell.label, range }));
       return;
     }
-    // Ligne de Vue (LDB 46 l.170 : « vous devez toujours être capable de voir […] votre cible ») —
+    // Ligne de Vue (LDB 46 l.121 : « vous devez toujours être capable de voir […] votre cible ») —
     // buff sur allié compris ; binaire, pas de malus de couvert pour un Sort. Couvre héros ET IA.
     if (castSightBlocked(get, caster.pos, target.pos)) {
       castRefused(get, set, caster, `${spell.label} : pas de ligne de vue.`);
@@ -4460,7 +4460,7 @@ export function placingZoneOf(s: Pick<GameState, 'pendingCast' | 'pendingSiegeAi
 }
 
 /** La case `pt` est-elle une POSE valide pour la zone en cours ? Portée depuis l'ancre + Ligne
- *  de Vue vers le point (LDB 46 l.170/202) — partagé par le gabarit (couleur) et le clic. */
+ *  de Vue vers le point (LDB 46 l.121) — partagé par le gabarit (couleur) et le clic. */
 export function placedZoneValidAt(get: Get, pz: PlacingZone, pt: Pt): boolean {
   const caster = inBattleId(get().battle, pz.casterId);
   if (!caster?.pos) return false;
@@ -4477,7 +4477,7 @@ export function commitPlacedZone(get: Get, set: SetFn, pt: Pt): void {
 }
 
 /** POSE de la zone d'un SORT (après le jet et la Surincantation) : gates portée (LDB 47) + Ligne
- *  de Vue vers le point (LDB 46 l.170/202), puis applique le MÊME jet à tous les combattants du
+ *  de Vue vers le point (LDB 46 l.121), puis applique le MÊME jet à tous les combattants du
  *  rayon FINAL — parité avec l'ancien flux (premier = target, reste = extraTargets,
  *  evaluateMissile par cible). Zone posée dans le vide : Sort lancé, Action consommée. */
 export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
@@ -4722,7 +4722,7 @@ export function overcastTargetCandidates(
     if (m.id === targetId) return false;
     if (missile ? m.kind === caster.kind || isOutOfAction(m) : m.kind !== caster.kind || m.dead || m.outOfRencontre) return false;
     if (range != null && caster.pos && m.pos && combatDistance(caster, m) > range) return false;
-    // Ligne de Vue (LDB 46 l.170) : une cible supplémentaire doit aussi être visible du lanceur.
+    // Ligne de Vue (LDB 46 l.121) : une cible supplémentaire doit aussi être visible du lanceur.
     return !spellSightBlocked(sight, caster, m);
   });
 }
@@ -6305,7 +6305,7 @@ export function advanceTurn(get: Get, set: SetFn) {
   let acted = false;
   if (newActive) {
     newActive.defensiveStance = false;
-    newActive.dualStrikeDefensePenalty = false; // Maniement de deux armes : expire au début de son Tour (LDB 10 l.638)
+    newActive.dualStrikeDefensePenalty = false; // Maniement de deux armes : expire au début de son Tour (LDB 10 l.767-773)
     // Maladresse (Oups! 61-80) : perte du Mouvement / de l'Action ce tour-ci.
     if (newActive.loseNextMovement) { movementUsed = mountMovement(battle, newActive); newActive.loseNextMovement = false; battle.log.push(ev('detail', tr('cf.loseMovement', { name: newActive.label }), newActive.id)); }
     if (newActive.loseNextAction) { acted = true; newActive.loseNextAction = false; battle.log.push(ev('detail', tr('cf.loseAction', { name: newActive.label }), newActive.id)); }
@@ -6774,7 +6774,7 @@ export function openRoundEndCascade(get: Get, set: SetFn): void {
  */
 function resolveCombatPsychRow(get: Get, hero: Combatant, cp: CombatPsychDecl, rm: CombatPsychRowMeta, r: CascadeRoll, immune: boolean): Consequence[] {
   const battle = get().battle;
-  // DÉTERMINATION (LDB 17 l.62) : immunité TEMPORAIRE — la Peur/Terreur/Trait est IGNORÉE ce Round,
+  // DÉTERMINATION (LDB 17 l.59) : immunité TEMPORAIRE — la Peur/Terreur/Trait est IGNORÉE ce Round,
   // PAS vaincue. On NE cumule PAS le DR, on NE pose PAS de Brisé, on N'active PAS le trait ciblé : le
   // `psychState` (et le `calmeDR` d'une Peur déjà entamée) reste INCHANGÉ. Le collecteur de Round saute
   // ce héros tant que `psychImmuneRoundsLeft > 0` ; à l'expiration, la source reprend.

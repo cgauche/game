@@ -3,7 +3,7 @@ import { resolveRecoverTest } from './recover';
 import type { Combatant } from '../../engine/types';
 
 /**
- * `resolveRecoverTest` — SOURCE UNIQUE des paramètres du Test de récupération par Action (LDB 16 l.61/77),
+ * `resolveRecoverTest` — SOURCE UNIQUE des paramètres du Test de récupération par Action (LDB 16 l.66/77),
  * lue de la donnée `EtatData.recover`. Partagée par l'IA (combatFlow) et le flux joueur (combatSlice) ;
  * fin du `if state === empetre … else athletisme` dupliqué. Pin de la résolution (skill/opposé/source).
  */
@@ -11,7 +11,7 @@ const mk = (over: Partial<Combatant>): Combatant =>
   ({ id: 'c', name: 'C', kind: 'enemy', conditions: [], skills: [], characteristics: { force: 40, agilite: 35 } as never,
      wounds: { current: 10, max: 10 }, ...over } as unknown as Combatant);
 
-describe('resolveRecoverTest (LDB 16 l.61/77) — données EtatData.recover', () => {
+describe('resolveRecoverTest (LDB 16 l.66/77) — données EtatData.recover', () => {
   it('En flammes : Test d’Athlétisme SIMPLE (l.77)', () => {
     const c = mk({ conditions: [{ id: 'en-flammes', value: 1 }] });
     const r = resolveRecoverTest(c, 'en-flammes')!;

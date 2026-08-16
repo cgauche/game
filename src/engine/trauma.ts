@@ -919,7 +919,7 @@ export function passiveTestMod(c: Combatant, charKey: CharKey): number {
 /** Les `testMod` GLOBAUX (sans `char`) portés par les MALADIES actives (kind `maladie`), UN PAR
  *  symptôme émetteur — pénalité « −N à TOUS les Tests » (Crampes abdominales −20, MSRC 16 l.152). NON
  *  exprimable en `charMod` (qui fausserait les stats DÉRIVÉES — SB/BE/Mouvement/PB max). Additive et
- *  CUMULATIVE avec les États (les maladies ne sont pas dans le pool non-cumul des États, LDB 16 l.20) ;
+ *  CUMULATIVE avec les États (les maladies ne sont pas dans le pool non-cumul des États, LDB 16 l.13) ;
  *  annulable par Détermination via le gate `maladie` déjà appliqué en amont dans `passiveMods`.
  *  SOURCE UNIQUE de la Σ (`passiveGlobalTestMod`) ET des lignes NOMMÉES du détail de jet
  *  (`combatTestPenaltyParts`, conditions.ts) : le `src` de chaque `PassiveMod` porte le symptôme. */

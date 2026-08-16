@@ -30,7 +30,7 @@ export function hasMeaningfulOption(active: Combatant, battle: BattleState): boo
   if (active.advantage >= 1 && !!trampleTarget(battle, active)) return true;
   // Attaque d'Arme GRATUITE accordée par un talent (Frénésie) encore disponible ce Round (LDB 21 l.34) ?
   if (hasFreeWeaponAttack(active)) return true;
-  // Détermination : retirer un État (LDB 17 l.62-66) ?
+  // Détermination : retirer un État (LDB 17 l.59-61) ?
   if ((active.resolve ?? 0) > 0 && active.conditions.length > 0) return true;
   return false;
 }

@@ -6,9 +6,9 @@ import { join } from 'node:path';
 /**
  * ANTI-DÉRIVE DU SYSTÈME DE JET — « tout passe par notre système » (fabrique + atomes PARTAGÉS).
  *
- * Les verbes d'influence sont des règles GLOBALES (LDB 17 l.68/83-84), applicables à N'IMPORTE quel
+ * Les verbes d'influence sont des règles GLOBALES (LDB 17 l.24/68), applicables à N'IMPORTE quel
  * Test, donc implémentées UNE SEULE FOIS et réutilisées par TOUS les flux :
- *   • Chance « +1 DR » (LDB 17 l.26/84) → `bumpSL(tr)` (ajoute un Degré, `success` INTACT) ;
+ *   • Chance « +1 DR » (LDB 17 l.24) → `bumpSL(tr)` (ajoute un Degré, `success` INTACT) ;
  *   • Résilience « Je ne faillirai pas ! » (l.68/73) → `bestForcedRoll(cible)` (dé forcé DR-MAX
  *     SELON la policy : standard → 01, mais Fast DR (LDB 12 l.128) → dé le plus HAUT valide) + `forcedTR` ;
  *   • dé CHOISI (picker) → `evaluateTest(forced.roll, cible)` ; Résistance → `resist`.
@@ -18,7 +18,7 @@ import { join } from 'node:path';
  * Ce garde SCANNE TOUT le code de résolution (src/state + src/engine, hors tests) et CASSE si une
  * signature de RE-CODAGE réapparaît. Il est né de dérives RÉELLES : une session parallèle a dé-lentillé
  * `activity` en recodant le dé forcé à `01` en dur (`evaluateTest(1, cible)` → DR MINIMAL en Fast DR)
- * et un `+1 DR` forçant `success:true` (transforme un échec en réussite, interdit LDB 17 l.84) ; le même
+ * et un `+1 DR` forçant `success:true` (le +1 DR de Chance n'écrit pas `success` — LDB 17 l.24, LDB 12 l.11) ; le même
  * `evaluateTest(1, …)` dormait aussi dans `shipManeuver.forceCrewRole` ET dans la Détermination d'une
  * étape de cascade — d'où le scan LARGE (le recodage ne vit pas que dans rollFlowSpecs.ts).
  *
@@ -62,8 +62,8 @@ describe('Anti-dérive du système de jet — tout passe par la fabrique + les a
     ).toEqual([]);
   });
 
-  it('Chance « +1 DR » ne force JAMAIS success (LDB 17 l.84) — bumpSL ou success recalculé', () => {
-    // +1 Degré ne transforme PAS un `roll > cible` en réussite. `bumpSL(tr)` garde `success` ; un
+  it('Chance « +1 DR » ne force JAMAIS success (LDB 17 l.24) — bumpSL ou success recalculé', () => {
+    // `success` reste dérivé du d100 face à la cible (LDB 12 l.11) : `bumpSL(tr)` le garde ; un
     // `bonus.derive` qui écrit `sl: …+1, success: true` travestit la règle (bug maneuver/battement).
     const hits = scan(/\.sl\s*\+\s*1\s*,\s*success:\s*true/g);
     expect(

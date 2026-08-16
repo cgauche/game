@@ -1,5 +1,5 @@
 /**
- * Ciblage homogène — Ligne de Vue des SORTS (LDB 46 l.170 : « sauf indication contraire, vous
+ * Ciblage homogène — Ligne de Vue des SORTS (LDB 46 l.121 : « sauf indication contraire, vous
  * devez toujours être capable de voir – par exemple, avoir en Ligne de vue – votre cible ») :
  *  • castSpell refuse AVANT la modale (pas de pendingCast) — Projectile comme buff sur allié ;
  *  • ZdE : LdV vers la case CENTRE de la zone (clic-case) ;
@@ -51,7 +51,7 @@ beforeEach(() => {
   useGame.getState().seedRng(23);
 });
 
-describe('castSpell — Ligne de Vue (LDB 46 l.170)', () => {
+describe('castSpell — Ligne de Vue (LDB 46 l.121)', () => {
   it('cible derrière un mur → refus dans le FEED de combat (pas le journal), pas de modale', () => {
     const { w, hidden } = setup();
     castSpell(useGame.getState, useGame.setState, w, hidden, 'carreau');

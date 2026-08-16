@@ -222,7 +222,7 @@ export function forceShipManeuver(ship: Combatant, prev: ManeuverResult | null):
   return deriveManeuver(ship, { sl: -(manoeuvre + extraDR + maneuverTestTypeDR(ship)), roll: prev?.roll ?? 1, target: prev?.target, success: true }, prev?.helmsman);
 }
 
-/** Chance « +1 DR » (LDB 17 l.26) : re-dérive la manœuvre avec `navDR + 1` (meilleure Progression / collision) ;
+/** Chance « +1 DR » (LDB 17 l.24) : re-dérive la manœuvre avec `navDR + 1` (meilleure Progression / collision) ;
  *  la réussite du Test (d100) est INCHANGÉE (le +1 DR augmente le degré, pas le succès). PUR. */
 export function bonusShipManeuver(ship: Combatant, prev: ManeuverResult): ManeuverResult {
   return deriveManeuver(ship, { sl: prev.navDR + 1, roll: prev.roll, target: prev.target, success: prev.success }, prev.helmsman);

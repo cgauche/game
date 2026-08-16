@@ -18,7 +18,7 @@ export interface OptionalRule {
   id: string;
   /** Libellé affiché dans le panneau. */
   label: string;
-  /** Citation de la règle (« LDB 12 l.48 »), montrée en infobulle. */
+  /** Citation de la règle (graphie canonique `<ABRÉV> <ch> l.<ligne>`), montrée en infobulle. */
   ref: string;
   /** Sous-système (regroupement dans le panneau). */
   group: string;

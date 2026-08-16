@@ -108,7 +108,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const batchDarkPact = useGame((s) => s.cascadeBatchDarkPact);
   const batchForce = useGame((s) => s.cascadeBatchForceSuccess);
   const batchResist = useGame((s) => s.cascadeBatchResist); // Résistance (Menace) PAR RANGÉE (LDB 10)
-  const batchDetermine = useGame((s) => s.cascadeBatchDetermine); // Détermination PAR RANGÉE (LDB 17 l.62)
+  const batchDetermine = useGame((s) => s.cascadeBatchDetermine); // Détermination PAR RANGÉE (LDB 17 l.59)
   const roll = useGame((s) => s.cascadeRoll);
   const reroll = useGame((s) => s.cascadeReroll);
   const bonusSL = useGame((s) => s.cascadeBonusSL);
@@ -699,7 +699,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     }).map((r) => {
       // Verbes à RESSOURCE de la rangée (parité avec l'étape MONO, joués PAR RANGÉE — flux `cascadeBatch`) :
       // Résistance (Menace) sur une rangée TAGUÉE dont l'issue reste défavorable (LDB 10 l.1015-1021) ;
-      // Détermination avant le jet sur une bande de Psychologie (LDB 17 l.62), dont la DÉCLARATION vit
+      // Détermination avant le jet sur une bande de Psychologie (LDB 17 l.59), dont la DÉCLARATION vit
       // sur l'étape (`cur.combatPsych`/`cur.encounterPsych`), les divergences par héros sur la rangée.
       const part = cur.participants!.find((x) => x.id === String(r.key));
       const a = r.actor;

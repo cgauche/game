@@ -942,7 +942,7 @@ export interface GameState extends RollFlowActionsMap {
   handGateConfirm: () => void;
   /** Annule l'Action avant le jet de Main ensanglantée (défait une charge misclic comme `attackCancel`). */
   handGateCancel: () => void;
-  /** Se libérer (Empêtré, Test opposé de Force) / se rouler au sol (En flammes, Athlétisme) : OUVRE la modale (LDB 16 l.61/77). */
+  /** Se libérer (Empêtré, Test opposé de Force) / se rouler au sol (En flammes, Athlétisme) : OUVRE la modale (LDB 16 l.66/77). */
   battleRecoverState: (state: 'empetre' | 'en-flammes') => void;
   // recover{Roll,Reroll,BonusSL,DarkPact} (Lancer/Chance/+1 DR/Pacte) : générés (RollFlowActionsMap).
   /** « Appliquer » : retire 1 + DR pions de l'État, consomme l'Action. */
@@ -955,15 +955,15 @@ export interface GameState extends RollFlowActionsMap {
   steamSaveConfirm: () => void;
   /** Sélectionne la munition à tirer (uid d'un item `kind 'ammo'`). */
   battleSelectAmmo: (uid: string) => void;
-  /** Détermination (Resolve, LDB 17 l.66) : retire un État de l'actif (+1 PB si À Terre).
+  /** Détermination (Resolve, LDB 17 l.61) : retire un État de l'actif (+1 PB si À Terre).
    *  Ne consomme PAS l'Action. */
   battleSpendResolve: (conditionName: string) => void;
-  /** Détermination depuis une MODALE de jet (LDB 17 l.66) : même règle, pour n'importe quel héros
+  /** Détermination depuis une MODALE de jet (LDB 17 l.61) : même règle, pour n'importe quel héros
    *  (le défenseur n'est pas l'actif) et sans toucher au mode d'action. */
   spendResolveCondition: (combatantId: string, conditionName: string) => void;
-  /** Détermination (LDB 17 l.62) : immunité à la Psychologie jusqu'à la fin du prochain Round. */
+  /** Détermination (LDB 17 l.59) : immunité à la Psychologie jusqu'à la fin du prochain Round. */
   battleResolvePsychImmune: () => void;
-  /** Détermination (LDB 17 l.64) : ignore les modificateurs de Blessure critique ce Round. */
+  /** Détermination (LDB 17 l.60) : ignore les modificateurs de Blessure critique ce Round. */
   battleResolveIgnoreCrit: () => void;
   /** Ramasser UN objet au sol pendant un Round (LDB 13 l.115-116) : applique au combattant
    *  actif un item ramassable d'un `prop` interactif adjacent. Consomme l'Action, pas d'auto-équipe.
@@ -1098,7 +1098,7 @@ export interface GameState extends RollFlowActionsMap {
   attackSetLocation: (loc: HitLocation | null) => void;
   /** Choisit l'arme d'attaque (uid d'ItemInstance du loadout actif ; null = auto) — avant le jet. */
   attackSetWeapon: (uid: string | null) => void;
-  /** Maniement de deux armes (LDB 10 l.638) : (dés)active le mode « des deux armes » sur l'attaque-Action. */
+  /** Maniement de deux armes (LDB 10 l.767-773) : (dés)active le mode « des deux armes » sur l'attaque-Action. */
   attackSetDualMode: (on: boolean) => void;
   /** « Tirer dans le tas » : bascule l'option de tir dans un groupe (cible au hasard, bonus +20/+40/+60). */
   attackSetIntoCrowd: (v: boolean) => void;
@@ -1127,7 +1127,7 @@ export interface GameState extends RollFlowActionsMap {
   cleaveAttack: (targetId: string) => void;
   /** Termine le balayage en cours (le joueur renonce aux enchaînements restants). */
   cleaveEnd: () => void;
-  /** Maniement de deux armes (LDB 10 l.638) : 2ᵉ frappe (main secondaire) contre la cible choisie. `skipGate`
+  /** Maniement de deux armes (LDB 10 l.767-773) : 2ᵉ frappe (main secondaire) contre la cible choisie. `skipGate`
    *  interne : Test de Main ensanglantée déjà PASSÉ (reprise via `handGateConfirm`), ne pas re-tester. */
   dualStrikeAttack: (targetId: string, skipGate?: boolean) => void;
   /** Renonce à la 2ᵉ frappe (« peut viser » = optionnel) → pas de 2ᵉ attaque, pas d'Avantage. */
@@ -2451,7 +2451,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
   // Test de scène (hors combat) : Lancer / Chance (relance / +1 DR) / Pacte — Résilience plus haut.
   // `cancel` : referme la cascade quand le test est annulable (action de combat, `pendingTest.cancellable`).
-  // `determine` : Détermination (LDB 17 l.62), corps dans `FLOWS.test.caps.determine`.
+  // `determine` : Détermination (LDB 17 l.59), corps dans `FLOWS.test.caps.determine`.
 
   /** Exposition à une Influence corruptrice (LDB 19) — flux différé, cf. spec `corruption`. */
   corruptionSetSkill: (skill) => {

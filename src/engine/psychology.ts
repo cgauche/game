@@ -307,7 +307,7 @@ export function peurTerreurFromSize(foe?: SizeCategory, self?: SizeCategory): { 
  * Immunité à la Psychologie — PRÉDICAT CENTRAL (toute source d'immunité passe par ici) :
  * - trait « Immunité (Psychologie) » (`psychImmune`, LDB 85 l.143-144) ;
  * - Frénésie active (LDB 21 l.34) ;
- * - Détermination « immunisé à Psychologie jusqu'à la fin du prochain Round » (LDB 17 l.62), via le
+ * - Détermination « immunisé à Psychologie jusqu'à la fin du prochain Round » (LDB 17 l.59), via le
  *   compteur `psychImmuneRoundsLeft` (décrémenté au passage de Round) → l'immunité ne fait que RETARDER :
  *   à expiration, les déclencheurs/effets reprennent (sauf si la source est morte entre-temps).
  * Round-indépendant : utilisable autant dans les déclencheurs (collectHeroRoundStart/EndPsych…) que
@@ -338,7 +338,7 @@ export function coldBloodedAdjust(
   return e.success ? { roll: e.roll, target: e.target, success: e.success, sl: e.sl } : t;
 }
 
-/** Détermination (LDB 17 l.62) : immunité à la Psychologie jusqu'à la fin du prochain Round. Portée par un
+/** Détermination (LDB 17 l.59) : immunité à la Psychologie jusqu'à la fin du prochain Round. Portée par un
  *  `ActiveEffect` à durée 2 Rounds (système de Durée unifié : décrémenté/expiré au passage de Round). */
 export function spendResolveForPsychImmunity(c: Combatant): string | null {
   if ((c.resolve ?? 0) <= 0) return null;

@@ -12,7 +12,7 @@ import { Icon } from './Icon';
 /**
  * Modale de Course (LDB 15 l.41) : « Lancer » jette le Test d'Athlétisme (+20),
  * « Relancer »/« Résilience ×N » dépensent Chance/Résilience, « Appliquer » ouvre le déplacement
- * étendu (Marche + Course + DR). La Course N'EST PAS binaire : « +1 DR » (Chance, LDB 17 l.26) allonge
+ * étendu (Marche + Course + DR). La Course N'EST PAS binaire : « +1 DR » (Chance, LDB 17 l.24) allonge
  * la distance parcourue (DR en mètres → cases, cf. le flux `run`).
  */
 export function RunModal() {
@@ -44,7 +44,7 @@ export function RunModal() {
     onRoll: roll,
     rerolled: !!pr.rerolled,
     onReroll: reroll,
-    onBonusSL: bonusSL, // Chance « +1 DR » = +distance de Course (LDB 17 l.26) — offert dès le jet réussi OU raté
+    onBonusSL: bonusSL, // Chance « +1 DR » = +distance de Course (LDB 17 l.24) — offert dès le jet réussi OU raté
     onDarkPact: darkPact,
     onForce: force,
   });

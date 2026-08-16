@@ -46,7 +46,7 @@ function actor(p: Partial<Combatant> & { id: string }): Combatant {
 
 /** Les postures d'État de la sonde : sain, États NON `combatOnly` (Sonné, Exténué, Brisé), État
  *  `combatOnly` (Aveuglé — c'est LUI qui distingue le canal combat de la convention hors combat), et
- *  un cumul qui exerce le pool de non-cumul (`LDB 16 l.20`). */
+ *  un cumul qui exerce le pool de non-cumul (`LDB 16 l.13`). */
 const POSTURES: { nom: string; conditions: unknown[] }[] = [
   { nom: 'sain', conditions: [] },
   { nom: 'Sonné', conditions: [{ id: 'sonne', value: 1 }] },

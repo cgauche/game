@@ -338,7 +338,7 @@ function cleaveAffordance(get: Get, _active: Combatant, target: Combatant): Hove
   return { kind: 'ok', line: 'solid', title: 'Frappe Mortelle', targetName: target.label, skill: attackTestLabel(weapon, 'melee'), base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
 }
 
-/** Mode 2ᵉ FRAPPE (deux armes, LDB 10 l.638) : cibles à portée de la main secondaire. */
+/** Mode 2ᵉ FRAPPE (deux armes, LDB 10 l.767-773) : cibles à portée de la main secondaire. */
 function dualAffordance(get: Get, _active: Combatant, target: Combatant): HoverTargeting {
   const s = get();
   const battle = s.battle!;

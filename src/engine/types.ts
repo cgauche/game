@@ -510,9 +510,9 @@ export interface ConditionInstance {
   /** id de l'État (slug d'etats.json) — ≠ libellé (résolu à l'affichage via `conditionLabel`). */
   id: ConditionId;
   value: number; // certains États s'empilent (ex. Hémorragique)
-  /** Source de l'État (id du Combatant) — pour le Test opposé de « se libérer » d'un Empêtré (LDB 16 l.61). */
+  /** Source de l'État (id du Combatant) — pour le Test opposé de « se libérer » d'un Empêtré (LDB 16 l.66). */
   sourceId?: string;
-  /** Force d'évasion FIGÉE d'un État à Test opposé (Empêtré « se libérer » — LDB 16 l.61) : posée par
+  /** Force d'évasion FIGÉE d'un État à Test opposé (Empêtré « se libérer » — LDB 16 l.66) : posée par
    *  l'op `condition.escapeStrength` (ex. Force Mentale du lanceur d'un Enchevêtrement). Si présente, le
    *  flux de récupération l'oppose AU LIEU de la Force de la source vivante — vaut même lanceur absent. */
   escapeStrength?: number;
@@ -764,10 +764,10 @@ export interface ActiveEffect {
   /** Modificateur aux Tests INDIVIDUELS d'un Test d'équipage (op `crewTestMod` — « Naviguons tous
    *  ensemble », MDG 09 l.224 : +10). Lu par `crewRoleValue` (engine/crewMorale). */
   crewTestMod?: number;
-  /** Détermination (LDB 17 l.62) : immunité PSYCHOLOGIQUE temporaire (la source est IGNORÉE, pas vaincue).
+  /** Détermination (LDB 17 l.59) : immunité PSYCHOLOGIQUE temporaire (la source est IGNORÉE, pas vaincue).
    *  Durée portée par `duration` (Rounds) → décrémentée/expirée par le système de Durée unifié. */
   psychImmune?: boolean;
-  /** Détermination (LDB 17 l.64) : ignore les modificateurs de Blessure critique (traumatismes), 1 Round.
+  /** Détermination (LDB 17 l.60) : ignore les modificateurs de Blessure critique (traumatismes), 1 Round.
    *  Durée portée par `duration` → expirée par le système de Durée unifié (plus de flag round-scopé). */
   ignoreCritMods?: boolean;
   /** Traits psychologiques SUSPENDUS par l'effet (Baume pour un esprit blessé, LDB 42 : « Tous les
@@ -1619,7 +1619,7 @@ export interface Combatant {
   distractedRounds?: number;
   /** « Sur la défensive » : +20 à tous les Tests de défense jusqu'au début du prochain tour (LDB Combat l.118). */
   defensiveStance?: boolean;
-  /** Maniement de deux armes (LDB 10 l.638) : −10 à TOUTES ses défenses jusqu'au début de son prochain Tour. */
+  /** Maniement de deux armes (LDB 10 l.767-773) : −10 à TOUTES ses défenses jusqu'au début de son prochain Tour. */
   dualStrikeDefensePenalty?: boolean;
   /** Action Viser engagée : +20 (Accessible) au PROCHAIN tir tant que la dernière action reste « viser »
    *  (LDB table des Difficultés, `14 - _GoBack.md` l.90 ; « pas de Test exigé pour viser »). */

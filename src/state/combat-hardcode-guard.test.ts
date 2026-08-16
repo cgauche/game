@@ -92,7 +92,7 @@ const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
  *       travelPostes.ts` (l.278,308) — fatigue `extenue` par-nom en instrumentation de voyage. */
 const BASELINES: Record<string, number> = {
   'src/engine/traits/dispatch.ts': 2,
-  'src/state/ai.ts': 6, // dont #411 : recover/retreat par-nom en-flammes (l.403) + empetre (l.558,959)
+  'src/state/ai.ts': 6, // dont #411 : recover/retreat par-nom en-flammes (l.526) + empetre (l.682,1098)
   'src/state/combatManeuvers.ts': 1, // #402 : hasTraitKey(mort-vivant) littéral → capabilities.undead (Trait), reste isBestial (défense)
   // #411 (2026-07-13) — stock révélé par l'extension aux littéraux, GELÉ, à résorber (doctrine #295)
   'src/engine/rest.ts': 8, // #413 : gate repos (l.13) + fatigue/veille extenue+inconscient+a-terre (l.97,112,113,125,141,145,155)

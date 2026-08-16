@@ -180,7 +180,7 @@ registerCombatHook({
 // résolu cadence-aware par la brique `combat/triggeredTest` (héros manuel → cascade influençable ;
 // ennemi/auto → jet inline).
 
-// Détermination (LDB 17 l.62/64) MIGRÉE sur le système de Durée UNIFIÉ : l'immunité psychologique (2
+// Détermination (LDB 17 l.59/60) MIGRÉE sur le système de Durée UNIFIÉ : l'immunité psychologique (2
 // Rounds) et l'ignorance des modifs de Critique (1 Round) sont portées par des `ActiveEffect`
 // (`psychImmune`/`ignoreCritMods`) à `duration` Rounds, décrémentés/expirés par `tickDurations` (hook
 // `end-of-round`) — plus de compteur/flag round-scopé ni de hook de décompte dédié.

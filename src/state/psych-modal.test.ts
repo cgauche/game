@@ -116,7 +116,7 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
     expect(peur!.calmeDR! >= 1).toBe(true); // DR maximal du dé 01 ≥ Indice 1 → Peur surmontée
   });
 
-  it('Détermination sur une Peur de combat = immunité TEMPORAIRE (LDB 17 l.62), jouée PAR RANGÉE : calmeDR INCHANGÉ, Peur NON surmontée', () => {
+  it('Détermination sur une Peur de combat = immunité TEMPORAIRE (LDB 17 l.59), jouée PAR RANGÉE : calmeDR INCHANGÉ, Peur NON surmontée', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup('grande'); // E est une source de Peur (Taille)
     H.resolve = 2;

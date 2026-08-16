@@ -6,7 +6,7 @@ import { CodexRef } from './compendium/CodexRef';
 import { RULE_REF } from '../engine/ruleRefs';
 
 /**
- * Détermination en modale de jet (LDB 17 l.62-66) : AVANT de lancer, un héros qui subit des
+ * Détermination en modale de jet (LDB 17 l.59-61) : AVANT de lancer, un héros qui subit des
  * États négatifs (À Terre, Sonné, Aveuglé… → malus au jet) peut en retirer un — le panneau
  * pré-rempli recalcule alors ses modificateurs. Bouton « Détermination ×n » → mini-picker des
  * États présents (même règle que `battleSpendResolve` de la barre d'action).
