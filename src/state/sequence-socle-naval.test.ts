@@ -114,7 +114,7 @@ registerSequence<SeaCrisisPayload>(NAVAL, {
     });
     if (!step) return undefined;
     return {
-      title: `Crise de mer — manche ${seq.round}`,
+      title: rawText(`Crise de mer — manche ${seq.round}`),
       steps: [step],
       immediate: true, // aucune fenêtre à montrer dans ce harnais : le socle résout et enchaîne
       payload: { ...seq.payload, manches: [...seq.payload.manches, seq.round] },
@@ -187,7 +187,7 @@ describe('Structure d’orchestrateur — instanciable par une crise NAVALE (2 m
           difficulty: 'intermediaire', montee: { base: 50, target: 50 },
           stake: combatStakeRef('pursuitMove', { values: { distance: 1, evasion: 10 } }),
         });
-        return step ? { title: 'Boucle', steps: [step], immediate: true } : undefined;
+        return step ? { title: rawText('Boucle'), steps: [step], immediate: true } : undefined;
       },
       close: () => ({ go: 'continue' }), // ne conclut JAMAIS
     });

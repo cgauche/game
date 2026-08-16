@@ -17,7 +17,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { t } from '../i18n';
-import { stepDetail, stepPrecision } from './rollSeam';
+import { stepDetail, stepFraction, stepPrecision } from './rollSeam';
 import { dataLabel } from '../data';
 import type { PlayerText } from '../i18n/playerText';
 
@@ -61,29 +61,85 @@ const SEQUENCE: Site[] = [
     apres: t('step.pursuitMouvement'),
   },
   {
-    site: 'tavernFlow.ts:541 — SequenceRound.title (choix d’option)',
+    site: 'tavernFlow.ts:542 — SequenceRound.title (choix d’option)',
     avant: `${JEU_OPTION} — ${t('tavern.optionTitre')}`,
     apres: stepDetail(dataLabel(JEU_OPTION), t('tavern.optionTitre')),
   },
   {
-    site: 'tavernFlow.ts:715 — SequenceRound.title (volée de lancers)',
+    site: 'tavernFlow.ts:716 — SequenceRound.title (volée de lancers)',
     avant: `Torchon trempé — lancer ${2}/${5}`,
     apres: t('tavern.volleyLancer', { jeu: 'Torchon trempé', n: 2, total: 5 }),
   },
   {
-    site: 'tavernFlow.ts:817 — SequenceRound.title (mi-temps)',
+    site: 'tavernFlow.ts:818 — SequenceRound.title (mi-temps)',
     avant: `Middenball — ${2}ᵉ mi-temps, tour ${1}/${3}`,
     apres: t('tavern.miTempsTitre', { jeu: 'Middenball', phase: 2, n: 1, total: 3 }),
   },
   {
-    site: 'tavernFlow.ts:1736 — SequenceBoardCamp.label (camps asymétriques, mien)',
+    site: 'tavernFlow.ts:1740 — SequenceBoardCamp.label (camps asymétriques, mien)',
     avant: `${HEROS} (${CAMP_MIEN})`,
     apres: stepPrecision(dataLabel(HEROS), dataLabel(CAMP_MIEN)),
   },
   {
-    site: 'tavernFlow.ts:1737 — SequenceBoardCamp.label (camps asymétriques, sien)',
+    site: 'tavernFlow.ts:1741 — SequenceBoardCamp.label (camps asymétriques, sien)',
     avant: `${ADVERSAIRE} (${CAMP_SIEN})`,
     apres: stepPrecision(dataLabel(ADVERSAIRE), dataLabel(CAMP_SIEN)),
+  },
+];
+
+/* ── V8b₂ : les positions rougies par le MARQUAGE `PlayerText` du contrat (8 positions) ──────────
+ * Le lot précédent avait migré ces textes par relecture ; celui-ci les rend IMPOSSIBLES à réécrire au
+ * flux (le type les refuse). Ce que le type ne dit pas, c'est que la phrase n'a pas bougé — d'où ces
+ * entrées, au même standard que les précédentes. */
+
+const JEU_EQUIPE = 'Middenball', HEROS2 = 'Kurt', ADVERSAIRE2 = 'Otto';
+const TOUR = { n: 2, mien: 27, sien: 14 };
+
+const MARQUAGE: Site[] = [
+  {
+    site: 'tavernFlow.ts:877 — SequenceRound.title (manche ordinaire, les deux camps)',
+    avant: `${JEU_OPTION} — ${HEROS2} contre ${ADVERSAIRE2}`,
+    apres: stepDetail(dataLabel(JEU_OPTION), t('tavern.contre', { who: HEROS2, adversaire: ADVERSAIRE2 })),
+  },
+  {
+    site: 'tavernFlow.ts:1083 — ligne de journal d’un tour d’équipe (sans but)',
+    avant: `${JEU_EQUIPE} — tour ${TOUR.n} : ${TOUR.mien} DR contre ${TOUR.sien}`,
+    apres: t('tavern.equipeTour', { jeu: JEU_EQUIPE, ...TOUR }),
+  },
+  {
+    site: 'tavernFlow.ts:1082 — ligne de journal d’un tour d’équipe (but du GROUPE)',
+    avant: `${JEU_EQUIPE} — tour ${TOUR.n} : ${TOUR.mien} DR contre ${TOUR.sien} — BUT pour votre équipe !`,
+    apres: t('tavern.equipeTourBut', { jeu: JEU_EQUIPE, ...TOUR, qui: t('tavern.equipeQui') }),
+  },
+  {
+    site: 'tavernFlow.ts:1082 — ligne de journal d’un tour d’équipe (but de l’ADVERSAIRE)',
+    avant: `${JEU_EQUIPE} — tour ${TOUR.n} : ${TOUR.mien} DR contre ${TOUR.sien} — BUT pour ${ADVERSAIRE2} !`,
+    apres: t('tavern.equipeTourBut', { jeu: JEU_EQUIPE, ...TOUR, qui: ADVERSAIRE2 }),
+  },
+  {
+    site: 'tavernFlow.ts:1699 — SequenceBoard.phase (fraction PUREMENT numérique)',
+    avant: `${2}/${2}`,
+    apres: stepFraction(2, 2),
+  },
+  {
+    site: 'SequencePanel.tsx:29 — compteur, partie OUVERTE (aucun total prévu)',
+    avant: `Manche ${4}`,
+    apres: t('seqPanel.manche', { n: 4 }),
+  },
+  {
+    site: 'SequencePanel.tsx:28 — compteur, total prévu et pas de phase',
+    avant: `Manche ${3}/${6}`,
+    apres: t('seqPanel.manche', { n: stepFraction(3, 6) }),
+  },
+  {
+    site: 'SequencePanel.tsx:27 — compteur, total prévu ET phase',
+    avant: `Manche ${3}/${6} · phase ${'1/2'}`,
+    apres: t('seqPanel.manchePhase', { n: stepFraction(3, 6), phase: stepFraction(1, 2) }),
+  },
+  {
+    site: 'SequencePanel.tsx:48 — format de jauge : fraction du seam + repli d’unité (des DR)',
+    avant: `${3}/${10} DR`,
+    apres: `${stepFraction(3, 10)} ${t('seqPanel.uniteDr')}`,
   },
 ];
 
@@ -139,18 +195,19 @@ const COMBAT: Site[] = [
   },
 ];
 
-const TOUS: Site[] = [...SEQUENCE, ...SIGNES, ...COMBAT];
+const TOUS: Site[] = [...SEQUENCE, ...MARQUAGE, ...SIGNES, ...COMBAT];
 
-describe('#1318 V8b/V8c₀ — la migration au catalogue est à PARITÉ D’OCTET', () => {
+describe('#1318 V8b/V8b₂/V8c₀ — la migration au catalogue est à PARITÉ D’OCTET', () => {
   it.each(TOUS)('$site', ({ avant, apres }) => {
     expect(apres).toBe(avant);
   });
 
-  it('le recensement couvre les DEUX lots et les trois signes de DR — un site migré s’y ajoute', () => {
+  it('le recensement couvre les TROIS lots et les trois signes de DR — un site migré s’y ajoute', () => {
     expect(SEQUENCE.length, 'les 8 positions de séquence migrées (V8b)').toBe(8);
+    expect(MARQUAGE.length, 'les sites rougis par le MARQUAGE du contrat (V8b₂), panneau compris').toBe(9);
     expect(SIGNES.length, 'DR positif, nul, négatif — le signe ne vit pas dans le gabarit').toBe(3);
     expect(COMBAT.length, 'les littéraux de combatFlow rendus au catalogue (V8c₀)').toBe(6 + 1);
-    expect(TOUS.length).toBe(18);
+    expect(TOUS.length).toBe(27);
   });
 
   it('MUTATION : l’oracle est SENSIBLE — un tiret cadratin changé en tiret court diverge', () => {

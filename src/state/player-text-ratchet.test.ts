@@ -45,6 +45,11 @@ import { join } from 'node:path';
  * se migre au lot suivant — c'est un fichier NOMMÉ, pas une tolérance. Le stock des TESTS a monté de
  * 108 à 133 : la marque s'est étendue à `ChoiceSpec.options[].label`, et les fixtures de test posent
  * ces libellés au call-site (arbitrage du lot d'extinction E7 — cf. le solde de la vague).
+ *
+ * REGEL V8b₂ — 139 : le marquage de `SequenceRound.title` (`state/sequenceContract.ts`) a rougi CINQ
+ * titres de fixtures des deux harnais de séquence (`sequence-familles`, `sequence-socle-naval`), qui
+ * les posent au call-site. Même arbitrage E7 : la PRODUCTION reste au fichier nommé unique, le stock
+ * des tests absorbe le verrou.
  */
 export const GEL_RAW_TEXT: Readonly<Record<string, number>> = {
   'src/state/cadence-rapide.test.ts': 4,
@@ -66,8 +71,8 @@ export const GEL_RAW_TEXT: Readonly<Record<string, number>> = {
   'src/state/roll-seam-porte.test.ts': 21,
   'src/state/roll-seam-socle.test.ts': 5,
   'src/state/sea-voyage-flow.test.ts': 9,
-  'src/state/sequence-familles.test.ts': 3,
-  'src/state/sequence-socle-naval.test.ts': 2,
+  'src/state/sequence-familles.test.ts': 6,
+  'src/state/sequence-socle-naval.test.ts': 4,
   'src/state/tavern-cerevis.test.ts': 1,
   'src/state/tavern-dominos-tiebreak.test.ts': 1,
   'src/state/tavern-lancers.test.ts': 1,
@@ -204,7 +209,7 @@ describe('#1318 V8a₀ — le fossile `rawText` est GELÉ, NOMINATIF et DÉCROIS
 
   it('CIBLE 0 : le stock mesuré ne dépasse pas le TOTAL gelé, et ce total est DIT', () => {
     expect(somme(reel), 'V8a₁/V8b/V8c ramènent ce total à 0, puis `i18n/rawText.ts` est supprimé').toBeLessThanOrEqual(somme(GEL_RAW_TEXT));
-    expect(somme(GEL_RAW_TEXT), 'le TOTAL regelé du 2026-08-16 (V8a₁) — il ne se relève pas, il se rabaisse').toBe(134);
+    expect(somme(GEL_RAW_TEXT), 'le TOTAL regelé du 2026-08-16 (V8b₂) — il ne se relève pas, il se rabaisse').toBe(139);
   });
 
   it('la PRODUCTION est à UN fichier NOMMÉ — plus un stock, une exception qui a un nom et une date', () => {

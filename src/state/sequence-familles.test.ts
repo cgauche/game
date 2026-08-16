@@ -79,7 +79,7 @@ registerSequence<JoutePayload>(JOUTE, {
       difficulty: 'intermediaire', montee: { base: 50, target: 50 },
       stake: combatStakeRef('pursuitMove', { values: { distance: 1, evasion: 10 } }),
     });
-    return step ? { title: `Joute — passe ${seq.round}`, steps: [step], immediate: true, payload: { ...seq.payload, passes: [...seq.payload.passes, seq.round] } } : undefined;
+    return step ? { title: rawText(`Joute — passe ${seq.round}`), steps: [step], immediate: true, payload: { ...seq.payload, passes: [...seq.payload.passes, seq.round] } } : undefined;
   },
   close: ({ get, seq }): SequenceVerdict<JoutePayload> => {
     const h = get().party[0];
@@ -182,7 +182,7 @@ describe('Famille (4)+(6) — le socle DÉCLENCHE les ops de manche, et s’arr�
           difficulty: 'intermediaire', montee: { base: 50, target: 50 },
           stake: combatStakeRef('pursuitMove', { values: { distance: 1, evasion: 10 } }),
         });
-        return step ? { title: 'Joute', steps: [step], immediate: true } : undefined;
+        return step ? { title: rawText('Joute'), steps: [step], immediate: true } : undefined;
       },
       close: ({ get }) => ({ go: 'continue', roundActors: { all: [get().party[0].id] } }),
     });
@@ -226,7 +226,7 @@ describe('la BORNE tient compte des phases déclarées', () => {
           difficulty: 'intermediaire', montee: { base: 50, target: 50 },
           stake: combatStakeRef('pursuitMove', { values: { distance: 1, evasion: 10 } }),
         });
-        return step ? { title: 'Joute', steps: [step], immediate: true } : undefined;
+        return step ? { title: rawText('Joute'), steps: [step], immediate: true } : undefined;
       },
       close: () => ({ go: 'continue' }),
     });

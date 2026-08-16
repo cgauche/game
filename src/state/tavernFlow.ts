@@ -68,7 +68,8 @@ import { jetSurfaced } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { t, interpolate } from '../i18n';
 import { dataLabel } from '../data';
-import { stepDetail, stepPrecision } from './rollSeam';
+import { stepDetail, stepFraction, stepPrecision } from './rollSeam';
+import type { PlayerText } from '../i18n/playerText';
 
 /**
  * Adversaire d'une partie — TROIS formes, jamais deux chemins pour la même :
@@ -872,7 +873,7 @@ function tavernRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Seq
   // L’adversaire INCARNÉ de la manche — compagnon OU PNJ de scène : la même couture, sinon un
   // adversaire à fiche perdrait sa rangée et retomberait sur le montage à jet adverse figé.
   const opponentHero = tavernActor(get, p.opponentId);
-  const title = `${game.label} — ${challenger.label} contre ${p.opponentName}`;
+  const title = stepDetail(dataLabel(game.label), t('tavern.contre', { who: challenger.label, adversaire: p.opponentName }));
   const stake = combatStakeRef('tavernGame', {
     values: {
       jeu: game.label, adversaire: p.opponentName,
@@ -1076,7 +1077,10 @@ function tavernTeamClose(ctx: SequenceCloseCtx<TavernPayload>, game: TavernGame)
   const heros = new Set(equipiers(ctx.get).map((h) => h.id));
   const vainqueurs = gagnant === 'player' ? teams.player.filter((id) => heros.has(id)) : [];
   const roundActors = { winners: vainqueurs, all: [...teams.player.filter((id) => heros.has(id))] };
-  const log = [`${game.label} — tour ${seq.round} : ${tp} DR contre ${to}${but ? ` — BUT pour ${gagnant === 'player' ? 'votre équipe' : p.opponentName} !` : ''}`];
+  const tour = { jeu: game.label, n: seq.round, mien: tp, sien: to };
+  const log = [but
+    ? t('tavern.equipeTourBut', { ...tour, qui: gagnant === 'player' ? t('tavern.equipeQui') : p.opponentName })
+    : t('tavern.equipeTour', tour)];
   // AVANTAGE « pour le tour suivant » (l.121), SYMÉTRIQUE : les héros le reçoivent en op de manche
   // (le socle), les camps le portent ici pour leurs figurants. Il ne s'accumule pas — c'est +1 pour
   // LE tour suivant, et le camp qui ne gagne pas ce tour retombe à 0.
@@ -1533,13 +1537,13 @@ function potSettle(get: Get, set: Set, game: TavernGame, challenger: Combatant, 
 function potBoard(game: TavernGame, p: TavernPayload): SequenceBoard {
   const out = p.out ?? [];
   return {
-    title: game.label,
+    title: dataLabel(game.label),
     pot: t('tavern.potEnJeu', { montant: formatMoney(fromBrass(p.pot ?? 0)) }),
     camps: (p.seats ?? []).map((s) => {
       const mouvement = p.net?.[s.id];
       return {
         id: s.id,
-        label: s.label,
+        label: dataLabel(s.label),
         score: p.gains?.[s.id] ?? 0,
         ...(out.includes(s.id) ? { note: t('tavern.potSorti') } : {}),
         ...(mouvement != null && !out.includes(s.id)
@@ -1692,7 +1696,7 @@ function tavernBoard(get: Get, seq: SequenceState<TavernPayload>): SequenceBoard
   const challenger = actorIn(get(), p.challengerId);
   if (!game || !challenger) return undefined;
   const ph = sequencePhaseOf(seq.params, seq.round);
-  const phase = ph.total > 0 ? { rounds: ph.total, phase: `${ph.phase}/${ph.count}` } : {};
+  const phase = ph.total > 0 ? { rounds: ph.total, phase: stepFraction(ph.phase, ph.count) } : {};
   if (game.roundShape === 'pot') return potBoard(game, p);
   // VOLÉE : le score d'un camp est ce que ses lancers lui ont acquis — la note dit où en est le
   // passage (quel lancer, et ce qu'il reste à prendre quand la règle en tient une réserve).
@@ -1700,30 +1704,30 @@ function tavernBoard(get: Get, seq: SequenceState<TavernPayload>): SequenceBoard
     const v = game.volley;
     const st = p.volley;
     const jauge = v.exact != null ? { target: v.exact } : {};
-    const note = st ? t('tavern.volleyNote', { n: st.jet, total: v.throws }) : '';
+    const note = st ? t('tavern.volleyNote', { n: st.jet, total: v.throws }) : undefined;
     return {
-      title: game.label,
+      title: dataLabel(game.label),
       camps: [
-        { id: CAMP_PLAYER, label: challenger.label, score: volleyScore(seq, CAMP_PLAYER), ...jauge, ...(st?.seat === 0 && note ? { note } : {}) },
-        { id: CAMP_OPPONENT, label: p.opponentName, score: volleyScore(seq, CAMP_OPPONENT), ...jauge, ...(st?.seat === 1 && note ? { note } : {}) },
+        { id: CAMP_PLAYER, label: dataLabel(challenger.label), score: volleyScore(seq, CAMP_PLAYER), ...jauge, ...(st?.seat === 0 && note ? { note } : {}) },
+        { id: CAMP_OPPONENT, label: dataLabel(p.opponentName), score: volleyScore(seq, CAMP_OPPONENT), ...jauge, ...(st?.seat === 1 && note ? { note } : {}) },
       ],
       round: st?.manche ?? 1,
       ...(v.manches != null ? { rounds: v.manches } : {}),
-      ...(game.scoreUnit ? { unit: game.scoreUnit } : {}),
+      ...(game.scoreUnit ? { unit: dataLabel(game.scoreUnit) } : {}),
     };
   }
   // TEST COMBINÉ : le score d'un camp est son compte de MARQUES (l.97) — le PLUS BAS l'emporte, la
   // jauge n'a donc pas de cible.
   if (game.combined) {
     return {
-      title: game.label,
+      title: dataLabel(game.label),
       camps: [
-        { id: CAMP_PLAYER, label: challenger.label, score: seq.cum[CAMP_PLAYER] ?? 0, note: t('tavern.cerevisNote') },
-        { id: CAMP_OPPONENT, label: p.opponentName, score: seq.cum[CAMP_OPPONENT] ?? 0 },
+        { id: CAMP_PLAYER, label: dataLabel(challenger.label), score: seq.cum[CAMP_PLAYER] ?? 0, note: t('tavern.cerevisNote') },
+        { id: CAMP_OPPONENT, label: dataLabel(p.opponentName), score: seq.cum[CAMP_OPPONENT] ?? 0 },
       ],
       round: p.combined?.tour ?? 1,
       ...(game.combined.tours != null ? { rounds: game.combined.tours } : {}),
-      ...(game.scoreUnit ? { unit: game.scoreUnit } : {}),
+      ...(game.scoreUnit ? { unit: dataLabel(game.scoreUnit) } : {}),
     };
   }
   // CAMPS ASYMÉTRIQUES : le score d'un camp est ce qu'il a PRIS à l'autre, et sa cible la moitié des
@@ -1731,34 +1735,34 @@ function tavernBoard(get: Get, seq: SequenceState<TavernPayload>): SequenceBoard
   const camps = game.sides?.length ? sidesOf(game, p) : undefined;
   if (camps) {
     return {
-      title: game.label,
+      title: dataLabel(game.label),
       camps: [
         { id: CAMP_PLAYER, label: stepPrecision(dataLabel(challenger.label), dataLabel(camps.mien.label)), score: seq.cum[CAMP_PLAYER] ?? 0, target: Math.floor(camps.sien.pieces / 2) + 1 },
         { id: CAMP_OPPONENT, label: stepPrecision(dataLabel(p.opponentName), dataLabel(camps.sien.label)), score: seq.cum[CAMP_OPPONENT] ?? 0, target: Math.floor(camps.mien.pieces / 2) + 1 },
       ],
       round: seq.round,
-      ...(game.scoreUnit ? { unit: game.scoreUnit } : {}),
+      ...(game.scoreUnit ? { unit: dataLabel(game.scoreUnit) } : {}),
     };
   }
   // TORCHON : le score d'un camp EST son total de points (l.111) — aucun cumul, aucune cible.
   if (game.roundShape === 'thrower') {
     return {
-      title: game.label,
+      title: dataLabel(game.label),
       camps: [
         { id: CAMP_PLAYER, label: t('tavern.campMien'), score: seq.cum[CAMP_PLAYER] ?? 0 },
-        { id: CAMP_OPPONENT, label: p.opponentName, score: seq.cum[CAMP_OPPONENT] ?? 0 },
+        { id: CAMP_OPPONENT, label: dataLabel(p.opponentName), score: seq.cum[CAMP_OPPONENT] ?? 0 },
       ],
       round: seq.round,
       ...(p.throwers?.length ? { rounds: p.throwers.length } : {}),
     };
   }
   if (game.roundShape === 'team') {
-    const somme = (n: number | undefined): string => t('tavern.sommeTour', { n: n ?? 0 });
+    const somme = (n: number | undefined): PlayerText => t('tavern.sommeTour', { n: n ?? 0 });
     return {
-      title: game.label,
+      title: dataLabel(game.label),
       camps: [
         { id: CAMP_PLAYER, label: t('tavern.campMien'), score: seq.cum[CAMP_PLAYER] ?? 0, note: somme(p.last?.playerSL) },
-        { id: CAMP_OPPONENT, label: p.opponentName, score: seq.cum[CAMP_OPPONENT] ?? 0, note: somme(p.last?.opponentSL) },
+        { id: CAMP_OPPONENT, label: dataLabel(p.opponentName), score: seq.cum[CAMP_OPPONENT] ?? 0, note: somme(p.last?.opponentSL) },
       ],
       round: seq.round,
       ...phase,
@@ -1766,10 +1770,10 @@ function tavernBoard(get: Get, seq: SequenceState<TavernPayload>): SequenceBoard
   }
   if (seq.params.target == null && ph.total === 0) return undefined;
   return {
-    title: game.label,
+    title: dataLabel(game.label),
     camps: [
-      { id: CAMP_PLAYER, label: challenger.label, score: seq.cum[CAMP_PLAYER] ?? 0, ...(seq.params.target != null ? { target: seq.params.target } : {}) },
-      { id: CAMP_OPPONENT, label: p.opponentName, score: seq.cum[CAMP_OPPONENT] ?? 0, ...(seq.params.target != null ? { target: seq.params.target } : {}) },
+      { id: CAMP_PLAYER, label: dataLabel(challenger.label), score: seq.cum[CAMP_PLAYER] ?? 0, ...(seq.params.target != null ? { target: seq.params.target } : {}) },
+      { id: CAMP_OPPONENT, label: dataLabel(p.opponentName), score: seq.cum[CAMP_OPPONENT] ?? 0, ...(seq.params.target != null ? { target: seq.params.target } : {}) },
     ],
     round: seq.round,
     ...phase,

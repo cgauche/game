@@ -25,6 +25,7 @@ import type { PendingCascade } from './pendings';
 import type { BuiltCascadeStep } from './rollSeam';
 import type { RNG } from '../engine/dice';
 import type { CharKey } from '../engine/types';
+import type { PlayerText } from '../i18n/playerText';
 import type {
   SequencePhases, SequencePotRules, SequenceRoundOps, SequenceTableRow, SequenceSide, SequenceVolleyRules,
   SequenceCombinedRules, SequenceThrowerPenalty,
@@ -119,17 +120,22 @@ export interface SequenceState<P = unknown> {
  * à montrer (cadence auto, aucun siège humain sur le porteur) — l'orchestrateur résout d'office au
  * lieu d'ouvrir une fenêtre que personne ne joue.
  *
- * LE TEXTE DES POSITIONS NOMMÉES par un système (#1318 V8b) — `title`/`log` ici,
- * `SequenceBoard.title`/`phase`/`unit`/`pot` et `SequenceBoardCamp.label`/`note` plus bas : le système
- * NOMME VIA LE CATALOGUE (fabriques t()-backed de `rollSeam` — `stepDetail`, `stepPrecision`,
- * `stepManche`… — ou `t()` direct) ; le littéral FR inline au flux est proscrit. Les types restent
- * `string` : ce sont des positions d'AFFICHAGE que l'UI écrit telles quelles, et c'est la PROVENANCE
- * du texte, pas sa marque de type, qui est tenue ici. Garde de migration : la parité octet de ces
- * positions est verrouillée par `state/sequence-parite-catalogue.test.ts`.
+ * LE TEXTE DES POSITIONS D'AFFICHAGE d'un système (#1318 V8b₂) — `title` ici,
+ * `SequenceBoard.title`/`phase`/`unit`/`pot` et `SequenceBoardCamp.label`/`note` plus bas : ces huit
+ * positions sont MARQUÉES `PlayerText`, donc seul un minteur les remplit (catalogue `t()`, fabriques
+ * t()-backed de `rollSeam` — `stepDetail`, `stepPrecision`, `stepManche`, `stepFraction`… — ou
+ * `dataLabel` pour un libellé authoré). Un gabarit FR écrit au flux NE COMPILE PLUS. Le murage
+ * S'ARRÊTE AU CONTRAT : `PlayerText` reste assignable vers `string`, donc l'UI, `PendingCascade.title`
+ * et la réhydratation des saves ne changent ni de type ni de cast. Garde de parité octet de la
+ * migration : `state/sequence-parite-catalogue.test.ts`.
  *
- * ANGLE MORT ASSUMÉ : ces champs n'étant pas `PlayerText`, les cliquets de la vague
- * (`state/player-text-ratchet.test.ts` — fossile `rawText`, casts de conteneur, littéraux de
- * `dataLabel`) ne mordent PAS dessus ; un littéral FR posé ici passerait encore au vert.
+ * `log` (ici et au verdict) reste `string[]` — ce N'EST PAS une position d'affichage du contrat, mais
+ * l'entrée d'un TUYAU : ses lignes vont à `GameState.log(msg: string)` (`state/store.ts`), et sa
+ * seconde source est le journal du MOTEUR (`applyOps`, `engine/ops.ts`, `string[]`, alimenté par une
+ * dizaine de familles d'aides). Marquer ce champ SEUL murerait un segment dont ni le puits ni l'autre
+ * affluent ne le sont, et forcerait un blanchiment aux deux sites qui y déversent le moteur. Le
+ * journal est un AXE à part (mesuré : 17 sites d'aides dans `ops.ts` au premier niveau), pas une
+ * position de plus dans ce lot.
  *
  * LIMITE v1 — un titre minté est du FR GELÉ dans les saves : un état de séquence se snapshote en JSON
  * (cf. en-tête de ce fichier), donc ce que ce lot libère est la PRODUCTION du texte, pas sa
@@ -139,7 +145,7 @@ export interface SequenceState<P = unknown> {
  * NOMMÉ, hors de ce lot.
  */
 export interface SequenceRound<P = unknown> {
-  title: string;
+  title: PlayerText;
   icon?: string;
   steps: readonly BuiltCascadeStep[];
   log?: string[];
@@ -178,31 +184,31 @@ export interface SequenceCloseCtx<P> {
  *  cours. `label` est de l'AFFICHAGE ; `id` est la clé de camp de l'accumulateur. */
 export interface SequenceBoardCamp {
   id: string;
-  label: string;
+  label: PlayerText;
   score: number;
   /** Score à atteindre (cumul vers cible) — absent : le camp n'a pas de jauge, juste un score. */
   target?: number;
   /** Complément d'une ligne (buts marqués, acquis de manche, joueur sorti de la manche) — AFFICHAGE. */
-  note?: string;
+  note?: PlayerText;
 }
 
 /** TABLEAU DE MARQUE d'une séquence EN COURS : ce que le système accepte de montrer pendant ses
  *  manches (score par camp, manche N/M, phase). Sans lui, une partie de six manches est AVEUGLE. */
 export interface SequenceBoard {
-  title: string;
+  title: PlayerText;
   camps: readonly SequenceBoardCamp[];
   round: number;
   /** (5) POT en jeu, DÉJÀ LIBELLÉ par le système (l'argent se formate chez lui, `engine/money`) —
    *  AFFICHAGE : l'UI ne convertit ni ne totalise rien. Absent : la séquence ne joue pas d'argent. */
-  pot?: string;
+  pot?: PlayerText;
   /** Nombre de manches PRÉVUES (phases × manches, ou borne déclarée) — absent : partie ouverte. */
   rounds?: number;
   /** Phase courante, déjà libellée par le système (« 1ʳᵉ mi-temps »). */
-  phase?: string;
+  phase?: PlayerText;
   /** UNITÉ du score, au pluriel, déjà libellée par le système (« quilles », « points », « pièces
    *  prises »). AFFICHAGE : l'UI l'écrit telle quelle. Absente : des DR (l'unité par défaut d'une
    *  séquence de Tests). Une famille qui ne compte pas des DR le DIT — sinon le tableau ment. */
-  unit?: string;
+  unit?: PlayerText;
 }
 
 /**

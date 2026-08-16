@@ -14,6 +14,8 @@ import { useGame } from '../state/store';
 import { sequenceBoardOf } from '../state/sequenceCore';
 import { Band } from './Band';
 import { LifeBar } from './LifeBar';
+import { t } from '../i18n';
+import { stepFraction } from '../state/rollSeam';
 
 export function SequencePanel() {
   // Re-rendu à chaque avance de séquence : le slot `sequence` est la source (cumuls + rang de manche).
@@ -21,9 +23,13 @@ export function SequencePanel() {
   const board = seq ? sequenceBoardOf(useGame.getState) : null;
   if (!board) return null;
 
+  // Le compteur est le SEUL texte que ce panneau produit : deux patrons complets du catalogue (avec
+  // et sans phase), le rang passant par la fabrique de fraction du seam.
   const compteur = board.rounds
-    ? `Manche ${Math.min(board.round, board.rounds)}/${board.rounds}${board.phase ? ` · phase ${board.phase}` : ''}`
-    : `Manche ${board.round}`;
+    ? (board.phase
+      ? t('seqPanel.manchePhase', { n: stepFraction(Math.min(board.round, board.rounds), board.rounds), phase: board.phase })
+      : t('seqPanel.manche', { n: stepFraction(Math.min(board.round, board.rounds), board.rounds) }))
+    : t('seqPanel.manche', { n: board.round });
 
   return (
     <Band title={board.title} right={compteur}>
@@ -39,7 +45,7 @@ export function SequencePanel() {
                 max={camp.target}
                 label={camp.label}
                 tone={(v, m) => (v >= m ? 'ok' : 'neutral')}
-                format={(v, m) => `${v}/${m} ${board.unit ?? 'DR'}`}
+                format={(v, m) => `${stepFraction(v, m)} ${board.unit ?? t('seqPanel.uniteDr')}`}
               />
             ) : (
               <p data-seq-score>

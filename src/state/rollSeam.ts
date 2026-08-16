@@ -186,6 +186,14 @@ export function stepManche(n: number | string, quoi: PlayerText): PlayerText {
   return t('step.manche', { n, quoi });
 }
 
+/** « {n}/{m} » : un RANG dans un total (phase courante, lancer d'une volée). Purement numérique — le
+ *  gabarit ne porte AUCUN mot, il porte le séparateur, qui est ce qu'une 2ᵉ langue déplace. C'est la
+ *  raison d'être d'une fabrique ici plutôt que d'un gabarit au flux : sans elle, chaque site qui
+ *  compte « n sur m » écrirait sa propre barre oblique hors du catalogue. */
+export function stepFraction(n: number | string, m: number | string): PlayerText {
+  return t('step.fraction', { n, m });
+}
+
 /** « Prolonger {quoi} [?] » : reconduire un effet en cours — la variante interrogative est la DÉCISION,
  *  l'affirmative le Test qui la suit. */
 export function stepProlonger(quoi: PlayerText, question = false): PlayerText {

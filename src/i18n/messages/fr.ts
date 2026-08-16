@@ -838,6 +838,12 @@ export const fr = {
   'pursuit.titreDistance': 'Distance {distance}/{evasion}',
   'pursuit.dr': '{dr} DR',
   'seq.borne': 'La partie s’arrête sur sa borne de {max} tours.',
+  // TABLEAU DE MARQUE (`ui/SequencePanel.tsx`) — le SEUL texte que le panneau écrit lui-même : le
+  // reste (titre, camps, pot, unité) vient du système, déjà minté. `{n}` reçoit le rang seul ou la
+  // fraction `stepFraction` ; le repli d'unité est celui du contrat (une séquence de Tests compte des DR).
+  'seqPanel.manche': 'Manche {n}',
+  'seqPanel.manchePhase': 'Manche {n} · phase {phase}',
+  'seqPanel.uniteDr': 'DR',
   // Issues d'un tour de jeu à MISE (famille 5 du socle) — ce que le lancer PRODUIT, pas sa plage.
   'seqPot.issueRafle': 'la manche est remportée, le pot est raflé',
   'seqPot.issueSort': 'sortie de la manche',
@@ -853,6 +859,14 @@ export const fr = {
   'tavern.equipier': 'Équipier {rang}',
   'tavern.campMien': 'Votre équipe',
   'tavern.sommeTour': '{n} DR au dernier tour',
+  // Jeu d'ÉQUIPE (Middenball NADJ 16 l.119) — ligne de journal d'un tour, en DEUX patrons complets
+  // plutôt qu'un suffixe interpolé : un fragment à espace de tête ne se réordonne pas d'une langue à
+  // l'autre. `tavern.equipeQui` est le camp du groupe, en position d'objet (minuscule).
+  'tavern.equipeTour': '{jeu} — tour {n} : {mien} DR contre {sien}',
+  'tavern.equipeTourBut': '{jeu} — tour {n} : {mien} DR contre {sien} — BUT pour {qui} !',
+  'tavern.equipeQui': 'votre équipe',
+  // En-tête d'une manche ORDINAIRE, position `SequenceRound.title` : le jeu, puis les deux camps.
+  'tavern.contre': '{who} contre {adversaire}',
   // Al-zahr — jeu de mise (NADJ 16 l.17).
   'tavern.potTable': 'Autour de la table',
   'tavern.potHabitue': 'Un habitué {rang}',
@@ -940,6 +954,7 @@ export const fr = {
   'step.sujetDetail': '{sujet} — {detail}',
   'step.sujetPrecision': '{sujet} ({precision})',
   'step.manche': 'Manche {n} — {quoi}',
+  'step.fraction': '{n}/{m}',
   'step.prolonger': 'Prolonger {quoi}',
   'step.prolongerQ': 'Prolonger {quoi} ?',
   'step.terreur': 'Terreur',
