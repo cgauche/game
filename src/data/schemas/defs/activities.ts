@@ -33,12 +33,27 @@ const battleOutcomeSchema = z.strictObject({
 
 const battleCondSchema = z.enum(['generalDown', 'intervention', 'noIntervention', 'combatWon', 'combatLost']);
 
+/** `ActivityResolver` (`src/engine/activities.ts`) — VOCABULAIRE FERMÉ des résolveurs bespoke
+ *  d'Activité (dispatch `runActivityResolver`/`seaActivities`/`travelPostes`/`battleActivities`).
+ *  Dupliqué à l'identique côté schéma (même patron que `stageOutcomeSchema`, `common.ts`) : un
+ *  résolveur de plus = une ligne ici ET sa branche moteur. */
+const activityResolverSchema = z.enum([
+  // Interlude — socle (LDB 23, ACE Annexe I)
+  'income', 'craftExtended', 'learnTalent', 'identify', 'entrainement', 'mecenat',
+  // Interlude — bespoke
+  'ritualFocus', 'masterWeapon', 'identifyByResearch', 'memorizeDiscount', 'combatTraining',
+  'punchausen', 'knowledgeResearch', 'reputation', 'wrathOfTheGods', 'dissensionScout',
+  'dissensionEmeute', 'contremaitre',
+  // Voyage (EDOC 8) · Mer (MDG) · Bataille de masse (ADE II 8)
+  'forage', 'seaChart', 'opportunityTrade', 'crewTraining', 'battleRally',
+]);
+
 const outcomeBandSchema = z.strictObject({
   on: z.enum(['success', 'failure', 'fumble']).optional(),
   minSL: z.number().optional(),
   maxSL: z.number().optional(),
   ops: z.array(gameOpSchema).optional(),
-  resolver: z.string().optional(),
+  resolver: activityResolverSchema.optional(),
   payoutPct: z.number().optional(),
   note: z.string().optional(),
   battle: z.array(battleOutcomeSchema).optional(),
@@ -63,7 +78,7 @@ export const schema = z.array(
     extended: z.strictObject({ drPerStage: z.number() }).optional(),
     failExtenue: z.boolean().optional(),
     weatherMod: z.record(z.string(), z.number()).optional(),
-    resolver: z.string().optional(),
+    resolver: activityResolverSchema.optional(),
     onSuccess: z.array(gameOpSchema).optional(),
     desc: z.string().optional(),
     outcomes: z.array(outcomeBandSchema).optional(),

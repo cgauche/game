@@ -51,10 +51,12 @@ export function isRegistryIdBranchExcluded(rel) {
  *  `propRef`) ; c'est MESURÉ : 2 sites de `\.ref === '…'` sur tout le dépôt, 0 faux positif.
  *  Les noms `key`/`code`/`name` ont été MESURÉS puis ÉCARTÉS : ~50 sites, TOUS des
  *  `KeyboardEvent.key`/`.code` ou des codes errno — une garde qui hurle à tort se fait désactiver.
+ *  `book` est ajouté (#1318 V6) : c'est l'identité d'un LIVRE source (`source.book`, sigle stable
+ *  `LDB`/`NADJ`/`VDM` du registre des livres), et le scan la manquait par son seul nom.
  *  C'est le SEUL critère de nom du scan, et donc sa principale limite : un champ d'identité baptisé
  *  autrement (`def.key`, `v.when.rule`) n'est pas reconnu. Les ALIAS, eux, sont suivis
  *  par la liaison (`const k = def.id` → kind `IDENTITY`), pas par leur nom. */
-const ID_NAME_RX = /^(?:id|ref|\w*Id|\w*Ref)$/;
+const ID_NAME_RX = /^(?:id|ref|book|\w*Id|\w*Ref)$/;
 
 /** Méthodes d'APPARTENANCE à une collection — `LISTE.includes(id)`, `SET.has(id)`. */
 const MEMBERSHIP_METHODS = new Set(['includes', 'has', 'indexOf', 'lastIndexOf']);
@@ -324,7 +326,11 @@ export function scanRegistryIdBranch(relPath, contenu) {
     if (ts.isForOfStatement(node) || ts.isForInStatement(node)) {
       scopes.push();
       if (ts.isVariableDeclarationList(node.initializer)) declareVarList(node.initializer, GENERIC);
-      ts.forEachChild(node, visit);
+      // L'initialiseur n'est PAS re-visité : `forEachChild` le repasserait au cas générique plus bas
+      // (`declareVarList(node)` sans `forcedKind`), qui redéclarerait la variable de boucle en VALUE —
+      // toute la boucle devenait alors invisible à la garde (#1318 V6).
+      visit(node.expression);
+      visit(node.statement);
       scopes.pop();
       return;
     }

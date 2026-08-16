@@ -32,24 +32,44 @@ const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/ui/ → ..
  * `src/data` et `scripts`, et à l'identité nommée `ref`/`xxxRef`). Chaque entrée est un site à TRAITER
  * (attribut déclaré sur l'entrée) ou à réfuter par une correction de la mécanique — jamais à conserver
  * telle quelle.
+ *
+ * RE-MESURE 2026-08-16 (#1318 V6) : 39 → 60. Deux corrections du DÉTECTEUR ont démasqué des sites
+ * qui existaient déjà (aucune régression de code, aucun site corrigé dans ce lot) :
+ *  - le trou `for…of` (la variable de boucle, déclarée GÉNÉRIQUE, était aussitôt redéclarée VALEUR
+ *    par la re-visite de l'initialiseur : AUCUNE boucle n'était vue) ;
+ *  - l'identité `book` ajoutée à `ID_NAME_RX` (`source.book`, sigle de livre).
+ * Les entrées neuves portent leur motif NOMINATIF ci-dessous : stock avoué, à faire DÉCROÎTRE.
  */
 const KNOWN: Record<string, number> = {
   'scripts/_qc-decor-sheet.mts': 2,
+  'scripts/arene/generate.mjs': 1, // for…of démasqué : `REST_OFFERS[s.id]` — table de repos par id de scène
+  'scripts/data/lib/obtainabilityGraph.ts': 1, // `talentId === 'invocation'|'beni'|'magie-du-chaos'` → famille
+  'scripts/gen-toise-gallery.mts': 1, // for…of démasqué : `t.id === 'taille'` (outil de galerie QC)
+  'scripts/loup-et-saumure/generate.mjs': 1, // for…of démasqué : `REST_OFFERS[s.id]` (même patron qu'arène)
   'scripts/qc/mesure-volume.mts': 1,
+  'scripts/qc/opera-furniture-check.mts': 2, // for…of démasqué : `FLOATING.has(e.ref)` + `e.ref !== 'siege'`
+  'scripts/raw/reconcile.mjs': 1, // `book` démasqué : `c.book === 'LDB'` (garde de couverture RAW)
+  'src/engine/careerSlots.ts': 1, // for…of démasqué : `t.talentId !== 'magie-des-arcanes'`
   'src/engine/combat.ts': 1,
-  'src/engine/conjuredWeapons.ts': 1,
+  'src/engine/conjuredWeapons.ts': 2, // +1 for…of démasqué : `s.skillId === 'corps-a-corps'`
+  'src/engine/creation.ts': 1, // `book` + for…of démasqués : `s.source.book === 'nuits-agitees-…'` (gate Gnome)
   'src/engine/creatureEquip.ts': 2,
   'src/engine/critical.ts': 4,
-  'src/engine/groups.ts': 3,
+  'src/engine/exposure.ts': 1, // for…of démasqué : `e.effectId === 'exposition-froid'|'-chaleur'`
+  'src/engine/groups.ts': 4, // +1 for…of démasqué : `t.talentId === 'beni'`
   'src/engine/items.ts': 1,
   'src/engine/mountTravel.ts': 2,
   'src/engine/persistence.ts': 2,
+  'src/engine/polymorph.ts': 1, // for…of démasqué : `t.id !== 'bestial'`
   'src/engine/skills.ts': 2,
   'src/engine/trauma.ts': 2,
-  'src/state/combatFlow.ts': 1,
+  'src/gameIso/rig/parts/injuries.ts': 2, // for…of démasqué : `t.traumaId === 'membre-inferieur-ampute'|'nez-ampute'`
+  'src/gameIso/rig/skeletons.ts': 1, // for…of démasqué : `WAIST_BONES.includes(id)`
+  'src/state/combatFlow.ts': 2, // +1 for…of démasqué : `MISCAST_TABLE_CATEGORIES[id]`
   'src/state/combatManeuvers.ts': 1,
   'src/state/massBattleFlow.ts': 1,
   'src/state/seaVoyageFlow.ts': 2,
+  'src/ui/CharacterSheet.tsx': 3, // for…of démasqué : `it.trappingId === 'crochet'|'fausse-jambe'` (prothèses)
   'src/ui/CityHubScreen.tsx': 1,
   'src/ui/CouncilModal.tsx': 2,
   'src/ui/CrewTestModal.tsx': 1,
@@ -57,6 +77,7 @@ const KNOWN: Record<string, number> = {
   'src/ui/PartyScreen.tsx': 2,
   'src/ui/PortView.tsx': 1,
   'src/ui/compendium/registry.ts': 2,
+  'src/ui/creator/CharacterCreator.tsx': 1, // `book` + for…of démasqués : même gate Gnome que creation.ts
   'src/ui/creator/draft.ts': 1,
 };
 
@@ -222,6 +243,35 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
 
     const bySuffix = ["export function place(e: Ent) {", "  switch (e.encRef) {", "    case 'embuscade': return 1;", '  }', '}'].join('\n');
     expect(rules(bySuffix)).toEqual(['id-switch']);
+  });
+
+  it('MORSURE : la variable d’une boucle `for…of` est GÉNÉRIQUE, dedans comme dehors (#1318 V6)', () => {
+    // Le trou historique : la déclaration GÉNÉRIQUE de la variable de boucle était écrasée par la
+    // re-visite de l'initialiseur — aucune boucle du dépôt n'était vue. Même faute, hors boucle
+    // (déjà mordue) et dans la boucle (démasquée) : les deux DOIVENT mordre.
+    const horsBoucle = "export function f(s: Sp) {\n  return s.source.book === 'nadj';\n}";
+    expect(rules(horsBoucle)).toEqual(['id-equality']);
+
+    const dansBoucle = [
+      'export function g(all: Sp[]) {',
+      '  for (const s of all) {',
+      "    if (s.source.book === 'nadj') continue;",
+      '  }',
+      '}',
+    ].join('\n');
+    expect(rules(dansBoucle)).toEqual(['id-equality']);
+
+    const dansBoucleParId = "export function h(all: E[]) {\n  for (const e of all) {\n    if (e.id === 'gnome') return e;\n  }\n}";
+    expect(rules(dansBoucleParId)).toEqual(['id-equality']);
+  });
+
+  it('MORSURE : l’identité d’un LIVRE source (`source.book`) est vue comme un `id` (#1318 V6)', () => {
+    const byBook = [
+      'export function eligible(s: SpeciesData) {',
+      "  return s.source.book === 'nuits-agitees-et-dures-journees';",
+      '}',
+    ].join('\n');
+    expect(rules(byBook)).toEqual(['id-equality']);
   });
 
   it('MORSURE : l’outillage `scripts/**` en `.mjs` est parsable et scanné', () => {

@@ -13,7 +13,8 @@ import { validateDataset } from '../../data/schemas/validate';
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
 import { entryKey, invalidateCodexLookup, ACTIVITY_CONTEXT_LABEL, OUTCOME_ON_LABEL, BATTLE_COND_LABEL, BATTLE_TARGET_LABEL, BATTLE_SCALE_LABEL, BATTLE_SIDE_LABEL } from './registry';
-import type { ActivityContext, OutcomeBand, BattleOutcome, BattleSide, BattleOutcomeTarget, BattleOutcomeScale, BattleCond } from '../../engine/activities';
+import { ACTIVITY_RESOLVERS, RESOLVER_OWNER, resolversOwnedBy } from '../../engine/activities';
+import type { ActivityContext, OutcomeBand, BattleOutcome, BattleSide, BattleOutcomeTarget, BattleOutcomeScale, BattleCond, ActivityResolver, ResolverOwner } from '../../engine/activities';
 import { WEATHER_LABEL } from '../../engine/travelStages';
 import { RefField, refFieldCfg } from './RefField';
 import { Icon } from '../Icon';
@@ -352,7 +353,8 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'shipHullSizes') add('lengthM'); // [minM,maxM] — éditeur dédié (2 nombres, comme StarSubField)
   // #168 : Activité — Test « posté » (contexts/skills « au choix »/char/difficulty) + table d'issues
   // `outcomes` (OutcomeBand[]) → éditeurs dédiés ; `onSuccess` couvert par opsFieldsOf ci-dessus.
-  if (categoryKey === 'activities') add('contexts', 'skills', 'char', 'difficulty', 'outcomes');
+  // `resolver` (#1318 V6) : vocabulaire FERMÉ → sélecteur dédié, jamais le champ texte générique.
+  if (categoryKey === 'activities') add('contexts', 'skills', 'char', 'difficulty', 'outcomes', 'resolver');
   // #851 : Magie environnementale (`arcanePhenomena`, mode 'single', patron `waterExposure`) — ses 4
   // tableaux top-level → éditeur GÉNÉRIQUE commun (`GenericArrayField`).
   if (categoryKey === 'arcanePhenomena') add('saturationLevels', 'windSaturationEffects', 'phenomena', 'tables');
@@ -726,6 +728,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isRiverNavigation && <GenericArrayField label="windDirections (Direction du vent, 1d10)" value={entry.windDirections as Record<string, unknown>[] | undefined} onChange={(v) => edit('windDirections', v)} />}
         {hasHullLength && <LengthRangeField value={entry.lengthM as [number, number] | undefined} onChange={(v) => edit('lengthM', v)} />}
         {isActivity && <ActivityTestField entry={entry} edit={edit} />}
+        {isActivity && <ActivityResolverField entry={entry} edit={edit} />}
         {isActivity && <OutcomeBandsField value={entry.outcomes as OutcomeBand[] | undefined} onChange={(v) => edit('outcomes', v.length ? v : undefined)} />}
         {opsFields.map((fieldKey) => (
           <div className="ed-field" key={fieldKey}>
@@ -1460,6 +1463,34 @@ function ChainsField({ value, onChange }: { value: string[] | undefined; onChang
   );
 }
 
+/** Familles de résolveurs (`RESOLVER_OWNER`) atteignables depuis un contexte d'Activité — le
+ *  sélecteur de résolveur s'y restreint. `auberge` n'a pas de dispatch propre : aucun filtre. */
+const OWNERS_BY_CONTEXT: Partial<Record<ActivityContext, ResolverOwner>> = {
+  interlude: 'interlude', mer: 'mer', voyage: 'voyage', bataille: 'bataille', 'bataille-round': 'bataille',
+};
+
+/** Résolveur BESPOKE d'une Activité — vocabulaire FERMÉ (`ACTIVITY_RESOLVERS`), jamais une saisie
+ *  libre : un nom inventé ici serait un no-op silencieux à l'exécution. Le choix est restreint aux
+ *  familles atteignables depuis les `contexts` déclarés (`RESOLVER_OWNER`) ; contextes absents ou sans
+ *  famille (`auberge`) ⇒ liste COMPLÈTE. La valeur courante reste toujours proposée (une entrée déjà
+ *  authorée ne se perd pas au premier rendu). */
+function ActivityResolverField({ entry, edit }: { entry: Record<string, unknown>; edit: (k: string, v: unknown) => void }) {
+  const cur = entry.resolver as ActivityResolver | undefined;
+  const contexts = (entry.contexts as ActivityContext[] | undefined) ?? [];
+  const owners = [...new Set(contexts.map((c) => OWNERS_BY_CONTEXT[c]).filter((o): o is ResolverOwner => !!o))];
+  const filtre = owners.length && owners.length === contexts.length;
+  const choix = filtre ? owners.flatMap(resolversOwnedBy) : [...ACTIVITY_RESOLVERS];
+  const options = cur && !choix.includes(cur) ? [cur, ...choix] : choix;
+  return (
+    <label className="ed-field">
+      <span>résolveur (bespoke) — logique nommée du flux propriétaire{filtre ? ` (familles : ${owners.join(', ')})` : ''}</span>
+      <select value={cur ?? ''} onChange={(e) => edit('resolver', (e.target.value || undefined) as ActivityResolver | undefined)}>
+        <option value="">— aucun (issue par ops/outcomes) —</option>
+        {options.map((r) => <option key={r} value={r}>{r} · {RESOLVER_OWNER[r]}</option>)}
+      </select>
+    </label>
+  );
+}
 /** Table d'ISSUES d'une Activité (`OutcomeBand[]`, ACE Annexe I / ADE II 8) : chaque bande = une
  *  fourchette de DR (`minSL`/`maxSL`, primitive de PLAGE comme mutationTables/weather) filtrée par issue
  *  (`on`) et gate de bataille (`when`), portant sa note VERBATIM, son effet `ops` (GameOpEditor commun),
@@ -1494,7 +1525,12 @@ function OutcomeBandsField({ value, onChange }: { value: OutcomeBand[] | undefin
             <textarea rows={2} value={b.note ?? ''} onChange={(e) => set(i, { note: e.target.value || undefined })} />
           </label>
           <div className="tf-row">
-            <label className="dr">résolveur (bespoke)<input value={b.resolver ?? ''} onChange={(e) => set(i, { resolver: e.target.value || undefined })} /></label>
+            <label className="dr">résolveur (bespoke)
+              <select value={b.resolver ?? ''} onChange={(e) => set(i, { resolver: (e.target.value || undefined) as ActivityResolver | undefined })}>
+                <option value="">— aucun —</option>
+                {ACTIVITY_RESOLVERS.map((r) => <option key={r} value={r}>{r}</option>)}
+              </select>
+            </label>
             <label className="dr">rendu %<input type="number" style={{ width: 64 }} value={b.payoutPct ?? ''} onChange={(e) => set(i, { payoutPct: numOrUndef(e.target.value) })} /></label>
           </div>
           <div className="ed-subfield">

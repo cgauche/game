@@ -104,47 +104,47 @@ _1 consommateurs sur 36._
 ## Matrice — consommateur × zones de RANGÉE
 
 Les zones de la RANGÉE (`RollRowProps`) : ce que chaque consommateur pose SUR la ligne de jet.
-Colonnes restreintes aux 28 zones effectivement consommées (sur 31 déclarées) — les autres
+Colonnes restreintes aux 26 zones effectivement consommées (sur 29 déclarées) — les autres
 seraient une colonne vide de bout en bout.
 
-| Consommateur | `actor` | `fortune` | `freeReroll` | `resilience` | `row` | `rolled` | `interactive` | `rollLabel` | `onRoll` | `rerollable` | `onReroll` | `onBonusSL` | `darkPactable` | `onDarkPact` | `onForce` | `preRollForce` | `forceShow` | `forcedRoll` | `fixedMark` | `flowKey` | `noForcedDie` | `determination` | `resist` | `reverse` | `declare` | `rollBlocked` | `rollFrisson` | `extendedDr` |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `src/ui/ActivityModal.tsx` | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · | ✓ |
-| `src/ui/AppraiseModal.tsx` | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/ApproachModal.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/AuContactModal.tsx` | ✓ | · | · | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/BargainModal.tsx` | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/BattementModal.tsx` | ✓ | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/CascadeModal.tsx` | ✓ | · | · | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | · | · | · | · | ✓ |
-| `src/ui/CastModal.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | · | ✓ | ✓ | · | · |
-| `src/ui/CorruptionModal.tsx` | ✓ | · | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | ✓ | · | · | · | · | · |
-| `src/ui/CrewTestModal.tsx` | · | · | · | · | ✓ | · | · | · | ✓ | · | ✓ | ✓ | · | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/DisengageModal.tsx` | ✓ | · | · | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | ✓ | · | · | · | · | · | · | · | · |
-| `src/ui/DispelModal.tsx` | ✓ | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | · | · | · | · | · | ✓ |
-| `src/ui/DistraireModal.tsx` | ✓ | · | · | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/FallModal.tsx` | ✓ | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/FocusModal.tsx` | ✓ | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | · | · | · | · | · | ✓ |
-| `src/ui/ForceDoorModal.tsx` | · | · | · | · | ✓ | · | · | ✓ | ✓ | · | ✓ | ✓ | · | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/FrenzyModal.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/GrappleModal.tsx` | ✓ | · | · | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/HandGateModal.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/HealModal.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/jetProps/useAttackJetProps.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | ✓ | · | · | ✓ | · | · | ✓ | · |
-| `src/ui/jetProps/useDefenseJetProps.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | · | · | ✓ | · |
-| `src/ui/jetProps/useExtendedTestJetProps.tsx` | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | ✓ | · | · | · | · | · | · | · | ✓ |
-| `src/ui/jetProps/useFumbleJetProps.tsx` | · | · | · | · | ✓ | ✓ | · | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | · | ✓ | · |
-| `src/ui/jetProps/useTestJetProps.tsx` | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | ✓ | · | ✓ | · | ✓ | · | · | · | · |
-| `src/ui/jetProps/useTrampleJetProps.tsx` | ✓ | · | ✓ | · | ✓ | ✓ | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | · | · | · | · | · |
-| `src/ui/ManeuverModal.tsx` | ✓ | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/MedicModal.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/ReloadModal.tsx` | ✓ | ✓ | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · | ✓ |
-| `src/ui/RunModal.tsx` | ✓ | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/ShantyModal.tsx` | ✓ | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/ShipBatteryModal.tsx` | · | · | · | · | ✓ | · | · | · | ✓ | · | ✓ | ✓ | · | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/ShipManeuverModal.tsx` | · | · | · | · | ✓ | · | · | · | ✓ | · | ✓ | ✓ | · | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/StateRecoveryModal.tsx` | ✓ | ✓ | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/SteamSaveModal.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | · | · | · | · | · | · |
-| `src/ui/WardModal.tsx` | ✓ | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | · | ✓ | · | · | · | · | · | · | · | · | · | · | · |
+| Consommateur | `actor` | `fortune` | `resilience` | `row` | `rolled` | `rerolled` | `lost` | `interactive` | `rollLabel` | `onRoll` | `onReroll` | `onBonusSL` | `onDarkPact` | `onForce` | `preRollForce` | `forcedRoll` | `fixedMark` | `flowKey` | `noForcedDie` | `determination` | `resist` | `reverse` | `declare` | `rollBlocked` | `rollFrisson` | `extendedDr` |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `src/ui/ActivityModal.tsx` | ✓ | ✓ | · | ✓ | · | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | ✓ |
+| `src/ui/AppraiseModal.tsx` | ✓ | ✓ | · | ✓ | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/ApproachModal.tsx` | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | ✓ | ✓ | · | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/AuContactModal.tsx` | ✓ | · | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/BargainModal.tsx` | ✓ | ✓ | · | ✓ | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/BattementModal.tsx` | ✓ | · | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/CascadeModal.tsx` | ✓ | · | · | ✓ | · | ✓ | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | ✓ | ✓ | · | ✓ | ✓ | · | · | · | · | ✓ |
+| `src/ui/CastModal.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | · | ✓ | ✓ | · | · |
+| `src/ui/CorruptionModal.tsx` | ✓ | · | ✓ | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | ✓ | · | · | · | · | · |
+| `src/ui/CrewTestModal.tsx` | · | · | · | ✓ | · | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/DisengageModal.tsx` | ✓ | · | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | · | · | · | · | · | · | · | · |
+| `src/ui/DispelModal.tsx` | ✓ | · | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | ✓ |
+| `src/ui/DistraireModal.tsx` | ✓ | · | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/FallModal.tsx` | ✓ | · | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/FocusModal.tsx` | ✓ | · | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | ✓ |
+| `src/ui/ForceDoorModal.tsx` | · | · | · | ✓ | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/FrenzyModal.tsx` | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | ✓ | ✓ | · | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/GrappleModal.tsx` | ✓ | · | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/HandGateModal.tsx` | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/HealModal.tsx` | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/jetProps/useAttackJetProps.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | ✓ | · | · | ✓ | · | · | ✓ | · |
+| `src/ui/jetProps/useDefenseJetProps.tsx` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | ✓ | · | · | ✓ | · |
+| `src/ui/jetProps/useExtendedTestJetProps.tsx` | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | · | · | · | · | · | · | · | ✓ |
+| `src/ui/jetProps/useFumbleJetProps.tsx` | · | · | · | ✓ | ✓ | · | · | · | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · | · | ✓ | · |
+| `src/ui/jetProps/useTestJetProps.tsx` | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | ✓ | · | ✓ | · | ✓ | · | · | · | · |
+| `src/ui/jetProps/useTrampleJetProps.tsx` | ✓ | · | · | ✓ | ✓ | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | ✓ | · | · | · | · | · | · | · | · |
+| `src/ui/ManeuverModal.tsx` | ✓ | · | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/MedicModal.tsx` | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/ReloadModal.tsx` | ✓ | ✓ | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | ✓ |
+| `src/ui/RunModal.tsx` | ✓ | · | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/ShantyModal.tsx` | ✓ | · | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/ShipBatteryModal.tsx` | · | · | · | ✓ | · | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/ShipManeuverModal.tsx` | · | · | · | ✓ | · | · | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/StateRecoveryModal.tsx` | ✓ | ✓ | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/SteamSaveModal.tsx` | ✓ | ✓ | ✓ | ✓ | · | ✓ | · | · | · | ✓ | ✓ | ✓ | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
+| `src/ui/WardModal.tsx` | ✓ | · | · | ✓ | · | ✓ | · | · | · | ✓ | ✓ | · | ✓ | ✓ | · | · | · | · | · | · | · | · | · | · | · | · |
 
 _Zones de rangée jamais consommées : `rollInBar`, `dieCommitRef`, `winner`._
 

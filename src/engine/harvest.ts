@@ -7,8 +7,9 @@
 import type { CreatureData, HarvestRarity, HarvestDanger } from '../data';
 import { findCreatureById } from '../data';
 import { fromBrass, type Money, PA_PER_SC, PA_PER_CO } from './money';
-import { formatTrait } from './traits/dispatch';
-import type { TraitInstance } from './statEntry';
+import { findResolvedTrait } from './traits/dispatch';
+import type { TraitList } from './statEntry';
+import { effectiveSize, parseSizeLabel, type SizeCategory } from './size';
 
 export type Rarity = HarvestRarity;
 export type Danger = HarvestDanger;
@@ -37,21 +38,26 @@ export function harvestProfileFor(creatureId: string | undefined): HarvestProfil
   return findCreatureById(creatureId)?.harvest ?? undefined;
 }
 
-/** Texte d'un Trait, qu'il soit une chaîne brute (authoring/test) ou un TraitInstance (runtime). */
-function traitText(x: unknown): string {
-  if (typeof x === 'string') return x;
-  if (x && typeof x === 'object' && 'id' in x) return formatTrait(x as TraitInstance);
-  return '';
-}
+/** Bracket de quantité exploitable d'une catégorie de Taille (`ZI 13 l.304-310`) — « Inférieure à
+ *  Moyenne » couvre les trois catégories sous Moyenne. */
+const HARVEST_SIZE_BY_CATEGORY: Record<SizeCategory, HarvestSize> = {
+  minuscule: 'InfMoyenne',
+  tresPetite: 'InfMoyenne',
+  petite: 'InfMoyenne',
+  moyenne: 'Moyenne',
+  grande: 'Grande',
+  enorme: 'Énorme',
+  monstrueuse: 'Monstrueuse',
+};
 
-/** Taille de récolte d'après le Trait Taille (défaut : Moyenne). */
-export function harvestSizeOf(creature: { traits?: readonly unknown[] }): HarvestSize {
-  const t = (creature.traits ?? []).map(traitText).find((s) => /^Taille/.test(s)) ?? '';
-  if (/Monstrueuse/.test(t)) return 'Monstrueuse';
-  if (/Énorme/.test(t)) return 'Énorme';
-  if (/Grande/.test(t)) return 'Grande';
-  if (/Petite|Minuscule/.test(t)) return 'InfMoyenne';
-  return 'Moyenne';
+/** Taille de récolte d'un cadavre : Trait `taille` lu par le REGISTRE (`findResolvedTrait` → `arg` →
+ *  `parseSizeLabel`, même voie que `spawn.sizeFromTraits` et `possession.livingSize`). Sans Trait
+ *  Taille, la catégorie retombe sur Moyenne par `effectiveSize` — ARBITRAGE de ce projet (standard
+ *  implicite des espèces sans Trait, cf. `src/engine/size.ts`), la table ZI ne dit rien du cas. */
+export function harvestSizeOf(creature: { traits?: TraitList }): HarvestSize {
+  const arg = findResolvedTrait(creature.traits, 'taille')?.arg;
+  const parsed = arg ? parseSizeLabel(arg) : null;
+  return HARVEST_SIZE_BY_CATEGORY[effectiveSize(parsed ?? undefined)];
 }
 
 /** Coût de base d'1 Enc de pièces de cette créature = rareté × dangerosité. */

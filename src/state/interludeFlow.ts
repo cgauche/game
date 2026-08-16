@@ -20,7 +20,7 @@ import { canFixDie } from './netOwnership';
 import { registerCascadeApplier, registerTableStep, rollTableStep, startCascade } from './cascade';
 import { freeCons, rollLine } from './rollSeam';
 import type { CascadeStep, CascadeTableDecl } from './pendings';
-import { fromBrass, toBrass, formatMoney, priceToMoney, canAfford, PA_PER_CO, PA_PER_SC } from '../engine/money';
+import { fromBrass, toBrass, formatMoney, priceToMoney, canAfford, parseStatus, PA_PER_CO, PA_PER_SC } from '../engine/money';
 import { partyMoneyTotal, bourseOf, payWithAllocation, payFromGroup, soloPayer, creditBourse, debitBourse } from './bourseFlow';
 import { itemFromTrappingById, recomputeLoadout, buildWeapon, autoStowNewItem } from '../engine/items';
 import { sleepParty } from './restFlow';
@@ -31,7 +31,8 @@ import {
   craftTarget, craftSpecOf, orderBlockOf, metierOf, statusIncome, statusIncomeMax, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost,
   entrainementOptions, entrainementTutorCost,
   ACTIVITIES, activitiesFor, activityById, matchOutcomes, activityAvailableAt, classGatedDifficulty,
-  type PriceTier, type ActivityDef,
+  RESOLVER_OWNER,
+  type PriceTier, type ActivityDef, type ActivityResolver, type ResolverOf,
 } from '../engine/activities';
 import { outOfTradeReason } from '../engine/disponibilite';
 import { applyOps, type GameOp } from '../engine/ops';
@@ -384,10 +385,9 @@ export interface PendingActivityFields extends PendingBase {
 export function heroStatus(h: Combatant): { tier: PriceTier; standing: number } {
   const levels = levelsForCareer(h.career ?? '');
   const lvl = levels[Math.max(0, (h.careerLevel ?? 1) - 1)];
-  const m = (lvl?.status ?? 'Bronze 1').match(/^(Bronze|Argent|Or)\s+(\d+)/i);
-  const tier = (m?.[1] ?? 'Bronze').toLowerCase() as PriceTier;
+  const st = parseStatus(lvl?.status) ?? { tier: 'bronze' as const, standing: 1 };
   const tempMod = (h.activeEffects ?? []).reduce((s, e) => s + (e.statusMod ?? 0), 0);
-  return { tier, standing: Math.max(1, Number(m?.[2] ?? 1) + tempMod) };
+  return { tier: st.tier, standing: Math.max(1, st.standing + tempMod) };
 }
 
 /** Classe du héros, `id` STABLE (`ClassData.id`) — les événements visent une Classe par id
@@ -773,10 +773,18 @@ function mecenatPayout(get: Get, set: Set, h: Combatant, depositIndex: number, p
  *  compteur d'acharnement — fusionnés dans l'écriture finale de `confirmActivity`). */
 interface ResolverResult { lines: string[]; patch?: Partial<InterludeHeroState> }
 
+/** Ce résolveur appartient-il à la famille INTERLUDE (`RESOLVER_OWNER`) ? */
+const ownedByInterlude = (r: ActivityResolver): r is ResolverOf<'interlude'> => RESOLVER_OWNER[r] === 'interlude';
+
 /** Dispatch des résolveurs BESPOKE d'issue d'Activité (`ActivityDef.resolver` + bandes `resolver`) —
  *  chacun RÉUTILISE une logique PURE existante et implémente la règle RAW vérifiée. Le `patch` porte
- *  les deltas d'état d'interlude (le `set` final est fait par `confirmActivity`). */
-function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingActivity, h: Combatant, st: InterludeHeroState): ResolverResult {
+ *  les deltas d'état d'interlude (le `set` final est fait par `confirmActivity`). FERMÉ sur le
+ *  sous-ensemble POSSÉDÉ par l'interlude (`RESOLVER_OWNER`) : un résolveur d'une autre famille qui
+ *  arriverait ici est une erreur de routage, elle CRIE. */
+function runActivityResolver(get: Get, set: Set, resolver: ActivityResolver, pa: PendingActivity, h: Combatant, st: InterludeHeroState): ResolverResult {
+  if (!ownedByInterlude(resolver)) {
+    throw new Error(`résolveur ${resolver} (famille ${RESOLVER_OWNER[resolver]}) invoqué par le dispatch d'INTERLUDE`);
+  }
   switch (resolver) {
     case 'income': {
       // Revenus = « Gagner de l'argent grâce au Statut » (LDB 08 l.110-118) : « Sur un succès, vous
@@ -1040,8 +1048,17 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
         ],
       };
     }
-    default:
+    // Résolveurs d'interlude SANS branche ici : leur issue est produite en amont (`entrainement` et
+    // `mecenat` ont un volet dédié d'`InterludeScreen` ; `knowledgeResearch` est gaté à l'ouverture,
+    // son issue vient de ses bandes `outcomes`). Cas ÉNUMÉRÉS, jamais un `default` qui avale.
+    case 'entrainement':
+    case 'mecenat':
+    case 'knowledgeResearch':
       return { lines: [] };
+    default: {
+      const jamais: never = resolver;
+      throw new Error(`résolveur d'interlude non dispatché : ${String(jamais)}`);
+    }
   }
 }
 

@@ -65,7 +65,6 @@ const BASELINE: Record<string, number> = {
   'src/engine/disease.ts': 11,
   'src/engine/drunkenness.ts': 1,
   'src/engine/exposure.ts': 2,
-  'src/engine/harvest.ts': 1,
   'src/engine/healing.ts': 2,
   'src/engine/items.ts': 1,
   'src/engine/mountTravel.ts': 4,

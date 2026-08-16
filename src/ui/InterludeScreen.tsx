@@ -11,7 +11,7 @@ import { inspireDifficulty } from '../engine/massBattle';
 import {
   craftCatalog, craftTarget, learnableTalents, orderCatalog, metierOf, bankPayout, entrainementOptions,
   classGatedDifficulty,
-  type ActivityDef, type CraftOption, type LearnOption, type EntrainementOption,
+  type ActivityDef, type ActivityResolver, type CraftOption, type LearnOption, type EntrainementOption,
 } from '../engine/activities';
 import type { GameOp } from '../engine/ops';
 import { learnableSpells } from '../engine/grimoire';
@@ -420,7 +420,8 @@ const withStake = (p: PendingRoll, activityId: string): PendingRoll =>
 /** Résolveurs des Activités du catalogue qui ont un VOLET DÉDIÉ (UX riche : formule de Revenus,
  *  flux 2 étapes de l'Artisanat, sélecteur de Talent, sélecteur d'artefact) ou vivent ailleurs
  *  (`mecenat` = dans la banque). Exclus de la liste GÉNÉRIQUE du catalogue pour ne pas les doubler. */
-const CORE_RESOLVERS = new Set(['income', 'craftExtended', 'learnTalent', 'identify', 'mecenat', 'entrainement']);
+const CORE_RESOLVERS = new Set<ActivityResolver>(['income', 'craftExtended', 'learnTalent', 'identify', 'mecenat', 'entrainement']);
+const hasCoreResolver = (r?: ActivityResolver): boolean => !!r && CORE_RESOLVERS.has(r);
 
 /** Icônes des Activités à volet dédié — les Activités du catalogue générique portent la leur
  *  en DONNÉE (`ActivityDef.icon`). */
@@ -465,7 +466,7 @@ function HeroCard({ hero, st, catalog, mecenat, favors, massBattle, canDrive, ow
     : null;
   // Volet du catalogue GÉNÉRIQUE : les 4 activités socle (Revenus/Artisanat/Apprentissage/
   // Identification) ont leur volet dédié ci-dessous — CatalogPane ne sert que les AUTRES.
-  const def = pane ? catalog.find((d) => d.id === pane && !CORE_RESOLVERS.has(d.resolver ?? '')) : undefined;
+  const def = pane ? catalog.find((d) => d.id === pane && !hasCoreResolver(d.resolver)) : undefined;
   // Description VERBATIM d'une Activité socle (`activities.json`, id = clé de volet) — la donnée
   // EXISTE (revenus/craft/learn/identify), passée au gabarit `ActivityPane` de chaque volet dédié.
   const coreDesc = (id: string) => catalog.find((d) => d.id === id)?.desc;
@@ -553,7 +554,7 @@ function ActivityList({ hero, catalog, favors, pane, onPane, canDrive, none, own
   // Activités du catalogue SANS volet dédié : les 4 activités « socle » (Revenus/Artisanat/
   // Apprentissage/Identification, volets riches ci-dessus) et Mécénat (dans la banque) sont
   // exclues pour ne pas les doubler — leur résolveur les identifie en DONNÉE.
-  const catalogItems = catalog.filter((d) => !CORE_RESOLVERS.has(d.resolver ?? '')).map((d) =>
+  const catalogItems = catalog.filter((d) => !hasCoreResolver(d.resolver)).map((d) =>
     item(d.id, <><Icon id={d.icon} size="sm" /> {d.label}</>, d.desc ? `${mdToText(d.desc).slice(0, 160)}…` : d.label, d.label));
   const items = [...core, ...catalogItems];
   const { search, setSearch, filtered } = useFilteredList(items, (o) => o.textLabel);

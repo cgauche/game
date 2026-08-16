@@ -230,17 +230,96 @@ function isLabelKeyedRecord(node) {
     && names.some((s) => /[À-ɏ]/.test(s) || /\s/.test(s));
 }
 
+/** Méthodes qui prennent une DÉCISION sur un texte via une expression régulière (le résultat pilote
+ *  un `if`/un `find`/un aiguillage). `replace`/`split` en sont écartés : ce sont des transformations
+ *  de texte, pas une reconnaissance d'entité. */
+const REGEX_DECIDING_METHODS = new Set(['test', 'exec', 'match', 'matchAll', 'search']);
+
+/** Le motif d'une regex littérale contient-il un MOT de LIBELLÉ (majuscule initiale ou accent) ?
+ *  Les classes de caractères (`[A-Z]`, `[À-ɏ]`) et les échappements (`\\S`, `\\p{Lu}`) sont retirés
+ *  avant l'extraction : ce sont des critères de FORME, pas des mots du vocabulaire de jeu.
+ *  @param {string} rxText texte SOURCE de la regex, délimiteurs et drapeaux compris @returns {boolean} */
+export function hasLabelWordRegex(rxText) {
+  const body = rxText.replace(/^\//, '').replace(/\/[a-z]*$/, '');
+  const stripped = body.replace(/\\[a-zA-Z](\{[^}]*\})?/g, ' ').replace(/\[[^\]]*\]/g, ' ');
+  for (const m of stripped.matchAll(/\p{L}[\p{L}\p{M}'’-]+/gu)) if (isLabelLiteral(m[0])) return true;
+  return false;
+}
+
+/** Valeur DÉRIVÉE d'un champ de donnée : une variable dont l'initialiseur LIT un champ quelque part
+ *  (`const t = (c.traits ?? []).map(f).find(g) ?? ''`), ou le paramètre d'un callback passé à une
+ *  méthode appelée SUR une telle expression (`c.traits.find((s) => …)`). C'est la maille par laquelle
+ *  la prose formatée d'une entité redevient une décision. */
+const FIELD_DERIVED = 'field-derived';
+
+/** L'expression LIT-ELLE un champ d'entité quelque part dans son sous-arbre ? Le NOM appelé d'une
+ *  méthode (`xs.map`) n'en est pas un — seuls le receveur et les arguments sont visités. */
+function containsEntityFieldRead(node) {
+  let found = false;
+  const walk = (n) => {
+    if (found || !n) return;
+    if (ts.isCallExpression(n)) {
+      walk(ts.isPropertyAccessExpression(n.expression) ? n.expression.expression : n.expression);
+      n.arguments.forEach(walk);
+      return;
+    }
+    if (readsEntityField(n)) { found = true; return; }
+    ts.forEachChild(n, walk);
+  };
+  walk(node);
+  return found;
+}
+
+/** L'expression tient-elle une valeur de champ, directement, par alias, ou DÉRIVÉE ? */
+function holdsOrDerivesFieldValue(node, scopes) {
+  const n = unwrap(node);
+  if (ts.isIdentifier(n)) return scopes.kindOf(n.text) === FIELD_HOLDER || scopes.kindOf(n.text) === FIELD_DERIVED;
+  return containsEntityFieldRead(n);
+}
+
+/** La regex littérale de cet appel, s'il en applique une à un texte : `/^Taille/.test(x)` (receveur)
+ *  ou `x.match(/Monstrueuse/)` (argument). Renvoie `{ rx, subject }` ou null. */
+function regexDecisionOf(node) {
+  if (!ts.isCallExpression(node) || !ts.isPropertyAccessExpression(node.expression)) return null;
+  if (!ts.isIdentifier(node.expression.name) || !REGEX_DECIDING_METHODS.has(node.expression.name.text)) return null;
+  const recv = unwrap(node.expression.expression);
+  if (ts.isRegularExpressionLiteral(recv)) return node.arguments.length === 1 ? { rx: recv, subject: node.arguments[0] } : null;
+  const arg = node.arguments.length === 1 ? unwrap(node.arguments[0]) : null;
+  if (arg && ts.isRegularExpressionLiteral(arg)) return { rx: arg, subject: recv };
+  return null;
+}
+
+/** Déclare DÉRIVÉS les paramètres d'un callback passé à une méthode appelée sur une expression qui
+ *  lit un champ de donnée (`(c.traits ?? []).map(f).find((s) => …)`) : `s` porte alors du texte
+ *  d'entité. @param {import('typescript').SignatureDeclaration} fn */
+function declareDerivedParams(fn, scopes) {
+  const call = fn.parent;
+  if (!call || !ts.isCallExpression(call) || !call.arguments.includes(fn)) return;
+  if (!ts.isPropertyAccessExpression(call.expression)) return;
+  if (!containsEntityFieldRead(call.expression.expression)) return;
+  for (const p of fn.parameters) for (const n of bindingNames(p.name)) scopes.declare(n, FIELD_DERIVED);
+}
+
 /**
- * Scan STRUCTUREL (AST) des libellés portés par un champ AUTRE que `label`/`name`. Trois formes :
+ * Scan STRUCTUREL (AST) des libellés portés par un champ AUTRE que `label`/`name`. Quatre formes :
  *  - `label-literal`  : `w.reach === 'Très longue'`, `t.availability !== 'Exotique'` — égalité entre
  *                       une valeur de champ (ou son alias) et un littéral de LIBELLÉ ;
  *  - `label-switch`   : `switch (w.reach) { case 'Très longue': … }` — même aiguillage, en `switch` ;
- *  - `label-record`   : `const T = { Tête: […], Bras: […] }` — table indexée par des libellés.
+ *  - `label-record`   : `const T = { Tête: […], Bras: […] }` — table indexée par des libellés ;
+ *  - `label-regex`    : `/^Taille/.test(t)`, `t.match(/Monstrueuse/)` — regex littérale portant un MOT
+ *                       de libellé, appliquée à une valeur dérivée d'un champ de donnée (la prose
+ *                       formatée d'une entité re-parseée : `harvestSizeOf`, #1318 V6).
  *
  * FRONTIÈRE (par FORME, aucune liste de noms) — ne lèvent PAS : un discriminant d'union en slug
  * ASCII (`area.kind === 'disc'`, `w.type === 'melee'`), une comparaison à une VARIABLE
  * (`a.reach === b.reach`), un champ d'ÉVÉNEMENT DOM (`e.key === 'Enter'`), le RENDU d'un libellé
  * (`{item.label}`) — seule une DÉCISION prise sur le texte est visée.
+ *
+ * ANGLE DÉCLARÉ de `label-regex` : le critère est le MOT du motif, pas son domaine — une regex de
+ * CONVENTION DE CODE portant un mot capitalisé (`/Data$/` sur un nom de type, `/^Taille/` sur un
+ * identifiant TS) mord au même titre qu'une regex de vocabulaire de jeu, dès lors que son sujet dérive
+ * d'un champ. `scripts/**` n'étant pas scanné par ce volet, aucun site n'est concerné aujourd'hui ; le
+ * jour où l'un se présente, il se REFORMULE (comparer un id) ou s'inscrit au stock — pas d'exception.
  *
  * CE QUE CE SCAN NE VOIT PAS (faux négatifs assumés, mesurés) : un libellé tenu par un PARAMÈTRE de
  * fonction (`function q(av: Availability) { if (av === 'Commune') … }`) — la provenance du texte
@@ -248,7 +327,7 @@ function isLabelKeyedRecord(node) {
  * (aucun n'existe : un libellé français porte accent, majuscule ou espace) ; un prédicat qui n'est
  * pas une égalité (`.startsWith('Très')`).
  * @param {string} relPath @param {string} contenu
- * @returns {{ line: number, detail: string, rule: 'label-literal' | 'label-switch' | 'label-record' }[]}
+ * @returns {{ line: number, detail: string, rule: 'label-literal' | 'label-switch' | 'label-record' | 'label-regex' }[]}
  */
 export function scanLabelLiteralCompare(relPath, contenu) {
   const kind = relPath.endsWith('.tsx') ? ts.ScriptKind.TSX
@@ -271,6 +350,7 @@ export function scanLabelLiteralCompare(relPath, contenu) {
   const visit = (node) => {
     if (ts.isFunctionLike(node) || ts.isBlock(node) || ts.isCaseBlock(node) || ts.isModuleBlock(node)) {
       scopes.push();
+      if (ts.isFunctionLike(node)) declareDerivedParams(node, scopes);
       ts.forEachChild(node, visit);
       scopes.pop();
       return;
@@ -278,7 +358,8 @@ export function scanLabelLiteralCompare(relPath, contenu) {
     if (ts.isVariableDeclarationList(node)) {
       for (const d of node.declarations) {
         const holder = !!d.initializer && holdsFieldValue(d.initializer, scopes);
-        for (const n of bindingNames(d.name)) scopes.declare(n, holder ? FIELD_HOLDER : 'value');
+        const derived = !holder && !!d.initializer && containsEntityFieldRead(d.initializer);
+        for (const n of bindingNames(d.name)) scopes.declare(n, holder ? FIELD_HOLDER : derived ? FIELD_DERIVED : 'value');
         if (d.initializer && isLabelKeyedRecord(d.initializer)) report(d, 'label-record');
       }
     }
@@ -291,6 +372,10 @@ export function scanLabelLiteralCompare(relPath, contenu) {
     if (ts.isSwitchStatement(node) && holdsFieldValue(node.expression, scopes)
       && node.caseBlock.clauses.some((c) => ts.isCaseClause(c) && isEntryLiteral(unwrap(c.expression)) && isLabelLiteral(unwrap(c.expression).text))) {
       report(node, 'label-switch');
+    }
+    const rxUse = regexDecisionOf(node);
+    if (rxUse && hasLabelWordRegex(rxUse.rx.getText(sf)) && holdsOrDerivesFieldValue(rxUse.subject, scopes)) {
+      report(node, 'label-regex');
     }
     ts.forEachChild(node, visit);
   };
@@ -681,14 +766,14 @@ export const RATCHET_EXCEPTIONS = {
     "pas une FK de logique métier — aucune régression jouable. Exposée par #608 (le champ etait `name`).",
   'ui/gallery/DesignGallery.tsx:28':
     'Même galerie DEV (classe active du bouton de liste, même comparaison) — même justification que :12.',
-  'ui/RollRow.tsx:82':
+  'ui/RollRow.tsx:92':
     "Nom ACCESSIBLE dérivé du libellé affiché de la ligne (« Fixer le dé — Voile », #1117) — display " +
     "pur, aucun branchement de comportement : rien n'est décidé selon le texte, il est seulement RENDU " +
     "dans un attribut. Le test de type est structurel, pas sémantique : `RollBreakdown.label` est une " +
     "chaîne, `PendingRoll.label` un ReactNode (chips) dont on ne peut extraire de texte sans le tester. " +
     "Sans ce nom, N spinbuttons « Fixer le dé » deviennent homonymes et le geste vise au hasard.",
-  'ui/RollRow.tsx:83':
-    'Même dérivation, branche du pré-jet (`row.pending.label`) — même justification que :82.',
+  'ui/RollRow.tsx:93':
+    'Même dérivation, branche du pré-jet (`row.pending.label`) — même justification que :92.',
 };
 
 /** Résout le `shortKey` (`fichier:ligne` relatif à `src/`) d'un finding porté par un chemin `src/…`

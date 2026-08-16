@@ -366,6 +366,31 @@ describe('garde-fou « logique par LIBELLÉ hors du champ label » (#142 LOT 7)'
     ].join('\n');
     expect(scanLabelLiteralCompare('fixture.tsx', 'const tag = el.tagName;\n' + src)).toEqual([]);
   });
+
+  it('ANTI-VACANCE : échoue sur la faute de RÉCOLTE reconstituée (regex de libellé sur une valeur dérivée d’un champ)', () => {
+    // Le motif EXACT qui vivait en `engine/harvest.ts` avant migration (#1318 V6) : le TraitInstance
+    // formaté en prose FR, puis re-parsé à la regex — la voie par id (`findResolvedTrait`) existait.
+    const viaCallback = 'function h(c: Creature) {\n'
+      + "  return (c.traits ?? []).map(traitText).find((s) => /^Taille/.test(s)) ?? '';\n"
+      + '}';
+    expect(scanLabelLiteralCompare('harvest.ts', viaCallback).map((f) => f.rule)).toEqual(['label-regex']);
+    const viaVariable = 'function h(c: Creature) {\n'
+      + "  const t = (c.traits ?? []).map(traitText).join(' ');\n"
+      + "  if (/Monstrueuse/.test(t)) return 'Monstrueuse';\n"
+      + "  return t.match(/Énorme/) ? 'Énorme' : 'Moyenne';\n"
+      + '}';
+    expect(scanLabelLiteralCompare('harvest.ts', viaVariable).map((f) => f.rule)).toEqual(['label-regex', 'label-regex']);
+  });
+
+  it('CONTRE-ÉPREUVES `label-regex` : motif de FORME, texte non dérivé d’un champ, transformation', () => {
+    const src = [
+      "const slug = s.replace(/[^a-z0-9]+/g, '-');", // transformation, pas une décision
+      'if (/^\\p{Lu}/u.test(raw)) return raw;', // critère de FORME (classe/échappement), aucun mot de libellé
+      "if (/^Taille/.test('Taille (Grande)')) return 1;", // littéral en dur : aucun champ de donnée derrière
+      'const n = txt.match(/[0-9]+/);', // motif numérique
+    ].join('\n');
+    expect(scanLabelLiteralCompare('fixture.ts', src)).toEqual([]);
+  });
 });
 
 /**

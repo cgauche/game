@@ -89,6 +89,65 @@ export type StageOutcome =
   | 'suppressExposure' | 'gatherInfo' | 'noSurprise' | 'mapMade' | 'rerollToken' | 'countsAsRest' | 'campCare'
   | 'extraActivity' | 'skipStage' | 'fullRecovery' | 'worsenWeather';
 
+/**
+ * VOCABULAIRE FERMÉ des résolveurs BESPOKE d'Activité. Chaque membre a un PROPRIÉTAIRE déclaré
+ * (`RESOLVER_OWNER`) = la famille de flux qui le consomme ; c'est ce propriétaire, pas ce type, qui
+ * dit où vit sa branche. Une Activité de plus à résolveur EXISTANT est une pure entrée de
+ * `activities.json` ; un résolveur NOUVEAU = une ligne ici + une ligne dans `RESOLVER_OWNER` + sa
+ * branche chez le propriétaire + la ligne miroir de `activityResolverSchema`
+ * (`src/data/schemas/defs/activities.ts`). Garde de consommation :
+ * `src/data/activity-resolver-dispatch.test.ts`.
+ */
+export type ActivityResolver =
+  // Interlude — socle (LDB 23, ACE Annexe I)
+  | 'income' | 'craftExtended' | 'learnTalent' | 'identify' | 'entrainement' | 'mecenat'
+  // Interlude — bespoke
+  | 'ritualFocus' | 'masterWeapon' | 'identifyByResearch' | 'memorizeDiscount' | 'combatTraining'
+  | 'punchausen' | 'knowledgeResearch' | 'reputation' | 'wrathOfTheGods' | 'dissensionScout'
+  | 'dissensionEmeute' | 'contremaitre'
+  // Voyage (EDOC 8) · Mer (MDG) · Bataille de masse (ADE II 8)
+  | 'forage' | 'seaChart' | 'opportunityTrade' | 'crewTraining' | 'battleRally';
+
+/** Familles de flux qui POSSÈDENT des résolveurs — un propriétaire = un dispatch, un seul. */
+export type ResolverOwner = 'interlude' | 'mer' | 'voyage' | 'bataille';
+
+/**
+ * PROPRIÉTAIRE de chaque résolveur, MESURÉ sur ses consommateurs (#1318 V6) :
+ *  - `interlude` → `runActivityResolver`/`openCatalogActivity` (`src/state/interludeFlow.ts`) et les
+ *    volets dédiés d'`InterludeScreen` (`entrainement`, `mecenat` : gate amont / volet, pas de branche
+ *    dans le dispatch) ;
+ *  - `mer` → `src/state/seaActivities.ts` (+ `SeaActivitiesModal`) ; `voyage` → `travelPostes.ts` ;
+ *  - `bataille` → ADE II 8 : **aucun consommateur de production** à ce jour.
+ * Table EXHAUSTIVE (`satisfies Record<ActivityResolver, …>`) : un résolveur ajouté sans propriétaire
+ * ne compile pas.
+ */
+export const RESOLVER_OWNER = {
+  income: 'interlude', craftExtended: 'interlude', learnTalent: 'interlude', identify: 'interlude',
+  entrainement: 'interlude', mecenat: 'interlude', ritualFocus: 'interlude', masterWeapon: 'interlude',
+  identifyByResearch: 'interlude', memorizeDiscount: 'interlude', combatTraining: 'interlude',
+  punchausen: 'interlude', knowledgeResearch: 'interlude', reputation: 'interlude',
+  wrathOfTheGods: 'interlude', dissensionScout: 'interlude', dissensionEmeute: 'interlude',
+  contremaitre: 'interlude',
+  seaChart: 'mer', opportunityTrade: 'mer', crewTraining: 'mer',
+  forage: 'voyage',
+  /** DETTE #1329 : porté par la donnée (`rassemblement`, `activities.json`) mais AUCUN consommateur de
+   *  production ne le lit — l'issue de Rassemblement passe par ses bandes `outcomes`/`battle`. Reste
+   *  au vocabulaire (la donnée le porte), listé en exception nominative par la garde de dispatch. */
+  battleRally: 'bataille',
+} as const satisfies Record<ActivityResolver, ResolverOwner>;
+
+/** Membres d'`ActivityResolver` possédés par une famille donnée (type). */
+export type ResolverOf<O extends ResolverOwner> =
+  { [K in ActivityResolver]: typeof RESOLVER_OWNER[K] extends O ? K : never }[ActivityResolver];
+
+/** Les membres d'`ActivityResolver` à l'EXÉCUTION (listes déroulantes du Codex, gardes) — DÉRIVÉS de
+ *  `RESOLVER_OWNER`, jamais une seconde liste à tenir à jour. */
+export const ACTIVITY_RESOLVERS: readonly ActivityResolver[] = Object.keys(RESOLVER_OWNER) as ActivityResolver[];
+
+/** Résolveurs d'une famille, à l'EXÉCUTION (sélecteur du Codex filtré par contexte, gardes). */
+export const resolversOwnedBy = (owner: ResolverOwner): ActivityResolver[] =>
+  ACTIVITY_RESOLVERS.filter((r) => RESOLVER_OWNER[r] === owner);
+
 /** Bande d'ISSUE par Degrés de Réussite d'une Activité (tables « DR → résultat », ACE 12 l.31-65) :
  *  bornes de DR INCLUSIVES ; `on` distingue ±0 (« +0 à +1 » = succès / « −0 à −1 » = échec, comme les
  *  tables RAW) et porte la Maladresse ; `ops` = effet mécanique (GameOp, langue UNIQUE des effets) ;
@@ -99,7 +158,7 @@ export interface OutcomeBand {
   minSL?: number;
   maxSL?: number;
   ops?: GameOp[];
-  resolver?: string;
+  resolver?: ActivityResolver;
   payoutPct?: number;
   note?: string;
   /** Issue(s) de BATAILLE (ADE II 8) portant sur l'ARMÉE (delta de Puissance / modificateur de Test),
@@ -213,7 +272,7 @@ export interface ActivityDef extends TestSpec {
    *  « -10 par temps sec » (l.56). Absent/météo non listée = 0. */
   weatherMod?: Record<string, number>;
   /** Résolveur BESPOKE nommé (réutilise une logique existante plutôt que de la dupliquer). */
-  resolver?: string;
+  resolver?: ActivityResolver;
   /** Effet mécanique de réussite, en `GameOp` (langue UNIQUE des effets, appliquée par `applyOps`). */
   onSuccess?: GameOp[];
   /** Description VERBATIM (Markdown) de la source — rendue par `<Prose>` (règle 5, jamais de paraphrase). */
@@ -300,13 +359,13 @@ export interface ActivityDef extends TestSpec {
 /** Résolveurs qui DÉRIVENT leur compétence du héros au moment d'ouvrir le jet (`openCatalogActivity`,
  *  `src/state/interludeFlow.ts`) : leur Activité n'a donc pas de `skills` en donnée, mais elle LANCE.
  *  SOURCE UNIQUE consommée par `activityRolls` — une Activité de plus dans ce cas = une ligne ici. */
-const SKILL_DERIVING_RESOLVERS = new Set(['income', 'craftExtended', 'learnTalent', 'reputation', 'ritualFocus']);
+const SKILL_DERIVING_RESOLVERS = new Set<ActivityResolver>(['income', 'craftExtended', 'learnTalent', 'reputation', 'ritualFocus']);
 
 /** L'Activité LANCE-t-elle un Test ? `skills`/`char`/`freeSkill` déclarés, ou résolveur qui dérive sa
  *  compétence du héros. Une Activité sans Test (Récupérer, Entraînement, Scènes de COMBAT tactique
  *  d'une bataille) n'a rien à mettre en jeu — pas de zone d'enjeu muette. PURE. */
 export function activityRolls(def: Pick<ActivityDef, 'skills' | 'char' | 'freeSkill' | 'resolver'>): boolean {
-  return !!(def.skills?.length || def.char || def.freeSkill || SKILL_DERIVING_RESOLVERS.has(def.resolver ?? ''));
+  return !!(def.skills?.length || def.char || def.freeSkill || (def.resolver && SKILL_DERIVING_RESOLVERS.has(def.resolver)));
 }
 
 /** Ligne de mod du modificateur de SITUATION d'un Test d'Activité (Menace `ADE II 8 l.219`,
@@ -389,7 +448,7 @@ export interface TravelActivityResult {
   /** Échec du Test d'Activité → État Exténué pour CET acteur (EDOC 8 l.133). */
   extenue: boolean;
   /** Résolveur BESPOKE à invoquer côté appelant (ex. `'forage'` → `forageYield`). */
-  resolver?: string;
+  resolver?: ActivityResolver;
   /** Cible de DR d'un Test ÉTENDU (Établir des cartes : `drPerStage` × Étapes). */
   drTarget?: number;
 }

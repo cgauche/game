@@ -155,7 +155,7 @@ Règle d'application des Traits Facultatifs modificateurs de profil (**Élite, C
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.11-13, l.45) → `aaTableFor`, `resolveAACritical`, `SceneEntity`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `critTableKeyFor`, `rollCritical` — `src/data/criticals.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
-- `LDB 85` (l.339-340) → `creatureWeapon`, `woundsForSize`, `taille-modificateurs-en-combat`, `sonne`, `souffle-feu`, `souffle-froid`, `souffle-corrosif`, `bestDefenseMode`, `souffle-electrique`, `souffle-poison`, +19 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, +2 fichiers
+- `LDB 85` (l.339-340) → `creatureWeapon`, `woundsForSize`, `taille-modificateurs-en-combat`, `sonne`, `souffle-feu`, `souffle-froid`, `souffle-corrosif`, `souffle-electrique`, `bestDefenseMode`, `souffle-poison`, +19 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, +2 fichiers
 
 ---
 

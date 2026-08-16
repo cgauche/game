@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { harvestProfileFor, harvestSizeOf, harvestYield, costPerEnc } from './harvest';
 import { formatMoney } from './money';
+import { findCreatureById } from '../data';
 
 describe('harvest — Précieuses Entrailles (ZI)', () => {
   it('profil porté par la créature (creatures.json), coût = rareté × dangerosité', () => {
@@ -38,9 +39,20 @@ describe('harvest — Précieuses Entrailles (ZI)', () => {
     expect(harvestYield(dragon, 'Énorme', 0, 'Pourri').total.gold).toBeGreaterThan(0);
   });
 
-  it('Taille de récolte dérivée du Trait Taille', () => {
-    expect(harvestSizeOf({ traits: ['Taille (Monstrueuse)'] })).toBe('Monstrueuse');
-    expect(harvestSizeOf({ traits: ['Taille (Petite)'] })).toBe('InfMoyenne');
-    expect(harvestSizeOf({ traits: ['Bestial', 'Vol 80'] })).toBe('Moyenne'); // défaut
+  it('Taille de récolte : catégorie lue au Trait `taille` par son id (bestiaire RÉEL)', () => {
+    expect(harvestSizeOf(findCreatureById('cockatrice')!)).toBe('Grande');
+    expect(harvestSizeOf(findCreatureById('dragon-de-la-foret')!)).toBe('Énorme');
+    expect(harvestSizeOf({ traits: [{ id: 'taille', arg: 'monstrueuse' }] })).toBe('Monstrueuse');
+  });
+
+  it('« Inférieure à Moyenne » (ZI 13 l.306) regroupe les trois catégories sous Moyenne', () => {
+    expect(harvestSizeOf({ traits: [{ id: 'taille', arg: 'petite' }] })).toBe('InfMoyenne');
+    expect(harvestSizeOf({ traits: [{ id: 'taille', arg: 'tresPetite' }] })).toBe('InfMoyenne');
+    expect(harvestSizeOf({ traits: [{ id: 'taille', arg: 'minuscule' }] })).toBe('InfMoyenne');
+  });
+
+  it('sans Trait Taille : défaut Moyenne (arbitrage `effectiveSize`)', () => {
+    expect(harvestSizeOf({ traits: [{ id: 'bestial' }, { id: 'vol', value: 80 }] })).toBe('Moyenne');
+    expect(harvestSizeOf({})).toBe('Moyenne');
   });
 });
