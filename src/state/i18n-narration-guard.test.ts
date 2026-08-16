@@ -56,15 +56,25 @@ const MIGRATED = new Set([
   'src/state/combatSlice.ts',
   'src/state/combatFlow.ts',
   'src/state/pursuitFlow.ts', // #1279 : toute la narration de poursuite est passee au catalogue
+  'src/state/interludeFlow.ts', // #1318 V8c₁ : `if.*`
+  'src/state/massBattleFlow.ts', // #1318 V8c₁ : `mbf.*`
+  'src/state/merchantFlow.ts', // #1318 V8c₁ : `mf.*`
 ]);
 
 /** Stock GELÉ par fichier (recensement #410, 2026-07-13) — littéraux FR de narration hors catalogue,
  *  Phase C à résorber. Toute HAUSSE échoue (régression) ; toute BAISSE doit ABAISSER la baseline. Les
  *  fichiers MIGRÉS (ci-dessus) n'y figurent PAS : leur invariant est ZÉRO.
  *
- *  GEL COURANT #1333 (V8c₀, 2026-08-16) — 275 littéraux, tels que les voit le prédicat de francité
- *  ci-dessous (`isFrench`, qui compte aussi le FR SANS accent). Ces entrées ne sont pas des dettes
- *  nouvelles : ce sont des littéraux de toujours, qu'une mesure plus fine rend enfin visibles.
+ *  GEL COURANT #1333 (V8c₁, 2026-08-16) — 198 littéraux, tels que les voit le prédicat de francité
+ *  ci-dessous (`isFrench`, qui compte aussi le FR SANS accent) ET le lecteur de littéraux corrigé
+ *  (`readString` honore l'ÉCHAPPEMENT). Ces entrées ne sont pas des dettes nouvelles : ce sont des
+ *  littéraux de toujours, qu'une mesure plus fine rend enfin visibles. Trois mouvements dans ce lot :
+ *  −81 (les trois flux passés MIGRÉS : interlude 36, bataille de masse 25, marchand 20) ;
+ *  +1 révélé par la lecture des échappements (`engine/spellRangeFormat.ts` 4 → 5 : « Jusqu'au lever du
+ *  soleil », seul littéral de tout le périmètre que l'ancien lecteur tronquait au point de le rendre
+ *  muet) ; +3 révélés par la 6ᵉ forme (`.log(` à argument non collé — `rollFlowFactory.ts` 1 → 3,
+ *  `store.ts` 15 → 16 ; le 4ᵉ de cette forme, l'achat de `merchantFlow.ts`, est parti au catalogue
+ *  dans le même geste plutôt que d'entrer en gel).
  *  `state/combatFlow.ts` reste MIGRÉ (invariant ZÉRO) : les littéraux que ce prédicat y a révélés sont
  *  au catalogue (`cf.gangwayCollapse`/`cf.spellNotFound`/`cf.cannotCast`/`cf.cannotPray`/`cf.oups`,
  *  plus `cf.outOfAction`/`cf.noLineOfSight`). */
@@ -81,7 +91,7 @@ const BASELINE: Record<string, number> = {
   'src/engine/rest.ts': 4,
   'src/engine/shipCritical.ts': 5,
   'src/engine/social.ts': 1,
-  'src/engine/spellRangeFormat.ts': 4,
+  'src/engine/spellRangeFormat.ts': 5,
   'src/engine/structureCritical.ts': 1,
   'src/engine/suffocation.ts': 2,
   'src/engine/tavernGame.ts': 2,
@@ -91,18 +101,15 @@ const BASELINE: Record<string, number> = {
   'src/state/combatEffects.ts': 15,
   'src/state/corruptionFlow.ts': 4,
   // `src/state/devtools.ts` : aucune baseline — DISPENSÉ par nature (`DEV_ONLY`, #1117).
-  'src/state/interludeFlow.ts': 36,
   'src/state/keybindings.ts': 1,
-  'src/state/massBattleFlow.ts': 25,
   'src/state/medicFlow.ts': 4,
-  'src/state/merchantFlow.ts': 20,
   'src/state/mount.ts': 1,
   'src/state/netFlow.ts': 4,
   'src/state/partyFlow.ts': 7,
   'src/state/portFlow.ts': 2,
   'src/state/restFlow.ts': 5,
   'src/state/riverVoyageFlow.ts': 11,
-  'src/state/rollFlowFactory.ts': 1,
+  'src/state/rollFlowFactory.ts': 3,
   // Légendes de l'export ASCII, semées à la déclaration : ce ne sont pas des lignes de JOURNAL, mais
   // elles se gèlent au même titre — à passer au catalogue avec leur surface.
   'src/state/sceneToAscii.ts': 3,
@@ -111,7 +118,7 @@ const BASELINE: Record<string, number> = {
   'src/state/shipCrew.ts': 6,
   'src/state/shipManeuver.ts': 1,
   'src/state/shipwreck.ts': 3,
-  'src/state/store.ts': 15,
+  'src/state/store.ts': 16,
   'src/state/travelFlow.ts': 14,
   'src/state/travelPostes.ts': 4,
   'src/state/upkeep.ts': 5,
@@ -186,11 +193,60 @@ const EMIT_SHAPES: RegExp[] = [
  *  compter le seul premier rejouerait le même trou d'un cran plus loin. */
 const ARRAY_SEED = /:\s*string\[\]\s*=\s*\[/g;
 
-/** Extrait le littéral de chaîne qui commence au délimiteur `quote` à la position `from`. */
+/**
+ * Extrait le littéral de chaîne qui commence au délimiteur `quote` à la position `from`.
+ *
+ * L'ÉCHAPPEMENT est honoré (`\'`, `\"`, `` \` ``, `\\`) : un délimiteur précédé d'un backslash ne
+ * ferme pas le littéral. Sans ce pas de plus, `'Impossible d\'ouvrir une bataille de masse…'` était
+ * lu comme `'Impossible d\'` — un fragment que `isFrench` déclare FAUX (l'élision y perd son
+ * apostrophe, et aucun mot-outil ne subsiste) : la phrase entière échappait au compte (mesuré sur
+ * `massBattleFlow.ts` au lot V8c₁).
+ */
 function readString(body: string, from: number, quote: string): string | null {
-  const end = body.indexOf(quote, from + 1);
-  if (end < 0) return null;
-  return body.slice(from, end + 1);
+  for (let i = from + 1; i < body.length; i++) {
+    if (body[i] === '\\') { i++; continue; }
+    if (body[i] === quote) return body.slice(from, i + 1);
+  }
+  return null;
+}
+
+/**
+ * 6ᵉ FORME (#1318 V8c₁) : `.log(` dont l'argument n'est PAS un littéral COLLÉ à l'ouverture — le cas
+ * réel est le TERNAIRE, `get().log(free ? `…` : `…`)`, qui cachait DEUX phrases joueur du chemin
+ * d'achat le plus fréquenté (`merchantFlow.ts`) : les cinq formes ci-dessus exigent le délimiteur
+ * immédiatement après l'ouverture, donc elles ne voyaient ni l'une ni l'autre.
+ *
+ * On lit ici tous les littéraux de PROFONDEUR 0 de l'appel — ceux passés en argument DIRECT, quelle
+ * que soit l'expression qui les enchâsse (ternaire, concaténation). Un littéral sous appel imbriqué
+ * (`get().log(t('mf.buy', { label }))`) est à profondeur 1 : jamais compté, c'est du catalogue.
+ * Les appels dont le PREMIER argument est déjà un littéral appartiennent à la forme 1 et sont laissés
+ * à elle (sans quoi ils compteraient deux fois).
+ */
+function logDepth0Literals(body: string): string[] {
+  const out: string[] = [];
+  const rx = /\.log\(/g;
+  let m: RegExpExecArray | null;
+  while ((m = rx.exec(body))) {
+    let i = m.index + m[0].length;
+    while (i < body.length && /\s/.test(body[i])) i++;
+    if (body[i] === '"' || body[i] === "'" || body[i] === '`') continue; // forme 1 : à elle de compter
+    let prof = 0;
+    while (i < body.length) {
+      const c = body[i];
+      if (c === '(' || c === '[' || c === '{') { prof++; i++; continue; }
+      if (c === ']' || c === '}') { prof--; i++; continue; }
+      if (c === ')') { if (prof === 0) break; prof--; i++; continue; }
+      if (c === '"' || c === "'" || c === '`') {
+        const lit = readString(body, i, c);
+        if (!lit) break;
+        if (prof === 0) out.push(lit);
+        i += lit.length;
+        continue;
+      }
+      i++;
+    }
+  }
+  return out;
 }
 
 /** Compte les littéraux FR de narration d'un fichier (hors catalogue). */
@@ -224,6 +280,7 @@ export function narrationCount(raw: string): number {
       if (lit && isFrench(lit)) n++;
     }
   }
+  for (const lit of logDepth0Literals(body)) if (isFrench(lit)) n++;
   return n;
 }
 
@@ -267,6 +324,30 @@ describe('garde-fou i18n — narration moteur (Phase C, #410 inversé)', () => {
       if (n > 0) regressed.push(`${rel} : ${n} littéral(aux) FR (doit rester 0)`);
     }
     expect(regressed, `Régression d'un fichier MIGRÉ — la narration doit rester au catalogue :\n${regressed.join('\n')}`).toEqual([]);
+  });
+
+  it('le lecteur de littéraux honore l’ÉCHAPPEMENT : une phrase à apostrophe échappée est COMPTÉE', () => {
+    // Fixture posée ICI, jamais lue dans l'arbre : le scan ignore les `.test.ts`.
+    // Avant le correctif, la lecture s'arrêtait au `\'` — le fragment `'Impossible d\'` ne portait plus
+    // ni élision ni mot-outil, et la phrase entière sortait du compte (cas réel : `massBattleFlow.ts`).
+    expect(narrationCount("get().log('Impossible d\\'ouvrir une bataille de masse en plein combat tactique.');")).toBe(1);
+    expect(narrationCount("  return 'La bataille s\\'achève sans vainqueur clair.';")).toBe(1);
+    // Le délimiteur ÉCHAPPÉ ne coupe plus le littéral : les deux moitiés ne comptent pas pour deux.
+    expect(narrationCount("get().log('Le tuteur demande l\\'argent d\\'un maître.');")).toBe(1);
+    // Aucune régression sur la forme ordinaire (sans échappement).
+    expect(narrationCount('get().log("Bourse insuffisante pour payer le panier.");')).toBe(1);
+    // …ni faux positif sur une chaîne technique échappée.
+    expect(narrationCount("get().log('a\\'b');")).toBe(0);
+  });
+
+  it('6ᵉ FORME : un `.log(` TERNAIRE compte SES DEUX branches (l’argument n’est pas collé à l’ouverture)', () => {
+    // Le site réel (`merchantFlow.ts`, chemin d'achat) : deux phrases joueur, zéro vue avant ce lot.
+    const ternaire = 'get().log(free ? `Achat : ${e} (dans les moyens du Statut du groupe — Tenir les comptes).` : `Vente : ${e} à la criée.`);';
+    expect(narrationCount(ternaire)).toBe(2);
+    // Un littéral sous appel IMBRIQUÉ reste du catalogue : profondeur 1, jamais compté.
+    expect(narrationCount("get().log(t('mf.buy', { label: 'Épée' }));")).toBe(0);
+    // La forme 1 garde ses appels : un littéral collé ne compte pas DEUX fois.
+    expect(narrationCount("get().log(`Bourse insuffisante pour ${x}.`);")).toBe(1);
   });
 
   it('CLIQUET : toute baseline devenue trop haute (fichier assaini) doit être ABAISSÉE', () => {

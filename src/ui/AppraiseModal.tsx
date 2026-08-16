@@ -1,5 +1,5 @@
 import { useGame, type PendingAppraise } from '../state/store';
-import { flowStakeRef } from '../data';
+import { flowStakeRef, refLabel } from '../data';
 import type { Combatant } from '../engine/types';
 import { influencesLocally } from '../state/netOwnership';
 import { RollShell, type RollAction } from './RollShell';
@@ -39,7 +39,8 @@ export function AppraiseModalView({
 }) {
   const rolled = pa.roll != null;
   const detect = pa.mode === 'detect';
-  const skill = pa.skillLabel ?? (detect ? 'Intuition' : 'Évaluation');
+  // Repli aligné sur le flux (`openAppraise`) : le libellé vient du REGISTRE par id stable.
+  const skill = pa.skillLabel ?? refLabel('skills', { id: APPRAISE_SKILL[pa.mode ?? 'evaluate'].skill });
   // Soutien du groupe (LDB 12) et composantes de la valeur de Test (États, séquelles, passifs,
   // effets — #1178) : lignes de mod NOMMÉES, base rebasée sur le Niveau de Compétence nu (LDB 09 l.17).
   // La Compétence testée vient de la SOURCE UNIQUE du flux (`APPRAISE_SKILL`), par id.

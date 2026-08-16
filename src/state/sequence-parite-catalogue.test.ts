@@ -195,9 +195,104 @@ const COMBAT: Site[] = [
   },
 ];
 
-const TOUS: Site[] = [...SEQUENCE, ...MARQUAGE, ...SIGNES, ...COMBAT];
+/* ── V8c₁ : les trois plus gros flux hors combat rendus au catalogue (invariant ZÉRO) ────────────
+ * `interludeFlow` (`if.*`), `massBattleFlow` (`mbf.*`), `merchantFlow` (`mf.*`). Échantillons pris
+ * sur les formes qui se cassent le plus vite : pluriel porté par une variable, composition de deux
+ * clés, ponctuation typographique (« », —, ≤, −), fragments optionnels. */
 
-describe('#1318 V8b/V8b₂/V8c₀ — la migration au catalogue est à PARITÉ D’OCTET', () => {
+const HEROS3 = 'Sigrid', OBJET = 'Épée runique', ARGENT = '12 CO', ACTIVITE = 'Artisanat';
+
+const V8C1: Site[] = [
+  {
+    site: 'interludeFlow.ts:195 — bandeau d’ouverture (pluriel porté par la variable)',
+    avant: `— Entre deux aventures : ${3} semaine${3 > 1 ? 's' : ''} —`,
+    apres: t('if.openBanner', { n: 3, s: 3 > 1 ? 's' : '' }),
+  },
+  {
+    site: 'interludeFlow.ts:240 — ligne d’Événement du héros',
+    avant: `${HEROS3} — Événement (${47}) : Un vieil ami. Vous croisez une connaissance.`,
+    apres: t('if.eventLine', { name: HEROS3, roll: 47, label: 'Un vieil ami', text: 'Vous croisez une connaissance.' }),
+  },
+  {
+    site: 'interludeFlow.ts:832 — ouvrage achevé (fragments Atouts/Défauts optionnels)',
+    avant: `${HEROS3} achève son ouvrage : ${OBJET}${' (Fiable)'}${''} !`,
+    apres: t('if.craftDone', { name: HEROS3, label: OBJET, atouts: ' (Fiable)', defauts: '' }),
+  },
+  {
+    site: 'interludeFlow.ts:1316 — dépôt investi (la même variable rendue trois fois)',
+    avant: `${HEROS3} investit ${ARGENT} (Indice d'intérêts ${4} — ${4} % de gains, faillite sur ≤ ${4}).`,
+    apres: t('if.bankInvest', { name: HEROS3, money: ARGENT, rate: 4 }),
+  },
+  {
+    site: 'interludeFlow.ts:1366 — dépôt perdu (issue composée d’une 2ᵉ clé)',
+    avant: `${HEROS3} — ${3} ≤ ${4} : ${'la banque a fait faillite'} — ${ARGENT} perdus !`,
+    apres: t('if.bankLost', { name: HEROS3, roll: 3, threshold: 4, what: t('if.bankFailBank'), money: ARGENT }),
+  },
+  {
+    site: 'massBattleFlow.ts:696 — libellé d’issue chiffrée (camp composé, signe porté par l’appelant)',
+    avant: `Puissance ${'ennemie'} ${''}${-3}`,
+    apres: t('mbf.outMight', { side: t('mbf.sideEnemy'), amount: `${''}${-3}` }),
+  },
+  {
+    site: 'massBattleFlow.ts:727 — « Tenez votre position » tenue (signe MOINS typographique)',
+    avant: `Tenez votre position : la position tient (Point de rupture ${2}/${5}) — Puissance ennemie −2. L'ennemi redoublera d'efforts (opposition +${10} au prochain Round).`,
+    apres: t('mbf.holdHeld', { bp: 2, max: 5, bonus: 10 }),
+  },
+  {
+    site: 'massBattleFlow.ts:870 — Test spectaculaire de Puissance du Round',
+    avant: `Round ${2}/${4} — Test spectaculaire de Puissance : les Personnages réduisent l'ennemi de ${7}, l'ennemi réduit les Personnages de ${5}.`,
+    apres: t('mbf.clash', { n: 2, total: 4, enemyLoss: 7, allyLoss: 5 }),
+  },
+  {
+    site: 'merchantFlow.ts:553 — panier payé (pluriel porté par la variable)',
+    avant: `Payé : ${ARGENT} (${1} article${1 > 1 ? 's' : ''}).`,
+    apres: t('mf.paid', { total: ARGENT, count: 1, s: 1 > 1 ? 's' : '' }),
+  },
+  {
+    site: 'merchantFlow.ts:710 — troc conclu (ratio recomposé au call-site)',
+    avant: `Troc : ${2} × ${'Corde'} contre ${1} × ${'Torche'} (${'commun'} ${2}:${1} ${'rare'}).`,
+    apres: t('mf.barterDone', { giveCount: 2, giveLabel: 'Corde', getCount: 1, getLabel: 'Torche', giveAv: 'commun', ratio: `${2}:${1}`, getAv: 'rare' }),
+  },
+  {
+    site: 'merchantFlow.ts:466 — achat GRATUIT « Tenir les comptes » (branche VRAIE du ternaire)',
+    avant: `Achat : ${OBJET} (dans les moyens du Statut du groupe — Tenir les comptes).`,
+    apres: t('mf.buyFree', { label: OBJET }),
+  },
+  {
+    site: 'merchantFlow.ts:466 — achat payé (branche FAUSSE du même ternaire)',
+    avant: `Achat : ${OBJET}.`,
+    apres: t('mf.buy', { label: OBJET }),
+  },
+  {
+    site: 'merchantFlow.ts:986 — fourchette d’estimation (le séparateur est de la typographie, pas du code)',
+    avant: `${'2 CO'} – ${'3 CO'}`,
+    apres: t('mf.estimateRange', { min: '2 CO', max: '3 CO' }),
+  },
+  {
+    site: 'interludeFlow.ts:1230 — MALADRESSE d’Activité (jumeau de `cf.oups`, V8c₀)',
+    avant: `${HEROS3} — MALADRESSE (${99}) !`,
+    apres: t('if.fumble', { name: HEROS3, roll: String(99) }),
+  },
+  {
+    site: 'interludeFlow.ts:937 — fausses Particularités CITÉES (jointure au catalogue)',
+    avant: `${HEROS3} confond ${OBJET} avec un objet similaire et le croit doté de « ${['Fiable', 'Précise'].join(' » et « ')} » — certitude(s) erronée(s).`,
+    apres: t('if.identifyFakes', { name: HEROS3, item: OBJET, fakes: ['Fiable', 'Précise'].join(t('if.fakesJoin')) }),
+  },
+  {
+    site: 'interludeFlow.ts:622 — libellé d’Activité composé (la fabrique remplace le gabarit inline)',
+    avant: `${ACTIVITE} — ${OBJET}`,
+    apres: stepDetail(dataLabel(ACTIVITE), dataLabel(OBJET)),
+  },
+  {
+    site: 'merchantFlow.ts:369 — recherche active (sujet + détail par `stepDetail`)',
+    avant: `${HEROS3} — recherche active (Ragot ${31}) : une journée aux marchés porte ses fruits (Disponibilité +10 %, LDB 59 l.50).`,
+    apres: stepDetail(dataLabel(HEROS3), t('mf.searchOk', { roll: 31 })),
+  },
+];
+
+const TOUS: Site[] = [...SEQUENCE, ...MARQUAGE, ...SIGNES, ...COMBAT, ...V8C1];
+
+describe('#1318 V8b/V8b₂/V8c₀/V8c₁ — la migration au catalogue est à PARITÉ D’OCTET', () => {
   it.each(TOUS)('$site', ({ avant, apres }) => {
     expect(apres).toBe(avant);
   });
@@ -207,7 +302,8 @@ describe('#1318 V8b/V8b₂/V8c₀ — la migration au catalogue est à PARITÉ D
     expect(MARQUAGE.length, 'les sites rougis par le MARQUAGE du contrat (V8b₂), panneau compris').toBe(9);
     expect(SIGNES.length, 'DR positif, nul, négatif — le signe ne vit pas dans le gabarit').toBe(3);
     expect(COMBAT.length, 'les littéraux de combatFlow rendus au catalogue (V8c₀)').toBe(6 + 1);
-    expect(TOUS.length).toBe(27);
+    expect(V8C1.length, 'échantillons des trois flux passés MIGRÉS par V8c₁ (interlude / bataille de masse / marchand)').toBe(17);
+    expect(TOUS.length).toBe(44);
   });
 
   it('MUTATION : l’oracle est SENSIBLE — un tiret cadratin changé en tiret court diverge', () => {

@@ -19,7 +19,7 @@ import { appraiseEstimate } from '../engine/appraisal';
 import { makeRNG } from '../engine/dice';
 import { rollStock, fullStock, availabilitySearchBonus, barterRatio, availabilityAfterHalvings, priceAfterHalvings, isTradable, outOfTradeReason, type Settlement, type CatalogItem, type StockLine } from '../engine/disponibilite';
 import type { Availability } from '../engine/types';
-import { t } from '../i18n';
+import { t, t as msg } from '../i18n'; // `msg` : alias local — `t` est aussi le nom d'un trapping résolu dans ce flux
 import { priceToMoney, add as moneyAdd, canAfford, fromBrass, toBrass, formatMoney, statusBudgetBrass, type StatusTier, type Money } from '../engine/money';
 import { bourseOf, payWithAllocation, payFromGroup, soloPayer, creditBourse } from './bourseFlow';
 import { actorStatus } from '../engine/social';
@@ -36,7 +36,7 @@ import { addPossession } from './possessionsFlow';
 import { traceLineOf } from '../engine/traceLine';
 
 import type { Get, Set } from './flowTypes';
-import { dataLabel } from '../data';
+import { dataLabel, refLabel } from '../data';
 import { stepDetail } from './rollSeam';
 
 /** Issue d'un Marchandage conclu (achat OU vente) — module les prix de la visite. */
@@ -179,7 +179,7 @@ function partyAvailabilityBonus(party: Combatant[], gossipDay = false): number {
  *  pré-tirage affiché (`openStockRevealCascade`) ET de la conséquence de l'étape. Le tirage n'est pas
  *  un Test de Compétence : c'est l'ARTICLE qui nomme la ligne, avec la nature du dé. */
 function stockTraceLine(l: StockLine): string {
-  return traceLineOf({ label: `${l.label} — Disponibilité`, roll: l.test!.roll, target: l.test!.target, success: true, issue: `disponible ×${l.qty}` });
+  return traceLineOf({ label: stepDetail(dataLabel(l.label), t('mf.dispoTrace')), roll: l.test!.roll, target: l.test!.target, success: true, issue: t('mf.dispoQty', { qty: l.qty }) });
 }
 /** Instantané de stock FRAIS d'un archétype à un instant `now`, avec un bonus de Disponibilité (Carrière
  *  cohérente + éventuelle recherche active, LDB 59 l.50). PUR (aucun `set`/`log`) — SOURCE UNIQUE de calcul,
@@ -232,7 +232,7 @@ function rollFreshStock(
   entityId: string, ent: SceneEntity | undefined, arch: (typeof MERCHANTS)[string], settlement: Settlement, now: number, restockPeriod: number, gossipDay: boolean,
 ): { id: string; qty: number }[] {
   const { stock, tested } = computeFreshStockLines(get, ent, arch, entityId, settlement, now, restockPeriod, gossipDay);
-  if (tested.length) get().log(`Marché (${settlement}) : ${tested.map((l) => `${l.label} ✔×${l.qty}`).join(', ')}.`);
+  if (tested.length) get().log(t('mf.marketRoll', { settlement, lignes: tested.map((l) => t('mf.stockLine', { label: l.label, qty: l.qty })).join(', ') }));
   persistStock(set, entityId, stock, now);
   return stock;
 }
@@ -301,7 +301,7 @@ function openStockRevealCascade(
     ...(outcome?.length ? { outcome: toRecapLines(outcome) } : {}),
     meta: { entityId, archetype, settlement, now, restockPeriod, gossipDay, resaleRate, buyMarkup, ...(backdrop != null ? { backdrop } : {}) },
   };
-  startCascade(get, set, { title: 'Réassort marchand', purpose: 'test', steps: [step] });
+  startCascade(get, set, { title: t('mf.restockTitle'), purpose: 'test', steps: [step] });
 }
 
 /** Ouverture PARTAGÉE d'une visite marchande (#369) — `ent` est l'override d'ENTITÉ de scène (PNJ posé
@@ -310,7 +310,7 @@ function openStockRevealCascade(
  *  par les deux entrées — aucune n'est un fork de l'autre. */
 function openMerchantByArchetype(get: Get, set: Set, entityId: string, archetype: string, ent?: SceneEntity, backdrop?: string): void {
   const arch = MERCHANTS[archetype];
-  if (!arch) { get().log(`Archétype marchand inconnu : « ${archetype} ».`); return; }
+  if (!arch) { get().log(t('mf.archetypeUnknown', { archetype })); return; }
   const settlement: Settlement = ent?.merchant?.settlement ?? arch.settlement;
   const resaleRate = ent?.merchant?.resaleRate ?? arch.resaleRate;
   const buyMarkup = ent?.merchant?.buyMarkup ?? arch.buyMarkup ?? 1; // majoration d’achat (1 = prix listé ; >1 = vend plus cher)
@@ -364,9 +364,10 @@ registerCascadeApplier(MERCHANT_RAGOT_KIND, (get, set, step) => {
   const actor = step.actorId ? actorIn(get(), step.actorId) : undefined;
   finalizeSearchAvailability(get, set, entityId, Number(meta.restockPeriod ?? MINUTES_PER_DAY), gossipDay);
   return {
-    consequences: freeCons([gossipDay
-      ? `${actor?.label ?? 'Le groupe'} — recherche active (Ragot ${step.result.roll}) : une journée aux marchés porte ses fruits (Disponibilité +10 %, LDB 59 l.50).`
-      : `${actor?.label ?? 'Le groupe'} — recherche active (Ragot ${step.result.roll}) : une journée aux marchés sans glaner de piste utile.`]),
+    consequences: freeCons([stepDetail(
+      actor ? dataLabel(actor.label) : t('eff.party'),
+      t(gossipDay ? 'mf.searchOk' : 'mf.searchKo', { roll: step.result.roll }),
+    )]),
   };
 });
 
@@ -405,13 +406,13 @@ export function searchAvailability(get: Get, set: Set): void {
   // Test de Ragot du groupe (Soutien LDB 12) — Intermédiaire (+0), le RAW ne chiffre pas la difficulté.
   const best = partyAssisted(get().party, 'ragot', 'sociabilite');
   if (!best) {
-    get().log('Personne dans le groupe ne sait glaner un Ragot — une journée passée en vain aux étals.');
+    get().log(t('mf.noGossip'));
     finalizeSearchAvailability(get, set, m.entityId, restockPeriod, false);
     return;
   }
   openPartyTest(get, set, {
     skill: 'ragot', char: 'sociabilite', // Soutien LDB 12 — même valeur que `partyAssisted`
-    actionLabel: 'Recherche active',
+    actionLabel: t('mf.rechercheActive'),
     difficulty: 'intermediaire',
     stake: combatStakeRef(MERCHANT_RAGOT_KIND),
   }, MERCHANT_RAGOT_KIND, { entityId: m.entityId, restockPeriod });
@@ -423,7 +424,7 @@ export function closeMerchant(get: Get, set: Set): void {
   const renege = !!m && ((m.bargainBuy != null && !m.bargainPaid) || (m.bargainSell != null && !m.bargainSellUsed));
   if (m && renege) {
     set((s) => ({ merchantStocks: { ...s.merchantStocks, [m.entityId]: { ...s.merchantStocks[m.entityId], bargainLocked: true } } }));
-    get().log('Vous quittez sans conclure le marché : le marchand refuse de re-marchander (achat ni vente) jusqu’à son prochain réassort.');
+    get().log(t('mf.renege'));
   }
   get().confirmDistribution(); // ne pas perdre les objets payés non répartis
   set({ merchant: null });
@@ -440,7 +441,7 @@ export function buyItem(get: Get, set: Set, id: string, heroId?: string): void {
   const cost = free ? fromBrass(0) : fromBrass(Math.round(toBrass(priceToMoney(entry.price)) * craftPriceFactor({ qualities: entry.qualities as never }) * (m.buyMarkup ?? 1) * factor));
   const dest = heroId ?? get().party[0]?.id;
   const destHero = get().party.find((h) => h.id === dest);
-  if (!free && (!destHero || !canAfford(bourseOf(destHero), cost))) { get().log(`Bourse insuffisante pour ${entry.label}.`); return; }
+  if (!free && (!destHero || !canAfford(bourseOf(destHero), cost))) { get().log(t('mf.purseKo', { label: entry.label })); return; }
   if (!entry.unit && !itemFromTrappingById(id)) return; // objet de sac introuvable → abandon (parité comportement)
   if (!free) payWithAllocation(get, set, { debits: soloPayer(dest!, cost), recipient: dest, purpose: 'achat' });
   const decr = (st: { id: string; qty: number }[]) => st.map((l) => (l.id === id ? { ...l, qty: l.qty - 1 } : l));
@@ -462,7 +463,7 @@ export function buyItem(get: Get, set: Set, id: string, heroId?: string): void {
       merchantStocks: { ...s.merchantStocks, [eid]: { stock: newStock, rolledAt: persisted?.rolledAt ?? s.gameTime } },
     };
   });
-  get().log(free ? `Achat : ${entry.label} (dans les moyens du Statut du groupe — Tenir les comptes).` : `Achat : ${entry.label}.`);
+  get().log(t(free ? 'mf.buyFree' : 'mf.buy', { label: entry.label }));
 }
 
 export function addToCart(_get: Get, set: Set, id: string): void {
@@ -504,7 +505,7 @@ export function refuseBargain(get: Get, set: Set, mode: 'buy' | 'sell'): void {
     merchant: { ...s.merchant!, ...patch, bargainLocked: true },
     merchantStocks: { ...s.merchantStocks, [m.entityId]: { ...s.merchantStocks[m.entityId], bargainLocked: true } },
   }));
-  get().log('Vous refusez le marché ; le marchand ne marchandera plus (ni achat ni vente) jusqu’à son prochain réassort.');
+  get().log(t('mf.bargainRefused'));
 }
 
 export function payCart(get: Get, set: Set): void {
@@ -522,7 +523,7 @@ export function payCart(get: Get, set: Set): void {
   let totalBrass = 0;
   for (const c of cart) totalBrass += unitBrass(c.id) * c.qty;
   const total = fromBrass(totalBrass);
-  if (!payFromGroup(get, set, total, { purpose: 'panier marchand' })) { get().log('Bourse insuffisante pour payer le panier.'); return; }
+  if (!payFromGroup(get, set, total, { purpose: 'panier marchand' })) { get().log(t('mf.cartPurseKo')); return; }
   // Crée les objets achetés (par UNITÉ) en attente de répartition + déplète le stock. Une ligne
   // UNITÉ (véhicule/créature-monture, #760) rejoint elle aussi `pendingDistribution` — le joueur
   // choisit le héros PROPRIÉTAIRE via le même écran de répartition que les objets de sac ;
@@ -549,7 +550,7 @@ export function payCart(get: Get, set: Set): void {
       merchantStocks: { ...s.merchantStocks, [eid]: { ...persisted, stock: newStock, rolledAt: persisted?.rolledAt ?? s.gameTime } },
     };
   });
-  get().log(`Payé : ${formatMoney(total)} (${count} article${count > 1 ? 's' : ''}).`);
+  get().log(t('mf.paid', { total: formatMoney(total), count, s: count > 1 ? 's' : '' }));
 }
 
 export function assignDistribution(_get: Get, set: Set, index: number, heroId: string): void {
@@ -681,14 +682,14 @@ export function barterExchange(get: Get, set: Set, opts: { giveHeroId: string; g
   const refused = barterRefusal(opts.giveTrappingId) ?? barterRefusal(opts.getStockId);
   if (refused) { get().log(t('trade.barterRefused', { reason: refused })); return; }
   const quote = barterQuote(opts.giveTrappingId, opts.getStockId, getCount);
-  if (!quote) { get().log('Troc impossible : objet sans prix de référence.'); return; }
+  if (!quote) { get().log(t('mf.barterNoPrice')); return; }
   const hero = get().party.find((h) => h.id === opts.giveHeroId);
   const stockLine = m.stock.find((l) => l.id === opts.getStockId);
   if (!hero || !stockLine) return;
   // Exemplaires cédés : instances NON équipées du même trapping chez ce héros.
   const givable = (hero.items ?? []).filter((i) => i.trappingId === opts.giveTrappingId && !i.equipped);
-  if (givable.length < quote.giveCount) { get().log(`Troc : il faut ${quote.giveCount} × ${findTrappingById(opts.giveTrappingId)?.label ?? '?'} à céder (${givable.length} disponible(s)).`); return; }
-  if (stockLine.qty < getCount) { get().log('Troc : stock insuffisant chez le marchand.'); return; }
+  if (givable.length < quote.giveCount) { get().log(t('mf.barterNeed', { n: quote.giveCount, label: findTrappingById(opts.giveTrappingId)?.label ?? '?', dispo: givable.length })); return; }
+  if (stockLine.qty < getCount) { get().log(t('mf.barterNoStock')); return; }
   const soldUids = givable.slice(0, quote.giveCount).map((i) => i.uid);
   const newStock = m.stock.map((l) => (l.id === opts.getStockId ? { ...l, qty: l.qty - getCount } : l));
   set((s) => {
@@ -706,7 +707,11 @@ export function barterExchange(get: Get, set: Set, opts: { giveHeroId: string; g
       merchantStocks: { ...s.merchantStocks, [eid]: { stock: newStock, rolledAt: persisted?.rolledAt ?? s.gameTime } },
     };
   });
-  get().log(`Troc : ${quote.giveCount} × ${findTrappingById(opts.giveTrappingId)?.label ?? '?'} contre ${getCount} × ${findTrappingById(opts.getStockId)?.label ?? '?'} (${quote.giveAv} ${quote.ratio.give}:${quote.ratio.get} ${quote.getAv}).`);
+  get().log(t('mf.barterDone', {
+    giveCount: quote.giveCount, giveLabel: findTrappingById(opts.giveTrappingId)?.label ?? '?',
+    getCount, getLabel: findTrappingById(opts.getStockId)?.label ?? '?',
+    giveAv: quote.giveAv, ratio: `${quote.ratio.give}:${quote.ratio.get}`, getAv: quote.getAv,
+  }));
 }
 
 /** Retire de `party` (clone + recompute) les instances `entries` (uid+heroId) et renvoie la nouvelle liste. */
@@ -782,7 +787,7 @@ export function repairItem(get: Get, set: Set, uid: string, heroId: string): voi
   const t = item.trappingId ? findTrappingById(item.trappingId) : undefined;
   const base = t ? toBrass(priceToMoney(t.price)) : 0;
   const cost = fromBrass(itemRepairCostBrass(item, base));
-  if (!hero || !canAfford(bourseOf(hero), cost)) { get().log(`Bourse insuffisante pour réparer ${item.label}.`); return; }
+  if (!hero || !canAfford(bourseOf(hero), cost)) { get().log(msg('mf.repairPurseKo', { label: item.label })); return; }
   payWithAllocation(get, set, { debits: soloPayer(heroId, cost), recipient: heroId, purpose: 'réparation' });
   set((s) => ({
     party: s.party.map((h) => {
@@ -793,7 +798,7 @@ export function repairItem(get: Get, set: Set, uid: string, heroId: string): voi
       return clone;
     }),
   }));
-  get().log(`Réparation : ${item.label}.`);
+  get().log(msg('mf.repairDone', { label: item.label }));
 }
 
 export function startBargain(get: Get, set: Set, mode: 'buy' | 'sell'): void {
@@ -873,7 +878,8 @@ function openAppraise(
   const t = trappingId ? findTrappingById(trappingId) : undefined;
   set({ pendingAppraise: {
     actorId: best.actor.id, actorName: best.actor.label, ...target, itemName,
-    mode, skillLabel: mode === 'detect' ? 'Intuition' : 'Évaluation',
+    // Le libellé de la Compétence vient du REGISTRE, par id stable — jamais un nom écrit au call-site.
+    mode, skillLabel: refLabel('skills', { id: APPRAISE_SKILL[mode].skill }),
     truePriceBrass: t ? toBrass(priceToMoney(t.price)) : 0,
     availability: (t?.availability as string | undefined) ?? null,
     skillValue: best.value, support: best.support, difficulty: 'intermediaire', target: best.value, roll: null, success: false, sl: 0,
@@ -890,7 +896,7 @@ export function appraiseItem(get: Get, set: Set, uid: string, heroId: string, mo
   const item = hero?.items?.find((i) => i.uid === uid); if (!item) return;
   if (mode === 'detect' && item.detectTried) return; // une seule tentative par artefact (LDB 10 l.312)
   if (mode === 'evaluate' && item.appraiseTriedDay === gameDay(get)) {
-    get().log(`${item.label} a déjà été jaugé aujourd'hui sans succès — réessayez demain.`);
+    get().log(t('mf.appraiseSameDay', { label: item.label }));
     return;
   }
   openAppraise(get, set, { itemUid: uid }, item.label, mode, item.trappingId);
@@ -954,32 +960,32 @@ export function resolveAppraise(get: Get, set: Set): void {
     const rules = line ? (line.effect.qualities?.length ?? (line.effect.identified === false ? 1 : 0)) : 1;
     if (!pa.success) {
       patchAppraiseTarget(get, set, pa, { detectTried: true });
-      get().log(`${pa.actorName} ne perçoit rien de net en touchant ${pa.itemName} (Détection d'artefact : une seule tentative).`);
+      get().log(t('mf.detectNothing', { actor: pa.actorName, item: pa.itemName }));
       return;
     }
     if (!isMagic) {
       patchAppraiseTarget(get, set, pa, { detectTried: true });
-      get().log(`${pa.actorName} sonde ${pa.itemName} : aucune aura — l'objet n'est pas magique.`);
+      get().log(t('mf.detectNotMagic', { actor: pa.actorName, item: pa.itemName }));
       return;
     }
     // Succès : aura sentie ; chaque DR apprend une règle → tout révélé quand DR couvre les règles.
     const allKnown = pa.sl >= Math.max(1, rules);
     patchAppraiseTarget(get, set, pa, { detectTried: true, magicKnown: true, ...(allKnown ? { identified: true } : {}) });
-    get().log(allKnown
-      ? `${pa.actorName} sent l'aura de ${pa.itemName} — et en saisit les règles (DR ${pa.sl}) : objet identifié.`
-      : `${pa.actorName} sent que ${pa.itemName} est MAGIQUE, sans en percer les règles (DR ${pa.sl}).`);
+    get().log(t(allKnown ? 'mf.detectAll' : 'mf.detectPartial', { actor: pa.actorName, item: pa.itemName, dr: pa.sl }));
     return;
   }
   if (!pa.success) {
     // Échec NET : pas de re-tentative le même jour (LDB 12 l.120 — seul un résultat marginal
     // « permet de faire un nouvel essai » ; ADE II : re-tenter une identification coûte du temps).
     patchAppraiseTarget(get, set, pa, { appraiseTriedDay: gameDay(get) });
-    get().log(`Évaluation ratée : ${pa.itemName} reste non identifié (rien de plus à en tirer aujourd'hui).`);
+    get().log(t('mf.appraiseFail', { item: pa.itemName }));
     return;
   }
   patchAppraiseTarget(get, set, pa, { identified: true });
-  if (pa.truePriceBrass <= 0) { get().log(`Évaluation : ${pa.itemName} révélé (pièce unique — sans prix de catalogue).`); return; }
+  if (pa.truePriceBrass <= 0) { get().log(t('mf.appraiseUnique', { item: pa.itemName })); return; }
   const est = appraiseEstimate(pa.availability as Parameters<typeof appraiseEstimate>[0], pa.truePriceBrass);
-  const range = est.min === est.max ? formatMoney(fromBrass(est.min)) : `${formatMoney(fromBrass(est.min))} – ${formatMoney(fromBrass(est.max))}`;
-  get().log(`Évaluation : ${pa.itemName} révélé (valeur estimée ${range}).`);
+  const range = est.min === est.max
+    ? formatMoney(fromBrass(est.min))
+    : t('mf.estimateRange', { min: formatMoney(fromBrass(est.min)), max: formatMoney(fromBrass(est.max)) });
+  get().log(t('mf.appraiseValue', { item: pa.itemName, range }));
 }
