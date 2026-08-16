@@ -18,6 +18,7 @@ import type { Get, Set as SetFn } from './flowTypes';
 import type { BattleState, GameState } from './store';
 import { facingToward } from './dir8';
 import { Combatant, type Difficulty, CHAR_LABELS } from '../engine/types';
+import { rawText } from '../i18n/rawText';
 import { battleRng } from './battleRng';
 import { evLines } from './combatLog';
 import type { RNG } from '../engine/dice';
@@ -514,7 +515,7 @@ function maneuverDefenseLabel(tgt: Combatant, defense: NonNullable<ManeuverDef['
 function openManeuverDefenseCascade(
   get: Get, set: SetFn, attacker: Combatant, def: ManeuverDef, indice: number, atk: TestResult, spent: number, heroes: Combatant[],
 ): void {
-  const attackerLabel = def.label || ATTACK_LABEL[def.kind];
+  const attackerLabel = rawText(def.label || ATTACK_LABEL[def.kind]);
   const steps: CascadeStep[] = heroes.map((h) => {
     const base = maneuverDefenseValue(h, def.defense!);
     return {

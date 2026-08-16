@@ -41,7 +41,7 @@ locale-aware · **Phase D** (UI, libellés menus/boutons).
 
 ### 1. Primitive — `src/i18n/` (pur)
 - `messages/fr.ts` : catalogue **plat** `Record<string, string>` à patrons : `'test.success': '{actor} réussit (DR {sl}).'`.
-- `index.ts` : `type Locale = 'fr'` ; `let locale: Locale = 'fr'` ; `setLocale(l)` ; `t(key: MsgKey, params?: Record<string, string|number>): string` (interpole `{param}`) ; `type MsgKey = keyof typeof fr` → **clé absente = erreur de compilation**.
+- `index.ts` : `type Locale = 'fr'` ; `let locale: Locale = 'fr'` ; `setLocale(l)` ; `t(key: MsgKey, params?: Record<string, string|number>): PlayerText` (interpole `{param}`) — MINTEUR (a) de la marque `PlayerText` (`src/i18n/playerText.ts`, #1318 V8a₀) : tout ce qui sort du catalogue est du texte joueur par construction, et un champ marqué n’accepte plus qu’une sortie de minteur ; `type MsgKey = keyof typeof fr` → **clé absente = erreur de compilation**.
 - **Pur** (aucun React/DOM) → importable par le moteur **sans casser sa pureté** (peer module, comme `src/data`).
 
 ### 2. Deux modes de résolution
@@ -111,8 +111,9 @@ type Params = Record<string, string | number>;
 const CATALOGS = { fr } as const;
 let locale: keyof typeof CATALOGS = 'fr';
 export const setLocale = (l: keyof typeof CATALOGS) => { locale = l; };
-export function t(key: MsgKey, params?: Params): string {
+export function t(key: MsgKey, params?: Params): PlayerText {
   const pat = CATALOGS[locale][key] ?? CATALOGS.fr[key] ?? key;
-  return params ? pat.replace(/\{(\w+)\}/g, (_, k) => String(params[k] ?? `{${k}}`)) : pat;
+  // Le cast est la FRAPPE du minteur (muré ailleurs par le lint, cf. `eslint.config.js`).
+  return (params ? pat.replace(/\{(\w+)\}/g, (_, k) => String(params[k] ?? `{${k}}`)) : pat) as PlayerText;
 }
 ```

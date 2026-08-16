@@ -4,6 +4,7 @@
  * aucune migration ne les régénère.
  */
 import type { EntityAppearance } from '../engine/authoringAppearance';
+import type { PlayerText } from '../i18n/playerText';
 import type { RigSpeciesId } from '../gameIso/rig/appearance';
 import type { SourceRef, SecondaryRef, RaceKey, RefCareerId } from './schemas/common';
 import type { MerchantArchetypeDef } from '../state/merchants/types';
@@ -3023,10 +3024,26 @@ export function specLabel(category: string, refId: string, specId: string): stri
   return entry ? specEntryLabel(entry) : specId;
 }
 /** Libellé CONCRET d'une `Ref` : « Magie des Arcanes (Ghur) » — base (repli sur l'id) + spec. SOURCE
- *  UNIQUE du nom affiché ET de la clé runtime (combatFeatures/grimoire). */
-export function refLabel(category: string, ref: Ref): string {
+ *  UNIQUE du nom affiché ET de la clé runtime (combatFeatures/grimoire).
+ *
+ *  MINTEUR (b) de `PlayerText` (#1318 V8a₀) — la couture label↔id du CHARGEMENT, la seule que le
+ *  CLAUDE.md tolère. C'est un ACCESSEUR qui mint, et non les `.label` des entités : marquer le champ
+ *  lui-même remonterait dans les schémas JSON et dans l'éditeur de données (qui ÉCRIT des libellés,
+ *  `src/ui/editor/**`), pour un verrou identique — ici le point de passage existe déjà et il est
+ *  documenté SOURCE UNIQUE. RÉSIDU MESURÉ : les résolveurs par famille qui lisent `.label` sans passer
+ *  par ici (`conditionLabel`, `damageTypeLabel`, les `label:` de `SPEC_SOURCES`) rendent encore
+ *  `string` — ils convergent en V8a₁, pas ici. À NOTER : `src/data/**` est hors du périmètre ESLint du
+ *  dépôt, donc ce cast n'est pas muré par le lint mais par la relecture (dit au JSDoc de `playerText`).
+ *
+ *  CO-LOCATAIRE À SCINDER EN V8a₁ (#1318, grief T3) : cette fonction est AUSSI la CLÉ RUNTIME de
+ *  plusieurs registres (`engine/character.ts` l.374 : `refLabel('skills', add)` sert d'index dans
+ *  `opts.skillAdvances` ; même usage côté `combatFeatures`/grimoire). Un texte qui sert de clé n'est
+ *  pas du texte JOUEUR : les deux usages doivent se séparer (accesseur de CLÉ non-minteur d'un côté,
+ *  libellé d'affichage de l'autre), sinon traduire la donnée casserait des lookups. La scission est le
+ *  travail de V8a₁ — la NOMMER ici en est la condition ; ce lot ne la fait PAS. */
+export function refLabel(category: string, ref: Ref): PlayerText {
   const base = findById(category, ref.id)?.label ?? ref.id;
-  return ref.spec ? `${base} (${specLabel(category, ref.id, ref.spec)})` : base;
+  return (ref.spec ? `${base} (${specLabel(category, ref.id, ref.spec)})` : base) as PlayerText;
 }
 /** Copie une `QualityRef` de catalogue en `QualityInstance` RUNTIME FRAÎCHE (`{id, value?}`) — objet neuf
  *  (le runtime mute `qualities` : enchantements, munitions). Plus d'aplatissement en chaîne « id value ». */

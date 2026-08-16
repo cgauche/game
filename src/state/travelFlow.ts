@@ -20,6 +20,7 @@
  * Une péripétie qui déclenche un combat/une transition INTERROMPT le voyage : `travelPlan` mémorise
  * la progression (`kmDone`) et la carte propose « Reprendre le voyage » (`resumeTravel`).
  */
+import { rawText } from '../i18n/rawText';
 import { battleRng } from './battleRng';
 import { bus, EVT } from './bus';
 import { applyEffectsLoot } from './combatFlow';
@@ -631,7 +632,7 @@ function buildTravelDayCascade(
     // Le tirage des péripéties n'est le pas d'AUCUN héros : c'est la route qui le lance (étape MONDE,
     // routée au siège MJ) — les Tests qu'elle appelle, eux, nomment leur jeteur à l'insertion.
     steps.push(displayStep({
-      id: 'land-peril', kind: 'landPeril', icon: 'ui/warning', label: 'Péripéties de la route',
+      id: 'land-peril', kind: 'landPeril', icon: 'ui/warning', label: rawText('Péripéties de la route'),
       worldOwner: true, meta: { destLabel: dest.destLabel },
     }));
   }
@@ -810,7 +811,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
       // Survie en extérieur Accessible (+20) INFLUENÇABLE → étape-jet insérée (échec = retard + Exténué).
       const best = partyAssisted(party, 'survie-en-exterieur'); // Soutien (LDB 12)
       const st = best && monoStep({
-        id: 'peril-survie', kind: 'landPerilSurvie', actor: best.actor, icon: 'travel/compass', label: 'Survie en extérieur',
+        id: 'peril-survie', kind: 'landPerilSurvie', actor: best.actor, icon: 'travel/compass', label: rawText('Survie en extérieur'),
         rollLabel: 'Survie en extérieur', difficulty: 'accessible',
         stake: voyageStakeRef('landPerilSurvie'),
         ligne: { test: { skill: 'survie-en-exterieur' }, valeur: best.value, soutien: best.support },
@@ -823,7 +824,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
       const configured = !!(route.ambush?.scene && route.ambush.encounter);
       const best = partyAssisted(party, 'perception'); // Soutien (LDB 12)
       const st = best && monoStep({
-        id: 'peril-perception', kind: 'landPerilPerception', actor: best.actor, icon: 'ui/eye', label: 'Perception',
+        id: 'peril-perception', kind: 'landPerilPerception', actor: best.actor, icon: 'ui/eye', label: rawText('Perception'),
         rollLabel: 'Perception', difficulty: 'accessible',
         stake: voyageStakeRef('landPerilPerception'),
         ligne: { test: { skill: 'perception' }, valeur: best.value, soutien: best.support },
@@ -1077,7 +1078,7 @@ function buildForcedPaceStep(driver: { actor: Combatant; value: number; support?
   const penalty = -10 * galloped; // l.229
   return monoStep({
     id: `land-forced-${galloped}`, kind: 'landForcedPace', actor: driver.actor, icon: 'travel/cart',
-    label: `${driver.actor.label} — Conduite d'attelage (allure forcée)`, rollLabel: 'Conduite d’attelage',
+    label: rawText(`${driver.actor.label} — Conduite d'attelage (allure forcée)`), rollLabel: 'Conduite d’attelage',
     difficulty: 'intermediaire',
     stake: voyageStakeRef('landForcedPace'),
     ligne: {
@@ -1150,7 +1151,7 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
     if (step.actorId && hero && driver) {
       const st = monoStep({
         id: `${step.id}-control`, kind: 'landForcedPaceControl', actor: driver.actor, icon: 'travel/cart',
-        label: `${driver.actor.label} — reprendre le contrôle`, rollLabel: 'Conduite d’attelage',
+        label: rawText(`${driver.actor.label} — reprendre le contrôle`), rollLabel: 'Conduite d’attelage',
         difficulty: 'intermediaire',
         stake: voyageStakeRef('landForcedPaceControl'),
         // MÊME jet que le km (Conduite d'attelage soutenue, `LDB 12 l.189`) : ni la pénalité de km

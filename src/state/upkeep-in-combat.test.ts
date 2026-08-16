@@ -1,3 +1,4 @@
+import { rawText } from '../i18n/rawText';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { cascadeAppliers } from './cascade';
@@ -25,7 +26,7 @@ describe('#253.1 — dessoûlage : le 2ᵉ Test (gueule de bois) est une étape 
     hero.drunk = { failedTests: 3, drunk: true, result: 'joyeux' };
     useGame.setState({ party: [hero], gameTime: 8 * 60 });
     // BANDE de Dessoûlage (#1117 L3) : la conséquence se joue PAR RANGÉE.
-    const step: CascadeStep = { id: 'bande-dessoulage', kind: 'dessoulage', label: 'Dessoûlage', aggregate: 'none',
+    const step: CascadeStep = { id: 'bande-dessoulage', kind: 'dessoulage', label: rawText('Dessoûlage'), aggregate: 'none',
       participants: [{ id: hero.id, interactive: true, label: 'Résistance', base: 40, target: 40, result: { roll: 45, target: 40, sl: 1, success: true } }] };
 
     const out = cascadeAppliers['dessoulage'].apply(get, set, step, hero, { steps: [step], index: 0 });
@@ -70,7 +71,7 @@ describe('#253.2 — combat franchissant minuit : les Tests d\'entretien se mett
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(3) });
     const heroClone = { ...hero, kind: 'hero' as const };
     // La file n'accepte plus qu'une étape MINTÉE (#1262 V2) ; sa ligne est posée telle quelle.
-    const queued = monoStep({ id: 'faim-H-0', kind: 'faim', actor: hero, label: 'Faim', rollLabel: 'Résistance',
+    const queued = monoStep({ id: 'faim-H-0', kind: 'faim', actor: hero, label: rawText('Faim'), rollLabel: 'Résistance',
       difficulty: 'intermediaire', montee: { base: 40, target: 40 }, stake: nightStakeRef('faim') })!;
     useGame.setState({
       party: [hero],

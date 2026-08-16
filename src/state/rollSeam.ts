@@ -33,6 +33,7 @@
  *     DÉJÀ CHIFFRÉS par le flux propriétaire via `meta` NEUTRE (`aggregateFlatDR`/`aggregateCapTo`/
  *     `aggregateOpposeSl`, `CascadeStepMeta`) ; par défaut 0/absent.
  */
+import { rawText } from '../i18n/rawText';
 import type { Get, Set } from './flowTypes';
 import type { Combatant, CharKey, Difficulty, Weapon } from '../engine/types';
 import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
@@ -42,6 +43,7 @@ import type {
   PendingDeviation, PendingBladeTrap, PendingCritSeverity, PendingMiscastStep, PendingMutationStep,
 } from './pendings';
 import type { BuiltCascadeStep } from './stepBrand';
+import type { PlayerText } from '../i18n/playerText';
 import type { PendingKey } from './stateFields';
 import type { OupsResolved } from '../engine/oups';
 import type { RecapLine, RecapTone } from './recapLine';
@@ -153,10 +155,14 @@ export function opposedAttackerLabel(opp: { test?: RollRequest['test']; attacker
  *  ni compétence ni caractéristique. Position : `step.label` (sous-titre d'étape) — JAMAIS le titre de
  *  cascade (`rollTitle`, plus court, pas de duplication).
  *  La DIFFICULTÉ n'est PAS ici (#1072) : elle vit sur la LIGNE du jet (`CascadeStep.difficulty` →
- *  `RollLine`). L'écrire aussi dans ce sous-titre serait le double rendu de classe #352. */
-export function composeRollLabel(actor: Combatant | undefined, action: string, test: RollRequest['test']): string {
+ *  `RollLine`). L'écrire aussi dans ce sous-titre serait le double rendu de classe #352.
+ *
+ *  MINTEUR (c) de `PlayerText` (#1318 V8a₀) — la FABRIQUE DE FORME du seam : elle est déjà l'unique
+ *  composeur de ce sous-titre, elle en devient donc l'unique origine typée. Le texte `action` qu'on
+ *  lui passe reste `string` pour ce lot : c'est lui que V8a₁ marque à son tour, minteur par minteur. */
+export function composeRollLabel(actor: Combatant | undefined, action: string, test: RollRequest['test']): PlayerText {
   const detail = testSkillLabel(test);
-  return `${actor ? `${actor.label} — ` : ''}${action}${detail ? ` (${detail})` : ''}`;
+  return `${actor ? `${actor.label} — ` : ''}${action}${detail ? ` (${detail})` : ''}` as PlayerText;
 }
 
 /**
@@ -366,7 +372,7 @@ export interface BandSpec {
   kind: string;
   /** Intitulé de la SITUATION. Absent : l'étape n'en porte pas, et la fenêtre qui l'accueille prend
    *  son repli (`cascade.ts` : « Conséquences »). Une chaîne VIDE, elle, s'affiche vide. */
-  label?: string;
+  label?: PlayerText;
   icon?: string;
   /** Défaut `'none'` : les rangées d'une bande sont des jets INDÉPENDANTS (#351). */
   aggregate?: RollAggregate;
@@ -869,7 +875,7 @@ function buildBatchStep(get: Get, req: RollRequest, kind: string, meta?: Cascade
   return {
     id: kind,
     kind,
-    label: req.actionLabel,
+    label: rawText(req.actionLabel),
     ...(porteurs.size > 1 ? { groupOwner: true } : participants.length ? { actorId: participants[0].id } : {}),
     participants,
     aggregate: req.aggregate ?? 'summed-dr',
@@ -1102,7 +1108,7 @@ export function openBand(get: Get, set: Set, spec: BandOpenSpec): void {
 export interface ChoiceSpec {
   id: string;
   kind: string;
-  label: string;
+  label: PlayerText;
   icon?: string;
   /** PORTEUR de la décision, REQUIS : l'arbitre (`modalArbiter`) route la fenêtre à son siège. Sans
    *  lui l'owner serait `undefined` — fenêtre à l'HÔTE SEUL, qui trancherait la voie d'autrui. Une
@@ -1192,7 +1198,7 @@ export function openChoice(get: Get, set: Set, spec: ChoiceSpec & { title: strin
 export interface QuantitySpec {
   id: string;
   kind: string;
-  label: string;
+  label: PlayerText;
   icon?: string;
   /** PORTEUR de la saisie, REQUIS : l'arbitre (`modalArbiter`) route la fenêtre à son siège. */
   actorId: string;
@@ -1256,7 +1262,7 @@ export function quantityStep(spec: QuantitySpec): BuiltCascadeStep | undefined {
 interface MonoBase {
   id: string;
   kind: string;
-  label: string;
+  label: PlayerText;
   icon?: string;
   /** Le jeteur : la possession de l'étape en dérive (`actorId`), et sa ligne aussi. */
   actor: Combatant;
@@ -1358,7 +1364,7 @@ export function monoStep(spec: MonoSpec): BuiltCascadeStep | undefined {
 export interface TableSpec {
   id: string;
   kind: string;
-  label: string;
+  label: PlayerText;
   icon?: string;
   /** PORTEUR du tirage : l'arbitre route la fenêtre à son siège (un d100 subi a son sujet). */
   actorId: string;
@@ -1440,7 +1446,7 @@ export function tableStepDone(spec: TableDoneSpec): BuiltCascadeStep | undefined
   const base: CascadeStep = {
     id: spec.id,
     kind: spec.kind,
-    label: spec.label,
+    label: rawText(spec.label),
     ...(spec.icon ? { icon: spec.icon } : {}),
     actorId: spec.actorId,
     stake: spec.stake,
@@ -1459,7 +1465,7 @@ export function tableStepDone(spec: TableDoneSpec): BuiltCascadeStep | undefined
 interface DisplayBase {
   id: string;
   kind: string;
-  label: string;
+  label: PlayerText;
   icon?: string;
   /** Ce qui vient d'arriver, en lignes déjà écrites (`RecapLine[]`), rendues par le renderer partagé. */
   outcome?: RecapLine[];
@@ -1530,7 +1536,7 @@ const PENDING_BY_JET: Record<HostJet, PendingKey | null> = {
 interface HostBase {
   id: string;
   kind: string;
-  label?: string;
+  label?: PlayerText;
   icon?: string;
   stake?: StakeRef;
   meta?: CascadeStepMeta;

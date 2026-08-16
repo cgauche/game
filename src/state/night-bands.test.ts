@@ -13,6 +13,7 @@
  *  5. la file de fin de combat est SCINDÉE par pilote : rangées manuelles influençables, témoins
  *     résolus d'office DANS LEUR PROPRE bande (jamais `interactive:false` dans la bande jouée).
  */
+import { rawText } from '../i18n/rawText';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
@@ -52,7 +53,7 @@ function nuit(spec: {
   base?: number; target?: number; difficulty?: Difficulty; menace?: string; meta?: CascadeStepMeta;
 }): BuiltCascadeStep {
   const step = monoStep({
-    id: spec.id, kind: spec.kind, actor: h(spec.hero ?? 'h1'), label: spec.label ?? '',
+    id: spec.id, kind: spec.kind, actor: h(spec.hero ?? 'h1'), label: rawText(spec.label ?? ''),
     rollLabel: spec.rollLabel ?? 'Résistance', difficulty: spec.difficulty ?? 'intermediaire',
     montee: { base: spec.base ?? 40, target: spec.target ?? 40 },
     stake: nightStakeRef('faim'),
@@ -335,7 +336,7 @@ describe('les TROIS producteurs d’Exposition passent par la MÊME fabrique de 
 describe('file de fin de combat — SCISSION par pilote (invariant 7)', () => {
   it('`splitBandRows` rend DEUX bandes entières, aucune rangée `interactive:false` dans la jouée', () => {
     const band: CascadeStep = {
-      id: 'bande-faim', kind: 'faim', label: 'Faim', aggregate: 'none',
+      id: 'bande-faim', kind: 'faim', label: rawText('Faim'), aggregate: 'none',
       participants: [
         { id: 'manuel', interactive: true, label: 'Résistance', base: 40, target: 40, result: null },
         { id: 'temoin', interactive: true, label: 'Résistance', base: 35, target: 35, result: null },

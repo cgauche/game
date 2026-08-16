@@ -11,6 +11,7 @@
  * ponctionné glouton par `payFromGroup`) ; le « +1 Chance max » est crédité directement ; la clôture
  * passe par le flux de repos standard (récupération, convalescence, horloge — weeks × 7 jours).
  */
+import { rawText } from '../i18n/rawText';
 import type { GameState } from './store';
 import { battleRng } from './battleRng';
 import { d100, roll as rollDice } from '../engine/dice';
@@ -152,7 +153,7 @@ function eventStep(hero: Combatant): CascadeStep {
   return {
     id: `interlude-event-${hero.id}`,
     kind: 'interludeEvent', actorId: hero.id, icon: 'nav/dice',
-    label: `Événement — ${hero.label}`,
+    label: rawText(`Événement — ${hero.label}`),
     table: INTERLUDE_EVENT_DECL,
     stake: combatStakeRef('interludeEvent'),
   };
@@ -164,7 +165,7 @@ function purseStep(): CascadeStep {
   return {
     id: 'interlude-purse',
     kind: 'interludePurse', icon: 'resource/gold-purse',
-    label: 'Les bourses du groupe',
+    label: rawText('Les bourses du groupe'),
   };
 }
 
@@ -621,6 +622,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     if (!r) return;
     skillValue = r.skillValue;
     skillLabel = r.skillLabel;
+    // eslint-disable-next-line no-restricted-syntax -- La cible est `Partial<PendingActivityFields>` (le pending d'activité), PAS une étape de cascade : ce `label` n'est pas le champ marqué #1318.
     Object.assign(extra, r.extra, { label: `${def.label} — ${r.extra.label}` });
   } else if (def.resolver === 'learnTalent') {
     // Apprentissage particulier (ch.23 l.66-72) : Talent HORS carrière. Test « Difficile (-20) en

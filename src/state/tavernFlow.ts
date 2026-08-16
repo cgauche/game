@@ -23,6 +23,7 @@
  *
  * Réservé aux tables qui activent l'option `tavern-games`.
  */
+import { rawText } from '../i18n/rawText';
 import { CHAR_LABELS, DIFFICULTY_LABELS, type CharKey, type Combatant, type Difficulty } from '../engine/types';
 import type { Get, Set } from './flowTypes';
 import {
@@ -602,7 +603,7 @@ function equipeBande(get: Get, seq: SequenceState<TavernPayload>): { band: Built
     id: `${TAVERN_ROUND_KIND}-${seq.round}`,
     kind: TAVERN_ROUND_KIND,
     icon: 'nav/dice',
-    label: `${game.label} — tour ${ph.roundInPhase} de la ${ph.phase}ᵉ mi-temps`,
+    label: rawText(`${game.label} — tour ${ph.roundInPhase} de la ${ph.phase}ᵉ mi-temps`),
     stake: combatStakeRef('tavernGame', {
       values: { jeu: game.label, adversaire: p.opponentName, mise: 'aucune' },
     }),
@@ -704,7 +705,7 @@ function torchonRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Se
     id: `${TAVERN_ROUND_KIND}-${seq.round}`,
     kind: TAVERN_ROUND_KIND,
     icon: 'nav/dice',
-    label: `${game.label} — ${lanceur.label} balance le torchon`,
+    label: rawText(`${game.label} — ${lanceur.label} balance le torchon`),
     stake: combatStakeRef('tavernGame', { values: { jeu: game.label, adversaire: p.opponentName, mise: 'aucune' } }),
     meta: { gameId: game.id, opponentName: p.opponentName, stakeBrass: 0, round: seq.round },
   }, rows);
@@ -824,7 +825,7 @@ function tavernTeamRound(get: Get, seq: SequenceState<TavernPayload>): SequenceR
   const steps = aChoisir.map((h) => choiceStep({
     id: `${TAVERN_CHOICE_KIND}-${seq.round}-${h.id}`,
     kind: TAVERN_CHOICE_KIND,
-    label: `${h.label} — comment jouer ce tour ?`,
+    label: rawText(`${h.label} — comment jouer ce tour ?`),
     icon: 'nav/dice',
     actorId: h.id,
     options: (game.options ?? []).map((o, i) => ({
@@ -887,7 +888,7 @@ function tavernRound(get: Get, seq: SequenceState<TavernPayload>, rng: RNG): Seq
       id: `${TAVERN_ROUND_KIND}-${seq.round}`,
       kind: TAVERN_ROUND_KIND,
       icon: 'nav/dice',
-      label: `${game.label} — manche ${seq.round}`,
+      label: rawText(`${game.label} — manche ${seq.round}`),
       stake,
       meta: { gameId: game.id, opponentName: p.opponentName, stakeBrass: p.stakeBrass, round: seq.round },
     }, rows);

@@ -15,6 +15,7 @@
  *  - IMMÉDIAT (`runCascadeImmediate`) — repos de plusieurs jours, reprise auto, triche de recette :
  *    on lance chaque étape (RNG, sans influence) et on applique sa conséquence, sans modale.
  */
+import { rawText } from '../i18n/rawText';
 import type { Get, Set } from './flowTypes';
 import type { GameState } from './store';
 import type { Combatant, Difficulty } from '../engine/types';
@@ -1073,7 +1074,7 @@ export function buildConsequenceSteps(groups: ConsequenceGroup[]): CascadeStep[]
       kind: g.kind,
       actorId: g.actorId,
       icon: g.icon,
-      label: g.label,
+      label: rawText(g.label),
       outcome: toRecapLines(g.lines),
     }));
 }

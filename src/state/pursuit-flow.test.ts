@@ -4,6 +4,7 @@
  * DR le plus haut des poursuivants et fait varier la Distance ; issue par `pursuitOutcome` (semé/rattrapé).
  * Réutilise les primitives PARTAGÉES `engine/pursuit` et la CASCADE (state/cascade), pas un flux parallèle.
  */
+import { rawText } from '../i18n/rawText';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatFlow';
@@ -35,7 +36,7 @@ function heroes() {
  *  Mouvement (`sl` imposé) — sert à tester la clôture de manche (`closeSequenceRound`) sans UI. */
 function doneRound(party: { id: string }[], sl: number): PendingCascade {
   const participants: CascadeStep[] = [{
-    id: 'pursuit-1', kind: 'pursuitMove', label: 'Manche 1 — Athlétisme', aggregate: 'none',
+    id: 'pursuit-1', kind: 'pursuitMove', label: rawText('Manche 1 — Athlétisme'), aggregate: 'none',
     participants: party.map((h) => ({
       id: h.id, label: 'Athlétisme', base: 40, target: 40, interactive: true,
       result: { roll: 40, target: 40, sl, success: sl >= 0 },
@@ -228,7 +229,7 @@ describe('Poursuite — la manche restaurée d’une save se possède comme la m
    *  produits de la porte (#1262 V2), et une save réhydratée y repasse (`saves.ts`). */
   const mono = (h: Combatant, round: string): BuiltCascadeStep => monoStep({
     id: `pursuit-${round}-${h.id}`, kind: 'pursuitMove', actor: h, icon: 'travel/foot',
-    label: `Manche ${round}`, rollLabel: 'Athlétisme', difficulty: 'intermediaire',
+    label: rawText(`Manche ${round}`), rollLabel: 'Athlétisme', difficulty: 'intermediaire',
     montee: { base: 40, target: 40 }, stake: combatStakeRef('pursuitMove', { values: { distance: 10, evasion: 3 } }),
   })!;
 
@@ -248,7 +249,7 @@ describe('Poursuite — la manche restaurée d’une save se possède comme la m
 
   it('une étape ÉTRANGÈRE traverse INTACTE (même référence — la migration compare pour savoir si rien n’a bougé)', () => {
     const [a] = heroes();
-    const etrangere = displayStep({ id: 'reveal-x', kind: 'reveal', label: 'Une ombre', worldOwner: true });
+    const etrangere = displayStep({ id: 'reveal-x', kind: 'reveal', label: rawText('Une ombre'), worldOwner: true });
     const out = pursuitBands([mono(a, '1'), etrangere]);
     expect(out[1]).toBe(etrangere);
   });
@@ -270,7 +271,7 @@ describe('Poursuite — la manche restaurée d’une save se possède comme la m
     expect(rangee.meta, 'ni charge de rangée').toBeUndefined();
     // …et quand l'étape en porte, elles descendent (pli du socle, jamais un oubli local).
     const avecMenace = monoStep({
-      id: `pursuit-9-${a.id}`, kind: 'pursuitMove', actor: a, label: 'Manche 9', rollLabel: 'Athlétisme',
+      id: `pursuit-9-${a.id}`, kind: 'pursuitMove', actor: a, label: rawText('Manche 9'), rollLabel: 'Athlétisme',
       difficulty: 'intermediaire', montee: { base: 40, target: 40 }, menace: 'Poursuite', meta: { round: 9 },
       stake: combatStakeRef('pursuitMove', { values: { distance: 10, evasion: 3 } }),
     })!;

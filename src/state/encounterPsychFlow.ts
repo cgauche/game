@@ -12,6 +12,8 @@
  * vit dans l'applier `'encounterPsych'`, appliquée RANGÉE PAR RANGÉE. La Détermination (immunité,
  * LDB 17 l.59) est offerte par la coquille via `cascadeBatchDetermine` sur la rangée.
  */
+import { rawText } from '../i18n/rawText';
+import type { PlayerText } from '../i18n/playerText';
 import type { Get, Set } from './flowTypes';
 import { Combatant } from '../engine/types';
 import { Scene } from './scene';
@@ -55,7 +57,7 @@ type PsychBandDecl = NonNullable<CascadeStep['encounterPsych']>;
 
 /** Un Test DÛ par un héros, avant regroupement : le héros, la déclaration de règle qui l'appelle, et
  *  la présentation qui en découle (icône/libellé — communes à toute la bande). */
-interface PsychDue { hero: Combatant; decl: PsychBandDecl; icon: string; label: string }
+interface PsychDue { hero: Combatant; decl: PsychBandDecl; icon: string; label: PlayerText }
 
 /** RANGÉE d'une bande : le Test de CE héros. Paramètres EN DONNÉES (`psychology.json` `test`) —
  *  compétence (défaut Calme) + difficulté (défaut Intermédiaire), mêmes données que le combat
@@ -128,7 +130,7 @@ export function openEncounterPsych(get: Get, set: Set): void {
       hero,
       decl: { kind: trig.kind, sourceId: trig.sourceId, sourceName: src?.label ?? '?', indice: trig.indice, cible: trig.cible },
       icon: cl?.icon ?? (trig.kind === 'terreur' ? 'creature/scream' : 'flag/fear'),
-      label: cl ? `${cl.label}${trig.cible ? ` (${trig.cible})` : ''}` : `${trig.kind === 'terreur' ? 'Terreur' : 'Peur'} ${trig.indice} — ${src?.label ?? '?'}`,
+      label: rawText(cl ? `${cl.label}${trig.cible ? ` (${trig.cible})` : ''}` : `${trig.kind === 'terreur' ? 'Terreur' : 'Peur'} ${trig.indice} — ${src?.label ?? '?'}`),
     });
   }
   const steps = psychBands(dues);
@@ -153,7 +155,7 @@ export function openScriptedPsych(get: Get, set: Set, kind: 'peur' | 'terreur', 
     dues.push({
       hero, decl,
       icon: kind === 'terreur' ? 'creature/scream' : 'flag/fear',
-      label: `${kind === 'terreur' ? 'Terreur' : 'Peur'} ${indice} — ${label}`,
+      label: rawText(`${kind === 'terreur' ? 'Terreur' : 'Peur'} ${indice} — ${label}`),
     });
   }
   const steps = psychBands(dues);

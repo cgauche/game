@@ -3,6 +3,7 @@
  * surfacée vs témoin NÉ roulé), `bandStep` (la bande pose SA possession, et sa fenêtre atteint le
  * siège de son porteur), `bandStepId` (dédoublement d'id).
  */
+import { rawText } from '../i18n/rawText';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { surfaceRow, bandStep, bandStepId, surfaceOf } from './rollSeam';
@@ -65,24 +66,24 @@ describe('#1262 — surfaceRow : rangée SURFACÉE ou TÉMOIN né roulé', () =>
 
 describe('#1262 — bandStep : la bande pose SA possession', () => {
   it('plus d’UN porteur → `groupOwner` posé par le constructeur (l’appelant ne le décide plus)', () => {
-    const b = bandStep({ id: 'manche-1', kind: 'pursuitMove', label: 'Manche 1' }, [rang('H1'), rang('H2')]);
+    const b = bandStep({ id: 'manche-1', kind: 'pursuitMove', label: rawText('Manche 1')}, [rang('H1'), rang('H2')]);
     expect(b!.groupOwner).toBe(true);
     expect(b!.aggregate).toBe('none');
     expect(b!.participants).toHaveLength(2);
   });
 
   it('un SEUL porteur → pas de `groupOwner`, mais l’étape NOMME son porteur (jamais une étape sans owner)', () => {
-    const b = bandStep({ id: 'b', kind: 'k', label: 'L' }, [rang('H1')])!;
+    const b = bandStep({ id: 'b', kind: 'k', label: rawText('L')}, [rang('H1')])!;
     expect(b.groupOwner).toBeUndefined();
     expect(b.actorId, 'la bande mono NOMME son porteur — c’est ce qui donne à l’arbitre un owner à router (sans `actorId` : fenêtre hôte seul)').toBe('H1');
   });
 
   it('zéro rangée → aucune fenêtre à ouvrir', () => {
-    expect(bandStep({ id: 'b', kind: 'k', label: 'L' }, [])).toBeUndefined();
+    expect(bandStep({ id: 'b', kind: 'k', label: rawText('L')}, [])).toBeUndefined();
   });
 
   it('`options` n’est PAS un champ que la bande peut porter (invariant #1262 tenu à la construction)', () => {
-    const b = bandStep({ id: 'b', kind: 'k', label: 'L' }, [rang('H1'), rang('H2')])!;
+    const b = bandStep({ id: 'b', kind: 'k', label: rawText('L')}, [rang('H1'), rang('H2')])!;
     expect(b.options).toBeUndefined();
   });
 });
@@ -112,7 +113,7 @@ describe('#1262 — une bande est TOUJOURS visible chez le siège de son porteur
   function ouvreBandeChezLHote(rows: BatchParticipant[]): void {
     useGame.setState({ party: [hero('H1'), hero('H2')] } as never);
     useGame.setState({ net: { ...useGame.getState().net, mode: 'host', mySeat: 0, ownership: { H1: 1, H2: 1 } } } as never);
-    const b = bandStep({ id: 'bande', kind: 'nightTest', label: 'Bande' }, rows)!;
+    const b = bandStep({ id: 'bande', kind: 'nightTest', label: rawText('Bande')}, rows)!;
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [b] });
   }
 

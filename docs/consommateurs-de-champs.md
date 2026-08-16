@@ -55,16 +55,16 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 3 | `src/data/index.ts:3028` |
-| `spec` | 1 | `src/data/index.ts:3029` |
+| `id` | 3 | `src/data/index.ts:3045` |
+| `spec` | 1 | `src/data/index.ts:3046` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 1 | `src/data/index.ts:3034` |
+| `id` | 1 | `src/data/index.ts:3051` |
 | `spec` | **0 — JAMAIS LU** | — |
-| `value` | 2 | `src/data/index.ts:3034` |
+| `value` | 2 | `src/data/index.ts:3051` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -91,27 +91,27 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3078` |
+| `id` | 4 | `src/data/index.ts:3095` |
 | `spec` | 1 | `src/engine/trappingChoices.ts:36` |
-| `count` | 3 | `src/data/index.ts:3079` |
-| `qualities` | 2 | `src/data/index.ts:3082` |
-| `qualityChoice` | 2 | `src/data/index.ts:3080` |
-| `text` | 1 | `src/data/index.ts:3073` |
-| `vehicleId` | 2 | `src/data/index.ts:3075` |
+| `count` | 3 | `src/data/index.ts:3096` |
+| `qualities` | 2 | `src/data/index.ts:3099` |
+| `qualityChoice` | 2 | `src/data/index.ts:3097` |
+| `text` | 1 | `src/data/index.ts:3090` |
+| `vehicleId` | 2 | `src/data/index.ts:3092` |
 | `label` | **0 — JAMAIS LU** | — |
-| `creatureId` | 2 | `src/data/index.ts:3077` |
-| `choice` | 3 | `src/data/index.ts:3070` |
-| `wildcard` | 1 | `src/data/index.ts:3071` |
+| `creatureId` | 2 | `src/data/index.ts:3094` |
+| `choice` | 3 | `src/data/index.ts:3087` |
+| `wildcard` | 1 | `src/data/index.ts:3088` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `ref` | 4 | `src/data/index.ts:3052` |
-| `wildcard` | 5 | `src/data/index.ts:3054` |
-| `specOptions` | 3 | `src/data/index.ts:3053` |
-| `choice` | 4 | `src/data/index.ts:3056` |
-| `random` | 2 | `src/data/index.ts:3057` |
+| `ref` | 4 | `src/data/index.ts:3069` |
+| `wildcard` | 5 | `src/data/index.ts:3071` |
+| `specOptions` | 3 | `src/data/index.ts:3070` |
+| `choice` | 4 | `src/data/index.ts:3073` |
+| `random` | 2 | `src/data/index.ts:3074` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -134,29 +134,29 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `stake` | 5 | `src/state/combat/triggeredTest.ts:204` |
-| `skill` | 14 | `src/state/combat/triggeredTest.ts:191` |
-| `spec` | 13 | `src/state/combat/triggeredTest.ts:191` |
-| `sense` | 2 | `src/state/combatEffects.ts:432` |
-| `characteristic` | 11 | `src/state/combat/triggeredTest.ts:191` |
+| `stake` | 5 | `src/state/combat/triggeredTest.ts:205` |
+| `skill` | 14 | `src/state/combat/triggeredTest.ts:192` |
+| `spec` | 13 | `src/state/combat/triggeredTest.ts:192` |
+| `sense` | 2 | `src/state/combatEffects.ts:433` |
+| `characteristic` | 11 | `src/state/combat/triggeredTest.ts:192` |
 | `difficulty` | 2 | `src/engine/flowCore.ts:370` |
-| `requireSL` | 1 | `src/state/combatEffects.ts:471` |
-| `label` | 6 | `src/state/combat/triggeredTest.ts:222` |
-| `tool` | 1 | `src/state/combatEffects.ts:434` |
-| `vsGroups` | 4 | `src/state/combatEffects.ts:339` |
-| `vsStatus` | 1 | `src/state/combatEffects.ts:338` |
-| `begging` | 3 | `src/state/combatEffects.ts:343` |
-| `vsCapricieux` | 1 | `src/state/combatEffects.ts:347` |
-| `easierIf` | 7 | `src/state/combatEffects.ts:388` |
+| `requireSL` | 1 | `src/state/combatEffects.ts:472` |
+| `label` | 6 | `src/state/combat/triggeredTest.ts:223` |
+| `tool` | 1 | `src/state/combatEffects.ts:435` |
+| `vsGroups` | 4 | `src/state/combatEffects.ts:340` |
+| `vsStatus` | 1 | `src/state/combatEffects.ts:339` |
+| `begging` | 3 | `src/state/combatEffects.ts:344` |
+| `vsCapricieux` | 1 | `src/state/combatEffects.ts:348` |
+| `easierIf` | 7 | `src/state/combatEffects.ts:389` |
 | `argDifficulty` | **0 — JAMAIS LU** | — |
 | `unlessImmune` | 1 | `src/state/combat/flowEval.ts:151` |
 | `onlyGroups` | 1 | `src/state/combat/flowEval.ts:152` |
 | `exceptGroups` | 1 | `src/state/combat/flowEval.ts:153` |
 | `gate` | 1 | `src/engine/flowCore.ts:375` |
-| `noSupport` | 1 | `src/state/combatEffects.ts:426` |
-| `menace` | 5 | `src/state/combat/triggeredTest.ts:232` |
+| `noSupport` | 1 | `src/state/combatEffects.ts:427` |
+| `menace` | 5 | `src/state/combat/triggeredTest.ts:233` |
 | `difficultyBy` | 1 | `src/engine/flowCore.ts:369` |
-| `opposed` | 2 | `src/state/combat/triggeredTest.ts:291` |
+| `opposed` | 2 | `src/state/combat/triggeredTest.ts:292` |
 
 ### `TravelTableEntry` (src/engine/travelTables.ts)
 

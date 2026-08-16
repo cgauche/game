@@ -6,6 +6,7 @@
  * dans les closures `run()` (au RUNTIME, quand `runCombatHooks` se déclenche) → pas de souci de cycle à
  * l'import. Le golden `roundBoundary.golden.test.ts` fige l'ordre + les tirages RNG byte-pour-byte.
  */
+import { rawText } from '../../i18n/rawText';
 import { registerCombatHook } from '../combatHooks';
 import { registerCascadeApplier } from '../cascade';
 import { freeCons, rollSansPilote, surfaceOf, monoStep, choiceStep, pushMono, pousseSi, type BuiltCascadeStep } from '../rollSeam';
@@ -381,7 +382,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: 
   //    le héros manuel). Le résolveur générique de cascade tire le Test sur `target` ; l'applier applique.
   if (rule('combat-aa-blessures') === 'aa' && aaBleedUnconsciousDue(c)) {
     const step = monoStep({
-      id: `aaBleed-${c.id}`, kind: 'aaBleedUnconscious', icon: 'condition/bleeding', label: 'Perte de sang',
+      id: `aaBleed-${c.id}`, kind: 'aaBleedUnconscious', icon: 'condition/bleeding', label: rawText('Perte de sang'),
       actor: c, ligne: { test: { skill: 'resistance' } }, difficulty: 'intermediaire',
       stake: combatStakeRef('aaBleedUnconscious'),
     });
@@ -395,7 +396,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: 
   //    n'émet l'étape que si le seuil est atteint (Test de Résistance différé).
   if (rule('combat-se-fatiguer') && (c.effortRounds ?? 0) >= fatigueThreshold(c)) {
     const step = monoStep({
-      id: `fatigue-${c.id}`, kind: 'fatigue', icon: 'condition/fatigued', label: 'Effort soutenu',
+      id: `fatigue-${c.id}`, kind: 'fatigue', icon: 'condition/fatigued', label: rawText('Effort soutenu'),
       actor: c, ligne: { test: { skill: 'resistance' } }, difficulty: 'intermediaire',
       stake: combatStakeRef('fatigue'),
     });
@@ -410,7 +411,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: 
     if (!spellId) continue; // pas de sort source identifiable — jamais atteint (spellDurationPlusSource l'exige déjà)
     const choix = choiceStep({
       id: `spellPlusChoice-${c.id}-${spellId}`, kind: 'spellPlusChoice', actorId: c.id,
-      icon: 'ui/think', label: `Prolonger ${e.label} ?`,
+      icon: 'ui/think', label: rawText(`Prolonger ${e.label} ?`),
       options: [{ key: 'yes', label: `Tenter (Force Mentale) — ${e.label}` }, { key: 'no', label: 'Renoncer' }],
       defaultChoice: 'no',
       meta: { sourceSpellId: spellId },
@@ -474,7 +475,7 @@ registerCascadeApplier('spellPlusChoice', (get, set, step, hero) => {
     pushMono(set, {
       id: `spellPlusTest-${hero.id}-${spellId}`, kind: 'spellPlusTest',
       actor: hero, ligne: { test: { char: 'force-mentale' } }, difficulty: 'intermediaire',
-      icon: 'nav/dice', label: `Prolonger ${effect.label}`,
+      icon: 'nav/dice', label: rawText(`Prolonger ${effect.label}`),
       meta: { sourceSpellId: spellId }, stake: combatStakeRef('spellPlusTest', { entryId: spellId }),
     });
     return;

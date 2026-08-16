@@ -3,6 +3,7 @@
  * `(get, set)` que combatFlow : ouverture/réassort, panier, achat/vente/réparation, Marchandage
  * (Test opposé), Évaluation. Refacto pure — comportement préservé.
  */
+import { rawText } from '../i18n/rawText';
 import type { GameState } from './store';
 import { toRecapLines } from './recapLine';
 import { Combatant, ItemInstance, type CharKey } from '../engine/types';
@@ -295,7 +296,7 @@ function openStockRevealCascade(
   const step: CascadeStep = {
     id: `${MERCHANT_STOCK_KIND}:${entityId}:${now}`,
     kind: MERCHANT_STOCK_KIND,
-    label: `Réassort — ${arch?.label ?? archetype}`,
+    label: rawText(`Réassort — ${arch?.label ?? archetype}`),
     ...(outcome?.length ? { outcome: toRecapLines(outcome) } : {}),
     meta: { entityId, archetype, settlement, now, restockPeriod, gossipDay, resaleRate, buyMarkup, ...(backdrop != null ? { backdrop } : {}) },
   };

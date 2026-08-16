@@ -1,3 +1,4 @@
+import { rawText } from '../i18n/rawText';
 import type { GameState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear, CascadeTableDone, PendingCascade } from './pendings';
@@ -1156,7 +1157,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         // et ressort en chip nommée) — une autre arithmétique que celle du monteur, à ne pas refaire.
         const st = monoStep({
           id: `expo-${c.id}`, kind: 'exposure', actor: c, icon: 'rest/cold',
-          rollLabel: 'Résistance', label: kind === 'froid' ? 'Exposition (froid)' : 'Exposition (chaleur)',
+          rollLabel: 'Résistance', label: rawText(kind === 'froid' ? 'Exposition (froid)' : 'Exposition (chaleur)'),
           difficulty: 'intermediaire',
           montee: { base: resVal, ...(kind === 'froid' ? exposureCoatMods(c) : {}), target },
           meta: { kind }, stake: nightStakeRef('exposure'),

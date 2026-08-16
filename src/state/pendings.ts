@@ -21,6 +21,7 @@ import type { HealMode } from '../engine/healing';
 import type { PsychType } from '../engine/psychology';
 import type { RecapLine } from './recapLine';
 import type { RollParticipant, MultiPending, PendingBase } from './rollFlowFactory';
+import type { PlayerText } from '../i18n/playerText';
 import type { Money } from '../engine/money';
 import type { SupportDetail } from '../engine/skills';
 /** Résultat du jet d'UN contributeur à un Test d'équipage par rôle (MDG 14). Défini ICI (neutre,
@@ -1520,6 +1521,22 @@ export type CascadeTableDone = CascadeTableDecl & { result: CascadeTableResult }
  * c'est `surfaceRow` qui le pose).
  */
 export interface CascadeStepBase extends Omit<RollParticipant, 'interactive'> {
+  /** Sous-titre de l'étape — CHAMP PILOTE du murage du texte joueur (#1318 V8a₀). RESSERRÉ ici et non
+   *  sur `RollParticipant` : la marque entre par l'ÉTAPE de cascade, pas par toutes les rangées de tous
+   *  les flux multi d'un coup.
+   *
+   *  LE MURAGE EST AUX PORTES, pas seulement ici : marquer CE champ ne mordait que sur la déclaration
+   *  DIRECTE d'une étape — la voie canonique passe par les 7 constructeurs du seam (`rollSeam` :
+   *  `monoStep`/`tableStep`/`choiceStep`/`quantityStep`/`displayStep`/`bandStep`/`hostStep`), dont le
+   *  cast interne `as BuiltCascadeStep` BLANCHISSAIT le libellé (mesuré : ~45 sites de production
+   *  posaient un littéral, `tsc` vert). Le `label` de leurs SPECS est donc marqué lui aussi : la marque
+   *  est exigée EN AMONT, au paramètre, et le cast de sortie n'a plus rien à blanchir. Restent murés par
+   *  le lint les deux voies de CONTENEUR (`Object.assign` sur une étape, `x as CascadeStep`).
+   *
+   *  `PlayerText` n'a que trois origines (`i18n.t`, `data.refLabel`, `rollSeam.composeRollLabel`) — un
+   *  littéral ne s'y pose plus, et le stock d'avant est gelé, nominatif et décroissant par le fossile
+   *  `i18n/rawText.ts` (`player-text-ratchet.test.ts`, cible 0). */
+  label?: PlayerText;
   /** Nature de la conséquence (clé de `cascadeAppliers`). Ex. 'recovery' | 'nightmare' | 'exposure'. */
   kind: string;
   /** Héros qui lance (résolu via `actorIn`). Absent → étape de groupe (rare). */

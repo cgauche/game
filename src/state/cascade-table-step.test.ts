@@ -1,3 +1,4 @@
+import { rawText } from '../i18n/rawText';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { makeRNG } from '../engine/dice';
@@ -39,7 +40,7 @@ describe('Étape à TABLE — le tirage sur tableau, résolu en un site', () => 
   });
 
   const tableStep = (id: string, decl: Partial<CascadeStep['table']> = {}): CascadeStep =>
-    ({ id, kind: 'tableSpy', label: 'Tirage', icon: 'nav/dice', table: { tableId: SYNTH, ...decl }});
+    ({ id, kind: 'tableSpy', label: rawText('Tirage'), icon: 'nav/dice', table: { tableId: SYNTH, ...decl }});
 
   it("l'interaction est inférée du champ `table` : sans résultat = à tirer, avec résultat = affichage prêt", () => {
     const st = tableStep('t1');
@@ -169,7 +170,7 @@ describe('MODE TABLE — poser le dé d’une étape à table (option « Dés fi
 
   /** Étape à table sur `T`, avec le `mod` voulu (le `mod` est ce qui rend le calcul du naturel visible). */
   const step = (mod?: number): CascadeStep =>
-    ({ id: 'tm', kind: 'tableModeSpy', label: 'Tirage', icon: 'nav/dice', table: { tableId: T, ...(mod != null ? { mod } : {}) }});
+    ({ id: 'tm', kind: 'tableModeSpy', label: rawText('Tirage'), icon: 'nav/dice', table: { tableId: T, ...(mod != null ? { mod } : {}) }});
 
   const open = (mod?: number) =>
     startCascade(useGame.getState, useGame.setState, { title: 'Tirage', purpose: 'test', steps: [step(mod)] });
@@ -265,7 +266,7 @@ describe('MODE TABLE — poser le dé d’une étape à table (option « Dés fi
   const openTwo = () =>
     startCascade(useGame.getState, useGame.setState, {
       title: 'Tirage', purpose: 'test',
-      steps: [{ ...step(), id: 's1', label: 'E1' }, { ...step(), id: 's2', label: 'E2' }],
+      steps: [{ ...step(), id: 's1', label: rawText('E1')}, { ...step(), id: 's2', label: rawText('E2')}],
     });
   const stepById = (id: string) => useGame.getState().pendingCascade!.participants.find((x) => x.id === id)!;
 
@@ -320,7 +321,7 @@ describe('Étape à TABLE — l’enjeu DESCEND à la ligne jouée (#1117)', () 
 
   /** Étape sur la VRAIE table de Critiques de Structure, portant l'enjeu de son `kind`. */
   const structureStep = (id: string, forcedRoll?: number): CascadeStep => ({
-    id, kind: 'stakeSpy', label: 'Critique de Structure', icon: 'nav/dice',
+    id, kind: 'stakeSpy', label: rawText('Critique de Structure'), icon: 'nav/dice',
     table: { tableId: STRUCTURE_CRIT_TABLE, die: 100, ...(forcedRoll ? { forcedRoll } : {}) },
     stake: combatStakeRef('structureCritical'),
   });
@@ -364,7 +365,7 @@ describe('Étape à TABLE — l’enjeu DESCEND à la ligne jouée (#1117)', () 
 
   it('table SANS catégorie d’entrées : l’enjeu est rendu TEL QUEL (repli déclaré)', () => {
     const st: CascadeStep = {
-      id: 'n1', kind: 'stakeSpy', label: 'Neutre', icon: 'nav/dice',
+      id: 'n1', kind: 'stakeSpy', label: rawText('Neutre'), icon: 'nav/dice',
       table: { tableId: NEUTRE, die: 100, forcedRoll: 50 }, stake: combatStakeRef('structureCritical'),
     };
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [st] });
@@ -376,7 +377,7 @@ describe('Étape à TABLE — l’enjeu DESCEND à la ligne jouée (#1117)', () 
 
   it('étape SANS enjeu : le tirage n’en fabrique aucun', () => {
     const st: CascadeStep = {
-      id: 'm1', kind: 'stakeSpy', label: 'Muette', icon: 'nav/dice',
+      id: 'm1', kind: 'stakeSpy', label: rawText('Muette'), icon: 'nav/dice',
       table: { tableId: STRUCTURE_CRIT_TABLE, die: 100, forcedRoll: 40 },
     };
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [st] });

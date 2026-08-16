@@ -8,6 +8,7 @@
  * ACTIONS. Surface IDENTIQUE : aucune clé ajoutée/retirée/renommée. Pas de value-import de `store.ts`
  * (les actions ne référencent jamais `useGame`) → import de TYPE seulement, aucun cycle d'exécution.
  */
+import { rawText } from '../i18n/rawText';
 import type { Get, Set } from './flowTypes';
 import { tickCombatAuto } from './combatAuto';
 import type { GameState, BattleState } from './store';
@@ -708,7 +709,7 @@ export function createCombatSlice(get: Get, set: Set) {
         // Déviation Critique du fuyard : `applyAttackResult` a EMPILÉ son étape de choix — le coup gratuit
         // n'est PAS résolu. La fuite (Brisé + Course) attend SA résolution, dans la même fenêtre, via
         // l'étape de reprise `fleeMove` (LDB 15 l.68 : « une fois que ce coup gratuit est résolu… »).
-        pushDisplay(set, { id: `flee-move-${mover.id}`, kind: 'fleeMove', actorId: mover.id, icon: 'melee/flee', label: 'Fuite', fleeMove: { moverId: mover.id, foeId: foe.id, broken } });
+        pushDisplay(set, { id: `flee-move-${mover.id}`, kind: 'fleeMove', actorId: mover.id, icon: 'melee/flee', label: rawText('Fuite'), fleeMove: { moverId: mover.id, foeId: foe.id, broken } });
         const casc = get().pendingCascade;
         if (casc?.participants[casc.cursor]?.jet === 'disengage') get().cascadeNext(); // avancer sur l'étape de Déviation
         return;
@@ -2813,7 +2814,7 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       // Pas d'Action ce tour (Sonné LDB 16 l.123 / Surpris l.132 — lu en DONNÉES via `canTakeAction`/gating,
       // plus de branche par-nom). La Détermination ('resolve') ne coûte pas l'Action et peut retirer l'État
-      // (LDB 13 l.81 / 17 l.62-66) ; les manœuvres gratuites (Se relever, Se désengager…) sont des slots
+      // (LDB 13 l.81 / 17 l.59-61) ; les manœuvres gratuites (Se relever, Se désengager…) sont des slots
       // DIRECTS qui n'appellent pas battleSelectAction. Surpris : message dédié (UX), le reste silencieux.
       if (a !== 'resolve' && a !== null && !canTakeAction(active)) {
         if (hasCondition(active, COND.surpris)) get().log(t('cs.surprised', { name: active.label }));

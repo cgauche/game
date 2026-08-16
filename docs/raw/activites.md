@@ -517,7 +517,7 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 - Échec → pas de révolte ; Échec de plusieurs DR → la cible apprend vos actions.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.237-249) → `InterludeHeroState`, `handrich`, `ActivityDef`, `PendingActivityFields`, `heroStatus`, `statusIncomeMax`, `GameOp`, `ActiveEffect`, `openCatalogActivity`, `runActivityResolver`, +4 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
+- `LDB 23` (l.237-249) → `InterludeHeroState`, `handrich`, `ActivityDef`, `PendingActivityFields`, `heroStatus`, `statusIncomeMax`, `GameOp`, `openCatalogActivity`, `ActiveEffect`, `runActivityResolver`, +4 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`
 
 ---
 

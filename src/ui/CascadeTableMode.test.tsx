@@ -11,6 +11,7 @@
  * poserait « 48 » en UN événement ne verrait ni le dé intermédiaire « 4 », ni un champ démonté après
  * la pose, ni le geste TERMINAL qui commet seul (#955).
  */
+import { rawText } from '../i18n/rawText';
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -36,7 +37,7 @@ let root: Root;
 
 /** Étape à table (aucun acteur : le tirage est du MONDE — le siège hôte/MJ le contrôle). */
 const tableStep = (tableId: string, mod?: number): CascadeStep =>
-  ({ id: 'tm', kind: 'uiTableSpy', label: 'Tirage sur tableau', icon: 'nav/dice', table: { tableId, ...(mod != null ? { mod } : {}) }});
+  ({ id: 'tm', kind: 'uiTableSpy', label: rawText('Tirage sur tableau'), icon: 'nav/dice', table: { tableId, ...(mod != null ? { mod } : {}) }});
 
 function openTable(mod?: number, tableId = T) {
   useGame.setState({
@@ -380,7 +381,7 @@ describe('Mode table — plancher ≠ 1 : l’écran affiche le dé du RÉSOLVEU
     // tomberait juste même avec un recalcul — la sonde ne prouverait alors rien.
     startCascade(useGame.getState, useGame.setState, {
       title: 'Tirage', purpose: 'test',
-      steps: [{ id: 'tm', kind: 'uiTableSpy', label: 'Tirage', icon: 'nav/dice', table: { tableId: T11, mod: -20, clamp: true, forcedRoll: 15 }}],
+      steps: [{ id: 'tm', kind: 'uiTableSpy', label: rawText('Tirage'), icon: 'nav/dice', table: { tableId: T11, mod: -20, clamp: true, forcedRoll: 15 }}],
     });
     render();
     act(() => { useGame.getState().cascadeTableRoll('tm'); });
@@ -415,8 +416,8 @@ describe('Après la pose — l’étape reste lisible à l’état résolu (verd
     startCascade(useGame.getState, useGame.setState, {
       title: 'Les nouvelles de la période', purpose: 'test',
       steps: [
-        { ...tableStep(T), kind: 'uiTableProse', id: 's1', label: 'Événement — Sigmund' },
-        { ...tableStep(T), kind: 'uiTableProse', id: 's2', label: 'Événement — Grunni' },
+        { ...tableStep(T), kind: 'uiTableProse', id: 's1', label: rawText('Événement — Sigmund')},
+        { ...tableStep(T), kind: 'uiTableProse', id: 's2', label: rawText('Événement — Grunni')},
       ],
     });
   }

@@ -17,6 +17,7 @@
  *  - Effets d'éditeur : `corruptionExposure` (Test différé par modale) ; gain direct
  *    via l'Effet générique `ops` (op `corruption` + champ `align` optionnel).
  */
+import { rawText } from '../i18n/rawText';
 import type { GameState } from './store';
 import type { Get, Set } from './flowTypes';
 import type { Combatant } from '../engine/types';
@@ -177,7 +178,7 @@ function natureStep(hero: Combatant, align: ChaosAlign | undefined, index: numbe
   return tableStep({
     id: `mutation-nature-${hero.id}-${index}`,
     kind: 'mutationNature', actorId: hero.id, icon: 'nav/mutation',
-    label: 'Dissolution — corps ou esprit',
+    label: rawText('Dissolution — corps ou esprit'),
     table: { tableId: mutationNatureTableId(hero.species), die: 100 },
     mutation: { heroId: hero.id, align },
     stake: combatStakeRef('mutationNature'),
@@ -188,7 +189,7 @@ function mutationTableStep(hero: Combatant, tableId: string, ctx: PendingMutatio
   return tableStep({
     id: `mutation-table-${tableId}-${hero.id}`,
     kind: 'mutationTable', actorId: hero.id, icon: 'nav/mutation',
-    label: `Mutation — ${mutationTablePlayerLabel(tableId)}`,
+    label: rawText(`Mutation — ${mutationTablePlayerLabel(tableId)}`),
     table: { tableId, die: 100 },
     mutation: { ...ctx, tableId },
     stake: combatStakeRef('mutationTable'),

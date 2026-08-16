@@ -25,6 +25,7 @@
  * Un camp tenu par un joueur y ouvre une étape de CHOIX ; un camp PNJ tranche par sa POLITIQUE
  * (`PursuitPolicy`, valeur maison éditable à l'Effet `startPursuit` — règle 7, jamais un MJ implicite).
  */
+import { rawText } from '../i18n/rawText';
 import type { Get, Set } from './flowTypes';
 import { rollTest } from '../engine/tests';
 import { effectiveMovement } from '../engine/encumbrance';
@@ -208,7 +209,7 @@ function pursuitRoundBand(get: Get, p: PursuitPayload, label: string): BuiltCasc
     id: `pursuit-${p.manche}`,
     kind: PURSUIT_MOVE_KIND,
     icon: 'travel/foot',
-    label: `Manche ${p.manche} — ${label}`,
+    label: rawText(`Manche ${p.manche} — ${label}`),
     stake: combatStakeRef('pursuitMove', { values: { distance: p.distance, evasion: p.escapeAt } }),
     meta: { round: p.manche },
   }, participants);
@@ -276,7 +277,7 @@ function choixFuyards(get: Get, p: PursuitPayload, pris: PursuitPris): BuiltCasc
     id: `pursuit-${p.manche}-fuyards`,
     kind: PURSUIT_CHOICE_KIND,
     icon: 'travel/foot',
-    label: 'Rattrapés — que fait le groupe ?',
+    label: rawText('Rattrapés — que fait le groupe ?'),
     actorId: porteur.id,
     options: [
       { key: 'sacrifier', label: `Abandonner ${pris.laggard.label}`, detail: 'Le plus lent est laissé derrière pour ralentir les poursuivants — la fuite continue (LDB 15 l.94).' },
@@ -294,7 +295,7 @@ function choixPoursuivants(get: Get, p: PursuitPayload, pris: PursuitPris): Buil
     id: `pursuit-${p.manche}-poursuivants`,
     kind: PURSUIT_CHOICE_KIND,
     icon: 'travel/foot',
-    label: `${pris.laggard.label} est abandonné — qui s'arrête ?`,
+    label: rawText(`${pris.laggard.label} est abandonné — qui s'arrête ?`),
     actorId: camp[0].id,
     options: [
       ...camp.map((h) => ({ key: `arreter:${h.id}`, label: `${h.label} s'arrête pour l'affronter`, detail: 'Les autres continuent la poursuite (LDB 15 l.94).' })),
@@ -329,7 +330,7 @@ export const pursuitBands = makeBandFactory<BuiltCascadeStep>({
   rangee: bandRowOfStep,
   situation: (step) => ({
     id: `pursuit-${monoPursuitRound(step)}`, kind: PURSUIT_MOVE_KIND, icon: step.icon,
-    label: `Manche ${monoPursuitRound(step)} — ${step.rollLabel ?? 'Mouvement'}`,
+    label: rawText(`Manche ${monoPursuitRound(step)} — ${step.rollLabel ?? 'Mouvement'}`),
     ...(step.stake ? { stake: step.stake } : {}),
     meta: { round: Number(monoPursuitRound(step)) },
   }),

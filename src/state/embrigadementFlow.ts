@@ -16,6 +16,7 @@
  * événement n'a pas lieu. » — la relâche à terre n'est pas modélisée (#164) : l'événement se déclenche
  * donc toujours (aucune décision de relâche n'existe pour le désactiver).
  */
+import { rawText } from '../i18n/rawText';
 import type { Get, Set } from './flowTypes';
 import type { BuiltCascadeStep } from './stepBrand';
 import { registerCascadeApplier } from './cascade';
@@ -53,7 +54,7 @@ export function openEmbrigadementRecovery(
   openChoice(get, set, {
     title: 'Embrigadement', icon: 'nav/dice', purpose: 'test',
     id: 'embrig-decision', kind: 'embrigadementDecision', actorId: lead.actor.id,
-    label: `${recover} membre(s) d'équipage embrigadé(s) — tenter de les récupérer ?`,
+    label: rawText(`${recover} membre(s) d'équipage embrigadé(s) — tenter de les récupérer ?`),
     options: [
       { key: 'tenter', label: 'Tenter la récupération', detail: 'Retrouver leur trace (Ragot) puis les libérer — un Test raté coûte 1d10 membres d\'équipage de plus.' },
       { key: 'renoncer', label: 'Renoncer', detail: 'Accepter la perte sans risquer d\'autres membres d\'équipage.' },
@@ -77,7 +78,7 @@ function ragotStep(
     difficulty: gossipDiff,
     stake: voyageStakeRef('embrigadementRagot'),
     ligne: lead.ligne,
-    label: `Retrouver l'équipage — Ragot ${DIFFICULTY_LABELS[gossipDiff]}`,
+    label: rawText(`Retrouver l'équipage — Ragot ${DIFFICULTY_LABELS[gossipDiff]}`),
     meta: { recover, ransomCO, extraLoss, stealthDiff },
   });
 }
@@ -106,7 +107,7 @@ registerCascadeApplier(
 function liberationChoice(leadId: string, recover: number, ransomCO: number, extraLoss: number, stealthDiff: Difficulty): BuiltCascadeStep | undefined {
   return choiceStep({
     id: 'embrig-choix', kind: 'embrigadementChoix', icon: 'nav/dice', actorId: leadId,
-    label: 'Comment libérer vos compagnons ?',
+    label: rawText('Comment libérer vos compagnons ?'),
     options: [
       { key: 'payer', label: `Payer ${ransomCO} CO`, detail: 'Racheter les marins embrigadés à l\'autre équipage.' },
       { key: 'discretion', label: `Discrétion (${DIFFICULTY_LABELS[stealthDiff]})`, detail: 'Les libérer en douce (un échec coûte 1d10 marins de plus).' },
@@ -156,7 +157,7 @@ registerCascadeApplier(
       difficulty: stealthDiff,
       stake: voyageStakeRef('embrigadementDiscretion'),
       ligne: { test: { skill: 'discretion' }, valeur: lead.value, soutien: lead.support },
-      label: `Libérer en douce — Discrétion ${DIFFICULTY_LABELS[stealthDiff]}`,
+      label: rawText(`Libérer en douce — Discrétion ${DIFFICULTY_LABELS[stealthDiff]}`),
       meta: { recover, extraLoss },
     });
     return st ? { insert: [st] } : undefined;

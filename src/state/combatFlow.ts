@@ -3,6 +3,8 @@
  * Fonctions (get,set) : combat, magie, IA, desengagement, effets. RNG via ./battleRng.
  * Refacto pure -- comportement preserve.
  */
+import type { PlayerText } from '../i18n/playerText';
+import { rawText } from '../i18n/rawText';
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
 import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, CascadeTableDone, PendingMiscastStep, CascadeStep, CascadeRoll, BatchParticipant, PendingCounterspell, CounterParticipant, CounterDeclaration } from './pendings';
@@ -1825,7 +1827,7 @@ export function applyStructureCriticalToTarget(
     // lit la catégorie déclarée par la table), et porte la charge riche dans son slot `reveal`.
     pushTableDone(set, {
       id: `cons-critical-structure-${target.id}-${target.criticalWounds}`,
-      kind: 'critical', actorId: target.id, icon: 'journal/critical', label: entry.title,
+      kind: 'critical', actorId: target.id, icon: 'journal/critical', label: rawText(entry.title),
       table, result: rolled, reveal: entry, outcome: toRecapLines(rolled.lines),
       stake: combatStakeRef('structureCritical'),
     });
@@ -1937,7 +1939,7 @@ function enemyAutoDeviate(
 function pushDeviationStep(set: SetFn, dev: PendingDeviation): void {
   pushChoice(set, {
     id: `cons-deviation-${dev.targetId}`, kind: 'deviation', actorId: dev.targetId, icon: 'fire/blast',
-    label: 'Coup Critique — dévier ?',
+    label: rawText('Coup Critique — dévier ?'),
     options: [{ key: 'devier', label: 'Dévier (−1 PA)' }, { key: 'subir', label: 'Subir' }],
     defaultChoice: 'devier', deviation: dev, reveal: dev.reveal,
   });
@@ -2125,7 +2127,7 @@ export function applyAttackResult(
       id: `cons-crit-severity-${target.id}-${(target.criticalWounds ?? 0) + 1}`,
       // Le titre d'étape porte la LOCALISATION : c'est elle qui dit sur QUELLE table le dé se pose.
       kind: 'critSeverity', actorId: target.id, icon: 'journal/critical',
-      label: `Blessure critique (${locationLabel(cloc, target.bodyShape)})`,
+      label: rawText(`Blessure critique (${locationLabel(cloc, target.bodyShape)})`),
       table: critSeverityDecl(target, cloc, overkill0, twice),
       critSeverity: { attackerId: attacker.id, targetId: target.id, weapon, res, location: cloc, overkill: overkill0, twice },
       // Avant le dé, l'enjeu est celui du TABLEAU (fiche `blessures-critiques`) ; après, la re-pose
@@ -2277,7 +2279,7 @@ export function applyAttackResult(
         const pbt: PendingBladeTrap = { defenderId: target.id, attackerId: attacker.id, weapon, parryWeaponUid: res.parryWeapon.uid!, defSL: dd.sl, roll: dd.roll };
         pushChoice(set, {
           id: `cons-bladetrap-${target.id}`, kind: 'bladeTrap', actorId: target.id, icon: 'item/weapon',
-          label: 'Parade — piéger la lame ?',
+          label: rawText('Parade — piéger la lame ?'),
           options: [{ key: 'trap', label: 'Piéger la lame' }, { key: 'crit', label: 'Coup Critique' }],
           defaultChoice: 'crit', bladeTrap: pbt,
           outcome: toRecapLines([
@@ -2523,7 +2525,7 @@ export function checkFocusInterruption(get: Get, set: SetFn, target: Combatant):
 export function applyFocusInterruption(get: Get, set: SetFn, focuser: Combatant): void {
   if (!focuser.focus || focuser.focus.dr <= 0) return; // garde (le composant/DR a pu changer entre Test et conséquence)
   const focusedSpellId = focuser.focus.spell;
-  const lines = [tr('cf.focusLost', { name: focuser.label, dr: focuser.focus.dr, spell: findSpellById(focusedSpellId)?.label ?? focusedSpellId })];
+  const lines: string[] = [tr('cf.focusLost', { name: focuser.label, dr: focuser.focus.dr, spell: findSpellById(focusedSpellId)?.label ?? focusedSpellId })];
   focuser.focus = undefined;
   const compUsed = useSpellComponent(focuser, focusedSpellId, lines); // un composant couvre aussi la Focalisation (incantation en cours)
   lines.push(...applyMiscast(get, set, focuser, 'mineure', { componentDowngrade: compUsed, domainId: findSpellById(focusedSpellId)?.domainId ?? undefined }));
@@ -3770,7 +3772,7 @@ function miscastTableSpec(caster: Combatant, ctx: PendingMiscastStep, id: string
     id,
     kind: 'miscastTable', actorId: caster.id,
     icon: colere ? 'magic/power' : 'fire/blast',
-    label: colere ? 'Colère des dieux' : `Incantation Imparfaite ${ctx.severity === 'majeure' ? 'Majeure' : 'Mineure'}`,
+    label: rawText(colere ? 'Colère des dieux' : `Incantation Imparfaite ${ctx.severity === 'majeure' ? 'Majeure' : 'Mineure'}`),
     table: miscastTableDecl(ctx),
     // Deux tirages de nature DIFFÉRENTE partagent ce `kind` d'étape : le contrecoup magique (LDB 46)
     // et la sanction divine (LDB 40, +10 par Point de Péché) ne mettent pas la même chose en jeu.
@@ -5690,7 +5692,7 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
         id: `combatEndDisease-${c.id}-${d.entry}-${d.disease}`, kind: 'combatEndDisease', actor: c, icon: 'medical/infection',
         rollLabel: 'Résistance', difficulty: d.difficulty,
         ligne: { valeur: resVal, surLaCible: conditionModLines(c) },
-        label: d.label, meta: { entry: d.entry, disease: d.disease, ...(d.instant ? { instant: true } : {}) },
+        label: rawText(d.label), meta: { entry: d.entry, disease: d.disease, ...(d.instant ? { instant: true } : {}) },
         stake: combatStakeRef('combatEndDisease', { entryId: d.disease }),
         menace: 'maladie', // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
       });
@@ -5702,7 +5704,7 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
         id: `combatEndCorruption-${c.id}`, kind: 'combatEndCorruption', actor: c, icon: 'nav/mutation',
         rollLabel: 'Résistance', difficulty: 'intermediaire',
         ligne: { test: { skill: 'resistance' }, valeur: res, surLaCible: conditionModLines(c) },
-        label: `Exposition à la Corruption (${corr.label})`, meta: { level: corr.level, exposureLabel: corr.label },
+        label: rawText(`Exposition à la Corruption (${corr.label})`), meta: { level: corr.level, exposureLabel: corr.label },
         // L'enjeu DIT le coût de l'échec, lu à l'applier : `corruptionGain(niveau, false, …)` est constant
         // par niveau (1/2/3) — la valeur interpolée vient donc du MÊME calcul que la conséquence.
         stake: combatStakeRef('combatEndCorruption', { values: { niveau: corr.label, gainEchec: corruptionGain(corr.level, false, 0) } }),
@@ -5796,7 +5798,7 @@ registerCombatEndBandApplier('combatEndCorruption', (get, set, _band, row, hero,
 export function openContractionCascade(get: Get, set: SetFn, patient: Combatant, disease: string, difficulty: Difficulty, title: string): void {
   openBand(get, set, {
     id: `infection-${patient.id}-${disease}`, kind: 'combatEndDisease', icon: 'medical/infection',
-    label: title, menace: 'maladie', meta: { entry: 'chirurgie', disease },
+    label: rawText(title), menace: 'maladie', meta: { entry: 'chirurgie', disease },
     stake: combatStakeRef('combatEndDisease', { entryId: disease }),
     difficulty,
     porteurs: [{ actor: patient, ligne: { valeur: combatEndResistVal(patient) }, label: 'Résistance', menace: 'maladie' }],
@@ -6599,7 +6601,7 @@ function psychRowMeta(part: BatchParticipant): CombatPsychRowMeta {
 
 /** Un Test de Psychologie de combat DÛ par un héros, avant regroupement : la déclaration de règle qui
  *  l'appelle (clé de bande), sa RANGÉE, et la présentation qui en découle (commune à toute la bande). */
-interface CombatPsychDue { decl: CombatPsychDecl; row: BatchParticipant; icon: string; label: string }
+interface CombatPsychDue { decl: CombatPsychDecl; row: BatchParticipant; icon: string; label: PlayerText }
 
 /** Le Test de Psychologie de combat dû au héros `c` selon `collect` (début ou fin de Round), sous forme
  *  de RANGÉE + déclaration de règle. La sortie de Frénésie est un effet `onTurnStart` en DONNÉES
@@ -6643,7 +6645,7 @@ function psychDueFor(get: Get, c: Combatant, collect: (get: Get, c: Combatant) =
       meta: { prevDR: t.prevDR, ...(sansPeur ? { sansPeur: true } : {}) },
     },
     icon: cl?.icon ?? (t.kind === 'terreur' ? 'creature/scream' : 'flag/fear'),
-    label: cl ? `${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? 'Terreur' : 'Peur'} ${t.indice}`,
+    label: rawText(cl ? `${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? 'Terreur' : 'Peur'} ${t.indice}`),
   };
 }
 

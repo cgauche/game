@@ -55,13 +55,13 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | Primitive | combat | magie | corruption | psychologie | voyage-terre | voyage-fluvial | voyage-maritime | combat-naval | bataille-masse | interlude | commerce | equipage | repos-survie | coop | editeur | codex |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `ScreenShell` |  |  |  |  | U |  | U | U |  |  | U |  |  |  | U |  |
-| `RollShell` |  | U | U |  | U |  | U | U | U | U |  | U |  |  |  |  |
-| `RollRow` |  | U | U |  | U |  | U | U | U | U |  | U |  |  |  |  |
+| `RollShell` |  | U | U |  | U |  | U | U | U | U | U | U | U |  |  |  |
+| `RollRow` |  | U | U |  | U |  | U | U | U | U | U | U | U |  |  |  |
 | `makeRollFlow/FLOWS` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `openRoll/resolveSurface` | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U | U |
 | `OptionChooser/ChoiceButtons` |  | U | U |  | U |  | U | U | U | U | U | U | U |  | U |  |
 | `optionValue/optionPending/testPending` |  | U | U |  | U |  | U | U | U | U |  | U |  |  |  |  |
-| `InfluenceRow` |  | U | U |  | U |  | U | U | U | U |  | U |  |  |  |  |
+| `InfluenceRow` |  | U | U |  | U |  | U | U | U | U | U | U | U |  |  |  |
 | `VsHeader` |  | U |  |  | U |  | U |  | U | U |  |  |  |  |  |  |
 | `PortraitTile/CharFrame` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
 | `SearchFilterField` |  |  |  |  |  |  |  |  |  | U |  |  |  |  | U |  |

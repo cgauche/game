@@ -564,7 +564,7 @@ export type ConditionUnlock = 'medicalAid' | 'surgery' | 'magic';
  * n'écrit rien et ne compose aucun texte : la ligne FR reste seule maîtresse du journal, l'id voyage
  * À CÔTÉ d'elle. Appariement 1:1 avec la ligne poussée au même instant (l'émetteur les pose ensemble).
  *
- * ⚠ C'est un appariement LIGNE↔ID, PAS un delta d'état : n'en dérivez aucun compteur d'États portés.
+ * ATTENTION : c'est un appariement LIGNE↔ID, PAS un delta d'état : n'en dérivez aucun compteur d'États portés.
  * Contre-exemple qui le prouve — une op `condition` à `perRound` notifie à l'ANNONCE (« X subit 1 État
  * Y par Round ») alors qu'AUCUN État n'est encore posé : les poses réelles tomberont à chaque fin de
  * Round et notifieront chacune la leur. Un consommateur qui compterait les `gain` double-compterait.

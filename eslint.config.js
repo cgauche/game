@@ -8,6 +8,44 @@ import globals from 'globals';
  * style. Les conventions stylistiques sont en `warn` (n'échouent pas la CI) pour
  * établir une base sans bloquer le développement en cours. À durcir au fil de l'eau.
  */
+
+/** Un NOM de marque, cherché en DESCENDANT (le cast se forge tout autant sous un tableau/`readonly`). */
+const MARQUES = '/^(Built(CascadeStep|RollRow)|PlayerText)$/';
+const MSG_FORGE = 'Marque d’origine (#1262/#1318) : forger un `Built*`/`PlayerText` par cast rend la marque décorative. Passer par un constructeur de la porte (rollSeam), par `revealToStep`, ou par un minteur de texte (`t`, `refLabel`, `composeRollLabel`).';
+
+/** VERROU DES MARQUES — les trois ROUTES DE FORGE (cast `as`, cast `<T>`, alias qui déguiserait le nom).
+ *  Défini ICI parce que DEUX blocs le déclarent : en flat config, le dernier bloc qui pose une règle
+ *  REMPLACE ses options — un bloc qui l'omettrait désarmerait le verrou au lieu de s'y ajouter. */
+const VERROU_MARQUES = [{
+  selector: `TSAsExpression TSTypeReference > Identifier[name=${MARQUES}]`,
+  message: MSG_FORGE,
+}, {
+  selector: `TSTypeAssertion TSTypeReference > Identifier[name=${MARQUES}]`,
+  message: MSG_FORGE,
+}, {
+  selector: [
+    `TSTypeAliasDeclaration > TSTypeReference > Identifier[name=${MARQUES}]`,
+    `TSTypeAliasDeclaration > TSArrayType > TSTypeReference > Identifier[name=${MARQUES}]`,
+    `TSTypeAliasDeclaration > TSTypeOperator > TSArrayType > TSTypeReference > Identifier[name=${MARQUES}]`,
+    `TSTypeAliasDeclaration > TSUnionType > TSTypeReference > Identifier[name=${MARQUES}]`,
+    `TSTypeAliasDeclaration > TSUnionType > TSArrayType > TSTypeReference > Identifier[name=${MARQUES}]`,
+    `TSTypeAliasDeclaration > TSUnionType > TSTypeOperator > TSArrayType > TSTypeReference > Identifier[name=${MARQUES}]`,
+  ].join(', '),
+  message: 'Marque d’origine (#1262/#1318) : aliaser un `Built*`/`PlayerText` rouvre la route de forge par cast (le verrou filtre par NOM). Nommer la marque au site, ou passer par un minteur.',
+}];
+
+/** VERROU DES CONTENEURS (#1318 V8a₀ T1/T2) — les deux voies qui recomposent l'ÉTAPE entière et
+ *  blanchissent son `label` au passage. Portée plus étroite que les marques (cf. le bloc qui l'emploie). */
+const VERROU_CONTENEUR = [{
+  selector: "CallExpression[callee.object.name='Object'][callee.property.name='assign'] > ObjectExpression > Property[key.name='label']",
+  message: 'Contournement de conteneur (#1318 T1) : `Object.assign` ne vérifie pas le type de la cible — un `label` y rentre en `string` et blanchit la marque. Déclarer le libellé à la porte (spec), ou passer par un minteur.',
+}, {
+  selector: [
+    'TSAsExpression TSTypeReference > Identifier[name=/^CascadeStep$/]',
+    'TSTypeAssertion TSTypeReference > Identifier[name=/^CascadeStep$/]',
+  ].join(', '),
+  message: 'Contournement de conteneur (#1318 T2) : caster en `CascadeStep` fait entrer un littéral entier, `label` compris. Passer par une porte du seam (`monoStep`/`tableStep`/`choiceStep`/`quantityStep`/`displayStep`/`bandStep`/`hostStep`).',
+}];
 export default tseslint.config(
   { ignores: ['dist/**', 'node_modules/**', 'public/**', '_site/**', 'src/data/**', '**/*.json', '*.config.*', '.claude/**', 'server/.wrangler/**', '.playwright-mcp/**'] },
   js.configs.recommended,
@@ -52,26 +90,41 @@ export default tseslint.config(
     // c'est-à-dire le murage lui-même. Employer la marque dans une signature n'est pas la déguiser.
     // Restent donc hors portée (dit au JSDoc de `state/stepBrand.ts`) : l'alias GÉNÉRIQUE ou calculé
     // (`type A<T> = …`, type conditionnel, accès indexé) et le renommage à l'import.
+    //
+    // TROISIÈME MARQUE, mêmes routes, même verrou (#1318 V8a₀) : `PlayerText` (`src/i18n/playerText.ts`),
+    // le texte destiné à l'œil du joueur. Ses MINTEURS sont exemptés au FICHIER (`i18n/index.ts` pour
+    // `t()`, `state/rollSeam.ts` pour `composeRollLabel` — déjà dans la liste), et le FOSSILE
+    // `i18n/rawText.ts` est SOUS la règle avec son exemption AU SITE (patron `saves.ts`) : un second cast
+    // y échouerait. `data/index.ts` (minteur des libellés de donnée) est hors du périmètre ESLint du
+    // dépôt (`ignores` de tête `src/data/**`) — dit au JSDoc de `playerText.ts`, jamais un oubli.
     files: ['src/**/*.ts', 'src/**/*.tsx'],
-    ignores: ['src/state/rollSeam.ts', 'src/state/revealStep.ts', 'src/ui/rollRowBuild.ts'],
+    ignores: ['src/state/rollSeam.ts', 'src/state/revealStep.ts', 'src/ui/rollRowBuild.ts', 'src/i18n/index.ts'],
     rules: {
-      'no-restricted-syntax': ['error', {
-        selector: 'TSAsExpression TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
-        message: 'Marque d’origine (#1262) : forger un `Built*` par cast rend la marque décorative. Passer par un constructeur de la porte (rollSeam) ou par `revealToStep`.',
-      }, {
-        selector: 'TSTypeAssertion TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
-        message: 'Marque d’origine (#1262) : forger un `Built*` par cast rend la marque décorative. Passer par un constructeur de la porte (rollSeam) ou par `revealToStep`.',
-      }, {
-        selector: [
-          'TSTypeAliasDeclaration > TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
-          'TSTypeAliasDeclaration > TSArrayType > TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
-          'TSTypeAliasDeclaration > TSTypeOperator > TSArrayType > TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
-          'TSTypeAliasDeclaration > TSUnionType > TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
-          'TSTypeAliasDeclaration > TSUnionType > TSArrayType > TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
-          'TSTypeAliasDeclaration > TSUnionType > TSTypeOperator > TSArrayType > TSTypeReference > Identifier[name=/^Built(CascadeStep|RollRow)$/]',
-        ].join(', '),
-        message: 'Marque d’origine (#1262) : aliaser un `Built*` rouvre la route de forge par cast (le verrou filtre par NOM). Nommer la marque au site, ou passer par un constructeur de la porte.',
-      }],
+      'no-restricted-syntax': ['error', ...VERROU_MARQUES],
+    },
+  },
+  {
+    // LES DEUX CONTOURNEMENTS DE CONTENEUR (#1318 V8a₀) — marquer `label` au type ferme la déclaration
+    // DIRECTE, pas les deux voies qui recomposent l'étape ENTIÈRE et blanchissent le champ au passage :
+    //  T1. `Object.assign(step, { label: '…' })` — la signature `assign<T,U>(t: T, s: U): T & U` ne
+    //      vérifie RIEN contre `T` : le champ marqué se réécrit en `string` sans un mot de `tsc`.
+    //  T2. `x as CascadeStep` — le cast de CONTENEUR : tout littéral y entre, `label` compris. Les casts
+    //      internes des 7 portes du seam visent `BuiltCascadeStep` et restent exemptés AU FICHIER
+    //      (`rollSeam`/`revealStep`) : ils ne blanchissent plus rien depuis que la marque est exigée EN
+    //      AMONT, au paramètre de leur SPEC — c'est la déclaration qui est murée, pas la sortie.
+    // Le sélecteur T1 est SYNTAXIQUE (un lint ne type pas la cible) : il vise `Object.assign` dont un
+    // argument littéral porte un `label`. Le seul site RÉEL du dépôt (`interludeFlow.ts`, un
+    // `Partial<PendingActivityFields>` — pas une étape) porte son exemption AU SITE avec sa raison.
+    // Les fichiers de TEST sont hors du sélecteur T2 : leurs 38 `as CascadeStep` sont GELÉS nominativement
+    // et décroissants (`state/player-text-ratchet.test.ts`, cible 0, éteints par V8a₁) — un gel mesuré
+    // vaut mieux qu'une exemption muette, et le code de PRODUCTION, lui, n'en a plus AUCUN (mesuré).
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ignores: ['src/state/rollSeam.ts', 'src/state/revealStep.ts', 'src/ui/rollRowBuild.ts', 'src/i18n/index.ts', 'src/**/*.test.ts', 'src/**/*.test.tsx'],
+    rules: {
+      // Les marques sont REDITES ici : en flat config, le DERNIER bloc qui déclare une règle REMPLACE
+      // ses options — les omettre désarmerait le verrou #1262/#1318 sur tout le code de production
+      // (mesuré : les `eslint-disable` de `saves.ts` devenaient INUTILISÉS, symptôme du désarmement).
+      'no-restricted-syntax': ['error', ...VERROU_MARQUES, ...VERROU_CONTENEUR],
     },
   },
   {

@@ -1,3 +1,4 @@
+import { rawText } from '../i18n/rawText';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { combatStakeRef } from '../data';
 import { useGame } from './store';
@@ -31,7 +32,7 @@ describe('Cascade séquentielle influençable', () => {
     return h;
   }
   const step = (id: string, actorId: string, target = 55): CascadeStep =>
-    ({ id, kind: 'tally', actorId, label: id, rollLabel: 'Résistance', base: target, target, result: null});
+    ({ id, kind: 'tally', actorId, label: rawText(id), rollLabel: 'Résistance', base: target, target, result: null});
 
   it('présente une étape à la fois, applique chaque conséquence dans l’ordre, puis finalise', () => {
     useGame.getState().seedRng(3);
@@ -71,10 +72,10 @@ describe('Cascade séquentielle influençable', () => {
     // Une étape insérée passe par un mint de la porte (`insert` n'accepte plus de littéral) : valeur
     // FOURNIE (40) à Intermédiaire (+0) — base 40, cible 40, comme le montage à la main d'avant.
     function step1Insert(actor: Combatant, id: string): BuiltCascadeStep {
-      return monoStep({ id, kind: 'tally', actor, label: id, rollLabel: 'Résistance', difficulty: 'intermediaire', stake: combatStakeRef('fatigue'), ligne: { valeur: 40, valeurEtrangere: true } })!;
+      return monoStep({ id, kind: 'tally', actor, label: rawText(id), rollLabel: 'Résistance', difficulty: 'intermediaire', stake: combatStakeRef('fatigue'), ligne: { valeur: 40, valeurEtrangere: true } })!;
     }
     // Abri FORCÉ raté (dé 99) → insère 2 étapes d'Exposition.
-    const shelter: CascadeStep = { id: 'abri', kind: 'shelter', actorId: h.id, label: 'Abri', rollLabel: 'Survie', base: 40, target: 40, result: { roll: 99, target: 40, sl: -5, success: false }};
+    const shelter: CascadeStep = { id: 'abri', kind: 'shelter', actorId: h.id, label: rawText('Abri'), rollLabel: 'Survie', base: 40, target: 40, result: { roll: 99, target: 40, sl: -5, success: false }};
     startCascade(useGame.getState, useGame.setState, { title: 'Camp', purpose: 'test', steps: [shelter] });
     expect(useGame.getState().pendingCascade!.participants).toHaveLength(1);
     useGame.getState().cascadeNext(); // valide l'abri raté → +2 étapes
@@ -98,7 +99,7 @@ describe('Cascade séquentielle influençable', () => {
 
   it('mêmes verbes d’influence : la Chance relance une étape propre ratée', () => {
     const h = hero();
-    const failed: CascadeStep = { id: 's1', kind: 'tally', actorId: h.id, label: 's1', rollLabel: 'Résistance', base: 30, target: 30, result: { roll: 88, target: 30, sl: -5, success: false }, rerolled: false};
+    const failed: CascadeStep = { id: 's1', kind: 'tally', actorId: h.id, label: rawText('s1'), rollLabel: 'Résistance', base: 30, target: 30, result: { roll: 88, target: 30, sl: -5, success: false }, rerolled: false};
     startCascade(useGame.getState, useGame.setState, { title: 'Nuit', purpose: 'test', steps: [failed] });
     useGame.getState().cascadeReroll('s1');
     expect(useGame.getState().party[0].fortune).toBe(1); // 1 Point de Chance dépensé
@@ -125,7 +126,7 @@ describe('Cascade séquentielle influençable', () => {
   it('étape « choix » : no-op sans choix, puis l’option pilote la conséquence + insertion', () => {
     const h = hero();
     spyApplier('pick', applied, (step) => ({ kind: step.kind, success: step.chosen === 'devier' }),
-      (step) => (step.chosen === 'devier' ? { insert: [displayStep({ id: 'suite', kind: 'note', actorId: h.id, label: 'Suite' })] } : {}));
+      (step) => (step.chosen === 'devier' ? { insert: [displayStep({ id: 'suite', kind: 'note', actorId: h.id, label: rawText('Suite')})] } : {}));
     spyApplier('note', applied, (step) => ({ kind: step.kind, success: true }), (step) => ({ consequences: freeCons([`${step.id}`]) }));
     const choix: CascadeStep = { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'devier', label: 'Dévier' }, { key: 'subir', label: 'Subir' }]};
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [choix] });
@@ -233,7 +234,7 @@ describe('Cascade séquentielle influençable', () => {
     ];
     // Deux porteurs → possession de GROUPE (`bandStep`/`buildBatchStep`) : une bande anonyme n'entre
     // plus dans une séquence (#1262 V2 L4, `assertBandeDeclarePossession`).
-    const batch: CascadeStep = { id: 'progression', kind: 'crew-batch', label: 'Progression', groupOwner: true, participants, result: null};
+    const batch: CascadeStep = { id: 'progression', kind: 'crew-batch', label: rawText('Progression'), groupOwner: true, participants, result: null};
     startCascade(useGame.getState, useGame.setState, { title: 'Voyage', purpose: 'test', steps: [batch] });
     expect(stepInteraction(useGame.getState().pendingCascade!.participants[0])).toBe('batch');
     expect(stepReady(useGame.getState().pendingCascade!.participants[0])).toBe(false); // aucun participant lancé
@@ -383,12 +384,12 @@ describe('Cascade séquentielle influençable', () => {
 
     it('pushStep suit la MÊME doctrine : append à même purpose, PARQUE l’autre (jamais un écrasement)', () => {
       const h = hero();
-      pushStep(useGame.setState, { id: 'p1', kind: 'note', actorId: h.id, label: 'Surprise'}, 'combat');
+      pushStep(useGame.setState, { id: 'p1', kind: 'note', actorId: h.id, label: rawText('Surprise')}, 'combat');
       expect(useGame.getState().pendingCascade!.title).toBe('Surprise'); // l'étape prête son label au titre
       pushStep(useGame.setState, { id: 'p2', kind: 'note', actorId: h.id}, 'combat');
       expect(useGame.getState().pendingCascade!.participants.map((s) => s.id)).toEqual(['p1', 'p2']);
       // purpose DIFFÉRENT : la séquence de combat est PARQUÉE, pas remplacée (contrat inverse de l'ancien).
-      pushStep(useGame.setState, { id: 'p3', kind: 'note', actorId: h.id, label: 'Voyage'}, 'travelDay');
+      pushStep(useGame.setState, { id: 'p3', kind: 'note', actorId: h.id, label: rawText('Voyage')}, 'travelDay');
       expect(useGame.getState().pendingCascade!.purpose).toBe('travelDay');
       expect(useGame.getState().pendingCascade!.participants.map((s) => s.id)).toEqual(['p3']);
       const stack = useGame.getState().suspendedCascades;

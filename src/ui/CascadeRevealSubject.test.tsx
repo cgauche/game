@@ -7,6 +7,7 @@
  *  - la BARRE DE TEMPS de l'auto-fermeture est réservée au GRAVE (arbitrage 2026-06-11) : le mineur
  *    s'auto-ferme aussi, mais sans cérémonie.
  */
+import { rawText } from '../i18n/rawText';
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -36,7 +37,7 @@ function openReveal(make: (heroId: string) => RevealEntry, autoCloseMs?: number)
     net: { mode: 'local', mySeat: 0, roomCode: null, seatNames: {}, presence: {}, ownership: {} } as never,
     pendingCascade: {
       title: entry.title, icon: 'nav/mutation', purpose: 'affichage', cursor: 0, log: [],
-      participants: [{ id: 'cons-0', kind: entry.kind, actorId: entry.subjectId, label: entry.title, reveal: entry, autoCloseMs}],
+      participants: [{ id: 'cons-0', kind: entry.kind, actorId: entry.subjectId, label: rawText(entry.title), reveal: entry, autoCloseMs}],
     },
   });
   return hero;

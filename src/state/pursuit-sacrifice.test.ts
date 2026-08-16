@@ -10,6 +10,7 @@
  * retardataire décale la variation de Distance d'EXACTEMENT (DR du deuxième plus lent − DR du plus
  * lent). Les deux lignes de journal (manche, puis recalcul) le donnent à l'unité près.
  */
+import { rawText } from '../i18n/rawText';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { pursuitOf, PURSUIT_POLICY_DEFAUT, type PursuitPayload, type PursuitFoe } from './pursuitFlow';
@@ -47,7 +48,7 @@ function pursuitSeq(p: Partial<PursuitPayload> & { foes: PursuitFoe[] }): Sequen
 /** Manche FIGÉE : une rangée par coureur, DR imposé (le jet adverse, lui, tombe au RNG semé). */
 function doneRound(rows: { id: string; sl: number }[]): PendingCascade {
   const participants: CascadeStep[] = [{
-    id: 'pursuit-1', kind: 'pursuitMove', label: 'Manche 1 — Athlétisme', aggregate: 'none',
+    id: 'pursuit-1', kind: 'pursuitMove', label: rawText('Manche 1 — Athlétisme'), aggregate: 'none',
     participants: rows.map((r) => ({
       id: r.id, label: 'Athlétisme', base: 40, target: 40, interactive: true,
       result: { roll: 40, target: 40, sl: r.sl, success: r.sl >= 0 },

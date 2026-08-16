@@ -5,6 +5,7 @@
  * une ERREUR DE COMPILATION. La 2ᵉ langue = un catalogue frère ajouté à `CATALOGS`.
  */
 import { fr } from './messages/fr';
+import type { PlayerText } from './playerText';
 
 export type MsgKey = keyof typeof fr;
 type Params = Record<string, string | number>;
@@ -28,8 +29,15 @@ export function interpolate(pattern: string, params?: Params): string {
   return params ? pattern.replace(/\{(\w+)\}/g, (_, k: string) => (params[k] != null ? String(params[k]) : `{${k}}`)) : pattern;
 }
 
-/** Texte de la clé dans la locale courante (repli FR puis clé), paramètres interpolés. */
-export function t(key: MsgKey, params?: Params): string {
+/**
+ * Texte de la clé dans la locale courante (repli FR puis clé), paramètres interpolés.
+ *
+ * MINTEUR (a) de `PlayerText` (#1318 V8a₀) — la voie NORMALE : tout ce qui sort du catalogue est du
+ * texte joueur par construction. Le retour reste assignable vers `string`, donc aucun consommateur
+ * d'affichage ne bouge ; ce qui change, c'est qu'un champ MARQUÉ n'accepte plus qu'une sortie de
+ * minteur. `interpolate` reste `string` : elle interpole un patron quelconque, elle ne mint pas.
+ */
+export function t(key: MsgKey, params?: Params): PlayerText {
   const pat: string = CATALOGS[locale][key] ?? CATALOGS.fr[key] ?? key;
-  return interpolate(pat, params);
+  return interpolate(pat, params) as PlayerText;
 }

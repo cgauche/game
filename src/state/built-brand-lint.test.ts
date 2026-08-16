@@ -80,9 +80,9 @@ describe('#1262 — le lint mure les ROUTES DE FORGE de la marque', () => {
     expect(await messagesDeVerrou(code)).toHaveLength(1);
   });
 
-  it('un cast SANS rapport avec la marque n’est pas touché (la règle ne mord que `Built*`)', async () => {
-    const code = "import type { CascadeStep } from './pendings';\ndeclare const o: unknown;\nexport const g = o as CascadeStep;\n";
-    expect(await messagesDeVerrou(code)).toHaveLength(0);
+  it('un cast SANS rapport avec le murage n’est pas touché (ni marque, ni CONTENEUR d’étape)', async () => {
+    const code = "import type { Combatant } from '../engine/types';\ndeclare const o: unknown;\nexport const g = o as Combatant;\n";
+    expect(await messagesDeVerrou(code), '`CascadeStep` n’est plus un cas neutre : il est muré depuis #1318 T2 (cf. le volet CONTENEURS)').toHaveLength(0);
   });
 
   it('un type de CALLBACK qui EXIGE des étapes mintées passe : employer la marque n’est pas la déguiser', async () => {
@@ -307,4 +307,167 @@ describe('#1262 V4 M2 — le murage du CHOIX DE GROUPE est TUEUR', () => {
   it('SANS le champ (l’état d’avant) : l’épandage passe, la directive devient INUTILISÉE (TS2578)', () => {
     expect(codesDeDiagnostic(SONDE_CHOIX('')), 'sans ce rouge, la mort de la garde runtime laisserait un trou').toContain(2578);
   });
+});
+
+/**
+ * LA MARQUE DU TEXTE JOUEUR (#1318 V8a₀) — troisième marque sous le MÊME verrou : `PlayerText`
+ * (`src/i18n/playerText.ts`) n'a que trois minteurs (`i18n.t`, `data.refLabel`,
+ * `rollSeam.composeRollLabel`), donc la seule autre fabrique est le cast. Les CINQ formes du patron
+ * sont rejouées ici sur la config RÉELLE : sans elles, ajouter un nom au sélecteur serait une
+ * déclaration, pas un murage.
+ *
+ * DEUX exemptions, de nature différente : `i18n/index.ts` est exempté AU FICHIER (c'est un minteur,
+ * comme `rollSeam`), tandis que le FOSSILE `i18n/rawText.ts` reste SOUS la règle avec son exemption AU
+ * SITE (patron `saves.ts`) — un second cast y échoue. `data/index.ts` n'est PAS mesurable ici :
+ * `src/data/**` est hors du périmètre ESLint du dépôt (`ignores` de tête) — limite dite, pas couverte.
+ */
+const ENTETE_TEXTE = "import type { PlayerText } from '../i18n/playerText';\ndeclare const o: unknown;\n";
+
+describe('#1318 V8a₀ — le lint mure les ROUTES DE FORGE du texte joueur', () => {
+  it('`x as PlayerText` — la forme directe', async () => {
+    expect(await messagesDeVerrou(`${ENTETE_TEXTE}export const a = o as PlayerText;\n`)).toHaveLength(1);
+  });
+
+  it('`<PlayerText>x` — l’autre syntaxe de cast (TSTypeAssertion)', async () => {
+    expect(await messagesDeVerrou(`${ENTETE_TEXTE}export const b = <PlayerText>o;\n`)).toHaveLength(1);
+  });
+
+  it('`x as PlayerText[]` — un tableau s’interpose entre le cast et la référence', async () => {
+    expect(await messagesDeVerrou(`${ENTETE_TEXTE}export const c = o as PlayerText[];\n`)).toHaveLength(1);
+  });
+
+  it('`as unknown as readonly PlayerText[]` — la route RÉALISTE vers une liste de libellés', async () => {
+    expect(await messagesDeVerrou(`${ENTETE_TEXTE}export const d = [] as unknown as readonly PlayerText[];\n`)).toHaveLength(1);
+  });
+
+  it('`type A = PlayerText` — l’ALIAS est refusé à sa DÉCLARATION (le verrou filtre par NOM)', async () => {
+    const code = `${ENTETE_TEXTE}type AliasTexte = PlayerText;\nexport const e = o as AliasTexte;\n`;
+    expect(await messagesDeVerrou(code), 'la route alias doit être MURÉE, pas seulement dite').toHaveLength(1);
+  });
+
+  it('un type de SIGNATURE qui EXIGE du texte minté passe : employer la marque n’est pas la déguiser', async () => {
+    const code = [
+      "import type { PlayerText } from '../i18n/playerText';",
+      'type Rendu = (lignes: readonly PlayerText[]) => PlayerText;',
+      'export const f: Rendu = (l) => l[0];',
+    ].join('\n');
+    expect(await messagesDeVerrou(code)).toHaveLength(0);
+  });
+
+  it('le MINTEUR `i18n/index.ts` est exempté AU FICHIER : son cast interne est la fabrique légitime', async () => {
+    const [res] = await eslint.lintText(`${ENTETE_TEXTE}export const g = o as PlayerText;\n`, { filePath: 'src/i18n/index.ts', warnIgnored: false });
+    expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax')).toHaveLength(0);
+  });
+
+  it('le FOSSILE `i18n/rawText.ts` passe la règle : son unique cast porte sa directive AU SITE', async () => {
+    const [res] = await eslint.lintFiles(['src/i18n/rawText.ts']);
+    expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax'), 'la directive posée couvre le cast du fossile').toHaveLength(0);
+    expect(res.errorCount, 'aucune autre erreur de lint sur le fossile').toBe(0);
+  });
+
+  it('un cast de PLUS dans le fossile (sans sa directive) est REFUSÉ — l’exemption n’est pas au fichier', async () => {
+    const reel = readFileSync('src/i18n/rawText.ts', 'utf8');
+    const second = `${reel}\ndeclare const sonde: unknown;\nexport const forge2 = sonde as PlayerText;\n`;
+    const [res] = await eslint.lintText(second, { filePath: 'src/i18n/rawText.ts' });
+    expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax'), 'un 2ᵉ cast non justifié doit rougir').toHaveLength(1);
+  });
+});
+
+/**
+ * LE CHAMP PILOTE EST MURÉ AU TYPE (#1318 V8a₀) — `CascadeStep.label` (resserré sur `CascadeStepBase`,
+ * pas sur `RollParticipant`) n'accepte plus qu'un `PlayerText`. La sonde rejoue les DEUX signatures sur
+ * un programme TypeScript réel : marquée, la directive est CONSOMMÉE ; en `string` (l'état d'avant), le
+ * littéral passe et la directive devient INUTILISÉE (TS2578). Sans ce rouge, le champ pourrait
+ * redevenir `label?: string` sans qu'aucun test ne bouge.
+ */
+const SONDE_TEXTE = (champ: 'label?: PlayerText' | 'label?: string') => `
+declare const BRAND: unique symbol;
+type PlayerText = string & { readonly [BRAND]: true };
+type CascadeStep = { id: string; kind: string; ${champ} };
+declare function pushStep(step: CascadeStep): void;
+// @ts-expect-error — libellé écrit au call-site : il n'est sorti d'aucun minteur de texte joueur
+pushStep({ id: 'e', kind: 'k', label: 'Retirer la voile (chavirage)' });
+`;
+
+describe('#1318 V8a₀ — le murage du CHAMP PILOTE (`CascadeStep.label`) est TUEUR', () => {
+  it('champ MARQUÉ (`PlayerText`) : la directive est CONSOMMÉE — zéro diagnostic', () => {
+    expect(codesDeDiagnostic(SONDE_TEXTE('label?: PlayerText'))).toEqual([]);
+  });
+
+  it('champ `string` (l’état d’avant) : le littéral passe, la directive devient INUTILISÉE (TS2578)', () => {
+    expect(codesDeDiagnostic(SONDE_TEXTE('label?: string')), 'sans ce rouge, le murage du texte joueur ne prouverait rien').toContain(2578);
+  });
+});
+
+/**
+ * LES PORTES DU SEAM NE PRENNENT PLUS DE LITTÉRAL (#1318 V8a₀) — LE contrat du lot, et celui qui
+ * manquait : marquer `CascadeStep.label` ne mordait QUE sur la déclaration directe d'une étape. La voie
+ * CANONIQUE passe par les constructeurs de `rollSeam` (`monoStep`/`tableStep`/`choiceStep`/
+ * `quantityStep`/`displayStep`/`bandStep`/`hostStep`), dont le cast interne `as BuiltCascadeStep`
+ * BLANCHISSAIT le champ : mesuré, ~45 sites de production posaient un libellé écrit à la main et `tsc`
+ * restait vert. Le `label` de leurs SPECS est donc marqué à son tour — la marque est exigée AU
+ * PARAMÈTRE, en amont du cast.
+ *
+ * La sonde reproduit la forme EXACTE de la porte (spec en entrée, cast vers la marque en sortie) et
+ * rejoue les deux signatures : marquée, la directive est consommée ; en `string` (l'état d'avant), le
+ * littéral traverse la porte et la directive devient INUTILISÉE (TS2578). Sans ce rouge, le murage
+ * pourrait redevenir cosmétique sans qu'aucun test ne bouge.
+ */
+const SONDE_PORTE = (champ: 'label: PlayerText' | 'label: string') => `
+declare const TEXTE: unique symbol;
+declare const ETAPE: unique symbol;
+type PlayerText = string & { readonly [TEXTE]: true };
+type CascadeStep = { id: string; kind: string; label?: PlayerText };
+type BuiltCascadeStep = CascadeStep & { readonly [ETAPE]: true };
+type MonoSpec = { id: string; kind: string; ${champ} };
+declare function pousse(step: BuiltCascadeStep): void;
+function monoStep(spec: MonoSpec): BuiltCascadeStep {
+  return { id: spec.id, kind: spec.kind, label: spec.label } as BuiltCascadeStep;
+}
+// @ts-expect-error — libellé écrit au call-site : la PORTE le refuse, son cast interne ne le blanchit plus
+pousse(monoStep({ id: 'e', kind: 'k', label: 'Retirer la voile (chavirage)' }));
+`;
+
+describe('#1318 V8a₀ — les PORTES du seam refusent un littéral (le cast interne ne blanchit plus)', () => {
+  it('spec MARQUÉE : la directive est CONSOMMÉE — zéro diagnostic', () => {
+    expect(codesDeDiagnostic(SONDE_PORTE('label: PlayerText'))).toEqual([]);
+  });
+
+  it('spec en `string` (l’état d’avant) : le littéral TRAVERSE la porte, la directive devient INUTILISÉE (TS2578)', () => {
+    expect(codesDeDiagnostic(SONDE_PORTE('label: string')), 'c’est CE rouge qui manquait : le mur ne mordait pas sur la voie canonique').toContain(2578);
+  });
+});
+
+/**
+ * LES DEUX CONTOURNEMENTS DE CONTENEUR (#1318 V8a₀ T1/T2) — un champ marqué ne protège que la
+ * DÉCLARATION ; recomposer l'étape entière le blanchit. `Object.assign` (dont la signature ne vérifie
+ * rien contre la cible) et `x as CascadeStep` sont donc murés par le lint, sur la config RÉELLE.
+ *
+ * Les TESTS sont hors de ce sélecteur, à dessein : leurs `as CascadeStep` sont GELÉS nominativement et
+ * décroissants (`player-text-ratchet.test.ts`), là où le code de PRODUCTION n'en a plus aucun (mesuré).
+ * Le dernier volet le prouve — sans lui, « les tests sont exclus » serait une affirmation, pas un fait.
+ */
+describe('#1318 V8a₀ T1/T2 — le lint mure les CONTENEURS qui blanchissent le libellé', () => {
+  it('T1 : `Object.assign(step, { label: "…" })` est REFUSÉ dans un fichier de flux', async () => {
+    const code = "declare const step: object;\nObject.assign(step, { label: 'Hop' });\n";
+    expect(await messagesDeVerrou(code)).toHaveLength(1);
+  });
+
+  it('T1 : un `Object.assign` SANS `label` n’est pas touché (la règle ne mord que le champ marqué)', async () => {
+    const code = "declare const o: object;\nObject.assign(o, { icon: 'x', kind: 'k' });\n";
+    expect(await messagesDeVerrou(code)).toHaveLength(0);
+  });
+
+  it('T2 : `x as CascadeStep` est REFUSÉ dans un fichier de flux', async () => {
+    const code = "import type { CascadeStep } from './pendings';\ndeclare const o: unknown;\nexport const a = o as CascadeStep;\n";
+    const [res] = await eslint.lintText(code, { filePath: 'src/state/__sonde-conteneur.ts' });
+    expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax')).toHaveLength(1);
+  });
+
+  it('T2 : le même cast dans un fichier de TEST passe — le stock y est GELÉ au cliquet, pas muré', async () => {
+    const code = "import type { CascadeStep } from './pendings';\ndeclare const o: unknown;\nexport const b = o as CascadeStep;\n";
+    const [res] = await eslint.lintText(code, { filePath: 'src/state/__sonde-conteneur.test.ts' });
+    expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax'), 'la portée du sélecteur est un CHOIX mesuré, pas un oubli').toHaveLength(0);
+  });
+
 });
