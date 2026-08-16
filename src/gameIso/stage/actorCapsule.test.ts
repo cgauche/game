@@ -29,7 +29,7 @@ describe('actorCapsuleOf — la boîte du jeton est calée sur le CORPS DESSINÉ
 
   /** Demi-largeur ÉCRAN de la silhouette RÉELLEMENT dessinée par le rig, sur le squelette de
    *  production (`groundedBodySkeleton`, composeRig.tsx) : FK de la pose de repos, extrémités de
-   *  chaque os élargies de sa demi-épaisseur, écart maximal à l'axe du bassin — l'axe que `BodyToken`
+   *  chaque os élargies de sa demi-épaisseur, écart maximal à l'axe du bassin — l'axe que le jeton
    *  aligne sur le centre de la tuile. */
   const drawnHalfWidth = (g: GabaritDef, sex: 'M' | 'F', build: number, scale: number) => {
     const sk = groundSkeleton(applyBuild(baseSkeleton(g, sex), build));

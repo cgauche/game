@@ -94,7 +94,7 @@ describe('planById(engin) — engin de siège statique, ANCRÉ au sol', () => {
     for (const v of ['front', 'profile', 'back'] as const) {
       const bones = planById('engin').resolve('canon-petit', v, {});
       expect(bones.length).toBe(1);
-      expect(bones[0].matrix[5]).toBe(150); // contact au sol exactement sur l'ancrage BodyToken
+      expect(bones[0].matrix[5]).toBe(150); // contact au sol exactement sur l'ancrage aux pieds
     }
   });
   it('cadre son PROPRE portrait (le bloc est au BAS de la boîte → pas de disque vide)', () => {

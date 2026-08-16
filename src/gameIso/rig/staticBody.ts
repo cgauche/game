@@ -3,7 +3,7 @@
  * (coque de navire MDG 12, engin de siège ADE II 8). Pas de squelette anatomique : une seule
  * silhouette dessinée, recoloriée par la palette à jetons, ANCRÉE BASE-AU-SOL (corrige la lévitation).
  *
- * Repère du corps (boîte 120×150) : `BodyToken` pose le point (60, GROUND_Y) au CENTRE de la tuile
+ * Repère du corps (boîte 120×150) : le rendu pose le point (60, GROUND_Y) au CENTRE de la tuile
  * (`translate(-60,-150)`) — exactement comme les PIEDS d'un bipède ou d'un quadrupède (cf. `groundQuad`).
  * Donc un art dont la BASE (point de contact bas) atterrit à y=GROUND_Y REPOSE sur la case, sans flotter.
  */
@@ -11,7 +11,7 @@ import type { ResolvedBone } from './composeRig';
 import { mul, rotate, translate, type Matrix } from './kinematics';
 import { buildTokenMap, applyTokenMap, type Palette, type StoredPalette } from './palette';
 
-/** Ligne de SOL du repère de corps (= les 150px de l'ancrage `BodyToken`). Tout corps statique pose
+/** Ligne de SOL du repère de corps (= les 150px de l'ancrage aux pieds). Tout corps statique pose
  *  sa base ICI ⇒ pas de lévitation (le défaut historique de la coque, qui se posait à ~98). */
 export const GROUND_Y = 150;
 

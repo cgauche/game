@@ -109,8 +109,9 @@ export function IsoStage() {
   const pendingDefense = useGame((s) => s.pendingDefense);
   const viewMode = useGame((s) => s.viewMode);
   const debugLabels = useGame((s) => s.debugLabels); // overlay d'annotation de carte (__wfrp.labels)
-  // L'orientation MONDE vivante (store `facing`) n'est lue QUE par `VolumetricWorld` : son abonnement
-  // vit là-bas (`setFacing` reforge la référence à chaque pas).
+  // L'orientation MONDE vivante (store `facing`) n'est PAS lue ici (`setFacing` reforge la référence à
+  // chaque pas) : `VolumetricWorld` s'y abonne pour ses billboards, et le disque d'un pion pour son cap
+  // — ce dernier seulement là où il est monté, c'est-à-dire sous `pionsEnDisques`.
   // MONDE INAFFICHABLE (#1176 C5a) : contexte volumique refusé = plus aucun peintre du monde — l'écran
   // le DIT, il ne se replie plus en silence (`stage/webglSupport`).
   const sansMonde = useWebglRefusé();
@@ -451,9 +452,12 @@ export function IsoStage() {
   // des jetons RÉELLEMENT postés.
   const partyToken = combatBattle ? null : partyLeader ? { leader: partyLeader, pos: partyPos } : null;
   const marquesDyn = dynamicMarks(mode === 'battle' ? battle : null, mode === 'exploration' && !dialogue ? partyPos : null, tokenEls, partyToken);
-  // CHROME DES JETONS (P3-0f) : même dérivation, même population (les jetons du builder). Le monde
-  // volumique le peint en overlay au-dessus des têtes et en porte l'allure au matériau des quads.
-  const chromes: TokenChromeMark[] = combatBattle ? tokenChromes(tokenEls, { ghostIds, hoveredId }) : [];
+  // JETONS POSTÉS (P3-0f, P3-5c) : même dérivation, même population que les marques dynamiques (les
+  // jetons du builder, plus le meneur du groupe hors combat). La surcouche SVG en peint le chrome, et
+  // le CORPS sous le verdict `pionsEnDisques` ; le monde volumique n'en reprend que l'allure, au
+  // matériau de ses quads. Dérivée SANS condition de mode : un figurant d'exploration est un jeton, et
+  // sous ce verdict c'est ici qu'il se dessine (le chrome, lui, reste vide pour lui).
+  const chromes: TokenChromeMark[] = tokenChromes(tokenEls, { ghostIds, hoveredId }, partyToken);
   // HALOS D'INTERACTION (P3-0g) : même partage que les marques dynamiques — dérivés UNE fois
   // (`builders/interactHalos`) ; le contexte qui les autorise (exploration, combat ouvert) se tranche
   // ici, et nulle part ailleurs.
@@ -498,19 +502,17 @@ export function IsoStage() {
         partyToken={partyToken}
         chromes={chromes}
         percage={percage}
+        pionsEnDisques={politique.pionsEnDisques}
       />
     {/* Le fond du SVG est transparent : le canevas peint dessous. */}
     <svg ref={svgRef} className="iso-stage" style={{ background: 'transparent' }} viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" {...handlers}>
       <g ref={camGRef} style={{ transform: camTransform, transition: camTransition, opacity: camOpacity }}>
-        {/* COMPOSITION DE LA VUE DU DESSUS (#1176, P3-5b) : le canevas volumique dessous ne peint que
-            les SOLS de l'étage actif ; ce qui suit est la surcouche de PLATEAU, du plus bas au plus
-            haut — la grille (fond), puis la structure au trait. Les affordances (portes, escaliers,
-            télégraphes) et le chrome des jetons s'empilent APRÈS, dans l'ordre d'émission du groupe :
-            l'état d'une porte se lit SUR son mur, jamais sous lui.
-            ÉCART STRUCTUREL 2026-08-16 (registre des fossiles) : grille et murs se peignent AU-DESSUS
-            des pions, qui sont des billboards du canevas volumique — le SVG couvre le canevas entier,
-            aucun ordre n'est négociable entre les deux arbres. Mort planifiée au lot 5c (#1176 P3-5c) :
-            les pions deviennent des disques SVG, et l'ordre redevient contrôlable dans un seul arbre. */}
+        {/* COMPOSITION DE LA VUE DU DESSUS (#1176, P3-5b/P3-5c) : le canevas volumique dessous ne peint
+            que les SOLS de l'étage actif et le DÉCOR ; ce qui suit est la surcouche de PLATEAU, du plus
+            bas au plus haut — la grille (fond), puis la structure au trait, puis les affordances
+            (portes, escaliers, télégraphes), puis les PIONS et leur chrome. L'ordre est celui de
+            l'émission du groupe : l'état d'une porte se lit SUR son mur, un pion SUR le sol qu'il
+            foule, jamais l'inverse. */}
         {grille.length > 0 && (
           <g pointerEvents="none" data-grille-jeu={grille.length}>
             {grille.map((l, i) => (
@@ -538,10 +540,10 @@ export function IsoStage() {
         <FxLayer dims={dimsVue} floats={floats} projs={projs} auras={auras} aoes={aoes} />
         {battle && hover && <ZdeTemplate battle={battle} hover={hover} pendingCast={pendingCast} pendingSiegeAim={pendingSiegeAim} activeC={activeC} dims={dimsVue} />}
         {mode === 'battle' && <EnemyAoeTelegraph actorAoe={actorAoe} dims={dimsVue} />}
-        {/* CHROME des jetons (P3-0f) : il se peint APRÈS les affordances de SOL (portes, télégraphes,
+        {/* JETONS (P3-0f, P3-5c) : ils se peignent APRÈS les affordances de SOL (portes, télégraphes,
             gabarits) — l'état d'un combattant se lit par-dessus ce qui est peint sur le sol, jamais
-            dessous. */}
-        <TokenChromeOverlay chromes={chromes} dims={dimsVue} liftAt={liftAt} walkPosAt={walkPosAt} />
+            dessous — et, sous `pionsEnDisques`, c'est ICI que vit le pion lui-même. */}
+        <TokenChromeOverlay chromes={chromes} dims={dimsVue} liftAt={liftAt} pions={politique.pionsEnDisques} tintAt={tintAt} walkPosAt={walkPosAt} />
         {/* Curseur LIBRE : il se tait dès qu'un ciblage carte tient la scène (verdict du registre
             `mapTargetingActive`) — le réticule/le gabarit du mode prennent alors le relais. */}
         {mode === 'battle' && battle && combatCursor

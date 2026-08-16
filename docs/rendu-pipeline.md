@@ -98,7 +98,8 @@ Aucun renderer d'environnement ne porte de **littéral** de couleur : toute coul
 `warm`). Couverture = **balayage récursif** de `builders/ backends/ authoring/ detail/ pov/ catalog/ stage/` + les
 renderers racine (`IsoStage.tsx`, `sprites.ts`) + un bloc dédié aux 97 defs de props (`catalog/decor/defs/`,
 qui consomment la palette `P.<ton>` de `decorPalette.json`). Hors périmètre (couleur légitime) : le rig
-(`rig/**`), les FX de combat (`fx/**`), les tokens (`BodyToken` = chrome d'état),
+(`rig/**`), les FX de combat (`fx/**`), les jetons (`stage/TokenChromeOverlay` = chrome d'état, qui a
+son propre bloc à allowlist neutre),
 `shade.ts`, et les defs de terrain (`state/terrain/defs/**` = donnée d'identité matériau, comme un JSON).
 
 ## 7. QC visuel — `node scripts/qc/capture-jeu.mjs`

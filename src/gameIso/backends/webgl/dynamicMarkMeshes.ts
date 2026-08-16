@@ -2,7 +2,7 @@
  * BACKEND VOLUMIQUE des marques DYNAMIQUES (#1176, P3-0d) — le pendant three des trois repères que la
  * rendu trace à la frame : lien d'ENGAGEMENT, contour de
  * l'unité ACTIVE, repère de position du GROUPE — plus l'ANNEAU D'ÉQUIPE aux pieds de chaque jeton
- * (P3-0e), que l'affine peint DANS son jeton (`BodyToken`). Même partage que `highlightMeshes.ts` : le
+ * (P3-0e), aux pieds du corps qu'il ceint. Même partage que `highlightMeshes.ts` : le
  * MONTAGE est ici, la POSE par frame vit dans `stage/dynamicMarkPose.ts`.
  *
  * QUATRE POOLS de capacité FIXE, montés une fois pour la vie de l'écran. Contrairement aux marques

@@ -693,8 +693,8 @@ export interface SceneBillboardEls {
   props: readonly PropEl[];
 }
 
-/** Éléments de la scène ENTIÈRE — pour un appelant SANS loi de vue ni combat en cours (planches QC,
- *  planches QC : elles jugent l'ENVIRONNEMENT, pas le brouillard), au même titre que `keepEl` absent.
+/** Éléments de la scène ENTIÈRE — pour un appelant SANS loi de vue ni combat en cours (les planches QC :
+ *  elles jugent l'ENVIRONNEMENT, pas le brouillard), au même titre que `keepEl` absent.
  *  Un écran de JEU ne passe JAMAIS ceci : c'est là que se perdraient l'embuscade et le combat. */
 export function wholeSceneBillboardEls(scene: Scene): SceneBillboardEls {
   const maxZ = Math.max(...scene.layers.map((l) => l.z));
@@ -778,7 +778,7 @@ export interface ActorPose {
   facing?: Dir8;
   /** CAVALIER du couple, quand `c` est une MONTURE portée (`TokenSubjectEl` `mounted`) : le sujet
    *  devient alors UN billboard COMPOSITE (cavalier assis sur la monture, trié à l'os), à la case et
-   *  à l'échelle de la monture — comme le `BodyToken` unique de la voie affine. */
+   *  à l'échelle de la monture — UN corps, UN quad. */
   rider?: Combatant;
   /** ORDINAL d'anneau de héros (`TokenSubjectEl.heroIndex`) — l'identité d'équipe du jeton, dont sa
    *  couleur d'anneau ET la teinte de sa silhouette se dérivent (`teamRingDecor`). Pour un couple
@@ -1462,9 +1462,15 @@ export function billboardViewDepth(camera: THREE.Camera, p: THREE.Vector3): numb
   return (p.x - OEIL_VUE.x) * AVANT_VUE.x + (p.y - OEIL_VUE.y) * AVANT_VUE.y + (p.z - OEIL_VUE.z) * AVANT_VUE.z;
 }
 
-/** Position MONDE du centre d'un quad de billboard aligné écran : l'ancre PIEDS est EXACTE, le quad
- *  monte de sa demi-hauteur le long du haut d'écran. Aucune avance le long du regard : l'arête basse du
- *  quad reste sur l'ancre quelle que soit la caméra. */
+/** Position MONDE du centre d'un quad aligné écran : l'ancre PIEDS est EXACTE, le quad monte de sa
+ *  demi-hauteur le long du HAUT D'ÉCRAN. Aucune avance le long du regard : l'arête basse du quad reste
+ *  sur l'ancre quelle que soit la caméra.
+ *
+ *  SÉMANTIQUE D'ÉCRAN, à DESSEIN, et c'est ce dont dépend l'ÉTINCELLE d'un décor fouillable
+ *  (`stage/interactHaloPose`) : son glyphe se décale en PIXELS d'écran, donc son élévation doit suivre
+ *  le haut de l'écran, même couché dans le plan du sol. Les CORPS, eux, ne passent plus par ici : leur
+ *  centre se prend à `stage/boardPose.boardCenter`, qui bascule sur la VERTICALE MONDE quand ce haut
+ *  d'écran dégénère (#1176, P3-5c). */
 export function billboardPose(anchor: THREE.Vector3, centerLiftM: number, camQuat: THREE.Quaternion): THREE.Vector3 {
   const up = new THREE.Vector3(0, 1, 0).applyQuaternion(camQuat);
   return anchor.clone().addScaledVector(up, centerLiftM);

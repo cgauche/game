@@ -166,7 +166,7 @@ export interface PropEl extends ElBase {
   entId?: string;
 }
 /** Le SUJET d'un token — la donnée d'identité que le stage transforme en corps React (tokenBodyKind/
- *  BodyToken). La position INTERPOLÉE de marche est PAR-FRAME : elle reste au stage ; l'élément ne
+ *  le pion-disque). La position INTERPOLÉE de marche est PAR-FRAME : elle reste au stage ; l'élément ne
  *  porte que la position LOGIQUE (`cell`) et les décisions de scène (filtres, ordre d'anneau héros). */
 export type TokenSubjectEl =
   /** PNJ/créature d'AMBIANCE — `inBattle` : rendu estompé + non interactif. */

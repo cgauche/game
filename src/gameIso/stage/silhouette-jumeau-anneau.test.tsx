@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { emptyScene, sceneMetresPerTile, type Scene } from '../../state/scene';
 import type { Dims } from '../../geometry/iso';
 import { GameStage3D, setStageRendererFactory, type StageRenderer, type StageWalkAnim } from './GameStage3D';
-import { COMBAT_TOKEN_BASE, teamRingRadiusK, topRingRadiusK, type DynamicMarks } from '../builders/dynamicMarks';
+import { COMBAT_TOKEN_BASE, teamRingRadiusK, type DynamicMarks } from '../builders/dynamicMarks';
 import { HERO_RING } from '../teamColors';
 import { SILHOUETTE_TWIN_OPACITY } from '../backends/webgl/dynamicMarkMeshes';
 import { RENDER_ORDER } from '../backends/webgl/renderRanks';
@@ -28,7 +28,7 @@ const MARQUES: DynamicMarks = {
   tethers: [],
   active: null,
   party: null,
-  rings: [{ id: 'h1', cell: { x: 2, y: 2, z: 0 }, rK: teamRingRadiusK(COMBAT_TOKEN_BASE), rTopK: topRingRadiusK(1), color: HERO_RING[0] }],
+  rings: [{ id: 'h1', cell: { x: 2, y: 2, z: 0 }, rK: teamRingRadiusK(COMBAT_TOKEN_BASE), color: HERO_RING[0] }],
 };
 
 let scènes: THREE.Scene[] = [];

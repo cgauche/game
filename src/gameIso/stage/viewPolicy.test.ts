@@ -34,6 +34,7 @@ describe('viewPolicy — un regard, ses verdicts de style', () => {
       mursAuTrait: false,
       grilleTactique: false,
       montesDissocies: false,
+      pionsEnDisques: false,
     });
     // `view` absent = le losange : le défaut de `Dims.view`, pas un cas particulier.
     expect(viewPolicy({})).toEqual(viewPolicy({ view: 'iso' }));
@@ -49,6 +50,7 @@ describe('viewPolicy — un regard, ses verdicts de style', () => {
       mursAuTrait: true,
       grilleTactique: true,
       montesDissocies: true,
+      pionsEnDisques: true,
     });
   });
 
@@ -56,6 +58,8 @@ describe('viewPolicy — un regard, ses verdicts de style', () => {
     const pov = viewPolicy({ pov: true });
     expect([pov.toitsVisibles, pov.ombreSoleil, pov.precipitations, pov.etageIsole, pov.montesDissocies])
       .toEqual([true, true, true, false, false]);
+    // On regarde le monde par les yeux d'un pion : il n'y a pas de plateau où en poser.
+    expect(pov.pionsEnDisques).toBe(false);
     expect(pov.nappesMonde).toBe(false); // le POV a sa brume de DISTANCE, pas des nappes empilées
     // La première personne n'est pas un plan : ni trait de mur, ni grille de cases.
     expect([pov.mursAuTrait, pov.grilleTactique]).toEqual([false, false]);
@@ -104,7 +108,9 @@ describe('RÉGIME SANS SOLEIL — la loi se dit dans les lampes, les consommateu
     // d'orientation, sans aucune porte au site d'appel de `applyVisibilityTint`.
     expect(shadeSousSoleil(0.62, top.fade)).toBe(0.62);
     expect(shadeSousSoleil(0.62, scalaires(true).fade)).toBe(1);
-    // …et le socle de figurine revient, exactement là où l'ombre portée cesse d'ancrer le pion.
+    // …et le socle de figurine revient sur les BILLBOARDS de ce régime (intérieur, nuit, plateau iso),
+    // exactement là où l'ombre portée cesse d'ancrer le corps. La vue du DESSUS, elle, n'a plus aucun
+    // billboard de personnage (`pionsEnDisques`) : son pion porte son propre socle, en SVG.
     expect(wantsContactShadow('personnage', top.lit)).toBe(true);
     expect(wantsContactShadow('personnage', scalaires(true).lit)).toBe(false);
   });

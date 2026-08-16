@@ -14,7 +14,9 @@
  */
 import { isOutOfAction } from '../../engine/conditions';
 import type { Combatant } from '../../engine/types';
-import { CELL, projectStep, stepOf, type ProjKind } from '../../geometry/iso';
+import { CELL, projectStep, stepOf, tileCenter, type Dims, type ProjKind } from '../../geometry/iso';
+import { DIR8_DELTA, type Dir8 } from '../../state/dir8';
+import { wedgePath } from '../topoMarkers';
 import { inBattleId } from '../../state/combatants';
 import { footprintN } from '../../state/footprint';
 import { mountOf } from '../../state/mount';
@@ -77,10 +79,6 @@ export interface TeamRing {
   cell: MarkCell;
   /** Rayon en fraction de case sous la projection LOSANGE — l'ellipse aux pieds du jeton. */
   rK: number;
-  /** Rayon en fraction de case sous la vue du DESSUS. La voie affine n'y trace pas le même anneau :
-   *  le jeton y devient un disque-portrait et son anneau ceint CE disque (`BodyToken`, branche
-   *  `flat` — même rayon que le disque, cf. `topRingRadiusK`). */
-  rTopK: number;
   color: string;
   /** Pointillé de la voie affine (`teamShape`) — absent = trait plein. */
   dash?: string;
@@ -140,9 +138,8 @@ export function dynamicMarks(battle: BattleState | null, party: Pt | null, token
   return { tethers, active, party: party ? { x: party.x, y: party.y, z: party.z ?? 0 } : null, rings: teamRings(tokens, partyToken) };
 }
 
-/** GABARIT de l'anneau d'ÉQUIPE aux pieds du jeton, tel que la voie AFFINE le trace (`BodyToken` :
- *  `<ellipse rx={18·s} ry={9·s} strokeWidth={2.5} strokeDasharray={ringDash} />`), en PIXELS de la
- *  projection SVG. */
+/** GABARIT de l'anneau d'ÉQUIPE aux pieds du jeton sous la projection LOSANGE (ellipse `rx = 18·s,
+ *  ry = 9·s`, `strokeWidth = 2.5`), en PIXELS de la projection SVG. */
 export const TEAM_RING_RX_PX = 18;
 export const TEAM_RING_STROKE_PX = 2.5;
 
@@ -160,9 +157,9 @@ export function teamRingRadiusK(s: number): number {
   return (TEAM_RING_RX_PX * s) / RING_A_PX;
 }
 
-/** GABARIT du disque-portrait de la VUE DU DESSUS, en fraction de case par case d'empreinte : la voie
- *  affine y remplace le corps par un disque centré sur la case, et son anneau d'équipe ceint CE
- *  disque (`BodyToken`, branche `flat` : `<circle r={discR}>` puis `<circle r={discR} stroke={ring}>`). */
+/** GABARIT du disque-portrait de la VUE DU DESSUS, en fraction de case par case d'empreinte : le pion
+ *  y est un disque centré sur sa case (`stage/TokenChromeOverlay`), et son anneau d'équipe ceint CE
+ *  disque — même rayon. */
 export const TOP_DISC_K = 0.85 / 2;
 
 /** Rayon ÉCRAN (px) du disque-portrait d'une empreinte de `n` cases. */
@@ -170,10 +167,42 @@ export function discR(n: number): number {
   return n * CELL * TOP_DISC_K;
 }
 
-/** Rayon MONDE (fraction de case) de l'anneau d'un jeton d'empreinte `n` en vue du DESSUS : le rayon
- *  du disque qu'il ceint (`discR(n)` px, à `CELL` px par case). */
-export function topRingRadiusK(n: number): number {
-  return discR(n) / CELL;
+/** GABARIT du CAP d'orientation d'un pion-disque, en fraction de SON rayon : un QUARTIER À CHEVAL sur
+ *  le bord du disque — base ancrée DEDANS (`INNER`), pointe au-delà (`OUTER`), demi-ouverture `HALF`.
+ *  C'est le quartier des jetons de table : peint AU-DESSUS du portrait (`stage/TokenChromeOverlay`),
+ *  sa surface visible ne dépend plus de ce que le bord du disque lui prend, donc les huit directions
+ *  se lisent au même poids — un onglet posé au SEUL bord ne montrait qu'une couleur au coin. Il dit le
+ *  cap, il ne le prolonge pas en flèche : le marqueur de station, lui, tire son triangle à 1,47 rayon
+ *  parce qu'il vise un arc de tir (`topoMarkers.ARC_DIR`). */
+export const DISC_CAP_INNER_K = 0.62;
+export const DISC_CAP_OUTER_K = 1.18;
+export const DISC_CAP_HALF_K = 0.46;
+
+/** Direction ÉCRAN unitaire d'un cap MONDE (`Dir8`) sous la vue `dims` : le pas de grille de ce cap,
+ *  passé par l'UNIQUE porte de projection des overlays du stage (`tileCenter`) — la rotation de caméra,
+ *  cran ou lacet libre, y entre donc sans seconde formule. La différence de deux centres annule
+ *  l'origine : seul le pas compte. Aucun `DIR8_DELTA` n'est nul, donc la norme non plus. */
+export function screenDirUnit(dir: Dir8, dims: Dims): readonly [number, number] {
+  const d = DIR8_DELTA[dir];
+  const a = tileCenter(0, 0, dims);
+  const b = tileCenter(d.gx, d.gy, dims);
+  const dx = b.cx - a.cx;
+  const dy = b.cy - a.cy;
+  const len = Math.hypot(dx, dy);
+  return len > 0 ? [dx / len, dy / len] : [0, 1];
+}
+
+/** Le CAP d'un pion-disque d'empreinte `n` orienté `dir`, tracé dans le repère de SON groupe — le
+ *  disque y est centré sur l'origine (`stage/TokenChromeOverlay`). Le quartier est le triangle du
+ *  marqueur de station, à un autre gabarit (`topoMarkers.wedgePath`) : un seul tracé pour les deux —
+ *  ici sa base est plantée DANS le disque (`DISC_CAP_INNER_K < 1`), et sa pointe dehors. */
+export function discCapPath(dir: Dir8, n: number, dims: Dims): string {
+  const R = discR(n);
+  return wedgePath(0, 0, screenDirUnit(dir, dims), {
+    r: R * DISC_CAP_INNER_K,
+    len: R * (DISC_CAP_OUTER_K - DISC_CAP_INNER_K),
+    half: R * DISC_CAP_HALF_K,
+  });
 }
 
 /** Demi-axes ÉCRAN (px) de la projection d'un cercle MONDE de rayon UNE case, en vue du DESSUS : la
@@ -239,7 +268,6 @@ export function teamRings(tokens: readonly TokenEl[], partyToken: { leader: Comb
       id: s.c.id,
       cell: { x: tk.cell.x + off, y: tk.cell.y + off, z: tk.cell.z },
       rK: teamRingRadiusK(COMBAT_TOKEN_BASE * combatantTokenScale(s.c)),
-      rTopK: topRingRadiusK(n),
       ...teamRingDecor(s.c, s.heroIndex),
     });
   }
@@ -250,7 +278,6 @@ export function teamRings(tokens: readonly TokenEl[], partyToken: { leader: Comb
       id: partyToken.leader.id,
       cell: { x: partyToken.pos.x, y: partyToken.pos.y, z: partyToken.pos.z ?? 0 },
       rK: teamRingRadiusK(PARTY_TOKEN_BASE),
-      rTopK: topRingRadiusK(1),
       color: HERO_RING[0],
     });
   return out;

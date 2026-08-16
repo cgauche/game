@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { createElement } from 'react';
 import { END_STATE_VISUAL } from './endStateVisual';
 import { PortraitTile } from './PortraitTile';
-import { BodyToken } from '../gameIso/BodyToken';
+import { TokenChromeMarks } from '../gameIso/TokenChromeMarks';
 import { iconSvg } from './Icon';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -20,8 +20,6 @@ const mkForState = (es: EndState): Combatant => {
   if (es === 'hors-combat') { c.outOfRencontre = true; c.exitReason = 'destin'; }
   return c;
 };
-
-const DIMS = { cols: 8, rows: 8, rot: 0 } as never;
 
 describe('Langage visuel des états de fin (#237) — 4 états, 4 rendus DISTINCTS', () => {
   it('la table END_STATE_VISUAL a une icône ET une classe UNIQUES par état', () => {
@@ -50,10 +48,10 @@ describe('Langage visuel des états de fin (#237) — 4 états, 4 rendus DISTINC
     expect(seenIcon.size).toBe(4);
   });
 
-  it('token iso (BodyToken) : chaque état rend token-endmark + SA classe et SON icône', () => {
+  it('jeton de carte (TokenChromeMarks) : chaque état rend token-endmark + SA classe et SON icône', () => {
     for (const s of ALL) {
       const html = renderToStaticMarkup(
-        createElement(BodyToken, { x: 1, y: 1, dims: DIMS, scale: 1, endState: s, children: null }),
+        createElement(TokenChromeMarks, { endState: s, badgeY: -30 }),
       );
       const v = END_STATE_VISUAL[s];
       expect(html).toContain('token-endmark');
@@ -62,9 +60,9 @@ describe('Langage visuel des états de fin (#237) — 4 états, 4 rendus DISTINC
     }
   });
 
-  it('token iso sans état de fin : PAS de pastille', () => {
+  it('jeton de carte sans état de fin : PAS de pastille', () => {
     const html = renderToStaticMarkup(
-      createElement(BodyToken, { x: 1, y: 1, dims: DIMS, scale: 1, children: null }),
+      createElement(TokenChromeMarks, { hp: { current: 4, max: 4 }, badgeY: -30 }),
     );
     expect(html).not.toContain('token-endmark');
   });

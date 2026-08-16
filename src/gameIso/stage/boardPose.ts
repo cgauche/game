@@ -13,7 +13,7 @@
  * marcheur sur sa case d'arrivée ; une lanterne laissée là éclairerait la case qu'il vient de quitter.
  */
 import * as THREE from 'three';
-import { billboardDepthOffsetUnits, billboardPose, billboardViewDepth, poseContactShadow, type BillboardSubject } from '../backends/webgl/sceneMeshes';
+import { billboardDepthOffsetUnits, billboardViewDepth, poseContactShadow, type BillboardSubject } from '../backends/webgl/sceneMeshes';
 import { billboardExposure, type PointLightSlots } from './stagePointLights';
 import { withRenderRank } from '../backends/webgl/renderRanks';
 import { LUMA_709 } from '../shade';
@@ -253,14 +253,15 @@ export function attachBodySilhouette(board: Board, teamColor: string): THREE.Mes
 }
 
 /** Ce que le CHROME d'un jeton change à l'ALLURE de son billboard (#1176, P3-0f) — la même donnée que
- *  la voie affine porte en style CSS sur son corps (`BodyToken`). */
+ *  la surcouche SVG porte en style CSS sur son disque (`stage/TokenChromeOverlay.allureStyle`). */
 export interface BoardChrome {
   ghost: boolean;
   dim: boolean;
   highlight: string | null;
 }
 
-/** Opacité d'un corps HORS D'ACTION, et d'un corps hors Ligne de Vue (`BodyToken`, style du jeton). */
+/** Opacité d'un corps HORS D'ACTION, et d'un corps hors Ligne de Vue — celle d'un QUAD, déjà découpé à
+ *  l'alpha (un disque plein s'estompe plus bas : `stage/TokenChromeOverlay.DISQUE_DIM_OPACITY`). */
 export const DIM_OPACITY = 0.82;
 export const GHOST_OPACITY = 0.45;
 /** Part de couleur retirée à un corps hors Ligne de Vue (`grayscale(0.85)`, même site). */
@@ -334,7 +335,7 @@ const TEINTE = new THREE.Color();
 /** Applique les trois canaux au matériau monté — l'unique écrivain de l'ALLURE d'un board.
  *
  *  ÉCART RÉSIDUEL (P3-0f) : la mise en évidence du survol est une TEINTE, là où la voie affine ajoute
- *  en plus une lueur externe (`BodyToken`, `drop-shadow` doublé autour de la silhouette). Un halo
+ *  en plus une lueur externe (`TokenChromeOverlay.allureStyle`, `drop-shadow` doublé). Un halo
  *  extérieur au quad demanderait une seconde passe — un second quad par sujet, ou un rendu de
  *  silhouette hors écran — que ce lot ne monte pas. */
 export function applyBoardChrome(material: Board['material'], chrome: BoardChrome | null, luminance: number): void {
@@ -368,6 +369,43 @@ export function applyShadowAllure(shadow: THREE.Object3D, opacité: number): voi
 /** Ancre de travail du glissement — une seule, réutilisée : `billboardPose` ne mute pas ce qu'on lui
  *  donne, et une allocation par billboard et par frame n'a rien à faire dans la boucle. */
 const ANCRE = new THREE.Vector3();
+
+/** VERTICALE MONDE, et le HAUT D'ÉCRAN de travail — deux ancres de plus, jamais réallouées. */
+const VERTICALE = new THREE.Vector3(0, 1, 0);
+const HAUT_ECRAN = new THREE.Vector3();
+
+/**
+ * SEUIL sous lequel le HAUT D'ÉCRAN de la caméra est COUCHÉ dans le plan du sol : sa composante
+ * verticale monde. 0,05 ≈ 87° de tangage — la vue du DESSUS regarde à 90°, l'iso à 30° (`up.y` ≈ 0,87).
+ * Aucune vue de ce jeu ne se pose entre les deux : le seuil ne coupe pas une transition, il nomme un
+ * régime.
+ */
+export const UP_ECRAN_COUCHE = 0.05;
+
+/**
+ * CENTRE MONDE du quad d'un billboard ancré aux PIEDS.
+ *
+ * DEUX RÉGIMES, et c'est structurel — la grandeur `centerLiftM` est une DEMI-HAUTEUR DE CORPS, donc une
+ * élévation :
+ *  - caméra INCLINÉE (iso, POV) : le quad monte le long du HAUT D'ÉCRAN (`billboardPose`), pour que
+ *    l'arête basse reste exactement sur l'ancre quelle que soit la rotation ;
+ *  - caméra à la VERTICALE (vue du dessus) : ce haut d'écran est couché dans le plan du sol, et la
+ *    même montée devient une TRANSLATION HORIZONTALE — mesuré 0,767 case à `mpt` 1,5 pour un sujet de
+ *    2,3 m, proportionnelle à sa taille, et TOURNANT avec le lacet. Le corps se lève alors selon la
+ *    VERTICALE MONDE : son centre reste à l'aplomb de son ancre, donc de sa case.
+ *
+ * Le lift est CONSERVÉ (jamais annulé) : à zéro, le quad se retrouve coplanaire du plancher cuit et les
+ * deux se disputent la profondeur.
+ */
+export function boardCenter(anchor: THREE.Vector3, centerLiftM: number, camQuat: THREE.Quaternion, out: THREE.Vector3): THREE.Vector3 {
+  HAUT_ECRAN.copy(VERTICALE).applyQuaternion(camQuat);
+  return Math.abs(HAUT_ECRAN.y) < UP_ECRAN_COUCHE
+    ? out.copy(anchor).addScaledVector(VERTICALE, centerLiftM)
+    : out.copy(anchor).addScaledVector(HAUT_ECRAN, centerLiftM);
+}
+
+/** Centre de travail de la pose — une ancre de plus, jamais réallouée. */
+const CENTRE = new THREE.Vector3();
 
 /** Décalage MONDE du sujet `cid` à l'instant de la frame, `null` s'il ne marche pas. */
 export type GlideAt = (cid: string) => { dx: number; dy: number; dz: number } | null;
@@ -454,7 +492,7 @@ export function poseBoards(boards: readonly Board[], camera: FrameCamera, glide:
     const g = GLISSEMENTS[i];
     const ancre = g ? ANCRE.set(b.sub.anchor.x + g.dx, b.sub.anchor.y + g.dy, b.sub.anchor.z + g.dz) : b.sub.anchor;
     b.mesh.quaternion.copy(camera.quaternion);
-    b.mesh.position.copy(billboardPose(ancre, b.quad.centerLiftM, camera.quaternion));
+    b.mesh.position.copy(boardCenter(ancre, b.quad.centerLiftM, camera.quaternion, CENTRE));
     b.material.polygonOffsetUnits = perspective
       ? billboardDepthOffsetUnits(camera.near, camera.far, billboardViewDepth(camera, b.mesh.position))
       : unitsOrtho;

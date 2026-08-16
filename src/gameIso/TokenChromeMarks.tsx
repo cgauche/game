@@ -1,13 +1,12 @@
 /**
  * PEINTRE UNIQUE du chrome d'écran d'un jeton (#1176, P3-0f) : la barre de PV, la rangée d'icônes
  * d'états/buffs avec son report « +N », et la pastille d'état de FIN (#237). Les DEUX voies de rendu
- * le montent — la voie affine DANS son jeton (`BodyToken`), la voie volumique dans l'overlay projeté
- * au-dessus de la tête du billboard (`stage/TokenChromeOverlay`) — et c'est structurel : deux
- * peintres divergeraient d'un pixel, d'une couleur de seuil ou d'un `<title>` d'accessibilité.
+ * L'unique surcouche des jetons le monte (`stage/TokenChromeOverlay`), au bord du disque d'un pion ou
+ * au-dessus de la tête d'un billboard — et c'est structurel : deux peintres divergeraient d'un pixel,
+ * d'une couleur de seuil ou d'un `<title>` d'accessibilité.
  *
- * Le repère est celui du JETON : origine aux pieds (centre de tuile), `badgeY` = l'ordonnée de la
- * TÊTE. Chaque voie mesure cette hauteur chez elle — la boîte du rig affine, le quad volumique — et
- * c'est le seul nombre qui les sépare.
+ * Le repère est celui du JETON : origine au centre de son bloc d'empreinte, `badgeY` = l'ordonnée de
+ * la TÊTE — le rayon du disque pour un pion, la hauteur du quad pour un billboard (`chromeHeadPx`).
  */
 import { hpColor } from './teamColors';
 import { IconG } from '../ui/Icon';

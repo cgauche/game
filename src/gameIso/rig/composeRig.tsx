@@ -105,7 +105,7 @@ const TOP_FRAC = new Map<string, number>();
 /** La toise d'une apparence RAPPORTÉE À SA BOÎTE (`GROUND_Y`) : 1 = un corps qui remplit la boîte
  *  120×150 de bas en haut, 0,55 = un halfling qui n'en occupe que la moitié basse. C'est le nombre
  *  qui dit OÙ est la tête DESSINÉE dans le cadre, quelle que soit la voie de rendu qui l'affiche —
- *  la boîte affine (`BodyToken`) et le quad texturé (`billboardMath`) la remplissent toutes deux.
+ *  le quad texturé (`billboardMath`) et l'ancrage du chrome (`chromeHeadPx`) la lisent tous deux.
  *  Borné à 1 : le fragment est rasterisé dans un `viewBox="0 0 120 150"` (`svgTexture`), un corps
  *  dessiné au-dessus du cadre y est coupé. Mémoïsé sur `toiseKey` (appelé par frame et par jeton). */
 export function bodyTopFrac(appearance: Appearance): number {

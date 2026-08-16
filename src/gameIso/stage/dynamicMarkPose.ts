@@ -31,10 +31,14 @@ export interface DynMarkFrame {
   glide: GlideAt;
   /** Hauteur métrique du sol d'une case (0 au sol, cf. `builders/highlights`). */
   groundM: (x: number, y: number, z: number) => number;
-  /** VUE de la caméra — la géométrie ÉCRAN d'un anneau en dépend : le losange écrase de moitié son
-   *  axe de profondeur (pointillé à pré-compenser), la vue du dessus projette 1:1 et y remplace le
-   *  jeton par un disque-portrait d'un autre rayon (`TeamRing.rTopK`). */
+  /** VUE de la caméra — la géométrie ÉCRAN d'un anneau en dépend : le losange écrase de moitié son axe
+   *  de profondeur, et son pointillé se pré-compense. */
   kind: ProjKind;
+  /** Verdict `pionsEnDisques` (`stage/viewPolicy`) : les pions sont des DISQUES SVG, donc leur anneau
+   *  d'équipe est peint par la surcouche qui les porte (`stage/TokenChromeOverlay`) et ce pool n'en
+   *  écrit AUCUN. Jamais les deux — deux anneaux au même rayon, l'un plat au sol, l'autre à l'écran.
+   *  Absent = ce pool les écrit (le plateau iso). */
+  pionsEnDisques?: boolean;
   /** Lacet de la CAMÉRA (degrés) — seuls les ANNEAUX s'en servent : leurs tirets se mesurent à
    *  l'écran. Absent = cran zéro. */
   yawDeg?: number;
@@ -225,9 +229,9 @@ function poserAnneaux(mesh: THREE.InstancedMesh, marks: DynamicMarks, f: DynMark
   const largeurM = TEAM_RING_WIDTH_K * f.mpt;
   let n = 0;
   for (const anneau of marks.rings) {
-    // La voie affine ne trace pas le même anneau selon la vue : l'ellipse aux pieds du corps en
-    // losange, le cercle du disque-portrait en vue du dessus (`BodyToken`, branche `flat`).
-    const rK = f.kind === 'top' ? anneau.rTopK : anneau.rK;
+    // L'anneau AUX PIEDS du corps : l'ellipse de la projection, à l'échelle du jeton qu'il ceint —
+    // sous `pionsEnDisques` ce pool n'écrit rien, l'anneau ceint alors le disque SVG de la surcouche.
+    const rK = anneau.rK;
     const tirets = ringDashes(rK, dashPattern(anneau.dash), f.kind);
     if (n + tirets.length > capacité) {
       if (import.meta.env?.DEV)
@@ -355,6 +359,8 @@ export function poseDynamicMarks(pools: DynMarkPools, marks: DynamicMarks, f: Dy
     écrire('groupe', n);
   }
   const anneaux = pools.anneau;
-  if (anneaux) écrire('anneau', poserAnneaux(anneaux, marks, f));
+  // ANNEAUX : sous `pionsEnDisques` le pool est vidé (compte 0), pas laissé à sa frame précédente — la
+  // surcouche SVG des pions porte alors le leur.
+  if (anneaux) écrire('anneau', f.pionsEnDisques ? 0 : poserAnneaux(anneaux, marks, f));
   return counts;
 }

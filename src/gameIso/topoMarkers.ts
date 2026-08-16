@@ -34,20 +34,38 @@ export function stationTint(faction: Station['faction']): string {
 
 /** Direction ÉCRAN (dx,dy unitaires) d'un arc relatif au marqueur — convention fixe, heading-agnostique
  *  (TopoScene reçoit une position déjà résolue) : proue=haut, poupe=bas, tribord=droite, babord=gauche. */
-const ARC_DIR: Record<FireArc, [number, number]> = {
+export const ARC_DIR: Record<FireArc, readonly [number, number]> = {
   proue: [0, -1],
   poupe: [0, 1],
   tribord: [1, 0],
   babord: [-1, 0],
 };
 
-/** Petit triangle (indice d'orientation) depuis le disque du marqueur vers `side`. */
-export function wedgePath(cx: number, cy: number, side: FireArc): string {
-  const [dx, dy] = ARC_DIR[side];
-  const tipX = cx + dx * (MARKER_R + WEDGE_LEN), tipY = cy + dy * (MARKER_R + WEDGE_LEN);
-  const bx = cx + dx * MARKER_R, by = cy + dy * MARKER_R; // pied du wedge, au bord du disque
+/** GABARIT du triangle : rayon du disque qu'il coiffe, longueur au-delà du bord, demi-ouverture de sa
+ *  base — tous en pixels d'écran. Défaut = le marqueur de station. */
+export interface WedgeGeom {
+  r: number;
+  len: number;
+  half: number;
+}
+
+const WEDGE_STATION: WedgeGeom = { r: MARKER_R, len: WEDGE_LEN, half: WEDGE_HALF };
+
+/**
+ * Petit triangle (indice d'orientation) posé au bord d'un disque de centre `(cx, cy)` et pointant vers
+ * la direction ÉCRAN unitaire `dir`.
+ *
+ * UN SEUL triangle pour les deux populations qui en portent un : le marqueur de STATION du plan de
+ * bord (qui passe `ARC_DIR[side]`) et le PION-DISQUE de la vue du dessus (qui passe son Dir8 projeté,
+ * `builders/dynamicMarks.discCapPath`). La direction est le paramètre, le gabarit une option — deux
+ * tracés séparés divergeraient au premier réglage de forme.
+ */
+export function wedgePath(cx: number, cy: number, dir: readonly [number, number], geom: WedgeGeom = WEDGE_STATION): string {
+  const [dx, dy] = dir;
+  const tipX = cx + dx * (geom.r + geom.len), tipY = cy + dy * (geom.r + geom.len);
+  const bx = cx + dx * geom.r, by = cy + dy * geom.r; // pied du wedge, au bord du disque
   // Perpendiculaire (−dy, dx) pour la base du triangle.
-  const px = -dy * WEDGE_HALF, py = dx * WEDGE_HALF;
+  const px = -dy * geom.half, py = dx * geom.half;
   return `M${bx + px},${by + py} L${tipX},${tipY} L${bx - px},${by - py} Z`;
 }
 
@@ -61,7 +79,7 @@ export function stationMarker(s: Station, dims: Dims, selectedId?: string, offse
     cx,
     cy,
     tint: stationTint(s.faction),
-    ...(s.side ? { wedge: wedgePath(cx, cy, s.side) } : {}),
+    ...(s.side ? { wedge: wedgePath(cx, cy, ARC_DIR[s.side]) } : {}),
     ring: s.id === selectedId,
     ...(s.assignedIds.length ? { badge: s.assignedIds.length } : {}),
   };

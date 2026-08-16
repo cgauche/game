@@ -222,6 +222,12 @@ const PERCAGE_PAS_MAX_MS = 100;
  *  verdict ne s'y rejoue jamais, et la liste vide y ramène toutes les cibles à zéro. */
 const PERCAGE_HORS_PLATEAU = 'percage:hors-plateau';
 
+/** Populations VIDES du verdict `pionsEnDisques` — des singletons de MODULE, et pas des littéraux de
+ *  rendu : la rétention des billboards compare des IDENTITÉS (`decorRetenu`/`acteursRetenus`), et un
+ *  tableau neuf par rendu démonterait puis remonterait tous les quads du décor à chaque tick. */
+const AUCUN_TOKEN: SceneBillboardEls['tokens'] = Object.freeze([]);
+const AUCUN_SUJET: BillboardSubject[] = [];
+
 /** DESSINS DE GRÂCE d'un héros dont le quad manque à l'appel. Les billboards se démontent et se
  *  remontent à chaque commit React qui touche les boards, et des dessins tombent DANS cette fenêtre :
  *  mesuré sur La Diligence, un re-rendu produit 5 dessins dont 4 où `boardsRef` est vide. Sans grâce,
@@ -377,6 +383,14 @@ export interface GameStage3DProps {
    *  dérive AUCUNE : deux jeux de nappes/capsules divergeraient de la géométrie d'occlusion, et le
    *  trou s'ouvrirait là où rien n'est caché. Absent (POV, éditeur) = aucun trou. */
   percage?: PercageEntrees | null;
+  /** PIONS EN DISQUES (#1176, P3-5c) — le verdict `pionsEnDisques` de `stage/viewPolicy`, tel que
+   *  l'hôte le tranche. EXIGÉ chez l'hôte, et pas re-déduit ici de la projection : c'est celui qui
+   *  PEINT les disques qui doit éteindre les billboards, jamais l'inverse. L'écran de JEU
+   *  (`IsoStage` → `stage/TokenChromeOverlay`) le passe ; l'ÉDITEUR, lui, regarde aussi son plateau du
+   *  dessus mais ne monte AUCUNE surcouche de jeton — il garde donc ses corps en billboard, sans quoi
+   *  l'auteur perdrait de vue ses figurants (mesuré : `ui/editor/editeur-monde-volumique.test.tsx`).
+   *  Absent = billboards, le régime historique. */
+  pionsEnDisques?: boolean;
 }
 
 /**
@@ -583,7 +597,7 @@ function dir8DuSegment(dx: number, dz: number): Dir8 | null {
   return best;
 }
 
-export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim, decalque, spritePicking = true, percage }: GameStage3DProps): JSX.Element {
+export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, actors, gameTime, lightLevel, lights, highlights, dynMarks, halos, chromeAt, anim, decalque, spritePicking = true, percage, pionsEnDisques = false }: GameStage3DProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<StageRenderer | null>(null);
   const boardsRef = useRef<Board[]>([]);
@@ -743,9 +757,21 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // BILLBOARDS : leur seule lecture de scène est `heightAt` (`sceneHeightDeps`) — tout le reste leur
   // vient de leurs éléments. Retenus dessus, un pas de combattant (jeu) comme un déplacement d'entité
   // ou de zone (édition) ne re-rasterise plus la planche entière.
+  //
+  // PIONS EN DISQUES (#1176, P3-5c) : sous ce verdict le monde ne monte AUCUN sujet `kind:'personnage'`
+  // — ni combattant, ni meneur de groupe, ni figurant ; ils sont peints en disques par la surcouche SVG
+  // (`stage/TokenChromeOverlay`). Le décor (`kind:'prop'`) reste billboard. C'est le SEUL geste : toute
+  // la cascade tombe avec la population, par construction — plus de jumeau de silhouette ni d'ombre de
+  // contact (montés PAR sujet, plus bas), plus de quad à percer (`percage` cherche un board par `cid`),
+  // et plus aucune cible portant un `cid` sous le rayon, donc le clic retombe sur la CASE, où le disque
+  // est centré (`useStagePointer.pickTile`).
   const hauteurDeps = sceneHeightDeps(scene);
-  const decor = decorRetenu(jeton, [...hauteurDeps, mpt, tintAt, els], () => collectBillboards(scene, mpt, tintAt, els));
-  const acteurs = acteursRetenus(jeton, [...hauteurDeps, actors, mpt, tintAt], () => actorBillboards(actors, scene, mpt, tintAt));
+  const elsMonde = useMemo(
+    () => (pionsEnDisques ? { tokens: AUCUN_TOKEN, props: els.props } : els),
+    [pionsEnDisques, els],
+  );
+  const decor = decorRetenu(jeton, [...hauteurDeps, mpt, tintAt, elsMonde], () => collectBillboards(scene, mpt, tintAt, elsMonde));
+  const acteurs = acteursRetenus(jeton, [...hauteurDeps, actors, mpt, tintAt, pionsEnDisques], () => (pionsEnDisques ? AUCUN_SUJET : actorBillboards(actors, scene, mpt, tintAt)));
   const subjects = useMemo(() => [...decor, ...acteurs], [decor, acteurs]);
   // ── MARQUES DE CASES (P3-0c) : les éléments du builder, rangés par SLOT de montage. La CAPACITÉ des
   // pools ne suit que les paliers (`slotCapacity`) — un anneau de cible qui apparaît ne redimensionne
@@ -1047,7 +1073,8 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
         mpt,
         glide: anim ? anim.glide : AUCUN_GLISSEMENT,
         groundM: solM,
-        kind: f.kind, // l'anneau d'équipe n'a ni le même rayon ni la même compensation selon la vue
+        kind: f.kind, // la compensation du pointillé d'anneau se mesure sur l'ellipse écran de la vue
+        pionsEnDisques, // pion en disque SVG ⇒ son anneau d'équipe y est peint aussi
         yawDeg: f.yawDeg, // les tirets de l'anneau d'équipe se mesurent à l'ÉCRAN : ils suivent la vue
         chromeAt: chromeAt ?? AUCUN_CHROME, // l'anneau d'un corps estompé s'estompe avec lui (P3-0f)
       });

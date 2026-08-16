@@ -15,13 +15,20 @@ import {
   TETHER_STROKE_PX,
   TETHER_WIDTH_K,
   dashPattern,
+  DISC_CAP_HALF_K,
+  DISC_CAP_INNER_K,
+  DISC_CAP_OUTER_K,
+  discCapPath,
   discR,
   dynamicMarks,
+  screenDirUnit,
   teamRingDecor,
   teamRings,
   type EngageTether,
 } from './dynamicMarks';
-import { CELL, TH, TW } from '../../geometry/iso';
+import { CELL, TH, TW, type Dims } from '../../geometry/iso';
+import { wedgePath } from '../topoMarkers';
+import type { Dir8 } from '../../state/dir8';
 import { ENEMY_RING, HERO_RING, teamShape } from '../teamColors';
 import { combatantTokenScale } from '../sizeScale';
 import type { TokenEl } from './types';
@@ -220,7 +227,7 @@ describe('teamRings — la POPULATION des anneaux et leur gabarit (#1176 P3-0e)'
     const c = combattant('h1', { pos: { x: 0, y: 0 } });
     const s = COMBAT_TOKEN_BASE * combatantTokenScale(c);
     const { rK } = teamRings([jeton(c, 0)], null)[0];
-    // `BodyToken` peint `rx = 18·s` et `ry = 9·s` : ce sont exactement les demi-axes écran du cercle
+    // L'anneau de pieds vaut `rx = 18·s` et `ry = 9·s` : ce sont exactement les demi-axes écran du cercle
     // monde de rayon `rK` cases (`RING_A_PX`/`RING_B_PX`), donc les deux voies dessinent LE MÊME disque.
     expect(rK * RING_A_PX).toBeCloseTo(TEAM_RING_RX_PX * s, 10);
     expect(rK * RING_B_PX).toBeCloseTo((TEAM_RING_RX_PX / 2) * s, 10);
@@ -233,16 +240,12 @@ describe('teamRings — la POPULATION des anneaux et leur gabarit (#1176 P3-0e)'
 
   it('en VUE DU DESSUS, le rayon est celui du DISQUE-PORTRAIT — pas l’ellipse des pieds (#1176 P3-0e)', () => {
     const c = combattant('h1', { pos: { x: 0, y: 0 } });
-    const gros = combattant('g1', { pos: { x: 4, y: 6 }, footprint: 3 } as Partial<Combatant>);
-    // `BodyToken` (branche `flat`) peint le disque en `<circle r={discR(n)}>` et son anneau SUR ce
-    // cercle : le rayon monde de l'anneau vaut donc `discR(n)` px à `CELL` px par case.
-    const [petit] = teamRings([jeton(c, 0)], null);
-    expect(petit.rTopK * CELL).toBeCloseTo(discR(1), 12);
-    expect(teamRings([jeton(gros, 0)], null)[0].rTopK * CELL).toBeCloseTo(discR(3), 12);
-    // et il n'a rien à voir avec le rayon LOSANGE : la vue du dessus ne rétrécit pas le jeton
-    expect(petit.rTopK).toBeGreaterThan(petit.rK * 1.5);
-    // le jeton de GROUPE porte le disque d'UNE case (`partyLeaderObj` : `discR(1)`)
-    expect(teamRings([], { leader: c, pos: { x: 1, y: 1 } })[0].rTopK * CELL).toBeCloseTo(discR(1), 12);
+    // La surcouche des pions peint le disque en `<circle r={discR(n)}>` et son anneau SUR ce cercle :
+    // ce rayon tient DANS la case et grandit avec l'empreinte.
+    expect(discR(1)).toBeLessThan(CELL / 2);
+    expect(discR(3)).toBeCloseTo(3 * discR(1), 12);
+    // et il n'a rien à voir avec le rayon LOSANGE des pieds : la vue du dessus ne rétrécit pas le jeton
+    expect(discR(1) / CELL).toBeGreaterThan(teamRings([jeton(c, 0)], null)[0].rK * 1.5);
   });
 
   it('le jeton de GROUPE porte l’anneau du GROUPE : plein et bleu, même si le meneur n’est pas un héros', () => {
@@ -267,5 +270,60 @@ describe('teamRings — la POPULATION des anneaux et leur gabarit (#1176 P3-0e)'
     expect(dynamicMarks(combat([h]), null, [], null).rings, 'sans jetons, aucun anneau').toHaveLength(0);
     expect(NO_DYNAMIC_MARKS.rings).toHaveLength(0);
     expect(Object.isFrozen(NO_DYNAMIC_MARKS.rings)).toBe(true);
+  });
+});
+
+/**
+ * CAP D'ORIENTATION DU PION (#1176, P3-5c) — le triangle posé au bord du disque, dans le repère de son
+ * groupe (le disque y est centré sur l'origine, cf. `stage/TokenChromeOverlay`).
+ *
+ * Ce qui se mesure ici : la direction ÉCRAN passe par l'UNIQUE porte de projection des overlays
+ * (`tileCenter`), donc elle suit la rotation de caméra sans seconde formule ; et le tracé est celui du
+ * marqueur de station (`topoMarkers.wedgePath`), à un autre gabarit — un seul triangle.
+ */
+describe('discCapPath — le cap du pion, projeté par la vue (#1176 P3-5c)', () => {
+  const dims = (rot: 0 | 1 | 2 | 3, view: 'top' | 'iso'): Dims => ({ w: 10, h: 10, rot, view, edge: false } as Dims);
+  /** Pointe du triangle : le 2ᵉ sommet du path `M.. L.. L.. Z` (convention de `wedgePath`). */
+  const pointe = (d: string): [number, number] => {
+    const m = /L([\d.-]+),([\d.-]+)/.exec(d)!;
+    return [parseFloat(m[1]), parseFloat(m[2])];
+  };
+  /** Les deux coins de la BASE : les 1ᵉʳ et 3ᵉ sommets du path (même convention). */
+  const coins = (d: string): [number, number][] => {
+    const n = d.match(/-?\d+(?:\.\d+)?/g)!.map(Number);
+    return [[n[0], n[1]], [n[4], n[5]]];
+  };
+
+  it('la direction ÉCRAN est celle du PAS DE GRILLE de ce cap, unitaire', () => {
+    // Vue du dessus au cran 0 : les axes écran SONT ceux de la grille — le Sud pointe vers le bas.
+    expect(screenDirUnit('S', dims(0, 'top'))).toEqual([0, 1]);
+    expect(screenDirUnit('E', dims(0, 'top'))).toEqual([1, 0]);
+    // …et toujours unitaire, y compris en diagonale et sous la projection LOSANGE (anisotrope).
+    for (const dir of ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'] as Dir8[])
+      for (const vue of ['top', 'iso'] as const)
+        expect(Math.hypot(...screenDirUnit(dir, dims(0, vue))), `${dir}/${vue}`).toBeCloseTo(1, 12);
+  });
+
+  it('le cap SUIT LA CAMÉRA : un quart de tour de vue fait tourner le triangle d’un quart de tour', () => {
+    // Un cran de caméra tourne le MONDE d'un quart de tour à l'écran (`rotTile` : `(x,y) → (y, W−1−x)`,
+    // soit `(dx,dy) → (dy, −dx)`) : le Nord monde, vu au cran 1, se lit là où le cran 0 lisait l'Ouest.
+    expect(screenDirUnit('N', dims(1, 'top'))).toEqual(screenDirUnit('O', dims(0, 'top')));
+    expect(screenDirUnit('E', dims(1, 'top'))).toEqual(screenDirUnit('N', dims(0, 'top')));
+    // Les huit caps donnent huit tracés distincts : aucun ne se replie sur un voisin.
+    const tracés = (['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'] as Dir8[]).map((d) => discCapPath(d, 1, dims(0, 'top')));
+    expect(new Set(tracés).size).toBe(8);
+  });
+
+  it('le quartier est celui du marqueur de station, À CHEVAL sur le bord du disque — un seul tracé', () => {
+    const R = discR(2); // empreinte 2×2 : le cap grandit avec le pion qu'il coiffe
+    expect(discCapPath('S', 2, dims(0, 'top'))).toBe(
+      wedgePath(0, 0, [0, 1], { r: R * DISC_CAP_INNER_K, len: R * (DISC_CAP_OUTER_K - DISC_CAP_INNER_K), half: R * DISC_CAP_HALF_K }),
+    );
+    // À CHEVAL : la pointe sort du disque, et les deux coins de la base sont DEDANS — c'est cette part
+    // intérieure qui donne au quartier une surface que le bord ne peut plus lui prendre.
+    const r1 = discR(1);
+    const d = discCapPath('S', 1, dims(0, 'top'));
+    expect(pointe(d)[1]).toBeGreaterThan(r1);
+    for (const [x, y] of coins(d)) expect(Math.hypot(x, y), `coin de base (${x}, ${y})`).toBeLessThan(r1);
   });
 });

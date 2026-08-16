@@ -34,7 +34,7 @@ export type TokenSubject =
 export interface TokenBody {
   /** Famille de CORPS montée. `bakedDeath` se dérive : `bodyKind !== 'sprite'`. */
   bodyKind: 'rig' | 'plan' | 'sprite';
-  /** Le CORPS (nœud React) à déposer dans BodyToken/tokenNode. */
+  /** Le CORPS (nœud React) à déposer chez l'appelant (pion-disque de la carte, vignette, planche QC). */
   body: ReactNode;
   /** Multiplicateur de taille d'espèce (bipède/créature) — la base reste au site appelant. */
   speciesScale: number;
@@ -75,7 +75,8 @@ const STRUCT_BODY = (
 /**
  * Vue de face cadrée sur le VISAGE (top-mode). Résout le rig en vue `front` et cadre le viewBox sur
  * l'os `tete` RÉSOLU (centré sur LE visage de chaque race — Nain/Ogre/… quelle que soit sa taille).
- * Math PURE, partagée par le pion-portrait de la carte (BodyToken flat) ET la vignette HUD (RigPortrait).
+ * Math PURE, partagée par le pion-disque de la carte (`stage/TokenChromeOverlay`) ET la vignette HUD
+ * (`RigPortrait`).
  */
 function faceFrame(appearance: Appearance, equip: EquipCtx, tenue: string | undefined, overlays: RigOverlay[]): { body: ReactNode; box: string } {
   const bones = resolveRig(appearance, equip, {}, tenue, 'front', overlays);
@@ -100,7 +101,7 @@ function faceFrame(appearance: Appearance, equip: EquipCtx, tenue: string | unde
  * `flat: true`) ; le décor reste un billboard de face (`flat: false`). En iso, comportement inchangé.
  *
  * NE porte AUCUNE info de layout (ombre/anneau/dim/échelle de base/walking) : ça reste au site
- * appelant (BodyToken/token/tokenNode). Les deux moteurs d'animation (rig à clips vs plan rAF)
+ * appelant (surcouche de jetons, planches QC). Les deux moteurs d'animation (rig à clips vs plan rAF)
  * restent DEUX backends distincts (asymétrie essentielle : parade/sort/clips d'arme côté rig).
  */
 export function tokenBodyKind(subject: TokenSubject, view: ViewMode = 'iso'): TokenBody {

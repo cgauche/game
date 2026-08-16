@@ -1,6 +1,6 @@
 /**
  * Source UNIQUE des couleurs d'identité d'équipe (anneaux des pions + portraits HUD)
- * et de la couleur d'une barre de vie. Utilisée par le rendu iso (IsoStage, BodyToken)
+ * et de la couleur d'une barre de vie. Utilisée par le rendu de carte (IsoStage, surcouche de jetons)
  * ET par le HUD React (ActionBar, CampaignView) — pas de duplication.
  */
 
@@ -43,7 +43,7 @@ export function tileTint(isHero: boolean, active: boolean): string {
  * Canal d'appartenance INDÉPENDANT de la teinte (R9 — daltonisme ~8 % des hommes) : la FORME de l'anneau
  * encode l'équipe en plus de sa couleur. Héros = anneau PLEIN (undefined) ; ennemi = anneau POINTILLÉ.
  * Renvoie un `strokeDasharray` SVG (ou undefined pour un trait plein). Source unique consommée par les
- * pions de terrain (BodyToken) et les portraits HUD (RigPortrait).
+ * pions de terrain (`stage/TokenChromeOverlay`) et les portraits HUD (RigPortrait).
  */
 export function teamShape(isHero: boolean): string | undefined {
   return isHero ? undefined : '5 3';

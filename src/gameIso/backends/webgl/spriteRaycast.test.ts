@@ -62,4 +62,18 @@ describe('pickNearestCid — le plus PROCHE tranche, et un DÉCOR rend `null` (#
     // …et un décor DEVANT les deux les couvre tous les deux.
     expect(pickNearestCid(CAMERA, [decor(-1).cible, loin, proche], CENTRE)).toBeNull();
   });
+
+  it('PIONS EN DISQUES (#1176 P3-5c) : sans un seul quad de personnage, le verdict est `null` — le clic RETOMBE sur la case', () => {
+    // Sous le verdict `pionsEnDisques` (vue du dessus), le monde ne monte AUCUN sujet `personnage`
+    // (`stage/GameStage3D`) : les seules cibles restantes sont du DÉCOR, qui ne rend jamais d'id. Le
+    // picking de sprite se tait donc PAR CONSTRUCTION, et `useStagePointer.pickTile` résout par
+    // `tileFromEvent` — juste, puisque le disque est centré sur SA case.
+    const cibles = [decor(-9).cible, decor(-3).cible];
+    expect(pickNearestCid(CAMERA, cibles, CENTRE)).toBeNull();
+    expect(pickNearestCid(CAMERA, cibles, BORD)).toBeNull();
+    expect(pickNearestCid(CAMERA, [], CENTRE)).toBeNull();
+    // TÉMOIN : la même caméra, le même pixel, avec un quad de personnage — l'absence d'id vient bien
+    // de la population, pas d'un rayon qui ne touche rien.
+    expect(pickNearestCid(CAMERA, [{ cid: 'h1', object: quad(-5) }], CENTRE)).toBe('h1');
+  });
 });

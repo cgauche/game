@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { stationMarker, stationTint, wedgePath, MARKER_R, colocationOffsets } from './topoMarkers';
+import { stationMarker, stationTint, wedgePath, ARC_DIR, MARKER_R, colocationOffsets } from './topoMarkers';
 import { tileCenter, type Dims } from '../geometry/iso';
 import { ALLY_TINT, ENEMY_TINT, NEUTRAL_TINT } from './teamColors';
 import type { Station } from '../state/stations';
@@ -73,13 +73,17 @@ describe('stationMarker / wedgePath — arc d’orientation par side', () => {
     const cx = 100, cy = 100;
     const tip = (side: FireArc): [number, number] => {
       // Le 2e sommet du path `M.. L.. L.. Z` est la POINTE (cf. wedgePath).
-      const m = wedgePath(cx, cy, side).match(/L([\d.-]+),([\d.-]+)/);
+      const m = wedgePath(cx, cy, ARC_DIR[side]).match(/L([\d.-]+),([\d.-]+)/);
       return [parseFloat(m![1]), parseFloat(m![2])];
     };
     expect(tip('proue')[1]).toBeLessThan(cy - MARKER_R); // vers le haut
     expect(tip('poupe')[1]).toBeGreaterThan(cy + MARKER_R); // vers le bas
     expect(tip('tribord')[0]).toBeGreaterThan(cx + MARKER_R); // vers la droite
     expect(tip('babord')[0]).toBeLessThan(cx - MARKER_R); // vers la gauche
+    // GABARIT DE STATION par DÉFAUT : la généralisation du triangle (une DIRECTION en paramètre, un
+    // gabarit en option — le pion du plateau y passe le sien) ne bouge pas ce tracé d'un pixel.
+    expect(wedgePath(cx, cy, ARC_DIR.proue))
+      .toBe(wedgePath(cx, cy, ARC_DIR.proue, { r: MARKER_R, len: 22, half: 8 }));
     // Les quatre pointes diffèrent.
     const all = (['proue', 'poupe', 'tribord', 'babord'] as FireArc[]).map((s) => tip(s).join(','));
     expect(new Set(all).size).toBe(4);

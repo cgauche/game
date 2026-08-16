@@ -1,8 +1,9 @@
 import { Mesh, MeshBasicMaterial, OrthographicCamera, PerspectiveCamera, PlaneGeometry, PointLight, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { billboardDepthOffsetUnits, BILLBOARD_DEPTH_BIAS_M, CONTACT_SHADOW_LIFT_M, contactShadow, DEPTH_BUFFER_BITS, type BillboardSubject } from '../backends/webgl/sceneMeshes';
+import { billboardDepthOffsetUnits, billboardPose, BILLBOARD_DEPTH_BIAS_M, CONTACT_SHADOW_LIFT_M, contactShadow, DEPTH_BUFFER_BITS, type BillboardSubject } from '../backends/webgl/sceneMeshes';
+import { affineCamera, affineScales } from '../backends/webgl/cameras';
 import { FOV_X } from '../pov/camera';
-import { poseBoards, type Board, type FrameLights } from './boardPose';
+import { boardCenter, boardProjectedPx, poseBoards, UP_ECRAN_COUCHE, type Board, type FrameLights } from './boardPose';
 import { billboardExposure, FLAME_INTENSITY, FLAME_LIFT_M, type PointLightSlots } from './stagePointLights';
 
 /**
@@ -304,5 +305,81 @@ describe('poseBoards — le biais métrique tient EN TOUT POINT de l’écran (#
     expect(d / z).toBeGreaterThan(1.3);
     // …et un biais pris sur la distance y perdrait ce facteur AU CARRÉ : le témoin de la mutation.
     expect(BILLBOARD_DEPTH_BIAS_M * (z / d) ** 2).toBeLessThan(0.19);
+  });
+});
+
+/**
+ * ANCRE DU QUAD À LA VERTICALE (#1176, P3-5c) — la sonde du juge, à travers la VRAIE `affineCamera` de
+ * production, aux quatre crans de lacet et sous les deux regards de plateau.
+ *
+ * LA LOI : la montée d'un quad — une demi-hauteur de corps — se fait le long de la VERTICALE MONDE dès
+ * que le haut d'écran de la caméra est COUCHÉ dans le plan du sol (`up.y` ≈ 0, le cas de la vue du
+ * DESSUS). Portée par le haut d'écran, elle y serait une TRANSLATION HORIZONTALE : 0,767 case à `mpt`
+ * 1,5 pour un sujet de 2,3 m, proportionnelle à sa taille et TOURNANT avec le lacet — c'est la mesure
+ * du témoin ci-dessous. Sur le plateau iso, où le haut d'écran est debout, les deux coïncident.
+ */
+describe('boardCenter — le corps se lève à la VERTICALE quand le haut d’écran est couché (#1176 P3-5c)', () => {
+  const MPT = 1.5;
+  const VUE = { w: 1280, h: 720 };
+  const ANCRE = new Vector3(4 * MPT, 0, 7 * MPT);
+  const LIFT = 1.15; // demi-hauteur d'un sujet de 2,30 m
+  const CRANS = [0, 90, 180, 270];
+  const dHoriz = (p: Vector3) => Math.hypot(p.x - ANCRE.x, p.z - ANCRE.z);
+
+  it('VUE DU DESSUS : le centre reste À L’APLOMB de l’ancre, à tous les crans, et monte du lift EXACT', () => {
+    for (const yaw of CRANS) {
+      const { camera } = affineCamera('top', yaw, MPT, VUE);
+      // TÉMOIN : le haut d'écran de cette caméra est bien couché dans le plan du sol.
+      const up = new Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
+      expect(Math.abs(up.y), `cran ${yaw}° : haut d’écran couché`).toBeLessThan(UP_ECRAN_COUCHE);
+      const p = boardCenter(ANCRE, LIFT, camera.quaternion, new Vector3());
+      expect(dHoriz(p), `cran ${yaw}° : aucun décalage horizontal`).toBeCloseTo(0, 12);
+      expect(p.y - ANCRE.y, `cran ${yaw}° : la montée vaut le lift`).toBeCloseTo(LIFT, 12);
+    }
+  });
+
+  it('TÉMOIN de la mutation : le haut d’écran, lui, décale de 0,767 case et TOURNE avec le lacet', () => {
+    const decales = CRANS.map((yaw) => {
+      const { camera } = affineCamera('top', yaw, MPT, VUE);
+      return billboardPose(ANCRE, LIFT, camera.quaternion);
+    });
+    for (const p of decales) {
+      expect(dHoriz(p) / MPT, 'décalage horizontal en cases').toBeCloseTo(LIFT / MPT, 6);
+      expect(p.y - ANCRE.y, 'et rien du lift ne monte').toBeCloseTo(0, 12);
+    }
+    // …et il TOURNE : quatre crans, quatre points distincts autour de la même case.
+    expect(new Set(decales.map((p) => `${p.x.toFixed(4)},${p.z.toFixed(4)}`)).size).toBe(4);
+  });
+
+  it('PLATEAU ISO : rien ne change — le quad monte le long du haut d’écran, arête basse sur l’ancre', () => {
+    for (const yaw of CRANS) {
+      const { camera } = affineCamera('iso', yaw, MPT, VUE);
+      const up = new Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
+      expect(Math.abs(up.y), `cran ${yaw}° : haut d’écran DEBOUT`).toBeGreaterThan(UP_ECRAN_COUCHE);
+      const p = boardCenter(ANCRE, LIFT, camera.quaternion, new Vector3());
+      expect(p.distanceTo(billboardPose(ANCRE, LIFT, camera.quaternion)), `cran ${yaw}°`).toBeCloseTo(0, 12);
+      expect(dHoriz(p), `cran ${yaw}° : et il avance bien dans le plan du sol`).toBeGreaterThan(0.1);
+    }
+  });
+
+  it('la HAUTEUR PROJETÉE d’un quad vaut sa hauteur monde à la cadence VERTICALE de sa vue', () => {
+    // Le quad reste ALIGNÉ ÉCRAN (`mesh.quaternion = camera.quaternion`) : son arête verticale EST le
+    // haut d'écran, couché ou non, et sa projection vaut `heightM × sy` — la cadence px/m verticale que
+    // `affineScales` donne à cette vue. `boardProjectedPx` n'a donc rien à corriger sous la verticale :
+    // la valeur attendue se DÉRIVE du gabarit, elle n'est pas un nombre relevé à l'écran.
+    const b = board('h1', ANCRE, false);
+    for (const kind of ['top', 'iso'] as const) {
+      const { camera } = affineCamera(kind, 0, MPT, VUE);
+      poseBoards([b], camera, () => null, flaques([]));
+      expect(boardProjectedPx(b, camera, VUE.h, 1), `${kind} : la cadence de « affineScales »`).toBeCloseTo(b.quad.heightM * affineScales(kind, MPT).sy, 9);
+    }
+    // …et la mesure MORD : la MÊME arête prise sur la VERTICALE MONDE au lieu du haut d'écran se
+    // projette à zéro sous la vue du dessus — c'est ce zéro que le contrat interdit.
+    const { camera } = affineCamera('top', 0, MPT, VUE);
+    poseBoards([b], camera, () => null, flaques([]));
+    const demi = new Vector3(0, b.quad.heightM / 2, 0);
+    const hautMonde = b.mesh.position.clone().add(demi).project(camera);
+    const basMonde = b.mesh.position.clone().sub(demi).project(camera);
+    expect((Math.abs(hautMonde.y - basMonde.y) / 2) * VUE.h, 'la verticale monde est vue dans son axe').toBeLessThan(1e-9);
   });
 });

@@ -373,11 +373,11 @@ rendu ; `destin`/`naufrage`/absent → hors-combat), posé aux sites de sortie (
 `resolveShipUnits`, Destin dans `combatSlice`). Un héros à 0 PB CONSCIENT reste À Terre — `endState`
 renvoie `null`, aucun marqueur de fin (l'À Terre vit dans les pastilles d'États).
 
-Ce langage s'applique aux **trois surfaces** via cette source unique : le token iso (`BodyToken`,
-pastille `token-endmark`), le portrait et la frise d'initiative (`PortraitTile`, badge `end-mark` —
+Ce langage s'applique aux **trois surfaces** via cette source unique : le jeton de carte
+(`TokenChromeMarks`, pastille `token-endmark`), le portrait et la frise d'initiative (`PortraitTile`, badge `end-mark` —
 la frise réutilise `PortraitTile`). Une coque (`bodyShape 'vehicule'`) passe par le même token :
 prise = pavillon amené (`rendu`), coulée = `hors-combat`. Verrou : `src/engine/endState.test.ts`
-(4 états distincts) + `src/ui/endStateVisual.test.ts` (icône/classe uniques sur token ET portrait).
+(4 états distincts) + `src/ui/endStateVisual.test.ts` (icône/classe uniques sur jeton ET portrait).
 
 ## Galerie design system (#412)
 

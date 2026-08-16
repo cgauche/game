@@ -7,7 +7,7 @@ import { SPECKLE_LIFT_M } from '../backends/webgl/groundAccents';
 import { pxPerM } from '../backends/webgl/worldTris';
 import { billboardHeightM } from '../backends/webgl/billboardMath';
 import { resetDiagOnce } from '../rig/devDiag';
-import { projectStep, rotOffset, stepOf, type ProjKind } from '../../geometry/iso';
+import { CELL, projectStep, rotOffset, stepOf, type ProjKind } from '../../geometry/iso';
 import { affineCamera, projectToScreen } from '../backends/webgl/cameras';
 import { ENEMY_RING, HERO_RING } from '../teamColors';
 import {
@@ -21,7 +21,6 @@ import {
   dashPattern,
   discR,
   ringPhaseRad,
-  topRingRadiusK,
   teamRingRadiusK,
   type DynamicMarks,
   type TeamRing,
@@ -222,9 +221,10 @@ describe('tetherDashCount — le pas du pointillé', () => {
  * la projection losange écrase de moitié l'axe de profondeur d'un cercle monde — et ne RIEN
  * pré-compenser sous la vue du dessus, dont la projection est 1:1.
  */
-/** Rayon (fraction de case) de l'anneau d'un jeton de combat à l'échelle d'art 1, par vue. */
+/** Rayon (fraction de case) de l'anneau d'un jeton de combat à l'échelle d'art 1, par vue. En vue du
+ *  DESSUS il ceint le disque-portrait, que la surcouche peint à `discR(n)` px, à `CELL` px par case. */
 const RK = teamRingRadiusK(COMBAT_TOKEN_BASE);
-const RK_TOP = topRingRadiusK(1);
+const RK_TOP = discR(1) / CELL;
 /** Le pointillé d'équipe (`teamShape(false)`), lu par la MÊME porte que la pose. */
 const MOTIF = dashPattern('5 3')!;
 /** Hauteurs de jeton JUGÉES (px écran) — les trois zooms du contrat d'art. */
@@ -354,7 +354,7 @@ function blancsÉcran(cordes: ReturnType<typeof cordesÉcran>): number[] {
 }
 
 describe('poseDynamicMarks — les ANNEAUX d’équipe (#1176 P3-0e)', () => {
-  const anneau: TeamRing = { id: 'e1', cell: { x: 2, y: 3, z: 0 }, rK: RK, rTopK: RK_TOP, color: ENEMY_RING, dash: '5 3' };
+  const anneau: TeamRing = { id: 'e1', cell: { x: 2, y: 3, z: 0 }, rK: RK, color: ENEMY_RING, dash: '5 3' };
   const avec = (rings: TeamRing[]): DynamicMarks => ({ tethers: [], active: null, party: null, rings });
 
   it('un chapelet de cordes posé sur le cercle des PIEDS, à l’épaisseur et à la teinte de son équipe', () => {
@@ -456,11 +456,14 @@ describe('poseDynamicMarks — l’anneau MESURÉ à travers la caméra de produ
     poseDynamicMarks(p, { tethers: [], active: null, party: null, rings: [ring] }, { mpt: MPT, glide: () => null, groundM: PLAT, kind, yawDeg });
     return p.anneau!;
   };
-  const ennemi: TeamRing = { id: 'e1', cell: { x: 2, y: 3, z: 0 }, rK: RK, rTopK: RK_TOP, color: ENEMY_RING, dash: '5 3' };
+  const ennemi: TeamRing = { id: 'e1', cell: { x: 2, y: 3, z: 0 }, rK: RK, color: ENEMY_RING, dash: '5 3' };
   /** Centre MONDE de cet anneau (case 2,3 à `mpt` mètres, au rang de son slot). */
   const CENTRE = new THREE.Vector3(2 * MPT, dynSlotLiftM('anneau'), 3 * MPT);
-  /** Compte de tirets que le `stroke-dasharray` affine peint sur le CERCLE de la vue du dessus. */
-  const N_AFFINE_TOP = Math.ceil((2 * Math.PI * discR(1)) / (MOTIF.dashPx + MOTIF.gapPx));
+  /** Le pool, posé sous un verdict de PION donné — c'est lui qui décide, jamais la projection. */
+  const compte = (kind: ProjKind, pionsEnDisques: boolean) => {
+    const p = pools();
+    return poseDynamicMarks(p, { tethers: [], active: null, party: null, rings: [ennemi] }, { mpt: MPT, glide: () => null, groundM: PLAT, kind, yawDeg: 0, pionsEnDisques }).anneau;
+  };
 
   it('en LOSANGE, les blancs restent égaux à l’écran à tous les lacets (0/15/45/90°)', () => {
     for (const yaw of [0, 15, 45, 90]) {
@@ -471,31 +474,27 @@ describe('poseDynamicMarks — l’anneau MESURÉ à travers la caméra de produ
     }
   });
 
-  it('en VUE DU DESSUS : rayon du DISQUE affine, blancs égaux (projection 1:1) et compte affine', () => {
-    const cordes = cordesÉcran(posé('top', 0, ennemi), 'top', 0, CENTRE);
-    // RAYON : la voie affine y trace `<circle r={discR(fp)}>` (`BodyToken`, branche `flat`).
-    const { camera } = affineCamera('top', 0, MPT, VUE);
-    const centre = projectToScreen(camera, CENTRE, VUE);
-    for (const c of cordes)
-      expect(Math.hypot(c.centre.sx - centre.sx, c.centre.sy - centre.sy), 'chaque corde sur le cercle du disque').toBeCloseTo(discR(1), 4);
-    // BLANCS : rien à pré-compenser, la projection du dessus est 1:1.
-    const g = blancsÉcran(cordes);
-    expect(Math.min(...g) / Math.max(...g), 'blancs uniformes en vue du dessus').toBeGreaterThan(0.95);
-    // COMPTE : celui que le `stroke-dasharray` affine peint sur CE cercle.
-    expect(cordes.length).toBe(N_AFFINE_TOP);
+  it('sous `pionsEnDisques` : ce pool n’écrit AUCUNE corde — l’anneau vit sur le disque SVG', () => {
+    // Le PION est un disque de la surcouche SVG (`stage/TokenChromeOverlay`), et son anneau y est peint
+    // au rayon du disque. Deux anneaux — l'un plat au sol, l'autre à l'écran — se superposeraient à des
+    // rayons différents : le verdict est EXCLUSIF, et c'est lui qui tranche, pas la projection.
+    expect(compte('top', true)).toBe(0);
   });
 
-  it('TÉMOIN : le gabarit LOSANGE en vue du dessus est faux trois fois (rayon, compte, blancs)', () => {
-    // Ce que la pose écrivait avant le correctif : le rayon de l'ellipse des pieds, et le chapelet
-    // pré-compensé 2:1 qui va avec.
-    const cordes = cordesÉcran(posé('top', 0, { ...ennemi, rTopK: RK }), 'top', 0, CENTRE);
-    const { camera } = affineCamera('top', 0, MPT, VUE);
-    const centre = projectToScreen(camera, CENTRE, VUE);
-    const rayon = Math.hypot(cordes[0].centre.sx - centre.sx, cordes[0].centre.sy - centre.sy);
-    expect(rayon, 'rayon du gabarit losange : bien plus petit que le disque').toBeLessThan(discR(1) * 0.75);
-    expect(ringDashes(RK, MOTIF, 'iso').length, 'et le compte iso ne couvre pas la moitié du cercle').toBeLessThan(N_AFFINE_TOP / 2);
-    // et les blancs d'un chapelet PRÉ-COMPENSÉ posé sur une projection 1:1 sont écrasés
-    const gn = blancs('top', ringDashes(RK, MOTIF, 'iso'), RK, 0, 1);
-    expect(Math.min(...gn) / Math.max(...gn), 'la compensation 2:1 CRÉE l’écrasement en vue du dessus').toBeLessThan(0.6);
+  it('TÉMOIN : le même relevé, verdict retombé, redonne son chapelet — c’est le VERDICT qui tranche', () => {
+    // Même vue, même anneau, même caméra : seul `pionsEnDisques` change. Sans lui le pool repeint, donc
+    // le zéro ci-dessus n'est pas un pool vide, une capacité nulle ou une marque perdue.
+    expect(compte('top', false)).toBeGreaterThan(3);
+    // …et le plateau iso, lui, n'est jamais gaté : c'est là que vit l'anneau AUX PIEDS.
+    expect(compte('iso', false)).toBeGreaterThan(3);
+  });
+
+  it('l’anneau posé est celui des PIEDS (`rK`) : c’est LUI que le relevé écran suit', () => {
+    // Mesuré sur le relevé écran EXACT, pas sur un rayon moyen : doubler `rK` déplace toutes les
+    // cordes, et c'est la seule grandeur de rayon que cette pose lise.
+    const relevé = (r: Partial<TeamRing>) => cordesÉcran(posé('iso', 0, { ...ennemi, ...r }), 'iso', 0, CENTRE)
+      .map((c) => `${c.centre.sx.toFixed(9)},${c.centre.sy.toFixed(9)}`).join('|');
+    expect(relevé({ rK: RK * 2 })).not.toBe(relevé({}));
+    expect(relevé({ dash: undefined })).not.toBe(relevé({}));
   });
 });

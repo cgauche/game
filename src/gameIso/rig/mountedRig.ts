@@ -67,7 +67,7 @@ export function mountedRest(view: View, weapon?: Weapon): Pose {
 
 export interface SeatOpts {
   view: View;
-  /** échelle d'écran de la monture (celle du BodyToken porteur). */
+  /** échelle d'écran de la monture (celle du jeton porteur). */
   mountScale: number;
   /** échelle d'écran VOULUE du cavalier (assis). */
   riderScale: number;

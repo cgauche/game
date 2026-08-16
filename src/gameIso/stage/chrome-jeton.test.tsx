@@ -11,6 +11,7 @@ import type { Combatant } from '../../engine/types';
 import { IsoStage } from '../IsoStage';
 import { CONVENTION, setStageRendererFactory, type StageRenderer } from './GameStage3D';
 import { chromeHeadPx } from './TokenChromeOverlay';
+import { viewPolicy } from './viewPolicy';
 import {
   ALPHA_TEST,
   DIM_OPACITY,
@@ -26,8 +27,9 @@ import {
 } from './boardPose';
 import { poseDynamicMarks, type DynMarkPools } from './dynamicMarkPose';
 import { buildDynamicMarkMesh } from '../backends/webgl/dynamicMarkMeshes';
-import { COMBAT_TOKEN_BASE, discR, teamRingRadiusK, topRingRadiusK, type DynamicMarks } from '../builders/dynamicMarks';
+import { COMBAT_TOKEN_BASE, discCapPath, discR, teamRingDecor, teamRingRadiusK, type DynamicMarks } from '../builders/dynamicMarks';
 import { tokenChrome } from '../builders/tokenChrome';
+import { tokenBodyKind } from '../tokenBodyKind';
 import { ALLY_TINT, ENEMY_TINT, NEUTRAL_TINT, hpColor } from '../teamColors';
 import { combatantBodyTopFrac, combatantTokenScale } from '../sizeScale';
 import { billboardHeightM } from '../backends/webgl/billboardMath';
@@ -221,16 +223,15 @@ describe('Chrome des jetons — UNE dérivation, UN peintre, deux voies (#1176 P
     // LOSANGE : la hauteur MONDE du quad, à la cadence verticale de la projection affine, RABATTUE sur
     // la part de boîte que le corps remplit — la toise du gabarit, pas le haut du cadre.
     const tête = billboardHeightM(CONVENTION, 'personnage') * scaleK * frac * ISO_PX_PER_M;
-    expect(chromeHeadPx(dims, marque)).toBeCloseTo(tête, 9);
+    expect(chromeHeadPx(false, marque)).toBeCloseTo(tête, 9);
     // Le bloc de badges est posé à `badgeY − 8`, `badgeY` valant cette ancre.
     expect(badgesDe(h1)).toContain(`translate(0,${-tête - 8})`);
     démonter();
 
-    // DESSUS : plus de tête à surmonter — le corps y est un disque-portrait, et le chrome se pose à son
-    // BORD, exactement comme la voie affine (`BodyToken`, branche `flat` : `badgeY = −discR`).
+    // DESSUS : plus de tête à surmonter — le pion y EST un disque-portrait, et le chrome se pose à son
+    // BORD (`badgeY = −discR`).
     const top = monter({ viewMode: 'top' });
-    const dimsTop: Dims = { ...dims, view: 'top' } as Dims;
-    expect(chromeHeadPx(dimsTop, marque)).toBe(discR(1));
+    expect(chromeHeadPx(true, marque)).toBe(discR(1));
     expect(badgesDe(chromeVolumique(top, 'h1')!)).toContain(`translate(0,${-discR(1) - 8})`);
   });
 });
@@ -429,7 +430,7 @@ describe('Chrome des jetons — l’ALLURE passe au MATÉRIAU du billboard (#117
   it('l’ANNEAU D’ÉQUIPE s’estompe avec son jeton (teinte par instance du pool P3-0e)', () => {
     const mesh = buildDynamicMarkMesh('anneau');
     const anneau = (id: string, x: number, color: string) => ({
-      id, cell: { x, y: 0, z: 0 }, rK: teamRingRadiusK(COMBAT_TOKEN_BASE), rTopK: topRingRadiusK(1), color,
+      id, cell: { x, y: 0, z: 0 }, rK: teamRingRadiusK(COMBAT_TOKEN_BASE), color,
     });
     const marques: DynamicMarks = { tethers: [], active: null, party: null, rings: [anneau('h1', 0, ALLY_TINT), anneau('e1', 3, ENEMY_TINT)] };
     const pools: DynMarkPools = { anneau: mesh };
@@ -544,9 +545,8 @@ describe('Ancre du chrome — la TOISE du gabarit, jamais une constante par fami
   const ESPÈCES = ['humain', 'nain', 'halfling', 'elfe', 'gobelin'];
   const app = (sp: string) => ({ species: sp, sex: 'M', build: 0.5, seed: 1 } as unknown as Appearance);
   const perso = (sp: string): Combatant => ({ ...hero('h1', { x: 3, y: 3 }), appearance: app(sp) } as unknown as Combatant);
-  const dims: Dims = { ...emptyScene(10, 10).dimensions, rot: 0, view: 'iso', edge: false } as Dims;
   /** Ancre volumique d'un combattant, par le chemin de production (builder → `chromeHeadPx`). */
-  const ancreVol = (c: Combatant) => chromeHeadPx(dims, { scaleK: combatantTokenScale(c), n: 1, bodyTopFrac: combatantBodyTopFrac(c) });
+  const ancreVol = (c: Combatant) => chromeHeadPx(false, { scaleK: combatantTokenScale(c), n: 1, bodyTopFrac: combatantBodyTopFrac(c) });
 
   it('cinq espèces, cinq ancres : la fraction sort de `bodyHeight`, pas d’un nombre par famille', () => {
     const fracs = ESPÈCES.map((sp) => combatantBodyTopFrac(perso(sp)));
@@ -585,5 +585,76 @@ describe('Ancre du chrome — la TOISE du gabarit, jamais une constante par fami
     const attendu = combatantBodyTopFrac(nain) / combatantBodyTopFrac(humain);
     expect(volNain / volHumain, 'ancre peinte à l’écran').toBeCloseTo(attendu, 9);
     expect(attendu, 'un nain n’arrive pas à la tête d’un humain').toBeLessThan(0.7);
+  });
+});
+
+/**
+ * LES PIONS EN DISQUES (#1176, P3-5c) — le verdict `pionsEnDisques` de `stage/viewPolicy` : en vue du
+ * dessus, un combattant N'EST PLUS un billboard du monde volumique. Il est un disque-portrait de la
+ * surcouche SVG, dans le MÊME groupe par-jeton que son chrome — donc au même transform, donc emmené
+ * par le MÊME battement de marche, et posé APRÈS la grille et les murs au trait dans le seul arbre où
+ * le rang de calque se décide.
+ */
+describe('Pions en disques — la vue du dessus n’a plus un seul billboard de personnage (#1176 P3-5c)', () => {
+  /** Le groupe de PION d'un jeton (celui que la surcouche marque quand elle porte le corps). */
+  const pion = (el: HTMLElement, cid: string) => el.querySelector(`svg.iso-stage g[data-pion-cid="${cid}"]`);
+  /** Nombre de SUJETS que le monde volumique a à peindre en billboard (décor + acteurs). */
+  const sujets = (el: HTMLElement) => Number(el.querySelector('canvas')!.getAttribute('data-sujets'));
+
+  it('LE GATE : UN SEUL verdict alimente les deux props de l’hôte — sujets du monde ET disques', () => {
+    // `GameStage3D pionsEnDisques` (le monde ne monte alors AUCUN sujet `personnage`) et
+    // `TokenChromeOverlay pions` (la surcouche porte alors le CORPS) descendent du MÊME
+    // `politique.pionsEnDisques` (`IsoStage`). Un hôte qui n'en passerait qu'une donnerait deux pions
+    // (billboard + disque) ou zéro : c'est le COUPLE qui se mesure ici, vue par vue, contre le verdict
+    // du module pur — jamais deux attentes écrites à la main.
+    for (const view of ['iso', 'top'] as const) {
+      const enDisques = viewPolicy({ view }).pionsEnDisques;
+      const el = monter({ viewMode: view });
+      expect(sujets(el), `${view} : sujets de billboard du monde volumique`).toBe(enDisques ? 0 : 2);
+      for (const cid of ['h1', 'e1'])
+        expect(Boolean(pion(el, cid)), `${view} : disque de la surcouche pour ${cid}`).toBe(enDisques);
+      démonter();
+    }
+    // …et le verdict n'est pas une constante : les deux regards en donnent bien deux valeurs.
+    expect(viewPolicy({ view: 'top' }).pionsEnDisques).not.toBe(viewPolicy({ view: 'iso' }).pionsEnDisques);
+  });
+
+  it('LE DISQUE : fond au rayon de l’empreinte, portrait CLIPPÉ dedans, anneau d’équipe SUR ce disque', () => {
+    const top = monter({ viewMode: 'top' });
+    const g = pion(top, 'h1')!;
+    const R = discR(1); // empreinte d'une case
+    const cercles = [...g.querySelectorAll('circle')];
+    const fond = cercles.find((c) => c.getAttribute('fill') !== 'none' && c.getAttribute('r') === String(R));
+    expect(fond, 'un disque de fond au rayon de l’empreinte').toBeTruthy();
+    // Le PORTRAIT : un `<svg>` imbriqué au cadrage de `tokenBodyKind` (chemin `faceFrame`), clippé au
+    // disque — c'est la classification du classifieur qui décide, elle n'est pas rejouée ici.
+    const portrait = g.querySelector('svg[viewBox]');
+    expect(portrait, 'le corps est un portrait cadré').toBeTruthy();
+    expect(portrait!.getAttribute('viewBox')).toBe(tokenBodyKind({ kind: 'combatant', combatant: combatChromé().combatants[0] }, 'top').portraitBox);
+    expect(portrait!.closest('g[clip-path]'), 'et il est CLIPPÉ au disque').toBeTruthy();
+    // L'ANNEAU d'équipe : la MÊME dérivation que l'anneau au sol du plateau iso, au rayon du disque.
+    const anneau = cercles.find((c) => c.getAttribute('fill') === 'none');
+    expect(anneau?.getAttribute('r')).toBe(String(R));
+    expect(anneau?.getAttribute('stroke')).toBe(teamRingDecor(combatChromé().combatants[0], 0).color);
+  });
+
+  it('LE CENTRAGE : le disque est posé au CENTRE de sa case — c’est ce qui rend le clic par case JUSTE', () => {
+    // Le picking du dessus n'a plus de cible de personnage sous le rayon (aucun quad) : `pickTile`
+    // retombe sur `tileFromEvent`, et ne répond juste que si le disque est centré sur SA case.
+    const top = monter({ viewMode: 'top' });
+    const dimsTop: Dims = { ...emptyScene(10, 10).dimensions, rot: 0, view: 'top', edge: false } as Dims;
+    const { cx, cy } = tileCenter(3, 3, dimsTop, 0);
+    expect(pion(top, 'h1')!.getAttribute('transform')).toBe(`translate(${cx},${cy})`);
+    const e = tileCenter(5, 3, dimsTop, 0);
+    expect(pion(top, 'e1')!.getAttribute('transform')).toBe(`translate(${e.cx},${e.cy})`);
+  });
+
+  it('LE CAP : le pion porte le triangle d’orientation de son `facing`, projeté par la vue', () => {
+    const top = monter({ viewMode: 'top', facing: { h1: 'E' } });
+    const cap = [...pion(top, 'h1')!.querySelectorAll('path')].map((p) => p.getAttribute('d'));
+    const dimsTop: Dims = { ...emptyScene(10, 10).dimensions, rot: 0, view: 'top', edge: false } as Dims;
+    expect(cap).toContain(discCapPath('E', 1, dimsTop));
+    // Deux caps distincts donnent deux tracés distincts : le champ est LU, pas ignoré.
+    expect(discCapPath('E', 1, dimsTop)).not.toBe(discCapPath('N', 1, dimsTop));
   });
 });

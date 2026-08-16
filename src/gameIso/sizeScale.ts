@@ -92,7 +92,7 @@ export function combatantTokenScale(c: Combatant): number {
 }
 
 /** OÙ la tête DESSINÉE d'un combattant arrive dans sa boîte de corps, en fraction de celle-ci —
- *  SOURCE UNIQUE de l'ancrage du chrome des DEUX voies (`BodyToken` affine, `TokenChromeOverlay`
+ *  SOURCE UNIQUE de l'ancrage du chrome au-dessus d'un billboard (`TokenChromeOverlay`
  *  volumique). Elle sort de la toise du gabarit (`bodyTopFrac` → `bodyHeight`, `composeRig`), la
  *  MÊME que l'aperçu de personnage à échelle vraie.
  *
