@@ -73,7 +73,7 @@ const cur = (s: GameState) => inBattle(s) && controlsActive(s) && noModal(s);
 /** Contexte du CURSEUR de combat (viser / valider SUR LA CARTE) : ton tour et carte vivante — le
  *  ciblage clavier survit donc à une modale pilotée par la carte, comme la souris. */
 const curMap = (s: GameState) => inBattle(s) && controlsActive(s) && mapLive(s);
-/** Contexte de VISÉE Tir rapide (pause de début de Round, LDB 10) : une visée est ARMÉE (`preemptAiming`),
+/** Contexte de VISÉE Tir rapide (pause de début de Round, LDB 11 l.97-103) : une visée est ARMÉE (`preemptAiming`),
  *  carte vivante — le curseur/Tab/Entrée pilotent le tir d'interruption HORS TOUR comme un ciblage normal. */
 const preemptCur = (s: GameState) => inBattle(s) && !!s.preemptAiming && mapLive(s);
 /** Curseur de combat actif : tour normal OU visée Tir rapide armée (le même curseur pilote les deux). */
@@ -119,7 +119,7 @@ export const KEYBINDINGS: KeyBinding[] = [
       if (!s.pendingRoundStart?.readyBySeat?.[s.net.mySeat]) s.roundStartReady(s.net.mySeat);
     },
   },
-  // Tir rapide (talent, LDB 10) au CLAVIER : pendant la pause, `T` arme la visée d'interruption du 1ᵉʳ tireur
+  // Tir rapide (talent, LDB 11 l.97-103) au CLAVIER : pendant la pause, `T` arme la visée d'interruption du 1ᵉʳ tireur
   // éligible (puis cycle les suivants, puis désarme) et pose le curseur sur la cible la plus proche → flèches/Tab
   // visent, Entrée TIRE, Échap annule. Réutilise le curseur de combat existant (aucun chemin parallèle).
   {
