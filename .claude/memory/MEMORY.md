@@ -35,7 +35,7 @@
 ## Chantiers récents / état
 - **[#1318 PROGRAMME DE PRÉVENTION](project-1318-programme-prevention.md)** (2026-08-14) — 8 classes P1-P8, V3 livrée (d47f1cce), V4-V10 au ticket ; #1279/#578 CLOS (solde `.claude/soldes/1279.md`), S4-c design doc à commissionner.
 - **[Vue TOP = tabletop/VTT](game-arbitrage-vue-top-tactique-tabletop.md)** (2026-08-12, verbatim ; P3-5 de #1176) · **[GRILLE = SYSTÈME, rendu LIBRE](game-arbitrage-grille-systeme-rendu-libre.md)** (2026-08-14, verbatim — l'immersion ne se quantifie pas par case).
-- **[NOUVEAU MOTEUR = LIBÉRER LE PRODUIT](user-doctrine-nouveau-moteur-liberer-le-produit.md)** (verbatim) — refaire MIEUX, jamais porter le contournement.
+- **[NOUVEAU MOTEUR = LIBÉRER LE PRODUIT](user-doctrine-nouveau-moteur-liberer-le-produit.md)** (verbatim) — refaire MIEUX, jamais porter le contournement · **[ÉTAT DE L'ART avant invention](user-doctrine-etat-de-lart-avant-invention.md)** (2026-08-16, verbatim — un problème de rendu résolu par l'industrie s'instruit avant tout dilemme maison).
 - **[VERROU PAR CONSTRUCTION](user-doctrine-verrou-par-construction.md)** (verbatim, #1262) — seul le MURAGE supprime la divergence ; découpage par FAMILLE.
 - **[Reprise : `.superpowers/sdd/` D'ABORD](game-reprise-chantier-lire-superpowers-sdd.md)** — plan et commits mentent.
 - **[CHANTIER campagne EDO+EDOC](game-campagne-edo-programme.md)** · [campagne = JSON PORTABLE](game-campagne-json-portable-frontiere-reference-narratif.md).

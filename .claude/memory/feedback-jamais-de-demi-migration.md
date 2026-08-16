@@ -34,6 +34,8 @@ les N sites déclaratifs — jamais N retouches.
 
 Troisième verbatim (2026-08-14, #1313, adressé à l'orchestrateur qui proposait « murer le neuf + migrer le stock au fil de l'eau ») : « Nan, j'ai deja dit que je ne voulais pas de demi-migration et tu devrais le savoir, **murer le neuf c'est valider du legacy qui vivra eternellement** » — la voie médiane cliquet-pour-le-neuf/stock-lazy N'EST JAMAIS une option à proposer : c'est LA définition de la demi-migration.
 
+Quatrième verbatim (2026-08-16, #1318, en réponse au programme de prévention) : « **Pas de demi-migration ou de guard qui valident l'existent et empeche les nouvelles apparitions, on est bien d'accord ?** » — une garde à baseline gelée qui ne bloque que le NEUF est la même demi-migration sous forme d'outillage. Toute baseline posée par un verrou est un ÉCHAFAUDAGE : nominative, datée, et son LOT D'EXTINCTION planifié au programme (stock → 0, la baseline meurt avec). Un verrou sans lot d'extinction du stock = refusé.
+
 **How to apply:**
 1. Un chantier de migration liste ses sites EXHAUSTIVEMENT au démarrage (grounding mesuré, pas
    d'échantillon) et ne se FERME que la liste à zéro — les « restes déclarés » d'un lot sont un
