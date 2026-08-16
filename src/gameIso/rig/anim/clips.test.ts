@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CLIPS, clipDuration, sampleClip, type ClipName } from './clips';
 
-const NAMES: ClipName[] = ['melee', 'ranged', 'cast', 'dodge', 'parry', 'hit', 'fall', 'walk', 'idle'];
+const NAMES: ClipName[] = ['melee', 'ranged', 'cast', 'dodge', 'parry', 'hit', 'walk', 'idle'];
 
 describe('CLIPS', () => {
   it('chaque clip existe et a une durée > 0', () => {
@@ -9,6 +9,9 @@ describe('CLIPS', () => {
       expect(CLIPS[n]).toBeTruthy();
       expect(clipDuration(CLIPS[n])).toBeGreaterThan(0);
     }
+  });
+  it('le registre ne porte QUE ces clips (l’énumération du test ne peut pas dériver)', () => {
+    expect(Object.keys(CLIPS).sort()).toEqual([...NAMES].sort());
   });
   it('onImpact (si présent) ≤ durée totale', () => {
     for (const n of NAMES) {

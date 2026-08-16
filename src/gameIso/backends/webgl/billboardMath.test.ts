@@ -10,6 +10,9 @@ import {
   RASTER_PX_MIN,
   RASTER_PX_MAX,
   JEU_ENT_H_M,
+  atlasLayout,
+  frameUvRect,
+  ATLAS_GUTTER_PX,
 } from './billboardMath';
 import { pxPerM } from './worldTris';
 import { ISO_PX_PER_M } from '../../iso';
@@ -184,5 +187,80 @@ describe('clé de cache de texture', () => {
     expect(k).not.toBe(billboardTextureKey('rig:soldat', 'profile', true, 256));
     expect(k).not.toBe(billboardTextureKey('prop:tonneau', 'profile', true, 128));
     expect(billboardTextureKey('rig:soldat', 'profile', true, 128)).toBe(k);
+  });
+});
+
+describe('atlas de flipbook — grille de frames et rectangles UV (#1176)', () => {
+  it('grilles mesurées : la cellule dicte le nombre de colonnes/rangées sous le plafond de texture', () => {
+    for (const [cw, ch, cols, rows] of [
+      [219, 273, 9, 7],
+      [295, 368, 6, 5],
+      [111, 138, 18, 14],
+    ] as const) {
+      const l = atlasLayout(cw, ch, cols * rows);
+      expect([l.cols, l.rows], `${cw}×${ch}`).toEqual([cols, rows]);
+      expect(l.cellW).toBe(cw);
+      expect(l.cellH).toBe(ch);
+      expect(l.texW).toBeLessThanOrEqual(RASTER_PX_MAX);
+      expect(l.texH).toBeLessThanOrEqual(RASTER_PX_MAX);
+      expect(l.texW + cw).toBeGreaterThan(RASTER_PX_MAX); // une colonne de plus déborderait
+      expect(l.texH + ch).toBeGreaterThan(RASTER_PX_MAX);
+    }
+  });
+
+  it('n RÉDUIT quand les frames ne tiennent pas — jamais une texture hors borne', () => {
+    const l = atlasLayout(219, 273, 500);
+    expect(l.n).toBe(9 * 7);
+    expect(l.rects).toHaveLength(l.n);
+    expect(Math.max(l.texW, l.texH)).toBeLessThanOrEqual(RASTER_PX_MAX);
+    // une cellule plus grande que le plafond ne peut PAS tenir la promesse de borne : refus explicite
+    expect(() => atlasLayout(3000, 4000, 12)).toThrow();
+    expect(() => atlasLayout(RASTER_PX_MAX + 1, 100, 2)).toThrow();
+    expect(atlasLayout(RASTER_PX_MAX, 100, 2).texW).toBe(RASTER_PX_MAX); // la cellule EXACTEMENT au plafond passe
+  });
+
+  it('peu de frames : une seule rangée, la texture ne réserve que ce qui sert', () => {
+    const l = atlasLayout(100, 200, 4);
+    expect([l.cols, l.rows, l.n]).toEqual([4, 1, 4]);
+    expect([l.texW, l.texH]).toEqual([400, 200]);
+    const l2 = atlasLayout(1000, 200, 3); // 2 colonnes au plus (2048/1000)
+    expect([l2.cols, l2.rows, l2.n]).toEqual([2, 2, 3]);
+    expect(l2.rects[2]).toEqual({ x: ATLAS_GUTTER_PX, y: 200 + ATLAS_GUTTER_PX, w: 1000 - 2 * ATLAS_GUTTER_PX, h: 200 - 2 * ATLAS_GUTTER_PX });
+  });
+
+  it('chaque frame réserve sa GOUTTIÈRE : les contenus ne se touchent jamais', () => {
+    const l = atlasLayout(100, 200, 6);
+    for (const r of l.rects) {
+      expect(r.w).toBe(100 - 2 * ATLAS_GUTTER_PX);
+      expect(r.h).toBe(200 - 2 * ATLAS_GUTTER_PX);
+      expect(r.x % 100).toBe(ATLAS_GUTTER_PX);
+      expect(r.y % 200).toBe(ATLAS_GUTTER_PX);
+    }
+    expect(l.rects[1].x - (l.rects[0].x + l.rects[0].w)).toBe(2 * ATLAS_GUTTER_PX); // gouttière des DEUX voisins
+  });
+
+  it('UV : origine en BAS (convention three), inset d’un DEMI-TEXEL', () => {
+    const l = atlasLayout(100, 200, 4); // 4×1
+    const u0 = frameUvRect(l, 0);
+    expect(u0.x).toBeCloseTo((ATLAS_GUTTER_PX + 0.5) / l.texW, 12);
+    expect(u0.w).toBeCloseTo((100 - 2 * ATLAS_GUTTER_PX - 1) / l.texW, 12);
+    // rangée du haut de l'image ⇒ les v les plus GRANDS ; le haut du contenu touche 1 − (2 + 0,5)/h
+    expect(u0.y + u0.h).toBeCloseTo(1 - (ATLAS_GUTTER_PX + 0.5) / l.texH, 12);
+    expect(u0.y).toBeCloseTo((ATLAS_GUTTER_PX + 0.5) / l.texH, 12); // symétrique en bas
+    expect(u0.y).toBeGreaterThan(0);
+    expect(u0.y + u0.h).toBeLessThan(1);
+    // frame suivante : décalée d'une cellule entière en u, même v
+    const u1 = frameUvRect(l, 1);
+    expect(u1.x - u0.x).toBeCloseTo(l.cellW / l.texW, 12);
+    expect(u1.y).toBeCloseTo(u0.y, 12);
+    // rangée SUIVANTE = plus BAS dans l'image = v plus PETIT
+    const deuxRangees = atlasLayout(1000, 200, 3);
+    expect(frameUvRect(deuxRangees, 2).y).toBeLessThan(frameUvRect(deuxRangees, 0).y);
+    expect(() => frameUvRect(l, 4)).toThrow();
+  });
+
+  it('cellule invalide (plus petite que ses deux gouttières) : refus explicite', () => {
+    expect(() => atlasLayout(4, 100, 2)).toThrow();
+    expect(() => atlasLayout(100, Number.NaN, 2)).toThrow();
   });
 });

@@ -1,6 +1,6 @@
 /**
- * Galerie ANIMÉE (SVG + CSS, pas de GIF) des clips du moteur d'animation : les 9 clips de base
- * (idle/walk/melee/ranged/dodge/parry/hit/fall + cast) joués en boucle sur un rig, plus les
+ * Galerie ANIMÉE (SVG + CSS, pas de GIF) des clips du moteur d'animation : les 8 clips de base
+ * (idle/walk/melee/ranged/dodge/parry/hit/cast) joués en boucle sur un rig, plus les
  * clips de sort (bolt arcane / bénédiction divine). Chaque tuile = un rig + des @keyframes CSS
  * par os mobile (cf. _lib-anim-rig). Lancer : npx tsx scripts/gen-clip-anim-gallery.mts
  */
@@ -46,7 +46,7 @@ const eqNu: EquipCtx = { weapons: [], armour: [] };
 
 const meleeClips: [string, Clip][] = [
   ['idle', CLIPS.idle], ['walk', CLIPS.walk], ['melee', CLIPS.melee],
-  ['dodge', CLIPS.dodge], ['parry', CLIPS.parry], ['hit', CLIPS.hit], ['fall', CLIPS.fall],
+  ['dodge', CLIPS.dodge], ['parry', CLIPS.parry], ['hit', CLIPS.hit],
 ];
 const rowSoldat = meleeClips.map(([l, c]) => tile(l, c, soldat, l === 'idle' || l === 'walk' ? eqEpee : eqEpee, 'Soldat', weaponRest(epee))).join('');
 const rowArc = tile('ranged (arc)', CLIPS.ranged, soldat, eqArc, 'Soldat', weaponRest(arc)).concat(

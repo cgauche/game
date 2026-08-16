@@ -11,7 +11,7 @@ export interface Clip {
   onImpact?: number;
   loop?: boolean;
 }
-export type ClipName = 'melee' | 'ranged' | 'cast' | 'dodge' | 'parry' | 'hit' | 'fall' | 'walk' | 'idle';
+export type ClipName = 'melee' | 'ranged' | 'cast' | 'dodge' | 'parry' | 'hit' | 'walk' | 'idle';
 
 const REST: Pose = {};
 
@@ -64,10 +64,6 @@ export const CLIPS: Record<ClipName, Clip> = {
       { pose: { torse: 14, tete: 12, bassin: 6 }, ms: 90, easing: 'easeOut' },
       { pose: REST, ms: 240, easing: 'easeInOut' },
     ],
-  },
-  // Chute vers une pose au sol (tenue par hold).
-  fall: {
-    steps: [{ pose: { bassin: 30, torse: 40, tete: 30, cuisseG: 40, cuisseD: 30 }, ms: 320, easing: 'easeOut' }],
   },
   // Cycle de marche (boucle) : jambes/bras alternés.
   walk: {

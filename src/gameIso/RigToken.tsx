@@ -11,7 +11,7 @@ import { RIG_GROUND_PIVOT, rigGroundPose, rigGroundTiltDeg, type GroundState } f
 /**
  * TOKEN RIG UNIQUE — sert le combat ET l'exploration (aucune différence visuelle entre les
  * modes : même squelette, mêmes parts, même apparence). L'identité cosmétique vit ici ;
- * l'ANIMATION (clips bus + vue 8-dir) est déléguée à `useRigAnim` (partagé avec MountedToken).
+ * l'ANIMATION (clips bus + vue 8-dir) est déléguée à `useRigAnim`, dont ce token est le SEUL appelant.
  */
 export function RigToken({
   id,

@@ -5,33 +5,32 @@ import { hasLeap } from '../engine/traits/dispatch';
 import { planById, type BodyPlanId, type BodyPlan, type WingState } from './rig/bodyPlan';
 import { project, type View } from './rig/facing';
 import type { Dir8 } from '../state/dir8';
-import { STEP_MS, walkMs } from '../geometry/walk';
+import { walkMs } from '../geometry/walk';
 import { isTileVisible } from './viewport';
-import { lerpPose, planGroundPose } from './groundPose';
+import type { GroundState } from './groundPose';
+import {
+  clipTotalMs,
+  planAttackDef,
+  planDyingDef,
+  planFlinchDef,
+  planRenderPose,
+  planRestDef,
+  planWalkDef,
+  type PlanClipDef,
+} from './rig/anim/actorAnimSelect';
 
-const IDLE_MS = 1600; // période de l'anim de repos (battement/ondulation/dodelinement)
-const FLINCH_MS = 240; // durée du recul (touché) / dérobade (attaque esquivée)
-const DYING_MS = 420; // durée de l'effondrement (mort / mis À Terre)
+/** Geste courant : sa définition PURE (`actorAnimSelect`), son départ, et — pour la marche — la fin
+ *  dictée par le chemin parcouru (la marche dure le trajet, pas une durée de clip). */
+type Mode = { def: PlanClipDef; start: number; until?: number };
 
-type Mode =
-  | { kind: 'rest' }
-  | { kind: 'walk'; until: number; leap?: boolean }
-  | { kind: 'attack'; start: number; atk?: string }
-  | { kind: 'flinch'; start: number }
-  | { kind: 'dying'; start: number };
-
-// Mise à l'échelle d'une pose (amplitude) — sert au repli générique de recul.
-const scalePose = (p: Record<string, number>, k: number): Record<string, number> =>
-  Object.fromEntries(Object.entries(p).map(([b, v]) => [b, v * k]));
-// L'interpolation de poses et la pose COUCHÉE d'un gabarit vivent dans `groundPose.ts` — la voie
-// volumique pose le même corps au sol sans rejouer cette horloge.
-const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
+const restMode = (): Mode => ({ def: planRestDef(), start: performance.now() });
 
 /**
  * Pilote l'ANIMATION d'un gabarit rigué non-bipède (quadrupède/ailé/serpentin/…) : repos en
  * continu (idlePose) + marche/attaque pilotées par le bus, projeté en vue 8-dir. Renvoie le
- * `plan` (null si monolithique), l'espèce, la `pose` courante, et `view`+`mirror`. EXTRAIT
- * d'AnimatedPlanToken pour être PARTAGÉ — le token seul ET MountedToken (monture) le consomment.
+ * `plan` (null si monolithique), l'espèce, la `pose` courante, et `view`+`mirror`. Consommé par
+ * `AnimatedPlanToken` (monté par `tokenBodyKind`) : le câblage bus et l'horloge rAF vivent ici, le
+ * CHOIX du geste et son échantillonnage sont purs (`rig/anim/actorAnimSelect`).
  */
 export function usePlanAnim(id: string, planId: BodyPlanId, species: string, dead?: boolean, facing?: Dir8, pos?: { x: number; y: number }, prone?: boolean): {
   plan: BodyPlan | null;
@@ -46,7 +45,7 @@ export function usePlanAnim(id: string, planId: BodyPlanId, species: string, dea
   const camRot = useGame((s) => s.camRot);
   const worldDir = useGame((s) => s.facing?.[id]) ?? facing;
   const [, force] = useState(0);
-  const modeRef = useRef<Mode>({ kind: 'rest' });
+  const modeRef = useRef<Mode>(restMode());
   const rafRef = useRef(0);
   const wasDown = useRef(!!(dead || prone)); // état initial : pas d'effondrement au montage
   const posRef = useRef(pos); // CULLING : tuile lue dans le rAF sans re-souscrire (pos stable)
@@ -60,15 +59,14 @@ export function usePlanAnim(id: string, planId: BodyPlanId, species: string, dea
     const loop = () => {
       const m = modeRef.current;
       const t = performance.now();
-      if (m.kind === 'walk' && t > m.until) modeRef.current = { kind: 'rest' };
-      else if (m.kind === 'attack' && t - m.start > 360) modeRef.current = { kind: 'rest' };
-      else if (m.kind === 'flinch' && t - m.start > FLINCH_MS) modeRef.current = { kind: 'rest' };
-      else if (m.kind === 'dying' && t - m.start > DYING_MS) modeRef.current = { kind: 'rest' };
+      // La marche dure le TRAJET (`until`) ; les autres gestes, leur durée de définition.
+      const ended = m.def.kind === 'walk' ? t > (m.until ?? 0) : m.def.kind !== 'rest' && t - m.start > clipTotalMs(m.def);
+      if (ended) modeRef.current = restMode();
       // CULLING viewport : hors-champ → on saute le re-rendu (donc resolveRig) mais on GARDE la
       // boucle vivante (reprise auto en revenant dans le cadre). Le mode (walk/attack→rest) avance
       // quand même, donc aucune désync de timing. Coût hors-champ = un simple test de cadre.
       if (!posRef.current || isTileVisible(posRef.current.x, posRef.current.y)) force((n) => n + 1);
-      rafRef.current = modeRef.current.kind === 'rest' && (!hasIdle || dead || prone) ? 0 : requestAnimationFrame(loop);
+      rafRef.current = modeRef.current.def.kind === 'rest' && (!hasIdle || dead || prone) ? 0 : requestAnimationFrame(loop);
     };
     const ensureLoop = () => { if (!rafRef.current) rafRef.current = requestAnimationFrame(loop); };
     if (hasIdle && !dead && !prone) ensureLoop();
@@ -76,7 +74,7 @@ export function usePlanAnim(id: string, planId: BodyPlanId, species: string, dea
     // pas une téléportation. Un token monté déjà au sol (chargement) ne s'anime pas.
     const downNow = !!(dead || prone);
     if (downNow && !wasDown.current) {
-      modeRef.current = { kind: 'dying', start: performance.now() };
+      modeRef.current = { def: planDyingDef(dead ? 'corpse' : 'prone'), start: performance.now() };
       ensureLoop();
     }
     wasDown.current = downNow;
@@ -85,23 +83,23 @@ export function usePlanAnim(id: string, planId: BodyPlanId, species: string, dea
       const p = d.path;
       // BOND (trait LDB 85) : le combattant qui l'a se déplace en BONDISSANT (leapPose du plan).
       const traits = useGame.getState().battle?.combatants.find((c) => c.id === id)?.traits;
-      modeRef.current = { kind: 'walk', until: performance.now() + Math.max(1, walkMs(p ?? [])), leap: hasLeap(traits) }; // s'arrête à l'arrivée réelle (plus d'off-by-one)
+      modeRef.current = { def: planWalkDef(hasLeap(traits)), start: performance.now(), until: performance.now() + Math.max(1, walkMs(p ?? [])) }; // s'arrête à l'arrivée réelle (plus d'off-by-one)
       ensureLoop();
     });
     const offAttack = bus.on(EVT.ANIM_ATTACK, (d: { from: string; to: string; creatureAttack?: string; result?: { hit?: boolean } }) => {
       if (d.from === id) {
-        modeRef.current = { kind: 'attack', start: performance.now(), atk: d.creatureAttack };
+        modeRef.current = { def: planAttackDef(d.creatureAttack), start: performance.now() };
         ensureLoop();
       } else if (d.to === id && !d.result?.hit) {
         // Attaque ESQUIVÉE : dérobade (les bipèdes jouent 'dodge' — les gabarits reculent).
-        modeRef.current = { kind: 'flinch', start: performance.now() };
+        modeRef.current = { def: planFlinchDef(), start: performance.now() };
         ensureLoop();
       }
     });
     const offImpact = bus.on(EVT.ANIM_IMPACT, (d: { to: string; result?: { hit?: boolean } }) => {
       if (d.to !== id || !d.result?.hit) return;
       // TOUCHÉ : recul d'impact (les bipèdes jouent 'hit' — les gabarits n'avaient RIEN).
-      modeRef.current = { kind: 'flinch', start: performance.now() };
+      modeRef.current = { def: planFlinchDef(), start: performance.now() };
       ensureLoop();
     });
     // IMPORTANT : remettre rafRef à 0 au cleanup. Sinon, après le démontage/remontage de
@@ -114,33 +112,14 @@ export function usePlanAnim(id: string, planId: BodyPlanId, species: string, dea
   const speciesName = plan ? (species || plan.speciesNames()[0] || '') : ''; // espèce résolue (passée), repli 1re du plan
   const m = modeRef.current;
   const now = performance.now();
-  // Recul (touché/dérobade), amplitude en cloche : un gabarit qui DÉCLARE son `flinchPose` joue le
-  // sien ; à défaut, on joue L'INVERSE atténué de son propre geste d'attaque — retrait
-  // anatomiquement juste sans connaître ses os.
-  const flinchPose = (k: number): Record<string, number> =>
-    plan!.flinchPose ? plan!.flinchPose(k) : scalePose(plan!.attackPose(1), -0.35 * k);
-  // Pose COUCHÉE : la résolution partagée (`planGroundPose`) — mort étalé, À Terre vivant affaissé.
-  const downPose = () => planGroundPose(plan!, dead ? 'corpse' : 'prone')!;
-  const pose: Record<string, number> = !plan
-    ? {}
-    : dead || prone
-      ? (m.kind === 'dying'
-          ? lerpPose(plan.restPose(), downPose(), easeOutCubic(Math.min(1, (now - m.start) / DYING_MS)))
-          : downPose()) // l'anneau de vie + l'icône « vivant » le confirment
-      : m.kind === 'walk'
-          ? (m.leap && plan.leapPose ? plan.leapPose : plan.walkPose)(((now / STEP_MS) % 2) / 2)
-          : m.kind === 'attack'
-            ? ((m.atk ? plan.attackKindPose?.(m.atk, Math.min(1, (now - m.start) / 280)) : null)
-                ?? plan.attackPose(Math.min(1, (now - m.start) / 280)))
-            : m.kind === 'flinch'
-              ? flinchPose(Math.sin(Math.min(1, (now - m.start) / FLINCH_MS) * Math.PI))
-              : plan.idlePose
-                ? plan.idlePose((now % IDLE_MS) / IDLE_MS)
-                : plan.restPose();
+  // Le CHOIX de pose au rendu est pur (`planRenderPose`) : l'état au sol y est lu MAINTENANT, et un
+  // geste en BOUCLE (repos, marche) prend sa phase sur l'horloge globale — tous les gabarits y
+  // battent en phase commune.
+  const ground: GroundState = dead ? 'corpse' : prone ? 'prone' : null;
+  const pose: Record<string, number> = plan ? planRenderPose(plan, m.def, ground, now, m.start) : {};
   // AILES : pliées posé/flinch, DÉPLOYÉES dès que la bête vole (marche/bond), attaque, ou
   // s'effondre (QUAD_DEATH les étale au sol).
-  const wings: WingState =
-    dead || prone || m.kind === 'walk' || m.kind === 'attack' || m.kind === 'dying' ? 'spread' : 'folded';
+  const wings: WingState = dead || prone || m.def.wings === 'spread' ? 'spread' : 'folded';
   const fv = worldDir ? project(worldDir, camRot) : { view: 'front' as View, mirror: false };
   return { plan, species: speciesName, pose, view: fv.view, mirror: fv.mirror, wings };
 }
