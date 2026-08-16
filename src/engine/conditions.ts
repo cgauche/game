@@ -2,7 +2,7 @@
  * États (conditions) — Livre de base, chapitre « États ».
  * Gestion minimale pour le combat tactique : ajout, empilement, retrait.
  */
-import { Combatant, ActiveEffect, ConditionInstance, effectRef, type ModLine } from './types';
+import { Combatant, ActiveEffect, ConditionInstance, effectRef, type ModLine, type ConditionEmit } from './types';
 import { evalCondition, type ConditionCtx, type ActorView } from './flowCore';
 import { tickRound } from './duration';
 import { conditionLabel, findConditionById, findPsychologyById, findSpellById, refLabel, skills } from '../data';
@@ -170,13 +170,14 @@ function actLifts(unlockBy: import('./types').ConditionUnlock, act: import('./ty
 /** Applique un acte de soin `act` : RETIRE tout État dont le verrou `unlockBy` est levé par cet acte (LDB 18 :
  *  « ne peut être retiré QUE par [acte] » ⇒ l'acte est ce qui le soigne). SOURCE UNIQUE appelée à chaque point
  *  de soin (`receiveMedicalAid`/soin magique → medicalAid/magic ; fin de Chirurgie → surgery). Pur ; renvoie le journal. */
-export function releaseConditionLocks(c: Combatant, act: import('./types').ConditionUnlock): string[] {
+export function releaseConditionLocks(c: Combatant, act: import('./types').ConditionUnlock, emit?: ConditionEmit): string[] {
   const log: string[] = [];
   for (const inst of [...c.conditions]) {
     if (inst.unlockBy == null || !actLifts(inst.unlockBy, act)) continue;
     delete inst.unlockBy; // le verrou tombe → removeCondition n'est plus inerte
     removeCondition(c, inst.id, inst.value); // l'acte SOIGNE l'État (LDB 18 : retiré par cet acte)
     log.push(t('cond.lockReleased', { name: c.label, cond: conditionLabel(inst.id) }));
+    emit?.({ stateId: inst.id, change: 'loss', targetId: c.id });
   }
   return log;
 }
@@ -531,7 +532,7 @@ export function isActionLocked(c: Combatant): boolean {
  * de cascade influençable (cf. `collectHeroRoundEndUpkeep`). Les DÉGÂTS restent ici pour tous ; seul
  * le Test est différé. ENNEMIS : `opts` absent → comportement (et ORDRE RNG) inchangé.
  */
-export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
+export function endOfRound(c: Combatant, rng: RNG = defaultRNG, emit?: ConditionEmit): string[] {
   const log: string[] = [];
   // Hémorragique : dégâts par-round (« 1 Blessure par pion, en ignorant les modificateurs », l.104) MIGRÉS
   // en données — etats.json hemorragique `effects: onRoundEnd → wounds {stacks:'self'}` (défaut : ignore
@@ -559,12 +560,12 @@ export function endOfRound(c: Combatant, rng: RNG = defaultRNG): string[] {
     // L'ancrage du re-jeu est celui MEMORISE sur l'effet a sa pose (`applyOps` l'y stampe) : il se relaie,
     // il ne se reconstruit pas.
     applyOps(c, e.opsPerRound, {
-      label: e.label, rng, source: e.source, sourceSpellId: e.sourceSpellId, effectId: e.effectId,
+      label: e.label, rng, source: e.source, sourceSpellId: e.sourceSpellId, effectId: e.effectId, onCondition: emit,
     }).forEach((l) => log.push(l));
   }
   // Décrément des durées (effets/États de sort/contrecoups) — SOURCE UNIQUE extraite, même emplacement
   // qu'avant (fin d'`endOfRound`, après les ops récurrentes). RNG-free.
-  tickDurations(c).forEach((l) => log.push(l));
+  tickDurations(c, emit).forEach((l) => log.push(l));
   return log;
 }
 
@@ -622,7 +623,7 @@ export function resolvePlusExtension(c: Combatant, e: ActiveEffect, extended: bo
   return removed.map((x) => t('cond.effectExpire', { name: c.label, label: x.label }));
 }
 
-export function tickDurations(c: Combatant): string[] {
+export function tickDurations(c: Combatant, emit?: ConditionEmit): string[] {
   const log: string[] = [];
   // Effets magiques temporisés (Bénédictions, Sorts de bonus) : décrément des durées en Rounds.
   // `tickRound` n'agit que sur l'échelle `rounds` ; les durées d'horloge/permanentes sont inertes ici
@@ -643,7 +644,7 @@ export function tickDurations(c: Combatant): string[] {
   if (c.conditions.some((x) => x.roundsLeft != null)) {
     for (const x of c.conditions) if (x.roundsLeft != null) x.roundsLeft -= 1;
     const done = c.conditions.filter((x) => x.roundsLeft != null && x.roundsLeft <= 0);
-    for (const x of done) log.push(t('cond.spellCondExpire', { name: c.label, cond: conditionLabel(x.id) }));
+    for (const x of done) { log.push(t('cond.spellCondExpire', { name: c.label, cond: conditionLabel(x.id) })); emit?.({ stateId: x.id, change: 'loss', targetId: c.id }); }
     c.conditions = c.conditions.filter((x) => !(x.roundsLeft != null && x.roundsLeft <= 0));
   }
   // Contrecoups d'incantation à durée en Rounds (tables d'Imparfaites/Colère, LDB 46/40).

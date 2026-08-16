@@ -614,7 +614,7 @@ export function rerollWindsOfMagic(get: Get, set: SetFn): void {
     }
   }
   battle.windsOfMagic = { roll, mod, revealed };
-  for (const { line, id } of lines) battle.log.push(ev('condition', line, id));
+  for (const { line, id } of lines) battle.log.push(ev('info', line, id));
   set({ battle: { ...battle } });
 }
 
@@ -2785,7 +2785,7 @@ export function applyShieldReaction(get: Get, set: SetFn, defender: Combatant, a
       }
     }
     disengageFrom(defender, attacker); // « ne plus être considéré comme Engagé »
-    log.push(ev('condition', tr('cf.shieldReactionPush', { name: defender.label, foe: attacker.label }), defender.id, attacker.id));
+    log.push(ev('detail', tr('cf.shieldReactionPush', { name: defender.label, foe: attacker.label }), defender.id, attacker.id));
   } else {
     // « causer des Dégâts comme s'il s'agissait de son Action » : une frappe de mêlée (arme principale) vers
     // l'attaquant, résolue passivement — même voie que la Riposte, surfacée au journal (jet dans le log).

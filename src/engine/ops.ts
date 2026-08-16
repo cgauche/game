@@ -59,6 +59,7 @@ import {
   ItemInstance,
   Weapon,
   type ReachValue,
+  type ConditionEmit,
 } from './types';
 import { formatTrait } from './traits/dispatch';
 import { woundsFromHit } from './woundsCalc';
@@ -1051,6 +1052,10 @@ export interface OpsCtx {
   /** Branché par le store : EXPOSITION corruptrice (op `corruptionExposure`) → Test différé par modale
    *  (pendingCorruption). Sans hook (moteur pur/tests), l'op est journalisée inerte. */
   onCorruptionExposure?: (level: ExposureLevel, skill?: 'resistance' | 'calme') => string[];
+  /** Branché par la couche state : NOTIFICATION des mouvements d'État posés par ces ops (`condition` /
+   *  `removeCondition`) — l'id part À CÔTÉ de la ligne, appariée 1:1 avec elle (#1330). Le moteur NOTIFIE :
+   *  aucun texte n'en dépend, et sans hook les lignes rendues sont STRICTEMENT identiques. */
+  onCondition?: ConditionEmit;
   /** Libellé de la source (sort/table) — ActiveEffect.label + journal. */
   label?: string;
   /** ENTITÉ SOURCE des ops en cours (sort, talent, trait, objet, maladie, mutation…) — marquée sur TOUT
@@ -1313,6 +1318,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           addCondition(target, o.id, v, escape, o.lockedUntil, o.unlockBy, threshold, o.entangleOnFail, struggleDamage); // verrous de Critique (LDB 18) : prédicat d'état / acte de soin
           lines.push(t('op.cond', { name: target.label, v, cond: conditionLabel(o.id) })); // libellé (« Exténué »), cohérent avec removeCond
         }
+        // Les QUATRE branches ci-dessus poussent EXACTEMENT une ligne nommant `o.id` : la notification
+        // se pose ici, une fois, appariée à elle (une 5ᵉ branche future est couverte par construction).
+        ctx.onCondition?.({ stateId: o.id, change: 'gain', targetId: target.id });
         // Empoignade (LDB 14 l.159) : le flag `grapple` pose la relation symétrique entre l'attaquant
         // (`ctx.caster`) et la cible — UNE seule fois (les ré-applications perRound ne portent pas le flag).
         if (o.grapple && ctx.caster && ctx.caster.id !== target.id) setGrapple(ctx.caster, target);
@@ -1327,6 +1335,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
             : Math.max(1, resolveFormula(o.value ?? 1, ref, rng) + slBonus(ctx.sl, o.valuePerSL));
           removeCondition(target, id, v);
           lines.push(t('op.removeCond', { name: target.label, what: o.all ? "tout l'État" : `${v} État`, cond: conditionLabel(id) }));
+          ctx.onCondition?.({ stateId: id, change: 'loss', targetId: target.id });
         } else {
           lines.push(t('op.noCondToRemove', { name: target.label }));
         }

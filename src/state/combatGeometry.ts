@@ -21,6 +21,7 @@ import { traitSeesInDark } from '../engine/traits/dispatch';
 import { losBlockingTiles, crossZones, barrierTilesFor, zoneCovers } from './zones';
 import { battleRng } from './battleRng';
 import { ev } from './combatLog';
+import { t } from '../i18n';
 import { bus, EVT } from './bus';
 // Type-only (effacé à la compilation) : la FORME du Flow gaté posé pour une zone `crossTest` — ce
 // module reste BAS NIVEAU (aucun import de `combat/triggeredTest`/`combatEffects`, qui remonteraient
@@ -279,7 +280,7 @@ export function applyZoneCrossings(get: Get, set: SetFn, mover: Combatant, path:
   if (mover.dead || isOutOfAction(mover)) return;
   for (const z of battle.zones) {
     if (!z.crossTest || !path.some((p) => zoneCovers(z, p))) continue;
-    battle.log.push(ev('condition', `${mover.label} traverse ${z.label} !`, mover.id));
+    battle.log.push(ev('move', t('cf.zoneCross', { name: mover.label, zone: z.label }), mover.id));
     bus.emit(EVT.SCENE_DIRTY);
     const caster = resolveCaster(z.casterId) ?? mover;
     const flow: CoreFlow<EffectOp> = {

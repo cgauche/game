@@ -20,7 +20,7 @@
  *    (Blessé/Gangrène), `amputation` (Gangrène), `stickyExtenue` (Malaise), `contagious` (Toux),
  *    `nausea` (combat), `endTest` (Persistant).
  */
-import { Combatant, Difficulty, UpkeepDeferTest, HitLocation } from './types';
+import { Combatant, Difficulty, UpkeepDeferTest, HitLocation, type ConditionEmit } from './types';
 import { RNG, defaultRNG, roll, type DiceSpec, rollDice, formatDice } from './dice';
 import { MINUTES_PER_DAY } from './clock';
 import { findTableEntry } from './tables';
@@ -277,7 +277,7 @@ export function symptomOnTick(inst: DiseaseSymptom): { difficulty?: Difficulty; 
  *  MSRC 16 l.101), Blessure directe + État (éclatement du Vers du Reik, l.142). Les ops RICHES à dés/table
  *  (`rollTable`/`charDamage` — table du Vers de carie, l.90) passent par la voie DIFFÉRÉE (`diseaseTick`
  *  → `applyOps` côté state, vocabulaire complet) ; elles sont IGNORÉES ici (jamais roulées à l'aveugle). */
-function applyOnFailInline(c: Combatant, onFail: GameOp[], contractOnce: (name: string) => boolean, log: string[]): void {
+function applyOnFailInline(c: Combatant, onFail: GameOp[], contractOnce: (name: string) => boolean, log: string[], emit?: ConditionEmit): void {
   for (const op of onFail) {
     if (op.op === 'contractDisease') contractOnce(op.disease);
     else if (op.op === 'kill') log.push(fateSaveOrDie(c) ? t('op.kill.fateSaved', { name: c.label }) : t('op.kill', { name: c.label }));
@@ -289,6 +289,7 @@ function applyOnFailInline(c: Combatant, onFail: GameOp[], contractOnce: (name: 
       if (ex) ex.value = (ex.value ?? 1) + 1;
       else c.conditions.push({ id: op.id, value: typeof op.value === 'number' ? op.value : 1 });
       log.push(t('op.cond', { name: c.label, v: ex ? (ex.value ?? 1) : 1, cond: conditionLabel(op.id) }));
+      emit?.({ stateId: op.id, change: 'gain', targetId: c.id });
     }
   }
 }
@@ -425,7 +426,7 @@ export function applyDiseasePersist(c: Combatant, diseaseName: string, success: 
  * d'un `onTick` (GameOp `onFail`) est appliquée par l'applier `diseaseTick` côté state (restFlow) ;
  * gangrène/persistant par `applyDiseaseGangrene/Persist`.
  */
-export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG, resistVal = 0, defer?: UpkeepDeferTest, beForGangrene = Math.floor(resistVal / 10)): string[] {
+export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG, resistVal = 0, defer?: UpkeepDeferTest, beForGangrene = Math.floor(resistVal / 10), emit?: ConditionEmit): string[] {
   if (minutes <= 0) return [];
   // Décroissance du RÉSIDU post-infection : −1 par jour plein (Vers du Reik « réduite de 1 point par jour
   // après la mort du ver », MSRC 16 l.138) — indépendante de toute maladie en cours.
@@ -496,9 +497,9 @@ export function tickDisease(c: Combatant, minutes: number, rng: RNG = defaultRNG
           if (tick.difficulty == null) {
             // Conséquence INCONDITIONNELLE (pas de jet — éclatement du Vers du Reik, issue invariante,
             // MSRC 16 l.142) : appliquée DIRECTEMENT ici (defer ou non), via l'interprète inline restreint.
-            applyOnFailInline(c, tick.onFail, contractOnce, log);
+            applyOnFailInline(c, tick.onFail, contractOnce, log, emit);
           } else if (defer) defer({ kind: 'diseaseTick', label: `${symptomLabel(inst.symptomId)} (${diseaseLabel(dz.id)})`, base: rv, difficulty: tick.difficulty, meta: { diseaseName: dz.id, symptomId: inst.symptomId, onFail: tick.onFail } });
-          else if (!rollTest(rv, tick.difficulty, rng).success) applyOnFailInline(c, tick.onFail, contractOnce, log);
+          else if (!rollTest(rv, tick.difficulty, rng).success) applyOnFailInline(c, tick.onFail, contractOnce, log, emit);
         }
         // Gangrène (l.176) : capacité `amputation` — Test de Résistance Accessible (+20) journalier ; plus
         // d'échecs que le Bonus d'Endurance → la Localisation est PERDUE (Amputation). Machinerie stateful.
