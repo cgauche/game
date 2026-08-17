@@ -71,10 +71,9 @@ export default tseslint.config(
     // VERROU DES MARQUES D'ORIGINE (#1262) : `BuiltCascadeStep`/`BuiltRollRow` portent une propriété
     // REQUISE inécrivable hors de leur module (symbole non exporté), donc le SEUL moyen d'en forger
     // une est le cast. L'exemption est AUX MINTEURS (`rollSeam`, `revealStep`, `rollRowBuild` : forger la
-    // marque EST leur corps de métier, une fois, dans leur corps). `saves.ts` — seul FORGEUR licite, la
-    // réhydratation POSTULE une marque que le JSON a effacée — l'a AU SITE et non au fichier (#1262 V4) :
-    // chacun de ses casts porte sa `eslint-disable-next-line` et sa raison, tout autre y échoue.
-    // Partout ailleurs le cast rendrait la marque décorative.
+    // marque EST leur corps de métier, une fois, dans leur corps) ; une exemption AU SITE (un
+    // `eslint-disable-next-line` porteur de sa raison) reste possible là où une marque effacée doit être
+    // postulée. Partout ailleurs le cast rendrait la marque décorative.
     //
     // DEUX formes de cast (`x as T` et `<T>x`), et la référence est cherchée en DESCENDANT : la marque
     // se forge tout autant sous un tableau (`as BuiltCascadeStep[]`), un `readonly` ou un générique —
@@ -94,7 +93,7 @@ export default tseslint.config(
     // TROISIÈME MARQUE, mêmes routes, même verrou (#1318 V8a₀) : `PlayerText` (`src/i18n/playerText.ts`),
     // le texte destiné à l'œil du joueur. Ses MINTEURS sont exemptés au FICHIER (`i18n/index.ts` pour
     // `t()`, `state/rollSeam.ts` pour `composeRollLabel` — déjà dans la liste), et le FOSSILE
-    // `i18n/rawText.ts` est SOUS la règle avec son exemption AU SITE (patron `saves.ts`) : un second cast
+    // `i18n/rawText.ts` est SOUS la règle avec son exemption AU SITE : un second cast
     // y échouerait. `data/index.ts` (minteur des libellés de donnée) est hors du périmètre ESLint du
     // dépôt (`ignores` de tête `src/data/**`) — dit au JSDoc de `playerText.ts`, jamais un oubli.
     files: ['src/**/*.ts', 'src/**/*.tsx'],
@@ -124,7 +123,7 @@ export default tseslint.config(
     rules: {
       // Les marques sont REDITES ici : en flat config, le DERNIER bloc qui déclare une règle REMPLACE
       // ses options — les omettre désarmerait le verrou #1262/#1318 sur tout le code de production
-      // (mesuré : les `eslint-disable` de `saves.ts` devenaient INUTILISÉS, symptôme du désarmement).
+      // (mesuré : les `eslint-disable` d'un fichier exempté AU SITE devenaient INUTILISÉS, symptôme du désarmement).
       'no-restricted-syntax': ['error', ...VERROU_MARQUES, ...VERROU_CONTENEUR],
     },
   },

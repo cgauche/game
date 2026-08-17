@@ -49,8 +49,8 @@ function bandable(step: CascadeStep): boolean {
 /**
  * FABRIQUE : regroupe des étapes MONO de fin de combat en BANDES, dans l'ordre de leur PREMIÈRE
  * émission. Les étapes hors périmètre (autre `kind`, bande déjà formée, pas de porteur ni de cible)
- * traversent INTACTES, à leur place. SOURCE UNIQUE de la conversion : la migration de sauvegarde
- * (`MIGRATIONS[19]`) l'appelle, elle ne redécrit pas une forme cible qui dériverait ensuite.
+ * traversent INTACTES, à leur place. SOURCE UNIQUE de la conversion : personne ne redit ailleurs la
+ * forme d'une bande de fin de combat.
  *
  * DÉCLARATION au socle (`makeBandFactory`, #1262 V2), comme `nightBands` : Map keyée, dédoublement de
  * clé (deux entrées DISTINCTES réclamant la même maladie au même personnage — Infection post-critique
@@ -62,7 +62,7 @@ function bandable(step: CascadeStep): boolean {
  * L'`id` de bande est dérivé de la CLÉ (jamais du premier `step.id`, qui nomme un porteur) : deux
  * bandes de la même séquence ne peuvent donc pas se confondre, et le rang de dédoublement (`#n`) du
  * filet d'id est porté à côté. Ids RUNTIME-ONLY : aucune sauvegarde ne les rejoue (elle restaure la
- * séquence telle quelle ; `MIGRATIONS[19]` les reconstruit par cette même fabrique).
+ * séquence telle quelle).
  *
  * ENTRE et SORT en étapes MINTÉES (#1262 V2) : ce qu'elle regroupe repasse par `bandStep`, ce qu'elle
  * laisse passer garde la marque de son propre mint.

@@ -672,11 +672,9 @@ export function pushStep(set: Set, step: CascadeStep | ((index: number) => Casca
  *
  * PORTÉE EXACTE, dite (garde de FORME : elle lit l'étape, jamais un call-site) — les DEUX portes
  * d'ENTRÉE d'étapes dans le slot, `startCascade` et `pushStep`. Ce qu'elle ne voit PAS :
- *  - une séquence RESTAURÉE d'une sauvegarde (`store.loadGame`) écrit le slot en direct. Ce sont les
- *    migrations qui en répondent — INÉGALEMENT : `bandifyNightSteps`/`bandifyPursuitSteps`/
- *    `bandifyCombatEndSteps` repassent par les FABRIQUES du jeu (donc par `bandStep`), mais
- *    `bandifyPsychStep` monte sa bande À LA MAIN (`saves.ts`) — sa possession n'est tenue que par son
- *    propre code et par son test ;
+ *  - une séquence RESTAURÉE d'une sauvegarde (`store.loadGame`) écrit le slot en direct. La save
+ *    chargée est toujours à `SAVE_VERSION` (toute autre version est jetée, `saves.ts`) : ses bandes
+ *    sont donc celles que les FABRIQUES du jeu ont mintées avant la sauvegarde ;
  *  - `runCascadeImmediate` bloqué sur un CHOIX sans défaut authoré : il installe `pendingCascade` en
  *    direct pour surfacer l'impasse (#351) — les étapes qu'il porte viennent de son appelant ;
  *  - les REMPLACEMENTS d'étape courante en vol : insertion de conséquence (`commitStep`), reminte du

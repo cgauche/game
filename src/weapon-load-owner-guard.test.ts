@@ -19,9 +19,7 @@ import { fileURLToPath } from 'node:url';
  * EXEMPTS, et pourquoi :
  *   - `src/engine/items.ts` (les écrivains) et `src/engine/weaponLoad.ts` (le résolveur de registre) ;
  *   - les fichiers de TEST (`*.test.ts(x)`) : une fixture CONSTRUIT un état initial, elle ne le mute pas
- *     en cours de partie — c'est l'angle mort assumé de cette garde ;
- *   - `src/state/saves.ts` : la migration de save réécrit une donnée SÉRIALISÉE (pas un `Combatant`
- *     vivant), avant que tout registre n'existe.
+ *     en cours de partie — c'est l'angle mort assumé de cette garde.
  * ANGLES MORTS (énoncés, pas contournés) : une écriture via alias (`const reg = ...; reg.loaded = ...`)
  * n'est vue que si l'alias vient de `loadRegister` (autorisé) — un alias fabriqué autrement passerait ;
  * une écriture par index (`obj['loaded'] = …`) passerait aussi. Le scan est TEXTUEL (pas d'AST) : il
@@ -34,8 +32,8 @@ const SRC_DIR = join(ROOT, 'src');
 /** Champs de l'état de charge — mêmes noms sur `Weapon`, `ItemInstance` et `ShipPoste`. */
 export const LOAD_FIELDS = ['loaded', 'loadedAmmoUid', 'reloadProgress', 'chambered', 'ammoUid'] as const;
 
-/** Fichiers de PRODUCTION exempts : les propriétaires, et le migrateur de saves (donnée sérialisée). */
-export const OWNER_FILES = ['src/engine/items.ts', 'src/engine/weaponLoad.ts', 'src/state/saves.ts'];
+/** Fichiers de PRODUCTION exempts : les propriétaires de l'état de charge, et eux seuls. */
+export const OWNER_FILES = ['src/engine/items.ts', 'src/engine/weaponLoad.ts'];
 
 /** Une affectation directe `qqch.<champ> = …` (hors `==`/`===`/`=>`), commentaires de ligne exclus. */
 export function loadWritesIn(rel: string, source: string): { file: string; line: number; text: string }[] {

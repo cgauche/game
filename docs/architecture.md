@@ -147,19 +147,17 @@ src/state/
   migrateDoc.ts                PRIMITIVE GÉNÉRIQUE de migration séquentielle de document versionné
                               (`{version, ...}` → `MigrationMap` chaînée jusqu'à `targetVersion` ;
                               refuse net — jamais ne corrompt — objet malformé/version future/trou
-                              dans la chaîne) : tout futur doc versionné la réutilise plutôt que de
-                              réinventer une chaîne ad hoc (#301)
+                              dans la chaîne). Consommée par `roster.ts` (`ROSTER_MIGRATIONS`) et
+                              `worldMap.ts` (`PROJECT_MIGRATIONS`) ; PAS par les saves de partie
   saves.ts                    Sauvegarde/chargement de partie (localStorage 3 slots + export/import
-                              JSON) : `SAVE_VERSION` + `MIGRATIONS` (via `migrateDoc`) upgradent une
-                              save ancienne AVANT validation — un bump de version SANS son
-                              `MIGRATIONS[N]` ET sa fixture golden `v<N>-*.json` fait échouer le
-                              CLIQUET de `saves-flow.test.ts`. Fixtures RÉELLES (jamais composées à
-                              la main) sous `__fixtures__/saves/`, régénérées via
-                              `__fixtures__/saves/_generate.test.ts` (`describe.skip`, procédure
-                              dans son `README.md`) — chargées par `saves-flow.test.ts` (« Golden
-                              saves ») : le filet qui détecte qu'une refonte d'état (ex. #311,
-                              renommage `CharKey`) casse silencieusement une save existante.
-                              Save AUTO-SUFFISANTE (#766, `SAVE_VERSION` 15) : le slot `campaignDoc`
+                              JSON). POLITIQUE DE VERSION (arbitrage utilisateur 2026-08-17) : un
+                              changement de forme persistée bump `SAVE_VERSION` et RIEN d'autre —
+                              aucune chaîne de migration, aucune fixture golden. Une save dont la
+                              version diffère de `SAVE_VERSION` est REJETÉE et RETIRÉE du stockage
+                              par `readSlot` (clé stable ET clés versionnées historiques), et le
+                              témoin `takeObsoleteNotice` fait afficher le message au joueur par
+                              `ui/SaveLoadModal`.
+                              Save AUTO-SUFFISANTE (#766) : le slot `campaignDoc`
                               (`store.ts`, snapshotté via `stateFields`) embarque le DOCUMENT SOURCE du
                               paquet chargé (scènes + carte + narratif + scène d'entrée). Au chargement,
                               `applyLoadedSave` RÉ-ENREGISTRE toutes ses scènes (`registerScene`) et

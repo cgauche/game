@@ -29,6 +29,7 @@ import { climbMovementCost } from '../engine/movement';
 import { hasAutoClimb, hasClimbFullSpeed } from '../engine/traits/dispatch';
 import { controlsCombatant } from './netOwnership';
 import { resetStageYaw, viewYawDeg } from './stageYaw';
+import { resetStagePan } from './stagePan';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 import { markActed } from './combatFlow';
 import { EMPTY_FLOW, type Flow } from './flow';
@@ -63,8 +64,8 @@ export type SheetTab = 'etat' | 'possessions' | 'competences' | 'magie' | 'avanc
 function applyLoadedSave(set: (s: Partial<GameState>) => void, save: SaveGame): void {
   const base = JSON.parse(JSON.stringify(useGame.getInitialState())) as Partial<GameState>;
   const data = { ...(save.data as Partial<GameState>) };
-  // Le drop du worldMap vide (saves d'avant la carte de campagne) est désormais une MIGRATION
-  // officielle (v1→v2, `saves.ts` MIGRATIONS[1]) — `save.data` en sort déjà nettoyé.
+  // La save chargée est TOUJOURS à `SAVE_VERSION` (toute autre version est jetée, `saves.ts`) :
+  // `save.data` a donc la forme courante, sans remise à niveau à faire ici.
   // `net` : la SESSION coop courante prime sur celle figée dans la save (ne pas ressusciter un
   // salon mort, ne pas dissoudre un salon vivant — l'hôte peut charger une save en ligne).
   // `camEdge` : une save d'avant la restriction aux quatre vues diagonales (#1289) peut porter une vue
@@ -348,7 +349,7 @@ export interface GameState extends RollFlowActionsMap {
   debugLabels: boolean;
   /** Décalage manuel de la caméra (caméra libre tactique) ; remis à zéro au refocus (changement de tour). */
   camPan: { x: number; y: number };
-  panCamBy: (dx: number, dy: number) => void;
+  setCamPan: (x: number, y: number) => void;
   resetCamPan: () => void;
   /** Option de jeu : INSPECTION des combattants (statbloc au clic sur la frise d'ordre). OFF par défaut
    *  (préférence du joueur — l'inspection casse un peu l'immersion) ; préférence persistante (comme la vue). */
@@ -1588,13 +1589,14 @@ export const useGame = create<GameState>((set, get) => ({
   camEdge: false, // vue de COIN (losange) : le SEUL régime du chemin joueur ; la vue de face (+45°) reste une géométrie servie à la caméra libre DEV
   // QUATRE crans (90°, les vues diagonales — #1289) : le chemin joueur saute les états de face, donc
   // `camEdge` en ressort toujours faux — y compris depuis une vue de face restaurée d'une sauvegarde.
-  rotateCam: (dir) =>
-    set((s) => {
-      const next = { camEdge: false, camRot: (((s.camRot + (dir === 1 ? 1 : 3)) % 4) as 0 | 1 | 2 | 3) };
-      // Re-centre sur le point focal à chaque cran : sinon le décalage manuel (camPan) persiste à
-      // travers le changement de projection (coin↔face, origines très différentes) → vue « téléportée ».
-      return { ...next, camPan: { x: 0, y: 0 } };
-    }),
+  rotateCam: (dir) => {
+    // Re-centre sur le point focal à chaque cran : sinon le décalage manuel (camPan) persiste à
+    // travers le changement de projection (coin↔face, origines très différentes) → vue « téléportée ».
+    // Le décalage VIVANT tombe avec lui (`resetStagePan`) : c'est lui que la frame lit, et un geste
+    // en cours doit se recaler dessus au lieu de le contredire.
+    resetStagePan();
+    set((s) => ({ camEdge: false, camRot: (((s.camRot + (dir === 1 ? 1 : 3)) % 4) as 0 | 1 | 2 | 3), camPan: { x: 0, y: 0 } }));
+  },
   facing: {},
   setFacing: (id, dir) => set((s) => ({ facing: { ...s.facing, [id]: dir } })),
   faceToward: (id, from, to) => {
@@ -1690,8 +1692,17 @@ export const useGame = create<GameState>((set, get) => ({
   togglePov: () => set((s) => ({ povActive: !s.povActive })),
   debugLabels: false,
   camPan: { x: 0, y: 0 },
-  panCamBy: (dx, dy) => set((s) => ({ camPan: { x: s.camPan.x + dx, y: s.camPan.y + dy } })),
-  resetCamPan: () => set((s) => (s.camPan.x === 0 && s.camPan.y === 0 ? {} : { camPan: { x: 0, y: 0 } })),
+  // ABSOLU, jamais relatif : le geste qui l'écrit vit hors de React (`state/stagePan`) et commet SA
+  // valeur au relâchement. Un incrément appliqué à un `camPan` qu'un recentrage a remis à zéro entre
+  // temps ferait sauter la vue de tout le glissement déjà parcouru.
+  setCamPan: (x, y) => set((s) => (s.camPan.x === x && s.camPan.y === y ? {} : { camPan: { x, y } })),
+  // RECENTRAGE : il porte sur le décalage VIVANT (celui que la frame lit) autant que sur le commis —
+  // un glisser en cours n'a encore rien commis, et sans cette remise à zéro le geste avalerait le
+  // recentrage que le joueur vient de demander (touche de recentrage, nouvelle unité active).
+  resetCamPan: () => {
+    resetStagePan();
+    set((s) => (s.camPan.x === 0 && s.camPan.y === 0 ? {} : { camPan: { x: 0, y: 0 } }));
+  },
   inspectEnabled: false,
   toggleInspectEnabled: () => set((s) => ({ inspectEnabled: !s.inspectEnabled })),
   inspectId: null,
@@ -1903,6 +1914,7 @@ export const useGame = create<GameState>((set, get) => ({
       journal: scene.startMessage ? [scene.startMessage] : [],
     });
     resetStageYaw(); // le lacet libre de la voie volumique n'est pas un état de partie : la carte s'ouvre à son cran
+    resetStagePan(); // idem pour le décalage manuel : la carte s'ouvre CENTRÉE, jamais au cadrage de la précédente
     // Semis des Possessions de dotation (#617/#618 Lot 1) — ICI, jamais `loadGame` (qui restaure
     // `data.possessions` de la save) : `startScene` est le SEUL seam qui repart d'un registre
     // `possessions` vidé (le reset ci-dessus), pour toute partie neuve (créateur → campagne,
@@ -1990,8 +2002,10 @@ export const useGame = create<GameState>((set, get) => ({
       battle: null,
       campaignSceneId: target.id,
       camEdge: false, // idem `resetStageYaw` ci-dessous : la scène d'arrivée se regarde depuis un cran DIAGONAL (#1289)
+      camPan: { x: 0, y: 0 }, // …et depuis son CENTRE : le commis suit le vivant que `resetStagePan` remet à zéro
     }));
     resetStageYaw(); // idem `startScene` : la scène d'arrivée se regarde depuis son cran, pas depuis le lacet de la précédente
+    resetStagePan(); // …ni depuis le décalage manuel de la précédente
     if (target.startMessage) get().log(target.startMessage);
     get().advanceTime(TIME_COST.sceneTransition); // seam « tout est horodaté » : 0 en intérieur (paramétrable, #T2 extérieur/voyage)
     bus.emit(EVT.SCENE_DIRTY);

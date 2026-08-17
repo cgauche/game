@@ -323,12 +323,11 @@ function monoPursuitRound(step: CascadeStep): string | null {
 }
 
 /**
- * FABRIQUE de bandification des étapes MONO de manche — SOURCE UNIQUE de la conversion, appelée par la
- * migration de save (`MIGRATIONS[18]`) : une save prise pendant une manche jouée à l'ancienne forme
- * (une étape PAR coureur) redevient UNE bande par manche, sans quoi son applier — qui exige des
- * RANGÉES — l'abandonnerait, et la clôture comparerait une manche SANS aucun DR de groupe. Les étapes
- * hors périmètre traversent INTACTES, à leur place (MÊME référence : la migration compare pour savoir
- * si rien n'a bougé).
+ * FABRIQUE de bandification des étapes MONO de manche — SOURCE UNIQUE de la conversion : une manche
+ * où chaque coureur porterait SA propre étape redevient UNE bande par manche, sans quoi son applier —
+ * qui exige des RANGÉES — l'abandonnerait, et la clôture comparerait une manche SANS aucun DR de
+ * groupe. Les étapes hors périmètre traversent INTACTES, à leur place (MÊME référence : l'appelant
+ * peut comparer pour savoir si rien n'a bougé).
  *
  * DÉCLARATION au socle (`makeBandFactory`, #1262 V2) : la manche restaurée sort MINTÉE comme la manche
  * vive (`pursuitRoundBand`) — même clé de regroupement, même possession posée par `bandStep`. Avant ce

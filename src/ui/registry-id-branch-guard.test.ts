@@ -175,7 +175,6 @@ const RAW_KNOWN: Record<string, number> = {
   'src/state/mount.ts': 1,
   'src/state/restFlow.ts': 1,
   'src/state/riverVoyageFlow.ts': 4,
-  'src/state/saves.ts': 1,
   'src/state/seaVoyageFlow.ts': 4,
   'src/state/store.ts': 1,
   'src/state/travelFlow.ts': 6,

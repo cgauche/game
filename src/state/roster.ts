@@ -80,10 +80,10 @@ export const EXPORT_VERSION = 3;
  *  l'entrée `vN → vN+1` — sinon les exports antérieurs sont refusés (jamais acceptés en silence
  *  avec des champs manquants). Chaînée par `migrateDoc` (primitive générique, `migrateDoc.ts`). */
 export const ROSTER_MIGRATIONS: MigrationMap = {
-  // v1 → v2 : renommage CharKey → slugs pleins (#311) — même remap que `saves.ts` MIGRATIONS[2].
+  // v1 → v2 : renommage CharKey → slugs pleins (#311) — primitive `charKeyMigration.ts`.
   1: (doc) => ({ ...doc, version: 2, hero: remapCharKeysDeep(doc.hero) }),
   // v2 → v3 (#604) : renommage `name` → `label` du héros exporté (nom du personnage, de ses objets et
-  // de ses armes) — même remap que `saves.ts` MIGRATIONS[8].
+  // de ses armes) — primitive `instanceIdMigration.ts`.
   2: (doc) => ({ ...doc, version: 3, hero: remapNameToLabelDeep(doc.hero) }),
 };
 

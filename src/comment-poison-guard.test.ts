@@ -397,9 +397,32 @@ describe('baseline nominative des signaux de commentaires (#136, 2026-08-03)', (
 // vivent dans les tests, pas dans le code de production.
 // ---------------------------------------------------------------------------------------------
 
-/** Sites de test tolérés, PAR FICHIER + ANCRE — aucun à ce jour : tout signal famille 4 dans un
- *  test bloque, et une entrée dont le site ne matche plus se purge (les listes décroissent). */
-const TEST_DECISION_SITES: BaselineEntry[] = [];
+/** Sites de test tolérés, PAR FICHIER + ANCRE : tout autre signal famille 4 dans un test bloque, et
+ *  une entrée dont le site ne matche plus se purge (les listes décroissent). Chaque entrée cite la
+ *  SOURCE du verbatim — sans elle, la revendication n'est qu'une évaluation d'ingénierie. */
+const TEST_DECISION_SITES: BaselineEntry[] = [
+  {
+    fichier: 'src/state/saves-flow.test.ts',
+    motif: 'politique de version des saves (en-tête)',
+    ancre: 'Plus la POLITIQUE DE VERSION (arbitrage utilisateur 2026-08-17)',
+    raison: 'verbatim utilisateur du 2026-08-17 consigné dans `.claude/memory/user-arbitrage-saves-reset-pas-migration.md` (une save d’une autre version se jette, elle ne se migre plus)',
+    date: '2026-08-17',
+  },
+  {
+    fichier: 'src/state/saves-flow.test.ts',
+    motif: 'politique de version des saves (describe)',
+    ancre: 'Arbitrage utilisateur 2026-08-17 : un changement de forme persistée',
+    raison: 'même verbatim, même fiche mémoire (`user-arbitrage-saves-reset-pas-migration.md`) : c’est lui qui fixe le comportement mesuré par ce describe',
+    date: '2026-08-17',
+  },
+  {
+    fichier: 'src/ui/saveload-message-obsolete.test.tsx',
+    motif: 'message joueur d’une save jetée',
+    ancre: 'arbitrage utilisateur 2026-08-17 : une save',
+    raison: 'même verbatim, même fiche mémoire : l’écran doit DIRE le rejet que l’arbitrage ordonne',
+    date: '2026-08-17',
+  },
+];
 
 function scanTestFiles(): string[] {
   const files: string[] = [];

@@ -109,27 +109,26 @@ describe('#1262 — le lint mure les ROUTES DE FORGE de la marque', () => {
   });
 
   /**
-   * `saves.ts` EST SOUS LA RÈGLE (#1262 V4 M1) — l'exemption y est passée du FICHIER aux SITES : ses
-   * casts de réhydratation portent chacun leur `eslint-disable-next-line`, et un cast de PLUS échoue.
-   * Mesuré sur le fichier RÉEL (`lintFiles`, puis son propre texte augmenté d'une 5ᵉ forge) : une sonde
-   * synthétique ne dirait rien de l'état des directives posées dans ce fichier-ci.
-   *
-   * DEUX effets de bord MESURÉS de la forme `disable-next-line` (`--max-warnings 0`, `npm run lint`) :
-   * la directive couvre les TROIS sélecteurs de la règle sur sa ligne (une ligne portant alias ET cast
-   * est muette d'un coup), et une directive INUTILISÉE rend un avertissement — donc une exemption morte
-   * échoue la CI et se retire d'elle-même.
+   * `saves.ts` EST SOUS LA RÈGLE, et n'y forge PLUS RIEN : la réhydratation d'étapes venues du JSON a
+   * disparu avec la chaîne de migration (une save d'une autre version se jette au lieu d'être
+   * remontée), donc plus aucune marque n'y est postulée. Le contrat est POSITIF (zéro cast mesuré sur
+   * le fichier RÉEL), et le cas planté ci-dessous prouve que la règle mord toujours là-bas : aucune
+   * exemption au fichier ne dort dans la config.
    */
-  it('`saves.ts` (le FORGEUR) passe la règle : ses casts de réhydratation sont exemptés AU SITE', async () => {
+  it('`saves.ts` ne forge AUCUNE marque : zéro cast, zéro directive d’exemption, lint propre', async () => {
+    const reel = readFileSync('src/state/saves.ts', 'utf8');
+    expect(reel, 'plus aucun cast de marque dans ce fichier').not.toMatch(/as\s+Built(CascadeStep|RollRow)/);
+    expect(reel, 'et donc plus aucune directive qui l’exempterait').not.toContain('no-restricted-syntax');
     const [res] = await eslint.lintFiles(['src/state/saves.ts']);
-    expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax'), 'les directives posées couvrent les casts existants').toHaveLength(0);
-    expect(res.errorCount, 'aucune autre erreur de lint sur le fichier sorti de l’ignore').toBe(0);
+    expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax')).toHaveLength(0);
+    expect(res.errorCount, 'aucune autre erreur de lint sur le fichier').toBe(0);
   });
 
-  it('un cast de PLUS dans `saves.ts` (sans sa directive) est REFUSÉ — l’exemption n’est plus au fichier', async () => {
+  it('cas planté : un cast ajouté dans `saves.ts` est REFUSÉ — la règle y mord, sans exemption au fichier', async () => {
     const reel = readFileSync('src/state/saves.ts', 'utf8');
-    const cinquieme = `${reel}\ndeclare const sonde: unknown;\nexport const forge5 = sonde as BuiltCascadeStep;\n`;
-    const [res] = await eslint.lintText(cinquieme, { filePath: 'src/state/saves.ts' });
-    expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax'), 'un 5ᵉ cast non justifié doit rougir').toHaveLength(1);
+    const augmente = `${reel}\ndeclare const sonde: unknown;\nexport const forge = sonde as BuiltCascadeStep;\n`;
+    const [res] = await eslint.lintText(augmente, { filePath: 'src/state/saves.ts' });
+    expect(res.messages.filter((m) => m.ruleId === 'no-restricted-syntax'), 'un cast non justifié doit rougir').toHaveLength(1);
   });
 });
 

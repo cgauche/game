@@ -220,6 +220,10 @@ export const fr = {
   'saveload.error.save': 'Sauvegarde impossible (stockage indisponible ou plein).',
   'saveload.error.load': 'Emplacement vide ou incompatible.',
   'saveload.error.import': 'Fichier de sauvegarde invalide ou de version inconnue.',
+  // Sauvegarde retirée du stockage, par CAUSE (`ObsoleteCause`, `state/saves.ts`).
+  'saveload.error.obsolete': 'Sauvegarde d’une version antérieure du jeu — incompatible, elle a été retirée.',
+  'saveload.error.futureSave': 'Sauvegarde d’une version plus récente du jeu — incompatible, elle a été retirée.',
+  'saveload.error.unreadable': 'Sauvegarde illisible — elle a été retirée.',
   // Lobby coop (CoopLobby) — Phase D.
   'coop.title.local': 'Jouer en ligne',
   'coop.title.guest': 'Salon — invité',

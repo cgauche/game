@@ -13,15 +13,12 @@
  *     Intermédiaire (+0) ») : le slot `pendingCorruption` est UNIQUE, et une bande fait déborder N
  *     héros d'un seul applier. Sans file, le 2ᵉ tombait sur le repli auto-résolu — un Test RAW roulé
  *     en silence, que le passage en bande aurait INTRODUIT.
- *
- * Plus la migration de sauvegarde (`MIGRATIONS[19]`), sur le cas legacy des ids dupliqués.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { openCombatEndCascade } from './combatFlow';
 import { combatEndBands } from './combatEndBands';
 import { splitBandRows } from './nightBands';
-import { stepReady } from './cascade';
 import { setCadence, resetCadence } from '../engine/cadence';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -29,12 +26,9 @@ import { seedBattleRng } from './battleRng';
 import { resetDesFixes } from '../engine/fixedDie';
 import { seatOwns } from './netOwnership';
 import { modalOwnerOf } from './modalArbiter';
-import { migrateSave, SAVE_VERSION } from './saves';
 import { corruptionThreshold } from '../engine/corruption';
 import { testScene } from '../scenes/test-fixture';
-import { readFileSync } from 'node:fs';
 import type { Combatant } from '../engine/types';
-import type { CascadeStep } from './pendings';
 
 const NET0 = useGame.getState().net;
 const g = useGame.getState;
@@ -344,63 +338,5 @@ describe('#1117 L4 — la pénalité d’ÉTATS pèse sur la rangée, des DEUX c
     // Moitié RÉSOLUE D'OFFICE (aucun porteur piloté) : les MÊMES rangées, donc la même cible.
     const { others } = splitBandRows(bande, () => false);
     expect(others!.participants!.find((r) => r.id === H[0].id)!.target).toBe(row(H[0].id).target);
-  });
-});
-
-describe('#1117 L4 — MIGRATIONS[19] : une save v19 en pleine cascade de bilan redevient des bandes', () => {
-  const fixture = () => JSON.parse(
-    readFileSync(new URL('./__fixtures__/saves/v19-fin-de-combat-mono.json', import.meta.url), 'utf-8'),
-  ) as unknown;
-
-  it('les DEUX étapes legacy de MÊME id (Infection + Contagion) donnent DEUX bandes joignables', () => {
-    const migrated = migrateSave(fixture())!;
-    expect(migrated.version).toBe(SAVE_VERSION);
-    const steps = (migrated.data as { pendingCascade: { participants: { id: string; kind: string; participants?: { id: string }[] }[] } }).pendingCascade.participants;
-    const maladies = steps.filter((s) => s.kind === 'combatEndDisease');
-    expect(maladies.length, 'deux entrées legacy chez h1 + une chez h2 → deux bandes').toBe(2);
-    expect(new Set(maladies.map((s) => s.id)).size, 'ids de bande DISTINCTS').toBe(2);
-    // h1 a UNE rangée dans chacune ; h2 rejoint la première (sa seule entrée).
-    expect(maladies.map((s) => s.participants!.map((r) => r.id))).toEqual([['h1', 'h2'], ['h1']]);
-    for (const s of maladies) expect(new Set(s.participants!.map((r) => r.id)).size).toBe(s.participants!.length);
-  });
-
-  it('les deux Expositions à la Corruption fusionnent en UNE bande à deux rangées', () => {
-    const migrated = migrateSave(fixture())!;
-    const steps = (migrated.data as { pendingCascade: { participants: { kind: string; participants?: { id: string }[] }[] } }).pendingCascade.participants;
-    const corr = steps.filter((s) => s.kind === 'combatEndCorruption');
-    expect(corr.length).toBe(1);
-    expect(corr[0].participants!.map((r) => r.id)).toEqual(['h1', 'h2']);
-  });
-
-  /** POSSESSION d'une bande RESTAURÉE (#1262 V2 lot 3) : c'est le SEUL chemin où la possession posée
-   *  par `combatEndBands` arrive telle quelle au joueur — la cascade vive, elle, re-minte en aval
-   *  (`routeBandByPilot` → `splitBandRows`). Sans `groupOwner`/`actorId`, l'arbitre (`modalArbiter`,
-   *  entrée `cascade`) rend la fenêtre à l'HÔTE SEUL et le siège du porteur ne voit jamais sa rangée. */
-  it('toute bande restaurée DÉCLARE sa possession (jamais une fenêtre anonyme)', () => {
-    const migrated = migrateSave(fixture())!;
-    const steps = (migrated.data as { pendingCascade: { participants: CascadeStep[] } }).pendingCascade.participants;
-    const bandes = steps.filter((s) => s.participants);
-    expect(bandes.length, 'la save porte bien des bandes').toBeGreaterThan(0);
-    for (const b of bandes) expect(!!b.groupOwner || !!b.actorId, `bande ${b.id} sans propriétaire`).toBe(true);
-  });
-
-  /** SONDE F promue (#1259) : la bandification NE DÉPLACE PAS le curseur (contrairement à
-   *  `bandifyPursuitSteps`, qui le REPOSE parce qu'une manche se juge à la clôture). Une bande dont
-   *  TOUTES les rangées sont déjà roulées reste PRÊTE à valider — jamais sautée, jamais rejouée. */
-  it('le curseur ne dérive pas, et une bande toute roulée reste à VALIDER', () => {
-    const doc = fixture() as { data: { pendingCascade: { cursor: number; participants: { result?: unknown }[] } } };
-    doc.data.pendingCascade.cursor = 1; // la 1re étape est de l'historique inerte
-    for (let i = 1; i < doc.data.pendingCascade.participants.length; i++) {
-      doc.data.pendingCascade.participants[i].result = { roll: 77, target: 40, sl: -3, success: false };
-    }
-    const migrated = migrateSave(doc)!;
-    const pc = (migrated.data as { pendingCascade: { cursor: number; participants: CascadeStep[] } }).pendingCascade;
-
-    expect(pc.cursor, 'le curseur reste POSÉ où la save l’a laissé').toBe(1);
-    expect(pc.participants[0].participants, 'l’avant-curseur n’est pas bandé').toBeUndefined();
-    const cur = pc.participants[pc.cursor];
-    expect(cur.participants, 'le curseur pointe la 1re BANDE').toBeTruthy();
-    expect(cur.participants!.every((r) => r.result), 'toutes ses rangées portent leur jet').toBe(true);
-    expect(stepReady(cur), 'toute roulée = PRÊTE à valider').toBe(true);
   });
 });

@@ -176,8 +176,8 @@ function isStatblockLike(o: Record<string, unknown>): boolean {
 
 /** Renommage `name` → `label` (#608) des DEUX porteurs authorés d'un projet éditeur sérialisé —
  *  l'entrée de bibliothèque elle-même (`SavedProject.name`) et tout `CustomStatblock` embarqué dans ses
- *  scènes. `projectLibrary.ts` n'a AUCUNE chaîne `SAVE_VERSION`/`MIGRATIONS` (liste nue en
- *  localStorage, contrairement à `saves.ts`) : repli IDEMPOTENT à chaque lecture, patron
+ *  scènes. `projectLibrary.ts` n'a AUCUN axe de version (liste nue en localStorage) : repli IDEMPOTENT
+ *  à chaque lecture, patron
  *  `roster.ts`/`remapNameToLabelDeep` — un projet déjà migré (ou jamais affecté) traverse en no-op. */
 export function remapProjectNamesDeep(node: unknown): unknown {
   if (Array.isArray(node)) return node.map(remapProjectNamesDeep);

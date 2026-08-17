@@ -219,14 +219,14 @@ describe('Poursuite terrestre (#95)', () => {
 });
 
 /**
- * MANCHE RESTAURÉE (#1262 V2 lot 3) — la fabrique de bandification des saves (`pursuitBands`,
- * MIGRATIONS[18]) rendait un littéral SANS possession : `modalOwnerOf` `undefined`, fenêtre à l'HÔTE
- * SEUL, alors que la manche VIVE, elle, était partagée. Depuis la déclaration au socle
- * (`makeBandFactory`), les deux chemins sortent par le MÊME mint.
+ * MANCHE RESTAURÉE (#1262 V2 lot 3) — la fabrique de bandification (`pursuitBands`) rendait un
+ * littéral SANS possession : `modalOwnerOf` `undefined`, fenêtre à l'HÔTE SEUL, alors que la manche
+ * VIVE, elle, était partagée. Depuis la déclaration au socle (`makeBandFactory`), les deux chemins
+ * sortent par le MÊME mint.
  */
-describe('Poursuite — la manche restaurée d’une save se possède comme la manche vive', () => {
-  /** Étape MONO de manche à l'ANCIENNE forme (une par coureur), MINTÉE : la fabrique n'accepte que des
-   *  produits de la porte (#1262 V2), et une save réhydratée y repasse (`saves.ts`). */
+describe('Poursuite — une manche bandifiée se possède comme la manche vive', () => {
+  /** Étape MONO de manche (une par coureur), MINTÉE : la fabrique n'accepte que des produits de la
+   *  porte (#1262 V2). */
   const mono = (h: Combatant, round: string): BuiltCascadeStep => monoStep({
     id: `pursuit-${round}-${h.id}`, kind: 'pursuitMove', actor: h, icon: 'travel/foot',
     label: fixtureText(`Manche ${round}`), rollLabel: 'Athlétisme', difficulty: 'intermediaire',

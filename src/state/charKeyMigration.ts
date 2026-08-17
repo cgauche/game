@@ -1,7 +1,8 @@
 /**
  * Migration #311 — `CharKey` (`'CC'|'CT'|'F'|'E'|'I'|'Ag'|'Dex'|'Int'|'FM'|'Soc'`) → slugs pleins
- * (`engine/types.ts`), portée sur l'état RUNTIME sérialisé (saves `SAVE_VERSION` MIGRATIONS[2],
- * export roster `ROSTER_MIGRATIONS[1]`) — SOURCE UNIQUE, jamais dupliquée entre `saves.ts`/`roster.ts`.
+ * (`engine/types.ts`), portée sur l'état RUNTIME sérialisé du ROSTER (liste localStorage non
+ * versionnée + `ROSTER_MIGRATIONS[1]` de l'export). SEUL consommateur : `roster.ts` — les saves de
+ * PARTIE ne migrent plus (elles se jettent au changement de version, `saves.ts`).
  */
 
 const OLD_CHARKEY_TO_NEW: Record<string, string> = {
@@ -33,9 +34,8 @@ const CHARKEY_RECORD_FIELDS = new Set(['characteristics', 'baseChar', 'char', 'c
 
 /** Réécrit récursivement TOUTE occurrence de CharKey (valeur scalaire OU clé de Record) rencontrée sous
  *  les noms de champ recensés — même primitive que la migration des données app-owned (#311), portée
- *  ici sur l'état RUNTIME sérialisé (save/export roster). Ne mute pas l'entrée : reconstruit (le
- *  round-trip `JSON.parse` de `migrateDoc` a déjà cloné le document). Idempotent (aucun ancien token
- *  restant après un premier passage → no-op sur un doc déjà migré). */
+ *  ici sur l'état RUNTIME sérialisé du roster. Ne mute pas l'entrée : reconstruit. Idempotent (aucun
+ *  ancien token restant après un premier passage → no-op sur un doc déjà migré). */
 export function remapCharKeysDeep(node: unknown): unknown {
   if (Array.isArray(node)) return node.map(remapCharKeysDeep);
   if (node && typeof node === 'object') {

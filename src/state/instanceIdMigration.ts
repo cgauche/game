@@ -1,26 +1,16 @@
 /**
- * Migration de RENOMMAGE `name` → `id` des INSTANCES portées par un `Combatant` (#598) —
- * `ConditionInstance` (`conditions[]`) et `Disease` (`diseases[]`) — portée sur l'état RUNTIME
- * sérialisé (save `SAVE_VERSION` MIGRATIONS[7], export roster). Même primitive que
- * `remapCharKeysDeep` (`charKeyMigration.ts`, #311) : réécriture récursive d'un document déjà cloné
- * par `migrateDoc`.
+ * Renommage `name` → `label` des porteurs de LIBELLÉ sérialisés (#604) — `Combatant`, `ItemInstance`
+ * et `Weapon` (`engine/types.ts`), et les porteurs recensés plus bas. Ces champs sont un libellé
+ * d'AFFICHAGE : le vocabulaire du dépôt est `label` partout (arbitrage 2026-07-19).
  *
- * Ces deux champs portaient un **id** de catalogue (slug d'`etats.json` / de `maladies.json`) sous un
- * nom de libellé, à rebours de la doctrine « la logique est keyée par id, `label`/`name` = affichage ».
- * La VALEUR est inchangée : seule la clé est renommée — aucune remise en correspondance à faire.
+ * SEUL consommateur : le ROSTER (`roster.ts`) — repli idempotent de `rosterLoad` (liste nue, non
+ * versionnée) et `ROSTER_MIGRATIONS[2]` de l'export `EXPORT_VERSION`. Même primitive que
+ * `remapCharKeysDeep` (`charKeyMigration.ts`, #311) : réécriture récursive d'un document déjà cloné.
+ *
+ * Le remap est borné par la FORME, pas par un chemin : un `name` n'est réécrit que sur un objet
+ * reconnu comme porteur. Tous les autres `name` sont laissés INTACTS — notamment ceux qui portent un
+ * **id** et le champ `name` des `GameOp` authorés, hors du périmètre de ce renommage.
  */
-
-/** Renommage `name` → `label` des porteurs de LIBELLÉ sérialisés (#604) — `Combatant`, `ItemInstance`
- *  et `Weapon` (`engine/types.ts`). Ces trois champs sont un libellé d'AFFICHAGE : le vocabulaire du
- *  dépôt est désormais `label` partout (arbitrage 2026-07-19). Sans cette migration, un héros nommé,
- *  un objet et une arme se rechargeraient avec `label: undefined` — le nom du personnage DISPARAÎT
- *  silencieusement de la fiche, de l'inventaire et du journal.
- *
- *  Le remap est borné par la FORME, pas par un chemin : un `name` n'est réécrit que sur un objet
- *  reconnu comme l'un des trois porteurs. Tous les autres `name` d'une save sont laissés INTACTS —
- *  notamment ceux qui portent un **id** (`conditions[]`/`diseases[]` migrés en `id` par #598
- *  ci-dessous) et le champ `name` des `GameOp` authorés (`condition`, `grantNaturalWeapon`), qui est
- *  un id/libellé de DONNÉE hors du périmètre de ce renommage. */
 
 /** Un `GameOp` sérialisé (clé `op`) n'est JAMAIS un porteur de libellé — garde-fou commun aux 3 formes. */
 function isGameOp(o: Record<string, unknown>): boolean {
@@ -107,8 +97,7 @@ function isSceneVesselOpLike(o: Record<string, unknown>): boolean {
 
 /** Réécrit récursivement `{ name, … }` → `{ label, … }` sur les seuls porteurs de libellé.
  *  IDEMPOTENT : un objet portant déjà `label` est laissé tel quel (un 2e passage est un no-op), et un
- *  objet portant les DEUX garde son `label` (la clé déjà migrée fait foi) — même contrat que
- *  `remapInstanceIdsDeep`. Applicable aussi bien à un doc de save qu'à une entrée de roster. */
+ *  objet portant les DEUX garde son `label` (la clé déjà migrée fait foi). */
 export function remapNameToLabelDeep(node: unknown): unknown {
   if (Array.isArray(node)) return node.map(remapNameToLabelDeep);
   if (!node || typeof node !== 'object') return node;
@@ -128,62 +117,4 @@ export function remapNameToLabelDeep(node: unknown): unknown {
     return Object.fromEntries(Object.entries(rest).map(([k, v]) => [k, remapNameToLabelDeep(v)]));
   }
   return Object.fromEntries(Object.entries(o).map(([k, v]) => [k, remapNameToLabelDeep(v)]));
-}
-
-/** Champs dont la valeur est un tableau d'instances keyées par id (`Combatant.conditions`/`.diseases`).
- *  Recensés par NOM de champ, comme `charKeyMigration` — un `name` rencontré HORS de ces tableaux est
- *  un vrai libellé (`Combatant.name`, `ItemInstance.name`, `Weapon.name`) et n'est jamais touché. */
-const INSTANCE_ARRAY_FIELDS = new Set(['conditions', 'diseases']);
-
-/** Réécrit récursivement `{ name, … }` → `{ id, … }` pour tout élément des tableaux recensés.
- *  Idempotent : un élément portant déjà `id` (doc migré) est laissé tel quel — un second passage est
- *  donc un no-op, et un élément portant les DEUX garde son `id` (la clé déjà migrée fait foi). */
-export function remapInstanceIdsDeep(node: unknown): unknown {
-  if (Array.isArray(node)) return node.map(remapInstanceIdsDeep);
-  if (node && typeof node === 'object') {
-    const entries = Object.entries(node as Record<string, unknown>).map(([k, v]) => {
-      if (INSTANCE_ARRAY_FIELDS.has(k) && Array.isArray(v)) {
-        return [k, v.map((el) => {
-          if (!el || typeof el !== 'object' || Array.isArray(el)) return remapInstanceIdsDeep(el);
-          const { name, ...rest } = el as Record<string, unknown>;
-          if (name === undefined) return remapInstanceIdsDeep(el);
-          const migrated = 'id' in rest ? rest : { id: name, ...rest };
-          return remapInstanceIdsDeep(migrated);
-        })];
-      }
-      return [k, remapInstanceIdsDeep(v)];
-    });
-    return Object.fromEntries(entries);
-  }
-  return node;
-}
-
-/** Ops `GameOp` dont le `name` porte un **id** d'État (`etats.json`) — `condition`/`removeCondition`
- *  (#608, ref #603). */
-const GAMEOP_ID_OPS = new Set(['condition', 'removeCondition']);
-/** Ops `GameOp` dont le `name` porte le **label** de l'arme créée — `grantWeapon`/`grantNaturalWeapon`
- *  (#608, ref #603). */
-const GAMEOP_LABEL_OPS = new Set(['grantWeapon', 'grantNaturalWeapon']);
-
-/** Réécrit récursivement le `name` d'un `GameOp` SÉRIALISÉ (`Combatant.activeEffects[].opsPerRound`/
- *  `.auraMods`/`recoveryPenalty`/`critTrigger.resist.onFail`…) — `id` pour `condition`/
- *  `removeCondition` (index d'État), `label` pour `grantWeapon`/`grantNaturalWeapon` (nom de l'arme
- *  invoquée). Bornée par la FORME de l'op (`op` + son appartenance à l'un des deux vocabulaires
- *  ci-dessus), jamais par un chemin — le SEUL cas où ce module vise un `name` d'op (`isGameOp` les
- *  PROTÉGEAIT jusqu'ici dans `remapNameToLabelDeep`). Idempotent (un op déjà migré n'a plus `name`). */
-export function remapGameOpNameDeep(node: unknown): unknown {
-  if (Array.isArray(node)) return node.map(remapGameOpNameDeep);
-  if (!node || typeof node !== 'object') return node;
-  const o = node as Record<string, unknown>;
-  if (typeof o.op === 'string' && typeof o.name === 'string') {
-    if (GAMEOP_ID_OPS.has(o.op)) {
-      const { name, ...rest } = o;
-      return Object.fromEntries(Object.entries({ ...rest, id: name }).map(([k, v]) => [k, remapGameOpNameDeep(v)]));
-    }
-    if (GAMEOP_LABEL_OPS.has(o.op)) {
-      const { name, ...rest } = o;
-      return Object.fromEntries(Object.entries({ ...rest, label: name }).map(([k, v]) => [k, remapGameOpNameDeep(v)]));
-    }
-  }
-  return Object.fromEntries(Object.entries(o).map(([k, v]) => [k, remapGameOpNameDeep(v)]));
 }

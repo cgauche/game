@@ -2,58 +2,6 @@
 
 ## Ouvertes
 
-- #787 [audit:contenu-manquant, domaine:art, sev:mineur, type:système] Décors d'intérieur ORIENTÉS rendus en billboard plat : 5/110 décors seulement portent leurs 3 vues (machinerie #342 livrée, contenu manquant)
-- #796 [audit:principe, domaine:cartes, domaine:combat, sev:majeur] ÉPIQUE — Classe z-blind : le moteur ignore souvent l'étage (z) en multi-niveaux (audit 4 axes)
-- #797 [domaine:cartes, sev:majeur] z-blind: perf — vision recalculée à chaque pas → cascade de re-build (rame multi-étages)
-- #806 [domaine:cartes, sev:mineur] z-blind: vision révèle vers le bas sans occlusion de plancher (salle fermée dévoilée)
-- #808 [audit:principe, domaine:cartes, sev:mineur] Perf TIER 3 : faire porter visKeys par les builders (floors/walls/roofs) — zéro rebuild au pas (suite #797)
-- #809 [bug, domaine:campagne, sev:majeur] Générateurs de campagne figés en schema 2 : régénérer une campagne bundlée DÉTRUIT son bloc meta/narratif
-- #810 [campagne:EDO, domaine:campagne, sev:mineur] Bibliotheque de campagnes : une suppression peut ne pas survivre a un double echec localStorage + IndexedDB suivi d un reload
-- #812 [bug, chantier:possessions, domaine:combat, sev:mineur] Monture a statbloc custom : table de Localisation humanoide pour une bete (apparence non transmise au spawn)
-- #813 [documentation, domaine:campagne, sev:mineur] Recette : aucun chemin honnete pour eprouver la resilience du stockage (le message d echec de #776 est inatteignable en jeu)
-- #814 [bug, campagne:EDO, domaine:combat, sev:mineur] Forme de corps d un PNJ de preset derivee du profil GLOBAL, pas du profil fusionne (re-resolution par id dans bodyShapeOf)
-- #815 [domaine:cartes, sev:mineur] Test d emprise de toiture : la boite englobante des parties ment des qu une section est multi-parties
-- #816 [domaine:primitives-UI, sev:smell] Cliquet (xii) aveugle aux selecteurs d attribut : il sous-declare le stock CSS de domaine
-- #817 [bug, domaine:cartes, sev:majeur] Perf : la scene entiere se reconstruit a CHAQUE FRAME pendant la marche (visualAllies non memoise) — candidat au 1 fps
-- #818 [audit:principe, domaine:art, sev:majeur] Rendu : le brouillard gate les TOITS par section et les MURS par segment — le bâtiment se peint à moitié (on voit à travers)
-- #819 [audit:contenu-manquant, domaine:art, sev:majeur] Toiture : le joint LATÉRAL entre deux sections voisines n'est fermé par personne — fente verticale ouverte, on voit dans le bâtiment
-- #820 [audit:principe, domaine:art, sev:majeur] wallFaces : une PORTE authorée sur un mur de pierre est rendue en rempart PLEIN crénelé — seg.door n'est jamais lu quand l'apparence porte un parapet
-- #821 [audit:non-branché, domaine:art, sev:majeur] POV : la couche de DÉTAIL des murs est absente — le même mur est à colombage en iso et NU en POV
-- #824 [domaine:cartes, sev:majeur, type:système] Outil map:check — chaque defaut de plan avec sa LIGNE et sa COLONNE dans le fichier ASCII
-- #825 [domaine:cartes, sev:majeur, type:donnée] La Diligence : corriger le SCHEMA depuis la planche (facades decalees, murs manquants, escalier en I)
-- #827 [domaine:cartes, domaine:moteur-pur, sev:majeur] validateBuildingMasses : portee GLOBALE exigee PAR CORPS (scene multi-batiments impossible) + aucun fail-fast sur schema roofs obsolete
-- #828 [audit:principe, sev:mineur] comment-poison-guard ROUGE : 27 pierres tombales ex-Nom que le detecteur repare fait remonter
-- #829 [audit:principe, domaine:UX, domaine:cartes, sev:majeur] L'emprise d'une masse doit se DERIVER du plan — editer une carte ne doit jamais exiger de re-declarer les toitures
-- #831 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:système] VDM ch.14 — MAGIE ENVIRONNEMENTALE (saturation, tempêtes de magie, lignes de force & pierres gardiennes, nexus) : aucun ticket de l'épique ne la couvre
-- #834 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:système] ÉPIQUE VDM — curation bout-en-bout des Vents de Magie (460 entités, 0 curée)
-- #835 [audit:principe, domaine:UX, domaine:cartes, sev:majeur] EPIQUE — l'EDITEUR est la SOURCE de la classe z-blind : bati mono-couche, multi-couche greffe par le bas seulement (miroir de #796)
-- #836 [audit:non-branché, livre:ZI, sev:majeur, type:donnée] Zoo Impérial — 19 préparations alchimiques achetables qui ne font RIEN (aucun consumable, prose seule)
-- #837 [domaine:cartes] Redimensionner une masse de toit MULTI-parties : quelle partie ? (no-op explicite)
-- #838 [audit:non-branché, chantier:VDM, domaine:magie, livre:LDB, sev:majeur, type:donnée] 210 sorts sur 416 (51 %) sont NARRATIFS — aucun effet appliqué par le moteur, dont 68 du Livre de base
-- #840 [audit:contenu-manquant, sev:mineur, type:système] Folios : le détecteur corrigé révèle 21 trous invisibles + 44 ancres posables sur 7 livres (non appliquées, non vérifiées)
-- #841 [audit:principe, domaine:UX, domaine:cartes, sev:majeur] EPIQUE — 22 champs de Scene sur 68 ne sont PAS editables au clic : l editeur edite des FEUILLES, le reste n existe que par le compilateur (donc par une IA)
-- #842 [audit:principe, domaine:moteur-pur, sev:majeur, type:système] Branchement par IDENTITÉ dans du code générique : 24 vrais poisons mesurés (14 dans src/ui, jamais scanné) — garde AST posée, cliquet 38 à ramener à 0
-- #844 [audit:non-branché, chantier:VDM, domaine:magie, domaine:moteur-pur, sev:majeur, type:système] Circonstances du monde : aucune source ne les produit — 7 des 8 Vents de Magie resteraient INERTES (météo, saison, relief, urbanisation, lieu nommé, vol)
-- #845 [audit:contenu-manquant, chantier:VDM, livre:VDM, sev:majeur, type:donnée] Corpus VDM amputé : un sort sans titre ni ligne de NI (Arc de T'Essla, ch.07) — ampleur non mesurée sur les 15 chapitres
-- #847 [audit:principe, chantier:VDM, domaine:moteur-pur, livre:AA, sev:majeur, type:système] Garde "wounds" : angle mort TypeScript — 11 sites muets, dont les Critiques d Aux Armes (chemin joué)
-- #848 [audit:principe, chantier:VDM, sev:majeur, type:système] Ancrage : le verdict "desc-introuvable" est SILENCIEUX — 780 entrées sur 2357 hors attestation, sans cliquet
-- #849 [audit:principe, domaine:moteur-pur, livre:LDB, sev:majeur, type:système] Une Possession ne peut pas porter de SPÉCIALISATION : 36 entrées explosées, liste fermée à tort, Guilde perdue sur 10 carrières
-- #853 [audit:principe, domaine:magie, livre:LDB, sev:majeur] Atlas : quatre sections de magie.md sont ancrees sur le mauvais chapitre, dont une sur une ligne VIDE
-- #854 [audit:principe, sev:mineur] coverage.mjs credite un chapitre depuis un RAPPORT GENERE (exclusion locale au lieu du set partage)
-- #856 [audit:principe, domaine:naval, livre:MDG, sev:majeur] Cinq sites citent MDG 03 l.71 pour une regle que ce passage ne porte pas (table des Quarts)
-- #857 [audit:non-branché, chantier:VDM, domaine:moteur-pur, sev:majeur, type:système] Ciblage geometrique : un GameOp[] doit s appliquer a un RAYON, a un camp, ou aux deux camps
-- #858 [audit:principe, chantier:VDM, domaine:moteur-pur, livre:LDB, sev:majeur, type:système] TrappingData porte ses qualificateurs : specialisation, Domaine, modificateurs de NI
-- #859 [audit:non-branché, chantier:VDM, domaine:moteur-pur, sev:majeur, type:système] Le canal passif d OBJET devient uniforme : port declare, talents et effets declenches atteignent l objet
-- #860 [audit:non-branché, chantier:VDM, domaine:moteur-pur, sev:mineur, type:système] Formules et specialisations : lever les litteraux residuels du vocabulaire (8 champs)
-- #861 [audit:principe, chantier:VDM, domaine:moteur-pur, livre:LDB, sev:majeur, type:système] Traits Psychologiques en DONNEE : fermer le doublon PsychType (union close) vs psychology.json
-- #862 [audit:non-branché, chantier:VDM, domaine:moteur-pur, sev:majeur, type:système] fireTriggers observe le TIERS, le REVEIL et l horloge (18 triggers tous centres sur le combat)
-- #863 [audit:non-branché, chantier:VDM, domaine:moteur-pur, sev:majeur, type:système] Sujet des ops au-dela du Combattant : objet MUTABLE et lieu PORTEUR de mecanique
-- #864 [audit:non-branché, chantier:VDM, domaine:moteur-pur, sev:mineur, type:système] DR par TYPE de Test (dissipation, tous Tests) + ActivityDef complete (talentGate, cible de DR)
-- #865 [chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:règle-optionnelle] Focalisation PARTIELLE de VDM : une VARIANTE de regle, pas un correctif (le moteur suit le LDB)
-- #866 [audit:contenu-manquant, domaine:magie, livre:LDB, sev:majeur] Reanimation cree des zombis ex nihilo : le RAW plafonne au nombre de CADAVRES a portee
-- #867 [audit:non-branché, domaine:magie, livre:LDB, sev:majeur] Tous les lanceurs PNJ de necromancie sont MUETS : langue (magick) a 0 et aucune capacite spellcaster
-- #869 [audit:contenu-manquant, domaine:religion, livre:LDB, sev:majeur, type:donnée] 35 prieres importees de frenchy-bzh : doublons presumes d entrees deja presentes (un statbloc porte les DEUX)
-- #870 [audit:contenu-manquant, domaine:magie, livre:VDM, sev:majeur, type:donnée] 3 sorts arcanes a cn:null — dont un NI 8 PERDU a l import — passent pour des Prieres a l ecran
 - #871 [audit:contenu-manquant, domaine:religion, sev:mineur, type:donnée] 2 statblocks de pretres de Taal portent 18 Prieres avec 0 avance en Priere (injouables meme apres #868)
 - #872 [chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:règle-optionnelle] Severite d Imparfaite : proxy de reussite qui ignore les bandes auto, escalade incomplete, et un 7e delta VDM jamais recense
 - #873 [chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:règle-optionnelle] Surincantation de Duree : la valeur passe en DR sous VDM la ou le moteur attend des PAS (2x les jets de table)
@@ -124,7 +72,6 @@
 - #957 [domaine:magie, livre:LDB, sev:mineur, type:système] Dissipation de Sorts PERMANENTS (LDB 46 l.160) : 3e site de la famille dissipation HORS de la source castTestDRMods -- ni Talent, ni armure, ni VDM 14
 - #958 [audit:non-branché, domaine:magie, livre:VDM, sev:majeur, type:système] Magie environnementale VDM 14 : aucun site d etat ne passe env -- Saturation et phenomenes arcaniques INERTES au runtime meme option active
 - #959 [audit:principe, domaine:moteur-pur, sev:smell, type:système] Commentaires « GENERALISE <artefact disparu> » (ops.ts:854/:880 -- movementHalved/noTwoHanded n existent plus) : classe hors de portee du detecteur commentPoison
-- #960 [domaine:moteur-pur, sev:majeur, type:système] Deux FORMES de sauvegarde sous le meme SAVE_VERSION 15 : l ouvrage/rituel d interlude d un save ancien est PERDU en silence (migration ecrite puis supprimee, jamais reinstauree)
 - #962 [audit:contenu-manquant, domaine:magie, livre:VDM, sev:mineur, type:donnée] Exemption des Domaines SOMBRES aux Influences malveillantes (VDM 02 l.159) : ni implementation ni manifeste — reliquat de #888 annonce RAS
 - #964 [audit:contenu-manquant, domaine:magie, livre:LDB, sev:smell, type:donnée] Atlas RAW : la regle Multiples Domaines magiques (LDB 46 l.175-177) n a aucune ancre dans docs/raw -- la ref de careerSlots.ts ne produit aucune entree Implemente
 - #966 [domaine:coop, sev:majeur, type:système] Owner de modale '*' = tout le monde peut TOUT : sur une fenetre de cast partagee, un siege TIERS depense la Chance/Resilience du heros d autrui et choisit son Critique (13 intents mesures)
@@ -242,7 +189,6 @@
 - #1114 [domaine:UX, domaine:naval, sev:mineur] Renvoi Codex sur les lignes de journal joueur - les refs RAW quittent la prose (arbitrage Effet + renvoi Codex)
 - #1115 [bug, domaine:art] rig/quadrupède : mountedRig cherche 'tronc'/'tete' par find-sur-id dans des os désormais SCINDÉS en fragments — bénin aujourd'hui, piège armé dès qu'on lira .z ou .parts
 - #1116 [domaine:art, type:système] Stock des 12 decos morts : il faut une catégorie NOMMÉE « profil-only par nature » distincte de « art à créer » — sinon le stock ne peut pas atteindre un zéro honnête
-- #1117 [domaine:UX, domaine:primitives-UI] Contrat : tout jet DIT son POURQUOI (enjeu + renvoi regle) - globalisation de la zone d'enjeu
 - #1118 [domaine:art, type:système] rig/quadrupède : le scale(1.3) de tête au profil (quadAnchor) est une décision de socle JAMAIS RENDUE — l'étalon bovin le compense localement (cataplasme d'espèce)
 - #1119 [type:système] QC : mesure-volume.mts ne sait mesurer qu'une TENUE bipède — à ÉTENDRE aux plans de créatures (jamais dupliquer)
 - #1120 [domaine:UX, domaine:naval, sev:mineur] Parite fluviale du delta de Coque - le jour passe narre des absolus qui vieillissent mal
@@ -289,7 +235,6 @@
 - #1173 [] CHANTIER : la table des Difficultés de Combat (LDB 14) devient de la DONNÉE — moteur lecteur, écran dérivé, cliquet AST anti-littéral
 - #1174 [] Manœuvres : départage MIXTE sur 'init' (Regard pétrifiant) + la cible du défenseur y ignore les États
 - #1175 [] Jets autonomes : 10 sites de dette du registre renvoient à #1064, FERMÉ — dette orpheline, et aucune garde n'empêche ça
-- #1176 [domaine:art, type:système] CHANTIER : migration du moteur de rendu vers le backend WebGL (decision user 2026-08-09)
 - #1177 [domaine:moteur-pur, sev:smell, type:système] Test oppose : pas de couture authorable pour une Difficulte PAR CAMP (LDB 12 l.166 « pas systematique ») — defaut partage implemente, divergence impossible a exprimer
 - #1178 [] Hors combat : le malus d'État agit sans être nommé sur 7 écrans de jet — la brique testStatePenaltyParts existe désormais (ref #1117)
 - #1179 [domaine:cartes, sev:mineur] opera : l ovale de l etage est troue dans l ASCII (58 bouts libres, segments isoles, murs sur vide)
@@ -312,7 +257,6 @@
 - #1204 [domaine:combat, sev:majeur] Défense (Parade) d'un héros Brisé : chip « +20 autres » inexpliqué — le monteur n'itemise pas une composante de +20 à l'émission (erreur console RollLine, repro seed 42)
 - #1205 [domaine:combat, sev:mineur, type:donnée] Aveuglé : la donnée porte testMod -10 combatOnly SANS scope 'vue' — le RAW dit « Tests qui impliquent la vue » (LDB 16 l.45) ; sightOnly n'existe pas
 - #1206 [domaine:moteur-pur, sev:mineur] difficultyFromModifier est un plus-proche-voisin consommé comme exact — la Difficulté AFFICHÉE des voyages ment déjà de 5 points (-25 affiché « Difficile -20 »)
-- #1207 [domaine:moteur-pur, sev:mineur] Fixtures de saves : aucun golden de la version COURANTE, et le README promeut encore v15 comme golden courant
 - #1208 [audit:principe, domaine:combat, livre:LDB, sev:majeur] Psychologie : 3e applier PNJ à la main (turnHooks) + immunité rencontre⇄combat asymétrique + Sans Peur⇄Terreur divergent par CAMP — unifier sur le résolveur après arbitrage RAW
 - #1209 [domaine:moteur-pur, sev:smell] rule-refs.test.ts : 8 balayages complets de src/** par run (14,8 s) en readFileSync sans garde — rouge probabiliste sur arbre partagé (ENOENT de course mesuré)
 - #1210 [domaine:combat, sev:mineur, type:donnée] Bandes psy : la phrase d'enjeu rédigée fait doublon/dissonance avec les chips dérivées (#1189) — retirer les stakes dérivés et INVERSER le cliquet stake-rule
@@ -344,7 +288,6 @@
 - #1242 [domaine:cartes, sev:mineur] authoring : Scene.northDeg editable a l'editeur mais ABSENT de MapSpec -- rupture de parite des deux chemins d'authoring (+ doc des deux soleils)
 - #1243 [domaine:UX, domaine:combat, livre:LDB, sev:mineur] Tir contre un adjacent : le choix d'arme n'est pas ATTEIGNABLE par le joueur — l'auto-choix impose la mêlée, le sélecteur n'apparaît pas (arbalète + mains nues), le loadout actif est ignoré
 - #1244 [domaine:moteur-pur, sev:mineur] build-implemente : ordre NON DÉTERMINISTE des symboles — churn de doc illisible à chaque régénération, attribution des hunks impossible sur arbre partagé (+ bruit du scanner : « fr »)
-- #1247 [domaine:art, sev:mineur] meteo volumique : brouillard sans expression + teinte d'orage absente + pluie visible sur les nappes levees par le cutaway (residus P2-6)
 - #1248 [domaine:UX, domaine:combat, sev:smell] Rangée témoin de l'attaquant figé (cascade opposée) : les mods de sa ligne sont JETÉS — résidu « autres » pour un attaquant à États (TestResult sans canal ModLine)
 - #1249 [audit:non-branché, domaine:combat, livre:LDB, sev:mineur] Belliqueux INERTE sur un héros : isPsychImmune appelé sans foesMaxAdvantage par les deux collecteurs de Round (sonde : 5 Avantages contre 0, le Test de Terreur reste dû) — + Aura de Dhar sans filtre sorciers/démons
 - #1250 [domaine:combat, sev:majeur] Soft-lock du séquenceur : l'IA charge un allié, pendingDefense s'ouvre mais auto().active reste sur l'attaquant — fastForward scrute 400 fois sans tour humain, cascade résiduelle non drainée
@@ -359,13 +302,11 @@
 - #1259 [sev:mineur, type:système] Migration Poursuite v19 : la manche toute roulée non validée saute son commitStep (lignes de journal par coureur perdues)
 - #1260 [audit:contenu-manquant, domaine:combat, livre:LDB, sev:mineur, type:système] Poursuite LDB 15 l.94 : « sacrifier le plus lent » non modélisé (l'alternative d'arrêt n'a que sa moitié)
 - #1261 [domaine:coop, sev:mineur, type:système] Garde structurelle : interactive/surface d'un jet JAMAIS dérivé d'un prédicat seat-local (humanControlled/pilotedByHuman) — la classe de la régression coop du lot #1246
-- #1262 [chantier:affichage-jets, domaine:UX, domaine:coop, sev:majeur, type:système] CHANTIER : harmoniser l'AFFICHAGE des jets comme le moteur l'a été — le montage hôte→RollShell (rangées, possession, groupOwner, actions) en couture UNIQUE
 - #1263 [domaine:orchestration, sev:smell] outillage QC : __wfrp.place sans bornes de carte + decodeurs PNG dupliques refusant le type RGB des captures CDP
 - #1264 [domaine:coop, sev:majeur, type:système] Cadence : politique de l'HÔTE imposée à tous les sièges (Rapide local éteint la fenêtre d'un invité Manuel) — arbitrage table vs par-siège à instruire
 - #1265 [domaine:combat, livre:LDB, sev:mineur, type:système] Inconscient privé de TOUT test d'entretien (dont le retrait d'Empoisonné, LDB 16 l.68-79) — arbitrage maison non tagué fondu dans un prédicat de possession
 - #1266 [domaine:UX, sev:mineur] possessions : aucun geste pour equiper/ranger un objet DIVERS porte (la lanterne ne peut pas s eteindre) -- affordance manquante ou non decouvrable
 - #1267 [domaine:UX, sev:mineur] UI : le HUD de portraits intercepte les clics PAR-DESSUS la fiche personnage a fort zoom (onglets incliquables)
-- #1268 [domaine:coop, sev:majeur, type:système] Bandes de NUIT hôte-seul en coop : nightBands ne pose ni groupOwner ni actorId — l'invité ne voit jamais ses jets de nuit (classe #1246, committé L3)
 - #1269 [sev:mineur, type:système] Garde state-purity : allowlist au FICHIER, pas au SITE — un fichier exempté peut ajouter un import ui invisible ; re-juger les 3 entrées (vocabulaires de donnée mal placés)
 - #1270 [domaine:UX, sev:mineur, type:système] ARBITRAGE : les révélations ne se ferment plus toutes seules — fermeture EXPLICITE par défaut, le timer autoCloseMs devient l'exception justifiée site par site (forme openReveal du chantier #1262)
 - #1271 [sev:smell, type:système] Cliquet cascade-step-stake-guard : angle mort du matcher (raccourci « table, » non couvert) — étendre par la FORME et re-mesurer TOUT le stock
@@ -374,51 +315,82 @@
 - #1274 [domaine:UX, sev:majeur, type:système] TRONC rouge : ambiance.ts:154 branche par id ('clair') dans du code générique — garde registry-id-branch rouge pour toute session depuis 98e4774f (P2-6 météo)
 - #1275 [sev:smell, type:système] Garde anti-poison : la famille tombale « MIGRÉ en données / n'est PLUS un X » n'est pas couverte — 23 occurrences / 14 fichiers, tri pure-vs-contrat-vivant requis (classe #1271)
 - #1276 [audit:principe, livre:LDB, sev:mineur] Atlas tests.md:191 : « Intermédiaire par défaut » élargi à TOUT Test sans tag maison — le verbatim LDB 12 l.166 ne vise que les Tests OPPOSÉS
+- #1278 [domaine:combat, domaine:magie, livre:LDB, sev:mineur, type:système] Porte « agressive » (Peur de Taille) aveugle aux 53 sorts NUISIBLES non-missile — le lanceur neutre de tempête reste « non agressif » pour ses victimes
+- #1280 [sev:mineur, type:système] TRONC : eslint global ROUGE — plugin react-hooks non résolu (8 « rule not found » IsoStage/GameStage3D) + faceBake no-useless-assignment/prefer-as-const committés
+- #1285 [domaine:art, sev:mineur] harnais recette : __wfrp.stage3d() sans argument MUTE au lieu de lire -- seule exception a la convention zero-arg=lecture, non documentee
+- #1286 [domaine:combat, sev:mineur] scenarios de test : aucun ennemi humanoide a arme a distance -- les recettes de bandes de portee / telegraphe / IA tireur n'ont pas de cible
+- #1287 [sev:smell, type:donnée] voyage-stakes ne sait pas declarer un enjeu multi-folios (alsoIn absent du schema)
+- #1289 [domaine:art, sev:mineur] rendu volumique a l'ecran de JEU : billboard flou a zoom 260% + crans de face qui empilent le groupe + limites lit/non-lit en polygones noirs durs (juge vision cumul P3-0, distinct de #1215)
+- #1290 [domaine:art, sev:mineur] rendu volumique : le raster tranche le crane des grands rigs (elfe 1,020 / ogre 1,168 vs viewBox 120x150) + les gabarits BodyPlan n'ont aucune TOISE (ancre de chrome au haut de boite)
+- #1292 [domaine:art, sev:mineur] rendu volumique : la branche RIG SIMPLE des billboards ne retourne pas geometriquement en miroir (profil gauche rendu non flippe) -- les 3 autres chemins flippent
+- #1293 [domaine:art, sev:mineur] rendu volumique : la glisse VERTICALE des jetons saute d'1 m en une frame sur un ressaut legal (meme defaut que l'oeil POV corrige en P3-1a, groundUnderM pret) + partyLeaderOf recopie inline dans store.ts
+- #1295 [domaine:art, sev:mineur] affine : l'ellipse d'OMBRE au sol d'un token vole le clic d'une case libre (data-cid sur l'ombre, faux positif de hit-test -- le raycast volumique laisse passer)
+- #1296 [domaine:UX, sev:mineur] harnais recette __wfrp : 4 pieges mesures (screenPos null en webgl, confirm() ambigu sur modales empilees, killEnemies bloque sur Continuer, state() sans povActive) -- complete #1285
+- #1298 [chantier:affichage-jets, domaine:coop, sev:mineur] Unicite des ids d'etape dans une sequence : aucune garde generale -- seule la cle de regroupement des bandes de nuit est fermee (#1277)
+- #1299 [domaine:UX, domaine:coop, sev:mineur] Coop : la puce spectateur FIXE d'ActiveModal chevauche les reponses du dialogue (cascade ouverte pendant un dialogue)
+- #1301 [domaine:art, sev:mineur] Silhouette #1297 : doser ENSEMBLE l'opacité du couple corps (1) / anneau traversant (0,65)
+- #1302 [audit:contenu-manquant, livre:Middenheim] Middenball : les règles COMPLÈTES (Middenheim) — l'entrée actuelle est la variante rapide sans le dire
+- #1303 [audit:contenu-manquant, livre:NADJ] Séquences à durée déclarée : le temps de jeu n'avance pas (Middenball 6×10 min non modélisées)
+- #1304 [bug] Journal : l'anneau de 40 lignes chasse le tour du joueur dans les séquences à N tours auto-résolus (Torchon : 90 lignes émises, son propre coup perdu)
+- #1305 [domaine:art, sev:majeur] Météo volumique : MATIÈRE des nappes (dalles crénelées, arête franche) + perceptibilité (facteur dilué, brouillard=neige en top)
+- #1306 [audit:contenu-manquant, livre:NADJ] Al-zahr « Spécial » (NADAJ 16 l.19) : Chance en relance d'un lancer hors Test + Maîtrise des dés (lance N garde 2) — deux seams manquants
+- #1307 [enhancement] Outillage de recette des séquences : __wfrp.advanceSequence (tours de routine) + seed scopé séquence
+- #1308 [bug, sev:mineur] Éditeur : cliquer une case VIDE en mode Sélection ne désélectionne pas l'entité active
+- #1309 [domaine:art, sev:mineur] Éditeur volumique : finitions vision — arête d'empreinte sur le corps + échelle effective seulement en infobulle
+- #1310 [sev:mineur, type:donnée] Authorer ambientLight (id de palier) aux intérieurs à sources posées — les flaques vivent dès 'couvert'
+- #1311 [domaine:art, sev:mineur] Éclairage des billboards : silhouettes plates sur sol modelé (ratio corps/mur 1,64 après #1300)
+- #1312 [bug, sev:mineur] Le label d'auteur d'une entrée d'encounter ne traverse pas jusqu'au combattant affiché
+- #1313 [audit:principe, type:système] L'UI se PARAMÈTRE : les flux exposent de la structure, la coquille dérive tout l'écran (titres, boards, dénouements — le jet l'a, le reste non)
+- #1314 [bug, sev:mineur] Cartes authorées SANS ROUTE DE JEU : opera-staatsoper et vitrine-batiments (orphelines de l'écran de jeu)
+- #1315 [bug, sev:mineur] Repli sans-WebGL : three émet 2 console.error internes avant le catch applicatif
+- #1316 [domaine:art, sev:majeur] Plan de station volumique : rendu indigne de la prod (pont nu, postes superposés) + libellés de postes NON discriminants
+- #1317 [bug, sev:majeur] Filtre de couche : les PROPS d'étage (z1) sont supprimés à l'écran de jeu pendant que leur plancher est peint (les deux voies)
+- #1318 [audit:principe] AUDIT DE CONFORMITÉ À LA VISION — inventaire EXHAUSTIF des dérives par CLASSE + un verrou par classe (prévention, jamais guérison)
+- #1319 [bug, sev:mineur] Micro-secousse MOVE_BLOCKED (#792) : le retour visuel est perdu depuis la bascule volumique (le son survit)
+- #1320 [sev:smell] store.ts : 'webglSpike' orphelin dans SCREENS (mort a C5b)
+- #1321 [domaine:art, sev:mineur] Galeries QC : generation non deterministe + 3 galeries en echec sous tsx
+- #1322 [domaine:art, sev:smell] Rendu : les affordances au MONDE (16 overlays SVG tiennent la camera en otage)
+- #1323 [domaine:art, sev:smell] Rendu : le pivot emet des SOLIDES (fin des plans d'epaisseur nulle regonfles)
+- #1324 [domaine:art, sev:smell] Rendu : le degagement (cutaway) par RAYCAST, plus par occlusion 2D d'ecran
+- #1325 [domaine:art, sev:smell] Rendu : picking de tuile par RAYON (fin des hypotheses de lift, degenerees en vue top)
+- #1329 [audit:non-branché, sev:mineur, type:donnée] [dette] L'activité « rassemblement » (bataille-round) porte un resolver battleRally que RIEN ne résout — Test de Résistance sans effet mécanique
+- #1330 [audit:principe, sev:mineur] [#1318] STATE_LABEL_TO_ID : le journal FR est re-parse par LABEL pour retrouver des ids d'Etat (combatLog.ts:80 + combatNarration.ts:52) — frere du cas harvest, meurt avec V8
+- #1331 [domaine:art, sev:mineur] Rendu : le fond de scene (stageBg) suit la meteo mais PAS le palier de nuit
+- #1332 [domaine:combat, livre:LDB, raw-audit, sev:mineur] Chance de début de Round AMPUTÉE : le RAW donne « choisissez le moment où vous allez agir », le code ne sait que propulser EN TÊTE (roundStartPromote sans rang)
+- #1336 [domaine:combat, livre:LDB, raw-audit, sev:mineur] Détermination « Ignorer les modificateurs de critique » : le collecteur annule AUSSI des pénalités de MALADIE — le RAW (LDB 17 l.60) ne couvre que la Blessure critique
+- #1340 [audit:principe, sev:mineur] [#1318] Deux poisons doctrinaux au marchand/bourse : slugId derive d'un LABEL de Talent (merchantFlow:863) et metadonnees purpose/recipient jamais consommees (bourseFlow:81)
+- #1342 [raw-audit, sev:majeur, type:donnée] [BUG] creatures.json : 387 specs de Competence par LIBELLE (sur 1450) — avances perdues et bonus de navigation RAW silencieusement morts pour toute entite authoree (3e vie de #1341, mesure)
+- #1343 [domaine:art, type:système] Props en VRAI 3D — le décor quitte les billboards (héritier #1176)
+- #1344 [domaine:art, sev:smell] Solde des fossiles d'ornement de #1176 (TIMBERED_PARTS, relief 0,26 m, double quantification)
+- #1345 [domaine:UX, domaine:combat, sev:smell] Libellé générique « Arme » fabriqué en DONNÉE (creatureEquip.ts:119, spawn.ts:331) alors que le canon ATTACK_LABEL.arme (« Arme / griffes ») existe — fuite d'étiquette moteur à l'écran
+- #1346 [audit:non-branché, domaine:moteur-pur, sev:mineur] [#1318] Le tag menace:'Exposition' est MORT (le bouton Resistance ne peut jamais s'offrir sur le Test de fin d'Etape) — typer menace par l'union des ids de spec + trancher l'Exposition (spec maison ou retrait)
+- #1347 [domaine:art, sev:smell] Refonte des bancs et oracles qui nomment la voie affine morte comme second terme
+- #1348 [domaine:UX, domaine:combat, type:système] PROGRAMME — Refonte HUD de combat (console RT, invariant V2) : spec scellée, lots ordonnés
+- #1349 [domaine:UX, domaine:combat, sev:majeur] [#1348] Lot console — CONTENU PAR ZONE : chaque zone rend EXACTEMENT son spécimen (l'habillage V4 couvrait le contenu legacy, zones au double du dessin)
+- #1350 [domaine:UX, domaine:combat, type:système] [#1348] PROGRAMME vague retour-visuel : 5 éléments validés (réparer #1327 → plaquette de conséquence → infobulle-contrat → curseur-coût → prévision de zone par créature)
+- #1351 [audit:contenu-manquant, livre:LDB, sev:mineur, type:donnée] Destin/Résilience des PNJ importants : autorisés par LDB 17 l.9, aucun chemin d'authoring (arbitré : en donnée éditable — S4-c L4)
+- #1352 [] Canari rouge — environnement ou suite cassés
+- #1353 [domaine:cartes, sev:mineur] Cadrage caméra combat : des barres de vie de pions se rendent HORS viewport (slivers à x=0, rect 30×5 dans svg.iso-stage) — visibles en bord d'écran
+- #1354 [audit:non-branché, domaine:économie, sev:mineur] Save Codex mort pour seaCargo/landCargo : tableau nu écrit dans un fichier jamais lu (NESTED_ARRAY_FILE manquant, zéro schéma)
+- #1355 [bug] LifeBar overlay : valeur a 1,88:1 a meme le remplissage — le correctif contraste remonte a la PRIMITIVE, pas aux 2 sites du lot console
+- #1356 [bug] Combat fige au tour ennemi sur enc-mutants : l IA ne rend jamais la main — fastForward en boucle « borne atteinte », battle.turn colle a 4
+- #1357 [audit:principe, policy-à-trancher, sev:mineur] groups.ts : 2 tables par mot-clé de LABEL résiduelles (FOLDER_RULES 15 dossiers/87 créatures, TRAIT_RULES 2 lignes + arbitrage « nature dissimulée vs Haine »)
+- #1358 [bug] Consommables : 23/58 entrées du catalogue en prose pure sans consumable:Flow — jamais jouables, lot de curation + cliquet decroissant
+- #1359 [bug] docs/raw/combat.md : second stock LDB 14 non migre (~20 sites, cibles deja mesurees) + claim Bout portant 6207 a reinstruire (+40 au Source, pas +60) + angle mort reanchor sur refs nues
+- #1360 [audit:principe, domaine:cartes, sev:majeur] Dérive générateurs↔JSON de campagne : 11 blocs stake.authored posés à la main seraient DÉTRUITS par une regen (MapSpec seul chemin violé)
+- #1361 [audit:contenu-manquant, domaine:UX] Audit etat de l art du jeu entier — programme des verdicts (13 conformes, 11 non-standard, 10 manquants)
+- #1362 [domaine:UX] Selection de personnage en exploration : clic-portrait = mener (modele BG3) — PREREQUIS de l edition de barre hors combat
+- #1363 [domaine:UX] Examiner en exploration : clic droit ouvre la fiche Codex de la cible
+- #1364 [audit:contenu-manquant, domaine:UX] Onboarding/apprentissage des regles : VRAI SUJET a cadrer (0 tutoriel dans src/, finalite du jeu)
+- #1365 [audit:contenu-manquant, domaine:UX] Surbrillance des interactifs : TAB maintenu = reveler (liseré sur les interactifs visibles)
+- #1366 [audit:contenu-manquant, domaine:coop] Ping coop : clic-milieu = marqueur temporaire visible par tous les sieges
+- #1367 [audit:contenu-manquant, domaine:UX] Quicksave/quickload : F5/F9 sur slot dedie rapide (exploration seulement)
+- #1368 [audit:contenu-manquant, domaine:UX] Toasts sobres pour les gains et evenements non-bloquants (le journal reste l historique)
+- #1369 [domaine:UX, domaine:combat] Formation de marche = deploiement d entree en combat (fini le groupe en ligne) ; furtivite reste au jet RAW
+- #1370 [domaine:combat, sev:majeur] RAW : boire une potion est une action GRATUITE (LDB 13 l.106, exemple canonique) — le moteur charge l Action
 
 ## Fermées
 
-- #777 [campagne:EDO] test-infra: campaign-snapshot.test.ts (vi.resetModules) — flake intermittent sous isolate:false selon la distribution des workers
-- #778 [campagne:EDO, domaine:cartes, livre:EDO-EDOC, sev:majeur] Améliorer l’authoring ASCII des bâtiments multi-étages — cas pilote La Diligence
-- #779 [domaine:cartes, sev:mineur] Authoring ASCII : char d'arête fenêtre dans les grilles box-drawing (fin des WallSpec coordonnés)
-- #780 [domaine:cartes, sev:majeur] MapSpec : recette déclarative d'escalier (CellRecipe.stair) compilée vers rampe + trémie validée
-- #781 [domaine:cartes, sev:mineur] Pans diagonaux \ et / : approximation orthogonale verrouillée par un garde fail-fast
-- #782 [domaine:UX, domaine:cartes, sev:mineur] MapSpec : zones descriptives nommées par calque ASCII (ops facultatifs sur SceneEffectZone)
-- #783 [domaine:art, domaine:cartes, sev:mineur] Décors : escalier-bois et balustrade-bois génériques (dé-scoper l'opéra) + purge tombale Scene.stairs
-- #784 [domaine:art, domaine:cartes, sev:mineur] Décors : vocabulaire d'auberge-relais (enclume/foyer de forge, cuve de brasserie, stalle d'écurie)
-- #785 [domaine:art, livre:AA, sev:mineur, type:donnée] structureAppearance : apparence colombages pour mur-a-ossature-en-bois
-- #786 [domaine:cartes, sev:smell] Réf morte : scripts/qc/gen-opera-ascii.mts cité par floorplan.ascii.ts
-- #788 [audit:principe, campagne:EDO, domaine:cartes, sev:mineur] Étiquettes de zone : largeur stable aux 4 rotations + ancrage vs figurine (polish #782)
-- #789 [audit:principe, domaine:cartes, domaine:combat, sev:majeur] Coupe-de-coin diagonale : un mur d'arête ne scelle pas les coins d'une pièce (2e jambe non testée)
-- #790 [audit:principe, domaine:cartes, domaine:combat, sev:mineur] Coupe-de-coin diagonale cross-couche : le garde n'évalue les arêtes qu'au z de départ
-- #791 [] Props multi-étages : entityBlockedAt ignore la couche z
-- #792 [audit:principe, domaine:cartes, sev:mineur] Exploration : aucun retour quand un pas clavier est bloqué (snap/oscillation silencieux)
-- #793 [audit:principe, sev:mineur] __wfrp.goto rapporte un succès quand le groupe ne bouge pas (outil de recette)
-- #794 [campagne:EDO, domaine:cartes, sev:majeur] La Diligence injouable : portes de liaison manquantes + escaliers à réorienter + zone 'Mur extérieur' parasite
-- #795 [audit:principe, domaine:cartes, sev:majeur] Câbler mapQC comme garde de scène (échoue si pièces inatteignables) + reachability jouable (props par étage)
-- #798 [domaine:combat, sev:majeur] z-blind: AoE cross-étage — combatantsWithinRadius 2D frappe l'étage voisin (souffles/grenades/zoneBlast)
-- #799 [domaine:combat, sev:majeur] z-blind: zones persistantes perdent le z — barrière/feu/fumée d'un étage agit sur l'autre
-- #800 [domaine:cartes, domaine:combat, sev:majeur] z-blind: interaction/ramassage 2D — on fouille & loote à travers le plancher
-- #801 [domaine:combat, sev:majeur] z-blind: ouverture de combat perd partyPos.z — héros placés au rez quand on se bat en étage
-- #802 [domaine:combat, sev:mineur] z-blind: helpers de placement cherchent en z0 et perdent le z (pushBack/displace/summon/monture)
-- #803 [domaine:cartes, sev:mineur] z-blind: types de scène sans champ z (Trigger.rect, restZones.rect, moveEntity.to) — jumeaux de #782
-- #804 [domaine:cartes, sev:mineur] z-blind: rendu — étiquettes de zone des 2 étages superposées (buildZoneLabels non gaté) + highlights/overlays z0
-- #805 [domaine:combat, sev:mineur] z-blind: aura & LoS-fumée 2D traversent les étages
-- #807 [audit:principe, domaine:cartes, domaine:combat, sev:majeur] z-blind: garde structurel anti-régression (séparation d'étage: aire/zone/interaction/blocage/aura/label)
-- #811 [bug, domaine:UX, domaine:campagne, sev:majeur] Editeur : l echec de sauvegarde d une campagne reste INVISIBLE (le resultat de projectSave y est jete)
-- #822 [audit:principe, domaine:art, domaine:cartes, sev:majeur] Toiture DÉRIVÉE d'une masse de bâtiment — supprime  authoré à la main ET  (mort)
-- #823 [audit:non-branché, domaine:UX, domaine:cartes, sev:majeur] Editeur : ouvrir une scene EMBARQUEE, isoler les couches, et REEXPORTER en ASCII
-- #826 [domaine:UX, domaine:cartes, sev:majeur] Editeur : le calque Pieges peint un voile orange sur tout le batiment — carte illisible par defaut
-- #830 [audit:principe, domaine:UX, domaine:cartes, sev:majeur] Editeur : l'outil mur ne porte pas son MATERIAU (499 murs a convertir un par un) + le catalogue de structures melange murs, vehicules et herses
-- #832 [audit:contenu-manquant, domaine:art, domaine:cartes, sev:majeur] 10 des 16 structures posables n'ont AUCUNE apparence (repli silencieux sur plain) + deux entrees quasi homonymes 'Mur en/de pierre'
-- #833 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:système] VDM — ANCRAGE FOLIO du corpus (aucun span data-folio) : prérequis bloquant des 8 tickets de curation
-- #839 [chantier:VDM, domaine:UX, domaine:primitives-UI, sev:majeur, type:système] Options : la Cadence n'est pas une règle optionnelle (seule ref maison sur 77) + l'onglet Règles maison déborde (77 règles, 15 sections, un seul défilement)
-- #843 [audit:non-branché, chantier:VDM, domaine:moteur-pur, livre:VDM, sev:majeur, type:système] Vocabulaire mécanique : 8 manques MESURÉS qui empêchent la fidélité RAW (Trigger tiers, test en table, PsychType clos, réveil, lancer un sort, souffle, annuler une Imparfaite, ActivityDef)
-- #846 [audit:non-branché, chantier:VDM, domaine:moteur-pur, livre:VDM, sev:majeur, type:système] Moteur : un bonus de DR d'OBJET s'applique sans condition de port (3 robes cumulent +6 DR depuis un sac)
-- #850 [audit:principe, chantier:VDM, livre:VDM, sev:majeur, type:donnée] [VDM] La cotte de mailles de bravoure usurpee porte 2 PA alors que sa description dit 3 — et la garde verrouille l erreur
-- #851 [chantier:VDM, domaine:magie, livre:VDM] Codex : exposer arcane-phenomena.json (magie environnementale VDM 14) - dataset cure mais invisible au joueur
-- #852 [audit:principe, chantier:VDM, domaine:magie, livre:VDM, sev:majeur] [VDM] Les passifs d objet ne sont pas gates sur le PORT : trois robes de sorcier en sac donnent +6 DR de Focalisation
-- #855 [audit:non-branché, sev:majeur] Quatre primitives de sceneEdit sont re-exportees a l editeur et n ont AUCUN appelant de composant
-- #868 [audit:non-branché, domaine:religion, livre:LDB, sev:majeur, type:donnée] 35 Prieres du LDB routees sur un Test de Langue (Magick) au lieu du Test de Priere
 - #882 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:donnée] Magister Vigilant et Umbramancien NON CURABLES : extraction amputee (folios 42 et 104)
 - #883 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:donnée] Les 40 niveaux de carriere VDM n ont AUCUNE avance de Caracteristique (schemas de progression non lus)
 - #885 [audit:non-branché, chantier:VDM, domaine:combat, domaine:magie, livre:VDM, sev:majeur, type:système] Surincantation VDM : l'IA subit le nerf du Projectile magique sans jamais pouvoir allouer l'axe Degats (damage:0 en dur)
@@ -438,6 +410,7 @@
 - #949 [domaine:coop, domaine:magie, sev:majeur, type:système] Flux opposition sans surface coop : les gestes de la cible s executent en LOCAL chez l invite (desync silencieuse), et la rangee CastModal est gatee par kind, pas par siege
 - #955 [domaine:UX, domaine:primitives-UI, sev:mineur, type:système] Champ « De fixe » pre-jet : commit a CHAQUE frappe -- taper 50 declenche le jet des le 5, un nombre a deux chiffres est insaisissable au clavier
 - #956 [domaine:UX, domaine:primitives-UI, sev:mineur, type:système] CodexRef inline (.ab-codex-info) : disque ~11 px sans glyphe lisible a cote des chips de modale -- lit comme une poussiere, pas une affordance
+- #960 [domaine:moteur-pur, sev:majeur, type:système] Deux FORMES de sauvegarde sous le meme SAVE_VERSION 15 : l ouvrage/rituel d interlude d un save ancien est PERDU en silence (migration ecrite puis supprimee, jamais reinstauree)
 - #961 [audit:principe, domaine:UX, sev:mineur, type:système] Residu de classe #904 : registry.ts:2263 aplatit encore creatureIds en libelles puis re-resout par texte (latent, garde manquante)
 - #963 [domaine:magie, livre:LDB, sev:mineur, type:règle-optionnelle] Contre-sort a PLUSIEURS : agregat « meilleur DR » maison presente comme RAW (l.156 ne parle que d UN dissipateur) et le Test Soutenu (l.162) jamais offert
 - #965 [domaine:coop, sev:mineur, type:système] Verbe resist hors surface coop mais OFFERT sur la rangee d un invite : le clic s execute en LOCAL (store divergent) -- meme classe que #949, hors de portee de l invariant pid-acteur=>coop
@@ -477,6 +450,7 @@
 - #1078 [domaine:UX, domaine:primitives-UI, sev:majeur] CONFORMITÉ DE PRÉSENTATION : l'affichage ENTIER des jets — chaque zone de chaque écran classée RÉGIE ou LIBRE, règle de charte + primitive pour toute zone libre
 - #1104 [domaine:UX, sev:majeur] Boucles SYNCHRONES de Tests de heros hors hote : redressement de chavirage (3,13 pct de naufrages vs 0,13 avec UNE Chance) et Exposition en mer (62 pct d echecs x 2-4 Tests/jour/heros)
 - #1112 [domaine:UX, livre:LDB, sev:majeur] La DIFFICULTE se tait sur les lignes OPPOSEES (11 sites mesures — LDB 12 l.166 : Intermediaire par defaut) ET sur les etapes de cascade du voyage (capture utilisateur : « Voile | 38 », « 38 +20 = 58 » au +20 ANONYME) — defaut au SOCLE + population cascade a mesurer
+- #1117 [domaine:UX, domaine:primitives-UI] Contrat : tout jet DIT son POURQUOI (enjeu + renvoi regle) - globalisation de la zone d'enjeu
 - #1135 [] Terminer et recetter la refonte du HUD combat/exploration
 - #1137 [domaine:UX, domaine:combat, sev:mineur] Pré-combat : survol de carte actif sous modale bloquante, infobulle tronquée, affordance « Commencer le combat »
 - #1143 [domaine:UX, domaine:combat, sev:mineur] Tour ennemi illisible : la modale de Défense ne dit pas QUI attaque (Z1 absente), le bandeau de combat reste périmé pendant l'attaque suivante
@@ -489,6 +463,7 @@
 - #1158 [domaine:cartes, sev:mineur] qc:env ROUGE — vit-taverne case 21,4 hors masse : instrument de non-régression du rendu cassé
 - #1165 [domaine:cartes, sev:mineur] arene : 9 PNJ du Bourg sans espece ni ref (NPC() du generateur) — 11 erreurs console au chargement
 - #1172 [domaine:cartes, sev:mineur] derivation des masses : un corps a parts vides avale tout le plancher dans l ordre du tableau (Diligence architecture-0 a 0 masse)
+- #1176 [domaine:art, type:système] CHANTIER : migration du moteur de rendu vers le backend WebGL (decision user 2026-08-09)
 - #1181 [domaine:cartes, sev:mineur] diligence : le toit au-dessus des escaliers a corriger (demande user 2026-08-09)
 - #1186 [domaine:art, sev:mineur] toitures : les raccords se traversent au lieu de se raccorder (volumes secants inter-masses, pignons nus, sabliere sur le pan)
 - #1189 [audit:non-branché, domaine:combat, type:système] Psychologie : les consequences vivent EN DUR (psychState, Brise par addCondition direct, immunites croisees) — les chips d'issues se taisent faute d'ops
@@ -497,6 +472,7 @@
 - #1199 [domaine:combat, sev:mineur, type:donnée] Tronc ROUGE : book-source-integrity — psychology.json terreur porte page 192, le folio du verbatim est 191
 - #1200 [domaine:combat, livre:LDB, sev:majeur, type:donnée] psychology.json : 7 descs sur 9 sont des PARAPHRASES sous un p.192 forfaitaire — remise au verbatim + folios mesurés + la garde doit dire ce qu'elle SAUTE
 - #1202 [audit:principe, domaine:combat, livre:LDB, sev:mineur] Peur : l'axe « considérée comme AGRESSIVE » (LDB 85, Taille) n'existe pas — le filtre par CAMP en tient lieu en silence ; un allié frénétique n'effraie jamais les siens
+- #1207 [domaine:moteur-pur, sev:mineur] Fixtures de saves : aucun golden de la version COURANTE, et le README promeut encore v15 comme golden courant
 - #1211 [domaine:UX, sev:mineur] Recette : la sonde de classification d'erreur du pipeline de capture (#1196) n'est pas committée — le harnais node --test de scripts/ existe, la promouvoir
 - #1218 [domaine:combat, sev:mineur] Portée du plafond des Difficultés : 2 questions RAW ouvertes par Lv — l'asymétrie des mods causés par la CIBLE (À Terre circonstance vs Parasité/Allonge jet) et la portée HORS combat
 - #1224 [domaine:combat, livre:LDB, sev:majeur, type:donnée] Psychologie : 4 écarts mécaniques révélés par le verbatim — Phobie = Peur 1 (pas un binaire), Intimidation absente des immunités de Haine/Amour, pénalités de succès d'Animosité/Préjugé non modélisées
@@ -505,3 +481,27 @@
 - #1232 [domaine:combat, livre:LDB, sev:mineur, type:donnée] Perturbant : l'aura restreinte aux ennemis contredit le normatif « Toute personne » (LDB 85 l.262) — et la réf du hook pointe Langue préhensile
 - #1245 [domaine:UX, domaine:art, sev:majeur] CHANTIER lumieres posees : de VRAIES lumieres ponctuelles dans le moteur volumique (braseros/lanterne/sort) -- l ancien rendu affine est constate mort, ne pas le reproduire (directive user 2026-08-10)
 - #1246 [domaine:UX, domaine:combat, livre:LDB, sev:mineur] Poursuite terrestre : N modales séquentielles (1/8) au lieu d'UNE bande multi-rangées — et le montage pose une FONDUE dans base (classe L3)
+- #1247 [domaine:art, sev:mineur] meteo volumique : brouillard sans expression + teinte d'orage absente + pluie visible sur les nappes levees par le cutaway (residus P2-6)
+- #1262 [chantier:affichage-jets, domaine:UX, domaine:coop, sev:majeur, type:système] CHANTIER : harmoniser l'AFFICHAGE des jets comme le moteur l'a été — le montage hôte→RollShell (rangées, possession, groupOwner, actions) en couture UNIQUE
+- #1268 [domaine:coop, sev:majeur, type:système] Bandes de NUIT hôte-seul en coop : nightBands ne pose ni groupOwner ni actorId — l'invité ne voit jamais ses jets de nuit (classe #1246, committé L3)
+- #1277 [sev:mineur, type:système] nightBands : collision d'id quand meta.day existe — le rang de dédoublement est jeté (2 Convalescences même jour même héros = 2 bandes de même id, injoignables)
+- #1279 [audit:principe, domaine:moteur-pur, type:système] CHANTIER (post-#1262) : le SOCLE DE SÉQUENCE composable — le squelette manche/état/clôture/fin que Poursuite, taverne, crises et rounds réécrivent chacun à la main (3 étages : socle TS, personnalisation, JSON conditionnel)
+- #1281 [domaine:UX, domaine:coop, sev:mineur, type:système] Traces des bandes AUTO-RÉSOLUES : le dé et la cible ne laissent aucune ligne (et l'ÉCHEC d'exposition disparaît entièrement) — meta.autoResolved au socle, une trace par rangée
+- #1282 [domaine:combat, sev:mineur, type:système] Slot pendingCorruption ÉCRASÉ sans file par 2 sites (combatEffects:1251, interludeFlow:1223) — un Test de seuil affiché serait perdu ; gainCorruption devient LA porte du slot
+- #1283 [chantier:affichage-jets, domaine:UX, sev:mineur] Zero jet silencieux PAR CONSTRUCTION -- la trace au journal devient une zone du contrat du socle #1262 (volet mono + extinction des re-prints par flux)
+- #1284 [domaine:art, sev:mineur] rendu WebGL : focus de piece en volumique -- canal KeepEl + arbitrage produit (retirer/estomper/rien)
+- #1288 [domaine:art, sev:mineur] rendu : hauteur de jeton divergente affine 93px vs volumique 52px (zoom 1) -- anneau/corps x1,79 et canal daltonien R9 sous seuil a 40px cote affine
+- #1291 [chantier:affichage-jets, domaine:UX, sev:smell] Bande auto-resolue : le de s'affiche DEUX fois (RollRow du PV + ligne #1281 au journal) -- la surface unique se tranche
+- #1294 [chantier:affichage-jets, sev:smell] traceLineOf ne parle pas l'OPPOSE (2 jets/1 ligne) et deux patrons de ligne de de coexistent (describeTestRoll) -- unification
+- #1297 [domaine:art, sev:majeur] rendu volumique : OCCLUSION des jetons par les murs divergente de l'affine (corps occlus, chrome flottant au-dessus de la crete) -- arbitrage produit : silhouette / degagement / parite / realisme
+- #1300 [domaine:art, sev:majeur] rendu volumique : MODELE NUL en interieur (ambiante seule + Lambert = faces sans normale -- un pilier est UNE couleur, l'affine donne x1,64 inter-faces) -- chantier d'eclairage partage iso/POV/top
+- #1326 [] Galeries QC : 3 générateurs en échec (ItemIcon, Animations, Toise) + tenue-gallery 100 % repli Nu (lookup par label)
+- #1327 [] Régression P3-4 : ANIM_IMPACT orphelin en volumique — flottants de dégâts et SFX d'impact muets en combat
+- #1328 [] POV : billboards de personnages pixelisés — palier de rasterisation calé sur ZOOM_MAX plateau, aveugle à la distance POV
+- #1333 [audit:principe, sev:mineur] [#1318] Le garde i18n-narration ne reconnait le francais qu'a l'ACCENT : ~100 litteraux FR invisibles, et combatFlow declare MIGRE porte 8 lignes brutes — l'invariant Phase C est faux en substance
+- #1334 [] Flipbook : ombre portée = la PLANCHE entière (grille de mini-silhouettes au sol) — passe de profondeur sans uFrameRect
+- #1335 [] Outillage recette : resumeLastScenario après HMR, testids du menu scénarios, doc seed/previewRoll pour impact garanti
+- #1337 [] Volumique : le surlignage de SURVOL remplace TOUTE la couleur du corps (boardChromeTint) — un corps pâle devient une silhouette plate de teinte de relation
+- #1338 [domaine:art, sev:mineur] Galeries/QC : 357 « repli Nu » restants (labels en career dans 4 générateurs + 13 _qc) ; weapon-gallery vide en silence
+- #1339 [bug, domaine:combat, sev:mineur] Cascade fantôme : pendingCascade ouvert SANS porte UI après plusieurs tours d'IA en fastForward (entrainement) — le tour humain revient bloqué en silence
+- #1341 [domaine:naval, raw-audit, sev:majeur] [BUG P1] La Competence specialisee demandee par LABEL au lieu de l'id : le charpentier est jauge SANS ses avances au calfatage/renflouage (riverVoyageFlow:835/847 — 35 au lieu de 60, mesure)

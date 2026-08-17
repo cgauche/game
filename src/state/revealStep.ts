@@ -1,10 +1,8 @@
 /**
  * CONVERSION « révélation → étape d'AFFICHAGE de cascade » (#942 L8) — module FEUILLE : le seul
  * endroit qui sait fabriquer un `CascadeStep` à partir d'une `RevealEntry` (icône par kind, cadence
- * d'auto-fermeture par gravité, charge riche portée telle quelle). Partagé par l'émetteur runtime
- * (`pushReveal`, state/combatEffects.ts) et par la migration de save qui reprend les révélations
- * d'une partie sauvegardée (`MIGRATIONS[15]`, state/saves.ts) — d'où l'extraction hors de
- * `combatEffects` (que `saves.ts` ne peut pas importer : cycle store↔flux).
+ * d'auto-fermeture par gravité, charge riche portée telle quelle). Extrait de `combatEffects` pour
+ * rester importable par les modules FEUILLE, hors du cycle store↔flux.
  */
 import type { CascadeTableDone, RevealEntry } from './pendings';
 import type { BuiltCascadeStep } from './stepBrand';

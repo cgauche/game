@@ -81,7 +81,7 @@ export const nightBands = makeBandFactory<BuiltCascadeStep>({
     // de nuit peut n'avoir aucun jour — la file de fin de combat en porte). Le seul lookup-par-id de
     // prod (`meta.nextWaveOf`) et les coordonnées de rangée (`nightRowId`) viseraient la mauvaise
     // fenêtre. Ids RUNTIME-ONLY : aucune sauvegarde ne les rejoue (elle restaure la séquence telle
-    // quelle ; `MIGRATIONS[17]` les reconstruit par cette même fabrique).
+    // quelle).
     id: step.meta?.day !== undefined ? `bande-${step.id}-j${step.meta.day}${rang > 1 ? `#${rang}` : ''}` : `bande-${step.id}-${rang}`,
     kind: step.kind,
     ...(step.label !== undefined ? { label: step.label } : {}),

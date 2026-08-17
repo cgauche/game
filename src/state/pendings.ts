@@ -1515,8 +1515,8 @@ export type CascadeTableDone = CascadeTableDecl & { result: CascadeTableResult }
  * n'est pas SURFACÉ (`rollSeam.surfaceOf`) — plus de booléen qu'un producteur pourrait oublier, ni
  * contredire. Le reste des lectures visait déjà des RANGÉES (`stepReady` batch, `interactiveOf` des
  * modales, `CascadeModal.rollAllRows`), la surface d'une étape se décidant par sa POSSESSION
- * (`modalArbiter`) et son INTERACTION (`stepInteraction`). Les sauvegardes le perdent par
- * `MIGRATIONS[20]` — la nouvelle définition ne le lit plus, la migration reste donc une pure purge.
+ * (`modalArbiter`) et son INTERACTION (`stepInteraction`). Plus personne ne le lit ni ne l'écrit :
+ * une sauvegarde de la version courante n'en porte plus.
  * Les RANGÉES gardent le leur (`BatchParticipant`, homonyme mais autre champ : il dit qui JOUE, et
  * c'est `surfaceRow` qui le pose).
  */

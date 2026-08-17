@@ -47,7 +47,7 @@ const HORS_SURFACE_UI: Record<string, string> = {
   setInspectId: CLIENT('inspection d’un statbloc'),
   toggleInspectEnabled: CLIENT('bascule d’inspection'),
   clearCursor: CLIENT('curseur clavier'),
-  panCamBy: CLIENT('caméra'),
+  setCamPan: CLIENT('caméra'),
   resetCamPan: CLIENT('caméra'),
   setZoom: CLIENT('zoom'),
   togglePov: CLIENT('vue subjective'),

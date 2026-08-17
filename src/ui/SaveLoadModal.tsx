@@ -1,11 +1,11 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useGame } from '../state/store';
-import { listSaves, readSlot, deleteSlot, exportSave, SAVE_SLOTS, AUTO_SLOT, type SaveSlot, type AnySlot, type SaveMeta } from '../state/saves';
+import { listSaves, readSlot, deleteSlot, exportSave, takeObsoleteNotice, SAVE_SLOTS, AUTO_SLOT, type SaveSlot, type AnySlot, type SaveMeta, type ObsoleteCause } from '../state/saves';
 import { downloadText } from '../state/fileIo';
 import { GameDate } from './GameDate';
 import { Modal } from './Modal';
 import { Icon } from './Icon';
-import { t } from '../i18n';
+import { t, type MsgKey } from '../i18n';
 
 /**
  * Sauvegarde / chargement (Jalon 5) — 3 emplacements manuels + 1 emplacement AUTO (écrit aux
@@ -18,6 +18,14 @@ const autoMetaOf = (): SaveMeta | null => {
   return s ? { version: s.version, savedAt: s.savedAt, sceneLabel: s.sceneLabel, gameTime: s.gameTime } : null;
 };
 
+/** Message du joueur par CAUSE de rejet (`ObsoleteCause`) : la version antérieure, la version plus
+ *  récente et le contenu illisible ne se disent pas d'un même mot. */
+const OBSOLETE_MSG: Record<ObsoleteCause, MsgKey> = {
+  anterieure: 'saveload.error.obsolete',
+  future: 'saveload.error.futureSave',
+  illisible: 'saveload.error.unreadable',
+};
+
 export function SaveLoadModal({ mode, onClose }: { mode: 'save' | 'load'; onClose: () => void }) {
   const saveGame = useGame((s) => s.saveGame);
   const loadGame = useGame((s) => s.loadGame);
@@ -26,7 +34,23 @@ export function SaveLoadModal({ mode, onClose }: { mode: 'save' | 'load'; onClos
   const [autoMeta, setAutoMeta] = useState(autoMetaOf);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const refresh = () => { setMetas(listSaves()); setAutoMeta(autoMetaOf()); };
+  // Une save dont la version diffère de `SAVE_VERSION` est retirée du stockage à la lecture
+  // (`readSlot`) : le témoin, posé par la lecture qui l'a jetée (`listSaves` ci-dessus, ou l'écran
+  // d'accueil), devient ICI le message au joueur — sans quoi l'emplacement se viderait en silence.
+  // La consommation est un EFFET, jamais un initialiseur de rendu : sous `<React.StrictMode>` (le
+  // montage réel, `main.tsx`) le corps est joué DEUX fois, et la 2ᵉ passe — qui trouverait le témoin
+  // déjà consommé — retiendrait `null`. L'effet ne fait que POSER un message, jamais l'effacer : son
+  // double-appel StrictMode est donc sans effet.
+  useEffect(() => {
+    const cause = takeObsoleteNotice();
+    if (cause) setError(t(OBSOLETE_MSG[cause]));
+  }, []);
+  const refresh = () => {
+    setMetas(listSaves());
+    setAutoMeta(autoMetaOf());
+    const cause = takeObsoleteNotice();
+    if (cause) setError(t(OBSOLETE_MSG[cause]));
+  };
 
   const onSave = (slot: SaveSlot) => { setError(saveGame(slot) ? null : t('saveload.error.save')); refresh(); };
   const onLoad = (slot: AnySlot) => { if (loadGame(slot)) onClose(); else setError(t('saveload.error.load')); };
