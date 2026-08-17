@@ -482,6 +482,71 @@ COMBAT, allégé** — une seule loi d'assemblage pour tout le jeu (§1c-ter) :
 - Touches d'ouvreurs d'écrans (I/J/M-style, registre `labelKey`) : volet ultérieur,
   consigné — pas dans le premier lot.
 
+## Zone 12 — REGISTRE DES ACTIONS (design SCELLÉ 2026-08-17 : jugé + grounding exhaustif)
+
+Demande user (verbatim : « il faut un fichier .json qui liste toutes ces "capacités"
+plutot que les avoir un peu partout dans l'application ») ; mandat « Ok, je compte sur
+toi ». Design attaqué par juge (6 lentilles) + 2 groundings (inventaire complet).
+
+**FAITS ÉTABLIS** : ~44 méthodes `battle*`, ZÉRO orpheline — toutes routent par le FOYER
+UNIQUE `ActionBar.tsx` (slots :417-496, sous-panneaux cast/dispel/advantage/resolve/ammo,
+sous-menu Attaque via `availableAttacks`) ou `targetingModes.ts` (dispatch de clic).
+L'ActionBar = le MANIFESTE exhaustif (~31 ids, icônes et coûts en texte dur) ; la console
+n'en couvre ~6 → **~20 actions sans surface vivante** (sonde du juge, pas 7). Cause
+racine mécanique : `hotbarBridge` positionnel par closures (meurt avec le composant) + 4
+espaces d'ids forkés (`KEYBINDINGS`, union `BattleState.action`, clés de console
+préfixées position, ciblages). `maneuvers.json` (27 entrées) et `crew-test-types.json`
+(11) sont les embryons data existants ; 37 icônes combat dorment au registre
+(`action/*` 20 — mount/dismount/serve-engine/leave-post/steer-ship/water comprises,
+`melee/*` 7, `creature/*` 10) ; `spells.json` : 0 icône sur 576.
+
+**FORME (verdicts du juge intégrés)** — `src/data/actions.json`, une entrée par action :
+`id` stable (sans préfixe de position) · `label` (affichage, minteur `dataLabel` — patron
+`activities.json`) · `icon` (id du registre) · `rule?` (cible Codex, liaison gardée) ·
+`source` · `cost` + **`maison: true` + `costNote` quand le coût est notre arbitrage**
+(RAW re-vérifié AU SOURCE : PAS de catalogue d'Actions en LDB 13 — verbatim l.106 :
+« C'est le MJ qui va décider ce qui vous coûtera votre Action, et ce que vous pouvez
+faire au cours d'un Round. On part en général du principe que si un acte nécessite un
+Test, c'est que c'est une Action plutôt qu'une Action gratuite. » — et la clause suivante
+regarde le plafond maison de la commutation : « Le fait de se retrouver *Engagé* en
+Combat peut interdire l'utilisation d'une Action gratuite qui nécessite une certaine
+concentration » ; arbitrage user 2026-08-17 verbatim : « le LDB indique que si y'a un
+jet, c'est une action comme une guideline pour décider ce genre de chose, mais qu'au
+final c'est le MJ qui décide » → la guideline = DÉFAUT de remplissage des coûts, tout
+écart = maison explicite — règle 7, le MJ c'est la donnée) · `surface` par défaut
+(`deduite-du-set`/`grille`/`pastille-entite`/`hors-console`) · `gate` = ID DE PRÉDICAT
+enregistré (⚠ `Condition[]` RÉFUTÉ par le juge : algèbre d'acteur à 4 champs numériques,
+0/10 actions exprimables — patron retenu = `resolver` d'`activities.json`) ·
+`candidates` = id de SÉLECTEUR impur (sortie injectée dans `AiInput` — l'IA reste pure
+et perd sa liste manuscrite) · `mode?` (id `TargetingMode` existant) · `run` = id du
+dispatcher (JAMAIS de code en JSON).
+
+**CODE** : `ACTION_GATES`/`ACTION_CANDIDATES`/`runAction(id, ctx)` ; **`KEYBINDINGS`
+devient CONSOMMATEUR** (pas un 5ᵉ registre : `run: runAction(id)`, libellé résolu du
+registre) ; `BattleState.action` se type DEPUIS le registre ; les clés de console
+deviennent des ids d'action (la POSITION sort de l'id — l'arbitrage « touche = CASE »
+reste : la touche suit la case, la case porte un id) ; le pont hotbar publie des paires
+(actionId, run) dérivées du registre, plus des closures anonymes.
+
+**GARDES (les sondes du juge promues)** : atteignabilité — itère `actions.json`, toute
+action éligible a une surface vivante (case/pastille/touche/focus), baseline GELÉE
+DÉCROISSANTE (~20 au départ, patron knip/raw-blind-refs) ; RÉCIPROQUE fail-closed — tout
+slot/case/id d'action NON déclaré au registre = rouge (sans elle la classe « action
+perdue » se reforme par un slot manuscrit).
+
+**POISON à corriger au 1ᵉʳ lot** : `turnEconomy.ts:11-14` — commentaire « réutilise
+EXACTEMENT les prédicats de l'ActionBar … une seule source de vérité » = FAUX (2ᵉ
+dérivation manuscrite, divergence déjà vécue : bug Détermination corrigé aux 2 sites,
+commit `0e14119b`) — les prédicats passent au registre (`ACTION_GATES`), les 2 sites le
+consomment.
+
+**ORDRE DES LOTS** : (1) registre + dispatcher + transcription du manifeste ActionBar
+(~31 entrées, icônes existantes réutilisées) + les 2 gardes — AUCUN pixel ne change ;
+(2) branchements des surfaces AVEC icônes (console/clavier par id, pastilles d'entité,
+grille + défauts de remplissage) — baseline d'atteignabilité décroît à chaque lot ;
+(3) purge `ActionBar` (b3.16) quand la baseline atteint 0 + réécriture
+`hud-clickables.mjs` ; (4) passe de matière.
+
 ---
 
 ## Vague 2 — RETOUR VISUEL (validée par l'utilisateur le 2026-08-16, 5 éléments)
