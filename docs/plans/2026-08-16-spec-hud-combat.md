@@ -24,16 +24,55 @@ lot console — composant réel `CombatConsole.tsx` + `combat-console.css`, mont
 captures + DOM) : **1280×800 TIENT** (console 185px = 23 % du viewport, zéro débordement,
 géométrie immuable PROUVÉE — 8/12 cases constantes entre la sorcière 211 sorts et un tireur
 nu) ; **360×640 : 69 %** (442px) — le budget ~40 % explose en portrait.
+✅ MATIÈRE VISUELLE (2026-08-16) : l'ébauche de maquettes est récupérée (artefact
+« Maquettes UI Warhammer Fantasy Web » → `docs/plans/2026-08-16-ebauche-maquettes-hud.artifact.html`,
+auto-contenu, se rend au navigateur ; 11 captures au scratchpad de session). ⚠ STATUT
+(verbatim user : « cette maquette a été faite avant l'invariant ») : c'est la MATIÈRE de
+départ — plaques acier/laiton, gouttières, conduit, plaquettes, cartouche de cible — PAS la
+cible de conformité. La STRUCTURE vient de cette spec ; toute divergence se résout POUR
+l'invariant (zone J refusée ; clavier lettres/F1-F4 remplacé par touche=case ; « Se
+cacher » sans moteur — dette à trancher avant toute case ; G6 → pastilles d'entité). La
+CIBLE visuelle du lot console = **LA PLANCHE USER du 2026-08-17** (bloc ✅ PLANCHE du §1c-bis),
+reproduite sur le worktree, VALIDÉE PAR L'UTILISATEUR avant tout commit d'écran.
 ✅ ARBITRAGE mobile (AskUserQuestion 2026-08-16) : **composition COMPACTE dédiée à ≤560px**,
 sans rien perdre — arche réduite à une ligne (portrait mini + jauges fines), conduit fondu
 dans le bord de la grille, commutateur replié sur l'icône du set actif, coin intégré —
 cible ~40-45 % (~280px), à re-mesurer sur la même maquette.
+⚠ RÈGLES DE COMPOSITION MOBILE (montée d'altitude après 3 passes vision sur la même classe
+— l'écrêtage ne se corrige plus au CSS, il s'interdit par RÈGLE) :
+- **R-M1 Bandeau = le GROUPE seul** (loi 1 : « bandeau du groupe ») — jamais les ennemis
+  (l'ordre du tour appartient à la frise). À ≤560px : tuiles PLEINES à largeur minimale
+  digne (portrait reconnaissable + PV lisibles, ≥44px) ; si ça ne tient pas, DÉFILEMENT à
+  tuiles pleines — jamais des tranches. Le pire cas mesuré (13 tuiles à 22,7px) était un
+  bug de contenu ET de forme.
+- **R-M2 Aucun mot tranché, nulle part** : un libellé se rend en entier, ou s'ellipse à la
+  FRONTIÈRE DE MOT (une ligne + `title`), ou coupe entre mots (2 lignes max) — jamais
+  `overflow-wrap:anywhere` sur du texte de libellé. S'applique aussi aux noms du bandeau
+  À 1280 (13/13 ellipsés = défaut : la tuile se dimensionne pour son contenu type).
+- **R-M3 Tout élément rendu est ENTIER** : une rangée qui ne tient pas ne se tronque pas —
+  la géométrie se recalcule (garde de recette : sonde pixel bord-bas, promue).
+- **R-M4 L'épinglage d'une capture = un HASH GIT RÉEL** : HEAD du worktree + marqueur
+  dirty/hash du diff (`git stash create` ou hash de `git diff | sha1`), vérifiable par
+  `git cat-file` — le filigrane « arbre 3844e9be » de la V3 n'était pas un objet git.
 Écarts maquette → ITEMS du lot console : bandeau de phase à couvrir AUSSI pour les
 interludes (`pendingCleave`/`pendingDualStrike`/`pickingTargets`/`battery`) ; fin de tour
 gatée sur le même prédicat que le store (`combatBusy`/cascade) avec sa RAISON (`GatedAction`)
 — aujourd'hui clic muet ; pont clavier de console (l'actuel `hotbarBridge` meurt avec
 `ActionBar`) ; purge d'`ActionBar` + knip ; dé-tripler l'Avantage (le conduit REMPLACE les
 2 rendus d'`ActiveFrame`) ; touches des cases 9-12 à régler au volet clavier (1-8 posées).
+Griefs VISION (juge sur écrans réels du lot munitions, 2026-08-16 — contrastes MESURÉS) →
+ITEMS du lot console : slot désactivé ILLISIBLE (« Recharger » 2,94:1 vs 12,33:1 pour ses
+voisins — le style disabled des slots passe sous AA) et indisponibilité MUETTE (la raison
+n'est qu'en title — patron `GatedAction` exigé par la charte) ; statut « chargée » porté
+par la COULEUR SEULE (rangée rouge danger `#8F271B`, aucun mot — a11y daltoniens) et le
+slot « Munition ▾ » ne dit pas SA valeur chargée ; tiroir NON ANCRÉ à son slot (démarre
+670px à gauche du déclencheur — RT : « les panneaux naissent de leur déclencheur ») ;
+DEUX idiomes pour le même choix (rangées colorées au HUD vs `<select>` en fiche) ; onglets
+de postes HOMONYMES (« Tribord Pierrier 1 » ×2) ; libellé de munition opaque (« pour 1
+tir ×10 ») ; l'arme du tireur ne dit ni son état déchargé ni sa munition sur la barre
+(l'info n'existe qu'au naval). Méthode : toute capture de recette s'accompagne du HASH de
+l'arbre qui l'a produite (grief d'épinglage du juge vision — il n'a pas pu identifier le
+worktree).
 
 ### 1a. Travée GAUCHE — l'arsenal et le nécessaire (compte FIXE : 8 cases, 2×4 à 360px)
 
@@ -77,6 +116,78 @@ de `careers.json` ne sont pas l'axe). Donnée : `src/data/console-defaults.json`
 ⚠ Anti-sur-affichage : le conduit REMPLACE les rendus d'Avantage d'`ActiveFrame`
 (jauge crantée l.63 + texte l.71) — jamais 3 écritures de la même donnée (défaut RT).
 
+### 1c-bis. CONTRATS DE CONTENU PAR ZONE (arbitrage user 2026-08-17, verbatim : « Le design
+ne fonctionnera pas si le contenu n'est pas respecté. Tu as mis l'habillage mais pas le
+fonctionnement attendu, donc certaines zones plus beaucoup plus grosse que prévu »)
+
+La V4 posait la peau sur le CONTENU LEGACY des composants — chaque zone rendait le double
+de son dessin. Règle : **une zone rend EXACTEMENT la liste de son spécimen, rien d'autre** ;
+la taille DÉCOULE du contenu. Listes fermées — là où la **PLANCHE USER 2026-08-17**
+(bloc ✅ ci-dessous) précise ou révise un spécimen antérieur, ELLE fait foi :
+
+- **ARCHE (D)** — RÉTABLI 2026-08-17 (j'avais INVERSÉ le sens du signalement user : « pas
+  de zone visible pour les états » désignait un DÉFAUT des captures — la zone MANQUE — pas
+  une correction du dessin ; verbatim de rappel : « Je te dit qu il n y a pas de zone
+  d état et c est un défaut dans l arche ») : portrait + NOM + jauge Mouvement en gouttière
+  + jauge Action en gouttière, chaque jauge avec sa VALEUR CHIFFRÉE VISIBLE au pied (socle
+  franc — planche : « 3 / MOUV. », « 1 / ACTION ») + Blessures chiffrées en barre pleine
+  (« 9 / 9 BLESSURES ») + **NICHE D'ÉTATS VISIBLE : COLONNE d'alvéoles réservées au flanc
+  DROIT du portrait (cases toujours dessinées, icône + INDICE chiffré par État)**
+  (`StateChips reserve`). ⚠ Une gouttière à 0/0 RESTE DESSINÉE (bug ArchGutter
+  `max<=0 → null` = violation de la géométrie immuable, à corriger dans la même passe).
+  — Interdits : liste texte A/M/Av, Avantage (conduit seul), `MovementIntent`,
+  chips d'identité/carrière.
+- **BANDEAU (B)** — RÉVISÉ PAR LA PLANCHE 2026-08-17 : par tuile — portrait (initiales) +
+  barre PV CHIFFRÉE (« 11/11 ») + **colonne d'alvéoles d'États réservées au flanc du
+  portrait (planche : 1 colonne × 3 cases, CHIFFRÉES, vides dessinées — « zéro État ne
+  rétrécit pas la carte »)** + **NOM VISIBLE SOUS LA TUILE** (la planche l'affiche en
+  permanence — l'interdit « nom au survol » du contrat précédent TOMBE) + actif surligné.
+  — Interdits : carrière, jauges annexes. Tuile petite et DENSE comme le dessin.
+- **FRISE (A)** : par entrée — vignette + liseré de camp + (pause : score en débord,
+  pointe de préemption, pastille de fin) + regroupement ×N des identiques (planche : ✕ de
+  mort, éclair de préemption, « ×3 », actif encadré, « Round I » en tête). C'EST TOUT. —
+  Interdits : PV, nom, états (ils vivent au bandeau/à l'arche).
+- **TRAVÉE GAUCHE (C)** — COMPOSITION DE LA PLANCHE : **colonne latérale de SETS**
+  (3 vignettes verticales : set actif en relief, set distance avec mention d'état
+  « déch. », set vide) + **2×3 cases** (rangée haute DÉDUITE du set — planche épée+dague :
+  Attaquer / Au contact / Désarmer ; rangée basse LIBRE à placement joueur, cases vides
+  dessinées « LIBRE ») + rubrique **ACCÈS RAPIDE 2×2** (consommables à compteur ×N —
+  planche : Potion ×2 — + cases LIBRES dessinées). En-tête de travée = le set au poing
+  (« ÉPÉE + DAGUE »). — Interdits : tout slot legacy non listé au §1a, le débord
+  « Capacités N » (l'exhaustif est l'écran de capacités, zone 6).
+- **GRILLE (E)** : 12 cases (icône + libellé + touche + crans) + conduit AVANTAGE
+  AU-DESSUS (colliers + valeur chiffrée) + **onglets de PAGES I/II/III** (planche —
+  fonctionnement annoté : II = épinglages joueur, III éteinte tant qu'aucun contexte ;
+  la géométrie 2×6 est CONSTANTE par page). C'EST TOUT.
+- **COIN (F)** : icône + libellé (« Fin du tour ») + touche (ESPACE) + ligne d'ÉTAT
+  (planche : « Action non dépensée » — l'avertissement garde-fou existant). C'EST TOUT.
+Vérification : à contenu conforme, re-mesurer chaque zone CONTRE la planche assemblée —
+l'écran assemblé se re-juge APRÈS cette passe, jamais avant.
+
+✅ **PLANCHE USER 2026-08-17 — CIBLE DE CONFORMITÉ** (artefact claude.ai
+`f2baf8fc…`, annoncée « Bon je te prépare du Claude design ») :
+`docs/plans/2026-08-17-maquette-hud-assemblee.artifact.html` (auto-contenu, se rend au
+navigateur, planche UNIQUE fixe 1920×1080) + capture de référence
+`docs/plans/2026-08-17-maquette-hud-assemblee.png`. C'est l'ÉCRAN ASSEMBLÉ complet
+(frise + bandeau + rail + journal + console 6 zones + terrain avec previews).
+⚠ **CONTENU UI vs ANNOTATIONS** (arbitrage user 2026-08-17, verbatim : « Certains textes
+sont juste des explications de fonctionnement plutôt que des informations à afficher ») :
+la planche embarque des notes de FONCTIONNEMENT qui ne se rendent JAMAIS à l'écran —
+identifiées : « II : épinglages · III éteinte, aucun contexte », « ▪ icône provisoire »
+(les glyphes de la planche sont des placeholders, pas la cible d'iconographie),
+« X FAIT TOURNER » dans l'en-tête de travée (= la touche X commute les sets, pas un
+libellé). Classement à CONFIRMER pour : « Action non dépensée » (coin) et
+« masqué par le décor » (terrain) — lus ici comme du VRAI contenu d'état/preview.
+Le terrain de la planche dessine la Vague 2 (déjà validée) : carte de prévisualisation
+d'attaque (« Score à atteindre 64 », décomposition, fourchette « 3 à 8 », restantes,
+chips « de flanc +10 / assailli −10 » = lot 3), plaquette de conséquence
+(« Terenz · touché · bras gauche · 4 Blessures » = lot 2), coût de déplacement
+(« 3 cases · 1 point de Mouvement » = lot 4) + attaque gratuite encourue
+(« rompre l'engagement — attaque gratuite pour Terenz » = lot 3), badges « deux
+assaillants »/« 3+ », portée en nappe, anneaux de camp sous pions, ligne d'attaque
+pointillée. Clavier de la planche : lettres AZERTY (A/Z/E/R/T/Y) sur la travée gauche +
+F1-F4 sur l'accès rapide + 1-0/−/= sur la grille — compatible « touche = CASE »
+(la touche s'imprime PAR CASE) ; le mapping exact se règle au volet clavier du lot.
 ### 1c. Coin FIN DE TOUR + chrome de l'arche — PRÊT À BRIEFER
 
 `end-turn` isolé + garde-fou existant. `undo-move` adossé à la jauge de Mouvement
