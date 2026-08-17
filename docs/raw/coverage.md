@@ -11,7 +11,7 @@
 > jamais traitée — plus jamais masquée) · `🔻 enfoui` = titre orné (`•`) rétrogradé par l'extraction
 > — un défaut d'extraction, pas une section ordinaire (#454).
 
-**Couverture (profondeur) : ✅ 96 traités par une fiche · 📖 77 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 1 trous** sur 175 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3441 section(s) non couvertes par une fiche : **633 transcrite(s) en catalogue** (recopiées, pas traitées) · **2374 hors-règle** (chapitre explicitement exclu) · **159 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **275 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅41·📖33·🟡0·⬜1 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅4·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅4·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅7·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 97 traités par une fiche · 📖 77 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 1 trous** sur 176 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3441 section(s) non couvertes par une fiche : **633 transcrite(s) en catalogue** (recopiées, pas traitées) · **2363 hors-règle** (chapitre explicitement exclu) · **159 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **286 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅41·📖33·🟡0·⬜1 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅4·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅4·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅8·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
 
 ## LDB — ✅ 41 · 📖 33 · 🟡 0 · ⬜ 1
 
@@ -31,8 +31,8 @@
 | 11 | Sixième sens | ✅ | 31 (talents.md ×30) |
 | 12 | Tests | ✅ | 48 (tests.md ×43) |
 | 13 | Combat | ✅ | 133 (combat.md ×122) |
-| 14 | OPTION : FRAPPE MORTELLE | ✅ | 129 (combat.md ×121) |
-| 15 | Déplacement | ✅ | 87 (combat.md ×76) |
+| 14 | OPTION : FRAPPE MORTELLE | ✅ | 138 (combat.md ×132) |
+| 15 | Déplacement | ✅ | 74 (combat.md ×66) |
 | 16 | États | ✅ | 54 (etats.md ×30) |
 | 17 | Destin et Résistance | ✅ | 52 (destin.md ×27) |
 | 18 | Traumatisme | ✅ | 111 (traumatisme.md ×67) |
@@ -1375,7 +1375,7 @@
 | 25 | Index des PNJ | ➖ hors-règle | |
 | 26 | *(section sans titre)* | ➖ hors-règle | |
 
-## NADJ — ✅ 7 · 📖 0 · 🟡 0 · ⬜ 0
+## NADJ — ✅ 8 · 📖 0 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -1393,7 +1393,7 @@
 | 11 | Le joyau volé | ✅ | 6 (combat.md ×6) |
 | 12 | *(artefact OCR)* | ➖ | |
 | 13 | SEIGNEUR D’UBERSREIK - | ➖ hors-règle | |
-| 14 | appendice I - Gnomes | ➖ hors-règle | |
+| 14 | appendice I - Gnomes | ✅ | 4 (reconciliation.md ×4) |
 | 15 | LE PEUPLE DES LANDES | ✅ | 4 (talents.md ×3) |
 | 16 | JEUX DE TAVERNE | ✅ | 18 (tests.md ×14) |
 
@@ -1549,6 +1549,18 @@
   - ⬜ l.5-17 « La duchesse douairière du Telland » — candidat trou de règle, 0 réf
   - ⬜ l.34-53 « Le Spectre » — candidat trou de règle, 0 réf
   - ⬜ l.54-59 « Le voleur gnome » — candidat trou de règle, 0 réf
+- **NADJ 14** (appendice I - Gnomes) :
+  - ⬜ l.7-18 « GNOMES » — candidat trou de règle, 0 réf
+  - ⬜ l.19-20 « Points de vue » — candidat trou de règle, 0 réf
+  - ⬜ l.21-27 « Sur les nains… » — candidat trou de règle, 0 réf
+  - ⬜ l.28-33 « Sur les elfes sylvains… » — candidat trou de règle, 0 réf
+  - ⬜ l.34-39 « Sur les hauts elfes… » — candidat trou de règle, 0 réf
+  - ⬜ l.40-45 « Sur les halflings…… » — candidat trou de règle, 0 réf
+  - ⬜ l.46-51 « Sur les humains… » — candidat trou de règle, 0 réf
+  - ⬜ l.52-57 « Sur les ogres… » — candidat trou de règle, 0 réf
+  - ⬜ l.58-61 « PERSONNAGES GNOMES » — candidat trou de règle, 0 réf
+  - ⬜ l.62-76 « 1) Races » — candidat trou de règle, 0 réf
+  - ⬜ l.77-126 « 2) Classes et carrières » — candidat trou de règle, 0 réf
 - **NADJ 15** (_GoBack) :
   - ⬜ l.68-73 « Noms de clan gnomes » — candidat trou de règle, 0 réf
   - ⬜ l.74-77 « Traits physiques » — candidat trou de règle, 0 réf

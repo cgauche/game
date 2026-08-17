@@ -401,7 +401,7 @@ d'une **Rude épreuve** réduisent le Moral d'autant.
 **Sources RAW** : `MDG 14 l.110` (Rude épreuve → Moral) · `l.133-141` (Moral 75).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.110) → `manoeuvre`, `perception`, `orientation`, `affaler`, `extermination-nuisibles`, `rude-epreuve`, `entretien`, `batterie`, `crew-progression`, `crew-orientation`, +19 — `src/data/crew-test-types.json`, `src/data/localisation.json`, `src/data/regles.json`, `src/data/voyage-stakes.json`, `src/engine/crewMorale.ts`, `src/state/seaActivities.ts`, +2 fichiers
+- `MDG 14` (l.110) → `schema`, `manoeuvre`, `perception`, `orientation`, `affaler`, `extermination-nuisibles`, `rude-epreuve`, `entretien`, `batterie`, `crew-progression`, +22 — `src/data/crew-test-types.json`, `src/data/index.ts`, `src/data/localisation.json`, `src/data/regles.json`, `src/data/schemas/defs/crew-test-types.ts`, `src/data/voyage-stakes.json`, +5 fichiers
 
 **État du code.** ✅ Moral 75 par défaut, bande de DR au Test d'équipage, pont campagne→combat. ⬜ évolution du
 Moral en combat (Rude épreuve, mutinerie).

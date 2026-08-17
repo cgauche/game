@@ -5,6 +5,23 @@ autorisés (table à jour dans [`sources.md`](sources.md)), à **usage d'agent**
 *« est-ce que X est RAW, et que dit exactement la source ? »* quand la réponse est éclatée sur
 plusieurs chapitres **et** plusieurs livres.
 
+## ⚠ Fichiers au-dessus du seuil d'outillage (512 Ko)
+
+Les outils de recherche des sessions (`ctx_search`, lean-ctx) **sautent SILENCIEUSEMENT** les
+fichiers de plus de 512 Ko et rendent « 0 résultat » : toute preuve d'existence ou d'absence
+dans ces fichiers se fait au **grep natif** (`Select-String`/`grep`) — un « 0 résultat »
+d'outil n'y prouve RIEN. Fichiers de l'Atlas concernés (garde
+`src/oversize-search-blindspot.test.ts` : cette liste et la mesure doivent coïncider) :
+
+- [`catalogue-creatures.md`](catalogue-creatures.md)
+- [`catalogue-equipement.md`](catalogue-equipement.md)
+- [`combat.md`](combat.md)
+- [`catalogue-sorts.md`](catalogue-sorts.md)
+- [`catalogue-carrieres.md`](catalogue-carrieres.md)
+
+Même piège hors Atlas : `src/data/*.json` volumineux (`creatures.json`, `spells.json`,
+`careerLevels.json`) et certains extraits `Source/**/*.md` — listes gelées dans la même garde.
+
 ## Comment c'est organisé
 
 - **1 fichier par domaine** ; dans chaque fichier, **1 section `##` = 1 topic atomique**.
