@@ -953,7 +953,7 @@ export interface Trauma {
    *  de CETTE prothèse à `'all'` pour `prosthesisCancels` (trauma.ts), sans changer `cancels` en donnée. */
   prosthesis?: { trappingId: string; cancels: 'all' | 'movement' }[];
   /** Nombre d'éléments perdus pour une séquelle CUMULATIVE par comptage (LDB 18) : doigts (−5/doigt, 4+ →
-   *  règle de la main, l.341/344) ou dents (−1 Soc/paire, l.338). Fusionné à chaque nouvelle perte. */
+   *  règle de la main, l.251/263) ou dents (−1 Soc/paire, l.247). Fusionné à chaque nouvelle perte. */
   count?: number;
   /** En attente d'Aide Médicale (LDB 18 l.307-312 : Guérison réussie / bandage-cataplasme / sort-prière de
    *  soin) — levé par le PREMIER acte de soin des 3 formes (`receiveMedicalAid`). Tant qu'il est posé, la

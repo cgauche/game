@@ -100,8 +100,9 @@ export function openLandMarket(get: Get, set: Set): void {
     if (enc <= 0) return;
     offers.push({ cargoId, label: cargo.label, enc, basePrice: landCargoBasePrice(cargo, season, market, rng), wine: !!cargo.wine });
   };
-  // Marchandises LOCALES (colonne Produits, hors marqueurs `commerce`/`subsistance`).
-  if (find.localFound) for (const id of market.produits.filter((p) => p !== 'commerce' && p !== 'subsistance')) addOffer(id);
+  // Marchandises LOCALES (colonne Produits) : un marqueur de l'Index (`echangeable: false`) n'est pas
+  // résolu par `findLandCargoById`, donc il n'ouvre aucune offre.
+  if (find.localFound) for (const id of market.produits.filter((p) => findLandCargoById(p))) addOffer(id);
   // « Commerce » (l.32-34) : une cargaison ALÉATOIRE de la table saisonnière en plus.
   if (find.randomFound) addOffer(rollRandomLandCargo(season, rng).id);
   // Identité de HALLE (#371) : hôte + décor. Défaut partagé au catalogue `marche` (`lieux-services.json`),

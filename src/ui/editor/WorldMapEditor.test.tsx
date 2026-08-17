@@ -170,6 +170,8 @@ describe('WorldMapEditor — panneau Lieu / Commerce (#419)', () => {
     setValue(richesseSel, otherRichesse);
     expect(lastMap!.places[0].market!.richesse).toBe(Number(otherRichesse));
 
+    // Libellé ET qualificatif viennent du catalogue (`land-cargo.json` : `label` + `hint`) — plus
+    // aucun texte par id ni suffixe codé dans le panneau.
     click(checkbox('Commerce (plaque tournante)'));
     expect(lastMap!.places[0].market!.produits).toContain('commerce');
   });

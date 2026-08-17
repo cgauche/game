@@ -231,6 +231,28 @@
         "page": 72,
         "note": "ch.11 « Règles du commerce » — TABLEAU DES CARGAISONS ALÉATOIRES + TABLEAU DES PRIX DE BASE (l.71-89)."
       }
+    },
+    {
+      "id": "commerce",
+      "label": "Commerce",
+      "echangeable": false,
+      "hint": "plaque tournante",
+      "source": {
+        "book": "mort-sur-le-reik-compagnon",
+        "page": 71,
+        "note": "ch.11 « Règles du commerce » — colonne Produits de l'Index : « La mention Commerce signifie qu'il peut y avoir une variété de biens disponibles » ; « il s'agit d'une plaque tournante du commerce local » (l.24-28)."
+      }
+    },
+    {
+      "id": "subsistance",
+      "label": "Subsistance",
+      "echangeable": false,
+      "hint": "rien à échanger",
+      "source": {
+        "book": "mort-sur-le-reik-compagnon",
+        "page": 73,
+        "note": "ch.11 « Règles du commerce » — types de cargaison : « **Subsistance :** certains petits emplacements ne produisent presque rien de valeur à échanger » (l.119)."
+      }
     }
   ],
   "wineQuality": [

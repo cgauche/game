@@ -359,6 +359,28 @@
         "page": 137,
         "note": "ch.15 « Longs voyages » — Générer les cargaisons disponibles, tables disponibilité + prix de base (l.406-434)."
       }
+    },
+    {
+      "id": "commerce",
+      "label": "Commerce",
+      "echangeable": false,
+      "hint": "plaque tournante",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 135,
+        "note": "ch.15 « Longs voyages » — colonne Production de l'Index : « Si l'Index indique que le lieu concerné produit du \"commerce\", générez une cargaison au hasard à l'aide du tableau des cargaisons » (l.321)."
+      }
+    },
+    {
+      "id": "minimum-vital",
+      "label": "Minimum vital",
+      "echangeable": false,
+      "hint": "rien à échanger",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 135,
+        "note": "ch.15 « Longs voyages » — colonne Production de l'Index : « Les ports pour lesquels la colonne Production indique \"minimum vital\" ne produisant pas de cargaison à vendre » (l.321)."
+      }
     }
   ],
   "buy": {

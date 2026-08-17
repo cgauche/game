@@ -13,26 +13,22 @@ import { planChrome } from '../PlanChrome';
 import { VB_W, VB_H } from '../worldMapViewport';
 import { Scene } from '../../state/scene';
 import { type MapPlace, type PlacePoi, resolvePortRef, placeServices, poiIcon } from '../../state/worldMap';
-import { LAND_CARGOES, LAND_RICHESSE_ROWS, type LandMarketProfile } from '../../engine/landCargo';
-import { CARGOES, type PortProfile } from '../../engine/seaVoyage';
+import { LAND_CARGO_ENTRIES, LAND_RICHESSE_ROWS, type LandMarketProfile } from '../../engine/landCargo';
+import { CARGOES, CARGO_ENTRIES, isEchangeable, type CargoEntry, type PortProfile } from '../../engine/seaVoyage';
 import { navalPorts, findNavalPortById, lieuxServices } from '../../data';
 import { IconField, BackdropField, RefSelect } from './worldMapPickers';
 
 /** Libellés des Tailles de communauté (MSRC 13 l.44-50, indices 1-4). */
 const TAILLE_LABELS = ['Hameau', 'Village', 'Ville', 'Grande ville'];
-/** Produits d'un marché : les cargaisons du livre + les MARQUEURS « Commerce » / « Subsistance » (l.24-28). */
-const MARKET_PRODUITS: readonly { id: string; label: string }[] = [
-  ...LAND_CARGOES.map((c) => ({ id: c.id, label: c.label })),
-  { id: 'commerce', label: 'Commerce (plaque tournante)' },
-  { id: 'subsistance', label: 'Subsistance (rien à échanger)' },
-];
-/** Production d'un port (Index des ports, MDG 15 l.439-506) : cargaisons maritimes + les MARQUEURS
- *  « Commerce » (plaque tournante) / « Minimum vital » (rien à échanger). */
-const PORT_PRODUITS: readonly { id: string; label: string }[] = [
-  ...CARGOES.map((c) => ({ id: c.id, label: c.label })),
-  { id: 'commerce', label: 'Commerce (plaque tournante)' },
-  { id: 'minimum-vital', label: 'Minimum vital (rien à échanger)' },
-];
+/** Options de la colonne Produits/Production : TOUT le vocabulaire du catalogue (marchandises ET
+ *  marqueurs). Un marqueur porte son qualificatif `hint` EN DONNÉE (« plaque tournante » / « rien à
+ *  échanger ») — l'écran le rend entre parenthèses, il ne l'écrit pas. */
+const produitOptions = (entries: readonly CargoEntry[]): { id: string; label: string }[] =>
+  entries.map((c) => ({ id: c.id, label: !isEchangeable(c) && c.hint ? `${c.label} (${c.hint})` : c.label }));
+/** Produits d'un marché terrestre (Index géographique, MSRC 13 l.183-278). */
+const MARKET_PRODUITS: readonly { id: string; label: string }[] = produitOptions(LAND_CARGO_ENTRIES);
+/** Production d'un port maritime (Index des ports, MDG 15 l.439-506). */
+const PORT_PRODUITS: readonly { id: string; label: string }[] = produitOptions(CARGO_ENTRIES);
 /** Port MARITIME par défaut posé quand l'auteur coche « Port » (petit port de production côtière). */
 const DEFAULT_PORT: PortProfile & { lighthouse?: boolean } = { taille: 2, richesse: 2, production: [] };
 

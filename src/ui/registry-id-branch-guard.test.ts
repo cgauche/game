@@ -3,7 +3,7 @@ import { readdirSync, readFileSync, statSync, mkdtempSync, writeFileSync, rmSync
 import { join, relative, isAbsolute } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { scanRegistryIdBranch, isRegistryIdBranchExcluded, SCAN_DIRS, SCAN_EXTS } from '../../scripts/guards/lib/registryIdBranch.mjs';
+import { scanRegistryIdBranch, scanRawIdEqualities, isRegistryIdBranchExcluded, SCAN_DIRS, SCAN_EXTS } from '../../scripts/guards/lib/registryIdBranch.mjs';
 
 /**
  * Garde-fou « branchement par IDENTITÉ dans du code GÉNÉRIQUE » (#842).
@@ -75,14 +75,119 @@ const KNOWN: Record<string, number> = {
   'src/ui/CrewTestModal.tsx': 1,
   'src/ui/InterludeScreen.tsx': 1,
   'src/ui/PartyScreen.tsx': 2,
-  'src/ui/PortView.tsx': 1,
-  'src/ui/compendium/registry.ts': 2,
+  'src/ui/compendium/registry.ts': 1, // `CONSTRUCTION_TRAIT_LABEL[t.id]` — libellés de Trait de coque sans champ `label` en donnée
   'src/ui/creator/CharacterCreator.tsx': 1, // `book` + for…of démasqués : même gate Gnome que creation.ts
   'src/ui/creator/draft.ts': 1,
 };
 
 /** Plafond GLOBAL du jour (= somme de `KNOWN`), destiné à tomber à 0. */
 const CEILING = Object.values(KNOWN).reduce((s, n) => s + n, 0);
+
+/**
+ * SECOND CLIQUET — la forme BRUTE « <champ d'identité> === '<littéral>' », sans aucune condition de
+ * liaison (`scanRawIdEqualities`). Il ne mesure PAS la doctrine : les formes que le garde principal
+ * laisse hors champ à raison (lookup par id stable dans un `.find`/`.some`, entrée tenue par une
+ * constante de module) sont ici comptées, et y figurer n'est pas une faute. Ce qu'il verrouille, c'est
+ * l'ÉVASION : `if (id === 'x')` réécrit en `xs.some((t) => t.id === 'x')` éteint le garde principal
+ * sans rien assainir — le compte brut, lui, ne bouge pas et la fuite se voit.
+ *
+ * SA COUVERTURE, ET RIEN DE PLUS : le seul critère est le NOM du champ (`id`/`xxxId`/`ref`/`xxxRef`/
+ * `book`) sur un nœud d'ÉGALITÉ. Un alias RENOMMÉ (`const cle = t.id; cle === 'x'`) échappe aux DEUX
+ * gardes — angle mort mesuré et ASSERTÉ en test ci-dessous, avec les autres (destructuration
+ * renommée, `switch`/`includes`, `Object.is`, gabarit à substitution, champ hors convention). Ce
+ * cliquet borne l'évasion la plus PROBABLE (déplacer le site dans un prédicat), pas toutes.
+ *
+ * Deux sens, comme le plafond principal : une hausse est nominative (un branchement brut de plus),
+ * une baisse non répercutée est « périmée » (le compte doit descendre dans ce fichier). Ce compte NE
+ * DOIT JAMAIS MONTER, et chaque lot d'assainissement doit le faire DESCENDRE.
+ * Mesure du 2026-08-17 (#1318 E4/C0-a), par NŒUD (deux comparaisons sur une même ligne pèsent 2) :
+ * 169 au moment de la pose du cliquet, 165 après le lot C1 (marqueurs de cargaison passés en donnée —
+ * `registry.ts` et `PortView.tsx` sortent de la liste).
+ */
+const RAW_KNOWN: Record<string, number> = {
+  'scripts/data/lib/obtainabilityGraph.ts': 3,
+  'scripts/gen-bestiary-gallery.mts': 1,
+  'scripts/gen-creature-attacks-gallery.mts': 2,
+  'scripts/gen-toise-gallery.mts': 1,
+  'scripts/qc/mesure-volume.mts': 1,
+  'scripts/qc/opera-furniture-check.mts': 1,
+  'scripts/raw/reconcile.mjs': 1,
+  'src/engine/aaCritical.ts': 1,
+  'src/engine/activities.ts': 1,
+  'src/engine/careerSlots.ts': 2,
+  'src/engine/combat.ts': 1,
+  'src/engine/conditions.ts': 1,
+  'src/engine/conjuredWeapons.ts': 3,
+  'src/engine/corruption.ts': 2,
+  'src/engine/creation.ts': 1,
+  'src/engine/creatureEquip.ts': 2,
+  'src/engine/crewedWeapon.ts': 1,
+  'src/engine/critical.ts': 5,
+  'src/engine/drunkenness.ts': 1,
+  'src/engine/engagement.ts': 2,
+  'src/engine/equipCompare.ts': 2,
+  'src/engine/exposure.ts': 2,
+  'src/engine/groups.ts': 3,
+  'src/engine/healing.ts': 1,
+  'src/engine/items.ts': 1,
+  'src/engine/magic.ts': 3,
+  'src/engine/menace.ts': 1,
+  'src/engine/mountTravel.ts': 1,
+  'src/engine/polymorph.ts': 1,
+  'src/engine/provisions.ts': 1,
+  'src/engine/psychology.ts': 3,
+  'src/engine/rest.ts': 1,
+  'src/engine/riverNavigation.ts': 3,
+  'src/engine/seaNavigation.ts': 1,
+  'src/engine/skills.ts': 2,
+  'src/engine/trauma.ts': 10,
+  'src/engine/weaponDamage.ts': 1,
+  'src/engine/windsOfMagic.ts': 1,
+  'src/gameIso/rig/mountedRig.ts': 1,
+  'src/gameIso/rig/parts/career.ts': 3,
+  'src/gameIso/rig/parts/equipment.ts': 1,
+  'src/gameIso/rig/parts/injuries.ts': 5,
+  'src/gameIso/stage/Ambiance.tsx': 1,
+  'src/gameIso/stage/CrewTooltip.tsx': 1,
+  'src/gameIso/stage/highlightLayer.tsx': 1,
+  'src/gameIso/tokenBodyKind.tsx': 1,
+  'src/state/aiSpellValue.ts': 2,
+  'src/state/bourseFlow.ts': 1,
+  'src/state/combatEffects.ts': 3,
+  'src/state/combatFlow.ts': 4,
+  'src/state/combatGeometry.ts': 1,
+  'src/state/combatManeuvers.ts': 4,
+  'src/state/combatSlice.ts': 3,
+  'src/state/devtools.ts': 1,
+  'src/state/interludeFlow.ts': 4,
+  'src/state/massBattleFlow.ts': 1,
+  'src/state/mount.ts': 1,
+  'src/state/partyFlow.ts': 2,
+  'src/state/restFlow.ts': 1,
+  'src/state/riverVoyageFlow.ts': 4,
+  'src/state/saves.ts': 1,
+  'src/state/seaVoyageFlow.ts': 6,
+  'src/state/store.ts': 1,
+  'src/state/travelFlow.ts': 6,
+  'src/state/travelPostes.ts': 2,
+  'src/state/vision.ts': 1,
+  'src/ui/ActiveModal.tsx': 1,
+  'src/ui/CharacterSheet.tsx': 3,
+  'src/ui/CityHubScreen.tsx': 1,
+  'src/ui/CouncilModal.tsx': 2,
+  'src/ui/CrewTestModal.tsx': 1,
+  'src/ui/HealModal.tsx': 2,
+  'src/ui/InterludeScreen.tsx': 3,
+  'src/ui/MedicModal.tsx': 2,
+  'src/ui/MerchantPanel.tsx': 1,
+  'src/ui/PartyScreen.tsx': 2,
+  'src/ui/creator/CharacterCreator.tsx': 8,
+  'src/ui/editor/StatblockEditor.tsx': 1,
+  'src/ui/gallery/registry.tsx': 4,
+};
+
+/** Plafond BRUT global du jour (= somme de `RAW_KNOWN`). */
+const RAW_CEILING = Object.values(RAW_KNOWN).reduce((s, n) => s + n, 0);
 
 /**
  * Lecture TOLÉRANTE d'un fichier LISTÉ à l'étape précédente : entre le listage et la lecture, un
@@ -123,6 +228,19 @@ function findingsIn(dirs: string[]): { rel: string; line: number; detail: string
     const raw = lireSiPresent(f);
     if (raw === null) continue;
     for (const fd of scanRegistryIdBranch(rel, raw)) out.push({ rel, ...fd });
+  }
+  return out;
+}
+
+/** MÊME corpus, MÊMES exclusions, détecteur BRUT (`scanRawIdEqualities`) — le cliquet anti-évasion. */
+function rawFindingsIn(dirs: string[]): { rel: string; line: number; detail: string }[] {
+  const out: { rel: string; line: number; detail: string }[] = [];
+  for (const f of scanFiles(dirs)) {
+    const rel = relative(ROOT, f).split('\\').join('/');
+    if (isRegistryIdBranchExcluded(rel)) continue;
+    const raw = lireSiPresent(f);
+    if (raw === null) continue;
+    for (const fd of scanRawIdEqualities(rel, raw)) out.push({ rel, ...fd });
   }
   return out;
 }
@@ -312,5 +430,84 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
       "Sites assainis : abaisser leur compte dans KNOWN (le plafond descend, il ne remonte jamais) :\n" + better.join('\n'),
     ).toEqual([]);
     expect(findings.length).toBe(CEILING);
+  });
+
+  it('MORSURE BRUTE : les liaisons hors champ du garde principal sont comptées, `.startsWith` non', () => {
+    // Ce que le garde principal laisse hors champ À RAISON (lookup par id stable, constante de
+    // module) : le compte brut, lui, les voit — c'est ce qui rend l'évasion visible.
+    const evasions = [
+      "const has = c.talents.some((t) => t.talentId === 'frenesie');",
+      "const sk = c.skills.find((s) => s.skillId === 'resistance');",
+      "const isFortune = FORTUNE.id === 'fortune-mid-session';",
+      "const noyau = REGISTRE[0];\nconst estCadence = noyau.id === 'combat-cadence';",
+    ].join('\n');
+    expect(scanRegistryIdBranch('fixture.ts', evasions)).toEqual([]);
+    expect(scanRawIdEqualities('fixture.ts', evasions)).toHaveLength(4);
+
+    // Hors périmètre du détecteur brut : ce n'est pas une ÉGALITÉ, ou pas un champ d'identité.
+    const horsPerimetre = [
+      "const fam = def.id.startsWith('combat-');",
+      "const sel = tabs.find((t) => t.id === tabKey);",
+      "const kind = def.kind === 'flag';",
+      "const vide = id === '';",
+    ].join('\n');
+    expect(scanRawIdEqualities('fixture.ts', horsPerimetre)).toEqual([]);
+  });
+
+  it('MORSURE BRUTE : deux comparaisons sur UNE ligne pèsent DEUX (compte par nœud)', () => {
+    // Le garde principal déduplique par ligne : n'en éteindre qu'une n'y changerait rien. Ici si.
+    const uneLigne = "const l = (id: string) => id === 'commerce' ? 'A' : id === 'minimum-vital' ? 'B' : id;";
+    expect(scanRegistryIdBranch('fixture.ts', uneLigne)).toHaveLength(1);
+    expect(scanRawIdEqualities('fixture.ts', uneLigne)).toHaveLength(2);
+  });
+
+  it('ANGLES MORTS ASSERTÉS : ce que les deux gardes ne voient PAS, écrit noir sur blanc', () => {
+    // Un détecteur ne mesure que SA COUVERTURE. Les formes ci-dessous rendent 0/0 ou 1/0 : c'est un
+    // ANGLE MORT CONNU, pas une couverture. Elles sont assertées TELLES QUELLES pour qu'aucune
+    // relecture ne les redécouvre comme une garantie, et pour qu'un élargissement futur du détecteur
+    // rougisse ICI et se déclare. Format : [principal, brut].
+    const mesure = (src: string): [number, number] =>
+      [scanRegistryIdBranch('fixture.ts', src).length, scanRawIdEqualities('fixture.ts', src).length];
+
+    // (1) ALIAS RENOMMÉ dans un prédicat : l'évasion COMPLÈTE — le nom porteur a changé, les deux
+    //     détecteurs sont aveugles. C'est la limite haute de ce cliquet, assumée.
+    expect(mesure("const has = (defs: E[]) => defs.some((t) => {\n  const cle = t.id;\n  return cle === 'commerce';\n});")).toEqual([0, 0]);
+    // (2) …et hors prédicat, même aveuglement.
+    expect(mesure("const noyau = REG[0];\nconst cle = noyau.id;\nconst x = cle === 'commerce';")).toEqual([0, 0]);
+    // (3) DESTRUCTURATION RENOMMÉE — 0/0 ; la destructuration DIRECTE garde le nom et mord (1/1).
+    expect(mesure("function f({ id: cle }: E) { return cle === 'commerce'; }")).toEqual([0, 0]);
+    expect(mesure("function f({ id }: E) { return id !== 'commerce'; }")).toEqual([1, 1]);
+    // (4) `switch` et appartenance : vus par le garde principal, HORS de la mesure brute (égalités seules).
+    expect(mesure("function f(e: E) { switch (e.id) { case 'commerce': return 1; } }")).toEqual([1, 0]);
+    expect(mesure("const L = ['commerce', 'subsistance'];\nfunction f(e: E) { return L.includes(e.id); }")).toEqual([1, 0]);
+    // (5) Comparaisons qui ne sont pas un nœud d'égalité, ou dont le littéral n'en est pas un.
+    expect(mesure("function f(e: E) { return Object.is(e.id, 'commerce'); }")).toEqual([0, 0]);
+    expect(mesure('function f(e: E, p: string) { return e.id === `${p}commerce`; }')).toEqual([0, 0]);
+    expect(mesure('function f(e: E) { return e.id === `commerce`; }')).toEqual([1, 1]); // gabarit SANS substitution : vu
+    expect(mesure("function f(e: E) { return e.id.startsWith('commerce'); }")).toEqual([0, 0]);
+    // (6) Champ d'identité hors convention de nom : le seul critère du scan brut est ce nom.
+    expect(mesure("function f(e: E) { return e.cle === 'commerce'; }")).toEqual([0, 0]);
+  });
+
+  it('CLIQUET BRUT : la forme « id === littéral » ne monte jamais, et toute baisse se répercute', () => {
+    const findings = rawFindingsIn(SCAN_DIRS);
+    const perFile: Record<string, number> = {};
+    for (const f of findings) perFile[f.rel] = (perFile[f.rel] ?? 0) + 1;
+
+    const worse = Object.entries(perFile)
+      .filter(([rel, n]) => n > (RAW_KNOWN[rel] ?? 0))
+      .map(([rel, n]) => `${rel}: ${n} (plafond ${RAW_KNOWN[rel] ?? 0})\n` + findings.filter((f) => f.rel === rel).map((f) => `    ${f.rel}:${f.line} ${f.detail}`).join('\n'));
+    expect(
+      worse,
+      'Comparaison BRUTE d’un champ d’identité à un littéral — ce compte ne monte jamais : un site ' +
+        'déplacé dans un `.find`/`.some` pour échapper au garde principal reste compté ICI :\n' + worse.join('\n'),
+    ).toEqual([]);
+
+    const better = Object.entries(RAW_KNOWN).filter(([rel, n]) => (perFile[rel] ?? 0) < n).map(([rel, n]) => `${rel}: ${perFile[rel] ?? 0} < ${n}`);
+    expect(
+      better,
+      'Mesure brute PÉRIMÉE : abaisser ces comptes dans RAW_KNOWN (le plafond descend, jamais l’inverse) :\n' + better.join('\n'),
+    ).toEqual([]);
+    expect(findings.length).toBe(RAW_CEILING);
   });
 });

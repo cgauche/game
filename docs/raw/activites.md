@@ -726,7 +726,7 @@ Former l'équipage (PNJ) dans une **Compétence utile à la gestion du bateau**.
 **Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [Entraînement](#entraînement) (Activité d'Augmentation LDB 23).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.294-300) → `SeaActivitiesModal`, `BankDeposit`, `schema`, `pieces-detachees-de-navire`, `port-buy-bargain`, `surcharge-3`, `sellRefusal`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, `PendingExtendedTest`, +5 — `src/data/combat-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, +8 fichiers
+- `MDG 15` (l.294-300) → `SeaActivitiesModal`, `BankDeposit`, `schema`, `commerce`, `minimum-vital`, `port-buy-bargain`, `surcharge-3`, `sellRefusal`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, +6 — `src/data/combat-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, +8 fichiers
 
 ---
 
@@ -751,7 +751,7 @@ Réparer l'usure du vaisseau (planches pourries, voiles, coque incrustée). **De
 **Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [Artisanat](#artisanat) (Métier, Test étendu).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.302-306) → `SeaActivitiesModal`, `BankDeposit`, `pieces-detachees-de-navire`, `port-buy-bargain`, `surcharge-3`, `bankWithdrawOutcome`, `bankWithdrawInner`, `GameState`, `PendingCascade`, `fr` — `src/data/combat-stakes.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/i18n/messages/fr.ts`, `src/state/interludeFlow.ts`, +4 fichiers
+- `MDG 15` (l.302-306) → `SeaActivitiesModal`, `BankDeposit`, `commerce`, `minimum-vital`, `port-buy-bargain`, `surcharge-3`, `bankWithdrawOutcome`, `bankWithdrawInner`, `GameState`, `PendingCascade`, +1 — `src/data/combat-stakes.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/i18n/messages/fr.ts`, `src/state/interludeFlow.ts`, +4 fichiers
 
 ---
 

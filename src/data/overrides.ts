@@ -31,8 +31,8 @@ import { MOUNT_INCIDENTS, VEHICLE_PROBLEMS, encounterTable } from '../engine/tra
 import { TAVERN_GAMES } from '../engine/tavernGame';
 import { OBSESSIONS } from './obsessions';
 import { STRUCTURE_CRITICALS } from './structureCriticals';
-import { LAND_CARGOES } from '../engine/landCargo';
-import { CARGOES, MANANN_FACTORS, BOARD_EVENTS, PORT_EVENTS } from '../engine/seaVoyage';
+import { LAND_CARGO_ENTRIES, type LandCargoEntry } from '../engine/landCargo';
+import { CARGO_ENTRIES, type CargoEntry, MANANN_FACTORS, BOARD_EVENTS, PORT_EVENTS } from '../engine/seaVoyage';
 import { RIVER_PERILS } from '../engine/riverNavigation';
 import { MORALE_FACTORS, MORALE_BANDS } from '../engine/crewMorale';
 import { STEAM_BREAKDOWNS } from '../engine/shipBuild';
@@ -147,7 +147,11 @@ const ARRAYS = {
   montures: MOUNT_PROFILES, incidentsMonture: MOUNT_INCIDENTS, problemesVehicule: VEHICLE_PROBLEMS,
   tavernGames: TAVERN_GAMES, obsessions: OBSESSIONS as unknown as { min: number; max: number; label: string }[],
   structureCriticals: STRUCTURE_CRITICALS, traumas,
-  landCargo: LAND_CARGOES, seaCargo: CARGOES, riverPerils: RIVER_PERILS,
+  // Catalogues de cargaison : le dataset éditable est le tableau BRUT du JSON (marchandises ET
+  // marqueurs de l'Index), pas la vue filtrée `CARGOES`/`LAND_CARGOES` — sinon une réécriture du
+  // dataset perdrait les marqueurs. Le Compendium, lui, n'affiche que les marchandises (filtre à la
+  // VUE, `ui/compendium/registry.ts`).
+  landCargo: LAND_CARGO_ENTRIES as LandCargoEntry[], seaCargo: CARGO_ENTRIES as CargoEntry[], riverPerils: RIVER_PERILS,
   crewMoraleFactors: MORALE_FACTORS, crewMoraleBands: MORALE_BANDS, steamBreakdowns: STEAM_BREAKDOWNS,
   criticalsTete, criticalsBras, criticalsCorps, criticalsJambe,
   aaCriticalsTete, aaCriticalsBras, aaCriticalsCorps, aaCriticalsJambe,

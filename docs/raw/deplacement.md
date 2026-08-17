@@ -1017,7 +1017,7 @@ Pour chaque **semaine (8 jours)** en mer, chaque Personnage peut faire une Activ
 **Voir aussi :** [Entretien du navire (Activité en mer) (MDG)](#entretien-du-navire-activité-en-mer-mdg), [Commerce maritime (MDG)](#commerce-maritime-mdg), [`deplacement.md`](deplacement.md#activités-de-voyage-1-par-étape) (Activités de Voyage EDOC).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.266-306) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `schema`, `SEA_WEEK_DAYS`, `pieces-detachees-de-navire`, `port-buy-bargain`, `sea-embrigadement-ragot`, `sea-embrigadement-discretion`, `surcharge-3`, +29 — `src/data/combat-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, +10 fichiers
+- `MDG 15` (l.266-306) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `schema`, `SEA_WEEK_DAYS`, `commerce`, `minimum-vital`, `port-buy-bargain`, `sea-embrigadement-ragot`, `sea-embrigadement-discretion`, +30 — `src/data/combat-stakes.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, +10 fichiers
 
 ---
 
@@ -1030,7 +1030,7 @@ Activité de réparation/usure, de préférence au port. En mer : **–20** supp
 **Voir aussi :** [Réparer un navire (MDG)](#réparer-un-navire-mdg), [Salissures de coque (MDG)](#salissures-de-coque-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg) (Entretien).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.302-306) → `SeaActivitiesModal`, `BankDeposit`, `pieces-detachees-de-navire`, `port-buy-bargain`, `surcharge-3`, `bankWithdrawOutcome`, `bankWithdrawInner`, `GameState`, `PendingCascade`, `fr` — `src/data/combat-stakes.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/i18n/messages/fr.ts`, `src/state/interludeFlow.ts`, +4 fichiers
+- `MDG 15` (l.302-306) → `SeaActivitiesModal`, `BankDeposit`, `commerce`, `minimum-vital`, `port-buy-bargain`, `surcharge-3`, `bankWithdrawOutcome`, `bankWithdrawInner`, `GameState`, `PendingCascade`, +1 — `src/data/combat-stakes.json`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/i18n/messages/fr.ts`, `src/state/interludeFlow.ts`, +4 fichiers
 
 ---
 
@@ -1051,5 +1051,5 @@ Deux actes : **acheter** une cargaison, la **vendre** ailleurs. Chaque port a un
 **Voir aussi :** [Longs voyages : résolution et vitesse (MDG)](#longs-voyages--résolution-et-vitesse-mdg), [Activités en mer (MDG)](#activités-en-mer-mdg) (Commerce d'opportunité), [`merchantFlow.ts`](../../src/state/merchantFlow.ts) (Marchandage).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.40-47, l.309-436) → `SeaActivitiesModal`, `l-anguille`, `rollSeasonalCargo`, `schema`, `PORT_PRODUITS`, `PortHeader`, `cereales`, `MapPlace`, `marienburg`, `PortOffer`, +53 — `src/data/combat-stakes.json`, `src/data/donnees.manifest.json` ⚠hors-app, `src/data/index.ts`, `src/data/naval-ports.json`, `src/data/schemas/defs/naval-ports.ts`, `src/data/schemas/defs/sea-cargo.ts`, +22 fichiers
+- `MDG 15` (l.40-47, l.309-436) → `SeaActivitiesModal`, `l-anguille`, `schema`, `cargoMarqueur`, `PortHeader`, `PORT_PRODUITS`, `cereales`, `MapPlace`, `marienburg`, `rollSeasonalCargo`, +57 — `src/data/combat-stakes.json`, `src/data/donnees.manifest.json` ⚠hors-app, `src/data/index.ts`, `src/data/naval-ports.json`, `src/data/schemas/defs/naval-ports.ts`, `src/data/schemas/defs/sea-cargo.ts`, +22 fichiers
 

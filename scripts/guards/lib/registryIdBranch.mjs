@@ -371,3 +371,68 @@ export function scanRegistryIdBranch(relPath, contenu) {
 export function countRegistryIdBranch(rel, contenu) {
   return scanRegistryIdBranch(rel, contenu).length;
 }
+
+// ── CLIQUET ANTI-ÉVASION : la forme BRUTE, sans aucune condition de liaison (#1318 E4/C0-a) ───────
+
+/**
+ * Scan de la forme BRUTE « <champ d'identité> === '<littéral>' » : une (in)égalité dont un côté est un
+ * accès `.id`/`.xxxId`/`.ref`/`.xxxRef`/`.book` — ou un identifiant nu de ce nom — et l'autre un
+ * littéral non vide. AUCUNE des conditions de `scanRegistryIdBranch` ne s'applique : ni nature de
+ * liaison (générique/valeur/sélecteur), ni `switch`, ni appartenance, ni table.
+ *
+ * CE QU'IL MESURE : l'ÉVASION, pas la doctrine. Le garde principal ne mord que sur une liaison
+ * générique ; réécrire `if (id === 'x')` en `xs.some((t) => t.id === 'x')` l'éteint sans rien
+ * assainir. Ce site-là reste compté ICI, comme y sont comptées les formes que le garde principal
+ * laisse hors champ à raison (lookup par id stable, entrée tenue par une constante de module) : y
+ * figurer n'est pas une faute, mais le COMPTE ne doit jamais monter, et chaque lot d'assainissement
+ * doit le faire descendre. Un site qui quitte le garde principal SANS descendre ici est une évasion.
+ *
+ * SA COUVERTURE, ET RIEN DE PLUS — le SEUL critère est le NOM du champ (`ID_NAME_RX`) sur un nœud
+ * d'égalité. Angles morts MESURÉS (compte principal/brut), assertés en test :
+ *  - alias RENOMMÉ (`const cle = t.id; cle === 'x'`), en prédicat ou non — 0/0 : le nom porteur a
+ *    changé, plus aucun des deux détecteurs ne le voit. C'est l'évasion la plus complète ;
+ *  - destructuration RENOMMÉE (`function f({ id: cle })`) — 0/0, même cause (la destructuration
+ *    DIRECTE, elle, garde le nom : 1/1) ;
+ *  - `switch (e.id) { case 'x' }` et `LISTE.includes(e.id)` — 1/0 : vus par le garde principal, hors
+ *    de cette mesure-ci qui ne compte que des ÉGALITÉS ;
+ *  - `Object.is(e.id, 'x')` — 0/0 : ce n'est pas un nœud d'égalité ;
+ *  - littéral de gabarit AVEC substitution — 0/0 (sans substitution : 1/1) ;
+ *  - `e.id.startsWith('x')`, `.match(…)` — 0/0 : ce n'est pas une égalité ;
+ *  - champ d'identité hors convention (`e.cle === 'x'`) — 0/0.
+ *
+ * Compté par NŒUD et non par ligne (contrairement au garde principal) : `id === 'a' ? … : id === 'b'`
+ * sur une seule ligne pèse deux comparaisons, et n'en éteindre qu'une doit se voir.
+ * @param {string} relPath @param {string} contenu
+ * @returns {{ line: number, detail: string }[]}
+ */
+export function scanRawIdEqualities(relPath, contenu) {
+  const kind = relPath.endsWith('.tsx') ? ts.ScriptKind.TSX
+    : /\.[cm]?js$/.test(relPath) ? ts.ScriptKind.JS
+      : ts.ScriptKind.TS;
+  const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, kind);
+  const lines = contenu.split('\n');
+  const findings = [];
+
+  /** Accès `<quoi que ce soit>.id` ou identifiant nu `id`, par le SEUL nom du champ. */
+  const isIdName = (node) => {
+    const n = unwrap(node);
+    if (ts.isPropertyAccessExpression(n) && ts.isIdentifier(n.name)) return ID_NAME_RX.test(n.name.text);
+    if (ts.isIdentifier(n)) return ID_NAME_RX.test(n.text);
+    return false;
+  };
+
+  const visit = (node) => {
+    if (ts.isBinaryExpression(node) && EQUALITY_OPS.has(node.operatorToken.kind)) {
+      const l = unwrap(node.left);
+      const r = unwrap(node.right);
+      if ((isIdName(l) && isEntryLiteral(r)) || (isIdName(r) && isEntryLiteral(l))) {
+        const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
+        findings.push({ line, detail: (lines[line - 1] || '').trim() });
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(sf, visit);
+  findings.sort((a, b) => a.line - b.line);
+  return findings;
+}

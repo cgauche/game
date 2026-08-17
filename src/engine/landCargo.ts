@@ -18,18 +18,22 @@ import { d10, d100, roll as rollDice, type RNG, defaultRNG } from './dice';
 import { findTableEntry, findTableEntryIndex } from './tables';
 import type { Difficulty } from './types';
 import type { Season } from './travelStages';
-import { type CargoDef, rollSeasonalCargo, cargoBasePrice } from './cargo';
+import { type CargoDef, type CargoMarkerDef, isEchangeable, rollSeasonalCargo, cargoBasePrice } from './cargo';
 
 /** Un type de cargaison terrestre = `CargoDef` + éventuel marqueur `wine` (prix par table de qualité, non
  *  par la colonne saisonnière). */
 export interface LandCargoDef extends CargoDef { wine?: boolean }
+
+/** Une entrée du catalogue terrestre : marchandise ou MARQUEUR de la colonne Produits (« Commerce »,
+ *  « Subsistance ») — même vocabulaire de colonne, exclusion portée en champ (`cargo.ts`). */
+export type LandCargoEntry = LandCargoDef | CargoMarkerDef;
 
 interface WineTier { min: number; max: number; label: string; price: number }
 interface OfferRow { richesse: number; label: string; pct: number }
 export interface RumourRow { min: number; max: number; biens: string[]; text: string }
 
 const LAND = landCargoJson as unknown as {
-  cargoes: LandCargoDef[];
+  cargoes: LandCargoEntry[];
   wineQuality: WineTier[];
   buy: { availabilityMultiplier: number; merchantSkill: { d10: number; plus: number }; partialSurchargePct: number; minEnc: number; wineEvalDifficulty: Difficulty; wineEvalEasyDifficulty: Difficulty; wineAlcoholResistThreshold: number };
   sell: { targetPerSize: number; commerceBonus: number; dumpingPctOfBase: number; offerByRichesse: OfferRow[] };
@@ -38,13 +42,20 @@ const LAND = landCargoJson as unknown as {
 };
 
 export const WINE_QUALITY = LAND.wineQuality;
-/** Catalogue des cargaisons terrestres (Tableau des cargaisons, MSRC 13 l.71-90) — source UNIQUE pour
- *  énumérer les Produits d'un Lieu (éditeur de marché). */
-export const LAND_CARGOES: readonly LandCargoDef[] = LAND.cargoes;
+/** Le catalogue COMPLET tel qu'il est authoré : marchandises ET marqueurs de la colonne Produits
+ *  (MSRC 13 l.24-28, l.119). À n'employer que pour NOMMER une entrée de cette colonne. */
+export const LAND_CARGO_ENTRIES: readonly LandCargoEntry[] = LAND.cargoes;
+/** Catalogue ÉCHANGEABLE des cargaisons terrestres (Tableau des cargaisons, MSRC 13 l.71-90) : filtré
+ *  À LA SOURCE sur le champ d'exclusion — source UNIQUE pour énumérer les Produits négociables d'un
+ *  Lieu (éditeur de marché, négoce, Compendium), marqueurs jamais compris. */
+export const LAND_CARGOES: readonly LandCargoDef[] = LAND.cargoes.filter(isEchangeable) as LandCargoDef[];
 /** Échelons de Richesse et leur Mise à prix (MSRC 13 l.150-156) — source des libellés (1 Misérable …
  *  5 Prospère) pour l'éditeur de marché. */
 export const LAND_RICHESSE_ROWS: readonly OfferRow[] = LAND.sell.offerByRichesse;
-export const findLandCargoById = (id: string): LandCargoDef | undefined => LAND.cargoes.find((c) => c.id === id);
+/** Résout une MARCHANDISE terrestre (les marqueurs ne sont ni achetables ni vendables). */
+export const findLandCargoById = (id: string): LandCargoDef | undefined => LAND_CARGOES.find((c) => c.id === id);
+/** Résout une entrée QUELCONQUE de la colonne Produits, marqueur compris (libellé d'affichage). */
+export const findLandCargoEntryById = (id: string): LandCargoEntry | undefined => LAND_CARGO_ENTRIES.find((c) => c.id === id);
 
 /** Profil COMMERCIAL d'un Lieu terrestre/fluvial (Index géographique, l.183-278) — porté par le LIEU de
  *  la carte du monde (`MapPlace.market`, donnée d'auteur). Reproduit les colonnes de l'Index. */
@@ -53,7 +64,8 @@ export interface LandMarketProfile {
   taille: number;
   /** Indice de Richesse (1 Pauvre … 5 Florissant ; Misérable = 0/absent, l.52-60). */
   richesse: number;
-  /** Colonne Produits : ids de cargaison produits, plus éventuellement `'commerce'` / `'subsistance'`. */
+  /** Colonne Produits : ids d'entrées de `land-cargo.json` — marchandises et/ou MARQUEURS (`echangeable:
+   *  false`), le catalogue porte les deux (l.24-28, l.119). */
   produits: string[];
   /** Biens en Demande (facultatif) — informatif / futur ; la Demande RAW dépend surtout de Taille+Commerce. */
   demande?: string[];
@@ -116,7 +128,7 @@ export function rollCargoQuantity(place: LandMarketProfile, rng: RNG = defaultRN
 
 /** Cargaison ALÉATOIRE de la saison (Tableau des cargaisons aléatoires, l.71-78) — table TERRESTRE. PUR. */
 export function rollRandomLandCargo(season: Season, rng: RNG = defaultRNG): LandCargoDef {
-  return rollSeasonalCargo(LAND.cargoes, season, rng) as LandCargoDef;
+  return rollSeasonalCargo([...LAND_CARGOES], season, rng) as LandCargoDef;
 }
 
 /** ÉCHELON de qualité SECRÈTE d'une cargaison de Vin/Eau-de-vie (l.93-104) : 1d10 → qualité → prix de base

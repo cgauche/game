@@ -13,16 +13,30 @@ export const file = 'sea-cargo.json';
 const seasonRange = z.tuple([z.number(), z.number()]);
 const seasonPrice = z.strictObject({ printemps: z.number(), ete: z.number(), automne: z.number(), hiver: z.number() });
 
+/** Une CARGAISON ÉCHANGEABLE : disponibilité saisonnière + prix (tableau des cargaisons, l.406-434). */
+const cargoMarchand = z.strictObject({
+  id: z.string(),
+  label: z.string(),
+  avail: z.strictObject({ printemps: seasonRange, ete: seasonRange, automne: seasonRange, hiver: seasonRange }),
+  price: z.union([seasonPrice, z.strictObject({ dice: z.string() })]),
+  source: sourceRefSchema,
+});
+
+/** Un MARQUEUR de la colonne Production de l'Index (« commerce », « minimum vital », MDG 15 l.321) :
+ *  il occupe la même colonne que les cargaisons sans être une marchandise — donc ni disponibilité ni
+ *  prix. `echangeable: false` est le champ d'EXCLUSION lu par le résolveur (`engine/seaVoyage.ts`),
+ *  qui filtre le catalogue échangeable à la source ; une entrée marchande ne porte pas le champ. */
+const cargoMarqueur = z.strictObject({
+  id: z.string(),
+  label: z.string(),
+  echangeable: z.literal(false),
+  /** Qualificatif d'affichage ÉDITABLE (« plaque tournante » / « rien à échanger ») — cf. `CargoMarkerDef`. */
+  hint: z.string().optional(),
+  source: sourceRefSchema,
+});
+
 export const schema = z.strictObject({
-  cargoes: z.array(
-    z.strictObject({
-      id: z.string(),
-      label: z.string(),
-      avail: z.strictObject({ printemps: seasonRange, ete: seasonRange, automne: seasonRange, hiver: seasonRange }),
-      price: z.union([seasonPrice, z.strictObject({ dice: z.string() })]),
-      source: sourceRefSchema,
-    }),
-  ),
+  cargoes: z.array(z.union([cargoMarchand, cargoMarqueur])),
   buy: z.strictObject({
     availabilityMultiplier: z.number(),
     merchantSkill: z.strictObject({ d10: z.number(), plus: z.number() }),

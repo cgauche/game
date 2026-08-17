@@ -315,7 +315,7 @@ export function amputationCombatPenalty(c: Combatant, weapon: Weapon): number {
  * d'une séquelle d'amputation (combat) :
  *  - Doigts par bras (l.251) : compte cumulé PAR bras ; **4+ doigts → règle de la main tranchée** (`maxWeaponHands`).
  *    La pénalité −5/doigt (et −20/main) est CONTEXTUELLE À L'ARME (`amputationCombatPenalty`), PAS un charMod ici.
- *  - Dents (l.338) : −1 Sociabilité PAR PAIRE perdue (1 dent = 0, 3 = −1, 4 = −2…).
+ *  - Dents (l.247) : −1 Sociabilité PAR PAIRE perdue (1 dent = 0, 3 = −1, 4 = −2…).
  * Latéralité portée par `location` (brasG/brasD) ; DROITIER (main principale = brasD). Prothèses : Merveille
  * (doigts/main), Dents en bois (dents).
  */

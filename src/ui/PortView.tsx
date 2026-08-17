@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useGame } from '../state/store';
 import { partyMoneyTotal } from '../state/bourseFlow';
 import { findVehicleById, NAVAL_TRAITS, findNavalPortById, crewRoles, type NavalPortData } from '../data';
-import { findCargoById, type PortProfile } from '../engine/seaVoyage';
+import { findCargoById, findCargoEntryById, type PortProfile } from '../engine/seaVoyage';
 import { installCost } from '../engine/shipBuild';
 import { shipHasNavalTrait } from '../engine/navalTraits';
 import { foulingEffects } from '../engine/seaNavigation';
@@ -21,8 +21,8 @@ import { TradeTable, type TradeGroup } from './TradeTable';
 import { ShoreLeaveBody } from './ShoreLeaveModal';
 import { ManannBody } from './ManannPriestModal';
 
-/** Libellé d'un id de cargaison / marqueur d'Index (`commerce`/`minimum-vital` ne sont pas des cargaisons). */
-const cargoLabel = (id: string): string => id === 'commerce' ? 'Commerce' : id === 'minimum-vital' ? 'Minimum vital' : findCargoById(id)?.label ?? id;
+/** Libellé d'une entrée de la colonne Production de l'Index — marchandise ou marqueur, même catalogue. */
+const cargoLabel = (id: string): string => findCargoEntryById(id)?.label ?? id;
 const indiceList = (rec: Record<string, number> | undefined): string =>
   Object.entries(rec ?? {}).map(([id, n]) => `${cargoLabel(id)}${n > 1 ? ` ×${n}` : ''}`).join(', ');
 

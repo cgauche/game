@@ -112,7 +112,9 @@ export function openPort(get: Get, set: Set): void {
   const season = seasonOfMonth(toDate(get().gameTime).month);
   const { port } = cur;
   const ids = new Set<string>();
-  for (const p of port.production) if (p !== 'commerce' && p !== 'minimum-vital') ids.add(p);
+  // Seules les MARCHANDISES de la colonne Production entrent au négoce : un marqueur de l'Index
+  // (`echangeable: false`) n'est pas résolu par `findCargoById` et ne produit donc aucune offre.
+  for (const p of port.production) if (findCargoById(p)) ids.add(p);
   for (const s of Object.keys(port.surplus ?? {})) ids.add(s);
   // « commerce » → cargaison(s) aléatoire(s) (l.321/347).
   if (port.production.includes('commerce')) {

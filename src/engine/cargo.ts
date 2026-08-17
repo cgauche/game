@@ -14,8 +14,38 @@ import type { Season } from './travelStages';
 export interface CargoDef {
   id: string;
   label: string;
+  /** Absent sur une cargaison marchande — présent et `false` sur un MARQUEUR (`CargoMarkerDef`). */
+  echangeable?: true;
   avail: Record<Season, [number, number]>;
   price: Record<Season, number> | { dice: string };
+}
+
+/** Un MARQUEUR de la colonne Production/Produits de l'Index (« Commerce », « Minimum vital »,
+ *  « Subsistance ») : il partage le vocabulaire des cargaisons — une colonne d'Index le cite comme une
+ *  marchandise — sans en être une, donc sans disponibilité ni prix. Il vit dans le MÊME catalogue
+ *  (`sea-cargo.json`/`land-cargo.json`) pour que son libellé joueur ait une source unique.
+ *
+ *  PÉRIMÈTRE EXACT de ce qui est passé en donnée : l'EXCLUSION du négoce (`echangeable`) et le
+ *  LIBELLÉ (`label` + `hint`). Le concept « plaque tournante » reste, lui, branché par id sur
+ *  6 sites `production.includes('commerce')` — `landCargo.ts:87`, `seaVoyage.ts:276/299/319`,
+ *  `state/portFlow.ts:120`, `ui/CityHubScreen.tsx:73` — qu'un second champ déclaré devra couvrir
+ *  (lot C1-bis). Rien ici ne le résout. */
+export interface CargoMarkerDef {
+  id: string;
+  label: string;
+  echangeable: false;
+  /** Qualificatif d'AFFICHAGE du marqueur, ÉDITABLE en donnée : il reprend la forme des verbatims
+   *  MSRC 13 — « plaque tournante » (l.28) vs « rien à échanger » (l.119). Deux sens DISTINCTS qu'un
+   *  suffixe unique codé en dur écrasait ; l'écran l'affiche entre parenthèses après le `label`. */
+  hint?: string;
+}
+
+/** Une entrée de catalogue de cargaison : marchandise ou marqueur. */
+export type CargoEntry = CargoDef | CargoMarkerDef;
+
+/** L'entrée est-elle une marchandise (achetable/vendable) ? Lit le CHAMP d'exclusion. PUR. */
+export function isEchangeable(entry: CargoEntry): entry is CargoDef {
+  return entry.echangeable !== false;
 }
 
 /** Cargaison ALÉATOIRE de la saison : d100 dans la colonne saisonnière du tableau fourni (MSRC 13 l.71-78,

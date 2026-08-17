@@ -25,8 +25,8 @@ import type { Difficulty } from './types';
 import type { Season } from './travelStages';
 // Tronc commun cargaison (partagé avec le commerce terrestre MSRC, `landCargo.ts`) — modèle de lot,
 // tirage saisonnier, prix de base. Re-exporté pour les importeurs historiques de ce module.
-import { type CargoDef, rollSeasonalCargo } from './cargo';
-export { type CargoDef, type CargoLot, cargoTotalEnc, removeCargo, spoilCargoByEnc, spoilCargoByPct, cargoBasePrice } from './cargo';
+import { type CargoDef, type CargoEntry, isEchangeable, rollSeasonalCargo } from './cargo';
+export { type CargoDef, type CargoEntry, type CargoLot, isEchangeable, cargoTotalEnc, removeCargo, spoilCargoByEnc, spoilCargoByPct, cargoBasePrice } from './cargo';
 
 // ── Types de la donnée ───────────────────────────────────────────────────────────────────────────
 
@@ -67,7 +67,7 @@ const EVENTS = seaEventsJson as unknown as {
 export interface OverloadPalier { id: string; fromPct: number; label: string; mMod: number; manoeuvreDR: number }
 
 const CARGO = seaCargoJson as unknown as {
-  cargoes: CargoDef[];
+  cargoes: CargoEntry[];
   overload: { hardCapPct: number; paliers: OverloadPalier[] };
   buy: { availabilityMultiplier: number; merchantSkill: { d10: number; plus: number }; bigPortSkill: { d10: number; plus: number }; partialPurchaseSellerDR: number; surplusSellerDR: number };
   sell: {
@@ -89,9 +89,17 @@ export const MANANN_FACTORS = EVENTS.manann.factors;
 export const BOARD_EVENTS = EVENTS.boardEvents;
 export const PORT_EVENTS = EVENTS.portEvents;
 export const FAST_VOYAGE_PALIERS = EVENTS.fastVoyage.paliers;
-export const CARGOES = CARGO.cargoes;
+/** Le catalogue COMPLET tel qu'il est authoré : marchandises ET marqueurs de l'Index (MDG 15 l.321) —
+ *  vocabulaire de la colonne Production. À n'employer que pour NOMMER une entrée de cette colonne. */
+export const CARGO_ENTRIES: readonly CargoEntry[] = CARGO.cargoes;
+/** Catalogue ÉCHANGEABLE : filtré À LA SOURCE sur le champ d'exclusion, pour que négoce, table de
+ *  cargaison aléatoire, éditeur et Compendium ne voient jamais un marqueur. */
+export const CARGOES: readonly CargoDef[] = CARGO.cargoes.filter(isEchangeable);
 export const OPPORTUNITE = CARGO.opportunite;
-export const findCargoById = (id: string): CargoDef | undefined => CARGO.cargoes.find((c) => c.id === id);
+/** Résout une MARCHANDISE (les marqueurs ne sont ni achetables ni vendables). */
+export const findCargoById = (id: string): CargoDef | undefined => CARGOES.find((c) => c.id === id);
+/** Résout une entrée QUELCONQUE de la colonne Production, marqueur compris (libellé d'affichage). */
+export const findCargoEntryById = (id: string): CargoEntry | undefined => CARGO_ENTRIES.find((c) => c.id === id);
 export const findManannFactor = (id: string): ManannFactor | undefined => EVENTS.manann.factors.find((f) => f.id === id);
 
 // ── Surcharge de la cale (MDG 12 l.70-75) ──────────────────────────────────────────────────────
@@ -225,7 +233,7 @@ export interface PortProfile {
 
 /** Cargaison ALÉATOIRE de la saison (l.402-418) : d100 dans la colonne saisonnière (tableau MARITIME). PUR. */
 export function rollRandomCargo(season: Season, rng: RNG = defaultRNG): CargoDef {
-  return rollSeasonalCargo(CARGO.cargoes, season, rng);
+  return rollSeasonalCargo([...CARGOES], season, rng);
 }
 
 /** Enc DISPONIBLE d'une cargaison à l'achat (l.323-331) : « additionnez la Taille et la Richesse du

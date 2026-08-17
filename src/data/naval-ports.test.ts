@@ -4,7 +4,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { navalPorts, findNavalPortById } from './index';
-import { CARGOES } from '../engine/seaVoyage';
+import { CARGOES, CARGO_ENTRIES } from '../engine/seaVoyage';
 
 describe('naval-ports.json — catalogue de l’Index des ports (#217)', () => {
   it('charge et porte au moins les entrées connues', () => {
@@ -20,10 +20,12 @@ describe('naval-ports.json — catalogue de l’Index des ports (#217)', () => {
 
   it('chaque id de production/surplus/demande résout dans le vocabulaire de marchandise (sea-cargo.json)', () => {
     const cargoIds = new Set(CARGOES.map((c) => c.id));
-    const specials = new Set(['commerce', 'minimum-vital']);
+    // La colonne Production admet TOUT le vocabulaire du catalogue, marqueurs de l'Index compris
+    // (`echangeable: false`) — Surplus et Demande, eux, ne portent que des marchandises.
+    const columnIds = new Set(CARGO_ENTRIES.map((c) => c.id));
     for (const p of navalPorts) {
       for (const id of p.production ?? []) {
-        expect(cargoIds.has(id) || specials.has(id), `${p.id} : production id inconnu "${id}"`).toBe(true);
+        expect(columnIds.has(id), `${p.id} : production id inconnu "${id}"`).toBe(true);
       }
       for (const id of Object.keys(p.surplus ?? {})) {
         expect(cargoIds.has(id), `${p.id} : surplus id inconnu "${id}"`).toBe(true);

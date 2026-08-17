@@ -4,7 +4,8 @@ import { partyMoneyTotal } from '../state/bourseFlow';
 import { placeServices, placeServiceMerchantId, serviceIcon, poiIcon, type ResolvedPlaceService, type MapPlace } from '../state/worldMap';
 import type { Scene } from '../state/scene';
 import { restServicePrice, type RestPlaces } from '../state/restFlow';
-import { findLandCargoById } from '../engine/landCargo';
+import { findLandCargoById, findLandCargoEntryById } from '../engine/landCargo';
+import { findCargoEntryById, isEchangeable } from '../engine/seaVoyage';
 import { innGatherInfoMinutes } from '../state/innFlow';
 import { ScreenShell } from './ScreenShell';
 import { MasterDetail } from './MasterDetail';
@@ -61,9 +62,14 @@ export function cityHubCanEnterPort(vessel: unknown): boolean {
   return vessel != null;
 }
 
+/** Entrée de la colonne Produits/Production, TERRESTRE ou MARITIME — le hub sert les deux profils et
+ *  les deux catalogues partagent la même forme d'entrée (`CargoEntry`). */
+const produitEntry = (id: string) => findLandCargoEntryById(id) ?? findCargoEntryById(id);
+
 /** Carte de synthèse d'un profil commercial (port/marché) : Taille/Richesse + colonne Produits. */
 function ProfileSynth({ taille, richesse, production }: { taille: number; richesse: number; production?: string[] }) {
-  const goods = (production ?? []).filter((p) => p !== 'commerce' && p !== 'subsistance' && p !== 'minimum-vital');
+  // Les MARCHANDISES seules se listent : un marqueur de l'Index porte son exclusion en champ.
+  const goods = (production ?? []).filter((p) => { const e = produitEntry(p); return !e || isEchangeable(e); });
   const commerce = (production ?? []).includes('commerce');
   return (
     <ul className="city-hub-synth">
@@ -72,7 +78,7 @@ function ProfileSynth({ taille, richesse, production }: { taille: number; riches
       {(goods.length > 0 || commerce) && (
         <li>
           <span className="city-hub-synth-k">Produits</span>
-          <span className="city-hub-synth-v">{[commerce ? 'Commerce' : null, ...goods.map((id) => findLandCargoById(id)?.label ?? id)].filter(Boolean).join(', ')}</span>
+          <span className="city-hub-synth-v">{[commerce ? 'Commerce' : null, ...goods.map((id) => produitEntry(id)?.label ?? id)].filter(Boolean).join(', ')}</span>
         </li>
       )}
     </ul>

@@ -128,7 +128,7 @@ describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB
   });
 });
 
-describe('consolidateAmputations — cumul doigts (l.251) & dents (l.338) ; pénalité de combat CONTEXTUELLE à l’arme (#101)', () => {
+describe('consolidateAmputations — cumul doigts (l.251) & dents (l.247) ; pénalité de combat CONTEXTUELLE à l’arme (#101)', () => {
   const finger = (loc: 'brasG' | 'brasD', count = 1): Trauma => ({ label: `Doigts amputés (${loc})`, traumaId: 'doigt-ampute', location: loc, count });
   const teeth = (count: number): Trauma => ({ label: 'Dents perdues', traumaId: 'dents-perdues', location: 'tete', count });
 

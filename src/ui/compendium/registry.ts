@@ -32,8 +32,8 @@ import { TAVERN_GAMES } from '../../engine/tavernGame';
 import { OBSESSIONS } from '../../data/obsessions';
 import { STRUCTURE_CRITICALS } from '../../data/structureCriticals';
 import { ARTILLERY_MISFIRE } from '../../data/artilleryMisfire';
-import { LAND_CARGOES } from '../../engine/landCargo';
-import { CARGOES } from '../../engine/seaVoyage';
+import { type LandCargoDef } from '../../engine/landCargo';
+import { findCargoEntryById, isEchangeable } from '../../engine/seaVoyage';
 import type { SeaEventDef, ManannFactor } from '../../engine/seaVoyage';
 import { RIVER_PERILS } from '../../engine/riverNavigation';
 import { MORALE_FACTORS, MORALE_BANDS } from '../../engine/crewMorale';
@@ -767,14 +767,17 @@ export function extractEpigraph(desc: string): { epigraph?: string; body: string
 //    UNIQUES (dataset-objet, MÊME patron que `waterExposure`, #157 suite) — chaque config imbriquée
 //    (Salissures, Orientation, Détroits, Tourbillons…) devient une section plutôt qu'une entité isolée. ──
 
-/** Libellé FR d'une entrée de `production`/`surplus`/`demande` d'un Port (`naval-ports.json`) : id réel
- *  de `sea-cargo.json` → lien cross-réf ; marqueur `commerce`/`minimum-vital` (hors catalogue de
- *  cargaison, LDB/MDG 15 l.343-349) → texte simple non cliquable. */
+/** Libellé FR d'une entrée de `production`/`surplus`/`demande` d'un Port (`naval-ports.json`) : le
+ *  catalogue `sea-cargo.json` porte tout le vocabulaire de la colonne. Une MARCHANDISE ouvre un lien
+ *  cross-réf vers sa fiche ; un MARQUEUR (`echangeable: false`, MDG 15 l.321) n'a pas de fiche — il
+ *  s'annonce en texte simple, avec son qualificatif `hint` lu EN DONNÉE (« plaque tournante » /
+ *  « rien à échanger »), jamais un suffixe codé ici ni un texte par id. */
 function portCargoRow(id: string, qty?: number): CodexRow {
-  const cargo = CARGOES.find((c) => c.id === id);
-  const label = cargo?.label ?? (id === 'commerce' ? 'Commerce (marqueur)' : id === 'minimum-vital' ? 'Minimum vital (marqueur)' : id);
-  const show = qty != null ? `${label} (${qty})` : label;
-  return cargo ? { t: 'ref', category: 'seaCargo', id: cargo.id, label, show } : { t: 'text', text: show };
+  const entry = findCargoEntryById(id);
+  const label = entry?.label ?? id;
+  const nom = entry && !isEchangeable(entry) && entry.hint ? `${label} (${entry.hint})` : label;
+  const show = qty != null ? `${nom} (${qty})` : nom;
+  return entry && isEchangeable(entry) ? { t: 'ref', category: 'seaCargo', id: entry.id, label, show } : { t: 'text', text: show };
 }
 
 /** Libellés FR des 5 modes de la table PROGRESSION D'UN NAVIRE (`naval-progression.json`, MDG 13 l.68-75). */
@@ -2421,13 +2424,18 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       ),
     })),
   },
+  // Cargaisons : le DATASET éditable est le tableau brut du JSON (marqueurs de l'Index compris, cf.
+  // `data/overrides.ts`), la VUE Compendium n'en montre que les marchandises — un marqueur n'a ni
+  // prix ni disponibilité, donc aucune fiche à ouvrir. Le filtre est ICI, pas dans la donnée.
   {
     key: 'landCargo', label: 'Cargaison terrestre', group: 'Monde',
-    build: () => LAND_CARGOES.map((c) => ({ id: c.id, label: c.label, meta: facts(fact('Vin', c.wine ? 'oui' : null)) })),
+    build: () => datasetArray('landCargo').filter(isEchangeable).map((c) => ({
+      id: c.id, label: c.label, meta: facts(fact('Vin', (c as LandCargoDef).wine ? 'oui' : null)),
+    })),
   },
   {
     key: 'seaCargo', label: 'Cargaison maritime', group: 'Monde',
-    build: () => CARGOES.map((c) => ({ id: c.id, label: c.label })),
+    build: () => datasetArray('seaCargo').filter(isEchangeable).map((c) => ({ id: c.id, label: c.label })),
   },
   {
     key: 'riverPerils', label: 'Périls fluviaux', group: 'Monde',
