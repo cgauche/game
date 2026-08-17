@@ -429,6 +429,17 @@ aujourd'hui ; à terme les écrans de la planche : fiche/grimoire/journal/vision
 `onRotateRelease={relacherCamera}` (la version main l'a) — sans objet une fois la plaque
 retirée du jeu, à ne PAS reporter.
 
+✅ COMPLÉMENT 2026-08-17 — **LA BOUSSOLE-HORLOGE** (arbitrage user, verbatim : « Minimap,
+vu la taille de nos map, ca n'a pas trop de sens, mais la boussole c'est souvent un
+élément qui sert aussi a afficher l'heure et la date dans les jeux ») : PAS de minimap
+(cartes d'un écran) ; UN médaillon de coin de carte, patron Kingmaker — la BOUSSOLE
+(nord visible, clic = réorienter la caméra au nord — indispensable depuis la rotation
+libre sans plaque) qui PORTE l'heure et la date (le domicile canonique que la date avait
+perdu en quittant la barre haute — `ScreenMeta` reste la méta des écrans plein-champ).
+Exploration ET combat (l'heure de campagne se lit partout). À dessiner au lot de
+matière ; le contrat de composition (un seul médaillon, coin de carte, jamais une
+plaque de boutons) vaut dès maintenant.
+
 ## Zone 7 — LES PHASES
 
 ✅ TRANCHÉ (2026-08-16) : l'interlude de ciblage (`ActionBar.tsx:234-245`) et la pause de
