@@ -82,7 +82,7 @@ travée — c'est sa logique) ; le placement joueur vaut pour la grille + les ca
 
 | Case | Contenu | Mécanisme |
 |---|---|---|
-| G1 | Attaque de l'arme du set — bouton d'intention (mode `attaque`) ; clic-ennemi direct inchangé | alvéole + `TargetingMode 'attaque'` |
+| G1 | ✅ RÉVISÉ 2026-08-17 (demande user verbatim : « si on a 2 armes, genre une pistolet et une dague ou deux dague, on doit pouvoir attaquer avec au choix le pistolet ou la dague (bien sur il y a le malus de la main directrice) depuis un des boutons d'actions ») : **UNE CASE D'ATTAQUE PAR ARME DU SET** — set à 2 armes = 2 cases, chacune arme SON attaque (`weaponUid` porté par le flux, couture `attackSetWeapon` existante) ; la case de la MAIN SECONDAIRE affiche son **−20** (RAW LDB 14 l.138-139 : « Vous pouvez utiliser n'importe quelle main pour effectuer une attaque. Les attaques effectuées avec votre main secondaire subissent une pénalité de -20 sur tous les Tests applicables » ; armes admises à deux armes : « n'importe quelle arme de combat rapproché à une main ou n'importe quel pistolet » l.138) ; attaquer avec LES DEUX dans le Round reste le talent Maniement de deux armes (l.140, `attackSetDualMode` en modale, zone 5). Bouton d'intention (mode `attaque`) ; clic-ennemi direct inchangé | alvéole ×2 + `TargetingMode 'attaque'` |
 | G2 | Charge — bouton d'intention (mode `charge`, `chargeReach` M×2 dans la bande Course) | alvéole + patron `pushEngine` |
 | G3 | Viser (existant) | alvéole |
 | G4 | Recharger + progression | alvéole |
