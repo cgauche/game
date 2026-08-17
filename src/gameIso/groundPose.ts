@@ -3,8 +3,8 @@
  *  - `corpse` : hors de combat OU Inconscient → effondré, ne bouge plus ;
  *  - `prone`  : À Terre (LDB 16 l.37) → couché mais CONSCIENT, à demi relevé sur un coude ;
  *  - `null`   : debout.
- * Pur — consommé par les deux moteurs (rig bipède ET gabarits de créature) ET par les deux voies de
- * rendu du monde (#1176) : le stage AFFINE (`RigToken` / `usePlanAnim`, poses animées) et le monde
+ * Pur — consommé par les deux moteurs de corps (rig bipède ET gabarits de créature), aussi bien par les
+ * poses animées des hooks de rig (`RigToken` / `usePlanAnim`) que par le monde
  * VOLUMIQUE (`backends/webgl/sceneMeshes.ts`, billboard figé). L'ÉTAT, la POSE couchée et la BASCULE
  * du rig vivent donc ici — un corps au sol ne se redresse pas selon le renderer qui le dessine.
  */

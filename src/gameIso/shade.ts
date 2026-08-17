@@ -36,7 +36,7 @@ export function mix(a: string, b: string, t: number): string {
 export const LUMA_709 = { r: 0.2126, g: 0.7152, b: 0.0722 } as const;
 
 /** LUMINANCE PERÇUE (0..1) d'une couleur `#rrggbb`, dans l'espace où elle est ÉCRITE (sRGB — les
- *  octets de la donnée, ceux que compose le voile d'écran de la voie affine). `null` si non-hex. */
+ *  octets de la donnée). `null` si non-hex. */
 export function luminanceHex(hex: string): number | null {
   const c = parseHex(hex);
   return c ? (LUMA_709.r * c[0] + LUMA_709.g * c[1] + LUMA_709.b * c[2]) / 255 : null;

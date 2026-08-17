@@ -80,9 +80,9 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
   battle: BattleState | null;
   /** Contexte de tour/ciblage dont les marques dérivent (`stage/highlightLayer`) — avec le combat. */
   highlightOpts?: HighlightOpts;
-  /** MARQUES DYNAMIQUES déjà dérivées par l'hôte — les DEUX voies consomment cette même liste. */
+  /** MARQUES DYNAMIQUES déjà dérivées par l'hôte (`builders/dynamicMarks`) — cette couche les pose. */
   dynMarks?: DynamicMarks;
-  /** HALOS D'INTERACTION déjà dérivés par l'hôte — même partage, même liste pour les deux voies. */
+  /** HALOS D'INTERACTION déjà dérivés par l'hôte (`builders/interactHalos`) — même partage. */
   halos?: InteractionHalos;
   /** CHROME des jetons déjà dérivé par l'hôte — cet écran n'en consomme que l'ALLURE (le reste se
    *  peint en overlay SVG, `stage/TokenChromeOverlay`). */
@@ -113,7 +113,7 @@ export function VolumetricWorld({ scene, mpt, frame, tintAt, keepEl, nappeVue, t
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const actors = useMemo(() => poses, [posesKey]);
   const els = useMemo(() => ({ tokens: tokenEls, props: propEls }), [tokenEls, propEls]);
-  // MARQUES DE CASES (P3-0c) : le MÊME builder pur que la voie affine, sur la MÊME vue assemblée
+  // MARQUES DE CASES (P3-0c) : le builder PUR `builders/highlights`, sur la vue assemblée
   // (`combatHighlightsView`). L'écran volumique n'en connaît que la liste — il la pose à plat au sol.
   const highlights = useMemo<HighlightEl[]>(
     () => (battle && highlightOpts ? buildHighlights(scene, battle, combatHighlightsView(useGame.getState, battle, highlightOpts)) : []),

@@ -49,8 +49,8 @@ function cutByView(scene: Scene, visible: ReadonlySet<string> | undefined, view:
  *  voile de brouillard). `visible` ABSENT = aucune loi de vue (planches QC : elles jugent
  *  l'environnement, pas le brouillard) — même convention que `buildFloors`/`buildProps`.
  *
- *  SOURCE UNIQUE des deux voies de rendu du monde (#1176) : le stage affine en fait des corps React
- *  le monde volumique en fait des billboards (`sceneBillboards`) — les filtres
+ *  SOURCE UNIQUE des jetons du monde (#1176) : le monde volumique en fait des billboards
+ *  (`sceneBillboards`) et la surcouche SVG leur chrome (`stage/TokenChromeOverlay`) — les filtres
  *  (embuscade, enrôlé, couverture, étage, hors-vue) ne se recopient pas, ils se CONSOMMENT. */
 export function buildTokens(scene: Scene, visible: ReadonlySet<string> | undefined, battle: BattleState | null, view: TokenView): TokenEl[] {
   const { activeZ, viewZ, top } = view;
@@ -117,8 +117,8 @@ export function buildTokens(scene: Scene, visible: ReadonlySet<string> | undefin
   // comme n'importe quel combattant — équipage abstrait, étage, surplomb, brouillard.
   //
   // ÉCART RÉSIDUEL DÉCLARÉ (#1176, P3-5) : en vue du DESSUS (`top`), le couple redevient DEUX pions
-  // superposés (branche ci-dessus) — c'est le comportement des pions-portraits de la voie affine, et
-  // le monde volumique en hérite deux billboards à la même case. La vue du dessus tactique le tranche.
+  // superposés (branche ci-dessus), et le monde volumique en hérite deux billboards à la même case.
+  // La vue du dessus tactique le tranche.
   if (!top)
     for (const mount of battle.combatants) {
       if (!isMount(mount) || !mount.pos) continue;

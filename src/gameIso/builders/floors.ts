@@ -111,7 +111,7 @@ function overhangLowerHeight(scene: Scene, x: number, y: number, z: number): num
 /** Étage de SOL effectif sous (x,y) pour le BROUILLARD : à un trou (`vide`) de l'étage actif, on retombe
  *  sur le premier sol en dessous → le voile reflète la visibilité du CONTREBAS (vu par le trou) au lieu
  *  d'un noir « inconnu » qui masquerait l'étage inférieur. Mono-niveau (pas de trou) ⇒ `activeZ`.
- *  PARTAGÉ par le builder (surplomb PLEIN) et par FogLayer (IsoStage) — une seule vérité de voile. */
+ *  Une seule vérité de voile pour le builder (surplomb PLEIN) et la teinte de visibilité du monde. */
 export function fogFloorZ(scene: Scene, x: number, y: number, activeZ: number): number {
   for (let zz = activeZ; zz >= 0; zz--)
     if (scene.layers.some((l) => l.z === zz) && tileAt(scene, x, y, zz) !== 'vide') return zz;

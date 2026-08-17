@@ -3,15 +3,13 @@
  * titre que `boardPose.ts` (pose) et `stage3dCamera.ts` (cadrage) : l'écran MONTE ce que cette passe
  * décide, il ne décide rien lui-même. Aucun DOM, aucun renderer — des scalaires et deux objets `three`.
  *
- * UN SEUL PROPRIÉTAIRE DE LUMINOSITÉ PAR RÉGIME. En volumique, le canevas porte TOUTE la luminosité de
- * la scène : le voile d'ambiance du SVG (`stage/Ambiance.tsx`) reste à la voie affine, que `IsoStage`
- * gate. Les deux voies sont réglées sur la MÊME donnée (`catalog/ambiance.ts`, `ambianceLuminance` →
- * `nightVeilMax`) : la voie affine peint son voile par-dessus la scène, celle-ci dose ses lampes avec
- * le complément — d'où une parité de luminance PAR CONSTRUCTION, et un plancher non nul à luminosité 0
- * (le palier `tenebres` rend `1 − nightVeilMax`, jamais un écran noir). Les deux grandeurs se lisent sur
- * une surface HORIZONTALE, la surface de référence de `surfaceLuminance` : depuis le modelé de forme
+ * UN SEUL PROPRIÉTAIRE DE LUMINOSITÉ. Le canevas porte TOUTE la luminosité de la scène, dosée sur le
+ * palier authoré (`catalog/ambiance.ts`, `ambianceLuminance` → `nightVeilMax`) : ses lampes rendent le
+ * COMPLÉMENT du voile de nuit que décrit cette donnée — d'où un plancher non nul à luminosité 0
+ * (le palier `tenebres` rend `1 − nightVeilMax`, jamais un écran noir). La grandeur se lit sur une
+ * surface HORIZONTALE, la surface de référence de `surfaceLuminance` : depuis le modelé de forme
  * (#1300), une face VERTICALE rend ce plancher multiplié par le facteur de sa famille d'orientation
- * (`AMBIANCE.faceShade`), et le voile de l'affine, lui, ne connaît pas d'orientation.
+ * (`AMBIANCE.faceShade`).
  *
  * DEUX lampes au plus, et la seconde a une PORTE :
  *  - l'AMBIANTE existe toujours. Son intensité suit le palier de lumière de la scène (`ambientScalar` →
@@ -79,23 +77,23 @@ export interface StageLightScalars {
   fade: number;
   /** Un soleil éclaire-t-il RÉELLEMENT la scène (donc : ombres portées, disque de contact inutile). */
   lit: boolean;
-  /** Ce que la MÉTÉO authorée fait à la lumière (#1247) — dérivé de `tint`/`alpha`, la donnée même du
-   *  voile d'écran de la voie affine. `dim` est déjà appliqué aux trois grandeurs ci-dessous ; `tint`
-   *  et `k` servent à la COULEUR des lampes et du fond. */
+  /** Ce que la MÉTÉO authorée fait à la lumière (#1247) — dérivé de `tint`/`alpha`. `dim` est déjà
+   *  appliqué aux trois grandeurs ci-dessous ; `tint` et `k` servent à la COULEUR des lampes et du
+   *  fond. */
   meteo: WeatherLight;
   /** Intensité de l'ambiante, en unités three (facteur `π` compris). */
   ambientIntensity: number;
   /** Intensité de la directionnelle, en unités three (facteur `π` compris) — 0 quand elle n'est pas montée. */
   sunIntensity: number;
   /** LUMINANCE du seul PALIER d'ambiance (`ambianceLuminance`), soleil exclu — le complément exact du
-   *  voile de nuit de la voie affine. C'est le scalaire que COMPLÈTENT les flaques de lampe
+   *  voile de nuit authoré. C'est le scalaire que COMPLÈTENT les flaques de lampe
    *  (`stagePointLights.ts`) : à 1 (plein jour) il ne reste rien à allumer. Un NOMBRE, sans rapport
    *  avec `Scene.ambiance`, qui est l'id du LIEU (`exterieur`/`interieur`). */
   ambianceLum: number;
   /** LUMINANCE d'une surface horizontale de la scène, en part de son albédo — l'exposition globale de
    *  la frame. C'est le scalaire que multiplient les surfaces NON lambertiennes (billboards), qui n'ont
-   *  pas de normale exploitable, et la mesure de parité avec la voie affine (sans soleil : elle vaut
-   *  exactement `ambianceLuminance(palier)`, soit le complément du voile SVG). */
+   *  pas de normale exploitable. Sans soleil, elle vaut exactement `ambianceLuminance(palier)`, soit le
+   *  complément du voile de nuit authoré. */
   surfaceLuminance: number;
 }
 
@@ -115,10 +113,10 @@ export function stageLightScalars(args: {
 }): StageLightScalars {
   const course = sceneSun(args.scene as Scene, args.gameTime);
   const palier = ambientScalar(args.scene as Scene, args.gameTime, args.lightLevel ?? null);
-  // MÉTÉO (#1247) : la MÊME donnée que le voile d'écran de la voie affine (`tint`/`alpha`), dérivée en
-  // scalaires (`weatherLightScalars`). `dim` est le facteur d'exposition APPARIÉ EN LUMINANCE au voile
-  // de l'affine sur l'albédo de référence — il vaut plus de 1 sous une météo plus CLAIRE que la scène
-  // (neige, brouillard). L'orage se joue par les LAMPES, jamais par un rect posé par-dessus.
+  // MÉTÉO (#1247) : la donnée authorée (`tint`/`alpha`), dérivée en scalaires (`weatherLightScalars`).
+  // `dim` est le facteur d'exposition APPARIÉ EN LUMINANCE au voile que cette donnée décrit sur
+  // l'albédo de référence — il vaut plus de 1 sous une météo plus CLAIRE que la scène (neige,
+  // brouillard). L'orage se joue par les LAMPES, jamais par un rect posé par-dessus.
   const meteo = weatherLightScalars(args.scene);
   const expo = ambianceLuminance(palier) * meteo.dim;
   // RÉGIME SANS SOLEIL, dit UNE fois : le regard qui n'en veut pas (`viewPolicy.ombreSoleil`) éteint

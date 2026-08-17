@@ -1,9 +1,7 @@
 /**
- * BACKEND VOLUMIQUE des HALOS D'INTERACTION (#1176, P3-0g) — le pendant three des deux affordances que
- * le SVG traçait en ellipses animées par CSS (`
- * `npcHoverHaloObjs`) : le halo permanent d'un décor FOUILLABLE et le halo de survol d'un PNJ
- * interlocuteur. Même partage que `dynamicMarkMeshes.ts` : le MONTAGE est ici, la POSE par frame vit
- * dans `stage/interactHaloPose.ts`.
+ * BACKEND VOLUMIQUE des HALOS D'INTERACTION (#1176, P3-0g) — les deux affordances hors combat : le halo
+ * permanent d'un décor FOUILLABLE et le halo de survol d'un PNJ interlocuteur. Même partage que
+ * `dynamicMarkMeshes.ts` : le MONTAGE est ici, la POSE par frame vit dans `stage/interactHaloPose.ts`.
  *
  * POOLS de capacité FIXE, montés une fois pour la vie de l'écran — même raison qu'aux marques
  * dynamiques : ces halos PULSENT, donc ils se réécrivent à la cadence de la frame, et un pool qui se
@@ -11,10 +9,10 @@
  *
  * POURQUOI UN SLOT PAR VARIANTE DE SURVOL : l'opacité est une propriété de MATÉRIAU (elle ne voyage
  * pas par instance), et c'est précisément elle que la pulsation fait battre. Or les deux variantes ne
- * battent NI à la même cadence NI entre les mêmes bornes (`anim.css` : `haloPulse 1.6s` 0,35→0,8 contre
- * `haloPulseHover 0.7s` 0,85→1) : un seul pool ne saurait porter les deux à la même frame. Le slot est
- * donc le halo DIVISÉ par sa variante, exactement comme les marques de case sont divisées par leur
- * opacité (`highlightMeshes.HighlightSlot`).
+ * battent NI à la même cadence NI entre les mêmes bornes (`stage/interactHaloPose` : `HALO_PULSE_S`
+ * 1,6 s 0,35→0,8 contre `HALO_HOVER_PULSE_S` 0,7 s 0,85→1) : un seul pool ne saurait porter les deux à
+ * la même frame. Le slot est donc le halo DIVISÉ par sa variante, exactement comme les marques de
+ * case sont divisées par leur opacité (`highlightMeshes.HighlightSlot`).
  *
  * UN ANNEAU EST UN CHAPELET DE CORDES, pas une géométrie d'anneau : c'est déjà la mécanique des anneaux
  * d'équipe (`stage/dynamicMarkPose.ringDashes`), et elle donne ce qu'une `RingGeometry` mise à
@@ -62,8 +60,7 @@ export const HALO_SLOTS: readonly HaloSlot[] = [
 
 /** RANG de superposition, dans la MÊME échelle que les marques de case (`highlightMeshes.SLOT_RANK`,
  *  qui s'arrête à 8) et que les marques dynamiques (`dynamicMarkMeshes.DYN_SLOT_RANK`, qui s'arrête à
- *  12) : ces halos passent au-dessus des deux, comme en affine où ils sont émis APRÈS elles
- *  (`IsoStage`, ordre d'émission de la frame). L'ÉTINCELLE n'est pas au sol — son rang ne la départage
+ *  12) : ces halos passent au-dessus des deux. L'ÉTINCELLE n'est pas au sol — son rang ne la départage
  *  de rien, mais la table reste totale. */
 export const HALO_SLOT_RANK: Record<HaloSlot, number> = {
   fouilleDisque: 13,
@@ -81,9 +78,9 @@ export function haloSlotLiftM(slot: HaloSlot): number {
   return (HALO_SLOT_RANK[slot] + 1) * SPECKLE_LIFT_M;
 }
 
-/** Opacité de REPOS d'un slot — celle que la voie affine porte en attribut, avant que la pulsation CSS
- *  ne la module. La pose la MULTIPLIE par la pulsation de l'instant (`stage/interactHaloPose`). L'onde
- *  « sonar » et l'étincelle n'en portent aucune : leur keyframe donne l'opacité entière. */
+/** Opacité de REPOS d'un slot, avant que la pulsation ne la module. La pose la MULTIPLIE par la
+ *  pulsation de l'instant (`stage/interactHaloPose`). L'onde « sonar » et l'étincelle n'ont pas de
+ *  repos propre : leur pulsation donne l'opacité entière. */
 export const HALO_SLOT_OPACITY: Record<HaloSlot, number> = {
   fouilleDisque: HALO_FILL_OPACITY,
   fouilleContour: HALO_STROKE_OPACITY,
@@ -95,7 +92,7 @@ export const HALO_SLOT_OPACITY: Record<HaloSlot, number> = {
   pnjContour: NPC_STROKE_OPACITY,
 };
 
-/** Teintes — le MÊME catalogue que la voie affine (`highlightTints`) : le disque prend le halo doux,
+/** Teintes — le catalogue partagé `gameIso/highlightTints` : le disque prend le halo doux,
  *  le contour, l'onde et l'étincelle prennent l'or. */
 export const HALO_SLOT_TINT: Record<HaloSlot, string> = {
   fouilleDisque: HALO_TINT,
@@ -142,10 +139,10 @@ export function unitDiscGeometry(segments = 48): THREE.BufferGeometry {
   return geo;
 }
 
-/** Gabarit UNITÉ de l'ÉTINCELLE : l'étoile de la voie affine (`builders/interactHalos.sparkPoints`),
- *  triangulée en ÉVENTAIL depuis son centre — `2n` triangles pour `n` branches, aucun canal de rendu de
- *  plus. DIAMÈTRE 1 de pointe à pointe, dans le plan XZ comme `tileQuadGeometry` : la pose la redresse
- *  et l'aligne sur la caméra. */
+/** Gabarit UNITÉ de l'ÉTINCELLE, SOURCE UNIQUE du glyphe : l'étoile paramétrée par les constantes du
+ *  builder (`SPARK_BRANCHES`, `SPARK_INNER_R_PX / SPARK_R_PX`), triangulée en ÉVENTAIL depuis son
+ *  centre — `2n` triangles pour `n` branches, aucun canal de rendu de plus. DIAMÈTRE 1 de pointe à
+ *  pointe, dans le plan XZ comme `tileQuadGeometry` : la pose la redresse et l'aligne sur la caméra. */
 export function unitStarGeometry(branches = SPARK_BRANCHES, innerRatio = SPARK_INNER_R_PX / SPARK_R_PX): THREE.BufferGeometry {
   const pas = Math.PI / branches;
   const sommet = (i: number): [number, number] => {

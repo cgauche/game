@@ -85,7 +85,7 @@ describe('apparence de structure (JSON partagé iso/POV)', () => {
     expect(day).toContain(structureAppearance('plain').window!.glass); // verre froid du JOUR (hex de la def)
     expect(day).not.toContain('class="warm"');
     const night = wallSvg(el, DIMS, { night: true });
-    expect(night).toContain('class="warm"'); // vitre allumée scintillante (anim.css global)
+    expect(night).toContain('class="warm"'); // vitre allumée
     expect(night).toContain(structureAppearance('plain').window!.lit); // ambre émissif de la def
   });
 

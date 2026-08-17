@@ -10,8 +10,8 @@
  * tirées de la palette partagée) → exclu du balayage.
  *
  * HORS périmètre (couleur LÉGITIME, non balayés) : le rig (`rig/**` = bestiaire/équipement dessinés
- * « à la main »), les FX de combat (`fx/**`), le brouillard (`FogLayer` = chrome d'état, pas un matériau
- * du monde), `shade.ts` (helpers de voile lumineux sanctionnés `ao`/`spec`/`warm`), et les defs de
+ * « à la main »), les FX de combat (`fx/**`), `shade.ts` (helpers de voile lumineux sanctionnés
+ * `ao`/`spec`/`warm`), et les defs de
  * terrain (`state/terrain/defs/**` = DONNÉE d'identité matériau, gradient/swatch, au même titre qu'un
  * JSON). Les TOKENS (`stage/TokenChromeOverlay`/`tokenBodyKind`) sont couverts À PART (bloc « chrome ») : leur
  * couleur d'identité vient de teamColors (`ACTIVE_RING`/`hpColor`) ou d'une donnée d'apparence, le reste

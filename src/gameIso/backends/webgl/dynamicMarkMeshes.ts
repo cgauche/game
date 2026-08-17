@@ -1,9 +1,8 @@
 /**
- * BACKEND VOLUMIQUE des marques DYNAMIQUES (#1176, P3-0d) — le pendant three des trois repères que la
- * rendu trace à la frame : lien d'ENGAGEMENT, contour de
- * l'unité ACTIVE, repère de position du GROUPE — plus l'ANNEAU D'ÉQUIPE aux pieds de chaque jeton
- * (P3-0e), aux pieds du corps qu'il ceint. Même partage que `highlightMeshes.ts` : le
- * MONTAGE est ici, la POSE par frame vit dans `stage/dynamicMarkPose.ts`.
+ * BACKEND VOLUMIQUE des marques DYNAMIQUES (#1176, P3-0d) — les trois repères que le rendu trace à la
+ * frame : lien d'ENGAGEMENT, contour de l'unité ACTIVE, repère de position du GROUPE — plus l'ANNEAU
+ * D'ÉQUIPE aux pieds de chaque jeton (P3-0e), aux pieds du corps qu'il ceint. Même partage que
+ * `highlightMeshes.ts` : le MONTAGE est ici, la POSE par frame vit dans `stage/dynamicMarkPose.ts`.
  *
  * QUATRE POOLS de capacité FIXE, montés une fois pour la vie de l'écran. Contrairement aux marques
  * statiques, la capacité ne suit même pas des paliers : ces marques se réécrivent SOIXANTE FOIS PAR
@@ -12,14 +11,14 @@
  *
  * LE LIEN EST FAIT DE QUADS, pas d'une ligne, et c'est mesuré :
  *  - `LineBasicMaterial.linewidth` part à `gl.lineWidth`, que la quasi-totalité des pilotes WebGL
- *    borne à 1 (`ALIASED_LINE_WIDTH_RANGE`) — l'épaisseur 2 de la voie affine n'y serait pas rendue ;
+ *    borne à 1 (`ALIASED_LINE_WIDTH_RANGE`) — l'épaisseur 2 du gabarit (`builders/dynamicMarks`) n'y serait pas rendue ;
  *  - `LineSegments.computeLineDistances()`, qu'exige `LineDashedMaterial` à chaque changement de
  *    géométrie, RECONSTRUIT son tableau et son `Float32BufferAttribute` à chaque appel
  *    (`three/src/objects/LineSegments.js`) — donc une allocation par frame de marche.
  * Un pointillé de quads n'a ni l'une ni l'autre limite : l'épaisseur est une échelle d'instance, et la
  * pose ne fait que réécrire des matrices. Le COÛT est borné par la nature de l'engagement : deux
  * combattants Engagés sont en CONTACT de mêlée, donc le lien fait environ une case — au pas de
- * pointillé de la voie affine (7 px, pour un pas de case qui se projette sur 35,78 px, cf.
+ * pointillé du gabarit (7 px, pour un pas de case qui se projette sur 35,78 px, cf.
  * `builders/dynamicMarks`), six quads pour un lien d'une case.
  */
 import * as THREE from 'three';
@@ -35,10 +34,9 @@ export type DynMarkSlot = 'tether' | 'actif' | 'groupe' | 'anneau';
 export const DYN_MARK_SLOTS: readonly DynMarkSlot[] = ['actif', 'groupe', 'anneau', 'tether'];
 
 /** RANG de superposition, dans la MÊME échelle que les marques statiques (`highlightMeshes.SLOT_RANK`,
- *  qui s'arrête à 8) : ces quatre-là passent AU-DESSUS de toutes les marques de case, comme en affine où
- *  elles sont émises après le builder. L'ANNEAU d'équipe passe au-dessus du contour d'actif et du repère
- *  de groupe : le monde le pose au SOL, sous le billboard
- *  quand elle pose ces deux-là sous les jetons (`+0.25`, `dynamicHighlightObjs`).
+ *  qui s'arrête à 8) : ces quatre-là passent AU-DESSUS de toutes les marques de case. L'ANNEAU d'équipe
+ *  passe au-dessus du contour d'actif et du repère de groupe : le monde le pose au SOL, sous le
+ *  billboard du jeton qu'il ceint.
  *
  *  LE LIEN D'ENGAGEMENT EST AU SOMMET (correctif du juge vision, 2026-08-13) : sous le contour d'actif,
  *  son dernier tiers disparaissait dans la bande or de la case active — un cadre d'opacité 1, large de
@@ -52,18 +50,16 @@ export function dynSlotLiftM(slot: DynMarkSlot): number {
   return (DYN_SLOT_RANK[slot] + 1) * SPECKLE_LIFT_M;
 }
 
-/** Opacités de la voie affine, à l'identique (ni le contour de l'actif ni l'anneau d'équipe n'y portent
- *  d'`opacity`) — SAUF le lien d'engagement.
+/** Opacités du gabarit (`builders/dynamicMarks`), à l'identique (ni le contour de l'actif ni l'anneau
+ *  d'équipe n'en portent) — SAUF le lien d'engagement.
  *
  *  LIEN : la parité d'EFFET PERÇU prime sur la parité de valeur (correctif du juge vision, 2026-08-13).
- *  La scène volumique est trois fois plus claire que l'affine (luminance de sol mesurée 73 contre 24) ;
- *  `ENGAGE_TINT` valant 137,7 de luminance, le lien détache 68,3 de son sol en affine à 0,6, mais 38,8
- *  seulement en volumique à la même valeur — il s'y lisait plus sombre que l'anneau d'équipe ennemi qu'il
- *  rejoint. À pleine
- *  opacité il en détache 64,7, l'écart de l'affine à 5 % près. */
+ *  Le sol volumique est mesuré à 73 de luminance ; `ENGAGE_TINT` valant 137,7, le lien n'en détachait
+ *  que 38,8 à l'opacité 0,6 du gabarit — il s'y lisait plus sombre que l'anneau d'équipe ennemi qu'il
+ *  rejoint. À pleine opacité il en détache 64,7. */
 export const DYN_SLOT_OPACITY: Record<DynMarkSlot, number> = { tether: 1, actif: 1, groupe: 0.5, anneau: 1 };
 
-/** Teintes — le MÊME catalogue que la voie affine (`highlightTints`). `null` = teinte PAR INSTANCE :
+/** Teintes — le catalogue partagé `gameIso/highlightTints`. `null` = teinte PAR INSTANCE :
  *  l'anneau d'équipe porte celle de son combattant (`builders/dynamicMarks.teamRingDecor`). */
 export const DYN_SLOT_TINT: Record<DynMarkSlot, string | null> = {
   tether: ENGAGE_TINT,
@@ -73,7 +69,7 @@ export const DYN_SLOT_TINT: Record<DynMarkSlot, string | null> = {
 };
 
 /** Épaisseur du cadre du repère de GROUPE : la MOITIÉ de celle du contour d'actif — le rapport exact
- *  des deux traits de la voie affine (1,5 px contre 3). */
+ *  des deux traits du gabarit (`builders/dynamicMarks` : 1,5 px contre 3). */
 export const PARTY_FRAME_K = RING_FRAME_K / 2;
 
 /** Capacité FIXE de chaque pool. `tether` : une dizaine de quads par lien, donc de l'ordre de vingt

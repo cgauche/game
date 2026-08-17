@@ -220,7 +220,7 @@ describe('Marques volumiques — l’anneau-contour est un CADRE, pas un quad pl
 });
 
 describe('Marques volumiques — teintes du catalogue partagé, jamais un littéral', () => {
-  it('chaque nature prend la teinte que la voie affine lui donne', () => {
+  it('chaque nature prend la teinte que le catalogue partagé lui donne', () => {
     expect(highlightTint({ key: 'k', cell: { x: 0, y: 0, z: 0 }, h: 0, kind: 'walk' })).toBe(WALK_TINT);
     expect(highlightTint({ key: 'k', cell: { x: 0, y: 0, z: 0 }, h: 0, kind: 'zone', smoke: true })).toBe(ZONE_SMOKE_TINT);
     expect(highlightTint({ key: 'k', cell: { x: 0, y: 0, z: 0 }, h: 0, kind: 'ring', tone: 'target' })).toBe(RING_TARGET_TINT);

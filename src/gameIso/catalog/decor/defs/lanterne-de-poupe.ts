@@ -2,7 +2,7 @@ import type { PropViz } from '../../types';
 import { P } from '../../decorPalette';
 
 // Lanterne de poupe : grande lanterne de navire vitrée à cage de fer, suspendue à une potence
-// de bois par un bras de fer forgé en volute — halo chaud animé (classe « warm », cf. anim.css).
+// de bois par un bras de fer forgé en volute — halo chaud (groupe « warm »).
 export const prop: PropViz = {
   id: 'lanterne-de-poupe',
   label: 'Lanterne de poupe',

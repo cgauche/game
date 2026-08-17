@@ -334,8 +334,8 @@ const TEINTE = new THREE.Color();
 
 /** Applique les trois canaux au matériau monté — l'unique écrivain de l'ALLURE d'un board.
  *
- *  ÉCART RÉSIDUEL (P3-0f) : la mise en évidence du survol est une TEINTE, là où la voie affine ajoute
- *  en plus une lueur externe (`TokenChromeOverlay.allureStyle`, `drop-shadow` doublé). Un halo
+ *  ÉCART RÉSIDUEL (P3-0f) : la mise en évidence du survol est une TEINTE, là où la surcouche du jeton
+ *  ajoute en plus une lueur externe (`TokenChromeOverlay.allureStyle`, `drop-shadow` doublé). Un halo
  *  extérieur au quad demanderait une seconde passe — un second quad par sujet, ou un rendu de
  *  silhouette hors écran — que ce lot ne monte pas. */
 export function applyBoardChrome(material: Board['material'], chrome: BoardChrome | null, luminance: number): void {
@@ -351,8 +351,8 @@ export function applyBoardChrome(material: Board['material'], chrome: BoardChrom
 /** Un disque d'ombre de contact, tel que la passe le retouche : son matériau porte une opacité. */
 type ShadowLike = THREE.Object3D & { material?: { opacity: number } };
 
-/** ATTÉNUE l'ombre de contact d'un corps sous son allure (P3-0f) : la voie affine estompe le GROUPE
- *  entier du jeton, ombre comprise — une ombre restée pleine sous un fantôme le rattache au sol qu'il
+/** ATTÉNUE l'ombre de contact d'un corps sous son allure (P3-0f) : un jeton s'estompe ENTIER,
+ *  ombre comprise — une ombre restée pleine sous un fantôme le rattache au sol qu'il
  *  ne foule plus. L'opacité de MONTAGE (celle que le disque porte avant toute allure) est relevée à la
  *  première pose : cette passe est le seul écrivain suivant.
  *
@@ -599,7 +599,7 @@ export function boardProjectedPx(b: Board, camera: FrameCamera, viewportH: numbe
  * IDENTITÉ DE PISTE d'un sujet — ce sous quoi l'écran tient son état de flipbook, et le seul critère
  * qui décide qu'un board JOUE (#1176, L4). DEUX populations la portent, et une seule des deux est
  * cliquable : les COMBATTANTS (`cid`, hit-test de sprite) et les FIGURANTS à clip d'ambiance authoré
- * (`eid`, `SceneEntity.anim` — une entité de scène n'a jamais de `data-cid` en affine non plus).
+ * (`eid`, `SceneEntity.anim`).
  * `undefined` = décor, ou figurant sans ambiance : il ne joue rien et ne coûte rien de plus.
  */
 export function boardTrackId(sub: BillboardSubject): string | undefined {

@@ -5,5 +5,5 @@ export const building: BuildingDef = {
   label: 'Forge',
   defaultFoot: { w: 3, h: 2 },
   roofMaterial: 'ardoise',
-  features: [{ prop: 'cheminee', anchor: 'ridge', fx: 'warm' }],
+  features: [{ prop: 'cheminee', anchor: 'ridge' }],
 };

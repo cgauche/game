@@ -11,10 +11,10 @@
  * seule, qui agrandit par catégorie. Garde-fou : `toise.test.ts` + galerie `toise-gallery.html`.
  *
  * Le PRODUIT des deux (art × catégorie) est le multiplicateur de jeton — `entityTokenScale` /
- * `combatantTokenScale` ci-dessous, source UNIQUE des DEUX voies de rendu du monde (#1176) : le stage
- * le monde VOLUMIQUE
- * (`backends/webgl/sceneMeshes.ts` : taille monde du billboard × ce facteur). Seule la BASE du site
- * appelant (0,55 / 0,58 / 0,62 du repère 120×150) reste chez lui : elle n'a de sens qu'en SVG.
+ * `combatantTokenScale` ci-dessous, source UNIQUE de l'échelle des jetons du monde (#1176), qu'ils
+ * soient billboards volumiques (`backends/webgl/sceneMeshes.ts` : taille monde du billboard × ce
+ * facteur) ou pions de la surcouche. Seule la BASE du site appelant (0,55 / 0,58 / 0,62 du repère
+ * 120×150) reste chez lui : elle n'a de sens qu'en pixels de projection.
  */
 import { effectiveSize, type SizeCategory } from '../engine/size';
 import type { Combatant } from '../engine/types';
@@ -58,8 +58,8 @@ export function footprintTokenScale(n: number): number {
 
 /** Entité de scène telle qu'elle se REND : un preset de PNJ nommé (#671) fournit sa base et son
  *  apparence EMBARQUÉE (`preset.portrait`, illustration, n'entre pas ici). Couche non chargée ou
- *  preset absent → l'entité telle quelle. Résolution partagée par le classifieur de corps et les
- *  deux voies de rendu. */
+ *  preset absent → l'entité telle quelle. Résolution partagée par le classifieur de corps et le
+ *  rendu du monde. */
 export function sceneEntityForRender(ent: SceneEntity): SceneEntity {
   const preset = ent.presetId ? presetPnjById(ent.presetId) : undefined;
   return preset ? { ...ent, ref: preset.base ?? ent.ref, appearance: preset.apparence ?? ent.appearance } : ent;

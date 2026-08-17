@@ -1,29 +1,15 @@
 /**
  * POSE PAR FRAME des HALOS D'INTERACTION du monde volumique (#1176, P3-0g) — la passe SŒUR de
  * `stage/dynamicMarkPose.ts`, et pour une raison de plus : ces halos ne se contentent pas de suivre le
- * décor, ils PULSENT. Ce que la voie affine obtient d'une animation CSS (le navigateur repeint son SVG
- * tout seul), la voie volumique ne l'obtient que d'une fonction de la frame — même patron que le
- * vacillement des lampes (`stage/stagePointLights.applyFlicker`, #1245).
+ * décor, ils PULSENT. Une pulsation ne se pose pas une fois pour toutes : elle est une fonction de la
+ * frame — même patron que le vacillement des lampes (`stage/stagePointLights.applyFlicker`, #1245).
+ * Les cadences et les amplitudes ci-dessous sont LA source de ces battements ; il n'y en a pas d'autre.
  *
- * FOSSILE DE TRANSITION (#1176) : les quatre keyframes de `src/gameIso/anim.css` (`haloPulse`,
- * `haloPulseHover`, `haloPing`, `sparkBob`) et les fonctions de frame ci-dessous décrivent la MÊME
- * animation pour deux voies de rendu. La feuille reste la source de la voie affine tant que celle-ci
- * vit ; elle MEURT avec elle (lot P3-4), et ces fonctions restent seules — comme le catalogue
- * `highlightTints` reste seul quand les tokens CSS `--combat-*` tombent. Toute retouche de cadence se
- * fait donc AUX DEUX endroits jusque-là.
- *
- * ÉCARTS DÉCLARÉS avec la voie affine — mesurés, non résorbés, et qui meurent avec elle :
- *  — EASING : les rampes du navigateur (`ease-in-out`, `ease-out` = `cubic-bezier(0, 0, .58, 1)`) sont
- *    rendues par une sinusoïde et une quadratique de MÊMES bornes et MÊME cadence ; la forme diffère de
- *    quelques centièmes en milieu de course.
- *  — DESCENTE ÉCRAN du halo : la voie affine pose ses ellipses `HALO_CY_PX` px SOUS le centre de case
- *    le monde volumique pose son cercle AU centre — un cercle couché au sol n'a pas
- *    d'axe d'écran où descendre sans quitter ce sol.
- *  — LUEUR de survol : le double `drop-shadow` de `.interact-halo.hovered` (`anim.css:184`) n'a pas
- *    d'équivalent ici — un filtre d'écran ne se pose pas sur une instance.
- *  — LISERÉ de l'étincelle : le GLYPHE (étoile à quatre branches) est le même des deux côtés
- *    (`interactHalos.sparkPoints`, `interactHaloMeshes.unitStarGeometry`) ; son contour sombre
- *    (`GOLD_DARK_TINT`, 0,7 px) ne l'est pas — il demanderait un second pool.
+ * CE QUI SE MESURE EN PIXELS D'ÉCRAN — le décalage de l'étincelle, sa montée, l'épaisseur des traits,
+ * et l'axe même de son élévation (cf. `poserEtincelle`) : une affordance d'interaction doit rester
+ * lisible à toute distance de caméra, là où une taille métrique fondrait avec le décor. C'est l'idiome
+ * courant des marques de ce monde volumique (`sceneMeshes.billboardPose`, `boardPose`), pas une
+ * convention d'écran subie.
  *
  * PURE : ni DOM ni contexte WebGL — elle ne fait que réécrire les matrices d'instance et l'opacité de
  * matériau de pools déjà montés (`backends/webgl/interactHaloMeshes`), au compte près. CÔTÉ
@@ -80,20 +66,15 @@ export interface HaloFrame {
   tSec: number;
 }
 
-// ── CONVERSION DES KEYFRAMES (`src/gameIso/anim.css`) EN FONCTIONS DE FRAME ────────────────────────
-// Chaque constante porte SA ligne de la feuille. Les rampes `ease-in-out` d'un motif symétrique
-// (0 % / 50 % / 100 %) se lisent en SINUSOÏDE : `(1 − cos 2πp) / 2` vaut 0 aux bornes, 1 au milieu, et
-// sa dérivée s'annule aux trois — la propriété même de `ease-in-out`. Le seul écart de FORME est là :
-// la courbe de Bézier du navigateur et cette sinusoïde ne coïncident pas au pour-cent près. La CADENCE
-// (période) et l'AMPLITUDE (bornes) sont, elles, celles de la feuille à l'exact.
+// ── CADENCES ET RAMPES ─────────────────────────────────────────────────────────────
+// Un motif symétrique (0 % / 50 % / 100 %) à départ et arrivée amortis se lit en SINUSOÏDE :
+// `(1 − cos 2πp) / 2` vaut 0 aux bornes, 1 au milieu, et sa dérivée s'annule aux trois.
 
-/** `@keyframes haloPulse` — `.interact-halo { animation: haloPulse 1.6s ease-in-out infinite }`
- *  (anim.css:154-158) : opacité 0,35 aux bornes, 0,8 à mi-course. */
+/** PULSATION du halo au repos : période 1,6 s, opacité 0,35 aux bornes, 0,8 à mi-course. */
 export const HALO_PULSE_S = 1.6;
 export const HALO_PULSE_MIN = 0.35;
 export const HALO_PULSE_MAX = 0.8;
-/** `@keyframes haloPulseHover` — `.interact-halo.hovered { animation: haloPulseHover 0.7s … }`
- *  (anim.css:175-180) : cadence plus rapide, opacité 0,85 → 1. */
+/** PULSATION du halo SURVOLÉ : plus rapide (0,7 s) et plus vive (0,85 → 1). */
 export const HALO_HOVER_PULSE_S = 0.7;
 export const HALO_HOVER_PULSE_MIN = 0.85;
 export const HALO_HOVER_PULSE_MAX = 1;
@@ -109,26 +90,24 @@ export function phase(tSec: number, periodeS: number): number {
   return p < 0 ? p + 1 : p;
 }
 
-/** MULTIPLICATEUR d'opacité du halo à l'instant `tSec` — la valeur que la feuille pose sur le groupe
- *  `.interact-halo`, et que les opacités d'attribut de ses deux ellipses multiplient. */
+/** MULTIPLICATEUR d'opacité du halo à l'instant `tSec` — il porte sur le halo ENTIER, et les opacités
+ *  de repos de ses deux pools (disque, contour) le multiplient. */
 export function haloPulse(tSec: number, hovered: boolean): number {
   const min = hovered ? HALO_HOVER_PULSE_MIN : HALO_PULSE_MIN;
   const max = hovered ? HALO_HOVER_PULSE_MAX : HALO_PULSE_MAX;
   return min + (max - min) * rampeSymetrique(phase(tSec, hovered ? HALO_HOVER_PULSE_S : HALO_PULSE_S));
 }
 
-/** `@keyframes haloPing` — `.halo-ping { animation: haloPing 1.9s ease-out infinite }`
- *  (anim.css:190-195) : de `scale(0.65)`/opacité 0,7 à `scale(1.55)`/opacité 0 à 75 % de la période,
- *  puis RIEN jusqu'au tour suivant (le palier 75 %→100 % répète la même image, invisible). */
+/** ONDE « sonar » du décor fouillable : période 1,9 s — de `scale 0,65`/opacité 0,7 à `scale 1,55`/
+ *  opacité 0 à 75 % de la période, puis RIEN jusqu'au tour suivant (le dernier quart est invisible). */
 export const PING_S = 1.9;
 export const PING_SCALE_MIN = 0.65;
 export const PING_SCALE_MAX = 1.55;
 export const PING_OPACITY_MAX = 0.7;
 export const PING_END = 0.75;
 
-/** Onde « sonar » de l'instant : échelle et opacité. L'`ease-out` du navigateur
- *  (`cubic-bezier(0, 0, .58, 1)`) est rendu par sa quadratique `1 − (1 − u)²` — mêmes bornes, même
- *  départ rapide, écart de forme borné à quelques centièmes en milieu de course. */
+/** Onde « sonar » de l'instant : échelle et opacité. La rampe est un `ease-out` — départ rapide,
+ *  arrivée amortie — rendu par la quadratique `1 − (1 − u)²`. */
 export function haloPing(tSec: number): { scale: number; opacity: number } {
   const p = phase(tSec, PING_S);
   if (p >= PING_END) return { scale: PING_SCALE_MAX, opacity: 0 };
@@ -137,8 +116,7 @@ export function haloPing(tSec: number): { scale: number; opacity: number } {
   return { scale: PING_SCALE_MIN + (PING_SCALE_MAX - PING_SCALE_MIN) * e, opacity: PING_OPACITY_MAX * (1 - e) };
 }
 
-/** `@keyframes sparkBob` — `.halo-spark { animation: sparkBob 1.6s ease-in-out infinite }`
- *  (anim.css:197-201) : l'étincelle monte de 4 px à mi-course et son opacité passe de 0,85 à 1. */
+/** FLOTTEMENT de l'étincelle : période 1,6 s, montée de 4 px à mi-course, opacité 0,85 → 1. */
 export const SPARK_S = 1.6;
 export const SPARK_RISE_PX = 4;
 export const SPARK_OPACITY_MIN = 0.85;
@@ -216,13 +194,12 @@ function poserAnneauDeHalo(
   }
 }
 
-/** Écrit l'ÉTINCELLE d'un décor fouillable : le glyphe ALIGNÉ ÉCRAN, décalé du centre du décor de ce
- *  que la voie affine décale le sien (droite `SPARK_DX_PX`, haut `SPARK_DY_PX`, flottement compris).
+/** Écrit l'ÉTINCELLE d'un décor fouillable : le glyphe ALIGNÉ ÉCRAN, décalé du centre du décor (droite
+ *  `SPARK_DX_PX`, haut `SPARK_DY_PX`, flottement compris).
  *
- *  CE QUI SUIT L'ÉCHELLE DU DÉCOR, ET CE QUI NE LA SUIT PAS : la voie affine met à l'échelle la seule
- *  POSITION du glyphe (`translate(cx + SPARK_DX_PX·scale, cy − SPARK_DY_PX·scale)`) ;
- *  son tracé garde ses 6 px et son flottement ses 4 px (`anim.css:199`), quel que soit le décor. La
- *  taille et la montée sont donc INVARIANTES de `h.scale` ici aussi.
+ *  CE QUI SUIT L'ÉCHELLE DU DÉCOR, ET CE QUI NE LA SUIT PAS : `h.scale` porte sur la seule POSITION du
+ *  glyphe ; son tracé garde ses 6 px et son flottement ses 4 px, quel que soit le décor — la taille et
+ *  la montée sont INVARIANTES de `h.scale`.
  *
  *  L'ÉLÉVATION suit le HAUT DE L'ÉCRAN, pas l'axe Y du monde : patron `sceneMeshes.billboardPose`,
  *  celui des billboards de la scène (`boardPose`). Une élévation en Y monde disparaîtrait sous la vue
@@ -275,13 +252,13 @@ export function poseInteractHalos(pools: HaloPools, halos: InteractionHalos, f: 
   for (const h of halos.fouilles) {
     const rK = haloRadiusK(HALO_RX_PX) * h.scale;
     const centre = caseDe(h.centre.x, h.centre.y, h.cell.z);
-    // La variante de SURVOL est le MÊME anneau, agrandi et épaissi par la feuille (`anim.css:183/187`) :
-    // le facteur porte sur le groupe, donc sur le rayon ET sur le trait.
+    // La variante de SURVOL est le MÊME anneau, agrandi et épaissi : le facteur porte sur le halo
+    // entier, donc sur le rayon ET sur le trait.
     if (h.hovered)
       poserAnneauDeHalo(pools, 'fouilleDisqueSurvol', 'fouilleContourSurvol', n, centre, rK * HALO_HOVER_SCALE, HALO_HOVER_STROKE_PX * HALO_HOVER_SCALE, f);
     else poserAnneauDeHalo(pools, 'fouilleDisque', 'fouilleContour', n, centre, rK, HALO_STROKE_PX, f);
-    // ONDE « SONAR » : le même cercle, à l'échelle de l'instant — trait compris, la feuille l'échelonne
-    // avec le reste du groupe (`transform: scale`, anim.css:191-195).
+    // ONDE « SONAR » : le même cercle, à l'échelle de l'instant — trait compris, l'échelle porte sur
+    // le halo ENTIER.
     const onde = pools.fouillePing;
     if (onde && ping.opacity > 0) {
       const tirets = ringDashes(rK, null, f.kind);
@@ -301,7 +278,7 @@ export function poseInteractHalos(pools: HaloPools, halos: InteractionHalos, f: 
     if (étincelles) n.fouilleEtincelle = poserEtincelle(étincelles, n.fouilleEtincelle, h, spark.risePx, f);
   }
   for (const p of halos.pnjs)
-    // Le halo de PNJ porte TOUJOURS la classe `hovered` (`anim.css`) : même
+    // Le halo de PNJ est TOUJOURS à la variante SURVOL : même
     // agrandissement, même trait épaissi, même cadence rapide que la variante de survol d'une fouille.
     poserAnneauDeHalo(
       pools,

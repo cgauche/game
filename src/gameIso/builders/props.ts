@@ -69,7 +69,6 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
       ref: ent.ref ?? 'tonneau',
       ...(ent.facing ? { facing: ent.facing } : {}),
       foot: decorFootGeometry(ent.foot),
-      ...(ent.anim ? { fx: ent.anim } : {}),
       interact: !!ent.interact,
       states: { visible: !visible || visible.has(`${ent.pos.x},${ent.pos.y},${z}`) },
     });
@@ -110,7 +109,6 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
             scale: viz.scale ?? 1,
           },
           ...(viz.liftM != null ? { liftM: viz.liftM } : {}),
-          ...(viz.fx ? { fx: viz.fx } : {}),
           interact: false,
           states: {
             visible: !visible ||
@@ -159,7 +157,6 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
           source: 'ornament' as const,
           ref: feat.prop,
           interact: false,
-          ...(feat.fx ? { fx: feat.fx } : {}),
           states: { visible: vis },
         };
         if (feat.anchor === 'ridge') {

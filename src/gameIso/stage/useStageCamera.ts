@@ -147,7 +147,7 @@ export function stageFocus(args: {
 }
 
 /** Cadre VISIBLE en tuiles (AABB des 4 coins de la fenêtre projetés) : culling d'animation
- *  (setVisibleTileBounds) ET du brouillard (FogLayer borné par la fenêtre, pas par la scène). */
+ *  (setVisibleTileBounds), borné par la fenêtre et non par la scène. */
 export function computeViewBounds(cam: { x: number; y: number }, zoom: number, dims: Dims): { minX: number; maxX: number; minY: number; maxY: number } {
   const toTile = (sx: number, sy: number) => screenToTile((sx - VW / 2) / zoom + VW / 2 - cam.x, (sy - VH / 2) / zoom + VH / 2 - cam.y, dims);
   const cs = [toTile(0, 0), toTile(VW, 0), toTile(0, VH), toTile(VW, VH)];

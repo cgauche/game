@@ -1,7 +1,8 @@
 /**
- * Animations d'ambiance d'une ENTITÉ de scène = classes CSS de `anim.css`, appliquées
- * au calque fx du token (donc sur le sprite composé — variantes comprises). Choisies
- * dans l'éditeur (inspecteur d'entité). Portées de public/ambush.html.
+ * Ambiances d'une ENTITÉ de scène (`SceneEntity.anim`), choisies dans l'éditeur (inspecteur
+ * d'entité). Le monde volumique les joue sur les FIGURANTS (`backends/webgl/sceneMeshes`
+ * `collectBillboards` : l'ambiance entre dans l'identité de la planche et cuit ses frames), quand
+ * le corps sait la jouer — `rig/anim/ambientClips` résout la clé courte en clip de rig.
  */
 export const SCENE_ANIMS: { key: string; label: string }[] = [
   { key: '', label: '— aucune (sprite fixe) —' },

@@ -110,7 +110,7 @@ export const vitrineSpec: MapSpec = {
   })),
   entities: [
     { id: 'orn-vit-taverne-enseigne', kind: 'prop', pos: { x: 10, y: 13 }, facing: 'S', ref: 'enseigne' },
-    { id: 'orn-vit-forge-cheminee', kind: 'prop', pos: { x: 10, y: 18 }, ref: 'cheminee', anim: 'warm' },
+    { id: 'orn-vit-forge-cheminee', kind: 'prop', pos: { x: 10, y: 18 }, ref: 'cheminee' },
     { id: 'orn-vit-chapelle-clocheton', kind: 'prop', pos: { x: 22, y: 16 }, ref: 'clocheton' },
     { id: 'orn-vit-echoppe-etal', kind: 'prop', pos: { x: 26, y: 19 }, facing: 'S', ref: 'etal-marche' },
   ],

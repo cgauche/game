@@ -47,9 +47,9 @@ export interface WeatherBrumeDef {
   povTightenK?: number;
 }
 
-/** #239 — voile de MÉTÉO authorée (`scene.weather`) : teinte plein écran (`tint`/`alpha`) et,
- *  pour la précipitation, un champ de particules (`particles` = classe CSS, `pcolor`, `density`) à la
- *  voie AFFINE, `precip` (ci-dessus) à la voie VOLUMIQUE. */
+/** #239 — météo authorée (`scene.weather`) : teinte (`tint`/`alpha`, dérivée en lumière par
+ *  `weatherLightScalars`) et, pour la précipitation, `precip` (ci-dessus) que le monde volumique
+ *  sème en quads. */
 export interface WeatherFxDef {
   tint: string;
   alpha: number;
@@ -67,11 +67,9 @@ export interface AmbianceDef {
    *  (`authoring/floorsSvg.ts`) → les deux répondent d'un cran égal. */
   ambientFloor: number;
   /** APPLICATION de la politique de visibilité (`state/visibility.ts`) en facteur multiplicatif, par
-   *  état de case. Source UNIQUE des trois rendus : couleur de sommet du monde three (`visibilityTint`),
-   *  terme `brightness` du voile CSS de l'iso (`FogLayer`), lumière d'ambiance d'une surface non vue au
-   *  POV. Un filtre CSS composé n'est pas un scalaire : l'iso n'y prend que son
-   *  `brightness` d'`explored`, et sa case inconnue s'éteint (`brightness(0)`) là où un rendu 3D garde
-   *  un facteur bas mais non nul — une silhouette noire y serait illisible. */
+   *  état de case. Source UNIQUE des rendus : couleur de sommet du monde three (`visibilityTint`) et
+   *  lumière d'ambiance d'une surface non vue au POV. Un rendu 3D garde, pour une case inconnue, un
+   *  facteur bas mais NON nul — une silhouette noire y serait illisible. */
   fogTint: Record<Visibility, number>;
   /** MODELÉ DE FORME de la voie VOLUMIQUE (#1300) : facteur d'irradiance ambiante par FAMILLE
    *  D'ORIENTATION, multiplié dans la couleur de sommet de chaque face selon la direction qu'elle
@@ -165,10 +163,9 @@ export interface PovDepthDef {
 export const AMBIANCE: AmbianceDef = ambiance;
 
 /** PORTE UNIQUE de la météo à l'écran (#1176 P2-6) : la scène a-t-elle une météo à MONTRER, et
- *  laquelle ? Une scène d'INTÉRIEUR n'en montre aucune — il n'y pleut pas plus sur l'écran que dans le
- *  volume (c'est la même porte que celle des voiles d'ambiance, `stage/Ambiance.tsx`). Les DEUX voies
- *  la lit : le semis de particules du monde volumique (`backends/webgl/weatherParticles.ts`). Le
- *  verdict d'intérieur lui-même vient de `isIndoor` (`state/scene.ts`), la porte de toutes les vues.
+ *  laquelle ? Une scène d'INTÉRIEUR n'en montre aucune. C'est le semis de particules du monde
+ *  volumique (`backends/webgl/weatherParticles.ts`) qui la lit. Le verdict d'intérieur lui-même vient
+ *  de `isIndoor` (`state/scene.ts`), la porte de toutes les vues.
  *  C'est le REGISTRE qui décide de ce qui se montre : un id sans entrée au catalogue — `clair`
  *  compris — ne montre rien. */
 export function sceneWeatherFx(scene: Pick<Scene, 'weather' | 'ambiance'>): WeatherFxDef | null {
@@ -207,29 +204,28 @@ export interface WeatherLight {
 export const METEO_SANS_EFFET: WeatherLight = { dim: 1, tint: null, k: 0 };
 
 /** ALBÉDO DE RÉFÉRENCE de l'appariement ci-dessous : le gris moyen (128/255), en sRGB — l'espace où
- *  la donnée de météo est ÉCRITE et où le voile d'écran de la voie affine compose. */
+ *  la donnée de météo est ÉCRITE, et où se compose le voile d'écran qu'elle décrit. */
 export const ALBEDO_REF = 0.5;
 
 /**
- * LUMIÈRE DÉRIVÉE de la météo — le pendant VOLUMIQUE du voile d'écran de la voie affine, tiré de la
- * MÊME donnée (`tint`/`alpha`) : aucun champ de lumière n'est authoré, donc les deux voies ne peuvent
- * pas diverger, et un type de météo qui n'a que `tint`/`alpha` (la neige) est servi sans une ligne de
- * code de plus.
+ * LUMIÈRE DÉRIVÉE de la météo — l'expression VOLUMIQUE du voile d'écran que décrit la donnée authorée
+ * (`tint`/`alpha`) : aucun champ de lumière n'est authoré, donc un type de météo qui n'a que
+ * `tint`/`alpha` (la neige) est servi sans une ligne de code de plus.
  *
- * APPARIEMENT EN LUMINANCE, sur l'albédo de référence. Le voile affine compose
- * `(1 − a)·scène + a·teinte` : il ÉCLAIRCIT dès que la teinte est plus claire que la scène (mesuré sur
- * gris moyen : brouillard 128 → 140, neige 128 → 140 ; pluie 128 → 120, tempête 128 → 102). Une lumière,
- * elle, MULTIPLIE — et `1 − a` seul assombrissait donc TOUTES les météos, à rebours de la moitié
- * d'entre elles. Le facteur rendu est celui qui reproduit la composition affine sur cet albédo :
+ * APPARIEMENT EN LUMINANCE, sur l'albédo de référence. Un voile compose `(1 − a)·scène + a·teinte` :
+ * il ÉCLAIRCIT dès que la teinte est plus claire que la scène (mesuré sur gris moyen : brouillard
+ * 128 → 140, neige 128 → 140 ; pluie 128 → 120, tempête 128 → 102). Une lumière, elle, MULTIPLIE — et
+ * `1 − a` seul assombrissait donc TOUTES les météos, à rebours de la moitié d'entre elles. Le facteur
+ * rendu est celui qui reproduit cette composition sur cet albédo :
  *   `dim = (1 − a) + a · L(teinte) / ALBEDO_REF`,
  * avec `L` la luminance perçue (Rec. 709, `luminanceHex`) en sRGB — l'espace des octets de la donnée,
- * celui où l'affine mélange. Il dépasse 1 pour une teinte claire : les intensités de three ne sont pas
- * bornées à 1, et c'est ce qui fait qu'une neige ÉCLAIRE la scène des deux côtés.
+ * celui où le voile mélange. Il dépasse 1 pour une teinte claire : les intensités de three ne sont pas
+ * bornées à 1, et c'est ce qui fait qu'une neige ÉCLAIRE la scène.
  *
  * CE QUE L'APPARIEMENT NE TIENT PAS, en fait : il est exact sur l'albédo de référence et approché
  * ailleurs (une lumière multiplie, un voile interpole — les deux ne coïncident qu'en un point). Un
- * albédo sombre reste donc un peu plus sombre en volumique qu'en affine, un albédo clair un peu plus
- * clair ; le SENS de l'effet, lui, est le même partout (le facteur est > 1 ou < 1 pour tous les
+ * albédo sombre rend donc un peu moins que le voile, un albédo clair un peu plus ; le SENS de
+ * l'effet, lui, est le même partout (le facteur est > 1 ou < 1 pour tous les
  * albédos à la fois). La TEINTE (hue) ne passe pas par ce scalaire : elle vit dans la couleur des
  * lampes et du fond (`meteoLightColor`, `stageClearColor`), dont la luminance est bornée par
  * construction — aucun déplacement de couleur ne relèverait à lui seul l'exposition.
@@ -244,17 +240,16 @@ export function weatherLightScalars(scene: Pick<Scene, 'weather' | 'ambiance'>):
   return { dim, tint: fx.tint, k };
 }
 
-/** Alpha du voile de NUIT à la luminosité `light` (0..1). SOURCE UNIQUE du dosage : le voile SVG de
- *  l'iso (`stage/Ambiance.tsx`) et le voile du POV (`pov/PovStage.tsx`) le posent tel quel. */
+/** Alpha du voile de NUIT à la luminosité `light` (0..1) — SOURCE UNIQUE du dosage, dont
+ *  `ambianceLuminance` ci-dessous est l'autre face. */
 export function nightVeilAlpha(light: number): number {
   return (1 - light) * AMBIANCE.iso.nightVeilMax;
 }
 
 /** Part de la LUMINANCE d'origine qui subsiste sous le voile de nuit à la luminosité `light` — soit
- *  `1 − nightVeilAlpha(light)`, l'autre face de la MÊME donnée. C'est le scalaire d'exposition commun
- *  aux DEUX voies de rendu du stage : la voie affine l'obtient en peignant son voile par-dessus la
- *  scène, la voie volumique en dose ses LAMPES avec (`stage/stageLights.ts`) — d'où une parité de
- *  luminosité par construction, et un plancher non nul à luminosité 0 (`1 − nightVeilMax`). */
+ *  `1 − nightVeilAlpha(light)`, l'autre face de la MÊME donnée. C'est le scalaire d'exposition du
+ *  stage : il en dose les LAMPES (`stage/stageLights.ts`) — d'où un plancher non nul à luminosité 0
+ *  (`1 − nightVeilMax`). */
 export function ambianceLuminance(light: number): number {
   return 1 - nightVeilAlpha(light);
 }

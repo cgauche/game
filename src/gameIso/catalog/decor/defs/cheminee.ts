@@ -2,8 +2,7 @@ import type { PropViz } from '../../types';
 import { P } from '../../decorPalette';
 
 // Cheminée de forge : souche de pierre appareillée + chaperon, conduit sombre, et PANACHE de fumée qui
-// s'élève (classe `smoke` : montée ∝ hauteur du panache — cf. feu-camp pour le patron d'anim d'ambiance ;
-// l'ornement entier reçoit en plus le fx 'warm' de la feature = lueur de forge). Ornement 'ridge'.
+// s'élève (groupe `smoke`, dont la montée est ∝ hauteur du panache — cf. feu-camp). Ornement 'ridge'.
 export const prop: PropViz = {
   id: 'cheminee',
   label: 'Cheminée',

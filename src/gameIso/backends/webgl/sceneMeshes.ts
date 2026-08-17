@@ -569,7 +569,7 @@ export interface BillboardSubject {
   identity: string;
   /** Id du COMBATTANT dessiné, quand ce sujet en est un (`actorBillboards`) — ce que le hit-test de
    *  sprite rend au pointeur (`stage/spritePicker.ts`). Absent pour un figurant ou un décor : ni l'un
-   *  ni l'autre ne porte de `data-cid` en affine, ils n'y sont donc pas cliquables non plus. */
+   *  ni l'autre n'est cliquable. */
   cid?: string;
   /** Id de l'ENTITÉ DE SCÈNE dessinée, quand ce figurant JOUE une ambiance authorée
    *  (`SceneEntity.anim`) — l'identité de sa piste de flipbook (`stage/boardPose.boardTrackId`), et
@@ -652,7 +652,7 @@ function personnageDraw(ent: SceneEntity, enrolled: boolean): {
   if (r.kind === 'rig') {
     const prof = entityRigProfileFor(e, enrolled);
     if (!prof) return null;
-    // PRISE D'ARME du figurant, composée à chaque frame comme le jeton affine (`RigToken`) : sans
+    // PRISE D'ARME du figurant, composée à chaque frame comme sur un corps de rig (`RigToken`) : sans
     // elle, un garde animé lâche sa hallebarde dès la première cellule de sa planche.
     const hold = weaponRest(mainWeaponOf(prof.equip));
     const at = (view: View, mirror: boolean, pose: Pose) =>
@@ -722,8 +722,8 @@ export function collectBillboards(scene: Scene, mpt: number, tintAt: TintAt, els
     const gy = ent.pos.y + off;
     const z = tk.cell.z;
     // AMBIANCE AUTHORÉE (`SceneEntity.anim`, catalogue `gameIso/sceneAnims`) : ce figurant JOUE sa
-    // boucle en volumique comme le jeton affine la joue (`RigToken`, prop `ambientAnim`). Sans
-    // ambiance — ou sur un corps qui ne sait pas la jouer — il reste une texture d'UNE frame.
+    // boucle, ses frames cuites dans sa planche. Sans ambiance — ou sur un corps qui ne sait pas la
+    // jouer — il reste une texture d'UNE frame.
     const ambient = ent.anim && corps.animable ? ent.anim : undefined;
     out.push({
       // L'ambiance entre dans l'IDENTITÉ : c'est ce qui périme la texture d'un figurant dont l'auteur
@@ -1070,7 +1070,7 @@ export function actorBillboards(actors: readonly ActorPose[], scene: Scene, mpt:
       };
       draw = (view, mirror) => drawAt(view, mirror, couché ?? {}, 1);
       voie = 'rig';
-      // PRISE D'ARME composée à CHAQUE frame, comme le jeton affine (`RigToken`) : la pose de geste
+      // PRISE D'ARME composée à CHAQUE frame, comme sur un corps de rig (`RigToken`) : la pose de geste
       // seule dessine un corps qui a lâché sa garde.
       frameAt = (view, mirror, def, k, n, o) =>
         def.voie === 'rig'
@@ -1330,10 +1330,10 @@ export function povBackground(
  *  même espace que celui d'`ambientDimmed`.
  *
  *  ESPACE DE MÉLANGE (réf juge de design P3-1c) : three mélange la brume en LINÉAIRE (le fragment
- *  travaille après conversion), la voie affine la mélange en sRGB (`mixHex`). À facteur égal, les deux
- *  voies rendent donc des octets différents : 13,3/255 par canal à mi-course sur un couple gris sombre
- *  → brume claire, 8,1/255 à trois quarts. Le FACTEUR, lui, est le même des deux côtés (courbe vérifiée
- *  à 1e-9, `sceneMeshes.test.ts`) : l'écart est perceptuel, il se juge à l'écran. */
+ *  travaille après conversion), là où le POV la mélange en sRGB (`pov/camera.mixHex`). À facteur égal,
+ *  les deux rendent donc des octets différents : 13,3/255 par canal à mi-course sur un couple gris
+ *  sombre → brume claire, 8,1/255 à trois quarts. Le FACTEUR, lui, est le même des deux côtés (courbe
+ *  vérifiée à 1e-9, `sceneMeshes.test.ts`) : l'écart est perceptuel, il se juge à l'écran. */
 export function povFog(
   mpt: number,
   indoor: boolean,

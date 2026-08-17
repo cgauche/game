@@ -45,15 +45,12 @@ export interface BuildingFeature {
   /** Où sur le bâtiment : 'ridge' = faîte (surélevé au toit) ; 'facade' = au-dessus de la porte (mur,
    *  orienté vers l'extérieur) ; 'front' = au sol juste DEVANT la porte (orienté vers l'extérieur). */
   anchor: 'ridge' | 'facade' | 'front';
-  /** Classe d'anim CSS d'ambiance passée à PropEl.fx (ex. 'warm' pour la fumée de forge). */
-  fx?: string;
 }
 
 export interface FacadeFeatureViz {
   prop: string;
   liftM?: number;
   scale?: number;
-  fx?: string;
 }
 
 export interface FacadeAppearanceDef {

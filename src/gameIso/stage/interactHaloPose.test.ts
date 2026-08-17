@@ -31,8 +31,8 @@ import { ringDashes } from './dynamicMarkPose';
 /**
  * POSE PAR FRAME des halos d'interaction (#1176, P3-0g) — la passe PURE, mesurée hors de tout écran.
  * Deux choses s'y jouent : la GÉOMÉTRIE (un halo est un cercle monde au pied du décor, du rayon dont
- * l'ellipse affine est la projection) et la PULSATION (ce que la voie affine obtient de `anim.css`, et
- * que celle-ci n'obtient QUE d'une fonction de l'horloge de la frame).
+ * l'ellipse affine est la projection) et la PULSATION, qui n'est ici qu'une fonction de l'horloge de
+ * la frame — cadences et bornes vivent dans `interactHaloPose.ts` (`HALO_PULSE_S`, `PING_S`, `SPARK_S`).
  */
 const MPT = 2;
 const PLAT = () => 0;
@@ -83,12 +83,12 @@ function rayonDesCordes(mesh: THREE.InstancedMesh, x: number, z: number): number
 
 const opacité = (mesh: THREE.InstancedMesh) => (mesh.material as THREE.MeshBasicMaterial).opacity;
 
-describe('Conversion des keyframes CSS en fonctions de frame (#1176 P3-0g)', () => {
-  it('haloPulse : la CADENCE et les BORNES de `haloPulse 1.6s` (0,35 → 0,8)', () => {
+describe('Pulsations : des fonctions de frame (#1176 P3-0g)', () => {
+  it('haloPulse : la CADENCE et les BORNES du battement de repos (1,6 s, 0,35 → 0,8)', () => {
     expect(haloPulse(0, false)).toBeCloseTo(HALO_PULSE_MIN, 12);
     expect(haloPulse(HALO_PULSE_S / 2, false), 'mi-course = le palier 50 %').toBeCloseTo(HALO_PULSE_MAX, 12);
     expect(haloPulse(HALO_PULSE_S, false), 'la période boucle sans couture').toBeCloseTo(HALO_PULSE_MIN, 12);
-    // et jamais hors des bornes de la feuille, à aucun instant du tour
+    // et jamais hors de ses bornes, à aucun instant du tour
     for (let i = 0; i < 200; i++) {
       const v = haloPulse((i * HALO_PULSE_S) / 200, false);
       expect(v).toBeGreaterThanOrEqual(HALO_PULSE_MIN - 1e-12);
@@ -96,7 +96,7 @@ describe('Conversion des keyframes CSS en fonctions de frame (#1176 P3-0g)', () 
     }
   });
 
-  it('haloPulse survolé : `haloPulseHover 0.7s` — plus VIF et plus RAPIDE', () => {
+  it('haloPulse survolé : 0,7 s, 0,85 → 1 — plus VIF et plus RAPIDE', () => {
     expect(haloPulse(0, true)).toBeCloseTo(HALO_HOVER_PULSE_MIN, 12);
     expect(haloPulse(HALO_HOVER_PULSE_S / 2, true)).toBeCloseTo(HALO_HOVER_PULSE_MAX, 12);
     expect(HALO_HOVER_PULSE_S).toBeLessThan(HALO_PULSE_S);
@@ -185,7 +185,7 @@ describe('Pose des halos — géométrie (#1176 P3-0g)', () => {
     expect(n.pnjDisque).toBe(1);
     expect(n.pnjContour).toBeGreaterThan(3);
     expect(n.fouilleDisque + n.fouilleContour + n.fouilleEtincelle, 'un PNJ n’a ni étincelle ni halo de fouille').toBe(0);
-    // le halo de PNJ porte TOUJOURS la variante renforcée (classe `hovered` en affine)
+    // le halo de PNJ porte TOUJOURS la variante renforcée
     const attendu = haloRadiusK(NPC_HALO_RX_PX) * HALO_HOVER_SCALE * MPT;
     expect(rayonDesCordes(p.pnjContour!, 5 * MPT, 5 * MPT)).toBeCloseTo(attendu, 6);
     expect(attendu).toBeLessThan(haloRadiusK(HALO_RX_PX) * HALO_HOVER_SCALE * MPT);
@@ -236,8 +236,8 @@ describe('Pose des halos — géométrie (#1176 P3-0g)', () => {
   });
 
   it('l’ÉTINCELLE ne grandit ni ne monte avec le décor — seule sa POSITION suit l’échelle', () => {
-    // La voie affine met à l'échelle le seul `translate` du glyphe : son tracé garde ses 6 px
-    // et son flottement ses 4 px (`anim.css:199`).
+    // `h.scale` porte sur la seule POSITION du glyphe : son tracé garde ses `SPARK_R_PX` px et son
+    // flottement ses `SPARK_RISE_PX` px (`interactHaloPose.poserEtincelle`, `sparkBob`).
     const mesure = (scale: number) => {
       const p = pools();
       poseInteractHalos(p, halos({ fouilles: [fouille('e', { scale })] }), frame(0));
@@ -303,7 +303,7 @@ describe('Pose des halos — la PULSATION passe par l’opacité des pools (#117
     const r1 = rayonDesCordes(p.fouillePing!, 3 * MPT, 4 * MPT);
     expect(r1, 'l’onde sonar avance entre deux frames').toBeGreaterThan(r0);
     expect(r0).toBeCloseTo(haloRadiusK(HALO_RX_PX) * PING_SCALE_MIN * MPT, 6);
-    // au-delà de 75 % du tour, la keyframe est à opacité nulle : rien à écrire
+    // au-delà de 75 % du tour, la pulsation est à opacité nulle : rien à écrire
     const n = poseInteractHalos(p, jeu, frame(PING_S * 0.9));
     expect(n.fouillePing).toBe(0);
     expect(n.fouilleContour, 'mais le halo permanent, lui, reste peint').toBeGreaterThan(0);

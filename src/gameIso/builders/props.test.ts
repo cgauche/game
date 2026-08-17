@@ -11,7 +11,7 @@ describe('buildProps — éléments prop du pivot', () => {
     s.layers[0].tiles[3 * 6 + 4] = 'bois'; // (4,3) : overlay à DÉCOR (overlayProp → 'arbre')
     s.entities = [
       { id: 'p1', kind: 'prop', pos: { x: 1, y: 1 } }, // ref absente → normalisée 'tonneau'
-      { id: 'p2', kind: 'prop', pos: { x: 3, y: 2 }, ref: 'tente', foot: { w: 2, h: 2 }, facing: 'SE', anim: 'flottement', interact: { flow: { kind: 'seq', steps: [] } } },
+      { id: 'p2', kind: 'prop', pos: { x: 3, y: 2 }, ref: 'tente', foot: { w: 2, h: 2 }, facing: 'SE', interact: { flow: { kind: 'seq', steps: [] } } },
       { id: 'npc', kind: 'personnage', pos: { x: 5, y: 5 } }, // pas un prop → ignoré
     ] as SceneEntity[];
     return s;
@@ -36,7 +36,7 @@ describe('buildProps — éléments prop du pivot', () => {
     expect(hidden.states.visible).toBe(false); // mémorisé → sous le voile / culé en POV
   });
 
-  it('normalise la ref (défaut tonneau) et porte facing/empreinte/fx/interact', () => {
+  it('normalise la ref (défaut tonneau) et porte facing/empreinte/interact', () => {
     const [p1, p2] = buildProps(scene()).filter((e) => e.source === 'entity');
     expect(p1.ref).toBe('tonneau');
     expect(p1.foot).toEqual({ offX: 0, offY: 0, scale: 1 });
@@ -45,7 +45,6 @@ describe('buildProps — éléments prop du pivot', () => {
     expect(p2.facing).toBe('SE');
     expect(p2.foot).toEqual({ offX: 0.5, offY: 0.5, scale: 2 }); // décalage vers le centre + côté max
     expect(p2.span).toEqual({ w: 2, h: 2 });
-    expect(p2.fx).toBe('flottement');
     expect(p2.interact).toBe(true);
     expect(p2.entId).toBe('p2');
   });
@@ -114,10 +113,10 @@ describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBod
     expect(o.states.visible).toBe(true); // `visible` absent (éditeur/QC) → visible
   });
 
-  it("forge → cheminée au faîte, fx 'warm' (lueur de forge) porté par la feature", () => {
+  it('forge → cheminée au FAÎTE : centrée sur la masse et posée haut sur la pente', () => {
     const [o] = orns(withRoof('forge', { x: 0, y: 0, w: 3, h: 2 }));
     expect(o.ref).toBe('cheminee');
-    expect(o.fx).toBe('warm');
+    expect(o.foot.offX).toBeCloseTo(1, 6); // recentré sur l'empreinte 3×2
     expect(o.liftM!).toBeGreaterThan(0);
   });
 

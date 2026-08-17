@@ -2,10 +2,9 @@
  * Marche visuelle (extraite d'IsoStage) : le token GLISSE le long du chemin (ANIM_MOVE) au lieu
  * de se téléporter à la destination. `walksRef` = id → {path, start} ; rAF tant qu'actif.
  *
- * Le rAF ne fait plus que ce qui est COMMUN aux deux voies de rendu : purger les marches finies et
- * BATTRE la frame (`subscribeWalkFrames`). Qui PEINT décide du reste (#1176, P2-4) — la voie affine
- * repeint ses jetons SVG par un rendu React (`repaint`), la voie volumique lit `walksRef` depuis sa
- * propre boucle de rendu et ne re-rend rien ; seule l'ARRIVÉE y re-synchronise React, en un rendu, pour
+ * Le rAF ne fait que purger les marches finies et BATTRE la frame (`subscribeWalkFrames`). Qui PEINT
+ * décide du reste (#1176, P2-4) — le monde volumique lit `walksRef` depuis sa propre boucle de rendu
+ * et ne re-rend rien ; seule l'ARRIVÉE y re-synchronise React, en un rendu, pour
  * que les vérités dérivées de l'état de marche (transition de caméra, aperçu de chemin) reprennent la
  * main sur la pose committée du store.
  */

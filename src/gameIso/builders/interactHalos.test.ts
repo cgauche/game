@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { emptyScene, type Scene, type SceneEntity } from '../../state/scene';
 import { RING_A_PX } from './dynamicMarks';
-import { HALO_RX_PX, SPARK_BRANCHES, SPARK_INNER_R_PX, SPARK_R_PX, haloRadiusK, interactionHalos, sparkPathD, sparkPoints, NO_INTERACTION_HALOS } from './interactHalos';
+import { HALO_RX_PX, haloRadiusK, interactionHalos, NO_INTERACTION_HALOS } from './interactHalos';
 import type { PropEl } from './types';
 
 /**
- * DÉRIVATION PARTAGÉE des halos d'interaction (#1176, P3-0g) : c'est ELLE qui décide qui appelle le
- * joueur — un décor fouillable non épuisé, un PNJ interlocuteur sous le curseur. Les deux voies de
- * rendu la consomment SANS rien re-décider, donc tout ce qui est mesuré ici vaut pour les deux ; ce
- * qu'aucune des deux ne pourrait rattraper, c'est un halo dérivé pour un objet déjà fouillé.
+ * DÉRIVATION des halos d'interaction (#1176, P3-0g) : c'est ELLE qui décide qui appelle le
+ * joueur — un décor fouillable non épuisé, un PNJ interlocuteur sous le curseur. Le rendu la consomme
+ * SANS rien re-décider ; ce qu'il ne pourrait pas rattraper, c'est un halo dérivé pour un objet déjà
+ * fouillé.
  */
 function décor(id: string, x: number, y: number, extra: Partial<PropEl> = {}): PropEl {
   return {
@@ -109,24 +109,5 @@ describe('Halos d’interaction — le PNJ INTERLOCUTEUR (#1176 P3-0g)', () => {
     expect(Object.isFrozen(NO_INTERACTION_HALOS)).toBe(true);
     expect(Object.isFrozen(NO_INTERACTION_HALOS.fouilles)).toBe(true);
     expect(Object.isFrozen(NO_INTERACTION_HALOS.pnjs)).toBe(true);
-  });
-});
-
-describe('GLYPHE de l’étincelle — une seule définition pour les deux voies (#1176 P3-0g)', () => {
-  it('le tracé rendu est l’étoile à QUATRE branches que la voie affine peignait à la main', () => {
-    expect(sparkPathD()).toBe('M0,-6 L1.7,-1.7 L6,0 L1.7,1.7 L0,6 L-1.7,1.7 L-6,0 L-1.7,-1.7 Z');
-  });
-
-  it('quatre POINTES sur les axes de l’écran, quatre CREUX sur les diagonales', () => {
-    const pts = sparkPoints();
-    expect(pts).toHaveLength(2 * SPARK_BRANCHES);
-    const rayons = pts.map((p) => Math.hypot(p.x, p.y));
-    for (let i = 0; i < pts.length; i++) expect(rayons[i]).toBeCloseTo(i % 2 === 0 ? SPARK_R_PX : SPARK_INNER_R_PX, 12);
-    // la première pointe est vers le HAUT de l'écran (y SVG vers le bas)
-    expect(pts[0].x).toBeCloseTo(0, 12);
-    expect(pts[0].y).toBeCloseTo(-SPARK_R_PX, 12);
-    // et le creux tombe sur la diagonale, à 1,7 px de chaque axe
-    expect(Math.abs(pts[1].x)).toBeCloseTo(1.7, 12);
-    expect(Math.abs(pts[1].y)).toBeCloseTo(1.7, 12);
   });
 });

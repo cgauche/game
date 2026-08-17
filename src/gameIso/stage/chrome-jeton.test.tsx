@@ -44,10 +44,10 @@ import type { BillboardSubject } from '../backends/webgl/sceneMeshes';
  * CHROME D'ÉCRAN des jetons de combat (#1176, P3-0f) — barre de PV, icônes d'États (report « +N »),
  * pastille d'état de FIN, et l'ALLURE du corps (fantôme hors LdV, hors d'action, cible survolée).
  *
- * Ce que cette sonde mesure, c'est le PARTAGE : une seule dérivation (`builders/tokenChrome`) et un
- * seul peintre (`TokenChromeMarks`) nourrissent les deux voies — la débrancher fait perdre le chrome
- * aux DEUX. Puis l'EXCLUSIVITÉ : en volumique le chrome vit dans l'overlay projeté (le jeton affine
- * n'est plus monté), en affine il vit dans le corps du jeton et aucun overlay ne le double.
+ * Ce que cette sonde mesure, c'est la SOURCE UNIQUE : une seule dérivation (`builders/tokenChrome`)
+ * et un seul peintre (`TokenChromeMarks`) — la débrancher fait perdre le chrome. Puis l'EXCLUSIVITÉ :
+ * le chrome vit dans l'overlay projeté (`stage/TokenChromeOverlay`), aucun corps de jeton SVG n'étant
+ * plus monté dans le stage.
  */
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -168,7 +168,7 @@ afterEach(() => {
   démonter();
 });
 
-describe('Chrome des jetons — UNE dérivation, UN peintre, deux voies (#1176 P3-0f)', () => {
+describe('Chrome des jetons — UNE dérivation, UN peintre (#1176 P3-0f)', () => {
   it('le chrome est peint à l’écran : une barre par combattant posté, « +1 », pastille de mort', () => {
     const el = monter();
     const barres = barresPV(el);
@@ -187,7 +187,7 @@ describe('Chrome des jetons — UNE dérivation, UN peintre, deux voies (#1176 P
     const e1 = chromeVolumique(el, 'e1');
     expect(h1, 'le héros porte son chrome au-dessus de sa tête').toBeTruthy();
     expect(e1).toBeTruthy();
-    // Barre de PV au ratio du héros — la MÊME couleur de seuil que la voie affine.
+    // Barre de PV au ratio du héros — la couleur de seuil du catalogue (`hpColor`).
     const barre = [...h1!.querySelectorAll('rect')].find((r) => r.getAttribute('fill') !== '#000');
     expect(barre?.getAttribute('fill')).toBe(hpColor(PV.current / PV.max));
     expect(Number(barre?.getAttribute('width'))).toBeCloseTo(26 * (PV.current / PV.max), 6);
@@ -236,7 +236,7 @@ describe('Chrome des jetons — UNE dérivation, UN peintre, deux voies (#1176 P
   });
 });
 
-describe('Chrome des jetons — la dérivation PURE que les deux voies partagent (#1176 P3-0f)', () => {
+describe('Chrome des jetons — la dérivation PURE, mesurée hors écran (#1176 P3-0f)', () => {
   const c = () => combatChromé().combatants[0];
   const vide = { ghostIds: new Set<string>(), hoveredId: null };
 
@@ -319,7 +319,7 @@ describe('Chrome des jetons — l’ALLURE passe au MATÉRIAU du billboard (#117
     const a = allure({ ghost: false, dim: true, highlight: null });
     expect(a.alpha).toBe(DIM_OPACITY);
     expect(a.desat).toBe(0);
-    // Hors d'action ET hors LdV : l'opacité du corps tombé prime, comme en affine.
+    // Hors d'action ET hors LdV : l'opacité du corps tombé prime.
     expect(allure({ ghost: true, dim: true, highlight: null }).alpha).toBe(DIM_OPACITY);
     expect(allure({ ghost: true, dim: true, highlight: null }).desat).toBe(0);
   });

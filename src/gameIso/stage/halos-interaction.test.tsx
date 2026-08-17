@@ -14,23 +14,21 @@ import { haloRadiusK, HALO_RX_PX, type InteractionHalos } from '../builders/inte
 import { PING_S } from './interactHaloPose';
 
 /**
- * HALOS D'INTERACTION dans les DEUX voies (#1176, P3-0g). Deux faits distincts s'y mesurent :
+ * HALOS D'INTERACTION (#1176, P3-0g). Deux faits distincts s'y mesurent :
  *
- *  1. PARITÉ DE PRÉSENCE — le décor fouillable appelle le joueur des deux côtés, et le flag
- *     d'épuisement (`__fouille_<id>`) l'éteint des deux côtés. La voie affine peint des ellipses
- *     animées par CSS, la voie volumique des anneaux plats posés à la frame : ce qui doit coïncider,
- *     c'est ce qui est peint et ce qui ne l'est pas.
- *  2. PULSATION PAR FRAME — ce que le navigateur donne gratuitement à la voie affine (il rejoue ses
- *     keyframes tout seul), la voie volumique ne l'obtient que d'une fonction de l'horloge, rejouée
- *     dans la BOUCLE. Le banc n'appelle donc `root.render` qu'UNE fois : tout ce qui bouge ensuite
- *     passe par le battement, et par lui seul.
+ *  1. PRÉSENCE — le décor fouillable appelle le joueur, le flag d'épuisement (`__fouille_<id>`)
+ *     l'éteint, et le PNJ interlocuteur n'appelle qu'au survol. Ce qui se mesure, c'est ce que les
+ *     pools d'anneaux plats peignent et ce qu'ils ne peignent pas.
+ *  2. PULSATION PAR FRAME — elle n'est qu'une fonction de l'horloge, rejouée dans la BOUCLE. Le banc
+ *     n'appelle donc `root.render` qu'UNE fois : tout ce qui bouge ensuite passe par le battement,
+ *     et par lui seul.
  *
  * ANGLES MORTS DÉCLARÉS. (a) Le SURVOL n'est pas posé par un vrai pointeur : jsdom n'a ni layout ni
  * géométrie, donc aucun `pointermove` n'y désigne une tuile. Il passe par la couture DEV de
  * `useStagePointer` (`__wfrpSetHover`, celle de la recette navigateur) — la chaîne pixel → tuile
  * (`stepFromScreen`) reste donc hors mesure ICI, elle est couverte par `stage/pick-parity`. (b) Ce banc
- * ne juge PAS le rendu : jsdom ne joue aucune keyframe CSS et ne rastérise rien — l'apparence des deux
- * voies (teinte, épaisseur perçue, lueur de survol) se juge au navigateur, pas ici.
+ * ne juge PAS le rendu : jsdom ne rastérise rien — l'apparence (teinte, épaisseur perçue, lueur de
+ * survol) se juge au navigateur, pas ici.
  */
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -116,15 +114,6 @@ function démonter(): void {
   if (conteneur) { conteneur.remove(); conteneur = null; }
 }
 
-/** Ce que la voie AFFINE a peint : les groupes de halo, l'onde et l'étincelle du SVG monté. */
-function comptesAffines(el: HTMLElement): { halo: number; ping: number; spark: number } {
-  return {
-    halo: el.querySelectorAll('svg.iso-stage g.interact-halo').length,
-    ping: el.querySelectorAll('svg.iso-stage ellipse.halo-ping').length,
-    spark: el.querySelectorAll('svg.iso-stage g.halo-spark').length,
-  };
-}
-
 /** Les pools de halos de la dernière frame rendue, par slot. */
 function poolsVolumiques(): Record<string, THREE.InstancedMesh> {
   const out: Record<string, THREE.InstancedMesh> = {};
@@ -173,12 +162,6 @@ describe('Halos d’interaction — le monde volumique peint l’affordance (#11
     // TÉMOIN : sans le flag, quelque chose est bien peint (le test ci-dessus ne mesure pas seulement
     // une scène vide).
     monter();
-    expect(totalVolumique()).toBeGreaterThan(0);
-  });
-
-  it('AUCUNE DOUBLE PEINTURE : le SVG posé par-dessus le monde ne peint plus aucun halo', () => {
-    monter();
-    expect(comptesAffines(conteneur!)).toEqual({ halo: 0, ping: 0, spark: 0 });
     expect(totalVolumique()).toBeGreaterThan(0);
   });
 

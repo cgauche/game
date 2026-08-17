@@ -158,8 +158,6 @@ export interface PropEl extends ElBase {
    *  ornement de FAÎTE (clocheton) ou de MUR (enseigne) se pose EN HAUTEUR. Honoré par les deux backends
    *  (iso : lift additionnel du token ; POV : hauteur d'ancre du billboard). */
   liftM?: number;
-  /** Anim CSS d'ambiance (calque fx du token). */
-  fx?: string;
   /** Prop fouillable : l'affordance (halo/étincelle) est décidée côté stage (flags de jeu). */
   interact: boolean;
   /** Id de l'entité source (flags `__fouille_<id>`, clés d'affordance). Absent pour un overlay terrain. */

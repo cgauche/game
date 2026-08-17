@@ -60,8 +60,8 @@ describe('embuscade — Scene produite par buildScene', () => {
     expect(prop('corps1')).toMatchObject({ ref: 'cadavre', pos: { x: 11, y: 7 } });
     expect(prop('corps2')?.pos).toEqual({ x: 14, y: 8 });
     expect(prop('corps3')?.pos).toEqual({ x: 17, y: 7 });
-    expect(prop('sang1')).toMatchObject({ ref: 'mare-sang', anim: 'gush' });
-    expect(prop('sang2')?.anim).toBe('gush');
+    expect(prop('sang1')).toMatchObject({ ref: 'mare-sang', pos: { x: 13, y: 7 } });
+    expect(prop('sang2')?.pos).toEqual({ x: 15, y: 7 });
     expect(prop('sang3')?.pos).toEqual({ x: 16, y: 8 });
     expect(prop('sang4')?.pos).toEqual({ x: 12, y: 8 });
   });

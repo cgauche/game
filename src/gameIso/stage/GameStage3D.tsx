@@ -30,8 +30,8 @@
  * le champ mécanique de vision consomme) posent leur lumière par un POOL de compte FIXE dont seules les
  * intensités bougent (`stage/stagePointLights.ts`, décision ; le pool ne se monte qu'une fois). Une
  * lampe PORTÉE suit son porteur sur la MÊME courbe de glissement que son quad (`stage/boardPose.ts`).
- * Le voile de nuit du SVG reste à la voie affine — deux propriétaires de luminosité en peindraient deux
- * paliers l'un sur l'autre. Les matériaux du monde sont TOUJOURS lambertiens : sans soleil, l'ambiante
+ * Cet écran est le SEUL propriétaire de la luminosité — deux en peindraient deux paliers l'un sur
+ * l'autre. Les matériaux du monde sont TOUJOURS lambertiens : sans soleil, l'ambiante
  * seule les porte, et le lever/coucher n'a plus de régime à basculer.
  * Les BILLBOARDS, eux, ne le sont jamais : la normale d'un quad aligné écran est l'axe caméra, un
  * lambertien y mesurerait l'angle caméra↔soleil et la luminosité d'un personnage suivrait la rotation
@@ -42,8 +42,7 @@
  * pas en entrant dans l'ombre, et la flaque qu'il reçoit est omnidirectionnelle.
  *
  * INTEMPÉRIES (P2-6, #1247) : la météo authorée de la scène a TROIS expressions dans le volume, toutes
- * dérivées de la MÊME donnée (`iso.weather`, `src/data/ambiance.json`) — la voie affine garde son voile
- * d'écran, qui ne se monte plus ici :
+ * dérivées de la MÊME donnée (`iso.weather`, `src/data/ambiance.json`) :
  *  - ce qui TOMBE (`precip`) : un semis de quads instanciés qui descend à la cadence de la frame, borné
  *    par le MÊME couvert bâti que le dégagement (`shelterField`, `builders/roofs.ts`) — rien ne tombe
  *    sous un toit, y compris sous une nappe que le cutaway a levée, et rien ne se REND au-dessus d'une
@@ -53,16 +52,6 @@
  *  - ce qui TEINTE (`tint`/`alpha`) : l'assombrissement et la couleur des LAMPES, du fond de canevas et
  *    du ciel du POV (`weatherLightScalars`), jamais un voile posé par-dessus la scène.
  * Un type de météo qui n'a que `tint`/`alpha` (la neige) est donc servi sans une ligne de code.
- *
- * CANAUX D'AMBIANCE ENCORE ABSENTS (mesuré #1176, P2-2) — la voie SVG les
- * applique OBJET PAR OBJET, cet écran porte la teinte de visibilité (`tintAt`) et la lumière globale
- * ci-dessus. Ils font partie de ce qui reste à porter AVANT que la double voie meure (cliquet
- * `stage/double-voie-ratchet.test.ts`, qui compte les consommateurs restants de la voie affine) :
- *  - champ de LUMIÈRE par case (`tileBrightness`) ;
- *  - opacité de PIÈCE / focus de salle (`roomOpacityOf`) ;
- *  - filtres de BROUILLARD, exploré vs inconnu (`fogFilterFor`, `FogLayer`).
- * Toute mesure de performance comparant les deux voies est donc à charge INÉGALE, et ne vaut pas
- * comparaison.
  *
  * Trois GROUPES distincts sous la même scène three : le MONDE (une géométrie, un matériau par groupe de
  * surface — remonté au seul changement de cuisson), les ACCENTS de sol (instanciés, remontés à la teinte)
@@ -328,36 +317,34 @@ export interface GameStage3DProps {
    *  ici par la clé de section — c'est ce que la pluie doit savoir pour ne pas s'arrêter en l'air
    *  au-dessus d'un toit qu'on ne peint plus (#1247). Absent = tout se dessine (POV, QC). */
   nappeVue?: (sectionId: string) => boolean;
-  /** Éléments de scène à billboarder — la sortie des BUILDERS du stage, donc les mêmes filtres que la
-   *  voie affine (embuscade, enrôlé, couverture, étage, hors-vue). Cet écran ne les recalcule PAS. */
+  /** Éléments de scène à billboarder — la sortie des BUILDERS du stage, filtres compris (embuscade,
+   *  enrôlé, couverture, étage, hors-vue). Cet écran ne les recalcule PAS. */
   els: SceneBillboardEls;
   /** Acteurs à leur case LOGIQUE — le glissement de marche passe par `anim`, pas par cette liste. */
   actors: readonly ActorPose[];
   /** Horloge de jeu (minutes) — SEULE entrée de la course du soleil, avec le nord de la scène. */
   gameTime: number;
   /** Mise en scène de lumière (`state.lightLevel`, 0..1) : prime sur le palier authoré de la scène,
-   *  exactement comme pour les voiles du SVG. */
+   *  exactement comme pour le palier authoré de la scène. */
   lightLevel: number | null | undefined;
   /** Sources de lumière PONCTUELLES de la scène (posées + portées) — la MÊME liste que le champ
    *  mécanique de vision consomme (`state/visionState.ts` `sceneLightSources`) : cet écran ne les
    *  recollecte pas, il en monte les flaques (`stage/stagePointLights.ts`). */
   lights: readonly LightSource[];
-  /** MARQUES DE CASES du combat (#1176, P3-0c) — la sortie du builder PUR `builders/highlights`, la
-   *  même que la voie affine projette en losanges. Cet écran ne les recalcule pas : il les pose à plat
-   *  dans le monde. */
+  /** MARQUES DE CASES du combat (#1176, P3-0c) — la sortie du builder PUR `builders/highlights`. Cet
+   *  écran ne les recalcule pas : il les pose à plat dans le monde. */
   highlights?: readonly HighlightEl[];
   /** MARQUES DYNAMIQUES (#1176, P3-0d) — lien d'engagement, contour de l'actif, repère du groupe : la
-   *  MÊME dérivation pure que la voie affine (`builders/dynamicMarks`), en cases LOGIQUES. Leur
-   *  position se prend à la FRAME, sur le glissement de `anim` — jamais à un rendu React. */
+   *  dérivation pure `builders/dynamicMarks`, en cases LOGIQUES. Leur position se prend à la FRAME, sur
+   *  le glissement de `anim` — jamais à un rendu React. */
   dynMarks?: DynamicMarks;
   /** HALOS D'INTERACTION (#1176, P3-0g) — affordance de fouille d'un décor, halo de survol d'un PNJ
-   *  interlocuteur : la MÊME dérivation pure que la voie affine (`builders/interactHalos`). Leurs
-   *  PULSATIONS sont des fonctions de la frame (`stage/interactHaloPose`), là où la voie affine les
-   *  laisse à ses keyframes CSS. Absents = aucun halo, et pas une frame de plus. */
+   *  interlocuteur : la dérivation pure `builders/interactHalos`. Leurs PULSATIONS sont des fonctions
+   *  de la frame (`stage/interactHaloPose`). Absents = aucun halo, et pas une frame de plus. */
   halos?: InteractionHalos;
   /** ALLURE des jetons (#1176, P3-0f) — fantôme hors Ligne de Vue, corps hors d'action, cible
-   *  survolée : la même dérivation pure que la voie affine (`builders/tokenChrome`), demandée à la
-   *  FRAME et posée sur le matériau des quads déjà montés. Absente = aucun jeton ne se distingue. */
+   *  survolée : la dérivation pure `builders/tokenChrome`, demandée à la FRAME et posée sur le matériau
+   *  des quads déjà montés. Absente = aucun jeton ne se distingue. */
   chromeAt?: ChromeAt;
   /** Cadençage de la MARCHE, quand le stage en offre un (lot P2-4) : sans lui, cet écran ne bouge
    *  qu'aux rendus du stage. */
@@ -787,7 +774,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // Leur contenu ne se déduit d'aucun état React — il se réécrit à la frame, dans `dessiner`.
   const poolsDyn = useRef<DynMarkPools>({});
   // ── HALOS D'INTERACTION (P3-0g) : même politique de pool, et un contenu qui BAT (l'opacité de leurs
-  // matériaux est une fonction de la frame — la conversion des keyframes CSS vit dans la passe de pose).
+  // matériaux est une fonction de la frame, écrite par la passe de pose).
   const poolsHalos = useRef<HaloPools>({});
   // Le SOL d'une case, la même convention que le builder de marques (0 au rez, la surface réelle en
   // hauteur) : c'est la hauteur d'où le glissement vertical de la marche se compte.
@@ -844,7 +831,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
     [geometry, subjects],
   );
 
-  // ── INTEMPÉRIES (P2-6) : ce qui TOMBE dans le monde. La PORTE est celle des DEUX voies
+  // ── INTEMPÉRIES (P2-6) : ce qui TOMBE dans le monde. La PORTE est celle de toutes les vues
   // (`scenePrecip` → `sceneWeatherFx` : une météo authorée, et jamais en intérieur) ; densité, vitesse
   // de chute, vent, taille et teinte viennent tous de la donnée — aucun type de météo n'est nommé ici.
   // `null` = rien ne tombe, et pas une frame ne s'en occupe. Le REGARD ferme cette porte à son tour
@@ -1302,7 +1289,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   }, [vacille]);
 
   // BOUCLE DE PULSATION DES HALOS (P3-0g) : un halo d'affordance bat hors des rendus React, comme la
-  // flamme et l'averse — c'est ce que la voie affine obtient de ses keyframes CSS. Elle ne bat QUE si
+  // flamme et l'averse. Elle ne bat QUE si
   // un halo est à l'écran : une scène sans décor fouillable et sans PNJ survolé ne rejoue pas une frame
   // de plus qu'avant ce lot. Même politique de CESSION que les deux autres boucles.
   const pulseHalos = !!halos && (halos.fouilles.length > 0 || halos.pnjs.length > 0);
@@ -1708,7 +1695,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
         const rig = ctx?.rig ?? {};
         const voie = q.sub.anim?.voie ?? ctx?.voie ?? 'rig';
         const authoré = q.sub.anim?.ambient;
-        // AMBIANCE : le MÊME clip que le jeton affine joue en repos (`RigToken`, `ambientClip`) pour
+        // AMBIANCE : le clip de repos du corps (`rig/anim/ambientClips`) pour
         // un bipède, l'idle du gabarit pour une bête. Une clé sans clip rig laisse le corps statique.
         const ambient = authoré ? (voie === 'plan' ? planAmbientDef(authoré) : rigAmbientDef(authoré)) : null;
         if (!authoré || ambient) {
@@ -1850,7 +1837,7 @@ export function GameStage3D({ scene, mpt, frame, tintAt, keepEl, nappeVue, els, 
   // besoin de savoir SI une directionnelle est là et OÙ elle est. Absent = aucune directionnelle
   // (intérieur, nuit, soleil encore sous son fondu de lever/coucher, ou regard qui n'en monte aucun).
   // `data-lum` : l'EXPOSITION de la frame (luminance d'une surface horizontale, en part d'albédo). C'est
-  // par elle que la parité avec la voie affine et la continuité du crépuscule se mesurent à l'écran.
+  // par elle que la continuité du crépuscule se mesure à l'écran.
   // `data-lampes` : les flaques ALLUMÉES sur le budget MONTÉ (`allumées/budget`) — le compte de droite
   // ne bouge jamais (c'est tout l'intérêt du pool), celui de gauche tombe à 0 de jour.
   // `data-precip` : le COMPTE de particules du semis d'intempéries — même raison que les deux autres

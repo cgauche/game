@@ -181,19 +181,52 @@ src/state/
                               premier rendu). Réconciliation localStorage⇄IndexedDB PAR ID à CHAQUE
                               `initLibrary` (jamais un flag one-shot, #776) ; `indexedDB` absent
                               (test/SSR) → repli localStorage.
-src/gameIso/                Rendu isométrique SVG (remplace Phaser) :
-  iso.ts                      dérivés MÉTRIQUES de la projection (WALL_H_M, isoPxToM — besoin du monde,
-                              via state/relief) ; la projection elle-même (Dims, tileCenter, diamondPath,
-                              screenToTile, stageSize…) vit dans `src/geometry/iso.ts` (#161)
-  sprites.ts                  décor (props/villageois/terrain en relief) + DEFS (gradients) — PLUS de sprite créature
-  rig/                        gabarits corporels (bipède + quadrupède/ailé/serpentin/…) — rend TOUT le bestiaire
-                              AJOUTER une créature : suivre docs/creer-une-creature.md (registre defs/,
-                              corps nu ≠ tenue, illustration art-ref obligatoire, pièges codifiés)
-  tokenBodyKind.tsx           classifieur unique : rig humanoïde / gabarit animé / sprite décor
-  IsoStage.tsx                hôte de l'écran de jeu (caméra, clics, overlays d'interaction) — le MONDE
-                              est peint par stage/GameStage3D, seul peintre depuis #1176 P3-4 C5a
-  fx/                         FX de combat pilotés par le bus : useCombatFx (flottants/projectiles/halos/
-                              zones) + FxLayer (rendu) + useWalkAnim (marche animée)
+src/gameIso/                Rendu du monde. Le moteur est le monde VOLUMIQUE three.js ; les surcouches
+                            de jeu sont du SVG posé sur son canevas. Pipeline détaillé (pivot, peintres,
+                            matériaux, QC) : docs/rendu-pipeline.md
+  builders/                 GÉOMÉTRIE PURE en espace MONDE : types.ts (`SceneEl` = floor/wall/roof/prop/
+                            token, discriminé par kind) + floors/walls/roofs/props/tokens/highlights/
+                            dynamicMarks/interactHalos/tokenChrome. Un builder n'importe NI caméra NI
+                            Dims — sa sortie survit à toute rotation et sert les deux vues
+  backends/webgl/           SEUL backend du monde : cuisson des SceneEl en géométrie three (sceneMeshes,
+                            faceBake, periodTexture, atlasBake des billboards) + caméras réelles
+                            (cameras.ts, ortho pour les vues de plateau, perspective en POV)
+  stage/                    hôtes et surcouches du monde : GameStage3D (boucle de rendu three) monté par
+                            VolumetricWorld ; viewPolicy.ts = POLITIQUE DE VUE (module PUR : d'un regard
+                            — plateau iso, dessus, POV — il dérive ce que l'écran CHOISIT de montrer :
+                            `mursAuTrait`, `grilleTactique`, `pionsEnDisques`, `toitsVisibles`,
+                            `etageIsole`, `ombreSoleil`, `nappesMonde`, `precipitations`,
+                            `montesDissocies` — un verdict de plus = une ligne) ; layers.tsx
+                            (`wallTraitObjs`, murs au trait), TokenChromeOverlay (pions-disques +
+                            chrome d'état), PlanWorldCanvas (matière du plan de station),
+                            SansWebgl (sans contexte WebGL, l'hôte le DIT — pas de second peintre)
+  authoring/                peintres SVG d'AUTHORING (floorsSvg, wallsSvg, roofsSvg, detailSvg), pilotés
+                            par Dims ; pont monde→écran UNIQUE `projGP` (project.ts) — la rotation
+                            caméra et l'élévation-écran vivent LÀ, jamais dans un builder. Trois
+                            consommateurs : plan de station, aperçu de l'éditeur, oracles de parité
+                            du monde volumique. Ils ne peignent AUCUNE image de partie
+  pov/                      première personne : le MÊME monde volumique regardé à hauteur d'œil
+                            (PovStage) + camera.ts (caméra et brume) + billboardCore.ts
+  detail/                   détail de surface en DONNÉE (`DetailRecipe`, `expandRecipe` → primitives UV
+                            seedées) — même recette cuite par le monde et posée en pattern par le SVG
+  iso.ts                    dérivés MÉTRIQUES de la projection (WALL_H_M, isoPxToM — besoin du monde,
+                            via state/relief) ; la projection elle-même (Dims, tileCenter, diamondPath,
+                            screenToTile, stageSize…) vit dans `src/geometry/iso.ts` (#161)
+  sprites.ts                décor (props/villageois/terrain en relief) + DEFS (gradients) — PLUS de sprite créature
+  rig/                      gabarits corporels (bipède + quadrupède/ailé/serpentin/…) — rend TOUT le bestiaire
+                            AJOUTER une créature : suivre docs/creer-une-creature.md (registre defs/,
+                            corps nu ≠ tenue, illustration art-ref obligatoire, pièges codifiés)
+  tokenBodyKind.tsx         classifieur unique : rig humanoïde / gabarit animé / sprite décor
+  IsoStage.tsx              hôte de l'écran de jeu : caméra (lacet CONTINU `state/stageYaw`, zoom molette
+                            continu, panoramique), clics et picking, et l'arbre SVG posé SUR le canevas
+                            (grille tactique `geometry/grid.gridLines`, murs au trait, portes/escaliers/
+                            télégraphes, FxLayer, TokenChromeOverlay = pions et chrome, curseur, aperçu
+                            de chemin). Le MONDE est peint par stage/VolumetricWorld, qui reçoit AUSSI
+                            les marques dynamiques et les halos d'interaction en props et les pose au sol
+  TopoScene.tsx             plan de station : sols cuits par PlanWorldCanvas, murs/portes/marqueurs en
+                            surcouche SVG — la MÊME loi de composition que la vue du dessus de jeu
+  fx/                       FX de combat pilotés par le bus : useCombatFx (flottants/projectiles/halos/
+                            zones) + FxLayer (rendu) + useWalkAnim (marche animée)
 src/ui/                     React : menus, CampaignView (HUD), CharacterSheet, modales
   creator/                    assistant de création multi-étapes (LDB 04/05) : CharacterCreator.tsx
                               (rendu) + draft.ts (état pur : tirages figés, bonus PX, validation)
@@ -317,16 +350,20 @@ Deux restrictions posées en 0cd24a01 (#232/#91) sans ticket au moment du commit
 
 ## Direction visuelle & apparence
 
-- **Isométrique 2.5D « à la Baldur's Gate »** (vue 3/4), PAS de vue top-down ni de carrés de
-  couleur générés par code. Art SVG dessiné/calculé à la main, scènes détaillées et ANIMÉES
-  (idle, marche, attaque, mort). Le rendu vit dans `src/gameIso/` (projection `iso.ts`, gabarits
-  corporels `rig/`, décor `sprites.ts`) et réutilise le moteur de règles pur (`src/engine`), le
-  store et le schéma de Scène — direction posée après le rejet net d'un premier jet top-down
-  générique jugé « jeu 2D des années 1980 ».
+- **Un monde VOLUMIQUE, plusieurs regards.** La scène est bâtie en géométrie réelle (unités de grille
+  et mètres, cuite par `src/gameIso/backends/webgl/`) puis regardée par une caméra. Trois regards :
+  plateau ISOMÉTRIQUE 2.5D « à la Baldur's Gate » (vue 3/4, lacet et zoom CONTINUS), plateau du DESSUS
+  de facture tabletop/VTT (grille de cases, murs au trait, pions-disques), et PREMIÈRE PERSONNE (le
+  même monde à hauteur d'œil). Aucun regard ne duplique la scène : ce qu'il choisit de MONTRER se lit
+  dans le module pur `viewPolicy` (`src/gameIso/stage/viewPolicy.ts`), un verdict par ligne.
+- **Le rendu se sert du moteur, jamais l'inverse** : il consomme le moteur de règles pur
+  (`src/engine`), le store et le schéma de Scène. Art dessiné/calculé à la main (gabarits corporels
+  `rig/`, décor `sprites.ts`, matériaux en donnée), scènes détaillées et ANIMÉES (idle, marche,
+  attaque, mort) — pas de carrés de couleur générés par code.
 - **Toute apparence (couleur/matériau/géométrie SVG) vit dans un registre `defs/`**, consommée
   par TOUS les renderers — jamais codée en dur dans un renderer, jamais choisie par regex/label
-  sur l'id (ban total du regex). Un même élément rendu par deux vues (iso `walls.ts` + POV
-  `geometry.ts`) partage UNE def. Avant de colorer/dessiner une entité : chercher ou créer sa def
+  sur l'id (ban total du regex). Un même élément cuit par le monde volumique et peint par un peintre
+  d'authoring (`src/gameIso/authoring/`) partage UNE def. Avant de colorer/dessiner une entité : chercher ou créer sa def
   (`structureAppearance(id)`, `TerrainDef`, etc.), classer par CHAMP DONNÉE (`kind`/`fortified`/…),
   jamais par pattern d'id. Nouveau type de rendu ⇒ étendre la def + le registre `gen-registry.mjs`,
   pas un `if` dans le renderer.

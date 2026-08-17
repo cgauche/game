@@ -14,21 +14,15 @@ import type { Scene } from '../../state/scene';
 import { RING_A_PX, type MarkCell } from './dynamicMarks';
 import type { PropEl } from './types';
 
-/** GABARIT des halos en PIXELS de la projection SVG (`<ellipse rx ry strokeWidth>`) — l'échelle de
- *  référence que le monde volumique reproduit. Le demi-axe ry vaut la moitié de rx : c'est la
- *  projection LOSANGE d'un cercle monde
- *  (`RING_A_PX / RING_B_PX`, cf. `builders/dynamicMarks`). */
+/** GABARIT des halos en PIXELS de la projection iso (`geometry/iso`) — l'échelle de référence dont le
+ *  monde volumique tire ses rayons monde (`haloRadiusK`). Le demi-axe ry y vaut la moitié de rx :
+ *  c'est la projection LOSANGE d'un cercle monde (`RING_A_PX / RING_B_PX`,
+ *  cf. `builders/dynamicMarks`). */
 export const HALO_RX_PX = 17;
 export const HALO_STROKE_PX = 2;
 /** Trait de l'onde « sonar » — plus fin que le contour du halo. */
 export const PING_STROKE_PX = 1.6;
 export const NPC_HALO_RX_PX = 15;
-/** Trait du halo de PNJ tel qu'il est ÉCRIT dans le SVG — la feuille l'écrase à `HALO_HOVER_STROKE_PX`
- *  (`anim.css:186`), ce halo portant toujours la classe `hovered` : c'est cette dernière valeur que le
- *  monde volumique reproduit. */
-export const NPC_HALO_STROKE_PX = 1.8;
-/** Descente du halo sous le centre de la case, en pixels d'écran (`cy + 4`). */
-export const HALO_CY_PX = 4;
 /** Opacités des deux ellipses du halo de fouille (disque translucide, contour doré). */
 export const HALO_FILL_OPACITY = 0.26;
 export const HALO_STROKE_OPACITY = 0.9;
@@ -46,34 +40,15 @@ export const SPARK_R_PX = 6;
 export const SPARK_BRANCHES = 4;
 export const SPARK_INNER_R_PX = 1.7 * Math.SQRT2;
 
-/** Sommets du glyphe, en PIXELS d'écran et dans l'ordre du tracé : pointe, creux, pointe… La première
- *  pointe est vers le HAUT de l'écran (`y` négatif en SVG). */
-export function sparkPoints(rPx = SPARK_R_PX, innerPx = SPARK_INNER_R_PX, branches = SPARK_BRANCHES): { x: number; y: number }[] {
-  const pas = Math.PI / branches;
-  const out: { x: number; y: number }[] = [];
-  for (let i = 0; i < 2 * branches; i++) {
-    const r = i % 2 === 0 ? rPx : innerPx;
-    const a = -Math.PI / 2 + i * pas;
-    out.push({ x: r * Math.cos(a), y: r * Math.sin(a) });
-  }
-  return out;
-}
-
-/** Tracé SVG du glyphe — la projection affine de `sparkPoints`, au centième de pixel. */
-export function sparkPathD(rPx = SPARK_R_PX, innerPx = SPARK_INNER_R_PX, branches = SPARK_BRANCHES): string {
-  const n2 = (v: number) => Number(v.toFixed(2));
-  return `M${sparkPoints(rPx, innerPx, branches).map((p) => `${n2(p.x)},${n2(p.y)}`).join(' L')} Z`;
-}
-/** Épaisseur du contour sous la variante SURVOL : la règle CSS `.interact-halo.hovered ellipse[stroke]`
- *  (`anim.css:186`) l'emporte sur l'attribut `stroke-width` de l'élément, PNJ compris (leur halo porte
- *  toujours la classe `hovered`). */
+/** Épaisseur du contour sous la variante SURVOL — celle des décors survolés ET des halos de PNJ, qui
+ *  y sont toujours (`stage/interactHaloPose.poseInteractHalos`). */
 export const HALO_HOVER_STROKE_PX = 3.4;
-/** Agrandissement de la variante SURVOL (`anim.css:183`, `transform: scale(1.32)`) : il porte sur le
- *  GROUPE, donc sur le rayon ET sur l'épaisseur du trait. */
+/** Agrandissement de la variante SURVOL : il porte sur le halo ENTIER, donc sur le rayon ET sur
+ *  l'épaisseur du trait (`stage/interactHaloPose.poseInteractHalos`). */
 export const HALO_HOVER_SCALE = 1.32;
 
-/** Rayon MONDE (fraction de case) d'un halo de demi-axe écran `rxPx` : l'ellipse affine EST la
- *  projection du cercle de ce rayon — mêmes demi-axes, même rapport (`teamRingRadiusK`, même loi). */
+/** Rayon MONDE (fraction de case) d'un halo de demi-axe écran `rxPx` : le cercle de ce rayon a POUR
+ *  projection l'ellipse de demi-axe `rxPx` — mêmes demi-axes, même rapport (`teamRingRadiusK`, même loi). */
 export function haloRadiusK(rxPx: number): number {
   return rxPx / RING_A_PX;
 }
@@ -102,7 +77,7 @@ export interface NpcHalo {
   cell: MarkCell;
 }
 
-/** Les halos d'interaction d'une frame. En LECTURE SEULE : les deux voies lisent le MÊME relevé. */
+/** Les halos d'interaction d'une frame. En LECTURE SEULE : une frame se dérive, elle ne se retouche pas. */
 export interface InteractionHalos {
   readonly fouilles: readonly InteractHalo[];
   readonly pnjs: readonly NpcHalo[];

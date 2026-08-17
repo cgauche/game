@@ -26,8 +26,8 @@ import { combatantTokenScale } from '../sizeScale';
 import { ENEMY_RING, HERO_RING, teamShape } from '../teamColors';
 import type { TokenEl } from './types';
 
-/** GABARIT du lien d'engagement tel que la voie AFFINE le trace : épaisseur de trait et pointillés, en
- *  PIXELS de la projection SVG (`strokeWidth`, `strokeDasharray`). */
+/** GABARIT du lien d'engagement : épaisseur de trait et pointillés, en PIXELS de la projection iso
+ *  (`geometry/iso`) — l'échelle de référence dont le monde volumique tire ses fractions de case. */
 export const TETHER_STROKE_PX = 2;
 export const TETHER_DASH_PX = 4;
 export const TETHER_GAP_PX = 3;
@@ -39,9 +39,9 @@ export const TETHER_GAP_PX = 3;
 const PAS_DE_CASE_PX = Math.hypot(projectStep(null, { x: 1, y: 0 }).dx, projectStep(null, { x: 1, y: 0 }).dy);
 
 /** Le MÊME gabarit en fractions de CASE : un pas de case vaut `PAS_DE_CASE_PX` pixels à l'écran et
- *  `mpt` mètres dans le monde volumique, donc `K · mpt` mètres se peignent aux pixels du gabarit affine
- *  LE LONG DES AXES DE LA GRILLE. Hors de ces axes les deux voies divergent par nature : l'affine mètre
- *  son pointillé à l'ÉCRAN, le volumique le sien dans le MONDE, et la projection isométrique n'a pas la
+ *  `mpt` mètres dans le monde volumique, donc `K · mpt` mètres se peignent aux pixels du gabarit LE LONG
+ *  DES AXES DE LA GRILLE. Hors de ces axes la conversion dérive par nature : le gabarit mètre son
+ *  pointillé à l'ÉCRAN, le volumique le sien dans le MONDE, et la projection isométrique n'a pas la
  *  même échelle dans toutes les directions. Un lien de mêlée relie des cases au CONTACT (#1176) :
  *  l'écart y reste sous le tiret. */
 export function strokeWidthK(px: number): number {
@@ -80,33 +80,32 @@ export interface TeamRing {
   /** Rayon en fraction de case sous la projection LOSANGE — l'ellipse aux pieds du jeton. */
   rK: number;
   color: string;
-  /** Pointillé de la voie affine (`teamShape`) — absent = trait plein. */
+  /** Pointillé du canal daltonien (`teamShape`) — absent = trait plein. */
   dash?: string;
 }
 
-/** Les marques dynamiques d'une frame, dans l'ordre d'ÉMISSION historique de la voie affine. En LECTURE
- *  SEULE : une frame se dérive, elle ne se retouche pas — les deux voies lisent le MÊME relevé. */
+/** Les marques dynamiques d'une frame. En LECTURE SEULE : une frame se dérive, elle ne se retouche
+ *  pas. */
 export interface DynamicMarks {
   readonly tethers: readonly EngageTether[];
   readonly active: ActiveFootprint | null;
-  /** Repère de position du GROUPE hors combat — sa case, sans glissement (cf. `dynamicHighlightObjs`). */
+  /** Repère de position du GROUPE hors combat — sa case, sans glissement. */
   readonly party: MarkCell | null;
   /** Anneaux d'équipe, un par jeton posté (cf. `teamRings`). */
   readonly rings: readonly TeamRing[];
 }
 
-/** Aucune marque dynamique — la valeur d'une voie qui n'en reçoit pas. GELÉE : elle est partagée par
- *  toutes les voies et toutes les frames, un appelant qui pousserait dedans la salirait pour tous. */
+/** Aucune marque dynamique — la valeur d'une frame qui n'en reçoit pas. GELÉE : elle est partagée par
+ *  toutes les frames, un appelant qui pousserait dedans la salirait pour toutes. */
 export const NO_DYNAMIC_MARKS: DynamicMarks = Object.freeze({ tethers: Object.freeze([]), active: null, party: null, rings: Object.freeze([]) });
 
 /**
  * Les marques dynamiques de l'instant. `battle` = le combat en cours (ou `null` hors combat), `party` =
  * la case du groupe quand le contexte l'affiche (le contexte — mode, dialogue ouvert — est tranché par
- * l'appelant, une seule fois, et les DEUX voies consomment le même verdict). `tokens` = les jetons du
- * builder et `partyToken` le meneur hors combat : c'est d'eux que se dérivent les ANNEAUX d'équipe, la
- * décoration de sol dont la population est celle des jetons RÉELLEMENT postés. Ces deux-là sont EXIGÉS
- * (une frame sans jeton passe `[]`, une frame en combat passe `null` pour le meneur) : un défaut y
- * rendrait des anneaux silencieusement absents d'une voie.
+ * l'appelant, une seule fois). `tokens` = les jetons du builder et `partyToken` le meneur hors combat :
+ * c'est d'eux que se dérivent les ANNEAUX d'équipe, la décoration de sol dont la population est celle
+ * des jetons RÉELLEMENT postés. Ces deux-là sont EXIGÉS (une frame sans jeton passe `[]`, une frame en
+ * combat passe `null` pour le meneur) : un défaut y rendrait des anneaux silencieusement absents.
  */
 export function dynamicMarks(battle: BattleState | null, party: Pt | null, tokens: readonly TokenEl[], partyToken: { leader: Combatant; pos: Pt } | null): DynamicMarks {
   const tethers: EngageTether[] = [];
@@ -151,8 +150,8 @@ export const TEAM_RING_STROKE_PX = 2.5;
 export const RING_A_PX = projectStep(null, { x: Math.SQRT1_2, y: -Math.SQRT1_2 }).dx;
 export const RING_B_PX = projectStep(null, { x: Math.SQRT1_2, y: Math.SQRT1_2 }).dy;
 
-/** Rayon MONDE (fraction de case) de l'anneau d'un jeton d'échelle `s` : l'ellipse affine
- *  `rx = 18·s, ry = 9·s` EST la projection du cercle de ce rayon — mêmes demi-axes, même rapport. */
+/** Rayon MONDE (fraction de case) de l'anneau d'un jeton d'échelle `s` : le cercle de ce rayon a POUR
+ *  projection l'ellipse `rx = 18·s, ry = 9·s` — mêmes demi-axes, même rapport. */
 export function teamRingRadiusK(s: number): number {
   return (TEAM_RING_RX_PX * s) / RING_A_PX;
 }
@@ -235,8 +234,8 @@ export const COMBAT_TOKEN_BASE = 0.62;
 export const PARTY_TOKEN_BASE = 0.6;
 
 /** Décoration d'ÉQUIPE d'un jeton : couleur d'anneau (identité de héros cyclique, rouge ennemi) et
- *  canal d'appartenance daltonien (`teamShape`, R9 : ennemi = anneau POINTILLÉ). Dérivation UNIQUE des
- *  deux voies — l'affine la peint en `<ellipse>`, la volumique en anneau plat au sol. */
+ *  canal d'appartenance daltonien (`teamShape`, R9 : ennemi = anneau POINTILLÉ). Le rendu en tire un
+ *  anneau plat au sol (`backends/webgl/dynamicMarkMeshes`, slot `anneau`). */
 export function teamRingDecor(c: Combatant, heroIndex?: number): { color: string; dash?: string } {
   const isHero = c.kind === 'hero';
   return {
@@ -245,7 +244,7 @@ export function teamRingDecor(c: Combatant, heroIndex?: number): { color: string
   };
 }
 
-/** Le `strokeDasharray` de la voie affine, lu en pixels de projection (`'5 3'` → tiret 5, blanc 3).
+/** Un motif `strokeDasharray` du gabarit, lu en pixels de projection (`'5 3'` → tiret 5, blanc 3).
  *  Absent ou illisible = trait PLEIN. */
 export function dashPattern(dash: string | undefined): { dashPx: number; gapPx: number } | null {
   if (!dash) return null;

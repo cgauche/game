@@ -156,7 +156,7 @@ app-owned** (commitée, éditable au Compendium), curée à la main, chaque entr
 
 ## Pile technique
 
-- **Vite + TypeScript + React** (UI). **Rendu isométrique en SVG React** (PAS Phaser).
+- **Vite + TypeScript + React** (UI). **Monde rendu en volumique three.js** (seul backend, `backends/webgl/`) ; grille, murs au trait, pions-disques et chrome sont des surcouches SVG React posées sur son canevas.
 - **Zustand** (store global). **Vitest** (tests du moteur). Le RNG est **seedable**
   (`makeRNG`) pour des tests déterministes et une future coop réseau.
 
@@ -196,7 +196,7 @@ l'embarquerait → s'assurer que l'arbre est propre/commité avant de pousser en
 ```
 src/engine/   règles WFRP4 PURES + testées (types, tests/DR, combat, ops.ts = GameOp, magic, corruption…)
 src/state/    store Zustand + flux (combatFlow barils, rollFlowFactory/Specs, scene.ts = SCHÉMA, upkeep…)
-src/gameIso/  rendu iso SVG (iso.ts projection, rig/ gabarits corporels, tokenBodyKind, IsoStage, fx/)
+src/gameIso/  rendu du monde : builders/ (géométrie PURE) → backends/webgl/ (three) montés par stage/ (GameStage3D, viewPolicy) ; authoring/ peintres SVG (plan, éditeur), pov/, rig/, IsoStage, fx/
 src/ui/       React (RollShell, OptionChooser, editor/ v2, creator/, compendium/)
 src/data/     base APP-OWNED (JSON commité, éditable au Compendium) + exceptions manuscrites sourcées
 src/scenes/   documents de scène + campagne Arène (arene-projet.json) ; asciiMap.ts = authoring ASCII

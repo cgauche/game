@@ -98,9 +98,8 @@ export const SLOT_OPACITY: Record<HighlightSlot, number> = {
 };
 
 /** Rang de SUPERPOSITION entre marques coplanaires. Il REPRODUIT l'ordre d'ÉMISSION du builder
- *  (`builders/highlights.buildHighlights`) : la voie affine trie ses objets par profondeur de façon
- *  STABLE (`stage/objs.sortByDepth`), donc à profondeur égale c'est l'ordre d'émission qui décide —
- *  le dernier émis passe au-dessus. Rang croissant = plus haut, à l'identique.
+ *  (`builders/highlights.buildHighlights`) : à case égale, le dernier émis passe au-dessus. Rang
+ *  croissant = plus haut, à l'identique.
  *  Chaque slot a son rang PROPRE : deux marques d'un même kind peuvent couvrir la même case (une
  *  zone de fumée et une zone de feu qui se chevauchent), et un rang partagé les z-fighterait. */
 export const SLOT_RANK: Record<HighlightSlot, number> = {
@@ -120,7 +119,7 @@ export function slotLiftM(slot: HighlightSlot): number {
   return (SLOT_RANK[slot] + 1) * SPECKLE_LIFT_M;
 }
 
-/** Teinte d'un élément — le MÊME catalogue que la voie affine, `team` par l'identité d'équipe. */
+/** Teinte d'un élément — le catalogue partagé `gameIso/highlightTints`, `team` par l'identité d'équipe. */
 export function highlightTint(el: HighlightEl): string {
   switch (el.kind) {
     case 'walk':

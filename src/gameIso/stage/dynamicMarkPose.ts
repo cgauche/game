@@ -43,8 +43,8 @@ export interface DynMarkFrame {
    *  l'écran. Absent = cran zéro. */
   yawDeg?: number;
   /** ALLURE d'un jeton à l'instant de la frame (#1176, P3-0f) — SEUL l'anneau d'équipe s'en sert :
-   *  il appartient au jeton, et la voie affine estompe le GROUPE entier d'un corps hors d'action ou
-   *  hors Ligne de Vue, anneau compris. Absente = aucun jeton ne s'estompe. */
+   *  il appartient au jeton, et un corps hors d'action ou hors Ligne de Vue s'estompe ENTIER, anneau
+   *  compris. Absente = aucun jeton ne s'estompe. */
   chromeAt?: ChromeAt;
 }
 
@@ -69,7 +69,7 @@ const CENTRE = new THREE.Vector3();
 const TEINTE = new THREE.Color();
 
 /** Nombre de tirets d'un pointillé de longueur `lenM`, au pas `dashM + gapM` — la sémantique de
- *  `stroke-dasharray` que la voie affine obtient du navigateur : un tiret est peint dès que son DÉBUT
+ *  `stroke-dasharray` du gabarit (`builders/dynamicMarks`) : un tiret est peint dès que son DÉBUT
  *  tombe avant la fin du segment, le dernier étant CLIPPÉ à cette fin (`poserLiens` le raccourcit).
  *  Un segment plus court qu'un tiret en porte donc UN — sans quoi deux combattants sur des cases
  *  voisines n'auraient aucun lien visible. */
@@ -145,12 +145,12 @@ const CACHE_MAX = 64;
  * cercle monde est une ellipse de rapport 2:1 (`RING_A_PX / RING_B_PX`), donc un pointillé dont le pas
  * serait uniforme en ARC MONDE arriverait à l'écran deux fois plus serré sur l'axe de profondeur — et
  * le canal daltonien R9 (`teamShape`) y perdrait ses tirets. Le pas se mesure donc sur l'ARC ÉCRAN,
- * exactement comme le `stroke-dasharray` de la voie affine, que le navigateur déroule le long du tracé
+ * exactement comme un `stroke-dasharray` que le navigateur déroulerait le long du tracé
  * PROJETÉ. Sous la vue du DESSUS, cette même mesure ne compense RIEN : la projection y est 1:1
  * (`ringAxesPx`), et pré-compenser un écrasement absent le CRÉERAIT (P3-0e, correctif du juge).
  *
  * `motif` absent = trait PLEIN : le même calcul, au pas des cordes (`ringSolidStepPx`) et sans blanc.
- * Le COMPTE est celui de la voie affine (un tiret est peint dès que son début tombe sur le tracé),
+ * Le COMPTE suit la même sémantique (un tiret est peint dès que son début tombe sur le tracé),
  * puis réparti également sur le tour : un anneau est FERMÉ, et un reste y laisserait une couture où
  * deux tirets se touchent.
  */
@@ -349,8 +349,8 @@ export function poseDynamicMarks(pools: DynMarkPools, marks: DynamicMarks, f: Dy
   const groupe = pools.groupe;
   if (groupe) {
     let n = 0;
-    // Le repère du groupe se pose à sa case LOGIQUE, sans glissement : la voie affine le trace ainsi
-    // (`dynamicHighlightObjs`), et le meneur qui marche le laisse derrière lui.
+    // Le repère du groupe se pose à sa case LOGIQUE, sans glissement : le meneur qui marche le laisse
+    // derrière lui.
     if (marks.party && groupe.instanceMatrix.count > 0) {
       Q.identity();
       S.set(f.mpt, 1, f.mpt);

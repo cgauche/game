@@ -70,7 +70,7 @@ function jambSvg(top: Pt2, bot: Pt2, app: StructureAppearanceDef): string {
 }
 
 /** VITRE d'une croisée : verre FROID le jour (léger reflet en haut-gauche via `spec`), AMBRÉ ÉMISSIF la
- *  nuit (halo pulsé + scintillement — classes `glow`/`warm` d'anim.css, GLOBALES iso+POV : signal de
+ *  nuit (halo + scintillement, classes `glow`/`warm` — signal de
  *  bâtiment fort). Le poly = [hautA, hautB, basB, basA] projeté. */
 function glassSvg(p: Pt2[], app: StructureAppearanceDef, tintK: number, night: boolean): string {
   const poly = polyPts(p);

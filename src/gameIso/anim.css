@@ -80,30 +80,6 @@
   }
 }
 
-/* Anim légère de token entier pour les créatures monolithiques (non riggées). */
-@keyframes tok-lunge {
-  0% { transform: translateY(0); }
-  40% { transform: translate(0, -4px) scale(1.04); }
-  100% { transform: translateY(0); }
-}
-@keyframes tok-recoil {
-  0% { transform: translateX(0); }
-  30% { transform: translate(4px, 1px) rotate(3deg); }
-  100% { transform: translateX(0); }
-}
-.tok-lunge { animation: tok-lunge 0.3s ease-out; }
-.tok-recoil { animation: tok-recoil 0.32s ease-out; }
-
-/* Micro-secousse d'un pas clavier BLOQUÉ en exploration (#792) : heurt contre un mur/bord, non-directionnel. */
-@keyframes token-bump {
-  0% { transform: translate(0, 0); }
-  25% { transform: translate(-2px, 0); }
-  50% { transform: translate(2px, 0); }
-  75% { transform: translate(-1px, 0); }
-  100% { transform: translate(0, 0); }
-}
-.token-bump { animation: token-bump 80ms ease-out; }
-
 /* Animations d'ambiance des créatures (portées de public/ambush.html) — appliquées
    sur le calque fx du token (origine = pieds), donc les rotations pivotent au sol. */
 .feed { animation: feed 1.1s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
@@ -150,12 +126,6 @@
 }
 .proj { animation: proj-fly 0.3s linear forwards; }
 
-/* Affordance « décor interactif » : halo doux pulsé au sol sous un prop fouillable/ramassable (cf. IsoStage). */
-@keyframes haloPulse {
-  0%, 100% { opacity: 0.35; }
-  50% { opacity: 0.8; }
-}
-.interact-halo { animation: haloPulse 1.6s ease-in-out infinite; }
 /* Pastille d'état de FIN sur le token iso (#237) : disque teinté par état + icône, langage visuel
    UNIQUE partagé avec le portrait (src/ui/endStateVisual.ts). Le disque `circle` prend la teinte
    d'état, l'icône reste claire pour le contraste. */
@@ -168,37 +138,6 @@
 .token-endmark.es-koan { color: #dbe6ff; }
 .token-endmark.es-rendu { color: #4a4030; }
 .token-endmark.es-hors { color: #d8e0cc; }
-/* SURVOL direct du décor interactif : halo NETTEMENT renforcé (plus vif, plus large, double lueur).
-   Le `.hovered` est posé par IsoStage quand la tuile survolée == la tuile du prop (hors combat).
-   #207 (playtest « pas assez visible ») : cadence plus rapide, amplitude d'opacité pleine, contour
-   épaissi et double drop-shadow (halo large + cœur serré) — couleur tirée de `--combat-halo`. */
-@keyframes haloPulseHover {
-  0%, 100% { opacity: 0.85; }
-  50% { opacity: 1; }
-}
-.interact-halo.hovered {
-  animation: haloPulseHover 0.7s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: center;
-  transform: scale(1.32);
-  filter: drop-shadow(0 0 10px var(--combat-halo)) drop-shadow(0 0 3px var(--combat-gold));
-}
-.interact-halo.hovered ellipse[stroke] {
-  stroke-width: 3.4px;
-}
-/* Onde « sonar » du décor fouillable : l'anneau s'élargit et s'évanouit — attire l'œil de loin. */
-@keyframes haloPing {
-  0% { transform: scale(0.65); opacity: 0.7; }
-  75% { transform: scale(1.55); opacity: 0; }
-  100% { transform: scale(1.55); opacity: 0; }
-}
-.halo-ping { transform-box: fill-box; transform-origin: center; animation: haloPing 1.9s ease-out infinite; }
-/* Étincelle dorée au-dessus de l'objet : flotte doucement (« il y a quelque chose ici »). */
-@keyframes sparkBob {
-  0%, 100% { translate: 0 0; opacity: 0.85; }
-  50% { translate: 0 -4px; opacity: 1; }
-}
-.halo-spark { animation: sparkBob 1.6s ease-in-out infinite; }
 
 /* Gabarit de zone à POSER (sorts/miracles ZdE) : pointillés « fourmis » qui tournent le long
    du contour — le gabarit se voit, même par-dessus le sol chargé (cf. IsoStage, placingZoneOf). */
@@ -206,19 +145,3 @@
   to { stroke-dashoffset: -32; }
 }
 .zde-ants { animation: zdeMarch 0.9s linear infinite; }
-
-/* #239 — météo authorée de scène : champ de particules de précipitation. Animation CSS PURE
-   (compositor GPU), positions seedées à la source (idempotentes), aucun re-calcul par frame.
-   Chaque particule boucle hors-écran (haut → bas) → boucle sans couture ; la couleur vient de la
-   donnée (`pcolor`, style inline), pas d'ici. */
-.wx-p { transform-box: view-box; animation-timing-function: linear; animation-iteration-count: infinite; }
-.wx-pluie, .wx-averse { animation-name: wx-fall-rain; }
-.wx-neige { animation-name: wx-fall-snow; }
-@keyframes wx-fall-rain {
-  from { transform: translate(0, -40px); }
-  to { transform: translate(-26px, 760px); }
-}
-@keyframes wx-fall-snow {
-  from { transform: translate(0, -20px); }
-  to { transform: translate(18px, 740px); }
-}

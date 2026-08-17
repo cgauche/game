@@ -36,7 +36,7 @@ import type { Combatant } from '../../engine/types';
 import type { BattleState } from '../../state/store';
 
 /**
- * DÉRIVATION des marques dynamiques (#1176, P3-0d) — la source UNIQUE que les deux voies consomment
+ * DÉRIVATION des marques dynamiques (#1176, P3-0d) — la source UNIQUE que la pose consomme
  * (`stage/dynamicMarkPose`). Mesurée ici
  * hors de tout écran : ce qui est dérivé, ce sont des cases LOGIQUES et des identités.
  */

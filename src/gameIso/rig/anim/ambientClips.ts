@@ -66,8 +66,8 @@ const standing: Clip = {
 
 export const AMBIENT_CLIPS: Record<string, Clip> = { feeding, praying, cowering, standing, howling };
 
-/** Alias : clés d'ambiance courtes (partagées avec les sprites monolithiques CSS)
- *  → clip rig correspondant, pour qu'une même `anim` marche dans les deux rendus. */
+/** Alias : clés d'ambiance courtes authorées sur une entité de scène (`gameIso/sceneAnims`)
+ *  → clip rig correspondant, pour qu'une `anim` authorée trouve un geste sur un corps de rig. */
 const ALIASES: Record<string, string> = {
   feed: 'feeding', howl: 'howling', breathe: 'standing', sway: 'standing', wrap: 'standing',
 };
