@@ -95,6 +95,27 @@ dans le tiroir munitions `ActionBar.tsx:568`, l'invariant n'en comptait que 3) +
 munition adossé à l'arme de tir. Munition FIXÉE AU CHARGEMENT (arbitrage) : le lot
 munitions PRÉCÈDE le lot console (b3.20) pour ne jamais exposer une sémantique double.
 
+✅ ARBITRAGE SET STRICT (2026-08-17, question user « l arbalétrier il n est pas à main
+nue, il est équipé d une arbalete » puis verbatim : « Proposer main nue par defaut c'est
+un peu difficile, sachant que la plupart des gens ont une arme de base, et que certains
+armes a distance fonctionnent même en étant engagé avec l'atout pistolet […] donc je
+prefere que le joueur change lui même son set ») — **l'attaque passe par les armes du SET
+ACTIF uniquement** :
+- Le fallback moteur « Mains nues toujours dans `c.weapons` » (`items.ts:661`) SE CORRIGE :
+  Mains nues n'est une arme QUE du combattant réellement désarmé — RAW LDB 14 (Atlas
+  `combat.md`) : « Les Mains nues sont l'arme par défaut de tout combattant DÉSARMÉ » —
+  c'est-à-dire le set sans arme portée. Fini le coup de poing AUTOMATIQUE de l'arbalétrier
+  au clic-ennemi adjacent (chemin mesuré : `pickAttackWeaponList`→`meleeWeaponInRangeList`,
+  `mount.ts:92-148`).
+- **AUCUNE proposition automatique de commutation** : le geste illégal est simplement
+  refusé avec sa raison ; le joueur commute lui-même (X — `battleSwitchLoadout`, action
+  gratuite 1×/round déjà en place, plafond tagué maison).
+- **L'Atout d'arme Pistolet reste la voie RAW du tir au contact** : « Vous pouvez utiliser
+  cette arme pour attaquer en Combat rapproché » (LDB 62 l.284-285) ; « Il est impossible
+  d'effectuer une attaque à distance alors qu'on est *Engagé*, à moins que vous ne
+  disposiez d'une arme à distance qui possède le trait d'arme Pistolet » (LDB 14 l.41) —
+  le gate moteur du tir Engagé se vérifie/complète au lot, jamais une commutation forcée.
+
 ### 1b. Travée DROITE — la grille de capacités (compte FIXE : 12 cases, 2×6)
 
 2×6, gap 4 (332px ≤ 336px utiles à 360px — mesuré). Touche imprimée (zone 8), coût en
