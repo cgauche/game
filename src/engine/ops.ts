@@ -1018,12 +1018,14 @@ export type PassiveKind =
 const ATTR_KEY = { wounds: 'op.attrWounds', fortune: 'op.attrFortune', resolve: 'op.attrResolve' } as const satisfies Record<string, MsgKey>;
 
 /** Ramène un `PassiveKind` à sa forme COURANTE : deux valeurs sont passées de l'id accentué à l'id ASCII
- *  (#1318 V8c₅) et ce `kind` est PERSISTÉ (`Trauma.passiveKind`) — une save/un roster d'avant le
- *  renommage en porte encore l'ancienne. La remise à niveau de la DONNÉE est la migration de save
- *  (`state/passiveKindMigration.ts`, `MIGRATIONS[24]`) ; ceci est le FILET lu par le collecteur passif
- *  (`engine/trauma.ts`), qui empêche à la fois le crash et la dérive silencieuse. `undefined` reste
- *  `undefined` ; une valeur déjà courante (ou inconnue) ressort telle quelle. Deux `if` plutôt qu'une
- *  table : la correspondance est fermée et se lit d'un coup d'œil. */
+ *  (#1318 V8c₅) et ce `kind` est PERSISTÉ (`Trauma.passiveKind`). Une SAVE d'avant le renommage n'arrive
+ *  plus jusqu'ici (politique de version 2026-08-17 : une save dont la version diffère de `SAVE_VERSION`
+ *  est refusée à la lecture) ; les portes qui restent OUVERTES sont NON versionnées — un export de
+ *  ROSTER (`state/roster.ts`) et un document réécrit à la main. D'où ce FILET, lu par le collecteur
+ *  passif (`engine/trauma.ts`) : il empêche à la fois le crash (`PASSIVE_CANCELLERS[kind]` indéfini) et
+ *  la dérive silencieuse (un kind non reconnu quitterait la somme additive sans un signe). `undefined`
+ *  reste `undefined` ; une valeur déjà courante (ou inconnue) ressort telle quelle. Deux `if` plutôt
+ *  qu'une table : la correspondance est fermée et se lit d'un coup d'œil. */
 export function normalizePassiveKind(kind: string | undefined): PassiveKind | undefined {
   if (kind == null) return undefined;
   if (kind === 'mobilité') return 'mobilite';

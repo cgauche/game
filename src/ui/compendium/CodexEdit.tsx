@@ -353,6 +353,9 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'mutations') add('psychTraits');
   if (['mutations', 'trappings'].includes(categoryKey)) add('derivedWeapon');
   if (categoryKey === 'trappings') add('consumable', 'consumableDuration', 'onHitEffects'); // onHitEffects → TriggeredEffectsField (#175)
+  // #1318 E4/C-γ : paliers d'entraînement d'une PROTHÈSE (LDB 73) — `{cost,label,reduces?,grants?}[]`,
+  // tableau d'objets HOMOGÈNES → éditeur GÉNÉRIQUE commun (`GenericArrayField`), jamais le repli JSON.
+  if (categoryKey === 'trappings') add('prosthesisTraining');
   if (categoryKey === 'maladies') add('symptoms');
   if (categoryKey === 'talents') add('combat', 'test');
   if (VARIANT_FIELDS_BY_CATEGORY[categoryKey]) add('variants'); // variants → VariantsField (#563 Lot 5)
@@ -759,6 +762,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {hasCrewSkills && <SkillSpecListField value={entry.skills as { skillId: string; spec?: string }[] | undefined} onChange={(v) => edit('skills', v)} />}
         {hasAxes && <SkillSpecListField hint="compétences contribuant à l'axe (facultatif)" value={entry.skills as { skillId: string; spec?: string }[] | undefined} onChange={(v) => edit('skills', v)} />}
         {hasAxes && <TalentSpecListField value={entry.talents as { talentId: string; spec?: string }[] | undefined} onChange={(v) => edit('talents', v)} />}
+        {hasConsumable && <GenericArrayField label="prosthesisTraining (paliers d’entraînement — PX, libellé joueur, tranche rachetée, aspect levé)" value={entry.prosthesisTraining as Record<string, unknown>[] | undefined} onChange={(v) => edit('prosthesisTraining', v.length ? v : undefined)} />}
         {hasProsthesis && <ProsthesisField value={entry.prosthesis as { trappingId: string; cancels: 'all' | 'movement' }[] | undefined} onChange={(v) => edit('prosthesis', v.length ? v : undefined)} />}
         {hasTraumaList && <TraumaListField value={entry.traumas as string[] | undefined} onChange={(v) => edit('traumas', v.length ? v : undefined)} />}
         {hasRestartTest && <RestartTestField value={entry.restart as { skillId: string; spec?: string; difficulty: Difficulty; extendedDR?: number }[] | undefined} onChange={(v) => edit('restart', v.length ? v : undefined)} />}

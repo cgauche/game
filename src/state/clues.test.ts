@@ -214,7 +214,7 @@ describe('clues — câblage store (#670)', () => {
       expect(useGame.getState().clues).toEqual(before);
     });
 
-    it('save v15 ANTÉRIEUR à ce commit (data sans clé « clues ») restaure clues à {} par un vrai loadGame', () => {
+    it('tolérance PAR CONSTRUCTION : clé « clues » absente du snapshot → valeur initiale ({}) au chargement', () => {
       useGame.setState({ party: [hero()] });
       useGame.getState().loadProject([fixtureScene('scene-g')], 'scene-g', undefined, narratif);
       applyEffects(useGame.getState, useGame.setState, [{ type: 'revealClue', indiceId: 'ind-lettre' }]);
@@ -222,7 +222,9 @@ describe('clues — câblage store (#670)', () => {
       const withClues = readSlot(1)!;
       const dataSansClues = { ...withClues.data } as Record<string, unknown>;
       delete dataSansClues.clues;
-      saveToSlot(1, { ...withClues, data: dataSansClues } as unknown as SaveGame); // simule une save d'AVANT #670
+      // La save est écrite à la version COURANTE, clé `clues` RETIRÉE : c'est le filet n°1 de la
+      // politique de version (champ manquant → `initialFields`), pas une save d'une autre version.
+      saveToSlot(1, { ...withClues, data: dataSansClues } as unknown as SaveGame);
       expect(useGame.getState().loadGame(1)).toBe(true);
       expect(useGame.getState().clues).toEqual({});
     });

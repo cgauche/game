@@ -851,9 +851,10 @@ const PASSIVE_CANCELLERS: Record<PassiveKind, ('determination' | 'painless' | 'p
 
 /** Le `kind` est-il ADDITIF (sommé dans la base : mutation/qualité, corps/équipement permanent) plutôt que
  *  combiné en POOL non-cumul (trauma/maladie/faim/sort) ? Seuls les `charMod`/`skillMod` distinguent les deux.
- *  L'entrée est NORMALISÉE (`normalizePassiveKind`) : une valeur PERSISTÉE à l'ancien id accentué (save
- *  antérieure à `SAVE_VERSION` 25, import de roster à la main) sortirait sinon de la somme additive pour
- *  le pool non-cumul SANS AUCUN SIGNE — la migration ferme la porte, ce filet ferme le silence. */
+ *  L'entrée est NORMALISÉE (`normalizePassiveKind`) : une valeur PERSISTÉE à l'ancien id accentué —
+ *  arrivée par une porte NON versionnée (export de roster, document réécrit à la main ; une save
+ *  obsolète, elle, est refusée à la lecture) — sortirait sinon de la somme additive pour le pool
+ *  non-cumul SANS AUCUN SIGNE. Ce filet ferme ce silence-là. */
 function isAdditiveKind(kind: PassiveKind | undefined): boolean {
   return (normalizePassiveKind(kind) ?? 'intrinseque') === 'intrinseque';
 }
@@ -908,7 +909,7 @@ export function traumaPassiveMods(c: Combatant): PassiveMod[] {
     // donc une composante de jet issue d'elle n'a jamais à se replier sur sa famille. Aucun `src` : les
     // séquelles ne sont pas une catégorie du Codex — le NOM tient, le LIEN n'existe pas.
     // `normalizePassiveKind` : le `kind` PERSISTÉ de la séquelle est ramené à la forme courante AVANT
-    // d'être gaté puis propagé (save d'avant `SAVE_VERSION` 25 — cf. `state/passiveKindMigration.ts`).
+    // d'être gaté puis propagé (porte NON versionnée : export de roster, document réécrit à la main).
     for (const o of traumaOps(t)) { const kind = normalizePassiveKind(t.passiveKind) ?? traumaOpKind(o); if (modSurvives(c, kind, t)) out.push({ op: o, kind, label: t.label }); }
   }
   return out;

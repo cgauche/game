@@ -166,7 +166,7 @@ describe('sceneInstance — câblage store, REVISIT (#707)', () => {
       expect(useGame.getState().scene!.entities.map((e) => e.id)).not.toContain('decor-retire');
     });
 
-    it('save v15 ANTÉRIEUR à ce commit (data sans clé « sceneInstances ») restaure {} par un vrai loadGame', () => {
+    it('tolérance PAR CONSTRUCTION : clé « sceneInstances » absente du snapshot → valeur initiale ({}) au chargement', () => {
       useGame.setState({ party: [hero()] });
       const sceneA = fixtureScene('scene-i');
       useGame.getState().loadProject([sceneA], 'scene-i', undefined);
@@ -174,7 +174,9 @@ describe('sceneInstance — câblage store, REVISIT (#707)', () => {
       const withField = readSlot(1)!;
       const dataSans = { ...withField.data } as Record<string, unknown>;
       delete dataSans.sceneInstances;
-      saveToSlot(1, { ...withField, data: dataSans } as unknown as SaveGame); // simule une save d'AVANT #707
+      // Save écrite à la version COURANTE, clé `sceneInstances` RETIRÉE : filet n°1 de la politique de
+      // version (champ manquant → `initialFields`), pas une save d'une autre version.
+      saveToSlot(1, { ...withField, data: dataSans } as unknown as SaveGame);
       expect(useGame.getState().loadGame(1)).toBe(true);
       expect(useGame.getState().sceneInstances).toEqual({});
     });
