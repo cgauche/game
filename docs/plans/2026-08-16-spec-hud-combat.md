@@ -386,22 +386,28 @@ sans surface exhaustive.
   **Le placement de la travée gauche est PAR SET** : chaque set a sa disposition,
   pré-remplie par déduction, rééditable, mémorisée (persistance `(partyKey, actorId)` +
   set) ; commuter (X) affiche la disposition du set. Proposé sans objection user.
-- **L'écran de capacités EST l'éditeur de la console, HORS COMBAT et PAR HÉROS**
-  (verbatim user : « Faudra un moyen d'éditer tout cela oui, et pas obliger
-  l'utilisateur a etre en combat … en mode exploration on n'a pas acces a la barre
-  d'action et même si on l'avait, on ne peut pas choisir le personnage ») : sélecteur de
-  héros DANS l'écran (patron fiche/PartyScreen), il montre dispositions par set + grille
-  + accès rapide et PLACE tout — aucun besoin d'être en combat ni de contrôler le héros.
+- **L'édition = GLISSER-DÉPOSER SUR LA BARRE ELLE-MÊME** (⚠ CORRIGÉ 2026-08-17 sur
+  contrôle user « c'est comme ca que les jeux videos font normalement ou tu réinvente la
+  roue ? » — ma 1ʳᵉ version « écran-éditeur avec sélecteur de héros » était une roue
+  réinventée) : état de l'art unanime (BG3/Pathfinder/POE/MMO) — AUCUN écran d'édition
+  de barre n'existe ; l'écran de capacités s'ouvre EN PANNEAU PAR-DESSUS le jeu, la
+  console reste visible dessous et REÇOIT le drag & drop, en combat comme hors combat
+  (verbatim user à l'origine : « Faudra un moyen d'éditer tout cela oui, et pas obliger
+  l'utilisateur a etre en combat ») ; tactile = appui long + glisser. Le choix du héros
+  = la SÉLECTION DE PERSONNAGE (Zone 13), pas un picker d'éditeur : hors combat, la
+  console affichée est celle du héros SÉLECTIONNÉ. Conséquence : **Zone 13 devient le
+  PRÉREQUIS de l'édition hors combat**, plus un chantier optionnel.
 
-## Zone 13 — CONTRÔLE DU PERSONNAGE EN EXPLORATION (ouvert 2026-08-17, à cadrer)
+## Zone 13 — SÉLECTION DU PERSONNAGE EN EXPLORATION (PRÉREQUIS de l'édition hors combat)
 
 Constat user (verbatim : « on ne peut pas choisir le personnage (vu que c'est toujours
 le premier en vie qu'on controle). Faudrait surement modifier ce comportement ») —
-aujourd'hui l'exploration contrôle le premier vivant. Proposition orchestrateur (état de
-l'art party-RPG, à CONFIRMER par l'user avant tout lot) : clic sur un portrait du
-BANDEAU en exploration = ce héros prend la TÊTE (les autres suivent) ; ouvre aussi
-l'accès naturel à « son » écran de capacités. Périmètre réel à cadrer : leader de
-marche, interactions/dialogues, coop (qui a le droit de mener), sauvegarde du choix.
+aujourd'hui l'exploration contrôle le premier vivant. Modèle état de l'art (BG3 :
+sélection d'un membre → SA barre s'affiche, SON grimoire s'ouvre) : clic sur un portrait
+du BANDEAU en exploration = SÉLECTIONNER ce héros (il prend la tête, les autres
+suivent ; sa console hors combat s'affiche pour l'édition ; ses écrans s'ouvrent sur
+lui). Périmètre réel à cadrer AVANT le lot : leader de marche, interactions/dialogues,
+coop (qui a le droit de mener), sauvegarde du choix — à CONFIRMER par l'user.
 
 ✅ ARBITRAGE CAMÉRA (AskUserQuestion 2026-08-17, sur question user verbatim : « Je ne suis
 pas fan de ces boutons de map en haut à droite, je ne connais aucun jeu vidéo qui offre ce
