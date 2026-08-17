@@ -31,6 +31,7 @@ import { bus, EVT } from './bus';
 import { scheduleFlowTimer, clearTrackedTimer } from './combatTimers';
 
 import type { Get, Set } from './flowTypes';
+import { t } from '../i18n';
 
 /** État réseau SÉRIALISABLE (dans GameState). `ownership` : heroId → siège (0 = hôte).
  *  `slots` : siège attribué à chacun des 4 emplacements de l'écran d'équipe (0 = hôte). */
@@ -201,7 +202,7 @@ export async function netHostStart(get: Get, set: Set, name: string): Promise<bo
       // Validation de POSSESSION (spec §4bis) : un invité ne pilote que SES combattants —
       // modale ouverte → seul son concerné agit ; sinon seul le propriétaire du tour actif.
       if (!intentAllowedFor(useGame.getState(), seat, action, args)) {
-        get().log(`Action réseau refusée (${action}) : pas le propriétaire.`);
+        get().log(t('coop.intentRefused', { action }));
         return;
       }
       // Composition d'équipe : le siège vient du transport, jamais des args de l'invité.
@@ -219,7 +220,7 @@ export async function netHostStart(get: Get, set: Set, name: string): Promise<bo
     onSeatClosed: (seat) => netSeatClosed(get, set, seat),
   });
   rh.onFatal = () => {
-    get().log('Connexion au service coop perdue — session terminée.');
+    get().log(t('coop.hostLinkLost'));
     netLeave(get, set);
   };
   rh.onJoin = (seat, gname) => {
@@ -251,9 +252,9 @@ export async function netHostStart(get: Get, set: Set, name: string): Promise<bo
 /** INVITÉ : rejoint une room par son code. Résout null si connecté, sinon le message d'erreur.
  *  Un token en sessionStorage (reload d'onglet) reprend le MÊME siège tant que la room vit. */
 export function netJoin(get: Get, set: Set, codeRaw: string, name: string): Promise<string | null> {
-  if (get().net.mode !== 'local') return Promise.resolve('Déjà en session.');
+  if (get().net.mode !== 'local') return Promise.resolve(t('coop.alreadyInSession'));
   const code = codeRaw.trim().toUpperCase();
-  if (!/^[A-Z0-9]{6}$/.test(code)) return Promise.resolve('Code invalide — 6 caractères.');
+  if (!/^[A-Z0-9]{6}$/.test(code)) return Promise.resolve(t('coop.badCode'));
   const stored = sessionStorage.getItem(tokenKey(code)) ?? undefined;
   return new Promise((resolve) => {
     let settled = false;
@@ -263,12 +264,12 @@ export function netJoin(get: Get, set: Set, codeRaw: string, name: string): Prom
       netLeave(get, set);
       resolve(msg);
     };
-    const timeout = scheduleFlowTimer(() => fail('Connexion impossible — réessayez.'), 15_000);
+    const timeout = scheduleFlowTimer(() => fail(t('coop.joinFailed')), 15_000);
     const rg = new RoomGuest(code, name, undefined, stored);
     roomGuest = rg;
     rg.onFatal = (reason) => {
       if (settled) {
-        get().log(`Coop : ${reason}`);
+        get().log(t('coop.reason', { reason }));
         netLeave(get, set);
         return;
       }
@@ -297,7 +298,7 @@ export function netJoin(get: Get, set: Set, codeRaw: string, name: string): Prom
         // (déjà utilisé pour « Un joueur a quitté »/« Connexion perdue ») — distinct du
         // onClose générique qui suit juste après (silencieux, cf. session.ts).
         onProtocolMismatch: (expected, got) =>
-          get().log(`Version du jeu différente de l'hôte (protocole ${got} ≠ ${expected}) — mettez à jour.`),
+          get().log(t('coop.protocolMismatch', { got, expected })),
         onClosed: () => netLeave(get, set),
       });
       set({ net: { ...initialNet(), mode: 'guest', mySeat: seat, roomCode: code, seatNames: { [seat]: name } } });
@@ -320,7 +321,7 @@ export function netSeatClosed(get: Get, set: Set, seat: number): void {
   delete pres[seat];
   const own = Object.fromEntries(Object.entries(ownership).map(([h, s]) => [h, s === seat ? 0 : s]));
   set({ net: { ...get().net, seatNames: names, presence: pres, ownership: own, slots: slots.map((s) => (s === seat ? 0 : s)), gmSeat: gmSeat === seat ? undefined : gmSeat } });
-  get().log(`Un joueur a quitté — ses héros reviennent à l'hôte.`);
+  get().log(t('coop.seatClosed'));
 }
 
 /** HÔTE : attribue un héros à un siège (lobby — « un certain nombre de personnages chacun »). */

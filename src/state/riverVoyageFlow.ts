@@ -66,6 +66,7 @@ import type { CascadeStep, CascadeStepMeta } from './pendings';
 import type { Get, Set } from './flowTypes';
 import { dataLabel } from '../data';
 import { t } from '../i18n';
+import { shipLocationLabel } from '../engine/shipCritical';
 import { stepDetail, stepPrecision } from './rollSeam';
 
 /** SPÉCIALISATIONS de Métier lues par la réparation de bateau (l.107-117) — ids STABLES de
@@ -76,17 +77,20 @@ const SPEC = { constructionBateaux: 'construction-de-bateaux', charpentier: 'cha
 
 /** LOCALISATIONS de Critique de bateau (clés des tables de `river-criticals.json`) — le type restreint
  *  rend le résolveur TOTAL : aucun repli sur l'id, donc aucune fuite de moteur-speak à l'écran. */
-export type RiverCritLocation = 'greement' | 'avirons' | 'gouvernail' | 'coque' | 'superstructure';
-const RIVER_LOC_KEY = {
-  greement: 'rv.locGreement', avirons: 'rv.locAvirons', gouvernail: 'rv.locGouvernail',
-  coque: 'rv.locCoque', superstructure: 'rv.locSuperstructure',
-} as const;
-/** Libellé JOUEUR d'une Localisation de bateau — la donnée n'en porte pas (tables keyées par id). */
-const riverLocLabel = (loc: RiverCritLocation): PlayerText => t(RIVER_LOC_KEY[loc]);
+const RIVER_LOCS = ['greement', 'avirons', 'gouvernail', 'coque', 'superstructure'] as const;
+export type RiverCritLocation = typeof RIVER_LOCS[number];
+/** Libellé JOUEUR d'une Localisation de bateau : le foyer est au moteur (`shipLocationLabel`), qui
+ *  couvre les huit `ShipLocation` — les cinq d'ici en sont un sous-ensemble.
+ *
+ *  UNE entrée DIVERGE par LIVRE et se PRÉSERVE : la table fluviale dit « Rames » (`MSRC 7 l.56`,
+ *  colonne Barque) là où la maritime dit « Avirons » (`MDG 13 l.575-582`). La surcharge est donc
+ *  NOMINATIVE et locale au fluvial ; les quatre autres restent au foyer commun. */
+export const riverLocLabel = (loc: RiverCritLocation): PlayerText =>
+  (loc === 'avirons' ? t('rv.locRames') : shipLocationLabel(loc));
 /** Ramène une méta d'étape (chaîne sérialisée) dans le domaine des Localisations connues ; à défaut, la
  *  COQUE (le corps du bateau) — jamais l'id inconnu rendu tel quel. */
 const riverCritLocationOf = (v: unknown): RiverCritLocation =>
-  (typeof v === 'string' && v in RIVER_LOC_KEY ? v : 'coque') as RiverCritLocation;
+  (typeof v === 'string' && (RIVER_LOCS as readonly string[]).includes(v) ? v : 'coque') as RiverCritLocation;
 
 /** État FLUVIAL d'un TravelPlan (route `river`) — persiste avec le plan. */
 export interface RiverVoyageState {

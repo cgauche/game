@@ -32,6 +32,11 @@ export const getLocale = (): Locale => locale;
  * (`engine/travelStages.ts`, que V8a₁ a fait passer de littéraux au catalogue, ÉTENDANT ce motif) et
  * `CHAR_PENALTY_KIND_LABEL` (`engine/trauma.ts`, familles Faim/Soif et Ivresse — V8c₃ l'a fait passer
  * de littéraux au catalogue, MÊME motif : la carte est figée à l'évaluation du module).
+ * V8c₄ ajoute UN site à cette liste, et un seul : `label: t('cor.natureTable')` passé à
+ * `registerTableStep` au CHARGEMENT de `state/corruptionFlow.ts` (la table « Corps ou esprit » est
+ * enregistrée par une boucle de module) — le libellé y est résolu une fois pour toutes. Les autres
+ * cartes de la tranche n'en sont PAS : `SHIP_LOC_KEY`/`ALLURE_KEY`/`ENCOUNTER_KEY`/`SPELL_*` portent
+ * des CLÉS (`MsgKey`), résolues à l'appel — c'est la forme à reprendre pour éteindre les précédentes.
  * Appeler `setLocale` après le chargement les laisse donc en FR, SANS erreur ni avertissement.
  *
  * Ce n'est pas un bug tant que la v1 fige la locale au lancement (`docs/i18n-seam.md`, Non-objectifs :

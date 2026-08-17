@@ -35,6 +35,7 @@ import { rollStep } from './rollSeam';
 import type { ModLine } from '../engine/combat';
 import { dailyDiseaseUpkeep, restResistVal } from '../engine/rest';
 import { conditionLabel } from '../data';
+import { t } from '../i18n';
 import { rule } from '../engine/policy';
 import { dropExpiredGrantedTraits } from '../engine/grantedTraits';
 import { dropExpiredGrantedResources } from '../engine/grantedResources';
@@ -62,12 +63,12 @@ export function purgeClockEffects(get: Get, set: Set): string[] {
   for (const h of pool) {
     const exp = (h.castPenalties ?? []).filter((p) => p.untilTime != null && p.untilTime <= now);
     if (exp.length) {
-      for (const p of exp) expiredLog.push(`${h.label} : ${p.label} se dissipe.`);
+      for (const p of exp) expiredLog.push(t('upkeep.fades', { name: h.label, what: p.label }));
       h.castPenalties = h.castPenalties!.filter((p) => !(p.untilTime != null && p.untilTime <= now));
     }
     const fx = (h.activeEffects ?? []).filter((e) => e.duration.scale === 'clock' && e.duration.until <= now);
     if (fx.length) {
-      for (const e of fx) expiredLog.push(`${h.label} : ${e.label} se dissipe.`);
+      for (const e of fx) expiredLog.push(t('upkeep.fades', { name: h.label, what: e.label }));
       h.activeEffects = h.activeEffects!.filter((e) => !(e.duration.scale === 'clock' && e.duration.until <= now));
       dropExpiredGrantedTraits(h, fx); // traits accordés (op grantTrait) retirés avec leur effet
       dropExpiredGrantedResources(h, fx); // Chance/Destin accordés (gainResource) non dépensés
@@ -83,7 +84,7 @@ export function purgeClockEffects(get: Get, set: Set): string[] {
     // dissipés à l'échéance, même canal de purge que les effets actifs (LDB 72 l.18).
     const conds = (h.conditions ?? []).filter((x) => x.untilTime != null && x.untilTime <= now);
     if (conds.length) {
-      for (const x of conds) expiredLog.push(`${h.label} : l'État ${conditionLabel(x.id)} se dissipe.`);
+      for (const x of conds) expiredLog.push(t('upkeep.condFades', { name: h.label, cond: conditionLabel(x.id) }));
       h.conditions = h.conditions.filter((x) => !(x.untilTime != null && x.untilTime <= now));
     }
   }
@@ -100,7 +101,7 @@ export function purgeAdventureEffects(get: Get, set: Set): string[] {
   for (const h of get().party) {
     const fx = (h.activeEffects ?? []).filter((e) => e.duration.scale === 'adventure');
     if (!fx.length) continue;
-    for (const e of fx) expiredLog.push(`${h.label} : ${e.label} se dissipe (fin de l'aventure).`);
+    for (const e of fx) expiredLog.push(t('upkeep.fadesAdventure', { name: h.label, what: e.label }));
     h.activeEffects = (h.activeEffects ?? []).filter((e) => e.duration.scale !== 'adventure');
   }
   if (expiredLog.length) { set({ party: [...get().party] }); get().log(expiredLog); }
@@ -196,7 +197,7 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
         const alc = testValue(h, alcool.skill, alcool.char);
         // DIFFÉRÉ comme ses voisins (faim/soif) quand un canal influençable existe : le Test de
         // Résistance à l'alcool devient une étape de cascade au lieu d'être roulé ici (sinon pré-résolu).
-        if (defer) defer({ kind: 'dessoulage', label: 'Dessoûlage', base: alc, test: alcool, difficulty: 'intermediaire' });
+        if (defer) defer({ kind: 'dessoulage', label: t('upkeep.sobering'), base: alc, test: alcool, difficulty: 'intermediaire' });
         else {
           const sr = soberUp(h, get().gameTime, rollTest(alc, 'intermediaire', battleRng()).sl, rollTest(alc, 'intermediaire', battleRng()).sl);
           lines.push(...sr.log);
@@ -217,12 +218,12 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
     if (missed > 0) {
       for (const h of party) {
         if (h.dead) continue;
-        lines.push(`${h.label} — privation de sommeil (${missed} nuit${missed > 1 ? 's' : ''} sans dormir) :`);
+        lines.push(t('upkeep.sleepDeprived', { name: h.label, n: missed, s: missed > 1 ? 's' : '' }));
         lines.push(...applyOps(h, [{ op: 'condition', id: 'extenue', value: missed }], { rng: battleRng() }));
       }
     }
   }
-  if (rations > 0) lines.unshift(`Le groupe entame ses provisions (${rations} ration${rations > 1 ? 's' : ''}).`);
+  if (rations > 0) lines.unshift(t('upkeep.rationsUsed', { n: rations, s: rations > 1 ? 's' : '' }));
   // Navire de campagne (MDG 14) : PAIE hebdomadaire de l'équipage salarié puis recalcul du Moral, une
   // fois par semaine calendaire (garde interne à `tickCampaignVesselWeek` ; un saut de plusieurs jours ne
   // recalcule qu'au franchissement de semaine). #216.

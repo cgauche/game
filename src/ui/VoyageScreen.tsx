@@ -9,7 +9,7 @@ import type { Combatant } from '../engine/types';
 import type { Possession } from '../engine/possession';
 import { placeById } from '../state/worldMap';
 import { routeDistanceLabel, TRAVEL_MODE_LABEL } from '../engine/travel';
-import { ALLURE_LABEL, partyMounts } from '../engine/mountTravel';
+import { allureLabel, partyMounts } from '../engine/mountTravel';
 import { windForceLabel, windDirectionLabel, precipitationDef, temperatureDef, visibilityDef } from '../engine/seaWeather';
 import { riverForceLabel, riverDirLabel } from '../engine/riverNavigation';
 import { cargoTotalEnc } from '../engine/seaVoyage';
@@ -226,7 +226,7 @@ export function voyageTiles(
     key: 'allure',
     icon: 'travel/foot',
     label: allureBased ? 'Allure' : 'Transport',
-    value: plan.allure ? ALLURE_LABEL[plan.allure]
+    value: plan.allure ? allureLabel(plan.allure)
       : plan.mode === 'monture' ? 'En selle'
         : plan.mode === 'pied' ? 'À pied'
           : TRAVEL_MODE_LABEL[plan.mode] ?? plan.mode,

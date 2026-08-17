@@ -39,6 +39,7 @@ import { bonus, effectiveChar } from './characteristics';
 import { rule } from './policy';
 import { offTerrainSuffocates } from './ops';
 import { itemCapability } from './capabilities';
+import { t } from '../i18n';
 
 /** Une main porte-t-elle un contenant d'eau (Outre à eau, LDB 64 p.301 / Seau, LDB 67 p.303) ? Capacité par-OBJET
  *  `waterContainer`, NON gatée sur le port — on le sort du sac pour asperger, comme `isRation`
@@ -101,18 +102,18 @@ export function suffocationTick(c: Combatant): string[] {
   if ((c.breathHoldSeconds ?? 0) > 0) {
     c.breathHoldSeconds = Math.max(0, c.breathHoldSeconds! - secondsPerRound());
     return [c.breathHoldSeconds > 0
-      ? `${c.label} retient son souffle (${c.breathHoldSeconds} s d'air).`
-      : `${c.label} n'a plus d'air — la suffocation commence.`];
+      ? t('suff.holding', { name: c.label, s: c.breathHoldSeconds })
+      : t('suff.noAir', { name: c.label })];
   }
   const lines: string[] = [];
   const be = Math.max(1, bonus(effectiveChar(c, 'endurance')));
   if (c.wounds.current > 0) {
     loseWounds(c, 1);
-    lines.push(`${c.label} suffoque (−1 PB).`);
+    lines.push(t('suff.lose', { name: c.label }));
     if (c.wounds.current <= 0) {
       if (!hasCondition(c, 'inconscient')) addCondition(c, 'inconscient');
       c.suffocationCountdown = be;
-      lines.push(`${c.label} s'évanouit, privé d'air (Inconscient) — mort dans ${be} Round(s).`);
+      lines.push(t('suff.faints', { name: c.label, n: be }));
     }
     return lines;
   }
@@ -120,12 +121,12 @@ export function suffocationTick(c: Combatant): string[] {
   if (c.suffocationCountdown == null) {
     if (!hasCondition(c, 'inconscient')) addCondition(c, 'inconscient');
     c.suffocationCountdown = be;
-    lines.push(`${c.label} suffoque, inconscient — mort dans ${be} Round(s).`);
+    lines.push(t('suff.unconscious', { name: c.label, n: be }));
     return lines;
   }
   c.suffocationCountdown -= 1;
   lines.push(c.suffocationCountdown <= 0
-    ? `${c.label} cesse de respirer — la mort par suffocation le prend.`
-    : `${c.label} étouffe — mort dans ${c.suffocationCountdown} Round(s).`);
+    ? t('suff.dies', { name: c.label })
+    : t('suff.countdown', { name: c.label, n: c.suffocationCountdown }));
   return lines;
 }

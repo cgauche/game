@@ -8,57 +8,62 @@ import type { Formula } from './ops';
 import { CHAR_LABELS } from './types';
 import type { SpellRange, SpellTarget } from './spellRange';
 import type { SpellDuration } from './spellDuration';
+import { t } from '../i18n';
 
 /** Mesure → prose : `6` → « 6 », `{charOf}` → « (Force Mentale) », `{bonusOf}` → « (Bonus de Force Mentale) ». */
 function fmtMeasure(f: Formula): string {
   if (typeof f === 'number') return String(f);
-  if ('bonusOf' in f) return `(Bonus de ${CHAR_LABELS[f.bonusOf]})`;
-  if ('charOf' in f) return `(${CHAR_LABELS[f.charOf]})`;
+  if ('bonusOf' in f) return t('spellFmt.bonusOf', { char: CHAR_LABELS[f.bonusOf] });
+  if ('charOf' in f) return t('spellFmt.charOf', { char: CHAR_LABELS[f.charOf] });
   return '?'; // dés/rolled/indiceOf n'apparaissent pas en portée/cible
 }
 
 /** « mètre(s) » / « kilomètre(s) » selon le pluriel (littéral 1 = singulier). */
 function unitWord(f: Formula, unit: 'm' | 'km'): string {
   const sing = f === 1;
-  return unit === 'km' ? (sing ? 'kilomètre' : 'kilomètres') : (sing ? 'mètre' : 'mètres');
+  return unit === 'km' ? (sing ? t('spellFmt.km') : t('spellFmt.kms')) : (sing ? t('spellFmt.m') : t('spellFmt.ms'));
 }
 
 export function formatSpellRange(r: SpellRange): string {
   switch (r.kind) {
-    case 'self': return 'Vous';
-    case 'touch': return 'Contact';
-    case 'distance': return `${fmtMeasure(r.value)} ${unitWord(r.value, r.unit)}`;
+    case 'self': return t('spellFmt.self');
+    case 'touch': return t('spellFmt.touch');
+    case 'distance': return t('spellFmt.distance', { n: fmtMeasure(r.value), unit: unitWord(r.value, r.unit) });
     case 'special': return r.text;
   }
 }
 
-export function formatSpellTarget(t: SpellTarget): string {
-  switch (t.kind) {
-    case 'self': return 'Vous';
-    case 'count': return typeof t.n === 'number'
-      ? (t.n === 1 ? '1 cible' : `${t.n} cibles`)
-      : `${fmtMeasure(t.n)} cibles`;
-    case 'area': return `ZdE ${t.span === 'radius' ? 'rayon' : 'diamètre'} ${fmtMeasure(t.meters)} mètres`;
-    case 'cone': return `Cône Longueur (${fmtMeasure(t.lengthMeters)} mètres) x Largeur (${fmtMeasure(t.widthMeters)} mètres)`;
-    case 'special': return t.text;
+export function formatSpellTarget(t2: SpellTarget): string {
+  switch (t2.kind) {
+    case 'self': return t('spellFmt.self');
+    case 'count': return typeof t2.n === 'number'
+      ? (t2.n === 1 ? t('spellFmt.oneTarget') : t('spellFmt.targets', { n: t2.n }))
+      : t('spellFmt.targets', { n: fmtMeasure(t2.n) });
+    case 'area': return t('spellFmt.area', { span: t2.span === 'radius' ? t('spellFmt.spanRadius') : t('spellFmt.spanDiameter'), n: fmtMeasure(t2.meters) });
+    case 'cone': return t('spellFmt.cone', { length: fmtMeasure(t2.lengthMeters), width: fmtMeasure(t2.widthMeters) });
+    case 'special': return t2.text;
   }
 }
 
-const CLOCK_UNIT: Record<'minutes' | 'hours' | 'days', [string, string]> = {
-  minutes: ['minute', 'minutes'], hours: ['heure', 'heures'], days: ['jour', 'jours'],
-};
+/** Unité d'horloge, au SINGULIER ou au PLURIEL — fonction, jamais carte de module : une carte figée à
+ *  l'évaluation ne suivrait pas `setLocale` (dette nommée, `src/i18n/index.ts`). */
+function clockUnit(unit: 'minutes' | 'hours' | 'days', plural: boolean): string {
+  if (unit === 'minutes') return plural ? t('spellFmt.minutes') : t('spellFmt.minute');
+  if (unit === 'hours') return plural ? t('spellFmt.heures') : t('spellFmt.heure');
+  return plural ? t('spellFmt.jours') : t('spellFmt.jour');
+}
 
 /** Suffixe « + » (LDB 47 l.311) : Test de Force Mentale possible pour prolonger la Durée de +1 Round.
  *  Titre/tooltip d'accessibilité de la signification — à câbler par le consommateur (Compendium, hors
- *  périmètre #543, cf. rendu final). Constante (pas de `t(...)` : hors surface JOURNAL, cf. i18n-narration-guard). */
-export const SPELL_DURATION_PLUS_TITLE = 'Vous pouvez effectuer un Test de Force Mentale pour prolonger la Durée de +1 Round (LDB 47 l.311)';
+ *  périmètre #543, cf. rendu final). FONCTION : une constante de module figerait sa locale. */
+export const spellDurationPlusTitle = (): string => t('spellFmt.plusTitle');
 
 export function formatSpellDuration(d: SpellDuration): string {
   switch (d.kind) {
-    case 'instant': return 'Instantané';
-    case 'rounds': return `${fmtMeasure(d.value)} ${d.value === 1 ? 'Round' : 'Rounds'}${d.plus ? ' +' : ''}`;
-    case 'clock': { const [sg, pl] = CLOCK_UNIT[d.unit]; return `${fmtMeasure(d.value)} ${d.value === 1 ? sg : pl}`; }
-    case 'untilDawn': return 'Jusqu\'au lever du soleil';
+    case 'instant': return t('spellFmt.instant');
+    case 'rounds': return t('spellFmt.rounds', { n: fmtMeasure(d.value), unit: d.value === 1 ? t('spellFmt.round') : t('spellFmt.roundsUnit'), plus: d.plus ? t('spellFmt.fragPlus') : '' });
+    case 'clock': return t('spellFmt.clock', { n: fmtMeasure(d.value), unit: clockUnit(d.unit, d.value !== 1) });
+    case 'untilDawn': return t('spellFmt.untilDawn');
     case 'special': return `${d.text}${d.plus && !/\+\s*$/.test(d.text) ? ' +' : ''}`;
   }
 }

@@ -341,7 +341,7 @@ exposé. Le **corps-à-corps** contre la coque touche auto (Localisation au choi
 **Citation** `l.571` : « inversez le résultat obtenu sur le jet d'attaque… **ou lancez 1d100.** »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.567-584, l.616-637) → `meleeVsHullBE`, `PortView`, `resolveVolley`, `RepairTick`, `haute-mer-degagee`, `GameState`, `applyHit` — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/engine/combat.ts`, `src/engine/seaPerils.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, +3 fichiers
+- `MDG 13` (l.567-584, l.616-637) → `meleeVsHullBE`, `riverLocLabel`, `PortView`, `resolveVolley`, `RepairTick`, `haute-mer-degagee`, `GameState`, `fr`, `applyHit` — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/engine/combat.ts`, `src/engine/seaPerils.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, +5 fichiers
 
 **État du code.** ✅ localisation 1d100 par gréement (bordée), BE déduit, plancher 0 (vs plancher 1 perso).
 ⬜ petites armes vs artillerie (seuil de Dégâts), corps-à-corps contre coque, table Taille.

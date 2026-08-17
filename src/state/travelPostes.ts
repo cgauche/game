@@ -31,7 +31,7 @@ import { extendedTestStep } from '../engine/tests';
 import { registerCascadeApplier } from './cascade';
 import { freeCons, resultLines, rollStep, monoStep, displayStep, bandStep, pousseSi, type Consequence, type BuiltCascadeStep } from './rollSeam';
 import { toRecapLines } from './recapLine';
-import { t } from '../i18n';
+import { t, type MsgKey } from '../i18n';
 import { rule } from '../engine/policy';
 import {
   stageCount, forageYield, stageExposureDifficulty, weatherResistanceTest,
@@ -58,11 +58,12 @@ const POSTE_ICON: Record<string, string> = {
   'etablir-cartes': 'expedition/cartography', 'pratiquer-competence': 'expedition/practice', recuperer: 'rest/bed', 'monter-camp': 'rest/camp',
 };
 
-/** Libellé d'une catégorie de Rencontre (EDOC 8). */
-const ENCOUNTER_LABEL: Record<EncounterCategory, string> = {
-  positives: 'Rencontre positive',
-  fortuites: 'Rencontre fortuite',
-  dangereuses: 'Rencontre dangereuse',
+/** Clés de libellé d'une catégorie de Rencontre (EDOC 8) — des CLÉS, jamais des phrases figées à
+ *  l'évaluation du module (dette nommée de `src/i18n/index.ts`). */
+const ENCOUNTER_KEY: Record<EncounterCategory, MsgKey> = {
+  positives: 'tp.encounterPositive',
+  fortuites: 'tp.encounterChance',
+  dangereuses: 'tp.encounterDanger',
 };
 
 /** CONTEXTE TRANSITOIRE de l'Étape en cours (posé par `buildStageSteps`, lu par les appliers, effacé à
@@ -94,8 +95,8 @@ function weatherModOf(def: ActivityDef, weather: Weather): number {
  *  par `RollLine`. `undefined` si aucun mod (rien à détailler). */
 function stageActivityMods(weather: Weather, wMod: number, pMod: number): ModLine[] | undefined {
   const mods: ModLine[] = [
-    ...(wMod !== 0 ? [{ label: `Météo : ${WEATHER_LABEL[weather]}`, value: wMod, famille: 'circonstance' as const, ref: weatherRef(weather) }] : []),
-    ...(pMod !== 0 ? [{ label: 'Tests physiques', value: pMod, famille: 'circonstance' as const, ref: weatherRef(weather) }] : []),
+    ...(wMod !== 0 ? [{ label: t('tp.modWeather', { weather: WEATHER_LABEL[weather] }), value: wMod, famille: 'circonstance' as const, ref: weatherRef(weather) }] : []),
+    ...(pMod !== 0 ? [{ label: t('tp.modPhysical'), value: pMod, famille: 'circonstance' as const, ref: weatherRef(weather) }] : []),
   ];
   return mods.length ? mods : undefined;
 }
@@ -147,7 +148,7 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
     // poste n'a plus d'objet → un pas d'AFFICHAGE « achevée », aucun jet ni accumulation (F1).
     if (spec.drTarget != null && (plan.extendedProgress ?? 0) >= spec.drTarget) {
       steps.push(displayStep({ id: `poste-${hero.id}`, kind: 'stagePosteDone', actorId: hero.id, icon: POSTE_ICON[def.id] ?? 'travel/compass',
-        label: dataLabel(def.label), outcome: toRecapLines([`${def.label} : déjà achevée (${spec.drTarget}/${spec.drTarget} DR).`]) }));
+        label: dataLabel(def.label), outcome: toRecapLines([t('tp.activityDone', { label: def.label, dr: spec.drTarget })]) }));
       continue;
     }
     if (spec.target == null) {
@@ -218,9 +219,9 @@ function applyPoste(get: Get, set: Set, hero: Combatant, def: ActivityDef, freeS
     cons.push({ ops: [op] });
   }
   // Issues INDIVIDUELLES (Récupérer / Pratiquer / Recueillir infos) : récit (systèmes dédiés câblés ailleurs).
-  if (r.success && r.stageOutcome === 'countsAsRest') cons.push(...freeCons([`${hero.label} prend soin de ne pas se surmener — cette Étape compte comme un repos.`]));
-  else if (r.success && r.stageOutcome === 'rerollToken') cons.push(...freeCons([`${hero.label} s'exerce en chemin — il pourra inverser un futur Test de cette Compétence.`]));
-  else if (r.success && r.stageOutcome === 'gatherInfo') cons.push(...freeCons([`${hero.label} glane des informations en route.`]));
+  if (r.success && r.stageOutcome === 'countsAsRest') cons.push(...freeCons([t('tp.countsAsRest', { name: hero.label })]));
+  else if (r.success && r.stageOutcome === 'rerollToken') cons.push(...freeCons([t('tp.practice', { name: hero.label })]));
+  else if (r.success && r.stageOutcome === 'gatherInfo') cons.push(...freeCons([t('tp.gatherInfo', { name: hero.label })]));
   return cons;
 }
 
@@ -268,7 +269,7 @@ export function buildWeatherResistanceSteps(get: Get, weather: Weather): BuiltCa
   for (const hero of get().party) {
     if (hero.dead || hero.outOfRencontre) continue;
     parts.push({
-      id: hero.id, label: 'Résistance', interactive: true,
+      id: hero.id, label: refLabel('skills', { id: 'resistance' }), interactive: true,
       difficulty: rt.difficulty,
       ...rollStep({ actor: hero, test: { skill: 'resistance', char: 'endurance' }, difficulty: rt.difficulty }),
       result: null,
@@ -321,7 +322,7 @@ registerCascadeApplier('stageAggregate', (get, set, step) => {
       h.items = [...(h.items ?? []), ration];
       autoStowNewItem(h, ration); // #204 : rangement par défaut
       remaining -= 1;
-      j.push(`${h.label} reçoit une ration trouvée en chemin.`);
+      j.push(t('tp.rationFound', { name: h.label }));
     }
   }
 
@@ -336,7 +337,7 @@ registerCascadeApplier('stageAggregate', (get, set, step) => {
     const take = Math.min(campDR, n);
     removeCondition(h, 'extenue', take);
     campDR -= take;
-    j.push(`Camp bien monté : ${h.label} récupère (−${take} Exténué).`);
+    j.push(t('tp.campCare', { name: h.label, n: take }));
   }
 
   // Établir des cartes (Test ÉTENDU inter-Étapes) : cumul via le helper UNIQUE + persistance sur le plan.
@@ -348,7 +349,7 @@ registerCascadeApplier('stageAggregate', (get, set, step) => {
     // étendu le lendemain — LDB 12 : il se termine à la cible) → `buildStageSteps` voit `>= drTarget` et
     // n'ouvre plus de jet (F1). En cours : le cumul réel `total` (borné à la cible pour l'affichage).
     set({ travelPlan: { ...get().travelPlan!, extendedProgress: done ? drTarget : total } });
-    j.push(done ? `La carte de l'itinéraire est ACHEVÉE (${drTarget}/${drTarget} DR).` : `Cartographie : ${total}/${drTarget} DR.`);
+    j.push(done ? t('tp.mapDone', { dr: drTarget }) : t('tp.mapProgress', { total, target: drTarget }));
   }
 
   // Individuel (Récupérer / Pratiquer / Recueillir infos) : le récit a déjà été poussé PAR POSTE (stagePoste).
@@ -357,7 +358,7 @@ registerCascadeApplier('stageAggregate', (get, set, step) => {
   const category = stageEncounterCategory(results);
   if (category) {
     const enc = rollEncounter(category, d100(battleRng()));
-    j.push(t('out.travelEncounter', { category: ENCOUNTER_LABEL[category], label: enc.label, text: enc.text }));
+    j.push(t('out.travelEncounter', { category: t(ENCOUNTER_KEY[category]), label: enc.label, text: enc.text }));
     if (enc.stageOutcome === 'fullRecovery') {
       for (const h of party.filter((x) => !x.dead)) {
         // SOURCE UNIQUE `applyHealWounds` — plafond munition logée (LDB 62 l.250) même chemin que Guérison/repos.
@@ -365,7 +366,7 @@ registerCascadeApplier('stageAggregate', (get, set, step) => {
         const ex = stacks(h, 'extenue');
         if (ex > 0) removeCondition(h, 'extenue', ex);
       }
-      j.push('Voyage tranquille : le groupe récupère toutes ses Blessures et tous ses États Exténué.');
+      j.push(t('tp.calmTravel'));
     }
   }
   set({ party: [...get().party] });
@@ -390,7 +391,7 @@ function buildExposureSteps(state: { party: Combatant[] }, stage: StageContext):
     if (!diff) continue; // bien équipé sous pluie/neige normale, ou beau temps → aucun Test
     const st = monoStep({
       id: `expo-${id}`, kind: 'stageExposure', actor: h, icon: 'rest/cold', label: t('step.exposition'),
-      rollLabel: 'Résistance', difficulty: diff as Difficulty,
+      rollLabel: refLabel('skills', { id: 'resistance' }), difficulty: diff as Difficulty,
       // MÊME Test d'Exposition que la nuit de repos : EDOC 08 l.90 renvoie à LDB p181, donc MÊME entrée.
       stake: voyageStakeRef('exposure', { chars: exposureFirstFailChars('froid') }),
       ligne: { test: { skill: 'resistance', char: 'endurance' } },
@@ -409,14 +410,14 @@ function buildExposureSteps(state: { party: Combatant[] }, stage: StageContext):
 registerCascadeApplier('stageExposure', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   const weatherLabel = String(step.meta?.weatherLabel ?? '');
-  if (step.meta?.warded) return { consequences: freeCons([`${hero.label} ignore le froid et les intempéries (protection magique).`]) };
+  if (step.meta?.warded) return { consequences: freeCons([t('eff.weatherWarded', { name: hero.label, what: t('eff.wardFroid') })]) };
   // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5) ;
   // succès sans effet (rien à ajouter) → aucune conséquence.
   if (step.result.success) return { consequences: freeCons([]) };
-  const j = [`${hero.label} — Exposition de fin d'Étape (${weatherLabel}) : transi par le froid.`];
+  const j: string[] = [t('tp.exposureLine', { name: hero.label, weather: weatherLabel })];
   const prior = (hero.activeEffects ?? []).filter((e) => e.effectId === 'exposition-froid').length;
   const rank = prior >= 10 ? 3 : prior >= 3 ? 2 : 1;
   j.push(...applyExposureFailure(hero, rank, battleRng()).log);
-  if (step.meta?.coldSeason) j.push(`${hero.label} grelotte et tousse — un rhume couve (saison froide).`);
+  if (step.meta?.coldSeason) j.push(t('tp.coldSeasonChill', { name: hero.label }));
   return { consequences: freeCons(j) };
 });

@@ -29,7 +29,8 @@ import { resolveOpposed, bumpSL, SL_ASTOUNDING, type TestResult } from '../engin
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, toMoney, priceToMoney } from '../engine/money';
 import { partyMoneyTotal, payFromGroup, distributeCredit } from './bourseFlow';
-import { findVehicleById, findCrewRoleById, combatStakeRef } from '../data';
+import { findVehicleById, findCrewRoleById, combatStakeRef, refLabel } from '../data';
+import { t } from '../i18n';
 import { weeklyCrewWageBrass } from '../engine/crewMorale';
 import {
   rollCargoAvailability, rollMerchantSkill, rollMerchantOpposition, buySellerDR, cargoBasePrice, rollRandomCargo,
@@ -159,10 +160,10 @@ function finalizePortBuy(get: Get, set: Set, cargoId: string, want: number, base
   const offer = st.offers.find((o) => o.cargoId === cargoId);
   if (!offer) return [];
   const enc = Math.max(0, Math.min(want, offer.enc, vesselMaxLoadEnc(get)));
-  if (enc <= 0) return ['La cale a atteint le maximum absolu (surcharge de 150 %) ou la cargaison est épuisée — rien à embarquer.'];
+  if (enc <= 0) return [t('port.holdFull')];
   const price = Math.max(0, Math.round(enc * basePrice * (1 + pct / 100)));
   const cost = toMoney({ gold: price });
-  if (!canAfford(partyMoneyTotal(get), cost)) return [`La bourse ne couvre pas ${price} CO de ${offer.label} — ${bargainLine}`];
+  if (!canAfford(partyMoneyTotal(get), cost)) return [t('port.purseShort', { price, label: offer.label, bargain: bargainLine })];
   const cargo: CargoLot = { cargoId, enc, basePriceGold: basePrice };
   const nextCargo = [...(vessel.cargo ?? []), cargo];
   payFromGroup(get, set, cost, { purpose: 'cargaison navire' });
@@ -170,11 +171,11 @@ function finalizePortBuy(get: Get, set: Set, cargoId: string, want: number, base
     vessel: { ...vessel, cargo: nextCargo },
     port: { ...st, freeEnc: Math.max(0, st.freeEnc - enc), maxLoadEnc: st.maxLoadEnc - enc, offers: st.offers.map((o) => o.cargoId === cargoId ? { ...o, enc: o.enc - enc } : o).filter((o) => o.enc > 0) },
   });
-  const lines = [`${enc} Enc de ${offer.label} embarqués — ${bargainLine} Prix payé : ${formatMoney(fromBrass(toBrass(cost)))}.`];
+  const lines = [t('port.loaded', { enc, label: offer.label, bargain: bargainLine, money: formatMoney(fromBrass(toBrass(cost))) })];
   // Surcharge de la cale (MDG 12 l.70-75) : au-delà de la Contenance nominale, avertir du palier d'assiette.
   const capacity = findVehicleById(vessel.vehicleId)?.ship?.capacity ?? 0;
   const over = cargoOverload(cargoTotalEnc(nextCargo), capacity);
-  if (over.palierId) lines.push(`Cale SURCHARGÉE (${over.ratioPct} % de la Contenance) : ${over.label} — ${over.mMod} M, ${over.manoeuvreDR} DR Manœuvre (MDG 12 l.70-75).`);
+  if (over.palierId) lines.push(t('port.overloaded', { pct: over.ratioPct, label: over.label, m: over.mMod, dr: over.manoeuvreDR }));
   return lines;
 }
 
@@ -190,20 +191,20 @@ export function portBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   const offer = st.offers.find((o) => o.cargoId === cargoId);
   if (!offer) return;
   const want = Math.max(0, Math.min(Math.floor(enc), offer.enc, vesselMaxLoadEnc(get)));
-  if (want <= 0) { log(get, set, ['La cale a atteint le maximum absolu (surcharge de 150 %) ou la cargaison est épuisée — rien à embarquer.']); return; }
+  if (want <= 0) { log(get, set, [t('port.holdFull')]); return; }
   const partial = want < offer.enc;
   const best = partyAssisted(get().party, 'marchandage');
   // Toujours tiré (même sans marchandeur) — parité RNG avec la vente (la porte du seam ne touche pas le rng).
   const merchant = rollMerchantSkill(!!st.port.cosmopolite, battleRng());
   if (!best) {
-    log(get, set, finalizePortBuy(get, set, cargoId, want, offer.basePrice, 0, 'Aucun marchandeur dans le groupe — prix plein.'));
+    log(get, set, finalizePortBuy(get, set, cargoId, want, offer.basePrice, 0, t('port.noBargainerBuy')));
     return;
   }
   // DR de camp du vendeur NPC (MDG 15 l.339-341 — écart de camp ouvert en #1140).
   const sellerDR = buySellerDR(partial, offer.surplus);
   openPartyTest(get, set, {
     skill: 'marchandage',
-    actionLabel: 'Achat',
+    actionLabel: t('port.actionBuy'),
     difficulty: 'intermediaire',
     stake: combatStakeRef(PORT_BUY_BARGAIN_KIND, { values: { sellerDR: signedDR(sellerDR) } }),
   }, PORT_BUY_BARGAIN_KIND, { cargoId, want, basePrice: offer.basePrice, merchantValue: merchant.value, merchantNegotiator: merchant.negotiator, sellerDR });
@@ -236,7 +237,7 @@ registerCascadeApplier(PORT_BUY_BARGAIN_KIND, (get, set, step) => {
   let pct = 0; // % appliqué au prix (négatif = remise pour l'acheteur)
   if (opp.winner === 'attacker') pct = -bargainPct(actor ? hasBargainBonus(actor) : false, netSL); // remise à l'acheteur
   else if (opp.winner === 'defender') pct = bargainPct(merchantNegotiator, netSL); // le vendeur monte le prix
-  const bargainLine = `${actor?.label ?? '?'} — Marchandage (${heroTR.roll} vs ${merchantRoll.roll}${sellerDR ? `, vendeur +${sellerDR} DR` : ''}) : ${pct === 0 ? 'prix inchangé' : pct < 0 ? `remise de ${-pct} %` : `surcoût de ${pct} %`}.`;
+  const bargainLine = t('port.bargainLine', { name: actor?.label ?? '?', roll: heroTR.roll, opp: merchantRoll.roll, seller: sellerDR ? t('port.fragSellerDR', { dr: sellerDR }) : '', issue: pct === 0 ? t('port.priceUnchanged') : pct < 0 ? t('port.discount', { pct: -pct }) : t('port.surcharge', { pct }) });
   return { consequences: freeCons(finalizePortBuy(get, set, cargoId, want, basePrice, pct, bargainLine)) };
 });
 
@@ -266,7 +267,7 @@ function finalizePortSale(get: Get, set: Set, cargoIndex: number, sellEnc: numbe
     vessel: { ...vessel, cargo: nextCargo },
     port: { ...st, freeEnc: Math.max(0, capacity - freed), maxLoadEnc: Math.max(0, overloadMaxEnc(capacity) - freed) },
   });
-  return `${sellEnc} Enc de ${label} vendus (prix d’offre ${offerPct} % du base — ${bargainLine}) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`;
+  return t('port.sold', { enc: sellEnc, label, pct: offerPct, bargain: bargainLine, money: formatMoney(fromBrass(gross * PA_PER_CO)) });
 }
 
 /** 3. Marchandage opposé (vendeur PJ +DR, l.387-397) — hero-test (`openRoll`) pour le héros ; le
@@ -283,13 +284,13 @@ function openPortSellBargainStep(get: Get, set: Set, cargoIndex: number, sellEnc
   // synchrone (déterminisme seedé conservé, la porte du seam ne touche pas le rng).
   const merchant = rollMerchantSkill(!!st.port.cosmopolite, battleRng());
   if (!best) {
-    log(get, set, [finalizePortSale(get, set, cargoIndex, sellEnc, offerPct, 0, 'Aucun marchandeur — prix d’offre pris tel quel.')]);
+    log(get, set, [finalizePortSale(get, set, cargoIndex, sellEnc, offerPct, 0, t('port.noBargainerSell'))]);
     return;
   }
   const sellerDR = sellChance(st.port, lot.cargoId, vessel.lastVoyageMilles ?? 0).sellerDR;
   openPartyTest(get, set, {
     skill: 'marchandage',
-    actionLabel: 'Vente',
+    actionLabel: t('port.actionSell'),
     difficulty: 'intermediaire',
     stake: combatStakeRef(PORT_SELL_BARGAIN_KIND, { values: { sellerDR: signedDR(sellerDR) } }),
   }, PORT_SELL_BARGAIN_KIND, { cargoIndex, sellEnc, offerPct, merchantValue: merchant.value, merchantNegotiator: merchant.negotiator, sellerDR });
@@ -313,7 +314,7 @@ registerCascadeApplier(PORT_SELL_BARGAIN_KIND, (get, set, step) => {
   let bargainPctVal = 0;
   if (opp.winner === 'attacker') bargainPctVal = bargainPct(actor ? hasBargainBonus(actor) : false, netSL); // le PJ monte le prix
   else if (opp.winner === 'defender') bargainPctVal = -bargainPct(merchantNegotiator, netSL); // l'acheteur le baisse
-  const bargainLine = `${actor?.label ?? '?'} — Marchandage (${heroTR.roll} vs ${merchantRoll.roll}${sellerDR ? `, vendeur ${sellerDR > 0 ? '+' : ''}${sellerDR} DR` : ''}) : ${bargainPctVal === 0 ? 'sans effet' : bargainPctVal > 0 ? `+${bargainPctVal} %` : `${bargainPctVal} %`}.`;
+  const bargainLine = t('port.bargainLine', { name: actor?.label ?? '?', roll: heroTR.roll, opp: merchantRoll.roll, seller: sellerDR ? t('port.fragSellerDRSigned', { dr: `${sellerDR > 0 ? '+' : ''}${sellerDR}` }) : '', issue: bargainPctVal === 0 ? t('port.noEffect') : t('port.pctPlain', { pct: `${bargainPctVal > 0 ? '+' : ''}${bargainPctVal}` }) });
   return { consequences: freeCons([finalizePortSale(get, set, cargoIndex, sellEnc, offerPct, bargainPctVal, bargainLine)]) };
 });
 
@@ -331,7 +332,7 @@ function openPortSellBuyerStep(get: Get, set: Set, cargoIndex: number, sellEnc: 
   const chance = sellChance(st.port, lot.cargoId, milles);
   openWorldTest(get, set, {
     ownerId: vessel.vehicleId,
-    actionLabel: 'Recherche d’acheteur',
+    actionLabel: t('port.buyerSearch'),
     difficulty: 'intermediaire',
   }, PORT_SELL_BUYER_KIND, { cargoIndex, sellEnc, retryHalf: allowHalfRetry, attempt, baseValue: chance.target });
 }
@@ -350,14 +351,14 @@ registerCascadeApplier(PORT_SELL_BUYER_KIND, (get, set, step) => {
   const label = findCargoById(lot.cargoId)?.label ?? lot.cargoId;
   if (step.result.success) {
     chainStep(get, () => openPortSellBargainStep(get, set, cargoIndex, sellEnc));
-    return attempt === 2 ? { consequences: freeCons([`↔ ${label} : personne pour tout le lot — la moitié (${sellEnc} Enc) trouve preneur.`]) } : {};
+    return attempt === 2 ? { consequences: freeCons([t('port.halfLot', { label, enc: sellEnc })]) } : {};
   }
   if (attempt === 1 && retryHalf) {
     const half = Math.max(1, Math.floor(lot.enc / 2));
     chainStep(get, () => openPortSellBuyerStep(get, set, cargoIndex, half, false, 2));
     return {};
   }
-  return { consequences: freeCons([`${label} : aucun marchand intéressé à ${st.label} (nombre visé ${step.result.target}).`]) };
+  return { consequences: freeCons([t('port.noBuyer', { label, port: st.label, target: step.result.target })]) };
 });
 
 /** 1. Test de Ragot PRÉALABLE éventuel (port qui produit / Surplus, l.366-372, hero-test). Aucun
@@ -374,14 +375,14 @@ registerCascadeApplier(PORT_SELL_GOSSIP_KIND, (get, set, step) => {
   const actor = step.actorId ? actorIn(get(), step.actorId) : undefined;
   // Le Test de Ragot n'a pas de rangée propre : sa ligne se DÉRIVE (`traceLineOf`), jamais ré-imprimée à la main.
   const gossip = (issue: string) => freeCons([traceLineOf({
-    who: actor?.label ?? 'Le groupe', label: `Ragot — ${label}`,
+    who: actor?.label ?? t('port.partyFallback'), label: t('port.gossipRow', { skill: refLabel('skills', { id: 'ragot' }), label }),
     roll: step.result!.roll, target: step.result!.target, sl: step.result!.sl, success: step.result!.success, issue,
   })]);
   if (!step.result.success) {
-    return { consequences: gossip(`échoue — aucun acheteur trouvé (ce port ${sellRelation(st.port, lot.cargoId) === 'surplus' ? 'en regorge' : 'en produit'})`) };
+    return { consequences: gossip(t('port.gossipFail', { relation: sellRelation(st.port, lot.cargoId) === 'surplus' ? t('port.hasSurplus') : t('port.produces') })) };
   }
   chainStep(get, () => openPortSellBuyerStep(get, set, cargoIndex, lot.enc, false, 1));
-  return { consequences: gossip('un acheteur potentiel est approché') };
+  return { consequences: gossip(t('port.gossipOk')) };
 });
 
 /** VENTE d'un lot de cargaison (l.351-397) : trouver un acheteur (relation du port au bien),
@@ -401,12 +402,12 @@ export function portSellCargo(get: Get, set: Set, cargoIndex: number): void {
   if (chance.gossip) {
     const best = partyAssisted(get().party, 'ragot');
     if (!best) {
-      log(get, set, [`${label} — ce port ${sellRelation(st.port, lot.cargoId) === 'surplus' ? 'en regorge' : 'en produit'} : le Test de Ragot ne trouve pas de camelot — aucun acheteur trouvé.`]);
+      log(get, set, [t('port.noCamelot', { label, relation: sellRelation(st.port, lot.cargoId) === 'surplus' ? t('port.hasSurplus') : t('port.produces') })]);
       return;
     }
     openPartyTest(get, set, {
       skill: 'ragot',
-      actionLabel: 'Recherche d’acheteur',
+      actionLabel: t('port.buyerSearch'),
       difficulty: chance.gossip.difficulty,
       stake: combatStakeRef(PORT_SELL_GOSSIP_KIND),
     }, PORT_SELL_GOSSIP_KIND, { cargoIndex });
@@ -424,7 +425,7 @@ export function portDumpCargo(get: Get, set: Set, cargoIndex: number): void {
   if (!lot) return;
   const pct = dumpingPricePct(st.port, lot.cargoId);
   const label = findCargoById(lot.cargoId)?.label ?? lot.cargoId;
-  if (pct == null) { log(get, set, [`${label} : ce port ne rachète pas les cargaisons à brader (ni « commerce » ni Demande, MDG 15 l.399).`]); return; }
+  if (pct == null) { log(get, set, [t('port.dumpRefused', { label })]); return; }
   const gross = Math.max(0, Math.round(lot.enc * lot.basePriceGold * (pct / 100)));
   const nextCargo = (vessel.cargo ?? []).filter((_, i) => i !== cargoIndex);
   const capacity = findVehicleById(vessel.vehicleId)?.ship?.capacity ?? 0;
@@ -434,7 +435,7 @@ export function portDumpCargo(get: Get, set: Set, cargoIndex: number): void {
     vessel: { ...vessel, cargo: nextCargo },
     port: { ...st, freeEnc: Math.max(0, capacity - freed), maxLoadEnc: Math.max(0, overloadMaxEnc(capacity) - freed) },
   });
-  log(get, set, [`${lot.enc} Enc de ${label} bradés (${pct} % du prix de base) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`]);
+  log(get, set, [t('port.dumped', { enc: lot.enc, label, pct, money: formatMoney(fromBrass(gross * PA_PER_CO)) })]);
 }
 
 /** RECRUTEMENT à quai (#228, escale-hub) : embauche `count` PNJ salariés au rôle `roleId` — fusionné
@@ -452,7 +453,7 @@ export function portHireCrew(get: Get, set: Set, roleId: string, count = 1): str
     ? crew.map((h) => h.roleId === roleId ? { ...h, count: h.count + count } : h)
     : [...crew, { roleId, count }];
   set({ vessel: { ...vessel, crew: next } });
-  const lines = [`${count} ${role.label} embauché(s) à ${formatMoney(priceToMoney(role.wage.weekly))}/semaine — solde hebdomadaire de l'équipage : ${formatMoney(fromBrass(weeklyCrewWageBrass(next)))}.`];
+  const lines = [t('port.hired', { count, role: role.label, wage: formatMoney(priceToMoney(role.wage.weekly)), total: formatMoney(fromBrass(weeklyCrewWageBrass(next))) })];
   log(get, set, lines);
   return lines;
 }
@@ -469,7 +470,7 @@ export function portDismissCrew(get: Get, set: Set, roleId: string, count = 1): 
   const next = left > 0 ? crew.map((h) => h.roleId === roleId ? { ...h, count: left } : h) : crew.filter((h) => h.roleId !== roleId);
   set({ vessel: { ...vessel, crew: next } });
   const role = findCrewRoleById(roleId);
-  const lines = [`${Math.min(count, cur.count)} ${role?.label ?? roleId} débarqué(s) — solde hebdomadaire de l'équipage : ${formatMoney(fromBrass(weeklyCrewWageBrass(next)))}.`];
+  const lines = [t('port.dismissed', { count: Math.min(count, cur.count), role: role?.label ?? roleId, total: formatMoney(fromBrass(weeklyCrewWageBrass(next))) })];
   log(get, set, lines);
   return lines;
 }

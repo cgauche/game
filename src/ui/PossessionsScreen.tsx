@@ -21,7 +21,7 @@ import { possessionLabel, possessionCapacity, possessionLoadEnc, embarkedEnc, ca
 import { cargoTotalEnc } from '../engine/cargo';
 import { findCargoById } from '../engine/seaVoyage';
 import {
-  mountProfileForCreature, ALLURES, ALLURE_LABEL, ALLURE_KMH_PER_M, allureEnduranceHours,
+  mountProfileForCreature, ALLURES, allureLabel, ALLURE_KMH_PER_M, allureEnduranceHours,
 } from '../engine/mountTravel';
 import { partyMoneyTotal } from '../state/bourseFlow';
 import { placeOfScene } from '../state/worldMap';
@@ -315,7 +315,7 @@ export function PossessionsScreen({ onClose, initialUid = null }: { onClose: () 
               <PlaqueRow
                 key={allure}
                 valueMuted
-                label={ALLURE_LABEL[allure]}
+                label={allureLabel(allure)}
                 content={noTrot ? '—' : `${(ALLURE_KMH_PER_M[allure] * mountProfile.m).toFixed(1)} km/h`}
                 value={noTrot ? 'ne trotte pas' : `${allureEnduranceHours(mountProfile, allure)} h`}
               />

@@ -1424,14 +1424,12 @@ export const fr = {
   'rv.pilotFallback': 'Le barreur',
   'rv.partyFallback': 'Le groupe',
   'rv.navigation': 'Navigation',
-  // LOCALISATIONS de Critique de bateau fluvial (`river-criticals.json` : les 5 tables sont keyées par
-  // id, la donnée ne porte AUCUN libellé — mesuré). Le flux affichait l'id brut (« Critique au
-  // greement »). Les 5 sont posées, pas seulement les 2 appelées : la table les nomme toutes.
-  'rv.locGreement': 'gréement',
-  'rv.locAvirons': 'avirons',
-  'rv.locGouvernail': 'gouvernail',
-  'rv.locCoque': 'coque',
-  'rv.locSuperstructure': 'superstructure',
+  // LOCALISATIONS de bateau : `shipLoc.*` (§ V8c₄, `engine/shipCritical.ts`) — le fluvial y était
+  // arrivé le premier sous `rv.loc*` ; le moteur en porte désormais les HUIT, la navigation
+  // fluviale s'y branche (ses cinq en sont un sous-ensemble)… À UNE PRÈS : la table fluviale nomme
+  // « Rames » (MSRC 7 l.56, colonne Barque) ce que la maritime nomme « Avirons » (MDG 13 l.575-582).
+  // La variante par LIVRE se PRÉSERVE : clé locale au fluvial, surcharge nominative de cette entrée.
+  'rv.locRames': 'rames',
   'rv.repairOk': '{name} rétablit le contrôle du gréement.',
   'rv.repairKo': '{name} ne parvient pas — le bateau dérive encore.',
   'rv.rowOk': '{name} tient la cadence de rame.',
@@ -1768,4 +1766,291 @@ export const fr = {
   'sv.shoreLeaveGranted': "Vous autorisez l'équipage à faire relâche à terre.",
   'sv.shoreLeaveDenied': "Vous refusez à l'équipage la permission de faire relâche à terre.",
   'sv.desertion': 'Désertion',
+
+  // ── #1318 V8c₄ — FAIM & SOIF (`engine/provisions.ts`, `prov.*`, LDB 18 l.338/340/343). Le libellé
+  // du modificateur cumulatif et les libellés d'étape différée (Faim/Soif) sont du texte JOUEUR : ils
+  // s'affichent sur la ligne de jet de la cascade de nuit, pas seulement au journal.
+  'prov.penaltyTestsTaken': 'Tests déjà subis',
+  'prov.faim': 'Faim',
+  'prov.soif': 'Soif',
+  // Gabarit NEUTRE : la Compétence lancée vient de `skills.json` (`refLabel`), jamais bakée ici —
+  // même règle que `mt.testOf`. `kind` = `prov.faim`/`prov.soif`, les deux seuls appelants.
+  'prov.testLabel': '{kind} : Test de {skill}{malus}',
+  'prov.fragTestMalus': ' (−{n})',
+  'prov.holdsOn': 'il tient bon',
+  'prov.fail': 'ÉCHEC',
+  'prov.starving': '{name} est affamé : −10 en Force et en Endurance.',
+  'prov.wasting': "{name} dépérit : −10 à toutes les autres Caractéristiques, {dmg} Blessure(s) (la faim ignore l'armure).",
+  'prov.fedAgain': '{name} mange enfin à sa faim — les effets de la faim se dissipent.',
+  'prov.parched': '{name} a la gorge sèche : −10 en Intelligence, Force Mentale et Sociabilité.',
+  'prov.dehydrating': "{name} se déshydrate : −10 à toutes les autres Caractéristiques, {dmg} Blessure(s) (la soif ignore l'armure).",
+  'prov.quenched': '{name} se désaltère — les effets de la soif se dissipent.',
+
+  // ── #1318 V8c₄ — SUFFOCATION (`engine/suffocation.ts`, `suff.*`, LDB 18 l.345-346).
+  'suff.holding': "{name} retient son souffle ({s} s d'air).",
+  'suff.noAir': "{name} n'a plus d'air — la suffocation commence.",
+  'suff.lose': '{name} suffoque (−1 PB).',
+  'suff.faints': "{name} s'évanouit, privé d'air (Inconscient) — mort dans {n} Round(s).",
+  'suff.unconscious': '{name} suffoque, inconscient — mort dans {n} Round(s).',
+  'suff.dies': '{name} cesse de respirer — la mort par suffocation le prend.',
+  'suff.countdown': '{name} étouffe — mort dans {n} Round(s).',
+
+  // ── #1318 V8c₄ — EXPOSITION (`engine/exposure.ts`, `exp.*`, LDB 18 l.330/334, MDG 14 l.277). La
+  // protection magique reprend `eff.weatherWarded`/`eff.wardFroid`/`eff.wardChaleur` (V8c₂) : une
+  // seule phrase pour les deux sites, jamais une jumelle.
+  'exp.noCoatMod': 'Sans manteau',
+  'exp.labelFroid': 'Exposition (froid)',
+  'exp.labelChaleur': 'Exposition (chaleur)',
+  'exp.shivers': '{name} grelotte — −10 CT/Agilité/Dextérité (Exposition au froid).',
+  'exp.frozen': '{name} est transi — −10 à toutes les autres Caractéristiques.',
+  'exp.heatstruck': '{name} suffoque de chaleur — −10 Intelligence/Force Mentale, +1 Exténué.',
+  'exp.overwhelmed': '{name} est accablé — −10 à toutes les autres Caractéristiques, +1 Exténué.',
+  'exp.fromCold': 'du froid',
+  'exp.fromHeat': 'de la chaleur',
+  'exp.wounds': '{name} souffre {what} : {dmg} Blessure(s) (ignore les PA).',
+  'exp.sinksFrozen': '{name} sombre, gelé — Inconscient.',
+  'exp.sealskinHeld': '{name} — la peau de phoque retient le froid (échec de justesse tenu, +1 DR).',
+  'exp.noCoat': "{name} n'a ni manteau ni cape — le froid mord (−{pen} aux Tests d'Exposition).",
+
+  // ── #1318 V8c₄ — LOCALISATIONS DE BATEAU (`engine/shipCritical.ts`, `shipLoc.*`, MDG 13 l.575-582
+  // pour les six navales, MSRC 7 pour gouvernail/superstructure). FOYER UNIQUE des huit : la
+  // navigation fluviale s'y branche (`riverLocLabel`), elle n'a plus sa propre table. Minuscule :
+  // ces libellés se lisent DANS la phrase (« Critique au gréement »), jamais en tête de colonne.
+  'shipLoc.equipage': 'équipage',
+  'shipLoc.avirons': 'avirons',
+  'shipLoc.greement': 'gréement',
+  'shipLoc.coque': 'coque',
+  'shipLoc.equipements': 'équipements',
+  'shipLoc.cargaison': 'cargaison',
+  'shipLoc.gouvernail': 'gouvernail',
+  'shipLoc.superstructure': 'superstructure',
+
+  // ── #1318 V8c₄ — CRITIQUES DE NAVIRE (`engine/shipCritical.ts`, `shipCrit.*`, MDG 13). Les deux
+  // premières lignes rendaient l'ID de Localisation à l'écran (« Critique navire (greement) ») :
+  // elles passent par `shipLocationLabel`.
+  'shipCrit.noTable': 'Aucune table de Critique pour la Localisation « {loc} ».',
+  'shipCrit.line': 'Critique navire ({loc}) : {label}{eclats}{extra}.',
+  'shipCrit.fragShrapnel': ' — Éclats {n}',
+  'shipCrit.fragExtraHull': ' — {n} Critique(s) de Coque',
+  'shipCrit.crewNoneExposed': "Coup à l'Équipage, mais aucun marin exposé pour l'encaisser.",
+  'shipCrit.crewHit': 'Équipage touché : {name} encaisse un Critique — {label}.',
+  'shipCrit.crewTakes': "{n} membre(s) d'équipage encaisse(nt) le Critique ({label}).",
+  'shipCrit.shrapnelHits': 'Éclats {indice} : {n} marin(s) touché(s).',
+  'shipCrit.extraHull': '{n} Critique(s) de Coque supplémentaire(s).',
+
+  // ── #1318 V8c₄ — PORTÉE / CIBLE / DURÉE d'un sort (`engine/spellRangeFormat.ts`, `spellFmt.*`,
+  // LDB 47). Ce module EST la source unique de cette prose (`spells.json` ne la stocke pas) : elle
+  // s'affiche au Compendium et sur la fiche, pas au journal.
+  'spellFmt.bonusOf': '(Bonus de {char})',
+  'spellFmt.charOf': '({char})',
+  'spellFmt.m': 'mètre',
+  'spellFmt.ms': 'mètres',
+  'spellFmt.km': 'kilomètre',
+  'spellFmt.kms': 'kilomètres',
+  'spellFmt.self': 'Vous',
+  'spellFmt.touch': 'Contact',
+  'spellFmt.distance': '{n} {unit}',
+  'spellFmt.oneTarget': '1 cible',
+  'spellFmt.targets': '{n} cibles',
+  'spellFmt.spanRadius': 'rayon',
+  'spellFmt.spanDiameter': 'diamètre',
+  'spellFmt.area': 'ZdE {span} {n} mètres',
+  'spellFmt.cone': 'Cône Longueur ({length} mètres) x Largeur ({width} mètres)',
+  'spellFmt.minute': 'minute',
+  'spellFmt.minutes': 'minutes',
+  'spellFmt.heure': 'heure',
+  'spellFmt.heures': 'heures',
+  'spellFmt.jour': 'jour',
+  'spellFmt.jours': 'jours',
+  'spellFmt.instant': 'Instantané',
+  'spellFmt.round': 'Round',
+  'spellFmt.roundsUnit': 'Rounds',
+  'spellFmt.rounds': '{n} {unit}{plus}',
+  'spellFmt.fragPlus': ' +',
+  'spellFmt.clock': '{n} {unit}',
+  'spellFmt.untilDawn': "Jusqu'au lever du soleil",
+  'spellFmt.plusTitle': 'Vous pouvez effectuer un Test de Force Mentale pour prolonger la Durée de +1 Round (LDB 47 l.311)',
+
+  // ── #1318 V8c₄ — MONTURES EN VOYAGE (`engine/mountTravel.ts`, `mt.*`, EDOC 07 l.142-174). Les
+  // libellés de Test viennent de la DONNÉE (`refLabel('skills', …)`) : « Chevaucher »/« Résistance »
+  // écrits au call-site étaient des jumeaux de `skills.json`.
+  'mt.allurePas': 'Pas',
+  'mt.allureTrot': 'Trot',
+  'mt.allureGalop': 'Petit galop',
+  'mt.incident': 'Incident de monte ({mount}) : {label}.',
+  'mt.testOf': '{skill} ({mount})',
+  'mt.testCollapseOf': '{skill} ({mount}, effondrement)',
+  'mt.riderFalls': '{name} vide les étriers et chute (2 mètres).',
+  'mt.riderHolds': '{name} se maintient en selle.',
+  'mt.girthBroken': "La sellerie de {mount} est endommagée (-20 en Chevaucher jusqu'à réparation).",
+  'mt.shoeLost': "{mount} doit aller au pas jusqu'au maréchal-ferrant.",
+  'mt.lame': '{mount} boite — la bête ne peut plus être montée ni attelée.',
+  'mt.legBroken': '{mount} se brise une patte — Fracture (Majeure), la bête est condamnée.',
+  'mt.collapseDead': "{mount} s'effondre, poussée jusqu'à la mort.",
+  'mt.collapse': "{mount} s'effondre d'épuisement (Sonné, À Terre).",
+  'mt.wearyDay': '{mount} termine la journée fourbue (+{n} Exténué).',
+
+  // ── #1318 V8c₄ — ENTRETIEN QUOTIDIEN (`state/upkeep.ts`, `upkeep.*`). `upkeep.fades` sert les DEUX
+  // purges d'horloge (pénalité d'incantation ET effet actif) : une seule phrase, deux sites.
+  'upkeep.fades': '{name} : {what} se dissipe.',
+  'upkeep.condFades': "{name} : l'État {cond} se dissipe.",
+  'upkeep.fadesAdventure': "{name} : {what} se dissipe (fin de l'aventure).",
+  'upkeep.sobering': 'Dessoûlage',
+  'upkeep.sleepDeprived': '{name} — privation de sommeil ({n} nuit{s} sans dormir) :',
+  'upkeep.rationsUsed': 'Le groupe entame ses provisions ({n} ration{s}).',
+
+  // ── #1318 V8c₄ — SOINS & CHIRURGIE (`state/medicFlow.ts`, `medic.*`, LDB 10 l.154/365, LDB 18 l.120/179).
+  'medic.aidRequired': 'Aide Médicale requise avant de rééduquer le membre.',
+  'medic.tooExpensive': 'Le groupe n’a pas assez d’argent pour cet acte.',
+  'medic.verbRecovery': 'rééduque',
+  'medic.verbSurgery': 'opère',
+  'medic.pass': '{healer} {verb} {patient} — passe : DR {dr} (total {cum}/{target}){suite}',
+  'medic.fragPassEnd': '.',
+  'medic.fragPassHarm': ', {harm} PB + 1 Hémorragie.',
+  'medic.patientSinks': "{patient} sombre sur la table — l'opération est interrompue (stabilisez-le d'abord).",
+  'medic.afterSurgery': 'Suites de l’opération',
+  'medic.interrupted': "{healer} interrompt l'opération — le travail est à refaire.",
+
+  // ── #1318 V8c₄ — COOP EN LIGNE (`state/netFlow.ts`, `coop.*` — le namespace du salon, déjà posé).
+  'coop.intentRefused': 'Action réseau refusée ({action}) : pas le propriétaire.',
+  'coop.hostLinkLost': 'Connexion au service coop perdue — session terminée.',
+  'coop.alreadyInSession': 'Déjà en session.',
+  'coop.badCode': 'Code invalide — 6 caractères.',
+  'coop.joinFailed': 'Connexion impossible — réessayez.',
+  'coop.reason': 'Coop : {reason}',
+  'coop.protocolMismatch': "Version du jeu différente de l'hôte (protocole {got} ≠ {expected}) — mettez à jour.",
+  'coop.seatClosed': "Un joueur a quitté — ses héros reviennent à l'hôte.",
+
+  // ── #1318 V8c₄ — POSTES D'ÉTAPE DE VOYAGE (`state/travelPostes.ts`, `tp.*`, EDOC 08). La protection
+  // magique reprend `eff.weatherWarded`/`eff.wardFroid` (V8c₂ — MÊME phrase que l'Exposition du moteur),
+  // et les deux libellés de Test viennent de `skills.json` (`refLabel`), plus d'un « Résistance » écrit ici.
+  'tp.encounterPositive': 'Rencontre positive',
+  'tp.encounterChance': 'Rencontre fortuite',
+  'tp.encounterDanger': 'Rencontre dangereuse',
+  'tp.modWeather': 'Météo : {weather}',
+  'tp.modPhysical': 'Tests physiques',
+  'tp.activityDone': '{label} : déjà achevée ({dr}/{dr} DR).',
+  'tp.countsAsRest': '{name} prend soin de ne pas se surmener — cette Étape compte comme un repos.',
+  'tp.practice': "{name} s'exerce en chemin — il pourra inverser un futur Test de cette Compétence.",
+  'tp.gatherInfo': '{name} glane des informations en route.',
+  'tp.rationFound': '{name} reçoit une ration trouvée en chemin.',
+  'tp.campCare': 'Camp bien monté : {name} récupère (−{n} Exténué).',
+  'tp.mapDone': "La carte de l'itinéraire est ACHEVÉE ({dr}/{dr} DR).",
+  'tp.mapProgress': 'Cartographie : {total}/{target} DR.',
+  'tp.calmTravel': 'Voyage tranquille : le groupe récupère toutes ses Blessures et tous ses États Exténué.',
+  'tp.exposureLine': "{name} — Exposition de fin d'Étape ({weather}) : transi par le froid.",
+  'tp.coldSeasonChill': '{name} grelotte et tousse — un rhume couve (saison froide).',
+
+  // ── #1318 V8c₄ — CORRUPTION (`state/corruptionFlow.ts`, `cor.*`, LDB 19 l.70-87 / LDB 17 l.71). La
+  // NATURE de la mutation était l'id interpolé (`physique`/`mentale`) : elle passe par ses deux clés.
+  'cor.phaWard': '{name} : la lumière sacrée de Phâ écarte la Corruption (aucun gain).',
+  'cor.gain': '{name} : +{n} Point{s} de Corruption (total {total}).',
+  'cor.threshold': '{name} : la Corruption déborde son seuil — Test de Résistance.',
+  'cor.contained': '{name} contient sa Corruption — pour cette fois.',
+  'cor.thresholdFail': '{name} échoue à contenir sa Corruption — la mutation menace…',
+  'cor.repelled': "{name} repousse l'Influence corruptrice.",
+  'cor.natureTable': 'Corps ou esprit',
+  'cor.kindPhysique': 'physique',
+  'cor.kindMentale': 'mentale',
+  'cor.body': 'corps',
+  'cor.mind': 'esprit',
+  'cor.mutates': '{name} MUTE : {label} — Corruption {kind} ({roll} → {what}).',
+  'cor.mutationNote': '{label} : {note}',
+  'cor.damned': '{name} a BASCULÉ dans le Chaos — damné, perdu pour le groupe.',
+  'cor.revealTitle': 'Mutation — {label}',
+  'cor.renounced': '{name} — « Je te renie ! » : la mutation est REFUSÉE (1 Point de Résilience ; les Points de Corruption restent).',
+  'cor.renounceTitle': 'Je te renie !',
+
+  // ── #1318 V8c₄ — ACTIVITÉS EN MER (`state/seaActivities.ts`, `sact.*`, MDG 15 l.288-292). Le nom
+  // d'Activité vient d'`activities.json` et la Compétence de `skills.json` : « Cartographie » et
+  // « Marchandage » étaient écrits au call-site, jumeaux de la donnée (classe #1341).
+  'sact.crewIsPlayers': 'L’équipage du navire de campagne est tenu par les PJ (MDG 14) — aucun équipage PNJ à entraîner.',
+  'sact.noFreeEnc': 'Aucun point d’Encombrement disponible sur le navire — rien à investir (MDG 15).',
+  'sact.weekTitle': 'Activités de la semaine',
+  'sact.tradeNoStake': "{name} — Commerce d'opportunité : aucune mise engagée.",
+  'sact.tradeDone': "{name} — Commerce d'opportunité : mise {stake}, retour {back} ({pct} %).",
+  'sact.heroFallback': 'Le héros',
+  'sact.chartOk': "{name} — Cartographie : une Carte marine d'une valeur de {gold} CO (+2 DR d'Orientation, MDG 15).",
+  'sact.chartKo': '{name} — Cartographie : les relevés sont inutilisables.',
+  'sact.stash': '{name} — Planque (MDG 15 l.292) : {money} cachés sur la carte — retrait libre, découverte sur ≤ 50.',
+
+  // ── #1318 V8c₄ — GROUPE : possessions, Avancement, sorts, prothèses (`state/partyFlow.ts`, `pf.*`,
+  // LDB 07/09/10/46/64/73). `pf.refused` et `pf.charNeedsMentor` servent les TROIS achats
+  // (Caractéristique / Compétence / Talent) : une phrase, trois sites. La carrière d'arrivée était
+  // rendue par son ID (« carrière → chasseur-de-primes ») : elle passe par `findCareerById`.
+  'pf.give': '{from} donne {item} à {to}.',
+  'pf.swapLayer': '{name} troque {out} contre {item} (même couche).',
+  'pf.stow': '{name} range {item}{bag}.',
+  'pf.fragInBag': ' dans {bag}',
+  'pf.stowTooBig': '{name} : {item} ne tient pas dans ce contenant.',
+  'pf.unstow': '{name} sort {item} de son contenant.',
+  'pf.charNeedsMentor': '{name} : {what} hors carrière — un mentor est requis (LDB 07 l.89).',
+  'pf.refused': '{name} : {what} — {reason}.',
+  'pf.advanceBought': '{name} : {what} +1 (−{cost} PX{hors}).',
+  'pf.fragOutOfCareer': ', hors carrière',
+  'pf.skillNotAcquirable': '{name} : « {what} » hors carrière, non acquérable.',
+  'pf.unknownSlot': '{name} : emplacement de carrière inconnu.',
+  'pf.designateRefused': '{name} : désignation refusée ({reason}).',
+  'pf.designated': "{name} : « {label} » devient le choix de carrière de l'emplacement (0 PX).",
+  'pf.talentOutOfCareer': '{name} : Talent « {label} » hors carrière.',
+  'pf.talentMaxed': '{name} : {label} — Maxi atteint.',
+  'pf.talentBought': '{name} : Talent {label} (−{cost} PX).',
+  'pf.minorMagicIncluded': ' {n} sorts de Magie mineure inclus — à mémoriser (Avancement).',
+  'pf.spellNotFound': 'Sort « {id} » introuvable.',
+  'pf.spellCannotLearn': '{name} ne peut pas apprendre {spell} (déjà connu ou Talent manquant).',
+  'pf.spellNeedsXp': '{name} : {cost} PX requis pour mémoriser {spell} (reste {left}).',
+  'pf.spellLearned': '{name} mémorise {spell} (−{cost} PX{remise}).',
+  'pf.fragSpellDiscount': ', remise de {n} PX — Recherche universitaire',
+  'pf.spellGranted': '{name} reçoit {spell} (inclus au Talent).',
+  'pf.componentSpellNotFound': 'Composant : sort introuvable.',
+  'pf.componentArcaneOnly': "{spell} : un composant ne s'applique qu'aux Sorts d'Arcane/Domaine (LDB 46 l.163).",
+  'pf.spellUnknown': '{name} ne connaît pas {spell}.',
+  'pf.componentTooExpensive': 'Bourse insuffisante pour un composant de {spell} ({money}).',
+  'pf.componentBought': '{name} achète un composant pour {spell} (−{money}).',
+  'pf.ambitionXp': '{name} : +{xp} PX (Ambition accomplie).',
+  'pf.motivationResolve': '{name} : +1 Détermination (a agi selon sa Motivation).',
+  'pf.prosthesisNotTrainable': '{name} : prothèse non portée / non entraînable.',
+  'pf.prosthesisTrained': '{name} : {item} déjà entraînée.',
+  'pf.notEnoughXp': '{name} : PX insuffisants ({cost}).',
+  'pf.legMoveTrained': "{name} s'entraîne à sa fausse jambe : Mouvement plein retrouvé (−{cost} PX).",
+  'pf.legDodgeTrained': "{name} réapprend l'Esquive avec sa fausse jambe (−{cost} PX).",
+  'pf.hookTrained': '{name} maîtrise son crochet : armes à deux mains de nouveau possibles (−{cost} PX).',
+  'pf.careerRefused': '{name} : changement de carrière refusé ({reason}).',
+  'pf.careerChanged': '{name} : carrière → {career} (niv. {level}, −{cost} PX).',
+  'pf.startingWealth': 'Richesse initiale de {name} : +{money}.',
+
+  // ── #1318 V8c₄ — PORT : négoce de cargaison et recrutement à quai (`state/portFlow.ts`, `port.*`,
+  // MDG 12 l.70-75 / MDG 15 l.319-399, MDG 14 l.293-302). `port.bargainLine` sert l'ACHAT et la VENTE
+  // (le signe et l'issue sont portés par l'appelant) ; « Ragot » vient de `skills.json`.
+  'port.holdFull': 'La cale a atteint le maximum absolu (surcharge de 150 %) ou la cargaison est épuisée — rien à embarquer.',
+  'port.purseShort': 'La bourse ne couvre pas {price} CO de {label} — {bargain}',
+  'port.loaded': '{enc} Enc de {label} embarqués — {bargain} Prix payé : {money}.',
+  'port.overloaded': 'Cale SURCHARGÉE ({pct} % de la Contenance) : {label} — {m} M, {dr} DR Manœuvre (MDG 12 l.70-75).',
+  'port.noBargainerBuy': 'Aucun marchandeur dans le groupe — prix plein.',
+  'port.noBargainerSell': 'Aucun marchandeur — prix d’offre pris tel quel.',
+  'port.actionBuy': 'Achat',
+  'port.actionSell': 'Vente',
+  'port.bargainLine': '{name} — Marchandage ({roll} vs {opp}{seller}) : {issue}.',
+  'port.fragSellerDR': ', vendeur +{dr} DR',
+  'port.fragSellerDRSigned': ', vendeur {dr} DR',
+  'port.priceUnchanged': 'prix inchangé',
+  'port.discount': 'remise de {pct} %',
+  'port.surcharge': 'surcoût de {pct} %',
+  'port.noEffect': 'sans effet',
+  'port.pctPlain': '{pct} %',
+  'port.sold': '{enc} Enc de {label} vendus (prix d’offre {pct} % du base — {bargain}) : {money}.',
+  'port.buyerSearch': 'Recherche d’acheteur',
+  'port.halfLot': '↔ {label} : personne pour tout le lot — la moitié ({enc} Enc) trouve preneur.',
+  'port.noBuyer': '{label} : aucun marchand intéressé à {port} (nombre visé {target}).',
+  'port.partyFallback': 'Le groupe',
+  'port.gossipRow': '{skill} — {label}',
+  'port.hasSurplus': 'en regorge',
+  'port.produces': 'en produit',
+  'port.gossipFail': 'échoue — aucun acheteur trouvé (ce port {relation})',
+  'port.gossipOk': 'un acheteur potentiel est approché',
+  'port.noCamelot': '{label} — ce port {relation} : le Test de Ragot ne trouve pas de camelot — aucun acheteur trouvé.',
+  'port.dumpRefused': '{label} : ce port ne rachète pas les cargaisons à brader (ni « commerce » ni Demande, MDG 15 l.399).',
+  'port.dumped': '{enc} Enc de {label} bradés ({pct} % du prix de base) : {money}.',
+  'port.hired': "{count} {role} embauché(s) à {wage}/semaine — solde hebdomadaire de l'équipage : {total}.",
+  'port.dismissed': "{count} {role} débarqué(s) — solde hebdomadaire de l'équipage : {total}.",
 } as const;

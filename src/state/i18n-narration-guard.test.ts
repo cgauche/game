@@ -69,22 +69,37 @@ const MIGRATED = new Set([
   'src/state/restFlow.ts', // #1318 V8c₃ : `rf.*`
   'src/state/shipCrew.ts', // #1318 V8c₃ : `crew.*`
   'src/state/seaVoyageFlow.ts', // #1318 V8c₃ : `sv.*`
+  'src/engine/provisions.ts', // #1318 V8c₄ : `prov.*` (Faim & Soif — le moteur pur résout par `t()`)
+  'src/engine/suffocation.ts', // #1318 V8c₄ : `suff.*`
+  'src/engine/exposure.ts', // #1318 V8c₄ : `exp.*` (protection magique = `eff.weatherWarded`, partagée)
+  'src/engine/mountTravel.ts', // #1318 V8c₄ : `mt.*`
+  'src/engine/shipCritical.ts', // #1318 V8c₄ : `shipCrit.*` + `shipLoc.*` (foyer des Localisations de bateau)
+  'src/engine/spellRangeFormat.ts', // #1318 V8c₄ : `spellFmt.*` (portée/cible/durée d'un sort)
+  'src/state/upkeep.ts', // #1318 V8c₄ : `upkeep.*`
+  'src/state/medicFlow.ts', // #1318 V8c₄ : `medic.*`
+  'src/state/netFlow.ts', // #1318 V8c₄ : `coop.*` (le namespace du salon, déjà posé)
+  'src/state/travelPostes.ts', // #1318 V8c₄ : `tp.*`
+  'src/state/corruptionFlow.ts', // #1318 V8c₄ : `cor.*`
+  'src/state/seaActivities.ts', // #1318 V8c₄ : `sact.*`
+  'src/state/portFlow.ts', // #1318 V8c₄ : `port.*`
+  'src/state/partyFlow.ts', // #1318 V8c₄ : `pf.*`
 ]);
 
 /** Stock GELÉ par fichier (recensement #410, 2026-07-13) — littéraux FR de narration hors catalogue,
  *  Phase C à résorber. Toute HAUSSE échoue (régression) ; toute BAISSE doit ABAISSER la baseline. Les
  *  fichiers MIGRÉS (ci-dessus) n'y figurent PAS : leur invariant est ZÉRO.
  *
- *  GEL COURANT #1318 V8c₃ (2026-08-17) — `GEL_TOTAL` littéraux sur `GEL_FICHIERS` fichiers, tels que
+ *  GEL COURANT #1318 V8c₄ (2026-08-17) — `GEL_TOTAL` littéraux sur `GEL_FICHIERS` fichiers, tels que
  *  les voit le prédicat de francité ci-dessous (`isFrench`, qui compte aussi le FR SANS accent), le
  *  lecteur de littéraux (`readString` honore l'ÉCHAPPEMENT) et les SEPT formes d'émission. Ces entrées
  *  ne sont pas des dettes nouvelles : ce sont des littéraux de toujours, qu'une mesure plus fine rend
- *  visibles. UN mouvement dans ce lot, −74 sur 37 → 32 fichiers : les CINQ de la tranche 3 passés
- *  MIGRÉS (`seaVoyageFlow` 27, `healing` 7, `engine/rest` 7, `restFlow` 5, `shipCrew` 9 = −55) et
- *  `engine/trauma` ramené de 20 à 1 (−19 ; son unique reliquat est un ID de type, cf. la note sur son
- *  entrée). Aucune forme nouvelle : la 7ᵉ (V8c₂) suffisait à ce périmètre — ce que le lot a trouvé en
- *  plus (166 sites INVISIBLES au prédicat) l'a été à la PASSE HUMAINE, et ces sites-là n'entraient dans
- *  aucun compte, ni avant ni après.
+ *  visibles. UN mouvement dans ce lot, −71 sur 32 → 18 fichiers : les QUATORZE de la tranche 4 passés
+ *  MIGRÉS (`provisions` 10, `partyFlow` 7, `mountTravel`/`shipCritical`/`spellRangeFormat`/
+ *  `corruptionFlow`/`seaActivities`/`upkeep` 5 chacun, `exposure`/`suffocation`/`medicFlow`/`netFlow`/
+ *  `portFlow`/`travelPostes` 4 chacun). Aucune forme nouvelle : la 7ᵉ (V8c₂) suffisait encore à ce
+ *  périmètre — ce que le lot a trouvé en plus (les sites INVISIBLES au prédicat : cartes de libellés
+ *  de module, `label`/`rollLabel`/`actionLabel` d'étape, retours de fonction) l'a été à la PASSE
+ *  HUMAINE, et ces sites-là n'entraient dans aucun compte, ni avant ni après.
  *  Les DEUX chiffres ci-dessus sont des CONSTANTES assertées contre la table (`GEL_TOTAL`/`GEL_FICHIERS`,
  *  dernier test du fichier) : ce commentaire a menti une fois (92 annoncés pour 103 tenus), il ne le
  *  peut plus sans rougir.
@@ -96,22 +111,16 @@ const MIGRATED = new Set([
 /** Le GEL ANNONCÉ au commentaire ci-dessus, en CONSTANTES — assertées contre la table réelle par le
  *  dernier test du fichier. Un commentaire de gel n'est pas une mesure : celui-ci a annoncé 92 pour
  *  103 tenus (V8c₃, rattrapé par le juge). Désormais, un chiffre faux rougit. */
-const GEL_TOTAL = 103;
-const GEL_FICHIERS = 32;
+const GEL_TOTAL = 32;
+const GEL_FICHIERS = 18;
 
 const BASELINE: Record<string, number> = {
   'src/engine/drunkenness.ts': 2,
-  'src/engine/exposure.ts': 4,
   'src/engine/items.ts': 3,
   'src/engine/money.ts': 3,
-  'src/engine/mountTravel.ts': 5,
-  'src/engine/provisions.ts': 10,
   'src/engine/qualities/craftEconomy.ts': 3,
-  'src/engine/shipCritical.ts': 5,
   'src/engine/social.ts': 1,
-  'src/engine/spellRangeFormat.ts': 5,
   'src/engine/structureCritical.ts': 1,
-  'src/engine/suffocation.ts': 4,
   'src/engine/tavernGame.ts': 2,
   'src/engine/traits/dispatch.ts': 1,
   // NON-MIGRABLE DÉLIBÉRÉ (V8c₃) : le SEUL littéral restant est `return 'mobilité';` (`traumaOpKind`) —
@@ -121,24 +130,16 @@ const BASELINE: Record<string, number> = {
   'src/engine/trauma.ts': 1,
   'src/engine/travel.ts': 1,
   'src/state/combat/roundHooks.ts': 1,
-  'src/state/corruptionFlow.ts': 5,
   // `src/state/devtools.ts` : aucune baseline — DISPENSÉ par nature (`DEV_ONLY`, #1117).
   'src/state/keybindings.ts': 1,
-  'src/state/medicFlow.ts': 4,
   'src/state/mount.ts': 1,
-  'src/state/netFlow.ts': 4,
-  'src/state/partyFlow.ts': 7,
-  'src/state/portFlow.ts': 4,
   'src/state/rollFlowFactory.ts': 3,
   // Légendes de l'export ASCII, semées à la déclaration : ce ne sont pas des lignes de JOURNAL, mais
   // elles se gèlent au même titre — à passer au catalogue avec leur surface.
   'src/state/sceneToAscii.ts': 3,
-  'src/state/seaActivities.ts': 5,
   'src/state/shipManeuver.ts': 1,
   'src/state/shipwreck.ts': 3,
   'src/state/summonFlow.ts': 1,
-  'src/state/travelPostes.ts': 4,
-  'src/state/upkeep.ts': 5,
 };
 
 /**
@@ -166,7 +167,16 @@ const BASELINE: Record<string, number> = {
  *   - un mot-outil FR dans une chaîne TECHNIQUE la ferait compter (aucun cas mesuré sur le stock
  *     courant : 0 faux positif sur les 67 littéraux nouvellement captés) ;
  *   - le périmètre reste celui des FORMES d'émission ci-dessus — un littéral posé ailleurs (champ
- *     `reason:`, retour d'objet) n'est vu par aucune marque, faute d'être scanné.
+ *     `reason:`, retour d'objet) n'est vu par aucune marque, faute d'être scanné. DEUX fichiers le
+ *     démontrent, NOMMÉS ici parce qu'ils portent du texte JOUEUR (leurs `reason` remontent à l'écran
+ *     via `pf.refused`/`pf.designateRefused`) sans peser un seul point de gel (V8c₄, comptés à la
+ *     main) : `src/engine/advancement.ts` ~10 `reason:` FR (« PX insuffisants », « Compétence
+ *     inconnue », « niveau de carrière inconnu »…) et `src/engine/careerSlots.ts` ~4 (« emplacement
+ *     déjà désigné », « un seul Domaine sombre autorisé… »). Ils partent à la tranche suivante.
+ *
+ * CE QUE `GEL_TOTAL` EST, DONC : la COUVERTURE de ce prédicat sur ces sept formes — jamais la dette
+ * totale de FR-hors-catalogue de `src/engine`+`src/state`. Un gel à 0 signifierait « plus rien de ce
+ * que je sais voir », pas « plus un littéral ».
  */
 const ACCENT = /[éèêëàâäçôöûùîïœÉÈÊÀÂÇÔÛ]/;
 const FR_QUOTES = /[«»]/;

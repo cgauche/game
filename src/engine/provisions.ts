@@ -40,15 +40,16 @@ import { rollTest } from './tests';
 import { hasActiveFlag } from './activeFlags';
 import { itemCapability } from './capabilities';
 import { dailyWaterLitres } from './seaWeather';
-import { findTraitById } from '../data';
+import { findTraitById, refLabel } from '../data';
 import { RULE_REF, type CodexTarget } from './ruleRefs';
 import { traceLineOf } from './traceLine';
 import type { ModFamille } from './types';
+import { t } from '../i18n';
 
 /** La pénalité CUMULATIVE des Tests de Faim/Soif, NOMMÉE et liée à sa règle (LDB 18 l.338) — c'est
  *  le producteur qui la nomme, la couture d'entretien différé ne fait que la porter. */
 function hungerThirstPenalty(value: number): { value: number; label: string; famille: ModFamille; ref: CodexTarget } {
-  return { value, label: 'Tests déjà subis', famille: 'jet', ref: RULE_REF['faim-et-soif'] };
+  return { value, label: t('prov.penaltyTestsTaken'), famille: 'jet', ref: RULE_REF['faim-et-soif'] };
 }
 
 /** Ids du Test que le RAW nomme pour la Faim comme pour la Soif : `LDB 18 l.338/340/343`. Les DIRE
@@ -171,10 +172,10 @@ export function applyFaimTest(c: Combatant, success: boolean, be: number, rng: R
   let damage = 0;
   if (!success) {
     h.failures += 1;
-    if (h.failures === 1) log.push(`${c.label} est affamé : −10 en Force et en Endurance.`);
+    if (h.failures === 1) log.push(t('prov.starving', { name: c.label }));
     else {
       damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (LDB 18 l.343)
-      log.push(`${c.label} dépérit : −10 à toutes les autres Caractéristiques, ${damage} Blessure(s) (la faim ignore l'armure).`);
+      log.push(t('prov.wasting', { name: c.label, dmg: damage }));
     }
   } // réussite : aucune conséquence (le jet a déjà été montré dans l'étape — pas de bruit de journal)
   c.hunger = h;
@@ -216,7 +217,7 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
   }
 
   if (res.ate) {
-    if (h.days > 0 || h.failures > 0) res.log.push(`${c.label} mange enfin à sa faim — les effets de la faim se dissipent.`);
+    if (h.days > 0 || h.failures > 0) res.log.push(t('prov.fedAgain', { name: c.label }));
     // Brouet : demi-ration → le jour suivant est couvert (LDB 10 l.139). Sinon, plus d'état de faim.
     c.hunger = brouet && res.rationConsumed ? { days: 0, tests: 0, failures: 0, coveredDay: true } : undefined;
     return res;
@@ -231,23 +232,23 @@ export function dailyFoodUpkeep(c: Combatant, resVal: number, be: number, rng: R
     if (deferTest) {
       // Cascade de nuit : le Test devient une ÉTAPE influençable (résolue par `applyFaimTest`).
       c.hunger = h; // days++ enregistré ; tests/échecs appliqués à la validation de l'étape
-      deferTest({ kind: 'faim', label: 'Faim', base: resVal, test: RESISTANCE_TEST, difficulty: 'intermediaire', penalty: hungerThirstPenalty(penalty) });
+      deferTest({ kind: 'faim', label: t('prov.faim'), base: resVal, test: RESISTANCE_TEST, difficulty: 'intermediaire', penalty: hungerThirstPenalty(penalty) });
       return res;
     }
-    const t = rollTest(resVal, 'intermediaire', rng, penalty);
+    const t2 = rollTest(resVal, 'intermediaire', rng, penalty);
     h.tests += 1;
     // Test résolu SANS fenêtre (entretien du jour) : sa ligne se DÉRIVE (`traceLineOf`).
     res.log.push(traceLineOf({
-      who: c.label, label: `Faim : Test de Résistance${h.tests > 1 ? ` (−${(h.tests - 1) * 10})` : ''}`,
-      roll: t.roll, target: t.target, sl: t.sl, success: t.success, issue: t.success ? 'il tient bon' : 'ÉCHEC',
+      who: c.label, label: t('prov.testLabel', { kind: t('prov.faim'), skill: refLabel('skills', { id: RESISTANCE_TEST.skill }), malus: h.tests > 1 ? t('prov.fragTestMalus', { n: (h.tests - 1) * 10 }) : '' }),
+      roll: t2.roll, target: t2.target, sl: t2.sl, success: t2.success, issue: t2.success ? t('prov.holdsOn') : t('prov.fail'),
     }));
-    if (!t.success) {
+    if (!t2.success) {
       h.failures += 1;
       if (h.failures === 1) {
-        res.log.push(`${c.label} est affamé : −10 en Force et en Endurance.`);
+        res.log.push(t('prov.starving', { name: c.label }));
       } else {
         res.damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (LDB 18 l.343)
-        res.log.push(`${c.label} dépérit : −10 à toutes les autres Caractéristiques, ${res.damage} Blessure(s) (la faim ignore l'armure).`);
+        res.log.push(t('prov.wasting', { name: c.label, dmg: res.damage }));
       }
     }
   }
@@ -275,10 +276,10 @@ export function applySoifTest(c: Combatant, success: boolean, be: number, rng: R
   let damage = 0;
   if (!success) {
     s.failures += 1;
-    if (s.failures === 1) log.push(`${c.label} a la gorge sèche : −10 en Intelligence, Force Mentale et Sociabilité.`);
+    if (s.failures === 1) log.push(t('prov.parched', { name: c.label }));
     else {
       damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (LDB 18 l.340)
-      log.push(`${c.label} se déshydrate : −10 à toutes les autres Caractéristiques, ${damage} Blessure(s) (la soif ignore l'armure).`);
+      log.push(t('prov.dehydrating', { name: c.label, dmg: damage }));
     }
   }
   c.thirst = s;
@@ -299,7 +300,7 @@ export function dailyWaterUpkeep(c: Combatant, hasWater: boolean, resVal: number
   // la Soif est suspendue au même titre que la Faim (drapeau `noHunger`), compteurs purgés.
   if (hasWater || hasActiveFlag(c, 'noHunger')) {
     res.drank = true;
-    if (c.thirst && (c.thirst.days > 0 || c.thirst.failures > 0)) res.log.push(`${c.label} se désaltère — les effets de la soif se dissipent.`);
+    if (c.thirst && (c.thirst.days > 0 || c.thirst.failures > 0)) res.log.push(t('prov.quenched', { name: c.label }));
     c.thirst = undefined;
     return res;
   }
@@ -308,21 +309,21 @@ export function dailyWaterUpkeep(c: Combatant, hasWater: boolean, resVal: number
   const penalty = -10 * s.tests || 0; // LDB 18 l.338 : chaque Test est plus dur (cumulatif ; évite −0)
   if (deferTest) {
     c.thirst = s; // days++ enregistré ; tests/échecs appliqués à la validation de l'étape
-    deferTest({ kind: 'soif', label: 'Soif', base: resVal, test: RESISTANCE_TEST, difficulty: 'intermediaire', penalty: hungerThirstPenalty(penalty) });
+    deferTest({ kind: 'soif', label: t('prov.soif'), base: resVal, test: RESISTANCE_TEST, difficulty: 'intermediaire', penalty: hungerThirstPenalty(penalty) });
     return res;
   }
-  const t = rollTest(resVal, 'intermediaire', rng, penalty);
+  const t2 = rollTest(resVal, 'intermediaire', rng, penalty);
   s.tests += 1;
   res.log.push(traceLineOf({
-    who: c.label, label: `Soif : Test de Résistance${s.tests > 1 ? ` (−${(s.tests - 1) * 10})` : ''}`,
-    roll: t.roll, target: t.target, sl: t.sl, success: t.success, issue: t.success ? 'il tient bon' : 'ÉCHEC',
+    who: c.label, label: t('prov.testLabel', { kind: t('prov.soif'), skill: refLabel('skills', { id: RESISTANCE_TEST.skill }), malus: s.tests > 1 ? t('prov.fragTestMalus', { n: (s.tests - 1) * 10 }) : '' }),
+    roll: t2.roll, target: t2.target, sl: t2.sl, success: t2.success, issue: t2.success ? t('prov.holdsOn') : t('prov.fail'),
   }));
-  if (!t.success) {
+  if (!t2.success) {
     s.failures += 1;
-    if (s.failures === 1) res.log.push(`${c.label} a la gorge sèche : −10 en Intelligence, Force Mentale et Sociabilité.`);
+    if (s.failures === 1) res.log.push(t('prov.parched', { name: c.label }));
     else {
       res.damage = Math.max(1, d10(rng) - be); // 1d10 Dégâts, ignore les PA, min 1 (LDB 18 l.340)
-      res.log.push(`${c.label} se déshydrate : −10 à toutes les autres Caractéristiques, ${res.damage} Blessure(s) (la soif ignore l'armure).`);
+      res.log.push(t('prov.dehydrating', { name: c.label, dmg: res.damage }));
     }
   }
   c.thirst = s;

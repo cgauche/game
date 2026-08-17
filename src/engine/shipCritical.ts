@@ -21,6 +21,21 @@ import { rollTest } from './tests';
 import { testValue } from './skills';
 import type { Combatant } from './types';
 import { SHIP_CRIT_SET, shipCritSet, type ShipCritSet, type ShipCritKey, type ShipCrewTest } from '../data/shipCriticals';
+import { t, type MsgKey } from '../i18n';
+import type { PlayerText } from '../i18n/playerText';
+
+/** Clés de libellé des Localisations de bateau (MDG 13) — des CLÉS, jamais des textes résolus : une
+ *  carte de phrases figée à l'évaluation du module ne suivrait pas `setLocale` (`src/i18n/index.ts`). */
+const SHIP_LOC_KEY: Record<ShipLocation, MsgKey> = {
+  equipage: 'shipLoc.equipage', avirons: 'shipLoc.avirons', greement: 'shipLoc.greement',
+  coque: 'shipLoc.coque', equipements: 'shipLoc.equipements', cargaison: 'shipLoc.cargaison',
+  gouvernail: 'shipLoc.gouvernail', superstructure: 'shipLoc.superstructure',
+};
+
+/** Libellé JOUEUR d'une Localisation de bateau — la donnée n'en porte pas (tables keyées par id).
+ *  Résolveur TOTAL : aucun repli sur l'id, donc aucun moteur-speak à l'écran. FOYER UNIQUE (la
+ *  navigation fluviale s'y branche, `state/riverVoyageFlow.ts`). */
+export const shipLocationLabel = (loc: ShipLocation): PlayerText => t(SHIP_LOC_KEY[loc]);
 
 /** Réfs de tables data-driven d'une coque (MDG naval par défaut / MSRC fluvial) — `hull.locationTable` (colonne
  *  de Localisation) + `hull.criticalTable` (jeu de Critiques). Absentes → jeu naval MDG (comportement historique). */
@@ -54,7 +69,7 @@ export function rollShipCritical(location: ShipCritKey, rng: RNG = defaultRNG, f
   const table = set.tables[location];
   if (!table) {
     // La table de Localisation appariée à ce jeu ne produit jamais une Localisation absente du jeu ; garde-fou.
-    return { location, id: 'aucun', label: '—', roll, ops: [], shrapnel: 0, extraHullCrits: 0, note: '', log: `Aucune table de Critique pour la Localisation « ${location} ».` };
+    return { location, id: 'aucun', label: '—', roll, ops: [], shrapnel: 0, extraHullCrits: 0, note: '', log: t('shipCrit.noTable', { loc: shipLocationLabel(location) }) };
   }
   const entry = findTableEntry(table, roll);
   // Effets « État » : AUTHORÉS en donnée (`entry.ops`, GameOp) — le résolveur n'a plus aucun couplage nom-d'État.
@@ -70,7 +85,7 @@ export function rollShipCritical(location: ShipCritKey, rng: RNG = defaultRNG, f
     extraHullCrits,
     crewTest: entry.crewTest,
     note: entry.note,
-    log: `Critique navire (${location}) : ${entry.label}${entry.shrapnel ? ` — Éclats ${entry.shrapnel}` : ''}${extraHullCrits ? ` — ${extraHullCrits} Critique(s) de Coque` : ''}.`,
+    log: t('shipCrit.line', { loc: shipLocationLabel(location), label: entry.label, eclats: entry.shrapnel ? t('shipCrit.fragShrapnel', { n: entry.shrapnel }) : '', extra: extraHullCrits ? t('shipCrit.fragExtraHull', { n: extraHullCrits }) : '' }),
   };
 }
 
@@ -177,14 +192,14 @@ export function applyHullCritical(
   if (hit.crewHit) {
     const sailor = exposed[0];
     if (!sailor) {
-      lines.push("Coup à l'Équipage, mais aucun marin exposé pour l'encaisser.");
+      lines.push(t('shipCrit.crewNoneExposed'));
       return { location: 'equipage', hullOps: [], shrapnel: [], extraHullCrits: [], lines };
     }
     const crit = rollCritical(sailor, hitLocation(d100(rng)), rng);
     applyOps(sailor, crit.ops, { rng });
     if (crit.traumas.length) sailor.traumas = [...(sailor.traumas ?? []), ...crit.traumas];
     if (crit.lethal) { sailor.wounds.current = 0; sailor.dead = true; }
-    lines.push(`Équipage touché : ${sailor.label} encaisse un Critique — ${crit.label}.`);
+    lines.push(t('shipCrit.crewHit', { name: sailor.label, label: crit.label }));
     return { location: 'equipage', hullOps: [], shrapnel: [], extraHullCrits: [], crewCrit: { crewId: sailor.id, crit }, lines };
   }
 
@@ -201,7 +216,7 @@ export function applyHullCritical(
   if (crit.crewTest) {
     const hits = applyCrewHit(hull, crew, crit.crewTest, rng);
     detachedPoste = { hits };
-    if (hits.length) lines.push(`${hits.length} membre(s) d'équipage encaisse(nt) le Critique (${crit.label}).`);
+    if (hits.length) lines.push(t('shipCrit.crewTakes', { n: hits.length, label: crit.label }));
   }
 
   // Éclats → effet data `set.shrapnelHit` (op `wounds` : 9 Dégâts en mer MDG / +5 en fleuve MSRC) à autant de
@@ -215,7 +230,7 @@ export function applyHullCritical(
     shrapnel.push({ crewId: sailor.id });
   }
   if (shrapnel.length) {
-    lines.push(`Éclats ${crit.shrapnel} : ${shrapnel.length} marin(s) touché(s).`);
+    lines.push(t('shipCrit.shrapnelHits', { indice: crit.shrapnel, n: shrapnel.length }));
     lines.push(...shrapnelLines);
   }
 
@@ -226,7 +241,7 @@ export function applyHullCritical(
     applyOps(hull, extra.ops, { rng });
     extraHullCrits.push(extra);
   }
-  if (extraHullCrits.length) lines.push(`${extraHullCrits.length} Critique(s) de Coque supplémentaire(s).`);
+  if (extraHullCrits.length) lines.push(t('shipCrit.extraHull', { n: extraHullCrits.length }));
 
   return { location: crit.location, hullOps: crit.ops, shrapnel, extraHullCrits, detachedPoste, lines };
 }

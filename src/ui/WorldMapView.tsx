@@ -7,7 +7,7 @@ import {
   routeDistanceLabel,
 } from '../engine/travel';
 import {
-  type Allure, ALLURE_LABEL, availableAllures, partyFullyMounted, partyMounts,
+  type Allure, allureLabel, availableAllures, partyFullyMounted, partyMounts,
 } from '../engine/mountTravel';
 import { rationCount, provisioningManifest } from '../engine/provisions';
 import { cargoOverload, cargoTotalEnc } from '../engine/seaVoyage';
@@ -436,7 +436,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               <div className="wm-modes">
                 {allures.map((a) => (
                   <button key={a} type="button" className={`btn small ${allure === a ? 'btn-primary' : ''}`} onClick={() => setAllure(a)}>
-                    {ALLURE_LABEL[a]}
+                    {allureLabel(a)}
                   </button>
                 ))}
               </div>

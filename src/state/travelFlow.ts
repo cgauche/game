@@ -30,7 +30,7 @@ import {
   vehicleTravel,
 } from '../engine/travel';
 import {
-  type Allure, ALLURE_KMH_PER_M, ALLURE_LABEL, mountProfileById, partyMounts, partyFullyMounted, resolveMountedDay,
+  type Allure, ALLURE_KMH_PER_M, allureLabel as allureName, mountProfileById, partyMounts, partyFullyMounted, resolveMountedDay,
   type MountInjury,
 } from '../engine/mountTravel';
 import { possessionLabel } from '../engine/possession';
@@ -381,7 +381,7 @@ export function startTravel(
     ...(vehicle ? { vehicle } : {}),
   };
   set({ travelPlan: plan, worldMapOpen: false, travelRecap: null });
-  const allureLabel = allure ? t('tf.fragAllure', { allure: ALLURE_LABEL[allure].toLowerCase() }) : '';
+  const allureLabel = allure ? t('tf.fragAllure', { allure: allureName(allure).toLowerCase() }) : '';
   log(get, set, [t('tf.depart', { to: to.label, km: route.km, mode: TRAVEL_MODE_LABEL[mode].toLowerCase(), allure: allureLabel })]);
   runTravelDays(get, set);
 }

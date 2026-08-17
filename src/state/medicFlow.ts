@@ -28,6 +28,7 @@ import { addCondition, loseWounds, releaseConditionLocks } from '../engine/condi
 import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable, healDifficulty, type HealMode } from '../engine/healing';
 import { removeSurgicalTrauma, surgeryTraumas, recoverableTraumas, recoverDisabledLimb } from '../engine/trauma';
 import { toMoney, canAfford } from '../engine/money';
+import { t } from '../i18n';
 import { partyMoneyTotal, payFromGroup, distributeCredit } from './bourseFlow';
 import { touchActors } from './combatOrParty';
 import { finishPlayerAction, openContractionCascade } from './combatFlow';
@@ -128,7 +129,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
   if (!patient || !availableHealModes(patient).includes(act)) return;
   // Récupération d'usage : bloquée tant que l'Aide Médicale n'a pas été reçue (LDB 18 l.120/179 : « Après
   // application de cette Aide… ») — l'acte reste proposé (raison affichée) mais ne s'arme pas.
-  if (act === 'recovery' && !recoverableTraumas(patient).length) { get().log('Aide Médicale requise avant de rééduquer le membre.'); return; }
+  if (act === 'recovery' && !recoverableTraumas(patient).length) { get().log(t('medic.aidRequired')); return; }
 
   // `actor` : le soigneur JOUEUR, absent pour un PNJ payant (aucune fiche) — c'est lui qui permet de
   // décomposer la valeur en Niveau de Compétence nu + composantes nommées (`rollLine`).
@@ -140,7 +141,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
     if (offer.cost) { // débit à l'ACTE — DÉPENSE DE GROUPE (arbitrage user 2026-07-20 : « le groupe peut se
       // cotiser pour payer […] les soins »), remboursé au groupe sur Annuler avant le jet
       const cost = toMoney(offer.cost);
-      if (!canAfford(partyMoneyTotal(get), cost)) { get().log('Le groupe n’a pas assez d’argent pour cet acte.'); return; }
+      if (!canAfford(partyMoneyTotal(get), cost)) { get().log(t('medic.tooExpensive')); return; }
       payFromGroup(get, set, cost, { purpose: 'soins' });
       paidCost = offer.cost;
     }
@@ -230,12 +231,12 @@ export function surgeryNext(get: Get, set: Set): void {
   if (!patient) { set({ pendingSurgery: null, medic: { ...m, surgery: undefined } }); return; }
   const { total: cum } = extendedTestStep(sg.cumDR, { success: ps.success, sl: ps.sl }, sg.targetDR); // Test étendu mutualisé (LDB 12)
   const recovery = sg.kind === 'recovery';
-  const verb = recovery ? 'rééduque' : 'opère';
+  const verb = recovery ? t('medic.verbRecovery') : t('medic.verbSurgery');
   const harm = recovery ? 0 : battleRng().int(1, 10);
   if (!recovery) { loseWounds(patient, harm); addCondition(patient, 'hemorragique'); } // dégâts d'une passe de Chirurgie (LDB 10 l.154)
-  const log = [`${sg.healerName} ${verb} ${patient.label} — passe : DR ${ps.sl >= 0 ? '+' : ''}${ps.sl} (total ${cum}/${sg.targetDR})${recovery ? '.' : `, ${harm} PB + 1 Hémorragie.`}`];
+  const log: string[] = [t('medic.pass', { healer: sg.healerName, verb, patient: patient.label, dr: `${ps.sl >= 0 ? '+' : ''}${ps.sl}`, cum, target: sg.targetDR, suite: recovery ? t('medic.fragPassEnd') : t('medic.fragPassHarm', { harm }) })];
   if (!recovery && patient.wounds.current <= 0) { // « de fortes chances de tuer » (LDB 10) : on interrompt
-    log.push(`${patient.label} sombre sur la table — l'opération est interrompue (stabilisez-le d'abord).`);
+    log.push(t('medic.patientSinks', { patient: patient.label }));
     set({ pendingSurgery: null, medic: { ...m, surgery: undefined } });
     finishPlayerAction(get, set, log, 'heal');
     return;
@@ -262,7 +263,7 @@ export function surgeryNext(get: Get, set: Set): void {
     // mais une ÉTAPE INFLUENÇABLE (cascade `combatEndDisease`, jumeau d'`openCombatEndCascade` :
     // Chance/Résilience + auto-succès Résistance (Menace : Maladie), LDB 17/10). La contraction
     // (`applyContraction`) est appliquée à la VALIDATION de l'étape, jamais avant l'influence.
-    openContractionCascade(get, set, patient, 'infection-mineure', 'accessible', 'Suites de l’opération');
+    openContractionCascade(get, set, patient, 'infection-mineure', 'accessible', t('medic.afterSurgery'));
     return;
   }
   // Passe intermédiaire : cumule (medic.surgery), journalise, et RÉOUVRE la passe suivante (FLOWS.surgery).
@@ -280,5 +281,5 @@ export function surgeryCancel(get: Get, set: Set): void {
   if (!m || !sg) { set({ pendingSurgery: null }); return; }
   if (!sg.last && sg.paidCost && m.patientId) distributeCredit(get, set, toMoney(sg.paidCost)); // remboursé au groupe (payeur), symétrique du débit `payFromGroup`
   set({ pendingSurgery: null, medic: { ...m, surgery: undefined } });
-  if (sg.last) get().log(`${sg.healerName} interrompt l'opération — le travail est à refaire.`);
+  if (sg.last) get().log(t('medic.interrupted', { healer: sg.healerName }));
 }

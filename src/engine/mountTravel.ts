@@ -30,10 +30,15 @@ import { d100, type RNG } from './dice';
 import { rollTest, testDetail } from './tests';
 import { testValue } from './skills';
 import { rollMountIncident, type TravelTableEntry } from './travelTables';
+import { t, type MsgKey } from '../i18n';
+import { refLabel } from '../data';
 
 export type Allure = 'pas' | 'trot' | 'galop';
 export const ALLURES: readonly Allure[] = ['pas', 'trot', 'galop'];
-export const ALLURE_LABEL: Record<Allure, string> = { pas: 'Pas', trot: 'Trot', galop: 'Petit galop' };
+const ALLURE_KEY: Record<Allure, MsgKey> = { pas: 'mt.allurePas', trot: 'mt.allureTrot', galop: 'mt.allureGalop' };
+/** Libellé JOUEUR d'une allure — fonction, jamais carte de phrases figée à l'évaluation du module
+ *  (elle ne suivrait pas `setLocale`, dette nommée de `src/i18n/index.ts`). */
+export const allureLabel = (a: Allure): string => t(ALLURE_KEY[a]);
 /** EDOC 07 l.140 : km/h par point de Mouvement, selon l'allure. */
 export const ALLURE_KMH_PER_M: Record<Allure, number> = { pas: 1.5, trot: 2.5, galop: 3 };
 
@@ -188,34 +193,34 @@ export interface MountIncidentResolved {
  * s'applique aux Tests de Chevaucher suivants (l.174) — lu sur `possession.mountInjury`.
  */
 export function resolveMountIncident(entry: TravelTableEntry, mount: PartyMount, rng: RNG): MountIncidentResolved {
-  const out: MountIncidentResolved = { entry, lines: [`Incident de monte (${possessionLabel(mount.possession)}) : ${entry.label}.`] };
+  const out: MountIncidentResolved = { entry, lines: [t('mt.incident', { mount: possessionLabel(mount.possession), label: entry.label })] };
   switch (entry.id) {
     case 'sangle-cassee':
     case 'perte-d-un-fer': {
       // Test de Chevaucher Complexe (-10) du cavalier, ou chute de 2 mètres (l.166 / l.171).
       const saddleMod = mount.possession.mountInjury === 'sangle-cassee' ? -20 : 0; // sellerie déjà abîmée (l.174)
       const base = testValue(mount.hero, 'chevaucher', 'agilite') + saddleMod;
-      const t = rollTest(Math.max(0, base), 'complexe', rng);
-      out.riderTest = testDetail('Chevaucher', Math.max(0, base), t);
-      if (!t.success) {
+      const tst = rollTest(Math.max(0, base), 'complexe', rng);
+      out.riderTest = testDetail(refLabel('skills', { id: 'chevaucher' }), Math.max(0, base), tst);
+      if (!tst.success) {
         out.riderFallM = 2;
-        out.lines.push(`${mount.hero.label} vide les étriers et chute (2 mètres).`);
+        out.lines.push(t('mt.riderFalls', { name: mount.hero.label }));
       } else {
-        out.lines.push(`${mount.hero.label} se maintient en selle.`);
+        out.lines.push(t('mt.riderHolds', { name: mount.hero.label }));
       }
       out.injury = entry.id;
       out.lines.push(entry.id === 'sangle-cassee'
-        ? `La sellerie de ${possessionLabel(mount.possession)} est endommagée (-20 en Chevaucher jusqu'à réparation).`
-        : `${possessionLabel(mount.possession)} doit aller au pas jusqu'au maréchal-ferrant.`);
+        ? t('mt.girthBroken', { mount: possessionLabel(mount.possession) })
+        : t('mt.shoeLost', { mount: possessionLabel(mount.possession) }));
       break;
     }
     case 'boiteux':
       out.injury = 'boiteux';
-      out.lines.push(`${possessionLabel(mount.possession)} boite — la bête ne peut plus être montée ni attelée.`);
+      out.lines.push(t('mt.lame', { mount: possessionLabel(mount.possession) }));
       break;
     case 'patte-brisee':
       out.injury = 'patte-brisee';
-      out.lines.push(`${possessionLabel(mount.possession)} se brise une patte — Fracture (Majeure), la bête est condamnée.`);
+      out.lines.push(t('mt.legBroken', { mount: possessionLabel(mount.possession) }));
       break;
     default:
       break;
@@ -260,9 +265,9 @@ export function resolveMountedDay(mounts: PartyMount[], hours: number, allure: A
     for (let h = 0; h < Math.ceil(overHours - 1e-9); h++) {
       o.extenue += 1; // « il gagne un État Exténué » (l.146)
       const base = Math.max(0, p.e - 10 * o.extenue); // -10 par État Exténué (LDB 16)
-      const t = rollTest(base, 'intermediaire', rng);
-      o.tests.push(testDetail(`Résistance (${possessionLabel(mount.possession)})`, base, t));
-      if (!t.success) {
+      const tst = rollTest(base, 'intermediaire', rng);
+      o.tests.push(testDetail(t('mt.testOf', { skill: refLabel('skills', { id: 'resistance' }), mount: possessionLabel(mount.possession) }), base, tst));
+      if (!tst.success) {
         o.extenue += 1; // « l'animal prend un nouvel État Exténué » (l.146)
         const inc = resolveMountIncident(rollMountIncident(d100(rng)), mount, rng);
         o.incidents.push(inc);
@@ -273,15 +278,15 @@ export function resolveMountedDay(mounts: PartyMount[], hours: number, allure: A
       if (o.extenue > be) {
         o.collapsed = true; // Sonné + À Terre (l.146)
         const t2 = rollTest(p.e, 'intermediaire', rng); // « sans aucun modificateur »
-        o.tests.push(testDetail(`Résistance (${possessionLabel(mount.possession)}, effondrement)`, p.e, t2));
+        o.tests.push(testDetail(t('mt.testCollapseOf', { skill: refLabel('skills', { id: 'resistance' }), mount: possessionLabel(mount.possession) }), p.e, t2));
         o.dead = !t2.success;
         o.lines.push(o.dead
-          ? `${possessionLabel(mount.possession)} s'effondre, poussée jusqu'à la mort.`
-          : `${possessionLabel(mount.possession)} s'effondre d'épuisement (Sonné, À Terre).`);
+          ? t('mt.collapseDead', { mount: possessionLabel(mount.possession) })
+          : t('mt.collapse', { mount: possessionLabel(mount.possession) }));
         break;
       }
     }
-    if (o.extenue > 0 && !o.collapsed) o.lines.push(`${possessionLabel(mount.possession)} termine la journée fourbue (+${o.extenue} Exténué).`);
+    if (o.extenue > 0 && !o.collapsed) o.lines.push(t('mt.wearyDay', { mount: possessionLabel(mount.possession), n: o.extenue }));
     out.push(o);
   }
   return out;

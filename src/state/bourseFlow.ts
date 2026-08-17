@@ -78,8 +78,9 @@ export function canDebitBourse(_heroId: string): boolean {
 
 /** Débite ATOMIQUEMENT plusieurs bourses pour UN achat (cotisation) — TOUT ou RIEN : si une seule bourse
  *  ponctionnée est insolvable OU refuse le consentement (`consent`), AUCUNE n'est débitée et la
- *  fonction renvoie `false`. `recipient`/`purpose` = métadonnée de journal (le bénéficiaire d'un achat
- *  est INDÉPENDANT des payeurs — laissé à l'appelant). `consent` : prédicat de consentement par héros,
+ *  fonction renvoie `false`. `recipient`/`purpose` sont acceptés mais JAMAIS LUS ici (le corps ne
+ *  touche que `debits` et `consent`) : aucune journalisation ne les consomme — champs MORTS, #1340.
+ *  `consent` : prédicat de consentement par héros,
  *  défaut `canDebitBourse` — seam injectable pour le câblage coop per-siège (#619/#627). */
 export function payWithAllocation(
   get: Get,

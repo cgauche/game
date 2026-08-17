@@ -83,10 +83,10 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, a
   const lines: string[] = [];
   // Protection de Phâ (LDB 48 p.249) : un occupant d'une Zone `noCorruption` ne gagne aucune Corruption.
   if (n > 0 && hero.pos && (get().battle?.zones ?? []).some((z) => z.noCorruption && zoneCovers(z, hero.pos!))) {
-    return [`${hero.label} : la lumière sacrée de Phâ écarte la Corruption (aucun gain).`];
+    return [t('cor.phaWard', { name: hero.label })];
   }
   hero.corruption = (hero.corruption ?? 0) + n;
-  lines.push(`${hero.label} : +${n} Point${n > 1 ? 's' : ''} de Corruption (total ${hero.corruption}).`);
+  lines.push(t('cor.gain', { name: hero.label, n, s: n > 1 ? 's' : '', total: hero.corruption }));
 
   // Seuil « Corrompu » (l.80) : à CHAQUE gain au-delà de BFM+BE (+ Âme pure), Test de Résistance
   // Intermédiaire (+0) ; succès = contenu « pour cette fois », échec = mutation.
@@ -96,7 +96,7 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, a
   // (succès = contenu ; échec = « Je te renie ! »/mutation — les DEUX fenêtres partent de là). Repli
   // auto-résolu : l'IA seule (elle ne tient aucune modale).
   if (pilotedByHuman(get(), hero)) {
-    lines.push(`${hero.label} : la Corruption déborde son seuil — Test de Résistance.`);
+    lines.push(t('cor.threshold', { name: hero.label }));
     // `menace: 'mutation'` : l'échec du Test de seuil fait MUTER (l.82) → c'est le Test qui « résiste
     // à la Mutation » du talent Résistance (Menace), LDB 10 l.1015-1021.
     const seuil: PendingCorruption = { heroId: hero.id, kind: 'seuil', skill: 'resistance', skillLocked: true, align, menace: 'mutation' };
@@ -106,12 +106,12 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, a
   // REPLI AUTO-RÉSOLU — atteint SEULEMENT quand aucun humain ne pilote le porteur (le `return`
   // ci-dessus a déjà emporté tous les autres) : l'IA ne tient aucune modale, ni de seuil, ni de
   // renoncement. Le Test est donc jeté ici et la mutation appliquée d'office.
-  const t = rollTest(testValue(hero, 'resistance'), 'intermediaire', rng);
-  if (t.success) {
-    lines.push(resultLine(freeCons([`${hero.label} contient sa Corruption — pour cette fois.`])));
+  const tst = rollTest(testValue(hero, 'resistance'), 'intermediaire', rng);
+  if (tst.success) {
+    lines.push(resultLine(freeCons([t('cor.contained', { name: hero.label })])));
     return lines;
   }
-  lines.push(...applyMutation(get, set, hero, { roll: t.roll, target: t.target }, align));
+  lines.push(...applyMutation(get, set, hero, { roll: tst.roll, target: tst.target }, align));
   return lines;
 }
 
@@ -136,7 +136,7 @@ export function mutationNatureTableId(species: string | undefined): string {
 for (const max of new Set([50, ...species.map((s) => s.mutationBodyMax ?? 50)])) {
   const rows = mutationNatureRowsFor(max);
   registerTableStep(`${NATURE_TABLE_PREFIX}${max}`, {
-    label: 'Corps ou esprit',
+    label: t('cor.natureTable'),
     die: 100,
     rows,
     lines: (die) => [findTableEntry(rows, die).label],
@@ -272,19 +272,19 @@ function finishMutation(
   // ci-dessous) — pas de re-print (#295 Lot 4). Le jet de Résistance du seuil est lui aussi
   // déjà affiché par SA propre rangée (Corruption/Renounce) en amont — jamais réimprimé ici (#295 Lot 5).
   lines.push(resultLine(freeCons([
-    `${hero.label} MUTE : ${m.label} — Corruption ${kind} (${kindRoll} → ${kind === 'physique' ? 'corps' : 'esprit'}).`,
+    t('cor.mutates', { name: hero.label, label: m.label, kind: kind === 'physique' ? t('cor.kindPhysique') : t('cor.kindMentale'), roll: kindRoll, what: kind === 'physique' ? t('cor.body') : t('cor.mind') }),
   ])));
-  if (m.note) lines.push(`${m.label} : ${m.note}`);
+  if (m.note) lines.push(t('cor.mutationNote', { label: m.label, note: m.note }));
 
   // Limites de Corruption (l.87) : plus de mutations physiques que BE ou mentales que
   // BFM → l'âme appartient aux Dieux Sombres. Hors-jeu définitif (traité comme mort).
   if (mutationLimitExceeded(hero)) {
     hero.damned = true;
     hero.dead = true;
-    lines.push(`${hero.label} a BASCULÉ dans le Chaos — damné, perdu pour le groupe.`);
+    lines.push(t('cor.damned', { name: hero.label }));
   }
   if (pilotedByHuman(get(), hero))
-    pushReveal(set, { kind: 'mutation', title: `Mutation — ${m.label}`, dice: m.roll, lines: [...lines], subjectId: hero.id, severity: 'grave' });
+    pushReveal(set, { kind: 'mutation', title: t('cor.revealTitle', { label: m.label }), dice: m.roll, lines: [...lines], subjectId: hero.id, severity: 'grave' });
   checkPartyWiped(get, set); // damnation du dernier héros hors combat → défaite (no-op en combat)
   return lines;
 }
@@ -300,8 +300,8 @@ export function resolveRenounce(get: Get, set: Set, renounce: boolean): void {
   const lines: string[] = [];
   if (renounce && (hero.resilience ?? 0) > 0) {
     hero.resilience = (hero.resilience ?? 0) - 1;
-    lines.push(`${hero.label} — « Je te renie ! » : la mutation est REFUSÉE (1 Point de Résilience ; les Points de Corruption restent).`);
-    pushReveal(set, { kind: 'mutation', title: 'Je te renie !', lines: [...lines], subjectId: hero.id, severity: 'minor' });
+    lines.push(t('cor.renounced', { name: hero.label }));
+    pushReveal(set, { kind: 'mutation', title: t('cor.renounceTitle'), lines: [...lines], subjectId: hero.id, severity: 'minor' });
   } else {
     lines.push(...applyMutation(get, set, hero, { roll: pr.testRoll, target: pr.testTarget }, pr.align));
   }
@@ -338,9 +338,9 @@ export function resolveCorruptionPending(get: Get, set: Set, pc: PendingCorrupti
     // Le jet (roll/target) est DÉJÀ affiché par la rangée de la modale de Corruption — pas de
     // re-print au journal (#295 Lot 4).
     if (pc.success) {
-      get().log(resultLine(freeCons([`${hero.label} contient sa Corruption — pour cette fois.`])));
+      get().log(resultLine(freeCons([t('cor.contained', { name: hero.label })])));
     } else if ((hero.resilience ?? 0) > 0) {
-      get().log(resultLine(freeCons([`${hero.label} échoue à contenir sa Corruption — la mutation menace…`])));
+      get().log(resultLine(freeCons([t('cor.thresholdFail', { name: hero.label })])));
       set({ pendingRenounce: { heroId: hero.id, testRoll: pc.roll, testTarget: pc.target ?? 0, align: pc.align } });
     } else {
       for (const l of applyMutation(get, set, hero, { roll: pc.roll, target: pc.target ?? 0 }, pc.align)) get().log(l);
@@ -351,7 +351,7 @@ export function resolveCorruptionPending(get: Get, set: Set, pc: PendingCorrupti
   const gain = corruptionGain(pc.level ?? 'mineure', !!pc.success, pc.sl ?? 0);
   if (gain <= 0) {
     // Le jet est DÉJÀ affiché par la rangée de la modale de Corruption — pas de re-print (#295 Lot 5).
-    get().log(resultLine(freeCons([`${hero.label} repousse l'Influence corruptrice.`])));
+    get().log(resultLine(freeCons([t('cor.repelled', { name: hero.label })])));
     return;
   }
   for (const l of gainCorruption(get, set, hero, gain, pc.align)) get().log(l);

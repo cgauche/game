@@ -41,7 +41,8 @@ import { itemFromTrappingById, recomputeLoadout, autoStowNewItem } from '../engi
 import { toBrass, fromBrass, formatMoney, PA_PER_CO } from '../engine/money';
 import { partyMoneyTotal, payFromGroup, payWithAllocation, soloPayer, distributeCredit, bourseOf } from './bourseFlow';
 import { cargoTotalEnc, OPPORTUNITE, opportunityTradePct } from '../engine/seaVoyage';
-import { findVehicleById, activityStakeRef, refLabel } from '../data';
+import { findVehicleById, activityStakeRef, refLabel, dataLabel } from '../data';
+import { t } from '../i18n';
 import type { Combatant } from '../engine/types';
 import type { TravelRecapDay } from './travelFlow';
 import { toRecapLines } from './recapLine';
@@ -91,10 +92,10 @@ export function vesselFreeEnc(get: Get): number {
 /** Raison de BLOCAGE d'une Activité en mer pour un héros (affordance expliquée, jamais muette). */
 export function seaActivityBlocked(get: Get, def: ActivityDef): string | null {
   if (def.resolver === 'crewTraining') {
-    return 'L’équipage du navire de campagne est tenu par les PJ (MDG 14) — aucun équipage PNJ à entraîner.';
+    return t('sact.crewIsPlayers');
   }
   if (def.resolver === 'opportunityTrade' && vesselFreeEnc(get) <= 0) {
-    return 'Aucun point d’Encombrement disponible sur le navire — rien à investir (MDG 15).';
+    return t('sact.noFreeEnc');
   }
   return null;
 }
@@ -120,7 +121,7 @@ function buildSeaChartStep(hero: Combatant, def: ActivityDef, pick: SeaActivityP
   const difficulty = def.difficulty ?? 'complexe';
   return monoStep({
     id: `sea-activity-chart-${hero.id}`, kind: 'sea-activity-chart', actor: hero,
-    label: composeRollLabel(hero, 'Cartographie', test), difficulty, rollLabel: refLabel('skills', { id: 'metier', spec: 'cartographe' }),
+    label: composeRollLabel(hero, dataLabel(def.label), test), difficulty, rollLabel: refLabel('skills', { id: 'metier', spec: 'cartographe' }),
     // L'enjeu d'une Activité EST l'Activité choisie : il vit sur SA fiche (`ActivityDef.stake`).
     stake: activityStakeRef(def.id),
     ligne: { test },
@@ -192,7 +193,7 @@ export function seaActivitiesConfirm(get: Get, set: Set, picks: Record<string, S
   }
   if (iSteps.length) runCascadeImmediate(get, set, iSteps);
   if (surfacedSteps.length) {
-    openSequence(get, set, { title: 'Activités de la semaine', icon: 'travel/anchor', purpose: 'seaActivities', steps: surfacedSteps });
+    openSequence(get, set, { title: t('sact.weekTitle'), icon: 'travel/anchor', purpose: 'seaActivities', steps: surfacedSteps });
     return;
   }
   continueSeaActivitiesAfterCascade(get, set);
@@ -213,14 +214,14 @@ function openNextOpportunityTrade(get: Get, set: Set): void {
   const capGold = Math.min(vesselFreeEnc(get), Math.floor(toBrass(partyMoneyTotal(get)) / PA_PER_CO));
   const invest = Math.max(0, Math.min(Math.floor(pick.investGold ?? 0), capGold));
   if (invest <= 0) {
-    noteSeaLine(get, set, [`${hero.label} — Commerce d'opportunité : aucune mise engagée.`]);
+    noteSeaLine(get, set, [t('sact.tradeNoStake', { name: hero.label })]);
     continueSeaActivitiesAfterCascade(get, set);
     return;
   }
   payFromGroup(get, set, fromBrass(invest * PA_PER_CO), { purpose: 'commerce d’opportunité' });
   const test: RollRequest['test'] = { skill: OPPORTUNITE.test.skillId };
   get().startExtendedTest({
-    actorId: hero.id, label: 'Commerce d\'opportunité', skillLabel: 'Marchandage',
+    actorId: hero.id, label: dataLabel(activityById(pick.activityId)?.label ?? pick.activityId), skillLabel: refLabel('skills', { id: OPPORTUNITE.test.skillId }),
     target: effectiveTarget(hero, test, OPPORTUNITE.test.difficulty), targetDR: OPPORTUNITE.test.totalDR,
     maxAttempts: OPPORTUNITE.test.maxAttempts,
     outcome: { kind: 'sea-activity-opportunity', meta: { heroId: hero.id, investBrass: invest * PA_PER_CO } },
@@ -267,16 +268,16 @@ registerCascadeApplier('sea-activity-chart', (get, set, step, hero) => {
       autoStowNewItem(hero, it); // #204 : rangement par défaut
       recomputeLoadout(hero);
     }
-    j.push(`${hero.label} — Cartographie : une Carte marine d'une valeur de ${Math.max(0, step.result.sl)} CO (+2 DR d'Orientation, MDG 15).`);
+    j.push(t('sact.chartOk', { name: hero.label, gold: Math.max(0, step.result.sl) }));
     const stashCO = Math.max(0, Math.min(stashGold, Math.floor(toBrass(bourseOf(hero)) / PA_PER_CO)));
     if (stashCO > 0) {
       const stashBrass = stashCO * PA_PER_CO;
       payWithAllocation(get, set, { debits: soloPayer(hero.id, fromBrass(stashBrass)), recipient: hero.id, purpose: 'planque cartographie' });
       set({ bank: [...get().bank, { heroId: hero.id, kind: 'stash', brass: stashBrass, rate: 50, chartSecured: true }] });
-      j.push(`${hero.label} — Planque (MDG 15 l.292) : ${formatMoney(fromBrass(stashBrass))} cachés sur la carte — retrait libre, découverte sur ≤ 50.`);
+      j.push(t('sact.stash', { name: hero.label, money: formatMoney(fromBrass(stashBrass)) }));
     }
   } else {
-    j.push(`${hero.label} — Cartographie : les relevés sont inutilisables.`);
+    j.push(t('sact.chartKo', { name: hero.label }));
   }
   set({ party: [...get().party] });
   return { consequences: freeCons(j) };
@@ -307,7 +308,7 @@ registerExtendedTestOutcome('sea-activity-opportunity', (get, set, p, total) => 
   const pct = opportunityTradePct(total);
   const back = Math.floor((investBrass * pct) / 100);
   distributeCredit(get, set, fromBrass(back));
-  const line = `${hero?.label ?? 'Le héros'} — Commerce d'opportunité : mise ${formatMoney(fromBrass(investBrass))}, retour ${formatMoney(fromBrass(back))} (${pct} %).`;
+  const line = t('sact.tradeDone', { name: hero?.label ?? t('sact.heroFallback'), stake: formatMoney(fromBrass(investBrass)), back: formatMoney(fromBrass(back)), pct });
   noteSeaLine(get, set, [line]);
   continueSeaActivitiesAfterCascade(get, set);
   return { consequences: freeCons([line]) };

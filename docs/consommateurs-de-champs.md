@@ -164,8 +164,8 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 |---|---|---|
 | `min` | 1 | `src/ui/compendium/registry.ts:671` |
 | `max` | 1 | `src/ui/compendium/registry.ts:671` |
-| `id` | 4 | `src/engine/mountTravel.ts:192` |
-| `label` | 2 | `src/engine/mountTravel.ts:191` |
+| `id` | 4 | `src/engine/mountTravel.ts:197` |
+| `label` | 2 | `src/engine/mountTravel.ts:196` |
 | `text` | 1 | `src/ui/compendium/registry.ts:672` |
 | `stageOutcome` | **0 — JAMAIS LU** | — |
 | `vehicleWounds` | 1 | `src/ui/compendium/registry.ts:673` |
@@ -175,10 +175,10 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `skillId` | 4 | `src/engine/shipCritical.ts:149` |
-| `difficulty` | 3 | `src/engine/shipCritical.ts:149` |
-| `crewTarget` | 2 | `src/engine/shipCritical.ts:146` |
-| `onFail` | 2 | `src/engine/shipCritical.ts:153` |
+| `skillId` | 4 | `src/engine/shipCritical.ts:164` |
+| `difficulty` | 3 | `src/engine/shipCritical.ts:164` |
+| `crewTarget` | 2 | `src/engine/shipCritical.ts:161` |
+| `onFail` | 2 | `src/engine/shipCritical.ts:168` |
 
 ### `ShipCritEntry` (src/data/shipCriticals.ts)
 

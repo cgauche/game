@@ -21,7 +21,9 @@ import { stepDetail, stepFraction, stepPrecision } from './rollSeam';
 import { dataLabel, conditionLabel } from '../data';
 import { riverForceLabel } from '../engine/riverNavigation';
 import { locationLabel } from '../engine/types';
-import { diseaseLabel, refLabel } from '../data';
+import { shipLocationLabel } from '../engine/shipCritical';
+import { riverLocLabel } from './riverVoyageFlow';
+import { diseaseLabel, refLabel, findCareerById } from '../data';
 import type { PlayerText } from '../i18n/playerText';
 
 /** Un site migré : ce que le flux écrivait AVANT, ce que le catalogue rend APRÈS. */
@@ -404,7 +406,7 @@ const V8C2: Site[] = [
     // là où sa jumelle influençable rendait `conditionLabel`, et la Localisation était l'id de table
     // (« Critique au greement »). L'oracle est le texte CORRECT : la parité avec un bug n'est pas un abri.
     avant: `Critique au ${'gréement'} — ${HEROS3} subit ${5} Dégâts d'éclats${` et gagne l'État ${'Empêtré'}.`}${` (Initiative ${62}/${41} ratée)`}`,
-    apres: t('rv.splinterHit', { loc: t('rv.locGreement'), name: HEROS3, dmg: 5, cond: t('rv.fragSplinterCond', { cond: conditionLabel('empetre') }), dodge: t('rv.fragDodgeFailed', { roll: 62, target: 41 }) }),
+    apres: t('rv.splinterHit', { loc: shipLocationLabel('greement'), name: HEROS3, dmg: 5, cond: t('rv.fragSplinterCond', { cond: conditionLabel('empetre') }), dodge: t('rv.fragDodgeFailed', { roll: 62, target: 41 }) }),
   },
   {
     site: 'riverVoyageFlow.ts:962 — échouage + renflouage (suite optionnelle à trois clés imbriquées)',
@@ -541,7 +543,130 @@ const V8C3: Site[] = [
   },
 ];
 
-const TOUS: Site[] = [...SEQUENCE, ...MARQUAGE, ...SIGNES, ...COMBAT, ...V8C1, ...V8C2, ...V8C3];
+/* ── V8c₄ : les quatorze fichiers de la LONGUE TRAÎNE rendus au catalogue (invariant ZÉRO) ─────────
+ * `provisions` (`prov.*`), `suffocation` (`suff.*`), `exposure` (`exp.*`), `mountTravel` (`mt.*`),
+ * `shipCritical` (`shipCrit.*`/`shipLoc.*`), `spellRangeFormat` (`spellFmt.*`), `upkeep`, `medicFlow`
+ * (`medic.*`), `netFlow` (`coop.*`), `travelPostes` (`tp.*`), `corruptionFlow` (`cor.*`),
+ * `seaActivities` (`sact.*`), `portFlow` (`port.*`), `partyFlow` (`pf.*`). DEUX oracles portent le
+ * texte CORRIGÉ, pas celui d'avant : la LOCALISATION de Critique de navire et la CARRIÈRE d'arrivée
+ * étaient rendues en ID brut (« Critique navire (greement) », « carrière → chasseur-de-primes ») —
+ * la parité avec un bug n'est pas un abri (précédent V8c₂/V8c₃). */
+
+const BETE4 = 'Jument de trait';
+
+const V8C4: Site[] = [
+  {
+    site: 'provisions.ts:177 — dépérissement de Faim (apostrophe DROITE au site, U+2212)',
+    avant: `${HEROS3} dépérit : −10 à toutes les autres Caractéristiques, ${3} Blessure(s) (la faim ignore l'armure).`,
+    apres: t('prov.wasting', { name: HEROS3, dmg: 3 }),
+  },
+  {
+    // La Compétence lancée vient de `skills.json` : le gabarit ne la bake plus (règle de `mt.testOf`).
+    site: 'provisions.ts:241 — libellé du Test de Faim (Compétence lue à la donnée, malus OPTIONNEL, U+2212)',
+    avant: `Faim : Test de Résistance${3 > 1 ? ` (−${(3 - 1) * 10})` : ''}`,
+    apres: t('prov.testLabel', { kind: t('prov.faim'), skill: refLabel('skills', { id: 'resistance' }), malus: t('prov.fragTestMalus', { n: 20 }) }),
+  },
+  {
+    site: 'provisions.ts:317 — le MÊME gabarit sert la Soif (une phrase, deux Tests)',
+    avant: 'Soif : Test de Résistance',
+    apres: t('prov.testLabel', { kind: t('prov.soif'), skill: refLabel('skills', { id: 'resistance' }), malus: '' }),
+  },
+  {
+    // DIVERGENCE PAR LIVRE PRÉSERVÉE : la barque fluviale a des « rames » (MSRC 7 l.56), le navire
+    // de mer des « avirons » (MDG 13 l.575-582). Le foyer commun sert les deux, la variante surcharge.
+    site: 'riverVoyageFlow.ts:84 — Localisation FLUVIALE « avirons » → « rames » (MSRC 7 l.56)',
+    avant: 'rames',
+    apres: riverLocLabel('avirons'),
+  },
+  {
+    site: 'shipCritical.ts:34 — la MÊME Localisation en MER reste « avirons » (MDG 13 l.575-582)',
+    avant: 'avirons',
+    apres: shipLocationLabel('avirons'),
+  },
+  {
+    site: 'suffocation.ts:104 — souffle retenu (secondes + apostrophe droite)',
+    avant: `${HEROS3} retient son souffle (${18} s d'air).`,
+    apres: t('suff.holding', { name: HEROS3, s: 18 }),
+  },
+  {
+    site: 'exposure.ts:175 — Blessures d’Exposition (le VOLET est un fragment, froid/chaleur)',
+    avant: `${HEROS3} souffre ${'du froid'} : ${4} Blessure(s) (ignore les PA).`,
+    apres: t('exp.wounds', { name: HEROS3, what: t('exp.fromCold'), dmg: 4 }),
+  },
+  {
+    site: "exposure.ts:217 — sans manteau ni cape (pénalité maison lue à la policy)",
+    avant: `${HEROS3} n'a ni manteau ni cape — le froid mord (−${10} aux Tests d'Exposition).`,
+    apres: t('exp.noCoat', { name: HEROS3, pen: 10 }),
+  },
+  {
+    // CORRIGÉ : `${location}` rendait l'id de table. La Localisation vient de `shipLocationLabel`.
+    site: 'shipCritical.ts:73 — ligne de Critique de navire (LOCALISATION + DEUX fragments optionnels)',
+    avant: `Critique navire (${'gréement'}) : ${'Voilure déchirée'}${` — Éclats ${2}`}${` — ${3} Critique(s) de Coque`}.`,
+    apres: t('shipCrit.line', {
+      loc: shipLocationLabel('greement'), label: 'Voilure déchirée',
+      eclats: t('shipCrit.fragShrapnel', { n: 2 }), extra: t('shipCrit.fragExtraHull', { n: 3 }),
+    }),
+  },
+  {
+    site: 'mountTravel.ts:281 — Test d’effondrement d’une monture (Compétence lue à `skills.json`)',
+    avant: `Résistance (${BETE4}, effondrement)`,
+    apres: t('mt.testCollapseOf', { skill: refLabel('skills', { id: 'resistance' }), mount: BETE4 }),
+  },
+  {
+    site: 'spellRangeFormat.ts:42 — cible en CÔNE (deux mesures, « x » minuscule au site)',
+    avant: `Cône Longueur (${6} mètres) x Largeur (${3} mètres)`,
+    apres: t('spellFmt.cone', { length: 6, width: 3 }),
+  },
+  {
+    site: 'upkeep.ts:220 — privation de sommeil (pluriel porté par la variable, deux-points final)',
+    avant: `${HEROS3} — privation de sommeil (${2} nuit${2 > 1 ? 's' : ''} sans dormir) :`,
+    apres: t('upkeep.sleepDeprived', { name: HEROS3, n: 2, s: 2 > 1 ? 's' : '' }),
+  },
+  {
+    site: 'medicFlow.ts:236 — passe de Chirurgie (signe du DR + suite conditionnelle)',
+    avant: `${HEROS3} ${'opère'} ${'Kurt'} — passe : DR ${'+2'} (total ${5}/${10})${`, ${4} PB + 1 Hémorragie.`}`,
+    apres: t('medic.pass', {
+      healer: HEROS3, verb: t('medic.verbSurgery'), patient: 'Kurt', dr: '+2', cum: 5, target: 10,
+      suite: t('medic.fragPassHarm', { harm: 4 }),
+    }),
+  },
+  {
+    site: 'corruptionFlow.ts:275 — mutation (la NATURE et le MOT de nature en deux clés)',
+    avant: `${HEROS3} MUTE : ${'Peau écailleuse'} — Corruption ${'physique'} (${37} → ${'corps'}).`,
+    apres: t('cor.mutates', { name: HEROS3, label: 'Peau écailleuse', kind: t('cor.kindPhysique'), roll: 37, what: t('cor.body') }),
+  },
+  {
+    site: 'travelPostes.ts:416 — Exposition de fin d’Étape (météo lue au meta)',
+    avant: `${HEROS3} — Exposition de fin d'Étape (${'Neige'}) : transi par le froid.`,
+    apres: t('tp.exposureLine', { name: HEROS3, weather: 'Neige' }),
+  },
+  {
+    site: 'seaActivities.ts:276 — Planque de Cartographie (≤ typographique, monnaie formatée)',
+    avant: `${HEROS3} — Planque (MDG 15 l.292) : ${'12 CO'} cachés sur la carte — retrait libre, découverte sur ≤ 50.`,
+    apres: t('sact.stash', { name: HEROS3, money: '12 CO' }),
+  },
+  {
+    site: 'portFlow.ts:239 — Marchandage d’ACHAT (DR du vendeur optionnel + issue en 2ᵉ clé)',
+    avant: `${HEROS3} — Marchandage (${34} vs ${58}${`, vendeur +${2} DR`}) : ${`remise de ${10} %`}.`,
+    apres: t('port.bargainLine', {
+      name: HEROS3, roll: 34, opp: 58, seller: t('port.fragSellerDR', { dr: 2 }),
+      issue: t('port.discount', { pct: 10 }),
+    }),
+  },
+  {
+    site: 'partyFlow.ts:548 — sort mémorisé (remise universitaire en fragment, U+2212)',
+    avant: `${HEROS3} mémorise ${'Dard de feu'} (−${100} PX${`, remise de ${100} PX — Recherche universitaire`}).`,
+    apres: t('pf.spellLearned', { name: HEROS3, spell: 'Dard de feu', cost: 100, remise: t('pf.fragSpellDiscount', { n: 100 }) }),
+  },
+  {
+    // CORRIGÉ : `${newCareer}` rendait l'ID de carrière (« carrière → chasseur-de-primes »).
+    site: 'partyFlow.ts:710 — changement de carrière (CARRIÈRE lue à la donnée, U+2212)',
+    avant: `${HEROS3} : carrière → ${'Chasseur de primes'} (niv. ${2}, −${100} PX).`,
+    apres: t('pf.careerChanged', { name: HEROS3, career: dataLabel(findCareerById('chasseur-de-primes')!.label), level: 2, cost: 100 }),
+  },
+];
+
+const TOUS: Site[] = [...SEQUENCE, ...MARQUAGE, ...SIGNES, ...COMBAT, ...V8C1, ...V8C2, ...V8C3, ...V8C4];
 
 describe('#1318 V8b/V8b₂/V8c₀/V8c₁/V8c₂ — la migration au catalogue est à PARITÉ D’OCTET', () => {
   it.each(TOUS)('$site', ({ avant, apres }) => {
@@ -556,7 +681,8 @@ describe('#1318 V8b/V8b₂/V8c₀/V8c₁/V8c₂ — la migration au catalogue es
     expect(V8C1.length, 'échantillons des trois flux passés MIGRÉS par V8c₁ (interlude / bataille de masse / marchand)').toBe(17);
     expect(V8C2.length, 'échantillons des cinq fichiers passés MIGRÉS par V8c₂ (effets / store / voyage terrestre / fluvial / maladies)').toBe(23);
     expect(V8C3.length, 'échantillons des fichiers passés MIGRÉS par V8c₃ (mer / guérison / repos / nuit / équipage / séquelles)').toBe(19);
-    expect(TOUS.length).toBe(86);
+    expect(V8C4.length, 'échantillons des QUATORZE fichiers de la longue traîne passés MIGRÉS par V8c₄').toBe(19);
+    expect(TOUS.length).toBe(105);
   });
 
   it('MUTATION : l’oracle est SENSIBLE — un tiret cadratin changé en tiret court diverge', () => {
@@ -571,18 +697,23 @@ describe('#1318 V8b/V8b₂/V8c₀/V8c₁/V8c₂ — la migration au catalogue es
    * la branche jumelle passait par `conditionLabel`) et l'id de table de Critique (« Critique au
    * greement »). Ce ne sont pas des fautes de frappe : c'est un id qui traverse la couche d'affichage.
    *
+   * V8c₄ l'étend de DEUX ids de plus, vus fuir sur d'autres surfaces : `greement` à nouveau (mais par
+   * `engine/shipCritical.ts` cette fois — « Critique navire (greement) », un SECOND site pour le MÊME
+   * id, ce que la sonde déjà en place n'empêchait pas puisqu'elle ne lit que les oracles) et l'id de
+   * CARRIÈRE (« carrière → chasseur-de-primes », `state/partyFlow.ts`).
+   *
    * La garde balaie TOUS les oracles du fichier — un futur cas qui recopierait un id se ferait prendre
    * ici, pas à la recette. Elle ne mesure QUE les ids déjà vus fuir : elle ne certifie pas le zéro.
    */
-  it('FUITE D’ID : aucun oracle ne rend un id de donnée à l’écran (empetre / greement…)', () => {
-    const IDS_INTERDITS = /\b(empetre|greement|coque_|tres-fort|modere|construction-de-bateaux|charpentier|brasG|brasD|jambeG|jambeD|tete|arriere|lateral|peste-noire|ingenieur)\b/;
+  it('FUITE D’ID : aucun oracle ne rend un id de donnée à l’écran (empetre / greement / chasseur-de-primes…)', () => {
+    const IDS_INTERDITS = /\b(empetre|greement|coque_|tres-fort|modere|construction-de-bateaux|charpentier|brasG|brasD|jambeG|jambeD|tete|arriere|lateral|peste-noire|ingenieur|chasseur-de-primes|infection-mineure)\b/;
     const fuites = TOUS.filter((s) => IDS_INTERDITS.test(s.avant) || IDS_INTERDITS.test(s.apres))
       .map((s) => `${s.site} → « ${s.apres} »`);
-    expect(fuites, 'un id de donnée s’affiche : passer par son libellé (conditionLabel/specLabel/rv.loc*)').toEqual([]);
+    expect(fuites, 'un id de donnée s’affiche : passer par son libellé (conditionLabel / specLabel / shipLocationLabel / findCareerById)').toEqual([]);
   });
 
   it('CONTRE-PREUVE : la sonde de fuite d’id MORD (elle n’est pas vide-et-verte)', () => {
-    const IDS_INTERDITS = /\b(empetre|greement|coque_|tres-fort|modere|construction-de-bateaux|charpentier|brasG|brasD|jambeG|jambeD|tete|arriere|lateral|peste-noire|ingenieur)\b/;
+    const IDS_INTERDITS = /\b(empetre|greement|coque_|tres-fort|modere|construction-de-bateaux|charpentier|brasG|brasD|jambeG|jambeD|tete|arriere|lateral|peste-noire|ingenieur|chasseur-de-primes|infection-mineure)\b/;
     // Le texte EXACT que la production rendait avant le fix — il doit être refusé.
     expect(IDS_INTERDITS.test("Critique au greement — Sigrid subit 5 Dégâts d'éclats et gagne l'État empetre.")).toBe(true);
     // …et le texte corrigé passe.
@@ -592,5 +723,10 @@ describe('#1318 V8b/V8b₂/V8c₀/V8c₁/V8c₂ — la migration au catalogue es
     expect(IDS_INTERDITS.test('vent arriere')).toBe(true);
     expect(IDS_INTERDITS.test('Sigrid : la durée de « peste-noire » est réduite de 2 jours (reste 5 j).')).toBe(true);
     expect(IDS_INTERDITS.test('la déchirure (Jambe gauche) entre en rémission partielle (−10).')).toBe(false);
+    // #1318 V8c₄ — les deux ids que CE lot a vus fuir, avant / après.
+    expect(IDS_INTERDITS.test('Critique navire (greement) : Voilure déchirée.')).toBe(true);
+    expect(IDS_INTERDITS.test('Sigrid : carrière → chasseur-de-primes (niv. 2, −100 PX).')).toBe(true);
+    expect(IDS_INTERDITS.test('Critique navire (gréement) : Voilure déchirée.')).toBe(false);
+    expect(IDS_INTERDITS.test('Sigrid : carrière → Chasseur de primes (niv. 2, −100 PX).')).toBe(false);
   });
 });
