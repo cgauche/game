@@ -194,7 +194,7 @@ describe('manœuvres en combat (store)', () => {
     expect(pa!.fromCharge).toBe(true); // …elle s'approche (charge), elle ne tire pas à distance
   });
 
-  it('manœuvre gratuite = 1/tour (RAW LDB 85 l.171) : Morsure indisponible après une 1ʳᵉ Morsure, même avec de l\'Avantage', () => {
+  it('manœuvre gratuite = 1/tour (RAW LDB 85 l.237) : Morsure indisponible après une 1ʳᵉ Morsure, même avec de l\'Avantage', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     H.traits = [{ id: 'morsure', value: 10 }];

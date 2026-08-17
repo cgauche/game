@@ -87,7 +87,7 @@ export function entitySize(ent: { ref?: string; statblock?: CustomStatblock }): 
   return (traits && sizeFromTraits(traits)) || undefined;
 }
 
-/** Nuée au spawn (LDB 85 l.200) : ×5 PB (« cinq fois plus de PB qu'une créature type ») + 10 CC sur
+/** Nuée au spawn (LDB 85 l.253) : ×5 PB (« cinq fois plus de PB qu'une créature type ») + 10 CC sur
  *  les PB/carac. déjà calculés. Le B mono-créature du bestiaire reste, c'est lui qu'on multiplie. */
 function applySwarmBuild(chars: Characteristics, wounds: number): { chars: Characteristics; wounds: number } {
   chars['capacite-de-combat'] += 10;

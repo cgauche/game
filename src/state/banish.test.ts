@@ -45,7 +45,7 @@ describe('Démoniaque — banni à la mort (op `banish` en DONNÉE, déclenché 
 describe('onWoundLoss — TOUTE perte de PB (mêlée OU distance) ; le type voyage en attribut', () => {
   const alive = (over: Partial<Combatant> = {}) => mk({ wounds: { current: 10, max: 10, base: 10 } as never, ...over });
 
-  it('Sang corrosif éclabousse les Engagés même sur une perte à DISTANCE (RAW LDB 85 l.220 : « chaque fois »)', () => {
+  it('Sang corrosif éclabousse les Engagés même sur une perte à DISTANCE (RAW LDB 85 l.310 : « chaque fois »)', () => {
     const acid = alive({ id: 'ac', traits: [{ id: 'sang-corrosif' }] as never });
     const foe = alive({ id: 'fo', engagedWith: ['ac'] as never });
     const g = (() => ({ battle: { combatants: [acid, foe] } })) as never;

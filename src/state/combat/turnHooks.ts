@@ -275,7 +275,7 @@ registerCombatHook({
     if (!enemy || !hasRage(enemy.traits) || isFrenzied(enemy)) return;
     const adv = enemy.advantage ?? 0;
     if (adv >= 3) {
-      campSpend(get, enemy, adv); // dépense TOUS ses Avantages (LDB 85 l.281) — réserve du camp en mode groupe (AA 11 l.30-38)
+      campSpend(get, enemy, adv); // dépense TOUS ses Avantages (LDB 85 l.282) — réserve du camp en mode groupe (AA 11 l.30-38)
       (enemy.psychState ??= []).push({ type: 'frenesie' });
       battle.log.push(ev('frenzy', t('turn.rageEnter', { name: enemy.label }), enemy.id));
       set({ battle: { ...battle } });
@@ -292,7 +292,7 @@ registerCombatHook({
     // n'est pas modélisable en Trait ciblé (groupMatch), on ne dépense pas pour lui.
     const cibles = [...new Set(uncovered.map((f) => f.groups?.[0]).filter((g): g is string => !!g))];
     if (!cibles.length) return;
-    campSpend(get, enemy, adv); // dépense TOUS ses Avantages (LDB 85 l.283) — réserve du camp en mode groupe (AA 11 l.30-38)
+    campSpend(get, enemy, adv); // dépense TOUS ses Avantages (LDB 85 l.282) — réserve du camp en mode groupe (AA 11 l.30-38)
     enemy.psychState ??= [];
     for (const cible of cibles) {
       const src = uncovered.find((f) => f.groups?.[0] === cible)!;

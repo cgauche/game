@@ -155,7 +155,7 @@ Règle d'application des Traits Facultatifs modificateurs de profil (**Élite, C
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.11-13, l.45) → `aaTableFor`, `resolveAACritical`, `SceneEntity`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `critTableKeyFor`, `rollCritical` — `src/data/criticals.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, `src/ui/editor/OptionalTraitsPicker.tsx`
-- `LDB 85` (l.339-340) → `creatureWeapon`, `woundsForSize`, `taille-modificateurs-en-combat`, `sonne`, `souffle-feu`, `souffle-froid`, `souffle-corrosif`, `souffle-electrique`, `bestDefenseMode`, `souffle-poison`, +19 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, +2 fichiers
+- `LDB 85` (l.339-340) → `creatureWeapon`, `resizeBySteps`, `taille-modificateurs-en-combat`, `sonne`, `souffle-feu`, `souffle-froid`, `souffle-corrosif`, `souffle-electrique`, `bestDefenseMode`, `souffle-poison`, +18 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, +1 fichiers
 
 ---
 
@@ -204,7 +204,7 @@ Le trait **Endurant** ajoute +BE aux Blessures calculées (appliqué avant tout 
 **Voir aussi** : [Modificateurs de Taille en combat](#modificateurs-de-taille-en-combat) ; [Taille dans combat.md](combat.md#taille-categories-et-modificateurs-de-combat) (récapitulatif en-combat, renvoi ici pour le détail des Blessures).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.343-406) → `creatureWeapon`, `cannotStopOn`, `agressifEnvers`, `markAttacked`, `weaponFromTrait`, `EnemyTurnInput`, `woundsForSize`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, +37 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/engagement.ts`, +8 fichiers
+- `LDB 85` (l.343-406) → `creatureWeapon`, `cannotStopOn`, `agressifEnvers`, `markAttacked`, `sizeDamageMultiplier`, `weaponFromTrait`, `sizeGrantedQualities`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, +52 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/creatureEquip.ts`, +11 fichiers
 
 ---
 
@@ -222,7 +222,7 @@ Ces modificateurs s'appliquent **par catégorie d'écart**. Ils sont cumulatifs 
 - `LDB 85 l.339-340` — règle d'agrandissement/réduction.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.276-277, l.339-340) → `creatureWeapon`, `StatblockEditor`, `woundsForSize`, `resizeBySteps`, `resolvePsychAI`, `creatureToCombatant`, `taille-modificateurs-en-combat`, `sonne`, `souffle-feu`, `souffle-froid`, +25 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, +5 fichiers
+- `LDB 85` (l.276-277, l.339-340) → `creatureWeapon`, `StatblockEditor`, `resizeBySteps`, `resolvePsychAI`, `creatureToCombatant`, `taille-modificateurs-en-combat`, `sonne`, `souffle-feu`, `souffle-froid`, `souffle-corrosif`, +23 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, +5 fichiers
 
 ---
 
@@ -295,7 +295,7 @@ Une créature plus grande peut effectuer une **Attaque de Piétinement comme Act
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 14` (l.142-165) → `GrappleModal`, `areGrappling`, `setGrapple`, `scatter`, `combat-deux-armes`, `empetre`, `grappleTierMod`, `main-secondaire`, `effectiveSize`, `grappleEnvMod`, +45 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +25 fichiers
-- `LDB 85` (l.357-387) → `cannotStopOn`, `agressifEnvers`, `markAttacked`, `weaponFromTrait`, `EnemyTurnInput`, `woundsForSize`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, `taille-modificateurs-en-combat`, +11 — `src/data/index.ts`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/engagement.ts`, `src/engine/psychology.ts`, +7 fichiers
+- `LDB 85` (l.357-387) → `cannotStopOn`, `agressifEnvers`, `markAttacked`, `sizeDamageMultiplier`, `weaponFromTrait`, `sizeGrantedQualities`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, `displaceSmaller`, +25 — `src/data/index.ts`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/creatureEquip.ts`, `src/engine/engagement.ts`, +10 fichiers
 
 ---
 

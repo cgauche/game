@@ -158,7 +158,7 @@ export type Condition =
   | { kind: 'attackKind'; is: string }
   /** CAUSE d'un effarouchement courant (`ctx.startleCause` : 'noise' bruits forts / 'magic' présence de
    *  magie — LDB 85 l.197 Nerveux) — gate l'exemption Dressé (Guerre ignore les bruits, Magie ignore la
-   *  magie, LDB 85 l.89). Hors contexte d'effarouchement = jamais vrai. */
+   *  magie, LDB 85 l.110). Hors contexte d'effarouchement = jamais vrai. */
   | { kind: 'startleCause'; is: 'noise' | 'magic' }
   /** Blessures infligées par l'attaque/lancement courant (`ctx.woundsDealt`), comparées par `op` à
    *  `value` (Venin : `> 0` → Empoisonné ; un rider « coup lourd » : `>= 3`). Hors contexte = 0. */
@@ -550,7 +550,7 @@ export interface TriggeredEffect<E = EffectOp> {
   condition?: string;
   /** Filtre par TYPE d'attaque (`onHit`/`onWoundLoss`) : ne réagit que si la touche/perte provient d'une
    *  attaque de ce type (`melee`/`ranged`). Absent = tout type (Sang corrosif : « chaque fois qu'elle subit
-   *  des Blessures », LDB 85 l.220 → aucune restriction). Lu via `ctx.attackType`. */
+   *  des Blessures », LDB 85 l.310 → aucune restriction). Lu via `ctx.attackType`. */
   attackType?: 'melee' | 'ranged';
   /** Effet OPT-IN (RAW « Vous pouvez… » — Contrôle de la Frénésie, LDB 10 l.251-255) : le porteur CHOISIT
    *  de le déclencher. Héros en cadence MANUELLE → proposé (étape de CHOIX de fin de Round, skippable) ;

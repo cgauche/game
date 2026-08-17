@@ -34,13 +34,16 @@ import {
  * sorts (ch.46 ligne 170 → 121), le non-cumul des États (ch.16 ligne 20 → 13), « se libérer » (ch.16 ligne 61 → 66).
  * Re-geler après solde : voir `countsByFileRef` + `serializeBaseline` (lib).
  *
- * DETTES À CORRECTION CONNUE, gelées faute de droit d'écriture au moment de la pose (fichiers en
- * chantier dans une session parallèle) — à solder au premier passage sur ces fichiers, la ligne
- * cible étant déjà mesurée au `Source/` :
- *   • `src/gameIso/stage/useHoverTargeting.ts` — chapitre 46 du LDB, ligne 170 → ligne 121
- *   • `src/ui/editor/GameOpEditor.tsx` — chapitre 16 du LDB, ligne 61 → ligne 66
- * Les ~106 autres entrées, elles, restent à INSTRUIRE (ligne cible inconnue tant que le passage
- * n'a pas été relu au `Source/`).
+ * Les entrées restantes du registre sont à INSTRUIRE une par une (ligne cible inconnue tant que le
+ * passage n'a pas été relu au `Source/`).
+ *
+ * ANGLE MORT ASSERTÉ (mesuré, pas supposé) : une réf pointant une ligne PLEINE mais ÉTRANGÈRE au
+ * passage est invisible aux DEUX volets — ni `check-code-refs` (elle est dans les bornes du
+ * chapitre) ni celui-ci (la ligne n'est pas vide). Le lot E3-L1 en a mesuré 18 dans le seul
+ * chapitre 85 du LDB, où la section Taille a glissé d'environ 65 lignes après la ré-extraction
+ * Marker : les réfs tombaient en plein texte de « Régénération »/« Résistance à la Magie ». Les
+ * détecter exigerait un recouvrement SÉMANTIQUE généralisé (le recouvrement lexical à ±2 lignes ne
+ * mord pas ici : la ligne visée est pleine, donc jamais soumise au test) — coût à chiffrer, hors E3.
  */
 
 /**

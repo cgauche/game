@@ -714,7 +714,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
                     <label className="dr"><input type="checkbox" checked={!!o.valuePerSL.onFailure} onChange={(e) => upd({ valuePerSL: { ...o.valuePerSL, onFailure: e.target.checked || undefined } })} /> sur l'échec (niveau d'échec)</label>
                   </>
                 )}
-                {/* Se libérer (LDB 16 l.61 / Filets, Zoo Impérial p.29) — escapeStrength (Test opposé) et
+                {/* Se libérer (LDB 16 l.66 / Filets, Zoo Impérial p.29) — escapeStrength (Test opposé) et
                     escapeThreshold (Test à seuil) sont MUTUELLEMENT EXCLUSIFS (cf. resolveRecoverTest). */}
                 <label className="dr"><input type="checkbox" checked={o.escapeStrength != null} onChange={(e) => upd({ escapeStrength: e.target.checked ? { charOf: 'force' } : undefined, escapeThreshold: e.target.checked ? undefined : o.escapeThreshold })} /> Force d'évasion (opposée)</label>
                 {o.escapeStrength != null && <FormulaField label="Force" value={o.escapeStrength} min={0} onChange={(escapeStrength) => upd({ escapeStrength, escapeThreshold: undefined })} />}

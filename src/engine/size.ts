@@ -96,14 +96,14 @@ export function parseSizeLabel(raw: string): SizeCategory | null {
   return best;
 }
 
-/** Multiplicateur de Dégâts si l'attaquant est plus grand (LDB 85 l.297) : ×2 à +2 cat, ×3 à +3…
+/** Multiplicateur de Dégâts si l'attaquant est plus grand (LDB 85 l.361) : ×2 à +2 cat, ×3 à +3…
  *  (+1 cat = ×1, no-op — le bonus à +1 est l'Atout Dévastatrice). Jamais < 1. */
 export function sizeDamageMultiplier(attacker?: SizeCategory, target?: SizeCategory): number {
   const gap = sizeGap(attacker, target);
   return gap >= 2 ? gap : 1;
 }
 
-/** Atouts conférés par l'écart de Taille (LDB 85 l.295) : Dévastatrice à +1 cat, Percutante à +2 — CUMUL.
+/** Atouts conférés par l'écart de Taille (LDB 85 l.360) : Dévastatrice à +1 cat, Percutante à +2 — CUMUL.
  *  Renvoie des **ids stables** (consommés tels quels par `qualityDamageStep`, plus de parse de libellé). */
 export function sizeGrantedQualities(attacker?: SizeCategory, target?: SizeCategory): QualityId[] {
   const gap = sizeGap(attacker, target);
@@ -112,7 +112,7 @@ export function sizeGrantedQualities(attacker?: SizeCategory, target?: SizeCateg
   return [];
 }
 
-/** Issue d'un Test de Force opposé selon la Taille (LDB 85 l.311-312), du point de vue de `a` :
+/** Issue d'un Test de Force opposé selon la Taille (LDB 85 l.378), du point de vue de `a` :
  *  a ≥ +2 cat → `autoWin` ; a plus petit (gap ≤ −1) → `needCrit` (doit un Critique pour s'opposer) ; sinon `normal`. */
 export function forceOpposedOutcome(a?: SizeCategory, b?: SizeCategory): 'autoWin' | 'needCrit' | 'normal' {
   const gap = sizeGap(a, b);
@@ -121,7 +121,7 @@ export function forceOpposedOutcome(a?: SizeCategory, b?: SizeCategory): 'autoWi
   return 'normal';
 }
 
-/** Points de Blessure de base par catégorie de Taille (LDB 85 l.332-352). bf/be/bfm = Bonus de F/E/FM. */
+/** Points de Blessure de base par catégorie de Taille (LDB 85 l.393-401). bf/be/bfm = Bonus de F/E/FM. */
 export function woundsForSize(bf: number, be: number, bfm: number, size: SizeCategory = 'moyenne'): number {
   const moyenne = bf + 2 * be + bfm;
   switch (size) {
@@ -162,7 +162,7 @@ export function stepSize(size: SizeCategory | undefined, steps: number): SizeCat
 }
 
 /**
- * « Utiliser les Tailles » (LDB 85 l.276-277) : agrandir une créature de `steps` catégories augmente
+ * « Utiliser les Tailles » (LDB 85 l.340) : agrandir une créature de `steps` catégories augmente
  * **F** et **E** de +10 et réduit **Ag** de −5 PAR catégorie ; réduire (`steps` < 0) inverse le procédé.
  * Générique (carac. complètes OU statbloc partiel : une carac. absente part de `def`, défaut 30).
  * Retourne un NOUVEL objet (les autres carac. inchangées). Outil de construction d'une variante.

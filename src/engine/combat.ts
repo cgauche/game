@@ -739,7 +739,7 @@ export function attackModifiers(
     const salvoShots = hasQuality(weapon, 'salve') ? (attacker.shotsThisTurn ?? 0) : 0;
     if (salvoShots > 0) out.push({ label: 'Salve (tir suivant)', value: -10 * salvoShots, famille: 'jet', ref: RULE_REF.salve });
     // Taille de la CIBLE au tir (LDB 14 l.151-170) — valeur absolue −30..+60. Une Nuée ignore la
-    // Taille et donne +40 au tir contre elle (LDB 85 l.200).
+    // Taille et donne +40 au tir contre elle (LDB 85 l.253).
     if (target?.swarm) out.push({ label: 'Nuée (tir)', value: 40, famille: 'circonstance', ref: RULE_REF.nuee });
     else if (target && !ignoresSizeRangedMods(attacker)) { // Tireur d'élite (LDB 10) : ignore la Taille de la cible
       const sm = SIZE_RANGED_MOD[effectiveSize(target.size)];
@@ -756,7 +756,7 @@ export function attackModifiers(
     const reach = weaponReachPenalty(weapon, target.weapons?.find((w) => w.type === 'melee'));
     if (reach) out.push({ label: "Allonge de l'adversaire", value: reach, famille: 'circonstance', ref: RULE_REF['allonge-longueur-d-arme'] });
   }
-  // +10 au plus petit, mêlée ET tir (LDB 85 l.301-303). Une Nuée ignore TOUTES les règles de Taille (l.200).
+  // +10 au plus petit, mêlée ET tir (LDB 85 l.366). Une Nuée ignore TOUTES les règles de Taille (l.253).
   if (target && !attacker.swarm && !target.swarm && sizeGap(attacker.size, target.size) < 0) out.push({ label: 'Taille (plus petit)', value: 10, famille: 'circonstance', ref: RULE_REF['taille-modificateurs-en-combat'] });
   const precise = qualitySum(weapon, 'attackMod');
   if (precise) {
@@ -1066,7 +1066,7 @@ export function finishMelee(
  * d'attaque `atkBd` (libellé « Corps à corps » vs « Projectiles », construit par l'appelant avec SES
  * mods : la mêlée via `finishMelee`, le tir DÉFENDU via `resolveRanged` — défense RAW Protectrice 2+/
  * Bout Portant/tireur Engagé). drAdjust : Défensive (déf.) +1 DR (l.273), À Enroulement (att.) -1 DR
- * (l.259), pénalité de Taille en Parade (LDB 85 l.305-306) ; Protectrice (LDB 62 l.306) → Indice PA
+ * (l.259), pénalité de Taille en Parade (LDB 85 l.370) ; Protectrice (LDB 62 l.306) → Indice PA
  * partout en Parade. Imprécise/Pratique/Peu Fiable/Lente modulent le DR du Test (LDB 62/60).
  */
 function combineOpposed(
@@ -1082,7 +1082,7 @@ function combineOpposed(
   const { location, dmgProxy } = opts;
   const parryWeapon = opts.parryWeapon ?? defender.weapons[0];
   const dodgeMod = opts.dodgeMod ?? 0;
-  const noSize = !!attacker.swarm || !!defender.swarm; // Nuée : ignore toutes les règles de Taille (LDB 85 l.200)
+  const noSize = !!attacker.swarm || !!defender.swarm; // Nuée : ignore toutes les règles de Taille (LDB 85 l.253)
   const parrySizePenalty = defenseMode === 'parade' && !noSize ? 2 * Math.max(0, sizeGap(attacker.size, defender.size)) : 0;
   // +DR d'effet actif/trait sur un Test d'ATTAQUE RÉUSSI (chanson « Jacques Bret » : +1 DR Corps à corps,
   // MDG 09 l.228) — même règle d'application que le +DR de Talent (LDB 10 l.19 : « utilisation RÉUSSIE »).
@@ -1144,7 +1144,7 @@ function combineOpposed(
   res.defenderRoll = def.roll;
   res.defenderDetail = defLine;
   res.parryWeapon = usedParry;
-  if (res.hit && (attacker.swarm || sizeGap(dmgProxy?.size ?? attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200) ; charge montée → Taille de la monture
+  if (res.hit && (attacker.swarm || sizeGap(dmgProxy?.size ?? attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.362/253) ; charge montée → Taille de la monture
   return res;
 }
 
@@ -1178,7 +1178,7 @@ export function resolveMeleePassive(
   const atkBd = bd(attackTestLabel(weapon, 'melee'), combatValue(attacker, 'melee', weapon), atk, compo ?? composeAttack(attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env })));
   if (!atk.success) return miss(attacker, defender, atkBd, 'defender');
   const res = applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon, atk.success) + psychDRAdjust(attacker, defender) + skillDRBonus(attacker, 'corps-a-corps') + offTerrainTestDR(attacker), atk.isDouble && atk.success, location, dmgProxy, 0, withhold); // Imprécise : −1 DR à l'attaque (LDB 62 l.323) ; Pointue (LDB 62 l.288) ; Peur/Haine ±1 DR (LDB 21) ; +DR d'effet actif sur un Test réussi (Jacques Bret) ; hors de son terrain −DR (Créature marine, MDG p.140)
-  if (res.hit && (attacker.swarm || sizeGap(dmgProxy?.size ?? attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200) ; charge montée → Taille de la monture
+  if (res.hit && (attacker.swarm || sizeGap(dmgProxy?.size ?? attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.362/253) ; charge montée → Taille de la monture
   return res;
 }
 
@@ -1430,7 +1430,7 @@ export function resolveStrayRangedHit(
   return res;
 }
 
-/** Attaque de Piétinement (LDB 85 l.320-321) : créature plus grande, Dégâts = Bonus de Force (+0),
+/** Attaque de Piétinement (LDB 85 l.387) : créature plus grande, Dégâts = Bonus de Force (+0),
  *  via Corps à corps (Bagarre). Action gratuite — le coût de 1 Avantage est géré par le store. */
 export function resolveTrample(attacker: Combatant, target: Combatant, rng: RNG = defaultRNG): AttackResult {
   const fist: Weapon = { label: 'Piétinement', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
@@ -1505,7 +1505,7 @@ function applyHit(
   const weaponDmg = effectiveWeaponDamage(weapon, sb); // Dégâts réduits par l'usure de l'arme (LDB 62 l.178)
   const units = atkBd.roll % 10; // dé des unités (LDB 62 l.279/313) ; « 00 » → 0
   // Dévastatrice (max(DR, unités)) / Percutante (+unités), annulés par Inoffensive ; Atouts conférés
-  // par la Taille (attaquant plus grand, LDB 85 l.295) fusionnés via `extra` (qualityDamageStep).
+  // par la Taille (attaquant plus grand, LDB 85 l.360) fusionnés via `extra` (qualityDamageStep).
   // Une Nuée ignore toutes les règles de Taille (l.200) : ni Atout ni multiplicateur de Taille.
   // Épuisante (LDB 62 l.319) : Percutante/Dévastatrice de l'arme inertes hors Charge (`charged`).
   const noSize = !!attacker.swarm || !!defender.swarm || withholding || !!hullAdj; // Retenir ses coups perd l'Atout Taille (Aux Armes 07 l.61) ; coque : tableau MDG à la place (l.616)
@@ -1514,7 +1514,10 @@ function applyHit(
   // Talents de Dégâts (LDB 10) : Coup puissant (mêlée), Tir précis (distance), Combat déloyal
   // (Bagarre), Charge berserk/Déterminé (en Charge) — +niveau, avant le multiplicateur de Taille.
   damage += talentDamageBonus(attacker, weapon, !!attacker.chargedThisTurn);
-  if (!noSize) damage *= sizeDamageMultiplier(dmgSize, defender.size); // ×N AVANT soak (LDB 85 l.297, confirmé utilisateur)
+  // LDB 85 l.361 (la multiplication s'applique après les modificateurs — l'ordre exact vis-à-vis de
+  // l'encaisse Bonus d'E + PA est à trancher, ticket à venir ; l'implémentation actuelle multiplie
+  // avant l'encaisse).
+  if (!noSize) damage *= sizeDamageMultiplier(dmgSize, defender.size);
   // Coque (MDG 13 l.618-637) : le BE ajusté du tableau (« 3 × BE » / « BE−1 ») est appliqué côté
   // Dégâts (mathématiquement identique, sans écraser le clamp de PA) — « 3 × BE » ⇔ −2×BE de plus.
   if (hullAdj && 'extraTB' in hullAdj) damage -= hullAdj.extraTB;

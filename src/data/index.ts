@@ -1491,7 +1491,7 @@ export interface ManeuverDef {
   activation: 'action' | 'free' | 'charge';
   advantageCost: number;
   /** Gestion de l'Avantage dépensé : `fixed` = `advantageCost` (défaut) ; `variable` = le joueur
-   *  CHOISIT (Regard : +1 DR par Avantage, LDB 85 l.238) ; `all` = dépense tout (Hurlement, l.135). */
+   *  CHOISIT (Regard : +1 DR par Avantage, LDB 85 l.290) ; `all` = dépense tout (Hurlement, l.170). */
   advantageMode?: 'fixed' | 'variable' | 'all';
   /** Caractéristique du jet de l'attaquant (capacite-de-combat mêlée / capacite-de-tir distance·zone) ;
    *  absent = AUCUN jet d'attaquant (Hurlement : chaque cible teste sa Résistance). */
@@ -1635,7 +1635,7 @@ export interface TraitCapabilities {
   noRun?: boolean;
   seesInDark?: boolean;
   /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.176` ;
-   *  Infravision = illimité, grande valeur — `LDB 85 l.165`). Lue par `darkSightTiles`. */
+   *  Infravision = illimité, grande valeur — `LDB 85 l.191`). Lue par `darkSightTiles`. */
   darkSightTiles?: number;
   /** Salive analgésique (MSRC 15) : la morsure INDOLORE de la créature ne RÉVEILLE pas une proie
    *  endormie (Inconscient magique) — elle s'y accroche sans être détectée. Lu par le modifier `wake-sleeper`. */

@@ -233,7 +233,7 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
     const minAdv = a.advantageMode === 'variable' ? 1 : a.avantage;
     if (active.advantage < minAdv) continue;
     if (a.trigger === 'action' && (battle.acted || !canTakeAction(active))) continue;
-    // RAW LDB 85 l.171 : « pendant son tour, la créature peut effectuer UNE Attaque gratuite » → 1/tour ;
+    // RAW LDB 85 l.237 : « pendant son tour, la créature peut effectuer UNE Attaque gratuite » → 1/tour ;
     // exception « une Attaque gratuite par tentacule » (l.355) → `count`/tour. Plafond DÉRIVÉ de la donnée
     // (`perTentacle`/`count`), compteur partagé `freeAttacksThisTurn` — pas de limite par type en dur.
     if (a.trigger === 'free' && (active.freeAttacksThisTurn?.[a.kind] ?? 0) >= (a.perTentacle ? (a.count ?? 1) : 1)) continue;

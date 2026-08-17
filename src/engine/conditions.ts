@@ -314,7 +314,7 @@ export function combatTestPenaltyParts(c: Combatant): ModLine[] {
   }
   // Auras de combat (Perturbant : −20 à BE m, LDB 85 p.341) — `testMod` projetés dans `auraMods` par le hook
   // `recompute-auras`. HORS du gate `ignoreStatePenalties` : une aura est un TRAIT, pas un État (Endurance de
-  // l'anachorète ne l'annule pas, LDB 42). Non-cumul = même pool (« une seule fois », LDB 85 l.208).
+  // l'anachorète ne l'annule pas, LDB 42). Non-cumul = même pool (« une seule fois », LDB 85 l.262).
   for (const m of c.auraMods ?? []) if (m.op.op === 'testMod' && m.op.char == null) cand.push({ amount: m.op.amount, nature: 'Aura', src: m.src });
   const out: ModLine[] = [];
   const best = poolWinner(cand);

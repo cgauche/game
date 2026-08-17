@@ -86,7 +86,7 @@ export function useHoverTargeting(
   // visée — mode neutre ou catégorie Tir ouverte — tant que l'Action n'est pas consommée.
   const ghostIds = useMemo<Set<string>>(() => {
     if (mode !== 'battle' || !battle || battle.over) return new Set();
-    // Mode incantation : grisage hors-LdV du SORT (LDB 46 l.170), indépendant de l'arme portée.
+    // Mode incantation : grisage hors-LdV du SORT (LDB 46 l.121), indépendant de l'arme portée.
     if (battle.action === 'cast' && battle.selectedSpellId) return castOutOfSightTargetIds(useGame.getState);
     if (battle.acted || battle.action !== null) return new Set();
     return outOfSightTargetIds(useGame.getState);

@@ -75,7 +75,7 @@ const COUVERT_AILLEURS = new Map<string, string>([
   // gameTime + d10 j (file scheduledEffects, horloge) ; fireScheduledEffects → applySummon ; précautions = cancelFlag.
   ['Gardien éternel', 'reconstitution d10 j si tué (op scheduleRespawn onSlain → resolveTriggerImpureOps → fireScheduledEffects/applySummon ; précautions = cancelFlag), #19'],
   // Dressé (Magie) : trait MARQUEUR sans effet propre — lu par le gate `startleCause` de Nerveux
-  // (Condition Flow `has dresse-magie` → exemption de l'effarouchement magique, LDB 85 l.89, données).
+  // (Condition Flow `has dresse-magie` → exemption de l'effarouchement magique, LDB 85 l.110, données).
   ['Dressé (Magie)', 'marqueur lu par le gate `startleCause` de Nerveux (exemption magie, données)'],
 ]);
 

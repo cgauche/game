@@ -1357,7 +1357,7 @@ Aptitudes d'entraînement des animaux (LDB 85 l.110) qui neutralisent ce Trait :
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.72-74, l.151-154) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `MedicState`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `tissage`, `surgeryNext`, +26 — `src/data/flow-stakes.json`, `src/data/talents.json`, `src/i18n/messages/fr.ts`, `src/state/medicFlow.ts`, `src/state/pendings.ts`, `src/state/rollFlowSpecs.ts`, +1 fichiers
 - `LDB 14` (l.118-131, l.175-177, l.179, l.180, l.181, l.182, l.183, l.184, l.187) → `advantageCapFor`, `isControlledMount`, `RunModal`, `combat-deux-armes`, `combatOrder`, `empetre`, `grappleTierMod`, `main-secondaire`, `grappleEnvMod`, `isPassengerInBattle`, +46 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, +25 fichiers
-- `LDB 85` (l.110, l.248-250, l.357-362) → `morsure`, `cannotStopOn`, `weaponFromTrait`, `woundsForSize`, `traitEntrySchema`, `SpawnExtras`, `empetre`, `etreinte-glaciale`, `availableAttacks`, `taille-modificateurs-en-combat`, +76 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, +11 fichiers
+- `LDB 85` (l.110, l.248-250, l.357-362) → `morsure`, `cannotStopOn`, `applySwarmBuild`, `sizeDamageMultiplier`, `weaponFromTrait`, `sizeGrantedQualities`, `traitEntrySchema`, `Condition`, `SpawnExtras`, `empetre`, +81 — `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/combat.ts`, +12 fichiers
 
 ---
 
@@ -3150,7 +3150,7 @@ L'aventure de départ **Aventures à Übersreik** rassemble les Traits d'un mons
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 16` (l.68-74, l.86-87) → `combat-fatigue`, `addCondition`, `StateRecoveryModal`, `EnemyAction`, `Formula`, `brise`, `needsRecoveryRoll`, `aaBleedUnconsciousDue`, `Condition`, `describeStateRecovery`, +24 — `src/data/combat-stakes.json`, `src/data/etats.json`, `src/data/flow-stakes.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, +15 fichiers
-- `LDB 85` (l.8-9, l.32-35, l.43, l.46-47, l.74-75, l.82-83, l.193-194, l.210-213, l.237, l.388, l.389, l.405, l.408, l.451) → `a-distance`, `arme`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `amphibie`, `agressifEnvers`, `markAttacked`, `a-terre`, +92 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +19 fichiers
+- `LDB 85` (l.8-9, l.32-35, l.43, l.46-47, l.74-75, l.82-83, l.193-194, l.210-213, l.237, l.388, l.389, l.405, l.408, l.451) → `a-distance`, `arme`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `amphibie`, `agressifEnvers`, `markAttacked`, `a-terre`, +89 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +16 fichiers
 - sans code : `AU1 4` (l.9, l.12)
 
 ---
@@ -3250,7 +3250,7 @@ La créature vomit un flot de corruption corrosive. **Pendant son tour, au prix 
 **Voir aussi** : Traits de créature (vue d'ensemble) · États (Sonné, Enflammé, Empoisonné, Brisé, Assourdi, Empêtré) · Tentacules et attaques naturelles · Zones d'effet et Lignes de vue · Avantage en combat · Le sort « Souffle » (Magie des Arcanes)
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.137-138, l.168-169, l.289-290, l.317-331, l.442-447) → `scene`, `planClimb`, `morsure`, `scenario`, `creatureWeapon`, `useTrampleJetProps`, `TraverseCapability`, `Formula`, `maxWounds`, `sizeDamageMultiplier`, +110 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +22 fichiers
+- `LDB 85` (l.137-138, l.168-169, l.289-290, l.317-331, l.442-447) → `scene`, `planClimb`, `morsure`, `scenario`, `creatureWeapon`, `useTrampleJetProps`, `TraverseCapability`, `Formula`, `maxWounds`, `moveEnv`, +102 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +20 fichiers
 
 ---
 
@@ -3345,7 +3345,7 @@ Les Dégâts dus au **Feu** sont notés à part et **jamais** régénérés. —
 **Voir aussi** : Traits d'attaque et d'allonge des créatures (Arme, Morsure, Cornes, Souffle, Étreinte glaciale) · Avantage en combat (Redoutable, Belliqueux) · Blessures critiques et Traumatisme (LDB 18) · Maladies et infections (LDB 20 — Blessure Purulente) · Localisation et Points d'Armure · Attaques magiques et Résistance des sorts (LDB 46) · Psychologie des créatures (Bestial, Immunité Psychologique).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.38-39, l.95-98, l.133-134, l.172-173, l.182-183, l.187, l.195, l.198-199, l.256-257, l.265, l.268, l.277-278, l.293-302) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `StatblockEditor`, +139 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/characteristics.ts`, +30 fichiers
+- `LDB 85` (l.38-39, l.95-98, l.133-134, l.172-173, l.182-183, l.187, l.195, l.198-199, l.256-257, l.265, l.268, l.277-278, l.293-302) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `StatblockEditor`, +136 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/characteristics.ts`, +28 fichiers
 - `ZI 1` (l.79-80) → `empoisonne`, `nuee-d-escampette`, `empetre`, `corps-a-corps`, `affinite-avec-les-animaux`, `sang-corrosif` — `src/data/creatures.json`, `src/data/spells.json`
 - `ZI 14` (l.1024, l.1025-1026, l.1045) → `fouissement` — `src/data/traits.json`
 - `EDO 11` (l.224-226) → `chair-necrosee`, `cretin`, `pattes-chevre`, `tete-bestiale-chien`, `digere`, `tete-pointue`, `dedoublement`, `absorption`, `amorphe`, `contagieux`, +2 — `src/data/etats.json`, `src/data/mutations.json`, `src/data/traits.json`
@@ -3553,7 +3553,7 @@ La créature est **porteuse de la maladie _Type_**. **Les autres doivent faire u
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 19` (l.34-58) → `CorruptionModal`, `combat-end-corruption`, `sombre-pacte`, `EXPOSURE_LADDER`, `MANUAL_COMBAT_INTENTS`, `physique`, `schema`, `corruption-mineure`, `corruption-moderee`, `corruption-majeure`, +16 — `src/data/characteristics.json`, `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/mutationTables.json`, `src/data/regles.json`, `src/data/schemas/defs/arcane-phenomena.ts`, +11 fichiers
 - `LDB 21` (l.9, l.20, l.21, l.23-25, l.27, l.29-35, l.37-39, l.41-51, l.54-57) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `terreur`, `opRow`, `openEncounterPsych`, `fearSourceFor`, `psychImmuneToFrom`, +59 — `src/data/combat-stakes.json`, `src/data/flow-stakes.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, +27 fichiers
-- `LDB 85` (l.5, l.13, l.17, l.25, l.51, l.59, l.71, l.87, l.92, l.110, l.142, l.150, l.165, l.179, l.185, l.221, l.225, l.249, l.253, l.262, l.264, l.274, l.282, l.334, l.335, l.383, l.411) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `affame`, `scenario`, `creatureWeapon`, `StatblockEditor`, +140 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, +26 fichiers
+- `LDB 85` (l.5, l.13, l.17, l.25, l.51, l.59, l.71, l.87, l.92, l.110, l.142, l.150, l.165, l.179, l.185, l.221, l.225, l.249, l.253, l.262, l.264, l.274, l.282, l.334, l.335, l.383, l.411) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `morsure`, `affame`, `scenario`, `creatureWeapon`, `StatblockEditor`, +152 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, +29 fichiers
 
 ---
 
@@ -3665,7 +3665,7 @@ Le **Zoo Impérial** ajoute un trait de mouvement parallèle à Vol, **Fouisseme
 **Voir aussi** : Taille des créatures et modificateurs de combat · Charge, Course et Désengagement · Bandes de portée (À distance) · Initiative et Avantage · Traits d'attaque de créature (Arme, Morsure, Cornes, Attaque Caudale)
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.62-158, l.160-162, l.285-286, l.310-314, l.357-370, l.428-439) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `useTrampleJetProps`, `StatblockEditor`, `TraverseCapability`, +119 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +26 fichiers
+- `LDB 85` (l.62-158, l.160-162, l.285-286, l.310-314, l.357-370, l.428-439) → `scene`, `a-distance`, `arme`, `planClimb`, `a-sang-froid`, `affame`, `scenario`, `useTrampleJetProps`, `StatblockEditor`, `TraverseCapability`, +124 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, +26 fichiers
 - `ZI 2` (l.66-70) → `fouissement`, `coup-puissant` — `src/data/creatures.json`, `src/data/traits.json`
 - `ZI 14` (l.1029-1035) → `fouissement` — `src/data/traits.json`
 - sans code : `AU1 4` (l.17)
@@ -3797,7 +3797,7 @@ Côté inverse, l'adversaire **plus petit** gagne toujours **+10 pour toucher** 
 **Voir aussi** : Trait Taille — ajustement de profil et Points de Blessure ; Modificateur d'à-toucher au Tir selon la Taille de la cible ; Atouts d'arme Dévastatrice & Percutante ; règle optionnelle Frappe Mortelle ; Peur & Terreur (psychologie) ; Désengagement ; Tests opposés.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.339-340, l.343-355, l.357-387, l.391-406) → `creatureWeapon`, `cannotStopOn`, `agressifEnvers`, `markAttacked`, `weaponFromTrait`, `EnemyTurnInput`, `woundsForSize`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, +37 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/engagement.ts`, +8 fichiers
+- `LDB 85` (l.339-340, l.343-355, l.357-387, l.391-406) → `creatureWeapon`, `cannotStopOn`, `agressifEnvers`, `markAttacked`, `sizeDamageMultiplier`, `weaponFromTrait`, `sizeGrantedQualities`, `EnemyTurnInput`, `forceOpposedOutcome` ⚠sans-appelant, `woundsForSize`, +52 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/creatureEquip.ts`, +11 fichiers
 - `ZI 14` (l.1075, l.1162) → `ethere`, `miracles` — `src/data/traits.json`
 - sans code : `ADE II 2` (l.563-589), `ZI 14` (l.1070)
 
@@ -3879,7 +3879,7 @@ Le profil ci-dessous porte le Trait **Nuée\*** (l'astérisque sur la créature 
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 14` (l.5-8) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `10-a-votre-action-au-prochain-round`, `vous-trebuchez-vous-perdez-votre-prochain-mouvement`, `vous-lachez-ou-ratez-vous-perdez-votre-prochaine-action`, `vous-vous-tordez-la-cheville-dechirure-musculaire-mineure-compte-comme-blessure-critique`, `vous-touchez-un-allie-au-hasard-ou-vous-meme-sonne`, `incident-de-tir-l-arme-explose-dans-votre-main-degats-au-bras-principal-arme-detruite`, `maladresse-tableau-des-oups`, `cleaveAffordance`, +14 — `src/data/oups.json`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/engine/combat.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +3 fichiers
-- `LDB 85` (l.199-200, l.252-253, l.346-355) → `morsure`, `STARTLE_CAUSE_LABELS`, `creatureWeapon`, `cannotStopOn`, `applySwarmBuild`, `TraumaFiche`, `weaponFromTrait`, `woundsForSize`, `traitEntrySchema`, `Condition`, +57 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/combat.ts`, +15 fichiers
+- `LDB 85` (l.199-200, l.252-253, l.346-355) → `morsure`, `STARTLE_CAUSE_LABELS`, `creatureWeapon`, `cannotStopOn`, `applySwarmBuild`, `sizeDamageMultiplier`, `TraumaFiche`, `weaponFromTrait`, `sizeGrantedQualities`, `traitEntrySchema`, +64 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/regles.json`, `src/data/schemas/defs/traits.ts`, `src/data/traits.json`, `src/engine/combat.ts`, +17 fichiers
 - `ZI 13` (l.984) → `derniere-gorgee`, `pierre-assoiffee` — `src/data/trappings.json`
 - sans code : `ZI 1` (l.702-709), `ZI 14` (l.1070)
 

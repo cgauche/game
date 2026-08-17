@@ -2329,7 +2329,7 @@ export function applyAttackResult(
     critLog.push(tr('cf.vomitStun', { name: target.label }));
   }
   // Effet DÉCLENCHÉ « à la perte de PB » authoré (Sang corrosif : 1d10 aux Engagés, BE+PA, min 1, sur
-  // TOUTE Blessure subie — LDB 85 l.220 ; Démoniaque : banni à 0 PB — `if woundsCurrent<=0`). Le TYPE
+  // TOUTE Blessure subie — LDB 85 l.310 ; Démoniaque : banni à 0 PB — `if woundsCurrent<=0`). Le TYPE
   // d'attaque (`weapon.type`) voyage dans le contexte ; un effet peut s'y restreindre (`attackType`).
   // Dispatcher générique (state/triggeredEffects), plus de handler en dur ni de branche par-nom.
   if (res.hit && res.woundsLost) {
@@ -3116,7 +3116,7 @@ export function resumeCleaveChain(get: Get, set: SetFn, attacker: Combatant, def
 }
 
 /** Balayage AUTOMATIQUE d'un attaquant conduit par l'IA après une touche de mêlée d'un plus grand
- *  (`res.cleave`, LDB 85 l.299) : enchaîne jusqu'à BCC attaques sur des adversaires adjacents non encore
+ *  (`res.cleave`, LDB 85 l.362) : enchaîne jusqu'à BCC attaques sur des adversaires adjacents non encore
  *  frappés, se déplaçant sur la case d'une cible tuée (l.10).
  *  MACHINERIE GÉOMÉTRIQUE (pas une réaction d'entité câblée par-nom) : le déclencheur `res.cleave` est
  *  dérivé GÉNÉRIQUEMENT (combat.ts : `attacker.swarm` ∨ `sizeGap ≥ 1`) et la Frappe Mortelle est une
@@ -3124,7 +3124,7 @@ export function resumeCleaveChain(get: Get, set: SetFn, attacker: Combatant, def
  *  trait/talent n'est nommé — règle universelle de l'arène pour les attaquants surdimensionnés/Nuée. */
 export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTarget: Combatant, res: AttackResult): void {
   if (!aiDriven(get(), attacker)) return;
-  const sizeCleave = !!res.cleave; // Taille/Nuée : enchaîne sur une simple TOUCHE (LDB 85 l.299)
+  const sizeCleave = !!res.cleave; // Taille/Nuée : enchaîne sur une simple TOUCHE (LDB 85 l.362)
   // Frappe Mortelle (option, hors Taille) : enchaîner seulement après avoir TUÉ en un coup (LDB 14 l.9).
   const fm = !sizeCleave && !!rule('combat-frappe-mortelle') && isOutOfAction(primaryTarget);
   if (!sizeCleave && !fm) return;
@@ -3146,7 +3146,7 @@ export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTar
 export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, target: Combatant, res: AttackResult, wasChain: boolean): void {
   if (!pilotedByHuman(get(), attacker)) return;
   const pc = get().pendingCleave;
-  const sizeCleave = !!res.cleave; // Taille : enchaîne sur une simple TOUCHE (LDB 85 l.299)
+  const sizeCleave = !!res.cleave; // Taille : enchaîne sur une simple TOUCHE (LDB 85 l.362)
   // Démarrage Frappe Mortelle (option, hors Taille) : la cible doit être TUÉE en un coup (LDB 14 l.9).
   const fmStart = !pc && !sizeCleave && !!rule('combat-frappe-mortelle') && isOutOfAction(target);
   if (!pc && !sizeCleave && !fmStart) return; // ni balayage en cours, ni déclenché par cette touche
@@ -3170,7 +3170,7 @@ export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, targe
 }
 
 // ---------------------------------------------------------------------------
-// Piétinement — action gratuite à 1 Avantage (LDB 85 - Traits de créature.md l.320-321)
+// Piétinement — action gratuite à 1 Avantage (LDB 85 - Traits de créature.md l.387)
 // ---------------------------------------------------------------------------
 
 /** Arme abstraite du Piétinement : Corps à corps (Bagarre), Dégâts = Bonus de Force (+0). */
@@ -3194,7 +3194,7 @@ export function trampleFreeMove(battle: BattleState | null | undefined, attacker
 export function applyTrample(get: Get, set: SetFn, attacker: Combatant, target: Combatant): void {
   const prevActed = get().battle?.acted ?? false; // « action gratuite » : ne doit pas consommer l'Action
   const free = trampleFreeMove(get().battle, attacker);
-  campSpend(get, attacker, free ? 0 : 1); // coût : 1 Avantage (LDB 85 l.320) — réserve du camp en mode groupe (AA 11 l.30-38)
+  campSpend(get, attacker, free ? 0 : 1); // coût : 1 Avantage (LDB 85 l.387) — réserve du camp en mode groupe (AA 11 l.30-38)
   const res = resolveTrample(attacker, target, battleRng());
   applyAttackResult(get, set, attacker, target, TRAMPLE_WEAPON, res, false); // pose acted=true (attaque standard)… ; Piétinement = résolution instantanée (pas de modale)
   const battle = get().battle!;
@@ -3286,7 +3286,7 @@ export function resolveFreeAttacks(get: Get, set: SetFn, actor: Combatant, trigg
 // ---------------------------------------------------------------------------
 // Attaques GRATUITES de créature (Taille & traits) — chacune au prix de 1 Avantage, OPPOSÉE
 // (la cible se défend Parade/Esquive, comme une attaque normale) et NE consomme PAS l'Action.
-// RAW : Piétinement (LDB 85 l.320-321, BF+0), Morsure/Attaque caudale (l.338/340, Indice) ; priorité
+// RAW : Piétinement (LDB 85 l.387, BF+0), Morsure/Attaque caudale (l.237/47, Indice) ; priorité
 // Morsure/Caudale (Indice) avant Piétinement (BF+0) — cf. exemple Aventures à Ubersreik.
 // ---------------------------------------------------------------------------
 
@@ -3315,7 +3315,7 @@ export function creatureAttackKind(weapon: { attackKind?: string; label: string 
 }
 
 /** Effets RAW post-touche d'une attaque gratuite (sur PB infligés) : Attaque caudale → cible de Taille
- *  INFÉRIEURE → À Terre (LDB 85 l.338). Le Venin est un `effects` du trait (dispatché par le
+ *  INFÉRIEURE → À Terre (LDB 85 l.47). Le Venin est un `effects` du trait (dispatché par le
  *  `fireTriggers('onHit')` d'`applyAttackResult`, atteint aussi par les attaques gratuites). */
 export function applyFreeAttackEffects(get: Get, attacker: Combatant, target: Combatant, kind: string, res: AttackResult): void {
   if (!res.hit) return; // les effets se déclenchent sur une touche réussie
@@ -3420,7 +3420,7 @@ export function applyWail(get: Get, set: SetFn, attacker: Combatant): boolean {
   return true; // « a agi » (creatureFreeAttacks.test le vérifie en cadence auto) ; la suspension est lue via `maneuverCascadePending`
 }
 
-/** Regard pétrifiant (IA) : jet CT puis résolution ; l'IA dépense TOUT (min 1), +1 DR/Av (LDB 85 l.238).
+/** Regard pétrifiant (IA) : jet CT puis résolution ; l'IA dépense TOUT (min 1), +1 DR/Av (LDB 85 l.290).
  *  Consomme l'Action. Renvoie false si pas d'Avantage/cible. Clôt par `checkBattleOver`. */
 export function applyGaze(get: Get, set: SetFn, attacker: Combatant): boolean {
   if (!attacker.pos || attacker.advantage < 1) return false;
@@ -3434,7 +3434,7 @@ export function applyGaze(get: Get, set: SetFn, attacker: Combatant): boolean {
   return true;
 }
 
-/** Étreinte glaciale (IA) : jet CC puis résolution ; 2 Av + Action (LDB 85 l.112). Renvoie false si pas
+/** Étreinte glaciale (IA) : jet CC puis résolution ; 2 Av + Action (LDB 85 l.138). Renvoie false si pas
  *  assez d'Avantage / pas de cible adjacente. Clôt par `checkBattleOver`. */
 export function applyChillGrasp(get: Get, set: SetFn, attacker: Combatant): boolean {
   if (!attacker.pos || attacker.advantage < 2) return false;
@@ -3629,7 +3629,7 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
     for (const a of atks) {
       if (a.trigger !== 'free') continue;
       if (a.kind === 'morsure' || a.kind === 'caudale') traitKinds.push(a.kind);
-      // Tentacules (LDB 85 l.354-355 : « Gagnez une Action d'Attaque gratuite PAR tentacule ») :
+      // Tentacules (LDB 85 l.405 : « Gagnez une Action d'Attaque gratuite PAR tentacule ») :
       // count× entrées (« 8 Tentacules +9 » → 8), coût d'Avantage 0.
       if (a.kind === 'tentacules') for (let i = 0; i < (a.count ?? 1); i++) traitKinds.push('tentacules');
     }
@@ -6364,7 +6364,7 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
     if (c.distractedRounds) c.distractedRounds = c.distractedRounds > 1 ? c.distractedRounds - 1 : undefined; // Distraire (LDB 10 l.364) : expire en fin de Round
     c.dispelledThisRound = undefined; // Dissipation : « un seul Sort chaque Round » (LDB 46 l.156)
   }
-  // Nuée (LDB 85 l.200) : tout opposant ENGAGÉ avec une nuée perd 1 PB en fin de Round (submergé).
+  // Nuée (LDB 85 l.253) : tout opposant ENGAGÉ avec une nuée perd 1 PB en fin de Round (submergé).
   const swarms = battle.combatants.filter((s) => s.swarm && !isOutOfAction(s));
   if (swarms.length)
     for (const c of battle.combatants) {

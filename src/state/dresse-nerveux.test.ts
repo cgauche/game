@@ -44,7 +44,7 @@ describe('Nerveux — effarouchement → +3 Brisé (effet de DONNÉE onStartled)
   });
 });
 
-describe('Dressé (Guerre) — ignore Nerveux pour les BRUITS FORTS seulement (LDB 85 l.89)', () => {
+describe('Dressé (Guerre) — ignore Nerveux pour les BRUITS FORTS seulement (LDB 85 l.110)', () => {
   it('bruits forts → AUCUN Brisé (exemption)', () => {
     const c = mk({ traits: [{ id: 'nerveux' }, { id: 'dresse-guerre' }] as never });
     startle(c, 'noise');
@@ -57,7 +57,7 @@ describe('Dressé (Guerre) — ignore Nerveux pour les BRUITS FORTS seulement (L
   });
 });
 
-describe('Dressé (Magie) — ignore Nerveux en présence de MAGIE seulement (LDB 85 l.89)', () => {
+describe('Dressé (Magie) — ignore Nerveux en présence de MAGIE seulement (LDB 85 l.110)', () => {
   it('magie → AUCUN Brisé (exemption)', () => {
     const c = mk({ traits: [{ id: 'nerveux' }, { id: 'dresse-magie' }] as never });
     startle(c, 'magic');
@@ -70,7 +70,7 @@ describe('Dressé (Magie) — ignore Nerveux en présence de MAGIE seulement (LD
   });
 });
 
-describe('Dressé (Guerre) — passive +10 CC (charMod, LDB 85 l.89) quand la discipline est EN DIRECT', () => {
+describe('Dressé (Guerre) — passive +10 CC (charMod, LDB 85 l.110) quand la discipline est EN DIRECT', () => {
   it('liveTrait dresse-guerre → +10 CC via le collecteur passif', () => {
     const c = mk({ characteristics: { 'capacite-de-combat': 30 } as never, liveTraits: [{ id: 'dresse-guerre' }] as never });
     expect(effectiveChar(c, 'capacite-de-combat')).toBe(40);
@@ -81,7 +81,7 @@ describe('Dressé (Guerre) — passive +10 CC (charMod, LDB 85 l.89) quand la di
   });
 });
 
-describe('Dressé (Dompté) — ignore le Trait Bestial (suppression générique, LDB 85 l.85)', () => {
+describe('Dressé (Dompté) — ignore le Trait Bestial (suppression générique, LDB 85 l.106)', () => {
   it('Bestial + Dompté → isBestial false (capacité supprimée)', () => {
     const c = mk({ traits: [{ id: 'bestial' }, { id: 'dresse-dompte' }] as never });
     expect(isBestial(c.traits)).toBe(false);
@@ -92,7 +92,7 @@ describe('Dressé (Dompté) — ignore le Trait Bestial (suppression générique
   });
 });
 
-describe('Dressé (Garde) — octroie le Trait Territorial (capability, LDB 85 l.87)', () => {
+describe('Dressé (Garde) — octroie le Trait Territorial (capability, LDB 85 l.108)', () => {
   it('Garde → isTerritorial true sans lister Territorial à part', () => {
     const c = mk({ traits: [{ id: 'dresse-garde' }] as never });
     expect(isTerritorial(c.traits)).toBe(true);

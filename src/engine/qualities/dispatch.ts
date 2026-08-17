@@ -288,7 +288,7 @@ export interface DamageStep {
 
 /** Ajustement de Dégâts dû aux qualités (ops PASSIVES `weaponDamageMod`) : Dévastatrice (DR = max(DR, dé
  *  des unités)), Percutante (+ dé des unités) ; **annulés** si une qualité Inoffensive est présente. `extra` =
- *  qualités conférées hors arme (ex. par la Taille, LDB 85 l.295). Épuisante (`chargeGated`, LDB 62 l.319) :
+ *  qualités conférées hors arme (ex. par la Taille, LDB 85 l.360). Épuisante (`chargeGated`, LDB 62 l.319) :
  *  les Atouts de Dégâts DE L'ARME ne valent qu'en Charge (`ctx.charged`) — pas ceux conférés par la Taille. Pur. */
 export function qualityDamageStep(w: QualityCarrier | undefined, ctx: DamageStepCtx, extra: string[] = []): DamageStep {
   // Ops `weaponDamageMod` de l'ARME (id → passif). Épuisante : hors Charge, on retire les Atouts de Dégâts

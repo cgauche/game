@@ -1173,7 +1173,7 @@ export interface GameState extends RollFlowActionsMap {
   // maneuver{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
   maneuverConfirm: () => void;
   maneuverCancel: () => void;
-  /** Avantage dépensé par le Regard pétrifiant (variable, LDB 85 l.238) : 1..advantage → +N DR. */
+  /** Avantage dépensé par le Regard pétrifiant (variable, LDB 85 l.290) : 1..advantage → +N DR. */
   maneuverSetAvantage: (n: number) => void;
   /** Course (LDB 15 l.79-82) : ouvrir la modale, lancer le Test d'Athlétisme, Chance/Résilience, appliquer (déplacement étendu). */
   battleRun: (dest?: Pt, movement?: { path: Pt[]; cost: number }) => void;
@@ -2063,7 +2063,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (mode === 'battle') {
       if (!battle || battle.over || !mover || !controlsCombatant(get(), mover)) return;
       const metres = Math.abs(heightAt(scene, to.x, to.y, to.z ?? 0) - heightAt(scene, from.x, from.y, from.z ?? 0));
-      // Grimpant `climbFullSpeed` (LDB 85 l.161) : coût NORMAL (1 case), pas la ½ vitesse du Talent
+      // Grimpant `climbFullSpeed` (LDB 85 l.162) : coût NORMAL (1 case), pas la ½ vitesse du Talent
       // Grimpeur joueur (LDB 15 l.53, `climbMovementCost`) — chemin joueur strictement inchangé.
       const cost = hasClimbFullSpeed(mover.traits) ? 1 : climbMovementCost(metres, sceneMetresPerTile(scene));
       placeCombatant(mover, scene, to); // hisse (optimiste) ; échec du Test → `fall` au pied

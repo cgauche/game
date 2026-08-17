@@ -81,7 +81,7 @@ describe('Taille en combat (T1) + env injecté — attackModifiers (LDB 14 l.151
     const mods = attackModifiers(mk(), mk(), bow, { kind: 'ranged', distanceTiles: 28, env: [{ label: 'Couvert (moyenne)', value: -20, famille: 'circonstance' }] });
     expect(mods.find((m) => m.label.startsWith('Couvert'))?.value).toBe(-20);
   });
-  it('+10 au plus petit en mêlée (attaquant Petite vs cible Moyenne, LDB 85 l.301-303)', () => {
+  it('+10 au plus petit en mêlée (attaquant Petite vs cible Moyenne, LDB 85 l.366)', () => {
     const mods = attackModifiers(mk({ size: 'petite' }), mk({ size: 'moyenne' }), sword, { kind: 'melee', env: [] });
     expect(mods.find((m) => m.label.startsWith('Taille (plus petit)'))?.value).toBe(10);
   });
@@ -144,7 +144,7 @@ describe('Atouts Dévastatrice / Percutante (LDB 62 l.279/313)', () => {
   });
 });
 
-describe('Taille — Frappe Mortelle (cleave) + Piétinement (LDB 85 l.299/320-321)', () => {
+describe('Taille — Frappe Mortelle (cleave) + Piétinement (LDB 85 l.362/387)', () => {
   const hit = evaluateTest(20, 60); // succès
   it('cleave posé sur une touche de mêlée d’un plus grand', () => {
     const r = resolveMeleePassive(mk({ size: 'enorme' }), mk({ size: 'moyenne' }), sword, hit);
@@ -160,7 +160,7 @@ describe('Taille — Frappe Mortelle (cleave) + Piétinement (LDB 85 l.299/320-3
   });
 });
 
-describe('Taille — défense −2 DR/catégorie en parade (LDB 85 l.305-306)', () => {
+describe('Taille — défense −2 DR/catégorie en parade (LDB 85 l.370)', () => {
   const moy = mk({ size: 'moyenne', weapons: [sword] });
   const atk = evaluateTest(30, 50); // DR 2
   const def = evaluateTest(30, 60); // DR 3 (le défenseur l'emporterait : 3 > 2)
@@ -175,7 +175,7 @@ describe('Taille — défense −2 DR/catégorie en parade (LDB 85 l.305-306)', 
   });
 });
 
-describe('Taille — Dégâts ×N + Atouts conférés (LDB 85 l.295-297)', () => {
+describe('Taille — Dégâts ×N + Atouts conférés (LDB 85 l.360-361)', () => {
   const ranged = { label: 'Arc', type: 'ranged' as const, damage: { plusBF: false, flat: 8 }, qualities: [] };
   it('attaquant Énorme (+2 cat) vs Moyen : ×2 + Dévastatrice + Percutante, AVANT soak', () => {
     expect(resolveStrayRangedHit(mk(), mk(), ranged, 34, 52).woundsLost).toBe(7); // 8+2 −3
@@ -260,7 +260,7 @@ describe('AttackResult — la RAISON du départage voyage sur le détail de lign
   });
 
   it('DR naturels DIFFÉRENTS, égalité créée par un AJUSTEMENT de DR → les deux lignes se TAISENT', () => {
-    // Pénalité de Taille en Parade (LDB 85 l.305-306) : l'attaquant Grand retire 2 DR à la Parade du
+    // Pénalité de Taille en Parade (LDB 85 l.370) : l'attaquant Grand retire 2 DR à la Parade du
     // défenseur Moyen. Les lignes affichent DR 3 (attaque) et DR 5 (parade) ; le verdict, lui, se joue
     // sur 3 contre 3 et se départage à la valeur nue (55 > 45, le défenseur l'emporte).
     const grand = mk({ label: 'Att', size: 'grande', characteristics: { ...mk().characteristics, 'capacite-de-combat': 45 } });

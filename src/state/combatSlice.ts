@@ -1076,7 +1076,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!a) return;
       if (active.advantage < a.avantage) return; // Hurlement : ≥ coût RAW (2, dépense tout à l'application)
       set({ battle: { ...battle, action: null } }); // referme le menu avant la résolution
-      // Hurlement (LDB 85 l.135) : PAS de jet d'attaquant — chaque cible tire son 1d10 + Test de
+      // Hurlement (LDB 85 l.170) : PAS de jet d'attaquant — chaque cible tire son 1d10 + Test de
       // Résistance (jets SUBIS montrés au feed). Aucune modale différable → résolution immédiate (le
       // wrapper roule les jets subis + checkBattleOver). Dépense TOUS les Avantages (min 2).
       if (kind === 'hurlement') applyWail(get, set, active);
@@ -1228,7 +1228,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || !pm || pm.result) return; // pas après le jet (l'Avantage fixe le DR)
       const attacker = inBattleId(battle, pm.attackerId);
       if (!attacker) return;
-      const clamped = Math.max(1, Math.min(n, attacker.advantage)); // 1..Avantage (LDB 85 l.238)
+      const clamped = Math.max(1, Math.min(n, attacker.advantage)); // 1..Avantage (LDB 85 l.290)
       set({ pendingManeuver: { ...pm, avantageSpent: clamped } });
     },
 

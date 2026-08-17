@@ -453,7 +453,7 @@ export interface PendingCleave {
   hitIds: string[];
   count: number;
   /** Mode Frappe Mortelle (option, hors Taille) : la poursuite EXIGE de tuer chaque cible (LDB 14
-   *  l.9). Absent/false = balayage de Taille (enchaîne sur une simple touche, LDB 85 l.299). */
+   *  l.9). Absent/false = balayage de Taille (enchaîne sur une simple touche, LDB 85 l.362). */
   fm?: boolean;
 }
 /** Sélection de la 2ᵉ cible du Maniement de deux armes (LDB 10 l.767-773), après une 1ʳᵉ frappe RÉUSSIE.
@@ -466,7 +466,7 @@ export interface PendingDualStrike {
   mainRoll: number;
   critValue?: number;
 }
-/** Piétinement en attente (LDB 85 l.320-321) : modale interactive — Lancer (resolveTrample) →
+/** Piétinement en attente (LDB 85 l.387) : modale interactive — Lancer (resolveTrample) →
  *  Chance → Appliquer (dépense 1 Avantage, action gratuite). */
 export interface PendingTrample {
   attackerId: string;
@@ -518,7 +518,7 @@ export interface PendingManeuver {
   /** Cible DÉSIGNÉE au clic (victime pour Langue/Regard/Étreinte ; point d'impact de la zone pour
    *  Souffle/Vomi — LDB 85 « choisit une cible visible »). Absent côté IA (cible auto la plus proche). */
   targetId?: string;
-  /** Avantage dépensé (coût RAW ; Regard : choisi par le joueur, +1 DR/Av — LDB 85 l.238). */
+  /** Avantage dépensé (coût RAW ; Regard : choisi par le joueur, +1 DR/Av — LDB 85 l.290). */
   avantageSpent: number;
   result: TestResult | null; // null = pas encore lancé
   rerolled?: boolean;
@@ -1236,7 +1236,7 @@ export interface ManeuverDefenseFreeze {
   maneuverId: string;
   /** Indice de la manœuvre (Dégâts = 4 + BF pour une arme naturelle, LDB 85). */
   indice: number;
-  /** Avantage dépensé (marge des manœuvres à Avantage VARIABLE, ex. Regard +1 DR/Av, LDB 85 l.238). */
+  /** Avantage dépensé (marge des manœuvres à Avantage VARIABLE, ex. Regard +1 DR/Av, LDB 85 l.290). */
   spent: number;
 }
 /** Contexte SÉRIALISABLE d'une ATTAQUE GRATUITE de talent (op `grantFreeAttack`) porté par une étape de
