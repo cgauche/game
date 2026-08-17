@@ -70,7 +70,10 @@ export const schema = z.array(
       propulsion: z.enum(['terrestre', 'fluvial', 'maritime']),
       rig: z.enum(['avirons', 'voile', 'mixte']).optional(),
       traits: z.array(z.strictObject({ id: z.string(), value: z.number().optional(), arg: z.string().optional() })).optional(),
-      locationTable: z.union([z.string(), z.null()]).optional(),
+      /** Table de Localisation des coups (`shipHitLocation`, `src/engine/combat.ts`) — vocabulaire
+       *  FERMÉ : une coquille d'authoring résoudrait sinon la coque fluviale sur la table maritime.
+       *  Absent/`null` = `navire` (MDG 13) ; `navire-fluvial` = MSRC 7. */
+      locationTable: z.union([z.enum(['navire', 'navire-fluvial']), z.null()]).optional(),
       criticalTable: z.union([z.string(), z.null()]).optional(),
     }).optional(),
     /** Facette NAVIRE (profil naval MDG 12). */

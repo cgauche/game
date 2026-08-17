@@ -39,6 +39,9 @@ const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/ui/ → ..
  *    par la re-visite de l'initialiseur : AUCUNE boucle n'était vue) ;
  *  - l'identité `book` ajoutée à `ID_NAME_RX` (`source.book`, sigle de livre).
  * Les entrées neuves portent leur motif NOMINATIF ci-dessous : stock avoué, à faire DÉCROÎTRE.
+ * Descente mesurée depuis : 60 → 58 (lots E4/C0+C1, `bc54767e`), puis 58 → 54 (lot E4/C2+C3,
+ * 2026-08-17) — `creation.ts` et `CharacterCreator.tsx` (gate d'espèce passé au champ
+ * `SpeciesData.gatedByRule`), `combat.ts` et `draft.ts` (tables `Record<union fermée, …>`).
  */
 const KNOWN: Record<string, number> = {
   'scripts/_qc-decor-sheet.mts': 2,
@@ -50,9 +53,7 @@ const KNOWN: Record<string, number> = {
   'scripts/qc/opera-furniture-check.mts': 2, // for…of démasqué : `FLOATING.has(e.ref)` + `e.ref !== 'siege'`
   'scripts/raw/reconcile.mjs': 1, // `book` démasqué : `c.book === 'LDB'` (garde de couverture RAW)
   'src/engine/careerSlots.ts': 1, // for…of démasqué : `t.talentId !== 'magie-des-arcanes'`
-  'src/engine/combat.ts': 1,
   'src/engine/conjuredWeapons.ts': 2, // +1 for…of démasqué : `s.skillId === 'corps-a-corps'`
-  'src/engine/creation.ts': 1, // `book` + for…of démasqués : `s.source.book === 'nuits-agitees-…'` (gate Gnome)
   'src/engine/creatureEquip.ts': 2,
   'src/engine/critical.ts': 4,
   'src/engine/exposure.ts': 1, // for…of démasqué : `e.effectId === 'exposition-froid'|'-chaleur'`
@@ -76,8 +77,6 @@ const KNOWN: Record<string, number> = {
   'src/ui/InterludeScreen.tsx': 1,
   'src/ui/PartyScreen.tsx': 2,
   'src/ui/compendium/registry.ts': 1, // `CONSTRUCTION_TRAIT_LABEL[t.id]` — libellés de Trait de coque sans champ `label` en donnée
-  'src/ui/creator/CharacterCreator.tsx': 1, // `book` + for…of démasqués : même gate Gnome que creation.ts
-  'src/ui/creator/draft.ts': 1,
 };
 
 /** Plafond GLOBAL du jour (= somme de `KNOWN`), destiné à tomber à 0. */
@@ -102,7 +101,8 @@ const CEILING = Object.values(KNOWN).reduce((s, n) => s + n, 0);
  * DOIT JAMAIS MONTER, et chaque lot d'assainissement doit le faire DESCENDRE.
  * Mesure du 2026-08-17 (#1318 E4/C0-a), par NŒUD (deux comparaisons sur une même ligne pèsent 2) :
  * 169 au moment de la pose du cliquet, 165 après le lot C1 (marqueurs de cargaison passés en donnée —
- * `registry.ts` et `PortView.tsx` sortent de la liste).
+ * `registry.ts` et `PortView.tsx` sortent de la liste), 163 après le lot C2 (gate d'espèce en champ
+ * déclaré : `creation.ts` sort de la liste, `CharacterCreator.tsx` passe de 8 à 7).
  */
 const RAW_KNOWN: Record<string, number> = {
   'scripts/data/lib/obtainabilityGraph.ts': 3,
@@ -119,7 +119,6 @@ const RAW_KNOWN: Record<string, number> = {
   'src/engine/conditions.ts': 1,
   'src/engine/conjuredWeapons.ts': 3,
   'src/engine/corruption.ts': 2,
-  'src/engine/creation.ts': 1,
   'src/engine/creatureEquip.ts': 2,
   'src/engine/crewedWeapon.ts': 1,
   'src/engine/critical.ts': 5,
@@ -181,7 +180,7 @@ const RAW_KNOWN: Record<string, number> = {
   'src/ui/MedicModal.tsx': 2,
   'src/ui/MerchantPanel.tsx': 1,
   'src/ui/PartyScreen.tsx': 2,
-  'src/ui/creator/CharacterCreator.tsx': 8,
+  'src/ui/creator/CharacterCreator.tsx': 7,
   'src/ui/editor/StatblockEditor.tsx': 1,
   'src/ui/gallery/registry.tsx': 4,
 };

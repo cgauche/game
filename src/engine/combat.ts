@@ -61,12 +61,15 @@ export type ShipLocation = 'equipage' | 'avirons' | 'greement' | 'coque' | 'equi
 interface BodyLocEntry { min: number; max: number; loc: HitLocation }
 interface ShipLocEntry { min: number; max: number; avirons: ShipLocation; voile: ShipLocation; mixte: ShipLocation }
 const BODY_SHAPES = (locJson as { personnage: { shapes: Record<string, BodyLocEntry[]> } }).personnage.shapes;
-const SHIP_LOC_ALL = locJson as unknown as { navire: { entries: ShipLocEntry[] }; 'navire-fluvial': { entries: ShipLocEntry[] } };
-/** Tables de Localisation des coups au bateau, par id : `navire` (MDG 13) / `navire-fluvial` (MSRC 7). */
-const SHIP_LOC_TABLES: Record<string, ShipLocEntry[]> = {
+/** Id de table de Localisation navale — union FERMÉE : `navire` (MDG 13) / `navire-fluvial` (MSRC 7).
+ *  Miroir du schéma de la coque (`hull.locationTable`, `data/schemas/defs/vehicles.ts`). */
+type ShipLocTableId = 'navire' | 'navire-fluvial';
+const SHIP_LOC_ALL = locJson as unknown as Record<ShipLocTableId, { entries: ShipLocEntry[] }>;
+const SHIP_LOC_TABLES: Record<ShipLocTableId, ShipLocEntry[]> = {
   navire: SHIP_LOC_ALL.navire.entries,
   'navire-fluvial': SHIP_LOC_ALL['navire-fluvial'].entries,
 };
+const isShipLocTableId = (id: string): id is ShipLocTableId => id in SHIP_LOC_TABLES;
 
 /** Tableau de Localisation humanoïde (LDB 13 p.159) — un dé déjà INVERSÉ (1..100). */
 export function hitLocation(reversed: number): HitLocation {
@@ -83,9 +86,12 @@ export function hitLocationByShape(reversed: number, shape: BodyShape = 'humanoi
 }
 
 /** Localisation d'un coup (d100) sur un BATEAU du gréement donné — `ShipLocation`. `tableId` choisit la
- *  table : `navire` (MDG 13, défaut) ou `navire-fluvial` (MSRC 7). Table inconnue → `navire`. */
+ *  table : `navire` (MDG 13, défaut) ou `navire-fluvial` (MSRC 7). Un id inconnu LÈVE : une coque
+ *  fluviale mal orthographiée se résoudrait sinon sur la table maritime, sans un mot. */
 export function shipHitLocation(rig: ShipRig, roll: number, tableId: string = 'navire'): ShipLocation {
-  const table = SHIP_LOC_TABLES[tableId] ?? SHIP_LOC_TABLES.navire;
+  if (!isShipLocTableId(tableId))
+    throw new Error(`shipHitLocation : table de Localisation inconnue « ${tableId} » (attendu : ${Object.keys(SHIP_LOC_TABLES).join(' | ')}).`);
+  const table = SHIP_LOC_TABLES[tableId];
   return findTableEntry(table, roll)[rig];
 }
 

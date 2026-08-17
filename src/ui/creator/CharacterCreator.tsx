@@ -54,7 +54,6 @@ import {
 import { SIZE_LABEL } from '../../engine/size';
 import type { SourceRef } from '../../data/schemas/common';
 import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics, Combatant } from '../../engine/types';
-import { rule } from '../../engine/policy';
 import { damageString, itemFromTrappingById } from '../../engine/items';
 import { skillBaseValue } from '../../engine/skills';
 import { effectiveChar } from '../../engine/characteristics';
@@ -162,7 +161,7 @@ import {
   splitLabel,
   splitTopLevelOu,
 } from './draft';
-import { XP_CAREER_FIRST, XP_CAREER_TOP3, XP_STAR_ROLLED, parseStatus } from '../../engine/creation';
+import { XP_CAREER_FIRST, XP_CAREER_TOP3, XP_STAR_ROLLED, parseStatus, speciesAllowed } from '../../engine/creation';
 
 /** Métadonnées d'étape : libellé FR + ÉCRAN de plein rendu. Les HUIT pas passent par la MÊME porte —
  *  un pas pose ses propres hooks puis compose `CreatorStepFrame` (seule Présentation garde un
@@ -453,11 +452,11 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
   // Groupes par race (`SpeciesData.family` — donnée, plus de regex sur le libellé),
   // les races du Livre de base d'abord — l'ordre des familles suit les données ; au sein d'une
   // famille, la 1ʳᵉ lignée des données EST la canonique (ex. Reiklander pour Humains, LDB 04 l.84).
-  // Le Gnome (et tout contenu NADJ) n'apparaît dans la grille que si la règle optionnelle l'autorise.
-  const gnomeOn = !!rule('creation-gnome-jouable');
+  // Une espèce gatée par une règle optionnelle inactive (`SpeciesData.gatedByRule`) n'apparaît pas
+  // dans la grille — MÊME filtre que le Tableau des Races aléatoires (`speciesAllowed`).
   const families: { family: string; list: SpeciesData[] }[] = [];
   for (const s of allSpecies) {
-    if (s.source.book === 'nuits-agitees-et-dures-journees' && !gnomeOn) continue;
+    if (!speciesAllowed(s)) continue;
     const g = families.find((f) => f.family === s.family);
     if (g) g.list.push(s);
     else families.push({ family: s.family, list: [s] });

@@ -51,6 +51,7 @@ describe('index par concept — contrat positif rollCareer (#903bis, incident fo
     const lines = text.split('\n');
     const conceptLine = lines.find((l) => l.startsWith('| ') && /carri[eè]re al[eé]atoire/i.test(l) && l.includes('`rollCareer`'));
     expect(conceptLine, 'aucune ligne de concept ne contient « carrière aléatoire » ET `rollCareer`').toBeDefined();
-    expect(conceptLine).toMatch(/creation\.ts:73/);
+    // Le SITE est porté par l'index (fichier:ligne) — la ligne suit le source, elle ne se fige pas.
+    expect(conceptLine).toMatch(/`rollCareer` \(creation\.ts:\d+\)/);
   });
 });

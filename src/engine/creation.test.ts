@@ -23,7 +23,7 @@ import {
   XP_CHARS_REASSIGNED,
   XP_STAR_ROLLED,
 } from './creation';
-import { careers, findSpeciesById, stars } from '../data';
+import { careers, findSpeciesById, species, stars, type SpeciesData } from '../data';
 
 describe('bonus de PX des choix aléatoires (LDB 04 l.87 / 05 l.191-385)', () => {
   it('valeurs verbatim', () => {
@@ -124,7 +124,7 @@ describe('Tableau des Races aléatoires (LDB 04 l.90) — borne = CHOIX (species
   });
 });
 
-describe('Gnome jouable — règle optionnelle (NADJ appendice I l.10)', () => {
+describe('Gnome jouable — règle optionnelle (NADJ 14 l.5)', () => {
   afterEach(() => resetRule('creation-gnome-jouable'));
   it('off (défaut) : le Gnome (NADJ) n\'est dans AUCUNE borne du Tableau des Races aléatoires', () => {
     expect(randomSpeciesTable().some((e) => e.ids.includes('gnomes'))).toBe(false);
@@ -135,6 +135,27 @@ describe('Gnome jouable — règle optionnelle (NADJ appendice I l.10)', () => {
     const b98 = t.find((e) => e.max === 98)!;
     expect(b98.ids).toContain('gnomes'); // ajouté par la règle
     expect(b98.ids).toContain('ogres'); // l'Ogre ADE II reste présent (aucune priorité)
+  });
+
+  it('SÉMANTIQUE : le gate porte sur l’ESPÈCE (`gatedByRule`), PAS sur son LIVRE — une autre espèce du MÊME livre sans le champ reste ouverte', () => {
+    // Le filtre historique masquait TOUT le livre NADJ ; il porte désormais sur le champ déclaré par
+    // l'entrée. Une espèce NADJ future SANS `gatedByRule` est donc ouverte — comportement VOULU,
+    // asserté ici pour qu'aucune relecture ne le prenne pour une régression.
+    const gnome = findSpeciesById('gnomes')!;
+    expect(gnome.source.book).toBe('nuits-agitees-et-dures-journees');
+    const fictive: SpeciesData = { ...gnome, id: 'sonde-espece-nadj', label: 'Sonde NADJ', rand: 97 };
+    delete fictive.gatedByRule;
+    species.push(fictive);
+    try {
+      const ids = () => randomSpeciesTable().flatMap((e) => e.ids);
+      expect(ids()).toContain('sonde-espece-nadj'); // même livre, aucun champ → jamais masquée
+      expect(ids()).not.toContain('gnomes'); // champ + règle inactive → masquée
+      setRule('creation-gnome-jouable', true);
+      expect(ids()).toContain('gnomes'); // règle active → ouverte
+      expect(ids()).toContain('sonde-espece-nadj');
+    } finally {
+      species.splice(species.indexOf(fictive), 1);
+    }
   });
 });
 

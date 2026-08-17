@@ -50,3 +50,20 @@ describe('Navires MDG (ch.12) — profils en donnée', () => {
     expect(shipHitLocation(cogue.hull!.rig!, 15)).toBe('greement');
   });
 });
+
+describe('Table de Localisation d’une COQUE — vocabulaire fermé, résolution fail-fast', () => {
+  const hulls = VEHICLES_LIST.filter((v) => v.hull);
+
+  it('les 29 coques ne portent qu’un id de table CONNU (absent = `navire` MDG 13, seule autre valeur `navire-fluvial` MSRC 7)', () => {
+    expect(hulls.length).toBe(29);
+    const distinct = [...new Set(hulls.map((v) => v.hull!.locationTable).filter((t) => t != null))];
+    expect(distinct).toEqual(['navire-fluvial']);
+    for (const v of hulls) {
+      expect(() => shipHitLocation(v.hull!.rig ?? 'voile', 50, v.hull!.locationTable ?? 'navire'), v.id).not.toThrow();
+    }
+  });
+
+  it('un id de table INCONNU LÈVE au lieu de retomber en silence sur la table maritime', () => {
+    expect(() => shipHitLocation('voile', 50, 'navire-fluvail')).toThrow(/navire-fluvail/);
+  });
+});

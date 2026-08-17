@@ -105,7 +105,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Aveuglé (état analogue pour la vue)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.29-30) → `PRONE_POSE`, `ActionBar`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `meleeAttackerBonusLines`, `SkillData`, `GameOp`, `AttackOptions`, `GameState`, `createCombatSlice`, +1 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/groundPose.ts`, `src/state/combatFlow.ts`, +3 fichiers
+- `LDB 16` (l.29-30) → `PRONE_POSE`, `ActionBar`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `meleeAttackerBonusLines`, `GameOp`, `SkillData`, `AttackOptions`, `GameState`, `createCombatSlice`, +1 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/groundPose.ts`, `src/state/combatFlow.ts`, +3 fichiers
 
 ---
 
@@ -129,7 +129,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Inconscient
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.33-39) → `PRONE_POSE`, `ActionBar`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `collectHeroRoundEndUpkeep`, `meleeAttackerBonusLines`, `findAwaitingExtension`, `SkillData`, `GameOp`, `AttackOptions`, +3 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/groundPose.ts`, `src/state/combat/roundHooks.ts`, +4 fichiers
+- `LDB 16` (l.33-39) → `PRONE_POSE`, `ActionBar`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `collectHeroRoundEndUpkeep`, `meleeAttackerBonusLines`, `findAwaitingExtension`, `GameOp`, `SkillData`, `AttackOptions`, +3 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/groundPose.ts`, `src/state/combat/roundHooks.ts`, +4 fichiers
 - `LDB 18` (l.15) → `followsCharacterRules`, `isHealable`, `outOfCombatUpkeep`, `HealWoundsOptions`, `applyHealWounds`, `critSeverityReduction`, `aaBleedUnconsciousApply`, `ActionBar`, `TableRollLine`, `isOutOfAction`, +15 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +9 fichiers
 
 ---

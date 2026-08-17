@@ -50,5 +50,8 @@ export const schema = z.array(
     /** `VDM 02 l.190` / `LDB 46 l.177` (`careerSlots.arcaneDomainCap`). Absent = plafond 1 (défaut RAW hors elfe).
      *  Portée ici sur les deux entrées « Hauts elfes »/« Elfes sylvains ». */
     arcaneDomainsBonusOf: charKeySchema.optional(),
+    /** id d'`OptionalRule` (`reglesOptionnelles.json`) qui OUVRE l'espèce au joueur — absent = ouverte.
+     *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
+    gatedByRule: z.string().optional(),
   }),
 );

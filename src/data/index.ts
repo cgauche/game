@@ -735,6 +735,10 @@ export interface SpeciesData {
    *  Caractéristique dont le Bonus fixe le plafond de Domaines NON sombres du Talent
    *  `magie-des-arcanes` (`careerSlots.arcaneDomainCap`). Absent = plafond 1 (hors elfe). */
   arcaneDomainsBonusOf?: CharKey;
+  /** id d'`OptionalRule` (`src/data/reglesOptionnelles.json`) dont l'activation OUVRE l'espèce au
+   *  joueur — lu par `speciesAllowed` (`engine/creation`). Absent = espèce ouverte sans condition.
+   *  Portée sur `gnomes` (`NADJ 14 l.5`, règle `creation-gnome-jouable`). */
+  gatedByRule?: string;
 }
 export interface ClassData {
   /** id STABLE (slug du libellé) — cible de `CareerData.class`. */

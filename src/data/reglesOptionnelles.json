@@ -329,7 +329,7 @@
   {
     "id": "creation-gnome-jouable",
     "label": "Gnome jouable (NADJ)",
-    "ref": "NADJ appendice I l.10",
+    "ref": "NADJ 14 l.5",
     "group": "Création",
     "kind": "flag",
     "default": false,

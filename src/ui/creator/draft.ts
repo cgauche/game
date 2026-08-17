@@ -683,83 +683,89 @@ export function stepIds(): StepId[] {
 }
 
 // ── Validation par étape ──
+/** Contexte dérivé du brouillon, calculé UNE fois par validation et passé à l'étape. */
+interface StepCtx { d: CreatorDraft; sp: ReturnType<typeof draftSpecies>; level: ReturnType<typeof draftLevel> }
+
+/**
+ * Validateurs PAR étape — table EXHAUSTIVE `Record<StepId, …>` : ajouter une étape à `StepId` force
+ * son entrée ICI à la compilation. `star` et `presentation` n'imposent aucune saisie (`null`).
+ */
+const STEP_VALIDATORS: Record<StepId, (c: StepCtx) => string | null> = {
+  species: ({ sp }) => (sp ? null : 'Choisissez votre race.'),
+  career: ({ d, level }) => {
+    if (!d.careerId) return 'Choisissez votre carrière.';
+    if (!level) return 'Carrière sans Niveau 1 dans les données.';
+    return null;
+  },
+  chars: ({ d, sp }) => {
+    if (!sp) return 'Choisissez votre race.';
+    if (d.charMode !== 'pointBuy' && !d.charsRolled) return 'Tirez vos Caractéristiques aux dés.';
+    if (d.charMode === 'pointBuy') {
+      const v = validatePointBuy(d.pointBuy as Record<CharKey, number>);
+      if (!v.ok) return `Répartition des 100 Points : ${v.reason}.`;
+    }
+    if (d.charMode === 'reassigned') {
+      const idx = CHAR_KEYS.map((k) => d.assignment[k]);
+      if (new Set(idx).size !== 10) return 'Réassignation : chaque jet doit être utilisé une seule fois.';
+    }
+    const careerChars = careerCharKeys(d).length;
+    const alloc = Object.values(d.charAdvancesAlloc).reduce((a, b) => a + (b ?? 0), 0);
+    if (careerChars && alloc !== CAREER_CHAR_ADVANCES)
+      return `Répartissez ${CAREER_CHAR_ADVANCES} Augmentations sur les Caractéristiques de carrière (actuel : ${alloc}).`;
+    const split = d.fateSplit.fate + d.fateSplit.resilience;
+    if (split !== sp.fate.extra) return `Répartissez les ${sp.fate.extra} points entre Destin et Résilience (actuel : ${split}).`;
+    return null;
+  },
+  star: () => null,
+  skills: ({ d, sp }) => {
+    if (!sp) return 'Choisissez votre race.';
+    if (d.speciesPlus5.length !== SPECIES_SKILLS_PLUS5 || d.speciesPlus3.length !== SPECIES_SKILLS_PLUS3)
+      return `Choisissez ${SPECIES_SKILLS_PLUS5} Compétences d'espèce à +5 et ${SPECIES_SKILLS_PLUS3} à +3.`;
+    if (d.speciesPlus5.some((s) => d.speciesPlus3.includes(s))) return 'Une Compétence d\'espèce ne peut pas être à la fois +5 et +3.';
+    for (const raw of [...d.speciesPlus5, ...d.speciesPlus3]) {
+      if (isUnresolvedChoice(raw) && !d.specChoices[raw]) return `Choisissez la Spécialisation de « ${raw} ».`;
+    }
+    // Entrées d'espèce « A ou B » : un choix requis quand il y en a.
+    for (const ref of sp.talents) {
+      const entry = advancementLabel('talents', ref);
+      if (splitTopLevelOu(entry).length > 1 && !d.speciesTalentChoices[entry]) return `Choisissez : « ${entry} ».`;
+    }
+    if (speciesTalentRandomCount(d) > 0 && !d.talentsRolled) return 'Tirez vos Talents aléatoires aux dés.';
+    const entries = careerSkillEntries(d);
+    const total = entries.reduce((a, e) => a + (d.skillAdvances[e] ?? 0), 0);
+    if (total !== CAREER_SKILL_ADVANCES) return `Répartissez ${CAREER_SKILL_ADVANCES} Augmentations de carrière (actuel : ${total}).`;
+    for (const e of entries) {
+      const adv = d.skillAdvances[e] ?? 0;
+      if (adv < 0 || adv > MAX_ADV_PER_SKILL) return `Maximum ${MAX_ADV_PER_SKILL} Augmentations par Compétence à la création (« ${e} »).`;
+      if (adv > 0 && isUnresolvedChoice(e) && !d.specChoices[e]) return `Choisissez la Spécialisation de « ${e} ».`;
+    }
+    if (!d.careerTalent) return 'Choisissez votre Talent de carrière.';
+    {
+      const { name, spec } = splitLabel(d.careerTalent);
+      const talentId = findTalent(name)?.id ?? slugId(name);
+      if (talentMaxReached(probeHero(d, false), talentId, spec)) return `« ${d.careerTalent} » : Maxi déjà atteint.`;
+    }
+    const quota = pettySpellQuota(d);
+    if (quota && d.pettySpells.length !== quota) {
+      return `Choisissez vos ${quota} sorts de Magie mineure (actuel : ${d.pettySpells.length}).`;
+    }
+    return null;
+  },
+  trappings: ({ d }) => {
+    if (!d.wealthRoll) return 'Tirez la bourse de départ aux dés.';
+    const unresolved = unresolvedTrappingSlots(d);
+    if (unresolved.length) return `Choisissez : « ${unresolved[0]} ».`;
+    return null;
+  },
+  details: ({ d }) => {
+    if (!d.label.trim()) return 'Donnez un nom à votre personnage.';
+    return null;
+  },
+  presentation: () => null,
+};
+
 export function validateStep(d: CreatorDraft, id: StepId): string | null {
-  const sp = draftSpecies(d);
-  const level = draftLevel(d);
-  switch (id) {
-    case 'species':
-      return sp ? null : 'Choisissez votre race.';
-    case 'career': {
-      if (!d.careerId) return 'Choisissez votre carrière.';
-      if (!level) return 'Carrière sans Niveau 1 dans les données.';
-      return null;
-    }
-    case 'chars': {
-      if (!sp) return 'Choisissez votre race.';
-      if (d.charMode !== 'pointBuy' && !d.charsRolled) return 'Tirez vos Caractéristiques aux dés.';
-      if (d.charMode === 'pointBuy') {
-        const v = validatePointBuy(d.pointBuy as Record<CharKey, number>);
-        if (!v.ok) return `Répartition des 100 Points : ${v.reason}.`;
-      }
-      if (d.charMode === 'reassigned') {
-        const idx = CHAR_KEYS.map((k) => d.assignment[k]);
-        if (new Set(idx).size !== 10) return 'Réassignation : chaque jet doit être utilisé une seule fois.';
-      }
-      const careerChars = careerCharKeys(d).length;
-      const alloc = Object.values(d.charAdvancesAlloc).reduce((a, b) => a + (b ?? 0), 0);
-      if (careerChars && alloc !== CAREER_CHAR_ADVANCES)
-        return `Répartissez ${CAREER_CHAR_ADVANCES} Augmentations sur les Caractéristiques de carrière (actuel : ${alloc}).`;
-      const split = d.fateSplit.fate + d.fateSplit.resilience;
-      if (split !== sp.fate.extra) return `Répartissez les ${sp.fate.extra} points entre Destin et Résilience (actuel : ${split}).`;
-      return null;
-    }
-    case 'skills': {
-      if (!sp) return 'Choisissez votre race.';
-      if (d.speciesPlus5.length !== SPECIES_SKILLS_PLUS5 || d.speciesPlus3.length !== SPECIES_SKILLS_PLUS3)
-        return `Choisissez ${SPECIES_SKILLS_PLUS5} Compétences d'espèce à +5 et ${SPECIES_SKILLS_PLUS3} à +3.`;
-      if (d.speciesPlus5.some((s) => d.speciesPlus3.includes(s))) return 'Une Compétence d\'espèce ne peut pas être à la fois +5 et +3.';
-      for (const raw of [...d.speciesPlus5, ...d.speciesPlus3]) {
-        if (isUnresolvedChoice(raw) && !d.specChoices[raw]) return `Choisissez la Spécialisation de « ${raw} ».`;
-      }
-      // Entrées d'espèce « A ou B » : un choix requis quand il y en a.
-      for (const ref of sp.talents) {
-        const entry = advancementLabel('talents', ref);
-        if (splitTopLevelOu(entry).length > 1 && !d.speciesTalentChoices[entry]) return `Choisissez : « ${entry} ».`;
-      }
-      if (speciesTalentRandomCount(d) > 0 && !d.talentsRolled) return 'Tirez vos Talents aléatoires aux dés.';
-      const entries = careerSkillEntries(d);
-      const total = entries.reduce((a, e) => a + (d.skillAdvances[e] ?? 0), 0);
-      if (total !== CAREER_SKILL_ADVANCES) return `Répartissez ${CAREER_SKILL_ADVANCES} Augmentations de carrière (actuel : ${total}).`;
-      for (const e of entries) {
-        const adv = d.skillAdvances[e] ?? 0;
-        if (adv < 0 || adv > MAX_ADV_PER_SKILL) return `Maximum ${MAX_ADV_PER_SKILL} Augmentations par Compétence à la création (« ${e} »).`;
-        if (adv > 0 && isUnresolvedChoice(e) && !d.specChoices[e]) return `Choisissez la Spécialisation de « ${e} ».`;
-      }
-      if (!d.careerTalent) return 'Choisissez votre Talent de carrière.';
-      {
-        const { name, spec } = splitLabel(d.careerTalent);
-        const talentId = findTalent(name)?.id ?? slugId(name);
-        if (talentMaxReached(probeHero(d, false), talentId, spec)) return `« ${d.careerTalent} » : Maxi déjà atteint.`;
-      }
-      const quota = pettySpellQuota(d);
-      if (quota && d.pettySpells.length !== quota) {
-        return `Choisissez vos ${quota} sorts de Magie mineure (actuel : ${d.pettySpells.length}).`;
-      }
-      return null;
-    }
-    case 'trappings': {
-      if (!d.wealthRoll) return 'Tirez la bourse de départ aux dés.';
-      const unresolved = unresolvedTrappingSlots(d);
-      if (unresolved.length) return `Choisissez : « ${unresolved[0]} ».`;
-      return null;
-    }
-    case 'details': {
-      if (!d.label.trim()) return 'Donnez un nom à votre personnage.';
-      return null;
-    }
-    default:
-      return null;
-  }
+  return STEP_VALIDATORS[id]({ d, sp: draftSpecies(d), level: draftLevel(d) });
 }
 
 // ── Construction finale ──

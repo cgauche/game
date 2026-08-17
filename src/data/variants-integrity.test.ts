@@ -72,6 +72,61 @@ describe('garde-fou « when.rule ∈ OPTIONAL_RULES » (#564 Lot 3 item 1)', () 
   });
 });
 
+// ── FK d'une règle optionnelle portée par une ENTRÉE : `gatedByRule` (#1318 E4/C2) ────────────────
+/**
+ * MÊME gate fantôme que `variants[].when.rule`, par une autre porte : une entrée peut subordonner sa
+ * disponibilité à une règle optionnelle (`SpeciesData.gatedByRule`, lu par `speciesAllowed`).
+ * `rule(id)` d'un id INCONNU rend `false` (`engine/policy.ts`) — une coquille rendrait l'entrée
+ * définitivement invisible, sans la moindre erreur. La FK se valide donc ici, sur la donnée réelle.
+ */
+const GATE_FIELD = 'gatedByRule';
+
+/** Chaque nœud portant `gatedByRule`, à toute profondeur — même walk générique que `variantConflicts`. */
+function gateRuleRefs(node: unknown, path = ''): { key: string; rule: string }[] {
+  const out: { key: string; rule: string }[] = [];
+  if (Array.isArray(node)) {
+    node.forEach((v, i) => out.push(...gateRuleRefs(v, `${path}[${i}]`)));
+    return out;
+  }
+  if (!node || typeof node !== 'object') return out;
+  const rec = node as Record<string, unknown>;
+  const key = typeof rec.id === 'string' ? rec.id : path;
+  if (typeof rec[GATE_FIELD] === 'string') out.push({ key, rule: rec[GATE_FIELD] as string });
+  for (const [k, v] of Object.entries(rec)) if (k !== GATE_FIELD) out.push(...gateRuleRefs(v, path ? `${path}.${k}` : k));
+  return out;
+}
+
+describe('garde-fou « gatedByRule ∈ OPTIONAL_RULES » (#1318 E4/C2)', () => {
+  const filesWithGate = () =>
+    readdirSync(DIR).filter((f) => f.endsWith('.json') && readFileSync(join(DIR, f), 'utf8').includes(`"${GATE_FIELD}"`));
+
+  it('0 entrée réelle de src/data/*.json ne subordonne sa disponibilité à un id de règle inconnu', () => {
+    const offenders = filesWithGate().flatMap((f) =>
+      gateRuleRefs(JSON.parse(readFileSync(join(DIR, f), 'utf8')))
+        .filter((e) => !KNOWN_RULE_IDS.has(e.rule))
+        .map((e) => ({ file: f, ...e })),
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  it('le champ est bien PORTÉ par la donnée réelle (sinon la garde ci-dessus est vide et verte pour rien)', () => {
+    const refs = filesWithGate().flatMap((f) => gateRuleRefs(JSON.parse(readFileSync(join(DIR, f), 'utf8'))));
+    expect(refs.length).toBeGreaterThan(0);
+  });
+
+  it('MORSURE — `gatedByRule` fantôme (`regle-inventee`) → rouge', () => {
+    const data = [{ id: 'fixture', gatedByRule: 'regle-inventee' }];
+    expect(gateRuleRefs(data).filter((e) => !KNOWN_RULE_IDS.has(e.rule))).toEqual([
+      { key: 'fixture', rule: 'regle-inventee' },
+    ]);
+  });
+
+  it('un id RÉEL du registre passe (vert)', () => {
+    const data = [{ id: 'fixture', gatedByRule: OPTIONAL_RULES[0].id }];
+    expect(gateRuleRefs(data).filter((e) => !KNOWN_RULE_IDS.has(e.rule))).toEqual([]);
+  });
+});
+
 describe('règle 5 PAR VARIANTE — `variants[i].desc` verbatim dans `variants[i].source` (#563 Lot 3 item 2)', () => {
   // Fixture RÉELLE (ZI, folio 23) — même patron que `secondary-ref-integrity.test.ts` : preuve de
   // câblage contre le vrai corpus, pas un livre inventé. Cf. `folioIntegrity.mjs` note l.241-244 :

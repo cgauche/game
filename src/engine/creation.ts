@@ -34,6 +34,16 @@ export const XP_CHARS_REASSIGNED = 25; // LDB 05 l.383
 export const XP_STAR_ROLLED = 25; // ADE II 3 l.36 (signe astral tiré et accepté)
 
 /**
+ * Espèce OUVERTE au joueur : une espèce peut déclarer `gatedByRule` (id d'`OptionalRule`) — elle
+ * n'est proposée qu'avec cette règle active. SOURCE UNIQUE du filtre (tirage ET grille du créateur).
+ * Porté par `gnomes` (`NADJ 14 l.5`) ; une espèce sans le champ est ouverte, quel que soit
+ * son livre.
+ */
+export function speciesAllowed(s: SpeciesData): boolean {
+  return !s.gatedByRule || !!rule(s.gatedByRule);
+}
+
+/**
  * Tableau des Races aléatoires (LDB 04 l.90) — DÉRIVÉ des données : chaque espèce porte sa
  * borne haute d100 (`SpeciesData.rand`, suppléments inclus). Plusieurs espèces partagent une
  * même borne (variantes régionales d'ADE, Gnome/Ogre…) : c'est VOULU par le RAW. Un jet désigne
@@ -42,14 +52,12 @@ export const XP_STAR_ROLLED = 25; // ADE II 3 l.36 (signe astral tiré et accept
  * On renvoie donc, pour chaque borne, TOUTES les espèces éligibles — sans priorité codée.
  */
 export function randomSpeciesTable(): { max: number; ids: string[] }[] {
-  // Règle optionnelle « Gnome jouable » (NADJ appendice I) : le Gnome (et tout contenu NADJ) n'entre
-  // dans le tableau que si la règle est active. C'est le SEUL effet sur le tirage — quand elle est
-  // active, le Gnome est une option NORMALE de sa borne (98, partagée avec l'Ogre ADE II), sans priorité.
-  const gnomeOn = !!rule('creation-gnome-jouable');
   const byBound = new Map<number, string[]>();
   for (const s of allSpecies) {
     if (typeof s.rand !== 'number') continue;
-    if (s.source.book === 'nuits-agitees-et-dures-journees' && !gnomeOn) continue; // gating d'éligibilité (pas de priorité)
+    // Espèce gatée par une règle inactive : hors du tableau. Quand elle est active, l'espèce est une
+    // option NORMALE de sa borne (Gnome : 98, partagée avec l'Ogre ADE II), sans priorité.
+    if (!speciesAllowed(s)) continue;
     byBound.set(s.rand, [...(byBound.get(s.rand) ?? []), s.id]);
   }
   return [...byBound.entries()]
