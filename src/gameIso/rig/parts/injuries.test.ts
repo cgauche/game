@@ -63,6 +63,28 @@ describe('visuels des amputations/prothèses (injuries)', () => {
     expect(injuryOverlaysFor(mk([nez], [item('nez-dore')]))[0].svg).toContain('data-injury="nez-dore"');
   });
 
+  it('le calque est DÉCLARÉ par la fiche (`TraumaFiche.rig`) : sans déclaration, aucun visuel', () => {
+    // #1318 E4/C-γ : le rig ne nomme plus aucune séquelle. Une séquelle réelle SANS `rig` (langue) ne
+    // produit rien ; une séquelle À `rig` produit l'os, la vue et l'art DÉCLARÉS (et l'os effacé).
+    expect(injuryOverlaysFor(mk([traumaById('langue-amputee', undefined, 'tete')]))).toEqual([]);
+    const nez = injuryOverlaysFor(mk([traumaById('nez-ampute', undefined, 'tete')]));
+    expect(nez).toHaveLength(1);
+    expect(nez[0]).toMatchObject({ bone: 'tete', view: 'front' });
+    const jambe = injuryOverlaysFor(mk([traumaById('membre-inferieur-ampute', undefined, 'jambeD')], [item('merveille-d-ingenierie')]));
+    expect(jambe.map((o) => o.bone)).toEqual(['cuisseD', 'piedD']); // `bone` + `hidesBone`, latéralisés
+  });
+
+  it('un `traumaId` ORPHELIN (entrée supprimée/renommée au Codex) reste INERTE — jamais un crash de scène', () => {
+    // Le canal d'affichage lit `findTraumaFiche` (tolérant) : une save portant une séquelle dont l'entrée
+    // n'existe plus rend la scène SANS visuel, au lieu de faire lever le rendu (`traumaFicheById`).
+    const orphelin = t({ label: 'Séquelle disparue', traumaId: 'sequelle-supprimee-v2', location: 'jambeD' });
+    expect(() => injuryOverlaysFor(mk([orphelin]))).not.toThrow();
+    expect(injuryOverlaysFor(mk([orphelin]))).toEqual([]);
+    // …et une séquelle VALIDE présente à côté continue de rendre son calque.
+    const ovs = injuryOverlaysFor(mk([orphelin, traumaById('nez-ampute', undefined, 'tete')]));
+    expect(ovs[0].svg).toContain('data-injury="nez-ampute"');
+  });
+
   it('pilotage par `traumaId`, PAS par le libellé (garde anti-régression i18n)', () => {
     // DÉCOY : libellé bidon/anglais, traumaId correct → l'overlay/apparence doit quand même sortir.
     const decoyJambe: Trauma = { ...traumaById('membre-inferieur-ampute', undefined, 'jambeD'), label: 'GARBAGE_LEG_LABEL' };

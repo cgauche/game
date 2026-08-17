@@ -173,7 +173,7 @@ import { findTableEntry } from '../engine/tables';
 import { aaCriticalIsTrivial } from '../engine/aaCritical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { rollArtillerySalveMisfire } from '../engine/artilleryMisfire';
-import { traumaById, dechirureFractureFicheId, escalateSensoryLoss, consolidateAmputations, maxFingersLostForWeapon, reinjuryBleed } from '../engine/trauma';
+import { traumaById, dechirureFractureFicheId, consolidateAmputations, maxFingersLostForWeapon, reinjuryBleed } from '../engine/trauma';
 import { effectiveWeaponDamage, effectiveWeaponRange, isThrownWeapon, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold, effectiveWeapon, type WeaponContext } from '../engine/weaponDamage';
 import { scatter } from '../engine/scatter';
 import { TIME_COST } from '../engine/timeCost';
@@ -1700,10 +1700,9 @@ export function applyCriticalToTarget(
       revealLines.push(`  ↳ ${text}.`);
       details.push({ text, note: t.desc });
     }
-    // Cumuls par comptage (LDB 18) : doigts (−5/doigt, 4+ → main) et dents (−1 Soc/paire) fusionnés ;
-    // 2e œil/oreille → Cécité / Surdité agrégée (l.360/363).
-    consolidateAmputations(target);
-    for (const l of escalateSensoryLoss(target)) {
+    // Cumuls par comptage (LDB 18) : chaque séquelle applique SA règle déclarée (`TraumaCumul`) —
+    // agrégation par bras/porteur, effet par palier, et escalade au seuil (main tranchée, Cécité, Surdité).
+    for (const l of consolidateAmputations(target)) {
       log.push(`  ↳ ${l}`);
       revealLines.push(`  ↳ ${l}`);
       details.push({ text: l });

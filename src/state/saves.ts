@@ -38,6 +38,7 @@ import { remapCharKeysDeep } from './charKeyMigration';
 import { remapInstanceIdsDeep, remapNameToLabelDeep, remapGameOpNameDeep } from './instanceIdMigration';
 import { remapPassiveKindDeep } from './passiveKindMigration';
 import { flagRespiteEffectsDeep } from './respiteEffectMigration';
+import { remapPerRoundDeep } from './perRoundMigration';
 import type { CodexFocus } from './codexFocus';
 import type { PendingCascade, RevealEntry } from './pendings';
 import type { BuiltCascadeStep } from './stepBrand';
@@ -47,7 +48,7 @@ import { pursuitBands, PURSUIT_POLICY_DEFAUT } from './pursuitFlow';
 import { stepReady } from './cascade';
 import { combatEndBands } from './combatEndBands';
 
-export const SAVE_VERSION = 26;
+export const SAVE_VERSION = 27;
 
 export interface SaveMeta {
   version: number;
@@ -385,6 +386,11 @@ export const MIGRATIONS: MigrationMap = {
   // avant ce lot n'a pas le drapeau : `expireOnRespite` ne le toucherait plus jamais et son −10 par
   // caractéristique deviendrait PERPÉTUEL. Primitive : `respiteEffectMigration.ts`.
   25: (doc) => ({ ...doc, version: 26, data: flagRespiteEffectsDeep(doc.data) as Record<string, unknown> }),
+  // v26→v27 (#1318 E4/C-γ) : l'escalade PÉRIODIQUE d'une plaie est passée du booléen qui NOMMAIT sa
+  // séquelle (`fingerLossPerRound`) à l'axe qui la DÉCLARE (`perRound: {versTraumaId, unites}`). Sans ce
+  // remap, une save prise pendant une « Main ouverte » recharge une plaie que `tickTraumaEscalation` ne
+  // voit plus : l'aggravation s'arrête en silence. Primitive : `perRoundMigration.ts`.
+  26: (doc) => ({ ...doc, version: 27, data: remapPerRoundDeep(doc.data) as Record<string, unknown> }),
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus

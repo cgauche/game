@@ -69,7 +69,13 @@ const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/ui/ → ..
  * `REST_OFFERS[s.id]` supprimées), `obtainabilityGraph` lit la famille de Sort qu'un Talent ouvre sur
  * son entrée (`combat.castingKind`), `gen-toise-gallery` passe par la primitive `sizeFromTraits`, la
  * planche `_qc-decor-sheet` prend sa liste de mise en avant EN ARGUMENT (`--new=id1,id2`) et
- * `reconcile.mjs` lit le sigle du livre PIVOT au registre (`PIVOT_ABBR`, dérivé de `books.json`).
+ * `reconcile.mjs` lit le sigle du livre PIVOT au registre (`PIVOT_ABBR`, dérivé de `books.json`), puis
+ * 20 → 9 (lot E4/C-γ, 2026-08-17) — le cluster AMPUTATION/comptage : `critical.ts`, `trauma.ts`,
+ * `injuries.ts` et `CharacterSheet.tsx` sortent de la liste. Ce que l'entrée DÉCLARE désormais : la règle
+ * de COMPTAGE d'une séquelle cumulative (`TraumaFiche.cumul` — portée, unité, effet par palier, seuil
+ * d'escalade `remplace`/`ajoute`), son routage d'APPARENCE sur le rig (`TraumaFiche.rig`), les PALIERS
+ * d'entraînement d'une prothèse (`TrappingData.prosthesisTraining`) et les deux escalades de Blessure
+ * critique, chacune en AXE paramétré (`escalation.perRound`/`apresDelai` : séquelle visée + cadence/délai).
  */
 const KNOWN: Record<string, number> = {
   // JUSTIFIÉS NOMINATIFS (outillage de LECTURE/QC, pas de la logique de règle) — leur forme saine
@@ -77,13 +83,9 @@ const KNOWN: Record<string, number> = {
   // registre d'os, hors du périmètre du lot δ4 :
   'scripts/qc/mesure-volume.mts': 1, // `id === 'torse'` — masque de mesure du harnais de volume
   'scripts/qc/opera-furniture-check.mts': 2, // `FLOATING.has(e.ref)` (lustre SUSPENDU) + `e.ref !== 'siege'` (prop admis sur le parterre) : deux propriétés du prop, à déclarer sur sa def
-  'src/engine/critical.ts': 4,
-  'src/engine/trauma.ts': 2,
-  'src/gameIso/rig/parts/injuries.ts': 2, // for…of démasqué : `t.traumaId === 'membre-inferieur-ampute'|'nez-ampute'`
   'src/gameIso/rig/skeletons.ts': 1, // for…of démasqué : `WAIST_BONES.includes(id)`
   'src/state/combatFlow.ts': 1,
   'src/state/combatManeuvers.ts': 1,
-  'src/ui/CharacterSheet.tsx': 3, // for…of démasqué : `it.trappingId === 'crochet'|'fausse-jambe'` (prothèses)
   'src/ui/PartyScreen.tsx': 2,
   'src/ui/compendium/registry.ts': 1, // `CONSTRUCTION_TRAIT_LABEL[t.id]` — libellés de Trait de coque sans champ `label` en donnée
 };
@@ -123,7 +125,9 @@ const CEILING = Object.values(KNOWN).reduce((s, n) => s + n, 0);
  * `seaVoyageFlow.ts` passe de 6 à 4, `combatSlice.ts` de 3 à 2 et `InterludeScreen.tsx` de 3 à 2),
  * 131 après le lot C4-δ4 (outillage : `obtainabilityGraph.ts`, `gen-toise-gallery.mts` et
  * `reconcile.mjs` sortent de la liste — famille de Sort lue sur le Talent, Taille lue par
- * `sizeFromTraits`, sigle du livre pivot lu au registre `books.json`).
+ * `sizeFromTraits`, sigle du livre pivot lu au registre `books.json`), 113 après le lot E4/C-γ (cluster
+ * amputation/comptage : `CharacterSheet.tsx` et `partyFlow.ts` sortent de la liste — paliers de prothèse
+ * déclarés au catalogue —, `critical.ts` passe de 5 à 1, `trauma.ts` de 10 à 4 et `injuries.ts` de 5 à 2).
  */
 const RAW_KNOWN: Record<string, number> = {
   'scripts/gen-bestiary-gallery.mts': 1,
@@ -136,7 +140,7 @@ const RAW_KNOWN: Record<string, number> = {
   'src/engine/conditions.ts': 1,
   'src/engine/corruption.ts': 2,
   'src/engine/crewedWeapon.ts': 1,
-  'src/engine/critical.ts': 5,
+  'src/engine/critical.ts': 1, // reste `s.skillId === 'resistance'` (lookup par id stable)
   'src/engine/drunkenness.ts': 1,
   'src/engine/engagement.ts': 2,
   'src/engine/equipCompare.ts': 2,
@@ -148,13 +152,13 @@ const RAW_KNOWN: Record<string, number> = {
   'src/engine/rest.ts': 1,
   'src/engine/riverNavigation.ts': 3,
   'src/engine/seaNavigation.ts': 1,
-  'src/engine/trauma.ts': 10,
+  'src/engine/trauma.ts': 4, // pénalité de combat PAR MAIN (doigts/main) + crochet entraîné : axe NON couvert par `cumul`
   'src/engine/weaponDamage.ts': 1,
   'src/engine/windsOfMagic.ts': 1,
   'src/gameIso/rig/mountedRig.ts': 1,
   'src/gameIso/rig/parts/career.ts': 3,
   'src/gameIso/rig/parts/equipment.ts': 1,
-  'src/gameIso/rig/parts/injuries.ts': 5,
+  'src/gameIso/rig/parts/injuries.ts': 2, // reste le canal APPARENCE (œil remplacé en place), hors `rig` (calques)
   'src/gameIso/stage/Ambiance.tsx': 1,
   'src/gameIso/stage/CrewTooltip.tsx': 1,
   'src/gameIso/stage/highlightLayer.tsx': 1,
@@ -169,7 +173,6 @@ const RAW_KNOWN: Record<string, number> = {
   'src/state/devtools.ts': 1,
   'src/state/interludeFlow.ts': 4,
   'src/state/mount.ts': 1,
-  'src/state/partyFlow.ts': 2,
   'src/state/restFlow.ts': 1,
   'src/state/riverVoyageFlow.ts': 4,
   'src/state/saves.ts': 1,
@@ -179,7 +182,6 @@ const RAW_KNOWN: Record<string, number> = {
   'src/state/travelPostes.ts': 2,
   'src/state/vision.ts': 1,
   'src/ui/ActiveModal.tsx': 1,
-  'src/ui/CharacterSheet.tsx': 3,
   'src/ui/HealModal.tsx': 2,
   'src/ui/InterludeScreen.tsx': 2,
   'src/ui/MedicModal.tsx': 2,

@@ -260,18 +260,24 @@
   {
     "id": "orteil-ampute",
     "label": "Orteil(s) amputé(s)",
-    "ops": [
-      {
-        "op": "charMod",
-        "char": "agilite",
-        "mod": -1
-      },
-      {
-        "op": "charMod",
-        "char": "capacite-de-combat",
-        "mod": -1
+    "cumul": {
+      "portee": "localisation",
+      "parPalier": {
+        "taille": 1,
+        "ops": [
+          {
+            "op": "charMod",
+            "char": "agilite",
+            "mod": -1
+          },
+          {
+            "op": "charMod",
+            "char": "capacite-de-combat",
+            "mod": -1
+          }
+        ]
       }
-    ],
+    },
     "desc": "La perte d’orteils a un effet sur votre équilibre. Pour chaque orteil perdu, vous subissez une perte définitive de -1 à votre Agilité et à votre Capacité de Combat.",
     "source": {
       "book": "livre-de-base",
@@ -305,6 +311,22 @@
         "cancels": "movement"
       }
     ],
+    "rig": {
+      "bone": "cuisse",
+      "lateral": true,
+      "replace": true,
+      "hidesBone": "pied",
+      "byProsthesis": [
+        {
+          "trappingId": "fausse-jambe",
+          "art": "jambe-de-bois"
+        },
+        {
+          "trappingId": "merveille-d-ingenierie",
+          "art": "jambe-de-bois"
+        }
+      ]
+    },
     "desc": "Réduisez de façon permanente votre Mouvement de moitié, et subissez une pénalité de -20 à tous les Tests qui impliquent la mobilité, comme une Esquive. Utilisez les mêmes règles que pour le pied. De plus, vous ne pouvez pas utiliser le talent Esquive du tout.",
     "source": {
       "book": "livre-de-base",
@@ -316,6 +338,14 @@
   {
     "id": "doigt-ampute",
     "label": "Doigts amputés",
+    "cumul": {
+      "portee": "localisation",
+      "escalade": {
+        "atLeast": 4,
+        "versTraumaId": "main-bras-ampute",
+        "mode": "remplace"
+      }
+    },
     "prosthesis": [
       {
         "trappingId": "merveille-d-ingenierie",
@@ -387,6 +417,17 @@
         "cancels": "all"
       }
     ],
+    "rig": {
+      "bone": "tete",
+      "art": "nez-ampute",
+      "view": "front",
+      "byProsthesis": [
+        {
+          "trappingId": "nez-dore",
+          "art": "nez-dore"
+        }
+      ]
+    },
     "desc": "La perte d’un nez rend le visage plutôt effrayant. Votre Sociabilité est réduite de -20 de façon permanente et vous subissez une pénalité de -30 à tous les Tests qui impliquent l’odorat.",
     "source": {
       "book": "livre-de-base",
@@ -400,15 +441,28 @@
     "label": "Œil perdu",
     "ops": [
       {
-        "op": "charMod",
-        "char": "sociabilite",
-        "mod": -5
-      },
-      {
         "op": "senseLoss",
         "sense": "vue"
       }
     ],
+    "cumul": {
+      "portee": "porteur",
+      "parPalier": {
+        "taille": 1,
+        "ops": [
+          {
+            "op": "charMod",
+            "char": "sociabilite",
+            "mod": -5
+          }
+        ]
+      },
+      "escalade": {
+        "atLeast": 2,
+        "versTraumaId": "cecite",
+        "mode": "ajoute"
+      }
+    },
     "prosthesis": [
       {
         "trappingId": "cache-oeil",
@@ -432,15 +486,28 @@
     "label": "Oreille perdue",
     "ops": [
       {
-        "op": "charMod",
-        "char": "sociabilite",
-        "mod": -5
-      },
-      {
         "op": "senseLoss",
         "sense": "ouie"
       }
     ],
+    "cumul": {
+      "portee": "porteur",
+      "parPalier": {
+        "taille": 1,
+        "ops": [
+          {
+            "op": "charMod",
+            "char": "sociabilite",
+            "mod": -5
+          }
+        ]
+      },
+      "escalade": {
+        "atLeast": 2,
+        "versTraumaId": "surdite",
+        "mode": "ajoute"
+      }
+    },
     "prosthesis": [
       {
         "trappingId": "merveille-d-ingenierie",
@@ -458,6 +525,19 @@
   {
     "id": "dents-perdues",
     "label": "Dents perdues",
+    "cumul": {
+      "portee": "porteur",
+      "parPalier": {
+        "taille": 2,
+        "ops": [
+          {
+            "op": "charMod",
+            "char": "sociabilite",
+            "mod": -1
+          }
+        ]
+      }
+    },
     "prosthesis": [
       {
         "trappingId": "dents-en-bois",
@@ -475,6 +555,11 @@
   {
     "id": "cecite",
     "label": "Cécité",
+    "rig": {
+      "bone": "tete",
+      "art": "cecite",
+      "view": "front"
+    },
     "ops": [
       {
         "op": "charMod",

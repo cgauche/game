@@ -6981,6 +6981,29 @@
   {
     "id": "crochet",
     "label": "Crochet",
+    "prosthesisTraining": [
+      {
+        "cost": 100,
+        "reduces": 5,
+        "label": "racheter 5 points de la pénalité"
+      },
+      {
+        "cost": 100,
+        "reduces": 5,
+        "label": "racheter 5 points de la pénalité"
+      },
+      {
+        "cost": 100,
+        "reduces": 5,
+        "label": "racheter 5 points de la pénalité"
+      },
+      {
+        "cost": 100,
+        "reduces": 5,
+        "grants": "all",
+        "label": "retirer la pénalité entière"
+      }
+    ],
     "type": "trapping",
     "subType": "protheses",
     "enc": 1,
@@ -7039,6 +7062,18 @@
   {
     "id": "fausse-jambe",
     "label": "Fausse jambe",
+    "prosthesisTraining": [
+      {
+        "cost": 100,
+        "grants": "movement",
+        "label": "récupérer le dernier Point de Mouvement perdu"
+      },
+      {
+        "cost": 200,
+        "grants": "all",
+        "label": "réapprendre à utiliser Esquive"
+      }
+    ],
     "type": "trapping",
     "subType": "protheses",
     "enc": 2,

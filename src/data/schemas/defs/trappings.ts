@@ -127,6 +127,12 @@ export const schema = z.array(
     shape: z.string().optional(),
     formChoices: z.array(z.string()).optional(),
     requiresMastery: z.boolean().optional(),
+    /** Paliers d'entraînement d'une PROTHÈSE (LDB 73 l.19/23), dans l'ordre d'achat — cf.
+     *  `TrappingData.prosthesisTraining` : `reduces` = tranche de pénalité rachetée, `grants` = aspect
+     *  entièrement levé, `label` = libellé joueur du palier (éditable, aucun texte en dur à l'écran). */
+    prosthesisTraining: z
+      .array(z.strictObject({ cost: z.number(), label: z.string(), reduces: z.number().optional(), grants: z.enum(['movement', 'all']).optional() }))
+      .optional(),
     /** Absent (pas seulement `null`) sur 5 entrées — reflet du contenu réel. */
     enc: z.union([z.number(), z.literal('ND'), z.literal('Variable'), z.null()]).optional(),
     /** Taille PRÉVUE (ADE II 2 l.706-710) — version « taille ogre » d'une possession ordinaire. */

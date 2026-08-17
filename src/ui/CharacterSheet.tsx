@@ -17,6 +17,7 @@ import { isMagicMissile, isArcaneSpell, castBlockedBy, castInfoIsPrayer } from '
 import { effectiveSpellOf } from '../state/combatFlow';
 import { GatedAction } from './GatedAction';
 import { actorHasSkill } from '../engine/skills';
+import { nextProsthesisTier } from '../engine/trauma';
 import { dispellableSpellsOn } from '../engine/dispel';
 import { rule } from '../engine/policy';
 import { canAfford, toMoney, formatMoney } from '../engine/money';
@@ -835,18 +836,19 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
         // Entraînement aux prothèses (LDB 73, #492 lot POSSESSIONS B) : achats PX qui vivaient dans
         // la barre d'actions du Sac (bouton par prothèse portée) — un ACHAT d'Avancement, pas une
         // action de possession, rejoint donc ce panneau (patron `AdvSection` déjà tenu ici).
+        // Le PALIER achetable est DÉCLARÉ sur l'entrée de prothèse (`TrappingData.prosthesisTraining`,
+        // LDB 73) et résolu par `nextProsthesisTier` — cet écran ne nomme aucune prothèse.
         const prostheses = (hero.items ?? []).filter((it) => it.subType === 'protheses' && it.equipped);
         const rows: { key: string; label: string; cost: number; onBuy: () => void }[] = [];
         for (const it of prostheses) {
-          if (it.trappingId === 'crochet' && !it.prosthesisTrained) {
-            rows.push({ key: `${it.uid}-2mains`, label: 'Crochet — maîtriser (armes à deux mains de nouveau possibles)', cost: 400, onBuy: () => trainProsthesis(hero.id, it.uid) });
-          }
-          if (it.trappingId === 'fausse-jambe' && !it.prosthesisMoveTrained) {
-            rows.push({ key: `${it.uid}-mvt`, label: 'Fausse jambe — s’entraîner (Mouvement plein retrouvé)', cost: 100, onBuy: () => trainProsthesis(hero.id, it.uid) });
-          }
-          if (it.trappingId === 'fausse-jambe' && it.prosthesisMoveTrained && !it.prosthesisTrained) {
-            rows.push({ key: `${it.uid}-esq`, label: 'Fausse jambe — réapprendre l’Esquive', cost: 200, onBuy: () => trainProsthesis(hero.id, it.uid) });
-          }
+          const tier = nextProsthesisTier(it);
+          if (!tier) continue;
+          rows.push({
+            key: `${it.uid}-${it.prosthesisReduced ?? 0}-${tier.grants ?? 'palier'}`,
+            label: `${it.label} — ${tier.label}`, // libellé du palier : DONNÉE éditable, jamais un texte d'écran
+            cost: tier.cost,
+            onBuy: () => trainProsthesis(hero.id, it.uid),
+          });
         }
         if (!rows.length) return null;
         return (

@@ -920,7 +920,7 @@ export interface Trauma {
   label: string;
   /** id STABLE d'une séquelle SYNTHÉTIQUE agrégée que le moteur reconnaît par identité
    *  (Dents perdues → 'dents-perdues', Cécité → 'cecite', Surdité → 'surdite') — ≠ libellé d'affichage.
-   *  Posé par `consolidateAmputations`/`escalateSensoryLoss` pour la déduplication langue-indépendante. */
+   *  Posé par `consolidateAmputations` pour la déduplication langue-indépendante. */
   traumaId?: string;
   location: HitLocation;
   /** Effets PASSIFS de la séquelle — vocabulaire PARTAGÉ `GameOp`. Lus EN DIRECT par les helpers de
@@ -965,9 +965,10 @@ export interface Trauma {
    *  soin) — levé par le PREMIER acte de soin des 3 formes (`receiveMedicalAid`). Tant qu'il est posé, la
    *  séquelle S'AGGRAVE : escalade « 1 doigt de plus par Round » de « Main ouverte » (AA 07 l.127 / LDB). */
   awaitingMedicalAid?: boolean;
-  /** « Main ouverte » (AA 07 l.127 / LDB « Main ouverte ») : à chaque fin de Round de combat SANS Aide Médicale
-   *  (`awaitingMedicalAid`), un doigt de plus est perdu (`tickFingerLossEscalation`) — 4+ doigts → main tranchée. */
-  fingerLossPerRound?: boolean;
+  /** Escalade PÉRIODIQUE de la plaie (« Main ouverte », AA 07 l.127 / LDB) : à chaque fin de Round de combat
+   *  SANS Aide Médicale (`awaitingMedicalAid`), `unites` unité(s) de la séquelle `versTraumaId` sont ajoutées
+   *  (`tickTraumaEscalation`). Elle s'éteint quand le cumul de cette séquelle a franchi SON seuil d'escalade. */
+  perRound?: { versTraumaId: string; unites?: number };
   /** « Pied écrasé » (AA 07 l.180 / LDB) : jours restants avant la perte définitive du membre (`amputateSequel`)
    *  si la Chirurgie de la plaie (`needsSurgery`) n'intervient pas à temps (1d10 jours). Décompté à l'entretien
    *  (`tickTraumaRecovery`) ; l'opération réussie retire la plaie AVANT l'échéance → membre sauvé. */
@@ -1150,6 +1151,10 @@ export interface ItemInstance {
    *  trauma.ts) SANS lever l'Esquive (second palier, `prosthesisTrained`). Le simple PORT (gratuit, sans
    *  aucun des deux paliers) n'ignore que 1 PM, restauré POST-halving par `effectiveMovement`. */
   prosthesisMoveTrained?: boolean;
+  /** Points de pénalité RACHETÉS sur cette prothèse par les paliers gradués déjà achetés (LDB 73 l.19,
+   *  Crochet : « 100 PX pour chaque tranche de 5, soustraite de la pénalité ») — cumul des `reduces`
+   *  des paliers acquis (`TrappingData.prosthesisTraining`), lu par `amputationCombatPenalty`. */
+  prosthesisReduced?: number;
   /** Arme INVOQUÉE temporaire (op `grantWeapon`) : objet ordinaire mais TENU d'office (injecté en
    *  tête de `c.weapons` par recomputeLoadout) et retiré à l'expiration du Sort. */
   conjured?: boolean;

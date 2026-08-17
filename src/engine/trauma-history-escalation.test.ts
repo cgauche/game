@@ -119,12 +119,12 @@ describe('#194 — stampCriticalEscalation : dédup du critTrigger (une commotio
   it('onNextCritWhileCondition présent mais un critTrigger équivalent existe déjà → aucun nouveau stamp', () => {
     const existing: Trauma[] = [{ label: 'x', location: 'tete' as HitLocation, critTrigger: { location: 'tete', whileCondition: 'extenue', resist: { difficulty: 'accessible', onFail: [] } } }];
     const traumas: Trauma[] = [];
-    stampCriticalEscalation(traumas, commotionEsc, 'tete', seq([1]), existing);
+    stampCriticalEscalation(traumas, commotionEsc, 'tete', C({}), seq([1]), existing);
     expect(traumas.some((t) => t.critTrigger)).toBe(false);
   });
   it('aucun critTrigger préexistant → stamp effectué', () => {
     const traumas: Trauma[] = [];
-    stampCriticalEscalation(traumas, commotionEsc, 'tete', seq([1]), []);
+    stampCriticalEscalation(traumas, commotionEsc, 'tete', C({}), seq([1]), []);
     expect(traumas.some((t) => t.critTrigger?.whileCondition === 'extenue')).toBe(true);
   });
 });

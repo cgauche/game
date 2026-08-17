@@ -21,7 +21,7 @@ const seq = (vals: number[]): RNG => { let i = 0; return { int: () => vals[i++ %
 
 const stamp = (loc: HitLocation, esc: CritEscalation) => {
   const traumas: Combatant['traumas'] = [];
-  stampCriticalEscalation(traumas!, esc, loc, seq([5]), []);
+  stampCriticalEscalation(traumas!, esc, loc, C({}), seq([5]), []);
   return traumas!;
 };
 

@@ -55,16 +55,16 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 3 | `src/data/index.ts:3126` |
-| `spec` | 1 | `src/data/index.ts:3127` |
+| `id` | 3 | `src/data/index.ts:3135` |
+| `spec` | 1 | `src/data/index.ts:3136` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 1 | `src/data/index.ts:3138` |
+| `id` | 1 | `src/data/index.ts:3147` |
 | `spec` | **0 — JAMAIS LU** | — |
-| `value` | 2 | `src/data/index.ts:3138` |
+| `value` | 2 | `src/data/index.ts:3147` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -91,27 +91,27 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 4 | `src/data/index.ts:3184` |
+| `id` | 4 | `src/data/index.ts:3193` |
 | `spec` | 1 | `src/engine/trappingChoices.ts:36` |
-| `count` | 3 | `src/data/index.ts:3185` |
-| `qualities` | 2 | `src/data/index.ts:3188` |
-| `qualityChoice` | 2 | `src/data/index.ts:3186` |
-| `text` | 1 | `src/data/index.ts:3179` |
-| `vehicleId` | 2 | `src/data/index.ts:3181` |
+| `count` | 3 | `src/data/index.ts:3194` |
+| `qualities` | 2 | `src/data/index.ts:3197` |
+| `qualityChoice` | 2 | `src/data/index.ts:3195` |
+| `text` | 1 | `src/data/index.ts:3188` |
+| `vehicleId` | 2 | `src/data/index.ts:3190` |
 | `label` | **0 — JAMAIS LU** | — |
-| `creatureId` | 2 | `src/data/index.ts:3183` |
-| `choice` | 3 | `src/data/index.ts:3176` |
-| `wildcard` | 1 | `src/data/index.ts:3177` |
+| `creatureId` | 2 | `src/data/index.ts:3192` |
+| `choice` | 3 | `src/data/index.ts:3185` |
+| `wildcard` | 1 | `src/data/index.ts:3186` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `ref` | 4 | `src/data/index.ts:3158` |
-| `wildcard` | 5 | `src/data/index.ts:3160` |
-| `specOptions` | 3 | `src/data/index.ts:3159` |
-| `choice` | 4 | `src/data/index.ts:3162` |
-| `random` | 2 | `src/data/index.ts:3163` |
+| `ref` | 4 | `src/data/index.ts:3167` |
+| `wildcard` | 5 | `src/data/index.ts:3169` |
+| `specOptions` | 3 | `src/data/index.ts:3168` |
+| `choice` | 4 | `src/data/index.ts:3171` |
+| `random` | 2 | `src/data/index.ts:3172` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -199,23 +199,23 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `fingerLossPerRound` | 1 | `src/engine/trauma.ts:422` |
-| `amputateAfter1d10Days` | 1 | `src/engine/trauma.ts:423` |
-| `amputateSequel` | 1 | `src/engine/trauma.ts:428` |
-| `medicalAidGate` | 2 | `src/engine/trauma.ts:430` |
-| `bleedOnReinjury` | 2 | `src/engine/trauma.ts:441` |
+| `perRound` | 1 | `src/engine/trauma.ts:529` |
+| `apresDelai` | 2 | `src/engine/trauma.ts:530` |
+| `medicalAidGate` | 2 | `src/engine/trauma.ts:537` |
+| `bleedOnReinjury` | 2 | `src/engine/trauma.ts:548` |
 | `onRepeat` | **0 — JAMAIS LU** | — |
-| `onNextCritWhileCondition` | 2 | `src/engine/trauma.ts:453` |
-| `onHealGrant` | 2 | `src/engine/trauma.ts:447` |
+| `onNextCritWhileCondition` | 2 | `src/engine/trauma.ts:560` |
+| `onHealGrant` | 2 | `src/engine/trauma.ts:554` |
 
 ### `Amputation` (src/data/criticals.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `difficulty` | 1 | `src/engine/critical.ts:79` |
-| `sequels` | 1 | `src/engine/critical.ts:91` |
+| `difficulty` | 1 | `src/engine/critical.ts:64` |
+| `sequels` | 1 | `src/engine/critical.ts:79` |
+| `unites` | 1 | `src/engine/critical.ts:77` |
 | `timing` | **0 — JAMAIS LU** | — |
-| `loss` | 5 | `src/engine/critical.ts:74` |
+| `loss` | 5 | `src/engine/critical.ts:59` |
 
 ## Synthèse
 

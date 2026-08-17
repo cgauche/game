@@ -10,9 +10,9 @@
  * defenseModifiers — et ne s'applique qu'aux jets d'arme qui IMPLIQUENT la main blessée (jamais un charMod
  * CC/CT global). Le trauma est enregistré (label+note) même sans effet modélisé.
  */
-import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest, Weapon, effectRef, locationLabel, type BodyShape, type ModFamille } from './types';
+import { Combatant, CharKey, CHAR_LABELS, HitLocation, ItemInstance, Trauma, Difficulty, UpkeepDeferTest, Weapon, effectRef, locationLabel, type BodyShape, type ModFamille } from './types';
 import { rollTest } from './tests';
-import { RNG, defaultRNG, d10 } from './dice';
+import { RNG, defaultRNG } from './dice';
 import type { CritEscalation } from '../data/criticals';
 import { isPainless, traitPassiveMods } from './traits/dispatch';
 import { findById, findConditionById, findPsychologyById, findTrappingById, refLabel } from '../data';
@@ -24,7 +24,7 @@ import { drunkCharPenalties } from './drunkenness';
 import { hasActiveFlag } from './activeFlags';
 import { wornSocialMods, qualityWearMods } from './wearPenalty';
 import type { GameOp, PairedSense, PassiveKind, PassiveMod } from './ops';
-import { normalizePassiveKind } from './ops';
+import { normalizePassiveKind, resolveFormula } from './ops';
 import traumasJson from '../data/traumas.json';
 import { t as tr } from '../i18n'; // alias : `t` est un identifiant local très fréquent ici (la séquelle courante)
 
@@ -36,6 +36,44 @@ const LEG: HitLocation[] = ['jambeG', 'jambeD'];
 /** Texte de la plaie chirurgicale d'une amputation (fiche `amputation-plaie`, LDB 18 l.239, DISPLAY-ONLY) —
  *  SOURCE UNIQUE partagée par `resolveAmputation` (critical.ts) et `stampCriticalEscalation` (« Pied écrasé »). */
 export const AMPUTATION_WOUND_DESC = (traumasJson as TraumaFiche[]).find((f) => f.id === 'amputation-plaie')!.desc;
+
+/**
+ * Règle de COMPTAGE/AGRÉGATION d'une séquelle CUMULATIVE, déclarée sur SON entrée de `traumas.json` —
+ * LDB 18 l.247 (dents), l.251 (doigts), l.273 (œil), l.277 (oreille), l.281 (orteils). Le moteur
+ * (`permanentAmputations`, `consolidateAmputations`) applique la règle DÉCLARÉE : il n'énumère aucune
+ * séquelle par id.
+ */
+export interface TraumaCumul {
+  /** Regroupement des occurrences : par Localisation (LDB 18 l.251 « cette main », l.281 orteils — le
+   *  membre reste identifiable à l'écran) ou sur le PORTEUR (l.247 dents, l.273/277 organes pairés).
+   *  La QUANTITÉ perdue, elle, n'est pas ici : elle est portée par la LIGNE de Critique
+   *  (`Amputation.unites`, « Perdez 1d10 dents »). */
+  portee: 'localisation' | 'porteur';
+  /** Ops appliquées PAR PALIER de `taille` unités : leur amplitude (`mod`) est multipliée par le
+   *  nombre de paliers atteints (`floor(total / taille)`). */
+  parPalier?: { taille: number; ops: GameOp[] };
+  /** Seuil au-delà duquel la séquelle `versTraumaId` s'applique — `remplace` (LDB 18 l.251) retire les
+   *  occurrences comptées, `ajoute` (l.273/277) les conserve. */
+  escalade?: { atLeast: number; versTraumaId: string; mode: 'remplace' | 'ajoute' };
+}
+
+/**
+ * Routage d'APPARENCE de la séquelle sur le rig (LDB 18 / prothèses LDB 73) — pur affichage, lu par
+ * `injuryOverlaysFor` (`gameIso/rig/parts/injuries.ts`) : le rig ne nomme plus aucune séquelle.
+ */
+export interface TraumaRig {
+  /** Os porteur du calque (`BoneId`) ; suffixé `G`/`D` d'après la Localisation si `lateral`. */
+  bone: string;
+  lateral?: boolean;
+  /** Art par défaut (`PROSTHESIS`) ; absent = rien tant qu'aucune prothèse n'est portée. */
+  art?: string;
+  /** Art substitué quand la prothèse `trappingId` est PORTÉE (première portée gagne). */
+  byProsthesis?: { trappingId: string; art: string }[];
+  /** Os effacé en plus du calque (même latéralité). */
+  hidesBone?: string;
+  view?: 'front';
+  replace?: boolean;
+}
 
 /**
  * Fiche de Traumatisme (registre `traumas.json`, app-owned) : mécanique = `ops` (GameOp[]), `desc` =
@@ -51,6 +89,10 @@ export interface TraumaFiche {
   kind?: TraumaKind;
   severity?: TraumaSeverity;
   prosthesis?: { trappingId: string; cancels: 'all' | 'movement' }[];
+  /** Séquelle CUMULATIVE : sa règle de comptage/agrégation, en donnée (LDB 18 l.247/251/273/277/281). */
+  cumul?: TraumaCumul;
+  /** Routage d'apparence sur le rig (affichage pur). */
+  rig?: TraumaRig;
   needsSurgery?: boolean;
   /** Séquelle COSMÉTIQUE (cicatrice) : n'est PAS une Blessure critique comptée (`criticalWounds`) — cf. `Trauma.cosmetic`. */
   cosmetic?: boolean;
@@ -74,6 +116,14 @@ export function traumaFicheById(id: string): TraumaFiche {
   const f = FICHE_BY_ID.get(id);
   if (!f) throw new Error(`Trauma fiche inconnue : ${id}`);
   return f;
+}
+
+/** Fiche de Traumatisme, ou `undefined` si l'id n'est plus au catalogue — porte TOLÉRANTE réservée aux
+ *  canaux d'AFFICHAGE (rendu de rig, écrans) : une entrée supprimée/renommée au Codex laisse des
+ *  `traumaId` orphelins dans les saves, et un écran ne doit pas planter pour un visuel manquant. Toute
+ *  lecture MÉCANIQUE passe par `traumaFicheById`, qui lève (une règle silencieusement absente = bug). */
+export function findTraumaFiche(id: string | undefined): TraumaFiche | undefined {
+  return id == null ? undefined : FICHE_BY_ID.get(id);
 }
 
 /** Ops PASSIVES d'une séquelle (lecteur UNIQUE de `t.ops` — vocab GameOp partagé). */
@@ -108,6 +158,32 @@ export function dechirureFractureFicheId(kind: TraumaKind, severity: TraumaSever
   return `fracture-${zone}-${sevW}`;
 }
 
+/** Amplitude d'une op de palier multipliée par le nombre de paliers atteints (`mod` : `charMod`,
+ *  `skillMod`, `moveMod`…). Une op sans amplitude chiffrée est émise TELLE QUELLE dès le 1ᵉʳ palier. */
+function scalePalierOp(o: GameOp, paliers: number): GameOp {
+  return 'mod' in o && typeof o.mod === 'number' ? { ...o, mod: o.mod * paliers } : { ...o };
+}
+
+/** Ops d'une séquelle pour `count` unités perdues : ops de base + `cumul.parPalier` mises à l'échelle du
+ *  nombre de paliers (`floor(count / taille)`, LDB 18 l.247 « pour chaque paire », l.281 « pour chaque
+ *  orteil »). SOURCE UNIQUE lue par `traumaById`, `permanentAmputations` et `consolidateAmputations`. */
+export function traumaCumulOps(f: TraumaFiche, count: number): GameOp[] {
+  const base = (f.ops ?? []).map((o) => ({ ...o }));
+  const p = f.cumul?.parPalier;
+  if (!p) return base;
+  const paliers = Math.floor(count / Math.max(1, p.taille));
+  return paliers <= 0 ? base : [...base, ...p.ops.map((o) => scalePalierOp(o, paliers))];
+}
+
+/** Pose `count` unités sur une séquelle cumulative et recalcule ses ops (`traumaCumulOps`). Mute `t`. */
+export function setTraumaCount(t: Trauma, f: TraumaFiche, count: number): Trauma {
+  t.count = count;
+  const ops = traumaCumulOps(f, count);
+  if (ops.length) t.ops = ops;
+  else delete t.ops;
+  return t;
+}
+
 /** Instancie un `Trauma` POSÉ depuis une fiche `traumas.json` (mécanique = `ops`, `desc` = canon
  *  DISPLAY-ONLY) à la `location` du coup. `opts.be` (Bonus d'Endurance) + `opts.d10` (1d10 des fractures)
  *  → durée de convalescence `recoveryDays` COMPUTÉE par la formule (jamais stockée). La sévérité est
@@ -134,6 +210,7 @@ export function traumaById(id: string, opts?: { be?: number; d10?: number }, loc
     if (recoveryDays != null) { out.recoveryDays = recoveryDays; out.recoveryTotal = recoveryDays; }
     if (f.kind === 'fracture' && sev === 'majeur') out.needsSurgery = true;
   }
+  if (f.cumul) setTraumaCount(out, f, 1); // séquelle cumulative : UNE unité par défaut (LDB 18 l.251/281)
   if (f.needsSurgery) out.needsSurgery = true;
   if (f.cosmetic) out.cosmetic = true;
   if (f.passiveKind) out.passiveKind = f.passiveKind;
@@ -299,57 +376,85 @@ export function maxFingersLostForWeapon(c: Combatant, weapon: Weapon): number {
 export function amputationCombatPenalty(c: Combatant, weapon: Weapon): number {
   const traumas = c.traumas ?? [];
   const handAmputated = (loc: HitLocation) => traumas.some((t) => t.traumaId === 'main-bras-ampute' && t.location === loc);
+  // Rachat GRADUÉ par prothèse entraînée (LDB 73 l.19) : chaque tranche acquise se SOUSTRAIT de la
+  // pénalité de main perdue, jusqu'à l'annuler entièrement (400 PX). Déclaré en donnée, jamais ici.
+  const rachat = prosthesisPenaltyBuyback(c);
+  const mainPerdue = Math.max(0, 20 - rachat);
   let penalty = 0;
   for (const [side, loc] of [['left', 'brasG'], ['right', 'brasD']] as const) {
     if (!weaponUsesHand(weapon, side)) continue;
-    if (handAmputated(loc)) penalty -= 20;
+    if (handAmputated(loc)) penalty -= mainPerdue;
     else penalty -= 5 * fingersLost(c, loc);
   }
-  if (handAmputated('brasD') && weaponUsesHand(weapon, 'left')) penalty -= 20; // clause l.263 : main principale perdue → main secondaire à −20
+  if (handAmputated('brasD') && weaponUsesHand(weapon, 'left')) penalty -= mainPerdue; // clause l.263 : main principale perdue → main secondaire à −20
   return penalty;
 }
 
+/** Fiches à règle de cumul déclarée (`TraumaCumul`) — l'ordre du registre fixe l'ordre de consolidation. */
+const CUMUL_FICHES = FICHES.filter((f) => f.cumul);
+const IS_CUMUL = (t: Trauma): boolean => CUMUL_FICHES.some((f) => f.id === t.traumaId);
+
+/** Séquelle cumulative agrégée : `total` unités à `loc`, ops recalculées ; le libellé porte la
+ *  Localisation quand le cumul est PAR LOCALISATION (LDB 18 l.251 « cette main »). */
+function aggregateCumul(c: Combatant, f: TraumaFiche, loc: HitLocation, total: number): Trauma {
+  const t = setTraumaCount(traumaById(f.id, undefined, loc), f, total);
+  if (f.cumul!.portee === 'localisation') t.label = tr('tra.locSuffix', { label: f.label, loc: locationLabel(loc, c.bodyShape) });
+  return t;
+}
+
+/** Effet JOUEUR d'une séquelle, DÉRIVÉ de ses ops déclarées (jamais une phrase écrite par cas) :
+ *  pénalités chiffrées regroupées par valeur (« −30 en Capacité de Combat, Esquive »), puis les effets
+ *  structurels (Mouvement, main, sens). Vide si la fiche ne déclare aucun effet. Sert le JOURNAL —
+ *  l'affichage riche du Codex reste `opRows`/`GameOpChips` (couche UI). */
+function sequelleEffet(f: TraumaFiche): string {
+  const parMod = new Map<number, string[]>();
+  const autres: string[] = [];
+  for (const o of f.ops ?? []) {
+    if (o.op === 'charMod') parMod.set(o.mod, [...(parMod.get(o.mod) ?? []), CHAR_LABELS[o.char]]);
+    else if (o.op === 'skillMod') parMod.set(o.mod, [...(parMod.get(o.mod) ?? []), refLabel('skills', { id: o.skill })]);
+    else if (o.op === 'moveScale') autres.push(tr('tra.effetMouvement'));
+    else if (o.op === 'maxWeaponHands') autres.push(tr('tra.effetUneMain'));
+    else if (o.op === 'senseLoss') autres.push(tr(o.sense === 'vue' ? 'tra.effetVue' : 'tra.effetOuie'));
+  }
+  const chiffres = [...parMod].map(([mod, noms]) => tr('tra.effetMod', { sign: mod >= 0 ? '+' : '−', n: Math.abs(mod), noms: noms.join(', ') }));
+  return [...chiffres, ...autres].join(' · ');
+}
+
 /**
- * Fusionne les séquelles CUMULATIVES par comptage (LDB 18) en UN trauma agrégé (≠ modèle non-cumul : ici le
- * RAW est explicitement cumulatif). Mute `c.traumas`, renvoie le journal. Idempotent. Appelé après l'ajout
- * d'une séquelle d'amputation (combat) :
- *  - Doigts par bras (l.251) : compte cumulé PAR bras ; **4+ doigts → règle de la main tranchée** (`maxWeaponHands`).
- *    La pénalité −5/doigt (et −20/main) est CONTEXTUELLE À L'ARME (`amputationCombatPenalty`), PAS un charMod ici.
- *  - Dents (l.247) : −1 Sociabilité PAR PAIRE perdue (1 dent = 0, 3 = −1, 4 = −2…).
- * Latéralité portée par `location` (brasG/brasD) ; DROITIER (main principale = brasD). Prothèses : Merveille
- * (doigts/main), Dents en bois (dents).
+ * Fusionne les séquelles CUMULATIVES par comptage (LDB 18) en UN trauma agrégé par groupe (≠ modèle
+ * non-cumul : ici le RAW est explicitement cumulatif). La RÈGLE est portée par l'entrée `traumas.json`
+ * (`cumul` : portée, unité, effet par palier, escalade) — ce moteur l'applique sans nommer aucune
+ * séquelle. Mute `c.traumas`, renvoie le journal. Idempotent. Appelé après l'ajout d'une séquelle
+ * d'amputation (combat) et après chaque escalade. Latéralité portée par `location` ; DROITIER (main
+ * principale = brasD). La pénalité −5/doigt (et −20/main) reste CONTEXTUELLE À L'ARME
+ * (`amputationCombatPenalty`), jamais un charMod posé ici.
  */
 export function consolidateAmputations(c: Combatant): string[] {
   const log: string[] = [];
   const traumas = c.traumas ?? [];
-  const isFinger = (t: Trauma) => t.traumaId === 'doigt-ampute';
-  const isTeeth = (t: Trauma) => t.traumaId === 'dents-perdues';
-  if (!traumas.some((t) => isFinger(t) || isTeeth(t))) return log;
-  const kept = traumas.filter((t) => !isFinger(t) && !isTeeth(t));
-  const fingerFiche = traumaFicheById('doigt-ampute');
-  const handFiche = traumaFicheById('main-bras-ampute');
-  const teethFiche = traumaFicheById('dents-perdues');
-  for (const loc of ['brasG', 'brasD'] as const) {
-    const grp = traumas.filter((t) => isFinger(t) && t.location === loc);
+  if (!traumas.some(IS_CUMUL)) return log;
+  const kept = traumas.filter((t) => !IS_CUMUL(t));
+  for (const f of CUMUL_FICHES) {
+    const grp = traumas.filter((t) => t.traumaId === f.id);
     if (!grp.length) continue;
-    const total = grp.reduce((s, t) => s + (t.count ?? 1), 0);
-    // La pénalité de combat (−5/doigt, −20/main) est CONTEXTUELLE À L'ARME (`amputationCombatPenalty`) — lue par
-    // attack/defenseModifiers depuis `traumaId`+`location`+`count` ci-dessous ; on ne pose PLUS de charMod CC/CT ici.
-    if (total >= 4) {
-      if (grp.length > 1) log.push(tr('tra.handSevered', { name: c.label, loc: locationLabel(loc, c.bodyShape) }));
-      if (!kept.some((t) => t.traumaId === 'main-bras-ampute' && t.location === loc)) {
-        kept.push({ label: tr('tra.locSuffix', { label: handFiche.label, loc: locationLabel(loc, c.bodyShape) }), traumaId: handFiche.id, location: loc, ops: [{ op: 'maxWeaponHands', hands: 1 }], prosthesis: handFiche.prosthesis!.map((p) => ({ ...p })), desc: handFiche.desc });
-      }
-    } else {
-      kept.push({ label: tr('tra.locSuffix', { label: fingerFiche.label, loc: locationLabel(loc, c.bodyShape) }), traumaId: fingerFiche.id, location: loc, count: total, prosthesis: fingerFiche.prosthesis!.map((p) => ({ ...p })), desc: fingerFiche.desc });
+    const cumul = f.cumul!;
+    const locs = cumul.portee === 'localisation' ? [...new Set(grp.map((t) => t.location))] : [grp[0].location];
+    for (const loc of locs) {
+      const groupe = cumul.portee === 'localisation' ? grp.filter((t) => t.location === loc) : grp;
+      const total = groupe.reduce((s, t) => s + (t.count ?? 1), 0);
+      const esc = cumul.escalade;
+      const atteint = !!esc && total >= esc.atLeast;
+      if (!atteint || esc!.mode === 'ajoute') kept.push(aggregateCumul(c, f, loc, total));
+      if (!atteint) continue;
+      const cible = traumaFicheById(esc!.versTraumaId);
+      const dejaLa = kept.some((t) => t.traumaId === cible.id && (cumul.portee === 'porteur' || t.location === loc));
+      if (dejaLa) continue;
+      const posee = traumaById(cible.id, undefined, loc);
+      if (cumul.portee === 'localisation') posee.label = tr('tra.locSuffix', { label: cible.label, loc: locationLabel(loc, c.bodyShape) });
+      kept.push(posee);
+      const effet = sequelleEffet(cible);
+      log.push(tr(effet ? 'tra.cumulEscalated' : 'tra.cumulEscalatedPlain', { name: c.label, count: total, source: f.label, label: posee.label, effet }));
     }
-  }
-  const teeth = traumas.filter(isTeeth);
-  if (teeth.length) {
-    const total = teeth.reduce((s, t) => s + (t.count ?? 1), 0);
-    const soc = -Math.floor(total / 2);
-    const ops: GameOp[] = soc < 0 ? [{ op: 'charMod', char: 'sociabilite', mod: soc }] : [];
-    kept.push({ label: teethFiche.label, traumaId: teethFiche.id, location: 'tete', count: total, ...(ops.length ? { ops } : {}), prosthesis: teethFiche.prosthesis!.map((p) => ({ ...p })), desc: teethFiche.desc });
   }
   c.traumas = kept;
   return log;
@@ -369,29 +474,30 @@ export function receiveMedicalAid(c: Combatant): string[] {
 }
 
 /**
- * Escalade « Main ouverte » (AA 07 l.127 / LDB « Main ouverte ») : à CHAQUE fin de Round de combat SANS Aide
- * Médicale (`awaitingMedicalAid`), la main perd un doigt de plus. `consolidateAmputations` applique ensuite la
- * règle de la main tranchée (4+ doigts → `main-bras-ampute`, LDB 18 l.251). Mute `c`, renvoie le journal.
+ * Escalade PÉRIODIQUE d'une plaie (« Main ouverte », AA 07 l.127 / LDB) : à CHAQUE fin de Round de combat
+ * SANS Aide Médicale (`awaitingMedicalAid`), la plaie ajoute `perRound.unites` unité(s) de la séquelle
+ * qu'elle DÉCLARE (`Trauma.perRound`, posée par `stampCriticalEscalation`). `consolidateAmputations`
+ * applique ensuite la règle de cumul de cette séquelle (LDB 18 l.251). Mute `c`, renvoie le journal.
  * Appelé par le hook de franchissement de Round (`roundHooks`, machinerie universelle — ne nomme aucune entité).
  */
-export function tickFingerLossEscalation(c: Combatant, _rng: RNG = defaultRNG): string[] {
-  const gated = (c.traumas ?? []).filter((t) => t.fingerLossPerRound && t.awaitingMedicalAid);
+export function tickTraumaEscalation(c: Combatant, _rng: RNG = defaultRNG): string[] {
+  const gated = (c.traumas ?? []).filter((t) => t.perRound && t.awaitingMedicalAid);
   if (!gated.length) return [];
   const log: string[] = [];
   for (const t of gated) {
-    const finger = traumaById('doigt-ampute', undefined, t.location);
-    finger.count = 1; // 1 doigt de plus (cumulé par consolidateAmputations, comme permanentAmputations)
-    c.traumas = [...(c.traumas ?? []), finger];
-    log.push(tr('tra.fingerLost', { name: c.label, loc: locationLabel(t.location ?? 'corps', c.bodyShape) }));
+    const fiche = traumaFicheById(t.perRound!.versTraumaId);
+    const ajout = setTraumaCount(traumaById(fiche.id, undefined, t.location), fiche, t.perRound!.unites ?? 1);
+    c.traumas = [...(c.traumas ?? []), ajout];
+    log.push(tr('tra.escalationTick', { name: c.label, label: fiche.label, loc: locationLabel(t.location ?? 'corps', c.bodyShape) }));
   }
   const cons = consolidateAmputations(c);
-  // Main tranchée (4+ doigts) : la règle « perdez tous vos doigts → vous perdez votre main » est atteinte —
-  // la plaie de doigt n'a plus lieu de saigner (le membre est amputé), on retire l'escalade en attente. Vérifié
-  // PAR LOCALISATION : une main déjà amputée sur l'AUTRE bras (crit antérieur) ne coupe pas une escalade « Main
-  // ouverte » fraîche — seule la main effectivement tranchée arrête SON escalade (AA 07 l.127 / LDB « Main ouverte »).
+  // Seuil d'escalade de la séquelle FRANCHI (« Si vous perdez tous vos doigts, vous perdez votre main ») :
+  // la plaie n'a plus de quoi s'aggraver, son escalade s'éteint. Vérifié PAR LOCALISATION — une escalade en
+  // cours sur l'AUTRE membre n'est pas coupée par un franchissement voisin.
   for (const t of c.traumas ?? []) {
-    if (t.fingerLossPerRound && (c.traumas ?? []).some((x) => x.traumaId === 'main-bras-ampute' && x.location === t.location)) {
-      t.fingerLossPerRound = false;
+    const seuil = t.perRound && traumaFicheById(t.perRound.versTraumaId).cumul?.escalade;
+    if (seuil && (c.traumas ?? []).some((x) => x.traumaId === seuil.versTraumaId && x.location === t.location)) {
+      t.perRound = undefined;
       t.awaitingMedicalAid = false;
     }
   }
@@ -401,10 +507,10 @@ export function tickFingerLossEscalation(c: Combatant, _rng: RNG = defaultRNG): 
 /**
  * Instancie l'escalade GATÉE d'un critique (`CritEscalation`, LDB / Aux Armes) — SOURCE UNIQUE partagée par
  * `rollCritical` et `resolveAACritical` :
- *  - « Main ouverte » (l.2571) → `fingerLossPerRound` + `awaitingMedicalAid` SUR la plaie chirurgicale (escalade
- *    par Round de combat) ;
- *  - « Pied écrasé » (l.2624) → `amputateAfterDays = 1d10` + `amputateSequel` SUR la plaie (perte du membre si
- *    pas de Chirurgie à temps ; décompté à l'entretien par `tickTraumaRecovery`) ;
+ *  - `perRound` (« Main ouverte », l.2571) → l'escalade périodique DÉCLARÉE + `awaitingMedicalAid` SUR la
+ *    plaie chirurgicale (jouée à chaque fin de Round par `tickTraumaEscalation`) ;
+ *  - `apresDelai` (« Pied écrasé », l.2624) → `amputateAfterDays` (délai résolu) + `amputateSequel` SUR la
+ *    plaie (séquelle posée si pas de Chirurgie à temps ; décompté à l'entretien par `tickTraumaRecovery`) ;
  *  - « Épaule luxée »/« Genou démis » (`medicalAidGate`) → POUSSE une NOUVELLE séquelle « membre désactivé » à
  *    `location` (pas de plaie chirurgicale : le membre n'est pas amputé mais inutilisable), porteuse de
  *    `restoreDR`/`recoveryPenalty`/`awaitingMedicalAid`.
@@ -414,18 +520,19 @@ export function stampCriticalEscalation(
   traumas: Trauma[],
   esc: CritEscalation | undefined,
   location: HitLocation,
+  ref: Combatant,
   rng: RNG = defaultRNG,
   existing: Trauma[] = [],
 ): void {
   if (!esc) return;
   let plaie = traumas.find((t) => t.needsSurgery && t.traumaId == null); // « Amputation » = la plaie chirurgicale
-  if (plaie && esc.fingerLossPerRound) { plaie.fingerLossPerRound = true; plaie.awaitingMedicalAid = true; }
-  if (esc.amputateAfter1d10Days) {
+  if (plaie && esc.perRound) { plaie.perRound = { ...esc.perRound }; plaie.awaitingMedicalAid = true; }
+  if (esc.apresDelai) {
     // « Pied écrasé » (LDB 18 l.180) : le pied est une plaie chirurgicale À PART ENTIÈRE (« Si vous n'êtes pas
     // soigné par Chirurgie… vous perdez votre pied »), indépendante de la perte d'orteil (`amputation.loss`
     // peut n'avoir posé aucune plaie sur un Test réussi) → on en CRÉE une si aucune n'existe.
     if (!plaie) { plaie = { label: traumaFicheById('amputation-plaie').label, location, needsSurgery: true, desc: AMPUTATION_WOUND_DESC }; traumas.push(plaie); }
-    plaie.amputateAfterDays = d10(rng); plaie.amputateSequel = esc.amputateSequel;
+    plaie.amputateAfterDays = resolveFormula(esc.apresDelai.jours, ref, rng); plaie.amputateSequel = esc.apresDelai.versTraumaId;
   }
   if (esc.medicalAidGate) {
     const g = esc.medicalAidGate;
@@ -559,30 +666,6 @@ export function recoverDisabledLimb(c: Combatant, idx = 0): { penalty: import('.
   return { penalty, log: [tr('tra.limbRestored', { name: c.label, label: t.label, loc: locationLabel(t.location ?? 'corps', c.bodyShape) })] };
 }
 
-/**
- * Cumul de pertes sensorielles (LDB 18 l.273/277) : perdre le SECOND œil/oreille agrège une séquelle —
- * Cécité (−30 aux Tests liés à la vue : Arme, Esquive, Chevaucher, compétences NOMMÉES) ou Surdité (−20 aux
- * Tests de Perception basés sur l'ouïe UNIQUEMENT — le `skillMod` de la fiche `surdite` porte `sense:'ouie'`,
- * gaté par `traumaSkillPenalty`/`testValue` contre le sens SOLLICITÉ par le Test, pas toute Perception).
- * Mute `c.traumas`, renvoie le journal ; idempotent. Appelé après l'ajout d'une séquelle d'amputation
- * (combat). Non annulable par prothèse (yeux/oreilles de remplacement = cosmétiques).
- */
-export function escalateSensoryLoss(c: Combatant): string[] {
-  const log: string[] = [];
-  const hasSense = (t: Trauma, s: 'vue' | 'ouie') => traumaOps(t).some((o) => o.op === 'senseLoss' && o.sense === s);
-  const eyes = (c.traumas ?? []).filter((t) => hasSense(t, 'vue')).length;
-  const ears = (c.traumas ?? []).filter((t) => hasSense(t, 'ouie')).length;
-  if (eyes >= 2 && !(c.traumas ?? []).some((t) => t.traumaId === 'cecite')) {
-    c.traumas = [...(c.traumas ?? []), traumaById('cecite', undefined, 'tete')];
-    log.push(tr('tra.blindness', { name: c.label }));
-  }
-  if (ears >= 2 && !(c.traumas ?? []).some((t) => t.traumaId === 'surdite')) {
-    c.traumas = [...(c.traumas ?? []), traumaById('surdite', undefined, 'tete')];
-    log.push(tr('tra.deafness', { name: c.label }));
-  }
-  return log;
-}
-
 /** Le personnage ne peut PAS manier d'arme à deux mains (amputation de main/bras, LDB 18 l.263) — sauf
  *  prothèse qui annule tout (Merveille d'ingénierie, LDB 73). Lu par `recomputeLoadout` via `weaponHands`
  *  — le marqueur « (2M) » de la donnée est UNIFORME mêlée ET distance (Arc/Arbalète/Arquebuse/Tromblon),
@@ -678,6 +761,48 @@ function prosthesisCancels(c: Combatant, t: Trauma, aspect: 'movement' | 'all'):
     if (worn.prosthesisTrained) return true; // 200 PX : mouvement + Esquive (Fausse jambe, LDB 73)
     return aspect === 'movement' && !!worn.prosthesisMoveTrained; // 100 PX : mouvement seul
   });
+}
+
+/** Palier d'entraînement d'une prothèse, tel que son entrée de catalogue le DÉCLARE (LDB 73). */
+export type ProsthesisTier = NonNullable<import('../data').TrappingData['prosthesisTraining']>[number];
+
+/** Un palier est-il DÉJÀ acquis sur cet objet ? `grants` → son drapeau ; `reduces` seul → la tranche
+ *  est comptée dans le total racheté (`prosthesisReduced`), `cumul` étant le total attendu jusqu'ici. */
+function tierAcquis(it: ItemInstance, tier: ProsthesisTier, cumul: number): boolean {
+  if (tier.grants) return tier.grants === 'movement' ? !!it.prosthesisMoveTrained : !!it.prosthesisTrained;
+  return (it.prosthesisReduced ?? 0) >= cumul;
+}
+
+/** PROCHAIN palier d'entraînement ACHETABLE d'une prothèse portée (LDB 73) : le premier palier DÉCLARÉ
+ *  (`TrappingData.prosthesisTraining`, dans l'ordre) qui reste à acquérir — un aspect à lever (`grants`)
+ *  ou une tranche de pénalité à racheter (`reduces`, l.19). `undefined` si l'objet n'est pas une prothèse
+ *  entraînable, n'est pas porté, ou est déjà entièrement maîtrisé.
+ *  SOURCE UNIQUE partagée par l'écran d'Avancement et `trainProsthesis` (state/partyFlow.ts). */
+export function nextProsthesisTier(it: ItemInstance): ProsthesisTier | undefined {
+  if (!it.equipped || !it.trappingId) return undefined;
+  const tiers = findTrappingById(it.trappingId)?.prosthesisTraining ?? [];
+  let cumul = 0;
+  for (const tier of tiers) {
+    cumul += tier.reduces ?? 0;
+    if (!tierAcquis(it, tier, cumul)) return tier;
+  }
+  return undefined;
+}
+
+/** Acquiert un palier sur l'objet (mute) — SOURCE UNIQUE de la projection palier → état de l'objet. */
+export function grantProsthesisTier(it: ItemInstance, tier: ProsthesisTier): void {
+  if (tier.reduces) it.prosthesisReduced = (it.prosthesisReduced ?? 0) + tier.reduces;
+  if (tier.grants === 'movement') it.prosthesisMoveTrained = true;
+  else if (tier.grants === 'all') it.prosthesisTrained = true;
+}
+
+/** Points de pénalité de combat RACHETÉS par les prothèses PORTÉES (LDB 73 l.19 — Crochet : « racheter
+ *  la pénalité de -20 à tous les Tests impliquant deux mains pour 100 PX pour chaque tranche de 5 »).
+ *  Somme les tranches acquises ; lu par `amputationCombatPenalty`, qui la soustrait de la pénalité de
+ *  main perdue. ANGLE MORT ASSUMÉ : la prothèse n'a pas de Localisation propre — deux mains perdues et
+ *  un seul crochet réduiraient les DEUX pénalités. */
+export function prosthesisPenaltyBuyback(c: Combatant): number {
+  return (c.items ?? []).reduce((s, i) => s + (i.equipped ? (i.prosthesisReduced ?? 0) : 0), 0);
 }
 
 /** Fausse jambe (ou faux pied) PORTÉE mais PAS entraînée au Mouvement (100 PX) : le port de BASE (gratuit)

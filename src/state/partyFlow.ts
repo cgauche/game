@@ -33,6 +33,7 @@ import {
 import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from '../engine/talentEffects';
 import { heroSessionXp, regainDetermination } from '../engine/session';
 import { skillCharacteristicById } from '../engine/character';
+import { nextProsthesisTier, grantProsthesisTier } from '../engine/trauma';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { castingKindOf } from '../engine/combatFeatures/dispatch';
 import { canAfford, toMoney, Money, formatMoney } from '../engine/money';
@@ -640,53 +641,29 @@ export function removeSpellComponent(_get: Get, set: Set, heroId: string, spellI
   }));
 }
 
-/** Fausse jambe (LDB 73 l.23) : 2 paliers DISTINCTS, achetés dans l'ordre — 100 PX (Mouvement,
- *  `prosthesisMoveTrained`) PUIS 200 PX (Esquive, `prosthesisTrained`). Crochet : 400 PX en un seul
- *  palier (`prosthesisTrained`, rachat entier de la pénalité « deux mains »). */
-const LEG_MOVE_COST = 100;
-const LEG_DODGE_COST = 200;
-const HOOK_COST = 400;
-
+/** Rachat PX d'une prothèse (LDB 73) : les PALIERS sont DÉCLARÉS sur l'entrée de catalogue
+ *  (`TrappingData.prosthesisTraining`) et joués dans l'ordre par `nextProsthesisTier` — ce flux ne nomme
+ *  aucune prothèse. Fausse jambe : 100 PX (Mouvement) puis 200 PX (Esquive) ; Crochet : 400 PX (l.23). */
 export function trainProsthesis(get: Get, set: Set, heroId: string, uid: string): void {
-  // Rachat PX d'une prothèse (LDB 73). Keyé par `trappingId` STABLE (≠ libellé).
   let msg = '';
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
       const clone: Combatant = structuredClone(h);
       const it = (clone.items ?? []).find((i) => i.uid === uid);
-      if (!it || !it.equipped || !it.trappingId) { msg = t('pf.prosthesisNotTrainable', { name: clone.label }); return h; }
-
-      if (it.trappingId === 'fausse-jambe') {
-        if (!it.prosthesisMoveTrained) { // 1er palier : 100 PX (récupérer le dernier PM perdu)
-          if ((clone.xp ?? 0) < LEG_MOVE_COST) { msg = t('pf.notEnoughXp', { name: clone.label, cost: LEG_MOVE_COST }); return h; }
-          clone.xp = (clone.xp ?? 0) - LEG_MOVE_COST;
-          it.prosthesisMoveTrained = true;
-          msg = t('pf.legMoveTrained', { name: clone.label, cost: LEG_MOVE_COST });
-          return clone;
-        }
-        if (!it.prosthesisTrained) { // 2e palier : 200 PX (réapprendre l'Esquive)
-          if ((clone.xp ?? 0) < LEG_DODGE_COST) { msg = t('pf.notEnoughXp', { name: clone.label, cost: LEG_DODGE_COST }); return h; }
-          clone.xp = (clone.xp ?? 0) - LEG_DODGE_COST;
-          it.prosthesisTrained = true;
-          msg = t('pf.legDodgeTrained', { name: clone.label, cost: LEG_DODGE_COST });
-          return clone;
-        }
-        msg = t('pf.prosthesisTrained', { name: clone.label, item: it.label });
+      if (!it) { msg = t('pf.prosthesisNotTrainable', { name: clone.label }); return h; }
+      const tier = nextProsthesisTier(it);
+      if (!tier) {
+        // Prothèse non entraînable (aucun palier déclaré / non portée) vs. déjà entièrement maîtrisée.
+        const done = it.equipped && !!it.trappingId && (findTrappingById(it.trappingId)?.prosthesisTraining?.length ?? 0) > 0;
+        msg = done ? t('pf.prosthesisTrained', { name: clone.label, item: it.label }) : t('pf.prosthesisNotTrainable', { name: clone.label });
         return h;
       }
-
-      if (it.trappingId === 'crochet') {
-        if (it.prosthesisTrained) { msg = t('pf.prosthesisTrained', { name: clone.label, item: it.label }); return h; }
-        if ((clone.xp ?? 0) < HOOK_COST) { msg = t('pf.notEnoughXp', { name: clone.label, cost: HOOK_COST }); return h; }
-        clone.xp = (clone.xp ?? 0) - HOOK_COST;
-        it.prosthesisTrained = true;
-        msg = t('pf.hookTrained', { name: clone.label, cost: HOOK_COST });
-        return clone;
-      }
-
-      msg = t('pf.prosthesisNotTrainable', { name: clone.label });
-      return h;
+      if ((clone.xp ?? 0) < tier.cost) { msg = t('pf.notEnoughXp', { name: clone.label, cost: tier.cost }); return h; }
+      clone.xp = (clone.xp ?? 0) - tier.cost;
+      grantProsthesisTier(it, tier);
+      msg = t('pf.prosthesisTierBought', { name: clone.label, item: it.label, tier: tier.label, cost: tier.cost });
+      return clone;
     }),
   }));
   if (msg) get().log(msg);

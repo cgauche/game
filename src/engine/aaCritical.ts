@@ -133,7 +133,7 @@ export function resolveAACritical(
     if (entry.amputation.timing === 'postEncounter') {
       traumas.push({ label: entry.label, location, pendingAmputation: entry.amputation });
     } else {
-      const amp = resolveAmputation(entry.amputation, location, resistVal, rng);
+      const amp = resolveAmputation(entry.amputation, location, resistVal, target, rng);
       ops.push(...amp.ops);
       traumas.push(...amp.traumas);
     }
@@ -141,7 +141,7 @@ export function resolveAACritical(
   // Escalade GATÉE par les soins (« Main ouverte » l.127 : doigt/Round ; « Pied écrasé » l.180 : perte du pied
   // sans Chirurgie sous 1d10 jours ; « Épaule luxée » l.125 / « Genou démis » l.179 : membre désactivé jusqu'au
   // Test étendu de Guérison) — en DERNIER (ne décale que les critiques à escalade). SOURCE UNIQUE (chemin LDB).
-  stampCriticalEscalation(traumas, entry.escalation, location, rng, target.traumas ?? []);
+  stampCriticalEscalation(traumas, entry.escalation, location, target, rng, target.traumas ?? []);
   // Déclencheurs armés par un critique ANTÉRIEUR (« Commotion cérébrale », LDB 18 l.74) — un critique LDB peut
   // avoir armé le déclencheur, un critique AA le fait feu (l'historique est kind-agnostique). En DERNIER (RNG).
   ops.push(...fireCritTriggers(target, location, resistVal, rng));

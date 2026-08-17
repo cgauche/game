@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { traumaById, dechirureFractureFicheId, traumaMovementHalved, traumaDodgePenalty, traumaCharPenalties, traumaSkillPenalty, escalateSensoryLoss, consolidateAmputations, treatTrauma } from './trauma';
+import { traumaById, dechirureFractureFicheId, traumaMovementHalved, traumaDodgePenalty, traumaCharPenalties, traumaSkillPenalty, consolidateAmputations, treatTrauma } from './trauma';
 import { effectiveChar } from './characteristics';
 import { effectiveMovement } from './encumbrance';
 import { defenseValue } from './combat';
@@ -170,28 +170,32 @@ describe('consolidateAmputations — cumul doigts (l.251) & dents (l.247) ; pén
   });
 });
 
-describe('escalateSensoryLoss — cumul deux yeux/oreilles (LDB 18 l.271-277)', () => {
-  const eye = (): Trauma => ({ label: 'Œil perdu', traumaId: 'oeil-perdu', location: 'tete', ops: [{ op: 'charMod', char: 'sociabilite', mod: -5 }, { op: 'senseLoss', sense: 'vue' }] });
-  const ear = (): Trauma => ({ label: 'Oreille perdue', traumaId: 'oreille-perdue', location: 'tete', ops: [{ op: 'charMod', char: 'sociabilite', mod: -5 }, { op: 'senseLoss', sense: 'ouie' }] });
-  it('un seul œil : pas de cécité', () => {
+describe('consolidateAmputations — escalade `ajoute` des organes pairés (LDB 18 l.273/277)', () => {
+  const eye = (): Trauma => traumaById('oeil-perdu', undefined, 'tete');
+  const ear = (): Trauma => traumaById('oreille-perdue', undefined, 'tete');
+  it('un seul œil : pas de cécité, mais −5 Soc par orbite vide (l.273)', () => {
     const c = fullCombatant({ traumas: [eye()] });
-    expect(escalateSensoryLoss(c)).toHaveLength(0);
-    expect((c.traumas ?? []).some((t) => t.label === 'Cécité')).toBe(false);
+    expect(consolidateAmputations(c)).toHaveLength(0);
+    expect((c.traumas ?? []).some((t) => t.traumaId === 'cecite')).toBe(false);
+    expect((c.traumas ?? []).find((t) => t.traumaId === 'oeil-perdu')!.ops).toContainEqual({ op: 'charMod', char: 'sociabilite', mod: -5 });
   });
-  it('deux yeux : Cécité (−30 vue : Arme/Esquive/Chevaucher) ; idempotent', () => {
+  it('deux yeux : Cécité EN PLUS de la séquelle comptée (−10 Soc pour 2 orbites) ; idempotent', () => {
     const c = fullCombatant({ traumas: [eye(), eye()] });
-    escalateSensoryLoss(c);
-    const cec = (c.traumas ?? []).find((t) => t.label === 'Cécité')!;
+    consolidateAmputations(c);
+    const cec = (c.traumas ?? []).find((t) => t.traumaId === 'cecite')!;
     expect(cec.ops).toContainEqual({ op: 'skillMod', skill: 'esquive', mod: -30 });
     expect(cec.ops).toContainEqual({ op: 'charMod', char: 'capacite-de-combat', mod: -30 });
     expect(cec.ops).toContainEqual({ op: 'charMod', char: 'capacite-de-tir', mod: -30 });
-    expect(escalateSensoryLoss(c)).toHaveLength(0); // pas de doublon
-    expect((c.traumas ?? []).filter((t) => t.label === 'Cécité')).toHaveLength(1);
+    const yeux = (c.traumas ?? []).find((t) => t.traumaId === 'oeil-perdu')!;
+    expect(yeux.count).toBe(2);
+    expect(yeux.ops).toContainEqual({ op: 'charMod', char: 'sociabilite', mod: -10 });
+    expect(consolidateAmputations(c)).toHaveLength(0); // pas de doublon
+    expect((c.traumas ?? []).filter((t) => t.traumaId === 'cecite')).toHaveLength(1);
   });
   it('deux oreilles : Surdité (−20 Perception, restreint aux Tests basés sur l’ouïe)', () => {
     const c = fullCombatant({ traumas: [ear(), ear()] });
-    escalateSensoryLoss(c);
-    expect((c.traumas ?? []).find((t) => t.label === 'Surdité')!.ops).toContainEqual({ op: 'skillMod', skill: 'perception', mod: -20, sense: 'ouie' });
+    consolidateAmputations(c);
+    expect((c.traumas ?? []).find((t) => t.traumaId === 'surdite')!.ops).toContainEqual({ op: 'skillMod', skill: 'perception', mod: -20, sense: 'ouie' });
   });
 });
 

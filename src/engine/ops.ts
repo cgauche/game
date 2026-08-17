@@ -921,8 +921,8 @@ export type GameOp =
    *  Main RÉSOLUE depuis `ctx.location` (convention DROITIER, comme `disarm` : `brasD`→`main`, `brasG`→`off`).
    *  Le gate tient tant que l'Hémorragique tient (`removeCondition` purge le marqueur à 0). */
   | { op: 'handGate' }
-  /** Perte d'un organe sensoriel PAIRÉ (œil/oreille). Porté par une séquelle ; `escalateSensoryLoss`
-   *  compte les `senseLoss` par sens (2 du même → Cécité/Surdité). */
+  /** Perte d'un organe sensoriel PAIRÉ (œil/oreille). Porté par une séquelle dont l'entrée déclare son
+   *  seuil d'escalade (`TraumaCumul.escalade` : 2 organes → Cécité/Surdité, LDB 18 l.273/277). */
   | { op: 'senseLoss'; sense: PairedSense }
   /** Perd sa prochaine Action ET/OU son prochain Mouvement (Affamé : « festoie » ; échec du gate de la
    *  Racine de mandragore : « une Action ou un Mouvement (un au choix) », LDB 71 l.35 → l'issue du choix

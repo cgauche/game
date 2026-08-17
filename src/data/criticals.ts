@@ -1,5 +1,5 @@
 import type { HitLocation, Difficulty } from '../engine/types';
-import type { GameOp } from '../engine/ops';
+import type { Formula, GameOp } from '../engine/ops';
 import type { SourceRef } from './schemas/common';
 import criticalsJson from './criticals.json';
 
@@ -35,10 +35,9 @@ export interface CritEntry {
   /** Traumatismes ENGENDRÉS (LDB 18) — refs d'id de fiches `traumas.json` ; la localisation vient de la table. */
   traumas?: string[];
   /** Escalade GATÉE d'une Blessure critique (LDB / Aux Armes) : sans soin, la séquelle S'AGGRAVE (ou n'est
-   *  levée que par un traitement). `fingerLossPerRound` (« Main ouverte ») : 1 doigt de plus par Round de
-   *  combat tant que l'Aide Médicale n'est pas reçue (4+ doigts → main tranchée). `amputateAfter1d10Days`
-   *  (« Pied écrasé ») : perte définitive du membre (`amputateSequel`) si la Chirurgie de la plaie n'intervient
-   *  pas dans le délai (1d10 jours). `medicalAidGate` (« Épaule luxée »/« Genou démis ») : membre désactivé
+   *  levée que par un traitement). `perRound` (« Main ouverte ») : une unité de séquelle de plus par Round de
+   *  combat tant que l'Aide Médicale n'est pas reçue. `apresDelai` (« Pied écrasé ») : séquelle posée si la
+   *  Chirurgie de la plaie n'intervient pas dans le délai. `medicalAidGate` (« Épaule luxée »/« Genou démis ») : membre désactivé
    *  jusqu'à un Test étendu de Guérison réussi APRÈS Aide Médicale. */
   escalation?: CritEscalation;
   /** Note MAISON (#195) — porte la trace éditable d'une valeur mécanique absente LITTÉRALEMENT du texte
@@ -64,15 +63,25 @@ export interface CritEntry {
 export interface Amputation {
   difficulty: Difficulty;
   sequels: string[];
+  /** Unités que CETTE ligne fait perdre à ses séquelles CUMULATIVES (`TraumaFiche.cumul`) — `Formula`,
+   *  défaut 1. C'est la LIGNE qui porte la quantité (« Perdez 1d10 dents », LDB 18 tables Tête
+   *  `bouche-explosee`/`machoire-mutilee` ; AA 07 `aa-tete-66`/`aa-tete-95`), jamais la séquelle : une
+   *  ligne future « perdez 2 dents » s'écrit ici. Une séquelle NON cumulative l'ignore (« perdez votre
+   *  langue ET 1d10 dents » : seules les dents comptent). Cumulé avec `loss.perDR`. */
+  unites?: Formula;
   timing?: 'postEncounter';
   loss?: { difficulty?: Difficulty; perDR?: boolean };
 }
 /** Déclaration d'escalade gatée par les soins — partagée LDB (`criticals.json`) et Aux Armes (`aa-criticals.json`).
  *  Instanciée par `stampCriticalEscalation` (trauma.ts) sur la plaie chirurgicale du critique. */
 export interface CritEscalation {
-  fingerLossPerRound?: boolean;
-  amputateAfter1d10Days?: boolean;
-  amputateSequel?: string;
+  /** Escalade PÉRIODIQUE tant que l'Aide Médicale n'est pas reçue (« Main ouverte », LDB 18 / AA 07 l.127) :
+   *  `unites` (défaut 1) unité(s) de la séquelle `versTraumaId` ajoutée(s) à CHAQUE fin de Round de combat.
+   *  L'escalade s'arrête d'elle-même quand le cumul de cette séquelle a franchi SON seuil (`TraumaCumul.escalade`). */
+  perRound?: { versTraumaId: string; unites?: number };
+  /** Escalade À ÉCHÉANCE si la Chirurgie de la plaie n'intervient pas dans le délai (« Pied écrasé »,
+   *  LDB 18 l.180) : `jours` (`Formula`) décomptés à l'entretien, puis pose de la séquelle `versTraumaId`. */
+  apresDelai?: { jours: Formula; versTraumaId: string };
   /** « Épaule luxée » (AA 07 l.125 / LDB l.120) / « Genou démis » (AA 07 l.179 / LDB l.179) : le membre est
    *  DÉSACTIVÉ (séquelle portant `disable` en `ops` passives : bras `maxWeaponHands:1` / jambe `moveScale`),
    *  en attente d'Aide Médicale (`awaitingMedicalAid`). Après l'Aide Médicale, un Test ÉTENDU de Guérison

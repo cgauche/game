@@ -15,7 +15,7 @@ import { testValue } from '../../engine/skills';
 import { bonus, effectiveChar, refreshWounds } from '../../engine/characteristics';
 import { addCondition, isOutOfAction, COND, tickDeath, bleedDeathRoll, stacks, endOfRound, hasCondition, pendingPlusExtensions, resolvePlusExtension } from '../../engine/conditions';
 import { suffocationTick } from '../../engine/suffocation';
-import { tickFingerLossEscalation } from '../../engine/trauma';
+import { tickTraumaEscalation } from '../../engine/trauma';
 import { clearPsychOf, refreshAllDefendedPsych } from '../../engine/psychology';
 import { zonesRoundTick } from '../zones';
 import { purgeExpiredSummons } from '../summonFlow';
@@ -268,13 +268,13 @@ registerCombatHook({
 });
 registerCombatHook({
   // « Main ouverte » (AA 07 l.127 / LDB « Main ouverte ») : MACHINERIE UNIVERSELLE — toute séquelle portant
-  // `fingerLossPerRound` encore `awaitingMedicalAid` perd un doigt de plus à chaque fin de Round (4+ doigts →
-  // main tranchée). Ne nomme aucune entité éditable ; comme `tick-death`, c'est une règle de l'arène. Inerte
+  // une escalade périodique DÉCLARÉE (`perRound`) encore `awaitingMedicalAid` s'aggrave d'une unité à chaque
+  // fin de Round. Ne nomme aucune entité éditable ; comme `tick-death`, c'est une règle de l'arène. Inerte
   // (aucune ligne ni RNG) tant qu'aucun combattant ne porte le marqueur → franchissement de Round iso-comportement.
   id: 'finger-loss-escalation',
   phase: 'onRoundEnd',
   order: 76.7,
-  run: ({ battle, sink }) => { for (const c of battle.combatants) tickFingerLossEscalation(c, battleRng()).forEach((l) => sink(l, c)); },
+  run: ({ battle, sink }) => { for (const c of battle.combatants) tickTraumaEscalation(c, battleRng()).forEach((l) => sink(l, c)); },
 });
 registerCombatHook({
   // Noyade et Suffocation (LDB 18 l.345-346) : MACHINERIE environnementale UNIVERSELLE — la règle de mort

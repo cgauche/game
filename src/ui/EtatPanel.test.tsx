@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Combatant } from '../engine/types';
-import { EtatPanel } from './EtatPanel';
+import { EtatPanel, zoneAfflictions } from './EtatPanel';
+import { traumaById, consolidateAmputations, traumaCharPenalties } from '../engine/trauma';
 import { ETAT_ANCHOR_CRITIQUES, ETAT_ANCHOR_MALADIES, ETAT_ANCHOR_MUTATIONS, ETAT_ANCHOR_TRAUMAS, ETAT_ANCHOR_PSYCHOLOGIE, ETAT_ANCHOR_ENCOMBREMENT } from './sheetAlarms';
 
 /** Héros minimal, patron `sheetAlarms.test.ts`/`CharacterSheet.test.tsx` (mkHero). */
@@ -260,5 +261,18 @@ describe('EtatPanel', () => {
     expect(html).toContain('notch-gauge__label">Critiques actives<');
     expect(html).not.toContain('notch-gauge__label">Chance<');
     expect(html).not.toContain('notch-gauge__label">Détermination<');
+  });
+
+  /** #1318 E4/C-γ — le cumul des séquelles ne doit pas ÉVAPORER la Localisation : `zoneAfflictions`
+   *  alimente les badges de zone de la colonne (`FigTile.zoneBadges`), un badge PAR membre touché. */
+  it('orteils perdus aux DEUX jambes : les deux zones restent badgées après consolidation (LDB 18 l.281)', () => {
+    const hero = mkHero((c) => {
+      c.traumas = [traumaById('orteil-ampute', undefined, 'jambeG'), traumaById('orteil-ampute', undefined, 'jambeD')];
+    });
+    consolidateAmputations(hero);
+    const zones = zoneAfflictions(hero).filter((z) => z.trauma > 0);
+    expect(zones.map((z) => z.loc).sort()).toEqual(['jambeD', 'jambeG']);
+    // …et la pénalité RAW (« pour chaque orteil perdu, −1 Ag et −1 CC ») reste entière au TOTAL.
+    expect(traumaCharPenalties(hero, 'agilite').reduce((s, n) => s + n, 0)).toBe(-2);
   });
 });

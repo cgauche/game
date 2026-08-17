@@ -4,6 +4,7 @@ import type { RNG } from './dice';
 import { rollCritical, critLocationRoll, critWoundLocation, permanentAmputations, resolvePostEncounterAmputations } from './critical';
 import { removeSurgicalTrauma } from './trauma';
 import { CRITICAL_TABLES } from '../data/criticals';
+import aaJson from '../data/aa-criticals.json';
 import type { Combatant } from './types';
 
 /** RNG scripté : renvoie les valeurs dans l'ordre. */
@@ -131,12 +132,35 @@ describe('permanentAmputations — séquelles permanentes par id de fiche (LDB 1
     expect(s.map((x) => x.label).sort()).toEqual(['Nez amputé', 'Œil perdu']);
     expect(s.find((x) => x.label === 'Nez amputé')!.ops).toContainEqual({ op: 'charMod', char: 'sociabilite', mod: -20 });
   });
-  it('tête : « Mâchoire mutilée » cumule langue (parole échoue) + dents (1d10=4 → 2 paires → −2 Soc)', () => {
-    const s = permanentAmputations(['langue-amputee', 'dents-perdues'], 'tete', seq([4]));
+  it('tête : « Mâchoire mutilée » — la LIGNE fait perdre 1d10 dents (unites), la langue n’est pas comptée', () => {
+    // Le 1d10 est résolu par `resolveAmputation` depuis `amputation.unites` de la ligne : ici, 4 unités
+    // arrivent à `permanentAmputations`, et seule la séquelle CUMULATIVE (dents) les reçoit.
+    const s = permanentAmputations(['langue-amputee', 'dents-perdues'], 'tete', 4);
     expect(s.find((x) => x.label === 'Langue amputée')!.ops).toContainEqual({ op: 'skillMod', skill: 'langue', mod: -100 });
+    expect(s.find((x) => x.label === 'Langue amputée')!.count).toBeUndefined(); // séquelle non cumulative : aucun comptage
     const dents = s.find((x) => x.traumaId === 'dents-perdues')!;
     expect(dents.count).toBe(4);
     expect(dents.ops).toContainEqual({ op: 'charMod', char: 'sociabilite', mod: -2 }); // 4 dents = 2 paires
+  });
+  it('« Bouche explosée » : le 1d10 de la LIGNE (unites) pilote le comptage de bout en bout', () => {
+    // d100=83 → « Bouche explosée » (81-85) ; puis le Test de Résistance de l'Amputation ; puis le 1d10
+    // des dents DÉCLARÉ par la ligne (`amputation.unites`).
+    const r = rollCritical(victim(30), 'tete', seq([83, 5, 7]));
+    const dents = r.traumas.find((t) => t.traumaId === 'dents-perdues')!;
+    expect(dents.count).toBe(7);
+    expect(dents.ops).toContainEqual({ op: 'charMod', char: 'sociabilite', mod: -3 }); // 7 dents = 3 paires
+  });
+  it('les 4 lignes qui font perdre des dents sont TOUTES en table Tête et déclarent leur quantité', () => {
+    // Aucune ligne de Bras/Corps/Jambe n'octroie `dents-perdues` : la garde `location === 'tete'` de
+    // l'ancien moteur n'avait aucun cas à couvrir — le comptage vient de la LIGNE, pas de la Localisation.
+    const tables: [string, { id: string; amputation?: { sequels: string[]; unites?: unknown } }[]][] = [
+      ['tete', CRITICAL_TABLES.tete as never], ['bras', CRITICAL_TABLES.brasG as never],
+      ['corps', CRITICAL_TABLES.corps as never], ['jambe', CRITICAL_TABLES.jambeG as never],
+      ['aa-tete', aaJson.tete as never], ['aa-bras', aaJson.bras as never], ['aa-corps', aaJson.corps as never], ['aa-jambe', aaJson.jambe as never],
+    ];
+    const porteuses = tables.flatMap(([t, rows]) => rows.filter((e) => e.amputation?.sequels.includes('dents-perdues')).map((e) => ({ table: t, e })));
+    expect(porteuses.map((p) => p.table).sort()).toEqual(['aa-tete', 'aa-tete', 'tete', 'tete']);
+    expect(porteuses.every((p) => p.e.amputation!.unites != null)).toBe(true);
   });
 
   it('rollCritical (jambe) : pose la plaie chirurgicale ET la séquelle permanente de mobilité', () => {

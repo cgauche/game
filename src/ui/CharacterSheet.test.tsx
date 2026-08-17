@@ -7,6 +7,7 @@ import { Combatant } from '../engine/types';
 import { AdvancementPanel, CharacterSheet } from './CharacterSheet';
 import { BackgroundPanel } from './BackgroundPanel';
 import { casterTalents } from '../engine/grimoire';
+import { findTrappingById } from '../data';
 import { useGame } from '../state/store';
 
 /** Héros « Agitateur » niveau 1 (« Pamphlétaire ») avec 1000 PX, Charme (in-carrière) + Esquive (hors). */
@@ -226,6 +227,18 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
     expect(htmlCorrupted).toContain('data-corruption="ronge"');
   });
 
+  it('Prothèses : la rangée d’Avancement porte le LIBELLÉ DÉCLARÉ du palier (LDB 73, `prosthesisTraining`)', () => {
+    // #1318 E4/C-γ : l'écran ne nomme plus aucune prothèse ni aucun palier — il rend `label` de la donnée.
+    const tiers = findTrappingById('fausse-jambe')!.prosthesisTraining!;
+    expect(tiers.map((t) => t.label)).toEqual(['récupérer le dernier Point de Mouvement perdu', 'réapprendre à utiliser Esquive']);
+    const porteur = {
+      ...hero(),
+      items: [{ uid: 'fj', trappingId: 'fausse-jambe', label: 'Fausse jambe', kind: 'misc', subType: 'protheses', qualities: [], enc: 2, equipped: true }],
+    } as unknown as Combatant;
+    const html = renderToStaticMarkup(<AdvancementPanel hero={porteur} />);
+    expect(html).toContain('Fausse jambe — récupérer le dernier Point de Mouvement perdu');
+  });
+
   it('badges de zone `FigTile.zoneBadges` : PA d’armure en Possessions (seules les zones COUVERTES, ton `sang` si l’armure portée est entamée)', () => {
     const h = {
       ...hero(),
@@ -365,13 +378,14 @@ describe('Onglet Possessions — registre `Band`/`PlaqueRow` (#492 lot POSSESSIO
     const h = { ...heroWithItems(), xp: 1000 } as Combatant;
     useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'possessions' });
     const possessionsHtml = mount(<CharacterSheet heroId={h.id} onClose={() => {}} />).innerHTML;
-    expect(possessionsHtml).not.toContain('400 PX');
+    expect(possessionsHtml).not.toContain('100 PX');
 
     useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'avancement' });
     const advHtml = mount(<CharacterSheet heroId={h.id} onClose={() => {}} />).innerHTML;
     expect(advHtml).toContain('Prothèses');
     expect(advHtml).toContain('Crochet');
-    expect(advHtml).toContain('400 PX');
+    // Rachat GRADUÉ du Crochet (LDB 73 l.19) : le palier ACHETABLE est la 1re tranche de 100 PX.
+    expect(advHtml).toContain('100 PX');
   });
 
   it('la Bourse PERSO (montant en CO/pistoles-sous) reste visible sur TOUT onglet — pas seulement Possessions (Lot 3 T-bourse #531)', () => {

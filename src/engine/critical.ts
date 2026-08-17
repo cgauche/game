@@ -10,10 +10,10 @@ import { bonus, effectiveChar } from './characteristics';
 import { hitLocationByShape, locationLabel } from './combat';
 import { BodyShape, Combatant, HitLocation, Trauma } from './types';
 import { CRITICAL_TABLES, criticalTableFor, type Amputation, type CritEntry } from '../data/criticals';
-import { traumaById, traumaFicheById, stampCriticalEscalation, fireCritTriggers, consolidateAmputations, AMPUTATION_WOUND_DESC } from './trauma';
+import { traumaById, traumaFicheById, stampCriticalEscalation, fireCritTriggers, consolidateAmputations, setTraumaCount, AMPUTATION_WOUND_DESC } from './trauma';
 import { rule } from './policy';
 import { resolveAACritical } from './aaCritical';
-import { applyOps, type GameOp } from './ops';
+import { applyOps, resolveFormula, type GameOp } from './ops';
 import aaCriticalsJson from '../data/aa-criticals.json';
 
 /**
@@ -21,32 +21,17 @@ import aaCriticalsJson from '../data/aa-criticals.json';
  * survivent à la Chirurgie (le membre reste absent). Instanciées depuis les `sequels` (ids de fiche
  * `traumas.json`) DÉCLARÉS STRUCTURELLEMENT sur le critique (`entry.amputation.sequels`) — plus aucune
  * lecture du texte. La latéralité (brasG/brasD, jambeG/jambeD) provient de la `location` réelle du coup —
- * hypothèse de jeu : **tout le monde est DROITIER** (main principale = brasD). Les fiches « par comptage »
- * (doigts l.251, dents l.247) reçoivent leur effet/comptage variable ICI (cumulé ensuite par
- * `consolidateAmputations`) ; la perte du SECOND œil/oreille est agrégée par `escalateSensoryLoss`.
+ * hypothèse de jeu : **tout le monde est DROITIER** (main principale = brasD). Une séquelle CUMULATIVE
+ * (`TraumaFiche.cumul`) reçoit ici le nombre d'unités que la LIGNE de Critique fait perdre (`units`,
+ * résolu par `resolveAmputation` depuis `amputation.unites` — « Perdez 1d10 dents » — et
+ * `amputation.loss.perDR` — « un orteil par DR en dessous de 0 »). Une séquelle NON cumulative l'ignore
+ * (« perdez votre langue ET 1d10 dents »). L'agrégation et les seuils suivent (`consolidateAmputations`).
  */
-export function permanentAmputations(sequels: string[], location: HitLocation, rng: RNG = defaultRNG, toeCount = 1): Trauma[] {
+export function permanentAmputations(sequels: string[], location: HitLocation, units = 1): Trauma[] {
   return sequels.map((id) => {
+    const fiche = traumaFicheById(id);
     const t = traumaById(id, undefined, location);
-    if (id === 'doigt-ampute') {
-      // 1 doigt par critique ; cumulé par consolidateAmputations. Pénalité −5/doigt = CONTEXTUELLE À L'ARME
-      // (`amputationCombatPenalty`, LDB 18 l.251) — plus de charMod CC/CT global ici.
-      t.count = 1;
-    } else if (id === 'orteil-ampute') {
-      // « Pour chaque orteil perdu, −1 Ag et −1 CC » (LDB 18 l.281) : les traumas d'orteil s'ADDITIONNENT (pas de
-      // consolidation par paire comme les dents) → `toeCount` orteils = charMods ×`toeCount`. « Pied écrasé »
-      // (l.180) : 1 orteil + 1 par DR en dessous de 0 (`amputation.loss.perDR`).
-      t.count = toeCount;
-      t.ops = (t.ops ?? []).map((o) => (o.op === 'charMod' ? { ...o, mod: -toeCount } : o));
-    } else if (id === 'main-bras-ampute') {
-      // −20 (LDB 18 l.263) = contextuel à l'arme (`amputationCombatPenalty`) ; ICI seul l'interdit d'arme à 2 mains.
-      t.ops = [{ op: 'maxWeaponHands', hands: 1 }];
-    } else if (id === 'dents-perdues') {
-      const n = location === 'tete' ? d10(rng) : 1; // « 1d10 dents » (la perte structurelle est multiple ; sinon 1).
-      t.count = n;
-      const soc = -Math.floor(n / 2); // −1 Sociabilité par PAIRE (LDB 18 l.247) : 1 dent = 0, 3 dents = −1, 4 = −2…
-      if (soc < 0) t.ops = [{ op: 'charMod', char: 'sociabilite', mod: soc }];
-    }
+    if (fiche.cumul) setTraumaCount(t, fiche, units);
     return t;
   });
 }
@@ -64,17 +49,17 @@ export function critResistValue(c: Combatant): number {
  *    États). Sinon on continue (« Coupure à l'orteil » : gate Intermédiaire).
  *  - puis le Test de Résistance `difficulty` (États par DR). Sans `loss.difficulty`, un `loss` sans gate propre fait
  *    de CE Test le déterminant de la perte (« Pied écrasé » : un seul Test Accessible gate ET États).
- *  - `loss.perDR` → orteils = 1 + DR en dessous de 0 du Test qui gate la perte.
+ *  - `loss.perDR` → nombre d'occurrences perdues = 1 + DR en dessous de 0 du Test qui gate la perte.
  * Sans `loss` : séquelle TOUJOURS (membre tranché — pied sectionné, tendon coupé…).
  */
-export function resolveAmputation(amp: Amputation, location: HitLocation, resistVal: number, rng: RNG = defaultRNG): { ops: GameOp[]; traumas: Trauma[] } {
+export function resolveAmputation(amp: Amputation, location: HitLocation, resistVal: number, ref: Combatant, rng: RNG = defaultRNG): { ops: GameOp[]; traumas: Trauma[] } {
   const ops: GameOp[] = [];
   const traumas: Trauma[] = [];
-  let toeCount = 1;
+  let units = 1;
   if (amp.loss?.difficulty) {
     const gate = rollTest(resistVal, amp.loss.difficulty, rng);
     if (gate.success) return { ops, traumas }; // Test gate réussi → pas d'amputation du tout
-    if (amp.loss.perDR) toeCount = 1 + Math.max(0, -gate.sl);
+    if (amp.loss.perDR) units = 1 + Math.max(0, -gate.sl);
   }
   const res = rollTest(resistVal, amp.difficulty, rng);
   if (!res.success) {
@@ -85,10 +70,13 @@ export function resolveAmputation(amp: Amputation, location: HitLocation, resist
   if (amp.loss && !amp.loss.difficulty) {
     // Pas de gate séparé : le Test de Résistance ci-dessus détermine LUI-MÊME la perte (succès → pas d'amputation).
     if (res.success) return { ops, traumas };
-    if (amp.loss.perDR) toeCount = 1 + Math.max(0, -res.sl);
+    if (amp.loss.perDR) units = 1 + Math.max(0, -res.sl);
   }
+  // Quantité DÉCLARÉE par la ligne (« Perdez 1d10 dents ») — résolue ICI, après les Tests, pour ne
+  // consommer le dé que sur les lignes qui en portent un.
+  if (amp.unites != null) units = resolveFormula(amp.unites, ref, rng) + (units - 1);
   traumas.push({ label: 'Amputation', location, needsSurgery: true, desc: AMPUTATION_WOUND_DESC });
-  traumas.push(...permanentAmputations(amp.sequels, location, rng, toeCount));
+  traumas.push(...permanentAmputations(amp.sequels, location, units));
   return { ops, traumas };
 }
 
@@ -105,7 +93,7 @@ export function resolvePostEncounterAmputations(c: Combatant, rng: RNG = default
   c.traumas = (c.traumas ?? []).filter((t) => !t.pendingAmputation);
   const log: string[] = [];
   for (const t of pending) {
-    const r = resolveAmputation(t.pendingAmputation!, t.location, resistVal, rng);
+    const r = resolveAmputation(t.pendingAmputation!, t.location, resistVal, c, rng);
     applyOps(c, r.ops, { rng });
     c.traumas = [...(c.traumas ?? []), ...r.traumas];
     log.push(r.traumas.length > 1 ? `${c.label} : ${t.label} — amputation confirmée après la rencontre.` : `${c.label} : ${t.label} — sans séquelle après la rencontre.`);
@@ -285,7 +273,7 @@ export function rollCritical(
     if (entry.amputation.timing === 'postEncounter') {
       traumas.push({ label: entry.label, location, pendingAmputation: entry.amputation });
     } else {
-      const amp = resolveAmputation(entry.amputation, location, resistVal, rng);
+      const amp = resolveAmputation(entry.amputation, location, resistVal, target, rng);
       ops.push(...amp.ops);
       traumas.push(...amp.traumas);
     }
@@ -293,7 +281,7 @@ export function rollCritical(
   // Escalade GATÉE par les soins (« Main ouverte » : doigt/Round ; « Pied écrasé » : perte du pied sans
   // Chirurgie sous 1d10 jours ; « Épaule luxée »/« Genou démis » : membre désactivé jusqu'au Test étendu de
   // Guérison) — placée en DERNIER (ne décale que les critiques à escalade). Même patron que le chemin AA.
-  stampCriticalEscalation(traumas, entry.escalation, location, rng, target.traumas ?? []);
+  stampCriticalEscalation(traumas, entry.escalation, location, target, rng, target.traumas ?? []);
   // Déclencheurs armés par un critique ANTÉRIEUR (« Commotion cérébrale » : autre critique tête pendant
   // Exténué, LDB 18 l.74) — lus sur `target.traumas` (jamais la séquelle stampée à l'instant : elle n'est pas
   // encore sur la cible). En DERNIER pour ne décaler le flux RNG que des critiques qui font effectivement feu.

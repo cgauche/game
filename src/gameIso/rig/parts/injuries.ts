@@ -11,6 +11,7 @@
  *  Doigts/dents/oreilles : trop petits pour l'art du rig — pas de visuel (assumé).
  */
 import type { Combatant, Trauma } from '../../../engine/types';
+import { findTraumaFiche } from '../../../engine/trauma';
 import type { RigOverlay, BoneId } from '../bones';
 import type { Appearance } from '../appearance';
 import { EYES } from './eyes';
@@ -19,6 +20,25 @@ import { PROSTHESIS } from './prosthesis';
 // Prothèse PORTÉE par son `trappingId` STABLE (≠ libellé) — réf de catalogue (trappings.json).
 const worn = (c: Combatant, trappingId: string): boolean => (c.items ?? []).some((i) => i.trappingId === trappingId && i.equipped);
 const handBone = (t: Trauma): BoneId => (t.location === 'brasG' ? 'mainG' : 'mainD');
+/** Suffixe de latéralité d'une Localisation (`brasG` → `G`) ; absent pour tête/corps. */
+const side = (t: Trauma): 'G' | 'D' | undefined => (t.location?.endsWith('G') ? 'G' : t.location?.endsWith('D') ? 'D' : undefined);
+
+/** Calques DÉCLARÉS par la séquelle (`TraumaFiche.rig`, `traumas.json`) : os porteur, art par défaut et
+ *  art substitué par la prothèse PORTÉE. Rien si la fiche ne déclare aucun visuel, si elle n'est visible
+ *  qu'AVEC une prothèse (jambe de bois) et qu'aucune n'est portée, ou si l'id ne résout plus au catalogue
+ *  (`findTraumaFiche` : un `traumaId` orphelin d'une save reste INERTE à l'écran, jamais un crash de scène). */
+function declaredOverlays(c: Combatant, t: Trauma): RigOverlay[] {
+  const rig = findTraumaFiche(t.traumaId)?.rig;
+  if (!rig) return [];
+  const lat = side(t);
+  if (rig.lateral && !lat) return [];
+  const suffix = rig.lateral ? lat : '';
+  const art = rig.byProsthesis?.find((p) => worn(c, p.trappingId))?.art ?? rig.art;
+  if (!art) return [];
+  const out: RigOverlay[] = [{ bone: `${rig.bone}${suffix}` as BoneId, svg: PROSTHESIS[art], ...(rig.replace ? { replace: true } : {}), ...(rig.view ? { view: rig.view } : {}) }];
+  if (rig.hidesBone) out.push({ bone: `${rig.hidesBone}${suffix}` as BoneId, svg: '', replace: true });
+  return out;
+}
 
 /** Calques d'amputations/prothèses d'un combattant (traumas + objets portés). */
 export function injuryOverlaysFor(c: Combatant): RigOverlay[] {
@@ -31,20 +51,8 @@ export function injuryOverlaysFor(c: Combatant): RigOverlay[] {
       const svg = worn(c, 'merveille-d-ingenierie') ? PROSTHESIS['main-mecanique'] : worn(c, 'crochet') ? PROSTHESIS.crochet : PROSTHESIS.moignon;
       out.push({ bone: handBone(t), svg, replace: true });
     }
-    // Jambe : visible seulement avec une prothèse (jambe de bois) — pilon + pied effacé.
-    if (t.traumaId === 'membre-inferieur-ampute' && (t.location === 'jambeG' || t.location === 'jambeD')) {
-      if (worn(c, 'fausse-jambe') || worn(c, 'merveille-d-ingenierie')) {
-        const side = t.location === 'jambeG' ? 'G' : 'D';
-        out.push({ bone: `cuisse${side}` as BoneId, svg: PROSTHESIS['jambe-de-bois'], replace: true });
-        out.push({ bone: `pied${side}` as BoneId, svg: '', replace: true });
-      }
-    }
-    if (t.traumaId === 'nez-ampute') out.push({ bone: 'tete', svg: worn(c, 'nez-dore') ? PROSTHESIS['nez-dore'] : PROSTHESIS['nez-ampute'], view: 'front' });
-  }
-  // Cécité (agrégat des deux yeux) : bandage par-dessus le visage (l'œil unique perdu, lui,
-  // passe par le remplacement d'œil — injuryAppearance).
-  if (traumas.some((t) => t.traumaId === 'cecite')) {
-    out.push({ bone: 'tete', svg: PROSTHESIS.cecite, view: 'front' });
+    // Jambe de bois, nez (doré ou trou), bandage de Cécité… : DÉCLARÉS par la fiche de séquelle.
+    out.push(...declaredOverlays(c, t));
   }
   return out;
 }

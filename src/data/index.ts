@@ -1109,6 +1109,15 @@ export interface TrappingData {
    *  maîtrise (`Combatant.masteredWeapons`) pour être maniée avec la Compétence du Groupe. Flag
    *  d'AUTEUR (artefacts uniques : « le couteau de lancer de Harald L'Infâme ») — éditable au Codex. */
   requiresMastery?: boolean;
+  /** PROTHÈSE (LDB 73) : ses PALIERS d'entraînement, achetés dans l'ordre déclaré. `cost` = PX ;
+   *  `label` = libellé JOUEUR du palier (éditable — aucun texte de palier en dur à l'écran) ;
+   *  `reduces` = points de pénalité rachetés par ce palier (`ItemInstance.prosthesisReduced`, cumulés) ;
+   *  `grants` = aspect ENTIÈREMENT levé (`movement` → `prosthesisMoveTrained`, `all` → `prosthesisTrained`).
+   *  Les deux formes du RAW : Fausse jambe = 2 paliers à `grants` (100 PX Mouvement puis 200 PX Esquive,
+   *  l.23) ; Crochet = rachat GRADUÉ (l.19 « 100 PX pour chaque tranche de 5, soustraite de la pénalité,
+   *  retirant la pénalité entière pour 400 PX ») = 4 paliers `reduces:5`, le dernier portant `grants:'all'`.
+   *  Lu par `nextProsthesisTier` (engine/trauma) — l'écran et le flux d'achat ne nomment aucune prothèse. */
+  prosthesisTraining?: { cost: number; label: string; reduces?: number; grants?: 'movement' | 'all' }[];
   /** Encombrement (Points d'Encombrement). Honnête : la donnée porte aussi des STRINGS pour des cas
    *  NON-ENCOMBRANTS / non chiffrés — `'ND'` (ateliers : on ne les transporte pas) et `'Variable'`
    *  (arme improvisée). Ces strings sont traitées comme 0 au calcul (`itemFromTrappingById`). */

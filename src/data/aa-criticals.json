@@ -1,5 +1,5 @@
 {
-  "_source": "Aux Armes (Up in Arms VF), « Une approche alternative des Blessures », tables de Blessures Critiques par Localisation (p.≈118-124). Système ALTERNATIF optionnel (policy combat-aa-blessures=aa). `blessures` = colonne Blessures (T = triviale, non comptée pour la mort ; nombre = Blessures perdues ; Mort = létal). `ops`/`resist`/`traumas` = corps mécanique immédiat, y COMPRIS les sous-effets récurrents à durée Rounds (#125 : `maxWeaponHands.durationRounds`/`charMod.durationRounds`, `resist.skill` hors-Résistance), les durées en JOURS (#153 : `condition`/`charMod` `durationHours` = jours×24, ctx.now câblé côté combatFlow), l'objet lâché (#153 : op `disarm`) et l'Amputation structurée (#153 : `amputation.{difficulty,sequels}`, même patron que `data/criticals.ts` LDB). `desc` = « Effets supplémentaires » VERBATIM (reste l'affichage long terme). aa-jambe-81 (Tendon rompu, l.2620) : RAW ne donne AUCUNE Difficulté pour l'Amputation référencée (« voir p.180 », contrairement à toutes ses voisines qui en citent une) — arbitrage maison NON entériné : réutilise la Difficulté Difficile du Test de Résistance de la MÊME ligne (seule valeur que la ligne fournit) ; à valider. La cascade « Aide Médicale → Test étendu de Guérison » (Épaule luxée 96-109 / Genou démis 96-105, #166) est modélisée par `escalation.medicalAidGate` (membre désactivé + `restoreDR`/`recoveryPenalty`, joué à l'Infirmerie via l'acte « Guérison ») et le Sonné « jusqu'à Aide Médicale » par `condition.unlockBy` (verrou d'acte de soin porté sur l'instance d'État, levé par `releaseConditionLocks`) ; l'escalade doigt/pied par Round ou par jour sans soin (bras 116-120/jambe 106-115) par `escalation.fingerLossPerRound`/`amputateAfter1d10Days` (#167). Le Test de Dextérité (+20) PAR ACTION de « Main ensanglantée » (bras 46-50, l.2569, #165) est modélisé par l'op `handGate` (marqueur PAR-MAIN `Combatant.handGates`, gate `attackHandGate` posé à la déclaration d'attaque, Échec → op `disarm`) ; il tient tant que l'Hémorragique tient (`removeCondition` purge le marqueur à 0).",
+  "_source": "Aux Armes (Up in Arms VF), « Une approche alternative des Blessures », tables de Blessures Critiques par Localisation (p.≈118-124). Système ALTERNATIF optionnel (policy combat-aa-blessures=aa). `blessures` = colonne Blessures (T = triviale, non comptée pour la mort ; nombre = Blessures perdues ; Mort = létal). `ops`/`resist`/`traumas` = corps mécanique immédiat, y COMPRIS les sous-effets récurrents à durée Rounds (#125 : `maxWeaponHands.durationRounds`/`charMod.durationRounds`, `resist.skill` hors-Résistance), les durées en JOURS (#153 : `condition`/`charMod` `durationHours` = jours×24, ctx.now câblé côté combatFlow), l'objet lâché (#153 : op `disarm`) et l'Amputation structurée (#153 : `amputation.{difficulty,sequels}`, même patron que `data/criticals.ts` LDB). `desc` = « Effets supplémentaires » VERBATIM (reste l'affichage long terme). aa-jambe-81 (Tendon rompu, l.2620) : RAW ne donne AUCUNE Difficulté pour l'Amputation référencée (« voir p.180 », contrairement à toutes ses voisines qui en citent une) — arbitrage maison NON entériné : réutilise la Difficulté Difficile du Test de Résistance de la MÊME ligne (seule valeur que la ligne fournit) ; à valider. La cascade « Aide Médicale → Test étendu de Guérison » (Épaule luxée 96-109 / Genou démis 96-105, #166) est modélisée par `escalation.medicalAidGate` (membre désactivé + `restoreDR`/`recoveryPenalty`, joué à l'Infirmerie via l'acte « Guérison ») et le Sonné « jusqu'à Aide Médicale » par `condition.unlockBy` (verrou d'acte de soin porté sur l'instance d'État, levé par `releaseConditionLocks`) ; l'escalade doigt/pied par Round ou par jour sans soin (bras 116-120/jambe 106-115) par `escalation.perRound`/`apresDelai` (#167). Le Test de Dextérité (+20) PAR ACTION de « Main ensanglantée » (bras 46-50, l.2569, #165) est modélisé par l'op `handGate` (marqueur PAR-MAIN `Combatant.handGates`, gate `attackHandGate` posé à la déclaration d'attaque, Échec → op `disarm`) ; il tient tant que l'Hémorragique tient (`removeCondition` purge le marqueur à 0).",
   "tete": [
     {
       "id": "aa-tete-01",
@@ -285,7 +285,13 @@
         "difficulty": "facile",
         "sequels": [
           "dents-perdues"
-        ]
+        ],
+        "unites": {
+          "dice": {
+            "n": 1,
+            "sides": 10
+          }
+        }
       },
       "desc": "Le coup vous déchausse plusieurs dents. Vous recevez 2 États Hémorragique. Vous perdez 1d10 dents – Amputation (Facile)."
     },
@@ -414,7 +420,13 @@
         "sequels": [
           "langue-amputee",
           "dents-perdues"
-        ]
+        ],
+        "unites": {
+          "dice": {
+            "n": 1,
+            "sides": 10
+          }
+        }
       },
       "desc": "Le coup vous fracasse totalement la mâchoire : il vous détruit la langue et fait voler vos dents. Vous recevez 4 États Hémorragique et 3 États Sonné. Vous subissez le Traumatisme Fracture (Majeure) et vous perdez votre langue et 1d10 dents – Amputation (Difficile)."
     },
@@ -771,7 +783,9 @@
         ]
       },
       "escalation": {
-        "fingerLossPerRound": true
+        "perRound": {
+          "versTraumaId": "doigt-ampute"
+        }
       },
       "desc": "Votre main s'ouvre. Perdez 1 doigt – Amputation (Complexe). Gagnez 2 États Hémorragique et 1 État Sonné. Pour chaque Round au cours duquel vous ne recevez pas d'Aide Médicale, vous perdez un autre doigt. Si vous perdez tous vos doigts, vous perdez votre main – Amputation (Complexe)."
     },
@@ -1669,8 +1683,15 @@
         }
       },
       "escalation": {
-        "amputateAfter1d10Days": true,
-        "amputateSequel": "membre-inferieur-ampute"
+        "apresDelai": {
+          "jours": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          },
+          "versTraumaId": "membre-inferieur-ampute"
+        }
       },
       "desc": "Effectuez un Test de Résistance Accessible (+20) ; sur un Échec, vous gagnez l'État À Terre et perdez un orteil, plus un orteil par DR en dessous de 0 – Amputation (Accessible). Gagnez 2 États Hémorragique. Si vous n'êtes pas soigné par Chirurgie au cours des 1d10 jours suivants, vous perdez votre pied."
     },

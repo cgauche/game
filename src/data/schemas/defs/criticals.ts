@@ -4,16 +4,17 @@
  * (`src/data/criticals.ts`).
  */
 import { z } from 'zod';
-import { gameOpSchema, difficultySchema, hitLocationSchema, sourceRefSchema } from '../common';
+import { gameOpSchema, difficultySchema, hitLocationSchema, sourceRefSchema, formulaSchema } from '../common';
 
 export const file = 'criticals.json';
 
 /** Escalade GATÉE par les soins (« Main ouverte » : doigt/Round ; « Pied écrasé » : perte du membre sans
  *  Chirurgie sous 1d10 jours) — reflet de `CritEscalation` (`src/data/criticals.ts`). Partagée AA/LDB. */
 export const critEscalationSchema = z.strictObject({
-  fingerLossPerRound: z.boolean().optional(),
-  amputateAfter1d10Days: z.boolean().optional(),
-  amputateSequel: z.string().optional(),
+  // Escalade PÉRIODIQUE sans Aide Médicale (« Main ouverte ») et escalade À ÉCHÉANCE sans Chirurgie
+  // (« Pied écrasé ») — deux AXES paramétrés (séquelle visée + cadence/délai), cf. `CritEscalation`.
+  perRound: z.strictObject({ versTraumaId: z.string(), unites: z.number().optional() }).optional(),
+  apresDelai: z.strictObject({ jours: formulaSchema, versTraumaId: z.string() }).optional(),
   // « Épaule luxée »/« Genou démis » : membre désactivé jusqu'à un Test étendu de Guérison réussi (DR
   // `restoreDR`) APRÈS Aide Médicale, puis pénalité 1d10 jours (`recoveryPenalty`). Cf. `CritEscalation`.
   medicalAidGate: z
@@ -60,6 +61,9 @@ export const critEscalationSchema = z.strictObject({
 export const amputationSchema = z.strictObject({
   difficulty: difficultySchema,
   sequels: z.array(z.string()),
+  // Nombre d'UNITÉS que CETTE ligne fait perdre à ses séquelles cumulatives (« Perdez 1d10 dents »,
+  // criticals.json:bouche-explosee/machoire-mutilee) — `Formula`, défaut 1. Cf. `Amputation.unites`.
+  unites: formulaSchema.optional(),
   // Test différé à la fin de la rencontre (« Coupure à l'orteil », LDB l.171 / AA 07 l.171) — marqueur `pendingAmputation`.
   timing: z.literal('postEncounter').optional(),
   // Séquelle CONDITIONNELLE : `difficulty` = Test gate SÉPARÉ (réussite → pas d'amputation) ; absent = le

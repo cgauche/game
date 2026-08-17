@@ -1189,7 +1189,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         // inférieur ; tête → œil, choix d'éditeur) — ids de fiche `traumas.json`, plus de texte parsé.
         const ampSequel = e.location === 'tete' ? 'oeil-perdu' : e.location === 'brasG' || e.location === 'brasD' ? 'main-bras-ampute' : 'membre-inferieur-ampute';
         const traumas = e.kind === 'amputation'
-          ? permanentAmputations([ampSequel], e.location, battleRng())
+          ? permanentAmputations([ampSequel], e.location)
           : [traumaById(dechirureFractureFicheId(e.kind, e.severity ?? 'mineur', e.location), { be, d10: d10(battleRng()) }, e.location)];
         labels = traumas.map((tr) => tr.label);
         return { ...h, traumas: [...(h.traumas ?? []), ...traumas], criticalWounds: (h.criticalWounds ?? 0) + 1 };

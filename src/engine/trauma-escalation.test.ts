@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { receiveMedicalAid, tickFingerLossEscalation, tickTraumaRecovery, stampCriticalEscalation,
+import { receiveMedicalAid, tickTraumaEscalation, tickTraumaRecovery, stampCriticalEscalation,
   recoverableTraumas, hasRecoverableTrauma, hasLimbAwaitingAid, recoverDisabledLimb, cannotWieldTwoHanded,
   traumaMovementHalved, reinjuryBleed, removeSurgicalTrauma } from './trauma';
 import { rollCritical } from './critical';
@@ -24,12 +24,17 @@ const C = (over: Partial<Combatant>): Combatant =>
 const plaie = (loc: HitLocation, extra: Partial<Trauma> = {}): Trauma =>
   ({ label: 'Amputation', location: loc, needsSurgery: true, desc: 'x', ...extra });
 
+/** Escalade « Main ouverte » telle qu'elle est DÉCLARÉE en donnée (`criticals.json`/`aa-criticals.json`). */
+const FINGER_PER_ROUND = { versTraumaId: 'doigt-ampute' };
+/** Escalade « Pied écrasé » DÉCLARÉE : délai 1d10 jours puis perte du membre. */
+const FOOT_AFTER_DELAY = { jours: { dice: { n: 1, sides: 10 } }, versTraumaId: 'membre-inferieur-ampute' };
+
 /** RNG qui débite une séquence fixe (int() ignore min/max — tests ciblés). */
 const seq = (vals: number[]): RNG => { let i = 0; return { int: () => vals[i++ % vals.length] }; };
 
 describe('#166/#167 — Aide Médicale reçue (LDB 18 l.307-312) : flag partagé', () => {
   it('receiveMedicalAid lève awaitingMedicalAid sur TOUTES les séquelles en attente', () => {
-    const c = C({ traumas: [plaie('brasD', { awaitingMedicalAid: true, fingerLossPerRound: true }), plaie('corps')] });
+    const c = C({ traumas: [plaie('brasD', { awaitingMedicalAid: true, perRound: FINGER_PER_ROUND }), plaie('corps')] });
     const log = receiveMedicalAid(c);
     expect(c.traumas!.every((t) => !t.awaitingMedicalAid)).toBe(true);
     expect(log.join(' ')).toMatch(/Aide Médicale/);
@@ -39,7 +44,7 @@ describe('#166/#167 — Aide Médicale reçue (LDB 18 l.307-312) : flag partagé
     expect(receiveMedicalAid(c)).toEqual([]);
   });
   it('les formes op (sort/prière = heal ; bandage/cataplasme = preventInfection) lèvent le flag via applyOps', () => {
-    const gate = (): Trauma => plaie('brasD', { awaitingMedicalAid: true, fingerLossPerRound: true });
+    const gate = (): Trauma => plaie('brasD', { awaitingMedicalAid: true, perRound: FINGER_PER_ROUND });
     const cHeal = C({ wounds: { current: 3, max: 10 }, traumas: [gate()] });
     applyOps(cHeal, [{ op: 'heal', amount: 2 }], {});
     expect(cHeal.traumas!.every((t) => !t.awaitingMedicalAid)).toBe(true);
@@ -51,24 +56,24 @@ describe('#166/#167 — Aide Médicale reçue (LDB 18 l.307-312) : flag partagé
 
 describe('#167 — « Main ouverte » : 1 doigt de plus par Round sans Aide Médicale (AA 07 l.127 / LDB)', () => {
   it('chaque tick perd un doigt ; 4 doigts → main tranchée ; l’escalade se coupe alors', () => {
-    const c = C({ traumas: [plaie('brasD', { awaitingMedicalAid: true, fingerLossPerRound: true })] });
-    for (let r = 0; r < 3; r++) tickFingerLossEscalation(c);
+    const c = C({ traumas: [plaie('brasD', { awaitingMedicalAid: true, perRound: FINGER_PER_ROUND })] });
+    for (let r = 0; r < 3; r++) tickTraumaEscalation(c);
     const fingers = c.traumas!.find((t) => t.traumaId === 'doigt-ampute');
     expect(fingers?.count).toBe(3);
     expect(c.traumas!.some((t) => t.traumaId === 'main-bras-ampute')).toBe(false);
-    tickFingerLossEscalation(c); // 4e doigt → main tranchée
+    tickTraumaEscalation(c); // 4e doigt → main tranchée
     expect(c.traumas!.some((t) => t.traumaId === 'main-bras-ampute')).toBe(true);
     expect(c.traumas!.some((t) => t.traumaId === 'doigt-ampute')).toBe(false);
     const stump = c.traumas!.find((t) => t.label === 'Amputation');
-    expect(stump?.fingerLossPerRound).toBeFalsy();
+    expect(stump?.perRound).toBeFalsy();
     expect(stump?.awaitingMedicalAid).toBeFalsy();
   });
   it('Aide Médicale reçue AVANT le 4e Round stoppe l’escalade (le membre est sauvé)', () => {
-    const c = C({ traumas: [plaie('brasD', { awaitingMedicalAid: true, fingerLossPerRound: true })] });
-    tickFingerLossEscalation(c); // 1 doigt
+    const c = C({ traumas: [plaie('brasD', { awaitingMedicalAid: true, perRound: FINGER_PER_ROUND })] });
+    tickTraumaEscalation(c); // 1 doigt
     receiveMedicalAid(c); // soin
-    tickFingerLossEscalation(c); // plus rien
-    tickFingerLossEscalation(c);
+    tickTraumaEscalation(c); // plus rien
+    tickTraumaEscalation(c);
     expect(c.traumas!.find((t) => t.traumaId === 'doigt-ampute')?.count).toBe(1);
     expect(c.traumas!.some((t) => t.traumaId === 'main-bras-ampute')).toBe(false);
   });
@@ -76,17 +81,17 @@ describe('#167 — « Main ouverte » : 1 doigt de plus par Round sans Aide Méd
     // brasD : ancienne amputation de main (crit antérieur). brasG : escalade « Main ouverte » fraîche.
     const c = C({ traumas: [
       { label: 'Main tranchée (brasD)', traumaId: 'main-bras-ampute', location: 'brasD', desc: 'x', ops: [{ op: 'maxWeaponHands', hands: 1 }] },
-      plaie('brasG', { awaitingMedicalAid: true, fingerLossPerRound: true }),
+      plaie('brasG', { awaitingMedicalAid: true, perRound: FINGER_PER_ROUND }),
     ] });
-    for (let r = 0; r < 3; r++) tickFingerLossEscalation(c);
+    for (let r = 0; r < 3; r++) tickTraumaEscalation(c);
     // L'escalade de brasG doit avoir progressé malgré la main amputée de brasD.
     expect(c.traumas!.find((t) => t.traumaId === 'doigt-ampute' && t.location === 'brasG')?.count).toBe(3);
     const stumpG = c.traumas!.find((t) => t.label === 'Amputation' && t.location === 'brasG');
-    expect(stumpG?.fingerLossPerRound).toBe(true); // toujours en escalade (pas coupée par brasD)
+    expect(stumpG?.perRound).toEqual(FINGER_PER_ROUND); // toujours en escalade (pas coupée par brasD)
     expect(stumpG?.awaitingMedicalAid).toBe(true);
-    tickFingerLossEscalation(c); // 4e doigt sur brasG → main tranchée sur brasG
+    tickTraumaEscalation(c); // 4e doigt sur brasG → main tranchée sur brasG
     expect(c.traumas!.some((t) => t.traumaId === 'main-bras-ampute' && t.location === 'brasG')).toBe(true);
-    expect(c.traumas!.find((t) => t.label === 'Amputation' && t.location === 'brasG')?.fingerLossPerRound).toBeFalsy();
+    expect(c.traumas!.find((t) => t.label === 'Amputation' && t.location === 'brasG')?.perRound).toBeFalsy();
   });
 });
 
@@ -113,24 +118,24 @@ describe('#167 — « Pied écrasé » : perte du pied si pas de Chirurgie sous 
 });
 
 describe('#166/#167 — câblage DONNÉE→plaie (stampCriticalEscalation) + entrées de tables', () => {
-  it('stamp « Main ouverte » pose fingerLossPerRound + awaitingMedicalAid sur la plaie', () => {
+  it('stamp « Main ouverte » pose l’escalade périodique DÉCLARÉE + awaitingMedicalAid sur la plaie', () => {
     const traumas = [plaie('brasD')];
-    stampCriticalEscalation(traumas, { fingerLossPerRound: true }, 'brasD');
-    expect(traumas[0].fingerLossPerRound).toBe(true);
+    stampCriticalEscalation(traumas, { perRound: FINGER_PER_ROUND }, 'brasD', C({}));
+    expect(traumas[0].perRound).toEqual(FINGER_PER_ROUND);
     expect(traumas[0].awaitingMedicalAid).toBe(true);
   });
-  it('stamp « Pied écrasé » pose amputateAfterDays (1d10) + amputateSequel', () => {
+  it('stamp « Pied écrasé » pose amputateAfterDays (délai 1d10 résolu) + amputateSequel', () => {
     const traumas = [plaie('jambeD')];
-    stampCriticalEscalation(traumas, { amputateAfter1d10Days: true, amputateSequel: 'membre-inferieur-ampute' }, 'jambeD', seq([7]));
+    stampCriticalEscalation(traumas, { apresDelai: FOOT_AFTER_DELAY }, 'jambeD', C({}), seq([7]));
     expect(traumas[0].amputateAfterDays).toBe(7);
     expect(traumas[0].amputateSequel).toBe('membre-inferieur-ampute');
   });
   it('les 4 entrées d’escalade doigt/pied portent l’escalade attendue', () => {
     const find = (arr: { id: string; escalation?: unknown }[], id: string) => arr.find((e) => e.id === id)!.escalation as Record<string, unknown>;
-    expect(find(aaJson.bras, 'aa-bras-116')).toEqual({ fingerLossPerRound: true });
-    expect(find(aaJson.jambe, 'aa-jambe-106')).toEqual({ amputateAfter1d10Days: true, amputateSequel: 'membre-inferieur-ampute' });
-    expect(find(criticalsJson.bras, 'main-ouverte')).toEqual({ fingerLossPerRound: true });
-    expect(find(criticalsJson.jambe, 'pied-ecrase')).toEqual({ amputateAfter1d10Days: true, amputateSequel: 'membre-inferieur-ampute' });
+    expect(find(aaJson.bras, 'aa-bras-116')).toEqual({ perRound: FINGER_PER_ROUND });
+    expect(find(aaJson.jambe, 'aa-jambe-106')).toEqual({ apresDelai: FOOT_AFTER_DELAY });
+    expect(find(criticalsJson.bras, 'main-ouverte')).toEqual({ perRound: FINGER_PER_ROUND });
+    expect(find(criticalsJson.jambe, 'pied-ecrase')).toEqual({ apresDelai: FOOT_AFTER_DELAY });
   });
   it('resolveAACritical(« Pied écrasé ») stampe l’escalade sur la plaie (overkill place le jet en 106-115)', () => {
     // roll = d100 + 10×overkill ; d100=100, overkill=1 → 110 (aa-jambe-106). Puis Test de Résistance
@@ -148,7 +153,7 @@ describe('#166 — « Épaule luxée »/« Genou démis » : membre désactivé 
     const traumas: Trauma[] = []; // Épaule luxée n’engendre PAS d’amputation → aucune plaie chirurgicale préalable
     stampCriticalEscalation(traumas, {
       medicalAidGate: { label: 'Épaule luxée (bras perdu)', disable: [{ op: 'maxWeaponHands', hands: 1 }], restoreDR: 6, recoveryPenalty: [{ op: 'charMod', char: 'capacite-de-combat', mod: -10 }] },
-    }, 'brasD');
+    }, 'brasD', C({}));
     expect(traumas).toHaveLength(1);
     const t = traumas[0];
     expect(t.location).toBe('brasD');
@@ -225,7 +230,7 @@ describe('#166 — « Épaule luxée »/« Genou démis » : membre désactivé 
 describe('#190 — réouverture (bleedOnReinjury) : chaque Dégât à la Localisation → +N Hémorragique, levée par Chirurgie (LDB 18 / AA 07)', () => {
   it('stamp pose une séquelle chirurgicale porteuse de `bleedOnReinjury` à la localisation', () => {
     const traumas: Trauma[] = []; // Blessure béante n’engendre PAS d’amputation → aucune plaie préalable
-    stampCriticalEscalation(traumas, { bleedOnReinjury: { amount: 2, label: 'Dégâts artériels' } }, 'corps');
+    stampCriticalEscalation(traumas, { bleedOnReinjury: { amount: 2, label: 'Dégâts artériels' } }, 'corps', C({}));
     expect(traumas).toHaveLength(1);
     expect(traumas[0]).toMatchObject({ label: 'Dégâts artériels', location: 'corps', bleedOnReinjury: 2, needsSurgery: true });
   });

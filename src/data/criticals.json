@@ -493,7 +493,13 @@
         "difficulty": "facile",
         "sequels": [
           "dents-perdues"
-        ]
+        ],
+        "unites": {
+          "dice": {
+            "n": 1,
+            "sides": 10
+          }
+        }
       },
       "desc": "Votre bouche se remplit de sang et de dents cassées avec un bruit répugnant. Gagnez\n2 États Hémorragique. Perdez 1d10 dents – Amputation (Facile)",
       "source": {
@@ -659,7 +665,13 @@
         "sequels": [
           "langue-amputee",
           "dents-perdues"
-        ]
+        ],
+        "unites": {
+          "dice": {
+            "n": 1,
+            "sides": 10
+          }
+        }
       },
       "traumas": [
         "fracture-tete-majeure"
@@ -1208,7 +1220,9 @@
         ]
       },
       "escalation": {
-        "fingerLossPerRound": true
+        "perRound": {
+          "versTraumaId": "doigt-ampute"
+        }
       },
       "desc": "Votre main s'ouvre sous la puissance du coup. Perdez 1 doigt – Amputation (Complexe).\nGagnez 2 États Hémorragique et 1 État Sonné. Pour chaque Round au cours duquel\nvous ne recevez pas d'Aide Médicale, vous perdez un autre doigt. Si vous perdez tous\nvos doigts, vous perdez votre main – Amputation (Complexe)",
       "source": {
@@ -2557,8 +2571,15 @@
         }
       },
       "escalation": {
-        "amputateAfter1d10Days": true,
-        "amputateSequel": "membre-inferieur-ampute"
+        "apresDelai": {
+          "jours": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          },
+          "versTraumaId": "membre-inferieur-ampute"
+        }
       },
       "desc": "Le coup explose votre pied. Effectuez un Test de Résistance Accessible (+20) ; sur un\néchec, vous gagnez l'État À Terre et perdez un orteil, plus un orteil par DR en dessous\nde 0 – Amputation (Accessible). Gagnez 2 États Hémorragique. Si vous n'êtes pas\nsoigné par Chirurgie au cours des 1d10 jours suivants, vous perdez votre pied.",
       "source": {

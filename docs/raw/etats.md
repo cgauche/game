@@ -82,7 +82,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Détermination (`destin.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.20-21) → `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `HEARING_SKILL`, `meleeAttackerBonusLines`, `FREE_ATTACK_LABEL`, `ModFamille`, `passiveMods`, +7 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, +2 fichiers
+- `LDB 16` (l.20-21) → `etatTestMods`, `PoolCandidate`, `dropWorst`, `poolWinner`, `combatTestPenaltyParts`, `HEARING_SKILL`, `meleeAttackerBonusLines`, `FREE_ATTACK_LABEL`, `ModFamille`, `GameOp`, +7 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, +2 fichiers
 
 ---
 
@@ -595,7 +595,7 @@ Ces tableaux utilisent tous les États standards (Hémorragique, Sonné, Aveugl�
 
 **Voir aussi** : Traumatisme (`traumatisme.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 7` (l.27-29, l.82-182) → `StructureCritEntry`, `critEscalationSchema`, `amputationSchema`, `CritEscalation`, `attackHandGate`, `retenir-ses-coups`, `resolveAACritical`, `MODAL_DEFS`, `removeCondition`, `tickTraumaRecovery`, +14 — `src/data/criticals.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/structureCriticals.ts`, `src/engine/aaCritical.ts`, +11 fichiers
+- `AA 7` (l.27-29, l.82-182) → `StructureCritEntry`, `critEscalationSchema`, `amputationSchema`, `CritEscalation`, `attackHandGate`, `retenir-ses-coups`, `resolveAACritical`, `MODAL_DEFS`, `removeCondition`, `aaBleedUnconsciousApply`, +14 — `src/data/criticals.ts`, `src/data/regles.json`, `src/data/reglesOptionnelles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/structureCriticals.ts`, `src/engine/aaCritical.ts`, +12 fichiers
 
 ---
 

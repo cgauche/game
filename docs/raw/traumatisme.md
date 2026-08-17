@@ -181,7 +181,7 @@ L'os est salement fracturé ou a éclaté. Peu probable de guérir correctement 
 **Voir aussi** : [Amputation — Membre amputé](#9-amputation--choc-traitement-et-séquelles-permanentes) ; [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.193-213) → `dechirure-jambe-mineure`, `dechirure-autre-mineure`, `fracture-torse-mineure`, `trauma-fracture`, `fracture-torse-majeure`, `fracture-jambe-mineure`, `fractureSequela`, `fractureEndDifficulty`, `fracture-jambe-majeure`, `fracture-tete-mineure`, +7 — `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traumas.json`, `src/engine/trauma.ts`
+- `LDB 18` (l.193-213) → `dechirure-jambe-mineure`, `dechirure-autre-mineure`, `fracture-torse-mineure`, `trauma-fracture`, `fracture-torse-majeure`, `fracture-jambe-mineure`, `fracture-jambe-majeure`, `fracture-tete-mineure`, `fracture-tete-majeure`, `fracture-bras-mineure`, +7 — `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traumas.json`, `src/engine/trauma.ts`
 
 ---
 
@@ -212,7 +212,7 @@ La Compétence Guérison ne raccourcit pas la Majeure (elle informe seulement qu
 **Voir aussi** : [Guérison des Blessures Critiques](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.215-231) → `permanentAmputations`, `dechirure-jambe-mineure`, `CritEntry`, `AMPUTATION_WOUND_DESC`, `dechirure-jambe-majeure`, `Amputation`, `amputationSchema`, `dechirure-autre-mineure`, `TraumaFiche`, `AAEntry`, +31 — `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, +3 fichiers
+- `LDB 18` (l.215-231) → `permanentAmputations`, `dechirure-jambe-mineure`, `CritEntry`, `AMPUTATION_WOUND_DESC`, `dechirure-jambe-majeure`, `resolveAmputation`, `Amputation`, `dechirure-autre-mineure`, `amputationSchema`, `AAEntry`, +31 — `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, +3 fichiers
 
 ---
 
@@ -258,7 +258,7 @@ Toute amputation nécessite une **Chirurgie** pour être traitée. La blessure n
 **Voir aussi** : [Chirurgie](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie) ; États → [etats.md](etats.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.233-285) → `faim`, `isFumble`, `permanentAmputations`, `soif`, `dechirure-jambe-mineure`, `recovery`, `CritEntry`, `AMPUTATION_WOUND_DESC`, `dechirure-jambe-majeure`, `Amputation`, +51 — `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, +8 fichiers
+- `LDB 18` (l.233-285) → `faim`, `cumulSchema`, `isFumble`, `permanentAmputations`, `soif`, `dechirure-jambe-mineure`, `recovery`, `CritEntry`, `AMPUTATION_WOUND_DESC`, `TraumaCumul`, +56 — `src/data/criticals.ts`, `src/data/flow-stakes.json`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, +10 fichiers
 
 ---
 
@@ -284,7 +284,7 @@ Un personnage est **blessé** s'il a perdu au moins 1 PB. Il n'y a **aucune pén
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 9` (l.255-269) → `carryOverState`, `healDifficulty`, `healWoundsDelta`, `stopBleedOutcome`, `HealWoundsOptions`, `applyHealWounds`, `heal-wounds`, `emprise-sur-les-animaux`, `heal-bleed`, `escamotage`, +6 — `src/data/flow-stakes.json`, `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/types.ts`, `src/state/combatSlice.ts`
-- `LDB 18` (l.289-300) → `faim`, `permanentAmputations`, `soif`, `recovery`, `dechirure-jambe-majeure`, `critEscalationSchema`, `TraumaFiche`, `dechirure-autre-majeure`, `exposure`, `exposure-heat-drop`, +30 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/data/voyage-stakes.json`, `src/engine/combat.ts`, +10 fichiers
+- `LDB 18` (l.289-300) → `faim`, `permanentAmputations`, `soif`, `recovery`, `dechirure-jambe-majeure`, `critEscalationSchema`, `dechirure-autre-majeure`, `exposure`, `exposure-heat-drop`, `TraumaFiche`, +30 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/data/voyage-stakes.json`, `src/engine/combat.ts`, +10 fichiers
 
 ---
 
