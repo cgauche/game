@@ -167,8 +167,34 @@ arbitrages du programme et les registres du dépôt :
   la géométrie 2×6 est CONSTANTE par page). C'EST TOUT.
 - **COIN (F)** : icône + libellé (« Fin du tour ») + touche (ESPACE) + ligne d'ÉTAT
   (planche : « Action non dépensée » — l'avertissement garde-fou existant). C'EST TOUT.
+
+### 1c-ter. CONTRAT D'ASSEMBLAGE — LA CONSOLE EST UN OBJET UNIQUE (arbitrage user
+2026-08-17, verbatim : « Tu garde le même défaut remonte que la maquette était sensé
+mettre en évidence: tes blocs sont tous déconnecté »)
+
+Le défaut que la planche devait mettre en évidence n'est PAS dans les zones — il est
+ENTRE elles : l'UI actuelle rend des boîtes flottantes déconnectées, le terrain visible
+entre chacune. La planche répond par UN PONT (mesures relevées sur la planche rendue) :
+
+- **UN PONT CONTINU pleine largeur** : bande unique de bord à bord (planche :
+  `[0,863,1920,217]`, ~20 % du viewport) avec son LISERÉ HAUT continu (`[0,873,1920,8]`).
+  Les travées, les pages, le conduit d'Avantage et le coin Fin du tour sont des RÉGIONS
+  du pont — jamais des boîtes soeurs flottantes. **Le terrain n'est JAMAIS visible entre
+  deux zones de console.**
+- **L'ARCHE est le FRONTON du pont** : même matière, continue avec lui, elle S'ÉLÈVE
+  au-dessus du bord (planche : arche `[781,811,357,269]`, ~52px au-dessus du liseré) —
+  pas un panneau posé devant.
+- **Le JOURNAL flotte SUR le terrain** au-dessus du pont, côté gauche, en texte nu
+  (planche : `[170,779,330,57]`, aucun cadre) — il n'appartient pas au pont.
+- **Chaque zone périphérique est UNE PLAQUE unique** : bandeau = une plaque cadrée
+  contenant les tuiles (`[723,10,475,119]`), frise = une plaque (`[0,132,133,472]`),
+  rail = une plaque (`[1857,160,63,279]`) — jamais des éléments épars.
+- Garde à promouvoir : un élément-pont UNIQUE porte les zones de console (structure), et
+  la sonde pixel « aucun pixel de terrain sous le bord haut du pont » passe en recette.
+
 Vérification : à contenu conforme, re-mesurer chaque zone CONTRE la planche assemblée —
-l'écran assemblé se re-juge APRÈS cette passe, jamais avant.
+et l'ASSEMBLAGE (pont, fronton, liseré continu) se juge comme un contrat à part entière,
+AVANT le goût.
 
 ✅ **PLANCHE USER 2026-08-17 — CIBLE DE CONFORMITÉ** (artefact claude.ai
 `f2baf8fc…`, annoncée « Bon je te prépare du Claude design ») :
