@@ -436,8 +436,16 @@ vu la taille de nos map, ca n'a pas trop de sens, mais la boussole c'est souvent
 (nord visible, clic = réorienter la caméra au nord — indispensable depuis la rotation
 libre sans plaque) qui PORTE l'heure et la date (le domicile canonique que la date avait
 perdu en quittant la barre haute — `ScreenMeta` reste la méta des écrans plein-champ).
-Exploration ET combat (l'heure de campagne se lit partout). À dessiner au lot de
-matière ; le contrat de composition (un seul médaillon, coin de carte, jamais une
+Exploration ET combat (l'heure de campagne se lit partout). ÉTENDUE (2026-08-17, suite
+de l'audit) : le médaillon porte AUSSI **le NOM DU LIEU** (l'en-tête de minimap du genre,
+sans minimap) — le nom QUITTE la barre haute, qui se réduit à ☰ + bannière d'objectif
+contextuelle ; et l'ARRIVÉE dans une zone nommée gagne son **ANNONCE TRANSITOIRE**
+(titre en grand au centre, s'efface — le standard du genre, l'entrée dans un lieu de
+campagne est un événement narratif). ⚠ Le module minimap EXISTANT (`TopoScene`, POC des
+combats de masse/armes de siège/stations navales) RESTE à ses contextes — verbatim user :
+« On a un module de minimap qu'on utilise pour les combats de masse et arme de siege, en
+POC, mais pour le moment je ne pense pas que cela soit utile sur le HUD ». À dessiner au
+lot de matière ; le contrat de composition (un seul médaillon, coin de carte, jamais une
 plaque de boutons) vaut dès maintenant.
 
 ## Zone 7 — LES PHASES
